@@ -1,5 +1,7 @@
 (load (format nil "~A/src/urdf2eus.l"
               (read-line (piped-fork "rospack find eusurdf"))))
+(load (format nil "~A/pr2model.l"
+              (read-line (piped-fork "rospack find pr2eus"))))
 
 (roseus-add-msgs "roslib")
 (roseus-add-msgs "std_msgs")
@@ -7,16 +9,13 @@
 (roseus-add-msgs "nav_msgs")
 (roseus-add-msgs "geometry_msgs")
 (roseus-add-msgs "sensor_msgs")
-;;(roseus-add-msgs "pr2_controllers_msgs")
+(roseus-add-msgs "pr2_controllers_msgs")
 (roseus-add-actionlibs "pr2_controllers_msgs")
 
 (unless (boundp '*pickview*)
   (pickview))
 
-(defvar *pr2* (instance urdf-robot :init
-                        (format nil
-                                 "~A/models/full_pr2.urdf"
-                                 (read-line (piped-fork "rospack find eusurdf")))))
+(defvar *pr2* (pr2))
 
 (defvar *pr2-state* nil
   "*pr2-state* update in ros::spin-onece")
@@ -36,22 +35,25 @@
 
 (defun send-pr2-joint-angles (pr2-model)
   (let ((joints
-         (list (cadr (cddddr (send *pr2* :joint-list))))))
-    (print joints)
-  (let ((joint-names (send-all joints :name))
-        (positions (mapcar #'deg2rad (send-all joints :joint-angle))))
+         ;;(list (cadr (cddddr (send *pr2* :joint-list))))
+         (send pr2-model :middle-body-joint-angle-list)))
+  (let ((joint-names (mapcar #'string-downcase (mapcar #'car joints)))
+        (positions (mapcar #'deg2rad (mapcar #'cdr joints))))
     (let ((goal (instance pr2_controllers_msgs::JointTrajectoryActionGoal
                           :init)))
-      (send goal :header :stamp (ros::time-now))
+      (send goal :header :stamp
+            (let ((tm (ros::time-now)))
+              (send tm :sec (+ (send tm :sec) 1))
+              tm))
       (send goal :goal :trajectory :joint_names joint-names)
       (send goal :goal :trajectory :points
             (list (instance trajectory_msgs::JointTrajectoryPoint
                             :init
                             :positions positions
-                            :velocities (list (make-list (length positions)
-                                                         :initial-element 0))
+;;                            :velocities (make-list (length positions)
+;;                                                   :initial-element 0)
                             :time_from_start
-                            (let ((tm (ros::time-now))) (send tm :sec 1) tm))))
+                            (let ((tm (ros::time))) (send tm :sec 10) tm))))
       (send *pr2-joint-action* :send-goal goal)))))
       ;;(send (car *pr2-joint-actions*) :send-goal goal)))))
 
@@ -69,7 +71,7 @@
   (let ((as (instance ros::simple-action-client :init
                       name pr2_controllers_msgs::JointTrajectoryAction)))
     (warning-message 1 "no waiting ~A~%" name)
-    ;;(send as :wait-for-server)
+    (send as :wait-for-server)
     as))
 
 (defvar *pr2-joint-action*
