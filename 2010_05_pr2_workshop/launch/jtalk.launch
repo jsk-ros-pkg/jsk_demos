@@ -4,7 +4,7 @@
 	name="sound_play">
     <param name="frequency" value="400" />
     <param name="size" value="-8" />
-    <param name="command" value="~ropack find jtalk`/text2wave-jp.sh" />
+    <param name="command" value="$(find jtalk)/text2wave-jp.sh" />
   </node>
 </launch>
 
