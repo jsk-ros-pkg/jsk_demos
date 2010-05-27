@@ -1,0 +1,6 @@
+<launch>
+  <node pkg="pr2_workshop_jsk_2010_main"
+        type="main.l"
+        name="$(anon pr2_workshop_jsk_main)" />
+  <include file="$(find pddl_planner)/launch/pddl_ff.launch" />
+</launch>
