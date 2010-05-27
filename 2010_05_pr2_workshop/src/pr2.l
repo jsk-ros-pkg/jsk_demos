@@ -39,7 +39,7 @@
                                (let ((tm (ros::time))) (send tm :sec 10) tm)))
   (let ((joints
          (send pr2-model :middle-body-joint-angle-list)))
-  (let ((joint-names (mapcar #'string-downcase (mapcar #'car joints)))
+  (let ((joint-names (mapcar #'car joints))
         (positions (mapcar #'deg2rad (mapcar #'cdr joints))))
     (let ((goal (instance pr2_controllers_msgs::JointTrajectoryActionGoal
                           :init)))
