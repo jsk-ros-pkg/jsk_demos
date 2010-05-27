@@ -4,12 +4,12 @@
               (read-line (piped-fork "rospack find pddl_planner"))))
 (load (format nil "~A/src/problem.l"
               (read-line (piped-fork
-                          "rospack find pr2_workshop_jsk_2010_main"))))
+                          "rospack find 2010_05_pr2_workshop"))))
 
 (roseus "pr2_jsk_main")
-(load (format nil "~A/src/pr2.l"
-              (read-line (piped-fork
-                          "rospack find pr2_workshop_jsk_2010_main"))))
+;; (load (format nil "~A/src/pr2.l"
+;;               (read-line (piped-fork
+;;                           "rospack find pr2_workshop_jsk_2010_main"))))
 ;; make an interface to pddl_planner
 
 (defun pddl-solve ()
@@ -33,6 +33,7 @@
     (setq *pddl-result* result)
     (pprint result)
     result))
+
 ;;((pick rarm pet desk)
 ;; (pick larm cup desk)
 ;; (pour pet cup rarm larm)
@@ -40,5 +41,5 @@
 ;; (put rarm pet desk))
 
 ;;(pddl-solve)
-
+(pddl-solve)
 ;;(ros::spin)
