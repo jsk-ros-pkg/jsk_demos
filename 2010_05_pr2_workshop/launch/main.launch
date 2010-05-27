@@ -3,4 +3,5 @@
         type="main.l"
         name="$(anon pr2_workshop_jsk_main)" />
   <include file="$(find pddl_planner)/launch/pddl_ff.launch" />
+  <include file="$(find 2010_05_pr2_workshop)/launch/2dnav.launch" />
 </launch>
