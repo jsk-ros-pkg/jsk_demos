@@ -1,0 +1,7 @@
+<package>
+  <description brief="pr2 workshop for pr2 beta program">
+    pr2 workshop for pr2 beta program
+  </description>
+  <author>Ryohei Ueda (ueda@jsk.t.u-tokyo.ac.jp)</author>
+  <license>Apache License 2.0</license>
+</package>
