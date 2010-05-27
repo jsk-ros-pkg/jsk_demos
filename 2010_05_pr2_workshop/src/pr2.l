@@ -33,29 +33,25 @@
             (coerce positions cons))
     (send pr2-model :angle-vector)))
 
-(defun send-pr2-joint-angles (pr2-model)
+(defun send-pr2-joint-angles (pr2-model
+                              &optional
+                              (duration
+                               (let ((tm (ros::time))) (send tm :sec 10) tm)))
   (let ((joints
-         ;;(list (cadr (cddddr (send *pr2* :joint-list))))
          (send pr2-model :middle-body-joint-angle-list)))
   (let ((joint-names (mapcar #'string-downcase (mapcar #'car joints)))
         (positions (mapcar #'deg2rad (mapcar #'cdr joints))))
     (let ((goal (instance pr2_controllers_msgs::JointTrajectoryActionGoal
                           :init)))
-      (send goal :header :stamp
-            (let ((tm (ros::time-now)))
-              (send tm :sec (+ (send tm :sec) 1))
-              tm))
+      (send goal :header :stamp (ros::time-now))
       (send goal :goal :trajectory :joint_names joint-names)
       (send goal :goal :trajectory :points
             (list (instance trajectory_msgs::JointTrajectoryPoint
                             :init
                             :positions positions
-;;                            :velocities (make-list (length positions)
-;;                                                   :initial-element 0)
                             :time_from_start
-                            (let ((tm (ros::time))) (send tm :sec 10) tm))))
+                            duration)))
       (send *pr2-joint-action* :send-goal goal)))))
-      ;;(send (car *pr2-joint-actions*) :send-goal goal)))))
 
 (defun pr2-state-callback (msg)
   ;; not cool
