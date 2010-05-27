@@ -1,4 +1,9 @@
 #!/usr/bin/env runeus
+
+(if (not (and (unix:getenv "ROS_IP")
+              (unix:getenv "ROS_HOSTNAME")))
+    (error "YOU HAVE TO SPECIFY $ROS_IP AND $ROS_HOSTNAME"))
+
 ;; mostly same to demo-eus.l in pddl package under jsk subversion trunk
 (load (format nil "~A/src/eus-pddl.l"
               (read-line (piped-fork "rospack find pddl_planner"))))
