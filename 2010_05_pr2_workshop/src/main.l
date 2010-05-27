@@ -7,9 +7,9 @@
                           "rospack find 2010_05_pr2_workshop"))))
 
 (roseus "pr2_jsk_main")
-;; (load (format nil "~A/src/pr2.l"
-;;               (read-line (piped-fork
-;;                           "rospack find pr2_workshop_jsk_2010_main"))))
+(load (format nil "~A/src/pr2.l"
+              (read-line (piped-fork
+                          "rospack find 2010_05_pr2_workshop"))))
 ;; make an interface to pddl_planner
 
 (defun pddl-solve ()
