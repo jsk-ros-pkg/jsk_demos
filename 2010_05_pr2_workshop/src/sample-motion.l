@@ -17,4 +17,3 @@
 (update-pr2-joint-angles *pr2* *pr2-state*)
 (send *pr2* :inverse-kinematics :rarm-target (make-coords :pos (float-vector 400 -800 1200 )) :rotation-axis nil)
 (send-pr2-joint-angles *pr2*)
-;;(send 

@@ -37,21 +37,27 @@
                               &optional
                               (duration
                                (let ((tm (ros::time))) (send tm :sec 10) tm)))
-  (let ((joints
-         (send pr2-model :middle-body-joint-angle-list)))
-  (let ((joint-names (mapcar #'car joints))
-        (positions (mapcar #'deg2rad (mapcar #'cdr joints))))
-    (let ((goal (instance pr2_controllers_msgs::JointTrajectoryActionGoal
-                          :init)))
-      (send goal :header :stamp (ros::time-now))
-      (send goal :goal :trajectory :joint_names joint-names)
-      (send goal :goal :trajectory :points
-            (list (instance trajectory_msgs::JointTrajectoryPoint
-                            :init
-                            :positions positions
-                            :time_from_start
-                            duration)))
-      (send *pr2-joint-action* :send-goal goal)))))
+  (let ((joints (send pr2-model :middle-body-joint-angle-list)))
+    (let ((joint-names (mapcar #'(lambda (x)
+                                   (string-downcase (string x)))
+                               (send-all joints :name)))
+          (positions ;;(mapcar #'deg2rad (mapcar #'cdr joints))))
+           (mapcar #'(lambda (x)
+                       (if (derivedp x rotational-joint)
+                           (deg2rad (send x :joint-angle))
+                         (* 0.001 (send x :joint-angle))))
+                   joints)))
+      (let ((goal (instance pr2_controllers_msgs::JointTrajectoryActionGoal
+                            :init)))
+        (send goal :header :stamp (ros::time-now))
+        (send goal :goal :trajectory :joint_names joint-names)
+        (send goal :goal :trajectory :points
+              (list (instance trajectory_msgs::JointTrajectoryPoint
+                              :init
+                              :positions positions
+                              :time_from_start
+                              duration)))
+        (send *pr2-joint-action* :send-goal goal)))))
 
 (defun pr2-state-callback (msg)
   ;; not cool
@@ -66,7 +72,7 @@
 (defun init-action-lib (name)
   (let ((as (instance ros::simple-action-client :init
                       name pr2_controllers_msgs::JointTrajectoryAction)))
-    (warning-message 1 "no waiting ~A~%" name)
+    (warning-message 1 "waiting ~A~%" name)
     (send as :wait-for-server)
     as))
 
