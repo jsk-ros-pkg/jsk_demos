@@ -35,8 +35,9 @@
 
 (defun send-pr2-joint-angles (pr2-model
                               &optional
-                              (duration (ros::time 10.0)))
-  (let ((joints (send pr2-model :middle-body-joint-angle-list)))
+                              (duration 10))
+  (let ((joints (send pr2-model :middle-body-joint-angle-list))
+        (tm (ros::time duration)))
     (let ((joint-names (mapcar #'(lambda (x)
                                    (string-downcase (string x)))
                                (send-all joints :name)))
@@ -55,7 +56,7 @@
                               :init
                               :positions positions
                               :time_from_start
-                              duration)))
+                              tm)))
         (send *pr2-joint-action* :send-goal goal)))))
 
 (defun pr2-state-callback (msg)
