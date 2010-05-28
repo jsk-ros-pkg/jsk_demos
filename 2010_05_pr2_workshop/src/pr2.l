@@ -35,8 +35,7 @@
 
 (defun send-pr2-joint-angles (pr2-model
                               &optional
-                              (duration
-                               (let ((tm (ros::time))) (send tm :sec 10) tm)))
+                              (duration (ros::time 10.0)))
   (let ((joints (send pr2-model :middle-body-joint-angle-list)))
     (let ((joint-names (mapcar #'(lambda (x)
                                    (string-downcase (string x)))
