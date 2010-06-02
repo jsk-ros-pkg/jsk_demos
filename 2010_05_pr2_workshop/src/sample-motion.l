@@ -25,14 +25,16 @@
   (send *pr2* :reset-pose)
   (send-pr2-joint-angles *pr2* duration))
 
-(defun hold-cup ()
+(defun hold-cup (&optional (duration 3))
   (send *pr2* :reset-pose)
   (send *pr2* :inverse-kinematics
         :larm-target (make-coords :pos #f(500 300 800))
         :rotation-axis :z)
-  )
+  (send-pr2-joint-angles *pr2* duration))
 
-(defun hold-cap ()
+
+(defun hold-cap (&optional (duration 3))
+  ;;(update-pr2-joint-angles *pr2* *pr2-state*)
   (send *pr2* :inverse-kinematics
         :rarm-target
         (send (send (send *pr2* :larm :end-coords) :copy-worldcoords)
@@ -40,5 +42,6 @@
                                       :rpy (float-vector 0 pi/2 pi)))
         :larm-target :relative
         :rotation-axis :x)
-  )
+  (send-pr2-joint-angles *pr2* duration))
+
 (warn ";; send-sample-pose~%")
