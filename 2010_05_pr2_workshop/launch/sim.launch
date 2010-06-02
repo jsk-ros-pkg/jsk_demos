@@ -1,0 +1,13 @@
+<launch>
+
+  <!-- start 602 simulater -->
+  <include file="$(find 2010_05_pr2_workshop)/launch/pr2_602_world.launch" />
+
+  <!-- start midbody controller -->
+  <node name="start_midcontroler" pkg="openrave_actionlib"
+	type="setup_controllers.py" respawn="false" />
+
+  <!-- start 2dnav and room602 map -->
+  <include file="$(find 2010_05_pr2_workshop)/launch/2dnav.launch" />
+
+</launch>
