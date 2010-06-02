@@ -49,12 +49,15 @@
                    joints)))
       (let ((goal (instance pr2_controllers_msgs::JointTrajectoryActionGoal
                             :init)))
+        (send goal :header :seq 1)
         (send goal :header :stamp (ros::time-now))
         (send goal :goal :trajectory :joint_names joint-names)
+        (send goal :goal :trajectory :header :stamp (ros::time-now))
         (send goal :goal :trajectory :points
               (list (instance trajectory_msgs::JointTrajectoryPoint
                               :init
                               :positions positions
+                              :velocities (make-list (length positions) :initial-element 0)
                               :time_from_start
                               tm)))
         (send *pr2-joint-action* :send-goal goal)))))
