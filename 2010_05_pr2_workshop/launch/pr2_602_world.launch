@@ -1,0 +1,9 @@
+<launch>
+
+  <!-- start up 602 world -->
+  <include file="$(find 2010_05_pr2_workshop)/launch/602_world.launch"/>
+
+  <!-- start pr2 robot -->
+  <include file="$(find pr2_gazebo)/pr2.launch"/>
+
+</launch>

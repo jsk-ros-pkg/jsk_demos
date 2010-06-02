@@ -1,0 +1,9 @@
+<launch>
+  <node name="map_server" pkg="map_server" type="map_server"
+	args="$(find 2010_05_pr2_workshop)/map/room602.yaml" >
+    <param name="frame_id" value="map"/>
+  </node>
+
+  <!-- <include file="$(find 2dnav_hrp2w)/maps/room602_objtf.launch"/> -->
+
+</launch>

@@ -1,4 +1,6 @@
 <launch>
+
   <include file="$(find pr2_2dnav)/pr2_2dnav.launch" />
-  <include file="$(find 2010_05_pr2_workshop)/map/start_map_willow_tent.launch" />
+  <include file="$(find 2010_05_pr2_workshop)/launch/start_map_room602.launch" />
+
 </launch>

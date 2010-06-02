@@ -1,0 +1,10 @@
+<launch>
+
+  <!-- start gazebo with an 602 world -->
+  <param name="/use_sim_time" value="true" />
+
+  <node name="gazebo" pkg="gazebo" type="gazebo"
+	args="-r $(find 2010_05_pr2_workshop)/worlds/602.world"
+	respawn="false" output="screen"/>
+
+</launch>
