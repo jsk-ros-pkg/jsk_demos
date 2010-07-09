@@ -1,6 +1,18 @@
-(load "test-finger.l")
-(defun r-grasp nil (move-gripper 0 :effort 8.0))
-(defun r-open nil (move-gripper 0.2 :effort 8.0)) ;; is max ?
+(pushnew (format nil "~A/euslisp/"
+                 (read-line (piped-fork "rospack find roseus")))
+         *load-path* :test #'equal)
+(load "roseus.l")
+(load "actionlib.l")
+(load "geometry-util.l")
+(load "eustf.l")
+
+(roseus "pr2_action_sample")
+
+(load (format nil "~A/src/pr2.l"
+                 (read-line (piped-fork "rospack find 2010_05_pr2_workshop"))))
+
+(defun r-grasp nil (move-gripper :rarm 0 :effort 20))
+(defun r-open nil (move-gripper :larm 0.2 :effort 20)) ;; is max ?
 
 (defun get-obj-coords nil
   ;; return dummy obj coords

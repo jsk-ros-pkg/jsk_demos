@@ -126,13 +126,13 @@
 -->
 
   <!-- 602 poor wall and objects model-->
-  <model:physical name="602_map">
+  <!-- <model:physical name="602_map">
    <xyz>-7.0 -4.5 0</xyz>
    <rpy>0 0 0</rpy>
    <static>true</static>
    <body:map name="602_map_body">
      <geom:map name="602_map_geom">
-       <image>room602.png</image>
+       <image>room602.pgm</image>
        <threshold>200</threshold>
        <granularity>1</granularity>
        <negative>false</negative>
@@ -141,7 +141,7 @@
        <material>Gazebo/Rocky</material>
      </geom:map>
    </body:map>
-  </model:physical>
+  </model:physical> -->
 
   <model:physical name="desk1">
     <xyz>2 2.5 0</xyz>
