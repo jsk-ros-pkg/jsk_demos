@@ -28,7 +28,9 @@
                                (send pr2-model :joint-list)
                                :key #'(lambda (x) (send x :name)))))
                   (when j
-                    (send j :joint-angle (rad2deg p)))))
+		    (if (derivedp j rotational-joint)
+			(send j :joint-angle (rad2deg p))
+		      (send j :joint-angle (* 1000 p))))))
             (coerce joint-names cons)
             (coerce positions cons))
     (send pr2-model :angle-vector)))
@@ -36,7 +38,7 @@
 (defun send-pr2-joint-angles (pr2-model
                               &optional
                               (duration 10))
-  (let ((joints (send pr2-model :middle-body-joint-angle-list))
+  (let ((joints (send pr2-model :full-body-joint-angle-list))
         (tm (ros::time duration)))
     (let ((joint-names (mapcar #'(lambda (x)
                                    (string-downcase (string x)))
@@ -47,6 +49,7 @@
                            (deg2rad (send x :joint-angle))
                          (* 0.001 (send x :joint-angle))))
                    joints)))
+      (print joint-names)
       (let ((goal (instance pr2_controllers_msgs::JointTrajectoryActionGoal
                             :init)))
         (send goal :header :seq 1)
@@ -80,7 +83,7 @@
     as))
 
 (defvar *pr2-joint-action*
-  (init-action-lib "midbody_controller/joint_trajectory_action"))
+  (init-action-lib "fullbody_controller/joint_trajectory_action"))
 
 ;;(objects (list *pr2*))
 ;;(do-until-key (ros::spin-once) (update-pr2-joint-angles *pr2* *pr2-state*))
