@@ -40,7 +40,7 @@
   (ros::advertise "robotsound" sound_play::SoundRequest 5)
   (ros::advertise "view_target" geometry_msgs::PointStamped 1)
 
-  (setq *node-debug* t)
+  (setq *node-debug* nil)
   (when *node-debug*
     (if (not (boundp '*irtviewer*)) (make-irtviewer))
     (objects (list *pr2* *scene*))
