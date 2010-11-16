@@ -1,0 +1,27 @@
+<launch>
+
+  <node name="find_elevator_button" pkg="roseus" type="roseus"
+	output="screen" respawn="true"
+	args="$(find elevatpr_move_base_pr2)src/find-elevator-button.l" />
+
+  <node name="elevator_move_base" pkg="roseus" type="roseus"
+	output="screen" respawn="true"
+	args="$(find elevatpr_move_base_pr2)/src/elevator-move-base.l" />
+
+  <node name="light_detector" pkg="elevatpr_move_base_pr2"
+	type="color_point_detector">
+    <remap from="image" to="/wide_stereo/left/image_color"/>
+    <param name="red" value="253"/>
+    <param name="green" value="251"/>
+    <param name="blue" value="183"/>
+  </node>
+
+  <!--
+  <node name="battery_talker" pkg="roseus" type="roseus"
+	args="$(find elevatpr_move_base_pr2)/tools/battery-talker.l" />
+  <node name="greeting" pkg="roseus" type="roseus"
+	output="screen"
+	args="$(find elevatpr_move_base_pr2)/tools/greeting-while-moving.l" />
+  -->
+
+</launch>

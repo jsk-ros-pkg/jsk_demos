@@ -1,0 +1,27 @@
+<package>
+  <description brief="elevator_move_base_pr2">
+
+     elevator_move_base_pr2
+
+  </description>
+  <author>saito</author>
+  <license>BSD</license>
+  <review status="unreviewed" notes=""/>
+  <url>http://ros.org/wiki/elevator_move_base_pr2</url>
+  <depend package="roseus"/>
+  <depend package="rospy"/>
+  <depend package="roscpp"/>
+  <depend package="pr2eus"/>
+  <depend package="posedetectiondb"/>
+  <depend package="move_base_msgs"/>
+  <depend package="sound_play"/>
+  <depend package="std_srvs"/>
+  <depend package="image_geometry"/>
+  <depend package="image_transport"/>
+  <depend package="smach_roseus"/>
+  <depend package="opencv2"/>
+  <depend package="cv_bridge"/>
+
+</package>
+
+
