@@ -1,0 +1,136 @@
+#!/usr/bin/env runeus
+
+(load "elevator-buttons.l")
+(load "package://pr2eus/pr2-utils.l")
+(load "package://pr2eus/pr2-interface.l")
+;(load "package://manipserver_lib/euslisp/manip_client_lib.l")
+
+;; (list larm-v rarm-v)
+(defconstant *pr2-tuckarm-pose-rarm-free* (list #f(5 75 105 -90 -70 0 20)
+						#f(0 65 -80 -125 -50 -120 160)))
+(defconstant *pr2-tuckarm-pose-larm-free* (list #f(0 65 70 -125 50 -120 160)
+						#f(-5 75 -105 -90 70 0 20)))
+
+;; check if current pose is tuckarm pose or not
+;;       which arm is free
+;; args = () (:rarm) (:larm)
+;; return = nil :rarm :larm
+(defun check-tuckarm-pose (&rest args)
+  (send *pr2* :angle-vector (send *ri* :state))
+  (let ((l-angle (map float-vector #'(lambda(d)(- d (* 360 (round (/ d 360.0)))))
+		      (send *pr2* :larm :angle-vector)))
+	(r-angle (map float-vector #'(lambda(d)(- d (* 360 (round (/ d 360.0)))))
+		      (send *pr2* :rarm :angle-vector)))
+	is-rarm is-larm (thre-deg 20))
+    (setq is-larm (and (< (distance l-angle (car *pr2-tuckarm-pose-larm-free*)) thre-deg)
+		       (< (distance r-angle (cadr *pr2-tuckarm-pose-larm-free*)) thre-deg)))
+    (setq is-rarm (and (< (distance l-angle (car *pr2-tuckarm-pose-rarm-free*)) thre-deg)
+		       (< (distance r-angle (cadr *pr2-tuckarm-pose-rarm-free*)) thre-deg)))
+    (cond ((and (memq :rarm args) is-rarm) :rarm)
+	  ((and (memq :larm args) is-larm) :larm)
+	  (is-rarm :rarm)
+	  (is-larm :larm))
+    ))
+
+;; send pr2 to move to tuckarm pose if not the pose now
+;; args is set the arm to move freely
+(defun pr2-tuckarm-pose (&rest args)
+  (let* ((current-arm (check-tuckarm-pose)) ;; nil rarm larm
+	 (free-arm (or (car args) current-arm :larm)))
+    (if (eq current-arm free-arm)
+	(return-from pr2-tuckarm-pose t))
+    (send *pr2* :head :angle-vector #f(0 0))
+    (send *pr2* :larm :angle-vector #f(25 0 0 -130 0 0 0))
+    (send *pr2* :rarm :angle-vector #f(-25 0 0 -130 0 0 0))
+    ;;(send *ri* :move-gripper :arms 0.005)
+    (send *ri* :angle-vector (send *pr2* :angle-vector) 2000)
+    (send *ri* :wait-interpolation)
+    (if (eq free-arm :larm)
+	(send *pr2* :rarm :angle-vector (cadr *pr2-tuckarm-pose-larm-free*))
+      (send *pr2* :larm :angle-vector (car *pr2-tuckarm-pose-rarm-free*)))
+    (send *ri* :angle-vector (send *pr2* :angle-vector) 2000)
+    (send *ri* :wait-interpolation)
+    (if (eq free-arm :larm)
+	(send *pr2* :larm :angle-vector (car *pr2-tuckarm-pose-larm-free*))
+      (send *pr2* :rarm :angle-vector (cadr *pr2-tuckarm-pose-rarm-free*)))
+    (send *ri* :angle-vector (send *pr2* :angle-vector) 2000)
+    (send *ri* :wait-interpolation)
+    ))
+
+(defun push-button (target-coords)
+  (let (via-coords arm
+		   via-angle-vector org-arm-anglev
+		   (rarm-reset #f(-60 70 110 -120 160 -30 180)) ;; second element 80 -> 70
+		   (larm-reset #f(60 70 70 -120 -160 -30 180))) ;; second element 80 -> 70
+    ;; via-coords
+    (setq via-coords (send (send target-coords :copy-worldcoords) :translate #f(-100 0 0) :world))
+
+    ;; check push target simply from current tuckarm-pose
+    (ros::spin-once)
+    (send *pr2* :angle-vector (send *ri* :state))
+    (setq arm (check-tuckarm-pose))
+
+    (when arm
+      (send *pr2* arm :angle-vector (case arm (:rarm rarm-reset)
+					  (:larm larm-reset)))
+      (unless (send *pr2* arm :inverse-kinematics target-coords :rotation-axis :x)
+	(setq *ik-fail-av*  (send *pr2* :angle-vector))
+	(setq *ik-fail-coords*  (send target-coords :copy-worldcoords))
+	(dump-loadable-structure (format nil "ik-fail-~d.l" (send (ros::time-now) :to-sec))
+				 *ik-fail-coords* *ik-fail-av*)
+	(setq arm nil)))
+    (send *pr2* :angle-vector (send *ri* :state))
+
+    ;; reset-pose and select arm
+    (unless arm
+      (setq arm (if (plusp (elt (send target-coords :worldpos) 1)) :larm :rarm))
+      (send *pr2* :reset-pose)
+      (send *ri* :angle-vector (send *pr2* :angle-vector) 3000)
+      (send *ri* :wait-interpolation))
+
+    (ros::ros-info "select ~A arm to push button ~A" arm (send target-coords :worldpos))
+
+    (setq org-arm-anglev (send *pr2* arm :angle-vector))
+
+    ;; start push
+    (send *pr2* arm :angle-vector (case arm (:rarm rarm-reset)
+					(:larm larm-reset)))
+    (send *pr2* :head :look-at (send target-coords :worldpos))
+    (unless
+	(send *pr2* arm :inverse-kinematics via-coords :rotation-axis :x)
+      (setq *ik-fail-av*  (send *pr2* :angle-vector))
+      (setq *ik-fail-coords*  (send target-coords :copy-worldcoords))
+      (dump-loadable-structure (format nil "ik-fail-~d.l" (send (ros::time-now) :to-sec))
+			       *ik-fail-coords* *ik-fail-av*)
+      (return-from push-button nil))
+    (setq via-angle-vector (send *pr2* :angle-vector))
+    (send *ri* :angle-vector (send *pr2* :angle-vector) 1500)
+    (send *ri* :wait-interpolation)
+
+    (unless
+	(send *pr2* arm :inverse-kinematics target-coords :rotation-axis :x)
+      (setq *ik-fail-av*  (send *pr2* :angle-vector))
+      (setq *ik-fail-coords*  (send target-coords :copy-worldcoords))
+      (dump-loadable-structure (format nil "ik-fail-~d.l" (send (ros::time-now) :to-sec))
+			       *ik-fail-coords* *ik-fail-av*)
+      (return-from push-button nil))
+    (send *ri* :angle-vector (send *pr2* :angle-vector) 1000)
+    (send *ri* :wait-interpolation)
+
+    (send *ri* :angle-vector via-angle-vector 400)
+    (send *ri* :wait-interpolation)
+
+    ;; return original pose
+    ;;(send *pr2* :head :angle-vector #f(0 0))
+    (send *pr2* arm :angle-vector org-arm-anglev)
+    (send *ri* :angle-vector (send *pr2* :angle-vector) 1000) ;; quick!
+    (send *ri* :wait-interpolation)
+#|
+    (send *s* :arm-target-coords arm via-coords)
+    (unix:sleep 10)
+    (send *s* :arm-target-coords arm target-coords)
+    (unix:sleep 2)
+    (send *s* :arm-target-coords arm via-coords)
+|#
+    t))
+
