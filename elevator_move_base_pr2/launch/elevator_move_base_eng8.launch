@@ -17,6 +17,9 @@
     <param name="blue" value="183"/>
   </node>
 
+  <!-- start objectdetection -->
+  <include file="$(find eusmodel_sift_detector)/launch/panel-detection.launch"/>
+
   <!--
   <node name="battery_talker" pkg="roseus" type="roseus"
 	args="$(find elevator_move_base_pr2)/tools/battery-talker.l" />
