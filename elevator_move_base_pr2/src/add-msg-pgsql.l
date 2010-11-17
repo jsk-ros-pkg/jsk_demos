@@ -102,7 +102,7 @@
     (insert-tf-table db msg :table table)
     ))
 
-(defun select-tf-from-table (db &key frame_id child_id after before (limit 1) (table "tf"))
+(defun select-tf-from-table (db &key frame_id child_id after before (limit 1) (table "tf") (with-time nil))
   (when (derivedp after time) (setq after (send after :to-nsec)))
   (when (derivedp before time) (setq before (send before :to-nsec)))
   (let ((fields
@@ -114,7 +114,8 @@
 	(cond2 (if child_id (list '= 'child_frame_id child_id)))
 	(cond3 (if after (list '> 'header_stamp after)))
 	(cond4 (if before (list '< 'header_stamp before)))
-	conslist where-cond result qu)
+	conslist where-cond result qu co
+	return-list)
     (setq condlist (delete nil (list cond1 cond2 cond3 cond4)))
     (setq where-cond (cond ((<= 2 (length condlist))
 			    (append '(and) condlist))
@@ -122,9 +123,14 @@
 			   (t "")))
     (setq result (select db fields table :where where-cond :order-by "header_stamp DESC" :limit limit))
     (when result
-      (setq qu (subseq (car result) 6))
-      (make-coords :pos (scale 1000 (coerce (subseq (car result) 3 6) float-vector))
-		   :rot (quaternion2matrix (float-vector (elt qu 3) (elt qu 0) (elt qu 1) (elt qu 2)))))
+      (dolist (record result)
+	(setq qu (subseq record 6))
+	(setq co (make-coords :pos (scale 1000 (coerce (subseq record 3 6) float-vector))
+			      :rot (quaternion2matrix (float-vector (elt qu 3) (elt qu 0) (elt qu 1) (elt qu 2)))))
+	(if with-time
+	    (push (cons co (send (ros::time) :from-nsec (elt record 0))) return-list)
+	  (push co return-list)))
+      return-list)
     ))
 
 ;; ros message types -> bool int8 uint8 int16 uint16 int32 uint32 int64 uint64
@@ -140,7 +146,7 @@
     (unix::sleep 1)
 
     (setq tmlist (flatten (pq:query *db* nil (format nil "SELECT stamp FROM trial WHERE type LIKE '~A%';" type))))
-    (setq tflist (mapcar #'(lambda(tm)(select-tf-from-table *db* :before tm :frame_id frame_id)) tmlist))
+    (setq tflist (mapcan #'(lambda(tm)(select-tf-from-table *db* :before tm :frame_id frame_id)) tmlist))
 
     (send msg :header :stamp (ros::time-now))
     (send msg :header :frame_id frame_id)
