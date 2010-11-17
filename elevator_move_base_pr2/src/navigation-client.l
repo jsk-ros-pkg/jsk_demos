@@ -3,7 +3,7 @@
 (ros::roseus-add-srvs "dynamic_tf_publisher")
 
 (defun load-coords-from-db (db table parent child)
-  (select-tf-from-table db :frame_id parent :child_id child :table table))
+  (car (select-tf-from-table db :frame_id parent :child_id child :table table)))
 
 (if (and (boundp '*db*) *db*)
     (progn
