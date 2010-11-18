@@ -18,7 +18,7 @@
   <depend package="std_srvs"/>
   <depend package="image_geometry"/>
   <depend package="image_transport"/>
-  <depend package="smach_roseus"/>
+  <depend package="roseus_smach"/>
   <depend package="opencv2"/>
   <depend package="cv_bridge"/>
 
