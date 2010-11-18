@@ -10,7 +10,7 @@
 (load "package://pr2eus/pr2-interface.l")
 (load "package://pr2eus/pr2-utils.l")
 
-(load "package://smach_roseus/src/state-machine-ros.l")
+(load "package://roseus_smach/src/state-machine-ros.l")
 
 (ros::roseus "elevator_move_base")
 
@@ -30,15 +30,14 @@
 
 (defun init ()
 
+  (ros::advertise "robotsound" sound_play::SoundRequest 5)
+  (ros::advertise "view_target" geometry_msgs::PointStamped 1)
+  (setq *ri* (instance pr2-interface :init))
+  (setq *pr2* (pr2))
+
   (setq *scene* (make-eng8-scene))
   (setq *all-objects* (send *scene* :objects))
   (ros::ros-info "make-all-objects : names = ~A" (send-all *all-objects* :name))
-
-  (setq *pr2* (pr2))
-
-  (setq *ri* (instance pr2-interface :init))
-  (ros::advertise "robotsound" sound_play::SoundRequest 5)
-  (ros::advertise "view_target" geometry_msgs::PointStamped 1)
 
   (setq *node-debug* nil)
   (when *node-debug*
@@ -342,6 +341,7 @@
   (let ((pub-msg (instance move_base_msgs::MoveBaseActionGoal :init)))
     (send pub-msg :header :stamp (ros::time-now))
     (send pub-msg :goal :target_pose msg)
+    (clear-costmap)
     (ros::publish "/elevator_move_base/goal" pub-msg)
     ))
 
@@ -354,7 +354,7 @@
 (setq s (instance state-machine-action-server :init "/elevator_move_base"
                   move_base_msgs::MoveBaseAction sm))
 (send s :success-state '(:success))
-(warn "move_base action start")
+(speak-jp "えれべ")
 (ros::rate 10)
 (do-until-key
  (ros::spin-once)

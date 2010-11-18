@@ -46,7 +46,7 @@
     (setq top-face (find-if #'(lambda(f)(equal (send f :id) '(:top)))
 			    (send map :faces)))
     (send map :paste-texture-to-face top-face :file
-	  (ros::resolve-ros-path "package://jsk_maps/8goukan.pgm"))
+	  (ros::resolve-ros-path "package://jsk_maps/8gokan.pgm"))
     (dolist (casco (list (make-cascoords :name "/eng8_1f" :pos #f(-30000 0 0))
 			 (make-cascoords :name "/eng8_6f" :pos #f(     0 0 0))))
       (send map :assoc casco))
