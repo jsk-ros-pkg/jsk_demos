@@ -67,7 +67,7 @@ if __name__=='__main__':
 
     global templates, result_pub
     template_list = rospy.get_param('~template_list').split()
-    templates = [[typename,LoadImage(rospy.get_param('~template/'+typename+'/path'),CV_LOAD_IMAGE_GRAYSCALE),rospy.get_param('~template/'+typename+'/thre'),rospy.get_param('~template/'+typename+'/method',''),rospy.get_param('~template/'+typename+'/name','')] for typename in template_list]
+    templates = [[typename,LoadImage(rospy.get_param('~template/'+typename+'/path'),CV_LOAD_IMAGE_GRAYSCALE),rospy.get_param('~template/'+typename+'/thre'),rospy.get_param('~template/'+typename+'/name',''),rospy.get_param('~template/'+typename+'/method','')] for typename in template_list]
 
     result_pub = rospy.Publisher("~result",StringStamped,MySubscribeListener())
 

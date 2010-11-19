@@ -1,13 +1,13 @@
 <launch>
   <include file="$(find pr2_machine)/pr2.machine"/>
 
-  <node name="find_elevator_button" pkg="roseus" type="roseus"
-	output="screen" respawn="true" machine="c2"
-	args="$(find elevator_move_base_pr2)/src/find-elevator-button.l" />
-
   <node name="elevator_move_base" pkg="roseus" type="roseus"
-	output="screen" respawn="true" machine="c2"
-	args="$(find elevator_move_base_pr2)/src/elevator-move-base.l" />
+	output="screen" respawn="true"
+	args="$(find elevator_move_base_pr2)/src/elevator-move-base.l"/>
+
+  <node name="find_elevator_button" pkg="roseus" type="roseus"
+	respawn="true" machine="c2"
+	args="$(find elevator_move_base_pr2)/src/find-elevator-button.l" />
 
   <node name="light_detector" pkg="elevator_move_base_pr2"
 	type="color_point_detector" machine="c2">
@@ -17,15 +17,14 @@
     <param name="blue" value="183"/>
   </node>
 
+  <!-- read the elevator floor number -->
+  <node name="panel_camera"  machine="c2"
+        pkg="virtual_camera" type="virtual_camera_mono">
+    <remap from="image" to="/narrow_stereo/left/image_raw"/>
+  </node>
+  <include file="$(find elevator_move_base_pr2)/launch/templatematch.launch"/>
+
   <!-- start objectdetection -->
   <include file="$(find eusmodel_sift_detector)/launch/panel-detection.launch"/>
-
-  <!--
-  <node name="battery_talker" pkg="roseus" type="roseus"
-	args="$(find elevator_move_base_pr2)/tools/battery-talker.l" />
-  <node name="greeting" pkg="roseus" type="roseus"
-	output="screen"
-	args="$(find elevator_move_base_pr2)/tools/greeting-while-moving.l" />
-  -->
 
 </launch>
