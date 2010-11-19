@@ -2,7 +2,7 @@
 
 (ros::load-ros-manifest "elevator_move_base_pr2")
 
-(load "package://elevator_move_base_pr2/src/add-msg-pgsql.l")
+;(load "package://elevator_move_base_pr2/src/add-msg-pgsql.l")
 (load "package://elevator_move_base_pr2/src/navigation-client.l")
 (load "package://elevator_move_base_pr2/src/push-elevator-button.l")
 (load "package://elevator_move_base_pr2/src/ros-callback-manager.l")
@@ -13,33 +13,28 @@
 (load "package://roseus_smach/src/state-machine-ros.l")
 
 (ros::roseus "elevator_move_base")
-
+(setq *node-debug* nil)
 ;(ros::service-call "~set_logger_level"
 ;                   (instance roscpp::SetLoggerLevelRequest
 ;                             :init :logger "ros" :level "DEBUG"))
 
 ;; これどうしよう
-(setq *floors* '(("B2F" "ちかにかい" "/eng8_b2f")
-		 ("B1F" "ちかいっかい" "/eng8_b1f")
-		 ("1F" "いっかい" "/eng8_1f") ("2F" "にかい" "/eng8_2f")
-		 ("3F" "さんかい" "/eng8_3f") ("4F" "よんかい" "/eng8_4f")
-		 ("5F" "ごかい" "/eng8_5f") ("6F" "ろくかい" "/eng8_6f")
-		 ("7F" "ななかい" "/eng8_7f")))
+(setq *floors* '(("B2F" "ちかにかい" "/eng8/b2f")
+		 ("B1F" "ちかいっかい" "/eng8/b1f")
+		 ("1F" "いっかい" "/eng8/1f") ("2F" "にかい" "/eng8/2f")
+		 ("3F" "さんかい" "/eng8/3f") ("4F" "よんかい" "/eng8/4f")
+		 ("5F" "ごかい" "/eng8/5f") ("6F" "ろくかい" "/eng8/6f")
+		 ("7F" "ななかい" "/eng8/7f")))
 
 (defvar *tfl* (instance ros::transform-listener :init))
 
 (defun init ()
-
   (ros::advertise "robotsound" sound_play::SoundRequest 5)
   (ros::advertise "view_target" geometry_msgs::PointStamped 1)
   (setq *ri* (instance pr2-interface :init))
   (setq *pr2* (pr2))
-
   (setq *scene* (make-eng8-scene))
-  (setq *all-objects* (send *scene* :objects))
-  (ros::ros-info "make-all-objects : names = ~A" (send-all *all-objects* :name))
 
-  (setq *node-debug* nil)
   (when *node-debug*
     (if (not (boundp '*irtviewer*)) (make-irtviewer))
     (objects (list *pr2* *scene*))
@@ -134,23 +129,17 @@
 ;;
 
 (defun look-button (userdata)
-  (let ((panel-name (cdr (assoc 'panel-name userdata))) coords-lst target)
+  (let ((panel-name (cdr (assoc 'panel-name userdata))) look-target)
     ;; nearest call panel
-    (setq *panel*
-	  (cadr (find-extream (mapcan #'(lambda(o)(mapcar #'(lambda(c) (list c o)) (send o  :get :prior-coords)))
-				      (send *scene* :find-object panel-name))
-			      #'(lambda(c)(norm (send (transform-pose-to-robot-coords (car c)) :pos))) #'<)))
-    (setq coords-lst (mapcar #'transform-pose-to-robot-coords (send *panel* :get :prior-coords)))
-    (setq target (find-extream coords-lst #'(lambda(c)(norm (send c :pos))) #'<))
+    (setq *panel* (car (send *scene* :find-object panel-name)))
+    (setq look-target (car (send *scene* :find-object (format nil "~A~A" (check-current-floor) panel-name))))
     ;;
     (update-robot-position)
     (update-scene-by-tf *scene*)
-    (when target
-      (ros::ros-info "look-at button position ~A" (send target :worldpos))
+    (when look-target
+      (ros::ros-info "look-at button position ~A" (send look-target :worldpos))
       (send *pr2* :head :angle-vector #f(0 0))
-      (send *pr2* :head :look-at (send target :worldpos)
-;	    :move-target (send *pr2* :narrow_stereo_optical_frame))
-	    )
+      (send *pr2* :head :look-at (send look-target :worldpos))
       (send *ri* :angle-vector (send *pr2* :angle-vector) 1000)
       (send *ri* :wait-interpolation))
 
@@ -213,12 +202,12 @@
 
 (defun costmap-for-elevator (userdata)
   (change-inflation-range 0.2)
-  (switch-global-planner-observation nil)
+  (switch-global-planner-observation nil) ;;disable tilt scan
   (initialize-costmaps)
   t)
 (defun costmap-normal (userdata)
   (change-inflation-range)
-  (switch-global-planner-observation t)
+  (switch-global-planner-observation t) ;;enable tilt scan
   (initialize-costmaps)
   t)
 
@@ -230,7 +219,6 @@
       (if (and (send topic :msg)
 	       (substringp target-floor (send topic :msg :data)))
 	  (return-from check-target-floor t))
-      (pprint (send topic :msg :data))
       (unix::usleep (* 500 1000))
       )))
 
@@ -260,6 +248,9 @@
   (initialize-costmaps)
   t)
 
+;; test macro
+(defmacro with-forms (head &rest forms) `(progn ,@(mapcar #'(lambda(f)(append head f)) forms)))
+
 ;; front-coords, outside-panel-name, outside-button, inside-coords, inside-panel-name, target-floor, outside-coords
 (defun elevator-state-machine ()
   (let ((sm (instance state-machine :init)))
@@ -278,6 +269,7 @@
 	  'inside-panel-name 'target-floor 'outside-coords)
     (send sm :goal-state (list :success :fail-outside :fail-inside))
     (send sm :start-state :move-front)
+    ;;
     (send sm :add-transition :move-front :costmap-for-elevator t)
     (send sm :add-transition :move-front :fail-outside nil)
     (send sm :add-transition :costmap-for-elevator :push-outside t)
@@ -301,20 +293,22 @@
 		     (send goal :target_pose)))
 	 (cur-floor (check-current-floor))
 	 (target-floor (check-current-floor goal-pose)) target-floor-button
-	 (target-coords (transform-pose-to-target-frame goal-pose target-floor))
+	 (target-coords (transform-pose-to-target-frame goal-pose (send *scene* :name)))
 	 (up/down (if (plusp (floor- target-floor cur-floor)) "up" "down")))
     (setq target-floor-button
 	  (elt (assoc target-floor *floors* :test #'string=
 		      :key #'(lambda(x)(elt x 2))) 0)) ;; /eng8_1f -> 1F
     (set-alist 'inside-panel-name "/elevator_inside_panel" userdata)
     (set-alist 'outside-panel-name "/elevator_call_panel" userdata)
-    (set-alist 'front-coords *eng8-elevator-panel-front* userdata)
-    (set-alist 'inside-coords *eng8-elevator-inside* userdata)
-    (set-alist 'outside-coords *eng8-elevator-outside* userdata)
+    ;; transform to scene frame
+    (set-alist 'front-coords (let ((coords (send *scene* :transformation (car (send *scene* :find-object (format nil "~A/elevator_call_panel-front" cur-floor)))))) (send coords :name (send *scene* :name)) coords) userdata)
+    (set-alist 'inside-coords (let ((coords (send *scene* :transformation (car (send *scene* :find-object (format nil "~A/elevator_inside_panel-front" cur-floor)))))) (send coords :name (send *scene* :name)) coords) userdata)
+    (set-alist 'outside-coords (let ((coords (send *scene* :transformation (car (send *scene* :find-object (format nil "~A/elevator-outside" target-floor)))))) (send coords :name (send *scene* :name)) coords) userdata)
     (set-alist 'target-floor target-floor-button userdata) ;; only for elevator
     (set-alist 'outside-button up/down userdata)
     (set-alist 'target-coords target-coords userdata)
-    (print (list target-floor up/down target-coords))
+    (print (list cur-floor '-> target-floor up/down target-coords))
+    (print (list "this returns" (floor- target-floor cur-floor)))
     (zerop (floor- target-floor cur-floor))))
 
 (defun elevator-smach ()
@@ -350,11 +344,12 @@
 (ros::subscribe "/elevator_move_base_simple/goal" geometry_msgs::PoseStamped
 		#'simple-goal-cb)
 (ros::advertise "/elevator_move_base/goal" move_base_msgs::MoveBaseActionGoal 1)
+
 (setq sm (elevator-smach))
 (setq s (instance state-machine-action-server :init "/elevator_move_base"
                   move_base_msgs::MoveBaseAction sm))
-(send s :success-state '(:success))
-(speak-jp "えれべ")
+(send s :success-state '(:success)) ;; name of success state
+(ros::ros-info "initialized elevator-move-base.l")
 (ros::rate 10)
 (do-until-key
  (ros::spin-once)
