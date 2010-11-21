@@ -10,7 +10,7 @@
 (load "package://pr2eus/pr2-interface.l")
 (load "package://pr2eus/pr2-utils.l")
 
-(load "package://roseus_smach/src/state-machine-ros.l")
+(load "package://roseus_smach/src/state-machine-actionlib.l")
 
 (ros::roseus "elevator_move_base")
 (setq *node-debug* nil)
