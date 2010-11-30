@@ -12,7 +12,11 @@
   <depend package="rospy"/>
   <depend package="roscpp"/>
   <depend package="pr2eus"/>
-  <depend package="posedetectiondb"/>
+  <depend package="roseus_smach"/>
+  <depend package="jsk_maps"/>
+  <depend package="move_base_jsk_patch"/>
+  <depend package="costmap_2d_jsk_patch"/>
+  <depend package="eusmodel_sift_detector"/>
   <depend package="move_base_msgs"/>
   <depend package="sound_play"/>
   <depend package="std_srvs"/>
