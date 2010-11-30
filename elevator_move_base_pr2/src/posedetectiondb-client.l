@@ -26,7 +26,7 @@
    (setq time-stamp (ros::time 0))
    (defvar *tfl* (instance ros::transform-listener :init))
    (defvar *tfb* (instance ros::transform-broadcaster :init))
-   (send-super :init "ObjectDetection" posedetection_msgs::ObjectDetection :detection-cb))
+   (send-super :init "/narrow_stereo/left/ObjectDetection" posedetection_msgs::ObjectDetection :detection-cb))
   (:update-coords
    (coords &optional (relative :local))
    (when (< 5 (send (ros::time- (ros::time-now) time-stamp) :to-sec))

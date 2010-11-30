@@ -25,6 +25,8 @@
   <include file="$(find elevator_move_base_pr2)/launch/templatematch.launch"/>
 
   <!-- start objectdetection -->
-  <include file="$(find eusmodel_sift_detector)/launch/panel-detection.launch"/>
+  <group ns="/narrow_stereo/left">
+    <include file="$(find eusmodel_sift_detector)/launch/panel-detection.launch"/>
+  </group>
 
 </launch>
