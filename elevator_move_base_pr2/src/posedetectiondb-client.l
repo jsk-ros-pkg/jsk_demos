@@ -18,15 +18,16 @@
 
 (defclass posedetectiondb-client
   :super ros::ros-callback-object
-  :slots (object time-stamp poselist))
+  :slots (object time-stamp poselist frame-id fixed-frame))
 (defmethod posedetectiondb-client
   (:init
-   (obj)
-   (setq object obj)
+   (obj &optional (_frame-name nil) (_fixed-frame "/base_footprint"))
+   (setq object obj frame-id _frame-id fixed-frame _fixed-frame)
    (setq time-stamp (ros::time 0))
    (defvar *tfl* (instance ros::transform-listener :init))
    (defvar *tfb* (instance ros::transform-broadcaster :init))
-   (send-super :init "/narrow_stereo/left/ObjectDetection" posedetection_msgs::ObjectDetection :detection-cb))
+   (send-super :init "ObjectDetection" posedetection_msgs::ObjectDetection :detection-cb))
+  ;; filter detection pose, and move obj to the estimated coords
   (:update-coords
    (coords &optional (relative :local))
    (when (< 5 (send (ros::time- (ros::time-now) time-stamp) :to-sec))
@@ -43,7 +44,7 @@
    (msg)
    (dolist (object-msg (send msg :objects))
      (when (equal (string-left-trim "/" (send object-msg :type))
-		  (string-left-trim "/" (send object :name)))
+		  (string-left-trim "/" (or frame-id (send object :name))))
        ;; broadcast transform
        (send msg :header :stamp (ros::time 0))
        (let* ((pose (instance geometry_msgs::PoseStamped :init
@@ -51,16 +52,15 @@
 			      :pose (send object-msg :pose)))
 	      (coords (ros::tf-pose->coords (send pose :pose)))
 	      (objcoords (send *tfl* :transform-pose
-			       "/base_footprint" pose)))
-	 (print (list 'detection-cb objcoords))
+			       fixed-frame pose)))
 	 (when objcoords
 	   (send self :update-coords objcoords :world)
 	   (send *tfb* :send-transform object
-		 "/base_footprint" (send object :name))
-	   ;; insert detection raw result to DB
+		 fixed-frame (or frame-id (send object :name)))
+	   ;; insert detection raw result to DB (TODO:remove)
 	   (insert-tf-table-by-coords
 	    *db* (ros::time-now) (make-coords) objcoords
-	    :source_id "/base_footprint" :target_id (send object :name))
+	    :source_id fixed-frame :target_id (send object :name))
 	   )
 	 ))))
   )
@@ -71,4 +71,3 @@
       (push (instance posedetectiondb-client :init obj) clients))
     (ros::ros-info "initialize posedetection db client with ~A~%" (send-all objects :name))
     clients))
-
