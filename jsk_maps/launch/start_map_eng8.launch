@@ -1,0 +1,19 @@
+<launch>
+  <node name="map_server" pkg="map_server" type="map_server"
+	args="$(find jsk_maps)/eng8.yaml" >
+    <param name="frame_id" value="/eng8"/>
+  </node>
+  <node pkg="dynamic_tf_publisher"
+        type="tf_set.py"
+        name="map_tf_6F"
+        args="0 0 0 0 0 0 /eng8 /eng8/6f 10"/>
+  <node pkg="dynamic_tf_publisher"
+        type="tf_set.py"
+        name="map_tf_1F"
+        args="-30 0 0 0 0 0 /eng8 /eng8/1f 10"/>
+  <node pkg="dynamic_tf_publisher"
+        type="tf_set.py"
+        name="initial_map_setter"
+        args="0 0 0 0 0 0 /eng8/6f /map 10"/>
+
+</launch>
