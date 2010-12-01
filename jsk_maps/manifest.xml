@@ -1,0 +1,15 @@
+<package>
+  <description brief="jsk_maps">
+
+     jsk_maps
+
+  </description>
+  <author>Manabu Saito, Haseru Chen</author>
+  <license>BSD</license>
+  <review status="unreviewed" notes=""/>
+  <url>http://ros.org/wiki/jsk_maps</url>
+  <depend package="euslisp"/>
+
+</package>
+
+
