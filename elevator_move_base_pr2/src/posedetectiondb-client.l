@@ -56,12 +56,7 @@
 	 (when objcoords
 	   (send self :update-coords objcoords :world)
 	   (send *tfb* :send-transform object
-		 fixed-frame (or frame-id (send object :name)))
-	   ;; insert detection raw result to DB (TODO:remove)
-	   (insert-tf-table-by-coords
-	    *db* (ros::time-now) (make-coords) objcoords
-	    :source_id fixed-frame :target_id (send object :name))
-	   )
+		 fixed-frame (or frame-id (send object :name))))
 	 ))))
   )
 
