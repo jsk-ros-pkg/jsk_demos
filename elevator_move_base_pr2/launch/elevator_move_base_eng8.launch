@@ -26,7 +26,7 @@
 
   <!-- start objectdetection -->
   <group ns="/narrow_stereo/left">
-    <include file="$(find eusmodel_sift_detector)/launch/panel-detection.launch"/>
+    <include file="$(find jsk_perception)/launch/eusmodel_detection_elevator-panels.launch"/>
   </group>
 
 </launch>
