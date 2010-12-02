@@ -31,7 +31,7 @@ if __name__ == '__main__':
 (defun get-item (key alist)
   (cdr (assoc key alist :test #'equal)))
 
-(defun get-spot (alist)
+(defun get-floor (alist)
   (let ((translation (get-item "translation" alist))
 	(rotation (get-item "rotation" alist)))
     (make-coords
@@ -81,7 +81,7 @@ if __name__ == '__main__':
 			  (get-item "origin" mapserver-yaml)))
      (unless (eq 0.0 (elt origin 2))
        (error "origin[2] is not zero: map coordinate is wrong"))
-     (setq spot-yaml (get-item "spot" map-yaml))
+     (setq floor-yaml (get-item "floor" map-yaml))
 
      (format f ";; This file is Generated from ~A~%" filename)
      (pprint
@@ -89,7 +89,7 @@ if __name__ == '__main__':
       ;; defun make-foo-map ()
       ;;
       `(defun ,(intern (string-upcase (format nil "make-~A-map" basename))) ()
-	 (let (map map-img top-face spots assoc-list)
+	 (let (map map-img top-face floors assoc-list)
 	   ;; map obj
 	   (setq map (make-cube ,(elt mapsize 1) ,(elt mapsize 0) 1))
 	   (send map :name ,(get-item "map_frame" map-yaml))
@@ -107,28 +107,28 @@ if __name__ == '__main__':
 	   (send map :paste-texture-to-face top-face :image map-img)
 	   (setq top-face (find-if #'(lambda(f)(equal (send f :id) '(:top)))
 				   (send map :faces)))
-	   (setq spots
+	   (setq floors
 		 (list
 		  ,@(mapcar
 		     #'(lambda(x)
 			 `(make-cascoords
 			   :name ,(car x)
-			   :pos ,(send (get-spot (cdr x)) :pos)
-			   :rot ,(send (get-spot (cdr x)) :rot)))
-		     spot-yaml)))
+			   :pos ,(send (get-floor (cdr x)) :pos)
+			   :rot ,(send (get-floor (cdr x)) :rot)))
+		     floor-yaml)))
 	   (setq assoc-list
 		 (list
 		  ,@(mapcar
 		    #'(lambda(x)
 			`(cons ,(get-item "frame_id" (cdr x)) ,(car x)))
-		    spot-yaml)))
-	   (dolist (spot spots)
+		    floor-yaml)))
+	   (dolist (flo floors)
 	     (let ((parent
-		    (find (car (rassoc (send spot :name) assoc-list))
-			  (append (list map) spots)
+		    (find (car (rassoc (send flo :name) assoc-list))
+			  (append (list map) floors)
 			  :key #'(lambda(x)(send x :name)) :test #'equal)))
-	       (send spot :move-to parent)
-	       (send parent :assoc spot)))
+	       (send flo :move-to parent)
+	       (send parent :assoc flo)))
 	   map))
       f ) ;; end of pprint
      )
