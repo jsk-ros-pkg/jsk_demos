@@ -1,3 +1,5 @@
+(load "package://euslib/irteus_proposals/scene.l")
+(load "package://jsk_maps/euslisp/eng8-map.l")
 (load "models/elevator_call_panel-object.l")
 (load "models/elevator_inside_panel-object.l")
 
@@ -31,97 +33,27 @@
 				:pos #f(0 115 90)))
     obj))
 
-(defun make-eng8-map ()
-  (let ((map (make-cube (* 50 1740) (* 50 1000) 1))
-	mag-img
-	top-face)
-    (send map :name "/eng8")
-    (send map :translate-vertices #f(-33500 13000 0)) ;; 87m/2 - 77m, 50m/2 - 12m
-    (send map :rotate-vertices pi/2 :z)
-    (setq top-face (find-if #'(lambda(f)(equal (send f :id) '(:top)))
-			    (send map :faces)))
-    (setq map-img (read-image-file (ros::resolve-ros-path "package://jsk_maps/eng8.pgm")))
-    (setf (get map-img :texture-max-width) 1000)
-    (setf (get map-img :texture-max-height) 1740)
-    (send map :paste-texture-to-face top-face :image map-img)
-    (dolist (casco (list (make-cascoords :name "/eng8/1f" :pos #f(-30000 0 0))
-			 (make-cascoords :name "/eng8/6f" :pos #f(     0 0 0))))
-      (send map :assoc casco))
-    map
-    ))
-
 (defun make-eng8-scene ()
-  (let* ((map (make-eng8-map))
+  (let* ((map (make-eng8-map-map))
 	 (scene
 	  (instance
 	   scene-model
 	   :init
 	   :name "/eng8"
 	   :objects
-	   (list
-	    map
-	    (make-elevator-call-panel)
-	    (make-elevator-inside-panel)
-	    ;; 1F
-	    (make-cascoords :rot #2f((0.0 1.0 0.0) (-1.0 0.0 0.0) (0.0 0.0 1.0))
-			    :pos #f(-26800.0 -29100.0 0.0)
-			    :name "/eng8/1f/elevator_call_panel-front")
-	    (make-cascoords :rot #2f((1.0 0.0 0.0) (0.0 1.0 0.0) (0.0 0.0 1.0))
-			    :pos #f(-25900.0 -31300.0 0.0)
-			    :name "/eng8/1f/elevator_inside_panel-front")
-	    (make-cascoords :rot #2f((0.0 -1.0 0.0) (1.0 0.0 0.0) (0.0 0.0 1.0))
-			    :pos #f(-26000.0 -29000.0 0.0)
-			    :name "/eng8/1f/elevator-outside")
-	    (make-cascoords :rot #2f((0.0 1.0 0.0) (-1.0 0.0 0.0) (0.0 0.0 1.0))
-			    :pos #f(-14500.0 -33000.0 0.0)
-			    :name "/eng8/1f/pamphlet-front")
-	    ;; 6F
-	    (make-cascoords :rot #2f((-1.0 0.0 0.0) (0.0 -1.0 0.0) (0.0 0.0 1.0))
-			    :pos #f(7500.0 2300.0 0.0)
-			    :name "/eng8/6f/room602-kitchen")
-	    (make-cascoords :rot #2f((1.0 0.0 0.0) (0.0 1.0 0.0) (0.0 0.0 1.0))
-			    :pos #f(7600.0 2700.0 0.0)
-			    :name "/eng8/6f/room602-microwave")
-	    (make-cascoords :rot #2f((1.0 0.0 0.0) (0.0 1.0 0.0) (0.0 0.0 1.0))
-			    :pos #f(7600.0 1100.0 0.0)
-			    :name "/eng8/6f/room602-refrigerator")
-	    (make-cascoords :rot #2f((0.0 -1.0 0.0) (1.0 0.0 0.0) (0.0 0.0 1.0))
-			    :pos #f(4000.0 4300.0 0.0)
-			    :name "/eng8/6f/room602-shelf")
-	    (make-cascoords :rot #2f((-0.866025 -0.5 0.0) (0.5 -0.866025 0.0) (0.0 0.0 1.0))
-			    :pos #f(1300.0 3800.0 0.0)
-			    :name "/eng8/6f/room602-washingmachine")
-	    (make-cascoords :rot #2f((1.0 0.0 0.0) (0.0 1.0 0.0) (0.0 0.0 1.0))
-			    :pos #f(1750.0 850.0 0.0)
-			    :name "/eng8/6f/room602-base")
-	    (make-cascoords :rot #2f((1.0 0.0 0.0) (0.0 1.0 0.0) (0.0 0.0 1.0))
-			    :pos #f(-400.0 100.0 0.0)
-			    :name "/eng8/6f/room602-front")
-	    (make-cascoords :rot #2f((0.0 1.0 0.0) (-1.0 0.0 0.0) (0.0 0.0 1.0))
-			    :pos #f(3200.0 -29100.0 0.0)
-			    :name "/eng8/6f/elevator_call_panel-front")
-	    (make-cascoords :rot #2f((1.0 0.0 0.0) (0.0 1.0 0.0) (0.0 0.0 1.0))
-			    :pos #f(4100.0 -31300.0 0.0)
-			    :name "/eng8/6f/elevator_inside_panel-front")
-	    (make-cascoords :rot #2f((0.0 -1.0 0.0) (1.0 0.0 0.0) (0.0 0.0 1.0))
-			    :pos #f(4000.0 -29000.0 0.0)
-			    :name "/eng8/6f/elevator-outside")
-	    ;; object position
-	    (make-cascoords :pos #f(-26900 -29900 920) :rpy #f(1.5706 0 0)
-			    :name "/eng8/1f/elevator_call_panel")
-	    (make-cascoords :pos #f(-25150 -31550 1000) :rpy #f(3.1416 0 0)
-			    :name "/eng8/1f/elevator_inside_panel")
-	    (make-cascoords :pos #f(3100 -29900 920) :rpy #f(1.5706 0 0)
-			    :name "/eng8/6f/elevator_call_panel")
-	    (make-cascoords :pos #f(4850 -31550 1000) :rpy #f(3.1416 0 0)
-			    :name "/eng8/6f/elevator_inside_panel")
+	   (append
+	    (list
+	     map
+	     (make-elevator-call-panel)
+	     (make-elevator-inside-panel))
+	    (flatten (send map :inheritance))
 	    ))))
     ;; scene -> map
     (send scene :assoc map)
 
     (dolist (obj (send scene :objects))
-      ;; map -> obj
-      (unless (eq obj map)
+      ;; map -> unassoc obj
+      (unless (find obj (flatten (send scene :inheritance)))
 	(send map :assoc obj))
       ;; first charactor of obj-name must be slash
       (when (not (eq (char (send obj :name) 0) #\/))
