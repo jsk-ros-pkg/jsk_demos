@@ -21,7 +21,7 @@
   :slots (object time-stamp poselist frame-id fixed-frame))
 (defmethod posedetectiondb-client
   (:init
-   (obj &optional (_frame-name nil) (_fixed-frame "/base_footprint"))
+   (obj &optional (_frame-id nil) (_fixed-frame "/base_footprint"))
    (setq object obj frame-id _frame-id fixed-frame _fixed-frame)
    (setq time-stamp (ros::time 0))
    (defvar *tfl* (instance ros::transform-listener :init))

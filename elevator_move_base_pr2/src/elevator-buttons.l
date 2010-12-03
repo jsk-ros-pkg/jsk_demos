@@ -1,4 +1,4 @@
-(load "package://jsk_maps/euslisp/8gokan-map-scene.l")
+(load "package://jsk_maps/src/eng8-scene.l")
 
 ;;
 (defun update-scene-by-tf (scene &optional (tm (ros::time 0)))
