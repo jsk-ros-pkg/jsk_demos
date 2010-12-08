@@ -32,13 +32,37 @@
 				:pos #f(0 115 90)))
     obj))
 
+(defclass plane-building-model
+  :super scene-model
+  :slots (floors))
+(defmethod plane-building-model
+  (:floors ;; lower-floor to upper-floor ex.("1F" "2F" "3F" "4F")
+   (&optional colist)
+   (if colist
+       (setq floors colist)
+     floors))
+  (:floor<
+   (name1 name2)
+   (let ((names (mapcar #'(lambda(x)(send x :name)) floors)))
+     (when (and (member name1 names :test #'equal) (member name2 names :test #'equal))
+       (< (position name1 names :test #'equal) (position name2 names :test #'equal)))))
+  (:current-floor
+   (pos)
+   (if (derivedp pos coordinates) (setq pos (send pos :worldpos))) ;; for coordinates
+   (dolist (floor floors)
+     (let ((re (find (format nil "~A/region" (send floor :name))
+		     (flatten (send floor :inheritance))
+		     :key #'(lambda(x)(send x :name)) :test #'equal)))
+       (if (not (eq :outside (send re :insidep pos)))
+	   (return-from :current-floor (send floor :name)))
+       )))
+  )
+
 (defun make-eng8-scene ()
   (let* ((map (make-eng8-map-map))
 	 (scene
 	  (instance
-	   scene-model
-	   :init
-	   :name "/eng8"
+	   plane-building-model :init :name "/eng8"
 	   :objects
 	   (append
 	    (list
@@ -98,10 +122,11 @@
 			    :name "/eng8/6f/elevator_call_panel")
 	    (make-cascoords :pos #f(4850 -31550 1000) :rpy #f(3.1416 0 0)
 			    :name "/eng8/6f/elevator_inside_panel"))
-	    (flatten (send map :inheritance))
+	    (flatten (send map :descendants))
 	    ))))
     ;; scene -> map
     (send scene :assoc map)
+    (send scene :floors (send map :descendants)) ;; set floor information
 
     (dolist (obj (send scene :objects))
       ;; map -> unassoc obj
@@ -111,10 +136,6 @@
       (when (not (eq (char (send obj :name) 0) #\/))
 	(send obj :name (format nil "/~A" (send obj :name)))))
     scene))
-
-(defun check-current-floor (&optional (pose (get-robot-pose)))
-  (cond ((< (elt (send pose :pos) 0) -5000) "/eng8/1f")
-	(t "/eng8/6f")))
 
 ;; example
 ;; (load "package://pr2eus/pr2-interface")

@@ -13,6 +13,10 @@
         args="-30 0 0 0 0 0 /eng8 /eng8/1f 10"/>
   <node pkg="dynamic_tf_publisher"
         type="tf_set.py"
+        name="map_tf_1F"
+        args="15 0 0 0 0 0 /eng8 /eng8/b1f 10"/>
+  <node pkg="dynamic_tf_publisher"
+        type="tf_set.py"
         name="initial_map_setter"
         args="0 0 0 0 0 0 /eng8/6f /map 10"/>
 

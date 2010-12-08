@@ -116,6 +116,18 @@ if __name__ == '__main__':
 			   :pos ,(send (get-floor (cdr x)) :pos)
 			   :rot ,(send (get-floor (cdr x)) :rot)))
 		     floor-yaml)))
+	   (setq regions
+		 (list
+		  ,@(mapcar
+		     #'(lambda(x)
+			 `(make-prism
+			   (list ,@(mapcar
+				    #'(lambda(y)(scale 1000 (float-vector (elt y 0)(elt y 1) 0)))
+				    (get-item "region" (cdr x))))
+			   1.0
+			   :name ,(format nil "~A/region" (car x))))
+		     floor-yaml)))
+	   (mapcar #'(lambda(co pr)(send pr :move-to co)(send co :assoc pr)) floors regions)
 	   (setq assoc-list
 		 (list
 		  ,@(mapcar
