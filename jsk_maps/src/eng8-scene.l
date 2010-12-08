@@ -37,9 +37,9 @@
   :slots (floors))
 (defmethod plane-building-model
   (:floors ;; lower-floor to upper-floor ex.("1F" "2F" "3F" "4F")
-   (&optional colist)
-   (if colist
-       (setq floors colist)
+   (&optional namelist)
+   (if namelist
+       (setq floors (mapcar #'(lambda(x)(send self :spot x)) namelist))
      floors))
   (:floor<
    (name1 name2)
@@ -49,11 +49,16 @@
   (:current-floor
    (pos)
    (if (derivedp pos coordinates) (setq pos (send pos :worldpos))) ;; for coordinates
+   (setf (elt pos 2) 0) ;; z=0 plane
    (dolist (floor floors)
-     (let ((re (find (format nil "~A/region" (send floor :name))
-		     (flatten (send floor :inheritance))
-		     :key #'(lambda(x)(send x :name)) :test #'equal)))
-       (if (not (eq :outside (send re :insidep pos)))
+     (let* ((re (find (format nil "~A/region" (send floor :name))
+		      (flatten (send floor :inheritance))
+		      :key #'(lambda(x)(send x :name)) :test #'equal))
+	    (foot-pos
+	     (send (find '(:top) (send re :faces)
+			 :key #'(lambda(x)(send x :id)) :test #'equal)
+		   :foot pos)))
+       (if (not (eq :outside (send re :insidep foot-pos)))
 	   (return-from :current-floor (send floor :name)))
        )))
   )
@@ -69,6 +74,16 @@
 	     map
 	     (make-elevator-call-panel)
 	     (make-elevator-inside-panel)
+	    ;; B1F
+	    (make-cascoords :rot #2f((0.0 1.0 0.0) (-1.0 0.0 0.0) (0.0 0.0 1.0))
+			    :pos #f(18200.0 -29100.0 0.0)
+			    :name "/eng8/b1f/elevator_call_panel-front")
+	    (make-cascoords :rot #2f((1.0 0.0 0.0) (0.0 1.0 0.0) (0.0 0.0 1.0))
+			    :pos #f(19100.0 -31300.0 0.0)
+			    :name "/eng8/b1f/elevator_inside_panel-front")
+	    (make-cascoords :rot #2f((0.0 -1.0 0.0) (1.0 0.0 0.0) (0.0 0.0 1.0))
+			    :pos #f(19000.0 -29000.0 0.0)
+			    :name "/eng8/b1f/elevator-outside")
 	    ;; 1F
 	    (make-cascoords :rot #2f((0.0 1.0 0.0) (-1.0 0.0 0.0) (0.0 0.0 1.0))
 			    :pos #f(-26800.0 -29100.0 0.0)
@@ -114,6 +129,10 @@
 			    :pos #f(4000.0 -29000.0 0.0)
 			    :name "/eng8/6f/elevator-outside")
 	    ;; object position
+	    (make-cascoords :pos #f(18100 -29900 920) :rpy #f(1.5706 0 0)
+			    :name "/eng8/b1f/elevator_call_panel")
+	    (make-cascoords :pos #f(19850 -31550 1000) :rpy #f(3.1416 0 0)
+			    :name "/eng8/b1f/elevator_inside_panel")
 	    (make-cascoords :pos #f(-26900 -29900 920) :rpy #f(1.5706 0 0)
 			    :name "/eng8/1f/elevator_call_panel")
 	    (make-cascoords :pos #f(-25150 -31550 1000) :rpy #f(3.1416 0 0)
@@ -126,7 +145,7 @@
 	    ))))
     ;; scene -> map
     (send scene :assoc map)
-    (send scene :floors (send map :descendants)) ;; set floor information
+    (send scene :floors '("/eng8/b1f" "/eng8/1f" "/eng8/6f")) ;; set floor information
 
     (dolist (obj (send scene :objects))
       ;; map -> unassoc obj
