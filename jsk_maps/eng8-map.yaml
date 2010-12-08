@@ -2,13 +2,18 @@ map_setting: eng8.yaml
 map_frame: /eng8
 floor:
     # floor origin and area
+    /eng8/b1f:
+        frame_id: /eng8
+        translation: {x: 15,y: 0,z: 0}
+        rotation: {w: 1,x: 0,y: 0,z: 0}
+        region: [[-5,-80],[-5,0],[35,0],[35,-80]]
     /eng8/1f:
         frame_id: /eng8
         translation: {x: -30,y: 0,z: 0}
         rotation: {w: 1,x: 0,y: 0,z: 0}
-        area: {x: -5,y: -60, dx: 30,dy: 80}
+        region: [[-5,-80],[-5,-10],[25,-10],[25,-80]]
     /eng8/6f:
         frame_id: /eng8
         translation: {x: 0,y: 0,z: 0}
         rotation: {w: 1,x: 0,y: 0,z: 0}
-        area: {x: -5,y: -60, dx: 30,dy: 80}
+        region: [[-5,-80],[-5,10],[10,10],[10,-80]]
