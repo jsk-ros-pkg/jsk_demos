@@ -5,12 +5,6 @@
 (defun load-coords-from-db (db table parent child)
   (car (select-tf-from-table db :frame_id parent :child_id child :table table :limit 1)))
 
-(if (and (boundp '*db*) *db*)
-    (progn
-      (warn "load spot from DB")
-      ;; read current spots from DB
-  ))
-
 (defun transform-pose-to-target-frame (coords frame-id &optional (tm (ros::time 0))) ;; (send coords :name) is frame-if
   (let ((tra (send *tfl* :lookup-transform frame-id (send coords :name) tm)))
     (when tra
@@ -23,17 +17,13 @@
 	:frame-id (send coords :name)
 	:wait-for-server-timeout 20))
 
-(defun check-current-floor (&optional pose)
+(defun check-current-floor (&optional pose) ;; :name == frame_id
   (if pose
-      (setq pose (transform-pose-to-target-frame pose "/map"))
-    (setq pose (send *tfl* :lookup-transform "/map" "/base_footprint" (ros::time 0))))
-  (cond ((< (elt (send pose :pos) 0) -5000) "/eng8/1f")
-	(t "/eng8/6f")))
-
-(defun floor- (frame1 frame2)
-  (let ((floor-list '("/eng8/7f" "/eng8/6f" "/eng8/5f" "/eng8/4f" "/eng8/3f" "/eng8/2f" "/eng8/1f" "/eng8/b1f" "/eng8/b2f")))
-    (apply #'- (mapcar #'(lambda(f)(length (member f floor-list :test #'string=))) (list frame1 frame2)))
-    ))
+      (setq pose (transform-pose-to-target-frame pose "/base_footprint"))
+    (setq pose (send *tfl* :lookup-transform "/base_footprint" "/base_footprint" (ros::time 0))))
+  (print (send-all (send *scene* :floors) :descendants))
+  (print pose)
+  (send *scene* :current-floor pose))
 
 (defun change-floor (target-floor)
   (ros::advertise "/initialpose" geometry_msgs::PoseWithCovarianceStamped 1)
