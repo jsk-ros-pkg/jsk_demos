@@ -16,7 +16,7 @@
   <depend package="jsk_maps"/>
   <depend package="move_base_jsk_patch"/>
   <depend package="costmap_2d_jsk_patch"/>
-  <depend package="eusmodel_sift_detector"/>
+  <depend package="jsk_perception"/>
   <depend package="move_base_msgs"/>
   <depend package="sound_play"/>
   <depend package="std_srvs"/>

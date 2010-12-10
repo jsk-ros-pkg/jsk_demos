@@ -288,13 +288,17 @@
 ;; elevator_move_base action server
 ;; target_pose :frame_id = "/map" -> convert pose to each floor local
 (defun elevator-smach-initial (userdata) ;; goal -> args
+  (update-robot-position)
   (let* ((goal (cdr (assoc :goal userdata)))
 	 (goal-pose (ros::tf-pose-stamped->coords
 		     (send goal :target_pose)))
 	 (cur-floor (check-current-floor))
 	 (target-floor (check-current-floor goal-pose)) target-floor-button
 	 (target-coords (transform-pose-to-target-frame goal-pose (send *scene* :name)))
-	 (up/down (if (plusp (floor- target-floor cur-floor)) "up" "down")))
+	 (up/down (cond ((send *scene* :floor< target-floor cur-floor) "down")
+			((send *scene* :floor< cur-floor target-floor) "up")
+			(t nil))))
+    (print (list cur-floor '-> target-floor up/down target-coords))
     (setq target-floor-button
 	  (elt (assoc target-floor *floors* :test #'string=
 		      :key #'(lambda(x)(elt x 2))) 0)) ;; /eng8_1f -> 1F
@@ -308,8 +312,7 @@
     (set-alist 'outside-button up/down userdata)
     (set-alist 'target-coords target-coords userdata)
     (print (list cur-floor '-> target-floor up/down target-coords))
-    (print (list "this returns" (floor- target-floor cur-floor)))
-    (zerop (floor- target-floor cur-floor))))
+    (not up/down)))
 
 (defun elevator-smach ()
   (let ((sm (instance state-machine :init)))
@@ -332,8 +335,11 @@
     sm ))
 
 (defun simple-goal-cb (msg)
-  (let ((pub-msg (instance move_base_msgs::MoveBaseActionGoal :init)))
-    (send pub-msg :header :stamp (ros::time-now))
+  (let ((pub-msg (instance move_base_msgs::MoveBaseActionGoal :init))
+	(stamp (ros::time-now)))
+    (send pub-msg :header :stamp stamp)
+    (send pub-msg :goal_id :stamp stamp)
+    (send pub-msg :goal_id :id (format nil "~A" (send stamp :sec-nsec)))
     (send pub-msg :goal :target_pose msg)
     (clear-costmap)
     (ros::publish "/elevator_move_base/goal" pub-msg)
