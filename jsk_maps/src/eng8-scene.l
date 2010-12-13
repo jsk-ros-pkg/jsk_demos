@@ -49,16 +49,21 @@
   (:current-floor
    (pos)
    (if (derivedp pos coordinates) (setq pos (send pos :worldpos))) ;; for coordinates
-   (setf (elt pos 2) 0) ;; z=0 plane
    (dolist (floor floors)
-     (let* ((re (find (format nil "~A/region" (send floor :name))
+     (let* (re footpos1 footpos2)
+       (setq re (find (format nil "~A/region" (send floor :name))
 		      (flatten (send floor :inheritance))
 		      :key #'(lambda(x)(send x :name)) :test #'equal))
-	    (foot-pos
+       (send re :worldpos)
+       (setq footpos1
 	     (send (find '(:top) (send re :faces)
 			 :key #'(lambda(x)(send x :id)) :test #'equal)
-		   :foot pos)))
-       (if (not (eq :outside (send re :insidep foot-pos)))
+		   :foot pos)
+	     footpos2
+	     (send (find '(:bottom) (send re :faces)
+			 :key #'(lambda(x)(send x :id)) :test #'equal)
+		   :foot pos))
+       (if (not (eq :outside (send re :insidep (scale 0.5 (v+ footpos1 footpos2)))))
 	   (return-from :current-floor (send floor :name)))
        )))
   )
@@ -76,7 +81,7 @@
 	     (make-elevator-inside-panel)
 	    ;; B1F
 	    (make-cascoords :rot #2f((0.0 1.0 0.0) (-1.0 0.0 0.0) (0.0 0.0 1.0))
-			    :pos #f(18200.0 -29100.0 0.0)
+			    :pos #f(18200.0 -29200.0 0.0)
 			    :name "/eng8/b1f/elevator_call_panel-front")
 	    (make-cascoords :rot #2f((1.0 0.0 0.0) (0.0 1.0 0.0) (0.0 0.0 1.0))
 			    :pos #f(19100.0 -31300.0 0.0)

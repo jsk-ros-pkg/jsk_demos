@@ -170,7 +170,7 @@
 				(flatten (send *panel* :inheritance))))
 	 (button-state (instance light-button-cb-class :init)))
     (update-robot-position)
-    (set-view-target button-coords (send *pr2* :wide_stereo-left-camera) "wide_stereo_optical_frame")
+    (set-view-target button-coords (send *pr2* :wide_stereo-left) "wide_stereo_optical_frame")
     ;; check phase
     (dotimes (i 30 (< i 30)) ;; 3 sec
       (ros::spin-once)
