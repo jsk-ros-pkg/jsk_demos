@@ -176,6 +176,7 @@
       (ros::spin-once)
       (when (< 0.5 (send button-state :value))
 	(pprint 'button-light) (speak-jp "ぼたんがひかりました")
+	(pr2-tuckarm-pose :rarm)
 	(return))
       (unix::usleep (* 100 1000)))
     ))
@@ -196,19 +197,67 @@
     (send sm :add-transition :check :look nil)
     sm ))
 
-(defun move-to-func (userdata &key (retry 10))
-  (pr2-tuckarm-pose :rarm)
-  (move-to (cdr (assoc 'coords userdata)) :retry retry))
+(defun coords->movebaseactiongoal (co)
+  (let ((goal (instance move_base_msgs::movebaseactiongoal :init)))
+    (send goal :goal :target_pose :pose (ros::coords->tf-pose co))
+    (send goal :goal :target_pose :header :frame_id (send co :name))
+    goal
+    ))
+
+(defun check-until-elevator-empty ()
+  (let ((start (ros::time-now)) (result nil))
+    (setq *scan* nil)
+    (ros::subscribe "/base_scan" sensor_msgs::LaserScan
+		    #'(lambda(m)(setq *scan* m)))
+    (unix::sleep 1) ;; to smart
+
+    (while (< (send (ros::time- (ros::time-now) start) :to-sec) 30)
+      (while (not *scan*) (ros::spin-once))
+      ;;
+      (send *tfl* :wait-for-transform "/map" (send *scan* :header :frame_id)
+	    (send *scan* :header :stamp) 0.5)
+      (setq laser-pose
+	    (send *tfl* :lookup-transform "map" (send *scan* :header :frame_id)
+		  (ros::time)))
+      (let ((points nil) (angle (send *scan* :angle_min)) box)
+	(setq target-areas
+	      (list (send (make-cube 1000 2000 1000) :translate #f(4200.0 -30700.0 0.0))
+		    (send (make-cube 1000 2000 1000) :translate #f(-25800.0 -30700.0 0.0))
+		    (send (make-cube 1000 2000 1000) :translate #f(34200.0 -30700.0 0.0))))
+	(send-all target-areas :worldpos) ;; omajinai
+	(setq points
+	      (map cons
+		   #'(lambda(r)
+		       (prog1
+			   (float-vector (* r (cos angle))
+					 (* r (sin angle)) 0)
+			 (incf angle (send *scan* :angle_increment))))
+		   (scale 1000 (send *scan* :ranges))))
+	(setq points
+	      (mapcan #'(lambda(x)
+			  (let ((pt (send laser-pose :transform-vector x)))
+			    (when (memq :inside (send-all target-areas :insidep pt))
+			      (list pt))))
+		      points))
+	(when (< (length points) 10)
+	  (setq result t) (return))
+	))
+    (ros::unsubscribe "/base_scan")
+    (speak-jp (if result "エレベータに入ります" "エレベータに入れません"))
+    result
+    ))
 
 (defun costmap-for-elevator (userdata)
   (change-inflation-range 0.2)
   (switch-global-planner-observation nil) ;;disable tilt scan
   (initialize-costmaps)
   t)
-(defun costmap-normal (userdata)
+(defun costmap-normal (&rest args)
+  (speak-jp "しょうしょうおまちください")
   (change-inflation-range)
   (switch-global-planner-observation t) ;;enable tilt scan
   (initialize-costmaps)
+  (print 'normal-costmap)
   t)
 
 (defun check-target-floor (userdata)
@@ -253,35 +302,50 @@
 
 ;; front-coords, outside-panel-name, outside-button, inside-coords, inside-panel-name, target-floor, outside-coords
 (defun elevator-state-machine ()
-  (let ((sm (instance state-machine :init)))
-    (send sm :add-node (instance state :init :move-front 'move-to-func :remap-list '((coords . front-coords))))
+  (let ((sm (instance state-machine :init))
+	(move-client (pr2-interface-move-base-action *ri*)))
+    (send sm :add-node (actionlib-client-state
+			:move-front move-client :timeout 300 :retry t
+			:key 'coords->movebaseactiongoal))
+    (send (send sm :node :move-front) :remap-list '((:goal . front-coords)))
     (send sm :add-node (instance state :init :costmap-for-elevator 'costmap-for-elevator))
     (send sm :add-node (instance state :init :push-outside (push-state-machine)
 				 :remap-list '((panel-name . outside-panel-name) (button . outside-button))))
-    (send sm :add-node (instance state :init :move-inside '(lambda(x)(move-to-func x :retry 30))
-				 :remap-list '((coords . inside-coords))))
+;    (send sm :add-node (instance state :init :check-elevator-empty 'check-until-elevator-empty))
+    (send sm :add-node (instance state :init :speak-fail '(lambda(x)(speak-jp "ろくじゅうびょうたちました") t)))
+    (send sm :add-node (actionlib-client-state
+			:move-inside move-client :timeout 60 :retry t
+			:key 'coords->movebaseactiongoal))
+    (send (send sm :node :move-inside) :remap-list '((:goal . inside-coords)))
     (send sm :add-node (instance state :init :push-inside (push-state-machine)
 				 :remap-list '((panel-name . inside-panel-name) (button . target-floor))))
     (send sm :add-node (instance state :init :ready-to-outside 'ready-to-outside))
-    (send sm :add-node (instance state :init :move-outside 'move-to-func :remap-list '((coords . outside-coords))))
+    (send sm :add-node (actionlib-client-state
+			:move-outside move-client :timeout 30 :retry t
+			:key 'coords->movebaseactiongoal))
+    (send (send sm :node :move-outside) :remap-list '((:goal . outside-coords)))
     (send sm :add-node (instance state :init :costmap-normal 'costmap-normal))
     (send sm :arg-keys 'front-coords 'outside-panel-name 'outside-button 'inside-coords
-	  'inside-panel-name 'target-floor 'outside-coords)
+	  'inside-panel-name 'target-floor 'outside-coords :cancel)
     (send sm :goal-state (list :success :fail-outside :fail-inside))
     (send sm :start-state :move-front)
     ;;
-    (send sm :add-transition :move-front :costmap-for-elevator t)
-    (send sm :add-transition :move-front :fail-outside nil)
+    (send sm :add-transition :move-front :costmap-for-elevator :succeeded)
+    (send sm :add-transition :move-front :fail-outside :failed)
     (send sm :add-transition :costmap-for-elevator :push-outside t)
+;    (send sm :add-transition :push-outside :check-elevator-empty :success)
     (send sm :add-transition :push-outside :move-inside :success)
     (send sm :add-transition :push-outside :push-outside :fail)
-    (send sm :add-transition :move-inside :push-inside t)
-    (send sm :add-transition :move-inside :move-front nil)
+;    (send sm :add-transition :check-elevator-empty :move-inside t)
+;    (send sm :add-transition :check-elevator-empty :move-front nil)
+    (send sm :add-transition :move-inside :push-inside :succeeded)
+    (send sm :add-transition :move-inside :speak-fail :failed)
+    (send sm :add-transition :speak-fail :move-front t)
     (send sm :add-transition :push-inside :ready-to-outside :success)
     (send sm :add-transition :push-inside :push-inside :fail)
     (send sm :add-transition :ready-to-outside :move-outside t)
-    (send sm :add-transition :move-outside :costmap-normal t)
-    (send sm :add-transition :move-outside :fail-inside nil)
+    (send sm :add-transition :move-outside :costmap-normal :succeeded)
+    (send sm :add-transition :move-outside :fail-inside :failed)
     (send sm :add-transition :costmap-normal :success t)
     sm ))
 
@@ -319,7 +383,11 @@
     (send sm :add-node (instance state :init :initial 'elevator-smach-initial))
     (send sm :add-node (instance state :init :speak-elevator '(lambda(x)(speak-jp "えれべーたにのります") t)))
     (send sm :add-node (instance state :init :take-elevator (elevator-state-machine)))
-    (send sm :add-node (instance state :init :go-to 'move-to-func :remap-list '((coords . target-coords))))
+    (send sm :add-node (actionlib-client-state
+			:go-to (pr2-interface-move-base-action *ri*)
+			:timeout 600 :retry t
+			:key 'coords->movebaseactiongoal))
+    (send (send sm :node :go-to) :remap-list '((:goal . target-coords)))
     (send sm :arg-keys 'front-coords 'outside-panel-name 'outside-button 'inside-coords
 	  'inside-panel-name 'target-floor 'outside-coords 'target-coords :goal :cancel)
     (send sm :goal-state (list :success :fail))
@@ -330,8 +398,8 @@
     (send sm :add-transition :take-elevator :go-to :success)
     (send sm :add-transition :take-elevator :fail :fail-inside)
     (send sm :add-transition :take-elevator :fail :fail-outside)
-    (send sm :add-transition :go-to :success t)
-    (send sm :add-transition :go-to :fail nil)
+    (send sm :add-transition :go-to :success :succeeded)
+    (send sm :add-transition :go-to :fail :failed)
     sm ))
 
 (defun simple-goal-cb (msg)
