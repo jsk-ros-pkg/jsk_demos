@@ -204,7 +204,7 @@
     goal
     ))
 
-(defun check-until-elevator-empty ()
+(defun check-until-elevator-empty (&rest args)
   (let ((start (ros::time-now)) (result nil))
     (setq *scan* nil)
     (ros::subscribe "/base_scan" sensor_msgs::LaserScan
@@ -248,15 +248,15 @@
     ))
 
 (defun costmap-for-elevator (userdata)
-  (change-inflation-range 0.2)
+  (change-inflation-range 0.2 :type all)
   (switch-global-planner-observation nil) ;;disable tilt scan
-  (initialize-costmaps)
+  (initialize-costmap)
   t)
 (defun costmap-normal (&rest args)
   (speak-jp "しょうしょうおまちください")
-  (change-inflation-range)
+  (change-inflation-range 0.55 :type :all)
   (switch-global-planner-observation t) ;;enable tilt scan
-  (initialize-costmaps)
+  (initialize-costmap)
   (print 'normal-costmap)
   t)
 
@@ -294,7 +294,7 @@
       (when (equal targetfloor (elt floor 0))
 	(speak-jp (concatenate string (elt floor 1) "につきました"))
 	(change-floor (elt floor 2)))))
-  (initialize-costmaps)
+  (initialize-costmap)
   t)
 
 ;; test macro

@@ -55,18 +55,22 @@
   (call-empty-service "/move_base_node/clear_local_costmap")
   (call-empty-service "/move_base_node/clear_unknown_space"))
 
-(defun initialize-costmaps ()
+(defun initialize-costmap ()
   (call-empty-service "move_base_node/global_costmap/initialize_costmap")
   (call-empty-service "move_base_node/local_costmap/initialize_costmap")
   (clear-costmap))
 
-(defun change-inflation-range (&optional (range 0.55))
-  (if (eps= (ros::get-param "/move_base_node/local_costmap/inflation_radius")
-	    range 0.1)
-      (return-from change-inflation-range nil))
-  (ros::set-param "/move_base_node/global_costmap/inflation_radius" range)
-  (ros::set-param "/move_base_node/local_costmap/inflation_radius" range)
-  )
+(defun change-inflation-range (&optional (range 0.55) &key (type :all))
+  (when (not (eq type :global))
+    (when (not (eps= (ros::get-param "/move_base_node/local_costmap/inflation_ra
+dius")
+                     range 0.1))
+      (ros::set-param "/move_base_node/local_costmap/inflation_radius" range)))
+  (when (not (eq type :local))
+    (when (not (eps= (ros::get-param "/move_base_node/global_costmap/inflation_r
+adius")
+                     range 0.1))
+      (ros::set-param "/move_base_node/global_costmap/inflation_radius" range))))
 
 (defun switch-global-planner-observation (enable)
   (let ((obs (if enable
