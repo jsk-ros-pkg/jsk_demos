@@ -102,6 +102,9 @@
 	    (make-cascoords :rot #2f((0.0 1.0 0.0) (-1.0 0.0 0.0) (0.0 0.0 1.0))
 			    :pos #f(-14500.0 -33000.0 0.0)
 			    :name "/eng8/1f/pamphlet-front")
+	    (make-cascoords :rot #2f((-1.0 0.0 0.0) (0.0 -1.0 0.0) (0.0 0.0 1.0))
+			    :pos #f(-31170.0 -27600.0 0.0)
+			    :name "/eng8/1f/student-affairs")
 	    ;; 6F
 	    (make-cascoords :rot #2f((-1.0 0.0 0.0) (0.0 -1.0 0.0) (0.0 0.0 1.0))
 			    :pos #f(7500.0 2300.0 0.0)
