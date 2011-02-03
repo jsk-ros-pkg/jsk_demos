@@ -5,58 +5,6 @@
 (load "package://pr2eus/pr2-interface.l")
 ;(load "package://manipserver_lib/euslisp/manip_client_lib.l")
 
-;; (list larm-v rarm-v)
-(defconstant *pr2-tuckarm-pose-rarm-free* (list #f(5 75 105 -90 -70 0 20)
-						#f(0 65 -80 -125 -50 -120 160)))
-(defconstant *pr2-tuckarm-pose-larm-free* (list #f(0 65 70 -125 50 -120 160)
-						#f(-5 75 -105 -90 70 0 20)))
-
-;; check if current pose is tuckarm pose or not
-;;       which arm is free
-;; args = () (:rarm) (:larm)
-;; return = nil :rarm :larm
-(defun check-tuckarm-pose (&rest args)
-  (send *pr2* :angle-vector (send *ri* :state))
-  (let ((l-angle (map float-vector #'(lambda(d)(- d (* 360 (round (/ d 360.0)))))
-		      (send *pr2* :larm :angle-vector)))
-	(r-angle (map float-vector #'(lambda(d)(- d (* 360 (round (/ d 360.0)))))
-		      (send *pr2* :rarm :angle-vector)))
-	is-rarm is-larm (thre-deg 20))
-    (setq is-larm (and (< (distance l-angle (car *pr2-tuckarm-pose-larm-free*)) thre-deg)
-		       (< (distance r-angle (cadr *pr2-tuckarm-pose-larm-free*)) thre-deg)))
-    (setq is-rarm (and (< (distance l-angle (car *pr2-tuckarm-pose-rarm-free*)) thre-deg)
-		       (< (distance r-angle (cadr *pr2-tuckarm-pose-rarm-free*)) thre-deg)))
-    (cond ((and (memq :rarm args) is-rarm) :rarm)
-	  ((and (memq :larm args) is-larm) :larm)
-	  (is-rarm :rarm)
-	  (is-larm :larm))
-    ))
-
-;; send pr2 to move to tuckarm pose if not the pose now
-;; args is set the arm to move freely
-(defun pr2-tuckarm-pose (&rest args)
-  (let* ((current-arm (check-tuckarm-pose)) ;; nil rarm larm
-	 (free-arm (or (car args) current-arm :larm)))
-    (if (eq current-arm free-arm)
-	(return-from pr2-tuckarm-pose t))
-    (send *pr2* :head :angle-vector #f(0 0))
-    (send *pr2* :larm :angle-vector #f(25 0 0 -130 0 0 0))
-    (send *pr2* :rarm :angle-vector #f(-25 0 0 -130 0 0 0))
-    ;;(send *ri* :move-gripper :arms 0.005)
-    (send *ri* :angle-vector (send *pr2* :angle-vector) 2000)
-    (send *ri* :wait-interpolation)
-    (if (eq free-arm :larm)
-	(send *pr2* :rarm :angle-vector (cadr *pr2-tuckarm-pose-larm-free*))
-      (send *pr2* :larm :angle-vector (car *pr2-tuckarm-pose-rarm-free*)))
-    (send *ri* :angle-vector (send *pr2* :angle-vector) 2000)
-    (send *ri* :wait-interpolation)
-    (if (eq free-arm :larm)
-	(send *pr2* :larm :angle-vector (car *pr2-tuckarm-pose-larm-free*))
-      (send *pr2* :rarm :angle-vector (cadr *pr2-tuckarm-pose-rarm-free*)))
-    (send *ri* :angle-vector (send *pr2* :angle-vector) 2000)
-    (send *ri* :wait-interpolation)
-    ))
-
 (defun push-button (target-coords)
   (let (via-coords arm
 		   via-angle-vector org-arm-anglev
