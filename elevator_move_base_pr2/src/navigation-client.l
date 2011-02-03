@@ -62,13 +62,11 @@
 
 (defun change-inflation-range (&optional (range 0.55) &key (type :all))
   (when (not (eq type :global))
-    (when (not (eps= (ros::get-param "/move_base_node/local_costmap/inflation_ra
-dius")
+    (when (not (eps= (ros::get-param "/move_base_node/local_costmap/inflation_radius")
                      range 0.1))
       (ros::set-param "/move_base_node/local_costmap/inflation_radius" range)))
   (when (not (eq type :local))
-    (when (not (eps= (ros::get-param "/move_base_node/global_costmap/inflation_r
-adius")
+    (when (not (eps= (ros::get-param "/move_base_node/global_costmap/inflation_radius")
                      range 0.1))
       (ros::set-param "/move_base_node/global_costmap/inflation_radius" range))))
 
