@@ -94,7 +94,7 @@
     (send msg :header :frame_id frame-id)
     (send msg :point :x (elt uv 0))
     (send msg :point :y (elt uv 1))
-    (send msg :point :z 20) ;; radius [px]
+    (send msg :point :z 10) ;; radius [px]
     (ros::publish "view_target" msg)
     t))
 
