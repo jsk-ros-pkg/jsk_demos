@@ -376,12 +376,13 @@
     (set-alist 'outside-button up/down userdata)
     (set-alist 'target-coords target-coords userdata)
     (print (list cur-floor '-> target-floor up/down target-coords))
+    (pr2-tuckarm-pose :rarm) ;; temporary, safety pose
     (not up/down)))
 
 (defun elevator-smach ()
   (let ((sm (instance state-machine :init)))
     (send sm :add-node (instance state :init :initial 'elevator-smach-initial))
-    (send sm :add-node (instance state :init :speak-elevator '(lambda(x)(speak-jp "えれべーたにのります") t)))
+    (send sm :add-node (instance state :init :speak-elevator '(lambda(x)(speak-jp "えれべーたにのります") (costmap-normal) t)))
     (send sm :add-node (instance state :init :take-elevator (elevator-state-machine)))
     (send sm :add-node (actionlib-client-state
 			:go-to (pr2-interface-move-base-action *ri*)
