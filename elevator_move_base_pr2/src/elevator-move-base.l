@@ -248,7 +248,7 @@
     ))
 
 (defun costmap-for-elevator (userdata)
-  (change-inflation-range 0.2 :type all)
+  (change-inflation-range 0.2 :type :all)
   (switch-global-planner-observation nil) ;;disable tilt scan
   (initialize-costmap)
   t)
