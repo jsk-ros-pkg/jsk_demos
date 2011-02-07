@@ -263,10 +263,11 @@
 (defun check-target-floor (userdata)
   (let ((topic (instance ros::ros-callback-message :init elevator_move_base_pr2::StringStamped "/elevator_number/result"))
 	(target-floor (cdr (assoc 'target-floor userdata))))
-    (dotimes (i 100 nil)
+    (dotimes (i 300 nil)
       (ros::spin-once)
       (if (and (send topic :msg)
-	       (substringp target-floor (send topic :msg :data)))
+	       (substringp (concatenate string "/" target-floor)
+			   (send topic :msg :data)))
 	  (return-from check-target-floor t))
       (unix::usleep (* 500 1000))
       )))
@@ -312,16 +313,16 @@
     (send sm :add-node (instance state :init :push-outside (push-state-machine)
 				 :remap-list '((panel-name . outside-panel-name) (button . outside-button))))
 ;    (send sm :add-node (instance state :init :check-elevator-empty 'check-until-elevator-empty))
-    (send sm :add-node (instance state :init :speak-fail '(lambda(x)(speak-jp "ろくじゅうびょうたちました") t)))
+    (send sm :add-node (instance state :init :speak-fail '(lambda(x)(speak-jp "にふんたちました") t)))
     (send sm :add-node (actionlib-client-state
-			:move-inside move-client :timeout 60 :retry t
+			:move-inside move-client :timeout 120 :retry t
 			:key 'coords->movebaseactiongoal))
     (send (send sm :node :move-inside) :remap-list '((:goal . inside-coords)))
     (send sm :add-node (instance state :init :push-inside (push-state-machine)
 				 :remap-list '((panel-name . inside-panel-name) (button . target-floor))))
     (send sm :add-node (instance state :init :ready-to-outside 'ready-to-outside))
     (send sm :add-node (actionlib-client-state
-			:move-outside move-client :timeout 30 :retry t
+			:move-outside move-client :timeout 60 :retry t
 			:key 'coords->movebaseactiongoal))
     (send (send sm :node :move-outside) :remap-list '((:goal . outside-coords)))
     (send sm :add-node (instance state :init :costmap-normal 'costmap-normal))
