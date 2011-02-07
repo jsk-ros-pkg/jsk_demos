@@ -8,6 +8,7 @@
 #include <posedetection_msgs/ObjectDetection.h>
 #include <geometry_msgs/Point.h>
 #include <std_msgs/Float32.h>
+#include <algorithm>
 
 class FrameDrawer
 {
@@ -76,24 +77,27 @@ public:
     }
 
     std::vector<CvScalar> colbuf;
-    for(int i = 0; i < 100; i++){
-      double px = i/10, py = i%10;
-      cv::Point2d uv(x + (5 - i/10)*r/10, y + (5 - i%10)*r/10);
+    for(int i = 0; i < 121; i++){
+      double px = i/11, py = i%11;
+      cv::Point2d uv(x + (5-px)*r/5, y + (5-py)*r/5);
       if(0<=uv.x && uv.x < image->width-1 && 0<=uv.y && uv.y < image->height-1){
 	colbuf.push_back(cvGet2D(image, (int)uv.y, (int)uv.x));
-	//cvCircle(image, uv, 1, CV_RGB(255,px*10,py*10), -1);
       }
     }
 
-    // check yello point
-    double color_val = 0.0;
+    // check yellow point
+    std::vector<double> vscore;
     for(std::vector<CvScalar>::iterator it=colbuf.begin();it!=colbuf.end();it++)
     {
+      double lscore = 0.0;
       for(int i=0;i<3;i++)
-	color_val += exp(-abs(target_color_.val[i] - it->val[i])/10.0);
+	lscore += exp(-abs(target_color_.val[i] - it->val[i])/10.0);
+      vscore.push_back(lscore);
     }
 
-    double score = color_val / (colbuf.size()+1);
+    std::sort(vscore.begin(), vscore.end());
+    double score = vscore[vscore.size()*3/4];
+
     ROS_INFO("yellow score = %f",score);
 
     std_msgs::Float32 score_msg;
