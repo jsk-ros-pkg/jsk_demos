@@ -1,0 +1,19 @@
+map_setting: eng2.yaml
+map_frame: /eng2
+floor:
+    # floor origin and area
+    /eng2/2f:
+        frame_id: /eng2
+        translation: {x: 0,y: 0,z: 0}
+        rotation: {w: 1,x: 0,y: 0,z: 0}
+        region: [[-5,-80],[-5,0],[35,0],[35,-80]]
+    /eng2/7f:
+        frame_id: /eng2
+        translation: {x: 60,y: 0,z: 0}
+        rotation: {w: 1,x: 0,y: 0,z: 0}
+        region: [[-5,-80],[-5,-10],[25,-10],[25,-80]]
+    /eng2/8f:
+        frame_id: /eng2
+        translation: {x: 60,y: 60,z: 0}
+        rotation: {w: 1,x: 0,y: 0,z: 0}
+        region: [[-5,-80],[-5,10],[10,10],[10,-80]]
