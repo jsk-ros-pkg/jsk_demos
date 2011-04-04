@@ -1,0 +1,23 @@
+<launch>
+  <node name="map_server" pkg="map_server" type="map_server"
+	args="$(find jsk_maps)/eng2.yaml" >
+    <param name="frame_id" value="/eng2"/>
+  </node>
+  <node pkg="tf"
+        type="static_transform_publisher"
+        name="map_tf_8F"
+        args="0 0 0 0 0 0 /eng2 /eng2/8f 10"/>
+  <node pkg="tf"
+        type="static_transform_publisher"
+        name="map_tf_7F"
+        args="-30 0 0 0 0 0 /eng2 /eng2/7f 10"/>
+  <node pkg="tf"
+        type="static_transform_publisher"
+        name="map_tf_2F"
+        args="15 0 0 0 0 0 /eng2 /eng2/2f 10"/>
+  <node pkg="tf"
+        type="static_transform_publisher"
+        name="initial_map_setter"
+        args="0 0 0 0 0 0 /eng2/2f /map 10"/>
+
+</launch>
