@@ -6,18 +6,18 @@
   <node pkg="tf"
         type="static_transform_publisher"
         name="map_tf_8F"
-        args="0 0 0 0 0 0 /eng2 /eng2/8f 10"/>
+        args="0 -60 0 0 0 0 /eng2 /eng2/8f 10"/>
   <node pkg="tf"
         type="static_transform_publisher"
         name="map_tf_7F"
-        args="-30 0 0 0 0 0 /eng2 /eng2/7f 10"/>
+        args="0 0 0 0 0 0 /eng2 /eng2/7f 10"/>
   <node pkg="tf"
         type="static_transform_publisher"
         name="map_tf_2F"
-        args="15 0 0 0 0 0 /eng2 /eng2/2f 10"/>
+        args="0 60 0 0 0 0 /eng2 /eng2/2f 10"/>
   <node pkg="tf"
         type="static_transform_publisher"
         name="initial_map_setter"
-        args="0 0 0 0 0 0 /eng2/2f /map 10"/>
+        args="0 0 0 0 0 0 /eng2 /map 10"/>
 
 </launch>
