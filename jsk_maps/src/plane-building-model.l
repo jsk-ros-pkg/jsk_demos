@@ -1,0 +1,35 @@
+(defclass plane-building-model
+  :super scene-model
+  :slots (floors))
+(defmethod plane-building-model
+  (:floors ;; lower-floor to upper-floor ex.("1F" "2F" "3F" "4F")
+   (&optional namelist)
+   (if namelist
+       (setq floors (mapcar #'(lambda(x)(send self :spot x)) namelist))
+     floors))
+  (:floor<
+   (name1 name2)
+   (let ((names (mapcar #'(lambda(x)(send x :name)) floors)))
+     (when (and (member name1 names :test #'equal) (member name2 names :test #'equal))
+       (< (position name1 names :test #'equal) (position name2 names :test #'equal)))))
+  (:current-floor
+   (pos)
+   (if (derivedp pos coordinates) (setq pos (send pos :worldpos))) ;; for coordinates
+   (dolist (floor floors)
+     (let* (re footpos1 footpos2)
+       (setq re (find (format nil "~A/region" (send floor :name))
+		      (flatten (send floor :inheritance))
+		      :key #'(lambda(x)(send x :name)) :test #'equal))
+       (send re :worldpos)
+       (setq footpos1
+	     (send (find '(:top) (send re :faces)
+			 :key #'(lambda(x)(send x :id)) :test #'equal)
+		   :foot pos)
+	     footpos2
+	     (send (find '(:bottom) (send re :faces)
+			 :key #'(lambda(x)(send x :id)) :test #'equal)
+		   :foot pos))
+       (if (not (eq :outside (send re :insidep (scale 0.5 (v+ footpos1 footpos2)))))
+	   (return-from :current-floor (send floor :name)))
+       )))
+  )

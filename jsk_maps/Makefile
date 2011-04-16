@@ -17,4 +17,4 @@ euslisp/eng8-map.l: eng8-map.yaml
 	./src/map-convert.sh eng8-map.yaml euslisp/eng8-map.l
 
 clean:
-	rm -rf euslisp
+	rm -rf euslisp *.pgm
