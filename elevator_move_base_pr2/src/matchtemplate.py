@@ -44,13 +44,16 @@ def process_msg ():
         ressize[0] -= cv.GetSize(tempimg)[0] - 1
         ressize[1] -= cv.GetSize(tempimg)[1] - 1
         results = cv.CreateImage(ressize, cv.IPL_DEPTH_32F, 1 )
-        cv.MatchTemplate(cv_image, tempimg, results, cv.CV_TM_SQDIFF_NORMED)
+        cv.MatchTemplate(cv_image, tempimg, results, tempmethod)
 
         status = cv.MinMaxLoc(results)
 
-        if (tempmethod == cv.CV_TM_SQDIFF_NORMED and status[0] < tempthre) or (tempmethod != cv.CV_TM_SQDIFF_NORMED and tempthre < status[1]):
+        if (tempmethod == cv.CV_TM_SQDIFF_NORMED and status[0] < tempthre):
             result.data += tempname+' '
-            reslist += [(tempname,status)]
+            reslist += [(tempname,(status[0],status[2]))]
+        if (tempmethod != cv.CV_TM_SQDIFF_NORMED and tempthre < status[1]):
+            result.data += tempname+' '
+            reslist += [(tempname,(status[1],status[3]))]
 
     result_pub.publish(result)
     publish_debug(cv_image, reslist)
@@ -77,8 +80,8 @@ def publish_debug(img, results):
             cv.Rectangle(output, (0, 0), size, cv.RGB(255,255,255), 9)
         cv.SetImageROI(output, view_rect)
         for _,status in [s for s in results if s[0] == template[3]]:
-            pt2 = (status[2][0]+size[0], status[2][1]+size[1])
-            cv.Rectangle(output, status[2], pt2, cv.RGB(255,255,255), 5)
+            pt2 = (status[1][0]+size[0], status[1][1]+size[1])
+            cv.Rectangle(output, status[1], pt2, cv.RGB(255,255,255), 5)
 
     cv.ResetImageROI(output)
     debug_pub.publish(bridge.cv_to_imgmsg(output, encoding="passthrough"))
