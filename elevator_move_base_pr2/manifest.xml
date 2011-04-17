@@ -20,6 +20,7 @@
   <depend package="move_base_msgs"/>
   <depend package="sound_play"/>
   <depend package="std_srvs"/>
+  <depend package="nav_msgs"/>
   <depend package="image_geometry"/>
   <depend package="image_transport"/>
   <depend package="roseus_smach"/>

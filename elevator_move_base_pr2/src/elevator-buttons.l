@@ -1,3 +1,4 @@
+(load "package://jsk_maps/src/eng2-scene.l")
 (load "package://jsk_maps/src/eng8-scene.l")
 
 ;;

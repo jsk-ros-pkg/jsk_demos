@@ -10,8 +10,19 @@
 (load "package://pr2eus/pr2-utils.l")
 (load "package://pr2eus/pr2-interface.l")
 
+(setq *map-name* nil) ;; load /map/header/frame_id
+(ros::subscribe "/map" nav_msgs::OccupancyGrid
+		#'(lambda(m)(setq *map-name* (send m :header :frame_id))))
 
-(setq *scene* (make-eng8-scene))
+(while (null *map-name*) (ros::spin-once))
+(ros::unsubscribe "/map")
+
+(cond ((string= *map-name* "/eng2")
+       (setq *scene* (make-eng2-scene)))
+      ((string= *map-name* "/eng8")
+       (setq *scene* (make-eng8-scene)))
+      )
+
 (setq *clients* (init-posedetectiondb-client (send *scene* :objects)))
 ;;(setq *ri* (instance pr2-interface :init))
 
