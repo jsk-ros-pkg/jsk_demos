@@ -19,21 +19,34 @@
 ;                             :init :logger "ros" :level "DEBUG"))
 
 ;; これどうしよう
-(setq *floors* '(("B2F" "ちかにかい" "/eng8/b2f")
-		 ("B1F" "ちかいっかい" "/eng8/b1f")
-		 ("1F" "いっかい" "/eng8/1f") ("2F" "にかい" "/eng8/2f")
-		 ("3F" "さんかい" "/eng8/3f") ("4F" "よんかい" "/eng8/4f")
-		 ("5F" "ごかい" "/eng8/5f") ("6F" "ろくかい" "/eng8/6f")
-		 ("7F" "ななかい" "/eng8/7f")))
+(setq *floors* '(("B2F" "ちかにかい") ("B1F" "ちかいっかい")
+		 ("1F" "いっかい") ("2F" "にかい")
+		 ("3F" "さんかい") ("4F" "よんかい")
+		 ("5F" "ごかい") ("6F" "ろくかい")
+		 ("7F" "ななかい") ("8F" "はちかい")
+		 ("9F" "きゅうかい") ("10F" "じっかい")
+		 ("11F" "じゅういっかい") ("12F" "じゅういっかい")))
 
+(setq *map-name* nil) ;; load /map/header/frame_id
 (defvar *tfl* (instance ros::transform-listener :init))
 
 (defun init ()
   (ros::advertise "robotsound" sound_play::SoundRequest 5)
   (ros::advertise "view_target" geometry_msgs::PointStamped 1)
+  (ros::subscribe "/map" nav_msgs::OccupancyGrid
+		  #'(lambda(m)(setq *map-name* (send m :header :frame_id))))
+
   (setq *ri* (instance pr2-interface :init))
   (setq *pr2* (pr2))
-  (setq *scene* (make-eng8-scene))
+
+  (while (null *map-name*) (ros::spin-once))
+  (ros::unsubscribe "/map")
+
+  (cond ((string= *map-name* "/eng2")
+	 (setq *scene* (make-eng2-scene)))
+	((string= *map-name* "/eng8")
+	 (setq *scene* (make-eng8-scene)))
+	)
 
   (when *node-debug*
     (if (not (boundp '*irtviewer*)) (make-irtviewer))
@@ -41,7 +54,8 @@
     (send *irtviewer* :look-all *pr2*)
     (send *irtviewer* :draw-objects)
     (x::window-main-one)
-    ))
+    )
+  )
 
 (defun update-robot-position ()
   (let (mappose)
@@ -294,7 +308,9 @@
     (dolist (floor *floors*)
       (when (equal targetfloor (elt floor 0))
 	(speak-jp (concatenate string (elt floor 1) "につきました"))
-	(change-floor (elt floor 2)))))
+	(change-floor (format nil "~A/~a" *map-name*
+			      (string-downcase (elt floor 0))))
+	)))
   (initialize-costmap)
   t)
 
@@ -366,7 +382,8 @@
     (print (list cur-floor '-> target-floor up/down target-coords))
     (setq target-floor-button
 	  (elt (assoc target-floor *floors* :test #'string=
-		      :key #'(lambda(x)(elt x 2))) 0)) ;; /eng8_1f -> 1F
+		      :key #'(lambda(x)(format nil "~A/~A" *map-name*
+					       (string-downcase (elt x 0))))) 0)) ;; /eng8/1f -> 1F
     (set-alist 'inside-panel-name "/elevator_inside_panel" userdata)
     (set-alist 'outside-panel-name "/elevator_call_panel" userdata)
     ;; transform to scene frame
