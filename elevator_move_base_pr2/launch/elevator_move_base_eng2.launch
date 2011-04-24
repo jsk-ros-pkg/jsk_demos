@@ -7,7 +7,7 @@
 
   <!-- start objectdetection/tf -->
   <group ns="/narrow_stereo/left">
-    <include file="$(find jsk_perception)/launch/eusmodel_detection_elevator-panels.launch"/>
+    <include file="$(find jsk_perception)/launch/eusmodel_detection_elevator-panels-eng2.launch"/>
     <node name="find_elevator_button" pkg="roseus" type="roseus"
 	  respawn="true" machine="c2"
 	  args="$(find elevator_move_base_pr2)/src/find-elevator-button.l" />
@@ -28,7 +28,7 @@
   </node>
 
   <node name="elevator_number" pkg="elevator_move_base_pr2" type="matchtemplate.py" output="screen" machine="c2">
-    <rosparam file="$(find elevator_move_base_pr2)/launch/template-eng8.yaml" command="load"/>
+    <rosparam file="$(find elevator_move_base_pr2)/launch/template-eng2.yaml" command="load"/>
     <remap from="~image" to="/panel_camera/image"/>
   </node>
 
