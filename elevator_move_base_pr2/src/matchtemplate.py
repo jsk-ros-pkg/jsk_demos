@@ -97,12 +97,19 @@ class MySubscribeListener(rospy.SubscribeListener):
             image_sub.unregister()
             image_sub = None
 
+def resolve_ros_path(path):
+    if "package://" in path:
+        plist = path.split('/')
+        pkg_dir = roslib.packages.get_pkg_dir(plist[2])
+        return "/".join([pkg_dir] + plist[3:])
+    return path
+
 if __name__=='__main__':
     rospy.init_node('match_template')
 
     global templates, result_pub
     template_list = rospy.get_param('~template_list').split()
-    templates = [[typename,cv.LoadImage(rospy.get_param('~template/'+typename+'/path'),cv.CV_LOAD_IMAGE_GRAYSCALE),rospy.get_param('~template/'+typename+'/thre'),rospy.get_param('~template/'+typename+'/name',''),rospy.get_param('~template/'+typename+'/method','')] for typename in template_list]
+    templates = [[typename,cv.LoadImage(resolve_ros_path(rospy.get_param('~template/'+typename+'/path')),cv.CV_LOAD_IMAGE_GRAYSCALE),rospy.get_param('~template/'+typename+'/thre'),rospy.get_param('~template/'+typename+'/name',''),rospy.get_param('~template/'+typename+'/method','')] for typename in template_list]
 
     result_pub = rospy.Publisher("~result",StringStamped,MySubscribeListener())
     debug_pub = rospy.Publisher("~debug_image",Image)

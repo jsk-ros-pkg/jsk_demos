@@ -1,0 +1,15 @@
+#template_list: B1F 1F 2F 3F 4F 5F 6F 7F 8F 9F 10F 11F 12F
+template_list: 2F 7F 8F
+template:
+    2F:
+        name: 2f
+        path: "package://elevator_move_base_pr2/elevator_numbers/eng2/2f.png"
+        thre: 0.05
+    7F:
+        name: 7f
+        path: "package://elevator_move_base_pr2/elevator_numbers/eng2/7f.png"
+        thre: 0.05
+    8F:
+        name: 8f
+        path: "package://elevator_move_base_pr2/elevator_numbers/eng2/8f.png"
+        thre: 0.05

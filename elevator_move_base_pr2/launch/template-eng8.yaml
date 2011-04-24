@@ -1,0 +1,39 @@
+template_list: B2F B1F 1F 2F 3F 4F 5F 6F 7F
+template:
+    B2F:
+        name: b2f
+        path: "package://elevator_move_base_pr2/elevator_numbers/eng8/b2f.png"
+        thre: 0.05
+    B1F:
+        name: b1f
+        path: "package://elevator_move_base_pr2/elevator_numbers/eng8/b1f.png"
+        thre: 0.05
+    1F:
+        name: 2f
+        path: "package://elevator_move_base_pr2/elevator_numbers/eng8/1f.png"
+        thre: 0.05
+    2F:
+        name: 2f
+        path: "package://elevator_move_base_pr2/elevator_numbers/eng8/2f.png"
+        thre: 0.05
+    3F:
+        name: 3f
+        path: "package://elevator_move_base_pr2/elevator_numbers/eng8/3f.png"
+        thre: 0.05
+    4F:
+        name: 4f
+        path: "package://elevator_move_base_pr2/elevator_numbers/eng8/4f.png"
+        thre: 0.05
+    5F:
+        name: 5f
+        path: "package://elevator_move_base_pr2/elevator_numbers/eng8/5f.png"
+        thre: 0.05
+    6F:
+        name: 6f
+        path: "package://elevator_move_base_pr2/elevator_numbers/eng8/6f.png"
+        thre: 0.05
+    7F:
+        name: 7f
+        path: "package://elevator_move_base_pr2/elevator_numbers/eng8/7f.png"
+        thre: 0.05
+
