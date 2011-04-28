@@ -59,6 +59,12 @@
 	    (make-cascoords :rot #2f((0.0 -1.0 0.0) (1.0 0.0 0.0) (0.0 0.0 1.0))
 			    :pos #f(65000.0 -26600.0 0.0)
 			    :name "/eng2/7f/non-combustible-trashbox-front")
+	    (make-cascoords :rot #2f((0.96 0.26 0.0) (-0.26 0.96 0.0) (0.0 0.0 1.0))
+			    :pos #f(65000.0 -2400.0 0.0)
+			    :name "/eng2/7f/room73B1-nakanishi")
+	    (make-cascoords :rot #2f((0.52 0.92 0.0) (-0.92 0.52 0.0) (0.0 0.0 1.0))
+			    :pos #f(63300.0 -1900.0 0.0)
+			    :name "/eng2/7f/room73B1-kurotobi")
 
 	    ;; 8F
 	    (make-cascoords :rot #2f((0.0 1.0 0.0) (-1.0 0.0 0.0) (0.0 0.0 1.0))
