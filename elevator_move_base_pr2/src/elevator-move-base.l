@@ -134,8 +134,8 @@
 (defun speak-jp (jp-str)
   (ros::publish "robotsound"
 		(instance sound_play::SoundRequest :init
-			  :sound sound_play::say
-			  :command sound_play::play_once
+			  :sound sound_play::*say*
+			  :command sound_play::*play_once*
 			  :arg jp-str)))
 
 ;;
