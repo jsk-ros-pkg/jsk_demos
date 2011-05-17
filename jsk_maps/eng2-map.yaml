@@ -17,3 +17,8 @@ floor:
         translation: {x: 120,y: 0,z: 0}
         rotation: {w: 1,x: 0,y: 0,z: 0}
         region: [[47,-48.5],[-13,-48.5],[-13,11.5],[47,11.5]]
+    /eng2/3f:
+        frame_id: /eng2
+        translation: {x: 180,y: 0,z: 0}
+        rotation: {w: 1,x: 0,y: 0,z: 0}
+        region: [[57,-48.5],[-13,-48.5],[-13,11.5],[57,11.5]]
