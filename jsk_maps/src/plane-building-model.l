@@ -33,3 +33,18 @@
 	   (return-from :current-floor (send floor :name)))
        )))
   )
+
+;; arglist := cascoords or (arglist of make-cascoords)
+;; children := (arglist of make-cascoords)
+(defun make-cascoords-tree (arglist &rest children)
+  (if children
+	  (let (par chi)
+		(if (eq (class arglist) cascaded-coords)
+			(setq par arglist)
+		  (setq par (apply #'make-cascoords arglist)))
+		(setq chi (mapcar #'make-cascoords-tree children))
+		(mapcar #'(lambda(x)(send x :transform par :world)) chi)
+		(mapcar #'(lambda(x)(send par :assoc x)) chi)
+		par)
+	(apply #'make-cascoords arglist))
+  )
