@@ -40,7 +40,7 @@
 	 (find "/eng2/3f" (send map :descendants)
 		   :test #'string= :key #'(lambda(x)(send x :name)))
 	'(:rot #2f((-1.0 0.0 0.0) (0.0 -1.0 0.0) (0.0 0.0 1.0))
-			:pos #f(-3080 -32650 0)
+			:pos #f(-2950 -32650 0)
 			:name "/eng2/3f/room-31A-front")
 	'(:rot #2f((-1.0 0.0 0.0) (0.0 -1.0 0.0) (0.0 0.0 1.0))
 		   :pos #f(-2590 -44905 0)
