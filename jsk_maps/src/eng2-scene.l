@@ -35,10 +35,13 @@
 			    :pos #f(25000.0 -9400.0 0.0)
 			    :name "/eng2/2f/subway-lunchset")
 	    ;; 3F
-
 	    (make-cascoords :rot #2f((-1.0 0.0 0.0) (0.0 -1.0 0.0) (0.0 0.0 1.0))
 			    :pos #f(17692 -3265 0)
 			    :name "/eng2/3f/room-31A-front")
+
+	    (make-cascoords :rot #2f((-1.0 0.0 0.0) (0.0 -1.0 0.0) (0.0 0.0 1.0))
+			    :pos #f(17741 -44905 0)
+			    :name "/eng2/3f/small-kitchen")
 	    ;; 7F
 	    (make-cascoords :rot #2f((0.0 1.0 0.0) (-1.0 0.0 0.0) (0.0 0.0 1.0))
 			    :pos #f(63100.0 -31250.0 0.0)
