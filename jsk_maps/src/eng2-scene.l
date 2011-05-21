@@ -53,7 +53,7 @@
 			:name "/eng2/3f/room-31A-inoue-front")
 	'(:rot #2f((-1.0 0.0 0.0) (0.0 -1.0 0.0) (0.0 0.0 1.0))
 			:pos #f(-2393 -28345 0)
-			:name "/eng2/3f/cross-road)"
+			:name "/eng2/3f/cross-road")
 	'(:rot #2f((1.0 0.0 0.0) (0.0 1.0 0.0) (0.0 0.0 1.0))
 		   :pos #f(-2590 -44905 0)
 		   :name "/eng2/3f/small-kitchen"))
