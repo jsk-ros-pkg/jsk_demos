@@ -46,30 +46,7 @@
 ;;
 ;; for dynamic configuration of costmap params
 ;;
-(defun call-empty-service (srvname)
-  (ros::wait-for-service srvname)
-  (ros::service-call srvname (instance std_srvs::EmptyRequest :init)))
-
 ;; reset local costmap and clear unknown grid around robot
-(defun clear-costmap ()
-  (call-empty-service "/move_base_node/clear_local_costmap")
-  (call-empty-service "/move_base_node/clear_unknown_space"))
-
-(defun initialize-costmap ()
-  (call-empty-service "move_base_node/global_costmap/initialize_costmap")
-  (call-empty-service "move_base_node/local_costmap/initialize_costmap")
-  (clear-costmap))
-
-(defun change-inflation-range (&optional (range 0.55) &key (type :all))
-  (when (not (eq type :global))
-    (when (not (eps= (ros::get-param "/move_base_node/local_costmap/inflation_radius")
-                     range 0.1))
-      (ros::set-param "/move_base_node/local_costmap/inflation_radius" range)))
-  (when (not (eq type :local))
-    (when (not (eps= (ros::get-param "/move_base_node/global_costmap/inflation_radius")
-                     range 0.1))
-      (ros::set-param "/move_base_node/global_costmap/inflation_radius" range))))
-
 (defun switch-global-planner-observation (enable)
   (let ((obs (if enable
                  "base_scan_marking base_scan tilt_scan ground_object_cloud"
