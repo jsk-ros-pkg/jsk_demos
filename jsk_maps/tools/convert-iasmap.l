@@ -1,3 +1,5 @@
+#!/usr/bin/env roseus
+
 ;; this a map convert script for jsk_maps to ias_semantic_map
 ;; rosrun mod_semantic_map SemanticMapToOWL
 
@@ -40,7 +42,10 @@
 (defun convert-objs->semobjs (objs &optional (pid 0))
   (let ((semobjs nil) id)
     (dolist (ob objs)
-      (dolist (type (list "hinge" "handle" "table" "door" "cupboard"))
+      (dolist (type (list "knob" "hinge" "handle" "table" "door" "cupboard"
+			  "drawer" "oven" "refrigerator" "dishwasher"
+			  "countertop" "sink"))
+	;; this is rule for convert type from object name
 	(when (substringp type (string-downcase (send ob :name)))
 	  (setq id (incf *id*))
 	  (push (convert-obj->semantic-bbox id ob type pid) semobjs)
