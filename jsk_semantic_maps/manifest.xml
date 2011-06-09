@@ -1,0 +1,17 @@
+<package>
+  <description brief="jsk_semantic_maps">
+
+    Semantic maps of different rooms at the JSK lab at the University of Tokyo.
+
+  </description>
+  <author>Lars Kunze</author>
+  <license>BSD</license>
+  <review status="unreviewed" notes=""/>
+  <url>http://ros.org/wiki/jsk_semantic_maps</url>
+  <depend package="ias_knowledge_base"/>
+  <depend package="comp_spatial"/>
+  
+
+</package>
+
+

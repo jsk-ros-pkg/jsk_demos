@@ -58,7 +58,7 @@
   (setq *id* 0)
   (let ((req (instance mod_semantic_map::GenerateSemanticMapOWLRequest :init))
 	res (offset 0))
-	(send req :map :header :frame_id "/map")
+	(send req :map :header :frame_id "http://www.jsk.t.u-tokyo.ac.jp/jsk_msp.owl#")
 	(send req :map :header :stamp (ros::time-now))
 	(setq semobjs (convert-objs->semobjs objs)) ;; convert
 	(send req :map :objects semobjs)
