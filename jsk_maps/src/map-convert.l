@@ -142,7 +142,7 @@ if __name__ == '__main__':
 		    (find (car (rassoc (send flo :name) assoc-list))
 			  (append (list map) (flatten (send map :inheritance)))
 			  :key #'(lambda(x)(send x :name)) :test #'equal)))
-	       (send flo :move-to parent)
+	       (send flo :move-to parent :parent)
 	       (send parent :assoc flo)))
 	   ;; definition of rooms
 	   (setq rooms
@@ -159,7 +159,7 @@ if __name__ == '__main__':
 		    (find (car (rassoc (send rm :name) assoc-list))
 			  (append (list map) (flatten (send map :inheritance)))
 			  :key #'(lambda(x)(send x :name)) :test #'equal)))
-	       (send rm :move-to parent)
+	       (send rm :move-to parent :parent)
 	       (send parent :assoc rm)))
 	   ;; end of room definition
 	   map))

@@ -43,7 +43,7 @@
 			(setq par arglist)
 		  (setq par (apply #'make-cascoords arglist)))
 		(setq chi (mapcar #'make-cascoords-tree children))
-		(mapcar #'(lambda(x)(send x :transform par :world)) chi)
+		(mapcar #'(lambda(x)(send x :transform par :parent)) chi)
 		(mapcar #'(lambda(x)(send par :assoc x)) chi)
 		par)
 	(apply #'make-cascoords arglist))
