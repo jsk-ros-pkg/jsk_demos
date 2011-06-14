@@ -108,8 +108,13 @@ if __name__ == '__main__':
 	   (send map :paste-texture-to-face top-face :image map-img)
 	   (setq top-face (find-if #'(lambda(f)(equal (send f :id) '(:top)))
 				   (send map :faces)))
-	   ;; definition of rooms
-	   ;; TODO
+	   ;;
+	   (setq assoc-list
+		 (list
+		  ,@(mapcar
+		    #'(lambda(x)
+			`(cons ,(get-item "frame_id" (cdr x)) ,(car x)))
+		    (append floor-yaml room-yaml))))
 	   ;; definition of floors
 	   (setq floors
 		 (list
@@ -132,19 +137,31 @@ if __name__ == '__main__':
 			   :name ,(format nil "~A/region" (car x))))
 		     floor-yaml)))
 	   (mapcar #'(lambda(co pr)(send pr :move-to co)(send co :assoc pr)) floors regions)
-	   (setq assoc-list
-		 (list
-		  ,@(mapcar
-		    #'(lambda(x)
-			`(cons ,(get-item "frame_id" (cdr x)) ,(car x)))
-		    floor-yaml)))
 	   (dolist (flo floors)
 	     (let ((parent
 		    (find (car (rassoc (send flo :name) assoc-list))
-			  (append (list map) floors)
+			  (append (list map) (flatten (send map :inheritance)))
 			  :key #'(lambda(x)(send x :name)) :test #'equal)))
 	       (send flo :move-to parent)
 	       (send parent :assoc flo)))
+	   ;; definition of rooms
+	   (setq rooms
+		 (list
+		  ,@(mapcar
+		     #'(lambda(x)
+			 `(make-cascoords
+			   :name ,(car x)
+			   :pos ,(send (get-coords (cdr x)) :pos)
+			   :rot ,(send (get-coords (cdr x)) :rot)))
+		     room-yaml)))
+	   (dolist (rm rooms)
+	     (let ((parent
+		    (find (car (rassoc (send rm :name) assoc-list))
+			  (append (list map) (flatten (send map :inheritance)))
+			  :key #'(lambda(x)(send x :name)) :test #'equal)))
+	       (send rm :move-to parent)
+	       (send parent :assoc rm)))
+	   ;; end of room definition
 	   map))
       f ) ;; end of pprint
      )
