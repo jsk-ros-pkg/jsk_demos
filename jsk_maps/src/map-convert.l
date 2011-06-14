@@ -31,7 +31,7 @@ if __name__ == '__main__':
 (defun get-item (key alist)
   (cdr (assoc key alist :test #'equal)))
 
-(defun get-floor (alist)
+(defun get-coords (alist)
   (let ((translation (get-item "translation" alist))
 	(rotation (get-item "rotation" alist)))
     (make-coords
@@ -82,6 +82,7 @@ if __name__ == '__main__':
      (unless (eq 0.0 (elt origin 2))
        (error "origin[2] is not zero: map coordinate is wrong"))
      (setq floor-yaml (get-item "floor" map-yaml))
+     (setq room-yaml (get-item "room" map-yaml))
 
      (format f ";; This file is Generated from ~A~%" filename)
      (pprint
@@ -107,14 +108,17 @@ if __name__ == '__main__':
 	   (send map :paste-texture-to-face top-face :image map-img)
 	   (setq top-face (find-if #'(lambda(f)(equal (send f :id) '(:top)))
 				   (send map :faces)))
+	   ;; definition of rooms
+	   ;; TODO
+	   ;; definition of floors
 	   (setq floors
 		 (list
 		  ,@(mapcar
 		     #'(lambda(x)
 			 `(make-cascoords
 			   :name ,(car x)
-			   :pos ,(send (get-floor (cdr x)) :pos)
-			   :rot ,(send (get-floor (cdr x)) :rot)))
+			   :pos ,(send (get-coords (cdr x)) :pos)
+			   :rot ,(send (get-coords (cdr x)) :rot)))
 		     floor-yaml)))
 	   (setq regions
 		 (list

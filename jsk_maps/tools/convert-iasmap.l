@@ -28,8 +28,8 @@
     (send semobj :id id)
     (send semobj :type type)
     (setq tmp (scale 0.001 (v- (send aabb :maxpoint) (send aabb :minpoint))))
-    (send semobj :depth  (elt tmp 0)) ;; x
-    (send semobj :width  (elt tmp 1)) ;; y
+    (send semobj :width  (elt tmp 0)) ;; x
+    (send semobj :depth  (elt tmp 1)) ;; y
     (send semobj :height (elt tmp 2)) ;; z
     (send semobj :pose ;; 4x4 matrix -> size =16
 	  (mapcan #'(lambda(x)(coerce (matrix-row (send obj :4x4) x) cons))
