@@ -10,7 +10,8 @@
   <url>http://ros.org/wiki/jsk_semantic_maps</url>
   <depend package="ias_knowledge_base"/>
   <depend package="comp_spatial"/>
-  
+  <depend package="mod_vis"/>
+  <depend package="comp_semantic_map"/>
 
 </package>
 

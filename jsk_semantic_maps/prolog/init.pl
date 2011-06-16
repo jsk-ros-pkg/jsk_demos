@@ -29,7 +29,10 @@
 %%
 
 :- register_ros_package(comp_spatial).
+:- register_ros_package(mod_vis).
+:- register_ros_package(comp_semantic_map).
 :- use_module(library('comp_spatial')).
+:- use_module(library('comp_semantic_map')).
 
 :- consult('jsk_map').
 

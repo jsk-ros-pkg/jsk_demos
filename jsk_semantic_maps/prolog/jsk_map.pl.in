@@ -41,3 +41,22 @@
 
 :- rdf_db:rdf_register_ns(knowrob, 'http://ias.cs.tum.edu/kb/knowrob.owl#', [keep(true)]).
 :- rdf_db:rdf_register_ns(jsk_map, 'http://www.jsk.t.u-tokyo.ac.jp/jsk_map.owl#', [keep(true)]).
+
+
+draw_all(C) :-
+  draw_rooms(0,250,0,'0.5',C),
+  draw_levels(250,0,250,'0.3',C).
+
+
+draw_rooms(R,G,B,P,C) :-
+  findall(Ro, (owl_has(Ro,rdf:type,knowrob:'RoomInAConstruction'),
+               add_object(Ro,C),
+               highlight_object(Ro,@(true),R,G,B,P,C)),
+          _Rs).
+
+draw_levels(R,G,B,P,C) :-
+  findall(L, (owl_has(L,rdf:type,knowrob:'LevelOfAConstruction'),
+              add_object(L,C),
+              highlight_object(L,@(true),R,G,B,P,C)),
+          _Ls).
+
