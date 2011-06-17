@@ -4,9 +4,9 @@ floor:
     # floor origin and area
     /eng8/b1f:
         frame_id: /eng8
-        translation: {x: 15,y: 0,z: 0}
+        translation: {x: 15,y: 25,z: 0}
         rotation: {w: 1,x: 0,y: 0,z: 0}
-        region: [[-5,-80],[-5,0],[35,0],[35,-80]]
+        region: [[-5,-80],[-5,20],[35,20],[35,-80]]
     /eng8/1f:
         frame_id: /eng8
         translation: {x: -30,y: 0,z: 0}

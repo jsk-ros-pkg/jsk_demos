@@ -14,7 +14,7 @@
   <node pkg="tf"
         type="static_transform_publisher"
         name="map_tf_B1F"
-        args="15 0 0 0 0 0 /eng8 /eng8/b1f 10"/>
+        args="15 25 0 0 0 0 /eng8 /eng8/b1f 10"/>
   <node pkg="tf"
         type="static_transform_publisher"
         name="initial_map_setter"

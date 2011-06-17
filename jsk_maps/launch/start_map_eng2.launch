@@ -3,6 +3,7 @@
 	args="$(find jsk_maps)/eng2.yaml" >
     <param name="frame_id" value="/eng2"/>
   </node>
+  <!-- the position is defined in eng2-map.yaml -->
   <node pkg="tf"
         type="static_transform_publisher"
         name="map_tf_8F"
@@ -11,6 +12,10 @@
         type="static_transform_publisher"
         name="map_tf_7F"
         args="60 0 0 0 0 0 /eng2 /eng2/7f 10"/>
+  <node pkg="tf"
+        type="static_transform_publisher"
+        name="map_tf_3F"
+        args="180 0 0 0 0 0 /eng2 /eng2/3f 10"/>
   <node pkg="tf"
         type="static_transform_publisher"
         name="map_tf_2F"
