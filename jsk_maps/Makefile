@@ -7,7 +7,7 @@ eng2.pgm: $(shell find raw_maps -name 'eng2*.pgm')
 
 #eng8.pgm: $(shell find raw_maps -name 'eng8*.pgm')
 eng8.pgm: $(shell find raw_maps -name 'eng8*.pgm')
-	convert +append raw_maps/eng8* eng8.pgm
+	convert +append raw_maps/eng8-1f-0.05.pgm raw_maps/eng8-6f-0.05.pgm raw_maps/eng8-b1f-0.05.pgm eng8.pgm
 
 euslisp/eng2-map.l: eng2-map.yaml
 	mkdir -p euslisp
