@@ -34,10 +34,11 @@ import time
 import sys
 import getopt
 import yaml
+import math
 
 # global varibles
 scale = 0.1
-height = 0.5
+height = 0.4
 id = 0
 
 def get_rotation(frame):
@@ -82,7 +83,13 @@ def get_depth(r):
     min_y = min( min(r[0][1],r[1][1]), min(r[2][1],r[3][1]))
     return (max_y - min_y)  * scale 
 
-    
+
+def calc_center_x(r):
+    pass
+
+def calc_center_y(r):
+    pass
+
 def quaternion_to_rotation_mat3d(q, t, r):
     global scale
     m = [ [1, 0, 0, 0],
@@ -90,51 +97,61 @@ def quaternion_to_rotation_mat3d(q, t, r):
           [0, 0, 1, 0],
           [0, 0, 0, 1]]
 
-    x = get_x(q)
-    y = get_y(q)
-    z = get_z(q)
-    w = get_w(q)
+    # do not use accessor functions because of scaling
+    x = q['x'] #get_x(q)
+    y = q['y'] #get_y(q)
+    z = q['z'] #get_z(q)
+    w = q['w'] #get_w(q)
 
-    # transposed matrix 
-    # first column
-    # m[0][0] = 1 - 2 * y * y - 2 * z * z
-    # m[1][0] = 2 * x * y + 2 * w * z
-    # m[2][0] = 2 * x * z - 2 * w * y
-    
-    # # second column
-    # m[0][1] = 2 * x * y - 2 * w * z
-    # m[1][1] = 1 - 2 * x * x - 2 * z * z
-    # m[2][1] = 2 * y * z + 2 * w * x
-    
-    # # third column
-    # m[0][2] = 2 * x * z + 2 * w * y
-    # m[1][2] = 2 * y * z - 2 * w * x
-    # m[2][2] = 1 - 2 * x * x - 2 * y * y
-    
+    # rotation matrix
     # first row
     m[0][0] = 1 - 2 * y * y - 2 * z * z
     m[0][1] = 2 * x * y + 2 * w * z
     m[0][2] = 2 * x * z - 2 * w * y
-    m[0][3] = get_x(t) + (get_depth(r) / 2) 
-
+  
     # second ros 
     m[1][0] = 2 * x * y - 2 * w * z
     m[1][1] = 1 - 2 * x * x - 2 * z * z
     m[1][2] = 2 * y * z + 2 * w * x
-    m[1][3] = get_y(t) + (get_width(r) / 2)
-
+  
     # third row
     m[2][0] = 2 * x * z + 2 * w * y
     m[2][1] = 2 * y * z - 2 * w * x
     m[2][2] = 1 - 2 * x * x - 2 * y * y
-    m[2][3] = get_z(t) 
 
-    # fourth row
+    # fourth row 
     m[3][0] = 0
     m[3][1] = 0
     m[3][2] = 0
+
+    # calculate the center of room (2D only)
+    xs = [xval[0] for xval in r]
+    ys = [yval[1] for yval in r]
+    
+    cent_x = (math.fsum(xs) / float(len(xs))) * scale 
+    cent_y = (math.fsum(ys) / float(len(ys))) * scale
+    cent_z = 0
+
+    # rotate the center point
+    rot_x = m[0][0] * cent_x + m[0][1] * cent_y + m[0][2] * cent_z 
+    rot_y = m[1][0] * cent_x + m[1][1] * cent_y + m[1][2] * cent_z
+    rot_z = m[2][0] * cent_x + m[2][1] * cent_y + m[2][2] * cent_z
+
+    # now set translation of obj 
+    m[0][3] = get_x(t) + rot_x 
+    m[1][3] = get_y(t) + rot_y 
+    m[2][3] = get_z(t) + rot_z
     m[3][3] = 1
 
+    # print "q ", q
+    # print "t ", t
+    # print "r ", r
+    # print "trans x/y ", get_x(t), " ", get_y(t) 
+    # print "cent x/y ", cent_x, " ", cent_y  
+    # print "rot x/y/z ", rot_x, " ", rot_y, " ",  rot_z
+    # print "m  x/y ", m[0][3] , " ", m[1][3]
+    # print m
+    
     return m
 
 def create_header():
@@ -167,37 +184,6 @@ def create_header():
       <owl:imports rdf:resource="&local_path;knowrob.owl"/>
     </owl:Ontology>
     
-<owl:ObjectProperty rdf:about="http://ias.cs.tum.edu/kb/knowrob.owl#describedInMap"/>
-<owl:ObjectProperty rdf:about="http://ias.cs.tum.edu/kb/knowrob.owl#eventOccursAt"/>
-<owl:ObjectProperty rdf:about="http://ias.cs.tum.edu/kb/knowrob.owl#objectActedOn"/>
-<owl:ObjectProperty rdf:about="http://ias.cs.tum.edu/kb/knowrob.owl#startTime"/>
-
-<owl:DatatypeProperty rdf:about="http://ias.cs.tum.edu/kb/knowrob.owl#widthOfObject"/>
-<owl:DatatypeProperty rdf:about="http://ias.cs.tum.edu/kb/knowrob.owl#heightOfObject"/>
-<owl:DatatypeProperty rdf:about="http://ias.cs.tum.edu/kb/knowrob.owl#depthOfObject"/>
-
-<owl:DatatypeProperty rdf:about="http://ias.cs.tum.edu/kb/knowrob.owl#m00"/>
-<owl:DatatypeProperty rdf:about="http://ias.cs.tum.edu/kb/knowrob.owl#m01"/>
-<owl:DatatypeProperty rdf:about="http://ias.cs.tum.edu/kb/knowrob.owl#m02"/>
-<owl:DatatypeProperty rdf:about="http://ias.cs.tum.edu/kb/knowrob.owl#m03"/>
-<owl:DatatypeProperty rdf:about="http://ias.cs.tum.edu/kb/knowrob.owl#m10"/>
-<owl:DatatypeProperty rdf:about="http://ias.cs.tum.edu/kb/knowrob.owl#m11"/>
-<owl:DatatypeProperty rdf:about="http://ias.cs.tum.edu/kb/knowrob.owl#m12"/>
-<owl:DatatypeProperty rdf:about="http://ias.cs.tum.edu/kb/knowrob.owl#m13"/>
-<owl:DatatypeProperty rdf:about="http://ias.cs.tum.edu/kb/knowrob.owl#m20"/>
-<owl:DatatypeProperty rdf:about="http://ias.cs.tum.edu/kb/knowrob.owl#m21"/>
-<owl:DatatypeProperty rdf:about="http://ias.cs.tum.edu/kb/knowrob.owl#m22"/>
-<owl:DatatypeProperty rdf:about="http://ias.cs.tum.edu/kb/knowrob.owl#m23"/>
-<owl:DatatypeProperty rdf:about="http://ias.cs.tum.edu/kb/knowrob.owl#m30"/>
-<owl:DatatypeProperty rdf:about="http://ias.cs.tum.edu/kb/knowrob.owl#m31"/>
-<owl:DatatypeProperty rdf:about="http://ias.cs.tum.edu/kb/knowrob.owl#m32"/>
-<owl:DatatypeProperty rdf:about="http://ias.cs.tum.edu/kb/knowrob.owl#m33"/>
-
-<owl:Class rdf:about="http://ias.cs.tum.edu/kb/knowrob.owl#RotationMatrix3D"/>
-<owl:Class rdf:about="http://ias.cs.tum.edu/kb/knowrob.owl#SemanticEnvironmentMap"/>
-<owl:Class rdf:about="http://ias.cs.tum.edu/kb/knowrob.owl#SemanticMapPerception"/>
-<owl:Class rdf:about="http://ias.cs.tum.edu/kb/knowrob.owl#TimePoint"/>
-
  '''
     
 def create_footer():
@@ -209,29 +195,35 @@ def create_footer():
 
 def create_timepoint(t):
     print ''
-    print '<owl:NamedIndividual rdf:about="http://www.jsk.t.u-tokyo.ac.jp/jsk_map.owl#timepoint_{0}">'.format(t)
+    print '<owl:NamedIndividual rdf:about="&jsk_map;timepoint_{0}">'.format(t)
     print '  <rdf:type rdf:resource="&knowrob;TimePoint"/>'
     print '</owl:Na1medIndividual>'
     print ''
 
 def create_instance(inst, type):
     print ''
-    print '<owl:NamedIndividual rdf:about="http://www.jsk.t.u-tokyo.ac.jp/jsk_map.owl#{0}">'.format(inst)
+    print '<owl:NamedIndividual rdf:about="&jsk_map;{0}">'.format(inst)
     print '  <rdf:type rdf:resource="http://ias.cs.tum.edu/kb/knowrob.owl#{0}"/>'.format(type)
     print '</owl:NamedIndividual>'
     print ''
     
-def create_instance_with_dim(inst,type,width,height,depth, prop=None, objs=None):
+def create_instance_with_dim(inst,type,width,height,depth, prop=None, objs=None, x=0.0, y=0.0, z=0.0):
     global building_inst
     print ''
-    print '<owl:NamedIndividual rdf:about="http://www.jsk.t.u-tokyo.ac.jp/jsk_map.owl#{0}">'.format(inst)
+    print '<owl:NamedIndividual rdf:about="&jsk_map;{0}">'.format(inst)
     print '  <rdf:type rdf:resource="&knowrob;{0}"/>'.format(type)
     print '  <knowrob:widthOfObject rdf:datatype="&xsd;float">{0}</knowrob:widthOfObject>'.format(width)
     print '  <knowrob:depthOfObject rdf:datatype="&xsd;float">{0}</knowrob:depthOfObject>'.format(depth)
     print '  <knowrob:heightOfObject rdf:datatype="&xsd;float">{0}</knowrob:heightOfObject>'.format(height)
-    print '  <knowrob:describedInMap rdf:resource="http://www.jsk.t.u-tokyo.ac.jp/jsk_map.owl#SemanticEnvironmentMap-{0}"/>'.format(building_inst)
+    # print '  <knowrob:translationX rdf:datatype="&xsd;float">{0}</knowrob:translationX>'.format(x)
+    # print '  <knowrob:translationY rdf:datatype="&xsd;float">{0}</knowrob:translationY>'.format(y)
+    # print '  <knowrob:translationZ rdf:datatype="&xsd;float">{0}</knowrob:translationZ>'.format(z)
+    print '  <knowrob:describedInMap rdf:resource="&jsk_map;SemanticEnvironmentMap-{0}"/>'.format(building_inst)
     if type is 'LevelOfAConstruction':
-        print '  <knowrob:floorNumber rdf:datatype="&xsd;int">{0}</knowrob:floorNumber>'.format(get_floor_number(inst))
+        print '  <knowrob:floorNumber rdf:datatype="&xsd;string">{0}</knowrob:floorNumber>'.format(get_floor_number(inst))
+    elif type is 'RoomInAConstruction':
+        print '  <knowrob:roomNumber rdf:datatype="&xsd;string">{0}</knowrob:roomNumber>'.format(get_room_number(inst))
+        
     if objs is not None:
         if objs.has_key(inst):
             create_props(prop, objs[inst])
@@ -242,10 +234,10 @@ def create_type(type):
     print '  <rdf:type rdf:resource="&knowrob;{0}"/>'.format(type)
 
 def create_building(building_inst, has_floors):
-    print '<owl:NamedIndividual rdf:about="http://www.jsk.t.u-tokyo.ac.jp/jsk_map.owl#{0}">'.format(building_inst)
+    print '<owl:NamedIndividual rdf:about="&jsk_map;{0}">'.format(building_inst)
     create_type('Building')
     create_props('hasLevels', has_floors[building_inst])
-    print '  <knowrob:describedInMap rdf:resource="http://www.jsk.t.u-tokyo.ac.jp/jsk_map.owl#SemanticEnvironmentMap-{0}"/>'.format(building_inst)
+    print '  <knowrob:describedInMap rdf:resource="&jsk_map;SemanticEnvironmentMap-{0}"/>'.format(building_inst)
     print '</owl:NamedIndividual>'    
     
 def create_props(prop, objs):
@@ -253,22 +245,28 @@ def create_props(prop, objs):
         create_prop(prop,o)
     
 def create_prop(prop, obj):
-    print '  <knowrob:{0} rdf:resource="http://www.jsk.t.u-tokyo.ac.jp/jsk_map.owl#{1}"/>'.format(prop,obj)
+    print '  <knowrob:{0} rdf:resource="&jsk_map;{1}"/>'.format(prop,obj)
 
-def create_perception_event(obj,mat3d_name,time=0):
+def create_perception_event(obj,mat3d_name,time=0, frame_parent=None, frame_trans=None, frame_region=None ):
     print   ''
-    print   '<owl:NamedIndividual rdf:about="http://www.jsk.t.u-tokyo.ac.jp/jsk_map.owl#SemanticMapPerception-{0}">'.format(get_id())
+    print   '<owl:NamedIndividual rdf:about="&jsk_map;SemanticMapPerception-{0}">'.format(get_id())
     print   '  <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>'
-    print   '  <knowrob:objectActedOn rdf:resource="http://www.jsk.t.u-tokyo.ac.jp/jsk_map.owl#{0}"/>'.format(obj)
-    print   '  <knowrob:eventOccursAt rdf:resource="http://www.jsk.t.u-tokyo.ac.jp/jsk_map.owl#{0}"/>'.format(mat3d_name)
-    print   '  <knowrob:startTime rdf:resource="http://www.jsk.t.u-tokyo.ac.jp/jsk_map.owl#timepoint_{0}"/>'.format(time)
+    print   '  <knowrob:objectActedOn rdf:resource="&jsk_map;{0}"/>'.format(obj)
+    print   '  <knowrob:eventOccursAt rdf:resource="&jsk_map;{0}"/>'.format(mat3d_name)
+    print   '  <knowrob:startTime rdf:resource="&jsk_map;timepoint_{0}"/>'.format(time)
+    if frame_parent is not None:
+        print '  <knowrob:frameParent rdf:resource="&jsk_map;{0}"/>'.format(frame_parent)
+    if frame_trans is not None:
+        print '  <knowrob:frameTransformation rdf:resource="&jsk_map;{0}"/>'.format(frame_trans)
+    if frame_region is not None:
+        print '  <knowrob:frameRegion rdf:resource="&jsk_map;{0}"/>'.format(frame_region)    
     print   '</owl:NamedIndividual>'
     print   ''
 
 def create_rot_mat3d(m):
     name = 'RotationMatrix3D-{0}'.format(get_id())
     print ''
-    print '<owl:NamedIndividual rdf:about="http://www.jsk.t.u-tokyo.ac.jp/jsk_map.owl#{0}">'.format(name)
+    print '<owl:NamedIndividual rdf:about="&jsk_map;{0}">'.format(name)
     print '  <rdf:type rdf:resource="&knowrob;RotationMatrix3D"/>'
     print '  <knowrob:m00 rdf:datatype="&xsd;float">{0}</knowrob:m00>'.format(m[0][0])
     print '  <knowrob:m01 rdf:datatype="&xsd;float">{0}</knowrob:m01>'.format(m[0][1])
@@ -293,9 +291,13 @@ def create_rot_mat3d(m):
 def get_name(name):
     return name.replace('/','-')
 
+def get_room_number(name):
+    rn = name[name.rfind('-') + 1:]
+    return rn
+
 def get_floor_number(name):
     n = name[name.rfind('-') + 1:]
-    fn = int(n.rstrip(string.ascii_letters))
+    fn = n.rstrip(string.ascii_letters)
     return fn
 
 def get_parent(frame):
@@ -305,6 +307,14 @@ def get_id():
     global id
     id = id + 1
     return id
+
+def create_test_room(name,q,trans,reg,time):
+    mat3d = quaternion_to_rotation_mat3d(q,trans,reg)
+
+    # switched depth and width !!!!
+    create_instance_with_dim(name,'RoomInAConstruction',get_depth(reg), get_height(reg), get_width(reg), None, None, get_x(trans), get_y(trans), get_z(trans)) 
+    mat_inst = create_rot_mat3d(mat3d)
+    create_perception_event(name, mat_inst, time)
 
 
 
@@ -373,15 +383,23 @@ def main(argv=None):
                 reg = get_region(rooms[r])   
                 q = get_rotation(rooms[r])
                 trans = get_translation(rooms[r])
+                # global coordinates
                 mat3d = quaternion_to_rotation_mat3d(q,trans,reg)
 
+                # local frame coordinates
+                frame_mat3d = quaternion_to_rotation_mat3d(q,trans,reg)
+                # same rotation but different translation (not center) 
+                frame_mat3d[0][3] = get_x(trans)  
+                frame_mat3d[1][3] = get_y(trans)
+                frame_mat3d[2][3] = get_z(trans)
 
                 # switched depth and width !!!!
-                create_instance_with_dim(name,'RoomInAConstruction',get_depth(reg), get_height(reg), get_width(reg)) 
+                create_instance_with_dim(name,'RoomInAConstruction',get_depth(reg), get_height(reg), get_width(reg), None, None,  get_x(trans), get_y(trans), get_z(trans))
+
                 mat_inst = create_rot_mat3d(mat3d)
-                create_perception_event(name, mat_inst, now)
+                frame_mat_inst = create_rot_mat3d(frame_mat3d)
 
-
+                create_perception_event(name, mat_inst, now, parent, frame_mat_inst, None)
         
         # read floors
         # create floors with rooms 
@@ -389,8 +407,6 @@ def main(argv=None):
         floors = map.get('floor')
         if floors is not None:
             for f in floors:
-
-                #print get_floor_number(get_name(f))
 
                 name = 'LevelOfAConstruction' + get_name(f)
                 parent = 'Building' + get_name(get_parent(floors[f]))
@@ -405,17 +421,41 @@ def main(argv=None):
                 reg = get_region(floors[f])                    
                 q = get_rotation(floors[f])
                 trans = get_translation(floors[f])
+
                 mat3d = quaternion_to_rotation_mat3d(q,trans,reg)
 
+                # local frame coordinates
+                frame_mat3d = quaternion_to_rotation_mat3d(q,trans,reg)
+                # same rotation but different translation (not center) 
+                frame_mat3d[0][3] = get_x(trans)  
+                frame_mat3d[1][3] = get_y(trans)
+                frame_mat3d[2][3] = get_z(trans)
 
-                create_instance_with_dim(name,'LevelOfAConstruction',get_width(reg), get_height(reg), get_depth(reg), 'hasRooms', has_rooms) 
+                create_instance_with_dim(name,'LevelOfAConstruction',get_depth(reg), get_height(reg), get_width(reg), 'hasRooms', has_rooms,  get_x(trans), get_y(trans), get_z(trans))
                 mat_inst = create_rot_mat3d(mat3d)
-                create_perception_event(name, mat_inst, now)
+                frame_mat_inst = create_rot_mat3d(frame_mat3d)
+                
+                create_perception_event(name, mat_inst, now, parent, frame_mat_inst, None)
                 
 
         # create buidling with floors
         create_building(building_inst, has_floors)
-                
+
+        
+        # create_test_room('73A1-test',
+        #                  #{'x': 0.7071,'y': 0,'z': 0,'w': 0.7071},
+        #                  {'w': 0,'x': 0,'y': 0,'z': 1},
+        #                  {'x': -2.2,'y': -0.8,'z': 0},
+        #                  [[0,2.7],[0,-0.7],[9,-0.7],[9,2.7]],
+        #                  now)
+
+        # create_test_room('73B1-test',
+        #                  #{'x': 0.7071,'y': 0,'z': 0,'w': 0.7071},
+        #                  {'w': 1,'x': 0,'y': 0,'z': 0},
+        #                  {'x': 0,'y': -0.5,'z': 0},
+        #                  [[0,3.5],[0,-3.5],[10,-3.5],[10,3.5]],
+        #                  now)
+        
         create_footer()
 
     except Usage, err:
