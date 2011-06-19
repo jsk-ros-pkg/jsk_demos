@@ -37,7 +37,8 @@
 :- use_module(library('semweb/actionmodel')).
 
 
-:- owl_parser:owl_parse('@LOCAL_PACKAGE_PATH@/owl/jsk_map.owl', false, false, true).
+%:- owl_parser:owl_parse('@LOCAL_PACKAGE_PATH@/owl/jsk_map.owl', false, false, true).
+:- owl_parser:owl_parse('@LOCAL_PACKAGE_PATH@/owl/jsk_map_addons.owl', false, false, true).
 
 :- rdf_db:rdf_register_ns(knowrob, 'http://ias.cs.tum.edu/kb/knowrob.owl#', [keep(true)]).
 :- rdf_db:rdf_register_ns(jsk_map, 'http://www.jsk.t.u-tokyo.ac.jp/jsk_map.owl#', [keep(true)]).

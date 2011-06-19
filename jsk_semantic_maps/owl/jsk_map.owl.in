@@ -27,67 +27,37 @@
       <owl:imports rdf:resource="&local_path;knowrob.owl"/>
     </owl:Ontology>
     
-<owl:ObjectProperty rdf:about="http://ias.cs.tum.edu/kb/knowrob.owl#describedInMap"/>
-<owl:ObjectProperty rdf:about="http://ias.cs.tum.edu/kb/knowrob.owl#eventOccursAt"/>
-<owl:ObjectProperty rdf:about="http://ias.cs.tum.edu/kb/knowrob.owl#objectActedOn"/>
-<owl:ObjectProperty rdf:about="http://ias.cs.tum.edu/kb/knowrob.owl#startTime"/>
-
-<owl:DatatypeProperty rdf:about="http://ias.cs.tum.edu/kb/knowrob.owl#widthOfObject"/>
-<owl:DatatypeProperty rdf:about="http://ias.cs.tum.edu/kb/knowrob.owl#heightOfObject"/>
-<owl:DatatypeProperty rdf:about="http://ias.cs.tum.edu/kb/knowrob.owl#depthOfObject"/>
-
-<owl:DatatypeProperty rdf:about="http://ias.cs.tum.edu/kb/knowrob.owl#m00"/>
-<owl:DatatypeProperty rdf:about="http://ias.cs.tum.edu/kb/knowrob.owl#m01"/>
-<owl:DatatypeProperty rdf:about="http://ias.cs.tum.edu/kb/knowrob.owl#m02"/>
-<owl:DatatypeProperty rdf:about="http://ias.cs.tum.edu/kb/knowrob.owl#m03"/>
-<owl:DatatypeProperty rdf:about="http://ias.cs.tum.edu/kb/knowrob.owl#m10"/>
-<owl:DatatypeProperty rdf:about="http://ias.cs.tum.edu/kb/knowrob.owl#m11"/>
-<owl:DatatypeProperty rdf:about="http://ias.cs.tum.edu/kb/knowrob.owl#m12"/>
-<owl:DatatypeProperty rdf:about="http://ias.cs.tum.edu/kb/knowrob.owl#m13"/>
-<owl:DatatypeProperty rdf:about="http://ias.cs.tum.edu/kb/knowrob.owl#m20"/>
-<owl:DatatypeProperty rdf:about="http://ias.cs.tum.edu/kb/knowrob.owl#m21"/>
-<owl:DatatypeProperty rdf:about="http://ias.cs.tum.edu/kb/knowrob.owl#m22"/>
-<owl:DatatypeProperty rdf:about="http://ias.cs.tum.edu/kb/knowrob.owl#m23"/>
-<owl:DatatypeProperty rdf:about="http://ias.cs.tum.edu/kb/knowrob.owl#m30"/>
-<owl:DatatypeProperty rdf:about="http://ias.cs.tum.edu/kb/knowrob.owl#m31"/>
-<owl:DatatypeProperty rdf:about="http://ias.cs.tum.edu/kb/knowrob.owl#m32"/>
-<owl:DatatypeProperty rdf:about="http://ias.cs.tum.edu/kb/knowrob.owl#m33"/>
-
-<owl:Class rdf:about="http://ias.cs.tum.edu/kb/knowrob.owl#RotationMatrix3D"/>
-<owl:Class rdf:about="http://ias.cs.tum.edu/kb/knowrob.owl#SemanticEnvironmentMap"/>
-<owl:Class rdf:about="http://ias.cs.tum.edu/kb/knowrob.owl#SemanticMapPerception"/>
-<owl:Class rdf:about="http://ias.cs.tum.edu/kb/knowrob.owl#TimePoint"/>
-
  
 
-<owl:NamedIndividual rdf:about="http://www.jsk.t.u-tokyo.ac.jp/jsk_map.owl#SemanticEnvironmentMap-Building-eng2">
+<owl:NamedIndividual rdf:about="&jsk_map;SemanticEnvironmentMap-Building-eng2">
   <rdf:type rdf:resource="http://ias.cs.tum.edu/kb/knowrob.owl#SemanticEnvironmentMap"/>
 </owl:NamedIndividual>
 
 
-<owl:NamedIndividual rdf:about="http://www.jsk.t.u-tokyo.ac.jp/jsk_map.owl#RoomInAConstruction-eng2-8f-83B1">
+<owl:NamedIndividual rdf:about="&jsk_map;RoomInAConstruction-eng2-8f-83B1">
   <rdf:type rdf:resource="&knowrob;RoomInAConstruction"/>
   <knowrob:widthOfObject rdf:datatype="&xsd;float">0.7</knowrob:widthOfObject>
   <knowrob:depthOfObject rdf:datatype="&xsd;float">1.0</knowrob:depthOfObject>
-  <knowrob:heightOfObject rdf:datatype="&xsd;float">0.005</knowrob:heightOfObject>
-  <knowrob:describedInMap rdf:resource="http://www.jsk.t.u-tokyo.ac.jp/jsk_map.owl#SemanticEnvironmentMap-Building-eng2"/>
+  <knowrob:heightOfObject rdf:datatype="&xsd;float">0.004</knowrob:heightOfObject>
+  <knowrob:describedInMap rdf:resource="&jsk_map;SemanticEnvironmentMap-Building-eng2"/>
+  <knowrob:roomNumber rdf:datatype="&xsd;string">83B1</knowrob:roomNumber>
 </owl:NamedIndividual>
 
 
-<owl:NamedIndividual rdf:about="http://www.jsk.t.u-tokyo.ac.jp/jsk_map.owl#RotationMatrix3D-1">
+<owl:NamedIndividual rdf:about="&jsk_map;RotationMatrix3D-1">
   <rdf:type rdf:resource="&knowrob;RotationMatrix3D"/>
-  <knowrob:m00 rdf:datatype="&xsd;float">1.0</knowrob:m00>
-  <knowrob:m01 rdf:datatype="&xsd;float">0.0</knowrob:m01>
-  <knowrob:m02 rdf:datatype="&xsd;float">0.0</knowrob:m02>
-  <knowrob:m03 rdf:datatype="&xsd;float">0.35</knowrob:m03>
-  <knowrob:m10 rdf:datatype="&xsd;float">0.0</knowrob:m10>
-  <knowrob:m11 rdf:datatype="&xsd;float">1.0</knowrob:m11>
-  <knowrob:m12 rdf:datatype="&xsd;float">0.0</knowrob:m12>
-  <knowrob:m13 rdf:datatype="&xsd;float">0.5</knowrob:m13>
-  <knowrob:m20 rdf:datatype="&xsd;float">0.0</knowrob:m20>
-  <knowrob:m21 rdf:datatype="&xsd;float">0.0</knowrob:m21>
-  <knowrob:m22 rdf:datatype="&xsd;float">1.0</knowrob:m22>
-  <knowrob:m23 rdf:datatype="&xsd;float">8.1</knowrob:m23>
+  <knowrob:m00 rdf:datatype="&xsd;float">1</knowrob:m00>
+  <knowrob:m01 rdf:datatype="&xsd;float">0</knowrob:m01>
+  <knowrob:m02 rdf:datatype="&xsd;float">0</knowrob:m02>
+  <knowrob:m03 rdf:datatype="&xsd;float">0.5</knowrob:m03>
+  <knowrob:m10 rdf:datatype="&xsd;float">0</knowrob:m10>
+  <knowrob:m11 rdf:datatype="&xsd;float">1</knowrob:m11>
+  <knowrob:m12 rdf:datatype="&xsd;float">0</knowrob:m12>
+  <knowrob:m13 rdf:datatype="&xsd;float">0.0</knowrob:m13>
+  <knowrob:m20 rdf:datatype="&xsd;float">0</knowrob:m20>
+  <knowrob:m21 rdf:datatype="&xsd;float">0</knowrob:m21>
+  <knowrob:m22 rdf:datatype="&xsd;float">1</knowrob:m22>
+  <knowrob:m23 rdf:datatype="&xsd;float">8.05</knowrob:m23>
   <knowrob:m30 rdf:datatype="&xsd;float">0</knowrob:m30>
   <knowrob:m31 rdf:datatype="&xsd;float">0</knowrob:m31>
   <knowrob:m32 rdf:datatype="&xsd;float">0</knowrob:m32>
@@ -95,37 +65,61 @@
 </owl:NamedIndividual>
 
 
-<owl:NamedIndividual rdf:about="http://www.jsk.t.u-tokyo.ac.jp/jsk_map.owl#SemanticMapPerception-2">
-  <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
-  <knowrob:objectActedOn rdf:resource="http://www.jsk.t.u-tokyo.ac.jp/jsk_map.owl#RoomInAConstruction-eng2-8f-83B1"/>
-  <knowrob:eventOccursAt rdf:resource="http://www.jsk.t.u-tokyo.ac.jp/jsk_map.owl#RotationMatrix3D-1"/>
-  <knowrob:startTime rdf:resource="http://www.jsk.t.u-tokyo.ac.jp/jsk_map.owl#timepoint_1308236028.49"/>
+<owl:NamedIndividual rdf:about="&jsk_map;RotationMatrix3D-2">
+  <rdf:type rdf:resource="&knowrob;RotationMatrix3D"/>
+  <knowrob:m00 rdf:datatype="&xsd;float">1</knowrob:m00>
+  <knowrob:m01 rdf:datatype="&xsd;float">0</knowrob:m01>
+  <knowrob:m02 rdf:datatype="&xsd;float">0</knowrob:m02>
+  <knowrob:m03 rdf:datatype="&xsd;float">0.0</knowrob:m03>
+  <knowrob:m10 rdf:datatype="&xsd;float">0</knowrob:m10>
+  <knowrob:m11 rdf:datatype="&xsd;float">1</knowrob:m11>
+  <knowrob:m12 rdf:datatype="&xsd;float">0</knowrob:m12>
+  <knowrob:m13 rdf:datatype="&xsd;float">0.0</knowrob:m13>
+  <knowrob:m20 rdf:datatype="&xsd;float">0</knowrob:m20>
+  <knowrob:m21 rdf:datatype="&xsd;float">0</knowrob:m21>
+  <knowrob:m22 rdf:datatype="&xsd;float">1</knowrob:m22>
+  <knowrob:m23 rdf:datatype="&xsd;float">8.05</knowrob:m23>
+  <knowrob:m30 rdf:datatype="&xsd;float">0</knowrob:m30>
+  <knowrob:m31 rdf:datatype="&xsd;float">0</knowrob:m31>
+  <knowrob:m32 rdf:datatype="&xsd;float">0</knowrob:m32>
+  <knowrob:m33 rdf:datatype="&xsd;float">1</knowrob:m33>
 </owl:NamedIndividual>
 
 
-<owl:NamedIndividual rdf:about="http://www.jsk.t.u-tokyo.ac.jp/jsk_map.owl#RoomInAConstruction-eng2-7f-73B2">
+<owl:NamedIndividual rdf:about="&jsk_map;SemanticMapPerception-3">
+  <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
+  <knowrob:objectActedOn rdf:resource="&jsk_map;RoomInAConstruction-eng2-8f-83B1"/>
+  <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-1"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1308501991.32"/>
+  <knowrob:frameParent rdf:resource="&jsk_map;LevelOfAConstruction-eng2-8f"/>
+  <knowrob:frameTransformation rdf:resource="&jsk_map;RotationMatrix3D-2"/>
+</owl:NamedIndividual>
+
+
+<owl:NamedIndividual rdf:about="&jsk_map;RoomInAConstruction-eng2-7f-73B2">
   <rdf:type rdf:resource="&knowrob;RoomInAConstruction"/>
   <knowrob:widthOfObject rdf:datatype="&xsd;float">0.7</knowrob:widthOfObject>
   <knowrob:depthOfObject rdf:datatype="&xsd;float">1.0</knowrob:depthOfObject>
-  <knowrob:heightOfObject rdf:datatype="&xsd;float">0.005</knowrob:heightOfObject>
-  <knowrob:describedInMap rdf:resource="http://www.jsk.t.u-tokyo.ac.jp/jsk_map.owl#SemanticEnvironmentMap-Building-eng2"/>
+  <knowrob:heightOfObject rdf:datatype="&xsd;float">0.004</knowrob:heightOfObject>
+  <knowrob:describedInMap rdf:resource="&jsk_map;SemanticEnvironmentMap-Building-eng2"/>
+  <knowrob:roomNumber rdf:datatype="&xsd;string">73B2</knowrob:roomNumber>
 </owl:NamedIndividual>
 
 
-<owl:NamedIndividual rdf:about="http://www.jsk.t.u-tokyo.ac.jp/jsk_map.owl#RotationMatrix3D-3">
+<owl:NamedIndividual rdf:about="&jsk_map;RotationMatrix3D-4">
   <rdf:type rdf:resource="&knowrob;RotationMatrix3D"/>
-  <knowrob:m00 rdf:datatype="&xsd;float">1.0</knowrob:m00>
-  <knowrob:m01 rdf:datatype="&xsd;float">0.0</knowrob:m01>
-  <knowrob:m02 rdf:datatype="&xsd;float">0.0</knowrob:m02>
-  <knowrob:m03 rdf:datatype="&xsd;float">0.35</knowrob:m03>
-  <knowrob:m10 rdf:datatype="&xsd;float">0.0</knowrob:m10>
-  <knowrob:m11 rdf:datatype="&xsd;float">1.0</knowrob:m11>
-  <knowrob:m12 rdf:datatype="&xsd;float">0.0</knowrob:m12>
-  <knowrob:m13 rdf:datatype="&xsd;float">1.2</knowrob:m13>
-  <knowrob:m20 rdf:datatype="&xsd;float">0.0</knowrob:m20>
-  <knowrob:m21 rdf:datatype="&xsd;float">0.0</knowrob:m21>
-  <knowrob:m22 rdf:datatype="&xsd;float">1.0</knowrob:m22>
-  <knowrob:m23 rdf:datatype="&xsd;float">7.1</knowrob:m23>
+  <knowrob:m00 rdf:datatype="&xsd;float">1</knowrob:m00>
+  <knowrob:m01 rdf:datatype="&xsd;float">0</knowrob:m01>
+  <knowrob:m02 rdf:datatype="&xsd;float">0</knowrob:m02>
+  <knowrob:m03 rdf:datatype="&xsd;float">0.5</knowrob:m03>
+  <knowrob:m10 rdf:datatype="&xsd;float">0</knowrob:m10>
+  <knowrob:m11 rdf:datatype="&xsd;float">1</knowrob:m11>
+  <knowrob:m12 rdf:datatype="&xsd;float">0</knowrob:m12>
+  <knowrob:m13 rdf:datatype="&xsd;float">0.7</knowrob:m13>
+  <knowrob:m20 rdf:datatype="&xsd;float">0</knowrob:m20>
+  <knowrob:m21 rdf:datatype="&xsd;float">0</knowrob:m21>
+  <knowrob:m22 rdf:datatype="&xsd;float">1</knowrob:m22>
+  <knowrob:m23 rdf:datatype="&xsd;float">7.05</knowrob:m23>
   <knowrob:m30 rdf:datatype="&xsd;float">0</knowrob:m30>
   <knowrob:m31 rdf:datatype="&xsd;float">0</knowrob:m31>
   <knowrob:m32 rdf:datatype="&xsd;float">0</knowrob:m32>
@@ -133,37 +127,61 @@
 </owl:NamedIndividual>
 
 
-<owl:NamedIndividual rdf:about="http://www.jsk.t.u-tokyo.ac.jp/jsk_map.owl#SemanticMapPerception-4">
-  <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
-  <knowrob:objectActedOn rdf:resource="http://www.jsk.t.u-tokyo.ac.jp/jsk_map.owl#RoomInAConstruction-eng2-7f-73B2"/>
-  <knowrob:eventOccursAt rdf:resource="http://www.jsk.t.u-tokyo.ac.jp/jsk_map.owl#RotationMatrix3D-3"/>
-  <knowrob:startTime rdf:resource="http://www.jsk.t.u-tokyo.ac.jp/jsk_map.owl#timepoint_1308236028.49"/>
+<owl:NamedIndividual rdf:about="&jsk_map;RotationMatrix3D-5">
+  <rdf:type rdf:resource="&knowrob;RotationMatrix3D"/>
+  <knowrob:m00 rdf:datatype="&xsd;float">1</knowrob:m00>
+  <knowrob:m01 rdf:datatype="&xsd;float">0</knowrob:m01>
+  <knowrob:m02 rdf:datatype="&xsd;float">0</knowrob:m02>
+  <knowrob:m03 rdf:datatype="&xsd;float">0.0</knowrob:m03>
+  <knowrob:m10 rdf:datatype="&xsd;float">0</knowrob:m10>
+  <knowrob:m11 rdf:datatype="&xsd;float">1</knowrob:m11>
+  <knowrob:m12 rdf:datatype="&xsd;float">0</knowrob:m12>
+  <knowrob:m13 rdf:datatype="&xsd;float">0.7</knowrob:m13>
+  <knowrob:m20 rdf:datatype="&xsd;float">0</knowrob:m20>
+  <knowrob:m21 rdf:datatype="&xsd;float">0</knowrob:m21>
+  <knowrob:m22 rdf:datatype="&xsd;float">1</knowrob:m22>
+  <knowrob:m23 rdf:datatype="&xsd;float">7.05</knowrob:m23>
+  <knowrob:m30 rdf:datatype="&xsd;float">0</knowrob:m30>
+  <knowrob:m31 rdf:datatype="&xsd;float">0</knowrob:m31>
+  <knowrob:m32 rdf:datatype="&xsd;float">0</knowrob:m32>
+  <knowrob:m33 rdf:datatype="&xsd;float">1</knowrob:m33>
 </owl:NamedIndividual>
 
 
-<owl:NamedIndividual rdf:about="http://www.jsk.t.u-tokyo.ac.jp/jsk_map.owl#RoomInAConstruction-eng2-7f-73B1">
+<owl:NamedIndividual rdf:about="&jsk_map;SemanticMapPerception-6">
+  <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
+  <knowrob:objectActedOn rdf:resource="&jsk_map;RoomInAConstruction-eng2-7f-73B2"/>
+  <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-4"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1308501991.32"/>
+  <knowrob:frameParent rdf:resource="&jsk_map;LevelOfAConstruction-eng2-7f"/>
+  <knowrob:frameTransformation rdf:resource="&jsk_map;RotationMatrix3D-5"/>
+</owl:NamedIndividual>
+
+
+<owl:NamedIndividual rdf:about="&jsk_map;RoomInAConstruction-eng2-7f-73B1">
   <rdf:type rdf:resource="&knowrob;RoomInAConstruction"/>
   <knowrob:widthOfObject rdf:datatype="&xsd;float">0.7</knowrob:widthOfObject>
   <knowrob:depthOfObject rdf:datatype="&xsd;float">1.0</knowrob:depthOfObject>
-  <knowrob:heightOfObject rdf:datatype="&xsd;float">0.005</knowrob:heightOfObject>
-  <knowrob:describedInMap rdf:resource="http://www.jsk.t.u-tokyo.ac.jp/jsk_map.owl#SemanticEnvironmentMap-Building-eng2"/>
+  <knowrob:heightOfObject rdf:datatype="&xsd;float">0.004</knowrob:heightOfObject>
+  <knowrob:describedInMap rdf:resource="&jsk_map;SemanticEnvironmentMap-Building-eng2"/>
+  <knowrob:roomNumber rdf:datatype="&xsd;string">73B1</knowrob:roomNumber>
 </owl:NamedIndividual>
 
 
-<owl:NamedIndividual rdf:about="http://www.jsk.t.u-tokyo.ac.jp/jsk_map.owl#RotationMatrix3D-5">
+<owl:NamedIndividual rdf:about="&jsk_map;RotationMatrix3D-7">
   <rdf:type rdf:resource="&knowrob;RotationMatrix3D"/>
-  <knowrob:m00 rdf:datatype="&xsd;float">1.0</knowrob:m00>
-  <knowrob:m01 rdf:datatype="&xsd;float">0.0</knowrob:m01>
-  <knowrob:m02 rdf:datatype="&xsd;float">0.0</knowrob:m02>
-  <knowrob:m03 rdf:datatype="&xsd;float">0.35</knowrob:m03>
-  <knowrob:m10 rdf:datatype="&xsd;float">0.0</knowrob:m10>
-  <knowrob:m11 rdf:datatype="&xsd;float">1.0</knowrob:m11>
-  <knowrob:m12 rdf:datatype="&xsd;float">0.0</knowrob:m12>
-  <knowrob:m13 rdf:datatype="&xsd;float">0.45</knowrob:m13>
-  <knowrob:m20 rdf:datatype="&xsd;float">0.0</knowrob:m20>
-  <knowrob:m21 rdf:datatype="&xsd;float">0.0</knowrob:m21>
-  <knowrob:m22 rdf:datatype="&xsd;float">1.0</knowrob:m22>
-  <knowrob:m23 rdf:datatype="&xsd;float">7.1</knowrob:m23>
+  <knowrob:m00 rdf:datatype="&xsd;float">1</knowrob:m00>
+  <knowrob:m01 rdf:datatype="&xsd;float">0</knowrob:m01>
+  <knowrob:m02 rdf:datatype="&xsd;float">0</knowrob:m02>
+  <knowrob:m03 rdf:datatype="&xsd;float">0.5</knowrob:m03>
+  <knowrob:m10 rdf:datatype="&xsd;float">0</knowrob:m10>
+  <knowrob:m11 rdf:datatype="&xsd;float">1</knowrob:m11>
+  <knowrob:m12 rdf:datatype="&xsd;float">0</knowrob:m12>
+  <knowrob:m13 rdf:datatype="&xsd;float">-0.05</knowrob:m13>
+  <knowrob:m20 rdf:datatype="&xsd;float">0</knowrob:m20>
+  <knowrob:m21 rdf:datatype="&xsd;float">0</knowrob:m21>
+  <knowrob:m22 rdf:datatype="&xsd;float">1</knowrob:m22>
+  <knowrob:m23 rdf:datatype="&xsd;float">7.05</knowrob:m23>
   <knowrob:m30 rdf:datatype="&xsd;float">0</knowrob:m30>
   <knowrob:m31 rdf:datatype="&xsd;float">0</knowrob:m31>
   <knowrob:m32 rdf:datatype="&xsd;float">0</knowrob:m32>
@@ -171,37 +189,61 @@
 </owl:NamedIndividual>
 
 
-<owl:NamedIndividual rdf:about="http://www.jsk.t.u-tokyo.ac.jp/jsk_map.owl#SemanticMapPerception-6">
-  <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
-  <knowrob:objectActedOn rdf:resource="http://www.jsk.t.u-tokyo.ac.jp/jsk_map.owl#RoomInAConstruction-eng2-7f-73B1"/>
-  <knowrob:eventOccursAt rdf:resource="http://www.jsk.t.u-tokyo.ac.jp/jsk_map.owl#RotationMatrix3D-5"/>
-  <knowrob:startTime rdf:resource="http://www.jsk.t.u-tokyo.ac.jp/jsk_map.owl#timepoint_1308236028.49"/>
+<owl:NamedIndividual rdf:about="&jsk_map;RotationMatrix3D-8">
+  <rdf:type rdf:resource="&knowrob;RotationMatrix3D"/>
+  <knowrob:m00 rdf:datatype="&xsd;float">1</knowrob:m00>
+  <knowrob:m01 rdf:datatype="&xsd;float">0</knowrob:m01>
+  <knowrob:m02 rdf:datatype="&xsd;float">0</knowrob:m02>
+  <knowrob:m03 rdf:datatype="&xsd;float">0.0</knowrob:m03>
+  <knowrob:m10 rdf:datatype="&xsd;float">0</knowrob:m10>
+  <knowrob:m11 rdf:datatype="&xsd;float">1</knowrob:m11>
+  <knowrob:m12 rdf:datatype="&xsd;float">0</knowrob:m12>
+  <knowrob:m13 rdf:datatype="&xsd;float">-0.05</knowrob:m13>
+  <knowrob:m20 rdf:datatype="&xsd;float">0</knowrob:m20>
+  <knowrob:m21 rdf:datatype="&xsd;float">0</knowrob:m21>
+  <knowrob:m22 rdf:datatype="&xsd;float">1</knowrob:m22>
+  <knowrob:m23 rdf:datatype="&xsd;float">7.05</knowrob:m23>
+  <knowrob:m30 rdf:datatype="&xsd;float">0</knowrob:m30>
+  <knowrob:m31 rdf:datatype="&xsd;float">0</knowrob:m31>
+  <knowrob:m32 rdf:datatype="&xsd;float">0</knowrob:m32>
+  <knowrob:m33 rdf:datatype="&xsd;float">1</knowrob:m33>
 </owl:NamedIndividual>
 
 
-<owl:NamedIndividual rdf:about="http://www.jsk.t.u-tokyo.ac.jp/jsk_map.owl#RoomInAConstruction-eng2-7f-73A2">
+<owl:NamedIndividual rdf:about="&jsk_map;SemanticMapPerception-9">
+  <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
+  <knowrob:objectActedOn rdf:resource="&jsk_map;RoomInAConstruction-eng2-7f-73B1"/>
+  <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-7"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1308501991.32"/>
+  <knowrob:frameParent rdf:resource="&jsk_map;LevelOfAConstruction-eng2-7f"/>
+  <knowrob:frameTransformation rdf:resource="&jsk_map;RotationMatrix3D-8"/>
+</owl:NamedIndividual>
+
+
+<owl:NamedIndividual rdf:about="&jsk_map;RoomInAConstruction-eng2-7f-73A2">
   <rdf:type rdf:resource="&knowrob;RoomInAConstruction"/>
   <knowrob:widthOfObject rdf:datatype="&xsd;float">0.34</knowrob:widthOfObject>
   <knowrob:depthOfObject rdf:datatype="&xsd;float">0.9</knowrob:depthOfObject>
-  <knowrob:heightOfObject rdf:datatype="&xsd;float">0.005</knowrob:heightOfObject>
-  <knowrob:describedInMap rdf:resource="http://www.jsk.t.u-tokyo.ac.jp/jsk_map.owl#SemanticEnvironmentMap-Building-eng2"/>
+  <knowrob:heightOfObject rdf:datatype="&xsd;float">0.004</knowrob:heightOfObject>
+  <knowrob:describedInMap rdf:resource="&jsk_map;SemanticEnvironmentMap-Building-eng2"/>
+  <knowrob:roomNumber rdf:datatype="&xsd;string">73A2</knowrob:roomNumber>
 </owl:NamedIndividual>
 
 
-<owl:NamedIndividual rdf:about="http://www.jsk.t.u-tokyo.ac.jp/jsk_map.owl#RotationMatrix3D-7">
+<owl:NamedIndividual rdf:about="&jsk_map;RotationMatrix3D-10">
   <rdf:type rdf:resource="&knowrob;RotationMatrix3D"/>
-  <knowrob:m00 rdf:datatype="&xsd;float">0.98</knowrob:m00>
-  <knowrob:m01 rdf:datatype="&xsd;float">0.0</knowrob:m01>
-  <knowrob:m02 rdf:datatype="&xsd;float">0.0</knowrob:m02>
-  <knowrob:m03 rdf:datatype="&xsd;float">-0.05</knowrob:m03>
-  <knowrob:m10 rdf:datatype="&xsd;float">0.0</knowrob:m10>
-  <knowrob:m11 rdf:datatype="&xsd;float">0.98</knowrob:m11>
-  <knowrob:m12 rdf:datatype="&xsd;float">0.0</knowrob:m12>
-  <knowrob:m13 rdf:datatype="&xsd;float">0.72</knowrob:m13>
-  <knowrob:m20 rdf:datatype="&xsd;float">0.0</knowrob:m20>
-  <knowrob:m21 rdf:datatype="&xsd;float">0.0</knowrob:m21>
-  <knowrob:m22 rdf:datatype="&xsd;float">1.0</knowrob:m22>
-  <knowrob:m23 rdf:datatype="&xsd;float">7.1</knowrob:m23>
+  <knowrob:m00 rdf:datatype="&xsd;float">-1</knowrob:m00>
+  <knowrob:m01 rdf:datatype="&xsd;float">0</knowrob:m01>
+  <knowrob:m02 rdf:datatype="&xsd;float">0</knowrob:m02>
+  <knowrob:m03 rdf:datatype="&xsd;float">-0.67</knowrob:m03>
+  <knowrob:m10 rdf:datatype="&xsd;float">0</knowrob:m10>
+  <knowrob:m11 rdf:datatype="&xsd;float">-1</knowrob:m11>
+  <knowrob:m12 rdf:datatype="&xsd;float">0</knowrob:m12>
+  <knowrob:m13 rdf:datatype="&xsd;float">0.17</knowrob:m13>
+  <knowrob:m20 rdf:datatype="&xsd;float">0</knowrob:m20>
+  <knowrob:m21 rdf:datatype="&xsd;float">0</knowrob:m21>
+  <knowrob:m22 rdf:datatype="&xsd;float">1</knowrob:m22>
+  <knowrob:m23 rdf:datatype="&xsd;float">7.05</knowrob:m23>
   <knowrob:m30 rdf:datatype="&xsd;float">0</knowrob:m30>
   <knowrob:m31 rdf:datatype="&xsd;float">0</knowrob:m31>
   <knowrob:m32 rdf:datatype="&xsd;float">0</knowrob:m32>
@@ -209,37 +251,61 @@
 </owl:NamedIndividual>
 
 
-<owl:NamedIndividual rdf:about="http://www.jsk.t.u-tokyo.ac.jp/jsk_map.owl#SemanticMapPerception-8">
-  <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
-  <knowrob:objectActedOn rdf:resource="http://www.jsk.t.u-tokyo.ac.jp/jsk_map.owl#RoomInAConstruction-eng2-7f-73A2"/>
-  <knowrob:eventOccursAt rdf:resource="http://www.jsk.t.u-tokyo.ac.jp/jsk_map.owl#RotationMatrix3D-7"/>
-  <knowrob:startTime rdf:resource="http://www.jsk.t.u-tokyo.ac.jp/jsk_map.owl#timepoint_1308236028.49"/>
+<owl:NamedIndividual rdf:about="&jsk_map;RotationMatrix3D-11">
+  <rdf:type rdf:resource="&knowrob;RotationMatrix3D"/>
+  <knowrob:m00 rdf:datatype="&xsd;float">-1</knowrob:m00>
+  <knowrob:m01 rdf:datatype="&xsd;float">0</knowrob:m01>
+  <knowrob:m02 rdf:datatype="&xsd;float">0</knowrob:m02>
+  <knowrob:m03 rdf:datatype="&xsd;float">-0.22</knowrob:m03>
+  <knowrob:m10 rdf:datatype="&xsd;float">0</knowrob:m10>
+  <knowrob:m11 rdf:datatype="&xsd;float">-1</knowrob:m11>
+  <knowrob:m12 rdf:datatype="&xsd;float">0</knowrob:m12>
+  <knowrob:m13 rdf:datatype="&xsd;float">0.27</knowrob:m13>
+  <knowrob:m20 rdf:datatype="&xsd;float">0</knowrob:m20>
+  <knowrob:m21 rdf:datatype="&xsd;float">0</knowrob:m21>
+  <knowrob:m22 rdf:datatype="&xsd;float">1</knowrob:m22>
+  <knowrob:m23 rdf:datatype="&xsd;float">7.05</knowrob:m23>
+  <knowrob:m30 rdf:datatype="&xsd;float">0</knowrob:m30>
+  <knowrob:m31 rdf:datatype="&xsd;float">0</knowrob:m31>
+  <knowrob:m32 rdf:datatype="&xsd;float">0</knowrob:m32>
+  <knowrob:m33 rdf:datatype="&xsd;float">1</knowrob:m33>
 </owl:NamedIndividual>
 
 
-<owl:NamedIndividual rdf:about="http://www.jsk.t.u-tokyo.ac.jp/jsk_map.owl#RoomInAConstruction-eng2-7f-73A3">
+<owl:NamedIndividual rdf:about="&jsk_map;SemanticMapPerception-12">
+  <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
+  <knowrob:objectActedOn rdf:resource="&jsk_map;RoomInAConstruction-eng2-7f-73A2"/>
+  <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-10"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1308501991.32"/>
+  <knowrob:frameParent rdf:resource="&jsk_map;LevelOfAConstruction-eng2-7f"/>
+  <knowrob:frameTransformation rdf:resource="&jsk_map;RotationMatrix3D-11"/>
+</owl:NamedIndividual>
+
+
+<owl:NamedIndividual rdf:about="&jsk_map;RoomInAConstruction-eng2-7f-73A3">
   <rdf:type rdf:resource="&knowrob;RoomInAConstruction"/>
   <knowrob:widthOfObject rdf:datatype="&xsd;float">0.34</knowrob:widthOfObject>
   <knowrob:depthOfObject rdf:datatype="&xsd;float">0.9</knowrob:depthOfObject>
-  <knowrob:heightOfObject rdf:datatype="&xsd;float">0.005</knowrob:heightOfObject>
-  <knowrob:describedInMap rdf:resource="http://www.jsk.t.u-tokyo.ac.jp/jsk_map.owl#SemanticEnvironmentMap-Building-eng2"/>
+  <knowrob:heightOfObject rdf:datatype="&xsd;float">0.004</knowrob:heightOfObject>
+  <knowrob:describedInMap rdf:resource="&jsk_map;SemanticEnvironmentMap-Building-eng2"/>
+  <knowrob:roomNumber rdf:datatype="&xsd;string">73A3</knowrob:roomNumber>
 </owl:NamedIndividual>
 
 
-<owl:NamedIndividual rdf:about="http://www.jsk.t.u-tokyo.ac.jp/jsk_map.owl#RotationMatrix3D-9">
+<owl:NamedIndividual rdf:about="&jsk_map;RotationMatrix3D-13">
   <rdf:type rdf:resource="&knowrob;RotationMatrix3D"/>
-  <knowrob:m00 rdf:datatype="&xsd;float">0.98</knowrob:m00>
-  <knowrob:m01 rdf:datatype="&xsd;float">0.0</knowrob:m01>
-  <knowrob:m02 rdf:datatype="&xsd;float">0.0</knowrob:m02>
-  <knowrob:m03 rdf:datatype="&xsd;float">-0.05</knowrob:m03>
-  <knowrob:m10 rdf:datatype="&xsd;float">0.0</knowrob:m10>
-  <knowrob:m11 rdf:datatype="&xsd;float">0.98</knowrob:m11>
-  <knowrob:m12 rdf:datatype="&xsd;float">0.0</knowrob:m12>
-  <knowrob:m13 rdf:datatype="&xsd;float">1.07</knowrob:m13>
-  <knowrob:m20 rdf:datatype="&xsd;float">0.0</knowrob:m20>
-  <knowrob:m21 rdf:datatype="&xsd;float">0.0</knowrob:m21>
-  <knowrob:m22 rdf:datatype="&xsd;float">1.0</knowrob:m22>
-  <knowrob:m23 rdf:datatype="&xsd;float">7.1</knowrob:m23>
+  <knowrob:m00 rdf:datatype="&xsd;float">-1</knowrob:m00>
+  <knowrob:m01 rdf:datatype="&xsd;float">0</knowrob:m01>
+  <knowrob:m02 rdf:datatype="&xsd;float">0</knowrob:m02>
+  <knowrob:m03 rdf:datatype="&xsd;float">-0.67</knowrob:m03>
+  <knowrob:m10 rdf:datatype="&xsd;float">0</knowrob:m10>
+  <knowrob:m11 rdf:datatype="&xsd;float">-1</knowrob:m11>
+  <knowrob:m12 rdf:datatype="&xsd;float">0</knowrob:m12>
+  <knowrob:m13 rdf:datatype="&xsd;float">0.52</knowrob:m13>
+  <knowrob:m20 rdf:datatype="&xsd;float">0</knowrob:m20>
+  <knowrob:m21 rdf:datatype="&xsd;float">0</knowrob:m21>
+  <knowrob:m22 rdf:datatype="&xsd;float">1</knowrob:m22>
+  <knowrob:m23 rdf:datatype="&xsd;float">7.05</knowrob:m23>
   <knowrob:m30 rdf:datatype="&xsd;float">0</knowrob:m30>
   <knowrob:m31 rdf:datatype="&xsd;float">0</knowrob:m31>
   <knowrob:m32 rdf:datatype="&xsd;float">0</knowrob:m32>
@@ -247,37 +313,61 @@
 </owl:NamedIndividual>
 
 
-<owl:NamedIndividual rdf:about="http://www.jsk.t.u-tokyo.ac.jp/jsk_map.owl#SemanticMapPerception-10">
-  <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
-  <knowrob:objectActedOn rdf:resource="http://www.jsk.t.u-tokyo.ac.jp/jsk_map.owl#RoomInAConstruction-eng2-7f-73A3"/>
-  <knowrob:eventOccursAt rdf:resource="http://www.jsk.t.u-tokyo.ac.jp/jsk_map.owl#RotationMatrix3D-9"/>
-  <knowrob:startTime rdf:resource="http://www.jsk.t.u-tokyo.ac.jp/jsk_map.owl#timepoint_1308236028.49"/>
+<owl:NamedIndividual rdf:about="&jsk_map;RotationMatrix3D-14">
+  <rdf:type rdf:resource="&knowrob;RotationMatrix3D"/>
+  <knowrob:m00 rdf:datatype="&xsd;float">-1</knowrob:m00>
+  <knowrob:m01 rdf:datatype="&xsd;float">0</knowrob:m01>
+  <knowrob:m02 rdf:datatype="&xsd;float">0</knowrob:m02>
+  <knowrob:m03 rdf:datatype="&xsd;float">-0.22</knowrob:m03>
+  <knowrob:m10 rdf:datatype="&xsd;float">0</knowrob:m10>
+  <knowrob:m11 rdf:datatype="&xsd;float">-1</knowrob:m11>
+  <knowrob:m12 rdf:datatype="&xsd;float">0</knowrob:m12>
+  <knowrob:m13 rdf:datatype="&xsd;float">0.62</knowrob:m13>
+  <knowrob:m20 rdf:datatype="&xsd;float">0</knowrob:m20>
+  <knowrob:m21 rdf:datatype="&xsd;float">0</knowrob:m21>
+  <knowrob:m22 rdf:datatype="&xsd;float">1</knowrob:m22>
+  <knowrob:m23 rdf:datatype="&xsd;float">7.05</knowrob:m23>
+  <knowrob:m30 rdf:datatype="&xsd;float">0</knowrob:m30>
+  <knowrob:m31 rdf:datatype="&xsd;float">0</knowrob:m31>
+  <knowrob:m32 rdf:datatype="&xsd;float">0</knowrob:m32>
+  <knowrob:m33 rdf:datatype="&xsd;float">1</knowrob:m33>
 </owl:NamedIndividual>
 
 
-<owl:NamedIndividual rdf:about="http://www.jsk.t.u-tokyo.ac.jp/jsk_map.owl#RoomInAConstruction-eng2-7f-73A1">
+<owl:NamedIndividual rdf:about="&jsk_map;SemanticMapPerception-15">
+  <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
+  <knowrob:objectActedOn rdf:resource="&jsk_map;RoomInAConstruction-eng2-7f-73A3"/>
+  <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-13"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1308501991.32"/>
+  <knowrob:frameParent rdf:resource="&jsk_map;LevelOfAConstruction-eng2-7f"/>
+  <knowrob:frameTransformation rdf:resource="&jsk_map;RotationMatrix3D-14"/>
+</owl:NamedIndividual>
+
+
+<owl:NamedIndividual rdf:about="&jsk_map;RoomInAConstruction-eng2-7f-73A1">
   <rdf:type rdf:resource="&knowrob;RoomInAConstruction"/>
   <knowrob:widthOfObject rdf:datatype="&xsd;float">0.34</knowrob:widthOfObject>
   <knowrob:depthOfObject rdf:datatype="&xsd;float">0.9</knowrob:depthOfObject>
-  <knowrob:heightOfObject rdf:datatype="&xsd;float">0.005</knowrob:heightOfObject>
-  <knowrob:describedInMap rdf:resource="http://www.jsk.t.u-tokyo.ac.jp/jsk_map.owl#SemanticEnvironmentMap-Building-eng2"/>
+  <knowrob:heightOfObject rdf:datatype="&xsd;float">0.004</knowrob:heightOfObject>
+  <knowrob:describedInMap rdf:resource="&jsk_map;SemanticEnvironmentMap-Building-eng2"/>
+  <knowrob:roomNumber rdf:datatype="&xsd;string">73A1</knowrob:roomNumber>
 </owl:NamedIndividual>
 
 
-<owl:NamedIndividual rdf:about="http://www.jsk.t.u-tokyo.ac.jp/jsk_map.owl#RotationMatrix3D-11">
+<owl:NamedIndividual rdf:about="&jsk_map;RotationMatrix3D-16">
   <rdf:type rdf:resource="&knowrob;RotationMatrix3D"/>
-  <knowrob:m00 rdf:datatype="&xsd;float">0.98</knowrob:m00>
-  <knowrob:m01 rdf:datatype="&xsd;float">0.0</knowrob:m01>
-  <knowrob:m02 rdf:datatype="&xsd;float">0.0</knowrob:m02>
-  <knowrob:m03 rdf:datatype="&xsd;float">-0.05</knowrob:m03>
-  <knowrob:m10 rdf:datatype="&xsd;float">0.0</knowrob:m10>
-  <knowrob:m11 rdf:datatype="&xsd;float">0.98</knowrob:m11>
-  <knowrob:m12 rdf:datatype="&xsd;float">0.0</knowrob:m12>
-  <knowrob:m13 rdf:datatype="&xsd;float">0.37</knowrob:m13>
-  <knowrob:m20 rdf:datatype="&xsd;float">0.0</knowrob:m20>
-  <knowrob:m21 rdf:datatype="&xsd;float">0.0</knowrob:m21>
-  <knowrob:m22 rdf:datatype="&xsd;float">1.0</knowrob:m22>
-  <knowrob:m23 rdf:datatype="&xsd;float">7.1</knowrob:m23>
+  <knowrob:m00 rdf:datatype="&xsd;float">-1</knowrob:m00>
+  <knowrob:m01 rdf:datatype="&xsd;float">0</knowrob:m01>
+  <knowrob:m02 rdf:datatype="&xsd;float">0</knowrob:m02>
+  <knowrob:m03 rdf:datatype="&xsd;float">-0.67</knowrob:m03>
+  <knowrob:m10 rdf:datatype="&xsd;float">0</knowrob:m10>
+  <knowrob:m11 rdf:datatype="&xsd;float">-1</knowrob:m11>
+  <knowrob:m12 rdf:datatype="&xsd;float">0</knowrob:m12>
+  <knowrob:m13 rdf:datatype="&xsd;float">-0.18</knowrob:m13>
+  <knowrob:m20 rdf:datatype="&xsd;float">0</knowrob:m20>
+  <knowrob:m21 rdf:datatype="&xsd;float">0</knowrob:m21>
+  <knowrob:m22 rdf:datatype="&xsd;float">1</knowrob:m22>
+  <knowrob:m23 rdf:datatype="&xsd;float">7.05</knowrob:m23>
   <knowrob:m30 rdf:datatype="&xsd;float">0</knowrob:m30>
   <knowrob:m31 rdf:datatype="&xsd;float">0</knowrob:m31>
   <knowrob:m32 rdf:datatype="&xsd;float">0</knowrob:m32>
@@ -285,37 +375,61 @@
 </owl:NamedIndividual>
 
 
-<owl:NamedIndividual rdf:about="http://www.jsk.t.u-tokyo.ac.jp/jsk_map.owl#SemanticMapPerception-12">
-  <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
-  <knowrob:objectActedOn rdf:resource="http://www.jsk.t.u-tokyo.ac.jp/jsk_map.owl#RoomInAConstruction-eng2-7f-73A1"/>
-  <knowrob:eventOccursAt rdf:resource="http://www.jsk.t.u-tokyo.ac.jp/jsk_map.owl#RotationMatrix3D-11"/>
-  <knowrob:startTime rdf:resource="http://www.jsk.t.u-tokyo.ac.jp/jsk_map.owl#timepoint_1308236028.49"/>
+<owl:NamedIndividual rdf:about="&jsk_map;RotationMatrix3D-17">
+  <rdf:type rdf:resource="&knowrob;RotationMatrix3D"/>
+  <knowrob:m00 rdf:datatype="&xsd;float">-1</knowrob:m00>
+  <knowrob:m01 rdf:datatype="&xsd;float">0</knowrob:m01>
+  <knowrob:m02 rdf:datatype="&xsd;float">0</knowrob:m02>
+  <knowrob:m03 rdf:datatype="&xsd;float">-0.22</knowrob:m03>
+  <knowrob:m10 rdf:datatype="&xsd;float">0</knowrob:m10>
+  <knowrob:m11 rdf:datatype="&xsd;float">-1</knowrob:m11>
+  <knowrob:m12 rdf:datatype="&xsd;float">0</knowrob:m12>
+  <knowrob:m13 rdf:datatype="&xsd;float">-0.08</knowrob:m13>
+  <knowrob:m20 rdf:datatype="&xsd;float">0</knowrob:m20>
+  <knowrob:m21 rdf:datatype="&xsd;float">0</knowrob:m21>
+  <knowrob:m22 rdf:datatype="&xsd;float">1</knowrob:m22>
+  <knowrob:m23 rdf:datatype="&xsd;float">7.05</knowrob:m23>
+  <knowrob:m30 rdf:datatype="&xsd;float">0</knowrob:m30>
+  <knowrob:m31 rdf:datatype="&xsd;float">0</knowrob:m31>
+  <knowrob:m32 rdf:datatype="&xsd;float">0</knowrob:m32>
+  <knowrob:m33 rdf:datatype="&xsd;float">1</knowrob:m33>
 </owl:NamedIndividual>
 
 
-<owl:NamedIndividual rdf:about="http://www.jsk.t.u-tokyo.ac.jp/jsk_map.owl#RoomInAConstruction-eng2-7f-73A4">
+<owl:NamedIndividual rdf:about="&jsk_map;SemanticMapPerception-18">
+  <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
+  <knowrob:objectActedOn rdf:resource="&jsk_map;RoomInAConstruction-eng2-7f-73A1"/>
+  <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-16"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1308501991.32"/>
+  <knowrob:frameParent rdf:resource="&jsk_map;LevelOfAConstruction-eng2-7f"/>
+  <knowrob:frameTransformation rdf:resource="&jsk_map;RotationMatrix3D-17"/>
+</owl:NamedIndividual>
+
+
+<owl:NamedIndividual rdf:about="&jsk_map;RoomInAConstruction-eng2-7f-73A4">
   <rdf:type rdf:resource="&knowrob;RoomInAConstruction"/>
   <knowrob:widthOfObject rdf:datatype="&xsd;float">0.39</knowrob:widthOfObject>
   <knowrob:depthOfObject rdf:datatype="&xsd;float">0.9</knowrob:depthOfObject>
-  <knowrob:heightOfObject rdf:datatype="&xsd;float">0.005</knowrob:heightOfObject>
-  <knowrob:describedInMap rdf:resource="http://www.jsk.t.u-tokyo.ac.jp/jsk_map.owl#SemanticEnvironmentMap-Building-eng2"/>
+  <knowrob:heightOfObject rdf:datatype="&xsd;float">0.004</knowrob:heightOfObject>
+  <knowrob:describedInMap rdf:resource="&jsk_map;SemanticEnvironmentMap-Building-eng2"/>
+  <knowrob:roomNumber rdf:datatype="&xsd;string">73A4</knowrob:roomNumber>
 </owl:NamedIndividual>
 
 
-<owl:NamedIndividual rdf:about="http://www.jsk.t.u-tokyo.ac.jp/jsk_map.owl#RotationMatrix3D-13">
+<owl:NamedIndividual rdf:about="&jsk_map;RotationMatrix3D-19">
   <rdf:type rdf:resource="&knowrob;RotationMatrix3D"/>
-  <knowrob:m00 rdf:datatype="&xsd;float">0.98</knowrob:m00>
-  <knowrob:m01 rdf:datatype="&xsd;float">0.0</knowrob:m01>
-  <knowrob:m02 rdf:datatype="&xsd;float">0.0</knowrob:m02>
-  <knowrob:m03 rdf:datatype="&xsd;float">-0.025</knowrob:m03>
-  <knowrob:m10 rdf:datatype="&xsd;float">0.0</knowrob:m10>
-  <knowrob:m11 rdf:datatype="&xsd;float">0.98</knowrob:m11>
-  <knowrob:m12 rdf:datatype="&xsd;float">0.0</knowrob:m12>
-  <knowrob:m13 rdf:datatype="&xsd;float">1.42</knowrob:m13>
-  <knowrob:m20 rdf:datatype="&xsd;float">0.0</knowrob:m20>
-  <knowrob:m21 rdf:datatype="&xsd;float">0.0</knowrob:m21>
-  <knowrob:m22 rdf:datatype="&xsd;float">1.0</knowrob:m22>
-  <knowrob:m23 rdf:datatype="&xsd;float">7.1</knowrob:m23>
+  <knowrob:m00 rdf:datatype="&xsd;float">-1</knowrob:m00>
+  <knowrob:m01 rdf:datatype="&xsd;float">0</knowrob:m01>
+  <knowrob:m02 rdf:datatype="&xsd;float">0</knowrob:m02>
+  <knowrob:m03 rdf:datatype="&xsd;float">-0.67</knowrob:m03>
+  <knowrob:m10 rdf:datatype="&xsd;float">0</knowrob:m10>
+  <knowrob:m11 rdf:datatype="&xsd;float">-1</knowrob:m11>
+  <knowrob:m12 rdf:datatype="&xsd;float">0</knowrob:m12>
+  <knowrob:m13 rdf:datatype="&xsd;float">0.895</knowrob:m13>
+  <knowrob:m20 rdf:datatype="&xsd;float">0</knowrob:m20>
+  <knowrob:m21 rdf:datatype="&xsd;float">0</knowrob:m21>
+  <knowrob:m22 rdf:datatype="&xsd;float">1</knowrob:m22>
+  <knowrob:m23 rdf:datatype="&xsd;float">7.05</knowrob:m23>
   <knowrob:m30 rdf:datatype="&xsd;float">0</knowrob:m30>
   <knowrob:m31 rdf:datatype="&xsd;float">0</knowrob:m31>
   <knowrob:m32 rdf:datatype="&xsd;float">0</knowrob:m32>
@@ -323,37 +437,60 @@
 </owl:NamedIndividual>
 
 
-<owl:NamedIndividual rdf:about="http://www.jsk.t.u-tokyo.ac.jp/jsk_map.owl#SemanticMapPerception-14">
-  <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
-  <knowrob:objectActedOn rdf:resource="http://www.jsk.t.u-tokyo.ac.jp/jsk_map.owl#RoomInAConstruction-eng2-7f-73A4"/>
-  <knowrob:eventOccursAt rdf:resource="http://www.jsk.t.u-tokyo.ac.jp/jsk_map.owl#RotationMatrix3D-13"/>
-  <knowrob:startTime rdf:resource="http://www.jsk.t.u-tokyo.ac.jp/jsk_map.owl#timepoint_1308236028.49"/>
+<owl:NamedIndividual rdf:about="&jsk_map;RotationMatrix3D-20">
+  <rdf:type rdf:resource="&knowrob;RotationMatrix3D"/>
+  <knowrob:m00 rdf:datatype="&xsd;float">-1</knowrob:m00>
+  <knowrob:m01 rdf:datatype="&xsd;float">0</knowrob:m01>
+  <knowrob:m02 rdf:datatype="&xsd;float">0</knowrob:m02>
+  <knowrob:m03 rdf:datatype="&xsd;float">-0.22</knowrob:m03>
+  <knowrob:m10 rdf:datatype="&xsd;float">0</knowrob:m10>
+  <knowrob:m11 rdf:datatype="&xsd;float">-1</knowrob:m11>
+  <knowrob:m12 rdf:datatype="&xsd;float">0</knowrob:m12>
+  <knowrob:m13 rdf:datatype="&xsd;float">0.97</knowrob:m13>
+  <knowrob:m20 rdf:datatype="&xsd;float">0</knowrob:m20>
+  <knowrob:m21 rdf:datatype="&xsd;float">0</knowrob:m21>
+  <knowrob:m22 rdf:datatype="&xsd;float">1</knowrob:m22>
+  <knowrob:m23 rdf:datatype="&xsd;float">7.05</knowrob:m23>
+  <knowrob:m30 rdf:datatype="&xsd;float">0</knowrob:m30>
+  <knowrob:m31 rdf:datatype="&xsd;float">0</knowrob:m31>
+  <knowrob:m32 rdf:datatype="&xsd;float">0</knowrob:m32>
+  <knowrob:m33 rdf:datatype="&xsd;float">1</knowrob:m33>
 </owl:NamedIndividual>
 
 
-<owl:NamedIndividual rdf:about="http://www.jsk.t.u-tokyo.ac.jp/jsk_map.owl#LevelOfAConstruction-eng2-2f">
+<owl:NamedIndividual rdf:about="&jsk_map;SemanticMapPerception-21">
+  <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
+  <knowrob:objectActedOn rdf:resource="&jsk_map;RoomInAConstruction-eng2-7f-73A4"/>
+  <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-19"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1308501991.32"/>
+  <knowrob:frameParent rdf:resource="&jsk_map;LevelOfAConstruction-eng2-7f"/>
+  <knowrob:frameTransformation rdf:resource="&jsk_map;RotationMatrix3D-20"/>
+</owl:NamedIndividual>
+
+
+<owl:NamedIndividual rdf:about="&jsk_map;LevelOfAConstruction-eng2-2f">
   <rdf:type rdf:resource="&knowrob;LevelOfAConstruction"/>
   <knowrob:widthOfObject rdf:datatype="&xsd;float">6.0</knowrob:widthOfObject>
   <knowrob:depthOfObject rdf:datatype="&xsd;float">6.0</knowrob:depthOfObject>
-  <knowrob:heightOfObject rdf:datatype="&xsd;float">0.005</knowrob:heightOfObject>
-  <knowrob:describedInMap rdf:resource="http://www.jsk.t.u-tokyo.ac.jp/jsk_map.owl#SemanticEnvironmentMap-Building-eng2"/>
-  <knowrob:floorNumber rdf:datatype="&xsd;int">2</knowrob:floorNumber>
+  <knowrob:heightOfObject rdf:datatype="&xsd;float">0.004</knowrob:heightOfObject>
+  <knowrob:describedInMap rdf:resource="&jsk_map;SemanticEnvironmentMap-Building-eng2"/>
+  <knowrob:floorNumber rdf:datatype="&xsd;string">2</knowrob:floorNumber>
 </owl:NamedIndividual>
 
 
-<owl:NamedIndividual rdf:about="http://www.jsk.t.u-tokyo.ac.jp/jsk_map.owl#RotationMatrix3D-15">
+<owl:NamedIndividual rdf:about="&jsk_map;RotationMatrix3D-22">
   <rdf:type rdf:resource="&knowrob;RotationMatrix3D"/>
-  <knowrob:m00 rdf:datatype="&xsd;float">1.0</knowrob:m00>
-  <knowrob:m01 rdf:datatype="&xsd;float">0.0</knowrob:m01>
-  <knowrob:m02 rdf:datatype="&xsd;float">0.0</knowrob:m02>
-  <knowrob:m03 rdf:datatype="&xsd;float">3.0</knowrob:m03>
-  <knowrob:m10 rdf:datatype="&xsd;float">0.0</knowrob:m10>
-  <knowrob:m11 rdf:datatype="&xsd;float">1.0</knowrob:m11>
-  <knowrob:m12 rdf:datatype="&xsd;float">0.0</knowrob:m12>
-  <knowrob:m13 rdf:datatype="&xsd;float">3.0</knowrob:m13>
-  <knowrob:m20 rdf:datatype="&xsd;float">0.0</knowrob:m20>
-  <knowrob:m21 rdf:datatype="&xsd;float">0.0</knowrob:m21>
-  <knowrob:m22 rdf:datatype="&xsd;float">1.0</knowrob:m22>
+  <knowrob:m00 rdf:datatype="&xsd;float">1</knowrob:m00>
+  <knowrob:m01 rdf:datatype="&xsd;float">0</knowrob:m01>
+  <knowrob:m02 rdf:datatype="&xsd;float">0</knowrob:m02>
+  <knowrob:m03 rdf:datatype="&xsd;float">1.7</knowrob:m03>
+  <knowrob:m10 rdf:datatype="&xsd;float">0</knowrob:m10>
+  <knowrob:m11 rdf:datatype="&xsd;float">1</knowrob:m11>
+  <knowrob:m12 rdf:datatype="&xsd;float">0</knowrob:m12>
+  <knowrob:m13 rdf:datatype="&xsd;float">-1.85</knowrob:m13>
+  <knowrob:m20 rdf:datatype="&xsd;float">0</knowrob:m20>
+  <knowrob:m21 rdf:datatype="&xsd;float">0</knowrob:m21>
+  <knowrob:m22 rdf:datatype="&xsd;float">1</knowrob:m22>
   <knowrob:m23 rdf:datatype="&xsd;float">2.0</knowrob:m23>
   <knowrob:m30 rdf:datatype="&xsd;float">0</knowrob:m30>
   <knowrob:m31 rdf:datatype="&xsd;float">0</knowrob:m31>
@@ -362,43 +499,66 @@
 </owl:NamedIndividual>
 
 
-<owl:NamedIndividual rdf:about="http://www.jsk.t.u-tokyo.ac.jp/jsk_map.owl#SemanticMapPerception-16">
-  <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
-  <knowrob:objectActedOn rdf:resource="http://www.jsk.t.u-tokyo.ac.jp/jsk_map.owl#LevelOfAConstruction-eng2-2f"/>
-  <knowrob:eventOccursAt rdf:resource="http://www.jsk.t.u-tokyo.ac.jp/jsk_map.owl#RotationMatrix3D-15"/>
-  <knowrob:startTime rdf:resource="http://www.jsk.t.u-tokyo.ac.jp/jsk_map.owl#timepoint_1308236028.49"/>
+<owl:NamedIndividual rdf:about="&jsk_map;RotationMatrix3D-23">
+  <rdf:type rdf:resource="&knowrob;RotationMatrix3D"/>
+  <knowrob:m00 rdf:datatype="&xsd;float">1</knowrob:m00>
+  <knowrob:m01 rdf:datatype="&xsd;float">0</knowrob:m01>
+  <knowrob:m02 rdf:datatype="&xsd;float">0</knowrob:m02>
+  <knowrob:m03 rdf:datatype="&xsd;float">0.0</knowrob:m03>
+  <knowrob:m10 rdf:datatype="&xsd;float">0</knowrob:m10>
+  <knowrob:m11 rdf:datatype="&xsd;float">1</knowrob:m11>
+  <knowrob:m12 rdf:datatype="&xsd;float">0</knowrob:m12>
+  <knowrob:m13 rdf:datatype="&xsd;float">0.0</knowrob:m13>
+  <knowrob:m20 rdf:datatype="&xsd;float">0</knowrob:m20>
+  <knowrob:m21 rdf:datatype="&xsd;float">0</knowrob:m21>
+  <knowrob:m22 rdf:datatype="&xsd;float">1</knowrob:m22>
+  <knowrob:m23 rdf:datatype="&xsd;float">2.0</knowrob:m23>
+  <knowrob:m30 rdf:datatype="&xsd;float">0</knowrob:m30>
+  <knowrob:m31 rdf:datatype="&xsd;float">0</knowrob:m31>
+  <knowrob:m32 rdf:datatype="&xsd;float">0</knowrob:m32>
+  <knowrob:m33 rdf:datatype="&xsd;float">1</knowrob:m33>
 </owl:NamedIndividual>
 
 
-<owl:NamedIndividual rdf:about="http://www.jsk.t.u-tokyo.ac.jp/jsk_map.owl#LevelOfAConstruction-eng2-7f">
+<owl:NamedIndividual rdf:about="&jsk_map;SemanticMapPerception-24">
+  <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
+  <knowrob:objectActedOn rdf:resource="&jsk_map;LevelOfAConstruction-eng2-2f"/>
+  <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-22"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1308501991.32"/>
+  <knowrob:frameParent rdf:resource="&jsk_map;Building-eng2"/>
+  <knowrob:frameTransformation rdf:resource="&jsk_map;RotationMatrix3D-23"/>
+</owl:NamedIndividual>
+
+
+<owl:NamedIndividual rdf:about="&jsk_map;LevelOfAConstruction-eng2-7f">
   <rdf:type rdf:resource="&knowrob;LevelOfAConstruction"/>
   <knowrob:widthOfObject rdf:datatype="&xsd;float">6.0</knowrob:widthOfObject>
   <knowrob:depthOfObject rdf:datatype="&xsd;float">6.0</knowrob:depthOfObject>
-  <knowrob:heightOfObject rdf:datatype="&xsd;float">0.005</knowrob:heightOfObject>
-  <knowrob:describedInMap rdf:resource="http://www.jsk.t.u-tokyo.ac.jp/jsk_map.owl#SemanticEnvironmentMap-Building-eng2"/>
-  <knowrob:floorNumber rdf:datatype="&xsd;int">7</knowrob:floorNumber>
-  <knowrob:hasRooms rdf:resource="http://www.jsk.t.u-tokyo.ac.jp/jsk_map.owl#RoomInAConstruction-eng2-7f-73B2"/>
-  <knowrob:hasRooms rdf:resource="http://www.jsk.t.u-tokyo.ac.jp/jsk_map.owl#RoomInAConstruction-eng2-7f-73B1"/>
-  <knowrob:hasRooms rdf:resource="http://www.jsk.t.u-tokyo.ac.jp/jsk_map.owl#RoomInAConstruction-eng2-7f-73A2"/>
-  <knowrob:hasRooms rdf:resource="http://www.jsk.t.u-tokyo.ac.jp/jsk_map.owl#RoomInAConstruction-eng2-7f-73A3"/>
-  <knowrob:hasRooms rdf:resource="http://www.jsk.t.u-tokyo.ac.jp/jsk_map.owl#RoomInAConstruction-eng2-7f-73A1"/>
-  <knowrob:hasRooms rdf:resource="http://www.jsk.t.u-tokyo.ac.jp/jsk_map.owl#RoomInAConstruction-eng2-7f-73A4"/>
+  <knowrob:heightOfObject rdf:datatype="&xsd;float">0.004</knowrob:heightOfObject>
+  <knowrob:describedInMap rdf:resource="&jsk_map;SemanticEnvironmentMap-Building-eng2"/>
+  <knowrob:floorNumber rdf:datatype="&xsd;string">7</knowrob:floorNumber>
+  <knowrob:hasRooms rdf:resource="&jsk_map;RoomInAConstruction-eng2-7f-73B2"/>
+  <knowrob:hasRooms rdf:resource="&jsk_map;RoomInAConstruction-eng2-7f-73B1"/>
+  <knowrob:hasRooms rdf:resource="&jsk_map;RoomInAConstruction-eng2-7f-73A2"/>
+  <knowrob:hasRooms rdf:resource="&jsk_map;RoomInAConstruction-eng2-7f-73A3"/>
+  <knowrob:hasRooms rdf:resource="&jsk_map;RoomInAConstruction-eng2-7f-73A1"/>
+  <knowrob:hasRooms rdf:resource="&jsk_map;RoomInAConstruction-eng2-7f-73A4"/>
 </owl:NamedIndividual>
 
 
-<owl:NamedIndividual rdf:about="http://www.jsk.t.u-tokyo.ac.jp/jsk_map.owl#RotationMatrix3D-17">
+<owl:NamedIndividual rdf:about="&jsk_map;RotationMatrix3D-25">
   <rdf:type rdf:resource="&knowrob;RotationMatrix3D"/>
-  <knowrob:m00 rdf:datatype="&xsd;float">1.0</knowrob:m00>
-  <knowrob:m01 rdf:datatype="&xsd;float">0.0</knowrob:m01>
-  <knowrob:m02 rdf:datatype="&xsd;float">0.0</knowrob:m02>
-  <knowrob:m03 rdf:datatype="&xsd;float">3.0</knowrob:m03>
-  <knowrob:m10 rdf:datatype="&xsd;float">0.0</knowrob:m10>
-  <knowrob:m11 rdf:datatype="&xsd;float">1.0</knowrob:m11>
-  <knowrob:m12 rdf:datatype="&xsd;float">0.0</knowrob:m12>
-  <knowrob:m13 rdf:datatype="&xsd;float">3.0</knowrob:m13>
-  <knowrob:m20 rdf:datatype="&xsd;float">0.0</knowrob:m20>
-  <knowrob:m21 rdf:datatype="&xsd;float">0.0</knowrob:m21>
-  <knowrob:m22 rdf:datatype="&xsd;float">1.0</knowrob:m22>
+  <knowrob:m00 rdf:datatype="&xsd;float">1</knowrob:m00>
+  <knowrob:m01 rdf:datatype="&xsd;float">0</knowrob:m01>
+  <knowrob:m02 rdf:datatype="&xsd;float">0</knowrob:m02>
+  <knowrob:m03 rdf:datatype="&xsd;float">1.7</knowrob:m03>
+  <knowrob:m10 rdf:datatype="&xsd;float">0</knowrob:m10>
+  <knowrob:m11 rdf:datatype="&xsd;float">1</knowrob:m11>
+  <knowrob:m12 rdf:datatype="&xsd;float">0</knowrob:m12>
+  <knowrob:m13 rdf:datatype="&xsd;float">-1.85</knowrob:m13>
+  <knowrob:m20 rdf:datatype="&xsd;float">0</knowrob:m20>
+  <knowrob:m21 rdf:datatype="&xsd;float">0</knowrob:m21>
+  <knowrob:m22 rdf:datatype="&xsd;float">1</knowrob:m22>
   <knowrob:m23 rdf:datatype="&xsd;float">7.0</knowrob:m23>
   <knowrob:m30 rdf:datatype="&xsd;float">0</knowrob:m30>
   <knowrob:m31 rdf:datatype="&xsd;float">0</knowrob:m31>
@@ -407,38 +567,61 @@
 </owl:NamedIndividual>
 
 
-<owl:NamedIndividual rdf:about="http://www.jsk.t.u-tokyo.ac.jp/jsk_map.owl#SemanticMapPerception-18">
-  <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
-  <knowrob:objectActedOn rdf:resource="http://www.jsk.t.u-tokyo.ac.jp/jsk_map.owl#LevelOfAConstruction-eng2-7f"/>
-  <knowrob:eventOccursAt rdf:resource="http://www.jsk.t.u-tokyo.ac.jp/jsk_map.owl#RotationMatrix3D-17"/>
-  <knowrob:startTime rdf:resource="http://www.jsk.t.u-tokyo.ac.jp/jsk_map.owl#timepoint_1308236028.49"/>
+<owl:NamedIndividual rdf:about="&jsk_map;RotationMatrix3D-26">
+  <rdf:type rdf:resource="&knowrob;RotationMatrix3D"/>
+  <knowrob:m00 rdf:datatype="&xsd;float">1</knowrob:m00>
+  <knowrob:m01 rdf:datatype="&xsd;float">0</knowrob:m01>
+  <knowrob:m02 rdf:datatype="&xsd;float">0</knowrob:m02>
+  <knowrob:m03 rdf:datatype="&xsd;float">0.0</knowrob:m03>
+  <knowrob:m10 rdf:datatype="&xsd;float">0</knowrob:m10>
+  <knowrob:m11 rdf:datatype="&xsd;float">1</knowrob:m11>
+  <knowrob:m12 rdf:datatype="&xsd;float">0</knowrob:m12>
+  <knowrob:m13 rdf:datatype="&xsd;float">0.0</knowrob:m13>
+  <knowrob:m20 rdf:datatype="&xsd;float">0</knowrob:m20>
+  <knowrob:m21 rdf:datatype="&xsd;float">0</knowrob:m21>
+  <knowrob:m22 rdf:datatype="&xsd;float">1</knowrob:m22>
+  <knowrob:m23 rdf:datatype="&xsd;float">7.0</knowrob:m23>
+  <knowrob:m30 rdf:datatype="&xsd;float">0</knowrob:m30>
+  <knowrob:m31 rdf:datatype="&xsd;float">0</knowrob:m31>
+  <knowrob:m32 rdf:datatype="&xsd;float">0</knowrob:m32>
+  <knowrob:m33 rdf:datatype="&xsd;float">1</knowrob:m33>
 </owl:NamedIndividual>
 
 
-<owl:NamedIndividual rdf:about="http://www.jsk.t.u-tokyo.ac.jp/jsk_map.owl#LevelOfAConstruction-eng2-8f">
+<owl:NamedIndividual rdf:about="&jsk_map;SemanticMapPerception-27">
+  <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
+  <knowrob:objectActedOn rdf:resource="&jsk_map;LevelOfAConstruction-eng2-7f"/>
+  <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-25"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1308501991.32"/>
+  <knowrob:frameParent rdf:resource="&jsk_map;Building-eng2"/>
+  <knowrob:frameTransformation rdf:resource="&jsk_map;RotationMatrix3D-26"/>
+</owl:NamedIndividual>
+
+
+<owl:NamedIndividual rdf:about="&jsk_map;LevelOfAConstruction-eng2-8f">
   <rdf:type rdf:resource="&knowrob;LevelOfAConstruction"/>
   <knowrob:widthOfObject rdf:datatype="&xsd;float">6.0</knowrob:widthOfObject>
   <knowrob:depthOfObject rdf:datatype="&xsd;float">6.0</knowrob:depthOfObject>
-  <knowrob:heightOfObject rdf:datatype="&xsd;float">0.005</knowrob:heightOfObject>
-  <knowrob:describedInMap rdf:resource="http://www.jsk.t.u-tokyo.ac.jp/jsk_map.owl#SemanticEnvironmentMap-Building-eng2"/>
-  <knowrob:floorNumber rdf:datatype="&xsd;int">8</knowrob:floorNumber>
-  <knowrob:hasRooms rdf:resource="http://www.jsk.t.u-tokyo.ac.jp/jsk_map.owl#RoomInAConstruction-eng2-8f-83B1"/>
+  <knowrob:heightOfObject rdf:datatype="&xsd;float">0.004</knowrob:heightOfObject>
+  <knowrob:describedInMap rdf:resource="&jsk_map;SemanticEnvironmentMap-Building-eng2"/>
+  <knowrob:floorNumber rdf:datatype="&xsd;string">8</knowrob:floorNumber>
+  <knowrob:hasRooms rdf:resource="&jsk_map;RoomInAConstruction-eng2-8f-83B1"/>
 </owl:NamedIndividual>
 
 
-<owl:NamedIndividual rdf:about="http://www.jsk.t.u-tokyo.ac.jp/jsk_map.owl#RotationMatrix3D-19">
+<owl:NamedIndividual rdf:about="&jsk_map;RotationMatrix3D-28">
   <rdf:type rdf:resource="&knowrob;RotationMatrix3D"/>
-  <knowrob:m00 rdf:datatype="&xsd;float">1.0</knowrob:m00>
-  <knowrob:m01 rdf:datatype="&xsd;float">0.0</knowrob:m01>
-  <knowrob:m02 rdf:datatype="&xsd;float">0.0</knowrob:m02>
-  <knowrob:m03 rdf:datatype="&xsd;float">3.0</knowrob:m03>
-  <knowrob:m10 rdf:datatype="&xsd;float">0.0</knowrob:m10>
-  <knowrob:m11 rdf:datatype="&xsd;float">1.0</knowrob:m11>
-  <knowrob:m12 rdf:datatype="&xsd;float">0.0</knowrob:m12>
-  <knowrob:m13 rdf:datatype="&xsd;float">3.0</knowrob:m13>
-  <knowrob:m20 rdf:datatype="&xsd;float">0.0</knowrob:m20>
-  <knowrob:m21 rdf:datatype="&xsd;float">0.0</knowrob:m21>
-  <knowrob:m22 rdf:datatype="&xsd;float">1.0</knowrob:m22>
+  <knowrob:m00 rdf:datatype="&xsd;float">1</knowrob:m00>
+  <knowrob:m01 rdf:datatype="&xsd;float">0</knowrob:m01>
+  <knowrob:m02 rdf:datatype="&xsd;float">0</knowrob:m02>
+  <knowrob:m03 rdf:datatype="&xsd;float">1.7</knowrob:m03>
+  <knowrob:m10 rdf:datatype="&xsd;float">0</knowrob:m10>
+  <knowrob:m11 rdf:datatype="&xsd;float">1</knowrob:m11>
+  <knowrob:m12 rdf:datatype="&xsd;float">0</knowrob:m12>
+  <knowrob:m13 rdf:datatype="&xsd;float">-1.85</knowrob:m13>
+  <knowrob:m20 rdf:datatype="&xsd;float">0</knowrob:m20>
+  <knowrob:m21 rdf:datatype="&xsd;float">0</knowrob:m21>
+  <knowrob:m22 rdf:datatype="&xsd;float">1</knowrob:m22>
   <knowrob:m23 rdf:datatype="&xsd;float">8.0</knowrob:m23>
   <knowrob:m30 rdf:datatype="&xsd;float">0</knowrob:m30>
   <knowrob:m31 rdf:datatype="&xsd;float">0</knowrob:m31>
@@ -447,37 +630,60 @@
 </owl:NamedIndividual>
 
 
-<owl:NamedIndividual rdf:about="http://www.jsk.t.u-tokyo.ac.jp/jsk_map.owl#SemanticMapPerception-20">
-  <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
-  <knowrob:objectActedOn rdf:resource="http://www.jsk.t.u-tokyo.ac.jp/jsk_map.owl#LevelOfAConstruction-eng2-8f"/>
-  <knowrob:eventOccursAt rdf:resource="http://www.jsk.t.u-tokyo.ac.jp/jsk_map.owl#RotationMatrix3D-19"/>
-  <knowrob:startTime rdf:resource="http://www.jsk.t.u-tokyo.ac.jp/jsk_map.owl#timepoint_1308236028.49"/>
-</owl:NamedIndividual>
-
-
-<owl:NamedIndividual rdf:about="http://www.jsk.t.u-tokyo.ac.jp/jsk_map.owl#LevelOfAConstruction-eng2-3f">
-  <rdf:type rdf:resource="&knowrob;LevelOfAConstruction"/>
-  <knowrob:widthOfObject rdf:datatype="&xsd;float">7.0</knowrob:widthOfObject>
-  <knowrob:depthOfObject rdf:datatype="&xsd;float">6.0</knowrob:depthOfObject>
-  <knowrob:heightOfObject rdf:datatype="&xsd;float">0.005</knowrob:heightOfObject>
-  <knowrob:describedInMap rdf:resource="http://www.jsk.t.u-tokyo.ac.jp/jsk_map.owl#SemanticEnvironmentMap-Building-eng2"/>
-  <knowrob:floorNumber rdf:datatype="&xsd;int">3</knowrob:floorNumber>
-</owl:NamedIndividual>
-
-
-<owl:NamedIndividual rdf:about="http://www.jsk.t.u-tokyo.ac.jp/jsk_map.owl#RotationMatrix3D-21">
+<owl:NamedIndividual rdf:about="&jsk_map;RotationMatrix3D-29">
   <rdf:type rdf:resource="&knowrob;RotationMatrix3D"/>
-  <knowrob:m00 rdf:datatype="&xsd;float">1.0</knowrob:m00>
-  <knowrob:m01 rdf:datatype="&xsd;float">0.0</knowrob:m01>
-  <knowrob:m02 rdf:datatype="&xsd;float">0.0</knowrob:m02>
-  <knowrob:m03 rdf:datatype="&xsd;float">3.0</knowrob:m03>
-  <knowrob:m10 rdf:datatype="&xsd;float">0.0</knowrob:m10>
-  <knowrob:m11 rdf:datatype="&xsd;float">1.0</knowrob:m11>
-  <knowrob:m12 rdf:datatype="&xsd;float">0.0</knowrob:m12>
-  <knowrob:m13 rdf:datatype="&xsd;float">3.5</knowrob:m13>
-  <knowrob:m20 rdf:datatype="&xsd;float">0.0</knowrob:m20>
-  <knowrob:m21 rdf:datatype="&xsd;float">0.0</knowrob:m21>
-  <knowrob:m22 rdf:datatype="&xsd;float">1.0</knowrob:m22>
+  <knowrob:m00 rdf:datatype="&xsd;float">1</knowrob:m00>
+  <knowrob:m01 rdf:datatype="&xsd;float">0</knowrob:m01>
+  <knowrob:m02 rdf:datatype="&xsd;float">0</knowrob:m02>
+  <knowrob:m03 rdf:datatype="&xsd;float">0.0</knowrob:m03>
+  <knowrob:m10 rdf:datatype="&xsd;float">0</knowrob:m10>
+  <knowrob:m11 rdf:datatype="&xsd;float">1</knowrob:m11>
+  <knowrob:m12 rdf:datatype="&xsd;float">0</knowrob:m12>
+  <knowrob:m13 rdf:datatype="&xsd;float">0.0</knowrob:m13>
+  <knowrob:m20 rdf:datatype="&xsd;float">0</knowrob:m20>
+  <knowrob:m21 rdf:datatype="&xsd;float">0</knowrob:m21>
+  <knowrob:m22 rdf:datatype="&xsd;float">1</knowrob:m22>
+  <knowrob:m23 rdf:datatype="&xsd;float">8.0</knowrob:m23>
+  <knowrob:m30 rdf:datatype="&xsd;float">0</knowrob:m30>
+  <knowrob:m31 rdf:datatype="&xsd;float">0</knowrob:m31>
+  <knowrob:m32 rdf:datatype="&xsd;float">0</knowrob:m32>
+  <knowrob:m33 rdf:datatype="&xsd;float">1</knowrob:m33>
+</owl:NamedIndividual>
+
+
+<owl:NamedIndividual rdf:about="&jsk_map;SemanticMapPerception-30">
+  <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
+  <knowrob:objectActedOn rdf:resource="&jsk_map;LevelOfAConstruction-eng2-8f"/>
+  <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-28"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1308501991.32"/>
+  <knowrob:frameParent rdf:resource="&jsk_map;Building-eng2"/>
+  <knowrob:frameTransformation rdf:resource="&jsk_map;RotationMatrix3D-29"/>
+</owl:NamedIndividual>
+
+
+<owl:NamedIndividual rdf:about="&jsk_map;LevelOfAConstruction-eng2-3f">
+  <rdf:type rdf:resource="&knowrob;LevelOfAConstruction"/>
+  <knowrob:widthOfObject rdf:datatype="&xsd;float">6.0</knowrob:widthOfObject>
+  <knowrob:depthOfObject rdf:datatype="&xsd;float">7.0</knowrob:depthOfObject>
+  <knowrob:heightOfObject rdf:datatype="&xsd;float">0.004</knowrob:heightOfObject>
+  <knowrob:describedInMap rdf:resource="&jsk_map;SemanticEnvironmentMap-Building-eng2"/>
+  <knowrob:floorNumber rdf:datatype="&xsd;string">3</knowrob:floorNumber>
+</owl:NamedIndividual>
+
+
+<owl:NamedIndividual rdf:about="&jsk_map;RotationMatrix3D-31">
+  <rdf:type rdf:resource="&knowrob;RotationMatrix3D"/>
+  <knowrob:m00 rdf:datatype="&xsd;float">1</knowrob:m00>
+  <knowrob:m01 rdf:datatype="&xsd;float">0</knowrob:m01>
+  <knowrob:m02 rdf:datatype="&xsd;float">0</knowrob:m02>
+  <knowrob:m03 rdf:datatype="&xsd;float">2.2</knowrob:m03>
+  <knowrob:m10 rdf:datatype="&xsd;float">0</knowrob:m10>
+  <knowrob:m11 rdf:datatype="&xsd;float">1</knowrob:m11>
+  <knowrob:m12 rdf:datatype="&xsd;float">0</knowrob:m12>
+  <knowrob:m13 rdf:datatype="&xsd;float">-1.85</knowrob:m13>
+  <knowrob:m20 rdf:datatype="&xsd;float">0</knowrob:m20>
+  <knowrob:m21 rdf:datatype="&xsd;float">0</knowrob:m21>
+  <knowrob:m22 rdf:datatype="&xsd;float">1</knowrob:m22>
   <knowrob:m23 rdf:datatype="&xsd;float">3.0</knowrob:m23>
   <knowrob:m30 rdf:datatype="&xsd;float">0</knowrob:m30>
   <knowrob:m31 rdf:datatype="&xsd;float">0</knowrob:m31>
@@ -486,20 +692,43 @@
 </owl:NamedIndividual>
 
 
-<owl:NamedIndividual rdf:about="http://www.jsk.t.u-tokyo.ac.jp/jsk_map.owl#SemanticMapPerception-22">
-  <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
-  <knowrob:objectActedOn rdf:resource="http://www.jsk.t.u-tokyo.ac.jp/jsk_map.owl#LevelOfAConstruction-eng2-3f"/>
-  <knowrob:eventOccursAt rdf:resource="http://www.jsk.t.u-tokyo.ac.jp/jsk_map.owl#RotationMatrix3D-21"/>
-  <knowrob:startTime rdf:resource="http://www.jsk.t.u-tokyo.ac.jp/jsk_map.owl#timepoint_1308236028.49"/>
+<owl:NamedIndividual rdf:about="&jsk_map;RotationMatrix3D-32">
+  <rdf:type rdf:resource="&knowrob;RotationMatrix3D"/>
+  <knowrob:m00 rdf:datatype="&xsd;float">1</knowrob:m00>
+  <knowrob:m01 rdf:datatype="&xsd;float">0</knowrob:m01>
+  <knowrob:m02 rdf:datatype="&xsd;float">0</knowrob:m02>
+  <knowrob:m03 rdf:datatype="&xsd;float">0.0</knowrob:m03>
+  <knowrob:m10 rdf:datatype="&xsd;float">0</knowrob:m10>
+  <knowrob:m11 rdf:datatype="&xsd;float">1</knowrob:m11>
+  <knowrob:m12 rdf:datatype="&xsd;float">0</knowrob:m12>
+  <knowrob:m13 rdf:datatype="&xsd;float">0.0</knowrob:m13>
+  <knowrob:m20 rdf:datatype="&xsd;float">0</knowrob:m20>
+  <knowrob:m21 rdf:datatype="&xsd;float">0</knowrob:m21>
+  <knowrob:m22 rdf:datatype="&xsd;float">1</knowrob:m22>
+  <knowrob:m23 rdf:datatype="&xsd;float">3.0</knowrob:m23>
+  <knowrob:m30 rdf:datatype="&xsd;float">0</knowrob:m30>
+  <knowrob:m31 rdf:datatype="&xsd;float">0</knowrob:m31>
+  <knowrob:m32 rdf:datatype="&xsd;float">0</knowrob:m32>
+  <knowrob:m33 rdf:datatype="&xsd;float">1</knowrob:m33>
 </owl:NamedIndividual>
 
-<owl:NamedIndividual rdf:about="http://www.jsk.t.u-tokyo.ac.jp/jsk_map.owl#Building-eng2">
+
+<owl:NamedIndividual rdf:about="&jsk_map;SemanticMapPerception-33">
+  <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
+  <knowrob:objectActedOn rdf:resource="&jsk_map;LevelOfAConstruction-eng2-3f"/>
+  <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-31"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1308501991.32"/>
+  <knowrob:frameParent rdf:resource="&jsk_map;Building-eng2"/>
+  <knowrob:frameTransformation rdf:resource="&jsk_map;RotationMatrix3D-32"/>
+</owl:NamedIndividual>
+
+<owl:NamedIndividual rdf:about="&jsk_map;Building-eng2">
   <rdf:type rdf:resource="&knowrob;Building"/>
-  <knowrob:hasLevels rdf:resource="http://www.jsk.t.u-tokyo.ac.jp/jsk_map.owl#LevelOfAConstruction-eng2-2f"/>
-  <knowrob:hasLevels rdf:resource="http://www.jsk.t.u-tokyo.ac.jp/jsk_map.owl#LevelOfAConstruction-eng2-7f"/>
-  <knowrob:hasLevels rdf:resource="http://www.jsk.t.u-tokyo.ac.jp/jsk_map.owl#LevelOfAConstruction-eng2-8f"/>
-  <knowrob:hasLevels rdf:resource="http://www.jsk.t.u-tokyo.ac.jp/jsk_map.owl#LevelOfAConstruction-eng2-3f"/>
-  <knowrob:describedInMap rdf:resource="http://www.jsk.t.u-tokyo.ac.jp/jsk_map.owl#SemanticEnvironmentMap-Building-eng2"/>
+  <knowrob:hasLevels rdf:resource="&jsk_map;LevelOfAConstruction-eng2-2f"/>
+  <knowrob:hasLevels rdf:resource="&jsk_map;LevelOfAConstruction-eng2-7f"/>
+  <knowrob:hasLevels rdf:resource="&jsk_map;LevelOfAConstruction-eng2-8f"/>
+  <knowrob:hasLevels rdf:resource="&jsk_map;LevelOfAConstruction-eng2-3f"/>
+  <knowrob:describedInMap rdf:resource="&jsk_map;SemanticEnvironmentMap-Building-eng2"/>
 </owl:NamedIndividual>
 
 </rdf:RDF>

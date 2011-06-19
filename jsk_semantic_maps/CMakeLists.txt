@@ -9,6 +9,11 @@ rosbuild_include(rosprolog utils)
 set( OWL_PATH_PREFIX ${ias_knowledge_base_PACKAGE_PATH} )
 fix_ros_destination_path(OWL_PATH_PREFIX)
 
+# replace path to local OWL files
+rosbuild_find_ros_package(jsk_semantic_maps)
+set( LOCAL_PACKAGE_PATH ${jsk_semantic_maps_PACKAGE_PATH} )
+fix_ros_destination_path(LOCAL_PACKAGE_PATH)
+
 file(GLOB inputs owl/*.in)
 
 foreach( _in ${inputs} )
@@ -16,10 +21,6 @@ foreach( _in ${inputs} )
   configure_file( ${_in} ${_out} )
 endforeach( _in )
 
-# replace path to local OWL files
-rosbuild_find_ros_package(jsk_semantic_maps)
-set( LOCAL_PACKAGE_PATH ${jsk_semantic_maps_PACKAGE_PATH} )
-fix_ros_destination_path(LOCAL_PACKAGE_PATH)
 
 file(GLOB inputs prolog/*.in)
 foreach( _in ${inputs} )
