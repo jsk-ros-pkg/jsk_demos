@@ -4,16 +4,23 @@ floor:
     # floor origin and area
     /eng8/b1f:
         frame_id: /eng8
-        translation: {x: 15,y: 25,z: 0}
+        translation: {x: 17,y: 25,z: 0}
         rotation: {w: 1,x: 0,y: 0,z: 0}
-        region: [[-5,-80],[-5,20],[35,20],[35,-80]]
+        region: [[-5,-75],[-5,-20],[35,-20],[35,-75]]
     /eng8/1f:
         frame_id: /eng8
         translation: {x: -30,y: 0,z: 0}
         rotation: {w: 1,x: 0,y: 0,z: 0}
-        region: [[-5,-80],[-5,-10],[25,-10],[25,-80]]
+        region: [[-5,-70],[-5,-10],[21,-10],[21,-70]]
     /eng8/6f:
         frame_id: /eng8
         translation: {x: 0,y: 0,z: 0}
         rotation: {w: 1,x: 0,y: 0,z: 0}
-        region: [[-5,-80],[-5,10],[10,10],[10,-80]]
+        region: [[-5,-75],[-5,10],[10,10],[10,-75]]
+room:
+    # room origin and area
+    /eng8/6f/602:
+        frame_id: /eng8/6f
+        translation: {x: 0,y: 0,z: 0}
+        rotation: {w: 1,x: 0,y: 0,z: 0}
+        region: [[0,8],[0,-2],[10,-2],[10,8]]

@@ -5,100 +5,115 @@
 (load "package://jsk_maps/src/plane-building-model.l")
 
 (defun make-eng8-scene ()
-  (let* ((map (make-eng8-map-map))
-	 (scene
-	  (instance
-	   plane-building-model :init :name "/eng8"
-	   :objects
-	   (append
-	    (list
-	     map
-	     (elevator_call_panel)
-	     (elevator_inside_panel)
-	    ;; B1F
-	    (make-cascoords :rot #2f((0.0 1.0 0.0) (-1.0 0.0 0.0) (0.0 0.0 1.0))
-			    :pos #f(18200.0 -29200.0 0.0)
-			    :name "/eng8/b1f/elevator_call_panel-front")
-	    (make-cascoords :rot #2f((1.0 0.0 0.0) (0.0 1.0 0.0) (0.0 0.0 1.0))
-			    :pos #f(19100.0 -31300.0 0.0)
-			    :name "/eng8/b1f/elevator_inside_panel-front")
-	    (make-cascoords :rot #2f((0.0 -1.0 0.0) (1.0 0.0 0.0) (0.0 0.0 1.0))
-			    :pos #f(19000.0 -29000.0 0.0)
-			    :name "/eng8/b1f/elevator-outside")
-	    ;; 1F
-	    (make-cascoords :rot #2f((0.0 1.0 0.0) (-1.0 0.0 0.0) (0.0 0.0 1.0))
-			    :pos #f(-26800.0 -29100.0 0.0)
-			    :name "/eng8/1f/elevator_call_panel-front")
-	    (make-cascoords :rot #2f((1.0 0.0 0.0) (0.0 1.0 0.0) (0.0 0.0 1.0))
-			    :pos #f(-25900.0 -31300.0 0.0)
-			    :name "/eng8/1f/elevator_inside_panel-front")
-	    (make-cascoords :rot #2f((0.0 -1.0 0.0) (1.0 0.0 0.0) (0.0 0.0 1.0))
-			    :pos #f(-26000.0 -29000.0 0.0)
-			    :name "/eng8/1f/elevator-outside")
-	    (make-cascoords :rot #2f((0.0 1.0 0.0) (-1.0 0.0 0.0) (0.0 0.0 1.0))
-			    :pos #f(-14500.0 -33000.0 0.0)
-			    :name "/eng8/1f/pamphlet-front")
-	    (make-cascoords :rot #2f((-1.0 0.0 0.0) (0.0 -1.0 0.0) (0.0 0.0 1.0))
-			    :pos #f(-31170.0 -27600.0 0.0)
-			    :name "/eng8/1f/student-affairs")
-	    ;; 6F
-	    (make-cascoords :rot #2f((-1.0 0.0 0.0) (0.0 -1.0 0.0) (0.0 0.0 1.0))
-			    :pos #f(7500.0 2300.0 0.0)
-			    :name "/eng8/6f/room602-kitchen")
-	    (make-cascoords :rot #2f((1.0 0.0 0.0) (0.0 1.0 0.0) (0.0 0.0 1.0))
-			    :pos #f(7600.0 2700.0 0.0)
-			    :name "/eng8/6f/room602-microwave")
-	    (make-cascoords :rot #2f((1.0 0.0 0.0) (0.0 1.0 0.0) (0.0 0.0 1.0))
-			    :pos #f(7600.0 1100.0 0.0)
-			    :name "/eng8/6f/room602-refrigerator")
-	    (make-cascoords :rot #2f((0.0 -1.0 0.0) (1.0 0.0 0.0) (0.0 0.0 1.0))
-			    :pos #f(4000.0 4300.0 0.0)
-			    :name "/eng8/6f/room602-shelf")
-	    (make-cascoords :rot #2f((-0.866025 -0.5 0.0) (0.5 -0.866025 0.0) (0.0 0.0 1.0))
-			    :pos #f(1300.0 3800.0 0.0)
-			    :name "/eng8/6f/room602-washingmachine")
-	    (make-cascoords :rot #2f((1.0 0.0 0.0) (0.0 1.0 0.0) (0.0 0.0 1.0))
-			    :pos #f(1750.0 850.0 0.0)
-			    :name "/eng8/6f/room602-base")
-	    (make-cascoords :rot #2f((1.0 0.0 0.0) (0.0 1.0 0.0) (0.0 0.0 1.0))
-			    :pos #f(-400.0 100.0 0.0)
-			    :name "/eng8/6f/room602-front")
-	    (make-cascoords :rot #2f((0.0 1.0 0.0) (-1.0 0.0 0.0) (0.0 0.0 1.0))
-			    :pos #f(3200.0 -29100.0 0.0)
-			    :name "/eng8/6f/elevator_call_panel-front")
-	    (make-cascoords :rot #2f((1.0 0.0 0.0) (0.0 1.0 0.0) (0.0 0.0 1.0))
-			    :pos #f(4100.0 -31300.0 0.0)
-			    :name "/eng8/6f/elevator_inside_panel-front")
-	    (make-cascoords :rot #2f((0.0 -1.0 0.0) (1.0 0.0 0.0) (0.0 0.0 1.0))
-			    :pos #f(4000.0 -29000.0 0.0)
-			    :name "/eng8/6f/elevator-outside")
-	    ;; object position
-	    (make-cascoords :pos #f(18100 -29900 920) :rpy #f(1.5706 0 0)
-			    :name "/eng8/b1f/elevator_call_panel")
-	    (make-cascoords :pos #f(19850 -31550 1000) :rpy #f(3.1416 0 0)
-			    :name "/eng8/b1f/elevator_inside_panel")
-	    (make-cascoords :pos #f(-26900 -29900 920) :rpy #f(1.5706 0 0)
-			    :name "/eng8/1f/elevator_call_panel")
-	    (make-cascoords :pos #f(-25150 -31550 1000) :rpy #f(3.1416 0 0)
-			    :name "/eng8/1f/elevator_inside_panel")
-	    (make-cascoords :pos #f(3100 -29900 920) :rpy #f(1.5706 0 0)
-			    :name "/eng8/6f/elevator_call_panel")
-	    (make-cascoords :pos #f(4850 -31550 1000) :rpy #f(3.1416 0 0)
-			    :name "/eng8/6f/elevator_inside_panel"))
-	    (flatten (send map :descendants))
-	    ))))
+  (let* (scene (map (make-eng8-map-map)) floor-names spots)
+	(setq floor-names
+	      (mapcar #'(lambda(x)(send x :name)) (send map :descendants)))
+
+	;; B1F
+	(make-cascoords-tree
+	 (find "/eng8/b1f" (send map :descendants)
+	       :test #'string= :key #'(lambda(x)(send x :name)))
+	 '(:rot #2f((0.0 1.0 0.0) (-1.0 0.0 0.0) (0.0 0.0 1.0))
+			:pos #f(3200.0 -29200.0 0.0)
+			:name "/eng8/b1f/elevator_call_panel-front")
+	 '(:rot #2f((1.0 0.0 0.0) (0.0 1.0 0.0) (0.0 0.0 1.0))
+			:pos #f(4100.0 -31300.0 0.0)
+			:name "/eng8/b1f/elevator_inside_panel-front")
+	 '(:rot #2f((0.0 -1.0 0.0) (1.0 0.0 0.0) (0.0 0.0 1.0))
+			:pos #f(4000.0 -29000.0 0.0)
+			:name "/eng8/b1f/elevator-outside")
+	 '(:pos #f(3100 -29900 920) :rpy #f(1.5706 0 0)
+			:name "/eng8/b1f/elevator_call_panel")
+	 '(:pos #f(4850 -31550 1000) :rpy #f(3.1416 0 0)
+			:name "/eng8/b1f/elevator_inside_panel"))
+	;; 1F
+	(make-cascoords-tree
+	 (find "/eng8/1f" (send map :descendants)
+	       :test #'string= :key #'(lambda(x)(send x :name)))
+	 '(:rot #2f((0.0 1.0 0.0) (-1.0 0.0 0.0) (0.0 0.0 1.0))
+			:pos #f(3200.0 -29100.0 0.0)
+			:name "/eng8/1f/elevator_call_panel-front")
+	 '(:rot #2f((1.0 0.0 0.0) (0.0 1.0 0.0) (0.0 0.0 1.0))
+			:pos #f(4100.0 -31300.0 0.0)
+			:name "/eng8/1f/elevator_inside_panel-front")
+	 '(:rot #2f((0.0 -1.0 0.0) (1.0 0.0 0.0) (0.0 0.0 1.0))
+			:pos #f(4000.0 -29000.0 0.0)
+			:name "/eng8/1f/elevator-outside")
+	 '(:rot #2f((0.0 1.0 0.0) (-1.0 0.0 0.0) (0.0 0.0 1.0))
+			:pos #f(15500.0 -33000.0 0.0)
+			:name "/eng8/1f/pamphlet-front")
+	 '(:rot #2f((-1.0 0.0 0.0) (0.0 -1.0 0.0) (0.0 0.0 1.0))
+			:pos #f(-1170.0 -27600.0 0.0)
+			:name "/eng8/1f/student-affairs")
+	 '(:pos #f(3100 -29900 920) :rpy #f(1.5706 0 0)
+			:name "/eng8/1f/elevator_call_panel")
+	 '(:pos #f(4850 -31550 1000) :rpy #f(3.1416 0 0)
+			:name "/eng8/1f/elevator_inside_panel"))
+	;; 6F
+	(make-cascoords-tree
+	 (find "/eng8/6f" (send map :descendants)
+	       :test #'string= :key #'(lambda(x)(send x :name)))
+	 '(:rot #2f((-1.0 0.0 0.0) (0.0 -1.0 0.0) (0.0 0.0 1.0))
+			:pos #f(7500.0 2300.0 0.0)
+			:name "/eng8/6f/room602-kitchen")
+	 '(:rot #2f((1.0 0.0 0.0) (0.0 1.0 0.0) (0.0 0.0 1.0))
+			:pos #f(7600.0 2700.0 0.0)
+			:name "/eng8/6f/room602-microwave")
+	 '(:rot #2f((1.0 0.0 0.0) (0.0 1.0 0.0) (0.0 0.0 1.0))
+			:pos #f(7600.0 1100.0 0.0)
+			:name "/eng8/6f/room602-refrigerator")
+	 '(:rot #2f((0.0 -1.0 0.0) (1.0 0.0 0.0) (0.0 0.0 1.0))
+			:pos #f(4000.0 4300.0 0.0)
+			:name "/eng8/6f/room602-shelf")
+	 '(:rot #2f((-0.866025 -0.5 0.0) (0.5 -0.866025 0.0) (0.0 0.0 1.0))
+			:pos #f(1300.0 3800.0 0.0)
+			:name "/eng8/6f/room602-washingmachine")
+	 '(:rot #2f((1.0 0.0 0.0) (0.0 1.0 0.0) (0.0 0.0 1.0))
+			:pos #f(1750.0 850.0 0.0)
+			:name "/eng8/6f/room602-base")
+	 '(:rot #2f((1.0 0.0 0.0) (0.0 1.0 0.0) (0.0 0.0 1.0))
+			:pos #f(-400.0 100.0 0.0)
+			:name "/eng8/6f/room602-front")
+	 '(:rot #2f((0.0 1.0 0.0) (-1.0 0.0 0.0) (0.0 0.0 1.0))
+			:pos #f(3200.0 -29100.0 0.0)
+			:name "/eng8/6f/elevator_call_panel-front")
+	 '(:rot #2f((1.0 0.0 0.0) (0.0 1.0 0.0) (0.0 0.0 1.0))
+			:pos #f(4100.0 -31300.0 0.0)
+			:name "/eng8/6f/elevator_inside_panel-front")
+	 '(:rot #2f((0.0 -1.0 0.0) (1.0 0.0 0.0) (0.0 0.0 1.0))
+			:pos #f(4000.0 -29000.0 0.0)
+			:name "/eng8/6f/elevator-outside")
+	 '(:pos #f(3100 -29900 920) :rpy #f(1.5706 0 0)
+			:name "/eng8/6f/elevator_call_panel")
+	 '(:pos #f(4850 -31550 1000) :rpy #f(3.1416 0 0)
+			:name "/eng8/6f/elevator_inside_panel"))
+
+	(setq scene
+		  (instance
+		   plane-building-model :init :name "/eng8"
+		   :objects
+		   (append
+			(list
+			 map
+			 (elevator_call_panel :name "elevator_call_panel")
+			 (elevator_inside_panel :name "elevator_inside_panel"))
+			(flatten (send map :inheritance)))
+		   ))
     ;; scene -> map
     (send scene :assoc map)
-    (send scene :floors '("/eng8/b1f" "/eng8/1f" "/eng8/6f")) ;; set floor information
+    (send scene :floors floor-names) ;; set floor information
+
+	;; visualize region
+	(mapcar #'(lambda(x)(let ((obj (car (send scene :find-object (concatenate string x "/region")))))
+						  (send obj :set-color #f(0 1 0 0.3))))
+			floor-names)
 
     (dolist (obj (send scene :objects))
-      ;; map -> unassoc obj
-      (unless (find obj (flatten (send scene :inheritance)))
-	(send map :assoc obj))
       ;; first charactor of obj-name must be slash
       (when (not (eq (char (send obj :name) 0) #\/))
-	(send obj :name (format nil "/~A" (send obj :name)))))
-    scene))
+		(send obj :name (format nil "/~A" (send obj :name)))))
+
+    scene)
 
 ;; example
 ;; (load "package://pr2eus/pr2-interface")

@@ -136,13 +136,13 @@ if __name__ == '__main__':
 			   1.0
 			   :name ,(format nil "~A/region" (car x))))
 		     floor-yaml)))
-	   (mapcar #'(lambda(co pr)(send pr :move-to co)(send co :assoc pr)) floors regions)
+	   (mapcar #'(lambda(co pr)(send pr :move-to co :local)(send co :assoc pr)) floors regions)
 	   (dolist (flo floors)
 	     (let ((parent
 		    (find (car (rassoc (send flo :name) assoc-list))
 			  (append (list map) (flatten (send map :inheritance)))
 			  :key #'(lambda(x)(send x :name)) :test #'equal)))
-	       (send flo :move-to parent :parent)
+	       (send flo :transform parent :local)
 	       (send parent :assoc flo)))
 	   ;; definition of rooms
 	   (setq rooms
@@ -159,7 +159,7 @@ if __name__ == '__main__':
 		    (find (car (rassoc (send rm :name) assoc-list))
 			  (append (list map) (flatten (send map :inheritance)))
 			  :key #'(lambda(x)(send x :name)) :test #'equal)))
-	       (send rm :move-to parent :parent)
+	       (send rm :transform parent :local)
 	       (send parent :assoc rm)))
 	   ;; end of room definition
 	   map))
