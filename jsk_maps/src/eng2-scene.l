@@ -141,6 +141,11 @@
 	(send scene :assoc map)
 	(send scene :floors floor-names) ;; set floor information
 
+	;; visualize region
+	(mapcar #'(lambda(x)(let ((obj (car (send scene :find-object (concatenate string x "/region")))))
+						  (send obj :set-color #f(0 1 0 0.3))))
+			floor-names)
+
 	(dolist (obj (send scene :objects))
 	  ;; first charactor of obj-name must be slash
 	  (when (not (eq (char (send obj :name) 0) #\/))
