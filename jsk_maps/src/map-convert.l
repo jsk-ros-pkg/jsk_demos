@@ -122,8 +122,8 @@ if __name__ == '__main__':
 		     #'(lambda(x)
 			 `(make-cascoords
 			   :name ,(car x)
-			   :pos ,(send (get-coords (cdr x)) :pos)
-			   :rot ,(send (get-coords (cdr x)) :rot)))
+			   :pos ,(concatenate cons '(float-vector) (send (get-coords (cdr x)) :pos))
+			   :rpy ,(concatenate cons '(float-vector) (car (rpy-angle (send (get-coords (cdr x)) :rot))))))
 		     floor-yaml)))
 	   (setq regions
 		 (list
@@ -131,9 +131,9 @@ if __name__ == '__main__':
 		     #'(lambda(x)
 			 `(make-prism
 			   (list ,@(mapcar
-				    #'(lambda(y)(scale 1000 (float-vector (elt y 0)(elt y 1) 0)))
+				    #'(lambda(y)(list 'float-vector (* 1000 (elt y 0)) (* 1000 (elt y 1)) 0))
 				    (get-item "region" (cdr x))))
-			   1.0
+			   100.0
 			   :name ,(format nil "~A/region" (car x))))
 		     floor-yaml)))
 	   (mapcar #'(lambda(co pr)(send pr :move-to co :local)(send co :assoc pr)) floors regions)
@@ -151,8 +151,8 @@ if __name__ == '__main__':
 		     #'(lambda(x)
 			 `(make-cascoords
 			   :name ,(car x)
-			   :pos ,(send (get-coords (cdr x)) :pos)
-			   :rot ,(send (get-coords (cdr x)) :rot)))
+			   :pos ,(concatenate cons '(float-vector) (send (get-coords (cdr x)) :pos))
+			   :rpy ,(concatenate cons '(float-vector) (car (rpy-angle (send (get-coords (cdr x)) :rot))))))
 		     room-yaml)))
 	   (dolist (rm rooms)
 	     (let ((parent
