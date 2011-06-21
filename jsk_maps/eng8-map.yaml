@@ -23,4 +23,14 @@ room:
         frame_id: /eng8/6f
         translation: {x: 0,y: 0,z: 0}
         rotation: {w: 1,x: 0,y: 0,z: 0}
-        region: [[0,8],[0,-2],[10,-2],[10,8]]
+        region: [[0,7],[0,-1],[9,-1],[9,7]]
+    /eng8/6f/606:
+        frame_id: /eng8/6f
+        translation: {x: 0,y: -3,z: 0}
+        rotation: {w: 1,x: 0,y: 0,z: 0}
+        region: [[0,2],[0,-2],[9,-2],[9,2]]
+    /eng8/6f/610:
+        frame_id: /eng8/6f
+        translation: {x: 0,y: -10,z: 0}
+        rotation: {w: 1,x: 0,y: 0,z: 0}
+        region: [[0,-7],[0,1],[9,1],[9,-7]]
