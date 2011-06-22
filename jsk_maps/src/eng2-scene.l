@@ -1,8 +1,10 @@
+(load "package://jsk_maps/src/plane-building-model.l")
 (load "package://jsk_maps/euslisp/eng2-map.l")
+
 (load "models/elevator_call_panel_eng2-object.l")
 (load "models/elevator_inside_panel_eng2-object.l")
 
-(load "package://jsk_maps/src/plane-building-model.l")
+(load "eng2-rooms.l")
 
 (defun make-eng2-scene ()
   (let* (scene (map (make-eng2-map-map)) floor-names spots)
@@ -58,6 +60,17 @@
 			:pos #f(-2590 -44905 0)
 			:name "/eng2/3f/small-kitchen"))
 	;; 7f
+	(setq rooms (eng2-rooms))
+	(let ((7f-o (find "/eng2/7f" (flatten (send map :inheritance))
+						:test #'string= :key #'(lambda(x)(send x :name))))
+		  (73b1 (find "73b1" rooms
+					  :test #'string= :key #'(lambda(x)(send x :name)))))
+	  (send 73b1 :move-to (send 7f-o :copy-worldcoords) :world)
+	  ;;(send 73b1 :rotate pi/2 :z)
+	  (dolist (rm rooms)
+		(send rm :name (concatenate string "/eng2/7f/" (send rm :name)))
+		(send 73b1 :dissoc rm) (send 7f-o :assoc rm))
+	  )
 	(make-cascoords-tree
 	 (find "/eng2/7f" (send map :descendants)
 	       :test #'string= :key #'(lambda(x)(send x :name)))

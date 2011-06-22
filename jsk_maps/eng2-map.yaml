@@ -26,7 +26,7 @@ room:
     # room origin and area
     /eng2/7f/73B1:
         frame_id: /eng2/7f
-        translation: {x: 0,y: -0.5,z: 0}
+        translation: {x: 0,y: 0,z: 0}
         rotation: {w: 1,x: 0,y: 0,z: 0}
         region: [[0,3.5],[0,-3.5],[10,-3.5],[10,3.5]]
     /eng2/7f/73B2:
