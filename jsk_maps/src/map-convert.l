@@ -134,33 +134,34 @@ if __name__ == '__main__':
 				    #'(lambda(y)(list 'float-vector (* 1000 (elt y 0)) (* 1000 (elt y 1)) 0))
 				    (get-item "region" (cdr x))))
 			   100.0
-			   :name ,(format nil "~A/region" (car x))))
+			   :name ,(format nil "~A" (car x))))
 		     floor-yaml)))
-	   (mapcar #'(lambda(co pr)(send pr :move-to co :local)(send co :assoc pr)) floors regions)
-	   (dolist (flo floors)
-	     (let ((parent
-		    (find (car (rassoc (send flo :name) assoc-list))
-			  (append (list map) (flatten (send map :inheritance)))
-			  :key #'(lambda(x)(send x :name)) :test #'equal)))
-	       (send flo :transform parent :world)
-	       (send parent :assoc flo)))
+
+	   (mapcar #'(lambda(co pr)(send co :transform map :world) (send pr :move-to co :world)(send map :assoc pr)) floors regions)
+	   ;; (dolist (flo regions)
+	   ;;   (let ((parent
+	   ;; 	    (find (car (rassoc (send flo :name) assoc-list))
+	   ;; 		  (append (list map) (flatten (send map :inheritance)))
+	   ;; 		  :key #'(lambda(x)(send x :name)) :test #'equal)))
+	   ;;     (send flo :transform parent :world)
+	   ;;     (send parent :assoc flo)))
 	   ;; definition of rooms
-	   (setq rooms
-		 (list
-		  ,@(mapcar
-		     #'(lambda(x)
-			 `(make-cascoords
-			   :name ,(car x)
-			   :pos ,(concatenate cons '(float-vector) (send (get-coords (cdr x)) :pos))
-			   :rpy ,(concatenate cons '(float-vector) (car (rpy-angle (send (get-coords (cdr x)) :rot))))))
-		     room-yaml)))
-	   (dolist (rm rooms)
-	     (let ((parent
-		    (find (car (rassoc (send rm :name) assoc-list))
-			  (append (list map) (flatten (send map :inheritance)))
-			  :key #'(lambda(x)(send x :name)) :test #'equal)))
-	       (send rm :transform parent :world)
-	       (send parent :assoc rm)))
+	   ;; (setq rooms
+	   ;; 	 (list
+	   ;; 	  ,@(mapcar
+	   ;; 	     #'(lambda(x)
+	   ;; 		 `(make-cascoords
+	   ;; 		   :name ,(car x)
+	   ;; 		   :pos ,(concatenate cons '(float-vector) (send (get-coords (cdr x)) :pos))
+	   ;; 		   :rpy ,(concatenate cons '(float-vector) (car (rpy-angle (send (get-coords (cdr x)) :rot))))))
+	   ;; 	     room-yaml)))
+	   ;; (dolist (rm rooms)
+	   ;;   (let ((parent
+	   ;; 	    (find (car (rassoc (send rm :name) assoc-list))
+	   ;; 		  (append (list map) (flatten (send map :inheritance)))
+	   ;; 		  :key #'(lambda(x)(send x :name)) :test #'equal)))
+	   ;;     (send rm :transform parent :world)
+	   ;;     (send parent :assoc rm)))
 	   ;; end of room definition
 	   map))
       f ) ;; end of pprint

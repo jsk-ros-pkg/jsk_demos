@@ -7,9 +7,8 @@
 (load "eng2-rooms.l")
 
 (defun make-eng2-scene ()
-  (let* (scene (map (make-eng2-map-map)) floor-names spots)
-	(setq floor-names
-	      (mapcar #'(lambda(x)(send x :name)) (send map :descendants)))
+  (let* (scene (map (make-eng2-map-map)) floor-names rooms spots)
+	(setq floor-names '("/eng2/2f" "/eng2/3f" "/eng2/7f" "/eng2/8f"))
 
 	;; 2f
 	(make-cascoords-tree
@@ -60,16 +59,16 @@
 			:pos #f(-2590 -44905 0)
 			:name "/eng2/3f/small-kitchen"))
 	;; 7f
-	(setq rooms (eng2-rooms))
-	(let ((7f-o (find "/eng2/7f" (send map :descendants)
-						:test #'string= :key #'(lambda(x)(send x :name))))
-		  (73b1 (find "73b1" rooms
-					  :test #'string= :key #'(lambda(x)(send x :name)))))
+	(let* ((7rms (eng2-rooms))
+		   (7f-o (find "/eng2/7f" (send map :descendants)
+					   :test #'string= :key #'(lambda(x)(send x :name))))
+		   (73b1 (find "73b1" 7rms
+					   :test #'string= :key #'(lambda(x)(send x :name)))))
 	  (send 73b1 :move-to (send 7f-o :copy-worldcoords) :world)
-	  ;;(send 73b1 :rotate pi/2 :z)
-	  (dolist (rm rooms)
+	  (dolist (rm 7rms)
 		(send rm :name (concatenate string "/eng2/7f/" (send rm :name)))
 		(send 73b1 :dissoc rm) (send 7f-o :assoc rm))
+	  (setq rooms (append rooms 7rms))
 	  )
 	(make-cascoords-tree
 	 (find "/eng2/7f" (send map :descendants)
@@ -138,26 +137,30 @@
 	 '(:pos #f(2900 -33750 1000) :rpy #f(3.1416 0 0)
 			:name "/eng2/8f/elevator_inside_panel"))
 
+	;; TODO smart
+	(setq map1 (list map)
+		  map2 (flatten (send-all map1 :descendants)) ;; floor
+		  map3 (flatten (send-all map2 :descendants)));; rooms or...
+
 	(setq scene
 	      (instance
 	       plane-building-model :init :name "/eng2"
 	       :objects
 	       (append
+			map1 map2 map3
 			(list
-			 map
 			 (elevator_call_panel_eng2 :name "elevator_call_panel")
-			 (elevator_inside_panel_eng2 :name "elevator_inside_panel"))
-			(flatten (send map :inheritance)))
+			 (elevator_inside_panel_eng2 :name "elevator_inside_panel")))
 	       ))
 
 	;; scene -> map
 	(send scene :assoc map)
 	(send scene :floors floor-names) ;; set floor information
+	(send scene :rooms rooms)
 
 	;; visualize region
-	(mapcar #'(lambda(x)(let ((obj (car (send scene :find-object (concatenate string x "/region")))))
-						  (send obj :set-color #f(0 1 0 0.3))))
-			floor-names)
+	(send-all (send scene :floors) :set-color #f(0 1 0 0.3))
+	(send-all rooms :translate #f(0 0 100))
 
 	(dolist (obj (send scene :objects))
 	  ;; first charactor of obj-name must be slash
