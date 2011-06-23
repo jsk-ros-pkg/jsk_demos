@@ -217,6 +217,9 @@
 				(make-eng2-corridor 2000 -14800 :pos (float-vector (+ 2020 33319) (- (+ 1500 445 2710 445 1500  14100 1500 445 2710 445 1500)) 0) :rpy (float-vector pi/2 0 0))
 				(make-eng2-corridor 2700 33319 :pos (float-vector 1010 (- (+ 14800 (* 2 (+ 2710 1500 445)))) 0))
 				))
+	(let ((id 0))
+	  (dolist (co corridors)
+		(send co :name (format nil "corridor~a" (incf id)))))
 	(setq rooms (append 71rooms 72rooms 73rooms corridors))
 
 	(setq 73b1 (find "73b1" rooms

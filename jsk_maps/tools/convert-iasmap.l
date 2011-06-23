@@ -65,25 +65,25 @@
   ))
 
 (defun convert-objs->semobjs (objs &optional (pid 0))
-  (let ((semobjs nil) type id)
+  (let ((semobjs nil) type (id 0))
     (dolist (ob objs)
 	  (setq type (conversion-rule (string-downcase (send ob :name))))
 	  (when type
-		(setq id (incf *id*))
+		(incf id)
 		(push (convert-obj->semantic-bbox id ob type pid) semobjs)
 		(append semobjs (convert-objs->semobjs (send ob :descendants) id))
 		))
     semobjs ))
 
 ;; dump the information for ias_sem_map
-(defun dump-obj->yaml (obj fd) ;; only objects
+(defun dump-obj->yaml (obj id fd) ;; only objects
   (if (null (send obj :parent)) (return-from dump-obj->yaml))
   (if (not (find-method obj :bodies)) (return-from dump-obj->yaml))
   (let* ((type (conversion-rule (string-downcase (send obj :name))))
 		 (pos (scale 0.001 (send obj :pos)))
 		 (qu (matrix2quaternion (send obj :rot)))
 		 (sobj (convert-obj->semantic-bbox 0 obj type 0)))
-	(format fd "    ~a:~%" (send obj :name))
+	(format fd "    ~a~a:~%" (send obj :name) id)
 	(format fd "        frame_id: ~a~%" (send (send obj :parent) :name))
 	(format fd "        type: [~a]~%" type)
 	(format fd "        translation: {x: ~a, y: ~a, z: ~a}~%"
@@ -102,7 +102,8 @@
 					 (send room :vertices)))
 	(setq w1 (apply #'max (mapcar #'(lambda(x)(elt x 1)) vs)))
 	(setq w2 (apply #'min (mapcar #'(lambda(x)(elt x 1)) vs)))
-	(setq d (apply #'max (mapcar #'(lambda(x)(abs (elt x 0))) vs)))
+	(setq d1 (apply #'max (mapcar #'(lambda(x)(elt x 0)) vs)))
+	(setq d2 (apply #'min (mapcar #'(lambda(x)(elt x 0)) vs)))
 	(format fd "    ~a:~%" (send room :name))
 	(format fd "        frame_id: ~a~%" (send (send room :parent) :name))
 	(format fd "        type: [~a]~%" type)
@@ -110,13 +111,13 @@
 			(elt pos 0) (elt pos 1) (elt pos 2))
 	(format fd "        rotation: {w: ~a, x: ~a, y: ~a, z: ~a}~%"
 			(elt qu 0) (elt qu 1) (elt qu 2) (elt qu 3))
-	(format fd "        region: {[0,~a],[0,~a],[~a,~a],[~a,~a]}~%"
-			w2 w1 d w1 d w2)
+	(format fd "        region: [[~a,~a],[~a,~a],[~a,~a],[~a,~a]]~%"
+			d1 w2 d1 w1 d2 w1 d2 w2)
 	))
 
 
 (defun dump-building->yaml (filename scene)
-  (let* ((floors (send scene :floors)) (rooms (send scene :rooms))
+  (let* ((floors (send scene :floors)) (rooms (send scene :rooms)) (id 0)
 		 (objs (set-difference (send scene :objects) (append floors rooms))))
 	(dolist (rm rooms)
 	  (when (derivedp rm scene-model)
@@ -124,10 +125,16 @@
 	(setq *objs* objs)
 	(with-open-file
 	 (fd filename :direction :output)
+	 (format fd "map_frame: ~a~%" (send scene :name))
+	 (format fd "floor:~%")
+	 (dolist (flo floors)
+	   (dump-room->yaml flo fd))
+	 (format fd "room:~%")
 	 (dolist (room rooms)
 	   (dump-room->yaml room fd))
+	 (format fd "object:~%")
 	 (dolist (obj objs)
-	   (dump-obj->yaml obj fd))
+	   (dump-obj->yaml obj (incf id) fd))
 	 )))
 
 (defun call-mod-semmap (objs)
