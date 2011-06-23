@@ -61,7 +61,7 @@
 			:name "/eng2/3f/small-kitchen"))
 	;; 7f
 	(setq rooms (eng2-rooms))
-	(let ((7f-o (find "/eng2/7f" (flatten (send map :inheritance))
+	(let ((7f-o (find "/eng2/7f" (send map :descendants)
 						:test #'string= :key #'(lambda(x)(send x :name))))
 		  (73b1 (find "73b1" rooms
 					  :test #'string= :key #'(lambda(x)(send x :name)))))
@@ -161,7 +161,7 @@
 
 	(dolist (obj (send scene :objects))
 	  ;; first charactor of obj-name must be slash
-	  (when (not (eq (char (send obj :name) 0) #\/))
+	  (when (not (eq (char (string (send obj :name)) 0) #\/))
 	    (send obj :name (format nil "/~A" (send obj :name)))))
 	scene))
 
