@@ -2,7 +2,9 @@
 ;; (+ 2707 2707 2707 2707 525) -> 11353
 ;; (+ 4050 3450 3450 3600) -> 14550
 ;; 2202
-
+;(load "models/room73b1-scene.l")
+(load "models/room73b2-scene.l")
+;(load "models/room73a3-scene.l")
 ;;
 (defun make-eng2-room (w1 w2 d &rest args &key (name) &allow-other-keys)
   (let* (b (s 50) (sd (if (> d 0) (- s) s)) k v)
@@ -130,8 +132,8 @@
 	(a3 (make-eng2-room 0 (* 1150 3) 8121 :name "73a3"))
 	(a4 (make-eng2-room (+ 100 500 295) (* 1150 3) 8121 :name "73a4"))
 	(b1 (make-eng2-room (* 1150 3) (+ (* 1150 3) 150) -11353 :name "73b1"))
-	(b2 (make-eng2-room (+ (* 1150 3) 100 500 295) (* 1150 3) -11353 :name "73b2"))
-
+;	(b2 (make-eng2-room (+ (* 1150 3) 100 500 295) (* 1150 3) -11353 :name "73b2"))
+	(b2 (room73b2))
 	(c1 (make-eng2-room (* 1150 3) (+ (* 1150 3) 150) 11353 :name "73c1"))
 	(c2 (make-eng2-room (+ (* 1150 3) 100 500 295) (* 1150 3) 11353 :name "73c2"))
 	(d1 (make-eng2-room (* 1150 3) 150 -8121 :name "73d1"))
@@ -145,6 +147,7 @@
     (setf (get b1 :face-color) :darkviolet)
     (setf (get b2 :face-color) :dodgerblue)
     (setf (get d1 :face-color) :dodgerblue)
+	(dolist (obj (send b2 :objects)) (send b2 :assoc obj))
 
     (send d4 :locate (float-vector 0 (* 3 1150) 0))
     (send d3 :assoc d4)
