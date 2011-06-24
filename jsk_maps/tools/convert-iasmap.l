@@ -112,16 +112,19 @@
 
 (defun convert-obj->semantic-bbox (id obj type parent)
   (let ((semobj (instance mod_semantic_map::SemMapObject :init))
-		aabb tmp size pos)
+		dummy aabb tmp size cpos pos vc)
     (setq tmp (send obj :copy-worldcoords))
     (send obj :orient 0 :z :world)
 	(send obj :worldpos) ;; omajinai
 	(if (find-method obj :box)
 		(setq aabb (send obj :box))
 	  (progn
+		(print (send obj :bodies))
 		(setq aabb (make-bounding-box (flatten (send-all (send obj :bodies) :vertices))))))
     (setq size (scale 0.001 (v- (send aabb :maxpoint) (send aabb :minpoint))))
-	(setq pos (scale 0.0005 (v+ (send aabb :maxpoint) (send aabb :minpoint))))
+	(setq cpos (scale 0.5 (v+ (send aabb :maxpoint) (send aabb :minpoint))))
+	(setq vc (v- cpos (send tmp :worldpos)))
+	(setq pos (scale 0.001 (v+ (send tmp :worldpos) (send tmp :rotate-vector vc))))
     (send obj :move-to (send tmp :copy-worldcoords) :world)
     ;;
     (send semobj :id id)
@@ -251,3 +254,8 @@
   (dump-building->yaml filename *scene* :yaml))
 
 (format t "type (yaml) or (srv)~%")
+
+
+(defun loc()
+  (setq loc (car (send (car (send *scene* :find-object "/eng2/7f/room73b2"))
+				  :find-object "room73b2-locker2"))))
