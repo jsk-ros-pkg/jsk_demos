@@ -114,15 +114,15 @@
   (let ((semobj (instance mod_semantic_map::SemMapObject :init))
 		aabb tmp size pos)
     (setq tmp (send obj :copy-worldcoords))
-    (send obj :move-to (make-coords) :world)
+    (send obj :orient 0 :z :world)
 	(send obj :worldpos) ;; omajinai
 	(if (find-method obj :box)
 		(setq aabb (send obj :box))
 	  (progn
 		(setq aabb (make-bounding-box (flatten (send-all (send obj :bodies) :vertices))))))
-    (send obj :move-to (send tmp :copy-worldcoords) :world)
     (setq size (scale 0.001 (v- (send aabb :maxpoint) (send aabb :minpoint))))
 	(setq pos (scale 0.0005 (v+ (send aabb :maxpoint) (send aabb :minpoint))))
+    (send obj :move-to (send tmp :copy-worldcoords) :world)
     ;;
     (send semobj :id id)
     (send semobj :type type)
