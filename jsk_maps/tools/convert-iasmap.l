@@ -107,7 +107,7 @@
    ;; building type
    ;;((substringp "???" name) "Building") 
 
-   (t "UnknownType") ;; no candidate -> will not convert
+   (t "ConstructionArtifact") ;; no candidate -> will not convert
   ))
 
 (defun convert-obj->semantic-bbox (id obj type parent)
