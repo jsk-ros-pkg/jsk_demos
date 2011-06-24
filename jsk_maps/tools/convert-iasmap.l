@@ -19,7 +19,7 @@
 
 (defun convert-obj->semantic-bbox (id obj type parent &key roomp)
   (let ((semobj (instance mod_semantic_map::SemMapObject :init))
-		aabb tmp)
+		aabb tmp size pos)
     (setq tmp (send obj :copy-worldcoords))
     (send obj :move-to (make-coords) :world)
 	(if (find-method obj :box)
@@ -31,13 +31,14 @@
     ;;
     (send semobj :id id)
     (send semobj :type type)
-    (setq tmp (scale 0.001 (v- (send aabb :maxpoint) (send aabb :minpoint))))
-    (send semobj :width  (elt tmp 0)) ;; x
-    (send semobj :depth  (elt tmp 1)) ;; y
-    (send semobj :height (elt tmp 2)) ;; z
+	(send tmp :locate (scale 0.001 (send tmp :pos)) :world)
     (send semobj :pose ;; 4x4 matrix -> size =16
-	  (mapcan #'(lambda(x)(coerce (matrix-row (send obj :4x4) x) cons))
-		  (list 0 1 2 3)))
+		  (mapcan #'(lambda(x)(coerce (matrix-row (send tmp :4x4) x) cons))
+				  (list 0 1 2 3)))
+    (setq size (scale 0.001 (v- (send aabb :maxpoint) (send aabb :minpoint))))
+    (send semobj :width  (elt size 0)) ;; x
+    (send semobj :depth  (elt size 1)) ;; y
+    (send semobj :height (elt size 2)) ;; z
     (send semobj :partof parent) ;; parent id
     (format t ";; convert id:~a obj:~a type:~a par:~a~%" id obj type parent)
     semobj
@@ -46,21 +47,21 @@
 (defun conversion-rule (name)
   (cond
    ;; prior rule
-   ((substringp "knob" name) "knob")
-   ((substringp "hinge" name) "hinge")
-   ((substringp "handle" name) "handle")
-   ((substringp "cupboard" name) "cupboard")
-   ((substringp "desk" name) "table")
-   ((substringp "table" name) "table")
-   ((substringp "door" name) "door")
-   ((substringp "cup" name) "cup")
-   ((substringp "drawer" name) "drawer")
-   ((substringp "oven" name) "oven")
-   ((substringp "refrigerator" name) "refrigerator")
-   ((substringp "dishwasher" name) "dishwasher")
-   ((substringp "countertop" name) "countertop")
-   ((substringp "sink" name) "sink")
-   ((substringp "shelf" name) "shelf")
+   ((substringp "knob" name) "Knob")
+   ((substringp "hinge" name) "Hinge")
+   ((substringp "handle" name) "Handle")
+   ((substringp "cupboard" name) "Cupboard")
+   ((substringp "desk" name) "Table")
+   ((substringp "table" name) "Table")
+   ((substringp "door" name) "Door")
+   ((substringp "cup" name) "Cup")
+   ((substringp "drawer" name) "Drawer")
+   ((substringp "oven" name) "Oven")
+   ((substringp "refrigerator" name) "Refrigerator")
+   ((substringp "dishwasher" name) "Dishwasher")
+   ((substringp "countertop" name) "Countertop")
+   ((substringp "sink" name) "Sink")
+   ((substringp "shelf" name) "Shelf")
    (t "UnknownType") ;; no candidate -> will not convert
   ))
 
@@ -87,7 +88,8 @@
 	(format fd "        frame_id: ~a~%" (send (send obj :parent) :name))
 	(format fd "        type: [~a]~%" type)
 	(format fd "        translation: {x: ~a, y: ~a, z: ~a}~%"
-			(elt pos 0) (elt pos 1) (elt pos 2))
+			(elt (send sobj :pose) 3) (elt (send sobj :pose) 7)	(elt (send sobj :pose) 11)) ;; global pose
+;			(elt pos 0) (elt pos 1) (elt pos 2)) local pose
 	(format fd "        rotation: {w: ~a, x: ~a, y: ~a, z: ~a}~%"
 			(elt qu 0) (elt qu 1) (elt qu 2) (elt qu 3))
 	(format fd "        width: ~a~%        depth: ~a~%        height: ~a~%"
@@ -108,7 +110,8 @@
 	(format fd "        frame_id: ~a~%" (send (send room :parent) :name))
 	(format fd "        type: [~a]~%" type)
 	(format fd "        translation: {x: ~a, y: ~a, z: ~a}~%"
-			(elt pos 0) (elt pos 1) (elt pos 2))
+;			(elt (send sobj :pose) 3) (elt (send sobj :pose) 7)	(elt (send sobj :pose) 11)) ;; global pose
+			(elt pos 0) (elt pos 1) (elt pos 2)) ;local pose
 	(format fd "        rotation: {w: ~a, x: ~a, y: ~a, z: ~a}~%"
 			(elt qu 0) (elt qu 1) (elt qu 2) (elt qu 3))
 	(format fd "        region: [[~a,~a],[~a,~a],[~a,~a],[~a,~a]]~%"
