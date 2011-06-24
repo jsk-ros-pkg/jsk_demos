@@ -14,10 +14,29 @@
 (ros::roseus-add-srvs "mod_semantic_map")
 (setq *srvname* "/generate_owl_map")
 
-(ros::roseus "hoge")
-;(ros::wait-for-service *srvname*)
+(defun conversion-rule (name)
+  (cond
+   ;; prior rule
+   ((substringp "knob" name) "Knob")
+   ((substringp "hinge" name) "Hinge")
+   ((substringp "handle" name) "Handle")
+   ((substringp "cupboard" name) "Cupboard")
+   ((substringp "desk" name) "Table")
+   ((substringp "table" name) "Table")
+   ((substringp "door" name) "Door")
+   ((substringp "cup" name) "Cup")
+   ((substringp "drawer" name) "Drawer")
+   ((substringp "oven" name) "Oven")
+   ((substringp "refrigerator" name) "Refrigerator")
+   ((substringp "dishwasher" name) "Dishwasher")
+   ((substringp "countertop" name) "Countertop")
+   ((substringp "sink" name) "Sink")
+   ((substringp "shelf" name) "Shelf")
+   (t "UnknownType") ;; no candidate -> will not convert
+  ))
 
-(defun convert-obj->semantic-bbox (id obj type parent &key roomp)
+
+(defun convert-obj->semantic-bbox (id obj type parent)
   (let ((semobj (instance mod_semantic_map::SemMapObject :init))
 		aabb tmp size pos)
     (setq tmp (send obj :copy-worldcoords))
@@ -44,36 +63,17 @@
     semobj
     ))
 
-(defun conversion-rule (name)
-  (cond
-   ;; prior rule
-   ((substringp "knob" name) "Knob")
-   ((substringp "hinge" name) "Hinge")
-   ((substringp "handle" name) "Handle")
-   ((substringp "cupboard" name) "Cupboard")
-   ((substringp "desk" name) "Table")
-   ((substringp "table" name) "Table")
-   ((substringp "door" name) "Door")
-   ((substringp "cup" name) "Cup")
-   ((substringp "drawer" name) "Drawer")
-   ((substringp "oven" name) "Oven")
-   ((substringp "refrigerator" name) "Refrigerator")
-   ((substringp "dishwasher" name) "Dishwasher")
-   ((substringp "countertop" name) "Countertop")
-   ((substringp "sink" name) "Sink")
-   ((substringp "shelf" name) "Shelf")
-   (t "UnknownType") ;; no candidate -> will not convert
-  ))
-
 (defun convert-objs->semobjs (objs &optional (pid 0))
   (let ((semobjs nil) type (id 0))
     (dolist (ob objs)
-	  (setq type (conversion-rule (string-downcase (send ob :name))))
-	  (when type
-		(incf id)
-		(push (convert-obj->semantic-bbox id ob type pid) semobjs)
-		(append semobjs (convert-objs->semobjs (send ob :descendants) id))
-		))
+	  (when (or (find-method ob :box) (find-method ob :bodies))
+		(progn
+		  (setq type (conversion-rule (string-downcase (send ob :name))))
+		  (when type
+			(incf id)
+			(push (convert-obj->semantic-bbox id ob type pid) semobjs)
+;			(append semobjs (convert-objs->semobjs (send ob :descendants) id))
+			))))
     semobjs ))
 
 ;; dump the information for ias_sem_map
@@ -119,26 +119,31 @@
 	))
 
 
-(defun dump-building->yaml (filename scene)
+(defun dump-building->yaml (filename scene type)
   (let* ((floors (send scene :floors)) (rooms (send scene :rooms)) (id 0)
 		 (objs (set-difference (send scene :objects) (append floors rooms))))
 	(dolist (rm rooms)
 	  (when (derivedp rm scene-model)
 		(setq objs (append objs (send rm :objects)))))
-	(setq *objs* objs)
-	(with-open-file
-	 (fd filename :direction :output)
-	 (format fd "map_frame: ~a~%" (send scene :name))
-	 (format fd "floor:~%")
-	 (dolist (flo floors)
-	   (dump-room->yaml flo fd))
-	 (format fd "room:~%")
-	 (dolist (room rooms)
-	   (dump-room->yaml room fd))
-	 (format fd "object:~%")
-	 (dolist (obj objs)
-	   (dump-obj->yaml obj (incf id) fd))
-	 )))
+   	(setq *objs* objs)
+	(if (eq type :yaml)
+		;; to yaml
+		(progn
+		  (with-open-file
+		   (fd filename :direction :output)
+		   (format fd "map_frame: ~a~%" (send scene :name))
+		   (format fd "floor:~%")
+		   (dolist (flo floors)
+			 (dump-room->yaml flo fd))
+		   (format fd "room:~%")
+		   (dolist (room rooms)
+			 (dump-room->yaml room fd))
+		   (format fd "object:~%")
+		   (dolist (obj objs)
+			 (dump-obj->yaml obj (incf id) fd))))
+	  ;; to service
+	  (call-mod-semmap (append floors rooms objs)))
+	))
 
 (defun call-mod-semmap (objs)
   (setq *id* 0)
@@ -153,10 +158,15 @@
     ))
 
 
-(load "package://jsk_maps/src/eng2-scene.l")
-(defun test (&optional (filename "eng2.yaml"))
-  (setq *scene* (make-eng2-scene))
-  (dump-building->yaml filename *scene*))
 
-(test)
-(exit)
+(load "package://jsk_maps/src/eng2-scene.l")
+(unless (boundp '*scene*) (setq *scene* (make-eng2-scene)))
+(defun srv ()
+  (ros::roseus "hoge")
+  (ros::wait-for-service *srvname*)
+  (dump-building->yaml "dummy" *scene* :srv))
+
+(defun yaml (&optional (filename "eng2.yaml"))
+  (dump-building->yaml filename *scene* :yaml))
+
+(format t "type (yaml) or (srv)~%")
