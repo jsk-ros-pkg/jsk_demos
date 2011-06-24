@@ -16,25 +16,99 @@
 
 (defun conversion-rule (name)
   (cond
-   ;; prior rule
-   ((substringp "knob" name) "Knob")
-   ((substringp "hinge" name) "Hinge")
+    ;; object types
+   ((substringp "knob" name) "ControlKnob") ;; knobs turned with one's fingers to control devices
+   ((substringp "hinge" name) "HingedJoint") ;; a hinged connection
    ((substringp "handle" name) "Handle")
    ((substringp "cupboard" name) "Cupboard")
-   ((substringp "desk" name) "Table")
-   ((substringp "table" name) "Table")
+   ((substringp "desk" name) "Table-PieceOfFurniture")  
+   ((substringp "table" name) "Table-PieceOfFurniture")
    ((substringp "door" name) "Door")
-   ((substringp "cup" name) "Cup")
    ((substringp "drawer" name) "Drawer")
    ((substringp "oven" name) "Oven")
    ((substringp "refrigerator" name) "Refrigerator")
+   ((substringp "fridge" name) "Refrigerator")
    ((substringp "dishwasher" name) "Dishwasher")
-   ((substringp "countertop" name) "Countertop")
+   ((substringp "countertop" name) "CounterTop")
    ((substringp "sink" name) "Sink")
-   ((substringp "shelf" name) "Shelf")
+   ((substringp "stairs" name) "Stairway")
+   ((substringp "washing-machine" name) "ClothesWasher")
+   ((substringp "refrigerator" name) "Refridgerator")
+   ((substringp "bed" name) "Bed-PieceOfFurniture")
+   ((substringp "microwave-oven" name) "MicrowaveOven")
+   ((substringp "trashbox" name) "TrashContainer") ;; for those in the hallway / WasteBasket small baskets
+   ((substringp "sofa" name) "Sofa-PieceOfFurniture")
+   ((substringp "book_shelf" name) "ShelfInABuilding")
+   ((substringp "audio_shelf" name) "ShelfInABuilding")
+   ((substringp "shelf" name) "ShelfInABuilding")
+   ((substringp "bariera" name) "ShelfInABuilding")
+   ((substringp "panel-wall" name) "WallOfAConstruction")
+   ((substringp "dining-table" name) "DiningRoomTable") ;; or EatingTable?
+   ((substringp "television" name) "TelevisionSet")
+   ((substringp "cabinet" name) "Cabinet-PieceOfFurniture")
+
+   ;; portable objects
+   ((substringp "sushi-cup" name) "Bowl-Eating") ;; its important that XXX-cup or cup-XXX is before cup
+   ((substringp "mug-cup" name) "DrinkingMug") 
+   ((substringp "cup-saucer" name) "Sauce")
+   ((substringp "cup" name) "Cup")
+   ((substringp "book" name) "BookCopy")
+   ((substringp "chair" name) "Chair-PieceOfFurniture")
+   ((substringp "chessboard" name) "ChessBoard")
+   ((substringp "cell-phone" name) "CellularTelephone")
+   ((substringp "frying-pan" name) "OmelettePan")
+   ((substringp "kettle" name) "Kettle")
+   ((substringp "knife" name) "Knife")
+   ((substringp "iron" name) "ClothesIron")
+   ((substringp "pockey" name) "Refrigerator")
+   ((substringp "sponge" name) "Sponge-CleaningImplement")
+   ((substringp "tray" name) "Tray")
+   ((substringp "ball" name) "Ball")
+
+   ;; room types
+   ;;((substringp "???" name) "RoomInAConstruction") ;; room without specific type
+   ;;((substringp "???" name) "Restroom") 
+   ;;((substringp "???" name) "PublicRestroom") 
+   ;;((substringp "???" name) "MensRoom") 
+   ;;((substringp "???" name) "UnisexRoom")    
+   ;;((substringp "???" name) "WomensRoom") 
+   ;;((substringp "???" name) "BathRoom") 
+   ;;((substringp "???" name) "Kitchen") 
+   ;;((substringp "???" name) "Nursery-BabysRoom")    
+   ;;((substringp "???" name) "StudyRoom") 
+   ;;((substringp "???" name) "Lobby-Room") 
+   ;;((substringp "???" name) "Closet") 
+   ;;((substringp "???" name) "HospitalRoom")    
+   ;;((substringp "???" name) "DiningRoom") 
+   ;;((substringp "???" name) "UtilityRoom") 
+   ;;((substringp "???" name) "StorageRoom") 
+   ;;((substringp "???" name) "BedRoom")    
+   ;;((substringp "???" name) "OfficeRoom") 
+   ;;((substringp "???" name) "ProfessorsOffice")
+   ;;((substringp "???" name) "LaboratoryRoom") 
+   ;;((substringp "???" name) "Workshop")    
+   ;;((substringp "???" name) "ServerRoom") 
+   ;;((substringp "???" name) "ClassRoom") 
+   ;;((substringp "???" name) "LectureHall") 
+   ;;((substringp "???" name) "LibraryRoom")    
+   ;;((substringp "???" name) "PersonAssemblyRoom") 
+   ;;((substringp "???" name) "AuditoriumRoom") 
+   ;;((substringp "???" name) "MeetingSpace") 
+   ;;((substringp "???" name) "ConferenceRoom")    
+   ;;((substringp "???" name) "RestaurantSpace") 
+   ;;((substringp "???" name) "FastFoodRestaurantSpace") 
+   ;;((substringp "???" name) "CoffeeShopSpace") 
+
+   ;; level / floor types
+   ;;((substringp "???" name) "LevelOfAConstruction") ;; level without specific type
+   ;;((substringp "???" name) "AboveGroundLevelInAConstruction") ;; 1st floor or above, ie 2,3, etc
+   ;;((substringp "???" name) "BasementLevelInAConstruction") ;; basement level, eg b1, b2, etc
+   
+   ;; building type
+   ;;((substringp "???" name) "Building") 
+
    (t "UnknownType") ;; no candidate -> will not convert
   ))
-
 
 (defun convert-obj->semantic-bbox (id obj type parent)
   (let ((semobj (instance mod_semantic_map::SemMapObject :init))
@@ -62,6 +136,8 @@
     (format t ";; convert id:~a obj:~a type:~a par:~a~%" id obj type parent)
     semobj
     ))
+
+
 
 (defun convert-objs->semobjs (objs &optional (pid 0))
   (let ((semobjs nil) type (id 0))
