@@ -115,11 +115,13 @@
 		aabb tmp size pos)
     (setq tmp (send obj :copy-worldcoords))
     (send obj :move-to (make-coords) :world)
+	(send obj :worldpos) ;; omajinai
 	(if (find-method obj :box)
 		(setq aabb (send obj :box))
 	  (progn
 		(setq aabb (make-bounding-box (flatten (send-all (send obj :bodies) :vertices))))))
     (send obj :move-to (send tmp :copy-worldcoords) :world)
+    (setq size (scale 0.001 (v- (send aabb :maxpoint) (send aabb :minpoint))))
 	(setq pos (scale 0.0005 (v+ (send aabb :maxpoint) (send aabb :minpoint))))
     ;;
     (send semobj :id id)
@@ -128,11 +130,11 @@
     (send semobj :pose ;; 4x4 matrix -> size =16
 		  (mapcan #'(lambda(x)(coerce (matrix-row (send tmp :4x4) x) cons))
 				  (list 0 1 2 3)))
-    (setq size (scale 0.001 (v- (send aabb :maxpoint) (send aabb :minpoint))))
     (send semobj :width  (elt size 0)) ;; x
     (send semobj :depth  (elt size 1)) ;; y
     (send semobj :height (elt size 2)) ;; z
     (send semobj :partof parent) ;; parent id
+	;;
     (format t ";; convert id:~a obj:~a type:~a par:~a~%" id obj type parent)
     semobj
     ))
