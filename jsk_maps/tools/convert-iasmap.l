@@ -119,12 +119,12 @@
 		(setq aabb (send obj :box))
 	  (progn
 		(setq aabb (make-bounding-box (flatten (send-all (send obj :bodies) :vertices))))))
-    (send obj :move-to tmp :world)
-	(send tmp :translate (scale 0.5 (v+ (send aabb :maxpoint) (send aabb :minpoint))) :local)
+    (send obj :move-to (send tmp :copy-worldcoords) :world)
+	(setq pos (scale 0.0005 (v+ (send aabb :maxpoint) (send aabb :minpoint))))
     ;;
     (send semobj :id id)
     (send semobj :type type)
-	(send tmp :locate (scale 0.001 (send tmp :pos)) :world)
+	(send tmp :locate pos :world)
     (send semobj :pose ;; 4x4 matrix -> size =16
 		  (mapcan #'(lambda(x)(coerce (matrix-row (send tmp :4x4) x) cons))
 				  (list 0 1 2 3)))
@@ -148,19 +148,20 @@
 		  (when type
 			(incf id)
 			(push (convert-obj->semantic-bbox id ob type pid) semobjs)
-;			(append semobjs (convert-objs->semobjs (send ob :descendants) id))
+;;			(append semobjs (convert-objs->semobjs (send ob :descendants) id))
 			))))
     semobjs ))
 
 ;; dump the information for ias_sem_map
 (defun dump-obj->yaml (obj id fd) ;; only objects
   (if (null (send obj :parent)) (return-from dump-obj->yaml))
-  (if (not (find-method obj :bodies)) (return-from dump-obj->yaml))
+  (if (not (or (find-method obj :box) (find-method obj :bodies)))
+	  (return-from dump-obj->yaml))
   (let* ((type (conversion-rule (string-downcase (send obj :name))))
 		 (pos (scale 0.001 (send obj :pos)))
 		 (qu (matrix2quaternion (send obj :rot)))
 		 (sobj (convert-obj->semantic-bbox 0 obj type 0)))
-	(format fd "    ~a~a:~%" (send obj :name) id)
+	(format fd "    ~a~a:~%" (send obj :name) (if id id ""))
 	(format fd "        frame_id: ~a~%" (send (send obj :parent) :name))
 	(format fd "        type: [~a]~%" type)
 	(format fd "        translation: {x: ~a, y: ~a, z: ~a}~%"
@@ -186,8 +187,8 @@
 	(format fd "        frame_id: ~a~%" (send (send room :parent) :name))
 	(format fd "        type: [~a]~%" type)
 	(format fd "        translation: {x: ~a, y: ~a, z: ~a}~%"
-;			(elt (send sobj :pose) 3) (elt (send sobj :pose) 7)	(elt (send sobj :pose) 11)) ;; global pose
-			(elt pos 0) (elt pos 1) (elt pos 2)) ;local pose
+			(elt (send sobj :pose) 3) (elt (send sobj :pose) 7)	(elt (send sobj :pose) 11)) ;; global pose
+;			(elt pos 0) (elt pos 1) (elt pos 2)) ;local pose
 	(format fd "        rotation: {w: ~a, x: ~a, y: ~a, z: ~a}~%"
 			(elt qu 0) (elt qu 1) (elt qu 2) (elt qu 3))
 	(format fd "        region: [[~a,~a],[~a,~a],[~a,~a],[~a,~a]]~%"
@@ -210,10 +211,12 @@
 		   (format fd "map_frame: ~a~%" (send scene :name))
 		   (format fd "floor:~%")
 		   (dolist (flo floors)
-			 (dump-room->yaml flo fd))
+;;			 (dump-room->yaml flo fd))
+			 (dump-obj->yaml flo nil fd))
 		   (format fd "room:~%")
 		   (dolist (room rooms)
-			 (dump-room->yaml room fd))
+;;			 (dump-room->yaml room fd))
+			 (dump-obj->yaml room nil fd))
 		   (format fd "object:~%")
 		   (dolist (obj objs)
 			 (dump-obj->yaml obj (incf id) fd))))
