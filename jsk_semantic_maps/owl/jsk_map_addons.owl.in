@@ -1,33 +1,70 @@
 <?xml version="1.0"?>
 
+
 <!DOCTYPE rdf:RDF [
-    <!ENTITY local_path "file://@LOCAL_PACKAGE_PATH@/owl/">
-    <!ENTITY owl "http://www.w3.org/2002/07/owl#" >
-    <!ENTITY owl2 "http://www.w3.org/2006/12/owl2#" >
-    <!ENTITY xsd "http://www.w3.org/2001/XMLSchema#" >
-    <!ENTITY owl2xml "http://www.w3.org/2006/12/owl2-xml#" >
-    <!ENTITY rdfs "http://www.w3.org/2000/01/rdf-schema#" >
-    <!ENTITY rdf "http://www.w3.org/1999/02/22-rdf-syntax-ns#" >
-    <!ENTITY protege "http://protege.stanford.edu/plugins/owl/protege#" >
-    <!ENTITY knowrob "http://ias.cs.tum.edu/kb/knowrob.owl#" >
-    <!ENTITY jsk_map "http://www.jsk.t.u-tokyo.ac.jp/jsk_map.owl#" >
-    <!ENTITY jsk_map_addons "http://ias.cs.tum.edu/kb/jsk_map_addons.owl#" >
-]>
+          <!ENTITY local_path "file://@LOCAL_PACKAGE_PATH@/owl/">
+          <!ENTITY owl "http://www.w3.org/2002/07/owl#" >
+          <!ENTITY owl2 "http://www.w3.org/2006/12/owl2#" >
+          <!ENTITY xsd "http://www.w3.org/2001/XMLSchema#" >
+          <!ENTITY owl2xml "http://www.w3.org/2006/12/owl2-xml#" >
+          <!ENTITY knowrob "http://ias.cs.tum.edu/kb/knowrob.owl#" >
+          <!ENTITY rdfs "http://www.w3.org/2000/01/rdf-schema#" >
+          <!ENTITY rdf "http://www.w3.org/1999/02/22-rdf-syntax-ns#" >
+          <!ENTITY jsk_map "http://www.jsk.t.u-tokyo.ac.jp/jsk_map.owl#" >
+          <!ENTITY protege "http://protege.stanford.edu/plugins/owl/protege#" >
+          ]>
+
 
 <rdf:RDF xmlns="http://www.jsk.t.u-tokyo.ac.jp/jsk_map_addons.owl#"
-     xml:base="http://www.jsk.t.u-tokyo.ac.jp/jsk_map_addons.owl"
-     xmlns:jsk_map="http://www.jsk.t.u-tokyo.ac.jp/jsk_map.owl#"
-     xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#"
-     xmlns:protege="http://protege.stanford.edu/plugins/owl/protege#"
-     xmlns:owl2xml="http://www.w3.org/2006/12/owl2-xml#"
-     xmlns:owl="http://www.w3.org/2002/07/owl#"
-     xmlns:xsd="http://www.w3.org/2001/XMLSchema#"
-     xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
-     xmlns:owl2="http://www.w3.org/2006/12/owl2#"
-     xmlns:knowrob="http://ias.cs.tum.edu/kb/knowrob.owl#">
-    <owl:Ontology rdf:about="http://www.jsk.t.u-tokyo.ac.jp/jsk_map_addons.owl#">
-      <owl:imports rdf:resource="&local_path;jsk_map.owl"/>
-    </owl:Ontology>
+         xml:base="http://www.jsk.t.u-tokyo.ac.jp/jsk_map_addons.owl"
+         xmlns:jsk_map="http://www.jsk.t.u-tokyo.ac.jp/jsk_map.owl#"
+         xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#"
+         xmlns:protege="http://protege.stanford.edu/plugins/owl/protege#"
+         xmlns:owl2xml="http://www.w3.org/2006/12/owl2-xml#"
+         xmlns:owl="http://www.w3.org/2002/07/owl#"
+         xmlns:xsd="http://www.w3.org/2001/XMLSchema#"
+         xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+         xmlns:owl2="http://www.w3.org/2006/12/owl2#"
+         xmlns:knowrob="http://ias.cs.tum.edu/kb/knowrob.owl#">
+  <owl:Ontology rdf:about="http://www.jsk.t.u-tokyo.ac.jp/jsk_map_addons.owl#">
+    <owl:imports rdf:resource="&local_path;jsk_map.owl"/>
+  </owl:Ontology>
+
+
+    <!-- 
+    ///////////////////////////////////////////////////////////////////////////////////////
+    //
+    // Classes
+    //
+    ///////////////////////////////////////////////////////////////////////////////////////
+     -->
+
+    
+
+
+    <!-- http://ias.cs.tum.edu/kb/knowrob.owl#AboveGroundLevelInAConstruction -->
+
+    <owl:Class rdf:about="&knowrob;AboveGroundLevelInAConstruction"/>
+    
+
+
+    <!-- http://ias.cs.tum.edu/kb/knowrob.owl#LaboratoryRoom -->
+
+    <owl:Class rdf:about="&knowrob;LaboratoryRoom"/>
+    
+
+
+    <!-- http://ias.cs.tum.edu/kb/knowrob.owl#OfficeRoom -->
+
+    <owl:Class rdf:about="&knowrob;OfficeRoom"/>
+    
+
+
+    <!-- http://ias.cs.tum.edu/kb/knowrob.owl#ProfessorsOffice -->
+
+    <owl:Class rdf:about="&knowrob;ProfessorsOffice"/>
+    
+
 
     <!-- 
     ///////////////////////////////////////////////////////////////////////////////////////
@@ -37,72 +74,212 @@
     ///////////////////////////////////////////////////////////////////////////////////////
      -->
 
+
+        <!-- http://www.jsk.t.u-tokyo.ac.jp/jsk_map.owl#DaytimeOpeningHours-subway-hongo-campus -->
+
+        <owl:NamedIndividual rdf:about="&jsk_map;DaytimeOpeningHours-subway-hongo-campus">
+          <rdf:type rdf:resource="&knowrob;DaytimeOpeningHours"/>
+          <knowrob:startTime rdf:resource="&jsk_map;timepoint_10"/>
+          <knowrob:endTime rdf:resource="&jsk_map;timepoint_20"/>
+        </owl:NamedIndividual>
+       
+         <owl:NamedIndividual rdf:about="&jsk_map;DaytimeOpeningHours-lawson-hongo-campus">
+          <rdf:type rdf:resource="&knowrob;DaytimeOpeningHours"/>
+          <knowrob:startTime rdf:resource="&jsk_map;timepoint_0"/>
+          <knowrob:endTime rdf:resource="&jsk_map;timepoint_24"/>
+        </owl:NamedIndividual>
+         
+
+<!--
+        <owl:NamedIndividual rdf:about="&jsk_map;DaytimeOpeningHours-during">
+          <rdf:type rdf:resource="&knowrob;DaytimeOpeningHours"/>
+          <knowrob:startTime rdf:resource="&jsk_map;timepoint_11"/>
+          <knowrob:endTime rdf:resource="&jsk_map;timepoint_19"/>
+        </owl:NamedIndividual>
+        
+        <owl:NamedIndividual rdf:about="&jsk_map;DaytimeOpeningHours-overlaps">
+          <rdf:type rdf:resource="&knowrob;DaytimeOpeningHours"/>
+          <knowrob:startTime rdf:resource="&jsk_map;timepoint_5"/>
+          <knowrob:endTime rdf:resource="&jsk_map;timepoint_12"/>
+        </owl:NamedIndividual>
+
+        <owl:NamedIndividual rdf:about="&jsk_map;DaytimeOpeningHours-starts">
+          <rdf:type rdf:resource="&knowrob;DaytimeOpeningHours"/>
+          <knowrob:startTime rdf:resource="&jsk_map;timepoint_10"/>
+          <knowrob:endTime rdf:resource="&jsk_map;timepoint_15"/>
+        </owl:NamedIndividual>
+        
+        <owl:NamedIndividual rdf:about="&jsk_map;DaytimeOpeningHours-meets">
+          <rdf:type rdf:resource="&knowrob;DaytimeOpeningHours"/>
+          <knowrob:startTime rdf:resource="&jsk_map;timepoint_7"/>
+          <knowrob:endTime rdf:resource="&jsk_map;timepoint_10"/>
+        </owl:NamedIndividual>
+
+        <owl:NamedIndividual rdf:about="&jsk_map;DaytimeOpeningHours-finishes">
+          <rdf:type rdf:resource="&knowrob;DaytimeOpeningHours"/>
+          <knowrob:startTime rdf:resource="&jsk_map;timepoint_15"/>
+          <knowrob:endTime rdf:resource="&jsk_map;timepoint_20"/>
+        </owl:NamedIndividual>
+
+        <owl:NamedIndividual rdf:about="&jsk_map;DaytimeOpeningHours-before">
+          <rdf:type rdf:resource="&knowrob;DaytimeOpeningHours"/>
+          <knowrob:startTime rdf:resource="&jsk_map;timepoint_1"/>
+          <knowrob:endTime rdf:resource="&jsk_map;timepoint_9"/>
+        </owl:NamedIndividual>
+
+        <owl:NamedIndividual rdf:about="&jsk_map;DaytimeOpeningHours-only_start">
+          <rdf:type rdf:resource="&knowrob;DaytimeOpeningHours"/>
+          <knowrob:startTime rdf:resource="&jsk_map;timepoint_12"/>
+         </owl:NamedIndividual>
+    -->      
     
-
-
     <!-- http://www.jsk.t.u-tokyo.ac.jp/jsk_map.owl#LevelOfAConstruction-eng2-2f -->
 
-    <knowrob:AboveGroundLevelInAConstruction rdf:about="&jsk_map;LevelOfAConstruction-eng2-2f"/>
+    <owl:NamedIndividual rdf:about="&jsk_map;LevelOfAConstruction-eng2-2f">
+        <rdf:type rdf:resource="&knowrob;AboveGroundLevelInAConstruction"/>
+    </owl:NamedIndividual>
     
 
 
     <!-- http://www.jsk.t.u-tokyo.ac.jp/jsk_map.owl#LevelOfAConstruction-eng2-3f -->
 
-    <knowrob:AboveGroundLevelInAConstruction rdf:about="&jsk_map;LevelOfAConstruction-eng2-3f"/>
+    <owl:NamedIndividual rdf:about="&jsk_map;LevelOfAConstruction-eng2-3f">
+        <rdf:type rdf:resource="&knowrob;AboveGroundLevelInAConstruction"/>
+    </owl:NamedIndividual>
     
 
 
     <!-- http://www.jsk.t.u-tokyo.ac.jp/jsk_map.owl#LevelOfAConstruction-eng2-7f -->
 
-    <knowrob:AboveGroundLevelInAConstruction rdf:about="&jsk_map;LevelOfAConstruction-eng2-7f"/>
+    <owl:NamedIndividual rdf:about="&jsk_map;LevelOfAConstruction-eng2-7f">
+        <rdf:type rdf:resource="&knowrob;AboveGroundLevelInAConstruction"/>
+    </owl:NamedIndividual>
     
 
 
     <!-- http://www.jsk.t.u-tokyo.ac.jp/jsk_map.owl#LevelOfAConstruction-eng2-8f -->
 
-    <knowrob:AboveGroundLevelInAConstruction rdf:about="&jsk_map;LevelOfAConstruction-eng2-8f"/>
+    <owl:NamedIndividual rdf:about="&jsk_map;LevelOfAConstruction-eng2-8f">
+        <rdf:type rdf:resource="&knowrob;AboveGroundLevelInAConstruction"/>
+    </owl:NamedIndividual>
     
 
 
     <!-- http://www.jsk.t.u-tokyo.ac.jp/jsk_map.owl#RoomInAConstruction-eng2-7f-73A1 -->
 
-    <knowrob:ProfessorsOffice rdf:about="&jsk_map;RoomInAConstruction-eng2-7f-73A1"/>
+    <owl:NamedIndividual rdf:about="&jsk_map;RoomInAConstruction-eng2-7f-73A1">
+        <rdf:type rdf:resource="&knowrob;ProfessorsOffice"/>
+    </owl:NamedIndividual>
     
 
 
     <!-- http://www.jsk.t.u-tokyo.ac.jp/jsk_map.owl#RoomInAConstruction-eng2-7f-73A2 -->
 
-    <knowrob:ProfessorsOffice rdf:about="&jsk_map;RoomInAConstruction-eng2-7f-73A2"/>
+    <owl:NamedIndividual rdf:about="&jsk_map;RoomInAConstruction-eng2-7f-73A2">
+        <rdf:type rdf:resource="&knowrob;ProfessorsOffice"/>
+    </owl:NamedIndividual>
     
 
 
     <!-- http://www.jsk.t.u-tokyo.ac.jp/jsk_map.owl#RoomInAConstruction-eng2-7f-73A3 -->
 
-    <knowrob:OfficeRoom rdf:about="&jsk_map;RoomInAConstruction-eng2-7f-73A3"/>
+    <owl:NamedIndividual rdf:about="&jsk_map;RoomInAConstruction-eng2-7f-73A3">
+        <rdf:type rdf:resource="&knowrob;OfficeRoom"/>
+    </owl:NamedIndividual>
     
 
 
     <!-- http://www.jsk.t.u-tokyo.ac.jp/jsk_map.owl#RoomInAConstruction-eng2-7f-73A4 -->
 
-    <knowrob:OfficeRoom rdf:about="&jsk_map;RoomInAConstruction-eng2-7f-73A4"/>
+    <owl:NamedIndividual rdf:about="&jsk_map;RoomInAConstruction-eng2-7f-73A4">
+        <rdf:type rdf:resource="&knowrob;OfficeRoom"/>
+    </owl:NamedIndividual>
     
 
 
     <!-- http://www.jsk.t.u-tokyo.ac.jp/jsk_map.owl#RoomInAConstruction-eng2-7f-73B1 -->
 
-    <knowrob:LaboratoryRoom rdf:about="&jsk_map;RoomInAConstruction-eng2-7f-73B1"/>
+    <owl:NamedIndividual rdf:about="&jsk_map;RoomInAConstruction-eng2-7f-73B1">
+        <rdf:type rdf:resource="&knowrob;LaboratoryRoom"/>
+    </owl:NamedIndividual>
     
 
 
     <!-- http://www.jsk.t.u-tokyo.ac.jp/jsk_map.owl#RoomInAConstruction-eng2-7f-73B2 -->
 
-    <knowrob:LaboratoryRoom rdf:about="&jsk_map;RoomInAConstruction-eng2-7f-73B2"/>
+    <owl:NamedIndividual rdf:about="&jsk_map;RoomInAConstruction-eng2-7f-73B2">
+        <rdf:type rdf:resource="&knowrob;LaboratoryRoom"/>
+    </owl:NamedIndividual>
     
 
 
     <!-- http://www.jsk.t.u-tokyo.ac.jp/jsk_map.owl#RoomInAConstruction-eng2-8f-83B1 -->
 
-    <knowrob:LaboratoryRoom rdf:about="&jsk_map;RoomInAConstruction-eng2-8f-83B1"/>
+    <owl:NamedIndividual rdf:about="&jsk_map;RoomInAConstruction-eng2-8f-83B1">
+        <rdf:type rdf:resource="&knowrob;LaboratoryRoom"/>
+    </owl:NamedIndividual>
+
+
+
+    <!-- http://www.jsk.t.u-tokyo.ac.jp/jsk_map.owl#subway-hongo-campus -->
+
+    <owl:NamedIndividual rdf:about="&jsk_map;subway-hongo-campus">
+        <rdf:type rdf:resource="&knowrob;Subway-Restaurant"/>
+        <knowrob:hasDaytimeOpeningHours rdf:resource="&jsk_map;DaytimeOpeningHours-subway-hongo-campus"/>
+    </owl:NamedIndividual>
+
+    
+    <owl:NamedIndividual rdf:about="&jsk_map;lawson-hongo-campus">
+        <rdf:type rdf:resource="&knowrob;Lawson"/>
+        <knowrob:hasDaytimeOpeningHours rdf:resource="&jsk_map;DaytimeOpeningHours-lawson-hongo-campus"/>
+    </owl:NamedIndividual>
+
+
+    <!-- http://www.jsk.t.u-tokyo.ac.jp/jsk_map.owl#subway-hongo-campus-space -->
+
+    <owl:NamedIndividual rdf:about="&jsk_map;subway-hongo-campus-space">
+        <rdf:type rdf:resource="&knowrob;FastFoodRestaurantSpace"/>
+    </owl:NamedIndividual>
+
+    <owl:NamedIndividual rdf:about="&jsk_map;laswon-hongo-campus-multiroom">
+      <rdf:type rdf:resource="&knowrob;MultiRoom"/>
+    </owl:NamedIndividual>
+
+    
+    <knowrob:TimePoint rdf:about="&jsk_map;timepoint_0"/>
+    <knowrob:TimePoint rdf:about="&jsk_map;timepoint_1"/>
+    <knowrob:TimePoint rdf:about="&jsk_map;timepoint_2"/>
+    <knowrob:TimePoint rdf:about="&jsk_map;timepoint_3"/>
+    <knowrob:TimePoint rdf:about="&jsk_map;timepoint_4"/>
+    <knowrob:TimePoint rdf:about="&jsk_map;timepoint_5"/>
+    <knowrob:TimePoint rdf:about="&jsk_map;timepoint_6"/>
+    <knowrob:TimePoint rdf:about="&jsk_map;timepoint_7"/>
+    <knowrob:TimePoint rdf:about="&jsk_map;timepoint_8"/>
+    <knowrob:TimePoint rdf:about="&jsk_map;timepoint_9"/>
+    <knowrob:TimePoint rdf:about="&jsk_map;timepoint_10"/>
+    <knowrob:TimePoint rdf:about="&jsk_map;timepoint_11"/>
+    <knowrob:TimePoint rdf:about="&jsk_map;timepoint_12"/>
+    <knowrob:TimePoint rdf:about="&jsk_map;timepoint_13"/>
+    <knowrob:TimePoint rdf:about="&jsk_map;timepoint_14"/>
+    <knowrob:TimePoint rdf:about="&jsk_map;timepoint_15"/>
+    <knowrob:TimePoint rdf:about="&jsk_map;timepoint_16"/>
+    <knowrob:TimePoint rdf:about="&jsk_map;timepoint_17"/>
+    <knowrob:TimePoint rdf:about="&jsk_map;timepoint_18"/>
+    <knowrob:TimePoint rdf:about="&jsk_map;timepoint_19"/>
+    <knowrob:TimePoint rdf:about="&jsk_map;timepoint_20"/>
+    <knowrob:TimePoint rdf:about="&jsk_map;timepoint_21"/>
+    <knowrob:TimePoint rdf:about="&jsk_map;timepoint_22"/>
+    <knowrob:TimePoint rdf:about="&jsk_map;timepoint_23"/>
+    <knowrob:TimePoint rdf:about="&jsk_map;timepoint_24"/>
+
+    <!-- http://www.jsk.t.u-tokyo.ac.jp/jsk_map.owl#timepoint_1308501991.32 -->
+
+    <knowrob:TimePoint rdf:about="&jsk_map;timepoint_1308501991.32"/>
 
 </rdf:RDF>
+
+
+
+<!-- Generated by the OWL API (version 3.2.3.22702) http://owlapi.sourceforge.net -->
+
 
