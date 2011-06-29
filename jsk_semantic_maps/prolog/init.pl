@@ -29,9 +29,12 @@
 %%
 
 :- register_ros_package(comp_spatial).
-:- register_ros_package(mod_vis).
+:- register_ros_package(comp_temporal).
 :- register_ros_package(comp_semantic_map).
+:- register_ros_package(mod_vis).
+
 :- use_module(library('comp_spatial')).
+:- use_module(library('comp_temporal')).
 :- use_module(library('comp_semantic_map')).
 
 :- consult('jsk_map').
