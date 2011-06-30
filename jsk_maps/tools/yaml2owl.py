@@ -37,8 +37,10 @@ import yaml
 import math
 
 # global varibles
-scale = 1
-height = 0.04
+vert = False
+scale = 1.0
+room_height = 4 
+height = 0.04 
 id = 0
 
 def get_rotation(frame):
@@ -69,31 +71,30 @@ def get_types(frame):
 def get_region(frame):
     return frame['region']
 
+# deprecated, get width, height and depth from region
 def get_width(r):
     global scale;
-    #return r['width'] * scale
     max_x = max( max(r[0][0],r[1][0]), max(r[2][0],r[3][0]))
     min_x = min( min(r[0][0],r[1][0]), min(r[2][0],r[3][0]))
     return (max_x - min_x) * scale 
 
 def get_height(r):
     global height, scale
-    #return r['height'] * scale
     return height * scale * scale 
 
 def get_depth(r):
     global scale
-    #return r['depth'] * scale
     max_y = max( max(r[0][1],r[1][1]), max(r[2][1],r[3][1]))
     min_y = min( min(r[0][1],r[1][1]), min(r[2][1],r[3][1]))
     return (max_y - min_y)  * scale 
 
+# get actual depth, width, and height
 def get_width2(r):
     global scale;
     return r['width'] * scale
     
 def get_height2(r):
-    global height, scale
+    global scale
     return r['height'] * scale
     
 def get_depth2(r):
@@ -113,11 +114,10 @@ def quaternion_to_rotation_mat3d(q, t, r):
           [0, 0, 1, 0],
           [0, 0, 0, 1]]
 
-    # do not use accessor functions because of scaling
-    x = q['x'] #get_x(q)
-    y = q['y'] #get_y(q)
-    z = q['z'] #get_z(q)
-    w = q['w'] #get_w(q)
+    x = q['x'] 
+    y = q['y'] 
+    z = q['z'] 
+    w = q['w'] 
 
     # rotation matrix
     # first row
@@ -140,15 +140,15 @@ def quaternion_to_rotation_mat3d(q, t, r):
     # m[3][1] = 0
     # m[3][2] = 0
 
-    # calculate the center of room (2D only)
-
+    # region should always be None now!
     if r is None:
         m[0][3] = get_x(t)
         m[1][3] = get_y(t)
         m[2][3] = get_z(t)
         m[3][3] = 1
         return m
-        
+
+    # calculate the center of room (2D only)
     xs = [xval[0] for xval in r]
     ys = [yval[1] for yval in r]
     
@@ -248,9 +248,9 @@ def create_instance_with_dim(inst,types,width,height,depth, prop=None, objs=None
     # print '  <knowrob:translationY rdf:datatype="&xsd;float">{0}</knowrob:translationY>'.format(y)
     # print '  <knowrob:translationZ rdf:datatype="&xsd;float">{0}</knowrob:translationZ>'.format(z)
     print '  <knowrob:describedInMap rdf:resource="&jsk_map;SemanticEnvironmentMap-{0}"/>'.format(building_inst)
-    if type is 'LevelOfAConstruction':
+    if 'LevelOfAConstruction' in types:
         print '  <knowrob:floorNumber rdf:datatype="&xsd;string">{0}</knowrob:floorNumber>'.format(get_floor_number(inst))
-    elif type is 'RoomInAConstruction':
+    elif 'RoomInAConstruction' in types:
         print '  <knowrob:roomNumber rdf:datatype="&xsd;string">{0}</knowrob:roomNumber>'.format(get_room_number(inst))
         
     if objs is not None:
@@ -365,8 +365,17 @@ def create_objs(map, now):
 
                 q = get_rotation(objs[o])
                 trans = get_translation(objs[o])
+                trans_cpy = trans.copy()
 
-                mat3d = quaternion_to_rotation_mat3d(q,trans,reg)
+                if vert:
+                    #print 'room trans ' , get_x(get_translation((map.get('room'))[get_parent(objs[o])]))
+                    #print 'level ', get_parent((map.get('room'))[get_parent(objs[o])])
+                    #print 'level trans ' , get_x(get_translation( (map.get('floor'))[ get_parent((map.get('room'))[get_parent(objs[o])]) ]))
+                    trans_cpy['x'] = trans['x'] -  get_translation( (map.get('floor'))[ get_parent((map.get('room'))[get_parent(objs[o])]) ])['x']
+                    #  get_x(get_translation((map.get('room'))[get_parent(objs[o])]))
+                    trans_cpy['z'] = float( get_floor_number( get_name(get_parent( (map.get('room'))[get_parent(objs[o])])) )) * room_height + trans['z'] # ['x']
+                
+                mat3d = quaternion_to_rotation_mat3d(q,trans_cpy,reg)
 
                 # local frame coordinates
                 frame_mat3d = quaternion_to_rotation_mat3d(q,trans,reg)
@@ -401,19 +410,23 @@ def help_msg():
 """
 
 def main(argv=None):
-    global building_inst
+    global building_inst, vert, scale
     if argv is None:
         argv = sys.argv
     try:
         try:
-            opts, args = getopt.getopt(argv[1:], "h", ["help"])
+            opts, args = getopt.getopt(argv[1:], "svh", ["scale", "vert", "help"])
         except getopt.error, msg:
             raise Usage(msg)
 
         if ('-h','') in opts or ('--help', '') in opts: #len(args) != 2 or
             raise Usage(help_msg())
 
-        #print >>sys.stderr, args
+        if ('-v','') in opts or ('--vert', '') in opts:
+            vert = True
+
+        if ('-v','') in opts or ('--scale', '') in opts:
+            scale = 0.1
 
         # read yaml file
         stream = file(args[0],'r')
@@ -451,8 +464,16 @@ def main(argv=None):
 
                 q = get_rotation(rooms[r])
                 trans = get_translation(rooms[r])
+                trans_cpy = trans.copy()
+                
+                if vert:
+                    #print 'x ' , get_x(trans)
+                    #print 'floor ' , get_x(get_translation((map.get('floor'))[get_parent(rooms[r])]))
+                    trans_cpy['x'] = trans['x'] - get_translation((map.get('floor'))[get_parent(rooms[r])])['x']
+                    trans_cpy['z'] = float(get_floor_number(get_name(get_parent(rooms[r])))) * room_height + trans['z'] + 0.2 #['x']
+
                 # global coordinates
-                mat3d = quaternion_to_rotation_mat3d(q,trans,reg)
+                mat3d = quaternion_to_rotation_mat3d(q,trans_cpy,reg)
 
                 # local frame coordinates
                 frame_mat3d = quaternion_to_rotation_mat3d(q,trans,reg)
@@ -492,8 +513,13 @@ def main(argv=None):
 
                 q = get_rotation(floors[f])
                 trans = get_translation(floors[f])
+                trans_cpy = trans.copy()
 
-                mat3d = quaternion_to_rotation_mat3d(q,trans,reg)
+                if vert:
+                    trans_cpy['x'] = trans['z']
+                    trans_cpy['z'] = float(get_floor_number(name)) * room_height                
+                
+                mat3d = quaternion_to_rotation_mat3d(q,trans_cpy,reg)
 
                 # local frame coordinates
                 frame_mat3d = quaternion_to_rotation_mat3d(q,trans,reg)
