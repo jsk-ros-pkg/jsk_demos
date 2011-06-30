@@ -162,7 +162,7 @@
   (if (null (send obj :parent)) (return-from dump-obj->yaml))
   (if (not (or (find-method obj :box) (find-method obj :bodies)))
 	  (return-from dump-obj->yaml))
-  (when view (irt-objects (list obj)))
+  (when view (objects (list obj)))
   (let* ((type (conversion-rule (string-downcase (send obj :name))))
 		 (pos (scale 0.001 (send obj :pos)))
 		 (qu (matrix2quaternion (send obj :rot)))
