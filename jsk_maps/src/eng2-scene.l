@@ -7,7 +7,7 @@
 (load "eng2-rooms.l")
 
 (defun make-eng2-scene ()
-  (let* (scene (map (make-eng2-map-map)) floor-names rooms spots)
+  (let* (scene (map (make-eng2-map-map)) floor-names rooms spots objects)
     (setq floor-names '("/eng2/2f" "/eng2/3f" "/eng2/7f" "/eng2/8f"))
 
     ;; 2f
@@ -59,7 +59,7 @@
 	    :pos #f(-2590 -44905 0)
 	    :name "/eng2/3f/small-kitchen"))
     ;; 7f
-    (let* ((7rms (eng2-rooms))
+    (let* ((7rms (eng2-7f-rooms))
 	   (7f-o (find "/eng2/7f" (send map :descendants)
 		       :test #'string= :key #'(lambda(x)(send x :name))))
 	   (73b1 (find "73b1" 7rms
@@ -68,8 +68,7 @@
       (dolist (rm 7rms)
 	(send rm :name (concatenate string "/eng2/7f/" (send rm :name)))
 	(send 73b1 :dissoc rm) (send 7f-o :assoc rm))
-      (setq rooms (append rooms 7rms))
-      )
+      (setq rooms (append rooms 7rms)))
     (make-cascoords-tree
      (find "/eng2/7f" (send map :descendants)
 	   :test #'string= :key #'(lambda(x)(send x :name)))
@@ -126,6 +125,16 @@
      '(:pos #f(2900 -33750 1000) :rpy #f(3.1416 0 0)
 	    :name "/eng2/7f/elevator_inside_panel"))
     ;; 8F
+    (let* ((8rms (eng2-8f-rooms))
+	   (8f-o (find "/eng2/8f" (send map :descendants)
+		       :test #'string= :key #'(lambda(x)(send x :name))))
+	   (83b1 (find "83b1" 8rms
+		       :test #'string= :key #'(lambda(x)(send x :name)))))
+      (send 83b1 :move-to (send 8f-o :copy-worldcoords) :world)
+      (dolist (rm 8rms)
+	(send rm :name (concatenate string "/eng2/8f/" (send rm :name)))
+	(send 83b1 :dissoc rm) (send 8f-o :assoc rm))
+      (setq rooms (append rooms 8rms)))
     (make-cascoords-tree
      (find "/eng2/8f" (send map :descendants)
 	   :test #'string= :key #'(lambda(x)(send x :name)))
@@ -143,6 +152,20 @@
      '(:pos #f(2900 -33750 1000) :rpy #f(3.1416 0 0)
 	    :name "/eng2/8f/elevator_inside_panel"))
 
+	;; elevator bounding box
+	(dolist (nm floor-names)
+	  (let ((elevator (make-cube 2000 1800 2600 :name (format nil "~a/elevator" nm)))
+			(floor-origin (find nm (send map :descendants)
+								:test #'string= :key #'(lambda(x)(send x :name)))))
+		(send elevator :move-to (send floor-origin :copy-worldcoords))
+		(send elevator :translate #f(1700 -33900 1300))
+		(send elevator :set-color #f(1 0 0 0.4))
+		(push elevator objects)
+		))
+	(push (elevator_call_panel_eng2 :name "elevator_call_panel") objects)
+	(push (elevator_inside_panel_eng2 :name "elevator_inside_panel") objects)
+
+
     ;; TODO smart
     (setq map1 (list map)
 	  map2 (flatten (send-all map1 :descendants)) ;; floor
@@ -152,11 +175,7 @@
 	  (instance
 	   plane-building-model :init :name "/eng2"
 	   :objects
-	   (append
-	    map1 map2 map3
-	    (list
-	     (elevator_call_panel_eng2 :name "elevator_call_panel")
-	     (elevator_inside_panel_eng2 :name "elevator_inside_panel")))
+	   (append map1 map2 map3 objects)
 	   ))
 
     ;; scene -> map
