@@ -14,7 +14,10 @@
 (ros::roseus-add-srvs "mod_semantic_map")
 (setq *srvname* "/generate_owl_map")
 
-(defun conversion-rule (name)
+(defun conversion-rule (obj)
+  (let ((name (string-downcase (send obj :name)))
+		(type (get obj :knowrob-type))
+		(classtype (class obj)))
   (cond
     ;; object types
    ((substringp "knob" name) "ControlKnob") ;; knobs turned with one's fingers to control devices
@@ -65,6 +68,11 @@
    ((substringp "tray" name) "Tray")
    ((substringp "ball" name) "Ball")
 
+   ;; load :knowrob-type
+   ((stringp type) type) ;; use if exists
+
+   ((eq classtype cascaded-coords) "Place")
+
    ;; room types
    ;;((substringp "???" name) "RoomInAConstruction") ;; room without specific type
    ;;((substringp "???" name) "Restroom") 
@@ -108,7 +116,7 @@
    ;;((substringp "???" name) "Building") 
 
    (t "ConstructionArtifact") ;; no candidate -> will not convert
-  ))
+  )))
 
 (defun convert-obj->semantic-bbox (id obj type parent)
   (let ((semobj (instance mod_semantic_map::SemMapObject :init))
@@ -116,11 +124,13 @@
     (setq tmp (send obj :copy-worldcoords))
     (send obj :orient 0 :z :world)
 	(send obj :worldpos) ;; omajinai
-	(if (find-method obj :box)
-		(setq aabb (send obj :box))
-	  (progn
-		(print (send obj :bodies))
-		(setq aabb (make-bounding-box (flatten (send-all (send obj :bodies) :vertices))))))
+	(cond
+	 ((find-method obj :box)
+	  (setq aabb (send obj :box)))
+	 ((find-method obj :bodies)
+	  (setq aabb (make-bounding-box (flatten (send-all (send obj :bodies) :vertices)))))
+	 (t
+	  (setq aabb (make-bounding-box (list #f(0 0 0))))))
     (setq size (scale 0.001 (v- (send aabb :maxpoint) (send aabb :minpoint))))
 	(setq cpos (scale 0.5 (v+ (send aabb :maxpoint) (send aabb :minpoint))))
 	(setq vc (v- cpos (send tmp :worldpos)))
@@ -160,10 +170,12 @@
 ;; dump the information for ias_sem_map
 (defun dump-obj->yaml (obj id fd &key (view nil)) ;; only objects
   (if (null (send obj :parent)) (return-from dump-obj->yaml))
-  (if (not (or (find-method obj :box) (find-method obj :bodies)))
+  (if (not (or (find-method obj :box)
+			   (find-method obj :bodies)
+			   (eq (class obj) cascaded-coords)))
 	  (return-from dump-obj->yaml))
-  (when view (objects (list obj)))
-  (let* ((type (conversion-rule (string-downcase (send obj :name))))
+  (when (and view (find-method obj :bodies)) (objects (list obj)))
+  (let* ((type (conversion-rule obj))
 		 (pos (scale 0.001 (send obj :pos)))
 		 (qu (matrix2quaternion (send obj :rot)))
 		 (sobj (convert-obj->semantic-bbox 0 obj type 0)))
@@ -224,6 +236,7 @@
 ;;			 (dump-room->yaml room fd))
 			 (dump-obj->yaml room nil fd :view view))
 		   (format fd "object:~%")
+		   (dump-obj->yaml scene nil fd :view view);; is it OK?
 		   (dolist (obj objs)
 			 (dump-obj->yaml obj (incf id) fd :view view))))
 	  ;; to service
