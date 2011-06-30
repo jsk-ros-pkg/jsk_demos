@@ -191,6 +191,12 @@
       ;; first charactor of obj-name must be slash
       (when (not (eq (char (string (send obj :name)) 0) #\/))
 	(send obj :name (format nil "/~A" (send obj :name)))))
+
+	;; add type for knowrob
+    (dolist (fl (send scene :floors))
+	  (setf (get fl :knowrob-type) "LevelOfAConstruction"))
+	(setf (get scene :knowrob-type) "Building")
+
     scene))
 
 ;; example
