@@ -158,10 +158,11 @@
     semobjs ))
 
 ;; dump the information for ias_sem_map
-(defun dump-obj->yaml (obj id fd) ;; only objects
+(defun dump-obj->yaml (obj id fd &key (view nil)) ;; only objects
   (if (null (send obj :parent)) (return-from dump-obj->yaml))
   (if (not (or (find-method obj :box) (find-method obj :bodies)))
 	  (return-from dump-obj->yaml))
+  (when view (irt-objects (list obj)))
   (let* ((type (conversion-rule (string-downcase (send obj :name))))
 		 (pos (scale 0.001 (send obj :pos)))
 		 (qu (matrix2quaternion (send obj :rot)))
@@ -201,7 +202,7 @@
 	))
 
 
-(defun dump-building->yaml (filename scene type)
+(defun dump-building->yaml (filename scene type &key (view nil))
   (let* ((floors (send scene :floors)) (rooms (send scene :rooms)) (id 0)
 		 (objs (set-difference (send scene :objects) (append floors rooms))))
 	(dolist (rm rooms)
@@ -217,14 +218,14 @@
 		   (format fd "floor:~%")
 		   (dolist (flo floors)
 ;;			 (dump-room->yaml flo fd))
-			 (dump-obj->yaml flo nil fd))
+			 (dump-obj->yaml flo nil fd :view view))
 		   (format fd "room:~%")
 		   (dolist (room rooms)
 ;;			 (dump-room->yaml room fd))
-			 (dump-obj->yaml room nil fd))
+			 (dump-obj->yaml room nil fd :view view))
 		   (format fd "object:~%")
 		   (dolist (obj objs)
-			 (dump-obj->yaml obj (incf id) fd))))
+			 (dump-obj->yaml obj (incf id) fd :view view))))
 	  ;; to service
 	  (call-mod-semmap (append floors rooms objs)))
 	))
@@ -250,12 +251,7 @@
   (ros::wait-for-service *srvname*)
   (dump-building->yaml "dummy" *scene* :srv))
 
-(defun yaml (&optional (filename "eng2.yaml"))
-  (dump-building->yaml filename *scene* :yaml))
+(defun yaml (&key (filename "eng2.yaml") (view nil))
+  (dump-building->yaml filename *scene* :yaml :view view))
 
 (format t "type (yaml) or (srv)~%")
-
-
-(defun loc()
-  (setq loc (car (send (car (send *scene* :find-object "/eng2/7f/room73b2"))
-				  :find-object "room73b2-locker2"))))
