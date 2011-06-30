@@ -353,7 +353,7 @@ def create_objs(map, now):
         for o in objs:
             
             name =   get_name(o)
-            parent = get_name(get_parent(objs[o]))
+            parent = 'RoomInAConstruction' + get_name(get_parent(objs[o]))
             
             # remember the parent (room) of the obj, in order to add the hasObjs property to the room
             if not has_objs.has_key(parent):
@@ -373,7 +373,7 @@ def create_objs(map, now):
                     #print 'level trans ' , get_x(get_translation( (map.get('floor'))[ get_parent((map.get('room'))[get_parent(objs[o])]) ]))
                     trans_cpy['x'] = trans['x'] -  get_translation( (map.get('floor'))[ get_parent((map.get('room'))[get_parent(objs[o])]) ])['x']
                     #  get_x(get_translation((map.get('room'))[get_parent(objs[o])]))
-                    trans_cpy['z'] = float( get_floor_number( get_name(get_parent( (map.get('room'))[get_parent(objs[o])])) )) * room_height + trans['z'] # ['x']
+                    trans_cpy['z'] = (float(get_floor_number(get_name(get_parent( (map.get('room'))[get_parent(objs[o])]))))-1.0) * room_height + trans['z'] # ['x']
                 
                 mat3d = quaternion_to_rotation_mat3d(q,trans_cpy,reg)
 
@@ -470,7 +470,7 @@ def main(argv=None):
                     #print 'x ' , get_x(trans)
                     #print 'floor ' , get_x(get_translation((map.get('floor'))[get_parent(rooms[r])]))
                     trans_cpy['x'] = trans['x'] - get_translation((map.get('floor'))[get_parent(rooms[r])])['x']
-                    trans_cpy['z'] = float(get_floor_number(get_name(get_parent(rooms[r])))) * room_height + trans['z'] + 0.2 #['x']
+                    trans_cpy['z'] = (float(get_floor_number(get_name(get_parent(rooms[r])))) - 1.0) * room_height + trans['z'] #['x']
 
                 # global coordinates
                 mat3d = quaternion_to_rotation_mat3d(q,trans_cpy,reg)
@@ -517,7 +517,7 @@ def main(argv=None):
 
                 if vert:
                     trans_cpy['x'] = trans['z']
-                    trans_cpy['z'] = float(get_floor_number(name)) * room_height                
+                    trans_cpy['z'] = (float(get_floor_number(name))-1.0) * room_height                
                 
                 mat3d = quaternion_to_rotation_mat3d(q,trans_cpy,reg)
 
