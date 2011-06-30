@@ -10,13 +10,15 @@
 		   via-angle-vector org-arm-anglev
 		   (rarm-reset #f(-60 70 110 -120 160 -30 180)) ;; second element 80 -> 70
 		   (larm-reset #f(60 70 70 -120 -160 -30 180))) ;; second element 80 -> 70
-    ;; via-coords
-    (setq via-coords (send (send target-coords :copy-worldcoords) :translate #f(-100 0 0) :world))
-
     ;; check push target simply from current tuckarm-pose
     (ros::spin-once)
-    (send *pr2* :angle-vector (send *ri* :state))
+    (send *pr2* :angle-vector (send *ri* :state :potentio-vector))
     (setq arm (check-tuckarm-pose))
+
+    ;; via-coords
+    (setq via-coords (send (send target-coords :copy-worldcoords)
+:translate (scale 100 (normalize-vector (v- (send *pr2* :narrow_stereo_optical_frame :worldpos) (send target-coords :worldpos)))) :world))
+;    (setq via-coords (send (send target-coords :copy-worldcoords) :translate #f(-100 0 0) :world))
 
     (when arm
       (send *pr2* arm :angle-vector (case arm (:rarm rarm-reset)
@@ -45,7 +47,7 @@
 					(:larm larm-reset)))
     (send *pr2* :head :look-at (send target-coords :worldpos))
     (unless
-	(send *pr2* arm :inverse-kinematics via-coords :rotation-axis :x)
+	(send *pr2* arm :inverse-kinematics via-coords :rotation-axis nil)
       (setq *ik-fail-av*  (send *pr2* :angle-vector))
       (setq *ik-fail-coords*  (send target-coords :copy-worldcoords))
       (dump-loadable-structure (format nil "ik-fail-~d.l" (send (ros::time-now) :to-sec))
