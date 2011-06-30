@@ -25,7 +25,7 @@
 		 ("5F" "ごかい") ("6F" "ろくかい")
 		 ("7F" "ななかい") ("8F" "はちかい")
 		 ("9F" "きゅうかい") ("10F" "じっかい")
-		 ("11F" "じゅういっかい") ("12F" "じゅういっかい")))
+		 ("11F" "じゅういっかい") ("12F" "じゅうにかい")))
 
 (setq *map-name* nil) ;; load /map/header/frame_id
 (defvar *tfl* (instance ros::transform-listener :init))
