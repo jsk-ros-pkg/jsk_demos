@@ -416,7 +416,7 @@
 	(setq 83b1 (find "83b1" rooms
 					 :test #'string= :key #'(lambda(x)(send x :name))))
 	(dolist (rm rooms)
-	  (when (not (eq rm 83b1)) (send rm :dissoc 83b1) (send 83b1 :assoc rm))
+	  (when (send rm :parent) (send (send rm :parent) :dissoc rm))
 	  (gl::transparent rm 0.3))
 
 	rooms ))
