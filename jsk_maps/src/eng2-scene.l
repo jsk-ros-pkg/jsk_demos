@@ -206,7 +206,40 @@
 	  (push-knowrob-properties (car (send scene :find-object "/eng2/7f/room73B2-table-front"))
 							   "inFrontOf-Generally"
 							   (car (send 73b2 :find-object "room73b2-karimoku-1200-desk")))
+	  (push-knowrob-properties (car (send scene :find-object "/eng2/7f/room73B2-front-of-tv"))
+							   "inFrontOf-Generally"
+							   (car (send 73b2 :find-object "room73b2-sharp-52-aquostv")))
 	  )
+	(push-knowrob-properties (car (send scene :find-object "/eng2/7f/room73A1-front"))
+							 "inFrontOf-Generally"
+							 (car (send scene :find-object "/eng2/7f/73a1")))
+	(push-knowrob-properties (car (send scene :find-object "/eng2/7f/room73A2-front"))
+							 "inFrontOf-Generally"
+							 (car (send scene :find-object "/eng2/7f/73a2")))
+	(push-knowrob-properties (car (send scene :find-object "/eng2/7f/room73A3-front"))
+							 "inFrontOf-Generally"
+							 (car (send scene :find-object "/eng2/7f/73a3")))
+	(push-knowrob-properties (car (send scene :find-object "/eng2/7f/room73A4-front"))
+							 "inFrontOf-Generally"
+							 (car (send scene :find-object "/eng2/7f/73a4")))
+	(push-knowrob-properties (car (send scene :find-object "/eng2/7f/room73B1-front"))
+							 "inFrontOf-Generally"
+							 (car (send scene :find-object "/eng2/7f/73b1")))
+	(push-knowrob-properties (car (send scene :find-object "/eng2/7f/room73B2-front"))
+							 "inFrontOf-Generally"
+							 (car (send scene :find-object "/eng2/7f/room73b2")))
+	(push-knowrob-properties (car (send scene :find-object "/eng2/2f/elevator-outside"))
+							 "inFrontOf-Generally"
+							 (car (send scene :find-object "/eng2/2f/elevator")))
+	(push-knowrob-properties (car (send scene :find-object "/eng2/3f/elevator-outside"))
+							 "inFrontOf-Generally"
+							 (car (send scene :find-object "/eng2/3f/elevator")))
+	(push-knowrob-properties (car (send scene :find-object "/eng2/7f/elevator-outside"))
+							 "inFrontOf-Generally"
+							 (car (send scene :find-object "/eng2/7f/elevator")))
+	(push-knowrob-properties (car (send scene :find-object "/eng2/8f/elevator-outside"))
+							 "inFrontOf-Generally"
+							 (car (send scene :find-object "/eng2/8f/elevator")))
 
     scene))
 
