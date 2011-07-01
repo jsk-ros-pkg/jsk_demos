@@ -6,6 +6,10 @@
 
 (load "eng2-rooms.l")
 
+(defun push-knowrob-properties (subj prop-name obj)
+  (when (and subj obj)
+	(push (cons prop-name obj) (get subj :knowrob-properties))))
+
 (defun make-eng2-scene ()
   (let* (scene (map (make-eng2-map-map)) floor-names rooms spots objects)
     (setq floor-names '("/eng2/2f" "/eng2/3f" "/eng2/7f" "/eng2/8f"))
@@ -159,12 +163,12 @@
 								:test #'string= :key #'(lambda(x)(send x :name)))))
 		(send elevator :move-to (send floor-origin :copy-worldcoords))
 		(send elevator :translate #f(1700 -33900 1300))
+		(send floor-origin :assoc elevator)
 		(send elevator :set-color #f(1 0 0 0.4))
 		(push elevator objects)
 		))
 	(push (elevator_call_panel_eng2 :name "elevator_call_panel") objects)
 	(push (elevator_inside_panel_eng2 :name "elevator_inside_panel") objects)
-
 
     ;; TODO smart
     (setq map1 (list map)
@@ -196,6 +200,13 @@
     (dolist (fl (send scene :floors))
 	  (setf (get fl :knowrob-type) "LevelOfAConstruction"))
 	(setf (get scene :knowrob-type) "Building")
+	(setf (get map :knowrob-type) :ignore) ;; not convert this
+
+	(let ((73b2 (car (send scene :find-object "/eng2/7f/room73b2"))))
+	  (push-knowrob-properties (car (send scene :find-object "/eng2/7f/room73B2-table-front"))
+							   "inFrontOf-Generally"
+							   (car (send 73b2 :find-object "room73b2-karimoku-1200-desk")))
+	  )
 
     scene))
 
