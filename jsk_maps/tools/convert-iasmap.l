@@ -200,7 +200,8 @@
 			(send sobj :width) (send sobj :depth) (send sobj :height))
 	))
 (defun dump-spot->yaml (spot fd) ;; only cascoords
-  (if (not (eq (class spot) cascaded-coords))
+  (if (not (and (eq (class spot) cascaded-coords)
+				(eps= 0.0 (elt (send spot :worldpos) 2) 50)))
 	  (return-from dump-spot->yaml))
   (let* ((type (conversion-rule spot))
 		 (properties (get spot :knowrob-properties)) (prop-str "")
