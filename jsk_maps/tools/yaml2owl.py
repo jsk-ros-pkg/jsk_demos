@@ -353,7 +353,10 @@ def create_objs(map, now):
         for o in objs:
             
             name =   get_name(o)
-            parent = 'RoomInAConstruction' + get_name(get_parent(objs[o]))
+            parent = 'RoomInAConstruction' +get_name(get_parent(objs[o]))
+
+            print name, " ", parent
+            
             
             # remember the parent (room) of the obj, in order to add the hasObjs property to the room
             if not has_objs.has_key(parent):
@@ -361,36 +364,36 @@ def create_objs(map, now):
             else:
                 has_objs[parent] = has_objs[parent] + [name]
                 
-                reg = None 
+            reg = None 
 
-                q = get_rotation(objs[o])
-                trans = get_translation(objs[o])
-                trans_cpy = trans.copy()
+            q = get_rotation(objs[o])
+            trans = get_translation(objs[o])
+            trans_cpy = trans.copy()
 
-                if vert:
+            if vert:
                     #print 'room trans ' , get_x(get_translation((map.get('room'))[get_parent(objs[o])]))
                     #print 'level ', get_parent((map.get('room'))[get_parent(objs[o])])
                     #print 'level trans ' , get_x(get_translation( (map.get('floor'))[ get_parent((map.get('room'))[get_parent(objs[o])]) ]))
-                    trans_cpy['x'] = trans['x'] -  get_translation( (map.get('floor'))[ get_parent((map.get('room'))[get_parent(objs[o])]) ])['x']
+                trans_cpy['x'] = trans['x'] -  get_translation( (map.get('floor'))[ get_parent((map.get('room'))[get_parent(objs[o])]) ])['x']
                     #  get_x(get_translation((map.get('room'))[get_parent(objs[o])]))
-                    trans_cpy['z'] = (float(get_floor_number(get_name(get_parent( (map.get('room'))[get_parent(objs[o])]))))-1.0) * room_height + trans['z'] # ['x']
+                trans_cpy['z'] = (float(get_floor_number(get_name(get_parent( (map.get('room'))[get_parent(objs[o])]))))-1.0) * room_height + trans['z'] # ['x']
                 
-                mat3d = quaternion_to_rotation_mat3d(q,trans_cpy,reg)
+            mat3d = quaternion_to_rotation_mat3d(q,trans_cpy,reg)
 
-                # local frame coordinates
-                frame_mat3d = quaternion_to_rotation_mat3d(q,trans,reg)
+            # local frame coordinates
+            frame_mat3d = quaternion_to_rotation_mat3d(q,trans,reg)
                 # same rotation but different translation (not center) 
-                frame_mat3d[0][3] = get_x(trans)  
-                frame_mat3d[1][3] = get_y(trans)
-                frame_mat3d[2][3] = get_z(trans)
-
+            frame_mat3d[0][3] = get_x(trans)  
+            frame_mat3d[1][3] = get_y(trans)
+            frame_mat3d[2][3] = get_z(trans)
+            
                 #['ConstructionArtifact']
-                create_instance_with_dim(name,get_types(objs[o]),get_depth2(objs[o]),get_height2(objs[o]),get_width2(objs[o]), None, None,  get_x(trans), get_y(trans), get_z(trans))
+            create_instance_with_dim(name,get_types(objs[o]),get_depth2(objs[o]),get_height2(objs[o]),get_width2(objs[o]), None, None,  get_x(trans), get_y(trans), get_z(trans))
 
-                mat_inst = create_rot_mat3d(mat3d)
-                frame_mat_inst = create_rot_mat3d(frame_mat3d)
-                
-                create_perception_event(name, mat_inst, now, parent, frame_mat_inst, None)
+            mat_inst = create_rot_mat3d(mat3d)
+            frame_mat_inst = create_rot_mat3d(frame_mat3d)
+            
+            create_perception_event(name, mat_inst, now, parent, frame_mat_inst, None)
 
     
 #______________________________________________________________________________
@@ -425,7 +428,7 @@ def main(argv=None):
         if ('-v','') in opts or ('--vert', '') in opts:
             vert = True
 
-        if ('-v','') in opts or ('--scale', '') in opts:
+        if ('-s','') in opts or ('--scale', '') in opts:
             scale = 0.1
 
         # read yaml file
