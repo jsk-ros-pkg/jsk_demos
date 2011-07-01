@@ -147,7 +147,7 @@
 	(a4 (make-eng2-room (+ 100 500 295) (* 1150 3) 8121 :name "73a4" :knowrob-type "LaboratoryRoom"))
 	(b1 (make-eng2-room (* 1150 3) (+ (* 1150 3) 150) -11353 :name "73b1" :knowrob-type "LaboratoryRoom"))
 ;	(b2 (make-eng2-room (+ (* 1150 3) 100 500 295) (* 1150 3) -11353 :name "73b2"))
-	(b2 (let ((b2 (room73b2))) (setf (get b2 :knowrob-type) "LaboratoryRoom") b2))
+	(b2 (let ((b2 (instance room73b2-scene :init :name "73b2"))) (setf (get b2 :knowrob-type) "LaboratoryRoom") b2))
 	(c1 (make-eng2-room (* 1150 3) (+ (* 1150 3) 150) 11353 :name "73c1"))
 	(c2 (make-eng2-room (+ (* 1150 3) 100 500 295) (* 1150 3) 11353 :name "73c2"))
 	(d1 (make-eng2-room (* 1150 3) 150 -8121 :name "73d1"))
@@ -385,7 +385,7 @@
 	(setq 73b1 (find "73b1" rooms
 					 :test #'string= :key #'(lambda(x)(send x :name))))
 	(dolist (rm rooms)
-	  (when (not (eq rm 73b1)) (send rm :dissoc 73b1) (send 73b1 :assoc rm))
+	  (when (send rm :parent) (send (send rm :parent) :dissoc rm))
 	  (gl::transparent rm 0.3))
 
 	rooms ))

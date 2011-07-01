@@ -63,15 +63,16 @@
 	    :pos #f(-2590 -44905 0)
 	    :name "/eng2/3f/small-kitchen"))
     ;; 7f
-    (let* ((7rms (eng2-7f-rooms))
-	   (7f-o (find "/eng2/7f" (send map :descendants)
-		       :test #'string= :key #'(lambda(x)(send x :name))))
-	   (73b1 (find "73b1" 7rms
-		       :test #'string= :key #'(lambda(x)(send x :name)))))
-      (send 73b1 :move-to (send 7f-o :copy-worldcoords) :world)
+    (let* ((7rms (eng2-7f-rooms)) trans
+		   (7f-o (find "/eng2/7f" (send map :descendants)
+					   :test #'string= :key #'(lambda(x)(send x :name))))
+		   (73b1 (find "73b1" 7rms
+					   :test #'string= :key #'(lambda(x)(send x :name)))))
+	  (setq trans (send 73b1 :transformation 7f-o))
       (dolist (rm 7rms)
-	(send rm :name (concatenate string "/eng2/7f/" (send rm :name)))
-	(send 73b1 :dissoc rm) (send 7f-o :assoc rm))
+		(send rm :name (concatenate string "/eng2/7f/" (send rm :name)))
+		(send 7f-o :assoc rm)
+		(send rm :transform trans :world))
       (setq rooms (append rooms 7rms)))
     (make-cascoords-tree
      (find "/eng2/7f" (send map :descendants)
@@ -129,15 +130,16 @@
      '(:pos #f(2900 -33750 1000) :rpy #f(3.1416 0 0)
 	    :name "/eng2/7f/elevator_inside_panel"))
     ;; 8F
-    (let* ((8rms (eng2-8f-rooms))
+    (let* ((8rms (eng2-8f-rooms)) trans
 	   (8f-o (find "/eng2/8f" (send map :descendants)
 		       :test #'string= :key #'(lambda(x)(send x :name))))
 	   (83b1 (find "83b1" 8rms
 		       :test #'string= :key #'(lambda(x)(send x :name)))))
-      (send 83b1 :move-to (send 8f-o :copy-worldcoords) :world)
+	  (setq trans (send 83b1 :transformation 8f-o))
       (dolist (rm 8rms)
-	(send rm :name (concatenate string "/eng2/8f/" (send rm :name)))
-	(send 83b1 :dissoc rm) (send 8f-o :assoc rm))
+		(send rm :name (concatenate string "/eng2/8f/" (send rm :name)))
+		(send 8f-o :assoc rm)
+		(send rm :transform trans :world))
       (setq rooms (append rooms 8rms)))
     (make-cascoords-tree
      (find "/eng2/8f" (send map :descendants)
@@ -165,7 +167,8 @@
 		(send elevator :translate #f(1700 -33900 1300))
 		(send floor-origin :assoc elevator)
 		(send elevator :set-color #f(1 0 0 0.4))
-		(push elevator objects)
+;		(push elevator objects)
+		(setf (get elevator :knowrob-type) "Elevator")
 		))
 	(push (elevator_call_panel_eng2 :name "elevator_call_panel") objects)
 	(push (elevator_inside_panel_eng2 :name "elevator_inside_panel") objects)
@@ -197,12 +200,14 @@
 	(send obj :name (format nil "/~A" (send obj :name)))))
 
 	;; add type for knowrob
+    (dolist (fl (send scene :rooms))
+	  (setf (get fl :knowrob-type) "RoomInAConstruction"))
     (dolist (fl (send scene :floors))
-	  (setf (get fl :knowrob-type) "LevelOfAConstruction"))
+	  (setf (get fl :knowrob-type) "AboveGroundLevelInAConstruction"))
 	(setf (get scene :knowrob-type) "Building")
 	(setf (get map :knowrob-type) :ignore) ;; not convert this
 
-	(let ((73b2 (car (send scene :find-object "/eng2/7f/room73b2"))))
+	(let ((73b2 (car (send scene :find-object "/eng2/7f/73b2"))))
 	  (push-knowrob-properties (car (send scene :find-object "/eng2/7f/room73B2-table-front"))
 							   "inFrontOf-Generally"
 							   (car (send 73b2 :find-object "room73b2-karimoku-1200-desk")))
@@ -227,7 +232,7 @@
 							 (car (send scene :find-object "/eng2/7f/73b1")))
 	(push-knowrob-properties (car (send scene :find-object "/eng2/7f/room73B2-front"))
 							 "inFrontOf-Generally"
-							 (car (send scene :find-object "/eng2/7f/room73b2")))
+							 (car (send scene :find-object "/eng2/7f/73b2")))
 	(push-knowrob-properties (car (send scene :find-object "/eng2/2f/elevator-outside"))
 							 "inFrontOf-Generally"
 							 (car (send scene :find-object "/eng2/2f/elevator")))

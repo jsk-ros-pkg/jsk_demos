@@ -3,12 +3,6 @@
 ;; this a map convert script for jsk_maps to ias_semantic_map
 ;; rosrun mod_semantic_map SemanticMapToOWL
 
-;; now only for jsk internal
-;#-:jsk
-;(jsk)
-;#-:rbrain
-;(rbrain)
-
 ;; call service
 (ros::roseus-add-msgs "mod_semantic_map")
 (ros::roseus-add-srvs "mod_semantic_map")
@@ -183,7 +177,7 @@
     semobjs ))
 
 ;; dump the information for ias_sem_map
-(defun dump-obj->yaml (obj id fd &key (view nil)) ;; only objects
+(defun dump-obj->yaml (obj fd &key (view nil)) ;; only objects
 ;  (if (null (send obj :parent)) (return-from dump-obj->yaml))
   (if (not (or (find-method obj :box)
 			   (find-method obj :bodies)))
@@ -205,13 +199,13 @@
 	(format fd "        width: ~a~%        depth: ~a~%        height: ~a~%"
 			(send sobj :width) (send sobj :depth) (send sobj :height))
 	))
-(defun dump-spot->yaml (spot id fd) ;; only cascoords
+(defun dump-spot->yaml (spot fd) ;; only cascoords
   (if (not (eq (class spot) cascaded-coords))
 	  (return-from dump-spot->yaml))
   (let* ((type (conversion-rule spot))
 		 (properties (get spot :knowrob-properties)) (prop-str "")
-		 (pos (scale 0.001 (send spot :pos)))
-		 (qu (matrix2quaternion (send spot :rot))))
+		 (pos (scale 0.001 (send spot :worldpos)))
+		 (qu (matrix2quaternion (send spot :worldrot))))
 	(if (not type) (return-from dump-spot->yaml))
 	(format fd "    ~a:~%" (send spot :name))
 	(when properties
@@ -248,7 +242,7 @@
 
 
 (defun dump-building->yaml (filename scene type &key (view nil))
-  (let* ((floors (send scene :floors)) (rooms (send scene :rooms)) (id 0)
+  (let* ((floors (send scene :floors)) (rooms (send scene :rooms))
 		 (objs (set-difference (send scene :objects) (append floors rooms)))
 		 spots)
 	(dolist (rm rooms)
@@ -264,21 +258,21 @@
 		  (with-open-file
 		   (fd filename :direction :output)
 		   (format fd "building:~%")
-		   (dump-obj->yaml scene nil fd :view view)
+		   (dump-obj->yaml scene fd :view view)
 		   (format fd "floor:~%")
 		   (dolist (flo floors)
 ;;			 (dump-room->yaml flo fd))
-			 (dump-obj->yaml flo nil fd :view view))
+			 (dump-obj->yaml flo fd :view view))
 		   (format fd "room:~%")
 		   (dolist (room rooms)
 ;;			 (dump-room->yaml room fd))
-			 (dump-obj->yaml room nil fd :view view))
+			 (dump-obj->yaml room fd :view view))
 		   (format fd "object:~%")
 		   (dolist (obj objs)
-			 (dump-obj->yaml obj (incf id) fd :view view))
+			 (dump-obj->yaml obj fd :view view))
 		   (format fd "spots:~%")
 		   (dolist (spot spots)
-			 (dump-spot->yaml spot (incf id) fd))))
+			 (dump-spot->yaml spot fd))))
 	  ;; to service
 	  (call-mod-semmap (append floors rooms objs)))
 	))
