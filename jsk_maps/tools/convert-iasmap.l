@@ -19,7 +19,10 @@
 		(type (get obj :knowrob-type))
 		(classtype (class obj)))
   (cond
-    ;; object types
+   ;; ignore this object
+   ((eq type :ignore) nil)
+
+   ;; object types
    ((substringp "knob" name) "ControlKnob") ;; knobs turned with one's fingers to control devices
    ((substringp "hinge" name) "HingedJoint") ;; a hinged connection
    ((substringp "handle" name) "Handle")
@@ -118,6 +121,17 @@
    (t "ConstructionArtifact") ;; no candidate -> will not convert
   )))
 
+(defun make-name-unique (objs)
+  (let ((sorted
+		 (sort (copy-list objs) #'string< #'(lambda(x)(send x :name))))
+		cur (id 0))
+	(dolist (item sorted)
+	  (if (string= (send item :name) cur)
+		  (send item :name (format nil "~a-~a" (send item :name) (incf id)))
+		(setq cur (send item :name))))
+	;; TODO loop this rule for ("a" "a" "a-1") -> ("a" "a-1" "a-1") if needed
+	))
+
 (defun convert-obj->semantic-bbox (id obj type parent)
   (let ((semobj (instance mod_semantic_map::SemMapObject :init))
 		dummy aabb tmp size cpos pos vc)
@@ -170,17 +184,17 @@
 
 ;; dump the information for ias_sem_map
 (defun dump-obj->yaml (obj id fd &key (view nil)) ;; only objects
-  (if (null (send obj :parent)) (return-from dump-obj->yaml))
+;  (if (null (send obj :parent)) (return-from dump-obj->yaml))
   (if (not (or (find-method obj :box)
-			   (find-method obj :bodies)
-			   (eq (class obj) cascaded-coords)))
+			   (find-method obj :bodies)))
 	  (return-from dump-obj->yaml))
   (when (and view (find-method obj :bodies)) (objects (list obj)))
   (let* ((type (conversion-rule obj))
 		 (pos (scale 0.001 (send obj :pos)))
 		 (qu (matrix2quaternion (send obj :rot)))
 		 (sobj (convert-obj->semantic-bbox 0 obj type 0)))
-	(format fd "    ~a~a:~%" (send obj :name) (if id id ""))
+	(if (not type) (return-from dump-obj->yaml))
+	(format fd "    ~a:~%" (send obj :name))
 	(format fd "        frame_id: ~a~%" (send (send obj :parent) :name))
 	(format fd "        type: [~a]~%" type)
 	(format fd "        translation: {x: ~a, y: ~a, z: ~a}~%"
@@ -191,6 +205,24 @@
 	(format fd "        width: ~a~%        depth: ~a~%        height: ~a~%"
 			(send sobj :width) (send sobj :depth) (send sobj :height))
 	))
+(defun dump-spot->yaml (spot id fd) ;; only cascoords
+  (if (not (eq (class spot) cascaded-coords))
+	  (return-from dump-spot->yaml))
+  (let* ((type (conversion-rule spot))
+		 (properties (get spot :knowrob-properties)) (prop-str "")
+		 (pos (scale 0.001 (send spot :pos)))
+		 (qu (matrix2quaternion (send spot :rot))))
+	(if (not type) (return-from dump-spot->yaml))
+	(format fd "    ~a:~%" (send spot :name))
+	(when properties
+	  (setq prop-str (apply #'concatenate string
+			  (mapcar #'(lambda(x)(format nil ",[~a,~a]" (car x) (send (cdr x) :name))) properties)))
+	  (format fd "        object-properties: [~a]~%" (subseq prop-str 1))) ;; remove first ,
+	(format fd "        translation: {x: ~a, y: ~a, z: ~a}~%"
+			(elt pos 0) (elt pos 1)	0.0) ;; global pose
+	(format fd "        rotation: {w: ~a, x: ~a, y: ~a, z: ~a}~%"
+			(elt qu 0) (elt qu 1) (elt qu 2) (elt qu 3)))
+  )
 (defun dump-room->yaml (room fd) ;; only rooms
   (let* ((type (conversion-rule (string-downcase (send room :name))))
 		 (pos (scale 0.001 (send room :pos)))
@@ -217,17 +249,22 @@
 
 (defun dump-building->yaml (filename scene type &key (view nil))
   (let* ((floors (send scene :floors)) (rooms (send scene :rooms)) (id 0)
-		 (objs (set-difference (send scene :objects) (append floors rooms))))
+		 (objs (set-difference (send scene :objects) (append floors rooms)))
+		 spots)
 	(dolist (rm rooms)
 	  (when (derivedp rm scene-model)
 		(setq objs (append objs (send rm :objects)))))
-   	(setq *objs* objs)
+	(setq spots (remove-if-not #'(lambda(x)(eq cascaded-coords (class x))) objs))
+	(setq objs (remove-if #'(lambda(x)(eq cascaded-coords (class x))) objs))
+	(make-name-unique (append floors rooms spots objs))
+	;;
 	(if (eq type :yaml)
 		;; to yaml
 		(progn
 		  (with-open-file
 		   (fd filename :direction :output)
-		   (format fd "map_frame: ~a~%" (send scene :name))
+		   (format fd "building:~%")
+		   (dump-obj->yaml scene nil fd :view view)
 		   (format fd "floor:~%")
 		   (dolist (flo floors)
 ;;			 (dump-room->yaml flo fd))
@@ -237,9 +274,11 @@
 ;;			 (dump-room->yaml room fd))
 			 (dump-obj->yaml room nil fd :view view))
 		   (format fd "object:~%")
-		   (dump-obj->yaml scene nil fd :view view);; is it OK?
 		   (dolist (obj objs)
-			 (dump-obj->yaml obj (incf id) fd :view view))))
+			 (dump-obj->yaml obj (incf id) fd :view view))
+		   (format fd "spots:~%")
+		   (dolist (spot spots)
+			 (dump-spot->yaml spot (incf id) fd))))
 	  ;; to service
 	  (call-mod-semmap (append floors rooms objs)))
 	))
