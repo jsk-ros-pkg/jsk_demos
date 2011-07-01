@@ -128,6 +128,7 @@
 	 ((find-method obj :box)
 	  (setq aabb (send obj :box)))
 	 ((find-method obj :bodies)
+	  (print (send obj :bodies)) ;; for update vertices
 	  (setq aabb (make-bounding-box (flatten (send-all (send obj :bodies) :vertices)))))
 	 (t
 	  (setq aabb (make-bounding-box (list #f(0 0 0))))))
