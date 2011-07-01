@@ -1,0 +1,8 @@
+<launch>
+  <node name="convert_to_iasmap" pkg="roseus" type="roseus"
+	args="$(find jsk_maps)/tools/convert-iasmap.l (yaml\ :view\ t) (exit)" />
+  <!-- "JAVA_HOME=`rosrun\ rosjava\ find-java-home.sh`" -->
+  <env name="JAVA_HOME" value="/usr/lib/jvm/java-6-sun-1.6.0.24/" />
+  <node name="json_prolog" pkg="json_prolog" type="json_prolog"
+	args="jsk_semantic_maps" />
+</launch>
