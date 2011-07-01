@@ -41,7 +41,7 @@ now = 0.0
 vert = False
 scale = 1.0
 room_height = 4 
-height = 0.04 # needed?
+spot_dim = 2 
 id = 0
 
 ### UTILS ###
@@ -90,7 +90,7 @@ def quaternion_to_rotation_mat3d(q, t):
 ### YAML ACCESSOR FUNCTIONS ###
 
 def get_name(name):
-    return name.replace('/','-')
+    return name.replace('/','-')[1:]
 
 def get_room_number(name):
     rn = name[name.rfind('-') + 1:]
@@ -124,6 +124,11 @@ def get_z(coord):
 
 def get_types(frame):
     return frame['type']
+
+def get_obj_properties(frame):
+    if frame.has_key('object-properties'):
+        return frame['object-properties']
+    return None
 
 # get actual depth, width, and height
 def get_width(r):
@@ -194,8 +199,8 @@ def create_instance(inst, type):
     print '</owl:NamedIndividual>'
     print ''
 
-def create_object(inst,types,width,height,depth, prop=None, objs=None, x=0.0, y=0.0, z=0.0):
-    global building_inst
+def create_spot(inst,types,width,height,depth, x, y, z, props=None):
+    global map_inst
     print ''
     print '<owl:NamedIndividual rdf:about="&jsk_map;{0}">'.format(inst)
     for t in types:
@@ -203,7 +208,24 @@ def create_object(inst,types,width,height,depth, prop=None, objs=None, x=0.0, y=
     print '  <knowrob:widthOfObject rdf:datatype="&xsd;float">{0}</knowrob:widthOfObject>'.format(width)
     print '  <knowrob:depthOfObject rdf:datatype="&xsd;float">{0}</knowrob:depthOfObject>'.format(depth)
     print '  <knowrob:heightOfObject rdf:datatype="&xsd;float">{0}</knowrob:heightOfObject>'.format(height)
-    print '  <knowrob:describedInMap rdf:resource="&jsk_map;SemanticEnvironmentMap-{0}"/>'.format(building_inst)
+    print '  <knowrob:describedInMap rdf:resource="&jsk_map;SemanticEnvironmentMap-{0}"/>'.format(map_inst)
+        
+    if props is not None:
+        for p in props:
+            create_prop(p[0], get_name(p[1]))
+    print '</owl:NamedIndividual>'
+    print ''
+    
+def create_object(inst,types,width,height,depth, prop=None, objs=None, x=0.0, y=0.0, z=0.0):
+    global map_inst
+    print ''
+    print '<owl:NamedIndividual rdf:about="&jsk_map;{0}">'.format(inst)
+    for t in types:
+        create_type(t)
+    print '  <knowrob:widthOfObject rdf:datatype="&xsd;float">{0}</knowrob:widthOfObject>'.format(width)
+    print '  <knowrob:depthOfObject rdf:datatype="&xsd;float">{0}</knowrob:depthOfObject>'.format(depth)
+    print '  <knowrob:heightOfObject rdf:datatype="&xsd;float">{0}</knowrob:heightOfObject>'.format(height)
+    print '  <knowrob:describedInMap rdf:resource="&jsk_map;SemanticEnvironmentMap-{0}"/>'.format(map_inst)
 
     if objs is not None:
         if objs.has_key(inst):
@@ -212,7 +234,7 @@ def create_object(inst,types,width,height,depth, prop=None, objs=None, x=0.0, y=
     print ''
     
 def create_room(inst,types,width,height,depth, prop=None, objs=None, x=0.0, y=0.0, z=0.0):
-    global building_inst
+    global map_inst
     print ''
     print '<owl:NamedIndividual rdf:about="&jsk_map;{0}">'.format(inst)
     for t in types:
@@ -220,7 +242,7 @@ def create_room(inst,types,width,height,depth, prop=None, objs=None, x=0.0, y=0.
     print '  <knowrob:widthOfObject rdf:datatype="&xsd;float">{0}</knowrob:widthOfObject>'.format(width)
     print '  <knowrob:depthOfObject rdf:datatype="&xsd;float">{0}</knowrob:depthOfObject>'.format(depth)
     print '  <knowrob:heightOfObject rdf:datatype="&xsd;float">{0}</knowrob:heightOfObject>'.format(height)
-    print '  <knowrob:describedInMap rdf:resource="&jsk_map;SemanticEnvironmentMap-{0}"/>'.format(building_inst)
+    print '  <knowrob:describedInMap rdf:resource="&jsk_map;SemanticEnvironmentMap-{0}"/>'.format(map_inst)
 
     print '  <knowrob:roomNumber rdf:datatype="&xsd;string">{0}</knowrob:roomNumber>'.format(get_room_number(inst))
         
@@ -231,7 +253,7 @@ def create_room(inst,types,width,height,depth, prop=None, objs=None, x=0.0, y=0.
     print ''
 
 def create_level(inst,types,width,height,depth, prop=None, objs=None, x=0.0, y=0.0, z=0.0):
-    global building_inst
+    global map_inst
     print ''
     print '<owl:NamedIndividual rdf:about="&jsk_map;{0}">'.format(inst)
     for t in types:
@@ -239,7 +261,7 @@ def create_level(inst,types,width,height,depth, prop=None, objs=None, x=0.0, y=0
     print '  <knowrob:widthOfObject rdf:datatype="&xsd;float">{0}</knowrob:widthOfObject>'.format(width)
     print '  <knowrob:depthOfObject rdf:datatype="&xsd;float">{0}</knowrob:depthOfObject>'.format(depth)
     print '  <knowrob:heightOfObject rdf:datatype="&xsd;float">{0}</knowrob:heightOfObject>'.format(height)
-    print '  <knowrob:describedInMap rdf:resource="&jsk_map;SemanticEnvironmentMap-{0}"/>'.format(building_inst)
+    print '  <knowrob:describedInMap rdf:resource="&jsk_map;SemanticEnvironmentMap-{0}"/>'.format(map_inst)
 
     print '  <knowrob:floorNumber rdf:datatype="&xsd;string">{0}</knowrob:floorNumber>'.format(get_floor_number(inst))
         
@@ -253,11 +275,18 @@ def create_level(inst,types,width,height,depth, prop=None, objs=None, x=0.0, y=0
 def create_type(type):
     print '  <rdf:type rdf:resource="&knowrob;{0}"/>'.format(type)
 
-def create_building(building_inst, has_floors):
-    print '<owl:NamedIndividual rdf:about="&jsk_map;{0}">'.format(building_inst)
-    create_type('Building')
-    create_props('hasLevels', has_floors[building_inst])
-    print '  <knowrob:describedInMap rdf:resource="&jsk_map;SemanticEnvironmentMap-{0}"/>'.format(building_inst)
+def create_bldg(inst,types,width,height,depth, prop=None, objs=None, x=0.0, y=0.0, z=0.0):
+    global map_inst
+    print '<owl:NamedIndividual rdf:about="&jsk_map;{0}">'.format(inst)
+    for t in types:
+        create_type(t)
+    print '  <knowrob:widthOfObject rdf:datatype="&xsd;float">{0}</knowrob:widthOfObject>'.format(width)
+    print '  <knowrob:depthOfObject rdf:datatype="&xsd;float">{0}</knowrob:depthOfObject>'.format(depth)
+    print '  <knowrob:heightOfObject rdf:datatype="&xsd;float">{0}</knowrob:heightOfObject>'.format(height)
+    print '  <knowrob:describedInMap rdf:resource="&jsk_map;SemanticEnvironmentMap-{0}"/>'.format(map_inst)
+    if objs is not None:
+        if objs.has_key(inst):
+            create_props(prop, objs[inst])
     print '</owl:NamedIndividual>'    
     
 def create_props(prop, objs):
@@ -315,8 +344,8 @@ def create_levels(map, has_rooms, now):
     if floors is not None:
         for f in floors:
 
-            name = 'LevelOfAConstruction' + get_name(f)
-            parent = 'Building' + get_name(get_parent(floors[f]))
+            name = get_name(f)
+            parent = get_name(get_parent(floors[f]))
             
             # remember the parent (building) of the floor, in order to add the hasLevels property to the building
             if not has_floors.has_key(parent):
@@ -356,8 +385,8 @@ def create_rooms(map, now):
     if rooms is not None:
         for r in rooms:
 
-            name = 'RoomInAConstruction' + get_name(r)
-            parent = 'LevelOfAConstruction' + get_name(get_parent(rooms[r]))
+            name = get_name(r)
+            parent = get_name(get_parent(rooms[r]))
             
                 # remember the parent (floor) of the room, in order to add the hasRooms property to the floor
             if not has_rooms.has_key(parent):
@@ -377,7 +406,7 @@ def create_rooms(map, now):
 
             # switched width and height !!!!
             create_room(name,
-                        ['RoomInAConstruction'],
+                        get_types(rooms[r]),  #['RoomInAConstruction'],
                         get_depth(rooms[r]), get_height(rooms[r]), get_width(rooms[r]),
                         None, None,  get_x(trans), get_y(trans), get_z(trans))
 
@@ -395,7 +424,7 @@ def create_objs(map, now):
         for o in objs:
             
             name =   get_name(o)
-            parent = 'RoomInAConstruction' +get_name(get_parent(objs[o]))
+            parent = get_name(get_parent(objs[o]))
 
                         
             # remember the parent (room) of the obj, in order to add the hasObjs property to the room
@@ -420,6 +449,75 @@ def create_objs(map, now):
             
             create_perception_event(name, mat_inst, now)
 
+def create_spots(map, now):
+    global spot_dim
+    spots = map.get('spots')
+    if spots is not None:
+        for s in spots:
+            
+            name =   get_name(s)
+                        
+            q = get_rotation(spots[s])
+            trans = get_translation(spots[s])
+            trans_cpy = trans.copy()
+
+            # parent for region needed
+            # if vert:
+            #     trans_cpy['x'] = trans['x'] -  get_translation( (map.get('floor'))[ get_parent((map.get('room'))[get_parent(objs[o])]) ])['x']
+            #     trans_cpy['z'] = (float(get_floor_number(get_name(get_parent( (map.get('room'))[get_parent(objs[o])]))))-1.0) * room_height + trans['z'] # ['x']
+                
+            mat3d = quaternion_to_rotation_mat3d(q,trans_cpy)
+
+            props = get_obj_properties(spots[s])
+            
+            create_spot(name,['Place'],spot_dim,spot_dim,spot_dim, get_x(trans), get_y(trans), get_z(trans), props)
+
+            mat_inst = create_rot_mat3d(mat3d)
+            
+            create_perception_event(name, mat_inst, now)
+            
+
+def create_map(map, now):
+    global map_inst
+    # read building, because building name become map name
+    buildings = map.get('building')
+    if buildings is not None:
+        b = buildings.keys()
+        map_inst = get_name(b[0])
+        create_instance('SemanticEnvironmentMap-' + map_inst,
+                        'SemanticEnvironmentMap')
+
+def create_building(map, now, has_floors):    
+    # read building
+    buildings = map.get('building')
+    if buildings is not None:
+        b = buildings.keys()
+        name  = get_name(b[0])
+        print name 
+        q = get_rotation(buildings[b[0]])
+        trans = get_translation(buildings[b[0]])
+        trans_cpy = trans.copy()
+        
+        if vert:
+            trans_cpy['x'] = trans['z']
+            trans_cpy['z'] = trans['x'] # maximoiun level numnber * room_height   
+                
+        mat3d = quaternion_to_rotation_mat3d(q,trans_cpy)
+            
+        create_bldg(name,
+                    get_types(buildings[b[0]]), #['Building'],
+                    get_depth(buildings[b[0]]),
+                    get_height(buildings[b[0]]),
+                    get_width(buildings[b[0]]),
+                    'hasLevels', has_floors,
+                    get_x(trans), get_y(trans), get_z(trans))
+
+        mat_inst = create_rot_mat3d(mat3d)
+            
+        create_perception_event(name, mat_inst, now)
+
+        
+        
     
 #______________________________________________________________________________
 # main  
@@ -441,7 +539,7 @@ def help_msg():
 """
 
 def main(argv=None):
-    global building_inst, vert, scale, now
+    global map_inst, vert, scale, now
     if argv is None:
         argv = sys.argv
     try:
@@ -467,10 +565,7 @@ def main(argv=None):
 
         create_header()
 
-        # read building
-        building = map.get('map_frame')
-        building_inst = 'Building' + get_name(building)
-        create_instance('SemanticEnvironmentMap-' + building_inst, 'SemanticEnvironmentMap')
+        create_map(map,now)
 
         has_rooms = create_rooms(map, now)
 
@@ -478,8 +573,10 @@ def main(argv=None):
 
         create_objs(map, now)
 
-        create_building(building_inst, has_floors)
-        
+        create_building(map, now, has_floors)
+
+        create_spots(map,now)
+    
         create_footer()
 
     except Usage, err:
