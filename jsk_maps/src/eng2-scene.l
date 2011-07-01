@@ -170,6 +170,7 @@
 ;		(push elevator objects)
 		(setf (get elevator :knowrob-type) "Elevator")
 		))
+
 	(push (elevator_call_panel_eng2 :name "elevator_call_panel") objects)
 	(push (elevator_inside_panel_eng2 :name "elevator_inside_panel") objects)
 
@@ -198,6 +199,12 @@
       ;; first charactor of obj-name must be slash
       (when (not (eq (char (string (send obj :name)) 0) #\/))
 	(send obj :name (format nil "/~A" (send obj :name)))))
+
+	;; move panels to initial pose
+	(send (car (send scene :find-object "/elevator_call_panel")) :move-to
+		  (send scene :spot "/eng2/7f/elevator_call_panel") :world)
+	(send (car (send scene :find-object "/elevator_inside_panel")) :move-to
+		  (send scene :spot "/eng2/7f/elevator_inside_panel") :world)
 
 	;; add type for knowrob
     (dolist (fl (send scene :rooms))
