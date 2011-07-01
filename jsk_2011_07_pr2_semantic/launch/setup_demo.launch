@@ -1,0 +1,4 @@
+<launch>
+  <node pkg="json_prolog" type="json_prolog" name="json_prolog"
+		args="jsk_semantic_maps" />
+</launch>
