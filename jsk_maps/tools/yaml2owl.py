@@ -37,77 +37,21 @@ import yaml
 import math
 
 # global varibles
+now = 0.0
 vert = False
 scale = 1.0
 room_height = 4 
-height = 0.04 
+height = 0.04 # needed?
 id = 0
 
-def get_rotation(frame):
-    return frame['rotation']
+### UTILS ###
 
-def get_translation(frame):
-    return frame['translation']
+def get_id():
+    global id
+    id = id + 1
+    return id
 
-def get_w(coord):
-    global scale
-    return coord['w'] * scale 
-
-def get_x(coord):
-    global scale
-    return coord['x'] * scale
-
-def get_y(coord):
-    global scale
-    return coord['y'] * scale
-
-def get_z(coord):
-    global scale 
-    return coord['z'] * scale
-
-def get_types(frame):
-    return frame['type']
-
-def get_region(frame):
-    return frame['region']
-
-# deprecated, get width, height and depth from region
-def get_width(r):
-    global scale;
-    max_x = max( max(r[0][0],r[1][0]), max(r[2][0],r[3][0]))
-    min_x = min( min(r[0][0],r[1][0]), min(r[2][0],r[3][0]))
-    return (max_x - min_x) * scale 
-
-def get_height(r):
-    global height, scale
-    return height * scale * scale 
-
-def get_depth(r):
-    global scale
-    max_y = max( max(r[0][1],r[1][1]), max(r[2][1],r[3][1]))
-    min_y = min( min(r[0][1],r[1][1]), min(r[2][1],r[3][1]))
-    return (max_y - min_y)  * scale 
-
-# get actual depth, width, and height
-def get_width2(r):
-    global scale;
-    return r['width'] * scale
-    
-def get_height2(r):
-    global scale
-    return r['height'] * scale
-    
-def get_depth2(r):
-    global scale
-    return r['depth'] * scale
-
-def calc_center_x(r):
-    pass
-
-def calc_center_y(r):
-    pass
-
-def quaternion_to_rotation_mat3d(q, t, r):
+def quaternion_to_rotation_mat3d(q, t):
     global scale
     m = [ [1, 0, 0, 0],
           [0, 1, 0, 0],
@@ -125,62 +69,77 @@ def quaternion_to_rotation_mat3d(q, t, r):
     m[0][1] = 2 * x * y + 2 * w * z
     m[0][2] = 2 * x * z - 2 * w * y
   
-    # # # second row 
+    # second row 
     m[1][0] = 2 * x * y - 2 * w * z
     m[1][1] = 1 - 2 * x * x - 2 * z * z
     m[1][2] = 2 * y * z + 2 * w * x
   
-    # # # third row
+    # third row
     m[2][0] = 2 * x * z + 2 * w * y
     m[2][1] = 2 * y * z - 2 * w * x
     m[2][2] = 1 - 2 * x * x - 2 * y * y
 
-    # # fourth row 
-    # m[3][0] = 0
-    # m[3][1] = 0
-    # m[3][2] = 0
-
-    # region should always be None now!
-    if r is None:
-        m[0][3] = get_x(t)
-        m[1][3] = get_y(t)
-        m[2][3] = get_z(t)
-        m[3][3] = 1
-        return m
-
-    # calculate the center of room (2D only)
-    xs = [xval[0] for xval in r]
-    ys = [yval[1] for yval in r]
-    
-    cent_x = (math.fsum(xs) / float(len(xs))) * scale 
-    cent_y = (math.fsum(ys) / float(len(ys))) * scale
-    cent_z = 0
-
-    # rotate the center point
-    #rot_x = m[0][0] * cent_x + m[0][1] * cent_y + m[0][2] * cent_z 
-    #rot_y = m[1][0] * cent_x + m[1][1] * cent_y + m[1][2] * cent_z
-    #rot_z = m[2][0] * cent_x + m[2][1] * cent_y + m[2][2] * cent_z
-
-    # now set translation of obj 
-    m[0][3] = get_x(t) + cent_x#+ rot_x 
-    m[1][3] = get_y(t) + cent_y#+ rot_y 
-    m[2][3] = get_z(t) + cent_z#+ rot_z
-    m[3][3] = 1
-
-    # print "q ", q
-    # print "x ", x
-    # print "y ", y
-    # print "z ", z
-    # print "w ", w
-    # print "t ", t
-    # print "r ", r
-    # # print "trans x/y ", get_x(t), " ", get_y(t) 
-    # # print "cent x/y ", cent_x, " ", cent_y  
-    # # print "rot x/y/z ", rot_x, " ", rot_y, " ",  rot_z
-    # print "m  x/y ", m[0][3] , " ", m[1][3]
-    # print m
+    # translation
+    m[0][3] = get_x(t)
+    m[1][3] = get_y(t)
+    m[2][3] = get_z(t)
     
     return m
+
+
+### YAML ACCESSOR FUNCTIONS ###
+
+def get_name(name):
+    return name.replace('/','-')
+
+def get_room_number(name):
+    rn = name[name.rfind('-') + 1:]
+    return rn
+
+def get_floor_number(name):
+    n = name[name.rfind('-') + 1:]
+    fn = n.rstrip(string.ascii_letters)
+    return fn
+
+def get_parent(frame):
+   return frame['frame_id']
+
+def get_rotation(frame):
+    return frame['rotation']
+
+def get_translation(frame):
+    return frame['translation']
+
+def get_x(coord):
+    global scale
+    return coord['x'] * scale
+
+def get_y(coord):
+    global scale
+    return coord['y'] * scale
+
+def get_z(coord):
+    global scale 
+    return coord['z'] * scale
+
+def get_types(frame):
+    return frame['type']
+
+# get actual depth, width, and height
+def get_width(r):
+    global scale;
+    return r['width'] * scale
+    
+def get_height(r):
+    global scale
+    return r['height'] * scale
+    
+def get_depth(r):
+    global scale
+    return r['depth'] * scale
+
+
+### OWL stuff ###    
 
 def create_header():
     print '''<?xml version="1.0"?>
@@ -234,8 +193,8 @@ def create_instance(inst, type):
     print '  <rdf:type rdf:resource="http://ias.cs.tum.edu/kb/knowrob.owl#{0}"/>'.format(type)
     print '</owl:NamedIndividual>'
     print ''
-    
-def create_instance_with_dim(inst,types,width,height,depth, prop=None, objs=None, x=0.0, y=0.0, z=0.0):
+
+def create_object(inst,types,width,height,depth, prop=None, objs=None, x=0.0, y=0.0, z=0.0):
     global building_inst
     print ''
     print '<owl:NamedIndividual rdf:about="&jsk_map;{0}">'.format(inst)
@@ -244,14 +203,26 @@ def create_instance_with_dim(inst,types,width,height,depth, prop=None, objs=None
     print '  <knowrob:widthOfObject rdf:datatype="&xsd;float">{0}</knowrob:widthOfObject>'.format(width)
     print '  <knowrob:depthOfObject rdf:datatype="&xsd;float">{0}</knowrob:depthOfObject>'.format(depth)
     print '  <knowrob:heightOfObject rdf:datatype="&xsd;float">{0}</knowrob:heightOfObject>'.format(height)
-    # print '  <knowrob:translationX rdf:datatype="&xsd;float">{0}</knowrob:translationX>'.format(x)
-    # print '  <knowrob:translationY rdf:datatype="&xsd;float">{0}</knowrob:translationY>'.format(y)
-    # print '  <knowrob:translationZ rdf:datatype="&xsd;float">{0}</knowrob:translationZ>'.format(z)
     print '  <knowrob:describedInMap rdf:resource="&jsk_map;SemanticEnvironmentMap-{0}"/>'.format(building_inst)
-    if 'LevelOfAConstruction' in types:
-        print '  <knowrob:floorNumber rdf:datatype="&xsd;string">{0}</knowrob:floorNumber>'.format(get_floor_number(inst))
-    elif 'RoomInAConstruction' in types:
-        print '  <knowrob:roomNumber rdf:datatype="&xsd;string">{0}</knowrob:roomNumber>'.format(get_room_number(inst))
+
+    if objs is not None:
+        if objs.has_key(inst):
+            create_props(prop, objs[inst])
+    print '</owl:NamedIndividual>'
+    print ''
+    
+def create_room(inst,types,width,height,depth, prop=None, objs=None, x=0.0, y=0.0, z=0.0):
+    global building_inst
+    print ''
+    print '<owl:NamedIndividual rdf:about="&jsk_map;{0}">'.format(inst)
+    for t in types:
+        create_type(t)
+    print '  <knowrob:widthOfObject rdf:datatype="&xsd;float">{0}</knowrob:widthOfObject>'.format(width)
+    print '  <knowrob:depthOfObject rdf:datatype="&xsd;float">{0}</knowrob:depthOfObject>'.format(depth)
+    print '  <knowrob:heightOfObject rdf:datatype="&xsd;float">{0}</knowrob:heightOfObject>'.format(height)
+    print '  <knowrob:describedInMap rdf:resource="&jsk_map;SemanticEnvironmentMap-{0}"/>'.format(building_inst)
+
+    print '  <knowrob:roomNumber rdf:datatype="&xsd;string">{0}</knowrob:roomNumber>'.format(get_room_number(inst))
         
     if objs is not None:
         if objs.has_key(inst):
@@ -259,6 +230,26 @@ def create_instance_with_dim(inst,types,width,height,depth, prop=None, objs=None
     print '</owl:NamedIndividual>'
     print ''
 
+def create_level(inst,types,width,height,depth, prop=None, objs=None, x=0.0, y=0.0, z=0.0):
+    global building_inst
+    print ''
+    print '<owl:NamedIndividual rdf:about="&jsk_map;{0}">'.format(inst)
+    for t in types:
+        create_type(t)
+    print '  <knowrob:widthOfObject rdf:datatype="&xsd;float">{0}</knowrob:widthOfObject>'.format(width)
+    print '  <knowrob:depthOfObject rdf:datatype="&xsd;float">{0}</knowrob:depthOfObject>'.format(depth)
+    print '  <knowrob:heightOfObject rdf:datatype="&xsd;float">{0}</knowrob:heightOfObject>'.format(height)
+    print '  <knowrob:describedInMap rdf:resource="&jsk_map;SemanticEnvironmentMap-{0}"/>'.format(building_inst)
+
+    print '  <knowrob:floorNumber rdf:datatype="&xsd;string">{0}</knowrob:floorNumber>'.format(get_floor_number(inst))
+        
+    if objs is not None:
+        if objs.has_key(inst):
+            create_props(prop, objs[inst])
+    print '</owl:NamedIndividual>'
+    print ''
+
+    
 def create_type(type):
     print '  <rdf:type rdf:resource="&knowrob;{0}"/>'.format(type)
 
@@ -276,21 +267,16 @@ def create_props(prop, objs):
 def create_prop(prop, obj):
     print '  <knowrob:{0} rdf:resource="&jsk_map;{1}"/>'.format(prop,obj)
 
-def create_perception_event(obj,mat3d_name,time=0, frame_parent=None, frame_trans=None, frame_region=None ):
+def create_perception_event(obj,mat3d_name,time=0):
     print   ''
     print   '<owl:NamedIndividual rdf:about="&jsk_map;SemanticMapPerception-{0}">'.format(get_id())
     print   '  <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>'
     print   '  <knowrob:objectActedOn rdf:resource="&jsk_map;{0}"/>'.format(obj)
     print   '  <knowrob:eventOccursAt rdf:resource="&jsk_map;{0}"/>'.format(mat3d_name)
     print   '  <knowrob:startTime rdf:resource="&jsk_map;timepoint_{0}"/>'.format(time)
-    if frame_parent is not None:
-        print '  <knowrob:frameParent rdf:resource="&jsk_map;{0}"/>'.format(frame_parent)
-    if frame_trans is not None:
-        print '  <knowrob:frameTransformation rdf:resource="&jsk_map;{0}"/>'.format(frame_trans)
-    if frame_region is not None:
-        print '  <knowrob:frameRegion rdf:resource="&jsk_map;{0}"/>'.format(frame_region)    
     print   '</owl:NamedIndividual>'
     print   ''
+    
 
 def create_rot_mat3d(m):
     name = 'RotationMatrix3D-{0}'.format(get_id())
@@ -317,33 +303,89 @@ def create_rot_mat3d(m):
     print ''
     return name
 
-def get_name(name):
-    return name.replace('/','-')
+### CREATING OWL FROM YAML ###
 
-def get_room_number(name):
-    rn = name[name.rfind('-') + 1:]
-    return rn
+def create_levels(map, has_rooms, now):
+    global room_height
+    
+    # read floors
+    # create floors with rooms 
+    has_floors = dict()
+    floors = map.get('floor')
+    if floors is not None:
+        for f in floors:
 
-def get_floor_number(name):
-    n = name[name.rfind('-') + 1:]
-    fn = n.rstrip(string.ascii_letters)
-    return fn
+            name = 'LevelOfAConstruction' + get_name(f)
+            parent = 'Building' + get_name(get_parent(floors[f]))
+            
+            # remember the parent (building) of the floor, in order to add the hasLevels property to the building
+            if not has_floors.has_key(parent):
+                has_floors[parent] = [name] 
+            else:
+                has_floors[parent] = has_floors[parent] + [name]
+                
 
-def get_parent(frame):
-   return frame['frame_id']
+            q = get_rotation(floors[f])
+            trans = get_translation(floors[f])
+            trans_cpy = trans.copy()
 
-def get_id():
-    global id
-    id = id + 1
-    return id
+            if vert:
+                trans_cpy['x'] = trans['z']
+                trans_cpy['z'] = (float(get_floor_number(name))-1.0) * room_height                
+                
+            mat3d = quaternion_to_rotation_mat3d(q,trans_cpy)
 
-def create_test_room(name,q,trans,reg,time):
-    mat3d = quaternion_to_rotation_mat3d(q,trans,reg)
+            create_level(name,
+                         ['LevelOfAConstruction'],
+                         get_depth(floors[f]), get_height(floors[f]), get_width(floors[f]),
+                         'hasRooms', has_rooms,
+                         get_x(trans), get_y(trans), get_z(trans))
+            
+            mat_inst = create_rot_mat3d(mat3d)
+                
+            create_perception_event(name, mat_inst, now)
+            
+    return has_floors
 
-    # switched width and height!!!!
-    create_instance_with_dim(name,['RoomInAConstruction'],get_depth(reg), get_height(reg), get_width(reg), None, None, get_x(trans), get_y(trans), get_z(trans)) 
-    mat_inst = create_rot_mat3d(mat3d)
-    create_perception_event(name, mat_inst, time)
+
+def create_rooms(map, now):
+    global room_height
+    # read rooms
+    has_rooms = dict()
+    rooms = map.get('room')
+    if rooms is not None:
+        for r in rooms:
+
+            name = 'RoomInAConstruction' + get_name(r)
+            parent = 'LevelOfAConstruction' + get_name(get_parent(rooms[r]))
+            
+                # remember the parent (floor) of the room, in order to add the hasRooms property to the floor
+            if not has_rooms.has_key(parent):
+                has_rooms[parent] = [name] 
+            else:
+                has_rooms[parent] = has_rooms[parent] + [name]
+                
+            q = get_rotation(rooms[r])
+            trans = get_translation(rooms[r])
+            trans_cpy = trans.copy()
+                
+            if vert:
+                trans_cpy['x'] = trans['x'] - get_translation((map.get('floor'))[get_parent(rooms[r])])['x']
+                trans_cpy['z'] = (float(get_floor_number(get_name(get_parent(rooms[r])))) - 1.0) * room_height + trans['z'] #['x']
+
+            mat3d = quaternion_to_rotation_mat3d(q,trans_cpy)
+
+            # switched width and height !!!!
+            create_room(name,
+                        ['RoomInAConstruction'],
+                        get_depth(rooms[r]), get_height(rooms[r]), get_width(rooms[r]),
+                        None, None,  get_x(trans), get_y(trans), get_z(trans))
+
+            mat_inst = create_rot_mat3d(mat3d)
+
+            create_perception_event(name, mat_inst, now)
+
+    return has_rooms
 
 
 def create_objs(map, now):
@@ -355,45 +397,28 @@ def create_objs(map, now):
             name =   get_name(o)
             parent = 'RoomInAConstruction' +get_name(get_parent(objs[o]))
 
-            print name, " ", parent
-            
-            
+                        
             # remember the parent (room) of the obj, in order to add the hasObjs property to the room
             if not has_objs.has_key(parent):
                 has_objs[parent] = [name] 
             else:
                 has_objs[parent] = has_objs[parent] + [name]
                 
-            reg = None 
-
             q = get_rotation(objs[o])
             trans = get_translation(objs[o])
             trans_cpy = trans.copy()
 
             if vert:
-                    #print 'room trans ' , get_x(get_translation((map.get('room'))[get_parent(objs[o])]))
-                    #print 'level ', get_parent((map.get('room'))[get_parent(objs[o])])
-                    #print 'level trans ' , get_x(get_translation( (map.get('floor'))[ get_parent((map.get('room'))[get_parent(objs[o])]) ]))
                 trans_cpy['x'] = trans['x'] -  get_translation( (map.get('floor'))[ get_parent((map.get('room'))[get_parent(objs[o])]) ])['x']
-                    #  get_x(get_translation((map.get('room'))[get_parent(objs[o])]))
                 trans_cpy['z'] = (float(get_floor_number(get_name(get_parent( (map.get('room'))[get_parent(objs[o])]))))-1.0) * room_height + trans['z'] # ['x']
                 
-            mat3d = quaternion_to_rotation_mat3d(q,trans_cpy,reg)
+            mat3d = quaternion_to_rotation_mat3d(q,trans_cpy)
 
-            # local frame coordinates
-            frame_mat3d = quaternion_to_rotation_mat3d(q,trans,reg)
-                # same rotation but different translation (not center) 
-            frame_mat3d[0][3] = get_x(trans)  
-            frame_mat3d[1][3] = get_y(trans)
-            frame_mat3d[2][3] = get_z(trans)
-            
-                #['ConstructionArtifact']
-            create_instance_with_dim(name,get_types(objs[o]),get_depth2(objs[o]),get_height2(objs[o]),get_width2(objs[o]), None, None,  get_x(trans), get_y(trans), get_z(trans))
+            create_object(name,get_types(objs[o]),get_depth(objs[o]),get_height(objs[o]),get_width(objs[o]), None, None,  get_x(trans), get_y(trans), get_z(trans))
 
             mat_inst = create_rot_mat3d(mat3d)
-            frame_mat_inst = create_rot_mat3d(frame_mat3d)
             
-            create_perception_event(name, mat_inst, now, parent, frame_mat_inst, None)
+            create_perception_event(name, mat_inst, now)
 
     
 #______________________________________________________________________________
@@ -409,11 +434,14 @@ def help_msg():
 
     map               name of the yaml file 
 
-    -h, --help for seeing this msg
+    -h, --help  for seeing this msg
+    -v, --vert  for creating the map vertically
+    -s, --scale for scaling the map
+
 """
 
 def main(argv=None):
-    global building_inst, vert, scale
+    global building_inst, vert, scale, now
     if argv is None:
         argv = sys.argv
     try:
@@ -444,121 +472,13 @@ def main(argv=None):
         building_inst = 'Building' + get_name(building)
         create_instance('SemanticEnvironmentMap-' + building_inst, 'SemanticEnvironmentMap')
 
-        
-        # read rooms
-        has_rooms = dict()
-        rooms = map.get('room')
-        if rooms is not None:
-            for r in rooms:
+        has_rooms = create_rooms(map, now)
 
-                name = 'RoomInAConstruction' + get_name(r)
-                parent = 'LevelOfAConstruction' + get_name(get_parent(rooms[r]))
-                
-                # remember the parent (floor) of the room, in order to add the hasRooms property to the floor
-                if not has_rooms.has_key(parent):
-                    has_rooms[parent] = [name] 
-                else:
-                    has_rooms[parent] = has_rooms[parent] + [name]
-                    
-                #print parent, " ", has_rooms[parent]
-
-                #reg = get_region(rooms[r])
-                reg = None 
-
-                q = get_rotation(rooms[r])
-                trans = get_translation(rooms[r])
-                trans_cpy = trans.copy()
-                
-                if vert:
-                    #print 'x ' , get_x(trans)
-                    #print 'floor ' , get_x(get_translation((map.get('floor'))[get_parent(rooms[r])]))
-                    trans_cpy['x'] = trans['x'] - get_translation((map.get('floor'))[get_parent(rooms[r])])['x']
-                    trans_cpy['z'] = (float(get_floor_number(get_name(get_parent(rooms[r])))) - 1.0) * room_height + trans['z'] #['x']
-
-                # global coordinates
-                mat3d = quaternion_to_rotation_mat3d(q,trans_cpy,reg)
-
-                # local frame coordinates
-                frame_mat3d = quaternion_to_rotation_mat3d(q,trans,reg)
-                # same rotation but different translation (not center) 
-                frame_mat3d[0][3] = get_x(trans)  
-                frame_mat3d[1][3] = get_y(trans)
-                frame_mat3d[2][3] = get_z(trans)
-
-                # switched width and height !!!!
-                #create_instance_with_dim(name,'RoomInAConstruction',get_depth(reg), get_height(reg), get_width(reg), None, None,  get_x(trans), get_y(trans), get_z(trans))
-                create_instance_with_dim(name,['RoomInAConstruction'],get_depth2(rooms[r]), get_height2(rooms[r]), get_width2(rooms[r]), None, None,  get_x(trans), get_y(trans), get_z(trans))
-
-                mat_inst = create_rot_mat3d(mat3d)
-                frame_mat_inst = create_rot_mat3d(frame_mat3d)
-
-                create_perception_event(name, mat_inst, now, parent, frame_mat_inst, None)
-        
-        # read floors
-        # create floors with rooms 
-        has_floors = dict()
-        floors = map.get('floor')
-        if floors is not None:
-            for f in floors:
-
-                name = 'LevelOfAConstruction' + get_name(f)
-                parent = 'Building' + get_name(get_parent(floors[f]))
-                
-                # remember the parent (building) of the floor, in order to add the hasLevels property to the building
-                if not has_floors.has_key(parent):
-                    has_floors[parent] = [name] 
-                else:
-                    has_floors[parent] = has_floors[parent] + [name]
-
-                #print parent, " ", has_floors[parent]
-                #reg = get_region(floors[f])
-                reg = None 
-
-                q = get_rotation(floors[f])
-                trans = get_translation(floors[f])
-                trans_cpy = trans.copy()
-
-                if vert:
-                    trans_cpy['x'] = trans['z']
-                    trans_cpy['z'] = (float(get_floor_number(name))-1.0) * room_height                
-                
-                mat3d = quaternion_to_rotation_mat3d(q,trans_cpy,reg)
-
-                # local frame coordinates
-                frame_mat3d = quaternion_to_rotation_mat3d(q,trans,reg)
-                # same rotation but different translation (not center) 
-                frame_mat3d[0][3] = get_x(trans)  
-                frame_mat3d[1][3] = get_y(trans)
-                frame_mat3d[2][3] = get_z(trans)
-
-                #create_instance_with_dim(name,'LevelOfAConstruction',get_depth(reg), get_height(reg), get_width(reg), 'hasRooms', has_rooms,  get_x(trans), get_y(trans), get_z(trans))
-                create_instance_with_dim(name,['LevelOfAConstruction'],get_depth2(floors[f]), get_height2(floors[f]), get_width2(floors[f]), 'hasRooms', has_rooms,  get_x(trans), get_y(trans), get_z(trans))
-                mat_inst = create_rot_mat3d(mat3d)
-                frame_mat_inst = create_rot_mat3d(frame_mat3d)
-                
-                create_perception_event(name, mat_inst, now, parent, frame_mat_inst, None)
-
+        has_floors = create_levels(map, has_rooms, now)
 
         create_objs(map, now)
 
-        # create buidling with floors
         create_building(building_inst, has_floors)
-
-        # create_test_room('73A1-test',
-        #                  {'z': 0.7071,'y': 0,'x': 0,'w': 0.7071},
-        #                  # {'w': 0,'x': 0,'y': 0,'z': 1},
-        #                  #{'x': -2.2,'y': -0.8,'z': 0},
-        #                  {'x': 0,'y': 0,'z': 0},
-        #                  #[[0,2.7],[0,-0.7],[9,-0.7],[9,2.7]],
-        #                  [[1.0,0.0],[1.0,14.8],[-1.0,14.8],[-1.0,0.0]],
-        #                  now)
-
-        # create_test_room('73B1-test',
-        #                  #{'x': 0.7071,'y': 0,'z': 0,'w': 0.7071},
-        #                  {'w': 1,'x': 0,'y': 0,'z': 0},
-        #                  {'x': 0,'y': -0.5,'z': 0},
-        #                  [[0,3.5],[0,-3.5],[10,-3.5],[10,3.5]],
-        #                  now)
         
         create_footer()
 
@@ -569,3 +489,82 @@ def main(argv=None):
     
 if __name__ == "__main__":
     sys.exit(main())
+
+# deprecated 
+#
+# def quaternion_to_rotation_mat3d(q, t, r):
+#     global scale
+#     m = [ [1, 0, 0, 0],
+#           [0, 1, 0, 0],
+#           [0, 0, 1, 0],
+#           [0, 0, 0, 1]]
+
+#     x = q['x'] 
+#     y = q['y'] 
+#     z = q['z'] 
+#     w = q['w'] 
+
+#     # rotation matrix
+#     # first row
+#     m[0][0] = 1 - 2 * y * y - 2 * z * z
+#     m[0][1] = 2 * x * y + 2 * w * z
+#     m[0][2] = 2 * x * z - 2 * w * y
+  
+#     # # # second row 
+#     m[1][0] = 2 * x * y - 2 * w * z
+#     m[1][1] = 1 - 2 * x * x - 2 * z * z
+#     m[1][2] = 2 * y * z + 2 * w * x
+  
+#     # # # third row
+#     m[2][0] = 2 * x * z + 2 * w * y
+#     m[2][1] = 2 * y * z - 2 * w * x
+#     m[2][2] = 1 - 2 * x * x - 2 * y * y
+
+#     # # fourth row 
+#     # m[3][0] = 0
+#     # m[3][1] = 0
+#     # m[3][2] = 0
+
+#     # region should always be None now!
+#     if r is None:
+#         m[0][3] = get_x(t)
+#         m[1][3] = get_y(t)
+#         m[2][3] = get_z(t)
+#         m[3][3] = 1
+#         return m
+
+#     # calculate the center of room (2D only)
+#     xs = [xval[0] for xval in r]
+#     ys = [yval[1] for yval in r]
+    
+#     cent_x = (math.fsum(xs) / float(len(xs))) * scale 
+#     cent_y = (math.fsum(ys) / float(len(ys))) * scale
+#     cent_z = 0
+
+#     # rotate the center point
+#     #rot_x = m[0][0] * cent_x + m[0][1] * cent_y + m[0][2] * cent_z 
+#     #rot_y = m[1][0] * cent_x + m[1][1] * cent_y + m[1][2] * cent_z
+#     #rot_z = m[2][0] * cent_x + m[2][1] * cent_y + m[2][2] * cent_z
+
+#     # now set translation of obj 
+#     m[0][3] = get_x(t) + cent_x#+ rot_x 
+#     m[1][3] = get_y(t) + cent_y#+ rot_y 
+#     m[2][3] = get_z(t) + cent_z#+ rot_z
+#     m[3][3] = 1
+
+#     # print "q ", q
+#     # print "x ", x
+#     # print "y ", y
+#     # print "z ", z
+#     # print "w ", w
+#     # print "t ", t
+#     # print "r ", r
+#     # # print "trans x/y ", get_x(t), " ", get_y(t) 
+#     # # print "cent x/y ", cent_x, " ", cent_y  
+#     # # print "rot x/y/z ", rot_x, " ", rot_y, " ",  rot_z
+#     # print "m  x/y ", m[0][3] , " ", m[1][3]
+#     # print m
+    
+#     return m
+
+ 
