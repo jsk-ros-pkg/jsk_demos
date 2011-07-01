@@ -135,7 +135,7 @@
     
     <!-- http://www.jsk.t.u-tokyo.ac.jp/jsk_map.owl#LevelOfAConstruction-eng2-2f -->
 
-    <owl:NamedIndividual rdf:about="&jsk_map;LevelOfAConstruction-eng2-2f">
+    <owl:NamedIndividual rdf:about="&jsk_map;eng2-2f">
         <rdf:type rdf:resource="&knowrob;AboveGroundLevelInAConstruction"/>
     </owl:NamedIndividual>
     
@@ -143,7 +143,7 @@
 
     <!-- http://www.jsk.t.u-tokyo.ac.jp/jsk_map.owl#LevelOfAConstruction-eng2-3f -->
 
-    <owl:NamedIndividual rdf:about="&jsk_map;LevelOfAConstruction-eng2-3f">
+    <owl:NamedIndividual rdf:about="&jsk_map;eng2-3f">
         <rdf:type rdf:resource="&knowrob;AboveGroundLevelInAConstruction"/>
     </owl:NamedIndividual>
     
@@ -151,7 +151,7 @@
 
     <!-- http://www.jsk.t.u-tokyo.ac.jp/jsk_map.owl#LevelOfAConstruction-eng2-7f -->
 
-    <owl:NamedIndividual rdf:about="&jsk_map;LevelOfAConstruction-eng2-7f">
+    <owl:NamedIndividual rdf:about="&jsk_map;eng2-7f">
         <rdf:type rdf:resource="&knowrob;AboveGroundLevelInAConstruction"/>
     </owl:NamedIndividual>
     
@@ -159,66 +159,10 @@
 
     <!-- http://www.jsk.t.u-tokyo.ac.jp/jsk_map.owl#LevelOfAConstruction-eng2-8f -->
 
-    <owl:NamedIndividual rdf:about="&jsk_map;LevelOfAConstruction-eng2-8f">
+    <owl:NamedIndividual rdf:about="&jsk_map;eng2-8f">
         <rdf:type rdf:resource="&knowrob;AboveGroundLevelInAConstruction"/>
     </owl:NamedIndividual>
     
-
-
-    <!-- http://www.jsk.t.u-tokyo.ac.jp/jsk_map.owl#RoomInAConstruction-eng2-7f-73A1 -->
-
-    <owl:NamedIndividual rdf:about="&jsk_map;RoomInAConstruction-eng2-7f-73A1">
-        <rdf:type rdf:resource="&knowrob;ProfessorsOffice"/>
-    </owl:NamedIndividual>
-    
-
-
-    <!-- http://www.jsk.t.u-tokyo.ac.jp/jsk_map.owl#RoomInAConstruction-eng2-7f-73A2 -->
-
-    <owl:NamedIndividual rdf:about="&jsk_map;RoomInAConstruction-eng2-7f-73A2">
-        <rdf:type rdf:resource="&knowrob;ProfessorsOffice"/>
-    </owl:NamedIndividual>
-    
-
-
-    <!-- http://www.jsk.t.u-tokyo.ac.jp/jsk_map.owl#RoomInAConstruction-eng2-7f-73A3 -->
-
-    <owl:NamedIndividual rdf:about="&jsk_map;RoomInAConstruction-eng2-7f-73A3">
-        <rdf:type rdf:resource="&knowrob;OfficeRoom"/>
-    </owl:NamedIndividual>
-    
-
-
-    <!-- http://www.jsk.t.u-tokyo.ac.jp/jsk_map.owl#RoomInAConstruction-eng2-7f-73A4 -->
-
-    <owl:NamedIndividual rdf:about="&jsk_map;RoomInAConstruction-eng2-7f-73A4">
-        <rdf:type rdf:resource="&knowrob;OfficeRoom"/>
-    </owl:NamedIndividual>
-    
-
-
-    <!-- http://www.jsk.t.u-tokyo.ac.jp/jsk_map.owl#RoomInAConstruction-eng2-7f-73B1 -->
-
-    <owl:NamedIndividual rdf:about="&jsk_map;RoomInAConstruction-eng2-7f-73B1">
-        <rdf:type rdf:resource="&knowrob;LaboratoryRoom"/>
-    </owl:NamedIndividual>
-    
-
-
-    <!-- http://www.jsk.t.u-tokyo.ac.jp/jsk_map.owl#RoomInAConstruction-eng2-7f-73B2 -->
-
-    <owl:NamedIndividual rdf:about="&jsk_map;RoomInAConstruction-eng2-7f-73B2">
-        <rdf:type rdf:resource="&knowrob;LaboratoryRoom"/>
-    </owl:NamedIndividual>
-    
-
-
-    <!-- http://www.jsk.t.u-tokyo.ac.jp/jsk_map.owl#RoomInAConstruction-eng2-8f-83B1 -->
-
-    <owl:NamedIndividual rdf:about="&jsk_map;RoomInAConstruction-eng2-8f-83B1">
-        <rdf:type rdf:resource="&knowrob;LaboratoryRoom"/>
-    </owl:NamedIndividual>
-
 
 
     <!-- http://www.jsk.t.u-tokyo.ac.jp/jsk_map.owl#subway-hongo-campus -->
