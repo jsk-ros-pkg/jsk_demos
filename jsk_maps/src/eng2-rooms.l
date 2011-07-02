@@ -4,7 +4,7 @@
 ;; 2202
 ;(load "models/room73b1-scene.l")
 (load "models/room73b2-scene.l")
-;(load "models/room73a3-scene.l")
+(load "models/room73a3-scene.l")
 ;;
 (defun make-eng2-room (w1 w2 d &rest args &key (name) &allow-other-keys)
   (let* (b (s 50) (sd (if (> d 0) (- s) s)) k v)
@@ -143,7 +143,8 @@
 (defun make-73-rooms ()
   (let ((a1 (make-eng2-room 0 (+ (* 1150 3) 150) 8121 :name "73a1" :people "Masayuki Inaba" :knowrob-type "ProfessorsOffice"))
 	(a2 (make-eng2-room 0 (* 1150 3) 8121 :name "73a2" :people "kei Okada" :knowrob-type "ProfessorsOffice"))
-	(a3 (make-eng2-room 0 (* 1150 3) 8121 :name "73a3" :knowrob-type "OfficeRoom"))
+;	(a3 (make-eng2-room 0 (* 1150 3) 8121 :name "73a3" :knowrob-type "OfficeRoom"))
+	(a3 (let ((a3 (instance room73a3-scene :init :name "73a3"))) (setf (get a3 :knowrob-type) "OfficeRoom") a3))
 	(a4 (make-eng2-room (+ 100 500 295) (* 1150 3) 8121 :name "73a4" :knowrob-type "LaboratoryRoom"))
 	(b1 (make-eng2-room (* 1150 3) (+ (* 1150 3) 150) -11353 :name "73b1" :knowrob-type "LaboratoryRoom"))
 ;	(b2 (make-eng2-room (+ (* 1150 3) 100 500 295) (* 1150 3) -11353 :name "73b2"))
@@ -162,6 +163,7 @@
     (setf (get b2 :face-color) :dodgerblue)
     (setf (get d1 :face-color) :dodgerblue)
 	(dolist (obj (send b2 :objects)) (send b2 :assoc obj))
+	(dolist (obj (send a3 :objects)) (send a3 :assoc obj))
 
     (send d4 :locate (float-vector 0 (* 3 1150) 0))
     (send d3 :assoc d4)
@@ -195,6 +197,11 @@
     (send c1 :locate (float-vector 1010 0 0))
     (send c1 :locate (float-vector (+ 33319 2020) 0 0))
     (send a1 :assoc c1)
+
+	;;
+	(send a3 :dissoc a4)
+	(send a3 :orient pi :z)
+
     ;;
     (list a1 a2 a3 a4 b1 b2 c1 c2 d1 d2 d3 d4)))
 
@@ -358,6 +365,18 @@
     ;;
     (list a1 a2 a3 a4 b1 b2 c1 c2 d1 d2 d3 d4)))
 
+(defun eng2-2f-rooms ()
+  (let ((21a  (make-eng2-room 0 (* 1150 3) 8121 :name "21a" :knowrob-type "LockerRoom"))
+		(21b2 (make-eng2-room 0 (* 1150 3) 8121 :name "21b2" :knowrob-type "ControlRoom"))
+		(22a  (make-eng2-room 0 (* 1150 3) 8121 :name "22a" :knowrob-type ""))
+		(22b  (make-eng2-room 0 (* 1150 3) 8121 :name "22b" :knowrob-type ""))
+		(23a  (make-eng2-room 0 (* 1150 3) 8121 :name "23a" :knowrob-type ""))
+		(23b  (make-eng2-room 0 (* 1150 3) 8121 :name "23b" :knowrob-type ""))
+		(subway (make-eng2-room 0 (* 1150 3) 8121 :name "subway-shop" :knowrob-type "FastFoodRestaurantSpace")))
+	
+	;;
+	(list 21a 21b2 22a 22b 23a 23b)
+	))
 
 (defun eng2-7f-rooms ()
   (let (71rooms 72rooms 73rooms corridors 73b1 rooms)

@@ -177,7 +177,8 @@
     semobjs ))
 
 ;; dump the information for ias_sem_map
-(defun dump-obj->yaml (obj fd &key (view nil)) ;; only objects
+;; height is for rooms or floors
+(defun dump-obj->yaml (obj fd &key (view) (height)) ;; only objects
 ;  (if (null (send obj :parent)) (return-from dump-obj->yaml))
   (if (not (or (find-method obj :box)
 			   (find-method obj :bodies)))
@@ -197,7 +198,8 @@
 	(format fd "        rotation: {w: ~a, x: ~a, y: ~a, z: ~a}~%"
 			(elt qu 0) (elt qu 1) (elt qu 2) (elt qu 3))
 	(format fd "        width: ~a~%        depth: ~a~%        height: ~a~%"
-			(send sobj :width) (send sobj :depth) (send sobj :height))
+			(send sobj :width) (send sobj :depth)
+			(if height (* 0.001 height) (send sobj :height)))
 	))
 (defun dump-spot->yaml (spot fd) ;; only cascoords
   (if (not (and (eq (class spot) cascaded-coords)
@@ -264,11 +266,11 @@
 		   (format fd "floor:~%")
 		   (dolist (flo floors)
 ;;			 (dump-room->yaml flo fd))
-			 (dump-obj->yaml flo fd :view view))
+			 (dump-obj->yaml flo fd :view view :height 3000))
 		   (format fd "room:~%")
 		   (dolist (room rooms)
 ;;			 (dump-room->yaml room fd))
-			 (dump-obj->yaml room fd :view view))
+			 (dump-obj->yaml room fd :view view :height 3000))
 		   (format fd "object:~%")
 		   (dolist (obj objs)
 			 (dump-obj->yaml obj fd :view view))
