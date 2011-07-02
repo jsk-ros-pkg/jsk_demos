@@ -41,7 +41,7 @@ now = 0.0
 vert = False
 scale = 1.0
 room_height = 4 
-spot_dim = 2 
+spot_dim = 20.0
 id = 0
 
 ### UTILS ###
@@ -90,8 +90,11 @@ def quaternion_to_rotation_mat3d(q, t):
 ### YAML ACCESSOR FUNCTIONS ###
 
 def get_name(name):
-    return name.replace('/','-')[1:]
-
+    n = name.replace('/','-')
+    if n[0] is '-':
+        return n[1:]
+    return n
+    
 def get_room_number(name):
     rn = name[name.rfind('-') + 1:]
     return rn
@@ -438,9 +441,15 @@ def create_objs(map, now):
             trans_cpy = trans.copy()
 
             if vert:
-                trans_cpy['x'] = trans['x'] -  get_translation( (map.get('floor'))[ get_parent((map.get('room'))[get_parent(objs[o])]) ])['x']
-                trans_cpy['z'] = (float(get_floor_number(get_name(get_parent( (map.get('room'))[get_parent(objs[o])]))))-1.0) * room_height + trans['z'] # ['x']
-                
+                if map.get('room').has_key(get_parent(objs[o])):
+                    trans_cpy['x'] = trans['x'] -  get_translation( (map.get('floor'))[ get_parent((map.get('room'))[get_parent(objs[o])]) ])['x']
+                    trans_cpy['z'] = (float(get_floor_number(get_name(get_parent( (map.get('room'))[get_parent(objs[o])]))))-1.0) * room_height + trans['z'] # ['x']
+                elif map.get('floor').has_key(get_parent(objs[o])):
+                    trans_cpy['x'] = trans['x'] -  get_translation( (map.get('floor'))[ get_parent(objs[o])])['x']
+                    trans_cpy['z'] = (float(get_floor_number(get_name(get_parent((objs[o]))))) - 1.0) * room_height + trans['z'] # ['x']
+                else: # all objects need parent!!!
+                    break
+                    
             mat3d = quaternion_to_rotation_mat3d(q,trans_cpy)
 
             create_object(name,get_types(objs[o]),get_depth(objs[o]),get_height(objs[o]),get_width(objs[o]), None, None,  get_x(trans), get_y(trans), get_z(trans))
@@ -461,10 +470,15 @@ def create_spots(map, now):
             trans = get_translation(spots[s])
             trans_cpy = trans.copy()
 
-            # parent for region needed
-            # if vert:
-            #     trans_cpy['x'] = trans['x'] -  get_translation( (map.get('floor'))[ get_parent((map.get('room'))[get_parent(objs[o])]) ])['x']
-            #     trans_cpy['z'] = (float(get_floor_number(get_name(get_parent( (map.get('room'))[get_parent(objs[o])]))))-1.0) * room_height + trans['z'] # ['x']
+            if vert:
+                if map.get('room').has_key(get_parent(spots[s])):
+                    trans_cpy['x'] = trans['x'] -  get_translation( (map.get('floor'))[ get_parent((map.get('room'))[get_parent(spots[s])]) ])['x']
+                    trans_cpy['z'] = (float(get_floor_number(get_name(get_parent( (map.get('room'))[get_parent(spots[s])]))))-1.0) * room_height + trans['z'] # ['x']
+                elif map.get('floor').has_key(get_parent(spots[s])):
+                    trans_cpy['x'] = trans['x'] -  get_translation( (map.get('floor'))[ get_parent(spots[s])])['x']
+                    trans_cpy['z'] = (float(get_floor_number(get_name(get_parent((spots[s]))))) - 1.0) * room_height + trans['z'] # ['x']
+                else: # all objects need parent!!!
+                    break
                 
             mat3d = quaternion_to_rotation_mat3d(q,trans_cpy)
 
