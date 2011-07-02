@@ -209,6 +209,7 @@
 		 (qu (matrix2quaternion (send spot :worldrot))))
 	(if (not type) (return-from dump-spot->yaml))
 	(format fd "    ~a:~%" (send spot :name))
+	(format fd "        frame_id: ~a~%" (send (send spot :parent) :name))
 	(when properties
 	  (setq prop-str (apply #'concatenate string
 			  (mapcar #'(lambda(x)(format nil ",[~a,~a]" (car x) (send (cdr x) :name))) properties)))
