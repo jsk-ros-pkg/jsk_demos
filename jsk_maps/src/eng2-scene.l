@@ -15,6 +15,15 @@
     (setq floor-names '("/eng2/2f" "/eng2/3f" "/eng2/7f" "/eng2/8f"))
 
     ;; 2f
+    (let* ((2rms (eng2-2f-rooms)) trans
+		   (2f-o (find "/eng2/2f" (send map :descendants)
+					   :test #'string= :key #'(lambda(x)(send x :name)))))
+	  (setq trans (send (make-coords) :transformation 2f-o))
+      (dolist (rm 2rms)
+		(send rm :name (concatenate string "/eng2/2f/" (send rm :name)))
+		(send 2f-o :assoc rm)
+		(send rm :transform trans :world))
+      (setq rooms (append rooms 2rms)))
     (make-cascoords-tree
      (find "/eng2/2f" (send map :descendants)
 	   :test #'string= :key #'(lambda(x)(send x :name)))
@@ -210,7 +219,8 @@
 
 	;; add type for knowrob
     (dolist (fl (send scene :rooms))
-	  (setf (get fl :knowrob-type) "RoomInAConstruction"))
+	  (when (not (get fl :knowrob-type))
+		(setf (get fl :knowrob-type) "RoomInAConstruction")))
     (dolist (fl (send scene :floors))
 	  (setf (get fl :knowrob-type) "AboveGroundLevelInAConstruction"))
 	(setf (get scene :knowrob-type) "Building")
