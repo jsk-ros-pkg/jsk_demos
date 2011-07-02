@@ -220,44 +220,6 @@
 
     <knowrob:TimePoint rdf:about="&jsk_map;timepoint_1308501991.32"/>
 
-    <owl:NamedIndividual rdf:about="&jsk_map;foo">
-  <rdf:type rdf:resource="&knowrob;Place"/>
-  <knowrob:widthOfObject rdf:datatype="&xsd;float">1.0</knowrob:widthOfObject>
-  <knowrob:depthOfObject rdf:datatype="&xsd;float">1.0</knowrob:depthOfObject>
-  <knowrob:heightOfObject rdf:datatype="&xsd;float">1.0</knowrob:heightOfObject>
-  <knowrob:describedInMap rdf:resource="&jsk_map;SemanticEnvironmentMap-eng2"/>
-</owl:NamedIndividual>
-
-
-<owl:NamedIndividual rdf:about="&jsk_map;RotationMatrix3D-666">
-  <rdf:type rdf:resource="&knowrob;RotationMatrix3D"/>
-  <knowrob:m00 rdf:datatype="&xsd;float">1.0</knowrob:m00>
-  <knowrob:m01 rdf:datatype="&xsd;float">0.0</knowrob:m01>
-  <knowrob:m02 rdf:datatype="&xsd;float">0.0</knowrob:m02>
-  <knowrob:m03 rdf:datatype="&xsd;float">2.0</knowrob:m03>
-  <knowrob:m10 rdf:datatype="&xsd;float">0.0</knowrob:m10>
-  <knowrob:m11 rdf:datatype="&xsd;float">1.0</knowrob:m11>
-  <knowrob:m12 rdf:datatype="&xsd;float">0.0</knowrob:m12>
-  <knowrob:m13 rdf:datatype="&xsd;float">2.0</knowrob:m13>
-  <knowrob:m20 rdf:datatype="&xsd;float">0.0</knowrob:m20>
-  <knowrob:m21 rdf:datatype="&xsd;float">0.0</knowrob:m21>
-  <knowrob:m22 rdf:datatype="&xsd;float">1.0</knowrob:m22>
-  <knowrob:m23 rdf:datatype="&xsd;float">0.5</knowrob:m23>
-  <knowrob:m30 rdf:datatype="&xsd;float">0</knowrob:m30>
-  <knowrob:m31 rdf:datatype="&xsd;float">0</knowrob:m31>
-  <knowrob:m32 rdf:datatype="&xsd;float">0</knowrob:m32>
-  <knowrob:m33 rdf:datatype="&xsd;float">1</knowrob:m33>
-</owl:NamedIndividual>
-
-
-<owl:NamedIndividual rdf:about="&jsk_map;SemanticMapPerception-666">
-  <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
-  <knowrob:objectActedOn rdf:resource="&jsk_map;foo"/>
-  <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-666"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1309518246"/>
-</owl:NamedIndividual>
-
-
 </rdf:RDF>
 
 
