@@ -205,6 +205,11 @@
 		  (send scene :spot "/eng2/7f/elevator_call_panel") :world)
 	(send (car (send scene :find-object "/elevator_inside_panel")) :move-to
 		  (send scene :spot "/eng2/7f/elevator_inside_panel") :world)
+	(send (car (send scene :find-object "/eng2/7f")) :assoc
+		  (car (send scene :find-object "/elevator_call_panel")))
+	(send (car (send scene :find-object "/eng2/7f")) :assoc
+		  (car (send scene :find-object "/elevator_inside_panel")))
+
 
 	;; add type for knowrob
     (dolist (fl (send scene :rooms))
