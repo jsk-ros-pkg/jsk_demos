@@ -1,4 +1,11 @@
 <launch>
   <node pkg="json_prolog" type="json_prolog" name="json_prolog"
 		args="jsk_semantic_maps" />
+  <node pkg="jsk_perception" type="point_pose_extractor"
+		name="cup_detector" ns="/narrow_stereo/left">
+	<remap from="ObjectDetection" to="/ObjectDetection"/>
+	<param name="template_filename" value="$(find jsk_2011_07_pr2_semantic)/data/cotesys-cup.png"/>
+	<param name="object_width" value="0.076"/>
+	<param name="object_height" value="0.082"/>
+  </node>
 </launch>

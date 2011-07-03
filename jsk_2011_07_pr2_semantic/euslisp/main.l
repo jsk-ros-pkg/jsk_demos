@@ -8,12 +8,12 @@
 
 (defun init ()
   ;; env
-  (setq *scene* (make-eng2-scene))
+;  (setq *scene* (make-eng2-scene))
   (setq *pr2* (pr2))
   (setq *ri* (instance pr2-interface :init))
-  (setq *knowrob* (instance json_prolog :init))
+  (setq *knowrob* (instance json_prolog :init "json_prolog"))
   ;; callbacks
-  (ros::subscribe "/query" std_msgs::string #'ask-query)
+  (ros::subscribe "/query" std_msgs::string #'identity)
   )
 
 ;; callback
@@ -22,20 +22,23 @@
 
 ;; ask to knowrob
 (defun ask-query-and-move (msg)
-  (let* ((objtype (send msg :data))
-		 (rdf-type (format nil "'http://ias.cs.tum.edu/kb/knowrob.owl#~a'" objtype))
+  (let* (;(objtype (send msg :data))
+		 ;(rdf-type (format nil "'http://ias.cs.tum.edu/kb/knowrob.owl#~a'" objtype))
 		 solutions pose)
 	(send *knowrob* :query
-		  (list->prolog
-		   `(rdfs_individual_of :obj ,rdf-type)) :pose "OBJ")
+		  "owl_has(SPOT, 'http://ias.cs.tum.edu/kb/knowrob.owl#inFrontOf-Generally', 'http://www.jsk.t.u-tokyo.ac.jp/jsk_map.owl#room73b2-sharp-52-aquostv')" :pose "SPOT")
+;	(send *knowrob* :query
+;		  "owl_has(SPOT, knowrob:'inFrontOf-Generally', jsk_map:'room73b2-sharp-52-aquostv')" :pose "SPOT")
 	(setq solutions (send *knowrob* :solutions))
 	(when solutions
-	  (setq pose (cadr (assoc (car solutions) "POSE" sol :test #'string=)))
+	  (setq pose (cadr (assoc "POSE" (car solutions) :test #'string=)))
 	  (send *ri* :move-to pose) ;; robot moves
 	  )
   ))
 
 ;;
 (init)
-(ros::spin)
-(exit)
+(ask-query-and-move nil)
+;(ros::spin)
+;(exit)
+
