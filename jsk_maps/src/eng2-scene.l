@@ -199,7 +199,7 @@
 
     ;; visualize region
     (send-all (send scene :floors) :set-color #f(0 1 0 0.3))
-    (send-all rooms :translate #f(0 0 100))
+    (send-all rooms :translate #f(0 0 2))
 
     (dolist (obj (send scene :objects))
       ;; first charactor of obj-name must be slash

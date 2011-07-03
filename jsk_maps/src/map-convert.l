@@ -133,7 +133,7 @@ if __name__ == '__main__':
 			   (list ,@(mapcar
 				    #'(lambda(y)(list 'float-vector (* 1000 (elt y 0)) (* 1000 (elt y 1)) 0))
 				    (get-item "region" (cdr x))))
-			   100.0
+			   1.0
 			   :name ,(format nil "~A" (car x))))
 		     floor-yaml)))
 
