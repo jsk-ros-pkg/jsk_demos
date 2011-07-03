@@ -59,11 +59,12 @@
 |#
 
 (defun make-subway-scene (&key ((:name n) "subway-shop"))
-  (let (models menu pole1 pole2 store casher walls table-set)
+  (let (models menu pole1 pole2 store cashier walls table-set)
 	;; manu panel (definition of origin)
 	(setq menu (make-cube 100 1000 2000 :name "subway-menu-panel"))
 	(send menu :set-color :gray)
 	(send menu :translate (float-vector 50 -500 1000))
+	(send menu :orient pi :z)
 	;; poles
 	(setq pole1 (make-cylinder 500 4000 :name "eng2-hall-pole"))
 	(send pole1 :set-color :gray)
@@ -71,13 +72,15 @@
 	(setq pole2 (make-cylinder 500 4000 :name "eng2-hall-pole"))
 	(send pole2 :set-color :gray)
 	(send pole2 :translate (float-vector 500 -3500 0))
-	;; store and casher
+	;; store and cashier
 	(setq store (make-cube 800 7000 700 :name "subway-showcase"))
 	(send store :set-color :green)
 	(send store :translate (float-vector (+ 2000 (/ 800 2)) (- 1000 (/ 7000 2)) (/ 700 2)))
-	(setq casher (make-cube 400 400 400 :name "subway-casher"))
-	(send casher :set-color :yellow)
-	(send casher :translate (float-vector 2300 -5500 900))
+	(send store :orient pi :z)
+	(setq cashier (make-cube 400 400 400 :name "subway-cashier"))
+	(send cashier :set-color :yellow)
+	(send cashier :translate (float-vector 2300 -5500 900))
+	(send cashier :orient pi :z)
 	;; tables and chairs
 	(dotimes (i 10)
 	  (setq table-set (list (subway-chair :color :red :name "subway-colorful-chair")
@@ -97,7 +100,7 @@
           (instance scene-model :init
                     :name n
                     :objects (flatten (list menu pole1 pole2
-											store casher models
+											store cashier models
 											))))
 	;;
 	subway-shop))
