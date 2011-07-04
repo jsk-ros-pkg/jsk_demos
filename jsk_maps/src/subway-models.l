@@ -19,6 +19,7 @@
 	(setq table (body+ leg1 leg2 top))
 	(send table :set-color :white)
 	(send table :name name)
+	(send table :rotate-vertices (/ pi 4) :z)
 	table
   ))
 
@@ -88,7 +89,6 @@
 							(subway-chair :color :blue :name "subway-colorful-chair")
 							(subway-chair :color :yellow :name "subway-colorful-chair")
 							(subway-table :name "subway-table")))
-	  (send (elt table-set 4) :orient (/ pi 4) :z)
 	  (dotimes (j 4)
 		(send (elt table-set j) :orient (* (+ j i) pi/2) :z)
 		(send (elt table-set j) :translate (float-vector -500 0 0)))
