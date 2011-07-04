@@ -73,13 +73,13 @@
 	(send pole2 :set-color :gray)
 	(send pole2 :translate (float-vector 500 -3500 0))
 	;; store and cashier
-	(setq store (make-cube 800 7000 700 :name "subway-showcase"))
+	(setq store (make-cube 800 4000 700 :name "subway-showcase"))
 	(send store :set-color :green)
-	(send store :translate (float-vector (+ 2000 (/ 800 2)) (- 1000 (/ 7000 2)) (/ 700 2)))
+	(send store :translate (float-vector (+ 2000 (/ 800 2)) (- 1000 (/ 4000 2)) (/ 700 2)))
 	(send store :orient pi :z)
 	(setq cashier (make-cube 400 400 400 :name "subway-cashier"))
 	(send cashier :set-color :yellow)
-	(send cashier :translate (float-vector 2300 -5500 900))
+	(send cashier :translate (float-vector 2300 -2500 900))
 	(send cashier :orient pi :z)
 	;; tables and chairs
 	(dotimes (i 10)
