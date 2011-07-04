@@ -185,7 +185,7 @@
 	  (return-from dump-obj->yaml))
   (when (and view (find-method obj :bodies)) (objects (list obj)))
   (let* ((type (conversion-rule obj))
-		 (pos (scale 0.001 (send obj :worldpos)))
+		 ;(pos (scale 0.001 (send obj :worldpos)))
 		 (qu (matrix2quaternion (send obj :worldrot)))
 		 (sobj (convert-obj->semantic-bbox 0 obj type 0)))
 	(if (not type) (return-from dump-obj->yaml))
@@ -193,8 +193,10 @@
 	(format fd "        frame_id: ~a~%" (send (send obj :parent) :name))
 	(format fd "        type: [~a]~%" type)
 	(format fd "        translation: {x: ~a, y: ~a, z: ~a}~%"
-			(elt (send sobj :pose) 3) (elt (send sobj :pose) 7)	(elt (send sobj :pose) 11)) ;; global pose
-;			(elt pos 0) (elt pos 1) (elt pos 2)) local pose
+			(elt (send sobj :pose) 3) (elt (send sobj :pose) 7)
+			(if height (+ (elt (send sobj :pose) 11)
+						  (/ (- (* 0.001 height) (send sobj :height)) 2))
+			  (elt (send sobj :pose) 11)))
 	(format fd "        rotation: {w: ~a, x: ~a, y: ~a, z: ~a}~%"
 			(elt qu 0) (elt qu 1) (elt qu 2) (elt qu 3))
 	(format fd "        width: ~a~%        depth: ~a~%        height: ~a~%"
