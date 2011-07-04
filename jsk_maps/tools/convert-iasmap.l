@@ -185,8 +185,8 @@
 	  (return-from dump-obj->yaml))
   (when (and view (find-method obj :bodies)) (objects (list obj)))
   (let* ((type (conversion-rule obj))
-		 (pos (scale 0.001 (send obj :pos)))
-		 (qu (matrix2quaternion (send obj :rot)))
+		 (pos (scale 0.001 (send obj :worldpos)))
+		 (qu (matrix2quaternion (send obj :worldrot)))
 		 (sobj (convert-obj->semantic-bbox 0 obj type 0)))
 	(if (not type) (return-from dump-obj->yaml))
 	(format fd "    ~a:~%" (send obj :name))
@@ -304,5 +304,13 @@
 
 (defun yaml (&key (filename "eng2.yaml") (view nil))
   (dump-building->yaml filename *scene* :yaml :view view))
+
+(defun make-semantic-scene1 (&key (filename "eng2-scene1.yaml") (view nil))
+  (let ((*scene* (make-eng2-scene)))
+	;;
+	;; add objects and relations here.
+	;;
+	(dump-building->yaml filename *scene* :yaml :view view)
+	))
 
 (format t "type (yaml) or (srv)~%")
