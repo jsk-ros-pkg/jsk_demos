@@ -362,7 +362,7 @@ def create_levels(map, has_rooms, now):
             trans_cpy = trans.copy()
 
             if vert:
-                trans_cpy['x'] = trans['z']
+                trans_cpy['x'] = get_width(floors[f])/2 #trans['z']
                 trans_cpy['z'] = (float(get_floor_number(name))-1.0) * room_height                
                 
             mat3d = quaternion_to_rotation_mat3d(q,trans_cpy)
@@ -402,7 +402,7 @@ def create_rooms(map, now):
             trans_cpy = trans.copy()
                 
             if vert:
-                trans_cpy['x'] = trans['x'] - get_translation((map.get('floor'))[get_parent(rooms[r])])['x']
+                trans_cpy['x'] = trans['x'] - get_translation((map.get('floor'))[get_parent(rooms[r])])['x'] +  get_width( (map.get('floor'))[get_parent(rooms[r])])/2
                 trans_cpy['z'] = (float(get_floor_number(get_name(get_parent(rooms[r])))) - 1.0) * room_height + trans['z'] #['x']
 
             mat3d = quaternion_to_rotation_mat3d(q,trans_cpy)
@@ -442,10 +442,10 @@ def create_objs(map, now):
 
             if vert:
                 if map.get('room').has_key(get_parent(objs[o])):
-                    trans_cpy['x'] = trans['x'] -  get_translation( (map.get('floor'))[ get_parent((map.get('room'))[get_parent(objs[o])]) ])['x']
+                    trans_cpy['x'] = trans['x'] -  get_translation( (map.get('floor'))[ get_parent((map.get('room'))[get_parent(objs[o])]) ])['x'] + get_width((map.get('floor'))[ get_parent((map.get('room'))[get_parent(objs[o])])])/2
                     trans_cpy['z'] = (float(get_floor_number(get_name(get_parent( (map.get('room'))[get_parent(objs[o])]))))-1.0) * room_height + trans['z'] # ['x']
                 elif map.get('floor').has_key(get_parent(objs[o])):
-                    trans_cpy['x'] = trans['x'] -  get_translation( (map.get('floor'))[ get_parent(objs[o])])['x']
+                    trans_cpy['x'] = trans['x'] -  get_translation( (map.get('floor'))[ get_parent(objs[o])])['x'] +  get_width( (map.get('floor'))[get_parent(objs[o])])/2
                     trans_cpy['z'] = (float(get_floor_number(get_name(get_parent((objs[o]))))) - 1.0) * room_height + trans['z'] # ['x']
                 else: # all objects need parent!!!
                     break
@@ -472,10 +472,10 @@ def create_spots(map, now):
 
             if vert:
                 if map.get('room').has_key(get_parent(spots[s])):
-                    trans_cpy['x'] = trans['x'] -  get_translation( (map.get('floor'))[ get_parent((map.get('room'))[get_parent(spots[s])]) ])['x']
+                    trans_cpy['x'] = trans['x'] -  get_translation( (map.get('floor'))[ get_parent((map.get('room'))[get_parent(spots[s])]) ])['x'] + get_width((map.get('floor'))[ get_parent((map.get('room'))[get_parent(spots[s])])])/2
                     trans_cpy['z'] = (float(get_floor_number(get_name(get_parent( (map.get('room'))[get_parent(spots[s])]))))-1.0) * room_height + trans['z'] # ['x']
                 elif map.get('floor').has_key(get_parent(spots[s])):
-                    trans_cpy['x'] = trans['x'] -  get_translation( (map.get('floor'))[ get_parent(spots[s])])['x']
+                    trans_cpy['x'] = trans['x'] -  get_translation( (map.get('floor'))[ get_parent(spots[s])])['x'] +  get_width( (map.get('floor'))[get_parent(spots[s])])/2
                     trans_cpy['z'] = (float(get_floor_number(get_name(get_parent((spots[s]))))) - 1.0) * room_height + trans['z'] # ['x']
                 else: # all objects need parent!!!
                     break
@@ -507,13 +507,12 @@ def create_building(map, now, has_floors):
     if buildings is not None:
         b = buildings.keys()
         name  = get_name(b[0])
-        print name 
         q = get_rotation(buildings[b[0]])
         trans = get_translation(buildings[b[0]])
         trans_cpy = trans.copy()
         
         if vert:
-            trans_cpy['x'] = trans['z']
+            trans_cpy['x'] = get_width(buildings[b[0]])/2 #trans['z'] +
             trans_cpy['z'] = trans['x'] # maximoiun level numnber * room_height   
                 
         mat3d = quaternion_to_rotation_mat3d(q,trans_cpy)
