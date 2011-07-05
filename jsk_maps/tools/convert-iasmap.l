@@ -298,21 +298,57 @@
 
 
 (load "package://jsk_maps/src/eng2-scene.l")
-(unless (boundp '*scene*) (setq *scene* (make-eng2-scene)))
 (defun srv ()
   (ros::roseus "hoge")
   (ros::wait-for-service *srvname*)
+  (setq *scene* (make-eng2-scene))
   (dump-building->yaml "dummy" *scene* :srv))
 
-(defun yaml (&key (filename "eng2.yaml") (view nil))
-  (dump-building->yaml filename *scene* :yaml :view view))
-
-(defun make-semantic-scene1 (&key (filename "eng2-scene1.yaml") (view nil))
-  (let ((*scene* (make-eng2-scene)))
-	;;
-	;; add objects and relations here.
-	;;
-	(dump-building->yaml filename *scene* :yaml :view view)
+(defun yaml (&optional (type :eng2) &key (filename "eng2.yaml") (view nil))
+  (case type
+	(:eng2
+	 (make-default-scene :filename "eng2.yaml" :view view))
+	(:scene1
+	 (make-semantic-scene1 :filename "scene1.yaml" :view view))
 	))
+
+(load "models/cup-object.l")
+(defun make-default-scene (&key (filename "scene.yaml") (view nil))
+  (let ((scene (make-eng2-scene)))
+	(dump-building->yaml filename scene :yaml :view view)))
+
+(defun make-semantic-scene1 (&key (filename "scene.yaml") (view nil))
+  (flet ((add-to-room
+		  (obj room)
+		  (send room :assoc obj)
+		  (nconc (send room :objects) (list obj))
+		  (send obj :move-to (send room :copy-worldcoords) :world)))
+	(let ((scene (make-eng2-scene))
+		  73b2 73a3 83b1
+		  cup1 cup2 cup3 cup4)
+	  ;;
+	  ;; add objects and relations here.
+	  ;;
+	  (setq 73b2 (car (send scene :find-object "/eng2/7f/73b2")))
+	  (setq 73a3 (car (send scene :find-object "/eng2/7f/73a3")))
+	  (setq 83b1 (car (send scene :find-object "/eng2/7f/83b1")))
+	  (setq cup1 (cup) cup2 (cup) cup3 (cup) cup4 (cup))
+	  ;;
+	  (add-to-room cup1 73a3)
+	  (send cup1 :translate (float-vector 5150 550 700))
+;	  (send 73a3 :assoc cup1)
+;	  (nconc (send 73a3 :objects) (list cup1))
+;	  (send cup1 :move-to (send 73a3 :copy-worldcoords) :world)
+	  ;;
+	  (add-to-room cup2 73b2)
+	  (add-to-room cup3 73b2)
+	  (add-to-room cup4 73b2)
+	  (send cup2 :translate (float-vector 5150 1500 700))
+	  (send cup3 :translate (float-vector 1800 1300 700))
+	  (send cup4 :translate (float-vector 4150 -2700 700))
+	  ;;
+	  (dump-building->yaml filename scene :yaml :view view)
+	  scene
+	  )))
 
 (format t "type (yaml) or (srv)~%")
