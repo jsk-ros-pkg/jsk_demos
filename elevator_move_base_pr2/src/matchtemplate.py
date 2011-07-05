@@ -4,7 +4,7 @@ import roslib; roslib.load_manifest('elevator_move_base_pr2')
 import rospy
 from sensor_msgs.msg import Image
 #from std_msgs.msg import String
-from elevator_move_base_pr2.msg import StringStamped
+from roseus.msg import StringStamped
 import cv
 from cv_bridge import CvBridge, CvBridgeError
 
