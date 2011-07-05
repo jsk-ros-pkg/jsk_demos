@@ -5,6 +5,7 @@
 ;(load "models/room73b1-scene.l")
 (load "models/room73b2-scene.l")
 (load "models/room73a3-scene.l")
+(load "models/room83b1-scene.l")
 (load "subway-models.l")
 ;;
 (defun make-eng2-room (w1 w2 d &rest args &key (name) &allow-other-keys)
@@ -315,7 +316,8 @@
 	(a2 (make-eng2-room 0 (* 1150 3) 8121 :name "83a2"))
 	(a3 (make-eng2-room 0 (* 1150 3) 8121 :name "83a3"))
 	(a4 (make-eng2-room (+ 100 500 295) (* 1150 3) 8121 :name "83a4"))
-	(b1 (make-eng2-room (* 1150 3) (+ (* 1150 3) 150) -11353 :name "83b1" :knowrob-type "LaboratoryRoom"))
+	(b1 (let ((b1 (instance room83b1-scene :init :name "83b1"))) (setf (get b1 :knowrob-type) "LaboratoryRoom") b1))
+	;;(b1 (make-eng2-room (* 1150 3) (+ (* 1150 3) 150) -11353 :name "83b1" :knowrob-type "LaboratoryRoom"))
 	(b2 (make-eng2-room (+ (* 1150 3) 100 500 295) (* 1150 3) -11353 :name "83b2"))
 	(c1 (make-eng2-room (* 1150 3) (+ (* 1150 3) 150) 11353 :name "83c1"))
 	(c2 (make-eng2-room (+ (* 1150 3) 100 500 295) (* 1150 3) 11353 :name "83c2"))
@@ -330,6 +332,7 @@
     (setf (get b1 :face-color) :darkviolet)
     (setf (get b2 :face-color) :dodgerblue)
     (setf (get d1 :face-color) :dodgerblue)
+	(dolist (obj (send b1 :objects)) (send b1 :assoc obj))
 
     (send d4 :locate (float-vector 0 (* 3 1150) 0))
     (send d3 :assoc d4)
