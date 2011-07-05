@@ -275,7 +275,7 @@
   t)
 
 (defun check-target-floor (userdata)
-  (let ((topic (instance ros::ros-callback-message :init elevator_move_base_pr2::StringStamped "/elevator_number/result"))
+  (let ((topic (instance ros::ros-callback-message :init roseus::StringStamped "/elevator_number/result"))
 	(target-floor (cdr (assoc 'target-floor userdata))))
     (dotimes (i 300 nil)
       (ros::spin-once)
