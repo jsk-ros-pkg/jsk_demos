@@ -126,6 +126,17 @@
 	;; TODO loop this rule for ("a" "a" "a-1") -> ("a" "a-1" "a-1") if needed
 	))
 
+(defun make-all-bbox (lst)
+  (cond ((atom lst)
+		 (make-bounding-box (send lst :vertices)))
+		(t
+		 (let* ((boxes (mapcar #'make-all-bbox lst))
+				(ret (car boxes)))
+		   (dolist (bb (cdr boxes))
+			 (setq ret (send ret :union bb)))
+		   ret))
+		))
+
 (defun convert-obj->semantic-bbox (id obj type parent)
   (let ((semobj (instance mod_semantic_map::SemMapObject :init))
 		dummy aabb tmp size cpos pos vc)
@@ -137,7 +148,8 @@
 	  (setq aabb (send obj :box)))
 	 ((find-method obj :bodies)
 	  (print (send obj :bodies)) ;; for update vertices
-	  (setq aabb (make-bounding-box (flatten (send-all (send obj :bodies) :vertices)))))
+	  (setq aabb (make-all-bbox (send obj :bodies))))
+	  ;(setq aabb (make-bounding-box (flatten1 (send-all (send obj :bodies) :vertices)))))
 	 (t
 	  (setq aabb (make-bounding-box (list #f(0 0 0))))))
     (setq size (scale 0.001 (v- (send aabb :maxpoint) (send aabb :minpoint))))
@@ -159,7 +171,7 @@
 	;;
     (format t ";; convert id:~a obj:~a type:~a par:~a~%" id obj type parent)
     semobj
-    ))
+	))
 
 
 
