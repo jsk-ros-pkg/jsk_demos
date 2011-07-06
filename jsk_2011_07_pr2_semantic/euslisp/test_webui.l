@@ -29,8 +29,8 @@
 
 ;;
 (init-settings)
-(ros::advertise-service "web_str_srv" roseus::StringString #'str-srv)
-(ros::subscribe "/ipad/event/select" roseus::StringStamped #'str-cv)
+(ros::advertise-service "/ipad/service/knowrob" roseus::StringString #'str-srv)
+(ros::subscribe "/ipad/event/select" roseus::StringStamped #'str-cb)
 
 (do-until-key
  (ros::spin-once))
