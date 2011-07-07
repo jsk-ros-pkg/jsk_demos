@@ -188,6 +188,26 @@
 			))))
     semobjs ))
 
+(defun dump-properties (obj fd)
+  (let* ((properties (get obj :knowrob-properties)) (prop-str "") prop)
+	(when (setq prop (remove-if-not #'(lambda(x)(or (stringp x) (numberp x)))
+								properties :key #'cdr))
+	  ;; data properties
+	  (setq prop-str (apply #'concatenate string
+			  (mapcar #'(lambda(x)(format nil ",[~a,~a,~s]" (car x)
+			    (if (stringp (cdr x)) "string" "float") (cdr x)))
+					  prop)))
+	  (format fd "        data-properties: [~a]~%" (subseq prop-str 1)))
+	(when (setq prop (remove-if #'(lambda(x)(or (stringp x) (numberp x)))
+										properties :key #'cdr))
+	  ;; object properties
+	  (setq prop-str (apply #'concatenate string
+			  (mapcar #'(lambda(x)(format nil ",[~a,~a]"
+										  (car x) (send (cdr x) :name)))
+					  prop)))
+	  (format fd "        object-properties: [~a]~%" (subseq prop-str 1)))
+	))
+
 ;; dump the information for ias_sem_map
 ;; height is for rooms or floors
 (defun dump-obj->yaml (obj fd &key (view) (height)) ;; only objects
@@ -197,13 +217,13 @@
 	  (return-from dump-obj->yaml))
   (when (and view (find-method obj :bodies)) (objects (list obj)))
   (let* ((type (conversion-rule obj))
-		 ;(pos (scale 0.001 (send obj :worldpos)))
 		 (qu (matrix2quaternion (send obj :worldrot)))
 		 (sobj (convert-obj->semantic-bbox 0 obj type 0)))
 	(if (not type) (return-from dump-obj->yaml))
 	(format fd "    ~a:~%" (send obj :name))
 	(format fd "        frame_id: ~a~%" (send (send obj :parent) :name))
 	(format fd "        type: [~a]~%" type)
+	(dump-properties obj fd)
 	(format fd "        translation: {x: ~a, y: ~a, z: ~a}~%"
 			(elt (send sobj :pose) 3) (elt (send sobj :pose) 7)
 			(if height (+ (elt (send sobj :pose) 11)
@@ -220,16 +240,12 @@
 				(eps= 0.0 (elt (send spot :worldpos) 2) 50)))
 	  (return-from dump-spot->yaml))
   (let* ((type (conversion-rule spot))
-		 (properties (get spot :knowrob-properties)) (prop-str "")
 		 (pos (scale 0.001 (send spot :worldpos)))
 		 (qu (matrix2quaternion (send spot :worldrot))))
 	(if (not type) (return-from dump-spot->yaml))
 	(format fd "    ~a:~%" (send spot :name))
 	(format fd "        frame_id: ~a~%" (send (send spot :parent) :name))
-	(when properties
-	  (setq prop-str (apply #'concatenate string
-			  (mapcar #'(lambda(x)(format nil ",[~a,~a]" (car x) (send (cdr x) :name))) properties)))
-	  (format fd "        object-properties: [~a]~%" (subseq prop-str 1))) ;; remove first ,
+	(dump-properties spot fd)
 	(format fd "        translation: {x: ~a, y: ~a, z: ~a}~%"
 			(elt pos 0) (elt pos 1)	0.0) ;; global pose
 	(format fd "        rotation: {w: ~a, x: ~a, y: ~a, z: ~a}~%"
@@ -251,7 +267,6 @@
 	(format fd "        type: [~a]~%" type)
 	(format fd "        translation: {x: ~a, y: ~a, z: ~a}~%"
 			(elt (send sobj :pose) 3) (elt (send sobj :pose) 7)	(elt (send sobj :pose) 11)) ;; global pose
-;			(elt pos 0) (elt pos 1) (elt pos 2)) ;local pose
 	(format fd "        rotation: {w: ~a, x: ~a, y: ~a, z: ~a}~%"
 			(elt qu 0) (elt qu 1) (elt qu 2) (elt qu 3))
 	(format fd "        region: [[~a,~a],[~a,~a],[~a,~a],[~a,~a]]~%"
@@ -357,6 +372,7 @@
 	  (send cupf1 :translate (float-vector 4350 1100 0))
 	  (send cupf1 :orient -pi/2 :z)
 	  (push-knowrob-properties cupf1 "inFrontOf-Generally" cup1)
+	  (push-knowrob-properties cup1 "linkToImageFile" "http://jsk-ros-pkg.svn.sourceforge.net/viewvc/jsk-ros-pkg/trunk/demos/jsk_2011_07_pr2_semantic/data/cotesys-cup.png")
 	  ;;
 	  (add-to-room cup2 73b2)
 	  (add-to-room cup3 73b2)
