@@ -41,7 +41,7 @@ now = 0.0
 vert = False
 scale = 1.0
 room_height = 4 
-spot_dim = 20.0
+spot_dim = 1.0
 id = 0
 
 ### UTILS ###
@@ -63,21 +63,38 @@ def quaternion_to_rotation_mat3d(q, t):
     z = q['z'] 
     w = q['w'] 
 
-    # rotation matrix
-    # first row
+    #rotation matrix
+    #first row
     m[0][0] = 1 - 2 * y * y - 2 * z * z
-    m[0][1] = 2 * x * y + 2 * w * z
-    m[0][2] = 2 * x * z - 2 * w * y
+    m[0][1] = 2 * x * y - 2 * w * z
+    m[0][2] = 2 * x * z + 2 * w * y
   
     # second row 
-    m[1][0] = 2 * x * y - 2 * w * z
+    m[1][0] = 2 * x * y +  2 * w * z
     m[1][1] = 1 - 2 * x * x - 2 * z * z
-    m[1][2] = 2 * y * z + 2 * w * x
+    m[1][2] = 2 * y * z - 2 * w * x
   
     # third row
-    m[2][0] = 2 * x * z + 2 * w * y
-    m[2][1] = 2 * y * z - 2 * w * x
+    m[2][0] = 2 * x * z - 2 * w * y
+    m[2][1] = 2 * y * z + 2 * w * x
     m[2][2] = 1 - 2 * x * x - 2 * y * y
+
+    # transposed matrix!
+    # rotation matrix
+    # first row
+    # m[0][0] = 1 - 2 * y * y - 2 * z * z
+    # m[0][1] = 2 * x * y + 2 * w * z
+    # m[0][2] = 2 * x * z - 2 * w * y
+  
+    # # second row 
+    # m[1][0] = 2 * x * y - 2 * w * z
+    # m[1][1] = 1 - 2 * x * x - 2 * z * z
+    # m[1][2] = 2 * y * z + 2 * w * x
+  
+    # # third row
+    # m[2][0] = 2 * x * z + 2 * w * y
+    # m[2][1] = 2 * y * z - 2 * w * x
+    # m[2][2] = 1 - 2 * x * x - 2 * y * y
 
     # translation
     m[0][3] = get_x(t)
@@ -131,6 +148,11 @@ def get_types(frame):
 def get_obj_properties(frame):
     if frame.has_key('object-properties'):
         return frame['object-properties']
+    return None
+
+def get_data_properties(frame):
+    if frame.has_key('data-properties'):
+        return frame['data-properties']
     return None
 
 # get actual depth, width, and height
@@ -219,7 +241,7 @@ def create_spot(inst,types,width,height,depth, x, y, z, props=None):
     print '</owl:NamedIndividual>'
     print ''
     
-def create_object(inst,types,width,height,depth, prop=None, objs=None, x=0.0, y=0.0, z=0.0):
+def create_object(inst,types,width,height,depth, prop=None, objs=None, x=0.0, y=0.0, z=0.0, data_props=None):
     global map_inst
     print ''
     print '<owl:NamedIndividual rdf:about="&jsk_map;{0}">'.format(inst)
@@ -233,6 +255,11 @@ def create_object(inst,types,width,height,depth, prop=None, objs=None, x=0.0, y=
     if objs is not None:
         if objs.has_key(inst):
             create_props(prop, objs[inst])
+
+    if data_props is not None:
+        for p in data_props:
+            create_data_prop(p[0], p[1], p[2])
+            
     print '</owl:NamedIndividual>'
     print ''
     
@@ -299,6 +326,9 @@ def create_props(prop, objs):
 def create_prop(prop, obj):
     print '  <knowrob:{0} rdf:resource="&jsk_map;{1}"/>'.format(prop,obj)
 
+def create_data_prop(prop, type, val):
+    print '  <knowrob:{0} rdf:datatype="&xsd;{1}">{2}</knowrob:{0}>'.format(prop,type,val)
+    
 def create_perception_event(obj,mat3d_name,time=0):
     print   ''
     print   '<owl:NamedIndividual rdf:about="&jsk_map;SemanticMapPerception-{0}">'.format(get_id())
@@ -452,7 +482,9 @@ def create_objs(map, now):
                     
             mat3d = quaternion_to_rotation_mat3d(q,trans_cpy)
 
-            create_object(name,get_types(objs[o]),get_depth(objs[o]),get_height(objs[o]),get_width(objs[o]), None, None,  get_x(trans), get_y(trans), get_z(trans))
+            data_props = get_data_properties(objs[o])
+
+            create_object(name,get_types(objs[o]),get_depth(objs[o]),get_height(objs[o]),get_width(objs[o]), None, None,  get_x(trans), get_y(trans), get_z(trans), data_props)
 
             mat_inst = create_rot_mat3d(mat3d)
             
@@ -484,7 +516,7 @@ def create_spots(map, now):
 
             props = get_obj_properties(spots[s])
             
-            create_spot(name,['Place'],spot_dim,spot_dim,spot_dim, get_x(trans), get_y(trans), get_z(trans), props)
+            create_spot(name,['Place'],spot_dim,spot_dim,0.0, get_x(trans), get_y(trans), get_z(trans), props)
 
             mat_inst = create_rot_mat3d(mat3d)
             
