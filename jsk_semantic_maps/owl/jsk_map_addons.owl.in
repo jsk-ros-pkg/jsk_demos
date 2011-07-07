@@ -31,40 +31,6 @@
   </owl:Ontology>
 
 
-    <!-- 
-    ///////////////////////////////////////////////////////////////////////////////////////
-    //
-    // Classes
-    //
-    ///////////////////////////////////////////////////////////////////////////////////////
-     -->
-
-    
-
-
-    <!-- http://ias.cs.tum.edu/kb/knowrob.owl#AboveGroundLevelInAConstruction -->
-
-    <owl:Class rdf:about="&knowrob;AboveGroundLevelInAConstruction"/>
-    
-
-
-    <!-- http://ias.cs.tum.edu/kb/knowrob.owl#LaboratoryRoom -->
-
-    <owl:Class rdf:about="&knowrob;LaboratoryRoom"/>
-    
-
-
-    <!-- http://ias.cs.tum.edu/kb/knowrob.owl#OfficeRoom -->
-
-    <owl:Class rdf:about="&knowrob;OfficeRoom"/>
-    
-
-
-    <!-- http://ias.cs.tum.edu/kb/knowrob.owl#ProfessorsOffice -->
-
-    <owl:Class rdf:about="&knowrob;ProfessorsOffice"/>
-    
-
 
     <!-- 
     ///////////////////////////////////////////////////////////////////////////////////////
@@ -133,43 +99,12 @@
          </owl:NamedIndividual>
     -->      
     
-    <!-- http://www.jsk.t.u-tokyo.ac.jp/jsk_map.owl#LevelOfAConstruction-eng2-2f -->
-
-    <owl:NamedIndividual rdf:about="&jsk_map;eng2-2f">
-        <rdf:type rdf:resource="&knowrob;AboveGroundLevelInAConstruction"/>
-    </owl:NamedIndividual>
-    
-
-
-    <!-- http://www.jsk.t.u-tokyo.ac.jp/jsk_map.owl#LevelOfAConstruction-eng2-3f -->
-
-    <owl:NamedIndividual rdf:about="&jsk_map;eng2-3f">
-        <rdf:type rdf:resource="&knowrob;AboveGroundLevelInAConstruction"/>
-    </owl:NamedIndividual>
-    
-
-
-    <!-- http://www.jsk.t.u-tokyo.ac.jp/jsk_map.owl#LevelOfAConstruction-eng2-7f -->
-
-    <owl:NamedIndividual rdf:about="&jsk_map;eng2-7f">
-        <rdf:type rdf:resource="&knowrob;AboveGroundLevelInAConstruction"/>
-    </owl:NamedIndividual>
-    
-
-
-    <!-- http://www.jsk.t.u-tokyo.ac.jp/jsk_map.owl#LevelOfAConstruction-eng2-8f -->
-
-    <owl:NamedIndividual rdf:about="&jsk_map;eng2-8f">
-        <rdf:type rdf:resource="&knowrob;AboveGroundLevelInAConstruction"/>
-    </owl:NamedIndividual>
-    
-
-
     <!-- http://www.jsk.t.u-tokyo.ac.jp/jsk_map.owl#subway-hongo-campus -->
 
     <owl:NamedIndividual rdf:about="&jsk_map;subway-hongo-campus">
         <rdf:type rdf:resource="&knowrob;Subway-Restaurant"/>
         <knowrob:hasDaytimeOpeningHours rdf:resource="&jsk_map;DaytimeOpeningHours-subway-hongo-campus"/>
+        <knowrob:servesCuisineAtLocation rdf:resource="&jsk_map;eng2-2f-subway-shop"/>
     </owl:NamedIndividual>
 
     
@@ -179,11 +114,6 @@
     </owl:NamedIndividual>
 
 
-    <!-- http://www.jsk.t.u-tokyo.ac.jp/jsk_map.owl#subway-hongo-campus-space -->
-
-    <owl:NamedIndividual rdf:about="&jsk_map;subway-hongo-campus-space">
-        <rdf:type rdf:resource="&knowrob;FastFoodRestaurantSpace"/>
-    </owl:NamedIndividual>
 
     <owl:NamedIndividual rdf:about="&jsk_map;laswon-hongo-campus-multiroom">
       <rdf:type rdf:resource="&knowrob;MultiRoom"/>
@@ -218,7 +148,7 @@
 
     <!-- http://www.jsk.t.u-tokyo.ac.jp/jsk_map.owl#timepoint_1308501991.32 -->
 
-    <knowrob:TimePoint rdf:about="&jsk_map;timepoint_1308501991.32"/>
+    <!-- <knowrob:TimePoint rdf:about="&jsk_map;timepoint_1308501991.32"/>-->
 
 </rdf:RDF>
 
