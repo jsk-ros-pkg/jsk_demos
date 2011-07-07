@@ -229,7 +229,7 @@
 	(let ((73b2 (car (send scene :find-object "/eng2/7f/73b2"))))
 	  (push-knowrob-properties (car (send scene :find-object "/eng2/7f/room73B2-table-front"))
 							   "inFrontOf-Generally"
-							   (car (send 73b2 :find-object "room73b2-karimoku-1200-desk")))
+							   (car (send 73b2 :find-object "room73b2-x-leg-desk")))
 	  (push-knowrob-properties (car (send scene :find-object "/eng2/7f/room73B2-front-of-tv"))
 							   "inFrontOf-Generally"
 							   (car (send 73b2 :find-object "room73b2-sharp-52-aquostv")))
