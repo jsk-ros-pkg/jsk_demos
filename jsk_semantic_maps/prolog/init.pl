@@ -39,3 +39,38 @@
 
 :- consult('jsk_map').
 
+draw_all(C) :-
+  draw_rooms(0,250,0,'0.5',C),
+  draw_levels(250,0,250,'0.3',C).
+
+
+draw_rooms(R,G,B,P,C) :-
+  findall(Ro, (owl_has(Ro,rdf:type,knowrob:'RoomInAConstruction'),
+               add_object(Ro,C),
+               highlight_object(Ro,@(true),R,G,B,P,C)),
+          _Rs).
+
+draw_levels(R,G,B,P,C) :-
+  findall(L, (owl_has(L,rdf:type,knowrob:'LevelOfAConstruction'),
+              add_object(L,C),
+              highlight_object(L,@(true),R,G,B,P,C)),
+          _Ls).
+
+draw_all_n(N,C) :-
+  draw_rooms_in_level_n(N,0,250,0,'0.5',C),
+  draw_level_n(N,250,0,250,'0.3',C).
+
+draw_level_n(N,R,G,B,P,C) :-
+  owl_has(L,rdf:type,knowrob:'LevelOfAConstruction'),
+  owl_has(L,knowrob:floorNumber,literal(type(_,N))),
+  add_object(L,C),
+  highlight_object(L,@(true),R,G,B,P,C).
+
+draw_rooms_in_level_n(N,R,G,B,P,C) :-
+  owl_has(L,rdf:type,knowrob:'LevelOfAConstruction'),
+  owl_has(L,knowrob:floorNumber,literal(type(_,N))),
+  findall(Room, (owl_has(L,knowrob:hasRooms,Room),
+                 add_object(Room,C),
+                 highlight_object(Room,@(true),R,G,B,P,C)), _Rs).
+
+
