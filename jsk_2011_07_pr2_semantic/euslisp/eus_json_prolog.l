@@ -24,6 +24,7 @@
 	  (setq ret (append (subseq ret 0 (1- p))
 						(list (list (elt ret (1- p)) (elt ret (1+ p))))
 						(if (< (+ 2 p) (length ret)) (subseq ret (+ 2 p))))))
+	;;
 	ret
 	))
 
@@ -45,7 +46,7 @@
    (let ((tm (ros::time-now)))
 	 (format nil "EUSLISP_QUERY_~a~0,9d" (send tm :sec)(send tm :nsec))))
   (:query
-   (query &key (mode :incremental) pose) ;; mode is :all or :incremental
+   (query &key (mode :all) pose) ;; mode is :all or :incremental
    (when (not finished) (send self :finish))
    (let ((req (instance json_prolog::PrologQueryRequest :init)) res)
 	 (cond ((eq mode :all)
@@ -61,7 +62,9 @@
 	 (setq res (ros::service-call simple-srv req))
 	 (ros::ros-info "prolog query> ~A" query)
 	 (setq finished nil attribute (if pose :pose))
-	 (send res :ok)
+	 (if (and (send res :ok) (eq mode :all))
+		 (send self :solutions)
+	   (send res :ok))
 	 ))
   ;; for http://ias.cs.tum.edu/kb/knowrob.owl\orientation
   (:attribute-pose
@@ -128,16 +131,18 @@
 ;; string  -> string
 ;; keyword -> string-upcase
 ;; symbol  -> string-downcase
+;; list    -> map list->prolog
 (defun list->prolog (lst)
-  (when (every #'atom lst) (setq lst (list lst)))
   (flet ((conv-item (x)
 					(cond ((numberp x) (string x))
 						  ((stringp x) x)
 						  ((keywordp x) (string-upcase x))
+						  ((listp x) (list->prolog (list x)))
 						  (t (string-downcase x)))))
 	(let (expr exprs ret)
 	  (dolist (l lst)
 		(cond ((stringp l) (setq expr l))
+			  ((numberp l) (setq expr l))
 			  (t
 			   (setq expr (format nil "~a(~a" (car l) (conv-item (cadr l))))
 			   (dolist (item (cddr l))
@@ -156,29 +161,35 @@
 ;;
 
 (defun test ()
-  (send *jp* :query "member(A, [1, 2, 3, 4]), B = ['x', A]")
-  (send *jp* :solutions))
+  (send *jp* :query "member(A, [1, 2, 3, 4]), B = ['x', A]"))
 
 (defun test2 ()
   (send *jp* :query "assert(friend(alice,bob))" :mode :all)
   (send *jp* :query "assert(friend(alice,carol))" :mode :all)
-  (send *jp* :query "friend(alice,X)")
-  (send *jp* :solutions))
+  (send *jp* :query "friend(alice,X)"))
 
 ;; with rosrun json_prolog json_prolog ias_semantic_map
 (defun knowrob-sample ()
-  (send *jp* :query "rdfs_individual_of(Fridge, 'http://ias.cs.tum.edu/kb/knowrob.owl#Refrigerator'), rdf_triple('http://ias.cs.tum.edu/kb/knowrob.owl#orientation',Fridge,Pose), rdf_triple('http://ias.cs.tum.edu/kb/knowrob.owl#m03',Pose,_M03), strip_literal_type(_M03, X), rdf_triple('http://ias.cs.tum.edu/kb/knowrob.owl#m13',Pose,_M13), strip_literal_type(_M13, Y), rdf_triple('http://ias.cs.tum.edu/kb/knowrob.owl#m23',Pose,_M23), strip_literal_type(_M23, Z)")
-  (send *jp* :solutions))
+  (send *jp* :query "rdfs_individual_of(Fridge, 'http://ias.cs.tum.edu/kb/knowrob.owl#Refrigerator'), rdf_triple('http://ias.cs.tum.edu/kb/knowrob.owl#orientation',Fridge,Pose), rdf_triple('http://ias.cs.tum.edu/kb/knowrob.owl#m03',Pose,_M03), strip_literal_type(_M03, X), rdf_triple('http://ias.cs.tum.edu/kb/knowrob.owl#m13',Pose,_M13), strip_literal_type(_M13, Y), rdf_triple('http://ias.cs.tum.edu/kb/knowrob.owl#m23',Pose,_M23), strip_literal_type(_M23, Z)"))
 
 (defun find-knowrob-objects (&optional (objtype "Refrigerator"))
   (let ((rdf-type (format nil "'http://ias.cs.tum.edu/kb/knowrob.owl#~a'" objtype)))
 	(send *jp* :query
 		  (list->prolog
-		   (list `(rdfs_individual_of :obj ,rdf-type)
-;				 '(owl_has :obj :pred :val)
-				 ))
+		   (list `(rdfs_individual_of :obj ,rdf-type)))
 		  :pose "OBJ")
-	(send *jp* :solutions)))
+	))
+
+(defun find-knowrob-objects-with-info (&optional (objtype "Refrigerator"))
+  (let ((rdf-type (format nil "'http://ias.cs.tum.edu/kb/knowrob.owl#~a'" objtype)))
+	(send *jp* :query
+		  (list->prolog (list
+		   `(setof :_o ("lookForObjT" ,rdf-type :_o) :_objs)
+		   `(member :obj :_objs)
+		   `(owl_has :spot ,infront-of :obj)
+		   `(object_info :obj "[IMAGE,ROOM,LEVEL|_]")))
+		  :pose "OBJ")
+	))
 
 
 ;; initialize and print usage
