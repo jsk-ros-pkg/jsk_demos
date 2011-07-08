@@ -29,22 +29,22 @@
 (defun pick ()
   (let* ((av (send *pr2* :angle-vector))
 		rarm via1 target)
-	(send *ri* :stop-grasp :larm)
+	(send *ri* :stop-grasp :rarm)
 	(setq via1
 		  (make-coords :pos (v+ (send *obj* :worldpos) #f(40 50 100))
 					   :rpy (float-vector pi/2 pi/2 pi/2)))
-	(send *pr2* :larm :inverse-kinematics via1 :rotation-axis t)
+	(send *pr2* :rarm :inverse-kinematics via1 :rotation-axis t)
 	(send *ri* :angle-vector (send *pr2* :angle-vector))
 	(send *ri* :wait-interpolation)
 	;;
 	(setq target
 		  (make-coords :pos (v+ (send *obj* :worldpos) #f(40 80 -40))
 					   :rpy (float-vector pi/2 pi/2 pi/2)))
-	(send *pr2* :larm :inverse-kinematics target :rotation-axis t)
+	(send *pr2* :rarm :inverse-kinematics target :rotation-axis t)
 	(send *ri* :angle-vector (send *pr2* :angle-vector))
 	(send *ri* :wait-interpolation)
 	;;
-	(send *ri* :move-gripper :larm 0.0)
+	(send *ri* :move-gripper :rarm 0.0)
 	))
 
 
