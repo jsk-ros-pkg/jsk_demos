@@ -37,17 +37,17 @@
 :- use_module(library('semweb/actionmodel')).
 
 
-vert:-
-  owl_parser:owl_parse('@LOCAL_PACKAGE_PATH@/owl/jsk_map_vert.owl', false, false, true).
+% vert:-
+%   owl_parser:owl_parse('@LOCAL_PACKAGE_PATH@/owl/jsk_map_vert.owl', false, false, true).
 
-eng2:-
-  owl_parser:owl_parse('@LOCAL_PACKAGE_PATH@/owl/eng2.owl', false, false, true).
+% eng2:-
+%   owl_parser:owl_parse('@LOCAL_PACKAGE_PATH@/owl/eng2.owl', false, false, true).
 
-scene1:-
-  owl_parser:owl_parse('@LOCAL_PACKAGE_PATH@/owl/scene1.owl', false, false, true).
+% scene1:-
+:-   owl_parser:owl_parse('@LOCAL_PACKAGE_PATH@/owl/scene1.owl', false, false, true).
 
-jsk_map:-
-  owl_parser:owl_parse('@LOCAL_PACKAGE_PATH@/owl/jsk_map.owl', false, false, true).
+% jsk_map:-
+%   owl_parser:owl_parse('@LOCAL_PACKAGE_PATH@/owl/jsk_map.owl', false, false, true).
 
 
 :- rdf_db:rdf_register_ns(knowrob, 'http://ias.cs.tum.edu/kb/knowrob.owl#', [keep(true)]).
