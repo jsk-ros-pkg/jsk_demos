@@ -56,38 +56,44 @@
 		   (t
 			(warn "mode should be :all or :incremental in :query")))
 	 (when pose
+	   (if (stringp pose) (setq pose (list pose)))
 	   (setq query (send self :attribute-pose query pose)))
 	 (send req :id (setq id (send self :make-query-id)))
 	 (send req :query query)
 	 (setq res (ros::service-call simple-srv req))
 	 (ros::ros-info "prolog query> ~A" query)
-	 (setq finished nil attribute (if pose :pose))
+	 (setq finished nil
+		   attribute (if pose (append '(:pose) pose)))
 	 (if (and (send res :ok) (eq mode :all))
 		 (send self :solutions)
 	   (send res :ok))
 	 ))
   ;; for http://ias.cs.tum.edu/kb/knowrob.owl\orientation
   (:attribute-pose
-   (query obj &rest args)
-   (setq query (format nil "~a,rdf_triple('http://ias.cs.tum.edu/kb/knowrob.owl#orientation',~a,POSE)" query obj))
-   (dotimes (i 4)
-	 (dotimes (j 4)
-	   (setq query (format nil "~a,rdf_triple('http://ias.cs.tum.edu/kb/knowrob.owl#m~a~a',POSE,_M~a~a), strip_literal_type(_M~a~a, M~a~a)" query i j i j i j i j))))
+   (query objs &rest args)
+   (dolist (obj objs)
+	 (let (mtmp)
+	   (setq query (format nil "~a,rdf_triple('http://ias.cs.tum.edu/kb/knowrob.owl#orientation',~a,POSE_~a)" query obj obj))
+	   (dotimes (i 4)
+		 (dotimes (j 4)
+		   (setq mtmp (format nil "~a_M~a~a" obj i j))
+		   (setq query (format nil "~a,rdf_triple('http://ias.cs.tum.edu/kb/knowrob.owl#m~a~a',POSE_~a,_~a), strip_literal_type(_~a, ~a)" query i j obj mtmp mtmp mtmp))))))
    query)
   (:extract-pose
-   (answer)
+   (answer objs)
    (let ((pose (make-array '(4 4) :element-type :float)) tmp)
-	 (dotimes (i 4)
-	   (dotimes (j 4)
-		 (setq tmp (assoc (format nil "M~a~a" i j) answer :test #'string=))
-		 (setf (aref pose i j) (read-from-string (cadr tmp)))
-		 (if (eq (car answer) tmp)
-			 (setq answer (cdr answer))
-		   (delete tmp answer :count 1))
-		 ))
-	 (dotimes(i 3) (setf (aref pose i 3) (* 1000 (aref pose i 3)))) ;; m -> mm
-	 (setq tmp (assoc "POSE" answer :test #'string=))
-	 (setf (cadr tmp) (make-coords :4x4 pose :name (cadr tmp)))
+	 (dolist (obj objs)
+	   (dotimes (i 4)
+		 (dotimes (j 4)
+		   (setq tmp (assoc (format nil "~a_M~a~a" obj i j) answer :test #'string=))
+		   (setf (aref pose i j) (read-from-string (cadr tmp)))
+		   (if (eq (car answer) tmp)
+			   (setq answer (cdr answer))
+			 (delete tmp answer :count 1))
+		   ))
+	   (dotimes(i 3) (setf (aref pose i 3) (* 1000 (aref pose i 3)))) ;; m -> mm
+	   (setq tmp (assoc (format nil "POSE_~a" obj) answer :test #'string=))
+	   (setf (cadr tmp) (make-coords :4x4 pose :name (cadr tmp))))
 	 answer))
   ;;
   (:solutions
@@ -112,8 +118,8 @@
 	   (ros::ros-info "Prolog query failed") (send self :finish) nil)
 	  ((eq st json_prolog::PrologNextSolution::*OK*)
 	   (setq answer (read-json (send res :solution)))
-	   (case attribute
-		 (:pose (setq answer (send self :extract-pose answer))))
+	   (case (car attribute)
+		 (:pose (setq answer (send self :extract-pose answer (cdr attribute)))))
 	   (ros::ros-info "prolog solution> ~A" answer)
 	   answer ))
 	 ))
@@ -181,16 +187,16 @@
 	))
 
 (defun find-knowrob-objects-with-info (&optional (objtype "Refrigerator"))
-  (let ((rdf-type (format nil "'http://ias.cs.tum.edu/kb/knowrob.owl#~a'" objtype)))
+  (let ((rdf-type (format nil "'http://ias.cs.tum.edu/kb/knowrob.owl#~a'" objtype))
+		(infront-of "'http://ias.cs.tum.edu/kb/knowrob.owl#inFrontOf-Generally'"))
 	(send *jp* :query
 		  (list->prolog (list
 		   `(setof :_o ("lookForObjT" ,rdf-type :_o) :_objs)
 		   `(member :obj :_objs)
 		   `(owl_has :spot ,infront-of :obj)
 		   `(object_info :obj "[IMAGE,ROOM,LEVEL|_]")))
-		  :pose "OBJ")
+		  :pose '("OBJ" "SPOT"))
 	))
-
 
 ;; initialize and print usage
 (ros::roseus "eus_prolog_sample")
@@ -198,4 +204,4 @@
 (setq *jp* (instance json_prolog :init "json_prolog"))
 (format t ";;(test) (test2) (knowrob-sample)~%")
 (format t ";;(find-knowrob-objects \"DrinkingMug\")~%")
-(format t ";;(find-knowrob-objects \"Cup\")~%")
+(format t ";;(find-knowrob-objects-with-info \"Cup\")~%")
