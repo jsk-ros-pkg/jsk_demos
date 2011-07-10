@@ -392,6 +392,7 @@
 	  (push-knowrob-properties cupf2 "inFrontOf-Generally" cup2)
 	  (push-knowrob-properties cupf3 "inFrontOf-Generally" cup3)
 	  (push-knowrob-properties cupf4 "inFrontOf-Generally" cup4)
+	  (push-knowrob-properties cup2 "linkToImageFile" "http://jsk-ros-pkg.svn.sourceforge.net/viewvc/jsk-ros-pkg/trunk/demos/jsk_2011_07_pr2_semantic/data/mit-mug.png")
 	  ;;
 	  (add-to-room cup5 83b1)
 	  (add-to-room cupf5 83b1)

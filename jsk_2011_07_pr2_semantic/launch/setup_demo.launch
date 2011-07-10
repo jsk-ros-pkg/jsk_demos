@@ -1,6 +1,5 @@
 <launch>
-  <node pkg="json_prolog" type="json_prolog" name="json_prolog"
-		args="jsk_semantic_maps">
+  <node pkg="json_prolog" type="json_prolog" name="json_prolog">
 	<param name="initial_package" value="jsk_semantic_maps" />
   </node>
   <node pkg="jsk_perception" type="point_pose_extractor"
