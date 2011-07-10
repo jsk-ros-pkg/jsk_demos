@@ -2,7 +2,7 @@
 
 (load "package://jsk_maps/src/eng2-scene.l")
 (load "package://pr2eus/pr2-interface.l")
-(load "eus_json_prolog.l") ;; -> json_prolog/src
+(load "knowrob-interface.l") ;; -> json_prolog/src
 (load "actions.l")
 
 (ros::roseus "demo_main")
@@ -23,16 +23,19 @@
   )
 
 (defun insert-robot-pose ()
-  (let (pose po ret)
+  (let (pose po ret
+	    (type "'http://ias.cs.tum.edu/kb/knowrob.owl#Robot'")
+		(robot "'http://jsk.t.u-tokyo.ac.jp/knowrob.owl#pr2'"))
 	(ros::spin-once)
 	(setq pose (send *tfl* :lookup-transform "/map" "/base_footprint" (ros::time 0)))
 	(send pose :locate (scale 0.001 (send pose :worldpos)) :world)
 	(setq po (coerce (array-entity (send pose :4x4)) cons))
 	(setq po (mapcan #'(lambda(x)(coerce (format nil ",~a" x) cons)) po))
 	(setq po (coerce (cdr po) string))
-	(send *knowrob* :query "create_object_instance('http://ias.cs.tum.edu/kb/knowrob.owl#Robot',http://jsk.t.u-tokyo.ac.jp/knowrob.owl#'pr2')") ;; always success
+	(send *knowrob* :query
+		  (list->prolog '((create_object_instance ,type ,robot)))) ;; always success
 	(setq ret (send *knowrob* :query
-					(format nil "update_pose(pr2,[~a])" po)))
+					(list->prolog '((update_pose ,robot ,(format nil "[~a]" po))))))
 	ret ))
 
 ;; ask to knowrob
