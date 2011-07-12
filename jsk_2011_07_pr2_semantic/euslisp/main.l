@@ -18,10 +18,6 @@
   (ros::subscribe "/query" std_msgs::string #'identity)
   )
 
-;; callback
-(defun recieve-task (msg)
-  )
-
 (defun insert-robot-pose ()
   (let (pose po ret
 	     (type "'http://ias.cs.tum.edu/kb/knowrob.owl#Robot'")
@@ -39,40 +35,37 @@
     ret ))
 
 ;; ask to knowrob
-(defun ask-query-and-move (type)
+(defun ask-query-and-move (&optional (type "Cup"))
   (let* (;(type (send msg :data))
-	 (infront-of "'http://ias.cs.tum.edu/kb/knowrob.owl#inFrontOf-Generally'")
-	 (rdf-type (format nil "'http://ias.cs.tum.edu/kb/knowrob.owl#~a'" type))
-	 (linktype "'http://ias.cs.tum.edu/kb/knowrob.owl#linkToImageFile'")
-	 solutions pose)
-    (setq solutions
-	  (send *knowrob* :query
-		(list->prolog
-		 (list `(rdfs_individual_of :obj ,rdf-type)
-		       `(owl_has :spot ,infront-of :obj)
-		       (format nil "(owl_has(OBJ,~a,URL);URL='')" linktype)
-		       ))
-		:pose "SPOT"))
+		 solutions pose)
+    (setq solutions (find-similar-objects-with-info type))
     (when solutions
-      (setq solutions (list (elt solutions 1)))
-      (setq obj (cadr (assoc "OBJ" (car solutions) :test #'string=)))
-      (setq robot-pose (cadr (assoc "POSE" (car solutions) :test #'string=)))
+      (setq solution (find-if #'(lambda(x)(equal (cadr (assoc "IMAGE" x :test #'equal)) "http://jsk-ros-pkg.svn.sourceforge.net/viewvc/jsk-ros-pkg/trunk/demos/jsk_2011_07_pr2_semantic/data/cup-cotesys.jpg")) solutions)) ;; for cotesys-mug
+      (setq obj (cadr (assoc "OBJ" (car solution) :test #'equal)))
+	  (setq robot-pose (cadr (assoc "POSE_SPOT" (car solution) :test #'equal)))
+	  (ros::spin-once)
+      (setq robot-original-pose (send *tfl* :lookup-transform "/map" "/base_footprint" (ros::time 0)))
       (send *ri* :move-to robot-pose) ;; robot moves
       (ros::spin-once)
       (send *pr2* :move-to (send *tfl* :lookup-transform "/map" "/base_footprint" (ros::time 0)) :world)
-      (send *knowrob* :query (format nil "OBJ='~a'" obj) :pose "OBJ" :mode :incremental)
-      (setq obj-pose (cadr (assoc "POSE" (car (send *knowrob* :solutions)) :test #'string=)))
+	  (setq obj-pose (cadr (assoc "POSE_OBJ" solution :test #'equal)))
       (send *pr2* :head :look-at (send obj-pose :worldpos))
       (send *ri* :angle-vector (send *pr2* :angle-vector) 2000)
       (send *ri* :wait-interpolation)
       ;; grasp cup here
+	  (check)
+	  (pick :larm)
       ;; go to somewhere
-      )
-    ))
+	  (pr2-tuckarm-pose :larm)
+	  (send *ri* :move-to robot-original-pose)
+	  (hand-over)
+	  )))
 
 ;;
-(init)  ;; for pr2 setup
-(init2) ;; for cup detection
+(progn
+  (init)  ;; for pr2 setup
+  (init2) ;; for cup detection
+)
 ;(ask-query-and-move "Cup")
 ;(ros::spin)
 ;(exit)
