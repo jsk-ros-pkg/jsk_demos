@@ -368,8 +368,8 @@
 	  ;;
 	  (add-to-room cup1 73a3)
 	  (add-to-room cupf1 73a3)
-	  (send cup1 :translate (float-vector 4350 650 700))
-	  (send cupf1 :translate (float-vector 4350 1100 0))
+	  (send cup1 :translate (float-vector 4350 700 700))
+	  (send cupf1 :translate (float-vector 4350 1400 0))
 	  (send cupf1 :orient -pi/2 :z)
 	  (push-knowrob-properties cupf1 "inFrontOf-Generally" cup1)
 	  (push-knowrob-properties cup1 "linkToImageFile" "http://jsk-ros-pkg.svn.sourceforge.net/viewvc/jsk-ros-pkg/trunk/demos/jsk_2011_07_pr2_semantic/data/cup-cotesys.jpg")
