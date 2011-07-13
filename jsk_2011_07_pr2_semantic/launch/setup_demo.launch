@@ -1,5 +1,6 @@
 <launch>
 
+  <!-- this needs knorwob/trunk -->
   <env name="JAVA_HOME" value="/usr/lib/jvm/java-6-openjdk"/>
   <node pkg="json_prolog" type="json_prolog" name="json_prolog">
 	<param name="initial_package" value="jsk_semantic_maps" />
@@ -14,8 +15,18 @@
   </node>
 
   <!-- for gripper action -->
-  <include file="$(find jsk_2011_07_pr2_semantic)/launch/pr2_gripper_sensor_action/pr2_gripper_sensor_actions.launch" />
+  <node pkg="roslaunch" type="roslaunch" name="$(anon launch)"
+        args="pr2_gripper_sensor_action pr2_gripper_sensor_actions.launch"
+	output="screen" />
 
-  <include file="$(find jsk_pcl_ros)/launch/pointcloud_screenpoint.launch" />
+  <!-- for acurate object position -->
+  <node pkg="roslaunch" type="roslaunch" name="$(anon launch)"
+        args="jsk_pcl_ros pointcloud_screenpoint.launch"
+	output="screen" />
+
+  <!-- for collision avoidance in arm planning -->
+  <node pkg="roslaunch" type="roslaunch" name="$(anon launch)"
+        args="pr2eus_openrave pr2_openrave_armplan.launch"
+	output="screen" />
 
 </launch>
