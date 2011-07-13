@@ -12,7 +12,7 @@
 	<param name="template_filename" value="$(find jsk_2011_07_pr2_semantic)/data/sift-cotesys.png"/>
 	<param name="object_width" value="0.068"/>
 	<param name="object_height" value="0.079"/>
-	<param name="window_name" value="" /> <!-- to disable window-->
+	<param name="viewer_window" value="false" /> <!-- to disable window-->
   </node>
 
   <!-- for gripper action -->
