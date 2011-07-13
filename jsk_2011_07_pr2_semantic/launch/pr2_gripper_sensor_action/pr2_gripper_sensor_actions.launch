@@ -1,0 +1,34 @@
+<launch>
+  <!-- launch real-time controller for both hands -->
+  <include file="$(find pr2_gripper_sensor_controller)/launch/pr2_gripper_sensor_controller.launch" />
+
+  
+  <!-- Launch the left/right action server nodes -->
+  <group ns="r_gripper_sensor_controller">
+    <node name="gripper_action_node" machine="c1"
+          pkg="pr2_gripper_sensor_action" type="pr2_gripper_sensor_action" />
+    <node name="findContact_action_node" machine="c1"
+          pkg="pr2_gripper_sensor_action" type="pr2_gripper_findContact_action" />
+    <node name="slipServo_action_node" machine="c1"
+          pkg="pr2_gripper_sensor_action" type="pr2_gripper_slipServo_action" />
+    <node name="forceServo_action_node" machine="c1"
+          pkg="pr2_gripper_sensor_action" type="pr2_gripper_forceServo_action" />
+    <node name="event_detector_action_node" machine="c1"
+          pkg="pr2_gripper_sensor_action" type="pr2_gripper_event_detector_action" />
+  </group>
+
+
+  <group ns="l_gripper_sensor_controller">
+    <node name="gripper_action_node" machine="c1"
+          pkg="pr2_gripper_sensor_action" type="pr2_gripper_sensor_action" />
+    <node name="findContact_action_node" machine="c1"
+          pkg="pr2_gripper_sensor_action" type="pr2_gripper_findContact_action" />
+    <node name="slipServo_action_node" machine="c1"
+          pkg="pr2_gripper_sensor_action" type="pr2_gripper_slipServo_action" />
+    <node name="forceServo_action_node" machine="c1"
+          pkg="pr2_gripper_sensor_action" type="pr2_gripper_forceServo_action" />
+    <node name="event_detector_action_node" machine="c1"
+          pkg="pr2_gripper_sensor_action" type="pr2_gripper_event_detector_action" />
+  </group>
+        
+</launch>
