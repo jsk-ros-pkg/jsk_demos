@@ -73,7 +73,7 @@
 	))
 
 
-(defun hand-over ()
+(defun hand-over () ;;  only larm
   (let ((client (instance ros::simple-action-client :init "/l_gripper_sensor_controller/event_detector" pr2_gripper_sensor_msgs::PR2GripperEventDetectorAction))
 		(goal (instance pr2_gripper_sensor_msgs::PR2GripperEventDetectorActionGoal :init))
 		(av (send *ri* :state :potentio-vector))
@@ -125,7 +125,7 @@
 (defun stop-subscribe ()
   (ros::subscribe "/ObjectDetection" posedetection_msgs::ObjectDetection #'identity))
 
-(defun check (&optional (timeout 10))
+(defun check (&key (timeout 10))
   (start-subscribe) (unix::sleep 3)
   (send *obj* :move-to (make-coords) :world)
   (let ((pos1 (send (send *obj* :copy-worldcoords) :worldpos)) pos2 tm)
