@@ -38,7 +38,6 @@
 		 via1 target vav avs)
 	(ros::spin-once)
 	(send *pr2* :angle-vector (send *ri* :state :potentio-vector))
-	(send *ri* :stop-grasp arm)
 	(setq via1
 		  (make-coords :pos (send (send *obj* :copy-worldcoords) :worldpos)
 					   :rpy (float-vector pi/2 pi/2 pi/2)))
@@ -50,6 +49,7 @@
 					:move-target arm :use-torso t))
 	;(send *ri* :angle-vector (send *pr2* :angle-vector))
 	(send *ri* :wait-interpolation)
+	(send *ri* :stop-grasp arm)
 	;;
 	(ros::spin-once)
 	(setq vav (send *ri* :state :potentio-vector))
@@ -58,7 +58,7 @@
 		  (make-coords :pos (send (send *obj* :copy-worldcoords) :worldpos)
 					   :rpy (float-vector pi/2 pi/2 pi/2)))
 	(send target :translate #f(20 60 -50) :world)
-	(send *pr2* arm :inverse-kinematics target :rotation-axis t)
+	(send *pr2* :inverse-kinematics target :move-arm arm :rotation-axis t)
 	(send *ri* :angle-vector (send *pr2* :angle-vector) 5000)
 	(send *ri* :wait-interpolation)
 	;;
@@ -102,6 +102,7 @@
 
 (defun objectdetection (msg)
  (let ((obj (car (send msg :objects))) (av (send *pr2* :angle-vector)))
+   (ros::ros-info "object detected.")
    (send *pr2* :angle-vector (send *ri* :state :potentio-vector))
    (send *obj* :move-to (send *pr2* :narrow_stereo_optical_frame :copy-worldcoords) :world)
    (send *obj* :move-to (ros::tf-pose->coords (send obj :pose)) :local)
@@ -124,10 +125,11 @@
 (defun stop-subscribe ()
   (ros::subscribe "/ObjectDetection" posedetection_msgs::ObjectDetection #'identity))
 
-(defun check ()
+(defun check (&optional (timeout 10))
   (start-subscribe) (unix::sleep 3)
   (send *obj* :move-to (make-coords) :world)
-  (let ((pos1 (send (send *obj* :copy-worldcoords) :worldpos)) pos2)
+  (let ((pos1 (send (send *obj* :copy-worldcoords) :worldpos)) pos2 tm)
+   (setq tm (ros::time-now))
    (while (ros::ok)
 	(ros::spin-once)
     (setq pos2 (send *obj* :worldpos))
@@ -138,6 +140,10 @@
 	  (stop-subscribe)
 	  (check-pcl)
 	  (return-from check t))
+	(when (< timeout (send (ros::time- (ros::time-now) tm) :to-sec))
+	  (ros::ros-info "timeout")
+	  (stop-subscribe)
+	  (return-from check nil))
     (send *viewer* :draw-objects)
     (x::window-main-one)
     (unix::usleep 50000)
