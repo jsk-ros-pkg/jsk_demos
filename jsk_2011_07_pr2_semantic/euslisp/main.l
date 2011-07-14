@@ -21,7 +21,7 @@
 (defun insert-robot-pose ()
   (let (pose po ret
 	     (type "'http://ias.cs.tum.edu/kb/knowrob.owl#Robot'")
-	     (robot "'http://jsk.t.u-tokyo.ac.jp/knowrob.owl#pr2'"))
+		 (robot "'http://www.jsk.t.u-tokyo.ac.jp/jsk_map.owl#pr2'"))
     (ros::spin-once)
     (setq pose (send *tfl* :lookup-transform "/map" "/base_footprint" (ros::time 0)))
     (send pose :locate (scale 0.001 (send pose :worldpos)) :world)
@@ -34,17 +34,17 @@
 		    (list->prolog `((update_pose ,robot ,(format nil "[~a]" po))))))
     ret ))
 
+
 ;; ask to knowrob
 (defun ask-query-and-move (&optional (type "Cup"))
-  (let* (;(type (send msg :data))
-		 solutions pose)
-    (setq solutions (find-similar-objects-with-info type))
-    (when solutions
-      (setq solution (find-if #'(lambda(x)(equal (cadr (assoc "IMAGE" x :test #'equal)) "http://jsk-ros-pkg.svn.sourceforge.net/viewvc/jsk-ros-pkg/trunk/demos/jsk_2011_07_pr2_semantic/data/cup-cotesys.jpg")) solutions)) ;; for cotesys-mug
+  (let* (solutions pose opose)
+	(ros::spin-once)
+	(setq opose (send *tfl* :lookup-transform "/map" "/base_footprint" (ros::time 0)))
+    (setq solutions (similar-objects-with-info-by-distance type))
+    (dolist (solution solutions)
       (setq obj (cadr (assoc "OBJ" solution :test #'equal)))
 	  (setq robot-pose (cadr (assoc "POSE_SPOT" solution :test #'equal)))
 	  (ros::spin-once)
-      (setq robot-original-pose (send *tfl* :lookup-transform "/map" "/base_footprint" (ros::time 0)))
       (send *ri* :move-to robot-pose) ;; robot moves
       (ros::spin-once)
       (send *pr2* :move-to (send *tfl* :lookup-transform "/map" "/base_footprint" (ros::time 0)) :world)
@@ -53,12 +53,13 @@
       (send *ri* :angle-vector (send *pr2* :angle-vector) 2000)
       (send *ri* :wait-interpolation)
       ;; grasp cup here
-	  (check)
-	  (pick :larm)
-      ;; go to somewhere
-	  (pr2-tuckarm-pose :larm)
-	  (send *ri* :move-to robot-original-pose)
-	  (hand-over)
+	  (when (check :timeout 20) ;; detection success
+		(pick :larm)
+		;; go to somewhere
+		(pr2-tuckarm-pose :larm)
+		(send *ri* :move-to opose)
+		(hand-over)
+		(return))
 	  )))
 
 ;;
