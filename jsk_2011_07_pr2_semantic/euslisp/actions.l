@@ -35,42 +35,42 @@
 
 (defun pick (arm)
   (let* ((av (send *pr2* :angle-vector))
-		 via1 target vav avs)
-	(ros::spin-once)
-	(send *pr2* :angle-vector (send *ri* :state :potentio-vector))
-	(setq via1
-		  (make-coords :pos (send (send *obj* :copy-worldcoords) :worldpos)
-					   :rpy (float-vector pi/2 pi/2 pi/2)))
-	(send via1 :translate #f(20 60 100) :world)
-	;;(send *pr2* arm :inverse-kinematics via1 :rotation-axis :x)
-	;;(send *pr2* arm :inverse-kinematics via1 :rotation-axis t)
+	 via1 target vav avs)
+    (ros::spin-once)
+    (send *pr2* :angle-vector (send *ri* :state :potentio-vector))
+    (setq via1
+	  (make-coords :pos (send (send *obj* :copy-worldcoords) :worldpos)
+		       :rpy (float-vector pi/2 pi/2 pi/2)))
+    (send via1 :translate #f(20 60 100) :world)
+    ;;(send *pr2* arm :inverse-kinematics via1 :rotation-axis :x)
+    ;;(send *pr2* arm :inverse-kinematics via1 :rotation-axis t)
     (setq avs (send *ri* :move-end-coords-plan
-					(send via1 :copy-worldcoords)
-					:move-target arm :use-torso t))
-	;(send *ri* :angle-vector (send *pr2* :angle-vector))
-	(send *ri* :wait-interpolation)
-	(send *ri* :stop-grasp arm)
-	;;
-	(ros::spin-once)
-	(setq vav (send *ri* :state :potentio-vector))
-	(send *pr2* :angle-vector (copy-object vav))
-	(setq target
-		  (make-coords :pos (send (send *obj* :copy-worldcoords) :worldpos)
-					   :rpy (float-vector pi/2 pi/2 pi/2)))
-	(send target :translate #f(20 60 -50) :world)
-	(send *pr2* :inverse-kinematics target :move-arm arm :rotation-axis t)
-	(send *ri* :angle-vector (send *pr2* :angle-vector) 5000)
-	(send *ri* :wait-interpolation)
-	;;
-	(send *ri* :move-gripper arm 0.0 :wait t)
-	;;
-	(send *ri* :angle-vector vav 5000)
-	(send *ri* :wait-interpolation)
-	;;
-	(send *ri* :angle-vector-sequence
-		  (reverse (car avs)) (reverse (cadr avs)))
-	(send *ri* :wait-interpolation)
-	))
+		    (send *pr2* :transformation via1)
+		    :move-target arm :use-torso t))
+    ;;(send *ri* :angle-vector (send *pr2* :angle-vector))
+    (send *ri* :wait-interpolation)
+    (send *ri* :stop-grasp arm)
+    ;;
+    (ros::spin-once)
+    (setq vav (send *ri* :state :potentio-vector))
+    (send *pr2* :angle-vector (copy-object vav))
+    (setq target
+	  (make-coords :pos (send (send *obj* :copy-worldcoords) :worldpos)
+		       :rpy (float-vector pi/2 pi/2 pi/2)))
+    (send target :translate #f(20 60 -50) :world)
+    (send *pr2* :inverse-kinematics target :move-arm arm :rotation-axis t)
+    (send *ri* :angle-vector (send *pr2* :angle-vector) 5000)
+    (send *ri* :wait-interpolation)
+    ;;
+    (send *ri* :move-gripper arm 0.0 :wait t)
+    ;;
+    (send *ri* :angle-vector vav 5000)
+    (send *ri* :wait-interpolation)
+    ;;
+    (send *ri* :angle-vector-sequence
+	  (reverse (car avs)) (reverse (cadr avs)))
+    (send *ri* :wait-interpolation)
+    ))
 
 
 (defun hand-over () ;;  only larm
@@ -117,7 +117,7 @@
   (send *obj* :translate-vertices (float-vector 50 0 0))
   (send *obj* :rotate-vertices pi/2 :y)
   (send *obj* :rotate-vertices (/ pi -4) :x)
-  (objects (list *pr2* *obj*))
+  (when x::*display* (objects (list *pr2* *obj*)))
   )
 
 (defun start-subscribe ()
@@ -133,19 +133,20 @@
    (while (ros::ok)
 	(ros::spin-once)
     (setq pos2 (send *obj* :worldpos))
-	(print (distance pos1 pos2))
-	(when (< 0.01 (distance pos1 pos2))
-	  (ros::ros-info "ok")
-	  (send *irtviewer* :draw-objects)
-	  (stop-subscribe)
-	  (check-pcl)
-	  (return-from check t))
-	(when (< timeout (send (ros::time- (ros::time-now) tm) :to-sec))
-	  (ros::ros-info "timeout")
-	  (stop-subscribe)
-	  (return-from check nil))
-    (send *viewer* :draw-objects)
-    (x::window-main-one)
+    (print (distance pos1 pos2))
+    (when (< 0.01 (distance pos1 pos2))
+      (ros::ros-info "ok")
+      (if x::*display* (send *irtviewer* :draw-objects))
+      (stop-subscribe)
+      (check-pcl)
+      (return-from check t))
+    (when (< timeout (send (ros::time- (ros::time-now) tm) :to-sec))
+      (ros::ros-info "timeout")
+      (stop-subscribe)
+      (return-from check nil))
+    (when x::*display*
+      (send *viewer* :draw-objects)
+      (x::window-main-one))
     (unix::usleep 50000)
    )))
 
@@ -166,15 +167,16 @@
 		 (ros::wait-for-service *ray_srv*)
 		 (setq res (ros::service-call *ray_srv* req))
 		 (setq 3dpos (ros::tf-point->pos (send res :point)))
-		 (if (< (norm 3dpos) (norm minpos))
-			 (setq minpos 3dpos))
+		 (if (and (not (equal 3dpos #f(0 0 0)))
+			  (< (norm 3dpos) (norm minpos)))
+		     (setq minpos 3dpos))
 		 ))
 	 (setq 3dpos minpos))
    (print (list 2dpos '-> 3dpos))
    (send *obj* :locate (send *pr2* :narrow_stereo_optical_frame :transform-vector 3dpos) :world)
    ;;
    (send *pr2* :angle-vector av)
-   (send *irtviewer* :draw-objects)
+   (when x::*display* (send *irtviewer* :draw-objects))
    ))
 
 

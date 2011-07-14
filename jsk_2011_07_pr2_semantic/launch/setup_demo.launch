@@ -20,9 +20,9 @@
         args="pr2_gripper_sensor_action pr2_gripper_sensor_actions.launch"
 	output="screen" />
 
-  <!-- for acurate object position -->
+  <!-- for accurate object position -->
   <node pkg="roslaunch" type="roslaunch" name="$(anon launch)"
-        args="jsk_pcl_ros pointcloud_screenpoint.launch"
+        args="jsk_2011_07_pr2_semantic pointcloud_screenpoint.launch"
 	output="screen" />
 
   <!-- for collision avoidance in arm planning -->
