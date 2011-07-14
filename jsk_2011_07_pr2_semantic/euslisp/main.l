@@ -13,7 +13,7 @@
   (unless (boundp '*pr2*) (pr2))
   (unless (boundp '*ri*) (setq *ri* (instance pr2-interface :init)))
   (unless (boundp '*tfl*)(setq *tfl* (instance ros::transform-listener :init)))
-  (setq *knowrob* (instance json_prolog :init "json_prolog"))
+  (setq *prolog* (instance json_prolog :init "json_prolog"))
   ;; callbacks
   (ros::subscribe "/query" std_msgs::string #'identity)
   )
@@ -28,10 +28,10 @@
     (setq po (coerce (array-entity (send pose :4x4)) cons))
     (setq po (mapcan #'(lambda(x)(coerce (format nil ",~a" x) cons)) po))
     (setq po (coerce (cdr po) string))
-    (send *knowrob* :query
-	  (list->prolog '((create_object_instance ,type ,robot)))) ;; always success
-    (setq ret (send *knowrob* :query
-		    (list->prolog '((update_pose ,robot ,(format nil "[~a]" po))))))
+    (send *prolog* :query
+	  (list->prolog `((create_object_instance ,type ,robot)))) ;; always success
+    (setq ret (send *prolog* :query
+		    (list->prolog `((update_pose ,robot ,(format nil "[~a]" po))))))
     ret ))
 
 ;; ask to knowrob
@@ -41,8 +41,8 @@
     (setq solutions (find-similar-objects-with-info type))
     (when solutions
       (setq solution (find-if #'(lambda(x)(equal (cadr (assoc "IMAGE" x :test #'equal)) "http://jsk-ros-pkg.svn.sourceforge.net/viewvc/jsk-ros-pkg/trunk/demos/jsk_2011_07_pr2_semantic/data/cup-cotesys.jpg")) solutions)) ;; for cotesys-mug
-      (setq obj (cadr (assoc "OBJ" (car solution) :test #'equal)))
-	  (setq robot-pose (cadr (assoc "POSE_SPOT" (car solution) :test #'equal)))
+      (setq obj (cadr (assoc "OBJ" solution :test #'equal)))
+	  (setq robot-pose (cadr (assoc "POSE_SPOT" solution :test #'equal)))
 	  (ros::spin-once)
       (setq robot-original-pose (send *tfl* :lookup-transform "/map" "/base_footprint" (ros::time 0)))
       (send *ri* :move-to robot-pose) ;; robot moves
