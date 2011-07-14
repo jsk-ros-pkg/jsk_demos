@@ -40,27 +40,42 @@
   (let* (solutions pose opose)
 	(ros::spin-once)
 	(setq opose (send *tfl* :lookup-transform "/map" "/base_footprint" (ros::time 0)))
+    (insert-robot-pose)
     (setq solutions (similar-objects-with-info-by-distance type))
     (dolist (solution solutions)
       (setq obj (cadr (assoc "OBJ" solution :test #'equal)))
-	  (setq robot-pose (cadr (assoc "POSE_SPOT" solution :test #'equal)))
-	  (ros::spin-once)
+      (setq robot-pose (cadr (assoc "POSE_SPOT" solution :test #'equal)))
+      (ros::spin-once)
       (send *ri* :move-to robot-pose) ;; robot moves
       (ros::spin-once)
       (send *pr2* :move-to (send *tfl* :lookup-transform "/map" "/base_footprint" (ros::time 0)) :world)
-	  (setq obj-pose (cadr (assoc "POSE_OBJ" solution :test #'equal)))
+      (setq obj-pose (cadr (assoc "POSE_OBJ" solution :test #'equal)))
       (send *pr2* :head :look-at (send obj-pose :worldpos))
       (send *ri* :angle-vector (send *pr2* :angle-vector) 2000)
       (send *ri* :wait-interpolation)
       ;; grasp cup here
-	  (when (check :timeout 20) ;; detection success
-		(pick :larm)
-		;; go to somewhere
-		(pr2-tuckarm-pose :larm)
-		(send *ri* :move-to opose)
-		(hand-over)
-		(return))
-	  )))
+      (when (check :timeout 20) ;; detection success
+	(pick :larm)
+	;; go to somewhere
+	(pr2-tuckarm-pose :larm)
+	(send *ri* :move-to opose)
+	(hand-over)
+	(return))
+      )))
+
+(defun demo (&rest args)
+  (when (eq args nil)
+    (warn ":home :pick~%")
+    (return-from demo t))
+  ;;
+  (when (member :home args)
+    (send *ri* :move-to
+	  (cadr (assoc "POSE_SPOT" (car (find-knowrob-objects-with-info "OfficeRoom")) :test #'equal))))
+  ;;
+  (when (member :pick args)
+    (ask-query-and-move "Cup"))
+  ;;
+)
 
 ;;
 (progn

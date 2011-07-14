@@ -34,18 +34,18 @@
 (defun similar-objects-with-info-by-distance
   (&optional (objtype "Refrigerator") (k 5))
   (let ((rdf-type (format nil "'http://ias.cs.tum.edu/kb/knowrob.owl#~a'" objtype))
-		(infront-of "'http://ias.cs.tum.edu/kb/knowrob.owl#inFrontOf-Generally'")
-		(robot "'http://www.jsk.t.u-tokyo.ac.jp/jsk_map.owl#pr2'"))
-	(send *prolog* :query
-		  (list->prolog
-		   `(,(format nil "_R=~a" robot)
-		     (setof :_O ("lookForKMostSimilarObjT" ,rdf-type ,k :_O) :_OBJS)
-			 (get_sorted_path_costs ,robot :_OBJS :_SORTED)
-			 (member "[C,OBJ]"  :_Sorted)
-			 (owl_has :spot ,infront-of :obj)
-			 (object_info :obj "[IMAGE,ROOM,LEVEL|_]")))
-		  :pose '("OBJ" "SPOT"))
-	))
+	(infront-of "'http://ias.cs.tum.edu/kb/knowrob.owl#inFrontOf-Generally'")
+	(robot "'http://www.jsk.t.u-tokyo.ac.jp/jsk_map.owl#pr2'"))
+    (send *prolog* :query
+	  (list->prolog
+	   `(,(format nil "_R=~a" robot)
+	     (setof :_O ("lookForKMostSimilarObjT" ,rdf-type ,k :_O) :_OBJS)
+	     (get_sorted_path_costs ,robot :_OBJS :_SORTED)
+	     (member "[C,OBJ]"  :_SORTED)
+	     (owl_has :spot ,infront-of :obj)
+	     (object_info :obj "[IMAGE,ROOM,LEVEL|_]")))
+	  :pose '("OBJ" "SPOT"))
+    ))
 
 ;; initialize and print usage
 (ros::roseus "eus_prolog_sample")
