@@ -10,6 +10,7 @@
 		name="cup_detector" ns="/narrow_stereo/left">
 	<remap from="ObjectDetection" to="/ObjectDetection"/>
 	<param name="template_filename" value="$(find jsk_2011_07_pr2_semantic)/data/sift-cotesys.png"/>
+	<param name="child_frame_id" value="cotesys_cup"/>
 	<param name="object_width" value="0.068"/>
 	<param name="object_height" value="0.079"/>
 	<param name="viewer_window" value="false" /> <!-- to disable window-->
@@ -23,7 +24,7 @@
   <!-- for accurate object position -->
   <node pkg="roslaunch" type="roslaunch" name="$(anon launch)"
         args="jsk_2011_07_pr2_semantic pointcloud_screenpoint.launch"
-	output="screen" />
+	output="screen" respawn="true"/>
 
   <!-- for collision avoidance in arm planning -->
   <node pkg="roslaunch" type="roslaunch" name="$(anon launch)"
