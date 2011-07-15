@@ -5,8 +5,17 @@
 (ros::roseus-add-msgs "posedetection_msgs")
 (ros::roseus-add-msgs "pr2_gripper_sensor_msgs")
 (ros::roseus-add-srvs "jsk_pcl_ros")
+(ros::roseus-add-msgs "sound_play")
 
 ;(ros::roseus "grasp_cup")
+
+;; speak function
+(defun speak-jp (jp-str)
+  (ros::publish "robotsound"
+                (instance sound_play::SoundRequest :init
+                          :sound sound_play::SoundRequest::*say*
+                          :command sound_play::SoundRequest::*play_once*
+                          :arg jp-str)))
 
 
 ;;
@@ -35,17 +44,20 @@
 
 (defun pick (arm)
   (let* ((av (send *pr2* :angle-vector))
-	 via1 target vav avs)
+	 tmp via1 target vav avs)
     (ros::spin-once)
     (send *pr2* :angle-vector (send *ri* :state :potentio-vector))
-    (setq via1
+    (setq tmp
 	  (make-coords :pos (send (send *obj* :copy-worldcoords) :worldpos)
 		       :rpy (float-vector pi/2 pi/2 pi/2)))
-    (send via1 :translate #f(20 60 100) :world)
+    (send tmp :translate #f(20 60 100) :world)
+    (setq via1 (send *pr2* :transformation tmp))
+    (send via1 :newcoords #2f((0 0 1.0) (0 1.0 0) (-1.0 0 0))
+	  (send via1 :worldpos))
+    (ros::ros-warn (format nil "~a" via1))
     ;;(send *pr2* arm :inverse-kinematics via1 :rotation-axis :x)
     ;;(send *pr2* arm :inverse-kinematics via1 :rotation-axis t)
-    (setq avs (send *ri* :move-end-coords-plan
-		    (send *pr2* :transformation via1)
+    (setq avs (send *ri* :move-end-coords-plan via1
 		    :move-target arm :use-torso t))
     ;;(send *ri* :angle-vector (send *pr2* :angle-vector))
     (send *ri* :wait-interpolation)
@@ -54,10 +66,8 @@
     (ros::spin-once)
     (setq vav (send *ri* :state :potentio-vector))
     (send *pr2* :angle-vector (copy-object vav))
-    (setq target
-	  (make-coords :pos (send (send *obj* :copy-worldcoords) :worldpos)
-		       :rpy (float-vector pi/2 pi/2 pi/2)))
-    (send target :translate #f(20 60 -50) :world)
+    (setq target (make-coords :pos (send (send *obj* :copy-worldcoords) :worldpos)
+			      :rot (send (send (send *pr2* :copy-worldcoords) :transform (make-coords :rot #2f((0 0 1.0) (0 1.0 0.0) (-1.0 0 0)))) :worldrot)))
     (send *pr2* :inverse-kinematics target :move-arm arm :rotation-axis t)
     (send *ri* :angle-vector (send *pr2* :angle-vector) 5000)
     (send *ri* :wait-interpolation)
@@ -101,10 +111,20 @@
   ))
 
 (defun objectdetection (msg)
- (let ((obj (car (send msg :objects))) (av (send *pr2* :angle-vector)))
+ (let ((obj (car (send msg :objects))) (av (send *pr2* :angle-vector))
+       (trans (send *tfl* :lookup-transform "/base_link"
+	      "/narrow_stereo_optical_frame" (send msg :header :stamp))))
    (ros::ros-info "object detected.")
+   (cond ((substringp "cotesys" (send obj :type))
+	  (send *obj* :name "cotesys-cup"))
+	 ((substringp "cmu" (send obj :type))
+	  (send *obj* :name "cmu-cup"))
+	 ((substringp "chen" (send obj :type))
+	  (send *obj* :name "chen-cup")))
    (send *pr2* :angle-vector (send *ri* :state :potentio-vector))
-   (send *obj* :move-to (send *pr2* :narrow_stereo_optical_frame :copy-worldcoords) :world)
+   (send *obj* :move-to *pr2* :world)
+   (send *obj* :move-to trans :local)
+;;   (send *obj* :move-to (send *pr2* :narrow_stereo_optical_frame :copy-worldcoords) :world)
    (send *obj* :move-to (ros::tf-pose->coords (send obj :pose)) :local)
    (send *pr2* :angle-vector av)
    ))
@@ -112,6 +132,7 @@
 (defun init2 ()
   (unless (boundp '*pr2*) (pr2))
   (unless (boundp '*ri*) (setq *ri* (instance pr2-interface :init)))
+  (ros::advertise "robotsound" sound_play::SoundRequest 5)
   (setq *obj* (body+ (make-cylinder 50 90)
 					 (send (make-cube 70 10 80) :translate #f(45 0 45))))
   (send *obj* :translate-vertices (float-vector 50 0 0))
@@ -131,7 +152,7 @@
   (let ((pos1 (send (send *obj* :copy-worldcoords) :worldpos)) pos2 tm)
    (setq tm (ros::time-now))
    (while (ros::ok)
-	(ros::spin-once)
+    (ros::spin-once)
     (setq pos2 (send *obj* :worldpos))
     (print (distance pos1 pos2))
     (when (< 0.01 (distance pos1 pos2))
@@ -178,8 +199,6 @@
    (send *pr2* :angle-vector av)
    (when x::*display* (send *irtviewer* :draw-objects))
    ))
-
-
 
 ;;
 ;; for wiping table
