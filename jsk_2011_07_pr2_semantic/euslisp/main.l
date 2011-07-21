@@ -37,7 +37,7 @@
 
 ;; ask to knowrob
 (defun ask-query-and-move (&optional (type "Cup") (name nil))
-  (let* (solutions pose opose)
+  (let* (solutions pose opose flag)
     (ros::spin-once)
     (setq opose (send *tfl* :lookup-transform "/map" "/base_footprint" (ros::time 0)))
     (insert-robot-pose)
@@ -61,11 +61,24 @@
       (send *ri* :wait-interpolation)
       ;; grasp cup here
       (speak-jp "こっぷをさがしています")
-      (when (check :timeout 20 :type name) ;; detection success
+	  (let ((neck-av (send *pr2* :head :angle-vector)))
+		(setq flag
+		  (or (check :timeout 10 :type name)
+			(progn (send *pr2* :head :angle-vector (v+ #f(20 0) neck-av))
+				   (send *ri* :angle-vector (send *pr2* :angle-vector) 500)
+				   (send *ri* :wait-interpolation)
+				   (check :timeout 10 :type name))
+			(progn (send *pr2* :head :angle-vector (v+ #f(-20 0) neck-av))
+				   (send *ri* :angle-vector (send *pr2* :angle-vector) 500)
+				   (send *ri* :wait-interpolation)
+				   (check :timeout 10 :type name)))
+		  ))
+      (when flag
 	(speak-jp "こっぷがみつかりました")
 	(pick :larm)
 	;; go to somewhere
 ;	(pr2-tuckarm-pose :larm)
+	(send *pr2* :angle-vector (send *ri* :state :potentio-vector))
 	(send *pr2* :head :angle-vector #f(0 0))
 	(send *pr2* :torso :angle-vector #f(0))
 	(send *ri* :angle-vector (send *pr2* :angle-vector) 2000)
@@ -81,7 +94,7 @@
 
 (defun demo (&rest args)
   (when (eq args nil)
-    (warn ":home :pick~%")
+    (warn "(:home) (:pick name)~%")
     (return-from demo t))
   ;;
   (when (member :home args)

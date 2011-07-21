@@ -18,30 +18,6 @@
                           :arg jp-str)))
 
 
-;;
-;; for picking cups
-;;
-(defun grasp (arm)
-  (let* ((av (send *pr2* :angle-vector))
-		via1 target)
-	(send *ri* :stop-grasp arm)
-	(setq via1
-		  (make-coords :pos (v+ (send *obj* :worldpos) #f(60 120 -50))
-					   :rpy #f(-2.1 0 0)))
-	(send *pr2* arm :inverse-kinematics via1 :rotation-axis t)
-	(send *ri* :angle-vector (send *pr2* :angle-vector))
-	(send *ri* :wait-interpolation)
-	;;
-	(setq target
-		  (make-coords :pos (v+ (send *obj* :worldpos) #f(60 90 -50))
-					   :rpy #f(-2.1 0 0)))
-	(send *pr2* arm :inverse-kinematics target :rotation-axis t)
-	(send *ri* :angle-vector (send *pr2* :angle-vector))
-	(send *ri* :wait-interpolation)
-	;;
-	(send *ri* :move-gripper arm 0.0)
-	))
-
 (defun pick (arm)
   (let* ((av (send *pr2* :angle-vector))
 	 tmp via1 target vav avs)
@@ -51,19 +27,20 @@
     ;; tmp : object coords wrt robot coordinates
     ;; *pr2* :world, *obj* :world
     (setq tmp (make-coords :pos (send *pr2* :inverse-transform-vector (send *obj* :worldpos)))) ;; local
-    (send tmp :translate #f(20 60 -50)) ;; move-to handle
+    (send tmp :translate #f(40 60 -50)) ;; move-to handle
     (send tmp :newcoords 
 	  (rpy-matrix pi/2 pi/2 pi/2) ;; grasp from top
 	  ;;(rpy-matrix -pi/2 0 0)        ;; grasp from side
 	  (send (send tmp :copy-worldcoords) :worldpos))
     (setq via1 (send tmp :copy-worldcoords))
-    (send via1 :translate #f(0 0 100) :world) ;; grasp from top
+    (send via1 :translate #f(0 0 150) :world) ;; grasp from top
     ;;(send via1 :translate #f(0 140 100) :world) ;; grasp from side
     (setq target (send tmp :copy-worldcoords))
     (ros::ros-warn (format nil "tmp ~a" tmp))
     (ros::ros-warn (format nil "via1 ~a" via1))
     (setq avs (send *ri* :move-end-coords-plan via1
 		    :move-target arm :use-torso t))
+	(if (null avs) (return-from pick nil))
     (send *ri* :wait-interpolation)
     (send *ri* :move-gripper arm 0.08 :wait t)
     ;; calculate grasp point
@@ -95,7 +72,7 @@
 		(avs (list #f(12.7338 -0.025174 65.3145 70.0513 -93.0477 24.3934
 					  -114.929 159.99 -5.00284 74.2661 -104.991 -90.0351
 					  69.9982 -5.32433 19.9689 -0.035619 -3.906)
-				   #f(12.7313 -0.091677 65.4018 70.0881 -120.296 -72.2013
+				   #f(12.7313 -0.091677 65.4018 70.0881 -110.296 -72.2013
 					  -114.981 159.993 -5.00284 74.2612 -105.001 -90.0019
 					  69.9982 -5.32433 20.0038 -0.029619 -3.906))))
   (send *ri* :angle-vector-sequence avs (list 1000 1000))
@@ -104,7 +81,7 @@
   (send goal :goal_id :stamp (ros::time-now))
 ;;  (send goal :goal :command :trigger_conditions pr2_gripper_sensor_msgs::PR2GripperEventDetectorCommand::*FINGER_SIDE_IMPACT_OR_SLIP_OR_ACC*)
   (send goal :goal :command :trigger_conditions pr2_gripper_sensor_msgs::PR2GripperEventDetectorCommand::*SLIP*)
-  (send goal :goal :command :slip_trigger_magnitude 0.005)
+  (send goal :goal :command :slip_trigger_magnitude 0.01)
   (send goal :goal :command :acceleration_trigger_magnitude 4.0)
   (send client :send-goal goal)
   (send client :wait-for-result)
@@ -152,7 +129,7 @@
   (ros::subscribe "/ObjectDetection" posedetection_msgs::ObjectDetection #'identity))
 
 (defun check (&key (timeout 10) (type nil))
-  (start-subscribe) (unix::sleep 3)
+  (start-subscribe) (unix::sleep 1)
   (send *obj* :move-to (make-coords) :world)
   (let ((pos1 (send (send *obj* :copy-worldcoords) :worldpos)) pos2 tm)
    (setq tm (ros::time-now))
