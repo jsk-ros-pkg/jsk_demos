@@ -36,7 +36,7 @@
 
 
 ;; ask to knowrob
-(defun ask-query-and-move (&optional (type "Cup"))
+(defun ask-query-and-move (&optional (type "Cup") (name nil))
   (let* (solutions pose opose)
     (ros::spin-once)
     (setq opose (send *tfl* :lookup-transform "/map" "/base_footprint" (ros::time 0)))
@@ -46,6 +46,7 @@
       (setq obj (cadr (assoc "OBJ" solution :test #'equal)))
       (setq robot-pose (cadr (assoc "POSE_SPOT" solution :test #'equal)))
       (ros::spin-once)
+      (send *pr2* :angle-vector (send *ri* :state :potentio-vector))
       (send *pr2* :head :angle-vector #f(0 0))
       (send *pr2* :torso :angle-vector #f(0))
       (send *ri* :angle-vector (send *pr2* :angle-vector) 2000)
@@ -59,11 +60,12 @@
       (send *ri* :angle-vector (send *pr2* :angle-vector) 2000)
       (send *ri* :wait-interpolation)
       ;; grasp cup here
-      (when (check :timeout 20) ;; detection success
+      (speak-jp "こっぷをさがしています")
+      (when (check :timeout 20 :type name) ;; detection success
 	(speak-jp "こっぷがみつかりました")
 	(pick :larm)
 	;; go to somewhere
-	(pr2-tuckarm-pose :larm)
+;	(pr2-tuckarm-pose :larm)
 	(send *pr2* :head :angle-vector #f(0 0))
 	(send *pr2* :torso :angle-vector #f(0))
 	(send *ri* :angle-vector (send *pr2* :angle-vector) 2000)
@@ -83,12 +85,14 @@
     (return-from demo t))
   ;;
   (when (member :home args)
+    (pr2-tuckarm-pose :larm)
     (send *ri* :move-to
 	  (cadr (assoc "POSE_SPOT" (car (find-knowrob-objects-with-info "OfficeRoom")) :test #'equal))))
   ;;
   (when (member :pick args)
+    (pr2-tuckarm-pose :larm)
     (change-inflation-range 0.15) (initialize-costmap)
-    (ask-query-and-move "Cup"))
+    (ask-query-and-move "Cup" (cadr (member :pick args))))
   ;;
   )
 

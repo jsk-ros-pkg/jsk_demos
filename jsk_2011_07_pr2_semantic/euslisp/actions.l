@@ -47,27 +47,32 @@
 	 tmp via1 target vav avs)
     (ros::spin-once)
     (send *pr2* :angle-vector (send *ri* :state :potentio-vector))
-    (setq tmp
-	  (make-coords :pos (send (send *obj* :copy-worldcoords) :worldpos)
-		       :rpy (float-vector pi/2 pi/2 pi/2)))
-    (send tmp :translate #f(20 60 100) :world)
-    (setq via1 (send *pr2* :transformation tmp))
-    (send via1 :newcoords #2f((0 0 1.0) (0 1.0 0) (-1.0 0 0))
-	  (send via1 :worldpos))
-    (ros::ros-warn (format nil "~a" via1))
-    ;;(send *pr2* arm :inverse-kinematics via1 :rotation-axis :x)
-    ;;(send *pr2* arm :inverse-kinematics via1 :rotation-axis t)
+    ;; calculate via point
+    ;; tmp : object coords wrt robot coordinates
+    ;; *pr2* :world, *obj* :world
+    (setq tmp (make-coords :pos (send *pr2* :inverse-transform-vector (send *obj* :worldpos)))) ;; local
+    (send tmp :translate #f(20 60 -50)) ;; move-to handle
+    (send tmp :newcoords 
+	  (rpy-matrix pi/2 pi/2 pi/2) ;; grasp from top
+	  ;;(rpy-matrix -pi/2 0 0)        ;; grasp from side
+	  (send (send tmp :copy-worldcoords) :worldpos))
+    (setq via1 (send tmp :copy-worldcoords))
+    (send via1 :translate #f(0 0 100) :world) ;; grasp from top
+    ;;(send via1 :translate #f(0 140 100) :world) ;; grasp from side
+    (setq target (send tmp :copy-worldcoords))
+    (ros::ros-warn (format nil "tmp ~a" tmp))
+    (ros::ros-warn (format nil "via1 ~a" via1))
     (setq avs (send *ri* :move-end-coords-plan via1
 		    :move-target arm :use-torso t))
-    ;;(send *ri* :angle-vector (send *pr2* :angle-vector))
     (send *ri* :wait-interpolation)
-    (send *ri* :stop-grasp arm)
-    ;;
+    (send *ri* :move-gripper arm 0.08 :wait t)
+    ;; calculate grasp point
     (ros::spin-once)
     (setq vav (send *ri* :state :potentio-vector))
     (send *pr2* :angle-vector (copy-object vav))
-    (setq target (make-coords :pos (send (send *obj* :copy-worldcoords) :worldpos)
-			      :rot (send (send (send *pr2* :copy-worldcoords) :transform (make-coords :rot #2f((0 0 1.0) (0 1.0 0.0) (-1.0 0 0)))) :worldrot)))
+    ;;
+    (send target :transform *pr2* :parent)
+    (print target)
     (send *pr2* :inverse-kinematics target :move-arm arm :rotation-axis t)
     (send *ri* :angle-vector (send *pr2* :angle-vector) 5000)
     (send *ri* :wait-interpolation)
@@ -146,7 +151,7 @@
 (defun stop-subscribe ()
   (ros::subscribe "/ObjectDetection" posedetection_msgs::ObjectDetection #'identity))
 
-(defun check (&key (timeout 10))
+(defun check (&key (timeout 10) (type nil))
   (start-subscribe) (unix::sleep 3)
   (send *obj* :move-to (make-coords) :world)
   (let ((pos1 (send (send *obj* :copy-worldcoords) :worldpos)) pos2 tm)
@@ -155,8 +160,9 @@
     (ros::spin-once)
     (setq pos2 (send *obj* :worldpos))
     (print (distance pos1 pos2))
-    (when (< 0.01 (distance pos1 pos2))
-      (ros::ros-info "ok")
+    (when (and (< 0.01 (distance pos1 pos2))
+	       (or (not type) (substringp type (send *obj* :name))))
+      (ros::ros-info (format nil "ok - cup-type(~a)" (send *obj* :name)))
       (if x::*display* (send *irtviewer* :draw-objects))
       (stop-subscribe)
       (check-pcl)
