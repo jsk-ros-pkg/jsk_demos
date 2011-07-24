@@ -39,6 +39,121 @@
 
 :- consult('jsk_map').
 
+:- rdf_meta
+  hl_path_costs_from(r,r).
+
+vis_types:-
+  visualisation_canvas(C),
+  remove_object('http://www.jsk.t.u-tokyo.ac.jp/jsk_map.owl#eng2-8f-83a3',C),
+  remove_object('http://www.jsk.t.u-tokyo.ac.jp/jsk_map.owl#eng2-8f-83a4',C),
+  remove_object('http://www.jsk.t.u-tokyo.ac.jp/jsk_map.owl#eng2-8f-83b2',C),
+  remove_object('http://www.jsk.t.u-tokyo.ac.jp/jsk_map.owl#eng2-8f-83a1',C),
+  remove_object('http://www.jsk.t.u-tokyo.ac.jp/jsk_map.owl#eng2-8f-83a2',C),
+  remove_object('http://www.jsk.t.u-tokyo.ac.jp/jsk_map.owl#room83b1-83b1-ground',C),
+  remove_object('http://www.jsk.t.u-tokyo.ac.jp/jsk_map.owl#room73a3-73a3-ground',C),
+  remove_object('http://www.jsk.t.u-tokyo.ac.jp/jsk_map.owl#room73b2-73b2-ground',C),
+  setof(I, (owl_individual_of(I, knowrob:'OfficeRoom'), highlight_object(I,@(true),0,200,200,'1',C)), _),
+  setof(I, (owl_individual_of(I, knowrob:'LevelOfAConstruction'), highlight_object(I,@(true),200,200,200,'0.1',C)), _),
+  setof(I, (owl_individual_of(I, knowrob:'ProfessorsOffice'),highlight_object(I,@(true),0,200,0,'1',C)), _),
+  setof(I, (owl_individual_of(I, knowrob:'Elevator'), highlight_object(I,@(true),250,250,0,'1',C)), _),
+  setof(I, (owl_individual_of(I, knowrob:'LectureHall'), highlight_object(I,@(true),250,150,0,'1',C)), _),
+  setof(I, (owl_individual_of(I, knowrob:'FastFoodRestaurantSpace'), highlight_object(I,@(true),0,100,0,'1',C)), _),
+  setof(I, (owl_individual_of(I, knowrob:'LaboratoryRoom'), highlight_object(I,@(true),0,0,100,'1',C)), _),
+  setof(I, (owl_individual_of(I, knowrob:'ControlRoom'), highlight_object(I,@(true),100,0,100,'1',C)), _),
+  setof(I, (owl_individual_of(I, knowrob:'LockerRoom'), highlight_object(I,@(true),100,200,100,'1',C)), _),
+  setof(I, (owl_has(I,rdf:type,knowrob:'Place'), highlight_object(I,@(true),200,0,100,'1',C)), _).
+
+vis_clear:-
+  visualisation_canvas(C), clear_canvas(C), draw_background(C).
+
+vis_cups:-
+  visualisation_canvas(C),
+  
+  setof(I, (owl_individual_of(I, knowrob:'LevelOfAConstruction'), highlight_object(I,@(true),200,200,200,'0.1',C)), _),
+  setof(I, (owl_individual_of(I, knowrob:'Chair-PieceOfFurniture'), remove_object(I,C)), _),
+  remove_object('http://www.jsk.t.u-tokyo.ac.jp/jsk_map.owl#eng2-2f-22b',C), % because orientation is not taken into account
+  remove_object('http://www.jsk.t.u-tokyo.ac.jp/jsk_map.owl#eng2-7f-room73B2-table-front',C),
+  remove_object('http://www.jsk.t.u-tokyo.ac.jp/jsk_map.owl#eng2-7f-room73A3-front',C),
+  remove_object('http://www.jsk.t.u-tokyo.ac.jp/jsk_map.owl#eng2-8f-83a3',C),
+  remove_object('http://www.jsk.t.u-tokyo.ac.jp/jsk_map.owl#eng2-8f-83a4',C),
+  remove_object('http://www.jsk.t.u-tokyo.ac.jp/jsk_map.owl#eng2-8f-83b2',C),
+  remove_object('http://www.jsk.t.u-tokyo.ac.jp/jsk_map.owl#eng2-8f-83a1',C),
+  remove_object('http://www.jsk.t.u-tokyo.ac.jp/jsk_map.owl#eng2-8f-83a2',C),
+  remove_object('http://www.jsk.t.u-tokyo.ac.jp/jsk_map.owl#room83b1-83b1-ground',C),
+  remove_object('http://www.jsk.t.u-tokyo.ac.jp/jsk_map.owl#room73a3-73a3-ground',C),
+  remove_object('http://www.jsk.t.u-tokyo.ac.jp/jsk_map.owl#room73b2-73b2-ground',C),
+
+  remove_object('http://www.jsk.t.u-tokyo.ac.jp/jsk_map.owl#room73b2-kettle',C),
+  remove_object('http://www.jsk.t.u-tokyo.ac.jp/jsk_map.owl#room73b2-sponge',C),
+  remove_object('http://www.jsk.t.u-tokyo.ac.jp/jsk_map.owl#room73b2-cup',C),
+  remove_object('http://www.jsk.t.u-tokyo.ac.jp/jsk_map.owl#room73b2-dish',C),
+  remove_object('http://www.jsk.t.u-tokyo.ac.jp/jsk_map.owl#room73b2-knife',C),
+  remove_object('http://www.jsk.t.u-tokyo.ac.jp/jsk_map.owl#room73b2-mug-cup',C),
+  remove_object('http://www.jsk.t.u-tokyo.ac.jp/jsk_map.owl#room73b2-tray',C).
+      
+
+
+% setof(I, owl_individual_of(I, knowrob:'Cup'), Cs), get_sorted_path_costs('http://ias.cs.tum.edu/kb/knowrob.owl#foo', Cs, SortedGoals), member([CC, CUP], SortedGoals), rdf_has(PLACE, knowrob:'inFrontOf-Generally' ,CUP), highlight_object(CUP,@(true), 250, 0, 0, '1', $C), highlight_object(PLACE,@(true), 250, 0, 0, '1', $C).
+
+
+r_func(X,Y):-
+  A is -0.125,
+  B is 0.125,
+  C is 0.375,
+  D is 0.625,
+  trapezoidal_shaped_func(A,B,C,D,X,YVal),
+  Y is floor(YVal * 255).
+
+g_func(X,Y):-
+  A is 0.125,
+  B is 0.375,
+  C is 0.625,
+  D is 0.875,
+  trapezoidal_shaped_func(A,B,C,D,X,YVal),
+  Y is floor(YVal * 255).
+  
+
+b_func(X,Y):-
+  A is 0.375,
+  B is 0.625,
+  C is 0.875,
+  D is 1.125,
+  trapezoidal_shaped_func(A,B,C,D,X,YVal),
+  Y is floor(YVal * 255).
+
+  % min_list([ ((X - A) / (B - A)) ,1 ,((D - X) / (D - C)) ], Min),
+  % Y is floor(max(Min, 0) * 255).
+
+trapezoidal_shaped_func(A,B,C,D,X,Y):-
+  min_list([ ((X - A) / (B - A)) ,1 ,((D - X) / (D - C)) ], Min),
+  Y is max(Min, 0).
+
+heatmap(Objs):-
+  visualisation_canvas(Canvas),
+  findall(Cost, member([Cost, _], Objs), Costs),
+  reverse(Costs,Rev),
+  nth0(0, Rev, Max),
+  findall(_,(member([C,Obj], Objs),
+             X is C / Max,
+             r_func(X,R),
+             g_func(X,G),
+             b_func(X,B),
+             highlight_object(Obj, @(true), R, G, B, '1.0', Canvas)),_).
+
+
+
+% findall([Cost,Obj], (lookForKMostSimilarObjTBecause('http://ias.cs.tum.edu/kb/knowrob.owl#RoomInAConstruction', 10,  Obj, [S, T]), Cost is 1.0 - S), Objs), heatmap(Objs).
+
+vis_costs :- hl_path_costs_from(jsk_map:'eng2-7f-73a4',knowrob:'RoomInAConstruction').
+
+hl_path_costs_from(Current, Type):-
+  setof(I, owl_individual_of(I,Type), Is),
+  get_sorted_path_costs(Current, Is, SortedGoals),
+  heatmap(SortedGoals).
+
+ 
+  
+
 draw_all(C) :-
   draw_rooms(0,250,0,'0.5',C),
   draw_levels(250,0,250,'0.3',C).
