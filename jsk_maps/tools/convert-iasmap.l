@@ -11,64 +11,76 @@
 (defun conversion-rule (obj)
   (let ((name (string-downcase (send obj :name)))
 		(type (get obj :knowrob-type))
-		(classtype (class obj)))
-  (cond
-   ;; ignore this object
-   ((eq type :ignore) nil)
+		(classtype (class obj)) ret)
+  ;; igrnore
+  (when (eq type :ignore) (return-from conversion-rule nil))
 
-   ;; object types
-   ((substringp "knob" name) "ControlKnob") ;; knobs turned with one's fingers to control devices
-   ((substringp "hinge" name) "HingedJoint") ;; a hinged connection
-   ((substringp "handle" name) "Handle")
-   ((substringp "cupboard" name) "Cupboard")
-   ((substringp "desk" name) "Table-PieceOfFurniture")  
-   ((substringp "table" name) "Table-PieceOfFurniture")
-   ((substringp "door" name) "Door")
-   ((substringp "drawer" name) "Drawer")
-   ((substringp "oven" name) "Oven")
-   ((substringp "refrigerator" name) "Refrigerator")
-   ((substringp "fridge" name) "Refrigerator")
-   ((substringp "dishwasher" name) "Dishwasher")
-   ((substringp "countertop" name) "CounterTop")
-   ((substringp "sink" name) "Sink")
-   ((substringp "stairs" name) "Stairway")
-   ((substringp "washing-machine" name) "ClothesWasher")
-   ((substringp "refrigerator" name) "Refridgerator")
-   ((substringp "bed" name) "Bed-PieceOfFurniture")
-   ((substringp "microwave-oven" name) "MicrowaveOven")
-   ((substringp "trashbox" name) "TrashContainer") ;; for those in the hallway / WasteBasket small baskets
-   ((substringp "sofa" name) "Sofa-PieceOfFurniture")
-   ((substringp "book_shelf" name) "ShelfInABuilding")
-   ((substringp "audio_shelf" name) "ShelfInABuilding")
-   ((substringp "shelf" name) "ShelfInABuilding")
-   ((substringp "bariera" name) "ShelfInABuilding")
-   ((substringp "panel-wall" name) "WallOfAConstruction")
-   ((substringp "dining-table" name) "DiningRoomTable") ;; or EatingTable?
-   ((substringp "television" name) "TelevisionSet")
-   ((substringp "cabinet" name) "Cabinet-PieceOfFurniture")
+  (push
+   (cond
+	;; object types
+	((substringp "knob" name) "ControlKnob") ;; knobs turned with one's fingers to control devices
+	((substringp "hinge" name) "HingedJoint") ;; a hinged connection
+	((substringp "handle" name) "Handle")
+	((substringp "cupboard" name) "Cupboard")
+	((substringp "desk" name) "Table-PieceOfFurniture")
+	((substringp "table" name) "Table-PieceOfFurniture")
+	((substringp "door" name) "Door")
+	((substringp "drawer" name) "Drawer")
+	((substringp "oven" name) "Oven")
+	((substringp "refrigerator" name) "Refrigerator")
+	((substringp "fridge" name) "Refrigerator")
+	((substringp "dishwasher" name) "Dishwasher")
+	((substringp "countertop" name) "CounterTop")
+	((substringp "sink" name) "Sink")
+	((substringp "stairs" name) "Stairway")
+	((substringp "washing-machine" name) "ClothesWasher")
+	((substringp "refrigerator" name) "Refridgerator")
+	((substringp "bed" name) "Bed-PieceOfFurniture")
+	((substringp "microwave-oven" name) "MicrowaveOven")
+	((substringp "trashbox" name) "TrashContainer") ;; for those in the hallway / WasteBasket small baskets
+	((substringp "sofa" name) "Sofa-PieceOfFurniture")
+	((substringp "book_shelf" name) "ShelfInABuilding")
+	((substringp "audio_shelf" name) "ShelfInABuilding")
+	((substringp "shelf" name) "ShelfInABuilding")
+	((substringp "bariera" name) "ShelfInABuilding")
+	((substringp "panel-wall" name) "WallOfAConstruction")
+	((substringp "dining-table" name) "DiningRoomTable") ;; or EatingTable?
+	((substringp "television" name) "TelevisionSet")
+	((substringp "cabinet" name) "Cabinet-PieceOfFurniture")
 
-   ;; portable objects
-   ((substringp "sushi-cup" name) "Bowl-Eating") ;; its important that XXX-cup or cup-XXX is before cup
-   ((substringp "mug-cup" name) "DrinkingMug") 
-   ((substringp "cup-saucer" name) "Sauce")
-   ((substringp "cup" name) "Cup")
-   ((substringp "book" name) "BookCopy")
-   ((substringp "chair" name) "Chair-PieceOfFurniture")
-   ((substringp "chessboard" name) "ChessBoard")
-   ((substringp "cell-phone" name) "CellularTelephone")
-   ((substringp "frying-pan" name) "OmelettePan")
-   ((substringp "kettle" name) "Kettle")
-   ((substringp "knife" name) "Knife")
-   ((substringp "iron" name) "ClothesIron")
-   ((substringp "pockey" name) "Refrigerator")
-   ((substringp "sponge" name) "Sponge-CleaningImplement")
-   ((substringp "tray" name) "Tray")
-   ((substringp "ball" name) "Ball")
+	;; portable objects
+	((substringp "sushi-cup" name) "Bowl-Eating") ;; its important that XXX-cup or cup-XXX is before cup
+	((substringp "mug-cup" name) "DrinkingMug") 
+	((substringp "cup-saucer" name) "Sauce")
+	((substringp "cup" name) "Cup")
+	((substringp "book" name) "BookCopy")
+	((substringp "chair" name) "Chair-PieceOfFurniture")
+	((substringp "chessboard" name) "ChessBoard")
+	((substringp "cell-phone" name) "CellularTelephone")
+	((substringp "frying-pan" name) "OmelettePan")
+	((substringp "kettle" name) "Kettle")
+	((substringp "knife" name) "Knife")
+	((substringp "iron" name) "ClothesIron")
+	((substringp "pockey" name) "Refrigerator")
+	((substringp "sponge" name) "Sponge-CleaningImplement")
+	((substringp "tray" name) "Tray")
+	((substringp "ball" name) "Ball"))
+   ret)
 
    ;; load :knowrob-type
-   ((stringp type) type) ;; use if exists
+   (when (stringp type) (push type ret)) ;; use if exists
+   (when (listp type) (dolist (ty type) (if (stringp ty) (push ty ret))))
+   ;; coords is "Place" (spot)
+   (when (eq classtype cascaded-coords) (push "Place" ret))
+   ;; no candidate -> will not convert
+   (setq ret (remove-if #'null ret))
+   (when (null ret) (push "ConstructionArtifact" ret))
 
-   ((eq classtype cascaded-coords) "Place")
+   ;; output is csv
+   (subseq (apply #'concatenate string
+				  (mapcar #'(lambda(x)(format nil ",~a" x)) ret)) 1)
+   ))
+
 
    ;; room types
    ;;((substringp "???" name) "RoomInAConstruction") ;; room without specific type
@@ -111,9 +123,6 @@
    
    ;; building type
    ;;((substringp "???" name) "Building") 
-
-   (t "ConstructionArtifact") ;; no candidate -> will not convert
-  )))
 
 (defun make-name-unique (objs)
   (let ((sorted
@@ -251,28 +260,6 @@
 	(format fd "        rotation: {w: ~a, x: ~a, y: ~a, z: ~a}~%"
 			(elt qu 0) (elt qu 1) (elt qu 2) (elt qu 3)))
   )
-(defun dump-room->yaml (room fd) ;; only rooms
-  (let* ((type (conversion-rule (string-downcase (send room :name))))
-		 (pos (scale 0.001 (send room :pos)))
-		 (qu (matrix2quaternion (send room :rot)))
-		 (sobj (convert-obj->semantic-bbox 0 room type 0)) vs w1 w2 d)
-	(setq vs (mapcar #'(lambda(x)(scale 0.001 (v- x (send room :worldpos))))
-					 (send room :vertices)))
-	(setq w1 (apply #'max (mapcar #'(lambda(x)(elt x 1)) vs)))
-	(setq w2 (apply #'min (mapcar #'(lambda(x)(elt x 1)) vs)))
-	(setq d1 (apply #'max (mapcar #'(lambda(x)(elt x 0)) vs)))
-	(setq d2 (apply #'min (mapcar #'(lambda(x)(elt x 0)) vs)))
-	(format fd "    ~a:~%" (send room :name))
-	(format fd "        frame_id: ~a~%" (send (send room :parent) :name))
-	(format fd "        type: [~a]~%" type)
-	(format fd "        translation: {x: ~a, y: ~a, z: ~a}~%"
-			(elt (send sobj :pose) 3) (elt (send sobj :pose) 7)	(elt (send sobj :pose) 11)) ;; global pose
-	(format fd "        rotation: {w: ~a, x: ~a, y: ~a, z: ~a}~%"
-			(elt qu 0) (elt qu 1) (elt qu 2) (elt qu 3))
-	(format fd "        region: [[~a,~a],[~a,~a],[~a,~a],[~a,~a]]~%"
-			d1 w2 d1 w1 d2 w1 d2 w2)
-	))
-
 
 (defun dump-building->yaml (filename scene type &key (view nil))
   (let* ((floors (send scene :floors)) (rooms (send scene :rooms))
@@ -294,11 +281,9 @@
 		   (dump-obj->yaml scene fd :view view)
 		   (format fd "floor:~%")
 		   (dolist (flo floors)
-;;			 (dump-room->yaml flo fd))
 			 (dump-obj->yaml flo fd :view view :height 3000))
 		   (format fd "room:~%")
 		   (dolist (room rooms)
-;;			 (dump-room->yaml room fd))
 			 (dump-obj->yaml room fd :view view :height 3000))
 		   (format fd "object:~%")
 		   (dolist (obj objs)
