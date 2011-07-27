@@ -32,6 +32,7 @@
 :- register_ros_package(comp_temporal).
 :- register_ros_package(comp_semantic_map).
 :- register_ros_package(mod_vis).
+:- register_ros_package(knowrob_omics).
 
 :- use_module(library('comp_spatial')).
 :- use_module(library('comp_temporal')).
@@ -91,6 +92,14 @@ vis_cups:-
   remove_object('http://www.jsk.t.u-tokyo.ac.jp/jsk_map.owl#room73b2-mug-cup',C),
   remove_object('http://www.jsk.t.u-tokyo.ac.jp/jsk_map.owl#room73b2-tray',C).
       
+
+% create_object_instance(knowrob:'Place', cur).
+% update_pose(cur, [1.0,0.0,0.0,8.98, 0.0,1.0,0.0,4.8, 0.0,0.0,1.0,27.0, 0.0,0.0,0.0,1.0]).
+% visualisation_canvas(C), add_object(cur,C).
+% visualisation_canvas(C), highlight_object(cur,@(true), 255, 255, 255, '1.0', C).
+
+
+%findall(X, (owl_individual_of(I, knowrob:'Cup'),owl_has(X, knowrob:'inFrontOf-Generally',I)), Is), get_sorted_path_costs(cur, Is, Sorted), heatmap(Sorted).
 
 
 % setof(I, owl_individual_of(I, knowrob:'Cup'), Cs), get_sorted_path_costs('http://ias.cs.tum.edu/kb/knowrob.owl#foo', Cs, SortedGoals), member([CC, CUP], SortedGoals), rdf_has(PLACE, knowrob:'inFrontOf-Generally' ,CUP), highlight_object(CUP,@(true), 250, 0, 0, '1', $C), highlight_object(PLACE,@(true), 250, 0, 0, '1', $C).

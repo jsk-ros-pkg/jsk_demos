@@ -13,6 +13,7 @@
   <depend package="comp_temporal"/>
   <depend package="mod_vis"/>
   <depend package="comp_semantic_map"/>
+  <depend package="knowrob_omics"/>
   <depend package="json_prolog"/>
 
 </package>
