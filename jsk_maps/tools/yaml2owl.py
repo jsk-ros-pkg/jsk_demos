@@ -40,8 +40,8 @@ import math
 now = 0.0
 vert = False
 scale = 1.0
-room_height = 4 
-spot_dim = 1.0
+room_height = 4.5
+spot_dim = 0.2
 id = 0
 
 ### UTILS ###
@@ -393,7 +393,7 @@ def create_levels(map, has_rooms, now):
 
             if vert:
                 trans_cpy['x'] = get_width(floors[f])/2 #trans['z']
-                trans_cpy['z'] = (float(get_floor_number(name))-1.0) * room_height                
+                trans_cpy['z'] = (float(get_floor_number(name))-1.0) * room_height  + trans['z']             
                 
             mat3d = quaternion_to_rotation_mat3d(q,trans_cpy)
 
@@ -516,7 +516,7 @@ def create_spots(map, now):
 
             props = get_obj_properties(spots[s])
             
-            create_spot(name,['Place'],spot_dim,spot_dim,0.0, get_x(trans), get_y(trans), get_z(trans), props)
+            create_spot(name,['Place'],spot_dim,spot_dim/2,spot_dim, get_x(trans), get_y(trans), get_z(trans), props)
 
             mat_inst = create_rot_mat3d(mat3d)
             
