@@ -41,17 +41,28 @@
 
 
 (defun make-71-rooms ()
-  (let ((a1 (make-eng2-room 0 (+ (* 1150 3) 600 250) 8121 :name "71a1"))
-	(a2 (make-eng2-room 0 (* 1150 3) 8121 :name "71a2"))
-	(a3 (make-eng2-room 0 (* 1150 3) 8121 :name "71a3"))
-	(a4 (make-eng2-room 150 (* 1150 3) 8121 :name "71a4"))
-	(b2 (make-eng2-room (+ (* 1150 4) 900) (+ (* 1150 3) 100 500 295) -11353 :name "71b2"))
-	(c1 (make-eng2-room (* 1150 3) (+ (* 1150 3) 100 500 295) 11353 :name "71c1"))
-	(c2 (make-eng2-room (+ (* 1150 3) 100) (* 1150 3) 11353 :name "71c2"))
-	(d1 (make-eng2-room (* 1150 3) (+ 100 500 295) -8121 :name "71d1"))
-	(d2 (make-eng2-room (* 1150 3) 0 -8121 :name "71d2"))
-	(d3 (make-eng2-room (* 1150 3) 0 -8121 :name "71d3"))
-	(d4 (make-eng2-room (+ (* 1150 3) 100) 0 -8121 :name "71d4"))
+  (let ((a1 (make-eng2-room 0 (+ (* 1150 3) 600 250) 8121 :name "71a1"
+            :knowrob-type "ProfessorsOffice"))
+	(a2 (make-eng2-room 0 (* 1150 3) 8121 :name "71a2"
+            :knowrob-type "ProfessorsOffice"))
+	(a3 (make-eng2-room 0 (* 1150 3) 8121 :name "71a3"
+            :knowrob-type "ProfessorsOffice"))
+	(a4 (make-eng2-room 150 (* 1150 3) 8121 :name "71a4"
+            :knowrob-type "ProfessorsOffice"))
+	(b2 (make-eng2-room (+ (* 1150 4) 900) (+ (* 1150 3) 100 500 295) -11353 :name "71b"
+            :knowrob-type "LaboratryRoom"))
+	(c1 (make-eng2-room (* 1150 3) (+ (* 1150 3) 100 500 295) 11353 :name "71c1"
+            :knowrob-type "LaboratryRoom"))
+	(c2 (make-eng2-room (+ (* 1150 3) 100) (* 1150 3) 11353 :name "71c2"
+            :knowrob-type "LaboratryRoom"))
+	(d1 (make-eng2-room (* 1150 3) (+ 100 500 295) -8121 :name "71d1"
+            :knowrob-type "ProfessorsOffice"))
+	(d2 (make-eng2-room (* 1150 3) 0 -8121 :name "71d2"
+            :knowrob-type "LaboratryRoom"))
+	(d3 (make-eng2-room (* 1150 3) 0 -8121 :name "71d3"
+            :knowrob-type "ProfessorsOffice"))
+	(d4 (make-eng2-room (+ (* 1150 3) 100) 0 -8121 :name "71d4"
+            :knowrob-type "StorageRoom"))
 	)
     (setf (get b2 :face-color) :dodgerblue)
     (setf (get c2 :face-color) :dodgerblue)
@@ -89,19 +100,31 @@
     (list a1 a2 a3 a4 b2 c1 c2 d1 d2 d3 d4)))
 
 (defun make-72-rooms ()
-  (let ((a1 (make-eng2-room 0 (+ (* 1150 3) 150) 8121 :name "72a1"))
-	(a2 (make-eng2-room 0 (* 1150 3) 8121 :name "72a2"))
-	(a3 (make-eng2-room 0 (* 1150 3) 8121 :name "72a3"))
-	(a4 (make-eng2-room 150 (+ (* 1150 3)) 8121 :name "72a4"))
-	(b1 (make-eng2-room (* 1150 3) (+ (* 1150 3) 150) -11353 :name "72b1"))
-	(b2 (make-eng2-room (+ (* 1150 3) 150) (* 1150 3) -11353 :name "72b2"))
+  (let ((a1 (make-eng2-room 0 (+ (* 1150 3) 150) 8121 :name "72a1"
+            :knowrob-type "ProfessorsOffice"))
+	(a2 (make-eng2-room 0 (* 1150 3) 8121 :name "72a2"
+            :knowrob-type "LaboratoryRoom"))
+	(a3 (make-eng2-room 0 (* 1150 3) 8121 :name "72a3"
+            :knowrob-type "LaboratoryRoom"))
+	(a4 (make-eng2-room 150 (+ (* 1150 3)) 8121 :name "72a4"
+            :knowrob-type "ProfessorsOffice"))
+	(b1 (make-eng2-room (* 1150 3) (+ (* 1150 3) 150) -11353 :name "72b1"
+            :knowrob-type "LaboratoryRoom"))
+	(b2 (make-eng2-room (+ (* 1150 3) 150) (* 1150 3) -11353 :name "72b2"
+            :knowrob-type "LaboratoryRoom"))
 	;;
-	(c1 (make-eng2-room (* 1150 3) (+ (* 1150 3) 150) 11353 :name "72c1"))
-	(c2 (make-eng2-room (+ (* 1150 3) 150) (* 1150 3) 11353 :name "72c2"))
-	(d1 (make-eng2-room (* 1150 3) 150 -8121 :name "72d1"))
-	(d2 (make-eng2-room (* 1150 3) 0 -8121 :name "72d2"))
-	(d3 (make-eng2-room (* 1150 3) 0 -8121 :name "72d3"))
-	(d4 (make-eng2-room (+ (* 1150 3) 150) 0 -8121 :name "72d4")))
+	(c1 (make-eng2-room (* 1150 3) (+ (* 1150 3) 150) 11353 :name "72c1"
+            :knowrob-type "LaboratoryRoom"))
+	(c2 (make-eng2-room (+ (* 1150 3) 150) (* 1150 3) 11353 :name "72c2"
+            :knowrob-type "LaboratoryRoom"))
+	(d1 (make-eng2-room (* 1150 3) 150 -8121 :name "72d1"
+            :knowrob-type "ProfessorsOffice"))
+	(d2 (make-eng2-room (* 1150 3) 0 -8121 :name "72d2"
+            :knowrob-type "ProfessorsOffice"))
+	(d3 (make-eng2-room (* 1150 3) 0 -8121 :name "72d3"
+            :knowrob-type "LaboratoryRoom"))
+	(d4 (make-eng2-room (+ (* 1150 3) 150) 0 -8121 :name "72d4"
+            :knowrob-type "LaboratoryRoom")))
     (setf (get b1 :face-color) :dodgerblue)
     (setf (get b2 :face-color) :dodgerblue)
     (setf (get d1 :face-color) :dodgerblue)
@@ -143,20 +166,30 @@
     (list a1 a2 a3 a4 b1 b2 c1 c2 d1 d2 d3 d4)))
 
 (defun make-73-rooms ()
-  (let ((a1 (make-eng2-room 0 (+ (* 1150 3) 150) 8121 :name "73a1" :people "Masayuki Inaba" :knowrob-type "ProfessorsOffice"))
-	(a2 (make-eng2-room 0 (* 1150 3) 8121 :name "73a2" :people "kei Okada" :knowrob-type "ProfessorsOffice"))
-;	(a3 (make-eng2-room 0 (* 1150 3) 8121 :name "73a3" :knowrob-type "OfficeRoom"))
-	(a3 (let ((a3 (instance room73a3-scene :init :name "73a3"))) (setf (get a3 :knowrob-type) "OfficeRoom") a3))
-	(a4 (make-eng2-room (+ 100 500 295) (* 1150 3) 8121 :name "73a4" :knowrob-type "LaboratoryRoom"))
-	(b1 (make-eng2-room (* 1150 3) (+ (* 1150 3) 150) -11353 :name "73b1" :knowrob-type "LaboratoryRoom"))
-;	(b2 (make-eng2-room (+ (* 1150 3) 100 500 295) (* 1150 3) -11353 :name "73b2"))
-	(b2 (let ((b2 (instance room73b2-scene :init :name "73b2"))) (setf (get b2 :knowrob-type) (list "Kitchen" "LaboratoryRoom")) b2))
-	(c1 (make-eng2-room (* 1150 3) (+ (* 1150 3) 150) 11353 :name "73c1"))
-	(c2 (make-eng2-room (+ (* 1150 3) 100 500 295) (* 1150 3) 11353 :name "73c2"))
-	(d1 (make-eng2-room (* 1150 3) 150 -8121 :name "73d1"))
-	(d2 (make-eng2-room (* 1150 3) 0 -8121 :name "73d2"))
-	(d3 (make-eng2-room (* 1150 3) 0 -8121 :name "73d3"))
-	(d4 (make-eng2-room (+ (* 1150 3) 100 500 295) 0 -8121 :name "73d4")))
+  (let ((a1 (make-eng2-room 0 (+ (* 1150 3) 150) 8121 :name "73a1"
+            :people "Masayuki Inaba" :knowrob-type "ProfessorsOffice"))
+	(a2 (make-eng2-room 0 (* 1150 3) 8121 :name "73a2"
+            :people "kei Okada" :knowrob-type "ProfessorsOffice"))
+        (a3 (let ((a3 (instance room73a3-scene :init :name "73a3")))
+            (setf (get a3 :knowrob-type) "OfficeRoom") a3))
+        (a4 (make-eng2-room (+ 100 500 295) (* 1150 3) 8121 :name "73a4"
+            :knowrob-type "LaboratoryRoom"))
+        (b1 (make-eng2-room (* 1150 3) (+ (* 1150 3) 150) -11353 :name "73b1"
+            :knowrob-type "LaboratoryRoom"))
+        (b2 (let ((b2 (instance room73b2-scene :init :name "73b2")))
+            (setf (get b2 :knowrob-type) (list "Kitchen" "LaboratoryRoom")) b2))
+        (c1 (make-eng2-room (* 1150 3) (+ (* 1150 3) 150) 11353 :name "73c1"
+            :knowrob-type "OfficeRoom"))
+        (c2 (make-eng2-room (+ (* 1150 3) 100 500 295) (* 1150 3) 11353 :name "73c2"
+            :knowrob-type "MeetingSpace"))
+        (d1 (make-eng2-room (* 1150 3) 150 -8121 :name "73d1"
+            :knowrob-type "LaboratryRoom"))
+        (d2 (make-eng2-room (* 1150 3) 0 -8121 :name "73d2"
+            :knowrob-type "LaboratryRoom"))
+        (d3 (make-eng2-room (* 1150 3) 0 -8121 :name "73d3"
+            :knowrob-type "ProfessorsOffice"))
+        (d4 (make-eng2-room (+ (* 1150 3) 100 500 295) 0 -8121 :name "73d4"
+            :knowrob-type "ProfessorsOffice")))
     (setf (get a1 :face-color) :deeppink)
     (setf (get a2 :face-color) :lightpink)
     (setf (get a3 :face-color) :lawngreen)
@@ -164,8 +197,8 @@
     (setf (get b1 :face-color) :darkviolet)
     (setf (get b2 :face-color) :dodgerblue)
     (setf (get d1 :face-color) :dodgerblue)
-	(dolist (obj (send b2 :objects)) (send b2 :assoc obj))
-	(dolist (obj (send a3 :objects)) (send a3 :assoc obj))
+    (dolist (obj (send b2 :objects)) (send b2 :assoc obj))
+    (dolist (obj (send a3 :objects)) (send a3 :assoc obj))
 
     (send d4 :locate (float-vector 0 (* 3 1150) 0))
     (send d3 :assoc d4)
@@ -313,12 +346,13 @@
 
 (defun make-83-rooms ()
   (let ((a1 (make-eng2-room 0 (+ (* 1150 3) 150) 8121 :name "83a1"))
-	(a2 (make-eng2-room 0 (* 1150 3) 8121 :name "83a2"))
+	(a2 (make-eng2-room 0 (* 1150 3) 8121 :name "83a2"
+            :knowrob-type '("ServerRoom" "StorageRoom" "Workshop")))
 	(a3 (make-eng2-room 0 (* 1150 3) 8121 :name "83a3"))
 	(a4 (make-eng2-room (+ 100 500 295) (* 1150 3) 8121 :name "83a4"))
 	(b1 (let ((b1 (instance room83b1-scene :init :name "83b1"))) (setf (get b1 :knowrob-type) "LaboratoryRoom") b1))
-	;;(b1 (make-eng2-room (* 1150 3) (+ (* 1150 3) 150) -11353 :name "83b1" :knowrob-type "LaboratoryRoom"))
-	(b2 (make-eng2-room (+ (* 1150 3) 100 500 295) (* 1150 3) -11353 :name "83b2"))
+	(b2 (make-eng2-room (+ (* 1150 3) 100 500 295) (* 1150 3) -11353 :name "83b2"
+            :knowrob-type "LaboratryRoom"))
 	(c1 (make-eng2-room (* 1150 3) (+ (* 1150 3) 150) 11353 :name "83c1"))
 	(c2 (make-eng2-room (+ (* 1150 3) 100 500 295) (* 1150 3) 11353 :name "83c2"))
 	(d1 (make-eng2-room (* 1150 3) 150 -8121 :name "83d1"))
@@ -332,7 +366,7 @@
     (setf (get b1 :face-color) :darkviolet)
     (setf (get b2 :face-color) :dodgerblue)
     (setf (get d1 :face-color) :dodgerblue)
-	(dolist (obj (send b1 :objects)) (send b1 :assoc obj))
+    (dolist (obj (send b1 :objects)) (send b1 :assoc obj))
 
     (send d4 :locate (float-vector 0 (* 3 1150) 0))
     (send d3 :assoc d4)
@@ -373,7 +407,7 @@
   (let ((21a  (make-eng2-room 0 (* 1150 6) 6500 :name "21a" :knowrob-type "LockerRoom"))
 		(21b2 (make-eng2-room 0 (* 1150 3) 9000 :name "21b2" :knowrob-type "ControlRoom"))
 		(22a  (make-eng2-room (* 1150 13) 0 18000 :name "22a" :knowrob-type "LectureHall"))
-		(22b  (make-eng2-room (* 1150 8) 0 18000 :name "22b"))
+		(22b  (make-eng2-room (* 1150 8) 0 18000 :name "22b" :knowrob-type "LaboratoryRoom"))
 ;		(23a  (make-eng2-room 0 (* 1150 3) 8121 :name "23a" :knowrob-type ""))
 ;		(23b  (make-eng2-room 0 (* 1150 3) 8121 :name "23b" :knowrob-type ""))
 		(subway (make-subway-scene :name "subway-shop")))
