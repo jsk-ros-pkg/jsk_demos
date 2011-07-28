@@ -2964,6 +2964,7 @@
 
 <owl:NamedIndividual rdf:about="&jsk_map;eng2-8f-83b1">
   <rdf:type rdf:resource="&knowrob;LaboratoryRoom"/>
+  <rdf:type rdf:resource="&knowrob;Kitchen"/>
   <knowrob:widthOfObject rdf:datatype="&xsd;float">7.24408</knowrob:widthOfObject>
   <knowrob:depthOfObject rdf:datatype="&xsd;float">11.5741</knowrob:depthOfObject>
   <knowrob:heightOfObject rdf:datatype="&xsd;float">3.0</knowrob:heightOfObject>

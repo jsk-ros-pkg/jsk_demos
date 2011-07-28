@@ -350,7 +350,7 @@
             :knowrob-type '("ServerRoom" "StorageRoom" "Workshop")))
 	(a3 (make-eng2-room 0 (* 1150 3) 8121 :name "83a3"))
 	(a4 (make-eng2-room (+ 100 500 295) (* 1150 3) 8121 :name "83a4"))
-	(b1 (let ((b1 (instance room83b1-scene :init :name "83b1"))) (setf (get b1 :knowrob-type) "LaboratoryRoom") b1))
+	(b1 (let ((b1 (instance room83b1-scene :init :name "83b1"))) (setf (get b1 :knowrob-type) (list "Kitchen" "LaboratoryRoom)") b1))
 	(b2 (make-eng2-room (+ (* 1150 3) 100 500 295) (* 1150 3) -11353 :name "83b2"
             :knowrob-type "LaboratryRoom"))
 	(c1 (make-eng2-room (* 1150 3) (+ (* 1150 3) 150) 11353 :name "83c1"))
