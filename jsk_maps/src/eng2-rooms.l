@@ -8,8 +8,12 @@
 (load "models/room83b1-scene.l")
 (load "subway-models.l")
 ;;
+(defmethod scene-model
+  (:set-color (c) (dolist (it objs)
+					(when (find-method it :set-color)
+					  (send-all objs :set-color c)))))
 (defun make-eng2-room (w1 w2 d &rest args &key (name) &allow-other-keys)
-  (let* (b (s 50) (sd (if (> d 0) (- s) s)) k v)
+  (let* (b (s 50) (sd (if (> d 0) (- s) s)) k v room)
     ;; w1 > 0, w2 < 0
     (setq b (make-prism (list (float-vector sd s 0)
 			      (float-vector sd (- w1 s) 0)
@@ -19,11 +23,12 @@
 			      (float-vector sd s 0)
 			      )
 			1.0 :name name))
-    (print args)
+	(setq room (instance scene-model :init :name name :objects (list b)))
+	(send room :assoc b)
     (while args
       (setq k (pop args) v (pop args))
-      (setf (get b k) v))
-    b))
+      (setf (get room k) v))
+    room))
 
 (defun make-eng2-corridor (w l &key (pos (float-vector 0 0 0)) (rpy (float-vector 0 0 0)) (name "corridor"))
   (let (b)
@@ -168,7 +173,7 @@
 (defun make-73-rooms ()
   (let ((a1 (make-eng2-room 0 (+ (* 1150 3) 150) 8121 :name "73a1"
             :people "Masayuki Inaba" :knowrob-type "ProfessorsOffice"))
-	(a2 (make-eng2-room 0 (* 1150 3) 8121 :name "73a2"
+        (a2 (make-eng2-room 0 (* 1150 3) 8121 :name "73a2"
             :people "kei Okada" :knowrob-type "ProfessorsOffice"))
         (a3 (let ((a3 (instance room73a3-scene :init :name "73a3")))
             (setf (get a3 :knowrob-type) "OfficeRoom") a3))
@@ -189,14 +194,19 @@
         (d3 (make-eng2-room (* 1150 3) 0 -8121 :name "73d3"
             :knowrob-type "ProfessorsOffice"))
         (d4 (make-eng2-room (+ (* 1150 3) 100 500 295) 0 -8121 :name "73d4"
-            :knowrob-type "ProfessorsOffice")))
-    (setf (get a1 :face-color) :deeppink)
-    (setf (get a2 :face-color) :lightpink)
-    (setf (get a3 :face-color) :lawngreen)
-    (setf (get a4 :face-color) :dodgerblue)
-    (setf (get b1 :face-color) :darkviolet)
-    (setf (get b2 :face-color) :dodgerblue)
-    (setf (get d1 :face-color) :dodgerblue)
+            :knowrob-type "ProfessorsOffice"))
+		(7a-mini-kitchen
+            (make-eng2-room (+ 850 400) 0 -2000 :name "7a-mini-kitchen"
+            :knowrob-type "Kitchen"))
+		 )
+    (send a1 :set-color :deeppink)
+    (send a2 :set-color :lightpink)
+    (send a3 :set-color :lawngreen)
+    (send a4 :set-color :dodgerblue)
+    (send b1 :set-color :darkviolet)
+    (send b2 :set-color :dodgerblue)
+    (send d1 :set-color :dodgerblue)
+    (send 7a-mini-kitchen :set-color :blue)
     (dolist (obj (send b2 :objects)) (send b2 :assoc obj))
     (dolist (obj (send a3 :objects)) (send a3 :assoc obj))
 
@@ -223,6 +233,10 @@
     (send a2 :assoc a3)
     (send a2 :locate (float-vector 0 (* 3 1150) 0))
     (send a1 :assoc a2)
+    (send 7a-mini-kitchen :locate
+		  (float-vector -300 (- (+ (* 3 1150) 2000 250)) 0))
+	(send 7a-mini-kitchen :rotate pi/2 :z)
+	(send a1 :assoc 7a-mini-kitchen)
     (send a1 :locate (float-vector 0 (+ (* 3 1150) 150) 0))
 
     (send b1 :locate (float-vector 2020 0 0))
@@ -238,7 +252,7 @@
 	(send a3 :orient pi :z)
 
     ;;
-    (list a1 a2 a3 a4 b1 b2 c1 c2 d1 d2 d3 d4)))
+    (list a1 a2 a3 a4 b1 b2 c1 c2 d1 d2 d3 d4 7a-mini-kitchen)))
 
 
 
@@ -350,7 +364,7 @@
             :knowrob-type '("ServerRoom" "StorageRoom" "Workshop")))
 	(a3 (make-eng2-room 0 (* 1150 3) 8121 :name "83a3"))
 	(a4 (make-eng2-room (+ 100 500 295) (* 1150 3) 8121 :name "83a4"))
-	(b1 (let ((b1 (instance room83b1-scene :init :name "83b1"))) (setf (get b1 :knowrob-type) (list "Kitchen" "LaboratoryRoom)") b1))
+	(b1 (let ((b1 (instance room83b1-scene :init :name "83b1"))) (setf (get b1 :knowrob-type) "LaboratoryRoom") b1))
 	(b2 (make-eng2-room (+ (* 1150 3) 100 500 295) (* 1150 3) -11353 :name "83b2"
             :knowrob-type "LaboratryRoom"))
 	(c1 (make-eng2-room (* 1150 3) (+ (* 1150 3) 150) 11353 :name "83c1"))
