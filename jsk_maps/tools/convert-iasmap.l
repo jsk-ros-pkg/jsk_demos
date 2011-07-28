@@ -392,7 +392,7 @@
 	  ;;
 	  (add-to-room cup6 kyuto)
           ;;(add-to-room cupf6 kyuto)
-	  (send cup6 :translate (float-vector 1400 300 700))
+	  (send cup6 :translate (float-vector 1400 600 700))
 	  (push-knowrob-properties cupf6 "inFrontOf-Generally" cup6)
 	  ;;
 	  (dump-building->yaml filename scene :yaml :view view)
