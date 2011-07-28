@@ -20,8 +20,8 @@
 
 (defun insert-robot-pose ()
   (let (pose po ret
-	     (type "'http://ias.cs.tum.edu/kb/knowrob.owl#Robot'")
-		 (robot "'http://www.jsk.t.u-tokyo.ac.jp/jsk_map.owl#pr2'"))
+             (type "'http://ias.cs.tum.edu/kb/knowrob.owl#Robot'")
+             (robot "'http://www.jsk.t.u-tokyo.ac.jp/jsk_map.owl#pr2'"))
     (ros::spin-once)
     (setq pose (send *tfl* :lookup-transform "/map" "/base_footprint" (ros::time 0)))
     (send pose :locate (scale 0.001 (send pose :worldpos)) :world)
@@ -94,7 +94,7 @@
 
 (defun demo (&rest args)
   (when (eq args nil)
-    (warn "(:home) (:pick name)~%")
+    (warn "(:home) (:pick name) (:pick-kitchen name)~%")
     (return-from demo t))
   ;;
   (when (member :home args)
@@ -107,6 +107,10 @@
     (change-inflation-range 0.15) (initialize-costmap)
     (ask-query-and-move "Cup" (cadr (member :pick args))))
   ;;
+  (when (member :pick-kitchen args)
+    (pr2-tuckarm-pose :larm)
+    (change-inflation-range 0.15) (initialize-costmap)
+    (ask-query-and-move "Cup" (cadr (member :pick-kitchen args))))
   )
 
 ;;
