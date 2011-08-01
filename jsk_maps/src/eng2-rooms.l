@@ -197,7 +197,7 @@
             :knowrob-type "ProfessorsOffice"))
 		(7a-mini-kitchen
             (make-eng2-room (+ 850 400) 0 -2000 :name "7a-mini-kitchen"
-            :knowrob-type "Kitchen"))
+            :knowrob-type (list "Kitchen" "UtilityRoom")))
 		 )
     (send a1 :set-color :deeppink)
     (send a2 :set-color :lightpink)
