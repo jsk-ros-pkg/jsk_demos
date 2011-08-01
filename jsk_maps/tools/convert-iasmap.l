@@ -398,6 +398,21 @@
 	  (push-knowrob-properties cup6 "linkToImageFile" "http://jsk-ros-pkg.svn.sourceforge.net/viewvc/jsk-ros-pkg/trunk/demos/jsk_2011_07_pr2_semantic/data/cup-cmu.jpg")
 	  ;;
 	  (dump-building->yaml filename scene :yaml :view view)
+	  ;; this is quick hack
+	  (let ((str "convert -resize 25% ") p)
+	    (dolist (c (list cup1 cup2 cup3 cup4 cup5 cup6))
+	      (print c)
+	      (setq p (float-vector (+ 13000 (elt (send c :worldpos) 0))
+				    (- 11500 (elt (send c :worldpos) 1))))
+	      (setq str (concatenate string str
+				     (format nil "-draw \"text ~A,~A '~A\" "
+					     (/ (elt p 0)  200.0)
+					     (/ (elt p 1)  200.0)
+					     (send c :name)
+					     ))))
+	    (setq str (concatenate string str "`rospack find jsk_maps`/eng2.pgm `rospack find jsk_maps`/eng2-cups.jpg"))
+	    (print str)
+	    (unix::system str))
 	  scene
 	  )))
 
