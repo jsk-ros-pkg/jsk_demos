@@ -346,7 +346,7 @@
 	  (setq kyuto (car (send scene :find-object "/eng2/7f/7a-mini-kitchen")))
 	  (setq 73a3 (car (send scene :find-object "/eng2/7f/73a3")))
 	  (setq 83b1 (car (send scene :find-object "/eng2/8f/83b1")))
-	  (setq cup1 (cup :name "cotesys") cup2 (cup :name "mit") cup3 (cup :name "tea") cup4 (cup :name "sumo") cup5 (cup :name "C") cup6 (cup :name "cmu"))
+	  (setq cup1 (cup :name "cup-cotesys") cup2 (cup :name "cup-mit") cup3 (cup :name "cup-tea") cup4 (cup :name "cup-sumo") cup5 (cup :name "cup-C") cup6 (cup :name "cup-cmu"))
 	  (setq cupf1 (make-cascoords :name "infront-of-cup")
                 cupf2 (make-cascoords :name "infront-of-cup")
                 cupf3 (make-cascoords :name "infront-of-cup")
