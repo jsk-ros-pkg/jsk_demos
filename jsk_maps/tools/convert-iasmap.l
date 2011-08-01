@@ -346,7 +346,7 @@
 	  (setq kyuto (car (send scene :find-object "/eng2/7f/7a-mini-kitchen")))
 	  (setq 73a3 (car (send scene :find-object "/eng2/7f/73a3")))
 	  (setq 83b1 (car (send scene :find-object "/eng2/8f/83b1")))
-	  (setq cup1 (cup) cup2 (cup) cup3 (cup) cup4 (cup) cup5 (cup) cup6 (cup))
+	  (setq cup1 (cup :name "cotesys") cup2 (cup :name "mit") cup3 (cup :name "tea") cup4 (cup :name "sumo") cup5 (cup :name "C") cup6 (cup :name "cmu"))
 	  (setq cupf1 (make-cascoords :name "infront-of-cup")
                 cupf2 (make-cascoords :name "infront-of-cup")
                 cupf3 (make-cascoords :name "infront-of-cup")
@@ -389,11 +389,13 @@
 	  (send cup5 :translate (float-vector 3300 -300 700))
 	  (send cupf5 :translate (float-vector 2800 -300 0))
 	  (push-knowrob-properties cupf5 "inFrontOf-Generally" cup5)
+	  (push-knowrob-properties cup5 "linkToImageFile" "http://jsk-ros-pkg.svn.sourceforge.net/viewvc/jsk-ros-pkg/trunk/demos/jsk_2011_07_pr2_semantic/data/cup-chen.jpg")
 	  ;;
 	  (add-to-room cup6 kyuto)
           ;;(add-to-room cupf6 kyuto)
 	  (send cup6 :translate (float-vector 1800 600 700))
 	  (push-knowrob-properties cupf6 "inFrontOf-Generally" cup6)
+	  (push-knowrob-properties cup6 "linkToImageFile" "http://jsk-ros-pkg.svn.sourceforge.net/viewvc/jsk-ros-pkg/trunk/demos/jsk_2011_07_pr2_semantic/data/cup-cmu.jpg")
 	  ;;
 	  (dump-building->yaml filename scene :yaml :view view)
 	  scene
