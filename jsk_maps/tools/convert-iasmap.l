@@ -375,7 +375,7 @@
 	  (send cupf2 :orient -pi/2 :z)
 	  (send cupf3 :translate (float-vector 2200 1800 0))
 	  (send cupf3 :orient -pi :z)
-	  (send cupf4 :translate (float-vector 4550 -2050 0))
+	  (send cupf4 :translate (float-vector 4550 -1900 0));;-150
 	  (send cupf4 :orient -pi/2 :z)
 	  (push-knowrob-properties cupf2 "inFrontOf-Generally" cup2)
 	  (push-knowrob-properties cupf3 "inFrontOf-Generally" cup3)
