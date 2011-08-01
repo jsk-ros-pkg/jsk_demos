@@ -272,6 +272,7 @@
 	(setq objs (remove-if #'(lambda(x)(eq cascaded-coords (class x))) objs))
 	(make-name-unique (append floors rooms spots objs))
 	;;
+	(when view (objects (list scene)))
 	(if (eq type :yaml)
 		;; to yaml
 		(progn
@@ -399,15 +400,16 @@
 	  ;;
 	  (dump-building->yaml filename scene :yaml :view view)
 	  ;; this is quick hack
-	  (let ((str "convert -resize 25% ") p)
+	  (let ((str "convert -resize 25% ") p x y)
 	    (dolist (c (list cup1 cup2 cup3 cup4 cup5 cup6))
 	      (print c)
 	      (setq p (float-vector (+ 13000 (elt (send c :worldpos) 0))
 				    (- 11500 (elt (send c :worldpos) 1))))
+	      (setq x (/ (elt p 0)  200.0) y (/ (elt p 1)  200.0))
 	      (setq str (concatenate string str
-				     (format nil "-draw \"text ~A,~A '~A\" "
-					     (/ (elt p 0)  200.0)
-					     (/ (elt p 1)  200.0)
+				     (format nil "-strokewidth 2 -draw \"line ~A,~A ~A,~A\" -font helvetica-bold -pointsize 12 -undercolor gray60 -draw \"text ~A,~A ' ~A\" "
+					     x y (+ x 10) (+ y 10)
+					     (+ x 10) (+ y 10)
 					     (send c :name)
 					     ))))
 	    (setq str (concatenate string str "`rospack find jsk_maps`/eng2.pgm `rospack find jsk_maps`/eng2-cups.jpg"))
