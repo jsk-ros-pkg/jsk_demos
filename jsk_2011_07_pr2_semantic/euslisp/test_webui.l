@@ -2,10 +2,11 @@
 
 (ros::load-ros-manifest "roseus")
 (ros::load-ros-manifest "jsk_pr2_gui")
+(ros::roseus "demo_webui")
+
 (load "package://pr2eus/pr2-interface.l")
 (load "package://jsk_2011_07_pr2_semantic/euslisp/knowrob-interface.l")
-
-(ros::roseus "demo_webui")
+(load "package://jsk_2011_07_pr2_semantic/euslisp/main.l")
 
 (defun init-settings ()
   (pr2)
@@ -18,8 +19,10 @@
 (defun str-srv (req)
   (let ((m (send req :response)))
     (ros::ros-info "str-srv:~A" (send req :str))
+    (insert-robot-pose)
     (print (send req :str))
-    (send m :str (format nil "~A" (find-knowrob-objects-with-info (send req :str))))
+;;    (send m :str (format nil "~A" (find-knowrob-objects-with-info (send req :str))))
+    (send m :str (format nil "~A" (similar-objects-with-info-by-distance (send req :str))))
     m))
 
 (defun str-cb (msg)
@@ -48,7 +51,9 @@
 (ros::advertise-service "/ipad/service/knowrob" roseus::StringString #'str-srv)
 (ros::subscribe "/ipad/event/select" jsk_pr2_gui::iPadSelect #'str-cb)
 
+(ros::rate 10)
 (do-until-key
+ (ros::sleep)
  (ros::spin-once))
 
 ;;(find-knowrob-objects "Cup")

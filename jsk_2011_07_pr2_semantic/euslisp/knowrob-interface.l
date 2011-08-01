@@ -41,7 +41,7 @@
 	   `(,(format nil "_R=~a" robot)
 	     (setof :_O ("lookForKMostSimilarObjT" ,rdf-type ,k :_O) :_OBJS)
 	     (get_sorted_path_costs ,robot :_OBJS :_SORTED)
-	     (member #(:C :OBJ)  :_SORTED)
+	     (member #(:COST :OBJ)  :_SORTED)
 	     (owl_has :spot ,infront-of :obj)
 	     (object_info :obj "[IMAGE,ROOM,LEVEL|_]")))
 	  :pose '("OBJ" "SPOT"))

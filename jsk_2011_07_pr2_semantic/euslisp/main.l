@@ -16,6 +16,7 @@
   (setq *prolog* (instance json_prolog :init "json_prolog"))
   ;; callbacks
   (ros::subscribe "/query" std_msgs::string #'identity)
+  (change-inflation-range 0.4)
   )
 
 (defun insert-robot-pose ()
