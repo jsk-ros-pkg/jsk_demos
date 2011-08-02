@@ -233,14 +233,14 @@
 	(format fd "        frame_id: ~a~%" (send (send obj :parent) :name))
 	(format fd "        type: [~a]~%" type)
 	(dump-properties obj fd)
-	(format fd "        translation: {x: ~a, y: ~a, z: ~a}~%"
+	(format fd "        translation: {x: ~0,4f, y: ~0,4f, z: ~0,4f}~%"
 			(elt (send sobj :pose) 3) (elt (send sobj :pose) 7)
 			(if height (+ (elt (send sobj :pose) 11)
 						  (/ (- (* 0.001 height) (send sobj :height)) 2))
 			  (elt (send sobj :pose) 11)))
-	(format fd "        rotation: {w: ~a, x: ~a, y: ~a, z: ~a}~%"
+	(format fd "        rotation: {w: ~0,4f, x: ~0,4f, y: ~0,4f, z: ~0,4f}~%"
 			(elt qu 0) (elt qu 1) (elt qu 2) (elt qu 3))
-	(format fd "        width: ~a~%        depth: ~a~%        height: ~a~%"
+	(format fd "        width: ~0,4f~%        depth: ~0,4f~%        height: ~0,4f~%"
 			(send sobj :width) (send sobj :depth)
 			(if height (* 0.001 height) (send sobj :height)))
 	))
@@ -255,9 +255,9 @@
 	(format fd "    ~a:~%" (send spot :name))
 	(format fd "        frame_id: ~a~%" (send (send spot :parent) :name))
 	(dump-properties spot fd)
-	(format fd "        translation: {x: ~a, y: ~a, z: ~a}~%"
+	(format fd "        translation: {x: ~0,4f, y: ~0,4f, z: ~0,4f}~%"
 			(elt pos 0) (elt pos 1)	0.0) ;; global pose
-	(format fd "        rotation: {w: ~a, x: ~a, y: ~a, z: ~a}~%"
+	(format fd "        rotation: {w: ~0,4f, x: ~0,4f, y: ~0,4f, z: ~0,4f}~%"
 			(elt qu 0) (elt qu 1) (elt qu 2) (elt qu 3)))
   )
 
@@ -332,11 +332,12 @@
 
 (defun make-semantic-scene1 (&key (filename "scene.yaml") (view nil))
   (flet ((add-to-room
-		  (obj room)
-		  (send room :assoc obj)
-		  (when (derivedp room scene-model)
+	  (obj room &key (move t))
+	  (send room :assoc obj)
+	  (when (derivedp room scene-model)
             (nconc (send room :objects) (list obj)))
-		  (send obj :move-to (send room :copy-worldcoords) :world)))
+	  (when move
+	    (send obj :move-to (send room :copy-worldcoords) :world))))
 	(let ((scene (make-eng2-scene))
 		  73b2 73a3 83b1
 		  cup1 cup2 cup3 cup4 cup5 cupf1 cupf2 cupf3 cupf4 cupf5)
@@ -366,7 +367,7 @@
 	  (add-to-room cup2 73b2)
 	  (add-to-room cup3 73b2)
 	  (add-to-room cup4 73b2)
-	  (add-to-room cupf2 73b2)
+	  (add-to-room cupf2 73b2 :move nil)
 	  (add-to-room cupf3 73b2)
 	  (add-to-room cupf4 73b2)
 	  (send cup2 :translate (float-vector 5150 1550 700))
@@ -393,7 +394,7 @@
 	  (push-knowrob-properties cup5 "linkToImageFile" "http://jsk-ros-pkg.svn.sourceforge.net/viewvc/jsk-ros-pkg/trunk/demos/jsk_2011_07_pr2_semantic/data/cup-chen.jpg")
 	  ;;
 	  (add-to-room cup6 kyuto)
-          (add-to-room cupf6 kyuto)
+          (add-to-room cupf6 kyuto :move nil)
 	  (send cup6 :translate (float-vector 1800 600 700))
 	  (push-knowrob-properties cupf6 "inFrontOf-Generally" cup6)
 	  (push-knowrob-properties cup6 "linkToImageFile" "http://jsk-ros-pkg.svn.sourceforge.net/viewvc/jsk-ros-pkg/trunk/demos/jsk_2011_07_pr2_semantic/data/cup-cmu.jpg")
