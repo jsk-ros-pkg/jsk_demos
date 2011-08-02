@@ -35,18 +35,13 @@
   </node>
   
   <!-- for gripper action -->
-  <node pkg="roslaunch" type="roslaunch" name="$(anon launch)"
-        args="pr2_gripper_sensor_action pr2_gripper_sensor_actions.launch"
-	output="screen" />
-
+  <machine name="c1" address="pr1012" ros-root="$(env ROS_ROOT)"
+  	   ros-package-path="$(env ROS_PACKAGE_PATH)"/>
+  <machine name="c2" address="pr1012s" ros-root="$(env ROS_ROOT)"
+  	   ros-package-path="$(env ROS_PACKAGE_PATH)"/>
+  <include file="$(find jsk_2011_07_pr2_semantic)/launch/pr2_gripper_sensor_action/pr2_gripper_sensor_actions.launch"/>
   <!-- for accurate object position -->
-  <node pkg="roslaunch" type="roslaunch" name="$(anon launch)"
-        args="jsk_2011_07_pr2_semantic pointcloud_screenpoint.launch"
-	output="screen" respawn="true"/>
-
-  <!-- for collision avoidance in arm planning -->
-  <node pkg="roslaunch" type="roslaunch" name="$(anon launch)"
-        args="pr2eus_openrave pr2_openrave_armplan.launch"
-	output="screen" />
-
+  <include file="$(find jsk_2011_07_pr2_semantic)/launch/jsk_pcl_ros/pointcloud_screenpoint.launch"/>
+ <!-- for collision avoidance in arm planning -->
+  <include file="$(find pr2eus_openrave)/launch/pr2_openrave_armplan.launch"/>
 </launch>
