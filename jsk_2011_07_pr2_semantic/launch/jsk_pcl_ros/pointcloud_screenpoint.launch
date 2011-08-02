@@ -1,8 +1,6 @@
 <launch>
   <machine name="localhost" address="localhost" ros-root="$(env ROS_ROOT)"
   	   ros-package-path="$(env ROS_PACKAGE_PATH)"/>
-  <machine name="c1" address="pr1012s" ros-root="$(env ROS_ROOT)"
-  	   ros-package-path="$(env ROS_PACKAGE_PATH)"/>
   <arg name="image" default="/narrow_stereo/left"/>
   <!-- <arg name="points" default="/tilt_laser_cloud2"/> -->
   <arg name="points" default="/camera/rgb/points"/>
