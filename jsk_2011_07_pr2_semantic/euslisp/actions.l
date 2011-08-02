@@ -19,10 +19,10 @@
 
 
 (defun pick (arm)
-  (let* ((av (send *pr2* :angle-vector))
-	 tmp via1 target vav avs)
+  (let* (tmp via1 target av vav avs)
     (ros::spin-once)
-    (send *pr2* :angle-vector (send *ri* :state :potentio-vector))
+    (setq av (send *ri* :state :potentio-vector))
+    (send *pr2* :angle-vector av)
     ;; calculate via point
     ;; tmp : object coords wrt robot coordinates
     ;; *pr2* :world, *obj* :world
@@ -60,7 +60,7 @@
     (send *ri* :wait-interpolation)
     ;;
     (send *ri* :angle-vector-sequence
-	  (reverse (car avs)) (reverse (cadr avs)))
+	  (append (cdr (reverse (car avs))) (list av)) (reverse (cadr avs)))
     (send *ri* :wait-interpolation)
     ))
 
