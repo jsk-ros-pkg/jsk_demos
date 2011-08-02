@@ -55,15 +55,15 @@
 	(a4 (make-eng2-room 150 (* 1150 3) 8121 :name "71a4"
             :knowrob-type "ProfessorsOffice"))
 	(b2 (make-eng2-room (+ (* 1150 4) 900) (+ (* 1150 3) 100 500 295) -11353 :name "71b"
-            :knowrob-type "LaboratryRoom"))
+            :knowrob-type "LaboratoryRoom"))
 	(c1 (make-eng2-room (* 1150 3) (+ (* 1150 3) 100 500 295) 11353 :name "71c1"
-            :knowrob-type "LaboratryRoom"))
+            :knowrob-type "LaboratoryRoom"))
 	(c2 (make-eng2-room (+ (* 1150 3) 100) (* 1150 3) 11353 :name "71c2"
-            :knowrob-type "LaboratryRoom"))
+            :knowrob-type "LaboratoryRoom"))
 	(d1 (make-eng2-room (* 1150 3) (+ 100 500 295) -8121 :name "71d1"
             :knowrob-type "ProfessorsOffice"))
 	(d2 (make-eng2-room (* 1150 3) 0 -8121 :name "71d2"
-            :knowrob-type "LaboratryRoom"))
+            :knowrob-type "LaboratoryRoom"))
 	(d3 (make-eng2-room (* 1150 3) 0 -8121 :name "71d3"
             :knowrob-type "ProfessorsOffice"))
 	(d4 (make-eng2-room (+ (* 1150 3) 100) 0 -8121 :name "71d4"
@@ -188,9 +188,9 @@
         (c2 (make-eng2-room (+ (* 1150 3) 100 500 295) (* 1150 3) 11353 :name "73c2"
             :knowrob-type "MeetingSpace"))
         (d1 (make-eng2-room (* 1150 3) 150 -8121 :name "73d1"
-            :knowrob-type "LaboratryRoom"))
+            :knowrob-type "LaboratoryRoom"))
         (d2 (make-eng2-room (* 1150 3) 0 -8121 :name "73d2"
-            :knowrob-type "LaboratryRoom"))
+            :knowrob-type "LaboratoryRoom"))
         (d3 (make-eng2-room (* 1150 3) 0 -8121 :name "73d3"
             :knowrob-type "ProfessorsOffice"))
         (d4 (make-eng2-room (+ (* 1150 3) 100 500 295) 0 -8121 :name "73d4"
@@ -366,7 +366,7 @@
 	(a4 (make-eng2-room (+ 100 500 295) (* 1150 3) 8121 :name "83a4"))
 	(b1 (let ((b1 (instance room83b1-scene :init :name "83b1"))) (setf (get b1 :knowrob-type) "LaboratoryRoom") b1))
 	(b2 (make-eng2-room (+ (* 1150 3) 100 500 295) (* 1150 3) -11353 :name "83b2"
-            :knowrob-type "LaboratryRoom"))
+            :knowrob-type "LaboratoryRoom"))
 	(c1 (make-eng2-room (* 1150 3) (+ (* 1150 3) 150) 11353 :name "83c1"))
 	(c2 (make-eng2-room (+ (* 1150 3) 100 500 295) (* 1150 3) 11353 :name "83c2"))
 	(d1 (make-eng2-room (* 1150 3) 150 -8121 :name "83d1"))
