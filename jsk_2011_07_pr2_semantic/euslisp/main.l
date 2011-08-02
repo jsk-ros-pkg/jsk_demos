@@ -86,6 +86,8 @@
 	(send *ri* :wait-interpolation)
 	(clear-costmap)
 	(send *ri* :move-to opose)
+	(send *pr2* :head :look-at (send *pr2* :larm :end-coords :worldpos))
+	(send *ri* :head-angle-vector (send *pr2* :angle-vector) 1000)
 	(speak-jp "こっぷをもってきました")
 	(hand-over)
 	(return))
@@ -105,12 +107,12 @@
   ;;
   (when (member :pick args)
     (pr2-tuckarm-pose :larm)
-    (change-inflation-range 0.15) (initialize-costmap)
+    (change-inflation-range 0.20) (initialize-costmap)
     (ask-query-and-move "Cup" (cadr (member :pick args))))
   ;;
   (when (member :pick-kitchen args)
     (pr2-tuckarm-pose :larm)
-    (change-inflation-range 0.15) (initialize-costmap)
+    (change-inflation-range 0.20) (initialize-costmap)
     (ask-query-and-move "Cup" (cadr (member :pick-kitchen args))))
   )
 
@@ -119,6 +121,7 @@
   (init)  ;; for pr2 setup
   (init2) ;; for cup detection
 )
+(warn ";;(demo :pick \"cmu\")")
 ;(ask-query-and-move "Cup")
 ;(ros::spin)
 ;(exit)
