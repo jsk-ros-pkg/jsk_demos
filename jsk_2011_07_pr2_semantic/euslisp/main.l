@@ -64,15 +64,15 @@
       (speak-jp "こっぷをさがしています")
 	  (let ((neck-av (send *pr2* :head :angle-vector)))
 		(setq flag
-		  (or (check :timeout 10 :type name)
+		  (or (check :timeout 4 :type name)
 			(progn (send *pr2* :head :angle-vector (v+ #f(20 0) neck-av))
 				   (send *ri* :angle-vector (send *pr2* :angle-vector) 500)
 				   (send *ri* :wait-interpolation)
-				   (check :timeout 10 :type name))
+				   (check :timeout 4 :type name))
 			(progn (send *pr2* :head :angle-vector (v+ #f(-20 0) neck-av))
 				   (send *ri* :angle-vector (send *pr2* :angle-vector) 500)
 				   (send *ri* :wait-interpolation)
-				   (check :timeout 10 :type name)))
+				   (check :timeout 4 :type name)))
 		  ))
       (when flag
 	(speak-jp "こっぷがみつかりました")
