@@ -66,6 +66,7 @@
 
 
 (defun hand-over () ;;  only larm
+  (ros::spin-once)
   (let ((client (instance ros::simple-action-client :init "/l_gripper_sensor_controller/event_detector" pr2_gripper_sensor_msgs::PR2GripperEventDetectorAction))
 	(goal (instance pr2_gripper_sensor_msgs::PR2GripperEventDetectorActionGoal :init))
 	(av (send *ri* :state :potentio-vector))
@@ -79,9 +80,9 @@
 		   )))
     (send *ri* :angle-vector-sequence avs (list 1000 1000 1000))
     (send *ri* :wait-interpolation)
-    (send *pr2* :head :look-at (send (send *pr2* :larm :end-coords) :worldpos))
-    (send *ri* :angle-vector (send *pr2* :angle-vector))
-    (send *ri* :wait-interpolation)
+;    (send *pr2* :head :look-at (send (send *pr2* :larm :end-coords) :worldpos))
+;    (send *ri* :head-angle-vector (send *pr2* :angle-vector) 1000)
+;    (send *ri* :wait-interpolation)
     (send goal :header :stamp (ros::time-now))
     (send goal :goal_id :stamp (ros::time-now))
     ;;  (send goal :goal :command :trigger_conditions pr2_gripper_sensor_msgs::PR2GripperEventDetectorCommand::*FINGER_SIDE_IMPACT_OR_SLIP_OR_ACC*)
