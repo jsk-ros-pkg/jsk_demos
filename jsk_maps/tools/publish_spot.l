@@ -81,8 +81,9 @@
     ))
 
 (ros::advertise *pub-spots-topic* visualization_msgs::MarkerArray 5)
+(dotimes (i 3) (pub-spot))
 (do-until-key
- (ros::rate 0.01)
+ (ros::rate 0.1)
  (pub-spot)
  (ros::spin-once)
  (ros::sleep))
