@@ -67,30 +67,35 @@
 
 (defun hand-over () ;;  only larm
   (let ((client (instance ros::simple-action-client :init "/l_gripper_sensor_controller/event_detector" pr2_gripper_sensor_msgs::PR2GripperEventDetectorAction))
-		(goal (instance pr2_gripper_sensor_msgs::PR2GripperEventDetectorActionGoal :init))
-		(av (send *ri* :state :potentio-vector))
-		(avs (list #f(12.7338 -0.025174 65.3145 70.0513 -93.0477 24.3934
-					  -114.929 159.99 -5.00284 74.2661 -104.991 -90.0351
-					  69.9982 -5.32433 19.9689 -0.035619 -3.906)
-				   #f(12.7313 -0.091677 65.4018 70.0881 -110.296 -72.2013
-					  -114.981 159.993 -5.00284 74.2612 -105.001 -90.0019
-					  69.9982 -5.32433 20.0038 -0.029619 -3.906))))
-  (send *ri* :angle-vector-sequence avs (list 1000 1000))
-  (send *ri* :wait-interpolation)
-  (send goal :header :stamp (ros::time-now))
-  (send goal :goal_id :stamp (ros::time-now))
-;;  (send goal :goal :command :trigger_conditions pr2_gripper_sensor_msgs::PR2GripperEventDetectorCommand::*FINGER_SIDE_IMPACT_OR_SLIP_OR_ACC*)
-  (send goal :goal :command :trigger_conditions pr2_gripper_sensor_msgs::PR2GripperEventDetectorCommand::*SLIP*)
-  (send goal :goal :command :slip_trigger_magnitude 0.01)
-  (send goal :goal :command :acceleration_trigger_magnitude 4.0)
-  (send client :send-goal goal)
-  (send client :wait-for-result)
-  (send *ri* :move-gripper :larm 0.08 :wait t)
-  (send *ri* :angle-vector-sequence (append (cdr (reverse avs)) (list av))
-		(list 1000 1000))
-  (send *ri* :move-gripper :larm 0.00 :wait nil)
-  (send *ri* :wait-interpolation)
-  ))
+	(goal (instance pr2_gripper_sensor_msgs::PR2GripperEventDetectorActionGoal :init))
+	(av (send *ri* :state :potentio-vector))
+	(avs (list #f(12.7338 -0.025174 65.3145 70.0513 -93.0477 24.3934
+			      -114.929 159.99 -5.00284 74.2661 -104.991 -90.0351
+			      69.9982 -5.32433 19.9689 -0.035619 -3.906)
+		   #f(12.7313 -0.091677 65.4018 70.0881 -110.296 -72.2013
+			      -114.981 159.993 -5.00284 74.2612 -105.001 -90.0019
+			      69.9982 -5.32433 20.0038 -0.029619 -3.906)
+		   #f(14.1073 1.10352 52.3712 60.5681 -106.423 -87.0543 -108.372 159.898 -5.00284 74.2612 -105.001 -90.0019 69.9982 -5.72958 20.0038 -0.029619 -3.906)
+		   )))
+    (send *ri* :angle-vector-sequence avs (list 1000 1000 1000))
+    (send *ri* :wait-interpolation)
+    (send *pr2* :head :look-at (send (send *pr2* :larm :end-coords) :worldpos))
+    (send *ri* :angle-vector (send *pr2* :angle-vector))
+    (send *ri* :wait-interpolation)
+    (send goal :header :stamp (ros::time-now))
+    (send goal :goal_id :stamp (ros::time-now))
+    ;;  (send goal :goal :command :trigger_conditions pr2_gripper_sensor_msgs::PR2GripperEventDetectorCommand::*FINGER_SIDE_IMPACT_OR_SLIP_OR_ACC*)
+    (send goal :goal :command :trigger_conditions pr2_gripper_sensor_msgs::PR2GripperEventDetectorCommand::*SLIP*)
+    (send goal :goal :command :slip_trigger_magnitude 0.01)
+    (send goal :goal :command :acceleration_trigger_magnitude 4.0)
+    (send client :send-goal goal)
+    (send client :wait-for-result)
+    (send *ri* :move-gripper :larm 0.08 :wait t)
+    (send *ri* :angle-vector-sequence (append (cdr (reverse avs)) (list av))
+	  (list 1000 1000))
+    (send *ri* :move-gripper :larm 0.00 :wait nil)
+    (send *ri* :wait-interpolation)
+    ))
 
 (defun objectdetection (msg)
  (let ((obj (car (send msg :objects))) (av (send *pr2* :angle-vector))
