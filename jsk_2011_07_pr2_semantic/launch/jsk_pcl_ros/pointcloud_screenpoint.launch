@@ -5,10 +5,10 @@
   <!-- <arg name="points" default="/tilt_laser_cloud2"/> -->
   <arg name="points" default="/camera/rgb/points"/>
   <node name="pointcloud_screenpoint" pkg="nodelet" type="nodelet"
-	args="manager" machine="c1" output="screen"/>
+	args="manager" output="screen" respawn="true"/>
   <node name="depth_image_creator_nodelet" pkg="nodelet" type="nodelet"
         args="load jsk_pcl/DepthImageCreator pointcloud_screenpoint"
-	output="screen"	machine="c1" clear_params="true">
+	output="screen" clear_params="true" respawn="true">
     <remap from="~info" to="$(arg image)/camera_info" />
     <remap from="~input" to="$(arg points)" />
     <remap from="~output_cloud" to="/pointcloud_screenpoint/points" />
@@ -22,7 +22,7 @@
     </rosparam>
   </node>
   <node name="pointcloud_screenpoint_nodelet" pkg="nodelet"
-	type="nodelet" machine="c1" output="screen"
+	type="nodelet" output="screen" respawn="true"
   	args="load jsk_pcl/PointcloudScreenpoint pointcloud_screenpoint" >
     <remap from="~points" to="/pointcloud_screenpoint/points" />
   </node>
