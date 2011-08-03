@@ -71,6 +71,7 @@
 			      (make-coords :pos (v+ (send c :worldpos) #f(0 0 2000)))
 			      header
 			      :ns "text"
+			      :scale 200
 			      :id id)
 	    msgs)
       (incf id)
@@ -81,7 +82,7 @@
 
 (ros::advertise *pub-spots-topic* visualization_msgs::MarkerArray 5)
 (do-until-key
- (ros::rate 0.1)
+ (ros::rate 0.01)
  (pub-spot)
  (ros::spin-once)
  (ros::sleep))
