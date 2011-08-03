@@ -62,7 +62,7 @@
     (send *ri* :angle-vector-sequence
 	  (append (cdr (reverse (car avs))) (list av)) (reverse (cadr avs)))
     (send *ri* :wait-interpolation)
-    ))
+    t ))
 
 
 (defun hand-over () ;;  only larm
