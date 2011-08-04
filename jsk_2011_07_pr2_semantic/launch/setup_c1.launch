@@ -1,0 +1,4 @@
+<launch>
+  <include file="$(find jsk_2011_07_pr2_semantic)/launch/jsk_pcl_ros/pointcloud_screenpoint.launch"/>
+</launch>
+
