@@ -157,6 +157,9 @@
     (make-cascoords-tree
      (find "/eng2/8f" (send map :descendants)
 	   :test #'string= :key #'(lambda(x)(send x :name)))
+     '(:rot #2f((0.0 -1.0 0.0) (1.0 0.0 0.0) (0.0 0.0 1.0))
+	    :pos #f(-2900 -4750 0.0)
+	    :name "/eng2/8f/mini-kitchen-A-inside")
      '(:rot #2f((0.0 1.0 0.0) (-1.0 0.0 0.0) (0.0 0.0 1.0))
 	    :pos #f(3100.0 -31250.0 0.0)
 	    :name "/eng2/8f/elevator_call_panel-front")
