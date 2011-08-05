@@ -195,10 +195,10 @@
             :knowrob-type "ProfessorsOffice"))
         (d4 (make-eng2-room (+ (* 1150 3) 100 500 295) 0 -8121 :name "73d4"
             :knowrob-type "ProfessorsOffice"))
-		(7a-mini-kitchen
+        (7a-mini-kitchen
             (make-eng2-room (+ 850 400) 0 -2000 :name "7a-mini-kitchen"
             :knowrob-type (list "Kitchen" "UtilityRoom")))
-		 )
+        )
     (send a1 :set-color :deeppink)
     (send a2 :set-color :lightpink)
     (send a3 :set-color :lawngreen)
@@ -234,9 +234,9 @@
     (send a2 :locate (float-vector 0 (* 3 1150) 0))
     (send a1 :assoc a2)
     (send 7a-mini-kitchen :locate
-		  (float-vector -300 (- (+ (* 3 1150) 2000 250)) 0))
-	(send 7a-mini-kitchen :rotate pi/2 :z)
-	(send a1 :assoc 7a-mini-kitchen)
+      (float-vector -300 (- (+ (* 3 1150) 2000 250)) 0))
+    (send 7a-mini-kitchen :rotate pi/2 :z)
+    (send a1 :assoc 7a-mini-kitchen)
     (send a1 :locate (float-vector 0 (+ (* 3 1150) 150) 0))
 
     (send b1 :locate (float-vector 2020 0 0))
@@ -372,7 +372,11 @@
 	(d1 (make-eng2-room (* 1150 3) 150 -8121 :name "83d1"))
 	(d2 (make-eng2-room (* 1150 3) 0 -8121 :name "83d2"))
 	(d3 (make-eng2-room (* 1150 3) 0 -8121 :name "83d3"))
-	(d4 (make-eng2-room (+ (* 1150 3) 100 500 295) 0 -8121 :name "83d4")))
+	(d4 (make-eng2-room (+ (* 1150 3) 100 500 295) 0 -8121 :name "83d4"))
+        (8a-mini-kitchen
+            (make-eng2-room (+ 850 400) 0 -2000 :name "8a-mini-kitchen"
+            :knowrob-type (list "Kitchen" "UtilityRoom")))
+        )
     (setf (get a1 :face-color) :deeppink)
     (setf (get a2 :face-color) :lightpink)
     (setf (get a3 :face-color) :lawngreen)
@@ -405,6 +409,10 @@
     (send a2 :assoc a3)
     (send a2 :locate (float-vector 0 (* 3 1150) 0))
     (send a1 :assoc a2)
+    (send 8a-mini-kitchen :locate
+      (float-vector -300 (- (+ (* 3 1150) 2000 250)) 0))
+    (send 8a-mini-kitchen :rotate pi/2 :z)
+    (send a1 :assoc 8a-mini-kitchen)
     (send a1 :locate (float-vector 0 (+ (* 3 1150) 150) 0))
 
     (send b1 :locate (float-vector 2020 0 0))
@@ -415,16 +423,16 @@
     (send c1 :locate (float-vector (+ 33319 2020) 0 0))
     (send a1 :assoc c1)
     ;;
-    (list a1 a2 a3 a4 b1 b2 c1 c2 d1 d2 d3 d4)))
+    (list a1 a2 a3 a4 b1 b2 c1 c2 d1 d2 d3 d4 8a-mini-kitchen)))
 
 (defun eng2-2f-rooms ()
   (let ((21a  (make-eng2-room 0 (* 1150 6) 6500 :name "21a" :knowrob-type "LockerRoom"))
-		(21b2 (make-eng2-room 0 (* 1150 3) 9000 :name "21b2" :knowrob-type "ControlRoom"))
-		(22a  (make-eng2-room (* 1150 13) 0 18000 :name "22a" :knowrob-type "LectureHall"))
-		(22b  (make-eng2-room (* 1150 8) 0 18000 :name "22b" :knowrob-type "LaboratoryRoom"))
-;		(23a  (make-eng2-room 0 (* 1150 3) 8121 :name "23a" :knowrob-type ""))
-;		(23b  (make-eng2-room 0 (* 1150 3) 8121 :name "23b" :knowrob-type ""))
-		(subway (make-subway-scene :name "subway-shop")))
+        (21b2 (make-eng2-room 0 (* 1150 3) 9000 :name "21b2" :knowrob-type "ControlRoom"))
+        (22a  (make-eng2-room (* 1150 13) 0 18000 :name "22a" :knowrob-type "LectureHall"))
+        (22b  (make-eng2-room (* 1150 8) 0 18000 :name "22b" :knowrob-type "LaboratoryRoom"))
+;       (23a  (make-eng2-room 0 (* 1150 3) 8121 :name "23a" :knowrob-type ""))
+;       (23b  (make-eng2-room 0 (* 1150 3) 8121 :name "23b" :knowrob-type ""))
+        (subway (make-subway-scene :name "subway-shop")))
 	(send 21a :locate (float-vector -7500 -39200 0))
 	(send 21a  :orient pi/2 :z)
 	(send 21b2  :locate (float-vector 8700 -35500 0))
