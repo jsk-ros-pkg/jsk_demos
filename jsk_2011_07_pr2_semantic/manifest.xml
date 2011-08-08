@@ -8,6 +8,9 @@
   <license>BSD</license>
   <review status="unreviewed" notes=""/>
   <url>http://ros.org/wiki/jsk_2011_07_pr2_semantic</url>
+  <export>
+    <rosdoc config="rosdoc.yaml" />
+  </export>
 
   <depend package="pr2eus"/>
   <depend package="json_prolog"/>

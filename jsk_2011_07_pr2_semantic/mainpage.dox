@@ -2,7 +2,12 @@
 \mainpage
 \htmlinclude manifest.html
 
-\b jsk_2011_07_pr2_semantic is ... 
+\b jsk_2011_07_pr2_semantic is a package for demonstration.
+
+$ roslaunch jsk_pr2_startup pr2.launch
+$ roslaunch jsk_2011_07_pr2_semantic setup_demo.launch
+$ roslaunch jsk_2011_07_pr2_semantic setup_c1.launch
+$ roslaunch elevator_move_base_pr2 elevator_move_base_eng2.launch
 
 <!-- 
 Provide an overview of your package.
