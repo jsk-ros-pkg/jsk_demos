@@ -15,6 +15,10 @@
     (send *pr2* :angle-vector (send *ri* :state :potentio-vector))
     (setq arm (check-tuckarm-pose))
 
+	;; if the free-arm is grasping something // TODO: smart arm change motion
+	(when (and arm (< 0.005 (send *ri* arm :start-grasp)))
+	  (pr2-tuckarm-pose (car (delete arm (list :larm :rarm)))))
+
     ;; via-coords
     (setq via-coords (send (send target-coords :copy-worldcoords)
 :translate (scale 100 (normalize-vector (v- (send *pr2* :narrow_stereo_optical_frame :worldpos) (send target-coords :worldpos)))) :world))
