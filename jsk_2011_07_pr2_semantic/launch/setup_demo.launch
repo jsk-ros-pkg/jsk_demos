@@ -44,4 +44,13 @@
   <include file="$(find jsk_2011_07_pr2_semantic)/launch/jsk_pcl_ros/pointcloud_screenpoint.launch"/>
  <!-- for collision avoidance in arm planning -->
   <include file="$(find pr2eus_openrave)/launch/pr2_openrave_armplan.launch"/>
+  <sphinxdoc><![CDATA[
+This script starts detector of cup-texture.
+
+.. image:: data/cup-cotesys.jpg
+  :width: 200
+
+  ]]></sphinxdoc>
+
+
 </launch>
