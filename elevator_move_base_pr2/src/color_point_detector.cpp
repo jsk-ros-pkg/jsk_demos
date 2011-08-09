@@ -3,6 +3,7 @@
 #include <opencv/cv.h>
 #include <opencv/highgui.h>
 #include <cv_bridge/CvBridge.h>
+#include <cv_bridge/cv_bridge.h>
 #include <image_geometry/pinhole_camera_model.h>
 #include <tf/transform_listener.h>
 #include <posedetection_msgs/ObjectDetection.h>
@@ -15,7 +16,7 @@ class FrameDrawer
   ros::NodeHandle nh_, private_nh_;
   image_transport::ImageTransport it_;
   image_transport::CameraSubscriber imgsub_;
-  image_transport::Publisher pub_;
+  image_transport::Publisher debug_pub_;
   ros::Subscriber pointsub_;
   ros::Publisher result_pub_;
   tf::TransformListener tf_listener_;
@@ -29,13 +30,13 @@ class FrameDrawer
   std::vector<tf::StampedTransform> button_pose_;
 
 public:
-  FrameDrawer() : it_(nh_), private_nh_("~")
+  FrameDrawer() : private_nh_("~"), it_(private_nh_)
   {
     std::string image_topic = nh_.resolveName("image");
     std::string point_topic = nh_.resolveName("view_target");
     imgsub_ = it_.subscribeCamera(image_topic, 100, &FrameDrawer::imageCb, this);
     pointsub_ = nh_.subscribe(point_topic, 1, &FrameDrawer::pointCb, this);
-    pub_ = it_.advertise("image_out", 1);
+    debug_pub_ = it_.advertise("debug_image", 1);
     result_pub_ = nh_.advertise<std_msgs::Float32>("light_button", 1);
 
     int r,g,b;
@@ -76,35 +77,59 @@ public:
       return;
     }
 
-    std::vector<CvScalar> colbuf;
-    for(int i = 0; i < 121; i++){
-      double px = i/11, py = i%11;
-      cv::Point2d uv(x + (5-px)*r/5, y + (5-py)*r/5);
-      if(0<=uv.x && uv.x < image->width-1 && 0<=uv.y && uv.y < image->height-1){
-	colbuf.push_back(cvGet2D(image, (int)uv.y, (int)uv.x));
+    // output debug image
+    sensor_msgs::CvBridge debug_bridge;
+    debug_bridge.fromImage (*image_msg, "bgr8");
+    IplImage* src_imgipl = debug_bridge.toIpl();
+    cv::Mat img(src_imgipl);
+    
+    // calcurate the score
+    double max_score = -1e9;
+    int ix[] = {0,1,0,-1,0}, iy[] = {0,0,1,0,-1};
+    for(int ind=0; ind<5; ind++) {
+      std::vector<CvScalar> colbuf;
+      for(int i = 0; i < 121; i++){
+	double px = i/11, py = i%11;
+	cv::Point2d uv(x + (5-px)*r/5 + r*ix[ind], y + (5-py)*r/5 + r*iy[ind]);
+	if(0<=uv.x && uv.x < image->width-1 && 0<=uv.y && uv.y < image->height-1){
+	  colbuf.push_back(cvGet2D(image, (int)uv.y, (int)uv.x));
+	}
       }
+
+      // check yellow point
+      std::vector<double> vscore;
+      for(std::vector<CvScalar>::iterator it=colbuf.begin();it!=colbuf.end();it++)
+	{
+	  double lscore = 0.0;
+	  for(int i=0;i<3;i++)
+	    lscore += exp(-abs(target_color_.val[i] - it->val[i])/10.0);
+	  vscore.push_back(lscore);
+	}
+
+      std::sort(vscore.begin(), vscore.end());
+      double score = vscore[vscore.size()*3/4];
+      if(max_score < score) { max_score = score; }
+
+      // for debug image
+      cv::circle(img, cv::Point2f(x + r*ix[ind], y + r*iy[ind]), r, CV_RGB(255,0,0), 3);
+      char text[32];
+      sprintf(text, "%.3f", score);
+      cv::putText (img, std::string(text), cv::Point(x-30+4*r*ix[ind], y+70+r+r*iy[ind]),
+		   0, 0.7, CV_RGB(0,0,0),
+		   2, 8, false);
+
     }
-
-    // check yellow point
-    std::vector<double> vscore;
-    for(std::vector<CvScalar>::iterator it=colbuf.begin();it!=colbuf.end();it++)
-    {
-      double lscore = 0.0;
-      for(int i=0;i<3;i++)
-	lscore += exp(-abs(target_color_.val[i] - it->val[i])/10.0);
-      vscore.push_back(lscore);
-    }
-
-    std::sort(vscore.begin(), vscore.end());
-    double score = vscore[vscore.size()*3/4];
-
-    ROS_INFO("yellow score = %f",score);
 
     std_msgs::Float32 score_msg;
-    score_msg.data = score;
+    score_msg.data = max_score;
     result_pub_.publish(score_msg);
 
-    pub_.publish(bridge_.cvToImgMsg(image, "bgr8"));
+    // publish debug image
+    cv_bridge::CvImage out_msg;
+    out_msg.header   = image_msg->header;
+    out_msg.encoding = "bgr8";
+    out_msg.image    = img;
+    debug_pub_.publish(out_msg.toImageMsg());
   }
 
 };
