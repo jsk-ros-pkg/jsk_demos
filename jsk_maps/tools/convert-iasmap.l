@@ -182,20 +182,18 @@
     semobj
 	))
 
-
-
-(defun convert-objs->semobjs (objs &optional (pid 0))
-  (let ((semobjs nil) type (id 0))
-    (dolist (ob objs)
-	  (when (or (find-method ob :box) (find-method ob :bodies))
-		(progn
-		  (setq type (conversion-rule (string-downcase (send ob :name))))
-		  (when type
-			(incf id)
-			(push (convert-obj->semantic-bbox id ob type pid) semobjs)
-;;			(append semobjs (convert-objs->semobjs (send ob :descendants) id))
-			))))
-    semobjs ))
+;; (defun convert-objs->semobjs (objs &optional (pid 0))
+;;   (let ((semobjs nil) type (id 0))
+;;     (dolist (ob objs)
+;; 	  (when (or (find-method ob :box) (find-method ob :bodies))
+;; 		(progn
+;; 		  (setq type (conversion-rule (string-downcase (send ob :name))))
+;; 		  (when type
+;; 			(incf id)
+;; 			(push (convert-obj->semantic-bbox id ob type pid) semobjs)
+;; ;;			(append semobjs (convert-objs->semobjs (send ob :descendants) id))
+;; 			))))
+;;     semobjs ))
 
 (defun dump-properties (obj fd)
   (let* ((properties (get obj :knowrob-properties)) (prop-str "") prop)
@@ -296,26 +294,24 @@
 	  (call-mod-semmap (append floors rooms objs)))
 	))
 
-(defun call-mod-semmap (objs)
-  (setq *id* 0)
-  (let ((req (instance mod_semantic_map::GenerateSemanticMapOWLRequest :init))
-	res (offset 0))
-	(send req :map :header :frame_id "http://www.jsk.t.u-tokyo.ac.jp/jsk_msp.owl#")
-	(send req :map :header :stamp (ros::time-now))
-	(setq semobjs (convert-objs->semobjs objs)) ;; convert
-	(send req :map :objects semobjs)
-	(setq res (ros::service-call *srvname* req))
-	(send res :owlmap) ;; output xml string
-    ))
-
-
+;; (defun call-mod-semmap (objs)
+;;   (setq *id* 0)
+;;   (let ((req (instance mod_semantic_map::GenerateSemanticMapOWLRequest :init))
+;; 	res (offset 0))
+;; 	(send req :map :header :frame_id "http://www.jsk.t.u-tokyo.ac.jp/jsk_msp.owl#")
+;; 	(send req :map :header :stamp (ros::time-now))
+;; 	(setq semobjs (convert-objs->semobjs objs)) ;; convert
+;; 	(send req :map :objects semobjs)
+;; 	(setq res (ros::service-call *srvname* req))
+;; 	(send res :owlmap) ;; output xml string
+;;     ))
 
 (load "package://jsk_maps/src/eng2-scene.l")
-(defun srv ()
-  (ros::roseus "hoge")
-  (ros::wait-for-service *srvname*)
-  (setq *scene* (make-eng2-scene))
-  (dump-building->yaml "dummy" *scene* :srv))
+;; (defun srv ()
+;;   (ros::roseus "hoge")
+;;   (ros::wait-for-service *srvname*)
+;;   (setq *scene* (make-eng2-scene))
+;;   (dump-building->yaml "dummy" *scene* :srv))
 
 (defun yaml (&optional (type :eng2) &key (filename "eng2.yaml") (view nil))
   (case type
@@ -359,8 +355,8 @@
 	  ;;
 	  (add-to-room cup1 73a3)
 	  (add-to-room cupf1 73a3)
-	  (send cup1 :translate (float-vector 4350 700 700))
-	  (send cupf1 :translate (float-vector 4350 1400 0))
+	  (send cup1 :translate (float-vector 4550 700 700))
+	  (send cupf1 :translate (float-vector 4550 1400 0))
 	  (send cupf1 :orient -pi/2 :z)
 	  (push-knowrob-properties cupf1 "inFrontOf-Generally" cup1)
 	  (push-knowrob-properties cup1 "linkToImageFile" "http://jsk-ros-pkg.svn.sourceforge.net/viewvc/jsk-ros-pkg/trunk/demos/jsk_2011_07_pr2_semantic/data/cup-cotesys.jpg")
@@ -421,4 +417,4 @@
 	  scene
 	  )))
 
-(format t "type (yaml) or (srv)~%")
+(format t "type (yaml)~%")
