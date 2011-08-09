@@ -47,13 +47,17 @@ def process_msg ():
         cv.MatchTemplate(cv_image, tempimg, results, tempmethod)
 
         status = cv.MinMaxLoc(results)
-
-        if (tempmethod == cv.CV_TM_SQDIFF_NORMED and status[0] < tempthre):
-            result.data += tempname+' '
-            reslist += [(tempname,(status[0],status[2]))]
-        if (tempmethod != cv.CV_TM_SQDIFF_NORMED and tempthre < status[1]):
-            result.data += tempname+' '
-            reslist += [(tempname,(status[1],status[3]))]
+        if (tempmethod == cv.CV_TM_SQDIFF_NORMED):
+            found = ( status[0] < tempthre ) 
+            reslist += [(tempname,(status[0],status[2],tempthre,found))]
+            if found :
+                result.data += tempname+' '
+        else :
+            found = (tempthre < status[1] )
+            reslist += [(tempname,(status[1],status[3],tempthre,found))]
+            if found :
+                result.data += tempname+' '
+        print reslist
 
     result_pub.publish(result)
     publish_debug(cv_image, reslist)
@@ -75,13 +79,21 @@ def publish_debug(img, results):
         cv.SetImageROI(output, (cur_x, 0, size[0], size[1]))
         cv.Copy(template[1], output)
         cur_x += size[0]
+
+        #cv.PutText(output, tempname, (0,size[1]-16), font, cv.CV_RGB(255,255,255))
+        #cv.PutText(output, str(tempthre)+'<'+str(status[1]), (0,size[1]-8), font, cv.CV_RGB(255,255,255))
         for _,status in [s for s in results if s[0] == template[3]]:
             print status
-            cv.Rectangle(output, (0, 0), size, cv.RGB(255,255,255), 9)
+            cv.PutText(output, template[3], (0,size[1]-42), font, cv.CV_RGB(255,255,255))
+            cv.PutText(output, "%7.5f"%(status[0]), (0,size[1]-24), font, cv.CV_RGB(255,255,255))
+            cv.PutText(output, "%7.5f"%(status[2]), (0,size[1]-8), font, cv.CV_RGB(255,255,255))
+            if status[3] : 
+                cv.Rectangle(output, (0, 0), size, cv.RGB(255,255,255), 9)
         cv.SetImageROI(output, view_rect)
         for _,status in [s for s in results if s[0] == template[3]]:
             pt2 = (status[1][0]+size[0], status[1][1]+size[1])
-            cv.Rectangle(output, status[1], pt2, cv.RGB(255,255,255), 5)
+            if status[3] : 
+                cv.Rectangle(output, status[1], pt2, cv.RGB(255,255,255), 5)
 
     cv.ResetImageROI(output)
     debug_pub.publish(bridge.cv_to_imgmsg(output, encoding="passthrough"))
@@ -107,7 +119,8 @@ def resolve_ros_path(path):
 if __name__=='__main__':
     rospy.init_node('match_template')
 
-    global templates, result_pub
+    global templates, result_pub, font
+    font = cv.InitFont(cv.CV_FONT_HERSHEY_SIMPLEX, 0.5, 0.5, 0.0, 1, cv.CV_AA)
     template_list = rospy.get_param('~template_list').split()
     templates = [[typename,cv.LoadImage(resolve_ros_path(rospy.get_param('~template/'+typename+'/path')),cv.CV_LOAD_IMAGE_GRAYSCALE),rospy.get_param('~template/'+typename+'/thre'),rospy.get_param('~template/'+typename+'/name',''),rospy.get_param('~template/'+typename+'/method','')] for typename in template_list]
 
