@@ -31,8 +31,9 @@
 	((not (equal (read-from-string (send msg :header :frame_id)) 'knowrob))
 	 (return-from str-cb nil)))
   (ros::ros-info "Got ~A" (send msg :selection))
-  (let* ((infront-of "'http://ias.cs.tum.edu/kb/knowrob.owl#inFrontOf-Generally'")
-	 (obj (format nil "http://www.jsk.t.u-tokyo.ac.jp/jsk_map.owl#cup-~A" (send msg :selection))) solutions robot-pose opose)
+  (let* ((name (send msg :selection))
+	 (infront-of "'http://ias.cs.tum.edu/kb/knowrob.owl#inFrontOf-Generally'")
+	 (obj (format nil "http://www.jsk.t.u-tokyo.ac.jp/jsk_map.owl#cup-~A" name)) solutions robot-pose opose)
     (print obj)
     (setq solutions
 	  (send *jp* :query
@@ -41,21 +42,19 @@
 		       `(owl_has :spot ,infront-of :obj))) :pose '("OBJ" "SPOT")))
     (setq solutions (list (elt solutions 0)))
     (setq obj (cadr (assoc "OBJ" (car solutions) :test #'string=)))
-    (setq robot-pose (cadr (assoc "POSE_SPOT" (car solutions) :test #'string=)))
-    (print solutions)
+    (setq robot-pose (cadr (assoc "POSE_SPOT" (car solutions) :test #'equal)))
+    (setq obj-pose (cadr (assoc "POSE_OBJ" (car solutions) :test #'equal)))
+
     (setq opose (send *tfl* :lookup-transform "/map" "/base_footprint" (ros::time 0)))
     (ros::spin-once)
-    (send *pr2* :angle-vector (send *ri* :state :potentio-vector))
-    (send *pr2* :head :angle-vector #f(0 0))
-    (send *pr2* :torso :angle-vector #f(0))
-    (send *ri* :angle-vector (send *pr2* :angle-vector) 2000)
+
+    (pr2-tuckarm-pose :larm)
     (clear-costmap)
     (send *ri* :wait-interpolation)
     (ros::ros-info "GO to ~A" robot-pose)
     (send *ri* :move-to robot-pose)
     (ros::spin-once)
     (send *pr2* :move-to (send *tfl* :lookup-transform "/map" "/base_footprint" (ros::time 0)) :world)
-    (setq obj-pose (cadr (assoc "POSE_OBJ" solutions :test #'equal)))
     (send *pr2* :head :look-at (send obj-pose :worldpos))
     (send *ri* :angle-vector (send *pr2* :angle-vector) 2000)
     (send *ri* :wait-interpolation)
@@ -88,7 +87,6 @@
       (return))
     (speak-jp "こっぷはみつかりませんでした")
     (pr2-tuckarm-pose :larm)
-
     ))
 
 ;;
