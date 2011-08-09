@@ -173,7 +173,7 @@
   (let* ((button (cdr (assoc 'button userdata)))
 	 (button-obj
 	   (find-if #'(lambda(o)(string= button (send o :name))) (flatten (send *panel* :inheritance)))))
-    (ros::ros-info "push button")
+    (ros::ros-info (format nil "push button> ~a" button-obj))
     (speak-jp "ぼたんをおします")
     (push-button button-obj)
     ))
@@ -190,7 +190,7 @@
       (ros::spin-once)
       (when (< 0.5 (send button-state :value))
 	(pprint 'button-light) (speak-jp "ぼたんがひかりました")
-	(pr2-tuckarm-pose :rarm)
+	(pr2-tuckarm-pose)
 	(return))
       (unix::usleep (* 100 1000)))
     ))
@@ -288,7 +288,7 @@
 
 (defun ready-to-outside (userdata)
   (clear-costmap)
-  (pr2-tuckarm-pose :rarm)
+  (pr2-tuckarm-pose)
   (send *ri* :go-pos 0 0 90)
 
   (update-robot-position)
@@ -394,7 +394,7 @@
     (set-alist 'outside-button up/down userdata)
     (set-alist 'target-coords target-coords userdata)
     (print (list cur-floor '-> target-floor up/down target-coords))
-    (pr2-tuckarm-pose :rarm) ;; temporary, safety pose
+    (pr2-tuckarm-pose) ;; temporary, safety pose
     (not up/down)))
 
 (defun elevator-smach ()
