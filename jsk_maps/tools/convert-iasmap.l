@@ -25,6 +25,7 @@
 	((substringp "desk" name) "Table-PieceOfFurniture")
 	((substringp "table" name) "Table-PieceOfFurniture")
 	((substringp "door" name) "Door")
+	((substringp "cashier" name) "CashRegister")
 	((substringp "drawer" name) "Drawer")
 	((substringp "oven" name) "Oven")
 	((substringp "refrigerator" name) "Refrigerator")
@@ -335,11 +336,12 @@
 	  (when move
 	    (send obj :move-to (send room :copy-worldcoords) :world))))
 	(let ((scene (make-eng2-scene))
-		  73b2 73a3 83b1
-		  cup1 cup2 cup3 cup4 cup5 cupf1 cupf2 cupf3 cupf4 cupf5)
+              73b2 73a3 83b1 subway
+              cup1 cup2 cup3 cup4 cup5 cupf1 cupf2 cupf3 cupf4 cupf5)
 	  ;;
 	  ;; add objects and relations here.
 	  ;;
+          (setq subway (car (send scene :find-object "/eng2/2f/subway-shop")))
 	  (setq 73b2 (car (send scene :find-object "/eng2/7f/73b2")))
 	  (setq kyuto7 (car (send scene :find-object "/eng2/7f/7a-mini-kitchen")))
 	  (setq kyuto8 (car (send scene :find-object "/eng2/8f/8a-mini-kitchen")))
@@ -351,7 +353,7 @@
                 cupf3 (car (send scene :find-object "/eng2/7f/room73B2-front-kitchen-table"))
                 cupf4 (make-cascoords :name "infront-of-cup")
 		cupf5 (car (send scene :find-object "/eng2/8f/mini-kitchen-A-inside"))
-		cupf6 (car (send scene :find-object "/eng2/7f/mini-kitchen-A-inside")))
+                cupf6 (car (send scene :find-object "/eng2/7f/mini-kitchen-A-inside")))
 	  ;;
 	  (add-to-room cup1 73a3)
 	  (add-to-room cupf1 73a3)
@@ -359,7 +361,8 @@
 	  (send cupf1 :translate (float-vector 4550 1400 0))
 	  (send cupf1 :orient -pi/2 :z)
 	  (push-knowrob-properties cupf1 "inFrontOf-Generally" cup1)
-	  (push-knowrob-properties cup1 "linkToImageFile" "http://jsk-ros-pkg.svn.sourceforge.net/viewvc/jsk-ros-pkg/trunk/demos/jsk_2011_07_pr2_semantic/data/cup-cotesys.jpg")
+	  ;;(push-knowrob-properties cup1 "linkToImageFile" "http://jsk-ros-pkg.svn.sourceforge.net/viewvc/jsk-ros-pkg/trunk/demos/jsk_2011_07_pr2_semantic/data/cup-cotesys.jpg")
+	  (push-knowrob-properties cup1 "linkToImageFile" "http://10.68.0.3/jsk-ros-pkg/demos/jsk_2011_07_pr2_semantic/data/cup-cotesys.jpg")
 	  ;;
 	  ;(add-to-room cup2 73b2)
 	  (add-to-room cup3 73b2)
@@ -379,9 +382,9 @@
 	  (push-knowrob-properties cupf2 "inFrontOf-Generally" cup2)
 	  (push-knowrob-properties cupf3 "inFrontOf-Generally" cup3)
 	  (push-knowrob-properties cupf4 "inFrontOf-Generally" cup4)
-	  (push-knowrob-properties cup2 "linkToImageFile" "http://jsk-ros-pkg.svn.sourceforge.net/viewvc/jsk-ros-pkg/trunk/demos/jsk_2011_07_pr2_semantic/data/mug-tea.jpg")
-	  (push-knowrob-properties cup3 "linkToImageFile" "http://jsk-ros-pkg.svn.sourceforge.net/viewvc/jsk-ros-pkg/trunk/demos/jsk_2011_07_pr2_semantic/data/cup-mit.jpg")
-	  (push-knowrob-properties cup4 "linkToImageFile" "http://jsk-ros-pkg.svn.sourceforge.net/viewvc/jsk-ros-pkg/trunk/demos/jsk_2011_07_pr2_semantic/data/cup-sumo.jpg")
+	  (push-knowrob-properties cup2 "linkToImageFile" "http://10.68.0.3/jsk-ros-pkg/demos/jsk_2011_07_pr2_semantic/data/mug-tea.jpg")
+	  (push-knowrob-properties cup3 "linkToImageFile" "http://10.68.0.3/jsk-ros-pkg/demos/jsk_2011_07_pr2_semantic/data/cup-mit.jpg")
+	  (push-knowrob-properties cup4 "linkToImageFile" "http://10.68.0.3/jsk-ros-pkg/demos/jsk_2011_07_pr2_semantic/data/cup-sumo.jpg")
 	  ;;
 	  (add-to-room cup5 kyuto8)
 	  (add-to-room cupf5 kyuto8 :move nil)
@@ -389,13 +392,18 @@
 	  ;;(send cup5 :translate (float-vector 3300 -300 700))
 	  ;;(send cupf5 :translate (float-vector 2800 -300 0))
 	  (push-knowrob-properties cupf5 "inFrontOf-Generally" cup5)
-	  (push-knowrob-properties cup5 "linkToImageFile" "http://jsk-ros-pkg.svn.sourceforge.net/viewvc/jsk-ros-pkg/trunk/demos/jsk_2011_07_pr2_semantic/data/cup-chen.jpg")
+	  (push-knowrob-properties cup5 "linkToImageFile" "http://10.68.0.3/jsk-ros-pkg/demos/jsk_2011_07_pr2_semantic/data/cup-chen.jpg")
 	  ;;
 	  (add-to-room cup6 kyuto7)
           (add-to-room cupf6 kyuto7 :move nil)
 	  (send cup6 :translate (float-vector 1800 600 700))
 	  (push-knowrob-properties cupf6 "inFrontOf-Generally" cup6)
-	  (push-knowrob-properties cup6 "linkToImageFile" "http://jsk-ros-pkg.svn.sourceforge.net/viewvc/jsk-ros-pkg/trunk/demos/jsk_2011_07_pr2_semantic/data/cup-cmu.jpg")
+	  (push-knowrob-properties cup6 "linkToImageFile" "http://10.68.0.3/jsk-ros-pkg/demos/jsk_2011_07_pr2_semantic/data/cup-cmu.jpg")
+	  ;;
+	  (push-knowrob-properties
+           (send scene :spot "/eng2/2f/subway-register")
+           "inFrontOf-Generally"
+           (car (send subway :find-object "subway-cashier")))
 	  ;;
 	  (dump-building->yaml filename scene :yaml :view view)
 	  ;; this is quick hack
