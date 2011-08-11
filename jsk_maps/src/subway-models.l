@@ -100,9 +100,9 @@
           (instance scene-model :init
                     :name n
                     :objects (flatten (list menu pole1 pole2
-											store cashier models
-											))))
+                              store cashier models
+                              ))))
 	;;
-	subway-shop))
+    subway-shop))
 
 ;(objects (list (make-subway-shop-scene)))
