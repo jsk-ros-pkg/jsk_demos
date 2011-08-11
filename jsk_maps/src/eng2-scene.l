@@ -139,7 +139,7 @@
 	    :name "/eng2/7f/room73A3-printer-front")
      '(:pos #f(3200 -31950 920) :rpy #f(1.5706 0 0)
 	    :name "/eng2/7f/elevator_call_panel")
-     '(:pos #f(2900 -33850 1000) :rpy #f(3.1416 0 0)
+     '(:pos #f(2900 -33800 1000) :rpy #f(3.1416 0 0)
 	    :name "/eng2/7f/elevator_inside_panel"))
     ;; 8F
     (let* ((8rms (eng2-8f-rooms)) trans
@@ -170,7 +170,7 @@
 	    :name "/eng2/8f/elevator-outside")
      '(:pos #f(3200 -31950 920) :rpy #f(1.5706 0 0)
 	    :name "/eng2/8f/elevator_call_panel")
-     '(:pos #f(2900 -33850 1000) :rpy #f(3.1416 0 0)
+     '(:pos #f(2900 -33800 1000) :rpy #f(3.1416 0 0)
 	    :name "/eng2/8f/elevator_inside_panel"))
 
 	;; elevator bounding box
