@@ -4,16 +4,16 @@ template:
     1F:
         name: /1f
         path: "package://elevator_move_base_pr2/elevator_numbers/eng2/1f.png"
-        thre: 0.05
+        thre: 0.11
     2F:
         name: /2f
         path: "package://elevator_move_base_pr2/elevator_numbers/eng2/2f.png"
-        thre: 0.05
+        thre: 0.11
     7F:
         name: /7f
         path: "package://elevator_move_base_pr2/elevator_numbers/eng2/7f.png"
-        thre: 0.05
+        thre: 0.11
     8F:
         name: /8f
         path: "package://elevator_move_base_pr2/elevator_numbers/eng2/8f.png"
-        thre: 0.05
+        thre: 0.11

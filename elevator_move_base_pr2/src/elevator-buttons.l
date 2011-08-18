@@ -3,7 +3,7 @@
 
 ;;
 (defun update-scene-by-tf (scene &optional (tm (ros::time 0)))
-  (let* ((objects (flatten (send scene :inheritance)))
+  (let* ((objects (send scene :objects))
 	 (fixed-frame (send scene :name)) ;; ok ?
 	 (fixed-obj (car (send scene :find-object fixed-frame)))
 	 (updated nil))
