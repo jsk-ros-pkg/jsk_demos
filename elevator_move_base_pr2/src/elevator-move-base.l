@@ -30,6 +30,8 @@
 (setq *map-name* nil) ;; load /map/header/frame_id
 (defvar *tfl* (instance ros::transform-listener :init))
 
+(load "package://elevator_move_base_pr2/src/navigation-client-addon.l")
+
 (defun init ()
   (ros::advertise "robotsound" sound_play::SoundRequest 5)
   (ros::advertise "view_target" geometry_msgs::PointStamped 1)
@@ -321,7 +323,7 @@
 (defun elevator-state-machine ()
   (let ((sm (instance state-machine :init))
 	(move-client (pr2-interface-move-base-action *ri*)))
-    (send sm :add-node (actionlib-client-state
+    (send sm :add-node (actionlib-client-state2
 			:move-front move-client :timeout 300 :retry t
 			:key 'coords->movebaseactiongoal))
     (send (send sm :node :move-front) :remap-list '((:goal . front-coords)))
@@ -330,14 +332,14 @@
 				 :remap-list '((panel-name . outside-panel-name) (button . outside-button))))
 ;    (send sm :add-node (instance state :init :check-elevator-empty 'check-until-elevator-empty))
     (send sm :add-node (instance state :init :speak-fail '(lambda(x)(speak-jp "にふんたちました") t)))
-    (send sm :add-node (actionlib-client-state
+    (send sm :add-node (actionlib-client-state2
 			:move-inside move-client :timeout 120 :retry t
 			:key 'coords->movebaseactiongoal))
     (send (send sm :node :move-inside) :remap-list '((:goal . inside-coords)))
     (send sm :add-node (instance state :init :push-inside (push-state-machine)
 				 :remap-list '((panel-name . inside-panel-name) (button . target-floor))))
     (send sm :add-node (instance state :init :ready-to-outside 'ready-to-outside))
-    (send sm :add-node (actionlib-client-state
+    (send sm :add-node (actionlib-client-state2
 			:move-outside move-client :timeout 60 :retry t
 			:key 'coords->movebaseactiongoal))
     (send (send sm :node :move-outside) :remap-list '((:goal . outside-coords)))
@@ -402,7 +404,7 @@
     (send sm :add-node (instance state :init :initial 'elevator-smach-initial))
     (send sm :add-node (instance state :init :speak-elevator '(lambda (x) (costmap-normal)  (speak-jp "えれべーたにのります") t)))
     (send sm :add-node (instance state :init :take-elevator (elevator-state-machine)))
-    (send sm :add-node (actionlib-client-state
+    (send sm :add-node (actionlib-client-state2
 			:go-to (pr2-interface-move-base-action *ri*)
 			:timeout 600 :retry t
 			:key 'coords->movebaseactiongoal))

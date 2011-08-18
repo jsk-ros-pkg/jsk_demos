@@ -6,34 +6,45 @@
 ;(load "package://manipserver_lib/euslisp/manip_client_lib.l")
 
 (defun push-button (target-coords)
-  (let (via-coords arm
-		   via-angle-vector org-arm-anglev
-		   (rarm-reset #f(-60 70 110 -120 160 -30 180)) ;; second element 80 -> 70
-		   (larm-reset #f(60 70 70 -120 -160 -30 180))) ;; second element 80 -> 70
+  (let (rayvec via-coords (arm :rarm)
+        via-angle-vector org-arm-anglev
+        (rarm-reset #f(-60 70 110 -120 160 -30 180)) ;; second element 80 -> 70
+        (larm-reset #f(60 70 70 -120 -160 -30 180))) ;; second element 80 -> 70
     ;; check push target simply from current tuckarm-pose
     (ros::spin-once)
     (send *pr2* :angle-vector (send *ri* :state :potentio-vector))
+    ;; if the free-arm is grasping something // TODO: smart arm change motion
+    (format t "grasp -> ~A~%" (send *ri* :start-grasp :arms))
+    (when (< 5 (send *ri* :start-grasp :larm))
+      (pr2-tuckarm-pose :rarm))
+    (when (< 5 (send *ri* :start-grasp :rarm))
+      (pr2-tuckarm-pose :larm))
+
     (setq arm (check-tuckarm-pose))
 
-	;; if the free-arm is grasping something // TODO: smart arm change motion
-	(when (and arm (< 0.005 (send *ri* arm :start-grasp)))
-	  (pr2-tuckarm-pose (car (delete arm (list :larm :rarm)))))
+
+    (setq rayvec (normalize-vector (v- (send *pr2* :narrow_stereo_optical_frame :worldpos) (send target-coords :worldpos))))
 
     ;; via-coords
     (setq via-coords (send (send target-coords :copy-worldcoords)
-:translate (scale 100 (normalize-vector (v- (send *pr2* :narrow_stereo_optical_frame :worldpos) (send target-coords :worldpos)))) :world))
+			   :translate (scale 100 rayvec) :world))
+    ;; push 20mm
+    (setq target-coords (send (send target-coords :copy-worldcoords)
+			      :translate (scale -10 rayvec) :world))
 ;    (setq via-coords (send (send target-coords :copy-worldcoords) :translate #f(-100 0 0) :world))
 
     (when arm
       (send *pr2* arm :angle-vector (case arm (:rarm rarm-reset)
 					  (:larm larm-reset)))
-      (unless (send *pr2* arm :inverse-kinematics target-coords :rotation-axis :x)
+      ;; check IK for free-arm is solvable
+      (unless (and arm (send *pr2* arm :inverse-kinematics target-coords :rotation-axis :x))
 	(setq *ik-fail-av*  (send *pr2* :angle-vector))
 	(setq *ik-fail-coords*  (send target-coords :copy-worldcoords))
 	(dump-loadable-structure (format nil "ik-fail-~d.l" (send (ros::time-now) :to-sec))
 				 *ik-fail-coords* *ik-fail-av*)
 	(setq arm nil)))
-    (send *pr2* :angle-vector (send *ri* :state))
+    (send *pr2* :angle-vector (send *ri* :state :potentio-vector))
+    ;;
 
     ;; reset-pose and select arm
     (unless arm
@@ -59,6 +70,12 @@
       (return-from push-button nil))
     (setq via-angle-vector (send *pr2* :angle-vector))
     (send *ri* :angle-vector (send *pr2* :angle-vector) 1500)
+    (send *ri* :wait-interpolation)
+
+    (send *pr2* arm :inverse-kinematics via-coords :rotation-axis :x
+	  :revert-if-fail nil)
+    (setq via-angle-vector (send *pr2* :angle-vector))
+    (send *ri* :angle-vector (send *pr2* :angle-vector) 500)
     (send *ri* :wait-interpolation)
 
     (unless
