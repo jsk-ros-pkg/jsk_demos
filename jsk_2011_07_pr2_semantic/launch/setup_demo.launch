@@ -1,9 +1,19 @@
 <launch>
+  <!-- start cpu and ntp monitor for pr1012t -->
+  <env name="LANG" value="C" />
+  <node pkg="pr2_computer_monitor" name="c3_cpu_monitor" type="cpu_monitor.py" args="--diag-hostname=c3" output="screen" >
+    <param name="check_core_temps" type="bool" value="False" />
+    <param name="check_ipmi_tool"  type="bool" value="False" />
+    <param name="enforce_clock_speed"  type="bool" value="False"/>
+    <param name="num_cores" value="8" type="int" />
+  </node>
+  <node pkg="pr2_computer_monitor" name="ntp_c3" type="ntp_monitor.py" args="c1 --diag-hostname=c3" />
 
   <!-- this needs knorwob/trunk -->
   <env name="JAVA_HOME" value="/usr/lib/jvm/java-6-openjdk"/>
   <node pkg="json_prolog" type="json_prolog" name="json_prolog">
-	<param name="initial_package" value="jsk_semantic_maps" />
+    <param name="initial_package" value="jsk_semantic_maps" />
+    <param name="goal" value="scene1." /> <!-- startup scene1 -->
   </node>
 
   <node pkg="jsk_perception" type="point_pose_extractor"
@@ -18,8 +28,8 @@
   <node pkg="jsk_perception" type="point_pose_extractor"
 	name="cup_detector2" ns="/narrow_stereo/left">
     <remap from="ObjectDetection" to="/ObjectDetection"/>
-    <param name="template_filename" value="$(find jsk_2011_07_pr2_semantic)/data/sift-chen.png"/>
-    <param name="window_name" value="chen_cup"/>
+    <param name="template_filename" value="$(find jsk_2011_07_pr2_semantic)/data/sift-mit.png"/>
+    <param name="window_name" value="mit_cup"/>
     <param name="object_width" value="0.055"/>
     <param name="object_height" value="0.062"/>
     <param name="viewer_window" value="false" /> <!-- to disable window-->
@@ -35,13 +45,15 @@
   </node>
   
   <!-- for gripper action -->
-  <machine name="c1" address="pr1012" ros-root="$(env ROS_ROOT)"
+  <machine name="c1" address="c1" ros-root="$(env ROS_ROOT)"
   	   ros-package-path="$(env ROS_PACKAGE_PATH)"/>
-  <machine name="c2" address="pr1012s" ros-root="$(env ROS_ROOT)"
+  <machine name="c2" address="c2" ros-root="$(env ROS_ROOT)"
   	   ros-package-path="$(env ROS_PACKAGE_PATH)"/>
   <include file="$(find jsk_2011_07_pr2_semantic)/launch/pr2_gripper_sensor_action/pr2_gripper_sensor_actions.launch"/>
   <!-- for accurate object position -->
+  <!-- launch on c1
   <include file="$(find jsk_2011_07_pr2_semantic)/launch/jsk_pcl_ros/pointcloud_screenpoint.launch"/>
+  -->
  <!-- for collision avoidance in arm planning -->
   <include file="$(find pr2eus_openrave)/launch/pr2_openrave_armplan.launch"/>
   <sphinxdoc><![CDATA[

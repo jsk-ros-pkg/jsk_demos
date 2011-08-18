@@ -47,10 +47,11 @@
 	  :pose '("OBJ" "SPOT"))
     ))
 
-(defun find-typical-place-omics
+(defun typical-place-to-buy-omics
   (&optional (objtype "Cup"))
   (let* ((knowrob "http://ias.cs.tum.edu/kb/knowrob.owl")
 	 (rdftype  (format nil "'~a#~a'" knowrob objtype))
+	 (cashier (format nil "'~a#CashRegister'" knowrob))
 	 (omicsloc (format nil "'~a#OmicsLocations'" knowrob))
 	 (incont  (format nil "'~a#in-ContGeneric'" knowrob))
 	 (infront-of (format nil "'~a#inFrontOf-Generally'" knowrob))
@@ -63,21 +64,21 @@
         (reverse :_Sorted :_Rev)
         (nth0 0 :_Rev #(:Prob :Type))
         (findall :_R (owl_individual_of :_R :Type) :_Rs)
-	(get_sorted_path_costs ,robot :_Rs :_SortRs)
-        (member :Room :_SortRs)
+	;(get_sorted_path_costs ,robot :_Rs :_SortRs)
+        (member :Room :_Rs)
         (rdf_triple ,incont :Spot :Room)
         (rdf_has :Spot "rdf:type" ,place)
-        (owl_has :Spot ,infront-of :obj)
-	("lookForObjT" ,rdftype :obj)
-        (object_info :obj "[IMAGE|_]")))
-      :pose '("OBJ" "SPOT"))
+	(rdf_has :cashier "rdf:type" ,cashier)
+        (owl_has :Spot ,infront-of :cashier)
+	))
+      :pose '("SPOT"))
     ))
 
 ;; initialize and print usage
 (ros::roseus "eus_prolog_sample")
 ;(setq *prolog* (instance json_prolog :init "knowrob_server"))
 (setq *prolog* (instance json_prolog :init "json_prolog"))
-(send *prolog* :query "scene1.") ;; for loading scene1.owl
+;(send *prolog* :query "scene1.") ;; for loading scene1.owl
 (format t ";;(prolog-sample1) (prolog-sample2) (prolog-sample3)")
 (format t ";;(find-knowrob-objects \"DrinkingMug\")~%")
 (format t ";;(find-knowrob-objects-with-info \"Cup\")~%")
