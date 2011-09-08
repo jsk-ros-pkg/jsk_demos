@@ -10,8 +10,42 @@
   (when (and subj obj)
 	(push (cons prop-name obj) (get subj :knowrob-properties))))
 
-(defun make-eng2-scene ()
-  (let* (scene (map (make-eng2-map-map)) floor-names rooms spots objects)
+(defun make-floor-plane (imgfile resolution cx cy &key (name))
+  (let* ((map-img (read-image-file imgfile))
+	 (width (* resolution (send map-img :width)))
+	 (height (* resolution (send map-img :height)))
+	 (map (make-cube width height 1)) top-face)
+    (send map :name "/eng2")
+    (send map :translate-vertices
+	  (float-vector (+ (/ height 2) cy) (- 0 (/ width 2) cx) 0))
+    (send map :rotate-vertices pi/2 :z)
+    (setq top-face (find-if
+		    #'(lambda (f) (equal (send f :id) '(:top)))
+		    (send map :faces)))
+    (setf (get map-img :texture-max-width) 2000)
+    (setf (get map-img :texture-max-height) 2000)
+    (send map :paste-texture-to-face top-face :image map-img)
+    (send map :name name)
+    map ))
+
+(defun make-eng2-vert-map ()
+  (let (map maplist)
+    (setq map (make-cascoords :name "/eng2"))
+    (setq maplist (list
+	   (make-floor-plane (ros::resolve-ros-path "package://jsk_maps/raw_maps/eng2-2f-0.05.pgm") 50 -13000 -48500 :name "/eng2/2f")
+	   (make-floor-plane (ros::resolve-ros-path "package://jsk_maps/raw_maps/eng2-3f-0.05.pgm") 50 -13000 -48500 :name "/eng2/3f")
+	   (make-floor-plane (ros::resolve-ros-path "package://jsk_maps/raw_maps/eng2-7f-0.05.pgm") 50 -13000 -48500 :name "/eng2/7f")
+	   (make-floor-plane (ros::resolve-ros-path "package://jsk_maps/raw_maps/eng2-8f-0.05.pgm") 50 -13000 -48500 :name "/eng2/8f")
+	   ))
+    (dotimes (i 4)
+      (send (elt maplist i) :translate (float-vector 0 0 (* i 10000)))
+      (send map :assoc (elt maplist i)))
+    map
+    ))
+
+(defun make-eng2-scene (&key (vertical nil))
+  (let* (scene map floor-names rooms spots objects)
+    (setq map (if vertical (make-eng2-vert-map) (make-eng2-map-map)))
     (setq floor-names '("/eng2/2f" "/eng2/3f" "/eng2/7f" "/eng2/8f"))
 
     ;; 2f
