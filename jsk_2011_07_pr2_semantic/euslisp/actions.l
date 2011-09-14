@@ -15,7 +15,8 @@
                 (instance sound_play::SoundRequest :init
                           :sound sound_play::SoundRequest::*say*
                           :command sound_play::SoundRequest::*play_once*
-                          :arg jp-str)))
+                          :arg jp-str
+			  :arg2 "aq_m4b.phont")))
 
 (defun pick (arm)
   (let* (tmp via1 target av vav avs)
@@ -26,11 +27,17 @@
     ;; tmp : object coords wrt robot coordinates
     ;; *pr2* :world, *obj* :world
     (setq tmp (make-coords :pos (send *pr2* :inverse-transform-vector (send *obj* :worldpos)))) ;; local
-    (send tmp :translate #f(40 60 -50)) ;; move-to handle
-    (send tmp :newcoords 
-	  (rpy-matrix pi/2 pi/2 pi/2) ;; grasp from top
-	  ;;(rpy-matrix -pi/2 0 0)        ;; grasp from side
-	  (send (send tmp :copy-worldcoords) :worldpos))
+    (cond ((substringp "cup" (send *obj* :name))
+	   (send tmp :translate #f(40 60 -50)) ;; move-to handle
+	   (send tmp :newcoords
+		 (rpy-matrix pi/2 pi/2 pi/2) ;; grasp from top
+		 ;;(rpy-matrix -pi/2 0 0)        ;; grasp from side
+		 (send (send tmp :copy-worldcoords) :worldpos)))
+	  ((substringp "sandwich" (send *obj* :name))
+	   (send tmp :newcoords
+		 (rpy-matrix 0 pi/2 pi/2) ;; grasp from top
+		 ;;(rpy-matrix -pi/2 0 0)        ;; grasp from side
+		 (send (send tmp :copy-worldcoords) :worldpos))))
     (setq via1 (send tmp :copy-worldcoords))
     (send via1 :translate #f(0 0 150) :world) ;; grasp from top
     ;;(send via1 :translate #f(0 140 100) :world) ;; grasp from side
@@ -108,7 +115,9 @@
 	 ((substringp "mit" (send obj :type))
 	  (send *obj* :name "mit-cup"))
 	 ((substringp "chen" (send obj :type))
-	  (send *obj* :name "chen-cup")))
+	  (send *obj* :name "chen-cup"))
+	 (t
+	  (send *obj* :name (send obj :type))))
    (send *pr2* :angle-vector (send *ri* :state :potentio-vector))
    (send *obj* :move-to *pr2* :world)
    (send *obj* :move-to trans :local)
