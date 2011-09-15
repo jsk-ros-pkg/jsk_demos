@@ -16,7 +16,7 @@
                           :sound sound_play::SoundRequest::*say*
                           :command sound_play::SoundRequest::*play_once*
                           :arg jp-str
-			  :arg2 "aq_m4b.phont")))
+			  :arg2 "aq_rm.phont")))
 
 (defun pick (arm)
   (let* (tmp via1 target av vav avs)
@@ -100,6 +100,8 @@
 (defun objectdetection (msg)
  (let ((obj (car (send msg :objects))) (av (send *pr2* :angle-vector))
        trans)
+;   (setq *tfl* (instance ros::transform-listener :init))
+   (unix::sleep 1)
    (unless
        (send *tfl* :wait-for-transform 
 	     "/base_link"
@@ -108,16 +110,7 @@
    (setq trans (send *tfl* :lookup-transform "/base_link"
 		     "/narrow_stereo_optical_frame" (send msg :header :stamp)))
    (ros::ros-info "object detected.")
-   (cond ((substringp "cotesys" (send obj :type))
-	  (send *obj* :name "cotesys-cup"))
-	 ((substringp "cmu" (send obj :type))
-	  (send *obj* :name "cmu-cup"))
-	 ((substringp "mit" (send obj :type))
-	  (send *obj* :name "mit-cup"))
-	 ((substringp "chen" (send obj :type))
-	  (send *obj* :name "chen-cup"))
-	 (t
-	  (send *obj* :name (send obj :type))))
+   (send *obj* :name (send obj :type))
    (send *pr2* :angle-vector (send *ri* :state :potentio-vector))
    (send *obj* :move-to *pr2* :world)
    (send *obj* :move-to trans :local)
@@ -177,8 +170,11 @@
    )))
 
 (defun check-pcl ()
- (let ((av (send *pr2* :angle-vector))
-	   cam 2dpos req res 3dpos rot pos)
+ (let ((ray_srv "/pointcloud_screenpoint/screen_to_point")
+       (av (send *pr2* :angle-vector))
+       cam 2dpos req res 3dpos rot pos)
+   (when (not (ros::wait-for-service ray_srv 5))
+     (return-from check-pcl nil))
    (send *pr2* :angle-vector (send *ri* :state :potentio-vector))
    ;;
    (setq cam (send *pr2* :narrow_stereo-left))
@@ -189,9 +185,7 @@
 	     (setq 2dpo (v+ 2dpos (float-vector (- (* i 10) 20) (- (* j 10) 20))))
 	     (setq req (instance jsk_pcl_ros::TransformScreenpointRequest :init
 				 :x (elt 2dpo 0) :y (elt 2dpo 1)))
-	     (setq *ray_srv* "/pointcloud_screenpoint/screen_to_point" )
-	     (ros::wait-for-service *ray_srv*)
-	     (setq res (ros::service-call *ray_srv* req))
+	     (setq res (ros::service-call ray_srv req))
 	     (setq 3dpos (ros::tf-point->pos (send res :point)))
 	     (if (and (not (equal 3dpos #f(0 0 0)))
 		      (< (norm 3dpos) (norm minpos)))
@@ -207,7 +201,48 @@
    ))
 
 ;;
-;; for wiping table
+;; for opening fridge
 ;;
-(defun wipe-table ()
-  )
+(ros::load-ros-manifest "jsk_pr2_gui")
+(load "package://jsk_pr2_gui/src/ipad_callback.l")
+(defun open-fridge (hand handle &optional (rad pi/2))
+  (let ((a (send (send handle :copy-worldcoords) :translate #f(0 -500 200)))
+	(b (send (send handle :copy-worldcoords) :translate #f(0 -500 -200)))
+	(c handle) (di pi/2) (ra :x) ret avs tms uavs utms)
+    (setq a (send a :worldpos) b (send b :worldpos) c (send c :worldpos))
+    (setq ret (generate-circle-path c a b rad));;a b maybe reverse
+    (setq *ret* ret)
+  ;;(show-markers (mapcar #'(lambda(x) (copy-object (send x :worldpos))) ret));
+    (cond
+     ((and (move-arm hand (send (send (send (elt ret 0) :copy-worldcoords) :translate #f(-100 0 0) :local) :rotate di :x) :rotation-axis :y)
+	   (move-arm hand (send (send (send (elt ret 0) :copy-worldcoords) :translate #f(-100 0 0) :local) :rotate di :x) :rotation-axis t))
+      (setq *current-arm* hand))
+     (t
+      (ros::ros-warn "Could not solve ik, return from execute-open")
+      (return-from open-fridge nil)))
+    (open-gripper *current-arm*)
+    (move-arm *current-arm* (send (send (send (elt ret 0) :copy-worldcoords) :translate #f(50 0 0) :local) :rotate di :x) :rotation-axis :t)
+    (grasp-gripper *current-arm* :range 0.06)
+    (unix::sleep 1)
+    (dolist (r (cdr ret))
+      (setq rr (send r :copy-worldcoords))
+      (when (send *pr2* :inverse-kinematics (send (send (send rr :copy-worldcoords) :translate #f(50 0 0) :local) :rotate di :x) :move-arm *current-arm* :rotation-axis ra :debug-view nil)
+	(push
+	 (send *pr2* :inverse-kinematics (send (send rr :copy-worldcoords) :rotate di :x) :move-arm *current-arm* :rotation-axis ra :debug-view nil) avs)
+	(push 400 tms))
+      (when (send *pr2* :inverse-kinematics (send (send (send rr :copy-worldcoords) :translate #f(30 0 -30) :world) :rotate di :x) :move-arm *current-arm* :rotation-axis :y :debug-view nil)
+	(push
+	 (send *pr2* :inverse-kinematics (send (send (send rr :copy-worldcoords) :translate #f(30 0 -30) :world) :rotate di :x) :move-arm *current-arm* :rotation-axis :y :debug-view nil) uavs)
+	(push 400 utms)))
+    (send *ri* :angle-vector-sequence (reverse avs) tms)
+    (send *ri* :wait-interpolation)
+    (open-gripper *current-arm*)
+    ))
+
+(defun open-fridge-by-marker ()
+  (let ((handle (send *obj* :copy-worldcoords)))
+    (setq *node-debug* nil)
+    (send handle :rotate pi :z)
+    (send handle :rotate pi/2 :y)
+    (open-fridge :rarm handle)
+    ))
