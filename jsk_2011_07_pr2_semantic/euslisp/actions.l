@@ -101,12 +101,12 @@
  (let ((obj (car (send msg :objects))) (av (send *pr2* :angle-vector))
        trans)
 ;   (setq *tfl* (instance ros::transform-listener :init))
-   (unix::sleep 1)
-   (unless
-       (send *tfl* :wait-for-transform 
-	     "/base_link"
-	     "/narrow_stereo_optical_frame" (send msg :header :stamp) 1)
-     (ros::ros-error "could not solve /base_link to /narrow_stereo_optical_frame"))
+;   (unix::sleep 1)
+;   (unless
+;       (send *tfl* :wait-for-transform 
+;	     "/base_link"
+;	     "/narrow_stereo_optical_frame" (send msg :header :stamp) 1)
+;     (ros::ros-error "could not solve /base_link to /narrow_stereo_optical_frame"))
    (setq trans (send *tfl* :lookup-transform "/base_link"
 		     "/narrow_stereo_optical_frame" (send msg :header :stamp)))
    (ros::ros-info "object detected.")
@@ -205,14 +205,15 @@
 ;;
 (ros::load-ros-manifest "jsk_pr2_gui")
 (load "package://jsk_pr2_gui/src/ipad_callback.l")
+(ros::advertise "ipad_marker_array" visualization_msgs::MarkerArray 10)
 (defun open-fridge (hand handle &optional (rad pi/2))
-  (let ((a (send (send handle :copy-worldcoords) :translate #f(0 -500 200)))
+  (let ((a (send (send handle :copy-worldcoords) :translate #f(0 -500 200)));3R
 	(b (send (send handle :copy-worldcoords) :translate #f(0 -500 -200)))
 	(c handle) (di pi/2) (ra :x) ret avs tms uavs utms)
     (setq a (send a :worldpos) b (send b :worldpos) c (send c :worldpos))
     (setq ret (generate-circle-path c a b rad));;a b maybe reverse
     (setq *ret* ret)
-  ;;(show-markers (mapcar #'(lambda(x) (copy-object (send x :worldpos))) ret));
+    (show-markers (mapcar #'(lambda(x) (copy-object (send x :worldpos))) ret));
     (cond
      ((and (move-arm hand (send (send (send (elt ret 0) :copy-worldcoords) :translate #f(-100 0 0) :local) :rotate di :x) :rotation-axis :y)
 	   (move-arm hand (send (send (send (elt ret 0) :copy-worldcoords) :translate #f(-100 0 0) :local) :rotate di :x) :rotation-axis t))
@@ -222,27 +223,66 @@
       (return-from open-fridge nil)))
     (open-gripper *current-arm*)
     (move-arm *current-arm* (send (send (send (elt ret 0) :copy-worldcoords) :translate #f(50 0 0) :local) :rotate di :x) :rotation-axis :t)
-    (grasp-gripper *current-arm* :range 0.06)
-    (unix::sleep 1)
+    (grasp-gripper *current-arm* :range 0.0)
+    (unix::sleep 3)
     (dolist (r (cdr ret))
       (setq rr (send r :copy-worldcoords))
       (when (send *pr2* :inverse-kinematics (send (send (send rr :copy-worldcoords) :translate #f(50 0 0) :local) :rotate di :x) :move-arm *current-arm* :rotation-axis ra :debug-view nil)
 	(push
 	 (send *pr2* :inverse-kinematics (send (send rr :copy-worldcoords) :rotate di :x) :move-arm *current-arm* :rotation-axis ra :debug-view nil) avs)
 	(push 400 tms))
-      (when (send *pr2* :inverse-kinematics (send (send (send rr :copy-worldcoords) :translate #f(30 0 -30) :world) :rotate di :x) :move-arm *current-arm* :rotation-axis :y :debug-view nil)
+      (when (send *pr2* :inverse-kinematics (send (send (send rr :copy-worldcoords) :translate #f(30 0 -30) :world) :rotate di :x) :move-arm *current-arm* :rotation-axis :x :debug-view nil)
 	(push
-	 (send *pr2* :inverse-kinematics (send (send (send rr :copy-worldcoords) :translate #f(30 0 -30) :world) :rotate di :x) :move-arm *current-arm* :rotation-axis :y :debug-view nil) uavs)
+	 (send *pr2* :inverse-kinematics (send (send (send rr :copy-worldcoords) :translate #f(30 0 -30) :world) :rotate di :x) :move-arm *current-arm* :rotation-axis :x :debug-view nil) uavs)
 	(push 400 utms)))
     (send *ri* :angle-vector-sequence (reverse avs) tms)
     (send *ri* :wait-interpolation)
-    (open-gripper *current-arm*)
-    ))
+    (open-gripper *current-arm*)))
 
 (defun open-fridge-by-marker ()
-  (let ((handle (send *obj* :copy-worldcoords)))
+  (let ((handle (send *obj* :copy-worldcoords)) avs-tms)
     (setq *node-debug* nil)
     (send handle :rotate pi :z)
     (send handle :rotate pi/2 :y)
-    (open-fridge :rarm handle)
+    (setq avs-tms (open-fridge :rarm handle))
+    (send *pr2* :head :look-at (v+ (send *obj* :worldpos) #f(200 -300 0)))
+    (send *ri* :head-angle-vector (send *pr2* :angle-vector) 1000)
+    (unix::sleep 10)
+    (speak-jp "なんもない")
+    (send *pr2* :rarm :inverse-kinematics *obj* :rotation-axis nil)
+    (send *ri* :angle-vector (send *pr2* :angle-vector) 1000)
+    (send *ri* :wait-interpolation)
+    (pr2-tuckarm-pose :rarm)
+    ))
+
+(defun demo-open-fridge ()
+  (let (opose co)
+    (pr2-tuckarm-pose :rarm)
+    (ros::spin-once)
+    (send *pr2* :angle-vector (send *ri* :state :potentio-vector))
+    (send *pr2* :torso :angle-vector #f(0))
+    (send *ri* :angle-vector (send *pr2* :angle-vector) 1000)
+    (send *ri* :wait-interpolation)
+    ;;
+    (setq opose (send *tfl* :lookup-transform "/map" "/base_footprint" (ros::time 0)))
+    (setq co (make-coords :pos #f(60972.374 6862.224 0.006)
+			  :rpy #f(-0.565 -0.001 0.002)))
+    (send *ri* :move-to co)
+    (let ((cur (send *tfl* :lookup-transform "/map" "/base_footprint" (ros::time 0)))
+	  diff)
+      (send *pr2* :move-to cur :world)
+      (setq diff (v- (send co :worldpos) (send cur :worldpos)))
+      (setq diff (send (send *pr2* :inverse-transformation) :rotate-vector diff))
+      (send *ri* :go-velocity (/ (elt diff 0) 3000) (/ (elt diff 1) 3000) 0 3200)) ;; almost 3sec
+      )
+    (send *pr2* :head :angle-vector #f(0 0))
+    (send *ri* :head-angle-vector (send *pr2* :angle-vector) 1000)
+    (send *ri* :wait-interpolation)
+    (unix::sleep 3) ;; wait for result on current robot pose
+    (check)
+    (open-fridge-by-marker)
+    (send *pr2* :torso :angle-vector #f(0))
+    (send *ri* :angle-vector (send *pr2* :angle-vector) 1000)
+    (send *ri* :wait-interpolation)
+    (send *ri* :move-to opose)
     ))
