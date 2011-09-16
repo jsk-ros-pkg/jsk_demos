@@ -209,7 +209,7 @@
 (defun open-fridge (hand handle &optional (rad pi/2))
   (let ((a (send (send handle :copy-worldcoords) :translate #f(0 -500 200)));3R
 	(b (send (send handle :copy-worldcoords) :translate #f(0 -500 -200)))
-	(c handle) (di pi/2) (ra :x) ret avs tms uavs utms)
+	(c handle) (di pi/2) (ra :z) ret avs tms uavs utms)
     (setq a (send a :worldpos) b (send b :worldpos) c (send c :worldpos))
     (setq ret (generate-circle-path c a b rad));;a b maybe reverse
     (setq *ret* ret)
@@ -227,14 +227,10 @@
     (unix::sleep 3)
     (dolist (r (cdr ret))
       (setq rr (send r :copy-worldcoords))
-      (when (send *pr2* :inverse-kinematics (send (send (send rr :copy-worldcoords) :translate #f(50 0 0) :local) :rotate di :x) :move-arm *current-arm* :rotation-axis ra :debug-view nil)
-	(push
-	 (send *pr2* :inverse-kinematics (send (send rr :copy-worldcoords) :rotate di :x) :move-arm *current-arm* :rotation-axis ra :debug-view nil) avs)
+      (when (send *pr2* :inverse-kinematics (send (send rr :copy-worldcoords) :rotate di :x) :move-arm *current-arm* :rotation-axis ra :debug-view nil)
+	(push (send *pr2* :angle-vector) avs)
 	(push 400 tms))
-      (when (send *pr2* :inverse-kinematics (send (send (send rr :copy-worldcoords) :translate #f(30 0 -30) :world) :rotate di :x) :move-arm *current-arm* :rotation-axis :x :debug-view nil)
-	(push
-	 (send *pr2* :inverse-kinematics (send (send (send rr :copy-worldcoords) :translate #f(30 0 -30) :world) :rotate di :x) :move-arm *current-arm* :rotation-axis :x :debug-view nil) uavs)
-	(push 400 utms)))
+      )
     (send *ri* :angle-vector-sequence (reverse avs) tms)
     (send *ri* :wait-interpolation)
     (open-gripper *current-arm*)))
@@ -250,7 +246,7 @@
     (unix::sleep 10)
     (speak-jp "なんもない")
     (send *pr2* :rarm :inverse-kinematics *obj* :rotation-axis nil)
-    (send *ri* :angle-vector (send *pr2* :angle-vector) 1000)
+    (send *ri* :angle-vector (send *pr2* :angle-vector) 2000)
     (send *ri* :wait-interpolation)
     (pr2-tuckarm-pose :rarm)
     ))
@@ -264,8 +260,8 @@
     (send *ri* :angle-vector (send *pr2* :angle-vector) 1000)
     (send *ri* :wait-interpolation)
     ;;
-    (setq opose (send *tfl* :lookup-transform "/map" "/base_footprint" (ros::time 0)))
-    (setq co (make-coords :pos #f(60972.374 6862.224 0.006)
+    (setq opose (send (send *tfl* :lookup-transform "/map" "/base_footprint" (ros::time 0)) :copy-worldcoords))
+    (setq co (make-coords :pos #f(60936.374 6802.224 0.006)
 			  :rpy #f(-0.565 -0.001 0.002)))
     (send *ri* :move-to co)
     (let ((cur (send *tfl* :lookup-transform "/map" "/base_footprint" (ros::time 0)))
@@ -274,7 +270,6 @@
       (setq diff (v- (send co :worldpos) (send cur :worldpos)))
       (setq diff (send (send *pr2* :inverse-transformation) :rotate-vector diff))
       (send *ri* :go-velocity (/ (elt diff 0) 3000) (/ (elt diff 1) 3000) 0 3200)) ;; almost 3sec
-      )
     (send *pr2* :head :angle-vector #f(0 0))
     (send *ri* :head-angle-vector (send *pr2* :angle-vector) 1000)
     (send *ri* :wait-interpolation)
