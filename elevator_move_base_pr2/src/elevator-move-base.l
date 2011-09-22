@@ -30,8 +30,6 @@
 (setq *map-name* nil) ;; load /map/header/frame_id
 (defvar *tfl* (instance ros::transform-listener :init))
 
-(load "package://elevator_move_base_pr2/src/navigation-client-addon.l")
-
 (defun init ()
   (ros::advertise "robotsound" sound_play::SoundRequest 5)
   (ros::advertise "view_target" geometry_msgs::PointStamped 1)
@@ -59,10 +57,10 @@
     )
   )
 
-(defun update-robot-position ()
+(defun update-robot-position (&optional (tm (ros::time 0)))
   (let (mappose)
     (ros::spin-once)
-    (setq mappose (send *tfl* :lookup-transform "/base_footprint" (send *scene* :name) (ros::time 0)))
+    (setq mappose (send *tfl* :lookup-transform "/base_footprint" (send *scene* :name) tm))
     (if mappose
 	(send *scene* :move-to mappose :world))
     (send *pr2* :angle-vector (send *ri* :state))
@@ -264,16 +262,12 @@
     ))
 
 (defun costmap-for-elevator (userdata)
-  (change-inflation-range 0.2 :type :all)
+  (change-inflation-range 0.2)
   (switch-global-planner-observation nil) ;;disable tilt scan
-  (initialize-costmap)
   t)
 (defun costmap-normal (&rest args)
-  (speak-jp "しょうしょうおまちください")
-  (change-inflation-range 0.55 :type :all)
+  (change-inflation-range 0.55)
   (switch-global-planner-observation t) ;;enable tilt scan
-  (initialize-costmap)
-  (print 'normal-costmap)
   t)
 
 (defun check-target-floor (userdata)
@@ -299,8 +293,10 @@
 	 (or (find-if #'(lambda(x)(string= (send x :name) "/elevator_number"))  (send *panel* :descendants)) *panel*)))
     (send *pr2* :head :look-at (send look-target :worldpos))
     (send *pr2* :head :look-at (send look-target :worldpos)) ;; bug twice
-    (send *ri* :angle-vector (send *pr2* :angle-vector) 1000))
+    (send *ri* :angle-vector (send *pr2* :angle-vector) 1000)
+    (send *ri* :wait-interpolation))
 
+  (unix::sleep 3) ;; this is pr2 reference coords problem -> robot 
   (check-target-floor userdata)
 
   (send *pr2* :head :angle-vector #f(0 0))
@@ -313,7 +309,7 @@
 	(change-floor (format nil "~A/~a" *map-name*
 			      (string-downcase (elt floor 0))))
 	)))
-  (initialize-costmap)
+  (clear-costmap)
   t)
 
 ;; test macro
@@ -323,23 +319,23 @@
 (defun elevator-state-machine ()
   (let ((sm (instance state-machine :init))
 	(move-client (pr2-interface-move-base-action *ri*)))
-    (send sm :add-node (actionlib-client-state2
+    (send sm :add-node (actionlib-client-state
 			:move-front move-client :timeout 300 :retry t
 			:key 'coords->movebaseactiongoal))
     (send (send sm :node :move-front) :remap-list '((:goal . front-coords)))
     (send sm :add-node (instance state :init :costmap-for-elevator 'costmap-for-elevator))
     (send sm :add-node (instance state :init :push-outside (push-state-machine)
 				 :remap-list '((panel-name . outside-panel-name) (button . outside-button))))
-;    (send sm :add-node (instance state :init :check-elevator-empty 'check-until-elevator-empty))
+1;    (send sm :add-node (instance state :init :check-elevator-empty 'check-until-elevator-empty))
     (send sm :add-node (instance state :init :speak-fail '(lambda(x)(speak-jp "にふんたちました") t)))
-    (send sm :add-node (actionlib-client-state2
+    (send sm :add-node (actionlib-client-state
 			:move-inside move-client :timeout 120 :retry t
 			:key 'coords->movebaseactiongoal))
     (send (send sm :node :move-inside) :remap-list '((:goal . inside-coords)))
     (send sm :add-node (instance state :init :push-inside (push-state-machine)
 				 :remap-list '((panel-name . inside-panel-name) (button . target-floor))))
     (send sm :add-node (instance state :init :ready-to-outside 'ready-to-outside))
-    (send sm :add-node (actionlib-client-state2
+    (send sm :add-node (actionlib-client-state
 			:move-outside move-client :timeout 60 :retry t
 			:key 'coords->movebaseactiongoal))
     (send (send sm :node :move-outside) :remap-list '((:goal . outside-coords)))
@@ -404,7 +400,7 @@
     (send sm :add-node (instance state :init :initial 'elevator-smach-initial))
     (send sm :add-node (instance state :init :speak-elevator '(lambda (x) (costmap-normal)  (speak-jp "えれべーたにのります") t)))
     (send sm :add-node (instance state :init :take-elevator (elevator-state-machine)))
-    (send sm :add-node (actionlib-client-state2
+    (send sm :add-node (actionlib-client-state
 			:go-to (pr2-interface-move-base-action *ri*)
 			:timeout 600 :retry t
 			:key 'coords->movebaseactiongoal))
