@@ -38,13 +38,12 @@
 	(robot "'http://www.jsk.t.u-tokyo.ac.jp/jsk_map.owl#pr2'"))
     (send *prolog* :query
 	  (list->prolog
-	   `(,(format nil "_R=~a" robot)
-	     (setof :_O ("lookForKMostSimilarObjT" ,rdf-type ,k :_O) :_OBJS)
-	     (get_sorted_path_costs ,robot :_OBJS :_SORTED)
-	     (member #(:COST :OBJ)  :_SORTED)
+	   `((setof :_O ("lookForKMostSimilarObjT" ,rdf-type ,k :_O) :OBJS)
+	     (get_sorted_path_costs ,robot :OBJS :SORTED)
+	     (member #(:COST :OBJ) :SORTED)
 	     (owl_has :spot ,infront-of :obj)
 	     (object_info :obj "[IMAGE,ROOM,LEVEL|_]")))
-	  :pose '("OBJ" "SPOT"))
+	   :pose '("OBJ" "SPOT"))
     ))
 
 (defun typical-place-to-buy-omics
@@ -64,7 +63,7 @@
         (reverse :_Sorted :_Rev)
         (nth0 0 :_Rev #(:Prob :Type))
         (findall :_R (owl_individual_of :_R :Type) :_Rs)
-	;(get_sorted_path_costs ,robot :_Rs :_SortRs)
+	(get_sorted_path_costs ,robot :_Rs :_SortRs)
         (member :Room :_Rs)
         (rdf_triple ,incont :Spot :Room)
         (rdf_has :Spot "rdf:type" ,place)
