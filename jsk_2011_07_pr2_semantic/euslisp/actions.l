@@ -35,11 +35,15 @@
 		 (send (send tmp :copy-worldcoords) :worldpos)))
 	  ((substringp "sandwich" (send *obj* :name))
 	   (send tmp :newcoords
-		 (rpy-matrix 0 pi/2 pi/2) ;; grasp from top
+		 (rpy-matrix 0 0 0) ;; grasp straight
+		 ;;(rpy-matrix 0 pi/2 pi/2) ;; grasp from top
 		 ;;(rpy-matrix -pi/2 0 0)        ;; grasp from side
-		 (send (send tmp :copy-worldcoords) :worldpos))))
+		 (send (send (send tmp :copy-worldcoords) :translate #f(50 100 100) :world) :worldpos)) ;; grasp baggage
+		 ;;(send (send tmp :copy-worldcoords) :worldpos) ;; grasp center
+		 ))
     (setq via1 (send tmp :copy-worldcoords))
-    (send via1 :translate #f(0 0 150) :world) ;; grasp from top
+    (send via1 :translate #f(-300 0 0) :world) ;; grasp from far
+    ;;(send via1 :translate #f(0 0 150) :world) ;; grasp from top
     ;;(send via1 :translate #f(0 140 100) :world) ;; grasp from side
     (setq target (send tmp :copy-worldcoords))
     (ros::ros-warn (format nil "tmp ~a" tmp))
@@ -48,7 +52,11 @@
 		    :move-target arm :use-torso t))
     (when (null avs)
       (speak-jp "あいけいがとけませんでした")
-      (return-from pick nil))
+      (cond ((send *pr2* :inverse-kinematics
+		   via1 :move-tagret arm :use-torso t)
+	     (send *ri* :angle-vector (send *pr2* :angle-vector) 5000))
+	    (t
+	     (return-from pick nil))))
     (send *ri* :wait-interpolation)
     (send *ri* :move-gripper arm 0.08 :wait t)
     ;; calculate grasp point
@@ -58,7 +66,8 @@
     ;;
     (send target :transform *pr2* :parent)
     (print target)
-    (send *pr2* :inverse-kinematics target :move-arm arm :rotation-axis t)
+    (send *pr2* :inverse-kinematics target :move-arm arm :rotation-axis t
+	  :revert-if-fail nil)
     (send *ri* :angle-vector (send *pr2* :angle-vector) 5000)
     (send *ri* :wait-interpolation)
     ;;
@@ -100,13 +109,11 @@
 (defun objectdetection (msg)
  (let ((obj (car (send msg :objects))) (av (send *pr2* :angle-vector))
        trans)
-;   (setq *tfl* (instance ros::transform-listener :init))
-;   (unix::sleep 1)
-;   (unless
-;       (send *tfl* :wait-for-transform 
-;	     "/base_link"
-;	     "/narrow_stereo_optical_frame" (send msg :header :stamp) 1)
-;     (ros::ros-error "could not solve /base_link to /narrow_stereo_optical_frame"))
+   (unless
+       (send *tfl* :wait-for-transform 
+	     "/base_link"
+	     "/narrow_stereo_optical_frame" (send msg :header :stamp) 1)
+     (ros::ros-error "could not solve /base_link to /narrow_stereo_optical_frame"))
    (setq trans (send *tfl* :lookup-transform "/base_link"
 		     "/narrow_stereo_optical_frame" (send msg :header :stamp)))
    (ros::ros-info "object detected.")
@@ -140,23 +147,22 @@
 (defun check (&key (timeout 10) (type nil))
   (start-subscribe) (unix::sleep 1)
   (send *obj* :move-to (make-coords) :world)
-  (let ((pos1 (send (send *obj* :copy-worldcoords) :worldpos)) pos2 speak tm)
-   (setq tm (ros::time-now))
+  (let ((pos1 (send (send *obj* :copy-worldcoords) :worldpos))
+	pos2 speak (tm (ros::time-now)))
    (while (ros::ok)
     (ros::spin-once)
     (setq pos2 (send *obj* :worldpos))
-    (print (distance pos1 pos2))
-    (when (< 0.01 (distance pos1 pos2)) ;; found cup
+    (when (< 0.01 (distance pos1 pos2)) ;; found obj
       (cond ((or (not type) (substringp type (send *obj* :name))) ;; found target
-	     (ros::ros-info (format nil "ok - cup-type(~a)" (send *obj* :name)))
+	     (ros::ros-info (format nil "ok - obj-type(~a)" (send *obj* :name)))
 	     (if x::*display* (send *irtviewer* :draw-objects))
 	     (stop-subscribe)
 	     (check-pcl)
 	     (return-from check t))
 	    (t
-	     (ros::ros-info (format nil "no - cup-type(~a)" (send *obj* :name)))
+	     (ros::ros-info (format nil "no - obj-type(~a)" (send *obj* :name)))
 	     (unless speak
-	       (speak-jp "ちがうこっぷがみつかりました")
+	       (speak-jp "こっぷがみつかりました")
 	       (setq speak t))
 	     )))
     (when (< timeout (send (ros::time- (ros::time-now) tm) :to-sec))
@@ -205,54 +211,68 @@
 ;;
 (ros::load-ros-manifest "jsk_pr2_gui")
 (load "package://jsk_pr2_gui/src/ipad_callback.l")
-(ros::advertise "ipad_marker_array" visualization_msgs::MarkerArray 10)
+(ros::advertise "/ipad_marker_array" visualization_msgs::MarkerArray 10)
 (defun open-fridge (hand handle &optional (rad pi/2))
-  (let ((a (send (send handle :copy-worldcoords) :translate #f(0 -500 200)));3R
+  ;; 500mm is a distance between handle and axis
+  (let ((a (send (send handle :copy-worldcoords) :translate #f(0 -500 200)))
 	(b (send (send handle :copy-worldcoords) :translate #f(0 -500 -200)))
-	(c handle) (di pi/2) (ra :z) ret avs tms uavs utms)
+	(c handle) (di pi/2) (ra :z) ret avs tms uavs utms current-arm)
     (setq a (send a :worldpos) b (send b :worldpos) c (send c :worldpos))
-    (setq ret (generate-circle-path c a b rad));;a b maybe reverse
-    (setq *ret* ret)
-    (show-markers (mapcar #'(lambda(x) (copy-object (send x :worldpos))) ret));
+    (setq ret (generate-circle-path c a b rad));;a,b can be reverse
+    (show-markers (mapcar #'(lambda(x) (copy-object (send x :worldpos))) ret))
     (cond
-     ((and (move-arm hand (send (send (send (elt ret 0) :copy-worldcoords) :translate #f(-100 0 0) :local) :rotate di :x) :rotation-axis :y)
-	   (move-arm hand (send (send (send (elt ret 0) :copy-worldcoords) :translate #f(-100 0 0) :local) :rotate di :x) :rotation-axis t))
-      (setq *current-arm* hand))
+     ((and (move-arm hand (send (send (send (elt ret 0) :copy-worldcoords) :translate #f(-100 0 0) :local) :rotate di :x) :rotation-axis :y :sec 1000)
+	   (move-arm hand (send (send (send (elt ret 0) :copy-worldcoords) :translate #f(-100 0 0) :local) :rotate di :x) :rotation-axis t :sec 1000)))
      (t
       (ros::ros-warn "Could not solve ik, return from execute-open")
       (return-from open-fridge nil)))
-    (open-gripper *current-arm*)
-    (move-arm *current-arm* (send (send (send (elt ret 0) :copy-worldcoords) :translate #f(50 0 0) :local) :rotate di :x) :rotation-axis :t)
-    (grasp-gripper *current-arm* :range 0.0)
-    (unix::sleep 3)
+    (send *ri* :move-gripper hand 0.09) ;; open
+    (move-arm hand (send (send (send (elt ret 0) :copy-worldcoords) :translate #f(50 0 0) :local) :rotate di :x) :rotation-axis t :sec 1000)
+    (send *ri* :move-gripper hand 0.0 :effort 100) ;; grasp
     (dolist (r (cdr ret))
       (setq rr (send r :copy-worldcoords))
-      (when (send *pr2* :inverse-kinematics (send (send rr :copy-worldcoords) :rotate di :x) :move-arm *current-arm* :rotation-axis ra :debug-view nil)
+      (when (send *pr2* :inverse-kinematics (send (send rr :copy-worldcoords) :rotate di :x) :move-arm hand :rotation-axis ra :debug-view nil)
 	(push (send *pr2* :angle-vector) avs)
-	(push 400 tms))
+	(push 300 tms))
       )
     (send *ri* :angle-vector-sequence (reverse avs) tms)
     (send *ri* :wait-interpolation)
-    (open-gripper *current-arm*)))
+    ;; (send *ri* :move-gripper hand 0.09) ;; open
+    ))
 
-(defun open-fridge-by-marker ()
-  (let ((handle (send *obj* :copy-worldcoords)) avs-tms)
+(defun open-fridge-by-marker (&key (pickup nil))
+  (let ((handle (send *obj* :copy-worldcoords)) avs-tms ret)
     (setq *node-debug* nil)
+    ;; open the door
     (send handle :rotate pi :z)
     (send handle :rotate pi/2 :y)
     (setq avs-tms (open-fridge :rarm handle))
-    (send *pr2* :head :look-at (v+ (send *obj* :worldpos) #f(200 -300 0)))
-    (send *ri* :head-angle-vector (send *pr2* :angle-vector) 1000)
-    (unix::sleep 10)
-    (speak-jp "なんもない")
-    (send *pr2* :rarm :inverse-kinematics *obj* :rotation-axis nil)
-    (send *ri* :angle-vector (send *pr2* :angle-vector) 2000)
+    (ros::spin-once)
+    (send *pr2* :angle-vector (send *ri* :state :angle-vector))
+    (send *pr2* :larm :shoulder-r :joint-angle 80)
+    (send *pr2* :head :look-at (v+ (send handle :worldpos) #f(100 -200 -100)))
+    (send *ri* :angle-vector (send *pr2* :angle-vector) 1000)
     (send *ri* :wait-interpolation)
-    (pr2-tuckarm-pose :rarm)
-    ))
+    ;; pick object inside fridge
+    (cond (pickup
+	   (if (check :type pickup)
+	       (setq ret (pick :larm))
+	     (speak-jp "ほしいものはありません")))
+	  (t
+	   (setq ret t)))
+    ;; close the door
+    (send *ri* :move-gripper :rarm 0.09)
+    (ros::spin-once)
+    (send *pr2* :angle-vector (send *ri* :state :angle-vector))
+    (send *pr2* :rarm :inverse-kinematics handle :rotation-axis nil)
+    (send *ri* :rarm-angle-vector (send *pr2* :angle-vector) 2000)
+    (send *ri* :wait-interpolation)
+    (send *ri* :move-gripper :rarm 0.0 :wait nil)
+    (pr2-tuckarm-pose (if pickup :larm :rarm))
+    ret ))
 
-(defun demo-open-fridge ()
-  (let (opose co)
+(defun demo-open-fridge (&key (go-back t) (pickup nil))
+  (let (opose co ret)
     (pr2-tuckarm-pose :rarm)
     (ros::spin-once)
     (send *pr2* :angle-vector (send *ri* :state :potentio-vector))
@@ -260,24 +280,32 @@
     (send *ri* :angle-vector (send *pr2* :angle-vector) 1000)
     (send *ri* :wait-interpolation)
     ;;
-    (setq opose (send (send *tfl* :lookup-transform "/map" "/base_footprint" (ros::time 0)) :copy-worldcoords))
-    (setq co (make-coords :pos #f(60936.374 6802.224 0.006)
-			  :rpy #f(-0.565 -0.001 0.002)))
+    (when go-back
+      (setq opose (send (send *tfl* :lookup-transform "/map" "/base_footprint" (ros::time 0)) :copy-worldcoords))
+      (setq *opose* opose))
+    (setq co (make-coords :pos #f(60936.374 6952.224 0)
+			  :rpy #f(-0.580 0 0)))
     (send *ri* :move-to co)
     (let ((cur (send *tfl* :lookup-transform "/map" "/base_footprint" (ros::time 0)))
 	  diff)
       (send *pr2* :move-to cur :world)
       (setq diff (v- (send co :worldpos) (send cur :worldpos)))
       (setq diff (send (send *pr2* :inverse-transformation) :rotate-vector diff))
-      (send *ri* :go-velocity (/ (elt diff 0) 3000) (/ (elt diff 1) 3000) 0 3200)) ;; almost 3sec
+      (send *ri* :go-velocity (/ (elt diff 0) 3000) (/ (elt diff 1) 3000)
+	    (/ (elt (car (rpy-angle (send (send cur :transformation co) :worldrot))) 0) 3)
+	    3000) ;; 3sec
+      (unix::sleep 3))
     (send *pr2* :head :angle-vector #f(0 0))
     (send *ri* :head-angle-vector (send *pr2* :angle-vector) 1000)
     (send *ri* :wait-interpolation)
-    (unix::sleep 3) ;; wait for result on current robot pose
-    (check)
-    (open-fridge-by-marker)
+    (check :type "fridge")
+    (send *pr2* :head :look-at (send *obj* :worldpos))
+    (send *ri* :head-angle-vector (send *pr2* :angle-vector) 1000)
+    (send *ri* :wait-interpolation)
+    (setq ret (open-fridge-by-marker :pickup pickup))
     (send *pr2* :torso :angle-vector #f(0))
     (send *ri* :angle-vector (send *pr2* :angle-vector) 1000)
     (send *ri* :wait-interpolation)
-    (send *ri* :move-to opose)
-    ))
+    (when go-back
+      (send *ri* :move-to opose))
+    ret ))
