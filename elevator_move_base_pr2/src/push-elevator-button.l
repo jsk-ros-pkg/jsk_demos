@@ -21,8 +21,6 @@
       (pr2-tuckarm-pose :larm))
 
     (setq arm (check-tuckarm-pose))
-
-
     (setq rayvec (normalize-vector (v- (send *pr2* :narrow_stereo_optical_frame :worldpos) (send target-coords :worldpos))))
 
     ;; via-coords
@@ -67,6 +65,10 @@
       (setq *ik-fail-coords*  (send target-coords :copy-worldcoords))
       (dump-loadable-structure (format nil "ik-fail-~d.l" (send (ros::time-now) :to-sec))
 			       *ik-fail-coords* *ik-fail-av*)
+      ;; return to original pose
+      (send *pr2* arm :angle-vector org-arm-anglev)
+      (send *ri* :angle-vector (send *pr2* :angle-vector) 1000) ;; quick!
+      (send *ri* :wait-interpolation)
       (return-from push-button nil))
     (setq via-angle-vector (send *pr2* :angle-vector))
     (send *ri* :angle-vector (send *pr2* :angle-vector) 1500)
@@ -84,6 +86,10 @@
       (setq *ik-fail-coords*  (send target-coords :copy-worldcoords))
       (dump-loadable-structure (format nil "ik-fail-~d.l" (send (ros::time-now) :to-sec))
 			       *ik-fail-coords* *ik-fail-av*)
+      ;; return to original pose
+      (send *pr2* arm :angle-vector org-arm-anglev)
+      (send *ri* :angle-vector (send *pr2* :angle-vector) 1000) ;; quick!
+      (send *ri* :wait-interpolation)
       (return-from push-button nil))
     (send *ri* :angle-vector (send *pr2* :angle-vector) 1000)
     (send *ri* :wait-interpolation)

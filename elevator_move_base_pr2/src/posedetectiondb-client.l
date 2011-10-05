@@ -46,7 +46,7 @@
      (when (equal (string-left-trim "/" (send object-msg :type))
 		  (string-left-trim "/" (or frame-id (send object :name))))
        ;; broadcast transform
-       (send msg :header :stamp (ros::time 0))
+       ;; (send msg :header :stamp (ros::time 0))
        (let* ((pose (instance geometry_msgs::PoseStamped :init
 			      :header (send msg :header)
 			      :pose (send object-msg :pose)))
@@ -57,7 +57,8 @@
 	 (when objcoords
 	   (send self :update-coords objcoords :world)
 	   (send *tfb* :send-transform object
-		 fixed-frame (or frame-id (send object :name))))
+		 fixed-frame (or frame-id (send object :name))
+		 (send msg :header :stamp)))
 	 ))))
   )
 
