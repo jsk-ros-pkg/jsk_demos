@@ -1,0 +1,54 @@
+#!/usr/bin/env python
+
+# amcl and move_base use "/map" topic and "/map" frame_id.
+# visualization tools use other maps.
+
+# USAGE (rviz)
+# Select target floor frame_id as "Fixed Frame",
+# Set "initialpose3d" as Estimate Topic in "Tool Propertied" Tab
+# then set initialpose
+
+PKG = 'tf'
+import roslib; roslib.load_manifest(PKG)
+import rospy
+
+from std_msgs.msg import String
+from geometry_msgs.msg import PoseWithCovarianceStamped
+from topic_tools.srv import MuxSelect
+
+
+def callback(pose):
+    global pub, tf_select, map_select
+
+    # change the map
+    frame = pose.header.frame_id;
+    if frame != '/map':
+        map_select.publish(String(data=frame[1:].replace('/','-')))
+
+    # call /mux/select "tf"
+    try:
+        resp = tf_select(frame+"_tf")
+    except rospy.ServiceException, e:
+        print "Service call failed: %s"%e
+
+    rospy.sleep(1) # this is bad.
+
+    # set initialpose
+    pose.header.frame_id = '/map'
+    pub.publish(pose)
+
+
+def listener():
+    global pub, tf_select, map_select
+
+    rospy.init_node('initialpose', anonymous=True)
+
+    pub = rospy.Publisher('initialpose', PoseWithCovarianceStamped)
+    tf_select = rospy.ServiceProxy('map_tf_mux/select', MuxSelect)
+    map_select = rospy.Publisher('map_reload', String)
+    rospy.Subscriber("initialpose3d", PoseWithCovarianceStamped, callback)
+
+    rospy.spin()
+
+if __name__ == '__main__':
+    listener()
