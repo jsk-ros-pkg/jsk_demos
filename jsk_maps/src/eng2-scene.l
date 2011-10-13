@@ -114,12 +114,7 @@
 		(send 7f-o :assoc rm)
 		(send rm :transform trans :world))
       (setq rooms (append rooms 7rms)))
-    ;; assoc spots in room TODO
-    (dolist (spot (send (find "/eng2/7f/73b2" rooms
-			      :test #'string= :key #'(lambda(x)(send x :name))) :spots))
-      (send (find "/eng2/7f" (send map :descendants)
-		  :test #'string= :key #'(lambda(x)(send x :name)))
-	    :assoc spot))
+    ;;
     (make-cascoords-tree
      (find "/eng2/7f" (send map :descendants)
 	   :test #'string= :key #'(lambda(x)(send x :name)))
