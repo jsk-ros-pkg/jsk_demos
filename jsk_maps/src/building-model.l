@@ -1,0 +1,51 @@
+;;
+;; floor-model is a plane-type scene model for ROS navigation.
+;; building-model is a set of map pieces.
+;; each element of floors slot is a ROS map.
+;;
+(defclass nav-scene-model
+  :super scene-model
+  :slots (mapobj))
+(defmethod nav-scene-model
+  (:map (&optional map) (if map (setq mapobj map) mapobj)))
+
+
+(defclass building-model
+  :super scene-model
+  :slots ())
+(defmethod building-model
+  (:floors
+   (&optional _flos)
+   (if _flos
+       (setq objs (mapcan #'(lambda(x)(send self :find-object x)) _flos))
+     (remove-if-not #'(lambda(x)(derivedp x nav-scene-model)) objs)))
+  (:floor<
+   (name1 name2)
+   (< (z (find name1 :test #'equal :key #'(lambda(x)(send x :name))))
+      (z (find name2 :test #'equal :key #'(lambda(x)(send x :name))))))
+  (:current-floor
+   (pos &optional (dist 1000))
+   (if (derivedp pos coordinates) (setq pos (send pos :worldpos))) ;; for coordinates
+   (let ((colbox (make-cube dist dist dist)))
+     (send colbox :translate pos)
+     (dolist (floor objs)
+       (setq res (car (pqp-collision-distance colbox (send floor :map))))
+       (if (equal 0.0 res)
+	   (return-from :current-floor (send floor :name)))
+       )))
+  )
+
+;; arglist := cascoords or (arglist of make-cascoords)
+;; children := (arglist of make-cascoords)
+(defun make-cascoords-tree (arglist &rest children)
+  (if children
+	  (let (par chi)
+		(if (derivedp arglist cascaded-coords)
+			(setq par arglist)
+		  (setq par (apply #'make-cascoords arglist)))
+		(setq chi (mapcar #'make-cascoords-tree children))
+		(mapcar #'(lambda(x)(send x :transform par :world)) chi)
+		(mapcar #'(lambda(x)(send par :assoc x)) chi)
+		par)
+	(apply #'make-cascoords arglist))
+  )
