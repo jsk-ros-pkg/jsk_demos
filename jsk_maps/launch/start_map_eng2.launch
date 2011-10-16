@@ -1,32 +1,11 @@
 <launch>
-  <node name="map_server" pkg="map_server" type="map_server"
-	args="$(find jsk_maps)/eng2.yaml" >
-    <param name="frame_id" value="/eng2"/>
-  </node>
-  <!-- the position is defined in eng2-map.yaml -->
-  <node pkg="tf"
-        type="static_transform_publisher"
-        name="map_tf_8F"
-        args="120 0 0 0 0 0 /eng2 /eng2/8f 10"/>
-  <node pkg="tf"
-        type="static_transform_publisher"
-        name="map_tf_7F"
-        args="60 0 0 0 0 0 /eng2 /eng2/7f 10"/>
-  <node pkg="tf"
-        type="static_transform_publisher"
-        name="map_tf_73B2"
+
+  <node pkg="tf" type="static_transform_publisher" name="$(anon map_tf)"
+        args="0 0 0 0 0 0 /world /eng2 10"/>
+
+  <include file="$(find jsk_maps)/launch/start_map_eng2_main.launch" />
+
+  <node pkg="tf" type="static_transform_publisher" name="$(anon map_tf)"
         args="0 6.9 0 0 0 0 /eng2/7f /eng2/7f/73B2 10"/>
-  <node pkg="tf"
-        type="static_transform_publisher"
-        name="map_tf_3F"
-        args="180 0 0 0 0 0 /eng2 /eng2/3f 10"/>
-  <node pkg="tf"
-        type="static_transform_publisher"
-        name="map_tf_2F"
-        args="0 0 0 0 0 0 /eng2 /eng2/2f 10"/>
-  <node pkg="tf"
-        type="static_transform_publisher"
-        name="initial_map_setter"
-        args="0 0 0 0 0 0 /eng2 /map 10"/>
 
 </launch>

@@ -9,6 +9,7 @@
   <review status="unreviewed" notes=""/>
   <url>http://ros.org/wiki/jsk_maps</url>
   <depend package="euslisp"/>
+  <depend package="map_server2"/>
 
   <rosdep name="imagemagick"/>
 
