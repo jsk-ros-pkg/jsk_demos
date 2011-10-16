@@ -8,4 +8,7 @@
   <node pkg="tf" type="static_transform_publisher" name="$(anon map_tf)"
         args="0 6.9 0 0 0 0 /eng2/7f /eng2/7f/73B2 10"/>
 
+  <!-- for initialpose topic -->
+  <node name="initialpose3d" pkg="jsk_maps" type="initialpose3d.py" />
+
 </launch>
