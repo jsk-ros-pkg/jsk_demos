@@ -33,7 +33,7 @@ origin: [~a, ~a, 0]
 negate: 0
 occupied_thresh: 0.65
 free_thresh: 0.192
-frame_id: ~a"
+map_id: ~a"
 	     (elt info 0)
 	     (elt info 1)
 	     (elt info 2)
@@ -82,7 +82,7 @@ frame_id: ~a"
      )
    ;;
    (format fd "  <node name=\"tf_mux\" pkg=\"topic_tools\" type=\"mux\"
-        args=\"tf \"")
+        args=\"tf ")
    (dolist (map (send building :floors))
      (format fd " ~a_tf" (send map :name)))
    (format fd "\">
