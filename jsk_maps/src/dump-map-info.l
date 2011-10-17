@@ -35,8 +35,8 @@ occupied_thresh: 0.65
 free_thresh: 0.192
 map_id: ~a"
 	     (elt info 0)
-	     (elt info 1)
-	     (elt info 2)
+	     (/ (elt info 1) 1000.0)
+	     (/ (elt info 2) 1000.0)
 	     (send nav-scene :name))
      )
     filename ))
@@ -70,15 +70,15 @@ map_id: ~a"
      (format fd "  <node pkg=\"tf\" type=\"static_transform_publisher\"
     name=\"$(anon map_tf)\"
     args=\"~a ~a ~a 0 0 0 ~a ~a 10\"/>~%"
-	     (/ (elt (send map :worldpos) 0) 1000)
-	     (/ (elt (send map :worldpos) 1) 1000)
-	     (/ (elt (send map :worldpos) 2) 1000)
+	     (/ (elt (send map :worldpos) 0) 1000.0)
+	     (/ (elt (send map :worldpos) 1) 1000.0)
+	     (/ (elt (send map :worldpos) 2) 1000.0)
 	     (send building :name) (send map :name))
      (format fd "  <node pkg=\"tf\" type=\"static_transform_publisher\" name=\"$(anon map_tf)\"
-        args=\"0 0 0 0 0 0 /eng2/2f /map 10\">
+        args=\"0 0 0 0 0 0 ~a /map 10\">
     <remap from=\"tf\" to=\"~a_tf\"/>
   </node>~%"
-	     (send map :name))
+	     (send map :name) (send map :name))
      )
    ;;
    (format fd "  <node name=\"tf_mux\" pkg=\"topic_tools\" type=\"mux\"
