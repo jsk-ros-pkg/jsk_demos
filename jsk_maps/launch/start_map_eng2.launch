@@ -9,6 +9,9 @@
         args="0 6.9 0 0 0 0 /eng2/7f /eng2/7f/73B2 10"/>
 
   <!-- for initialpose topic -->
-  <node name="initialpose3d" pkg="jsk_maps" type="initialpose3d.py" />
+  <node name="initialpose3d" pkg="jsk_maps" type="initialpose3d.py">
+    <remap from="initialpose_in" to="initialpose" />
+    <remap from="initialpose_out" to="initialpose2d" />
+  </node>
 
 </launch>
