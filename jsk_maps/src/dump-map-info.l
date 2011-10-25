@@ -100,4 +100,6 @@ map_id: ~a"
   ;;(dump-map-launch (make-eng8-scene) "../launch/start_map_eng8.launch")
   )
 
-(dump-all-maps)
+(progn
+  (dump-all-maps)
+  (exit))

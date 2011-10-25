@@ -23,11 +23,12 @@ def callback(pose):
     # change the map
     frame = pose.header.frame_id;
     if frame != '/map':
-        map_select.publish(String(data=frame[1:].replace('/','-')))
+        map_select.publish(frame)
 
     # call /mux/select "tf"
     try:
-        resp = tf_select(frame+"_tf")
+        if frame != '/map':
+            resp = tf_select(frame+"_tf")
     except rospy.ServiceException, e:
         print "Service call failed: %s"%e
 
@@ -43,10 +44,10 @@ def listener():
 
     rospy.init_node('initialpose', anonymous=True)
 
-    pub = rospy.Publisher('initialpose', PoseWithCovarianceStamped)
+    pub = rospy.Publisher('initialpose_out', PoseWithCovarianceStamped)
     tf_select = rospy.ServiceProxy('map_tf_mux/select', MuxSelect)
     map_select = rospy.Publisher('map_reload', String)
-    rospy.Subscriber("initialpose3d", PoseWithCovarianceStamped, callback)
+    rospy.Subscriber("initialpose_in", PoseWithCovarianceStamped, callback)
 
     rospy.spin()
 
