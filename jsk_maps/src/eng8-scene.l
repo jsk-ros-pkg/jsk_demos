@@ -1,8 +1,7 @@
-(load "package://jsk_maps/euslisp/eng8-map.l")
 (load "models/elevator_call_panel-object.l")
 (load "models/elevator_inside_panel-object.l")
 
-(load "package://jsk_maps/src/plane-building-model.l")
+(load "package://jsk_maps/src/building-model.l")
 
 (defun make-eng8-scene ()
   (let* (scene (map (make-eng8-map-map)) floor-names spots)

@@ -17,11 +17,9 @@ from geometry_msgs.msg import PoseWithCovarianceStamped
 from topic_tools.srv import MuxSelect
 
 
-def callback(pose):
-    global pub, tf_select, map_select
+def change_map(frame):
+    global tf_select, map_select
 
-    # change the map
-    frame = pose.header.frame_id;
     if frame != '/map':
         map_select.publish(frame)
 
@@ -32,7 +30,17 @@ def callback(pose):
     except rospy.ServiceException, e:
         print "Service call failed: %s"%e
 
-    rospy.sleep(1) # this is bad.
+    rospy.set_param('/amcl/initial_map', frame)
+
+
+def callback(pose):
+    global pub
+
+    # change the map
+    frame = pose.header.frame_id;
+    change_map(frame)
+
+    rospy.sleep(1) # this is bad
 
     # set initialpose
     pose.header.frame_id = '/map'
@@ -48,6 +56,11 @@ def listener():
     tf_select = rospy.ServiceProxy('map_tf_mux/select', MuxSelect)
     map_select = rospy.Publisher('map_reload', String)
     rospy.Subscriber("initialpose_in", PoseWithCovarianceStamped, callback)
+
+    initial_map = rospy.get_param('/amcl/initial_map', None)
+
+    if initial_map:
+        change_map(initial_map)
 
     rospy.spin()
 

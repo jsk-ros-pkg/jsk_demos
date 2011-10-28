@@ -21,18 +21,21 @@
      (remove-if-not #'(lambda(x)(derivedp x nav-scene-model)) objs)))
   (:floor<
    (name1 name2)
-   (< (z (find name1 :test #'equal :key #'(lambda(x)(send x :name))))
-      (z (find name2 :test #'equal :key #'(lambda(x)(send x :name))))))
+   (let ((p1 (find name1 objs :test #'equal :key #'(lambda(x)(send x :name))))
+	 (p2 (find name2 objs :test #'equal :key #'(lambda(x)(send x :name)))))
+     (< (elt (send p1 :worldpos) 2)
+	(elt (send p2 :worldpos) 2))))
   (:current-floor
    (pos &optional (dist 1000))
    (if (derivedp pos coordinates) (setq pos (send pos :worldpos))) ;; for coordinates
    (let ((colbox (make-cube dist dist dist)))
      (send colbox :translate pos)
      (dolist (floor objs)
-       (setq res (car (pqp-collision-distance colbox (send floor :map))))
-       (if (equal 0.0 res)
-	   (return-from :current-floor (send floor :name)))
-       )))
+       (when (derivedp floors nav-scene-model)
+	 (setq res (car (pqp-collision-distance colbox (send floor :map))))
+	 (if (equal 0.0 res)
+	     (return-from :current-floor (send floor :name)))
+	 ))))
   )
 
 ;; arglist := cascoords or (arglist of make-cascoords)

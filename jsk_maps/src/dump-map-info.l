@@ -87,7 +87,7 @@ map_id: ~a"
      (format fd " ~a_tf" (send map :name)))
    (format fd "\">
     <remap from=\"mux\" to=\"map_tf_mux\" />
-  </node>")
+  </node>~%")
    ;;
    (format fd "</launch>~%")
    ))
