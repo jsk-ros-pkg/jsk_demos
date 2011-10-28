@@ -10,8 +10,8 @@
 
   <!-- for initialpose topic -->
   <node name="initialpose3d" pkg="jsk_maps" type="initialpose3d.py">
-    <remap from="initialpose_in" to="initialpose" />
-    <remap from="initialpose_out" to="initialpose2d" />
+    <remap from="initialpose_in" to="initialpose3d" />
+    <remap from="initialpose_out" to="initialpose" />
   </node>
 
 </launch>
