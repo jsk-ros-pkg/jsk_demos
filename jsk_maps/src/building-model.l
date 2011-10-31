@@ -3,6 +3,25 @@
 ;; building-model is a set of map pieces.
 ;; each element of floors slot is a ROS map.
 ;;
+
+(defun make-floor-plane (imgfile resolution cx cy &key (name))
+  (let* ((map-img (read-image-file imgfile))
+	 (width (* resolution (send map-img :width)))
+	 (height (* resolution (send map-img :height)))
+	 (map (make-cube width height 1)) top-face
+	 nav-scene)
+    (send map :translate-vertices
+	  (float-vector (+ (/ height 2) cy) (- 0 (/ width 2) cx) 0))
+    (send map :rotate-vertices pi/2 :z)
+    (setq top-face (find-if
+		    #'(lambda (f) (equal (send f :id) '(:top)))
+		    (send map :faces)))
+    ;;(setf (get map-img :texture-max-width) 2000)
+    ;;(setf (get map-img :texture-max-height) 2000)
+    (send map :paste-texture-to-face top-face :image map-img)
+    (send map :name name)
+    map ))
+
 (defclass nav-scene-model
   :super scene-model
   :slots (mapobj))
@@ -31,7 +50,7 @@
    (let ((colbox (make-cube dist dist dist)))
      (send colbox :translate pos)
      (dolist (floor objs)
-       (when (derivedp floors nav-scene-model)
+       (when (derivedp floor nav-scene-model)
 	 (setq res (car (pqp-collision-distance colbox (send floor :map))))
 	 (if (equal 0.0 res)
 	     (return-from :current-floor (send floor :name)))
