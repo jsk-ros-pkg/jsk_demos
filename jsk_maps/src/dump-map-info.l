@@ -42,9 +42,15 @@ map_id: ~a"
     filename ))
 
 
-(defun dump-map-launch (building filename)
+(defun dump-map-launch (building filename &key default-floor)
+  (let ((floors (send building :floors)))
+    (if (stringp default-floor)
+	(setq default-floor
+	      (find default-floor floors :test #'string= :key #'(lambda(x)(send x :name)))))
+    (if default-floor
+	(setq floors (append (list default-floor) (remove default-floor floors))))
   ;;
-  (dolist (map (send building :floors))
+  (dolist (map floors)
     (dump-map-yaml map))
   ;;
   (with-open-file
@@ -52,7 +58,7 @@ map_id: ~a"
    (format fd "<launch>~%")
    ;;
    (format fd "  <!-- map for visualization nodes -->~%")
-   (dolist (map (send building :floors))
+   (dolist (map floors)
      (format fd "  <node name=\"$(anon map_server)\" pkg=\"map_server\" type=\"map_server\"
         args=\"~a\" >
     <remap from=\"map\" to=\"~a\"/>
@@ -62,11 +68,11 @@ map_id: ~a"
    ;;
    (format fd "~%  <!-- map for navigation nodes -->~%")
    (format fd "  <node pkg=\"map_server2\" type=\"map_server\" name=\"map_server\"~%        args=\"")
-   (dolist (map (send building :floors))
+   (dolist (map floors)
      (format fd " ~a~%" (get-yaml-filename map)))
    (format fd "\"/>~%")
    ;;
-   (dolist (map (send building :floors))
+   (dolist (map floors)
      (format fd "  <node pkg=\"tf\" type=\"static_transform_publisher\"
     name=\"$(anon map_tf)\"
     args=\"~a ~a ~a 0 0 0 ~a ~a 10\"/>~%"
@@ -83,19 +89,20 @@ map_id: ~a"
    ;;
    (format fd "  <node name=\"tf_mux\" pkg=\"topic_tools\" type=\"mux\"
         args=\"tf ")
-   (dolist (map (send building :floors))
+   (dolist (map floors)
      (format fd " ~a_tf" (send map :name)))
    (format fd "\">
     <remap from=\"mux\" to=\"map_tf_mux\" />
   </node>~%")
    ;;
    (format fd "</launch>~%")
-   ))
+   )))
 
 
 (defun dump-all-maps ()
   (load "eng2-scene.l")
-  (dump-map-launch (make-eng2-scene) "launch/start_map_eng2_main.launch")
+  (dump-map-launch (make-eng2-scene) "launch/start_map_eng2_main.launch"
+		   :default-floor "/eng2/7f")
   ;;(load "eng8-scene.l")
   ;;(dump-map-launch (make-eng8-scene) "../launch/start_map_eng8.launch")
   )
