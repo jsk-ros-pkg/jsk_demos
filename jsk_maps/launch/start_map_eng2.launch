@@ -1,12 +1,12 @@
 <launch>
 
   <node pkg="tf" type="static_transform_publisher" name="$(anon map_tf)"
-        args="0 0 0 0 0 0 /world /eng2 10"/>
+        args="0 0 0 0 0 0 /world /eng2 100"/>
 
   <include file="$(find jsk_maps)/launch/start_map_eng2_main.launch" />
 
   <node pkg="tf" type="static_transform_publisher" name="$(anon map_tf)"
-        args="0 6.9 0 0 0 0 /eng2/7f /eng2/7f/73B2 10"/>
+        args="0 6.9 0 0 0 0 /eng2/7f /eng2/7f/73B2 100"/>
 
   <!-- for initialpose topic -->
   <node name="initialpose3d" pkg="jsk_maps" type="initialpose3d.py">
