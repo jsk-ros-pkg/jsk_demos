@@ -75,7 +75,7 @@ map_id: ~a"
    (dolist (map floors)
      (format fd "  <node pkg=\"tf\" type=\"static_transform_publisher\"
     name=\"$(anon map_tf)\"
-    args=\"~a ~a ~a 0 0 0 ~a ~a 10\"/>~%"
+    args=\"~a ~a ~a 0 0 0 ~a ~a 100\"/>~%"
 	     (/ (elt (send map :worldpos) 0) 1000.0)
 	     (/ (elt (send map :worldpos) 1) 1000.0)
 	     (/ (elt (send map :worldpos) 2) 1000.0)
