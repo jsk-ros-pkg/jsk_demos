@@ -67,7 +67,7 @@ map_id: ~a"
      )
    ;;
    (format fd "~%  <!-- map for navigation nodes -->~%")
-   (format fd "  <node pkg=\"map_server2\" type=\"map_server\" name=\"map_server\"~%        args=\"")
+   (format fd "  <node pkg=\"multi_map_server\" type=\"map_server\" name=\"map_server\"~%        args=\"")
    (dolist (map floors)
      (format fd " ~a~%" (get-yaml-filename map)))
    (format fd "\"/>~%")
