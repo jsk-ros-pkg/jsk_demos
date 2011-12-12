@@ -7,30 +7,29 @@
 (load "package://elevator_move_base_pr2/src/posedetectiondb-client.l")
 (load "package://elevator_move_base_pr2/src/elevator-buttons.l")
 
-(load "package://pr2eus/pr2-utils.l")
 (load "package://pr2eus/pr2-interface.l")
 
-(setq *map-name* nil) ;; load /map/header/frame_id
-(ros::subscribe "/map" nav_msgs::OccupancyGrid
-		#'(lambda(m)(setq *map-name* (send m :header :frame_id))))
+(defvar *tfl* (instance ros::transform-listener :init))
+(unix::sleep 1) ;; wait for TF messages
 
-(while (null *map-name*) (ros::spin-once))
-(ros::unsubscribe "/map")
-
-(cond ((string= *map-name* "/eng2")
-       (setq *scene* (make-eng2-scene)))
-      ((string= *map-name* "/eng8")
-       (setq *scene* (make-eng8-scene)))
-      )
-
-(setq *clients* (init-posedetectiondb-client (send *scene* :objects)))
+(let ((frames (send *tfl* :get-frame-strings)))
+  (cond ((find "/eng2" frames :test #'string=)
+	 (setq *scene* (make-eng2-scene)))
+	((find "/eng8" frames :test #'string=)
+	 (setq *scene* (make-eng8-scene)))
+	(t
+	 (ros::ros-error "There is no building frame-id in TF tree.")
+	 (exit))
+	))
+(let ((objs (list (send *scene* :object "/elevator_inside_panel")
+		  (send *scene* :object "/elevator_call_panel"))))
+  (setq *clients* (init-posedetectiondb-client objs)))
 ;;(setq *ri* (instance pr2-interface :init))
 
 (setq *node-debug* nil)
 (when *node-debug*
   (setq *ri* (instance pr2-interface :init))
   (setq *pr2* (pr2))
-  (defvar *tfl* (instance ros::transform-listener :init))
   (if (not (boundp '*irtviewer*)) (make-irtviewer :title "find-elevator-button"))
   (objects (append (list *pr2*) (send *scene* :objects)))
   (send *irtviewer* :look-all *pr2*)
