@@ -1,8 +1,8 @@
 #!/usr/bin/env roseus
 
-(load "package://elevator_move_base_pr2/src/elevator-move-base-main.l")
-
 (ros::roseus "elevator_move_base")
+
+(load "package://elevator_move_base_pr2/src/elevator-move-base-main.l")
 
 (defun simple-goal-cb (msg)
   (let ((pub-msg (instance move_base_msgs::MoveBaseActionGoal :init))
