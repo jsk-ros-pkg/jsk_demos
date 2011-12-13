@@ -31,21 +31,20 @@
 
 (defun check-current-floor (&optional pose) ;; :name == frame_id
   (if pose
-      (setq pose (transform-pose-to-target-frame pose "/base_footprint"))
-    (setq pose (send *tfl* :lookup-transform "/base_footprint" "/base_footprint" (ros::time 0))))
-  (print (send-all (send *scene* :floors) :descendants))
+      (setq pose (transform-pose-to-target-frame pose (send *scene* :name)))
+    (setq pose (send *tfl* :lookup-transform (send *scene* :name) "/base_footprint" (ros::time 0))))
   (print pose)
   (send *scene* :current-floor pose))
 
-(defun change-floor (target-floor &optional (topicname "/initialpose"))
+(defun change-floor (target-floor &optional (topicname "/initialpose3d"))
   (ros::advertise topicname geometry_msgs::PoseWithCovarianceStamped 1)
   (unix:sleep 1);; important
   (let* ((msg (instance geometry_msgs::PoseWithCovarianceStamped :init))
 	 (current-floor-frame (check-current-floor))
-	 (robot-pose (send *tfl* :lookup-transform "/map" "/base_footprint" (ros::time 0)))
-	 (trans (send *tfl*  :lookup-transform current-floor-frame target-floor (ros::time 0))))
-    (send robot-pose :transform trans :world)
-    (send msg :header :frame_id "/map")
+	 (robot-pose (send *tfl* :lookup-transform current-floor-frame "/base_footprint" (ros::time 0))))
+    (if (null robot-pose)
+	(return-from change-floor nil))
+    (send msg :header :frame_id target-floor)
     (send msg :header :stamp (ros::time-now))
     (let ((cov (send msg :pose :covariance)))
       (setf (elt cov 0) 0.05)
@@ -53,7 +52,6 @@
       (setf (elt cov 21) 0.02))
     (send msg :pose :pose (ros::coords->tf-pose robot-pose))
     (ros::publish topicname msg)))
-
 
 ;;
 ;; for dynamic configuration of costmap params

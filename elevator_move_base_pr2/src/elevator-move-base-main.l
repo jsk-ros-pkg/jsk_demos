@@ -27,6 +27,7 @@
 
 (defun initialize-env ()
   (defvar *tfl* (instance ros::transform-listener :init))
+
   (ros::advertise "robotsound" sound_play::SoundRequest 5)
   (ros::advertise "view_target" geometry_msgs::PointStamped 1)
 
@@ -57,9 +58,10 @@
 (defun update-robot-position (&optional (tm (ros::time 0)))
   (let (mappose)
     (ros::spin-once)
-    (setq mappose (send *tfl* :lookup-transform "/base_footprint" (send *scene* :name) tm))
-    (if mappose
-	(send *scene* :move-to mappose :world))
+    (send *pr2* :move-to (send *ri* :state :worldcoords) :world)
+;    (setq mappose (send *tfl* :lookup-transform "/base_footprint" (send *scene* :name) tm))
+;    (if mappose
+;	(send *scene* :move-to mappose :world))
     (send *pr2* :angle-vector (send *ri* :state))
     ))
 
