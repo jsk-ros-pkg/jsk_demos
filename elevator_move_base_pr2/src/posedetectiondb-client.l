@@ -1,5 +1,5 @@
 (load "ros-callback-manager.l")
-(load "add-msg-pgsql.l")
+;;(load "add-msg-pgsql.l")
 
 ;; posedetectiondb -> tf client class
 ;;(load "package://euslib/jsk/kalmanlib.l")
@@ -21,12 +21,13 @@
   :slots (object time-stamp poselist frame-id fixed-frame))
 (defmethod posedetectiondb-client
   (:init
-   (obj &optional (_frame-id nil) (_fixed-frame "/base_footprint"))
-   (setq object obj frame-id _frame-id fixed-frame _fixed-frame)
+   (obj &key (topic "ObjectDetection") ((:object-frame _obj) nil)
+	((:fixed-frame _fixed) "/base_footprint"))
+   (setq object obj frame-id _obj fixed-frame _fixed)
    (setq time-stamp (ros::time 0))
    (defvar *tfl* (instance ros::transform-listener :init))
    (defvar *tfb* (instance ros::transform-broadcaster :init))
-   (send-super :init "ObjectDetection" posedetection_msgs::ObjectDetection :detection-cb))
+   (send-super :init topic posedetection_msgs::ObjectDetection :detection-cb))
   ;; filter detection pose, and move obj to the estimated coords
   (:update-coords
    (coords &optional (relative :local))
@@ -39,7 +40,8 @@
        (nreverse poselist)
        (pop poselist)
        (nreverse poselist)))
-   (send object :move-to (lmeds-pose poselist) relative))
+;   (send object :move-to (lmeds-pose poselist) relative))
+   (send object :move-to coords relative))
   (:detection-cb
    (msg)
    (dolist (object-msg (send msg :objects))
@@ -56,15 +58,19 @@
 	 (ros::ros-info "posedetection-cb type:~A, coords~A" (send object-msg :type) coords)
 	 (when objcoords
 	   (send self :update-coords objcoords :world)
+	   (putprop object (send msg :header :stamp) :stamp)
 	   (send *tfb* :send-transform object
 		 fixed-frame (or frame-id (send object :name))
 		 (send msg :header :stamp)))
 	 ))))
   )
 
-(defun init-posedetectiondb-client (objects)
+(defun init-posedetectiondb-client (objects &key topic)
   (let (clients)
     (dolist (obj objects)
-      (push (instance posedetectiondb-client :init obj) clients))
+	  (push
+	   (if topic (instance posedetectiondb-client :init obj :topic topic)
+	     (instance posedetectiondb-client :init obj))
+	   clients))
     (ros::ros-info "initialize posedetection db client with ~A~%" (send-all objects :name))
     clients))
