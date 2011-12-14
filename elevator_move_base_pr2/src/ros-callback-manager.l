@@ -38,14 +38,15 @@
 ;;
 (defclass ros::ros-callback-object
   :super propertied-object
-  :slots ())
+  :slots (topic-name))
 (defmethod ros::ros-callback-object
   (:init
-   (type name &optional (cb :callback))
-   (send ros::*ros-callback-manager* :add-subscribe self type name cb)
+   (name type &optional (cb :callback))
+   (setq topic-name name)
+   (send ros::*ros-callback-manager* :add-subscribe self name type cb)
    self)
-  (:delete (name)
-   (send ros::*ros-callback-manager* :delete-subscribe self name))
+  (:unregister ()
+   (send ros::*ros-callback-manager* :delete-subscribe self topic-name))
   )
 
 ;; sample callback class
