@@ -26,25 +26,34 @@
     ;; calculate via point
     ;; tmp : object coords wrt robot coordinates
     ;; *pr2* :world, *obj* :world
-    (setq tmp (make-coords :pos (send *pr2* :inverse-transform-vector (send *obj* :worldpos)))) ;; local
+    (setq tmp (send *pr2* :transformation *obj*)) ;; local pose
     (cond ((substringp "cup" (send *obj* :name))
-	   (send tmp :translate #f(40 60 -50)) ;; move-to handle
+	   (send tmp :translate #f(40 60 -50) *pr2*) ;; move-to handle
 	   (send tmp :newcoords
 		 (rpy-matrix pi/2 pi/2 pi/2) ;; grasp from top
 		 ;;(rpy-matrix -pi/2 0 0)        ;; grasp from side
-		 (send (send tmp :copy-worldcoords) :worldpos)))
+		 (send (send tmp :copy-worldcoords) :worldpos))
+	   (setq via1 (send tmp :copy-worldcoords))
+	   (send via1 :translate #f(-300 0 0) *pr2*) ;; grasp from far
+	   ;;(send via1 :translate #f(0 140 100) *pr2*) ;; grasp from side
+	   )
+	  ((substringp "controller" (send *obj* :name))
+	   (send tmp :translate #f(0 0 -40) *pr2*) ;; move-to handle
+	   (send tmp :rotate pi/2 :y)
+	   (send tmp :rotate pi/2 :x)
+	   (setq via1 (send tmp :copy-worldcoords))
+	   (send via1 :translate #f(0 0 100) *pr2*) ;; grasp from top
+	   )
 	  ((substringp "sandwich" (send *obj* :name))
 	   (send tmp :newcoords
 		 (rpy-matrix 0 0 0) ;; grasp straight
 		 ;;(rpy-matrix 0 pi/2 pi/2) ;; grasp from top
 		 ;;(rpy-matrix -pi/2 0 0)        ;; grasp from side
-		 (send (send (send tmp :copy-worldcoords) :translate #f(50 100 100) :world) :worldpos)) ;; grasp baggage
-		 ;;(send (send tmp :copy-worldcoords) :worldpos) ;; grasp center
-		 ))
-    (setq via1 (send tmp :copy-worldcoords))
-    (send via1 :translate #f(-300 0 0) :world) ;; grasp from far
-    ;;(send via1 :translate #f(0 0 150) :world) ;; grasp from top
-    ;;(send via1 :translate #f(0 140 100) :world) ;; grasp from side
+		 (send (send (send tmp :copy-worldcoords) :translate #f(50 100 100) *pr2*) :worldpos)) ;; grasp baggage
+	   (setq via1 (send tmp :copy-worldcoords))
+	   (send via1 :translate #f(-300 0 0) *pr2*) ;; grasp from far
+	   ;;(send (send tmp :copy-worldcoords) :worldpos) ;; grasp center
+	   ))
     (setq target (send tmp :copy-worldcoords))
     (ros::ros-warn (format nil "tmp ~a" tmp))
     (ros::ros-warn (format nil "via1 ~a" via1))
@@ -52,8 +61,8 @@
 		    :move-target arm :use-torso t))
     (when (null avs)
       (speak-jp "あいけいがとけませんでした")
-      (cond ((send *pr2* :inverse-kinematics
-		   via1 :move-tagret arm :use-torso t)
+      (send via1 :transform *pr2* :parent) ;; ???
+      (cond ((send *pr2* arm :inverse-kinematics via1 :use-torso t)
 	     (send *ri* :angle-vector (send *pr2* :angle-vector) 5000))
 	    (t
 	     (return-from pick nil))))
@@ -76,8 +85,11 @@
     (send *ri* :angle-vector vav 5000)
     (send *ri* :wait-interpolation)
     ;;
-    (send *ri* :angle-vector-sequence
-	  (append (cdr (reverse (car avs))) (list av)) (reverse (cadr avs)))
+    (if avs
+	(send *ri* :angle-vector-sequence
+	      (append (cdr (reverse (car avs))) (list av))
+	      (reverse (cadr avs)))
+      (send *ri* :angle-vector av 3000)) ;; return to initial pose
     (send *ri* :wait-interpolation)
     t ))
 
