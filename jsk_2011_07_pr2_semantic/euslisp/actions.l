@@ -100,7 +100,11 @@
   (let ((client (instance ros::simple-action-client :init "/l_gripper_sensor_controller/event_detector" pr2_gripper_sensor_msgs::PR2GripperEventDetectorAction))
 	(goal (instance pr2_gripper_sensor_msgs::PR2GripperEventDetectorActionGoal :init))
 	(av (send *ri* :state :potentio-vector))
-	(avs (list #f(12 -0.253184 64.3257 69.9411 -121.542 49.5928 -114.592 160.001 -4.99809 74.2418 -105.001 -89.9936 70.002 -5.73317 20.0024 -3.73162 -18.6) #f(12 4.86278 57.2298 63.3719 -117.808 2.05774 -86.5717 162.479 -5.00284 74.2418 -104.991 -90.0019 69.9987 -5.73317 20.0024 -3.67162 -18.6) #f(12 10.0167 55.7951 52.3191 -99.0116 -76.7519 -49.7594 -96.8963 -4.99809 74.2418 -104.982 -90.0019 69.9953 -5.73067 20.0049 -11.9036 34.05) #f(12 8.77694 55.4801 51.2442 -79.8424 -118.059 -45.9951 9.59657 -4.99809 74.237 -105.001 -90.0019 69.992 -5.73067 20.0049 5.22038 36.426))))
+	(avs (list #f(12 -0.253184 64.3257 69.9411 -121.542 49.5928 -114.592 160.001 -4.99809 74.2418 -105.001 -89.9936 70.002 -5.73317 20.0024 -3.73162 0)
+		   #f(12.1514 5.61519 8.79311 106.189 -78.374 35.3234 -124.849 -129.223 -5.0 75.0 -105.0 -90.0 70.0 0.0 20.0 2.34638 32.984)
+		   ;;#f(12 4.86278 57.2298 63.3719 -117.808 2.05774 -86.5717 162.479 -5.00284 74.2418 -104.991 -90.0019 69.9987 -5.73317 20.0024 -3.67162 -18.6)
+		   #f(12 10.0167 55.7951 52.3191 -99.0116 -76.7519 -49.7594 -96.8963 -4.99809 74.2418 -104.982 -90.0019 69.9953 -5.73067 20.0049 -11.9036 34.05)
+		   #f(12 8.77694 55.4801 51.2442 -79.8424 -118.059 -45.9951 9.59657 -4.99809 74.237 -105.001 -90.0019 69.992 -5.73067 20.0049 5.22038 36.426))))
     (send *ri* :angle-vector-sequence avs (list 1000 1000 1000 1000))
     (send *ri* :wait-interpolation)
     (send goal :header :stamp (ros::time-now))
@@ -109,11 +113,17 @@
     (send goal :goal :command :trigger_conditions pr2_gripper_sensor_msgs::PR2GripperEventDetectorCommand::*SLIP*)
     (send goal :goal :command :slip_trigger_magnitude 0.01)
     (send goal :goal :command :acceleration_trigger_magnitude 4.0)
-    (send client :send-goal goal)
-    (send client :wait-for-result)
+    ;;
+;    (when (not (send client :wait-for-server 10))
+;      (warn (format nil "~A is not respond -> fail hand-over~%" client))
+;      (return-from hand-over nil))
+;    (send client :send-goal goal)
+;    (send client :wait-for-result)
+    ;;
+    (ros::ros-info "return from gripper sensor event")
     (send *ri* :move-gripper :larm 0.08 :wait t)
     (send *ri* :angle-vector-sequence (append (cdr (reverse avs)) (list av))
-	  (list 1000 1000))
+	  (list 1000 1000 1000 1000))
     (send *ri* :move-gripper :larm 0.00 :wait nil)
     (send *ri* :wait-interpolation)
     ))
@@ -123,10 +133,10 @@
        trans)
    (unless
        (send *tfl* :wait-for-transform 
-	     "/base_link"
+	     "/base_footprint"
 	     "/narrow_stereo_optical_frame" (send msg :header :stamp) 1)
-     (ros::ros-error "could not solve /base_link to /narrow_stereo_optical_frame"))
-   (setq trans (send *tfl* :lookup-transform "/base_link"
+     (ros::ros-error "could not solve /base_footprint to /narrow_stereo_optical_frame"))
+   (setq trans (send *tfl* :lookup-transform "/base_footprint"
 		     "/narrow_stereo_optical_frame" (send msg :header :stamp)))
    (ros::ros-info "object detected.")
    (send *obj* :name (send obj :type))
