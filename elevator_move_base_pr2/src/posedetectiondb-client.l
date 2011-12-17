@@ -18,15 +18,17 @@
 
 (defclass posedetectiondb-client
   :super ros::ros-callback-object
-  :slots (object time-stamp poselist frame-id fixed-frame))
+  :slots (object time-stamp poselist frame-id fixed-frame filter-type))
 (defmethod posedetectiondb-client
   (:init
    (obj &key (topic "ObjectDetection") ((:object-frame _obj) nil)
-	((:fixed-frame _fixed) "/base_footprint"))
-   (setq object obj frame-id _obj fixed-frame _fixed)
+	((:fixed-frame _fixed) "/base_footprint") ((:filter-type ft) nil))
+   (setq object obj frame-id _obj fixed-frame _fixed filter-type ft)
    (setq time-stamp (ros::time 0))
-   (defvar *tfl* (instance ros::transform-listener :init))
-   (defvar *tfb* (instance ros::transform-broadcaster :init))
+   (unless (boundp '*tfl*)
+     (defvar *tfl* (instance ros::transform-listener :init)))
+   (unless (boundp '*tfb*)
+     (defvar *tfb* (instance ros::transform-broadcaster :init)))
    (send-super :init topic posedetection_msgs::ObjectDetection :detection-cb))
   ;; filter detection pose, and move obj to the estimated coords
   (:update-coords
@@ -40,15 +42,20 @@
        (nreverse poselist)
        (pop poselist)
        (nreverse poselist)))
-;   (send object :move-to (lmeds-pose poselist) relative))
-   (send object :move-to coords relative))
+   (case filter-type
+	 (:lmeads
+	  (send object :move-to (lmeds-pose poselist) relative))
+	 (t
+	  (send object :move-to coords relative))))
   (:detection-cb
    (msg)
    (dolist (object-msg (send msg :objects))
      (when (equal (string-left-trim "/" (send object-msg :type))
 		  (string-left-trim "/" (or frame-id (send object :name))))
        ;; broadcast transform
-       ;; (send msg :header :stamp (ros::time 0))
+       (send *tfl* :wait-for-transform
+	     fixed-frame (send msg :header :frame_id)
+	     (send msg :header :stamp) 1)
        (let* ((pose (instance geometry_msgs::PoseStamped :init
 			      :header (send msg :header)
 			      :pose (send object-msg :pose)))
