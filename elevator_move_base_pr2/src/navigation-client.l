@@ -58,8 +58,10 @@
 ;;
 ;; reset local costmap and clear unknown grid around robot
 (defun switch-global-planner-observation (enable)
-  (let ((obs (if enable
-                 "base_scan_marking base_scan tilt_scan ground_object_cloud"
-               "base_scan_marking base_scan tilt_scan")))
-  (ros::set-param "/move_base_node/local_costmap/observation_sources" obs)
-  ))
+  (unix::system
+   (format nil "rosrun topic_tools mux_select /tilt_laser_mux ~s"
+	   (if enable "ground_object_cloud" "empty_cloud"))))
+;  (let ((obs (if enable
+;                 "base_scan_marking base_scan tilt_scan ground_object_cloud"
+;               "base_scan_marking base_scan tilt_scan")))
+;  (ros::set-param "/move_base_node/local_costmap/observation_sources" obs)
