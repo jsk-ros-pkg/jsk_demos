@@ -6,7 +6,6 @@
 #include <cv_bridge/cv_bridge.h>
 #include <image_geometry/pinhole_camera_model.h>
 #include <tf/transform_listener.h>
-#include <posedetection_msgs/ObjectDetection.h>
 #include <geometry_msgs/Point.h>
 #include <std_msgs/Float32.h>
 #include <algorithm>
