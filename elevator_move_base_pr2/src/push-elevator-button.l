@@ -26,10 +26,9 @@
     ;; via-coords
     (setq via-coords (send (send target-coords :copy-worldcoords)
 			   :translate (scale 100 rayvec) :world))
-    ;; push 20mm
+    ;; push 30mm
     (setq target-coords (send (send target-coords :copy-worldcoords)
-			      :translate (scale -10 rayvec) :world))
-;    (setq via-coords (send (send target-coords :copy-worldcoords) :translate #f(-100 0 0) :world))
+			      :translate (scale -30 rayvec) :world))
 
     (when arm
       (send *pr2* arm :angle-vector (case arm (:rarm rarm-reset)
@@ -38,7 +37,7 @@
       (unless (and arm (send *pr2* arm :inverse-kinematics target-coords :rotation-axis :x))
 	(setq *ik-fail-av*  (send *pr2* :angle-vector))
 	(setq *ik-fail-coords*  (send target-coords :copy-worldcoords))
-	(dump-loadable-structure (format nil "ik-fail-~d.l" (send (ros::time-now) :to-sec))
+	(dump-loadable-structure (format nil "ik-fail-~d.l" (send (ros::time-now) :sec))
 				 *ik-fail-coords* *ik-fail-av*)
 	(setq arm nil)))
     (send *pr2* :angle-vector (send *ri* :state :potentio-vector))
@@ -46,7 +45,8 @@
 
     ;; reset-pose and select arm
     (unless arm
-      (setq arm (if (plusp (elt (send target-coords :worldpos) 1)) :larm :rarm))
+;      (setq arm (if (plusp (elt (send target-coords :worldpos) 1)) :larm :rarm))
+      (setq arm (if (plusp (elt (send (send *pr2* :transformation target-coords) :worldpos) 1)) :larm :rarm))
       (send *pr2* :reset-pose)
       (send *ri* :angle-vector (send *pr2* :angle-vector) 3000)
       (send *ri* :wait-interpolation))
@@ -63,7 +63,7 @@
 	(send *pr2* arm :inverse-kinematics via-coords :rotation-axis nil)
       (setq *ik-fail-av*  (send *pr2* :angle-vector))
       (setq *ik-fail-coords*  (send target-coords :copy-worldcoords))
-      (dump-loadable-structure (format nil "ik-fail-~d.l" (send (ros::time-now) :to-sec))
+      (dump-loadable-structure (format nil "ik-fail-~d.l" (send (ros::time-now) :sec))
 			       *ik-fail-coords* *ik-fail-av*)
       ;; return to original pose
       (send *pr2* arm :angle-vector org-arm-anglev)
@@ -84,7 +84,7 @@
 	(send *pr2* arm :inverse-kinematics target-coords :rotation-axis :x)
       (setq *ik-fail-av*  (send *pr2* :angle-vector))
       (setq *ik-fail-coords*  (send target-coords :copy-worldcoords))
-      (dump-loadable-structure (format nil "ik-fail-~d.l" (send (ros::time-now) :to-sec))
+      (dump-loadable-structure (format nil "ik-fail-~d.l" (send (ros::time-now) :sec))
 			       *ik-fail-coords* *ik-fail-av*)
       ;; return to original pose
       (send *pr2* arm :angle-vector org-arm-anglev)
