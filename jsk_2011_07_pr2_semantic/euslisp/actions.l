@@ -85,7 +85,8 @@
       (setq avs (send *ri* :move-end-coords-plan via
 		      :move-target arm :use-torso t))
       (unless avs
-	(speak-jp "あい'/けい'が/とけませ'んでした。")))
+	(ros::ros-info "move arm planning was failed, in pick, actions.l")))
+	;;(speak-jp "あい'/けい'が/とけませ'んでした。")))
     ;; if openrave is failed or not exists
     (when (null avs)
       (unless (listp via) (setq via (list via)))
@@ -114,13 +115,16 @@
     (send *ri* :angle-vector (send *pr2* :angle-vector) 3000)
     (send *ri* :wait-interpolation)
     ;;
-    ;;(send *ri* :move-gripper arm 0.0 :wait t)
     (when (< (send *ri* :start-grasp arm) 5) ;; 5[mm]
       (setq success nil))
     (unix::sleep 1)
     ;;
     (send *ri* :angle-vector vav 3000)
     (send *ri* :wait-interpolation)
+    ;;
+    (when (< (send *ri* :start-grasp arm) 5) ;; 5[mm]
+      (setq success nil))
+    (unix::sleep 1)
     ;; return to initial pose
     (if avs
 	(send *ri* :angle-vector-sequence
@@ -182,8 +186,10 @@
     (send *ri* :angle-vector-sequence avs tms)
     (send *ri* :wait-interpolation)
     ;;
+    (if (and wait-shock (not (numberp wait-shock))) ;; if wait-shock = t
+	(setq wait-shock 10))
     (if wait-shock
-	(progn (wait-for-hand-impact arm)
+	(progn (wait-for-hand-impact arm :timeout wait-shock)
 	       (ros::ros-info "return from gripper sensor event")
 	       (send *ri* :move-gripper arm 0.08 :wait t))
       (progn
@@ -237,14 +243,14 @@
   )
 
 (defun check (&key (timeout 10) (type nil))
-  (start-subscribe) (unix::sleep 1)
+  (start-subscribe) (unix::sleep 2)
   (send *obj* :move-to (make-coords) :world)
   (let ((pos1 (send (send *obj* :copy-worldcoords) :worldpos))
 	pos2 speak (tm (ros::time-now)))
    (while (ros::ok)
     (ros::spin-once)
     (setq pos2 (send *obj* :worldpos))
-    (when (< 0.01 (distance pos1 pos2)) ;; found obj
+    (when (< 0.01 (distance pos1 pos2)) ;; moved a little -> found obj
       (cond ((or (not (stringp type)) (substringp type (send *obj* :name))) ;; found target
 	     (ros::ros-info (format nil "ok - obj-type(~a)" (send *obj* :name)))
 	     (if x::*display* (send *irtviewer* :draw-objects))
@@ -338,9 +344,7 @@
   (let ((handle (send *obj* :copy-worldcoords)) avs-tms ret)
     (setq *node-debug* nil)
     ;; open the door
-    ;;(send handle :rotate pi :z)
-    ;;(send handle :rotate pi/2 :y)
-    (setq avs-tms (open-fridge :rarm handle))
+    (setq avs-tms (open-fridge :rarm handle (/ pi 3)))
     (ros::spin-once)
     (send *pr2* :angle-vector (send *ri* :state :angle-vector))
     (send *pr2* :larm :shoulder-r :joint-angle 80)
@@ -421,7 +425,7 @@
     (send *ri* :angle-vector-sequence avs (list 2000 2000))
     (send *ri* :wait-interpolation)
 
-    (wait-for-hand-impact :larm :timeout 30)
+    (wait-for-hand-impact :larm :timeout 10)
 
     (send *ri* :move-gripper :larm 0.005 :effort 15 :wait t)
     (unix:sleep 1)
