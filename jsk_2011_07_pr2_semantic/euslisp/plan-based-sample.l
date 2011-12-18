@@ -186,7 +186,7 @@
   (let ((obj (eval s-obj)))
     (format t ";; pass [~a]    ~%" obj)
     (speak-jp "こっぷをもってきました")
-    (hand-over)
+    (hand-over :larm)
     t ))
 
 ;; convert to smach

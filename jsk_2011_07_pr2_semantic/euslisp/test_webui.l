@@ -83,7 +83,7 @@
       (clear-costmap)
       (send *ri* :move-to opose)
       (speak-jp "こっぷをもってきました")
-      (hand-over)
+      (hand-over :larm)
       (return))
     (speak-jp "こっぷはみつかりませんでした")
     (pr2-tuckarm-pose :larm)

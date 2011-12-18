@@ -16,9 +16,10 @@
     <param name="goal" value="scene1." /> <!-- startup scene1 -->
   </node>
 
+  <include file="$(find jsk_perception)/sample/milktea-box.launch"/>
+
   <node pkg="jsk_perception" type="point_pose_extractor"
 	name="cup_detector1" ns="/narrow_stereo/left">
-    <remap from="ObjectDetection" to="/ObjectDetection"/>
     <param name="template_filename" value="$(find jsk_2011_07_pr2_semantic)/data/sift-cotesys.png"/>
     <param name="window_name" value="cotesys_cup"/>
     <param name="object_width" value="0.068"/>
@@ -27,7 +28,6 @@
   </node>
   <node pkg="jsk_perception" type="point_pose_extractor"
 	name="cup_detector2" ns="/narrow_stereo/left">
-    <remap from="ObjectDetection" to="/ObjectDetection"/>
     <param name="template_filename" value="$(find jsk_2011_07_pr2_semantic)/data/sift-mit.png"/>
     <param name="window_name" value="mit_cup"/>
     <param name="object_width" value="0.055"/>
@@ -36,7 +36,6 @@
   </node>
   <node pkg="jsk_perception" type="point_pose_extractor"
 	name="cup_detector3" ns="/narrow_stereo/left">
-    <remap from="ObjectDetection" to="/ObjectDetection"/>
     <param name="template_filename" value="$(find jsk_2011_07_pr2_semantic)/data/sift-cmu.png"/>
     <param name="window_name" value="cmu_cup"/>
     <param name="object_width" value="0.085"/>
@@ -46,23 +45,21 @@
 
   <node pkg="jsk_perception" type="point_pose_extractor"
 	name="sandwich_detector" ns="/narrow_stereo/left">
-    <remap from="ObjectDetection" to="/ObjectDetection"/>
     <param name="template_filename" value="$(find jsk_2011_07_pr2_semantic)/data/bigmac-top.png"/>
     <param name="window_name" value="bigmac_sandwich"/>
     <param name="object_width" value="0.081"/>
     <param name="object_height" value="0.081"/>
-    <param name="relative_pose" value="0.04 -0.04 -0.03 0 0 0 1"/>
+    <param name="relative_pose" value="0.04 0.04 -0.03 0 0 0 1"/>
     <param name="viewer_window" value="false" /> <!-- to disable window-->
   </node>
 
   <node pkg="jsk_perception" type="point_pose_extractor"
 	name="fridge_detector" ns="/narrow_stereo/left">
-    <remap from="ObjectDetection" to="/ObjectDetection"/>
     <param name="template_filename" value="$(find jsk_2011_07_pr2_semantic)/data/linux-penguin.png"/>
     <param name="window_name" value="fridge_handle_upper"/>
     <param name="object_width" value="0.05"/>
     <param name="object_height" value="0.057"/>
-    <param name="relative_pose" value="0.25 -0.02 -0.03 0 0 0 1"/>
+    <param name="relative_pose" value="0.25 0.04 0.0  0.707107 0 -0.707107 0"/>
     <param name="viewer_window" value="false" /> <!-- to disable window-->
   </node>
 
