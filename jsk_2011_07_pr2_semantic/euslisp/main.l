@@ -81,12 +81,12 @@
 	(speak-jp "こっぷがみつかりました")
 	(send *pr2* :head :look-at (send *obj* :worldpos))
 	(send *ri* :head-angle-vector (send *pr2* :angle-vector) 500)
-	(or (pick :larm)
+	(or (pick *obj* :larm)
 	    (progn
 	      (check :timeout 4 :type name)
-	      (pick :larm)))
+	      (pick *obj* :larm)))
 	;; go to somewhere
-;	(pr2-tuckarm-pose :larm)
+	(pr2-tuckarm-pose :larm)
 	(send *pr2* :angle-vector (send *ri* :state :potentio-vector))
 	(send *pr2* :head :angle-vector #f(0 0))
 	(send *pr2* :torso :angle-vector #f(0))
@@ -97,7 +97,7 @@
 	(send *pr2* :head :look-at (send *pr2* :larm :end-coords :worldpos))
 	(send *ri* :head-angle-vector (send *pr2* :angle-vector) 1000)
 	(speak-jp "こっぷをもってきました")
-	(hand-over)
+	(hand-over :larm) ;; larm
 	(return-from ask-query-and-move t))
       (speak-jp "こっぷはみつかりませんでした")
       (pr2-tuckarm-pose :larm)
@@ -105,75 +105,6 @@
     (send *ri* :move-to opose)
     nil))
 
-(defun wait-for-hand-impact (arm &key (timeout 30))
-  (let* ((action-name (format nil "/~c_gripper_sensor_controller/event_detector" (if (eq arm :larm) #\l #\r)))
-         (client (instance ros::simple-action-client :init action-name pr2_gripper_sensor_msgs::PR2GripperEventDetectorAction))
-         (goal (instance pr2_gripper_sensor_msgs::PR2GripperEventDetectorActionGoal :init)))
-    ;;(send goal :goal :command :trigger_conditions pr2_gripper_sensor_msgs::PR2GripperEventDetectorCommand::*FINGER_SIDE_IMPACT_OR_SLIP_OR_ACC*)
-    (send goal :goal :command :trigger_conditions pr2_gripper_sensor_msgs::PR2GripperEventDetectorCommand::*FINGER_SIDE_IMPACT_OR_ACC*)
-    (send goal :goal :command :slip_trigger_magnitude 0.02)
-    (send goal :goal :command :acceleration_trigger_magnitude 3.0) ;; m/s^2
-    (send client :wait-for-server)
-    (send client :send-goal goal)
-    (ros::ros-info "wait for touching robot hand")
-    (send client :wait-for-result :timeout timeout))
-  )
-
-(load "package://jsk_maps/src/eng2-scene.l")
-(defun pickup-sandwich () ;; this method use larm to pickup
-  (let (av0 koshi spose gpose avs avs2 tms tms2)
-    (setq av0 #f(11.6033 5 74.228 105 -90 -70 -5.72958 20 -0 65 -80 -121.542 -50 -114.56 160 -0 -21.2682))
-    (setq koshi 300 koshi/2 150)
-    (setq avs (list (float-vector koshi 14 67 101 -90 -71 -5 20 -31 46 -67 -107 -10 -79 170 0 6)
-		     (float-vector koshi -19 61 56 -120 -125 -100 24 -62 57 -67 -117 33 -79 170 0 6)
-		     (float-vector koshi -24.9115 21.5613 6.97807 -118.338 -153.238 -91.6696 175.646 -62.884 57.1758 -67.9469 -117.059 33.1559 -79.0911 170.481 0.000381 6.436)
-		     (float-vector koshi -19.4962 6.1666 11.0941 -64.9368 -156.886 -65.099 70.739 -62.8793 57.1758 -67.9469 -117.059 33.1559 -79.0913 170.478 -0.005619 5.904)))
-    (setq avs2 (list (float-vector 0 2.31667 31.3327 68.2505 -121.542 33.0023 -114.592 53.2743 -62.9885 57.1903 -67.9561 -117.234 33.1559 -79.0936 170.483 -0.005619 27.06)
-		     (float-vector 0 43.5769 27.7993 129.082 -121.54 -3.76423 -41.4207 -69.8589 -62.9933 57.1903 -67.9561 -117.234 33.1559 -79.0936 170.483 0.018381 27.06)
-		     (float-vector 0 1.87966 72.7594 92.5151 -92.2514 9.2315 -5.72958 -34.318 -63.0028 57.1903 -67.9561 -117.242 33.1559 -79.0936 170.483 0.012381 27.06)))
-    (setq tms (list 1000 1000 1000 1000) tms2 (list 3000 2000 2000))
-
-    ;;
-    (print av0)
-    (send *ri* :move-gripper :larm 0.08 :effort 20 :wait t)
-    (send *pr2* :head :look-at (v+ (send *pr2* :worldpos) #f(800 0 1000)))
-    (send *ri* :head-angle-vector (send *pr2* :angle-vector) 1000)
-    (send *ri* :angle-vector (car avs) 4000)
-    (send *ri* :wait-interpolation)
-    (speak-jp "さんどいっちをください") (unix::sleep 4)
-    (send *ri* :angle-vector-sequence avs tms)
-    (send *ri* :wait-interpolation)
-
-    (wait-for-hand-impact :larm :timeout 30)
-
-    (send *ri* :move-gripper :larm 0.005 :effort 15 :wait t)
-    (unix:sleep 5)
-    (send *ri* :angle-vector-sequence (append (cdr (reverse avs)) (list (car avs2))) tms)
-    (send *ri* :wait-interpolation)
-    (send *ri* :angle-vector-sequence (append (cdr avs2) (list av0)) tms2)
-    (send *ri* :wait-interpolation)
-    (speak-jp "どうもありがとう") (unix::sleep 5)
-    ))
-
-(defun tewatashi (arm)
-  (let ((av0 (send *ri* :state :potentio-vector))
-	(tuckarm (or (check-tuckarm-pose) arm)))
-    (send *pr2* :reset-pose)
-    (send *pr2* :head :look-at (v+ #f(1000 0 900) (send *pr2* :worldpos)))
-    (send *ri* :angle-vector (send *pr2* :angle-vector))
-    (send *ri* :wait-interpolation)
-    ;;
-    (send *ri* :stop-grasp arm)
-    (send *pr2* arm :inverse-kinematics
-	  (make-coords :pos (v+ #f(600 0 700) (send *pr2* :worldpos))))
-    (send *ri* :angle-vector (send *pr2* :angle-vector))
-    (send *ri* :wait-interpolation)
-    (wait-for-hand-impact arm :timeout 10)
-    (unix::sleep 5)
-    (send *ri* :start-grasp arm)
-    ;;
-    (pr2-tuckarm-pose tuckarm)
-    ))
 
 
 (defun ask-query-and-pick (&optional (type "Sandwich"))
@@ -189,7 +120,7 @@
     ;;
     (send *ri* :move-to spose)
     ;;
-    (tewatashi :larm)
+    (hand-over :larm)
   ))
 
 (defun tmp-demo-0920 ()
@@ -200,7 +131,8 @@
     (setq spose (send *tfl* :lookup-transform "/map" "/base_footprint" (ros::time 0)))
     (setq *opose* spose)
     ;; go to fridge, and check inside
-    (demo-open-fridge :go-back nil :pickup t)
+    (demo-open-fridge (send *scene* :spot "/eng2/7f/room73B2-fridge-front")
+		      :go-back nil :pickup t)
     ;;
     (setq gpose (cadr (assoc "POSE_SPOT" (car (typical-place-to-buy-omics type)) :test #'equal)))
     ;; rarm
@@ -210,7 +142,7 @@
     ;; rarm
     (send *ri* :move-to spose)
     ;; rarm
-    (tewatashi :larm)
+    (hand-over :larm)
     ))
 
 (defun demo (&rest args)
@@ -240,14 +172,14 @@
 ;;
 ;; to debug ...
 ;;(check :type \"cmu\")  ;; to start recognize
-;;(pick :larm) ;; to pickup using openrave
-;;(demo-open-fridge) ;; to go and open the fridge
+;;(pick *obj* :larm) ;; to pickup using openrave
+;;(demo-open-fridge fridge-front) ;; to go and open the fridge
 ")
 
 
 (defun daa ()
-  (setq spose (send *tfl* :lookup-transform "/map" "/base_footprint" (ros::time 0)))
-  (speak-jp "ごようけんはなんですか")
+  (setq spose (send *ri* :state :worldcoords))
+;;  (speak-jp "ごようけんはなんですか")
   (unix::sleep 3)
   ;;
 ;  (setq cand1 (send *scene* :spot "/eng2/7f/room73B2-front-kitchen-table"))
@@ -255,8 +187,9 @@
 ;  (if (check :type "sandwich")
 ;      (pick :larm))
   ;;
-  (demo-open-fridge :go-back nil :pickup "sandwich")
+  (demo-open-fridge (send *scene* :spot "/eng2/7f/room73B2-fridge-front")
+		    :go-back nil :pickup "box")
   ;;
   (send *ri* :move-to spose)
-  (tewatashi :larm)
+  (hand-over :larm)
   )
