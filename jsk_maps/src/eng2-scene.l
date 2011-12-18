@@ -149,7 +149,7 @@
      `(:rot #2f((-1.0 0.0 0.0) (0.0 -1.0 0.0) (0.0 0.0 1.0))
 	    :pos ,(float-vector 1300 8900 0.0)
 	    :name "/eng2/7f/room73B2-kitchen-drawer")
-     `(:pos (float-vector 940 6950 0) :rpy (float-vector -0.580 0 0)
+     `(:pos ,(float-vector 940 6950 0) :rpy ,(float-vector -0.580 0 0)
 	    :name "/eng2/7f/room73B2-fridge-front")
      ;; `(:rot #2f((-1.0 0.0 0.0) (0.0 -1.0 0.0) (0.0 0.0 1.0))
      ;;        :pos ,(float-vector 1300 8974 0.0)
