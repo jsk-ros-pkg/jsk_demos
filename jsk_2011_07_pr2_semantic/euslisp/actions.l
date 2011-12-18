@@ -268,7 +268,7 @@
    )))
 
 (defun check-pcl ()
- (let ((ray_srv "/pointcloud_screenpoint/screen_to_point")
+ (let ((ray_srv "/pointcloud_screenpoint_nodelet/screen_to_point")
        (av (send *pr2* :angle-vector))
        cam 2dpos req res 3dpos rot pos)
    (when (not (ros::wait-for-service ray_srv 5))
