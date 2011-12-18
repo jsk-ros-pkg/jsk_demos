@@ -247,9 +247,9 @@
     (send c1 :locate (float-vector (+ 33319 2020) 0 0))
     (send a1 :assoc c1)
 
-	;;
-	(send a3 :dissoc a4)
-	(send a3 :orient pi :z)
+    ;;
+    (send a3 :dissoc a4)
+    (send a3 :orient pi :z)
 
     ;;
     (list a1 a2 a3 a4 b1 b2 c1 c2 d1 d2 d3 d4 7a-mini-kitchen)))
@@ -474,7 +474,7 @@
 
 	(setq rooms (append 71rooms 72rooms 73rooms corridors))
 	(setq 73b1 (find "73b1" rooms
-					 :test #'string= :key #'(lambda(x)(send x :name))))
+                         :test #'string= :key #'(lambda(x)(send x :name))))
 	(dolist (rm rooms)
 	  (when (send rm :parent) (send (send rm :parent) :dissoc rm))
 	  (gl::transparent rm 0.3))
