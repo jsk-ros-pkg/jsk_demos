@@ -12,23 +12,6 @@
       (send tra :name frame-id)
       tra)))
 
-;; (defun move-to (coords &key (retry 10))
-;;   (let (cur cur2 diff (ret nil))
-;;     (when (send *ri* :move-to coords :retry retry
-;; 		:frame-id (send coords :name)
-;; 		:wait-for-server-timeout 20)
-;;       (setq cur (send *tfl* :lookup-transform "/map" "/base_footprint" (ros::time 0)))
-;;       (setq cur2 (send cur :copy-worldcoords))
-;;       (setq diff (v- (send co :worldpos) (send cur :worldpos)))
-;;       (setq diff (send (send cur2 :inverse-transformation) :rotate-vector diff))
-;;       (when (< (norm diff) 500) ;; path length < 500mm
-;; 	(send *ri* :go-velocity (/ (elt diff 0) 3000) (/ (elt diff 1) 3000)
-;; 	      (/ (elt (car (rpy-angle (send (send cur :transformation co) :worldrot))) 0) 3)
-;; 	      3000) ;; 3sec
-;; 	(unix::sleep 3)
-;; 	(setq ret t)))
-;;     ret ))
-
 (defun check-current-floor (&optional pose) ;; :name == frame_id
   (if pose
       (setq pose (transform-pose-to-target-frame pose (send *scene* :name)))

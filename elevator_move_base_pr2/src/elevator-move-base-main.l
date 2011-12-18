@@ -311,9 +311,6 @@
   (clear-costmap)
   t)
 
-;; test macro
-(defmacro with-forms (head &rest forms) `(progn ,@(mapcar #'(lambda(f)(append head f)) forms)))
-
 ;; front-coords, outside-panel-name, outside-button, inside-coords, inside-panel-name, target-floor, outside-coords
 (defun elevator-state-machine ()
   (let ((sm (instance state-machine :init))
@@ -325,7 +322,7 @@
     (send sm :add-node (instance state :init :costmap-for-elevator 'costmap-for-elevator))
     (send sm :add-node (instance state :init :push-outside (push-state-machine)
 				 :remap-list '((panel-name . outside-panel-name) (button . outside-button))))
-1;    (send sm :add-node (instance state :init :check-elevator-empty 'check-until-elevator-empty))
+;;    (send sm :add-node (instance state :init :check-elevator-empty 'check-until-elevator-empty))
     (send sm :add-node (instance state :init :speak-fail '(lambda(x)(speak-jp "にふんたちました") t)))
     (send sm :add-node (actionlib-client-state
 			:move-inside move-client :timeout 120 :retry t
