@@ -17,6 +17,7 @@
   </node>
 
   <include file="$(find jsk_perception)/sample/milktea-box.launch"/>
+  <include file="$(find jsk_perception)/sample/rimokon-pose.launch"/>
 
   <node pkg="jsk_perception" type="point_pose_extractor"
 	name="cup_detector1" ns="/narrow_stereo/left">
@@ -68,13 +69,16 @@
   	   ros-package-path="$(env ROS_PACKAGE_PATH)"/>
   <machine name="c2" address="c2" ros-root="$(env ROS_ROOT)"
   	   ros-package-path="$(env ROS_PACKAGE_PATH)"/>
-  <include file="$(find jsk_2011_07_pr2_semantic)/launch/pr2_gripper_sensor_action/pr2_gripper_sensor_actions.launch"/>
+  <!--include file="$(find jsk_2011_07_pr2_semantic)/launch/pr2_gripper_sensor_action/pr2_gripper_sensor_actions.launch"/-->
+
   <!-- for accurate object position -->
   <!-- launch on c1
   <include file="$(find jsk_2011_07_pr2_semantic)/launch/jsk_pcl_ros/pointcloud_screenpoint.launch"/>
   -->
+
  <!-- for collision avoidance in arm planning -->
-  <include file="$(find pr2eus_openrave)/launch/pr2_openrave_armplan.launch"/>
+ <!--include file="$(find pr2eus_openrave)/launch/pr2_openrave_armplan.launch"/-->
+
   <sphinxdoc><![CDATA[
 This script starts detector of cup-texture.
 

@@ -85,7 +85,7 @@
       (setq avs (send *ri* :move-end-coords-plan via
 		      :move-target arm :use-torso t))
       (unless avs
-	(speak-jp "あいけいがとけませんでした")))
+	(speak-jp "あい'/けい'が/とけませ'んでした。")))
     ;; if openrave is failed or not exists
     (when (null avs)
       (unless (listp via) (setq via (list via)))
