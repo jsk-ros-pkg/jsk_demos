@@ -92,7 +92,11 @@
       (dolist (rm 7rms)
 	(send rm :name (concatenate string "/eng2/7f/" (send rm :name)))
 	(send 7f-o :assoc rm)
-	(send rm :transform trans :world)))
+	(send rm :transform trans :world)
+	(mapc #'(lambda(o)(unless (send o :parent)
+			    (send o :transform trans :world)))
+	      (send-if-found nil rm :objects))
+	))
 
     ;;
     (make-cascoords-tree
@@ -177,7 +181,12 @@
       (dolist (rm 8rms)
 	(send rm :name (concatenate string "/eng2/8f/" (send rm :name)))
 	(send 8f-o :assoc rm)
-	(send rm :transform trans :world)))
+	(send rm :transform trans :world)
+	(mapc #'(lambda(o)(unless (send o :parent)
+			    (send o :transform trans :world)))
+	      (send-if-found nil rm :objects))
+	))
+    ;;
     (make-cascoords-tree
      map
      `(:rot #2f((0.0 -1.0 0.0) (1.0 0.0 0.0) (0.0 0.0 1.0))
