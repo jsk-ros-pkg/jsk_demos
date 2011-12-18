@@ -144,7 +144,7 @@
 	    :pos ,(float-vector -5500.0 4800.0 0.0)
 	    :name "/eng2/7f/room73A3-printer-front")
      `(:rot #2f((-1.0 0.0 0.0) (0.0 -1.0 0.0) (0.0 0.0 1.0))
-	    :pos ,(float-vector 2850 8600 0.0)
+	    :pos ,(float-vector 2960 8600 0.0)
 	    :name "/eng2/7f/room73B2-coe-shelf")
      `(:rot #2f((-1.0 0.0 0.0) (0.0 -1.0 0.0) (0.0 0.0 1.0))
 	    :pos ,(float-vector 1300 8900 0.0)
