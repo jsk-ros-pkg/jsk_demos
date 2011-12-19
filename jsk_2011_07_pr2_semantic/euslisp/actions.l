@@ -10,13 +10,13 @@
 ;(ros::roseus "grasp_cup")
 
 ;; speak function
-(defun speak-jp (jp-str)
+(defun speak-jp (jp-str &key (phont "aq_f1c.phont"))
   (ros::publish "robotsound"
                 (instance sound_play::SoundRequest :init
                           :sound sound_play::SoundRequest::*say*
                           :command sound_play::SoundRequest::*play_once*
                           :arg jp-str
-			  :arg2 "aq_rm.phont")))
+			  :arg2 phont)))
 
 ;; calculate via point
 ;; tmp : object coords wrt robot coordinates
@@ -49,7 +49,7 @@
 	   (send (car via) :rotate pi/2 :y)
 	   )
 	  ((substringp "controller" (send obj :name))
-	   (send tmp :translate #f(0 0 -40) *pr2*) ;; move-to handle
+	   (send tmp :translate #f(0 0 -60) *pr2*) ;; move-to handle
 	   (send tmp :rotate pi/2 :y)
 	   (send tmp :rotate pi/2 :x)
 	   (setq via (send tmp :copy-worldcoords))
@@ -102,7 +102,7 @@
 	     (return-from pick nil))))
     ;;
     (send *ri* :wait-interpolation)
-    (send *ri* :move-gripper arm 0.08 :wait t)
+    (send *ri* :move-gripper arm 0.09 :wait t)
     ;;
     (ros::spin-once)
     (setq vav (send *ri* :state :potentio-vector))
@@ -199,6 +199,8 @@
     (send *ri* :angle-vector-sequence (append (cdr (reverse avs)) (list av)) tms)
     (send *ri* :move-gripper arm 0.00 :wait nil)
     (send *ri* :wait-interpolation)
+    ;;
+    (send *pr2* :angle-vector (send *ri* :state :potentio-vector))
     (pr2-tuckarm-pose tuckarm)
     ))
 
@@ -337,30 +339,40 @@
       )
     (send *ri* :angle-vector-sequence (reverse avs) tms)
     (send *ri* :wait-interpolation)
-    ;; (send *ri* :move-gripper hand 0.09) ;; open
-    ))
+    ;;
+    (unix::sleep 1) (ros::spin-once)
+    (send *pr2* :angle-vector (send *ri* :state :potentio-vector))
+    (setq end-pt (send *pr2* hand :end-coords :worldpos))
+    (setq idx (position (find-extream ret #'(lambda(x)(distance (send x :worldpos) end-pt)) #'<) ret))
+    (ros::ros-info "idx = [~a/~a]" idx (length ret))
+    (when (< idx (/ (length ret) 2))
+      (send *ri* :move-gripper hand 0.09) ;; open
+      (return-from open-fridge nil))
+    t ))
 
 (defun open-fridge-by-marker (&key (pickup nil))
-  (let ((handle (send *obj* :copy-worldcoords)) avs-tms ret)
+  (let ((handle (send *obj* :copy-worldcoords)) (ret :not-open))
     (setq *node-debug* nil)
     ;; open the door
-    (setq avs-tms (open-fridge :rarm handle (/ pi 3)))
-    (ros::spin-once)
-    (send *pr2* :angle-vector (send *ri* :state :angle-vector))
-    (send *pr2* :larm :shoulder-r :joint-angle 80)
+    (when (open-fridge :rarm handle (/ pi 3))
+      ;;
+      (ros::spin-once)
+      (send *pr2* :angle-vector (send *ri* :state :angle-vector))
+      (send *pr2* :larm :shoulder-r :joint-angle 80)
 ;;  (send *pr2* :head :look-at (v+ (send handle :worldpos) #f(100 -200 -100)))
-    (send *pr2* :head :look-at (v+ (send handle :worldpos) #f(0 -400 -200)))
-    (send *ri* :angle-vector (send *pr2* :angle-vector) 1000)
-    (send *ri* :wait-interpolation)
-    ;; pick object inside fridge
-    (cond (pickup
-	   (dotimes (trial 3)
-	     (if (check :type pickup)
-		 (setq ret (pick *obj* :larm)))
-	     (if ret (return)))
-	   (unless ret (speak-jp "ほしいものはありません")))
-	  (t
-	   (setq ret t)))
+      (send *pr2* :head :look-at (v+ (send handle :worldpos) #f(0 -400 -200)))
+      (send *ri* :angle-vector (send *pr2* :angle-vector) 1000)
+      (send *ri* :wait-interpolation)
+      ;; pick object inside fridge
+      (cond (pickup
+	     (dotimes (trial 3)
+	       (if (check :type pickup)
+		   (setq ret (pick *obj* :larm)))
+	       (if ret (return)))
+	     (unless ret (speak-jp "ほしいものはありません")))
+	    (t
+	     (setq ret t)))
+      )
     ;; close the door
     (send *ri* :move-gripper :rarm 0.09)
     (ros::spin-once)
@@ -369,7 +381,9 @@
     (send *ri* :rarm-angle-vector (send *pr2* :angle-vector) 2000)
     (send *ri* :wait-interpolation)
     (send *ri* :move-gripper :rarm 0.0 :wait nil)
-    (pr2-tuckarm-pose (if pickup :larm :rarm))
+    (if (eq ret :not-open)
+	(pr2-tuckarm-pose :rarm)
+      (pr2-tuckarm-pose (if pickup :larm :rarm)))
     ret ))
 
 (defun demo-open-fridge (co &key (go-back t) (pickup nil))
@@ -387,14 +401,18 @@
     (send *ri* :move-to co)
     (send *pr2* :move-to (send *ri* :state :worldcoords) :world)
     ;;
-    (send *pr2* :head :angle-vector #f(0 0))
-    (send *ri* :head-angle-vector (send *pr2* :angle-vector) 1000)
-    (send *ri* :wait-interpolation)
-    (check :type "fridge")
-    (send *pr2* :head :look-at (send *obj* :worldpos))
-    (send *ri* :head-angle-vector (send *pr2* :angle-vector) 1000)
-    (send *ri* :wait-interpolation)
-    (setq ret (open-fridge-by-marker :pickup pickup))
+    (dotimes (trial 3)
+      (send *pr2* :head :angle-vector #f(0 0))
+      (send *ri* :head-angle-vector (send *pr2* :angle-vector) 1000)
+      (send *ri* :wait-interpolation)
+      (check :type "fridge")
+      (send *pr2* :head :look-at (send *obj* :worldpos))
+      (send *ri* :head-angle-vector (send *pr2* :angle-vector) 1000)
+      (send *ri* :wait-interpolation)
+      (setq ret (open-fridge-by-marker :pickup pickup))
+      (unless (eq ret :not-open)
+	(setq ret nil)
+	(return)))
     (send *pr2* :torso :angle-vector #f(0))
     (send *ri* :angle-vector (send *pr2* :angle-vector) 1000)
     (send *ri* :wait-interpolation)
@@ -434,6 +452,6 @@
     (send *ri* :wait-interpolation)
     (send *ri* :angle-vector-sequence (append (cdr avs2) (list av0)) tms2)
     (send *ri* :wait-interpolation)
-    (speak-jp "あ'りがとう") (unix::sleep 5)
+    (speak-jp "あり'/がとお+ございます") (unix::sleep 5)
     ))
 
