@@ -5,7 +5,7 @@
 
 (defun make-eng8-b1f-scene ()
   (let* (scene map floor-names rooms spots objects)
-    (setq map (make-floor-plane (ros::resolve-ros-path "package://jsk_maps/raw_maps/eng8-b1f-0.05.pgm") 50 -38000 -70000 :name "/eng8/b1f/floor-plane"))
+    (setq map (make-floor-plane (ros::resolve-ros-path "package://jsk_maps/raw_maps/eng8-b1f-0.05.pgm") 50 -7500 -75000 :name "/eng8/b1f/floor-plane"))
 
     ;; B1F
     (make-cascoords-tree
@@ -23,20 +23,21 @@
 	    :name "/eng8/b1f/elevator_call_panel")
      '(:pos #f(4850 -31550 1000) :rpy #f(3.1416 0 0)
 	    :name "/eng8/b1f/elevator_inside_panel"))
-    
-    (setq scene (instance nav-scene-model :init :name "/eng8/b1f" :objects (append (list map) (send map :descendants))))
+
+    (setq scene
+	  (instance nav-scene-model :init :name "/eng8/b1f"
+		    :objects (append (list map) (send map :descendants))))
     (send scene :map map)
     scene ))
 
 
 (defun make-eng8-1f-scene ()
   (let* (scene map floor-names rooms spots objects)
-    (setq map (make-floor-plane (ros::resolve-ros-path "package://jsk_maps/raw_maps/eng8-1f-0.05.pgm") 50 -38000 -70000 :name "/eng8/1f/floor-plane"))
+    (setq map (make-floor-plane (ros::resolve-ros-path "package://jsk_maps/raw_maps/eng8-1f-0.05.pgm") 50 -8000 -70000 :name "/eng8/1f/floor-plane"))
 
     ;; 1F
     (make-cascoords-tree
-     (find "/eng8/1f" (send map :descendants)
-	   :test #'string= :key #'(lambda(x)(send x :name)))
+     map
      '(:rot #2f((0.0 1.0 0.0) (-1.0 0.0 0.0) (0.0 0.0 1.0))
 	    :pos #f(3200.0 -29100.0 0.0)
 	    :name "/eng8/1f/elevator_call_panel-front")
@@ -56,19 +57,20 @@
 	    :name "/eng8/1f/elevator_call_panel")
      '(:pos #f(4850 -31550 1000) :rpy #f(3.1416 0 0)
 	    :name "/eng8/1f/elevator_inside_panel"))
-    
-    (setq scene (instance nav-scene-model :init :name "/eng8/1f" :objects (append (list map) (send map :descendants))))
+
+    (setq scene
+	  (instance nav-scene-model :init :name "/eng8/1f"
+		    :objects (append (list map) (send map :descendants))))
     (send scene :map map)
     scene ))
 
 (defun make-eng8-6f-scene ()
   (let* (scene map floor-names rooms spots objects)
-    (setq map (make-floor-plane (ros::resolve-ros-path "package://jsk_maps/raw_maps/eng8-6f-0.05.pgm") 50 -38000 -70000 :name "/eng8/6f/floor-plane"))
+    (setq map (make-floor-plane (ros::resolve-ros-path "package://jsk_maps/raw_maps/eng8-6f-0.05.pgm") 50 -8000 -70000 :name "/eng8/6f/floor-plane"))
 
     ;; 6F
     (make-cascoords-tree
-     (find "/eng8/6f" (send map :descendants)
-	   :test #'string= :key #'(lambda(x)(send x :name)))
+     map
      '(:rot #2f((-1.0 0.0 0.0) (0.0 -1.0 0.0) (0.0 0.0 1.0))
 	    :pos #f(7500.0 2300.0 0.0)
 	    :name "/eng8/6f/room602-kitchen")
@@ -104,7 +106,9 @@
      '(:pos #f(4850 -31550 1000) :rpy #f(3.1416 0 0)
 	    :name "/eng8/6f/elevator_inside_panel"))
     
-    (setq scene (instance nav-scene-model :init :name "/eng8/6f" :objects (append (list map) (send map :descendants))))
+    (setq scene
+	  (instance nav-scene-model :init :name "/eng8/6f"
+		    :objects (append (list map) (send map :descendants))))
     (send scene :map map)
     scene ))
 

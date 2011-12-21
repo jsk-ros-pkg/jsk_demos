@@ -8,11 +8,11 @@
   (let* ((map-img (read-image-file imgfile))
 	 (width (* resolution (send map-img :width)))
 	 (height (* resolution (send map-img :height)))
-	 (map (make-cube width height 1)) top-face
+	 (map (make-cube height width 1)) top-face
 	 nav-scene)
-    (send map :translate-vertices
-	  (float-vector (+ (/ height 2) cy) (- 0 (/ width 2) cx) 0))
     (send map :rotate-vertices pi/2 :z)
+    (send map :translate-vertices
+	  (float-vector (+ (/ width 2) cx) (+ (/ height 2) cy) 0))
     (setq top-face (find-if
 		    #'(lambda (f) (equal (send f :id) '(:top)))
 		    (send map :faces)))
