@@ -9,15 +9,6 @@
 
 ;(ros::roseus "grasp_cup")
 
-;; speak function
-(defun speak-jp (jp-str &key (phont "aq_f1c.phont"))
-  (ros::publish "robotsound"
-                (instance sound_play::SoundRequest :init
-                          :sound sound_play::SoundRequest::*say*
-                          :command sound_play::SoundRequest::*play_once*
-                          :arg jp-str
-			  :arg2 phont)))
-
 ;; calculate via point
 ;; tmp : object coords wrt robot coordinates
 ;; *pr2* :world, obj :world
