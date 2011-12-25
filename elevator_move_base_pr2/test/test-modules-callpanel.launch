@@ -1,0 +1,33 @@
+<launch>
+
+  <include file="$(find pr2_machine)/sim.machine"/>
+  <include file="$(find elevator_move_base_pr2)/launch/elevator_move_base_modules.xml" />
+
+  <!-- inputs are tf, image_raw, camera_info, joint_states -->
+  <node pkg="rosbag" type="play" name="rosbag_play"
+        args="$(find elevator_move_base_pr2)/test/test-eng2-call-panel.bag -l -r 0.2 --clock" />
+	
+  <!-- image_raw, camera_info -> image_rect -->
+  <!-- image_rect -> ImageFeature0D -->
+  <group ns="/narrow_stereo/left" >
+    <node pkg="image_proc" type="image_proc" name="image_proc">
+    <param name="queue_size" value="100"/> <!-- image is throttled ?? -->
+    </node>
+    <node pkg="imagesift" type="imagesift" name="imagesift" >
+      <remap from="image" to="image_rect" />
+    </node>
+  </group>
+
+  <group ns="/wide_stereo/left" >
+    <node pkg="image_proc" type="image_proc" name="image_proc"/>
+  </group>
+
+  <!-- test for panel pose detection -->
+  <test test-name="panel_pose_detection" pkg="roseus" type="roseus"
+     args="$(find elevator_move_base_pr2)/test/test-panel-pose-detection.l"/>
+
+  <!-- test for button color recognition -->
+
+  <!-- test for number recognition -->
+
+</launch>
