@@ -244,9 +244,8 @@
 			(if height (* 0.001 height) (send sobj :height)))
 	))
 (defun dump-spot->yaml (spot fd) ;; only cascoords
-  (if (not (and (eq (class spot) cascaded-coords)
-				(eps= 0.0 (elt (send spot :worldpos) 2) 50)))
-	  (return-from dump-spot->yaml))
+  (if (not (eq (class spot) cascaded-coords))
+      (return-from dump-spot->yaml))
   (let* ((type (conversion-rule spot))
 		 (pos (scale 0.001 (send spot :worldpos)))
 		 (qu (matrix2quaternion (send spot :worldrot))))
@@ -255,7 +254,7 @@
 	(format fd "        frame_id: ~a~%" (send (send spot :parent) :name))
 	(dump-properties spot fd)
 	(format fd "        translation: {x: ~0,4f, y: ~0,4f, z: ~0,4f}~%"
-			(elt pos 0) (elt pos 1)	0.0) ;; global pose
+			(elt pos 0) (elt pos 1)	(elt pos 2)) ;; global pose
 	(format fd "        rotation: {w: ~0,4f, x: ~0,4f, y: ~0,4f, z: ~0,4f}~%"
 			(elt qu 0) (elt qu 1) (elt qu 2) (elt qu 3)))
   )
@@ -263,14 +262,15 @@
 (defun dump-building->yaml (filename scene type &key (view nil))
   (let* ((floors (send scene :floors))
 	 (rooms (remove-if-not #'(lambda(x)(derivedp x scene-model))
-			       (flatten (send-all floors :objects))))
-	 (objs (set-difference (send scene :objects) (append floors rooms)))
-	 spots)
+                               (flatten (send-all floors :objects))))
+         (objs (set-difference (send scene :objects) (append floors rooms)))
+         spots)
     (dolist (rm rooms)
       (setq objs (append objs (send rm :objects))))
-	(setq spots (remove-if-not #'(lambda(x)(eq cascaded-coords (class x))) objs))
-	(setq objs (remove-if #'(lambda(x)(eq cascaded-coords (class x))) objs))
-	(make-name-unique (append floors rooms spots objs))
+    (setq spots (remove-if-not #'(lambda(x)(eq cascaded-coords (class x))) objs))
+    (setq objs (remove-if #'(lambda(x)(eq cascaded-coords (class x))) objs))
+    (setq spots (remove-if #'(lambda(x)(< 50.0 (apply #'min (mapcar #'(lambda(f)(abs (- (elt (send f :worldpos) 2) (elt (send x :worldpos) 2)))) floors)))) spots))
+    (make-name-unique (append floors rooms spots objs))
 	;;
 	(when view (objects (list scene)))
 	(if (eq type :yaml)
@@ -338,7 +338,8 @@
 	    (send obj :move-to (send room :copy-worldcoords) :world))))
 	(let ((scene (make-eng2-scene))
               73b2 73a3 83b1 subway
-              cup1 cup2 cup3 cup4 cup5 cupf1 cupf2 cupf3 cupf4 cupf5)
+              cup1 cup2 cup3 cup4 cup5 cup6
+	      cupf1 cupf2 cupf3 cupf4 cupf5 cupf6)
 	  ;;
 	  ;; add objects and relations here.
 	  ;;
