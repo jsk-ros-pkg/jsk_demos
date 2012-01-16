@@ -43,6 +43,19 @@
 :- rdf_meta
   hl_path_costs_from(r,r).
 
+
+obj_room_history(Obj, Room, ObjT, RoomT):-
+  findall(_R, (owl_individual_of(_L, knowrob:'OmicsLocations'),
+               owl_has(_L, knowrob:object, _R)), 
+          _RoomTLst),
+  list_to_set(_RoomTLst, _RoomTs), 
+  member(RoomT,_RoomTs), 
+  owl_individual_of(Room,RoomT), 
+  holds(in_ContGeneric(Obj, Room),Time), 
+  owl_has(Obj,rdf:type,ObjT), 
+  owl_subclass_of(ObjT, knowrob:'Artifact').
+  
+
 vis_types:-
   visualisation_canvas(C),
   remove_object('http://www.jsk.t.u-tokyo.ac.jp/jsk_map.owl#eng2-8f-83a3',C),
