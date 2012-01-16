@@ -108,16 +108,15 @@ public:
       std::sort(vscore.begin(), vscore.end());
       double score = vscore[vscore.size()*3/4];
       if(max_score < score) { max_score = score; }
-
-      // for debug image
-      cv::circle(img, cv::Point2f(x + r*ix[ind], y + r*iy[ind]), r, CV_RGB(255,0,0), 3);
-      char text[32];
-      sprintf(text, "%.3f", score);
-      cv::putText (img, std::string(text), cv::Point(x-30+4*r*ix[ind], y+70+r+r*iy[ind]),
-		   0, 0.7, CV_RGB(0,0,0),
-		   2, 8, false);
-
     }
+
+    // for debug image
+    cv::circle(img, cv::Point2f(x, y), r, CV_RGB(255,0,0), 3);
+    char text[32];
+    sprintf(text, "brightness = %.3f", max_score);
+    cv::putText (img, std::string(text), cv::Point(x-100, y+70+r),
+		 0, 0.7, CV_RGB(255,0,0),
+		 2, 8, false);
 
     std_msgs::Float32 score_msg;
     score_msg.data = max_score;
