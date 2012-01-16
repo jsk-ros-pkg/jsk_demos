@@ -37,8 +37,8 @@
 :- use_module(library('semweb/actionmodel')).
 
 
-# jsk_map_vert :-
-#   owl_parser:owl_parse('@LOCAL_PACKAGE_PATH@/owl/jsk_map_vert.owl', false, false, true).
+% jsk_map_vert :-
+%   owl_parser:owl_parse('@LOCAL_PACKAGE_PATH@/owl/jsk_map_vert.owl', false, false, true).
 
 eng2 :-
   owl_parser:owl_parse('@LOCAL_PACKAGE_PATH@/owl/eng2.owl', false, false, true).
