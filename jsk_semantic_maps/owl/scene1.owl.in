@@ -69,7 +69,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;eng2-7f-73c1"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-1"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -108,7 +108,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;eng2-7f-73c2"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-3"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -147,7 +147,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;eng2-7f-72a4"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-5"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -186,7 +186,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;eng2-7f-72a3"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-7"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -226,7 +226,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;eng2-7f-7a-mini-kitchen"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-9"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -265,7 +265,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;eng2-7f-72a1"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-11"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -304,7 +304,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;eng2-7f-73d2"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-13"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -343,7 +343,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;eng2-8f-82a1"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-15"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -382,7 +382,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;eng2-8f-82a3"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-17"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -421,7 +421,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;eng2-8f-82a2"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-19"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -460,7 +460,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;eng2-8f-82a4"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-21"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -499,7 +499,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;eng2-7f-72a2"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-23"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -538,7 +538,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;eng2-8f-83c2"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-25"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -577,7 +577,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;eng2-2f-21b2"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-27"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -616,7 +616,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;eng2-8f-83c1"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-29"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -655,7 +655,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;eng2-8f-81c1"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-31"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -694,7 +694,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;eng2-8f-81c2"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-33"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -733,7 +733,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;eng2-7f-71a4"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-35"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -772,7 +772,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;eng2-7f-72c1"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-37"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -811,7 +811,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;eng2-7f-71a1"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-39"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -850,7 +850,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;eng2-7f-71a2"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-41"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -889,7 +889,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;eng2-7f-71a3"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-43"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -928,7 +928,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;eng2-7f-72c2"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-45"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -967,7 +967,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;eng2-7f-72d4"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-47"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -1006,7 +1006,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;eng2-7f-72d1"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-49"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -1045,7 +1045,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;eng2-7f-72d2"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-51"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -1084,7 +1084,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;eng2-7f-72d3"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-53"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -1123,7 +1123,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;eng2-7f-73d4"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-55"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -1162,7 +1162,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;eng2-8f-83d4"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-57"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -1201,7 +1201,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;eng2-8f-83d3"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-59"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -1240,7 +1240,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;eng2-8f-83d2"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-61"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -1279,7 +1279,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;eng2-8f-83d1"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-63"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -1319,7 +1319,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;eng2-8f-8a-mini-kitchen"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-65"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -1358,7 +1358,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;eng2-8f-82d4"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-67"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -1397,7 +1397,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;eng2-8f-82d2"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-69"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -1436,7 +1436,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;eng2-8f-82d3"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-71"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -1475,7 +1475,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;eng2-8f-82d1"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-73"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -1514,7 +1514,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;eng2-8f-83b2"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-75"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -1553,7 +1553,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;eng2-7f-73d3"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-77"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -1592,7 +1592,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;eng2-8f-81d4"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-79"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -1631,7 +1631,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;eng2-8f-81d1"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-81"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -1670,7 +1670,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;eng2-8f-81d3"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-83"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -1709,7 +1709,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;eng2-8f-81d2"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-85"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -1748,7 +1748,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;eng2-2f-22b"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-87"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -1787,7 +1787,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;eng2-7f-73a2"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-89"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -1826,7 +1826,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;eng2-7f-73a3"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-91"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -1865,7 +1865,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;eng2-7f-73a1"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-93"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -1904,7 +1904,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;eng2-7f-73a4"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-95"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -1943,7 +1943,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;eng2-7f-71d2"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-97"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -1982,7 +1982,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;eng2-8f-82c2"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-99"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -2021,7 +2021,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;eng2-8f-82c1"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-101"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -2060,7 +2060,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;eng2-8f-83a4"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-103"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -2099,7 +2099,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;eng2-8f-83a1"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-105"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -2140,7 +2140,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;eng2-8f-83a2"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-107"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -2179,7 +2179,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;eng2-8f-83a3"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-109"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -2218,7 +2218,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;eng2-8f-81a2"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-111"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -2257,7 +2257,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;eng2-8f-81a3"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-113"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -2296,7 +2296,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;eng2-8f-81a1"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-115"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -2335,7 +2335,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;eng2-8f-81a4"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-117"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -2374,7 +2374,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;eng2-7f-71c2"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-119"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -2413,7 +2413,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;eng2-7f-71c1"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-121"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -2453,7 +2453,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;eng2-7f-73b2"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-123"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -2492,7 +2492,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;eng2-7f-73b1"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-125"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -2531,7 +2531,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;eng2-7f-72b2"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-127"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -2570,7 +2570,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;eng2-7f-72b1"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-129"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -2609,7 +2609,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;eng2-7f-71b"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-131"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -2648,7 +2648,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;eng2-8f-82b1"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-133"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -2687,7 +2687,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;eng2-8f-82b2"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-135"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -2726,7 +2726,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;eng2-2f-subway-shop"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-137"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -2765,7 +2765,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;eng2-8f-83b1"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-139"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -2804,7 +2804,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;eng2-2f-21a"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-141"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -2843,7 +2843,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;eng2-2f-22a"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-143"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -2882,7 +2882,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;eng2-7f-71d4"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-145"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -2921,7 +2921,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;eng2-7f-71d3"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-147"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -2960,7 +2960,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;eng2-8f-81b2"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-149"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -2999,7 +2999,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;eng2-7f-71d1"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-151"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -3038,7 +3038,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;eng2-7f-73d1"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-153"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -3082,7 +3082,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;eng2-2f"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-155"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -3157,7 +3157,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;eng2-7f"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-157"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -3232,7 +3232,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;eng2-8f"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-159"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -3271,7 +3271,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;eng2-3f"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-161"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -3309,7 +3309,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;room73b2-bariera-1400-middle"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-163"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -3347,7 +3347,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;room73b2-hrp2-rack"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-165"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -3385,7 +3385,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;subway-showcase"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-167"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -3423,7 +3423,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;73b1"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-169"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -3461,7 +3461,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;room73b2-kitchen-shelf"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-171"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -3499,7 +3499,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;room73a3-clock"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-173"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -3537,7 +3537,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;room73a3-bariera-1400-middle-9"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-175"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -3575,7 +3575,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;room73a3-unknown-1200-desk"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-177"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -3613,7 +3613,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;room73b2-cup"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-179"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -3651,7 +3651,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;room73b2-empty-box"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-181"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -3690,7 +3690,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;cup-C"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-183"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -3729,7 +3729,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;cup-cotesys"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-185"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -3767,7 +3767,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;subway-colorful-chair-49"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-187"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -3805,7 +3805,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;subway-colorful-chair-48"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-189"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -3843,7 +3843,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;room73b2-azuma-broom"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-191"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -3881,7 +3881,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;subway-colorful-chair-46"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-193"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -3919,7 +3919,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;subway-colorful-chair-45"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-195"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -3957,7 +3957,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;subway-colorful-chair-44"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-197"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -3995,7 +3995,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;subway-colorful-chair-43"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-199"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -4033,7 +4033,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;subway-colorful-chair-42"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-201"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -4071,7 +4071,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;subway-colorful-chair-41"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-203"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -4109,7 +4109,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;subway-colorful-chair-40"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-205"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -4147,7 +4147,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;room73b2-dish"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-207"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -4185,7 +4185,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;eng2-8f-elevator"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-209"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -4223,7 +4223,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;room73b2-bottle"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-211"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -4261,7 +4261,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;82a1"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-213"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -4299,7 +4299,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;82a3"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-215"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -4337,7 +4337,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;82a2"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-217"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -4375,7 +4375,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;82a4"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-219"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -4413,7 +4413,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;room73b2-knife"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-221"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -4451,7 +4451,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;subway-colorful-chair-26"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-223"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -4489,7 +4489,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;room73b2-meeting-table"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-225"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -4527,7 +4527,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;subway-menu-panel"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-227"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -4565,7 +4565,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;room73b2-unknown-1200-desk-3"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-229"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -4603,7 +4603,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;room73b2-unknown-1200-desk-2"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-231"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -4641,7 +4641,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;room73b2-unknown-1200-desk-1"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-233"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -4679,7 +4679,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;room73b2-unknown-1200-desk-0"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-235"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -4717,7 +4717,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;room73b2-unknown-1200-desk-4"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-237"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -4755,7 +4755,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;71b"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-239"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -4793,7 +4793,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;82d2"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-241"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -4831,7 +4831,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;82d3"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-243"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -4869,7 +4869,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;room73b2-trashbox0"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-245"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -4907,7 +4907,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;room73b2-askul-1200x700-desk-0"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-247"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -4945,7 +4945,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;room73b2-cupboard-left"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-249"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -4983,7 +4983,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;room73b2-askul-1400-desk"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-251"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -5021,7 +5021,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;room73b2-sponge"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-253"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -5059,7 +5059,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;82d1"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-255"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -5097,7 +5097,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;subway-table-60"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-257"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -5135,7 +5135,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;82d4"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-259"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -5173,7 +5173,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;room73b2-sushi-cup2"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-261"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -5212,7 +5212,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;cup-mit"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-263"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -5250,7 +5250,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;room73a3-73a3-ground"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-265"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -5288,7 +5288,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;83d3"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-267"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -5326,7 +5326,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;room73b2-bariera-1200-corner"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-269"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -5364,7 +5364,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;subway-colorful-chair-13"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-271"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -5402,7 +5402,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;subway-colorful-chair-14"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-273"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -5440,7 +5440,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;subway-colorful-chair-15"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-275"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -5478,7 +5478,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;subway-colorful-chair-16"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-277"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -5516,7 +5516,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;subway-colorful-chair-17"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-279"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -5554,7 +5554,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;subway-colorful-chair-18"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-281"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -5592,7 +5592,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;subway-colorful-chair-19"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-283"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -5630,7 +5630,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;subway-colorful-chair-34"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-285"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -5668,7 +5668,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;room73b2-bamboo-broom"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-287"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -5706,7 +5706,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;room73b2-coe-800-shelf"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-289"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -5744,7 +5744,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;subway-colorful-chair-32"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-291"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -5782,7 +5782,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;subway-colorful-chair-33"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-293"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -5820,7 +5820,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;room83b1-door-left"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-295"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -5858,7 +5858,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;subway-colorful-chair-31"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-297"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -5896,7 +5896,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;room73b2-bariera-1200-middle-1"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-299"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -5934,7 +5934,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;room73b2-bariera-1200-middle-0"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-301"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -5972,7 +5972,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;room73b2-bariera-1200-middle-2"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-303"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -6010,7 +6010,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;eng2-hall-pole"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-305"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -6048,7 +6048,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;elevator_inside_panel"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-307"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -6087,7 +6087,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;cup-cmu"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-309"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -6125,7 +6125,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;room83b1-shelf-1"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-311"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -6163,7 +6163,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;room83b1-shelf-0"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-313"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -6201,7 +6201,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;subway-cashier"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-315"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -6239,7 +6239,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;room73b2-door-left"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-317"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -6277,7 +6277,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;eng2-2f-elevator"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-319"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -6315,7 +6315,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;subway-colorful-chair-36"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-321"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -6353,7 +6353,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;subway-colorful-chair-37"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-323"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -6391,7 +6391,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;73d4"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-325"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -6429,7 +6429,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;subway-colorful-chair-35"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-327"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -6467,7 +6467,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;73d2"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-329"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -6505,7 +6505,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;73d3"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-331"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -6543,7 +6543,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;subway-colorful-chair-30"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-333"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -6581,7 +6581,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;73d1"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-335"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -6619,7 +6619,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;subway-colorful-chair-29"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-337"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -6657,7 +6657,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;subway-colorful-chair-38"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-339"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -6695,7 +6695,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;subway-colorful-chair-39"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-341"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -6733,7 +6733,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;room83b1-uchida-1800-desk"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-343"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -6771,7 +6771,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;71a3"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-345"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -6809,7 +6809,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;room73a3-shelf-2"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-347"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -6847,7 +6847,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;71a1"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-349"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -6885,7 +6885,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;room73a3-shelf-0"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-351"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -6923,7 +6923,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;71a4"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-353"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -6961,7 +6961,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;subway-table"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-355"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -6999,7 +6999,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;83b2"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-357"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -7037,7 +7037,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;room73b2-sharp-52-aquostv"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-359"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -7075,7 +7075,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;82b1"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-361"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -7113,7 +7113,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;82b2"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-363"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -7151,7 +7151,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;21b2"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-365"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -7189,7 +7189,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;room83b1-door-right"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-367"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -7227,7 +7227,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;room73b2-panelwall-0"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-369"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -7265,7 +7265,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;room73b2-uchida-shelf-1100"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-371"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -7303,7 +7303,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;room73b2-tray"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-373"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -7341,7 +7341,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;71a2"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-375"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -7379,7 +7379,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;room73a3-shelf-1"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-377"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -7417,7 +7417,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;eng2-7f-elevator"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-379"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -7455,7 +7455,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;room83b1-83b1-ground"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-381"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -7493,7 +7493,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;subway-colorful-chair"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-383"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -7531,7 +7531,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;room73b2-uchida-shelf-1300-12"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-385"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -7569,7 +7569,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;room73b2-uchida-shelf-1300-11"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-387"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -7607,7 +7607,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;room73b2-uchida-shelf-1300-10"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-389"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -7645,7 +7645,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;73c2"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-391"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -7683,7 +7683,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;72b1"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-393"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -7721,7 +7721,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;eng2-hall-pole-4"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-395"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -7759,7 +7759,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;room73a3-bariera-1400-middle-8"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-397"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -7797,7 +7797,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;room73a3-bariera-1400-middle-7"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-399"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -7835,7 +7835,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;room73a3-bariera-1400-middle-6"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-401"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -7873,7 +7873,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;room73a3-bariera-1400-middle-5"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-403"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -7911,7 +7911,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;room73a3-bariera-1400-middle-4"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-405"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -7949,7 +7949,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;room73a3-bariera-1400-middle-3"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-407"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -7987,7 +7987,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;room73a3-bariera-1400-middle-2"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-409"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -8025,7 +8025,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;room73a3-bariera-1400-middle-1"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-411"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -8063,7 +8063,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;room73a3-bariera-1400-middle-0"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-413"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -8101,7 +8101,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;subway-colorful-chair-47"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-415"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -8139,7 +8139,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;72b2"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-417"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -8177,7 +8177,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;8a-mini-kitchen"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-419"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -8215,7 +8215,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;subway-colorful-chair-50"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-421"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -8253,7 +8253,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;subway-colorful-chair-51"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-423"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -8291,7 +8291,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;72a3"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-425"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -8329,7 +8329,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;room73b2-bed"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-427"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -8367,7 +8367,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;71c1"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-429"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -8405,7 +8405,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;83d2"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-431"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -8443,7 +8443,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;83d1"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-433"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -8481,7 +8481,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;71c2"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-435"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -8519,7 +8519,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;room83b1-wooden-table"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-437"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -8557,7 +8557,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;83d4"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-439"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -8595,7 +8595,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;room73b2-bariera-900-middle-0"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-441"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -8633,7 +8633,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;room73b2-bariera-900-middle-1"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-443"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -8671,7 +8671,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;eng2-3f-elevator"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-445"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -8709,7 +8709,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;room73b2-73b2-ground"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-447"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -8747,7 +8747,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;room73b2-bariera-1200-middle2"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-449"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -8785,7 +8785,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;7a-mini-kitchen"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-451"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -8823,7 +8823,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;room73a3-officeprinter"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-453"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -8861,7 +8861,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;subway-table-54"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-455"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -8899,7 +8899,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;22a"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-457"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -8937,7 +8937,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;73c1"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-459"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -8975,7 +8975,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;21a"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-461"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -9013,7 +9013,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;room73b2-kitchen"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-463"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -9051,7 +9051,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;72a1"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-465"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -9089,7 +9089,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;72a2"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-467"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -9127,7 +9127,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;elevator_call_panel"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-469"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -9165,7 +9165,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;72a4"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-471"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -9203,7 +9203,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;room73b2-panelwall-1"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-473"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -9241,7 +9241,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;room73b2-locker1"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-475"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -9279,7 +9279,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;room73b2-locker2"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-477"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -9317,7 +9317,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;room73b2-azuma-short-broom"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-479"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -9355,7 +9355,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;71d4"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-481"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -9393,7 +9393,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;room73b2-askul-1000x700-desk"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-483"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -9431,7 +9431,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;71d1"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-485"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -9469,7 +9469,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;71d2"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-487"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -9507,7 +9507,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;71d3"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-489"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -9545,7 +9545,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;room73b2-x-leg-desk"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-491"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -9583,7 +9583,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;room73a3-village-chair-5"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-493"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -9621,7 +9621,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;room73a3-village-chair-4"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-495"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -9659,7 +9659,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;room73a3-village-chair-3"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-497"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -9697,7 +9697,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;room73a3-village-chair-2"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-499"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -9735,7 +9735,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;room73a3-village-chair-1"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-501"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -9773,7 +9773,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;room73a3-village-chair-0"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-503"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -9811,7 +9811,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;room73b2-broom"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-505"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -9849,7 +9849,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;room73b2-kettle"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-507"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -9887,7 +9887,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;room73b2-plus-590-locker"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-509"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -9925,7 +9925,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;room83b1-village-chair-1"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-511"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -9963,7 +9963,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;room83b1-village-chair-0"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-513"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -10001,7 +10001,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;room73b2-bariera-900-left"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-515"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -10039,7 +10039,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;room73b2-clock"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-517"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -10077,7 +10077,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;72c2"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-519"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -10115,7 +10115,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;72c1"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-521"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -10153,7 +10153,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;room73b2-askul-1200x700-desk-2"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-523"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -10191,7 +10191,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;room73b2-askul-1200x700-desk-3"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-525"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -10229,7 +10229,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;room73a3-door-right"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-527"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -10267,7 +10267,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;room73b2-askul-1200x700-desk-1"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-529"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -10305,7 +10305,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;room73b2-askul-1200x700-desk-6"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-531"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -10343,7 +10343,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;room73b2-askul-1200x700-desk-4"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-533"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -10381,7 +10381,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;room73b2-askul-1200x700-desk-5"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-535"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -10419,7 +10419,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;room73b2-hitachi-fiesta-refrigerator"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-537"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -10457,7 +10457,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;73a4"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-539"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -10495,7 +10495,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;73a1"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-541"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -10533,7 +10533,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;73a2"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-543"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -10571,7 +10571,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;83a4"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-545"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -10609,7 +10609,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;room73a3-askul-1600-desk-2"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-547"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -10647,7 +10647,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;room73a3-askul-1600-desk-1"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-549"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -10685,7 +10685,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;room73a3-askul-1600-desk-0"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-551"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -10723,7 +10723,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;83a1"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-553"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -10761,7 +10761,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;83a2"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-555"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -10799,7 +10799,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;83a3"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-557"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -10837,7 +10837,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;room73a3-plus-830-locker"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-559"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -10875,7 +10875,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;room83b1-askul-1400-desk-4"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-561"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -10913,7 +10913,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;room83b1-askul-1400-desk-3"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-563"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -10951,7 +10951,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;room83b1-askul-1400-desk-2"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-565"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -10989,7 +10989,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;room73b2-uchida-shelf-1300"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-567"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -11027,7 +11027,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;room83b1-askul-1400-desk-0"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-569"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -11065,7 +11065,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;room73b2-bariera-1200-middle3-1"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-571"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -11103,7 +11103,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;room73b2-bariera-1200-middle3-0"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-573"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -11141,7 +11141,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;subway-table-59"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-575"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -11179,7 +11179,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;subway-table-58"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-577"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -11217,7 +11217,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;room73b2-toshiba-clacio-refrigerator"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-579"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -11255,7 +11255,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;subway-table-53"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-581"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -11293,7 +11293,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;subway-table-52"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-583"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -11331,7 +11331,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;subway-table-55"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-585"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -11369,7 +11369,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;22b"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-587"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -11407,7 +11407,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;subway-table-57"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-589"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -11445,7 +11445,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;subway-table-56"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-591"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -11483,7 +11483,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;room73b2-mug-cup"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-593"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -11521,7 +11521,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;subway-colorful-chair-27"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-595"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -11559,7 +11559,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;81d1"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-597"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -11597,7 +11597,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;81d3"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-599"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -11635,7 +11635,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;81d2"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-601"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -11673,7 +11673,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;81d4"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-603"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -11711,7 +11711,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;room73b2-coe-450-shelf"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-605"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -11749,7 +11749,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;room73b2-uchida-shelf-1100-6"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-607"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -11787,7 +11787,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;83c2"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-609"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -11825,7 +11825,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;83c1"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-611"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -11863,7 +11863,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;room73b2-bariera-1200-right"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-613"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -11901,7 +11901,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;room73a3-askul-1200x700-desk-0"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-615"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -11939,7 +11939,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;room73a3-askul-1200x700-desk-1"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-617"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -11977,7 +11977,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;room73b2-door-right"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-619"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -12015,7 +12015,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;81a2"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-621"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -12053,7 +12053,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;81a3"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-623"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -12091,7 +12091,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;81a1"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-625"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -12129,7 +12129,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;81a4"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-627"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -12167,7 +12167,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;72d4"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-629"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -12205,7 +12205,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;72d3"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-631"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -12243,7 +12243,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;72d2"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-633"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -12281,7 +12281,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;72d1"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-635"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -12319,7 +12319,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;room73b2-hrp2-parts-drawer"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-637"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -12357,7 +12357,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;room73b2-cupboard-right"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-639"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -12395,7 +12395,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;81c1"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-641"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -12433,7 +12433,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;room73b2-desk-2"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-643"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -12471,7 +12471,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;room73b2-desk-1"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-645"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -12509,7 +12509,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;room73b2-desk-0"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-647"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -12547,7 +12547,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;81c2"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-649"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -12585,7 +12585,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;room73b2-sushi-cup"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-651"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -12623,7 +12623,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;81b2"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-653"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -12661,7 +12661,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;room73b2-uchida-shelf-1300-7"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-655"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -12699,7 +12699,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;subway-colorful-chair-28"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-657"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -12737,7 +12737,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;room73b2-chair0"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-659"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -12775,7 +12775,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;room73b2-chair1"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-661"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -12813,7 +12813,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;room73a3-askul-1400-desk-1"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-663"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -12851,7 +12851,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;room73a3-askul-1400-desk-0"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-665"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -12889,7 +12889,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;room73a3-askul-1400-desk-2"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-667"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -12927,7 +12927,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;subway-colorful-chair-21"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-669"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -12965,7 +12965,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;subway-colorful-chair-20"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-671"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -13003,7 +13003,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;subway-colorful-chair-23"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-673"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -13041,7 +13041,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;subway-colorful-chair-22"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-675"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -13079,7 +13079,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;subway-colorful-chair-25"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-677"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -13117,7 +13117,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;subway-colorful-chair-24"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-679"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -13155,7 +13155,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;room73b2-uchida-shelf-1300-9"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-681"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -13193,7 +13193,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;room73b2-uchida-shelf-1300-8"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-683"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -13231,7 +13231,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;82c2"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-685"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -13269,7 +13269,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;82c1"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-687"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -13307,7 +13307,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;room83b1-askul-1400-desk-1"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-689"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -13345,7 +13345,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;room83b1-askul-1600-desk-1"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-691"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -13383,7 +13383,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;room83b1-askul-1600-desk-0"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-693"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
@@ -13421,7 +13421,7 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;room83b1-askul-1600-desk-2"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-695"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 <owl:NamedIndividual rdf:about="&jsk_map;eng2">
@@ -13461,7 +13461,1001 @@
   <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
   <knowrob:objectActedOn rdf:resource="&jsk_map;eng2"/>
   <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-697"/>
-  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1325636486"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
+</owl:NamedIndividual>
+
+
+<owl:NamedIndividual rdf:about="&jsk_map;eng2-7f-room73B2-trashbox-front">
+  <rdf:type rdf:resource="&knowrob;Place"/>
+  <knowrob:widthOfObject rdf:datatype="&xsd;float">0.2</knowrob:widthOfObject>
+  <knowrob:depthOfObject rdf:datatype="&xsd;float">0.2</knowrob:depthOfObject>
+  <knowrob:heightOfObject rdf:datatype="&xsd;float">0.1</knowrob:heightOfObject>
+  <knowrob:describedInMap rdf:resource="&jsk_map;SemanticEnvironmentMap-eng2"/>
+</owl:NamedIndividual>
+
+
+<owl:NamedIndividual rdf:about="&jsk_map;RotationMatrix3D-699">
+  <rdf:type rdf:resource="&knowrob;RotationMatrix3D"/>
+  <knowrob:m00 rdf:datatype="&xsd;float">1.91800000001e-05</knowrob:m00>
+  <knowrob:m01 rdf:datatype="&xsd;float">0.99998082</knowrob:m01>
+  <knowrob:m02 rdf:datatype="&xsd;float">0.0</knowrob:m02>
+  <knowrob:m03 rdf:datatype="&xsd;float">1.88</knowrob:m03>
+  <knowrob:m10 rdf:datatype="&xsd;float">-0.99998082</knowrob:m10>
+  <knowrob:m11 rdf:datatype="&xsd;float">1.91800000001e-05</knowrob:m11>
+  <knowrob:m12 rdf:datatype="&xsd;float">-0.0</knowrob:m12>
+  <knowrob:m13 rdf:datatype="&xsd;float">7.55</knowrob:m13>
+  <knowrob:m20 rdf:datatype="&xsd;float">-0.0</knowrob:m20>
+  <knowrob:m21 rdf:datatype="&xsd;float">0.0</knowrob:m21>
+  <knowrob:m22 rdf:datatype="&xsd;float">1.0</knowrob:m22>
+  <knowrob:m23 rdf:datatype="&xsd;float">20.002</knowrob:m23>
+  <knowrob:m30 rdf:datatype="&xsd;float">0</knowrob:m30>
+  <knowrob:m31 rdf:datatype="&xsd;float">0</knowrob:m31>
+  <knowrob:m32 rdf:datatype="&xsd;float">0</knowrob:m32>
+  <knowrob:m33 rdf:datatype="&xsd;float">1</knowrob:m33>
+</owl:NamedIndividual>
+
+
+<owl:NamedIndividual rdf:about="&jsk_map;SemanticMapPerception-700">
+  <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
+  <knowrob:objectActedOn rdf:resource="&jsk_map;eng2-7f-room73B2-trashbox-front"/>
+  <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-699"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
+</owl:NamedIndividual>
+
+
+<owl:NamedIndividual rdf:about="&jsk_map;coe-spot">
+  <rdf:type rdf:resource="&knowrob;Place"/>
+  <knowrob:widthOfObject rdf:datatype="&xsd;float">0.2</knowrob:widthOfObject>
+  <knowrob:depthOfObject rdf:datatype="&xsd;float">0.2</knowrob:depthOfObject>
+  <knowrob:heightOfObject rdf:datatype="&xsd;float">0.1</knowrob:heightOfObject>
+  <knowrob:describedInMap rdf:resource="&jsk_map;SemanticEnvironmentMap-eng2"/>
+</owl:NamedIndividual>
+
+
+<owl:NamedIndividual rdf:about="&jsk_map;RotationMatrix3D-701">
+  <rdf:type rdf:resource="&knowrob;RotationMatrix3D"/>
+  <knowrob:m00 rdf:datatype="&xsd;float">1.0</knowrob:m00>
+  <knowrob:m01 rdf:datatype="&xsd;float">0.0</knowrob:m01>
+  <knowrob:m02 rdf:datatype="&xsd;float">0.0</knowrob:m02>
+  <knowrob:m03 rdf:datatype="&xsd;float">1.2</knowrob:m03>
+  <knowrob:m10 rdf:datatype="&xsd;float">0.0</knowrob:m10>
+  <knowrob:m11 rdf:datatype="&xsd;float">1.0</knowrob:m11>
+  <knowrob:m12 rdf:datatype="&xsd;float">0.0</knowrob:m12>
+  <knowrob:m13 rdf:datatype="&xsd;float">9.2</knowrob:m13>
+  <knowrob:m20 rdf:datatype="&xsd;float">0.0</knowrob:m20>
+  <knowrob:m21 rdf:datatype="&xsd;float">0.0</knowrob:m21>
+  <knowrob:m22 rdf:datatype="&xsd;float">1.0</knowrob:m22>
+  <knowrob:m23 rdf:datatype="&xsd;float">20.002</knowrob:m23>
+  <knowrob:m30 rdf:datatype="&xsd;float">0</knowrob:m30>
+  <knowrob:m31 rdf:datatype="&xsd;float">0</knowrob:m31>
+  <knowrob:m32 rdf:datatype="&xsd;float">0</knowrob:m32>
+  <knowrob:m33 rdf:datatype="&xsd;float">1</knowrob:m33>
+</owl:NamedIndividual>
+
+
+<owl:NamedIndividual rdf:about="&jsk_map;SemanticMapPerception-702">
+  <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
+  <knowrob:objectActedOn rdf:resource="&jsk_map;coe-spot"/>
+  <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-701"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
+</owl:NamedIndividual>
+
+
+<owl:NamedIndividual rdf:about="&jsk_map;eng2-7f-room73B2-table-front">
+  <rdf:type rdf:resource="&knowrob;Place"/>
+  <knowrob:widthOfObject rdf:datatype="&xsd;float">0.2</knowrob:widthOfObject>
+  <knowrob:depthOfObject rdf:datatype="&xsd;float">0.2</knowrob:depthOfObject>
+  <knowrob:heightOfObject rdf:datatype="&xsd;float">0.1</knowrob:heightOfObject>
+  <knowrob:describedInMap rdf:resource="&jsk_map;SemanticEnvironmentMap-eng2"/>
+  <knowrob:inFrontOf-Generally rdf:resource="&jsk_map;room73b2-x-leg-desk"/>
+</owl:NamedIndividual>
+
+
+<owl:NamedIndividual rdf:about="&jsk_map;RotationMatrix3D-703">
+  <rdf:type rdf:resource="&knowrob;RotationMatrix3D"/>
+  <knowrob:m00 rdf:datatype="&xsd;float">1.0</knowrob:m00>
+  <knowrob:m01 rdf:datatype="&xsd;float">0.0</knowrob:m01>
+  <knowrob:m02 rdf:datatype="&xsd;float">0.0</knowrob:m02>
+  <knowrob:m03 rdf:datatype="&xsd;float">4.2</knowrob:m03>
+  <knowrob:m10 rdf:datatype="&xsd;float">0.0</knowrob:m10>
+  <knowrob:m11 rdf:datatype="&xsd;float">1.0</knowrob:m11>
+  <knowrob:m12 rdf:datatype="&xsd;float">0.0</knowrob:m12>
+  <knowrob:m13 rdf:datatype="&xsd;float">7.9</knowrob:m13>
+  <knowrob:m20 rdf:datatype="&xsd;float">0.0</knowrob:m20>
+  <knowrob:m21 rdf:datatype="&xsd;float">0.0</knowrob:m21>
+  <knowrob:m22 rdf:datatype="&xsd;float">1.0</knowrob:m22>
+  <knowrob:m23 rdf:datatype="&xsd;float">20.002</knowrob:m23>
+  <knowrob:m30 rdf:datatype="&xsd;float">0</knowrob:m30>
+  <knowrob:m31 rdf:datatype="&xsd;float">0</knowrob:m31>
+  <knowrob:m32 rdf:datatype="&xsd;float">0</knowrob:m32>
+  <knowrob:m33 rdf:datatype="&xsd;float">1</knowrob:m33>
+</owl:NamedIndividual>
+
+
+<owl:NamedIndividual rdf:about="&jsk_map;SemanticMapPerception-704">
+  <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
+  <knowrob:objectActedOn rdf:resource="&jsk_map;eng2-7f-room73B2-table-front"/>
+  <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-703"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
+</owl:NamedIndividual>
+
+
+<owl:NamedIndividual rdf:about="&jsk_map;broom-spot">
+  <rdf:type rdf:resource="&knowrob;Place"/>
+  <knowrob:widthOfObject rdf:datatype="&xsd;float">0.2</knowrob:widthOfObject>
+  <knowrob:depthOfObject rdf:datatype="&xsd;float">0.2</knowrob:depthOfObject>
+  <knowrob:heightOfObject rdf:datatype="&xsd;float">0.1</knowrob:heightOfObject>
+  <knowrob:describedInMap rdf:resource="&jsk_map;SemanticEnvironmentMap-eng2"/>
+</owl:NamedIndividual>
+
+
+<owl:NamedIndividual rdf:about="&jsk_map;RotationMatrix3D-705">
+  <rdf:type rdf:resource="&knowrob;RotationMatrix3D"/>
+  <knowrob:m00 rdf:datatype="&xsd;float">1.91800000001e-05</knowrob:m00>
+  <knowrob:m01 rdf:datatype="&xsd;float">0.99998082</knowrob:m01>
+  <knowrob:m02 rdf:datatype="&xsd;float">0.0</knowrob:m02>
+  <knowrob:m03 rdf:datatype="&xsd;float">2.25</knowrob:m03>
+  <knowrob:m10 rdf:datatype="&xsd;float">-0.99998082</knowrob:m10>
+  <knowrob:m11 rdf:datatype="&xsd;float">1.91800000001e-05</knowrob:m11>
+  <knowrob:m12 rdf:datatype="&xsd;float">-0.0</knowrob:m12>
+  <knowrob:m13 rdf:datatype="&xsd;float">7.9</knowrob:m13>
+  <knowrob:m20 rdf:datatype="&xsd;float">-0.0</knowrob:m20>
+  <knowrob:m21 rdf:datatype="&xsd;float">0.0</knowrob:m21>
+  <knowrob:m22 rdf:datatype="&xsd;float">1.0</knowrob:m22>
+  <knowrob:m23 rdf:datatype="&xsd;float">20.002</knowrob:m23>
+  <knowrob:m30 rdf:datatype="&xsd;float">0</knowrob:m30>
+  <knowrob:m31 rdf:datatype="&xsd;float">0</knowrob:m31>
+  <knowrob:m32 rdf:datatype="&xsd;float">0</knowrob:m32>
+  <knowrob:m33 rdf:datatype="&xsd;float">1</knowrob:m33>
+</owl:NamedIndividual>
+
+
+<owl:NamedIndividual rdf:about="&jsk_map;SemanticMapPerception-706">
+  <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
+  <knowrob:objectActedOn rdf:resource="&jsk_map;broom-spot"/>
+  <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-705"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
+</owl:NamedIndividual>
+
+
+<owl:NamedIndividual rdf:about="&jsk_map;init-spot">
+  <rdf:type rdf:resource="&knowrob;Place"/>
+  <knowrob:widthOfObject rdf:datatype="&xsd;float">0.2</knowrob:widthOfObject>
+  <knowrob:depthOfObject rdf:datatype="&xsd;float">0.2</knowrob:depthOfObject>
+  <knowrob:heightOfObject rdf:datatype="&xsd;float">0.1</knowrob:heightOfObject>
+  <knowrob:describedInMap rdf:resource="&jsk_map;SemanticEnvironmentMap-eng2"/>
+</owl:NamedIndividual>
+
+
+<owl:NamedIndividual rdf:about="&jsk_map;RotationMatrix3D-707">
+  <rdf:type rdf:resource="&knowrob;RotationMatrix3D"/>
+  <knowrob:m00 rdf:datatype="&xsd;float">-1.0</knowrob:m00>
+  <knowrob:m01 rdf:datatype="&xsd;float">0.0</knowrob:m01>
+  <knowrob:m02 rdf:datatype="&xsd;float">0.0</knowrob:m02>
+  <knowrob:m03 rdf:datatype="&xsd;float">-2.52</knowrob:m03>
+  <knowrob:m10 rdf:datatype="&xsd;float">0.0</knowrob:m10>
+  <knowrob:m11 rdf:datatype="&xsd;float">-1.0</knowrob:m11>
+  <knowrob:m12 rdf:datatype="&xsd;float">0.0</knowrob:m12>
+  <knowrob:m13 rdf:datatype="&xsd;float">6.9</knowrob:m13>
+  <knowrob:m20 rdf:datatype="&xsd;float">0.0</knowrob:m20>
+  <knowrob:m21 rdf:datatype="&xsd;float">0.0</knowrob:m21>
+  <knowrob:m22 rdf:datatype="&xsd;float">1.0</knowrob:m22>
+  <knowrob:m23 rdf:datatype="&xsd;float">20.002</knowrob:m23>
+  <knowrob:m30 rdf:datatype="&xsd;float">0</knowrob:m30>
+  <knowrob:m31 rdf:datatype="&xsd;float">0</knowrob:m31>
+  <knowrob:m32 rdf:datatype="&xsd;float">0</knowrob:m32>
+  <knowrob:m33 rdf:datatype="&xsd;float">1</knowrob:m33>
+</owl:NamedIndividual>
+
+
+<owl:NamedIndividual rdf:about="&jsk_map;SemanticMapPerception-708">
+  <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
+  <knowrob:objectActedOn rdf:resource="&jsk_map;init-spot"/>
+  <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-707"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
+</owl:NamedIndividual>
+
+
+<owl:NamedIndividual rdf:about="&jsk_map;eng2-8f-mini-kitchen-A-inside">
+  <rdf:type rdf:resource="&knowrob;Place"/>
+  <knowrob:widthOfObject rdf:datatype="&xsd;float">0.2</knowrob:widthOfObject>
+  <knowrob:depthOfObject rdf:datatype="&xsd;float">0.2</knowrob:depthOfObject>
+  <knowrob:heightOfObject rdf:datatype="&xsd;float">0.1</knowrob:heightOfObject>
+  <knowrob:describedInMap rdf:resource="&jsk_map;SemanticEnvironmentMap-eng2"/>
+  <knowrob:inFrontOf-Generally rdf:resource="&jsk_map;cup-C"/>
+</owl:NamedIndividual>
+
+
+<owl:NamedIndividual rdf:about="&jsk_map;RotationMatrix3D-709">
+  <rdf:type rdf:resource="&knowrob;RotationMatrix3D"/>
+  <knowrob:m00 rdf:datatype="&xsd;float">1.91800000001e-05</knowrob:m00>
+  <knowrob:m01 rdf:datatype="&xsd;float">-0.99998082</knowrob:m01>
+  <knowrob:m02 rdf:datatype="&xsd;float">0.0</knowrob:m02>
+  <knowrob:m03 rdf:datatype="&xsd;float">-2.9</knowrob:m03>
+  <knowrob:m10 rdf:datatype="&xsd;float">0.99998082</knowrob:m10>
+  <knowrob:m11 rdf:datatype="&xsd;float">1.91800000001e-05</knowrob:m11>
+  <knowrob:m12 rdf:datatype="&xsd;float">0.0</knowrob:m12>
+  <knowrob:m13 rdf:datatype="&xsd;float">-4.65</knowrob:m13>
+  <knowrob:m20 rdf:datatype="&xsd;float">0.0</knowrob:m20>
+  <knowrob:m21 rdf:datatype="&xsd;float">0.0</knowrob:m21>
+  <knowrob:m22 rdf:datatype="&xsd;float">1.0</knowrob:m22>
+  <knowrob:m23 rdf:datatype="&xsd;float">30.0</knowrob:m23>
+  <knowrob:m30 rdf:datatype="&xsd;float">0</knowrob:m30>
+  <knowrob:m31 rdf:datatype="&xsd;float">0</knowrob:m31>
+  <knowrob:m32 rdf:datatype="&xsd;float">0</knowrob:m32>
+  <knowrob:m33 rdf:datatype="&xsd;float">1</knowrob:m33>
+</owl:NamedIndividual>
+
+
+<owl:NamedIndividual rdf:about="&jsk_map;SemanticMapPerception-710">
+  <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
+  <knowrob:objectActedOn rdf:resource="&jsk_map;eng2-8f-mini-kitchen-A-inside"/>
+  <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-709"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
+</owl:NamedIndividual>
+
+
+<owl:NamedIndividual rdf:about="&jsk_map;eng2-7f-room73B2-table-side">
+  <rdf:type rdf:resource="&knowrob;Place"/>
+  <knowrob:widthOfObject rdf:datatype="&xsd;float">0.2</knowrob:widthOfObject>
+  <knowrob:depthOfObject rdf:datatype="&xsd;float">0.2</knowrob:depthOfObject>
+  <knowrob:heightOfObject rdf:datatype="&xsd;float">0.1</knowrob:heightOfObject>
+  <knowrob:describedInMap rdf:resource="&jsk_map;SemanticEnvironmentMap-eng2"/>
+</owl:NamedIndividual>
+
+
+<owl:NamedIndividual rdf:about="&jsk_map;RotationMatrix3D-711">
+  <rdf:type rdf:resource="&knowrob;RotationMatrix3D"/>
+  <knowrob:m00 rdf:datatype="&xsd;float">1.91800000001e-05</knowrob:m00>
+  <knowrob:m01 rdf:datatype="&xsd;float">0.99998082</knowrob:m01>
+  <knowrob:m02 rdf:datatype="&xsd;float">0.0</knowrob:m02>
+  <knowrob:m03 rdf:datatype="&xsd;float">5.15</knowrob:m03>
+  <knowrob:m10 rdf:datatype="&xsd;float">-0.99998082</knowrob:m10>
+  <knowrob:m11 rdf:datatype="&xsd;float">1.91800000001e-05</knowrob:m11>
+  <knowrob:m12 rdf:datatype="&xsd;float">-0.0</knowrob:m12>
+  <knowrob:m13 rdf:datatype="&xsd;float">9.08</knowrob:m13>
+  <knowrob:m20 rdf:datatype="&xsd;float">-0.0</knowrob:m20>
+  <knowrob:m21 rdf:datatype="&xsd;float">0.0</knowrob:m21>
+  <knowrob:m22 rdf:datatype="&xsd;float">1.0</knowrob:m22>
+  <knowrob:m23 rdf:datatype="&xsd;float">20.002</knowrob:m23>
+  <knowrob:m30 rdf:datatype="&xsd;float">0</knowrob:m30>
+  <knowrob:m31 rdf:datatype="&xsd;float">0</knowrob:m31>
+  <knowrob:m32 rdf:datatype="&xsd;float">0</knowrob:m32>
+  <knowrob:m33 rdf:datatype="&xsd;float">1</knowrob:m33>
+</owl:NamedIndividual>
+
+
+<owl:NamedIndividual rdf:about="&jsk_map;SemanticMapPerception-712">
+  <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
+  <knowrob:objectActedOn rdf:resource="&jsk_map;eng2-7f-room73B2-table-side"/>
+  <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-711"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
+</owl:NamedIndividual>
+
+
+<owl:NamedIndividual rdf:about="&jsk_map;eng2-7f-room73B2-front-of-kitchenboard">
+  <rdf:type rdf:resource="&knowrob;Place"/>
+  <knowrob:widthOfObject rdf:datatype="&xsd;float">0.2</knowrob:widthOfObject>
+  <knowrob:depthOfObject rdf:datatype="&xsd;float">0.2</knowrob:depthOfObject>
+  <knowrob:heightOfObject rdf:datatype="&xsd;float">0.1</knowrob:heightOfObject>
+  <knowrob:describedInMap rdf:resource="&jsk_map;SemanticEnvironmentMap-eng2"/>
+</owl:NamedIndividual>
+
+
+<owl:NamedIndividual rdf:about="&jsk_map;RotationMatrix3D-713">
+  <rdf:type rdf:resource="&knowrob;RotationMatrix3D"/>
+  <knowrob:m00 rdf:datatype="&xsd;float">-1.0</knowrob:m00>
+  <knowrob:m01 rdf:datatype="&xsd;float">0.0</knowrob:m01>
+  <knowrob:m02 rdf:datatype="&xsd;float">0.0</knowrob:m02>
+  <knowrob:m03 rdf:datatype="&xsd;float">1.35</knowrob:m03>
+  <knowrob:m10 rdf:datatype="&xsd;float">0.0</knowrob:m10>
+  <knowrob:m11 rdf:datatype="&xsd;float">-1.0</knowrob:m11>
+  <knowrob:m12 rdf:datatype="&xsd;float">0.0</knowrob:m12>
+  <knowrob:m13 rdf:datatype="&xsd;float">8.75</knowrob:m13>
+  <knowrob:m20 rdf:datatype="&xsd;float">0.0</knowrob:m20>
+  <knowrob:m21 rdf:datatype="&xsd;float">0.0</knowrob:m21>
+  <knowrob:m22 rdf:datatype="&xsd;float">1.0</knowrob:m22>
+  <knowrob:m23 rdf:datatype="&xsd;float">20.002</knowrob:m23>
+  <knowrob:m30 rdf:datatype="&xsd;float">0</knowrob:m30>
+  <knowrob:m31 rdf:datatype="&xsd;float">0</knowrob:m31>
+  <knowrob:m32 rdf:datatype="&xsd;float">0</knowrob:m32>
+  <knowrob:m33 rdf:datatype="&xsd;float">1</knowrob:m33>
+</owl:NamedIndividual>
+
+
+<owl:NamedIndividual rdf:about="&jsk_map;SemanticMapPerception-714">
+  <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
+  <knowrob:objectActedOn rdf:resource="&jsk_map;eng2-7f-room73B2-front-of-kitchenboard"/>
+  <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-713"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
+</owl:NamedIndividual>
+
+
+<owl:NamedIndividual rdf:about="&jsk_map;init-spot-5">
+  <rdf:type rdf:resource="&knowrob;Place"/>
+  <knowrob:widthOfObject rdf:datatype="&xsd;float">0.2</knowrob:widthOfObject>
+  <knowrob:depthOfObject rdf:datatype="&xsd;float">0.2</knowrob:depthOfObject>
+  <knowrob:heightOfObject rdf:datatype="&xsd;float">0.1</knowrob:heightOfObject>
+  <knowrob:describedInMap rdf:resource="&jsk_map;SemanticEnvironmentMap-eng2"/>
+</owl:NamedIndividual>
+
+
+<owl:NamedIndividual rdf:about="&jsk_map;RotationMatrix3D-715">
+  <rdf:type rdf:resource="&knowrob;RotationMatrix3D"/>
+  <knowrob:m00 rdf:datatype="&xsd;float">1.0</knowrob:m00>
+  <knowrob:m01 rdf:datatype="&xsd;float">0.0</knowrob:m01>
+  <knowrob:m02 rdf:datatype="&xsd;float">0.0</knowrob:m02>
+  <knowrob:m03 rdf:datatype="&xsd;float">0.5</knowrob:m03>
+  <knowrob:m10 rdf:datatype="&xsd;float">0.0</knowrob:m10>
+  <knowrob:m11 rdf:datatype="&xsd;float">1.0</knowrob:m11>
+  <knowrob:m12 rdf:datatype="&xsd;float">0.0</knowrob:m12>
+  <knowrob:m13 rdf:datatype="&xsd;float">6.9</knowrob:m13>
+  <knowrob:m20 rdf:datatype="&xsd;float">0.0</knowrob:m20>
+  <knowrob:m21 rdf:datatype="&xsd;float">0.0</knowrob:m21>
+  <knowrob:m22 rdf:datatype="&xsd;float">1.0</knowrob:m22>
+  <knowrob:m23 rdf:datatype="&xsd;float">20.002</knowrob:m23>
+  <knowrob:m30 rdf:datatype="&xsd;float">0</knowrob:m30>
+  <knowrob:m31 rdf:datatype="&xsd;float">0</knowrob:m31>
+  <knowrob:m32 rdf:datatype="&xsd;float">0</knowrob:m32>
+  <knowrob:m33 rdf:datatype="&xsd;float">1</knowrob:m33>
+</owl:NamedIndividual>
+
+
+<owl:NamedIndividual rdf:about="&jsk_map;SemanticMapPerception-716">
+  <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
+  <knowrob:objectActedOn rdf:resource="&jsk_map;init-spot-5"/>
+  <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-715"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
+</owl:NamedIndividual>
+
+
+<owl:NamedIndividual rdf:about="&jsk_map;eng2-7f-room73B2-tmp-chair-back">
+  <rdf:type rdf:resource="&knowrob;Place"/>
+  <knowrob:widthOfObject rdf:datatype="&xsd;float">0.2</knowrob:widthOfObject>
+  <knowrob:depthOfObject rdf:datatype="&xsd;float">0.2</knowrob:depthOfObject>
+  <knowrob:heightOfObject rdf:datatype="&xsd;float">0.1</knowrob:heightOfObject>
+  <knowrob:describedInMap rdf:resource="&jsk_map;SemanticEnvironmentMap-eng2"/>
+</owl:NamedIndividual>
+
+
+<owl:NamedIndividual rdf:about="&jsk_map;RotationMatrix3D-717">
+  <rdf:type rdf:resource="&knowrob;RotationMatrix3D"/>
+  <knowrob:m00 rdf:datatype="&xsd;float">1.0</knowrob:m00>
+  <knowrob:m01 rdf:datatype="&xsd;float">0.0</knowrob:m01>
+  <knowrob:m02 rdf:datatype="&xsd;float">0.0</knowrob:m02>
+  <knowrob:m03 rdf:datatype="&xsd;float">3.28</knowrob:m03>
+  <knowrob:m10 rdf:datatype="&xsd;float">0.0</knowrob:m10>
+  <knowrob:m11 rdf:datatype="&xsd;float">1.0</knowrob:m11>
+  <knowrob:m12 rdf:datatype="&xsd;float">0.0</knowrob:m12>
+  <knowrob:m13 rdf:datatype="&xsd;float">9.05</knowrob:m13>
+  <knowrob:m20 rdf:datatype="&xsd;float">0.0</knowrob:m20>
+  <knowrob:m21 rdf:datatype="&xsd;float">0.0</knowrob:m21>
+  <knowrob:m22 rdf:datatype="&xsd;float">1.0</knowrob:m22>
+  <knowrob:m23 rdf:datatype="&xsd;float">20.002</knowrob:m23>
+  <knowrob:m30 rdf:datatype="&xsd;float">0</knowrob:m30>
+  <knowrob:m31 rdf:datatype="&xsd;float">0</knowrob:m31>
+  <knowrob:m32 rdf:datatype="&xsd;float">0</knowrob:m32>
+  <knowrob:m33 rdf:datatype="&xsd;float">1</knowrob:m33>
+</owl:NamedIndividual>
+
+
+<owl:NamedIndividual rdf:about="&jsk_map;SemanticMapPerception-718">
+  <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
+  <knowrob:objectActedOn rdf:resource="&jsk_map;eng2-7f-room73B2-tmp-chair-back"/>
+  <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-717"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
+</owl:NamedIndividual>
+
+
+<owl:NamedIndividual rdf:about="&jsk_map;eng2-7f-room73B2-far-chair-back">
+  <rdf:type rdf:resource="&knowrob;Place"/>
+  <knowrob:widthOfObject rdf:datatype="&xsd;float">0.2</knowrob:widthOfObject>
+  <knowrob:depthOfObject rdf:datatype="&xsd;float">0.2</knowrob:depthOfObject>
+  <knowrob:heightOfObject rdf:datatype="&xsd;float">0.1</knowrob:heightOfObject>
+  <knowrob:describedInMap rdf:resource="&jsk_map;SemanticEnvironmentMap-eng2"/>
+</owl:NamedIndividual>
+
+
+<owl:NamedIndividual rdf:about="&jsk_map;RotationMatrix3D-719">
+  <rdf:type rdf:resource="&knowrob;RotationMatrix3D"/>
+  <knowrob:m00 rdf:datatype="&xsd;float">1.0</knowrob:m00>
+  <knowrob:m01 rdf:datatype="&xsd;float">0.0</knowrob:m01>
+  <knowrob:m02 rdf:datatype="&xsd;float">0.0</knowrob:m02>
+  <knowrob:m03 rdf:datatype="&xsd;float">3.47</knowrob:m03>
+  <knowrob:m10 rdf:datatype="&xsd;float">0.0</knowrob:m10>
+  <knowrob:m11 rdf:datatype="&xsd;float">1.0</knowrob:m11>
+  <knowrob:m12 rdf:datatype="&xsd;float">0.0</knowrob:m12>
+  <knowrob:m13 rdf:datatype="&xsd;float">8.05</knowrob:m13>
+  <knowrob:m20 rdf:datatype="&xsd;float">0.0</knowrob:m20>
+  <knowrob:m21 rdf:datatype="&xsd;float">0.0</knowrob:m21>
+  <knowrob:m22 rdf:datatype="&xsd;float">1.0</knowrob:m22>
+  <knowrob:m23 rdf:datatype="&xsd;float">20.002</knowrob:m23>
+  <knowrob:m30 rdf:datatype="&xsd;float">0</knowrob:m30>
+  <knowrob:m31 rdf:datatype="&xsd;float">0</knowrob:m31>
+  <knowrob:m32 rdf:datatype="&xsd;float">0</knowrob:m32>
+  <knowrob:m33 rdf:datatype="&xsd;float">1</knowrob:m33>
+</owl:NamedIndividual>
+
+
+<owl:NamedIndividual rdf:about="&jsk_map;SemanticMapPerception-720">
+  <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
+  <knowrob:objectActedOn rdf:resource="&jsk_map;eng2-7f-room73B2-far-chair-back"/>
+  <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-719"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
+</owl:NamedIndividual>
+
+
+<owl:NamedIndividual rdf:about="&jsk_map;eng2-7f-room73B2-beside-bed">
+  <rdf:type rdf:resource="&knowrob;Place"/>
+  <knowrob:widthOfObject rdf:datatype="&xsd;float">0.2</knowrob:widthOfObject>
+  <knowrob:depthOfObject rdf:datatype="&xsd;float">0.2</knowrob:depthOfObject>
+  <knowrob:heightOfObject rdf:datatype="&xsd;float">0.1</knowrob:heightOfObject>
+  <knowrob:describedInMap rdf:resource="&jsk_map;SemanticEnvironmentMap-eng2"/>
+</owl:NamedIndividual>
+
+
+<owl:NamedIndividual rdf:about="&jsk_map;RotationMatrix3D-721">
+  <rdf:type rdf:resource="&knowrob;RotationMatrix3D"/>
+  <knowrob:m00 rdf:datatype="&xsd;float">-1.0</knowrob:m00>
+  <knowrob:m01 rdf:datatype="&xsd;float">0.0</knowrob:m01>
+  <knowrob:m02 rdf:datatype="&xsd;float">0.0</knowrob:m02>
+  <knowrob:m03 rdf:datatype="&xsd;float">3.6</knowrob:m03>
+  <knowrob:m10 rdf:datatype="&xsd;float">0.0</knowrob:m10>
+  <knowrob:m11 rdf:datatype="&xsd;float">-1.0</knowrob:m11>
+  <knowrob:m12 rdf:datatype="&xsd;float">0.0</knowrob:m12>
+  <knowrob:m13 rdf:datatype="&xsd;float">6.72</knowrob:m13>
+  <knowrob:m20 rdf:datatype="&xsd;float">0.0</knowrob:m20>
+  <knowrob:m21 rdf:datatype="&xsd;float">0.0</knowrob:m21>
+  <knowrob:m22 rdf:datatype="&xsd;float">1.0</knowrob:m22>
+  <knowrob:m23 rdf:datatype="&xsd;float">20.002</knowrob:m23>
+  <knowrob:m30 rdf:datatype="&xsd;float">0</knowrob:m30>
+  <knowrob:m31 rdf:datatype="&xsd;float">0</knowrob:m31>
+  <knowrob:m32 rdf:datatype="&xsd;float">0</knowrob:m32>
+  <knowrob:m33 rdf:datatype="&xsd;float">1</knowrob:m33>
+</owl:NamedIndividual>
+
+
+<owl:NamedIndividual rdf:about="&jsk_map;SemanticMapPerception-722">
+  <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
+  <knowrob:objectActedOn rdf:resource="&jsk_map;eng2-7f-room73B2-beside-bed"/>
+  <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-721"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
+</owl:NamedIndividual>
+
+
+<owl:NamedIndividual rdf:about="&jsk_map;eng2-7f-room73B2-table-back">
+  <rdf:type rdf:resource="&knowrob;Place"/>
+  <knowrob:widthOfObject rdf:datatype="&xsd;float">0.2</knowrob:widthOfObject>
+  <knowrob:depthOfObject rdf:datatype="&xsd;float">0.2</knowrob:depthOfObject>
+  <knowrob:heightOfObject rdf:datatype="&xsd;float">0.1</knowrob:heightOfObject>
+  <knowrob:describedInMap rdf:resource="&jsk_map;SemanticEnvironmentMap-eng2"/>
+</owl:NamedIndividual>
+
+
+<owl:NamedIndividual rdf:about="&jsk_map;RotationMatrix3D-723">
+  <rdf:type rdf:resource="&knowrob;RotationMatrix3D"/>
+  <knowrob:m00 rdf:datatype="&xsd;float">1.91800000001e-05</knowrob:m00>
+  <knowrob:m01 rdf:datatype="&xsd;float">-0.99998082</knowrob:m01>
+  <knowrob:m02 rdf:datatype="&xsd;float">0.0</knowrob:m02>
+  <knowrob:m03 rdf:datatype="&xsd;float">5.155</knowrob:m03>
+  <knowrob:m10 rdf:datatype="&xsd;float">0.99998082</knowrob:m10>
+  <knowrob:m11 rdf:datatype="&xsd;float">1.91800000001e-05</knowrob:m11>
+  <knowrob:m12 rdf:datatype="&xsd;float">0.0</knowrob:m12>
+  <knowrob:m13 rdf:datatype="&xsd;float">6.91</knowrob:m13>
+  <knowrob:m20 rdf:datatype="&xsd;float">0.0</knowrob:m20>
+  <knowrob:m21 rdf:datatype="&xsd;float">0.0</knowrob:m21>
+  <knowrob:m22 rdf:datatype="&xsd;float">1.0</knowrob:m22>
+  <knowrob:m23 rdf:datatype="&xsd;float">20.002</knowrob:m23>
+  <knowrob:m30 rdf:datatype="&xsd;float">0</knowrob:m30>
+  <knowrob:m31 rdf:datatype="&xsd;float">0</knowrob:m31>
+  <knowrob:m32 rdf:datatype="&xsd;float">0</knowrob:m32>
+  <knowrob:m33 rdf:datatype="&xsd;float">1</knowrob:m33>
+</owl:NamedIndividual>
+
+
+<owl:NamedIndividual rdf:about="&jsk_map;SemanticMapPerception-724">
+  <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
+  <knowrob:objectActedOn rdf:resource="&jsk_map;eng2-7f-room73B2-table-back"/>
+  <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-723"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
+</owl:NamedIndividual>
+
+
+<owl:NamedIndividual rdf:about="&jsk_map;cook-spot-2">
+  <rdf:type rdf:resource="&knowrob;Place"/>
+  <knowrob:widthOfObject rdf:datatype="&xsd;float">0.2</knowrob:widthOfObject>
+  <knowrob:depthOfObject rdf:datatype="&xsd;float">0.2</knowrob:depthOfObject>
+  <knowrob:heightOfObject rdf:datatype="&xsd;float">0.1</knowrob:heightOfObject>
+  <knowrob:describedInMap rdf:resource="&jsk_map;SemanticEnvironmentMap-eng2"/>
+</owl:NamedIndividual>
+
+
+<owl:NamedIndividual rdf:about="&jsk_map;RotationMatrix3D-725">
+  <rdf:type rdf:resource="&knowrob;RotationMatrix3D"/>
+  <knowrob:m00 rdf:datatype="&xsd;float">-1.0</knowrob:m00>
+  <knowrob:m01 rdf:datatype="&xsd;float">0.0</knowrob:m01>
+  <knowrob:m02 rdf:datatype="&xsd;float">0.0</knowrob:m02>
+  <knowrob:m03 rdf:datatype="&xsd;float">1.1</knowrob:m03>
+  <knowrob:m10 rdf:datatype="&xsd;float">0.0</knowrob:m10>
+  <knowrob:m11 rdf:datatype="&xsd;float">-1.0</knowrob:m11>
+  <knowrob:m12 rdf:datatype="&xsd;float">0.0</knowrob:m12>
+  <knowrob:m13 rdf:datatype="&xsd;float">8.5</knowrob:m13>
+  <knowrob:m20 rdf:datatype="&xsd;float">0.0</knowrob:m20>
+  <knowrob:m21 rdf:datatype="&xsd;float">0.0</knowrob:m21>
+  <knowrob:m22 rdf:datatype="&xsd;float">1.0</knowrob:m22>
+  <knowrob:m23 rdf:datatype="&xsd;float">20.002</knowrob:m23>
+  <knowrob:m30 rdf:datatype="&xsd;float">0</knowrob:m30>
+  <knowrob:m31 rdf:datatype="&xsd;float">0</knowrob:m31>
+  <knowrob:m32 rdf:datatype="&xsd;float">0</knowrob:m32>
+  <knowrob:m33 rdf:datatype="&xsd;float">1</knowrob:m33>
+</owl:NamedIndividual>
+
+
+<owl:NamedIndividual rdf:about="&jsk_map;SemanticMapPerception-726">
+  <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
+  <knowrob:objectActedOn rdf:resource="&jsk_map;cook-spot-2"/>
+  <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-725"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
+</owl:NamedIndividual>
+
+
+<owl:NamedIndividual rdf:about="&jsk_map;table-spot-61">
+  <rdf:type rdf:resource="&knowrob;Place"/>
+  <knowrob:widthOfObject rdf:datatype="&xsd;float">0.2</knowrob:widthOfObject>
+  <knowrob:depthOfObject rdf:datatype="&xsd;float">0.2</knowrob:depthOfObject>
+  <knowrob:heightOfObject rdf:datatype="&xsd;float">0.1</knowrob:heightOfObject>
+  <knowrob:describedInMap rdf:resource="&jsk_map;SemanticEnvironmentMap-eng2"/>
+</owl:NamedIndividual>
+
+
+<owl:NamedIndividual rdf:about="&jsk_map;RotationMatrix3D-727">
+  <rdf:type rdf:resource="&knowrob;RotationMatrix3D"/>
+  <knowrob:m00 rdf:datatype="&xsd;float">1.91800000001e-05</knowrob:m00>
+  <knowrob:m01 rdf:datatype="&xsd;float">-0.99998082</knowrob:m01>
+  <knowrob:m02 rdf:datatype="&xsd;float">0.0</knowrob:m02>
+  <knowrob:m03 rdf:datatype="&xsd;float">5.0</knowrob:m03>
+  <knowrob:m10 rdf:datatype="&xsd;float">0.99998082</knowrob:m10>
+  <knowrob:m11 rdf:datatype="&xsd;float">1.91800000001e-05</knowrob:m11>
+  <knowrob:m12 rdf:datatype="&xsd;float">0.0</knowrob:m12>
+  <knowrob:m13 rdf:datatype="&xsd;float">8.15</knowrob:m13>
+  <knowrob:m20 rdf:datatype="&xsd;float">0.0</knowrob:m20>
+  <knowrob:m21 rdf:datatype="&xsd;float">0.0</knowrob:m21>
+  <knowrob:m22 rdf:datatype="&xsd;float">1.0</knowrob:m22>
+  <knowrob:m23 rdf:datatype="&xsd;float">20.002</knowrob:m23>
+  <knowrob:m30 rdf:datatype="&xsd;float">0</knowrob:m30>
+  <knowrob:m31 rdf:datatype="&xsd;float">0</knowrob:m31>
+  <knowrob:m32 rdf:datatype="&xsd;float">0</knowrob:m32>
+  <knowrob:m33 rdf:datatype="&xsd;float">1</knowrob:m33>
+</owl:NamedIndividual>
+
+
+<owl:NamedIndividual rdf:about="&jsk_map;SemanticMapPerception-728">
+  <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
+  <knowrob:objectActedOn rdf:resource="&jsk_map;table-spot-61"/>
+  <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-727"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
+</owl:NamedIndividual>
+
+
+<owl:NamedIndividual rdf:about="&jsk_map;eng2-7f-mini-kitchen-A-inside">
+  <rdf:type rdf:resource="&knowrob;Place"/>
+  <knowrob:widthOfObject rdf:datatype="&xsd;float">0.2</knowrob:widthOfObject>
+  <knowrob:depthOfObject rdf:datatype="&xsd;float">0.2</knowrob:depthOfObject>
+  <knowrob:heightOfObject rdf:datatype="&xsd;float">0.1</knowrob:heightOfObject>
+  <knowrob:describedInMap rdf:resource="&jsk_map;SemanticEnvironmentMap-eng2"/>
+  <knowrob:inFrontOf-Generally rdf:resource="&jsk_map;cup-cmu"/>
+</owl:NamedIndividual>
+
+
+<owl:NamedIndividual rdf:about="&jsk_map;RotationMatrix3D-729">
+  <rdf:type rdf:resource="&knowrob;RotationMatrix3D"/>
+  <knowrob:m00 rdf:datatype="&xsd;float">1.91800000001e-05</knowrob:m00>
+  <knowrob:m01 rdf:datatype="&xsd;float">-0.99998082</knowrob:m01>
+  <knowrob:m02 rdf:datatype="&xsd;float">0.0</knowrob:m02>
+  <knowrob:m03 rdf:datatype="&xsd;float">-2.9</knowrob:m03>
+  <knowrob:m10 rdf:datatype="&xsd;float">0.99998082</knowrob:m10>
+  <knowrob:m11 rdf:datatype="&xsd;float">1.91800000001e-05</knowrob:m11>
+  <knowrob:m12 rdf:datatype="&xsd;float">0.0</knowrob:m12>
+  <knowrob:m13 rdf:datatype="&xsd;float">-4.75</knowrob:m13>
+  <knowrob:m20 rdf:datatype="&xsd;float">0.0</knowrob:m20>
+  <knowrob:m21 rdf:datatype="&xsd;float">0.0</knowrob:m21>
+  <knowrob:m22 rdf:datatype="&xsd;float">1.0</knowrob:m22>
+  <knowrob:m23 rdf:datatype="&xsd;float">20.0</knowrob:m23>
+  <knowrob:m30 rdf:datatype="&xsd;float">0</knowrob:m30>
+  <knowrob:m31 rdf:datatype="&xsd;float">0</knowrob:m31>
+  <knowrob:m32 rdf:datatype="&xsd;float">0</knowrob:m32>
+  <knowrob:m33 rdf:datatype="&xsd;float">1</knowrob:m33>
+</owl:NamedIndividual>
+
+
+<owl:NamedIndividual rdf:about="&jsk_map;SemanticMapPerception-730">
+  <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
+  <knowrob:objectActedOn rdf:resource="&jsk_map;eng2-7f-mini-kitchen-A-inside"/>
+  <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-729"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
+</owl:NamedIndividual>
+
+
+<owl:NamedIndividual rdf:about="&jsk_map;eng2-7f-room73B2-front-kitchen-table-1">
+  <rdf:type rdf:resource="&knowrob;Place"/>
+  <knowrob:widthOfObject rdf:datatype="&xsd;float">0.2</knowrob:widthOfObject>
+  <knowrob:depthOfObject rdf:datatype="&xsd;float">0.2</knowrob:depthOfObject>
+  <knowrob:heightOfObject rdf:datatype="&xsd;float">0.1</knowrob:heightOfObject>
+  <knowrob:describedInMap rdf:resource="&jsk_map;SemanticEnvironmentMap-eng2"/>
+  <knowrob:inFrontOf-Generally rdf:resource="&jsk_map;cup-mit"/>
+</owl:NamedIndividual>
+
+
+<owl:NamedIndividual rdf:about="&jsk_map;RotationMatrix3D-731">
+  <rdf:type rdf:resource="&knowrob;RotationMatrix3D"/>
+  <knowrob:m00 rdf:datatype="&xsd;float">-1.0</knowrob:m00>
+  <knowrob:m01 rdf:datatype="&xsd;float">0.0</knowrob:m01>
+  <knowrob:m02 rdf:datatype="&xsd;float">0.0</knowrob:m02>
+  <knowrob:m03 rdf:datatype="&xsd;float">2.293</knowrob:m03>
+  <knowrob:m10 rdf:datatype="&xsd;float">0.0</knowrob:m10>
+  <knowrob:m11 rdf:datatype="&xsd;float">-1.0</knowrob:m11>
+  <knowrob:m12 rdf:datatype="&xsd;float">0.0</knowrob:m12>
+  <knowrob:m13 rdf:datatype="&xsd;float">8.883</knowrob:m13>
+  <knowrob:m20 rdf:datatype="&xsd;float">0.0</knowrob:m20>
+  <knowrob:m21 rdf:datatype="&xsd;float">0.0</knowrob:m21>
+  <knowrob:m22 rdf:datatype="&xsd;float">1.0</knowrob:m22>
+  <knowrob:m23 rdf:datatype="&xsd;float">20.002</knowrob:m23>
+  <knowrob:m30 rdf:datatype="&xsd;float">0</knowrob:m30>
+  <knowrob:m31 rdf:datatype="&xsd;float">0</knowrob:m31>
+  <knowrob:m32 rdf:datatype="&xsd;float">0</knowrob:m32>
+  <knowrob:m33 rdf:datatype="&xsd;float">1</knowrob:m33>
+</owl:NamedIndividual>
+
+
+<owl:NamedIndividual rdf:about="&jsk_map;SemanticMapPerception-732">
+  <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
+  <knowrob:objectActedOn rdf:resource="&jsk_map;eng2-7f-room73B2-front-kitchen-table-1"/>
+  <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-731"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
+</owl:NamedIndividual>
+
+
+<owl:NamedIndividual rdf:about="&jsk_map;table-spot">
+  <rdf:type rdf:resource="&knowrob;Place"/>
+  <knowrob:widthOfObject rdf:datatype="&xsd;float">0.2</knowrob:widthOfObject>
+  <knowrob:depthOfObject rdf:datatype="&xsd;float">0.2</knowrob:depthOfObject>
+  <knowrob:heightOfObject rdf:datatype="&xsd;float">0.1</knowrob:heightOfObject>
+  <knowrob:describedInMap rdf:resource="&jsk_map;SemanticEnvironmentMap-eng2"/>
+</owl:NamedIndividual>
+
+
+<owl:NamedIndividual rdf:about="&jsk_map;RotationMatrix3D-733">
+  <rdf:type rdf:resource="&knowrob;RotationMatrix3D"/>
+  <knowrob:m00 rdf:datatype="&xsd;float">1.91800000001e-05</knowrob:m00>
+  <knowrob:m01 rdf:datatype="&xsd;float">0.99998082</knowrob:m01>
+  <knowrob:m02 rdf:datatype="&xsd;float">0.0</knowrob:m02>
+  <knowrob:m03 rdf:datatype="&xsd;float">-7.02</knowrob:m03>
+  <knowrob:m10 rdf:datatype="&xsd;float">-0.99998082</knowrob:m10>
+  <knowrob:m11 rdf:datatype="&xsd;float">1.91800000001e-05</knowrob:m11>
+  <knowrob:m12 rdf:datatype="&xsd;float">-0.0</knowrob:m12>
+  <knowrob:m13 rdf:datatype="&xsd;float">5.65</knowrob:m13>
+  <knowrob:m20 rdf:datatype="&xsd;float">-0.0</knowrob:m20>
+  <knowrob:m21 rdf:datatype="&xsd;float">0.0</knowrob:m21>
+  <knowrob:m22 rdf:datatype="&xsd;float">1.0</knowrob:m22>
+  <knowrob:m23 rdf:datatype="&xsd;float">20.002</knowrob:m23>
+  <knowrob:m30 rdf:datatype="&xsd;float">0</knowrob:m30>
+  <knowrob:m31 rdf:datatype="&xsd;float">0</knowrob:m31>
+  <knowrob:m32 rdf:datatype="&xsd;float">0</knowrob:m32>
+  <knowrob:m33 rdf:datatype="&xsd;float">1</knowrob:m33>
+</owl:NamedIndividual>
+
+
+<owl:NamedIndividual rdf:about="&jsk_map;SemanticMapPerception-734">
+  <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
+  <knowrob:objectActedOn rdf:resource="&jsk_map;table-spot"/>
+  <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-733"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
+</owl:NamedIndividual>
+
+
+<owl:NamedIndividual rdf:about="&jsk_map;eng2-7f-room73B2-sink-front">
+  <rdf:type rdf:resource="&knowrob;Place"/>
+  <knowrob:widthOfObject rdf:datatype="&xsd;float">0.2</knowrob:widthOfObject>
+  <knowrob:depthOfObject rdf:datatype="&xsd;float">0.2</knowrob:depthOfObject>
+  <knowrob:heightOfObject rdf:datatype="&xsd;float">0.1</knowrob:heightOfObject>
+  <knowrob:describedInMap rdf:resource="&jsk_map;SemanticEnvironmentMap-eng2"/>
+</owl:NamedIndividual>
+
+
+<owl:NamedIndividual rdf:about="&jsk_map;RotationMatrix3D-735">
+  <rdf:type rdf:resource="&knowrob;RotationMatrix3D"/>
+  <knowrob:m00 rdf:datatype="&xsd;float">-1.0</knowrob:m00>
+  <knowrob:m01 rdf:datatype="&xsd;float">0.0</knowrob:m01>
+  <knowrob:m02 rdf:datatype="&xsd;float">0.0</knowrob:m02>
+  <knowrob:m03 rdf:datatype="&xsd;float">1.355</knowrob:m03>
+  <knowrob:m10 rdf:datatype="&xsd;float">0.0</knowrob:m10>
+  <knowrob:m11 rdf:datatype="&xsd;float">-1.0</knowrob:m11>
+  <knowrob:m12 rdf:datatype="&xsd;float">0.0</knowrob:m12>
+  <knowrob:m13 rdf:datatype="&xsd;float">9.35</knowrob:m13>
+  <knowrob:m20 rdf:datatype="&xsd;float">0.0</knowrob:m20>
+  <knowrob:m21 rdf:datatype="&xsd;float">0.0</knowrob:m21>
+  <knowrob:m22 rdf:datatype="&xsd;float">1.0</knowrob:m22>
+  <knowrob:m23 rdf:datatype="&xsd;float">20.002</knowrob:m23>
+  <knowrob:m30 rdf:datatype="&xsd;float">0</knowrob:m30>
+  <knowrob:m31 rdf:datatype="&xsd;float">0</knowrob:m31>
+  <knowrob:m32 rdf:datatype="&xsd;float">0</knowrob:m32>
+  <knowrob:m33 rdf:datatype="&xsd;float">1</knowrob:m33>
+</owl:NamedIndividual>
+
+
+<owl:NamedIndividual rdf:about="&jsk_map;SemanticMapPerception-736">
+  <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
+  <knowrob:objectActedOn rdf:resource="&jsk_map;eng2-7f-room73B2-sink-front"/>
+  <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-735"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
+</owl:NamedIndividual>
+
+
+<owl:NamedIndividual rdf:about="&jsk_map;door-spot-3">
+  <rdf:type rdf:resource="&knowrob;Place"/>
+  <knowrob:widthOfObject rdf:datatype="&xsd;float">0.2</knowrob:widthOfObject>
+  <knowrob:depthOfObject rdf:datatype="&xsd;float">0.2</knowrob:depthOfObject>
+  <knowrob:heightOfObject rdf:datatype="&xsd;float">0.1</knowrob:heightOfObject>
+  <knowrob:describedInMap rdf:resource="&jsk_map;SemanticEnvironmentMap-eng2"/>
+</owl:NamedIndividual>
+
+
+<owl:NamedIndividual rdf:about="&jsk_map;RotationMatrix3D-737">
+  <rdf:type rdf:resource="&knowrob;RotationMatrix3D"/>
+  <knowrob:m00 rdf:datatype="&xsd;float">-1.0</knowrob:m00>
+  <knowrob:m01 rdf:datatype="&xsd;float">0.0</knowrob:m01>
+  <knowrob:m02 rdf:datatype="&xsd;float">0.0</knowrob:m02>
+  <knowrob:m03 rdf:datatype="&xsd;float">0.675</knowrob:m03>
+  <knowrob:m10 rdf:datatype="&xsd;float">0.0</knowrob:m10>
+  <knowrob:m11 rdf:datatype="&xsd;float">-1.0</knowrob:m11>
+  <knowrob:m12 rdf:datatype="&xsd;float">0.0</knowrob:m12>
+  <knowrob:m13 rdf:datatype="&xsd;float">7.11</knowrob:m13>
+  <knowrob:m20 rdf:datatype="&xsd;float">0.0</knowrob:m20>
+  <knowrob:m21 rdf:datatype="&xsd;float">0.0</knowrob:m21>
+  <knowrob:m22 rdf:datatype="&xsd;float">1.0</knowrob:m22>
+  <knowrob:m23 rdf:datatype="&xsd;float">20.002</knowrob:m23>
+  <knowrob:m30 rdf:datatype="&xsd;float">0</knowrob:m30>
+  <knowrob:m31 rdf:datatype="&xsd;float">0</knowrob:m31>
+  <knowrob:m32 rdf:datatype="&xsd;float">0</knowrob:m32>
+  <knowrob:m33 rdf:datatype="&xsd;float">1</knowrob:m33>
+</owl:NamedIndividual>
+
+
+<owl:NamedIndividual rdf:about="&jsk_map;SemanticMapPerception-738">
+  <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
+  <knowrob:objectActedOn rdf:resource="&jsk_map;door-spot-3"/>
+  <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-737"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
+</owl:NamedIndividual>
+
+
+<owl:NamedIndividual rdf:about="&jsk_map;eng2-7f-room73B2-beside-chair">
+  <rdf:type rdf:resource="&knowrob;Place"/>
+  <knowrob:widthOfObject rdf:datatype="&xsd;float">0.2</knowrob:widthOfObject>
+  <knowrob:depthOfObject rdf:datatype="&xsd;float">0.2</knowrob:depthOfObject>
+  <knowrob:heightOfObject rdf:datatype="&xsd;float">0.1</knowrob:heightOfObject>
+  <knowrob:describedInMap rdf:resource="&jsk_map;SemanticEnvironmentMap-eng2"/>
+</owl:NamedIndividual>
+
+
+<owl:NamedIndividual rdf:about="&jsk_map;RotationMatrix3D-739">
+  <rdf:type rdf:resource="&knowrob;RotationMatrix3D"/>
+  <knowrob:m00 rdf:datatype="&xsd;float">1.0</knowrob:m00>
+  <knowrob:m01 rdf:datatype="&xsd;float">0.0</knowrob:m01>
+  <knowrob:m02 rdf:datatype="&xsd;float">0.0</knowrob:m02>
+  <knowrob:m03 rdf:datatype="&xsd;float">3.86</knowrob:m03>
+  <knowrob:m10 rdf:datatype="&xsd;float">0.0</knowrob:m10>
+  <knowrob:m11 rdf:datatype="&xsd;float">1.0</knowrob:m11>
+  <knowrob:m12 rdf:datatype="&xsd;float">0.0</knowrob:m12>
+  <knowrob:m13 rdf:datatype="&xsd;float">7.25</knowrob:m13>
+  <knowrob:m20 rdf:datatype="&xsd;float">0.0</knowrob:m20>
+  <knowrob:m21 rdf:datatype="&xsd;float">0.0</knowrob:m21>
+  <knowrob:m22 rdf:datatype="&xsd;float">1.0</knowrob:m22>
+  <knowrob:m23 rdf:datatype="&xsd;float">20.002</knowrob:m23>
+  <knowrob:m30 rdf:datatype="&xsd;float">0</knowrob:m30>
+  <knowrob:m31 rdf:datatype="&xsd;float">0</knowrob:m31>
+  <knowrob:m32 rdf:datatype="&xsd;float">0</knowrob:m32>
+  <knowrob:m33 rdf:datatype="&xsd;float">1</knowrob:m33>
+</owl:NamedIndividual>
+
+
+<owl:NamedIndividual rdf:about="&jsk_map;SemanticMapPerception-740">
+  <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
+  <knowrob:objectActedOn rdf:resource="&jsk_map;eng2-7f-room73B2-beside-chair"/>
+  <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-739"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
+</owl:NamedIndividual>
+
+
+<owl:NamedIndividual rdf:about="&jsk_map;cook-spot">
+  <rdf:type rdf:resource="&knowrob;Place"/>
+  <knowrob:widthOfObject rdf:datatype="&xsd;float">0.2</knowrob:widthOfObject>
+  <knowrob:depthOfObject rdf:datatype="&xsd;float">0.2</knowrob:depthOfObject>
+  <knowrob:heightOfObject rdf:datatype="&xsd;float">0.1</knowrob:heightOfObject>
+  <knowrob:describedInMap rdf:resource="&jsk_map;SemanticEnvironmentMap-eng2"/>
+</owl:NamedIndividual>
+
+
+<owl:NamedIndividual rdf:about="&jsk_map;RotationMatrix3D-741">
+  <rdf:type rdf:resource="&knowrob;RotationMatrix3D"/>
+  <knowrob:m00 rdf:datatype="&xsd;float">1.0</knowrob:m00>
+  <knowrob:m01 rdf:datatype="&xsd;float">0.0</knowrob:m01>
+  <knowrob:m02 rdf:datatype="&xsd;float">0.0</knowrob:m02>
+  <knowrob:m03 rdf:datatype="&xsd;float">-3.12</knowrob:m03>
+  <knowrob:m10 rdf:datatype="&xsd;float">0.0</knowrob:m10>
+  <knowrob:m11 rdf:datatype="&xsd;float">1.0</knowrob:m11>
+  <knowrob:m12 rdf:datatype="&xsd;float">-0.0</knowrob:m12>
+  <knowrob:m13 rdf:datatype="&xsd;float">5.3</knowrob:m13>
+  <knowrob:m20 rdf:datatype="&xsd;float">-0.0</knowrob:m20>
+  <knowrob:m21 rdf:datatype="&xsd;float">0.0</knowrob:m21>
+  <knowrob:m22 rdf:datatype="&xsd;float">1.0</knowrob:m22>
+  <knowrob:m23 rdf:datatype="&xsd;float">20.002</knowrob:m23>
+  <knowrob:m30 rdf:datatype="&xsd;float">0</knowrob:m30>
+  <knowrob:m31 rdf:datatype="&xsd;float">0</knowrob:m31>
+  <knowrob:m32 rdf:datatype="&xsd;float">0</knowrob:m32>
+  <knowrob:m33 rdf:datatype="&xsd;float">1</knowrob:m33>
+</owl:NamedIndividual>
+
+
+<owl:NamedIndividual rdf:about="&jsk_map;SemanticMapPerception-742">
+  <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
+  <knowrob:objectActedOn rdf:resource="&jsk_map;cook-spot"/>
+  <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-741"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
+</owl:NamedIndividual>
+
+
+<owl:NamedIndividual rdf:about="&jsk_map;eng2-7f-room73B2-front-of-tv">
+  <rdf:type rdf:resource="&knowrob;Place"/>
+  <knowrob:widthOfObject rdf:datatype="&xsd;float">0.2</knowrob:widthOfObject>
+  <knowrob:depthOfObject rdf:datatype="&xsd;float">0.2</knowrob:depthOfObject>
+  <knowrob:heightOfObject rdf:datatype="&xsd;float">0.1</knowrob:heightOfObject>
+  <knowrob:describedInMap rdf:resource="&jsk_map;SemanticEnvironmentMap-eng2"/>
+  <knowrob:inFrontOf-Generally rdf:resource="&jsk_map;room73b2-sharp-52-aquostv"/>
+</owl:NamedIndividual>
+
+
+<owl:NamedIndividual rdf:about="&jsk_map;RotationMatrix3D-743">
+  <rdf:type rdf:resource="&knowrob;RotationMatrix3D"/>
+  <knowrob:m00 rdf:datatype="&xsd;float">1.91800000001e-05</knowrob:m00>
+  <knowrob:m01 rdf:datatype="&xsd;float">-0.99998082</knowrob:m01>
+  <knowrob:m02 rdf:datatype="&xsd;float">0.0</knowrob:m02>
+  <knowrob:m03 rdf:datatype="&xsd;float">3.7</knowrob:m03>
+  <knowrob:m10 rdf:datatype="&xsd;float">0.99998082</knowrob:m10>
+  <knowrob:m11 rdf:datatype="&xsd;float">1.91800000001e-05</knowrob:m11>
+  <knowrob:m12 rdf:datatype="&xsd;float">0.0</knowrob:m12>
+  <knowrob:m13 rdf:datatype="&xsd;float">8.6</knowrob:m13>
+  <knowrob:m20 rdf:datatype="&xsd;float">0.0</knowrob:m20>
+  <knowrob:m21 rdf:datatype="&xsd;float">0.0</knowrob:m21>
+  <knowrob:m22 rdf:datatype="&xsd;float">1.0</knowrob:m22>
+  <knowrob:m23 rdf:datatype="&xsd;float">20.002</knowrob:m23>
+  <knowrob:m30 rdf:datatype="&xsd;float">0</knowrob:m30>
+  <knowrob:m31 rdf:datatype="&xsd;float">0</knowrob:m31>
+  <knowrob:m32 rdf:datatype="&xsd;float">0</knowrob:m32>
+  <knowrob:m33 rdf:datatype="&xsd;float">1</knowrob:m33>
+</owl:NamedIndividual>
+
+
+<owl:NamedIndividual rdf:about="&jsk_map;SemanticMapPerception-744">
+  <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
+  <knowrob:objectActedOn rdf:resource="&jsk_map;eng2-7f-room73B2-front-of-tv"/>
+  <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-743"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
+</owl:NamedIndividual>
+
+
+<owl:NamedIndividual rdf:about="&jsk_map;eng2-7f-room73B2-chair-back">
+  <rdf:type rdf:resource="&knowrob;Place"/>
+  <knowrob:widthOfObject rdf:datatype="&xsd;float">0.2</knowrob:widthOfObject>
+  <knowrob:depthOfObject rdf:datatype="&xsd;float">0.2</knowrob:depthOfObject>
+  <knowrob:heightOfObject rdf:datatype="&xsd;float">0.1</knowrob:heightOfObject>
+  <knowrob:describedInMap rdf:resource="&jsk_map;SemanticEnvironmentMap-eng2"/>
+</owl:NamedIndividual>
+
+
+<owl:NamedIndividual rdf:about="&jsk_map;RotationMatrix3D-745">
+  <rdf:type rdf:resource="&knowrob;RotationMatrix3D"/>
+  <knowrob:m00 rdf:datatype="&xsd;float">1.0</knowrob:m00>
+  <knowrob:m01 rdf:datatype="&xsd;float">0.0</knowrob:m01>
+  <knowrob:m02 rdf:datatype="&xsd;float">0.0</knowrob:m02>
+  <knowrob:m03 rdf:datatype="&xsd;float">3.58</knowrob:m03>
+  <knowrob:m10 rdf:datatype="&xsd;float">0.0</knowrob:m10>
+  <knowrob:m11 rdf:datatype="&xsd;float">1.0</knowrob:m11>
+  <knowrob:m12 rdf:datatype="&xsd;float">0.0</knowrob:m12>
+  <knowrob:m13 rdf:datatype="&xsd;float">8.05</knowrob:m13>
+  <knowrob:m20 rdf:datatype="&xsd;float">0.0</knowrob:m20>
+  <knowrob:m21 rdf:datatype="&xsd;float">0.0</knowrob:m21>
+  <knowrob:m22 rdf:datatype="&xsd;float">1.0</knowrob:m22>
+  <knowrob:m23 rdf:datatype="&xsd;float">20.002</knowrob:m23>
+  <knowrob:m30 rdf:datatype="&xsd;float">0</knowrob:m30>
+  <knowrob:m31 rdf:datatype="&xsd;float">0</knowrob:m31>
+  <knowrob:m32 rdf:datatype="&xsd;float">0</knowrob:m32>
+  <knowrob:m33 rdf:datatype="&xsd;float">1</knowrob:m33>
+</owl:NamedIndividual>
+
+
+<owl:NamedIndividual rdf:about="&jsk_map;SemanticMapPerception-746">
+  <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
+  <knowrob:objectActedOn rdf:resource="&jsk_map;eng2-7f-room73B2-chair-back"/>
+  <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-745"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
+</owl:NamedIndividual>
+
+
+<owl:NamedIndividual rdf:about="&jsk_map;infront-of-cup">
+  <rdf:type rdf:resource="&knowrob;Place"/>
+  <knowrob:widthOfObject rdf:datatype="&xsd;float">0.2</knowrob:widthOfObject>
+  <knowrob:depthOfObject rdf:datatype="&xsd;float">0.2</knowrob:depthOfObject>
+  <knowrob:heightOfObject rdf:datatype="&xsd;float">0.1</knowrob:heightOfObject>
+  <knowrob:describedInMap rdf:resource="&jsk_map;SemanticEnvironmentMap-eng2"/>
+  <knowrob:inFrontOf-Generally rdf:resource="&jsk_map;cup-cotesys"/>
+</owl:NamedIndividual>
+
+
+<owl:NamedIndividual rdf:about="&jsk_map;RotationMatrix3D-747">
+  <rdf:type rdf:resource="&knowrob;RotationMatrix3D"/>
+  <knowrob:m00 rdf:datatype="&xsd;float">1.91800000001e-05</knowrob:m00>
+  <knowrob:m01 rdf:datatype="&xsd;float">-0.99998082</knowrob:m01>
+  <knowrob:m02 rdf:datatype="&xsd;float">0.0</knowrob:m02>
+  <knowrob:m03 rdf:datatype="&xsd;float">-6.57</knowrob:m03>
+  <knowrob:m10 rdf:datatype="&xsd;float">0.99998082</knowrob:m10>
+  <knowrob:m11 rdf:datatype="&xsd;float">1.91800000001e-05</knowrob:m11>
+  <knowrob:m12 rdf:datatype="&xsd;float">0.0</knowrob:m12>
+  <knowrob:m13 rdf:datatype="&xsd;float">5.5</knowrob:m13>
+  <knowrob:m20 rdf:datatype="&xsd;float">0.0</knowrob:m20>
+  <knowrob:m21 rdf:datatype="&xsd;float">0.0</knowrob:m21>
+  <knowrob:m22 rdf:datatype="&xsd;float">1.0</knowrob:m22>
+  <knowrob:m23 rdf:datatype="&xsd;float">20.002</knowrob:m23>
+  <knowrob:m30 rdf:datatype="&xsd;float">0</knowrob:m30>
+  <knowrob:m31 rdf:datatype="&xsd;float">0</knowrob:m31>
+  <knowrob:m32 rdf:datatype="&xsd;float">0</knowrob:m32>
+  <knowrob:m33 rdf:datatype="&xsd;float">1</knowrob:m33>
+</owl:NamedIndividual>
+
+
+<owl:NamedIndividual rdf:about="&jsk_map;SemanticMapPerception-748">
+  <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
+  <knowrob:objectActedOn rdf:resource="&jsk_map;infront-of-cup"/>
+  <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-747"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
+</owl:NamedIndividual>
+
+
+<owl:NamedIndividual rdf:about="&jsk_map;door-spot">
+  <rdf:type rdf:resource="&knowrob;Place"/>
+  <knowrob:widthOfObject rdf:datatype="&xsd;float">0.2</knowrob:widthOfObject>
+  <knowrob:depthOfObject rdf:datatype="&xsd;float">0.2</knowrob:depthOfObject>
+  <knowrob:heightOfObject rdf:datatype="&xsd;float">0.1</knowrob:heightOfObject>
+  <knowrob:describedInMap rdf:resource="&jsk_map;SemanticEnvironmentMap-eng2"/>
+</owl:NamedIndividual>
+
+
+<owl:NamedIndividual rdf:about="&jsk_map;RotationMatrix3D-749">
+  <rdf:type rdf:resource="&knowrob;RotationMatrix3D"/>
+  <knowrob:m00 rdf:datatype="&xsd;float">1.0</knowrob:m00>
+  <knowrob:m01 rdf:datatype="&xsd;float">0.0</knowrob:m01>
+  <knowrob:m02 rdf:datatype="&xsd;float">0.0</knowrob:m02>
+  <knowrob:m03 rdf:datatype="&xsd;float">-2.695</knowrob:m03>
+  <knowrob:m10 rdf:datatype="&xsd;float">0.0</knowrob:m10>
+  <knowrob:m11 rdf:datatype="&xsd;float">1.0</knowrob:m11>
+  <knowrob:m12 rdf:datatype="&xsd;float">-0.0</knowrob:m12>
+  <knowrob:m13 rdf:datatype="&xsd;float">6.69</knowrob:m13>
+  <knowrob:m20 rdf:datatype="&xsd;float">-0.0</knowrob:m20>
+  <knowrob:m21 rdf:datatype="&xsd;float">0.0</knowrob:m21>
+  <knowrob:m22 rdf:datatype="&xsd;float">1.0</knowrob:m22>
+  <knowrob:m23 rdf:datatype="&xsd;float">20.002</knowrob:m23>
+  <knowrob:m30 rdf:datatype="&xsd;float">0</knowrob:m30>
+  <knowrob:m31 rdf:datatype="&xsd;float">0</knowrob:m31>
+  <knowrob:m32 rdf:datatype="&xsd;float">0</knowrob:m32>
+  <knowrob:m33 rdf:datatype="&xsd;float">1</knowrob:m33>
+</owl:NamedIndividual>
+
+
+<owl:NamedIndividual rdf:about="&jsk_map;SemanticMapPerception-750">
+  <rdf:type rdf:resource="&knowrob;SemanticMapPerception"/>
+  <knowrob:objectActedOn rdf:resource="&jsk_map;door-spot"/>
+  <knowrob:eventOccursAt rdf:resource="&jsk_map;RotationMatrix3D-749"/>
+  <knowrob:startTime rdf:resource="&jsk_map;timepoint_1326711416"/>
 </owl:NamedIndividual>
 
 
