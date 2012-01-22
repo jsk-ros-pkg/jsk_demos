@@ -5,7 +5,6 @@
 (ros::roseus-add-msgs "posedetection_msgs")
 (ros::roseus-add-msgs "pr2_gripper_sensor_msgs")
 (ros::roseus-add-srvs "jsk_pcl_ros")
-(ros::roseus-add-msgs "sound_play")
 
 ;(ros::roseus "grasp_cup")
 
@@ -16,13 +15,13 @@
   (let (tmp via)
     (setq tmp (send *pr2* :transformation obj)) ;; local pose
     (cond ((substringp "cup" (send obj :name))
-	   (send tmp :translate #f(40 60 -50) *pr2*) ;; move-to handle
+	   (send tmp :translate #f(40 30 -50) *pr2*) ;; move-to handle
 	   (send tmp :newcoords
 		 (rpy-matrix pi/2 pi/2 pi/2) ;; grasp from top
 		 ;;(rpy-matrix -pi/2 0 0)        ;; grasp from side
 		 (send (send tmp :copy-worldcoords) :worldpos))
 	   (setq via (send tmp :copy-worldcoords))
-	   (send via :translate #f(-300 0 0) *pr2*) ;; grasp from far
+	   (send via :translate #f(0 30 150) *pr2*) ;; grasp from top
 	   )
 	  ((substringp "tea_box" (send obj :name)) ;; milktea_box
 	   (send tmp :translate #f(0 0 20) :local)
@@ -58,7 +57,7 @@
     (list via tmp)
     ))
 
-(defun pick (obj arm)
+(defun pick (obj arm &key (force nil))
   (let* (tmp via target av vav avs (success t))
     (setq tmp (get-pick-handle obj arm))
     (setq via (car tmp) tmp (cadr tmp))
@@ -70,14 +69,16 @@
     (ros::spin-once)
     (setq av (send *ri* :state :potentio-vector))
     (send *pr2* :angle-vector av)
+
     ;; start move joints
     ;; call openrave planning and move
     (when (not (listp via))
       (setq avs (send *ri* :move-end-coords-plan via
-		      :move-target arm :use-torso t))
+		      :move-arm arm :use-torso t))
       (unless avs
 	(ros::ros-info "move arm planning was failed, in pick, actions.l")))
-	;;(speak-jp "あい'/けい'が/とけませ'んでした。")))
+    (when (not (or force avs)) (return-from pick nil))
+
     ;; if openrave is failed or not exists
     (when (null avs)
       (unless (listp via) (setq via (list via)))
@@ -223,7 +224,6 @@
 (defun init2 ()
   (unless (boundp '*pr2*) (pr2))
   (unless (boundp '*ri*) (setq *ri* (instance pr2-interface :init)))
-  (ros::advertise "robotsound" sound_play::SoundRequest 5)
   (ros::advertise "/camera/rgb/points_sliced" sensor_msgs::PointCloud2 1)
   ;; *obj* is dummy object for detector callback
   ;;      :name <- frame_id, :pos,:rot <- pose
@@ -248,7 +248,8 @@
 	     (ros::ros-info (format nil "ok - obj-type(~a)" (send *obj* :name)))
 	     (if x::*display* (send *irtviewer* :draw-objects))
 	     (stop-subscribe)
-	     ;; (check-pcl) ;; this is working only for cups 
+	     (when (substringp "cup" (send *obj* :name))
+	       (check-pcl)) ;; this is working only for cups 
 	     (return-from check t))
 	    (t
 	     (ros::ros-info (format nil "no - obj-type(~a)" (send *obj* :name)))
@@ -291,7 +292,8 @@
 	 (setq 3dpos minpos))
    ;;(ros::advertise "/camera/rgb/points_sliced" sensor_msgs::PointCloud2 1)
    (print (list 2dpos '-> 3dpos))
-   (send *obj* :locate (send *pr2* :narrow_stereo_optical_frame :transform-vector 3dpos) :world)
+   (when (< (distance 3dpos (send *obj* :worldpos)) 100)
+     (send *obj* :locate (send *pr2* :narrow_stereo_optical_frame :transform-vector 3dpos) :world))
    ;;
    (send *pr2* :angle-vector av)
    (when x::*display* (send *irtviewer* :draw-objects))

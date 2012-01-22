@@ -7,11 +7,13 @@
 
 (defun find-knowrob-objects-with-info (&optional (objtype "Refrigerator"))
   (let ((rdf-type (format nil "'http://ias.cs.tum.edu/kb/knowrob.owl#~a'" objtype))
-		(infront-of "'http://ias.cs.tum.edu/kb/knowrob.owl#inFrontOf-Generally'"))
+		(infront-of "'http://ias.cs.tum.edu/kb/knowrob.owl#inFrontOf-Generally'")
+	(robot "'http://www.jsk.t.u-tokyo.ac.jp/jsk_map.owl#pr2'"))
 	(send *prolog* :query
 		  (list->prolog (list
-		   `(setof :_o ("lookForObjT" ,rdf-type :_o) :_objs)
-		   `(member :obj :_objs)
+		   `(setof :_o ("lookForObjT" ,rdf-type :_o) :objs)
+		   `(get_sorted_path_costs ,robot :OBJS :SORTED)
+		   `(member #(:cost :obj) :sorted)
 		   `(owl_has :spot ,infront-of :obj)
 		   `(object_info :obj "[IMAGE,ROOM,LEVEL|_]")))
 		  :pose '("OBJ" "SPOT"))
