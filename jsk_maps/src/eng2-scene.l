@@ -135,7 +135,7 @@
 	    :pos ,(float-vector 5000.0 -2400.0 0.0)
 	    :name "/eng2/7f/room73B1-nakanishi")
      `(:rot #2f((0.0 -1.0 0.0) (1.0 0.0 0.0) (0.0 0.0 1.0))
-	    :pos ,(float-vector -2900 -4750 0.0)
+	    :pos ,(float-vector -2900 -4900 0.0)
 	    :name "/eng2/7f/mini-kitchen-A-inside")
      `(:rot #2f((0.52 0.92 0.0) (-0.92 0.52 0.0) (0.0 0.0 1.0))
 	    :pos ,(float-vector 3300.0 -1900.0 0.0)
@@ -198,7 +198,7 @@
     (make-cascoords-tree
      map
      `(:rot #2f((0.0 -1.0 0.0) (1.0 0.0 0.0) (0.0 0.0 1.0))
-	    :pos ,(float-vector -2900 -4650 0.0)
+	    :pos ,(float-vector -2900 -4800 0.0)
 	    :name "/eng2/8f/mini-kitchen-A-inside")
      `(:rot #2f((0.0 1.0 0.0) (-1.0 0.0 0.0) (0.0 0.0 1.0))
 	    :pos ,(float-vector 3100.0 -31250.0 0.0)
