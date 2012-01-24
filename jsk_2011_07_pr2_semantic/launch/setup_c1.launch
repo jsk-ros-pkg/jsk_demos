@@ -1,4 +1,7 @@
 <launch>
-  <include file="$(find jsk_2011_07_pr2_semantic)/launch/jsk_pcl_ros/pointcloud_screenpoint.launch"/>
+  <include file="$(find jsk_2011_07_pr2_semantic)/launch/jsk_pcl_ros/pointcloud_screenpoint.launch">
+    <arg name="image" default="/narrow_stereo/left"/>
+    <arg name="points" default="/tilt_laser_cloud2"/>
+  </include>
 </launch>
 
