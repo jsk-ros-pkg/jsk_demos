@@ -13,15 +13,15 @@
 ;; *pr2* :world, obj :world
 (defun get-pick-handle (obj arm)
   (let (tmp via)
-    (setq tmp (send *pr2* :transformation obj)) ;; local pose
+    (setq tmp (send *pr2* :transformation obj)) ;; robot relative pose
     (cond ((substringp "cup" (send obj :name))
-	   (send tmp :translate #f(40 30 -50) *pr2*) ;; move-to handle
+	   (send tmp :translate #f(40 30 -50) :world) ;; move-to handle
 	   (send tmp :newcoords
 		 (rpy-matrix pi/2 pi/2 pi/2) ;; grasp from top
 		 ;;(rpy-matrix -pi/2 0 0)        ;; grasp from side
 		 (send (send tmp :copy-worldcoords) :worldpos))
 	   (setq via (send tmp :copy-worldcoords))
-	   (send via :translate #f(0 30 150) *pr2*) ;; grasp from top
+	   (send via :translate #f(0 30 150) :world) ;; grasp from top
 	   )
 	  ((substringp "tea_box" (send obj :name)) ;; milktea_box
 	   (send tmp :translate #f(0 0 20) :local)
@@ -39,11 +39,11 @@
 	   (send (car via) :rotate pi/2 :y)
 	   )
 	  ((substringp "controller" (send obj :name))
-	   (send tmp :translate #f(0 0 -60) *pr2*) ;; move-to handle
+	   (send tmp :translate #f(0 0 -60) :world) ;; move-to handle
 	   (send tmp :rotate pi/2 :y)
 	   (send tmp :rotate pi/2 :x)
 	   (setq via (send tmp :copy-worldcoords))
-	   (send via :translate #f(0 0 200) *pr2*) ;; grasp from top
+	   (send via :translate #f(0 0 200) :world) ;; grasp from top
 	   )
 	  ((substringp "sandwich" (send obj :name))
 	   (send tmp :newcoords
@@ -52,7 +52,7 @@
 		 ;;(rpy-matrix -pi/2 0 0)        ;; grasp from side
 		 (send (send (send tmp :copy-worldcoords) :translate #f(50 100 100) *pr2*) :worldpos)) ;; grasp baggage
 	   (setq via (send tmp :copy-worldcoords))
-	   (send via :translate #f(-300 0 0) *pr2*) ;; grasp from far
+	   (send via :translate #f(-300 0 0) :world) ;; grasp from far
 	   ))
     (list via tmp)
     ))
@@ -67,6 +67,7 @@
     (ros::ros-warn (format nil "via ~a" via))
     ;;
     (ros::spin-once)
+    (send *pr2* :move-to (send *ri* :state :worldcoords) :world)
     (setq av (send *ri* :state :potentio-vector))
     (send *pr2* :angle-vector av)
 
@@ -76,7 +77,8 @@
       (setq avs (send *ri* :move-end-coords-plan via
 		      :move-arm arm :use-torso t))
       (unless avs
-	(ros::ros-info "move arm planning was failed, in pick, actions.l")))
+	(ros::ros-info "move arm planning was failed, in pick, actions.l")
+	(speak-jp "しょうとつかいひどうさ,しっぱい")))
     (when (not (or force avs)) (return-from pick nil))
 
     ;; if openrave is failed or not exists
@@ -245,12 +247,15 @@
     (setq pos2 (send *obj* :worldpos))
     (when (< 0.01 (distance pos1 pos2)) ;; moved a little -> found obj
       (cond ((or (not (stringp type)) (substringp type (send *obj* :name))) ;; found target
-	     (ros::ros-info (format nil "ok - obj-type(~a)" (send *obj* :name)))
+	     (ros::ros-info (format nil "ok - obj-type(~a)"  *obj*))
 	     (if x::*display* (send *irtviewer* :draw-objects))
 	     (stop-subscribe)
-	     (when (substringp "cup" (send *obj* :name))
-	       (check-pcl)) ;; this is working only for cups 
-	     (return-from check t))
+	     (cond ((substringp "cup" (send *obj* :name))
+		    ;; this is working only for cups 
+		    (when (check-pcl)
+		      (return-from check t)))
+		   (t
+		    (return-from check t))))
 	    (t
 	     (ros::ros-info (format nil "no - obj-type(~a)" (send *obj* :name)))
 	     (unless speak
@@ -270,7 +275,7 @@
 (defun check-pcl ()
  (let ((ray_srv "/pointcloud_screenpoint_nodelet/screen_to_point")
        (av (send *pr2* :angle-vector))
-       cam 2dpos req res 3dpos rot pos)
+       cam 2dpos req res 3dpos rot pos ret)
    (when (not (ros::wait-for-service ray_srv 5))
      (return-from check-pcl nil))
    (send *pr2* :angle-vector (send *ri* :state :potentio-vector))
@@ -293,11 +298,12 @@
    ;;(ros::advertise "/camera/rgb/points_sliced" sensor_msgs::PointCloud2 1)
    (print (list 2dpos '-> 3dpos))
    (when (< (distance 3dpos (send *obj* :worldpos)) 100)
-     (send *obj* :locate (send *pr2* :narrow_stereo_optical_frame :transform-vector 3dpos) :world))
+     (send *obj* :locate (send *pr2* :narrow_stereo_optical_frame :transform-vector 3dpos) :world)
+     (setq ret t))
    ;;
    (send *pr2* :angle-vector av)
    (when x::*display* (send *irtviewer* :draw-objects))
-   ))
+   t ))
 
 ;;
 ;; for opening fridge
