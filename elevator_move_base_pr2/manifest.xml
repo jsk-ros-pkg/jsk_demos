@@ -8,6 +8,10 @@
   <license>BSD</license>
   <review status="unreviewed" notes=""/>
   <url>http://ros.org/wiki/elevator_move_base_pr2</url>
+  <export>
+    <rosdoc config="rosdoc.yaml" />
+  </export>
+
   <depend package="roseus"/>
   <depend package="rospy"/>
   <depend package="roscpp"/>

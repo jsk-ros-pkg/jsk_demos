@@ -54,7 +54,3 @@ ClassName=rviz::RobotModelDisplay
 Name=Image
 Package=rviz
 ClassName=rviz::ImageDisplay
-[Display4]
-Name=Image2
-Package=rviz
-ClassName=rviz::ImageDisplay
