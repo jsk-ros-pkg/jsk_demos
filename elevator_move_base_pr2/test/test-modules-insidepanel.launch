@@ -1,0 +1,59 @@
+<launch>
+
+  <include file="$(find pr2_machine)/sim.machine"/>
+  <include file="$(find elevator_move_base_pr2)/launch/elevator_move_base_modules.xml" />
+
+  <!-- inputs are tf, image_raw, camera_info, joint_states -->
+  <node pkg="rosbag" type="play" name="rosbag_play"
+        args="$(find elevator_move_base_pr2)/test/test-eng2-inside-panel.bag -l -r 0.2 --clock" />
+
+  <!-- image_raw, camera_info -> image_rect -->
+  <!-- image_rect -> ImageFeature0D -->
+  <group ns="/narrow_stereo/left" >
+    <node pkg="image_proc" type="image_proc" name="image_proc">
+    <param name="queue_size" value="100"/> <!-- image is throttled ?? -->
+    </node>
+    <node pkg="imagesift" type="imagesift" name="sift" >
+      <remap from="image" to="image_rect" />
+    </node>
+  </group>
+
+  <!-- test for panel pose detection -->
+  <test test-name="panel_pose_detection" pkg="roseus" type="roseus"
+     args="$(find elevator_move_base_pr2)/test/test-panel-pose-detection.l"/>
+
+  <!-- test for number recognition -->
+  <test test-name="number_recognition" pkg="roseus" type="roseus"
+     args="$(find elevator_move_base_pr2)/test/test-number-recognition.l"/>
+
+
+  <sphinxdoc><![CDATA[
+This scripts is test for elevator inside panel.
+
+.. image:: build/images/inside-panel-pose.mp4
+  :width: 600
+
+Then apply affine transform to camera image for template match.
+Template is number region of the panel.
+
+.. image:: build/images/inside-panel-number.mp4
+  :width: 600
+
+  ]]></sphinxdoc>
+
+
+  <node type="image_view2" pkg="image_view2" name="viewer1"
+        launch-prefix='glc-capture --start --out=$(find elevator_move_base_pr2)/build/inside-panel-pose.glc'>
+    <remap from="image" to="/narrow_stereo/left/point_pose_extractor_elevator_inside_panel/debug_image" />
+  </node>
+  <node type="image_view2" pkg="image_view2" name="viewer2"
+        launch-prefix='glc-capture --start --out=$(find elevator_move_base_pr2)/build/test1-2.glc' >
+    <remap from="image" to="/elevator_number/debug_image" />
+  </node>
+  <!-- we assume test code is invokde in alphabet order of test-name -->
+  <test type="glc_encode.sh" pkg="jsk_tools" test-name="z_encode_test1" args="$(find elevator_move_base_pr2)/build/call-inside-pose.glc" time-limit="300"/>
+  <atest type="glc_encode.sh" pkg="jsk_tools" test-name="z_encode_test2" args="$(find elevator_move_base_pr2)/build/test1-2.glc" time-limit="300"/>
+
+
+
+</launch>
