@@ -34,6 +34,7 @@
       (setq *msg* nil))
     (ros::spin-once)
     (unix::usleep (* 100 1000)))
+  (unix::sleep 15) ;; for making video
   (assert is-ok
 	  "test exit successfully")
   )
