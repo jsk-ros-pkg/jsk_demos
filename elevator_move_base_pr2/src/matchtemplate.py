@@ -127,9 +127,11 @@ if __name__=='__main__':
     result_pub = rospy.Publisher("~result",StringStamped,MySubscribeListener())
     debug_pub = rospy.Publisher("~debug_image",Image)
 
-    while not rospy.is_shutdown():
-        process_msg()
-        rospy.sleep(0.1)
+    try:
+        while not rospy.is_shutdown():
+            process_msg()
+            rospy.sleep(0.1)
+    except rospy.ROSInterruptException: pass
 
     result_pub.unregister()
     debug_pub.unregister()
