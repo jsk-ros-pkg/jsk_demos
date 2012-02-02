@@ -1,6 +1,5 @@
 
-(ros::roseus-add-msgs "move_base_msgs")
-(ros::roseus-add-srvs "dynamic_tf_publisher")
+(ros::roseus-add-msgs "geometry_msgs")
 
 (defun load-coords-from-db (db table parent child)
   (car (select-tf-from-table db :frame_id parent :child_id child :table table :limit 1)))
@@ -44,7 +43,3 @@
   (unix::system
    (format nil "rosrun topic_tools mux_select /tilt_laser_mux ~s"
 	   (if enable "ground_object_cloud" "empty_cloud"))))
-;  (let ((obs (if enable
-;                 "base_scan_marking base_scan tilt_scan ground_object_cloud"
-;               "base_scan_marking base_scan tilt_scan")))
-;  (ros::set-param "/move_base_node/local_costmap/observation_sources" obs)

@@ -55,15 +55,11 @@
     )
   )
 
-(defun update-robot-position (&optional (tm (ros::time 0)))
-  (let (mappose)
-    (ros::spin-once)
-    (send *pr2* :move-to (send *ri* :state :worldcoords) :world)
-;    (setq mappose (send *tfl* :lookup-transform "/base_footprint" (send *scene* :name) tm))
-;    (if mappose
-;	(send *scene* :move-to mappose :world))
-    (send *pr2* :angle-vector (send *ri* :state))
-    ))
+(defun update-robot-position ()
+  (ros::spin-once)
+  (send *pr2* :move-to (send *ri* :state :worldcoords) :world)
+  (send *pr2* :angle-vector (send *ri* :state))
+  )
 
 (defun update (&optional (times 100))
   (let (updated-object (count 0) (found 0) (panel-moved nil))
