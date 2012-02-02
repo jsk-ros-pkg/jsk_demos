@@ -31,4 +31,12 @@ rosbuild_genmsg()
 
 rosbuild_add_executable(color_point_detector src/color_point_detector.cpp)
 
+rosbuild_add_rostest(test/test-panel-pose-detection.launch)
+rosbuild_add_rostest(test/test-button-light.launch)
+#rosbuild_add_rostest(test/test-read-number.launch)
 rosbuild_add_rostest(test/test-modules-callpanel.launch)
+#rosbuild_add_rostest(test/test-modules-insidepanel.launch)
+
+# roslaunch documentation
+rosbuild_find_ros_package("jsk_tools")
+execute_process(COMMAND cmake -E chdir ${PROJECT_SOURCE_DIR} python ${jsk_tools_PACKAGE_PATH}/bin/launchdoc-generator.py ${PROJECT_NAME} --output_dir=. --nomakefile RESULT_VARIABLE _make_failed)

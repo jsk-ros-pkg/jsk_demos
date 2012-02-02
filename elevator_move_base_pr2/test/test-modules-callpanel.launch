@@ -2,11 +2,12 @@
 
   <param name="use_sim_time" value="true"/>
   <include file="$(find pr2_machine)/sim.machine"/>
+  <include file="$(find jsk_maps)/launch/start_map_eng2.launch" />
   <include file="$(find elevator_move_base_pr2)/launch/elevator_move_base_modules.xml" />
 
   <!-- inputs are tf, image_raw, camera_info, joint_states -->
-  <node pkg="rosbag" type="play" name="rosbag_play"
-        args="$(find elevator_move_base_pr2)/test/test-eng2-call-panel.bag -l -r 0.2 --clock" />
+  <anode pkg="rosbag" type="play" name="rosbag_play"
+        args="$(find elevator_move_base_pr2)/test/test-modules-call-panel.bag -l -r 0.2 --clock" />
 
   <!-- image_raw, camera_info -> image_rect -> ImageFeature0D -->
   <group ns="/narrow_stereo/left" >
@@ -22,24 +23,20 @@
     <node pkg="image_proc" type="image_proc" name="image_proc"/>
   </group>
 
-  <!-- test for panel pose detection -->
-  <test test-name="panel_pose_detection" pkg="roseus" type="roseus"
-	time-limit="300" args="$(find elevator_move_base_pr2)/test/test-panel-pose-detection.l"/>
-
-  <!-- test for button color recognition -->
-  <atest test-name="button_light" pkg="roseus" type="roseus" time-limit="300"
-     args="$(find elevator_move_base_pr2)/test/test-button-light.l"/>
+  <!-- test for all modules for pushing buttons on call panel -->
+  <test test-name="modules" pkg="roseus" type="roseus" time-limit="300"
+	args="$(find elevator_move_base_pr2)/test/test-modules-callpanel.l" />
 
   <sphinxdoc><![CDATA[
 This scripts is test for elevator call panel.
 
 The bagfile contains these topics.
-narrow_stereo/left/{camera_info,image_raw}, joint_states,, tf, view_point
+narrow_stereo/left/{camera_info,image_raw}, joint_states, tf
+wide_stereo/left/{camera_info,image_raw}
 
-Tests check equality of
-narrow_stereo/left/{camera_info,image_raw} -> panel pose in /tf
-tf, joint_states -> view_point
-view_point, image_rect -> light_button
+narrow/image_rect -> ObjectDetection
+ObjectDetection -> view_target
+view_target, wide/image_rect -> light_button
 
 .. image:: build/call-panel-pose.mp4
   :width: 600
@@ -55,12 +52,12 @@ The button area in the camera image is calcurated from Euslisp camera model and 
 
   ]]></sphinxdoc>
 
-  <node type="rviz" pkg="rviz" name="rviz" respawn="true"
+  <anode type="rviz" pkg="rviz" name="rviz" respawn="true"
         args="-d $(find elevator_move_base_pr2)/test/test-modules-callpanel.vcg"
         launch-prefix="glc-capture --start --out=$(find elevator_move_base_pr2)/build/test-modules-callpanel.glc" />
 
   <!-- we assume test code is invoked in alphabet order of test-name -->
-  <test type="glc_encode.sh" pkg="jsk_tools" test-name="z_encode_test1" args="$(find elevator_move_base_pr2)/build/test-modules-callpanel.glc --ctx 1 -o $(find elevator_move_base_pr2)/build/call-panel-pose.mp4" time-limit="300"/>
+  <atest type="glc_encode.sh" pkg="jsk_tools" test-name="z_encode_test1" args="$(find elevator_move_base_pr2)/build/test-modules-callpanel.glc --ctx 1 -o $(find elevator_move_base_pr2)/build/call-panel-pose.mp4" time-limit="300"/>
   <atest type="glc_encode.sh" pkg="jsk_tools" test-name="z_encode_test2" args="$(find elevator_move_base_pr2)/build/test-modules-callpanel.glc --ctx 2 -o $(find elevator_move_base_pr2)/build/call-panel-lighting-not.mp4" time-limit="300"/>
 
 </launch>
