@@ -2,12 +2,13 @@
 
   <param name="use_sim_time" value="true"/>
   <include file="$(find pr2_machine)/sim.machine"/>
+  <include file="$(find pr2_description)/robots/upload_pr2.launch"/>
   <include file="$(find jsk_maps)/launch/start_map_eng2.launch" />
   <include file="$(find elevator_move_base_pr2)/launch/elevator_move_base_modules.xml" />
 
   <!-- inputs are tf, image_raw, camera_info, joint_states -->
-  <anode pkg="rosbag" type="play" name="rosbag_play"
-        args="$(find elevator_move_base_pr2)/test/test-modules-call-panel.bag -l -r 0.2 --clock" />
+  <node pkg="rosbag" type="play" name="rosbag_play"
+        args="$(find elevator_move_base_pr2)/test/test-modules-callpanel.bag -l -r 0.5 --clock" />
 
   <!-- image_raw, camera_info -> image_rect -> ImageFeature0D -->
   <group ns="/narrow_stereo/left" >
@@ -52,12 +53,11 @@ The button area in the camera image is calcurated from Euslisp camera model and 
 
   ]]></sphinxdoc>
 
-  <anode type="rviz" pkg="rviz" name="rviz" respawn="true"
+  <node type="rviz" pkg="rviz" name="rviz" respawn="true"
         args="-d $(find elevator_move_base_pr2)/test/test-modules-callpanel.vcg"
         launch-prefix="glc-capture --start --out=$(find elevator_move_base_pr2)/build/test-modules-callpanel.glc" />
 
   <!-- we assume test code is invoked in alphabet order of test-name -->
-  <atest type="glc_encode.sh" pkg="jsk_tools" test-name="z_encode_test1" args="$(find elevator_move_base_pr2)/build/test-modules-callpanel.glc --ctx 1 -o $(find elevator_move_base_pr2)/build/call-panel-pose.mp4" time-limit="300"/>
-  <atest type="glc_encode.sh" pkg="jsk_tools" test-name="z_encode_test2" args="$(find elevator_move_base_pr2)/build/test-modules-callpanel.glc --ctx 2 -o $(find elevator_move_base_pr2)/build/call-panel-lighting-not.mp4" time-limit="300"/>
+  <test type="glc_encode.sh" pkg="jsk_tools" test-name="z_encode_test1" args="$(find elevator_move_base_pr2)/build/test-modules-callpanel.glc --ctx 0 -o $(find elevator_move_base_pr2)/build/test-modules-callpanel" time-limit="300"/>
 
 </launch>
