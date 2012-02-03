@@ -20,7 +20,7 @@
 
   <!-- read the elevator floor number -->
   <node name="panel_camera"  machine="c2"
-        pkg="virtual_camera" type="virtual_camera_mono">
+        pkg="jsk_perception" type="virtual_camera_mono">
     <remap from="image" to="/narrow_stereo/left/image_raw"/>
   </node>
   <node name="elevator_number" pkg="elevator_move_base_pr2" type="matchtemplate.py" output="screen" machine="c2">
