@@ -28,7 +28,6 @@
   <depend package="roseus_smach"/>
   <depend package="opencv2"/>
   <depend package="cv_bridge"/>
-  <depend package="virtual_camera"/>
 
 </package>
 
