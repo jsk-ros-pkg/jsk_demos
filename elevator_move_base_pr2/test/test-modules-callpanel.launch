@@ -39,16 +39,16 @@ narrow/image_rect -> ObjectDetection
 ObjectDetection -> view_target
 view_target, wide/image_rect -> light_button
 
-.. image:: build/call-panel-pose.mp4
+.. image:: build/call-panel-pose.gif
   :width: 600
 
 Then check the button color to detect the button was pushed.
 The button area in the camera image is calcurated from Euslisp camera model and panel object model.
 
-.. image:: build/call-panel-lighting.mp4
+.. image:: build/call-panel-lighting.gif
   :width: 600
 
-.. image:: build/call-panel-lighting-not.mp4
+.. image:: build/call-panel-lighting-not.gif
   :width: 600
 
   ]]></sphinxdoc>
