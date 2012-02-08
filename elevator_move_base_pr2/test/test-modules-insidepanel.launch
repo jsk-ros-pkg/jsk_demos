@@ -31,7 +31,7 @@
   <sphinxdoc><![CDATA[
 This scripts is test for elevator inside panel.
 
-.. image:: build/images/inside-panel-pose.gif
+.. image:: build/images/call-panel-pose.gif
   :width: 600
 
 Then apply affine transform to camera image for template match.
