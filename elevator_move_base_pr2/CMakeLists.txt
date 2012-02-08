@@ -31,11 +31,14 @@ rosbuild_genmsg()
 
 rosbuild_add_executable(color_point_detector src/color_point_detector.cpp)
 
-rosbuild_add_rostest(test/test-panel-pose-detection.launch)
-rosbuild_add_rostest(test/test-button-light.launch)
-#rosbuild_add_rostest(test/test-read-number.launch)
-rosbuild_add_rostest(test/test-modules-callpanel.launch)
-#rosbuild_add_rostest(test/test-modules-insidepanel.launch)
+rosbuild_check_for_display(disp)
+if(disp)
+  rosbuild_add_rostest(test/test-panel-pose-detection.launch)
+  rosbuild_add_rostest(test/test-button-light.launch)
+  #rosbuild_add_rostest(test/test-read-number.launch)
+  rosbuild_add_rostest(test/test-modules-callpanel.launch)
+  #rosbuild_add_rostest(test/test-modules-insidepanel.launch)
+endif(disp)
 
 # roslaunch documentation
 rosbuild_find_ros_package("jsk_tools")
