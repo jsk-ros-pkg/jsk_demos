@@ -31,13 +31,13 @@
   <sphinxdoc><![CDATA[
 This scripts is test for elevator inside panel.
 
-.. image:: build/images/call-panel-pose.gif
+.. video:: build/images/call-panel-pose
   :width: 600
 
 Then apply affine transform to camera image for template match.
 Template is number region of the panel.
 
-.. image:: build/images/inside-panel-number.gif
+.. video:: build/images/inside-panel-number
   :width: 600
 
   ]]></sphinxdoc>

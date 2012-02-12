@@ -32,10 +32,10 @@
 This scripts is test for elevator call panel pose detection.
 
 
-.. image:: build/test-panel-pose-detection-1.gif
+.. video:: build/test-panel-pose-detection-1
   :width: 600
 
-.. image:: build/test-panel-pose-detection-2.gif
+.. video:: build/test-panel-pose-detection-2
   :width: 600
 
   ]]></sphinxdoc>
