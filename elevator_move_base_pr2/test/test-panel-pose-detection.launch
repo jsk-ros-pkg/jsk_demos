@@ -45,6 +45,6 @@ This scripts is test for elevator call panel pose detection.
         launch-prefix="glc-capture --start --out=$(find elevator_move_base_pr2)/build/test-panel-pose-detection.glc" />
 
   <!-- we assume test code is invoked in alphabet order of test-name -->
-  <test type="glc_encode.sh" pkg="jsk_tools" test-name="z_encode_test1" args="$(find elevator_move_base_pr2)/build/test-panel-pose-detection.glc --ctx 0 -o $(find elevator_move_base_pr2)/build/test-panel-pose-detection" time-limit="300"/>
+  <test type="glc_encode.sh" pkg="jsk_tools" test-name="z_encode_test1" args="$(find elevator_move_base_pr2)/build/test-panel-pose-detection.glc" time-limit="300"/>
 
 </launch>
