@@ -9,7 +9,7 @@
   <review status="unreviewed" notes=""/>
   <url>http://ros.org/wiki/jsk_maps</url>
 
-  <depend package="euslisp"/>
+  <depend package="roseus"/>
   <depend package="multi_map_server"/>
 
   <rosdep name="imagemagick"/>
