@@ -19,23 +19,16 @@
 	args="$(find elevator_move_base_pr2)/test/test-button-light.l"/>
 
   <sphinxdoc><![CDATA[
-This scripts is test for elevator call panel.
+This scripts is test for elevator call panel light state.
 
 The bagfile contains these topics.
-narrow_stereo/left/{camera_info,image_raw}, joint_states,, tf, view_point
-
-Tests check equality of
-narrow_stereo/left/{camera_info,image_raw} -> panel pose in /tf
-tf, joint_states -> view_point
-view_point, image_rect -> light_button
-
-.. video:: build/call-panel-pose
-  :width: 600
+narrow_stereo/left/{camera_info,image_raw}, joint_states, tf, view_point
 
 Then check the button color to detect the button was pushed.
 The button area in the camera image is calcurated from Euslisp camera model and panel object model.
 
-.. video:: build/call-panel-lighting
+
+.. image:: build/test-button-light.mp4
   :width: 600
 
 .. video:: build/call-panel-lighting-not
@@ -43,12 +36,13 @@ The button area in the camera image is calcurated from Euslisp camera model and 
 
   ]]></sphinxdoc>
 
-  <!-- mjpeg_server for web -->
-  <node pkg="mjpeg_server" type="mjpeg_server"  name="mjpeg_server" output="screen">
-    <param name="port" type="int" value="8080" />
+  <!-- mjpeg_server and capture script -->
+  <node pkg="mjpeg_server" type="mjpeg_server"  name="mjpeg_server"
+	output="screen" respawn="true">
+    <param name="port" type="int" value="8910" />
   </node>
+  <node type="mjpeg_capture.sh" pkg="jsk_tools" name="capture_result" args="http://localhost:8910/stream?topic=/light_detector/debug_image $(find elevator_move_base_pr2)/build/test-button-light.mp4 -t 20 -p 8910"/>
 
-  <node type="mjpeg_capture.sh" pkg="jsk_tools" name="capture_result" args="http://localhost:8080/stream?topic=/light_detector/debug_image $(find elevator_move_base_pr2)/build/test-button-light.mpeg -t 20"/>
 
   <anode type="rviz" pkg="rviz" name="rviz" respawn="true"
         args="-d $(find elevator_move_base_pr2)/test/test-button-light.vcg"
