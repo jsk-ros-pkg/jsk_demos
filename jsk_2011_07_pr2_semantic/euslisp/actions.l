@@ -198,16 +198,16 @@
     (pr2-tuckarm-pose tuckarm)
     ))
 
-(defun objectdetection (msg)
+(defun objectdetection (force msg)
+  (pprint 'objectDetection)
  (let ((obj (car (send msg :objects))) (av (send *pr2* :angle-vector))
-       trans)
+       (frame (send msg :header :frame_id)) stamp trans)
+   (setq stamp (if force (ros::time 0) (send msg :header :stamp)))
    (unless
-       (send *tfl* :wait-for-transform 
-	     "/base_footprint"
-	     "/narrow_stereo_optical_frame" (send msg :header :stamp) 1)
-     (ros::ros-error "could not solve /base_footprint to /narrow_stereo_optical_frame"))
-   (setq trans (send *tfl* :lookup-transform "/base_footprint"
-		     "/narrow_stereo_optical_frame" (send msg :header :stamp)))
+       (send *tfl* :wait-for-transform
+	     "/base_footprint" frame stamp 1)
+     (ros::ros-error "could not solve /base_footprint to ~A" frame))
+   (setq trans (send *tfl* :lookup-transform "/base_footprint" frame stamp))
    (ros::ros-info "object detected.")
    (send *obj* :name (send obj :type))
    (send *pr2* :angle-vector (send *ri* :state :potentio-vector))
@@ -217,9 +217,9 @@
    (send *pr2* :angle-vector av)
    ))
 
-(defun start-subscribe ()
+(defun start-subscribe (tf-force)
   (ros::subscribe "/narrow_stereo/left/ObjectDetection"
-		  posedetection_msgs::ObjectDetection #'objectdetection))
+		  posedetection_msgs::ObjectDetection #'objectdetection tf-force))
 (defun stop-subscribe ()
   (ros::unsubscribe "/narrow_stereo/left/ObjectDetection"))
 
@@ -237,8 +237,8 @@
   (when x::*display* (objects (list *pr2* *obj*)))
   )
 
-(defun check (&key (timeout 10) (type nil))
-  (start-subscribe) (unix::sleep 2)
+(defun check (&key (timeout 10) (type nil) (tf-force nil))
+  (start-subscribe tf-force) (unix::sleep 2)
   (send *obj* :move-to (make-coords) :world)
   (let ((pos1 (send (send *obj* :copy-worldcoords) :worldpos))
 	pos2 speak (tm (ros::time-now)))
@@ -267,7 +267,7 @@
       (stop-subscribe)
       (return-from check nil))
     (when x::*display*
-      (send *viewer* :draw-objects)
+      (send *irtviewer* :draw-objects)
       (x::window-main-one))
     (unix::usleep 50000)
    )))
