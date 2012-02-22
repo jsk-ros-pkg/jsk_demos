@@ -1,0 +1,18 @@
+<package>
+  <description brief="detect_cans_in_fridge_201202">
+
+     detect_cans_in_fridge_201202
+
+  </description>
+  <author>leus</author>
+  <license>BSD</license>
+  <review status="unreviewed" notes=""/>
+  <url>http://ros.org/wiki/detect_cans_in_fridge_201202</url>
+  <depend package="roseus"/>
+  <depend package="jsk_perception"/>
+  <depend package="white_balance_converter"/>
+  <depend package="rectangular_solid_filter"/>
+  <depend package="robot_self_filter_color"/>
+
+</package>
+

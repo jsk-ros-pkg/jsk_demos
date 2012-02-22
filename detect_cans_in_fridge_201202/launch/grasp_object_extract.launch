@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<launch>
+  <node pkg="rectangular_solid_filter" type="rectangular_solid_filter_color" output="screen" name="grasp_object_extract" clear_params="true">
+    <remap from="points_in" to="/camera/rgb/points_throttle"/>
+    <remap from="points_out" to="grasp_object_points"/>
+    <rosparam>
+      hand_frame: r_gripper_tool_frame
+      x_length: 0.4
+      y_length: 0.4
+      z_length: 0.4
+      is_const_point: false
+    </rosparam>
+  </node>
+
+  <node name="robot_self_filter_kinect" pkg="robot_self_filter_color" type="self_filter_color" respawn="true" output="screen">
+    <!-- The topic for the input cloud -->
+    <remap from="cloud_in" to="grasp_object_points" />
+    <!-- The topic for the output cloud -->
+    <remap from="cloud_out" to="grasp_object_points_filtered" />
+    <!-- The frame of the sensor used to obtain the data to be
+	 filtered; This parameter is optional. If it is not specified,
+	 shadow points will be considered outside -->
+    <param name="sensor_frame" type="string" value="openni_depth_optical_frame" />
+    <!-- Minimum distance to sensor (for point not to be considered inside) -->
+    <param name="min_sensor_dist" type="double" value="0.01" />
+    <!-- The padding to be added for the body parts the robot can see -->
+    <param name="self_see_padd" type="double" value="0.02" />
+    <!-- The scaling to be added for the body parts the robot can see -->
+    <param name="self_see_scale" type="double" value="1.0" />
+    <param name="subsample_value" type="double" value="0.0"/>
+    <rosparam file="$(find detect_cans_in_fridge_201202)/self_filter.yaml" command="load" />
+  </node>
+</launch>
