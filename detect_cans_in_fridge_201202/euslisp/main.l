@@ -33,14 +33,16 @@
   (send *ri* :wait-interpolation)
   (send *pr2* :angle-vector (send *ri* :state :potentio-vector))
   ;;(send *pr2* :move-to (send *ri* :state :worldcoords) :world)
-  ;;
+
+  ;; open door
   (dotimes (i 3 nil)
     (check :type "fridge")
     (when (setq ret (open-fridge :rarm *obj* (/ pi 2)))
       (return)))
   (when (not ret)
     (return-from demo nil))
-  ;;
+
+  ;; 
   (ros::spin-once)
   (send *pr2* :angle-vector (send *ri* :state :potentio-vector))
   (setq rend (send *pr2* :rarm :end-coords :copy-worldcoords))
@@ -49,6 +51,7 @@
   (send *ri* :angle-vector (send *pr2* :angle-vector) 1000)
   (send *ri* :stop-grasp :rarm)
 
+  ;; ?? open door ()
   (send *ri* :angle-vector-sequence
 	(list #f(50  5 74 100 -90 -70 -6 20  -70 50 -59 -43 118 0 0 -2 31)
 	      #f(50  5 74 100 -90 -70 -6 20  -0 60 -20 -90 118 -90 0 -2 31)
@@ -58,7 +61,7 @@
 	(list 1500 1000 1000 3000 3000))
   (send *ri* :wait-interpolation)
 
-  ;; move-to
+  ;; move-to spot for grasping
   (ros::spin-once)
   (send *ri* :go-pos-unsafe 0 0 (rad2deg -1.3))
   (send *ri* :go-pos-unsafe 0.40 -0.15 0)
@@ -68,9 +71,11 @@
   (send *ri* :wait-interpolation)
   (send *pr2* :angle-vector (send *ri* :state :potentio-vector))
 
+  ;; detect 
   (check :type type :tf-force t :timeout 30)
-  ;;(objects *obj*)
+  ;;(objects *obj*) ;; *obj* -> position
   (send *ri* :stop-grasp :larm)
+
   ;;
   (let (pre1 pre via via-av tar)
     (setq pre #f(250 87 65 14 -122 61 -115 170 -5 74 -104 -90 70 -6 20 90 20)

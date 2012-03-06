@@ -68,10 +68,12 @@
     (setq q (white-balance-points p *ref-color*))
     (setq qlst (euclidean-cluster-points q 0.01))
     (setq *obj-lst* (remove-if #'(lambda (x) (bbox-area (send x :box))) qlst))
+    ;; *obj-lst* -> point cloud list
     ;; need match-hist.l
     (dolist (nm *model-names*)
       (setq obj nil)
       (when *obj-lst*
+	;; object match using histogram
 	(setq obj (match-model *obj-lst*
 			       (format nil "/object_hs_histgram/~A" nm))))
       (when obj
