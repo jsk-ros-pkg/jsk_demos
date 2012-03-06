@@ -15,15 +15,17 @@
   (ros::spin-once)
   (send *pr2* :angle-vector (send *ri* :state :potentio-vector))
   ;;(send *pr2* :move-to (send *ri* :state :worldcoords) :world)
-  (objects (list *pr2*))
+  ;;(objects (list *pr2*))
   )
 
 (defun demo (&key (type "georgia"))
+  (let (ret)
   ;;(init)
   (pr2-tuckarm-pose :rarm)
   (setq *opose* (send *ri* :state :worldcoords))
   ;; move-to fridge
   (setq co (send *scene* :spot "/eng2/7f/room73B2-fridge-front"))
+  (send co :translate #f(50 0 0) :world)
   (send *ri* :move-to co)
   ;;
   (send *pr2* :head :angle-vector #f(0 0))
@@ -32,9 +34,13 @@
   (send *pr2* :angle-vector (send *ri* :state :potentio-vector))
   ;;(send *pr2* :move-to (send *ri* :state :worldcoords) :world)
   ;;
-  (check :type "fridge")
-  (when (not (open-fridge :rarm *obj* (/ pi 2)))
+  (dotimes (i 3 nil)
+    (check :type "fridge")
+    (when (setq ret (open-fridge :rarm *obj* (/ pi 2)))
+      (return)))
+  (when (not ret)
     (return-from demo nil))
+  ;;
   (ros::spin-once)
   (send *pr2* :angle-vector (send *ri* :state :potentio-vector))
   (setq rend (send *pr2* :rarm :end-coords :copy-worldcoords))
@@ -57,13 +63,13 @@
   (send *ri* :go-pos-unsafe 0 0 (rad2deg -1.3))
   (send *ri* :go-pos-unsafe 0.40 -0.15 0)
 
-  (send *pr2* :head :angle-vector #f(70 20))
+  (send *pr2* :head :angle-vector #f(90 10))
   (send *ri* :angle-vector (send *pr2* :angle-vector))
   (send *ri* :wait-interpolation)
   (send *pr2* :angle-vector (send *ri* :state :potentio-vector))
 
   (check :type type :tf-force t :timeout 30)
-  (objects *obj*)
+  ;;(objects *obj*)
   (send *ri* :stop-grasp :larm)
   ;;
   (let (pre1 pre via via-av tar)
@@ -76,7 +82,7 @@
     (send *ri* :wait-interpolation)
     ;;
     (setq via (send *obj* :copy-worldcoords))
-    (send via :translate #f(0 -300 0) *pr2*)
+    (send via :translate #f(0 -200 0) *pr2*)
     (send via :orient pi/2 :z *pr2*)
     (or (send *pr2* :larm :inverse-kinematics via :rotation-axis t)
 	(send *pr2* :larm :inverse-kinematics via :rotation-axis nil))
@@ -129,3 +135,9 @@
      (return-from wait-query t))
    (ros::sleep))
   )
+
+(warn ";; (init)")
+(warn ";; (demo)")
+(warn ";; (demo \"georgia\")")
+(warn ";; (demo \"mets\")")
+(warn ";; (demo \"mountain_dew\")")

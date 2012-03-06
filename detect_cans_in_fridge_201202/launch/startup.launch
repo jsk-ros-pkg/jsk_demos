@@ -4,14 +4,14 @@
 	 args="-l -r 0.1 /home/leus/work/rits/refrig-kinect-c.bag" />
 
   <!-- reference white -->
-  <node pkg="image_view2" type="image_view2" name="select_ref_white">
+  <anode pkg="image_view2" type="image_view2" name="select_ref_white">
     <remap from="image" to="/camera/rgb/image_rect_color"/>
     <remap from="camera_info" to="/camera/rgb/camera_info"/>
     <remap from="/camera/rgb/image_rect_color/screenpoint" to="/camera/rgb/screenpoint"/>
   </node>
 
   <!-- setup fridge handle marker template -->
-  <ainclude file="$(find jsk_2011_07_pr2_semantic)/launch/setup_demo.launch" />
+  <include file="$(find jsk_2011_07_pr2_semantic)/launch/setup_demo.launch" />
 
   <!-- load model (color histgrams) -->
   <include file="$(find white_balance_converter)/white_balance.launch" />
