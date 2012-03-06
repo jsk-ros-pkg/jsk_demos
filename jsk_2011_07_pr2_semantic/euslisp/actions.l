@@ -234,7 +234,7 @@
   (send *obj* :translate-vertices (float-vector 50 0 0))
   (send *obj* :rotate-vertices pi/2 :y)
   (send *obj* :rotate-vertices (/ pi -4) :x)
-  (when x::*display* (objects (list *pr2* *obj*)))
+  (when (and x::*display* (/= x::*display* 0)) (objects (list *pr2* *obj*)))
   )
 
 (defun check (&key (timeout 10) (type nil) (tf-force nil))
@@ -248,7 +248,7 @@
     (when (< 0.01 (distance pos1 pos2)) ;; moved a little -> found obj
       (cond ((or (not (stringp type)) (substringp type (send *obj* :name))) ;; found target
 	     (ros::ros-info (format nil "ok - obj-type(~a)"  *obj*))
-	     (if x::*display* (send *irtviewer* :draw-objects))
+	     (if (and x::*display* (/= x::*display* 0)) (send *irtviewer* :draw-objects))
 	     (stop-subscribe)
 	     (cond ((substringp "cup" (send *obj* :name))
 		    ;; this is working only for cups 
@@ -266,7 +266,7 @@
       (ros::ros-info "timeout")
       (stop-subscribe)
       (return-from check nil))
-    (when x::*display*
+    (when (and x::*display* (/= x::*display* 0))
       (send *irtviewer* :draw-objects)
       (x::window-main-one))
     (unix::usleep 50000)
@@ -302,7 +302,7 @@
      (setq ret t))
    ;;
    (send *pr2* :angle-vector av)
-   (when x::*display* (send *irtviewer* :draw-objects))
+   (when (and x::*display* (/= x::*display* 0)) (send *irtviewer* :draw-objects))
    t ))
 
 ;;
