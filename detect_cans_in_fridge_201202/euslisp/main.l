@@ -19,13 +19,12 @@
   )
 
 (defun demo (&key (type "georgia"))
-  (let (ret)
   ;;(init)
   (pr2-tuckarm-pose :rarm)
   (setq *opose* (send *ri* :state :worldcoords))
-  ;; move-to fridge
+  ;; move-to front of fridge
   (setq co (send *scene* :spot "/eng2/7f/room73B2-fridge-front"))
-  (send co :translate #f(50 0 0) :world)
+  (send co :translate #f(50 0 0) :world) ;; for opening door
   (send *ri* :move-to co)
   ;;
   (send *pr2* :head :angle-vector #f(0 0))
@@ -35,14 +34,22 @@
   ;;(send *pr2* :move-to (send *ri* :state :worldcoords) :world)
 
   ;; open door
-  (dotimes (i 3 nil)
-    (check :type "fridge")
-    (when (setq ret (open-fridge :rarm *obj* (/ pi 2)))
-      (return)))
-  (when (not ret)
-    (return-from demo nil))
+  (let (ret)
+    (dotimes (i 3 nil)
+      ;; finding handle position
+      (check :type "fridge")
+      ;; opening door
+      (warn ";; print check frig~%")
+      (dump-structure *standard-output*
+                      (list (send *pr2* :copy-worldcoords)
+                            (send *obj* :copy-worldcoords)))
+      (when (setq ret (open-fridge :rarm *obj* (/ pi 2)))
+        (return)))
+    (when (not ret)
+      (return-from demo nil))
+    )
 
-  ;; 
+  ;; free door handle
   (ros::spin-once)
   (send *pr2* :angle-vector (send *ri* :state :potentio-vector))
   (setq rend (send *pr2* :rarm :end-coords :copy-worldcoords))
@@ -71,15 +78,21 @@
   (send *ri* :wait-interpolation)
   (send *pr2* :angle-vector (send *ri* :state :potentio-vector))
 
-  ;; detect 
+  ;; detect cans which was indicated by ( type )
   (check :type type :tf-force t :timeout 30)
+  (warn ";; print check cans~%")
+  (dump-structure *standard-output*
+                  (list (send *pr2* :copy-worldcoords)
+                        (send *obj* :copy-worldcoords)))
+
   ;;(objects *obj*) ;; *obj* -> position
   (send *ri* :stop-grasp :larm)
 
-  ;;
+  ;; *obj* -> can position
   (let (pre1 pre via via-av tar)
     (setq pre #f(250 87 65 14 -122 61 -115 170 -5 74 -104 -90 70 -6 20 90 20)
 	  pre1 #f(50 87 65 14 -122 61 -115 170 -5 74 -104 -90 70 -6 20 90 20))
+    ;; traject: pre1 -> pre -> via -> tar -> ( grasp ) -> via -> pre
     (send *pr2* :angle-vector pre)
     (send *ri* :angle-vector pre1)
     (send *ri* :wait-interpolation)
@@ -96,12 +109,14 @@
     (send *ri* :wait-interpolation)
     ;;
     (setq tar (send *obj* :copy-worldcoords))
-    (send tar :translate #f(0 50 0) *pr2*)
+    (send tar :translate #f(0 30 0) *pr2*) ;; offset for grasping
     (send tar :orient pi/2 :z *pr2*)
     (send *pr2* :larm :inverse-kinematics tar :rotation-axis t)
     (send *ri* :angle-vector (send *pr2* :angle-vector))
     (send *ri* :wait-interpolation)
+    ;; grasp can
     (send *ri* :start-grasp :larm)
+    ;;
     (send *ri* :angle-vector via-av)
     (send *ri* :wait-interpolation)
     ;;
@@ -110,7 +125,7 @@
     )
   (pr2-tuckarm-pose :rarm)
 
-  ;; close the fridge
+  ;; close the door of fridge
   (send *ri* :go-pos-unsafe 0 0 90)
   (send *ri* :angle-vector-sequence
 	(list #f(250 5 74 100 -90 -70 -6 20 -13 50 -59 -43 118 -90 62 -2 31)
@@ -141,8 +156,8 @@
    (ros::sleep))
   )
 
-(warn ";; (init)")
-(warn ";; (demo)")
-(warn ";; (demo \"georgia\")")
-(warn ";; (demo \"mets\")")
-(warn ";; (demo \"mountain_dew\")")
+(warn ";; (init)~%")
+(warn ";; (demo)~%")
+(warn ";; (demo \"georgia\")~%")
+(warn ";; (demo \"mets\")~%")
+(warn ";; (demo \"mountain_dew\")~%")
