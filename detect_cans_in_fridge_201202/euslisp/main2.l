@@ -126,7 +126,7 @@
 	(list 1500 1000 1000 3000 3000))
   (send *ri* :wait-interpolation)
 
-  (send *pr2* :angle-vector #f(200 5.00529 74.2038 105.001 -90.0035 -70.0071 -5.73378 19.9988 9.96029 39.7801 -45.0972 -121.542 94.4262 -111.922 63.0666 -20.0316 21.024))
+  (send *pr2* :angle-vector #f(200 5.00529 74.2038 105.001 -90.0035 -70.0071 -5.73378 19.9988 9.96029 39.7801 -45.0972 -121.542 94.4262 -111.922 63.0666 -0.0316 21.024))
   (send *ri* :angle-vector (send *pr2* :angle-vector))
 
   ;; move-to spot for grasping
@@ -159,7 +159,7 @@
 
   ;; close the door of fridge
   (send *ri* :go-pos-unsafe 0 0 -20)
-  (send *ri* :go-velocity -0.1 0.20 0 1500)
+  (send *ri* :go-velocity -0.1 0.10 0 1500)
   (send *ri* :angle-vector-sequence
 	(list #f(250 5 74 100 -90 -70 -6 20 -13 50 -59 -43 118 -90 62 -2 31)
 	      #f(200 5 74 100 -90 -70 -6 20 -50 36 -29 -43 118 -90 62 -2 31)
