@@ -2,19 +2,12 @@
 ;; -*- mode: EusLisp; coding: utf-8-unix; -*-
 
 (setq ros::*compile-message* t) ;; switch for compile
-;;(ros::load-ros-manifest "jskpointcloud")
-;;(load "package://jskpointcloud/euslisp/jskpointcloud.l")
-
-(ros::load-ros-manifest "irt_pointcloud")
-;;(load "package://euslib/irteus_proposals/pointcloud.l");;
-(load "package://irt_pointcloud/euslisp/irt_pointcloud.l")
 
 (ros::roseus-add-srvs "jsk_perception")
 (ros::roseus-add-srvs "jsk_pcl_ros")
 
 (defvar *topic-name* "/camera/rgb/points_throttle")
 ;(defvar *topic-name* "/camera/depth_registered/points")
-;(defvar *topic-name* "/store_data/points")
 (defvar *image-topic* "/camera/rgb/image_rect_color")
 (defvar *screen-topic* "/camera/rgb/screenpoint")
 (defvar *result-topic* "/narrow_stereo/left/ObjectDetection")
@@ -22,10 +15,8 @@
 (ros::roseus-add-msgs "posedetection_msgs")
 (load "match-hist.l")
 
-;;(unless (boundp '*pickview*) (pickview))
 ;(unless (boundp '*irtviewer*) (make-irtviewer))
 (setq *3dpos* (instance pointcloud :init))
-;(objects (list *3dpos*))
 
 (ros::roseus "white_balance_main")
 (setq *p* nil
@@ -57,7 +48,7 @@
 
 (defun pcloud-cb (msg)
   (pprint 'capture)
-  (make-pointcloud-from-msg2 msg :3dp *3dpos* :remove-nan t) ;; ???
+  (make-eus-pointcloud-from-ros-msg msg :pcloud *3dpos* :remove-nan t) ;; ???
   (let ((p (instance pointcloud :init)) q qlst obj)
     (setq *obj-det* nil)
     (send p :copy-from *3dpos*)
@@ -97,18 +88,15 @@
   )
 (ros::advertise *result-topic* posedetection_msgs::ObjectDetection)
 (ros::subscribe *topic-name* sensor_msgs::PointCloud2 #'pcloud-cb)
-;;(ros::subscribe *topic-name* sensor_msgs::PointCloud #'pcloud-cb)
 
 (defun white-balance-points (3dp &optional (reference-color #f(1 1 1)))
   (let ((req (instance jsk_perception::WhiteBalancePointsRequest :init))
         ret)
-    ;;(send req :input (make-msg2-from-3dpointcloud 3dp :with-color t))
-    (send req :input (make-msg2-from-pointcloud 3dp :with-color t))
+    (send req :input (make-ros-msg-from-eus-pointcloud 3dp :with-color t))
     (send req :reference_color reference-color)
 
     (setq ret (ros::service-call "/white_balance/convert_points" req))
-    ;;(make-3dpointcloud-from-msg2 ret)
-    (make-pointcloud-from-msg2 (send ret :output))
+    (make-eus-pointcloud-from-ros-msg (send ret :output))
     ))
 
 (defun euclidean-cluster-points (3dp &optional (tolerance 0.01))
@@ -116,13 +104,11 @@
     (return-from euclidean-cluster-points nil))
   (let ((req (instance jsk_pcl_ros::EuclideanSegmentRequest :init))
         ret)
-    ;;(send req :input (make-msg2-from-3dpointcloud 3dp :with-color t))
-    (send req :input (make-msg2-from-pointcloud 3dp :with-color t))
+    (send req :input (make-ros-msg-from-eus-pointcloud 3dp :with-color t))
     (send req :tolerance tolerance);;
 
     (setq ret (ros::service-call "/euclidean_clustering/euclidean_clustering" req))
-    ;;(mapcar #'(lambda (m) (make-3dpointcloud-from-msg2 m)) ret)
-    (mapcar #'(lambda (m) (make-pointcloud-from-msg2 m)) (send ret :output))
+    (mapcar #'(lambda (m) (make-eus-pointcloud-from-ros-msg m)) (send ret :output))
     ))
 
 ;; simple bounding box size check
@@ -176,5 +162,3 @@
  (let ((vw (send *viewer* :viewsurface)))
    (setq (vw . x::bg-color) col)
    (gl::glClearColorfv col)))
-
-;(load "package://detect_cans_in_fridge_201202/euslisp/match-hist.l")
