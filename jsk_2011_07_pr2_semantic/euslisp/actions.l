@@ -337,6 +337,8 @@
 	(push 300 tms))
       )
     (send *ri* :angle-vector-sequence (reverse avs) tms)
+    (unix:sleep 2)
+    (send *ri* :stop-grasp hand)
     (send *ri* :wait-interpolation)
     ;;
     (unix::sleep 1) (ros::spin-once)
@@ -345,7 +347,6 @@
     (setq idx (position (find-extream ret #'(lambda(x)(distance (send x :worldpos) end-pt)) #'<) ret))
     (ros::ros-info "idx = [~a/~a]" idx (length ret))
     (when (< idx (/ (length ret) 2))
-      (send *ri* :move-gripper hand 0.09) ;; open
       (return-from open-fridge nil))
     t ))
 
