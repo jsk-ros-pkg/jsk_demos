@@ -10,7 +10,7 @@
   <url>http://ros.org/wiki/detect_cans_in_fridge_201202</url>
   <depend package="roseus"/>
   <depend package="jsk_perception"/>
-  <depend package="white_balance_converter"/>
+  <depend package="jsk_pcl_ros" />
   <depend package="rectangular_solid_filter"/>
   <depend package="robot_self_filter_color"/>
 

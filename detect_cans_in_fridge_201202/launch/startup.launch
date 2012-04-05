@@ -14,7 +14,7 @@
   <include file="$(find jsk_2011_07_pr2_semantic)/launch/setup_demo.launch" />
 
   <!-- load model (color histgrams) -->
-  <include file="$(find white_balance_converter)/white_balance.launch" />
+  <include file="$(find detect_cans_in_fridge_201202)/launch/white_balance.launch" />
   <rosparam file="$(find detect_cans_in_fridge_201202)/object_models1.yaml" command="load" />
 
   <!-- clusters + model -> can_position -->
