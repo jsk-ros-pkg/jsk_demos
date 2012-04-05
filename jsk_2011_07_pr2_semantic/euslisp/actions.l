@@ -259,7 +259,7 @@
 	    (t
 	     (ros::ros-info (format nil "no - obj-type(~a)" (send *obj* :name)))
 	     (unless speak
-	       (speak-jp "こっぷがみつかりました")
+	       (speak-jp (format nil "~a が みつかりました" (send *obj* :name)))
 	       (setq speak t))
 	     )))
     (when (< timeout (send (ros::time- (ros::time-now) tm) :to-sec))
