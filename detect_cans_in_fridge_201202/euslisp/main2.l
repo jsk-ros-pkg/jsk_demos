@@ -74,6 +74,7 @@
   (setq co (send *scene* :spot "/eng2/7f/room73B2-fridge-front"))
   (send co :translate #f(0 0 0) :world) ;; for opening door
   (send *ri* :move-to co)
+  (send *ri* :go-pos 0 -0.05 0)
   ;;
   (send *pr2* :head :angle-vector #f(0 0))
   (send *pr2* :torso :angle-vector #f(50))
@@ -83,7 +84,7 @@
   ;;(send *pr2* :move-to (send *ri* :state :worldcoords) :world)
 
   ;; open door
-  (let (ret)
+  (let (ret (idealcds (make-coords :pos (float-vector 733.757 135.013 1092.946) :rpy (float-vector 0.002 0.059 -0.019))) (diffcds (make-coords :pos (float-vector 10000 10000 10000))))
     (dotimes (i 10 nil)
       ;; finding handle position
       (check :type "fridge")
@@ -92,9 +93,10 @@
       (dump-structure *standard-output*
                       (list (send *pr2* :copy-worldcoords)
                             (send *obj* :copy-worldcoords)))
-      ;;(setq diff (/ (- 650 (elt (send *obj* :worldpos) 0)) -1000))
-      ;;(when (< diff 0.1)
-      ;;  (send *ri* :go-velocity diff 0 0 1000))
+      (setq diffcds (send (send *obj* :copy-worldcoords) :transform (send idealcds :inverse-transformation)))
+      (send *ri* :go-pos-unsafe (/ (elt (send diffcds :worldpos) 0) 1000.0) (/ (elt (send diffcds :worldpos) 1) 1000.0) (rad2deg (elt (car (rpy-angle (send diffcds :worldrot))) 0)))
+      ;;(send *obj* :move-to idealcds :world)
+      (check :type "fridge")
       (ros::spin-once)
       (when (setq ret (open-fridge :rarm *obj* (/ pi 2)))
         (return))
@@ -159,8 +161,8 @@
       (return)))
 
   ;; close the door of fridge
-  (send *ri* :go-pos-unsafe 0 0 -20)
-  (send *ri* :go-velocity -0.1 0.10 0 1500)
+  (send *ri* :go-pos-unsafe -0.3 0.05 -20)
+  (unix::sleep 1)
   (send *ri* :angle-vector-sequence
 	(list #f(250 5 74 100 -90 -70 -6 20 -13 50 -59 -43 118 -90 62 -2 31)
 	      #f(200 5 74 100 -90 -70 -6 20 -50 36 -29 -43 118 -90 62 -2 31)
@@ -175,6 +177,7 @@
   ;; move-to user and put
   (send *ri* :go-pos-unsafe 0 0 -90)
   ;;(send *ri* :move-to *opose*)
+  (speak-jp (format nil "~a を どうぞ" (send *obj* :name)))
   (hand-over :rarm :wait-shock t)
   )
 
