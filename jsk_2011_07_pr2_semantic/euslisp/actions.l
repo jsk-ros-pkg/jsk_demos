@@ -78,7 +78,7 @@
 		      :move-arm arm :use-torso t))
       (unless avs
 	(ros::ros-info "move arm planning was failed, in pick, actions.l")
-	(speak-jp "しょうとつかいひどうさ,しっぱい")))
+	(speak-jp "しょうとつかいひどうさしっぱい")))
     (when (not (or force avs)) (return-from pick nil))
 
     ;; if openrave is failed or not exists
@@ -208,13 +208,14 @@
 	     "/base_footprint" frame stamp 1)
      (ros::ros-error "could not solve /base_footprint to ~A" frame))
    (setq trans (send *tfl* :lookup-transform "/base_footprint" frame stamp))
-   (ros::ros-info "object detected.")
-   (send *obj* :name (send obj :type))
-   (send *pr2* :angle-vector (send *ri* :state :potentio-vector))
-   (send *obj* :move-to *pr2* :world)
-   (send *obj* :move-to trans :local)
-   (send *obj* :move-to (ros::tf-pose->coords (send obj :pose)) :local)
-   (send *pr2* :angle-vector av)
+   (when trans
+     (ros::ros-info "object detected ~A" (send obj :type))
+     (send *obj* :name (send obj :type))
+     (send *pr2* :angle-vector (send *ri* :state :potentio-vector))
+     (send *obj* :move-to *pr2* :world)
+     (send *obj* :move-to trans :local)
+     (send *obj* :move-to (ros::tf-pose->coords (send obj :pose)) :local)
+     (send *pr2* :angle-vector av))
    ))
 
 (defun start-subscribe (tf-force)
@@ -250,6 +251,9 @@
 	     (ros::ros-info (format nil "ok - obj-type(~a)"  *obj*))
 	     (if (and x::*display* (/= x::*display* 0)) (send *irtviewer* :draw-objects))
 	     (stop-subscribe)
+	     (unless speak
+	       (speak-jp (format nil "~a がみつかりました" (send *obj* :name)))
+	       (setq speak t))
 	     (cond ((substringp "cup" (send *obj* :name))
 		    ;; this is working only for cups 
 		    (when (check-pcl)
@@ -258,9 +262,6 @@
 		    (return-from check t))))
 	    (t
 	     (ros::ros-info (format nil "no - obj-type(~a)" (send *obj* :name)))
-	     (unless speak
-	       (speak-jp (format nil "~a が みつかりました" (send *obj* :name)))
-	       (setq speak t))
 	     )))
     (when (< timeout (send (ros::time- (ros::time-now) tm) :to-sec))
       (ros::ros-info "timeout")
@@ -337,7 +338,7 @@
 	(push 300 tms))
       )
     (send *ri* :angle-vector-sequence (reverse avs) tms)
-    (unix:sleep 2)
+    (unix:sleep 4)
     (send *ri* :stop-grasp hand)
     (send *ri* :wait-interpolation)
     ;;
@@ -437,7 +438,7 @@
     (send *ri* :stop-grasp :larm)
     (send *pr2* :head :look-at (send (send (send *pr2* :copy-worldcoords) :translate #f(800 0 1500)) :worldpos))
     (send *ri* :head-angle-vector (send *pr2* :angle-vector) 1000)
-    (speak-jp "さんどい'っちを/ください")
+    (speak-jp "さんどいっちをください")
     (send *ri* :wait-interpolation)
     ;;
     (send *ri* :angle-vector-sequence avs (list 2000 2000))
@@ -452,6 +453,6 @@
     (send *ri* :wait-interpolation)
     (send *ri* :angle-vector-sequence (append (cdr avs2) (list av0)) tms2)
     (send *ri* :wait-interpolation)
-    (speak-jp "あり'/がとお+ございます") (unix::sleep 5)
+    (speak-jp "ありがとおございます") (unix::sleep 5)
     ))
 
