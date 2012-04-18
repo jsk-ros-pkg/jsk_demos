@@ -11,7 +11,7 @@
   </anode>
 
   <!-- setup fridge handle marker template -->
-  <include file="$(find jsk_2011_07_pr2_semantic)/launch/setup_demo.launch" />
+  <include file="$(find jsk_2011_07_pr2_semantic)/launch/start_perception.launch" />
 
   <!-- load model (color histgrams) -->
   <include file="$(find detect_cans_in_fridge_201202)/launch/white_balance.launch" />
