@@ -1,7 +1,7 @@
 #!/usr/bin/env roseus
 
 (ros::load-ros-manifest "roseus")
-(ros::load-ros-manifest "jsk_pr2_gui")
+(ros::load-ros-manifest "jsk_ipad_gui")
 (ros::roseus "demo_webui")
 
 (load "package://pr2eus/pr2-interface.l")
@@ -92,7 +92,7 @@
 ;;
 (init-settings)
 (ros::advertise-service "/ipad/service/knowrob" roseus::StringString #'str-srv)
-(ros::subscribe "/ipad/event/select" jsk_pr2_gui::iPadSelect #'str-cb)
+(ros::subscribe "/ipad/event/select" jsk_ipad_gui::iPadSelect #'str-cb)
 
 (ros::rate 10)
 (do-until-key
