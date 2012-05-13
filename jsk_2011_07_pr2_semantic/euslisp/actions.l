@@ -309,8 +309,8 @@
 ;;
 ;; for opening fridge
 ;;   *pr2* and *obj* are needed on worldcoords ??
-(ros::load-ros-manifest "jsk_pr2_gui")
-(load "package://jsk_pr2_gui/src/utils.l")
+(ros::load-ros-manifest "jsk_ipad_gui")
+(load "package://jsk_ipad_gui/src/utils.l")
 (ros::advertise "/ipad_marker_array" visualization_msgs::MarkerArray 10)
 (defun open-fridge (hand handle &optional (rad pi/2))
   ;; 500mm is a distance between handle and axis
