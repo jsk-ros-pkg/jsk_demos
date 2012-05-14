@@ -29,7 +29,9 @@ rosbuild_genmsg()
 #rosbuild_add_executable(example examples/example.cpp)
 #target_link_libraries(example ${PROJECT_NAME})
 
+find_package(OpenCV REQUIRED)
 rosbuild_add_executable(color_point_detector src/color_point_detector.cpp)
+target_link_libraries(color_point_detector ${OpenCV_LIBRARIES})
 
 rosbuild_check_for_display(disp)
 if(disp)
