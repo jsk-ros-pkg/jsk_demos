@@ -21,4 +21,15 @@
   <node pkg="roseus" type="roseus" name="detect_cans" output="screen"
   	args="$(find detect_cans_in_fridge_201202)/euslisp/white_balance_converter.l" />
 
+  <sphinxdoc><![CDATA[
+This package containts detect and fetch can in the fridge demo program
+
+
+.. figure:: http://r7videos-thumbnail.s3.amazonaws.com/ER7_RE_JR_DOMESTICAS_452kbps_2012-02-23_b9dace72-5e73-11e1-b9a6-4ba54d97a5f8.jpg
+   :width 400
+
+   http://noticias.r7.com/videos/japoneses-utilizam-robo-para-as-funcoes-de-empregada-domestica/idmedia/4f46c7a2fc9b864945d600a5.html
+
+]]></sphinxdoc>
+
 </launch>
