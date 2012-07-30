@@ -11,7 +11,7 @@
   <depend package="roseus"/>
   <depend package="jsk_perception"/>
   <depend package="jsk_pcl_ros" />
-  <depend package="rectangular_solid_filter"/>
+  <!-- depend package="rectangular_solid_filter"/ -->
   <depend package="robot_self_filter_color"/>
 
   <export>
