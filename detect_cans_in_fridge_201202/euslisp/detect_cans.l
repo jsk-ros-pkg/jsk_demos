@@ -5,6 +5,7 @@
 
 (ros::roseus-add-srvs "jsk_perception")
 (ros::roseus-add-srvs "jsk_pcl_ros")
+(ros::roseus-add-srvs "jsk_pcl_ros_unreleased")
 
 (defvar *topic-name* "/camera/rgb/points_throttle")
 ;(defvar *topic-name* "/camera/depth_registered/points")
@@ -52,7 +53,6 @@
   (let ((p (instance pointcloud :init)) q qlst obj)
     (setq *obj-det* nil)
     (send p :copy-from *3dpos*)
-    (pprint 'copied)
     (setq *p* p)
     (send p :filter :key #'(lambda (p) (> 1500 (norm p) 100)))
     (objects (list p))
@@ -102,7 +102,7 @@
 (defun euclidean-cluster-points (3dp &optional (tolerance 0.01))
   (when (or (not 3dp) (= (send 3dp :size) 0))
     (return-from euclidean-cluster-points nil))
-  (let ((req (instance jsk_pcl_ros::EuclideanSegmentRequest :init))
+  (let ((req (instance jsk_pcl_ros_unreleased::EuclideanSegmentRequest :init))
         ret)
     (send req :input (make-ros-msg-from-eus-pointcloud 3dp :with-color t))
     (send req :tolerance tolerance);;

@@ -1,0 +1,17 @@
+<launch>
+  <rosparam file="$(find detect_cans_in_fridge_201202)/object_models1.yaml" command="load" />
+
+  <!-- clusters + model -> can_position -->
+  <node pkg="roseus" type="roseus" name="detect_cans" output="screen"
+  	args="$(find detect_cans_in_fridge_201202)/euslisp/detect_cans.l" />
+
+  <!-- euclidean clustering service -->
+  <node pkg="jsk_pcl_ros_unreleased" type="euclidean_cluster_extraction"
+	name="euclidean_clustering"
+        output="screen" clear_params="true">
+    <!--
+    <remap from="input" to="/camera/depth_registered/points" />
+    -->
+    <param name="tolerance" value="0.01" />
+  </node>
+</launch>
