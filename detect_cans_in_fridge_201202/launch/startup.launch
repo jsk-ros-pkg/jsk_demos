@@ -15,11 +15,13 @@
 
   <!-- load model (color histgrams) -->
   <include file="$(find detect_cans_in_fridge_201202)/launch/white_balance.launch" />
-  <rosparam file="$(find detect_cans_in_fridge_201202)/object_models1.yaml" command="load" />
 
-  <!-- clusters + model -> can_position -->
-  <node pkg="roseus" type="roseus" name="detect_cans" output="screen"
-  	args="$(find detect_cans_in_fridge_201202)/euslisp/white_balance_converter.l" />
+  <!-- detect cans -->
+  <include file="$(find detect_cans_in_fridge_201202)/launch/detect_cans.launch" />
+
+  <!-- ICP matching between map and base scan -->
+  <param name="SnapMapICP/age_threshold" value="2.0"/>
+  <node pkg="SnapMapICP" type="SnapMapICP" name="tum_SnapMapICP" output="screen" />
 
   <sphinxdoc><![CDATA[
 This package containts detect and fetch can in the fridge demo program

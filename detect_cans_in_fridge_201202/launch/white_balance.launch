@@ -1,18 +1,8 @@
 <launch>
   <!-- white balance -->
-  <node  name="white_balance" pkg="jsk_perception" type="white_balance_converter"
+  <node  pkg="jsk_perception" type="white_balance_converter"
+	 name="white_balance"
          output="screen" clear_params="true">
     <rosparam command="load" file="$(find jsk_perception)/launch/white_balance_param.yaml" />
   </node>
-
-  <!-- euclidean clustering service -->
-  <node name="euclidean_clustering" pkg="jsk_pcl_ros"
-        type="euclidean_cluster_extraction"
-        output="screen" clear_params="true">
-    <!--
-    <remap from="input" to="/camera/depth_registered/points" />
-    -->
-    <param name="tolerance" value="0.01" />
-  </node>
-
 </launch>
