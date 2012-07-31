@@ -4,8 +4,8 @@
 ;; 入力： 見えている点群全体の色相彩度のヒストグラム
 
 ;; for rgb2hsi
-(setq ros::*compile-message* nil)
-(load "package://euslib/jsk/jskgeo.l")
+;;(setq ros::*compile-message* nil)
+;;(load "package://euslib/jsk/jskgeo.l")
 
 ;; copy from color_histogram_creater.l
 (defun get-bin (d &key (step 3) (max-num 1.0) (min-num 0.0))
