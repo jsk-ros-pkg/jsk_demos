@@ -75,7 +75,7 @@
   (let ((co (send *scene* :spot "/eng2/7f/room73B2-fridge-front")))
     (send co :translate (float-vector 0 0 0) :world) ;; for opening door
     (send *ri* :move-to co)
-    (send *ri* :go-pos 0 -0.05 0) ;; ???
+    (send *ri* :go-pos 0 -0.04 0) ;; ???
   ;;
     (send *pr2* :head :angle-vector (float-vector 0 0))
     (send *pr2* :torso :angle-vector (float-vector 50))
@@ -147,9 +147,10 @@
   ;; move-to spot for grasping
   (ros::spin-once)
   (send *ri* :spin-once)
+  (ros::ros-info "GO POS UNSAFE")
   (send *ri* :go-pos-unsafe 0 0 (rad2deg 0.40))
   ;;(send *ri* :go-pos-unsafe 0.15 -0.30 0)
-  (send *ri* :go-pos-unsafe 0.20 -0.30 0)
+  (send *ri* :go-pos-unsafe 0.18 -0.31 0)
   (send *ri* :wait-interpolation)
 
   (ros::spin-once)
@@ -216,6 +217,9 @@
     (return-from demo))
 
   (unless (grasp-can)
+    (return-from demo))
+
+  (unless (close-fridge)
     (return-from demo))
 
   (unless (goto-initial-position)
