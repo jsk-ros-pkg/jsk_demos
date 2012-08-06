@@ -161,7 +161,7 @@
     (dotimes (trial 10)
       ;; detect cans which was indicated by ( type )
       (when (not (check :type *type*))
-	(check :type type :tf-force t :timeout 30))
+	(check :type *type* :tf-force t :timeout 30))
       (warn ";; print check cans~%")
       (dump-structure *standard-output*
 		      (list (send *pr2* :copy-worldcoords)

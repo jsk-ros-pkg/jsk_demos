@@ -19,7 +19,7 @@
                  (list h-step s-step)
                  :element-type float-vector)))
       (dotimes (i (send self :size))
-        (let* ((his (geo:rgb2his (matrix-row col i)))
+        (let* ((his (rgb2his (matrix-row col i)))
                (h-bin (get-bin (elt his 0) :step h-step :max-num 360.0))
                (s-bin (get-bin (elt his 2) :step s-step)))
           (incf (aref hist h-bin s-bin))))
