@@ -20,8 +20,9 @@
   <include file="$(find detect_cans_in_fridge_201202)/launch/detect_cans.launch" />
 
   <!-- ICP matching between map and base scan -->
+  <include file="$(find pr2_machine)/$(env ROBOT).machine" />
   <param name="SnapMapICP/age_threshold" value="2.0"/>
-  <node pkg="SnapMapICP" type="SnapMapICP" name="tum_SnapMapICP" output="screen" />
+  <node pkg="SnapMapICP" type="SnapMapICP" name="tum_SnapMapICP" output="screen" machine="c2"/>
 
   <sphinxdoc><![CDATA[
 This package containts detect and fetch can in the fridge demo program
