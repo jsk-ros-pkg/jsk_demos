@@ -74,6 +74,13 @@ Contents
   
     </launch>
 
+test_perception.launch
+----------------------
+
+.. code-block:: bash
+
+  roslaunch detect_cans_in_fridge_201202 test_perception.launch
+
 white_balance.launch
 --------------------
 
