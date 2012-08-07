@@ -1,0 +1,35 @@
+<launch>
+  <!-- for kinect camera -->
+  <include file="$(find openni_camera)/launch/openni_node.launch" />
+
+  <!--start sift on kinect (faked narrow left) -->
+  <group ns="/narrow_stereo/left">
+    <remap from="image_raw" to="/camera/rgb/image_raw"  />
+    <remap from="camera_info" to="/camera/rgb/camera_info" />
+    <node name="narrow_image_proc" pkg="image_proc" type="image_proc" />
+    <node name="throttle" pkg="topic_tools"
+          type="throttle" args="messages image_rect 2.0"/>
+    <node name="sift" pkg="imagesift" type="imagesift"
+          args="image:=image_rect_throttle"
+          launch-prefix="nice -n +10"/>
+  </group>
+
+  <!-- comment out if you use robot or simulation -->
+  <node pkg="tf" type="static_transform_publisher" name="test_base_footprint"
+        args="0 0 0 0 0 0 /base_footprint /openni_rgb_optical_frame 100" />
+  <!-- debug display -->
+  <node name="image_view2" pkg="image_view2" type="image_view2" output="screen" >
+    <remap from="image" to="/narrow_stereo/left/image_rect" />
+    <param name="autosize" value="true" />
+    <param name="blurry" value="false" />
+    <param name="window_name" value="fridge_handle_upper" />
+  </node>
+
+  <!-- setup fridge handle marker template -->
+  <include file="$(find jsk_2011_07_pr2_semantic)/launch/start_perception.launch" />
+
+  <!-- load model (color histgrams) -->
+  <ainclude file="$(find detect_cans_in_fridge_201202)/launch/white_balance.launch" />
+  <!-- detect cans -->
+  <ainclude file="$(find detect_cans_in_fridge_201202)/launch/detect_cans.launch" />
+</launch>

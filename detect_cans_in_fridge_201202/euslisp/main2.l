@@ -7,17 +7,25 @@
 
 (ros::roseus "demo_main")
 
-(defun init ()
-  ;; env
-  (unless (boundp '*pr2*) (pr2))
-  (unless (boundp '*ri*) (setq *ri* (instance pr2-interface :init)))
+(defun init-for-perception ()
   (unless (boundp '*scene*) (setq *scene* (make-eng2-scene)))
   (unless (boundp '*tfb*)
     (setq *tfb* (instance ros::transform-broadcaster :init)))
+  (if (and x::*display* (/= x::*display* 0)) (make-irtviewer))
   (setq *obj* (make-sphere 100)) ;; dummy object
   (ros::spin-once)
+  )
+
+(defun init-for-robot ()
+  (unless (boundp '*pr2*) (pr2))
+  (unless (boundp '*ri*) (setq *ri* (instance pr2-interface :init)))
   (send *ri* :spin-once)
   (send *pr2* :angle-vector (send *ri* :state :potentio-vector))
+  )
+
+(defun init ()
+  (init-for-perception)
+  (init-for-robot)
   ;;(send *pr2* :move-to (send *ri* :state :worldcoords) :world)
   ;;(objects (list *pr2*))
   )
@@ -93,7 +101,7 @@
 	(diffcds (make-coords :pos (float-vector 10000 10000 10000))))
     (dotimes (i 10 nil)
       ;; finding handle position
-      (check :type "fridge")
+      (check :type "fridge") ;; need detection fail check
       ;; opening door
       (warn ";; print check frig~%")
       (dump-structure *standard-output*
@@ -247,5 +255,7 @@
 (warn ";; (demo :type \"georgia\")~%")
 (warn ";; (demo :type \"iemon\")~%")
 (warn ";; (demo :type \"wonda\")~%")
+(warn ";; ~%")
+(warn ";; (check :type \"fridge\")~%")
 
 ;; (progn (check :type "wonda")(grasp-can *obj*))
