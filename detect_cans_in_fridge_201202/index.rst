@@ -60,6 +60,9 @@ Contents
     </anode>
   
     
+    <anode args="-d $(find detect_cans_in_fridge_201202)/detect_cans.vcg" name="detect_cans_rviz" pkg="rviz" type="rviz" />
+  
+    
     <include file="$(find jsk_2011_07_pr2_semantic)/launch/start_perception.launch" />
   
     
