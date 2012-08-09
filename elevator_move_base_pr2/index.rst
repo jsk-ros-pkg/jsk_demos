@@ -42,11 +42,10 @@ Then check the button color to detect the button was pushed.
 The button area in the camera image is calcurated from Euslisp camera model and panel object model.
 
 
-.. image:: build/test-button-light.mp4
+.. image:: $JENKINS_URL/job/$JOB_NAME/lastSuccessfulBuild/artifact/doc/$JOB_NAME/html/_images//test-button-light.mp4
   :width: 600
 
-.. video:: build/call-panel-lighting-not
-  :url: http://jenkins.jsk.imi.i.u-tokyo.ac.jp:8080/job/agentsystem-test/lastSuccessfulBuild/artifact/elevator_move_base_pr2-example/_images/call-panel-lighting-not
+.. video:: $JENKINS_URL/job/$JOB_NAME/lastSuccessfulBuild/artifact/doc/$JOB_NAME/html/_images//call-panel-lighting-not
   :width: 600
 
   
@@ -96,12 +95,10 @@ test-modules-callpanel.launch
 
 This scripts is test for elevator call panel.
 
-.. video:: build/test-modules-callpanel-1
-  :url: http://jenkins.jsk.imi.i.u-tokyo.ac.jp:8080/job/agentsystem-test/lastSuccessfulBuild/artifact/elevator_move_base_pr2-example/_images/test-modules-callpanel-1
+.. video:: $JENKINS_URL/job/$JOB_NAME/lastSuccessfulBuild/artifact/doc/$JOB_NAME/html/_images//test-modules-callpanel-1
   :width: 600
 
-.. video:: build/test-modules-callpanel-2
-  :url: http://jenkins.jsk.imi.i.u-tokyo.ac.jp:8080/job/agentsystem-test/lastSuccessfulBuild/artifact/elevator_move_base_pr2-example/_images/test-modules-callpanel-2
+.. video:: $JENKINS_URL/job/$JOB_NAME/lastSuccessfulBuild/artifact/doc/$JOB_NAME/html/_images//test-modules-callpanel-2
   :width: 600
 
 Then check the button color to detect the button was pushed.
@@ -159,15 +156,13 @@ test-modules-insidepanel.launch
 
 This scripts is test for elevator inside panel.
 
-.. video:: build/images/call-panel-pose
-  :url: http://jenkins.jsk.imi.i.u-tokyo.ac.jp:8080/job/agentsystem-test/lastSuccessfulBuild/artifact/elevator_move_base_pr2-example/_images/call-panel-pose
+.. video:: $JENKINS_URL/job/$JOB_NAME/lastSuccessfulBuild/artifact/doc/$JOB_NAME/html/_images//images/call-panel-pose
   :width: 600
 
 Then apply affine transform to camera image for template match.
 Template is number region of the panel.
 
-.. video:: build/images/inside-panel-number
-  :url: http://jenkins.jsk.imi.i.u-tokyo.ac.jp:8080/job/agentsystem-test/lastSuccessfulBuild/artifact/elevator_move_base_pr2-example/_images/inside-panel-number
+.. video:: $JENKINS_URL/job/$JOB_NAME/lastSuccessfulBuild/artifact/doc/$JOB_NAME/html/_images//images/inside-panel-number
   :width: 600
 
   
@@ -223,12 +218,10 @@ test-panel-pose-detection.launch
 This scripts is test for elevator call panel pose detection.
 
 
-.. video:: build/test-panel-pose-detection-1
-  :url: http://jenkins.jsk.imi.i.u-tokyo.ac.jp:8080/job/agentsystem-test/lastSuccessfulBuild/artifact/elevator_move_base_pr2-example/_images/test-panel-pose-detection-1
+.. video:: $JENKINS_URL/job/$JOB_NAME/lastSuccessfulBuild/artifact/doc/$JOB_NAME/html/_images//test-panel-pose-detection-1
   :width: 600
 
-.. video:: build/test-panel-pose-detection-2
-  :url: http://jenkins.jsk.imi.i.u-tokyo.ac.jp:8080/job/agentsystem-test/lastSuccessfulBuild/artifact/elevator_move_base_pr2-example/_images/test-panel-pose-detection-2
+.. video:: $JENKINS_URL/job/$JOB_NAME/lastSuccessfulBuild/artifact/doc/$JOB_NAME/html/_images//test-panel-pose-detection-2
   :width: 600
 
   
