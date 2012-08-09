@@ -1,7 +1,7 @@
 <launch>
   <!-- sample data for test -->
   <anode pkg="rosbag" type="play" name="play"
-	 args="-l -r 0.1 /home/leus/work/rits/refrig-kinect-c.bag" />
+         args="-l -r 0.1 /home/leus/work/rits/refrig-kinect-c.bag" />
 
   <!-- reference white -->
   <anode pkg="image_view2" type="image_view2" name="select_ref_white">
@@ -9,6 +9,10 @@
     <remap from="camera_info" to="/camera/rgb/camera_info"/>
     <remap from="/camera/rgb/image_rect_color/screenpoint" to="/camera/rgb/screenpoint"/>
   </anode>
+
+  <!-- for desktop -->
+  <anode pkg="rviz" type="rviz" name="detect_cans_rviz"
+         args="-d $(find detect_cans_in_fridge_201202)/detect_cans.vcg" />
 
   <!-- setup fridge handle marker template -->
   <include file="$(find jsk_2011_07_pr2_semantic)/launch/start_perception.launch" />
