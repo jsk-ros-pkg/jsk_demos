@@ -68,7 +68,7 @@
     (dolist (c (send *scene* :spots))
       (when (and current-map-coords (substringp current-map-id (send c :name)))
         ;(ros::ros-info "publish spot~A" (send c :name))
-        (push (object->marker-msg (make-pin-body :coords (send (send current-map-coords :transformation c) :worldcoords) :height 1500)
+        (push (object->marker-msg (make-pin-body :coords (send (send current-map-coords :transformation c) :worldcoords) :height 500 :radius 60)
                                   header
                                   :color (elt colors id)
                                   :ns "pin"
@@ -76,10 +76,10 @@
                                   :id id)
               msgs)
         (push (text->marker-msg (subseq (send c :name) (length current-map-id))
-                                (make-coords :pos (v+ (send (send current-map-coords :transformation c) :worldpos) #f(0 0 1700)))
+                                (make-coords :pos (v+ (send (send current-map-coords :transformation c) :worldpos) #f(0 0 700)))
                                 header
                                 :ns "text"
-                                :scale 200
+                                :scale 100
                                 :lifetime 15
                                 :id id)
               msgs)
