@@ -88,6 +88,10 @@ MarkerArray.Enabled=0
 MarkerArray.Marker\ Array\ Topic=/openrave_marker_array
 MarkerArray2.Enabled=1
 MarkerArray2.Marker\ Array\ Topic=/ipad_marker_array
+MarkerArray3.Enabled=1
+MarkerArray3.Marker\ Array\ Topic=/spots_marker_array
+MarkerArray3.pin=1
+MarkerArray3.text=1
 Path.Alpha=1
 Path.ColorR=0.1
 Path.ColorG=1
@@ -299,8 +303,8 @@ TF.Update\ Interval=0.05
 Tool\ 2D\ Nav\ GoalTopic=move_base_simple/goal
 Tool\ 2D\ Pose\ EstimateTopic=initialpose
 Camera\ Type=rviz::XYOrbitViewController
-Camera\ Config=1.0104 2.47039 9.09273 -8.81236 -1.54972e-06 -1.71577
-Property\ Grid\ State=selection=;expanded=.Global Options,MarkerArray.Enabled.MarkerArray.StatusTopStatus,MarkerArray.Enabled.MarkerArray.Namespaces,MarkerArray2.Enabled.MarkerArray2.Namespaces,TF.Enabled.TF.StatusTopStatus,TF.Enabled.TF.Tree,Laser Scan2.Enabled.Laser Scan2.StatusTopStatus;scrollpos=0,0;splitterpos=175,350;ispageselected=1
+Camera\ Config=1.2254 1.58039 9.09273 -8.81236 -1.54972e-06 -1.71577
+Property\ Grid\ State=selection=;expanded=.Global Options,MarkerArray.Enabled.MarkerArray.StatusTopStatus,MarkerArray.Enabled.MarkerArray.Namespaces,MarkerArray2.Enabled.MarkerArray2.Namespaces,TF.Enabled.TF.StatusTopStatus,TF.Enabled.TF.Tree,Laser Scan2.Enabled.Laser Scan2.StatusTopStatus,MarkerArray3.Enabled.MarkerArray3.Namespaces;scrollpos=0,0;splitterpos=269,555;ispageselected=1
 [Display0]
 Name=Grid
 Package=rviz
@@ -369,3 +373,7 @@ ClassName=rviz::LaserScanDisplay
 Name=Point Cloud2
 Package=rviz
 ClassName=rviz::PointCloud2Display
+[Display17]
+Name=MarkerArray3
+Package=rviz
+ClassName=rviz::MarkerArrayDisplay
