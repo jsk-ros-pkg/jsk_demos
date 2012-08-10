@@ -53,4 +53,5 @@
 
 (warn ";;~%")
 (warn ";;~%")
+(warn ";; (init)~%")
 (warn ";; (test-go-to-fridge)~%")
