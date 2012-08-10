@@ -9,11 +9,11 @@ Camera.Image\ Topic=/camera/rgb/image_rect_color
 Camera.Overlay\ Alpha=0.5
 Camera.Transport\ Hint=raw
 Camera.Zoom\ Factor=1
-Grid\ Cells.Alpha=1
+Grid\ Cells.Alpha=0.2
 Grid\ Cells.ColorR=0.1
 Grid\ Cells.ColorG=1
 Grid\ Cells.ColorB=0
-Grid\ Cells.Enabled=0
+Grid\ Cells.Enabled=1
 Grid\ Cells.Topic=/safe_teleop_base/local_costmap/inflated_obstacles
 Grid.Alpha=0.5
 Grid.Cell\ Size=1
@@ -314,8 +314,8 @@ TF.Update\ Interval=0.05
 Tool\ 2D\ Nav\ GoalTopic=move_base_simple/goal
 Tool\ 2D\ Pose\ EstimateTopic=initialpose
 Camera\ Type=rviz::XYOrbitViewController
-Camera\ Config=1.086 2.29537 2.79846 -6.96015 8.22544e-06 -5.30627
-Property\ Grid\ State=selection=;expanded=.Global Options,MarkerArray.Enabled.MarkerArray.StatusTopStatus,MarkerArray.Enabled.MarkerArray.Namespaces,MarkerArray2.Enabled.MarkerArray2.Namespaces,TF.Enabled.TF.StatusTopStatus,TF.Enabled.TF.Tree,Laser Scan2.Enabled.Laser Scan2.StatusTopStatus,MarkerArray3.Enabled.MarkerArray3.Namespaces,MarkerArray4.Enabled.MarkerArray4.Namespaces;scrollpos=0,8;splitterpos=167,435;ispageselected=1
+Camera\ Config=0.780999 0.325371 3.72476 -6.96015 8.22544e-06 -5.30627
+Property\ Grid\ State=selection=;expanded=.Global Options,MarkerArray.Enabled.MarkerArray.StatusTopStatus,MarkerArray.Enabled.MarkerArray.Namespaces,MarkerArray2.Enabled.MarkerArray2.Namespaces,TF.Enabled.TF.StatusTopStatus,TF.Enabled.TF.Tree,Laser Scan2.Enabled.Laser Scan2.StatusTopStatus,MarkerArray3.Enabled.MarkerArray3.Namespaces,MarkerArray4.Enabled.MarkerArray4.Namespaces;scrollpos=0,0;splitterpos=167,435;ispageselected=1
 [Display0]
 Name=Grid
 Package=rviz
