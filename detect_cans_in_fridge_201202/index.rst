@@ -25,12 +25,20 @@ grasp_object_extract.launch
 
   roslaunch detect_cans_in_fridge_201202 grasp_object_extract.launch
 
+rviz.launch
+-----------
+
+.. code-block:: bash
+
+  roslaunch detect_cans_in_fridge_201202 rviz.launch
+
 startup.launch
 --------------
 
 .. code-block:: bash
 
   roslaunch detect_cans_in_fridge_201202 startup.launch
+
 
 
 This package containts detect and fetch can in the fridge demo program
@@ -40,6 +48,23 @@ This package containts detect and fetch can in the fridge demo program
    :width 400
 
    http://noticias.r7.com/videos/japoneses-utilizam-robo-para-as-funcoes-de-empregada-domestica/idmedia/4f46c7a2fc9b864945d600a5.html
+
+.. code-block:: bash
+
+  @c1; roslaunch jsk_pr2_startup pr2.launch
+  @c1; roslaunch detect_cans_in_fridge_201202 startup.launch
+  @local; roslaunch  detect_cans_in_fridge_201202 rviz.launch
+
+set current pr2 position using "2D Pose Estimate" button on rviz
+
+make sure that Tool Properties -> Interact -> 2D Nav Goal -> Topic is move_bas_simple_goal and  
+2DPoseEstimate is initialpose.
+
+.. code-block:: bash
+
+  @local; rosrun roseus roseus `rospack find detect_cans_in_fridge_201202`/euslisp/main2.l
+
+type (init)(demo) to start demo
 
 
 
