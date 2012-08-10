@@ -42,11 +42,11 @@
       ((> x color-num) ret)
       ))
 
-(defun make-pin-body (&key (coords (make-cascoords)))
+(defun make-pin-body (&key (coords (make-cascoords)) (height 1800) (radius 100))
   (let (b)
     (setq b (body+ ;;(send (make-cone #f(0 0 1800) 30 :pos #f(0 0 1800)) :rotate pi :x)
-		   (make-cube 30 30 1800 :pos #f(0 0 900))
-		   (send (make-cylinder 100 100 :segments 9 :pos #f(50 0 1800)) :rotate -pi/2 :y)))
+		   (make-cube (/ radius 3) (/ radius 3) height :pos (float-vector 0 0 (/ height 2)))
+		   (send (make-cylinder radius radius :segments 9 :pos (float-vector 50 0 height)) :rotate -pi/2 :y)))
     (send b :name (send coords :name))
     (send b :transform coords :world)
     b))
@@ -63,18 +63,20 @@
     (setq current-map-id (string-right-trim "_" (string-right-trim "tf" *map-selected*))) ;; remove _tf
     (when (send  *tf-listener* :wait-for-transform "/world" current-map-id (ros::time-now) 1)
       (setq current-map-coords (send *tf-listener* :lookup-transform "/world" current-map-id (ros::time-now)))) ;; resolve /world /eng/7f
+    (setq current-map-id (format nil "~A/" current-map-id))     ;; add /
+    (ros::ros-info "current-map ~A ~A" current-map-id current-map-coords)
     (dolist (c (send *scene* :spots))
       (when (and current-map-coords (substringp current-map-id (send c :name)))
         ;(ros::ros-info "publish spot~A" (send c :name))
-        (push (object->marker-msg (make-pin-body :coords (send (send current-map-coords :transformation c) :worldcoords))
+        (push (object->marker-msg (make-pin-body :coords (send (send current-map-coords :transformation c) :worldcoords) :height 1500)
                                   header
                                   :color (elt colors id)
                                   :ns "pin"
                                   :lifetime 15
                                   :id id)
               msgs)
-        (push (text->marker-msg (send c :name)
-                                (make-coords :pos (v+ (send (send current-map-coords :transformation c) :worldpos) #f(0 0 2000)))
+        (push (text->marker-msg (subseq (send c :name) (length current-map-id))
+                                (make-coords :pos (v+ (send (send current-map-coords :transformation c) :worldpos) #f(0 0 1700)))
                                 header
                                 :ns "text"
                                 :scale 200
