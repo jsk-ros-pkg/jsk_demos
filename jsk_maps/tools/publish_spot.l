@@ -53,37 +53,49 @@
 
 (ros::roseus "publish_jskmap_spots")
 (defvar *pub-spots-topic* "/spots_marker_array")
+(defvar *tf-listener* (instance ros::transform-listener :init))
 
 (defun pub-spot ()
   (let ((msg-array (instance visualization_msgs::MarkerArray :init))
-	(header (instance std_msgs::header :init :stamp (ros::time-now) :frame_id "/map"))
-	(colors (make-color-list (length (send *scene* :spots))))
-	(id 0) c msgs)
+        (header (instance std_msgs::header :init :stamp (ros::time-now) :frame_id "/map"))
+        (colors (make-color-list (length (send *scene* :spots))))
+        (id 0) c n msgs current-map-id current-map-coords)
+    (setq current-map-id (string-right-trim "_" (string-right-trim "tf" *map-selected*))) ;; remove _tf
+    (when (send  *tf-listener* :wait-for-transform "/world" current-map-id (ros::time-now) 1)
+      (setq current-map-coords (send *tf-listener* :lookup-transform "/world" current-map-id (ros::time-now)))) ;; resolve /world /eng/7f
     (dolist (c (send *scene* :spots))
-      (ros::ros-info "publish spot~A" (send c :name))
-      (push (object->marker-msg (make-pin-body :coords (send c :worldcoords))
-				header
-				:color (elt colors id)
-				:ns "pin"
-				:id id)
-	    msgs)
-      (push (text->marker-msg (send c :name)
-			      (make-coords :pos (v+ (send c :worldpos) #f(0 0 2000)))
-			      header
-			      :ns "text"
-			      :scale 200
-			      :id id)
-	    msgs)
-      (incf id)
-      )
+      (when (and current-map-coords (substringp current-map-id (send c :name)))
+        ;(ros::ros-info "publish spot~A" (send c :name))
+        (push (object->marker-msg (make-pin-body :coords (send (send current-map-coords :transformation c) :worldcoords))
+                                  header
+                                  :color (elt colors id)
+                                  :ns "pin"
+                                  :lifetime 15
+                                  :id id)
+              msgs)
+        (push (text->marker-msg (send c :name)
+                                (make-coords :pos (v+ (send (send current-map-coords :transformation c) :worldpos) #f(0 0 2000)))
+                                header
+                                :ns "text"
+                                :scale 200
+                                :lifetime 15
+                                :id id)
+              msgs)
+        (incf id)
+        ))
     (send msg-array :markers msgs)
     (ros::publish *pub-spots-topic* msg-array)
     ))
 
+(setq *map-selected* "")
+(defun map-selected-cb (msg) (setq *map-selected* (send msg :data)))
+(ros::subscribe "/map_tf_mux/selected" std_msgs::String #'map-selected-cb)
+
 (ros::advertise *pub-spots-topic* visualization_msgs::MarkerArray 5)
+
 (dotimes (i 3) (pub-spot))
+(ros::rate 0.1)
 (do-until-key
- (ros::rate 0.1)
  (pub-spot)
  (ros::spin-once)
  (ros::sleep))
