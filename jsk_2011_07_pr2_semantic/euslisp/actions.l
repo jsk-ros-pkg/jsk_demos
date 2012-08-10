@@ -209,7 +209,7 @@
      (ros::ros-error "could not solve /base_footprint to ~A" frame))
    (setq trans (send *tfl* :lookup-transform "/base_footprint" frame stamp))
    (when trans
-     (ros::ros-info "object detected ~A" (send obj :type))
+     (ros::ros-info "object detected ~A ~A" (send obj :type) (ros::tf-pose->coords (send obj :pose)))
      (send *obj* :name (send obj :type))
      (send *pr2* :angle-vector (send *ri* :state :potentio-vector))
      (send *obj* :move-to *pr2* :world)
@@ -238,14 +238,33 @@
   (when (and x::*display* (/= x::*display* 0)) (objects (list *pr2* *obj*)))
   )
 
+(ros::advertise "/object_detection_marker_array" visualization_msgs::MarkerArray 5)
+
 (defun check (&key (timeout 10) (type nil) (tf-force nil))
   (start-subscribe tf-force) (unix::sleep 2)
   (send *obj* :move-to (make-coords) :world)
-  (let ((pos1 (send (send *obj* :copy-worldcoords) :worldpos))
-	pos2 speak (tm (ros::time-now)))
+  (let* ((pos1 (send (send *obj* :copy-worldcoords) :worldpos))
+         pos2 speak (tm (ros::time-now))
+         (header (instance std_msgs::header :init :stamp tm :frame_id "/base_footprint")))
    (while (ros::ok)
     (ros::spin-once)
     (setq pos2 (send *obj* :worldpos))
+
+    (ros::publish "/object_detection_marker_array"
+                  (instance visualization_msgs::MarkerArray :init
+                            :markers
+                            (list (text->marker-msg (send *obj* :name)
+                                                    (send (send *obj* :copy-worldcoords)
+                                                          :translate #f(-100 0 100))
+                                                    header
+                                                    :ns "object_text" :color #f(1 0 0)
+                                                    :scale 100 :lifetime 15 :id 0)
+                                  (coords->marker-msg (send *obj* :worldcoords) header
+                                                      :ns  "object_coords"
+                                                      ;; :size 200 :width 20
+                                                      :lifetime 15 :id 1)
+                                  )))
+
     (when (< 0.01 (distance pos1 pos2)) ;; moved a little -> found obj
       (cond ((or (not (stringp type)) (substringp type (send *obj* :name))) ;; found target
 	     (ros::ros-info (format nil "ok - obj-type(~a)"  *obj*))
