@@ -41,10 +41,11 @@
 
       (when (send  *tf-listener* :wait-for-transform "/world" "/base_footprint" (ros::time-now) 1)
         (setq footcds (send *tf-listener* :lookup-transform "/world" "/base_footprint" (ros::time-now))))
-      (ros::ros-fatal "footf coords ~9,3f ~9,3f ~9,3f~%"
-                      (elt (send footcds :worldpos) 0)
-                      (elt (send footcds :worldpos) 1)
-                      (rad2deg (elt (car (rpy-angle (send footcds :worldrot))) 0)))
+      (when footcds
+        (ros::ros-fatal "footf coords ~9,3f ~9,3f ~9,3f~%"
+                        (elt (send footcds :worldpos) 0)
+                        (elt (send footcds :worldpos) 1)
+                        (rad2deg (elt (car (rpy-angle (send footcds :worldrot))) 0))))
 
       )
     )
