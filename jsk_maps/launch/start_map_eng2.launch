@@ -14,4 +14,7 @@
     <remap from="initialpose_out" to="initialpose" />
   </node>
 
+  <node name="publish_spot" pkg="roseus" type="roseus"
+        args="$(find jsk_maps)/tools/publish_spot.l" />
+
 </launch>
