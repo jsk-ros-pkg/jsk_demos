@@ -42,10 +42,10 @@ Then check the button color to detect the button was pushed.
 The button area in the camera image is calcurated from Euslisp camera model and panel object model.
 
 
-.. image:: http://jenkins.jsk.imi.i.u-tokyo.ac.jp:8080//job/jsk-ros-pkg-electric/lastSuccessfulBuild/artifact/doc/jsk-ros-pkg-electric/html/_images/test-button-light.mp4
+.. image:: http://jenkins.jsk.imi.i.u-tokyo.ac.jp:8080//job/jsk-ros-pkg-electric/lastSuccessfulBuild/artifact/doc/elevator_move_base_pr2/html/_images/test-button-light.mp4
   :width: 600
 
-.. video:: http://jenkins.jsk.imi.i.u-tokyo.ac.jp:8080//job/jsk-ros-pkg-electric/lastSuccessfulBuild/artifact/doc/jsk-ros-pkg-electric/html/_images/call-panel-lighting-not
+.. video:: http://jenkins.jsk.imi.i.u-tokyo.ac.jp:8080//job/jsk-ros-pkg-electric/lastSuccessfulBuild/artifact/doc/elevator_move_base_pr2/html/_images/call-panel-lighting-not
   :width: 600
 
   
@@ -95,10 +95,10 @@ test-modules-callpanel.launch
 
 This scripts is test for elevator call panel.
 
-.. video:: http://jenkins.jsk.imi.i.u-tokyo.ac.jp:8080//job/jsk-ros-pkg-electric/lastSuccessfulBuild/artifact/doc/jsk-ros-pkg-electric/html/_images/test-modules-callpanel-1
+.. video:: http://jenkins.jsk.imi.i.u-tokyo.ac.jp:8080//job/jsk-ros-pkg-electric/lastSuccessfulBuild/artifact/doc/elevator_move_base_pr2/html/_images/test-modules-callpanel-1
   :width: 600
 
-.. video:: http://jenkins.jsk.imi.i.u-tokyo.ac.jp:8080//job/jsk-ros-pkg-electric/lastSuccessfulBuild/artifact/doc/jsk-ros-pkg-electric/html/_images/test-modules-callpanel-2
+.. video:: http://jenkins.jsk.imi.i.u-tokyo.ac.jp:8080//job/jsk-ros-pkg-electric/lastSuccessfulBuild/artifact/doc/elevator_move_base_pr2/html/_images/test-modules-callpanel-2
   :width: 600
 
 Then check the button color to detect the button was pushed.
@@ -156,13 +156,13 @@ test-modules-insidepanel.launch
 
 This scripts is test for elevator inside panel.
 
-.. video:: http://jenkins.jsk.imi.i.u-tokyo.ac.jp:8080//job/jsk-ros-pkg-electric/lastSuccessfulBuild/artifact/doc/jsk-ros-pkg-electric/html/_images/images/call-panel-pose
+.. video:: http://jenkins.jsk.imi.i.u-tokyo.ac.jp:8080//job/jsk-ros-pkg-electric/lastSuccessfulBuild/artifact/doc/elevator_move_base_pr2/html/_images/images/call-panel-pose
   :width: 600
 
 Then apply affine transform to camera image for template match.
 Template is number region of the panel.
 
-.. video:: http://jenkins.jsk.imi.i.u-tokyo.ac.jp:8080//job/jsk-ros-pkg-electric/lastSuccessfulBuild/artifact/doc/jsk-ros-pkg-electric/html/_images/images/inside-panel-number
+.. video:: http://jenkins.jsk.imi.i.u-tokyo.ac.jp:8080//job/jsk-ros-pkg-electric/lastSuccessfulBuild/artifact/doc/elevator_move_base_pr2/html/_images/images/inside-panel-number
   :width: 600
 
   
@@ -218,10 +218,10 @@ test-panel-pose-detection.launch
 This scripts is test for elevator call panel pose detection.
 
 
-.. video:: http://jenkins.jsk.imi.i.u-tokyo.ac.jp:8080//job/jsk-ros-pkg-electric/lastSuccessfulBuild/artifact/doc/jsk-ros-pkg-electric/html/_images/test-panel-pose-detection-1
+.. video:: http://jenkins.jsk.imi.i.u-tokyo.ac.jp:8080//job/jsk-ros-pkg-electric/lastSuccessfulBuild/artifact/doc/elevator_move_base_pr2/html/_images/test-panel-pose-detection-1
   :width: 600
 
-.. video:: http://jenkins.jsk.imi.i.u-tokyo.ac.jp:8080//job/jsk-ros-pkg-electric/lastSuccessfulBuild/artifact/doc/jsk-ros-pkg-electric/html/_images/test-panel-pose-detection-2
+.. video:: http://jenkins.jsk.imi.i.u-tokyo.ac.jp:8080//job/jsk-ros-pkg-electric/lastSuccessfulBuild/artifact/doc/elevator_move_base_pr2/html/_images/test-panel-pose-detection-2
   :width: 600
 
   
