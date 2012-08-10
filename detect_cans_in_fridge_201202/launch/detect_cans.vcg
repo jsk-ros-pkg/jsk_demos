@@ -3,6 +3,12 @@ Background\ ColorG=0
 Background\ ColorB=0
 Fixed\ Frame=/map
 Target\ Frame=<Fixed Frame>
+Camera.Enabled=1
+Camera.Image\ Rendering=overlay
+Camera.Image\ Topic=/camera/rgb/image_rect_color
+Camera.Overlay\ Alpha=0.5
+Camera.Transport\ Hint=raw
+Camera.Zoom\ Factor=1
 Grid\ Cells.Alpha=1
 Grid\ Cells.ColorR=0.1
 Grid\ Cells.ColorG=1
@@ -92,6 +98,11 @@ MarkerArray3.Enabled=1
 MarkerArray3.Marker\ Array\ Topic=/spots_marker_array
 MarkerArray3.pin=1
 MarkerArray3.text=1
+MarkerArray4.Enabled=1
+MarkerArray4.Marker\ Array\ Topic=/object_detection_marker_array
+MarkerArray4.object_coords=1
+MarkerArray4.object_text=1
+MarkerArray4.text=1
 Path.Alpha=1
 Path.ColorR=0.1
 Path.ColorG=1
@@ -303,8 +314,8 @@ TF.Update\ Interval=0.05
 Tool\ 2D\ Nav\ GoalTopic=move_base_simple/goal
 Tool\ 2D\ Pose\ EstimateTopic=initialpose
 Camera\ Type=rviz::XYOrbitViewController
-Camera\ Config=1.2254 1.58039 9.09273 -8.81236 -1.54972e-06 -1.71577
-Property\ Grid\ State=selection=;expanded=.Global Options,MarkerArray.Enabled.MarkerArray.StatusTopStatus,MarkerArray.Enabled.MarkerArray.Namespaces,MarkerArray2.Enabled.MarkerArray2.Namespaces,TF.Enabled.TF.StatusTopStatus,TF.Enabled.TF.Tree,Laser Scan2.Enabled.Laser Scan2.StatusTopStatus,MarkerArray3.Enabled.MarkerArray3.Namespaces;scrollpos=0,0;splitterpos=269,555;ispageselected=1
+Camera\ Config=1.086 2.29537 2.79846 -6.96015 8.22544e-06 -5.30627
+Property\ Grid\ State=selection=;expanded=.Global Options,MarkerArray.Enabled.MarkerArray.StatusTopStatus,MarkerArray.Enabled.MarkerArray.Namespaces,MarkerArray2.Enabled.MarkerArray2.Namespaces,TF.Enabled.TF.StatusTopStatus,TF.Enabled.TF.Tree,Laser Scan2.Enabled.Laser Scan2.StatusTopStatus,MarkerArray3.Enabled.MarkerArray3.Namespaces,MarkerArray4.Enabled.MarkerArray4.Namespaces;scrollpos=0,8;splitterpos=167,435;ispageselected=1
 [Display0]
 Name=Grid
 Package=rviz
@@ -375,5 +386,13 @@ Package=rviz
 ClassName=rviz::PointCloud2Display
 [Display17]
 Name=MarkerArray3
+Package=rviz
+ClassName=rviz::MarkerArrayDisplay
+[Display18]
+Name=Camera
+Package=rviz
+ClassName=rviz::CameraDisplay
+[Display19]
+Name=MarkerArray4
 Package=rviz
 ClassName=rviz::MarkerArrayDisplay
