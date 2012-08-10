@@ -51,7 +51,7 @@ make sure that Tool Properties -> Interact -> 2D Nav Goal -> Topic is move_bas_s
 
 .. code-block:: bash
 
-  @local; rosrun roseus roseus `rospack find detect_cans_in_fridge_201202`/euslisp/main2.l
+  @local; rosrun roseus roseus `rospack find detect_cans_in_fridge_201202`/euslisp/main.l
 
 type (init)(demo) to start demo
 
