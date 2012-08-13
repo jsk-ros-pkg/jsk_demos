@@ -108,7 +108,8 @@
                       (list (send *pr2* :copy-worldcoords)
                             (send *obj* :copy-worldcoords)))
       (setq diffcds (send (send *obj* :copy-worldcoords)
-			  :transform (send idealcds :inverse-transformation)))
+			  :transform (send idealcds :inverse-transformation)
+                          :world)) ;; pr2 is located at origin and object reference coords is pr2
       (send *ri* :go-pos-unsafe
 	    (/ (elt (send diffcds :worldpos) 0) 1000.0)
 	    (/ (elt (send diffcds :worldpos) 1) 1000.0)
