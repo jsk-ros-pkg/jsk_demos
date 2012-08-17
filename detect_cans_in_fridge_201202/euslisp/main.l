@@ -3,7 +3,9 @@
 (load "package://jsk_2011_07_pr2_semantic/euslisp/actions.l")
 (load "package://jsk_maps/src/eng2-scene.l")
 (load "package://pr2eus/pr2-interface.l")
-(load "package://pr2eus_openrave/pr2eus-openrave.l")
+
+;;(load "package://pr2eus_openrave/pr2eus-openrave.l")
+(load "package://pr2eus_armnavigation/pr2eus-arm-navigation.l")
 
 (ros::roseus "demo_main")
 
@@ -21,6 +23,7 @@
   (unless (boundp '*ri*) (setq *ri* (instance pr2-interface :init)))
   (send *ri* :spin-once)
   (send *pr2* :angle-vector (send *ri* :state :potentio-vector))
+  (setq *plan-env* (instance arm_planning_environment :init :robot *pr2*))
   )
 
 (defun init ()
@@ -31,11 +34,13 @@
   )
 
 (defun grasp-can-single (obj)
-  (let (via1 via2 tar orig-av)
+  (let (via1 via2 via3 tar orig-av)
     (send *ri* :stop-grasp :rarm)
     (send *tfb* :send-transform
-	  obj "/base_footprint" "/objecta_pose_frame")
+          obj "/base_footprint" "/objecta_pose_frame")
     (setq orig-av (send *ri* :state :potentio-vector))
+
+    (send *plan-env* :get-planning-scene)
 
     (setq tar (send obj :copy-worldcoords))
     (send tar :orient 0 :z :world)
@@ -43,37 +48,67 @@
     (setq via1 (send tar :copy-worldcoords))
     (send via1 :translate (float-vector -100 0 0) :world)
 
-    (setq via2 (send tar :copy-worldcoords))
-    (send via2 :translate (float-vector -50 0 0) :world)
+    ;;(setq via2 (send tar :copy-worldcoords))
+    ;;(send via2 :translate (float-vector -50 0 0) :world)
 
     (setq via3 (send tar :copy-worldcoords))
     (send via3 :translate (float-vector 30 0 0) :world)
 
     ;; publish tf
     (send *tfb* :send-transform
-	  via1 "/base_footprint" "/objecta_pose_frame_via1")
+          via1 "/base_footprint" "/objecta_pose_frame_via1")
+    ;;(send *tfb* :send-transform
+    ;;via2 "/base_footprint" "/objecta_pose_frame_via2")
     (send *tfb* :send-transform
-	  via2 "/base_footprint" "/objecta_pose_frame_via2")
-    (send *tfb* :send-transform
-	  via3 "/base_footprint" "/objecta_pose_frame_via3")
-    ;;
+          via3 "/base_footprint" "/objecta_pose_frame_via3")
+
+    ;; move to via1
     (send *pr2* :rarm :inverse-kinematics via1 :rotation-axis t :use-torso t)
     (send *tfb* :send-transform
-	  (send *pr2* :rarm :end-coords)  "/base_footprint" "/objecta_pose_end_coords")
+          (send *pr2* :rarm :end-coords)  "/base_footprint" "/objecta_pose_end_coords")
 
-    (send *ri* :angle-vector (send *pr2* :angle-vector))
-    (send *ri* :wait-interpolation)
-    ;;
+    ;;(send *ri* :angle-vector (send *pr2* :angle-vector))
+    ;;(send *ri* :wait-interpolation))
+    ;; check IK
+    (cond
+     ((send *plan-env* :get-ik-for-pose (send *plan-env* :get-robot-coords :rarm) :rarm)
+      (ros::ros-warn ";; can not solve collision free IK")
+      (send *ri* :angle-vector (send *pr2* :angle-vector))
+      (send *ri* :wait-interpolation))
+     (t
+      (when (send *plan-env* :planning-move-arm :rarm :planning_time 4.0)
+              (ros::ros-warn ";; can not solve collision free Plan")
+        (send *ri* :angle-vector (send *pr2* :angle-vector))
+        (send *ri* :wait-interpolation))
+      ))
+
+    ;; move to via3
     (send *pr2* :rarm :inverse-kinematics via3 :rotation-axis t :use-torso t)
-    (send *ri* :angle-vector (send *pr2* :angle-vector))
-    (send *ri* :wait-interpolation)
+    ;;(send *ri* :angle-vector (send *pr2* :angle-vector))
+    ;;(send *ri* :wait-interpolation))
+    ;; check IK
+    (cond
+     ((send *plan-env* :get-ik-for-pose (send *plan-env* :get-robot-coords :rarm) :rarm)
+      (ros::ros-warn ";; can not solve collision free IK")
+      ;; move to via1
+      (send *ri* :angle-vector (send *pr2* :angle-vector))
+      (send *ri* :wait-interpolation))
+     (t
+      (when (send *plan-env* :planning-move-arm :rarm :planning_time 4.0)
+              (ros::ros-warn ";; can not solve collision free Plan")
+        (send *ri* :angle-vector (send *pr2* :angle-vector))
+        (send *ri* :wait-interpolation))
+      ))
+
+    ;; grasp
     (send *ri* :start-grasp :rarm)
 
-    ;;
+    ;; move to via1
     (send *pr2* :rarm :inverse-kinematics via1 :rotation-axis t :use-torso t)
     (send *ri* :angle-vector (send *pr2* :angle-vector))
     (send *ri* :wait-interpolation)
-    ;;
+
+    ;; move to original pose
     (send *ri* :angle-vector orig-av)
     (send *ri* :wait-interpolation)
     )
@@ -156,7 +191,7 @@
   ;; move-to spot for grasping
   (ros::spin-once)
   (send *ri* :spin-once)
-  (ros::ros-info "GO POS UNSAFE")
+  (ros::ros-info "GO POS UNSAFE for grasping can")
   (send *ri* :go-pos-unsafe 0 0 (rad2deg 0.40))
   ;;(send *ri* :go-pos-unsafe 0.15 -0.30 0)
   (send *ri* :go-pos-unsafe 0.18 -0.31 0)
@@ -170,19 +205,19 @@
     (dotimes (trial 10)
       ;; detect cans which was indicated by ( type )
       (when (not (check :type *type*))
-	(check :type *type* :tf-force t :timeout 30))
+        (check :type *type* :tf-force t :timeout 30))
       (warn ";; print check cans~%")
       (dump-structure *standard-output*
-		      (list (send *pr2* :copy-worldcoords)
-			    (send *obj* :copy-worldcoords)))
+                      (list (send *pr2* :copy-worldcoords)
+                            (send *obj* :copy-worldcoords)))
       (unless (boundp '*tfb*)
-	(setq *tfb* (instance ros::transform-broadcaster :init)))
+        (setq *tfb* (instance ros::transform-broadcaster :init)))
       (send *tfb* :send-transform
-	    *obj* "/base_footprint" "/object_pose_frame")
+            *obj* "/base_footprint" "/object_pose_frame")
       (grasp-can-single *obj*)
       (setq isgrasp (< 10 (send *ri* :start-grasp :rarm)))
       (when isgrasp
-	(return-from grasp-can t))
+        (return-from grasp-can t))
       ))
   nil)
 
