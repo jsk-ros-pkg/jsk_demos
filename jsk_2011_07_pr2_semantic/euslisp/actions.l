@@ -362,7 +362,7 @@
 ;;   *pr2* and *obj* are needed on worldcoords ??
 (ros::load-ros-manifest "jsk_ipad_gui")
 (load "package://jsk_ipad_gui/src/utils.l")
-(ros::advertise "/ipad_marker_array" visualization_msgs::MarkerArray 10)
+(ros::advertise "/tablet_marker_array" visualization_msgs::MarkerArray 10)
 (defun open-fridge (hand handle &optional (rad pi/2))
   ;; 500mm is a distance between handle and axis
   (let ((a (send (send handle :copy-worldcoords) :translate #f(0 -500 200)))
