@@ -8,6 +8,7 @@
 (load "package://pr2eus_armnavigation/pr2eus-arm-navigation.l")
 
 (ros::roseus "demo_main")
+(setq *use-arm-navigation* nil)
 
 (defun init-for-perception ()
   (unless (boundp '*scene*) (setq *scene* (make-eng2-scene)))
@@ -24,7 +25,8 @@
   (unless (boundp '*ri*) (setq *ri* (instance pr2-interface :init)))
   (send *ri* :spin-once)
   (send *pr2* :angle-vector (send *ri* :state :potentio-vector))
-  (setq *plan-env* (instance arm_planning_environment :init :robot *pr2*))
+  (when *use-arm-navigation*
+    (setq *plan-env* (instance arm_planning_environment :init :robot *pr2*)))
   )
 
 (defun init ()
@@ -41,10 +43,11 @@
           obj "/base_footprint" "/objecta_pose_frame")
     (setq orig-av (send *ri* :state :potentio-vector))
 
-    (dotimes (i 5)
-      (send *plan-env* :get-planning-scene)
-      ;; (unix::usleep (* 400 1000))
-      )
+    (when *use-arm-navigation*
+      (dotimes (i 5)
+	(send *plan-env* :get-planning-scene)
+	;; (unix::usleep (* 400 1000))
+	))
 
     (setq tar (send obj :copy-worldcoords))
     (send tar :orient 0 :z :world)
@@ -73,7 +76,11 @@
     ;;(send *ri* :angle-vector (send *pr2* :angle-vector))
     ;;(send *ri* :wait-interpolation))
     ;; check IK
+
     (cond
+     ((null *use-arm-navigation*)
+      (send *ri* :angle-vector (send *pr2* :angle-vector))
+      (send *ri* :wait-interpolation))
      ((send *plan-env* :get-ik-for-pose (send *plan-env* :get-robot-coords :rarm) :rarm)
       (ros::ros-warn ";; can not solve collision free IK")
       (send *ri* :angle-vector (send *pr2* :angle-vector))
@@ -110,6 +117,9 @@
     (send *pr2* :rarm :inverse-kinematics via1 :rotation-axis t :use-torso t)
     ;; check IK
     (cond
+     ((null *use-arm-navigation*)
+      (send *ri* :angle-vector (send *pr2* :angle-vector))
+      (send *ri* :wait-interpolation))
      ((send *plan-env* :get-ik-for-pose (send *plan-env* :get-robot-coords :rarm) :rarm)
       (ros::ros-warn ";; can not solve collision free IK")
       ;; move to via1
