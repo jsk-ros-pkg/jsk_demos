@@ -319,6 +319,20 @@
    (ros::sleep))
   )
 
+;; this is just an another sample
+(defun wait-android-query-test ()
+  (setq *android-flag* nil)
+  (ros::subscribe "/Tablet/chen/MainDemo" roseus::StringStamped
+		  #'(lambda(m) (setq *android-flag* t)))
+  (do-until-key
+   (ros::spin-once)
+   (send *ri* :spin-once)
+   (when *android-flag*
+     (ros::unsubscribe "/Tablet/chen/MainDemo")
+     (demo)
+     (setq *android-flag* nil))
+   (ros::sleep)))
+
 (warn ";; (init)~%")
 (warn ";; (demo)~%")
 (warn ";; (demo :type \"georgia\")~%")
