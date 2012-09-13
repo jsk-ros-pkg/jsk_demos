@@ -322,13 +322,14 @@
 ;; this is just an another sample
 (defun wait-android-query-test ()
   (setq *android-flag* nil)
-  (ros::subscribe "/Tablet/chen/MainDemo" roseus::StringStamped
-		  #'(lambda(m) (setq *android-flag* t)))
+  (ros::subscribe "/Tablet/StartDemo" roseus::StringStamped
+		  #'(lambda(m) (print (send m :data))(if (equal (send m :data) "/Tablet/other/MainDemo") (setq *android-flag* t))))
   (do-until-key
    (ros::spin-once)
    (send *ri* :spin-once)
    (when *android-flag*
-     (ros::unsubscribe "/Tablet/chen/MainDemo")
+     (ros::unsubscribe "/Tablet/StartDemo")
+     (ros::ros-info "detect_cans: starting demo")
      (demo)
      (setq *android-flag* nil))
    (ros::sleep)))
