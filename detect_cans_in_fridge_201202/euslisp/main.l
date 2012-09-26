@@ -5,7 +5,7 @@
 (load "package://pr2eus/pr2-interface.l")
 
 ;;(load "package://pr2eus_openrave/pr2eus-openrave.l")
-(load "package://pr2eus_armnavigation/pr2eus-arm-navigation.l")
+;;(load "package://pr2eus_armnavigation/pr2eus-arm-navigation.l")
 
 (ros::roseus "demo_main")
 (setq *use-arm-navigation* nil)
@@ -32,6 +32,7 @@
 (defun init ()
   (init-for-perception)
   (init-for-robot)
+  (load "package://jsk_perception/euslisp/detection_interface.l");;
   ;;(send *pr2* :move-to (send *ri* :state :worldcoords) :world)
   ;;(objects (list *pr2*))
   )
@@ -96,17 +97,17 @@
     (send *pr2* :rarm :inverse-kinematics via2 :rotation-axis t :use-torso t)
     ;; check IK
     #|(cond
-     ((send *plan-env* :get-ik-for-pose (send *plan-env* :get-robot-coords :rarm) :rarm)
-      (ros::ros-warn ";; can not solve collision free IK")
-      ;; move to via1
-      (send *ri* :angle-vector (send *pr2* :angle-vector))
-      (send *ri* :wait-interpolation))
-     (t
-      (when (send *plan-env* :planning-move-arm :rarm :planning-time 4.0)
-              (ros::ros-warn ";; can not solve collision free Plan")
-        (send *ri* :angle-vector (send *pr2* :angle-vector))
-        (send *ri* :wait-interpolation))
-      ))|#
+    ((send *plan-env* :get-ik-for-pose (send *plan-env* :get-robot-coords :rarm) :rarm)
+    (ros::ros-warn ";; can not solve collision free IK")
+    ;; move to via1
+    (send *ri* :angle-vector (send *pr2* :angle-vector))
+    (send *ri* :wait-interpolation))
+    (t
+    (when (send *plan-env* :planning-move-arm :rarm :planning-time 4.0)
+    (ros::ros-warn ";; can not solve collision free Plan")
+    (send *ri* :angle-vector (send *pr2* :angle-vector))
+    (send *ri* :wait-interpolation))
+    ))|#
     (send *ri* :angle-vector (send *pr2* :angle-vector))
     (send *ri* :wait-interpolation)
 
@@ -127,7 +128,7 @@
       (send *ri* :wait-interpolation))
      (t
       (when (send *plan-env* :planning-move-arm :rarm :planning-time 4.0)
-              (ros::ros-warn ";; can not solve collision free Plan")
+	(ros::ros-warn ";; can not solve collision free Plan")
         (send *ri* :angle-vector (send *pr2* :angle-vector))
         (send *ri* :wait-interpolation))
       ))
@@ -145,7 +146,7 @@
     (send co :translate (float-vector 0 0 0) :world) ;; for opening door
     (send *ri* :move-to co)
     (send *ri* :go-pos 0 -0.04 0) ;; ???
-  ;;
+    ;;
     (send *pr2* :head :angle-vector (float-vector 0 0))
     (send *pr2* :torso :angle-vector (float-vector 50))
     (send *ri* :angle-vector (send *pr2* :angle-vector))
@@ -159,30 +160,34 @@
   (let (ret
 	(idealcds (make-coords :pos (float-vector 733.757 135.013 1092.946)
 			       :rpy (float-vector 0.002 0.059 -0.019)))
-	(diffcds (make-coords :pos (float-vector 10000 10000 10000))))
+	(diffcds (make-coords :pos (float-vector 10000 10000 10000)))
+	cds)
     (dotimes (i 10 nil)
       ;; finding handle position
-      (check :type "fridge") ;; need detection fail check
-      ;; opening door
-      (warn ";; print check frig~%")
-      (dump-structure *standard-output*
-                      (list (send *pr2* :copy-worldcoords)
-                            (send *obj* :copy-worldcoords)))
-      (setq diffcds (send (send *obj* :copy-worldcoords)
-			  :transform (send idealcds :inverse-transformation)
-                          :world)) ;; pr2 is located at origin and object reference coords is pr2
-      (send *ri* :go-pos-unsafe
-	    (/ (elt (send diffcds :worldpos) 0) 1000.0)
-	    (/ (elt (send diffcds :worldpos) 1) 1000.0)
-	    (rad2deg (elt (car (rpy-angle (send diffcds :worldrot))) 0)))
-      ;;(send *obj* :move-to idealcds :world)
-      (check :type "fridge")
-      (ros::spin-once)
-      (send *ri* :spin-once)
-      (when (setq ret (open-fridge :rarm *obj* (/ pi 2)))
-        (return))
-      (speak-jp "こまった") (speak-jp ".") (unix::sleep 3)
-      )
+      (setq cds (check-detection :type "fridge")) ;; need detection fail check
+      (send *obj* :reset-coords)
+      (send *obj* :transform cds)
+      (when cds
+	;; opening door
+	(warn ";; print check frig~%")
+	(dump-structure *standard-output*
+			(list (send *pr2* :copy-worldcoords)
+			      (send cds :copy-worldcoords)))
+	(setq diffcds (send (send cds :copy-worldcoords)
+			    :transform (send idealcds :inverse-transformation)
+			    :world)) ;; pr2 is located at origin and object reference coords is pr2
+	(send *ri* :go-pos-unsafe
+	      (/ (elt (send diffcds :worldpos) 0) 1000.0)
+	      (/ (elt (send diffcds :worldpos) 1) 1000.0)
+	      (rad2deg (elt (car (rpy-angle (send diffcds :worldrot))) 0)))
+	;;(send *obj* :move-to idealcds :world)
+	(check-detection :type "fridge")
+	(ros::spin-once)
+	(send *ri* :spin-once)
+	(when (setq ret (open-fridge :rarm cds (/ pi 2)))
+	  (return))
+	(speak-jp "こまった") (speak-jp ".") (unix::sleep 3)
+	))
     (when (not ret)
       (format t "(demo2 :type \"~a\")" type)
       (return-from open-fridge-door nil))
@@ -228,30 +233,33 @@
   (send *ri* :spin-once)
   (send *pr2* :angle-vector (send *ri* :state :potentio-vector))
 
-  (let (isgrasp)
+  (let (isgrasp cds)
     (dotimes (trial 10)
       ;; detect cans which was indicated by ( type )
-      (when (not (check :type *type*))
-        (check :type *type* :tf-force t :timeout 30))
-      (warn ";; print check cans~%")
-      (dump-structure *standard-output*
-                      (list (send *pr2* :copy-worldcoords)
-                            (send *obj* :copy-worldcoords)))
-      (unless (boundp '*tfb*)
-        (setq *tfb* (instance ros::transform-broadcaster :init)))
-      (send *tfb* :send-transform
-            *obj* "/base_footprint" "/object_pose_frame")
-      (ros::spin-once)
-      (send *ri* :spin-once)
-      (send *pr2* :angle-vector (send *ri* :state :potentio-vector))
-      (unless rotation
-	;; FIXME: calc rotation from /map and /base_footprint
-	(setq rotation 0))
-      (grasp-can-single *obj* :rotation rotation)
-      (setq isgrasp (< 10 (send *ri* :start-grasp :rarm)))
-      (when isgrasp
-        (return-from grasp-can t))
-      ))
+      (when (not (setq cds (check-detection :type *type* :single t)))
+        (setq cds (check-detection :type *type* :tf-force t :timeout 30 :single t)))
+      (when cds
+	(send *obj* :reset-coords)
+	(send *obj* :transform cds)
+	(warn ";; print check cans~%")
+	(dump-structure *standard-output*
+			(list (send *pr2* :copy-worldcoords)
+			      (send cds :copy-worldcoords)))
+	(unless (boundp '*tfb*)
+	  (setq *tfb* (instance ros::transform-broadcaster :init)))
+	(send *tfb* :send-transform
+	      cds "/base_footprint" "/object_pose_frame")
+	(ros::spin-once)
+	(send *ri* :spin-once)
+	(send *pr2* :angle-vector (send *ri* :state :potentio-vector))
+	(unless rotation
+	  ;; FIXME: calc rotation from /map and /base_footprint
+	  (setq rotation 0))
+	(grasp-can-single cds :rotation rotation)
+	(setq isgrasp (< 10 (send *ri* :start-grasp :rarm)))
+	(when isgrasp
+	  (return-from grasp-can t))
+	)))
   nil)
 
 (defun close-fridge ()
@@ -287,6 +295,8 @@
   (pr2-tuckarm-pose :rarm)
   (setq *opose* (send *ri* :state :worldcoords))
 
+  (speak-jp (format nil "~a を " (send *obj* :name)))
+
   (unless (goto-front-of-fridge)
     (return-from demo))
 
@@ -306,9 +316,9 @@
 (defun wait-query ()
   (setq *type* nil)
   (ros::subscribe "/query" std_msgs::String
-		  #'(lambda(m) (setq *type* (send m :data))))
+          #'(lambda(m) (setq *type* (send m :data))))
   #|(ros::subscribe "/query" std_msgs::String
-		  #'(lambda(m)(setq *type* (send m :data))))|#
+          #'(lambda(m)(setq *type* (send m :data))))|#
   (do-until-key
    (ros::spin-once)
    (send *ri* :spin-once)
@@ -323,7 +333,7 @@
 (defun wait-android-query-test ()
   (setq *android-flag* nil)
   (ros::subscribe "/Tablet/StartDemo" roseus::StringStamped
-		  #'(lambda(m) (print (send m :data))(if (equal (send m :data) "/Tablet/other/MainDemo") (setq *android-flag* t))))
+          #'(lambda(m) (print (send m :data))(if (equal (send m :data) "/Tablet/other/MainDemo") (setq *android-flag* t))))
   (do-until-key
    (ros::spin-once)
    (send *ri* :spin-once)

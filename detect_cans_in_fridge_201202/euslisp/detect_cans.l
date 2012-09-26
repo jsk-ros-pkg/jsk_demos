@@ -3,14 +3,19 @@
 
 (setq ros::*compile-message* t) ;; switch for compile
 
+(ros::roseus-add-msgs "pcl")
 (ros::roseus-add-srvs "jsk_perception")
 (ros::roseus-add-srvs "jsk_pcl_ros")
 (ros::roseus-add-srvs "jsk_pcl_ros_unreleased")
 
-(defvar *topic-name* "/camera/rgb/points_throttle")
-;(defvar *topic-name* "/camera/depth_registered/points")
-(defvar *image-topic* "/camera/rgb/image_rect_color")
-(defvar *screen-topic* "/camera/rgb/screenpoint")
+;; electric
+;;(defvar *topic-name* "/camera/rgb/points_throttle")
+;;(defvar *image-topic* "/camera/rgb/image_rect_color")
+;;(defvar *screen-topic* "/camera/rgb/screenpoint")
+;; fuerte
+(defvar *topic-name* "/openni/depth_registered/points")
+(defvar *image-topic* "/openni/rgb/image_rect_color")
+(defvar *screen-topic* "/openni/rgb/screenpoint")
 (defvar *result-topic* "/narrow_stereo/left/ObjectDetection")
 
 (ros::roseus-add-msgs "posedetection_msgs")
