@@ -158,38 +158,67 @@
 
 (defun open-fridge-door ()
   (let (ret
-	(idealcds (make-coords :pos (float-vector 733.757 135.013 1092.946)
-			       :rpy (float-vector 0.002 0.059 -0.019)))
+	;;(idealcds (make-coords :pos (float-vector 733.757 135.013 1092.946)
+	;;:rpy (float-vector 0.002 0.059 -0.019)))
+	(idealcds (make-coords :pos (float-vector 735 115 0)
+			       :rpy (float-vector 0.05 0 0)))
 	(diffcds (make-coords :pos (float-vector 10000 10000 10000)))
 	cds)
+
     (dotimes (i 10 nil)
+
       ;; finding handle position
       (setq cds (check-detection :type "fridge")) ;; need detection fail check
-      (send *obj* :reset-coords)
-      (send *obj* :transform cds)
+
       (when cds
-	;; opening door
-	(warn ";; print check frig~%")
+	(send *obj* :reset-coords)
+	(send *obj* :transform cds)
 	(dump-structure *standard-output*
 			(list (send *pr2* :copy-worldcoords)
 			      (send cds :copy-worldcoords)))
-	(setq diffcds (send (send cds :copy-worldcoords)
-			    :transform (send idealcds :inverse-transformation)
-			    :world)) ;; pr2 is located at origin and object reference coords is pr2
-	(send *ri* :go-pos-unsafe
-	      (/ (elt (send diffcds :worldpos) 0) 1000.0)
-	      (/ (elt (send diffcds :worldpos) 1) 1000.0)
-	      (rad2deg (elt (car (rpy-angle (send diffcds :worldrot))) 0)))
-	;;(send *obj* :move-to idealcds :world)
-	(check-detection :type "fridge")
-	(ros::spin-once)
-	(send *ri* :spin-once)
-	(when (setq ret (open-fridge :rarm cds (/ pi 2)))
-	  (return))
-	(speak-jp "こまった") (speak-jp ".") (unix::sleep 3)
+	(setq cds
+	      (make-coords :pos
+			   (float-vector (elt (send cds :worldpos) 0)
+					 (elt (send cds :worldpos) 1) 0)
+			   :rpy (list (elt (car (rpy-angle (send cds :worldrot))) 0)
+				      0 0)))
+
+	(setq diffcds (send (send idealcds :inverse-transformation)
+                            :transform (send cds :worldcoords) :world))
+
+	(warn "~A -> ~A / ~A~%" diffcds cds idealcds)
+	(ros::ros-info "DIFF: ~A" diffcds)
+
+	(cond
+	 ((and (< (norm (float-vector (elt (send diffcds :worldpos) 0)
+				      (elt (send diffcds :worldpos) 1)))
+		  40.0)
+	       (< (elt (car (rpy-angle (send diffcds :worldrot))) 0) 0.07))
+	  (setq cds (check-detection :type "fridge"))
+	  (ros::spin-once)
+	  (send *ri* :spin-once)
+	  (when cds
+	    (when (setq ret (open-fridge :rarm cds (/ pi 2)))
+	      (return)))
+	  (speak-jp "こまった")
+	  (send *pr2* :head :angle-vector (float-vector 0 0))
+	  (send *pr2* :torso :angle-vector (float-vector 50))
+	  (send *ri* :angle-vector (send *pr2* :angle-vector))
+	  (send *ri* :go-pos-unsafe -0.1 0 0)
+	  (send *ri* :wait-interpolation)
+	  )
+	 (t ;;  there is much difference
+	  (send *ri* :go-pos-unsafe
+		(/ (elt (send diffcds :worldpos) 0) 1000.0)
+		(/ (elt (send diffcds :worldpos) 1) 1000.0)
+		(rad2deg (elt (car (rpy-angle (send diffcds :worldrot))) 0)))
+	  (unix::usleep (* 500 1000))
+	  ;; (send *ri* :wait-interpolation)
+	  ))
 	))
+
     (when (not ret)
-      (format t "(demo2 :type \"~a\")" type)
+      (ros::ros-info "TIMEOUT: open-fridge-door");;
       (return-from open-fridge-door nil))
 
     ;; free door handle
@@ -281,6 +310,7 @@
 
 (defun goto-initial-position (&key (return-to-initial-position t))
   (send *ri* :go-pos-unsafe 0 0 -90)
+  (send *ri* :wait-interpolation)
   (when return-to-initial-position
     (send *ri* :move-to *opose*))
 
@@ -292,11 +322,11 @@
 (defun demo (&key (type "georgia"))
   ;;(init)
   (setq *type* type)
+  (speak-jp (format nil "~a を もってきます  しょうしょう おまち ください"
+		    *type*))
+
   (pr2-tuckarm-pose :rarm)
   (setq *opose* (send *ri* :state :worldcoords))
-
-  (speak-jp (format nil "~a を もってきます  しょうしょう おまち ください"
-                    (send *obj* :name)))
 
   (unless (goto-front-of-fridge)
     (return-from demo))
@@ -332,18 +362,25 @@
 
 ;; this is just an another sample
 (defun wait-android-query-test ()
-  (setq *android-flag* nil)
-  (ros::subscribe "/Tablet/StartDemo" roseus::StringStamped
-          #'(lambda(m) (print (send m :data))(if (equal (send m :data) "/Tablet/other/MainDemo") (setq *android-flag* t))))
-  (do-until-key
-   (ros::spin-once)
-   (send *ri* :spin-once)
-   (when *android-flag*
-     (ros::unsubscribe "/Tablet/StartDemo")
-     (ros::ros-info "detect_cans: starting demo")
-     (demo)
-     (setq *android-flag* nil))
-   (ros::sleep)))
+  (ros::ros-info "Begin Waiting ....")
+  (let (type)
+    (ros::subscribe "/Tablet/StartDemo" roseus::StringStamped
+		    #'(lambda(m)
+			(print (send m :data))
+			(cond
+			 ((equal (send m :data) "/Tablet/other/MainDemo")
+			  (setq type "georgia"))
+			 (t ))))
+    (do-until-key
+     (ros::spin-once)
+     (send *ri* :spin-once)
+     (when type
+       (ros::unsubscribe "/Tablet/StartDemo")
+       (ros::ros-info "detect_cans: starting demo")
+       (demo :type type)
+       (setq type nil))
+     (ros::sleep))
+    ))
 
 (warn ";; (init)~%")
 (warn ";; (demo)~%")
@@ -352,6 +389,9 @@
 (warn ";; (demo :type \"wonda\")~%")
 (warn ";; ~%")
 (warn ";; (check :type \"fridge\")~%")
+
+(init)
+(wait-android-query-test)
 
 ;; (progn (check :type "wonda")(grasp-can *obj*))
 ;;(setq *type* "georgia")
