@@ -295,7 +295,8 @@
   (pr2-tuckarm-pose :rarm)
   (setq *opose* (send *ri* :state :worldcoords))
 
-  (speak-jp (format nil "~a を " (send *obj* :name)))
+  (speak-jp (format nil "~a を もってきます  しょうしょう おまち ください"
+                    (send *obj* :name)))
 
   (unless (goto-front-of-fridge)
     (return-from demo))
