@@ -1,16 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
 <launch>
-  <node pkg="rectangular_solid_filter" type="rectangular_solid_filter_color"
-	name="grasp_object_extract"
-	output="screen" clear_params="true">
-    <remap from="points_in" to="/camera/rgb/points_throttle"/>
-    <remap from="points_out" to="grasp_object_points"/>
+  <node name="cropbox_manager" pkg="nodelet"
+	type="nodelet" args="manager" output="screen" respawn="true"/>
+  <node pkg="nodelet" type="nodelet" name="cropbox_nodelet" args="load
+    pcl/CropBox cropbox_manager" output="screen" clear_params="true">
+    <remap from="~input" to="/openni/depth_registered/points_throttle"/>
+    <remap from="~output" to="grasp_object_points"/>
     <rosparam>
-      hand_frame: r_gripper_tool_frame
-      x_length: 0.4
-      y_length: 0.4
-      z_length: 0.4
-      is_const_point: false
+      target_frame_id: r_gripper_tool_frame
+      min_x: -0.3
+      min_y: -0.3
+      min_z: -0.3
+      max_x: 0.3
+      max_y: 0.3
+      max_z: 0.3
     </rosparam>
   </node>
 
@@ -24,7 +27,7 @@
     <!-- The frame of the sensor used to obtain the data to be
 	 filtered; This parameter is optional. If it is not specified,
 	 shadow points will be considered outside -->
-    <param name="sensor_frame" type="string" value="openni_depth_optical_frame" />
+    <!-- <param name="sensor_frame" type="string" value="openni_depth_optical_frame" /> -->
     <!-- Minimum distance to sensor (for point not to be considered inside) -->
     <param name="min_sensor_dist" type="double" value="0.01" />
     <!-- The padding to be added for the body parts the robot can see -->
