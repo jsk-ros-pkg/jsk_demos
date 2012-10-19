@@ -79,9 +79,9 @@ Contents
   
     
     <anode name="select_ref_white" pkg="image_view2" type="image_view2">
-      <remap from="image" to="/camera/rgb/image_rect_color" />
-      <remap from="camera_info" to="/camera/rgb/camera_info" />
-      <remap from="/camera/rgb/image_rect_color/screenpoint" to="/camera/rgb/screenpoint" />
+      <remap from="image" to="/openni/rgb/image_rect_color" />
+      <remap from="camera_info" to="/openni/rgb/camera_info" />
+      <remap from="/openni/rgb/image_rect_color/screenpoint" to="/openni/rgb/screenpoint" />
     </anode>
   
     
