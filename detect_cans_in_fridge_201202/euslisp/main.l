@@ -371,7 +371,9 @@
 			 ((equal (send m :data) "/Tablet/other/MainDemo")
 			  (setq type "georgia"))
 			 (t ))))
+    (ros::rate 4)
     (do-until-key
+     (ros::ros-info " Waiting ....")
      (ros::spin-once)
      (send *ri* :spin-once)
      (when type
@@ -392,6 +394,7 @@
 
 (init)
 (wait-android-query-test)
+;;(demo :type "georgia")
 
 ;; (progn (check :type "wonda")(grasp-can *obj*))
 ;;(setq *type* "georgia")
