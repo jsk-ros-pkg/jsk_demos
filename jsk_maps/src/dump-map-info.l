@@ -43,7 +43,8 @@ map_id: ~a"
 
 
 (defun dump-map-launch (building filename &key default-floor)
-  (let ((floors (send building :floors)))
+  (let ((floors (send building :floors))
+        (cntr 0))
     (if (stringp default-floor)
 	(setq default-floor
 	      (find default-floor floors :test #'string= :key #'(lambda(x)(send x :name)))))
@@ -59,11 +60,12 @@ map_id: ~a"
    ;;
    (format fd "  <!-- map for visualization nodes -->~%")
    (dolist (map floors)
-     (format fd "  <node name=\"$(anon map_server)\" pkg=\"map_server\" type=\"map_server\"
+     (format fd "  <node name=\"$(anon map_server~2,2D)\" pkg=\"map_server\" type=\"map_server\"
         args=\"~a\" >
     <remap from=\"map\" to=\"~a\"/>
     <param name=\"frame_id\" value=\"~a\"/>
-  </node>~%" (get-yaml-filename map) (send map :name) (send map :name))
+  </node>~%" cntr (get-yaml-filename map) (send map :name) (send map :name))
+     (incf cntr)
      )
    ;;
    (format fd "~%  <!-- map for navigation nodes -->~%")
@@ -72,19 +74,23 @@ map_id: ~a"
      (format fd " ~a~%" (get-yaml-filename map)))
    (format fd "\"/>~%")
    ;;
+   (setq cntr 0)
    (dolist (map floors)
      (format fd "  <node pkg=\"tf\" type=\"static_transform_publisher\"
-    name=\"$(anon map_tf)\"
+    name=\"$(anon map_tf~2,2D)\"
     args=\"~a ~a ~a 0 0 0 ~a ~a 100\"/>~%"
+             cntr
 	     (/ (elt (send map :worldpos) 0) 1000.0)
 	     (/ (elt (send map :worldpos) 1) 1000.0)
 	     (/ (elt (send map :worldpos) 2) 1000.0)
 	     (send building :name) (send map :name))
-     (format fd "  <node pkg=\"tf\" type=\"static_transform_publisher\" name=\"$(anon map_tf)\"
+     (incf cntr)
+     (format fd "  <node pkg=\"tf\" type=\"static_transform_publisher\" name=\"$(anon map_tf~2,2D)\"
         args=\"0 0 0 0 0 0 ~a /map 10\">
     <remap from=\"tf\" to=\"~a_tf\"/>
   </node>~%"
-	     (send map :name) (send map :name))
+     cntr (send map :name) (send map :name))
+     (incf cntr)
      )
    ;;
    (format fd "  <node name=\"tf_mux\" pkg=\"topic_tools\" type=\"mux\"
