@@ -74,6 +74,9 @@ Contents
 .. code-block:: xml
 
   <launch>
+    <arg default="false" name="start_rviz" />
+    <arg default="false" name="start_euslisp" />
+  
     
     <anode args="-l -r 0.1 /home/leus/work/rits/refrig-kinect-c.bag" name="play" pkg="rosbag" type="play" />
   
@@ -85,7 +88,7 @@ Contents
     </anode>
   
     
-    <anode args="-d $(find detect_cans_in_fridge_201202)/detect_cans.vcg" name="detect_cans_rviz" pkg="rviz" type="rviz" />
+    <node args="-d $(find detect_cans_in_fridge_201202)/detect_cans.vcg" if="$(arg start_rviz)" name="detect_cans_rviz" pkg="rviz" type="rviz" />
   
     
     <include file="$(find jsk_2011_07_pr2_semantic)/launch/start_perception.launch" />
@@ -100,6 +103,8 @@ Contents
     <include file="$(find pr2_machine)/$(env ROBOT).machine" />
     <param name="SnapMapICP/age_threshold" value="2.0" />
     <node machine="c2" name="tum_SnapMapICP" output="screen" pkg="SnapMapICP" type="SnapMapICP" />
+  
+    <node args="$(find detect_cans_in_fridge_201202)/euslisp/main.l" if="$(arg start_euslisp)" name="fridge_can_main" pkg="roseus" type="roseus" />
   
     </launch>
 
