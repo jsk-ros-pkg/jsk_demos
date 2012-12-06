@@ -1,4 +1,7 @@
 <launch>
+  <arg name="start_rviz" default="false" />
+  <arg name="start_euslisp" default="false" />
+
   <!-- sample data for test -->
   <anode pkg="rosbag" type="play" name="play"
          args="-l -r 0.1 /home/leus/work/rits/refrig-kinect-c.bag" />
@@ -11,8 +14,9 @@
   </anode>
 
   <!-- for desktop -->
-  <anode pkg="rviz" type="rviz" name="detect_cans_rviz"
-         args="-d $(find detect_cans_in_fridge_201202)/detect_cans.vcg" />
+  <node pkg="rviz" type="rviz" name="detect_cans_rviz"
+         args="-d $(find detect_cans_in_fridge_201202)/detect_cans.vcg"
+	 if="$(arg start_rviz)" />
 
   <!-- setup fridge handle marker template -->
   <include file="$(find jsk_2011_07_pr2_semantic)/launch/start_perception.launch" />
@@ -27,6 +31,10 @@
   <include file="$(find pr2_machine)/$(env ROBOT).machine" />
   <param name="SnapMapICP/age_threshold" value="2.0"/>
   <node pkg="SnapMapICP" type="SnapMapICP" name="tum_SnapMapICP" output="screen" machine="c2"/>
+
+  <node pkg="roseus" name="fridge_can_main" type="roseus"
+	args="$(find detect_cans_in_fridge_201202)/euslisp/main.l"
+	 if="$(arg start_euslisp)" />
 
   <sphinxdoc><![CDATA[
 
