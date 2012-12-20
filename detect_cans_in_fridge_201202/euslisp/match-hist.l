@@ -1,3 +1,4 @@
+;;(jsk)
 ;; 色ヒストグラムのマッチ関数
 
 ;; モデル： n分割した表面それぞれの色相彩度のヒストグラム
@@ -24,6 +25,13 @@
                (s-bin (get-bin (elt his 2) :step s-step)))
           (incf (aref hist h-bin s-bin))))
       (scale-matrix (/ 1.0 (send self :size)) hist))))
+
+(defun make-histdata(pclst)
+  (flatten
+   (mapcar
+    #'(lambda(pc)
+	(coerce ((send pc :hs-hist :h-step 10 :s-step 10) . entity) cons))
+    pclst)))
 
 
 ;; utils

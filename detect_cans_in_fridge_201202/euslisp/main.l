@@ -46,18 +46,18 @@
 
     (when *use-arm-navigation*
       (dotimes (i 5)
-	(send *plan-env* :get-planning-scene)
-	;; (unix::usleep (* 400 1000))
-	))
+        (send *plan-env* :get-planning-scene)
+        ;; (unix::usleep (* 400 1000))
+        ))
 
     (setq tar (send obj :copy-worldcoords))
     (send tar :orient 0 :z :world)
 
     (setq via1 (send tar :copy-worldcoords))
     (send via1 :translate (float-vector (* (cos (deg2rad rotation)) -100)
-					(* (sin (deg2rad rotation))  100) 0) :world)
+                                        (* (sin (deg2rad rotation))  100) 0) :world)
 
-    ;; via2 
+    ;; via2
     (setq via2 (send tar :copy-worldcoords))
     (send via2 :translate (float-vector 30 0 0) :world)
 
@@ -88,7 +88,7 @@
       (send *ri* :wait-interpolation))
      (t
       (when (send *plan-env* :planning-move-arm :rarm :planning-time 4.0)
-	(ros::ros-warn ";; can not solve collision free Plan")
+        (ros::ros-warn ";; can not solve collision free Plan")
         (send *ri* :angle-vector (send *pr2* :angle-vector))
         (send *ri* :wait-interpolation))
       ))
@@ -128,7 +128,7 @@
       (send *ri* :wait-interpolation))
      (t
       (when (send *plan-env* :planning-move-arm :rarm :planning-time 4.0)
-	(ros::ros-warn ";; can not solve collision free Plan")
+        (ros::ros-warn ";; can not solve collision free Plan")
         (send *ri* :angle-vector (send *pr2* :angle-vector))
         (send *ri* :wait-interpolation))
       ))
@@ -156,6 +156,8 @@
     t
     ))
 
+(defvar *fridge-distance-threshold* 40.0)
+(defvar *fridge-rotation-threshold* 0.09)
 (defun open-fridge-door ()
   (let (ret
 	;;(idealcds (make-coords :pos (float-vector 733.757 135.013 1092.946)
@@ -186,39 +188,42 @@
 	(setq diffcds (send (send idealcds :inverse-transformation)
                             :transform (send cds :worldcoords) :world))
 
-	(warn "~A -> ~A / ~A~%" diffcds cds idealcds)
+	(warn "~%~A -> ~A / ~A~%" diffcds cds idealcds)
 	(ros::ros-info "DIFF: ~A" diffcds)
-
-	(cond
-	 ((and (< (norm (float-vector (elt (send diffcds :worldpos) 0)
-				      (elt (send diffcds :worldpos) 1)))
-		  40.0)
-	       (< (elt (car (rpy-angle (send diffcds :worldrot))) 0) 0.07))
-	  (setq cds (check-detection :type "fridge"))
-	  (ros::spin-once)
-	  (send *ri* :spin-once)
-	  (when cds
-	    (when (setq ret (open-fridge :rarm cds (/ pi 2)))
-	      (return)))
-	  (speak-jp "こまった")
-	  (send *pr2* :head :angle-vector (float-vector 0 0))
-	  (send *pr2* :torso :angle-vector (float-vector 50))
-	  (send *ri* :angle-vector (send *pr2* :angle-vector))
-	  (send *ri* :go-pos-unsafe -0.1 0 0)
-	  (send *ri* :wait-interpolation)
-	  )
-	 (t ;;  there is much difference
-	  (send *ri* :go-pos-unsafe
-		(/ (elt (send diffcds :worldpos) 0) 1000.0)
-		(/ (elt (send diffcds :worldpos) 1) 1000.0)
-		(rad2deg (elt (car (rpy-angle (send diffcds :worldrot))) 0)))
-	  (unix::usleep (* 500 1000))
-	  ;; (send *ri* :wait-interpolation)
-	  ))
-	))
+        (cond
+         ((and (< (norm (float-vector (elt (send diffcds :worldpos) 0)
+                                      (elt (send diffcds :worldpos) 1)))
+                  *fridge-distance-threshold*)
+               (< (abs (elt (car (rpy-angle (send diffcds :worldrot))) 0))
+                  *fridge-rotation-threshold*))
+          (setq cds (check-detection :type "fridge"))
+          (ros::spin-once)
+          (send *ri* :spin-once)
+          (when cds
+            (when (setq ret (open-fridge :rarm cds (/ pi 2)))
+              (return)))
+          (speak-jp "れいぞうこを あけられません でした")
+          (send *pr2* :head :angle-vector (float-vector 0 0))
+          (send *pr2* :torso :angle-vector (float-vector 50))
+          (send *ri* :angle-vector (send *pr2* :angle-vector))
+          (send *ri* :go-pos-unsafe -0.1 0 0)
+          (send *ri* :wait-interpolation)
+          )
+         (t ;;  there is much difference
+          (send *ri* :go-pos-unsafe
+                (/ (elt (send diffcds :worldpos) 0) 1100.0)
+                (/ (elt (send diffcds :worldpos) 1) 1100.0)
+                (* 0.9 (rad2deg (elt (car (rpy-angle (send diffcds :worldrot))) 0))))
+          ;; wait ???
+          (unix::usleep (* 500 1000))
+          ;; (send *ri* :wait-interpolation)
+          ))
+        ))
 
     (when (not ret)
       (ros::ros-info "TIMEOUT: open-fridge-door");;
+      (speak-jp "れいぞうこを みつけられません でした")
+      (unix::sleep 2);;
       (return-from open-fridge-door nil))
 
     ;; free door handle
@@ -390,13 +395,13 @@
 (warn ";; (demo :type \"iemon\")~%")
 (warn ";; (demo :type \"wonda\")~%")
 (warn ";; ~%")
-(warn ";; (check :type \"fridge\")~%")
+(warn ";; (check-detection :type \"fridge\")~%")
 
 (init)
-(wait-android-query-test)
+;;(wait-android-query-test)
 ;;(demo :type "georgia")
 
-;; (progn (check :type "wonda")(grasp-can *obj*))
+;; (progn (check-detection :type "wonda")(grasp-can *obj*))
 ;;(setq *type* "georgia")
-;;(check :type *type* :tf-force t :timeout 30)
+;;(check-detection :type *type* :tf-force t :timeout 30)
 ;;(grasp-can :move nil)
