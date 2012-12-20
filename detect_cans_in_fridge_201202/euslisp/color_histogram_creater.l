@@ -54,7 +54,7 @@
     (ros::spin-once)
     (send *pr2* :angle-vector (send *ri* :state :potentio-vector))
     (setq rgripper-cds (send *pr2* :r_gripper_tool_frame :copy-worldcoords))
-    (setq kinect-cds (send (send *pr2* :camera-rgb :parent) :copy-worldcoords))
+    (setq kinect-cds (send (send *pr2* :openni_rgb_optical_frame) :copy-worldcoords))
     (send 3dp :transform-points (send rgripper-cds :transformation kinect-cds))
     (send 3dp :nfilter :key #'rotational-divide-filter)
     (push 3dp *lst*)
