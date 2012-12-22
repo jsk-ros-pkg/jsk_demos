@@ -13,6 +13,7 @@
     <remap from="/openni/rgb/image_rect_color/screenpoint" to="/openni/rgb/screenpoint"/>
   </anode>
 
+  <include file="$(find pr2_machine)/$(env ROBOT).machine" />
   <!-- for desktop -->
   <node pkg="rviz" type="rviz" name="detect_cans_rviz"
          args="-d $(find detect_cans_in_fridge_201202)/detect_cans.vcg"
@@ -21,21 +22,23 @@
   <!-- setup fridge handle marker template -->
   <!--include file="$(find jsk_2011_07_pr2_semantic)/launch/start_perception.launch" /-->
   <group ns="/openni/rgb">
-  <node name="throttle" pkg="topic_tools"
-        type="throttle" args="messages image_rect 3.0"/>
-  <node name="fridge_demo_sift" pkg="imagesift"
-        type="imagesift" launch-prefix="nice -n +10">
-    <remap from="image" to="image_rect_throttle" />
-  </node>
-  <node pkg="jsk_perception" type="point_pose_extractor"
-        name="fridge_detector">
-    <param name="template_filename" value="$(find detect_cans_in_fridge_201202)/data/openni_rgb_fridge.png"/>
-    <param name="window_name" value="fridge_handle_upper"/>
-    <param name="object_width" value="0.2"/>
-    <param name="object_height" value="0.2"/>
-    <param name="relative_pose" value="0.28 0.03 0.0  0.707107 0 -0.707107 0"/>
-    <param name="viewer_window" value="false" /> <!-- to disable window-->
-  </node>
+    <node name="throttle" pkg="topic_tools"
+          type="throttle" args="messages image_rect 4.0"
+          machine="c2" />
+    <node name="fridge_demo_sift" pkg="imagesift"
+          type="imagesift" launch-prefix="nice -n +10"
+          machine="c2" >
+      <remap from="image" to="image_rect_throttle" />
+    </node>
+    <node pkg="jsk_perception" type="point_pose_extractor"
+          name="fridge_detector">
+      <param name="template_filename" value="$(find detect_cans_in_fridge_201202)/data/openni_rgb_fridge.png"/>
+      <param name="window_name" value="fridge_handle_upper"/>
+      <param name="object_width" value="0.2"/>
+      <param name="object_height" value="0.2"/>
+      <param name="relative_pose" value="0.28 0.03 0.0  0.707107 0 -0.707107 0"/>
+      <param name="viewer_window" value="false" /> <!-- to disable window-->
+    </node>
   </group>
   <!-- load model (color histgrams) -->
   <include file="$(find detect_cans_in_fridge_201202)/launch/white_balance.launch" />
@@ -44,12 +47,12 @@
   <include file="$(find detect_cans_in_fridge_201202)/launch/detect_cans.launch" />
 
   <!-- ICP matching between map and base scan -->
-  <include file="$(find pr2_machine)/$(env ROBOT).machine" />
   <param name="SnapMapICP/age_threshold" value="2.0"/>
-  <node pkg="SnapMapICP" type="SnapMapICP" name="tum_SnapMapICP" output="screen" machine="c2"/>
+  <node pkg="SnapMapICP" type="SnapMapICP" name="tum_SnapMapICP"
+        output="screen" machine="c2"/>
 
   <node pkg="roseus" name="fridge_can_main" type="roseus"
-        args="$(find detect_cans_in_fridge_201202)/euslisp/main.l"
+        args="$(find detect_cans_in_fridge_201202)/euslisp/main.l &quot;(wait-android-query-test)&quot;"
         if="$(arg start_euslisp)" />
 
   <sphinxdoc><![CDATA[
