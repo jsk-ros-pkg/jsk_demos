@@ -32,6 +32,8 @@
 (defun init ()
   (init-for-perception)
   (init-for-robot)
+  (defparameter *detection-topic* "/openni/rgb/ObjectDetection")
+  ;;(defparameter *base-frame-id* "/base_footprint")
   (load "package://jsk_perception/euslisp/detection_interface.l");;
   ;;(send *pr2* :move-to (send *ri* :state :worldcoords) :world)
   ;;(objects (list *pr2*))
