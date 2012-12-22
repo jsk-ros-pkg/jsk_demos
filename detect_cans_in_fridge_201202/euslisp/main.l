@@ -172,7 +172,8 @@
     (dotimes (i 10 nil)
 
       ;; finding handle position
-      (setq cds (check-detection :type "fridge")) ;; need detection fail check
+      (setq cds (check-detection :type "fridge" :speak-name "refridge"))
+      ;; need detection fail check
 
       (when cds
 	(send *obj* :reset-coords)
@@ -198,7 +199,7 @@
                   *fridge-distance-threshold*)
                (< (abs (elt (car (rpy-angle (send diffcds :worldrot))) 0))
                   *fridge-rotation-threshold*))
-          (setq cds (check-detection :type "fridge"))
+          (setq cds (check-detection :type "fridge" :speak-name "refridge"))
           (ros::spin-once)
           (send *ri* :spin-once)
           (when cds
