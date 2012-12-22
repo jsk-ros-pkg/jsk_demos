@@ -144,6 +144,7 @@
   )
 
 (defun goto-front-of-fridge ()
+  (speak-jp "いどう します");;
   (let ((co (send *scene* :spot "/eng2/7f/room73B2-fridge-front")))
     (send co :translate (float-vector 0 0 0) :world) ;; for opening door
     (send *ri* :move-to co)
@@ -172,7 +173,7 @@
     (dotimes (i 10 nil)
 
       ;; finding handle position
-      (setq cds (check-detection :type "fridge" :speak-name "refridge"))
+      (setq cds (check-detection :type "fridge" :speak-name "れいぞうこ"))
       ;; need detection fail check
 
       (when cds
@@ -199,7 +200,7 @@
                   *fridge-distance-threshold*)
                (< (abs (elt (car (rpy-angle (send diffcds :worldrot))) 0))
                   *fridge-rotation-threshold*))
-          (setq cds (check-detection :type "fridge" :speak-name "refridge"))
+          (setq cds (check-detection :type "fridge" :speak-name "れいぞうこ"))
           (ros::spin-once)
           (send *ri* :spin-once)
           (when cds
@@ -225,7 +226,7 @@
 
     (when (not ret)
       (ros::ros-info "TIMEOUT: open-fridge-door");;
-      (speak-jp "れいぞうこを みつけられません でした")
+      (speak-jp "れいぞうこ を みつけられません でした")
       (unix::sleep 2);;
       (return-from open-fridge-door nil))
 
@@ -276,27 +277,30 @@
       (when (not (setq cds (check-detection :type *type* :single t)))
         (setq cds (check-detection :type *type* :tf-force t :timeout 30 :single t)))
       (when cds
-	(send *obj* :reset-coords)
-	(send *obj* :transform cds)
-	(warn ";; print check cans~%")
-	(dump-structure *standard-output*
-			(list (send *pr2* :copy-worldcoords)
-			      (send cds :copy-worldcoords)))
-	(unless (boundp '*tfb*)
-	  (setq *tfb* (instance ros::transform-broadcaster :init)))
-	(send *tfb* :send-transform
-	      cds "/base_footprint" "/object_pose_frame")
-	(ros::spin-once)
-	(send *ri* :spin-once)
-	(send *pr2* :angle-vector (send *ri* :state :potentio-vector))
-	(unless rotation
-	  ;; FIXME: calc rotation from /map and /base_footprint
-	  (setq rotation 0))
-	(grasp-can-single cds :rotation rotation)
-	(setq isgrasp (< 10 (send *ri* :start-grasp :rarm)))
-	(when isgrasp
-	  (return-from grasp-can t))
-	)))
+        (speak-jp (format nil "~A を とりだします" *type*))
+        (send *obj* :reset-coords)
+        (send *obj* :transform cds)
+        (warn ";; print check cans~%")
+        (dump-structure *standard-output*
+                        (list (send *pr2* :copy-worldcoords)
+                              (send cds :copy-worldcoords)))
+        (unless (boundp '*tfb*)
+          (setq *tfb* (instance ros::transform-broadcaster :init)))
+        (send *tfb* :send-transform
+              cds "/base_footprint" "/object_pose_frame")
+        (ros::spin-once)
+        (send *ri* :spin-once)
+        (send *pr2* :angle-vector (send *ri* :state :potentio-vector))
+        (unless rotation
+          ;; FIXME: calc rotation from /map and /base_footprint
+          (setq rotation 0))
+        (grasp-can-single cds :rotation rotation)
+        (setq isgrasp (< 10 (send *ri* :start-grasp :rarm)))
+        (when isgrasp
+          (return-from grasp-can t))
+        (speak-jp "しっぱいしました  もういちど やって みます");;
+        )))
+  (speak-jp (format nil "~A を とりだし ません でした" *type*))
   nil)
 
 (defun close-fridge ()
@@ -320,6 +324,7 @@
   (send *ri* :go-pos-unsafe 0 0 -90)
   (send *ri* :wait-interpolation)
   (when return-to-initial-position
+    (speak-jp (format nil "~a を もって いきます" *type*))
     (send *ri* :move-to *opose*))
 
   (speak-jp (format nil "~a を どうぞ" (send *obj* :name)))
@@ -330,8 +335,7 @@
 (defun demo (&key (type "georgia"))
   ;;(init)
   (setq *type* type)
-  (speak-jp (format nil "~a を もってきます  しょうしょう おまち ください"
-		    *type*))
+  (speak-jp (format nil "~a を もってきます  しょうしょう おまち ください" *type*))
 
   (pr2-tuckarm-pose :rarm)
   (setq *opose* (send *ri* :state :worldcoords))
