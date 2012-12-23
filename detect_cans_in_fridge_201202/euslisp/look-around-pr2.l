@@ -24,7 +24,7 @@
         ))
     msg))
 
-(defun look-around-pr2 (&key (relative-p 12) (relative-y 16) (tm 1000))
+(defun look-around-pr2 (&key (relative-p 12) (relative-y 16) (tm 1000) (timeout 1000))
   (send *pr2* :angle-vector (send *ri* :state :potentio-vector))
   (let ((org-av (send *pr2* :head :angle-vector))
         (p-ang (send *pr2* :head :neck-p :joint-angle))
@@ -47,7 +47,7 @@
         (send *pr2* :head :neck-y :joint-angle yy)
         (send *ri* :angle-vector (send *pr2* :angle-vector) tm)
         (send *ri* :wait-interpolation)
-        (push (get-one-points) ret))
+        (push (get-one-points :timeout timeout) ret))
       (setq ylst (nreverse ylst)))
     (send *pr2* :head :angle-vector org-av)
     (send *ri* :angle-vector (send *pr2* :angle-vector) tm)
@@ -56,7 +56,7 @@
     ret))
 
 #|
-(let ((ret (look-around-pr2))
+(let ((ret (look-around-pr2 :timeout 3000))
       lst)
   (dolist (r ret)
     (let ((pts
