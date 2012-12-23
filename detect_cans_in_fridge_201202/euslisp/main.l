@@ -159,13 +159,13 @@
     t
     ))
 
-(defvar *fridge-distance-threshold* 40.0)
+(defvar *fridge-distance-threshold* 25.0)
 (defvar *fridge-rotation-threshold* 0.09)
 (defun open-fridge-door ()
   (let (ret
 	;;(idealcds (make-coords :pos (float-vector 733.757 135.013 1092.946)
 	;;:rpy (float-vector 0.002 0.059 -0.019)))
-	(idealcds (make-coords :pos (float-vector 735 115 0)
+	(idealcds (make-coords :pos (float-vector 740 105 0)
 			       :rpy (float-vector 0.05 0 0)))
 	(diffcds (make-coords :pos (float-vector 10000 10000 10000)))
 	cds)
@@ -262,43 +262,49 @@
   (send *ri* :spin-once)
   (when move
     (ros::ros-info "GO POS UNSAFE for grasping can")
-    (send *ri* :go-pos-unsafe 0 0 (rad2deg 0.40))
-    ;;(send *ri* :go-pos-unsafe 0.15 -0.30 0)
-    (send *ri* :go-pos-unsafe 0.18 -0.31 0)
+    (send *ri* :go-pos-unsafe 0 0 (rad2deg 0.38))
+    (send *ri* :go-pos-unsafe 0.17 -0.25 0)
     (send *ri* :wait-interpolation))
 
   (ros::spin-once)
   (send *ri* :spin-once)
   (send *pr2* :angle-vector (send *ri* :state :potentio-vector))
 
-  (let (isgrasp cds)
+  (let (isgrasp)
     (dotimes (trial 10)
       ;; detect cans which was indicated by ( type )
-      (when (not (setq cds (check-detection :type *type* :single t)))
-        (setq cds (check-detection :type *type* :tf-force t :timeout 30 :single t)))
-      (when cds
-        (speak-jp (format nil "~A を とりだします" *type*))
-        (send *obj* :reset-coords)
-        (send *obj* :transform cds)
-        (warn ";; print check cans~%")
-        (dump-structure *standard-output*
-                        (list (send *pr2* :copy-worldcoords)
-                              (send cds :copy-worldcoords)))
-        (unless (boundp '*tfb*)
-          (setq *tfb* (instance ros::transform-broadcaster :init)))
-        (send *tfb* :send-transform
-              cds "/base_footprint" "/object_pose_frame")
-        (ros::spin-once)
-        (send *ri* :spin-once)
-        (send *pr2* :angle-vector (send *ri* :state :potentio-vector))
-        (unless rotation
-          ;; FIXME: calc rotation from /map and /base_footprint
-          (setq rotation 0))
-        (grasp-can-single cds :rotation rotation)
-        (setq isgrasp (< 10 (send *ri* :start-grasp :rarm)))
-        (when isgrasp
-          (return-from grasp-can t))
-        (speak-jp "しっぱいしました  もういちど やって みます");;
+      ;;(when (not (setq cds (check-detection :type *type* :single t)))
+      ;;(setq cds (check-detection :type *type* :tf-force t :timeout 30 :single t)))
+      (let (cds)
+        (unless (setq cds (check-detection
+                           :type *type* :tf-force t :timeout 35 :single t))
+          (setq cds (check-detection
+                     :type *type* :tf-force t :timeout 70 :single t)))
+        (when cds
+          ;; (speak-jp (format nil "~A を とりだします" *type*))
+          (send *obj* :reset-coords)
+          (send *obj* :transform cds)
+          (warn ";; print check cans~%")
+          (dump-structure *standard-output*
+                          (list (send *pr2* :copy-worldcoords)
+                                (send cds :copy-worldcoords)))
+          (unless (boundp '*tfb*)
+            (setq *tfb* (instance ros::transform-broadcaster :init)))
+          (send *tfb* :send-transform
+                cds "/base_footprint" "/object_pose_frame")
+          (ros::spin-once)
+          (send *ri* :spin-once)
+          (send *pr2* :angle-vector (send *ri* :state :potentio-vector))
+          (unless rotation
+            ;; FIXME: calc rotation from /map and /base_footprint
+            (setq rotation 0))
+          (grasp-can-single cds :rotation rotation)
+          (setq isgrasp (< 10 (send *ri* :start-grasp :rarm)))
+          (when isgrasp
+            (return-from grasp-can t))
+          ;; (unix::sleep 2)
+          (speak-jp "しっぱいしました  もういちど やって みます");;
+          )
         )))
   (speak-jp (format nil "~A を とりだし ません でした" *type*))
   nil)
