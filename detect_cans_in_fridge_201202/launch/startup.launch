@@ -10,7 +10,8 @@
   <anode pkg="image_view2" type="image_view2" name="select_ref_white">
     <remap from="image" to="/openni/rgb/image_rect_color"/>
     <remap from="camera_info" to="/openni/rgb/camera_info"/>
-    <remap from="/openni/rgb/image_rect_color/screenpoint" to="/openni/rgb/screenpoint"/>
+    <remap from="/openni/rgb/image_rect_color/screenpoint"
+           to="/openni/rgb/screenpoint"/>
   </anode>
 
   <include file="$(find pr2_machine)/$(env ROBOT).machine" />
@@ -24,7 +25,7 @@
   <group ns="/openni/rgb">
     <node name="throttle" pkg="topic_tools"
           type="throttle" args="messages image_rect 4.0"
-          machine="c2" />
+          machine="c1" />
     <node name="fridge_demo_sift" pkg="imagesift"
           type="imagesift" launch-prefix="nice -n +10"
           machine="c2" >
