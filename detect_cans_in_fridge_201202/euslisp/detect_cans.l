@@ -17,7 +17,8 @@
 (defvar *topic-name* "/openni/depth_registered/points_throttle")
 (defvar *image-topic* "/openni/rgb/image_rect_color")
 (defvar *screen-topic* "/openni/rgb/screenpoint")
-(defvar *result-topic* "/narrow_stereo/left/ObjectDetection")
+;;(defvar *result-topic* "/narrow_stereo/left/ObjectDetection")
+(defvar *result-topic* "/openni/rgb/ObjectDetection")
 
 (ros::roseus-add-msgs "posedetection_msgs")
 (load "match-hist.l")
