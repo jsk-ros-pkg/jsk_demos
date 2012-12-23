@@ -13,7 +13,8 @@
 ;;(defvar *image-topic* "/camera/rgb/image_rect_color")
 ;;(defvar *screen-topic* "/camera/rgb/screenpoint")
 ;; fuerte
-(defvar *topic-name* "/openni/depth_registered/points")
+;;(defvar *topic-name* "/openni/depth_registered/points")
+(defvar *topic-name* "/openni/depth_registered/points_throttle")
 (defvar *image-topic* "/openni/rgb/image_rect_color")
 (defvar *screen-topic* "/openni/rgb/screenpoint")
 (defvar *result-topic* "/narrow_stereo/left/ObjectDetection")
@@ -69,30 +70,38 @@
     (dolist (nm *model-names*)
       (setq obj nil)
       (when *obj-lst*
-	;; object match using histogram
-	(setq obj (match-model *obj-lst*
-			       (format nil "/object_hs_histgram/~A" nm))))
+        ;; object match using histogram
+        (setq obj (match-model
+                   *obj-lst* (format nil "/object_hs_histgram/~A" nm))))
       (when obj
-	(push obj *obj-det*)
-	(let ((bb (make-bounding-box (send obj :point-list))) pos rospose
-	      (o6dp (instance posedetection_msgs::Object6DPose :init))
-	      (res (instance posedetection_msgs::ObjectDetection :init)))
-	  (setq pos (scale 0.5 (v+ (send bb :maxpoint) (send bb :minpoint))))
-	  (setq rospose (ros::coords->tf-pose (make-coords :pos pos)))
-	  (send o6dp :pose rospose)
-	  (send o6dp :type nm)
-	  (send res :header (send msg :header))
-	  (send res :objects (list o6dp))
-	  (format t "result publish ~A=~A~%" nm pos)
-	  (ros::publish *result-topic* res)
-	  )))
+        (push obj *obj-det*)
+        (let ((bb (make-bounding-box (send obj :point-list))) pos rospose
+              (o6dp (instance posedetection_msgs::Object6DPose :init))
+              (res (instance posedetection_msgs::ObjectDetection :init)))
+          (setq pos (scale 0.5 (v+ (send bb :maxpoint) (send bb :minpoint))))
+          (setq rospose (ros::coords->tf-pose (make-coords :pos pos)))
+          (send o6dp :pose rospose)
+          (send o6dp :type nm)
+          (send res :header (send msg :header))
+          (send res :objects (list o6dp))
+          (format t "result publish ~A=~A~%" nm pos)
+          (ros::publish *result-topic* res)
+          )))
     ;;(if *obj-det* (objects *obj-det*))
     )
   ;(send *irtviewer* :draw-objects)
   ;;(objects (list pc) *irtviewer* :fix t)
   )
 (ros::advertise *result-topic* posedetection_msgs::ObjectDetection)
-(ros::subscribe *topic-name* sensor_msgs::PointCloud2 #'pcloud-cb)
+
+(setq *cloud-subscribed* nil)
+(defun subscribe-cloud-topic ()
+  (unless *cloud-subscribed*
+    (setq *cloud-subscribed* t)
+    (ros::subscribe *topic-name* sensor_msgs::PointCloud2 #'pcloud-cb)))
+(defun unsubscribe-cloud-topic ()
+  (setq *cloud-subscribed* nil)
+  (ros::unsubscribe *topic-name*))
 
 (defun white-balance-points (3dp &optional (reference-color #f(1 1 1)))
   (let ((req (instance jsk_perception::WhiteBalancePointsRequest :init))
@@ -135,8 +144,14 @@
       )))
 
 (defun ros-spin ()
+  (ros::rate 15)
   (do-until-key
+   (cond
+    ((= (ros::get-num-subscribers *result-topic*) 0)
+     (unsubscribe-cloud-topic))
+    (t (subscribe-cloud-topic)))
    (ros::spin-once)
+   (ros::sleep)
    ;;(x::window-main-one)
    ))
 
