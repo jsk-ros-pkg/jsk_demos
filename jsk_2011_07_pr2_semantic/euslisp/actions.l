@@ -363,31 +363,47 @@
 (ros::load-ros-manifest "jsk_ipad_gui")
 (load "package://jsk_ipad_gui/src/utils.l")
 (ros::advertise "/tablet_marker_array" visualization_msgs::MarkerArray 10)
-(defun open-fridge (hand handle &optional (rad pi/2))
+(defun open-fridge (hand handle &optional (rad pi/2)
+                         &key (radius 500) ((:rotation-axis ra) :z)))
   ;; 500mm is a distance between handle and axis
-  (let ((a (send (send handle :copy-worldcoords) :translate #f(0 -500 200)))
-	(b (send (send handle :copy-worldcoords) :translate #f(0 -500 -200)))
-	(c handle) (di pi/2) (ra :z) ret avs tms uavs utms current-arm)
+  (let ((a (send (send handle :copy-worldcoords) :translate (float-vector 0 (- radius) 200)))
+        (b (send (send handle :copy-worldcoords) :translate (float-vector 0 (- radius) -200)))
+        (c handle) (di pi/2) ret avs tms uavs utms current-arm)
     (setq a (send a :worldpos) b (send b :worldpos) c (send c :worldpos))
     (setq ret (generate-circle-path c a b rad));;a,b can be reverse
     (show-markers (mapcar #'(lambda(x) (copy-object (send x :worldpos))) ret))
     (send *ri* :move-gripper hand 0.09 :wait nil) ;; open
     (setq *ret* (elt ret 0))
     (cond
-     ((move-arm hand (send (send (send (elt ret 0) :copy-worldcoords) :translate #f(-100 0 0) :local) :rotate di :x) :rotation-axis t :sec 1000) t)
+     ((move-arm hand (send (send (send (car ret) :copy-worldcoords)
+                                 :translate #f(-100 0 0) :local)
+                           :rotate di :x)
+                :rotation-axis t :sec 1000) t)
      (t
       (ros::ros-warn "Could not solve ik, return from execute-open")
       (return-from open-fridge nil)))
-    (move-arm hand (send (send (send (elt ret 0) :copy-worldcoords) :translate #f(50 0 0) :local) :rotate di :x) :rotation-axis t :sec 1000)
+    (move-arm hand (send (send (send (car ret) :copy-worldcoords)
+                               :translate #f(50 0 0) :local)
+                         :rotate di :x)
+              :rotation-axis t :sec 1000)
     (when (< (send *ri* :start-grasp hand :gain 0.1) 10) ;; grasp
       (ros::ros-warn "Grasp handle failed, return from execute-open")
       (return-from open-fridge nil))
     (dolist (r (cdr ret))
       (setq rr (send r :copy-worldcoords))
-      (when (send *pr2* :inverse-kinematics (send (send rr :copy-worldcoords) :rotate di :x) :move-arm hand :rotation-axis ra :debug-view nil)
-	(push (send *pr2* :angle-vector) avs)
-	(push 300 tms))
-      )
+      (let ((ik-solved
+             (send *pr2* :inverse-kinematics
+                   (send (send rr :copy-worldcoords) :rotate di :x)
+                   :move-arm hand :rotation-axis ra :debug-view nil :warnp nil)))
+        (unless (or ik-solved (eq ra nil))
+          (setq ik-solved
+                (send *pr2* :inverse-kinematics
+                      (send (send rr :copy-worldcoords) :rotate di :x)
+                      :move-arm hand :rotation-axis nil :debug-view nil :warnp nil)))
+        (when ik-solved
+          (push (send *pr2* :angle-vector) avs)
+          (push 300 tms))
+        ))
     (send *ri* :angle-vector-sequence (reverse avs) tms)
     (unix:sleep 4)
     (send *ri* :stop-grasp hand)
@@ -400,7 +416,7 @@
     (ros::ros-info "idx = [~a/~a]" idx (length ret))
     (when (< idx (/ (length ret) 2))
       (return-from open-fridge nil))
-    t ))
+    t))
 
 (defun open-fridge-by-marker (&key (pickup nil))
   (let ((handle (send *obj* :copy-worldcoords)) (ret :not-open))
