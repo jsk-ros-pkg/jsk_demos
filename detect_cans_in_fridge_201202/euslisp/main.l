@@ -165,7 +165,7 @@
   (let (ret
 	;;(idealcds (make-coords :pos (float-vector 733.757 135.013 1092.946)
 	;;:rpy (float-vector 0.002 0.059 -0.019)))
-	(idealcds (make-coords :pos (float-vector 740 105 0)
+	(idealcds (make-coords :pos (float-vector 760 100 0)
 			       :rpy (float-vector 0.05 0 0)))
 	(diffcds (make-coords :pos (float-vector 10000 10000 10000)))
 	cds)
@@ -204,7 +204,11 @@
           (ros::spin-once)
           (send *ri* :spin-once)
           (when cds
-            (when (setq ret (open-fridge :rarm cds (/ pi 2)))
+            (setq cds
+                  (make-coords :pos (send cds :worldpos)
+                               :rpy (list (caar (send cds :rpy-angle)) 0 0)))
+            (when (setq ret (open-fridge :rarm cds 1.7 ;;(/ pi 2)
+                                         :rotation-axis t :radius 490))
               (return)))
           (speak-jp "れいぞうこを あけられません でした")
           (send *pr2* :head :angle-vector (float-vector 0 0))
@@ -263,7 +267,7 @@
   (when move
     (ros::ros-info "GO POS UNSAFE for grasping can")
     (send *ri* :go-pos-unsafe 0 0 (rad2deg 0.38))
-    (send *ri* :go-pos-unsafe 0.17 -0.25 0)
+    (send *ri* :go-pos-unsafe 0.185 -0.25 0)
     (send *ri* :wait-interpolation))
 
   (ros::spin-once)
