@@ -360,13 +360,13 @@
 ;;
 ;; for opening fridge
 ;;   *pr2* and *obj* are needed on worldcoords ??
-(ros::load-ros-manifest "jsk_ipad_gui")
-(load "package://jsk_ipad_gui/src/utils.l")
-;;;(ros::load-ros-manifest "jsk_smart_gui")
-;;;(load "package://jsk_smart_gui/src/utils.l")
+;;(ros::load-ros-manifest "jsk_ipad_gui")
+;;(load "package://jsk_ipad_gui/src/utils.l")
+(ros::load-ros-manifest "jsk_smart_gui")
+(load "package://jsk_smart_gui/src/utils.l")
 (ros::advertise "/tablet_marker_array" visualization_msgs::MarkerArray 10)
 (defun open-fridge (hand handle &optional (rad pi/2)
-                         &key (radius 500) ((:rotation-axis ra) :z))
+                         &key (radius 500) ((:rotation-axis ra) :z) (use-torso 0.0025))
   ;; 500mm is a distance between handle and axis
   (let ((a (send (send handle :copy-worldcoords) :translate (float-vector 0 (- radius) 200)))
         (b (send (send handle :copy-worldcoords) :translate (float-vector 0 (- radius) -200)))
@@ -396,12 +396,16 @@
       (let ((ik-solved
              (send *pr2* :inverse-kinematics
                    (send (send rr :copy-worldcoords) :rotate di :x)
+                   :use-torso use-torso
                    :move-arm hand :rotation-axis ra :debug-view nil :warnp nil)))
         (unless (or ik-solved (eq ra nil))
+          (warn ";; retry ~A~%" rr);
           (setq ik-solved
                 (send *pr2* :inverse-kinematics
                       (send (send rr :copy-worldcoords) :rotate di :x)
+                      :use-torso use-torso
                       :move-arm hand :rotation-axis nil :debug-view nil :warnp nil)))
+        (unless ik-solved (warn ";; failed ~A~%" rr))
         (when ik-solved
           (push (send *pr2* :angle-vector) avs)
           (push 300 tms))
