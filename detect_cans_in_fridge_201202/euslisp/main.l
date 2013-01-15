@@ -330,9 +330,10 @@
   t
   )
 
-(defun goto-initial-position (&key (return-to-initial-position t))
-  (send *ri* :go-pos-unsafe 0 0 -90)
-  (send *ri* :wait-interpolation)
+(defun goto-initial-position (&key (return-to-initial-position t) (turnp t))
+  (when turnp
+    (send *ri* :go-pos-unsafe 0 0 -90)
+    (send *ri* :wait-interpolation))
   (when return-to-initial-position
     (speak-jp (format nil "~a を もって いきます" *type*))
     (send *ri* :move-to *opose*))
@@ -364,6 +365,30 @@
 
   (unless (goto-initial-position)
     (return-from demo))
+  )
+
+(defun demo-short (&key (type "georgia"))
+  (setq *type* type)
+  (speak-jp (format nil "~a を もってきます  しょうしょう おまち ください" *type*))
+
+  (pr2-tuckarm-pose :rarm)
+  (setq *opose* (send *ri* :state :worldcoords))
+
+  ;;do not use map
+  ;;(unless (goto-front-of-fridge)
+  ;;(return-from demo))
+
+  (unless (open-fridge-door)
+    (return-from demo-short))
+
+  (unless (grasp-can)
+    (return-from demo-short))
+
+  (unless (close-fridge)
+    (return-from demo-short))
+
+  (unless (goto-initial-position :turnp nil)
+    (return-from demo-short))
   )
 
 (defun wait-query ()
