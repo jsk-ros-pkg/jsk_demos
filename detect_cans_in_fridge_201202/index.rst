@@ -87,12 +87,26 @@ Contents
       <remap from="/openni/rgb/image_rect_color/screenpoint" to="/openni/rgb/screenpoint" />
     </anode>
   
+    <include file="$(find pr2_machine)/$(env ROBOT).machine" />
     
     <node args="-d $(find detect_cans_in_fridge_201202)/detect_cans.vcg" if="$(arg start_rviz)" name="detect_cans_rviz" pkg="rviz" type="rviz" />
   
     
-    <include file="$(find jsk_2011_07_pr2_semantic)/launch/start_perception.launch" />
-  
+    
+    <group ns="/openni/rgb">
+      <node args="messages image_rect 4.0" machine="c1" name="throttle" pkg="topic_tools" type="throttle" />
+      <node launch-prefix="nice -n +10" machine="c2" name="fridge_demo_sift" pkg="imagesift" type="imagesift">
+        <remap from="image" to="image_rect_throttle" />
+      </node>
+      <node name="fridge_detector" pkg="jsk_perception" type="point_pose_extractor">
+        <param name="template_filename" value="$(find detect_cans_in_fridge_201202)/data/openni_rgb_fridge.png" />
+        <param name="window_name" value="fridge_handle_upper" />
+        <param name="object_width" value="0.2" />
+        <param name="object_height" value="0.2" />
+        <param name="relative_pose" value="0.22 0.03 0.0  0.707107 0 -0.707107 0" />
+        <param name="viewer_window" value="false" /> 
+      </node>
+    </group>
     
     <include file="$(find detect_cans_in_fridge_201202)/launch/white_balance.launch" />
   
@@ -100,11 +114,10 @@ Contents
     <include file="$(find detect_cans_in_fridge_201202)/launch/detect_cans.launch" />
   
     
-    <include file="$(find pr2_machine)/$(env ROBOT).machine" />
     <param name="SnapMapICP/age_threshold" value="2.0" />
     <node machine="c2" name="tum_SnapMapICP" output="screen" pkg="SnapMapICP" type="SnapMapICP" />
   
-    <node args="$(find detect_cans_in_fridge_201202)/euslisp/main.l" if="$(arg start_euslisp)" name="fridge_can_main" pkg="roseus" type="roseus" />
+    <node args="$(find detect_cans_in_fridge_201202)/euslisp/main.l &quot;(wait-android-query-test)&quot;" if="$(arg start_euslisp)" name="fridge_can_main" pkg="roseus" type="roseus" />
   
     </launch>
 
