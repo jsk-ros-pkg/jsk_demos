@@ -2,7 +2,6 @@
 #include <image_transport/image_transport.h>
 #include <opencv/cv.h>
 #include <opencv/highgui.h>
-#include <cv_bridge/CvBridge.h>
 #include <cv_bridge/cv_bridge.h>
 #include <image_geometry/pinhole_camera_model.h>
 #include <tf/transform_listener.h>
@@ -19,7 +18,6 @@ class FrameDrawer
   ros::Subscriber pointsub_;
   ros::Publisher result_pub_;
   tf::TransformListener tf_listener_;
-  sensor_msgs::CvBridge bridge_;
   image_geometry::PinholeCameraModel cam_model_;
 
   std::string current_frame_;
@@ -56,7 +54,8 @@ public:
   void imageCb(const sensor_msgs::ImageConstPtr& image_msg,
                const sensor_msgs::CameraInfoConstPtr& info_msg)
   {
-    IplImage* image = NULL;
+    cv_bridge::CvImagePtr cv_ptr;
+    cv::Mat image;
 
     //std::cout << ".";
     // drop 9 of 10 frames
@@ -69,18 +68,21 @@ public:
       if (image_msg->encoding.find("bayer") != std::string::npos)
 	boost::const_pointer_cast<sensor_msgs::Image>(image_msg)->encoding = "mono8";
 
-      image = bridge_.imgMsgToCv(image_msg, "bgr8");
+      //image = bridge_.imgMsgToCv(image_msg, "bgr8");
+      cv_ptr = cv_bridge::toCvCopy(image_msg, "bgr8");
+      image = cv_ptr->image;
     }
-    catch (sensor_msgs::CvBridgeException& ex) {
+    catch (cv_bridge::Exception& ex) {
       ROS_ERROR("[draw_frames] Failed to convert image");
       return;
     }
 
     // output debug image
-    sensor_msgs::CvBridge debug_bridge;
-    debug_bridge.fromImage (*image_msg, "bgr8");
-    IplImage* src_imgipl = debug_bridge.toIpl();
-    cv::Mat img(src_imgipl);
+    //sensor_msgs::CvBridge debug_bridge;
+    //debug_bridge.fromImage (*image_msg, "bgr8");
+    //IplImage* src_imgipl = debug_bridge.toIpl();
+    //cv::Mat img(src_imgipl);
+    cv::Mat img = image;
     
     // calcurate the score
     double max_score = -1e9;
@@ -123,11 +125,12 @@ public:
     result_pub_.publish(score_msg);
 
     // publish debug image
-    cv_bridge::CvImage out_msg;
-    out_msg.header   = image_msg->header;
-    out_msg.encoding = "bgr8";
-    out_msg.image    = img;
-    debug_pub_.publish(out_msg.toImageMsg());
+    //cv_bridge::CvImage out_msg;
+    //out_msg.header   = image_msg->header;
+    //out_msg.encoding = "bgr8";
+    //out_msg.image    = img;
+    //debug_pub_.publish(out_msg.toImageMsg());
+    debug_pub_.publish(cv_ptr->toImageMsg());
   }
 
 };
