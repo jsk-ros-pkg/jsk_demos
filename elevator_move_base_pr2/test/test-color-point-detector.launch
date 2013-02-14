@@ -1,0 +1,33 @@
+<launch>
+
+  <!-- inputs are tf, image_raw, camera_info, joint_states -->
+  <node pkg="rosbag" type="play" name="rosbag_play"
+        args="$(find elevator_move_base_pr2)/test/test-button-light.bag -l --clock" />
+
+  <node name="light_detector" pkg="elevator_move_base_pr2"
+	type="color_point_detector" output="screen">
+    <remap from="image" to="/wide_stereo/left/image_color"/>
+    <param name="red" value="253"/>
+    <param name="green" value="251"/>
+    <param name="blue" value="183"/>
+  </node>
+
+  <!-- image_raw, camera_info, view_target -> light_button -->
+  <group ns="/wide_stereo/left" >
+    <node pkg="image_proc" type="image_proc" name="image_proc"/>
+  </group>
+
+  <!-- for debug
+  <node name="debug_image_view" pkg="image_view" type="image_view"
+        args="image:=/light_detector/debug_image" />
+  -->
+
+  <param name="hztest1/topic" value="/light_button" />
+  <param name="hztest1/hz" value="2.0" />
+  <param name="hztest1/hzerror" value="0.5" />
+  <param name="hztest1/test_duration" value="5.0" />
+  <test test-name="hztest_test" pkg="rostest" type="hztest" name="hztest1" />
+
+  <test test-name="data_test" pkg="elevator_move_base_pr2" type="test-color-point-detector.py" name="datatest1" />
+
+</launch>

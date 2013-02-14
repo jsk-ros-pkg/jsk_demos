@@ -88,22 +88,22 @@ public:
     double max_score = -1e9;
     int ix[] = {0,1,0,-1,0}, iy[] = {0,0,1,0,-1};
     for(int ind=0; ind<5; ind++) {
-      std::vector<CvScalar> colbuf;
+      std::vector<cv::Vec3b> colbuf;
       for(int i = 0; i < 121; i++){
 	double px = i/11, py = i%11;
 	cv::Point2d uv(x + (5-px)*r/5 + r*ix[ind], y + (5-py)*r/5 + r*iy[ind]);
 	if(0<=uv.x && uv.x < image.size().width-1 && 0<=uv.y && uv.y < image.size().height-1){
-         colbuf.push_back(image.at<CvScalar>((int)uv.y, (int)uv.x));
+         colbuf.push_back(image.at<cv::Vec3b>((int)uv.y, (int)uv.x));
 	}
       }
 
       // check yellow point
       std::vector<double> vscore;
-      for(std::vector<CvScalar>::iterator it=colbuf.begin();it!=colbuf.end();it++)
+      for(std::vector<cv::Vec3b>::iterator it=colbuf.begin();it!=colbuf.end();it++)
 	{
 	  double lscore = 0.0;
 	  for(int i=0;i<3;i++)
-	    lscore += exp(-abs(target_color_.val[i] - it->val[i])/10.0);
+           lscore += exp(-abs(target_color_.val[i] - (*it)[i])/10.0);
 	  vscore.push_back(lscore);
 	}
 
