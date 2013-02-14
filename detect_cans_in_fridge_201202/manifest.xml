@@ -13,6 +13,7 @@
   <depend package="jsk_pcl_ros" />
   <!-- depend package="rectangular_solid_filter"/ -->
   <depend package="robot_self_filter_color"/>
+  <depend package="SnapMapICP"/>
 
   <export>
     <rosdoc config="rosdoc.yaml" />
