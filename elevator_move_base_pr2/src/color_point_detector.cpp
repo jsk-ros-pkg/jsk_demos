@@ -92,8 +92,8 @@ public:
       for(int i = 0; i < 121; i++){
 	double px = i/11, py = i%11;
 	cv::Point2d uv(x + (5-px)*r/5 + r*ix[ind], y + (5-py)*r/5 + r*iy[ind]);
-	if(0<=uv.x && uv.x < image->width-1 && 0<=uv.y && uv.y < image->height-1){
-	  colbuf.push_back(cvGet2D(image, (int)uv.y, (int)uv.x));
+	if(0<=uv.x && uv.x < image.size().width-1 && 0<=uv.y && uv.y < image.size().height-1){
+         colbuf.push_back(image.at<CvScalar>((int)uv.y, (int)uv.x));
 	}
       }
 
