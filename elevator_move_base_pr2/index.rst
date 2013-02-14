@@ -85,6 +85,13 @@ Contents
   
   </launch>
 
+test-color-point-detector.launch
+--------------------------------
+
+.. code-block:: bash
+
+  roslaunch elevator_move_base_pr2 test-color-point-detector.launch
+
 test-modules-callpanel.launch
 -----------------------------
 
