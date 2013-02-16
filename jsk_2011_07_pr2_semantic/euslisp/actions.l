@@ -366,7 +366,8 @@
 (load "package://jsk_smart_gui/src/utils.l")
 (ros::advertise "/tablet_marker_array" visualization_msgs::MarkerArray 10)
 (defun open-fridge (hand handle &optional (rad pi/2)
-                         &key (radius 500) ((:rotation-axis ra) :z) (use-torso 0.0025))
+                         &key (radius 500) ((:rotation-axis ra) :z) (use-torso 0.0025)
+                         (wait-time 4))
   ;; 500mm is a distance between handle and axis
   (let ((a (send (send handle :copy-worldcoords) :translate (float-vector 0 (- radius) 200)))
         (b (send (send handle :copy-worldcoords) :translate (float-vector 0 (- radius) -200)))
@@ -411,7 +412,14 @@
           (push 300 tms))
         ))
     (send *ri* :angle-vector-sequence (reverse avs) tms)
-    (unix:sleep 4)
+    (cond
+     ((integerp wait-time)
+      (unix:sleep wait-time))
+     ((numberp wait-time)
+      (unix::usleep
+       (round (* wait-time 1000 1000))))
+     (wait-time
+      (send *ri* :wait-interpolation)))
     (send *ri* :stop-grasp hand)
     (send *ri* :wait-interpolation)
     ;;
