@@ -208,7 +208,8 @@
                   (make-coords :pos (send cds :worldpos)
                                :rpy (list (caar (send cds :rpy-angle)) 0 0)))
             (when (setq ret (open-fridge :rarm cds 1.7 ;;(/ pi 2)
-                                         :rotation-axis t :radius 490))
+                                         :rotation-axis t :radius 490
+                                         :wait-time 5.5))
               (return)))
           (speak-jp "れいぞうこを あけられません でした")
           (send *pr2* :head :angle-vector (float-vector 0 0))
@@ -246,12 +247,13 @@
 
     ;; ?? open door ()
     (send *ri* :angle-vector-sequence
-	  (list (float-vector 50 5 74 100 -90 -70 -6 20 -70 50 -59 -43 118 0 0 -2 31)
-		(float-vector 50 5 74 100 -90 -70 -6 20 -0 60 -20 -90 118 -90 0 -2 31)
-		(float-vector 50 5 74 100 -90 -70 -6 20 -7 45 -34 -110 12 -38 74 -2 31)
-		(float-vector 50 5 74 100 -90 -70 -6 20 -45 26 -31 -62 22 -76 121 -2 31)
-		(float-vector 150 5 74 100 -90 -70 -6 20 -7 45 -34 -110 12 -38 74 -2 31))
-	  (list 1500 1000 1000 3000 3000))
+          (list (float-vector 50 5 74 100 -90 -70 -6 20 -70 50 -59 -43 118 0 0 -2 31) ;; 1500
+                (float-vector 50 5 74 100 -90 -70 -6 20 -0 60 -20 -45 118 -90 0 -2 31) ;; 1000
+                (float-vector 50 5 74 100 -90 -70 -6 20 12 45 -34 -110 12 -38 74 -2 31) ;; 1000
+                (float-vector 50 5 74 100 -90 -70 -6 20 -54.745 34.2625 -34.6956 -83.6538 24.9161 -66.3615 118.904 -2.0 31.0) ;; 4500
+                (float-vector 50 5 74 100 -90 -70 -6 20 -54.745 34.2625 -34.6956 -83.6538 24.9161 -66.3615 118.904 -2.0 31.0) ;; 1500 ;; just wait
+                (float-vector 150 5 74 100 -90 -70 -6 20 -7 45 -34 -110 12 -38 74 -2 31)) ;; 2000
+          (list 1500 1000 1000 4500 1500 2000))
     (send *ri* :wait-interpolation)
 
     ;; (send *pr2* :angle-vector (float-vector 200 5.00529 74.2038 105.001 -90.0035 -70.0071 -5.73378 19.9988 9.96029 39.7801 -45.0972 -121.542 94.4262 -111.922 63.0666 -0.0316 21.024))
@@ -313,17 +315,18 @@
   (speak-jp (format nil "~A を とりだし ません でした" *type*))
   nil)
 
-(defun close-fridge ()
+(defun close-fridge (&key (move t))
   ;; close the door of fridge
-  (send *ri* :go-pos-unsafe -0.3 0.05 -20)
+  (when move (send *ri* :go-pos-unsafe -0.3 0.05 -20))
   (unix::sleep 1)
   (send *ri* :angle-vector-sequence
-	(list (float-vector 250 5 74 100 -90 -70 -6 20 -13 50 -59 -43 118 -90 62 -2 31)
-	      (float-vector 200 5 74 100 -90 -70 -6 20 -50 36 -29 -43 118 -90 62 -2 31)
-	      (float-vector 150 5 74 100 -90 -70 -6 20 -63 10 -39 -33 -49 -32 89 -2 32)
-	      (float-vector 100 5 74 100 -90 -70 -6 20 -61 6 -74 -64 -35 -6 102 -2 33)
-	      (float-vector 50 5 74 100 -90 -70 -6 20 3 -2 -64 -80 -24 -55 10 -2 33))
-	(list 2000 1000 3000 2000 2000))
+        (list (float-vector 250 5 74 100 -90 -70 -6 20 -13 50 -30 -25 118 -90 62 -2 31);; 2000
+              (float-vector 200 5 74 100 -90 -70 -6 20 -50 54 -15 -43 118 -90 62 -2 31);; 1000
+              (float-vector 150 5 74 100 -90 -70 -6 20 -80 10 -39 -33 -49 -32 89 -2 32);; 1500
+              (float-vector 100 5 74 100 -90 -70 -6 20 -61 6 -74 -64 55 -75 102 -2 33);; 2500
+              ;;(float-vector 50 5 74 100 -90 -70 -6 20 9.05631 26.4211 -42.0907 -111.215 97.6198 -19.5577 -24.0422 -2.0 33.0)
+              (float-vector 50 5 74 100 -90 -70 -6 20 -1.74817 12.0099 -66.7541 -77.0519 67.3822 -49.1028 30.3261 -2.0 33.0))  ;; 3500
+        (list 2000 1000 1500 2500 3500))
   (send *ri* :wait-interpolation)
   (send *pr2* :angle-vector (send *ri* :state :potentio-vector))
   (pr2-tuckarm-pose :rarm)
@@ -431,19 +434,24 @@
      (ros::sleep))
     ))
 
-(warn ";; (init)~%")
-(warn ";; (demo)~%")
+(init)
+(warn ";; (init) ;; initialize demo~%")
+(warn ";; (demo) ;; start demo~%")
 (warn ";; (demo :type \"georgia\")~%")
 (warn ";; (demo :type \"iemon\")~%")
 (warn ";; (demo :type \"wonda\")~%")
 (warn ";; ~%")
 (warn ";; (check-detection :type \"fridge\")~%")
 
-(init)
+(warn ";; ~%")
+(warn ";; (goto-front-of-fridge)~%")
+
 ;;(wait-android-query-test)
 ;;(demo :type "georgia")
 
 ;; (progn (check-detection :type "wonda")(grasp-can *obj*))
+;;(check-detection :type "fridge")
 ;;(setq *type* "georgia")
 ;;(check-detection :type *type* :tf-force t :timeout 30)
+;;(open-fridge-door)
 ;;(grasp-can :move nil)
