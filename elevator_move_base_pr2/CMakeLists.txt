@@ -41,7 +41,7 @@ if(disp)
   rosbuild_add_rostest(test/test-modules-callpanel.launch)
   #rosbuild_add_rostest(test/test-modules-insidepanel.launch)
 endif(disp)
-rosbuild_add_rostest(test/test-modules-callpanel.launch)
+rosbuild_add_rostest(test/test-color-point-detector.launch)
 
 # roslaunch documentation
 rosbuild_find_ros_package("jsk_tools")
