@@ -1,3 +1,8 @@
+(setq *obj* (make-sphere 100)) ;; dummy object
+(setq *target-name* nil)
+(defparameter *detection-topic* "/openni/rgb/ObjectDetection")
+(load "package://jsk_perception/euslisp/detection_interface.l")
+
 (warn ";; define grasp-can-single")
 (defun grasp-can-single (obj &key (rotation 0))
   (let (via1 via2 tar orig-av)
