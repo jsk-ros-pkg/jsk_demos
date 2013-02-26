@@ -258,19 +258,21 @@
           (grasp-can-single cds :rotation rotation)
           (setq isgrasp (< 10 (send *ri* :start-grasp :rarm)))
           (when isgrasp
+            (when move (send *ri* :go-pos-unsafe -0.3 0.05 -20))
+            (unix::sleep 1)
             (return-from grasp-can t))
           ;; (unix::sleep 2)
           (speak-jp "しっぱいしました  もういちど やって みます");;
           )
         )))
   (speak-jp (format nil "~A を とりだし ません でした" *type*))
+  (when move (send *ri* :go-pos-unsafe -0.3 0.05 -20))
+  (unix::sleep 1)
   nil)
 
 (warn ";; define close-fridge")
-(defun close-fridge (&key (move t))
+(defun close-fridge ()
   ;; close the door of fridge
-  (when move (send *ri* :go-pos-unsafe -0.3 0.05 -20))
-  (unix::sleep 1)
   (send *ri* :angle-vector-sequence
         (list (float-vector 250 5 74 100 -90 -70 -6 20 -13 50 -30 -25 118 -90 62 -2 31);; 2000
               (float-vector 200 5 74 100 -90 -70 -6 20 -50 54 -15 -43 118 -90 62 -2 31);; 1000
@@ -278,7 +280,7 @@
               (float-vector 100 5 74 100 -90 -70 -6 20 -61 6 -74 -64 55 -75 102 -2 33);; 2500
               ;;(float-vector 50 5 74 100 -90 -70 -6 20 9.05631 26.4211 -42.0907 -111.215 97.6198 -19.5577 -24.0422 -2.0 33.0)
               (float-vector 50 5 74 100 -90 -70 -6 20 -1.74817 12.0099 -66.7541 -77.0519 67.3822 -49.1028 30.3261 -2.0 33.0))  ;; 3500
-        (list 2000 1000 1500 2500 3500))
+        (list 2000 1000 1500 1500 2500))
   (send *ri* :wait-interpolation)
   (send *pr2* :angle-vector (send *ri* :state :potentio-vector))
   (pr2-tuckarm-pose :rarm)
