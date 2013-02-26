@@ -1,0 +1,14 @@
+<package>
+  <description brief="jsk_demo_common">
+
+     jsk_demo_common
+
+  </description>
+  <author>Hiroyuki Mikita</author>
+  <license>BSD</license>
+  <review status="unreviewed" notes=""/>
+  <url>http://ros.org/wiki/jsk_demo_common</url>
+
+</package>
+
+
