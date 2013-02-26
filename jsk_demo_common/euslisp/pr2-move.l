@@ -1,5 +1,7 @@
 (load "package://jsk_maps/src/eng2-scene.l")
 
+(unless (boundp '*scene*) (setq *scene* (make-eng2-scene)))
+
 (warn "goto-front-of-fridge")
 (defun goto-front-of-fridge ()
   (speak-jp "いどう します");;
