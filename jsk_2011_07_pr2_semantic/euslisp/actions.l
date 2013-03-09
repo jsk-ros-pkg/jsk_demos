@@ -367,7 +367,7 @@
 (ros::advertise "/tablet_marker_array" visualization_msgs::MarkerArray 10)
 (defun open-fridge (hand handle &optional (rad pi/2)
                          &key (radius 500) ((:rotation-axis ra) :z) (use-torso 0.0025)
-                         (wait-time 4))
+                         (return-sequence) (wait-time 4))
   ;; 500mm is a distance between handle and axis
   (let ((a (send (send handle :copy-worldcoords) :translate (float-vector 0 (- radius) 200)))
         (b (send (send handle :copy-worldcoords) :translate (float-vector 0 (- radius) -200)))
@@ -411,6 +411,8 @@
           (push (send *pr2* :angle-vector) avs)
           (push 300 tms))
         ))
+    (when return-sequence
+      (return-from open-fridge (list (reverse avs) tms)))
     (send *ri* :angle-vector-sequence (reverse avs) tms)
     (cond
      ((integerp wait-time)
