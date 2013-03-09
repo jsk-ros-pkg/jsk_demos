@@ -101,23 +101,8 @@
            :return-to-initial-position nil :turnp t)
     (return-from demo-short))
   )
-#|
-(defun wait-query ()
-  (setq *type* nil)
-  (ros::subscribe "/query" std_msgs::String
-          #'(lambda(m) (setq *type* (send m :data))))
-  (do-until-key
-   (ros::spin-once)
-   (send *ri* :spin-once)
-   (when *type*
-     (ros::unsubscribe "/query")
-     (demo *type*)
-     (return-from wait-query t))
-   (ros::sleep))
-  )
-|#
-;; this is just an another sample
-(defun wait-android-query-test ()
+
+(defun wait-android-query ()
   (ros::ros-info "Begin Waiting ....")
   (let (type)
     (ros::subscribe "/Tablet/StartDemo" roseus::StringStamped
@@ -142,19 +127,20 @@
     ))
 
 (init)
-(wait-android-query-test)
+(wait-android-query)
 
 (warn ";; (init) ;; initialize demo~%")
 (warn ";; (demo) ;; start demo~%")
-(warn ";; (demo :type \"georgia\")~%")
-(warn ";; (demo :type \"iemon\")~%")
-(warn ";; (demo :type \"wonda\")~%")
+(warn ";; (demo :type \"georgia\")~%") ;; type georgia wanda iemon
+(warn ";; (demo-short :type \"georgia\")~%")
 (warn ";; ~%")
 (warn ";; (check-detection :type \"fridge\")~%")
-
 (warn ";; ~%")
 (warn ";; (goto-front-of-fridge)~%")
-
+(warn ";; ~%")
+(warn ";; (open-fridge-door)~%")
+(warn ";; ~%")
+(warn ";; (grasp-can :move nil)~%")
 
 ;;(demo :type "georgia")
 
