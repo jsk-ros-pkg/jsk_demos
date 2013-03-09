@@ -367,7 +367,7 @@
 (ros::advertise "/tablet_marker_array" visualization_msgs::MarkerArray 10)
 (defun open-fridge (hand handle &optional (rad pi/2)
                          &key (radius 500) ((:rotation-axis ra) :z) (use-torso 0.0025)
-                         (return-sequence) (wait-time 4))
+                         (return-sequence) (time-tick 300) (wait-time 4) (grasp-check t))
   ;; 500mm is a distance between handle and axis
   (let ((a (send (send handle :copy-worldcoords) :translate (float-vector 0 (- radius) 200)))
         (b (send (send handle :copy-worldcoords) :translate (float-vector 0 (- radius) -200)))
@@ -389,9 +389,11 @@
                                :translate #f(50 0 0) :local)
                          :rotate di :x)
               :rotation-axis t :sec 1000)
-    (when (< (send *ri* :start-grasp hand :gain 0.1) 10) ;; grasp
-      (ros::ros-warn "Grasp handle failed, return from execute-open")
-      (return-from open-fridge nil))
+    (let ((grasp-ret (send *ri* :start-grasp hand :gain 0.1)))
+      (when (and grasp-check
+                 (< grasp-ret 8)) ;; grasp
+        (ros::ros-warn "Grasp handle failed, return from execute-open")
+        (return-from open-fridge nil)))
     (dolist (r (cdr ret))
       (setq rr (send r :copy-worldcoords))
       (let ((ik-solved
@@ -409,7 +411,7 @@
         (unless ik-solved (warn ";; failed ~A~%" rr))
         (when ik-solved
           (push (send *pr2* :angle-vector) avs)
-          (push 300 tms))
+          (push time-tick tms))
         ))
     (when return-sequence
       (return-from open-fridge (list (reverse avs) tms)))
