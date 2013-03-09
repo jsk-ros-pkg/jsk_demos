@@ -111,11 +111,11 @@
 (warn ";; define open-fridge-door")
 (defvar *fridge-distance-threshold* 25.0)
 (defvar *fridge-rotation-threshold* 0.09)
-(defun open-fridge-door ()
+(defun open-fridge-door (&key (open-fridge-func #'open-fridge))
   (let (ret
 	;;(idealcds (make-coords :pos (float-vector 733.757 135.013 1092.946)
 	;;:rpy (float-vector 0.002 0.059 -0.019)))
-	(idealcds (make-coords :pos (float-vector 760 100 0)
+	(idealcds (make-coords :pos (float-vector 780 100 0) ;;(float-vector 760 100 0)
 			       :rpy (float-vector 0.05 0 0)))
 	(diffcds (make-coords :pos (float-vector 10000 10000 10000)))
 	cds)
@@ -157,9 +157,11 @@
             (setq cds
                   (make-coords :pos (send cds :worldpos)
                                :rpy (list (caar (send cds :rpy-angle)) 0 0)))
-            (when (setq ret (open-fridge :rarm cds 1.7 ;;(/ pi 2)
-                                         :rotation-axis t :radius 490
-                                         :wait-time 5.5))
+            (pprint (list :cds cds))
+            (when (setq ret (funcall open-fridge-func
+                                     :rarm cds 1.7 ;;(/ pi 2)
+                                     :rotation-axis t :radius 490
+                                     :wait-time 5.5))
               (return)))
           (speak-jp "れいぞうこを あけられません でした")
           (send *pr2* :head :angle-vector (float-vector 0 0))
