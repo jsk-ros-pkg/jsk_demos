@@ -3,6 +3,148 @@
 (defparameter *detection-topic* "/openni/rgb/ObjectDetection")
 (load "package://jsk_perception/euslisp/detection_interface.l")
 
+;;
+;; action-utility
+;;
+(defun open-fridge-traj (hand handle &optional (rad/length pi/2) &rest args
+                         &key (radius 500) (path-div 20) (door-type :circle) &allow-other-keys)
+  (let ((cds-traj
+         (case door-type
+           (:circle
+            (open-fridge-circle-traj handle rad/length :radius radius :path-div path-div))
+           (:slide
+            (open-fridge-slide-traj handle rad/length :path-div path-div))
+           )))
+    (apply #'move-fridge-traj hand cds-traj args)
+    ))
+(defun open-fridge-slide-traj
+  (handle &optional (path-length 200)
+          &key  (path-div 20) &allow-other-keys)
+  (let ((tcds (send (send handle :copy-worldcoords) :translate (float-vector (- path-length) 0 0)))
+        ret)
+    (setq ret (generate-slide-path (send handle :worldpos)
+                                   (send handle :worldpos) (send tcds :worldpos)
+                                   path-length :div path-div))
+    (mapc #'(lambda (x) (send x :rotate pi/2 :x)) ret)
+    (setq *ret*
+          (append (list (send (send (car ret) :copy-worldcoords)
+                              :translate #f(-100 0 0) :local)
+                        (send (send (car ret) :copy-worldcoords)
+                              :translate #f(50 0 0) :local))
+                  ret))
+    ;; open grasp
+    ;; move (elt ret 0)
+    ;; move (elt ret 1)
+    ;; grap
+    ;; grasp check
+    ;; move (subseq ret 2)
+    ;; finalize
+    *ret*))
+(defun open-fridge-circle-traj
+  (handle &optional (rad pi/2)
+          &key (radius 500) (path-div 20))
+  ;; 500mm is a distance between handle and axis
+  (let ((acds (send (send handle :copy-worldcoords) :translate (float-vector 0 (- radius) 200)))
+        (bcds (send (send handle :copy-worldcoords) :translate (float-vector 0 (- radius) -200)))
+        (di -pi/2) ret)
+    (setq ret (generate-circle-path (send handle :worldpos)
+                                    (send acds :worldpos) (send bcds :worldpos)
+                                    rad :div path-div));;a,b can be reverse
+    (mapc #'(lambda (x) (send x :rotate -pi/2 :x)) ret)
+    (setq *ret*
+          (append (list (send (send (car ret) :copy-worldcoords)
+                              :translate #f(-100 0 0) :local)
+                        (send (send (car ret) :copy-worldcoords)
+                              :translate #f(50 0 0) :local))
+                  ret))
+    ;; open grasp
+    ;; move (elt ret 0)
+    ;; move (elt ret 1)
+    ;; grap
+    ;; grasp check
+    ;; move (subseq ret 2)
+    ;; finalize
+    *ret*))
+(defun move-fridge-traj (hand cds-traj
+                              &key ((:rotation-axis ra) :z) (use-torso 0.0025)
+                              (fix-waist-z 150) (return-sequence) (time-tick 300) (wait-time 4)
+                              (grasp-check t)  (move-robot t) (start-sec 1000) &allow-other-keys)
+  (let ((st0 (car cds-traj))
+        (st1 (cadr cds-traj))
+        (lst (cddr cds-traj))
+        avs tms)
+    (when move-robot  ;; open-gripper
+      (send *ri* :move-gripper hand 0.09 :wait nil))
+    (when fix-waist-z
+      (unless (numberp fix-waist-z) (setq fix-waist-z 130))
+      (send *pr2* :torso :waist-z :joint-angle fix-waist-z))
+    (cond
+     ((move-arm hand st0
+                :use-torso (if use-torso (/ use-torso 5))
+                :rotation-axis t :sec start-sec :move-robot move-robot)
+      t)
+     (t
+      (ros::ros-warn "Could not solve ik, return from execute-open")
+      (return-from move-fridge-traj nil)))
+
+    (move-arm hand st1
+              :use-torso (if use-torso (/ use-torso 5))
+              :rotation-axis t :sec start-sec :move-robot move-robot)
+
+    (let ((grasp-ret (if move-robot (send *ri* :start-grasp hand :gain 0.1) 10)))
+      (when (and grasp-check
+                 (< grasp-ret 8)) ;; grasp
+        (ros::ros-warn "Grasp handle failed, return from execute-open")
+        (return-from move-fridge-traj nil)))
+
+    (dolist (rr lst)
+      (let ((ik-solved
+             (send *pr2* :inverse-kinematics
+                   (send rr :worldcoords)
+                   :use-torso use-torso
+                   :move-arm hand :rotation-axis ra :debug-view nil :warnp nil)))
+        (unless (or ik-solved (eq ra nil))
+          (warn ";; retry ~A~%" rr);
+          (setq ik-solved
+                (send *pr2* :inverse-kinematics
+                      (send rr :copy-worldcoords)
+                      :use-torso use-torso
+                      :move-arm hand :rotation-axis nil :debug-view nil :warnp nil)))
+        (unless ik-solved (warn ";; failed ~A~%" rr))
+        (when ik-solved
+          (push (send *pr2* :angle-vector) avs)
+          (push time-tick tms))
+        ))
+    (when return-sequence
+      (return-from move-fridge-traj (list (reverse avs) tms)))
+
+    (when move-robot
+      (send *ri* :angle-vector-sequence (reverse avs) tms))
+    ;; finalize
+    (cond
+     ((integerp wait-time)
+      (unix:sleep wait-time))
+     ((numberp wait-time)
+      (unix::usleep
+       (round (* wait-time 1000 1000))))
+     (wait-time
+      (send *ri* :wait-interpolation)))
+    (send *ri* :stop-grasp hand)
+    (send *ri* :wait-interpolation)
+    ;;
+    (unix::sleep 1) (ros::spin-once)
+    (send *pr2* :angle-vector (send *ri* :state :potentio-vector))
+    (let ((end-pt (send *pr2* hand :end-coords :worldpos))
+          idx)
+      (setq idx (position (find-extream lst #'(lambda(x) (distance (send x :worldpos) end-pt)) #'<) lst))
+      (ros::ros-info "idx = [~a/~a]" idx (length ret))
+      (when (< idx (/ (length ret) 2))
+        (return-from open-fridge nil)))
+    t))
+
+;;
+;; actions
+;;
 (warn ";; define grasp-can-single")
 (defun grasp-can-single (obj &key (rotation 0))
   (let (via1 via2 tar orig-av)
@@ -111,7 +253,7 @@
 (warn ";; define open-fridge-door")
 (defvar *fridge-distance-threshold* 25.0)
 (defvar *fridge-rotation-threshold* 0.09)
-(defun open-fridge-door (&key (open-fridge-func #'open-fridge))
+(defun open-fridge-door (&key (open-fridge-func #'open-fridge-traj))
   (let (ret
 	;;(idealcds (make-coords :pos (float-vector 733.757 135.013 1092.946)
 	;;:rpy (float-vector 0.002 0.059 -0.019)))
