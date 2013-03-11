@@ -367,13 +367,14 @@
 (ros::advertise "/tablet_marker_array" visualization_msgs::MarkerArray 10)
 (defun open-fridge (hand handle &optional (rad pi/2)
                          &key (radius 500) ((:rotation-axis ra) :z) (use-torso 0.0025)
-                         (return-sequence) (time-tick 300) (wait-time 4) (grasp-check t))
+                         (return-sequence) (time-tick 300) (wait-time 4)
+                         (path-div 20) (grasp-check t))
   ;; 500mm is a distance between handle and axis
   (let ((a (send (send handle :copy-worldcoords) :translate (float-vector 0 (- radius) 200)))
         (b (send (send handle :copy-worldcoords) :translate (float-vector 0 (- radius) -200)))
         (c handle) (di pi/2) ret avs tms uavs utms current-arm)
     (setq a (send a :worldpos) b (send b :worldpos) c (send c :worldpos))
-    (setq ret (generate-circle-path c a b rad));;a,b can be reverse
+    (setq ret (generate-circle-path c a b rad :div path-div));;a,b can be reverse
     (show-markers (mapcar #'(lambda(x) (copy-object (send x :worldpos))) ret))
     (send *ri* :move-gripper hand 0.09 :wait nil) ;; open
     (setq *ret* (elt ret 0))
