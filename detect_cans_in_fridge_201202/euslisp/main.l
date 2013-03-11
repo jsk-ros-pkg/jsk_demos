@@ -1,11 +1,11 @@
 ;; open fridge and pick a can (and close the door)
 (load "package://jsk_2011_07_pr2_semantic/euslisp/actions.l")
-(load "package://pr2eus/pr2-interface.l")
-
-(load "package://jsk_demo_common/euslisp/pr2-move.l")
-(load "package://jsk_demo_common/euslisp/pr2-action.l")
+(require :pr2-interface "package://pr2eus/pr2-interface.l")
 ;;(load "package://pr2eus_openrave/pr2eus-openrave.l")
 ;;(load "package://pr2eus_armnavigation/pr2eus-arm-navigation.l")
+
+(require :pr2-move "package://jsk_demo_common/euslisp/pr2-move.l")
+(require :pr2-action "package://jsk_demo_common/euslisp/pr2-action.l")
 
 (ros::roseus "demo_main")
 (setq *use-arm-navigation* nil)
@@ -150,3 +150,11 @@
 ;;(check-detection :type *type* :tf-force t :timeout 30)
 ;;(open-fridge-door)
 ;;(grasp-can :move nil)
+
+;;
+;; (load "package://ee_cart_imped_tutorial/scripts/imped_motion_util.l") ;; override move-arm
+;;
+;; (setq cds (make-coords :pos (float-vector 775.472 97.99 1137.752) :rpy (list 0.054 0 0)))
+;; (setq bcds (send (send *last-fridge-handle* :copy-worldcoords) :translate #f(0 -230 -355)))
+;; (setq ccds (send (send *last-fridge-handle* :copy-worldcoords) :translate #f(0 -230 -675)))
+;;
