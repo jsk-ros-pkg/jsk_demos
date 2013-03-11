@@ -1,7 +1,7 @@
 #!/usr/bin/env roseus
+(require :pr2-interface "package://pr2eus/pr2-interface.l")
+(require :pr2eus-openrave "package://pr2eus_openrave/pr2eus-openrave.l")
 
-(load "package://pr2eus/pr2-interface.l")
-(load "package://pr2eus_openrave/pr2eus-openrave.l")
 (ros::roseus-add-msgs "posedetection_msgs")
 (ros::roseus-add-msgs "pr2_gripper_sensor_msgs")
 (ros::roseus-add-srvs "jsk_pcl_ros")
