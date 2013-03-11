@@ -19,7 +19,8 @@
     ))
 (defun open-fridge-slide-traj
   (handle &optional (path-length 200)
-          &key  (path-div 20) &allow-other-keys)
+          &key  (path-div 20) (pre-start-x -100) (start-x 25)
+          &allow-other-keys)
   (let ((tcds (send (send handle :copy-worldcoords) :translate (float-vector (- path-length) 0 0)))
         ret)
     (setq ret (generate-slide-path (send handle :worldpos)
@@ -28,9 +29,9 @@
     (mapc #'(lambda (x) (send x :rotate pi/2 :x)) ret)
     (setq *ret*
           (append (list (send (send (car ret) :copy-worldcoords)
-                              :translate #f(-100 0 0) :local)
+                              :translate (float-vector pre-start-x 0 0) :local)
                         (send (send (car ret) :copy-worldcoords)
-                              :translate #f(50 0 0) :local))
+                              :translate (float-vector start-x 0 0) :local))
                   ret))
     ;; open grasp
     ;; move (elt ret 0)
@@ -42,7 +43,7 @@
     *ret*))
 (defun open-fridge-circle-traj
   (handle &optional (rad pi/2)
-          &key (radius 500) (path-div 20))
+          &key (radius 500) (path-div 20) (pre-start-x -100) (start-x 25))
   ;; 500mm is a distance between handle and axis
   (let ((acds (send (send handle :copy-worldcoords) :translate (float-vector 0 (- radius) 200)))
         (bcds (send (send handle :copy-worldcoords) :translate (float-vector 0 (- radius) -200)))
@@ -53,9 +54,9 @@
     (mapc #'(lambda (x) (send x :rotate -pi/2 :x)) ret)
     (setq *ret*
           (append (list (send (send (car ret) :copy-worldcoords)
-                              :translate #f(-100 0 0) :local)
+                              :translate (float-vector pre-start-x 0 0) :local)
                         (send (send (car ret) :copy-worldcoords)
-                              :translate #f(50 0 0) :local))
+                              :translate (float-vector start-x 0 0) :local))
                   ret))
     ;; open grasp
     ;; move (elt ret 0)
@@ -137,9 +138,9 @@
     (let ((end-pt (send *pr2* hand :end-coords :worldpos))
           idx)
       (setq idx (position (find-extream lst #'(lambda(x) (distance (send x :worldpos) end-pt)) #'<) lst))
-      (ros::ros-info "idx = [~a/~a]" idx (length ret))
-      (when (< idx (/ (length ret) 2))
-        (return-from open-fridge nil)))
+      (ros::ros-info "idx = [~a/~a]" idx (length lst))
+      (when (< idx (/ (length lst) 2))
+        (return-from open-fridge-traj nil)))
     t))
 
 ;;
@@ -253,7 +254,8 @@
 (warn ";; define open-fridge-door")
 (defvar *fridge-distance-threshold* 25.0)
 (defvar *fridge-rotation-threshold* 0.09)
-(defun open-fridge-door (&key (open-fridge-func #'open-fridge-traj))
+(defun open-fridge-door (&key (open-fridge-func #'open-fridge-traj)
+                              (door-type :circle)) ;; :circle, :slide1, :slide2
   (let (ret
 	;;(idealcds (make-coords :pos (float-vector 733.757 135.013 1092.946)
 	;;:rpy (float-vector 0.002 0.059 -0.019)))
@@ -299,7 +301,7 @@
             (setq cds
                   (make-coords :pos (send cds :worldpos)
                                :rpy (list (caar (send cds :rpy-angle)) 0 0)))
-            (pprint (list :cds cds))
+            (setq *last-fridge-handle* cds)
             (when (setq ret (funcall open-fridge-func
                                      :rarm cds 1.7 ;;(/ pi 2)
                                      :rotation-axis t :radius 490
