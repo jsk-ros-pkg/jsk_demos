@@ -370,25 +370,26 @@
                          (return-sequence) (time-tick 300) (wait-time 4)
                          (path-div 20) (grasp-check t))
   ;; 500mm is a distance between handle and axis
-  (let ((a (send (send handle :copy-worldcoords) :translate (float-vector 0 (- radius) 200)))
-        (b (send (send handle :copy-worldcoords) :translate (float-vector 0 (- radius) -200)))
-        (c handle) (di pi/2) ret avs tms uavs utms current-arm)
-    (setq a (send a :worldpos) b (send b :worldpos) c (send c :worldpos))
-    (setq ret (generate-circle-path c a b rad :div path-div));;a,b can be reverse
+  (let ((acds (send (send handle :copy-worldcoords) :translate (float-vector 0 (- radius) 200)))
+        (bcds (send (send handle :copy-worldcoords) :translate (float-vector 0 (- radius) -200)))
+        (di -pi/2) ret avs tms uavs utms current-arm)
+    (setq ret (generate-circle-path (send handle :worldpos)
+                                    (send acds :worldpos) (send bcds :worldpos)
+                                    rad :div path-div));;a,b can be reverse
     (show-markers (mapcar #'(lambda(x) (copy-object (send x :worldpos))) ret))
     (send *ri* :move-gripper hand 0.09 :wait nil) ;; open
+    ;;
+    (mapc #'(lambda (x) (send x :rotate -pi/2 :x)) ret)
     (setq *ret* (elt ret 0))
     (cond
-     ((move-arm hand (send (send (send (car ret) :copy-worldcoords)
-                                 :translate #f(-100 0 0) :local)
-                           :rotate di :x)
+     ((move-arm hand (send (send (car ret) :copy-worldcoords)
+                           :translate #f(-100 0 0) :local)
                 :rotation-axis t :sec 1000) t)
      (t
       (ros::ros-warn "Could not solve ik, return from execute-open")
       (return-from open-fridge nil)))
-    (move-arm hand (send (send (send (car ret) :copy-worldcoords)
+    (move-arm hand (send (send (car ret) :copy-worldcoords)
                                :translate #f(50 0 0) :local)
-                         :rotate di :x)
               :rotation-axis t :sec 1000)
     (let ((grasp-ret (send *ri* :start-grasp hand :gain 0.1)))
       (when (and grasp-check
@@ -399,14 +400,14 @@
       (setq rr (send r :copy-worldcoords))
       (let ((ik-solved
              (send *pr2* :inverse-kinematics
-                   (send (send rr :copy-worldcoords) :rotate di :x)
+                   (send rr :worldcoords)
                    :use-torso use-torso
                    :move-arm hand :rotation-axis ra :debug-view nil :warnp nil)))
         (unless (or ik-solved (eq ra nil))
           (warn ";; retry ~A~%" rr);
           (setq ik-solved
                 (send *pr2* :inverse-kinematics
-                      (send (send rr :copy-worldcoords) :rotate di :x)
+                      (send rr :copy-worldcoords)
                       :use-torso use-torso
                       :move-arm hand :rotation-axis nil :debug-view nil :warnp nil)))
         (unless ik-solved (warn ";; failed ~A~%" rr))
