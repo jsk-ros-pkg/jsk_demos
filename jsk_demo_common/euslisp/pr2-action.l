@@ -33,12 +33,12 @@
                         (send (send (car ret) :copy-worldcoords)
                               :translate (float-vector start-x 0 0) :local))
                   ret))
-    ;; open grasp
+    ;; stop grasp
     ;; move (elt ret 0)
     ;; move (elt ret 1)
-    ;; grap
+    ;; start grap
     ;; grasp check
-    ;; move (subseq ret 2)
+    ;; move-trajectory (subseq ret 2)
     ;; finalize
     *ret*))
 (defun open-fridge-circle-traj
@@ -58,12 +58,12 @@
                         (send (send (car ret) :copy-worldcoords)
                               :translate (float-vector start-x 0 0) :local))
                   ret))
-    ;; open grasp
+    ;; stop grasp
     ;; move (elt ret 0)
     ;; move (elt ret 1)
-    ;; grap
+    ;; start grap
     ;; grasp check
-    ;; move (subseq ret 2)
+    ;; move-trajectory (subseq ret 2)
     ;; finalize
     *ret*))
 (defun move-fridge-traj (hand cds-traj
@@ -251,43 +251,93 @@
     )
   )
 
+(defun pr2-look-around (&key (time-tick 600) (show-wait 1200)
+                             (yaw-angle-list (list 16 -16))
+                             (pitch-angle-list (list 14 48))
+                             (waist-z 140))
+  (let ((last-angle (send *pr2* :angle-vector))
+        (y-angle yaw-angle-list)
+        (p-angle pitch-angle-list))
+    (send *pr2* :head :angle-vector (float-vector (car y-angle) (car p-angle)))
+    (send *pr2* :rarm :angle-vector #f(-80.0 74.0 -20.0 -120.0 -20.0 -30.0 180.0))
+    (send *pr2* :larm :angle-vector #f(80.0 74.0 20.0 -120.0 20.0 -30.0 180.0))
+    (send *pr2* :torso :angle-vector (float-vector waist-z))
+    (send *ri* :angle-vector (send *pr2* :angle-vector) 1400)
+    (send *ri* :wait-interpolation)
+
+    (dolist (ya y-angle)
+      (dolist (pa p-angle)
+        (send *pr2* :head :angle-vector (float-vector ya pa))
+        (send *ri* :angle-vector (send *pr2* :angle-vector) time-tick)
+        (send *ri* :wait-interpolation)
+        (unix::usleep (round (* show-wait 1000)))
+        )
+      (setq p-angle (nreverse p-angle)))
+
+    (send *pr2* :angle-vector last-angle)
+    (send *ri* :angle-vector (send *pr2* :angle-vector) 1400)
+    (send *ri* :wait-interpolation)
+    ))
+
 (warn ";; define open-fridge-door")
 (defvar *fridge-distance-threshold* 25.0)
 (defvar *fridge-rotation-threshold* 0.09)
 (defun open-fridge-door (&key (open-fridge-func #'open-fridge-traj)
-                              (door-type :circle)) ;; :circle, :slide1, :slide2
+                              (door-type :circle) (look-around nil)) ;; :circle, :slide1, :slide2
   (let (ret
-	;;(idealcds (make-coords :pos (float-vector 733.757 135.013 1092.946)
-	;;:rpy (float-vector 0.002 0.059 -0.019)))
-	(idealcds (make-coords :pos (float-vector 780 100 0) ;;(float-vector 760 100 0)
-			       :rpy (float-vector 0.05 0 0)))
-	(diffcds (make-coords :pos (float-vector 10000 10000 10000)))
-	cds)
+        (idealcds
+        (case door-type
+          (:circle
+           (make-coords :pos (float-vector 790 100 0)
+                        ;;(float-vector 775 100 0) ;;(float-vector 760 100 0)
+                        :rpy (float-vector 0.05 0 0)))
+          (:slide1
+           (make-coords :pos (float-vector 780 100 0)
+                        :rpy (float-vector 0.0 0 0)))
+          (:slide2
+           (make-coords :pos (float-vector 750 100 0)
+                        :rpy (float-vector 0.0 0 0)))))
+        (diffcds (make-coords :pos (float-vector 10000 10000 10000)))
+        cds)
+    ;; initial pose
+    (case door-type
+      (:circle
+       (send *pr2* :head :angle-vector (float-vector 0 0))
+       (send *pr2* :torso :angle-vector (float-vector 140))
+       (send *ri* :angle-vector (send *pr2* :angle-vector))
+       (send *ri* :wait-interpolation)
+       )
+      ((:slide1 :slide2)
+       (send *pr2* :head :angle-vector (float-vector 0 0))
+       (send *pr2* :torso :angle-vector (float-vector 140))
+       (send *pr2* :larm :angle-vector (float-vector 25.0 74.0 35.0 -120.0 20.0 -30.0 0.0))
+       (send *ri* :angle-vector (send *pr2* :angle-vector))
+       (send *ri* :wait-interpolation)
+       ))
 
     (dotimes (i 10 nil)
-
       ;; finding handle position
       (setq cds (check-detection :type "fridge" :speak-name "れいぞうこ"))
       ;; need detection fail check
 
       (when cds
-	(send *obj* :reset-coords)
-	(send *obj* :transform cds)
-	(dump-structure *standard-output*
-			(list (send *pr2* :copy-worldcoords)
-			      (send cds :copy-worldcoords)))
-	(setq cds
-	      (make-coords :pos
-			   (float-vector (elt (send cds :worldpos) 0)
-					 (elt (send cds :worldpos) 1) 0)
-			   :rpy (list (elt (car (rpy-angle (send cds :worldrot))) 0)
-				      0 0)))
+        (send *obj* :reset-coords)
+        (send *obj* :transform cds)
+        (dump-structure *standard-output*
+                        (list (send *pr2* :copy-worldcoords)
+                              (send cds :copy-worldcoords)))
+        (setq cds
+              (make-coords :pos
+                           (float-vector (elt (send cds :worldpos) 0)
+                                         (elt (send cds :worldpos) 1) 0)
+                           :rpy (list (elt (car (rpy-angle (send cds :worldrot))) 0)
+                                      0 0)))
 
-	(setq diffcds (send (send idealcds :inverse-transformation)
+        (setq diffcds (send (send idealcds :inverse-transformation)
                             :transform (send cds :worldcoords) :world))
 
-	(warn "~%~A -> ~A / ~A~%" diffcds cds idealcds)
-	(ros::ros-info "DIFF: ~A" diffcds)
+        (warn "~%~A -> ~A / ~A~%" diffcds cds idealcds)
+        (ros::ros-info "DIFF: ~A" diffcds)
         (cond
          ((and (< (norm (float-vector (elt (send diffcds :worldpos) 0)
                                       (elt (send diffcds :worldpos) 1)))
@@ -297,19 +347,52 @@
           (setq cds (check-detection :type "fridge" :speak-name "れいぞうこ"))
           (ros::spin-once)
           (send *ri* :spin-once)
+          ;; (y-or-n-p "Can I start open fridge? ")
           (when cds
+            (if look-around (pr2-look-around))
+            ;; for open fridge
+            (case door-type
+              (:circle
+               (send *pr2* :head :angle-vector (float-vector 0 24))
+               (send *ri* :angle-vector (send *pr2* :angle-vector) 600)
+               (send *ri* :wait-interpolation)
+               )
+              ((:slide1 :slide2)
+               (send *pr2* :head :angle-vector (float-vector 0 50))
+               (send *ri* :angle-vector (send *pr2* :angle-vector) 600)
+               (send *ri* :wait-interpolation)
+               ))
+
             (setq cds
                   (make-coords :pos (send cds :worldpos)
                                :rpy (list (caar (send cds :rpy-angle)) 0 0)))
+            (case door-type
+              (:slide1
+               (send cds :translate #f(0 -230 -355)))
+              (:slide2
+               (send cds :translate #f(0 -230 -675))))
             (setq *last-fridge-handle* cds)
-            (when (setq ret (funcall open-fridge-func
-                                     :rarm cds 1.7 ;;(/ pi 2)
-                                     :rotation-axis t :radius 490
-                                     :wait-time 5.5))
-              (return)))
+
+            (case door-type
+              (:circle
+               (setq ret (funcall open-fridge-func
+                                  :rarm cds 1.7 ;;(/ pi 2)
+                                  :rotation-axis t :radius 490
+                                  :time-tick 600 ;; 300
+                                  :wait-time t ;; 6.0
+                                  )))
+              ((:slide1 :slide2)
+               (setq ret (funcall open-fridge-func
+                                  :rarm cds 320
+                                  :rotation-axis t :door-type :slide
+                                  :time-tick 500 ;; 200
+                                  :wait-time t
+                                  )))
+              )
+            (if ret (return)))
           (speak-jp "れいぞうこを あけられません でした")
           (send *pr2* :head :angle-vector (float-vector 0 0))
-          (send *pr2* :torso :angle-vector (float-vector 50))
+          (send *pr2* :torso :angle-vector (float-vector 140))
           (send *ri* :angle-vector (send *pr2* :angle-vector))
           (send *ri* :go-pos-unsafe -0.1 0 0)
           (send *ri* :wait-interpolation)
@@ -331,30 +414,50 @@
       (unix::sleep 2);;
       (return-from open-fridge-door nil))
 
-    ;; free door handle
     (ros::spin-once)
     (send *ri* :spin-once)
     (send *ri* :stop-grasp :rarm)
     (send *pr2* :angle-vector (send *ri* :state :potentio-vector))
-    (setq rend (send *pr2* :rarm :end-coords :copy-worldcoords))
-    (send rend :translate (float-vector -100 -50 0) *pr2*)
-    (send *pr2* :rarm :inverse-kinematics rend)
-    (send *ri* :angle-vector (send *pr2* :angle-vector) 1000)
 
-    ;; ?? open door ()
-    (send *ri* :angle-vector-sequence
-          (list (float-vector 50 5 74 100 -90 -70 -6 20 -70 50 -59 -43 118 0 0 -2 31) ;; 1500
-                (float-vector 50 5 74 100 -90 -70 -6 20 -0 60 -20 -45 118 -90 0 -2 31) ;; 1000
-                (float-vector 50 5 74 100 -90 -70 -6 20 12 45 -34 -110 12 -38 74 -2 31) ;; 1000
-                (float-vector 50 5 74 100 -90 -70 -6 20 -54.745 34.2625 -34.6956 -83.6538 24.9161 -66.3615 118.904 -2.0 31.0) ;; 4500
-                (float-vector 50 5 74 100 -90 -70 -6 20 -54.745 34.2625 -34.6956 -83.6538 24.9161 -66.3615 118.904 -2.0 31.0) ;; 1500 ;; just wait
-                (float-vector 150 5 74 100 -90 -70 -6 20 -7 45 -34 -110 12 -38 74 -2 31)) ;; 2000
-          (list 1500 1000 1000 4500 1500 2000))
-    (send *ri* :wait-interpolation)
+    (case door-type
+      (:circle
+       ;; free door handle
+       (let ((rend (send *pr2* :rarm :end-coords :copy-worldcoords)))
+         (send rend :translate (float-vector -100 -50 0) *pr2*)
+         (send *pr2* :rarm :inverse-kinematics rend)
+         (send *ri* :angle-vector (send *pr2* :angle-vector) 1000))
 
-    ;; (send *pr2* :angle-vector (float-vector 200 5.00529 74.2038 105.001 -90.0035 -70.0071 -5.73378 19.9988 9.96029 39.7801 -45.0972 -121.542 94.4262 -111.922 63.0666 -0.0316 21.024))
-    (send *pr2* :angle-vector (float-vector 199.971 5.30455 72.1244 105.231 -88.5188 -69.9972 -5.72958 19.9717 24.6812 36.1934 10.6903 -121.497 159.113 -79.5111 -2.92658 -1.35562 26.862))
-    (send *ri* :angle-vector (send *pr2* :angle-vector))
+       ;; ?? open door ()
+       (send *ri* :angle-vector-sequence
+             (list (float-vector 50 5 74 100 -90 -70 -6 20 -70 50 -59 -43 118 0 0 -2 31) ;; 1500
+                   (float-vector 50 5 74 100 -90 -70 -6 20 -0 60 -20 -45 118 -90 0 -2 31) ;; 1000
+                   (float-vector 50 5 74 100 -90 -70 -6 20 12 45 -34 -110 12 -38 74 -2 31) ;; 1000
+                   (float-vector 50 5 74 100 -90 -70 -6 20 -54.745 34.2625 -34.6956 -83.6538 24.9161 -66.3615 118.904 -2.0 31.0) ;; 4500
+                   (float-vector 50 5 74 100 -90 -70 -6 20 -54.745 34.2625 -34.6956 -83.6538 24.9161 -66.3615 118.904 -2.0 31.0) ;; 1500 ;; just wait
+                   (float-vector 150 5 74 100 -90 -70 -6 20 -7 45 -34 -110 12 -38 74 -2 31)) ;; 2000
+             (list 1500 1000 1000 4500 1500 2000))
+       (send *ri* :wait-interpolation)
+
+       ;; (send *pr2* :angle-vector (float-vector 200 5.00529 74.2038 105.001 -90.0035 -70.0071 -5.73378 19.9988 9.96029 39.7801 -45.0972 -121.542 94.4262 -111.922 63.0666 -0.0316 21.024))
+       (send *pr2* :angle-vector (float-vector 199.971 5.30455 72.1244 105.231 -88.5188 -69.9972 -5.72958 19.9717 24.6812 36.1934 10.6903 -121.497 159.113 -79.5111 -2.92658 -1.35562 26.862))
+       (send *ri* :angle-vector (send *pr2* :angle-vector))
+       )
+      ((:slide1 :slide2)
+       (let ((rend (send *pr2* :rarm :end-coords :copy-worldcoords))
+             avs)
+         ;; should be changed
+         (send rend :translate (float-vector -40 -100 0) *pr2*)
+         (send *pr2* :rarm :inverse-kinematics rend)
+         (push (send *pr2* :angle-vector) avs)
+         (send rend :translate (float-vector 0 0 100) *pr2*)
+         (send *pr2* :rarm :inverse-kinematics rend)
+         (push (send *pr2* :angle-vector) avs)
+         (send *ri* :angle-vector-sequence (nreverse avs) (list 800 800))
+         (send *ri* :wait-interpolation)
+         (send *pr2* :rarm :angle-vector #f(-45.0 25.0 -65.0 -120.0 12.0 -38.0 74.0))
+         (send *ri* :angle-vector (send *pr2* :angle-vector) 1600)
+         ))
+      )
     t
     ))
 
