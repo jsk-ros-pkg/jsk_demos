@@ -288,8 +288,8 @@
         (idealcds
         (case door-type
           (:circle
-           (make-coords :pos (float-vector 790 100 0)
-                        ;;(float-vector 775 100 0) ;;(float-vector 760 100 0)
+           (make-coords :pos (float-vector 775 100 0)
+                        ;;(float-vector 790 100 0) ;;(float-vector 760 100 0)
                         :rpy (float-vector 0.05 0 0)))
           (:slide1
            (make-coords :pos (float-vector 780 100 0)
@@ -310,7 +310,7 @@
       ((:slide1 :slide2)
        (send *pr2* :head :angle-vector (float-vector 0 0))
        (send *pr2* :torso :angle-vector (float-vector 140))
-       (send *pr2* :larm :angle-vector (float-vector 25.0 74.0 35.0 -120.0 20.0 -30.0 0.0))
+       ;;(send *pr2* :larm :angle-vector (float-vector 25.0 74.0 35.0 -120.0 20.0 -30.0 0.0))
        (send *ri* :angle-vector (send *pr2* :angle-vector))
        (send *ri* :wait-interpolation)
        ))
@@ -378,14 +378,14 @@
                (setq ret (funcall open-fridge-func
                                   :rarm cds 1.7 ;;(/ pi 2)
                                   :rotation-axis t :radius 490
-                                  :time-tick 600 ;; 300
-                                  :wait-time t ;; 6.0
+                                  :time-tick 280 ;; 600
+                                  :wait-time 5.8 ;; t
                                   )))
               ((:slide1 :slide2)
                (setq ret (funcall open-fridge-func
-                                  :rarm cds 320
+                                  :rarm cds 320 ;; 330 ;; max
                                   :rotation-axis t :door-type :slide
-                                  :time-tick 500 ;; 200
+                                  :time-tick 200 ;; 320
                                   :wait-time t
                                   )))
               )
@@ -438,23 +438,25 @@
              (list 1500 1000 1000 4500 1500 2000))
        (send *ri* :wait-interpolation)
 
-       ;; (send *pr2* :angle-vector (float-vector 200 5.00529 74.2038 105.001 -90.0035 -70.0071 -5.73378 19.9988 9.96029 39.7801 -45.0972 -121.542 94.4262 -111.922 63.0666 -0.0316 21.024))
-       (send *pr2* :angle-vector (float-vector 199.971 5.30455 72.1244 105.231 -88.5188 -69.9972 -5.72958 19.9717 24.6812 36.1934 10.6903 -121.497 159.113 -79.5111 -2.92658 -1.35562 26.862))
+       (send *pr2* :angle-vector (float-vector 199.971 5.30455 72.1244 105.231 -88.5188 -69.9972 -5.72958 19.9717 31.3839 25.5029 23.0531 -118.916 160.305 -84.1469 160.058 -20 24))
+
        (send *ri* :angle-vector (send *pr2* :angle-vector))
        )
       ((:slide1 :slide2)
        (let ((rend (send *pr2* :rarm :end-coords :copy-worldcoords))
              avs)
          ;; should be changed
-         (send rend :translate (float-vector -40 -100 0) *pr2*)
-         (send *pr2* :rarm :inverse-kinematics rend)
+         (send rend :translate (float-vector -40 -160 0) *pr2*)
+         (send *pr2* :inverse-kinematics rend
+               :move-arm :rarm :revert-if-fail nil :use-torso 0.003)
          (push (send *pr2* :angle-vector) avs)
          (send rend :translate (float-vector 0 0 100) *pr2*)
-         (send *pr2* :rarm :inverse-kinematics rend)
+         (send *pr2* :inverse-kinematics rend
+               :move-arm :rarm :revert-if-fail nil :use-torso 0.002)
          (push (send *pr2* :angle-vector) avs)
          (send *ri* :angle-vector-sequence (nreverse avs) (list 800 800))
          (send *ri* :wait-interpolation)
-         (send *pr2* :rarm :angle-vector #f(-45.0 25.0 -65.0 -120.0 12.0 -38.0 74.0))
+         (send *pr2* :rarm :angle-vector #f(-45.0 55.0 -15.0 -120.0 12.0 -38.0 74.0))
          (send *ri* :angle-vector (send *pr2* :angle-vector) 1600)
          ))
       )
