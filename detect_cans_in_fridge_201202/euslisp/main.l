@@ -39,19 +39,27 @@
   ;;(objects (list *pr2*))
   )
 
-(defun goto-initial-position (&key (return-to-initial-position t) (turnp t))
+(defun goto-initial-position (&key (return-to-initial-position t)
+                                   (turnp t) (finish-type :pass-to-human))
   (when turnp
     (send *ri* :go-pos-unsafe 0 0 -90)
     (send *ri* :wait-interpolation))
+
   (when return-to-initial-position
     (speak-jp (format nil "~a を もって いきます" *type*))
     (send *ri* :move-to *opose*))
 
-  (speak-jp (format nil "~a を どうぞ" (send *obj* :name)))
-  (hand-over :rarm :wait-shock t)
+  (case finish-type
+    (:put-on-turtlebot
+     (put-can-on-turtlebot))
+    ((:pass-to-human t)
+     (speak-jp (format nil "~a を どうぞ" (send *obj* :name)))
+     (hand-over :rarm :wait-shock t))
+    )
   t
   )
 
+#|
 (defun demo (&key (type "georgia"))
   ;;(init)
   (setq *type* type)
@@ -76,40 +84,67 @@
   (unless (goto-initial-position)
     (return-from demo))
   )
-
-(defun demo-short (&key (type "georgia"))
+|#
+(defun demo (&key (type "georgia")
+                  (demo-type :map)  ;; :map, :short, ...
+                  (finish-type :pass-to-human) ;; :pass-to-human, :put-on-turtlebot, ...
+                  )
   (setq *type* type)
   (speak-jp (format nil "~a を もってきます  しょうしょう おまち ください" *type*))
+
+  (send *pr2* :head :angle-vector (float-vector 0 10))
+  (send *ri* :angle-vector (send *pr2* :angle-vector) 750)
+  (send *ri* :wait-interpolation)
 
   (pr2-tuckarm-pose :rarm)
   (setq *opose* (send *ri* :state :worldcoords))
 
-  ;;do not use map
-  ;;(unless (goto-front-of-fridge)
-  ;;(return-from demo))
+  (case demo-type
+    (:map
+     (unless (goto-front-of-fridge)
+       (return-from demo)))
+    (t
+     ;; do nothing
+     ))
 
   (unless (open-fridge-door)
-    (return-from demo-short))
+    (return-from demo))
 
   (unless (grasp-can)
-    (return-from demo-short))
+    (return-from demo))
 
   (unless (close-fridge)
-    (return-from demo-short))
+    (return-from demo))
 
-  (unless (goto-initial-position
-           :return-to-initial-position nil :turnp t)
-    (return-from demo-short))
+  (case demo-type
+    (:map
+     (goto-initial-position :finish-type finish-type)
+     )
+    (t
+     (unless (goto-initial-position
+              :return-to-initial-position nil :turnp t
+              :finish-type finish-type)
+       (return-from demo)))
+    )
   )
 
 (defun wait-android-query ()
   (ros::ros-info "Begin Waiting ....")
-  (let (type)
+  (let (type from)
     (ros::subscribe "/Tablet/StartDemo" roseus::StringStamped
                     #'(lambda(m)
                         (print (list :subscribe (send m :data)))
                         (cond
                          ((string= (send m :data) "/Tablet/other/GetGeorgia")
+                          (setq from :tablet)
+                          (setq type "georgia"))
+                         (t ))))
+    (ros::subscribe "/Murase/Demo" std_msgs::String
+                    #'(lambda(m)
+                        (print (list :subscribe (send m :data)))
+                        (cond
+                         ((string= (send m :data) "georgia")
+                          (setq from :app)
                           (setq type "georgia"))
                          (t ))))
     (ros::rate 4)
@@ -118,12 +153,22 @@
      (ros::spin-once)
      (send *ri* :spin-once)
      (when type
-       (ros::unsubscribe "/Tablet/StartDemo")
-       (ros::ros-info "detect_cans: starting demo with ~A" type)
-       ;;(demo :type type)
-       (demo-short :type type)
-       (setq type nil))
+       (case from
+         (:tablet
+          (ros::ros-info "detect_cans: starting demo with ~A" type)
+          ;;(demo :type type)
+          (demo :type type :demo-type :short))
+         (:app
+          (ros::ros-info "detect_cans: starting app demo with ~A" type)
+          ;;(demo :type type)
+          (demo :type type :demo-type :short :finish-type :put-on-turtlebot))
+         )
+       (ros::spin-once)
+       (setq type nil from nil)
+       )
      (ros::sleep))
+    (ros::unsubscribe "/Tablet/StartDemo")
+    (ros::unsubscribe "/Murase/Demo")
     ))
 
 (init)
@@ -148,12 +193,14 @@
 ;;(check-detection :type "fridge")
 ;;(setq *type* "georgia")
 ;;(check-detection :type *type* :tf-force t :timeout 30)
-;;(open-fridge-door)
+;;(open-fridge-door :type)
 ;;(grasp-can :move nil)
-
+;; (open-fridge-door :door-type :slide1 :look-around nil)
 ;;
 ;; (load "package://ee_cart_imped_tutorial/scripts/imped_motion_util.l") ;; override move-arm
-;;
+;; (open-fridge-door :open-fridge-func #'open-fridge-traj-imped)
+;; (open-fridge-traj-imped :rarm *last-fridge-handle* 1.7 :radius 490 :use-torso nil :time-tick 400 :path-div 32 :wait-time 0.1 :grasp-check nil :rotation-asix t :door-type :circle)
+;; (open-fridge-traj-imped :rarm bcds 200 :use-torso nil :time-tick 400 :path-div 32 :wait-time 0.1 :grasp-check nil :rotation-asix t :door-type :slide)
 ;; (setq cds (make-coords :pos (float-vector 775.472 97.99 1137.752) :rpy (list 0.054 0 0)))
 ;; (setq bcds (send (send *last-fridge-handle* :copy-worldcoords) :translate #f(0 -230 -355)))
 ;; (setq ccds (send (send *last-fridge-handle* :copy-worldcoords) :translate #f(0 -230 -675)))

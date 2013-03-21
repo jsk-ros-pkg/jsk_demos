@@ -1,6 +1,6 @@
 <launch>
   <arg name="start_rviz" default="false" />
-  <arg name="start_euslisp" default="false" />
+  <arg name="wait_query" default="false" />
 
   <!-- sample data for test -->
   <anode pkg="rosbag" type="play" name="play"
@@ -52,9 +52,9 @@
   <node pkg="SnapMapICP" type="SnapMapICP" name="tum_SnapMapICP"
         output="screen" machine="c2"/>
 
-  <node pkg="roseus" name="fridge_can_main" type="roseus"
-        args="$(find detect_cans_in_fridge_201202)/euslisp/main.l &quot;(wait-android-query-test)&quot;"
-        if="$(arg start_euslisp)" />
+  <node if="$(arg wait_query)"
+        pkg="roseus" name="fridge_can_main" type="roseus"
+        args="$(find detect_cans_in_fridge_201202)/euslisp/main.l" />
 
   <sphinxdoc><![CDATA[
 
