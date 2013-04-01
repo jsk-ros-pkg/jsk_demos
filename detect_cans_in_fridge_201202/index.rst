@@ -75,7 +75,7 @@ Contents
 
   <launch>
     <arg default="false" name="start_rviz" />
-    <arg default="false" name="start_euslisp" />
+    <arg default="false" name="wait_query" />
   
     
     <anode args="-l -r 0.1 /home/leus/work/rits/refrig-kinect-c.bag" name="play" pkg="rosbag" type="play" />
@@ -117,7 +117,7 @@ Contents
     <param name="SnapMapICP/age_threshold" value="2.0" />
     <node machine="c2" name="tum_SnapMapICP" output="screen" pkg="SnapMapICP" type="SnapMapICP" />
   
-    <node args="$(find detect_cans_in_fridge_201202)/euslisp/main.l &quot;(wait-android-query-test)&quot;" if="$(arg start_euslisp)" name="fridge_can_main" pkg="roseus" type="roseus" />
+    <node args="$(find detect_cans_in_fridge_201202)/euslisp/main.l" if="$(arg wait_query)" name="fridge_can_main" pkg="roseus" type="roseus" />
   
     </launch>
 
