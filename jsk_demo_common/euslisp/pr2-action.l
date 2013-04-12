@@ -529,9 +529,9 @@
         (list (float-vector 250 5 74 100 -90 -70 -6 20 -13 50 -30 -25 118 -90 62 -2 31);; 2000
               (float-vector 200 5 74 100 -90 -70 -6 20 -50 54 -15 -43 118 -90 62 -2 31);; 1000
               (float-vector 150 5 74 100 -90 -70 -6 20 -80 10 -39 -33 -49 -32 89 -2 32);; 1500
-              (float-vector 100 5 74 100 -90 -70 -6 20 -61 6 -74 -64 55 -75 102 -2 33);; 2500
+              (float-vector 100 5 74 100 -90 -70 -6 20 -61 6 -74 -44 55 -75 102 -2 33);; 2500
               ;;(float-vector 50 5 74 100 -90 -70 -6 20 9.05631 26.4211 -42.0907 -111.215 97.6198 -19.5577 -24.0422 -2.0 33.0)
-              (float-vector 50 5 74 100 -90 -70 -6 20 -1.74817 12.0099 -66.7541 -77.0519 67.3822 -49.1028 30.3261 -2.0 33.0))  ;; 3500
+              (float-vector 50 5 74 100 -90 -70 -6 20 10 12.0099 -66.7541 -67.0519 67.3822 -49.1028 30.3261 -2.0 33.0))  ;; 3500
         (list 2000 1000 1500 1500 2500))
   (send *ri* :wait-interpolation)
   (send *pr2* :angle-vector (send *ri* :state :potentio-vector))
@@ -543,14 +543,32 @@
   (send *ri* :update-robot-state)
   (send *pr2* :angle-vector (send *ri* :state :potentio-vector))
   (pr2-tuckarm-pose :rarm)
-  (send *pr2* :rarm :inverse-kinematics (send (make-coords :pos (float-vector 800 0 730)) :rotate (deg2rad -20) :y))
+  (send *pr2* :rarm :inverse-kinematics (make-coords :pos (float-vector 800 0 730)))
   (send *ri* :angle-vector (send *pr2* :angle-vector) 6000)
   (send *ri* :wait-interpolation)
-  (send *pr2* :rarm :inverse-kinematics (send (make-coords :pos (float-vector 800 0 530)) :rotate (deg2rad -20) :y))
+  (send *pr2* :rarm :inverse-kinematics (make-coords :pos (float-vector 800 0 530)))
   (send *ri* :angle-vector (send *pr2* :angle-vector) 3000)
   (send *ri* :wait-interpolation)
   (send *ri* :move-gripper :rarm 0.08 :wait t)
-  (send *pr2* :rarm :inverse-kinematics (send (make-coords :pos (float-vector 650 0 530)) :rotate (deg2rad -20) :y))
+  (send *pr2* :rarm :inverse-kinematics (make-coords :pos (float-vector 650 0 530)))
+  (send *ri* :angle-vector (send *pr2* :angle-vector) 3000)
+  (send *ri* :wait-interpolation)
+  (send *ri* :move-gripper :rarm 0.005 :wait t)
+  (pr2-tuckarm-pose :rarm)
+  )
+
+(defun put-can-on-turtlebot2 ()
+  (send *ri* :update-robot-state)
+  (send *pr2* :angle-vector (send *ri* :state :potentio-vector))
+  (pr2-tuckarm-pose :rarm)
+  (send *pr2* :rarm :inverse-kinematics (send (make-coords :pos (float-vector 800 0 730)) :rotate (deg2rad 180) :x))
+  (send *ri* :angle-vector (send *pr2* :angle-vector) 6000)
+  (send *ri* :wait-interpolation)
+  (send *pr2* :rarm :inverse-kinematics (send (make-coords :pos (float-vector 800 0 550)) :rotate (deg2rad 180) :x))
+  (send *ri* :angle-vector (send *pr2* :angle-vector) 3000)
+  (send *ri* :wait-interpolation)
+  (send *ri* :move-gripper :rarm 0.08 :wait t)
+  (send *pr2* :rarm :inverse-kinematics (send (make-coords :pos (float-vector 650 0 530)) :rotate (deg2rad 180) :x))
   (send *ri* :angle-vector (send *pr2* :angle-vector) 3000)
   (send *ri* :wait-interpolation)
   (send *ri* :move-gripper :rarm 0.005 :wait t)
