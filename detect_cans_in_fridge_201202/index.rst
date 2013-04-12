@@ -75,7 +75,7 @@ Contents
 
   <launch>
     <arg default="false" name="start_rviz" />
-    <arg default="false" name="wait_query" />
+    <arg default="true" name="wait_query" />
   
     
     <anode args="-l -r 0.1 /home/leus/work/rits/refrig-kinect-c.bag" name="play" pkg="rosbag" type="play" />
