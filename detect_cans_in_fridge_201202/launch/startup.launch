@@ -1,6 +1,6 @@
 <launch>
   <arg name="start_rviz" default="false" />
-  <arg name="wait_query" default="false" />
+  <arg name="wait_query" default="true" />
 
   <!-- sample data for test -->
   <anode pkg="rosbag" type="play" name="play"
