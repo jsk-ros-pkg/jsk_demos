@@ -108,11 +108,12 @@ map_id: ~a"
 (defun dump-all-maps ()
   (load "eng2-scene.l")
   (dump-map-launch (make-eng2-scene) "launch/start_map_eng2_main.launch"
-		   :default-floor "/eng2/7f")
+                   :default-floor "/eng2/7f")
   (load "eng8-scene.l")
-  (dump-map-launch (make-eng8-scene) "launch/start_map_eng8.launch")
+  (dump-map-launch (make-eng8-scene) "launch/start_map_eng8_main.launch"
+                   :default-floor "/eng8/6f")
   (load "eng6-scene.l")
-  (dump-map-launch (make-eng6-scene) "launch/start_map_eng6.launch")
+  (dump-map-launch (make-eng6-scene) "launch/start_map_eng6_main.launch")
   )
 
 (progn
