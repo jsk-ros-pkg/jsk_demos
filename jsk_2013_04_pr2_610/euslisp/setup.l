@@ -37,8 +37,8 @@
   (warn "put-cloth~%")
   )
 
-(defun pick-bloom ()
-  (warn "pick-bloom~%")
+(defun pick-broom ()
+  (warn "pick-broom~%")
   )
 
 (defun move-chair ()
@@ -63,7 +63,7 @@
   (move-to-laundary)
   (open-laundary-door)
   (put-cloth)
-  (pick-bloom)
+  (pick-broom)
   (move-chair)
   (sweep-under-table)
   (sweep-floor)
