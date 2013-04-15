@@ -1,0 +1,15 @@
+<package>
+  <description brief="jsk_2013_04_pr2_610">
+
+     jsk_2013_04_pr2_610
+
+  </description>
+  <author>k-okada</author>
+  <license>BSD</license>
+  <review status="unreviewed" notes=""/>
+  <url>http://ros.org/wiki/jsk_2013_04_pr2_610</url>
+  <depend package="pr2eus"/>
+
+</package>
+
+
