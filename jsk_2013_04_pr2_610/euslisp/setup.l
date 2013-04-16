@@ -11,6 +11,9 @@
 
 (objects (list *room610* *pr2*))
 
+(setq banzai-potentio-vector #f(50.1549 4.8215 -12.3808 61.5356 -8.60842 158.704 -19.4601 -42.9146 -50.9129 13.8802 -60.8123 -101.186 -137.428 -75.7661 117.379 2.60076 -21.2682))
+
+
 (defun pick-tray ()
   (warn "pick-tray~%")
   )
@@ -45,14 +48,17 @@
 
 (defun pick-broom ()
   (warn "pick-broom~%")
-  (setq prev-angle (send *pr2* :angle-vector)) ;; TODO: 前の動作からの姿勢引き継ぎ
-  (send *pr2* :rarm :move-end-pos (float-vector 200 0 0) :world :rotation-axis :z)
+  (setq pick-broom-pos (make-coords ))
+  (setq pick-potentio-vector (float-vector 50.1549 4.8215 -12.3808 61.5356 -8.60842 158.704 -19.4601 -42.9146 -50.9129 13.8802 -60.8123 -101.186 -137.428 -75.7661 117.379 2.60076 -21.2682))
+ ; (setq prev-angle (send *pr2* :angle-vector)) ;; TODO: 前の動作からの姿勢引き継ぎ
+  (send *ri* :stop-grasp :larm) ; 手を広げる　;; FIXME: 実機につながってないと関数が終了しない。
+  (send *pr2* :larm :move-end-pos (float-vector 200 0 0) :world :rotation-axis :z)
   (send *ri* :angle-vector (send *pr2* :angle-vector) 3000)
   (send *ri* :wait-interpolation)
   (when *irtviewer* (send *irtviewer* :draw-objects))
   (unix:sleep 3)
   (warn "rarm-start-grasp~%")
-  (send *ri* :start-grasp :rarm) ;; FIXME: 実機につながってないと関数が終了しない。
+  (send *ri* :start-grasp :larm)
   (warn "prev-angle")
   (send *pr2* :angle-vector prev-angle)
   (when *irtviewer* (send *irtviewer* :draw-objects))
@@ -66,6 +72,9 @@
 (defun sweep-under-table ()
   (warn "sweep-under-table~%")
   )
+
+(defun pass-broom-to-right-hand ()
+  (warn "pass-broom-to-right-hand~%"))
 
 (defun sweep-floor ()
   (warn "sweep-floor~%")
