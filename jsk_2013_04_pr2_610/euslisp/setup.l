@@ -41,34 +41,35 @@
 
 (defun pick-broom ()
   (warn "pick-broom~%")
-  (speak-jp "もっぷ")
   (warn "reset-larm-rpy~%")
   (speak-jp "てをひろげる")
-  (send *pr2* :angle-vector (send *ri* :state :potentio-vector))
+  (r2p)
 
   (send *ri* :stop-grasp :larm) ; 手を広げる
 
-  (send *pr2* :larm :inverse-kinematics
-		(make-coords :pos #f(550 200 1000) :rpy (float-vector 0 0 (deg2rad -180)))
-		:rotation-axis t
-		:debug-view nil)
-  (send *pr2* :head :look-at (send *pr2* :larm :end-coords :worldpos))
-  (send *ri* :angle-vector (send *pr2* :angle-vector) 2000)
-  (send *ri* :wait-interpolation)
-
+  (speak-jp "ひだりて")
+  (pr2-solve-ik :larm
+				(make-coords :pos #f(550 200 1000)
+							 :rpy (list 0 0 (deg2rad -180)))
+				:rotation-axis t
+				:time 2000)
+ 
+  (speak-jp "もっぷ")
   (setq *pick-potentio-vector* #f(50.1352 17.7895 -20.1068 84.3393 -45.8187 -78.6757 -5.72958 146.766 -60.0998 73.8901 -69.9999 -119.882 -19.999 -29.9744 179.986 0.002763 -1.302))
   (send *pr2* :angle-vector *pick-potentio-vector*)
   (send *ri* :angle-vector (send *pr2* :angle-vector) 4000)
   (send *ri* :wait-interpolation)
 
   (warn "larm-start-grasp~%")
-  (speak-en "larm-start-grasp")
-  (send *ri* :start-grasp :larm) ;; TODO: 微妙ににぎる
+  (speak-jp "つかむ")
+  (send *ri* :start-grasp :larm)
 
+  (speak-jp "さがる")
+  (unix:sleep 3)
   (send *ri* :go-pos-unsafe -0.5 0)
   (send *ri* :wait-interpolation)
 
-  (send *pr2* :angle-vector (send *ri* :state :potentio-vector))
+  (r2p)
   (setq z-axis-inversed-p
 		(let ((r (send (send *pr2* :larm :end-coords) :rotate-vector #f(0 0 1))))
 		  (if (> (elt r 2) 0) t nil)))
@@ -79,31 +80,29 @@
 		  (list (deg2rad -70) 0 (deg2rad 180))))
 
   (send *ri* :stop-grasp :rarm)
-  (send *pr2* :larm :inverse-kinematics
-		(make-coords :pos #f(630 0 1200) :rpy larm-rpy)
-		:rotation-axis t
-		:debug-view nil)
-  (send *pr2* :head :look-at (send *pr2* :larm :end-coords :worldpos))
-  (send *ri* :angle-vector (send *pr2* :angle-vector) 1000)
-  (send *ri* :wait-interpolation)
 
-  (send *pr2* :larm :move-end-pos #f(-100 0 0)
-		:world
-		:rotation-axis nil)
+  (speak-jp "もちあげる")
+  (pr2-solve-ik :larm
+				(make-coords :pos #f(530 0 1300)
+							 :rpy larm-rpy)
+				:rotation-axis t
+				:time 1000)
+
+#|  (send *pr2* :larm :move-end-pos #f(-100 0 150) :world :rotation-axis nil)
   (send *ri* :angle-vector (send *pr2* :angle-vector) 1500)
-  (send *ri* :wait-interpolation)
+  (send *ri* :wait-interpolation) |#
 
- (send *ri* :move-gripper :larm (* 60 0.001) :wait nil)
- 
+; (send *ri* :move-gripper :larm (* 60 0.001) :wait t)
+  (grasp-with-angle :larm 60)
+
   (warn "calib-pick-height~%")
   (speak-en "calib-pick-height")
-  (send *pr2* :larm :inverse-kinematics
-		(make-coords :pos #f(530 0 1000) :rpy larm-rpy)
-		:rotation-axis t
-		:debug-view nil)
-  (send *pr2* :head :look-at (send *pr2* :larm :end-coords :worldpos))
-  (send *ri* :angle-vector (send *pr2* :angle-vector) 1500)
-  (send *ri* :wait-interpolation)
+
+  (pr2-solve-ik :larm
+				(make-coords :pos #f(530 0 1000)
+							 :rpy larm-rpy)
+				:rotation-axis t
+				:time 1500)
 
   (send *ri* :start-grasp :larm)
 
@@ -111,14 +110,13 @@
   (send *ri* :wait-interpolation)
   
   (speak-en "move-right-arm")
-  (send *pr2* :rarm :inverse-kinematics
-		(make-coords :pos #f(530 20 650) :rpy (list (deg2rad 70) 0 0))
-		:rotation-axis t
-		:debug-view nil)
-  (send *pr2* :head :look-at (send *pr2* :rarm :end-coords :worldpos))
-  (send *ri* :angle-vector (send *pr2* :angle-vector) 1500)
-;  (send *ri* :wait-interpolation)
-  (unix:sleep 3)
+
+  (pr2-solve-ik :rarm
+				(make-coords :pos #f(530 20 650)
+							 :rpy (list (deg2rad 70) 0 0))
+				:rotation-axis t
+				:time 1500)
+
   (send *ri* :start-grasp)
 
   (speak-en "move-3-centimeter-up")
