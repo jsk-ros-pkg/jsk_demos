@@ -53,6 +53,11 @@
   (warn "put-cloth~%")
   )
 
+(defun close-laundary-door ()
+  (warn "close-laundary-door~%")
+  )
+
+
 (setq pick-broom-pos (make-coords :pos #f(-26629.619 19523.138 1.559) :rpy (list 1.876 -0.005 -0.001)))
   (setq pick-potentio-vector (float-vector 50.1549 4.8215 -12.3808 61.5356 -8.60842 158.704 -19.4601 -42.9146 -50.9129 13.8802 -60.8123 -101.186 -137.428 -75.7661 117.379 2.60076 -21.2682))
 
@@ -160,6 +165,7 @@
   (move-to-laundary)
   (open-laundary-door)
   (put-cloth)
+  (close-laundry-door)
   (pick-broom)
   (move-chair)
   (sweep-under-table)
