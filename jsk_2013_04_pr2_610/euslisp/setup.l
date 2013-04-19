@@ -35,8 +35,8 @@
   (warn "put-cloth~%")
   )
 
-(defun close-laundary-door ()
-  (warn "close-laundary-door~%")
+(defun close-laundry-door ()
+  (warn "close-laundry-door~%")
   )
 
 (defun pick-broom ()
