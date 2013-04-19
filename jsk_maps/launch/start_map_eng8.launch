@@ -4,8 +4,8 @@
 
   <include file="$(find jsk_maps)/launch/start_map_eng8_main.launch" />
 
-  <!--node pkg="tf" type="static_transform_publisher" name="$(anon map_tfB)"
-        args="0 6.9 0 0 0 0 /eng8/6f /eng8/6f/610 100"/-->
+  <node pkg="tf" type="static_transform_publisher" name="$(anon map_tfB)"
+        args="-29.823 16.322 0  0 0 0 /eng8/6f /eng8/6f/610 100" />
 
   <!-- for initialpose topic -->
   <node name="initialpose3d" pkg="jsk_maps" type="initialpose3d.py">
