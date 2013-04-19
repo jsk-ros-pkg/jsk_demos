@@ -8,7 +8,7 @@
 (if (not (boundp '*pr2*)) (pr2))
 (if (not (boundp '*ri*)) (setq *ri* (instance pr2-interface :init :objects (send *room610* :objects))))
 
-(objects (list *room610* *pr2*))
+(objects (list *pr2*))
 
 ;; utility
 (defun r2p ()
