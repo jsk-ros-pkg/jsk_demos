@@ -145,7 +145,7 @@
   )
 
 (defun move-chair ()
-  (warn "move-chair~%")
+  (warn "move-chair (inagaki)~%")
   ;; show chair on objects
   ;; TODO update chair position using perception pipeline,
   ;;   load and instantiate chair model at setup function, 
