@@ -15,7 +15,7 @@
 (setq *chair-coords* (make-coords :pos #f(3800 0 0)))
 
 (load "package://jsk_2013_04_pr2_610/euslisp/pick-broom.l")
-(load "package://jsk_2013_04_pr2_610/euslisp/open-laundary.l")
+;;(load "package://jsk_2013_04_pr2_610/euslisp/open-laundary.l")
 
 
 (defun move-to-table ()
