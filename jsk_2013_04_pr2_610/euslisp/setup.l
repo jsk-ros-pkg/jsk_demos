@@ -171,7 +171,7 @@
   )
 
 (defun sweep-under-table ()
-  (warn "sweep-under-table~%")
+  (warn "sweep-under-table (yukizaki)~%")
   )
 
 (defun pass-broom-to-right-hand ()
