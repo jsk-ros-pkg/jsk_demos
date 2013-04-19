@@ -5,6 +5,7 @@
 
 (setq *room610-origin* "/eng8/6f/room610")
 (setq *table-coords* (make-coords :pos #f(4700 1000 0) :rpy (float-vector -pi/2 0 0)))
+(setq *chair-coords* (make-coords :pos #f(3300 0 0)))
 
 (defun move-to-table ()
   (warn "move-to-table~%")
@@ -25,6 +26,7 @@
 
 (defun move-to-chair ()
   (warn "move-to-chair~%")
+  (send *ri* :move-to *chair-coords* :frame-id *room610-origin*)
   )
 
 (defun pick-cloth ()
