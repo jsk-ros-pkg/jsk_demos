@@ -1,11 +1,22 @@
 #!/usr/bin/env roseus
-(load "furushchev-utils.l")
 
-(setq banzai-potentio-vector #f(50.1549 4.8215 -12.3808 61.5356 -8.60842 158.704 -19.4601 -42.9146 -50.9129 13.8802 -60.8123 -101.186 -137.428 -75.7661 117.379 2.60076 -21.2682))
+(load "models/room610-scene.l")
+(load "package://pr2eus/pr2.l")
+(load "package://pr2eus/pr2-interface.l")
+
+(if (not (boundp '*room610*)) (room610))
+(if (not (boundp '*pr2*)) (pr2))
+(if (not (boundp '*ri*)) (setq *ri* (instance pr2-interface :init :objects (send *room610* :objects))))
+
+(objects (list *pr2*))
 
 (setq *room610-origin* "/eng8/6f/room610")
 (setq *table-coords* (make-coords :pos #f(4700 1000 0) :rpy (float-vector -pi/2 0 0)))
 (setq *chair-coords* (make-coords :pos #f(3800 0 0)))
+
+(load "package://jsk_2013_04_pr2_610/euslisp/pick-broom.l")
+(load "package://jsk_2013_04_pr2_610/euslisp/open-laundary.l")
+
 
 (defun move-to-table ()
   (warn "move-to-table~%")
@@ -40,10 +51,6 @@
   (warn "move-to-laundary~%")
   )
 
-(defun open-laundary-door ()
-  (warn "open-laundary-door~%")
-  )
-
 (defun put-cloth ()
   (warn "put-cloth (kuroiwa)~%")
   )
@@ -52,97 +59,6 @@
   (warn "close-laundry-door (kuroiwa)~%")
   )
 
-(defun pick-broom ()
-  (warn "pick-broom (furushchev)~%")
-  (warn "reset-larm-rpy~%")
-  (speak-jp "てをひろげる")
-  (r2p)
-
-  (send *ri* :stop-grasp :larm) ; 手を広げる
-
-  (speak-jp "ひだりて")
-  (pr2-solve-ik :larm
-				(make-coords :pos #f(550 200 1000)
-							 :rpy (list 0 0 (deg2rad -180)))
-				:rotation-axis t
-				:time 2000)
- 
-  (speak-jp "もっぷ")
-  (setq *pick-potentio-vector* #f(50.1352 17.7895 -20.1068 84.3393 -45.8187 -78.6757 -5.72958 146.766 -60.0998 73.8901 -69.9999 -119.882 -19.999 -29.9744 179.986 0.002763 -1.302))
-  (send *pr2* :angle-vector *pick-potentio-vector*)
-  (send *ri* :angle-vector (send *pr2* :angle-vector) 4000)
-  (send *ri* :wait-interpolation)
-
-  (warn "larm-start-grasp~%")
-  (speak-jp "つかむ")
-  (send *ri* :start-grasp :larm)
-
-  (speak-jp "さがる")
-  (unix:sleep 3)
-  (send *ri* :go-pos-unsafe -0.5 0)
-  (send *ri* :wait-interpolation)
-
-  (r2p)
-  (setq z-axis-inversed-p
-		(let ((r (send (send *pr2* :larm :end-coords) :rotate-vector #f(0 0 1))))
-		  (if (> (elt r 2) 0) t nil)))
-
-  (setq larm-rpy
-		(if z-axis-inversed-p
-			(list (deg2rad -70) 0 0)
-		  (list (deg2rad -70) 0 (deg2rad 180))))
-
-  (send *ri* :stop-grasp :rarm)
-
-  (speak-jp "もちあげる")
-  (pr2-solve-ik :larm
-				(make-coords :pos #f(530 0 1300)
-							 :rpy larm-rpy)
-				:rotation-axis t
-				:time 1000)
-
-#|  (send *pr2* :larm :move-end-pos #f(-100 0 150) :world :rotation-axis nil)
-  (send *ri* :angle-vector (send *pr2* :angle-vector) 1500)
-  (send *ri* :wait-interpolation) |#
-
-; (send *ri* :move-gripper :larm (* 60 0.001) :wait t)
-  (grasp-with-angle :larm 60)
-
-  (warn "calib-pick-height~%")
-  (speak-en "calib-pick-height")
-
-  (pr2-solve-ik :larm
-				(make-coords :pos #f(530 0 1000)
-							 :rpy larm-rpy)
-				:rotation-axis t
-				:time 1500)
-
-  (send *ri* :start-grasp :larm)
-
-  (send *pr2* :larm :move-end-pos (float-vector 0 0 (if z-axis-inversed-p 200 -200)))
-  (send *ri* :wait-interpolation)
-  
-  (speak-en "move-right-arm")
-
-  (pr2-solve-ik :rarm
-				(make-coords :pos #f(530 20 650)
-							 :rpy (list (deg2rad 70) 0 0))
-				:rotation-axis t
-				:time 1500)
-
-  (send *ri* :start-grasp)
-
-  (speak-en "move-3-centimeter-up")
-
-  (send *pr2* :rarm :move-end-pos #f(0 0 200))
-  (send *ri* :angle-vector (send *pr2* :angle-vector) 1000)
-  (send *ri* :wait-interpolation)
-  ;for debug
-  (speak-jp "もとにもどる")
-  (send *ri* :stop-grasp)
-  (send *ri* :go-pos-unsafe 0.5 0)
-  (send *ri* :angle-vector (send *pr2* :reset-pose) 4000)
-  )
 
 (defun move-chair ()
   (warn "move-chair (inagaki)~%")
