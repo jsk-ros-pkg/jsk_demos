@@ -4,7 +4,7 @@
 (setq banzai-potentio-vector #f(50.1549 4.8215 -12.3808 61.5356 -8.60842 158.704 -19.4601 -42.9146 -50.9129 13.8802 -60.8123 -101.186 -137.428 -75.7661 117.379 2.60076 -21.2682))
 
 (defun pick-tray ()
-  (warn "pick-tray~%")
+  (warn "pick-tray (tanaka)~%")
   )
 
 (defun move-to-sink ()
@@ -12,7 +12,7 @@
   )
 
 (defun place-tray ()
-  (warn "place-tray~%")
+  (warn "place-tray (chan)~%")
   )
 
 (defun move-to-chair ()
@@ -20,7 +20,7 @@
   )
 
 (defun pick-cloth ()
-  (warn "pick-cloth~%")
+  (warn "pick-cloth (iwaishi)~%")
   )
 
 (defun move-to-laundary ()
@@ -32,15 +32,15 @@
   )
 
 (defun put-cloth ()
-  (warn "put-cloth~%")
+  (warn "put-cloth (kuroiwa)~%")
   )
 
 (defun close-laundry-door ()
-  (warn "close-laundry-door~%")
+  (warn "close-laundry-door (kuroiwa)~%")
   )
 
 (defun pick-broom ()
-  (warn "pick-broom~%")
+  (warn "pick-broom (furushchev)~%")
   (warn "reset-larm-rpy~%")
   (speak-jp "てをひろげる")
   (r2p)
@@ -143,7 +143,7 @@
   (warn "pass-broom-to-right-hand~%"))
 
 (defun sweep-floor ()
-  (warn "sweep-floor~%")
+  (warn "sweep-floor (furuta)~%")
   )
 
 
