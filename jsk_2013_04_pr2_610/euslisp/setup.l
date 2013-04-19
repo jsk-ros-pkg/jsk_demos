@@ -5,10 +5,12 @@
 
 (setq *room610-origin* "/eng8/6f/room610")
 (setq *table-coords* (make-coords :pos #f(4700 1000 0) :rpy (float-vector -pi/2 0 0)))
-(setq *chair-coords* (make-coords :pos #f(3300 0 0)))
+(setq *chair-coords* (make-coords :pos #f(3800 0 0)))
 
 (defun move-to-table ()
   (warn "move-to-table~%")
+  (pr2-tuckarm-pose)
+  (send *ri* :angle-vector (send *pr2* :angle-vector) 4000)
   (send *ri* :move-to *table-coords* :frame-id *room610-origin*)
   )
 
@@ -26,6 +28,7 @@
 
 (defun move-to-chair ()
   (warn "move-to-chair~%")
+  (pr2-tuckarm-pose)
   (send *ri* :move-to *chair-coords* :frame-id *room610-origin*)
   )
 
@@ -143,6 +146,28 @@
 
 (defun move-chair ()
   (warn "move-chair~%")
+  ;; show chair on objects
+  ;; TODO update chair position using perception pipeline,
+  ;;   load and instantiate chair model at setup function, 
+  ;;   start/stop perception piplen in move-chair function
+  (load "models/red-chair0-object.l") ;; need to use karimoku chair
+  (setq *chair* (red-chair0))
+  (send *chair* :move-to (make-coords :pos #f(800 0 0) :rpy (float-vector pi/2 0 0)) :world)
+  (objects (list *pr2* *chair*))
+  ;; use handle to manipulate
+  (send *pr2* :reset-pose) ;; to solve ik, do not  send to *ri*
+  (send *pr2* :inverse-kinematics (send *chair* :handle)
+        :link-list (list
+                      (send *pr2* :link-list (send *pr2* :larm :end-coords :parent))
+                      (send *pr2* :link-list (send *pr2* :rarm :end-coords :parent)))
+        :move-target (list (send *pr2* :larm :end-coords) (send *pr2* :rarm :end-coords))
+        :look-at-target t
+        )
+  (send *ri* :angle-vector (send *pr2* :angle-vector))
+  (send *ri* :start-grasp)
+  ;; backword
+  (send *ri* :go-pos-unsafe -0.5 0 30)
+  (send *ri* :stop-grasp)
   )
 
 (defun sweep-under-table ()
