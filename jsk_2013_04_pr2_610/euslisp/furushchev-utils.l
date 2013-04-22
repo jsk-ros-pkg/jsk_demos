@@ -15,7 +15,22 @@
   (send *pr2* arm :inverse-kinematics
 		coords
 		:rotation-axis rotation-axis
-                :look-at-target t
+		:look-at-target t
 		:debug-view debug-view)
   (send *ri* :angle-vector (send *pr2* :angle-vector) time)
   (if wait (send *ri* :wait-interpolation)))
+
+(defmethod pr2-robot
+  (:start-grasp (&key (arm :arms) (time 3000))
+				(let ((current-joint-angle (send self arm :gripper :joint-angle))
+					  (max-count (floor (/ time 30))))
+				  (dotimes (i max-count)
+					(send self arm :gripper :joint-angle (/ current-joint-angle (- max-count i))))))
+  (:stop-grasp (&key (arm :arms) (time 3000))
+			   (let ((current-joint-angle (send self arm :gripper :joint-angle))
+					 (d-angle (- 90 current-joint-angle)
+							  (max-count (floor (/ time 30))))
+					 (dotimes (i max-count)
+					   (send self arm :gripper :joint-angle (* (/ d-angle max-count) i))))))
+  )
+
