@@ -6,8 +6,8 @@
     (setq teximg (send face :get :gl-textureimage))
     (setq filename (send teximg :name))
     (setq size (float-vector (send teximg :width) (send teximg :height)))
-    (setq cx (- (elt (send cube :centroid) 0) (/ (* (elt size 1) 50) 2)))
-    (setq cy (- (elt (send cube :centroid) 1) (/ (* (elt size 0) 50) 2)))
+    (setq cx (- (elt (send cube :centroid) 0) (/ (* (elt size 0) 50) 2)))
+    (setq cy (- (elt (send cube :centroid) 1) (/ (* (elt size 1) 50) 2)))
     (list filename cx cy) ))
 
 (defun get-yaml-filename (nav-scene)
