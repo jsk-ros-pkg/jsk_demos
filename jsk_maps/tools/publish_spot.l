@@ -3,36 +3,6 @@
 (load "package://jsk_maps/src/eng2-scene.l")
 (setq *scene* (make-eng2-scene))
 
-;; copy from jskgeo.l
-(defun hvs2rgb (h &optional i s ret)
-  (when (or (listp h) (vectorp h))
-    (setq ret s)
-    (setq s (elt h 2) i (elt h 1) h (elt h 0)))
-  (if (>= h 360) (setq h (mod (round h) 360)))
-  (if (< h    0) (setq h (- 360 (mod (round (- h)) 360))))
-  (setq s (* 255 s) i (* 255 i))
-  (let* ((hi (floor (/ h 60.0)))
-	 (f (- (/ h 60.0) hi))
-	 (p1 (* i (- 1.0 (/ s 255.0))))
-	 (p2 (* i (- 1.0 (* f (/ s 255.0)))))
-	 (p3 (* i (- 1.0 (* (- 1 f) (/ s 255.0)))))
-	 r g b)
-    (case hi
-     ((0 6) (setq r i  g p3 b p1))
-     (1 (setq r p2 g i  b p1))
-     (2 (setq r p1 g i  b p3))
-     (3 (setq r p1 g p2 b i))
-     (4 (setq r p3 g p1 b i))
-     (5 (setq r i  g p1 b p2))
-     (t (warn "hri2rgb error")))
-    (cond
-     (ret
-      (setf (elt ret 0) r)
-      (setf (elt ret 1) g)
-      (setf (elt ret 2) b)
-      ret)
-     (t (list r g b)))))
-
 (defun make-color-list (color-num &key (hue-max 300.0))
   (do ((ret nil (push
 		 (scale (/ 1.0 255.0) (hvs2rgb (* (/ hue-max color-num) x) 1.0 1.0
