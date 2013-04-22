@@ -1,7 +1,14 @@
 #!/usr/bin/env roseus
 
-(load "package://jsk_maps/src/eng2-scene.l")
-(setq *scene* (make-eng2-scene))
+(ros::roseus "publish_jskmap_spots")
+
+(let ((scene (ros::get-param "~scene" "eng2")))
+  (load (format nil "package://jsk_maps/src/~A-scene.l" scene))
+  (setq *scene* (funcall (intern (string-upcase (format nil "make-~A-scene" scene))))))
+
+(defvar *pub-spots-topic* "/spots_marker_array")
+(defvar *tf-listener* (instance ros::transform-listener :init))
+
 
 (defun make-color-list (color-num &key (hue-max 300.0))
   (do ((ret nil (push
@@ -21,10 +28,6 @@
     (send b :transform coords :world)
     b))
 
-(ros::roseus "publish_jskmap_spots")
-(defvar *pub-spots-topic* "/spots_marker_array")
-(defvar *tf-listener* (instance ros::transform-listener :init))
-
 (defun pub-spot ()
   (let ((msg-array (instance visualization_msgs::MarkerArray :init))
         (header (instance std_msgs::header :init :stamp (ros::time-now) :frame_id "/map"))
@@ -37,7 +40,7 @@
     (ros::ros-info "current-map ~A ~A" current-map-id current-map-coords)
     (dolist (c (send *scene* :spots))
       (when (and current-map-coords (substringp current-map-id (send c :name)))
-        ;(ros::ros-info "publish spot~A" (send c :name))
+        ;;(ros::ros-info "publish spot ~A" (send c :name))
         (push (object->marker-msg (make-pin-body :coords (send (send current-map-coords :transformation c) :worldcoords) :height 500 :radius 61)
                                   header
                                   :color (elt colors id)
