@@ -6,11 +6,11 @@
 (load "models/room73b2-broom-object.l")
 
 (if (not (boundp '*room610*)) (room610))
-(if (not (boundp '*broom*)) (setq *broom* (room73b2-broom)))
 (if (not (boundp '*pr2*)) (pr2))
 (if (not (boundp '*ri*)) (setq *ri* (instance pr2-interface :init :objects (send *room610* :objects))))
 
 ;;handle
+#|
 (setq *broom-handle2* (make-cascoords :pos (float-vector 0.0 0.0 600.0)
 									  :rot #2f((0.5 -0.866025 0.0) (0.866025 0.5 0.0) (0.0 0.0 1.0))
 									  :name "handle2"))
@@ -18,13 +18,16 @@
 (defmethod room73b2-broom-object
   (:handle-handle2 () *broom-handle2*)
   (:handle () (list handle0 handle1 *broom-handle2*)))
+|#
 
-
-(objects (list *room610* *pr2* *broom*))
+(objects (list *room610* *pr2*))
 
 (setq *room610-origin* "/eng8/6f/room610")
 (setq *table-coords* (make-coords :pos #f(4700 1000 0) :rpy (float-vector -pi/2 0 0)))
 (setq *chair-coords* (make-coords :pos #f(3800 0 0)))
+
+(setq *broom* (send *room610* :object "room610-sweeper"))
+(setq *chair* (send *room610* :object "room610-chair"))
 
 ;; spots
 (setq *tray-spot* (make-cascoords :pos #f(4650 1000 0) :rpy (list -pi/2 0 0)))
@@ -48,7 +51,7 @@
 		  (list *tray-spot* *chair-spot* *laundry-spot* *sink-spot* *sweep-spot*)))
 
 
-(send *broom* :move-to (make-coords :pos #f(3050 2050 0) :rpy (list pi/2 0 (deg2rad 5))) :world)
+;(send *broom* :move-to (make-coords :pos #f(3050 2050 0) :rpy (list pi/2 0 (deg2rad 5))) :world)
 
 
 (load "package://jsk_2013_04_pr2_610/euslisp/pick-broom.l")
@@ -119,13 +122,14 @@
   ;; TODO update chair position using perception pipeline,
   ;;   load and instantiate chair model at setup function, 
   ;;   start/stop perception piplen in move-chair function
-  (load "models/red-chair0-object.l") ;; need to use karimoku chair
-  (setq *chair* (red-chair0))
-  (send *chair* :move-to (make-coords :pos #f(800 0 0) :rpy (float-vector pi/2 0 0)) :world)
-  (objects (list *pr2* *chair*))
+;  (load "models/red-chair0-object.l") ;; need to use karimoku chair
+;  (setq *chair* (red-chair0))
+;  (send *chair* :move-to (make-coords :pos #f(800 0 0) :rpy (float-vector pi/2 0 0)) :world)
+;  (objects (list *pr2* *chair*))
   ;; use handle to manipulate
   (send *pr2* :reset-pose) ;; to solve ik, do not  send to *ri*
-  (send *pr2* :inverse-kinematics (send *chair* :handle)
+;  (send *pr2* :inverse-kinematics (send *chair* :handle)
+  (send *pr2* :inverse-kinematics (list (send *chair* :handle-larm) (send *chair* :handle-rarm))
         :link-list (list
                       (send *pr2* :link-list (send *pr2* :larm :end-coords :parent))
                       (send *pr2* :link-list (send *pr2* :rarm :end-coords :parent)))

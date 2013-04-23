@@ -49,22 +49,25 @@
 				:debug-view debug)
 |#
 
-  (pr2-reset-pose)
+;  (pr2-reset-pose)
 
   (speak-jp "もっぷ")
-  (send *pr2* :inverse-kinematics (send (send *broom* :handle-handle0) :rotate -80 :z)
+;  (send *pr2* :inverse-kinematics (send (send *broom* :handle-handle0) :rotate -80 :z)
+  (send *pr2* :inverse-kinematics (send (send *broom* :handle-larm) :rotate (deg2rad 170) :z)
 		:link-list (list
 					(send *pr2* :link-list (send *pr2* :larm :end-coords :parent)))
 		:move-target (list (send *pr2* :larm :end-coords))
 		:look-at-target t
 		:debug-view debug)
 
-
+  (if debug (break))
 ;  (setq *pick-potentio-vector* #f(50.1352 17.7895 -20.1068 84.3393 -45.8187 -78.6757 -5.72958 146.766 -60.0998 73.8901 -69.9999 -119.882 -19.999 -29.9744 179.986 0.002763 -1.302))
 ;  (send *pr2* :angle-vector *pick-potentio-vector*)
 ;  (send *irtviewer* :draw-objects)
   (send *ri* :angle-vector (send *pr2* :angle-vector) 4000)
   (send *ri* :wait-interpolation)
+
+  (if debug (break))
 
   (warn "larm-start-grasp~%")
   (speak-jp "つかむ")
@@ -75,11 +78,16 @@
   (send *pr2* :torso :waist-z :joint-angle 200)
   (p2r)
 
+  (if debug (break))
+
   (warn "go backward")
   (speak-jp "うしろへさがる")
+  (send *pr2* :translate #f(-500 0 0))
   (send *ri* :go-pos-unsafe -0.5 0 0)
 
   (send *ri* :wait-interpolation)
+
+  (if debug (break))
 
   (r2p)
   (setq z-axis-inversed-p
@@ -93,11 +101,13 @@
 
 ;  (send *ri* :stop-grasp :rarm)
 
+  (setq pr2-pos (send (send *pr2* :coords) :pos))
+
   (warn "bring up")
   (speak-jp "もちあげる")
   (pr2-solve-ik :larm
-				(make-coords :pos #f(530 0 1300)
-							 :rpy larm-rpy)
+				(make-cascoords :pos (v+ pr2-pos #f(530 0 1300))
+								:rpy larm-rpy)
 				:rotation-axis t
 				:time 1000
 				:debug-view debug)
@@ -108,11 +118,13 @@
 
 ; (send *ri* :move-gripper :larm (* 60 0.001) :wait t)
 
+  (if debug (break))
+
   (warn "right-hand~%")
   (speak-jp "みぎて")
 
   (pr2-solve-ik :rarm
-				(make-coords :pos #f(530 20 650)
+				(make-coords :pos (v+ pr2-pos #f(530 20 650))
 							 :rpy (list (deg2rad 70) 0 0))
 				:rotation-axis t
 				:time 1500
@@ -124,17 +136,16 @@
   (grasp-with-angle :arms 60)
 
   (send (elt (send *pr2* :larm) 6) :dissoc *broom*)
-  (send *broom* :move-to )
 
   (warn "calib-pick-height~%")
   (speak-jp "た'かさを,そろ'える")
-
-  (send *pr2* :inverse-kinematics (send *broom* :handle-handle0)
+  (if debug (break))
+  (send *pr2* :inverse-kinematics (send *broom* :handle-larm) ; (send *broom* :handle-handle0)
 		:link-list (list (send *pr2* :link-list (send *pr2* :larm :end-coords :parent)))
 		:move-target (list (send *pr2* :larm :end-coords))
 		:look-at-target t
 		:debug-view debug)
-  (send *pr2* :inverse-kinematics (send *broom* :handle-handle2)
+  (send *pr2* :inverse-kinematics (send *broom* :handle-rarm) ;(send *broom* :handle-handle2)
 		:link-list (list (send *pr2* :link-list (send *pr2* :rarm :end-coords :parent)))
 		:move-target (list (send *pr2* :rarm :end-coords))
 		:look-at-target nil
@@ -176,6 +187,7 @@
   ;for debug
   (speak-jp "もとにもどる")
   (send *ri* :stop-grasp)
+  (send (elt (send *pr2* :larm) 6) :dissoc *broom*)
   (send *ri* :go-pos-unsafe 0.5 0)
   (send *ri* :angle-vector (send *pr2* :reset-pose) 4000)
   )
