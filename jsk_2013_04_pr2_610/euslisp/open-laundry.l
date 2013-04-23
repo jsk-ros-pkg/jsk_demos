@@ -1,3 +1,11 @@
+;; 1.irteusgl$ (send *ri* :state :worldcoords)
+;; (:worldcoords "/world")
+;; #<cascaded-coords #X94e3948 /world  -26787.743 17924.335 19999.995 / 1.645 0.002 -0.001>
+;; 2.irteusgl$ (send *ri* :state :worldcoords "/map")
+;; (:worldcoords "/map")
+;; #<cascaded-coords #X9541540 /map  -26787.743 17924.335 -0.005 / 1.645 0.003 -0.002>
+
+
 (load "models/room610-scene.l")
 (load "package://pr2eus/pr2-interface.l")
 
