@@ -145,8 +145,8 @@
   (send *pr2* :rotate (deg2rad -30) :z)
   (send *pr2* :translate #f(-500 0 0))
   
-  (send (send *pr2* :l_wrist_roll_link) :dissoc (send *chair* :handle-side-larm))
-  (send (send *pr2* :r_wrist_roll_link) :dissoc (send *chair* :handle-side-rarm))
+  (send (send *pr2* :l_wrist_roll_link) :dissoc *chair*)
+  (send (send *pr2* :r_wrist_roll_link) :dissoc *chair*)
   (send *ri* :stop-grasp)
   )
 
