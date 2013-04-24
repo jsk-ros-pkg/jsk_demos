@@ -2,7 +2,7 @@
 
 (defun pick-broom ()
   (warn "pick-broom (furushchev)~%")
-  (setq debug t)
+  (setq debug nil)
 
   (warn "reset-larm-rpy~%")
   (speak-jp "てをひろげる")
@@ -32,7 +32,7 @@
   (speak-jp "つかむ")
   (send *ri* :start-grasp :larm)
 
-  (send (elt (send *pr2* :larm) 6) :assoc *broom*)
+  (send (send *pr2* :l_wrist_roll_link) :assoc *broom*)
 
   (send *pr2* :torso :waist-z :joint-angle 200)
   (p2r)
@@ -86,7 +86,7 @@
   (send *ri* :wait-interpolation)
   (grasp-with-angle :arms 60)
 
-  (send (elt (send *pr2* :larm) 6) :dissoc *broom*)
+  (send (send *pr2* :l_wrist_roll_link) :dissoc *broom*)
 
   (warn "calib-pick-height~%")
   (speak-jp "た'かさを,そろ'える")
