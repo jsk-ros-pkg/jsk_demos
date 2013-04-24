@@ -32,7 +32,7 @@
 ;; spots
 (setq *tray-spot* (make-cascoords :pos #f(4650 1000 0) :rpy (list -pi/2 0 0)))
 (send *room610* :assoc *tray-spot*)
-(setq *chair-spot* (make-cascoords :pos #f(3200 -200 0) :rpy (list 0 0 0)))
+(setq *chair-spot* (make-cascoords :pos #f(3200 0 0) :rpy (list 0 0 0)))
 (send *room610* :assoc *chair-spot*)
 (setq *laundry-spot* (make-cascoords :pos #f(3400 1400 0) :rpy (list pi/2 0 0)))
 (send *room610* :assoc *laundry-spot*)
@@ -119,7 +119,7 @@
   (warn "move-chair (inagaki)~%")
   ;; use handle to manipulate
   (send *pr2* :reset-pose) ;; to solve ik, do not  send to *ri*
-  (send *pr2* :inverse-kinematics (send (send (send *chair* :handle-above-rarm) :copy-worldcoords) :translate #f(0 -200 400) :world)
+  (send *pr2* :inverse-kinematics (send (send (send *chair* :handle-above-rarm) :copy-worldcoords) :translate #f(0 -200 500) :world)
         :link-list (list
                       (send *pr2* :link-list (send *pr2* :rarm :end-coords :parent)))
         :move-target (list (send *pr2* :rarm :end-coords))
@@ -127,6 +127,7 @@
                 :debug-view t
         )
 
+  (send *ri* :wait-interpolation)
   (send *ri* :stop-grasp)
   (send *ri* :wait-interpolation)
 
