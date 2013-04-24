@@ -32,7 +32,7 @@
 ;; spots
 (setq *tray-spot* (make-cascoords :pos #f(4650 1000 0) :rpy (list -pi/2 0 0)))
 (send *room610* :assoc *tray-spot*)
-(setq *chair-spot* (make-cascoords :pos #f(3750 -100 0) :rpy (list 0 0 0)))
+(setq *chair-spot* (make-cascoords :pos #f(3600 -200 0) :rpy (list 0 0 0)))
 (send *room610* :assoc *chair-spot*)
 (setq *laundry-spot* (make-cascoords :pos #f(3400 1400 0) :rpy (list pi/2 0 0)))
 (send *room610* :assoc *laundry-spot*)
@@ -121,31 +121,38 @@
   ;; show chair on objects
   ;; TODO update chair position using perception pipeline,
   ;;   load and instantiate chair model at setup function, 
-  ;;   start/stop perception piplen in move-chair function
+  ;;   start/stop perception piplen in move-chair functio
 ;  (load "models/red-chair0-object.l") ;; need to use karimoku chair
 ;  (setq *chair* (red-chair0))
 ;  (send *chair* :move-to (make-coords :pos #f(800 0 0) :rpy (float-vector pi/2 0 0)) :world)
 ;  (objects (list *pr2* *chair*))
   ;; use handle to manipulate
   (send *pr2* :reset-pose) ;; to solve ik, do not  send to *ri*
-;  (send *pr2* :inverse-kinematics (send *chair* :handle)
-  (send *pr2* :inverse-kinematics (list (send *chair* :handle-larm) (send *chair* :handle-rarm))
+  (send *pr2* :inverse-kinematics (list (send *chair* :handle-side-larm) (send *chair* :handle-side-rarm))
         :link-list (list
                       (send *pr2* :link-list (send *pr2* :larm :end-coords :parent))
                       (send *pr2* :link-list (send *pr2* :rarm :end-coords :parent)))
         :move-target (list (send *pr2* :larm :end-coords) (send *pr2* :rarm :end-coords))
         :look-at-target t
 		:debug-view t
-        )
+        ) 
+  (send (send *pr2* :l_wrist_roll_link) :assoc *chair*)
+  (send (send *pr2* :r_wrist_roll_link) :assoc *chair*)
   (send *ri* :angle-vector (send *pr2* :angle-vector))
   (send *ri* :start-grasp)
   ;; backword
   (send *ri* :go-pos-unsafe -0.5 0 30)
+  (send *pr2* :rotate (deg2rad -30) :z)
+  (send *pr2* :translate #f(-500 0 0))
+  
+  (send (send *pr2* :l_wrist_roll_link) :dissoc (send *chair* :handle-side-larm))
+  (send (send *pr2* :r_wrist_roll_link) :dissoc (send *chair* :handle-side-rarm))
   (send *ri* :stop-grasp)
   )
 
 (defun move-to-sweep ()
   (warn "move-to-sweep~%")
+  (send *pr2* :move-to (send *room610* :spot-sweep-spot) :world)
   (send *ri* :move-to (send *room610* :spot-sweep-spot)))
 
 (defun sweep-under-table ()
@@ -184,7 +191,11 @@
   (send *irtviewer* :draw-objects)
   (pick-broom)
   (send *irtviewer* :draw-objects)
+  (move-to-chair)
+  (send *irtviewer* :draw-objects)
   (move-chair)
+  (send *irtviewer* :draw-objects)
+  (move-to-sweep)
   (send *irtviewer* :draw-objects)
   (sweep-under-table)
   (send *irtviewer* :draw-objects)
