@@ -89,7 +89,7 @@
 
 (defun move-to-laundry ()
   (warn "move-to-laundry~%")
-  (send *pr2* :move-to (send *room610* :spot-laundry-spot) :world)
+  (send *pr2* :move-to (send *room610* :spot-laundry-spot) :frame-id *room610-origin*)
   (send *pr2* :translate #f(0 300 0) (send *room610* :worldcoords))
   (send *ri* :move-to (send *room610* :spot-laundry-spot) :frame-id *room610-origin*)
   (setq current-ri-coords (send (send *world-to-610* :worldcoords) :transformation (send *ri* :state :worldcoords)))
