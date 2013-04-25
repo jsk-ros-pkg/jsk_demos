@@ -125,28 +125,32 @@
 (defun move-chair ()
   (warn "move-chair (inagaki)~%")
   ;; use handle to manipulate
-  (send *pr2* :reset-pose) ;; to solve ik, do not  send to *ri*
-  (send *pr2* :inverse-kinematics (send (send (send *chair* :handle-above-rarm) :copy-worldcoords) :translate #f(0 -200 500) :world)
+  ;;(send *pr2* :reset-pose) ;; to solve ik, do not  send to *ri*
+  (send *pr2* :inverse-kinematics (send  (send (send *pr2* :rarm :end-coords) :copy-worldcoords) :translate #f(0 0 300) :world)
+	:revert-if-fail nil
         :link-list (list
                       (send *pr2* :link-list (send *pr2* :rarm :end-coords :parent)))
         :move-target (list (send *pr2* :rarm :end-coords))
         :look-at-target t
                 :debug-view t
         )
-
+  (send *ri* :angle-vector (send *pr2* :angle-vector))
   (send *ri* :wait-interpolation)
   (send *ri* :stop-grasp)
   (send *ri* :wait-interpolation)
 
-
+  (send *pr2* :angle-vector (send *ri* :state :potentio-vector))
 ;;(send *pr2* :reset-pose) ;; to solve ik, do not  send to *ri*
   (send *pr2* :inverse-kinematics (list (send *chair* :handle-above-rarm))
         :link-list (list
                       (send *pr2* :link-list (send *pr2* :rarm :end-coords :parent)))
         :move-target (list (send *pr2* :rarm :end-coords))
+	:revert-if-fail nil
         :look-at-target t
 		:debug-view t
-        ) 
+        )
+ 
+  (send *ri* :angle-vector (send *pr2* :angle-vector))
   (send *ri* :wait-interpolation)
 
   (send (send *pr2* :r_wrist_roll_link) :assoc *chair*)
@@ -155,9 +159,9 @@
   (send *ri* :wait-interpolation)
 
 
-
+(send *pr2* :angle-vector (send *ri* :state :potentio-vector))
 (setq destC (send (send *pr2* :rarm :end-coords) :copy-worldcoords))
-(send destC :translate #f(-250 0 -200) :world)
+(send destC :translate #f(-250 0 -150) :world)
 (send destC :rotate (deg2rad -45) :y :world)
 
 
