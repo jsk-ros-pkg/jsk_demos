@@ -98,7 +98,7 @@
       (print "open the cap")
 
       ;; move the right arm for putting the cloth
-      (send *pr2* :rarm :move-end-pos (float-vector (- (* r 0.3)) 0 0) :revert-if-fail nil)
+      (send *pr2* :rarm :move-end-pos (float-vector (- (* r 0.3)) 0 0))
       (send *irtviewer* :draw-objects)
       (send *ri* :angle-vector (send *pr2* :angle-vector))
       (send *ri* :wait-interpolation)
