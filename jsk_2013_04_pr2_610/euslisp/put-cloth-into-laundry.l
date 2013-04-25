@@ -91,7 +91,7 @@
       ;; (send dst :init :pos (send (send (send cap_point :copy-worldcoords) :translate (float-vector (- near) (* 0.7 r) 0) :world) :worldpos) :rot (send cap_point :worldrot))
       (send dst :init :pos (send (send (send cap_point :copy-worldcoords) :translate (float-vector (- near) (* 0.7 r) 0) (send *pr2* :worldcoords)) :worldpos) :rot (send cap_point :worldrot))
 
-      (send *pr2* :rarm :inverse-kinematics dst :look-at-target t :debug-view t :revert-if-fail nil)
+      (send *pr2* :rarm :inverse-kinematics dst :look-at-target t :debug-view t :rotation-axis nil :revert-if-fail nil)
       (send *irtviewer* :draw-objects)
       (send *ri* :angle-vector (send *pr2* :angle-vector))
       (send *ri* :wait-interpolation)
