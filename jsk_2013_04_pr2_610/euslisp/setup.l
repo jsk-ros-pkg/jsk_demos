@@ -134,7 +134,7 @@
                       (send *pr2* :link-list (send *pr2* :rarm :end-coords :parent)))
         :move-target (list (send *pr2* :rarm :end-coords))
         :look-at-target t
-                :debug-view t
+;;                :debug-view t
         )
   (send *ri* :angle-vector (send *pr2* :angle-vector))
   (send *ri* :wait-interpolation)
@@ -149,7 +149,7 @@
         :move-target (list (send *pr2* :rarm :end-coords))
 	:revert-if-fail nil
         :look-at-target t
-		:debug-view t
+;;		:debug-view t
         )
  
   (send *ri* :angle-vector (send *pr2* :angle-vector))
@@ -173,7 +173,7 @@
                       (send *pr2* :link-list (send *pr2* :rarm :end-coords :parent)))
         :move-target (list (send *pr2* :rarm :end-coords))
         :look-at-target t
-                :debug-view t
+;;                :debug-view t
         )
   (send *ri* :wait-interpolation)
 
@@ -183,9 +183,9 @@
 
 
   ;; backword
-  (send *ri* :go-pos-unsafe -0.7 -0.3 0)
+  (send *ri* :go-pos-unsafe -1 -0.4 10)
   ;;(send *pr2* :rotate (deg2rad -30) :z)
-  (send *pr2* :translate #f(-700 -300 0))
+  (send *pr2* :translate #f(-1000 -400 10))
   (send *ri* :wait-interpolation)
   
   (send (send *pr2* :r_wrist_roll_link) :dissoc *chair*)
