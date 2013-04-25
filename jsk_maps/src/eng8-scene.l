@@ -89,10 +89,12 @@
     ;; temporarily copy from jsk_2013_04_pr2_610/euslisp/setup.l
     (setq table-front (make-coords :pos #f(4700 1000 0) :rpy (float-vector -pi/2 0 0)))
     (setq chair-back (make-coords :pos #f(3800 0 0)))
+    (setq laundry-front (make-coords :pos #f(2309.927 1601.466 0)))
 
     ;; convert to map coordinates
     (setq table-front (send table-front :transform room610 :world))
     (setq chair-back  (send chair-back :transform room610 :world))
+    (estq laundry-front (send laundry-front :transform room610 :world))
 
     (make-cascoords-tree
      map
@@ -141,6 +143,9 @@
      `(:rot  ,(send chair-back :worldrot)
              :pos ,(send chair-back :worldpos)
              :name "/eng8/6f/room610-chair-back")
+     `(:rot  ,(send laundry-front :worldrot)
+             :pos ,(send laundry-front :worldpos)
+             :name "/eng8/6f/room610-laundry-back")
      )
     
     (setq scene
