@@ -6,6 +6,7 @@
 (load "models/room73b2-broom-object.l")
 (load "models/room610-scene.l")
 ;;(load "open-laundry.l")
+(load "iwaishi-pick-croth.l")
 
 (setq debug nil)
 
@@ -100,6 +101,7 @@
 
 (defun pick-cloth ()
   (warn "pick-cloth (iwaishi)~%")
+  (iwaishi-pick-cloth)
   )
 
 (defun move-to-laundry ()
