@@ -4,6 +4,7 @@
 (load "package://pr2eus/pr2.l")
 (load "package://pr2eus/pr2-interface.l")
 (load "models/room73b2-broom-object.l")
+;;(load "open-laundry.l")
 
 (if (not (boundp '*room610*)) (room610))
 (if (not (boundp '*pr2*)) (pr2))
@@ -12,8 +13,8 @@
 ;;handle
 #|
 (setq *broom-handle2* (make-cascoords :pos (float-vector 0.0 0.0 600.0)
-									  :rot #2f((0.5 -0.866025 0.0) (0.866025 0.5 0.0) (0.0 0.0 1.0))
-									  :name "handle2"))
+                                      :rot #2f((0.5 -0.866025 0.0) (0.866025 0.5 0.0) (0.0 0.0 1.0))
+                                      :name "handle2"))
 (send *broom* :assoc *broom-handle2*)
 (defmethod room73b2-broom-object
   (:handle-handle2 () *broom-handle2*)
@@ -28,13 +29,16 @@
 
 (setq *broom* (send *room610* :object "room610-sweeper"))
 (setq *chair* (send *room610* :object "room610-chair"))
+(setq *laundry* (send *room610* :object "room610-laundry-machine"))
+(send *laundry* :translate #f(39.927 201.466 -85) :world)
 
 ;; spots
 (setq *tray-spot* (make-cascoords :pos #f(4650 1000 0) :rpy (list -pi/2 0 0)))
 (send *room610* :assoc *tray-spot*)
 (setq *chair-spot* (make-cascoords :pos #f(3200 0 0) :rpy (list 0 0 0)))
 (send *room610* :assoc *chair-spot*)
-(setq *laundry-spot* (make-cascoords :pos #f(3400 1400 0) :rpy (list pi/2 0 0)))
+;;(setq *laundry-spot* (make-cascoords :pos #f(3400 1400 0) :rpy (list pi/2 0 0)))
+(setq *laundry-spot* (make-cascoords :pos #f(3359.927 1601.466 0) :rpy (list pi/2 0 0)))
 (send *room610* :assoc *laundry-spot*)
 (setq *sink-spot* (make-cascoords :pos #f(7300 200 0) :rpy (list 0 0 0)))
 (send *room610* :assoc *sink-spot*)
@@ -48,14 +52,14 @@
   (:spot-sink-spot () *sink-spot*)
   (:spot-sweep-spot () *sweep-spot*)
   (:spots ()
-		  (list *tray-spot* *chair-spot* *laundry-spot* *sink-spot* *sweep-spot*)))
+          (list *tray-spot* *chair-spot* *laundry-spot* *sink-spot* *sweep-spot*)))
 
 
 ;(send *broom* :move-to (make-coords :pos #f(3050 2050 0) :rpy (list pi/2 0 (deg2rad 5))) :world)
 
 
 (load "package://jsk_2013_04_pr2_610/euslisp/pick-broom.l")
-;;(load "package://jsk_2013_04_pr2_610/euslisp/open-laundary.l")
+(load "package://jsk_2013_04_pr2_610/euslisp/put-cloth-into-laundry.l")
 
 
 (defun move-to-table ()
@@ -103,16 +107,16 @@
   (send *ri* :move-to (send *room610* :spot-laundry-spot))
   )
 
-(defun open-laundry-door ()
-  (warn "open-laundry-door (kuroiwa)~%"))
+;; (defun open-laundry-door ()
+;;   (warn "open-laundry-door (kuroiwa)~%"))
 
-(defun put-cloth ()
-  (warn "put-cloth (kuroiwa)~%")
-  )
+;; (defun put-cloth ()
+;;   (warn "put-cloth (kuroiwa)~%")
+;;   )
 
-(defun close-laundry-door ()
-  (warn "close-laundry-door (kuroiwa)~%")
-  )
+;; (defun close-laundry-door ()
+;;   (warn "close-laundry-door (kuroiwa)~%")
+;;   )
 
 
 (defun move-chair ()
@@ -213,12 +217,12 @@
   (send *irtviewer* :draw-objects)
   (move-to-laundry)
   (send *irtviewer* :draw-objects)
-  (open-laundry-door)
+  (put-cloth-into-laundry)
   (send *irtviewer* :draw-objects)
-  (put-cloth)
-  (send *irtviewer* :draw-objects)
-  (close-laundry-door)
-  (send *irtviewer* :draw-objects)
+  ;; (put-cloth)
+  ;; (send *irtviewer* :draw-objects)
+  ;; (close-laundry-door)
+  ;; (send *irtviewer* :draw-objects)
   (pick-broom)
   (send *irtviewer* :draw-objects)
   (move-to-chair)
