@@ -5,7 +5,6 @@
 (load "package://pr2eus/pr2-interface.l")
 (load "models/room73b2-broom-object.l")
 (load "models/room610-scene.l")
-;;(load "open-laundry.l")
 (load "iwaishi-pick-croth.l")
 
 (setq debug nil)
@@ -13,25 +12,16 @@
 (if (not (boundp '*room610*)) (room610))
 (if (not (boundp '*pr2*)) (pr2))
 (if (not (boundp '*ri*)) (setq *ri* (instance pr2-interface :init :objects (send *room610* :objects))))
-
-;;handle
-#|
-(setq *broom-handle2* (make-cascoords :pos (float-vector 0.0 0.0 600.0)
-                                      :rot #2f((0.5 -0.866025 0.0) (0.866025 0.5 0.0) (0.0 0.0 1.0))
-                                      :name "handle2"))
-(send *broom* :assoc *broom-handle2*)
-(defmethod room73b2-broom-object
-  (:handle-handle2 () *broom-handle2*)
-  (:handle () (list handle0 handle1 *broom-handle2*)))
-|#
+(if (not (boundp '*tfl*)) (setq *tfl* (instance transform-listener :init)))
 
 (objects (list *room610* *pr2*))
 
-(setq *room610-origin* "/eng8/6f/room610")
+(setq *room610-origin* "/eng8/6f/610")
 (setq *table-coords* (make-coords :pos #f(4700 1000 0) :rpy (float-vector -pi/2 0 0)))
 (setq *chair-coords* (make-coords :pos #f(3800 0 0)))
 
 (setq *broom* (send *room610* :object "room610-sweeper"))
+(send *broom* :translate #f(0 100 0) :world)
 (setq *chair* (send *room610* :object "room610-chair"))
 (setq *laundry* (send *room610* :object "room610-laundry-machine"))
 (send *laundry* :translate #f(39.927 201.466 -85) :world)
@@ -41,8 +31,7 @@
 (send *room610* :assoc *tray-spot*)
 (setq *chair-spot* (make-cascoords :pos #f(3200 0 0) :rpy (list 0 0 0)))
 (send *room610* :assoc *chair-spot*)
-;;(setq *laundry-spot* (make-cascoords :pos #f(3400 1400 0) :rpy (list pi/2 0 0)))
-(setq *laundry-spot* (make-cascoords :pos #f(3359.927 1601.466 0) :rpy (list pi/2 0 0)))
+(setq *laundry-spot* (make-cascoords :pos #f(3359.927 1301.466 0) :rpy (list pi/2 0 0)))
 (send *room610* :assoc *laundry-spot*)
 (setq *sink-spot* (make-cascoords :pos #f(7300 200 0) :rpy (list 0 0 0)))
 (send *room610* :assoc *sink-spot*)
@@ -58,21 +47,18 @@
   (:spots ()
           (list *tray-spot* *chair-spot* *laundry-spot* *sink-spot* *sweep-spot*)))
 
-
-;(send *broom* :move-to (make-coords :pos #f(3050 2050 0) :rpy (list pi/2 0 (deg2rad 5))) :world)
-
-
 (load "package://jsk_2013_04_pr2_610/euslisp/pick-broom.l")
 (load "package://jsk_2013_04_pr2_610/euslisp/put-cloth-into-laundry.l")
 
+(setq *world-to-610* (send *tfl* :lookup-transform "/world" *room610-origin* (ros::time 0)))
 
 (defun move-to-table ()
   (warn "move-to-table~%")
+  (pr2-reset-pose)
   (pr2-tuckarm-pose)
   (send *ri* :angle-vector (send *pr2* :angle-vector) 4000)
- ; (send *ri* :move-to *table-coords* :frame-id *room610-origin*)
   (send *pr2* :move-to (send *room610* :spot-tray-spot) :world)
-  (send *ri* :move-to (send *room610* :spot-tray-spot))
+  (send *ri* :move-to (send *room610* :spot-tray-spot) :frame-id *room610-origin*)
   )
 
 (defun pick-tray ()
@@ -81,10 +67,9 @@
 
 (defun move-to-sink ()
   (warn "move-to-sink~%")
-;  (pr2-tuckarm-pose)
-;  (send *ri* :angle-vector (send *pr2* :angle-vector) 4000)
+  (pr2-tuckarm-pose)
   (send *pr2* :move-to (send *room610* :spot-sink-spot) :world)
-  (send *ri* :move-to (send *room610* :spot-sink-spot))
+  (send *ri* :move-to (send *room610* :spot-sink-spot) :frame-id *room610-origin*)
   )
 
 (defun place-tray ()
@@ -93,10 +78,8 @@
 
 (defun move-to-chair ()
   (warn "move-to-chair~%")
-;  (send *ri* :move-to *chair-coords* :frame-id *room610-origin*)
-  (send *ri* :angle-vector (send *pr2* :angle-vector) 4000)
   (send *pr2* :move-to (send *room610* :spot-chair-spot) :world)
-  (send *ri* :move-to (send *room610* :spot-chair-spot))
+  (send *ri* :move-to (send *room610* :spot-chair-spot) :frame-id *room610-origin*)
   )
 
 (defun pick-cloth ()
@@ -106,10 +89,16 @@
 
 (defun move-to-laundry ()
   (warn "move-to-laundry~%")
- ; (pr2-tuckarm-pose)
- ; (send *ri* :angle-vector (send *pr2* :angle-vector) 4000)
   (send *pr2* :move-to (send *room610* :spot-laundry-spot) :world)
-  (send *ri* :move-to (send *room610* :spot-laundry-spot))
+  (send *pr2* :translate #f(0 300 0) (send *room610* :worldcoords))
+  (send *ri* :move-to (send *room610* :spot-laundry-spot) :frame-id *room610-origin*)
+  (setq current-ri-coords (send (send *world-to-610* :worldcoords) :transformation (send *ri* :state :worldcoords)))
+  (setq mou-chotto-pos (v- (send (send *room610* :spot-laundry-spot) :pos) (send current-ri-coords :pos)))
+  (setq mou-chotto-roll
+		(- 
+		 (elt (elt (send (send *room610* :spot-laundry-spot) :rpy-angle) 0) 0)
+		 (elt (elt (send current-ri-coords :rpy-angle) 0) 0)))
+  (send *ri* :go-pos-unsafe (/ (elt mou-chotto-pos 0) 1000) (/ (elt mou-chotto-pos 1) 1000) (rad2deg mou-chotto-roll))
   )
 
 ;; (defun open-laundry-door ()
@@ -157,6 +146,7 @@
 
   (send (send *pr2* :r_wrist_roll_link) :assoc *chair*)
   (send *ri* :angle-vector (send *pr2* :angle-vector))
+  (send *ri* :wait-interpolation)
   (send *ri* :start-grasp)
   (send *ri* :wait-interpolation)
 
@@ -196,7 +186,8 @@
 (defun move-to-sweep ()
   (warn "move-to-sweep~%")
   (send *pr2* :move-to (send *room610* :spot-sweep-spot) :world)
-  (send *ri* :move-to (send *room610* :spot-sweep-spot)))
+  (send *ri* :move-to (send *room610* :spot-sweep-spot) :frame-id *room610-origin*)
+)
 
 (defun sweep-under-table ()
   (warn "sweep-under-table (yukizaki)~%")
