@@ -42,7 +42,7 @@
       
 
       ;; ready to push
-      (send *pr2* :rarm :inverse-kinematics dst :look-at-target t :debug-view t)
+      (send *pr2* :rarm :inverse-kinematics dst :look-at-target t :debug-view t :revert-if-fail nil)
       (send *irtviewer* :draw-objects)
       (send *pr2* :rarm :wrist-r :joint-angle 0)
       (send *ri* :angle-vector (send *pr2* :angle-vector))
