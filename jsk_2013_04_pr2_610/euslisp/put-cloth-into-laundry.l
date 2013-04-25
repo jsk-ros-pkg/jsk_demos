@@ -37,7 +37,7 @@
     (let ((dst (make-coords)) (front 120))
       ;; modify the model's parameters
       ;; (send dst :init :pos (send (send (send button :copy-worldcoords) :translate (float-vector (- near) 0 0) :world) :worldpos) :rot (send *pr2* :worldrot))
-      (send dst :init :pos (send (send (send button :copy-worldcoords) :translate (float-vector (- (* near 1.2)) 0 0) (send *pr2* :worldcoords)) :worldpos) :rot (send *pr2* :worldrot))
+      (send dst :init :pos (send (send (send button :copy-worldcoords) :translate (float-vector (- (* near 1.2)) 0 0) (send *pr2* :worldcoords)) :worldpos) :rot (send (send *pr2* :worldrot) :rotate (deg2rad 90) :axis :x))
       
 
       ;; ready to push
