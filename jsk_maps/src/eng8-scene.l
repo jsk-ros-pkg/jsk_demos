@@ -145,7 +145,7 @@
              :name "/eng8/6f/room610-chair-back")
      `(:rot  ,(send laundry-front :worldrot)
              :pos ,(send laundry-front :worldpos)
-             :name "/eng8/6f/room610-laundry-back")
+             :name "/eng8/6f/room610-laundry-flont")
      )
     
     (setq scene
