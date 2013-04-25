@@ -94,7 +94,7 @@
     ;; convert to map coordinates
     (setq table-front (send table-front :transform room610 :world))
     (setq chair-back  (send chair-back :transform room610 :world))
-    (estq laundry-front (send laundry-front :transform room610 :world))
+    (setq laundry-front (send laundry-front :transform room610 :world))
 
     (make-cascoords-tree
      map
