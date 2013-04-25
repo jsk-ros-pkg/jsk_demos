@@ -132,7 +132,7 @@
       (send *irtviewer* :draw-objects)
       (send *ri* :angle-vector (send *pr2* :angle-vector))
       (send *ri* :wait-interpolation)
-      (send *ri* :start-grasp :rarm)
+      ;; (send *ri* :start-grasp :rarm)
       (print "put the cloth")
 
       ;; pull the right arm
@@ -184,7 +184,7 @@
     (send *irtviewer* :draw-objects)
     (send *ri* :angle-vector (send *pr2* :angle-vector))
     (send *ri* :wait-interpolation)
-    (speak-en "MISISON COMPLETE")
+    (speak-ja "ミッションコンプリート")
     )
   )
 
