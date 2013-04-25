@@ -39,9 +39,8 @@
       ;; (send dst :init :pos (send (send (send button :copy-worldcoords) :translate (float-vector (- near) 0 0) :world) :worldpos) :rot (send *pr2* :worldrot))
       
       (setq tmp_list (car (rpy-angle (send *pr2* :worldrot))))
-      (setq tmp_float (float-vector (+ (car tmp_list) (/ pi 2)) (cadr tmp_list) (caddr tmp_list)))
       ;; (send dst :init :pos (send (send (send button :copy-worldcoords) :translate (float-vector (- (* near 1.2)) 0 0) (send *pr2* :worldcoords)) :worldpos) :rot (send (send *pr2* :worldrot) :rotate (deg2rad 90) :axis :x))
-      (send dst :init :pos (send (send (send button :copy-worldcoords) :translate (float-vector (- (* near 1.2)) 0 0) (send *pr2* :worldcoords)) :worldpos) :rot tmp_float)
+      (send dst :init :pos (send (send (send button :copy-worldcoords) :translate (float-vector (- (* near 1.2)) 0 0) (send *pr2* :worldcoords)) :worldpos) :rot (Euler-matrix (car tmp_list) (cadr tmp_list) (caddr tmp_list)))
 
       ;; ready to push
       (send *pr2* :rarm :inverse-kinematics dst :look-at-target t :debug-view t :revert-if-fail nil)
