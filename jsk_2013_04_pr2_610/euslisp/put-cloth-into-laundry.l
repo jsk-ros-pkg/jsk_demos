@@ -81,7 +81,7 @@
       (send cap_point :init :pos (send (send (send handle :copy-worldcoords) :translate #f(-60 0 0) (send *pr2* :worldcoords)) :worldpos) :rot (send handle :worldrot))
 
       ;; insert the right arm into the gap
-      (send *pr2* :rarm :inverse-kinematics cap_point :look-at-target t :debug-view t)
+      (send *pr2* :rarm :inverse-kinematics cap_point :look-at-target t :debug-view t :revert-if-fail nil)
       (send *irtviewer* :draw-objects)
       (send *ri* :angle-vector (send *pr2* :angle-vector))
       (send *ri* :wait-interpolation)
@@ -91,14 +91,14 @@
       ;; (send dst :init :pos (send (send (send cap_point :copy-worldcoords) :translate (float-vector (- near) (* 0.7 r) 0) :world) :worldpos) :rot (send cap_point :worldrot))
       (send dst :init :pos (send (send (send cap_point :copy-worldcoords) :translate (float-vector (- near) (* 0.7 r) 0) (send *pr2* :worldcoords)) :worldpos) :rot (send cap_point :worldrot))
 
-      (send *pr2* :rarm :inverse-kinematics dst :look-at-target t :debug-view t)
+      (send *pr2* :rarm :inverse-kinematics dst :look-at-target t :debug-view t :revert-if-fail nil)
       (send *irtviewer* :draw-objects)
       (send *ri* :angle-vector (send *pr2* :angle-vector))
       (send *ri* :wait-interpolation)
       (print "open the cap")
 
       ;; move the right arm for putting the cloth
-      (send *pr2* :rarm :move-end-pos (float-vector (- (* r 0.3)) 0 0))
+      (send *pr2* :rarm :move-end-pos (float-vector (- (* r 0.3)) 0 0) :revert-if-fail nil)
       (send *irtviewer* :draw-objects)
       (send *ri* :angle-vector (send *pr2* :angle-vector))
       (send *ri* :wait-interpolation)
@@ -117,7 +117,7 @@
       ;; (send *pr2* :rarm :inverse-kinematics (send (send dst :copy-worldcoords) :translate (float-vector (- (* depth 0.4)) 0 near) :world) :look-at-target t :debug-view t)
       ;; (send *pr2* :rarm :inverse-kinematics (send (send dst :copy-worldcoords) :translate (float-vector (- (* depth 0.4)) 0 near)) :look-at-target t :debug-view t)
       ;; (send *pr2* :rarm :inverse-kinematics (send (send dst :copy-worldcoords) :translate (send *pr2* :transform-vector (float-vector (- (* depth 0.4)) 0 near))) :look-at-target t :debug-view t)
-      (send *pr2* :rarm :inverse-kinematics (send (send dst :copy-worldcoords) :translate (float-vector (- (* depth 0.4)) 0 near) (send *pr2* :worldcoords)) :look-at-target t :debug-view t)
+      (send *pr2* :rarm :inverse-kinematics (send (send dst :copy-worldcoords) :translate (float-vector (- (* depth 0.4)) 0 near) (send *pr2* :worldcoords)) :look-at-target t :debug-view t :revert-if-fail nil)
 
       (send *irtviewer* :draw-objects)
       (send *ri* :angle-vector (send *pr2* :angle-vector))
@@ -145,7 +145,7 @@
       ;; (send *pr2* :rarm :inverse-kinematics (send (send dst :copy-worldcoords) :translate (float-vector (- (* depth 0.7)) 0 (* near 1.2)) :world) :look-at-target t :debug-view t)
       ;; (send *pr2* :rarm :inverse-kinematics (send (send dst :copy-worldcoords) :translate (float-vector (- (* depth 0.7)) 0 (* near 1.2))) :rotation-axis nil :look-at-target t :debug-view t)
       ;; (send *pr2* :rarm :inverse-kinematics (send (send dst :copy-worldcoords) :translate (send *pr2* :transform-vector (float-vector (- (* depth 0.7)) 0 (* near 1.2)))) :look-at-target t :debug-view t)
-      (send *pr2* :rarm :inverse-kinematics (send (send dst :copy-worldcoords) :translate (float-vector (- (* depth 0.7)) 0 (* near 1.2)) (send *pr2* :worldcoords)) :look-at-target t :debug-view t)
+      (send *pr2* :rarm :inverse-kinematics (send (send dst :copy-worldcoords) :translate (float-vector (- (* depth 0.7)) 0 (* near 1.2)) (send *pr2* :worldcoords)) :look-at-target t :debug-view t :revert-if-fail nil)
       (send *irtviewer* :draw-objects)
       (send *ri* :angle-vector (send *pr2* :angle-vector))
       (send *ri* :wait-interpolation)
@@ -160,7 +160,7 @@
       ;; (send *pr2* :rarm :inverse-kinematics (send (send former :copy-worldcoords) :translate #f(-100 -200 -100) :world) :rotation-axis nil :debug-view t)
       ;; (send *pr2* :rarm :inverse-kinematics (send (send former :copy-worldcoords) :translate #f(-100 -200 -100)) :rotation-axis nil :debug-view t)
       ;; (send *pr2* :rarm :inverse-kinematics (send (send former :copy-worldcoords) :translate (send *pr2* :transform-vector #f(-100 -200 -100))) :rotation-axis nil :debug-view t)
-      (send *pr2* :rarm :inverse-kinematics (send (send former :copy-worldcoords) :translate #f(-100 -200 -100) (send *pr2* :worldcoords)) :rotation-axis nil :debug-view t)
+      (send *pr2* :rarm :inverse-kinematics (send (send former :copy-worldcoords) :translate #f(-100 -200 -100) (send *pr2* :worldcoords)) :rotation-axis nil :debug-view t :revert-if-fail nil)
       (send *irtviewer* :draw-objects)
       (send *ri* :angle-vector (send *pr2* :angle-vector))
       (send *ri* :wait-interpolation)
@@ -176,7 +176,7 @@
 
       ;; close the cap
       ;;(send *pr2* :larm :inverse-kinematics (send (send cap_point :copy-worldcoords) :translate (send *pr2* :transform-vector (float-vector (+ near 50) 0 0))) :rotation-axis nil :debug-view t)
-      (send *pr2* :larm :inverse-kinematics (send (send cap_point :copy-worldcoords) :translate (float-vector (+ near 50) 0 0) (send *pr2* :worldcoords)) :rotation-axis nil :debug-view t)
+      (send *pr2* :larm :inverse-kinematics (send (send cap_point :copy-worldcoords) :translate (float-vector (+ near 50) 0 0) (send *pr2* :worldcoords)) :rotation-axis nil :debug-view t :revert-if-fail nil)
       (send *irtviewer* :draw-objects)
       (send *ri* :angle-vector (send *pr2* :angle-vector) 1000)
       (send *ri* :wait-interpolation)
