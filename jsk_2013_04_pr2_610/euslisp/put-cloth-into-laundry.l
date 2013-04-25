@@ -37,15 +37,18 @@
     (let ((dst (make-coords)) (front 120))
       ;; modify the model's parameters
       ;; (send dst :init :pos (send (send (send button :copy-worldcoords) :translate (float-vector (- near) 0 0) :world) :worldpos) :rot (send *pr2* :worldrot))
-      (send dst :init :pos (send (send (send button :copy-worldcoords) :translate (float-vector (- near) 0 0) (send *pr2* :worldcoords)) :worldpos) :rot (send *pr2* :worldrot))
+      (send dst :init :pos (send (send (send button :copy-worldcoords) :translate (float-vector (- (* near 1.2)) 0 0) (send *pr2* :worldcoords)) :worldpos) :rot (send *pr2* :worldrot))
       
 
       ;; ready to push
       (send *pr2* :rarm :inverse-kinematics dst :look-at-target t :debug-view t :revert-if-fail nil)
       (send *irtviewer* :draw-objects)
-      (send *pr2* :rarm :wrist-r :joint-angle 0)
+      (send *pr2* :rarm :wrist-r :joint-angle 90)
       (send *ri* :angle-vector (send *pr2* :angle-vector))
       (send *ri* :wait-interpolation)
+      ;; (send *pr2* :rarm :wrist-r :joint-angle 90)
+      ;; (send *ri* :angle-vector (send *pr2* :angle-vector))
+      ;; (send *ri* :wait-interpolation)
       (print "ready to put")
 
       ;; push
@@ -118,7 +121,7 @@
       (print "ready to put")
 
       ;; put the cloth
-      (send *pr2* :rarm :inverse-kinematics dst :rotation-axis nil :look-at-target t :debug-view t)
+      (send *pr2* :rarm :inverse-kinematics dst :rotation-axis nil :look-at-target t :debug-view t :revert-if-fail nil)
       (send *irtviewer* :draw-objects)
       (send *ri* :angle-vector (send *pr2* :angle-vector))
       (send *ri* :wait-interpolation)
