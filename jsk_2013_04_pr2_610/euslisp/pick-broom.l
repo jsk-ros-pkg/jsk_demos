@@ -65,7 +65,7 @@
   (pr2-solve-ik :larm
 				(make-cascoords :pos (send *pr2* :transform-vector #f(530 0 1300))
 								:rpy larm-rpy)
-				:rotation-axis :Z
+				:rotation-axis :z
 				:time 1000
 				:debug-view debug)
 
@@ -75,7 +75,7 @@
   (speak-jp "みぎて")
 
   (pr2-solve-ik :rarm
-				(make-coords :pos (send *pr2* :transform-vector #f(530 20 650))
+				(make-coords :pos (send *pr2* :transform-vector #f(530 100 650))
 							 :rpy (list (deg2rad 70) 0 0))
 				:rotation-axis :z
 				:time 1500
@@ -84,7 +84,7 @@
   (send *pr2* :torso :waist-z :joint-angle 0)
   (p2r)
   (send *ri* :wait-interpolation)
-  (grasp-with-angle :arms 60)
+;  (grasp-with-angle :arms 60)
 
   (send (send *pr2* :l_wrist_roll_link) :dissoc *broom*)
 
@@ -108,9 +108,10 @@
   (send *ri* :start-grasp)
 
   ;for debug
+  (when debug
   (speak-jp "もとにもどる")
   (send *ri* :stop-grasp)
   (send (elt (send *pr2* :larm) 6) :dissoc *broom*)
   (send *ri* :go-pos-unsafe 0.5 0)
-  (send *ri* :angle-vector (send *pr2* :reset-pose) 4000)
+  (send *ri* :angle-vector (send *pr2* :reset-pose) 4000))
   )
