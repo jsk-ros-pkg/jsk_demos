@@ -7,23 +7,22 @@
 
 ;; 610' position
 ;; -29097.67 16322.869 20000.103
+(defun init ()
+  (load "models/room610-scene.l")
+  (load "package://pr2eus/pr2-interface.l")
 
-(load "models/room610-scene.l")
-(load "package://pr2eus/pr2-interface.l")
+  (if (not (boundp '*room610*)) (room610))
+  (if (not (boundp '*pr2*)) (pr2))
+  (if (not (boundp '*ri*)) (setq *ri* (instance pr2-interface :init :objects (send *room610* :objects))))
+  ;;(if (not (boundp '*laundry*)) (setq *laundry* (room610-laundry-machine)))
 
-(if (not (boundp '*room610*)) (room610))
-(if (not (boundp '*pr2*)) (pr2))
-(if (not (boundp '*ri*)) (setq *ri* (instance pr2-interface :init :objects (send *room610* :objects))))
-;;(if (not (boundp '*laundry*)) (setq *laundry* (room610-laundry-machine)))
+  (send *irtviewer* :draw-objects)
+  (send *pr2* :reset-pose)
+  (send *ri* :angle-vector (send *pr2* :angle-vector))
+  (send *ri* :start-grasp :rarm)
 
-(send *irtviewer* :draw-objects)
-(send *pr2* :reset-pose)
-(send *ri* :angle-vector (send *pr2* :angle-vector))
-(send *ri* :start-grasp :rarm)
-
-;;(send *laundry* :move-to (make-cascoords :pos #f(1240 -180 -85) :rpy (float-vector pi 0 0)) :world)
-
-
+  ;;(send *laundry* :move-to (make-cascoords :pos #f(1240 -180 -85) :rpy (float-vector pi 0 0)) :world)
+)
 (defun put-cloth-into-laundry ()
   (warn "open-laundry-door (kuroiwa2)~%")
 

@@ -8,6 +8,8 @@
 ;;(load "force_cul.l")
 (load "models/arrow-object.l")
 
+(warn "You need to roslaunch ee_cart_imped_tutorial change_arms_controll.launch~%")
+
 (defun rhand-grasp nil
   (let (lhand lhand-pre)
     (send *pr2* :reset-pose)
