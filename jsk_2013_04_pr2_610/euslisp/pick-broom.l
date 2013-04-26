@@ -1,5 +1,20 @@
 (load "package://jsk_2013_04_pr2_610/euslisp/furushchev-utils.l")
 
+(defun move-to-pick-broom-spot ()
+  (warn "move-to-pick-broom-spot~%")
+  (send *pr2* :move-to (send *room610* :spot-pick-broom-spot) :world)
+;  (send *pr2* :translate #f(0 300 0) (send *room610* :worldcoords))
+;  (send *ri* :move-to (send *room610* :spot-pick-broom-spot) :frame-id *room610-origin*)
+  (setq current-ri-coords (send (send *world-to-610* :worldcoords) :transformation (send *ri* :state :worldcoords)))
+  (setq mou-chotto-pos (v- (send (send *room610* :spot-pick-broom-spot) :pos) (send current-ri-coords :pos)))
+  (setq mou-chotto-local-pos (transform (inverse-matrix (send (send *ri* :state :worldcoords) :worldrot)) mou-chotto-pos))
+  (setq mou-chotto-roll
+		(- 
+		 (elt (elt (send (send *room610* :spot-pick-broom-spot) :rpy-angle) 0) 0)
+		 (elt (elt (send current-ri-coords :rpy-angle) 0) 0)))
+  (send *ri* :go-pos-unsafe (/ (elt mou-chotto-local-pos 0) 1000) (/ (elt mou-chotto-local-pos 1) 1000) (rad2deg mou-chotto-roll))
+)
+
 (defun pick-broom ()
   (warn "pick-broom (furushchev)~%")
   (setq debug nil)
@@ -89,7 +104,7 @@
   (send (send *pr2* :l_wrist_roll_link) :dissoc *broom*)
 
   (warn "calib-pick-height~%")
-  (speak-jp "た'かさを,そろ'える")
+  (speak-jp "'たかさを,そ'ろえる")
   (if debug (break))
   (send *pr2* :inverse-kinematics (send *broom* :handle-larm)
 		:link-list (list (send *pr2* :link-list (send *pr2* :larm :end-coords :parent)))
@@ -103,9 +118,15 @@
 		:look-at-target nil
 		:rotation-axis :z
 		:debug-view debug)
+
+  (send *ri* :angle-vector (send *pr2* :angle-vector))
+  (send *ri* :wait-interpolation)
+  (send *pr2* :rarm :move-end-pos #f(80 0 0))
   (send *ri* :angle-vector (send *pr2* :angle-vector))
   (send *ri* :wait-interpolation)
   (send *ri* :start-grasp)
+
+  (send *pr2* :torso :waist-z :joint-angle 100)
 
   ;for debug
   (when debug
