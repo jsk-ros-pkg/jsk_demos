@@ -6,6 +6,7 @@
 (load "models/room73b2-broom-object.l")
 (load "models/room610-scene.l")
 (load "iwaishi-pick-croth.l")
+(load "y-tanaka-pick-tray.l")
 
 (setq debug nil)
 
@@ -74,7 +75,8 @@
 
 (defun pick-tray ()
   (warn "pick-tray (tanaka)~%")
-  )
+  (y-tanaka-pick-tray)
+)
 
 (defun move-to-sink ()
   (warn "move-to-sink~%")
@@ -94,7 +96,7 @@
   )
 
 (defun pick-cloth ()
-  (warn "pick-cloth (iwaishi)~%")
+  (warn "pick-cloth ()~%")
   (iwaishi-pick-cloth)
   )
 
