@@ -176,14 +176,24 @@
 
 
 (defun move-around nil
-	(send *ri* :go-pos-unsafe 0.5 0 0)
-	(send *ri* :go-pos-unsafe 0 0 0)
+	(send *ri* :go-pos-unsafe 0 0 -90)
+	(send *ri* :go-pos-unsafe 1.5 0 0)
+	(send *ri* :go-pos-unsafe 0 0 90)
+	(send *ri* :go-pos-unsafe 2.5 0 0)
+	(send *ri* :go-pos-unsafe 0 0 90)
+
+	(send *ri* :go-pos-unsafe 2.5 0 0)
+	(send *ri* :go-pos-unsafe 0 0 90)
+
+	(send *ri* :go-pos-unsafe 2.5 0 0)
+	(send *ri* :go-pos-unsafe 0 0 90)
+
 )
 
-(ros::roseus "read_marker_sample")
 
 
-(defun init nil
+
+(defun furuta-init nil
   (pr2)
   ;;(set-link)
   ;;(objects (list *arrow* *pr2*))
@@ -194,7 +204,8 @@
   ;;(marker-memory :pose-move)
 )
 
-(defun sweep nil
+(defun furuta-sweep nil
+  (ros::roseus "read_marker_sample")
   (rhand-grasp)
   (force-move)
   (move-around)
