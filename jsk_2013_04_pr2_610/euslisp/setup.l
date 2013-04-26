@@ -151,7 +151,7 @@
   (warn "move-chair (inagaki)~%")
   ;; use handle to manipulate
   ;;(send *pr2* :reset-pose) ;; to solve ik, do not  send to *ri*
-  (send *pr2* :inverse-kinematics (send  (send (send *pr2* :rarm :end-coords) :copy-worldcoords) :translate #f(0 0 300) :world)
+  (send *pr2* :inverse-kinematics (send  (send (send *pr2* :rarm :end-coords) :copy-worldcoords) :translate #f(0 0 400) :world)
 	:revert-if-fail nil
         :link-list (list
                       (send *pr2* :link-list (send *pr2* :rarm :end-coords :parent)))
@@ -166,7 +166,7 @@
 
   (send *pr2* :angle-vector (send *ri* :state :potentio-vector))
 ;;(send *pr2* :reset-pose) ;; to solve ik, do not  send to *ri*
-  (send *pr2* :inverse-kinematics (list (send *chair* :handle-above-rarm))
+  (send *pr2* :inverse-kinematics (list (send (send *chair* :handle-above-rarm) :translate #f(0 0 -20) :wolrd))
         :link-list (list
                       (send *pr2* :link-list (send *pr2* :rarm :end-coords :parent)))
         :move-target (list (send *pr2* :rarm :end-coords))
@@ -187,7 +187,33 @@
 
 (send *pr2* :angle-vector (send *ri* :state :potentio-vector))
 (setq destC (send (send *pr2* :rarm :end-coords) :copy-worldcoords))
-(send destC :translate #f(-250 0 -150) :world)
+(send destC :translate #f(-260 200 -200) :world)
+(send destC :rotate (deg2rad -50) :y :world)
+
+
+
+(send *pr2* :inverse-kinematics destC
+        :link-list (list
+                      (send *pr2* :link-list (send *pr2* :rarm :end-coords :parent)))
+        :move-target (list (send *pr2* :rarm :end-coords))
+        :look-at-target t
+;;                :debug-view t
+        )
+  (send *ri* :wait-interpolation)
+
+  (send *ri* :angle-vector (send *pr2* :angle-vector))
+  (send *ri* :wait-interpolation)
+
+ (unix::sleep 5)
+
+  ;; backword
+  (send *ri* :go-pos-unsafe -1.1 -0.4 10)
+  ;;(send *pr2* :rotate (deg2rad -30) :z)
+  (send *pr2* :translate #f(-1100 -400 10))
+  (send *ri* :wait-interpolation)
+
+(setq destC (send (send *pr2* :rarm :end-coords) :copy-worldcoords))
+(send destC :translate #f(300 0 300) :world)
 (send destC :rotate (deg2rad -45) :y :world)
 
 
@@ -206,11 +232,6 @@
 
 
 
-  ;; backword
-  (send *ri* :go-pos-unsafe -1 -0.4 10)
-  ;;(send *pr2* :rotate (deg2rad -30) :z)
-  (send *pr2* :translate #f(-1000 -400 10))
-  (send *ri* :wait-interpolation)
   
   (send (send *pr2* :r_wrist_roll_link) :dissoc *chair*)
   (send *ri* :stop-grasp :rarm)
