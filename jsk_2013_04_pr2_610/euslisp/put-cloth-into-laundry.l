@@ -42,7 +42,7 @@
       ;; (send dst :init :pos (send (send (send button :copy-worldcoords) :translate (float-vector (- (* near 1.2)) 0 0) (send *pr2* :worldcoords)) :worldpos) :rot (send (send *pr2* :worldrot) :rotate (deg2rad 90) :axis :x))
       (send dst :init 
             :pos (send (send (send button :copy-worldcoords) :translate (float-vector (- (* near 1.2)) 0 0) (send *pr2* :worldcoords)) :worldpos)
-            :rot (send (send (send *pr2* :copy-worldcoords) :rotate (deg2rad -100) :x) :worldrot))
+            :rot (send (send (send *pr2* :copy-worldcoords) :rotate (deg2rad 30) :x) :worldrot))
 
       ;; ready to push
       (send *pr2* :rarm :inverse-kinematics dst :look-at-target t :debug-view t :revert-if-fail nil)
@@ -56,7 +56,9 @@
       (print "ready to put")
 
       ;; push
-      (send *pr2* :rarm :move-end-pos (float-vector near 0 0))
+      ;; (setq test (send (send dst :copy-worldcoords) :translate (float-vector near 0 0) (send *room610* :worldcoords)))
+      ;; (send *pr2* :rarm :inverse-kinematics test 1000)
+      (send *pr2* :rarm :move-end-pos (float-vector 100 0 0))
       (send *irtviewer* :draw-objects)
       (send *ri* :angle-vector (send *pr2* :angle-vector))
       (send *ri* :wait-interpolation)
@@ -196,7 +198,7 @@
     (send *irtviewer* :draw-objects)
     (send *ri* :angle-vector (send *pr2* :angle-vector))
     (send *ri* :wait-interpolation)
-    (speak-ja "ミッションコンプリート")
+    (speak-jp "ミッションコンプリート")
     )
   )
 

@@ -28,7 +28,9 @@
 (setq *laundry* (send *room610* :object "room610-laundry-machine"))
 ;;(send *laundry* :translate #f(39.927 201.466 -85) :world)
 ;;(send *laundry* :translate #f(-130 250 200) (send *room610* :worldcoords))
-(send *laundry* :translate #f(-135 120 -85) (send *room610* :worldcoords))
+;; yukizaki?
+;; (send *laundry* :translate #f(-135 120 -85) (send *room610* :worldcoords))
+(send *laundry* :translate #f(-120 10 -85) (send *room610* :worldcoords))
 
 ;; spots
 (setq *tray-spot* (make-cascoords :pos #f(4650 1000 0) :rpy (list -pi/2 0 0)))
@@ -102,9 +104,19 @@
   (send *laundry* :translate diff (send *room610* :worldcoords))
   )
 
+(defun relocate-pr2 ()
+  (setq ima (send *ri* :state :worldcoords "/eng8/6f/610"))
+  (send *pr2* :move-to ima :world))
+
 (defun mtl ()
   (setq ima (send *ri* :state :worldcoords "/eng8/6f/610"))
   (send *pr2* :move-to ima :world)
+)
+
+(defun test ()
+  (init)
+  (mtl)
+  (put-cloth-into-laundry)
 )
 
 (defun move-to-laundry ()
