@@ -174,10 +174,32 @@
     (send *pr2* :angle-vector (send *ri* :state :potentio-vector))
 )
 
+(defun pr2-rotate (rad)
+  (setq current-ri-coords (send (send *world-to-610* :worldcoords) :transformation (send *ri* :state :worldcoords)))
+  (setq mou-chotto-pos (v- (send (send *room610* :spot-laundry-spot) :pos) (send current-ri-coords :pos)))
+  (setq mou-chotto-roll
+        (- rad (elt (elt (send current-ri-coords :rpy-angle) 0) 0)))
+  (print mou-chotto-roll)
+  (send *ri* :go-pos-unsafe 0 0 (rad2deg mou-chotto-roll))
+)
+
+(defun pr2-move-first nil
+  (setq current-ri-coords (send (send *world-to-610* :worldcoords) :transformation (send *ri* :state :worldcoords)))
+  (setq mou-chotto-pos (v- #f(4012.3 -1607.95 1.20346)  (send current-ri-coords :pos)))
+  (setq mou-chotto-pos (transform (inverse-matrix  (send (send *ri* :state :worldcoords) :worldrot)) mou-chotto-pos))
+  (setq mou-chotto-roll
+        (- -pi/2 (elt (elt (send current-ri-coords :rpy-angle) 0) 0)))
+  (print mou-chotto-roll)
+  (send *ri* :go-pos-unsafe (/ (elt mou-chotto-pos 0) 1000) (/ (elt mou-chotto-pos 1) 1000)   (rad2deg mou-chotto-roll))
+)
 
 (defun move-around nil
-	(send *ri* :go-pos-unsafe 0 0 -90)
-	(send *ri* :go-pos-unsafe 1.5 0 0)
+
+(pr2-rotate -pi/2)
+(pr2-move-first)
+
+  (pr2-rotate 0)
+;;  (return-from move-around)
 	(send *ri* :go-pos-unsafe 0 0 90)
 	(send *ri* :go-pos-unsafe 2.5 0 0)
 	(send *ri* :go-pos-unsafe 0 0 90)
@@ -189,8 +211,6 @@
 	(send *ri* :go-pos-unsafe 0 0 90)
 
 )
-
-
 
 
 (defun furuta-init nil
@@ -206,7 +226,7 @@
 
 (defun furuta-sweep nil
   (ros::roseus "read_marker_sample")
-  (rhand-grasp)
+  ;;(rhand-grasp)
   (force-move)
   (move-around)
   (stop-force)

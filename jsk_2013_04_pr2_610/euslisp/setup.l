@@ -272,6 +272,7 @@
 
 (defun sweep-floor ()
   (warn "sweep-floor (furuta)~%")
+  (furuta-sweep)
   )
 
 
