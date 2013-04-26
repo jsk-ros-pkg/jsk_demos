@@ -26,7 +26,7 @@
 (setq *chair-coords* (make-coords :pos #f(3800 0 0)))
 
 (setq *broom* (send *room610* :object "room610-sweeper"))
-(send *broom* :locate #f(3100.0 2090.0 0.0) :world)
+(send *broom* :locate #f(3000.0 2090.0 0.0) :world)
 ;;(send *broom* :translate #f(0 100 0) :world)
 (setq *chair* (send *room610* :object "room610-chair"))
 (setq *laundry* (send *room610* :object "room610-laundry-machine"))
@@ -45,7 +45,7 @@
 (send *room610* :assoc *chair-spot*)
 (setq *laundry-spot* (make-cascoords :pos #f(3176.358 1409.163 -0.854) :rpy #f(1.544 0.004 0.002)))
 (send *room610* :assoc *laundry-spot*)
-(setq *pick-broom-spot* (make-cascoords :pos #f(3369.927 1451.466 0) :rpy (list pi/2 0 0)))
+(setq *pick-broom-spot* (make-cascoords :pos #f(3269.927 1351.466 0) :rpy (list pi/2 0 0)))
 (send *room610* :assoc *pick-broom-spot*)
 (setq *sink-spot* (make-cascoords :pos #f(7300 200 0) :rpy (list 0 0 0)))
 (send *room610* :assoc *sink-spot*)
