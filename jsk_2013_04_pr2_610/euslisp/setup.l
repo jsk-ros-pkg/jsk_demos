@@ -7,6 +7,7 @@
 (load "models/room610-scene.l")
 (load "iwaishi-pick-croth.l")
 (load "y-tanaka-pick-tray.l")
+(load "wesleyc-place-tray.l")
 
 (setq debug nil)
 
@@ -87,6 +88,7 @@
 
 (defun place-tray ()
   (warn "place-tray (chan)~%")
+  (wesleyc-place-tray)
   )
 
 (defun move-to-chair ()
