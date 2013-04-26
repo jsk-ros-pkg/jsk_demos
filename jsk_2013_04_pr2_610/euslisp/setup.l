@@ -159,7 +159,7 @@
         )
   (send *ri* :angle-vector (send *pr2* :angle-vector))
   (send *ri* :wait-interpolation)
-  (send *ri* :stop-grasp)
+  (send *ri* :stop-grasp :rarm)
   (send *ri* :wait-interpolation)
 
   (send *pr2* :angle-vector (send *ri* :state :potentio-vector))
@@ -179,7 +179,7 @@
   (send (send *pr2* :r_wrist_roll_link) :assoc *chair*)
   (send *ri* :angle-vector (send *pr2* :angle-vector))
   (send *ri* :wait-interpolation)
-  (send *ri* :start-grasp)
+  (send *ri* :start-grasp :rarm)
   (send *ri* :wait-interpolation)
 
 
@@ -211,7 +211,7 @@
   (send *ri* :wait-interpolation)
   
   (send (send *pr2* :r_wrist_roll_link) :dissoc *chair*)
-  (send *ri* :stop-grasp)
+  (send *ri* :stop-grasp :rarm)
   (send *ri* :wait-interpolation)
   )
 
