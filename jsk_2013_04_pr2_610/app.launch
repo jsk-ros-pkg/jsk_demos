@@ -2,6 +2,6 @@
   <env name="PATH" value="$(env PATH):$(find roseus)/bin" />
   <node name="setup"
     pkg="jsk_2013_04_pr2_610"
-    type="euslisp/setup.l"
+    type="euslisp/demo.l"
     output="screen"/>
 </launch>
