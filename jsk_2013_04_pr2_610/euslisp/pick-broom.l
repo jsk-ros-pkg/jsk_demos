@@ -29,6 +29,16 @@
 
   (speak-jp "もっぷ")
 
+  (send *pr2* :inverse-kinematics
+		(make-coords :pos (send *pr2* :transform-vector #f(300 200 1000))
+					 :rpy (list 0 0 0))
+		:link-list (list (send *pr2* :link-list (send *pr2* :larm :end-coords :parent)))
+		:move-target (list (send *pr2* :larm :end-coords))
+		:look-at-target t
+		:rotation-axis nil
+		:debug-view debug)
+  (p2r)
+  (send *ri* :wait-interpolation)
   (send *pr2* :inverse-kinematics (send (send *broom* :handle-larm) :rotate (deg2rad 170) :z)
 		:link-list (list
 					(send *pr2* :link-list (send *pr2* :larm :end-coords :parent)))
@@ -39,6 +49,10 @@
 
   (if debug (break))
   (send *ri* :angle-vector (send *pr2* :angle-vector) 4000)
+  (send *ri* :wait-interpolation)
+
+  (send *pr2* :larm :move-end-pos #f(100 0 0))
+  (p2r)
   (send *ri* :wait-interpolation)
 
   (if debug (break))
