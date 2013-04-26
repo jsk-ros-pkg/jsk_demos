@@ -38,11 +38,10 @@
   (send *ri* :wait-interpolation)
 
   ;;grasp
-#|
   (setq *croth-point*
 	(apply 'midpoint 0.5 (list
-	    (send (send *chair* :handle-above-cloth-larm) :worldpos)
-	    (send (send *chair* :handle-above-cloth-rarm) (send *room610* :worldcoords)))))
+			      (send (send *chair* :handle-above-cloth-larm) :worldpos)
+			      (send (send *chair* :handle-above-cloth-rarm) :worldpos))))
   (setq *croth-cascoord* (make-cascoords :pos *croth-point*))
   (send *croth-cascoord* :rotate (deg2rad 90) :y)
   (send *pr2* :inverse-kinematics *croth-cascoord*
@@ -51,12 +50,14 @@
 	;;(list (send *pr2* :r_shoulder_pan_link) (send *pr2* :r_shoulder_lift_link) (send *pr2* :r_upper_arm_roll_link) (send *pr2* :r_elbow_flex_link) (send *pr2* :r_forearm_roll_link) (send *pr2* :r_wrist_flex_link) (send *pr2* :r_wrist_roll_link))
 	:move-target (send *pr2* :rarm :end-coords)
 	:look-at-target t)
-|#
+
+  #|
   (send *pr2* :inverse-kinematics (send *chair* :handle-above-cloth-rarm))
-	:link-list 
-	(send *pr2* :link-list (send *pr2* :rarm :end-coords :parent))
-	:move-target (send *pr2* :rarm :end-coords)
-	:look-at-target t)
+  :link-list 
+  (send *pr2* :link-list (send *pr2* :rarm :end-coords :parent))
+  :move-target (send *pr2* :rarm :end-coords)
+  :look-at-target t)
+  |#
   (send *irtviewer* :draw-objects)
   (send *ri* :angle-vector (send *pr2* :angle-vector) 3000)
   (send *ri* :wait-interpolation)
@@ -70,4 +71,4 @@
   (send *ri* :wait-interpolation)
   (send *ri* :angle-vector (send *pr2* :angle-vector) 3000)
   (send *ri* :wait-interpolation)
-)
+  )
