@@ -4,29 +4,22 @@
 ;;;; pick croth by Iwaishi
 ;;;;
 
-(defun iwaishi-demo()
+(load "models/room610-scene.l")
+(load "package://pr2eus/pr2-interface.l")
+(load "models/room610-chair-object.l")
+;;(load "models/red-chair0-object.l") ;; need to use karimoku chair
 
-  ;;(load "models/room610-scene.l")
-  (load "package://pr2eus/pr2-interface.l")
-  (load "models/room610-chair-object.l")
-  (load "models/red-chair0-object.l") ;; need to use karimoku chair
-  (ros::roseus "pr2_send_joints")
+(if (not (boundp '*room610*)) (room610))
+(if (not (boundp '*pr2*)) (pr2))
+(if (not (boundp '*ri*)) (setq *ri* (instance pr2-interface :init :objects (send *room610* :objects))))
+(if (not (boundp '*irtviewer*)) (make-irtviewer))
 
-  (pr2)
-  (if (not (boundp '*irtviewer*)) (make-irtviewer))
-  ;;(setq *chair* (red-chair0))
-  (setq *chair* (room610-chair))
-  (send *chair* :move-to (make-coords :pos #f(1000 100 0) :rpy (float-vector 0 0 0)) :world)
-  ;;(1000 -100 60)
-  (objects (list *pr2* *chair*))
-  (send *irtviewer* :draw-objects)
+(if (not (boundp '*chair*)) (setq *chair* (room610-chair)))
+;;(send *chair* :move-to (make-coords :pos #f(1000 100 0) :rpy (float-vector 0 0 0)) (send *pr2* :worldcoords))
+;;(1000 -100 60)
+(objects (list *pr2* *room610*))
 
-  ;;(if (not (boundp '*room610*)) (room610))
-  (setq *ri* (instance pr2-interface :init))
-  ;;(if (not (boundp '*ri*)) (setq *ri* (instance pr2-interface :init :objects (send *room610* :objects))))
-
-  (iwaishi-pick-cloth)
-)
+(send *irtviewer* :draw-objects)
 
 (defun iwaishi-pick-cloth ()
   (send *pr2* :reset-pose)
@@ -34,6 +27,8 @@
   (send *ri* :angle-vector (send *pr2* :angle-vector) 3000)
   (send *ri* :stop-grasp :rarm)
   (send *ri* :wait-interpolation)
+
+  (send *pr2* :move-to *chair-spot* :world)
 
   ;;kamae
   (send *pr2* :angle-vector
@@ -43,16 +38,23 @@
   (send *ri* :wait-interpolation)
 
   ;;grasp
+#|
   (setq *croth-point*
 	(apply 'midpoint 0.5 (list
 	    (send (send *chair* :handle-above-cloth-larm) :worldpos)
-	    (send (send *chair* :handle-above-cloth-rarm) :worldpos))))
+	    (send (send *chair* :handle-above-cloth-rarm) (send *room610* :worldcoords)))))
   (setq *croth-cascoord* (make-cascoords :pos *croth-point*))
   (send *croth-cascoord* :rotate (deg2rad 90) :y)
   (send *pr2* :inverse-kinematics *croth-cascoord*
 	:link-list 
 	(send *pr2* :link-list (send *pr2* :rarm :end-coords :parent))
 	;;(list (send *pr2* :r_shoulder_pan_link) (send *pr2* :r_shoulder_lift_link) (send *pr2* :r_upper_arm_roll_link) (send *pr2* :r_elbow_flex_link) (send *pr2* :r_forearm_roll_link) (send *pr2* :r_wrist_flex_link) (send *pr2* :r_wrist_roll_link))
+	:move-target (send *pr2* :rarm :end-coords)
+	:look-at-target t)
+|#
+  (send *pr2* :inverse-kinematics (send *chair* :handle-above-cloth-rarm))
+	:link-list 
+	(send *pr2* :link-list (send *pr2* :rarm :end-coords :parent))
 	:move-target (send *pr2* :rarm :end-coords)
 	:look-at-target t)
   (send *irtviewer* :draw-objects)
