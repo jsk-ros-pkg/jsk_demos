@@ -16,7 +16,7 @@
   (if (not (boundp '*irtviewer*)) (make-irtviewer))
   ;;(setq *chair* (red-chair0))
   (setq *chair* (room610-chair))
-  (send *chair* :move-to (make-coords :pos #f(800 100 0) :rpy (float-vector 0 0 0)) :world)
+  (send *chair* :move-to (make-coords :pos #f(1000 100 0) :rpy (float-vector 0 0 0)) :world)
   ;;(1000 -100 60)
   (objects (list *pr2* *chair*))
   (send *irtviewer* :draw-objects)
