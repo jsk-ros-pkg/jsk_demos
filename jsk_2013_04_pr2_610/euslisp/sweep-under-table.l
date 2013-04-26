@@ -6,6 +6,7 @@
           (if (> (elt r 2) 0) t nil)))
   (setq z-axis (if z-axis-inversed-p 0
                  180))
+  (send *ri* :stop-grasp :rarm)
   (send *pr2* :reset-pose)
   (send *pr2* :inverse-kinematics
         (make-coords :pos (send *pr2* :transform-vector #f(800 600 900)) :rpy (float-vector 0 0 (deg2rad z-axis)))
