@@ -8,6 +8,7 @@
 (load "iwaishi-pick-croth.l")
 (load "y-tanaka-pick-tray.l")
 (load "wesleyc-place-tray.l")
+(load "sweep-under-table.l")
 
 (setq debug nil)
 
@@ -247,7 +248,8 @@
 )
 
 (defun sweep-under-table ()
-  (warn "sweep-under-table (yukizaki)~%")
+  (warn "sweep-under-table-yukizaki~%")
+  (sweep-under-table-yukizaki)
   )
 
 (defun pass-broom-to-right-hand ()
