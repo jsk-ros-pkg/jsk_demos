@@ -7,6 +7,7 @@
 
 ;; 610' position
 ;; -29097.67 16322.869 20000.103
+
 (defun init ()
   (load "models/room610-scene.l")
   (load "package://pr2eus/pr2-interface.l")
@@ -20,9 +21,9 @@
   (send *pr2* :reset-pose)
   (send *ri* :angle-vector (send *pr2* :angle-vector))
   (send *ri* :start-grasp :rarm)
-
   ;;(send *laundry* :move-to (make-cascoords :pos #f(1240 -180 -85) :rpy (float-vector pi 0 0)) :world)
 )
+
 (defun put-cloth-into-laundry ()
   (warn "open-laundry-door (kuroiwa2)~%")
 
