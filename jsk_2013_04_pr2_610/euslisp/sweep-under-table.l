@@ -57,4 +57,107 @@
      ))
 
 
+;;両手で
+;;make broom model
+(setq *broom2* (room73b2-broom))
+(objects (list *pr2* *broom2*))
+(send *pr2* :assoc *broom2*)
+(send *broom2* :locate #f(600 0 500) :parent)
+(send *broom2* :orient (deg2rad 0) :y :parent)
+;;手首を正しく
+(setq *handle-l* (make-coords :coords (send (car (send *broom2* :handle)) :worldcoords)))
+(send *handle-l* :rotate (deg2rad z-axis) :x)
+
+;;左手を前に
+(send *pr2* :inverse-kinematics
+      *handle-l*
+      :rotation-axis t
+      :move-target (send *pr2* :larm :end-coords)
+      :use-torso t
+      :debug-view nil)
+(p2r)
+
+(send *broom2* :locate #f(600 0 0) :parent)
+(setq *handle-l* (make-coords :coords (send (car (send *broom2* :handle)) :worldcoords)))
+(send *handle-l* :rotate (deg2rad z-axis) :x)
+(send *pr2* :inverse-kinematics
+      *handle-l*
+      :rotation-axis t
+      :move-target (send *pr2* :larm :end-coords)
+      :use-torso t
+      :debug-view nil)
+(p2r)
+;;右手を開いて前に
+(send *ri* :stop-grasp :rarm)
+(unix::sleep 2)
+(send *pr2* :inverse-kinematics
+      (car (cdr (send *broom2* :handle)))
+      :rotation-axis t
+      :move-target (send *pr2* :rarm :end-coords)
+      :use-torso t
+      :debug-view nil)
+(send *pr2* :rarm :move-end-pos #f(60 0 0))
+(p2r)
+(unix:sleep 2)
+
+;;右手でつかむ
+(send *ri* :start-grasp :rarm)
+(unix:sleep 2)
+
+;;左手掴み直し
+(send *ri* :stop-grasp :larm)
+(send *pr2* :larm :move-end-pos #f(-200 0 0))
+(p2r)
+(unix:sleep 2)
+(send *pr2* :inverse-kinematics
+      (car (send *broom2* :handle))
+      :rotation-axis t
+      :move-target (send *pr2* :larm :end-coords)
+      :use-torso t
+      :debug-view t)
+(p2r)
+(unix:sleep 2)
+(send *ri* :start-grasp :larm)
+(unix:sleep 2)
+
+(let ((i 0))
+  (loop
+   (if (= i 3) (return i))
+   (setq i (+ i 1))
+   (send *broom2* :locate #f(900 0 0) :parent)
+   (send *broom2* :orient (deg2rad -30) :y :parent)
+   ;;sweep start
+   (send *pr2* :inverse-kinematics
+         (car (cdr (send *broom2* :handle)))
+         :rotation-axis t
+         :move-target (send *pr2* :rarm :end-coords)
+         :use-torso t
+         :debug-view nil)
+   (send *pr2* :inverse-kinematics
+         (car (send *broom2* :handle))
+         :rotation-axis t
+         :move-target (send *pr2* :larm :end-coords)
+         :use-torso t
+         :debug-view nil)
+   (p2r 100)
+   (send *ri* :wait-interpolation))
+
+  (send *broom2* :locate #f(1200 0 -150) :parent)
+  (send *broom2* :orient (deg2rad -55) :y :parent)
+  ;;sweep end
+  (send *pr2* :inverse-kinematics
+        (car (cdr (send *broom2* :handle)))
+        :rotation-axis t
+        :move-target (send *pr2* :rarm :end-coords)
+        :use-torso t
+        :debug-view nil)
+  (send *pr2* :inverse-kinematics
+        (car (send *broom2* :handle))
+        :rotation-axis t
+        :move-target (send *pr2* :larm :end-coords)
+        :use-torso t
+        :debug-view nil)
+  (p2r 100))
+
+
   )
