@@ -39,6 +39,8 @@
 (send *room610* :assoc *tray-spot*)
 (setq *chair-spot* (make-cascoords :pos #f(3750 -250 0) :rpy (list 0 0 0)))
 (send *room610* :assoc *chair-spot*)
+(setq *chair-spot2* (make-cascoords :pos #f(3650 -200 0) :rpy (list 0 0 0)))
+(send *room610* :assoc *chair-spot2*)
 (setq *laundry-spot* (make-cascoords :pos #f(3176.358 1409.163 -0.854) :rpy #f(1.544 0.004 0.002)))
 (send *room610* :assoc *laundry-spot*)
 (setq *pick-broom-spot* (make-cascoords :pos #f(3269.927 1351.466 0) :rpy (list pi/2 0 0)))
@@ -51,6 +53,7 @@
 (defmethod room610-scene
   (:spot-tray-spot () *tray-spot*)
   (:spot-chair-spot () *chair-spot*)
+  (:spot-chair-spot2 () *chair-spot2*)
   (:spot-laundry-spot () *laundry-spot*)
   (:spot-pick-broom-spot () *pick-broom-spot*)
   (:spot-sink-spot () *sink-spot*)
@@ -94,6 +97,13 @@
   (send *pr2* :move-to (send *room610* :spot-chair-spot) :world)
   (send *ri* :move-to (send *room610* :spot-chair-spot) :frame-id *room610-origin*)
   )
+
+(defun move-to-chair2 ()
+  (warn "move-to-chair2~%")
+  (send *pr2* :move-to (send *room610* :spot-chair-spot2) :world)
+  (send *ri* :move-to (send *room610* :spot-chair-spot2) :frame-id *room610-origin*)
+  )
+
 
 (defun pick-cloth ()
   (warn "pick-cloth ()~%")
@@ -184,15 +194,17 @@
   (send *ri* :stop-grasp :rarm)
   (send *ri* :wait-interpolation)
 
-
   (send *ri* :go-pos-unsafe -0.1 0 0)
   (send *pr2* :translate #f(-100 0 0))
+
+;;  (send *ri* :go-pos-unsafe -0.3 0.05 0)
+;;  (send *pr2* :translate #f(-300 50 0))
   (send *ri* :wait-interpolation)
 
 
   (send *pr2* :angle-vector (send *ri* :state :potentio-vector))
 ;;(send *pr2* :reset-pose) ;; to solve ik, do not  send to *ri*
-  (send *pr2* :inverse-kinematics (list (send (send (send *chair* :handle-above-rarm) :translate #f(0 0 -15) :wolrd) :rotate (deg2rad 20) :y :world))
+  (send *pr2* :inverse-kinematics (list (send (send (send *chair* :handle-above-rarm) :translate #f(-10 0 -15) :wolrd) :rotate (deg2rad 20) :y :world))
         :link-list (list
                       (send *pr2* :link-list (send *pr2* :rarm :end-coords :parent)))
         :move-target (list (send *pr2* :rarm :end-coords))
@@ -215,7 +227,8 @@
 
 (send *pr2* :angle-vector (send *ri* :state :potentio-vector))
 (setq destC (send (send *pr2* :rarm :end-coords) :copy-worldcoords))
-(send destC :translate #f(-280 -120 -220) :world)
+;;(send destC :translate #f(-280 -120 -220) :world)
+(send destC :translate #f(-260 -100 -200) :world)
 (send destC :rotate (deg2rad -50) :y :world)
 
 
@@ -314,7 +327,7 @@
         (switch-global-planner-observation nil)
         (move-to-laundry)
         (pick-broom)
-        (move-to-chair)
+        (move-to-chair2)
         (move-chair)
         (move-to-sweep)
         (sweep-under-table)

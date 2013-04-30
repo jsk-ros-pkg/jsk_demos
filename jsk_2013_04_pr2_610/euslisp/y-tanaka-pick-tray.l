@@ -45,7 +45,7 @@
   ; IK
   (send *pr2* :inverse-kinematics
       ; (make-coords :pos #f(735.006 251.506 746.315))
-      (send (send (send *tray* :handle-larm-handle) :rotate (deg2rad -20) :y :world)  :translate #f(0 0 100) :world) 
+      (send (send (send *tray* :handle-larm-handle) :rotate (deg2rad -20) :y :world)  :translate #f(10 0 100) :world) 
 ;;      :rotation-axis nil
       :move-target (send *pr2* :larm :end-coords)
       :link-list (send *pr2* :link-list
@@ -54,7 +54,7 @@
       :debug-view t)
   (send *pr2* :inverse-kinematics
         ; (make-coords :pos #f(742.159 -220.170 758.206))
-        (send (send (send *tray* :handle-rarm-handle) :rotate (deg2rad 20) :y :world) :translate #f(0 0 100) :world)
+        (send (send (send *tray* :handle-rarm-handle) :rotate (deg2rad 20) :y :world) :translate #f(-10 0 100) :world)
 ;;        :rotation-axis nil
         :move-target (send *pr2* :rarm :end-coords)
         :link-list (send *pr2* :link-list
