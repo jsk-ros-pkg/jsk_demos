@@ -32,6 +32,14 @@
   (send *ri* :wait-interpolation)
 )
 
+(setq z-axis-inversed-p
+        (let ((r (send (send *pr2* :larm :end-coords) :rotate-vector #f(0 0 1))))
+          (if (> (elt r 2) 0) t nil)))
+
+(setq z-axis (if z-axis-inversed-p 0
+                 180))
+
+
 
 
   ;;sweep under table
