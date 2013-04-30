@@ -40,6 +40,4 @@
 ;;
 ;; reset local costmap and clear unknown grid around robot
 (defun switch-global-planner-observation (enable)
-  (unix::system
-   (format nil "rosrun topic_tools mux_select /tilt_laser_mux ~s"
-	   (if enable "ground_object_cloud" "empty_cloud"))))
+  (use-tilt-laser-obstacle-cloud enable))
