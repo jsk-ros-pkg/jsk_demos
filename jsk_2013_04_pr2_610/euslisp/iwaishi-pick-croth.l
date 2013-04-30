@@ -49,6 +49,7 @@
 	(send *pr2* :link-list (send *pr2* :rarm :end-coords :parent))
 	;;(list (send *pr2* :r_shoulder_pan_link) (send *pr2* :r_shoulder_lift_link) (send *pr2* :r_upper_arm_roll_link) (send *pr2* :r_elbow_flex_link) (send *pr2* :r_forearm_roll_link) (send *pr2* :r_wrist_flex_link) (send *pr2* :r_wrist_roll_link))
 	:move-target (send *pr2* :rarm :end-coords)
+	:revert-if-fail nil
 	:look-at-target t)
 
   #|
