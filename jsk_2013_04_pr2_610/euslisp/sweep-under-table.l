@@ -1,5 +1,8 @@
 (defun sweep-under-table-yukizaki ()
   ;;モップを掴み直す
+
+
+  (when debug
   (r2p)
   (setq z-axis-inversed-p
         (let ((r (send (send *pr2* :larm :end-coords) :rotate-vector #f(0 0 1))))
@@ -27,6 +30,10 @@
   (send *ri* :wait-interpolation)
   (send *ri* :start-grasp :larm)
   (send *ri* :wait-interpolation)
+)
+
+
+
   ;;sweep under table
   (let ((i 0))
     (loop
