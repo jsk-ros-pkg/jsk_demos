@@ -22,7 +22,7 @@
         :look-at-target t
 	:debug-view t
         )
-    (send *irtviewer* :draw-objects)
+      (if (boundp '*irtviewer*) (send *irtviewer* :draw-objects))
     (send *ri* :angle-vector (send *pr2* :angle-vector) 3000)
 ;;    (return-from rhand-grasp)
 
@@ -43,7 +43,7 @@
         :look-at-target t
 	:debug-view t
         )
-    (send *irtviewer* :draw-objects)
+      (if (boundp '*irtviewer*) (send *irtviewer* :draw-objects))
     (send *ri* :angle-vector (send *pr2* :angle-vector) 3000)
     (print lhand-pre)
 
@@ -56,7 +56,7 @@
         :look-at-target t
 	:debug-view t
         )
-    (send *irtviewer* :draw-objects)
+      (if (boundp '*irtviewer*) (send *irtviewer* :draw-objects))
     (send *ri* :angle-vector (send *pr2* :angle-vector) 3000)
     (print lhand)
 
@@ -111,7 +111,7 @@
     ;; (push (send *pr2* :angle-vector) vector-list)
     ;; (objects (list *pr2* add-coord))
     ;; ;;      (print add-coord)
-    ;; (send *irtviewer* :draw-objects)
+    ;;   (if (boundp '*irtviewer*) (send *irtviewer* :draw-objects))
     ;; (setq reset-coord (send add-coord :copy-worldcoords))
     ;; )
 
