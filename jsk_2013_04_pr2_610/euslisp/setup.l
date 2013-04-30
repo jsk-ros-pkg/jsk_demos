@@ -24,6 +24,7 @@
 (setq *chair-coords* (make-coords :pos #f(3800 0 0)))
 
 (setq *tray* (send *room610* :object "room610-tray"))
+(send *tray* :locate #f(5050.0 0.0 700.0) :world)
 (setq *broom* (send *room610* :object "room610-sweeper"))
 (send *broom* :locate #f(3000.0 2090.0 0.0) :world)
 ;;(send *broom* :translate #f(0 100 0) :world)
@@ -33,7 +34,7 @@
 (send *laundry* :translate #f(-120 10 -85) (send *room610* :worldcoords))
 
 ;; spots
-(setq *tray-spot* (make-cascoords :pos #f(4650 1000 0) :rpy (list -pi/2 0 0)))
+(setq *tray-spot* (make-cascoords :pos #f(5050 700 0) :rpy (list -pi/2 0 0)))
 (send *room610* :assoc *tray-spot*)
 (setq *chair-spot* (make-cascoords :pos #f(3200 0 0) :rpy (list 0 0 0)))
 (send *room610* :assoc *chair-spot*)
@@ -77,7 +78,7 @@
 
 (defun move-to-sink ()
   (warn "move-to-sink~%")
-  (pr2-tuckarm-pose)
+  ;;(pr2-tuckarm-pose)
   (send *pr2* :move-to (send *room610* :spot-sink-spot) :world)
   (send *ri* :move-to (send *room610* :spot-sink-spot) :frame-id *room610-origin*)
   )
@@ -147,6 +148,26 @@
 
 (defun move-chair ()
   (warn "move-chair (inagaki)~%")
+  ;;reset from furuta's pose
+
+  (send *ri* :stop-grasp :rarm)
+  (send *ri* :wait-interpolation)
+
+(send *pr2* :inverse-kinematics (send  (send (send *pr2* :rarm :end-coords) :copy-worldcoords) :translate #f(0 -300 0) :world)
+        :revert-if-fail nil
+        :link-list (list
+                      (send *pr2* :link-list (send *pr2* :rarm :end-coords :parent)))
+        :move-target (list (send *pr2* :rarm :end-coords))
+        :look-at-target t
+;;                :debug-view t
+        )
+  (send *ri* :angle-vector (send *pr2* :angle-vector))
+  (send *ri* :wait-interpolation)
+
+
+
+
+
   ;; use handle to manipulate
   ;;(send *pr2* :reset-pose) ;; to solve ik, do not  send to *ri*
   (send *pr2* :inverse-kinematics (send  (send (send *pr2* :rarm :end-coords) :copy-worldcoords) :translate #f(0 0 500) :world)
@@ -220,18 +241,19 @@
  (unix::sleep 5)
 
   ;; backword
-  (send *ri* :go-pos-unsafe -1 -0.3 -30)
+  (send *ri* :go-pos-unsafe -1.2 -0.3 -40)
   ;;(send *pr2* :rotate (deg2rad -30) :z)
-  (send *pr2* :translate #f(-1000 -300 -30))
+  (send *pr2* :translate #f(-1200 -300 -40))
   (send *ri* :wait-interpolation)
 
 (setq destC (send (send *pr2* :rarm :end-coords) :copy-worldcoords))
-(send destC :translate #f(300 0 300) :world)
+(send destC :translate #f(100 -100 300) :world)
 (send destC :rotate (deg2rad -45) :y :world)
 
 
 
 (send *pr2* :inverse-kinematics destC
+	:revert-if-fail nil
         :link-list (list
                       (send *pr2* :link-list (send *pr2* :rarm :end-coords :parent)))
         :move-target (list (send *pr2* :rarm :end-coords))
