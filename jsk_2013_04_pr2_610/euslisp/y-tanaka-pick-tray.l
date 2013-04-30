@@ -1,42 +1,12 @@
 #!/usr/bin/env roseus
 
-(load "models/room610-scene.l")
-(load "package://pr2eus/pr2.l")
-(load "package://pr2eus/pr2-interface.l")
-(load "models/room73b2-broom-object.l")
-(load "models/room610-scene.l")
-
-(setq debug nil)
-
-(room610)
-(pr2)
-(if (not (boundp '*ri*)) (setq *ri* (instance pr2-interface :init :objects (send *room610* :objects))))
-(if (not (boundp '*tfl*)) (setq *tfl* (instance transform-listener :init)))
-
-(objects (list *room610* *pr2*))
-
-(setq *room610-origin* "/eng8/6f/610")
-(setq *table-coords* (make-coords :pos #f(4700 1000 0) :rpy (float-vector -pi/2 0 0)))
-
-(setq *tray* (send *room610* :object "room610-tray"))
-
-;; spots
-(setq *tray-spot* (make-cascoords :pos #f(4650 1000 0) :rpy (list -pi/2 0 0)))
-(send *room610* :assoc *tray-spot*)
-
-(defmethod room610-scene
-  (:spot-tray-spot () *tray-spot*)
-  (:spots () (list *tray-spot*)))
-
-(setq *world-to-610* (send *tfl* :lookup-transform "/world" *room610-origin* (ros::time 0)))
-
 (defun y-tanaka-move-to-table ()
   (speak-jp "トレイの前に移動します。")
   (send *pr2* :reset-pose)
   (pr2-tuckarm-pose)
   (send *pr2* :move-to (send *room610* :spot-tray-spot) :world)
   (send *ri* :move-to *tray-spot* :frame-id *room610-origin*)
-  (send *irtviewer* :draw-objects)
+    (if (boundp '*irtviewer*) (send *irtviewer* :draw-objects))
   (send *ri* :angle-vector (send *pr2* :angle-vector) 2000)
   (send *ri* :wait-interpolation)
 )
@@ -52,7 +22,7 @@
 
   ; (pick-tray)
   (speak-jp "トレイを持ちます。")
-  
+
   ; Open gripper
   (send *ri* :stop-grasp :arms)
   (send *ri* :wait-interpolation)
@@ -93,7 +63,7 @@
         :debug-view t)
   (send *pr2* :head :look-at 
         (apply 'midpoint 0.5 (send *pr2* :arms :end-coords :worldpos))) 
-  (send *irtviewer* :draw-objects)
+    (if (boundp '*irtviewer*) (send *irtviewer* :draw-objects))
   (send *ri* :angle-vector (send *pr2* :angle-vector) 2000)
   (send *ri* :wait-interpolation)
 
@@ -123,7 +93,7 @@
         :debug-view t)
   (send *pr2* :head :look-at
         (apply 'midpoint 0.5 (send *pr2* :arms :end-coords :worldpos)))
-  (send *irtviewer* :draw-objects)
+    (if (boundp '*irtviewer*) (send *irtviewer* :draw-objects))
   (send *ri* :angle-vector (send *pr2* :angle-vector) 2000)
   (send *ri* :wait-interpolation)
 
@@ -150,7 +120,7 @@
       :debug-view t)
   (send *pr2* :head :look-at
         (apply 'midpoint 0.5 (send *pr2* :arms :end-coords :worldpos)))
-  (send *irtviewer* :draw-objects)
+  (if (boundp '*irtviewer*) (send *irtviewer* :draw-objects))
   (send *ri* :angle-vector (send *pr2* :angle-vector) 2000)
   (send *ri* :wait-interpolation)
 
@@ -158,6 +128,3 @@
   (speak-jp "コーヒーをお持ちします。")
   ; (speak-jp "コーヒーをお持ちしますわ、ご主人様。")
 )
-
-
-

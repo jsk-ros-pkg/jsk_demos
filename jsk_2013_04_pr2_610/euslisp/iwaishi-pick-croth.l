@@ -19,11 +19,11 @@
 ;;(1000 -100 60)
 (objects (list *pr2* *room610*))
 
-(send *irtviewer* :draw-objects)
+(if (boundp '*irtviewer) (send *irtviewer* :draw-objects))
 
 (defun iwaishi-pick-cloth ()
   (send *pr2* :reset-pose)
-  (send *irtviewer* :draw-objects)
+  (if (boundp '*irtviewer) (send *irtviewer* :draw-objects))
   (send *ri* :angle-vector (send *pr2* :angle-vector) 3000)
   (send *ri* :stop-grasp :rarm)
   (send *ri* :wait-interpolation)
@@ -33,7 +33,7 @@
   ;;kamae
   (send *pr2* :angle-vector
 	#f(50.0 60.0 74.0 70.0 -120.0 20.0 -30.0 180.0 -40.0 -20.0 0.0 -70.0 -70.0 -90.0 0.0 0.0 0.0))
-  (send *irtviewer* :draw-objects)
+  (if (boundp '*irtviewer) (send *irtviewer* :draw-objects))
   (send *ri* :angle-vector (send *pr2* :angle-vector) 3000)
   (send *ri* :wait-interpolation)
 
@@ -58,7 +58,7 @@
   :move-target (send *pr2* :rarm :end-coords)
   :look-at-target t)
   |#
-  (send *irtviewer* :draw-objects)
+  (if (boundp '*irtviewer) (send *irtviewer* :draw-objects))
   (send *ri* :angle-vector (send *pr2* :angle-vector) 3000)
   (send *ri* :wait-interpolation)
 
@@ -66,7 +66,7 @@
   (send *pr2* :angle-vector
 	#f(50.0 60.0 74.0 70.0 -120.0 20.0 -30.0 180.0 -20.0 -20.0 0.0 -70.0 -70.0 -90.0 0.0 0.0 0.0))
   (send *pr2* :head :look-at (send *pr2* :rarm :end-coords :worldpos))
-  (send *irtviewer* :draw-objects)
+  (if (boundp '*irtviewer) (send *irtviewer* :draw-objects))
   (send *ri* :start-grasp :rarm)
   (send *ri* :wait-interpolation)
   (send *ri* :angle-vector (send *pr2* :angle-vector) 3000)

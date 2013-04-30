@@ -7,7 +7,7 @@
 
 (load "capture_prepare_pose.l")
 (send *pr2* :reset-pose)
-(send *irtviewer* :draw-objects)
+(if (boundp '*irtviewer*) (send *irtviewer* :draw-objects))
 (send *ri* :angle-vector (send *pr2* :angle-vector) 3000)
 (send *ri* :wait-interpolation)
 
@@ -39,7 +39,7 @@
 		       (send *pr2* :torso_lift_link))
       :debug-view t)
 (send *pr2* :head :look-at (send *pr2* :rarm :end-coords :worldpos))
-(send *irtviewer* :draw-objects)
+(if (boundp '*irtviewer*) (send *irtviewer* :draw-objects))
 (send *ri* :angle-vector (send *pr2* :angle-vector) 5000)
 (send *ri* :wait-interpolation)
 
@@ -66,7 +66,7 @@
                        (send *pr2* :torso_lift_link))
       :debug-view t)
 (send *pr2* :head :look-at (send *pr2* :rarm :end-coords :worldpos))
-(send *irtviewer* :draw-objects)
+(if (boundp '*irtviewer*) (send *irtviewer* :draw-objects))
 (send *ri* :angle-vector (send *pr2* :angle-vector) 5000)
 (send *ri* :wait-interpolation)
 
@@ -90,7 +90,7 @@
                        (send *pr2* :torso_lift_link))
       :debug-view t)
 (send *pr2* :head :look-at (send *pr2* :rarm :end-coords :worldpos))
-(send *irtviewer* :draw-objects)
+(if (boundp '*irtviewer*) (send *irtviewer* :draw-objects))
 (send *ri* :angle-vector (send *pr2* :angle-vector) 5000)
 (send *ri* :wait-interpolation)
 
