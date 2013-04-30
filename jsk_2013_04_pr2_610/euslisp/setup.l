@@ -276,6 +276,13 @@
   )
 
 
+(defun switch-global-planner-observation (enable)
+  (unix::system
+   (format nil "rosrun topic_tools mux_select /tilt_laser_mux ~s"
+           (if enable "ground_object_cloud" "empty_cloud"))))
+
+
+
 (defun demo ()
   (if (not debug)
       (progn
@@ -284,7 +291,9 @@
         (send *irtviewer* :draw-objects)
         (pick-tray)
         (send *irtviewer* :draw-objects)
+        (switch-global-planner-observation nil)
         (move-to-sink)
+        (switch-global-planner-observation t)
         (send *irtviewer* :draw-objects)
         (place-tray)
         (send *irtviewer* :draw-objects)
@@ -292,6 +301,7 @@
         (send *irtviewer* :draw-objects)
         (pick-cloth)
         (send *irtviewer* :draw-objects)
+        (switch-global-planner-observation nil)
         (move-to-laundry)
         (send *irtviewer* :draw-objects)
         (send *irtviewer* :draw-objects)
@@ -311,6 +321,7 @@
         (send *irtviewer* :draw-objects)
         (sweep-floor)
         (send *irtviewer* :draw-objects)
+        (switch-global-planner-observation t)
         ))
   (put-cloth-into-laundry)
   )
