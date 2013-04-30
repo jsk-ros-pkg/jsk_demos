@@ -66,92 +66,41 @@
 
 
 (defun force-move (&key (mem t))
-(send *pr2* :angle-vector (send *ri* :state :potentio-vector))
+  (send *pr2* :angle-vector (send *ri* :state :potentio-vector))
   ;;rotational stiffness default:30
   ;;(norm force-vec-r) 1000 1000 50 50 50
-  (let ((imped_goal_r (instance ee_cart_imped_msgs::EECartImpedActionGoal :init))
-	(imped_goal_l (instance ee_cart_imped_msgs::EECartImpedActionGoal :init))
+  (let ((goal_l (createImpedGoal "base_footprint"))
+	(goal_r (createImpedGoal "base_footprint"))
 	)
-    (setq *moving-arm* :arms)
-    
-    (setq traj-coord-l (send *pr2* :larm :end-coords))
-    (setq traj-coord-r (send *pr2* :rarm :end-coords))
 
-    (setq tmp-pos (send traj-coord-l :worldpos))
-    (setq tmp-qua (matrix2quaternion (send traj-coord-l :worldrot)))
+    (setq *moving-arm* :both)
+    (setq larm-end-coords (send *pr2* :larm :end-coords))
+    (addForceTrajectoryCoords goal_l (send *pr2* :larm :end-coords) 1000.0
+			      :control-rot (send (make-coords :axis :y :angle pi/2) :worldrot)
+			      :target-force #f(-5 1000 1000 20 20 20)
+			      :force-control (list t nil nil nil nil nil))
 
-;;    (setq *constrainted-force* (send *arrow-origin* :transformation *force-coord*))
-;;    (send *constrainted-force* :transform add-coord :world)
-    (setq *constrainted-force* (make-coords :rot #2f((0.0 0.0 1.0) (0.0 1.0 0.0) (-1.0 0.0 0.0)))) ;;down force
-    (setq force-qua-l (matrix2quaternion (send *constrainted-force* :worldrot)))
-    (addTrajectoryPoint imped_goal_l (/ (elt tmp-pos 0) 1000) (/ (elt tmp-pos 1) 1000) (/ (elt tmp-pos 2) 1000)
-			(elt tmp-qua 1) (elt tmp-qua 2) (elt tmp-qua 3) (elt tmp-qua 0)
-			5 1000 1000 30 30 30
-			t nil nil nil nil nil
-			(aref force-qua-l 1) (aref force-qua-l 2) (aref force-qua-l 3) (aref force-qua-l 0)
-			0  "/base_link")
-    ;;			  (/ (* i 10.0) inter-num)  "/base_link")
+    (setq rarm-end-coords (send *pr2* :rarm :end-coords))
+    (addForceTrajectoryCoords goal_r (send *pr2* :rarm :end-coords) 1000.0
+			      :control-rot (send (make-coords :axis :y :angle pi/2) :worldrot)
+			      :target-force #f(-5 1000 1000 20 20 20)
+			      :force-control (list t nil nil nil nil nil))
 
-    (setq *constrainted-force* (make-coords :rot #2f((0.0 0.0 1.0) (0.0 1.0 0.0) (-1.0 0.0 0.0)))) ;;down force
-    
-	(setq tmp-pos (send traj-coord-r :worldpos))
-    (setq tmp-qua (matrix2quaternion (send traj-coord-r :worldrot)))
+    (startImpedance *moving-arm*)
+    (startTrajectory goal_l :larm)
+    (startTrajectory goal_r :rarm)
 
-  (setq force-qua-r (matrix2quaternion (send *constrainted-force* :worldrot)))
-    (addTrajectoryPoint imped_goal_r (/ (elt tmp-pos 0) 1000) (/ (elt tmp-pos 1) 1000) (/ (elt tmp-pos 2) 1000)
-			(elt tmp-qua 1) (elt tmp-qua 2) (elt tmp-qua 3) (elt tmp-qua 0)
-			5 1000 1000 30 30 30
-			t nil nil nil nil nil
-			(aref force-qua-l 1) (aref force-qua-l 2) (aref force-qua-l 3) (aref force-qua-l 0)
-			0  "/base_link")
- (print tmp-pos)
-;;(return-from force-move)
-    ;; (send *pr2* :head :look-at
-    ;; 	    (send add-coord :worldpos))
-    ;; (push (send *pr2* :angle-vector) vector-list)
-    ;; (objects (list *pr2* add-coord))
-    ;; ;;      (print add-coord)
-    ;;   (if (boundp '*irtviewer*) (send *irtviewer* :draw-objects))
-    ;; (setq reset-coord (send add-coord :copy-worldcoords))
-    ;; )
-
-    (addForceCoord imped_goal_r "/force_arrow")
-    (addForceCoord imped_goal_l "/force_arrow")
-    (setq req (instance ee_cart_imped_tutorial::UseImpedRequest :init :useImped t))
-
-    (case *moving-arm*
-      (:rarm
-       (ros::service-call "r_imped_control" req)
-       (unix::sleep 1)
-       (startTrajectory imped_goal_r :rarm 0)
-       )
-      (:larm
-       (ros::service-call "l_imped_control" req)
-       (unix::sleep 1)
-       (startTrajectory imped_goal_l :larm 0)
-       )
-      (t
-       (ros::service-call "r_imped_control" req)
-       (ros::service-call "l_imped_control" req)
-       (unix::sleep 1)
-       (startTrajectory imped_goal_r :rarm 0)
-       (startTrajectory imped_goal_l :larm 0)
-       )
+    (dotimes (i 10)
+      (send *pr2* :angle-vector (send *ri* :state :potentio-vector))
+      (send *pr2* :head :look-at (send (send *pr2* :rarm :end-coords) :worldpos))
+      (send *ri* :angle-vector (send *pr2* :angle-vector) 1000)
+      (unix:sleep 1)
       )
-;;(send *ri* :go-pos-unsafe 0 0.2 0)
-    (return-from force-move)
+;;    (unix:sleep 10)
 
-    ;; (unix::sleep 23)
-    ;; (setq req (instance ee_cart_imped_tutorial::UseImpedRequest :init :useImped nil))
-    ;; (ros::service-call "r_imped_control" req)
-    ;; (ros::service-call "l_imped_control" req)
+    (stopImpedance *moving-arm*)
 
-    ;; (print "exe")
-
-
-    ;; (send *ri* :wait-interpolation)
-    ;; ;;*pr2*への反映
-    ;; (send *pr2* :angle-vector (send *ri* :state :potentio-vector))
+    (send *pr2* :angle-vector (send *ri* :state :potentio-vector))
 
     ;; ;;look at object center
     ;; ;;(send *pr2* :head :look-at (send *arrow* :worldpos))
