@@ -306,25 +306,18 @@
   )
 
 
-(defun switch-global-planner-observation (enable)
-  (unix::system
-   (format nil "rosrun topic_tools mux_select /tilt_laser_mux ~s"
-           (if enable "ground_object_cloud" "empty_cloud"))))
-
-
-
 (defun demo ()
   (if (not debug)
       (progn
         (move-to-table)
         (pick-tray)
-        (switch-global-planner-observation nil)
+        (use-tilt-laser-obstacle-cloud nil)
         (move-to-sink)
-        (switch-global-planner-observation t)
+        (use-tilt-laser-obstacle-cloud t)
         (place-tray)
         (move-to-chair)
         (pick-cloth)
-        (switch-global-planner-observation nil)
+        (use-tilt-laser-obstacle-cloud nil)
         (move-to-laundry)
         (pick-broom)
         (move-to-chair2)
@@ -332,7 +325,7 @@
         (move-to-sweep)
         (sweep-under-table)
         (sweep-floor)
-        (switch-global-planner-observation t)
+        (use-tilt-laser-obstacle-cloud t)
         ))
   (put-cloth-into-laundry)
   )
