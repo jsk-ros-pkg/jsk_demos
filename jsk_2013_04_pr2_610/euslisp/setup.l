@@ -15,8 +15,6 @@
 (defun setup ()
   (room610)
   (pr2)
-  (if (not (boundp '*ri*)) (setq *ri* (instance pr2-interface :init :objects (send *room610* :objects))))
-  (if (not (boundp '*tfl*)) (setq *tfl* (instance transform-listener :init)))
 
   (objects (list *room610* *pr2*))
 
@@ -52,6 +50,9 @@
   (send *room610* :assoc *sweep-spot*)
 
   (setq *world-to-610* (send *tfl* :lookup-transform "/world" *room610-origin* (ros::time 0)))
+
+  (if (not (boundp '*ri*)) (setq *ri* (instance pr2-interface :init :objects (send *room610* :objects))))
+  (if (not (boundp '*tfl*)) (setq *tfl* (instance transform-listener :init)))
 
   )
 
