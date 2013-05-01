@@ -15,6 +15,7 @@
 (defun pick-tray ()
   (let (tray-larm-handles tray-rarm-handles avs) ;; use let to define local variables
     (warn "pick-tray (tanaka)~%")
+    (send *pr2* :move-to (send *room610* :spot-tray-spot) :world)
 
     (speak-jp "トレイを持ちます。")
 
