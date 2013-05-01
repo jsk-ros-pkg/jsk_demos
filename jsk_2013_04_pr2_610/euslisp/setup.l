@@ -6,9 +6,12 @@
 (load "models/room73b2-broom-object.l")
 (load "models/room610-scene.l")
 (load "iwaishi-pick-croth.l")
-(load "y-tanaka-pick-tray.l")
+(load "package://jsk_2013_04_pr2_610/euslisp/pick-tray.l")
 (load "wesleyc-place-tray.l")
 (load "sweep-under-table.l")
+(load "package://jsk_2013_04_pr2_610/euslisp/pick-broom.l")
+(load "package://jsk_2013_04_pr2_610/euslisp/put-cloth-into-laundry.l")
+
 
 (setq debug nil)
 
@@ -67,23 +70,6 @@
   (:spot-sweep-spot () *sweep-spot*)
   (:spots ()
           (list *tray-spot* *chair-spot* *laundry-spot* *pick-broom-spot* *sink-spot* *sweep-spot*)))
-
-(load "package://jsk_2013_04_pr2_610/euslisp/pick-broom.l")
-(load "package://jsk_2013_04_pr2_610/euslisp/put-cloth-into-laundry.l")
-
-(defun move-to-table ()
-  (warn "move-to-table~%")
-  (pr2-reset-pose)
-  (pr2-tuckarm-pose)
-  (send *ri* :angle-vector (send *pr2* :angle-vector) 4000)
-  (send *pr2* :move-to (send *room610* :spot-tray-spot) :world)
-  (send *ri* :move-to (send *room610* :spot-tray-spot) :frame-id *room610-origin*)
-  )
-
-(defun pick-tray ()
-  (warn "pick-tray (tanaka)~%")
-  (y-tanaka-pick-tray)
-)
 
 (defun move-to-sink ()
   (warn "move-to-sink~%")
