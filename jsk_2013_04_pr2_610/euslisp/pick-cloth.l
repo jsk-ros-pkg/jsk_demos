@@ -1,0 +1,44 @@
+#!/usr/bin/env roseus
+;;;;
+;;;; send robot joint angle-vector to pr2 robot
+;;;; pick croth by Iwaishi
+;;;;
+
+(defun pick-cloth ()
+  (warn "pick-cloth ()~%")
+  (let (croth-coords)
+    (send *pr2* :reset-pose)
+    (send *pr2* :move-to *chair-spot* :world)
+    (if (boundp '*irtviewer*) (send *irtviewer* :draw-objects))
+
+    ;;kamae
+    (send *pr2* :rarm :angle-vector #f(-40.0 -20.0 0.0 -70.0 -70.0 -90.0 0.0))
+    (if (boundp '*irtviewer*) (send *irtviewer* :draw-objects))
+    (send *ri* :angle-vector (send *pr2* :angle-vector) 1000)
+    (send *ri* :wait-interpolation)
+
+    ;;grasp
+    (setq croth-coords
+          (make-coords
+           :pos
+           (midpoint 0.5
+                     (send (send *chair* :handle-above-cloth-larm) :worldpos)
+                     (send (send *chair* :handle-above-cloth-rarm) :worldpos))
+           :rot
+           (rotate-matrix (send (send *chair* :handle-above-cloth-larm) :worldrot) -pi/2 :x)))
+    (send croth-coords :draw-on :flush t)
+    (send *pr2* :rarm :inverse-kinematics croth-coords :revert-if-fail t :look-at-target t)
+    (if (boundp '*irtviewer*) (send *irtviewer* :draw-objects))
+    (send *ri* :angle-vector (send *pr2* :angle-vector) 2000)
+    (send *ri* :wait-interpolation)
+    (send *ri* :start-grasp :rarm) ;; wait motion and grasp
+
+    ;;lift up
+    (send *pr2* :rarm :angle-vector #f(-20.0 -20.0 0.0 -70.0 -70.0 -90.0 0.0))
+    (send *pr2* :look-at-hand :rarm)
+    (if (boundp '*irtviewer*) (send *irtviewer* :draw-objects))
+    (send *ri* :start-grasp :rarm)
+    (send *ri* :wait-interpolation)
+    (send *ri* :angle-vector (send *pr2* :angle-vector) 1000)
+    (send *ri* :wait-interpolation)
+    ))

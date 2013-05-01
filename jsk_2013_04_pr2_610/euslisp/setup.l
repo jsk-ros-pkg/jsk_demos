@@ -5,15 +5,15 @@
 (load "package://pr2eus/pr2-interface.l")
 (load "models/room73b2-broom-object.l")
 (load "models/room610-scene.l")
-(load "iwaishi-pick-croth.l")
+(load "package://jsk_2013_04_pr2_610/euslisp/utils.l")
+(load "package://jsk_2013_04_pr2_610/euslisp/pick-cloth.l")
 (load "package://jsk_2013_04_pr2_610/euslisp/pick-tray.l")
+(load "package://jsk_2013_04_pr2_610/euslisp/move-chair.l")
 (load "wesleyc-place-tray.l")
-(load "sweep-under-table.l")
+(load "package://jsk_2013_04_pr2_610/euslisp/sweep-under-table.l")
 (load "package://jsk_2013_04_pr2_610/euslisp/pick-broom.l")
 (load "package://jsk_2013_04_pr2_610/euslisp/put-cloth-into-laundry.l")
 
-
-(setq debug nil)
 
 (defun setup ()
   (room610)
@@ -52,11 +52,10 @@
   (setq *sweep-spot* (make-cascoords :pos #f(3750 200 0) :rpy (list (deg2rad -30) 0 0)))
   (send *room610* :assoc *sweep-spot*)
 
-  (setq *world-to-610* (send *tfl* :lookup-transform "/world" *room610-origin* (ros::time 0)))
-
   (if (not (boundp '*ri*)) (setq *ri* (instance pr2-interface :init :objects (send *room610* :objects))))
   (if (not (boundp '*tfl*)) (setq *tfl* (instance transform-listener :init)))
 
+  (setq *world-to-610* (send *tfl* :lookup-transform "/world" *room610-origin* (ros::time 0)))
   )
 
 
@@ -73,9 +72,11 @@
 
 (defun move-to-sink ()
   (warn "move-to-sink~%")
+  (use-tilt-laser-obstacle-cloud nil)
   ;;(pr2-tuckarm-pose)
   (send *pr2* :move-to (send *room610* :spot-sink-spot) :world)
   (send *ri* :move-to (send *room610* :spot-sink-spot) :frame-id *room610-origin*)
+  (use-tilt-laser-obstacle-cloud t)
   )
 
 (defun place-tray ()
@@ -91,15 +92,12 @@
 
 (defun move-to-chair2 ()
   (warn "move-to-chair2~%")
+  (use-tilt-laser-obstacle-cloud nil)
   (send *pr2* :move-to (send *room610* :spot-chair-spot2) :world)
   (send *ri* :move-to (send *room610* :spot-chair-spot2) :frame-id *room610-origin*)
+  (use-tilt-laser-obstacle-cloud t)
   )
 
-
-(defun pick-cloth ()
-  (warn "pick-cloth ()~%")
-  (iwaishi-pick-cloth)
-  )
 
 (defun move-to-laund ()
   (setq ima (send *ri* :state :worldcoords "/eng8/6f/610"))
@@ -124,202 +122,84 @@
 
 (defun move-to-laundry ()
   (warn "move-to-laundry~%")
-  (send *pr2* :move-to (send *room610* :spot-laundry-spot) :world)
-  ;; (send *pr2* :translate #f(0 300 0) (send *room610* :worldcoords))
-  (send *ri* :move-to (send *room610* :spot-laundry-spot) :frame-id *room610-origin*)
-  (setq current-ri-coords (send (send *world-to-610* :worldcoords) :transformation (send *ri* :state :worldcoords)))
-  (setq mou-chotto-pos (v- (send (send *room610* :spot-laundry-spot) :pos) (send current-ri-coords :pos)))
-  (setq mou-chotto-local-pos (transform (inverse-matrix (send (send *ri* :state :worldcoords) :worldrot)) mou-chotto-pos))
-  (setq mou-chotto-roll
-		(- 
-		 (elt (elt (send (send *room610* :spot-laundry-spot) :rpy-angle) 0) 0)
-		 (elt (elt (send current-ri-coords :rpy-angle) 0) 0)))
-  (send *ri* :go-pos-unsafe (/ (elt mou-chotto-local-pos 0) 1000) (/ (elt mou-chotto-local-pos 1) 1000) (rad2deg mou-chotto-roll))
-  )
+  (let (current-ri-coordsmou-chotto-pos mou-chotto-local-pos mou-chotto-roll)
+    (use-tilt-laser-obstacle-cloud nil)
+    (send *pr2* :move-to (send *room610* :spot-laundry-spot) :world)
+    ;; (send *pr2* :translate #f(0 300 0) (send *room610* :worldcoords))
+    (when *world-to-610*
+      (send *ri* :move-to (send *room610* :spot-laundry-spot) :frame-id *room610-origin*)
+      (setq current-ri-coords (send (send *world-to-610* :worldcoords) :transformation (send *ri* :state :worldcoords)))
+      (setq mou-chotto-pos (v- (send (send *room610* :spot-laundry-spot) :pos) (send current-ri-coords :pos)))
+      (setq mou-chotto-local-pos (transform (inverse-matrix (send (send *ri* :state :worldcoords) :worldrot)) mou-chotto-pos))
+      (setq mou-chotto-roll
+          (- 
+           (elt (elt (send (send *room610* :spot-laundry-spot) :rpy-angle) 0) 0)
+           (elt (elt (send current-ri-coords :rpy-angle) 0) 0)))
+      (send *ri* :go-pos-unsafe (/ (elt mou-chotto-local-pos 0) 1000) (/ (elt mou-chotto-local-pos 1) 1000) (rad2deg mou-chotto-roll)))
+    (use-tilt-laser-obstacle-cloud t)
+  ))
 
-;; (defun open-laundry-door ()
-;;   (warn "open-laundry-door (kuroiwa)~%"))
-
-;; (defun put-cloth ()
-;;   (warn "put-cloth (kuroiwa)~%")
-;;   )
-
-;; (defun close-laundry-door ()
-;;   (warn "close-laundry-door (kuroiwa)~%")
-;;   )
-
-(defun move-chair ()
-  (warn "move-chair (inagaki)~%")
-  ;;reset from furuta's pose
-
-  (send *ri* :stop-grasp :rarm)
-  (send *ri* :wait-interpolation)
-
-(send *pr2* :inverse-kinematics (send  (send (send *pr2* :rarm :end-coords) :copy-worldcoords) :translate #f(0 -300 0) :world)
-        :revert-if-fail nil
-        :link-list (list
-                      (send *pr2* :link-list (send *pr2* :rarm :end-coords :parent)))
-        :move-target (list (send *pr2* :rarm :end-coords))
-        :look-at-target t
-;;                :debug-view t
-        )
-  (send *ri* :angle-vector (send *pr2* :angle-vector))
-  (send *ri* :wait-interpolation)
-
-
-
-
-
-  ;; use handle to manipulate
-  ;;(send *pr2* :reset-pose) ;; to solve ik, do not  send to *ri*
-  (send *pr2* :inverse-kinematics (send  (send (send *pr2* :rarm :end-coords) :copy-worldcoords) :translate #f(0 0 500) :world)
-	:revert-if-fail nil
-        :link-list (list
-                      (send *pr2* :link-list (send *pr2* :rarm :end-coords :parent)))
-        :move-target (list (send *pr2* :rarm :end-coords))
-        :look-at-target t
-;;                :debug-view t
-        )
-  (send *ri* :angle-vector (send *pr2* :angle-vector))
-  (send *ri* :wait-interpolation)
-  (send *ri* :stop-grasp :rarm)
-  (send *ri* :wait-interpolation)
-
-  (send *ri* :go-pos-unsafe -0.1 0 0)
-  (send *pr2* :translate #f(-100 0 0))
-
-;;  (send *ri* :go-pos-unsafe -0.3 0.05 0)
-;;  (send *pr2* :translate #f(-300 50 0))
-  (send *ri* :wait-interpolation)
-
-
-  (send *pr2* :angle-vector (send *ri* :state :potentio-vector))
-;;(send *pr2* :reset-pose) ;; to solve ik, do not  send to *ri*
-  (send *pr2* :inverse-kinematics (list (send (send (send *chair* :handle-above-rarm) :translate #f(-10 0 -15) :wolrd) :rotate (deg2rad 20) :y :world))
-        :link-list (list
-                      (send *pr2* :link-list (send *pr2* :rarm :end-coords :parent)))
-        :move-target (list (send *pr2* :rarm :end-coords))
-	:revert-if-fail nil
-        :look-at-target t
-;;		:debug-view t
-        )
- 
-  (send *ri* :angle-vector (send *pr2* :angle-vector))
-  (send *ri* :wait-interpolation)
-
-  (send (send *pr2* :r_wrist_roll_link) :assoc *chair*)
-  (send *ri* :angle-vector (send *pr2* :angle-vector))
-  (send *ri* :wait-interpolation)
-
-
-  (send *ri* :start-grasp :rarm)
-  (send *ri* :wait-interpolation)
-
-
-(send *pr2* :angle-vector (send *ri* :state :potentio-vector))
-(setq destC (send (send *pr2* :rarm :end-coords) :copy-worldcoords))
-;;(send destC :translate #f(-280 -120 -220) :world)
-(send destC :translate #f(-260 -100 -200) :world)
-(send destC :rotate (deg2rad -50) :y :world)
-
-
-
-(send *pr2* :inverse-kinematics destC
-        :link-list (list
-                      (send *pr2* :link-list (send *pr2* :rarm :end-coords :parent)))
-        :move-target (list (send *pr2* :rarm :end-coords))
-        :look-at-target t
-;;                :debug-view t
-        )
-  (send *ri* :wait-interpolation)
-
-  (send *ri* :angle-vector (send *pr2* :angle-vector))
-
-  (send *ri* :wait-interpolation)
-  (send *ri* :go-pos-unsafe -0.2 -0 10)
-  ;;(send *pr2* :rotate (deg2rad -30) :z)
-  (send *pr2* :translate #f(-200 -0 10))
-
-
-  (send *ri* :wait-interpolation)
-
- (unix::sleep 5)
-
-  ;; backword
-  (send *ri* :go-pos-unsafe -1.2 -0.3 -40)
-  ;;(send *pr2* :rotate (deg2rad -30) :z)
-  (send *pr2* :translate #f(-1200 -300 -40))
-  (send *ri* :wait-interpolation)
-
-(setq destC (send (send *pr2* :rarm :end-coords) :copy-worldcoords))
-(send destC :translate #f(100 -100 300) :world)
-(send destC :rotate (deg2rad -45) :y :world)
-
-
-
-(send *pr2* :inverse-kinematics destC
-	:revert-if-fail nil
-        :link-list (list
-                      (send *pr2* :link-list (send *pr2* :rarm :end-coords :parent)))
-        :move-target (list (send *pr2* :rarm :end-coords))
-        :look-at-target t
-;;                :debug-view t
-        )
-
-  (send *ri* :angle-vector (send *pr2* :angle-vector))
-  (send *ri* :wait-interpolation)
-
-
-
-  
-  (send (send *pr2* :r_wrist_roll_link) :dissoc *chair*)
-  (send *ri* :stop-grasp :rarm)
-  (send *ri* :wait-interpolation)
-  )
+(defun move-to-broom ()
+  (warn "move-to-broom~%")
+  (let (current-ri-coords mou-chotto-pos mou-chotto-local-pos mou-chotto-roll)
+    (use-tilt-laser-obstacle-cloud nil)
+    (send *pr2* :move-to (send *room610* :spot-pick-broom-spot) :world)
+                                        ;  (send *pr2* :translate #f(0 300 0) (send *room610* :worldcoords))
+                                        ;  (send *ri* :move-to (send *room610* :spot-pick-broom-spot) :frame-id *room610-origin*)
+    (when *world-to-610*
+      (setq current-ri-coords (send (send *world-to-610* :worldcoords) :transformation (send *ri* :state :worldcoords)))
+      (setq mou-chotto-pos (v- (send (send *room610* :spot-pick-broom-spot) :pos) (send current-ri-coords :pos)))
+      (setq mou-chotto-local-pos (transform (inverse-matrix (send (send *ri* :state :worldcoords) :worldrot)) mou-chotto-pos))
+      (setq mou-chotto-roll
+            (- 
+             (elt (elt (send (send *room610* :spot-pick-broom-spot) :rpy-angle) 0) 0)
+             (elt (elt (send current-ri-coords :rpy-angle) 0) 0)))
+      (send *ri* :go-pos-unsafe (/ (elt mou-chotto-local-pos 0) 1000) (/ (elt mou-chotto-local-pos 1) 1000) (rad2deg mou-chotto-roll)))
+    (use-tilt-laser-obstacle-cloud t)
+    ))
 
 (defun move-to-sweep ()
   (warn "move-to-sweep~%")
+  (use-tilt-laser-obstacle-cloud nil)
   (send *pr2* :move-to (send *room610* :spot-sweep-spot) :world)
   (send *ri* :move-to (send *room610* :spot-sweep-spot) :frame-id *room610-origin*)
+  (use-tilt-laser-obstacle-cloud t)
 )
-
-(defun sweep-under-table ()
-  (warn "sweep-under-table-yukizaki~%")
-  (sweep-under-table-yukizaki)
-  )
 
 (defun pass-broom-to-right-hand ()
   (warn "pass-broom-to-right-hand~%"))
 
 (defun sweep-floor ()
   (warn "sweep-floor (furuta)~%")
-  (furuta-sweep)
+  ;;(furuta-sweep)
   )
 
 
 (defun demo ()
-  (if (not debug)
-      (progn
-        (move-to-table)
-        (pick-tray)
-        (use-tilt-laser-obstacle-cloud nil)
-        (move-to-sink)
-        (use-tilt-laser-obstacle-cloud t)
-        (place-tray)
-        (move-to-chair)
-        (pick-cloth)
-        (use-tilt-laser-obstacle-cloud nil)
-        (move-to-laundry)
-        (pick-broom)
-        (move-to-chair2)
-        (move-chair)
-        (move-to-sweep)
-        (sweep-under-table)
-        (sweep-floor)
-        (use-tilt-laser-obstacle-cloud t)
-        ))
+  (move-to-table)
+  (pick-tray)
+  ;;
+  (move-to-sink)
+  (place-tray)
+  ;;
+  (move-to-chair)
+  (pick-cloth)
+  ;;
+  (move-to-laundry)
   (put-cloth-into-laundry)
+  ;;
+  (move-to-broom)
+  (pick-broom)
+  ;;
+  (move-to-chair2)
+  (move-chair)
+  ;;
+  (move-to-sweep)
+  (sweep-under-table)
+  (sweep-floor)
+  (use-tilt-laser-obstacle-cloud t)
   )
+
 
 (warn "type (demo) to start~%")
 (warn "type (setup) to revert all object location~%")
