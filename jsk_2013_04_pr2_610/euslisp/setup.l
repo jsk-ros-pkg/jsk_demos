@@ -84,8 +84,10 @@
 
 (defun move-to-chair ()
   (warn "move-to-chair~%")
+  (use-tilt-laser-obstacle-cloud nil)
   (send *pr2* :move-to (send *room610* :spot-chair-spot) :world)
   (send *ri* :move-to (send *room610* :spot-chair-spot) :frame-id *room610-origin*)
+  (use-tilt-laser-obstacle-cloud t)
   )
 
 (defun move-to-chair2 ()
