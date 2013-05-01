@@ -103,6 +103,7 @@
   (setq ima (send *ri* :state :worldcoords "/eng8/6f/610"))
   (setq diff (v- (send *laundry-spot* :pos) (send ima :pos)))
   (send *laundry* :translate diff (send *room610* :worldcoords))
+  
   )
 
 (defun relocate-pr2 ()
