@@ -51,6 +51,8 @@
   (setq *sweep-spot* (make-cascoords :pos #f(3750 200 0) :rpy (list (deg2rad -30) 0 0)))
   (send *room610* :assoc *sweep-spot*)
 
+  (setq *world-to-610* (send *tfl* :lookup-transform "/world" *room610-origin* (ros::time 0)))
+
   )
 
 
@@ -67,8 +69,6 @@
 
 (load "package://jsk_2013_04_pr2_610/euslisp/pick-broom.l")
 (load "package://jsk_2013_04_pr2_610/euslisp/put-cloth-into-laundry.l")
-
-(setq *world-to-610* (send *tfl* :lookup-transform "/world" *room610-origin* (ros::time 0)))
 
 (defun move-to-table ()
   (warn "move-to-table~%")
