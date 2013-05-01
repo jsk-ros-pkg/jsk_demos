@@ -40,8 +40,8 @@
     (send *ri* :wait-interpolation)
 
     ;; use dual arm IK (see https://sourceforge.net/p/jsk-ros-pkg/code/4103/)
-    (setq tray-larm-handle (send (send (send *tray* :handle-larm-handle) :copy-worldcoords) :rotate (deg2rad -20) :z) ;; do not move in world coords, use object(tray) relative coords
-          tray-rarm-handle (send (send (send *tray* :handle-rarm-handle) :copy-worldcoords) :rotate (deg2rad  20) :z)) ;; need copy-worldcoords, otherwise move handle coords directory
+    (setq tray-larm-handle (send (send *tray* :handle-larm-handle :copy-worldcoords) :rotate (deg2rad -20) :z) ;; do not move in world coords, use object(tray) relative coords
+          tray-rarm-handle (send (send *tray* :handle-rarm-handle :copy-worldcoords) :rotate (deg2rad  20) :z)) ;; need copy-worldcoords, otherwise move handle coords directory
     (send-all (list tray-larm-handle tray-rarm-handle) :draw-on :flush t) ;; use :draw-on to confirm coords position
 
     (dolist (offset (list (cons #f(-100 -10 0) #f(-100 10 0)) (cons #f(0 0 0) #f(0 0 0))))
@@ -54,10 +54,8 @@
                         (send *pr2* :link-list (send *pr2* :rarm :end-coords :parent)))
             :move-target (list (send *pr2* :larm :end-coords) (send *pr2* :rarm :end-coords))
             :use-torso t
-            :look-at-target t   ;; https://sourceforge.net/p/jskeus/tickets/21/
+            :look-at-target (midpoint 0.5 (send tray-larm-handle :worldpos) (send tray-rarm-handle :worldpos))
             )
-      (send *pr2* :head :look-at ;; https://sourceforge.net/p/jskeus/tickets/22/
-            (apply 'midpoint 0.5 (send *pr2* :arms :end-coords :worldpos)))
       (if (boundp '*irtviewer*) (send *irtviewer* :draw-objects))
 
       (send *ri* :angle-vector (send *pr2* :angle-vector) 1000)
@@ -71,15 +69,13 @@
     (setq avs nil)
     ;; Hold it up!
     (send *pr2* :arms :move-end-pos #f(0 0 100) :world)
-    (send *pr2* :head :look-at
-          (apply 'midpoint 0.5 (send *pr2* :arms :end-coords :worldpos)))
+    (send *pr2* :look-at-hand :arms)
     (if (boundp '*irtviewer*) (send *irtviewer* :draw-objects))
     (push (send *pr2* :angle-vector) avs)
 
     ;; Move it close to PR2
     (send *pr2* :arms :move-end-pos #f(0 0 -250))
-    (send *pr2* :head :look-at
-          (apply 'midpoint 0.5 (send *pr2* :arms :end-coords :worldpos)))
+    (send *pr2* :look-at-hand :arms)
     (if (boundp '*irtviewer*) (send *irtviewer* :draw-objects))
     (push (send *pr2* :angle-vector) avs)
 
