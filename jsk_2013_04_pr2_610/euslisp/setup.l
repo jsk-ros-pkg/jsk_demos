@@ -12,43 +12,47 @@
 
 (setq debug nil)
 
-(room610)
-(pr2)
-(if (not (boundp '*ri*)) (setq *ri* (instance pr2-interface :init :objects (send *room610* :objects))))
-(if (not (boundp '*tfl*)) (setq *tfl* (instance transform-listener :init)))
+(defun setup ()
+  (room610)
+  (pr2)
+  (if (not (boundp '*ri*)) (setq *ri* (instance pr2-interface :init :objects (send *room610* :objects))))
+  (if (not (boundp '*tfl*)) (setq *tfl* (instance transform-listener :init)))
 
-(objects (list *room610* *pr2*))
+  (objects (list *room610* *pr2*))
 
-(setq *room610-origin* "/eng8/6f/610")
-(setq *table-coords* (make-coords :pos #f(4700 1000 0) :rpy (float-vector -pi/2 0 0)))
-(setq *chair-coords* (make-coords :pos #f(3800 0 0)))
+  (setq *room610-origin* "/eng8/6f/610")
+  (setq *table-coords* (make-coords :pos #f(4700 1000 0) :rpy (float-vector -pi/2 0 0)))
+  (setq *chair-coords* (make-coords :pos #f(3800 0 0)))
 
-(setq *tray* (send *room610* :object "room610-tray"))
-(send *tray* :locate #f(5050.0 0.0 700.0) :world)
-(setq *broom* (send *room610* :object "room610-sweeper"))
-(send *broom* :locate #f(3000.0 2090.0 0.0) :world)
-;;(send *broom* :translate #f(0 100 0) :world)
-(setq *chair* (send *room610* :object "room610-chair"))
-(send *chair* :locate #f(4700.0 -360 0.0) :world)
-(setq *laundry* (send *room610* :object "room610-laundry-machine"))
-;; yukizaki?
-(send *laundry* :translate #f(-120 10 -85) (send *room610* :worldcoords))
+  (setq *tray* (send *room610* :object "room610-tray"))
+  (send *tray* :locate #f(5050.0 0.0 700.0) :world)
+  (setq *broom* (send *room610* :object "room610-sweeper"))
+  (send *broom* :locate #f(3000.0 2090.0 0.0) :world)
+  ;;(send *broom* :translate #f(0 100 0) :world)
+  (setq *chair* (send *room610* :object "room610-chair"))
+  (send *chair* :locate #f(4700.0 -360 0.0) :world)
+  (setq *laundry* (send *room610* :object "room610-laundry-machine"))
+  ;; yukizaki?
+  (send *laundry* :translate #f(-120 10 -85) (send *room610* :worldcoords))
 
-;; spots
-(setq *tray-spot* (make-cascoords :pos #f(5050 700 0) :rpy (list -pi/2 0 0)))
-(send *room610* :assoc *tray-spot*)
-(setq *chair-spot* (make-cascoords :pos #f(3750 -250 0) :rpy (list 0 0 0)))
-(send *room610* :assoc *chair-spot*)
-(setq *chair-spot2* (make-cascoords :pos #f(3650 -200 0) :rpy (list 0 0 0)))
-(send *room610* :assoc *chair-spot2*)
-(setq *laundry-spot* (make-cascoords :pos #f(3176.358 1409.163 -0.854) :rpy #f(1.544 0.004 0.002)))
-(send *room610* :assoc *laundry-spot*)
-(setq *pick-broom-spot* (make-cascoords :pos #f(3269.927 1351.466 0) :rpy (list pi/2 0 0)))
-(send *room610* :assoc *pick-broom-spot*)
-(setq *sink-spot* (make-cascoords :pos #f(7300 200 0) :rpy (list 0 0 0)))
-(send *room610* :assoc *sink-spot*)
-(setq *sweep-spot* (make-cascoords :pos #f(3750 200 0) :rpy (list (deg2rad -30) 0 0)))
-(send *room610* :assoc *sweep-spot*)
+  ;; spots
+  (setq *tray-spot* (make-cascoords :pos #f(5050 700 0) :rpy (list -pi/2 0 0)))
+  (send *room610* :assoc *tray-spot*)
+  (setq *chair-spot* (make-cascoords :pos #f(3750 -250 0) :rpy (list 0 0 0)))
+  (send *room610* :assoc *chair-spot*)
+  (setq *chair-spot2* (make-cascoords :pos #f(3650 -200 0) :rpy (list 0 0 0)))
+  (send *room610* :assoc *chair-spot2*)
+  (setq *laundry-spot* (make-cascoords :pos #f(3176.358 1409.163 -0.854) :rpy #f(1.544 0.004 0.002)))
+  (send *room610* :assoc *laundry-spot*)
+  (setq *pick-broom-spot* (make-cascoords :pos #f(3269.927 1351.466 0) :rpy (list pi/2 0 0)))
+  (send *room610* :assoc *pick-broom-spot*)
+  (setq *sink-spot* (make-cascoords :pos #f(7300 200 0) :rpy (list 0 0 0)))
+  (send *room610* :assoc *sink-spot*)
+  (setq *sweep-spot* (make-cascoords :pos #f(3750 200 0) :rpy (list (deg2rad -30) 0 0)))
+  (send *room610* :assoc *sweep-spot*)
+
+  )
+
 
 (defmethod room610-scene
   (:spot-tray-spot () *tray-spot*)
@@ -331,3 +335,6 @@
   )
 
 (warn "type (demo) to start~%")
+(warn "type (setup) to revert all object location~%")
+
+(setup)
