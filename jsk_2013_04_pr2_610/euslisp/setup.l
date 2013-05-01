@@ -82,11 +82,6 @@
   (use-tilt-laser-obstacle-cloud t)
   )
 
-(defun place-tray ()
-  (warn "place-tray (chan)~%")
-;;  (wesleyc-place-tray)
-  )
-
 (defun move-to-chair ()
   (warn "move-to-chair~%")
   (send *pr2* :move-to (send *room610* :spot-chair-spot) :world)
