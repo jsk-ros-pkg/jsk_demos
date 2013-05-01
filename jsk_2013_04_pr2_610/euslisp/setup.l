@@ -9,7 +9,7 @@
 (load "package://jsk_2013_04_pr2_610/euslisp/pick-cloth.l")
 (load "package://jsk_2013_04_pr2_610/euslisp/pick-tray.l")
 (load "package://jsk_2013_04_pr2_610/euslisp/move-chair.l")
-(load "wesleyc-place-tray.l")
+(load "package://jsk_2013_04_pr2_610/euslisp/place-tray.l")
 (load "package://jsk_2013_04_pr2_610/euslisp/sweep-under-table.l")
 (load "package://jsk_2013_04_pr2_610/euslisp/pick-broom.l")
 (load "package://jsk_2013_04_pr2_610/euslisp/put-cloth-into-laundry.l")
