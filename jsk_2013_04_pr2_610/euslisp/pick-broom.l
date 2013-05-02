@@ -42,7 +42,7 @@
 
     (send *pr2* :larm :end-coords :assoc *broom*)
 
-    (send *pr2* :torso :waist-z :joint-angle 200)
+    (send *pr2* :torso :waist-z :joint-angle 100)
     (send *ri* :angle-vector (send *pr2* :angle-vector) 1200)
 
     (if debug (break))
@@ -77,9 +77,9 @@
 
     (warn "right-hand~%")
     (speak-jp "みぎて")
-
+    
     (send *pr2* :rarm :inverse-kinematics
-          (make-coords :pos (send *pr2* :transform-vector #f(530 100 650))
+          (make-coords :pos (send *pr2* :transform-vector #f(530 60 650))
                        :rpy (list (deg2rad 70) 0 0))
           :rotation-axis :z
           :debug-view debug)
@@ -88,30 +88,45 @@
     (send *pr2* :torso :waist-z :joint-angle 0)
     (send *ri* :angle-vector (send *pr2* :angle-vector) 1200)
     (send *ri* :wait-interpolation)
-                                        ;  (grasp-with-angle :arms 60)
-
+    (send *ri* :start-grasp :rarm)
+    (send *ri* :stop-grasp :larm)
     (send *pr2* :larm :end-coords :dissoc *broom*)
 
     (warn "calib-pick-height~%")
     (speak-jp "'たかさを,そ'ろえる")
     (if debug (break))
-    (send *pr2* :larm :inverse-kinematics (send *broom* :handle-larm)
-          :look-at-target t
-          :rotation-axis :z
-          :debug-view debug)
-    (send *pr2* :larm :inverse-kinematics (send *broom* :handle-rarm)
-          :look-at-target nil
-          :rotation-axis :z
-          :debug-view debug)
-
+    (let ((offset-l (send *pr2* :rotate-vector #f(0 -30 -500)))
+          (offset-r #f(0 0 -500))
+          (handle-larm (send (send *broom* :handle-larm) :copy-worldcoords))
+          (handle-rarm (send (send *broom* :handle-rarm) :copy-worldcoords)))
+      (print offset-l)
+      (send *pr2* :larm :inverse-kinematics (send handle-larm :translate offset-l :world)
+            :look-at-target t
+            :rotation-axis :z
+            :debug-view debug)
+      (send *pr2* :rarm :inverse-kinematics (send handle-rarm :translate offset-r :world)
+            :look-at-target nil
+            :rotation-axis :z
+            :debug-view debug))
     (send *ri* :angle-vector (send *pr2* :angle-vector))
     (send *ri* :wait-interpolation)
-    (send *pr2* :rarm :move-end-pos #f(80 0 0))
-    (send *ri* :angle-vector (send *pr2* :angle-vector))
-    (send *ri* :wait-interpolation)
+                                        ;    (send *pr2* :rarm :move-end-pos #f(20 0 0))
+                                        ;    (send *ri* :angle-vector (send *pr2* :angle-vector))
+                                        ;    (send *ri* :wait-interpolation)
     (send *ri* :start-grasp)
 
+;    (send *pr2* :torso :waist-z :joint-angle 100)
+#|    (send *ri* :stop-grasp :larm)
+    (send *ri* :wait-interpolation)
+    (send *pr2* :larm :move-end-pos (send *pr2* :rotate-vector #f(0 0 -230)))
+    (send *ri* :angle-vector (send *pr2* :angle-vector))
+    (send *ri* :wait-interpolation)
+    (send *ri* :start-grasp :larm)
+|#
+    (send *pr2* :arms :move-end-pos (send *pr2* :rotate-vector #f(0 0 400)))
     (send *pr2* :torso :waist-z :joint-angle 100)
+    (send *ri* :angle-vector (send *pr2* :angle-vector))
+    (send *ri* :wait-interpolation)
 
                                         ;for debug
     (when debug
