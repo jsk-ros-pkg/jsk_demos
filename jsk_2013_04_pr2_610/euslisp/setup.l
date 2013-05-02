@@ -75,8 +75,8 @@
 
 (defun move-to-sink ()
   (warn "move-to-sink~%")
-  (clear-costmap)
   (use-tilt-laser-obstacle-cloud nil)
+  (clear-costmap)
   (send *pr2* :move-to (send *room610* :spot-sink-spot) :world)
   (send *ri* :move-to (send *room610* :spot-sink-spot) :frame-id *room610-origin*)
   (use-tilt-laser-obstacle-cloud t)
@@ -84,8 +84,8 @@
 
 (defun move-to-chair ()
   (warn "move-to-chair~%")
-  (clear-costmap)
   (use-tilt-laser-obstacle-cloud nil)
+  (clear-costmap)
   (send *pr2* :move-to (send *room610* :spot-chair-spot) :world)
   (send *ri* :move-to (send *room610* :spot-chair-spot) :frame-id *room610-origin*)
   (use-tilt-laser-obstacle-cloud t)
@@ -94,6 +94,7 @@
 (defun move-to-chair2 ()
   (warn "move-to-chair2~%")
   (use-tilt-laser-obstacle-cloud nil)
+  (clear-costmap)
   (send *pr2* :move-to (send *room610* :spot-chair-spot2) :world)
   (send *ri* :move-to (send *room610* :spot-chair-spot2) :frame-id *room610-origin*)
   (use-tilt-laser-obstacle-cloud t)
