@@ -51,9 +51,6 @@
             (list
              (send (send tray-larm-handle :copy-worldcoords) :translate (car offset))  ;; use local coords, this cod works if tray is placed on different orientation
              (send (send tray-rarm-handle :copy-worldcoords) :translate (cdr offset)))
-            :link-list (list     ;; https://sourceforge.net/p/jskeus/tickets/20/
-                        (send *pr2* :link-list (send *pr2* :larm :end-coords :parent))
-                        (send *pr2* :link-list (send *pr2* :rarm :end-coords :parent)))
             :move-target (list (send *pr2* :larm :end-coords) (send *pr2* :rarm :end-coords))
             :use-torso t
             :look-at-target (midpoint 0.5 (send tray-larm-handle :worldpos) (send tray-rarm-handle :worldpos))
