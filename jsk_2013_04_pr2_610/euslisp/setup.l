@@ -130,7 +130,8 @@
     (use-tilt-laser-obstacle-cloud nil)
     (send *pr2* :move-to (send *room610* :spot-laundry-spot) :world)
     ;; (send *pr2* :translate #f(0 300 0) (send *room610* :worldcoords))
-    (when *world-to-610*
+    (cond 
+     (*world-to-610*
       (send *ri* :move-to (send *room610* :spot-laundry-spot) :frame-id *room610-origin*)
       (setq current-ri-coords (send (send *world-to-610* :worldcoords) :transformation (send *ri* :state :worldcoords)))
       (setq mou-chotto-pos (v- (send (send *room610* :spot-laundry-spot) :pos) (send current-ri-coords :pos)))
@@ -140,6 +141,9 @@
            (elt (elt (send (send *room610* :spot-laundry-spot) :rpy-angle) 0) 0)
            (elt (elt (send current-ri-coords :rpy-angle) 0) 0)))
       (send *ri* :go-pos-unsafe (/ (elt mou-chotto-local-pos 0) 1000) (/ (elt mou-chotto-local-pos 1) 1000) (rad2deg mou-chotto-roll)))
+     (t
+      (send *ri* :move-to (send *pr2* :worldcoords))
+      ))
     (use-tilt-laser-obstacle-cloud t)
   ))
 
@@ -150,7 +154,8 @@
     (send *pr2* :move-to (send *room610* :spot-pick-broom-spot) :world)
                                         ;  (send *pr2* :translate #f(0 300 0) (send *room610* :worldcoords))
                                         ;  (send *ri* :move-to (send *room610* :spot-pick-broom-spot) :frame-id *room610-origin*)
-    (when *world-to-610*
+    (cond
+     (*world-to-610*
       (setq current-ri-coords (send (send *world-to-610* :worldcoords) :transformation (send *ri* :state :worldcoords)))
       (setq mou-chotto-pos (v- (send (send *room610* :spot-pick-broom-spot) :pos) (send current-ri-coords :pos)))
       (setq mou-chotto-local-pos (transform (inverse-matrix (send (send *ri* :state :worldcoords) :worldrot)) mou-chotto-pos))
@@ -159,6 +164,10 @@
              (elt (elt (send (send *room610* :spot-pick-broom-spot) :rpy-angle) 0) 0)
              (elt (elt (send current-ri-coords :rpy-angle) 0) 0)))
       (send *ri* :go-pos-unsafe (/ (elt mou-chotto-local-pos 0) 1000) (/ (elt mou-chotto-local-pos 1) 1000) (rad2deg mou-chotto-roll)))
+     (t
+      (send *ri* :move-to (send *pr2* :worldcoords))
+      ))
+
     (use-tilt-laser-obstacle-cloud t)
     ))
 

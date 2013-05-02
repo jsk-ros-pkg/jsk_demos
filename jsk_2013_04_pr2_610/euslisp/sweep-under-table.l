@@ -42,6 +42,7 @@
                              (send *pr2* :torso_lift_link))
             :debug-view nil)
       (send *pr2* :look-at-hand :larm)
+      (if (boundp '*irtviewer*) (send *irtviewer* :draw-objects))
       (send *ri* :angle-vector (send *pr2* :angle-vector) 1200)
       (send *ri* :wait-interpolation)
       ;;   (send *pr2* :angle-vector end-sweep)
@@ -54,9 +55,12 @@
                              (send *pr2* :torso_lift_link))
             :debug-view nil)
       (send *pr2* :look-at-hand :larm)
+      (if (boundp '*irtviewer*) (send *irtviewer* :draw-objects))
       (send *ri* :angle-vector (send *pr2* :angle-vector) 1200)
       (send *ri* :wait-interpolation)
       )
+
+    (return-from sweep-under-table)
 
     ;;両手で
     ;;make broom model

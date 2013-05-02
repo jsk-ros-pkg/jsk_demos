@@ -134,8 +134,7 @@
     (setq rotate-origin (make-cascoords :coords (send (send *pr2* :r_wrist_roll_link) :copy-worldcoords)))
     (send rotate-origin :assoc *chair*)
     (send rotate-origin :rotate pi/2 :z)
-
-
+    (if (boundp '*irtviewer*) (send *irtviewer* :draw-objects))
 
     ))
 

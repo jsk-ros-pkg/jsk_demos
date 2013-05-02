@@ -19,18 +19,20 @@
           :look-at-target t
           :rotation-axis nil
           :debug-view debug)
+    (if (boundp '*irtviewer*) (send *irtviewer* :draw-objects))
     (send *ri* :angle-vector (send *pr2* :angle-vector) 1200)
     (send *ri* :wait-interpolation)
     (send *pr2* :larm :inverse-kinematics (send (send *broom* :handle-larm) :rotate (deg2rad 170) :z)
           :look-at-target t
           :rotation-axis :z
           :debug-view debug)
-
+    (if (boundp '*irtviewer*) (send *irtviewer* :draw-objects))
     (if debug (break))
     (send *ri* :angle-vector (send *pr2* :angle-vector) 4000)
     (send *ri* :wait-interpolation)
 
     (send *pr2* :larm :move-end-pos #f(100 0 0))
+    (if (boundp '*irtviewer*) (send *irtviewer* :draw-objects))
     (send *ri* :angle-vector (send *pr2* :angle-vector) 1200)
     (send *ri* :wait-interpolation)
 
@@ -43,6 +45,7 @@
     (send *pr2* :larm :end-coords :assoc *broom*)
 
     (send *pr2* :torso :waist-z :joint-angle 100)
+    (if (boundp '*irtviewer*) (send *irtviewer* :draw-objects))
     (send *ri* :angle-vector (send *pr2* :angle-vector) 1200)
 
     (if debug (break))
@@ -50,6 +53,7 @@
     (warn "go backward")
     (speak-jp "うしろへさがる")
     (send *pr2* :translate #f(-500 0 0))
+    (if (boundp '*irtviewer*) (send *irtviewer* :draw-objects))
     (send *ri* :go-pos-unsafe -0.5 0 0)
 
     (send *ri* :wait-interpolation)
@@ -71,6 +75,7 @@
           :look-at-target t
           :rotation-axis :z
           :debug-view debug)
+    (if (boundp '*irtviewer*) (send *irtviewer* :draw-objects))
     (send *ri* :angle-vector (send *pr2* :angle-vector) 1000)
 
     (if debug (break))
@@ -83,9 +88,11 @@
                        :rpy (list (deg2rad 70) 0 0))
           :rotation-axis :z
           :debug-view debug)
+    (if (boundp '*irtviewer*) (send *irtviewer* :draw-objects))
     (send *ri* :angle-vector (send *pr2* :angle-vector) 1500)
     
     (send *pr2* :torso :waist-z :joint-angle 0)
+    (if (boundp '*irtviewer*) (send *irtviewer* :draw-objects))
     (send *ri* :angle-vector (send *pr2* :angle-vector) 1200)
     (send *ri* :wait-interpolation)
     (send *ri* :start-grasp :rarm)
@@ -108,12 +115,14 @@
             :look-at-target nil
             :rotation-axis :z
             :debug-view debug))
+    (if (boundp '*irtviewer*) (send *irtviewer* :draw-objects))
     (send *ri* :angle-vector (send *pr2* :angle-vector))
     (send *ri* :wait-interpolation)
                                         ;    (send *pr2* :rarm :move-end-pos #f(20 0 0))
                                         ;    (send *ri* :angle-vector (send *pr2* :angle-vector))
                                         ;    (send *ri* :wait-interpolation)
     (send *ri* :start-grasp)
+    (send *pr2* :larm :end-coords :assoc *broom*)
 
 ;    (send *pr2* :torso :waist-z :joint-angle 100)
 #|    (send *ri* :stop-grasp :larm)
@@ -125,6 +134,7 @@
 |#
     (send *pr2* :arms :move-end-pos (send *pr2* :rotate-vector #f(0 0 400)))
     (send *pr2* :torso :waist-z :joint-angle 100)
+    (if (boundp '*irtviewer*) (send *irtviewer* :draw-objects))
     (send *ri* :angle-vector (send *pr2* :angle-vector))
     (send *ri* :wait-interpolation)
 
