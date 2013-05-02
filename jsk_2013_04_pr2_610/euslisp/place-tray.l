@@ -6,7 +6,7 @@
 (defun place-tray ()
   (let ((table-height 850)
         (yokei-up-height 150)
-        (yokei-down-height 100)
+        (yokei-down-height 150)
         p)
     ;;
     ;; place_tray function
@@ -60,8 +60,8 @@
           :move-target (list (send *pr2* :larm :end-coords) (send *pr2* :rarm :end-coords))
           :use-torso t
           :look-at-target nil)|#
-    (send *pr2* :larm :move-end-pos (send *pr2* :rotate-vector #f(0 50 0)))
-    (send *pr2* :rarm :move-end-pos (send *pr2* :rotate-vector #f(0 -50 0)))
+    (send *pr2* :larm :move-end-pos (send *pr2* :rotate-vector #f(0 10 0)))
+    (send *pr2* :rarm :move-end-pos (send *pr2* :rotate-vector #f(0 -10 0)))
     (send *ri* :angle-vector (send *pr2* :angle-vector))
     (send *ri* :wait-interpolation)
 

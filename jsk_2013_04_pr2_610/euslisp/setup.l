@@ -50,7 +50,7 @@
   (send *room610* :assoc *pick-broom-spot*)
   (setq *sink-spot* (make-cascoords :pos #f(7300 200 0) :rpy (list 0 0 0)))
   (send *room610* :assoc *sink-spot*)
-  (setq *sweep-spot* (make-cascoords :pos #f(3750 200 0) :rpy (list (deg2rad -30) 0 0)))
+  (setq *sweep-spot* (make-cascoords :pos #f(3550 -300 0) :rpy (list (deg2rad -30) 0 0)))
   (send *room610* :assoc *sweep-spot*)
 
   (if (not (boundp '*ri*)) (setq *ri* (instance pr2-interface :init :objects (send *room610* :objects))))
@@ -171,8 +171,25 @@
     (use-tilt-laser-obstacle-cloud t)
     ))
 
+
+(defun rarm-tuck ()
+(send *pr2* :angle-vector (send *ri* :state :potentio-vector))
+(send *pr2* :rarm :wrist-r  :joint-angle 19.9)
+(send *pr2* :rarm :wrist-p  :joint-angle -6)
+(send *pr2* :rarm :elbow-r  :joint-angle 69.8225)
+(send *pr2* :rarm :elbow-p  :joint-angle -90.0744)
+(send *pr2* :rarm :shoulder-r  :joint-angle -104.746)
+(send *pr2* :rarm :shoulder-p  :joint-angle 69.8)
+(send *pr2* :rarm :collar-y  :joint-angle -5.05)
+(send *ri* :angle-vector (send *pr2* :angle-vector))
+(send *ri* :wait-interpolation)
+)
+
+
+
 (defun move-to-sweep ()
   (warn "move-to-sweep~%")
+  (rarm-tuck)
   (use-tilt-laser-obstacle-cloud nil)
   (send *pr2* :move-to (send *room610* :spot-sweep-spot) :world)
   (send *ri* :move-to (send *room610* :spot-sweep-spot) :frame-id *room610-origin*)

@@ -42,7 +42,7 @@
     (send *ri* :stop-grasp :arms) ;; stop-grasp wait until gripper motion stops
     ;; wait interpolation
     (send *ri* :wait-interpolation)
-
+    (warn "11111")
     ;; use dual arm IK (see https://sourceforge.net/p/jsk-ros-pkg/code/4103/)
     (setq tray-larm-handle (send (send *tray* :handle-larm-handle :copy-worldcoords) :rotate (deg2rad -20) :z) ;; do not move in world coords, use object(tray) relative coords
           tray-rarm-handle (send (send *tray* :handle-rarm-handle :copy-worldcoords) :rotate (deg2rad  20) :z)) ;; need copy-worldcoords, otherwise move handle coords directory
@@ -62,6 +62,8 @@
       (send *ri* :angle-vector (send *pr2* :angle-vector) 1000)
       (send *ri* :wait-interpolation)
       )
+
+    (warn "22222")
 
     ;; Grasp it
     (send *ri* :start-grasp :arms)  ;; stop-grasp wait until gripper motion stops
