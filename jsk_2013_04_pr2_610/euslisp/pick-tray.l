@@ -4,9 +4,10 @@
   (warn "move-to-table~%")
   (warn "hoge~%")
 ;  (speak-jp "トレイの前に移動します。")
+  (use-tilt-laser-obstacle-cloud nil)
   (send *pr2* :reset-pose)
                                         ;  (pr2-tuckarm-pose)
-  (send *pr2* :torso :waist-z :joint-angle 150) ;; move torso while walking to table spot?
+;  (send *pr2* :torso :waist-z :joint-angle 150) ;; move torso while walking to table spot?
 
                                         ; Open collar-y a little bit
   (send *pr2* :larm :collar-y :joint-angle 75)
@@ -22,6 +23,7 @@
   (send *pr2* :move-to (send *room610* :spot-tray-spot) :world)
   (send *ri* :move-to *tray-spot* :frame-id *room610-origin*)
   (if (boundp '*irtviewer*) (send *irtviewer* :draw-objects))
+  (use-tilt-laser-obstacle-cloud t)
 ;  (send *ri* :angle-vector (send *pr2* :angle-vector) 2000)
 ;  (send *ri* :wait-interpolation)
 )
@@ -46,7 +48,7 @@
           tray-rarm-handle (send (send *tray* :handle-rarm-handle :copy-worldcoords) :rotate (deg2rad  20) :z)) ;; need copy-worldcoords, otherwise move handle coords directory
     (if (boundp '*irtviewer*) (send-all (list tray-larm-handle tray-rarm-handle) :draw-on :flush t)) ;; use :draw-on to confirm coords position
 
-    (dolist (offset (list (cons #f(-100 -10 0) #f(-100 10 0)) (cons #f(0 0 0) #f(0 0 0))))
+    (dolist (offset (list (cons #f(-100 -10 0) #f(-100 10 0)) (cons #f(0 30 0) #f(0 -30 0))))
       (send *pr2* :inverse-kinematics
             (list
              (send (send tray-larm-handle :copy-worldcoords) :translate (car offset))  ;; use local coords, this cod works if tray is placed on different orientation
@@ -83,4 +85,7 @@
     (send *ri* :angle-vector-sequence avs 1000) ;; use angle-vector-sequence
     (send *ri* :wait-interpolation)
 
+    ;; Go back 50cm
+    (speak-en "I'm going back ATTENTION!")
+    (send *ri* :go-pos-unsafe -0.5 0 30)
     t))
