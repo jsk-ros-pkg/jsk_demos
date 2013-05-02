@@ -34,6 +34,7 @@
     (setq lhand-pre (send lhand :copy-worldcoords))
     (send lhand-pre :locate #f(-100 0 0))
 
+
     (send *pr2* :inverse-kinematics lhand-pre
         :link-list (list
                       (send *pr2* :link-list (send *pr2* :rarm :end-coords :parent)
@@ -63,9 +64,7 @@
     (send *ri* :start-grasp :rarm)
 ))
 
-
-
-(defun lower-mop (&key (mem t))
+(defun lower-mop (&optional (m_arms :rarm))
   (send *pr2* :angle-vector (send *ri* :state :potentio-vector))
   ;;rotational stiffness default:30
   ;;(norm force-vec-r) 1000 1000 50 50 50
@@ -73,7 +72,7 @@
 	(goal_r (createImpedGoal "base_footprint"))
 	)
 
-    (setq *moving-arm* :both)
+;;    (setq *moving-arm* arm)
     (setq larm-end-coords (send *pr2* :larm :end-coords))
     (addForceTrajectoryCoords goal_l (send *pr2* :larm :end-coords) 1000.0
 			      :control-rot (send (make-coords :axis :y :angle pi/2) :worldrot)
@@ -86,7 +85,7 @@
 			      :target-force #f(-5 1000 1000 20 20 20)
 			      :force-control (list t nil nil nil nil nil))
 
-    (startImpedance *moving-arm*)
+    (startImpedance m_arms)
     (startTrajectory goal_l :larm)
     (startTrajectory goal_r :rarm)
 
@@ -111,55 +110,76 @@
     )
   )
 
+(defun pr2-rotate (rad)
+  (send *pr2* :orient rad :z :world)
+  (if (boundp '*irtviewer*) (send *irtviewer* :draw-objects))
 
-;; (defun stop-force nil
-;;     (setq req (instance ee_cart_imped_tutorial::UseImpedRequest :init :useImped nil))
-;;     (ros::service-call "r_imped_control" req)
-;;     (ros::service-call "l_imped_control" req)
+  (if *world-to-610*
+      (progn
+	(setq current-ri-coords (send (send *world-to-610* :worldcoords) :transformation (send *ri* :state :worldcoords)))
+	(setq mou-chotto-pos (v- (send (send *room610* :spot-laundry-spot) :pos) (send current-ri-coords :pos)))
+	(setq mou-chotto-roll
+	      (- rad (elt (elt (send current-ri-coords :rpy-angle) 0) 0)))
+	(print mou-chotto-roll)
+	(send *ri* :go-pos-unsafe 0 0 (rad2deg mou-chotto-roll))
+	)
 
-;;     (print "exe")
-;;     (unix::sleep 1)
-;;  ;;   (send *ri* :wait-interpolation)
-;;     ;;*pr2*への反映
-;;     (send *pr2* :angle-vector (send *ri* :state :potentio-vector))
+    (progn
+      (send *ri* :move-to (send *pr2* :worldcoords))
+      )
+    )
+  )
+
+
+
+;; (defun pr2-move-to-unsafe (coords)
+;;   (setq current-ri-coords (send (send *world-to-610* :worldcoords) :transformation (send *ri* :state :worldcoords)))
+;;   (setq mou-chotto-pos (v- #f(4012.3 -1607.95 1.20346)  (send current-ri-coords :pos)))
+;;   (setq mou-chotto-pos (transform (inverse-matrix  (send (send *ri* :state :worldcoords) :worldrot)) mou-chotto-pos))
+;;   (setq mou-chotto-roll
+;;         (- -pi/2 (elt (elt (send current-ri-coords :rpy-angle) 0) 0)))
+;;   (print mou-chotto-roll)
+;;   (send *ri* :go-pos-unsafe (/ (elt mou-chotto-pos 0) 1000) (/ (elt mou-chotto-pos 1) 1000)   (rad2deg mou-chotto-roll))
 ;; )
 
-(defun pr2-rotate (rad)
-  (setq current-ri-coords (send (send *world-to-610* :worldcoords) :transformation (send *ri* :state :worldcoords)))
-  (setq mou-chotto-pos (v- (send (send *room610* :spot-laundry-spot) :pos) (send current-ri-coords :pos)))
-  (setq mou-chotto-roll
-        (- rad (elt (elt (send current-ri-coords :rpy-angle) 0) 0)))
-  (print mou-chotto-roll)
-  (send *ri* :go-pos-unsafe 0 0 (rad2deg mou-chotto-roll))
-)
+(defun pr2-move-to-unsafe (coords)
+  (send *pr2* :move-to coords :world)
+  (if (boundp '*irtviewer*) (send *irtviewer* :draw-objects))
 
-(defun pr2-move-first nil
-  (setq current-ri-coords (send (send *world-to-610* :worldcoords) :transformation (send *ri* :state :worldcoords)))
-  (setq mou-chotto-pos (v- #f(4012.3 -1607.95 1.20346)  (send current-ri-coords :pos)))
-  (setq mou-chotto-pos (transform (inverse-matrix  (send (send *ri* :state :worldcoords) :worldrot)) mou-chotto-pos))
-  (setq mou-chotto-roll
-        (- -pi/2 (elt (elt (send current-ri-coords :rpy-angle) 0) 0)))
-  (print mou-chotto-roll)
-  (send *ri* :go-pos-unsafe (/ (elt mou-chotto-pos 0) 1000) (/ (elt mou-chotto-pos 1) 1000)   (rad2deg mou-chotto-roll))
+  (if *world-to-610*
+      (progn
+	(setq current-ri-coords (send (send *world-to-610* :worldcoords) :transformation (send *ri* :state :worldcoords)))
+	(setq mou-chotto-pos (v- (send coords :worldpos)  (send current-ri-coords :pos)))
+	(setq mou-chotto-pos (transform (inverse-matrix  (send (send *ri* :state :worldcoords) :worldrot)) mou-chotto-pos))
+	(setq mou-chotto-roll
+	      (- -pi/2 (elt (elt (send current-ri-coords :rpy-angle) 0) 0)))
+	(print mou-chotto-roll)
+	(send *ri* :go-pos-unsafe (/ (elt mou-chotto-pos 0) 1000) (/ (elt mou-chotto-pos 1) 1000)   (rad2deg mou-chotto-roll))
+	)
+    (progn
+      (send *ri* :move-to coords)
+      )
+    )
 )
 
 (defun move-around nil
+  (setq *sweep-spot1* (make-cascoords :pos #f(4010 -1600 0) :rpy (list -pi/2 0 0)))
+  (send *room610* :assoc *sweep-spot1*)
+  (setq *sweep-spot2* (make-cascoords :pos #f(6510 -1607 0) :rpy (list 0 0 0)))
+  (send *room610* :assoc *sweep-spot2*)
+  (setq *sweep-spot3* (make-cascoords :pos #f(6510 1000 0) :rpy (list pi/2 0 0)))
+  (send *room610* :assoc *sweep-spot3*)
+  (setq *sweep-spot4* (make-cascoords :pos #f(4010 1000 0) :rpy (list pi 0 0)))
+  (send *room610* :assoc *sweep-spot4*)
 
   (pr2-rotate -pi/2)
-  (pr2-move-first)
-
+  (pr2-move-to-unsafe *sweep-spot1*)
   (pr2-rotate 0)
-  ;;  (return-from move-around)
-  (send *ri* :go-pos-unsafe 0 0 90)
-  (send *ri* :go-pos-unsafe 2.5 0 0)
-  (send *ri* :go-pos-unsafe 0 0 90)
-
-  (send *ri* :go-pos-unsafe 2.5 0 0)
-  (send *ri* :go-pos-unsafe 0 0 90)
-
-  (send *ri* :go-pos-unsafe 2.5 0 0)
-  (send *ri* :go-pos-unsafe 0 0 90)
-
+  (pr2-move-to-unsafe *sweep-spot2*)
+  (pr2-rotate pi/2)
+  (pr2-move-to-unsafe *sweep-spot3*)
+  (pr2-rotate pi)
+  (pr2-move-to-unsafe *sweep-spot4*)
 )
 
 
@@ -176,31 +196,35 @@
 
 (defun furuta-sweep nil
   (ros::roseus "read_marker_sample")
+  (setq *moving-arm* :both)
   ;;(rhand-grasp)
-  (lower-mop)
+  (lower-mop *moving-arm*)
   (move-around)
-  ;;(stop-force)
   (stopImpedance *moving-arm*)
 )
+
+
 
 
 (defun furuta-sweep-under-table nil
 ;;  (lower-mop)
 ;;  (setq origin (make-coords :pos #f(500 0 0)))
   (send *pr2* :angle-vector (send *ri* :state :potentio-vector))
-  (setq origin (send (send *pr2* :rarm :end-coords) :copy-worldcoords))
-  (setq goal (send (send origin :copy-worldcoords) :locate #f(-100 0 0)))
-  (move-mop origin goal 10 1000)
 
-  (objects (list *pr2* origin))
+  (setq origin (send (send *pr2* :rarm :end-coords) :copy-worldcoords))
+  (setq goal (send (send origin :copy-worldcoords) :locate #f(100 0 0)))
+  (move-mop origin goal 1000)
+
+  (setq goal (send (send origin :copy-worldcoords) :locate #f(-100 0 0)))
+  (move-mop origin goal 1000)
+
+  ;;(objects (list *pr2* origin))
   (if (boundp '*irtviewer*) (send *irtviewer* :draw-objects))
 ;;  (print origin)
 ;;  (send *pr2* :rarm :end-coords)
 )
 
-
-
-(defun move-mop (nowcoords goalcoords &optional (inter_num 10) (time 10000.0))
+(defun move-mop (nowcoords goalcoords &optional  (time 10000.0) (inter_num 10))
   (send *pr2* :angle-vector (send *ri* :state :potentio-vector))
   (let ((goal_l (createImpedGoal "base_footprint"))
 	(goal_r (createImpedGoal "base_footprint"))
