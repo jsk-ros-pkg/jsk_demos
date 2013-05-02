@@ -14,6 +14,7 @@
           :look-at-target t
           ;;                :debug-view t
           )
+    (if (boundp '*irtviewer*) (send *irtviewer* :draw-objects))
     (send *ri* :angle-vector (send *pr2* :angle-vector))
     (send *ri* :wait-interpolation)
 
@@ -28,6 +29,7 @@
           :look-at-target t
           ;;                :debug-view t
           )
+    (if (boundp '*irtviewer*) (send *irtviewer* :draw-objects))
     (send *ri* :angle-vector (send *pr2* :angle-vector))
     (send *ri* :wait-interpolation)
     (send *ri* :stop-grasp :rarm)
@@ -35,6 +37,7 @@
 
     (send *ri* :go-pos-unsafe -0.1 0 0)
     (send *pr2* :translate #f(-100 0 0))
+    (if (boundp '*irtviewer*) (send *irtviewer* :draw-objects))
 
     ;;  (send *ri* :go-pos-unsafe -0.3 0.05 0)
     ;;  (send *pr2* :translate #f(-300 50 0))
@@ -52,6 +55,7 @@
           ;;		:debug-view t
           )
     
+    (if (boundp '*irtviewer*) (send *irtviewer* :draw-objects))
     (send *ri* :angle-vector (send *pr2* :angle-vector))
     (send *ri* :wait-interpolation)
 
@@ -79,6 +83,7 @@
           :look-at-target t
           ;;                :debug-view t
           )
+    (if (boundp '*irtviewer*) (send *irtviewer* :draw-objects))
     (send *ri* :wait-interpolation)
 
     (send *ri* :angle-vector (send *pr2* :angle-vector))
@@ -87,7 +92,7 @@
     (send *ri* :go-pos-unsafe -0.2 -0 10)
     ;;(send *pr2* :rotate (deg2rad -30) :z)
     (send *pr2* :translate #f(-200 -0 10))
-
+    (if (boundp '*irtviewer*) (send *irtviewer* :draw-objects))
 
     (send *ri* :wait-interpolation)
 
@@ -97,6 +102,7 @@
     (send *ri* :go-pos-unsafe -1.2 -0.3 -40)
     ;;(send *pr2* :rotate (deg2rad -30) :z)
     (send *pr2* :translate #f(-1200 -300 -40))
+    (if (boundp '*irtviewer*) (send *irtviewer* :draw-objects))
     (send *ri* :wait-interpolation)
 
     (setq dest-c (send (send *pr2* :rarm :end-coords) :copy-worldcoords))
@@ -114,6 +120,7 @@
           ;;                :debug-view t
           )
 
+    (if (boundp '*irtviewer*) (send *irtviewer* :draw-objects))
     (send *ri* :angle-vector (send *pr2* :angle-vector))
     (send *ri* :wait-interpolation)
 
@@ -123,5 +130,12 @@
     (send (send *pr2* :r_wrist_roll_link) :dissoc *chair*)
     (send *ri* :stop-grasp :rarm)
     (send *ri* :wait-interpolation)
+    
+    (setq rotate-origin (make-cascoords :coords (send (send *pr2* :r_wrist_roll_link) :copy-worldcoords)))
+    (send rotate-origin :assoc *chair*)
+    (send rotate-origin :rotate pi/2 :z)
+
+
+
     ))
 
