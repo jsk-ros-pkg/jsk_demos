@@ -13,6 +13,7 @@
 (load "package://jsk_2013_04_pr2_610/euslisp/sweep-under-table.l")
 (load "package://jsk_2013_04_pr2_610/euslisp/pick-broom.l")
 (load "package://jsk_2013_04_pr2_610/euslisp/put-cloth-into-laundry.l")
+(load "package://jsk_2013_04_pr2_610/euslisp/sweep-floor.l")
 
 
 (defun setup ()
@@ -174,7 +175,7 @@
 
 (defun sweep-floor ()
   (warn "sweep-floor (furuta)~%")
-  ;;(furuta-sweep)
+  (furuta-sweep)
   )
 
 
@@ -202,7 +203,6 @@
   (sweep-floor)
   (use-tilt-laser-obstacle-cloud t)
   )
-
 
 (warn "type (demo) to start~%")
 (warn "type (setup) to revert all object location~%")
