@@ -3,7 +3,8 @@
   (let (dest-c)
     ;;reset from furuta's pose
 
-    (send *ri* :stop-grasp :rarm)
+    (send *ri* :stop-grasp :rarm :wait t)
+    (send *ri* :wait-interpolation)
 
 
     (send *pr2* :inverse-kinematics (send  (send (send *pr2* :rarm :end-coords) :copy-worldcoords) :translate #f(0 -300 0) :world)
@@ -125,6 +126,13 @@
     (send *ri* :wait-interpolation)
 
 
+
+    ;;push and back
+    (send *ri* :go-pos-unsafe 0.2 0 0)
+    (send *pr2* :translate #f(200 0 0))
+
+    (send *ri* :go-pos-unsafe -0.3 0 0)
+    (send *pr2* :translate #f(-300 0 0))
 
     
     (send (send *pr2* :r_wrist_roll_link) :dissoc *chair*)
