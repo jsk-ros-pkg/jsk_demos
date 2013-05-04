@@ -27,7 +27,10 @@
            :rot
            (rotate-matrix (send (send *chair* :handle-above-cloth-larm) :worldrot) -pi/2 :x)))
     (if (boundp '*irtviewer*) (send croth-coords :draw-on :flush t))
-    (send *pr2* :rarm :inverse-kinematics croth-coords :revert-if-fail t :look-at-target t)
+    (send *pr2* :rarm :inverse-kinematics
+          croth-coords
+          :revert-if-fail t
+          :look-at-target t)
     (if (boundp '*irtviewer*) (send *irtviewer* :draw-objects))
     (send *ri* :angle-vector (send *pr2* :angle-vector) 2000)
     (send *ri* :wait-interpolation)
