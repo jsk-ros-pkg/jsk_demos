@@ -26,7 +26,7 @@
 
     ;; for navigation
     (speak-en "DANGER go 30 centimeter.")
-    (send *ri* :go-pos-unsafe 0.35 0)
+    (send *ri* :go-pos-unsafe 0.29 0)
 
     (send *pr2* :arms :move-end-pos (float-vector 0 0 (- (- table-height yokei-down-height) (elt p 2))) :world)
     (send *ri* :angle-vector (send *pr2* :angle-vector))

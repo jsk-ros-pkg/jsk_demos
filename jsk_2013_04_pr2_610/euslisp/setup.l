@@ -36,7 +36,7 @@
   (setq *laundry* (send *room610* :object "room610-laundry-machine"))
   ;; yukizaki?
 ;  (send *laundry* :translate #f(-120 10 -85) (send *room610* :worldcoords))
-  (send *laundry* :translate #f(-180 -40 -105) (send *room610* :worldcoords))
+  (send *laundry* :translate #f(-180 -10 -85) (send *room610* :worldcoords))
 
   ;; spots
   (setq *tray-spot* (make-cascoords :pos #f(5050 700 0) :rpy (list -pi/2 0 0)))
@@ -135,7 +135,7 @@
     ;; (send *pr2* :translate #f(0 300 0) (send *room610* :worldcoords))
     (cond 
      (*world-to-610*
-      (send *ri* :move-to (send *room610* :spot-laundry-spot) :frame-id *room610-origin*)
+;      (send *ri* :move-to (send *room610* :spot-laundry-spot) :frame-id *room610-origin*)
       (setq current-ri-coords (send (send *world-to-610* :worldcoords) :transformation (send *ri* :state :worldcoords)))
       (setq mou-chotto-pos (v- (send (send *room610* :spot-laundry-spot) :pos) (send current-ri-coords :pos)))
       (setq mou-chotto-local-pos (transform (inverse-matrix (send (send *ri* :state :worldcoords) :worldrot)) mou-chotto-pos))
@@ -187,8 +187,6 @@
 (send *ri* :angle-vector (send *pr2* :angle-vector))
 (send *ri* :wait-interpolation)
 )
-
-
 
 (defun move-to-sweep ()
   (warn "move-to-sweep~%")
