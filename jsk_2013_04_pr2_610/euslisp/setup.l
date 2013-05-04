@@ -35,7 +35,8 @@
   (send *chair* :locate #f(4700.0 -360 0.0) :world)
   (setq *laundry* (send *room610* :object "room610-laundry-machine"))
   ;; yukizaki?
-  (send *laundry* :translate #f(-120 10 -85) (send *room610* :worldcoords))
+;  (send *laundry* :translate #f(-120 10 -85) (send *room610* :worldcoords))
+  (send *laundry* :translate #f(-180 -40 -105) (send *room610* :worldcoords))
 
   ;; spots
   (setq *tray-spot* (make-cascoords :pos #f(5050 700 0) :rpy (list -pi/2 0 0)))
@@ -85,11 +86,13 @@
 
 (defun move-to-chair ()
   (warn "move-to-chair~%")
+  (pr2-tuckarm-pose)
   (use-tilt-laser-obstacle-cloud nil)
   (clear-costmap)
   (send *pr2* :move-to (send *room610* :spot-chair-spot) :world)
   (send *ri* :move-to (send *room610* :spot-chair-spot) :frame-id *room610-origin*)
   (use-tilt-laser-obstacle-cloud t)
+  (pr2-reset-pose)
   )
 
 (defun move-to-chair2 ()
@@ -189,7 +192,18 @@
 
 (defun move-to-sweep ()
   (warn "move-to-sweep~%")
-  (rarm-tuck)
+;  (rarm-tuck)
+  (send *pr2* :angle-vector (send *ri* :state :potentio-vector))
+  (let ((larm-end-coords (send *pr2* :larm :end-coords)))
+    (send *pr2* :rarm :inverse-kinematics
+          (send larm-end-coords :translate #f(0 0 -300) :world)
+          :look-at-target t
+          :rotation-axis :z
+          :debug-view nil))
+  (send *ri* :angle-vector (send *pr2* :angle-vector))
+  (send *ri* :wait-interpolation)
+  (send *ri* :start-grasp)
+
   (use-tilt-laser-obstacle-cloud nil)
   (send *pr2* :move-to (send *room610* :spot-sweep-spot) :world)
   (send *ri* :move-to (send *room610* :spot-sweep-spot) :frame-id *room610-origin*)
@@ -198,6 +212,11 @@
 
 (defun pass-broom-to-right-hand ()
   (warn "pass-broom-to-right-hand~%"))
+
+(defun move-to-sweep-floor ()
+  (warn "move-to-sweep-floor~%")
+  (send *ri* :go-pos-unsafe -0.15 0)
+  (send *pr2* :translate (send *pr2* :transform-vector #f(-150 0 0)) :world))
 
 (defun sweep-floor ()
   (warn "sweep-floor (furuta)~%")
@@ -226,6 +245,7 @@
   ;;
   (move-to-sweep)
   (sweep-under-table)
+  (move-to-sweep-floor)
   (sweep-floor)
   (use-tilt-laser-obstacle-cloud t)
   )
