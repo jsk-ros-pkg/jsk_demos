@@ -36,7 +36,7 @@
   (setq *laundry* (send *room610* :object "room610-laundry-machine"))
   ;; yukizaki?
 ;  (send *laundry* :translate #f(-120 10 -85) (send *room610* :worldcoords))
-  (send *laundry* :translate #f(-180 -10 -85) (send *room610* :worldcoords))
+  (send *laundry* :translate #f(-260 -30 -125) (send *room610* :worldcoords))
 
   ;; spots
   (setq *tray-spot* (make-cascoords :pos #f(5050 700 0) :rpy (list -pi/2 0 0)))
@@ -124,7 +124,7 @@
 (defun test ()
   (init)
   (mtl)
-  (put-cloth-into-laundry)
+  (put-cloth)
 )
 
 (defun move-to-laundry ()
@@ -133,6 +133,9 @@
     (use-tilt-laser-obstacle-cloud nil)
     (send *pr2* :move-to (send *room610* :spot-laundry-spot) :world)
     ;; (send *pr2* :translate #f(0 300 0) (send *room610* :worldcoords))
+    ;; #<rotational-joint #X930d028 l_wrist_flex_joint> :joint-angle(-5.7293) violate ma\| 
+ (send *ri* :move-to (send *room610* :spot-laundry-spot) :frame-id *room610-origin*)
+#|
     (cond 
      (*world-to-610*
 ;      (send *ri* :move-to (send *room610* :spot-laundry-spot) :frame-id *room610-origin*)
@@ -146,7 +149,7 @@
       (send *ri* :go-pos-unsafe (/ (elt mou-chotto-local-pos 0) 1000) (/ (elt mou-chotto-local-pos 1) 1000) (rad2deg mou-chotto-roll)))
      (t
       (send *ri* :move-to (send *pr2* :worldcoords))
-      ))
+      ))|#
     (use-tilt-laser-obstacle-cloud t)
   ))
 
@@ -155,8 +158,10 @@
   (let (current-ri-coords mou-chotto-pos mou-chotto-local-pos mou-chotto-roll)
     (use-tilt-laser-obstacle-cloud nil)
     (send *pr2* :move-to (send *room610* :spot-pick-broom-spot) :world)
+ (send *ri* :move-to (send *room610* :spot-pick-broom-spot) :frame-id *room610-origin*)
                                         ;  (send *pr2* :translate #f(0 300 0) (send *room610* :worldcoords))
                                         ;  (send *ri* :move-to (send *room610* :spot-pick-broom-spot) :frame-id *room610-origin*)
+#|
     (cond
      (*world-to-610*
       (setq current-ri-coords (send (send *world-to-610* :worldcoords) :transformation (send *ri* :state :worldcoords)))
@@ -170,6 +175,7 @@
      (t
       (send *ri* :move-to (send *pr2* :worldcoords))
       ))
+|#
 
     (use-tilt-laser-obstacle-cloud t)
     ))
@@ -233,7 +239,7 @@
   (pick-cloth)
   ;;
   (move-to-laundry)
-  (put-cloth-into-laundry)
+  (put-cloth)
   ;;
   (move-to-broom)
   (pick-broom)

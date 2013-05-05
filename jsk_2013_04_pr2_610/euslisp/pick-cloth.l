@@ -8,14 +8,14 @@
   (warn "pick-cloth ()~%")
   (let (croth-coords)
     (send *pr2* :reset-pose)
-    (send *pr2* :move-to *chair-spot* :world)
-    (if (boundp '*irtviewer*) (send *irtviewer* :draw-objects))
-
+;    (send *pr2* :move-to *chair-spot* :world)
+;    (if (boundp '*irtviewer*) (send *irtviewer* :draw-objects))
     ;;kamae
     (send *pr2* :rarm :angle-vector #f(-40.0 -20.0 0.0 -70.0 -70.0 -90.0 0.0))
     (if (boundp '*irtviewer*) (send *irtviewer* :draw-objects))
     (send *ri* :angle-vector (send *pr2* :angle-vector) 1000)
     (send *ri* :wait-interpolation)
+    (send *ri* :stop-grasp :rarm :wait t)
 
     ;;grasp
     (setq croth-coords
@@ -29,7 +29,7 @@
     (if (boundp '*irtviewer*) (send croth-coords :draw-on :flush t))
     (send *pr2* :rarm :inverse-kinematics
           croth-coords
-          :revert-if-fail t
+          :revert-if-fail nil
           :look-at-target t)
     (if (boundp '*irtviewer*) (send *irtviewer* :draw-objects))
     (send *ri* :angle-vector (send *pr2* :angle-vector) 2000)
