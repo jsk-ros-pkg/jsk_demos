@@ -1,4 +1,10 @@
+
 (defun put-cloth-into-laundry ()
+  (warn "put-cloth-into-laundry is too long. So ...~%")
+  (warn "use (put-cloth)~%")
+)
+
+(defun put-cloth ()
   (warn "open-laundry-door (kuroiwa)~%")
   (let ((release (send *laundry* :handle-contents))
         (handle (send *laundry* :handle-handle-cap))
@@ -6,11 +12,20 @@
         (debug nil)
         (r 500) (depth 500) (near 80) (cap-point (make-coords)) dst front)
 
+    ;;STEP0 open collar-y
+    (send *pr2* :angle-vector (send *ri* :state :potentio-vector))
+    (send *pr2* :rarm :collar-y :joint-angle -90)
+    (send *ri* :angle-vector (send *pr2* :angle-vector))
+    (send *ri* :wait-interpolation)
+
     ;; STEP1 Push the Button
     (setq dst (make-coords) front 120)
     (send dst :init
-          :pos (send (send (send button :copy-worldcoords) :translate (float-vector (- (* near 1.2)) 0 0) (send *pr2* :worldcoords)) :worldpos)
-          :rot (send (send (send *pr2* :copy-worldcoords) :rotate (deg2rad 30) :x) :worldrot))
+          :pos (send (send (send button :copy-worldcoords) :translate (float-vector (- (* near 1.2)) -30 25) (send *pr2* :worldcoords)) :worldpos)
+          :rot (send (send (send *pr2* :copy-worldcoords) :rotate (deg2rad -45) :x) :worldrot))
+
+    (send dst :rotate (deg2rad -135) :y :world)
+
 
     ;; ready to push
     (send *pr2* :rarm :inverse-kinematics
@@ -27,16 +42,24 @@
     ;; push
     (send *pr2* :rarm :move-end-pos (float-vector 100 0 0))
     (if (boundp '*irtviewer*) (send *irtviewer* :draw-objects))
-    (send *ri* :angle-vector (send *pr2* :angle-vector) 500)
+    (send *ri* :angle-vector (send *pr2* :angle-vector) 1000)
     (send *ri* :wait-interpolation)
     (print "push")
     
     ;; pull the right arm for opening the cap
-    (send *pr2* :rarm :move-end-pos (float-vector -100 0 0))
+    (send *pr2* :rarm :move-end-pos (float-vector -100 0 -30))
     (if (boundp '*irtviewer*) (send *irtviewer* :draw-objects))
     (send *ri* :angle-vector (send *pr2* :angle-vector))
     (send *ri* :wait-interpolation)
     (print "pull")
+
+
+    (send *pr2* :rarm :move-end-pos (float-vector 0 -80 0))
+    (if (boundp '*irtviewer*) (send *irtviewer* :draw-objects))
+    (send *ri* :angle-vector (send *pr2* :angle-vector))
+    (send *ri* :wait-interpolation)
+    (print "pull")
+
 
     ;; store current position of right arm
     (setq former (send (send *pr2* :rarm :end-coords) :copy-worldcoords))
@@ -49,7 +72,7 @@
     ;; modify the model's parameters
     (send cap-point :init 
           :pos (send 
-                (send (send handle :copy-worldcoords) :translate #f(-60 0 0)
+                (send (send handle :copy-worldcoords) :translate #f(-60 80 0)
                       (send *pr2* :worldcoords))
                 :worldpos)
           :rot (send handle :worldrot))
