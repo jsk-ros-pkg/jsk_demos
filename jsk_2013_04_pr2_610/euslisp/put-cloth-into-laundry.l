@@ -40,16 +40,16 @@
     (print "ready to put")
 
     ;; push
-    (send *pr2* :rarm :move-end-pos (float-vector 100 0 0))
+    (send *pr2* :rarm :move-end-pos (float-vector 150 0 0))
     (if (boundp '*irtviewer*) (send *irtviewer* :draw-objects))
-    (send *ri* :angle-vector (send *pr2* :angle-vector) 1000)
+    (send *ri* :angle-vector (send *pr2* :angle-vector) 100)
     (send *ri* :wait-interpolation)
     (print "push")
     
     ;; pull the right arm for opening the cap
-    (send *pr2* :rarm :move-end-pos (float-vector -100 0 -30))
+    (send *pr2* :rarm :move-end-pos (float-vector -150 0 -30))
     (if (boundp '*irtviewer*) (send *irtviewer* :draw-objects))
-    (send *ri* :angle-vector (send *pr2* :angle-vector))
+    (send *ri* :angle-vector (send *pr2* :angle-vector) )
     (send *ri* :wait-interpolation)
     (print "pull")
 

@@ -203,9 +203,19 @@
           (send larm-end-coords :translate #f(0 0 -300) :world)
           :look-at-target t
           :rotation-axis :z
+          :debug-view nil)
+  (send *ri* :angle-vector (send *pr2* :angle-vector))
+  (send *ri* :wait-interpolation)
+
+    (send *pr2* :rarm :inverse-kinematics
+          (send larm-end-coords :translate #f(30 0 0) :world)
+          :look-at-target t
+          :rotation-axis :z
           :debug-view nil))
   (send *ri* :angle-vector (send *pr2* :angle-vector))
   (send *ri* :wait-interpolation)
+
+
   (send *ri* :start-grasp)
 
   (use-tilt-laser-obstacle-cloud nil)
