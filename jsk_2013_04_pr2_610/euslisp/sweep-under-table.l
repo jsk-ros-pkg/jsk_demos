@@ -93,6 +93,42 @@
 |#
 
 
+#|
+      (send *pr2* :inverse-kinematics
+            (make-coords :pos (send *pr2* :transform-vector #f(640 700 800)) :rpy (float-vector -0.2 -0.4 (deg2rad z-axis)))
+            :rotation-axis t
+            :move-target (send *pr2* :larm :end-coords)
+            :link-list (send *pr2* :link-list
+                             (send *pr2* :larm :end-coords :parent)
+                             (send *pr2* :torso_lift_link))
+            :revert-if-fail nil
+
+            :debug-view nil)
+      (send *pr2* :look-at-hand :larm)
+      (if (boundp '*irtviewer*) (send *irtviewer* :draw-objects))
+      (send *ri* :angle-vector (send *pr2* :angle-vector) 1200)
+      (send *ri* :wait-interpolation)
+|#
+
+
+
+(send *pr2* :inverse-kinematics
+            (make-coords :pos (send *pr2* :transform-vector #f(800 600 900)) :rpy (float-vector 0 0 (deg2rad z-axis)))
+            :rotation-axis t
+            :move-target (send *pr2* :larm :end-coords)
+            :use-torso t
+            :debug-view nil)
+      (send *pr2* :head :look-at (send *pr2* :larm :end-coords :worldpos))
+      (send *ri* :angle-vector (send *pr2* :angle-vector) 1200)
+      (send *ri* :wait-interpolation)
+
+      (send *ri* :stop-grasp :larm :wait t)
+      (send *ri* :wait-interpolation)
+      (send *ri* :start-grasp :larm)
+      (send *ri* :wait-interpolation)
+
+
+
 
     ;;sweep under table
     (dotimes (i 3)
@@ -100,6 +136,7 @@
       (send *pr2* :inverse-kinematics
             (make-coords :pos (send *pr2* :transform-vector #f(140 600 700)) :rpy (float-vector -0.2 -0.4 (deg2rad z-axis)))
             :rotation-axis t
+            :revert-if-fail nil
             :move-target (send *pr2* :larm :end-coords)
             :link-list (send *pr2* :link-list
                              (send *pr2* :larm :end-coords :parent)
@@ -113,6 +150,7 @@
       (send *pr2* :inverse-kinematics
             (make-coords :pos (send *pr2* :transform-vector (float-vector 640 (- 500 (* 150 i)) 500)) :rpy (float-vector 0 -0.7 (deg2rad z-axis)))
             :rotation-axis t
+            :revert-if-fail nil
             :move-target (send *pr2* :larm :end-coords)
             :link-list (send *pr2* :link-list
                              (send *pr2* :larm :end-coords :parent)
@@ -125,6 +163,33 @@
       )
 
     (return-from sweep-under-table)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
     ;;両手で
     ;;make broom model
@@ -235,4 +300,4 @@
     (send *ri* :angle-vector (send *pr2* :angle-vector) 1200)
     (send *ri* :wait-interpolation)
 
-    ))
+))
