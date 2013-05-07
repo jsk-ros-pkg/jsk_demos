@@ -6,7 +6,7 @@
   	args="$(find detect_cans_in_fridge_201202)/euslisp/detect_cans.l" />
 
   <!-- euclidean clustering service -->
-  <node pkg="jsk_pcl_ros_unreleased" type="euclidean_cluster_extraction"
+  <node pkg="jsk_pcl_ros" type="euclidean_cluster_extraction"
 	name="euclidean_clustering"
         output="screen" clear_params="true">
     <!--
