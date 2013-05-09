@@ -206,15 +206,16 @@
           :debug-view nil)
   (send *ri* :angle-vector (send *pr2* :angle-vector))
   (send *ri* :wait-interpolation)
+  (if (boundp '*irtviewer*) (send *irtviewer* :draw-objects))
 
-    (send *pr2* :rarm :inverse-kinematics
+  (send *pr2* :rarm :inverse-kinematics
           (send larm-end-coords :translate #f(30 0 0) :world)
           :look-at-target t
           :rotation-axis :z
           :debug-view nil))
   (send *ri* :angle-vector (send *pr2* :angle-vector))
   (send *ri* :wait-interpolation)
-
+  (if (boundp '*irtviewer*) (send *irtviewer* :draw-objects))
 
   (send *ri* :start-grasp)
 
