@@ -13,7 +13,7 @@
 (load "package://jsk_2013_04_pr2_610/euslisp/sweep-under-table.l")
 (load "package://jsk_2013_04_pr2_610/euslisp/pick-broom.l")
 (load "package://jsk_2013_04_pr2_610/euslisp/put-cloth-into-laundry.l")
-(load "package://jsk_2013_04_pr2_610/euslisp/sweep-floor.l")
+;(load "package://jsk_2013_04_pr2_610/euslisp/sweep-floor.l")
 
 
 (defun setup ()
