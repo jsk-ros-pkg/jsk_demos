@@ -133,6 +133,15 @@
     ;; send to real robot
     (send *ri* :angle-vector (send *pr2* :angle-vector) 1000)
     (send *ri* :wait-interpolation)
+
+    ;; back to reset pose
+    (send *pr2* :reset-manip-pose)
+    (send *pr2* :arms :shoulder-p :joint-angle 0)
+    (send *pr2* :torso :waist-z :joint-angle)
+
+    (send *ri* :angle-vector (send *pr2* :angle-vector) 1500) ;; 1500[msec]
+    (send *ri* :stop-grasp) ;; open hand
+    (send *irtviewer* :draw-objects)
     ))
 
 (defun demo ()
