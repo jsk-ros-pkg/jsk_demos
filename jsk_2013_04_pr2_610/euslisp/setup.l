@@ -60,7 +60,7 @@
   (setq *world-to-610* (send *tfl* :lookup-transform "/world" *room610-origin* (ros::time 0)))
 
   (change-inflation-range 0.1)
-  (clear-costmap)
+  (if (not (boundp '*irtviewer*)) (clear-costmap))
   )
 
 
