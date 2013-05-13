@@ -1,3 +1,6 @@
+#!/usr/bin/env roseus
+
+(load "package://jsk_demo_common/euslisp/pr2-action.l")
 
 (defun put-cloth-into-laundry ()
   (warn "put-cloth-into-laundry is too long. So ...~%")
@@ -6,11 +9,23 @@
 
 (defun put-cloth ()
   (warn "open-laundry-door (kuroiwa)~%")
-  (let ((release (send *laundry* :handle-contents))
+  (let* ((release (send *laundry* :handle-contents))
         (handle (send *laundry* :handle-handle-cap))
         (button (send *laundry* :handle-open-button))
+		(button-detected button)
         (debug nil)
+		(marker-coords (check-detection :type "laundry_center" :speak-name "せんたくき"))
         (r 500) (depth 500) (near 80) (cap-point (make-coords)) dst front)
+
+	;; change laundry button pos according to image processing
+	(when marker-coords
+	  (let ((button-coords (send button :copy-worldcoords))
+			(diff-vector (float-vector -5 -30 -30)))
+	  (setq button-detected (send button-coords :transform (send *pr2* :transform-vector diff-vector) :world))
+	  (warn "button-detected: ~A~%" button-detected)
+	  (setq button button-detected)))
+	  
+		
 
     ;;STEP0 open collar-y
     (send *pr2* :angle-vector (send *ri* :state :potentio-vector))

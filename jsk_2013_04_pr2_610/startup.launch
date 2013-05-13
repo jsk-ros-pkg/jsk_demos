@@ -1,0 +1,15 @@
+<launch>
+  <group ns="/openni/rgb">
+	<node pkg="jsk_perception" type="point_pose_extractor" name="laundry_detector">
+      <param name="template_filename" value="$(find detect_cans_in_fridge_201202)/data/openni_rgb_fridge.png"/>
+      <param name="window_name" value="fridge_handle_upper"/>
+      <param name="object_width" value="0.2"/>
+      <param name="object_height" value="0.2"/>
+      <!-- <param name="relative_pose" value="0.22 0.03 0.0  0.707107 0 -0.707107 0"/> -->
+	  <param name="relative_pose" value="0.0 0.0 0.0 0.0 0.0 0.0 0.0" />
+      <param name="viewer_window" value="false" /> <!-- to disable window-->
+	</node>
+  </group>
+  <node pkg="roseus" type="roseus" name="detect_laundry" output="screen"
+		args="$(find jsk_2013_04_pr2_610)/euslisp/test-detection.l" />
+</launch>
