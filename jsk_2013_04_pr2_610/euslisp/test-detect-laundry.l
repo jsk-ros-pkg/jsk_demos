@@ -12,8 +12,9 @@
 (speak-en "sentakuki")
 
 (while (ros::ok)
-  (warn "test")
   (setq laundry-coords (check-detection :type "laundry_button" :speak-name "sentakuki"))
+  ;;(send *laundry* :move-to laundry-coords)
+  ;;(send *pr2* :inverse-kinematics (send *laundory* :button-handle))
   (warn "laundry-coords: ~A~%" laundry-coords)
   (ros::spin-once)
   (ros::sleep))
