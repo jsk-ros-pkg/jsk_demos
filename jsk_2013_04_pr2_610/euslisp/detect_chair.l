@@ -1,6 +1,12 @@
 #!/usr/bin/env roseus
 
 
+(ros::roseus-add-msgs "sensor_msgs")
+(ros::roseus-add-msgs "posedetection_msgs")
+(defvar *result-topic* "/ObjectDetection")
+
+(ros::roseus "detect_chair")
+
 (setq *chair-width* 0.38)
 (setq *chair-height* 0.43)
 (setq *error-thred* 0.02)
@@ -130,33 +136,46 @@
 	;;(m->mm *chair-xy*)
     )
 
+    ;;if there are answer, continue the process
     (when (not (eq chair_xy_params nil))
-    ;;we calc the normal
-    (setq normal-to-line (float-vector (* 1 (- (caddr (car chair_xy_params)) (caddr (cadr chair_xy_params)))) (* -1 (- (cadr (car chair_xy_params)) (cadr (cadr chair_xy_params))))))
+        ;;we calc the normal
+        (setq normal-to-line (float-vector (* 1 (- (caddr (car chair_xy_params)) (caddr (cadr chair_xy_params)))) (* -1 (- (cadr (car chair_xy_params)) (cadr (cadr chair_xy_params))))))
 	(ros::ros-info "~A  normal-line" normal-to-line)
 
-    ;;normalization
-    (setq normal-to-line (normalize-vector normal-to-line))
+        ;;normalization
+        (setq normal-to-line (normalize-vector normal-to-line))
 	(ros::ros-info "~A  normal-line" normal-to-line)
 
-    ;;transform from float-vector to list
-    (setq normal-to-line-list (coerce normal-to-line cons))
+        ;;transform from float-vector to list
+        (setq normal-to-line-list (coerce normal-to-line cons))
 	(ros::ros-info "~A  normal-line" normal-to-line-list)
 
-    ;;reset to the chair center pos
-    (setq *chair-xy* (mapcar #'+ *chair-xy* (mapcar #'(lambda (x) (* x (/ *chair-height* 2))) normal-to-line-list)))
-    (ros::ros-info "~A renew chair-xy" *chair-xy*)
-)
+        ;;reset to the chair center pos
+        (setq *chair-xy* (mapcar #'+ *chair-xy* (mapcar #'(lambda (x) (* x (/ *chair-height* 2))) normal-to-line-list)))
+        (ros::ros-info "~A renew chair-xy" *chair-xy*)
 
+        ;;publish ObjectDetection
+        (let ((res (instance posedetection_msgs::ObjectDetection :init))  lst)
+            (let* (
+                   (o6dp (instance posedetection_msgs::Object6DPose :init)))
+              (send o6dp :pose (ros::coords->tf-pose (make-coords :pos (float-vector (* 1000 (car *chair-xy*)) (* 1000 (cadr *chair-xy*)) 0))))
+              (send o6dp :type "chair-center")
+              (push o6dp lst)
+              )
+          (send res :header (send laserScan :header))
+          (send res :objects lst)
+          (ros::publish *result-topic* res)
+        )
+    )
 )
 
 
 (defun detect_chair ()
-(ros::roseus "detect_chair")
-(ros::roseus-add-msgs "sensor_msgs")
 (ros::subscribe "/scan_filtered2"
                 sensor_msgs::LaserScan
                 #'chair-detection-cb)
+
+(ros::advertise *result-topic* posedetection_msgs::ObjectDetection)
 
 (ros::rate 10)
 (while (ros::ok)
