@@ -66,7 +66,7 @@
     (warn "22222")
 
     ;; Grasp it
-    (send *ri* :start-grasp :arms)  ;; stop-grasp wait until gripper motion stops
+    (send *ri* :start-grasp :arms :objects (list (find *tray* (send *ri* :objects) :test #'(lambda (a b) (string= (send a :name) (send b :name))))))  ;; stop-grasp wait until gripper motion stops
     (send *pr2* :larm :end-coords :assoc *tray*) ;; ???
 
     (setq avs nil)
