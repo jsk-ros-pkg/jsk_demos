@@ -115,6 +115,7 @@
     )
 	(ros::ros-info "~A will be answers" seem_answer)
     (setq prev_xy_distance nil)
+    (setq chair_xy_params nil)
     ;;this time we use closest chair-width
     (dolist (xy seem_answer)
 	(setq middle_xy (list (/ (+ (cadr (car xy)) (cadr (cadr xy)) )2) (/ (+ (caddr (car xy)) (caddr (cadr xy))) 2)))
@@ -122,11 +123,31 @@
 	(if (or (= *chair-xy* nil) (= prev_xy_distance nil) (< xy_distance prev_xy_distance )) )
     		(progn (setq *chair-xy* middle_xy)
 			(setq prev_xy_distance xy_distance)
+	 		(setq chair_xy_params xy)
 		)
 	)
 	(ros::ros-info "~A  answer ?" *chair-xy*)
-	(m->mm *chair-xy*)
+	;;(m->mm *chair-xy*)
     )
+
+    (when (not (eq chair_xy_params nil))
+    ;;we calc the normal
+    (setq normal-to-line (float-vector (* 1 (- (caddr (car chair_xy_params)) (caddr (cadr chair_xy_params)))) (* -1 (- (cadr (car chair_xy_params)) (cadr (cadr chair_xy_params))))))
+	(ros::ros-info "~A  normal-line" normal-to-line)
+
+    ;;normalization
+    (setq normal-to-line (normalize-vector normal-to-line))
+	(ros::ros-info "~A  normal-line" normal-to-line)
+
+    ;;transform from float-vector to list
+    (setq normal-to-line-list (coerce normal-to-line cons))
+	(ros::ros-info "~A  normal-line" normal-to-line-list)
+
+    ;;reset to the chair center pos
+    (setq *chair-xy* (mapcar #'+ *chair-xy* (mapcar #'(lambda (x) (* x (/ *chair-height* 2))) normal-to-line-list)))
+    (ros::ros-info "~A renew chair-xy" *chair-xy*)
+)
+
 )
 
 
