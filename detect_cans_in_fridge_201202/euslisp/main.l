@@ -53,7 +53,7 @@
     (:put-on-turtlebot
      (put-can-on-turtlebot))
     ((:pass-to-human t)
-     (speak-jp (format nil "~a を どうぞ" (send *obj* :name)))
+     (speak-jp (format nil "~a を どうぞ" *type*))
      (hand-over :rarm :wait-shock t))
     )
   t
