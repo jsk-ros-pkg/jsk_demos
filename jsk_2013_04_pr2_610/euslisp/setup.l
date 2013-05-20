@@ -15,6 +15,7 @@
 (load "package://jsk_2013_04_pr2_610/euslisp/put-cloth-into-laundry.l")
 ;(load "package://jsk_2013_04_pr2_610/euslisp/sweep-floor.l")
 
+(load "package://jsk_2013_04_pr2_610/euslisp/publish-laundry-marker.l")
 
 (defun setup ()
   (room610)
@@ -58,6 +59,9 @@
   (if (not (boundp '*tfl*)) (setq *tfl* (instance transform-listener :init)))
 
   (setq *world-to-610* (send *tfl* :lookup-transform "/world" *room610-origin* (ros::time 0)))
+
+  ;; publish laundry marker
+  (publish-laundry-marker)
 
   (change-inflation-range 0.1)
   (if (not (boundp '*irtviewer*)) (clear-costmap))

@@ -7,15 +7,20 @@
 (load "package://pr2eus/pr2-interface.l")
 (load "package://jsk_demo_common/euslisp/pr2-action.l")
 (load "package://pr2eus/speak.l")
+(load "package://jsk_2013_04_pr2_610/euslisp/publish-laundry-marker.l")
 
 (ros::rate 1)
-(pr2-init)
+(if (not (and (boundp '*ri*) (boundp '*pr2*))) (pr2-init))
 (speak-en "sentakuki")
 
 (while (ros::ok)
-  (setq laundry-coords (check-detection :type "laundry_button" :speak-name "sentakuki" :speak nil))
-  (if laundry-coords
-	  (publish_tf laundry-coords "/laundry"))
+  (setq laundry-coords (check-detection :type "laundry_button" 
+										:speak-name "sentakuki"
+										:target-object *laundry*
+										:speak nil))
+  (when laundry-coords
+	(publish-laundry-marker)
+	(publish_tf laundry-coords "/laundry"))
   
   ;;(send *laundry* :move-to laundry-coords)
   ;;(send *pr2* :inverse-kinematics (send *laundory* :button-handle))
