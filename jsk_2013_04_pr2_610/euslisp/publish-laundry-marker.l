@@ -2,14 +2,17 @@
 
 (load "models/room610-laundry-machine-object.l")
 
+(load "package://roseus/euslisp/roseus-utils.l")
+
 (ros::roseus "publish_laundry_marker")
 
+(defvar *base-frame-id* "/base_footprint")
 (defvar *pub-laundry-topic* "/laundry_marker")
 (defvar *pub-all-topic* "/all_marker_array")
 
-(if (not (boundp '*tfb*) (setq *tfb* (instance ros::transform-broadcaster :init))))
+(if (not (boundp '*tfb*)) (setq *tfb* (instance ros::transform-broadcaster :init)))
 
-(if (not (boundp '*laundry*) (setq *laundry* (room610-laundry-machine))))
+(when (not (boundp '*laundry*)) (setq *laundry* (room610-laundry-machine)) (warn "hoge~%"))
 
 (defun laundry-pub ()
   (ros::rate 10)
@@ -18,8 +21,8 @@
 							   :stamp (ros::time-now)
 							   :frame_id "/laundry_id"))
 			 (laundry-msg (object->marker-msg *laundry* header))
-			 (all-msg (instance visualization_msgs::MarkerArray :init))))
-	(send *tfb* :send-transform (make-coords) "/base_footprint" "/laundry_id")
+			 (all-msg (instance visualization_msgs::MarkerArray :init)))
+	(send *tfb* :send-transform (send *laundry* :worldcoords) *base-frame-id* "/laundry_id")
 
 	;; publish msg
 	(ros::publish *pub-laundry-topic* laundry-msg)
@@ -32,10 +35,11 @@
 	(ros::spin-once)
 	(ros::sleep)
 	(ros::sleep)
-	(print header)))
+	(print header))))
 
 
 ;; main
+(defun publish-laundry-marker ()
 (ros::advertise *pub-laundry-topic* visualization_msgs::Marker 5)
 (ros::advertise *pub-all-topic* visualization_msgs::Marker 5)
-(laundry-pub)
+(laundry-pub))
