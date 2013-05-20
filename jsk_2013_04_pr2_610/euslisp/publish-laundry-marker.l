@@ -17,7 +17,7 @@
 	  (let* ((header (instance std_msgs::header :init
 							   :stamp (ros::time-now)
 							   :frame_id "/laundry_id"))
-			 (laundry-msg (laundry->laundry-msg *laundry* header))
+			 (laundry-msg (object->marker-msg *laundry* header))
 			 (all-msg (instance visualization_msgs::MarkerArray :init))))
 	(send *tfb* :send-transform (make-coords) "/base_footprint" "/laundry_id")
 
