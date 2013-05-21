@@ -1,3 +1,9 @@
+
+;;after move-to, save the pos
+(defparameter *moved-chair-spot* nil)
+
+
+
 (defun move-chair ()
   (warn "move-chair (inagaki)~%")
   (let (dest-c)
@@ -32,6 +38,10 @@
     (if (boundp '*irtviewer*) (send *irtviewer* :draw-objects))
     (send *ri* :angle-vector (send *pr2* :angle-vector))
     (send *ri* :wait-interpolation) |#
+
+
+
+
     (send *ri* :stop-grasp :rarm)
 ;    (send *ri* :wait-interpolation)
 
@@ -214,10 +224,54 @@
     (if (boundp '*irtviewer*) (send *irtviewer* :draw-objects))
     (send *ri* :angle-vector (send *pr2* :angle-vector) 2000)
     (send *ri* :wait-interpolation)
+
+
+
+
+    ;;save the place where robot was
+    (setq *moved-chair-spot* (send *ri* :state :worldcoords))
     ;; (setq rotate-origin (make-cascoords :coords (send (send *pr2* :r_wrist_roll_link) :copy-worldcoords)))
     ;; (send rotate-origin :assoc *chair*)
     ;; (send rotate-origin :rotate pi/2 :z)
     ;; (if (boundp '*irtviewer*) (send *irtviewer* :draw-objects))
 
     ))
+
+
+(defun move-back-chair ()
+
+
+  ;;cache above pos phase---------------------------------------------------------------------------------;;
+ (send *pr2* :angle-vector (send *ri* :state :potentio-vector))
+    ;;(send *pr2* :reset-pose) ;; to solve ik, do not  send to *ri*
+    (send *pr2* :inverse-kinematics (list (send (send (send *chair* :handle-above-rarm) :translate  #f(-20 0 15) (send *chair* :worldcoords)) :rotate (deg2rad 20) :y (send *chair* :worldcoords)))
+          :link-list (list
+                      (send *pr2* :link-list (send *pr2* :rarm :end-coords :parent)))
+          :move-target (list (send *pr2* :rarm :end-coords))
+          :revert-if-fail nil
+          :look-at-target t
+          ;;            :debug-view t
+          )
+
+    (if (boundp '*irtviewer*) (send *irtviewer* :draw-objects))
+    (send *ri* :angle-vector (send *pr2* :angle-vector))
+    (send *ri* :wait-interpolation)
+
+    (send *pr2* :rarm :move-end-pos #f(0 0 -30) :world)
+    (send *ri* :angle-vector (send *pr2* :angle-vector))
+    (send *ri* :wait-interpolation)
+
+    (send (send *pr2* :r_wrist_roll_link) :assoc *chair*)
+    (send *ri* :angle-vector (send *pr2* :angle-vector))
+    (send *ri* :wait-interpolation)
+
+    (send *ri* :start-grasp :rarm)
+    (send *ri* :wait-interpolation)
+    
+
+  ;;push and move phase---------------------------------------------------------------------------------;;
+    
+
+
+)
 
