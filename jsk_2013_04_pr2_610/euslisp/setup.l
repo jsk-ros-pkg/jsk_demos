@@ -13,6 +13,7 @@
 (load "package://jsk_2013_04_pr2_610/euslisp/sweep-under-table.l")
 (load "package://jsk_2013_04_pr2_610/euslisp/pick-broom.l")
 (load "package://jsk_2013_04_pr2_610/euslisp/put-cloth-into-laundry.l")
+(load "package://jsk_2013_04_pr2_610/euslisp/detect_chair.l")
 ;(load "package://jsk_2013_04_pr2_610/euslisp/sweep-floor.l")
 
 (load "package://jsk_2013_04_pr2_610/euslisp/publish-laundry-marker.l")
@@ -116,8 +117,11 @@
   (warn "move-to-chair2~%")
   (use-tilt-laser-obstacle-cloud nil)
   (clear-costmap)
-  (send *pr2* :move-to (send *room610* :spot-chair-spot2) :world)
-  (send *ri* :move-to (send *room610* :spot-chair-spot2) :frame-id *room610-origin*)
+  (if (*moved-chair-spot*)
+    (progn
+      (send *pr2* :move-to *moved-chair-spot* :world)
+      (send *ri* :move-to *moved-chair-spot* :frame-id *room610-origin*)
+    ))
   (use-tilt-laser-obstacle-cloud t)
 )
 
