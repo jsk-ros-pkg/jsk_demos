@@ -1,8 +1,5 @@
 
 ;;after move-to, save the pos
-(defparameter *moved-chair-spot* nil)
-
-
 
 (defun move-chair ()
   (warn "move-chair (inagaki)~%")
