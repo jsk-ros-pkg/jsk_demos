@@ -55,6 +55,10 @@
   (setq *sweep-spot* (make-cascoords :pos #f(3550 -300 0) :rpy (list (deg2rad -30) 0 0)))
   (send *room610* :assoc *sweep-spot*)
 
+  ;;after move-to, save the pos
+  (setq *moved-chair-spot* nil)
+
+
   (if (not (boundp '*ri*)) (setq *ri* (instance pr2-interface :init :objects (send *room610* :objects))))
   (if (not (boundp '*tfl*)) (setq *tfl* (instance transform-listener :init)))
 
@@ -107,6 +111,15 @@
   (send *ri* :move-to (send *room610* :spot-chair-spot2) :frame-id *room610-origin*)
   (use-tilt-laser-obstacle-cloud t)
   )
+
+(defun move-to-back-chair ()
+  (warn "move-to-chair2~%")
+  (use-tilt-laser-obstacle-cloud nil)
+  (clear-costmap)
+  (send *pr2* :move-to (send *room610* :spot-chair-spot2) :world)
+  (send *ri* :move-to (send *room610* :spot-chair-spot2) :frame-id *room610-origin*)
+  (use-tilt-laser-obstacle-cloud t)
+)
 
 
 (defun move-to-laund ()
