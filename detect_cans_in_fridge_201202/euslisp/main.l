@@ -172,7 +172,7 @@
     ))
 
 (init)
-(wait-android-query)
+;;(wait-android-query)
 
 (warn ";; (init) ;; initialize demo~%")
 (warn ";; (demo) ;; start demo~%")
