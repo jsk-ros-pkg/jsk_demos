@@ -54,7 +54,7 @@
 
   <node if="$(arg wait_query)"
         pkg="roseus" name="fridge_can_main" type="roseus"
-        args="$(find detect_cans_in_fridge_201202)/euslisp/main.l" />
+        args="$(find detect_cans_in_fridge_201202)/euslisp/main.l (wait-android-query)" />
 
   <sphinxdoc><![CDATA[
 
