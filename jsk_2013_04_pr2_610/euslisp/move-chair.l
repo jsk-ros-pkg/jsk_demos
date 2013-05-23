@@ -1,9 +1,38 @@
+#!/usr/bin/env roseus
+(ros::load-ros-manifest "jsk_perception")
+
+;; define detection parameters befor load detection_interface.l
+(defvar *detection-topic* "/ObjectDetection")
+
+;; load functions
+(load "package://jsk_perception/euslisp/detection_interface.l")
+
+;; stret program
+;;(load "package://euslisp/jskeus/eus/models/room610-chair-object.l")
+
+(defun start-detect-chair ()
+;;	(setq *target-object* (room610-chair))
+	(ros::roseus "objectdetection_publisher")
+	(ros::rate 10)
+	(do-until-key
+;;	 (send *target-object* :move-to (make-coords) :world)
+	 (check-detection :type "chair-center" ;; work for any object
+                  :speak-name "test object"
+                  :target-object *chair*
+                  :speak nil)
+	 (ros::spin-once)
+	 (ros::sleep))
+)
+
+
 
 ;;after move-to, save the pos
 
 (defun move-chair ()
   (warn "move-chair (inagaki)~%")
   (let (dest-c)
+    ;;start-detect-chair
+    (start-detect-chair)
 
     ;;reset from furuta's pose
 
@@ -221,7 +250,6 @@
     (if (boundp '*irtviewer*) (send *irtviewer* :draw-objects))
     (send *ri* :angle-vector (send *pr2* :angle-vector) 2000)
     (send *ri* :wait-interpolation)
-
 
 
 
