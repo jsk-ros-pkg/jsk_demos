@@ -5,7 +5,7 @@
 
 (defun move-chair ()
 
-(load "capture_prepare_pose.l")
+(load "capture-prepare-pose.l")
 (send *pr2* :reset-pose)
 (if (boundp '*irtviewer*) (send *irtviewer* :draw-objects))
 (send *ri* :angle-vector (send *pr2* :angle-vector) 3000)
