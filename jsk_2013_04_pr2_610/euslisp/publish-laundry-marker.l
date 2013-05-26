@@ -41,5 +41,5 @@
 ;; main
 (defun publish-laundry-marker ()
 (ros::advertise *pub-laundry-topic* visualization_msgs::Marker 5)
-(ros::advertise *pub-all-topic* visualization_msgs::Marker 5)
+(ros::advertise *pub-all-topic* visualization_msgs::MarkerArray 5)
 (laundry-pub))

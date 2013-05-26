@@ -1,6 +1,16 @@
 #!/usr/bin/env roseus
 
+(ros::roseus-add-msgs "posedetection_msgs")
+(load "models/arrow-object.l")
+
+(defvar *base-frame-id* "/base_footprint")
+(defvar *pub-laundry-button-topic* "/laundry_button_marker")
+
 (load "package://jsk_demo_common/euslisp/pr2-action.l")
+(load "package://jsk_2013_04_pr2_610/euslisp/objectdetection-laundry.l")
+
+(ros::roseus "laundry_button_marker_publisher")
+(ros::advertise *pub-laundry-button-topic* visualization_msgs::Marker 5)
 
 (defun put-cloth-into-laundry ()
   (warn "put-cloth-into-laundry is too long. So ...~%")
@@ -8,24 +18,216 @@
 )
 
 (defun put-cloth ()
+  (pr2-reset-pose)  ;; debug
+  (open-door)
+  (put-cloth-into)
+  (close-door)
+  (pr2-reset-pose)
+)
+
+(defun open-door ()
+  (warn "open-door ~%")
+  (let (button)
+
+    ;; reset coords
+    (send *pr2* :reset-coords)
+
+    ;; change camera pos to laundry\
+    (send *ri* :start-grasp :rarm)
+    (send *pr2* :angle-vector (send *ri* :state :potentio-vector))
+    (send *pr2* :head :neck-y :joint-angle -4.353)
+    (send *pr2* :head :neck-p :joint-angle 24.422)
+    (send *ri* :angle-vector (send *pr2* :angle-vector))
+    (send *ri* :wait-interpolation)
+
+    ;; change laundry button pos according to image processing
+    (laundry-detection *laundry*)
+    (warn "laundry moved to ~A~%" (send *laundry* :coords))
+    (setq button (send (make-coords :pos #f(770 120 780)
+				    :rpy (list (deg2rad 180) (deg2rad 30) (deg2rad 0)))
+		       :transform *laundry* :world))
+    (warn "button: ~A~%" button)
+
+    ;; publish button marker
+    (ros::publish *pub-laundry-button-topic* 
+		  (coords->marker-msg
+		   button
+		   (instance std_msgs::header :init
+			     :stamp (ros::time-now)
+			     :frame_id *base-frame-id*)
+		   :ns "laundry_button"
+		   :lifetime 300))
+
+    ;; move right hand out
+    (send *pr2* :angle-vector (send *ri* :state :potentio-vector))
+    (send *pr2* :rarm :collar-y :joint-angle -90)
+    (send *ri* :angle-vector (send *pr2* :angle-vector) 1000)
+    (send *ri* :wait-interpolation)
+    (send *pr2* :rarm :move-end-pos #f(200 200 200) :world)
+    (send *ri* :angle-vector (send *pr2* :angle-vector) 1000)
+    (send *ri* :wait-interpolation)
+
+    ;; ready to push
+    (send *pr2* :rarm :inverse-kinematics
+	  button
+	  :rotation-axis t
+	  :look-at-target t
+	  :debug-view nil
+	  :revert-if-fail t)
+    (send *pr2* :rarm :move-end-pos #f(-50 0 0))
+    (if (boundp '*irtviewer*) (send *irtviewer* :draw-objects))
+    (send *pr2* :rarm :wrist-r :joint-angle 90)
+    (send *ri* :angle-vector (send *pr2* :angle-vector) 2000)
+    (send *ri* :wait-interpolation)
+
+    ;; push
+    (send *pr2* :rarm :move-end-pos (float-vector 150 0 0))
+    (if (boundp '*irtviewer*) (send *irtviewer* :draw-objects))
+    (send *ri* :angle-vector (send *pr2* :angle-vector) 100)
+    (send *ri* :wait-interpolation)
+
+    ;; pull arm for preventing collision
+    (send *pr2* :rarm :move-end-pos #f(-200 0 0))
+    (send *pr2* :rarm :move-end-pos #f(-50 0 -150) (send *pr2* :worldcoords))
+    (send *ri* :angle-vector (send *pr2* :angle-vector) 500)
+    (send *ri* :wait-interpolation)
+    )
+  )
+
+(defun put-cloth-into ()
+  (warn "put-cloth~%")
+  (let (standby release)
+    (setq standby (send (make-coords :pos #f(800 -110 680)
+				     :rpy (list (deg2rad 180) (deg2rad 0) (deg2rad 30)))
+			:transform *laundry* :world))
+    (warn "release: ~A~%" release)
+
+    (send *pr2* :rarm :inverse-kinematics
+	  standby
+	  :rotation-axis t
+	  :look-at-target t
+	  :debug-view nil
+	  :revert-if-fail t)
+    (send *ri* :angle-vector (send *pr2* :angle-vector) 1000)
+    (send *ri* :wait-interpolation)
+    
+    (setq release (send (make-coords :pos #f(650 -110 480)
+				     :rpy (list (deg2rad 180) (deg2rad 30) (deg2rad 0)))
+			:transform *laundry* :world))
+    (warn "release: ~A~%" release)
+
+    (send *pr2* :rarm :inverse-kinematics
+	  release
+	  :rotation-axis t
+	  :look-at-target t
+	  :debug-view nil
+	  :revert-if-fail nil)
+    (send *ri* :angle-vector (send *pr2* :angle-vector) 2000)
+    (send *ri* :wait-interpolation)
+
+    ;; release cloth
+    (send *ri* :stop-grasp :rarm :wait nil)
+    (send *pr2* :rarm :wrist-r :joint-angle -180)
+    (if (boundp '*irtviewer*) (send *irtviewer* :draw-objects))
+    (send *ri* :angle-vector (send *pr2* :angle-vector) 1000)
+    (send *ri* :wait-interpolation)
+    (send *pr2* :rarm :wrist-r :joint-angle 0)
+    (if (boundp '*irtviewer*) (send *irtviewer* :draw-objects))
+    (send *ri* :angle-vector (send *pr2* :angle-vector) 500)
+    (send *ri* :wait-interpolation)
+
+
+    ;; move back hand
+    (send *pr2* :rarm :inverse-kinematics
+	  standby
+	  :rotation-axis t
+	  :look-at-target t
+	  :debug-view nil
+	  :revert-if-fail t)
+    (send *ri* :angle-vector (send *pr2* :angle-vector) 1500)
+    (send *ri* :wait-interpolation)
+
+    (send *pr2* :rarm :move-end-pos #f(-100 0 0))
+    (send *ri* :angle-vector (send *pr2* :angle-vector) 1000)
+    (send *ri* :wait-interpolation)
+
+    (send *pr2* :rarm :move-end-pos #f(-70 -500 0) (send *pr2* :worldcoords))
+    (send *ri* :angle-vector (send *pr2* :angle-vector) 1000)
+    (send *ri* :wait-interpolation)
+    )
+  )
+
+(defun close-door ()
+  (warn "close-door~%")
+  (let ((handle (send *laundry* :handle-handle-cap))
+	 release)
+
+    ;; ready to close
+    (send *pr2* :larm :move-end-pos (float-vector 0 -250 0) (send *pr2* :worldcoords))
+    (if (boundp '*irtviewer*) (send *irtviewer* :draw-objects))
+    (send *ri* :angle-vector (send *pr2* :angle-vector))
+    (send *ri* :wait-interpolation)
+    (print "ready to close")
+
+    ;; close the cap
+    (setq release (send (make-coords :pos #f(650 -110 480)
+				     :rpy (list (deg2rad 180) (deg2rad 0) (deg2rad 0)))
+			:transform *laundry* :world))
+    (warn "release: ~A~%" release)
+
+    (send *pr2* :larm :inverse-kinematics
+	  release
+	  :rotation-axis t
+	  :look-at-target t
+	  :debug-view nil
+	  :revert-if-fail nil)
+    (send *ri* :angle-vector (send *pr2* :angle-vector) 500)
+    (send *ri* :wait-interpolation)
+    )
+  )
+
+
+(defun put-cloth-old ()
   (warn "open-laundry-door (kuroiwa)~%")
   (let* ((release (send *laundry* :handle-contents))
         (handle (send *laundry* :handle-handle-cap))
         (button (send *laundry* :handle-open-button))
-		(button-detected button)
         (debug nil)
-		(marker-coords (check-detection :type "laundry_center" :speak-name "せんたくき"))
         (r 500) (depth 500) (near 80) (cap-point (make-coords)) dst front)
 
-	;; change laundry button pos according to image processing
-	(when marker-coords
-	  (let ((button-coords (send button :copy-worldcoords))
-			(diff-vector (float-vector -5 -30 -30)))
-	  (setq button-detected (send button-coords :transform (send *pr2* :transform-vector diff-vector) :world))
-	  (warn "button-detected: ~A~%" button-detected)
-	  (setq button button-detected)))
+    ;; debug
+    (pr2-reset-pose)
+
+    ;; change laundry button pos according to image processing
+    (send *ri* :start-grasp :rarm)
+    (send *pr2* :angle-vector (send *ri* :state :potentio-vector))
+    (send *pr2* :head :neck-y :joint-angle -4.353)
+    (send *pr2* :head :neck-p :joint-angle 24.422)
+    (send *ri* :angle-vector (send *pr2* :angle-vector))
+    (send *ri* :wait-interpolation)
+
+    (laundry-detection *laundry*)
+    (setq release (send *laundry* :handle-contents))
+    (setq handle (send *laundry* :handle-handle-cap))
+    (setq button (send (make-coords :pos #f(770 120 780)
+				    :rpy (list (deg2rad 180) (deg2rad 30) (deg2rad 0)))
+		       :transform *laundry* :world))
+    (print button)
+    ;; publish button marker
+    (ros::publish *pub-laundry-button-topic* 
+		  (coords->marker-msg
+		   button
+		   (instance std_msgs::header :init
+			     :stamp (ros::time-now)
+			     :frame_id *base-frame-id*)
+		   :ns "laundry_button"
+		   :lifetime 300))    
+;    (send *pr2* :rarm :inverse-kinematics
+;	  (send button :worldcoords))
+;    (send *ri* :angle-vector (send *pr2* :angle-vector))
+;    (send *ri* :wait-interpolation)
 	  
-		
+;    (return-from put-cloth nil)
 
     ;;STEP0 open collar-y
     (send *pr2* :angle-vector (send *ri* :state :potentio-vector))
@@ -33,21 +235,28 @@
     (send *ri* :angle-vector (send *pr2* :angle-vector))
     (send *ri* :wait-interpolation)
 
+    (send *pr2* :rarm :move-end-pos #f(200 200 200) :world)
+    (send *ri* :angle-vector (send *pr2* :angle-vector))
+    (send *ri* :wait-interpolation)
+
     ;; STEP1 Push the Button
-    (setq dst (make-coords) front 120)
+#|    (setq dst (make-coords)
+	  front 120)
     (send dst :init
           :pos (send (send (send button :copy-worldcoords) :translate (float-vector (- (* near 1.2)) -30 25) (send *pr2* :worldcoords)) :worldpos)
           :rot (send (send (send *pr2* :copy-worldcoords) :rotate (deg2rad -45) :x) :worldrot))
 
     (send dst :rotate (deg2rad -135) :y :world)
-
+|#
 
     ;; ready to push
     (send *pr2* :rarm :inverse-kinematics
-          dst
+          button
+	  :rotation-axis t
           :look-at-target t
           :debug-view debug
           :revert-if-fail nil)
+    (send *pr2* :rarm :move-end-pos #f(-50 0 0))
     (if (boundp '*irtviewer*) (send *irtviewer* :draw-objects))
     (send *pr2* :rarm :wrist-r :joint-angle 90)
     (send *ri* :angle-vector (send *pr2* :angle-vector))
@@ -62,14 +271,16 @@
     (print "push")
     
     ;; pull the right arm for opening the cap
-    (send *pr2* :rarm :move-end-pos (float-vector -150 0 -30))
+;    (send *pr2* :rarm :move-end-pos (float-vector -150 0 -30))
+    (send *pr2* :rarm :move-end-pos (float-vector -200 0 -30))
     (if (boundp '*irtviewer*) (send *irtviewer* :draw-objects))
     (send *ri* :angle-vector (send *pr2* :angle-vector) )
     (send *ri* :wait-interpolation)
     (print "pull")
 
 
-    (send *pr2* :rarm :move-end-pos (float-vector 0 -80 0))
+;    (send *pr2* :rarm :move-end-pos (float-vector 0 -80 0))
+    (send *pr2* :rarm :move-end-pos (float-vector 0 -120 0) :world)
     (if (boundp '*irtviewer*) (send *irtviewer* :draw-objects))
     (send *ri* :angle-vector (send *pr2* :angle-vector))
     (send *ri* :wait-interpolation)
