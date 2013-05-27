@@ -213,5 +213,5 @@
     (ros::sleep)
     ))
 
-(detect-chair)
+;;;(detect-chair)
 
