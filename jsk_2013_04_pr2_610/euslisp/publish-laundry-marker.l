@@ -17,25 +17,24 @@
 (defun laundry-pub ()
   (ros::rate 10)
   (do-until-key
-	  (let* ((header (instance std_msgs::header :init
-							   :stamp (ros::time-now)
-							   :frame_id "/laundry_id"))
-			 (laundry-msg (object->marker-msg *laundry* header))
-			 (all-msg (instance visualization_msgs::MarkerArray :init)))
-	(send *tfb* :send-transform (send *laundry* :worldcoords) *base-frame-id* "/laundry_id")
+   (let* ((header (instance std_msgs::header :init
+                            :stamp (ros::time-now)
+                            :frame_id "/laundry_id"))
+          (laundry-msg (object->marker-msg *laundry* header))
+          (all-msg (instance visualization_msgs::MarkerArray :init)))
+     (send *tfb* :send-transform (send *laundry* :worldcoords) *base-frame-id* "/laundry_id")
 
-	;; publish msg
-	(ros::publish *pub-laundry-topic* laundry-msg)
-	(ros::publish *pub-all-topic* all-msg)
-	
-	(send laundry-msg :ns "laundry")
-	(send all-msg :markers (list laundry-msg))
-	(ros::publish *pub-all-topic* all-msg)
+     ;; publish msg
+     (ros::publish *pub-laundry-topic* laundry-msg)
+     ;;(ros::publish *pub-all-topic* all-msg)
 
-	(ros::spin-once)
-	(ros::sleep)
-	(ros::sleep)
-	(print header))))
+     (send laundry-msg :ns "laundry")
+     (send all-msg :markers (list laundry-msg))
+     (ros::publish *pub-all-topic* all-msg)
+
+     (ros::spin-once)
+     (ros::sleep)
+     (print header))))
 
 
 ;; main

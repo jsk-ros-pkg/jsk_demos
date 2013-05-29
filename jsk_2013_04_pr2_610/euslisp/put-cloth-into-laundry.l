@@ -190,10 +190,12 @@
 (defun put-cloth-old ()
   (warn "open-laundry-door (kuroiwa)~%")
   (let* ((release (send *laundry* :handle-contents))
-        (handle (send *laundry* :handle-handle-cap))
-        (button (send *laundry* :handle-open-button))
-        (debug nil)
-        (r 500) (depth 500) (near 80) (cap-point (make-coords)) dst front)
+         (handle (send *laundry* :handle-handle-cap))
+         (button (send *laundry* :handle-open-button))
+         (button-detected button)
+         (debug nil)
+         (marker-coords (check-detection :type "laundry_center" :speak-name "せんたくき" :target-object *laundry*))
+         (r 500) (depth 500) (near 80) (cap-point (make-coords)) dst front)
 
     ;; debug
     (pr2-reset-pose)
@@ -228,6 +230,10 @@
 ;    (send *ri* :wait-interpolation)
 	  
 ;    (return-from put-cloth nil)
+
+    (when marker-coords
+      (warn "laundry position changed by image processing to ~A~%" marker-coords))
+
 
     ;;STEP0 open collar-y
     (send *pr2* :angle-vector (send *ri* :state :potentio-vector))
@@ -269,7 +275,7 @@
     (send *ri* :angle-vector (send *pr2* :angle-vector) 100)
     (send *ri* :wait-interpolation)
     (print "push")
-    
+
     ;; pull the right arm for opening the cap
 ;    (send *pr2* :rarm :move-end-pos (float-vector -150 0 -30))
     (send *pr2* :rarm :move-end-pos (float-vector -200 0 -30))
