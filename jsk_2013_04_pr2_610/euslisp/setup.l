@@ -148,13 +148,12 @@
   (let (current-ri-coordsmou-chotto-pos mou-chotto-local-pos mou-chotto-roll)
     (use-tilt-laser-obstacle-cloud nil)
     (send *pr2* :move-to (send *room610* :spot-laundry-spot) :world)
-    ;; (send *pr2* :translate #f(0 300 0) (send *room610* :worldcoords))
-    ;; #<rotational-joint #X930d028 l_wrist_flex_joint> :joint-angle(-5.7293) violate ma\| 
+   ;; (send *pr2* :translate #f(0 300 0) (send *room610* :worldcoords))
+   ;; #<rotational-joint #X930d028 l_wrist_flex_joint> :joint-angle(-5.7293) violate ma\| 
  (send *ri* :move-to (send *room610* :spot-laundry-spot) :frame-id *room610-origin*)
-#|
     (cond 
      (*world-to-610*
-;      (send *ri* :move-to (send *room610* :spot-laundry-spot) :frame-id *room610-origin*)
+      (send *ri* :move-to (send *room610* :spot-laundry-spot) :frame-id *room610-origin*)
       (setq current-ri-coords (send (send *world-to-610* :worldcoords) :transformation (send *ri* :state :worldcoords)))
       (setq mou-chotto-pos (v- (send (send *room610* :spot-laundry-spot) :pos) (send current-ri-coords :pos)))
       (setq mou-chotto-local-pos (transform (inverse-matrix (send (send *ri* :state :worldcoords) :worldrot)) mou-chotto-pos))
@@ -165,8 +164,12 @@
       (send *ri* :go-pos-unsafe (/ (elt mou-chotto-local-pos 0) 1000) (/ (elt mou-chotto-local-pos 1) 1000) (rad2deg mou-chotto-roll)))
      (t
       (send *ri* :move-to (send *pr2* :worldcoords))
-      ))|#
+      ))
     (use-tilt-laser-obstacle-cloud t)
+    (send *pr2* :angle-vector (send *ri* :state :potentio-vector))
+    (send *pr2* :head :neck-p :joint-angle 42.828)
+    (send *ri* :angle-vector (send *pr2* :angle-vector))
+    (send *ri* :wait-interpolation)
   ))
 
 (defun move-to-broom ()
@@ -177,7 +180,6 @@
  (send *ri* :move-to (send *room610* :spot-pick-broom-spot) :frame-id *room610-origin*)
                                         ;  (send *pr2* :translate #f(0 300 0) (send *room610* :worldcoords))
                                         ;  (send *ri* :move-to (send *room610* :spot-pick-broom-spot) :frame-id *room610-origin*)
-#|
     (cond
      (*world-to-610*
       (setq current-ri-coords (send (send *world-to-610* :worldcoords) :transformation (send *ri* :state :worldcoords)))
@@ -191,7 +193,6 @@
      (t
       (send *ri* :move-to (send *pr2* :worldcoords))
       ))
-|#
 
     (use-tilt-laser-obstacle-cloud t)
     ))
