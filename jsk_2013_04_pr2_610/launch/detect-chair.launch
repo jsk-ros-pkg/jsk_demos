@@ -1,0 +1,10 @@
+<launch>
+
+  <include file="$(find laser_filters_jsk_patch)/launch/footobject_filter_example.launch" />
+  <env name="PATH" value="$(env PATH):$(find roseus)/bin" />
+  <node name="detect_chaire"
+	pkg="jsk_2013_04_pr2_610"
+	type="detect-chair.l"
+	output="screen"/>
+
+</launch>

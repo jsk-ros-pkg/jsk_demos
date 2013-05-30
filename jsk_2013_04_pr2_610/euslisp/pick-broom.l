@@ -28,7 +28,7 @@
                        :rpy (elt (send (send laundry-coords :rotate pi :z) :rpy-angle) 0))
           :look-at-target t
           :rotation-axis t
-          :debug-view t)
+          :debug-view nil)
 	
     (send *ri* :angle-vector (send *pr2* :angle-vector))
     (send *ri* :wait-interpolation)

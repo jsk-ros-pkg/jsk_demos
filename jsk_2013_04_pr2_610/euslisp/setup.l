@@ -13,7 +13,7 @@
 (load "package://jsk_2013_04_pr2_610/euslisp/sweep-under-table.l")
 (load "package://jsk_2013_04_pr2_610/euslisp/pick-broom.l")
 (load "package://jsk_2013_04_pr2_610/euslisp/put-cloth-into-laundry.l")
-(load "package://jsk_2013_04_pr2_610/euslisp/detect-chair.l")
+;(load "package://jsk_2013_04_pr2_610/euslisp/detect-chair.l")
 ;(load "package://jsk_2013_04_pr2_610/euslisp/sweep-floor.l")
 
 (defun setup ()
@@ -45,7 +45,8 @@
   (send *room610* :assoc *chair-spot*)
   (setq *chair-spot2* (make-cascoords :pos #f(3650 -200 0) :rpy (list 0 0 0)))
   (send *room610* :assoc *chair-spot2*)
-  (setq *laundry-spot* (make-cascoords :pos #f(3176.358 1409.163 -0.854) :rpy #f(1.544 0.004 0.002)))
+;;  (setq *laundry-spot* (make-cascoords :pos #f(3176.358 1409.163 -0.854) :rpy #f(1.544 0.004 0.002)))
+  (setq *laundry-spot* (make-cascoords :pos #f(3376.358 1309.163 -0.854) :rpy #f(1.544 0.004 0.002)))
   (send *room610* :assoc *laundry-spot*)
   (setq *pick-broom-spot* (make-cascoords :pos #f(3269.927 1351.466 0) :rpy (list pi/2 0 0)))
   (send *room610* :assoc *pick-broom-spot*)

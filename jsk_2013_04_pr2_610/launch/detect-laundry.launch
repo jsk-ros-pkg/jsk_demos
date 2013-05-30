@@ -24,7 +24,7 @@
       <!--<param name="relative_pose" value="0.535 0.16 -1.085 0 0 0"/>-->
       <param name="relative_pose" value="0.164 0.27 -1.129  0.0 -0.698 0.0" />
       <!-- <param name="relative_pose_rpy" value="0 0 0 0 0 0" /> -->
-      <param name="viewer_window" value="true" /> <!-- to disable window-->
+      <param name="viewer_window" value="false" /> <!-- to disable window-->
     </node>
   </group>
 </launch>
