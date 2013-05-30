@@ -22,12 +22,14 @@
   (let ((c (send (send *broom* :handle-larm) :copy-worldcoords))
         (laundry-coords (send *laundry* :copy-worldcoords)))
     (send c :translate #f(100 0 0) *laundry*)
+
     (send *pr2* :larm :inverse-kinematics
           (make-coords :pos (send c :worldpos)
                        :rpy (elt (send (send laundry-coords :rotate pi :z) :rpy-angle) 0))
           :look-at-target t
-          :rotation-axis :z
+          :rotation-axis t
           :debug-view t)
+	
     (send *ri* :angle-vector (send *pr2* :angle-vector))
     (send *ri* :wait-interpolation)
 
