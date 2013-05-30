@@ -195,8 +195,10 @@
 
 
     ;;check the direction. If normal-to-line differ from vector2, change it
+    (setq reverse-flag 1)
     (when (< (v. normal-to-line vector2) 0)
 	(setq normal-to-line (scale -1 normal-to-line))
+	(setq reverse-flag -1)
 	)
 
     ;;normalization
@@ -209,7 +211,7 @@
     (setq *chair-xy* (mapcar #'+ *chair-xy* (mapcar #'(lambda (x) (* x (/ *chair-height* 2))) normal-to-line-list)))
 
     ;;calc the rotate by using normal-to-line's y
-    (setq rot-radian (asin (elt normal-to-line 1)))
+    (setq rot-radian (* reverse-flag (asin (elt normal-to-line 1))))
 
     ;;prepare target-coords
     (setq target-coords (make-coords :pos (float-vector (* 1000 (car *chair-xy*)) (* 1000 (cadr *chair-xy*)) -303)))
