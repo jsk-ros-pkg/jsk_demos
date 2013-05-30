@@ -4,6 +4,10 @@
 ;;;; pick croth by Iwaishi
 ;;;;
 
+
+;;(load "package://jsk_2013_04_pr2_610/euslisp/move-chair.l")
+
+
 (defun pick-cloth ()
   (warn "pick-cloth ()~%")
   (let (croth-coords)
@@ -16,6 +20,18 @@
     (send *ri* :angle-vector (send *pr2* :angle-vector) 1000)
     (send *ri* :wait-interpolation)
     (send *ri* :stop-grasp :rarm :wait t)
+
+
+;;----------------------------------------------------------------
+;;    find out chair
+
+
+    (start-detect-chair)
+;;----------------------------------------------------------------
+
+
+
+
 
     ;;grasp
     (setq croth-coords
