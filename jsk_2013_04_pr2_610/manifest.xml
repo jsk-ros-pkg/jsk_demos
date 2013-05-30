@@ -8,7 +8,10 @@
   <license>BSD</license>
   <review status="unreviewed" notes=""/>
   <url>http://ros.org/wiki/jsk_2013_04_pr2_610</url>
+
   <depend package="pr2eus"/>
+  <depend package="laser_filters_jsk_patch" />
+  <depend package="jsk_perception" />
 
 </package>
 
