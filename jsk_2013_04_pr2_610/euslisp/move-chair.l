@@ -243,6 +243,7 @@
 
 (defun move-back-chair ()
 
+   (start-detect-chair)
 
   ;;cache above pos phase---------------------------------------------------------------------------------;;
  (send *pr2* :angle-vector (send *ri* :state :potentio-vector))
