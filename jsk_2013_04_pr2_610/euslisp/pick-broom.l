@@ -13,6 +13,7 @@
   (send *pr2* :move-to (send *room610* :spot-pick-broom-spot) :world)
 
   (grasp-broom)
+  (goback-broom)
   (bringup-broom)
 )
 
@@ -23,16 +24,19 @@
     (send c :translate #f(100 0 0) *laundry*)
     (send *pr2* :larm :inverse-kinematics
           (make-coords :pos (send c :worldpos)
-                       :rpy (elt (send (send laundry-coords :rotate (list pi 0 0)) :rpy-angle) 0))
+                       :rpy (elt (send (send laundry-coords :rotate pi :z) :rpy-angle) 0))
           :look-at-target t
           :rotation-axis :z
-          :debug-view nil)
+          :debug-view t)
     (send *ri* :angle-vector (send *pr2* :angle-vector))
-    (send *ri* :wait-interpolcation)
+    (send *ri* :wait-interpolation)
 
     (send *pr2* :larm :move-end-pos #f(100 0 0))
     (send *ri* :angle-vector (send *pr2* :angle-vector))
-    (send *ri* :wait-interpolcation)
+    (send *ri* :wait-interpolation)
+
+	(send *ri* :start-grasp :larm)
+	(send *pr2* :larm :end-coords :assoc *broom*)
     )
   )
 
@@ -63,7 +67,7 @@
                         :rpy larm-rpy)
         :look-at-target t
         :rotation-axis :z
-        :debug-view debug)
+        :debug-view nil)
   (if (boundp '*irtviewer*) (send *irtviewer* :draw-objects))
   (send *ri* :angle-vector (send *pr2* :angle-vector) 1000)
 
@@ -72,7 +76,7 @@
         (make-coords :pos (send *pr2* :transform-vector #f(530 60 650))
                      :rpy (list (deg2rad 70) 0 0))
         :rotation-axis :z
-        :debug-view debug)
+        :debug-view nil)
   (if (boundp '*irtviewer*) (send *irtviewer* :draw-objects))
   (send *ri* :angle-vector (send *pr2* :angle-vector) 1500)
 
@@ -93,11 +97,11 @@
     (send *pr2* :larm :inverse-kinematics (send handle-larm :translate offset-l :world)
           :look-at-target t
           :rotation-axis :z
-          :debug-view debug)
+          :debug-view nil)
     (send *pr2* :rarm :inverse-kinematics (send handle-rarm :translate offset-r :world)
           :look-at-target nil
           :rotation-axis :z
-          :debug-view debug))
+          :debug-view nil))
   (if (boundp '*irtviewer*) (send *irtviewer* :draw-objects))
   (send *ri* :angle-vector (send *pr2* :angle-vector))
   (send *ri* :wait-interpolation)
