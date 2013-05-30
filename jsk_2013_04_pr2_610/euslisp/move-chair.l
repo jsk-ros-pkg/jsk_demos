@@ -62,7 +62,7 @@
                       (send *pr2* :link-list (send *pr2* :rarm :end-coords :parent)))
           :move-target (list (send *pr2* :rarm :end-coords))
           :look-at-target t
-          ;;                :debug-view t
+          :debug-view nil
           )
     (if (boundp '*irtviewer*) (send *irtviewer* :draw-objects))
     (send *ri* :angle-vector (send *pr2* :angle-vector))
@@ -90,7 +90,7 @@
     	      :move-target (list (send *pr2* :rarm :end-coords))
     	      :revert-if-fail nil
     	      :look-at-target t
-    	      ;;		:debug-view t
+              :debug-view nil
     	      )
     
     	(if (boundp '*irtviewer*) (send *irtviewer* :draw-objects))
@@ -134,7 +134,7 @@
 			(send *pr2* :link-list (send *pr2* :rarm :end-coords :parent)))
 	    :move-target (list (send *pr2* :rarm :end-coords))
 	    :look-at-target t
-               :debug-view t
+            :debug-view nil
 	    )
       (if (boundp '*irtviewer*) (send *irtviewer* :draw-objects))
       (push (send *pr2* :angle-vector) angle-vector-list)
@@ -184,7 +184,7 @@
 			(send *pr2* :link-list (send *pr2* :rarm :end-coords :parent)))
 	    :move-target (list (send *pr2* :rarm :end-coords))
 	    :look-at-target t
-	    ;;                :debug-view t
+            :debug-view nil
 	    )
       (if (boundp '*irtviewer*) (send *irtviewer* :draw-objects))
       (push (send *pr2* :angle-vector) angle-vector-list)
@@ -253,7 +253,7 @@
           :move-target (list (send *pr2* :rarm :end-coords))
           :revert-if-fail nil
           :look-at-target t
-          ;;            :debug-view t
+          :debug-view nil
           )
 
     (if (boundp '*irtviewer*) (send *irtviewer* :draw-objects))
