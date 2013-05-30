@@ -1,5 +1,5 @@
 #!/usr/bin/env roseus
-(ros::load-ros-manifest "jsk_perception")
+;;(ros::load-ros-manifest "jsk_perception")
 
 ;; define detection parameters befor load detection_interface.l
 (defvar *detection-topic* "/ObjectDetection")
@@ -15,12 +15,13 @@
 	(ros::roseus "objectdetection_publisher")
 	(ros::rate 10)
 	(do-until-key
-;;	 (send *target-object* :move-to (make-coords) :world)
 	 (check-detection :type "chair-center" ;; work for any object
-                  :speak-name "test object"
+                  :speak-name "chair object"
                   :target-object *chair*
                   :speak nil)
 	 (ros::spin-once)
+	 (send *chair* :translate (send *pr2* :worldpos) :wolrd)
+   	 (if (boundp '*irtviewer*) (send *irtviewer* :draw-objects))
 	 (ros::sleep))
 )
 
@@ -36,6 +37,7 @@
 
     ;;reset from furuta's pose
 
+    (send *pr2* :angle-vector (send *ri* :state :potentio-vector))
     (send *ri* :stop-grasp :rarm :wait t)
     (send *ri* :wait-interpolation)
 
@@ -254,13 +256,37 @@
 
 
     ;;save the place where robot was
-    (setq *moved-chair-spot* (send *ri* :state :worldcoords))
+    (setq *moved-chair-spot* (get-moved-chair-back-spot))
+
+
+
+
     ;; (setq rotate-origin (make-cascoords :coords (send (send *pr2* :r_wrist_roll_link) :copy-worldcoords)))
     ;; (send rotate-origin :assoc *chair*)
     ;; (send rotate-origin :rotate pi/2 :z)
     ;; (if (boundp '*irtviewer*) (send *irtviewer* :draw-objects))
 
     ))
+
+
+;; calc where pr2 should go next time when pr2 push back it
+(defun get-moved-chair-back-spot ()
+    ;;subscribe and update *chair*
+    (start-detect-chair)
+    
+    ;;get chair info
+    (setq copy-chair (send *chair* :copy-worldcoords))
+    (setq copy-chair-pos (send copy-chair :worldpos))
+    (setq copy-chair-rot (send copy-chair :worldrot))
+
+    ;;how far from chair center
+    (defparameter distance-from-chair-center 60)
+
+    ;;calc x y back use *chair-height*
+    (setq x_vec )
+
+
+)
 
 
 (defun move-back-chair ()
@@ -297,6 +323,6 @@
   ;;push and move phase---------------------------------------------------------------------------------;;
     
 
-
+ 
 )
 

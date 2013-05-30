@@ -3,7 +3,7 @@
 
 (ros::roseus-add-msgs "sensor_msgs")
 (ros::roseus-add-msgs "posedetection_msgs")
-(defvar *result-topic* "/ObjectDetection")
+(defvar *result-topic* "/narrow_stereo/left/ObjectDetection")
 (defvar *base-frame-id* "/base_footprint")
 
 (ros::roseus "detect_chair")
