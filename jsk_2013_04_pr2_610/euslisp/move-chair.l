@@ -2,7 +2,7 @@
 ;;(ros::load-ros-manifest "jsk_perception")
 
 ;; define detection parameters befor load detection_interface.l
-(defparameter *detection-topic* "/base_laser/ObjectDetection")
+(defparameter *detection-topic* "/narrow_stereo/left/ObjectDetection")
 
 ;; load functions
 (load "package://jsk_perception/euslisp/detection_interface.l")
@@ -23,7 +23,7 @@
 (defun start-detect-chair (&key (debug nil))
   (let ((loop t) (loop-counter 0) (chair-coords nil))
     (ros::roseus "objectdetection_publisher")
-    (defparameter *detection-topic* "/base_laser/ObjectDetection")
+    (defparameter *detection-topic* "/narrow_stereo/left/ObjectDetection")
     (ros::rate 10)
       (ros::ros-info "detecting_now")
       (if debug (ros::ros-info "detecting_now"))
@@ -36,6 +36,7 @@
                        :speak nil)
       (ros::spin-once)
       (send *chair* :translate (send *pr2* :worldpos) :world)
+;;      (send *chair* :transform *pr2*)
       (push (send *chair* :worldcoords) chair-coords)
       (when (> loop-counter *detect-chair-loop-threshold*)
         (setq loop nil)	;;temp method
@@ -53,7 +54,7 @@
 
 (defun move-chair ()
   (warn "move-chair (inagaki)~%")
-  (let (dest-c (grasp-success t))
+  (let (dest-c (grasp-success nil))
 
     ;;reset from furuta's pose
 
@@ -82,8 +83,8 @@
 	(ros::ros-info "end-detect-chair")
     	(send *ri* :stop-grasp :rarm)
 
-    	(send *ri* :go-pos-unsafe -0.1 0 0)
-    	(send *pr2* :translate #f(-100 0 0))
+;;    	(send *ri* :go-pos-unsafe -0.1 0 0)
+;;    	(send *pr2* :translate #f(-100 0 0))
     	(if (boundp '*irtviewer*) (send *irtviewer* :draw-objects))
 
     	(send *ri* :wait-interpolation)
@@ -113,7 +114,10 @@
     	(send *ri* :wait-interpolation)
 
 	;;check if grasp is success
-	(when (> (send *ri* :start-grasp :rarm) *grasp-success-threshold*)
+	(setq grip_r_dist (send *ri* :start-grasp :rarm))
+    	(send *ri* :wait-interpolation)
+	(ros::ros-info "~d gripper distance" grip_r_dist)
+	(when (> grip_r_dist *grasp-success-threshold*)
 		(setq grasp-success t)
 		)
     )

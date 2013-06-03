@@ -3,7 +3,7 @@
 
 (ros::roseus-add-msgs "sensor_msgs")
 (ros::roseus-add-msgs "posedetection_msgs")
-(defparameter *result-topic* "/base_laser/ObjectDetection")
+(defparameter *result-topic* "/narrow_stereo/left/ObjectDetection")
 (defvar *base-frame-id* "/base_footprint")
 
 (ros::roseus "detect_chair")
@@ -54,11 +54,6 @@
     )
   )
 
-(defun m->mm (xy-list)
-  (let ()
-    (list (* (elt xy-list 0) 1000) (* (elt xy-list 1) 1000))
-    )
-  )
 
 
 ;;CALL-BACK this will be called when subscriver is activated
@@ -76,7 +71,6 @@
       ;;here if range > 0 it is meaningful
       (if (> range 0)
 	  (push (rtheta->xy range angle index) xy-list)
-
 	)
       (setq angle (+ angle angle-step))
       (inc index)
@@ -166,7 +160,6 @@
 	))
 	)
     (ros::ros-info "~A  answer " *chair-xy*)
-    ;;(m->mm *chair-xy*)
     )
 
   ;;if there are answer, continue the process
@@ -175,22 +168,6 @@
     (setq normal-to-line (float-vector (* 1 (- (caddr (car chair-xy-params)) (caddr (cadr chair-xy-params)))) (* -1 (- (cadr (car chair-xy-params)) (cadr (cadr chair-xy-params))))))
     (ros::ros-info "normal-to-line ~A" normal-to-line)
     
-    ;;check it is same direction to width  
-    (if former 
-    	(setq vector2 (float-vector (- (cadr (cadddr chair-xy-params)) (cadr (caddr chair-xy-params))) (- (caddr (cadddr chair-xy-params)) (caddr (caddr chair-xy-params)))))
-    	(setq vector2 (float-vector (- (cadr (caddr chair-xy-params)) (cadr (cadddr chair-xy-params))) (- (caddr (caddr chair-xy-params)) (caddr (cadddr chair-xy-params)))))
-	)
-    (when former
-	(ros::ros-info "I REVERSED==!=!=!=!=!=!=!=!=!=!=!=!=!")
-	)
-
-	(ros::ros-info "vector2 ~A" vector2)
-    ;;check the direction. If normal-to-line differ from vector2, change it
-    (setq reverse-flag 1)
-    (when (< (v. normal-to-line vector2) 0)
-;;	(setq normal-to-line (scale -1 normal-to-line))
-;;	(setq reverse-flag -1)
-	)
     ;;normalization
     (setq normal-to-line (normalize-vector normal-to-line))
     (ros::ros-info "normal-to-line ~A" normal-to-line)
@@ -206,7 +183,7 @@
 
     ;;calc the rotate by using normal-to-line's y
     
-    (setq rot-radian (* reverse-flag (asin (elt normal-to-line 1))))
+    (setq rot-radian (asin (elt normal-to-line 1)))
     (ros::ros-info "ros-radian ~d" rot-radian)
     (ros::ros-info "ros-radian y ~d" (elt normal-to-line 1))
     (ros::ros-info "ros-radian deg ~d" (rad2deg rot-radian))
