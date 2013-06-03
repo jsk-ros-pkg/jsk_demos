@@ -10,43 +10,38 @@
 (load "package://jsk_perception/euslisp/detection_interface.l")
 
 (defun laundry-detection (obj)
-  ;; start program
-  (ros::roseus "objectdetection_laundry_publisher")
+  (let (ret)
+	;; start program
+	(ros::roseus "objectdetection_laundry_publisher")
 
-  (setq *target-object* obj)
+	(if (boundp '*irtviewer*) (send *irtviewer* :draw-objects :flush t))
 
-  (warn "610->base: ~A~%" (send *tfl* :lookup-transform *room610-origin* *base-frame-id* (ros::time 0)))
-  (warn "*pr2*: ~A~%" *pr2*)
-  (warn "*laundry*: ~A~%" *laundry*)
-  (warn "*broom*: ~A~%" *broom*)
+<<<<<<< .mine
+	(ros::roseus "object_detection_marker_laundry")
+	(setq ret 
+		  (check-detection :type nil ;; work for any object
+						   :speak-name "sentakuki"
+						   :target-object obj
+						   :timeout 30
+						   :diff-position 10
+						   :diff-rotation (deg2rad 10)
+						   :speak nil))
 
-  (if (boundp '*irtviewer*) (send *irtviewer* :draw-objects :flush t))
+	(if (boundp '*irtviewer*) (send *irtviewer* :draw-objects :flush t))
 
-  (ros::roseus "object_detection_marker_laundry")
-  (check-detection :type nil ;; work for any object
-                       :speak-name "sentakuki"
-                       :target-object *target-object*
-                       :timeout 30
-                       :diff-position 10
-                       :diff-rotation (deg2rad 10)
-                       :speak nil)
+	(if (boundp '*irtviewer*) (send ret :draw-on :flush t :size 100))
+	(if (boundp '*irtviewer*) (send (send *pr2* :copy-worldcoords) :draw-on :flush t :size 2000))
+	(send obj :move-to ret :world)
+	(send obj :transform *pr2* :world)
+	(if (boundp '*irtviewer*) (send (send obj :copy-worldcoords) :draw-on :flush t :size 1500 :color #f(1 0 0)))
+	(if (boundp '*irtviewer*) (send *irtviewer* :draw-objects :flush t))
 
-#|  (setq temp-c (send *pr2* :copy-worldcoords))
-  (send *pr2* :reset-coords)
-  (send *pr2* :assoc *target-object*)
-  (send *pr2* :transform temp-c :world)
-  (send *pr2* :dissoc *target-object*)
-|#
+	;; debug
+	(ros::ros-info "610->base: ~A" (send *tfl* :lookup-transform *room610-origin* *base-frame-id* (ros::time 0)))
+	(ros::ros-info "*pr2*: ~A" *pr2*)
+	(ros::ros-info "*laundry*: ~A" *laundry*)
+	(ros::ros-info "*broom*: ~A" *broom*)
 
-  (if (boundp '*irtviewer*) (send *irtviewer* :draw-objects :flush t))
-
-  (send *target-object* :transform *pr2*)
-  (if (boundp '*irtviewer*) (send *irtviewer* :draw-objects :flush t))
-
-  ;; debug
-  (warn "610->base: ~A~%" (send *tfl* :lookup-transform *room610-origin* *base-frame-id* (ros::time 0)))
-  (warn "*pr2*: ~A~%" *pr2*)
-  (warn "*laundry*: ~A~%" *laundry*)
-  (warn "*broom*: ~A~%" *broom*)
-
-)
+	(ros::ros-info "found laundry?: ~A" ret)
+  
+	ret))

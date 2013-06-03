@@ -19,8 +19,12 @@
 
 (defun put-cloth ()
   (pr2-reset-pose)  ;; debug
+  (send *pr2* :larm :collar-y :joint-angle 90)
+  (send *ri* :angle-vector (send *pr2* :angle-vector))
   (open-door)
   (put-cloth-into)
+  (send *pr2* :larm :collar-y :joint-angle -90)
+  (send *ri* :angle-vector (send *pr2* :angle-vector))
   (close-door)
   (pr2-reset-pose)
 )
@@ -29,24 +33,23 @@
   (warn "open-door ~%")
   (let (button)
 
-    ;; reset coords
-;    (send *pr2* :reset-coords)
 
-    ;; change camera pos to laundry\
     (send *ri* :start-grasp :rarm)
     (send *pr2* :angle-vector (send *ri* :state :potentio-vector))
-    (send *pr2* :head :neck-y :joint-angle -4.353)
+;    (send *pr2* :head :neck-y :joint-angle -4.353)
     (send *pr2* :head :neck-p :joint-angle 24.422)
     (send *ri* :angle-vector (send *pr2* :angle-vector))
     (send *ri* :wait-interpolation)
 
     ;; change laundry button pos according to image processing
-    (warn "*pr2*: ~A~%" *pr2*) ;; debug
-    (laundry-detection *laundry*)
+    (send *laundry* :move-to (laundry-detection *laundry*) :world);; FIX ME returns t if found, nil not found
+	(if (boundp '*irtviewer*) (send (send *laundry* :copy-worldcoords) :draw-on :flush t :size 1700 :color #f(0 1 0)))
     (warn "laundry moved to ~A~%" (send *laundry* :coords))
-    (setq button (send (make-coords :pos #f(770 120 780)
+    (setq button (send (make-coords :pos (float-vector 770 112 780)
 				    :rpy (list (deg2rad 180) (deg2rad 30) (deg2rad 0)))
-		       :transform *laundry* :world))
+		       :transform (send *laundry* :copy-worldcoords) :world))
+	;; debug
+	(if (boundp '*irtviewer*) (send button :draw-on :flush t :size 1000))
     (warn "button: ~A~%" button)
 
     ;; publish button marker
@@ -60,13 +63,21 @@
 		   :lifetime 300))
 
     ;; move right hand out
-    (send *pr2* :angle-vector (send *ri* :state :potentio-vector))
-    (send *pr2* :rarm :collar-y :joint-angle -90)
-    (send *ri* :angle-vector (send *pr2* :angle-vector) 1000)
-    (send *ri* :wait-interpolation)
-    (send *pr2* :rarm :move-end-pos #f(200 200 200) :world)
-    (send *ri* :angle-vector (send *pr2* :angle-vector) 1000)
-    (send *ri* :wait-interpolation)
+;    (send *pr2* :angle-vector (send *ri* :state :potentio-vector))
+;	(pr2-reset-pose)
+;    (send *pr2* :rarm :collar-y :joint-angle -90)
+;   (send *ri* :angle-vector (send *pr2* :angle-vector) 500)
+;   (send *ri* :wait-interpolation)
+;	(send *pr2* :rarm :inverse-kinematics
+;		  (send (make-coords :pos (float-vector 820 120 780))
+;				:transform (send *laundry* :copy-worldcoords) :world)
+;		  :rotation-axis t
+;		  :look-at-target t
+;		  :revert-if-fail t
+;		  :debug-view nil)
+;    (send *pr2* :rarm :move-end-pos #f(200 200 200) :world)
+;    (send *ri* :angle-vector (send *pr2* :angle-vector) 1000)
+;    (send *ri* :wait-interpolation)
 
     ;; ready to push
     (send *pr2* :rarm :inverse-kinematics
@@ -75,17 +86,35 @@
 	  :look-at-target t
 	  :debug-view nil
 	  :revert-if-fail t)
-    (send *pr2* :rarm :move-end-pos #f(-50 0 0))
+    (send *pr2* :rarm :move-end-pos #f(-40 0 0))
     (if (boundp '*irtviewer*) (send *irtviewer* :draw-objects))
-    (send *pr2* :rarm :wrist-r :joint-angle 90)
-    (send *ri* :angle-vector (send *pr2* :angle-vector) 2000)
+;    (send *pr2* :rarm :wrist-r :joint-angle 90)
+    (send *ri* :angle-vector (send *pr2* :angle-vector) 4000)
     (send *ri* :wait-interpolation)
 
     ;; push
     (send *pr2* :rarm :move-end-pos (float-vector 150 0 0))
     (if (boundp '*irtviewer*) (send *irtviewer* :draw-objects))
-    (send *ri* :angle-vector (send *pr2* :angle-vector) 100)
+    (send *ri* :angle-vector (send *pr2* :angle-vector) 3000)
     (send *ri* :wait-interpolation)
+
+;	(do ((i 180 (+ i 45)) (r 2))
+;		((> i 540) t)
+;	  (progn 
+		(send *pr2* :rarm :move-end-pos (float-vector -50 -5 0) (send *pr2* :worldcoords))
+		(send *ri* :angle-vector (send *pr2* :angle-vector) 500)
+		(send *ri* :wait-interpolation)
+		(send *pr2* :rarm :move-end-pos (float-vector 50 0 0) (send *pr2* :worldcoords))
+		(send *ri* :angle-vector (send *pr2* :angle-vector) 500)
+		(send *ri* :wait-interpolation)
+		(send *pr2* :rarm :move-end-pos (float-vector -50 0 -5) (send *pr2* :worldcoords))
+		(send *ri* :angle-vector (send *pr2* :angle-vector) 500)
+		(send *ri* :wait-interpolation)
+		(send *pr2* :rarm :move-end-pos (float-vector 50 0 0) (send *pr2* :worldcoords))
+		(send *ri* :angle-vector (send *pr2* :angle-vector) 500)
+		(send *ri* :wait-interpolation)
+;		)
+;	  )
 
     ;; pull arm for preventing collision
     (send *pr2* :rarm :move-end-pos #f(-200 0 0))
@@ -102,7 +131,7 @@
 				     :rpy (list (deg2rad 180) (deg2rad 0) (deg2rad 30)))
 			:transform *laundry* :world))
     (warn "release: ~A~%" release)
-
+	(break)
     (send *pr2* :rarm :inverse-kinematics
 	  standby
 	  :rotation-axis t
@@ -111,7 +140,7 @@
 	  :revert-if-fail t)
     (send *ri* :angle-vector (send *pr2* :angle-vector) 1000)
     (send *ri* :wait-interpolation)
-    
+    (break)
     (setq release (send (make-coords :pos #f(650 -110 480)
 				     :rpy (list (deg2rad 180) (deg2rad 30) (deg2rad 0)))
 			:transform *laundry* :world))
@@ -164,14 +193,14 @@
 	 release)
 
     ;; ready to close
-    (send *pr2* :larm :move-end-pos (float-vector 0 -250 0) (send *pr2* :worldcoords))
+    (send *pr2* :larm :move-end-pos (float-vector 50 -120 0) (send *pr2* :worldcoords))
     (if (boundp '*irtviewer*) (send *irtviewer* :draw-objects))
     (send *ri* :angle-vector (send *pr2* :angle-vector))
     (send *ri* :wait-interpolation)
     (print "ready to close")
 
     ;; close the cap
-    (setq release (send (make-coords :pos #f(650 -110 480)
+    (setq release (send (make-coords :pos #f(650 -110 530)
 				     :rpy (list (deg2rad 180) (deg2rad 0) (deg2rad 0)))
 			:transform *laundry* :world))
     (warn "release: ~A~%" release)
