@@ -2,7 +2,7 @@
 ;;(ros::load-ros-manifest "jsk_perception")
 
 ;; define detection parameters befor load detection_interface.l
-(defvar *detection-topic* "/ObjectDetection")
+(defparameter *detection-topic* "/base_laser/ObjectDetection")
 
 ;; load functions
 (load "package://jsk_perception/euslisp/detection_interface.l")
@@ -17,30 +17,35 @@
 (defparameter *grasp-success-threshold* 1.5)
 
 ;;loop counter threshold for start-detect-chair
-(defparameter *detect-chair-loop-threshold* 5)
+(defparameter *detect-chair-loop-threshold* 3)
 ;;
 
-(defun start-detect-chair ()
-	(let ((loop t) (loop-counter 0) (chair-coords nil))
-	    (while (and loop (not (boundp '*irtviewer*)))
-			(ros::roseus "objectdetection_publisher")
-			(ros::rate 10)
-			 (check-detection :type "chair-center" ;; work for any object
-        		          :speak-name "chair object"
-        	 	         :target-object *chair*
-        	 	         :speak nil)
-		 	(ros::spin-once)
-		 	(send *chair* :translate (send *pr2* :worldpos) :wolrd)
-			(push (send *chair* :worldcoords) chair-coords)
-   		 	(if (boundp '*irtviewer*) (send *irtviewer* :draw-objects))
-			(when (> loop-counter *detect-chair-loop-threshold*)
-				(setq loop nil)	;;temp method
-				)
-			(inc loop-counter)
-		 	(ros::sleep)
-		)
-	)
-)
+(defun start-detect-chair (&key (debug nil))
+  (let ((loop t) (loop-counter 0) (chair-coords nil))
+    (ros::roseus "objectdetection_publisher")
+    (defparameter *detection-topic* "/base_laser/ObjectDetection")
+    (ros::rate 10)
+      (ros::ros-info "detecting_now")
+      (if debug (ros::ros-info "detecting_now"))
+      (if loop (ros::ros-info "detecting_now"))
+    (while loop
+      (if debug (ros::ros-info "detecting_now"))
+      (check-detection :type "chair-center" ;; work for any object
+                       :speak-name "chair object"
+                       :target-object *chair*
+                       :speak nil)
+      (ros::spin-once)
+      (send *chair* :translate (send *pr2* :worldpos) :world)
+      (push (send *chair* :worldcoords) chair-coords)
+      (when (> loop-counter *detect-chair-loop-threshold*)
+        (setq loop nil)	;;temp method
+        )
+      (inc loop-counter)
+      (ros::ros-info "~d loop counter ----" loop-counter)
+      (ros::sleep)
+      )
+    )
+  )
 
 
 
@@ -72,7 +77,9 @@
     ;; start detecting char and grasp chair
     (while (not grasp-success)
     	;;start-detect-chair
+	(ros::ros-info "start-detect-chair")
     	(start-detect-chair)
+	(ros::ros-info "end-detect-chair")
     	(send *ri* :stop-grasp :rarm)
 
     	(send *ri* :go-pos-unsafe -0.1 0 0)

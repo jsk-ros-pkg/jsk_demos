@@ -3,14 +3,14 @@
 
 (ros::roseus-add-msgs "sensor_msgs")
 (ros::roseus-add-msgs "posedetection_msgs")
-(defvar *result-topic* "/narrow_stereo/left/ObjectDetection")
+(defvar *result-topic* "/base_laser/ObjectDetection")
 (defvar *base-frame-id* "/base_footprint")
 
 (ros::roseus "detect_chair")
 
-(setq *chair-width* 0.38)
+(setq *chair-width* 0.37)
 (setq *chair-height* 0.43)
-(setq *error-thred* 0.01)
+(setq *error-thred* 0.005)
 (setq *chair-xy* nil)
 
 ;;prepare tfs
@@ -72,7 +72,7 @@
   (let ((index 0) (trans nil) (angle (send laser-scan-msg :angle_min)) (angle-step (send laser-scan-msg :angle_increment)) (ranges-vec (send laser-scan-msg :ranges)) (x 0) (y 0) (xy-list nil) (chair-width-likely nil) (chair-height-likely nil))
 
     (setq ranges-vec (send laser-scan-msg :ranges))
-    ;;(ros::ros-info "callback is called!!" )
+    (ros::ros-info "------------callback is called!!----------------" )
     (setq ranges (coerce ranges-vec cons))
 
     ;; First Calc the x y and put those in xy-list
@@ -100,9 +100,18 @@
 	(setq xy2 (elt xy-list j))
 	;;(ros::ros-info "~d distance" (between-distance xy1 xy2))
 	;;push to array if it seems to be chair-width
-	(if (check-likely-target (between-distance xy1 xy2) *chair-width* *error-thred*) (push (list xy1 xy2) chair-width-likely))
+	(if (check-likely-target (between-distance xy1 xy2) *chair-width* *error-thred*) (progn 
+		(push (list xy1 xy2) chair-width-likely)
+		(ros::ros-info "~d ~d ~d distance width" (car xy1) (car xy2) (between-distance xy1 xy2))
+		
+		))
 	;;push to array if it seems to be chair-height
-	(if (check-likely-target (between-distance xy1 xy2) *chair-height* *error-thred*) (push (list xy1 xy2) chair-height-likely))
+	(if (check-likely-target (between-distance xy1 xy2) *chair-height* *error-thred*)(progn 
+		(push (list xy1 xy2) chair-height-likely)
+		(ros::ros-info "~d ~d ~d distance height" (car xy1) (car xy2) (between-distance xy1 xy2))
+		;;
+          )
+          )
 	)
       )
     ;;(ros::ros-info "~d nums in xy-list-------------------------------------------------------------------------------------------------" (length xy-list))
@@ -139,14 +148,6 @@
       (setq xy-distance (distance-from-origin middle-xy))
 
       ;;for inner-product
-#|      (setq vector1 (list (- (cadr (car xy)) (cadr (cadr xy))) (- (caddr (car xy)) (caddr (cadr xy)))))
-      (setq vector2 (list (- (cadr (caddr xy)) (cadr (cadddr xy))) (- (caddr (caddr xy)) (caddr (cadddr xy)))))
-      (setq vector1-size (sqrt (+ (* (car vector1) (car vector1)) (+ (cadr vector1) (cadr vector1)))))
-      (setq vector2-size (sqrt (+ (* (car vector2) (car vector2)) (* (cadr vector2) (cadr vector2)))))
-      (setq xy-inner-product (+ (* (car vector1) (car vector2) ) (* (cadr vector1) (cadr vector2))))
-      (setq xy-inner-product (/ xy-inner-product (* vector1-size vector2-size)))
-      (ros::ros-info "~d is inner-product vec1 ~A vec2 ~A" xy-inner-product vector1 vector2)
-|#
 
 	(setq former t);;this is for duplicate id's position
 
@@ -175,7 +176,7 @@
  
 	))
 	)
-    (ros::ros-info "~A  answer ?" *chair-xy*)
+    (ros::ros-info "~A  answer " *chair-xy*)
     ;;(m->mm *chair-xy*)
     )
 
@@ -183,6 +184,7 @@
   (when (not (eq chair-xy-params nil))
     ;;we calc the normal
     (setq normal-to-line (float-vector (* 1 (- (caddr (car chair-xy-params)) (caddr (cadr chair-xy-params)))) (* -1 (- (cadr (car chair-xy-params)) (cadr (cadr chair-xy-params))))))
+    (ros::ros-info "normal-to-line ~A" normal-to-line)
     
     ;;check it is same direction to width  
     (if former 
@@ -193,25 +195,33 @@
 	(ros::ros-info "I REVERSED==!=!=!=!=!=!=!=!=!=!=!=!=!")
 	)
 
-
+	(ros::ros-info "vector2 ~A" vector2)
     ;;check the direction. If normal-to-line differ from vector2, change it
     (setq reverse-flag 1)
     (when (< (v. normal-to-line vector2) 0)
-	(setq normal-to-line (scale -1 normal-to-line))
-	(setq reverse-flag -1)
+;;	(setq normal-to-line (scale -1 normal-to-line))
+;;	(setq reverse-flag -1)
 	)
-
     ;;normalization
     (setq normal-to-line (normalize-vector normal-to-line))
+    (ros::ros-info "normal-to-line ~A" normal-to-line)
 
     ;;transform from float-vector to list
     (setq normal-to-line-list (coerce normal-to-line cons))
 
     ;;reset to the chair center pos
+    (ros::ros-info "before chair ~A" *chair-xy*)
+    
     (setq *chair-xy* (mapcar #'+ *chair-xy* (mapcar #'(lambda (x) (* x (/ *chair-height* 2))) normal-to-line-list)))
+    (ros::ros-info "after chair ~A" *chair-xy*)
 
     ;;calc the rotate by using normal-to-line's y
+    
     (setq rot-radian (* reverse-flag (asin (elt normal-to-line 1))))
+    (ros::ros-info "ros-radian ~d" rot-radian)
+    (ros::ros-info "ros-radian y ~d" (elt normal-to-line 1))
+    (ros::ros-info "ros-radian deg ~d" (rad2deg rot-radian))
+    ;;(break)
 
     ;;prepare target-coords
     (setq target-coords (make-coords :pos (float-vector (* 1000 (car *chair-xy*)) (* 1000 (cadr *chair-xy*)) -303)))
