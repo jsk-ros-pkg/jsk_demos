@@ -5,7 +5,7 @@
 ;;;;
 
 
-;;(load "package://jsk_2013_04_pr2_610/euslisp/move-chair.l")
+(load "package://jsk_2013_04_pr2_610/euslisp/move-chair.l")
 
 
 (defun pick-cloth ()
@@ -25,8 +25,9 @@
 ;;----------------------------------------------------------------
 ;;    find out chair
 
-
+    (ros::ros-info "start detect chair")
     (start-detect-chair)
+    (ros::ros-info "end detect chair")
 ;;----------------------------------------------------------------
 
 

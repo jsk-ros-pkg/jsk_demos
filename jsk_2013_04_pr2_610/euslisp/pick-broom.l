@@ -7,6 +7,11 @@
                                :transform *laundry* :world)
         :world)
 
+  ;; debug
+  (warn "*pr2*: ~A~%" *pr2*)
+  (warn "*laundry*: ~A~%" *laundry*)
+  (warn "*broom*: ~A~%" *broom*)
+
   ;; move pr2 to pick-broom spot
   (pr2-reset-pose)  ;; debug
   (send *ri* :stop-grasp :larm :wait nil)

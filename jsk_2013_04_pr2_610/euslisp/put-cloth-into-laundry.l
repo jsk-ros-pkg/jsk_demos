@@ -30,7 +30,7 @@
   (let (button)
 
     ;; reset coords
-    (send *pr2* :reset-coords)
+;    (send *pr2* :reset-coords)
 
     ;; change camera pos to laundry\
     (send *ri* :start-grasp :rarm)
@@ -41,6 +41,7 @@
     (send *ri* :wait-interpolation)
 
     ;; change laundry button pos according to image processing
+    (warn "*pr2*: ~A~%" *pr2*) ;; debug
     (laundry-detection *laundry*)
     (warn "laundry moved to ~A~%" (send *laundry* :coords))
     (setq button (send (make-coords :pos #f(770 120 780)
