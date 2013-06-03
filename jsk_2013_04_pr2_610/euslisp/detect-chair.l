@@ -3,7 +3,7 @@
 
 (ros::roseus-add-msgs "sensor_msgs")
 (ros::roseus-add-msgs "posedetection_msgs")
-(defvar *result-topic* "/base_laser/ObjectDetection")
+(defparameter *result-topic* "/base_laser/ObjectDetection")
 (defvar *base-frame-id* "/base_footprint")
 
 (ros::roseus "detect_chair")
@@ -12,12 +12,6 @@
 (setq *chair-height* 0.43)
 (setq *error-thred* 0.005)
 (setq *chair-xy* nil)
-
-;;prepare tfs
-(unless (boundp '*tfl*)
-  (setq *tfl* (instance ros::transform-listener :init)))
-(unless (boundp '*tfb*)
-  (setq *tfb* (instance ros::transform-broadcaster :init)))
 
 
 ;;convert r theta to xy
@@ -87,8 +81,6 @@
       (setq angle (+ angle angle-step))
       (inc index)
       )
-    ;;(ros::ros-info "range to xy end")    
-
 
     ;; Next estimate best combination
     (setq end-index (- (length xy-list) 1))
@@ -114,9 +106,6 @@
           )
 	)
       )
-    ;;(ros::ros-info "~d nums in xy-list-------------------------------------------------------------------------------------------------" (length xy-list))
-    ;;(ros::ros-info "~A chair-width" chair-width-likely)
-    ;;(ros::ros-info "~A chair-height" chair-height-likely)
 
     ;;search combination of elements from each lists with id
     (setq seem-answer nil)
@@ -258,9 +247,6 @@
   (ros::advertise *result-topic* posedetection_msgs::ObjectDetection)
 
   ;; get base_link to base_laser_link
-					;(unless (send *tfl* :wait-for-transform *base-frame-id* "chair-center"  (ros::time 0) 1)
-					;  (ros::ros-error "could not solve ~A to ~A" *base-frame-id* "chair-center"))
-  ;;(setq *base_laser_to_laser_scan* (send *tfl* :lookup-transform *base-frame-id* "base_laser_link" (ros::time 0)))
   (setq *base-laser-to-laser-scan* (make-coords :pos #f(275 0 303)))
 
   (ros::rate 10)
