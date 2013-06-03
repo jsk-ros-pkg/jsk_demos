@@ -36,7 +36,7 @@
 
     (send *ri* :start-grasp :rarm)
     (send *pr2* :angle-vector (send *ri* :state :potentio-vector))
-;    (send *pr2* :head :neck-y :joint-angle -4.353)
+    (send *pr2* :head :neck-y :joint-angle -4.353)
     (send *pr2* :head :neck-p :joint-angle 24.422)
     (send *ri* :angle-vector (send *pr2* :angle-vector))
     (send *ri* :wait-interpolation)
@@ -131,7 +131,6 @@
 				     :rpy (list (deg2rad 180) (deg2rad 0) (deg2rad 30)))
 			:transform *laundry* :world))
     (warn "release: ~A~%" release)
-	(break)
     (send *pr2* :rarm :inverse-kinematics
 	  standby
 	  :rotation-axis t
@@ -140,7 +139,6 @@
 	  :revert-if-fail t)
     (send *ri* :angle-vector (send *pr2* :angle-vector) 1000)
     (send *ri* :wait-interpolation)
-    (break)
     (setq release (send (make-coords :pos #f(650 -110 480)
 				     :rpy (list (deg2rad 180) (deg2rad 30) (deg2rad 0)))
 			:transform *laundry* :world))
