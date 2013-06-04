@@ -7,4 +7,8 @@
 	type="detect-chair.l"
 	output="screen"/>
 
+  <node name="check_chair_marker"
+	pkg="jsk_2013_04_pr2_610"
+	type="check-publish-marker.l"
+	output="screen"/>
 </launch>
