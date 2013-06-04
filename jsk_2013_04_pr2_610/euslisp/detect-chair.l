@@ -144,10 +144,8 @@
         	((> i 1) (return 0))
       		(do ((j 2 (1+ j)))
         	  ((> j end-index) (return 0))
-					(ros::ros-info "joint at ~d ~d" i j)
         		(setq id1 (car (elt xy i)))
 	        	(setq id2 (car (elt xy j)))
-					(ros::ros-info "joint at ~d ~d" i j)
 			(when (equal id1 id2)
 				(if (equal j 3)
 					(setq former nil)
@@ -170,21 +168,21 @@
     
     ;;normalization
     (setq normal-to-line (normalize-vector normal-to-line))
-    (ros::ros-info "normal-to-line ~A" normal-to-line)
+;;    (ros::ros-info "normal-to-line ~A" normal-to-line)
 
     ;;transform from float-vector to list
     (setq normal-to-line-list (coerce normal-to-line cons))
 
     ;;reset to the chair center pos
-    (ros::ros-info "before chair ~A" *chair-xy*)
+;;    (ros::ros-info "before chair ~A" *chair-xy*)
     
     (setq *chair-xy* (mapcar #'+ *chair-xy* (mapcar #'(lambda (x) (* x (/ *chair-height* 2))) normal-to-line-list)))
-    (ros::ros-info "after chair ~A" *chair-xy*)
+;;    (ros::ros-info "after chair ~A" *chair-xy*)
 
     ;;calc the rotate by using normal-to-line's y
     
     (setq rot-radian (asin (elt normal-to-line 1)))
-    (ros::ros-info "ros-radian ~d" rot-radian)
+;;    (ros::ros-info "ros-radian ~d" rot-radian)
     (ros::ros-info "ros-radian y ~d" (elt normal-to-line 1))
     (ros::ros-info "ros-radian deg ~d" (rad2deg rot-radian))
     ;;(break)
