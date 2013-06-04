@@ -17,7 +17,7 @@
 (defparameter *grasp-success-threshold* 1.5)
 
 ;;loop counter threshold for start-detect-chair
-(defparameter *detect-chair-loop-threshold* 3)
+(defparameter *detect-chair-loop-threshold* 1)
 ;;
 
 (defun start-detect-chair (&key (debug nil))
