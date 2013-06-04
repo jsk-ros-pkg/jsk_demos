@@ -41,9 +41,9 @@
   ;; spots
   (setq *tray-spot* (make-cascoords :pos #f(5050 700 0) :rpy (list -pi/2 0 0)))
   (send *room610* :assoc *tray-spot*)
-  (setq *chair-spot* (make-cascoords :pos #f(3850 50 0) :rpy (list 0 0 0)))
+  (setq *chair-spot* (make-cascoords :pos #f(3750 50 0) :rpy (list 0 0 0)))
   (send *room610* :assoc *chair-spot*)
-  (setq *chair-spot2* (make-cascoords :pos #f(3900 50 0) :rpy (list 0 0 0)))
+  (setq *chair-spot2* (make-cascoords :pos #f(3850 50 0) :rpy (list 0 0 0)))
   (send *room610* :assoc *chair-spot2*)
 ;;  (setq *laundry-spot* (make-cascoords :pos #f(3176.358 1409.163 -0.854) :rpy #f(1.544 0.004 0.002)))
 ;;  (setq *laundry-spot* (make-cascoords :pos #f(3376.358 1309.163 -0.854) :rpy #f(1.544 0.004 0.002))) ;; move-to bug?
