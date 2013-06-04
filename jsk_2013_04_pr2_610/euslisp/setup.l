@@ -114,7 +114,7 @@
   (warn "move-to-chair2~%")
   (use-tilt-laser-obstacle-cloud nil)
   (clear-costmap)
-  (if (*moved-chair-spot*)
+  (if *moved-chair-spot*
     (progn
       (send *pr2* :move-to *moved-chair-spot* :world)
       (send *ri* :move-to *moved-chair-spot* :frame-id *room610-origin*)
