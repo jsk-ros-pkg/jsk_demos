@@ -3,7 +3,10 @@
 
 (ros::roseus-add-msgs "sensor_msgs")
 (ros::roseus-add-msgs "posedetection_msgs")
+(ros::roseus-add-msgs "geometry_msgs")
+(ros::roseus-add-msgs "jsk_2013_04_pr2_610")
 (defparameter *result-topic* "/narrow_stereo/left/ObjectDetection")
+(defparameter *check-topic* "/check_topic")
 (defvar *base-frame-id* "/base_footprint")
 
 (ros::roseus "detect_chair")
@@ -158,7 +161,21 @@
 	))
 	)
     (ros::ros-info "~A  answer " *chair-xy*)
-    )
+    ;;publish answer 
+    (setq publish-list nil)
+    (dolist (xy chair-xy-params)
+	(setq gm
+		(instance geometry_msgs::Vector3 :init
+                                 :x (cadr xy) :y (caddr xy) :z 0))
+	(push gm  publish-list)
+	)
+	
+    (setq all-input-msg (instance jsk_2013_04_pr2_610::geometry_vectors :init))
+    (send all-input-msg :vectors publish-list)
+    (when ( > (length publish-list) 0)
+   	(ros::publish *check-topic* all-input-msg)
+	)
+  )
 
   ;;if there are answer, continue the process
   (when (not (eq chair-xy-params nil))
@@ -220,6 +237,7 @@
 		  #'chair-detection-cb)
 
   (ros::advertise *result-topic* posedetection_msgs::ObjectDetection)
+  (ros::advertise *check-topic* jsk_2013_04_pr2_610::geometry_vectors)
 
   ;; get base_link to base_laser_link
   (setq *base-laser-to-laser-scan* (make-coords :pos #f(275 0 303)))
