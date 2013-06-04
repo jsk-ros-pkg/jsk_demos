@@ -21,8 +21,8 @@
     (send *ri* :wait-interpolation)
     (send *ri* :stop-grasp :rarm :wait t)
 
-    (send *ri* :go-pos-unsafe 0.1 0 0)
-    (send *pr2* :translate #f(100 0 0))
+    (send *ri* :go-pos-unsafe 0.2 0 0)
+    (send *pr2* :translate #f(200 0 0))
 
 
 ;;----------------------------------------------------------------

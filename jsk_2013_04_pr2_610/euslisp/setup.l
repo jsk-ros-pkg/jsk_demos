@@ -41,7 +41,7 @@
   ;; spots
   (setq *tray-spot* (make-cascoords :pos #f(5050 700 0) :rpy (list -pi/2 0 0)))
   (send *room610* :assoc *tray-spot*)
-  (setq *chair-spot* (make-cascoords :pos #f(3750 50 0) :rpy (list 0 0 0)))
+  (setq *chair-spot* (make-cascoords :pos #f(3650 50 0) :rpy (list 0 0 0)))
   (send *room610* :assoc *chair-spot*)
   (setq *chair-spot2* (make-cascoords :pos #f(3850 50 0) :rpy (list 0 0 0)))
   (send *room610* :assoc *chair-spot2*)
@@ -65,7 +65,7 @@
 
   (setq *world-to-610* (send *tfl* :lookup-transform "/world" *room610-origin* (ros::time 0)))
 
-  (change-inflation-range 0.2) ;;0.1
+  (change-inflation-range 0.4) ;;0.1
   (if (not (boundp '*irtviewer*)) (clear-costmap))
   )
 

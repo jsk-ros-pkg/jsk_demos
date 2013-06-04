@@ -14,7 +14,7 @@
 (defparameter distance-from-chair-center 700)
 
 ;;set variable to use for judging if grasp success or not
-(defparameter *grasp-success-threshold* 1.5)
+(defparameter *grasp-success-threshold* 2)
 
 ;;loop counter threshold for start-detect-chair
 (defparameter *detect-chair-loop-threshold* 1)
@@ -36,7 +36,9 @@
                        :speak nil)
       (ros::spin-once)
       (send *chair* :translate (send *pr2* :worldpos) :world)
-;;      (send *chair* :transform *pr2*)
+      (send *pr2* :head :look-at (send(send *chair* :handle-above-rarm) :worldpos))
+      (send *ri* :angle-vector (send *pr2* :angle-vector))
+
       (push (send *chair* :worldcoords) chair-coords)
       (when (> loop-counter *detect-chair-loop-threshold*)
         (setq loop nil)	;;temp method
@@ -105,7 +107,16 @@
     	(send *ri* :angle-vector (send *pr2* :angle-vector))
     	(send *ri* :wait-interpolation)
 
-    	(send *pr2* :rarm :move-end-pos #f(0 0 -30) :world)
+	(send *pr2* :inverse-kinematics (send  (send (send *pr2* :rarm :end-coords) :copy-worldcoords) :translate #f(0 0 -30) :world)
+              :link-list (list
+                          (send *pr2* :link-list (send *pr2* :rarm :end-coords :parent)))
+              :move-target (send *pr2* :rarm :end-coords)
+              :revert-if-fail nil
+              :look-at-target t
+              :debug-view nil
+              )
+
+
     	(send *ri* :angle-vector (send *pr2* :angle-vector))
     	(send *ri* :wait-interpolation)
 
