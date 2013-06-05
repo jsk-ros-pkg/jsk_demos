@@ -21,7 +21,7 @@
 ;;
 
 (defun start-detect-chair (&key (debug nil))
-  (let ((loop t) (loop-counter 0) (chair-coords nil))
+  (let ((loop t) (loop-counter 0) (chair-coords nil) (ret))
     (ros::roseus "objectdetection_publisher")
     (defparameter *detection-topic* "/narrow_stereo/left/ObjectDetection")
     (ros::rate 10)
@@ -30,16 +30,21 @@
       (if loop (ros::ros-info "detecting_now"))
     (while loop
       (if debug (ros::ros-info "detecting_now"))
-      (check-detection :type "chair-center" ;; work for any object
+      (setq ret (check-detection :type "chair-center" ;; work for any object
                        :speak-name "chair object"
                        :target-object *chair*
-                       :speak nil)
+                       :speak nil))
       (ros::spin-once)
-      (send *chair* :translate (send *pr2* :worldpos) :world)
-      (send *pr2* :head :look-at (send(send *chair* :handle-above-rarm) :worldpos))
-      (send *ri* :angle-vector (send *pr2* :angle-vector))
+      (if ret
+	(progn
+      		(send *chair* :translate (send *pr2* :worldpos) :world)
+      		(send *pr2* :head :look-at (send(send *chair* :handle-above-rarm) :worldpos))
+      		(send *ri* :angle-vector (send *pr2* :angle-vector))
+	))
 
       (push (send *chair* :worldcoords) chair-coords)
+
+
       (when (> loop-counter *detect-chair-loop-threshold*)
         (setq loop nil)	;;temp method
         )
@@ -77,10 +82,16 @@
     (send *ri* :angle-vector (send *pr2* :angle-vector))
     (send *ri* :wait-interpolation)
 
+    (setq before-pose (send *ri* :potentio-vector))
 
       (ros::ros-info "end move to right")
     ;; start detecting char and grasp chair
     (while (not grasp-success)
+	;;setup pose
+	(send *pr2* :angle-vector before-pose)
+	(send *ri*  :angle-vector before-pose)
+    	(send *ri* :wait-interpolation)
+
     	;;start-detect-chair
 	(ros::ros-info "start-detect-chair")
     	(start-detect-chair)
