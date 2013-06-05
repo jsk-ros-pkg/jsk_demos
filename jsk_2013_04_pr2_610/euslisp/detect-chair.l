@@ -15,7 +15,7 @@
 (setq *chair-height* 0.43)
 (setq *error-thred* 0.005)
 (setq *chair-xy* nil)
-
+(setq *inner-threshold* 0.3)
 
 ;;convert r theta to xy
 (defun rtheta->xy (r theta index &key (debug nil))
@@ -70,7 +70,6 @@
     ;; First Calc the x y and put those in xy-list
     ;; and add index too.
     (dolist (range ranges)
-      ;;(ros::ros-info "~d range ~d angle" range angle)
       ;;here if range > 0 it is meaningful
       (if (> range 0)
 	  (push (rtheta->xy range angle index) xy-list)
@@ -91,13 +90,13 @@
 	;;push to array if it seems to be chair-width
 	(if (check-likely-target (between-distance xy1 xy2) *chair-width* *error-thred*) (progn 
 		(push (list xy1 xy2) chair-width-likely)
-		(ros::ros-info "~d ~d ~d distance width" (car xy1) (car xy2) (between-distance xy1 xy2))
+		;;(ros::ros-info "~d ~d ~d distance width" (car xy1) (car xy2) (between-distance xy1 xy2))
 		
 		))
 	;;push to array if it seems to be chair-height
 	(if (check-likely-target (between-distance xy1 xy2) *chair-height* *error-thred*)(progn 
 		(push (list xy1 xy2) chair-height-likely)
-		(ros::ros-info "~d ~d ~d distance height" (car xy1) (car xy2) (between-distance xy1 xy2))
+		;;(ros::ros-info "~d ~d ~d distance height" (car xy1) (car xy2) (between-distance xy1 xy2))
 		;;
           )
           )
@@ -118,7 +117,22 @@
 		 (= cdr-index-width car-index-height)
 		 (= cdr-index-width cdr-index-height)
 		 )
-	    (push (append chair-width-xy chair-height-xy) seem-answer)
+		(progn 
+		;;check inner-product
+		(setq vector1 (float-vector (- (cadr (car chair-width-xy)) (cadr (cadr chair-width-xy))) (- (caddr (car chair-width-xy)) (caddr (cadr chair-width-xy)))))
+		(setq vector1 (normalize-vector vector1))
+		(setq vector2 (float-vector (- (cadr (car chair-height-xy)) (cadr (cadr chair-height-xy))) (- (caddr (car chair-height-xy)) (caddr (cadr chair-height-xy)))))
+		(setq vector2 (normalize-vector vector2))
+		(setq inner-product (v. vector1 vector2))
+		(ros::ros-info "~d inner-product before check" inner-product)
+		
+		(if (and ( < inner-product  *inner-threshold* ) (> inner-product (* -1 *inner-threshold*)))
+			(progn
+				(ros::ros-info "~d inner-product passed" inner-product)
+	    			(push (append chair-width-xy chair-height-xy) seem-answer)
+			)
+			)
+		)
 	  )
 	)
       )
@@ -152,7 +166,7 @@
 			(when (equal id1 id2)
 				(if (equal j 3)
 					(setq former nil)
-					(ros::ros-info "------------------------------------------joint at ~d ~d-----------------------------" id1 id2)
+					;;(ros::ros-info "------------------------------------------joint at ~d ~d-----------------------------" id1 id2)
 					)
 				)
         	)
@@ -200,8 +214,8 @@
     
     (setq rot-radian (asin (elt normal-to-line 1)))
 ;;    (ros::ros-info "ros-radian ~d" rot-radian)
-    (ros::ros-info "ros-radian y ~d" (elt normal-to-line 1))
-    (ros::ros-info "ros-radian deg ~d" (rad2deg rot-radian))
+;;    (ros::ros-info "ros-radian y ~d" (elt normal-to-line 1))
+;;    (ros::ros-info "ros-radian deg ~d" (rad2deg rot-radian))
     ;;(break)
 
     ;;prepare target-coords
