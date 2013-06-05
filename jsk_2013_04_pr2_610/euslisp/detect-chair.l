@@ -13,9 +13,9 @@
 
 (setq *chair-width* 0.37)
 (setq *chair-height* 0.43)
-(setq *error-thred* 0.005)
+(setq *error-thred* 0.02)
 (setq *chair-xy* nil)
-(setq *inner-threshold* 0.3)
+(setq *inner-threshold* 0.2)
 
 ;;convert r theta to xy
 (defun rtheta->xy (r theta index &key (debug nil))
