@@ -14,7 +14,7 @@
 (defparameter distance-from-chair-center 700)
 
 ;;set variable to use for judging if grasp success or not
-(defparameter *grasp-success-threshold* 2)
+(defparameter *grasp-success-threshold* 10)
 
 ;;loop counter threshold for start-detect-chair
 (defparameter *detect-chair-loop-threshold* 1)
@@ -63,7 +63,8 @@
     (send *pr2* :angle-vector (send *ri* :state :potentio-vector))
     (send *ri* :stop-grasp :rarm :wait t)
     (send *ri* :wait-interpolation)
-
+      (ros::ros-info "move to right")
+  
     (send *pr2* :inverse-kinematics (send  (send (send *pr2* :rarm :end-coords) :copy-worldcoords) :translate #f(0 -300 0) :world)
           :revert-if-fail nil
           :link-list (list
@@ -77,6 +78,7 @@
     (send *ri* :wait-interpolation)
 
 
+      (ros::ros-info "end move to right")
     ;; start detecting char and grasp chair
     (while (not grasp-success)
     	;;start-detect-chair
@@ -126,6 +128,9 @@
 
 	;;check if grasp is success
 	(setq grip_r_dist (send *ri* :start-grasp :rarm))
+	(send *ri* :update-robot-state)
+	(setq grip_r_dist (send *ri* :robot :r_gripper_joint :joint-angle))
+
     	(send *ri* :wait-interpolation)
 	(ros::ros-info "~d gripper distance" grip_r_dist)
 	(when (> grip_r_dist *grasp-success-threshold*)
@@ -134,8 +139,8 @@
     )
     (ros::ros-info "end catch chair")
 
-    (send *ri* :go-pos-unsafe -0.1 0 0)
-    (send *pr2* :translate #f(-100 0 0))
+    (send *ri* :go-pos-unsafe -0.2 0 0)
+    (send *pr2* :translate #f(-200 0 0))
     
     (send *pr2* :angle-vector (send *ri* :state :potentio-vector))
     (send *ri* :wait-interpolation)
@@ -151,7 +156,7 @@
 
     (setq angle-vector-list nil)
     (dotimes (i 9)
-      (send back-legs-center :rotate (deg2rad -2) :y)
+      (send (send back-legs-center :rotate (deg2rad -2) :y) :translate #f(-10 0 0) *pr2*)
       (send *pr2* :inverse-kinematics dest-c
 	    :link-list (list
 			(send *pr2* :link-list (send *pr2* :rarm :end-coords :parent)))
