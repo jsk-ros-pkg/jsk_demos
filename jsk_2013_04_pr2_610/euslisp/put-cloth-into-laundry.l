@@ -93,10 +93,16 @@
     (send *ri* :wait-interpolation)
 
     ;; push
-    (send *pr2* :rarm :move-end-pos (float-vector 150 0 0))
+    (send *pr2* :rarm :move-end-pos (float-vector 30 0 0))
     (if (boundp '*irtviewer*) (send *irtviewer* :draw-objects))
-    (send *ri* :angle-vector (send *pr2* :angle-vector) 3000)
+    (send *ri* :angle-vector (send *pr2* :angle-vector) 2000)
     (send *ri* :wait-interpolation)
+
+    (send *pr2* :rarm :move-end-pos (float-vector 100 0 0))
+    (if (boundp '*irtviewer*) (send *irtviewer* :draw-objects))
+    (send *ri* :angle-vector (send *pr2* :angle-vector) 100)
+    (send *ri* :wait-interpolation)
+
 
 ;	(do ((i 180 (+ i 45)) (r 2))
 ;		((> i 540) t)
