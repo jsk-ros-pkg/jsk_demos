@@ -2,7 +2,7 @@
   (warn "(pick-broom)~%")
 
   ;; move broom
-  (send *broom* :move-to (send (make-coords :pos #f(650 -390 0)
+  (send *broom* :move-to (send (make-coords :pos (float-vector 600 -590 0)
                                             :rpy (list pi/2 (deg2rad 4) 0))
                                :transform *laundry* :world)
         :world)
@@ -18,6 +18,7 @@
   (send *pr2* :move-to (send *room610* :spot-pick-broom-spot) :world)
 
   (grasp-broom)
+  (read-char)
   (goback-broom)
   (bringup-broom)
 )
@@ -27,7 +28,7 @@
   (let ((c (send (send *broom* :handle-larm) :copy-worldcoords))
         (laundry-coords (send *laundry* :copy-worldcoords)))
     (send c :translate #f(100 0 0) *laundry*)
-
+	(break)
     (send *pr2* :larm :inverse-kinematics
           (make-coords :pos (send c :worldpos)
                        :rpy (elt (send (send laundry-coords :rotate pi :z) :rpy-angle) 0))
@@ -42,9 +43,12 @@
     (send *ri* :angle-vector (send *pr2* :angle-vector))
     (send *ri* :wait-interpolation)
 
-	(send *ri* :start-grasp :larm)
-	(send *pr2* :larm :end-coords :assoc *broom*)
+	(while (< (send *ri* :start-grasp :larm) 2.0)
+	  (send *ri* :stop-grasp :larm :wait t)
+	  (speak-jp "ほうきがとれなかった")
+	  (unix:sleep 2)
     )
+	(send *pr2* :larm :end-coords :assoc *broom*)
   )
 
 
