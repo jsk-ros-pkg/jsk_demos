@@ -43,7 +43,7 @@
   (send *room610* :assoc *tray-spot*)
   (setq *chair-spot* (make-cascoords :pos #f(3650 50 0) :rpy (list 0 0 0)))
   (send *room610* :assoc *chair-spot*)
-  (setq *chair-spot2* (make-cascoords :pos #f(3850 50 0) :rpy (list 0 0 0)))
+  (setq *chair-spot2* (make-cascoords :pos #f(3650 50 0) :rpy (list 0 0 0)))
   (send *room610* :assoc *chair-spot2*)
 ;;  (setq *laundry-spot* (make-cascoords :pos #f(3176.358 1409.163 -0.854) :rpy #f(1.544 0.004 0.002)))
 ;;  (setq *laundry-spot* (make-cascoords :pos #f(3376.358 1309.163 -0.854) :rpy #f(1.544 0.004 0.002))) ;; move-to bug?
@@ -55,6 +55,8 @@
   (send *room610* :assoc *sink-spot*)
   (setq *sweep-spot* (make-cascoords :pos #f(3550 -300 0) :rpy (list (deg2rad -30) 0 0)))
   (send *room610* :assoc *sweep-spot*)
+  (setq *moved-back-chair-spot* (make-cascoords :pos #f(550 0 0) :rpy (list 0 0 0)))
+  (send *room610* :assoc *moved-back-chair-spot*)
 
   ;;after move-to, save the pos
   (setq *moved-chair-spot* nil)
@@ -78,8 +80,9 @@
   (:spot-pick-broom-spot () *pick-broom-spot*)
   (:spot-sink-spot () *sink-spot*)
   (:spot-sweep-spot () *sweep-spot*)
+  (:spot-moved-back-chair () *moved-back-chair-spot*)
   (:spots ()
-          (list *tray-spot* *chair-spot* *laundry-spot* *pick-broom-spot* *sink-spot* *sweep-spot*)))
+          (list *tray-spot* *chair-spot* *laundry-spot* *pick-broom-spot* *sink-spot* *sweep-spot* *moved-back-chair-spot*)))
 
 (defun move-to-sink ()
   (warn "move-to-sink~%")
@@ -111,14 +114,20 @@
   )
 
 (defun move-to-back-chair ()
-  (warn "move-to-chair2~%")
+  (warn "move-to-back-chair~%")
   (use-tilt-laser-obstacle-cloud nil)
   (clear-costmap)
   (if *moved-chair-spot*
     (progn
       (send *pr2* :move-to *moved-chair-spot* :world)
       (send *ri* :move-to *moved-chair-spot* :frame-id *room610-origin*)
-    ))
+    )
+    (progn
+      (ros::ros-error "I Don't now where *moved-chair-spot*")
+      (send *pr2* :move-to (send *room610* :spot-moved-back-chair) :world)
+      (send *ri* :move-to (send *room610 :spot-moved-back-chair) :frame-id *room610-origin* )
+    )
+   )
   (use-tilt-laser-obstacle-cloud t)
 )
 
@@ -275,6 +284,10 @@
   ;;
   (move-to-sweep)
   (sweep-under-table)
+  ;;
+  (move-to-back-chair)
+  (move-back-chair)
+  ;;
   (move-to-sweep-floor)
   (sweep-floor)
   (use-tilt-laser-obstacle-cloud t)
