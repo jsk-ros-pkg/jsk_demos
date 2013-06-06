@@ -18,7 +18,6 @@
   (send *pr2* :move-to (send *room610* :spot-pick-broom-spot) :world)
 
   (grasp-broom)
-  (read-char)
   (goback-broom)
   (bringup-broom)
 )
@@ -33,7 +32,8 @@
           (make-coords :pos (send c :worldpos)
                        :rpy (elt (send (send laundry-coords :rotate pi :z) :rpy-angle) 0))
           :look-at-target t
-          :rotation-axis t
+;          :rotation-axis t
+		  :rotation-axis :z
           :debug-view nil)
 	
     (send *ri* :angle-vector (send *pr2* :angle-vector))
@@ -45,7 +45,7 @@
 
 	(while (< (send *ri* :start-grasp :larm) 2.0)
 	  (send *ri* :stop-grasp :larm :wait t)
-	  (speak-jp "ほうきがとれなかった")
+	  (speak-jp "ほうきとれなかった")
 	  (unix:sleep 2)
     )
 	(send *pr2* :larm :end-coords :assoc *broom*)
@@ -58,7 +58,7 @@
   (send *ri* :angle-vector (send *pr2* :angle-vector) 1200)
 
 
-  (speak-jp "うしろへさがる")
+  (speak-jp "うしろへさがった")
   (send *pr2* :translate #f(-500 0 0))
   (send *ri* :go-pos-unsafe -0.5 0 0)
   (send *ri* :wait-interpolation)
@@ -66,39 +66,44 @@
 
 (defun bringup-broom ()
   (warn "(bringup-broom)~%")
-  (let (larm-rpy)
+  (let (larm-rpy av-list)
   (setq larm-rpy
-        (if (gripper-z-axis-inversed-p :larm)
+        (if (not (gripper-z-axis-inversed-p :larm))
             (list (deg2rad -70) 0 0)
           (list (deg2rad -70) 0 (deg2rad 180))))
 
-  (warn "bring up")
-  (send *pr2* :larm :inverse-kinematics
+  (warn "bring up~%")
+  (push (send *pr2* :larm :inverse-kinematics
         (make-cascoords :pos (send *pr2* :transform-vector #f(530 0 1300))
                         :rpy larm-rpy)
         :look-at-target t
         :rotation-axis :z
-        :debug-view nil)
+        :debug-view nil) av-list)
   (if (boundp '*irtviewer*) (send *irtviewer* :draw-objects))
-  (send *ri* :angle-vector (send *pr2* :angle-vector) 1000)
+;  (send *ri* :angle-vector (send *pr2* :angle-vector) 1000)
 
   (warn "right-hand~%")
-  (send *pr2* :rarm :inverse-kinematics
+  (push (send *pr2* :rarm :inverse-kinematics
         (make-coords :pos (send *pr2* :transform-vector #f(530 60 650))
                      :rpy (list (deg2rad 70) 0 0))
         :rotation-axis :z
-        :debug-view nil)
+;		:rotation-axis t
+        :debug-view nil) av-list)
   (if (boundp '*irtviewer*) (send *irtviewer* :draw-objects))
-  (send *ri* :angle-vector (send *pr2* :angle-vector) 1500)
+;  (send *ri* :angle-vector (send *pr2* :angle-vector) 1500)
 
   (send *pr2* :torso :waist-z :joint-angle 0)
+  (push (send *pr2* :angle-vector) av-list)
   (if (boundp '*irtviewer*) (send *irtviewer* :draw-objects))
-  (send *ri* :angle-vector (send *pr2* :angle-vector) 1200)
+;  (send *ri* :angle-vector (send *pr2* :angle-vector) 1200)
+;  (send *ri* :wait-interpolation)
+
+  (send *ri* :angle-vector-sequence (reverse av-list) (list 1000 1500 1200))
   (send *ri* :wait-interpolation)
   (send *ri* :start-grasp :rarm)
   (send *ri* :stop-grasp :larm)
   (send *pr2* :larm :end-coords :dissoc *broom*)
-
+  (setq av-list nil)
   (warn "calib-pick-height~%")
   (let ((offset-l (send *pr2* :rotate-vector #f(0 -30 -500)))
         (offset-r #f(0 0 -500))
@@ -108,10 +113,12 @@
     (send *pr2* :larm :inverse-kinematics (send handle-larm :translate offset-l :world)
           :look-at-target t
           :rotation-axis :z
+		  :rotation-axis t
           :debug-view nil)
     (send *pr2* :rarm :inverse-kinematics (send handle-rarm :translate offset-r :world)
           :look-at-target nil
           :rotation-axis :z
+		  :rotation-axis t
           :debug-view nil))
   (if (boundp '*irtviewer*) (send *irtviewer* :draw-objects))
   (send *ri* :angle-vector (send *pr2* :angle-vector))

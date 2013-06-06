@@ -109,7 +109,7 @@
 (defun put-cloth-into ()
   (warn "put-cloth~%")
   (let (standby release)
-    (setq standby (send (make-coords :pos #f(800 -110 680)
+    (setq standby (send (make-coords :pos (float-vector 800 -110 680)
 				     :rpy (list (deg2rad 180) (deg2rad 0) (deg2rad 30)))
 			:transform *laundry* :world))
     (warn "release: ~A~%" release)
@@ -121,17 +121,20 @@
 	  :revert-if-fail t)
     (send *ri* :angle-vector (send *pr2* :angle-vector) 1000)
     (send *ri* :wait-interpolation)
-    (setq release (send (make-coords :pos #f(650 -110 480)
+    (setq release (send (make-coords :pos (float-vector 650 -110 480)
 				     :rpy (list (deg2rad 180) (deg2rad 30) (deg2rad 0)))
 			:transform *laundry* :world))
     (warn "release: ~A~%" release)
 
+#|
     (send *pr2* :rarm :inverse-kinematics
 	  release
 	  :rotation-axis t
 	  :look-at-target t
 	  :debug-view nil
 	  :revert-if-fail nil)
+|#
+	(send *pr2* :rarm :move-end-pos #f(200 0 -100) :local)
     (send *ri* :angle-vector (send *pr2* :angle-vector) 2000)
     (send *ri* :wait-interpolation)
 
