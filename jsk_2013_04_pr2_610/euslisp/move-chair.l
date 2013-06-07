@@ -23,6 +23,9 @@
 
 (defparameter *prev-chair-was* nil)
 
+
+;;if you call this function, (as like (start-detect-chair))
+;;*chair* will be update and move to where it would be
 (defun start-detect-chair (&key (debug nil))
   (let ((loop t) (loop-counter 0) (chair-coords nil) (ret))
     (ros::roseus "objectdetection_publisher")
@@ -46,7 +49,7 @@
 
       (push (send *chair* :worldcoords) chair-coords)
 
-
+      ;;wait a few loop
       (when (> loop-counter *detect-chair-loop-threshold*)
         (setq loop nil)	;;temp method
         )
@@ -161,6 +164,7 @@
     ;;(break)
 
     ;;-------------------------------------------------------PULL PART---------------------------------------------------;;;;
+    (ros::ros-info "PULL PART...")
 
 
     (send (send *pr2* :r_wrist_roll_link) :assoc *chair*)
@@ -210,6 +214,7 @@
 
 
     ;;-------------------------------------------------------MOVE PART---------------------------------------------------;;;;
+    (ros::ros-info "Move PART...")
 
 
     (send (send *pr2* :r_wrist_roll_link) :assoc *chair*)
@@ -237,6 +242,7 @@
 
 
     ;;-------------------------------------------------------RELEASE PART---------------------------------------------------;;;;
+    (ros::ros-info "Release PART...")
 
     (setq back-legs-center (make-cascoords :coords (send *chair* :worldcoords)))
     (send back-legs-center :locate (float-vector -250 0 0))
@@ -293,6 +299,7 @@
 
 
     ;;-------------------------------------------------------REMEMBER PART---------------------------------------------------;;;;
+    (ros::ros-info "Now Remember...")
 
 
     ;;save the place where robot was
@@ -384,6 +391,9 @@
                 (setq grasp-success t)
                 )
     )
+    ;; -------- pr2 catch chair !!!!! -------------------------
+    (ros::ros-info "--PR2 Catch IT !!!!!--")
+
     (send (send *pr2* :r_wrist_roll_link) :assoc *chair*)
     (send *ri* :angle-vector (send *pr2* :angle-vector))
     (send *ri* :wait-interpolation)
@@ -407,6 +417,7 @@
 
 
   ;;push and move phase---------------------------------------------------------------------------------;;
+    (ros::ros-info "--Push and Move PART!--")
     (setq now-chair-pos (send (send *chair* :copy-worldcoords) :worldpos))
     (setq prev-chair-pos (send *prev-chair-was* :worldpos))
     (setq diff-chair-pos (v- prev-chair-pos now-chair-pos))
@@ -430,6 +441,7 @@
 
 
   ;;end push and release chair -------------------------------------------------------------------------;;
+    (ros::ros-info "--End Push and Release PART!--")
 
     (send (send *pr2* :r_wrist_roll_link) :dissoc *chair*)
     (send *ri* :stop-grasp :rarm)
