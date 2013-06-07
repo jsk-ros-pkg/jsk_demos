@@ -44,8 +44,8 @@
     (send *ri* :wait-interpolation)
     (warn "11111")
     ;; use dual arm IK (see https://sourceforge.net/p/jsk-ros-pkg/code/4103/)
-    (setq tray-larm-handle (send (send *tray* :handle-larm-handle :copy-worldcoords) :rotate (deg2rad -20) :z) ;; do not move in world coords, use object(tray) relative coords
-          tray-rarm-handle (send (send *tray* :handle-rarm-handle :copy-worldcoords) :rotate (deg2rad  20) :z)) ;; need copy-worldcoords, otherwise move handle coords directory
+    (setq tray-larm-handle (send (send (send *tray* :handle-larm-handle) :copy-worldcoords) :rotate (deg2rad -20) :z) ;; do not move in world coords, use object(tray) relative coords
+          tray-rarm-handle (send (send (send *tray* :handle-rarm-handle) :copy-worldcoords) :rotate (deg2rad  20) :z)) ;; need copy-worldcoords, otherwise move handle coords directory
     (if (boundp '*irtviewer*) (send-all (list tray-larm-handle tray-rarm-handle) :draw-on :flush t)) ;; use :draw-on to confirm coords position
 
     (dolist (offset (list (cons #f(-100 -10 0) #f(-100 10 0)) (cons #f(0 30 0) #f(0 -30 0))))

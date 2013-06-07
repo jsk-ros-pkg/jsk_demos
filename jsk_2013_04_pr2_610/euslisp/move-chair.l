@@ -109,9 +109,9 @@
 
     	(send *pr2* :angle-vector (send *ri* :state :potentio-vector))
     	;;(send *pr2* :reset-pose) ;; to solve ik, do not  send to *ri*
-        (setq handle-rarm (send *chair* :handle-above-rarm) )
+        (setq handle-rarm (send (send *chair* :handle-above-rarm) :copy-worldcoords) )
     	(send *pr2* :inverse-kinematics 
-	      (list (send (send  handle-rarm  :translate (float-vector -20 0 15) :wolrd) :rotate (deg2rad 20) :y :world))
+	      (list (send (send  handle-rarm  :translate (float-vector -20 0 15) :world) :rotate (deg2rad 20) :y :world))
     	      :link-list (list
     	                  (send *pr2* :link-list (send *pr2* :rarm :end-coords :parent)))
     	      :move-target (list (send *pr2* :rarm :end-coords))
@@ -150,10 +150,12 @@
 		)
     )
     (ros::ros-info "end catch chair")
-    (break)
+    ;;(break)
+
+    ;;-------------------------------------------------------PULL PART---------------------------------------------------;;;;
+
 
     (send (send *pr2* :r_wrist_roll_link) :assoc *chair*)
-    (send (send *pr2* :r_wrist_roll_link) :dissoc *chair*)
     (send *ri* :angle-vector (send *pr2* :angle-vector))
     (send *ri* :wait-interpolation)
 
@@ -164,6 +166,8 @@
     
     (send *pr2* :angle-vector (send *ri* :state :potentio-vector))
     (send *ri* :wait-interpolation)
+
+    (send (send *pr2* :r_wrist_roll_link) :dissoc *chair*)
 
 
     (setq back-legs-center (make-cascoords :coords (send *chair* :worldcoords)))
@@ -194,6 +198,12 @@
     (send *ri* :angle-vector-sequence angle-vector-list (make-sequence 'list (length angle-vector-list) :initial-element 300))
     (send *ri* :wait-interpolation)
 
+    (send back-legs-center :dissoc *chair*)
+
+
+    ;;-------------------------------------------------------MOVE PART---------------------------------------------------;;;;
+
+
     (send (send *pr2* :r_wrist_roll_link) :assoc *chair*)
 
 
@@ -212,9 +222,13 @@
     (send *pr2* :translate #f(-1200 -300 0))
     (send *pr2* :rotate (deg2rad -10) :z)
 
+    (send (send *pr2* :r_wrist_roll_link) :dissoc *chair*)
+
     (if (boundp '*irtviewer*) (send *irtviewer* :draw-objects))
     (send *ri* :wait-interpolation)
 
+
+    ;;-------------------------------------------------------RELEASE PART---------------------------------------------------;;;;
 
     (setq back-legs-center (make-cascoords :coords (send *chair* :worldcoords)))
     (send back-legs-center :locate #f(-250 0 0))
@@ -243,6 +257,11 @@
 
     (send *ri* :angle-vector-sequence angle-vector-list (make-sequence 'list (length angle-vector-list) :initial-element 300))
     (send *ri* :wait-interpolation)
+
+
+    (send back-legs-center :dissoc *chair*)
+    (send (send *pr2* :r_wrist_roll_link) :assoc *chair*)
+
     (send *ri* :go-pos-unsafe -0.2 -0 0) ;;10
     (send *pr2* :translate #f(-200 -0 0))
     (send *ri* :wait-interpolation)
@@ -263,6 +282,9 @@
     (if (boundp '*irtviewer*) (send *irtviewer* :draw-objects))
     (send *ri* :angle-vector (send *pr2* :angle-vector) 2000)
     (send *ri* :wait-interpolation)
+
+
+    ;;-------------------------------------------------------REMEMBER PART---------------------------------------------------;;;;
 
 
     ;;save the place where robot was
