@@ -69,7 +69,7 @@
 
     (send *pr2* :angle-vector (send *ri* :state :potentio-vector))
     (send *ri* :stop-grasp :rarm :wait t)
-    (send *ri* :wait-interpolation)
+
       (ros::ros-info "move to right")
   
     (send *pr2* :inverse-kinematics (send  (send (send *pr2* :rarm :end-coords) :copy-worldcoords) :translate #f(0 -300 0) :world)
@@ -109,7 +109,9 @@
 
     	(send *pr2* :angle-vector (send *ri* :state :potentio-vector))
     	;;(send *pr2* :reset-pose) ;; to solve ik, do not  send to *ri*
-    	(send *pr2* :inverse-kinematics (list (send (send (send *chair* :handle-above-rarm) :translate #f(-20 0 15) :wolrd) :rotate (deg2rad 20) :y :world))
+        (setq handle-rarm (send *chair* :handle-above-rarm) )
+    	(send *pr2* :inverse-kinematics 
+	      (list (send (send  handle-rarm  :translate (float-vector -20 0 15) :wolrd) :rotate (deg2rad 20) :y :world))
     	      :link-list (list
     	                  (send *pr2* :link-list (send *pr2* :rarm :end-coords :parent)))
     	      :move-target (list (send *pr2* :rarm :end-coords))
@@ -135,9 +137,6 @@
     	(send *ri* :angle-vector (send *pr2* :angle-vector))
     	(send *ri* :wait-interpolation)
 
-    	(send (send *pr2* :r_wrist_roll_link) :assoc *chair*)
-    	(send *ri* :angle-vector (send *pr2* :angle-vector))
-    	(send *ri* :wait-interpolation)
 
 	;;check if grasp is success
 	(setq grip_r_dist (send *ri* :start-grasp :rarm))
@@ -151,6 +150,14 @@
 		)
     )
     (ros::ros-info "end catch chair")
+    (break)
+
+    (send (send *pr2* :r_wrist_roll_link) :assoc *chair*)
+    (send (send *pr2* :r_wrist_roll_link) :dissoc *chair*)
+    (send *ri* :angle-vector (send *pr2* :angle-vector))
+    (send *ri* :wait-interpolation)
+
+
 
     (send *ri* :go-pos-unsafe -0.3 0 0)
     (send *pr2* :translate #f(-300 0 0))
