@@ -1,5 +1,6 @@
 #!/usr/bin/env roseus
 
+
 (ros::roseus-add-msgs "posedetection_msgs")
 (load "models/arrow-object.l")
 
@@ -32,7 +33,6 @@
 (defun open-door ()
   (warn "open-door ~%")
   (let (button)
-
     (send *ri* :start-grasp :rarm)
     (send *pr2* :angle-vector (send *ri* :state :potentio-vector))
     (send *pr2* :head :neck-y :joint-angle -4.353)
@@ -42,12 +42,14 @@
 
     ;; change laundry button pos according to image processing
     (send *laundry* :move-to (laundry-detection *laundry*) :world);; FIX ME returns t if found, nil not found
-	(if (boundp '*irtviewer*) (send (send *laundry* :copy-worldcoords) :draw-on :flush t :size 1700 :color #f(0 1 0)))
+    (if (boundp '*irtviewer*) (send (send *laundry* :copy-worldcoords)
+                                    :draw-on :flush t
+                                    :size 1700 :color #f(0 1 0)))
     (warn "laundry moved to ~A~%" (send *laundry* :coords))
-    (setq button (send (make-coords :pos (float-vector 770 112 780)
-				    :rpy (list (deg2rad 180) (deg2rad 30) (deg2rad 0)))
-		       :transform (send *laundry* :copy-worldcoords) :world))
-	;; debug
+    (setq button (send (make-coords :pos (float-vector 770 112 790)
+                                    :rpy (list (deg2rad 180) (deg2rad 30) (deg2rad 0)))
+                       :transform (send *laundry* :copy-worldcoords) :world))
+    ;; debug
 	(if (boundp '*irtviewer*) (send button :draw-on :flush t :size 1000))
     (warn "button: ~A~%" button)
 
@@ -97,7 +99,6 @@
 	(send *pr2* :rarm :move-end-pos (float-vector 50 0 0) (send *pr2* :worldcoords))
 	(send *ri* :angle-vector (send *pr2* :angle-vector) 500)
 	(send *ri* :wait-interpolation)
-
     ;; pull arm for preventing collision
     (send *pr2* :rarm :move-end-pos #f(-200 0 0))
     (send *pr2* :rarm :move-end-pos #f(-50 0 -150) (send *pr2* :worldcoords))

@@ -27,7 +27,6 @@
   (let ((c (send (send *broom* :handle-larm) :copy-worldcoords))
         (laundry-coords (send *laundry* :copy-worldcoords)))
     (send c :translate #f(100 0 0) *laundry*)
-	(break)
     (send *pr2* :larm :inverse-kinematics
           (make-coords :pos (send c :worldpos)
                        :rpy (elt (send (send laundry-coords :rotate pi :z) :rpy-angle) 0))
@@ -47,7 +46,7 @@
 	  (send *ri* :stop-grasp :larm :wait t)
 	  (speak-jp "ほうきとれなかった")
 	  (unix:sleep 2)
-    )
+          )
 	(send *pr2* :larm :end-coords :assoc *broom*)
   )
 

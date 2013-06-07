@@ -128,6 +128,9 @@
       (send *ri* :move-to (send *room610 :spot-moved-back-chair) :frame-id *room610-origin* )
     )
    )
+  (send *ri* :go-pos-unsafe 0.1 0 0)
+  (send *pr2* :translate #f(100 0 0))
+
   (use-tilt-laser-obstacle-cloud t)
 )
 
@@ -219,6 +222,7 @@
 (defun move-to-sweep ()
   (warn "move-to-sweep~%")
 ;  (rarm-tuck)
+#|
   (send *pr2* :angle-vector (send *ri* :state :potentio-vector))
   (let ((larm-end-coords (send *pr2* :larm :end-coords)))
     (send *pr2* :rarm :inverse-kinematics
@@ -240,7 +244,7 @@
   (if (boundp '*irtviewer*) (send *irtviewer* :draw-objects))
 
   (send *ri* :start-grasp)
-
+|#
   (use-tilt-laser-obstacle-cloud nil)
   (send *pr2* :move-to (send *room610* :spot-sweep-spot) :world)
   (send *ri* :move-to (send *room610* :spot-sweep-spot) :frame-id *room610-origin*)
