@@ -190,6 +190,7 @@
 
     (send *pr2* :arms :move-end-pos (send *pr2* :rotate-vector #f(0 0 400)))
     (send *pr2* :torso :waist-z :joint-angle 100)
+    (send *pr2* :larm :end-coords :dissoc *broom*)
     (send *ri* :angle-vector (send *pr2* :angle-vector))
     (send *ri* :wait-interpolation)
     )
