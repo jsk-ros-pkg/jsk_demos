@@ -1,3 +1,5 @@
+
+;; (progn (load "pick-broom.l")(pr2-reset-pose)(move-to-laundry) (open-door)(move-to-broom)(grasp-broom)) ;; to  test
 (defun pick-broom ()
   (let ((count 0))
     (warn "(pick-broom)~%")
@@ -114,6 +116,7 @@
     (if (boundp '*irtviewer*) (send *irtviewer* :draw-objects))
     ))
 
+;; (progn (load "pick-broom.l" )(bringup-broom-init)(bringup-broom)) ;; to test
 (defun bringup-broom ()
   (warn "(bringup-broom)~%")
   (let (av-list)
