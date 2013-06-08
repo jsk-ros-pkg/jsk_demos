@@ -105,23 +105,23 @@
                 :rotation-axis :z
                 :debug-view nil) av-list)
     (if (boundp '*irtviewer*) (send *irtviewer* :draw-objects))
-                                        ;  (send *ri* :angle-vector (send *pr2* :angle-vector) 1000)
+    ;;  (send *ri* :angle-vector (send *pr2* :angle-vector) 1000)
 
     (warn "right-hand~%")
     (push (send *pr2* :rarm :inverse-kinematics
                 (make-coords :pos (send *pr2* :transform-vector #f(530 60 650))
                              :rpy (list (deg2rad 70) 0 0))
                 :rotation-axis :z
-                                        ;		:rotation-axis t
+                                        ;;		:rotation-axis t
                 :debug-view nil) av-list)
     (if (boundp '*irtviewer*) (send *irtviewer* :draw-objects))
-                                        ;  (send *ri* :angle-vector (send *pr2* :angle-vector) 1500)
+    ;;  (send *ri* :angle-vector (send *pr2* :angle-vector) 1500)
 
     (send *pr2* :torso :waist-z :joint-angle 0)
     (push (send *pr2* :angle-vector) av-list)
     (if (boundp '*irtviewer*) (send *irtviewer* :draw-objects))
-                                        ;  (send *ri* :angle-vector (send *pr2* :angle-vector) 1200)
-                                        ;  (send *ri* :wait-interpolation)
+    ;;  (send *ri* :angle-vector (send *pr2* :angle-vector) 1200)
+    ;;  (send *ri* :wait-interpolation)
 
     (send *ri* :angle-vector-sequence (reverse av-list) (list 1000 1500 1200))
     (send *ri* :wait-interpolation)
