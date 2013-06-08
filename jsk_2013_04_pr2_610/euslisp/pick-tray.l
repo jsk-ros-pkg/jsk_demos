@@ -89,5 +89,5 @@
 
     ;; Go back 50cm
     (speak-en "I'm going back ATTENTION!")
-    (send *ri* :go-pos-unsafe -0.5 0 30)
+    (send *ri* :go-pos-unsafe -0.4 0 90)
     t))

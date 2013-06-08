@@ -77,5 +77,7 @@
 
     ;; for navigation
     (speak-en "DANGER go back 50 centimeters")
-    (send *ri* :go-pos-unsafe -0.5 0)
+    (send *ri* :go-pos-unsafe -1 0)
+    (send *pr2* :translate (float-vector -1000 0 0))
+
     ))
