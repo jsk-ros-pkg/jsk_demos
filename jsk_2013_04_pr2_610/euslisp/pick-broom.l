@@ -88,19 +88,43 @@
   (send *pr2* :larm :end-coords :dissoc *broom*)
   )
 
+;; for debug
+(defun bringup-broom-init ()
+  (let (target-coords ret)
+    (pr2-reset-pose)
+    (send *pr2* :larm :end-coords :dissoc *broom*)
+    (send *pr2* :move-to (send *room610* :spot-pick-broom-spot) :world)
+    (send *broom* :move-to (send (make-coords :pos (float-vector 650 -490 0)
+                                            :rpy (list pi/2 (deg2rad 4) 0))
+                                 :transform *laundry* :world)
+          :world)
+    (setq target-coords
+          (make-coords :pos (send (send *broom* :handle-larm) :worldpos)
+                     :rot
+                     (send (send (send *laundry* :copy-worldcoords) :rotate pi :z) :worldrot)))
+
+    (send *pr2* :reset-pose)
+    (setq ret
+          (send *pr2* :larm :inverse-kinematics
+                target-coords
+                :look-at-target t
+                ;;          :rotation-axis t
+                :rotation-axis t
+                :debug-view nil))
+    (if (boundp '*irtviewer*) (send *irtviewer* :draw-objects))
+    ))
+
 (defun bringup-broom ()
   (warn "(bringup-broom)~%")
-  (let (larm-rpy av-list)
+  (let (av-list)
+    (setq av-list nil)
     (send *pr2* :larm :end-coords :assoc *broom*)
-    (setq larm-rpy
-          (if (not (gripper-z-axis-inversed-p :larm))
-              (list (deg2rad -70) 0 0)
-            (list (deg2rad -70) 0 (deg2rad 180))))
 
     (warn "bring up~%")
+    ;; in pick-broom (grasp-broom), we use :rotation-axis t
     (push (send *pr2* :larm :inverse-kinematics
                 (make-cascoords :pos (send *pr2* :transform-vector #f(530 0 1300))
-                                :rpy larm-rpy)
+                                :rpy (list (deg2rad -70) 0 0))
                 :look-at-target t
                 :rotation-axis :z
                 :debug-view nil) av-list)
@@ -123,11 +147,13 @@
     ;;  (send *ri* :angle-vector (send *pr2* :angle-vector) 1200)
     ;;  (send *ri* :wait-interpolation)
 
+    (send *ri* :stop-grasp :rarm :wait t)
     (send *ri* :angle-vector-sequence (reverse av-list) (list 1000 1500 1200))
     (send *ri* :wait-interpolation)
     (send *ri* :start-grasp :rarm)
     (send *ri* :stop-grasp :larm)
     (send *pr2* :larm :end-coords :dissoc *broom*)
+    (if (boundp '*irtviewer*) (send *irtviewer* :draw-objects))
     (setq av-list nil)
     (warn "calib-pick-height~%")
     (let ((offset-l (send *pr2* :rotate-vector #f(0 -30 -500)))
