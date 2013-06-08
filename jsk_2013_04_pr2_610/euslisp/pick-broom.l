@@ -93,6 +93,7 @@
 ;; for debug
 (defun bringup-broom-init ()
   (let (target-coords ret)
+    (send *ri* :stop-grasp :arms :wait t)
     (pr2-reset-pose)
     (send *pr2* :larm :end-coords :dissoc *broom*)
     (send *pr2* :move-to (send *room610* :spot-pick-broom-spot) :world)
@@ -113,7 +114,11 @@
                 ;;          :rotation-axis t
                 :rotation-axis t
                 :debug-view nil))
+    (send *pr2* :torso :waist-z :joint-angle 100)
     (if (boundp '*irtviewer*) (send *irtviewer* :draw-objects))
+    (send *ri* :angle-vector (send *pr2* :angle-vector) 1200)
+    (send *ri* :wait-interpolation)
+    (send *ri* :start-grasp :larm)
     ))
 
 ;; (progn (load "pick-broom.l" )(bringup-broom-init)(bringup-broom)) ;; to test
@@ -143,18 +148,19 @@
                 :debug-view nil) av-list)
     (if (boundp '*irtviewer*) (send *irtviewer* :draw-objects))
     ;;  (send *ri* :angle-vector (send *pr2* :angle-vector) 1500)
-
-    (send *pr2* :torso :waist-z :joint-angle 0)
-    (push (send *pr2* :angle-vector) av-list)
-    (if (boundp '*irtviewer*) (send *irtviewer* :draw-objects))
-    ;;  (send *ri* :angle-vector (send *pr2* :angle-vector) 1200)
-    ;;  (send *ri* :wait-interpolation)
-
-    (send *ri* :stop-grasp :rarm :wait t)
-    (send *ri* :angle-vector-sequence (reverse av-list) (list 1000 1500 1200))
+    (send *ri* :angle-vector-sequence (reverse av-list) (list 1000 1500))
     (send *ri* :wait-interpolation)
-    (send *ri* :start-grasp :rarm)
-    (send *ri* :stop-grasp :larm)
+    ;; special command for casing grasp
+    (send *ri* :move-gripper :rarm 0.03 :effort 20)
+ 
+    ;; move torso down
+    (send *pr2* :torso :waist-z :joint-angle 0)
+    (if (boundp '*irtviewer*) (send *irtviewer* :draw-objects))
+    (send *ri* :angle-vector (send *pr2* :angle-vector) 500)
+    ;; special command for casing grasp
+    (send *ri* :move-gripper :arms 0.02 :effort 20)
+    (send *ri* :wait-interpolation)
+
     (send *pr2* :larm :end-coords :dissoc *broom*)
     (if (boundp '*irtviewer*) (send *irtviewer* :draw-objects))
     (setq av-list nil)
@@ -175,10 +181,11 @@
             :rotation-axis t
             :debug-view nil))
     (if (boundp '*irtviewer*) (send *irtviewer* :draw-objects))
+    (send *ri* :start-grasp :rarm)
     (send *ri* :angle-vector (send *pr2* :angle-vector))
     (send *ri* :wait-interpolation)
 
-    (send *ri* :start-grasp)
+    (send *ri* :start-grasp :larm)
     (send *pr2* :larm :end-coords :assoc *broom*)
 
     (send *pr2* :arms :move-end-pos (send *pr2* :rotate-vector #f(0 0 400)))
