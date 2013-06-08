@@ -87,9 +87,13 @@
 (defun move-to-sink ()
   (warn "move-to-sink~%")
   (use-tilt-laser-obstacle-cloud nil)
+  (change-inflation-range 1) ;;0.1
+  (ros::ros-info "*CAUTION* change-inflation to 1")
   (clear-costmap)
   (send *pr2* :move-to (send *room610* :spot-sink-spot) :world)
   (send *ri* :move-to (send *room610* :spot-sink-spot) :frame-id *room610-origin*)
+  (change-inflation-range 0.4) ;;0.1
+  (ros::ros-info "*CAUTION* change-inflation to 0.4")
   (use-tilt-laser-obstacle-cloud t)
   )
 
