@@ -107,8 +107,21 @@
     (dotimes (i 5)
       (send *ri* :angle-vector-sequence (list av-sweep1 av-sweep0) (list 1200 1200))
       (send *ri* :wait-interpolation))
-    (send *ri* :angle-vector av-grasp 1000)
+    (setq c0 (make-coords :pos (send *pr2* :transform-vector #f(800 600 1200)) :rpy (float-vector 0 0 0)))
+    (send *pr2* :inverse-kinematics
+          c0
+          :rotation-axis t
+          :move-target (send *pr2* :larm :end-coords)
+          :use-torso t
+          :look-at-target t
+          :debug-view nil)
+    (send *pr2* :rarm :angle-vector (cadr *pr2-tuckarm-pose-rarm-free*))
+    (setq av-grasp (send *pr2* :angle-vector))
+    (send *ri* :angle-vector av-grasp 500)
     (send *ri* :wait-interpolation)
+
+;;    (send *ri* :angle-vector av-grasp 1000)
+;;   (send *ri* :wait-interpolation)
     (sweep-under-table-init)
 
     ))
