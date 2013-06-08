@@ -1,0 +1,4 @@
+<launch>
+  <include file="$(find jsk_2013_04_pr2_610)/launch/detect-chair.launch" />
+  <include file="$(find jsk_2013_04_pr2_610)/launch/detect-laundry.launch" />
+</launch>
