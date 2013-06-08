@@ -53,7 +53,7 @@
   (send *room610* :assoc *pick-broom-spot*)
   (setq *sink-spot* (make-cascoords :pos #f(7300 200 0) :rpy (list 0 0 0)))
   (send *room610* :assoc *sink-spot*)
-  (setq *sweep-spot* (make-cascoords :pos #f(3550 -300 0) :rpy (list (deg2rad -30) 0 0)))
+  (setq *sweep-spot* (make-cascoords :pos #f(3450 -400 0) :rpy (list (deg2rad -40) 0 0)))
   (send *room610* :assoc *sweep-spot*)
   (setq *moved-back-chair-spot* (make-cascoords :pos #f(750 0 0) :rpy (list 0 0 0)))
   (send *room610* :assoc *moved-back-chair-spot*)
