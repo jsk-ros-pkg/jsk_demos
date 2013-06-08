@@ -1,228 +1,205 @@
+;; (progn (load "sweep-under-table.l")(sweep-under-table-init)(sweep-under-table))
+(defun sweep-under-table-init ()
+  (send *ri* :stop-grasp)
+  (send *pr2* :angle-vector #f(100.0 10.6748 2.30296 30.0196 -97.4113 107.346 -62.9762 171.355 -30.7465 10.2422 -59.3904 -105.095 -89.2577 -28.9264 174.513 -3.07712 54.4601))
+  (send *ri* :angle-vector (send *pr2* :angle-vector))
+  (send *ri* :wait-interpolation)
+  (send *ri* :start-grasp)
+  )
+
 (defun sweep-under-table ()
-  (warn "sweep-under-table (yukizaki)~%")
-  (ros::ros-debug "NOW SKIPPING SWEEP-UNDER-TABLE")
-  (ros::ros-debug "FOR TEST")
-  (return-from sweep-under-table)
-  (send *ri* :stop-grasp :rarm :wait t)
-  (let (z-axis)
-    (when nil ;; ?? debug
-      (send *pr2* :angle-vector (send *ri* :state :potentio-vector))
-      (setq z-axis (if (gripper-z-axis-inversed-p :larm) 0 180))
-      (send *ri* :stop-grasp :rarm)
-      (send *pr2* :reset-pose)
-      (send *pr2* :inverse-kinematics
-            (make-coords :pos (send *pr2* :transform-vector #f(800 600 900)) :rpy (float-vector 0 0 (deg2rad z-axis)))
-            :rotation-axis t
-            :move-target (send *pr2* :larm :end-coords)
-            :use-torso t
-            :debug-view nil)
-      (send *pr2* :head :look-at (send *pr2* :larm :end-coords :worldpos))
-      (send *ri* :angle-vector (send *pr2* :angle-vector) 1200)
-      (send *ri* :wait-interpolation)
+  (let (c0 c1 av-grasp av-sweep0 av-sweep1)
+    (warn "sweep-under-table (yukizaki)~%")
+    (send *ri* :stop-grasp :rarm :wait t)
 
-
-      (send *ri* :stop-grasp :larm)
-      (unix::sleep 2)
-      (send *ri* :wait-interpolation)
-      (send *pr2* :larm :move-end-pos #f(-500 0 0))
-      (send *ri* :angle-vector (send *pr2* :angle-vector) 1200)
-      (send *ri* :wait-interpolation)
-      (send *ri* :start-grasp :larm)
-      (send *ri* :wait-interpolation)
-      )
-
-    (setq z-axis (if (gripper-z-axis-inversed-p :larm) 0 180))
-
-
-
-
-
+    ;; grasp pose
+    (setq c0 (make-coords :pos (send *pr2* :transform-vector #f(800 600 1200)) :rpy (float-vector 0 0 0)))
     (send *pr2* :inverse-kinematics
-            (make-coords :pos (send *pr2* :transform-vector #f(800 600 900)) :rpy (float-vector 0 0 (deg2rad z-axis)))
-            :rotation-axis t
-            :move-target (send *pr2* :larm :end-coords)
-            :use-torso t
-            :debug-view nil)
-      (send *pr2* :head :look-at (send *pr2* :larm :end-coords :worldpos))
-      (send *ri* :angle-vector (send *pr2* :angle-vector) 1200)
-      (send *ri* :wait-interpolation)
+          c0
+          :rotation-axis t
+          :move-target (send *pr2* :larm :end-coords)
+          :use-torso t
+          :look-at-target t
+          :debug-view nil)
+    (send *pr2* :rarm :angle-vector (cadr *pr2-tuckarm-pose-rarm-free*))
+    (setq av-grasp (send *pr2* :angle-vector))
+    (send *ri* :angle-vector av-grasp 500)
+    (send *ri* :wait-interpolation)
+    ;; special command for casing grasp
+    (send *ri* :move-gripper :larm 0.02 :effort 20 :wait t)
 
-      (send *ri* :stop-grasp :larm :wait t)
-      (send *ri* :wait-interpolation)
-      (send *ri* :start-grasp :larm)
-      (send *ri* :wait-interpolation)
-
-
-
+    ;; grasp pose
+    ;; tmp code until https://sourceforge.net/p/jsk-ros-pkg/tickets/91/ fixed
+    ;;(send *pr2* :larm :move-end-pos #f(0 0 -500))
+    ;;(send *pr2* :head :look-at (send *pr2* :larm :end-coords :worldpos))
+    ;;(send *ri* :angle-vector (send *pr2* :angle-vector) 1000)
+    (send c0 :translate #f(0 0 -250) :world)
+    (send *pr2* :inverse-kinematics
+          c0
+          :rotation-axis t
+          :move-targe (send *pr2* :larm :end-coords)
+          :use-torso t
+          :look-at-target t
+          :debug-view nil)
+    (send *pr2* :head :look-at (send *pr2* :larm :end-coords :worldpos))
+    (setq av0 (send *pr2* :angle-vector))
+    (send c0 :translate #f(0 0 -250) :world)
+    (send *pr2* :inverse-kinematics
+          c0
+          :rotation-axis t
+          :move-target (send *pr2* :larm :end-coords)
+          :use-torso t
+          :look-at-target t
+          :debug-view nil)
+    (send *pr2* :head :look-at (send *pr2* :larm :end-coords :worldpos))
+    (setq av1 (send *pr2* :angle-vector))
+    (send *ri* :angle-vector-sequence (list av0 av1) (list 800 800))
+    (send *ri* :wait-interpolation)
 
     ;;sweep under table
-    (dotimes (i 3)
-      ;;   (send *pr2* :angle-vector start-sweep)
+    ;; ready pose
+    (setq c0 (make-coords :pos (send *pr2* :transform-vector #f(140 600 700)) :rpy (float-vector -0.2 -0.4 0)))
+    (setq c1 (make-coords :pos (send *pr2* :transform-vector (float-vector 640 500 500)) :rpy (float-vector 0 -0.7 0)))
+    (send *pr2* :inverse-kinematics
+          c0
+          :rotation-axis t
+          :revert-if-fail nil
+          :move-target (send *pr2* :larm :end-coords)
+          :use-torso t
+          :look-at-target t
+          :debug-view nil)
+    (setq av-sweep0 (send *pr2* :angle-vector))
+
+    ;; sweep pose
+    (send *pr2* :inverse-kinematics
+          c1
+          :rotation-axis t
+          :revert-if-fail nil
+          :move-target (send *pr2* :larm :end-coords)
+          :use-torso nil
+          :look-at-target t
+          :debug-view nil)
+    (setq av-sweep1 (send *pr2* :angle-vector))
+
+    ;; ready and grasp bloom
+    ;;(send *pr2* :angle-vector av0)
+    ;;(send *ri* :angle-vector av0 2500)
+    ;; tmp code until https://sourceforge.net/p/jsk-ros-pkg/tickets/91/ fixed
+    (let (tmp-av)
       (send *pr2* :inverse-kinematics
-            (make-coords :pos (send *pr2* :transform-vector #f(140 600 700)) :rpy (float-vector -0.2 -0.4 (deg2rad z-axis)))
+            (midcoords 0.5 c0 c1)
             :rotation-axis t
             :revert-if-fail nil
             :move-target (send *pr2* :larm :end-coords)
-            :link-list (send *pr2* :link-list
-                             (send *pr2* :larm :end-coords :parent)
-                             (send *pr2* :torso_lift_link))
+            :use-torso nil
+            :look-at-target t
             :debug-view nil)
-      (send *pr2* :look-at-hand :larm)
-      (if (boundp '*irtviewer*) (send *irtviewer* :draw-objects))
-      (send *ri* :angle-vector (send *pr2* :angle-vector) 1200)
-      (send *ri* :wait-interpolation)
-      ;;   (send *pr2* :angle-vector end-sweep)
-      (send *pr2* :inverse-kinematics
-            (make-coords :pos (send *pr2* :transform-vector (float-vector 640 (- 500 (* 150 i)) 500)) :rpy (float-vector 0 -0.7 (deg2rad z-axis)))
-            :rotation-axis t
-            :revert-if-fail nil
-            :move-target (send *pr2* :larm :end-coords)
-            :link-list (send *pr2* :link-list
-                             (send *pr2* :larm :end-coords :parent)
-                             (send *pr2* :torso_lift_link))
-            :debug-view nil)
-      (send *pr2* :look-at-hand :larm)
-      (if (boundp '*irtviewer*) (send *irtviewer* :draw-objects))
-      (send *ri* :angle-vector (send *pr2* :angle-vector) 1200)
-      (send *ri* :wait-interpolation)
-      )
+      (setq tmp-av (send *pr2* :angle-vector))
+      (send *ri* :angle-vector-sequence (list tmp-av av-sweep0) (list 1250 1250)))
+    (send *ri* :wait-interpolation)
+    ;;(send *ri* :start-grasp :larm)
+    ;; grsip tight
+    (send *ri* :move-gripper :larm 0.0 :effort 40 :wait t) ;; default effor is 20
 
-    (return-from sweep-under-table)
+    ;; start sweep
+    (dotimes (i 5)
+      (send *ri* :angle-vector-sequence (list av-sweep1 av-sweep0) (list 1200 1200))
+      (send *ri* :wait-interpolation))
+    (send *ri* :angle-vector av-grasp 1000)
+    (send *ri* :wait-interpolation)
+    ))
 
+(defun sweep-under-table-dual-arm ()
+  ;; we assume the robot aready in broon grasp pose, see (sweep-under-table-init)
+  (let (av0 av1
+            handle-larm handle-rarm offset-l offset-r
+                        av-grasp av-sweep0 av-sweep1)
+    (setq av-grasp (send *pr2* :angle-vector))
+    ;; 両手を前に
+    (send *pr2* :larm :move-end-pos #f(200 0 0) *pr2*)
+    (send *pr2* :rarm :move-end-pos #f(200 0 0) *pr2*)
+    (setq av0 (send *pr2* :angle-vector))
+    (send *ri* :angle-vector (send *pr2* :angle-vector) 800)
+    (send *ri* :wait-interpolation)
 
+    ;; down both hand
+    (send *broom* :move-to (make-coords :pos (transform #2f((1 0 0)(0 1 0)(0 0 0)) (send *pr2* :larm :end-coords :worldpos)) :rot (send *pr2* :worldrot)) :world)
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    ;;両手で
-    ;;make broom model
-    (setq *broom2* (room73b2-broom))
-    (objects (list *pr2* *broom2*))
-    (send *pr2* :assoc *broom2*)
-    (send *broom2* :locate #f(600 0 500) :parent)
-    (send *broom2* :orient (deg2rad 0) :y :parent)
-    ;;手首を正しく
-    (setq *handle-l* (make-coords :coords (send (car (send *broom2* :handle)) :worldcoords)))
-    (send *handle-l* :rotate (deg2rad z-axis) :x)
-
-    ;;左手を前に
-    (send *pr2* :reset-pose)
-    (send *pr2* :inverse-kinematics
-          *handle-l*
+    (setq handle-larm (send (send *broom* :handle-larm) :copy-worldcoords)
+          handle-rarm (send (send *broom* :handle-rarm) :copy-worldcoords)
+          offset-l #f(0 0 -200)
+          offset-r #f(0 0 -200))
+    (send *pr2* :larm :inverse-kinematics (send handle-larm :translate offset-l)
+          :look-at-target t
+          :rotation-axis :z
           :rotation-axis t
-          :move-target (send *pr2* :larm :end-coords)
-          :use-torso t
           :debug-view nil)
+    (send *pr2* :rarm :inverse-kinematics (send handle-rarm :translate offset-r)
+          :look-at-target nil
+          :rotation-axis :z
+          :rotation-axis t
+          :debug-view nil)
+    (if (boundp '*irtviewer*) (send *irtviewer* :draw-objects))
+    ;; special command for casing grasp
+    (send *ri* :move-gripper :arms 0.02 :effort 20)
     (send *ri* :angle-vector (send *pr2* :angle-vector) 1200)
+
+    ;; ready pose
+    (send *broom* :orient (deg2rad -20) :y) ;; -40
+    (send *broom* :orient (deg2rad -20) :x)
+    (setq handle-larm (send (send *broom* :handle-larm) :copy-worldcoords)
+          handle-rarm (send (send *broom* :handle-rarm) :copy-worldcoords)
+          offset-l #f(0 0 -200)
+          offset-r #f(0 0 -200))
+
+    (send *pr2* :larm :inverse-kinematics (send handle-larm :translate offset-l)
+          :look-at-target *broom*
+          :rotation-axis :z
+          :rotation-axis t
+          :debug-view nil)
+    (send *pr2* :rarm :inverse-kinematics (send handle-rarm :translate offset-r)
+          :look-at-target nil
+          :rotation-axis :z
+          :rotation-axis t
+          :debug-view nil)
+    (if (boundp '*irtviewer*) (send *irtviewer* :draw-objects))
+    (setq av-sweep0 (send *pr2* :angle-vector))
+    ;; tmp code until https://sourceforge.net/p/jsk-ros-pkg/tickets/91/ fixed
+    (send *ri* :angle-vector (send *pr2* :angle-vector) 1000)
+    ;(setq av1 (send *pr2* :angle-vector))
+    ;(dotimes (i 50) (send *pr2* :angle-vector (midpoint (/ i 50.0) av0 av1))(send *irtviewer* :draw-objects))    (send *ri* :angle-vector-sequence (list (midpoint 0.5 av0 av1) av1) (list 2000 2000))
+    (send *ri* :wait-interpolation)
+    ;; grsip tight
+    (send *ri* :move-gripper :rarm 0.0 :effort 40 :wait t) ;; default effor is 20
+
+
+    ;; sweep motion
+    (send *broom* :translate #f(300 -300 0) *pr2*)
+    (setq handle-larm (send (send *broom* :handle-larm) :copy-worldcoords)
+          handle-rarm (send (send *broom* :handle-rarm) :copy-worldcoords)
+          offset-l #f(0 0 -100)
+          offset-r #f(0 0 -200))
+
+    (send *pr2* :larm :inverse-kinematics (send handle-larm :translate offset-l)
+          :look-at-target nil
+          :rotation-axis :z
+          :rotation-axis t
+          :debug-view nil)
+    (send *pr2* :rarm :inverse-kinematics (send handle-rarm :translate offset-r)
+          :look-at-target *broom*
+          :rotation-axis :z
+          :rotation-axis t
+          :debug-view nil)
+    (if (boundp '*irtviewer*) (send *irtviewer* :draw-objects))
+    (setq av-sweep1 (send *pr2* :angle-vector))
+    ;; special command for casing grasp
+    (send *ri* :angle-vector av-sweep0 2000)
     (send *ri* :wait-interpolation)
 
-    (send *broom2* :locate #f(600 0 0) :parent)
-    (setq *handle-l* (make-coords :coords (send (car (send *broom2* :handle)) :worldcoords)))
-    (send *handle-l* :rotate (deg2rad z-axis) :x)
-    (send *pr2* :reset-pose)
-    (send *pr2* :inverse-kinematics
-          *handle-l*
-          :rotation-axis t
-          :move-target (send *pr2* :larm :end-coords)
-          :use-torso t
-          :debug-view nil)
-    (send *ri* :angle-vector (send *pr2* :angle-vector) 1200)
+    (dotimes (i 5)
+      (send *ri* :angle-vector-sequence (list av-sweep1 av-sweep0) (list 1200 1200))
+      (send *ri* :wait-interpolation))
+    (send *ri* :angle-vector av-grasp 1000)
     (send *ri* :wait-interpolation)
-    ;;右手を開いて前に
-    (send *ri* :stop-grasp :rarm)
-    (send *ri* :wait-interpolation)
-    (unix::sleep 2)
-    (send *pr2* :inverse-kinematics
-          (car (cdr (send *broom2* :handle)))
-          :rotation-axis t
-          :move-target (send *pr2* :rarm :end-coords)
-          :use-torso t
-          :debug-view nil)
-    (send *pr2* :rarm :move-end-pos #f(60 0 0))
-    (send *ri* :angle-vector (send *pr2* :angle-vector) 1200)
-    (send *ri* :wait-interpolation)
-    (unix:sleep 2)
+    ))
 
-    ;;右手でつかむ
-    (send *ri* :start-grasp :rarm)
-    (unix:sleep 5)
-
-    ;;左手掴み直し
-    (send *ri* :stop-grasp :larm)
-    (send *pr2* :larm :move-end-pos #f(-200 0 0))
-    (send *ri* :angle-vector (send *pr2* :angle-vector) 1200)
-    (send *ri* :wait-interpolation)
-    (unix:sleep 2)
-    (send *pr2* :inverse-kinematics
-          (car (send *broom2* :handle))
-          :rotation-axis t
-          :move-target (send *pr2* :larm :end-coords)
-          :use-torso t
-          :debug-view t)
-    (send *ri* :angle-vector (send *pr2* :angle-vector) 1200)
-    (send *ri* :wait-interpolation)
-    (unix:sleep 2)
-    (send *ri* :start-grasp :larm)
-    (unix:sleep 5)
-
-    (send *broom2* :locate #f(900 0 0) :parent)
-    (send *broom2* :orient (deg2rad -30) :y :parent)
-    ;;sweep start
-    (send *pr2* :reset-pose)
-    (send *pr2* :inverse-kinematics
-          (car (cdr (send *broom2* :handle)))
-          :rotation-axis t
-          :move-target (send *pr2* :rarm :end-coords)
-          :use-torso t
-          :debug-view nil)
-    (send *pr2* :inverse-kinematics
-          (car (send *broom2* :handle))
-          :rotation-axis t
-          :move-target (send *pr2* :larm :end-coords)
-          :use-torso t
-          :debug-view nil)
-    (send *ri* :angle-vector (send *pr2* :angle-vector) 1200)
-    (send *ri* :wait-interpolation)
-
-    (send *broom2* :locate #f(1200 0 -150) :parent)
-    (send *broom2* :orient (deg2rad -55) :y :parent)
-    ;;sweep end
-    (send *pr2* :reset-pose)
-    (send *pr2* :inverse-kinematics
-          (car (cdr (send *broom2* :handle)))
-          :rotation-axis t
-          :move-target (send *pr2* :rarm :end-coords)
-          :use-torso t
-          :debug-view nil)
-    (send *pr2* :inverse-kinematics
-          (car (send *broom2* :handle))
-          :rotation-axis t
-          :move-target (send *pr2* :larm :end-coords)
-          :use-torso t
-          :debug-view nil)
-    (send *ri* :angle-vector (send *pr2* :angle-vector) 1200)
-    (send *ri* :wait-interpolation)
-
-))
