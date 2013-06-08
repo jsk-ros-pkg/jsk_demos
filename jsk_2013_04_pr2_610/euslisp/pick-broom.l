@@ -2,13 +2,6 @@
   (let ((count 0))
     (warn "(pick-broom)~%")
 
-    ;; move broom
-    (send *broom* :move-to (send (make-coords :pos (float-vector 600 -590 0)
-                                              :rpy (list pi/2 (deg2rad 4) 0))
-                                 :transform *laundry* :world)
-          :world)
-
-
     ;; debug
     (warn "*pr2*: ~A~%" *pr2*)
     (warn "*laundry*: ~A~%" *laundry*)
@@ -22,6 +15,7 @@
     (setq count 0)
     (while (null (grasp-broom))
       (incf count)
+      (move-to-broom)
       (if (> count 3) (return-from pick-broom nil)))
     (goback-broom)
     (bringup-broom)
@@ -29,40 +23,60 @@
 
 (defun grasp-broom ()
   (warn "(grasp-broom)~%")
-  (let ((c (send (send *broom* :handle-larm) :copy-worldcoords))
-        (laundry-coords (send *laundry* :copy-worldcoords)) ret)
-    (send c :translate #f(100 0 0) *laundry*)
+  (let (av0 av1 target-coords laundry-coords ret)
+    ;; move robot position
+    (send *pr2* :move-to (send *ri* :state :worldcoords *room610-origin*) :world)
+
+    ;; move broom
+    (send *pr2* :larm :end-coords :dissoc *broom*)
+    (send *broom* :move-to (send (make-coords :pos (float-vector 650 -490 0)
+                                              :rpy (list pi/2 (deg2rad 4) 0))
+                                 :transform *laundry* :world)
+          :world)
+    (if (boundp '*irtviewer*) (send *irtviewer* :draw-objects))
+
+    (setq target-coords 
+          (make-coords :pos (send (send *broom* :handle-larm) :worldpos)
+                       :rot 
+                       (send (send (send *laundry* :copy-worldcoords) :rotate pi :z) :worldrot)))
+
+    (send *pr2* :reset-pose)
     (setq ret
           (send *pr2* :larm :inverse-kinematics
-                (make-coords :pos (send c :worldpos)
-                             :rpy (elt (send (send laundry-coords :rotate pi :z) :rpy-angle) 0))
+                target-coords
                 :look-at-target t
-                                        ;          :rotation-axis t
-                :rotation-axis :z
+                ;;          :rotation-axis t
+                :rotation-axis t
                 :debug-view nil))
+    (when (boundp '*irtviewer*)
+      (send *irtviewer* :draw-objects)
+      (send target-coords :draw-on :flush t :size 500))
+
     (unless ret
       (ros::ros-error "could not solve ik to grasp broom")
       (speak-en "Could not reach to the broom")
       (return-from grasp-broom nil))
 	
-    (send *ri* :angle-vector (send *pr2* :angle-vector))
+    (setq av1 (send *pr2* :angle-vector))
+    (send *pr2* :larm :move-end-pos #f(-100 0 0)) ;; via point
+    (setq av0 (send *pr2* :angle-vector))
+
+    (send *ri* :angle-vector-sequence (list av0 av1) (list 1000 1500))
     (send *ri* :wait-interpolation)
 
-    (send *pr2* :larm :move-end-pos #f(100 0 0))
-    (send *ri* :angle-vector (send *pr2* :angle-vector))
-    (send *ri* :wait-interpolation)
-
-	(while (< (send *ri* :start-grasp :larm) 2.0)
-	  (send *ri* :stop-grasp :larm :wait t)
-	  (speak-jp "ほうきとれなかった")
-	  (unix:sleep 2)
-          )
-	(send *pr2* :larm :end-coords :assoc *broom*)
-  )
+    (when (< (send *ri* :start-grasp :larm) 3.0)
+      (send *ri* :stop-grasp :larm :wait t)
+      (speak-jp "ほうきとれなかった")
+      (send *ri* :angle-vector av0)
+      (send *ri* :stop-grasp :larm :wait nil)
+      (return-from grasp-broom nil)
+      )
+    t))
 
 
 (defun goback-broom ()
   (warn "go backward~%")
+  (send *pr2* :larm :end-coords :assoc *broom*)
   (send *pr2* :torso :waist-z :joint-angle 100)
   (send *ri* :angle-vector (send *pr2* :angle-vector) 1200)
 
@@ -71,11 +85,13 @@
   (send *pr2* :translate #f(-500 0 0))
   (send *ri* :go-pos-unsafe -0.5 0 0)
   (send *ri* :wait-interpolation)
+  (send *pr2* :larm :end-coords :dissoc *broom*)
   )
 
 (defun bringup-broom ()
   (warn "(bringup-broom)~%")
   (let (larm-rpy av-list)
+  (send *pr2* :larm :end-coords :assoc *broom*)
   (setq larm-rpy
         (if (not (gripper-z-axis-inversed-p :larm))
             (list (deg2rad -70) 0 0)
