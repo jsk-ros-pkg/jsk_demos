@@ -1,6 +1,6 @@
 ;; (progn (load "sweep-under-table.l")(sweep-under-table-init)(sweep-under-table))
 (defun sweep-under-table-init ()
-  (send *ri* :stop-grasp)
+  (send *ri* :stop-grasp :rarm)
   (send *pr2* :angle-vector #f(100.0 10.6748 2.30296 30.0196 -97.4113 107.346 -62.9762 171.355 -30.7465 10.2422 -59.3904 -105.095 -89.2577 -28.9264 174.513 -3.07712 54.4601))
   (send *ri* :angle-vector (send *pr2* :angle-vector))
   (send *ri* :wait-interpolation)
@@ -11,6 +11,8 @@
   (let (c0 c1 av-grasp av-sweep0 av-sweep1)
     (warn "sweep-under-table (yukizaki)~%")
     (send *ri* :stop-grasp :rarm :wait t)
+
+    (setq before-sweep-left-hand (send (send *pr2* :larm :end-coords) :copy-worldcoords))
 
     ;; grasp pose
     (setq c0 (make-coords :pos (send *pr2* :transform-vector #f(800 600 1200)) :rpy (float-vector 0 0 0)))
@@ -107,6 +109,8 @@
       (send *ri* :wait-interpolation))
     (send *ri* :angle-vector av-grasp 1000)
     (send *ri* :wait-interpolation)
+    (sweep-under-table-init)
+
     ))
 
 (defun sweep-under-table-dual-arm ()
