@@ -39,7 +39,7 @@
   (send *laundry* :translate #f(-260 -30 -125) (send *room610* :worldcoords))
 
   ;; spots
-  (setq *tray-spot* (make-cascoords :pos #f(5050 700 0) :rpy (list -pi/2 0 0)))
+  (setq *tray-spot* (make-cascoords :pos #f(5000 700 0) :rpy (list -pi/2 0 0)))
   (send *room610* :assoc *tray-spot*)
   (setq *chair-spot* (make-cascoords :pos #f(3650 50 0) :rpy (list 0 0 0)))
   (send *room610* :assoc *chair-spot*)
@@ -55,7 +55,7 @@
   (send *room610* :assoc *sink-spot*)
   (setq *sweep-spot* (make-cascoords :pos #f(3550 -300 0) :rpy (list (deg2rad -30) 0 0)))
   (send *room610* :assoc *sweep-spot*)
-  (setq *moved-back-chair-spot* (make-cascoords :pos #f(550 0 0) :rpy (list 0 0 0)))
+  (setq *moved-back-chair-spot* (make-cascoords :pos #f(750 0 0) :rpy (list 0 0 0)))
   (send *room610* :assoc *moved-back-chair-spot*)
 
   ;;after move-to, save the pos
@@ -87,25 +87,27 @@
 (defun move-to-sink ()
   (warn "move-to-sink~%")
   (use-tilt-laser-obstacle-cloud nil)
-  (change-inflation-range 1) ;;0.1
-  (ros::ros-info "*CAUTION* change-inflation to 1")
   (clear-costmap)
   (send *pr2* :move-to (send *room610* :spot-sink-spot) :world)
   (send *ri* :move-to (send *room610* :spot-sink-spot) :frame-id *room610-origin*)
-  (change-inflation-range 0.4) ;;0.1
-  (ros::ros-info "*CAUTION* change-inflation to 0.4")
   (use-tilt-laser-obstacle-cloud t)
   )
 
 (defun move-to-chair ()
   (warn "move-to-chair~%")
-  (pr2-tuckarm-pose)
-;  (use-tilt-laser-obstacle-cloud nil)
+
+  ;;kamae
+  (larm-tuck)
+  (send *pr2* :rarm :angle-vector #f(-40.0 -20.0 0.0 -70.0 -70.0 -90.0 0.0))
+  (if (boundp '*irtviewer*) (send *irtviewer* :draw-objects))
+  (send *ri* :angle-vector (send *pr2* :angle-vector) 1000)
+  (send *ri* :stop-grasp :rarm )
+
+  (use-tilt-laser-obstacle-cloud nil)
   (clear-costmap)
   (send *pr2* :move-to (send *room610* :spot-chair-spot) :world)
   (send *ri* :move-to (send *room610* :spot-chair-spot) :frame-id *room610-origin*)
-;  (use-tilt-laser-obstacle-cloud t)
-  (pr2-reset-pose)
+  (use-tilt-laser-obstacle-cloud t)
   )
 
 (defun move-to-chair2 ()
@@ -129,7 +131,7 @@
     (progn
       (ros::ros-error "I Don't now where *moved-chair-spot*")
       (send *pr2* :move-to (send *room610* :spot-moved-back-chair) :world)
-      (send *ri* :move-to (send *room610 :spot-moved-back-chair) :frame-id *room610-origin* )
+      (send *ri* :move-to (send *room610* :spot-moved-back-chair) :frame-id *room610-origin* )
     )
    )
   (send *ri* :go-pos-unsafe 0.1 0 0)
@@ -220,8 +222,20 @@
 (send *pr2* :rarm :shoulder-p  :joint-angle 69.8)
 (send *pr2* :rarm :collar-y  :joint-angle -5.05)
 (send *ri* :angle-vector (send *pr2* :angle-vector))
-(send *ri* :wait-interpolation)
 )
+
+(defun larm-tuck ()
+(send *pr2* :angle-vector (send *ri* :state :potentio-vector))
+(send *pr2* :larm :wrist-r  :joint-angle 20)
+(send *pr2* :larm :wrist-p  :joint-angle -5)
+(send *pr2* :larm :elbow-r  :joint-angle 69)
+(send *pr2* :larm :elbow-p  :joint-angle -90)
+(send *pr2* :larm :shoulder-r  :joint-angle 79)
+(send *pr2* :larm :shoulder-p  :joint-angle 60)
+(send *pr2* :larm :collar-y  :joint-angle 0)
+(send *ri* :angle-vector (send *pr2* :angle-vector))
+)
+
 
 (defun move-to-sweep ()
   (warn "move-to-sweep~%")
@@ -249,6 +263,7 @@
 
   (send *ri* :start-grasp)
 |#
+  (sweep-under-table-init)
   (use-tilt-laser-obstacle-cloud nil)
   (send *pr2* :move-to (send *room610* :spot-sweep-spot) :world)
   (send *ri* :move-to (send *room610* :spot-sweep-spot) :frame-id *room610-origin*)

@@ -17,7 +17,7 @@
 (defparameter *grasp-success-threshold* 10)
 
 ;;loop counter threshold for start-detect-chair
-(defparameter *detect-chair-loop-threshold* 1)
+(defparameter *detect-chair-loop-threshold* 0)
 ;;
 
 
@@ -45,9 +45,9 @@
 		(ros::ros-info "chair- pos info ~A after trans" *chair*)
       		(send *pr2* :head :look-at (send(send *chair* :handle-above-rarm) :worldpos))
       		(send *ri* :angle-vector (send *pr2* :angle-vector))
+                (push (send *chair* :worldcoords) chair-coords)
 	))
 
-      (push (send *chair* :worldcoords) chair-coords)
 
       ;;wait a few loop
       (when (> loop-counter *detect-chair-loop-threshold*)
