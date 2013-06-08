@@ -15,9 +15,9 @@
     (warn "*broom*: ~A~%" *broom*)
 
     ;; move pr2 to pick-broom spot
-    (pr2-reset-pose)  ;; debug
     (send *ri* :stop-grasp :larm :wait nil)
     (send *pr2* :move-to (send *room610* :spot-pick-broom-spot) :world)
+    (pr2-reset-pose)  ;; debug
 
     (setq count 0)
     (while (null (grasp-broom))
