@@ -265,6 +265,7 @@
   (send *ri* :start-grasp)
 |#
   (sweep-under-table-init-slim)
+  (rehold-mop)
 ;;  (sweep-under-table-init)
   (use-tilt-laser-obstacle-cloud nil)
   (send *pr2* :move-to (send *room610* :spot-sweep-spot) :world)
