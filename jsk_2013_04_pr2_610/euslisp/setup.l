@@ -134,8 +134,7 @@
       (send *ri* :move-to (send *room610* :spot-moved-back-chair) :frame-id *room610-origin* )
     )
    )
-  (send *ri* :go-pos-unsafe 0.1 0 0)
-  (send *pr2* :translate #f(100 0 0))
+
 
   (use-tilt-laser-obstacle-cloud t)
 )
@@ -167,6 +166,8 @@
   (warn "move-to-laundry~%")
   (let (current-ri-coordsmou-chotto-pos mou-chotto-local-pos mou-chotto-roll)
     (use-tilt-laser-obstacle-cloud nil)
+    (send *pr2* :reset-pose)
+    (send *ri* :angle-vector (send *pr2* :angle-vector) 2000)
     (send *pr2* :move-to (send *room610* :spot-laundry-spot) :world)
     (send *ri* :move-to (send *room610* :spot-laundry-spot) :frame-id *room610-origin*)
 #|    (cond 
@@ -263,7 +264,8 @@
 
   (send *ri* :start-grasp)
 |#
-  (sweep-under-table-init)
+  (sweep-under-table-init-slim)
+;;  (sweep-under-table-init)
   (use-tilt-laser-obstacle-cloud nil)
   (send *pr2* :move-to (send *room610* :spot-sweep-spot) :world)
   (send *ri* :move-to (send *room610* :spot-sweep-spot) :frame-id *room610-origin*)

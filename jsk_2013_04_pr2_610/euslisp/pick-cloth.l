@@ -63,5 +63,8 @@
     (send *ri* :start-grasp :rarm)
     (send *ri* :wait-interpolation)
     (send *ri* :angle-vector (send *pr2* :angle-vector) 1000)
+    (send *ri* :go-pos-unsafe -0.4 0 0)
+    (send *pr2* :translate #f(-400 0 0))
     (send *ri* :wait-interpolation)
+
     ))
