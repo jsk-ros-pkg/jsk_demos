@@ -26,14 +26,16 @@
 
     ;; for navigation
     (speak-en "DANGER go 30 centimeter.")
-    (send *ri* :go-pos-unsafe 0.29 0)
+    ;;(send *ri* :go-pos-unsafe 0.29 0)
+    (send *ri* :go-pos-unsafe 0.34 0)
 
     (send *pr2* :arms :move-end-pos (float-vector 0 0 (- (- table-height yokei-down-height) (elt p 2))) :world)
     (send *ri* :angle-vector (send *pr2* :angle-vector))
     (send *ri* :wait-interpolation)
 #|
     (dolist (offset (list (cons #f(0 30 0) #f(0 -30 0)) (cons #f(0 60 0) #f(0 -60 0))))
-      (send *pr2* :inverse-kinematics
+      (send *pr2* :inverse-kinemat
+\cs
             (list
              (send (send tray-larm-handle :copy-worldcoords) :translate (car offset))  ;; use local coords, this cod works if tray is placed on different orientation
              (send (send tray-rarm-handle :copy-worldcoords) :translate (cdr offset)))
@@ -44,8 +46,7 @@
             :use-torso t
             :revert-if-fail nil
             :look-at-target (midpoint 0.5 (send tray-larm-handle :worldpos) (send tray-rarm-handle :worldpos))
-            )
-      (if (boundp '*irtviewer*) (send *irtviewer* :draw-objects))
+            )      (if (boundp '*irtviewer*) (send *irtviewer* :draw-objects))
 
       (send *ri* :angle-vector (send *pr2* :angle-vector) 1000)
       (send *ri* :wait-interpolation)

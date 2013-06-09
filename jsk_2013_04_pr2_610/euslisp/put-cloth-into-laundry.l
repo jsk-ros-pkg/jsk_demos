@@ -19,7 +19,7 @@
 )
 
 (defun put-cloth ()
-  (pr2-reset-pose)  ;; debug
+  ;;(pr2-reset-pose)  ;; debug
   (send *pr2* :larm :collar-y :joint-angle 90)
   (send *ri* :angle-vector (send *pr2* :angle-vector))
   (open-door)

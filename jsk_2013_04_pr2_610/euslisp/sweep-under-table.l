@@ -7,6 +7,17 @@
   (send *ri* :start-grasp)
   )
 
+
+
+(defun sweep-under-table-init-slim ()
+  (send *ri* :stop-grasp :rarm)
+  (send *pr2* :angle-vector #f(113.438 58.9369 57.6647 65.3248 -116.158 68.5206 -69.8531 252.361 -64.9854 47.4221 -64.6623 -102.165 -53.8258 -76.5718 96.786 -31.679 63.096))
+  (send *ri* :angle-vector (send *pr2* :angle-vector))
+  (send *ri* :wait-interpolation)
+  (send *ri* :start-grasp)
+  )
+
+
 (defun sweep-under-table ()
   (let (c0 c1 av-grasp av-sweep0 av-sweep1)
     (warn "sweep-under-table (yukizaki)~%")
@@ -122,7 +133,7 @@
 
 ;;    (send *ri* :angle-vector av-grasp 1000)
 ;;   (send *ri* :wait-interpolation)
-    (sweep-under-table-init)
+    (sweep-under-table-init-slim)
 
     ))
 
