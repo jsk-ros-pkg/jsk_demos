@@ -353,8 +353,8 @@
     (send *ri* :angle-vector (send *pr2* :angle-vector))
     (send *ri* :wait-interpolation)
 
-    (send *ri* :go-pos-unsafe 0.1 0 0)
-    (send *pr2* :translate #f(100 0 0))
+    (send *ri* :go-pos-unsafe 0.2 0 0)
+    (send *pr2* :translate #f(200 0 0))
     (setq before-pose (send *ri* :potentio-vector))
 
     ;; start detecting char and grasp chair
@@ -455,8 +455,8 @@
 
     ;;pull *chair* a little bit to me
       (send *pr2* :inverse-kinematics (list 
-                                       (send  (send (send *pr2* :rarm :end-coords) :copy-worldcoords) :translate (float-vector -150 0 0) (send *chair* :worldcoords))
-                                       (send  (send (send *pr2* :larm :end-coords) :copy-worldcoords) :translate (float-vector -150 0 0) (send *chair* :worldcoords))
+                                       (send  (send (send *pr2* :rarm :end-coords) :copy-worldcoords) :translate (float-vector -50 0 0) (send *chair* :worldcoords))
+                                       (send  (send (send *pr2* :larm :end-coords) :copy-worldcoords) :translate (float-vector -50 0 0) (send *chair* :worldcoords))
                                        )
             :link-list (list
                         (send *pr2* :link-list (send *pr2* :rarm :end-coords :parent))
