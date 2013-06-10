@@ -246,7 +246,7 @@
 
 
 (defun detect-chair ()
-  (ros::subscribe "/scan_filtered2"
+  (ros::subscribe "/scan_filtered_foot"
 		  sensor_msgs::LaserScan
 		  #'chair-detection-cb)
 
