@@ -33,8 +33,8 @@
     (ros::ros-info "end detect chair")
 ;;----------------------------------------------------------------
 
-
-
+    (send *pr2* :head :look-at (send *chair* :worldpos))
+    (send *ri* :angle-vector (send *pr2* :angle-vector) 2000)
 
 
     ;;grasp
@@ -55,6 +55,7 @@
     (send *ri* :angle-vector (send *pr2* :angle-vector) 2000)
     (send *ri* :wait-interpolation)
     (send *ri* :start-grasp :rarm) ;; wait motion and grasp
+    (send *ri* :start-grasp :rarm) ;; wait motion and grasp ;; make sure that we really grasp cloth
 
     ;;lift up
     (send *pr2* :rarm :angle-vector #f(-20.0 -20.0 0.0 -70.0 -70.0 -90.0 0.0))

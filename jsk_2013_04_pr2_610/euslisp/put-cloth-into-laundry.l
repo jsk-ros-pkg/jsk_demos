@@ -105,18 +105,28 @@
 	(send *pr2* :rarm :move-end-pos #f(0 50 0) :local)
     (send *ri* :angle-vector (send *pr2* :angle-vector) 2000)
     (send *ri* :wait-interpolation)
-
-	(send *pr2* :rarm :move-end-pos #f(-150 20 0) :local)
-    (send *ri* :angle-vector (send *pr2* :angle-vector) 2000)
+    (print (send *pr2* :angle-vector))
+    ;; (send *pr2* :angle-vector #f(50.1227 60.001 74.0183 70.0105 -120.007 20.0093 -30.0151 179.983 -21.4518 -12.461 -92.2449 -90.2698 -137.645 -64.4394 -107.972 -8.057 39.66))
+    (send *pr2* :rarm :move-end-pos #f(-160 20 0) :local)
+    (send *ri* :angle-vector (send *pr2* :angle-vector) 500)
+    (send *pr2* :rarm :move-end-pos #f(0 100 0) :local)
+    (send *ri* :angle-vector (send *pr2* :angle-vector) 500)
+    (send *pr2* :rarm :move-end-pos #f(0 -120 0) :local)
+    (send *ri* :angle-vector (send *pr2* :angle-vector) 500)
     (send *ri* :wait-interpolation)
 
 
     ;; pull arm for preventing collision
 ;    (send *pr2* :rarm :move-end-pos #f(-200 0 0))
 ;    (send *pr2* :rarm :move-end-pos #f(-50 0 -150) :local)
-	(send *pr2* :rarm :move-end-pos #f(0 0 -150) :local)
+    ;; (send *pr2* :angle-vector #f(50.1267 60.3763 74.0134 70.0105 -120.007 20.0093 -29.9977 180.001 -21.2988 -19.3232 -86.5519 -104.83 -133.433 -78.0176 -101.325 -8.033 39.834))
+    (send *pr2* :rarm :move-end-pos #f(0 -80 0) :local)
     (send *ri* :angle-vector (send *pr2* :angle-vector) 500)
-    ;(send *ri* :wait-interpolation)
+    (send *ri* :wait-interpolation)
+
+    (send *pr2* :rarm :move-end-pos #f(0 -100 -150) :local)
+    (send *ri* :angle-vector (send *pr2* :angle-vector) 500)
+    (send *ri* :wait-interpolation)
     )
   )
 
@@ -148,7 +158,7 @@
 	  :debug-view nil
 	  :revert-if-fail nil)
 |#
-	(send *pr2* :rarm :move-end-pos #f(200 0 -100) :local)
+    (send *pr2* :rarm :move-end-pos #f(200 0 -100) :local)
     (send *ri* :angle-vector (send *pr2* :angle-vector) 2000)
     (send *ri* :wait-interpolation)
 
@@ -215,7 +225,7 @@
 	  :debug-view nil
 	  :revert-if-fail nil)
     (send *ri* :angle-vector (send *pr2* :angle-vector) 500)
-    (send *ri* :wait-interpolation)
+    ;(send *ri* :wait-interpolation)
     )
   )
 

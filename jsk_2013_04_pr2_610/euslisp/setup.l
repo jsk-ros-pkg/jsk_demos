@@ -9,6 +9,7 @@
 (load "package://jsk_2013_04_pr2_610/euslisp/pick-cloth.l")
 (load "package://jsk_2013_04_pr2_610/euslisp/pick-tray.l")
 (load "package://jsk_2013_04_pr2_610/euslisp/move-chair.l")
+(load "package://jsk_2013_04_pr2_610/euslisp/move-table.l")
 (load "package://jsk_2013_04_pr2_610/euslisp/place-tray.l")
 (load "package://jsk_2013_04_pr2_610/euslisp/sweep-under-table.l")
 (load "package://jsk_2013_04_pr2_610/euslisp/pick-broom.l")
@@ -26,6 +27,8 @@
   (setq *table-coords* (make-coords :pos #f(4700 1000 0) :rpy (float-vector -pi/2 0 0)))
   (setq *chair-coords* (make-coords :pos #f(3800 0 0)))
 
+  (setq *table* (send *room610* :object "room610-table"))
+  (send *table* :locate #f(4700 1000 0) :world)
   (setq *tray* (send *room610* :object "room610-tray"))
   (send *tray* :locate #f(5050.0 0.0 700.0) :world)
   (setq *broom* (send *room610* :object "room610-sweeper"))
@@ -97,10 +100,11 @@
   (warn "move-to-chair~%")
 
   ;;kamae
-  (larm-tuck)
+  ;;(larm-tuck)
+  (pr2-tuckarm-pose :rarm)
   (send *pr2* :rarm :angle-vector #f(-40.0 -20.0 0.0 -70.0 -70.0 -90.0 0.0))
   (if (boundp '*irtviewer*) (send *irtviewer* :draw-objects))
-  (send *ri* :angle-vector (send *pr2* :angle-vector) 1000)
+  (send *ri* :angle-vector (send *pr2* :angle-vector) 10000)
   (send *ri* :stop-grasp :rarm )
 
   (use-tilt-laser-obstacle-cloud nil)
@@ -283,38 +287,39 @@
 
 (defun sweep-floor ()
   (warn "sweep-floor (furuta)~%")
-  (furuta-sweep)
+  ;(furuta-sweep)
   )
 
 
 (defun demo ()
+  (setup)
   (pr2-reset-pose)
 
-  (move-to-table)
+  (while (not (move-to-table)))
   (pick-tray)
   ;;
-  (move-to-sink)
+  (while (not (move-to-sink)))
   (place-tray)
   ;;
-  (move-to-chair)
+  (while (not (move-to-chair)))
   (pick-cloth)
   ;;
-  (move-to-laundry)
+  (while (not (move-to-laundry)))
   (put-cloth)
   ;;
-  (move-to-broom)
+  (while (not (move-to-broom)))
   (pick-broom)
   ;;
-  (move-to-chair2)
+  (while (not (move-to-chair2)))
   (move-chair)
   ;;
-  (move-to-sweep)
+  (while (not (move-to-sweep)))
   (sweep-under-table)
   ;;
-  (move-to-back-chair)
+  (while (not (move-to-back-chair)))
   (move-back-chair)
   ;;
-  (move-to-sweep-floor)
+  (while (not (move-to-sweep-floor)))
   (sweep-floor)
   (use-tilt-laser-obstacle-cloud t)
   )

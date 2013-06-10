@@ -18,7 +18,7 @@
 
     (ros::roseus "object_detection_marker_laundry")
     (setq ret 
-          (check-detection :type nil ;; work for any object
+          (check-detection :type "laundry_button" ;; work for any object
                            :speak-name "sentakuki"
                            :target-object obj
                            :timeout 30

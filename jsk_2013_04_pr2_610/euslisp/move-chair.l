@@ -332,13 +332,23 @@
   )
 
 
+;; 
 (defun move-back-chair ()
+  (hold-chair-dual-arm)
+  (push-move-chair)
+  )
+
+(defun hold-chair-dual-arm (&key (move t))
   (let ((grasp-success nil))
+    (if (send *chair* :parent) (send (send *chair* :parent) :dissoc *chair*))
     (send *pr2* :angle-vector (send *ri* :state :potentio-vector))
     (send *ri* :stop-grasp :rarm :wait t)
 
     (ros::ros-info "move to right")
     
+    ;; for debug
+    (send *pr2* :angle-vector #f(126.795 -1.00107 -20.2206 11.9353 -71.4577 93.1963 -72.7922 176.55 -2.71504 -5.92811 -3.83082 -83.875 -79.9001 -86.0572 -191.652 15.421 -21.2682))
+    ;;
     (send *pr2* :inverse-kinematics (send  (send (send *pr2* :rarm :end-coords) :copy-worldcoords) :translate (float-vector 0 -300 0) :world)
           :revert-if-fail nil
           :rotation-axis :z
@@ -353,8 +363,10 @@
     (send *ri* :angle-vector (send *pr2* :angle-vector))
     (send *ri* :wait-interpolation)
 
-    (send *ri* :go-pos-unsafe 0.2 0 0)
-    (send *pr2* :translate #f(200 0 0))
+    (when move
+      (send *ri* :go-pos-unsafe 0.2 0 0)
+      (send *pr2* :translate #f(200 0 0)))
+
     (setq before-pose (send *ri* :potentio-vector))
 
     ;; start detecting char and grasp chair
@@ -389,11 +401,11 @@
       (setq chair-handle-side-rarm (send (send *chair* :handle-side-rarm) :copy-worldcoords))
       (setq chair-handle-side-larm (send (send *chair* :handle-side-larm) :copy-worldcoords))
       (send *pr2* :inverse-kinematics (list 
-                                       (send (send chair-handle-side-rarm :translate  (float-vector 0 -200 0) (send *chair* :worldcoords)) :rotate (deg2rad 0) :y (send *chair* :worldcoords))
-                                       (send (send chair-handle-side-larm :translate  (float-vector -100 0 0) (send *chair* :worldcoords)) :rotate (deg2rad 0) :y (send *chair* :worldcoords))
+                                       (send (send chair-handle-side-rarm :translate  (float-vector 40 -50 0) (send *chair* :worldcoords)) :rotate (deg2rad 0) :y (send *chair* :worldcoords))
+                                       (send (send chair-handle-side-larm :translate  (float-vector -200 400 0) (send *chair* :worldcoords)) :rotate (deg2rad 0) :y (send *chair* :worldcoords))
                                        )
-            :link-list (list
-                        (send *pr2* :link-list (send *pr2* :rarm :end-coords :parent)) (send *pr2* :link-list (send *pr2* :larm :end-coords :parent)))
+;;;            :link-list (list
+;;;                        (send *pr2* :link-list (send *pr2* :rarm :end-coords :parent)) (send *pr2* :link-list (send *pr2* :larm :end-coords :parent)))
             :move-target (list (send *pr2* :rarm :end-coords) (send *pr2* :larm :end-coords))
             :revert-if-fail nil
             :look-at-target t
@@ -402,7 +414,7 @@
 
 
       (if (boundp '*irtviewer*) (send *irtviewer* :draw-objects))
-      (send *ri* :angle-vector (send *pr2* :angle-vector))
+      (send *ri* :angle-vector-with-constraint (send *pr2* :angle-vector) 1500 :larm :rotation-axis :z)
       (send *ri* :wait-interpolation)
       #|
       (send *pr2* :inverse-kinematics (send  (send (send *pr2* :rarm :end-coords) :copy-worldcoords) :translate (float-vector 0 0 -50) :world)
@@ -417,8 +429,8 @@
 
 
       (send *pr2* :inverse-kinematics (list 
-                                       (send  (send (send *pr2* :rarm :end-coords) :copy-worldcoords) :translate (float-vector 0 200 0) (send *chair* :worldcoords))
-                                       (send  (send (send *pr2* :larm :end-coords) :copy-worldcoords) :translate (float-vector 0 -200 0) (send *chair* :worldcoords))
+                                       (send  (send (send *pr2* :rarm :end-coords) :copy-worldcoords) :translate (float-vector 0 300 0) (send *chair* :worldcoords))
+                                       (send  (send (send *pr2* :larm :end-coords) :copy-worldcoords) :translate (float-vector 0 -300 0) (send *chair* :worldcoords))
                                        )
             :link-list (list
                         (send *pr2* :link-list (send *pr2* :rarm :end-coords :parent))
@@ -430,14 +442,14 @@
             :debug-view nil
             )
 
-      (send *ri* :angle-vector (send *pr2* :angle-vector))
+      (send *ri* :angle-vector-with-constraint (send *pr2* :angle-vector) 1500 :larm :rotation-axis :z)
       (send *ri* :wait-interpolation)
 
 
       ;;check if grasp is success
       (setq grip_r_dist (send *ri* :start-grasp :rarm))
-      (send *ri* :update-robot-state)
-      (setq grip_r_dist (send *ri* :robot :r_gripper_joint :joint-angle))
+      ;;(send *ri* :update-robot-state)
+      ;;(setq grip_r_dist (send *ri* :robot :r_gripper_joint :joint-angle))
 
       (send *ri* :wait-interpolation)
       (ros::ros-info "~d gripper distance" grip_r_dist)
@@ -449,10 +461,10 @@
     (ros::ros-info "--PR2 Catch IT !!!!!--")
 
     (send (send *pr2* :r_wrist_roll_link) :assoc *chair*)
-    (send *ri* :angle-vector (send *pr2* :angle-vector))
-    (send *ri* :wait-interpolation)
+    ;;(send *ri* :angle-vector (send *pr2* :angle-vector))
+    ;;(send *ri* :wait-interpolation)
 
-
+#|
     ;;pull *chair* a little bit to me
       (send *pr2* :inverse-kinematics (list 
                                        (send  (send (send *pr2* :rarm :end-coords) :copy-worldcoords) :translate (float-vector -50 0 0) (send *chair* :worldcoords))
@@ -472,6 +484,7 @@
     (send *ri* :go-pos-unsafe 0.1 0 0) ;;10
     (send *pr2* :translate (float-vector 100 0 0))
     (send *ri* :wait-interpolation)
+|#
 
     #|
     (send *pr2* :inverse-kinematics (send  (send (send *pr2* :rarm :end-coords) :copy-worldcoords) :translate (float-vector 0 0 50) :world)
@@ -487,7 +500,10 @@
     (send *ri* :angle-vector (send *pr2* :angle-vector))
     (send *ri* :wait-interpolation)
     |#
+    ))
 
+(defun push-move-chair nil
+  (let (offset-y)
     ;;push and move phase---------------------------------------------------------------------------------;;
     (ros::ros-info "--Push and Move PART!--")
     (setq now-chair-pos (send (send *chair* :copy-worldcoords) :worldpos))
@@ -552,8 +568,6 @@
     (send *ri* :go-pos-unsafe -0.2 -0 0) ;;10
     (send *pr2* :translate (float-vector -200 -0 0))
     (send *ri* :wait-interpolation)
-
-
 
     )
   )
