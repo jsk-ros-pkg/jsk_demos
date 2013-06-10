@@ -1,3 +1,19 @@
+(defun publish-broom ()
+   (let* ()
+     (ros::advertise "/object_detection_marker_array" visualization_msgs::MarkerArray 5)
+     (ros::publish
+      "/object_detection_marker_array"
+      (instance visualization_msgs::MarkerArray :init
+                :markers
+                (list
+                 (object->marker-msg *broom*
+                                     (instance std_msgs::header :init
+                                               :stamp (ros::time-now)
+                                               :frame_id *room610-origin*)
+                                     :ns "object_body"
+                                     :lifetime 20 :id 99)
+                 )))
+     ))
 
 ;; (progn (load "pick-broom.l")(pr2-reset-pose)(move-to-laundry) (open-door)(move-to-broom)(grasp-broom)) ;; to  test
 (defun pick-broom ()
@@ -31,11 +47,12 @@
 
     ;; move broom
     (send *pr2* :larm :end-coords :dissoc *broom*)
-    (send *broom* :move-to (send (make-coords :pos (float-vector 650 -490 0)
+    (send *broom* :move-to (send (make-coords :pos (float-vector 670 -490 0)
                                               :rpy (list pi/2 (deg2rad 4) 0))
                                  :transform *laundry* :world)
           :world)
     (if (boundp '*irtviewer*) (send *irtviewer* :draw-objects))
+    (publish-broom)
 
     (setq target-coords 
           (make-coords :pos (send (send *broom* :handle-larm) :worldpos)
@@ -192,7 +209,7 @@
     (send *pr2* :torso :waist-z :joint-angle 100)
     (send *pr2* :larm :end-coords :dissoc *broom*)
     (send *ri* :angle-vector (send *pr2* :angle-vector))
-    (send *ri* :wait-interpolation)
+    ;; (send *ri* :wait-interpolation)
     )
   )
 

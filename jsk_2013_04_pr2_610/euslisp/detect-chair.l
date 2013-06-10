@@ -139,7 +139,7 @@
 
 
 
-    (ros::ros-info "~A will be answers" seem-answer)
+;;    (ros::ros-info "~A will be answers" seem-answer)
     (setq prev-xy-distance nil)
     (setq chair-xy-params nil)
     ;;this time we use closest chair-width

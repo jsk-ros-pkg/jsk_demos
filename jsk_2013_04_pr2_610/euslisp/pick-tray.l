@@ -19,13 +19,16 @@
   (send *pr2* :rarm :shoulder-r :joint-angle -70)
 
   ;; send angle-vector
-  (send *ri* :angle-vector (send *pr2* :angle-vector) 1500)
+  (send *ri* :angle-vector (send *pr2* :angle-vector) 5000)
   (send *pr2* :move-to (send *room610* :spot-tray-spot) :world)
-  (send *ri* :move-to *tray-spot* :frame-id *room610-origin*)
-  (if (boundp '*irtviewer*) (send *irtviewer* :draw-objects))
-  (use-tilt-laser-obstacle-cloud t)
-;  (send *ri* :angle-vector (send *pr2* :angle-vector) 2000)
-;  (send *ri* :wait-interpolation)
+  (prog1
+      (send *ri* :move-to *tray-spot* :frame-id *room610-origin*)
+    (if (boundp '*irtviewer*) (send *irtviewer* :draw-objects))
+;;    (use-tilt-laser-obstacle-cloud t)
+    ;;  (send *ri* :angle-vector (send *pr2* :angle-vector) 2000)
+    ;;  (send *ri* :wait-interpolation)
+    (clear-costmap)
+   )
 )
 
 (defun pick-tray ()
