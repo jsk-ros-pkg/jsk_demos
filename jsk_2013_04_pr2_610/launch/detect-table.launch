@@ -4,7 +4,7 @@
   <env name="PATH" value="$(env PATH):$(find roseus)/bin" />
   <node name="detect_chaire"
 	pkg="jsk_2013_04_pr2_610"
-	type="detect-chair.l"
+	type="detect-table.l"
 	output="screen"
         respawn="true"/>
 
