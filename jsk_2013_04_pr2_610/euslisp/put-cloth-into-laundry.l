@@ -86,7 +86,7 @@
     (if (boundp '*irtviewer*) (send *irtviewer* :draw-objects))
     (send *ri* :angle-vector (send *pr2* :angle-vector) 100)
     (send *ri* :wait-interpolation)
-
+#|
 	(send *pr2* :rarm :move-end-pos (float-vector -50 -5 0) (send *pr2* :worldcoords))
 	(send *ri* :angle-vector (send *pr2* :angle-vector) 500)
 	(send *ri* :wait-interpolation)
@@ -99,11 +99,24 @@
 	(send *pr2* :rarm :move-end-pos (float-vector 50 0 0) (send *pr2* :worldcoords))
 	(send *ri* :angle-vector (send *pr2* :angle-vector) 500)
 	(send *ri* :wait-interpolation)
-    ;; pull arm for preventing collision
-    (send *pr2* :rarm :move-end-pos #f(-200 0 0))
-    (send *pr2* :rarm :move-end-pos #f(-50 0 -150) (send *pr2* :worldcoords))
-    (send *ri* :angle-vector (send *pr2* :angle-vector) 500)
+|#
+
+ 	(send *pr2* :angle-vector (send *ri* :state :potentio-vector))
+	(send *pr2* :rarm :move-end-pos #f(0 50 0) :local)
+    (send *ri* :angle-vector (send *pr2* :angle-vector) 2000)
     (send *ri* :wait-interpolation)
+
+	(send *pr2* :rarm :move-end-pos #f(-150 20 0) :local)
+    (send *ri* :angle-vector (send *pr2* :angle-vector) 2000)
+    (send *ri* :wait-interpolation)
+
+
+    ;; pull arm for preventing collision
+;    (send *pr2* :rarm :move-end-pos #f(-200 0 0))
+;    (send *pr2* :rarm :move-end-pos #f(-50 0 -150) :local)
+	(send *pr2* :rarm :move-end-pos #f(0 0 -150) :local)
+    (send *ri* :angle-vector (send *pr2* :angle-vector) 500)
+    ;(send *ri* :wait-interpolation)
     )
   )
 
