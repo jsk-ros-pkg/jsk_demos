@@ -1,6 +1,6 @@
 #!/usr/bin/env roseus
 
-(defvar *pub-all-input-topic* "/all_input_marker_array")
+(defvar *pub-all-input-topic* "/detect_chair_debug_marker")
 (defvar *base-laser-link* "/base_laser_link")
 (ros::roseus-add-msgs "geometry_msgs")
 (ros::roseus-add-msgs "jsk_2013_04_pr2_610")
