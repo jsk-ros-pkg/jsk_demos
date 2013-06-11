@@ -210,7 +210,7 @@
     ;;sweep under table
     ;; ready pose
     (setq c0 (make-coords :pos (send *pr2* :transform-vector #f(140 600 700)) :rpy (float-vector -0.2 -0.4 0)))
-    (setq c1 (make-coords :pos (send *pr2* :transform-vector (float-vector 640 500 500)) :rpy (float-vector 0 -0.7 0)))
+    (setq c1 (make-coords :pos (send *pr2* :transform-vector (float-vector 250 500 500)) :rpy (float-vector 0 -0.7 0)))
     (send *pr2* :inverse-kinematics
           c0
           :rotation-axis t
@@ -261,7 +261,7 @@
       (send *ri* :wait-interpolation))
 
     (send *pr2* :angle-vector av-grasp)
-    (send *ri* :angle-vector (send *pr2* :angle-vector) 800)
+    (send *ri* :angle-vector-with-constraint (send *pr2* :angle-vector) 1800 :larm :rotation-axis :z)
     (send *ri* :wait-interpolation)
 
     (sweep-under-table-init-slim)
@@ -273,6 +273,9 @@
   (let (av0 av1
             handle-larm handle-rarm offset-l offset-r
             av-grasp av-sweep0 av-sweep1)
+  (use-tilt-laser-obstacle-cloud nil)
+
+    (send *ri* :go-pos-unsafe -1.5 0 90)
     (setq av-grasp (send *pr2* :angle-vector))
     ;; 両手を前に
     (send *pr2* :larm :move-end-pos #f(200 0 0) *pr2*)
@@ -352,13 +355,19 @@
     (if (boundp '*irtviewer*) (send *irtviewer* :draw-objects))
     (setq av-sweep1 (send *pr2* :angle-vector))
     ;; special command for casing grasp
-    (send *ri* :angle-vector av-sweep0 2000)
+;;    (send *ri* :angle-vector av-sweep0 2000)
+;;    (send *ri* :wait-interpolation)
+    (send *ri* :angle-vector av-sweep1 2000)
     (send *ri* :wait-interpolation)
 
-    (dotimes (i 5)
-      (send *ri* :angle-vector-sequence (list av-sweep1 av-sweep0) (list 1200 1200))
-      (send *ri* :wait-interpolation))
-    (send *ri* :angle-vector av-grasp 1000)
+    (send *pr2* :rarm :move-end-pos #f(   0 0 -100))
+    (send *pr2* :rarm :move-end-pos #f(   0 0 -100))
+    (send *ri* :angle-vector-with-constraint (send *pr2* :angle-vector) 800 :arms :rotation-axis :z)
     (send *ri* :wait-interpolation)
+
+   ;; (dotimes (i 5)
+;;      (send *ri* :angle-vector-sequence (list av-sweep1 av-sweep0) (list 1200 1200))
+;;      (send *ri* :wait-interpolation))
+;;    (send *ri* :angle-vector av-grasp 1000)
+;;    (send *ri* :wait-interpolation)
     ))
-

@@ -1,6 +1,8 @@
 #!/usr/bin/env roseus
 
 
+(load "package://pr2eus/pr2-interface.l")
+(load "models/room610-chair-object.l")
 (ros::roseus-add-msgs "sensor_msgs")
 (ros::roseus-add-msgs "posedetection_msgs")
 (ros::roseus-add-msgs "geometry_msgs")
@@ -11,6 +13,9 @@
 
 (ros::roseus "detect_chair")
 
+(setq *room610-origin* "/eng8/6f/610")
+(setq *chair* (instance room610-chair-object :init))
+(setq *ri* (instance pr2-interface :init))
 (setq *chair-width* 0.37)
 (setq *chair-height* 0.43)
 (setq *error-thred* 0.02)
@@ -234,13 +239,48 @@
 	(send o6dp :pose (ros::coords->tf-pose target-coords))
 	(send o6dp :type "chair-center")
 	(push o6dp lst)
+        ;;
+        ;; publish object_detection_marekr
+        (setq marker-life 10)
+        (send *chair* :move-to (send target-coords :copy-worldcoords)
+              (send *ri* :state :worldcoords *room610-origin*))
+        (send *chair* :update-descendants) ;; ???
+        (send *chair* :copy-worldcoords)   ;; ??? 
+        (ros::advertise "/object_detection_marker_array" visualization_msgs::MarkerArray 5)
+        (ros::publish "/object_detection_marker_array"
+                      (instance visualization_msgs::MarkerArray :init
+                                :markers
+                                (list (text->marker-msg
+                                       "chair-center"
+                                       (send (send *chair* :copy-worldcoords)
+                                               :translate #f(-100 0 100))
+                                         (instance std_msgs::header :init
+                                                   :stamp (send header :stamp)
+                                                   :frame_id *room610-origin*)
+                                         :ns (format nil "object_text_~A" "chair-center") :color #f(1 0 0)
+                                         :scale 100 :lifetime marker-life :id 0)
+                                        (coords->marker-msg
+                                         (send *chair* :copy-worldcoords)
+                                         (instance std_msgs::header :init
+                                                   :stamp (send header :stamp)
+                                                   :frame_id *room610-origin*)
+                                         :ns (format nil "object_coords_~A" "chair-center")
+                                         ;; :size 200 :width 20
+                                         :lifetime marker-life :id 1)
+                                        (object->marker-msg
+                                         *chair*
+                                         (instance std_msgs::header :init
+                                                   :stamp (send header :stamp)
+                                                   :frame_id *room610-origin*)
+                                         :ns (format nil "object_body_~A" "chair-center")
+                                         :lifetime marker-life :id 2)
+                                        )))
 	)
       (send res :header header)
       (send res :objects lst)
       (ros::publish *result-topic* res)
       (ros::ros-info "PUBLISHED to ~A" *result-topic*)
       )
-
     )
   )
 

@@ -105,12 +105,13 @@
   (send *pr2* :rarm :angle-vector #f(-40.0 -20.0 0.0 -70.0 -70.0 -90.0 0.0))
   (if (boundp '*irtviewer*) (send *irtviewer* :draw-objects))
   (send *ri* :angle-vector (send *pr2* :angle-vector) 10000)
-  (send *ri* :stop-grasp :rarm )
+  (send *ri* :stop-grasp :rarm)
 
   (use-tilt-laser-obstacle-cloud nil)
   (clear-costmap)
   (send *pr2* :move-to (send *room610* :spot-chair-spot) :world)
   (send *ri* :move-to (send *room610* :spot-chair-spot) :frame-id *room610-origin*)
+  (send *ri* :angle-vector (send *pr2* :angle-vector) 500)
   (use-tilt-laser-obstacle-cloud t)
   )
 

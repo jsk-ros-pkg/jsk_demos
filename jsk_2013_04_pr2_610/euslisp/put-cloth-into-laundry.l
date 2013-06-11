@@ -19,7 +19,6 @@
 )
 
 (defun put-cloth ()
-  ;;(pr2-reset-pose)  ;; debug
   (send *pr2* :larm :collar-y :joint-angle 90)
   (send *ri* :angle-vector (send *pr2* :angle-vector))
   (open-door)
@@ -87,8 +86,8 @@
     (send *ri* :angle-vector (send *pr2* :angle-vector) 100)
     (send *ri* :wait-interpolation)
 
- 	(send *pr2* :angle-vector (send *ri* :state :potentio-vector))
-	(send *pr2* :rarm :move-end-pos #f(0 50 0) :local)
+    (send *pr2* :angle-vector (send *ri* :state :potentio-vector))
+    (send *pr2* :rarm :move-end-pos #f(0 50 0) (send *pr2* :worldcoords))
     (send *ri* :angle-vector (send *pr2* :angle-vector) 2000)
     (send *ri* :wait-interpolation)
     (print (send *pr2* :angle-vector))
@@ -137,8 +136,18 @@
     (send *ri* :wait-interpolation)
 
     ;; release cloth
-    (send *ri* :stop-grasp :rarm :wait nil)
-    (send *pr2* :rarm :wrist-r :joint-angle -180)
+    (let (avs)
+      (send *ri* :start-grasp :rarm)
+      (dotimes (i 10)
+        (send *pr2* :rarm :wrist-r :joint-angle (* i 178))
+        (push (send *pr2* :angle-vector) avs))
+      (send-message *ri* (send *ri* :super) :angle-vector-sequence avs (make-sequence 'list (length avs) :initial-element 500))
+      (send *ri* :wait-interpolation)
+      (send *ri* :stop-grasp :rarm :wait nil)
+      (send-message *ri* (send *ri* :super) :angle-vector-sequence (reverse avs) (make-sequence 'list (length avs) :initial-element 500))
+      (send *ri* :wait-interpolation)
+      )
+
     (if (boundp '*irtviewer*) (send *irtviewer* :draw-objects))
     (send *ri* :angle-vector (send *pr2* :angle-vector) 1000)
     (send *ri* :wait-interpolation)
