@@ -388,7 +388,7 @@
     (send *ri* :angle-vector-with-constraint (send *pr2* :angle-vector) 2000 :arms)
     (send *ri* :wait-interpolation)
 
-    (speak-jp "")
+    (speak-jp "部屋の掃除が終わりました")
 
 
    ;; (dotimes (i 5)
