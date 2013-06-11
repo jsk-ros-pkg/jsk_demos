@@ -34,6 +34,9 @@
         (under chair table)
         (at world)
         (not (in cloth laundry))
+        (= (total-cost) 0)
+        (= (move-to) 10)
+        (= (sweep) 100)
         ))
 
 ;; goal condition
@@ -46,6 +49,8 @@
         (in cloth laundry)
         (working laundry)
         ))
+
+(send *problem* :metric '(minimize (total-cost)))
 
 ;;
 ;; domain
@@ -64,13 +69,18 @@
                              (under ?obj ?space - object)
                              (working ?obj - object)
                              ))
+(send *domain* :functions '((total-cost) - number
+                            (move-to) - number
+                            (sweep) - number))
 ;;making action
 (setq *move* (instance pddl-action :init
                        :name "move-to"
                        :parameters '((?to object))
                        :precondition '()
                        :effect '((forall (?any - object) (not (at ?any)))
-                                 (at ?to))))
+                                 (at ?to)
+                                 (increase (total-cost) (move-to))
+                                 )))
 
 (setq *pick* (instance pddl-action :init
                        :name "pick"
@@ -127,7 +137,8 @@
                        :parameters '((?space object))
                        :precondition '((hold broom)
                                        (under chair table))
-                       :effect '((clean ?space))))
+                       :effect '((clean ?space)
+                                 (increase (total-cost) (sweep)))))
 
 (setq *sweep-under* (instance pddl-action :init
                        :name "sweep-under"
