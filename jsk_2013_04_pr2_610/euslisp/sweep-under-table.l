@@ -277,7 +277,7 @@
 
     (send *ri* :go-pos-unsafe -1.5 0 90)
     (setq av-grasp (send *pr2* :angle-vector))
-    ;; $BN><j$rA0$K(B
+    ;; 両手を前に
     (send *pr2* :larm :move-end-pos #f(200 0 0) *pr2*)
     (send *pr2* :rarm :move-end-pos #f(200 0 0) *pr2*)
     (setq av0 (send *pr2* :angle-vector))
@@ -364,6 +364,32 @@
     (send *pr2* :rarm :move-end-pos #f(   0 0 -100))
     (send *ri* :angle-vector-with-constraint (send *pr2* :angle-vector) 800 :arms :rotation-axis :z)
     (send *ri* :wait-interpolation)
+
+
+    ;;go to  kitchen
+    (setq goal_coords (make-coords :pos #f(5050 1000 0)))
+    (setq pr2_now_coords (send *ri* :state :worldcoords *room610-origin*))
+    (setq move-diff (send pr2_now_coords :transformation goal_coords))
+    (send *ri* :go-pos-unsafe (* 0.001 (elt (send move-diff :pos) 0)) (* 0.001 (elt (send move-diff :pos) 1)) (rad2deg (elt (car (send move-diff :rpy-angle)) 0)))
+
+    ;;go to  kitchen
+    (setq goal_coords (make-coords :pos #f(6600 1000 0)))
+    (setq pr2_now_coords (send *ri* :state :worldcoords *room610-origin*))
+    (setq move-diff (send pr2_now_coords :transformation goal_coords))
+    (send *ri* :go-pos-unsafe (* 0.001 (elt (send move-diff :pos) 0)) (* 0.001 (elt (send move-diff :pos) 1)) (rad2deg (elt (car (send move-diff :rpy-angle)) 0)))
+
+    ;;go to  kitchen
+    (setq goal_coords (make-coords :pos #f(6600 1000 0) :rpy #f(-2.4 0 0)))
+    (setq pr2_now_coords (send *ri* :state :worldcoords *room610-origin*))
+    (setq move-diff (send pr2_now_coords :transformation goal_coords))
+    (send *ri* :go-pos-unsafe (* 0.001 (elt (send move-diff :pos) 0)) (* 0.001 (elt (send move-diff :pos) 1)) (rad2deg (elt (car (send move-diff :rpy-angle)) 0)))
+
+    (send *pr2* :head :angle-vector #f(0 0))
+    (send *ri* :angle-vector-with-constraint (send *pr2* :angle-vector) 2000 :arms)
+    (send *ri* :wait-interpolation)
+
+    (speak-jp "")
+
 
    ;; (dotimes (i 5)
 ;;      (send *ri* :angle-vector-sequence (list av-sweep1 av-sweep0) (list 1200 1200))

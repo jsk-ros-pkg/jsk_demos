@@ -8,6 +8,12 @@
 	output="screen"
         respawn="true"/>
 
+  <node name="detect_table"
+	pkg="jsk_2013_04_pr2_610"
+	type="detect-table.l"
+	output="screen"
+        respawn="true"/>
+
   <node name="check_chair_marker"
 	pkg="jsk_2013_04_pr2_610"
 	type="check-publish-marker.l"
