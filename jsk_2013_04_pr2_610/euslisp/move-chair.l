@@ -36,6 +36,7 @@
       (setq ret (check-detection :type "chair-center" ;; work for any object
                                  :speak-name "chair object"
                                  :target-object *chair*
+                                 :publish-objectdetection-marker nil
                                  :speak nil))
       (ros::spin-once)
       (if ret
