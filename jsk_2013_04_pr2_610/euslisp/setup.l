@@ -317,11 +317,14 @@
   (while (not (move-to-sweep)))
   (sweep-under-table)
   ;;
-  (while (not (move-to-back-chair)))
-  (move-back-chair)
+  ;;(while (not (move-to-back-chair)))
+  ;;(move-back-chair)
   ;;
-  (while (not (move-to-sweep-floor)))
-  (sweep-floor)
+  ;;(while (not (move-to-sweep-floor)))
+  ;;(sweep-floor)
+
+  (sweep-under-table-dual-arm)
+
   (use-tilt-laser-obstacle-cloud t)
   )
 
