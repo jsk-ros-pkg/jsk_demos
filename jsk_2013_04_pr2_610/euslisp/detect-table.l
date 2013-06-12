@@ -16,9 +16,9 @@
 (setq *room610-origin* "/eng8/6f/610")
 (setq *chair* (instance room610-table-object :init))
 (setq *ri* (instance pr2-interface :init))
-(setq *chair-width* 1.13)
-(setq *chair-height* 0.67)
-(setq *error-thred* 0.03) ;;0.05
+(setq *chair-width* 1.09)
+(setq *chair-height* 0.63)
+(setq *error-thred* 0.05) ;;0.05
 (setq *chair-xy* nil)
 (setq *inner-threshold* 0.2)
 
@@ -143,6 +143,8 @@
       )
 
 
+             (setq width-same-index -1)
+             (setq height-same-index -1)
 
 ;;    (ros::ros-info "~A will be answers" seem-answer)
     (setq prev-xy-distance nil)
@@ -162,8 +164,6 @@
 	     (setq chair-xy-params xy)
 	     ;;calc the same id
 	     (setq end-index 3)
-             (setq width-same-index -1)
-             (setq height-same-index -1)
              
       	     (do ((i 0 (1+ i)))
         	((> i 1) (return 0))
@@ -221,13 +221,13 @@
     (setq *chair-xy* (mapcar #'+ *chair-xy* (mapcar #'(lambda (x) (* x (/ *chair-height* 2))) normal-to-line-list)))
     (setq corner1 nil)
     (setq corner2 nil)
-    (if (equal width-same-index 0)
-        (setq corner1 (car chair-xy-params))
-      (setq corner1 (cadr chair-xy-params))
+    (if (equal width-same-index (car (car chair-xy-params)))
+        (setq corner1 (cadr chair-xy-params))
+      (setq corner1 (car chair-xy-params))
         )
-    (if (equal height-same-index 2)
-        (setq corner2 (caddr chair-xy-params))
-      (setq corner2 (cadddr chair-xy-params))
+    (if (equal height-same-index (car (caddr chair-xy-params)))
+        (setq corner2 (cadddr chair-xy-params))
+      (setq corner2 (caddr chair-xy-params))
         )
     (setq *chair-xy* (list (/ (+ (cadr corner1) (cadr corner2) ) 2) (/ (+ (caddr corner1) (caddr corner2)) 2)))
 
