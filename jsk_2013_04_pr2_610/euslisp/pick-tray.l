@@ -62,7 +62,7 @@
             )
       (if (boundp '*irtviewer*) (send *irtviewer* :draw-objects))
 
-      (send *ri* :angle-vector (send *pr2* :angle-vector) 1000)
+      (send *ri* :angle-vector-with-constraint (send *pr2* :angle-vector) 1000 :arms)
       (send *ri* :wait-interpolation)
       )
 
