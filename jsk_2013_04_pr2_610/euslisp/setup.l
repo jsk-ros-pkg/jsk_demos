@@ -1,5 +1,6 @@
 #!/usr/bin/env roseus
 
+(ros::roseus "jsk_irt_demo")
 (load "models/room610-scene.l")
 (load "package://pr2eus/pr2.l")
 (load "package://pr2eus/pr2-interface.l")
