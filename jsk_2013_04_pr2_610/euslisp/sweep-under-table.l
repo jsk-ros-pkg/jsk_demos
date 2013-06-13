@@ -40,7 +40,7 @@
 
   ;; open grasp
   (send *ri* :move-gripper :rarm 0.03 :effort 20)
-  (send *ri* :move-gripper :larm 0.03 :effort 20)
+  (send *ri* :move-gripper :larm 0.1  :effort 20)
   (send *ri* :wait-interpolation)
 
   ;; down 200 mm
@@ -82,7 +82,7 @@
         :debug-view nil
         )
   (setq av1 (send *pr2* :angle-vector))
-  (send *ri* :angle-vector-sequence (list av0 av1) (list 1200 1200))
+  (send *ri* :angle-vector-sequence (list  avo av1)  (list 1200 1200))
   (send *ri* :wait-interpolation)
 |#
   (send *ri* :angle-vector-with-constraint (send *pr2* :angle-vector) 2000 :rarm :rotation-axis :z)
@@ -154,7 +154,7 @@
           :use-torso t
           :look-at-target t
           :debug-view nil)
-    (send *pr2* :inverse-kinematics (send  (send (send *pr2* :rarm :end-coords) :copy-worldcoords) :translate (float-vector 0 -300 0) :world)
+    (send *pr2* :inverse-kinematics (send  (send (send *pr2* :rarm :end-coords) :copy-worldcoords) :translate (float-vector 0 -150 0) :world)
           :revert-if-fail nil
           :rotation-axis t
           :link-list (list

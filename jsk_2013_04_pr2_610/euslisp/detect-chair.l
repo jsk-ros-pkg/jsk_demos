@@ -2,7 +2,8 @@
 
 
 (load "package://pr2eus/pr2-interface.l")
-(load "models/room610-chair-object.l")
+;;(load "models/room610-object-object.l")
+(load "package://jsk_2013_04_pr2_610/pfilter.l")
 (ros::roseus-add-msgs "sensor_msgs")
 (ros::roseus-add-msgs "posedetection_msgs")
 (ros::roseus-add-msgs "geometry_msgs")
@@ -11,16 +12,50 @@
 (defparameter *check-topic* "/check_topic")
 (defvar *base-frame-id* "/base_footprint")
 
-(ros::roseus "detect_chair")
+(ros::roseus "detect_object")
 
 (setq *room610-origin* "/eng8/6f/610")
-(setq *chair* (instance room610-chair-object :init))
+(setq *target-object* (instance room610-object-object :init))
 (setq *ri* (instance pr2-interface :init))
-(setq *chair-width* 0.37)
-(setq *chair-height* 0.43)
+(setq *object-width* 0.37)
+(setq *object-height* 0.43)
 (setq *error-thred* 0.02)
-(setq *chair-xy* nil)
+(setq *object-xy* nil)
 (setq *inner-threshold* 0.2)
+
+(setq *detect-pf* nil)
+(setq *detect-system-noise*)
+(setq *detect-measurement-noise*)
+
+
+(defclass detect-particle-filter
+  :super particle-filter)
+(defmethod detect-particle-filter
+  (:likelihood
+   (x y)
+   )
+  )
+
+
+(defun init-particles ()
+      (setq *detect-pf* (instance detect-particle-filter :init :state-dim 3
+		       :particle-num 200
+		       :system-noise *detect-system-noise*
+		       :measurement-noise *detect-measurement-noise*
+		       :initial-noise 1.0
+                       :use-adaptive-particle-num t))
+    (send *detect-pf* :particle-num 20)
+    (send *detect-pf* :initial-noise 0.1)
+	(setq pr2->target (send (send *pr2* :base_laser_link) :transformation *target-object*))
+	(steq pr2->target-pos (send pr2->target :worldpos))
+	(setq pr2->target-rot (send pr2->target :rpy-angle))
+    (send *detect-pf* :initial-state (float-vector (elt pr2->target-pos 0) (elt pr2->target-pos 1) (rad2deg (car (car pr2->target-rot)))))
+    (send *detect-pf* :reset-particles)
+
+  )
+
+
+
 
 ;;convert r theta to xy
 (defun rtheta->xy (r theta index &key (debug nil))
@@ -65,8 +100,8 @@
 
 
 ;;CALL-BACK this will be called when subscriver is activated
-(defun chair-detection-cb (laser-scan-msg)
-  (let ((index 0) (trans nil) (angle (send laser-scan-msg :angle_min)) (angle-step (send laser-scan-msg :angle_increment)) (ranges-vec (send laser-scan-msg :ranges)) (x 0) (y 0) (xy-list nil) (chair-width-likely nil) (chair-height-likely nil))
+(defun object-detection-cb (laser-scan-msg)
+  (let ((index 0) (trans nil) (angle (send laser-scan-msg :angle_min)) (angle-step (send laser-scan-msg :angle_increment)) (ranges-vec (send laser-scan-msg :ranges)) (x 0) (y 0) (xy-list nil) (object-width-likely nil) (object-height-likely nil))
 
     (setq ranges-vec (send laser-scan-msg :ranges))
     (ros::ros-info "------------callback is called!!----------------" )
@@ -90,13 +125,13 @@
       (do ((j (+ i 1) (1+ j)))
 		  ((> j end-index) (return 0))
 		(setq xy1 (elt xy-list i)     xy2 (elt xy-list j))
-		;;push to array if it seems to be chair-width
-		(if (check-likely-target (between-distance xy1 xy2) *chair-width* *error-thred*) (progn 
-																						   (push (list xy1 xy2) chair-width-likely)
+		;;push to array if it seems to be object-width
+		(if (check-likely-target (between-distance xy1 xy2) *object-width* *error-thred*) (progn 
+																						   (push (list xy1 xy2) object-width-likely)
 																						   ))
-		;;push to array if it seems to be chair-height
-		(if (check-likely-target (between-distance xy1 xy2) *chair-height* *error-thred*)(progn 
-																						   (push (list xy1 xy2) chair-height-likely)
+		;;push to array if it seems to be object-height
+		(if (check-likely-target (between-distance xy1 xy2) *object-height* *error-thred*)(progn 
+																						   (push (list xy1 xy2) object-height-likely)
 																						   )
           )
 		)
@@ -104,11 +139,11 @@
 
     ;;search combination of elements from each lists with id
     (setq seem-answer nil)
-    (dolist (chair-width-xy chair-width-likely)
-      (setq car-index-width (car (car chair-width-xy))              cdr-index-width (car (cadr chair-width-xy)))
-      (dolist (chair-height-xy chair-height-likely)
-		(setq car-index-height (car (car chair-height-xy)))
-		(setq cdr-index-height (car (cadr chair-height-xy)))
+    (dolist (object-width-xy object-width-likely)
+      (setq car-index-width (car (car object-width-xy))              cdr-index-width (car (cadr object-width-xy)))
+      (dolist (object-height-xy object-height-likely)
+		(setq car-index-height (car (car object-height-xy)))
+		(setq cdr-index-height (car (cadr object-height-xy)))
 		(if ( or (= car-index-width car-index-height) 
 				 (= car-index-width cdr-index-height)
 				 (= cdr-index-width car-index-height)
@@ -116,15 +151,15 @@
 				 )
 			(progn 
 			  ;;check inner-product
-			  (setq vector1 (float-vector (- (cadr (car chair-width-xy)) (cadr (cadr chair-width-xy))) (- (caddr (car chair-width-xy)) (caddr (cadr chair-width-xy)))))
+			  (setq vector1 (float-vector (- (cadr (car object-width-xy)) (cadr (cadr object-width-xy))) (- (caddr (car object-width-xy)) (caddr (cadr object-width-xy)))))
 			  (setq vector1 (normalize-vector vector1))
-			  (setq vector2 (float-vector (- (cadr (car chair-height-xy)) (cadr (cadr chair-height-xy))) (- (caddr (car chair-height-xy)) (caddr (cadr chair-height-xy)))))
+			  (setq vector2 (float-vector (- (cadr (car object-height-xy)) (cadr (cadr object-height-xy))) (- (caddr (car object-height-xy)) (caddr (cadr object-height-xy)))))
 			  (setq vector2 (normalize-vector vector2))
 			  (setq inner-product (v. vector1 vector2))
 			  
 			  (if (and ( < inner-product  *inner-threshold* ) (> inner-product (* -1 *inner-threshold*)))
 				  (progn
-					(push (append chair-width-xy chair-height-xy) seem-answer)
+					(push (append object-width-xy object-height-xy) seem-answer)
 					)
 				)
 			  )
@@ -135,8 +170,8 @@
 
 
 ;;    (ros::ros-info "~A will be answers" seem-answer)
-    (setq prev-xy-distance nil chair-xy-params nil)
-    ;;this time we use closest chair-width
+    (setq prev-xy-distance nil object-xy-params nil)
+    ;;this time we use closest object-width
     (dolist (xy seem-answer)
       (setq middle-xy (list (/ (+ (cadr (car xy)) (cadr (cadr xy)) )2) (/ (+ (caddr (car xy)) (caddr (cadr xy))) 2)))
       (setq xy-distance (distance-from-origin middle-xy))
@@ -145,9 +180,9 @@
 
 	  (setq former t);;this is for duplicate id's position
 
-      (if (or (equal *chair-xy* nil) (equal prev-xy-distance nil) (< xy-distance prev-xy-distance ))
-		  (progn (setq *chair-xy* middle-xy)
-				 (setq prev-xy-distance xy-distance    chair-xy-params xy    end-index 3)
+      (if (or (equal *object-xy* nil) (equal prev-xy-distance nil) (< xy-distance prev-xy-distance ))
+		  (progn (setq *object-xy* middle-xy)
+				 (setq prev-xy-distance xy-distance    object-xy-params xy    end-index 3)
 				 (do ((i 0 (1+ i)))
 					 ((> i 1) (return 0))
 				   (do ((j 2 (1+ j)))
@@ -164,10 +199,10 @@
 				 
 				 ))
 	  )
-    (ros::ros-info "~A  answer " *chair-xy*)
+    (ros::ros-info "~A  answer " *object-xy*)
     ;;publish answer 
     (setq publish-list nil)
-    (dolist (xy chair-xy-params)
+    (dolist (xy object-xy-params)
 	  (setq gm
 			(instance geometry_msgs::Vector3 :init
 					  :x (cadr xy) :y (caddr xy) :z 0))
@@ -182,21 +217,21 @@
 	)
 
   ;;if there are answer, continue the process
-  (when (not (eq chair-xy-params nil))
+  (when (not (eq object-xy-params nil))
     ;;we calc the normal
-    (setq normal-to-line (float-vector (* 1 (- (caddr (car chair-xy-params)) (caddr (cadr chair-xy-params)))) (* -1 (- (cadr (car chair-xy-params)) (cadr (cadr chair-xy-params))))))    
+    (setq normal-to-line (float-vector (* 1 (- (caddr (car object-xy-params)) (caddr (cadr object-xy-params)))) (* -1 (- (cadr (car object-xy-params)) (cadr (cadr object-xy-params))))))    
     ;;normalization
     ;;transform from float-vector to list
     (setq normal-to-line-list (coerce (normalize-vector normal-to-line) cons))
 
-    ;;reset to the chair center pos
-    (setq *chair-xy* (mapcar #'+ *chair-xy* (mapcar #'(lambda (x) (* x (/ *chair-height* 2))) normal-to-line-list)))
+    ;;reset to the object center pos
+    (setq *object-xy* (mapcar #'+ *object-xy* (mapcar #'(lambda (x) (* x (/ *object-height* 2))) normal-to-line-list)))
 
     ;;calc the rotate by using normal-to-line's y    
     (setq rot-radian (asin (elt normal-to-line 1)))
 
     ;;prepare target-coords
-    (setq target-coords (make-coords :pos (float-vector (* 1000 (car *chair-xy*)) (* 1000 (cadr *chair-xy*)) -303)))
+    (setq target-coords (make-coords :pos (float-vector (* 1000 (car *object-xy*)) (* 1000 (cadr *object-xy*)) -303)))
     (send target-coords :rotate rot-radian :z)
 
     ;;publish ObjectDetection
@@ -209,42 +244,42 @@
 	;;*base-laser-to-laser-scan*
 	(send target-coords :transform *base-laser-to-laser-scan* :world)
 	(send o6dp :pose (ros::coords->tf-pose target-coords))
-	(send o6dp :type "chair-center")
+	(send o6dp :type "object-center")
 	(push o6dp lst)
         ;;
         ;; publish object_detection_marekr
         (setq marker-life 10)
-        (send *chair* :move-to (send target-coords :copy-worldcoords)
+        (send *target-object* :move-to (send target-coords :copy-worldcoords)
               (send *ri* :state :worldcoords *room610-origin*))
-        (send *chair* :update-descendants) ;; ???
-        (send *chair* :copy-worldcoords)   ;; ??? 
+        (send *target-object* :update-descendants) ;; ???
+        (send *target-object* :copy-worldcoords)   ;; ??? 
         (ros::advertise "/object_detection_marker_array" visualization_msgs::MarkerArray 5)
         (ros::publish "/object_detection_marker_array"
                       (instance visualization_msgs::MarkerArray :init
                                 :markers
                                 (list (text->marker-msg
-                                       "chair-center"
-                                       (send (send *chair* :copy-worldcoords)
+                                       "object-center"
+                                       (send (send *target-object* :copy-worldcoords)
                                                :translate #f(-100 0 100))
                                          (instance std_msgs::header :init
                                                    :stamp (send header :stamp)
                                                    :frame_id *room610-origin*)
-                                         :ns (format nil "object_text_~A" "chair-center") :color #f(1 0 0)
+                                         :ns (format nil "object_text_~A" "object-center") :color #f(1 0 0)
                                          :scale 100 :lifetime marker-life :id 0)
                                         (coords->marker-msg
-                                         (send *chair* :copy-worldcoords)
+                                         (send *target-object* :copy-worldcoords)
                                          (instance std_msgs::header :init
                                                    :stamp (send header :stamp)
                                                    :frame_id *room610-origin*)
-                                         :ns (format nil "object_coords_~A" "chair-center")
+                                         :ns (format nil "object_coords_~A" "object-center")
                                          ;; :size 200 :width 20
                                          :lifetime marker-life :id 1)
                                         (object->marker-msg
-                                         *chair*
+                                         *target-object*
                                          (instance std_msgs::header :init
                                                    :stamp (send header :stamp)
                                                    :frame_id *room610-origin*)
-                                         :ns (format nil "object_body_~A" "chair-center")
+                                         :ns (format nil "object_body_~A" "object-center")
                                          :lifetime marker-life :id 2)
                                         )))
 	)
@@ -257,11 +292,12 @@
   )
 
 
-(defun detect-chair ()
+(defun detect-object ()
   (ros::subscribe "/scan_filtered_foot"
 				  sensor_msgs::LaserScan
-				  #'chair-detection-cb)
+				  #'object-detection-cb)
 
+  (init-particles)
   (ros::advertise *result-topic* posedetection_msgs::ObjectDetection)
   (ros::advertise *check-topic* jsk_2013_04_pr2_610::geometry_vectors)
 
@@ -274,5 +310,5 @@
     (ros::sleep)
     ))
 
-(detect-chair)
+(detect-object)
 
