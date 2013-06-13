@@ -62,7 +62,10 @@
             )
       (if (boundp '*irtviewer*) (send *irtviewer* :draw-objects))
 
-      (send *ri* :angle-vector-with-constraint (send *pr2* :angle-vector) 1000 :arms)
+      (print (send *pr2* :angle-vector))
+      (print (send *pr2* :arms :wrist-r :joint-angle))
+      (send *ri* :angle-vector (send *pr2* :angle-vector) 1000)
+      ;;(send *ri* :angle-vector-with-constraint (send *pr2* :angle-vector) 1000 :arms)
       (send *ri* :wait-interpolation)
       )
 
@@ -77,12 +80,16 @@
     (send *pr2* :arms :move-end-pos #f(0 0 100) :world)
     (send *pr2* :look-at-hand :arms)
     (if (boundp '*irtviewer*) (send *irtviewer* :draw-objects))
+    (print (send *pr2* :angle-vector))
+    (print (send *pr2* :arms :wrist-r :joint-angle))
     (push (send *pr2* :angle-vector) avs)
 
     ;; Move it close to PR2
     (send *pr2* :arms :move-end-pos #f(0 0 -250))
     (send *pr2* :look-at-hand :arms)
     (if (boundp '*irtviewer*) (send *irtviewer* :draw-objects))
+    (print (send *pr2* :angle-vector))
+    (print (send *pr2* :arms :wrist-r :joint-angle))
     (push (send *pr2* :angle-vector) avs)
 
     (setq avs (reverse avs))
