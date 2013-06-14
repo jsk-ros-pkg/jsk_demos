@@ -2,7 +2,7 @@
 
 
 (load "package://pr2eus/pr2-interface.l")
-;;(load "models/room610-object-object.l")
+(load "models/room610-chair-object.l")
 (load "package://jsk_2013_04_pr2_610/pfilter.l")
 (ros::roseus-add-msgs "sensor_msgs")
 (ros::roseus-add-msgs "posedetection_msgs")
@@ -15,7 +15,7 @@
 (ros::roseus "detect_object")
 
 (setq *room610-origin* "/eng8/6f/610")
-(setq *target-object* (instance room610-object-object :init))
+(setq *target-object* (instance room610-chair-object :init))
 (setq *ri* (instance pr2-interface :init))
 (setq *object-width* 0.37)
 (setq *object-height* 0.43)

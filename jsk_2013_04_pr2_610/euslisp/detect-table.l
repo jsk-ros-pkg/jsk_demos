@@ -34,6 +34,19 @@
     )
   )
 
+;;convert r theta to xy
+(defun tmp-rtheta->xy (r theta &key (debug nil))
+  (let (x y)
+    (setq x (* r (cos theta)))
+    (setq y (* r (sin theta)))
+    (when debug
+      (ros::ros-info "~d ~d x-y" x y)
+      )
+    (list x y )
+    )
+  )
+
+
 (defun distance (x y)
   (sqrt (+ (* x x) (* y y)))
   )
@@ -82,6 +95,17 @@
       (setq angle (+ angle angle-step))
       (inc index)
       )
+
+    (setq tmp-xy-list nil)
+    (dolist (range ranges)
+      ;;here if range > 0 it is meaningful
+      (if (> range 0)
+	  (push (tmp-rtheta->xy range angle) tmp-xy-list)
+	)
+      (setq angle (+ angle angle-step))
+      )
+    (pprint tmp-xy-list)
+
 
     ;; Next estimate best combination
     (setq end-index (- (length xy-list) 1))
@@ -231,6 +255,7 @@
         )
     (setq *chair-xy* (list (/ (+ (cadr corner1) (cadr corner2) ) 2) (/ (+ (caddr corner1) (caddr corner2)) 2)))
 
+    (ros::ros-info "chair-xy CENTER is  ~A !!!!!" *chair-xy*)
 ;;    (setq *chair-xy* (list (/ (+ (car chair-xy-params)) 2)))
 
 ;;    (ros::ros-info "after chair ~A" *chair-xy*)
