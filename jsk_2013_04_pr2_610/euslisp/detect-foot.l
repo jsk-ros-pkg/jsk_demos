@@ -31,7 +31,7 @@
 (setq *detect-pf* nil)
 (setq *detect-system-noise* 0.05)
 (setq *detect-measurement-noise* 0.1)
-(setq *detect-threshold* 0.1)
+(setq *detect-threshold* 1)
 
 
 (defclass detect-particle-filter
@@ -47,8 +47,7 @@
          (error-sum 0) (error-list nil)
          )
      (setq foot-list (list foot1 foot2 foot3 foot4))
-     (print "foot-list ~A " foot-list)
-     (dolist (foot foot-list)
+	 (dolist (foot foot-list)
        (if (> (length y) 0) (setq min-error (distance foot (elt y 0))))
        (dolist (measure-point y)
          (setq d (distance measure-point foot))
@@ -67,16 +66,28 @@
              )
          )
        )
+	 (print "passnum:")
+	 (print  error-pass-num)
+	 
      (if (> error-pass-num 2)
          (progn
-           (print "~A :error-list" error-list)
+		   (print "GOOD!::error-list")
+		   (pprint error-list)
+		   (print x)
            (exp (* measurement-noise error-sum))
            )
-       0
-       )
-     )
+	   (progn
+		 (print "--------BAD::error-list:--------------")
+;;		 (pprint error-list)
+		 (print "error-list -end")
+		 0
+		 )
+	   )
+	 )
    )
   )
+
+
 
 (defun init-particles ()
   (setq *detect-pf* (instance detect-particle-filter :init :state-dim 3
@@ -102,60 +113,7 @@
     (when debug
       (ros::ros-info "~d ~d x-y" x y)
       )
-    (float-vector x y )
-    )
-  )
-
-(defun distance (x y)
-  (sqrt (+ (* x x) (* y y)))
-  )
-
-;;calc the distance between two lists
-(defun between-distance (xy1 xy2)
-  (let (x-diff y-diff)
-    (setq x-diff (- (cadr xy1) (cadr xy2)))
-    (setq y-diff (- (caddr xy1) (caddr xy2)))
-    (distance x-diff y-diff)
-    )
-  )
-
-;;return if distance is within right range or not
-(defun check-likely-target (sample-length target-length &optional (error-thred *error-thred*))
-  (if (and (<= sample-length (+ target-length error-thred)) (>= sample-length (- target-length error-thred))) 
-      t
-    nil
-    )
-  )
-
-(defun distance-from-origin (xy &key (x-index 0) (y-index 1))
-  (let ((x (elt xy x-index))( y (elt xy y-index)))
-    (distance x y)
-    )
-  )
-
-
-(defun search-list (main-xy target-xy-list answer-list)
-  ;;remove self
-  (dolist (target-xy target-xy-list)
-    (if (equal (car target-xy) (car main-xy))
-        (setq target-xy-list (remove target-xy target-xy-list))
-      )
-    )
-  )
-
-(defun search-combination (wl hl wl2 hl2)
-  (let (tmp-list (xy-lists nil) (may-answers nil) (index 0))
-    (setq tmp-list (list wl hl wl2 hl2))
-    ;;exclude lenght zero
-    
-    (dolist (tmp tmp-list)
-      (if (> (length tmp) 0)
-          (push (push (format nil "list~A" index) tmp) xy-lists)
-        )
-      )
-    (dolist (xy-list xy-lists)
-      (setq ret (search-list xy_list xy_lists nil))
-      )
+    (float-vector x y 0)
     )
   )
 
@@ -275,4 +233,3 @@
     ))
 
 (detect-table)
-
