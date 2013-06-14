@@ -110,28 +110,6 @@
     )
   )
 
-;;calc the distance between two lists
-(defun between-distance (xy1 xy2)
-  (let (x-diff y-diff)
-    (setq x-diff (- (cadr xy1) (cadr xy2)))
-    (setq y-diff (- (caddr xy1) (caddr xy2)))
-    (distance x-diff y-diff)
-    )
-  )
-
-;;return if distance is within right range or not
-(defun check-likely-target (sample-length target-length &optional (error-thred *error-thred*))
-  (if (and (<= sample-length (+ target-length error-thred)) (>= sample-length (- target-length error-thred))) 
-      t
-    nil
-    )
-  )
-
-(defun distance-from-origin (xy &key (x-index 0) (y-index 1))
-  (let ((x (elt xy x-index))( y (elt xy y-index)))
-    (distance x y)
-    )
-  )
 
 ;;CALL-BACK this will be called when subscriver is activated
 (defun table-detection-cb (laser-scan-msg)
@@ -154,7 +132,6 @@
     (send *tobject* :reset-coords)
     (send *tobject* :locate (float-vector (elt ret 0) (elt ret 1) 0))
     (send *tobject* :rotate (elt ret 2) :z)
-
     
 	))
 
