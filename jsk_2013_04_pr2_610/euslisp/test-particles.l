@@ -137,7 +137,7 @@
 
 
 
-(defun check-particle-filter()
+(defun cpf()
   (init-particles)
   (setq xy-list '(#f(2.84881 1.16548 0)
  #f(0.402975 -0.632544 0)
@@ -154,5 +154,12 @@
  #f(-1.89802 0.429477 0)
 ))
   (setq ret (send *detect-pf* :update xy-list))
-
+  (pprint (send *detect-pf* :weight))
+  (pprint (send *detect-pf* :filter))
+  (pprint (send *detect-pf* :predict))
+  (print (matrix-column (send *detect-pf* :filter) 0))
+  (print (matrix-row (send *detect-pf* :predict) 0))
+  (print (aref (send *detect-pf* :predict) 0 0)))
+;;  (print (aref (send *detect-pf* :weight) 0))
   )
+(cpf)
