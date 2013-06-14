@@ -24,7 +24,7 @@
 (setq *detect-pf* nil)
 (setq *detect-system-noise* 0.05)
 (setq *detect-measurement-noise* 0.1)
-(setq *detect-threshold* 0.1)
+(setq *detect-threshold* 1)
 
 
 (defclass detect-particle-filter
@@ -40,8 +40,7 @@
          (error-sum 0) (error-list nil)
          )
      (setq foot-list (list foot1 foot2 foot3 foot4))
-     (print "foot-list ~A " foot-list)
-     (dolist (foot foot-list)
+	 (dolist (foot foot-list)
        (if (> (length y) 0) (setq min-error (distance foot (elt y 0))))
        (dolist (measure-point y)
          (setq d (distance measure-point foot))
@@ -60,14 +59,24 @@
              )
          )
        )
+	 (print "passnum:")
+	 (print  error-pass-num)
+	 
      (if (> error-pass-num 2)
          (progn
-           (print "~A :error-list" error-list)
+		   (print "GOOD!::error-list")
+		   (pprint error-list)
+		   (print x)
            (exp (* measurement-noise error-sum))
            )
-       0
-       )
-     )
+	   (progn
+		 (print "--------BAD::error-list:--------------")
+;;		 (pprint error-list)
+		 (print "error-list -end")
+		 0
+		 )
+	   )
+	 )
    )
   )
 
@@ -80,10 +89,12 @@
                               :use-adaptive-particle-num t))
   (send *detect-pf* :particle-num 20)
   (send *detect-pf* :initial-noise 0.1)
-;;  (setq pr2->target (send (send *pr2* :base_laser_link) :transformation *target-object*))
-;;  (steq pr2->target-pos (send pr2->target :worldpos))
-;;  (setq pr2->target-rot (send pr2->target :rpy-angle))
-;;  (send *detect-pf* :initial-state (float-vector (elt pr2->target-pos 0) (elt pr2->target-pos 1) (rad2deg (car (car pr2->target-rot)))))
+  ;;  (setq pr2->target (send (send *pr2* :base_laser_link) :transformation *target-object*))
+  ;;  (steq pr2->target-pos (send pr2->target :worldpos))
+  ;;  (setq pr2->target-rot (send pr2->target :rpy-angle))
+  ;;  (send *detect-pf* :initial-state (float-vector (elt pr2->target-pos 0) (elt pr2->target-pos 1) (rad2deg (car (car pr2->target-rot)))))
+  (send *detect-pf* :initial-state #f(0.85282
+									  -0.042751 0))
   (send *detect-pf* :reset-particles)
   )
 
@@ -97,10 +108,6 @@
       )
     (float-vector x y )
     )
-  )
-
-(defun distance (x y)
-  (sqrt (+ (* x x) (* y y)))
   )
 
 ;;calc the distance between two lists
@@ -138,8 +145,8 @@
     (dolist (range ranges)
       ;;here if range > 0 it is meaningful
       (if (> range 0)
-	  (push (rtheta->xy range angle) xy-list)
-	)
+		  (push (rtheta->xy range angle) xy-list)
+		)
       (setq angle (+ angle angle-step))
       )
 
@@ -149,4 +156,26 @@
     (send *tobject* :rotate (elt ret 2) :z)
 
     
+	))
+
+
+
+(defun check-particle-filter()
+  (init-particles)
+  (setq xy-list '(#f(2.84881 1.16548 0)
+ #f(0.402975 -0.632544 0)
+ #f(0.268385 -1.21061 0)
+ #f(-0.360074 -1.52918 0)
+ #f(-0.648768 -0.454272 0)
+ #f(-2.33983 -1.10353 0)
+ #f(-1.78759 -0.598119 0)
+ #f(-2.28799 -0.549297 0)
+ #f(-2.23463 -0.324006 0)
+ #f(-2.18648 -0.124157 0)
+ #f(-2.16867 -0.037854 0)
+ #f(-3.52454 0.308357 0)
+ #f(-1.89802 0.429477 0)
 ))
+  (setq ret (send *detect-pf* :update xy-list))
+
+  )
