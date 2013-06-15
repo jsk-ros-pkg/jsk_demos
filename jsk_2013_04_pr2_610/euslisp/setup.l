@@ -43,7 +43,7 @@
   (send *laundry* :translate #f(-260 -30 -125) (send *room610* :worldcoords))
 
   ;; spots
-  (setq *tray-spot* (make-cascoords :pos #f(5000 700 0) :rpy (list -pi/2 0 0)))
+  (setq *tray-spot* (make-cascoords :pos #f(4900 700 0) :rpy (list -pi/2 0 0)))
   (send *room610* :assoc *tray-spot*)
   (setq *chair-spot* (make-cascoords :pos #f(3650 50 0) :rpy (list 0 0 0)))
   (send *room610* :assoc *chair-spot*)
