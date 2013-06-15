@@ -244,7 +244,7 @@
 	;;*base-laser-to-laser-scan*
 	(send target-coords :transform *base-laser-to-laser-scan* :world)
 	(send o6dp :pose (ros::coords->tf-pose target-coords))
-	(send o6dp :type "object-center")
+	(send o6dp :type "chair-center")
 	(push o6dp lst)
         ;;
         ;; publish object_detection_marekr
@@ -258,20 +258,20 @@
                       (instance visualization_msgs::MarkerArray :init
                                 :markers
                                 (list (text->marker-msg
-                                       "object-center"
+                                       "chair-center"
                                        (send (send *target-object* :copy-worldcoords)
                                                :translate #f(-100 0 100))
                                          (instance std_msgs::header :init
                                                    :stamp (send header :stamp)
                                                    :frame_id *room610-origin*)
-                                         :ns (format nil "object_text_~A" "object-center") :color #f(1 0 0)
+                                         :ns (format nil "object_text_~A" "chair-center") :color #f(1 0 0)
                                          :scale 100 :lifetime marker-life :id 0)
                                         (coords->marker-msg
                                          (send *target-object* :copy-worldcoords)
                                          (instance std_msgs::header :init
                                                    :stamp (send header :stamp)
                                                    :frame_id *room610-origin*)
-                                         :ns (format nil "object_coords_~A" "object-center")
+                                         :ns (format nil "object_coords_~A" "chair-center")
                                          ;; :size 200 :width 20
                                          :lifetime marker-life :id 1)
                                         (object->marker-msg
@@ -279,7 +279,7 @@
                                          (instance std_msgs::header :init
                                                    :stamp (send header :stamp)
                                                    :frame_id *room610-origin*)
-                                         :ns (format nil "object_body_~A" "object-center")
+                                         :ns (format nil "object_body_~A" "chair-center")
                                          :lifetime marker-life :id 2)
                                         )))
 	)
