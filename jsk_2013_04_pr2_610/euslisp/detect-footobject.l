@@ -1,9 +1,6 @@
 #!/usr/bin/env roseus
 
-
-(load "package://pr2eus/pr2-interface.l")
-(load "models/room610-chair-object.l")
-;;(load "package://jsk_2013_04_pr2_610/pfilter.l")
+(ros::roseus  "tmp-node-detect-foot-object")
 (ros::roseus-add-msgs "sensor_msgs")
 (ros::roseus-add-msgs "posedetection_msgs")
 (ros::roseus-add-msgs "geometry_msgs")
@@ -11,41 +8,17 @@
 (defparameter *result-topic* "/narrow_stereo/left/ObjectDetection")
 (defparameter *check-topic* "/check_topic")
 (defvar *base-frame-id* "/base_footprint")
+(defparameter *subscribe-scan-laser* "/scan_filtered_foot")
 
-(ros::roseus "detect_object")
-
-(setq *room610-origin* "/eng8/6f/610")
-(setq *target-object* (instance room610-chair-object :init))
-(setq *object-width* 0.37)
-(setq *object-height* 0.43)
-(setq *error-thred* 0.02)
+;;(setq *base-origin* "/eng8/6f/610")
 (setq *object-xy* nil)
-(setq *inner-threshold* 0.2)
-
-(defclass detect-object
-  :slots (width height error-thred inner-threshold model-filename mode-instance-name model)
-  )
-
-(defmethod detect-object
-  (:init
-   (&rest args &key ((:width w) 0 ) ((:height h) 0) ((:error-thred et) 0) ((:inner-threshold it) 0) ((:model-filename mf) "") ((:model m) nil))
-   (setq width w)
-   (setq heght h)
-   (setq error-thred et)
-   (setq inner-threshold it)
-   (setq model-filename mf)
-   (load model-filename)
-   (setq model m)
-   (if min 
-       (setq model (instance min :init)))
-    )
-  (:width  (&optional w) (if w (setq width  w)) width)
-  (:height (&optional h) (if h (setq height h)) height)
-  (:error-thred (&optional et) (if et (setq error-thred et)) error-thred)
-  (:inner-threshold (&optional it) (if it (setq inner-threshold it)) inner-threshold)
-  (:model-filename (&optional mf) (if mf (setq model-filename mf)) model-filename)
-  (:model (&optional m) (if m (setq model m)) model)
-  )
+(setq *object-width* 0)
+(setq *object-height* 0)
+(setq *target-object* nil)
+(setq *error-thred* 0)
+(setq *inner-threshold* 0)
+(setq *base-origin* "")
+(setq *name-space* "")
 
 ;;convert r theta to xy
 (defun rtheta->xy (r theta index &key (debug nil))
@@ -86,8 +59,6 @@
     (distance x y)
     )
   )
-
-
 
 ;;CALL-BACK this will be called when subscriver is activated
 (defun object-detection-cb (laser-scan-msg)
@@ -203,7 +174,7 @@
     (when ( > (length publish-list) 0)
       (ros::publish *check-topic* all-input-msg)
       )
-    )
+    
 
   ;;if there are answer, continue the process
   (when (not (eq object-xy-params nil))
@@ -233,13 +204,13 @@
 	;;*base-laser-to-laser-scan*
 	(send target-coords :transform *base-laser-to-laser-scan* :world)
 	(send o6dp :pose (ros::coords->tf-pose target-coords))
-	(send o6dp :type "chair-center")
+	(send o6dp :type *name-space*)
 	(push o6dp lst)
         ;;
         ;; publish object_detection_marekr
         (setq marker-life 10)
         (send *target-object* :move-to (send target-coords :copy-worldcoords)
-              (send *ri* :state :worldcoords *room610-origin*))
+              (send *ri* :state :worldcoords *base-origin*))
         (send *target-object* :update-descendants) ;; ???
         (send *target-object* :copy-worldcoords)   ;; ??? 
         (ros::advertise "/object_detection_marker_array" visualization_msgs::MarkerArray 5)
@@ -247,28 +218,28 @@
                       (instance visualization_msgs::MarkerArray :init
                                 :markers
                                 (list (text->marker-msg
-                                       "chair-center"
+                                       *name-space*
                                        (send (send *target-object* :copy-worldcoords)
                                              :translate #f(-100 0 100))
                                        (instance std_msgs::header :init
                                                  :stamp (send header :stamp)
-                                                 :frame_id *room610-origin*)
-                                       :ns (format nil "object_text_~A" "chair-center") :color #f(1 0 0)
+                                                 :frame_id *base-origin*)
+                                       :ns (format nil "object_text_~A" *name-space*) :color #f(1 0 0)
                                        :scale 100 :lifetime marker-life :id 0)
                                       (coords->marker-msg
                                        (send *target-object* :copy-worldcoords)
                                        (instance std_msgs::header :init
                                                  :stamp (send header :stamp)
-                                                 :frame_id *room610-origin*)
-                                       :ns (format nil "object_coords_~A" "chair-center")
+                                                 :frame_id *base-origin*)
+                                       :ns (format nil "object_coords_~A" *name-space*)
                                        ;; :size 200 :width 20
                                        :lifetime marker-life :id 1)
                                       (object->marker-msg
                                        *target-object*
                                        (instance std_msgs::header :init
                                                  :stamp (send header :stamp)
-                                                 :frame_id *room610-origin*)
-                                       :ns (format nil "object_body_~A" "chair-center")
+                                                 :frame_id *base-origin*)
+                                       :ns (format nil "object_body_~A" *name-space*
                                        :lifetime marker-life :id 2)
                                       )))
 	)
@@ -279,15 +250,18 @@
       )
     )
   )
+))
 
+(defun start-detect-footobject (&rest args &key (width 0) (height  0) (model nil) (error-thred  0) (inner-threshold  0) (base-origin  "") (name-space ""))
+  (setq *object-width* width)
+  (setq *object-height* height)
+  (setq *target-object* model)
+  (setq *error-thred* error-thred)
+  (setq *inner-threshold* inner-threshold)
+  (setq *base-origin* base-origin)
+  (setq *name-space* name-space)
 
-(defun setup-detect-object (&key (width 0) (height 0) (object-name "")))
-)
-
-(defun start-detect-object
-  (setup-detect-object :width 0.37 :height 0.43 )
-
-  (ros::subscribe "/scan_filtered_foot"
+  (ros::subscribe *subscribe-scan-laser*
                   sensor_msgs::LaserScan
                   #'object-detection-cb)
 
@@ -303,9 +277,5 @@
     (ros::spin-once)
     (ros::sleep)
     )
-
   )
-
-
-(start-detect-object)
 
