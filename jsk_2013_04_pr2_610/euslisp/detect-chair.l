@@ -3,7 +3,7 @@
 
 (load "package://pr2eus/pr2-interface.l")
 (load "models/room610-chair-object.l")
-(load "package://jsk_2013_04_pr2_610/pfilter.l")
+;;(load "package://jsk_2013_04_pr2_610/pfilter.l")
 (ros::roseus-add-msgs "sensor_msgs")
 (ros::roseus-add-msgs "posedetection_msgs")
 (ros::roseus-add-msgs "geometry_msgs")
@@ -23,11 +23,11 @@
 (setq *object-xy* nil)
 (setq *inner-threshold* 0.2)
 
-(setq *detect-pf* nil)
-(setq *detect-system-noise*)
-(setq *detect-measurement-noise*)
+;;(setq *detect-pf* nil)
+;;(setq *detect-system-noise*)
+;;(setq *detect-measurement-noise*)
 
-
+#|
 (defclass detect-particle-filter
   :super particle-filter)
 (defmethod detect-particle-filter
@@ -54,7 +54,7 @@
 
   )
 
-
+|#
 
 
 ;;convert r theta to xy
@@ -297,7 +297,7 @@
 				  sensor_msgs::LaserScan
 				  #'object-detection-cb)
 
-  (init-particles)
+;;  (init-particles)
   (ros::advertise *result-topic* posedetection_msgs::ObjectDetection)
   (ros::advertise *check-topic* jsk_2013_04_pr2_610::geometry_vectors)
 

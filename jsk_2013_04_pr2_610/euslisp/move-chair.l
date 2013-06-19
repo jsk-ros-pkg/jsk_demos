@@ -69,8 +69,8 @@
   (warn "move-chair (inagaki)~%")
   (let (dest-c (grasp-success nil))
 
-    (send *ri* :go-pos-unsafe 0.1 0 0)
-    (send *pr2* :translate (float-vector 100 0 0))
+    ;;(send *ri* :go-pos-unsafe 0.1 0 0)
+    ;;(send *pr2* :translate (float-vector 100 0 0))
 
     ;;reset from furuta's pose
 
@@ -200,7 +200,7 @@
 			(send *pr2* :link-list (send *pr2* :rarm :end-coords :parent)))
 	    :move-target (list (send *pr2* :rarm :end-coords))
 	    :look-at-target t
-	    :revert-if-fail nil
+            :rotation-axis  :z
             :debug-view nil
 	    )
       (if (boundp '*irtviewer*) (send *irtviewer* :draw-objects))
