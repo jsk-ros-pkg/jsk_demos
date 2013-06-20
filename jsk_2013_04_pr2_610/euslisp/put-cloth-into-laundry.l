@@ -8,7 +8,7 @@
 (defvar *pub-laundry-button-topic* "/laundry_button_marker")
 
 (load "package://jsk_demo_common/euslisp/pr2-action.l")
-(load "package://jsk_2013_04_pr2_610/euslisp/objectdetection-laundry.l")
+(load "package://jsk_2013_04_pr2_610/euslisp/objectdetection.l")
 
 (ros::roseus "laundry_button_marker_publisher")
 (ros::advertise *pub-laundry-button-topic* visualization_msgs::Marker 5)

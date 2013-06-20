@@ -1,5 +1,6 @@
 <launch>
   <arg name="object" />
+  <arg name="type" />
   <arg name="image" />
   <arg name="width" />
   <arg name="height" />
@@ -21,7 +22,7 @@
           output="screen" >
       <param name="template_filename"
              value="$(arg image)" />
-      <param name="window_name" value="$(arg object)_button"/>
+      <param name="window_name" value="$(arg type)"/>
       <param name="object_width" value="$(arg width)"/>
       <param name="object_height" value="$(arg height)"/>
       <param name="reprojection_threshold" value="3.0" />
