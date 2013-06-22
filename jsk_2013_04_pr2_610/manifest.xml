@@ -12,7 +12,6 @@
   <depend package="pr2eus"/>
   <depend package="laser_filters_jsk_patch" />
   <depend package="jsk_perception" />
-
 </package>
 
 
