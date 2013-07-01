@@ -65,7 +65,6 @@
   ;;after move-to, save the pos
   (setq *moved-chair-spot* nil)
 
-
   (if (not (boundp '*ri*)) (setq *ri* (instance pr2-interface :init :objects (send *room610* :objects))))
   (if (not (boundp '*tfl*)) (setq *tfl* (instance transform-listener :init)))
 
@@ -88,14 +87,49 @@
   (:spots ()
           (list *tray-spot* *chair-spot* *laundry-spot* *pick-broom-spot* *sink-spot* *sweep-spot* *moved-back-chair-spot*)))
 
+(defun pr2-pick-tray-pose ()
+  ;; Open collar-y a little bit
+  (send *pr2* :larm :collar-y :joint-angle 75)
+  (send *pr2* :rarm :collar-y :joint-angle -75)
+
+  ;; Rise shoulder-p upto horizontal position
+  (send *pr2* :arms :shoulder-p :joint-angle -20)
+
+  ;; Rotate shoulder-p
+  (send *pr2* :larm :shoulder-r :joint-angle 70)
+  (send *pr2* :rarm :shoulder-r :joint-angle -70)
+  )
+
+(defun move-to-table ()
+  (warn "move-to-table~%")
+  (use-tilt-laser-obstacle-cloud nil)
+
+  (send *pr2* :reset-pose)
+  (pr2-pick-tray-pose)
+
+  ;; send angle-vector
+  (send *ri* :angle-vector (send *pr2* :angle-vector) 5000)
+
+  (clear-costmap)
+  (send *pr2* :move-to (send *room610* :spot-tray-spot) :world)
+  (if (not (send *ri* :move-to (send *room610* :spot-tray-spot) :frame-id *room610-origin*))
+	  (return-from move-to-table nil)
+	  )
+  (send *pr2* :head :neck-p :joint-angle 49.386)
+  (send *ri* :angle-vector (send *pr2* :angle-vector) 1000)
+  (send *ri* :wait-interpolation)
+  t)
+
 (defun move-to-sink ()
   (warn "move-to-sink~%")
   (use-tilt-laser-obstacle-cloud nil)
   (clear-costmap)
   (send *pr2* :move-to (send *room610* :spot-sink-spot) :world)
-  (send *ri* :move-to (send *room610* :spot-sink-spot) :frame-id *room610-origin*)
+  (if (not (send *ri* :move-to (send *room610* :spot-sink-spot) :frame-id *room610-origin*))
+	  (return-from move-to-sink nil)
+	  )
   (use-tilt-laser-obstacle-cloud t)
-  )
+  t)
 
 (defun move-to-chair ()
   (warn "move-to-chair~%")
@@ -111,20 +145,25 @@
   (use-tilt-laser-obstacle-cloud nil)
   (clear-costmap)
   (send *pr2* :move-to (send *room610* :spot-chair-spot) :world)
-  (send *ri* :move-to (send *room610* :spot-chair-spot) :frame-id *room610-origin*)
+  (if (not (send *ri* :move-to (send *room610* :spot-chair-spot) :frame-id *room610-origin*))
+	  (return-from move-to-chair nil)
+	  )
   (send *ri* :angle-vector (send *pr2* :angle-vector) 500)
   (use-tilt-laser-obstacle-cloud t)
-  )
+  t)
 
 (defun move-to-chair2 ()
   (warn "move-to-chair2~%")
   (use-tilt-laser-obstacle-cloud nil)
   (clear-costmap)
   (send *pr2* :move-to (send *room610* :spot-chair-spot2) :world)
-  (send *ri* :move-to (send *room610* :spot-chair-spot2) :frame-id *room610-origin*)
+  (if (not (send *ri* :move-to (send *room610* :spot-chair-spot2) :frame-id *room610-origin*))
+	  (return-from move-to-chair2 nil)
+	  )
   (use-tilt-laser-obstacle-cloud t)
-  )
+  t)
 
+#|
 (defun move-to-back-chair ()
   (warn "move-to-back-chair~%")
   (use-tilt-laser-obstacle-cloud nil)
@@ -140,144 +179,70 @@
       (send *ri* :move-to (send *room610* :spot-moved-back-chair) :frame-id *room610-origin* )
     )
    )
-
-
   (use-tilt-laser-obstacle-cloud t)
 )
-
-
-(defun move-to-laund ()
-  (setq ima (send *ri* :state :worldcoords "/eng8/6f/610"))
-  (setq diff (v- (send *laundry-spot* :pos) (send ima :pos)))
-  (send *laundry* :translate diff (send *room610* :worldcoords))
-  
-  )
-
-(defun relocate-pr2 ()
-  (setq ima (send *ri* :state :worldcoords "/eng8/6f/610"))
-  (send *pr2* :move-to ima :world))
-
-(defun mtl ()
-  (setq ima (send *ri* :state :worldcoords "/eng8/6f/610"))
-  (send *pr2* :move-to ima :world)
-)
-
-(defun test ()
-  (init)
-  (mtl)
-  (put-cloth)
-)
+|#
 
 (defun move-to-laundry ()
   (warn "move-to-laundry~%")
-  (let (current-ri-coordsmou-chotto-pos mou-chotto-local-pos mou-chotto-roll)
-    (use-tilt-laser-obstacle-cloud nil)
-    (send *pr2* :reset-pose)
-    (send *ri* :angle-vector (send *pr2* :angle-vector) 2000)
-    (send *pr2* :move-to (send *room610* :spot-laundry-spot) :world)
-    (send *ri* :move-to (send *room610* :spot-laundry-spot) :frame-id *room610-origin*)
-#|    (cond 
-     (*world-to-610*
-      (send *ri* :move-to (send *room610* :spot-laundry-spot) :frame-id *room610-origin*)
-      (setq current-ri-coords (send (send *world-to-610* :worldcoords) :transformation (send *ri* :state :worldcoords)))
-      (setq mou-chotto-pos (v- (send (send *room610* :spot-laundry-spot) :pos) (send current-ri-coords :pos)))
-      (setq mou-chotto-local-pos (transform (inverse-matrix (send (send *ri* :state :worldcoords) :worldrot)) mou-chotto-pos))
-      (setq mou-chotto-roll
-            (-
-             (elt (elt (send (send *room610* :spot-laundry-spot) :rpy-angle) 0) 0)
-             (elt (elt (send current-ri-coords :rpy-angle) 0) 0)))
-      (send *ri* :go-pos-unsafe (/ (elt mou-chotto-local-pos 0) 1000) (/ (elt mou-chotto-local-pos 1) 1000) (rad2deg mou-chotto-roll)))
-     (t
-      (send *ri* :move-to (send *pr2* :worldcoords))
-      ))
-|#
-    (use-tilt-laser-obstacle-cloud t)
-    ))
+  (use-tilt-laser-obstacle-cloud nil)
+  (send *pr2* :reset-pose)
+  (send *ri* :angle-vector (send *pr2* :angle-vector) 2000)
+  (clear-costmap)
+  (send *pr2* :move-to (send *room610* :spot-laundry-spot) :world)
+  (if (not (send *ri* :move-to (send *room610* :spot-laundry-spot) :frame-id *room610-origin*))
+	  (return-from move-to-laundry nil)
+	  )
+  (use-tilt-laser-obstacle-cloud t)
+  t)
 
 (defun move-to-broom ()
   (warn "move-to-broom~%")
-  (let (current-ri-coords mou-chotto-pos mou-chotto-local-pos mou-chotto-roll)
     (use-tilt-laser-obstacle-cloud nil)
     (send *pr2* :move-to (send *room610* :spot-pick-broom-spot) :world)
-    (send *ri* :move-to (send *room610* :spot-pick-broom-spot) :frame-id *room610-origin*)
-#|
-    (cond
-     (*world-to-610*
-      (setq current-ri-coords (send (send *world-to-610* :worldcoords) :transformation (send *ri* :state :worldcoords)))
-      (setq mou-chotto-pos (v- (send (send *room610* :spot-pick-broom-spot) :pos) (send current-ri-coords :pos)))
-      (setq mou-chotto-local-pos (transform (inverse-matrix (send (send *ri* :state :worldcoords) :worldrot)) mou-chotto-pos))
-      (setq mou-chotto-roll
-            (- 
-             (elt (elt (send (send *room610* :spot-pick-broom-spot) :rpy-angle) 0) 0)
-             (elt (elt (send current-ri-coords :rpy-angle) 0) 0)))
-      (send *ri* :go-pos-unsafe (/ (elt mou-chotto-local-pos 0) 1000) (/ (elt mou-chotto-local-pos 1) 1000) (rad2deg mou-chotto-roll)))
-     (t
-      (send *ri* :move-to (send *pr2* :worldcoords))
-      ))
-|#
+    (if (not (send *ri* :move-to (send *room610* :spot-pick-broom-spot) :frame-id *room610-origin*))
+		(return-from move-to-broom nil)
+		)
     (use-tilt-laser-obstacle-cloud t)
-    ))
+	t)
 
 
 (defun rarm-tuck ()
-(send *pr2* :angle-vector (send *ri* :state :potentio-vector))
-(send *pr2* :rarm :wrist-r  :joint-angle 19.9)
-(send *pr2* :rarm :wrist-p  :joint-angle -6)
-(send *pr2* :rarm :elbow-r  :joint-angle 69.8225)
-(send *pr2* :rarm :elbow-p  :joint-angle -90.0744)
-(send *pr2* :rarm :shoulder-r  :joint-angle -104.746)
-(send *pr2* :rarm :shoulder-p  :joint-angle 69.8)
-(send *pr2* :rarm :collar-y  :joint-angle -5.05)
-(send *ri* :angle-vector (send *pr2* :angle-vector))
-)
+  (send *pr2* :angle-vector (send *ri* :state :potentio-vector))
+  (send *pr2* :rarm :wrist-r  :joint-angle 19.9)
+  (send *pr2* :rarm :wrist-p  :joint-angle -6)
+  (send *pr2* :rarm :elbow-r  :joint-angle 69.8225)
+  (send *pr2* :rarm :elbow-p  :joint-angle -90.0744)
+  (send *pr2* :rarm :shoulder-r  :joint-angle -104.746)
+  (send *pr2* :rarm :shoulder-p  :joint-angle 69.8)
+  (send *pr2* :rarm :collar-y  :joint-angle -5.05)
+  (send *ri* :angle-vector (send *pr2* :angle-vector))
+  )
 
 (defun larm-tuck ()
-(send *pr2* :angle-vector (send *ri* :state :potentio-vector))
-(send *pr2* :larm :wrist-r  :joint-angle 20)
-(send *pr2* :larm :wrist-p  :joint-angle -5)
-(send *pr2* :larm :elbow-r  :joint-angle 69)
-(send *pr2* :larm :elbow-p  :joint-angle -90)
-(send *pr2* :larm :shoulder-r  :joint-angle 79)
-(send *pr2* :larm :shoulder-p  :joint-angle 60)
-(send *pr2* :larm :collar-y  :joint-angle 0)
-(send *ri* :angle-vector (send *pr2* :angle-vector))
-)
+  (send *pr2* :angle-vector (send *ri* :state :potentio-vector))
+  (send *pr2* :larm :wrist-r  :joint-angle 20)
+  (send *pr2* :larm :wrist-p  :joint-angle -5)
+  (send *pr2* :larm :elbow-r  :joint-angle 69)
+  (send *pr2* :larm :elbow-p  :joint-angle -90)
+  (send *pr2* :larm :shoulder-r  :joint-angle 79)
+  (send *pr2* :larm :shoulder-p  :joint-angle 60)
+  (send *pr2* :larm :collar-y  :joint-angle 0)
+  (send *ri* :angle-vector (send *pr2* :angle-vector))
+  )
 
 
 (defun move-to-sweep ()
   (warn "move-to-sweep~%")
-;  (rarm-tuck)
-#|
-  (send *pr2* :angle-vector (send *ri* :state :potentio-vector))
-  (let ((larm-end-coords (send *pr2* :larm :end-coords)))
-    (send *pr2* :rarm :inverse-kinematics
-          (send larm-end-coords :translate #f(0 0 -300) :world)
-          :look-at-target t
-          :rotation-axis :z
-          :debug-view nil)
-  (send *ri* :angle-vector (send *pr2* :angle-vector))
-  (send *ri* :wait-interpolation)
-  (if (boundp '*irtviewer*) (send *irtviewer* :draw-objects))
-
-  (send *pr2* :rarm :inverse-kinematics
-          (send larm-end-coords :translate #f(30 0 0) :world)
-          :look-at-target t
-          :rotation-axis :z
-          :debug-view nil))
-  (send *ri* :angle-vector (send *pr2* :angle-vector))
-  (send *ri* :wait-interpolation)
-  (if (boundp '*irtviewer*) (send *irtviewer* :draw-objects))
-
-  (send *ri* :start-grasp)
-|#
   (sweep-under-table-init-slim)
   (rehold-mop)
-;;  (sweep-under-table-init)
   (use-tilt-laser-obstacle-cloud nil)
   (send *pr2* :move-to (send *room610* :spot-sweep-spot) :world)
-  (send *ri* :move-to (send *room610* :spot-sweep-spot) :frame-id *room610-origin*)
+  (if (not (send *ri* :move-to (send *room610* :spot-sweep-spot) :frame-id *room610-origin*))
+	  (return-from move-to-sweep nil)
+	  )
   (use-tilt-laser-obstacle-cloud t)
-)
+  t)
 
 (defun pass-broom-to-right-hand ()
   (warn "pass-broom-to-right-hand~%"))
