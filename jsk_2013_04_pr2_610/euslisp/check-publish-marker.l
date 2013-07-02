@@ -19,7 +19,7 @@
   (setq index-input 0)
 
   (setq geo-vec-vec (send geo-vec-list :vectors))
-  (ros::ros-info "------------callback is called!!----------------" )
+;;  (ros::ros-info "------------callback is called!!----------------" )
   (setq vector-list (coerce geo-vec-vec cons))
 
   (setq list-num (length vector-list))
@@ -27,7 +27,7 @@
 
   (dolist (geovec vector-list)
 		(setq flovec (float-vector (send geovec :x) (send geovec :y) (send geovec :z)))
-  		(ros::ros-info "flovec ~A" flovec)
+;;  		(ros::ros-info "flovec ~A" flovec)
                 (setq sp (make-sphere size :pos (scale 1000 flovec)))
                 (setq sp-msg (sphere->marker-msg sp header :color (float-vector 0 0 1) :alpha 0.5))
 		(send sp-msg :ns (string (format nil "~dinput_sphere" index-input)))

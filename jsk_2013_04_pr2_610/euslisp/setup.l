@@ -23,7 +23,6 @@
   (pr2)
 
   (objects (list *room610* *pr2*))
-
   (setq *room610-origin* "/eng8/6f/610")
   (setq *table-coords* (make-coords :pos #f(4700 1000 0) :rpy (float-vector -pi/2 0 0)))
   (setq *chair-coords* (make-coords :pos #f(3800 0 0)))

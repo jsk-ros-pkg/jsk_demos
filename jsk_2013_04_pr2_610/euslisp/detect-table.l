@@ -82,7 +82,7 @@
   (let ((index 0) (trans nil) (angle (send laser-scan-msg :angle_min)) (angle-step (send laser-scan-msg :angle_increment)) (ranges-vec (send laser-scan-msg :ranges)) (x 0) (y 0) (xy-list nil) (chair-width-likely nil) (chair-height-likely nil))
 
     (setq ranges-vec (send laser-scan-msg :ranges))
-    (ros::ros-info "------------callback is called!!----------------" )
+    ;;(ros::ros-info "------------callback is called!!----------------" )
     (setq ranges (coerce ranges-vec cons))
 
     ;; First Calc the x y and put those in xy-list
@@ -104,7 +104,7 @@
 	)
       (setq angle (+ angle angle-step))
       )
-    (pprint tmp-xy-list)
+    ;;(pprint tmp-xy-list)
 
 
     ;; Next estimate best combination
@@ -153,11 +153,11 @@
 		(setq vector2 (float-vector (- (cadr (car chair-height-xy)) (cadr (cadr chair-height-xy))) (- (caddr (car chair-height-xy)) (caddr (cadr chair-height-xy)))))
 		(setq vector2 (normalize-vector vector2))
 		(setq inner-product (v. vector1 vector2))
-		(ros::ros-info "~d inner-product before check" inner-product)
+		;;(ros::ros-info "~d inner-product before check" inner-product)
 		
 		(if (and ( < inner-product  *inner-threshold* ) (> inner-product (* -1 *inner-threshold*)))
 			(progn
-				(ros::ros-info "~d inner-product passed" inner-product)
+				;;(ros::ros-info "~d inner-product passed" inner-product)
 	    			(push (append chair-width-xy chair-height-xy) seem-answer)
 			)
 			)
@@ -198,9 +198,9 @@
 			(when (equal id1 id2)
 				(if (equal j 3)
 					(setq former nil)
-					(ros::ros-info "------------------------------------------joint at ~d ~d-----------------------------" id1 id2)
+					;;(ros::ros-info "------------------------------------------joint at ~d ~d-----------------------------" id1 id2)
 					)
-                                (ros::ros-info "------------------------------------------joint at ~d ~d-----------------------------" id1 id2)
+                                ;;(ros::ros-info "------------------------------------------joint at ~d ~d-----------------------------" id1 id2)
                                 (setq width-same-index id1)
                                 (setq height-same-index id2)
 				)
@@ -209,7 +209,7 @@
  
 	))
 	)
-    (ros::ros-info "~A  answer ~d ~d" *chair-xy* width-same-index height-same-index)
+   ;; (ros::ros-info "~A  answer ~d ~d" *chair-xy* width-same-index height-same-index)
     ;;publish answer 
     (setq publish-list nil)
     (dolist (xy chair-xy-params)
@@ -230,7 +230,7 @@
   (when (not (eq chair-xy-params nil))
     ;;we calc the normal
     (setq normal-to-line (float-vector (* 1 (- (caddr (car chair-xy-params)) (caddr (cadr chair-xy-params)))) (* -1 (- (cadr (car chair-xy-params)) (cadr (cadr chair-xy-params))))))
-    (ros::ros-info "normal-to-line ~A" normal-to-line)
+    ;;(ros::ros-info "normal-to-line ~A" normal-to-line)
     
     ;;normalization
     (setq normal-to-line (normalize-vector normal-to-line))
@@ -255,7 +255,7 @@
         )
     (setq *chair-xy* (list (/ (+ (cadr corner1) (cadr corner2) ) 2) (/ (+ (caddr corner1) (caddr corner2)) 2)))
 
-    (ros::ros-info "chair-xy CENTER is  ~A !!!!!" *chair-xy*)
+ ;;   (ros::ros-info "chair-xy CENTER is  ~A !!!!!" *chair-xy*)
 ;;    (setq *chair-xy* (list (/ (+ (car chair-xy-params)) 2)))
 
 ;;    (ros::ros-info "after chair ~A" *chair-xy*)
@@ -324,7 +324,7 @@
       (send res :header header)
       (send res :objects lst)
       (ros::publish *result-topic* res)
-      (ros::ros-info "PUBLISHED to ~A" *result-topic*)
+      ;;(ros::ros-info "PUBLISHED to ~A" *result-topic*)
       )
 
     )
