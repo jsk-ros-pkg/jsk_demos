@@ -104,7 +104,7 @@
   (let ((index 0) (trans nil) (angle (send laser-scan-msg :angle_min)) (angle-step (send laser-scan-msg :angle_increment)) (ranges-vec (send laser-scan-msg :ranges)) (x 0) (y 0) (xy-list nil) (object-width-likely nil) (object-height-likely nil))
 
     (setq ranges-vec (send laser-scan-msg :ranges))
-    (ros::ros-info "------------callback is called!!----------------" )
+    ;;(ros::ros-info "------------callback is called!!----------------" )
     (setq ranges (coerce ranges-vec cons))
 
     ;; First Calc the x y and put those in xy-list
@@ -199,7 +199,7 @@
 				 
 				 ))
 	  )
-    (ros::ros-info "~A  answer " *object-xy*)
+;;    (ros::ros-info "~A  answer " *object-xy*)
     ;;publish answer 
     (setq publish-list nil)
     (dolist (xy object-xy-params)
@@ -286,7 +286,7 @@
       (send res :header header)
       (send res :objects lst)
       (ros::publish *result-topic* res)
-      (ros::ros-info "PUBLISHED to ~A" *result-topic*)
+;;      (ros::ros-info "PUBLISHED to ~A" *result-topic*)
       )
     )
   )

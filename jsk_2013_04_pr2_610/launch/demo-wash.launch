@@ -4,4 +4,5 @@
     pkg="jsk_2013_04_pr2_610"
     type="demo-wash.l"
     output="screen"/>
+  <include file="$(find jsk_2013_04_pr2_610)/launch/detect-all.launch" />
 </launch>

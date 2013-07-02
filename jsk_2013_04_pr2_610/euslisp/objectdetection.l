@@ -51,6 +51,8 @@
     (if (boundp '*irtviewer*) (send *irtviewer* :draw-objects :flush t))
 
     (ros::roseus "object_detection_marker_tray")
+    (setq ret nil)
+    (while (not ret)
     (setq ret
           (check-detection :type "tray_center" ;; work for any object
                            :speak-name "とれい"
@@ -59,6 +61,7 @@
                            :diff-position 10
                            :diff-rotation (deg2rad 10)
                            :speak t))
+    )
 
     (if (boundp '*irtviewer*) (send *irtviewer* :draw-objects :flush t))
 
