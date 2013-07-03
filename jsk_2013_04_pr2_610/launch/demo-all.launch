@@ -1,8 +1,9 @@
 <launch>
+  <arg name="task" />
   <env name="PATH" value="$(env PATH):$(find roseus)/bin" />
   <node name="setup"
     pkg="jsk_2013_04_pr2_610"
-    type="demo-all.l"
+    type="demo.l"
     output="screen"/>
   <include file="$(find jsk_2013_04_pr2_610)/launch/detect-all.launch" />
 </launch>

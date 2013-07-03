@@ -1,4 +1,4 @@
-#!/usr/bin/env roseus
+B1;3201;0c#!/usr/bin/env roseus
 ;;(ros::load-ros-manifest "jsk_perception")
 
 ;; define detection parameters befor load detection_interface.l
@@ -194,7 +194,7 @@
 
     (setq angle-vector-list nil)
     (dotimes (i 9)
-      (send (send back-legs-center :rotate (deg2rad -2) :y) :translate (float-vector -5 0 3) *pr2*)
+      (send (send back-legs-center :rotate (deg2rad 2) :y) :translate (float-vector -5 0 3) *pr2*)
       (send *pr2* :inverse-kinematics dest-c
 	    :link-list (list
 			(send *pr2* :link-list (send *pr2* :rarm :end-coords :parent)))
