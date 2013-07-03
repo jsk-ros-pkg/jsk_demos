@@ -1,7 +1,7 @@
 <launch>
-  <include file="$(find jsk_2013_04_pr2_610)/launch/detect-chair.launch" />
+  <include file="$(find jsk_2013_04_pr2_610)/launch/detect_chair.launch" />
 
-  <include file="$(find jsk_2013_04_pr2_610)/launch/detect-with-image.launch">
+  <include file="$(find jsk_2013_04_pr2_610)/launch/detect_with_image.launch">
 	<arg name="object" value="laundry" />
         <arg name="type" value="laundry_button" />
 	<arg name="image" value="$(find jsk_2013_04_pr2_610)/data/marker_laundry_052149_narrow_cut.jpg" />
@@ -10,7 +10,7 @@
 	<arg name="pose" value="0.164 0.27 -1.129  0.0 -0.698 0.0" />
   </include>
 
-  <include file="$(find jsk_2013_04_pr2_610)/launch/detect-with-image.launch">
+  <include file="$(find jsk_2013_04_pr2_610)/launch/detect_with_image.launch">
 	<arg name="object" value="tray" />
         <arg name="type" value="tray_center" />
 	<arg name="image" value="$(find roseus_tutorials)/roseus_detection_templates/turtlebot_big.jpg" />
