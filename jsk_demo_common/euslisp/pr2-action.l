@@ -284,6 +284,7 @@
 (defvar *fridge-distance-threshold* 25.0)
 (defvar *fridge-rotation-threshold* 0.09)
 (defun open-fridge-door (&key (open-fridge-func #'open-fridge-traj)
+                              (torso-lift 50) (head-pitch 0)
                               (door-type :circle) (look-around nil)) ;; :circle, :slide1, :slide2
   (let (ret
         (idealcds
@@ -303,14 +304,14 @@
     ;; initial pose
     (case door-type
       (:circle
-       (send *pr2* :head :angle-vector (float-vector 0 0))
-       (send *pr2* :torso :angle-vector (float-vector 140))
+       (send *pr2* :head :angle-vector (float-vector 0 head-pitch))
+       (send *pr2* :torso :angle-vector (float-vector torso-lift))
        (send *ri* :angle-vector (send *pr2* :angle-vector))
        (send *ri* :wait-interpolation)
        )
       ((:slide1 :slide2)
-       (send *pr2* :head :angle-vector (float-vector 0 0))
-       (send *pr2* :torso :angle-vector (float-vector 140))
+       (send *pr2* :head :angle-vector (float-vector 0 head-pitch))
+       (send *pr2* :torso :angle-vector (float-vector torso-lift))
        ;;(send *pr2* :larm :angle-vector (float-vector 25.0 74.0 35.0 -120.0 20.0 -30.0 0.0))
        (send *ri* :angle-vector (send *pr2* :angle-vector))
        (send *ri* :wait-interpolation)
@@ -355,12 +356,14 @@
             (case door-type
               (:circle
                (send *pr2* :head :angle-vector (float-vector 0 24))
-               (send *ri* :angle-vector (send *pr2* :angle-vector) 600)
+               (send *pr2* :torso :angle-vector (float-vector 140))
+               (send *ri* :angle-vector (send *pr2* :angle-vector) 3000)
                (send *ri* :wait-interpolation)
                )
               ((:slide1 :slide2)
                (send *pr2* :head :angle-vector (float-vector 0 50))
-               (send *ri* :angle-vector (send *pr2* :angle-vector) 600)
+               (send *pr2* :torso :angle-vector (float-vector 140))
+               (send *ri* :angle-vector (send *pr2* :angle-vector) 3000)
                (send *ri* :wait-interpolation)
                ))
 
@@ -392,8 +395,8 @@
               )
             (if ret (return)))
           (speak-jp "れいぞうこを あけられません でした")
-          (send *pr2* :head :angle-vector (float-vector 0 0))
-          (send *pr2* :torso :angle-vector (float-vector 140))
+          (send *pr2* :head :angle-vector (float-vector 0 head-pitch))
+          (send *pr2* :torso :angle-vector (float-vector torso-lift))
           (send *ri* :angle-vector (send *pr2* :angle-vector))
           (send *ri* :go-pos-unsafe -0.1 0 0)
           (send *ri* :wait-interpolation)
