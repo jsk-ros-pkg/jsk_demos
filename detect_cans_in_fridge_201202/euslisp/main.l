@@ -1,3 +1,5 @@
+(defvar *use-voicetext* t)
+
 ;; open fridge and pick a can (and close the door)
 (load "package://jsk_2011_07_pr2_semantic/euslisp/actions.l")
 (require :pr2-interface "package://pr2eus/pr2-interface.l")
@@ -46,14 +48,18 @@
     (send *ri* :wait-interpolation))
 
   (when return-to-initial-position
-    (speak-jp (format nil "~a を もって いきます" *type*))
+    (if (and (boundp '*use-voicetext*) *use-voicetext*)
+        (speak-jp (format nil "~aを持って行きます。" *type*))
+      (speak-jp (format nil "~a を もって いきます" *type*)))
     (send *ri* :move-to *opose*))
 
   (case finish-type
     (:put-on-turtlebot
      (put-can-on-turtlebot))
     ((:pass-to-human t)
-     (speak-jp (format nil "~a を どうぞ" *type*))
+     (if (and (boundp '*use-voicetext*) *use-voicetext*)
+         (speak-jp (format nil "~aをどうぞ。" *type*))
+       (speak-jp (format nil "~a を どうぞ" *type*)))
      (hand-over :rarm :wait-shock t))
     )
   t
@@ -90,8 +96,9 @@
                   (finish-type :pass-to-human) ;; :pass-to-human, :put-on-turtlebot, ...
                   )
   (setq *type* type)
-  (speak-jp (format nil "~a を もってきます  しょうしょう おまち ください" *type*))
-
+  (if (and (boundp '*use-voicetext*) *use-voicetext*)
+      (speak-jp (format nil "~aを持って行きます。少々、お待ちください。" *type*))
+    (speak-jp (format nil "~a を もってきます  しょうしょう おまち ください" *type*)))
   (send *pr2* :head :angle-vector (float-vector 0 10))
   (send *ri* :angle-vector (send *pr2* :angle-vector) 750)
   (send *ri* :wait-interpolation)
