@@ -1,6 +1,7 @@
 <launch>
   <arg name="start_rviz" default="false" />
   <arg name="wait_query" default="true" />
+  <arg name="DEMOTYPE" default=":map" />
 
   <!-- sample data for test -->
   <anode pkg="rosbag" type="play" name="play"
@@ -54,7 +55,7 @@
 
   <node if="$(arg wait_query)"
         pkg="roseus" name="fridge_can_main" type="roseus"
-        args="$(find detect_cans_in_fridge_201202)/euslisp/main.l (wait-android-query)" />
+        args="$(find detect_cans_in_fridge_201202)/euslisp/main.l (wait-android-query $(arg DEMOTYPE))" />
 
   <sphinxdoc><![CDATA[
 

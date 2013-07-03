@@ -135,7 +135,7 @@
     )
   )
 
-(defun wait-android-query ()
+(defun wait-android-query (&optional (demo-type :map))
   (ros::ros-info "Begin Waiting ....")
   (let (type from)
     (ros::subscribe "/Tablet/StartDemo" roseus::StringStamped
@@ -163,12 +163,11 @@
        (case from
          (:tablet
           (ros::ros-info "detect_cans: starting demo with ~A" type)
-          ;;(demo :type type)
-          (demo :type type :demo-type :short))
+          (demo :type type :demo-type demo-type))
          (:app
           (ros::ros-info "detect_cans: starting app demo with ~A" type)
           ;;(demo :type type)
-          (demo :type type :demo-type :short :finish-type :put-on-turtlebot))
+          (demo :type type :demo-type demo-type :finish-type :put-on-turtlebot))
          )
        (ros::spin-once)
        (setq type nil from nil)
