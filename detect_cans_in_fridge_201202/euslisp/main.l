@@ -99,11 +99,8 @@
   (if (and (boundp '*use-voicetext*) *use-voicetext*)
       (speak-jp (format nil "~aを持って行きます。少々、お待ちください。" *type*))
     (speak-jp (format nil "~a を もってきます  しょうしょう おまち ください" *type*)))
-  (send *pr2* :head :angle-vector (float-vector 0 10))
-  (send *ri* :angle-vector (send *pr2* :angle-vector) 750)
-  (send *ri* :wait-interpolation)
-
   (pr2-tuckarm-pose :rarm)
+
   (setq *opose* (send *ri* :state :worldcoords))
 
   (case demo-type
@@ -114,7 +111,7 @@
      ;; do nothing
      ))
 
-  (unless (open-fridge-door)
+  (unless (open-fridge-door :torso-lift 25 :head-pitch 14)
     (return-from demo))
 
   (unless (grasp-can)
