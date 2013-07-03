@@ -1,0 +1,63 @@
+#!/usr/bin/env roseus
+
+(load "package://jsk_2013_04_pr2_610/euslisp/setup.l")
+
+(defun demo-all ()
+  (demo)
+  (speak-jp "おわりました")
+  )
+
+(defun demo-tray ()
+  (setup)
+  (pr2-reset-pose)
+  (while (not (move-to-table)))
+  (pick-tray)
+  (while (not (move-to-sink)))
+  (place-tray)
+
+  (send *ri* :go-pos-unsafe -0.3 0)
+  (send *ri* :go-pos-unsafe 0 0 180)
+
+  (speak-jp "おわりました")
+  )
+
+(defun demo-wash ()
+  (setup)
+
+  (while (not (move-to-chair)))
+  (pick-cloth)
+
+  (while (not (move-to-laundry)))
+  (put-cloth)
+
+  (pr2-reset-pose)
+
+  (send *ri* :go-pos-unsafe -0.2 0)
+  (send *ri* :go-pos-unsafe 0 0 -140)
+
+  (speak-jp "おわりました")
+  )
+
+(defun demo-pick-broom ()
+  (setup)
+
+  (pr2-reset-pose)
+
+  (while (not (move-to-laundry)))
+
+  (send *pr2* :angle-vector (send *ri* :state :potentio-vector))
+  (send *pr2* :head :neck-y :joint-angle -4.353)
+  (send *pr2* :head :neck-p :joint-angle 24.422)
+  (send *ri* :angle-vector (send *pr2* :angle-vector))
+  (send *ri* :wait-interpolation)
+
+  (send *laundry* :move-to (laundry-detection *laundry*) :world)
+
+  (while (not (move-to-broom)))
+
+  (pick-broom)
+
+  (send *ri* :go-pos-unsafe -0.1 0 -140)
+
+  (speak-jp "おわりました")
+  )
