@@ -4,7 +4,9 @@
 
 (warn "goto-front-of-fridge")
 (defun goto-front-of-fridge (&key (torso-lift 50) (head-pitch 0))
-  (speak-jp "いどう します");;
+  (if (and (boundp '*use-voicetext*) *use-voicetext*)
+      (speak-jp "移動します。");;
+    (speak-jp "いどう します"));;
   (let ((co (send *scene* :spot "/eng2/7f/room73B2-fridge-front")))
     (send co :translate (float-vector 0 0 0) :world) ;; for opening door
     (send *ri* :move-to co)

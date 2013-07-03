@@ -3,6 +3,10 @@
 (defparameter *detection-topic* "/openni/rgb/ObjectDetection")
 (load "package://jsk_perception/euslisp/detection_interface.l")
 
+(if (and (boundp '*use-voicetext*) *use-voicetext*)
+    (setq *frige-speak-str* "冷蔵庫")
+  (setq *frige-speak-str* "れいぞうこ"))
+
 ;;
 ;; action-utility
 ;;
@@ -319,7 +323,7 @@
 
     (dotimes (i 10 nil)
       ;; finding handle position
-      (setq cds (check-detection :type "fridge" :speak-name "れいぞうこ"))
+      (setq cds (check-detection :type "fridge" :speak-name *frige-speak-str*))
       ;; need detection fail check
 
       (when cds
@@ -346,7 +350,7 @@
                   *fridge-distance-threshold*)
                (< (abs (elt (car (rpy-angle (send diffcds :worldrot))) 0))
                   *fridge-rotation-threshold*))
-          (setq cds (check-detection :type "fridge" :speak-name "れいぞうこ"))
+          (setq cds (check-detection :type "fridge" :speak-name *frige-speak-str*))
           (ros::spin-once)
           (send *ri* :spin-once)
           ;; (y-or-n-p "Can I start open fridge? ")
@@ -394,7 +398,9 @@
                                   )))
               )
             (if ret (return)))
-          (speak-jp "れいぞうこを あけられません でした")
+          (if (and (boundp '*use-voicetext*) *use-voicetext*)
+              (speak-jp "冷蔵庫を開けられませんでした。")
+            (speak-jp "れいぞうこを あけられません でした"))
           (send *pr2* :head :angle-vector (float-vector 0 head-pitch))
           (send *pr2* :torso :angle-vector (float-vector torso-lift))
           (send *ri* :angle-vector (send *pr2* :angle-vector))
@@ -414,7 +420,9 @@
 
     (when (not ret)
       (ros::ros-info "TIMEOUT: open-fridge-door");;
-      (speak-jp "れいぞうこ を みつけられません でした")
+      (if (and (boundp '*use-voicetext*) *use-voicetext*)
+          (speak-jp "冷蔵庫を見つけられませんでした。")
+        (speak-jp "れいぞうこ を みつけられません でした"))
       (unix::sleep 2);;
       (return-from open-fridge-door nil))
 
@@ -517,10 +525,14 @@
             (unix::sleep 1)
             (return-from grasp-can t))
           ;; (unix::sleep 2)
-          (speak-jp "しっぱいしました  もういちど やって みます");;
+          (if (and (boundp '*use-voicetext*) *use-voicetext*)
+              (speak-jp "失敗しましたもう一度やってみます。");;
+            (speak-jp "しっぱいしました  もういちど やって みます"));;
           )
         )))
-  (speak-jp (format nil "~A を とりだし ません でした" *type*))
+  (if (and (boundp '*use-voicetext*) *use-voicetext*)
+      (speak-jp (format nil "~Aを取り出しませんでした。" *type*))
+    (speak-jp (format nil "~A を とりだし ません でした" *type*)))
   (when move (send *ri* :go-pos-unsafe -0.3 0.05 -20))
   (unix::sleep 1)
   nil)
