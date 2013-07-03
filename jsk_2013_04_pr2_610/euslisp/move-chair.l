@@ -1,4 +1,4 @@
-B1;3201;0c#!/usr/bin/env roseus
+#!/usr/bin/env roseus
 ;;(ros::load-ros-manifest "jsk_perception")
 
 ;; define detection parameters befor load detection_interface.l
