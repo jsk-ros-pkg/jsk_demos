@@ -13,17 +13,17 @@
   <arg name="viewer_window" default="false" />
 
   <include file="$(find pr2_machine)/pr2.machine" />
+  <group ns="$(arg camera)" if="$(arg launch_sift)">
+	<node name="$(arg object)_throttle" pkg="topic_tools"
+		  type="throttle" args="messages image_rect 4.0"
+		  machine="c1" />
+	<node name="$(arg object)_sift" pkg="imagesift"
+		  type="imagesift" launch-prefix="nice -n +10"
+		  machine="c2" >
+	  <remap from="image" to="image_rect_throttle" />
+	</node>
+  </group>
   <group ns="$(arg camera)">
-	<group if="$(arg launch_sift)">
-	  <node name="$(arg object)_throttle" pkg="topic_tools"
-			type="throttle" args="messages image_rect 4.0"
-			machine="c1" />
-	  <node name="$(arg object)_sift" pkg="imagesift"
-			type="imagesift" launch-prefix="nice -n +10"
-			machine="c2" >
-		<remap from="image" to="image_rect_throttle" />
-	  </node>
-	</group>
     <node name="$(arg object)_pose_extractor"
           pkg="jsk_perception" type="point_pose_extractor"
           output="screen" >
@@ -40,6 +40,3 @@
     </node>
   </group>
 </launch>
-<!-- (load "package://jsk_demo_common/euslisp/pr2-action.l") -->
-<!-- (setq tray-coords (check-detection :type "tray_center" :speak-name "とれい")) -->
-<!-- (setq tray-coords (check-detection :type "tray_center" :speak-name "tray")) -->
