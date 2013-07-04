@@ -2,20 +2,29 @@
   <include file="$(find jsk_2013_04_pr2_610)/launch/detect_chair.launch" />
 
   <include file="$(find jsk_2013_04_pr2_610)/launch/detect_with_image.launch">
+	<arg name="camera" value="/narrow_stereo/left" />
 	<arg name="object" value="laundry" />
-        <arg name="type" value="laundry_button" />
-	<arg name="image" value="$(find jsk_2013_04_pr2_610)/data/marker_laundry_052149_narrow_cut.jpg" />
-	<arg name="width" value="0.4" />
-	<arg name="height" value="0.15" />
-	<arg name="pose" value="0.164 0.27 -1.129  0.0 -0.698 0.0" />
+	<arg name="window_name" value="laundry_button" />
+	<arg name="template_filename" value="$(find jsk_2013_04_pr2_610)/data/marker_laundry_052149_narrow_cut.jpg" />
+	<arg name="object_width" value="0.4" />
+	<arg name="object_height" value="0.15" />
+	<arg name="relative_pose" value="0.164 0.27 -1.129  0.0 -0.698 0.0" />
+	<arg name="reprojection_threshold" value="3.0" />
+	<arg name="error_threshold" value="80.0" />
+	<arg name="distanceratio_threshold" value="0.49" />
   </include>
 
   <include file="$(find jsk_2013_04_pr2_610)/launch/detect_with_image.launch">
+	<arg name="launch_sift" value="false" />
+	<arg name="camera" value="/narrow_stereo/left" />
 	<arg name="object" value="tray" />
-        <arg name="type" value="tray_center" />
-	<arg name="image" value="$(find roseus_tutorials)/roseus_detection_templates/turtlebot_big.jpg" />
-	<arg name="width" value="0.27" />
-	<arg name="height" value="0.38" />
-	<arg name="pose" value="0.19 0.11 0.0 0 0 0" />
+	<arg name="window_name" value="tray_center" />
+	<arg name="template_filename" value="$(find roseus_tutorials)/roseus_detection_templates/turtlebot_big.jpg" />
+	<arg name="object_width" value="0.27" />
+	<arg name="object_height" value="0.38" />
+	<arg name="relative_pose" value="0.19 0.11 0.0 0 0 0" />
+	<arg name="reprojection_threshold" value="3.0" />
+	<arg name="error_threshold" value="80.0" />
+	<arg name="distanceratio_threshold" value="0.49" />
   </include>
 </launch>
