@@ -76,9 +76,8 @@ map_id: ~a"
    ;;
    (setq cntr 0)
    (dolist (map floors)
-     (format fd "  <node pkg=\"tf\" type=\"static_transform_publisher\"
-    name=\"$(anon map_tf~2,2D)\"
-    args=\"~a ~a ~a 0 0 0 ~a ~a 100\"/>~%"
+     (format fd "  <node pkg=\"tf\" type=\"static_transform_publisher\" name=\"$(anon map_tf~2,2D)\"
+        args=\"~7,3f ~7,3f ~7,3f 0 0 0 ~a ~a 100\"/>~%"
              cntr
 	     (/ (elt (send map :worldpos) 0) 1000.0)
 	     (/ (elt (send map :worldpos) 1) 1000.0)
@@ -86,7 +85,7 @@ map_id: ~a"
 	     (send building :name) (send map :name))
      (incf cntr)
      (format fd "  <node pkg=\"tf\" type=\"static_transform_publisher\" name=\"$(anon map_tf~2,2D)\"
-        args=\"0 0 0 0 0 0 ~a /map 10\">
+        args=\"  0.000   0.000   0.000 0 0 0 ~a /map 100\" >~%
     <remap from=\"tf\" to=\"~a_tf\"/>
   </node>~%"
      cntr (send map :name) (send map :name))
