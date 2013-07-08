@@ -2,6 +2,6 @@
   <arg name="task" />
   <include file="$(find jsk_2013_04_pr2_610)/launch/detect_all.launch" />
   <node name="irt_demo" pkg="roseus" type="roseus"
-        args="$(find jsk_2013_04_pr2_610)/euslisp/demo.l &quot; (progn (demo-$(arg task)) (unix:sleep 1) (exit))&quot;"
+        args="$(find jsk_2013_04_pr2_610)/euslisp/demo.l &quot;(progn (demo-$(arg task)) (unix:sleep 1) (exit))&quot;"
         output="screen" />
 </launch>
