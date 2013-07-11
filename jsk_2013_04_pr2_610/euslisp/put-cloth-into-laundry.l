@@ -138,7 +138,7 @@
     ;; release cloth
     (let (avs)
       (send *ri* :start-grasp :rarm)
-      (dotimes (i 10)
+      (dotimes (i 5)
         (send *pr2* :rarm :wrist-r :joint-angle (* i 178))
         (push (send *pr2* :angle-vector) avs))
       (send-message *ri* (send *ri* :super) :angle-vector-sequence avs (make-sequence 'list (length avs) :initial-element 500))
@@ -148,6 +148,7 @@
       (send *ri* :wait-interpolation)
       )
 
+#|
     (if (boundp '*irtviewer*) (send *irtviewer* :draw-objects))
     (send *ri* :angle-vector (send *pr2* :angle-vector) 1000)
     (send *ri* :wait-interpolation)
@@ -155,7 +156,7 @@
     (if (boundp '*irtviewer*) (send *irtviewer* :draw-objects))
     (send *ri* :angle-vector (send *pr2* :angle-vector) 500)
     (send *ri* :wait-interpolation)
-
+|#
     ;; move back hand
     (send *pr2* :rarm :inverse-kinematics
 	  standby
