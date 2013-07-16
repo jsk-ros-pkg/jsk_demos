@@ -15,6 +15,8 @@
     (send *ri* :angle-vector (send *pr2* :angle-vector) 2000)
     (send *ri* :wait-interpolation)
 
+    (tray-detection *tray*)
+
     ;; Open gripper
     (send *ri* :stop-grasp :arms) ;; stop-grasp wait until gripper motion stops
     ;; wait interpolation
