@@ -36,8 +36,8 @@
           name="fridge_detector">
       <param name="template_filename" value="$(find detect_cans_in_fridge_201202)/data/openni_rgb_fridge.png"/>
       <param name="window_name" value="fridge_handle_upper"/>
-      <param name="object_width" value="0.2"/>
-      <param name="object_height" value="0.2"/>
+      <param name="object_width" value="0.231"/>
+      <param name="object_height" value="0.196"/>
       <param name="relative_pose" value="0.22 0.03 0.0  0.707107 0 -0.707107 0"/>
       <param name="viewer_window" value="false" /> <!-- to disable window-->
     </node>
