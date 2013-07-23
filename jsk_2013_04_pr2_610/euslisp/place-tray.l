@@ -25,13 +25,22 @@
     (send *ri* :wait-interpolation)
 
     ;; for navigation
-    (speak-en "DANGER go 30 centimeter.")
+    (speak-jp "まえにすすみます")
+    ;;(speak-en "DANGER go 30 centimeter.")
     ;;(send *ri* :go-pos-unsafe 0.29 0)
     (send *ri* :go-pos-unsafe 0.34 0)
 
+    ;; put forward a tray
+    (send *pr2* :arms :move-end-pos (send *pr2* :rotate-vector #f(0 0 10)))
+    (send *ri* :angle-vector (send *pr2* :angle-vector))
+    (send *ri* :wait-interpolation)
+
+    ;; put down a tray
     (send *pr2* :arms :move-end-pos (float-vector 0 0 (- (- table-height yokei-down-height) (elt p 2))) :world)
     (send *ri* :angle-vector (send *pr2* :angle-vector))
     (send *ri* :wait-interpolation)
+
+
 #|
     (dolist (offset (list (cons #f(0 30 0) #f(0 -30 0)) (cons #f(0 60 0) #f(0 -60 0))))
       (send *pr2* :inverse-kinemat
@@ -77,7 +86,8 @@
     (send *ri* :wait-interpolation)
 
     ;; for navigation
-    (speak-en "DANGER go back 50 centimeters")
+    (speak-jp "うしろにさがります")
+;;    (speak-en "DANGER go back 50 centimeters")
     (send *ri* :go-pos-unsafe -1 0)
     (send *pr2* :translate (float-vector -1000 0 0))
 
