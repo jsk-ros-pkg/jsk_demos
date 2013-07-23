@@ -46,6 +46,8 @@
 (defun tray-detection (obj)
   (let (ret)
     ;; start program
+    (warning-message 3 "tray detection is not impremented yet~%")
+    (return-from tray-detection nil)
     (ros::roseus "objectdetection_tray_publisher")
 
     (if (boundp '*irtviewer*) (send *irtviewer* :draw-objects :flush t))
