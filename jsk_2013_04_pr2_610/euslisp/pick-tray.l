@@ -3,6 +3,7 @@
 (load "package://jsk_2013_04_pr2_610/euslisp/objectdetection.l")
 (load "package://pr2eus/pr2-utils.l")
 
+;; (send *pr2* :move-to (send *room610* :spot-tray-spot) :world)
 (defun pick-tray ()
   (let ((tray-larm-handle (send (send (send *tray* :handle-larm-handle) :copy-worldcoords) :rotate (deg2rad -20) :z)) ;; do not move in world coords, use object(tray) relative coords
         (tray-rarm-handle (send (send (send *tray* :handle-rarm-handle) :copy-worldcoords) :rotate (deg2rad  20) :z)) ;; need copy-worldcoords, otherwise move handle coords directory
@@ -20,7 +21,6 @@
     ;; Open gripper
     (send *ri* :stop-grasp :arms) ;; stop-grasp wait until gripper motion stops
     ;; wait interpolation
-    (send *ri* :wait-interpolation)
 
     ;; use dual arm IK (see https://sourceforge.net/p/jsk-ros-pkg/code/4103/)
     (if (boundp '*irtviewer*) (send-all (list tray-larm-handle tray-rarm-handle) :draw-on :flush t)) ;; use :draw-on to confirm coords position
@@ -45,12 +45,21 @@
       (send *ri* :wait-interpolation)
       )
 
+    (warning-message 3 "grasp tray~%")
     ;; Grasp it
     (setq grasp-args (send *ri* :start-grasp :arms :objects (list (find *tray* (send *ri* :objects) :test #'(lambda (a b) (string= (send a :name) (send b :name)))))))  ;; stop-grasp wait until gripper motion stops
 	;; check if tray is grasped
-    (if (and (> (elt grasp-args 0) (elt grasp-threshold 0))
-             (> (elt grasp-args 1) (elt grasp-threshold 1)))
-        (return-from pick-tray nil)
+    (warning-message 3 "check tray ~A > ~A~%" grasp-args grasp-threshold)
+    (when (or (< (elt grasp-args 0) (elt grasp-threshold 0))
+              (< (elt grasp-args 1) (elt grasp-threshold 1)))
+      (warning-message 3 "tray is not grasped~%")
+      (speak-en "can not grasp tray")
+      ;; Open gripper
+      (send *ri* :stop-grasp :arms) ;; stop-grasp wait until gripper motion stops
+      (pr2-pick-tray-pose)
+      (send *ri* :angle-vector (send *pr2* :angle-vector) 2000)
+      (send *ri* :wait-interpolation)
+      (return-from pick-tray nil)
       )
     (send *pr2* :larm :end-coords :assoc *tray*) ;; ???
 
