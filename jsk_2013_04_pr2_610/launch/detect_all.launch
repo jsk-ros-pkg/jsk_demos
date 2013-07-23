@@ -1,5 +1,5 @@
 <launch>
-  <include file="$(find jsk_2013_04_pr2_610)/launch/detect_chair.launch" />
+  <include file="$(find jsk_2013_04_pr2_610)/launch/detect_footobject.launch" />
 
   <include file="$(find jsk_2013_04_pr2_610)/launch/detect_with_image.launch">
 	<arg name="camera" value="/narrow_stereo/left" />
