@@ -6,7 +6,7 @@
 (defun place-tray ()
   (let ((table-height 850)
         (yokei-up-height 150)
-        (yokei-down-height 150)
+        (yokei-down-height 50)
         p)
     ;;
     ;; place_tray function
@@ -86,7 +86,8 @@
     (send *pr2* :larm :end-coords :dissoc *tray*) ;; ???
 
     ;; move arms apart
-    (send *pr2* :arms :move-end-pos #f(0 0 50) :world)
+    (send *pr2* :arms :move-end-pos #f(0 0 100) :world)
+    (send *pr2* :arms :move-end-pos #f(0 0 100) :world)
     (if (boundp '*irtviewer*) (send *irtviewer* :draw-objects))
     (send *ri* :angle-vector (send *pr2* :angle-vector) 1000)
     (send *ri* :wait-interpolation)
