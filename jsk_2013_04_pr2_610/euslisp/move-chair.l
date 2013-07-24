@@ -132,7 +132,7 @@
       (send *ri* :angle-vector (send *pr2* :angle-vector))
       (send *ri* :wait-interpolation)
 
-      (send *pr2* :inverse-kinematics (send  (send (send *pr2* :rarm :end-coords) :copy-worldcoords) :translate (float-vector 0 0 -40) :world)
+      (send *pr2* :inverse-kinematics (send  (send (send *pr2* :rarm :end-coords) :copy-worldcoords) :translate (float-vector 0 0 -90) :world)
             :link-list (list
                         (send *pr2* :link-list (send *pr2* :rarm :end-coords :parent)))
             :move-target (send *pr2* :rarm :end-coords)
@@ -175,7 +175,7 @@
 
 
 
-    (send *ri* :go-pos-unsafe -0.3 0 0)
+    ;;(send *ri* :go-pos-unsafe -0.3 0 0)
     (send *pr2* :translate (float-vector -300 0 0))
     
     (send *pr2* :angle-vector (send *ri* :state :potentio-vector))
