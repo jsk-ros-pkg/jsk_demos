@@ -29,6 +29,72 @@
   (pr2-reset-pose)
 )
 
+(defun put-cloth-larm ()
+  (send *pr2* :larm :collar-y :joint-angle 110)
+  (send *ri* :angle-vector (send *pr2* :angle-vector))
+  (open-door)
+  (send *ri* :go-pos-unsafe -0.5 0)
+  (pass-cloth-to-rarm)
+  (send *ri* :go-pos-unsafe 0.5 0)
+  (put-cloth-into)
+  (send *pr2* :larm :collar-y :joint-angle -90)
+  (send *ri* :angle-vector (send *pr2* :angle-vector))
+  (close-door)
+  (pr2-reset-pose)
+)
+
+(defun pass-cloth-to-rarm ()
+  (warn "pass-cloth-to-rarm ~%")
+  (let (pass-coords pass-coords-r pass-coords-l)
+    (setq pass-coords (send (send *pr2* :copy-worldcoords) :translate #f(400 0 800)))
+    (setq pass-coords-r (send (send (send pass-coords :copy-worldcoords) :translate #f(0 0 -70)) :rotate pi/2 :z))
+    (setq pass-coords-l (send (send pass-coords :copy-worldcoords) :rotate -pi/2 :z))
+    
+    (send *pr2* :reset-pose)
+    (send *ri* :wait-interpolation)
+    (send *pr2* :larm :inverse-kinematics
+	  pass-coords-l
+	  :rotation-axis t
+	  :debug-view nil
+	  :revert-if-fail t)
+    (send *ri* :angle-vector (send *pr2* :angle-vector) 2000)
+    (send *ri* :wait-interpolation)
+
+    (send *ri* :stop-grasp :rarm :wait t)
+    
+    (let (av-seq)
+      (send *pr2* :rarm :inverse-kinematics
+	    (send (send pass-coords-r :copy-worldcoords) :translate #f(-100 0 0))
+	    :rotation-axis t
+	    :debug-view nil
+	    :revert-if-fail t)
+      (push (send *pr2* :angle-vector) av-seq)
+      ;;      (send *ri* :angle-vector (send *pr2* :angle-vector) 2000)
+      ;;    (send *ri* :wait-interpolation)
+      (send *pr2* :rarm :inverse-kinematics
+	    pass-coords-r
+	    :rotation-axis t
+	    :debug-view nil
+	    :revert-if-fail t)
+      (push (send *pr2* :angle-vector) av-seq)
+      (setq av-seq (reverse av-seq))
+      (send *ri* :angle-vector-sequence av-seq (list 2000 1000))
+      ;;(send *ri* :angle-vector (send *pr2* :angle-vector) 2000)
+      (send *ri* :wait-interpolation)
+      )
+
+    (send *ri* :start-grasp :rarm)
+    (send *ri* :stop-grasp :larm :wait t)
+
+    (pr2-reset-pose)
+    (send *pr2* :larm :collar-y :joint-angle 110)
+    (send *ri* :angle-vector (send *pr2* :angle-vector))
+    (send *ri* :wait-interpolation)
+
+    )
+)
+
+
 (defun open-door ()
   (warn "open-door ~%")
   (let (button)

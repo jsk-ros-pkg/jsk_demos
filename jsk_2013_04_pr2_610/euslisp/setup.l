@@ -151,6 +151,27 @@
   (use-tilt-laser-obstacle-cloud t)
   t)
 
+(defun move-to-chair-larm ()
+  (warn "move-to-chair-larm~%")
+
+  ;;kamae
+  ;;(larm-tuck)
+  (pr2-tuckarm-pose :larm)
+  (send *pr2* :larm :angle-vector #f(40.0 -20.0 0.0 -70.0 70.0 -90.0 0.0))
+  (if (boundp '*irtviewer*) (send *irtviewer* :draw-objects))
+  (send *ri* :angle-vector (send *pr2* :angle-vector) 10000)
+  (send *ri* :stop-grasp :larm)
+
+  (use-tilt-laser-obstacle-cloud nil)
+  (clear-costmap)
+  (send *pr2* :move-to (send *room610* :spot-chair-spot) :world)
+  (if (not (send *ri* :move-to (send *room610* :spot-chair-spot) :frame-id *room610-origin*))
+	  (return-from move-to-chair nil)
+	  )
+  (send *ri* :angle-vector (send *pr2* :angle-vector) 500)
+  (use-tilt-laser-obstacle-cloud t)
+  t)
+
 (defun move-to-chair2 ()
   (warn "move-to-chair2~%")
   (use-tilt-laser-obstacle-cloud nil)
@@ -257,6 +278,16 @@
   ;(furuta-sweep)
   )
 
+(defun demo2 ()
+  (setup)
+  (pr2-reset-pose)
+  
+  (while (not (move-to-chair-larm)))
+  (pick-cloth-larm)
+
+  (while (not (move-to-laundry)))
+  (put-cloth-larm)
+)
 
 (defun demo ()
   (setup)
@@ -298,3 +329,4 @@
 (warn "type (setup) to revert all object location~%")
 
 (setup)
+
