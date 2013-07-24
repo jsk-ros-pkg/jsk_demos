@@ -6,7 +6,7 @@
 (defun place-tray ()
   (let ((table-height 850)
         (yokei-up-height 150)
-        (yokei-down-height 30)
+        (yokei-down-height -20)
         p)
     ;;
     ;; place_tray function
@@ -82,7 +82,7 @@
     |#
 
     ;; open grippers
-    (send *ri* :stop-grasp :arms)
+    (send *ri* :stop-grasp :arms :wait t)
     (send *pr2* :larm :end-coords :dissoc *tray*) ;; ???
 
     ;; move arms apart
@@ -104,4 +104,3 @@
     (send *ri* :wait-interpolation)
 
     ))
-
