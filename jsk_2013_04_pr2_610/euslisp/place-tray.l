@@ -18,6 +18,7 @@
 
     ;; get current gripper pose
     (setq p (apply #'midpoint 0.5 (send *pr2* :arms :end-coords :worldpos)))
+    (send *pr2* :torso  :waist-z :joint-angle 250)
     (send *pr2* :arms :move-end-pos (float-vector 0 0 (- (+ table-height yokei-up-height) (elt p 2))) :world)
     (if (boundp '*irtviewer*) (send *irtviewer* :draw-objects))
 
@@ -31,7 +32,7 @@
     (send *ri* :go-pos-unsafe 0.34 0)
 
     ;; put forward a tray
-    (send *pr2* :arms :move-end-pos (send *pr2* :rotate-vector #f(0 0 10)))
+    (send *pr2* :arms :move-end-pos (send *pr2* :rotate-vector #f(0 100 0)))
     (send *ri* :angle-vector (send *pr2* :angle-vector))
     (send *ri* :wait-interpolation)
 
