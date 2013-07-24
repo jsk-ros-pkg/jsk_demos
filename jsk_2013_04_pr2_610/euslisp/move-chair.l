@@ -15,6 +15,7 @@
 
 ;;set variable to use for judging if grasp success or not
 (defparameter *grasp-success-threshold* 10)
+(defparameter *grasp-success-upper-threshold* 23)
 
 ;;loop counter threshold for start-detect-chair
 (defparameter *detect-chair-loop-threshold* 0)
@@ -118,6 +119,7 @@
       (send *ri* :wait-interpolation)
 
 
+      ;; put forward the rarm
       (send *pr2* :angle-vector (send *ri* :state :potentio-vector))
       (send *pr2* :rarm :angle-vector #f(-40.0 -20.0 0.0 -70.0 -70.0 -90.0 0.0)) ;; to solve ik, do not  send to *ri*
       (setq handle-rarm (send (send *chair* :handle-above-rarm) :copy-worldcoords) )
@@ -135,7 +137,8 @@
       (send *ri* :angle-vector (send *pr2* :angle-vector))
       (send *ri* :wait-interpolation)
 
-      (send *pr2* :inverse-kinematics (send  (send (send *pr2* :rarm :end-coords) :copy-worldcoords) :translate (float-vector 0 0 -90) :world)
+      ;; put down the rarm
+      (send *pr2* :inverse-kinematics (send  (send (send *pr2* :rarm :end-coords) :copy-worldcoords) :translate (float-vector 0 0 -50) :world)
             :link-list (list
                         (send *pr2* :link-list (send *pr2* :rarm :end-coords :parent)))
             :move-target (send *pr2* :rarm :end-coords)
@@ -153,12 +156,29 @@
         (setq grasp-success t)
         ;; if real
         (progn
-          ;;check if grasp is success
+          
+          ;; make gripper effort weak, grasp, move up rarm, and grasp tightly again
+          (send *ri* :move-gripper :rarm 0.10 :effort 8)
           (setq grip_r_dist (send *ri* :start-grasp :rarm))
           (send *ri* :update-robot-state)
           (setq grip_r_dist (send *ri* :robot :r_gripper_joint :joint-angle))
-
           (send *ri* :wait-interpolation)
+
+          (send *pr2* :inverse-kinematics (send  (send (send *pr2* :rarm :end-coords) :copy-worldcoords) :translate (float-vector 0 0 -40) :world)
+                :link-list (list
+                             (send *pr2* :link-list (send *pr2* :rarm :end-coords :parent)))
+                :move-target (send *pr2* :rarm :end-coords)
+                :revert-if-fail nil
+                :look-at-target t
+                :debug-view nil
+                )
+
+          (send *ri* :move-gripper :rarm 0.03 :effort 28)
+          (setq grip_r_dist (send *ri* :start-grasp :rarm))
+          (send *ri* :update-robot-state)
+          (setq grip_r_dist (send *ri* :robot :r_gripper_joint :joint-angle))
+          (send *ri* :wait-interpolation)
+
           (ros::ros-info "~d gripper distance" grip_r_dist)
           (when (> grip_r_dist *grasp-success-threshold*)
             (setq grasp-success t)
@@ -265,7 +285,7 @@
 
     (setq angle-vector-list nil)
     (dotimes (i 9)
-      (send (send back-legs-center :rotate (deg2rad 2) :y) :translate (float-vector 5 0 -3) *pr2*)
+      (send (send back-legs-center :rotate (deg2rad 2) :y) :translate (float-vector -5 0 10) *pr2*)
       (send *pr2* :inverse-kinematics dest-c
 	    :link-list (list
 			(send *pr2* :link-list (send *pr2* :rarm :end-coords :parent)))
