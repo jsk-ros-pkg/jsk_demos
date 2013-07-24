@@ -27,6 +27,9 @@
 ;;if you call this function, (as like (start-detect-chair))
 ;;*chair* will be update and move to where it would be
 (defun start-detect-chair (&key (debug nil))
+  (unless (send *ri* :joint-action-enable)
+    (return-from start-detect-chair nil)
+    )
   (let ((loop t) (loop-counter 0) (chair-coords nil) (ret))
     (ros::roseus "objectdetection_publisher")
     (defparameter *detection-topic* "/narrow_stereo/left/ObjectDetection")
