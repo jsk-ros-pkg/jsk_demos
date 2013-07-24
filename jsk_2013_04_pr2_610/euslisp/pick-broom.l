@@ -1,3 +1,6 @@
+#!/usr/bin/env roseus
+(load "package://jsk_2013_04_pr2_610/euslisp/utils.l")
+
 (defun publish-broom ()
    (let* ()
      (ros::advertise "/object_detection_marker_array" visualization_msgs::MarkerArray 5)
@@ -37,6 +40,7 @@
       (if (> count 3) (return-from pick-broom nil)))
     (goback-broom)
     (bringup-broom)
+    ;;(raise-mop)
 ))
 
 (defun grasp-broom ()
@@ -83,7 +87,7 @@
     (send *ri* :angle-vector-sequence (list av0 av1) (list 1000 1500))
     (send *ri* :wait-interpolation)
 
-    (when (< (send *ri* :start-grasp :larm) 3.0)
+    (when (and (send *ri* :joint-action-enable) (< (send *ri* :start-grasp :larm) 3.0))
       (send *ri* :stop-grasp :larm :wait t)
       (speak-jp "ほうきとれなかった")
       (send *ri* :angle-vector av0)

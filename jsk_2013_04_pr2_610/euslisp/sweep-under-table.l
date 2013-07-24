@@ -1,4 +1,8 @@
+#!/usr/bin/env roseus
+(load "package://jsk_2013_04_pr2_610/euslisp/utils.l")
 ;; (progn (load "sweep-under-table.l")(sweep-under-table-init)(sweep-under-table))
+
+#|
 (defun sweep-under-table-init ()
   (send *ri* :stop-grasp :rarm)
   (send *pr2* :angle-vector #f(100.0 10.6748 2.30296 30.0196 -97.4113 107.346 -62.9762 171.355 -30.7465 10.2422 -59.3904 -105.095 -89.2577 -28.9264 174.513 -3.07712 54.4601))
@@ -17,14 +21,14 @@
   (send *ri* :start-grasp)
   )
 
-
+|#
 
 
 (defun sweep-under-table-init-slim ()
   (send *pr2* :angle-vector #f(126.795 -1.00107 -20.2206 11.9353 -71.4577 93.1963 -72.7922 176.55 -2.71504 -5.92811 -3.83082 -83.875 -79.9001 -86.0572 -191.652 0 12.2682))
   (send *pr2* :rarm :move-end-pos #f(-100 0 0))
 ;;  (send *ri* :angle-vector (send *pr2* :angle-vector) 1000)
-  (send *ri* :angle-vector-with-constraint (send *pr2* :angle-vector) 1000 :larm :rotation-axis :z)
+  (send *ri* :angle-vector-with-constraint (send *pr2* :angle-vector) 1000 :arms :rotation-axis :z)
   (send *ri* :wait-interpolation)
   (send *ri* :stop-grasp :rarm)
   (send *pr2* :rarm :move-end-pos #f(100 0 0))
@@ -36,8 +40,6 @@
 
 
 (defun rehold-mop ()
-  ;;
-
   ;; open grasp
   (send *ri* :move-gripper :rarm 0.03 :effort 20)
   (send *ri* :move-gripper :larm 0.1  :effort 20)
@@ -145,6 +147,18 @@
     (send *pr2* :angle-vector #f(126.795 -1.00107 -20.2206 11.9353 -71.4577 93.1963 -72.7922 176.55 -2.71504 -5.92811 -3.83082 -83.875 -79.9001 -86.0572 -191.652 0 12.2682))
     ;;(setq before-sweep-left-hand (send (send *pr2* :larm :end-coords) :copy-worldcoords))
 
+    ;; release rarm
+    (send *pr2* :inverse-kinematics (send  (send (send *pr2* :rarm :end-coords) :copy-worldcoords) :translate (float-vector 0 -150 0) :world)
+          :revert-if-fail nil
+          :rotation-axis t
+          :link-list (list
+                      (send *pr2* :link-list (send *pr2* :rarm :end-coords :parent)))
+          :move-target (list (send *pr2* :rarm :end-coords))
+          :debug-view nil
+          )
+    (send *ri* :angle-vector (send *pr2* :angle-vector) 2000)
+    (send *ri* :wait-interpolation)
+
     ;; grasp pose
     (setq c0 (make-coords :pos (send *pr2* :transform-vector #f(700 600 1200)) :rpy (float-vector 0 0 0)))
     (send *pr2* :inverse-kinematics
@@ -154,17 +168,9 @@
           :use-torso t
           :look-at-target t
           :debug-view nil)
-    (send *pr2* :inverse-kinematics (send  (send (send *pr2* :rarm :end-coords) :copy-worldcoords) :translate (float-vector 0 -150 0) :world)
-          :revert-if-fail nil
-          :rotation-axis t
-          :link-list (list
-                      (send *pr2* :link-list (send *pr2* :rarm :end-coords :parent)))
-          :move-target (list (send *pr2* :rarm :end-coords))
-          :debug-view nil
-          )
-
-    (setq av-grasp (send *pr2* :angle-vector))
-    (send *ri* :angle-vector av-grasp 1000)
+    
+    ;;(setq av-grasp (send *pr2* :angle-vector))
+    (send *ri* :angle-vector (send *pr2* :angle-vector) 2000)
     (send *ri* :wait-interpolation)
 
     (send *pr2* :rarm :angle-vector (cadr *pr2-tuckarm-pose-rarm-free*))
@@ -265,7 +271,8 @@
     (send *ri* :wait-interpolation)
 
     (sweep-under-table-init-slim)
-    (rehold-mop)
+;;    (rehold-mop)
+    (raise-mop)
     ))
 
 (defun sweep-under-table-dual-arm ()

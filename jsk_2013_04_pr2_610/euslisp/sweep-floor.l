@@ -76,13 +76,13 @@
     (setq larm-end-coords (send *pr2* :larm :end-coords))
     (addForceTrajectoryCoords goal_l (send *pr2* :larm :end-coords) 1000.0
 			      :control-rot (send (make-coords :axis :y :angle pi/2) :worldrot)
-			      :target-force #f(-5 1000 1000 20 20 20)
+			      :target-force #f(5 1000 1000 20 20 20)
 			      :force-control (list t nil nil nil nil nil))
 
     (setq rarm-end-coords (send *pr2* :rarm :end-coords))
     (addForceTrajectoryCoords goal_r (send *pr2* :rarm :end-coords) 1000.0
 			      :control-rot (send (make-coords :axis :y :angle pi/2) :worldrot)
-			      :target-force #f(-5 1000 1000 20 20 20)
+			      :target-force #f(5 1000 1000 20 20 20)
 			      :force-control (list t nil nil nil nil nil))
 
     (startImpedance m_arms)
