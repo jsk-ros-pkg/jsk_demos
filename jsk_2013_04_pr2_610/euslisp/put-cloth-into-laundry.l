@@ -40,7 +40,9 @@
     (send *ri* :wait-interpolation)
 
     ;; change laundry button pos according to image processing
-    (send *laundry* :move-to (laundry-detection *laundry*) :world);; FIX ME returns t if found, nil not found
+    (if (send *ri* :joint-action-enable)
+	(send *laundry* :move-to (laundry-detection *laundry*) :world);; FIX ME returns t if found, nil not found
+    )
     (if (boundp '*irtviewer*) (send (send *laundry* :copy-worldcoords)
                                     :draw-on :flush t
                                     :size 1700 :color #f(0 1 0)))
