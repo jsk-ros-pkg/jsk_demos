@@ -6,7 +6,7 @@
 (defun place-tray ()
   (let ((table-height 850)
         (yokei-up-height 150)
-        (yokei-down-height 50)
+        (yokei-down-height 30)
         p)
     ;;
     ;; place_tray function
