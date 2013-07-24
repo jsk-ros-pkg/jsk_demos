@@ -263,7 +263,7 @@
   (pr2-reset-pose)
 
   (while (not (move-to-table)))
-  (pick-tray)
+  (while (not (pick-tray)))
   ;;
   (while (not (move-to-sink)))
   (place-tray)
