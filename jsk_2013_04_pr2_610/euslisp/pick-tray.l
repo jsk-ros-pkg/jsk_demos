@@ -10,7 +10,7 @@
         (grasp-threshold (list 3 3))
         (avs nil)
         (grasp-args)) ;; use let to define local variables
-    (warn "pick-tray (tanaka)~%")
+    (warn "pick-tray ~%")
 
     (pr2-pick-tray-pose)
     (send *ri* :angle-vector (send *pr2* :angle-vector) 2000)
@@ -50,8 +50,9 @@
     (setq grasp-args (send *ri* :start-grasp :arms :objects (list (find *tray* (send *ri* :objects) :test #'(lambda (a b) (string= (send a :name) (send b :name)))))))  ;; stop-grasp wait until gripper motion stops
 	;; check if tray is grasped
     (warning-message 3 "check tray ~A > ~A~%" grasp-args grasp-threshold)
-    (when (or (< (elt grasp-args 0) (elt grasp-threshold 0))
-              (< (elt grasp-args 1) (elt grasp-threshold 1)))
+    (when (and (send *ri* :joint-action-enable)
+	       (or (< (elt grasp-args 0) (elt grasp-threshold 0))
+		   (< (elt grasp-args 1) (elt grasp-threshold 1))))
       (warning-message 3 "tray is not grasped~%")
       (speak-en "can not grasp tray")
       ;; Open gripper
