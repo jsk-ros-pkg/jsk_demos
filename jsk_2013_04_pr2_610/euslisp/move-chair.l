@@ -148,19 +148,23 @@
       (send *ri* :angle-vector (send *pr2* :angle-vector))
       (send *ri* :wait-interpolation)
 
-      (setq grasp-success t)
-      (when (send *ri* :joint-action-enable)
-	;;check if grasp is success
-	(setq grip_r_dist (send *ri* :start-grasp :rarm))
-	(send *ri* :update-robot-state)
-	(setq grip_r_dist (send *ri* :robot :r_gripper_joint :joint-angle))
+      (if (not (send *ri* :joint-action-enable))
+        ;; if simulation
+        (setq grasp-success t)
+        ;; if real
+        (progn
+          ;;check if grasp is success
+          (setq grip_r_dist (send *ri* :start-grasp :rarm))
+          (send *ri* :update-robot-state)
+          (setq grip_r_dist (send *ri* :robot :r_gripper_joint :joint-angle))
 
-	(send *ri* :wait-interpolation)
-	(ros::ros-info "~d gripper distance" grip_r_dist)
-	(when (< grip_r_dist *grasp-success-threshold*)
-	  (setq grasp-success nil)
-	  )
-	)
+          (send *ri* :wait-interpolation)
+          (ros::ros-info "~d gripper distance" grip_r_dist)
+          (when (> grip_r_dist *grasp-success-threshold*)
+            (setq grasp-success t)
+            )
+          )
+        )
       )
     (ros::ros-info "end catch chair")
 
