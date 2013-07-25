@@ -166,7 +166,7 @@
     (send *ri* :angle-vector (send *pr2* :angle-vector) 2000)
     (send *ri* :wait-interpolation)
 
-    (send *pr2* :rarm :angle-vector (cadr *pr2-tuckarm-pose-rarm-free*))
+    ;;(send *pr2* :rarm :angle-vector (cadr *pr2-tuckarm-pose-rarm-free*))
 
     ;; special command for casing grasp
     (send *ri* :move-gripper :larm 0.02 :effort 20 :wait t)
