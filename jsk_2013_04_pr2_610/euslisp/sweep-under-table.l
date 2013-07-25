@@ -147,15 +147,8 @@
     (send *pr2* :angle-vector #f(126.795 -1.00107 -20.2206 11.9353 -71.4577 93.1963 -72.7922 176.55 -2.71504 -5.92811 -3.83082 -83.875 -79.9001 -86.0572 -191.652 0 12.2682))
     ;;(setq before-sweep-left-hand (send (send *pr2* :larm :end-coords) :copy-worldcoords))
 
-    ;; release rarm
-    (send *pr2* :inverse-kinematics (send  (send (send *pr2* :rarm :end-coords) :copy-worldcoords) :translate (float-vector 0 -150 0) :world)
-          :revert-if-fail nil
-          :rotation-axis t
-          :link-list (list
-                      (send *pr2* :link-list (send *pr2* :rarm :end-coords :parent)))
-          :move-target (list (send *pr2* :rarm :end-coords))
-          :debug-view nil
-          )
+    ;; get the rarm off of the broom
+    (send *pr2* :rarm :move-end-pos #f(-100 0 0))
     (send *ri* :angle-vector (send *pr2* :angle-vector) 2000)
     (send *ri* :wait-interpolation)
 
