@@ -162,8 +162,9 @@
 
   ;;kamae
   ;;(larm-tuck)
-  (pr2-tuckarm-pose :larm)
-  (send *pr2* :larm :angle-vector #f(40.0 -20.0 0.0 -70.0 70.0 -90.0 0.0))
+  ;;(pr2-tuckarm-pose :larm)
+  ;;(send *pr2* :larm :angle-vector #f(40.0 -20.0 0.0 -70.0 70.0 -90.0 0.0))
+  (send *pr2* :angle-vector #f(50.1262 0.0 -10.0 40.0 -70.0 70.0 -90.0 90.0 -5.0 70.0 -105.0 -90.0 70.0 -6.0 20.0 0.007004 -1.914))
   (send *pr2* :torso :waist-z :joint-angle 50)
   (if (boundp '*irtviewer*) (send *irtviewer* :draw-objects))
   (send *ri* :angle-vector (send *pr2* :angle-vector) 10000)
