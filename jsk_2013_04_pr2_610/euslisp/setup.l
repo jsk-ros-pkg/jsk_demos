@@ -297,7 +297,7 @@
   (place-tray)
   
   (while (not (move-to-chair-larm)))
-  (while (not (pick-cloth-larm))
+  (while (not (pick-cloth-larm)))
 
   (while (not (move-to-laundry)))
   (put-cloth-larm)
