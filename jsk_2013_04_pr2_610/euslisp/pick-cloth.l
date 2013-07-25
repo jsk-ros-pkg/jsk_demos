@@ -83,7 +83,7 @@
 ;    (if (boundp '*irtviewer*) (send *irtviewer* :draw-objects))
 ;    (send *ri* :angle-vector (send *pr2* :angle-vector) 1000)
 ;    (send *ri* :wait-interpolation)
-    (send *ri* :stop-grasp :rarm :wait t)
+    (send *ri* :stop-grasp :larm :wait t)
 
     (send *ri* :go-pos-unsafe 0.2 0 0)
     (send *pr2* :translate #f(200 0 0))
