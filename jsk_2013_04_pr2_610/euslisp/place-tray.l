@@ -7,7 +7,9 @@
   (let ((table-height 850)
         (yokei-up-height 150)
         (yokei-down-height -20)
-        p)
+	(forward-dist 450)
+        p
+	p-pr2)
     ;;
     ;; place_tray function
     ;;
@@ -30,17 +32,23 @@
     ;;(speak-en "DANGER go 30 centimeter.")
     ;;(send *ri* :go-pos-unsafe 0.29 0)
     (send *ri* :go-pos-unsafe 0.34 0)
+    
+    ;;put a tray
+    (let ((av-seq nil))
+      (setq p-pr2 (send (send *pr2* :worldcoords) :inverse-transform-vector (apply #'midpoint 0.5 (send *pr2* :arms :end-coords :worldpos))))
 
-    ;; put forward a tray
-    (send *pr2* :arms :move-end-pos (send *pr2* :rotate-vector #f(100 0 0)) :world)
-    (send *ri* :angle-vector (send *pr2* :angle-vector))
-    (send *ri* :wait-interpolation)
+      (send *pr2* :arms :move-end-pos (send *pr2* :rotate-vector (float-vector (- forward-dist  (elt p-pr2 0)) 0 0)) :world)
+      ;; put forward a tray
+      ;;    (send *pr2* :arms :move-end-pos (send *pr2* :rotate-vector #f(100 0 0)) :world)
+      (push (send *pr2* :angle-vector) av-seq)
 
-    ;; put down a tray
-    (send *pr2* :arms :move-end-pos (float-vector 0 0 (- (- table-height yokei-down-height) (elt p 2))) :world)
-    (send *ri* :angle-vector (send *pr2* :angle-vector))
-    (send *ri* :wait-interpolation)
-
+      ;; put down a tray
+      (send *pr2* :arms :move-end-pos (float-vector 0 0 (- (- table-height yokei-down-height) (elt p 2))) :world)
+      (push (send *pr2* :angle-vector) av-seq)
+      (setq av-seq (reverse av-seq))
+      (send *ri* :angle-vector-sequence av-seq (list 2000 2000))
+      (send *ri* :wait-interpolation)
+      )
 
 #|
     (dolist (offset (list (cons #f(0 30 0) #f(0 -30 0)) (cons #f(0 60 0) #f(0 -60 0))))
