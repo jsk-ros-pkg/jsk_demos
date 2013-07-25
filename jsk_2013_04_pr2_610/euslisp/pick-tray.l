@@ -5,8 +5,7 @@
 
 ;; (send *pr2* :move-to (send *room610* :spot-tray-spot) :world)
 (defun pick-tray ()
-  (let ((tray-larm-handle (send (send (send *tray* :handle-larm-handle) :copy-worldcoords) :rotate (deg2rad -20) :z)) ;; do not move in world coords, use object(tray) relative coords
-        (tray-rarm-handle (send (send (send *tray* :handle-rarm-handle) :copy-worldcoords) :rotate (deg2rad  20) :z)) ;; need copy-worldcoords, otherwise move handle coords directory
+  (let (tray-larm-handle tray-rarm-handle 
         (grasp-threshold (list 3 3))
         (avs nil)
         (grasp-args)) ;; use let to define local variables
@@ -17,6 +16,9 @@
     (send *ri* :wait-interpolation)
 
     (tray-detection *tray*)
+    (setq tray-larm-handle (send (send (send *tray* :handle-larm-handle) :copy-worldcoords) :rotate (deg2rad -20) :z) ;; do not move in world coords, use object(tray) relative coords
+	  tray-rarm-handle (send (send (send *tray* :handle-rarm-handle) :copy-worldcoords) :rotate (deg2rad  20) :z)) ;; need copy-worldcoords, otherwise move handle coords directory
+
 
     ;; Open gripper
     (send *ri* :stop-grasp :arms) ;; stop-grasp wait until gripper motion stops
@@ -30,11 +32,8 @@
             (list
              (send (send tray-larm-handle :copy-worldcoords) :translate (car offset))  ;; use local coords, this cod works if tray is placed on different orientation
              (send (send tray-rarm-handle :copy-worldcoords) :translate (cdr offset)))
-;;            :move-target (list (send *pr2* :larm :end-coords) (send *pr2* :rarm :end-coords))
             :use-torso t
             :look-at-target (midpoint 0.5 (send tray-larm-handle :worldpos) (send tray-rarm-handle :worldpos))
-            :move-arm :arms
-;            :rotation-axis :zz
             )
       (if (boundp '*irtviewer*) (send *irtviewer* :draw-objects))
 
