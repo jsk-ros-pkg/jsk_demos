@@ -289,12 +289,31 @@
 (defun demo2 ()
   (setup)
   (pr2-reset-pose)
+
+  (while (not (move-to-table)))
+  (while (not (pick-tray)))
+  ;;
+  (while (not (move-to-sink)))
+  (place-tray)
   
   (while (not (move-to-chair-larm)))
-  (pick-cloth-larm)
+  (while (not (pick-cloth-larm))
 
   (while (not (move-to-laundry)))
   (put-cloth-larm)
+
+  (while (not (move-to-broom)))
+  (pick-broom)
+  ;;
+  (while (not (move-to-chair2)))
+  (move-chair)
+  ;;
+  (while (not (move-to-sweep)))
+  (sweep-under-table)
+
+  (sweep-under-table-dual-arm)
+
+  (use-tilt-laser-obstacle-cloud t)
 )
 
 (defun demo ()
