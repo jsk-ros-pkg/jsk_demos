@@ -168,7 +168,7 @@
   (clear-costmap)
   (send *pr2* :move-to (send *room610* :spot-chair-spot) :world)
   (if (not (send *ri* :move-to (send *room610* :spot-chair-spot) :frame-id *room610-origin*))
-	  (return-from move-to-chair nil)
+	  (return-from move-to-chair-larm nil)
 	  )
   (send *ri* :angle-vector (send *pr2* :angle-vector) 500)
   (use-tilt-laser-obstacle-cloud t)
