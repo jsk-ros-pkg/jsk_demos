@@ -83,7 +83,7 @@
 ;    (if (boundp '*irtviewer*) (send *irtviewer* :draw-objects))
 ;    (send *ri* :angle-vector (send *pr2* :angle-vector) 1000)
 ;    (send *ri* :wait-interpolation)
-;    (send *ri* :stop-grasp :rarm :wait t)
+    (send *ri* :stop-grasp :rarm :wait t)
 
     (send *ri* :go-pos-unsafe 0.2 0 0)
     (send *pr2* :translate #f(200 0 0))
@@ -122,8 +122,12 @@
       (send *ri* :start-grasp :larm) ;; wait motion and grasp
       (setq grasp-width (send *ri* :start-grasp :larm)) ;; wait motion and grasp ;; make sure that we really grasp cloth
       ;; if pr2 fail to grasp the cloth, return nil.
-      (if (< grasp-width 1.5)
-          (return-from pick-cloth-larm nil)
+      (if (< grasp-width 1.1)
+          (progn
+            (send *ri* :go-pos-unsafe -0.2 0 0)
+            (send *pr2* :translate #f(-200 0 0))
+            (return-from pick-cloth-larm nil)
+            )
         )
       )
     ;;lift up
