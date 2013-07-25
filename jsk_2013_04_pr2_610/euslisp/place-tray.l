@@ -21,7 +21,9 @@
     ;; get current gripper pose
     (send *pr2* :torso  :waist-z :joint-angle 250)
     (setq p (apply #'midpoint 0.5 (send *pr2* :arms :end-coords :worldpos)))
+
     (send *pr2* :arms :move-end-pos (float-vector 0 0 (- (+ table-height yokei-up-height) (elt p 2))) :world)
+
     (if (boundp '*irtviewer*) (send *irtviewer* :draw-objects))
 
     (send *ri* :angle-vector (send *pr2* :angle-vector) 2000)
@@ -37,6 +39,7 @@
     (let ((av-seq nil))
       (setq p-pr2 (send (send *pr2* :worldcoords) :inverse-transform-vector (apply #'midpoint 0.5 (send *pr2* :arms :end-coords :worldpos))))
 
+;;mid of hand in pr2-coordinates
       (send *pr2* :arms :move-end-pos (send *pr2* :rotate-vector (float-vector (- forward-dist  (elt p-pr2 0)) 0 0)) :world)
       ;; put forward a tray
       ;;    (send *pr2* :arms :move-end-pos (send *pr2* :rotate-vector #f(100 0 0)) :world)
@@ -108,7 +111,6 @@
 
     ;; revert torso link
     (send *pr2* :torso :waist-z :joint-angle 50)
-    (send *ri* :angle-vector (send *pr2* :angle-vector) 2000)
-    (send *ri* :wait-interpolation)
-
+    (send *ri* :angle-vector (send *pr2* :angle-vector) 5000)
+    ;;dont wait interpolation
     ))
