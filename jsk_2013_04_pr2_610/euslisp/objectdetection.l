@@ -46,8 +46,6 @@
 (defun tray-detection (obj)
   (let (ret)
     ;; start program
-    (warning-message 3 "tray detection is not impremented yet~%")
-    (return-from tray-detection nil)
     (ros::roseus "objectdetection_tray_publisher")
 
     (if (boundp '*irtviewer*) (send *irtviewer* :draw-objects :flush t))
@@ -57,7 +55,7 @@
     (while (not ret)
     (setq ret
           (check-detection :type "tray_center" ;; work for any object
-                           :speak-name "とれい"
+                           :speak-name "tray"
                            :target-object obj
                            :timeout 30
                            :diff-position 10
