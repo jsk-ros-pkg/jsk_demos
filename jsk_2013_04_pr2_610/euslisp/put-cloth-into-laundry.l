@@ -130,52 +130,66 @@
 		   :ns "laundry_button"
 		   :lifetime 300))
 
-    ;; ready to push
-    (send *pr2* :rarm :inverse-kinematics
-	  button
-	  :rotation-axis t
-	  :look-at-target t
-	  :debug-view nil
-	  :revert-if-fail t)
-    (send *pr2* :rarm :move-end-pos #f(-40 0 0))
-    (if (boundp '*irtviewer*) (send *irtviewer* :draw-objects))
-;    (send *pr2* :rarm :wrist-r :joint-angle 90)
-    (send *ri* :angle-vector (send *pr2* :angle-vector) 4000)
-    (send *ri* :wait-interpolation)
+    (let (av-seq)
+      (setq av-seq nil)
+      ;; ready to push
+      (send *pr2* :rarm :inverse-kinematics
+	    button
+	    :rotation-axis t
+	    :look-at-target t
+	    :debug-view nil
+	    :revert-if-fail t)
+      (send *pr2* :rarm :move-end-pos #f(-40 0 0))
+      (if (boundp '*irtviewer*) (send *irtviewer* :draw-objects))
+      (push (send *pr2* :angle-vector) av-seq)
+      
+      ;; push
+      (send *pr2* :rarm :move-end-pos (float-vector 30 0 0))
+      (if (boundp '*irtviewer*) (send *irtviewer* :draw-objects))
+      (push (send *pr2* :angle-vector) av-seq)
 
-    ;; push
-    (send *pr2* :rarm :move-end-pos (float-vector 30 0 0))
-    (if (boundp '*irtviewer*) (send *irtviewer* :draw-objects))
-    (send *ri* :angle-vector (send *pr2* :angle-vector) 2000)
-    (send *ri* :wait-interpolation)
+      (send *pr2* :rarm :move-end-pos (float-vector 50 0 0))
+      (if (boundp '*irtviewer*) (send *irtviewer* :draw-objects))
+      (push (send *pr2* :angle-vector) av-seq)
+      
+      (setq av-seq (reverse av-seq))
+      (send *ri* :angle-vector-sequence av-seq (list 4000 2000 500))
+      (send *ri* :wait-interpolation)
 
-    (send *pr2* :rarm :move-end-pos (float-vector 100 0 0))
-    (if (boundp '*irtviewer*) (send *irtviewer* :draw-objects))
-    (send *ri* :angle-vector (send *pr2* :angle-vector) 100)
-    (send *ri* :wait-interpolation)
+      (setq av-seq nil)
+      (send *pr2* :angle-vector (send *ri* :state :potentio-vector))
 
-    (send *pr2* :angle-vector (send *ri* :state :potentio-vector))
-    (send *pr2* :rarm :move-end-pos #f(0 50 0) (send *pr2* :worldcoords))
-    (send *ri* :angle-vector (send *pr2* :angle-vector) 2000)
-    (send *ri* :wait-interpolation)
-    (print (send *pr2* :angle-vector))
+      (send *pr2* :rarm :move-end-pos (float-vector -50 0 0))
+      (if (boundp '*irtviewer*) (send *irtviewer* :draw-objects))
+      (push (send *pr2* :angle-vector) av-seq)
 
-	;; break open door
-	(send *pr2* :rarm :inverse-kinematics
-		  (make-coords :pos (send (send *pr2* :rarm :end-coords) :worldpos)
-					   :rpy (list (deg2rad 140) 0 0))
-		  :rotation-axis t
-		  :debug-view nil)
-	(send *pr2* :rarm :move-end-pos #f(0 450 0) (send *pr2* :worldcoords))
-	(send *ri* :angle-vector (send *pr2* :angle-vector) 1500)
-	(send *ri* :wait-interpolation)
-	(send *pr2* :rarm :move-end-pos #f(-200 0 0) (send *pr2* :worldcoords) :rotation-axis :z)
-	(send *ri* :angle-vector (send *pr2* :angle-vector) 500)
-	(send *ri* :wait-interpolation)
+      (send *pr2* :rarm :move-end-pos #f(0 50 0) (send *pr2* :worldcoords))
+      (if (boundp '*irtviewer*) (send *irtviewer* :draw-objects))
+      (push (send *pr2* :angle-vector) av-seq)
+      (print (send *pr2* :angle-vector))
 
-	(send *pr2* :rarm :move-end-pos #f(0 0 -200) (send *pr2* :worldcoords) :rotation-axis :z)
-	(send *ri* :angle-vector (send *pr2* :angle-vector) 1500)
-	(send *ri* :wait-interpolation)
+      ;; break open door
+      (send *pr2* :rarm :inverse-kinematics
+	    (make-coords :pos (send (send *pr2* :rarm :end-coords) :worldpos)
+			 :rpy (list (deg2rad 140) 0 0))
+	    :rotation-axis t
+	    :debug-view nil)
+      (send *pr2* :rarm :move-end-pos #f(0 450 0) (send *pr2* :worldcoords))
+      (if (boundp '*irtviewer*) (send *irtviewer* :draw-objects))
+      (push (send *pr2* :angle-vector) av-seq)
+
+      (send *pr2* :rarm :move-end-pos #f(-200 0 0) (send *pr2* :worldcoords) :rotation-axis :z)
+      (if (boundp '*irtviewer*) (send *irtviewer* :draw-objects))
+      (push (send *pr2* :angle-vector) av-seq)
+      
+      (send *pr2* :rarm :move-end-pos #f(0 0 -200) (send *pr2* :worldcoords) :rotation-axis :z)
+      (if (boundp '*irtviewer*) (send *irtviewer* :draw-objects))
+      (push (send *pr2* :angle-vector) av-seq)
+
+      (setq av-seq (reverse av-seq))
+      (send *ri* :angle-vector-sequence av-seq (list 1000 2000 3000 500 1500))
+      (send *ri* :wait-interpolation)
+      )
     )
   )
 
