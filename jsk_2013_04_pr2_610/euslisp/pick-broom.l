@@ -45,7 +45,7 @@
 
 (defun grasp-broom ()
   (warn "(grasp-broom)~%")
-  (let (av0 av1 target-coords laundry-coords ret)
+  (let (av-seq target-coords laundry-coords ret)
     ;; move robot position
     (send *pr2* :move-to (send *ri* :state :worldcoords *room610-origin*) :world)
 
@@ -79,12 +79,16 @@
       (ros::ros-error "could not solve ik to grasp broom")
       (speak-en "Could not reach to the broom")
       (return-from grasp-broom nil))
-	
-    (setq av1 (send *pr2* :angle-vector))
-    (send *pr2* :larm :move-end-pos #f(-100 0 0)) ;; via point
-    (setq av0 (send *pr2* :angle-vector))
 
-    (send *ri* :angle-vector-sequence (list av0 av1) (list 1000 1500))
+    (push (send *pr2* :angle-vector) av-seq)
+
+    (send *pr2* :larm :move-end-pos #f(-100 0 0)) ;; via point2
+    (push (send *pr2* :angle-vector) av-seq)
+
+    (send *pr2* :larm :move-end-pos #f(-100 0 0)) ;; via point1
+    (push (send *pr2* :angle-vector) av-seq)
+
+    (send *ri* :angle-vector-sequence av-seq (list 1500 1000 1000))
     (send *ri* :wait-interpolation)
 
     (when (and (send *ri* :joint-action-enable) (< (send *ri* :start-grasp :larm) 3.0))
