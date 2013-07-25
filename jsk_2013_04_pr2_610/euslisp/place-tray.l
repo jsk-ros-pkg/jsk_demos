@@ -21,13 +21,21 @@
     ;; get current gripper pose
     (send *pr2* :torso  :waist-z :joint-angle 250)
     (setq p (apply #'midpoint 0.5 (send *pr2* :arms :end-coords :worldpos)))
+    (setq p-pr2 (send (send *pr2* :worldcoords) :inverse-transform-vector (apply #'midpoint 0.5 (send *pr2* :arms :end-coords :worldpos))))
+    ;;raise tray
+    (let ((av-seq nil))
+      (send *pr2* :arms :move-end-pos (float-vector 0 0 (- (+ table-height yokei-up-height) (elt p 2))) :world)
+      (push (send *pr2* :angle-vector) av-seq)
+      (if (boundp '*irtviewer*) (send *irtviewer* :draw-objects))
+      ;; put forward a tray
+      (send *pr2* :arms :move-end-pos (send *pr2* :rotate-vector (float-vector (- forward-dist  (elt p-pr2 0)) 0 0)) :world)
+      (push (send *pr2* :angle-vector) av-seq)
+      (if (boundp '*irtviewer*) (send *irtviewer* :draw-objects))
 
-    (send *pr2* :arms :move-end-pos (float-vector 0 0 (- (+ table-height yokei-up-height) (elt p 2))) :world)
-
-    (if (boundp '*irtviewer*) (send *irtviewer* :draw-objects))
-
-    (send *ri* :angle-vector (send *pr2* :angle-vector) 2000)
-    (send *ri* :wait-interpolation)
+      (setq av-seq (reverse av-seq))
+      (send *ri* :angle-vector-sequence av-seq (list 2000 2000))
+      (send *ri* :wait-interpolation)
+      )
 
     ;; for navigation
     (speak-jp "まえにすすみます")
@@ -35,23 +43,11 @@
     ;;(send *ri* :go-pos-unsafe 0.29 0)
     (send *ri* :go-pos-unsafe 0.34 0)
     
-    ;;put a tray
-    (let ((av-seq nil))
-      (setq p-pr2 (send (send *pr2* :worldcoords) :inverse-transform-vector (apply #'midpoint 0.5 (send *pr2* :arms :end-coords :worldpos))))
-
-;;mid of hand in pr2-coordinates
-      (send *pr2* :arms :move-end-pos (send *pr2* :rotate-vector (float-vector (- forward-dist  (elt p-pr2 0)) 0 0)) :world)
-      ;; put forward a tray
-      ;;    (send *pr2* :arms :move-end-pos (send *pr2* :rotate-vector #f(100 0 0)) :world)
-      (push (send *pr2* :angle-vector) av-seq)
-
-      ;; put down a tray
-      (send *pr2* :arms :move-end-pos (float-vector 0 0 (- (- table-height yokei-down-height) (elt p 2))) :world)
-      (push (send *pr2* :angle-vector) av-seq)
-      (setq av-seq (reverse av-seq))
-      (send *ri* :angle-vector-sequence av-seq (list 2000 2000))
-      (send *ri* :wait-interpolation)
-      )
+    ;; put down a tray
+    (send *pr2* :arms :move-end-pos (float-vector 0 0 (- (- table-height yokei-down-height) (elt p 2))) :world)
+    (send *ri* :angle-vector (send *pr2* :angle-vector) 2000)
+    (send *ri* :wait-interpolation)
+    
 
 #|
     (dolist (offset (list (cons #f(0 30 0) #f(0 -30 0)) (cons #f(0 60 0) #f(0 -60 0))))
@@ -100,7 +96,7 @@
     (send *pr2* :arms :move-end-pos #f(0 0 100) :world)
     (send *pr2* :arms :move-end-pos #f(0 0 100) :world)
     (if (boundp '*irtviewer*) (send *irtviewer* :draw-objects))
-    (send *ri* :angle-vector (send *pr2* :angle-vector) 1000)
+    (send *ri* :angle-vector (send *pr2* :angle-vector) 2000)
     (send *ri* :wait-interpolation)
 
     ;; for navigation
