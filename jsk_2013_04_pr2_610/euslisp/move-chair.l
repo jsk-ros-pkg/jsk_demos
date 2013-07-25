@@ -123,11 +123,8 @@
       (send *pr2* :angle-vector (send *ri* :state :potentio-vector))
       (send *pr2* :rarm :angle-vector #f(-40.0 -20.0 0.0 -70.0 -70.0 -90.0 0.0)) ;; to solve ik, do not  send to *ri*
       (setq handle-rarm (send (send *chair* :handle-above-rarm) :copy-worldcoords) )
-      (send *pr2* :inverse-kinematics 
-            (list (send (send  handle-rarm  :translate (float-vector -20 0 15) :world) :rotate (deg2rad 20) :y :world))
-            :link-list (list
-                        (send *pr2* :link-list (send *pr2* :rarm :end-coords :parent)))
-            :move-target (list (send *pr2* :rarm :end-coords))
+      (send *pr2* :rarm :inverse-kinematics 
+            (send (send  handle-rarm  :translate (float-vector -20 0 15) :world) :rotate (deg2rad 20) :y :world)
             :revert-if-fail nil
             :look-at-target t
             :debug-view nil
