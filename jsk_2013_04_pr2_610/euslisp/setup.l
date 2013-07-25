@@ -97,6 +97,8 @@
   ;; Rotate shoulder-p
   (send *pr2* :larm :shoulder-r :joint-angle 70)
   (send *pr2* :rarm :shoulder-r :joint-angle -70)
+
+  (send *pr2* :head :neck-p :joint-angle 50)
   )
 
 (defun move-to-table ()
