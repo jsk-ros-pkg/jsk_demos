@@ -153,7 +153,7 @@
       (push (send *pr2* :angle-vector) av-seq)
       
       (setq av-seq (reverse av-seq))
-      (send *ri* :angle-vector-sequence av-seq (list 4000 2000 500))
+      (send *ri* :angle-vector-sequence av-seq (list 4000 2000 1000))
       (send *ri* :wait-interpolation)
 
       (setq av-seq nil)
@@ -226,7 +226,7 @@
     (if (boundp '*irtviewer*) (send *irtviewer* :draw-objects))
 
     (setq av-seq (reverse av-seq))
-    (send *ri* :angle-vector-sequence av-seq (list 1000 2000 1000))
+    (send *ri* :angle-vector-sequence av-seq (list 3000 2000 1000))
     (send *ri* :wait-interpolation)
 
 

@@ -45,7 +45,8 @@
 
 (defun grasp-broom ()
   (warn "(grasp-broom)~%")
-  (let (av-seq target-coords laundry-coords ret)
+  (let (av-seq target-coords laundry-coords ret av0)
+    (setq av0 (send *pr2* :angle-vector))
     ;; move robot position
     (send *pr2* :move-to (send *ri* :state :worldcoords *room610-origin*) :world)
 
@@ -94,7 +95,7 @@
     (when (and (send *ri* :joint-action-enable) (< (send *ri* :start-grasp :larm) 3.0))
       (send *ri* :stop-grasp :larm :wait t)
       (speak-jp "ほうきとれなかった")
-      (send *ri* :angle-vector av0)
+      (send *ri* :angle-vector av0 3000)
       (send *ri* :stop-grasp :larm :wait nil)
       (return-from grasp-broom nil)
       )
@@ -210,6 +211,7 @@
             :debug-view nil))
     (if (boundp '*irtviewer*) (send *irtviewer* :draw-objects))
     (send *ri* :start-grasp :rarm)
+    (send *ri* :stop-grasp :larm :wait t)
     (send *ri* :angle-vector-with-constraint (send *pr2* :angle-vector) 2000 :arms :rotation-axis :z)
     ;;(send *ri* :angle-vector (send *pr2* :angle-vector))
     (send *ri* :wait-interpolation)

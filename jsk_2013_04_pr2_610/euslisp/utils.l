@@ -9,8 +9,8 @@
   (let ((r-grasp-height 600)
 	(l-grasp-height 750)
 	(raise-height 600))
-    (send *pr2* :torso :waist-z :joint-angle 150)
-    (send *ri* :angle-vector (send *pr2* :angle-vector) 2000)
+;;    (send *pr2* :torso :waist-z :joint-angle 150)
+;;    (send *ri* :angle-vector (send *pr2* :angle-vector) 2000)
 
     ;; release mop
     (send *ri* :move-gripper :rarm 0.03 :effort 20)
