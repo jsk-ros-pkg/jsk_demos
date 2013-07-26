@@ -83,18 +83,17 @@
 
     (ros::ros-info "move to right")
     
-    (send *pr2* :inverse-kinematics (send  (send (send *pr2* :rarm :end-coords) :copy-worldcoords) :translate (float-vector 0 -300 0) :world)
+    (send *pr2* :rarm :inverse-kinematics (send  (send (send *pr2* :rarm :end-coords) :copy-worldcoords) :translate (float-vector 0 -300 0) :world)
           :revert-if-fail nil
-          :link-list (list
-                      (send *pr2* :link-list (send *pr2* :rarm :end-coords :parent)))
-          :move-target (list (send *pr2* :rarm :end-coords))
           :look-at-target t
           :debug-view nil
           )
     (send *pr2* :larm :collar-y :joint-angle 120)
     (if (boundp '*irtviewer*) (send *irtviewer* :draw-objects))
-    (send *ri* :angle-vector (send *pr2* :angle-vector))
+    (send *ri* :angle-vector-with-constraint (send *pr2* :angle-vector) 3000 :rarm :rotation-axis :z)
+    ;;(send *ri* :angle-vector (send *pr2* :angle-vector))
     (send *ri* :wait-interpolation)
+    (send *pr2* :angle-vector (send *ri* :state :angle-vector))
 
     (setq before-pose (send *ri* :potentio-vector))
 
@@ -135,10 +134,7 @@
       (send *ri* :wait-interpolation)
 
       ;; put down the rarm
-      (send *pr2* :inverse-kinematics (send  (send (send *pr2* :rarm :end-coords) :copy-worldcoords) :translate (float-vector 0 0 -50) :world)
-            :link-list (list
-                        (send *pr2* :link-list (send *pr2* :rarm :end-coords :parent)))
-            :move-target (send *pr2* :rarm :end-coords)
+      (send *pr2* :rarm :inverse-kinematics (send  (send (send *pr2* :rarm :end-coords) :copy-worldcoords) :translate (float-vector 0 0 -50) :world)
             :revert-if-fail nil
             :look-at-target t
             :debug-view nil
@@ -334,6 +330,8 @@
     (ros::ros-info "Next get moved chair spot ")
     (setq *moved-chair-spot* (get-moved-chair-back-spot))
 
+    (ros::ros-info "Move to left")
+    (send *ri* :go-pos-unsafe 0 0.3 0)
     ))
 
 

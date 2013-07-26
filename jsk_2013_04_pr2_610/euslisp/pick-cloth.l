@@ -74,7 +74,7 @@
 
 (defun pick-cloth-larm ()
   (warn "pick-cloth-larm ()~%")
-  (let (croth-coords)
+  (let (croth-coords av-seq)
 ;    (send *pr2* :reset-pose)
 ;    (send *pr2* :move-to *chair-spot* :world)
 ;    (if (boundp '*irtviewer*) (send *irtviewer* :draw-objects))
@@ -102,6 +102,7 @@
 
 
     ;;grasp
+    (setq av-seq nil)
     (setq croth-coords
           (make-coords
            :pos
@@ -116,8 +117,15 @@
           :revert-if-fail nil
           :look-at-target t)
     (if (boundp '*irtviewer*) (send *irtviewer* :draw-objects))
-    (send *ri* :angle-vector (send *pr2* :angle-vector) 2000)
+    (push (send *pr2* :angle-vector) av-seq)
+
+    (send *pr2* :larm :move-end-pos #f(-100 0 0))
+    (push (send *pr2* :angle-vector) av-seq)
+    ;;(send *ri* :angle-vector (send *pr2* :angle-vector) 2000)
+    (send *ri* :angle-vector-sequence av-seq (list 3000 1000))
     (send *ri* :wait-interpolation)
+    (send *pr2* :angle-vector (send *ri* :state :angle-vector))
+
     (let (grasp-width)
       (send *ri* :start-grasp :larm) ;; wait motion and grasp
       (setq grasp-width (send *ri* :start-grasp :larm)) ;; wait motion and grasp ;; make sure that we really grasp cloth

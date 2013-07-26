@@ -56,7 +56,8 @@
   (send *room610* :assoc *pick-broom-spot*)
   (setq *sink-spot* (make-cascoords :pos #f(7300 200 0) :rpy (list 0 0 0)))
   (send *room610* :assoc *sink-spot*)
-  (setq *sweep-spot* (make-cascoords :pos #f(3450 -400 0) :rpy (list (deg2rad -40) 0 0)))
+  ;;(setq *sweep-spot* (make-cascoords :pos #f(3450 -400 0) :rpy (list (deg2rad -40) 0 0)))
+  (setq *sweep-spot* (make-cascoords :pos #f(3750 -400 0) :rpy (list (deg2rad -40) 0 0)))
   (send *room610* :assoc *sweep-spot*)
   (setq *moved-back-chair-spot* (make-cascoords :pos #f(750 0 0) :rpy (list 0 0 0)))
   (send *room610* :assoc *moved-back-chair-spot*)
@@ -295,15 +296,18 @@
   ;;
   (while (not (move-to-sink)))
   (place-tray)
-  
+  (send *ri* :go-pos-unsafe 0 0 90)
+
   (while (not (move-to-chair-larm)))
   (while (not (pick-cloth-larm)))
+  (send *ri* :go-pos-unsafe 0 0 90)
 
   (while (not (move-to-laundry)))
   (put-cloth-larm)
 
   (while (not (move-to-broom)))
   (pick-broom)
+  (send *ri* :go-pos-unsafe 0 0 -90)
   ;;
   (while (not (move-to-chair2)))
   (move-chair)
