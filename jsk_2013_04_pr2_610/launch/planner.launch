@@ -1,0 +1,9 @@
+<launch>
+  <node pkg="pddl_planner_viewer"
+        type="pddl_planner_viewer.py"
+        name="$(anon pddl_planner_viewer)" />
+  <include file="$(find task_compiler)/launch/execute-pddl.launch">
+    <arg name="action" value="$(find jsk_2013_04_pr2_610)/pddl/action.l"/>
+    <arg name="description" value="$(find jsk_2013_04_pr2_610)/pddl/description.l"/>
+  </include>
+</launch>
