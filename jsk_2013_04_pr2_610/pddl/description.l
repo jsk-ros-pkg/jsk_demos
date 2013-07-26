@@ -50,7 +50,7 @@
         (working laundry)
         ))
 
-(send *problem* :metric '(minimize (total-cost)))
+;(send *problem* :metric '(minimize (total-cost)))
 
 ;;
 ;; domain
@@ -183,6 +183,7 @@
 (send *domain* :add :action *push-button*)
 
 
+#|
 ;;
 ;; solve planning
 ;;
@@ -191,3 +192,4 @@
 (pprint (cdr (assoc :plan *result*)))
 ;(format t "result = ~A " *result*)
 (ros::exit)
+|#
