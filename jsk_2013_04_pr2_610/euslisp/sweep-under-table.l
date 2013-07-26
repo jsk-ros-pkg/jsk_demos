@@ -25,8 +25,10 @@
 
 
 (defun sweep-under-table-init-slim ()
+  (warn "init pose for sweep~%")
+  (send *ri* :stop-grasp :rarm :wait t)
   (let (handle-coords handle-coords-r handle-coords-l)
-    (setq handle-coords (send (send *pr2* :copy-worldcoords) :translate #f(400 0 870)))
+    (setq handle-coords (send (send *pr2* :copy-worldcoords) :translate #f(650 0 870)))
     (setq handle-coords-r (send (send (send handle-coords :copy-worldcoords) :translate #f(0 0 -130)) :rotate pi/2 :z))
     (setq handle-coords-l (send (send handle-coords :copy-worldcoords) :rotate -pi/2 :z))
     (send *pr2* :rarm :inverse-kinematics handle-coords-r
@@ -35,17 +37,18 @@
 
     (send *pr2* :larm :inverse-kinematics handle-coords-l
           :rotation-axis t
-          :look-at-target nil
+          :look-at-target t
           :debug-view nil)
-
+    (print handle-coords-l)
+    (print handle-coords-r)
     ;;(send *pr2* :angle-vector #f(126.795 -1.00107 -20.2206 11.9353 -71.4577 93.1963 -72.7922 176.55 -2.71504 -5.92811 -3.83082 -83.875 -79.9001 -86.0572 -191.652 0 12.2682))
+    
     (send *pr2* :rarm :move-end-pos #f(-100 0 0))
     ;;  (send *ri* :angle-vector (send *pr2* :angle-vector) 1000)
-    (send *ri* :angle-vector-with-constraint (send *pr2* :angle-vector) 3000 :arms :rotation-axis :z)
+    (send *ri* :angle-vector-with-constraint (send *pr2* :angle-vector) 3000 :larm :rotation-axis :z)
     (send *ri* :wait-interpolation)
     (send *pr2* :angle-vector (send *ri* :state :angle-vector))
-    (send *ri* :stop-grasp :rarm :wait t)
-    (send *pr2* :rarm :move-end-pos #f(100 0 0))
+    (send *pr2* :rarm :move-end-pos #f(150 0 0))
     (send *ri* :angle-vector (send *pr2* :angle-vector) 1500)
     (send *ri* :wait-interpolation)
     (send *ri* :start-grasp)
@@ -273,13 +276,13 @@
     (send *ri* :angle-vector-with-constraint (send *pr2* :angle-vector) 1800 :larm :rotation-axis :z)
     (send *ri* :wait-interpolation)
 
-    (sweep-under-table-init-s<lim)
+    (sweep-under-table-init-slim)
 ;;    (rehold-mop)
     (raise-mop)
     ))
 
 (defun sweep-under-table-dual-arm ()
-  ;; we assume the robot aready in broon grasp pose, see (sweep-under-table-init)
+  ;; we assume the robot arleady in broon grasp pose, see (sweep-under-table-init)
   (let (av0 av1
             handle-larm handle-rarm offset-l offset-r
             av-grasp av-sweep0 av-sweep1)

@@ -287,7 +287,7 @@
   ;(furuta-sweep)
   )
 
-(defun demo2 ()
+(defun demo ()
   (setup)
   (pr2-reset-pose)
 
@@ -296,7 +296,7 @@
   ;;
   (while (not (move-to-sink)))
   (place-tray)
-  (send *ri* :go-pos-unsafe 0 0 90)
+  (send *ri* :go-pos-unsafe 0 0 -90)
 
   (while (not (move-to-chair-larm)))
   (while (not (pick-cloth-larm)))
@@ -315,46 +315,11 @@
   (while (not (move-to-sweep)))
   (sweep-under-table)
 
-  (sweep-under-table-dual-arm)
-
+  ;;(sweep-under-table-dual-arm)
+  (speak-jp "部屋の掃除が終わりました")
   (use-tilt-laser-obstacle-cloud t)
 )
 
-(defun demo ()
-  (setup)
-  (pr2-reset-pose)
-
-  (while (not (move-to-table)))
-  (while (not (pick-tray)))
-  ;;
-  (while (not (move-to-sink)))
-  (place-tray)
-  ;;
-  (while (not (move-to-chair)))
-  (pick-cloth)
-  ;;
-  (while (not (move-to-laundry)))
-  (put-cloth)
-  ;;
-  (while (not (move-to-broom)))
-  (pick-broom)
-  ;;
-  (while (not (move-to-chair2)))
-  (move-chair)
-  ;;
-  (while (not (move-to-sweep)))
-  (sweep-under-table)
-  ;;
-  ;;(while (not (move-to-back-chair)))
-  ;;(move-back-chair)
-  ;;
-  ;;(while (not (move-to-sweep-floor)))
-  ;;(sweep-floor)
-
-  (sweep-under-table-dual-arm)
-
-  (use-tilt-laser-obstacle-cloud t)
-  )
 
 (warn "type (demo) to start~%")
 (warn "type (setup) to revert all object location~%")
