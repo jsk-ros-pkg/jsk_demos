@@ -168,6 +168,12 @@
 
     (warn "right-hand~%")
     (push (send *pr2* :rarm :inverse-kinematics
+                (make-coords :pos (send *pr2* :transform-vector #f(530 -50 650))
+                             :rpy (list (deg2rad 70) 0 0))
+                :rotation-axis :z
+                :debug-view nil) av-list)
+    
+    (push (send *pr2* :rarm :inverse-kinematics
                 (make-coords :pos (send *pr2* :transform-vector #f(530 60 650))
                              :rpy (list (deg2rad 70) 0 0))
                 :rotation-axis :z
@@ -175,7 +181,7 @@
                 :debug-view nil) av-list)
     (if (boundp '*irtviewer*) (send *irtviewer* :draw-objects))
     ;;  (send *ri* :angle-vector (send *pr2* :angle-vector) 1500)
-    (send *ri* :angle-vector-sequence (reverse av-list) (list 1000 1500))
+    (send *ri* :angle-vector-sequence (reverse av-list) (list 1500 1500 1000))
     (send *ri* :wait-interpolation)
     ;; special command for casing grasp
     (send *ri* :move-gripper :rarm 0.03 :effort 20)
@@ -192,9 +198,12 @@
 
     (send *pr2* :larm :end-coords :dissoc *broom*)
     (if (boundp '*irtviewer*) (send *irtviewer* :draw-objects))
+
+
     (setq av-list nil)
     (warn "calib-pick-height~%")
-    (let ((offset-l (send *pr2* :rotate-vector #f(0 -30 -500)))
+    (send *broom* :translate #f(0 0 100) :world)
+    (let ((offset-l (send *pr2* :rotate-vector #f(20 -50 -500)))
           (offset-r #f(0 0 -500))
           (handle-larm (send (send *broom* :handle-larm) :copy-worldcoords))
           (handle-rarm (send (send *broom* :handle-rarm) :copy-worldcoords)))
@@ -219,7 +228,8 @@
     (send *ri* :start-grasp :larm)
     (send *pr2* :larm :end-coords :assoc *broom*)
 
-    (send *pr2* :arms :move-end-pos (send *pr2* :rotate-vector #f(0 0 400)))
+    (send *pr2* :arms :move-end-pos (send *pr2* :rotate-vector #f(0 0 200)))
+    (send *pr2* :arms :move-end-pos (send *pr2* :rotate-vector #f(0 0 200)))
     (send *pr2* :torso :waist-z :joint-angle 100)
     (send *pr2* :larm :end-coords :dissoc *broom*)
     (send *ri* :angle-vector-with-constraint (send *pr2* :angle-vector) 2000 :arms :rotation-axis :z)

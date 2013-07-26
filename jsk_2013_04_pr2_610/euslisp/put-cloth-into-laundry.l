@@ -55,6 +55,7 @@
     (send *pr2* :larm :inverse-kinematics
 	  pass-coords-l
 	  :rotation-axis t
+          :look-at-target t
 	  :debug-view nil
 	  :revert-if-fail t)
     (send *ri* :angle-vector (send *pr2* :angle-vector) 2000)
@@ -65,6 +66,7 @@
     (let (av-seq)
       (send *pr2* :rarm :inverse-kinematics
 	    (send (send pass-coords-r :copy-worldcoords) :translate #f(-100 0 0))
+            :look-at-target t
 	    :rotation-axis t
 	    :debug-view nil
 	    :revert-if-fail t)
@@ -73,6 +75,7 @@
       ;;    (send *ri* :wait-interpolation)
       (send *pr2* :rarm :inverse-kinematics
 	    pass-coords-r
+            :look-at-target t
 	    :rotation-axis t
 	    :debug-view nil
 	    :revert-if-fail t)

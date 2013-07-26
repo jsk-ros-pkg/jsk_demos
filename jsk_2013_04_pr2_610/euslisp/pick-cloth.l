@@ -33,8 +33,8 @@
     (ros::ros-info "end detect chair")
 ;;----------------------------------------------------------------
 
-    (send *pr2* :head :look-at (send *chair* :worldpos))
-    (send *ri* :angle-vector (send *pr2* :angle-vector) 2000)
+;;    (send *pr2* :head :look-at (send *chair* :worldpos))
+;;    (send *ri* :angle-vector (send *pr2* :angle-vector) 2000)
 
 
     ;;grasp
@@ -46,14 +46,30 @@
                      (send (send *chair* :handle-above-cloth-rarm) :worldpos))
            :rot
            (rotate-matrix (send (send *chair* :handle-above-cloth-larm) :worldrot) -pi/2 :x)))
-    (if (boundp '*irtviewer*) (send croth-coords :draw-on :flush t))
-    (send *pr2* :rarm :inverse-kinematics
-          croth-coords
-          :revert-if-fail nil
-          :look-at-target t)
-    (if (boundp '*irtviewer*) (send *irtviewer* :draw-objects))
+
+    ;look-at-cloth
+    (send *pr2* :head :look-at (send croth-coords :worldpos))
     (send *ri* :angle-vector (send *pr2* :angle-vector) 2000)
-    (send *ri* :wait-interpolation)
+    (if (boundp '*irtviewer*) (send croth-coords :draw-on :flush t))
+
+    ;;move rarm
+    (let (av-seq av-last)
+      (send *pr2* :rarm :inverse-kinematics
+            croth-coords
+            :revert-if-fail nil
+            :look-at-target t)
+      (push (send *pr2* :angle-vector) av-seq)
+      (setq av-last (send *pr2* :angle-vector))
+      (if (boundp '*irtviewer*) (send *irtviewer* :draw-objects))
+      
+      (send *pr2* :rarm :move-end-pos #f(-100 0 0))
+      (push (send *pr2* :angle-vector) av-seq)
+      (send *pr2* :angle-vector av-last)
+
+      ;;(send *ri* :angle-vector (send *pr2* :angle-vector) 2000)
+      (send *ri* :angle-vector-sequence av-seq (list 2000 1000))
+      (send *ri* :wait-interpolation)
+      )
     (send *ri* :start-grasp :rarm) ;; wait motion and grasp
     (send *ri* :start-grasp :rarm) ;; wait motion and grasp ;; make sure that we really grasp cloth
 
@@ -97,11 +113,7 @@
     (ros::ros-info "end detect chair")
 ;;----------------------------------------------------------------
 
-    (send *pr2* :head :look-at (send *chair* :worldpos))
-    (send *ri* :angle-vector (send *pr2* :angle-vector) 2000)
-
-
-    ;;grasp
+    ;;set cloth coord
     (setq av-seq nil)
     (setq croth-coords
           (make-coords
@@ -111,7 +123,12 @@
                      (send (send *chair* :handle-above-cloth-rarm) :worldpos))
            :rot
            (rotate-matrix (send (send *chair* :handle-above-cloth-larm) :worldrot) -pi/2 :x)))
+
+    ;look-at-cloth
+    (send *pr2* :head :look-at (send croth-coords :worldpos))
+    (send *ri* :angle-vector (send *pr2* :angle-vector) 2000)
     (if (boundp '*irtviewer*) (send croth-coords :draw-on :flush t))
+
     (send *pr2* :larm :inverse-kinematics
           croth-coords
           :revert-if-fail nil
