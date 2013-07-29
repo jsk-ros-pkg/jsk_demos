@@ -288,11 +288,11 @@
   )
 
 (defun demo ()
+  (speak-jp "部屋の掃除を始めます")
   (setup)
   (pr2-reset-pose)
-
-  (speak-jp "部屋の掃除")
   
+  (speak-jp "トレイをキッチンに運びます")
   (While (not (move-to-table)))
   (while (not (pick-tray)))
   ;;
@@ -300,6 +300,7 @@
   (place-tray)
   (send *ri* :go-pos-unsafe 0 0 -90)
 
+  (speak-jp "洗濯物を洗濯機に入れます")
   (while (not (move-to-chair-larm)))
   (while (not (pick-cloth-larm)))
   (send *ri* :go-pos-unsafe 0 0 90)
@@ -307,13 +308,16 @@
   (while (not (move-to-laundry)))
   (put-cloth-larm)
 
+  (speak-jp "モップをとります")
   (while (not (move-to-broom)))
   (pick-broom)
   (send *ri* :go-pos-unsafe 0 0 -90)
   ;;
+  (speak-jp "いすをひきます")
   (while (not (move-to-chair2)))
   (move-chair)
   ;;
+  (speak-jp "モップをかけます")
   (while (not (move-to-sweep)))
   (sweep-under-table)
 
