@@ -234,7 +234,7 @@
     (send *pr2* :larm :end-coords :dissoc *broom*)
     (send *ri* :angle-vector-with-constraint (send *pr2* :angle-vector) 2000 :arms :rotation-axis :z)
     ;;(send *ri* :angle-vector (send *pr2* :angle-vector))
-    ;; (send *ri* :wait-interpolation)
+    (send *ri* :wait-interpolation)
     )
   )
 
