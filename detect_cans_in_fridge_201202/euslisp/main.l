@@ -1,4 +1,5 @@
 (defvar *use-voicetext* t)
+(defvar *use-english* t)
 
 ;; open fridge and pick a can (and close the door)
 (load "package://jsk_2011_07_pr2_semantic/euslisp/actions.l")
@@ -49,7 +50,10 @@
 
   (when return-to-initial-position
     (if (and (boundp '*use-voicetext*) *use-voicetext*)
-        (speak-jp (format nil "~aを持って行きます。" *type*))
+        (cond
+         ((and (boundp '*use-english*) *use-english*)
+          (speak-jp (format nil "I will bring  ~a." *type*)))
+         (t (speak-jp (format nil "~aを持って行きます。" *type*))))
       (speak-jp (format nil "~a を もって いきます" *type*)))
     (send *ri* :move-to *opose*))
 
@@ -58,7 +62,10 @@
      (put-can-on-turtlebot))
     ((:pass-to-human t)
      (if (and (boundp '*use-voicetext*) *use-voicetext*)
-         (speak-jp (format nil "~aをどうぞ。" *type*))
+         (cond
+          ((and (boundp '*use-english*) *use-english*)
+           (speak-jp (format nil "Please take ~a." *type*)))
+          (t (speak-jp (format nil "~aをどうぞ。" *type*))))
        (speak-jp (format nil "~a を どうぞ" *type*)))
      (hand-over :rarm :wait-shock t))
     )
@@ -97,7 +104,10 @@
                   )
   (setq *type* type)
   (if (and (boundp '*use-voicetext*) *use-voicetext*)
-      (speak-jp (format nil "~aを持って行きます。少々、お待ちください。" *type*))
+      (cond
+       ((and (boundp '*use-english*) *use-english*)
+        (speak-jp (format nil "I will look for ~a and bring it. Please wait a minute." *type*)))
+       (t (speak-jp (format nil "~aを持って行きます。少々、お待ちください。" *type*))))
     (speak-jp (format nil "~a を もってきます  しょうしょう おまち ください" *type*)))
   (pr2-tuckarm-pose :rarm)
 
@@ -133,7 +143,7 @@
   )
 
 (defun wait-android-query (&optional (demo-type :map))
-  (ros::ros-info "Begin Waiting ....")
+  (ros::ros-info "Begin Waiting .... ~A" demo-type)
   (let (type from)
     (ros::subscribe "/Tablet/StartDemo" roseus::StringStamped
                     #'(lambda(m)
@@ -151,7 +161,7 @@
                           (setq from :app)
                           (setq type "georgia"))
                          (t ))))
-    (ros::rate 4)
+    (ros::rate 2)
     (do-until-key
      (ros::ros-info " Waiting ....")
      (ros::spin-once)
