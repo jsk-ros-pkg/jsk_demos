@@ -291,7 +291,9 @@
   (setup)
   (pr2-reset-pose)
 
-  (while (not (move-to-table)))
+  (speak-jp "部屋の掃除")
+  
+  (While (not (move-to-table)))
   (while (not (pick-tray)))
   ;;
   (while (not (move-to-sink)))
@@ -315,7 +317,7 @@
   (while (not (move-to-sweep)))
   (sweep-under-table)
 
-  ;;(sweep-under-table-dual-arm)
+  (sweep-under-table-dual-arm)
   (speak-jp "部屋の掃除が終わりました")
   (use-tilt-laser-obstacle-cloud t)
 )
