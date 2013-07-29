@@ -300,19 +300,17 @@
 
 (defun sweep-under-table-dual-arm ()
   ;; we assume the robot arleady in broon grasp pose, see (sweep-under-table-init)
-  (let (av0 av1
-            handle-larm handle-rarm offset-l offset-r
-            av-grasp av-sweep0 av-sweep1)
-  (use-tilt-laser-obstacle-cloud nil)
-
+  (let (handle-larm handle-rarm offset-l offset-r)
+    (use-tilt-laser-obstacle-cloud nil)
+    
     (send *ri* :go-pos-unsafe -1.5 0 90)
-    (setq av-grasp (send *pr2* :angle-vector))
+    #| furuta
     ;; 両手を前に
-    (send *pr2* :larm :move-end-pos #f(200 0 0) *pr2*)
-    (send *pr2* :rarm :move-end-pos #f(200 0 0) *pr2*)
+    (send *pr2* :arms :move-end-pos #f(200 0 0) *pr2*)
     (setq av0 (send *pr2* :angle-vector))
     (send *ri* :angle-vector (send *pr2* :angle-vector) 800)
     (send *ri* :wait-interpolation)
+    |#
 
     ;; down both hand
     (send *broom* :move-to (make-coords :pos (transform #2f((1 0 0)(0 1 0)(0 0 0)) (send *pr2* :larm :end-coords :worldpos)) :rot (send *pr2* :worldrot)) :world)
@@ -334,7 +332,8 @@
     (if (boundp '*irtviewer*) (send *irtviewer* :draw-objects))
     ;; special command for casing grasp
     (send *ri* :move-gripper :arms 0.02 :effort 20)
-    (send *ri* :angle-vector (send *pr2* :angle-vector) 1200)
+    (send *ri* :angle-vector (send *pr2* :angle-vector) 2000)
+    (send *ri* :wait-interpolation)
 
     ;; ready pose
     (send *broom* :orient (deg2rad -20) :y) ;; -40
@@ -355,15 +354,12 @@
           :rotation-axis t
           :debug-view nil)
     (if (boundp '*irtviewer*) (send *irtviewer* :draw-objects))
-    (setq av-sweep0 (send *pr2* :angle-vector))
     ;; tmp code until https://sourceforge.net/p/jsk-ros-pkg/tickets/91/ fixed
-    (send *ri* :angle-vector (send *pr2* :angle-vector) 1000)
-                                        ;(setq av1 (send *pr2* :angle-vector))
-                                        ;(dotimes (i 50) (send *pr2* :angle-vector (midpoint (/ i 50.0) av0 av1))(send *irtviewer* :draw-objects))    (send *ri* :angle-vector-sequence (list (midpoint 0.5 av0 av1) av1) (list 2000 2000))
+    (send *ri* :angle-vector (send *pr2* :angle-vector) 1500)
     (send *ri* :wait-interpolation)
-    ;; grsip tight
-    (send *ri* :move-gripper :rarm 0.0 :effort 40 :wait t) ;; default effor is 20
 
+    ;; grasp tight
+    (send *ri* :move-gripper :rarm 0.0 :effort 40 :wait t) ;; default effor is 20
 
     ;; sweep motion
     (send *broom* :translate #f(300 -300 0) *pr2*)
@@ -383,18 +379,14 @@
           :rotation-axis t
           :debug-view nil)
     (if (boundp '*irtviewer*) (send *irtviewer* :draw-objects))
-    (setq av-sweep1 (send *pr2* :angle-vector))
-    ;; special command for casing grasp
-;;    (send *ri* :angle-vector av-sweep0 2000)
-;;    (send *ri* :wait-interpolation)
-    (send *ri* :angle-vector av-sweep1 2000)
+
+    (send *ri* :angle-vector (send *pr2* :angle-vector) 2000)
     (send *ri* :wait-interpolation)
 
-    (send *pr2* :rarm :move-end-pos #f(   0 0 -100))
-    (send *pr2* :rarm :move-end-pos #f(   0 0 -100))
+    (send *pr2* :rarm :move-end-pos #f(0 0 -100))
+    (send *pr2* :rarm :move-end-pos #f(0 0 -100))
     (send *ri* :angle-vector-with-constraint (send *pr2* :angle-vector) 800 :arms :rotation-axis :z)
     (send *ri* :wait-interpolation)
-
 
     ;;go to  kitchen
     (setq goal_coords (make-coords :pos #f(5050 1000 0)))
@@ -417,13 +409,4 @@
     (send *pr2* :head :angle-vector #f(0 0))
     (send *ri* :angle-vector-with-constraint (send *pr2* :angle-vector) 2000 :arms)
     (send *ri* :wait-interpolation)
-
-    (speak-jp "部屋の掃除が終わりました")
-
-
-   ;; (dotimes (i 5)
-;;      (send *ri* :angle-vector-sequence (list av-sweep1 av-sweep0) (list 1200 1200))
-;;      (send *ri* :wait-interpolation))
-;;    (send *ri* :angle-vector av-grasp 1000)
-;;    (send *ri* :wait-interpolation)
     ))

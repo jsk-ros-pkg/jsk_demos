@@ -46,8 +46,8 @@
 ;;    (send *ri* :angle-vector (send *pr2* :angle-vector) 2000)
 
     ;; release mop
-    (send *ri* :move-gripper :rarm 0.03 :effort 20)
-    (send *ri* :move-gripper :larm 0.03  :effort 20)
+    (send *ri* :move-gripper :rarm 0.02 :effort 20)
+    (send *ri* :move-gripper :larm 0.02  :effort 20)
     (send *ri* :wait-interpolation)
     
     (send *pr2* :larm :inverse-kinematics
@@ -79,7 +79,7 @@
     (send *ri* :start-grasp)
     (send *ri* :start-grasp)
     
-    (send *pr2* :arms :move-end-pos (float-vector 0 0 raise-height) :world)
+    (send *pr2* :arms :move-end-pos (float-vector 0 0 raise-height) :world :rotation-axis :z)
     (send *pr2* :head :look-at (send *pr2* :larm :end-coords :worldpos))
     (send *ri* :angle-vector-with-constraint (send *pr2* :angle-vector) 2000 :arms :rotation-axis :z)
     (send *ri* :wait-interpolation)

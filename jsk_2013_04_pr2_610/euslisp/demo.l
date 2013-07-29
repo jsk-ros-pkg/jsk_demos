@@ -62,3 +62,23 @@
 
   (speak-jp "おわりました")
   )
+
+
+(defun demo-sweep ()
+  (setup)
+  (pr2-reset-pose)
+
+  ;;pick broom
+  (bringup-broom-init)(bringup-broom)
+  
+  (while (not (move-to-chair2)))
+  (move-chair)
+  ;;
+  (while (not (move-to-sweep)))
+  (sweep-under-table)
+
+  (sweep-under-table-dual-arm)
+  (speak-jp "おわりました")
+  (use-tilt-laser-obstacle-cloud t)
+)
+
