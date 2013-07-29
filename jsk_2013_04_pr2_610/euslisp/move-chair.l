@@ -77,6 +77,11 @@
     ;;(send *pr2* :translate (float-vector 100 0 0))
 
     ;;reset from furuta's pose
+    ;;reset torso
+    (send *pr2* :torso :waist-z :joint-angle 100)
+    (send *ri* :angle-vector (send *pr2* :angle-vector) 2000)
+    (send *ri* :wait-interpolation)
+
 
     (send *pr2* :angle-vector (send *ri* :state :potentio-vector))
     (send *ri* :stop-grasp :rarm :wait t)

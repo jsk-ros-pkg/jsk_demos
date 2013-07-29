@@ -25,15 +25,34 @@
 
 
 (defun sweep-under-table-init-slim ()
+  (send *pr2* :angle-vector (send *ri* :state :angle-vector))
   (warn "init pose for sweep~%")
   (send *ri* :stop-grasp :rarm :wait t)
-  (let (handle-coords handle-coords-r handle-coords-l)
+  ;;(send *ri* :move-gripper :larm 0.02 :effort 20)
+
+  (let (handle-coords handle-coords-r handle-coords-l handle-first-l)
     (setq handle-coords (send (send *pr2* :copy-worldcoords) :translate #f(650 0 870)))
     (setq handle-coords-r (send (send (send handle-coords :copy-worldcoords) :translate #f(0 0 -130)) :rotate pi/2 :z))
     (setq handle-coords-l (send (send handle-coords :copy-worldcoords) :rotate -pi/2 :z))
+    (setq handle-first-l (send handle-coords :copy-worldcoords))
+    (send handle-first-l :translate (float-vector 0 0 (- (elt (send (send *pr2* :larm :end-coords) :worldpos) 2 ) (elt (send handle-coords-l :worldpos) 2))))
+
+    (print (elt (send (send *pr2* :larm :end-coords) :worldpos) 2 ))
+    (print (elt (send handle-coords-l :worldpos) 2))
+
+    (send *pr2* :larm :inverse-kinematics handle-first-l
+          :rotation-axis :z
+          :look-at-target t
+          :debug-view nil)
+
     (send *pr2* :rarm :inverse-kinematics handle-coords-r
           :rotation-axis t
           :debug-view nil)
+    (send *pr2* :rarm :move-end-pos #f(-100 0 0))
+    (send *ri* :angle-vector-with-constraint (send *pr2* :angle-vector) 3000 :larm :rotation-axis :z)
+    (send *ri* :wait-interpolation)
+    (send *pr2* :angle-vector (send *ri* :state :angle-vector))
+    (send *ri* :move-gripper :larm 0.02 :effort 20)
 
     (send *pr2* :larm :inverse-kinematics handle-coords-l
           :rotation-axis t
@@ -43,8 +62,6 @@
     (print handle-coords-r)
     ;;(send *pr2* :angle-vector #f(126.795 -1.00107 -20.2206 11.9353 -71.4577 93.1963 -72.7922 176.55 -2.71504 -5.92811 -3.83082 -83.875 -79.9001 -86.0572 -191.652 0 12.2682))
     
-    (send *pr2* :rarm :move-end-pos #f(-100 0 0))
-    ;;  (send *ri* :angle-vector (send *pr2* :angle-vector) 1000)
     (send *ri* :angle-vector-with-constraint (send *pr2* :angle-vector) 3000 :larm :rotation-axis :z)
     (send *ri* :wait-interpolation)
     (send *pr2* :angle-vector (send *ri* :state :angle-vector))
