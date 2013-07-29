@@ -4,7 +4,10 @@
 (load "package://jsk_perception/euslisp/detection_interface.l")
 
 (if (and (boundp '*use-voicetext*) *use-voicetext*)
-    (setq *frige-speak-str* "冷蔵庫")
+    (cond
+     ((and (boundp '*use-english*) *use-english*)
+      (setq *frige-speak-str* "the refrigerator"))
+     (t (setq *frige-speak-str* "冷蔵庫")))
   (setq *frige-speak-str* "れいぞうこ"))
 
 ;;
@@ -399,7 +402,10 @@
               )
             (if ret (return)))
           (if (and (boundp '*use-voicetext*) *use-voicetext*)
-              (speak-jp "冷蔵庫を開けられませんでした。")
+              (cond
+               ((and (boundp '*use-english*) *use-english*)
+                (speak-jp "I could not open the refrigerator."))
+               (t (speak-jp "冷蔵庫を開けられませんでした。")))
             (speak-jp "れいぞうこを あけられません でした"))
           (send *pr2* :head :angle-vector (float-vector 0 head-pitch))
           (send *pr2* :torso :angle-vector (float-vector torso-lift))
@@ -421,7 +427,10 @@
     (when (not ret)
       (ros::ros-info "TIMEOUT: open-fridge-door");;
       (if (and (boundp '*use-voicetext*) *use-voicetext*)
-          (speak-jp "冷蔵庫を見つけられませんでした。")
+          (cond
+           ((and (boundp '*use-english*) *use-english*)
+            (speak-jp "I could not find the refrigerator."))
+           (t (speak-jp "冷蔵庫を見つけられませんでした。")))
         (speak-jp "れいぞうこ を みつけられません でした"))
       (unix::sleep 2);;
       (return-from open-fridge-door nil))
@@ -483,7 +492,7 @@
   (when move
     (ros::ros-info "GO POS UNSAFE for grasping can")
     (send *ri* :go-pos-unsafe 0 0 (rad2deg 0.38))
-    (send *ri* :go-pos-unsafe 0.185 -0.25 0)
+    (send *ri* :go-pos-unsafe 0.185 -0.25 0) ;; 
     (send *ri* :wait-interpolation))
 
   (ros::spin-once)
@@ -496,9 +505,9 @@
       ;;(when (not (setq cds (check-detection :type *type* :single t)))
       ;;(setq cds (check-detection :type *type* :tf-force t :timeout 30 :single t)))
       (let (cds)
-        (unless (setq cds (check-detection
+        (unless (setq cds (check-detection :speak-name *type*
                            :type *type* :tf-force t :timeout 35 :single t))
-          (setq cds (check-detection
+          (setq cds (check-detection :speak-name *type*
                      :type *type* :tf-force t :timeout 70 :single t)))
         (when cds
           ;; (speak-jp (format nil "~A を とりだします" *type*))
@@ -526,12 +535,18 @@
             (return-from grasp-can t))
           ;; (unix::sleep 2)
           (if (and (boundp '*use-voicetext*) *use-voicetext*)
-              (speak-jp "失敗しましたもう一度やってみます。");;
+              (cond
+               ((and (boundp '*use-english*) *use-english*)
+                (speak-jp "I failed to pick up. I will retry."))
+               (t (speak-jp "失敗しましたもう一度やってみます。")))
             (speak-jp "しっぱいしました  もういちど やって みます"));;
           )
         )))
   (if (and (boundp '*use-voicetext*) *use-voicetext*)
-      (speak-jp (format nil "~Aを取り出しませんでした。" *type*))
+      (cond
+       ((and (boundp '*use-english*) *use-english*)
+        (speak-jp (format nil "I could no pick up ~A" *type*)))
+       (t (speak-jp (format nil "~Aを取り出しませんでした。" *type*))))
     (speak-jp (format nil "~A を とりだし ません でした" *type*)))
   (when move (send *ri* :go-pos-unsafe -0.3 0.05 -20))
   (unix::sleep 1)
