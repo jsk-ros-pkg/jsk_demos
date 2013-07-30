@@ -235,7 +235,7 @@
 
     ;; release cloth
     (let (avs)
-      (send *ri* :start-grasp :rarm)
+      (send *ri* :start-grasp :rarm :objects nil)
       (dotimes (i 5)
         (send *pr2* :rarm :wrist-r :joint-angle (* i 178))
         (push (send *pr2* :angle-vector) avs))

@@ -14,8 +14,11 @@
     (pr2-pick-tray-pose)
     (send *ri* :angle-vector (send *pr2* :angle-vector) 2000)
     (send *ri* :wait-interpolation)
-
-    (tray-detection *tray*)
+    
+    ;;detect tray when real robot
+    (if (send *ri* :joint-action-enable)
+	(tray-detection *tray*)
+      )
     (setq tray-larm-handle (send (send (send *tray* :handle-larm-handle) :copy-worldcoords) :rotate (deg2rad -20) :z) ;; do not move in world coords, use object(tray) relative coords
 	  tray-rarm-handle (send (send (send *tray* :handle-rarm-handle) :copy-worldcoords) :rotate (deg2rad  20) :z)) ;; need copy-worldcoords, otherwise move handle coords directory
 

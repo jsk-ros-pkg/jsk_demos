@@ -83,7 +83,8 @@
     (send *pr2* :head :look-at (send *pr2* :larm :end-coords :worldpos))
     (send *ri* :angle-vector-with-constraint (send *pr2* :angle-vector) 2000 :arms :rotation-axis :z)
     (send *ri* :wait-interpolation)
-    (send *ri* :start-grasp)
+    (send *ri* :start-grasp :larm)
+    (send *ri* :start-grasp :rarm :objects nil)
     )
   )
 
