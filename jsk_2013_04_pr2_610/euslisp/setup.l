@@ -32,7 +32,9 @@
   (setq *tray* (send *room610* :object "room610-tray"))
   (send *tray* :locate #f(5050.0 0.0 700.0) :world)
   (setq *broom* (send *room610* :object "room610-sweeper"))
-  (send *broom* :locate #f(3000.0 2090.0 0.0) :world)
+  ;;(send *broom* :locate #f(3000.0 2090.0 0.0) :world)
+  (send *broom* :locate #f(2830.0 1900.0 0.0) :world)
+  ;;(send *broom* :locate #f(2760.0 1900.0 0.0) :world)
   ;;(send *broom* :translate #f(0 100 0) :world)
   (setq *chair* (send *room610* :object "room610-chair"))
   (send *chair* :locate #f(4700.0 -360 0.0) :world)
@@ -40,7 +42,8 @@
   ;; yukizaki?
 ;  (send *laundry* :translate #f(-120 10 -85) (send *room610* :worldcoords))
   (send *laundry* :translate #f(-260 -30 -125) (send *room610* :worldcoords))
-
+  (setq *cabinet* (send *room610* :object "room610-cabinet-mamoru"))
+  (send *cabinet* :locate #f(7000 -2200 0) :world)
   ;; spots
   (setq *tray-spot* (make-cascoords :pos #f(4900 600 0) :rpy (list -pi/2 0 0)))
   (send *room610* :assoc *tray-spot*)

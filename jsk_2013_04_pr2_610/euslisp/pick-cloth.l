@@ -70,8 +70,8 @@
       (send *ri* :angle-vector-sequence av-seq (list 2000 1000))
       (send *ri* :wait-interpolation)
       )
-    (send *ri* :start-grasp :rarm) ;; wait motion and grasp
-    (send *ri* :start-grasp :rarm) ;; wait motion and grasp ;; make sure that we really grasp cloth
+    (send *ri* :start-grasp :rarm :objects nil)
+    (send *ri* :start-grasp :rarm :objects nil) ;; wait motion and grasp ;; make sure that we really grasp cloth
 
     ;;lift up
     (send *pr2* :rarm :angle-vector #f(-20.0 -20.0 0.0 -70.0 -70.0 -90.0 0.0))
@@ -144,22 +144,21 @@
     (send *pr2* :angle-vector (send *ri* :state :angle-vector))
 
     (let (grasp-width)
-      (send *ri* :start-grasp :larm) ;; wait motion and grasp
-      (setq grasp-width (send *ri* :start-grasp :larm)) ;; wait motion and grasp ;; make sure that we really grasp cloth
+      (send *ri* :start-grasp :larm :objects nil) ;; wait motion and grasp
+      (setq grasp-width (send *ri* :start-grasp :larm :objects nil)) ;; wait motion and grasp ;; make sure that we really grasp cloth
       ;; if pr2 fail to grasp the cloth, return nil.
-      (if (< grasp-width 1.1)
-          (progn
-            (send *ri* :go-pos-unsafe -0.2 0 0)
-            (send *pr2* :translate #f(-200 0 0))
-            (return-from pick-cloth-larm nil)
-            )
+      (when (and (send *ri* :joint-action-enable) (< grasp-width 1.1))
+	(send *ri* :go-pos-unsafe -0.2 0 0)
+	(send *pr2* :translate #f(-200 0 0))
+	(return-from pick-cloth-larm nil)
+
         )
       )
     ;;lift up
     (send *pr2* :larm :angle-vector #f(20.0 -20.0 0.0 -70.0 70.0 -90.0 0.0))
     (send *pr2* :look-at-hand :larm)
     (if (boundp '*irtviewer*) (send *irtviewer* :draw-objects))
-    (send *ri* :start-grasp :larm)
+    (send *ri* :start-grasp :larm :objects nil)
     (send *ri* :move-gripper :larm 0.0 :effort 50 :wait t)
     (unix:sleep 1)
     (send *ri* :angle-vector (send *pr2* :angle-vector) 2000)

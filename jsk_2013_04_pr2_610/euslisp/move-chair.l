@@ -149,10 +149,14 @@
       (send *ri* :angle-vector (send *pr2* :angle-vector))
       (send *ri* :wait-interpolation)
 
+
       (if (not (send *ri* :joint-action-enable))
-        ;; if simulation
-        (setq grasp-success t)
-        ;; if real
+	  ;; if simulation
+	  (progn
+	    (setq grasp-success t)
+	    (send *ri* :start-grasp :rarm)
+	    )
+	;; if real
         (progn
           
           ;; make gripper effort weak, grasp, move up rarm, and grasp tightly again

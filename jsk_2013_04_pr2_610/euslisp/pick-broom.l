@@ -92,6 +92,7 @@
     (send *ri* :angle-vector-sequence av-seq (list 1500 1000 1000))
     (send *ri* :wait-interpolation)
 
+    (send *ri* :start-grasp :larm)
     (when (and (send *ri* :joint-action-enable) (< (send *ri* :start-grasp :larm) 3.0))
       (send *ri* :stop-grasp :larm :wait t)
       (speak-jp "ほうきとれなかった")
