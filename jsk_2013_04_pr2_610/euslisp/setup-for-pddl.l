@@ -17,7 +17,7 @@
   `(funcall (read-from-string (concatenate string "push-button-" (symbol-name (quote ,obj))))))
 
 (defmacro pull-chair (place)
-  `(move-chair)) ;; TODO いろいろなものに対応する
+  `(pull-chair-table)) ;; TODO いろいろなものに対応する
 
 (defmacro push-chair (place)
   `(move-chair-back))

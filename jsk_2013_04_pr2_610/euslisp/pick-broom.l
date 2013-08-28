@@ -19,9 +19,9 @@
      ))
 
 ;; (progn (load "pick-broom.l")(pr2-reset-pose)(move-to-laundry) (open-door)(move-to-broom)(grasp-broom)) ;; to  test
-(defun pick-broom ()
+(defun pick-broom-laundry ()
   (let ((count 0))
-    (warn "(pick-broom)~%")
+    (warn "(pick-broom-laundry)~%")
 
     ;; debug
     (warn "*pr2*: ~A~%" *pr2*)
@@ -37,7 +37,7 @@
     (while (null (grasp-broom))
       (incf count)
       (move-to-broom)
-      (if (> count 3) (return-from pick-broom nil)))
+      (if (> count 3) (return-from pick-broom-laundry nil)))
     (goback-broom)
     (bringup-broom)
     ;;(raise-mop)
@@ -238,6 +238,13 @@
     (send *ri* :wait-interpolation)
     (send *pr2* :larm :end-coords :assoc *broom*)
     )
+  )
+
+
+
+
+(defun put-broom ()
+  (warn "There is nothing to do at func: put-broom")
   )
 
 

@@ -12,7 +12,7 @@
   (pr2-reset-pose)
 
   (while (not (move-to-table)))
-  (while (not (pick-tray)))
+  (while (not (pick-tray-table)))
   (while (not (move-to-sink)))
   (place-tray)
 
@@ -56,7 +56,7 @@
 
   (while (not (move-to-broom)))
 
-  (pick-broom)
+  (pick-broom-laundry)
 
   (send *ri* :go-pos-unsafe -0.1 0 -140)
 
@@ -72,7 +72,7 @@
   (bringup-broom-init)(bringup-broom)
   
   (while (not (move-to-chair2)))
-  (move-chair)
+  (pull-chair-table)
   ;;
   (while (not (move-to-sweep)))
   (sweep-under-table)

@@ -69,8 +69,8 @@
 
 ;;after move-to, save the pos
 
-(defun move-chair ()
-  (warn "move-chair (inagaki)~%")
+(defun pull-chair-table ()
+  (warn "pull-chair-table (inagaki)~%")
   (let (dest-c (grasp-success nil))
 
     ;;(send *ri* :go-pos-unsafe 0.1 0 0)
