@@ -2,6 +2,7 @@
 
 
 (ros::roseus-add-msgs "posedetection_msgs")
+(load "models/arrow-object.l")
 
 (defvar *base-frame-id* "/base_footprint")
 (defvar *pub-laundry-button-topic* "/laundry_button_marker")
@@ -12,16 +13,21 @@
 (ros::roseus "laundry_button_marker_publisher")
 (ros::advertise *pub-laundry-button-topic* visualization_msgs::Marker 5)
 
+(defun put-cloth-into-laundry ()
+  (warn "put-cloth-into-laundry is too long. So ...~%")
+  (warn "use (put-cloth)~%")
+)
+
 (defun put-cloth ()
   (send *pr2* :larm :collar-y :joint-angle 90)
   (send *ri* :angle-vector (send *pr2* :angle-vector))
-  (if (not (open-door)) (return-from put-cloth nil))
-  (if (not (put-cloth-into)) (return-from put-cloth nil))
+  (open-door)
+  (put-cloth-into)
   (send *pr2* :larm :collar-y :joint-angle -90)
   (send *ri* :angle-vector (send *pr2* :angle-vector))
-  (if (not (close-door)) (return-from put-cloth nil))
+  (close-door)
   (pr2-reset-pose)
-  t)
+)
 
 (defun put-cloth-larm ()
   (send *pr2* :larm :collar-y :joint-angle 110)
@@ -94,7 +100,7 @@
 
 (defun open-door ()
   (warn "open-door ~%")
-  (let ((button))
+  (let (button)
     (send *ri* :start-grasp :rarm)
     (send *pr2* :angle-vector (send *ri* :state :potentio-vector))
     (send *pr2* :head :neck-y :joint-angle -4.353)
