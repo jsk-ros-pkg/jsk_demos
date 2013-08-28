@@ -10,7 +10,7 @@
 (load "package://jsk_2013_04_pr2_610/euslisp/pick-cloth.l")
 (load "package://jsk_2013_04_pr2_610/euslisp/pick-tray.l")
 (load "package://jsk_2013_04_pr2_610/euslisp/move-chair.l")
-(load "package://jsk_2013_04_pr2_610/euslisp/move-table.l")
+;(load "package://jsk_2013_04_pr2_610/euslisp/move-table.l")
 (load "package://jsk_2013_04_pr2_610/euslisp/place-tray.l")
 (load "package://jsk_2013_04_pr2_610/euslisp/sweep-under-table.l")
 (load "package://jsk_2013_04_pr2_610/euslisp/pick-broom.l")
@@ -28,7 +28,8 @@
   (setq *chair-coords* (make-coords :pos #f(3800 0 0)))
 
   (setq *table* (send *room610* :object "room610-table"))
-  (send *table* :locate #f(4700 1000 0) :world)
+;  (send *table* :locate #f(4700 1000 0) :world)
+  (send *table* :locate #f(5000 -400 0) :world)
   (setq *tray* (send *room610* :object "room610-tray"))
   (send *tray* :locate #f(5050.0 0.0 700.0) :world)
   (setq *broom* (send *room610* :object "room610-sweeper"))
@@ -296,7 +297,7 @@
   (pr2-reset-pose)
   
   (speak-jp "トレイをキッチンに運びます")
-  (While (not (move-to-table)))
+  (while (not (move-to-table)))
   (while (not (pick-tray)))
   ;;
   (while (not (move-to-sink)))
