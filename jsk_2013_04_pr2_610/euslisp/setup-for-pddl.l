@@ -16,6 +16,10 @@
 (defmacro close (obj)
   `(funcall (read-from-string (concatenate string "close-" (symbol-name (quote ,obj))))))
 
+(defmacro sweep (obj)
+  `(funcall (read-from-string (concatenate string "sweep-" (symbol-name (quote ,obj))))))
+
+
 (defmacro push-button (obj)
   `(funcall (read-from-string (concatenate string "push-button-" (symbol-name (quote ,obj))))))
 
