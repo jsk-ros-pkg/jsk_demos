@@ -85,11 +85,10 @@
     (send *ri* :go-pos-unsafe -0.4 0 0)
     (send *pr2* :translate #f(-400 0 0))
     (send *ri* :wait-interpolation)
-
     ))
 
-(defun pick-cloth-larm ()
-  (warn "pick-cloth-larm ()~%")
+(defun pick-cloth-chair ()
+  (warn "pick-cloth-chair ()~%")
   (let (croth-coords av-seq)
 ;    (send *pr2* :reset-pose)
 ;    (send *pr2* :move-to *chair-spot* :world)
@@ -150,7 +149,7 @@
       (when (and (send *ri* :joint-action-enable) (< grasp-width 1.1))
 	(send *ri* :go-pos-unsafe -0.2 0 0)
 	(send *pr2* :translate #f(-200 0 0))
-	(return-from pick-cloth-larm nil)
+	(return-from pick-cloth-chair nil)
 
         )
       )

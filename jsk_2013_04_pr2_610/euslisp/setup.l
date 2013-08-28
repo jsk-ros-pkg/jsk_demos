@@ -306,7 +306,7 @@
 
   (speak-jp "洗濯物を洗濯機に入れます")
   (while (not (move-to-chair-larm)))
-  (while (not (pick-cloth-larm)))
+  (while (not (pick-cloth-chair)))
   (send *ri* :go-pos-unsafe 0 0 90)
 
   (while (not (move-to-laundry)))

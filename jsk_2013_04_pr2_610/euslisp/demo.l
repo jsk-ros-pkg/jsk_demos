@@ -14,7 +14,7 @@
   (while (not (move-to-table)))
   (while (not (pick-tray-table)))
   (while (not (move-to-sink)))
-  (place-tray)
+  (place-tray-sink)
 
   (send *ri* :go-pos-unsafe -0.3 0)
   (send *ri* :go-pos-unsafe 0 0 180)
@@ -26,10 +26,10 @@
   (setup)
 
   (while (not (move-to-chair)))
-  (pick-cloth)
+  (pick-cloth-chair)
 
   (while (not (move-to-laundry)))
-  (put-cloth)
+  (put-cloth-laundry)
 
   (pr2-reset-pose)
 
