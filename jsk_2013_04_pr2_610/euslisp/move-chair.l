@@ -606,3 +606,6 @@
     )
   )
 
+(defun push-chair-table ()
+  (warn "There is nothing to do At func: push-chair-table")
+  )
