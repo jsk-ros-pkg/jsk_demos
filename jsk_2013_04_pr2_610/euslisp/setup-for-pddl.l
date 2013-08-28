@@ -4,10 +4,13 @@
 (defmacro pick (obj place)
   `(funcall (read-from-string (concatenate string "pick-" (symbol-name (quote ,obj)) "-" (symbol-name (quote ,place))))))
 
+(defmacro place (obj place)
+  `(funcall (read-from-string (concatenate string "place-" (symbol-name (quote ,obj)) "-" (symbol-name (quote ,place))))))
+
 (defmacro put (obj place)
   `(funcall (read-from-string (concatenate string "put-" (symbol-name (quote ,obj)) "-" (symbol-name (quote ,place))))))
 
-(defmacro open (obj)
+(defmacro open-door (obj)
   `(funcall (read-from-string (concatenate string "open-" (symbol-name (quote ,obj))))))
 
 (defmacro close (obj)
