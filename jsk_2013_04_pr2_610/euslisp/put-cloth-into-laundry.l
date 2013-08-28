@@ -18,11 +18,11 @@
   (warn "use (put-cloth)~%")
 )
 
-(defun put-cloth ()
+(defun put-cloth-old ()
   (send *pr2* :larm :collar-y :joint-angle 90)
   (send *ri* :angle-vector (send *pr2* :angle-vector))
   (open-laundry)
-  (put-cloth-laundry)
+  (put-cloth-into)
   (send *pr2* :larm :collar-y :joint-angle -90)
   (send *ri* :angle-vector (send *pr2* :angle-vector))
   (close-laundry)
@@ -30,21 +30,24 @@
 )
 
 (defun put-cloth-larm ()
-  (send *pr2* :larm :collar-y :joint-angle 110)
-  (send *ri* :angle-vector (send *pr2* :angle-vector))
+;  (send *pr2* :larm :collar-y :joint-angle 110)
+;  (send *ri* :angle-vector (send *pr2* :angle-vector))
   (open-laundry)
-  (send *ri* :go-pos-unsafe -0.5 0)
-  (pass-cloth-to-rarm)
-  (send *ri* :go-pos-unsafe 0.5 0)
+;  (send *ri* :go-pos-unsafe -0.5 0)
+;  (pass-cloth-to-rarm)
+;  (send *ri* :go-pos-unsafe 0.5 0)
   (put-cloth-laundry)
-  (send *pr2* :larm :collar-y :joint-angle -90)
-  (send *ri* :angle-vector (send *pr2* :angle-vector))
+;  (send *pr2* :larm :collar-y :joint-angle -90)
+;  (send *ri* :angle-vector (send *pr2* :angle-vector))
   (close-laundry)
+  (push-broom-laundry)
   (pr2-reset-pose)
 )
 
 (defun pass-cloth-to-rarm ()
   (warn "pass-cloth-to-rarm ~%")
+  (send *ri* :go-pos-unsafe -0.5 0)
+
   (let (pass-coords pass-coords-r pass-coords-l)
     (setq pass-coords (send (send *pr2* :copy-worldcoords) :translate #f(400 0 800)))
     (setq pass-coords-r (send (send (send pass-coords :copy-worldcoords) :translate #f(0 0 -70)) :rotate pi/2 :z))
@@ -100,6 +103,9 @@
 
 (defun open-laundry ()
   (warn "open-laundry ~%")
+  (send *pr2* :larm :collar-y :joint-angle 110)
+  (send *ri* :angle-vector (send *pr2* :angle-vector))
+
   (let (button)
     (send *ri* :start-grasp :rarm)
     (send *pr2* :angle-vector (send *ri* :state :potentio-vector))
@@ -196,8 +202,11 @@
     )
   )
 
-(defun put-cloth-into ()
-  (warn "put-cloth~%")
+(defun put-cloth-laundry ()
+  (warn "put-cloth-laundry~%")
+  (pass-cloth-to-rarm)
+  (send *ri* :go-pos-unsafe 0.5 0)
+
   (let (standby release av-seq)
     (setq av-seq nil)
     (setq standby (send (make-coords :pos (float-vector 800 -110 680)
@@ -277,6 +286,9 @@
 
 (defun close-laundry ()
   (warn "close-laundry~%")
+  (send *pr2* :larm :collar-y :joint-angle -90)
+  (send *ri* :angle-vector (send *pr2* :angle-vector))
+
   (let ((handle (send *laundry* :handle-handle-cap))
 	 release)
 
@@ -308,6 +320,7 @@
     (send *ri* :angle-vector (send *pr2* :angle-vector) 500)
     (send *ri* :wait-interpolation)
     )
+    (pr2-reset-pose)
   )
 
 (defun push-button-laundry ()
