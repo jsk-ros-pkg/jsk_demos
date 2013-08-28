@@ -30,7 +30,7 @@
 
     ;; move pr2 to pick-broom spot
     (send *ri* :stop-grasp :larm :wait nil)
-    (print (send *pr2* :move-to (send *room610* :spot-pick-broom-spot) :world))
+    (send *pr2* :move-to (send *room610* :spot-pick-broom-spot) :world)
     (pr2-reset-pose)  ;; debug
 
     (setq count 0)
@@ -232,10 +232,11 @@
     (send *pr2* :arms :move-end-pos (send *pr2* :rotate-vector #f(0 0 200)))
     (send *pr2* :arms :move-end-pos (send *pr2* :rotate-vector #f(0 0 100)))
     (send *pr2* :torso :waist-z :joint-angle 200)
-    (send *pr2* :larm :end-coords :dissoc *broom*)
+    (send *pr2* :larm :end-coords :dissoc *broom*) ; なぜdissoc?
     (send *ri* :angle-vector-with-constraint (send *pr2* :angle-vector) 2000 :arms :rotation-axis :z)
     ;;(send *ri* :angle-vector (send *pr2* :angle-vector))
     (send *ri* :wait-interpolation)
+    (send *pr2* :larm :end-coords :assoc *broom*)
     )
   )
 
