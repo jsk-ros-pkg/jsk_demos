@@ -30,7 +30,7 @@
 
     ;; move pr2 to pick-broom spot
     (send *ri* :stop-grasp :larm :wait nil)
-    (send *pr2* :move-to (send *room610* :spot-pick-broom-spot) :world)
+    (print (send *pr2* :move-to (send *room610* :spot-pick-broom-spot) :world))
     (pr2-reset-pose)  ;; debug
 
     (setq count 0)

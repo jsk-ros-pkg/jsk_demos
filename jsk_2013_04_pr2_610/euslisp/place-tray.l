@@ -3,6 +3,7 @@
 ;; (setup)
 ;; (pick-tray)
 ;; (place-tray)
+
 (defun place-tray ()
   (let ((table-height 850)
         (yokei-up-height 150)
@@ -65,19 +66,6 @@
             :look-at-target (midpoint 0.5 (send tray-larm-handle :worldpos) (send tray-rarm-handle :worldpos))
             )      (if (boundp '*irtviewer*) (send *irtviewer* :draw-objects))
 
-      (send *ri* :angle-vector (send *pr2* :angle-vector) 1000)
-      (send *ri* :wait-interpolation)
-      )
-|#
-#|    (send *pr2* :inverse-kinematics
-          (list (send *pr2* :rotate-vector #f(0 50 0))
-                (send *pr2* :rotate-vector #f(0 -50 0)))
-          :link-list (list
-                      (send *pr2* :link-list (send *pr2* :larm :end-coords :parent))
-                      (send *pr2* :link-list (send *pr2* :rarm :end-coords :parent)))
-          :move-target (list (send *pr2* :larm :end-coords) (send *pr2* :rarm :end-coords))
-          :use-torso t
-          :look-at-target nil)|#
 
     #|
     ;; ???
