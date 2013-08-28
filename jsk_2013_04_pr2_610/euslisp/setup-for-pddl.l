@@ -5,16 +5,16 @@
   `(funcall (read-from-string (concatenate string "pick-" (symbol-name (quote ,obj)) "-" (symbol-name (quote ,place))))))
 
 (defmacro put (obj place)
-  `(funcall (read-from-string (concatenate string "put-" ,obj "-" ,place))))
+  `(funcall (read-from-string (concatenate string "put-" (symbol-name (quote ,obj)) "-" (symbol-name (quote ,place))))))
 
 (defmacro open (obj)
-  `(funcall (read-from-string (concatenate string "open-" ,obj))))
+  `(funcall (read-from-string (concatenate string "open-" (symbol-name (quote ,obj))))))
 
 (defmacro close (obj)
-  `(funcall (read-from-string (concatenate string "close-" ,obj))))
+  `(funcall (read-from-string (concatenate string "close-" (symbol-name (quote ,obj))))))
 
 (defmacro push-button (obj)
-  `(funcall (read-from-string (concatenate string "push-button-" ,obj))))
+  `(funcall (read-from-string (concatenate string "push-button-" (symbol-name (quote ,obj))))))
 
 (defmacro pull-chair (place)
   `(move-chair)) ;; TODO いろいろなものに対応する
