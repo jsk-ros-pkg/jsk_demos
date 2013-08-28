@@ -410,3 +410,7 @@
     (send *ri* :angle-vector-with-constraint (send *pr2* :angle-vector) 2000 :arms)
     (send *ri* :wait-interpolation)
     ))
+
+(defun sweep-room ()
+  (warn "There is nothing to do At func: sweep-room")
+  )

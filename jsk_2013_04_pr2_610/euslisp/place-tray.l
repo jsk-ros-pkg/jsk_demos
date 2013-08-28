@@ -1,9 +1,9 @@
 ;; to test
 ;; (load "setup.l")
 ;; (setup)
-;; (pick-tray)
+;; (pick-tray-sink)
 ;; (place-tray)
-(defun place-tray ()
+(defun place-tray-sink ()
   (let ((table-height 850)
         (yokei-up-height 150)
         (yokei-down-height -20)

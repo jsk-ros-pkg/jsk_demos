@@ -298,10 +298,10 @@
   
   (speak-jp "トレイをキッチンに運びます")
   (while (not (move-to-table)))
-  (while (not (pick-tray)))
+  (while (not (pick-tray-table)))
   ;;
   (while (not (move-to-sink)))
-  (place-tray)
+  (place-tray-sink)
   (send *ri* :go-pos-unsafe 0 0 -90)
 
   (speak-jp "洗濯物を洗濯機に入れます")
@@ -314,12 +314,12 @@
 
   (speak-jp "モップをとります")
   (while (not (move-to-broom)))
-  (pick-broom)
+  (pick-broom-laundry)
   (send *ri* :go-pos-unsafe 0 0 -90)
   ;;
   (speak-jp "いすをひきます")
   (while (not (move-to-chair2)))
-  (move-chair)
+  (pull-chair-table)
   ;;
   (speak-jp "モップをかけます")
   (while (not (move-to-sweep)))
