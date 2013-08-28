@@ -65,7 +65,7 @@
                              (clean ?room - object)
                              (clean-under ?obj - object)
                              (space ?room - object)
-                             (open ?obj - object)
+                             (open-door ?obj - object)
                              (under ?obj ?space - object)
                              (working ?obj - object)
                              ))
@@ -104,7 +104,7 @@
                        :parameters '((?obj ?to object))
                        :precondition '((at ?to)
                                        (hold ?obj)
-                                       (open ?to))
+                                       (open-door ?to))
                        :effect '((not (hold ?obj))
                                  (in ?obj ?to))))
 
@@ -113,24 +113,24 @@
                               :parameters '((?obj object))
                               :precondition '((at ?obj)
                                               (in cloth ?obj)
-                                              (not (open ?obj))
+                                              (not (open-door ?obj))
                                               )
                               :effect '((working ?obj))))
 
 
-(setq *open* (instance pddl-action :init
-                       :name "open"
+(setq *open-door* (instance pddl-action :init
+                       :name "open-door"
                        :parameters '((?obj object))
                        :precondition '((at ?obj)
-                                       (not (open ?obj)))
-                       :effect '((open ?obj))))
+                                       (not (open-door ?obj)))
+                       :effect '((open-door ?obj))))
 
 (setq *close* (instance pddl-action :init
                        :name "close"
                        :parameters '((?obj object))
                        :precondition '((at ?obj)
-                                       (open ?obj))
-                       :effect '((not (open ?obj)))))
+                                       (open-door ?obj))
+                       :effect '((not (open-door ?obj)))))
 
 (setq *sweep* (instance pddl-action :init
                        :name "sweep"
@@ -176,7 +176,7 @@
 (send *domain* :add :action *sweep*)
 (send *domain* :add :action *sweep-under*)
 (send *domain* :add :action *put*)
-(send *domain* :add :action *open*)
+(send *domain* :add :action *open-door*)
 (send *domain* :add :action *close*)
 (send *domain* :add :action *pull*)
 (send *domain* :add :action *push*)
