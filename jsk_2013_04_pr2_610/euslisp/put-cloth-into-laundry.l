@@ -27,6 +27,7 @@
   (send *ri* :angle-vector (send *pr2* :angle-vector))
   (close-laundry)
   (pr2-reset-pose)
+  t
 )
 
 (defun put-cloth-larm ()
@@ -42,6 +43,7 @@
   (close-laundry)
   (push-button-laundry)
   (pr2-reset-pose)
+  t
 )
 
 (defun pass-cloth-to-rarm ()
@@ -98,7 +100,8 @@
     (send *ri* :wait-interpolation)
 
     )
-)
+  t
+  )
 
 
 (defun open-laundry ()
@@ -200,6 +203,7 @@
       (send *ri* :wait-interpolation)
       )
     )
+  t
   )
 
 (defun put-cloth-laundry ()
@@ -282,7 +286,8 @@
     (send *ri* :angle-vector (send *pr2* :angle-vector) 1000)
     (send *ri* :wait-interpolation)
     )
-  )
+  t
+)
 
 (defun close-laundry ()
   (warn "close-laundry~%")
@@ -321,8 +326,10 @@
     (send *ri* :wait-interpolation)
     )
     (pr2-reset-pose)
+    t
   )
 
 (defun push-button-laundry ()
   (warn "There is Nothing to do at func:push-button-laundry")
+  t
   )

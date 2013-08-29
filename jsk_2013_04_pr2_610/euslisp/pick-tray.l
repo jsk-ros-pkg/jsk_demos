@@ -4,12 +4,12 @@
 (load "package://pr2eus/pr2-utils.l")
 
 ;; (send *pr2* :move-to (send *room610* :spot-tray-spot) :world)
-(defun pick-tray-table ()
+(defun pick-tray-table-side ()
   (let (tray-larm-handle tray-rarm-handle 
         (grasp-threshold (list 3 3))
         (avs nil)
         (grasp-args)) ;; use let to define local variables
-    (warn "pick-tray-table ~%")
+    (warn "pick-tray-table-side ~%")
 
     (pr2-pick-tray-pose)
     (send *ri* :angle-vector (send *pr2* :angle-vector) 2000)
@@ -62,7 +62,7 @@
       (pr2-pick-tray-pose)
       (send *ri* :angle-vector (send *pr2* :angle-vector) 2000)
       (send *ri* :wait-interpolation)
-      (return-from pick-tray-table nil)
+      (return-from pick-tray-table-side nil)
       )
     (send *pr2* :larm :end-coords :assoc *tray*) ;; ???
 
