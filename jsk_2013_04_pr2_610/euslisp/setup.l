@@ -1,5 +1,4 @@
 #!/usr/bin/env roseus
-
 (ros::roseus "jsk_irt_demo")
 (load "models/room610-scene.l")
 (load "package://pr2eus/pr2.l")
@@ -309,7 +308,7 @@
         (return-from place-broom-laundry nil)
       )
     (send *ri* :go-pos-unsafe -0.2 0 0)
-    (send *pr2* :translate #f(-200 0 0)))
+    (send *pr2* :translate #f(-200 0 0))
 
     (send *ri* :stop-grasp :rarm :wait t)
     (send *ri* :wait-interpolation)
