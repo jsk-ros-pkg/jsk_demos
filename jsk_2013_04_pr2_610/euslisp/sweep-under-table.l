@@ -298,12 +298,27 @@
     (raise-mop)
     ))
 
+(defun sweep-room ()
+  (warn "sweep-room~%")
+  (sweep-under-table-dual-arm)
+  (send *pr2* :torso :waist-z :joint-angle (- (send *pr2* :torso :waist-z :joint-angle) 50))
+  (send *ri* :angle-vector (send *pr2* :angle-vector) 1000)
+  (send *ri* :wait-interpolation)
+  (raise-mop)
+  )
+
 (defun sweep-under-table-dual-arm ()
   ;; we assume the robot arleady in broon grasp pose, see (sweep-under-table-init)
   (let (handle-larm handle-rarm offset-l offset-r)
     (use-tilt-laser-obstacle-cloud nil)
     
-    (send *ri* :go-pos-unsafe -1.5 0 90)
+;    (send *ri* :go-pos-unsafe -1.5 0 90)
+    (setq goal_coords (make-coords :pos (float-vector 2647.568 555.029 1.215)
+                                   :rpy (list 0.854 -0.025 0.045)))
+    (setq pr2_now_coords (send *ri* :state :worldcoords *room610-origin*))
+    (setq move-diff (send pr2_now_coords :transformation goal_coords))
+    (send *ri* :go-pos-unsafe (* 0.001 (elt (send move-diff :pos) 0)) (* 0.001 (elt (send move-diff :pos) 1)) (rad2deg (elt (car (send move-diff :rpy-angle)) 0)))
+
     #| furuta
     ;; 両手を前に
     (send *pr2* :arms :move-end-pos #f(200 0 0) *pr2*)
@@ -410,7 +425,3 @@
     (send *ri* :angle-vector-with-constraint (send *pr2* :angle-vector) 2000 :arms)
     (send *ri* :wait-interpolation)
     ))
-
-(defun sweep-room ()
-  (warn "There is nothing to do At func: sweep-room")
-  )

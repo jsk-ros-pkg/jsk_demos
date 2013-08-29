@@ -40,7 +40,7 @@
 ;  (send *pr2* :larm :collar-y :joint-angle -90)
 ;  (send *ri* :angle-vector (send *pr2* :angle-vector))
   (close-laundry)
-  (push-broom-laundry)
+  (push-button-laundry)
   (pr2-reset-pose)
 )
 

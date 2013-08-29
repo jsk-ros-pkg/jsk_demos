@@ -142,6 +142,11 @@
 
 (defun move-to-chair ()
   (warn "move-to-chair~%")
+  (move-to-chair2)
+  )
+
+(defun move-to-chair-rarm ()
+  (warn "move-to-chair~%")
 
   ;;kamae
   ;;(larm-tuck)
@@ -196,7 +201,7 @@
   (use-tilt-laser-obstacle-cloud t)
   t)
 
-#|
+
 (defun move-to-back-chair ()
   (warn "move-to-back-chair~%")
   (use-tilt-laser-obstacle-cloud nil)
@@ -214,12 +219,11 @@
    )
   (use-tilt-laser-obstacle-cloud t)
 )
-|#
+
 
 (defun move-to-laundry ()
   (warn "move-to-laundry~%")
   (use-tilt-laser-obstacle-cloud nil)
-  (send *pr2* :reset-pose)
   (send *ri* :angle-vector (send *pr2* :angle-vector) 2000)
   (clear-costmap)
   (send *pr2* :move-to (send *room610* :spot-laundry-spot) :world)
@@ -290,6 +294,42 @@
   (warn "sweep-floor (furuta)~%")
   ;(furuta-sweep)
   )
+
+(defun place-broom-laundry ()
+  (warn "place-broom-laundry (furushchev)~%")
+  (let ((place-broom-spot (make-cascoords :pos #f(3269.927 1251.466 0) :rpy (list pi/2 0 0))))
+
+    (raise-mop)
+    ;; (move-to-broom)
+    (send *ri* :go-pos-unsafe -0.2 0 0)
+    (send *pr2* :translate #f(-200 0 0)))
+
+    (send *pr2* :move-to place-broom-spot :world)
+    (if (not (send *ri* :move-to place-broom-spot :frame-id *room610-origin*))
+        (return-from place-broom-laundry nil)
+      )
+    (send *ri* :go-pos-unsafe -0.2 0 0)
+    (send *pr2* :translate #f(-200 0 0)))
+
+    (send *ri* :stop-grasp :rarm :wait t)
+    (send *ri* :wait-interpolation)
+    (send *pr2* :larm :inverse-kinematics
+          ;600 -410 1500
+          (send (make-coords :pos (float-vector 650 -560 1500)
+                             :rpy (list pi (deg2rad 4) 0))
+                :transform *laundry* :world)
+          :look-at-target t
+          :rotation-axis t
+          :revert-if-fail nil
+          :debug-view nil)
+    (send *ri* :angle-vector (send *pr2* :angle-vector) 2000)
+    (send *ri* :wait-interpolation)
+    (move-to-broom)
+    (send *ri* :stop-grasp :larm :wait t)
+    (send *ri* :wait-interpolation)
+    (send *ri* :go-pos-unsafe -0.1 0 0)
+    (pr2-reset-pose)
+    ))
 
 (defun demo ()
   (speak-jp "部屋の掃除を始めます")
