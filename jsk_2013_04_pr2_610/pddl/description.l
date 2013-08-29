@@ -35,9 +35,9 @@
         (under chair table-front)
         (at world)
         (not (in cloth laundry))
-        (= (total-cost) 0)
-        (= (move-to) 10)
-        (= (sweep) 100)
+;        (= (total-cost) 0)
+;        (= (move-to) 10)
+;        (= (sweep) 100)
         ))
 
 ;; goal condition
@@ -51,7 +51,7 @@
         (working laundry)
         ))
 
-(send *problem* :metric '(minimize (total-cost)))
+;(send *problem* :metric '(minimize (total-cost)))
 
 ;;
 ;; domain
@@ -70,10 +70,13 @@
                              (under ?obj ?space - object)
                              (working ?obj - object)
                              ))
+#|
 (send *domain* :functions '((total-cost)
                             (move-to)
                             (sweep)
 							))
+|#
+
 ;;making action
 (setq *move* (instance pddl-action :init
                        :name "move-to"
@@ -81,7 +84,7 @@
                        :precondition '()
                        :effect '((forall (?any - object) (not (at ?any)))
                                  (at ?to)
-                                 (increase (total-cost) (move-to))
+;                                 (increase (total-cost) (move-to))
                                  )))
 
 (setq *pick* (instance pddl-action :init
@@ -140,7 +143,8 @@
                        :precondition '((hold broom)
                                        (under chair table-front))
                        :effect '((clean ?space)
-                                 (increase (total-cost) (sweep)))))
+;                                 (increase (total-cost) (sweep))
+								 )))
 
 (setq *sweep-under* (instance pddl-action :init
                        :name "sweep-under"
@@ -194,6 +198,12 @@
   (format t "plan = ")
   (pprint (cdr (assoc :plan *result*)))
   )
+
+;; generate graph
+(load "package://pddl_planner/src/pddl-result-graph.l")
+(defun debug-make-graph ()
+  (setq *graph* (make-graph-from-pddl-results (list *result*)))
+  (send (make-readable-graph *graph*) :write-to-pdf "pddl_graph.pdf"))
 #|
 ;(format t "result = ~A " *result*)
 (ros::exit)
