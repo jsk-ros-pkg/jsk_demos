@@ -307,6 +307,7 @@
   (send *ri* :angle-vector (send *pr2* :angle-vector) 1000)
   (send *ri* :wait-interpolation)
   (raise-mop)
+  (raise-mop)
   t
   )
 

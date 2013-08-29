@@ -21,7 +21,7 @@
   (room610)
   (pr2)
 
-  (objects (list *room610* *pr2*))
+  (if (boundp '*irtviewer*) (objects (list *room610* *pr2*)))
   (setq *room610-origin* "/eng8/6f/610")
   (setq *table-coords* (make-coords :pos #f(4700 1000 0) :rpy (float-vector -pi/2 0 0)))
   (setq *chair-coords* (make-coords :pos #f(3800 0 0)))
@@ -297,11 +297,9 @@
 (defun place-broom-laundry ()
   (warn "place-broom-laundry (furushchev)~%")
   (let ((place-broom-spot (make-cascoords :pos #f(3269.927 1251.466 0) :rpy (list pi/2 0 0))))
-
-    (raise-mop)
     ;; (move-to-broom)
     (send *ri* :go-pos-unsafe -0.2 0 0)
-    (send *pr2* :translate #f(-200 0 0)))
+    (send *pr2* :translate #f(-200 0 0))
 
     (send *pr2* :move-to place-broom-spot :world)
     (if (not (send *ri* :move-to place-broom-spot :frame-id *room610-origin*))
@@ -328,7 +326,8 @@
     (send *ri* :wait-interpolation)
     (send *ri* :go-pos-unsafe -0.1 0 0)
     (pr2-reset-pose)
-    ))
+    )
+  )
 
 (defun demo ()
   (speak-jp "部屋の掃除を始めます")
@@ -373,5 +372,5 @@
 (warn "type (demo) to start~%")
 (warn "type (setup) to revert all object location~%")
 
-(setup)
+;(setup)
 
