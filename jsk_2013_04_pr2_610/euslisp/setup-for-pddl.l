@@ -19,6 +19,9 @@
 (defmacro sweep (obj)
   `(funcall (read-from-string (concatenate string "sweep-" (symbol-name (quote ,obj))))))
 
+(defmacro sweep-under (obj)
+  `(funcall (read-from-string (concatenate string "sweep-under-" (symbol-name (quote ,obj))))))
+
 
 (defmacro push-button (obj)
   `(funcall (read-from-string (concatenate string "push-button-" (symbol-name (quote ,obj))))))
@@ -27,4 +30,4 @@
   `(pull-chair-table)) ;; TODO いろいろなものに対応する
 
 (defmacro push-chair (place)
-  `(move-chair-back))
+  `(move-back-chair))

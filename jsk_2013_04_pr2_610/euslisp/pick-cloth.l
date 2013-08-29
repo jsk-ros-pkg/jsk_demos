@@ -21,6 +21,14 @@
 ;    (send *ri* :wait-interpolation)
 ;    (send *ri* :stop-grasp :rarm :wait t)
 
+    ;; copy from move-to-chair-larm
+    (send *pr2* :angle-vector #f(50.1262 0.0 -10.0 40.0 -70.0 70.0 -90.0 90.0 -5.0 70.0 -105.0 -90.0 70.0 -6.0 20.0 0.007004 -1.914))
+    (send *pr2* :torso :waist-z :joint-angle 50)
+    (if (boundp '*irtviewer*) (send *irtviewer* :draw-objects))
+    (send *ri* :angle-vector (send *pr2* :angle-vector) 10000)
+    (send *ri* :stop-grasp :larm)
+
+
     (send *ri* :go-pos-unsafe 0.2 0 0)
     (send *pr2* :translate #f(200 0 0))
 
@@ -100,8 +108,8 @@
 ;    (send *ri* :wait-interpolation)
     (send *ri* :stop-grasp :larm :wait t)
 
-    (send *ri* :go-pos-unsafe 0.2 0 0)
-    (send *pr2* :translate #f(200 0 0))
+    (send *ri* :go-pos-unsafe 0.2 -0.2 0)
+    (send *pr2* :translate #f(200 -200 0))
 
 
 ;;----------------------------------------------------------------
@@ -165,6 +173,7 @@
     (send *ri* :go-pos-unsafe -0.4 0 0)
     (send *pr2* :translate #f(-400 0 0))
     (send *ri* :wait-interpolation)
+    (send *pr2* :reset-pose)
 
     t ;; return t on success
     ))
