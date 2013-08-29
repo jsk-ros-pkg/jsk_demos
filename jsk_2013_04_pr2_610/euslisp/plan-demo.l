@@ -32,9 +32,9 @@
 (defun plan-all ()
   (plan-to-condition
    '((clean room)
-	 (clean-under table)
+	 (clean-under table-front)
 	 (on tray sink)
-	 (under chair table)
+	 (under chair table-front)
 	 (on broom laundry)
 	 (in cloth laundry)
 	 (working laundry)
@@ -57,8 +57,8 @@
 (defun plan-sweep ()
   (plan-to-condition
    '((clean room)
-	 (clean-under table)
-	 (under chair table)
+	 (clean-under table-front)
+	 (under chair table-front)
 	 (on broom laundry)
 	 )
    ))
