@@ -16,7 +16,8 @@
 
         (chair-back . object)
         (chair . object)
-        (table . object)
+        (table-front . object)
+		(table-side . object)
         (sink  . object)
         (laundry . object)
 
@@ -28,10 +29,10 @@
 
 ;; initial condition
 (send *problem* :initial-condition
-      '((on tray  table)
+      '((on tray  table-side)
         (on cloth chair)
         (on broom laundry)
-        (under chair table)
+        (under chair table-front)
         (at world)
         (not (in cloth laundry))
         (= (total-cost) 0)
@@ -42,15 +43,15 @@
 ;; goal condition
 (send *problem* :goal-condition
       '((clean room)
-        (clean-under table)
+        (clean-under table-front)
         (on tray sink)
-        (under chair table)
+        (under chair table-front)
         (on broom laundry)
         (in cloth laundry)
         (working laundry)
         ))
 
-;(send *problem* :metric '(minimize (total-cost)))
+(send *problem* :metric '(minimize (total-cost)))
 
 ;;
 ;; domain
@@ -69,9 +70,10 @@
                              (under ?obj ?space - object)
                              (working ?obj - object)
                              ))
-(send *domain* :functions '((total-cost) - number
-                            (move-to) - number
-                            (sweep) - number))
+(send *domain* :functions '((total-cost)
+                            (move-to)
+                            (sweep)
+							))
 ;;making action
 (setq *move* (instance pddl-action :init
                        :name "move-to"
@@ -136,7 +138,7 @@
                        :name "sweep"
                        :parameters '((?space object))
                        :precondition '((hold broom)
-                                       (under chair table))
+                                       (under chair table-front))
                        :effect '((clean ?space)
                                  (increase (total-cost) (sweep)))))
 
@@ -183,13 +185,16 @@
 (send *domain* :add :action *push-button*)
 
 
-#|
+
 ;;
 ;; solve planning
 ;;
-(setq *result* (solve-pddl-planning *domain* *problem*))
-(format t "plan = ")
-(pprint (cdr (assoc :plan *result*)))
+(defun debug-solve ()
+  (setq *result* (solve-pddl-planning *domain* *problem*))
+  (format t "plan = ")
+  (pprint (cdr (assoc :plan *result*)))
+  )
+#|
 ;(format t "result = ~A " *result*)
 (ros::exit)
 |#
