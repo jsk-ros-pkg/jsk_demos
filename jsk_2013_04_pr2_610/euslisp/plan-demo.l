@@ -18,8 +18,11 @@
   ;; send plan to pr2
   (setup)
   (pr2-reset-pose)
-  (dolist (order (cdr (assoc :plan result)))
-	(eval order))
+  (if (send *problem* :metric)
+	  (dolist (order (cdr (assoc :plan result)))
+		(while (not (eval (subseq order 0 (- (length order) 3))))))
+	  (dolist (order (cdr (assoc :plan result)))
+		(while (not (eval order)))))
   (speak-jp "おわりました")
   )
 )
