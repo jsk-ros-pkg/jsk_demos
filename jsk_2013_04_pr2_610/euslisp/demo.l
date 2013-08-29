@@ -11,7 +11,7 @@
   (setup)
   (pr2-reset-pose)
 
-  (while (not (move-to-table)))
+  (while (not (move-to-table-side)))
   (while (not (pick-tray-table)))
   (while (not (move-to-sink)))
   (place-tray-sink)
@@ -74,7 +74,7 @@
   (while (not (move-to-chair2)))
   (pull-chair-table)
   ;;
-  (while (not (move-to-sweep)))
+  (while (not (move-to-table-front)))
   (sweep-under-table)
 
   (sweep-under-table-dual-arm)

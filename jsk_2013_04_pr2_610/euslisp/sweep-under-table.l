@@ -296,7 +296,9 @@
     (sweep-under-table-init-slim)
 ;;    (rehold-mop)
     (raise-mop)
-    ))
+    )
+  t
+  )
 
 (defun sweep-room ()
   (warn "sweep-room~%")
@@ -305,6 +307,7 @@
   (send *ri* :angle-vector (send *pr2* :angle-vector) 1000)
   (send *ri* :wait-interpolation)
   (raise-mop)
+  t
   )
 
 (defun sweep-under-table-dual-arm ()

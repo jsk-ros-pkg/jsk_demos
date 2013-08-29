@@ -110,4 +110,6 @@
     (send *pr2* :torso :waist-z :joint-angle 50)
     (send *ri* :angle-vector (send *pr2* :angle-vector) 5000)
     ;;dont wait interpolation
+    (pr2-reset-pose)
+    t
     ))

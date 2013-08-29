@@ -40,6 +40,7 @@
       (if (> count 3) (return-from pick-broom-laundry nil)))
     (goback-broom)
     (bringup-broom)
+    t
     ;;(raise-mop)
 ))
 
@@ -147,6 +148,7 @@
     (send *ri* :angle-vector (send *pr2* :angle-vector) 1200)
     (send *ri* :wait-interpolation)
     (send *ri* :start-grasp :larm)
+    t
     ))
 
 ;; (progn (load "pick-broom.l" )(bringup-broom-init)(bringup-broom)) ;; to test

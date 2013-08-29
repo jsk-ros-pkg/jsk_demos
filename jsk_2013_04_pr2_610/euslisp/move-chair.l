@@ -341,6 +341,7 @@
 
     (ros::ros-info "Move to left")
     (send *ri* :go-pos-unsafe 0 0.3 0)
+    t
     ))
 
 
@@ -370,6 +371,7 @@
 (defun move-back-chair ()
   (hold-chair-dual-arm)
   (push-move-chair)
+  t
   )
 
 (defun hold-chair-dual-arm (&key (move t))

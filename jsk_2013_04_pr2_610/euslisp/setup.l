@@ -105,8 +105,8 @@
   (send *pr2* :head :neck-p :joint-angle 50)
   )
 
-(defun move-to-table ()
-  (warn "move-to-table~%")
+(defun move-to-table-side ()
+  (warn "move-to-table-side~%")
   (use-tilt-laser-obstacle-cloud nil)
 
   (send *pr2* :reset-pose)
@@ -118,7 +118,7 @@
   (clear-costmap)
   (send *pr2* :move-to (send *room610* :spot-tray-spot) :world)
   (if (not (send *ri* :move-to (send *room610* :spot-tray-spot) :frame-id *room610-origin*))
-	  (return-from move-to-table nil)
+	  (return-from move-to-table-side nil)
 	  )
   (send *pr2* :head :neck-p :joint-angle 49.386)
   (send *ri* :angle-vector (send *pr2* :angle-vector) 1000)
@@ -268,15 +268,15 @@
   )
 
 
-(defun move-to-sweep ()
-  (warn "move-to-sweep~%")
+(defun move-to-table-front ()
+  (warn "move-to-table-front~%")
   (sweep-under-table-init-slim)
 ;;  (rehold-mop)
   (raise-mop)
   (use-tilt-laser-obstacle-cloud nil)
   (send *pr2* :move-to (send *room610* :spot-sweep-spot) :world)
   (if (not (send *ri* :move-to (send *room610* :spot-sweep-spot) :frame-id *room610-origin*))
-	  (return-from move-to-sweep nil)
+	  (return-from move-to-table-front nil)
 	  )
   (use-tilt-laser-obstacle-cloud t)
   t)
@@ -336,7 +336,7 @@
   (pr2-reset-pose)
   
   (speak-jp "トレイをキッチンに運びます")
-  (while (not (move-to-table)))
+  (while (not (move-to-table-side)))
   (while (not (pick-tray-table)))
   ;;
   (while (not (move-to-sink)))
@@ -361,7 +361,7 @@
   (pull-chair-table)
   ;;
   (speak-jp "モップをかけます")
-  (while (not (move-to-sweep)))
+  (while (not (move-to-table-front)))
   (sweep-under-table)
 
   (sweep-under-table-dual-arm)
