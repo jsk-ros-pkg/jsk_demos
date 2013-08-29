@@ -17,7 +17,7 @@
         (chair-back . object)
         (chair . object)
         (table-front . object)
-		(table-side . object)
+        (table-side . object)
         (sink  . object)
         (laundry . object)
 
