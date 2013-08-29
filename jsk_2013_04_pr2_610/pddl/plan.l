@@ -60,7 +60,7 @@
                              (clean ?room - object)
                              (clean-under ?obj - object)
                              (space ?room - object)
-                             (open ?obj - object)
+                             (open-door ?obj - object)
                              (under ?obj ?space - object)
                              (working ?obj - object)
                              ))
@@ -96,7 +96,7 @@
                        :parameters '((?obj ?to object))
                        :precondition '((at ?to)
                                        (hold ?obj)
-                                       (open ?to))
+                                       (open-door ?to))
                        :effect '((not (hold ?obj))
                                  (in ?obj ?to))))
 
@@ -105,24 +105,24 @@
                               :parameters '((?obj object))
                               :precondition '((at ?obj)
                                               (in cloth ?obj)
-                                              (not (open ?obj))
+                                              (not (open-door ?obj))
                                               )
                               :effect '((working ?obj))))
 
 
-(setq *open* (instance pddl-action :init
-                       :name "open"
+(setq *open-door* (instance pddl-action :init
+                       :name "open-door"
                        :parameters '((?obj object))
                        :precondition '((at ?obj)
-                                       (not (open ?obj)))
-                       :effect '((open ?obj))))
+                                       (not (open-door ?obj)))
+                       :effect '((open-door ?obj))))
 
 (setq *close* (instance pddl-action :init
                        :name "close"
                        :parameters '((?obj object))
                        :precondition '((at ?obj)
-                                       (open ?obj))
-                       :effect '((not (open ?obj)))))
+                                       (open-door ?obj))
+                       :effect '((not (open-door ?obj)))))
 
 (setq *sweep* (instance pddl-action :init
                        :name "sweep"
@@ -167,7 +167,7 @@
 (send *domain* :add :action *sweep*)
 (send *domain* :add :action *sweep-under*)
 (send *domain* :add :action *put*)
-(send *domain* :add :action *open*)
+(send *domain* :add :action *open-door*)
 (send *domain* :add :action *close*)
 (send *domain* :add :action *pull*)
 (send *domain* :add :action *push*)
@@ -188,3 +188,61 @@
 (defun make-graph ()
   (setq *graph* (make-graph-from-pddl-results (list *result*)))
   (send (make-readable-graph *graph*) :write-to-pdf "pddl_graph.pdf"))
+
+(defun make-smach ()
+  (make-graph)
+  (send *graph* :name (send *domain* :name))
+  ;; convert to smach
+  (load "package://roseus_smach/src/state-machine-ros.l")
+  (load "package://roseus_smach/src/state-machine-utils.l")
+  (load "package://roseus_smach/src/pddl2smach.l")
+
+  (defun move-to (&rest args)
+	(warn "move-to ~A~%" args)
+	t)
+
+  (defun pick (&rest args)
+	(warn "pick ~A~%" args)
+	t)
+ 
+  (defun sweep (&rest args)
+	(warn "sweep ~A~%" args)
+	t)
+
+  (defun open-door (&rest args)
+	(warn "open-door ~A~%" args)
+	t)
+
+  (defun close (&rest args)
+	(warn "close ~A~%" args)
+	t)
+
+  (defun push-button (&rest args)
+	(warn "push-button ~A~%" args)
+	t)
+  (defun place (&rest args)
+	(warn "place ~A~%" args)
+	t)
+
+  (defun sweep-under (&rest args)
+	(warn "sweep-under ~A~%" args)
+	t)
+
+  (defun push-chair (&rest args)
+	(warn "push-chair ~A~%" args)
+	t)
+
+  (defun put (&rest args)
+	(warn "put ~A~%" args)
+	t)
+
+  (defun pull-chair (&rest args)
+	(warn "pull-chair ~A~%" args)
+	t)
+
+
+  ;; global data is not used (nil)
+  (exec-smach-with-spin (convert-smach *graph*) nil :hz 1.0)
+
+  (when (string= "__log:=" (subseq (car (last lisp::*eustop-argument*)) 0 7))
+	(ros::exit)))
