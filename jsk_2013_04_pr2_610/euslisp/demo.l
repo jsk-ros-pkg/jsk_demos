@@ -75,7 +75,7 @@
   (pull-chair-table)
   ;;
   (while (not (move-to-table-front)))
-  (sweep-under-table)
+  (sweep-under-table-front)
 
   (sweep-under-table-dual-arm)
   (speak-jp "おわりました")

@@ -172,9 +172,9 @@
   )
 
 
-(defun sweep-under-table ()
+(defun sweep-under-table-front ()
   (let (c0 c1 av-grasp av-sweep0 av-sweep1)
-    (warn "sweep-under-table (yukizaki)~%")
+    (warn "sweep-under-table-front (yukizaki)~%")
     (send *ri* :stop-grasp :rarm :wait t)
 
     ;; make sure that we start from same situation
@@ -302,6 +302,7 @@
 
 (defun sweep-room ()
   (warn "sweep-room~%")
+  (raise-mop)
   (sweep-under-table-dual-arm)
   (send *pr2* :torso :waist-z :joint-angle (- (send *pr2* :torso :waist-z :joint-angle) 50))
   (send *ri* :angle-vector (send *pr2* :angle-vector) 1000)
