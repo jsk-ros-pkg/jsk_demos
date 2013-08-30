@@ -121,6 +121,9 @@
 ;;----------------------------------------------------------------
 
     ;;set cloth coord
+    (send *pr2* :larm :angle-vector #f(40.0 -20.0 0.0 -70.0 70.0 -90.0 0.0))
+    (send *ri* :angle-vector (send *pr2* :angle-vector) 2000)
+    (send *ri* :wait-interpolation)
     (setq av-seq nil)
     (setq croth-coords
           (make-coords
@@ -170,8 +173,10 @@
     (unix:sleep 1)
     (send *ri* :angle-vector (send *pr2* :angle-vector) 2000)
     (unix:sleep 1)
-    (send *ri* :go-pos-unsafe -0.4 0 0)
-    (send *pr2* :translate #f(-400 0 0))
+;    (send *ri* :go-pos-unsafe -0.4 0 0)
+;    (send *pr2* :translate #f(-400 0 0))
+    (send *ri* :go-pos-unsafe -0.2 0.2 0)
+    (send *pr2* :translate #f(-200 200 0))
     (send *ri* :wait-interpolation)
     (send *pr2* :reset-pose)
 

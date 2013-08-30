@@ -361,7 +361,7 @@
   ;;
   (speak-jp "モップをかけます")
   (while (not (move-to-table-front)))
-  (sweep-under-table)
+  (sweep-under-table-front)
 
   (sweep-under-table-dual-arm)
   (speak-jp "部屋の掃除が終わりました")
@@ -372,5 +372,5 @@
 (warn "type (demo) to start~%")
 (warn "type (setup) to revert all object location~%")
 
-;(setup)
+(setup)
 
