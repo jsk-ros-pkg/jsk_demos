@@ -159,6 +159,7 @@
                                        (need-closed-door ?obj)
                                        )
                        :effect '((open-door ?obj)
+                                 (not (need-closed-door ?obj))
                                  )))
 
 
