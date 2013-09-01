@@ -280,3 +280,71 @@
 ;(format t "result = ~A " *result*)
 (ros::exit)
 |#
+
+(defun debug-make-smach ()
+  ;; convert to smach
+  (load "package://roseus_smach/src/state-machine-ros.l")
+  (load "package://roseus_smach/src/state-machine-utils.l")
+  (load "package://roseus_smach/src/pddl2smach.l")
+
+  (defun move-to (&rest args)
+	(warn "move-to ~A~%" args)
+	t)
+
+  (defun pick (&rest args)
+	(warn "pick ~A~%" args)
+	(if (> (random 1.0) 0.3) nil t))
+ 
+  (defun sweep (&rest args)
+	(warn "sweep ~A~%" args)
+	t)
+
+  (defun open-door (&rest args)
+	(warn "open-door ~A~%" args)
+	(if (> (random 1.0) 0.3) nil t))
+
+  (defun close (&rest args)
+	(warn "close ~A~%" args)
+	(if (> (random 1.0) 0.3) nil t))
+
+  (defun more-open-door (&rest args)
+    (warn "more-open-door ~A~%" args)
+    t)
+
+  (defun push-button (&rest args)
+	(warn "push-button ~A~%" args)
+	t)
+  (defun place (&rest args)
+	(warn "place ~A~%" args)
+	t)
+
+  (defun sweep-under (&rest args)
+	(warn "sweep-under ~A~%" args)
+	t)
+
+  (defun push-chair (&rest args)
+	(warn "push-chair ~A~%" args)
+	t)
+
+  (defun put (&rest args)
+	(warn "put ~A~%" args)
+	t)
+
+  (defun pull-chair (&rest args)
+	(warn "pull-chair ~A~%" args)
+	t)
+
+
+  ;; global data is not used (nil)
+  (exec-smach-with-spin (convert-smach *graph*) nil :hz 1.0)
+
+  (when (string= "__log:=" (subseq (car (last lisp::*eustop-argument*)) 0 7))
+	(ros::exit))
+  )
+
+(defun debug-all ()
+;  (load "package://jsk_2013_04_pr2_610/pddl/description_wash.l")
+  (debug-solve)
+  (debug-make-graph)
+  (debug-make-smach)
+)
