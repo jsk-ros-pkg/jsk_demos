@@ -302,7 +302,9 @@
 
 (defun sweep-room ()
   (warn "sweep-room~%")
-  (raise-mop)
+    (sweep-under-table-init-slim)
+;;    (rehold-mop)
+    (raise-mop)
   (sweep-under-table-dual-arm)
   (send *pr2* :torso :waist-z :joint-angle (- (send *pr2* :torso :waist-z :joint-angle) 50))
   (send *ri* :angle-vector (send *pr2* :angle-vector) 1000)

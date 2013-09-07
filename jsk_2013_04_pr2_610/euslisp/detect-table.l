@@ -270,6 +270,7 @@
 
     ;;prepare target-coords
     (setq target-coords (make-coords :pos (float-vector (* 1000 (car *chair-xy*)) (* 1000 (cadr *chair-xy*)) -303)))
+
     (send target-coords :rotate rot-radian :z)
 
     ;;publish ObjectDetection
