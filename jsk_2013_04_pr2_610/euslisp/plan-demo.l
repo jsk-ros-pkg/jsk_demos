@@ -8,6 +8,7 @@
   `(let ((problem (copy-object *problem*)))
 	 (send problem :goal-condition ,goal-condition)
 	 (exec-plan problem)
+         (ros::exit)
 	 ))
 
 (defun exec-plan (problem)

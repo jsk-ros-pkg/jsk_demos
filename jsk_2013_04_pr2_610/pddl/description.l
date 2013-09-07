@@ -45,7 +45,7 @@
       '((clean room)
         (clean-under table-front)
         (on tray sink)
-        (under chair table-front)
+;        (under chair table-front)
         (on broom laundry)
         (in cloth laundry)
         (working laundry)
@@ -81,7 +81,7 @@
 (setq *move* (instance pddl-action :init
                        :name "move-to"
                        :parameters '((?to object))
-                       :precondition '()
+                       :precondition '((not (at ?to)))
                        :effect '((forall (?any - object) (not (at ?any)))
                                  (at ?to)
 ;                                 (increase (total-cost) (move-to))

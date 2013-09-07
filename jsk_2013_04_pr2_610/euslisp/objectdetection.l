@@ -28,7 +28,8 @@
 
     (if (boundp '*irtviewer*) (send ret :draw-on :flush t :size 100))
     (if (boundp '*irtviewer*) (send (send *pr2* :copy-worldcoords) :draw-on :flush t :size 2000))
-    (send obj :move-to ret :world)
+    (if ret
+        (send obj :move-to ret :world))
     (send obj :transform *pr2* :world)
     (if (boundp '*irtviewer*) (send (send obj :copy-worldcoords) :draw-on :flush t :size 1500 :color #f(1 0 0)))
     (if (boundp '*irtviewer*) (send *irtviewer* :draw-objects :flush t))

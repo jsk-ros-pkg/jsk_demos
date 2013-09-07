@@ -4,6 +4,7 @@
   <!-- <node name="irt_demo" pkg="roseus" type="roseus"
         args="$(find jsk_2013_04_pr2_610)/euslisp/demo.l &quot;(progn (demo-$(arg task)) (unix:sleep 1) (ros::exit) (exit))&quot;"
         output="screen" /> -->
+  <include file="$(find pddl_planner)/launch/pddl_ffha.launch" />
   <node name="irt_demo" pkg="roseus" type="roseus"
         args="$(find jsk_2013_04_pr2_610)/euslisp/plan-demo.l &quot;(progn (plan-$(arg task)) (unix:sleep 1) (ros::exit) (exit))&quot;"
         output="screen" />
