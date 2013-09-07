@@ -1,11 +1,16 @@
 <launch>
   <arg name="task" />
+  <arg name="plan" default="true" />
   <include file="$(find jsk_2013_04_pr2_610)/launch/detect_all.launch" />
-  <!-- <node name="irt_demo" pkg="roseus" type="roseus"
-        args="$(find jsk_2013_04_pr2_610)/euslisp/demo.l &quot;(progn (demo-$(arg task)) (unix:sleep 1) (ros::exit) (exit))&quot;"
-        output="screen" /> -->
-  <include file="$(find pddl_planner)/launch/pddl_ffha.launch" />
-  <node name="irt_demo" pkg="roseus" type="roseus"
-        args="$(find jsk_2013_04_pr2_610)/euslisp/plan-demo.l &quot;(progn (plan-$(arg task)) (unix:sleep 1) (ros::exit) (exit))&quot;"
-        output="screen" />
+  <group unless="$(arg plan)">
+    <node name="irt_demo" pkg="roseus" type="roseus"
+          args="$(find jsk_2013_04_pr2_610)/euslisp/demo.l &quot;(progn (demo-$(arg task)) (unix:sleep 1) (ros::exit) (exit))&quot;"
+          output="screen" />
+  </group>
+  <group if="$(arg plan)">
+    <include file="$(find pddl_planner)/launch/pddl_ffha.launch" />
+    <node name="irt_demo" pkg="roseus" type="roseus"
+          args="$(find jsk_2013_04_pr2_610)/euslisp/plan-demo.l &quot;(progn (plan-$(arg task)) (unix:sleep 1) (ros::exit) (exit))&quot;"
+          output="screen" />
+  </group>
 </launch>
