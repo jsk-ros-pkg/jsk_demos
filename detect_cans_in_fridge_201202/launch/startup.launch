@@ -1,7 +1,7 @@
 <launch>
   <arg name="start_rviz" default="false" />
   <arg name="wait_query" default="true" />
-  <arg name="DEMOTYPE" default="map" />
+  <arg name="DEMOTYPE" default="short" />
 
   <!-- sample data for test -->
   <anode pkg="rosbag" type="play" name="play"
@@ -38,7 +38,7 @@
       <param name="window_name" value="fridge_handle_upper"/>
       <param name="object_width" value="0.231"/>
       <param name="object_height" value="0.196"/>
-      <param name="relative_pose" value="0.22 0.03 0.075  0.707107 0 -0.707107 0"/>
+      <param name="relative_pose" value="0.22 0.05 0.075  0.707107 0 -0.707107 0"/>
       <param name="viewer_window" value="false" /> <!-- to disable window-->
     </node>
   </group>
