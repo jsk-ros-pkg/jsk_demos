@@ -1,3 +1,5 @@
+(load "package://pr2eus/pr2-interface.l")
+
 (defvar *attention-flag* "/attention_observation/flag")
 (defvar *attention-id* "/attention_observation/id")
 
@@ -21,23 +23,36 @@
 (defmethod pr2-attention-interface
   (:wait-interpolation (&rest args)
    (let ((ret (send-super* :wait-interpolation args)))
-     (unless (some #'identity ret)
-       (throw :attention-barrier (ros::get-param *attention-flag*)))))
+     (unless (or (not (memq :attention-barrier (sys::list-all-catchers)))
+                 (some #'identity ret))
+       (throw :attention-barrier (ros::get-param *attention-flag*)))
+     ret))
   (:move-to (&rest args)
    (let ((ret (send-super* :move-to args)))
-     (unless ret
+     (unless (or (not (memq :attention-barrier (sys::list-all-catchers)))
+                 ret)
        (throw :attention-barrier (ros::get-param *attention-flag*)))
      ret))
   (:go-pos (&rest args)
    (let ((ret (send-super* :go-pos args)))
-     (unless ret
+     (unless (or (not (memq :attention-barrier (sys::list-all-catchers)))
+                 ret)
        (throw :attention-barrier (ros::get-param *attention-flag*)))
      ret))
   (:go-pos-unsafe (&rest args)
    (let ((ret (send-super* :go-pos-unsafe args)))
-     (unless ret
+     (unless (or (not (memq :attention-barrier (sys::list-all-catchers)))
+                 ret)
        (throw :attention-barrier (ros::get-param *attention-flag*)))
      ret))
+  (:wait-interpolation-org (&rest args)
+   (send-super* :wait-interpolation args))
+  (:move-to-org (&rest args)
+   (send-super* :move-to args))
+  (:go-pos-org (&rest args)
+   (send-super* :go-pos args))
+  (:go-pos-unsafe-org (&rest args)
+   (send-super* :go-pos-unsafe args))
   (:try-check-cancel-flag ()
    (let ((ret (ros::get-param *attention-flag*)))
      (if ret (throw :attention-barrier ret))))
@@ -49,6 +64,14 @@
    (ros::set-param *attention-flag* flag)
    (send self :cancel-angle-vector)
    (send self :go-stop nil))
+  )
+
+(unless (fboundp 'pr2-init-org)
+  (setf (symbol-function 'pr2-init-org) (symbol-function 'pr2-init)))
+
+(defun pr2-init (&rest args)
+  (setq *ri* (setq *ri* (instance pr2-attention-interface :init)))
+  (apply #'pr2-init-org args)
   )
 
 (defun do-command-sequence (seq &rest args)
@@ -86,6 +109,7 @@
     ))
 
 #| ;; sample actions for detect_cans
+(load "package://jsk_demo_common/euslisp/attention-observation.l")
 (defun action-0 (&rest args
                    &key type demo-type finish-type
                    &allow-other-keys)
