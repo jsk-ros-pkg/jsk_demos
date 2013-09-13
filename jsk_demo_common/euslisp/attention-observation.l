@@ -65,7 +65,7 @@
    (send self :cancel-angle-vector)
    (send self :go-stop nil))
   (:ros-wait
-   (tm &key (spin) (spin-self) (func-before-throw)
+   (tm &key (spin) (spin-self) (func-before-throw))
    (send-super self :ros-wait tm :spin spin :spin-self spin-self
                :finish-check
                #'(lambda (sl)
@@ -119,6 +119,47 @@
          (setq ptr 0))
         (t (incf ptr))
        ))
+    ))
+
+(defun wait-android-query ()
+  (ros::ros-info "Begin Waiting")
+  (let (type from (cntr 0))
+    (ros::subscribe "/Tablet/StartDemo" roseus::StringStamped
+                    #'(lambda(m)
+                        ;;(print (list :subscribe (send m :data)))
+                        (cond
+                         ((string= (send m :data)
+                                   "/Tablet/other/GetGeorgia")
+                          (setq from :tablet)
+                          (setq type "georgia"))
+                         ((string= (send m :data)
+                                   "/Tablet/other/DoNothing")
+                          (setq from :tablet)
+                          (setq type "nothing"))
+                         (t ))))
+    (ros::rate 100)
+    (do-until-key
+     (incf cntr)
+     (when (> cntr 200)
+       (ros::ros-info " Waiting ....")
+       (setq cntr 0))
+     (ros::spin-once)
+     (send *ri* :spin-once)
+     (when type
+       (case from
+         (:tablet
+          (cond
+           ((string= type "nothing")
+            (ros::ros-info "Cancel all motion")
+            (send *ri* :cancel-all-motion "tablet")
+            )
+           (t )
+           )
+          ))
+       (setq type nil from nil)
+       )
+     (ros::sleep))
+    (ros::unsubscribe "/Tablet/StartDemo")
     ))
 
 #| ;; sample actions for detect_cans
