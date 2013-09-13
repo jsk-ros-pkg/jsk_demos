@@ -64,6 +64,17 @@
    (ros::set-param *attention-flag* flag)
    (send self :cancel-angle-vector)
    (send self :go-stop nil))
+  (:ros-wait
+   (tm &key (spin) (spin-self))
+   (send-super self :ros-wait tm :spin spin :spin-self spin-self
+               :finish-check
+               #'(lambda (sl)
+                   (if (and
+                        (memq :attention-barrier (sys::list-all-catchers))
+                        (ros::get-param *attention-flag*))
+                       (throw :attention-barrier (ros::get-param *attention-flag*)))
+                   nil))
+   )
   )
 
 (unless (fboundp 'pr2-init-org)
