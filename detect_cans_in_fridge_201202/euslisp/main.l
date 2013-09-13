@@ -1,14 +1,17 @@
 (defvar *use-voicetext* t)
-(defvar *use-english* t)
+(defvar *use-english* nil)
 
 ;; open fridge and pick a can (and close the door)
 (load "package://jsk_2011_07_pr2_semantic/euslisp/actions.l")
 (require :pr2-interface "package://pr2eus/pr2-interface.l")
 ;;(load "package://pr2eus_openrave/pr2eus-openrave.l")
 ;;(load "package://pr2eus_armnavigation/pr2eus-arm-navigation.l")
+;;(load "package://pr2eus_moveit/euslisp/pr2eus-moveit.l")
 
 (require :pr2-move "package://jsk_demo_common/euslisp/pr2-move.l")
 (require :pr2-action "package://jsk_demo_common/euslisp/pr2-action.l")
+
+(load "package://jsk_demo_common/euslisp/attention-observation.l")
 
 (ros::roseus "demo_main")
 (setq *use-arm-navigation* nil)
@@ -24,10 +27,13 @@
   )
 
 (defun init-for-robot ()
+  #|
   (unless (boundp '*pr2*) (pr2))
   (unless (boundp '*ri*) (setq *ri* (instance pr2-interface :init)))
   (send *ri* :spin-once)
   (send *pr2* :angle-vector (send *ri* :state :potentio-vector))
+  |#
+  (pr2-init)
   (when *use-arm-navigation*
     (setq *plan-env* (instance arm_planning_environment :init :robot *pr2*)))
   )
@@ -72,32 +78,6 @@
   t
   )
 
-#|
-(defun demo (&key (type "georgia"))
-  ;;(init)
-  (setq *type* type)
-  (speak-jp (format nil "~a を もってきます  しょうしょう おまち ください" *type*))
-
-  (pr2-tuckarm-pose :rarm)
-
-  (setq *opose* (send *ri* :state :worldcoords))
-
-  (unless (goto-front-of-fridge)
-    (return-from demo))
-
-  (unless (open-fridge-door)
-    (return-from demo))
-
-  (unless (grasp-can)
-    (return-from demo))
-
-  (unless (close-fridge)
-    (return-from demo))
-
-  (unless (goto-initial-position)
-    (return-from demo))
-  )
-|#
 (defun demo (&key (type "georgia")
                   (demo-type :map)  ;; :map, :short, ...
                   (finish-type :pass-to-human) ;; :pass-to-human, :put-on-turtlebot, ...
