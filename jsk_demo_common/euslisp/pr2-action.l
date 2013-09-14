@@ -127,20 +127,23 @@
       (return-from move-fridge-traj (list (reverse avs) tms)))
 
     (when move-robot
+      (send *ri* :ros-wait 0.0 :spin-self t) ;; attention-check ...
       (send *ri* :angle-vector-sequence (reverse avs) tms))
     ;; finalize
     (cond
      ((integerp wait-time)
-      (unix:sleep wait-time))
+      (send *ri* :ros-wait wait-time :spin-self t)) ;; attention-check ...
      ((numberp wait-time)
-      (unix::usleep
-       (round (* wait-time 1000 1000))))
+      (send *ri* :ros-wait wait-time :spin-self t) ;; attention-check ...
+      ;;(unix::usleep
+      ;;(round (* wait-time 1000 1000)))
+      )
      (wait-time
       (send *ri* :wait-interpolation)))
     (send *ri* :stop-grasp hand)
     (send *ri* :wait-interpolation)
     ;;
-    (unix::sleep 1) (ros::spin-once)
+    (send *ri* :ros-wait 1.0 :spin t :spin-self t) ;; attention-check ...
     (send *pr2* :angle-vector (send *ri* :state :potentio-vector))
     (let ((end-pt (send *pr2* hand :end-coords :worldpos))
           idx)
@@ -194,6 +197,7 @@
     ;;(send *ri* :angle-vector (send *pr2* :angle-vector))
     ;;(send *ri* :wait-interpolation))
     ;; check IK
+    (send *ri* :ros-wait 0.0 :spin-self t) ;; attention-check ...
 
     (cond
      ((null *use-arm-navigation*)
@@ -225,6 +229,7 @@
     (send *ri* :angle-vector (send *pr2* :angle-vector))
     (send *ri* :wait-interpolation))
     ))|#
+    (send *ri* :ros-wait 0.0 :spin-self t) ;; attention-check ...
     (send *ri* :angle-vector (send *pr2* :angle-vector))
     (send *ri* :wait-interpolation)
 
@@ -234,6 +239,7 @@
     ;; move to via1
     (send *pr2* :rarm :inverse-kinematics via1 :rotation-axis t :use-torso t)
     ;; check IK
+    (send *ri* :ros-wait 0.0 :spin-self t) ;; attention-check ...
     (cond
      ((null *use-arm-navigation*)
       (send *ri* :angle-vector (send *pr2* :angle-vector))
@@ -253,6 +259,7 @@
     ;;(send *ri* :wait-interpolation)
 
     ;; move to original pose
+    (send *ri* :ros-wait 0.0 :spin-self t) ;; attention-check ...
     (send *ri* :angle-vector orig-av)
     (send *ri* :wait-interpolation)
     )
@@ -328,7 +335,7 @@
       ;; finding handle position
       (setq cds (check-detection :type "fridge" :speak-name *frige-speak-str*))
       ;; need detection fail check
-
+      (send *ri* :ros-wait 0.0 :spin-self t) ;; attention-check ...
       (when cds
         (send *obj* :reset-coords)
         (send *obj* :transform cds)
@@ -354,8 +361,7 @@
                (< (abs (elt (car (rpy-angle (send diffcds :worldrot))) 0))
                   *fridge-rotation-threshold*))
           (setq cds (check-detection :type "fridge" :speak-name *frige-speak-str*))
-          (ros::spin-once)
-          (send *ri* :spin-once)
+          (send *ri* :ros-wait 0.0 :spin-self t :spin t) ;; attention-check ...
           ;; (y-or-n-p "Can I start open fridge? ")
           (when cds
             (if look-around (pr2-look-around))
@@ -419,7 +425,7 @@
                 (/ (elt (send diffcds :worldpos) 1) 1100.0)
                 (* 0.9 (rad2deg (elt (car (rpy-angle (send diffcds :worldrot))) 0))))
           ;; wait ???
-          (unix::usleep (* 500 1000))
+          (send *ri* :ros-wait 0.6 :spin-self t :spin t) ;; attention-check ...
           ;; (send *ri* :wait-interpolation)
           ))
         ))
@@ -432,21 +438,29 @@
             (speak-jp "I could not find the refrigerator."))
            (t (speak-jp "冷蔵庫を見つけられませんでした。")))
         (speak-jp "れいぞうこ を みつけられません でした"))
-      (unix::sleep 2);;
+      (send *ri* :ros-wait 2.0 :spin-self t :spin t) ;; attention-check ...
       (return-from open-fridge-door nil))
 
-    (ros::spin-once)
-    (send *ri* :spin-once)
     (send *ri* :stop-grasp :rarm)
+    (send *ri* :ros-wait 0.4 :spin-self t :spin t) ;; attention-check ...
     (send *pr2* :angle-vector (send *ri* :state :potentio-vector))
 
     (case door-type
       (:circle
        ;; free door handle
-       (let ((rend (send *pr2* :rarm :end-coords :copy-worldcoords)))
-         (send rend :translate (float-vector -100 -50 0) *pr2*)
+       (let ((rend (send *pr2* :rarm :end-coords :copy-worldcoords))
+             av1 av2)
+         (send rend :translate (float-vector -20 -60 0) *pr2*)
          (send *pr2* :rarm :inverse-kinematics rend)
-         (send *ri* :angle-vector (send *pr2* :angle-vector) 1000))
+         (setq av1 (send *pr2* :angle-vector))
+         (send rend :rotate pi/2 :x *pr2*)
+         (send rend :translate (float-vector 0 -60 0) *pr2*)
+         (send *pr2* :rarm :inverse-kinematics rend)
+         (setq av2 (send *pr2* :angle-vector))
+         (send *ri* :angle-vector-sequence
+               (list av1 av2) (list 600 600))
+         (send *ri* :wait-interpolation)
+         )
 
        ;; ?? open door ()
        (send *ri* :angle-vector-sequence
@@ -481,22 +495,22 @@
          (send *ri* :angle-vector (send *pr2* :angle-vector) 1600)
          ))
       )
+    (send *ri* :ros-wait 0.0 :spin-self t) ;; attention-check ...
+    (send *ri* :wait-interpolation)
     t
     ))
 
 (warn ";; define grasp-can")
 (defun grasp-can (&key (move t) (rotation))
   ;; move-to spot for grasping
-  (ros::spin-once)
-  (send *ri* :spin-once)
+  (send *ri* :ros-wait 0.0 :spin-self t :spin t) ;; attention-check ...
   (when move
     (ros::ros-info "GO POS UNSAFE for grasping can")
     (send *ri* :go-pos-unsafe 0 0 (rad2deg 0.38))
     (send *ri* :go-pos-unsafe 0.185 -0.25 0) ;; 
     (send *ri* :wait-interpolation))
 
-  (ros::spin-once)
-  (send *ri* :spin-once)
+  (send *ri* :ros-wait 0.0 :spin-self t :spin t) ;; attention-check ...
   (send *pr2* :angle-vector (send *ri* :state :potentio-vector))
 
   (let (isgrasp)
@@ -509,6 +523,7 @@
                            :type *type* :tf-force t :timeout 35 :single t))
           (setq cds (check-detection :speak-name *type*
                      :type *type* :tf-force t :timeout 70 :single t)))
+        (send *ri* :ros-wait 0.0 :spin-self t :spin t) ;; attention-check ...
         (when cds
           ;; (speak-jp (format nil "~A を とりだします" *type*))
           (send *obj* :reset-coords)
@@ -521,8 +536,7 @@
             (setq *tfb* (instance ros::transform-broadcaster :init)))
           (send *tfb* :send-transform
                 cds "/base_footprint" "/object_pose_frame")
-          (ros::spin-once)
-          (send *ri* :spin-once)
+          (send *ri* :ros-wait 0.0 :spin-self t :spin t) ;; attention-check ...
           (send *pr2* :angle-vector (send *ri* :state :potentio-vector))
           (unless rotation
             ;; FIXME: calc rotation from /map and /base_footprint
@@ -531,7 +545,7 @@
           (setq isgrasp (< 10 (send *ri* :start-grasp :rarm)))
           (when isgrasp
             (when move (send *ri* :go-pos-unsafe -0.3 0.05 -20))
-            (unix::sleep 1)
+            (send *ri* :ros-wait 1.0 :spin-self t :spin t) ;; attention-check ...
             (return-from grasp-can t))
           ;; (unix::sleep 2)
           (if (and (boundp '*use-voicetext*) *use-voicetext*)
@@ -549,12 +563,13 @@
        (t (speak-jp (format nil "~Aを取り出しませんでした。" *type*))))
     (speak-jp (format nil "~A を とりだし ません でした" *type*)))
   (when move (send *ri* :go-pos-unsafe -0.3 0.05 -20))
-  (unix::sleep 1)
+  (send *ri* :ros-wait 1.0 :spin-self t :spin t) ;; attention-check ...
   nil)
 
 (warn ";; define close-fridge")
 (defun close-fridge ()
   ;; close the door of fridge
+  (send *ri* :ros-wait 0.0 :spin-self t) ;; attention-check ...
   (send *ri* :angle-vector-sequence
         (list (float-vector 250 5 74 100 -90 -70 -6 20 -13 50 -30 -25 118 -90 62 -2 31);; 2000
               (float-vector 200 5 74 100 -90 -70 -6 20 -50 54 -15 -43 118 -90 62 -2 31);; 1000
@@ -565,6 +580,7 @@
         (list 2000 1000 1500 1500 2500))
   (send *ri* :wait-interpolation)
   (send *pr2* :angle-vector (send *ri* :state :potentio-vector))
+  (send *ri* :ros-wait 0.0 :spin-self t) ;; attention-check ...
   (pr2-tuckarm-pose :rarm)
   t
   )
