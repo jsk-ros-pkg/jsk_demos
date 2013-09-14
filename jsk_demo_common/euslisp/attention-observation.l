@@ -78,13 +78,13 @@
    (ros::set-param *attention-flag* nil))
   (:cancel-all-motion (&optional (flag t))
    (ros::set-param *attention-flag* flag)
-   (send r-gripper-action :cancel-all-gols)
-   (send l-gripper-action :cancel-all-gols)
+   (send r-gripper-action :cancel-all-goals)
+   (send l-gripper-action :cancel-all-goals)
    (send self :cancel-angle-vector)
    (send self :go-stop nil))
   (:ros-wait
    (tm &key (spin) (spin-self) (func-before-throw))
-   (send-super self :ros-wait tm :spin spin :spin-self spin-self
+   (send-super :ros-wait tm :spin spin :spin-self spin-self
                :finish-check
                #'(lambda (sl) (send sl :try-check-cancel-flag func-before-throw) nil))
    )
@@ -100,7 +100,7 @@
 
 (defun do-command-sequence (seq &rest args)
   (let ((ptr 0) com abr)
-    (while (< ptr (lenth com))
+    (while (< ptr (length seq))
       (setq abr
             (catch :attention-barrier
               (setq com (elt seq ptr))
@@ -117,12 +117,12 @@
           ))
        ((null abr)
         (warn "abr = nil~%");;
-        (setq abr :fail))
+        (setq abr :fail)) ;; just fail action
        ((eq t abr) ;; normal cancel
         (setq abr :fail))
        )
       (case abr
-        ((:retry :fail) )
+        ((:retry :fail :tablet) )
         (:retry-plus
          (decf ptr 1)
          (if (< ptr 0) (setq ptr 0)))
@@ -172,63 +172,3 @@
      (ros::sleep))
     (ros::unsubscribe "/Tablet/StartDemo")
     ))
-
-#| ;; sample actions for detect_cans
-(load "package://jsk_demo_common/euslisp/attention-observation.l")
-(defun action-0 (&rest args
-                   &key type demo-type finish-type
-                   &allow-other-keys)
-  (setq *type* type)
-  ;;
-  (if (and (boundp '*use-voicetext*) *use-voicetext*)
-      (cond
-       ((and (boundp '*use-english*) *use-english*)
-        (speak-jp (format nil "I will look for ~a and bring it. Please wait a minute." *type*)))
-       (t (speak-jp (format nil "~aを持って行きます。少々、お待ちください。" *type*))))
-    (speak-jp (format nil "~a を もってきます  しょうしょう おまち ください" *type*)))
-  (pr2-tuckarm-pose :rarm)
-  (setq *opose* (send *ri* :state :worldcoords))
-  t
-  )
-
-(defun action-1 (&rest args
-                   &key type demo-type finish-type
-                   &allow-other-keys)
-  (case demo-type
-    (:map
-     (goto-front-of-fridge))
-    (t
-     ;; do nothing
-     t))
-  )
-
-(defun action-2 (&rest args
-                       &key type demo-type finish-type
-                       &allow-other-keys)
-  (open-fridge-door :torso-lift 25 :head-pitch 14)
-  )
-
-(defun action-3 (&rest args
-                       &key type demo-type finish-type
-                       &allow-other-keys)
-  (grasp-can)
-  )
-
-(defun action-4 (&rest args
-                       &key type demo-type finish-type
-                       &allow-other-keys)
-  (close-fridge)
-  )
-
-(defun action-5 (&rest args
-                       &key type demo-type finish-type
-                       &allow-other-keys)
-  (case demo-type
-    (:map
-     (goto-initial-position :finish-type finish-type))
-    (t
-     (goto-initial-position
-      :return-to-initial-position nil :turnp t
-      :finish-type finish-type)))
-  )
-|#
