@@ -83,10 +83,12 @@
    (send self :cancel-angle-vector)
    (send self :go-stop nil))
   (:ros-wait
-   (tm &key (spin) (spin-self) (func-before-throw))
+   (tm &key (spin) (spin-self) (finish-check) (func-before-throw) &allow-other-keys)
    (send-super :ros-wait tm :spin spin :spin-self spin-self
                :finish-check
-               #'(lambda (sl) (send sl :try-check-cancel-flag func-before-throw) nil))
+               (if finish-check
+                   #'(lambda (sl) (prog1 (funcall finish-check sl) (send sl :try-check-cancel-flag func-before-throw)))
+               #'(lambda (sl) (send sl :try-check-cancel-flag func-before-throw) nil)))
    )
   ) ;;
 
