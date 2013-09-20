@@ -13,7 +13,7 @@
 (defmacro open-door (obj)
   `(funcall (read-from-string (concatenate string "open-" (symbol-name (quote ,obj))))))
 
-(defmacro close (obj)
+(defmacro close-door (obj)
   `(funcall (read-from-string (concatenate string "close-" (symbol-name (quote ,obj))))))
 
 (defmacro sweep (obj)
