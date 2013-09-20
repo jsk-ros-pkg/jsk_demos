@@ -188,8 +188,6 @@
 (send *domain* :add :action *push*)
 (send *domain* :add :action *push-button*)
 
-
-
 ;;
 ;; solve planning
 ;;
@@ -200,8 +198,8 @@
   )
 
 ;; generate graph
-(load "package://pddl_planner/src/pddl-result-graph.l")
 (defun debug-make-graph ()
+  (load "package://pddl_planner/src/pddl-result-graph.l")
   (setq *graph* (make-graph-from-pddl-results (list *result*)))
   (send (make-readable-graph *graph*) :write-to-pdf "pddl_graph.pdf"))
 #|
