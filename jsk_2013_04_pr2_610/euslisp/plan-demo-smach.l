@@ -4,6 +4,7 @@
 ;;(load "package://jsk_2013_04_pr2_610/euslisp/setup-for-pddl.l")
 (load "package://pddl_planner/src/eus-pddl-client.l")
 (load "package://jsk_2013_04_pr2_610/pddl/description.l")
+(load "package://jsk_2013_04_pr2_610/pddl/action.l")
 
 ;; smach
 (load "package://roseus_smach/src/pddl2smach.l")
@@ -21,9 +22,11 @@
 
 (defun graph-to-smach (agraph)
   (let* ((sm
-          (convert-smach agraph :return-success :success :return-fail :fail
+          (convert-smach agraph
+                         :return-success :success :return-fail :fail
                          ;; :use-userdata t
-                         :add-self-return-failure-path nil))
+                         :add-self-return-failure-path nil
+                         ))
          (sm-inspect (instance state-machine-inspector :init sm)))
     sm-inspect))
 
@@ -57,64 +60,9 @@
 
   (setq *sm-insp* (graph-to-smach *graph*))
 
-  (when debug (defun-debug-functions *graph*))
+  ;;(when debug (defun-debug-functions *graph*))
+  (when debug (setq *pddl-debug* t))
   (when exec (exec-ros-smach *sm-insp*))
 
   *sm-insp*
   )
-
-(defun move-to (&rest args)
-  (let ((pl (car args)))
-    (funcall (read-from-string (format nil "move-to-~A" (symbol-string pl))))
-    :success))
-
-(defun pick (&rest args)
-  (let ((obj (car args))
-        (pl (cadr args)))
-    (funcall (read-from-string (format nil "pick-~A-~A" (symbol-string obj) (symbol-string pl))))
-    :success))
-
-(defun place (&rest args)
-  (let ((obj (car args))
-        (pl (cadr args)))
-    (funcall (read-from-string (format nil "place-~A-~A" (symbol-string obj) (symbol-string pl))))
-    :success))
-
-(defun put (&rest args)
-  (let ((obj (car args))
-        (pl (cadr  args)))
-    (funcall (read-from-string (format nil "put-~A-~A" (symbol-string obj) (symbol-string pl))))
-    :success))
-
-(defun open-door (&rest args)
-  (let ((obj (car args)))
-    (funcall (read-from-string (format nil "open-~A" (symbol-string obj))))
-    :success))
-
-(defun close-door (&rest args)
-  (let ((obj (car args)))
-    (funcall (read-from-string (format nil "close-~A" (symbol-string obj))))
-    :success))
-
-(defun push-button (&rest args)
-  (let ((obj (car args)))
-    (funcall (read-from-string (format nil "push-button-~A" (symbol-string obj))))
-    :success))
-
-(defun sweep (&rest args)
-  (let ((obj (car args)))
-    (funcall (read-from-string (format nil "sweep-~A" (symbol-string obj))))
-    :success))
-
-(defun sweep-under (&rest args)
-  (let ((obj (car args)))
-    (funcall (read-from-string (format nil "sweep-under-~A" (symbol-string obj))))
-    :success))
-
-(defun pull-chair (&rest args)
-  (pull-chair-table)
-  :success)
-
-(defun push-chair (&rest args)
-  (move-back-chair)
-  :success)
