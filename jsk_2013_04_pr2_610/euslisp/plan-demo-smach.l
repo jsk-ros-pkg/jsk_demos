@@ -1,7 +1,4 @@
 ;;
-;;(load "package://jsk_2013_04_pr2_610/euslisp/plan-demo.l")
-(load "package://jsk_2013_04_pr2_610/euslisp/setup.l")
-;;(load "package://jsk_2013_04_pr2_610/euslisp/setup-for-pddl.l")
 (load "package://pddl_planner/src/eus-pddl-client.l")
 (load "package://jsk_2013_04_pr2_610/pddl/description.l")
 (load "package://jsk_2013_04_pr2_610/pddl/action.l")
