@@ -131,7 +131,7 @@
                        :effect '((open-door ?obj))))
 
 (setq *close* (instance pddl-action :init
-                       :name "close"
+                       :name "close-door"
                        :parameters '((?obj object))
                        :precondition '((at ?obj)
                                        (open-door ?obj))
