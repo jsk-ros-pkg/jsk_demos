@@ -9,7 +9,6 @@
 (load "package://roseus_smach/src/pddl2smach.l")
 (load "package://roseus_smach/src/state-machine-ros.l")
 
-
 (defun plan-to-graph (goal-condition &optional debug)
   (let ((problem (copy-object *problem*)))
     (send problem :goal-condition goal-condition)
@@ -63,3 +62,59 @@
 
   *sm-insp*
   )
+
+(defun move-to (&rest args)
+  (let ((pl (car args)))
+    (funcall (read-from-string (format nil "move-to-~A" (symbol-string pl))))
+    :success))
+
+(defun pick (&rest args)
+  (let ((obj (car args))
+        (pl (cadr args)))
+    (funcall (read-from-string (format nil "pick-~A-~A" (symbol-string obj) (symbol-string pl))))
+    :success))
+
+(defun place (&rest args)
+  (let ((obj (car args))
+        (pl (cadr args)))
+    (funcall (read-from-string (format nil "place-~A-~A" (symbol-string obj) (symbol-string pl))))
+    :success))
+
+(defun put (&rest args)
+  (let ((obj (car args))
+        (pl (cadr  args)))
+    (funcall (read-from-string (format nil "put-~A-~A" (symbol-string obj) (symbol-string pl))))
+    :success))
+
+(defun open-door (&rest args)
+  (let ((obj (car args)))
+    (funcall (read-from-string (format nil "open-~A" (symbol-string obj))))
+    :success))
+
+(defun close-door (&rest args)
+  (let ((obj (car args)))
+    (funcall (read-from-string (format nil "close-~A" (symbol-string obj))))
+    :success))
+
+(defun push-button (&rest args)
+  (let ((obj (car args)))
+    (funcall (read-from-string (format nil "push-button-~A" (symbol-string obj))))
+    :success))
+
+(defun sweep (&rest args)
+  (let ((obj (car args)))
+    (funcall (read-from-string (format nil "sweep-~A" (symbol-string obj))))
+    :success))
+
+(defun sweep-under (&rest args)
+  (let ((obj (car args)))
+    (funcall (read-from-string (format nil "sweep-under-~A" (symbol-string obj))))
+    :success))
+
+(defun pull-chair (&rest args)
+  (pull-chair-table)
+  :success)
+
+(defun push-chair (&rest args)
+  (move-back-chair)
+  :success)
