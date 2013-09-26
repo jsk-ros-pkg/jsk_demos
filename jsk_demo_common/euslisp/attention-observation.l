@@ -338,7 +338,7 @@
     nil
     ))
 
-(make-atteion-action move-recoverly (&rest args)
+(make-attention-action move-recoverly (&rest args)
   (send *ri* :ros-wait 0.0 :spin-self t :spin t) ;; attention-check ...
   (send *ri* :go-pos -0.25 -0.10 0)
   ;;(send *ri* :go-pos-unsafe -0.25 -0.10 0)
@@ -346,19 +346,19 @@
   t
   )
 
-(make-atteion-action open-door (&rest args)
+(make-attention-action open-door (&rest args)
   (open-fridge-door :torso-lift 25 :head-pitch 14)
   )
 
-(make-atteion-action grasp-can (&rest args)
+(make-attention-action grasp-can (&rest args)
   (grasp-can :move nil)
   )
 
-(make-atteion-action close-door (&rest args)
+(make-attention-action close-door (&rest args)
   (close-fridge)
   )
 
-(make-atteion-action try-close (&rest args)
+(make-attention-action try-close (&rest args)
   (close-fridge)
   )
 
