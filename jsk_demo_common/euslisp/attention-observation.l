@@ -135,6 +135,56 @@
        ))
     ))
 
+(defun do-command-sequence-with-recover
+  (seq &rest args)
+  (let ((ptr 0) com com-recover abr)
+    (while (< ptr (length seq))
+
+      ;; try command
+      (setq abr
+            (catch :attention-barrier
+              (setq com (car (elt seq ptr))
+                    com-recover (cdr (elt seq ptr)))
+              (let (ret)
+                (setq ret (apply com args))
+                (unless ret (throw :attention-barrier :fail))
+                :success
+                )))
+
+      ;; parse cancel flag
+      (cond
+       ((stringp abr)
+        (let ((str (send *ri* :get-cancel-flag)))
+          (send *ri* :clear-cancel-flag)
+          (setq abr (intern (string-upcase abr) *keyword-package*))
+          ))
+       ((null abr)
+        (warn "abr = nil~%");;
+        (setq abr :fail)) ;; just fail action
+       ((eq t abr) ;; normal cancel
+        (setq abr :fail))
+       )
+
+      ;;
+      (case abr
+        ((:retry :fail :tablet)
+         (when com-recover
+           (apply com-recover args))
+         ;;
+         )
+        (:retry-plus
+         (when com-recover
+           (apply com-recover args))
+         (decf ptr 1)
+         (if (< ptr 0) (setq ptr 0)))
+        (:retry-all
+         (when com-recover
+           (apply com-recover args))
+         (setq ptr 0))
+        (t (incf ptr)) ;; do-next-command
+       ))
+    ))
+
 (defun wait-android-query ()
   (ros::ros-info "Begin Waiting")
   (let (type from (cntr 0))
