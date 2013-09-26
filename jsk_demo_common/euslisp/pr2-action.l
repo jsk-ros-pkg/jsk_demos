@@ -190,7 +190,7 @@
           via2 "/base_footprint" "/objecta_pose_frame_via2")
 
     ;; move to via1
-    (send *pr2* :rarm :inverse-kinematics via1 :rotation-axis t :use-torso t)
+    (send *pr2* :rarm :inverse-kinematics via1 :rotation-axis t)
     (send *tfb* :send-transform
           (send *pr2* :rarm :end-coords)  "/base_footprint" "/objecta_pose_end_coords")
 
@@ -215,7 +215,7 @@
       ))
 
     ;; move to via2 (grasping pose)
-    (send *pr2* :rarm :inverse-kinematics via2 :rotation-axis t :use-torso t)
+    (send *pr2* :rarm :inverse-kinematics via2 :rotation-axis t)
     ;; check IK
     #|(cond
     ((send *plan-env* :get-ik-for-pose (send *plan-env* :get-robot-coords :rarm) :rarm)
@@ -237,7 +237,7 @@
     (send *ri* :start-grasp :rarm)
 
     ;; move to via1
-    (send *pr2* :rarm :inverse-kinematics via1 :rotation-axis t :use-torso t)
+    (send *pr2* :rarm :inverse-kinematics via1 :rotation-axis t)
     ;; check IK
     (send *ri* :ros-wait 0.0 :spin-self t) ;; attention-check ...
     (cond

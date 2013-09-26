@@ -87,7 +87,7 @@
       (send-all via :transform *pr2* :parent)
       (setq avs (list 
 		 (mapcar #'(lambda(co)(send *pr2* arm :inverse-kinematics
-			       co :use-torso t :revert-if-fail nil)
+			       co :revert-if-fail nil)
 			     (send *pr2* :angle-vector)) via)
 		 (make-list (length via) :initial-element 2000.0)))
       (cond ((every #'identity (car avs)) ;; ik all success ??
