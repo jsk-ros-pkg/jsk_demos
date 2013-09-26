@@ -503,8 +503,8 @@
 (warn ";; define grasp-can")
 (defun grasp-can (&key (move t) (rotation))
   ;; move-to spot for grasping
-  (send *ri* :ros-wait 0.0 :spin-self t :spin t) ;; attention-check ...
   (when move
+    (send *ri* :ros-wait 0.0 :spin-self t :spin t) ;; attention-check ...
     (ros::ros-info "GO POS UNSAFE for grasping can")
     (send *ri* :go-pos-unsafe 0 0 (rad2deg 0.38))
     (send *ri* :go-pos-unsafe 0.185 -0.25 0) ;; 
