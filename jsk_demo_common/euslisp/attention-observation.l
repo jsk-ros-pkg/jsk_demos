@@ -96,7 +96,8 @@
   (setf (symbol-function 'pr2-init-org) (symbol-function 'pr2-init)))
 
 (defun pr2-init (&rest args)
-  (setq *ri* (setq *ri* (instance pr2-attention-interface :init)))
+  (unless (boundp '*ri*)
+    (setq *ri* (instance pr2-attention-interface :init)))
   (apply #'pr2-init-org args)
   )
 
@@ -114,7 +115,6 @@
       (cond
        ((stringp abr)
         (let ((str (send *ri* :get-cancel-flag)))
-          (send *ri* :clear-cancel-flag)
           (setq abr (intern (string-upcase abr) *keyword-package*))
           ))
        ((null abr)
@@ -123,6 +123,7 @@
        ((eq t abr) ;; normal cancel
         (setq abr :fail))
        )
+      (send *ri* :clear-cancel-flag)
       (case abr
         ((:retry :fail :tablet) )
         (:retry-plus
@@ -174,3 +175,65 @@
      (ros::sleep))
     (ros::unsubscribe "/Tablet/StartDemo")
     ))
+
+;;
+;; using smach
+;;
+(defun loop-check (node-list) nil)
+
+(defun exec-smach-with-interrupt (sm-inspector &key mydata (hz 1))
+  (let (ret state-history)
+    (send sm-inspector :reset-state :user-data mydata) ;; set start-state
+    (unix::sleep 0.5)
+    (send sm-inspector :publish-structure) ;; publish once and latch
+    (send sm-inspector :publish-status mydata)
+    (unix::sleep 0.5)
+
+    ;;
+    (if (boundp '*ri*) (send *ri* :ros-wait 0.0 :spin t :spin-self t))
+
+    (setq ret
+          (catch :all-barrier
+            (push (send sm-inspector :state-machine :active-state) state-history)
+            (while (not (send sm-inspector :state-machine :goal-reached))
+              (if (boundp '*ri*) (send *ri* :ros-wait 0.0 :spin t :spin-self t))
+              (send sm-inspector :publish-status mydata)
+              (send sm-inspector :state-machine :execute mydata :step -1)
+              (push (send sm-inspector :state-machine :active-state) state-history)
+              ;; loop check
+              (when (loop-check state-history)
+                (throw :all-barrier :loop))
+              )
+            :finish
+            ))
+    state-history
+    ))
+
+;;; debug functions
+(defun defun-debug-functions-interrupt
+  (agraph &key (sleep 0.5) (return-success-value :success) (return-fail-value :fail))
+  (let (func-sym)
+    (dolist (arc (flatten (send-all (send agraph :nodes) :arc-list)))
+      (when arc
+        (let ((sym (car (read-from-string (send arc :name)))))
+          (push sym func-sym))))
+    (setq func-sym (remove-duplicates func-sym))
+    (dolist (fs func-sym)
+      (eval `(defun ,fs (&rest args)
+               (pprint (list ,(intern (symbol-string fs) *keyword-package*) args))
+               (let ((ret
+                      (catch :attention-barrier
+                        (dotimes (i 50)
+                          (unix::usleep ,(round (* (/ sleep 50.0) 1000 1000)))
+                          (if (boundp '*ri*) (send *ri* :try-check-cancel-flag)))
+                        :nothing)))
+                 (cond
+                  ((eq ret :nothing) ,return-success-value)
+                  (t (if (boundp '*ri*) (send *ri* :clear-cancel-flag))
+                     (warn ";; interrupt with ~A~%" ret)
+                     ;; (if return-all (throw :motion-barrier ret))
+                     ,return-fail-value))))
+            ))
+    ))
+
+;;(defmacro attention-action-template ())
