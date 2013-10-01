@@ -450,7 +450,7 @@
        ;; free door handle
        (let ((rend (send *pr2* :rarm :end-coords :copy-worldcoords))
              av1 av2)
-         (send rend :translate (float-vector -20 -60 0) *pr2*)
+         (send rend :translate (float-vector 30 -60 0) *pr2*)
          (send *pr2* :rarm :inverse-kinematics rend)
          (setq av1 (send *pr2* :angle-vector))
          (send rend :rotate pi/2 :x *pr2*)
