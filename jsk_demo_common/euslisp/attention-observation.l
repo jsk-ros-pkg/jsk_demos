@@ -1,4 +1,7 @@
+(load "package://jsk_2011_07_pr2_semantic/euslisp/actions.l")
 (require :pr2-interface "package://pr2eus/pr2-interface.l")
+(require :pr2-move "package://jsk_demo_common/euslisp/pr2-move.l")
+(require :pr2-action "package://jsk_demo_common/euslisp/pr2-action.l")
 
 (defvar *attention-flag* "/attention_observation/flag")
 (defvar *attention-id* "/attention_observation/id")
@@ -101,52 +104,12 @@
   (apply #'pr2-init-org args)
   )
 
-(defun wait-android-query ()
-  (ros::ros-info "Begin Waiting")
-  (let (type from (cntr 0))
-    (ros::subscribe "/Tablet/StartDemo" roseus::StringStamped
-                    #'(lambda(m)
-                        ;;(print (list :subscribe (send m :data)))
-                        (cond
-                         ((string= (send m :data)
-                                   "/Tablet/other/GetGeorgia")
-                          (setq from :tablet)
-                          (setq type "georgia"))
-                         ((string= (send m :data)
-                                   "/Tablet/other/DoNothing")
-                          (setq from :tablet)
-                          (setq type "nothing"))
-                         (t ))))
-    (ros::rate 100)
-    (do-until-key
-     (incf cntr)
-     (when (> cntr 200)
-       (ros::ros-info " Waiting ....")
-       (setq cntr 0))
-     (ros::spin-once)
-     (send *ri* :spin-once)
-     (when type
-       (case from
-         (:tablet
-          (cond
-           ((string= type "nothing")
-            (ros::ros-info "Cancel all motion")
-            (send *ri* :cancel-all-motion "tablet")
-            )
-           (t )
-           )
-          ))
-       (setq type nil from nil)
-       )
-     (ros::sleep))
-    (ros::unsubscribe "/Tablet/StartDemo")
-    ))
-
 ;;
 ;; using smach
 ;;
 (defun loop-check (node-lst &key (continuous-same-node 3)
-                             (same-route 2))
+                             (same-route 2) (same-route-length 4)
+                             (loop-limit 3) (loop-length 3))
   (let ((cur (car node-lst))
         (lst (cdr node-lst)))
     ;; continuous same node
@@ -154,10 +117,11 @@
       (while (and (eq cur (pop lst)) lst)
         (incf cntr))
       (if (>= cntr (1- continuous-same-node))
-          (return-from loop-check cur)))
+          (return-from loop-check (list :continuous cur))
+        ))
     ;; same route
     (let ((cntr 0)
-          (ln 2))
+          (ln same-route-length))
       (while (<= ln (/ (length node-lst) 2))
         (let ((seq (subseq node-lst 0 ln))
               (lstseq (subseq node-lst ln)))
@@ -166,15 +130,33 @@
                        (subseq lstseq i (+ ln i)))
                 (incf cntr)))
           (if (>= cntr (1- same-route))
-              (return-from loop-check seq))
+              (return-from loop-check (list :same-route seq)))
           (incf ln)
           ))
       )
+    ;; loop
+    (let ((cntr 0)
+          (ln loop-length))
+      (while (<= ln (/ (length node-lst) 2))
+        (dotimes (i (- (length node-lst) ln 1))
+          (let ((seq (subseq node-lst i (+ ln i))))
+            (when (eq (car seq)
+                      (car (last seq))) ;; loop / fiest one = last one
+              (incf cntr))
+            (if (>= cntr (1- loop-limit))
+                (return-from loop-check (list :loop seq)))
+            ))
+        (incf ln)
+        ))
+    nil
     ))
 
-(defun exec-smach-with-interrupt (sm-inspector &key mydata (hz 1))
+(defun exec-smach-with-interrupt (sm-inspector &key state mydata (hz 1))
   (let (ret state-history)
-    (send sm-inspector :reset-state :user-data mydata) ;; set start-state
+    (if state
+        (send sm-inspector :reset-state :on-state state :user-data mydata) ;; set start-state
+      (send sm-inspector :reset-state :user-data mydata) ;; set start-state
+      )
     (unix::usleep (* 500 1000))
     (send sm-inspector :publish-structure) ;; publish once and latch
     (send sm-inspector :publish-status mydata)
@@ -299,33 +281,33 @@
         (src (car (last (butlast args)))))
     (pprint (list :move-to src dst))
     (cond
-     ((and (eq src start)
-           (eq dst frontfridge))
+     ((and (eq src 'start)
+           (eq dst 'frontfridge))
       (case *demo-type*
         (:map (goto-front-of-fridge))
         (t
          ;; do nothing
          t))
       )
-     ((and (eq src frontfridge)
-           (eq dst pregrasp))
+     ((and (eq src 'frontfridge)
+           (eq dst 'pregrasp))
       (send *ri* :ros-wait 0.0 :spin-self t :spin t) ;; attention-check ...
       (ros::ros-info "GO POS UNSAFE for grasping can")
       (send *ri* :go-pos-unsafe 0 0 (rad2deg 0.38))
       (send *ri* :go-pos-unsafe 0.185 -0.25 0) ;;
       (send *ri* :wait-interpolation)
       )
-     ((and (eq src pregrasp)
-           (eq dst preclose))
+     ((and (eq src 'pregrasp)
+           (eq dst 'preclose))
       (send *ri* :ros-wait 0.0 :spin-self t :spin t) ;; attention-check ...
       (ros::ros-info "GO POS UNSAFE for grasping can")
       (send *ri* :go-pos-unsafe -0.3 0.05 -20)
       (send *ri* :wait-interpolation)
       )
-     ((or (and (eq src preclose)
-               (eq dst start))
-          (and (eq src frontfridge)
-               (eq dst start)))
+     ((or (and (eq src 'preclose)
+               (eq dst 'start))
+          (and (eq src 'frontfridge)
+               (eq dst 'start)))
       (case *demo-type*
         (:map
          (goto-initial-position :finish-type *finish-type*))
@@ -335,13 +317,12 @@
           :finish-type *finish-type*)))
       )
      ) ;; /cond
-    nil
     ))
 
 (make-attention-action move-recoverly (&rest args)
   (send *ri* :ros-wait 0.0 :spin-self t :spin t) ;; attention-check ...
-  (send *ri* :go-pos -0.25 -0.10 0)
-  ;;(send *ri* :go-pos-unsafe -0.25 -0.10 0)
+  ;;(send *ri* :go-pos -0.25 -0.10 0)
+  (send *ri* :go-pos-unsafe -0.25 -0.10 0)
   (send *ri* :wait-interpolation)
   t
   )
@@ -350,7 +331,7 @@
   (open-fridge-door :torso-lift 25 :head-pitch 14)
   )
 
-(make-attention-action grasp-can (&rest args)
+(make-attention-action grasp-object (&rest args)
   (grasp-can :move nil)
   )
 
@@ -361,6 +342,18 @@
 (make-attention-action try-close (&rest args)
   (close-fridge)
   )
+
+#|
+;; initialize demo
+(send *sm-inspect* :reset-state)
+(initialize-demo "georgia")
+
+;; do demo
+(setq sequence (exec-smach-with-interrupt *sm-inspect*))
+
+;; retry
+(exec-smach-with-interrupt *sm-inspect* :state (car sequence))
+|#
 
 #|
 (defun do-command-sequence (seq &rest args)
