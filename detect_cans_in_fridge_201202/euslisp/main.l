@@ -78,10 +78,7 @@
   t
   )
 
-(defun demo (&key (type "georgia")
-                  (demo-type :map)  ;; :map, :short, ...
-                  (finish-type :pass-to-human) ;; :pass-to-human, :put-on-turtlebot, ...
-                  )
+(defun initialize-demo (type)
   (setq *type* type)
   (if (and (boundp '*use-voicetext*) *use-voicetext*)
       (cond
@@ -92,6 +89,13 @@
   (pr2-tuckarm-pose :rarm)
 
   (setq *opose* (send *ri* :state :worldcoords))
+  )
+
+(defun demo (&key (type "georgia")
+                  (demo-type :map)  ;; :map, :short, ...
+                  (finish-type :pass-to-human) ;; :pass-to-human, :put-on-turtlebot, ...
+                  )
+  (initialize-demo type)
 
   (case demo-type
     (:map
@@ -104,8 +108,12 @@
   (unless (open-fridge-door :torso-lift 25 :head-pitch 14)
     (return-from demo))
 
+  ;; move
+
   (unless (grasp-can)
     (return-from demo))
+
+  ;; move
 
   (unless (close-fridge)
     (return-from demo))
