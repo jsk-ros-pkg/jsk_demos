@@ -150,6 +150,9 @@
      `(:rot #2f((-1.0 0.0 0.0) (0.0 -1.0 0.0) (0.0 0.0 1.0))
 	    :pos ,(float-vector 1300 8900 0.0)
 	    :name "/eng2/7f/room73B2-kitchen-drawer")
+     `(:rot #2f((-1.0 0.0 0.0) (0.0 -1.0 0.0) (0.0 0.0 1.0))
+	    :pos ,(float-vector 1150 5800 0.0)
+	    :name "/eng2/7f/room73B2-trashbox-front")
 
      ;; `(:rot #2f((0.997494 -0.070743 0.000947) (0.070733 0.997466 0.007593) (-0.001482 -0.007507 0.999971)) :pos ,(float-vector 4432.37 8054.5 52.2822)
      ;; 	    :name "/eng2/7f/room73B2-fridge-front")
