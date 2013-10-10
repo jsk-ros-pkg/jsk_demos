@@ -166,7 +166,7 @@
 			:name "/eng2/7f/room73B2-fridge-front")
 	 `(:rot ,(rpy-matrix 1.563 0.003 0.003)
 			:pos ,(float-vector 3228.967 7292.739 51.6065)
-			:name "/eng2/7f/room73B2-table-side")
+			:name "/eng2/7f/room73B2-table-side1")
 	 `(:rot ,(rpy-matrix pi 0 0)
 			:pos ,(float-vector 4035.736 8466.901 51.6065)
 			:name "/eng2/7f/room73B2-table-front1")
