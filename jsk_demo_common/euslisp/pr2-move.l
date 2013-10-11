@@ -14,8 +14,10 @@
 
   (cond
    (angle-vector
+    (send *pr2* :angle-vector angle-vector)
     (send *ri* :angle-vector (send *pr2* :angle-vector) time))
    (trajectory
+    (send *pr2* :angle-vector (car (last (car trajectory))))
     (send *ri* :angle-vector-sequence
           (car trajectory) (cdr trajectory))
     ))

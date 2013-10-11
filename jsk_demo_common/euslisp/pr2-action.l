@@ -621,3 +621,84 @@
   (send *ri* :move-gripper :rarm 0.005 :wait t)
   (pr2-tuckarm-pose :rarm)
   )
+
+(defun place-tray (&key (table-height 850.0)
+                        (up-height-tolerance 150.0)
+                        (down-height-tolerance -20.0)
+                        (go-forward 0)
+                        (forward-dist 450.0))
+    ;;
+    ;; place_tray function
+    ;;
+    ;; Before this function is called, the robot is assumed to have the tray gripped in both grippers
+    ;; and the tray is posiitoned directly above the table.
+    ;;
+  (let (arm-mid-pos
+        arm-mid-pos-pr2)
+
+    ;; get current gripper pose
+    (send *pr2* :torso :waist-z :joint-angle 250)
+    (send *ri* :angle-vector (send *pr2* :angle-vector) 4000)
+    (send *ri* :wait-interpolation)
+
+    (setq arm-mid-pos
+          (apply #'midpoint 0.5 (send *pr2* :arms :end-coords :worldpos)))
+
+    (setq arm-mid-pos-pr2 (send (send *pr2* :worldcoords) :inverse-transform-vector
+                                (apply #'midpoint 0.5 (send *pr2* :arms :end-coords :worldpos))))
+    ;;raise tray
+    (let ((av-seq nil))
+      (send *pr2* :arms :move-end-pos
+            (float-vector 0 0 (- (+ table-height height-tolerance) (elt arm-mid-pos 2))) :world)
+      (push (send *pr2* :angle-vector) av-seq)
+
+      (if (boundp '*irtviewer*) (send *irtviewer* :draw-objects))
+      ;; put forward a tray
+      (send *pr2* :arms :move-end-pos
+            (send *pr2* :rotate-vector (float-vector (- forward-dist (elt arm-mid-pos-pr2 0)) 0 0)) :world)
+      (push (send *pr2* :angle-vector) av-seq)
+      (if (boundp '*irtviewer*) (send *irtviewer* :draw-objects))
+
+      (setq av-seq (reverse av-seq))
+      (send *ri* :angle-vector-sequence av-seq (list 2000 2000))
+      (send *ri* :wait-interpolation)
+      )
+
+    ;; for navigation
+    (when (> go-forward 10)
+      (speak-jp "まえにすすみます")
+      (send *pr2* :translate (float-vector go-forward 0 0))
+      (send *ri* :go-pos-unsafe (/ go-forward 1000.0) 0)
+      )
+
+    ;; put down a tray
+    (send *pr2* :arms :move-end-pos
+          (float-vector 0 0 (- (- table-height down-height-tolerance) (elt arm-mid-pos 2))) :world)
+    (send *ri* :angle-vector (send *pr2* :angle-vector) 2000)
+    (send *ri* :wait-interpolation)
+
+    ;; open grippers
+    (send *ri* :stop-grasp :arms :wait t)
+    ;; (send *pr2* :larm :end-coords :dissoc *tray*) ;; ???
+
+    ;; move arms apart
+    (send *pr2* :arms :move-end-pos (float-vector 0 0 100) :world)
+    (send *pr2* :arms :move-end-pos (float-vector 0 0 100) :world)
+    (if (boundp '*irtviewer*) (send *irtviewer* :draw-objects))
+    (send *ri* :angle-vector (send *pr2* :angle-vector) 2000)
+    (send *ri* :wait-interpolation)
+
+    ;; for navigation
+    (when (> go-forward 10)
+      (speak-jp "うしろにさがります")
+      (send *pr2* :translate (float-vector (- go-forward) 0 0))
+      (send *ri* :go-pos-unsafe (/ go-forward -1000.0) 0)
+      )
+
+    ;; revert torso link
+    (send *pr2* :torso :waist-z :joint-angle 50)
+    (send *ri* :angle-vector (send *pr2* :angle-vector) 5000)
+    ;;dont wait interpolation
+    (pr2-reset-pose)
+    t
+    ))
