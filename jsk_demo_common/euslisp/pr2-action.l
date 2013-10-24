@@ -622,9 +622,41 @@
   (pr2-tuckarm-pose :rarm)
   )
 
+
+(defun distance-of-front-cb (msg)
+  (let* ((pc (send msg :ranges))
+		 (about-front (remove-if #'zerop 
+								 (subseq pc (- (/ (length pc) 2) 10) (+ (/ (length pc) 2) 10)))))
+	(push (/ (reduce #'+ about-front) (length about-front))
+		  *averages*)
+	))
+
+(defun distance-of-front ()
+  (ros::roseus "place_tray_base_scan_calc")
+  (ros::roseus-add-msgs "sensor_msgs")
+  (ros::roseus-add-msgs "posedetection_msgs")
+  (ros::roseus-add-msgs "geometry_msgs")
+  (defvar *base-scan-id* "/base_scan")
+  (defparameter *averages* nil)
+
+  (ros::subscribe *base-scan-id*
+				  sensor_msgs::LaserScan
+				  #'distance-of-front-cb)
+
+  (ros::rate 50)
+  (when (ros::ok)
+	(dotimes (i 30)
+	  (ros::spin-once)
+	  (ros::sleep)
+	  ))
+  (ros::unsubscribe *base-scan-id*)
+  (/ (reduce #'+ *averages*) (length *averages*))
+  )
+
 (defun place-tray (&key (table-height 850.0)
                         (up-height-tolerance 150.0)
                         (down-height-tolerance -20.0)
+				        (use-base-scan t)
                         (go-forward 0)
                         (forward-dist 450.0))
     ;;
@@ -665,6 +697,9 @@
       )
 
     ;; for navigation
+	(when use-base-scan
+	  (setq go-forward (* (- (distance-of-front) 0.1) 1000))
+	  (if (> 0.1 go-forward) (setq go-forward 0)))
     (when (> go-forward 10)
       (speak-jp "まえにすすみます")
       (send *pr2* :translate (float-vector go-forward 0 0))
@@ -808,3 +843,46 @@
     ;; Go back 50cm
     (send *ri* :go-pos-unsafe -0.4 0 90)
     t))
+
+(defparameter *detection-loop-threshold* 0)
+(defun detect-with-base-laser (obj obj-type &key (arg nil) (debug nil) (speak nil) (publish-marker nil))
+  (ros::ros-info "detect-with-base-laser~%")
+  (unless (send *ri* :joint-action-enable)
+	(if obj (ros::ros-warn "~A detection failed" obj))
+    (return-from detect-with-base-laser nil)
+    )
+  (let ((loop-flag t) (loop-counter 0) (obj-coords nil) (ret))
+    (ros::roseus "objectdetection_publisher")
+    (defparameter *detection-topic* "/narrow_stereo/left/ObjectDetection")
+    (ros::rate 10)
+    (ros::ros-info "detecting_now")
+    (while loop-flag
+      (setq ret (check-detection :type obj-type ;; work for any object
+                                 :speak-name (if speak speak "")
+                                 :target-object obj
+                                 :publish-objectdetection-marker publish-marker
+                                 :speak speak))
+      (ros::spin-once)
+      (if ret
+          (progn
+            (ros::ros-info "object pos info ~A before trans" obj)
+            (send obj :translate (send *pr2* :worldpos) :world)
+            (ros::ros-info "object pos info ~A after trans" obj)
+            (send *pr2* :head :look-at
+				  (if spot
+					  (send (send obj spot) :worldpos)
+					  (send obj :worldpos)))
+            (send *ri* :angle-vector (send *pr2* :angle-vector))
+            (push (send obj :worldcoords) obj-coords)
+            ))
+
+      ;;wait a few loop
+      (when (> loop-counter *detection-loop-threshold*)
+        (setq loop-flag nil)	;;temp method
+        )
+      (inc loop-counter)
+      (ros::ros-info "~d loop counter ----" loop-counter)
+      (ros::sleep)
+      )
+    )
+  )
