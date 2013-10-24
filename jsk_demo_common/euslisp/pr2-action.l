@@ -13,6 +13,112 @@
 ;;
 ;; action-utility
 ;;
+
+
+(defparameter *detection-loop-threshold* 0)
+(warn ";; define detect-with-base-laser")
+(defun detect-with-base-laser (obj obj-type &key (arg nil) (debug nil) (speak nil) (publish-marker nil))
+  (ros::ros-info "detect-with-base-laser~%")
+  (unless (send *ri* :joint-action-enable)
+	(if obj (ros::ros-warn "~A detection failed" obj))
+    (return-from detect-with-base-laser nil)
+    )
+  (let ((loop-flag t) (loop-counter 0) (obj-coords nil) (ret))
+    (ros::roseus "objectdetection_publisher")
+    (defparameter *detection-topic* "/narrow_stereo/left/ObjectDetection")
+    (ros::rate 10)
+    (ros::ros-info "detecting_now")
+    (while loop-flag
+      (setq ret (check-detection :type obj-type ;; work for any object
+                                 :speak-name (if speak speak "")
+                                 :target-object obj
+                                 :publish-objectdetection-marker publish-marker
+                                 :speak speak))
+      (ros::spin-once)
+      (if ret
+          (progn
+            (ros::ros-info "object pos info ~A before trans" obj)
+            (send obj :translate (send *pr2* :worldpos) :world)
+            (ros::ros-info "object pos info ~A after trans" obj)
+            (send *pr2* :head :look-at
+				  (if spot
+					  (send (send obj spot) :worldpos)
+					  (send obj :worldpos)))
+            (send *ri* :angle-vector (send *pr2* :angle-vector))
+            (push (send obj :worldcoords) obj-coords)
+            ))
+
+      ;;wait a few loop
+      (when (> loop-counter *detection-loop-threshold*)
+        (setq loop-flag nil)	;;temp method
+        )
+      (inc loop-counter)
+      (ros::ros-info "~d loop counter ----" loop-counter)
+      (ros::sleep)
+      )
+    )
+  )
+
+(warn ";; define hold-chair")
+(defun hold-chair (chair)
+  (hold-chair-prepair chair)
+  (send *pr2* :inverse-kinematics (send (send *pr2* :larm :end-coords :copy-worldcoords) :translate #f(-300 0 0) *pr2*) :move-arm :larm :use-torso nil :rotation-axis :y)
+  (send *pr2* :inverse-kinematics (send (send *pr2* :rarm :end-coords :copy-worldcoords) :translate #f(-300 0 0) *pr2*) :move-arm :rarm :use-torso nil :rotation-axis :y)
+  (send *ri* :angle-vector (send *pr2* :angle-vector))
+  (send *ri* :wait-interpolation)
+  (send *pr2* :rarm :angle-vector #f(-14.3227 16.0059 -85.3758 -102.121 -35.757 -32.3901 -173.201))
+  (send *pr2* :larm :angle-vector #f(8.64394 19.7097 109.218 -85.0018 43.0966 -7.98218 163.739))
+  (send *ri* :angle-vector (send *pr2* :angle-vector))
+  (send *ri* :wait-interpolation))
+
+(defun hold-chair-prepair (chair)
+  (send *pr2* :larm :angle-vector #f(25 0 0 -130 0 0 0))
+  (send *pr2* :rarm :angle-vector #f(-25 0 0 -130 0 0 0))
+  (send *ri* :angle-vector (send *pr2* :angle-vector))
+  (send *ri* :wait-interpolation)
+  (send *pr2* :reset-pose)
+  (send *pr2* :head :look-at (vector-mean (send-all (send chair :handle) :worldpos)) :world)
+  (send-message *pr2* euscollada-robot
+				:inverse-kinematics (send (send (send (send chair :handle-larm) :copy-worldcoords) :rotate -pi/2 :x) :translate #f(30 100 200))
+				:rthre (deg2rad 5)
+				:thre 10
+				:stop 300
+				:weight #f(0 1 1 1 1 1 1 0)
+				:link-list (send *pr2* :link-list (send (send *pr2* :larm :end-coords) :parent))
+				:move-target (send *pr2* :larm :end-coords)
+				:rotation-axis :y)
+  (send-message *pr2* euscollada-robot
+				:inverse-kinematics (send (send (send (send chair :handle-rarm) :copy-worldcoords) :rotate pi/2 :x) :translate #f(30 -100 200))
+				:rthre (deg2rad 5)
+				:thre 10
+				:stop 300
+				:weight #f(0 1 1 1 1 1 1 0)
+				:link-list (send *pr2* :link-list (send (send *pr2* :rarm :end-coords) :parent))
+				:move-target (send *pr2* :rarm :end-coords)
+				:rotation-axis :y)
+  (send *ri* :angle-vector (send *pr2* :angle-vector))
+  (send *ri* :wait-interpolation)
+  (send-message *pr2* euscollada-robot
+				:inverse-kinematics (send (send (send (send chair :handle-larm) :copy-worldcoords) :rotate -pi/2 :x) :translate #f(30 100 -120))
+				:rthre (deg2rad 5)
+				:thre 10
+				:stop 300
+				:weight #f(0 1 1 1 1 1 1 0)
+				:link-list (send *pr2* :link-list (send (send *pr2* :larm :end-coords) :parent))
+				:move-target (send *pr2* :larm :end-coords)
+				:rotation-axis :y)
+  (send-message *pr2* euscollada-robot
+				:inverse-kinematics (send (send (send (send chair :handle-rarm) :copy-worldcoords) :rotate pi/2 :x) :translate #f(30 -100 -120))
+				:rthre (deg2rad 5)
+				:thre 10
+				:stop 300
+				:weight #f(0 1 1 1 1 1 1 0)
+				:link-list (send *pr2* :link-list (send (send *pr2* :rarm :end-coords) :parent))
+				:move-target (send *pr2* :rarm :end-coords)
+				:rotation-axis :y)
+  (send *ri* :angle-vector (send *pr2* :angle-vector))
+  (send *ri* :wait-interpolation))
+
 (defun open-fridge-traj (hand handle &optional (rad/length pi/2) &rest args
                          &key (radius 500) (path-div 20) (door-type :circle) &allow-other-keys)
   (let ((cds-traj
@@ -48,6 +154,7 @@
     ;; move-trajectory (subseq ret 2)
     ;; finalize
     *ret*))
+
 (defun open-fridge-circle-traj
   (handle &optional (rad pi/2)
           &key (radius 500) (path-div 20) (pre-start-x -100) (start-x 25))
@@ -73,6 +180,7 @@
     ;; move-trajectory (subseq ret 2)
     ;; finalize
     *ret*))
+
 (defun move-fridge-traj (hand cds-traj
                               &key ((:rotation-axis ra) :z) (use-torso 0.0025)
                               (fix-waist-z 150) (return-sequence) (time-tick 300) (wait-time 4)
@@ -653,6 +761,7 @@
   (/ (reduce #'+ *averages*) (length *averages*))
   )
 
+(warn ";; define place-tray")
 (defun place-tray (&key (table-height 850.0)
                         (up-height-tolerance 150.0)
                         (down-height-tolerance -20.0)
@@ -738,7 +847,8 @@
     t
     ))
 
-(defun pick-tray (&key (target *tray*) (manip-pose t)
+(warn ";; define pick-tray")
+(defun pick-tray (&key (target *tray*) (manip-pose t))
   (let (tray-larm-handle tray-rarm-handle
         (grasp-threshold (list 3 3))
         (grasp-args)) ;; use let to define local variables
@@ -843,46 +953,3 @@
     ;; Go back 50cm
     (send *ri* :go-pos-unsafe -0.4 0 90)
     t))
-
-(defparameter *detection-loop-threshold* 0)
-(defun detect-with-base-laser (obj obj-type &key (arg nil) (debug nil) (speak nil) (publish-marker nil))
-  (ros::ros-info "detect-with-base-laser~%")
-  (unless (send *ri* :joint-action-enable)
-	(if obj (ros::ros-warn "~A detection failed" obj))
-    (return-from detect-with-base-laser nil)
-    )
-  (let ((loop-flag t) (loop-counter 0) (obj-coords nil) (ret))
-    (ros::roseus "objectdetection_publisher")
-    (defparameter *detection-topic* "/narrow_stereo/left/ObjectDetection")
-    (ros::rate 10)
-    (ros::ros-info "detecting_now")
-    (while loop-flag
-      (setq ret (check-detection :type obj-type ;; work for any object
-                                 :speak-name (if speak speak "")
-                                 :target-object obj
-                                 :publish-objectdetection-marker publish-marker
-                                 :speak speak))
-      (ros::spin-once)
-      (if ret
-          (progn
-            (ros::ros-info "object pos info ~A before trans" obj)
-            (send obj :translate (send *pr2* :worldpos) :world)
-            (ros::ros-info "object pos info ~A after trans" obj)
-            (send *pr2* :head :look-at
-				  (if spot
-					  (send (send obj spot) :worldpos)
-					  (send obj :worldpos)))
-            (send *ri* :angle-vector (send *pr2* :angle-vector))
-            (push (send obj :worldcoords) obj-coords)
-            ))
-
-      ;;wait a few loop
-      (when (> loop-counter *detection-loop-threshold*)
-        (setq loop-flag nil)	;;temp method
-        )
-      (inc loop-counter)
-      (ros::ros-info "~d loop counter ----" loop-counter)
-      (ros::sleep)
-      )
-    )
-  )
