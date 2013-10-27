@@ -6,7 +6,7 @@
 (defun move-to-spot (spot &key (scene  *scene*)
                           (angle-vector) (time 2000) (trajectory)
                           ((:clear-costmap clear-cmap) t)
-                          (with-tilt-laser-obstacle-cloud t))
+                          ((:tilt-enable with-tilt-laser-obstacle-cloud) t))
   (send *ri* :ros-wait 0.0 :spin t :spin-self t) ;; attention-check ...
 
   (unless with-tilt-laser-obstacle-cloud
