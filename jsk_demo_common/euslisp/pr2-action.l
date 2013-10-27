@@ -14,6 +14,160 @@
 ;; action-utility
 ;;
 
+(defun pick (pos &key (arm :larm)
+			 (debug-view nil))
+  (let ((tmp-pos (send pos :copy-worldcoords)))
+    (format t  "Start Pick: ~a~%" pos)
+    (send *ri* :stop-grasp arm)  ;; Stop grasp
+    (send *pr2* :inverse-kinematics 
+		  (progn
+			(send tmp-pos :rotate  (deg2rad 90) :y) ;; alignment
+			(send tmp-pos :translate #f(-25 0 0)))  ;; avoid collision
+		  :rotation-axis :x
+		  :move-target (send *pr2* arm :end-coords)
+		  :link-list (send *pr2* :link-list
+						   (send *pr2* arm :end-coords :parent)
+						   (send *pr2* :torso_lift_link))
+		  :debug-view nil)
+    (send *ri* :angle-vector (send *pr2* :angle-vector) 2000)
+    (send *ri* :wait-interpolation)
+    (unix::usleep 100000)
+
+    ;; Low down to pick 
+    (send *pr2* :torso :waist-z
+		  :joint-angle (- (send *pr2* :torso :waist-z :joint-angle) 30))
+    (send *ri* :angle-vector (send *pr2* :angle-vector) 2000)
+    (send *ri* :wait-interpolation)
+    (unix::usleep 100000)
+    (send *ri* :start-grasp arm)
+    ;;(send *ri* :move-gripper arm 0.0 :effort 100 :wait t)
+    (print "End Pick!"))
+  )
+
+(defun pick2 (pos &key (arm :rarm)
+			  (rotation-axis :z)
+			  (debug-view nil))
+  (let ((tmp-pos (send pos :copy-worldcoords)))
+    (format t  "Start Pick: ~a~%" pos)
+    (send *ri* :stop-grasp arm)  ;; Stop grasp
+    (send *pr2* arm :inverse-kinematics 
+		  tmp-pos
+		  :rotation-axis rotation-axis
+		  :debug-view nil)
+	(send *pr2* arm :move-end-pos (float-vector -100 0 0))
+    (send *ri* :angle-vector (send *pr2* :angle-vector) 2000)
+    (send *ri* :wait-interpolation)
+    (unix::usleep 100000)
+
+	(send *pr2* arm :move-end-pos (float-vector 150 0 0))
+    (send *ri* :angle-vector (send *pr2* :angle-vector) 2000)
+    (send *ri* :wait-interpolation)
+    (unix::usleep 100000)
+
+;    (send *pr2* :torso :waist-z
+;		  :joint-angle (+ (send *pr2* :torso :waist-z :joint-angle) 230))
+;    (send *ri* :angle-vector (send *pr2* :angle-vector) 2000)
+;    (send *ri* :wait-interpolation)
+;    (unix::usleep 100000)
+    (send *ri* :start-grasp arm)
+    ;;(send *ri* :move-gripper arm 0.0 :effort 100 :wait t)
+    (print "End Pick!"))
+  )
+
+(defun place2 (pos &key (arm :rarm)
+			  (rotation-axis :z)
+			  (debug-view nil))
+  (let ((tmp-pos (send pos :copy-worldcoords)))
+	(send *pr2* arm :inverse-kinematics
+		  tmp-pos
+		  :rotation-axis rotation-axis
+		  :debug-view debug-view)
+	(send *pr2* :torso :waist-z :joint-angle
+		  (+ (send *pr2* :torso :waist-z :joint-angle) 100))
+	(send *ri* :angle-vector (send *pr2* :angle-vector))
+	(send *ri* :wait-interpolation)
+	
+	(send *pr2* :torso :waist-z :joint-angle
+		  (- (send *pr2* :torso :waist-z :joint-angle) 100))
+	(send *ri* :angle-vector (send *pr2* :angle-vector))
+	(send *ri* :wait-interpolation)
+	(send *ri* :stop-grasp arm)
+	(print "End Place!"))
+  )
+
+(defun place (pos &key (arm :larm)
+			  (height -50)
+			  (debug-view nil))
+  (let ((tmp-pos (send pos :copy-worldcoords)))
+    (format t  "Start Place: ~a~%" pos)
+    (send *pr2* :inverse-kinematics 
+	  (progn 
+	    (send tmp-pos :rotate (deg2rad 90) :y)
+	    (send tmp-pos :translate (float-vector height 0.0 0.0)))
+	  :rotation-axis :x  ;; 
+	  :move-target (send *pr2* arm :end-coords)
+	  :link-list (send *pr2* :link-list
+			   (send *pr2* arm :end-coords :parent)
+			   (send *pr2* :torso_lift_link))
+	  :debug-view debug)
+    (send *ri* :angle-vector (send *pr2* :angle-vector) 2000)
+    (send *ri* :wait-interpolation)
+    (unix::usleep 100000)
+    
+    (send *pr2* :torso :waist-z
+     	  :joint-angle (- (send *pr2* :torso :waist-z :joint-angle) 30))
+    (send *ri* :angle-vector (send *pr2* :angle-vector) 2000)
+    (send *ri* :wait-interpolation)
+    (unix::usleep 100000)
+
+    (send *ri* :stop-grasp arm)
+    
+    (send *pr2* :torso :waist-z
+	  :joint-angle (- (send *pr2* :torso :waist-z :joint-angle) -50))
+    (send *ri* :angle-vector (send *pr2* :angle-vector) 2000)
+    (send *ri* :wait-interpolation)
+    (unix::usleep 100000)
+    (print "End Place!"))
+  )
+
+(defmacro start-detect-tabletop-object ()
+  `(progn
+	 (if (not (boundp '*tfb*)) (setq *tfb* (instance ros::transform-broadcaster :init)))
+	 (defun tabletop-objectdetection-cb (msg)
+	   (let ((frame-id (send msg :header :frame_id)) type ret)
+		 (print msg)
+		 (unless (eq (char frame-id 0) #\/) (setq frame-id (concatenate string "/" frame-id)))
+		 (dolist (obj-pose (send msg :objects))
+		   (setq type (send obj-pose :type))
+		   (unless (eq (char type 0) #\/) (setq type (concatenate string "/" type)))
+		   (setq ret (ros::tf-pose->coords (send obj-pose :pose)))
+		   (send *tfb* :send-transform ret frame-id type)
+		   (ros::ros-info "~A ~A ~A" ret frame-id type))
+		 ))
+	 (ros::subscribe "ObjectDetection" posedetection_msgs::ObjectDetection #'tabletop-objectdetection-cb))
+  )
+
+
+(defun stop-detect-tabletop-object ()
+  (ros::unsubscribe "ObjectDetection"))
+
+(defun detect-tabletop-object (&optional (root-frame-id "/base_footprint"))
+  (ros::spin-once)
+  (if (not (boundp '*tfl*)) (setq *tfl* (instance ros::transform-listener :init)))
+  (let (c obj-frame-id ret)
+    (dolist (obj-frame-id (list "/tabletop0"
+								"/tabletop1"
+								"/tabletop2"
+								"/tabletop3"
+								"/tabletop4"))
+      ;; advertise
+      (when (send *tfl* :get-latest-common-time root-frame-id obj-frame-id)
+		(setq c (send *tfl* :lookup-transform root-frame-id obj-frame-id (ros::time 0)))
+		(when c
+		  (ros::ros-info "~A ~A" obj-frame-id c)
+		  (push c ret))))
+	(ros::sleep)
+    ret))
 
 (defparameter *detection-loop-threshold* 0)
 (warn ";; define detect-with-base-laser")
@@ -269,7 +423,8 @@
   (let (via1 via2 tar orig-av)
     (send *ri* :stop-grasp :rarm)
     (send *tfb* :send-transform
-          obj "/base_footprint" "/objecta_pose_frame")
+		  (send (send *pr2* :worldcoords) :transformation (send obj :worldcoords))
+          "/base_footprint" "/objecta_pose_frame")
     (setq orig-av (send *ri* :state :potentio-vector))
 
     (when *use-arm-navigation*
@@ -278,7 +433,8 @@
         ;; (unix::usleep (* 400 1000))
         ))
 
-    (setq tar (send obj :copy-worldcoords))
+    (setq tar (send (send (send *pr2* :worldcoords) :transformation
+						  (send obj :worldcoords)) :copy-worldcoords))
     (send tar :orient 0 :z :world)
 
     (setq via1 (send tar :copy-worldcoords))
@@ -298,9 +454,12 @@
           via2 "/base_footprint" "/objecta_pose_frame_via2")
 
     ;; move to via1
-    (send *pr2* :rarm :inverse-kinematics via1 :rotation-axis t)
+    (send *pr2* :rarm :inverse-kinematics 
+		  (send via1 :transform (send *pr2* :worldcoords) :world)
+		  :rotation-axis t)
     (send *tfb* :send-transform
-          (send *pr2* :rarm :end-coords)  "/base_footprint" "/objecta_pose_end_coords")
+          (send (send *pr2* :worldcoords) :transformation (send *pr2* :rarm :end-coords))
+		  "/base_footprint" "/objecta_pose_end_coords")
 
     ;;(send *ri* :angle-vector (send *pr2* :angle-vector))
     ;;(send *ri* :wait-interpolation))
@@ -323,7 +482,9 @@
       ))
 
     ;; move to via2 (grasping pose)
-    (send *pr2* :rarm :inverse-kinematics via2 :rotation-axis t)
+    (send *pr2* :rarm :inverse-kinematics
+		  (send via2 :transform (send *pr2* :worldcoords) :world)
+		  :rotation-axis t)
     ;; check IK
     #|(cond
     ((send *plan-env* :get-ik-for-pose (send *plan-env* :get-robot-coords :rarm) :rarm)
@@ -345,7 +506,9 @@
     (send *ri* :start-grasp :rarm)
 
     ;; move to via1
-    (send *pr2* :rarm :inverse-kinematics via1 :rotation-axis t)
+    (send *pr2* :rarm :inverse-kinematics
+		  (send via1 :transform (send *pr2* :worldcoords) :world)
+		  :rotation-axis t)
     ;; check IK
     (send *ri* :ros-wait 0.0 :spin-self t) ;; attention-check ...
     (cond
@@ -408,6 +571,7 @@
 (defun open-fridge-door (&key (open-fridge-func #'open-fridge-traj)
                               (torso-lift 50) (head-pitch 0)
                               (door-type :circle) (look-around nil)) ;; :circle, :slide1, :slide2
+  (defparameter *detection-topic* "/openni/rgb/ObjectDetection")
   (let (ret
         (idealcds
         (case door-type
@@ -441,7 +605,9 @@
 
     (dotimes (i 10 nil)
       ;; finding handle position
-      (setq cds (check-detection :type "fridge" :speak-name *frige-speak-str*))
+      (setq cds (check-detection :type "fridge"
+								 :speak-name *frige-speak-str*))
+
       ;; need detection fail check
       (send *ri* :ros-wait 0.0 :spin-self t) ;; attention-check ...
       (when cds
@@ -468,7 +634,8 @@
                   *fridge-distance-threshold*)
                (< (abs (elt (car (rpy-angle (send diffcds :worldrot))) 0))
                   *fridge-rotation-threshold*))
-          (setq cds (check-detection :type "fridge" :speak-name *frige-speak-str*))
+          (setq cds (check-detection :type "fridge"
+									 :speak-name *frige-speak-str*))
           (send *ri* :ros-wait 0.0 :spin-self t :spin t) ;; attention-check ...
           ;; (y-or-n-p "Can I start open fridge? ")
           (when cds
@@ -497,7 +664,8 @@
               (:slide2
                (send cds :translate #f(0 -230 -675))))
             (setq *last-fridge-handle* cds)
-
+			;; pr2 local coords transform to worldcoords
+			(send cds :transform (send *pr2* :worldcoords) :world)
             (case door-type
               (:circle
                (setq ret (funcall open-fridge-func
@@ -649,6 +817,7 @@
           (unless rotation
             ;; FIXME: calc rotation from /map and /base_footprint
             (setq rotation 0))
+		  (send cds :transform (send *pr2* :worldcoords) :world)
           (grasp-can-single cds :rotation rotation)
           (setq isgrasp (< 10 (send *ri* :start-grasp :rarm)))
           (when isgrasp
@@ -790,7 +959,7 @@
     ;;raise tray
     (let ((av-seq nil))
       (send *pr2* :arms :move-end-pos
-            (float-vector 0 0 (- (+ table-height height-tolerance) (elt arm-mid-pos 2))) :world)
+            (float-vector 0 0 (- (+ table-height up-height-tolerance) (elt arm-mid-pos 2))) :world)
       (push (send *pr2* :angle-vector) av-seq)
 
       (if (boundp '*irtviewer*) (send *irtviewer* :draw-objects))
@@ -853,7 +1022,8 @@
         (grasp-threshold (list 3 3))
         (grasp-args)) ;; use let to define local variables
     (warn "pick-tray-table-side ~%")
-
+	(load "package://jsk_2013_10_pr2_73b2/euslisp/objectdetection.l")
+	(defparameter *room73b2-origin* "/eng2/7f/73B2")
     (when manip-pose
       (pr2-pick-tray-pose :reset-pose t)
       (send *pr2* :head :neck-p :joint-angle 50)
@@ -909,7 +1079,7 @@
 
     (warning-message 3 "grasp tray~%")
     ;; Grasp it
-    (setq grasp-args (send *ri* :start-grasp :arms :objects
+    (setq grasp-args (send *ri* :start-grasp :arms :gain 1 :objects
                            (list (find *tray* (send *ri* :objects)
                                        :test #'(lambda (a b) (string= (send a :name) (send b :name)))))))
     ;; stop-grasp wait until gripper motion stops
@@ -951,5 +1121,5 @@
       )
 
     ;; Go back 50cm
-    (send *ri* :go-pos-unsafe -0.4 0 90)
+;;    (send *ri* :go-pos-unsafe -0.4 0 90)
     t))
