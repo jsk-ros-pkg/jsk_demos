@@ -340,7 +340,7 @@
   
   (speak-jp "トレイをキッチンに運びます")
   (while (not (move-to-table-side)))
-  (while (not (pick-tray-table)))
+  (while (not (pick-tray-table-side)))
   ;;
   (while (not (move-to-sink)))
   (place-tray-sink)
