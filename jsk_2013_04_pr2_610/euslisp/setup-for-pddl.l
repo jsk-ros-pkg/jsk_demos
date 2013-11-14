@@ -30,4 +30,5 @@
   `(pull-chair-table)) ;; TODO いろいろなものに対応する
 
 (defmacro push-chair (place)
-  `(move-back-chair))
+;;  `(move-back-chair)) ;; NOTE: not impremented
+  `(warn (concatenate string "push-chair " (symbol-name (quote ,place)) " is not impremented")))
