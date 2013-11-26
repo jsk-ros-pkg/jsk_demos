@@ -1,6 +1,14 @@
 #!/usr/bin/env roseus
 ;; mostly same to demo-eus.l in pddl package under jsk subversion trunk
-(load "package://pddl_planner/src/eus-pddl-client.l")
+(ros::ros-info "/pddl_planner/planner => ~A" (ros::get-param "/pddl_planner/planner"))
+(if (and (ros::has-param "/pddl_planner/planner")
+		 (equal (ros::get-param "/pddl_planner/planner") "downward"))
+	(progn
+	  (ros::ros-info "use planner: downward")
+	  (require :eus-pddl-client "package://pddl_planner/src/eus-downward-client.l"))
+	(progn
+	  (ros::ros-info "use planner: ffha")
+	  (require :eus-pddl-client "package://pddl_planner/src/eus-pddl-client.l")))
 
 ;;
 ;; problem
@@ -34,7 +42,7 @@
         (on broom laundry)
         (under chair table-front)
         (at world)
-        (not (in cloth laundry))
+;;        (not (in cloth laundry))
 ;        (= (total-cost) 0)
 ;        (= (move-to) 10)
 ;        (= (sweep) 100)
@@ -89,7 +97,7 @@
 
 (setq *pick* (instance pddl-action :init
                        :name "pick"
-                       :parameters '((?obj ?from object))
+                       :parameters '((?obj object)(?from object))
                        :precondition '((at ?from)
                                        (on ?obj ?from)
                                        (forall (?any - object) (not (hold ?any))))
@@ -98,7 +106,7 @@
 
 (setq *place* (instance pddl-action :init
                        :name "place"
-                       :parameters '((?obj ?to object))
+                       :parameters '((?obj object)(?to object))
                        :precondition '((at ?to)
                                        (hold ?obj))
                        :effect '((not (hold ?obj))
@@ -106,7 +114,7 @@
 
 (setq *put* (instance pddl-action :init
                        :name "put"
-                       :parameters '((?obj ?to object))
+                       :parameters '((?obj object)(?to object))
                        :precondition '((at ?to)
                                        (hold ?obj)
                                        (open-door ?to))
@@ -194,7 +202,8 @@
 (defun debug-solve ()
   (setq *result* (solve-pddl-planning *domain* *problem*))
   (format t "plan = ")
-  (pprint (cdr (assoc :plan *result*)))
+;;  (pprint (cdr (assoc :plan *result*)))
+  (pprint *result*)
   )
 
 ;; generate graph
@@ -202,7 +211,3 @@
   (load "package://pddl_planner/src/pddl-result-graph.l")
   (setq *graph* (make-graph-from-pddl-results (list *result*)))
   (send (make-readable-graph *graph*) :write-to-pdf "pddl_graph.pdf"))
-#|
-;(format t "result = ~A " *result*)
-(ros::exit)
-|#
