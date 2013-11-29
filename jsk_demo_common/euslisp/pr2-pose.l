@@ -15,3 +15,5 @@
   (send *pr2* :head :neck-p :joint-angle 50)
   (send *pr2* :angle-vector)
   )
+
+(provide :pr2-pose)

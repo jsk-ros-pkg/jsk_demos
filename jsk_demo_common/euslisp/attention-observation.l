@@ -317,7 +317,7 @@
           :finish-type *finish-type*)))
       )
      ) ;; /cond
-    ))
+    t))
 
 (make-attention-action move-recoverly (&rest args)
   (send *ri* :ros-wait 0.0 :spin-self t :spin t) ;; attention-check ...
@@ -440,3 +440,5 @@
        ))
     ))
 |#
+
+(provide :attention-observation)

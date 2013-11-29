@@ -145,3 +145,5 @@
     ;;(send *pr2* :move-to (send *ri* :state :worldcoords) :world)
     t
     ))
+
+(provide :pr2-move)

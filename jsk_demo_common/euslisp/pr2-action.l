@@ -1123,3 +1123,24 @@
     ;; Go back 50cm
 ;;    (send *ri* :go-pos-unsafe -0.4 0 90)
     t))
+
+(ros::roseus-add-msgs "pr2_gripper_sensor_msgs")
+(defun wait-for-hand-impact (arm &key (timeout 30))
+  (let* ((action-name (format nil "/~c_gripper_sensor_controller/event_detector" (if (eq arm :larm) #\l #\r)))
+         (client (instance ros::simple-action-client :init action-name pr2_gripper_sensor_msgs::PR2GripperEventDetectorAction))
+         (goal (instance pr2_gripper_sensor_msgs::PR2GripperEventDetectorActionGoal :init)))
+    (unless (send client :wait-for-server 5)
+      (return-from wait-for-hand-impact nil))
+    (send goal :header :stamp (ros::time-now))
+    (send goal :goal_id :stamp (ros::time-now))
+    ;;(send goal :goal :command :trigger_conditions pr2_gripper_sensor_msgs::PR2GripperEventDetectorCommand::*FINGER_SIDE_IMPACT_OR_SLIP_OR_ACC*)
+    (send goal :goal :command :trigger_conditions pr2_gripper_sensor_msgs::PR2GripperEventDetectorCommand::*FINGER_SIDE_IMPACT_OR_ACC*)
+    ;;(send goal :goal :command :trigger_conditions pr2_gripper_sensor_msgs::PR2GripperEventDetectorCommand::*SLIP*)
+    (send goal :goal :command :slip_trigger_magnitude 0.02)
+    (send goal :goal :command :acceleration_trigger_magnitude 3.0) ;; m/s^2
+    (send client :send-goal goal)
+    (ros::ros-info "wait for touching robot hand")
+    (send client :wait-for-result :timeout timeout))
+  )
+
+(provide :pr2-action)
