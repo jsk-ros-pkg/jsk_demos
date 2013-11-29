@@ -934,7 +934,7 @@
 (defun place-tray (&key (table-height 850.0)
                         (up-height-tolerance 150.0)
                         (down-height-tolerance -20.0)
-				        (use-base-scan t)
+                        (use-base-scan nil)
                         (go-forward 0)
                         (forward-dist 450.0))
     ;;
@@ -975,9 +975,9 @@
       )
 
     ;; for navigation
-	(when use-base-scan
-	  (setq go-forward (* (- (distance-of-front) 0.1) 1000))
-	  (if (> 0.1 go-forward) (setq go-forward 0)))
+    (when use-base-scan
+      (setq go-forward (* (- (distance-of-front) 0.1) 1000))
+      (if (> 0.1 go-forward) (setq go-forward 0)))
     (when (> go-forward 10)
       (speak-jp "まえにすすみます")
       (send *pr2* :translate (float-vector go-forward 0 0))
