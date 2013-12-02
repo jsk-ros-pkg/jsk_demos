@@ -186,7 +186,7 @@
 			:pos ,(float-vector 4711.057 6599.601 51.6065)
 			:name "/eng2/7f/room73B2-center")
 	 `(:rot ,(rpy-matrix pi/2 0 0)
-			:pos ,(float-vector 2001.277 7757.852 51.6065)
+			:pos ,(float-vector 2001.277 7457.852 51.6065)
 			:name "/eng2/7f/room73B2-counter-side")
 	 `(:rot ,(rpy-matrix pi 0 0)
 			:pos ,(float-vector 995.672 5638.59 51.6065)
