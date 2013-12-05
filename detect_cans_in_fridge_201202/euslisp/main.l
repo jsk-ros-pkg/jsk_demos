@@ -128,6 +128,7 @@
               :finish-type finish-type)
        (return-from demo)))
     )
+  (ros::exit)
   )
 
 (defun wait-android-query (&optional (demo-type :map))
