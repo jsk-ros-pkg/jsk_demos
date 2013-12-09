@@ -3,7 +3,7 @@
   <arg name="wait_query" default="true" />
   <arg name="execute" default="false" />
   <arg name="DEMOTYPE" default="short" />
-  <arg name="object" default="georgia" />
+  <arg name="app_manager" default="false" />
 
   <!-- sample data for test -->
   <anode pkg="rosbag" type="play" name="play"
@@ -65,7 +65,7 @@
   <group unless="$(arg wait_query)" >
   <node if="$(arg execute)"
         pkg="roseus" name="fridge_can_main" type="roseus"
-        args="$(find detect_cans_in_fridge_201202)/euslisp/main.l &quot;(demo :type :$(arg object) :demo-type :$(arg DEMOTYPE))&quot;"
+        args="$(find detect_cans_in_fridge_201202)/euslisp/main.l &quot;(demo :app-manager :$(arg app_manager) :demo-type :$(arg DEMOTYPE))&quot;"
         required="true"
         output="screen" />
   </group>
