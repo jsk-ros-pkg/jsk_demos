@@ -93,9 +93,20 @@
 
 (defun demo (&key (type "georgia")
                   (demo-type :map)  ;; :map, :short, ...
+                  (app-manager :false)
                   (finish-type :pass-to-human) ;; :pass-to-human, :put-on-turtlebot, ...
                   )
-  (initialize-demo type)
+  (case app-manager
+    (:true
+     ;; get type from parameter server
+     (if (ros::has-param "/object_for_multitask")
+         (initialize-demo
+          (read-from-string (ros::get-param "/object_for_multitask")))
+       (initialize-demo type)
+     )
+    (t
+     (initialize-demo type)
+     ))
 
   (case demo-type
     (:map
