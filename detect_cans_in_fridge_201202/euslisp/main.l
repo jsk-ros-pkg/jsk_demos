@@ -103,7 +103,7 @@
          (initialize-demo
           (read-from-string (ros::get-param "/object_for_multitask")))
        (initialize-demo type)
-     )
+     ))
     (t
      (initialize-demo type)
      ))
