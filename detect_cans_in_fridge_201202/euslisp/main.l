@@ -99,9 +99,9 @@
   (case app-manager
     (:true
      ;; get type from parameter server
-     (if (ros::has-param "/object_for_multitask")
+     (if (ros::has-param "/app_execute/object")
          (initialize-demo
-          (read-from-string (ros::get-param "/object_for_multitask")))
+          (read-from-string (ros::get-param "/app_execute/object")))
        (initialize-demo type)
      ))
     (t
