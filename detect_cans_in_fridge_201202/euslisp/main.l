@@ -78,8 +78,8 @@
   t
   )
 
-(defun initialize-demo (type)
-  (setq *type* type)
+(defun initialize-demo (atype)
+  (setq *type* atype)
   (if (and (boundp '*use-voicetext*) *use-voicetext*)
       (cond
        ((and (boundp '*use-english*) *use-english*)
@@ -91,7 +91,7 @@
   (setq *opose* (send *ri* :state :worldcoords))
   )
 
-(defun demo (&key (type "georgia")
+(defun demo (&key ((:type atype) "georgia")
                   (demo-type :map)  ;; :map, :short, ...
                   (app-manager :false)
                   (finish-type :pass-to-human) ;; :pass-to-human, :put-on-turtlebot, ...
@@ -102,10 +102,10 @@
      (if (ros::has-param "/app_execute/object")
          (initialize-demo
           (read-from-string (ros::get-param "/app_execute/object")))
-       (initialize-demo type)
+       (initialize-demo atype)
      ))
     (t
-     (initialize-demo type)
+     (initialize-demo atype)
      ))
 
   (case demo-type
@@ -144,14 +144,14 @@
 
 (defun wait-android-query (&optional (demo-type :map))
   (ros::ros-info "Begin Waiting .... ~A" demo-type)
-  (let (type from)
+  (let (atype from)
     (ros::subscribe "/Tablet/StartDemo" roseus::StringStamped
                     #'(lambda(m)
                         (print (list :subscribe (send m :data)))
                         (cond
                          ((string= (send m :data) "/Tablet/other/GetGeorgia")
                           (setq from :tablet)
-                          (setq type "georgia"))
+                          (setq atype "georgia"))
                          (t ))))
     (ros::subscribe "/Murase/Demo" std_msgs::String
                     #'(lambda(m)
@@ -159,25 +159,25 @@
                         (cond
                          ((string= (send m :data) "georgia")
                           (setq from :app)
-                          (setq type "georgia"))
+                          (setq atype "georgia"))
                          (t ))))
     (ros::rate 2)
     (do-until-key
      (ros::ros-info " Waiting ....")
      (ros::spin-once)
      (send *ri* :spin-once)
-     (when type
+     (when atype
        (case from
          (:tablet
-          (ros::ros-info "detect_cans: starting demo with ~A" type)
-          (demo :type type :demo-type demo-type))
+          (ros::ros-info "detect_cans: starting demo with ~A" atype)
+          (demo :type atype :demo-type demo-type))
          (:app
-          (ros::ros-info "detect_cans: starting app demo with ~A" type)
+          (ros::ros-info "detect_cans: starting app demo with ~A" atype)
           ;;(demo :type type)
-          (demo :type type :demo-type demo-type :finish-type :put-on-turtlebot))
+          (demo :type atype :demo-type demo-type :finish-type :put-on-turtlebot))
          )
        (ros::spin-once)
-       (setq type nil from nil)
+       (setq atype nil from nil)
        )
      (ros::sleep))
     (ros::unsubscribe "/Tablet/StartDemo")
