@@ -3,6 +3,12 @@
 (defparameter *detection-topic* "/openni/rgb/ObjectDetection")
 (load "package://jsk_perception/euslisp/detection_interface.l")
 
+(ros::load-ros-manifest "jsk_smart_gui")
+(require :jsk-smart-gui-utils "package://jsk_smart_gui/src/utils.l")
+
+(defvar *use-voicetext* t)
+(defvar *use-english* nil)
+
 (if (and (boundp '*use-voicetext*) *use-voicetext*)
     (cond
      ((and (boundp '*use-english*) *use-english*)
@@ -134,15 +140,15 @@
   `(progn
 	 (if (not (boundp '*tfb*)) (setq *tfb* (instance ros::transform-broadcaster :init)))
 	 (defun tabletop-objectdetection-cb (msg)
-	   (let ((frame-id (send msg :header :frame_id)) type ret)
+	   (let ((frame-id (send msg :header :frame_id)) atype ret)
 		 (print msg)
 		 (unless (eq (char frame-id 0) #\/) (setq frame-id (concatenate string "/" frame-id)))
 		 (dolist (obj-pose (send msg :objects))
-		   (setq type (send obj-pose :type))
-		   (unless (eq (char type 0) #\/) (setq type (concatenate string "/" type)))
+		   (setq atype (send obj-pose :type))
+		   (unless (eq (char atype 0) #\/) (setq atype (concatenate string "/" atype)))
 		   (setq ret (ros::tf-pose->coords (send obj-pose :pose)))
-		   (send *tfb* :send-transform ret frame-id type)
-		   (ros::ros-info "~A ~A ~A" ret frame-id type))
+		   (send *tfb* :send-transform ret frame-id atype)
+		   (ros::ros-info "~A ~A ~A" ret frame-id atype))
 		 ))
 	 (ros::subscribe "ObjectDetection" posedetection_msgs::ObjectDetection #'tabletop-objectdetection-cb))
   )
@@ -605,8 +611,7 @@
 
     (dotimes (i 10 nil)
       ;; finding handle position
-      (setq cds (check-detection :type "fridge"
-								 :speak-name *frige-speak-str*))
+      (setq cds (check-detection :type "fridge" :speak-name *frige-speak-str*))
 
       ;; need detection fail check
       (send *ri* :ros-wait 0.0 :spin-self t) ;; attention-check ...
@@ -777,6 +782,7 @@
     ))
 
 (warn ";; define grasp-can")
+(defvar *use-arm-navigation* nil)
 (defun grasp-can (&key (move t) (rotation))
   ;; move-to spot for grasping
   (when move
