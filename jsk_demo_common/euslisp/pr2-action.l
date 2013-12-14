@@ -1,7 +1,8 @@
 (setq *obj* (make-sphere 100)) ;; dummy object
 (setq *target-name* nil)
 (defparameter *detection-topic* "/openni/rgb/ObjectDetection")
-(load "package://jsk_perception/euslisp/detection_interface.l")
+(require :detection-interface "package://jsk_perception/euslisp/detection_interface.l")
+(require :pr2-pose "package://jsk_demo_common/euslisp/pr2-pose.l")
 
 (ros::load-ros-manifest "jsk_smart_gui")
 (require :jsk-smart-gui-utils "package://jsk_smart_gui/src/utils.l")
@@ -1024,7 +1025,13 @@
     ))
 
 (warn ";; define pick-tray")
-(defun pick-tray (&key (target *tray*) (manip-pose t))
+(load "models/room610-tray-object.l");; for room610-tray
+(defun pick-tray (&key (target (room610-tray))
+                       (manip-pose t)
+                       (desired-tray-pose
+                        (make-coords :pos (float-vector 600 0 800)
+                                     :rpy (list -pi/2 0 0)))
+                       )
   (let (tray-larm-handle tray-rarm-handle
         (grasp-threshold (list 3 3))
         (grasp-args)) ;; use let to define local variables
@@ -1039,20 +1046,54 @@
       )
 
     ;;detect tray when real robot
-    (if (send *ri* :joint-action-enable)
-        (let ((cnt 0))
-          (while (and (<= cnt 3) (not (tray-detection *tray*)))
-            (send *pr2* :head :neck-p :joint-angle (+ 50 (* (10 (incf cnt)))))
-            (send *ri* :angle-vector (send *pr2* :angle-vector) 100)
-            (send *ri* :wait-interpolation)
-            ))
+    (when (send *ri* :joint-action-enable)
+
+      (let ((cnt 0))
+        (while (and (<= cnt 3) (not (tray-detection target)))
+          (send *pr2* :head :neck-p :joint-angle (+ 50 (* (10 (incf cnt)))))
+          (send *ri* :angle-vector (send *pr2* :angle-vector) 600)
+          (send *ri* :wait-interpolation)
+          ))
+
+      (dotimes (i 10)
+        (let ((cds
+               (check-detection :type "tray_center" ;; work for any object
+                                :speak-name "tray"
+                                :target-object target
+                                :timeout 30
+                                :diff-position 10
+                                :diff-rotation (deg2rad 10)
+                                :speak t))
+              diffcds)
+          (when cds
+            (send *ri* :ros-wait 0.0 :spin-self t) ;; attention-check ...
+
+            (setq diffcds (send (send desired-tray-pose :inverse-transformation)
+                                :transform (send cds :worldcoords) :world))
+            (warn "~%~A -> ~A / ~A~%" diffcds cds desired-tray-pose)
+            (ros::ros-info "DIFF: ~A" diffcds)
+
+            (if (and (< (norm (float-vector (elt (send diffcds :worldpos) 0)
+                                            (elt (send diffcds :worldpos) 1)))
+                        *fridge-distance-threshold*)
+                     (< (abs (elt (car (rpy-angle (send diffcds :worldrot))) 0))
+                        *fridge-rotation-threshold*))
+                (return))
+
+            (send *ri* :go-pos-unsafe
+                  (/ (elt (send diffcds :worldpos) 0) 1100.0)
+                  (/ (elt (send diffcds :worldpos) 1) 1100.0)
+                  (* 0.9 (rad2deg (elt (car (rpy-angle (send diffcds :worldrot))) 0))))
+            ;; wait ???
+            (send *ri* :ros-wait 0.6 :spin-self t :spin t) ;; attention-check ...
+            )))
       )
 
     (setq tray-larm-handle
-          (send (send (send *tray* :handle-larm-handle) :copy-worldcoords)
+          (send (send (send target :handle-larm-handle) :copy-worldcoords)
                 :rotate (deg2rad -20) :z)) ;; do not move in world coords, use object(tray) relative coords
     (setq tray-rarm-handle
-          (send (send (send *tray* :handle-rarm-handle) :copy-worldcoords)
+          (send (send (send target :handle-rarm-handle) :copy-worldcoords)
                 :rotate (deg2rad  20) :z)) ;; need copy-worldcoords, otherwise move handle coords directory
 
     ;; Open gripper
@@ -1064,8 +1105,10 @@
         (send-all (list tray-larm-handle tray-rarm-handle) :draw-on :flush t)) ;; use :draw-on to confirm coords position
 
     (let (avs)
-      (dolist (offset (list (cons #f(-100 -10 0) #f(-100 10 0))
-                            (cons #f(0 30 0) #f(0 -30 0))))
+      (dolist (offset (list (cons (float-vector -100 -10 0)
+                                  (float-vector -100 10 0))
+                            (cons (float-vector -25 15 0)
+                                  (float-vector -25 -15 0))))
         (send *pr2* :inverse-kinematics
               (list   ;; use local coords, this cod works if tray is placed on different orientation
                (send (send tray-larm-handle :copy-worldcoords) :translate (car offset))
@@ -1079,7 +1122,7 @@
       (if (boundp '*irtviewer*) (send *irtviewer* :draw-objects))
       ;;(print (send *pr2* :angle-vector))
       ;;(print (send *pr2* :arms :wrist-r :joint-angle))
-      (send *ri* :angle-vector-sequence (reverse avs) (list 1500 700))
+      (send *ri* :angle-vector-sequence (reverse avs) (list 2000 1200))
       ;;(send *ri* :angle-vector-with-constraint (send *pr2* :angle-vector) 1000 :arms)
       (send *ri* :wait-interpolation)
       )
@@ -1087,8 +1130,9 @@
     (warning-message 3 "grasp tray~%")
     ;; Grasp it
     (setq grasp-args (send *ri* :start-grasp :arms :gain 1 :objects
-                           (list (find *tray* (send *ri* :objects)
-                                       :test #'(lambda (a b) (string= (send a :name) (send b :name)))))))
+                           (list (find target (send *ri* :objects)
+                                       :test #'(lambda (a b) (string= (send a :name)
+                                                                      (send b :name)))))))
     ;; stop-grasp wait until gripper motion stops
 
     ;; check if tray is grasped
@@ -1106,29 +1150,29 @@
       (send *ri* :wait-interpolation)
       (return-from pick-tray nil)
       )
-    (send *pr2* :larm :end-coords :assoc *tray*) ;; ???
+    (send *pr2* :larm :end-coords :assoc target) ;; ???
 
     (let (avs)
       ;; Hold it up!
-      (send *pr2* :arms :move-end-pos #f(0 0 100) :world)
+      (send *pr2* :arms :move-end-pos (float-vector 0 0 100) :world)
       (send *pr2* :look-at-hand :arms)
       (push (send *pr2* :angle-vector) avs)
 
       (if (boundp '*irtviewer*) (send *irtviewer* :draw-objects))
 
       ;; Move it close to PR2
-      (send *pr2* :arms :move-end-pos #f(0 0 -250))
+      (send *pr2* :arms :move-end-pos (float-vector 0 0 -250))
       (send *pr2* :look-at-hand :arms)
       (push (send *pr2* :angle-vector) avs)
 
       (if (boundp '*irtviewer*) (send *irtviewer* :draw-objects))
 
-      (send *ri* :angle-vector-sequence (reverse avs) 1000) ;; use angle-vector-sequence
+      (send *ri* :angle-vector-sequence (reverse avs) 1400) ;; use angle-vector-sequence
       (send *ri* :wait-interpolation)
       )
 
     ;; Go back 50cm
-;;    (send *ri* :go-pos-unsafe -0.4 0 90)
+    ;;(send *ri* :go-pos-unsafe -0.4 0 90)
     t))
 
 (ros::roseus-add-msgs "pr2_gripper_sensor_msgs")
