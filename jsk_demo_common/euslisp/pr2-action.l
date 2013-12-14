@@ -609,6 +609,7 @@
        (send *ri* :wait-interpolation)
        ))
 
+    ;; detect fridge and open door
     (dotimes (i 10 nil)
       ;; finding handle position
       (setq cds (check-detection :type "fridge" :speak-name *frige-speak-str*))
@@ -639,8 +640,7 @@
                   *fridge-distance-threshold*)
                (< (abs (elt (car (rpy-angle (send diffcds :worldrot))) 0))
                   *fridge-rotation-threshold*))
-          (setq cds (check-detection :type "fridge"
-									 :speak-name *frige-speak-str*))
+          (setq cds (check-detection :type "fridge" :speak-name *frige-speak-str*))
           (send *ri* :ros-wait 0.0 :spin-self t :spin t) ;; attention-check ...
           ;; (y-or-n-p "Can I start open fridge? ")
           (when cds
@@ -669,8 +669,8 @@
               (:slide2
                (send cds :translate #f(0 -230 -675))))
             (setq *last-fridge-handle* cds)
-			;; pr2 local coords transform to worldcoords
-			(send cds :transform (send *pr2* :worldcoords) :world)
+            ;; pr2 local coords transform to worldcoords
+            (send cds :transform (send *pr2* :worldcoords) :world)
             (case door-type
               (:circle
                (setq ret (funcall open-fridge-func
@@ -709,7 +709,8 @@
           (send *ri* :ros-wait 0.6 :spin-self t :spin t) ;; attention-check ...
           ;; (send *ri* :wait-interpolation)
           ))
-        ))
+        ) ;; /when cds
+      ) ;; dotimes
 
     (when (not ret)
       (ros::ros-info "TIMEOUT: open-fridge-door");;
