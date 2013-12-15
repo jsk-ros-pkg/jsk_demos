@@ -430,7 +430,7 @@
   (let (via1 via2 tar orig-av)
     (send *ri* :stop-grasp :rarm)
     (send *tfb* :send-transform
-		  (send (send *pr2* :worldcoords) :transformation (send obj :worldcoords))
+          (send (send *pr2* :worldcoords) :transformation (send obj :worldcoords))
           "/base_footprint" "/objecta_pose_frame")
     (setq orig-av (send *ri* :state :potentio-vector))
 
@@ -441,7 +441,7 @@
         ))
 
     (setq tar (send (send (send *pr2* :worldcoords) :transformation
-						  (send obj :worldcoords)) :copy-worldcoords))
+                          (send obj :worldcoords)) :copy-worldcoords))
     (send tar :orient 0 :z :world)
 
     (setq via1 (send tar :copy-worldcoords))
@@ -461,12 +461,12 @@
           via2 "/base_footprint" "/objecta_pose_frame_via2")
 
     ;; move to via1
-    (send *pr2* :rarm :inverse-kinematics 
-		  (send via1 :transform (send *pr2* :worldcoords) :world)
-		  :rotation-axis t)
+    (send *pr2* :rarm :inverse-kinematics
+          (send via1 :transform (send *pr2* :worldcoords) :world)
+          :rotation-axis t)
     (send *tfb* :send-transform
           (send (send *pr2* :worldcoords) :transformation (send *pr2* :rarm :end-coords))
-		  "/base_footprint" "/objecta_pose_end_coords")
+          "/base_footprint" "/objecta_pose_end_coords")
 
     ;;(send *ri* :angle-vector (send *pr2* :angle-vector))
     ;;(send *ri* :wait-interpolation))
@@ -490,8 +490,8 @@
 
     ;; move to via2 (grasping pose)
     (send *pr2* :rarm :inverse-kinematics
-		  (send via2 :transform (send *pr2* :worldcoords) :world)
-		  :rotation-axis t)
+          (send via2 :transform (send *pr2* :worldcoords) :world)
+          :rotation-axis t)
     ;; check IK
     #|(cond
     ((send *plan-env* :get-ik-for-pose (send *plan-env* :get-robot-coords :rarm) :rarm)
@@ -514,8 +514,8 @@
 
     ;; move to via1
     (send *pr2* :rarm :inverse-kinematics
-		  (send via1 :transform (send *pr2* :worldcoords) :world)
-		  :rotation-axis t)
+          (send via1 :transform (send *pr2* :worldcoords) :world)
+          :rotation-axis t)
     ;; check IK
     (send *ri* :ros-wait 0.0 :spin-self t) ;; attention-check ...
     (cond
@@ -666,9 +666,9 @@
                                :rpy (list (caar (send cds :rpy-angle)) 0 0)))
             (case door-type
               (:slide1
-               (send cds :translate #f(0 -230 -355)))
+               (send cds :translate (float-vector 0 -230 -355)))
               (:slide2
-               (send cds :translate #f(0 -230 -675))))
+               (send cds :translate (float-vector 0 -230 -675))))
             (setq *last-fridge-handle* cds)
             ;; pr2 local coords transform to worldcoords
             (send cds :transform (send *pr2* :worldcoords) :world)
@@ -731,31 +731,47 @@
     (case door-type
       (:circle
        ;; free door handle
+       (setq *free-door-pose* (send *pr2* :angle-vector))
        (let ((rend (send *pr2* :rarm :end-coords :copy-worldcoords))
-             av1 av2)
-         (send rend :translate (float-vector 30 -60 0) *pr2*)
+             avl)
+         (send *pr2* :larm :angle-vector (float-vector 20 45 53 -100 -43 -60 0))
+         (push (send *pr2* :angle-vector) avl)
+         ;;
+         (send rend :translate (float-vector 40 0 0) *pr2*)
          (send *pr2* :rarm :inverse-kinematics rend)
-         (setq av1 (send *pr2* :angle-vector))
-         (send rend :rotate pi/2 :x *pr2*)
+         (send *pr2* :larm :angle-vector (float-vector -20 16 53 -38 -43 -60 0))
+         (push (send *pr2* :angle-vector) avl)
+         ;;
          (send rend :translate (float-vector 0 -60 0) *pr2*)
          (send *pr2* :rarm :inverse-kinematics rend)
-         (setq av2 (send *pr2* :angle-vector))
-         (send *ri* :angle-vector-sequence
-               (list av1 av2) (list 600 600))
+         (push (send *pr2* :angle-vector) avl)
+         ;;
+         (send rend :rotate pi/2 :x *pr2*)
+         (send rend :translate (float-vector 0 -40 0) *pr2*)
+         (send *pr2* :rarm :inverse-kinematics rend)
+         (push (send *pr2* :angle-vector) avl)
+         ;;
+         (send *ri* :angle-vector-sequence (reverse avl)
+               (list 1200 1000 600 900))
          (send *ri* :wait-interpolation)
          )
+       ;; fix door by larm
 
        ;; ?? open door ()
        (send *ri* :angle-vector-sequence
-             (list (float-vector 50 5 74 100 -90 -70 -6 20 -70 50 -59 -43 118 0 0 -2 31) ;; 1500
-                   (float-vector 50 5 74 100 -90 -70 -6 20 -0 60 -20 -45 118 -90 0 -2 31) ;; 1000
-                   (float-vector 50 5 74 100 -90 -70 -6 20 12 45 -34 -110 12 -38 74 -2 31) ;; 1000
-                   (float-vector 50 5 74 100 -90 -70 -6 20 -54.745 34.2625 -34.6956 -83.6538 24.9161 -66.3615 118.904 -2.0 31.0) ;; 4500
-                   (float-vector 50 5 74 100 -90 -70 -6 20 -54.745 34.2625 -34.6956 -83.6538 24.9161 -66.3615 118.904 -2.0 31.0) ;; 1500 ;; just wait
+             (list ;;(float-vector 50 5 74 100 -90 -70 -6 20 -70 50 -59 -43 118 0 0 -2 31) ;; 1500
+                   ;;(float-vector 50 -20 16 53 -38 -43 -50 0  -70 50 -59 -43 118   0 0 -2 31) ;; 1500
+                   (float-vector 50  20 45  53 -100 -43 -60 0  -60 43 -31 -70 243 -19 -115 -2 31) ;; 1000
+                   (float-vector 50   5 74 100  -90 -70 -6  20 -70 50 -59 -43 118  0  0 -2 31) ;; 1000
+                   (float-vector 50   5 74 100  -90 -70 -6  20   0 60 -20 -45 118 -90 0 -2 31) ;; 1000
+                   (float-vector 50   5 74 100  -90 -70 -6  20  12 45 -34 -110 12 -38 74 -2 31);; 1000
+                   (float-vector 50   5 74 100 -90 -70 -6  20 -54.745 34.2625 -34.6956 -83.6538 24.9161 -66.3615 118.904 -2.0 31.0) ;; 4500
+                   (float-vector 50   5 74 100 -90 -70 -6  20 -54.745 34.2625 -34.6956 -83.6538 24.9161 -66.3615 118.904 -2.0 31.0) ;; 1500 ;; just wait
                    (float-vector 150 5 74 100 -90 -70 -6 20 -7 45 -34 -110 12 -38 74 -2 31)) ;; 2000
-             (list 1500 1000 1000 4500 1500 2000))
+             (list 1400 1400 1000 1000 4500 1500 2000))
        (send *ri* :wait-interpolation)
 
+       ;; grasp larm
        (send *pr2* :angle-vector (float-vector 199.971 5.30455 72.1244 105.231 -88.5188 -69.9972 -5.72958 19.9717 31.3839 25.5029 23.0531 -118.916 160.305 -84.1469 160.058 -20 24))
 
        (send *ri* :angle-vector (send *pr2* :angle-vector))
@@ -825,7 +841,7 @@
           (unless rotation
             ;; FIXME: calc rotation from /map and /base_footprint
             (setq rotation 0))
-		  (send cds :transform (send *pr2* :worldcoords) :world)
+          (send cds :transform (send *pr2* :worldcoords) :world)
           (grasp-can-single cds :rotation rotation)
           (setq isgrasp (< 10 (send *ri* :start-grasp :rarm)))
           (when isgrasp
