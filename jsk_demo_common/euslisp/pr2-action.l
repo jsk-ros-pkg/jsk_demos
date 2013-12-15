@@ -576,7 +576,7 @@
 (defvar *fridge-distance-threshold* 25.0)
 (defvar *fridge-rotation-threshold* 0.09)
 (defun open-fridge-door (&key (open-fridge-func #'open-fridge-traj)
-                              (torso-lift 50) (head-pitch 0)
+                              (torso-lift 30) (head-pitch 14)
                               (door-type :circle) (look-around nil)) ;; :circle, :slide1, :slide2
   (defparameter *detection-topic* "/openni/rgb/ObjectDetection")
   (let (ret
