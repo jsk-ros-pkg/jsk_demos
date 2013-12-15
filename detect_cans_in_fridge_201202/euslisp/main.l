@@ -117,7 +117,7 @@
      ;; do nothing
      ))
 
-  (unless (open-fridge-door :torso-lift 25 :head-pitch 14)
+  (unless (open-fridge-door)
     (return-from demo))
 
   ;; move
@@ -140,7 +140,7 @@
               :finish-type finish-type)
        (return-from demo)))
     )
-  (ros::exit)
+  (if (eq app-manager :true) (ros::exit))
   )
 
 (defun wait-android-query (&optional (demo-type :map))
