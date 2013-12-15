@@ -771,9 +771,12 @@
              (list 1400 1400 1000 1000 4500 1500 2000))
        (send *ri* :wait-interpolation)
 
-       ;; grasp larm
+       ;; grasp rarm
        (send *pr2* :angle-vector (float-vector 199.971 5.30455 72.1244 105.231 -88.5188 -69.9972 -5.72958 19.9717 31.3839 25.5029 23.0531 -118.916 160.305 -84.1469 160.058 -20 24))
-
+       (let ((cds (send *pr2* :rarm :end-coords :copy-worldcoords)))
+         ;; pre grasp pose
+         (send cds :rotate (- (deg2rad 20)) :z)
+         (send *pr2* :rarm :inverse-kinematics cds))
        (send *ri* :angle-vector (send *pr2* :angle-vector))
        )
       ((:slide1 :slide2)
