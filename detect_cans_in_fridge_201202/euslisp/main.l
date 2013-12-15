@@ -80,6 +80,7 @@
 
 (defun initialize-demo (atype)
   (setq *type* atype)
+  (ros::ros-info "start fridge demo / ~A" *type*)
   (if (and (boundp '*use-voicetext*) *use-voicetext*)
       (cond
        ((and (boundp '*use-english*) *use-english*)
