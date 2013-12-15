@@ -99,9 +99,9 @@
   (case app-manager
     (:true
      ;; get type from parameter server
-     (if (ros::has-param "/app_execute/object")
+     (if (ros::has-param "/app_execute/target")
          (initialize-demo
-          (read-from-string (ros::get-param "/app_execute/object")))
+          (read-from-string (ros::get-param "/app_execute/target")))
        (initialize-demo atype)
      ))
     (t
