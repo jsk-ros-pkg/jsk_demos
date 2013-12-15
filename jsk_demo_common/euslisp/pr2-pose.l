@@ -1,6 +1,8 @@
-(defun pr2-pick-tray-pose (&key (reset-pose))
+(defun pr2-pick-tray-pose (&key (reset-pose) (torso-height 50))
   (when reset-pose
     (send *pr2* :reset-pose))
+  (send *pr2* :torso_lift_joint :joint-angle torso-height)
+
   ;; Open collar-y a little bit
   (send *pr2* :larm :collar-y :joint-angle 75)
   (send *pr2* :rarm :collar-y :joint-angle -75)
