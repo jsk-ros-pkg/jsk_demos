@@ -4,6 +4,7 @@
   <arg name="execute" default="false" />
   <arg name="DEMOTYPE" default="short" />
   <arg name="app_manager" default="false" />
+  <!-- <arg name="app_manager" default="true" /> -->
 
   <!-- sample data for test -->
   <anode pkg="rosbag" type="play" name="play"
