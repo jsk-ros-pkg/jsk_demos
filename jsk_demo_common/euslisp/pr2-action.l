@@ -1112,7 +1112,9 @@
             (send *ri* :ros-wait 0.6 :spin-self t :spin t) ;; attention-check ...
             )))
       )
-
+    ;;
+    (send target :transform  (send *pr2* :worldcoords) :world)
+    ;;
     (setq tray-larm-handle
           (send (send (send target :handle-larm-handle) :copy-worldcoords)
                 :rotate (deg2rad -20) :z)) ;; do not move in world coords, use object(tray) relative coords
