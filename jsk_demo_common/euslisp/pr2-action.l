@@ -963,12 +963,12 @@
   )
 
 (warn ";; define place-tray")
-(defun place-tray (&key (table-height 850.0)
-                        (up-height-tolerance 150.0)
+(defun place-tray (&key (table-height 740.0)
+                        (up-height-tolerance 100.0)
                         (down-height-tolerance -20.0)
                         (use-base-scan nil)
                         (go-forward 0)
-                        (forward-dist 450.0))
+                        (forward-dist 250.0))
     ;;
     ;; place_tray function
     ;;
@@ -979,7 +979,10 @@
         arm-mid-pos-pr2)
 
     ;; get current gripper pose
-    (send *pr2* :torso :waist-z :joint-angle 250)
+    (send *pr2* :angle-vector (send *ri* :state :potentio-vector))
+    (if (> table-height (+ 750 (send *pr2* :torso :waist-z :joint-angle)))
+        (ros::ros-info "move torso up")
+        (send *pr2* :torso :waist-z :joint-angle (- table-height 750 (send *pr2* :torso :waist-z :joint-angle))))
     (send *ri* :angle-vector (send *pr2* :angle-vector) 4000)
     (send *ri* :wait-interpolation)
 
@@ -996,8 +999,9 @@
 
       (if (boundp '*irtviewer*) (send *irtviewer* :draw-objects))
       ;; put forward a tray
-      (send *pr2* :arms :move-end-pos
-            (send *pr2* :rotate-vector (float-vector (- forward-dist (elt arm-mid-pos-pr2 0)) 0 0)) :world)
+;;      (send *pr2* :arms :move-end-pos
+;;            (send *pr2* :rotate-vector (float-vector (- forward-dist (elt arm-mid-pos-pr2 0)) 0 0)) :world)
+      (send *pr2* :arms :move-end-pos (float-vector forward-dist 0 0) :world)
       (push (send *pr2* :angle-vector) av-seq)
       (if (boundp '*irtviewer*) (send *irtviewer* :draw-objects))
 
@@ -1012,19 +1016,45 @@
       (if (> 0.1 go-forward) (setq go-forward 0)))
     (when (> go-forward 10)
       (speak-jp "まえにすすみます")
-      (send *pr2* :translate (float-vector go-forward 0 0))
+;;      (send *pr2* :translate (float-vector go-forward 0 0))
       (send *ri* :go-pos-unsafe (/ go-forward 1000.0) 0)
       )
 
     ;; put down a tray
-    (send *pr2* :arms :move-end-pos
-          (float-vector 0 0 (- (- table-height down-height-tolerance) (elt arm-mid-pos 2))) :world)
-    (send *ri* :angle-vector (send *pr2* :angle-vector) 2000)
-    (send *ri* :wait-interpolation)
+;;    (send *pr2* :arms :move-end-pos
+;;          (float-vector 0 0 (- (- table-height down-height-tolerance) (elt arm-mid-pos 2))) :world)
+    (setq arm-mid-pos
+          (apply #'midpoint 0.5 (send *pr2* :arms :end-coords :worldpos)))
+#|
+    (let ((mtrq 0))
+      (while (and (< (- table-height down-height-tolerance (elt arm-mid-pos 2)) 0) (< mtrq 0.4))
+        (send *ri* :state)
+        (setq mtrq (apply #'max (mapcar #'(lambda (j) (/ (abs (send j :joint-torque))
+                                                          (send j :max-joint-torque)))
+                                         (flatten (send *ri* :robot :arms :joint-list)))))
+        (send *pr2* :arms :move-end-pos (float-vector 0 0 -50) :world)
+        (send *ri* :angle-vector (send *pr2* :angle-vector) 500)
+        (send *ri* :wait-interpolation)
+        ))
+|#
+    (send *pr2* :angle-vector (send *ri* :state :potentio-vector))
+    (send *pr2* :arms :move-end-pos (float-vector 0 0 -200) :world)
+    (send *ri* :angle-vector (send *pr2* :angle-vector) 500)
+    (let (av
+          (prev-cds #f(0 0 0)))
+      (while (> (abs (- (elt prev-cds 2) (elt (apply #'midpoint 0.5 (send *pr2* :arms :end-coords :worldpos)) 2))) 10)
+        (ros::ros-info "~A" (abs (- (elt prev-cds 2) (elt (apply #'midpoint 0.5 (send *pr2* :arms :end-coords :worldpos)) 2))))
+        (setq prev-cds (apply #'midpoint 0.5 (send *pr2* :arms :end-coords :worldpos)))
+        (send *pr2* :angle-vector (send *ri* :state :potentio-vector))
+        (unix:usleep 200000)
+        (ros::spin-once)
+        (ros::sleep)))
+    (send *ri* :stop-motion)
+    (send *pr2* :angle-vector (send *ri* :state :potentio-vector))
 
     ;; open grippers
     (send *ri* :stop-grasp :arms :wait t)
-    ;; (send *pr2* :larm :end-coords :dissoc *tray*) ;; ???
+;;     (send *pr2* :larm :end-coords :dissoc target) ;; ???
 
     ;; move arms apart
     (send *pr2* :arms :move-end-pos (float-vector 0 0 100) :world)
@@ -1097,7 +1127,7 @@
                 (send desired-tray-pose :rotate pi :z))
 
             (setq diffcds (send *pr2* :transformation 
-                                (send (send *tray* :copy-worldcoords)
+                                (send (send target :copy-worldcoords)
                                       :transform (send desired-tray-pose :inverse-transformation))))
             (warn "~%~A -> ~A / ~A~%" diffcds cds desired-tray-pose) 
             (ros::ros-info "DIFF: ~A" diffcds)
@@ -1182,30 +1212,31 @@
       (send *ri* :wait-interpolation)
       (return-from pick-tray nil)
       )
-    (send *pr2* :larm :end-coords :assoc target) ;; ???
+    (unwind-protect
+        (progn
+          (send *pr2* :larm :end-coords :assoc target) ;; ???
 
-    (let (avs)
-      ;; Hold it up!
-      (send *pr2* :arms :move-end-pos (float-vector 0 0 100) :world)
-      (send *pr2* :look-at-hand :arms)
-      (push (send *pr2* :angle-vector) avs)
+          (let (avs)
+            ;; Hold it up!
+            (send *pr2* :arms :move-end-pos (float-vector 0 0 100) :world)
+            (send *pr2* :look-at-hand :arms)
+            (push (send *pr2* :angle-vector) avs)
+            (if (boundp '*irtviewer*) (send *irtviewer* :draw-objects))
+            ;; Move it close to PR2
+            (send *pr2* :arms :move-end-pos (float-vector 0 0 -250))
+            (send *pr2* :look-at-hand :arms)
+            (push (send *pr2* :angle-vector) avs)
+            (if (boundp '*irtviewer*) (send *irtviewer* :draw-objects))
 
-      (if (boundp '*irtviewer*) (send *irtviewer* :draw-objects))
-
-      ;; Move it close to PR2
-      (send *pr2* :arms :move-end-pos (float-vector 0 0 -250))
-      (send *pr2* :look-at-hand :arms)
-      (push (send *pr2* :angle-vector) avs)
-
-      (if (boundp '*irtviewer*) (send *irtviewer* :draw-objects))
-
-      (send *ri* :angle-vector-sequence (reverse avs) 1400) ;; use angle-vector-sequence
-      (send *ri* :wait-interpolation)
-      )
-
-    ;; Go back 50cm
-    ;;(send *ri* :go-pos-unsafe -0.4 0 90)
-    t))
+            (send *ri* :angle-vector-sequence (reverse avs) 1400) ;; use angle-vector-sequence
+            (send *ri* :wait-interpolation)
+          ;; Go back 50cm
+          ;;(send *ri* :go-pos-unsafe -0.4 0 90)
+            t))
+      (progn
+        (send *pr2* :larm :end-coords :assoc target) ;; ???
+        (return-from pick-tray nil))
+      )))
 
 (ros::roseus-add-msgs "pr2_gripper_sensor_msgs")
 (defun wait-for-hand-impact (arm &key (timeout 30))
