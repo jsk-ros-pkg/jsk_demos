@@ -1092,9 +1092,14 @@
           (when cds
             (send *ri* :ros-wait 0.0 :spin-self t) ;; attention-check ...
 
-            (setq diffcds (send (send desired-tray-pose :inverse-transformation)
-                                :transform (send cds :worldcoords) :world))
-            (warn "~%~A -> ~A / ~A~%" diffcds cds desired-tray-pose)
+            ;; rotate desired-tray-pose if detected tray is 180deg rotated
+            (if (> (abs (rad2deg (elt (send cds :difference-rotation desired-tray-pose) 2))) 90)
+                (send desired-tray-pose :rotate pi :z))
+
+            (setq diffcds (send *pr2* :transformation 
+                                (send (send *tray* :copy-worldcoords)
+                                      :transform (send desired-tray-pose :inverse-transformation))))
+            (warn "~%~A -> ~A / ~A~%" diffcds cds desired-tray-pose) 
             (ros::ros-info "DIFF: ~A" diffcds)
 
             (if (and (< (norm (float-vector (elt (send diffcds :worldpos) 0)
@@ -1108,6 +1113,7 @@
                   (/ (elt (send diffcds :worldpos) 0) 1100.0)
                   (/ (elt (send diffcds :worldpos) 1) 1100.0)
                   (* 0.9 (rad2deg (elt (car (rpy-angle (send diffcds :worldrot))) 0))))
+
             ;; wait ???
             (send *ri* :ros-wait 0.6 :spin-self t :spin t) ;; attention-check ...
             )))
