@@ -1001,7 +1001,7 @@
       ;; put forward a tray
 ;;      (send *pr2* :arms :move-end-pos
 ;;            (send *pr2* :rotate-vector (float-vector (- forward-dist (elt arm-mid-pos-pr2 0)) 0 0)) :world)
-      (send *pr2* :arms :move-end-pos (float-vector forward-dist 0 0) :world)
+      (send *pr2* :arms :move-end-pos (float-vector forward-dist 0 0) *pr2*)
       (push (send *pr2* :angle-vector) av-seq)
       (if (boundp '*irtviewer*) (send *irtviewer* :draw-objects))
 
@@ -1039,18 +1039,23 @@
 |#
     (send *pr2* :angle-vector (send *ri* :state :potentio-vector))
     (send *pr2* :arms :move-end-pos (float-vector 0 0 -200) :world)
-    (send *ri* :angle-vector (send *pr2* :angle-vector) 500)
-    (let (av
-          (prev-cds #f(0 0 0)))
-      (while (> (abs (- (elt prev-cds 2) (elt (apply #'midpoint 0.5 (send *pr2* :arms :end-coords :worldpos)) 2))) 10)
-        (ros::ros-info "~A" (abs (- (elt prev-cds 2) (elt (apply #'midpoint 0.5 (send *pr2* :arms :end-coords :worldpos)) 2))))
+    (send *ri* :angle-vector (send *pr2* :angle-vector) 5000)
+    (let* (av
+          (prev-cds #f(0 0 0))
+          (diff-height (abs (- (elt prev-cds 2) (elt (apply #'midpoint 0.5 (send *pr2* :arms :end-coords :worldpos)) 2)))))
+      (while (> diff-height 0.5)
+        (ros::ros-info "diff height: ~A" diff-height)
         (setq prev-cds (apply #'midpoint 0.5 (send *pr2* :arms :end-coords :worldpos)))
+        (send *ri* :update-robot-state)
         (send *pr2* :angle-vector (send *ri* :state :potentio-vector))
         (unix:usleep 200000)
         (ros::spin-once)
-        (ros::sleep)))
+        (ros::sleep)
+        (setq diff-height (abs (- (elt prev-cds 2) (elt (apply #'midpoint 0.5 (send *pr2* :arms :end-coords :worldpos)) 2))))
+        )
     (send *ri* :stop-motion)
     (send *pr2* :angle-vector (send *ri* :state :potentio-vector))
+    (ros::ros-info "diff height ~A < 10 -> open gripper" diff-height))
 
     ;; open grippers
     (send *ri* :stop-grasp :arms :wait t)
@@ -1060,7 +1065,10 @@
     (send *pr2* :arms :move-end-pos (float-vector 0 0 100) :world)
     (send *pr2* :arms :move-end-pos (float-vector 0 0 100) :world)
     (if (boundp '*irtviewer*) (send *irtviewer* :draw-objects))
-    (send *ri* :angle-vector (send *pr2* :angle-vector) 2000)
+    (send *ri* :angle-vector (send *pr2* :angle-vector) 1000)
+    (send *ri* :wait-interpolation)
+    (send *pr2* :arms :move-end-pos (float-vector -100 0 0) *pr2*)
+    (send *ri* :angle-vector (send *pr2* :angle-vector) 1000)
     (send *ri* :wait-interpolation)
 
     ;; for navigation
@@ -1126,9 +1134,8 @@
             (if (> (abs (rad2deg (elt (send cds :difference-rotation desired-tray-pose) 2))) 90)
                 (send desired-tray-pose :rotate pi :z))
 
-            (setq diffcds (send *pr2* :transformation 
-                                (send (send target :copy-worldcoords)
-                                      :transform (send desired-tray-pose :inverse-transformation))))
+            (setq diffcds (send (send cds :copy-worldcoords)
+                                :transform (send desired-tray-pose :inverse-transformation)))
             (warn "~%~A -> ~A / ~A~%" diffcds cds desired-tray-pose) 
             (ros::ros-info "DIFF: ~A" diffcds)
 
@@ -1214,7 +1221,7 @@
       )
     (unwind-protect
         (progn
-          (send *pr2* :larm :end-coords :assoc target) ;; ???
+;;          (send *pr2* :larm :end-coords :assoc target) ;; ???
 
           (let (avs)
             ;; Hold it up!
@@ -1223,7 +1230,7 @@
             (push (send *pr2* :angle-vector) avs)
             (if (boundp '*irtviewer*) (send *irtviewer* :draw-objects))
             ;; Move it close to PR2
-            (send *pr2* :arms :move-end-pos (float-vector 0 0 -250))
+            (send *pr2* :arms :move-end-pos (float-vector -250 0 0) *pr2*)
             (send *pr2* :look-at-hand :arms)
             (push (send *pr2* :angle-vector) avs)
             (if (boundp '*irtviewer*) (send *irtviewer* :draw-objects))
@@ -1234,7 +1241,7 @@
           ;;(send *ri* :go-pos-unsafe -0.4 0 90)
             t))
       (progn
-        (send *pr2* :larm :end-coords :assoc target) ;; ???
+;;        (send *pr2* :larm :end-coords :assoc target) ;; ???
         (return-from pick-tray nil))
       )))
 
