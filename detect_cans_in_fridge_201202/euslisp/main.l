@@ -49,6 +49,7 @@
   )
 
 (defun goto-initial-position (&key (return-to-initial-position t)
+                                   (use-arm :rarm)
                                    (turnp t) (finish-type :pass-to-human))
   (when turnp
     (send *ri* :go-pos-unsafe 0 0 -90)
@@ -73,7 +74,7 @@
            (speak-jp (format nil "Please take ~a." *type*)))
           (t (speak-jp (format nil "~aをどうぞ。" *type*))))
        (speak-jp (format nil "~a を どうぞ" *type*)))
-     (hand-over :rarm :wait-shock t))
+     (hand-over use-arm :wait-shock t))
     )
   t
   )
@@ -96,6 +97,7 @@
                   (demo-type :map)  ;; :map, :short, ...
                   (app-manager :false)
                   (finish-type :pass-to-human) ;; :pass-to-human, :put-on-turtlebot, ...
+                  (use-arm :rarm)
                   )
   (case app-manager
     (:true
@@ -117,26 +119,27 @@
      ;; do nothing
      ))
 
-  (unless (open-fridge-door)
+  (unless (open-fridge-door :use-arm use-arm)
     (return-from demo))
 
   ;; move
 
-  (unless (grasp-can)
+  (unless (grasp-can :use-arm use-arm)
     (return-from demo))
 
   ;; move
 
-  (unless (close-fridge)
+  (unless (close-fridge :use-arm use-arm)
     (return-from demo))
 
   (case demo-type
     (:map
-     (goto-initial-position :finish-type finish-type)
+     (goto-initial-position :finish-type finish-type :use-arm use-arm)
      )
     (t
      (unless (goto-initial-position
               :return-to-initial-position nil :turnp t
+              :use-arm use-arm
               :finish-type finish-type)
        (return-from demo)))
     )
