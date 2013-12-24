@@ -426,7 +426,7 @@
 ;; actions
 ;;
 (warn ";; define grasp-can-single")
-(defun grasp-can-single (obj &key (rotation 0) (arm :rarm))
+(defun grasp-can-single (obj &key (rotation 0) (arm :rarm) (grasp-depth 35))
   (let (via1 via2 tar orig-av)
     (send *ri* :stop-grasp :rarm)
     (send *tfb* :send-transform
@@ -442,17 +442,14 @@
 
     (setq tar (send (send (send *pr2* :worldcoords) :transformation
                           (send obj :worldcoords)) :copy-worldcoords))
-    (send tar :orient (deg2ead rotation) :z :world)
+    (send tar :orient (deg2rad (- rotation)) :z :world)
 
     (setq via1 (send tar :copy-worldcoords))
-    ;;(send via1 :translate (float-vector (* (cos (deg2rad rotation)) -100)
-    ;;(* (sin (deg2rad rotation))  100) 0) :world)
-    (send via1 :translate (float-vector -100 0 0))
+    (send via1 :translate (float-vector -100 0 50))
 
     ;; via2
     (setq via2 (send tar :copy-worldcoords))
-    ;;(send via2 :translate (float-vector 30 0 0) :world)
-    (send via1 :translate (float-vector 30 0 0))
+    (send via2 :translate (float-vector grasp-depth 0 10))
 
     ;; publish tf
     (send *tfb* :send-transform
@@ -779,7 +776,7 @@
          ;; pre grasp pose
          (send cds :rotate (- (deg2rad 20)) :z)
          (send *pr2* :rarm :inverse-kinematics cds))
-
+       (send *ri* :angle-vector (send *pr2* :angle-vector) 1400)
        ;; grasp larm
 #|
        (send *pr2* :angle-vector (float-vector 199.971 -32.3186 26.4366 -19.6876 -118.217 -138.147 -78.3509 -166.767 -5.30455 72.1244 -105.231 -88.5188 69.9972 -5.72958 -19.9717 20.0 24.0))
@@ -815,12 +812,12 @@
 
 (warn ";; define grasp-can")
 (defvar *use-arm-navigation* nil)
-(defun grasp-can (&key (move t) (rotation))
+(defun grasp-can (&key (move t) (rotation 20))
   ;; move-to spot for grasping
   (when move
     (send *ri* :ros-wait 0.0 :spin-self t :spin t) ;; attention-check ...
     (ros::ros-info "GO POS UNSAFE for grasping can")
-    (send *ri* :go-pos-unsafe 0 0 (rad2deg 0.38)) ;; g-rarm
+    (send *ri* :go-pos-unsafe 0 0 rotation) ;; g-rarm
     (send *ri* :go-pos-unsafe 0.185 -0.25 0) ;; g-rarm
     (send *ri* :wait-interpolation))
 
@@ -852,14 +849,12 @@
                 cds "/base_footprint" "/object_pose_frame")
           (send *ri* :ros-wait 0.0 :spin-self t :spin t) ;; attention-check ...
           (send *pr2* :angle-vector (send *ri* :state :potentio-vector))
-          (unless rotation
-            ;; FIXME: calc rotation from /map and /base_footprint
-            (setq rotation 0))
           (send cds :transform (send *pr2* :worldcoords) :world)
+          (setq *last-can-coords* cds)
           (grasp-can-single cds :rotation rotation)
           (setq isgrasp (< 10 (send *ri* :start-grasp :rarm))) ;; g-rarm
           (when isgrasp
-            (when move (send *ri* :go-pos-unsafe -0.3 0.05 -20)) ;; g-rarm
+            (when move (send *ri* :go-pos-unsafe -0.3 0.05 (- rotation))) ;; g-rarm
             (send *ri* :ros-wait 1.0 :spin-self t :spin t) ;; attention-check ...
             (return-from grasp-can t))
           ;; (unix::sleep 2)
@@ -877,7 +872,7 @@
         (speak-jp (format nil "I could no pick up ~A" *type*)))
        (t (speak-jp (format nil "~Aを取り出しませんでした。" *type*))))
     (speak-jp (format nil "~A を とりだし ません でした" *type*)))
-  (when move (send *ri* :go-pos-unsafe -0.3 0.05 -20)) ;; g-rarm
+  (when move (send *ri* :go-pos-unsafe -0.3 0.05 (- rotation))) ;; g-rarm
   (send *ri* :ros-wait 1.0 :spin-self t :spin t) ;; attention-check ...
   nil)
 
@@ -1074,6 +1069,7 @@
 ;;     (send *pr2* :larm :end-coords :dissoc target) ;; ???
 
     ;; move arms apart
+    (send *pr2* :torso :waist-z :joint-angle (+ (send *pr2* :torso :waist-z :joint-angle) 100))
     (send *pr2* :arms :move-end-pos (float-vector 0 0 100) :world)
     (send *pr2* :arms :move-end-pos (float-vector 0 0 100) :world)
     (if (boundp '*irtviewer*) (send *irtviewer* :draw-objects))
