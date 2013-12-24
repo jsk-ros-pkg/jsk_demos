@@ -276,6 +276,7 @@
 ;;
 (setq *demo-type* :short)
 (setq *finish-type* :pass-to-human)
+(setq *use-arm* :rarm)
 (make-attention-action move-to (&rest args)
   (let ((dst (car (last args)))
         (src (car (last (butlast args)))))
@@ -293,16 +294,27 @@
            (eq dst 'pregrasp))
       (send *ri* :ros-wait 0.0 :spin-self t :spin t) ;; attention-check ...
       (ros::ros-info "GO POS UNSAFE for grasping can")
-      (send *ri* :go-pos-unsafe 0 0 (rad2deg 0.38))
-      (send *ri* :go-pos-unsafe 0.185 -0.25 0) ;;
-      (send *ri* :wait-interpolation)
-      )
+      (cond
+       ((and (boundp *use-arm*) (eq *use-arm* :larm))
+        ;; larm
+        )
+       (t ;; rarm
+        (send *ri* :go-pos-unsafe 0 0 (rad2deg 0.38))
+        (send *ri* :go-pos-unsafe 0.185 -0.25 0) ;;
+        (send *ri* :wait-interpolation))
+       ))
      ((and (eq src 'pregrasp)
            (eq dst 'preclose))
       (send *ri* :ros-wait 0.0 :spin-self t :spin t) ;; attention-check ...
       (ros::ros-info "GO POS UNSAFE for grasping can")
-      (send *ri* :go-pos-unsafe -0.3 0.05 -20)
-      (send *ri* :wait-interpolation)
+      (cond
+       ((and (boundp *use-arm*) (eq *use-arm* :larm))
+        ;; larm
+        )
+       (t
+        (send *ri* :go-pos-unsafe -0.3 0.05 -20)
+        (send *ri* :wait-interpolation)
+        ))
       )
      ((or (and (eq src 'preclose)
                (eq dst 'start))
@@ -313,6 +325,7 @@
          (goto-initial-position :finish-type *finish-type*))
         (t
          (goto-initial-position
+          :use-arm (if (boundp *use-arm*) *use-arm* :rarm)
           :return-to-initial-position nil :turnp t
           :finish-type *finish-type*)))
       )
@@ -328,28 +341,40 @@
   )
 
 (make-attention-action open-door (&rest args)
-  (open-fridge-door :torso-lift 25 :head-pitch 14)
+  (open-fridge-door :torso-lift 25 :head-pitch 14
+                    :use-arm (if (boundp *use-arm*) *use-arm* :rarm))
   )
 
 (make-attention-action grasp-object (&rest args)
-  (grasp-can :move nil)
+  (grasp-can :move nil :use-arm (if (boundp *use-arm*) *use-arm* :rarm))
   )
 
 (make-attention-action close-door (&rest args)
-  (close-fridge)
+  (close-fridge :use-arm (if (boundp *use-arm*) *use-arm* :rarm))
   )
 
 (make-attention-action try-close (&rest args)
-  (close-fridge)
+  (close-fridge :use-arm (if (boundp *use-arm*) *use-arm* :rarm))
   )
 
 #|
 ;; initialize demo
+(require :eus-pddl-client "package://pddl_planner/src/eus-pddl-client.l")
+(require :pddl-result-graph "package://pddl_planner/src/pddl-result-graph.l")
+(load "package://roseus_smach/src/pddl2smach.l")
+(load "package://roseus_smach/src/state-machine-ros.l")
+(setq *sm-inspect* (pddl-graph-to-smach
+                    (with-open-file
+                     (f (ros::resolve-ros-path "package://pddl_planner/demos/2013_fridge_demo/solved-fridge-graph.l"))
+                     (read f))))
+(unix::sleep 1)
 (send *sm-inspect* :reset-state)
-(initialize-demo "georgia")
 
+(progn
+  (initialize-demo "georgia")
 ;; do demo
-(setq sequence (exec-smach-with-interrupt *sm-inspect*))
+  (setq sequence (exec-smach-with-interrupt *sm-inspect*))
+)
 
 ;; retry
 (exec-smach-with-interrupt *sm-inspect* :state (car sequence))
@@ -441,4 +466,23 @@
     ))
 |#
 
-(provide :attention-observation)
+#|
+(defun move-arm-test ()
+  (send *pr2* :angle-vector #f(50.0 22.2332 20.5759 44.2506 -48.2925 17.9101 -11.6638 180.0 -60.0 74.0 -70.0 -120.0 -20.0 -30.0 180.0 0.0 0.0))
+  (send *ri* :angle-vector (send *pr2* :angle-vector) 14000)
+  (send *ri* :wait-interpolation)
+  )
+
+(defun smach-base-function (func)
+  (setq *smach-pre-state*
+        (list (list :posture (send *pr2* :angle-vector))
+              (list :coords (send *pr2* :copy-worldcoords))))
+
+  (prog1  (funcall func)
+    (setq *smach-pre-state* nil)
+    (setq *smach-post-state*
+          (list (list :posture (send *pr2* :angle-vector))
+                (list :coords (send *pr2* :copy-worldcoords))))
+    )
+  )
+|#
