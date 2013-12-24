@@ -426,9 +426,9 @@
 ;; actions
 ;;
 (warn ";; define grasp-can-single")
-(defun grasp-can-single (obj &key (rotation 0) (arm :rarm) (grasp-depth 35))
+(defun grasp-can-single (obj &key (rotation 0) (use-arm :rarm) (grasp-depth 35))
   (let (via1 via2 tar orig-av)
-    (send *ri* :stop-grasp :rarm)
+    (send *ri* :stop-grasp use-arm)
     (send *tfb* :send-transform
           (send (send *pr2* :worldcoords) :transformation (send obj :worldcoords))
           "/base_footprint" "/objecta_pose_frame")
@@ -460,11 +460,11 @@
           via2 "/base_footprint" "/objecta_pose_frame_via2")
 
     ;; move to via1
-    (send *pr2* arm :inverse-kinematics
+    (send *pr2* use-arm :inverse-kinematics
           (send via1 :transform (send *pr2* :worldcoords) :world)
           :rotation-axis t)
     (send *tfb* :send-transform
-          (send (send *pr2* :worldcoords) :transformation (send *pr2* arm :end-coords))
+          (send (send *pr2* :worldcoords) :transformation (send *pr2* use-arm :end-coords))
           "/base_footprint" "/objecta_pose_end_coords")
 
     ;;(send *ri* :angle-vector (send *pr2* :angle-vector))
@@ -476,19 +476,19 @@
      ((null *use-arm-navigation*)
       (send *ri* :angle-vector (send *pr2* :angle-vector))
       (send *ri* :wait-interpolation))
-     ((send *plan-env* :get-ik-for-pose (send *plan-env* :get-robot-coords :rarm) :rarm)
+     ((send *plan-env* :get-ik-for-pose (send *plan-env* :get-robot-coords use-arm) use-arm)
       (ros::ros-warn ";; can not solve collision free IK")
       (send *ri* :angle-vector (send *pr2* :angle-vector))
       (send *ri* :wait-interpolation))
      (t
-      (when (send *plan-env* :planning-move-arm arm :planning-time 4.0)
+      (when (send *plan-env* :planning-move-arm use-arm :planning-time 4.0)
         (ros::ros-warn ";; can not solve collision free Plan")
         (send *ri* :angle-vector (send *pr2* :angle-vector))
         (send *ri* :wait-interpolation))
       ))
 
     ;; move to via2 (grasping pose)
-    (send *pr2* arm :inverse-kinematics
+    (send *pr2* use-arm :inverse-kinematics
           (send via2 :transform (send *pr2* :worldcoords) :world)
           :rotation-axis t)
     ;; check IK
@@ -509,10 +509,10 @@
     (send *ri* :wait-interpolation)
 
     ;; grasp
-    (send *ri* :start-grasp arm)
+    (send *ri* :start-grasp use-arm)
 
     ;; move to via1
-    (send *pr2* :rarm :inverse-kinematics
+    (send *pr2* use-arm :inverse-kinematics
           (send via1 :transform (send *pr2* :worldcoords) :world)
           :rotation-axis t)
     ;; check IK
@@ -521,13 +521,13 @@
      ((null *use-arm-navigation*)
       (send *ri* :angle-vector (send *pr2* :angle-vector))
       (send *ri* :wait-interpolation))
-     ((send *plan-env* :get-ik-for-pose (send *plan-env* :get-robot-coords arm) arm)
+     ((send *plan-env* :get-ik-for-pose (send *plan-env* :get-robot-coords use-arm) use-arm)
       (ros::ros-warn ";; can not solve collision free IK")
       ;; move to via1
       (send *ri* :angle-vector (send *pr2* :angle-vector))
       (send *ri* :wait-interpolation))
      (t
-      (when (send *plan-env* :planning-move-arm arm :planning-time 4.0)
+      (when (send *plan-env* :planning-move-arm use-arm :planning-time 4.0)
         (ros::ros-warn ";; can not solve collision free Plan")
         (send *ri* :angle-vector (send *pr2* :angle-vector))
         (send *ri* :wait-interpolation))
@@ -576,6 +576,7 @@
 (defvar *fridge-rotation-threshold* 0.09)
 (defun open-fridge-door (&key (open-fridge-func #'open-fridge-traj)
                               (torso-lift 30) (head-pitch 14)
+                              (use-arm :rarm)
                               (door-type :circle) (look-around nil)) ;; :circle, :slide1, :slide2
   (defparameter *detection-topic* "/openni/rgb/ObjectDetection")
   (let (ret
@@ -770,22 +771,27 @@
              (list 1400 1400 1000 1000 4500 1500 2000))
        (send *ri* :wait-interpolation)
 
-       ;; grasp rarm
-       (send *pr2* :angle-vector (float-vector 199.971 5.30455 72.1244 105.231 -88.5188 -69.9972 -5.72958 19.9717 31.3839 25.5029 23.0531 -118.916 160.305 -84.1469 160.058 -20 24))
-       (let ((cds (send *pr2* :rarm :end-coords :copy-worldcoords)))
-         ;; pre grasp pose
-         (send cds :rotate (- (deg2rad 20)) :z)
-         (send *pr2* :rarm :inverse-kinematics cds))
-       (send *ri* :angle-vector (send *pr2* :angle-vector) 1400)
-       ;; grasp larm
-#|
-       (send *pr2* :angle-vector (float-vector 199.971 -32.3186 26.4366 -19.6876 -118.217 -138.147 -78.3509 -166.767 -5.30455 72.1244 -105.231 -88.5188 69.9972 -5.72958 -19.9717 20.0 24.0))
-       (send *ri* :angle-vector-sequence
-             (list (float-vector 150.0 5.0 74.0 70.0 -75.0 -70.0 -6.0 20.0 -20.0 20.0 -34.0 -110.0 12.0 -38.0 74.0 -2.0 31.0)
-                   (float-vector 150.0 25.0 54.0 20.0 -120.0 -70.0 -6.0 20.0 -12.0 46.0 -79.0 -45.0 40.0 -22.0 27.0 -2.0 31.0)
-                   (send *pr2* :angle-vector))
-             (list 1400 800 800))
-|#
+       (case use-arm
+        (:rarm
+         ;; grasp rarm
+         (send *pr2* :angle-vector (float-vector 199.971 5.30455 69.0 105.231 -88.5188 -69.9972 -5.72958 19.9717 31.3839 25.5029 23.0531 -118.916 160.305 -84.1469 160.058 -20 24))
+         (let ((cds (send *pr2* :rarm :end-coords :copy-worldcoords)))
+           ;; pre grasp pose
+           (send cds :rotate (- (deg2rad 20)) :z)
+           (send *pr2* :rarm :inverse-kinematics cds))
+         (send *ri* :angle-vector (send *pr2* :angle-vector) 1400)
+         )
+        (:larm
+         ;; grasp larm
+         (send *pr2* :angle-vector (float-vector 199.971 -32.3186 26.4366 -19.6876 -118.217 -138.147 -78.3509 -166.767 -5.30455 69.0 -105.231 -88.5188 69.9972 -5.72958 -19.9717 20.0 24.0))
+         (send *ri* :angle-vector-sequence
+               (list (float-vector 150.0 5.0 74.0 70.0 -75.0 -70.0 -6.0 20.0 -20.0 20.0 -34.0 -110.0 12.0 -38.0 74.0 -2.0 31.0)
+                     ;;(float-vector 150.0 25.0 54.0 20.0 -120.0 -70.0 -6.0 20.0 -12.0 46.0 -79.0 -45.0 40.0 -22.0 27.0 -2.0 31.0)
+                     (float-vector 150.0 25.0 54.0 20.0 -120.0 -70.0 -6.0 20.0 -22.0 66.0 -79.0 -65.0 -40.0 -72.0 27.0 -2.0 31.0)
+                     (send *pr2* :angle-vector))
+               (list 1400 1200 800))
+         (send *ri* :start-grasp :rarm)
+         ))
        )
       ((:slide1 :slide2)
        (let ((rend (send *pr2* :rarm :end-coords :copy-worldcoords))
@@ -804,7 +810,7 @@
          (send *pr2* :rarm :angle-vector #f(-45.0 55.0 -15.0 -120.0 12.0 -38.0 74.0))
          (send *ri* :angle-vector (send *pr2* :angle-vector) 1600)
          ))
-      )
+      ) ;; / (case door-type
     (send *ri* :ros-wait 0.0 :spin-self t) ;; attention-check ...
     (send *ri* :wait-interpolation)
     t
@@ -812,13 +818,21 @@
 
 (warn ";; define grasp-can")
 (defvar *use-arm-navigation* nil)
-(defun grasp-can (&key (move t) (rotation 20))
+(defun grasp-can (&key (move t) (rotation 20) (use-arm :rarm))
   ;; move-to spot for grasping
+  (if (eq use-arm :larm) (setq rotation (- rotation)))
   (when move
     (send *ri* :ros-wait 0.0 :spin-self t :spin t) ;; attention-check ...
     (ros::ros-info "GO POS UNSAFE for grasping can")
-    (send *ri* :go-pos-unsafe 0 0 rotation) ;; g-rarm
-    (send *ri* :go-pos-unsafe 0.185 -0.25 0) ;; g-rarm
+    (case use-arm
+      (:rarm
+       (send *ri* :go-pos-unsafe 0 0 rotation) ;; g-rarm
+       (send *ri* :go-pos-unsafe 0.185 -0.25 0) ;; g-rarm
+       )
+      (:larm
+       (send *ri* :go-pos-unsafe 0 0 rotation) ;; g-rarm
+       (send *ri* :go-pos-unsafe 0.33 -0.05 0) ;; g-rarm
+       ))
     (send *ri* :wait-interpolation))
 
   (send *ri* :ros-wait 0.0 :spin-self t :spin t) ;; attention-check ...
@@ -851,10 +865,15 @@
           (send *pr2* :angle-vector (send *ri* :state :potentio-vector))
           (send cds :transform (send *pr2* :worldcoords) :world)
           (setq *last-can-coords* cds)
-          (grasp-can-single cds :rotation rotation)
-          (setq isgrasp (< 10 (send *ri* :start-grasp :rarm))) ;; g-rarm
+          (grasp-can-single cds :rotation rotation :use-arm use-arm)
+          (setq isgrasp (< 10 (send *ri* :start-grasp use-arm)))
           (when isgrasp
-            (when move (send *ri* :go-pos-unsafe -0.3 0.05 (- rotation))) ;; g-rarm
+            (when move
+              (case use-arm
+                (:rarm
+                 (send *ri* :go-pos-unsafe -0.3 0.05 (- rotation)))
+                (:larm
+                 (send *ri* :go-pos-unsafe -0.3 -0.2 (- rotation)))))
             (send *ri* :ros-wait 1.0 :spin-self t :spin t) ;; attention-check ...
             (return-from grasp-can t))
           ;; (unix::sleep 2)
@@ -864,7 +883,7 @@
                 (speak-jp "I failed to pick up. I will retry."))
                (t (speak-jp "失敗しましたもう一度やってみます。")))
             (speak-jp "しっぱいしました  もういちど やって みます"));;
-          )
+          ) ;; / (when cds
         )))
   (if (and (boundp '*use-voicetext*) *use-voicetext*)
       (cond
@@ -872,33 +891,64 @@
         (speak-jp (format nil "I could no pick up ~A" *type*)))
        (t (speak-jp (format nil "~Aを取り出しませんでした。" *type*))))
     (speak-jp (format nil "~A を とりだし ません でした" *type*)))
-  (when move (send *ri* :go-pos-unsafe -0.3 0.05 (- rotation))) ;; g-rarm
+  (when move
+    (case use-arm
+      (:rarm
+       (send *ri* :go-pos-unsafe -0.3 0.05 (- rotation)))
+      (:larm
+       (send *ri* :go-pos-unsafe -0.3 -0.2 (- rotation)))))
   (send *ri* :ros-wait 1.0 :spin-self t :spin t) ;; attention-check ...
   nil)
 
 (warn ";; define close-fridge")
-(defun close-fridge ()
+(defun close-fridge (&key (use-arm :rarm))
   ;; close the door of fridge
   (send *ri* :ros-wait 0.0 :spin-self t) ;; attention-check ...
-  (send *ri* :angle-vector-sequence
-        (list (float-vector 180 5 74 100 -90 -70 -6 20 -13 50 -30 -25 118 -90 62 -2 31);; 2000
-              (float-vector 150 5 74 100 -90 -70 -6 20 -50 54 -15 -43 118 -90 62 -2 31);; 1000
-              (float-vector 120 5 74 100 -90 -70 -6 20 -80 10 -39 -33 -49 -32 89 -2 32);; 1500
-              (float-vector 100 5 74 100 -90 -70 -6 20 -61 6 -74 -44 55 -75 102 -2 33) ;; 1500 ;; pre-close
-              ;;(float-vector 50 5 74 100 -90 -70 -6 20 9.05631 26.4211 -42.0907 -111.215 97.6198 -19.5577 -24.0422 -2.0 33.0)
-              (float-vector 75 5 74 100 -90 -70 -6 20
-                            ;;-18.5 5 -70 -39 66 -48 66
-                            -35 13 -71 -89 50 -53 46
-                            -2.0 33.0) ;; 2400
-              (float-vector 50 5 74 100 -90 -70 -6 20
-                            24 3 -2 -18 -40 -16 0
-                            -2.0 33.0))  ;; 2500
-        (list 2000 1000 1500 1500 2600 3000))
+
+  (case use-arm
+    (:rarm
+     (send *ri* :angle-vector-sequence
+           (list (float-vector 180 5 74 100 -90 -70 -6 20 -13 50 -30 -25 118 -90 62 -2 31);; 2000
+                 (float-vector 150 5 74 100 -90 -70 -6 20 -50 54 -15 -43 118 -90 62 -2 31);; 1000
+                 (float-vector 120 5 74 100 -90 -70 -6 20 -80 10 -39 -33 -49 -32 89 -2 32);; 1500
+                 (float-vector 100 5 74 100 -90 -70 -6 20 -61 6 -74 -44 55 -75 102 -2 33) ;; 1500 ;; pre-close
+                 ;;(float-vector 50 5 74 100 -90 -70 -6 20 9.05631 26.4211 -42.0907 -111.215 97.6198 -19.5577 -24.0422 -2.0 33.0)
+                 (float-vector 75 5 74 100 -90 -70 -6 20
+                               ;;-18.5 5 -70 -39 66 -48 66
+                               -35 13 -71 -89 50 -53 46
+                               -2.0 33.0) ;; 2400
+                 (float-vector 50 5 74 100 -90 -70 -6 20
+                               24 3 -2 -18 -40 -16 0
+                               -2.0 33.0))  ;; 2500
+           (list 2000 1000 1500 1500 2600 3000))
+     )
+    (:larm
+     (send *ri* :angle-vector-sequence
+           (list ;;(float-vector 180.0 45.0 74.0 100.0 -90.0 -70.0 -36.0 20.0 -13.0 50.0 -30.0 -25.0 118.0 -90.0 62.0 -2.0 31.0)
+                 (float-vector 180.0 45.0 74.0 100.0 -90.0 -70.0 -36.0 20.0 -33.0 35.0 -30.0 -25.0 118.0 -90.0 62.0 -2.0 31.0)
+                 (float-vector 180 5 74 100 -90 -70 -6 20 -13 50 -30 -25 118 -90 62 -2 31);; 2000
+                 (float-vector 150 5 74 100 -90 -70 -6 20 -50 54 -15 -43 118 -90 62 -2 31);; 1000
+                 (float-vector 120 5 74 100 -90 -70 -6 20 -80 10 -39 -33 -49 -32 89 -2 32);; 1500
+                 (float-vector 100 5 74 100 -90 -70 -6 20 -61 6 -74 -44 55 -75 102 -2 33) ;; 1500 ;; pre-close
+                 ;;(float-vector 50 5 74 100 -90 -70 -6 20 9.05631 26.4211 -42.0907 -111.215 97.6198 -19.5577 -24.0422 -2.0 33.0)
+                 (float-vector 75 5 74 100 -90 -70 -6 20
+                               ;;-18.5 5 -70 -39 66 -48 66
+                               -35 13 -71 -89 50 -53 46
+                               -2.0 33.0) ;; 2600
+                 (float-vector 50 5 74 100 -90 -70 -6 20
+                               24 3 -2 -18 -40 -16 0
+                               -2.0 33.0)  ;; 2500
+                 (float-vector 50 5 74 100 -90 -70 -6 20
+                               24 3 -2 -18 -40 -16 0
+                               -2.0 33.0)  ;; 700 / wait at same pose
+                 (float-vector 50.0 5.0 74.0 100.0 -90.0 -70.0 -6.0 20.0 -24.0 -14.0 -2.0 -68.0 -40.0 -16.0 0.0 -2.0 33.0)
+                 )
+           (list 1400 800 1000 1500 1500 2600 2500 700 1200))
+     ))
   (send *ri* :wait-interpolation)
   (send *pr2* :angle-vector (send *ri* :state :potentio-vector))
   (send *ri* :ros-wait 0.0 :spin-self t) ;; attention-check ...
-  (pr2-tuckarm-pose :rarm) ;; g-rarm
-  ;; (pr2-tuckarm-pose :larm) ;; g-larm
+  (pr2-tuckarm-pose use-arm)
   t
   )
 
