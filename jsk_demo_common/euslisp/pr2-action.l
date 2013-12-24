@@ -426,7 +426,7 @@
 ;; actions
 ;;
 (warn ";; define grasp-can-single")
-(defun grasp-can-single (obj &key (rotation 0))
+(defun grasp-can-single (obj &key (rotation 0) (arm :rarm))
   (let (via1 via2 tar orig-av)
     (send *ri* :stop-grasp :rarm)
     (send *tfb* :send-transform
@@ -442,15 +442,17 @@
 
     (setq tar (send (send (send *pr2* :worldcoords) :transformation
                           (send obj :worldcoords)) :copy-worldcoords))
-    (send tar :orient 0 :z :world)
+    (send tar :orient (deg2ead rotation) :z :world)
 
     (setq via1 (send tar :copy-worldcoords))
-    (send via1 :translate (float-vector (* (cos (deg2rad rotation)) -100)
-                                        (* (sin (deg2rad rotation))  100) 0) :world)
+    ;;(send via1 :translate (float-vector (* (cos (deg2rad rotation)) -100)
+    ;;(* (sin (deg2rad rotation))  100) 0) :world)
+    (send via1 :translate (float-vector -100 0 0))
 
     ;; via2
     (setq via2 (send tar :copy-worldcoords))
-    (send via2 :translate (float-vector 30 0 0) :world)
+    ;;(send via2 :translate (float-vector 30 0 0) :world)
+    (send via1 :translate (float-vector 30 0 0))
 
     ;; publish tf
     (send *tfb* :send-transform
@@ -461,11 +463,11 @@
           via2 "/base_footprint" "/objecta_pose_frame_via2")
 
     ;; move to via1
-    (send *pr2* :rarm :inverse-kinematics
+    (send *pr2* arm :inverse-kinematics
           (send via1 :transform (send *pr2* :worldcoords) :world)
           :rotation-axis t)
     (send *tfb* :send-transform
-          (send (send *pr2* :worldcoords) :transformation (send *pr2* :rarm :end-coords))
+          (send (send *pr2* :worldcoords) :transformation (send *pr2* arm :end-coords))
           "/base_footprint" "/objecta_pose_end_coords")
 
     ;;(send *ri* :angle-vector (send *pr2* :angle-vector))
@@ -482,14 +484,14 @@
       (send *ri* :angle-vector (send *pr2* :angle-vector))
       (send *ri* :wait-interpolation))
      (t
-      (when (send *plan-env* :planning-move-arm :rarm :planning-time 4.0)
+      (when (send *plan-env* :planning-move-arm arm :planning-time 4.0)
         (ros::ros-warn ";; can not solve collision free Plan")
         (send *ri* :angle-vector (send *pr2* :angle-vector))
         (send *ri* :wait-interpolation))
       ))
 
     ;; move to via2 (grasping pose)
-    (send *pr2* :rarm :inverse-kinematics
+    (send *pr2* arm :inverse-kinematics
           (send via2 :transform (send *pr2* :worldcoords) :world)
           :rotation-axis t)
     ;; check IK
@@ -510,7 +512,7 @@
     (send *ri* :wait-interpolation)
 
     ;; grasp
-    (send *ri* :start-grasp :rarm)
+    (send *ri* :start-grasp arm)
 
     ;; move to via1
     (send *pr2* :rarm :inverse-kinematics
@@ -522,13 +524,13 @@
      ((null *use-arm-navigation*)
       (send *ri* :angle-vector (send *pr2* :angle-vector))
       (send *ri* :wait-interpolation))
-     ((send *plan-env* :get-ik-for-pose (send *plan-env* :get-robot-coords :rarm) :rarm)
+     ((send *plan-env* :get-ik-for-pose (send *plan-env* :get-robot-coords arm) arm)
       (ros::ros-warn ";; can not solve collision free IK")
       ;; move to via1
       (send *ri* :angle-vector (send *pr2* :angle-vector))
       (send *ri* :wait-interpolation))
      (t
-      (when (send *plan-env* :planning-move-arm :rarm :planning-time 4.0)
+      (when (send *plan-env* :planning-move-arm arm :planning-time 4.0)
         (ros::ros-warn ";; can not solve collision free Plan")
         (send *ri* :angle-vector (send *pr2* :angle-vector))
         (send *ri* :wait-interpolation))
@@ -777,7 +779,16 @@
          ;; pre grasp pose
          (send cds :rotate (- (deg2rad 20)) :z)
          (send *pr2* :rarm :inverse-kinematics cds))
-       (send *ri* :angle-vector (send *pr2* :angle-vector))
+
+       ;; grasp larm
+#|
+       (send *pr2* :angle-vector (float-vector 199.971 -32.3186 26.4366 -19.6876 -118.217 -138.147 -78.3509 -166.767 -5.30455 72.1244 -105.231 -88.5188 69.9972 -5.72958 -19.9717 20.0 24.0))
+       (send *ri* :angle-vector-sequence
+             (list (float-vector 150.0 5.0 74.0 70.0 -75.0 -70.0 -6.0 20.0 -20.0 20.0 -34.0 -110.0 12.0 -38.0 74.0 -2.0 31.0)
+                   (float-vector 150.0 25.0 54.0 20.0 -120.0 -70.0 -6.0 20.0 -12.0 46.0 -79.0 -45.0 40.0 -22.0 27.0 -2.0 31.0)
+                   (send *pr2* :angle-vector))
+             (list 1400 800 800))
+|#
        )
       ((:slide1 :slide2)
        (let ((rend (send *pr2* :rarm :end-coords :copy-worldcoords))
@@ -809,8 +820,8 @@
   (when move
     (send *ri* :ros-wait 0.0 :spin-self t :spin t) ;; attention-check ...
     (ros::ros-info "GO POS UNSAFE for grasping can")
-    (send *ri* :go-pos-unsafe 0 0 (rad2deg 0.38))
-    (send *ri* :go-pos-unsafe 0.185 -0.25 0) ;; 
+    (send *ri* :go-pos-unsafe 0 0 (rad2deg 0.38)) ;; g-rarm
+    (send *ri* :go-pos-unsafe 0.185 -0.25 0) ;; g-rarm
     (send *ri* :wait-interpolation))
 
   (send *ri* :ros-wait 0.0 :spin-self t :spin t) ;; attention-check ...
@@ -846,9 +857,9 @@
             (setq rotation 0))
           (send cds :transform (send *pr2* :worldcoords) :world)
           (grasp-can-single cds :rotation rotation)
-          (setq isgrasp (< 10 (send *ri* :start-grasp :rarm)))
+          (setq isgrasp (< 10 (send *ri* :start-grasp :rarm))) ;; g-rarm
           (when isgrasp
-            (when move (send *ri* :go-pos-unsafe -0.3 0.05 -20))
+            (when move (send *ri* :go-pos-unsafe -0.3 0.05 -20)) ;; g-rarm
             (send *ri* :ros-wait 1.0 :spin-self t :spin t) ;; attention-check ...
             (return-from grasp-can t))
           ;; (unix::sleep 2)
@@ -866,7 +877,7 @@
         (speak-jp (format nil "I could no pick up ~A" *type*)))
        (t (speak-jp (format nil "~Aを取り出しませんでした。" *type*))))
     (speak-jp (format nil "~A を とりだし ません でした" *type*)))
-  (when move (send *ri* :go-pos-unsafe -0.3 0.05 -20))
+  (when move (send *ri* :go-pos-unsafe -0.3 0.05 -20)) ;; g-rarm
   (send *ri* :ros-wait 1.0 :spin-self t :spin t) ;; attention-check ...
   nil)
 
@@ -891,7 +902,8 @@
   (send *ri* :wait-interpolation)
   (send *pr2* :angle-vector (send *ri* :state :potentio-vector))
   (send *ri* :ros-wait 0.0 :spin-self t) ;; attention-check ...
-  (pr2-tuckarm-pose :rarm)
+  (pr2-tuckarm-pose :rarm) ;; g-rarm
+  ;; (pr2-tuckarm-pose :larm) ;; g-larm
   t
   )
 
@@ -1040,15 +1052,15 @@
     (send *pr2* :angle-vector (send *ri* :state :potentio-vector))
     (send *pr2* :arms :move-end-pos (float-vector 0 0 -200) :world)
     (send *ri* :angle-vector (send *pr2* :angle-vector) 5000)
+    (ros::rate 10)
     (let* (av
           (prev-cds #f(0 0 0))
           (diff-height (abs (- (elt prev-cds 2) (elt (apply #'midpoint 0.5 (send *pr2* :arms :end-coords :worldpos)) 2)))))
-      (while (> diff-height 0.5)
+      (while (> diff-height 0.05)
         (ros::ros-info "diff height: ~A" diff-height)
         (setq prev-cds (apply #'midpoint 0.5 (send *pr2* :arms :end-coords :worldpos)))
         (send *ri* :update-robot-state)
         (send *pr2* :angle-vector (send *ri* :state :potentio-vector))
-        (unix:usleep 200000)
         (ros::spin-once)
         (ros::sleep)
         (setq diff-height (abs (- (elt prev-cds 2) (elt (apply #'midpoint 0.5 (send *pr2* :arms :end-coords :worldpos)) 2))))
@@ -1067,7 +1079,7 @@
     (if (boundp '*irtviewer*) (send *irtviewer* :draw-objects))
     (send *ri* :angle-vector (send *pr2* :angle-vector) 1000)
     (send *ri* :wait-interpolation)
-    (send *pr2* :arms :move-end-pos (float-vector -100 0 0) *pr2*)
+    (send *pr2* :arms :move-end-pos (float-vector -250 0 -50) *pr2*)
     (send *ri* :angle-vector (send *pr2* :angle-vector) 1000)
     (send *ri* :wait-interpolation)
 
