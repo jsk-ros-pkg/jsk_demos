@@ -2,7 +2,6 @@
 (defvar *use-english* nil)
 
 ;; open fridge and pick a can (and close the door)
-(load "package://jsk_2011_07_pr2_semantic/euslisp/actions.l")
 (require :pr2-interface "package://pr2eus/pr2-interface.l")
 ;;(load "package://pr2eus_openrave/pr2eus-openrave.l")
 ;;(load "package://pr2eus_armnavigation/pr2eus-arm-navigation.l")
@@ -97,7 +96,8 @@
                   (demo-type :map)  ;; :map, :short, ...
                   (app-manager :false)
                   (finish-type :pass-to-human) ;; :pass-to-human, :put-on-turtlebot, ...
-                  (use-arm :rarm)
+                  ;;(use-arm :rarm)
+                  (use-arm :larm)
                   )
   (case app-manager
     (:true
