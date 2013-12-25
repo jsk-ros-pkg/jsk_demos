@@ -1,4 +1,3 @@
-(load "package://jsk_2011_07_pr2_semantic/euslisp/actions.l")
 (require :pr2-interface "package://pr2eus/pr2-interface.l")
 (require :pr2-move "package://jsk_demo_common/euslisp/pr2-move.l")
 (require :pr2-action "package://jsk_demo_common/euslisp/pr2-action.l")
