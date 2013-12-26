@@ -578,7 +578,6 @@
                               (torso-lift 30) (head-pitch 14)
                               (use-arm :rarm)
                               (door-type :circle) (look-around nil)) ;; :circle, :slide1, :slide2
-  (defparameter *detection-topic* "/openni/rgb/ObjectDetection")
   (let (ret
         (idealcds
         (case door-type
@@ -613,8 +612,9 @@
     ;; detect fridge and open door
     (dotimes (i 10 nil)
       ;; finding handle position
-      (setq cds (check-detection :type "fridge" :speak-name *frige-speak-str*))
-
+      (setq cds (check-detection :type "fridge" :speak-name *frige-speak-str*
+                                 :detection-topic "/openni/rgb/ObjectDetection"
+                                 ))
       ;; need detection fail check
       (send *ri* :ros-wait 0.0 :spin-self t) ;; attention-check ...
       (when cds
@@ -1106,6 +1106,7 @@
         (setq prev-cds (apply #'midpoint 0.5 (send *pr2* :arms :end-coords :worldpos)))
         (send *ri* :update-robot-state)
         (send *pr2* :angle-vector (send *ri* :state :potentio-vector))
+        (unix:usleep 100000)
         (ros::spin-once)
         (ros::sleep)
         (setq diff-height (abs (- (elt prev-cds 2) (elt (apply #'midpoint 0.5 (send *pr2* :arms :end-coords :worldpos)) 2))))
@@ -1321,5 +1322,56 @@
     (ros::ros-info "wait for touching robot hand")
     (send client :wait-for-result :timeout timeout))
   )
+
+(defun hand-over (arm &key (wait-shock nil))
+  (ros::spin-once)
+  (let* ((av (send *ri* :state :potentio-vector))
+         (tuckarm (check-tuckarm-pose))
+         (isfreearm (eq arm tuckarm))
+         ;; this is for :larm
+         (avs (list #f(12 0 64 70 -122 50 -115 160 -4 74 -105 -90 70 -5 20 2 15)
+                    #f(12 6 9 106 -77 35 -124 -128 -4 75 -104 -89 70 0 20 3 30)
+                    #f(12 13 21 62 -105 -117 -66 -71 -4 74 -104 -89 70 -5 20 4 40)
+                    #f(12 9 24 50 -94 -158 -70 39 -4 74 -104 -89 70 -5 20 5 30)))
+         (tms (make-list (length avs) :initial-element 1000))
+         (l-r-reverse #f(1  -1 1 -1 1 -1 1 -1  -1 1 -1 1 -1 1 -1  -1 1)))
+    ;;
+    (if (eq arm :rarm)
+        (setq avs
+              (mapcar #'(lambda(av)
+                          (map float-vector #'*
+                               (concatenate float-vector
+                                            (subseq av 0 1) (subseq av 8 15)
+                                            (subseq av 1 8) (subseq av 15 17))
+                               l-r-reverse))
+                      avs)))
+    ;;
+    (unless isfreearm
+      (pr2-reset-pose)
+      (setq avs (subseq avs (- (length avs) 2))
+            tms (subseq tms (- (length avs) 2))
+            av (send *ri* :state :potentio-vector))
+      (setq tuckarm arm))
+    ;;
+    (send *ri* :angle-vector-sequence avs tms)
+    (send *ri* :wait-interpolation)
+    ;;
+    (if (and wait-shock (not (numberp wait-shock))) ;; if wait-shock = t
+        (setq wait-shock 10))
+    (if wait-shock
+        (progn (wait-for-hand-impact arm :timeout wait-shock)
+               (ros::ros-info "return from gripper sensor event")
+               (send *ri* :move-gripper arm 0.08 :wait t))
+      (progn
+        (send *ri* :move-gripper arm 0.08 :wait t)
+        (unix::sleep 3)))
+    ;;
+    (send *ri* :angle-vector-sequence (append (cdr (reverse avs)) (list av)) tms)
+    (send *ri* :move-gripper arm 0.00 :wait nil)
+    (send *ri* :wait-interpolation)
+    ;;
+    (send *pr2* :angle-vector (send *ri* :state :potentio-vector))
+    (pr2-tuckarm-pose tuckarm)
+    ))
 
 (provide :pr2-action)
