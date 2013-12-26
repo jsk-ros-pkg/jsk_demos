@@ -32,10 +32,9 @@
     (when (> (length *average-vector-list*) *average-count*)
       (setq *average-vector-list* (butlast *average-vector-list*))
       )
-    (setq *average-power*
-          (mean-vector-list *average-vector-list*))
+    (setq *average-power* (mean-vector-list *average-vector-list*))
 
-    #| debug print
+    #|;;debug print
     (pprint (list *average-power*
                   (vmean *average-power*)
                   (v- pw *average-power*)
@@ -55,7 +54,7 @@
 (ros::subscribe "/HarkPower" jsk_hark_msgs::HarkPower #'callback)
 (ros::advertise "/HarkPower_ave" jsk_hark_msgs::HarkPower)
 
-(setq *pmax-countr* 0)
+(setq *pmax-counter* 0)
 (setq *pmax-threshold* 2.0)
 (defun sound-attention ()
   (when *pub-msg*
@@ -66,15 +65,16 @@
       (setq pmax (apply #'max (coerce powers cons)))
       (if (> pmax *pmax-threshold*) (incf *pmax-counter*))
       (when (> *pmax-counter* 1)
-        (return sound-attention t))
+        (setq *pmax-counter* 0)
+        (return-from sound-attention t))
       ;;
       ))
   nil)
-
 #|
 (do-until-key
  (ros::spin-once)
- (send *ri* :spin-once)
+ ;;(send *ri* :spin-once)
+ (ros::spin-once)
  (sound-attention)
  )
 |#
