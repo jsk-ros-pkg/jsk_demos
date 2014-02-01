@@ -1,14 +1,6 @@
 #!/usr/bin/env roseus
 ;; mostly same to demo-eus.l in pddl package under jsk subversion trunk
-(ros::ros-info "/pddl_planner/planner => ~A" (ros::get-param "/pddl_planner/planner"))
-(if (and (ros::has-param "/pddl_planner/planner")
-		 (equal (ros::get-param "/pddl_planner/planner") "downward"))
-	(progn
-	  (ros::ros-info "use planner: downward")
-	  (require :eus-pddl-client "package://pddl_planner/src/eus-downward-client.l"))
-	(progn
-	  (ros::ros-info "use planner: ffha")
-	  (require :eus-pddl-client "package://pddl_planner/src/eus-pddl-client.l")))
+(require :eus-pddl-client "package://pddl_planner/src/eus-pddl-client.l")
 
 ;;
 ;; problem
