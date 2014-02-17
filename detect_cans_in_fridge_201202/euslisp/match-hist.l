@@ -13,8 +13,9 @@
  (if (= d max-num) (- step 1)
    (floor (/ d (/ (- max-num min-num) step)))))
 
+#| ;; move to irtpointcloud.l
 (defmethod pointcloud
-  (:hs-hist (&key (h-step 3) (s-step 3))
+  (:generate-color-histogram-hs (&key (h-step 3) (s-step 3))
     (let ((col (send self :colors))
           (hist (make-array
                  (list h-step s-step)
@@ -25,21 +26,22 @@
                (s-bin (get-bin (elt his 2) :step s-step)))
           (incf (aref hist h-bin s-bin))))
       (scale-matrix (/ 1.0 (send self :size)) hist))))
+|#
 
 (defun make-histdata(pclst)
   (flatten
    (mapcar
     #'(lambda(pc)
-	(coerce ((send pc :hs-hist :h-step 10 :s-step 10) . entity) cons))
+        (coerce (array-entity (send pc :generate-color-histogram-hs
+                                    :h-step 10 :s-step 10)) cons))
     pclst)))
-
 
 ;; utils
 (defun maxidx (vec)
   (let ((idx 0))
     (dotimes (i (length vec) idx)
       (when (< (elt vec idx) (elt vec i))
-	(setq idx i)))))
+        (setq idx i)))))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -54,9 +56,9 @@
   )
 ;; kl-div
 (defun kl-divergence (f g)
-  (apply #'+ (mapcar #'(lambda(x y)(* x (/ (log (+ x 1e-9)) (log (+ y 1e-9))))) f g)))
+  (apply #'+ (mapcar #'(lambda(x y) (* x (/ (log (+ x 1e-9)) (log (+ y 1e-9))))) f g)))
 (defun color-hist-similarity-kl (input models)
-  (apply #'max (mapcar #'(lambda(m)(kl-divergence m input)) models)) ;; ??
+  (apply #'max (mapcar #'(lambda(m) (kl-divergence m input)) models)) ;; ??
   )
 
 ;; euclidean distance
@@ -84,20 +86,22 @@
   ))
 
 (defun match-model (objs model-name &optional (thr 0.7))
-  (let ((num (ros::get-param "/object_hs_histgram/histnum"))
-        (bin (ros::get-param "/object_hs_histgram/hs_bin"))
-        model hist-mod
-        ret hist
+  (let ((histnum (ros::get-param "/object_hs_histgram/histnum"))
+        (hs_bin (ros::get-param "/object_hs_histgram/hs_bin"))
+        (model-hist (ros::get-param model-name))
+        model-hist-list ret hist
         (val 0))
     (format t "TARGET: ~A~%" model-name)
-    (setq model (ros::get-param model-name) hist-mod nil)
-    (dotimes (i num)
-      (push (subseq model (* i (apply #'* bin)) (* (1+ i) (apply #'* bin))) hist-mod))
+    (dotimes (i histnum)
+      (push (subseq model-hist (* i (apply #'* hs_bin)) (* (1+ i) (apply #'* hs_bin)))
+            model-hist-list))
     ;;
     (dolist (obj objs)
-      (setq hist (coerce (array-entity (send obj :hs-hist :h-step (elt bin 0) :s-step (elt bin 1))) cons))
+      (setq hist (coerce (array-entity
+                          (send obj :generate-color-histogram-hs
+                                :h-step (elt hs_bin 0) :s-step (elt hs_bin 1))) cons))
       ;;    (let ((ev (color-hist-similarity-hi hist hist-mod)))
-      (let ((ev (color-hist-similarity-kl hist hist-mod)))
+      (let ((ev (color-hist-similarity-kl hist model-hist-list)))
         (format t "~A -> ~A~%" obj ev)
         (when (and (< thr ev) (< val ev))
           (setq val ev ret obj)))
@@ -110,20 +114,22 @@
     ))
 
 (defun visualize-obj-hist (obj)
-  (let ((hbin 10) (sbin 5) hist peaks cols cubes)
-    (setq hist (coerce (array-entity (send obj :hs-hist :h-step hbin :s-step sbin)) cons))
+  (let ((hbin 10) (sbin 10) hist peaks cols cubes)
+    (setq hist (coerce (array-entity
+                        (send obj :generate-color-histogram-hs
+                              :h-step hbin :s-step sbin)) cons))
     (setq peaks (get-peaks hist hbin sbin))
     (setq cols (mapcar #'(lambda(p)(hvs2rgb
-				    (* (/ 2pi hbin) (+ (elt p 1) 0.5))
-				    1.0
-				    (* (/ 2pi sbin) (+ (elt p 2) 0.5))))
-		       peaks))
+                                    (* (/ 2pi hbin) (+ (elt p 1) 0.5))
+                                    1.0
+                                    (* (/ 2pi sbin) (+ (elt p 2) 0.5))))
+                       peaks))
     (dolist (col cols)
       (let ((cu (make-cube 100 100 100)))
-	(send-all cu :translate #f(0 0 100))
-	(push cu cubes)
-	(send cu :translate (car (send obj :point-list)))
-	(send cu :set-color col)))
+        (send-all cu :translate #f(0 0 100))
+        (push cu cubes)
+        (send cu :translate (car (send obj :point-list)))
+        (send cu :set-color col)))
     cubes))
 
 (defvar *model-names* (ros::get-param "/object_hs_histgram/names"))
