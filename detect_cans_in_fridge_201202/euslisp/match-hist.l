@@ -10,8 +10,11 @@
 
 ;; copy from color_histogram_creater.l
 (defun get-bin (d &key (step 3) (max-num 1.0) (min-num 0.0))
- (if (= d max-num) (- step 1)
-   (floor (/ d (/ (- max-num min-num) step)))))
+  (if (>= d max-num) (return-from get-bin (- step 1)))
+  (let ((ret (floor (/ d (/ (- max-num min-num) step)))))
+    (if (>= ret step) (return-from get-bin (- step 1)))
+    (if (<= ret 0) (return-from get-bin 0))
+    ret))
 
 #| ;; move to irtpointcloud.l
 (defmethod pointcloud
