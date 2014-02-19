@@ -75,19 +75,6 @@
       ()))
   )
 
-(defun get-peaks (hist s1 s2)
-  (let (ret var)
-  (dotimes (y s2)
-    (dotimes (x s1)
-      (setq var (elt hist (+ x (* y s1))) tmp nil)
-      (dolist (dx '(-1 0 1))
-	(dolist (dy '(-1 0 1))
-	  (push (elt hist (+ (mod (+ x dx s1) s1) (* (mod (+ y dy s2) s2) s1))) tmp)))
-      (when (< 0 (apply #'max tmp) (+ var 1e-5))
-	(push (list (apply #'+ tmp) x y) ret))))
-  (sort ret #'(lambda(x y)(> (car x) (car y))))
-  ))
-
 (defun match-model (objs model-name &optional (thr 0.7))
   (let ((histnum (ros::get-param "/object_hs_histgram/histnum"))
         (hs_bin (ros::get-param "/object_hs_histgram/hs_bin"))
@@ -115,7 +102,47 @@
               (append (get ret :results) (list (cons model-name val)))))
     ret
     ))
+#| ;; currently working
+(defun visualize-histogram (hist &key
+                                 ((:h-step hbin) 3) ((:s-step sbin) 3)
+                                 (hlimits (cons 360.0 0.0))
+                                 (slimits (cons 1.0 0.0))
+                                 (vlimits (cons 1.0 0.0))
+                                 (sizelimits))
+  (let (ret
+        (hist-vec (if (matrixp hist) (array-entity hist) hist)))
+    (dotimes (hi hbin)
+      (let ((ch (* (/ 360.0 hbin) (+ hi 0.5))))
+        (dotimes (si sbin)
+          (let* ((hcol (list ch 1.0
+                             (* (/ 1.0 sbin) (+ si 0.5))))
+                 (col (scale (/ 1.0 255) (coerce (hvs2rgb hcol) float-vector)))
+                 (cube-height (* (* hbin sbin 40)
+                                 (elt hist (+ (* hi sbin) si))))
+                 (cu (make-cube 40 40 cube-height))
+                 )
+            (when (/= cube-height 0.0)
+              (send cu :translate
+                    (float-vector (* 40 hi) (* 40 si) (/ cube-height 2)))
+              (send cu :set-color col)
+              (push cu ret))
+            ))))
+  ret))
+|#
 
+#|
+(defun get-peaks (hist s1 s2)
+  (let (ret var)
+  (dotimes (y s2)
+    (dotimes (x s1)
+      (setq var (elt hist (+ x (* y s1))) tmp nil)
+      (dolist (dx '(-1 0 1))
+	(dolist (dy '(-1 0 1))
+	  (push (elt hist (+ (mod (+ x dx s1) s1) (* (mod (+ y dy s2) s2) s1))) tmp)))
+      (when (< 0 (apply #'max tmp) (+ var 1e-5))
+	(push (list (apply #'+ tmp) x y) ret))))
+  (sort ret #'(lambda(x y)(> (car x) (car y))))
+  ))
 (defun visualize-obj-hist (obj)
   (let ((hbin 10) (sbin 10) hist peaks cols cubes)
     (setq hist (coerce (array-entity
@@ -127,13 +154,16 @@
                                     1.0
                                     (* (/ 2pi sbin) (+ (elt p 2) 0.5))))
                        peaks))
+    (pprint cols)
     (dolist (col cols)
       (let ((cu (make-cube 100 100 100)))
         (send-all cu :translate #f(0 0 100))
         (push cu cubes)
         (send cu :translate (car (send obj :point-list)))
-        (send cu :set-color col)))
+        (send cu :set-color col)
+        ))
     cubes))
+|#
 
 (defvar *model-names* (ros::get-param "/object_hs_histgram/names"))
 
