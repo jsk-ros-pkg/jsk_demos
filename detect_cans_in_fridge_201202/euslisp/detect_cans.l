@@ -17,10 +17,13 @@
 (defvar *image-topic* "/openni/rgb/image_rect_color")
 (defvar *screen-topic* "/openni/rgb/screenpoint")
 ;;(defvar *result-topic* "/narrow_stereo/left/ObjectDetection")
-(defvar *result-topic* "/openni/rgb/ObjectDetection")
+;;(defvar *result-topic* "/openni/rgb/ObjectDetection")
+(defvar *result-topic* "/openni/depth_registered/ObjectDetection")
 
 (ros::roseus-add-msgs "posedetection_msgs")
 (load "match-hist.l")
+;;
+(defvar *model-names* (ros::get-param "/object_hs_histgram/names"))
 
 ;(unless (boundp '*irtviewer*) (make-irtviewer))
 (setq *3dpos* (instance pointcloud :init))

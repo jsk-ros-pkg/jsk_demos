@@ -89,7 +89,7 @@
 (defun color-hist-similarity-kl (input models)
   (exp (- (/
            (apply #'min (mapcar #'(lambda(m) (kl-divergence m input)) models)) ;; ??
-           2.4))))
+           3.0))))
 
 ;; euclidean distance
 (defun color-hist-distance (input models &optional (thr 1))
