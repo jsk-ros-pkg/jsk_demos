@@ -30,7 +30,6 @@
           (incf (aref hist h-bin s-bin))))
       (scale-matrix (/ 1.0 (send self :size)) hist))))
 |#
-
 (defun make-histdata(pclst)
   (flatten
    (mapcar
@@ -46,12 +45,38 @@
       (when (< (elt vec idx) (elt vec i))
         (setq idx i)))))
 
+(defun rotate-h-bin (hist &key (cw t) (h-step 9) (s-step 7))
+  (if (matrixp hist) (setq hist (array-entity hist)))
+  (let ((hret (copy-seq hist)))
+    (cond
+     (cw
+      (dotimes (hi (1- h-step))
+        (dotimes (si s-step)
+          (setf (elt hret (+ (* (1+ hi) s-step) si))
+                (elt hist (+ (* hi      s-step) si)))
+          ))
+      (dotimes (si s-step)
+        (setf (elt hret                           si)
+              (elt hist (+ (* (1- h-step) s-step) si))))
+      )
+     (t ;; ccw
+      (dotimes (hi (1- h-step))
+        (dotimes (si s-step)
+          (setf (elt hret (+ (* hi      s-step) si))
+                (elt hist (+ (* (1+ hi) s-step) si)))
+          ))
+      (dotimes (si s-step)
+        (setf (elt hret (+ (* (1- h-step) s-step) si))
+              (elt hist (+                        si))))
+      ))
+    hret
+    ))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;; 単純に内積を取る
 (defun color-hist-similarity1 (input models &optional)
-  (apply #'max (mapcar #'(lambda(m)(v. input m)) models))
+  (apply #'max (mapcar #'(lambda(m) (v. (coerce input float-vector) (coerce m float-vector))) models))
   )
 ;; Swain,1991で提案されているHistogram Intersection
 (defun color-hist-similarity-hi (input models)
@@ -59,10 +84,12 @@
   )
 ;; kl-div
 (defun kl-divergence (f g)
-  (apply #'+ (mapcar #'(lambda(x y) (* x (/ (log (+ x 1e-9)) (log (+ y 1e-9))))) f g)))
+;;  (apply #'+ (mapcar #'(lambda(x y) (* x (/ (log (+ x 1e-9)) (log (+ y 1e-9))))) f g)))
+  (apply #'+ (mapcar #'(lambda(x y) (* x (log (/ (+ x 1e-9) (+ y 1e-9))))) f g)))
 (defun color-hist-similarity-kl (input models)
-  (apply #'max (mapcar #'(lambda(m) (kl-divergence m input)) models)) ;; ??
-  )
+  (exp (- (/
+           (apply #'min (mapcar #'(lambda(m) (kl-divergence m input)) models)) ;; ??
+           2.4))))
 
 ;; euclidean distance
 (defun color-hist-distance (input models &optional (thr 1))
@@ -75,11 +102,11 @@
       ()))
   )
 
-(defun match-model (objs model-name &optional (thr 0.7))
+(defun match-model (objs model-name &key (thr 0.7) (rotate 20))
   (let ((histnum (ros::get-param "/object_hs_histgram/histnum"))
         (hs_bin (ros::get-param "/object_hs_histgram/hs_bin"))
         (model-hist (ros::get-param model-name))
-        model-hist-list ret hist
+        model-hist-list ret hist hist-cw hist-ccw
         (val 0))
     (format t "TARGET: ~A~%" model-name)
     (dotimes (i histnum)
@@ -87,48 +114,66 @@
             model-hist-list))
     ;;
     (dolist (obj objs)
-      (setq hist (coerce (array-entity
-                          (send obj :generate-color-histogram-hs
-                                :h-step (elt hs_bin 0) :s-step (elt hs_bin 1))) cons))
-      ;;    (let ((ev (color-hist-similarity-hi hist hist-mod)))
-      (let ((ev (color-hist-similarity-kl hist model-hist-list)))
-        (format t "~A -> ~A~%" obj ev)
-        (when (and (< thr ev) (< val ev))
-          (setq val ev ret obj)))
-      )
+      (setq hist (send obj :generate-color-histogram-hs
+                       :h-step (elt hs_bin 0) :s-step (elt hs_bin 1)
+                       :sizelimits (* 0.2 (send obj :size))))
+      (when hist
+        (setq hist-cw (send obj :generate-color-histogram-hs
+                            :h-step (elt hs_bin 0) :s-step (elt hs_bin 1)
+                            :sizelimits (* 0.2 (send obj :size))
+                            :rotate-hue rotate))
+        (setq hist-ccw (send obj :generate-color-histogram-hs
+                             :h-step (elt hs_bin 0) :s-step (elt hs_bin 1)
+                             :sizelimits (* 0.2 (send obj :size))
+                             :rotate-hue (- rotate)))
+        (setq hist     (coerce (array-entity hist) cons))
+        (setq hist-cw  (coerce (array-entity hist-cw) cons))
+        (setq hist-ccw (coerce (array-entity hist-ccw) cons))
+        (let ((ev-cw  (color-hist-similarity-kl hist-cw model-hist-list))
+              (ev-ccw (color-hist-similarity-kl hist-ccw model-hist-list))
+              (ev-org (color-hist-similarity-kl hist model-hist-list))
+              ev)
+          (setq ev (max ev-cw ev-org ev-ccw))
+          ;; choose max
+          (format t "~A -> ~A (~A/~A/~A)~%" obj ev ev-ccw ev-org ev-cw)
+          (when (and (< thr ev) (< val ev))
+            (setq val ev ret obj)))
+        ))
     (format t "RESULT(~A): ~A -> ~A~%" model-name ret val)
     (if ret
         (setf (get ret :results)
               (append (get ret :results) (list (cons model-name val)))))
     ret
     ))
-#| ;; currently working
+
 (defun visualize-histogram (hist &key
-                                 ((:h-step hbin) 3) ((:s-step sbin) 3)
+                                 ((:h-step hbin) 9) ((:s-step sbin) 7)
+                                 (box-size 40)
                                  (hlimits (cons 360.0 0.0))
-                                 (slimits (cons 1.0 0.0))
-                                 (vlimits (cons 1.0 0.0))
-                                 (sizelimits))
+                                 (vlimits (cons 1.0 0.15))
+                                 (slimits (cons 1.0 0.25))
+                                 (sizelimits 1))
   (let (ret
         (hist-vec (if (matrixp hist) (array-entity hist) hist)))
     (dotimes (hi hbin)
-      (let ((ch (* (/ 360.0 hbin) (+ hi 0.5))))
+      (let ((ch (+ (* (/ (- (car hlimits) (cdr hlimits)) hbin) (+ hi 0.5))
+                   (cdr hlimits))))
         (dotimes (si sbin)
           (let* ((hcol (list ch 1.0
-                             (* (/ 1.0 sbin) (+ si 0.5))))
+                             (+ (* (/ (- (car slimits) (cdr slimits)) sbin) (+ si 0.5))
+                                (cdr slimits))))
                  (col (scale (/ 1.0 255) (coerce (hvs2rgb hcol) float-vector)))
-                 (cube-height (* (* hbin sbin 40)
-                                 (elt hist (+ (* hi sbin) si))))
-                 (cu (make-cube 40 40 cube-height))
+                 (cube-height (* (* hbin sbin box-size)
+                                 (elt hist-vec (+ (* hi sbin) si))))
+                 (cu (make-cube box-size box-size cube-height))
                  )
             (when (/= cube-height 0.0)
               (send cu :translate
-                    (float-vector (* 40 hi) (* 40 si) (/ cube-height 2)))
+                    (float-vector (* box-size hi) (* box-size si) (/ cube-height 2)))
               (send cu :set-color col)
               (push cu ret))
             ))))
   ret))
-|#
 
 #|
 (defun get-peaks (hist s1 s2)
@@ -154,7 +199,6 @@
                                     1.0
                                     (* (/ 2pi sbin) (+ (elt p 2) 0.5))))
                        peaks))
-    (pprint cols)
     (dolist (col cols)
       (let ((cu (make-cube 100 100 100)))
         (send-all cu :translate #f(0 0 100))
@@ -165,10 +209,9 @@
     cubes))
 |#
 
-(defvar *model-names* (ros::get-param "/object_hs_histgram/names"))
-
 #|
-(dolist (nm model-names)
+(defvar *model-names* (ros::get-param "/object_hs_histgram/names"))
+(dolist (nm *model-names*)
   (setq obj (match-model obj-lst (format nil "/object_hs_histgram/~A" nm)))
   (when obj
     (objects (list obj))
