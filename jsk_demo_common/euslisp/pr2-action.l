@@ -641,7 +641,8 @@
                   *fridge-distance-threshold*)
                (< (abs (elt (car (rpy-angle (send diffcds :worldrot))) 0))
                   *fridge-rotation-threshold*))
-          (setq cds (check-detection :type "fridge" :speak-name *frige-speak-str*))
+          (setq cds (check-detection :type "fridge" :speak-name *frige-speak-str*
+                                     :detection-topic "/openni/rgb/ObjectDetection"))
           (send *ri* :ros-wait 0.0 :spin-self t :spin t) ;; attention-check ...
           ;; (y-or-n-p "Can I start open fridge? ")
           (when cds
@@ -845,9 +846,11 @@
       ;;(setq cds (check-detection :type *type* :tf-force t :timeout 30 :single t)))
       (let (cds)
         (unless (setq cds (check-detection :speak-name *type*
-                           :type *type* :tf-force t :timeout 35 :single t))
+                           :type *type* :tf-force t :timeout 35 :single t
+                           :detection-topic "/openni/depth_registered/ObjectDetection"))
           (setq cds (check-detection :speak-name *type*
-                     :type *type* :tf-force t :timeout 70 :single t)))
+                     :type *type* :tf-force t :timeout 70 :single t
+                     :detection-topic "/openni/depth_registered/ObjectDetection")))
         (send *ri* :ros-wait 0.0 :spin-self t :spin t) ;; attention-check ...
         (when cds
           ;; (speak-jp (format nil "~A を とりだします" *type*))
