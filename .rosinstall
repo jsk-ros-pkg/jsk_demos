@@ -22,3 +22,6 @@
 - git:
     uri: https://github.com/knowrob/knowrob.git
     local-name: knowrob
+- git:
+    uri: https://github.com/gheorghelisca/rosjava_jni.git
+    local-name: rosjava_jni
