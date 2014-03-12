@@ -13,6 +13,9 @@
 - git:
     uri: https://github.com/jsk-ros-pkg/jsk_common.git
     local-name: jsk-ros-pkg/jsk_common
+- git:
+    uri: https://github.com/jsk-ros-pkg/jsk_planner.git
+    local-name: jsk-ros-pkg/jsk_planner
 - svn:
     uri: https://svn.code.sf.net/p/tum-ros-pkg/code/perception/
     local-name: tum-ros-pkg/perception
