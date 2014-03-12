@@ -14,8 +14,8 @@
     uri: https://github.com/jsk-ros-pkg/jsk_common.git
     local-name: jsk-ros-pkg/jsk_common
 - git:
-    uri: https://github.com/jsk-ros-pkg/jsk_planner.git
-    local-name: jsk-ros-pkg/jsk_planner
+    uri: https://github.com/jsk-ros-pkg/jsk_planning.git
+    local-name: jsk-ros-pkg/jsk_planning
 - git:
     uri: https://github.com/jsk-ros-pkg/openrave_planning.git
     local-name: jsk-ros-pkg/openrave_planning
