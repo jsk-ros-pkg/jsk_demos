@@ -31,3 +31,6 @@
 - git:
     uri: https://github.com/gheorghelisca/rosjava_jni.git
     local-name: rosjava_jni
+- svn:
+    uri: http://svn.code.sf.net/p/bosch-ros-pkg/code/trunk/stacks/bosch_shared_autonomy
+    local-name: bosch-ros-pkg/stacks/bosch_shared_autonomy
