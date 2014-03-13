@@ -12,6 +12,8 @@
   <depend package="roscpp"/>
   <depend package="sensor_msgs"/>
   <depend package="laser_geometry"/>
+  <depend package="pcl" />
+  <depend package="pcl_ros" />
   <!-- <depend package="pcl17"/> -->
 
 </package>
