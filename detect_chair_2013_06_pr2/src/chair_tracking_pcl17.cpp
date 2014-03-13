@@ -42,67 +42,67 @@
 #include <laser_geometry/laser_geometry.h>
 
 
-#include <pcl17/tracking/tracking.h>
-#include <pcl17/tracking/particle_filter.h>
-#include <pcl17/tracking/kld_adaptive_particle_filter_omp.h>
-#include <pcl17/tracking/particle_filter_omp.h>
+#include <pcl/tracking/tracking.h>
+#include <pcl/tracking/particle_filter.h>
+#include <pcl/tracking/kld_adaptive_particle_filter_omp.h>
+#include <pcl/tracking/particle_filter_omp.h>
 
-#include <pcl17/tracking/coherence.h>
-#include <pcl17/tracking/distance_coherence.h>
-#include <pcl17/tracking/hsv_color_coherence.h>
-#include <pcl17/tracking/normal_coherence.h>
+#include <pcl/tracking/coherence.h>
+#include <pcl/tracking/distance_coherence.h>
+#include <pcl/tracking/hsv_color_coherence.h>
+#include <pcl/tracking/normal_coherence.h>
 
-#include <pcl17/tracking/approx_nearest_pair_point_cloud_coherence.h>
-#include <pcl17/tracking/nearest_pair_point_cloud_coherence.h>
+#include <pcl/tracking/approx_nearest_pair_point_cloud_coherence.h>
+#include <pcl/tracking/nearest_pair_point_cloud_coherence.h>
 
-#include <pcl17/point_cloud.h>
-#include <pcl17/point_types.h>
-#include <pcl17/console/parse.h>
-#include <pcl17/common/time.h>
-#include <pcl17/common/centroid.h>
+#include <pcl/point_cloud.h>
+#include <pcl/point_types.h>
+#include <pcl/console/parse.h>
+#include <pcl/common/time.h>
+#include <pcl/common/centroid.h>
 
-#include <pcl17/io/pcd_io.h>
+#include <pcl/io/pcd_io.h>
 
-#include <pcl17/filters/passthrough.h>
-#include <pcl17/filters/project_inliers.h>
-#include <pcl17/filters/voxel_grid.h>
-#include <pcl17/filters/approximate_voxel_grid.h>
-#include <pcl17/filters/extract_indices.h>
+#include <pcl/filters/passthrough.h>
+#include <pcl/filters/project_inliers.h>
+#include <pcl/filters/voxel_grid.h>
+#include <pcl/filters/approximate_voxel_grid.h>
+#include <pcl/filters/extract_indices.h>
 
-#include <pcl17/features/normal_3d.h>
-#include <pcl17/features/normal_3d_omp.h>
-#include <pcl17/features/integral_image_normal.h>
+#include <pcl/features/normal_3d.h>
+#include <pcl/features/normal_3d_omp.h>
+#include <pcl/features/integral_image_normal.h>
 
-#include <pcl17/sample_consensus/method_types.h>
-#include <pcl17/sample_consensus/model_types.h>
+#include <pcl/sample_consensus/method_types.h>
+#include <pcl/sample_consensus/model_types.h>
 
-#include <pcl17/segmentation/sac_segmentation.h>
-#include <pcl17/segmentation/extract_polygonal_prism_data.h>
-#include <pcl17/segmentation/extract_clusters.h>
+#include <pcl/segmentation/sac_segmentation.h>
+#include <pcl/segmentation/extract_polygonal_prism_data.h>
+#include <pcl/segmentation/extract_clusters.h>
 
-#include <pcl17/search/pcl_search.h>
-#include <pcl17/common/transforms.h>
+#include <pcl/search/pcl_search.h>
+#include <pcl/common/transforms.h>
 
 #include <boost/format.hpp>
 
-using namespace pcl17::tracking;
+using namespace pcl::tracking;
 
 template <typename PointType>
 class OpenNISegmentTracking
 {
 public:
-  typedef pcl17::PointXYZ RefPointType;
+  typedef pcl::PointXYZ RefPointType;
   typedef ParticleXYR ParticleT;
 
-  typedef pcl17::PointCloud<PointType> Cloud;
-  typedef pcl17::PointCloud<RefPointType> RefCloud;
+  typedef pcl::PointCloud<PointType> Cloud;
+  typedef pcl::PointCloud<RefPointType> RefCloud;
   typedef typename RefCloud::Ptr RefCloudPtr;
   typedef typename RefCloud::ConstPtr RefCloudConstPtr;
   typedef typename Cloud::Ptr CloudPtr;
   typedef typename Cloud::ConstPtr CloudConstPtr;
   typedef ParticleFilterTracker<RefPointType, ParticleT> ParticleFilter;
   typedef typename ParticleFilter::CoherencePtr CoherencePtr;
-  typedef typename pcl17::search::KdTree<PointType> KdTree;
+  typedef typename pcl::search::KdTree<PointType> KdTree;
   typedef typename KdTree::Ptr KdTreePtr;
   OpenNISegmentTracking ( int thread_nr, double downsampling_grid_size,
                           bool use_fixed/*, const CloudConstPtr input_model_point_cloud*/)
@@ -166,7 +166,7 @@ public:
       = boost::shared_ptr<DistanceCoherence<RefPointType> > (new DistanceCoherence<RefPointType> ());
     coherence->addPointCoherence (distance_coherence);
     
-    boost::shared_ptr<pcl17::search::Octree<RefPointType> > search (new pcl17::search::Octree<RefPointType> (0.01));
+    boost::shared_ptr<pcl::search::Octree<RefPointType> > search (new pcl::search::Octree<RefPointType> (0.01));
     coherence->setSearchMethod (search);
     coherence->setMaximumDistance (0.01);
     tracker_->setCloudCoherence (coherence);
@@ -175,7 +175,7 @@ public:
  
   void filterPassThrough (const RefCloudConstPtr &cloud, Cloud &result)
   {
-    pcl17::PassThrough<PointType> pass;
+    pcl::PassThrough<PointType> pass;
     pass.setFilterFieldName ("z");
     pass.setFilterLimits (0.0, 10.0);
     pass.setKeepOrganized (false);
@@ -186,7 +186,7 @@ public:
   
   void gridSample (const CloudConstPtr &cloud, Cloud &result, double leaf_size = 0.01)
   {
-    pcl17::VoxelGrid<PointType> grid;
+    pcl::VoxelGrid<PointType> grid;
     grid.setLeafSize (float (leaf_size), float (leaf_size), float (leaf_size));
     grid.setInputCloud (cloud);
     grid.filter (result);
@@ -194,7 +194,7 @@ public:
   
   void gridSampleApprox (const CloudConstPtr &cloud, Cloud &result, double leaf_size = 0.01)
   {
-    pcl17::ApproximateVoxelGrid<PointType> grid;
+    pcl::ApproximateVoxelGrid<PointType> grid;
     grid.setLeafSize (static_cast<float> (leaf_size), static_cast<float> (leaf_size), static_cast<float> (leaf_size));
     grid.setInputCloud (cloud);
     grid.filter (result);
@@ -234,14 +234,14 @@ public:
     RefCloudPtr raw_cloud(new RefCloud);
 
     projector_.transformLaserScanToPointCloud("base_laser_link", *scan, point_cloud2, tfListener_);
-    pcl17::fromROSMsg<PointType> (point_cloud2, *raw_cloud);
+    pcl::fromROSMsg<PointType> (point_cloud2, *raw_cloud);
 
 
     boost::mutex::scoped_lock lock (mtx_);
     cloud_pass_.reset (new Cloud);
     cloud_pass_downsampled_.reset (new Cloud);
-    pcl17::ModelCoefficients::Ptr coefficients (new pcl17::ModelCoefficients ());
-    pcl17::PointIndices::Ptr inliers (new pcl17::PointIndices ());
+    pcl::ModelCoefficients::Ptr coefficients (new pcl::ModelCoefficients ());
+    pcl::PointIndices::Ptr inliers (new pcl::PointIndices ());
     filterPassThrough (raw_cloud, *cloud_pass_);
     if (counter_ < 10)
       {
@@ -263,10 +263,10 @@ public:
 
             Eigen::Vector4f c;
             RefCloudPtr transed_ref (new RefCloud);
-            pcl17::compute3DCentroid<RefPointType> (*nonzero_ref, c);
+            pcl::compute3DCentroid<RefPointType> (*nonzero_ref, c);
             Eigen::Affine3f trans = Eigen::Affine3f::Identity ();
             trans.translation ().matrix () = Eigen::Vector3f (c[0], c[1], c[2]);
-            pcl17::transformPointCloud<RefPointType> (*nonzero_ref, *transed_ref, trans.inverse());
+            pcl::transformPointCloud<RefPointType> (*nonzero_ref, *transed_ref, trans.inverse());
             CloudPtr transed_ref_downsampled (new Cloud);
             gridSample (transed_ref, *transed_ref_downsampled, downsampling_grid_size_);
             tracker_->setReferenceCloud (transed_ref_downsampled);
@@ -298,13 +298,13 @@ public:
 	  
   }
   
-  pcl17::PointCloud<pcl17::Normal>::Ptr normals_;
+  pcl::PointCloud<pcl::Normal>::Ptr normals_;
   CloudPtr cloud_pass_;
   CloudPtr cloud_pass_downsampled_;
   CloudPtr input_model_point_cloud_;
   boost::mutex mtx_;
   bool new_cloud_;
-  pcl17::NormalEstimationOMP<PointType, pcl17::Normal> ne_; // to store threadpool
+  pcl::NormalEstimationOMP<PointType, pcl::Normal> ne_; // to store threadpool
   boost::shared_ptr<ParticleFilter> tracker_;
   int counter_;
   double tracking_time_;
@@ -326,12 +326,12 @@ int
 main (int argc, char** argv)
 {
 
-  ros::init(argc, argv, "chair_pcl17_tracking");
+  ros::init(argc, argv, "chair_pcl_tracking");
   bool use_fixed = false;
 
   double downsampling_grid_size = 0.01;
   
-  pcl17::console::parse_argument (argc, argv, "-d", downsampling_grid_size);
+  pcl::console::parse_argument (argc, argv, "-d", downsampling_grid_size);
   if (argc < 2)
     {
       usage (argv);
@@ -339,10 +339,10 @@ main (int argc, char** argv)
     }
   
   /*
-    pcl17::PointCloud<pcl17::PointXYZ>::Ptr input_model_point_cloud(new pcl17::PointCloud<pcl17::PointXYZ>);
+    pcl::PointCloud<pcl::PointXYZ>::Ptr input_model_point_cloud(new pcl::PointCloud<pcl::PointXYZ>);
   */
 
   // open kinect
-  OpenNISegmentTracking<pcl17::PointXYZ> v (8, downsampling_grid_size,use_fixed/*,input_model_point_cloud*/);
+  OpenNISegmentTracking<pcl::PointXYZ> v (8, downsampling_grid_size,use_fixed/*,input_model_point_cloud*/);
   v.run ();
 }
