@@ -1,4 +1,5 @@
 <launch>
+  <arg name="MACHINE" default="localhost" />
   <node pkg="tf" type="static_transform_publisher" name="$(anon map_tfA)"
         args="0 0 0 0 0 0 /world /eng8 100"/>
 
@@ -15,6 +16,7 @@
 
   <node name="publish_spot" pkg="roseus" type="roseus"
         args="$(find jsk_maps)/tools/publish_spot.l"
+        machine="$(arg MACHINE)"
         output="screen" >
     <param name="~scene" value="eng8" />
   </node>
