@@ -59,6 +59,7 @@
   <group unless="$(arg execute)" >
     <node if="$(arg wait_query)"
           pkg="roseus" name="fridge_can_main" type="roseus"
+          machine="c2"
           args="$(find detect_cans_in_fridge_201202)/euslisp/main.l &quot;(wait-android-query :$(arg DEMOTYPE))&quot;"
           output="screen" />
   </group>
@@ -67,6 +68,7 @@
   <node if="$(arg execute)"
         pkg="roseus" name="fridge_can_main" type="roseus"
         args="$(find detect_cans_in_fridge_201202)/euslisp/main.l &quot;(demo :app-manager :$(arg app_manager) :demo-type :$(arg DEMOTYPE))&quot;"
+        machine="c2"
         required="true"
         output="screen" />
   </group>
