@@ -200,7 +200,7 @@
     (ros::ros-info "PULL PART...")
 
 
-    (send (send *pr2* :r_wrist_roll_link) :assoc *chair*)
+    (send (send *pr2* :r_wrist_roll_link_lk) :assoc *chair*)
     (send *ri* :angle-vector (send *pr2* :angle-vector))
     (send *ri* :wait-interpolation)
 
@@ -212,7 +212,7 @@
     (send *pr2* :angle-vector (send *ri* :state :potentio-vector))
     (send *ri* :wait-interpolation)
 
-    (send (send *pr2* :r_wrist_roll_link) :dissoc *chair*)
+    (send (send *pr2* :r_wrist_roll_link_lk) :dissoc *chair*)
 
 
     (setq back-legs-center (make-cascoords :coords (send *chair* :worldcoords)))
@@ -250,7 +250,7 @@
     (ros::ros-info "Move PART...")
 
 
-    (send (send *pr2* :r_wrist_roll_link) :assoc *chair*)
+    (send (send *pr2* :r_wrist_roll_link_lk) :assoc *chair*)
 
 
     (send *ri* :go-pos-unsafe -0.2 -0 0) ;;10
@@ -268,7 +268,7 @@
     (send *pr2* :translate (float-vector -1400 -300 0))
     (send *pr2* :rotate (deg2rad -10) :z)
 
-    (send (send *pr2* :r_wrist_roll_link) :dissoc *chair*)
+    (send (send *pr2* :r_wrist_roll_link_lk) :dissoc *chair*)
 
     (if (boundp '*irtviewer*) (send *irtviewer* :draw-objects))
     (send *ri* :wait-interpolation)
@@ -307,7 +307,7 @@
 
 
     (send back-legs-center :dissoc *chair*)
-    (send (send *pr2* :r_wrist_roll_link) :assoc *chair*)
+    (send (send *pr2* :r_wrist_roll_link_lk) :assoc *chair*)
 
     (send *ri* :go-pos-unsafe -0.2 -0 0) ;;10
     (send *pr2* :translate (float-vector -200 -0 0))
@@ -315,7 +315,7 @@
 
 
     
-    (send (send *pr2* :r_wrist_roll_link) :dissoc *chair*)
+    (send (send *pr2* :r_wrist_roll_link_lk) :dissoc *chair*)
     (send *ri* :stop-grasp :rarm)
     (send *ri* :wait-interpolation)
 
@@ -496,7 +496,7 @@
     ;; -------- pr2 catch chair !!!!! -------------------------
     (ros::ros-info "--PR2 Catch IT !!!!!--")
 
-    (send (send *pr2* :r_wrist_roll_link) :assoc *chair*)
+    (send (send *pr2* :r_wrist_roll_link_lk) :assoc *chair*)
     ;;(send *ri* :angle-vector (send *pr2* :angle-vector))
     ;;(send *ri* :wait-interpolation)
 
@@ -564,7 +564,7 @@
     ;;end push and release chair -------------------------------------------------------------------------;;
     (ros::ros-info "--End Push and Release PART!--")
 
-    (send (send *pr2* :r_wrist_roll_link) :dissoc *chair*)
+    (send (send *pr2* :r_wrist_roll_link_lk) :dissoc *chair*)
     (send *ri* :stop-grasp :rarm)
     (send *ri* :wait-interpolation)
 

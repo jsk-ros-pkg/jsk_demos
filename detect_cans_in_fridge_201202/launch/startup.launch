@@ -53,6 +53,7 @@
 
   <!-- ICP matching between map and base scan -->
   <param name="SnapMapICP/age_threshold" value="2.0"/>
+  <param name="SnapMapICP/icp_inlier_threshold" value="0.78" />
   <node pkg="SnapMapICP" type="SnapMapICP" name="tum_SnapMapICP"
         output="screen" machine="c2"/>
 
