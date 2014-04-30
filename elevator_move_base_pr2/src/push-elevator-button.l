@@ -21,7 +21,7 @@
       (pr2-tuckarm-pose :larm))
 
     (setq arm (check-tuckarm-pose))
-    (setq rayvec (normalize-vector (v- (send *pr2* :narrow_stereo_optical_frame :worldpos) (send target-coords :worldpos))))
+    (setq rayvec (normalize-vector (v- (send *pr2* :narrow_stereo_optical_frame_lk :worldpos) (send target-coords :worldpos))))
 
     ;; via-coords
     (setq via-coords (send (send target-coords :copy-worldcoords)
