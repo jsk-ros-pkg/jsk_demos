@@ -9,6 +9,26 @@
   (when (and subj obj)
 	(push (cons prop-name obj) (get subj :knowrob-properties))))
 
+(defun make-eng2-1f-scene ()
+  (let* (scene map floor-names rooms spots objects)
+    (setq map (make-floor-plane (ros::resolve-ros-path "package://jsk_maps/raw_maps/eng2-1f-0.05.pgm") 50 -13000 -48500 :name "/eng2/1f/floor-plane"))
+
+    ;; 1F
+  ;; should be updated
+    (make-cascoords-tree
+     map
+     `(:rot #2f((-1.0 0.0 0.0) (0.0 -1.0 0.0) (0.0 0.0 1.0))
+            :pos ,(float-vector 4543 -30186 0)
+            :name "/eng2/1f/elevator_call_panel_front")
+     `(:rot #2f((0.0 1.0 0.0) (-1.0 0.0 0.0) (0.0 0.0 1.0))
+            :pos ,(float-vector 45243 -2270 0)
+            :name "/eng2/1f/garbage_front")
+    )
+
+    (setq scene (instance nav-scene-model :init :name "/eng2/1f" :objects (append (list map) (send map :descendants))))
+    (send scene :map map)
+    scene ))
+
 (defun make-eng2-2f-scene ()
   (let* (scene map floor-names rooms spots objects)
     (setq map (make-floor-plane (ros::resolve-ros-path "package://jsk_maps/raw_maps/eng2-2f-0.05.pgm") 50 -13000 -48500 :name "/eng2/2f/floor-plane"))
@@ -53,8 +73,7 @@
 
     ;; 3F
     (make-cascoords-tree
-     (find "/eng2/3f" (send map :descendants)
-	   :test #'string= :key #'(lambda(x)(send x :name)))
+     map
      `(:rot #2f((-1.0 0.0 0.0) (0.0 -1.0 0.0) (0.0 0.0 1.0))
 	    :pos ,(float-vector -2950 -32650 0)
 	    :name "/eng2/3f/room-31A-front")
@@ -269,12 +288,12 @@
 
 (defun make-eng2-scene ()
   (let* (scene maps floor-names rooms spots objects)
-    (setq maps (list (make-eng2-2f-scene)
+    (setq maps (list (make-eng2-1f-scene)
+                     (make-eng2-2f-scene)
 		     (make-eng2-3f-scene)
 		     (make-eng2-7f-scene)
 		     (make-eng2-8f-scene)))
-
-    ;; this is not true
+     ;; this is not true TODO: floor height should be set
     (dotimes (i (length maps))
       (send (elt maps i) :translate (float-vector 0 0 (* i 10000))))
 
