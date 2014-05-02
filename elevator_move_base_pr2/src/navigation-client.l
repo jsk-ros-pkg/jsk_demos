@@ -15,7 +15,6 @@
   (if pose
       (setq pose (transform-pose-to-target-frame pose (send *scene* :name)))
     (setq pose (send *tfl* :lookup-transform (send *scene* :name) "/base_footprint" (ros::time 0))))
-  (print pose)
   (send *scene* :current-floor pose))
 
 (defun change-floor (target-floor &optional (topicname "/initialpose3d"))
