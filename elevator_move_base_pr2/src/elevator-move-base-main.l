@@ -317,6 +317,10 @@
 			:move-inside move-client :timeout 120 :retry t
 			:key 'coords->movebaseactiongoal))
     (send (send sm :node :move-inside) :remap-list '((:goal . inside-coords)))
+
+    ;; check if elevator door open (added by furushchev 2014/04/29)
+    (send sm :add-node (instance state :init :check-elevator-open 'check-elevator-open))
+    
     (send sm :add-node (instance state :init :push-inside (push-state-machine)
 				 :remap-list '((panel-name . inside-panel-name) (button . target-floor))))
     (send sm :add-node (instance state :init :ready-to-outside 'ready-to-outside))
@@ -334,7 +338,10 @@
     (send sm :add-transition :move-front :fail-outside :failed)
     (send sm :add-transition :costmap-for-elevator :push-outside t)
 ;    (send sm :add-transition :push-outside :check-elevator-empty :success)
-    (send sm :add-transition :push-outside :move-inside :success)
+;;    (send sm :add-transition :push-outside :move-inside :success)
+    (send sm :add-transition :push-outside :check-elevator-open :success)
+    (send sm :add-transition :check-elevator-open :move-inside :success)
+    (send sm :add-transition :check-elevator-open :check-elevator-open :fail)
     (send sm :add-transition :push-outside :push-outside :fail)
 ;    (send sm :add-transition :check-elevator-empty :move-inside t)
 ;    (send sm :add-transition :check-elevator-empty :move-front nil)
