@@ -23,6 +23,9 @@
      `(:rot #2f((0.0 1.0 0.0) (-1.0 0.0 0.0) (0.0 0.0 1.0))
             :pos ,(float-vector 45243 -2270 0)
             :name "/eng2/1f/garbage_front")
+     `(:rot #2f((0.0 -1.0 0.0) (1.0 0.0 0.0) (0.0 0.0 1.0))
+	    :pos ,(float-vector 2000.0 -31000.0 0.0)
+	    :name "/eng2/1f/elevator-outside")
     )
 
     (setq scene (instance nav-scene-model :init :name "/eng2/1f" :objects (append (list map) (send map :descendants))))
@@ -198,7 +201,7 @@
 	 `(:rot ,(rpy-matrix pi/2 0 0)
 			:pos ,(float-vector 2067.596 9747.629 51.6065)
 			:name "/eng2/7f/room73B2-microwave-front")
-	 `(:rot ,(rpy-matrix 0 0 0)
+	 `(:rot ,(rpy-matrix pi 0 0)
 			:pos ,(float-vector 418.845 6829.953 51.6065)
 			:name "/eng2/7f/room73B2-door-front")
 	 `(:rot ,(rpy-matrix 2.53 0 0)
@@ -210,6 +213,10 @@
 	 `(:rot ,(rpy-matrix pi 0 0)
 			:pos ,(float-vector 995.672 5638.59 51.6065)
 			:name "/eng2/7f/room73B2-trashbox-front")
+         `(:rot ,(rpy-matrix 0 0 0)
+                :pos ,(float-vector -750.0 6829.0 51.6065)
+                :name "/eng2/7f/room73A3-front")
+
 
 
      ;; `(:rot #2f((0.995724 0.092033 -0.007992) (-0.091974 0.995734 0.007399) (0.008639 -0.006632 0.999941))
