@@ -10,12 +10,10 @@ env:
   - ROS_DISTRO=groovy ROSWS=rosws BUILDER=rosbuild BUILD_PACKAGES="2010_05_pr2_workshop detect_chair_2013_06_pr2 elevator_move_base_pr2 jsk_2013_04_pr2_610 jsk_2013_05_pr2_tatu jsk_demo_common jsk_maps"
   - ROS_DISTRO=hydro ROSWS=wstool BUILDER=catkin
   - ROS_DISTRO=groovy ROSWS=wstool BUILDER=catkin
-#notifications:
-#  email:
-#    recipients:
-#      - roseus@jsk.t.u-tokyo.ac.jp
-#    on_success: always #[always|never|change] # default: change
-#    on_failure: always #[always|never|change] # default: always
+notifications:
+  email:
+    on_success: always
+    on_failure: always
 before_install: # Use this to prepare the system to install prerequisites or dependencies
   # Define some config vars
   - export CI_SOURCE_PATH=$(pwd)
