@@ -16,6 +16,7 @@ cd path/to/install
 rosws init
 rosws merge /opt/ros/hydro
 rosws set jsk_demos http://github.com/jsk-ros-pkg/jsk_demos --git
+rosws update jsk_demos
 source setup.bash
 rosrun jsk_2013_04_pr2_610 demo.l "(demo)" ;; please ignore all error message
 ```
