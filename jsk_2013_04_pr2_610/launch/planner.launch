@@ -1,24 +1,31 @@
 <launch>
   <arg name="debug" default="false" />
+  <arg name="use_ffha" default="false" />
   <node pkg="pddl_planner_viewer"
         type="pddl_planner_viewer.py"
         name="$(anon pddl_planner_viewer)" />
   <group>
-  <param name="~planner" type="str" value="downward" />
-  <include file="$(find task_compiler)/launch/execute-pddl.launch">
+    <include if="$(arg use_ffha)"
+             file="$(find task_compiler)/launch/execute-pddl.launch">
     <arg name="action" value="$(find jsk_2013_04_pr2_610)/pddl/action.l"/>
     <arg name="description" value="$(find jsk_2013_04_pr2_610)/pddl/description.l"/>
-<!--    <arg name="planner" value="ffha" /> -->
+    <arg name="planner" value="ffha" />
+    <arg name="debug" value="$(arg debug)" />
+  </include>
+
+  <include unless="$(arg use_ffha)"
+           file="$(find task_compiler)/launch/execute-pddl.launch">
+    <arg name="action" value="$(find jsk_2013_04_pr2_610)/pddl/action.l"/>
+    <arg name="description" value="$(find jsk_2013_04_pr2_610)/pddl/description.l"/>
     <arg name="planner" value="downward" />
     <arg name="use_planner_option" value="true" />
-    <arg name="planner_option" value="\-\-heuristic &quot;hlm=lmcount(lm_rhw(reasonable_orders=true,lm_cost_type=2,cost_type=2),pref=true)&quot; 
-									  \-\-heuristic &quot;hff=ff()&quot;
-									  \-\-search &quot;iterated([lazy_greedy([hff,hlm],preferred=[hff,hlm]),
-									  lazy_wastar([hff,hlm],preferred=[hff,hlm],w=5),
-									  lazy_wastar([hff,hlm],preferred=[hff,hlm],w=3),
-									  lazy_wastar([hff,hlm],preferred=[hff,hlm],w=2)], 
-									  repeat_last=false)&quot;" />
-    <!-- ", lazy_wastar([hff,hlm],preferred=[hff,hlm],w=1)" -->
+    <arg name="planner_option" value="--heuristic &quot;hlm=lmcount(lm_rhw(reasonable_orders=true,lm_cost_type=2,cost_type=2),pref=true)&quot;
+                                      --heuristic &quot;hff=ff()&quot;
+                                      --search &quot;iterated([lazy_greedy([hff,hlm],preferred=[hff,hlm]),
+                                      lazy_wastar([hff,hlm],preferred=[hff,hlm],w=5),
+                                      lazy_wastar([hff,hlm],preferred=[hff,hlm],w=3),
+                                      lazy_wastar([hff,hlm],preferred=[hff,hlm],w=2)],
+                                      repeat_last=false)&quot;" />
     <arg name="debug" value="$(arg debug)" />
   </include>
   </group>
