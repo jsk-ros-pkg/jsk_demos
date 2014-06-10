@@ -200,7 +200,7 @@
     (ros::ros-info "PULL PART...")
 
 
-    (send (send *pr2* :r_wrist_roll_link_lk) :assoc *chair*)
+    (send (send *pr2* :rarm :wrist-r :child-link) :assoc *chair*)
     (send *ri* :angle-vector (send *pr2* :angle-vector))
     (send *ri* :wait-interpolation)
 
