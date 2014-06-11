@@ -25,17 +25,38 @@
   <node pkg="rviz" type="rviz" name="detect_cans_rviz"
          args="-d $(find detect_cans_in_fridge_201202)/detect_cans.vcg"
          if="$(arg start_rviz)" />
+  <group ns="openni">
+    <group ns="rgb">
+      <group ns="image_rect_color">
+        <node pkg="nodelet" type="nodelet" name="crop"
+              output="screen"
+              args="load image_proc/crop_decimate /openni/openni_nodelet_manager">
+          <remap from="camera/image_raw" to="/openni/rgb/image_rect_color"/>
+          <remap from="camera/camera_info" to="/openni/rgb/camera_info"/>
+          <remap from="camera_out/image_raw" to="~image" />
+          <remap from="camera_out/camera_info" to="~camera_info" />
+          <rosparam>
+            x_offset: 50
+            y_offset: 200
+            width: 320
+            height: 240
+          </rosparam>
+        </node>
+      </group>
+    </group>
+  </group>
 
   <!-- setup fridge handle marker template -->
   <!--include file="$(find jsk_2011_07_pr2_semantic)/launch/start_perception.launch" /-->
   <group ns="/openni/rgb">
-    <node name="throttle" pkg="topic_tools"
-          type="throttle" args="messages image_rect_color 4.0 image_rect_throttle"
-          machine="c1" />
+    <!-- <node name="throttle" pkg="topic_tools" -->
+    <!--       type="throttle" args="messages image_rect_color 4.0 image_rect_throttle" -->
+    <!--       machine="c1" /> -->
     <node name="fridge_demo_sift" pkg="imagesift"
           type="imagesift" launch-prefix="nice -n +10"
           machine="c2" >
-      <remap from="image" to="image_rect_throttle" />
+      <remap from="/openni/rgb/image" to="/openni/rgb/image_rect_color/crop/image" />
+      <remap from="/openni/rgb/camera_info" to="/openni/rgb/image_rect_color/crop/camera_info" />
     </node>
     <node pkg="jsk_perception" type="point_pose_extractor"
           name="fridge_detector">
