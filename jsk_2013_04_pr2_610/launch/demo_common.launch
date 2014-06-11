@@ -1,6 +1,16 @@
 <launch>
   <arg name="task" />
   <arg name="plan" default="true" />
+  <arg name="use_downward" default="true" />
+  <arg name="use_ffha" default="false" />
+  <arg name="planner_option" value="--heuristic &quot;hlm=lmcount(lm_rhw(reasonable_orders=true,lm_cost_type=2,cost_type=2),pref=true)&quot;
+                                    --heuristic &quot;hff=ff()&quot;
+                                    --search &quot;iterated([lazy_greedy([hff,hlm],preferred=[hff,hlm]),
+                                    lazy_wastar([hff,hlm],preferred=[hff,hlm],w=5),
+                                    lazy_wastar([hff,hlm],preferred=[hff,hlm],w=3),
+                                    lazy_wastar([hff,hlm],preferred=[hff,hlm],w=2)],
+                                    repeat_last=false)&quot;" />
+
   <include file="$(find jsk_2013_04_pr2_610)/launch/detect_all.launch" />
   <group unless="$(arg plan)">
     <node name="irt_demo" pkg="roseus" type="roseus"
@@ -8,7 +18,12 @@
           output="screen" />
   </group>
   <group if="$(arg plan)">
-    <include file="$(find pddl_planner)/launch/pddl_ffha.launch" />
+    <include if="$(arg use_downward)"
+             file="$(find pddl_planner)/launch/pddl_downward.launch">
+      <arg name="planner_option" value="$(arg planner_option)" />
+    </include>
+    <include if="$(arg use_ffha)"
+             file="$(find pddl_planner)/launch/pddl_ffha.launch" />
     <node name="irt_demo" pkg="roseus" type="roseus"
           args="$(find jsk_2013_04_pr2_610)/euslisp/plan-demo.l &quot;(progn (plan-$(arg task)) (unix:sleep 1) (ros::exit) (exit))&quot;"
           output="screen" />
