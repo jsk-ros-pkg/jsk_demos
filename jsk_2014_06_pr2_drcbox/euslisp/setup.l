@@ -66,8 +66,8 @@
 
 
 
-(warn "(gen-motion-valve-rotation :object \"drcbox-valve-large\" :start -30 :end 30 :interval 10 :time-interval 1000)~%")
-(defun gen-motion-valve-rotation (&key (object "drcbox-valve-large") (start -30) (end 30) (interval 10) (time-interval 1000))
+(warn "(gen-motion-valve-rotation :object \"drcbox-valve-large\" :start -30 :end 30 :interval 10 :time-interval 1000 :alpha 0.8 :real nil)~%")
+(defun gen-motion-valve-rotation (&key (object "drcbox-valve-large") (start -30) (end 30) (interval 10) (time-interval 1000) (alpha 0.8) (real nil))
   (labels ((get-target
             (valve deg)
             (send (send valve :joint :crank-joint) :joint-angle deg)
@@ -75,28 +75,27 @@
            (make-deg-list
             (start end interval)
             (let (tmp)
-              (do ((i start (+ i interval)))
+              (do ((i start (+ i interval))) ;only counter clockwise
                   ((> i end) 'done)
                 (push i tmp))
               (reverse tmp))))
     (let ((deg-list (append (make-deg-list start end interval)
                             (reverse (make-deg-list start end interval))))
-          (tm 0)
-          ret)
+          tc-list tm-list)
+      (send-reach-target (list (send *robot* :rarm :end-coords))
+                         (list (send (car (send *robot* :links))
+                                     :transformation (get-target (send *drcbox* :object object) (car deg-list))))
+                         2000
+                         alpha
+                         :robot *robot*
+                         :real real)
       (dolist (i deg-list)
-        (send-reach-target
-         (list (send *robot* :rarm :end-coords))
-         (list (send (car (send *robot* :links))
-                     :transformation (get-target (send *drcbox* :object object) i)))
-         time-interval
-         1.0
-         :robot *robot*
-         :real nil)
-        (push (list :angle-vector (send *robot* :angle-vector)
-                    :root-coords (send (car (send *robot* :links)) :copy-worldcoords)
-                    :contact-state '(:rarm)
-                    :end-coords-list (mapcar #'(lambda (l) (send *robot* l :end-coords)) '(:rarm))
-                    :time tm)
-              ret)
-        (setq tm (+ tm time-interval)))
-      (reverse ret))))
+        (push (send (car (send *robot* :links))
+                    :transformation (get-target (send *drcbox* :object object) i))
+              tc-list)
+        (push time-interval tm-list))
+      (send-way-point (list (send *robot* :rarm :end-coords))
+                      (reverse tc-list)
+                      (reverse tm-list)
+                      :robot *robot*
+                      :real real))))
