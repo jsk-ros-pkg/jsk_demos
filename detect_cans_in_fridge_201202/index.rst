@@ -114,8 +114,8 @@ Contents
     <include file="$(find detect_cans_in_fridge_201202)/launch/detect_cans.launch" />
   
     
-    <param name="SnapMapICP/age_threshold" value="2.0" />
-    <node machine="c2" name="tum_SnapMapICP" output="screen" pkg="SnapMapICP" type="SnapMapICP" />
+    <param name="snap_map_icp/age_threshold" value="2.0" />
+    <node machine="c2" name="tum_snap_map_icp" output="screen" pkg="snap_map_icp" type="snap_map_icp" />
   
     <node args="$(find detect_cans_in_fridge_201202)/euslisp/main.l" if="$(arg wait_query)" name="fridge_can_main" pkg="roseus" type="roseus" />
   

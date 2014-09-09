@@ -1,0 +1,44 @@
+<package>
+  <name>detect_cans_in_fridge_201202</name>
+  <version>0.0.1</version>
+  <description>detect_cans_in_fridge_201202</description>
+  <maintainer email="t@t.com">Manabu Saito</maintainer>
+  <maintainer email="t@t.com">Youhei Kakiuchi</maintainer>
+
+  <license>BSD</license>
+
+  <url type="website">http://ros.org/wiki/detect_cans_in_fridge_201202</url>
+  <!-- <url type="bugtracker"></url> -->
+
+  <author>Manabu Saito</author>
+  <author>Youhei Kakiuchi</author>
+
+  <!-- Dependencies which this package needs to build itself. -->
+  <buildtool_depend>catkin</buildtool_depend>
+
+  <!-- Dependencies needed to compile this package. -->
+  <build_depend>roseus</build_depend>
+  <build_depend>jsk_perception</build_depend>
+  <build_depend>jsk_pcl_ros</build_depend>
+  <build_depend>jsk_pr2_startup</build_depend>
+  <build_depend>snap_map_icp</build_depend>
+
+  <!-- Dependencies needed after this package is compiled. -->
+  <run_depend>roseus</run_depend>
+  <run_depend>jsk_perception</run_depend>
+  <run_depend>jsk_pcl_ros</run_depend>
+  <run_depend>jsk_pr2_startup</run_depend>
+  <run_depend>snap_map_icp</run_depend>
+
+  <!-- Dependencies needed only for running tests. -->
+  <!-- <test_depend>roseus</test_depend> -->
+  <!-- <test_depend>jsk_perception</test_depend> -->
+  <!-- <test_depend>jsk_pcl_ros</test_depend> -->
+  <!-- <test_depend>jsk_pr2_startup</test_depend> -->
+  <!-- <test_depend>snap_map_icp</test_depend> -->
+
+<export>
+    <rosdoc config="rosdoc.yaml"/>
+</export>
+
+</package>

@@ -1,0 +1,31 @@
+<package>
+  <name>jsk_maps</name>
+  <version>0.0.1</version>
+  <description>jsk_maps</description>
+  <maintainer email="t@t.com">Manabu Saito</maintainer>
+  <maintainer email="t@t.com">Haseru Chen</maintainer>
+
+  <license>BSD</license>
+
+  <url type="website">http://ros.org/wiki/jsk_maps</url>
+  <!-- <url type="bugtracker"></url> -->
+
+  <author>Manabu Saito</author>
+  <author>Haseru Chen</author>
+
+  <!-- Dependencies which this package needs to build itself. -->
+  <buildtool_depend>catkin</buildtool_depend>
+
+  <!-- Dependencies needed to compile this package. -->
+  <build_depend>roseus</build_depend>
+  <build_depend>multi_map_server</build_depend>
+
+  <!-- Dependencies needed after this package is compiled. -->
+  <run_depend>roseus</run_depend>
+  <run_depend>multi_map_server</run_depend>
+
+  <!-- Dependencies needed only for running tests. -->
+  <!-- <test_depend>roseus</test_depend> -->
+  <!-- <test_depend>multi_map_server</test_depend> -->
+
+</package>
