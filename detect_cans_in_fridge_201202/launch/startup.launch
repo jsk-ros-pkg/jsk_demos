@@ -52,9 +52,9 @@
   <include file="$(find detect_cans_in_fridge_201202)/launch/detect_cans.launch" />
 
   <!-- ICP matching between map and base scan -->
-  <param name="SnapMapICP/age_threshold" value="2.0"/>
-  <param name="SnapMapICP/icp_inlier_threshold" value="0.78" />
-  <node pkg="SnapMapICP" type="SnapMapICP" name="tum_SnapMapICP"
+  <param name="snap_map_icp/age_threshold" value="2.0"/>
+  <param name="snap_map_icp/icp_inlier_threshold" value="0.78" />
+  <node pkg="snap_map_icp" type="snap_map_icp" name="tum_snap_map_icp"
         output="screen" machine="c2"/>
 
   <group unless="$(arg execute)" >
