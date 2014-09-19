@@ -78,6 +78,21 @@
   t
   )
 
+(defun enable-behavior-server ()
+  (if (ros::wait-for-service "/interactive_behavior_enable" 1)
+      (let ((req (instance std_srvs::EmptyRequest :init)))
+        (ros::service-call "/interactive_behavior_enable" req)
+        (ros::ros-warn "ENABLED behavior server"))
+    (ros::ros-warn "behavior server is not available")))
+
+(defun disable-behavior-server ()
+  (if (ros::wait-for-service "/interactive_behavior_disable" 1)
+      (let ((req (instance std_srvs::EmptyRequest :init)))
+        (ros::service-call "/interactive_behavior_disable" req)
+        (ros::ros-warn "DISABLED behavior server"))
+    (ros::ros-warn "behavior server is not available")))
+  
+
 (defun initialize-demo (atype)
   (setq *type* atype)
   (ros::ros-info "start fridge demo / ~A" *type*)
@@ -99,6 +114,7 @@
                   ;;(use-arm :rarm)
                   (use-arm :larm)
                   )
+  (disable-behavior-server)
   (case app-manager
     (:true
      ;; get type from parameter server
@@ -183,6 +199,8 @@
        (ros::spin-once)
        (setq atype nil from nil)
        )
+     (unless atype
+       (enable-behavior-server))
      (ros::sleep))
     (ros::unsubscribe "/Tablet/StartDemo")
     (ros::unsubscribe "/Murase/Demo")
