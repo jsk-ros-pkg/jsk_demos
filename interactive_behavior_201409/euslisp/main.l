@@ -26,7 +26,7 @@
         (ros::ros-warn "~A is timeout (behavior timeout was ~A)" *current-behavior* *behavior-timeout*)
         (setq *current-behavior* :idle))
       (progn                            ;idle -> idle
-        (if (= (random 10) 0)          ;1%
+        (if (= (random 50) 0)          ;2%
             (progn
               (ros::ros-info "random-lookat")
               (run-behavior :idle-random-look)))))))
@@ -52,7 +52,7 @@
                                    (* 3000.0 (sin theta))
                                    0)))
       (let ((cds (send *tfl* :lookup-transform "/base_footprint" 
-                       "/head_mount_kinect_ir_link"
+                       "/head_pan_link"
                        (ros::time 0))))
         (if cds (look-at-pos (send cds :transform-vector local-pos)))))))
 
@@ -113,8 +113,10 @@
       ;;       (send msg :header :frame_id)
       ;;       (send msg :header :stamp) 1)
       (let ((cds (send *tfl* :lookup-transform "/base_footprint" 
-                       (send msg :header :frame_id)
-                       (ros::time- (send msg :header :stamp) (ros::time 0.5)))))
+                       ;;(send msg :header :frame_id)
+                       "/head_pan_link"
+                       (send msg :header :stamp))))
+                       ;;(ros::time- (send msg :header :stamp) (ros::time 0.5)))))
                        ;;(ros::time 0))))
         (if cds
             (let ((powers (send msg :powers)))
@@ -153,11 +155,11 @@
  jsk_hark_msgs::HarkPower
  #'sound-cb)
 (ros::advertise-service
- "interactive_behavior_enable"
+ "/interactive_behavior_enable"
  std_srvs::Empty
  #'enable-cb)
 (ros::advertise-service
- "interactive_behavior_disable"
+ "/interactive_behavior_disable"
  std_srvs::Empty
  #'disable-cb)
 
