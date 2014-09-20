@@ -433,7 +433,7 @@
 ;;
 (warn ";; define grasp-can-single")
 (defun grasp-can-single (obj &key (rotation 0) (use-arm :rarm) (grasp-depth 35)(func-time 15))
-  (let (via1 via2 tar orig-av (mvt (* (/ (- func-time 3) 4.0) 1000)))
+  (let (via1 via2 tar orig-av (mvt (* (/ (- func-time 4) 4.0) 1000)))
     (send *ri* :stop-grasp use-arm)
     (send *tfb* :send-transform
           (send (send *pr2* :worldcoords) :transformation (send obj :worldcoords))
