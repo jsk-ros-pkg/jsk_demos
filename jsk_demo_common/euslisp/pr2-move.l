@@ -136,14 +136,12 @@
     (send *ri* :move-to co)
     (send *ri* :go-pos 0 -0.04 0) ;; ???
     ;;
-#|
     (send *pr2* :head :angle-vector (float-vector 0 head-pitch))
     (send *pr2* :torso :angle-vector (float-vector torso-lift))
     (send *ri* :ros-wait 0.0 :spin t :spin-self t) ;; attention-check ...
     (send *ri* :angle-vector (send *pr2* :angle-vector))
     (send *ri* :wait-interpolation)
     (send *pr2* :angle-vector (send *ri* :state :potentio-vector))
-|#
     ;;(send *pr2* :move-to (send *ri* :state :worldcoords) :world)
     t
     ))
