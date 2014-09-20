@@ -350,10 +350,11 @@
 (defun move-fridge-traj (hand cds-traj
                               &key ((:rotation-axis ra) :z) (use-torso 0.0025)
                               (fix-waist-z 150) (return-sequence) (time-tick 300) (wait-time 4)
-                              (grasp-check t)  (move-robot t) (start-sec 1000) &allow-other-keys)
+                              (grasp-check t)  (move-robot t) (start-sec 1000) (func-time 25) &allow-other-keys)
   (let ((st0 (car cds-traj))
         (st1 (cadr cds-traj))
         (lst (cddr cds-traj))
+        (ratio (/ (- func-time 20) 5.0))
         avs tms)
     (when move-robot  ;; open-gripper
       (send *ri* :move-gripper hand 0.09 :wait nil))
@@ -395,7 +396,7 @@
         (unless ik-solved (warn ";; failed ~A~%" rr))
         (when ik-solved
           (push (send *pr2* :angle-vector) avs)
-          (push time-tick tms))
+          (push (* ratio time-tick) tms))
         ))
     (when return-sequence
       (return-from move-fridge-traj (list (reverse avs) tms)))
