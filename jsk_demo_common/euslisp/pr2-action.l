@@ -601,7 +601,7 @@
         (diffcds (make-coords :pos (float-vector 10000 10000 10000)))
         cds
         (mvt (* (/ (- func-time 50) 13.0) 1000))
-        (ratio (/ mvt 3000)))
+        (ratio (/ (* (/ (- func-time 50) 13.0) 1000) 3000)))
     ;; initial pose
     (case door-type
       (:circle
