@@ -584,7 +584,7 @@
                               (torso-lift 30) (head-pitch 14)
                               (use-arm :rarm)
                               (door-type :circle) (look-around nil) ;; :circle, :slide1, :slide2
-                              (func-time 90))
+                              (func-time 90) )
   (let (ret
         (idealcds
         (case door-type
