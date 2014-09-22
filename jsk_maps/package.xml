@@ -1,0 +1,19 @@
+<package>
+  <name>jsk_maps</name>
+  <version>0.0.0</version>
+  <description>
+     jsk_maps
+  </description>
+  <maintainer email="ueda@jsk.t.u-tokyo.ac.jp">Manabu Saito, Haseru Chen and Ryohei Ueda</maintainer>
+  <license>BSD</license>
+  <url>http://ros.org/wiki/jsk_maps</url>
+  <buildtool_depend>catkin</buildtool_depend>
+  <build_depend>roseus</build_depend>
+  <build_depend>multi_map_server</build_depend>
+  <build_depend>imagemagick</build_depend>
+  <run_depend>roseus</run_depend>
+  <run_depend>multi_map_server</run_depend>
+  <run_depend>imagemagick</run_depend>
+</package>
+
+
