@@ -414,10 +414,10 @@
       )
      (wait-time
       (send *ri* :wait-interpolation)))
-    (send *ri* :stop-grasp hand)
-    (send *ri* :wait-interpolation)
-    ;;
-    (send *ri* :ros-wait 1.0 :spin t :spin-self t) ;; attention-check ...
+    ;; (send *ri* :stop-grasp hand)
+    ;; (send *ri* :wait-interpolation)
+    ;; ;;
+    ;; (send *ri* :ros-wait 1.0 :spin t :spin-self t) ;; attention-check ...
     (send *pr2* :angle-vector (send *ri* :state :potentio-vector))
     (let ((end-pt (send *pr2* hand :end-coords :worldpos))
           idx)
@@ -730,73 +730,74 @@
       (send *ri* :ros-wait 2.0 :spin-self t :spin t) ;; attention-check ...
       (return-from open-fridge-door nil))
 
+    (send *ri* :angle-vector (float-vector 150 20.0 45.0 53.0 -100.0 -43.0 -60.0 0.0 -65.8057 8.42586 -35.2772 -75.5471 341.186 -100.698 139.341 -0.008044 23.916) 700)
+    (send *ri* :wait-interpolation)
     (send *ri* :stop-grasp :rarm)
-    (send *ri* :ros-wait 0.4 :spin-self t :spin t) ;; attention-check ...
+    (send *ri* :ros-wait 0.0 :spin-self t :spin t) ;; attention-check ...
     (send *pr2* :angle-vector (send *ri* :state :potentio-vector))
 
     (case door-type
       (:circle
        ;; free door handle
        (setq *free-door-pose* (send *pr2* :angle-vector))
-       (let ((rend (send *pr2* :rarm :end-coords :copy-worldcoords))
-             avl)
-         (send *pr2* :larm :angle-vector (float-vector 20 45 53 -100 -43 -60 0))
-         (push (send *pr2* :angle-vector) avl)
-         ;;
-         (send rend :translate (float-vector 40 0 0) *pr2*)
-         (send *pr2* :rarm :inverse-kinematics rend)
-         (send *pr2* :larm :angle-vector (float-vector -20 16 53 -38 -43 -60 0))
-         (push (send *pr2* :angle-vector) avl)
-         ;;
-         (send rend :translate (float-vector 0 -60 0) *pr2*)
-         (send *pr2* :rarm :inverse-kinematics rend)
-         (push (send *pr2* :angle-vector) avl)
-         ;;
-         (send rend :rotate pi/2 :x *pr2*)
-         (send rend :translate (float-vector 0 -40 0) *pr2*)
-         (send *pr2* :rarm :inverse-kinematics rend)
-         (push (send *pr2* :angle-vector) avl)
-         ;;
-         (send *ri* :angle-vector-sequence (reverse avl)
-               (list 1200 1000 600 900))
-         (send *ri* :wait-interpolation)
-         )
+       ;; (let ((rend (send *pr2* :rarm :end-coords :copy-worldcoords))
+       ;;       avl)
+       ;;   (send *pr2* :larm :angle-vector (float-vector 20 45 53 -100 -43 -60 0))
+       ;;   (push (send *pr2* :angle-vector) avl)
+       ;;   ;;
+       ;;   (send rend :translate (float-vector 40 0 0) *pr2*)
+       ;;   (send *pr2* :rarm :inverse-kinematics rend)
+       ;;   (send *pr2* :larm :angle-vector (float-vector -20 16 53 -38 -43 -60 0))
+       ;;   (push (send *pr2* :angle-vector) avl)
+       ;;   ;;
+       ;;   (send rend :translate (float-vector 0 -60 0) *pr2*)
+       ;;   (send *pr2* :rarm :inverse-kinematics rend)
+       ;;   (push (send *pr2* :angle-vector) avl)
+       ;;   ;;
+       ;;   (send rend :rotate pi/2 :x *pr2*)
+       ;;   (send rend :translate (float-vector 0 -40 0) *pr2*)
+       ;;   (send *pr2* :rarm :inverse-kinematics rend)
+       ;;   (push (send *pr2* :angle-vector) avl)
+       ;;   ;;
+       ;;   (send *ri* :angle-vector-sequence (reverse avl)
+       ;;         (list 1200 1000 600 900))
+       ;; 	 (ros::ros-info "reverseavl: ~A" (reverse avl))
+       ;;   (send *ri* :wait-interpolation)
+       ;;   )
        ;; fix door by larm
 
        ;; ?? open door ()
        (send *ri* :angle-vector-sequence
-             (list ;;(float-vector 50 5 74 100 -90 -70 -6 20 -70 50 -59 -43 118 0 0 -2 31) ;; 1500
-                   ;;(float-vector 50 -20 16 53 -38 -43 -50 0  -70 50 -59 -43 118   0 0 -2 31) ;; 1500
-                   (float-vector 50  20 45  53 -100 -43 -60 0  -60 43 -31 -70 243 -19 -115 -2 31) ;; 1000
-                   (float-vector 50   5 74 100  -90 -70 -6  20 -70 50 -59 -43 118  0  0 -2 31) ;; 1000
-                   (float-vector 50   5 74 100  -90 -70 -6  20   0 60 -20 -45 118 -90 0 -2 31) ;; 1000
-                   (float-vector 50   5 74 100  -90 -70 -6  20  12 45 -34 -110 12 -38 74 -2 31);; 1000
-                   (float-vector 50   5 74 100 -90 -70 -6  20 -54.745 34.2625 -34.6956 -83.6538 24.9161 -66.3615 118.904 -2.0 31.0) ;; 4500
-                   (float-vector 50   5 74 100 -90 -70 -6  20 -54.745 34.2625 -34.6956 -83.6538 24.9161 -66.3615 118.904 -2.0 31.0) ;; 1500 ;; just wait
-                   (float-vector 150 5 74 100 -90 -70 -6 20 -7 45 -34 -110 12 -38 74 -2 31)) ;; 2000
-             (list 1400 1400 1000 1000 4500 1500 2000))
+	     (list 
+	      #f(150.083 -0.503229 16.2662 53.056 -50.3808 -42.9983 -69.7208 -6.5318 -62.9319 6.13811 -37.4822 -69.7739 339.678 -104.523 135.492 0.009956 23.484)
+	      (float-vector 150 -20.2546 15.9172 53.2397 -38.2041 -43.0083 -60.0086 -0.000466 -66.8745 25.0654 -42.6273 -49.3771 319.162 -71.6589 167.523 -0.020044 23.832) 
+	      #f(149.972 -25.9215 15.5489 55.3988 -36.512 -44.1484 -28.2568 -7.75581 -50.5861 44.487 -45.2274 -70.2799 245.195 -26.7547 148.858 0.027956 -7.548)
+	      #f(149.977 38.3106 20.1389 77.7708 -88.0224 -47.5755 -5.72958 -10.483 -12.7603 46.1883 -29.4706 -70.2965 245.815 -44.8729 150.788 0.003956 -13.794)
+	      )
+	     (list 1000 600 1000 700))
+       (send *ri* :stop-grasp :rarm)
        (send *ri* :wait-interpolation)
 
        (case use-arm
         (:rarm
          ;; grasp rarm
-         (send *pr2* :angle-vector (float-vector 199.971 5.30455 69.0 105.231 -88.5188 -69.9972 -5.72958 19.9717 31.3839 25.5029 23.0531 -118.916 160.305 -84.1469 160.058 -20 24))
-         (let ((cds (send *pr2* :rarm :end-coords :copy-worldcoords)))
-           ;; pre grasp pose
-           (send cds :rotate (- (deg2rad 20)) :z)
-           (send *pr2* :rarm :inverse-kinematics cds))
-         (send *ri* :angle-vector (send *pr2* :angle-vector) 1400)
+         (send *ri* :angle-vector (float-vector 199.971 5.30455 69.0 105.231 -88.5188 -69.9972 -5.72958 19.9717 31.3839 25.5029 23.0531 -118.916 160.305 -84.1469 160.058 -20 24) 2000)
+         ;; (let ((cds (send *pr2* :rarm :end-coords :copy-worldcoords)))
+         ;;   ;; pre grasp pose
+         ;;   (send cds :rotate (- (deg2rad 20)) :z)
+         ;;   (send *pr2* :rarm :inverse-kinematics cds))
+         ;; (send *ri* :angle-vector (send *pr2* :angle-vector) 1400)
          )
         (:larm
          ;; grasp larm
-         (send *pr2* :angle-vector (float-vector 199.971 -32.3186 26.4366 -19.6876 -118.217 -138.147 -78.3509 -166.767 -5.30455 69.0 -105.231 -88.5188 69.9972 -5.72958 -19.9717 20.0 24.0))
-         (send *ri* :angle-vector-sequence
-               (list (float-vector 150.0 5.0 74.0 70.0 -75.0 -70.0 -6.0 20.0 -20.0 20.0 -34.0 -110.0 12.0 -38.0 74.0 -2.0 31.0)
-                     ;;(float-vector 150.0 25.0 54.0 20.0 -120.0 -70.0 -6.0 20.0 -12.0 46.0 -79.0 -45.0 40.0 -22.0 27.0 -2.0 31.0)
-                     (float-vector 150.0 25.0 54.0 20.0 -120.0 -70.0 -6.0 20.0 -22.0 66.0 -79.0 -65.0 -40.0 -72.0 27.0 -2.0 31.0)
-                     (send *pr2* :angle-vector))
-               (list 1400 1200 800))
-         (send *ri* :start-grasp :rarm)
+         (send *ri* :angle-vector (float-vector 199.971 -32.3186 26.4366 -19.6876 -118.217 -138.147 -78.3509 -166.767 -5.30455 69.0 -105.231 -88.5188 69.9972 -5.72958 -19.9717 20.0 24.0) 2000)
+         ;; (send *ri* :angle-vector-sequence
+         ;;       (list (float-vector 150.0 5.0 74.0 70.0 -75.0 -70.0 -6.0 20.0 -20.0 20.0 -34.0 -110.0 12.0 -38.0 74.0 -2.0 31.0)
+         ;;             ;;(float-vector 150.0 25.0 54.0 20.0 -120.0 -70.0 -6.0 20.0 -12.0 46.0 -79.0 -45.0 40.0 -22.0 27.0 -2.0 31.0)
+         ;;             (float-vector 150.0 25.0 54.0 20.0 -120.0 -70.0 -6.0 20.0 -22.0 66.0 -79.0 -65.0 -40.0 -72.0 27.0 -2.0 31.0)
+         ;;             (send *pr2* :angle-vector))
+         ;;       (list 1400 1200 800))
+	 ;;         (send *ri* :start-grasp :rarm)
          ))
        )
       ((:slide1 :slide2)
