@@ -33,6 +33,7 @@
         (header (instance std_msgs::header :init :stamp (ros::time-now) :frame_id "/map"))
         (colors (make-color-list (length (send *scene* :spots))))
         (id 0) c n msgs current-map-id current-map-coords)
+    (if (equal "" *map-selected*) (progn (ros::ros-error "[jsk_maps/publish_spot.l] map-selected is empty! please publish /map_tf_mux/selected") (return-from pub-spot)))
     (setq current-map-id (string-right-trim "_" (string-right-trim "tf" *map-selected*))) ;; remove _tf
     (when (send  *tf-listener* :wait-for-transform "/world" current-map-id (ros::time-now) 1)
       (setq current-map-coords (send *tf-listener* :lookup-transform "/world" current-map-id (ros::time-now)))) ;; resolve /world /eng/7f
