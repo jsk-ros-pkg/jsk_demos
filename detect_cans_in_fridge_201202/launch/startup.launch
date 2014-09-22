@@ -30,7 +30,7 @@
   <!--include file="$(find jsk_2011_07_pr2_semantic)/launch/start_perception.launch" /-->
   <group ns="/openni/rgb">
     <node name="throttle" pkg="topic_tools"
-          type="throttle" args="messages image_rect 4.0"
+          type="throttle" args="messages image_rect_color 4.0 image_rect_throttle"
           machine="c1" />
     <node name="fridge_demo_sift" pkg="imagesift"
           type="imagesift" launch-prefix="nice -n +10"
@@ -54,11 +54,11 @@
   <include file="$(find detect_cans_in_fridge_201202)/launch/detect_cans.launch" />
 
   <!-- ICP matching between map and base scan -->
-  <param name="SnapMapICP/age_threshold" value="2.0"/>
-  <param name="SnapMapICP/icp_inlier_threshold" value="0.78" />
-  <node pkg="SnapMapICP" type="SnapMapICP" name="tum_SnapMapICP"
-        output="screen" machine="c2"/>
-
+  <node pkg="snap_map_icp" type="snap_map_icp" name="tum_SnapMapICP"
+        output="screen" machine="c2">
+    <param name="age_threshold" value="2.0"/>
+    <param name="icp_inlier_threshold" value="0.78" />
+  </node>
   <group unless="$(arg execute)" >
     <node if="$(arg wait_query)"
           pkg="roseus" name="fridge_can_main" type="roseus"
