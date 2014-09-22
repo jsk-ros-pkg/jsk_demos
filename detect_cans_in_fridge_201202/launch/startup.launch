@@ -4,6 +4,8 @@
   <arg name="execute" default="false" />
   <arg name="DEMOTYPE" default="map" />
   <arg name="app_manager" default="false" />
+  <arg name="run_behavior" default="true" />
+  
   <!-- <arg name="app_manager" default="true" /> -->
 
   <!-- sample data for test -->
@@ -53,6 +55,7 @@
 
   <!-- ICP matching between map and base scan -->
   <param name="SnapMapICP/age_threshold" value="2.0"/>
+  <param name="SnapMapICP/icp_inlier_threshold" value="0.78" />
   <node pkg="SnapMapICP" type="SnapMapICP" name="tum_SnapMapICP"
         output="screen" machine="c2"/>
 
@@ -72,7 +75,13 @@
         required="true"
         output="screen" />
   </group>
-
+  <group if="$(arg run_behavior)">
+    <node pkg="interactive_behavior_201409" type="main.l" name="interactive_behavior_server"
+          machine="c2"
+          output="screen">
+    </node>
+    <include file="$(find jsk_pr2_startup)/jsk_pr2_sensors/hydro_recognition.launch" />
+  </group>
 
   <sphinxdoc><![CDATA[
 
