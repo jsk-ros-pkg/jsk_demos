@@ -3,7 +3,9 @@
 
 (setq ros::*compile-message* t) ;; switch for compile
 
-(ros::roseus-add-msgs "pcl")
+(if (string= (unix::getenv "ROS_DISTRO") "groovy")
+    (ros::roseus-add-msgs "pcl")
+  (ros::roseus-add-msgs "pcl_msgs"))  
 (ros::roseus-add-srvs "jsk_perception")
 (ros::roseus-add-srvs "jsk_pcl_ros")
 
