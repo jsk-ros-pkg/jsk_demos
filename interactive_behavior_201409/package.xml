@@ -1,0 +1,28 @@
+<?xml version="1.0"?>
+<package>
+  <name>interactive_behavior_201409</name>
+  <version>0.0.0</version>
+  <description>The interactive_behavior_201409 package</description>
+
+  <maintainer email="ueda@jsk.t.u-tokyo.ac.jp">Ryohei Ueda</maintainer>
+  <license>BSD</license>
+  <buildtool_depend>catkin</buildtool_depend>
+  <build_depend>face_detector</build_depend>
+  <build_depend>people_msgs</build_depend>
+  <build_depend>pr2eus</build_depend>
+  <build_depend>roseus</build_depend>
+  <run_depend>face_detector</run_depend>
+  <run_depend>people_msgs</run_depend>
+  <run_depend>pr2eus</run_depend>
+  <run_depend>roseus</run_depend>
+
+
+  <!-- The export tag contains other, unspecified, tags -->
+  <export>
+    <!-- You can specify that this package is a metapackage here: -->
+    <!-- <metapackage/> -->
+
+    <!-- Other tools can request additional information be placed here -->
+
+  </export>
+</package>
