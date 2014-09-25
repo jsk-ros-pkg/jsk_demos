@@ -1,4 +1,4 @@
-image: /home/applications/ros/groovy/jsk-ros-pkg/jsk_demos/jsk_maps//raw_maps/eng2-1f-0.05.pgm
+image: /home/applications/ros/hydro/src/jsk-ros-pkg/jsk_demos/jsk_maps//raw_maps/eng2-1f-0.05.pgm
 resolution: 0.050
 origin: [-13.0, -48.5, 0]
 negate: 0
