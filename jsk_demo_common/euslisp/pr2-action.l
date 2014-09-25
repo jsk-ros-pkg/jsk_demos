@@ -349,12 +349,13 @@
 
 (defun move-fridge-traj (hand cds-traj
                               &key ((:rotation-axis ra) :z) (use-torso 0.0025)
-                              (fix-waist-z 150) (return-sequence) (time-tick 300) (wait-time 4)
-                              (grasp-check t)  (move-robot t) (start-sec 1000) &allow-other-keys)
-  (let ((st0 (car cds-traj))
-        (st1 (cadr cds-traj))
-        (lst (cddr cds-traj))
-        avs tms)
+                              (fix-waist-z 150) (return-sequence) (wait-time 4)
+                              (grasp-check t)  (move-robot t) (start-sec 1000) (func-time 25) &allow-other-keys)
+  (let* ((st0 (car cds-traj))
+	 (st1 (cadr cds-traj))
+	 (lst (cddr cds-traj))
+	 (time-tick (/ (* (- func-time 13) 1000) (length lst)));;changing opening-door speed
+	 avs tms)
     (when move-robot  ;; open-gripper
       (send *ri* :move-gripper hand 0.09 :wait nil))
     (when fix-waist-z
@@ -431,8 +432,8 @@
 ;; actions
 ;;
 (warn ";; define grasp-can-single")
-(defun grasp-can-single (obj &key (rotation 0) (use-arm :rarm) (grasp-depth 35))
-  (let (via1 via2 tar orig-av)
+(defun grasp-can-single (obj &key (rotation 0) (use-arm :rarm) (grasp-depth 35)(func-time 15))
+  (let (via1 via2 tar orig-av (mvt (* (/ (- func-time 4) 4.0) 1000)));; mvt is about 3000. we assume it takes 4 sec other than sending :angle-vector, and there are 4 :angle-vector in this funciton
     (send *ri* :stop-grasp use-arm)
     (send *tfb* :send-transform
           (send (send *pr2* :worldcoords) :transformation (send obj :worldcoords))
@@ -479,16 +480,16 @@
 
     (cond
      ((null *use-arm-navigation*)
-      (send *ri* :angle-vector (send *pr2* :angle-vector))
+      (send *ri* :angle-vector (send *pr2* :angle-vector) mvt)
       (send *ri* :wait-interpolation))
      ((send *plan-env* :get-ik-for-pose (send *plan-env* :get-robot-coords use-arm) use-arm)
       (ros::ros-warn ";; can not solve collision free IK")
-      (send *ri* :angle-vector (send *pr2* :angle-vector))
+      (send *ri* :angle-vector (send *pr2* :angle-vector) mvt)
       (send *ri* :wait-interpolation))
      (t
       (when (send *plan-env* :planning-move-arm use-arm :planning-time 4.0)
         (ros::ros-warn ";; can not solve collision free Plan")
-        (send *ri* :angle-vector (send *pr2* :angle-vector))
+        (send *ri* :angle-vector (send *pr2* :angle-vector) mvt)
         (send *ri* :wait-interpolation))
       ))
 
@@ -510,7 +511,7 @@
     (send *ri* :wait-interpolation))
     ))|#
     (send *ri* :ros-wait 0.0 :spin-self t) ;; attention-check ...
-    (send *ri* :angle-vector (send *pr2* :angle-vector))
+    (send *ri* :angle-vector (send *pr2* :angle-vector) mvt)
     (send *ri* :wait-interpolation)
 
     ;; grasp
@@ -524,17 +525,17 @@
     (send *ri* :ros-wait 0.0 :spin-self t) ;; attention-check ...
     (cond
      ((null *use-arm-navigation*)
-      (send *ri* :angle-vector (send *pr2* :angle-vector))
+      (send *ri* :angle-vector (send *pr2* :angle-vector) mvt)
       (send *ri* :wait-interpolation))
      ((send *plan-env* :get-ik-for-pose (send *plan-env* :get-robot-coords use-arm) use-arm)
       (ros::ros-warn ";; can not solve collision free IK")
       ;; move to via1
-      (send *ri* :angle-vector (send *pr2* :angle-vector))
+      (send *ri* :angle-vector (send *pr2* :angle-vector) mvt)
       (send *ri* :wait-interpolation))
      (t
       (when (send *plan-env* :planning-move-arm use-arm :planning-time 4.0)
         (ros::ros-warn ";; can not solve collision free Plan")
-        (send *ri* :angle-vector (send *pr2* :angle-vector))
+        (send *ri* :angle-vector (send *pr2* :angle-vector) mvt)
         (send *ri* :wait-interpolation))
       ))
     ;;(send *ri* :angle-vector (send *pr2* :angle-vector))
@@ -542,7 +543,7 @@
 
     ;; move to original pose
     (send *ri* :ros-wait 0.0 :spin-self t) ;; attention-check ...
-    (send *ri* :angle-vector orig-av)
+    (send *ri* :angle-vector orig-av mvt)
     (send *ri* :wait-interpolation)
     )
   )
@@ -582,7 +583,8 @@
 (defun open-fridge-door (&key (open-fridge-func #'open-fridge-traj)
                               (torso-lift 30) (head-pitch 14)
                               (use-arm :rarm)
-                              (door-type :circle) (look-around nil)) ;; :circle, :slide1, :slide2
+                              (door-type :circle) (look-around nil) ;; :circle, :slide1, :slide2
+                              (func-time 90) )
   (let (ret
         (idealcds
         (case door-type
@@ -597,20 +599,21 @@
            (make-coords :pos (float-vector 750 100 0)
                         :rpy (float-vector 0.0 0 0)))))
         (diffcds (make-coords :pos (float-vector 10000 10000 10000)))
-        cds)
+        cds
+        (ratio (/ (- func-time 56) 24.0))) ;;about 1  if ratio is smaller than 1, move speed goes up.
     ;; initial pose
     (case door-type
       (:circle
        (send *pr2* :head :angle-vector (float-vector 0 head-pitch))
        (send *pr2* :torso :angle-vector (float-vector torso-lift))
-       (send *ri* :angle-vector (send *pr2* :angle-vector))
+       (send *ri* :angle-vector (send *pr2* :angle-vector) (* ratio 3000))
        (send *ri* :wait-interpolation)
        )
       ((:slide1 :slide2)
        (send *pr2* :head :angle-vector (float-vector 0 head-pitch))
        (send *pr2* :torso :angle-vector (float-vector torso-lift))
        ;;(send *pr2* :larm :angle-vector (float-vector 25.0 74.0 35.0 -120.0 20.0 -30.0 0.0))
-       (send *ri* :angle-vector (send *pr2* :angle-vector))
+       (send *ri* :angle-vector (send *pr2* :angle-vector) (* ratio 3000))
        (send *ri* :wait-interpolation)
        ))
 
@@ -657,13 +660,13 @@
               (:circle
                (send *pr2* :head :angle-vector (float-vector 0 24))
                (send *pr2* :torso :angle-vector (float-vector 140))
-               (send *ri* :angle-vector (send *pr2* :angle-vector) 3000)
+               (send *ri* :angle-vector (send *pr2* :angle-vector) (* ratio 3000))
                (send *ri* :wait-interpolation)
                )
               ((:slide1 :slide2)
                (send *pr2* :head :angle-vector (float-vector 0 50))
                (send *pr2* :torso :angle-vector (float-vector 140))
-               (send *ri* :angle-vector (send *pr2* :angle-vector) 3000)
+               (send *ri* :angle-vector (send *pr2* :angle-vector) (* ratio 3000))
                (send *ri* :wait-interpolation)
                ))
 
@@ -703,7 +706,7 @@
             (speak-jp "れいぞうこを あけられません でした"))
           (send *pr2* :head :angle-vector (float-vector 0 head-pitch))
           (send *pr2* :torso :angle-vector (float-vector torso-lift))
-          (send *ri* :angle-vector (send *pr2* :angle-vector))
+          (send *ri* :angle-vector (send *pr2* :angle-vector) (* ratio 3000))
           (send *ri* :go-pos-unsafe -0.1 0 0)
           (send *ri* :wait-interpolation)
           )
@@ -787,10 +790,10 @@
          (send *pr2* :inverse-kinematics rend
                :move-arm :rarm :revert-if-fail nil :use-torso 0.002)
          (push (send *pr2* :angle-vector) avs)
-         (send *ri* :angle-vector-sequence (nreverse avs) (list 800 800))
+         (send *ri* :angle-vector-sequence (nreverse avs) (list (* ratio 800) (* ratio 800)))
          (send *ri* :wait-interpolation)
          (send *pr2* :rarm :angle-vector #f(-45.0 55.0 -15.0 -120.0 12.0 -38.0 74.0))
-         (send *ri* :angle-vector (send *pr2* :angle-vector) 1600)
+         (send *ri* :angle-vector (send *pr2* :angle-vector) (* ratio 1600))
          ))
       ) ;; / (case door-type
     (send *ri* :ros-wait 0.0 :spin-self t) ;; attention-check ...
@@ -908,26 +911,17 @@
      )
     (:larm
      (send *ri* :angle-vector-sequence
-           (list ;;(float-vector 180.0 45.0 74.0 100.0 -90.0 -70.0 -36.0 20.0 -13.0 50.0 -30.0 -25.0 118.0 -90.0 62.0 -2.0 31.0)
-                 (float-vector 180.0 45.0 74.0 100.0 -90.0 -70.0 -36.0 20.0 -33.0 35.0 -30.0 -25.0 118.0 -90.0 62.0 -2.0 31.0)
-                 (float-vector 180 5 74 100 -90 -70 -6 20 -13 50 -30 -25 118 -90 62 -2 31);; 2000
-                 (float-vector 150 5 74 100 -90 -70 -6 20 -50 54 -15 -43 118 -90 62 -2 31);; 1000
-                 (float-vector 120 5 74 100 -90 -70 -6 20 -80 10 -39 -33 -49 -32 89 -2 32);; 1500
-                 (float-vector 100 5 74 100 -90 -70 -6 20 -61 6 -74 -44 55 -75 102 -2 33) ;; 1500 ;; pre-close
-                 ;;(float-vector 50 5 74 100 -90 -70 -6 20 9.05631 26.4211 -42.0907 -111.215 97.6198 -19.5577 -24.0422 -2.0 33.0)
-                 (float-vector 75 5 74 100 -90 -70 -6 20
-                               ;;-18.5 5 -70 -39 66 -48 66
-                               -35 13 -71 -89 50 -53 46
-                               -2.0 33.0) ;; 2600
-                 (float-vector 50 5 74 100 -90 -70 -6 20
-                               24 3 -2 -18 -40 -16 0
-                               -2.0 33.0)  ;; 2500
-                 (float-vector 50 5 74 100 -90 -70 -6 20
-                               24 3 -2 -18 -40 -16 0
-                               -2.0 33.0)  ;; 700 / wait at same pose
-                 (float-vector 50.0 5.0 74.0 100.0 -90.0 -70.0 -6.0 20.0 -24.0 -14.0 -2.0 -68.0 -40.0 -16.0 0.0 -2.0 33.0)
-                 )
-           (list 1400 800 1000 1500 1500 2600 2500 700 1200))
+	   (list
+	    (float-vector 199.925 30.5203 45.755 4.94941 -109.614 -181.537 -6.86273 -181.599 -53.1607 47.972 -113.924 -85.8823 69.9861 -5.72958 -19.9642 20.098 23.796)
+	    (float-vector 199.925 30.5203 45.755 4.94941 -109.614 -181.537 -6.86273 -181.599 -52.6619 48.6215 -58.4944 -63.1464 52.4 -18.6578 -36.158 20.068 23.844)
+	    (float-vector 199.925 30.5203 45.755 4.94941 -109.614 -181.537 -6.86273 -181.599 -47.223 7.4904 -68.5549 -27.9932 -5.62513 -42.8014 -3.89764 20.074 23.874)
+	    (float-vector 199.946 30.5203 45.784 5.36286 -109.622 -181.537 -8.06679 -181.631 -59.7112 14.9014 -67.1032 -63.3787 -27.4106 -22.5567 -5.52051 20.056 23.958)
+	    (float-vector 199.945 30.4823 45.7646 5.60174 -109.556 -181.537 -8.78224 -181.609 -39.5086 18.5463 -68.6927 -77.5544 -27.1157 -22.6614 -5.46068 20.074 23.844)
+	    (float-vector 199.946 30.4538 45.7162 5.80387 -109.514 -181.537 -9.29827 -181.561 -5.03645 8.29984 -64.2091 -40.9414 -24.0764 -6.03142 -7.88126 20.08 23.778)
+	    (float-vector 199.925 30.5013 45.7743 5.23423 -109.572 -181.537 -7.40368 -181.626 -20.6884 41.162 -12.6847 -106.395 -0.527595 -7.67921 -0.599568 20.038 23.814)
+	    )
+	   (list 500 500 500 800 1000 1000 600)
+	   )
      ))
   (send *ri* :wait-interpolation)
   (send *pr2* :angle-vector (send *ri* :state :potentio-vector))
