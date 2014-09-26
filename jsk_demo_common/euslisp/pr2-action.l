@@ -410,15 +410,15 @@
       (send *ri* :ros-wait wait-time :spin-self t)) ;; attention-check ...
      ((numberp wait-time)
       (send *ri* :ros-wait wait-time :spin-self t) ;; attention-check ...
-      ;;(unix::usleep
-      ;;(round (* wait-time 1000 1000)))
+      (unix::usleep
+      (round (* wait-time 1000 1000)))
       )
      (wait-time
       (send *ri* :wait-interpolation)))
     ;; (send *ri* :stop-grasp hand)
     ;; (send *ri* :wait-interpolation)
     ;; ;;
-    ;; (send *ri* :ros-wait 1.0 :spin t :spin-self t) ;; attention-check ...
+    (send *ri* :ros-wait 1.0 :spin t :spin-self t) ;; attention-check ...
     (send *pr2* :angle-vector (send *ri* :state :potentio-vector))
     (let ((end-pt (send *pr2* hand :end-coords :worldpos))
           idx)
