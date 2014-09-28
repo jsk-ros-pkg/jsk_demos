@@ -23,8 +23,20 @@
     uri: https://github.com/knowrob/knowrob.git
     local-name: knowrob
 - git:
-    uri: https://github.com/gheorghelisca/rosjava_jni.git
-    local-name: rosjava_jni
+    uri: https://github.com/velveteenrobot/appmanandroid.git
+    local-name: appmanandroid
+- git:
+    local-name: android_core
+    uri: git://github.com/rosjava/android_core.git
+    version: hydro
+- hg:
+    local-name: osrf_rosandroid
+    uri: https://bitbucket.org/osrf/rosandroid
+    version: default
+- hg:
+    local-name: rosjava_zeroconf
+    uri: https://bitbucket.org/osrf/rosjava_zeroconf
+    version: default
 - svn:
     uri: http://svn.code.sf.net/p/bosch-ros-pkg/code/trunk/stacks/bosch_shared_autonomy
     local-name: bosch-ros-pkg/stacks/bosch_shared_autonomy
