@@ -26,7 +26,17 @@ before_install: # Use this to prepare the system to install prerequisites or dep
   - sudo sh -c 'echo "deb http://packages.ros.org/ros/ubuntu precise main" > /etc/apt/sources.list.d/ros-latest.list'
   - wget http://packages.ros.org/ros.key -O - | sudo apt-key add -
   - sudo apt-get update -qq
+  - sudo apt-get install -qq --force-yes libgd2-xpm ia32-libs ia32-libs-multiarch
   - sudo apt-get install -qq -y python-catkin-pkg python-rosdep python-wstool ros-$ROS_DISTRO-catkin ros-$ROS_DISTRO-ros python-rosinstall swi-prolog libjson-glib-dev
+  - wget http://dl.google.com/android/android-sdk_r21.0.1-linux.tgz
+  - tar xzf android-sdk_r21.0.1-linux.tgz
+  - export ANDROID_HOME=$PWD/android-sdk-linux
+  - export PATH=${PATH}:${ANDROID_HOME}/tools:${ANDROID_HOME}/platform-tools
+  # Install required Android components.
+  - echo y | android update sdk --no-ui --force
+  - echo y | android update sdk --all --filter android-10 --no-ui --force
+  - echo y | android update sdk --all --filter android-13 --no-ui --force
+  - echo y | android update sdk --all --filter build-tools-19.1.0 --no-ui --force
   # MongoDB hack - I don't fully understand this but its for moveit_warehouse
   - sudo apt-get remove -y mongodb mongodb-10gen
   - sudo apt-get install -y mongodb-clients mongodb-server -o Dpkg::Options::="--force-confdef" # default actions
@@ -59,7 +69,7 @@ script: # All commands must exit with code 0 on success. Anything else is consid
   - cd ~/ros/ws_$REPOSITORY_NAME
   - if [ $BUILDER = rosbuild ]; then source src/setup.sh; cd src; fi
   - rospack profile
-  - if [ $BUILDER = catkin ]; then catkin_make -j2; else rosmake $BUILD_PACKAGES --profile --pjobs=4; fi
+  - if [ $BUILDER = catkin ]; then catkin_make -j1; else rosmake $BUILD_PACKAGES --profile --pjobs=4; fi
   - if [ $BUILDER = catkin ]; then if [ "$CATKIN_PACKAGES" != "" ]; then catkin_make test --pkg $CATKIN_PACKAGES; fi; else rosmake $BUILD_PACKAGES --test-only; fi
   - if [ $BUILDER = catkin ]; then catkin_make install; fi
   - if [ $BUILDER = catkin ]; then rm -fr devel src build; source install/setup.bash; else source setup.sh; fi
