@@ -9,7 +9,7 @@
 
 (require :pr2-move "package://jsk_demo_common/euslisp/pr2-move.l")
 (require :pr2-action "package://jsk_demo_common/euslisp/pr2-action.l")
-
+(ros::roseus-add-msgs "pr2_gripper_sensor_msgs")
 (load "package://jsk_demo_common/euslisp/attention-observation.l")
 
 (ros::roseus "demo_main")
