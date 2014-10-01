@@ -736,8 +736,8 @@
     (send *pr2* :angle-vector (send *ri* :state :potentio-vector))
     (send *pr2* :larm :angle-vector (float-vector 20.0 45.0 53.0 -100.0 -43.0 -60.0 0.0))
     (send *ri* :angle-vector (send *pr2* :angle-vector) 700)
-    (send *ri* :wait-interpolation)
     (send *ri* :stop-grasp :rarm)
+    (send *ri* :wait-interpolation)
     (send *ri* :ros-wait 0.0 :spin-self t :spin t) ;; attention-check ...
     (send *pr2* :angle-vector (send *ri* :state :potentio-vector))
 
