@@ -314,8 +314,8 @@
 ;;    (send sm :add-node (instance state :init :check-elevator-empty 'check-until-elevator-empty))
     (send sm :add-node (instance state :init :speak-fail '(lambda(x)(speak-jp "にふんたちました") t)))
     (send sm :add-node (actionlib-client-state
-        		:move-inside move-client :timeout 120 :retry t
-        		:key 'coords->movebaseactiongoal))
+			:move-inside move-client :timeout 120 :retry t
+			:key 'coords->movebaseactiongoal))
     (send (send sm :node :move-inside) :remap-list '((:goal . inside-coords)))
 
     ;; check if elevator door open (added by furushchev 2014/04/29)
