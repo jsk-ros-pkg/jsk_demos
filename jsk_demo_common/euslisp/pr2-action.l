@@ -830,10 +830,10 @@
       (let (cds)
         (unless (setq cds (check-detection :speak-name *type*
                            :type *type* :tf-force t :timeout 35 :single t
-                           :detection-topic "/openni/depth_registered/ObjectDetection"))
+                           :detection-topic "/openni_c2/depth_registered/ObjectDetection"))
           (setq cds (check-detection :speak-name *type*
                      :type *type* :tf-force t :timeout 70 :single t
-                     :detection-topic "/openni/depth_registered/ObjectDetection")))
+                     :detection-topic "/openni_c2/depth_registered/ObjectDetection")))
         (send *ri* :ros-wait 0.0 :spin-self t :spin t) ;; attention-check ...
         (when cds
           ;; (speak-jp (format nil "~A を とりだします" *type*))
