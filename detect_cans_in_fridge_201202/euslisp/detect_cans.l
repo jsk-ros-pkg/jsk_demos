@@ -15,12 +15,12 @@
 ;;(defvar *screen-topic* "/camera/rgb/screenpoint")
 ;; fuerte
 ;;(defvar *topic-name* "/openni/depth_registered/points")
-(defvar *topic-name* "/openni/depth_registered/points_throttle")
-(defvar *image-topic* "/openni/rgb/image_rect_color")
-(defvar *screen-topic* "/openni/rgb/screenpoint")
+(defvar *topic-name* "/openni_c2/depth_registered/points_throttle")
+(defvar *image-topic* "/openni_c2/rgb/image_rect_color")
+(defvar *screen-topic* "/openni_c2/rgb/screenpoint")
 ;;(defvar *result-topic* "/narrow_stereo/left/ObjectDetection")
 ;;(defvar *result-topic* "/openni/rgb/ObjectDetection")
-(defvar *result-topic* "/openni/depth_registered/ObjectDetection")
+(defvar *result-topic* "/openni_c2/depth_registered/ObjectDetection")
 
 (ros::roseus-add-msgs "posedetection_msgs")
 (load "match-hist.l")
@@ -112,9 +112,11 @@
 (setq *cloud-subscribed* nil)
 (defun subscribe-cloud-topic ()
   (unless *cloud-subscribed*
+    (ros::ros-warn "subscribe cloud topics")
     (setq *cloud-subscribed* t)
     (ros::subscribe *topic-name* sensor_msgs::PointCloud2 #'pcloud-cb)))
 (defun unsubscribe-cloud-topic ()
+  (ros::ros-warn "unsubscribe cloud topics")
   (setq *cloud-subscribed* nil)
   (ros::unsubscribe *topic-name*))
 

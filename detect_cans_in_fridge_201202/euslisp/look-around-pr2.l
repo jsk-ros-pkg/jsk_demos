@@ -1,4 +1,4 @@
-(defvar *points-topic* "/openni/depth_registered/points")
+(defvar *points-topic* "/openni_c2/depth_registered_half/points")
 (defvar *fix-frame-id* "/base_footprint")
 (defvar *map-frame-id* "/odom_combined")
 
