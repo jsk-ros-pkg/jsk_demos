@@ -184,7 +184,7 @@
 
 	 ;; updated 73b2 room
 	 `(:rot ,(rpy-matrix 0.04 -0.005 0.003)
-			:pos ,(float-vector 4613.557 8096.851 51.6065)
+			:pos ,(float-vector 4410.0 8129.0 51.6065)
 			:name "/eng2/7f/room73B2-fridge-front")
 	 `(:rot ,(rpy-matrix 1.563 0.003 0.003)
 			:pos ,(float-vector 3228.967 7292.739 51.6065)
