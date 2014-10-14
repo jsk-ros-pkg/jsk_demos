@@ -72,10 +72,11 @@
           )))))
 
 (defun position-measurement-cb (msg)
-  (if (or (eq *current-behavior* :idle)
+  (when (or (eq *current-behavior* :idle)
           (eq *current-behavior* :idle-random-look)
           (eq *current-behavior* :look-at-sound)
           (eq *current-behavior* :look-at-face))
+      (setq msg (elt (send msg :people) 0))
       (let ((cds (send *tfl* :lookup-transform "/base_footprint" 
                        (send msg :header :frame_id)
                        (send msg :header :stamp))))
@@ -147,8 +148,8 @@
 
 ;; subscribe topics
 (ros::subscribe
- "/face_detector/people_tracker_measurements"
- people_msgs::PositionMeasurement
+ "/face_detector/people_tracker_measurements_array"
+ people_msgs::PositionMeasurementArray
  #'position-measurement-cb)
 (ros::subscribe
  "/HarkPower"
