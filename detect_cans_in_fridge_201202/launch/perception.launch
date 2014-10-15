@@ -13,8 +13,8 @@
   <!-- <anode pkg="rosbag" type="play" name="play" -->
   <!--        args="-l -r 0.1 /home/leus/work/rits/refrig-kinect-c.bag" /> -->
 
-  <node pkg="roseus" type="roseus" name="fridge_marker" output="screen" if="$(arg fridge_show)"
-        args="$(find detect_cans_in_fridge_201202)/euslisp/fridge-marker.l" />
+  <node pkg="roseus" type="roseus" name="marker_publish" output="screen" if="$(arg fridge_show)"
+        args="$(find jsk_perception)/euslisp/only-perception.l" />
 
   <!-- reference white -->
   <anode pkg="image_view2" type="image_view2" name="select_ref_white" machine="c2">
