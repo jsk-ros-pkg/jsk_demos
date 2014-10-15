@@ -23,7 +23,11 @@
     <param name="age_threshold" value="2.0"/>
     <param name="icp_inlier_threshold" value="0.78" />
   </node>
-  <include file="$(find detect_cans_in_fridge_201202)/launch/perception.launch" />
+
+  <include file="$(find detect_cans_in_fridge_201202)/launch/perception.launch">
+    <arg name="fridge_show" value="false" />
+  </include>
+
   <group unless="$(arg execute)" >
     <node if="$(arg wait_query)"
           pkg="roseus" name="fridge_can_main" type="roseus"
