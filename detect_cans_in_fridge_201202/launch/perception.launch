@@ -6,7 +6,7 @@
   <arg name="app_manager" default="false" />
   <arg name="run_behavior" default="true" />
   <arg name="fridge_show" default="true" />
-  <include file="$(find pr2_machine)/$(env ROBOT).machine" />  
+  <include file="$(find pr2_machine)/$(env ROBOT).machine" />
   <!-- <arg name="app_manager" default="true" /> -->
 
   <!-- sample data for test -->
