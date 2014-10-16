@@ -14,7 +14,7 @@
   <!--        args="-l -r 0.1 /home/leus/work/rits/refrig-kinect-c.bag" /> -->
 
   <node pkg="roseus" type="roseus" name="marker_publish" output="screen" if="$(arg fridge_show)"
-        args="$(find jsk_perception)/euslisp/only-perception.l" />
+        args="$(find jsk_perception)/euslisp/kalman-filtered-objectdetection-marker.l" />
 
   <!-- reference white -->
   <anode pkg="image_view2" type="image_view2" name="select_ref_white" machine="c2">
