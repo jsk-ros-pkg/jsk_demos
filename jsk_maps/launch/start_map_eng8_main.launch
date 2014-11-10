@@ -1,0 +1,50 @@
+<launch>
+  <!-- map for visualization nodes -->
+  <node name="$(anon map_server00)" pkg="map_server" type="map_server"
+        args="/home/applications/ros/hydro/src/jsk-ros-pkg/jsk_demos/jsk_maps/raw_maps/eng8-6f-0.05.yaml" >
+    <remap from="map" to="/eng8/6f"/>
+    <param name="frame_id" value="/eng8/6f"/>
+  </node>
+  <node name="$(anon map_server01)" pkg="map_server" type="map_server"
+        args="/home/applications/ros/hydro/src/jsk-ros-pkg/jsk_demos/jsk_maps/raw_maps/eng8-b1f-0.05.yaml" >
+    <remap from="map" to="/eng8/b1f"/>
+    <param name="frame_id" value="/eng8/b1f"/>
+  </node>
+  <node name="$(anon map_server02)" pkg="map_server" type="map_server"
+        args="/home/applications/ros/hydro/src/jsk-ros-pkg/jsk_demos/jsk_maps/raw_maps/eng8-1f-0.05.yaml" >
+    <remap from="map" to="/eng8/1f"/>
+    <param name="frame_id" value="/eng8/1f"/>
+  </node>
+
+  <!-- map for navigation nodes -->
+  <node pkg="multi_map_server" type="multi_map_server" name="map_server"
+        args=" /home/applications/ros/hydro/src/jsk-ros-pkg/jsk_demos/jsk_maps/raw_maps/eng8-6f-0.05.yaml
+ /home/applications/ros/hydro/src/jsk-ros-pkg/jsk_demos/jsk_maps/raw_maps/eng8-b1f-0.05.yaml
+ /home/applications/ros/hydro/src/jsk-ros-pkg/jsk_demos/jsk_maps/raw_maps/eng8-1f-0.05.yaml
+"/>
+  <node pkg="tf" type="static_transform_publisher" name="$(anon map_tf00)"
+        args="  0.000   0.000  20.000 0 0 0 /eng8 /eng8/6f 100"/>
+  <node pkg="tf" type="static_transform_publisher" name="$(anon map_tf01)"
+        args="  0.000   0.000   0.000 0 0 0 /eng8/6f /map 100" >
+
+    <remap from="tf" to="/eng8/6f_tf"/>
+  </node>
+  <node pkg="tf" type="static_transform_publisher" name="$(anon map_tf02)"
+        args="  0.000   0.000   0.000 0 0 0 /eng8 /eng8/b1f 100"/>
+  <node pkg="tf" type="static_transform_publisher" name="$(anon map_tf03)"
+        args="  0.000   0.000   0.000 0 0 0 /eng8/b1f /map 100" >
+
+    <remap from="tf" to="/eng8/b1f_tf"/>
+  </node>
+  <node pkg="tf" type="static_transform_publisher" name="$(anon map_tf04)"
+        args="  0.000   0.000  10.000 0 0 0 /eng8 /eng8/1f 100"/>
+  <node pkg="tf" type="static_transform_publisher" name="$(anon map_tf05)"
+        args="  0.000   0.000   0.000 0 0 0 /eng8/1f /map 100" >
+
+    <remap from="tf" to="/eng8/1f_tf"/>
+  </node>
+  <node name="tf_mux" pkg="topic_tools" type="mux"
+        args="tf  /eng8/6f_tf /eng8/b1f_tf /eng8/1f_tf">
+    <remap from="mux" to="map_tf_mux" />
+  </node>
+</launch>
