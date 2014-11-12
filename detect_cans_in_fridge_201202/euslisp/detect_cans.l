@@ -112,13 +112,14 @@
 (setq *cloud-subscribed* nil)
 (defun subscribe-cloud-topic ()
   (unless *cloud-subscribed*
-    (ros::ros-warn "subscribe cloud topics")
+    (ros::ros-info "subscribe cloud topics")
     (setq *cloud-subscribed* t)
     (ros::subscribe *topic-name* sensor_msgs::PointCloud2 #'pcloud-cb)))
 (defun unsubscribe-cloud-topic ()
-  (ros::ros-warn "unsubscribe cloud topics")
-  (setq *cloud-subscribed* nil)
-  (ros::unsubscribe *topic-name*))
+  (when *cloud-subscribed*
+    (ros::ros-info "unsubscribe cloud topics")
+    (setq *cloud-subscribed* nil)
+    (ros::unsubscribe *topic-name*)))
 
 (defun white-balance-points (3dp &optional (reference-color #f(1 1 1)))
   (let ((req (instance jsk_perception::WhiteBalancePointsRequest :init))
