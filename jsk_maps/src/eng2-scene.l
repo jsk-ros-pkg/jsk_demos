@@ -215,7 +215,7 @@
 			:name "/eng2/7f/room73B2-trashbox-front")
          `(:rot ,(rpy-matrix 0 0 0)
                 :pos ,(float-vector -750.0 6829.0 51.6065)
-                :name "/eng2/7f/room73A3-front")
+                :name "/eng2/7f/room73A3-front1")
 
 
 
