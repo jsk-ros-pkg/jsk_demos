@@ -5,11 +5,13 @@ project(jsk_maps)
 find_package(catkin REQUIRED COMPONENTS
   roseus multi_map_server)
 
+set(_roseus_exe ${roseus_PREFIX}/bin/roseus)
+
 catkin_package()
 
 add_custom_command(
   OUTPUT installed
-  COMMAND rosrun roseus roseus ${PROJECT_SOURCE_DIR}/src/dump-map-info.l
+  COMMAND ${_roseus_exe} ${PROJECT_SOURCE_DIR}/src/dump-map-info.l
   WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
 )
 
