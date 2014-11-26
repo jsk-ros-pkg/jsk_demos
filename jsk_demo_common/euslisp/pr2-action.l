@@ -348,13 +348,14 @@
     *ret*))
 
 (defun move-fridge-traj (hand cds-traj
-                              &key ((:rotation-axis ra) :z) (use-torso 0.0025)
-                              (fix-waist-z 150) (return-sequence) (wait-time 4)
-                              (grasp-check t)  (move-robot t) (start-sec 1000) (func-time 25) &allow-other-keys)
+                              ;; &key ((:rotation-axis ra) :z) (use-torso 0.0025)
+                              &key ((:rotation-axis ra) :z) (use-torso nil)
+                              (fix-waist-z 130) (return-sequence) (wait-time 1)
+                              (grasp-check t)  (move-robot t) (start-sec 1000) (func-time 20) &allow-other-keys)
   (let* ((st0 (car cds-traj))
 	 (st1 (cadr cds-traj))
 	 (lst (cddr cds-traj))
-	 (time-tick (/ (* (- func-time 13) 1000) (length lst)));;changing opening-door speed
+	 (time-tick (/ (* (- func-time 16) 1000) (length lst)));;changing opening-door speed
 	 avs tms)
     (when move-robot  ;; open-gripper
       (send *ri* :move-gripper hand 0.09 :wait nil))
@@ -410,15 +411,15 @@
       (send *ri* :ros-wait wait-time :spin-self t)) ;; attention-check ...
      ((numberp wait-time)
       (send *ri* :ros-wait wait-time :spin-self t) ;; attention-check ...
-      (unix::usleep
-      (round (* wait-time 1000 1000)))
+      ;; (unix::usleep
+      ;; (round (* wait-time 1000 1000)))
       )
      (wait-time
       (send *ri* :wait-interpolation)))
     ;; (send *ri* :stop-grasp hand)
     ;; (send *ri* :wait-interpolation)
     ;; ;;
-    (send *ri* :ros-wait 1.0 :spin t :spin-self t) ;; attention-check ...
+    (send *ri* :ros-wait 0.0 :spin t :spin-self t) ;; attention-check ...
     (send *pr2* :angle-vector (send *ri* :state :potentio-vector))
     (let ((end-pt (send *pr2* hand :end-coords :worldpos))
           idx)
@@ -432,7 +433,7 @@
 ;; actions
 ;;
 (warn ";; define grasp-can-single")
-(defun grasp-can-single (obj &key (rotation 0) (use-arm :rarm) (grasp-depth 35)(func-time 15))
+(defun grasp-can-single (obj &key (rotation 0) (use-arm :rarm) (grasp-depth 35)(func-time 7))
   (let (via1 via2 tar orig-av (mvt (* (/ (- func-time 4) 4.0) 1000)));; mvt is about 3000. we assume it takes 4 sec other than sending :angle-vector, and there are 4 :angle-vector in this funciton
     (send *ri* :stop-grasp use-arm)
     (send *tfb* :send-transform
@@ -581,10 +582,10 @@
 (defvar *fridge-distance-threshold* 25.0)
 (defvar *fridge-rotation-threshold* 0.09)
 (defun open-fridge-door (&key (open-fridge-func #'open-fridge-traj)
-                              (torso-lift 30) (head-pitch 14)
+                              (torso-lift 130) (head-pitch 14)
                               (use-arm :rarm)
                               (door-type :circle) (look-around nil) ;; :circle, :slide1, :slide2
-                              (func-time 90) )
+                              (func-time 80) )
   (let (ret
         (idealcds
         (case door-type
@@ -658,14 +659,14 @@
             ;; for open fridge
             (case door-type
               (:circle
-               (send *pr2* :head :angle-vector (float-vector 0 24))
-               (send *pr2* :torso :angle-vector (float-vector 140))
-               (send *ri* :angle-vector (send *pr2* :angle-vector) (* ratio 3000))
-               (send *ri* :wait-interpolation)
+               ;; (send *pr2* :head :angle-vector (float-vector 0 24))
+               ;; (send *pr2* :torso :angle-vector (float-vector 130))
+               ;; (send *ri* :angle-vector (send *pr2* :angle-vector) (* ratio 3000))
+               ;; (send *ri* :wait-interpolation)
                )
               ((:slide1 :slide2)
                (send *pr2* :head :angle-vector (float-vector 0 50))
-               (send *pr2* :torso :angle-vector (float-vector 140))
+               (send *pr2* :torso :angle-vector (float-vector 130))
                (send *ri* :angle-vector (send *pr2* :angle-vector) (* ratio 3000))
                (send *ri* :wait-interpolation)
                ))
@@ -686,14 +687,12 @@
                (setq ret (funcall open-fridge-func
                                   :rarm cds 1.7 ;;(/ pi 2)
                                   :rotation-axis t :radius 490
-                                  :time-tick 280 ;; 600
                                   :wait-time 5.8 ;; t
                                   )))
               ((:slide1 :slide2)
                (setq ret (funcall open-fridge-func
                                   :rarm cds 320 ;; 330 ;; max
                                   :rotation-axis t :door-type :slide
-                                  :time-tick 200 ;; 320
                                   :wait-time t
                                   )))
               )
@@ -716,7 +715,7 @@
                 (/ (elt (send diffcds :worldpos) 1) 1100.0)
                 (* 0.9 (rad2deg (elt (car (rpy-angle (send diffcds :worldrot))) 0))))
           ;; wait ???
-          (send *ri* :ros-wait 0.6 :spin-self t :spin t) ;; attention-check ...
+          (send *ri* :ros-wait 0.5 :spin-self t :spin t) ;; attention-check ...
           ;; (send *ri* :wait-interpolation)
           ))
         ) ;; /when cds
@@ -736,8 +735,8 @@
     (send *pr2* :angle-vector (send *ri* :state :potentio-vector))
     (send *pr2* :larm :angle-vector (float-vector 20.0 45.0 53.0 -100.0 -43.0 -60.0 0.0))
     (send *ri* :angle-vector (send *pr2* :angle-vector) 700)
-    (send *ri* :wait-interpolation)
     (send *ri* :stop-grasp :rarm)
+    (send *ri* :wait-interpolation)
     (send *ri* :ros-wait 0.0 :spin-self t :spin t) ;; attention-check ...
     (send *pr2* :angle-vector (send *ri* :state :potentio-vector))
 
@@ -747,10 +746,10 @@
        (setq *free-door-pose* (send *pr2* :angle-vector))
        (send *ri* :angle-vector-sequence
 	     (list 
-	      (float-vector 150.096 -8.34106 16.3632 56.7586 -50.7209 -42.9818 -69.7732 -6.52931 -61.9676 12.5409 -37.3903 -42.7413 338.286 -107.454 135.477 0.027956 22.926)
-	      (float-vector 150 -20.2546 15.9172 53.2397 -38.2041 -43.0083 -60.0086 -0.000466 -66.8745 25.0654 -42.6273 -49.3771 319.162 -71.6589 167.523 -0.020044 23.832) 
-	      (float-vector 149.972 -25.9215 15.5489 55.3988 -36.512 -44.1484 -28.2568 -7.75581 -50.5861 44.487 -45.2274 -70.2799 245.195 -26.7547 148.858 0.027956 -7.548)
-	      (float-vector 149.977 38.3106 20.1389 77.7708 -88.0224 -47.5755 -5.72958 -10.483 -12.7603 46.1883 -29.4706 -70.2965 245.815 -44.8729 150.788 0.003956 -13.794)
+	      (float-vector 130 -8.34106 16.3632 56.7586 -50.7209 -42.9818 -69.7732 -6.52931 -61.9676 12.5409 -37.3903 -42.7413 338.286 -107.454 135.477 0.027956 22.926)
+	      (float-vector 130 -20.2546 15.9172 53.2397 -38.2041 -43.0083 -60.0086 -0.000466 -66.8745 25.0654 -42.6273 -49.3771 319.162 -71.6589 167.523 -0.020044 23.832) 
+	      (float-vector 130 -25.9215 15.5489 55.3988 -36.512 -44.1484 -28.2568 -7.75581 -50.5861 44.487 -45.2274 -70.2799 245.195 -26.7547 148.858 0.027956 -7.548)
+	      (float-vector 130 38.3106 20.1389 77.7708 -88.0224 -47.5755 -5.72958 -10.483 -12.7603 46.1883 -29.4706 -70.2965 245.815 -44.8729 150.788 0.003956 -13.794)
 	      )
 	     (list 1200 600 1000 700))
        (send *ri* :stop-grasp :rarm)
@@ -759,7 +758,7 @@
        (case use-arm
         (:rarm
          ;; grasp rarm
-         (send *ri* :angle-vector (float-vector 199.971 5.30455 69.0 105.231 -88.5188 -69.9972 -5.72958 19.9717 31.3839 25.5029 23.0531 -118.916 160.305 -84.1469 160.058 -20 24) 2000)
+         (send *ri* :angle-vector (float-vector 130 5.30455 69.0 105.231 -88.5188 -69.9972 -5.72958 19.9717 31.3839 25.5029 23.0531 -118.916 160.305 -84.1469 160.058 -20 24) (* ratio 2000))
          ;; (let ((cds (send *pr2* :rarm :end-coords :copy-worldcoords)))
          ;;   ;; pre grasp pose
          ;;   (send cds :rotate (- (deg2rad 20)) :z)
@@ -768,7 +767,7 @@
          )
         (:larm
          ;; grasp larm
-         (send *ri* :angle-vector (float-vector 199.971 -32.3186 26.4366 -19.6876 -118.217 -138.147 -78.3509 -166.767 -5.30455 69.0 -105.231 -88.5188 69.9972 -5.72958 -19.9717 20.0 24.0) 2000)
+         (send *ri* :angle-vector (float-vector 130 -32.3186 26.4366 -19.6876 -118.217 -138.147 -78.3509 -166.767 -5.30455 69.0 -105.231 -88.5188 69.9972 -5.72958 -19.9717 20.0 24.0) (* ratio 2000))
          ;; (send *ri* :angle-vector-sequence
          ;;       (list (float-vector 150.0 5.0 74.0 70.0 -75.0 -70.0 -6.0 20.0 -20.0 20.0 -34.0 -110.0 12.0 -38.0 74.0 -2.0 31.0)
          ;;             ;;(float-vector 150.0 25.0 54.0 20.0 -120.0 -70.0 -6.0 20.0 -12.0 46.0 -79.0 -45.0 40.0 -22.0 27.0 -2.0 31.0)
@@ -831,10 +830,10 @@
       (let (cds)
         (unless (setq cds (check-detection :speak-name *type*
                            :type *type* :tf-force t :timeout 35 :single t
-                           :detection-topic "/openni/depth_registered/ObjectDetection"))
+                           :detection-topic "/openni_c2/depth_registered/ObjectDetection"))
           (setq cds (check-detection :speak-name *type*
                      :type *type* :tf-force t :timeout 70 :single t
-                     :detection-topic "/openni/depth_registered/ObjectDetection")))
+                     :detection-topic "/openni_c2/depth_registered/ObjectDetection")))
         (send *ri* :ros-wait 0.0 :spin-self t :spin t) ;; attention-check ...
         (when cds
           ;; (speak-jp (format nil "~A を とりだします" *type*))
@@ -861,7 +860,7 @@
                  (send *ri* :go-pos-unsafe -0.3 0.05 (- rotation)))
                 (:larm
                  (send *ri* :go-pos-unsafe -0.3 -0.2 (- rotation)))))
-            (send *ri* :ros-wait 1.0 :spin-self t :spin t) ;; attention-check ...
+            (send *ri* :ros-wait 0.0 :spin-self t :spin t) ;; attention-check ...
             (return-from grasp-can t))
           ;; (unix::sleep 2)
           (if (and (boundp '*use-voicetext*) *use-voicetext*)
@@ -912,13 +911,13 @@
     (:larm
      (send *ri* :angle-vector-sequence
 	   (list
-	    (float-vector 199.925 30.5203 45.755 4.94941 -109.614 -181.537 -6.86273 -181.599 -53.1607 47.972 -113.924 -85.8823 69.9861 -5.72958 -19.9642 20.098 23.796)
-	    (float-vector 199.925 30.5203 45.755 4.94941 -109.614 -181.537 -6.86273 -181.599 -52.6619 48.6215 -58.4944 -63.1464 52.4 -18.6578 -36.158 20.068 23.844)
-	    (float-vector 199.925 30.5203 45.755 4.94941 -109.614 -181.537 -6.86273 -181.599 -47.223 7.4904 -68.5549 -27.9932 -5.62513 -42.8014 -3.89764 20.074 23.874)
-	    (float-vector 199.946 30.5203 45.784 5.36286 -109.622 -181.537 -8.06679 -181.631 -59.7112 14.9014 -67.1032 -63.3787 -27.4106 -22.5567 -5.52051 20.056 23.958)
-	    (float-vector 199.945 30.4823 45.7646 5.60174 -109.556 -181.537 -8.78224 -181.609 -39.5086 18.5463 -68.6927 -77.5544 -27.1157 -22.6614 -5.46068 20.074 23.844)
-	    (float-vector 199.946 30.4538 45.7162 5.80387 -109.514 -181.537 -9.29827 -181.561 -5.03645 8.29984 -64.2091 -40.9414 -24.0764 -6.03142 -7.88126 20.08 23.778)
-	    (float-vector 199.925 30.5013 45.7743 5.23423 -109.572 -181.537 -7.40368 -181.626 -20.6884 41.162 -12.6847 -106.395 -0.527595 -7.67921 -0.599568 20.038 23.814))
+	    (float-vector 130 30.5203 45.755 4.94941 -109.614 -181.537 -6.86273 -181.599 -53.1607 47.972 -113.924 -85.8823 69.9861 -5.72958 -19.9642 20.098 23.796)
+	    (float-vector 130 30.5203 45.755 4.94941 -109.614 -181.537 -6.86273 -181.599 -52.6619 48.6215 -58.4944 -63.1464 52.4 -18.6578 -36.158 20.068 23.844)
+	    (float-vector 130 30.5203 45.755 4.94941 -109.614 -181.537 -6.86273 -181.599 -47.223 7.4904 -68.5549 -27.9932 -5.62513 -42.8014 -3.89764 20.074 23.874)
+	    (float-vector 130 30.5203 45.784 5.36286 -109.622 -181.537 -8.06679 -181.631 -59.7112 14.9014 -67.1032 -63.3787 -27.4106 -22.5567 -5.52051 20.056 23.958)
+	    (float-vector 130 30.4823 45.7646 5.60174 -109.556 -181.537 -8.78224 -181.609 -39.5086 18.5463 -68.6927 -77.5544 -27.1157 -22.6614 -5.46068 20.074 23.844)
+	    (float-vector 130 30.4538 45.7162 5.80387 -109.514 -181.537 -9.29827 -181.561 -5.03645 8.29984 -64.2091 -40.9414 -24.0764 -6.03142 -7.88126 20.08 23.778)
+	    (float-vector 130 30.5013 45.7743 5.23423 -109.572 -181.537 -7.40368 -181.626 -20.6884 41.162 -12.6847 -106.395 -0.527595 -7.67921 -0.599568 20.038 23.814))
 	   (list 500 500 500 800 1000 1000 600)
 	   )
      ))
