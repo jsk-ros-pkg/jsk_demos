@@ -5,17 +5,24 @@ project(jsk_maps)
 find_package(catkin REQUIRED COMPONENTS
   roseus multi_map_server)
 
-set(_roseus_exe ${roseus_PREFIX}/bin/roseus)
+if(EXISTS ${roseus_PREFIX}/bin/roseus)
+  set(_roseus_exe ${roseus_PREFIX}/bin/roseus)
+else(EXISTS ${roseus_PACKAGE_PATH}/bin/roseus)
+  set(_roseus_exe ${roseus_PACKAGE_PATH}/bin/roseus)
+endif()
 
 catkin_package()
 
+set(_generated_yamls ${PROJECT_SOURCE_DIR}/raw_maps/eng2-2f-0.05.yaml ${PROJECT_SOURCE_DIR}/raw_maps/eng2-7f-0.05.yaml ${PROJECT_SOURCE_DIR}/raw_maps/eng6-1f-0.05.yaml ${PROJECT_SOURCE_DIR}/raw_maps/eng6-3f-0.05.yaml ${PROJECT_SOURCE_DIR}/raw_maps/eng6-b1f-0.05.yaml ${PROJECT_SOURCE_DIR}/raw_maps/eng8-6f-0.05.yaml
+eng2-1f-0.05.yaml ${PROJECT_SOURCE_DIR}/raw_maps/eng2-3f-0.05.yaml ${PROJECT_SOURCE_DIR}/raw_maps/eng2-8f-0.05.yaml ${PROJECT_SOURCE_DIR}/raw_maps/eng6-2f-0.05.yaml ${PROJECT_SOURCE_DIR}/raw_maps/eng6-4f-0.05.yaml ${PROJECT_SOURCE_DIR}/raw_maps/eng8-1f-0.05.yaml ${PROJECT_SOURCE_DIR}/raw_maps/ eng8-b1f-0.05.yaml)
+
 add_custom_command(
-  OUTPUT installed
+  OUTPUT ${_generated_yamls}
   COMMAND ${_roseus_exe} ${PROJECT_SOURCE_DIR}/src/dump-map-info.l
   WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
 )
 
-add_custom_target(jsk_maps_install ALL DEPENDS installed)
+add_custom_target(jsk_maps_install ALL DEPENDS ${_generated_yamls})
 
 install(DIRECTORY launch raw_maps src tools
   DESTINATION
