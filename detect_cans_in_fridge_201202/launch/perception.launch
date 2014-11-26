@@ -1,0 +1,105 @@
+<launch>
+  <arg name="start_rviz" default="false" />
+  <arg name="wait_query" default="true" />
+  <arg name="execute" default="false" />
+  <arg name="DEMOTYPE" default="map" />
+  <arg name="app_manager" default="false" />
+  <arg name="run_behavior" default="true" />
+  <arg name="fridge_show" default="true" />
+  <include file="$(find pr2_machine)/$(env ROBOT).machine" />
+  <!-- <arg name="app_manager" default="true" /> -->
+
+  <!-- sample data for test -->
+  <!-- <anode pkg="rosbag" type="play" name="play" -->
+  <!--        args="-l -r 0.1 /home/leus/work/rits/refrig-kinect-c.bag" /> -->
+
+  <node pkg="roseus" type="roseus" name="marker_publish" output="screen" if="$(arg fridge_show)"
+        args="$(find jsk_perception)/euslisp/kalman-filtered-objectdetection-marker.l" />
+
+  <!-- reference white -->
+  <anode pkg="image_view2" type="image_view2" name="select_ref_white" machine="c2">
+    <remap from="image" to="/openni_c2/rgb/image_rect_color"/>
+    <remap from="camera_info" to="/openni_c2/rgb/camera_info"/>
+    <remap from="/openni_c2/rgb/image_rect_color/screenpoint"
+           to="/openni_c2/rgb/screenpoint"/>
+  </anode>
+
+  <group ns="openni">
+    <group ns="rgb">
+      <group ns="image_rect_color">
+        <node pkg="nodelet" type="nodelet" name="crop_manager" args="manager" />
+        <node pkg="nodelet" type="nodelet" name="crop"
+              output="screen"
+              args="load image_proc/crop_decimate crop_manager">
+          <remap from="camera/image_raw" to="/openni_c2/rgb/image_rect_color"/>
+          <remap from="camera/camera_info" to="/openni_c2/rgb/camera_info"/>
+          <remap from="camera_out/image_raw" to="~image" />
+          <remap from="camera_out/camera_info" to="~camera_info" />
+          <rosparam>
+            x_offset: 50
+            y_offset: 200
+            width: 320
+            height: 240
+          </rosparam>
+        </node>
+      </group>
+    </group>
+  </group>
+
+  <!-- setup fridge handle marker template -->
+  <!--include file="$(find jsk_2011_07_pr2_semantic)/launch/start_perception.launch" /-->
+  <group ns="/openni/rgb">
+    <!-- <node name="throttle" pkg="topic_tools" -->
+    <!--       type="throttle" args="messages image_rect_color 4.0 image_rect_throttle" -->
+    <!--       machine="c1" /> -->
+    <node name="fridge_demo_sift" pkg="imagesift"
+          type="imagesift" launch-prefix="nice -n +10"
+          machine="c2" >
+      <remap from="/openni/rgb/image" to="/openni/rgb/image_rect_color/crop/image" />
+      <remap from="/openni/rgb/camera_info" to="/openni/rgb/image_rect_color/crop/camera_info" />
+    </node>
+    <node pkg="jsk_perception" type="point_pose_extractor"
+          name="fridge_detector">
+      <param name="template_filename" value="$(find detect_cans_in_fridge_201202)/data/openni_rgb_fridge.png"/>
+      <param name="window_name" value="fridge_handle_upper"/>
+      <param name="object_width" value="0.231"/>
+      <param name="object_height" value="0.196"/>
+      <param name="relative_pose" value="0.22 0.05 0.075  0.707107 0 -0.707107 0"/>
+      <param name="viewer_window" value="false" /> <!-- to disable window-->
+    </node>
+  </group>
+  <!-- load model (color histgrams) -->
+  <include file="$(find detect_cans_in_fridge_201202)/launch/white_balance.launch" />
+
+  <!-- detect cans -->
+  <include file="$(find detect_cans_in_fridge_201202)/launch/detect_cans.launch" />
+  <sphinxdoc><![CDATA[
+
+This package containts detect and fetch can in the fridge demo program
+
+
+.. figure:: http://r7videos-thumbnail.s3.amazonaws.com/ER7_RE_JR_DOMESTICAS_452kbps_2012-02-23_b9dace72-5e73-11e1-b9a6-4ba54d97a5f8.jpg
+   :width 400
+
+   http://noticias.r7.com/videos/japoneses-utilizam-robo-para-as-funcoes-de-empregada-domestica/idmedia/4f46c7a2fc9b864945d600a5.html
+
+.. code-block:: bash
+
+  @c1; roslaunch jsk_pr2_startup pr2.launch
+  @c1; roslaunch detect_cans_in_fridge_201202 startup.launch
+  @local; roslaunch  detect_cans_in_fridge_201202 rviz.launch
+
+set current pr2 position using "2D Pose Estimate" button on rviz
+
+make sure that Tool Properties -> Interact -> 2D Nav Goal -> Topic is move_bas_simple_goal and  
+2DPoseEstimate is initialpose.
+
+.. code-block:: bash
+
+  @local; rosrun roseus roseus `rospack find detect_cans_in_fridge_201202`/euslisp/main.l
+
+type (init)(demo) to start demo
+
+]]></sphinxdoc>
+
+</launch>
