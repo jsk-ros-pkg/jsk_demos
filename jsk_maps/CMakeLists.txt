@@ -5,10 +5,25 @@ project(jsk_maps)
 find_package(catkin REQUIRED COMPONENTS
   roseus multi_map_server geometry_msgs)
 
+if(roseus_SOURCE_DIR)
+  set(roseus_PACKAGE_PATH ${roseus_SOURCE_DIR})
+elseif(roseus_SOURCE_PREFIX)
+  set(roseus_PACKAGE_PATH ${roseus_SOURCE_PREFIX})
+else(roseus_SOURCE_PREFIX)
+  set(roseus_PACKAGE_PATH ${roseus_PREFIX}/share/roseus)
+endif()
+  
+
 if(EXISTS ${roseus_PREFIX}/bin/roseus)
   set(_roseus_exe ${roseus_PREFIX}/bin/roseus)
 else(EXISTS ${roseus_PACKAGE_PATH}/bin/roseus)
   set(_roseus_exe ${roseus_PACKAGE_PATH}/bin/roseus)
+endif()
+
+if(EXISTS ${roseus_PREFIX}/scripts/generate-all-msg-srv.sh)
+  set(_geneus_msg_exe ${roseus_PREFIX}/scripts/generate-all-msg-srv.sh)
+else(EXISTS ${roseus_PACKAGE_PATH}/scripts/generate-all-msg-srv.sh)
+  set(_geneus_msg_exe ${roseus_PACKAGE_PATH}/scripts/generate-all-msg-srv.sh)
 endif()
 
 catkin_package()
@@ -35,6 +50,7 @@ set(_generated_files
 add_custom_command(
   OUTPUT ${_generated_files}
   COMMAND ${_roseus_exe} ${PROJECT_SOURCE_DIR}/src/dump-map-info.l
+  DEPENDS ${ALL_GEN_OUTPUT_FILES_eus}
   WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
 )
 
