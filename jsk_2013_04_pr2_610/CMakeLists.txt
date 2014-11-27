@@ -1,3 +1,8 @@
+if(NOT USE_ROSBUILD)
+  include(catkin.cmake)
+  return()
+endif()
+
 cmake_minimum_required(VERSION 2.8 FATAL_ERROR)
 include($ENV{ROS_ROOT}/core/rosbuild/rosbuild.cmake)
 
