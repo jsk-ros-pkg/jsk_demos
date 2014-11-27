@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 2.8.3)
 project(jsk_maps)
 
 find_package(catkin REQUIRED COMPONENTS
-  roseus multi_map_server geometry_msgs)
+  roseus multi_map_server)
 
 catkin_package()
 
