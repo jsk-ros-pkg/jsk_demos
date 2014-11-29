@@ -47,9 +47,11 @@ set(_generated_files
   ${PROJECT_SOURCE_DIR}/launch/start_map_eng8_main.launch
   )
 
+set(_eus_cmd "\"(progn;(setq;*src*;\\\"${PROJECT_SOURCE_DIR}\\\");(load;\\\"${PROJECT_SOURCE_DIR}/src/catkin-build-util.l\\\"))\"")
+
 add_custom_command(
   OUTPUT ${_generated_files}
-  COMMAND ${_roseus_exe} ${PROJECT_SOURCE_DIR}/src/dump-map-info.l
+  COMMAND ${_roseus_exe} ${_eus_cmd}
   DEPENDS ${ALL_GEN_OUTPUT_FILES_eus}
   WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
 )
