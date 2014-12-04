@@ -426,7 +426,7 @@
       (setq idx (position (find-extream lst #'(lambda(x) (distance (send x :worldpos) end-pt)) #'<) lst))
       (ros::ros-info "idx = [~a/~a]" idx (length lst))
       (when (< idx (/ (length lst) 2))
-        (return-from open-fridge-traj nil)))
+        (return-from move-fridge-traj nil)))
     t))
 
 ;;
