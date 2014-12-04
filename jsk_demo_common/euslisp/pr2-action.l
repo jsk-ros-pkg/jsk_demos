@@ -924,7 +924,7 @@
   (send *ri* :wait-interpolation)
   (send *pr2* :angle-vector (send *ri* :state :potentio-vector))
   (send *ri* :ros-wait 0.0 :spin-self t) ;; attention-check ...
-  (pr2-tuckarm-pose use-arm)
+  (pr2-tuckarm-pose use-arm :outside)
   t
   )
 
