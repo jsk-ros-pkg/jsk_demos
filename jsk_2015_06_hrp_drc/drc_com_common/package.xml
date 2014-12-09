@@ -1,0 +1,23 @@
+<package>
+  <name>drc_com_common</name>
+  <version>0.1.0</version>
+  <description>drc_com_common</description>
+  <maintainer email="murooka@jsk.t.u-tokyo.ac.jp">Masaki Murooka</maintainer>
+  <license>BSD</license>
+  <author email="murooka@jsk.t.u-tokyo.ac.jp">Masaki Murooka</author>
+
+  <buildtool_depend>catkin</buildtool_depend>
+
+  <build_depend>mk</build_depend>
+  <build_depend>rosbuid</build_depend>
+  <build_depend>roseus</build_depend>
+  <build_depend>message_generation</build_depend>
+  <build_depend>roslib</build_depend>
+  <build_depend>rospy</build_depend>
+  <run_depend>mk</run_depend>
+  <run_depend>rosbuid</run_depend>
+  <run_depend>roseus</run_depend>
+  <run_depend>message_runtime</run_depend>
+  <run_depend>roslib</run_depend>
+  <run_depend>rospy</run_depend>
+</package>
