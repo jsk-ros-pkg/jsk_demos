@@ -1,0 +1,37 @@
+<?xml version="1.0"?>
+<package>
+  <name>jsk_demo_common</name>
+  <version>0.0.0</version>
+  <description>The jsk_demo_common package</description>
+  <maintainer email="mikita@jsk.imi.i.u-tokyo.ac.jp">Hiroyuki Mikita</maintainer>
+  <license>BSD</license>
+  <url type="website">http://wiki.ros.org/jsk_demo_common</url>
+
+  <author email="mikita@jsk.imi.i.u-tokyo.ac.jp">Hiroyuki Mikita</author>
+  <author email="youhei@jsk.imi.i.u-tokyo.ac.jp">Yohei Kakiuchi</author>
+  <author email="furushchev@jsk.imi.i.u-tokyo.ac.jp">Yuki Furuta</author>
+  <author email="murase@jsk.imi.i.u-tokyo.ac.jp">Kazuto Murase</author>
+
+  <buildtool_depend>catkin</buildtool_depend>
+  <build_depend>control_msgs</build_depend>
+  <build_depend>jsk_hark_msgs</build_depend>
+  <build_depend>jsk_maps</build_depend>
+  <build_depend>jsk_perception</build_depend>
+  <build_depend>pddl_planner</build_depend>
+  <build_depend>pr2eus</build_depend>
+  <build_depend>roseus</build_depend>
+  <build_depend>roseus_smach</build_depend>
+  <build_depend>message_generation</build_depend>
+  <run_depend>control_msgs</run_depend>
+  <run_depend>jsk_hark_msgs</run_depend>
+  <run_depend>jsk_maps</run_depend>
+  <run_depend>jsk_perception</run_depend>
+  <run_depend>pddl_planner</run_depend>
+  <run_depend>pr2eus</run_depend>
+  <run_depend>roseus</run_depend>
+  <run_depend>roseus_smach</run_depend>
+  <run_depend>message_runtime</run_depend>
+
+  <export>
+  </export>
+</package>
