@@ -1,0 +1,51 @@
+<launch>
+  <param name="hrp2_urdf" command="$(find xacro)/xacro.py $(find hrpsys_ros_bridge_tutorials)/models/HRP2JSKNTS.urdf.xacro" />
+
+  <arg name="LAUNCH_DYNAMIC_TF_PUBLISHER" default="true" />
+  <arg name="models" default="$(find drc_valve_task)/config/hrp2_interactive_marker.yaml" />
+  <arg name="marker_tf_prefix" default="/jsk_model_marker_interface/hrp2"/>
+  <arg name="default_frame_id" default="odom_on_ground" />
+
+  <!-- robot marker -->
+  <node pkg="jsk_interactive_marker" type="urdf_model_marker" name="jsk_model_marker_interface" clear_params="true" output="screen">
+    <rosparam command="load" param="model_config" file="$(arg models)"/>
+    <param name="use_dynamic_tf" value="$(arg LAUNCH_DYNAMIC_TF_PUBLISHER)"/>
+  </node>
+
+  <node pkg="jsk_interactive_marker" type="urdf_control_marker" name="urdf_control_marker" output="screen">
+    <param name="use_dynamic_tf" value="$(arg LAUNCH_DYNAMIC_TF_PUBLISHER)"/>
+    <param name="move_2d" value="true"/>
+    <param name="frame_id" value="$(arg default_frame_id)"/>
+    <param name="marker_frame_id" value="hrp2_marker_root"/>
+  </node>
+
+  <group if="$(arg LAUNCH_DYNAMIC_TF_PUBLISHER)">
+    <node pkg="dynamic_tf_publisher" type="tf_publish.py" name="dynamic_tf_publisher_for_urdf_marker">
+      <param name="use_cache" type="bool" value="false"/>
+    </node>
+  </group>
+
+  <!-- publish carmine tf -->
+  <node pkg="tf" type="static_transform_publisher" name="static_transform_publisher_for_carmine" 
+        args="0.091965 0.005659 0.111169 -0.563491677276 0.575071457361 -0.420579296396 0.418190152935 $(arg marker_tf_prefix)/HEAD_LINK1 $(arg marker_tf_prefix)/CARMINE 50" />
+  <node name="static_transform_publisher_for_camera_link" pkg="tf" type="static_transform_publisher"
+        args="-0.045 0.000 0.000 0.500 -0.500 0.500 0.500 $(arg marker_tf_prefix)/CARMINE $(arg marker_tf_prefix)/camera_link 50"/>
+
+  <group ns="interactive_marker_carmine">
+    <include file="$(find rgbd_launch)/launch/kinect_frames.launch">
+      <arg name="camera" value="camera"/>
+      <arg name="tf_prefix" value="$(arg marker_tf_prefix)"/>
+    </include>
+  </group>
+
+  <!-- publish camera info  -->
+  <node pkg="jsk_rviz_plugins" type="relay_camera_info.py" name="relay_camera_info">
+    <param name="frame_id" value="$(arg marker_tf_prefix)/camera_depth_optical_frame"/>
+    <remap from="input" to="/camera/depth_registered/camera_info"/>
+    <remap from="output" to="$(arg marker_tf_prefix)/camera/depth_registered/camera_info"/>
+  </node>
+
+  <!-- publish reachable map -->
+  <node pkg="drc_valve_task" type="reachability-map-publisher.l" name="reachability_map_publisher" />
+
+</launch>

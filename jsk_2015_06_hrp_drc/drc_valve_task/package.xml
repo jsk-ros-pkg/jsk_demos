@@ -1,0 +1,9 @@
+<package>
+  <name>drc_valve_task</name>
+  <version>0.1.0</version>
+  <description>drc_valve_task</description>
+  <maintainer email="murooka@jsk.t.u-tokyo.ac.jp">Masaki Murooka</maintainer>
+  <license>BSD</license>
+  <author email="murooka@jsk.t.u-tokyo.ac.jp">Masaki Murooka</author>
+  <buildtool_depend>catkin</buildtool_depend>
+</package>

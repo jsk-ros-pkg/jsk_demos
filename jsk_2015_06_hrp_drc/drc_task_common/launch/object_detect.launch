@@ -1,0 +1,75 @@
+<launch>
+  <arg name="only_recognition_with_openni" default="false" />
+  <arg name="COLOR_HISTOGRAM" default="false" />
+  <arg name="TRACKING" default="false" />
+  <arg unless="$(arg only_recognition_with_openni)" name="INPUT" default="/move_group/filtered_cloud" />
+  <arg if="$(arg only_recognition_with_openni)" name="INPUT" default="/camera/depth_registered/points" />
+ 
+
+  <include file="$(find jsk_pcl_ros)/launch/organized_multi_plane_segmentation.launch">
+    <arg name="INPUT" value="$(arg INPUT)" />
+    <arg name="COLOR_HISTOGRAM" value="$(arg COLOR_HISTOGRAM)" />
+    <arg name="ICP_REGISTRATION" value="true" />
+  </include>
+  <node if="$(arg only_recognition_with_openni)"
+  	pkg="drc_task_common"
+  	type="tf_dammy.py"
+  	name="tf_dammy"
+  	/>
+  
+  <node if="$(arg COLOR_HISTOGRAM)"
+        pkg="jsk_interactive_marker"
+        type="bounding_box_marker"
+        name="color_match_result_bounding_box_marker"
+        output="screen"
+        >
+    <remap from="/bounding_box_interactive_marker/update"
+           to="/color_match_result_bounding_box_marker/update" />
+    <remap from="/bounding_box_interactive_marker/update_full"
+           to="/color_match_result_bounding_box_marker/update_full" />
+    <remap from="/bounding_box_interactive_marker/feedback"
+           to="/color_match_result_bounding_box_marker/feedback" />
+    <remap from="~bounding_box_array" to="/match_result/boxes" />
+  </node>
+
+  <node if="$(arg COLOR_HISTOGRAM)"
+        pkg="nodelet" type="nodelet"
+        name="selected_color_cloud"
+        args="load jsk_pcl/SelectedClusterPublisher /manager"
+        output="screen" clear_params="true">
+    <remap from="~input" to="input_relay/output" />
+    <remap from="~indices" to="grid_sampler/output" />
+    <remap from="~selected_index" to="/color_match_result_bounding_box_marker/selected_index" />
+    <remap from="~output" to="/selected_color_pointcloud" />
+  </node>
+
+  <node if="$(arg COLOR_HISTOGRAM)"
+        pkg="nodelet" type="nodelet"
+        name="selected_color_cloud_centroid"
+        args="load jsk_pcl/CentroidPublisher /manager"
+        output="screen" clear_params="true">
+    <remap from="~input" to="/selected_color_pointcloud" />
+    <rosparam>
+      frame: "selected_color_cloud_frame"
+    </rosparam>
+  </node>
+
+
+  <!-- <node pkg="rostopic" type="rostopic" -->
+  <!--       name="drill_referehce_histogram" -->
+  <!--       args="pub /color_histogram/input_reference jsk_pcl_ros/ColorHistogram '{histogram:  [0.07025761157274246, 0.018345043063163757, 0.21272443234920502, 0.026932084932923317, 0.014441842213273048, 0.0078064012341201305, 0.00741608114913106, 0.009758001193404198, 0.022248243913054466, 0.0031225604470819235, 0.008977361023426056, 0.04449648782610893, 0.01483216229826212, 0.03395784646272659, 0.0027322403620928526, 0.0, 0.0, 0.0, 0.0011709601385518909, 0.0007806401117704809, 0.08196721225976944, 0.020686963573098183, 0.005464480724185705, 0.004683840554207563, 0.005854800809174776, 0.010148321278393269, 0.011319281533360481, 0.005854800809174776, 0.012099921703338623, 0.012099921703338623, 0.022248243913054466, 0.02576112374663353, 0.020296642556786537, 0.022248243913054466, 0.022248243913054466, 0.020686963573098183, 0.022248243913054466, 0.020686963573098183, 0.014051522128283978, 0.13934426009655], header: {stamp: now}}' -r 1" /> -->
+  <include if="$(arg TRACKING)" 
+      file="$(find jsk_pcl_ros)/launch/tracking.launch">
+    <arg name="input_point" value="$(arg INPUT)" />
+    <arg name="create_manager" value="false" />
+    <arg name="manager" value="manager" />
+  </include>
+
+  <!-- parameter setting for each task -->
+  <!-- moved into eus-command-server.l -->
+  <!-- <node pkg="drc_task_common" type="set-recog-param.l" name="set_recog_param" output="screen" > -->
+  <!--   <rosparam command="load" file="$(find drc_task_common)/config/recog-param-for-valve.yaml" /> -->
+  <!--   <rosparam command="load" file="$(find drc_task_common)/config/recog-param-for-drill.yaml" /> -->
+  <!--   <rosparam command="load" file="$(find drc_task_common)/config/recog-param-for-handle.yaml" /> -->
+  <!-- </node> -->
+</launch>
