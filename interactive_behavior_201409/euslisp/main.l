@@ -19,6 +19,67 @@
 ;;   :look-at-face
 ;;   :look-at-sound
 
+;; for PCA calculation
+(defun pca (x)
+  (let* ((mat (apply #'matrix x))
+         (len (length (car x)))
+         (mea (vector-mean x))
+         (cen (copy-object mat))
+         vs cov ret)
+    ;; cov = (covariance x)
+    (dotimes (i len)
+      (push (matrix-column mat (- len i 1)) vs))
+    (setq cov (apply #'covariance-matrix vs))
+    ;; cen = (center x)
+    (dotimes (i (array-dimension cen 0))
+      (setf (matrix-row cen i)
+            (v- (matrix-row cen i) mea)))
+    ;; pc : principal components
+    ;; z  : transformed data
+    ;; w  : eigenvalues of covariance matrix
+    (setq ret (sv-decompose cov)) ;; U D pc
+    ;; returns (pc (center(x)*pc) w v-mean)
+    (list (elt ret 2) (m* cen (elt ret 2)) (elt ret 1) mea)
+    ))
+
+(defun covariance-matrix (&rest vs)
+  "make covariance matrix of given input vector-list(vs)"
+  (let (m n)
+    (setq n (length vs))
+    (setq m (make-matrix n n))
+    (dotimes (i n m)
+      (dotimes (j n)
+p	(setf (aref m i j) (covariance (elt vs i) (elt vs j)))))))
+
+(defun covariance (v1 v2)
+  "make co-variance of vector, covariance #f(1 2 3) #(0 2 4)->1.3"
+  (let* ((a 0.0) (m1 (vmean v1)) (m2 (vmean v2)) e1 e2)
+    (dotimes (i (length v1))
+      (setq e1 (elt v1 i) e2 (elt v2 i))
+      (setq a (+ a (* (- e1 m1) (- e2 m2)))))
+    (/ a (- (length v1) 1))))
+
+(defun vmean (v)
+  "make mean of vector, vmean #f(1 2 3)->2.0"
+  (let ((a 0.0))
+    (dotimes (i (length v))
+      (setq a (+ a (elt v i))))
+    (/ a (length v))))
+
+(defun elipse-estimation (vs)
+  ;; vs is a list of 2-dimensional float-vector
+  ;; return '(primaly axis, secondoly axis)
+  (let ((pca-res (pca (mapcar #'(lambda (v)
+                                  (float-vector (elt v 0) (elt v 1) 0))
+                              vs))))
+    (list (scale (elt (caddr pca-res) 0) (matrix-column (car pca-res) 0))
+          (scale (elt (caddr pca-res) 1) (matrix-column (car pca-res) 1)))))
+
+(defun elipse-ratio (vs)
+  (multiple-value-bind
+   (primary secondary) (elipse-estimation vs)
+   (/ (norm primary) (norm secondary))))
+
 (defun check-behavior-timeout ()
   (let ((now (ros::time-now)))
     (if (not (eq *current-behavior* :idle))
