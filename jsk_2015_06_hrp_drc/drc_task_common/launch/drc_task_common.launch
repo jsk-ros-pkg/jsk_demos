@@ -28,4 +28,9 @@
 
   <!-- teleop interface -->
   <include file="$(find drc_task_common)/launch/teleop_interface.launch" />
+  <!-- manipulation data processor  -->
+  <include file="$(find drc_task_common)/launch/manipulation_data_processor.launch" >
+    <arg name="default_frame_id" default="$(arg default_frame_id)" />
+  </include>
+
 </launch>
