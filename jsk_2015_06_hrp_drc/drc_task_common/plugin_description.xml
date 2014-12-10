@@ -1,9 +1,0 @@
-<library path="lib/libdrc_task_common">
-  <class name="drc_task_common/DRCTeleopInterfaceAction"
-         type="drc_task_common::DRCTeleopInterfaceAction"
-         base_class_type="rviz::Panel">
-    <description>
-      A panel widget to RobotCommandInterfaceAction action, specified for drc
-    </description>
-  </class>
-</library>
