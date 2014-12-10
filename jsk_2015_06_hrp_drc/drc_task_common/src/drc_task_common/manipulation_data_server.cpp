@@ -261,7 +261,7 @@ protected:
   int reference_num;
   geometry_msgs::Pose menu_pose;
   geometry_msgs::Pose marker_pose;
-  geometry_msgs::Pose grasp_pose_l;
+  geometry_msgs::Pose grasp_pose;
   std::string base_link_name;
   // marker 
   std::vector<boost::shared_ptr<IntMarkers> > markers_array;
@@ -330,13 +330,13 @@ public:
     _pointsPub = _node.advertise<sensor_msgs::PointCloud2>("/manip_points", 10);
     _pointsArrayPub = _node.advertise<sensor_msgs::PointCloud2>("/icp_registration/input_reference_add", 10);
     _debug_cloud_pub = _node.advertise<sensor_msgs::PointCloud2>("/manip/debug_cloud", 10);
-    grasp_pose_pub = _node.advertise<geometry_msgs::PoseStamped>("/grasp_pose_l", 10);
-    push_pose_pub = _node.advertise<geometry_msgs::PoseStamped>("/push_pose_r", 10);
+    grasp_pose_pub = _node.advertise<geometry_msgs::PoseStamped>("/grasp_pose", 10);
+    push_pose_pub = _node.advertise<geometry_msgs::PoseStamped>("/push_pose", 10);
     debug_pose_pub = _node.advertise<geometry_msgs::PoseStamped>("/debug_pose", 10);
     debug_point_pub = _node.advertise<geometry_msgs::PointStamped>("/debug_point", 10);
     reset_pose_pub = _node.advertise<std_msgs::String>("/reset_pose_command", 1);
     reset_pub = _node.advertise<jsk_pcl_ros::PointsArray>("/icp_registration/input_reference_array", 1, boost::bind( &PointsNode::icp_connection, this, _1), boost::bind( &PointsNode::icp_disconnection, this, _1));
-    move_pose_pub = _node.advertise<geometry_msgs::PoseStamped>("/move_pose_l", 1);
+    move_pose_pub = _node.advertise<geometry_msgs::PoseStamped>("/move_pose", 1);
     feedback_pub = _node.advertise<visualization_msgs::InteractiveMarkerFeedback>("/interactive_point_cloud/feedback", 1);
     usleep(100000);
     debug_grasp = _node.advertise<visualization_msgs::Marker>("/debug_grasp", 1);
@@ -546,7 +546,7 @@ public:
       geometry_msgs::PoseStamped move_pose;
       move_pose.header = feedback.header;
       move_pose.header.frame_id=std::string("marker_frame");
-      move_pose.pose = grasp_pose_l;
+      move_pose.pose = grasp_pose;
       move_pose_pub.publish(move_pose);
       //pub zero feedback
       marker_pose.position.x=marker_pose.position.y=marker_pose.position.z=0;
@@ -649,7 +649,7 @@ public:
     pose_msg.pose = feedback->pose;
     grasp_pose_pub.publish(pose_msg);
     // mode change 
-    grasp_pose_l = feedback->pose;
+    grasp_pose = feedback->pose;
   }
   void do_push_cb(const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback){
     geometry_msgs::PoseStamped pose_msg;
