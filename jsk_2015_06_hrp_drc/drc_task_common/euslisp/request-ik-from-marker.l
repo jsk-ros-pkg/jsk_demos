@@ -421,7 +421,6 @@
     )
   (send *grasp-pose-coords* :rotate (* (/ -1.0 4) pi) :z :local)
   (setq *solve-ik-from-grasp-pose-command-flag* t)
-  (ros::ros-info "test end")
   )
 (defun save-obj-command
   (msg)
@@ -726,8 +725,7 @@
   (when *solve-ik-command-flag*
     (request-ik-from-marker-one))  
   (when *solve-ik-from-grasp-pose-command-flag*
-    (request-ik-from-grasp-pose-one)
-    (ros::ros-info "test done"))
+    (request-ik-from-grasp-pose-one))
   (when *save-obj-command-flag*
     (save-obj-model-one))
   (when *send-angle-command-flag*
