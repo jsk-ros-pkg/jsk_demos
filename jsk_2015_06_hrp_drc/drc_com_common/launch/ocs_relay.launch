@@ -1,0 +1,26 @@
+<!-- This launch file is automatically generated. -->
+<launch>
+<node pkg="jsk_topic_tools" type="topic_buffer_client" name="stat_topic_buffer_client" clear_params="true" respawn="true">
+  <param name="fixed_rate" value="0.05" />
+  <param name="update_rate" value="-1" />
+  <param name="latched" value="true" />
+  <remap from="/list" to="/stat_topic_buffer/list" />
+  <remap from="/update" to="/stat_topic_buffer/update" />
+  <remap from="/diagnostics_agg_buffered" to="/diagnostics_agg" />
+  <remap from="/joint_states_buffered" to="/joint_states" />
+  <remap from="/lfsensor_buffered" to="/lfsensor" />
+  <remap from="/lhsensor_buffered" to="/lhsensor" />
+  <remap from="/rfsensor_buffered" to="/rfsensor" />
+  <remap from="/rhsensor_buffered" to="/rhsensor" />
+  <remap from="/motor_states_buffered" to="/motor_states" />
+  <remap from="/odom_buffered" to="/odom" />
+  <remap from="/zmp_buffered" to="/zmp" />
+</node>
+<node pkg="topic_tools" type="relay" name="selected_pointcloud_relay" args="/selected_pointcloud_relaid /selected_pointcloud _unreliable:=true"/>
+<node pkg="topic_tools" type="relay" name="multi_plane_estimate_output_refined_polygon_relay" args="/multi_plane_estimate/output_refined_polygon_relaid /multi_plane_estimate/output_refined_polygon _unreliable:=true"/>
+<node pkg="topic_tools" type="relay" name="cluster_decomposer_final_boxes_relay" args="/cluster_decomposer_final/boxes_relaid /cluster_decomposer_final/boxes _unreliable:=true"/>
+<node pkg="topic_tools" type="relay" name="bounding_box_interactive_marker_update_relay" args="/bounding_box_interactive_marker/update_relaid /bounding_box_interactive_marker/update _unreliable:=true"/>
+<node pkg="topic_tools" type="relay" name="bounding_box_interactive_marker_update_full_relay" args="/bounding_box_interactive_marker/update_full_relaid /bounding_box_interactive_marker/update_full _unreliable:=true"/>
+<node pkg="topic_tools" type="relay" name="bounding_box_marker_selected_box_relay" args="/bounding_box_marker/selected_box_relaid /bounding_box_marker/selected_box _unreliable:=true"/>
+<node pkg="topic_tools" type="relay" name="bounding_box_interactive_marker_feedback_relay" args="/bounding_box_interactive_marker/feedback /bounding_box_interactive_marker/feedback_relaid _unreliable:=true"/>
+</launch>

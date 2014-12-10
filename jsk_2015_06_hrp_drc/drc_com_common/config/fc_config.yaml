@@ -1,0 +1,55 @@
+# This launch file is automatically generated.
+default_advertisements:
+  - name: /diagnostics_agg_update
+    node: None
+    type: publisher
+  - name: /joint_states_update
+    node: None
+    type: publisher
+  - name: /lfsensor_update
+    node: None
+    type: publisher
+  - name: /lhsensor_update
+    node: None
+    type: publisher
+  - name: /rfsensor_update
+    node: None
+    type: publisher
+  - name: /rhsensor_update
+    node: None
+    type: publisher
+  - name: /motor_states_update
+    node: None
+    type: publisher
+  - name: /odom_update
+    node: None
+    type: publisher
+  - name: /zmp_update
+    node: None
+    type: publisher
+  - name: /stat_topic_buffer/list
+    node: None
+    type: service
+  - name: /stat_topic_buffer/update
+    node: None
+    type: service
+  - name: /selected_pointcloud_relaid
+    node: None
+    type: publisher
+  - name: /multi_plane_estimate/output_refined_polygon_relaid
+    node: None
+    type: publisher
+  - name: /cluster_decomposer_final/boxes_relaid
+    node: None
+    type: publisher
+  - name: /bounding_box_interactive_marker/update_relaid
+    node: None
+    type: publisher
+  - name: /bounding_box_interactive_marker/update_full_relaid
+    node: None
+    type: publisher
+  - name: /bounding_box_marker/selected_box_relaid
+    node: None
+    type: publisher
+default_pulls:
+  - gateway: jsk_operator_station.*
