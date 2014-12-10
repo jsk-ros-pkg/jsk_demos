@@ -1,7 +1,0 @@
-icon_include_package: ""
-
-rviz_service_call:
-    buttons:
-    - {icon: "/usr/share/icons/gnome/48x48/emotes/face-angry.png", service_name: "/set_operator_mode_emergency", text: "Emergeny"}
-    - {icon: "/usr/share/icons/gnome/48x48/emotes/face-smile-big.png", service_name: "/set_operator_mode_teleoperating", text: "Teleopelating"}
-    - {icon: "/usr/share/icons/gnome/48x48/emotes/face-tired.png", service_name: "/set_operator_mode_idling", text: "Idling"}
