@@ -191,6 +191,17 @@ bool write_marker(int file_index, IntMarkers &imk){
 inline float SIGN(float x) {return (x >= 0.0f) ? +1.0f : -1.0f;}
 inline float NORM(float a, float b, float c) {return sqrt(a * a + b * b + c * c);}
 inline float NORM(float a, float b, float c, float d) {return sqrt(a * a + b * b + c * c + d * d);}
+inline tf::Transform pose_to_tf(geometry_msgs::Pose pose){
+  return tf::Transform(tf::Quaternion(pose.orientation.x, pose.orientation.y, pose.orientation.z, pose.orientation.w), tf::Vector3(pose.position.x, pose.position.y, pose.position.z));
+}
+inline geometry_msgs::Pose tf_to_pose(tf::Transform transform){
+  geometry_msgs::Pose pose;
+  tf::Quaternion q;
+  transform.getBasis().getRotation(q);
+  pose.orientation.x = q.getX(); pose.orientation.y=q.getY(); pose.orientation.z=q.getZ(), pose.orientation.w=q.getW();
+  pose.position.x=transform.getOrigin().getX(), pose.position.y=transform.getOrigin().getY(), pose.position.z=transform.getOrigin().getZ();
+  return pose;
+}
 
 class PointsNode
 {
@@ -209,6 +220,8 @@ protected:
   Subscriber _subSelectedPoints;
   Subscriber _subSelectedPose;
   Subscriber _sub_pose_feedback;
+  Subscriber _sub_object_pose_update;
+  Subscriber _sub_object_pose_feedback;
   Publisher _pointsPub;
   Publisher _pointsArrayPub;
   Publisher _debug_cloud_pub;
@@ -221,17 +234,22 @@ protected:
   Publisher move_pose_pub;
   Publisher feedback_pub;
   Publisher debug_point_pub;
+  Publisher marker_set_pose_pub;
+  Publisher t_marker_set_pose_pub;
   ServiceClient client;
   ServiceClient get_type_client;
   ServiceClient get_pose_client;
   ServiceClient get_dim_client;
   ServiceServer align_icp_server;
   ServiceServer save_server;
+  ServiceServer assoc_server;
+  ServiceServer disassoc_server;
   boost::shared_ptr<message_filters::Synchronizer<SyncPolicy> >sync_;
   tf::Transform tf_from_base;
   tf::Transform tf_before;
   tf::Transform tf_marker;
   tf::Transform tf_from_camera;
+  tf::Transform tf_object_constraint;
   ros::Timer tf_timer;
   boost::shared_ptr<interactive_markers::InteractiveMarkerServer> server;
   interactive_markers::MenuHandler menu_handler_first;
@@ -243,7 +261,7 @@ protected:
   int reference_num;
   geometry_msgs::Pose menu_pose;
   geometry_msgs::Pose marker_pose;
-  geometry_msgs::Pose grasp_pose_l;
+  geometry_msgs::Pose grasp_pose;
   std::string base_link_name;
   // marker 
   std::vector<boost::shared_ptr<IntMarkers> > markers_array;
@@ -251,6 +269,7 @@ protected:
   // now reference marker's ptr ;
   int timer_count;
   bool reference_hit;
+  bool assoc_marker_flug_;
   //bool init_reference_end;
 public:
   bool transformPointcloudInBoundingBox(
@@ -291,6 +310,7 @@ public:
   {
     //init_reference_end=false;
     init_reference();
+    assoc_marker_flug_=false;
     ROS_INFO("start interface");
     ros::NodeHandle local_nh("~");
     local_nh.param("BASE_FRAME_ID", base_link_name, std::string("/camera_link"));
@@ -310,18 +330,21 @@ public:
     _pointsPub = _node.advertise<sensor_msgs::PointCloud2>("/manip_points", 10);
     _pointsArrayPub = _node.advertise<sensor_msgs::PointCloud2>("/icp_registration/input_reference_add", 10);
     _debug_cloud_pub = _node.advertise<sensor_msgs::PointCloud2>("/manip/debug_cloud", 10);
-    grasp_pose_pub = _node.advertise<geometry_msgs::PoseStamped>("/grasp_pose_l", 10);
-    push_pose_pub = _node.advertise<geometry_msgs::PoseStamped>("/push_pose_r", 10);
+    grasp_pose_pub = _node.advertise<geometry_msgs::PoseStamped>("/grasp_pose", 10);
+    push_pose_pub = _node.advertise<geometry_msgs::PoseStamped>("/push_pose", 10);
     debug_pose_pub = _node.advertise<geometry_msgs::PoseStamped>("/debug_pose", 10);
     debug_point_pub = _node.advertise<geometry_msgs::PointStamped>("/debug_point", 10);
     reset_pose_pub = _node.advertise<std_msgs::String>("/reset_pose_command", 1);
     reset_pub = _node.advertise<jsk_pcl_ros::PointsArray>("/icp_registration/input_reference_array", 1, boost::bind( &PointsNode::icp_connection, this, _1), boost::bind( &PointsNode::icp_disconnection, this, _1));
-    move_pose_pub = _node.advertise<geometry_msgs::PoseStamped>("/move_pose_l", 1);
+    move_pose_pub = _node.advertise<geometry_msgs::PoseStamped>("/move_pose", 1);
     feedback_pub = _node.advertise<visualization_msgs::InteractiveMarkerFeedback>("/interactive_point_cloud/feedback", 1);
     usleep(100000);
     debug_grasp = _node.advertise<visualization_msgs::Marker>("/debug_grasp", 1);
+    marker_set_pose_pub = _node.advertise<geometry_msgs::PoseStamped>("/interactive_point_cloud/set_marker_pose", 1);
+    t_marker_set_pose_pub = _node.advertise<geometry_msgs::PoseStamped>("/transformable_interactive_server/set_pose", 1);
     _subBox.subscribe(_node, "/bounding_box_marker/selected_box", 1);
     sync_ = boost::make_shared<message_filters::Synchronizer<SyncPolicy> >(100);
+   
     sync_->connectInput(_subPoints, _subBox);
     sync_->registerCallback(boost::bind(
 					&PointsNode::set_reference,
@@ -334,9 +357,12 @@ public:
     _subSelectedPoints = _node.subscribe("/selected_points",1,&PointsNode::set_menu_cloud,this);
     _subSelectedPose = _node.subscribe("/interactive_point_cloud/left_click_point_relative", 1, &PointsNode::set_menu_point, this);
     _sub_pose_feedback = _node.subscribe("/interactive_point_cloud/feedback", 1, &PointsNode::marker_move_feedback, this);
+    _sub_object_pose_update = _node.subscribe("/simple_marker/update", 1, &PointsNode::t_marker_move_update, this);
+    _sub_object_pose_feedback = _node.subscribe("/simple_marker/feedback", 1, &PointsNode::t_marker_move_feedback, this);
     align_icp_server = _node.advertiseService("icp_apply", &PointsNode::align_cb, this);
     save_server = _node.advertiseService("save_manipulation", &PointsNode::save_cb, this);
-    
+    assoc_server = _node.advertiseService("assoc_points", &PointsNode::assoc_object_to_marker_cb, this);
+    disassoc_server = _node.advertiseService("disassoc_points", &PointsNode::disassoc_object_to_marker_cb, this);
     tf_from_base.setOrigin(tf::Vector3(0, 0, 0));
     tf_from_base.setRotation(tf::Quaternion(0, 0, 0, 1));
     tf_marker = tf_before = tf_from_base;
@@ -460,6 +486,37 @@ public:
   }
   ~PointsNode() {
   }
+  void t_marker_move_update(const visualization_msgs::InteractiveMarkerUpdate update)
+  {
+    if(!assoc_marker_flug_) return;
+    if(update.type == 0) return;
+    if(update.markers.size()==1) {
+      tf::Transform tf_to_object = pose_to_tf(update.markers[0].pose);
+      geometry_msgs::PoseStamped marker_pose_stamped;
+      marker_pose_stamped.pose = tf_to_pose( tf_to_object * tf_object_constraint.inverse());
+      marker_pose_stamped.header = update.markers[0].header;
+      marker_set_pose_pub.publish(marker_pose_stamped);
+      geometry_msgs::PoseStamped marker_pose_stamped_from_manip;
+      listener.transformPose("/manipulate_frame",ros::Time::now()-(ros::Duration(0.2)), marker_pose_stamped , marker_pose_stamped.header.frame_id, marker_pose_stamped_from_manip);
+      tf_marker=pose_to_tf(marker_pose_stamped_from_manip.pose);
+
+    }
+  }
+  void t_marker_move_feedback(const visualization_msgs::InteractiveMarkerFeedback feedback)
+  {
+    if(!assoc_marker_flug_) return;
+    if(feedback.event_type == 1) {
+      tf::Transform tf_to_object = pose_to_tf(feedback.pose);
+      geometry_msgs::PoseStamped marker_pose_stamped;
+      marker_pose_stamped.pose = tf_to_pose( tf_to_object * tf_object_constraint.inverse());
+      marker_pose_stamped.header = feedback.header;
+      marker_set_pose_pub.publish(marker_pose_stamped);
+      geometry_msgs::PoseStamped marker_pose_stamped_from_manip;
+      listener.transformPose("/manipulate_frame",ros::Time::now()-(ros::Duration(0.2)), marker_pose_stamped , marker_pose_stamped.header.frame_id, marker_pose_stamped_from_manip);
+      tf_marker=pose_to_tf(marker_pose_stamped_from_manip.pose);
+
+    }
+  }
   void marker_move_feedback(const visualization_msgs::InteractiveMarkerFeedback feedback)
   {
     //
@@ -479,11 +536,17 @@ public:
     //listener.transformPose("manipulate_frame", feedback.pose,marker_pose);
     tf::poseMsgToTF(marker_pose, tf_marker);
     //depends jsk_interactive_marker
+    if(assoc_marker_flug_){
+      geometry_msgs::PoseStamped t_pose_stamped;
+      t_pose_stamped.pose = tf_to_pose(tf_marker*tf_object_constraint);
+      t_pose_stamped.header = temp_pose_stamped.header;
+      t_marker_set_pose_pub.publish(t_pose_stamped);
+    }
     if(feedback.menu_entry_id==1){
       geometry_msgs::PoseStamped move_pose;
       move_pose.header = feedback.header;
       move_pose.header.frame_id=std::string("marker_frame");
-      move_pose.pose = grasp_pose_l;
+      move_pose.pose = grasp_pose;
       move_pose_pub.publish(move_pose);
       //pub zero feedback
       marker_pose.position.x=marker_pose.position.y=marker_pose.position.z=0;
@@ -503,6 +566,7 @@ public:
       tf::poseMsgToTF(marker_pose, tf_marker);
       timer_count = 0;
     }
+
   }
   void reset_pose_cb(const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback){
     std_msgs::String a;
@@ -585,7 +649,7 @@ public:
     pose_msg.pose = feedback->pose;
     grasp_pose_pub.publish(pose_msg);
     // mode change 
-    grasp_pose_l = feedback->pose;
+    grasp_pose = feedback->pose;
   }
   void do_push_cb(const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback){
     geometry_msgs::PoseStamped pose_msg;
@@ -689,6 +753,30 @@ public:
       return false;
     }
   }
+  bool assoc_object_to_marker_cb(std_srvs::Empty::Request& req, std_srvs::Empty::Response& res){
+    return assoc_object_to_marker();
+  }
+  bool assoc_object_to_marker(){
+    assoc_marker_flug_=true;
+    if(assoc_marker_flug_){
+      jsk_interactive_marker::GetTransformableMarkerPose get_pose_srv;
+      get_pose_srv.request.target_name="";
+      if(get_pose_client.call(get_pose_srv)){
+	geometry_msgs::PoseStamped after_pose_;
+	listener.transformPose("marker_frame",ros::Time::now()-(ros::Duration(0.2)), get_pose_srv.response.pose_stamped, get_pose_srv.response.pose_stamped.header.frame_id, after_pose_);
+	tf_object_constraint = pose_to_tf(after_pose_.pose);
+      }
+    }
+    return true;
+  }
+  
+  bool disassoc_object_to_marker_cb(std_srvs::Empty::Request& req, std_srvs::Empty::Response& res){
+    return disassoc_object_to_marker();
+  }
+  bool disassoc_object_to_marker(){
+    assoc_marker_flug_=false;
+    return true;
+  }
   void set_reference(const sensor_msgs::PointCloud2ConstPtr& msg_ptr, const jsk_pcl_ros::BoundingBoxConstPtr& box_ptr)
   {
     sensor_msgs::PointCloud2 msg = *msg_ptr;
@@ -728,6 +816,7 @@ public:
     //marker_init
     geometry_msgs::PoseStamped before_pose_, after_pose_;
     jsk_pcl_ros::ICPAlignWithBox srv; 
+    disassoc_object_to_marker();
     srv.request.target_cloud = *msg_ptr;
     srv.request.target_box = *box_ptr;
     //save_marker();
@@ -1095,7 +1184,6 @@ public:
     if (timer_count < 250){
       timer_count++;
     }
-
   }
   tf::Transform tf_calc()
   {
