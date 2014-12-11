@@ -73,7 +73,7 @@ script: # All commands must exit with code 0 on success. Anything else is consid
   - rospack profile
   - if [ $BUILDER = catkin ]; then catkin_make -j1; else rosmake $BUILD_PACKAGES --profile --pjobs=4; fi
   - if [ $BUILDER = catkin ]; then if [ "$CATKIN_PACKAGES" != "" ]; then catkin_make test --pkg $CATKIN_PACKAGES; fi; else rosmake $BUILD_PACKAGES --test-only; fi
-  - if [ $BUILDER = catkin ]; then catkin_make install; fi
+  - if [ $BUILDER = catkin ]; then catkin_make install -j1; fi
   - if [ $BUILDER = catkin ]; then rm -fr devel src build; source install/setup.bash; else source setup.sh; fi
 after_failure:
   - if [ -e ./build/Testing/Temporary/LastTest.log ]; then cat ./build/Testing/Temporary/LastTest.log; fi
