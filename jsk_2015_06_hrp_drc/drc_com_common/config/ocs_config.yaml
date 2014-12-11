@@ -1,0 +1,7 @@
+# This launch file is automatically generated.
+default_pulls:
+  - gateway: jsk_field_computer.*
+default_advertisements:
+  - name: /bounding_box_interactive_marker/feedback_relaid
+    node: None
+    type: publisher
