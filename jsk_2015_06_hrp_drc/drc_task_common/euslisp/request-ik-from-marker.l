@@ -35,6 +35,8 @@
   (ros::subscribe "/object_menu_command" std_msgs::empty #'object-menu-command 1)
   (ros::subscribe "/robot_menu_command" std_msgs::empty #'robot-menu-command 1)
   (ros::subscribe "/grasp_pose" geometry_msgs::PoseStamped #'solve-ik-from-grasp-pose-command 1)
+  (ros::subscribe "/push_pose" geometry_msgs::PoseStamped #'solve-ik-from-push-pose-command 1)
+  (ros::subscribe "/move_pose" geometry_msgs::PoseStamped #'solve-ik-from-move-pose-command 1)
   (ros::advertise "/object_handle" geometry_msgs::PoseStamped 1)
   (ros::advertise "/object_approach" geometry_msgs::PoseStamped 1)
   (ros::subscribe "/object_handle_variable_pos" std_msgs::Float32 #'set-object-handle-pos-from-variable)
@@ -78,6 +80,8 @@
   (setq *handle-reverse-flag* nil)
   (setq *assoc-obj-flag* nil)
   (setq *assoc-obj-coords* (make-coords))
+  (setq *target-pose-coords* (make-coords))
+  (setq *initial-pose-coords* (make-coords))
   ;; ik
   (setq *ik-arm* :rarm)
   (setq *ik-result* nil)
@@ -408,19 +412,41 @@
 (defun solve-ik-command
   (msg)
   (setq *solve-ik-command-flag* t))
-(defun solve-ik-from-grasp-pose-command
+
+(defun solve-ik-from-grasp-pose-command 
+  (msg)
+  (solve-ik-from-pose-common msg)
+  (send *target-pose-coords* :rotate (* (/ -1.0 4) pi) :z :local)
+  (setq *initial-pose-coords* (send (send *target-pose-coords* :copy-worldcoords) :translate (float-vector -60 0 0) :local))
+  (setq *solve-ik-from-grasp-pose-command-flag* t)
+  )
+(defun solve-ik-from-move-pose-command 
+  (msg)
+  (solve-ik-from-pose-common msg)
+  (send *target-pose-coords* :rotate (* (/ -1.0 4) pi) :z :local)
+  (setq *initial-pose-coords* (send *robot* *ik-arm* :end-coords :worldcoords))
+  (setq *solve-ik-from-grasp-pose-command-flag* t)
+  )
+(defun solve-ik-from-push-pose-command 
+  (msg)
+  (solve-ik-from-pose-common msg)
+  (send *target-pose-coords* :rotate (* (/ -1.0 4) pi) :z :local)
+  (send *target-pose-coords* :translate (float-vector -10 0 0) :local) ; length of finger
+  (setq *initial-pose-coords* (send (send *target-pose-coords* :copy-worldcoords) :translate (float-vector -60 0 0) :local))
+  (setq *solve-ik-from-grasp-pose-command-flag* t)
+  )
+
+(defun solve-ik-from-pose-common
   (msg)
   (let* ((ts (ros::time-now))
 	 )
     (unless (send *tfl* :wait-for-transform *frame-id* (send msg :header :frame_id) ts 1) (return-from solve-ik-command nil))
-    (setq *grasp-pose-coords*
+    (setq *target-pose-coords*
           (send 
 	   (send (send (send *tfl* :lookup-transform *frame-id* (send msg :header :frame_id) ts) :transform (ros::tf-pose->coords(send msg :pose)))
 		 :transformation *robot-coords* :local) :transformation (make-coords) :local)
 	  )
     )
-  (send *grasp-pose-coords* :rotate (* (/ -1.0 4) pi) :z :local)
-  (setq *solve-ik-from-grasp-pose-command-flag* t)
   )
 (defun save-obj-command
   (msg)
@@ -473,7 +499,7 @@
            ))
     (setq *solve-ik-command-flag* nil)
     ))
-(defun request-ik-from-grasp-pose-one
+(defun request-ik-from-pose-one
   (&key (initial-pose :reset-manip-pose))
   (let* (original-av original-coords)
     (warning-message 2 "[request-ik] send solve-ik service.~%")
@@ -482,10 +508,10 @@
     ;; regenerate move coords
     (when initial-pose (send *robot* initial-pose))
     (send *robot* :fix-leg-to-coords (make-coords))
-    (when *draw-viewer-flag* (objects (list *robot* *grasp-pose-coords*)))
+    (when *draw-viewer-flag* (objects (list *robot* *target-pose-coords* *initial-pose-coords*)))
     ;; check mode 
     ;; solve ik
-    (setq *ik-result* (send-ik-request :target-coords *grasp-pose-coords* :rotation-axis (list t t t)))
+    (setq *ik-result* (send-ik-request :target-coords *target-pose-coords* :initial-coords *initial-pose-coords* :rotation-axis (list t t t)))
     (cond (*ik-result*
            (send-joint-states-to-marker))
           (t
@@ -725,7 +751,7 @@
   (when *solve-ik-command-flag*
     (request-ik-from-marker-one))  
   (when *solve-ik-from-grasp-pose-command-flag*
-    (request-ik-from-grasp-pose-one))
+    (request-ik-from-pose-one))
   (when *save-obj-command-flag*
     (save-obj-model-one))
   (when *send-angle-command-flag*
