@@ -1,0 +1,31 @@
+############################################################################
+##    edit this file to change setting of communication from fc to ocs    ##
+############################################################################
+
+# priodically published topic (topic transmitted through topic_buffer_server/client)
+buffered_topic:
+  # robot status
+  - name: stat_topic_buffer
+    topics:
+      - /diagnostics_agg
+      - /joint_states
+      - /lfsensor
+      - /lhsensor
+      - /rfsensor
+      - /rhsensor
+      - /motor_states
+      - /odom
+      - /zmp
+
+# one-shot topic (topic transmitted through topic_tools relay)
+relaid_topic:
+  # for teleoperation
+  - /selected_pointcloud
+  - /multi_plane_estimate/output_refined_polygon
+  - /cluster_decomposer_final/boxes
+  - /bounding_box_interactive_marker/update
+  - /bounding_box_interactive_marker/update_full
+  - /bounding_box_marker/selected_box
+
+# service
+service:
