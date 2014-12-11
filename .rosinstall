@@ -13,12 +13,12 @@
 - git:
     uri: https://github.com/jsk-ros-pkg/jsk_smart_apps.git
     local-name: jsk-ros-pkg/jsk_smart_apps
-- svn:
-    uri: https://svn.code.sf.net/p/tum-ros-pkg/code/perception/
-    local-name: tum-ros-pkg/perception
-- git:
-    uri: https://github.com/code-iai/SnapMapICP.git
-    local-name: tum-ros-pkg/highlevel/SnapMapICP
+# - svn:
+#     uri: https://svn.code.sf.net/p/tum-ros-pkg/code/perception/
+#     local-name: tum-ros-pkg/perception
+# - git:
+#     uri: https://github.com/code-iai/SnapMapICP.git
+#     local-name: tum-ros-pkg/highlevel/SnapMapICP
 - git:
     uri: https://github.com/knowrob/knowrob.git
     local-name: knowrob
