@@ -51,6 +51,12 @@ def write_launch_and_config_from_yaml(_yaml, _from_config_f, _to_config_f, _from
             # fc launch file
             _from_launch_f.write('<node pkg=\"topic_tools\" type=\"relay\" name=\"%s\" args=\"%s %s _unreliable:=true\"/>\n' % (_node[1:].replace('/', '_'), _topic, _relaid_topic))
 
+    if _yaml.has_key('service'):
+        for _service in (_yaml['service'] or []):
+            _from_config_f.write('  - name: %s\n' % _service)
+            _from_config_f.write('    node: None\n')
+            _from_config_f.write('    type: service\n')
+
 
 if __name__ == '__main__':
     # open files

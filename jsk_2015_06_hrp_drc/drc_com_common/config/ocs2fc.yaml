@@ -9,6 +9,11 @@ buffered_topic:
 relaid_topic:
   # for teleoperation
   - /bounding_box_interactive_marker/feedback
+  - /fullbody_controller/joint_trajectory_action/goal
+  - /fullbody_controller/joint_trajectory_action/cancel
+  - /fullbody_controller/follow_joint_trajectory_action/goal
+  - /fullbody_controller/follow_joint_trajectory_action/cancel
+  - /fullbody_controller/command
 
 # service
 service:
