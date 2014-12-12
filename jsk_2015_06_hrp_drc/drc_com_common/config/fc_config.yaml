@@ -51,5 +51,158 @@ default_advertisements:
   - name: /bounding_box_marker/selected_box_relaid
     node: None
     type: publisher
+  - name: /fullbody_controller/state_relaid
+    node: None
+    type: publisher
+  - name: /fullbody_controller/joint_trajectory_action/status_relaid
+    node: None
+    type: publisher
+  - name: /fullbody_controller/joint_trajectory_action/feedback_relaid
+    node: None
+    type: publisher
+  - name: /fullbody_controller/joint_trajectory_action/result_relaid
+    node: None
+    type: publisher
+  - name: /fullbody_controller/follow_joint_trajectory_action/status_relaid
+    node: None
+    type: publisher
+  - name: /fullbody_controller/follow_joint_trajectory_action/feedback_relaid
+    node: None
+    type: publisher
+  - name: /fullbody_controller/follow_joint_trajectory_action/result_relaid
+    node: None
+    type: publisher
+  - name: /eus_command
+    node: None
+    type: service
+  - name: /AutoBalancerServiceROSBridge/getAutoBalancerParam
+    node: None
+    type: service
+  - name: /AutoBalancerServiceROSBridge/getFootstepParam
+    node: None
+    type: service
+  - name: /AutoBalancerServiceROSBridge/getGaitGeneratorParam
+    node: None
+    type: service
+  - name: /AutoBalancerServiceROSBridge/goPos
+    node: None
+    type: service
+  - name: /AutoBalancerServiceROSBridge/goStop
+    node: None
+    type: service
+  - name: /AutoBalancerServiceROSBridge/goVelocity
+    node: None
+    type: service
+  - name: /AutoBalancerServiceROSBridge/setAutoBalancerParam
+    node: None
+    type: service
+  - name: /AutoBalancerServiceROSBridge/setFootSteps
+    node: None
+    type: service
+  - name: /AutoBalancerServiceROSBridge/setGaitGeneratorParam
+    node: None
+    type: service
+  - name: /AutoBalancerServiceROSBridge/startAutoBalancer
+    node: None
+    type: service
+  - name: /AutoBalancerServiceROSBridge/stopAutoBalancer
+    node: None
+    type: service
+  - name: /AutoBalancerServiceROSBridge/waitFootSteps
+    node: None
+    type: service
+  - name: /StabilizerServiceROSBridge/dummy
+    node: None
+    type: service
+  - name: /StabilizerServiceROSBridge/getParameter
+    node: None
+    type: service
+  - name: /StabilizerServiceROSBridge/setParameter
+    node: None
+    type: service
+  - name: /StabilizerServiceROSBridge/startStabilizer
+    node: None
+    type: service
+  - name: /StabilizerServiceROSBridge/stopStabilizer
+    node: None
+    type: service
+  - name: /StateHolderServiceROSBridge/getCommand
+    node: None
+    type: service
+  - name: /StateHolderServiceROSBridge/goActual
+    node: None
+    type: service
+  - name: /SequencePlayerServiceROSBridge/addJointGroup
+    node: None
+    type: service
+  - name: /SequencePlayerServiceROSBridge/clear
+    node: None
+    type: service
+  - name: /SequencePlayerServiceROSBridge/clearNoWait
+    node: None
+    type: service
+  - name: /SequencePlayerServiceROSBridge/clearOfGroup
+    node: None
+    type: service
+  - name: /SequencePlayerServiceROSBridge/isEmpty
+    node: None
+    type: service
+  - name: /SequencePlayerServiceROSBridge/loadPattern
+    node: None
+    type: service
+  - name: /SequencePlayerServiceROSBridge/playPattern
+    node: None
+    type: service
+  - name: /SequencePlayerServiceROSBridge/playPatternOfGroup
+    node: None
+    type: service
+  - name: /SequencePlayerServiceROSBridge/removeJointGroup
+    node: None
+    type: service
+  - name: /SequencePlayerServiceROSBridge/setBasePos
+    node: None
+    type: service
+  - name: /SequencePlayerServiceROSBridge/setBaseRpy
+    node: None
+    type: service
+  - name: /SequencePlayerServiceROSBridge/setInitialState
+    node: None
+    type: service
+  - name: /SequencePlayerServiceROSBridge/setInterpolationMode
+    node: None
+    type: service
+  - name: /SequencePlayerServiceROSBridge/setJointAngle
+    node: None
+    type: service
+  - name: /SequencePlayerServiceROSBridge/setJointAngles
+    node: None
+    type: service
+  - name: /SequencePlayerServiceROSBridge/setJointAnglesOfGroup
+    node: None
+    type: service
+  - name: /SequencePlayerServiceROSBridge/setJointAnglesWithMask
+    node: None
+    type: service
+  - name: /SequencePlayerServiceROSBridge/setMaxIKError
+    node: None
+    type: service
+  - name: /SequencePlayerServiceROSBridge/setMaxIKIteration
+    node: None
+    type: service
+  - name: /SequencePlayerServiceROSBridge/setTargetPose
+    node: None
+    type: service
+  - name: /SequencePlayerServiceROSBridge/setWrenches
+    node: None
+    type: service
+  - name: /SequencePlayerServiceROSBridge/setZmp
+    node: None
+    type: service
+  - name: /SequencePlayerServiceROSBridge/waitInterpolation
+    node: None
+    type: service
+  - name: /SequencePlayerServiceROSBridge/waitInterpolationOfGroup
+    node: None
+    type: service
 default_pulls:
   - gateway: jsk_operator_station.*

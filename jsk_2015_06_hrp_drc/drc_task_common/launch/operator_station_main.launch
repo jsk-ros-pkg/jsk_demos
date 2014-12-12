@@ -10,6 +10,8 @@
   <!-- communication -->
   <include if="$(arg USE_COM)"
            file="$(find drc_com_common)/launch/operator_station_com.launch" />
+  <include if="$(arg USE_COM)"
+           file="$(find jsk_hrp2_ros_bridge)/launch/hrp2017_local.launch" />
 
   <!-- -->
   <!-- robot motion -->
@@ -18,7 +20,7 @@
   </include>
 
   <!-- robot model -->
-  <include file="$(find drc_task_common)/launch/hrp2_interactive_marker.launch" >
+  <include file="$(find drc_task_common)/launch/robot_model.launch" >
     <arg name="default_frame_id" default="$(arg default_frame_id)" />
   </include>
 
