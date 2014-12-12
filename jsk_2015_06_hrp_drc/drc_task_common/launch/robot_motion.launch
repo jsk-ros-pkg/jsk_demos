@@ -1,0 +1,17 @@
+<launch>
+  <arg name="default_frame_id" default="odom_on_ground" />
+
+  <!-- inverse kinematics server -->
+  <include file="$(find jsk_ik_server)/launch/hrp2jsknts-ik-server.launch" />
+
+  <!-- inverse kinematics client -->
+  <node pkg="drc_task_common" type="request-ik-from-marker.l" name="request_ik_from_marker" output="screen" >
+    <param name="default_frame_id" value="$(arg default_frame_id)"/>
+    <param name="transformable_interactive_server_nodename" value="transformable_interactive_server"/>
+    <param name="draw_viewer" value="false"/>
+  </node>
+
+  <!-- go-pos -->
+  <node pkg="drc_task_common" type="walk-to-object.l" name="walk_to_object" output="screen">
+  </node>
+</launch>

@@ -1,0 +1,36 @@
+<launch>
+  <arg name="default_frame_id" default="odom_on_ground" />
+  <arg name="only_recognition_with_openni" default="false" />
+  <!-- object detection -->
+  <include file="$(find drc_task_common)/launch/object_detect.launch" >
+    <arg name="only_recognition_with_openni" default="$(arg only_recognition_with_openni)" />
+  </include>
+  
+  <!-- robot motion -->
+  <include file="$(find drc_task_common)/launch/robot_motion.launch" >
+    <arg name="default_frame_id" default="$(arg default_frame_id)" />
+  </include>
+
+  <!-- robot model -->
+  <include file="$(find drc_task_common)/launch/robot_model.launch" >
+    <arg name="default_frame_id" default="$(arg default_frame_id)" />
+  </include>
+
+  <!-- object model -->
+  <include file="$(find drc_task_common)/launch/transformable_model.launch" >
+    <arg name="default_frame_id" default="$(arg default_frame_id)" />
+  </include>
+
+  <!-- teleop device -->
+  <include file="$(find drc_task_common)/launch/teleop_device.launch" >
+    <arg name="default_frame_id" default="$(arg default_frame_id)" />
+  </include>
+
+  <!-- teleop interface -->
+  <include file="$(find drc_task_common)/launch/teleop_interface.launch" />
+  <!-- manipulation data processor  -->
+  <include file="$(find drc_task_common)/launch/manipulation_data_processor.launch" >
+    <arg name="default_frame_id" default="$(arg default_frame_id)" />
+  </include>
+
+</launch>

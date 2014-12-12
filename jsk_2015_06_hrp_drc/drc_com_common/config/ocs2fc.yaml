@@ -1,0 +1,14 @@
+############################################################################
+##    edit this file to change setting of communication from ocs to fc    ##
+############################################################################
+
+# priodically published topic (topic transmitted through topic_buffer_server/client)
+buffered_topic:
+
+# one-shot topic (topic transmitted through topic_tools relay)
+relaid_topic:
+  # for teleoperation
+  - /bounding_box_interactive_marker/feedback
+
+# service
+service:
