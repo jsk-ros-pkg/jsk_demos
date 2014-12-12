@@ -14,7 +14,11 @@
   <!--        args="-l -r 0.1 /home/leus/work/rits/refrig-kinect-c.bag" /> -->
 
   <node pkg="roseus" type="roseus" name="marker_publish" output="screen" if="$(arg fridge_show)"
-        args="$(find jsk_perception)/euslisp/kalman-filtered-objectdetection-marker.l" />
+        args="$(find jsk_perception)/euslisp/kalman-filtered-objectdetection-marker.l">
+    <param name="object_width" value="0.231"/>
+    <param name="object_height" value="0.196"/>
+    <param name="relative_pose" value="0.22 0.05 0.075  0.707107 0 -0.707107 0"/>
+  </node>
 
   <!-- reference white -->
   <anode pkg="image_view2" type="image_view2" name="select_ref_white" machine="c2">
@@ -24,48 +28,39 @@
            to="/openni_c2/rgb/screenpoint"/>
   </anode>
 
-  <group ns="openni">
-    <group ns="rgb">
-      <group ns="image_rect_color">
-        <node pkg="nodelet" type="nodelet" name="crop_manager" args="manager" />
-        <node pkg="nodelet" type="nodelet" name="crop"
-              output="screen"
-              args="load image_proc/crop_decimate crop_manager">
-          <remap from="camera/image_raw" to="/openni_c2/rgb/image_rect_color"/>
-          <remap from="camera/camera_info" to="/openni_c2/rgb/camera_info"/>
-          <remap from="camera_out/image_raw" to="~image" />
-          <remap from="camera_out/camera_info" to="~camera_info" />
-          <rosparam>
-            x_offset: 50
-            y_offset: 200
-            width: 320
-            height: 240
-          </rosparam>
-        </node>
-      </group>
-    </group>
-  </group>
+  <node pkg="jsk_pcl_ros" type="attention_clipper" name="attention_clipper" output="screen">
+    <remap from="~input" to="/openni_c2/rgb/camera_info" />
+    <rosparam>
+      dimension_x: 0.3
+      dimension_y: 0.3
+      dimension_z: 0.05
+      frame_id: "/map"
+    </rosparam>
+  </node>
+
+  <node pkg="jsk_pcl_ros" type="roi_clipper" name="roi_attention_clipper" output="screen">
+    <remap from="~input/image" to="/openni_c2/rgb/image_rect_color" />
+    <remap from="~input/camera_info" to="/attention_clipper/output" />
+  </node>
 
   <!-- setup fridge handle marker template -->
-  <!--include file="$(find jsk_2011_07_pr2_semantic)/launch/start_perception.launch" /-->
   <group ns="/openni/rgb">
-    <!-- <node name="throttle" pkg="topic_tools" -->
-    <!--       type="throttle" args="messages image_rect_color 4.0 image_rect_throttle" -->
-    <!--       machine="c1" /> -->
     <node name="fridge_demo_sift" pkg="imagesift"
-          type="imagesift" launch-prefix="nice -n +10"
+          type="imagesift" launch-prefix="nice -n +10" output="screen"
           machine="c2" >
-      <remap from="/openni/rgb/image" to="/openni/rgb/image_rect_color/crop/image" />
-      <remap from="/openni/rgb/camera_info" to="/openni/rgb/image_rect_color/crop/camera_info" />
+      <remap from="/openni/rgb/image" to="/openni_c2/rgb/image_rect_color" />
+      <remap from="/openni/rgb/camera_info" to="/openni_c2/rgb/camera_info"/>
+      <param name="use_mask" value="true" />
+      <remap from="mask" to="/attention_clipper/output/mask"/>
     </node>
-    <node pkg="jsk_perception" type="point_pose_extractor"
+    <node pkg="jsk_perception" type="point_pose_extractor" machien="c2"
           name="fridge_detector">
       <param name="template_filename" value="$(find detect_cans_in_fridge_201202)/data/openni_rgb_fridge.png"/>
       <param name="window_name" value="fridge_handle_upper"/>
       <param name="object_width" value="0.231"/>
       <param name="object_height" value="0.196"/>
       <param name="relative_pose" value="0.22 0.05 0.075  0.707107 0 -0.707107 0"/>
-      <param name="viewer_window" value="false" /> <!-- to disable window-->
+      <param name="viewer_window" value="false" /><!-- to disable window-->
     </node>
   </group>
   <!-- load model (color histgrams) -->
