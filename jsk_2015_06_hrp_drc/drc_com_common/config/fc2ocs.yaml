@@ -26,6 +26,61 @@ relaid_topic:
   - /bounding_box_interactive_marker/update
   - /bounding_box_interactive_marker/update_full
   - /bounding_box_marker/selected_box
+  - /fullbody_controller/state
+  - /fullbody_controller/joint_trajectory_action/status
+  - /fullbody_controller/joint_trajectory_action/feedback
+  - /fullbody_controller/joint_trajectory_action/result
+  - /fullbody_controller/follow_joint_trajectory_action/status
+  - /fullbody_controller/follow_joint_trajectory_action/feedback
+  - /fullbody_controller/follow_joint_trajectory_action/result
 
 # service
 service:
+  # for teleoperation
+  - /eus_command
+  # for hrpsys abc
+  - /AutoBalancerServiceROSBridge/getAutoBalancerParam
+  - /AutoBalancerServiceROSBridge/getFootstepParam
+  - /AutoBalancerServiceROSBridge/getGaitGeneratorParam
+  - /AutoBalancerServiceROSBridge/goPos
+  - /AutoBalancerServiceROSBridge/goStop
+  - /AutoBalancerServiceROSBridge/goVelocity
+  - /AutoBalancerServiceROSBridge/setAutoBalancerParam
+  - /AutoBalancerServiceROSBridge/setFootSteps
+  - /AutoBalancerServiceROSBridge/setGaitGeneratorParam
+  - /AutoBalancerServiceROSBridge/startAutoBalancer
+  - /AutoBalancerServiceROSBridge/stopAutoBalancer
+  - /AutoBalancerServiceROSBridge/waitFootSteps
+  # for hrpsys st
+  - /StabilizerServiceROSBridge/dummy
+  - /StabilizerServiceROSBridge/getParameter
+  - /StabilizerServiceROSBridge/setParameter
+  - /StabilizerServiceROSBridge/startStabilizer
+  - /StabilizerServiceROSBridge/stopStabilizer
+  - /StateHolderServiceROSBridge/getCommand
+  - /StateHolderServiceROSBridge/goActual
+  # for hrpsys seq
+  - /SequencePlayerServiceROSBridge/addJointGroup
+  - /SequencePlayerServiceROSBridge/clear
+  - /SequencePlayerServiceROSBridge/clearNoWait
+  - /SequencePlayerServiceROSBridge/clearOfGroup
+  - /SequencePlayerServiceROSBridge/isEmpty
+  - /SequencePlayerServiceROSBridge/loadPattern
+  - /SequencePlayerServiceROSBridge/playPattern
+  - /SequencePlayerServiceROSBridge/playPatternOfGroup
+  - /SequencePlayerServiceROSBridge/removeJointGroup
+  - /SequencePlayerServiceROSBridge/setBasePos
+  - /SequencePlayerServiceROSBridge/setBaseRpy
+  - /SequencePlayerServiceROSBridge/setInitialState
+  - /SequencePlayerServiceROSBridge/setInterpolationMode
+  - /SequencePlayerServiceROSBridge/setJointAngle
+  - /SequencePlayerServiceROSBridge/setJointAngles
+  - /SequencePlayerServiceROSBridge/setJointAnglesOfGroup
+  - /SequencePlayerServiceROSBridge/setJointAnglesWithMask
+  - /SequencePlayerServiceROSBridge/setMaxIKError
+  - /SequencePlayerServiceROSBridge/setMaxIKIteration
+  - /SequencePlayerServiceROSBridge/setTargetPose
+  - /SequencePlayerServiceROSBridge/setWrenches
+  - /SequencePlayerServiceROSBridge/setZmp
+  - /SequencePlayerServiceROSBridge/waitInterpolation
+  - /SequencePlayerServiceROSBridge/waitInterpolationOfGroup

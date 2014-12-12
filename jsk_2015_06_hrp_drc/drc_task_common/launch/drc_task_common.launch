@@ -5,7 +5,7 @@
   <include file="$(find drc_task_common)/launch/object_detect.launch" >
     <arg name="only_recognition_with_openni" default="$(arg only_recognition_with_openni)" />
   </include>
-  
+
   <!-- robot motion -->
   <include file="$(find drc_task_common)/launch/robot_motion.launch" >
     <arg name="default_frame_id" default="$(arg default_frame_id)" />
@@ -28,6 +28,10 @@
 
   <!-- teleop interface -->
   <include file="$(find drc_task_common)/launch/teleop_interface.launch" />
+
+  <!-- remote server -->
+  <include file="$(find drc_task_common)/launch/remote_server.launch" />
+
   <!-- manipulation data processor  -->
   <include file="$(find drc_task_common)/launch/manipulation_data_processor.launch" >
     <arg name="default_frame_id" default="$(arg default_frame_id)" />
