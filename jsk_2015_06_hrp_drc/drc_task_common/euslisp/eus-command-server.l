@@ -14,7 +14,6 @@
 (defun eus-command-init
   ()
   (load "package://hrpsys_ros_bridge_tutorials/euslisp/hrp2jsknts-interface.l")
-  (load "package://jsk_hrp2_ros_bridge/scripts/thk-hand-utils.l")
   (load "package://drc_task_common/euslisp/set-recog-param.l")
   (hrp2jsknts-init)
   (setq *robot* *hrp2jsknts*)

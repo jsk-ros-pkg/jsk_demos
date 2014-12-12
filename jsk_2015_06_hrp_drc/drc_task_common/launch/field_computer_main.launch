@@ -11,4 +11,7 @@
 
   <!-- object detection -->
   <include file="$(find drc_task_common)/launch/object_detect.launch" />
+
+  <!-- remote server -->
+  <include file="$(find drc_task_common)/launch/remote_server.launch" />
 </launch>
