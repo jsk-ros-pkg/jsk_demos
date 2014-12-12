@@ -1,5 +1,6 @@
 <launch>
   <arg name="only_recognition_with_openni" default="false" />
+  <arg name="FIND_DRILL_WITH_HISTOGRAM" default="false" />
   <arg name="COLOR_HISTOGRAM" default="false" />
   <arg name="TRACKING" default="false" />
   <arg unless="$(arg only_recognition_with_openni)" name="INPUT" default="/move_group/filtered_cloud" />
@@ -72,4 +73,8 @@
   <!--   <rosparam command="load" file="$(find drc_task_common)/config/recog-param-for-drill.yaml" /> -->
   <!--   <rosparam command="load" file="$(find drc_task_common)/config/recog-param-for-handle.yaml" /> -->
   <!-- </node> -->
+  <include if="$(arg FIND_DRILL_WITH_HISTOGRAM)"
+	   file="$(find drc_task_common)/launch/color_histogram_2d_matcher.launch">
+    <arg name="only_recognition_with_openni" value="$(arg only_recognition_with_openni)" />
+  </include>
 </launch>
