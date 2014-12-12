@@ -1,0 +1,32 @@
+<launch>
+  <arg name="only_recognition_with_openni" default="false" />
+  <arg if="$(arg only_recognition_with_openni)" name="image" default="/camera/rgb/image_rect_color" />
+  <arg if="$(arg only_recognition_with_openni)" name="info" default="/camera/rgb/camera_info" />
+  <arg unless="$(arg only_recognition_with_openni)" name="image" default="/camera_remote/rgb/image_rect_color" />
+  <arg unless="$(arg only_recognition_with_openni)" name="info" default="/camera_remote/rgb/camera_info" />
+  
+
+  <node name="color_histogram_sliding_matcher" pkg="jsk_perception" type="color_histogram_sliding_matcher"
+respawn="false" output="screen" launch-prefix="nice -n 10">
+    <remap from="image" to="$(arg image)" />
+    <param name="template_filename" value="$(find drc_task_common)/templates/drill_template.jpg" />
+    <remap from="camera_info" to="$(arg info)" />
+    <param name="standard_height" value="24" />
+    <param name="standard_width" value="12" />
+    <param name="object_width" value=".15" />
+    <param name="object_height" value=".3" />
+    <param name="coefficient_threshold" value="0.5" />
+  </node>
+  <node pkg="jsk_interactive_marker"
+        type="bounding_box_marker"
+        name="bounding_box_color_histogram"
+        output="screen"
+        >
+    <remap from="~bounding_box_array" to="/best_box" />
+    <remap from="/bounding_box_interactive_marker/update" to="/color_box/update" />
+    <remap from="/bounding_box_interactive_marker/feedback" to="/color_box/feedback" />
+    <remap from="/bounding_box_interactive_marker/update_full" to="/color_box/update_full" />
+
+
+  </node>
+</launch>
