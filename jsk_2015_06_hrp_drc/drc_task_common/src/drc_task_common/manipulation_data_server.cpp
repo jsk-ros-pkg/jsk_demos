@@ -435,17 +435,13 @@ public:
       markers_ptr->int_marker_array.int_markers.resize(0);
       if(server->get("first_menu", int_marker_tmp)){
 	markers_ptr->int_marker_array.int_markers.push_back(int_marker_tmp);
-	server->erase("first_menu");
       }
       if(server->get("grasp_pose", int_marker_tmp)){
 	markers_ptr->int_marker_array.int_markers.push_back(int_marker_tmp);
-	server->erase("grasp_pose");
       }
       if(server->get("push_pose", int_marker_tmp)){
 	markers_ptr->int_marker_array.int_markers.push_back(int_marker_tmp);
-	server->erase("push_pose");
       }
-      server->applyChanges();
       markers_ptr->cloud = *reference_cloud;
       jsk_interactive_marker::GetMarkerDimensions get_dim_srv;
       jsk_interactive_marker::GetTransformableMarkerPose get_pose_srv;
@@ -820,6 +816,11 @@ public:
     srv.request.target_cloud = *msg_ptr;
     srv.request.target_box = *box_ptr;
     //save_marker();
+    server->erase("first_menu");
+    server->erase("grasp_pose");
+    server->erase("push_pose");
+    server->applyChanges();
+
     if (client.call(srv) && srv.response.result.score < 0.000075){
       before_pose_.pose = srv.response.result.pose;
       before_pose_.header = srv.response.result.header;
@@ -875,10 +876,13 @@ public:
 	Eigen::Affine3f offset_inverse = offset.inverse();
       
 	pcl::NormalEstimation<pcl::PointXYZRGB, pcl::Normal> ne;
+	reference_kd_tree.reset(new pcl::search::KdTree<pcl::PointXYZRGB>);
 	ne.setInputCloud(reference_cloud);
 	ne.setSearchMethod(reference_kd_tree);
 	ne.setRadiusSearch(0.02);
 	ne.setViewPoint(offset.translation().x(), offset.translation().y(), offset.translation().z());//after_orig.point.x, after_orig.point.y, after_orig.point.z);
+	//hoge
+	reference_cloud_normals.reset(new pcl::PointCloud<pcl::Normal>);
 	ne.compute(*reference_cloud_normals);
 	pcl::PointCloud<pcl::PointXYZRGBNormal> concatenated_cloud;
 	concatenated_cloud.points.resize(reference_cloud->points.size());
@@ -1018,6 +1022,7 @@ public:
       for (size_t index=0; index<points_xyz->size(); index++){
 	points_xyz->points[index].x = points_xyz->points[index].z = 0;
       }
+      if(points_xyz->points.size() == 0){ROS_INFO("points are empty");return;}
       kdtree.setInputCloud(points_xyz);
       std::vector<int> pointIdxRadiusSearch;
       std::vector<float> pointRadiusSquaredDistance;
