@@ -5,3 +5,18 @@ default_advertisements:
   - name: /bounding_box_interactive_marker/feedback_relaid
     node: None
     type: publisher
+  - name: /fullbody_controller/joint_trajectory_action/goal_relaid
+    node: None
+    type: publisher
+  - name: /fullbody_controller/joint_trajectory_action/cancel_relaid
+    node: None
+    type: publisher
+  - name: /fullbody_controller/follow_joint_trajectory_action/goal_relaid
+    node: None
+    type: publisher
+  - name: /fullbody_controller/follow_joint_trajectory_action/cancel_relaid
+    node: None
+    type: publisher
+  - name: /fullbody_controller/command_relaid
+    node: None
+    type: publisher
