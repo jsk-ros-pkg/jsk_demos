@@ -77,6 +77,7 @@ def b_control_client_init():
     ts = message_filters.TimeSynchronizer([box_sub, points_sub], 10)
     ts.registerCallback(selected_box_cb)
     #rospy.Subscriber('bounding_box_marker/selected_box', BoundingBox, selected_box_cb)
+    rospy.Subscriber('/bounding_box_color_histogram/selected_box', BoundingBox, selected_only_box_cb)
     tf_listener = tf.TransformListener()
     get_type_srv = rospy.ServiceProxy(ns+'/get_type', GetType)
     set_pose_srv = rospy.ServiceProxy(ns+'/set_pose', SetTransformableMarkerPose)
@@ -275,6 +276,8 @@ def selected_box_cb(msg, points_msg):
     except rospy.ServiceException, e:
         print "ICP Service call failed: %s"%e
     # pose
+    selected_only_box_cb(msg)
+def selected_only_box_cb(msg):
     pose_stamped_msg = PoseStamped()
     pose_stamped_msg.header = msg.header
     pose_stamped_msg.pose = msg.pose
