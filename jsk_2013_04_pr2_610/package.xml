@@ -1,0 +1,39 @@
+<?xml version="1.0"?>
+<package>
+  <name>jsk_2013_04_pr2_610</name>
+  <version>0.0.0</version>
+  <description>The jsk_2013_04_pr2_610 package</description>
+
+  <maintainer email="k-okada@jsk.t.u-tokyo.ac.jp">Kei Okada</maintainer>
+  <license>BSD</license>
+  <url type="website">http://wiki.ros.org/jsk_2013_04_pr2_610</url>
+  <author email="k-okada@jsk.t.u-tokyo.ac.jp">Kei Okada</author>
+  <author email="youhei@jsk.imi.i.u-tokyo.ac.jp">Youhei Kakiuchi</author>
+  <author email="furuta@jsk.imi.i.u-tokyo.ac.jp">Yusuke Furuta</author>
+  <author email="mikita@jsk.imi.i.u-tokyo.ac.jp">Hiroyuki Mikita</author>
+  <author email="wesleyc@jsk.imi.i.u-tokyo.ac.jp">Chan Wesley</author>
+  <author email="inagaki@jsk.imi.i.u-tokyo.ac.jp">Yuto Inagaki</author>
+  <author email="kuroiwa@jsk.imi.i.u-tokyo.ac.jp">Eisoku Kuroiwa</author>
+  <author email="furushchev@jsk.imi.i.u-tokyo.ac.jp">Yuki Furuta</author>
+
+  <buildtool_depend>catkin</buildtool_depend>
+  <build_depend>geometry_msgs</build_depend>
+  <build_depend>jsk_demo_common</build_depend>
+  <build_depend>jsk_perception</build_depend>
+  <build_depend>pddl_planner</build_depend>
+  <build_depend>pr2eus</build_depend>
+  <build_depend>roseus_smach</build_depend>
+  <build_depend>message_generation</build_depend>
+  <build_depend>jsk_smart_gui</build_depend>
+  <run_depend>geometry_msgs</run_depend>
+  <run_depend>jsk_demo_common</run_depend>
+  <run_depend>jsk_perception</run_depend>
+  <run_depend>pddl_planner</run_depend>
+  <run_depend>pr2eus</run_depend>
+  <run_depend>roseus_smach</run_depend>
+  <run_depend>message_runtime</run_depend>
+  <run_depend>jsk_smart_gui</run_depend>
+
+  <export>
+  </export>
+</package>

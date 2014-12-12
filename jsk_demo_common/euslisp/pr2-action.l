@@ -426,7 +426,7 @@
       (setq idx (position (find-extream lst #'(lambda(x) (distance (send x :worldpos) end-pt)) #'<) lst))
       (ros::ros-info "idx = [~a/~a]" idx (length lst))
       (when (< idx (/ (length lst) 2))
-        (return-from open-fridge-traj nil)))
+        (return-from move-fridge-traj nil)))
     t))
 
 ;;
@@ -924,7 +924,7 @@
   (send *ri* :wait-interpolation)
   (send *pr2* :angle-vector (send *ri* :state :potentio-vector))
   (send *ri* :ros-wait 0.0 :spin-self t) ;; attention-check ...
-  (pr2-tuckarm-pose use-arm)
+  (pr2-tuckarm-pose use-arm :outside)
   t
   )
 

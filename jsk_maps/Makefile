@@ -7,4 +7,4 @@ launch/start_map_eng2_vert.launch:
 
 
 clean:
-	rm -rf euslisp *.pgm raw_maps/*.yaml launch/*_main.launch
+	rm -rf euslisp *.pgm raw_maps/*-0.05.yaml launch/*_main.launch

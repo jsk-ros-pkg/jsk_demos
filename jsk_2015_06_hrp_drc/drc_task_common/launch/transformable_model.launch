@@ -1,0 +1,12 @@
+<launch>
+  <arg name="default_frame_id" default="odom_on_ground" />
+
+  <param name="torus_udiv" value="40" />
+  <param name="torus_vdiv" value="40" />
+
+  <!-- transformable marker server -->
+  <node pkg="jsk_interactive_marker" type="transformable_server_sample" name="transformable_interactive_server"
+        output="screen">
+   <param name="display_interactive_manipulator" value="false"/>
+  </node>
+</launch>

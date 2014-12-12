@@ -1,0 +1,10 @@
+string title
+string[] menu_list
+float32 variable_max
+float32 variable_min
+float32 variable
+bool boolean
+---
+int32 index
+float32 variable_ret
+bool boolean_ret
