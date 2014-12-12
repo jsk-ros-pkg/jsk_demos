@@ -1,0 +1,48 @@
+<launch>
+  <!--
+      This is a launch file for Main PC of Operator Control Station (OCS)
+  -->
+
+  <arg name="USE_COM" default="false" />
+
+  <arg name="default_frame_id" default="odom_on_ground" />
+
+  <!-- communication -->
+  <include if="$(arg USE_COM)"
+           file="$(find drc_com_common)/launch/operator_station_com.launch" />
+
+  <!-- -->
+  <!-- robot motion -->
+  <include file="$(find drc_task_common)/launch/robot_motion.launch" >
+    <arg name="default_frame_id" default="$(arg default_frame_id)" />
+  </include>
+
+  <!-- robot model -->
+  <include file="$(find drc_task_common)/launch/hrp2_interactive_marker.launch" >
+    <arg name="default_frame_id" default="$(arg default_frame_id)" />
+  </include>
+
+  <!-- object model -->
+  <include file="$(find drc_task_common)/launch/transformable_model.launch" >
+    <arg name="default_frame_id" default="$(arg default_frame_id)" />
+  </include>
+
+  <!-- teleop device -->
+  <include file="$(find drc_task_common)/launch/teleop_device.launch" >
+    <arg name="default_frame_id" value="$(arg default_frame_id)" />
+    <arg name="TRACKBALL_DEVICE_FILE" value="/dev/input/mouse2" />
+  </include>
+
+  <!-- teleop interface -->
+  <include file="$(find drc_task_common)/launch/teleop_interface.launch" />
+
+  <group>
+    <remap from="robotsound" to="robotsound_ocs" />
+
+    <!-- google translation talk -->
+    <include file="$(find sound_play)/soundplay_node.launch" />
+
+    <!-- timer talker -->
+    <node pkg="drc_task_common" name="timer_talker" type="timer_talker.py" args="" output="screen" />
+  </group>
+</launch>

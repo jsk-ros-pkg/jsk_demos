@@ -1,0 +1,12 @@
+<library path="src">
+  <class name="drc_teleop_interface" type="drc_task_common.drc_teleop_interface.DRCTeleopInterface" base_class_type="rqt_gui_py::Plugin">
+    <description>
+      Teleoperation interface for DRC tasks
+    </description>
+    <qtgui>
+      <label>DRC Teleop Interface</label>
+      <icon type="theme">task-past-due</icon>
+      <statustip>A Python GUI plugin for DRC teleoperation.</statustip>
+    </qtgui>
+  </class>
+</library>

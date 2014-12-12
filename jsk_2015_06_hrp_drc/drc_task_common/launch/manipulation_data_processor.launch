@@ -1,0 +1,21 @@
+<launch>
+  <arg name="default_frame_id" default="odom_on_ground" />
+  <arg name="use_with_service" default="true" />
+  <node pkg="jsk_interactive_marker" type="interactive_point_cloud" name="interactive_point_cloud" output="screen">
+    <remap from="/selected_pointcloud" to="/manip_points" />
+    <param name="use_bounding_box" value="false" />
+    <param name="point_size" value="0.007" />
+  </node>
+  
+  <node 
+      pkg="drc_task_common"
+      type="manipulation_data_server"
+      name="manipulation_data_server"
+      output="screen"
+      >
+    <param name="BASE_FRAME_ID" value="$(arg default_frame_id)" />
+    <remap from="/icp_registration/input_reference_array" to="/pointcloud_server/output" />
+    <remap if="$(arg use_with_service)" from="selected_pointcloud" to="dammy_selected_pointcloud" />
+    <remap if="$(arg use_with_service)" from="/bounding_box_marker/selected_box" to="dammy_selected_box" />
+  </node>
+</launch>

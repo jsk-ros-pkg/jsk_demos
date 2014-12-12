@@ -1,0 +1,5 @@
+sensor_msgs/PointCloud2 points
+jsk_pcl_ros/BoundingBox box
+---
+jsk_interactive_marker/MarkerDimensions dim
+geometry_msgs/PoseStamped pose_stamped

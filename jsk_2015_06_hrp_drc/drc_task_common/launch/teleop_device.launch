@@ -1,0 +1,57 @@
+<launch>
+  <arg name="b_control_joy_topic" default="/b_control/joy" />
+  <arg name="spacenav_joy_topic" default="/spacenav/joy" />
+  <arg name="default_frame_id" default="odom_on_ground" />
+  <arg name="TRACKBALL_DEVICE_FILE" default="/dev/input/mouse0" />
+
+  <!-- publish spacenav topic -->
+  <node pkg="spacenav_node" type="spacenav_node" name="spacenav">
+  </node>
+
+  <!-- publish midi device topic -->
+  <node pkg="jsk_teleop_joy" type="midi_config_player.py" name="midi_config_player"
+        args="$(find jsk_teleop_joy)/configs/b_control.yaml"
+        output="screen">
+    <remap from="joy" to="b_control/joy" />
+    <param name="autorepeat_rate" value="0" />
+  </node>
+
+  <!-- b_control client node -->
+  <node pkg="drc_task_common" type="b_control_client.py" name="b_control_client"
+        output="screen">
+    <remap from="input_joy" to="$(arg b_control_joy_topic)"/>
+    <!-- range of marker dimensions -->
+    <param name="transformable_interactive_server_nodename" value="transformable_interactive_server"/>
+    <param name="default_frame_id" value="$(arg default_frame_id)"/>
+    <param name="x_max" value="1.5"/>
+    <param name="y_max" value="1.5"/>
+    <param name="z_max" value="1.5"/>
+    <param name="r_max" value="1.0"/>
+    <param name="sr_max" value="0.2"/>
+    <param name="x_min" value="0.01"/>
+    <param name="y_min" value="0.01"/>
+    <param name="z_min" value="0.01"/>
+    <param name="r_min" value="0.01"/>
+    <param name="sr_min" value="0.001"/>
+  </node>
+
+  <!-- spacenav client node -->
+  <node pkg="drc_task_common" type="spacenav_client.py" name="spacenav_client">
+    <remap from="input_joy" to="$(arg spacenav_joy_topic)"/>
+    <!-- choose using both at same time or using separately -->
+    <param name="transformable_interactive_server_nodename" value="transformable_interactive_server"/>
+    <param name="separate_mode" value="true"/>
+    <!-- these are diff speed gain -->
+    <param name="x_max" value="0.01"/>
+    <param name="y_max" value="0.01"/>
+    <param name="z_max" value="0.01"/>
+    <param name="rx_max" value="0.01"/>
+    <param name="ry_max" value="0.01"/>
+    <param name="rz_max" value="0.01"/>
+  </node>
+
+  <!-- trackball client node -->
+  <include file="$(find jsk_teleop_joy)/launch/hrp2_trackball_head.launch" >
+    <arg name="DEV" value="$(arg TRACKBALL_DEVICE_FILE)" />
+  </include>
+</launch>
