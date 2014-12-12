@@ -61,3 +61,4 @@ target_link_libraries(manipulation_data_server
    ${catkin_LIBRARIES}
    yaml-cpp
 )
+add_dependencies(manipulation_data_server ${PROJECT_NAME}_gencpp)
