@@ -1,0 +1,13 @@
+<!-- This launch file is automatically generated. -->
+<launch>
+<node pkg="jsk_topic_tools" type="topic_buffer_server" name="stat_topic_buffer" args="/diagnostics_agg /joint_states /lfsensor /lhsensor /rfsensor /rhsensor /motor_states /odom /zmp"  respawn="true">
+  <param name="periodic_rate" value="1" />
+</node>
+<node pkg="topic_tools" type="relay" name="selected_pointcloud_relay" args="/selected_pointcloud /selected_pointcloud_relaid _unreliable:=true"/>
+<node pkg="topic_tools" type="relay" name="multi_plane_estimate_output_refined_polygon_relay" args="/multi_plane_estimate/output_refined_polygon /multi_plane_estimate/output_refined_polygon_relaid _unreliable:=true"/>
+<node pkg="topic_tools" type="relay" name="cluster_decomposer_final_boxes_relay" args="/cluster_decomposer_final/boxes /cluster_decomposer_final/boxes_relaid _unreliable:=true"/>
+<node pkg="topic_tools" type="relay" name="bounding_box_interactive_marker_update_relay" args="/bounding_box_interactive_marker/update /bounding_box_interactive_marker/update_relaid _unreliable:=true"/>
+<node pkg="topic_tools" type="relay" name="bounding_box_interactive_marker_update_full_relay" args="/bounding_box_interactive_marker/update_full /bounding_box_interactive_marker/update_full_relaid _unreliable:=true"/>
+<node pkg="topic_tools" type="relay" name="bounding_box_marker_selected_box_relay" args="/bounding_box_marker/selected_box /bounding_box_marker/selected_box_relaid _unreliable:=true"/>
+<node pkg="topic_tools" type="relay" name="bounding_box_interactive_marker_feedback_relay" args="/bounding_box_interactive_marker/feedback_relaid /bounding_box_interactive_marker/feedback _unreliable:=true"/>
+</launch>

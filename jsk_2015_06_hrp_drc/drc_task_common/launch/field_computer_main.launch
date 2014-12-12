@@ -1,0 +1,14 @@
+<launch>
+  <!--
+      This is a launch file for Main PC of Field Computer (FC)
+  -->
+
+  <arg name="USE_COM" default="false" />
+
+  <!-- communication -->
+  <include if="$(arg USE_COM)"
+           file="$(find drc_com_common)/launch/field_computer_com.launch" />
+
+  <!-- object detection -->
+  <include file="$(find drc_task_common)/launch/object_detect.launch" />
+</launch>
