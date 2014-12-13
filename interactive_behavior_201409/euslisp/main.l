@@ -4,13 +4,14 @@
 
 (ros::roseus-add-msgs "people_msgs")
 (ros::roseus-add-msgs "jsk_hark_msgs")
+(ros::roseus-add-msgs "geometry_msgs")
 (ros::roseus "interactive_behavior_server")
 
 ;; initialization
 (ros::ros-info "initializing")
 (pr2-init)
 (setq *tfl* (instance ros::transform-listener :init))
-(setq *behavior-server-enabled* nil)
+(setq *behavior-server-enabled* t)
 (setq *current-behavior* :idle)
 (setq *behavior-timeout* 0)
 (setq *behavior-start-at* (ros::time-now))
@@ -18,6 +19,7 @@
 ;;   :idle
 ;;   :look-at-face
 ;;   :look-at-sound
+
 
 (defun check-behavior-timeout ()
   (let ((now (ros::time-now)))
@@ -61,6 +63,8 @@
   (send *pr2* :angle-vector (send *ri* :state :potentio-vector))
   (let ((current-pitch (send *pr2* :head :neck-p :joint-angle))
         (current-yaw (send *pr2* :head :neck-y :joint-angle)))
+    (send *pr2* :head :heck-y :joint-angle 0)
+    (send *pr2* :head :heck-p :joint-angle 0)
     (send *pr2* :head :look-at world-pos) ;LOOK AT!!
     (let ((next-pitch (send *pr2* :head :neck-p :joint-angle))
           (next-yaw (send *pr2* :head :neck-y :joint-angle)))
@@ -108,7 +112,8 @@
   ;; offset ... - pi
   (if (or (eq *current-behavior* :idle)
           (eq *current-behavior* :idle-random-look)
-          (eq *current-behavior* :look-at-sound))
+          ;;(eq *current-behavior* :look-at-sound)
+          )
       ;; (send *tfl* :wait-for-transform 
       ;;       "/base_footprint"
       ;;       (send msg :header :frame_id)
@@ -120,23 +125,11 @@
                        ;;(ros::time- (send msg :header :stamp) (ros::time 0.5)))))
                        ;;(ros::time 0))))
         (if cds
-            (let ((powers (send msg :powers)))
-              ;; look up maximum position
-              (let* ((max-index (find-max-powers-index powers))
-                     (max-power (elt powers max-index)))
-                (when (and (> max-index 4) (> max-power 32))
-                    (ros::ros-info "max-power: ~A" max-power)
-                  (ros::ros-info "max-index: ~A/~A" max-index (length powers))
-                    ;; look at direction!!
-                    (let ((theta (- (* (/ 2pi (length powers)) max-index) pi)))
-                      ;; compute the posistion to look at
-                      (let ((local-pos (float-vector (* 3000 (cos theta)) (* 3000 (sin theta)) 0)))
-                        (let ((world-pos (send cds :transform-vector local-pos)))
-                          (run-behavior :look-at-sound world-pos)
-                          ))
-                      )
-                  ))))))
-  )
+            (let ((local-pos (scale 3000 (float-vector (send msg :vector :x)
+                                                       (send msg :vector :y)
+                                                       (send msg :vector :z)))))
+              (let ((world-pos (send cds :transform-vector local-pos)))
+                (run-behavior :look-at-sound world-pos)))))))
 
 (defun enable-cb (req)
   (setq *behavior-server-enabled* t)
@@ -152,8 +145,8 @@
  people_msgs::PositionMeasurementArray
  #'position-measurement-cb)
 (ros::subscribe
- "/HarkPower"
- jsk_hark_msgs::HarkPower
+ "/sound_direction"
+ geometry_msgs::Vector3Stamped
  #'sound-cb)
 (ros::advertise-service
  "/interactive_behavior_enable"
