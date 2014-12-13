@@ -1,12 +1,14 @@
 #!/usr/bin/env roseus
 
 (ros::roseus "publish_jskmap_spots")
+(ros::roseus-add-msgs "jsk_rviz_plugins")
 
 (let ((scene (ros::get-param "~scene" "eng2")))
   (load (format nil "package://jsk_maps/src/~A-scene.l" scene))
   (setq *scene* (funcall (intern (string-upcase (format nil "make-~A-scene" scene))))))
 
 (defvar *pub-spots-topic* "/spots_marker_array")
+(defvar *pub-spots-pictogram-topic* "/spots_pictogram")
 (defvar *tf-listener* (instance ros::transform-listener :init))
 
 
@@ -42,13 +44,13 @@
     (dolist (c (send *scene* :spots))
       (when (and current-map-coords (substringp current-map-id (send c :name)))
         ;;(ros::ros-info "publish spot ~A" (send c :name))
-        (push (object->marker-msg (make-pin-body :coords (send (send current-map-coords :transformation c) :worldcoords) :height 500 :radius 61)
-                                  header
-                                  :color (elt colors id)
-                                  :ns "pin"
-                                  :lifetime 15
-                                  :id id)
-              msgs)
+        ;; (push (object->marker-msg (make-pin-body :coords (send (send current-map-coords :transformation c) :worldcoords) :height 500 :radius 61)
+        ;;                           header
+        ;;                           :color (elt colors id)
+        ;;                           :ns "pin"
+        ;;                           :lifetime 15
+        ;;                           :id id)
+        ;;       msgs)
         (push (text->marker-msg (subseq (send c :name) (length current-map-id))
                                 (make-coords :pos (v+ (send (send current-map-coords :transformation c) :worldpos) #f(0 0 700)))
                                 header
@@ -61,6 +63,40 @@
         ))
     (send msg-array :markers msgs)
     (ros::publish *pub-spots-topic* msg-array)
+    (publish-pictograms msgs)
+    ))
+
+(defun publish-pictograms (msgs)
+  (let ((pictogram-array (instance jsk_rviz_plugins::PictogramArray :init))
+        (pictograms nil))
+    (send pictogram-array :header :stamp (ros::time-now))
+    (send pictogram-array :header :frame_id "map")
+    (dolist (msg msgs)
+      (when (string= (send msg :ns) "text")
+        (let ((pictogram (instance jsk_rviz_plugins::Pictogram :init)))
+          (send pictogram :header (send msg :header))
+          (send pictogram :pose (send msg :pose))
+          (send pictogram :pose :position :z 
+                (- (send pictogram :pose :position :z )
+                   0.3))
+          (let ((c (make-coords)))
+            (send c :rotate (deg2rad -90) :y)
+            (send c :rotate (deg2rad 180) :z)
+            (let ((q (matrix2quaternion (send c :rot))))
+              (send pictogram :pose :orientation :w (elt q 0))
+              (send pictogram :pose :orientation :x (elt q 1))
+              (send pictogram :pose :orientation :y (elt q 2))
+              (send pictogram :pose :orientation :z (elt q 3))))
+          (send pictogram :size 0.5)
+          (send pictogram :character "fa-chevron-circle-up")
+          (push pictogram pictograms)
+          (send pictogram :color :r (/ 255 255.0))
+          (send pictogram :color :g (/ 87 255.0))
+          (send pictogram :color :b (/ 34 255.0))
+          (send pictogram :color :a 1.0)
+          )))
+    (send pictogram-array :pictograms pictograms)
+    (ros::publish *pub-spots-pictogram-topic* pictogram-array)
     ))
 
 (setq *map-selected* "")
@@ -68,6 +104,7 @@
 (ros::subscribe "/map_tf_mux/selected" std_msgs::String #'map-selected-cb)
 
 (ros::advertise *pub-spots-topic* visualization_msgs::MarkerArray 5)
+(ros::advertise *pub-spots-pictogram-topic* jsk_rviz_plugins::PictogramArray 1)
 
 (dotimes (i 3) (pub-spot))
 (ros::rate 0.1)
@@ -76,5 +113,3 @@
  (ros::spin-once)
  (ros::sleep))
 (ros::unadvertise *pub-spots-topic*)
-
-
