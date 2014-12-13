@@ -4,13 +4,14 @@
 
 (ros::roseus-add-msgs "people_msgs")
 (ros::roseus-add-msgs "jsk_hark_msgs")
+(ros::roseus-add-msgs "geometry_msgs")
 (ros::roseus "interactive_behavior_server")
 
 ;; initialization
 (ros::ros-info "initializing")
 (pr2-init)
 (setq *tfl* (instance ros::transform-listener :init))
-(setq *behavior-server-enabled* nil)
+(setq *behavior-server-enabled* t)
 (setq *current-behavior* :idle)
 (setq *behavior-timeout* 0)
 (setq *behavior-start-at* (ros::time-now))
@@ -19,66 +20,6 @@
 ;;   :look-at-face
 ;;   :look-at-sound
 
-;; for PCA calculation
-(defun pca (x)
-  (let* ((mat (apply #'matrix x))
-         (len (length (car x)))
-         (mea (vector-mean x))
-         (cen (copy-object mat))
-         vs cov ret)
-    ;; cov = (covariance x)
-    (dotimes (i len)
-      (push (matrix-column mat (- len i 1)) vs))
-    (setq cov (apply #'covariance-matrix vs))
-    ;; cen = (center x)
-    (dotimes (i (array-dimension cen 0))
-      (setf (matrix-row cen i)
-            (v- (matrix-row cen i) mea)))
-    ;; pc : principal components
-    ;; z  : transformed data
-    ;; w  : eigenvalues of covariance matrix
-    (setq ret (sv-decompose cov)) ;; U D pc
-    ;; returns (pc (center(x)*pc) w v-mean)
-    (list (elt ret 2) (m* cen (elt ret 2)) (elt ret 1) mea)
-    ))
-
-(defun covariance-matrix (&rest vs)
-  "make covariance matrix of given input vector-list(vs)"
-  (let (m n)
-    (setq n (length vs))
-    (setq m (make-matrix n n))
-    (dotimes (i n m)
-      (dotimes (j n)
-p	(setf (aref m i j) (covariance (elt vs i) (elt vs j)))))))
-
-(defun covariance (v1 v2)
-  "make co-variance of vector, covariance #f(1 2 3) #(0 2 4)->1.3"
-  (let* ((a 0.0) (m1 (vmean v1)) (m2 (vmean v2)) e1 e2)
-    (dotimes (i (length v1))
-      (setq e1 (elt v1 i) e2 (elt v2 i))
-      (setq a (+ a (* (- e1 m1) (- e2 m2)))))
-    (/ a (- (length v1) 1))))
-
-(defun vmean (v)
-  "make mean of vector, vmean #f(1 2 3)->2.0"
-  (let ((a 0.0))
-    (dotimes (i (length v))
-      (setq a (+ a (elt v i))))
-    (/ a (length v))))
-
-(defun elipse-estimation (vs)
-  ;; vs is a list of 2-dimensional float-vector
-  ;; return '(primaly axis, secondoly axis)
-  (let ((pca-res (pca (mapcar #'(lambda (v)
-                                  (float-vector (elt v 0) (elt v 1) 0))
-                              vs))))
-    (list (scale (elt (caddr pca-res) 0) (matrix-column (car pca-res) 0))
-          (scale (elt (caddr pca-res) 1) (matrix-column (car pca-res) 1)))))
-
-(defun elipse-ratio (vs)
-  (multiple-value-bind
-   (primary secondary) (elipse-estimation vs)
-   (/ (norm primary) (norm secondary))))
 
 (defun check-behavior-timeout ()
   (let ((now (ros::time-now)))
@@ -122,6 +63,8 @@ p	(setf (aref m i j) (covariance (elt vs i) (elt vs j)))))))
   (send *pr2* :angle-vector (send *ri* :state :potentio-vector))
   (let ((current-pitch (send *pr2* :head :neck-p :joint-angle))
         (current-yaw (send *pr2* :head :neck-y :joint-angle)))
+    (send *pr2* :head :heck-y :joint-angle 0)
+    (send *pr2* :head :heck-p :joint-angle 0)
     (send *pr2* :head :look-at world-pos) ;LOOK AT!!
     (let ((next-pitch (send *pr2* :head :neck-p :joint-angle))
           (next-yaw (send *pr2* :head :neck-y :joint-angle)))
@@ -169,7 +112,8 @@ p	(setf (aref m i j) (covariance (elt vs i) (elt vs j)))))))
   ;; offset ... - pi
   (if (or (eq *current-behavior* :idle)
           (eq *current-behavior* :idle-random-look)
-          (eq *current-behavior* :look-at-sound))
+          ;;(eq *current-behavior* :look-at-sound)
+          )
       ;; (send *tfl* :wait-for-transform 
       ;;       "/base_footprint"
       ;;       (send msg :header :frame_id)
@@ -181,23 +125,11 @@ p	(setf (aref m i j) (covariance (elt vs i) (elt vs j)))))))
                        ;;(ros::time- (send msg :header :stamp) (ros::time 0.5)))))
                        ;;(ros::time 0))))
         (if cds
-            (let ((powers (send msg :powers)))
-              ;; look up maximum position
-              (let* ((max-index (find-max-powers-index powers))
-                     (max-power (elt powers max-index)))
-                (when (and (> max-index 4) (> max-power 32))
-                    (ros::ros-info "max-power: ~A" max-power)
-                  (ros::ros-info "max-index: ~A/~A" max-index (length powers))
-                    ;; look at direction!!
-                    (let ((theta (- (* (/ 2pi (length powers)) max-index) pi)))
-                      ;; compute the posistion to look at
-                      (let ((local-pos (float-vector (* 3000 (cos theta)) (* 3000 (sin theta)) 0)))
-                        (let ((world-pos (send cds :transform-vector local-pos)))
-                          (run-behavior :look-at-sound world-pos)
-                          ))
-                      )
-                  ))))))
-  )
+            (let ((local-pos (scale 3000 (float-vector (send msg :vector :x)
+                                                       (send msg :vector :y)
+                                                       (send msg :vector :z)))))
+              (let ((world-pos (send cds :transform-vector local-pos)))
+                (run-behavior :look-at-sound world-pos)))))))
 
 (defun enable-cb (req)
   (setq *behavior-server-enabled* t)
@@ -213,8 +145,8 @@ p	(setf (aref m i j) (covariance (elt vs i) (elt vs j)))))))
  people_msgs::PositionMeasurementArray
  #'position-measurement-cb)
 (ros::subscribe
- "/HarkPower"
- jsk_hark_msgs::HarkPower
+ "/sound_direction"
+ geometry_msgs::Vector3Stamped
  #'sound-cb)
 (ros::advertise-service
  "/interactive_behavior_enable"
