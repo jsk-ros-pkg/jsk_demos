@@ -6,7 +6,13 @@
     <param name="use_bounding_box" value="false" />
     <param name="point_size" value="0.007" />
   </node>
-
+  <node 
+      pkg="drc_task_common"
+      type="tf_keeper"
+      name="tf_keeper"
+      output="screen"
+      >
+  </node>
   <node
       pkg="drc_task_common"
       type="manipulation_data_server"
