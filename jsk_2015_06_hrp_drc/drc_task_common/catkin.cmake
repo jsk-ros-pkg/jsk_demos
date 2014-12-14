@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(drc_task_common)
 
-find_package(catkin REQUIRED COMPONENTS cmake_modules message_generation std_msgs std_srvs geometry_msgs roscpp rospy sensor_msgs visualization_msgs message_filters message_generation jsk_pcl_ros interactive_markers tf2_msgs pcl_conversions jsk_topic_tools rviz eigen_conversions)
+find_package(catkin REQUIRED COMPONENTS cmake_modules message_generation std_msgs std_srvs geometry_msgs roscpp rospy sensor_msgs visualization_msgs message_filters message_generation jsk_pcl_ros interactive_markers pcl_conversions jsk_topic_tools rviz eigen_conversions dynamic_tf_publisher)
 catkin_python_setup()
 
 add_message_files(DIRECTORY msg FILES StringMultiArray.msg)
@@ -62,8 +62,3 @@ target_link_libraries(manipulation_data_server
    yaml-cpp
 )
 add_dependencies(manipulation_data_server ${PROJECT_NAME}_gencpp)
-add_executable(tf_keeper src/drc_task_common/tf_keeper.cpp)
-target_link_libraries(tf_keeper
-   ${catkin_LIBRARIES}
-)
-add_dependencies(tf_keeper ${PROJECT_NAME}_gencpp)

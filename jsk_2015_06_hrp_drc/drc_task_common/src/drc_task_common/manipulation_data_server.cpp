@@ -47,6 +47,7 @@
 #include <fstream>
 #include <ros/serialization.h>
 #include <pcl/io/pcd_io.h>
+#include <dynamic_tf_publisher/SetDynamicTF.h>
 
 using namespace std;
 using namespace ros;
@@ -236,7 +237,7 @@ protected:
   Publisher debug_point_pub;
   Publisher marker_set_pose_pub;
   Publisher t_marker_set_pose_pub;
-  Publisher tf_keeper_send_;
+  ServiceClient tf_publish_client_;
   ServiceClient client;
   ServiceClient get_type_client;
   ServiceClient get_pose_client;
@@ -346,7 +347,6 @@ public:
     debug_grasp = _node.advertise<visualization_msgs::Marker>("/debug_grasp", 1);
     marker_set_pose_pub = _node.advertise<geometry_msgs::PoseStamped>("/interactive_point_cloud/set_marker_pose", 1);
     t_marker_set_pose_pub = _node.advertise<geometry_msgs::PoseStamped>("/transformable_interactive_server/set_pose", 1);
-    tf_keeper_send_ = _node.advertise<tf2_msgs::TFMessage>("/transform_array", 1, boost::bind( &PointsNode::tf_keeper_connection, this, _1 ), boost::bind( &PointsNode::tf_keeper_disconnection, this, _1 ));
     _subBox.subscribe(_node, "/bounding_box_marker/selected_box", 1);
     sync_ = boost::make_shared<message_filters::Synchronizer<SyncPolicy> >(100);
    
@@ -358,7 +358,7 @@ public:
     get_type_client = _node.serviceClient<jsk_interactive_marker::GetType>("/transformable_interactive_server/get_type");
     get_pose_client = _node.serviceClient<jsk_interactive_marker::GetTransformableMarkerPose>("/transformable_interactive_server/get_pose");
     get_dim_client = _node.serviceClient<jsk_interactive_marker::GetMarkerDimensions>("/transformable_interactive_server/get_dimensions");
-
+    tf_publish_client_ = _node.serviceClient<dynamic_tf_publisher::SetDynamicTF>("/manipulation_data_server/set_dynamic_tf");
     _subSelectedPoints = _node.subscribe("/selected_points",1,&PointsNode::set_menu_cloud,this);
     _subSelectedPose = _node.subscribe("/interactive_point_cloud/left_click_point_relative", 1, &PointsNode::set_menu_point, this);
     _sub_pose_feedback = _node.subscribe("/interactive_point_cloud/feedback", 1, &PointsNode::marker_move_feedback, this);
@@ -413,8 +413,9 @@ public:
     ROS_INFO("initialize done");
   }
   void pub_tf(){
-    tf2_msgs::TFMessage tf_message;
+    dynamic_tf_publisher::SetDynamicTF set_tf_srv;
     geometry_msgs::TransformStamped transform_msg_temp;
+    set_tf_srv.request.freq = 20.0;
     transform_msg_temp.transform.translation.x = tf_from_base.getOrigin().getX();
     transform_msg_temp.transform.translation.y = tf_from_base.getOrigin().getY();
     transform_msg_temp.transform.translation.z = tf_from_base.getOrigin().getZ();
@@ -426,7 +427,10 @@ public:
     transform_msg_temp.transform.rotation.w = temp_qua.getW();
     transform_msg_temp.header.frame_id = std::string(base_link_name);
     transform_msg_temp.child_frame_id = std::string("manipulate_frame");
-    tf_message.transforms.push_back(transform_msg_temp);
+    set_tf_srv.request.cur_tf = transform_msg_temp;
+    if(!tf_publish_client_.call(set_tf_srv)){
+      return;
+    }
     tf::Transform tf_marker_from_base = tf_from_base*tf_marker;
     transform_msg_temp.transform.translation.x = tf_marker_from_base.getOrigin().getX();
     transform_msg_temp.transform.translation.y = tf_marker_from_base.getOrigin().getY();
@@ -438,8 +442,10 @@ public:
     transform_msg_temp.transform.rotation.w = temp_qua.getW();
     transform_msg_temp.header.frame_id = std::string(base_link_name);
     transform_msg_temp.child_frame_id = std::string("marker_frame");
-    tf_message.transforms.push_back(transform_msg_temp);
-    tf_keeper_send_.publish(tf_message);
+    set_tf_srv.request.cur_tf = transform_msg_temp;
+    if(!tf_publish_client_.call(set_tf_srv)){
+      return;
+    }
   }
   bool save_cb(std_srvs::Empty::Request& req,
 		std_srvs::Empty::Response& res)
@@ -512,14 +518,7 @@ public:
   }
   void icp_disconnection(const ros::SingleSubscriberPublisher& pub){  
   }
-  void tf_keeper_connection(const ros::SingleSubscriberPublisher& pub){
-    if(pub.getSubscriberName() == std::string("/tf_keeper")){
-      pub_tf();
-    }
-    ROS_INFO("tf_keeper_connected");
-  }
-  void tf_keeper_disconnection(const ros::SingleSubscriberPublisher& pub){
-  }
+
   ~PointsNode() {
   }
   void t_marker_move_update(const visualization_msgs::InteractiveMarkerUpdate update)
