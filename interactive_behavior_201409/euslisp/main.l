@@ -63,8 +63,8 @@
   (send *pr2* :angle-vector (send *ri* :state :potentio-vector))
   (let ((current-pitch (send *pr2* :head :neck-p :joint-angle))
         (current-yaw (send *pr2* :head :neck-y :joint-angle)))
-    (send *pr2* :head :heck-y :joint-angle 0)
-    (send *pr2* :head :heck-p :joint-angle 0)
+    (send *pr2* :head :neck-y :joint-angle 0)
+    (send *pr2* :head :neck-p :joint-angle 0)
     (send *pr2* :head :look-at world-pos) ;LOOK AT!!
     (let ((next-pitch (send *pr2* :head :neck-p :joint-angle))
           (next-yaw (send *pr2* :head :neck-y :joint-angle)))
