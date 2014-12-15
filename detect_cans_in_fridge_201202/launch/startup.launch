@@ -45,6 +45,10 @@
         output="screen" />
   </group>
   <group if="$(arg run_behavior)">
+    <node pkg="interactive_behavior_201409" type="sound-localize.l" name="sound_localization"
+          machine="c2"
+          output="screen">
+    </node>
     <node pkg="interactive_behavior_201409" type="main.l" name="interactive_behavior_server"
           machine="c2"
           output="screen">
