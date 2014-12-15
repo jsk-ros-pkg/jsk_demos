@@ -416,22 +416,19 @@
 (defun solve-ik-from-grasp-pose-command 
   (msg)
   (solve-ik-from-pose-common msg)
-  (send *target-pose-coords* :rotate (* (/ -1.0 4) pi) :z :local)
   (setq *initial-pose-coords* (send (send *target-pose-coords* :copy-worldcoords) :translate (float-vector -60 0 0) :local))
   (setq *solve-ik-from-grasp-pose-command-flag* t)
   )
 (defun solve-ik-from-move-pose-command 
   (msg)
   (solve-ik-from-pose-common msg)
-  (send *target-pose-coords* :rotate (* (/ -1.0 4) pi) :z :local)
   (setq *initial-pose-coords* (send *robot* *ik-arm* :end-coords :worldcoords))
   (setq *solve-ik-from-grasp-pose-command-flag* t)
   )
 (defun solve-ik-from-push-pose-command 
   (msg)
   (solve-ik-from-pose-common msg)
-  (send *target-pose-coords* :rotate (* (/ -1.0 4) pi) :z :local)
-  (send *target-pose-coords* :translate (float-vector -10 0 0) :local) ; length of finger
+  (send *target-pose-coords* :translate (float-vector -10 0 0) :local) ;; length of finger
   (setq *initial-pose-coords* (send (send *target-pose-coords* :copy-worldcoords) :translate (float-vector -60 0 0) :local))
   (setq *solve-ik-from-grasp-pose-command-flag* t)
   )
@@ -446,7 +443,10 @@
 	   (send (send (send *tfl* :lookup-transform *frame-id* (send msg :header :frame_id) ts) :transform (ros::tf-pose->coords(send msg :pose)))
 		 :transformation *robot-coords* :local) :transformation (make-coords) :local)
 	  )
-    )
+    (if (equal *ik-arm* :rarm)
+	(send *target-pose-coords* :rotate (* (/ -1.0 4) pi) :z :local)
+      (send *target-pose-coords* :rotate (* (/ 1.0 4) pi) :z :local)
+      ))
   )
 (defun save-obj-command
   (msg)
