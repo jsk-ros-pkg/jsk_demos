@@ -8,6 +8,17 @@
   </node>
 
   <node
+      pkg="dynamic_tf_publisher"
+      type="tf_publish.py"
+      name="manipulation_frame_publisher"
+      output="screen"
+      >
+    <remap from="/publish_tf" to="/manipulation_data_server/publish_tf" />
+    <remap from="/dissoc_tf" to="/manipulation_data_server/dissoc_tf" />
+    <remap from="/set_dynamic_tf" to="/manipulation_data_server/set_dynamic_tf" />
+    <remap from="/assoc_tf" to="/manipulation_data_server/assoc_tf" />
+  </node>
+  <node
       pkg="drc_task_common"
       type="manipulation_data_server"
       name="manipulation_data_server"

@@ -47,6 +47,7 @@
 #include <fstream>
 #include <ros/serialization.h>
 #include <pcl/io/pcd_io.h>
+#include <dynamic_tf_publisher/SetDynamicTF.h>
 
 using namespace std;
 using namespace ros;
@@ -236,6 +237,7 @@ protected:
   Publisher debug_point_pub;
   Publisher marker_set_pose_pub;
   Publisher t_marker_set_pose_pub;
+  ServiceClient tf_publish_client_;
   ServiceClient client;
   ServiceClient get_type_client;
   ServiceClient get_pose_client;
@@ -306,11 +308,14 @@ public:
   }
 
 
-  PointsNode():timer_count(100),tf_timer(_node.createTimer(ros::Duration(0.01), &PointsNode::timerCallback, this)), reference_cloud(new pcl::PointCloud<pcl::PointXYZRGB>), reference_cloud_normals(new pcl::PointCloud<pcl::Normal>), reference_kd_tree(new pcl::search::KdTree<pcl::PointXYZRGB>)
+  PointsNode():timer_count(100),tf_timer(_node.createTimer(ros::Duration(0.1), &PointsNode::timerCallback, this)), reference_cloud(new pcl::PointCloud<pcl::PointXYZRGB>), reference_cloud_normals(new pcl::PointCloud<pcl::Normal>), reference_kd_tree(new pcl::search::KdTree<pcl::PointXYZRGB>)
   {
     //init_reference_end=false;
     init_reference();
     assoc_marker_flug_=false;
+    tf_from_base.setOrigin(tf::Vector3(0, 0, 0));
+    tf_from_base.setRotation(tf::Quaternion(0, 0, 0, 1));
+    tf_marker = tf_before = tf_from_base;
     ROS_INFO("start interface");
     ros::NodeHandle local_nh("~");
     local_nh.param("BASE_FRAME_ID", base_link_name, std::string("/camera_link"));
@@ -353,7 +358,7 @@ public:
     get_type_client = _node.serviceClient<jsk_interactive_marker::GetType>("/transformable_interactive_server/get_type");
     get_pose_client = _node.serviceClient<jsk_interactive_marker::GetTransformableMarkerPose>("/transformable_interactive_server/get_pose");
     get_dim_client = _node.serviceClient<jsk_interactive_marker::GetMarkerDimensions>("/transformable_interactive_server/get_dimensions");
-
+    tf_publish_client_ = _node.serviceClient<dynamic_tf_publisher::SetDynamicTF>("/manipulation_data_server/set_dynamic_tf");
     _subSelectedPoints = _node.subscribe("/selected_points",1,&PointsNode::set_menu_cloud,this);
     _subSelectedPose = _node.subscribe("/interactive_point_cloud/left_click_point_relative", 1, &PointsNode::set_menu_point, this);
     _sub_pose_feedback = _node.subscribe("/interactive_point_cloud/feedback", 1, &PointsNode::marker_move_feedback, this);
@@ -363,9 +368,7 @@ public:
     save_server = _node.advertiseService("save_manipulation", &PointsNode::save_cb, this);
     assoc_server = _node.advertiseService("assoc_points", &PointsNode::assoc_object_to_marker_cb, this);
     disassoc_server = _node.advertiseService("disassoc_points", &PointsNode::disassoc_object_to_marker_cb, this);
-    tf_from_base.setOrigin(tf::Vector3(0, 0, 0));
-    tf_from_base.setRotation(tf::Quaternion(0, 0, 0, 1));
-    tf_marker = tf_before = tf_from_base;
+    pub_tf();
     //
     // ros::Rate poll_rate(100);
     // ROS_INFO("num sub %d", reset_pub.getNumSubscribers());
@@ -408,6 +411,41 @@ public:
     _debug_cloud_pub.publish(temp_cloud_msg_all);
     reset_pub.publish(reset_points);
     ROS_INFO("initialize done");
+  }
+  void pub_tf(){
+    dynamic_tf_publisher::SetDynamicTF set_tf_srv;
+    geometry_msgs::TransformStamped transform_msg_temp;
+    set_tf_srv.request.freq = 20.0;
+    transform_msg_temp.transform.translation.x = tf_from_base.getOrigin().getX();
+    transform_msg_temp.transform.translation.y = tf_from_base.getOrigin().getY();
+    transform_msg_temp.transform.translation.z = tf_from_base.getOrigin().getZ();
+    tf::Quaternion temp_qua;
+    tf_from_base.getBasis().getRotation(temp_qua);
+    transform_msg_temp.transform.rotation.x = temp_qua.getX();
+    transform_msg_temp.transform.rotation.y = temp_qua.getY();
+    transform_msg_temp.transform.rotation.z = temp_qua.getZ();
+    transform_msg_temp.transform.rotation.w = temp_qua.getW();
+    transform_msg_temp.header.frame_id = std::string(base_link_name);
+    transform_msg_temp.child_frame_id = std::string("manipulate_frame");
+    set_tf_srv.request.cur_tf = transform_msg_temp;
+    if(!tf_publish_client_.call(set_tf_srv)){
+      return;
+    }
+    tf::Transform tf_marker_from_base = tf_from_base*tf_marker;
+    transform_msg_temp.transform.translation.x = tf_marker_from_base.getOrigin().getX();
+    transform_msg_temp.transform.translation.y = tf_marker_from_base.getOrigin().getY();
+    transform_msg_temp.transform.translation.z = tf_marker_from_base.getOrigin().getZ();
+    tf_marker_from_base.getBasis().getRotation(temp_qua);
+    transform_msg_temp.transform.rotation.x = temp_qua.getX();
+    transform_msg_temp.transform.rotation.y = temp_qua.getY();
+    transform_msg_temp.transform.rotation.z = temp_qua.getZ();
+    transform_msg_temp.transform.rotation.w = temp_qua.getW();
+    transform_msg_temp.header.frame_id = std::string(base_link_name);
+    transform_msg_temp.child_frame_id = std::string("marker_frame");
+    set_tf_srv.request.cur_tf = transform_msg_temp;
+    if(!tf_publish_client_.call(set_tf_srv)){
+      return;
+    }
   }
   bool save_cb(std_srvs::Empty::Request& req,
 		std_srvs::Empty::Response& res)
@@ -452,7 +490,8 @@ public:
       if (get_pose_client.call(get_pose_srv)){
         ROS_INFO("pose service succeed");
 	geometry_msgs::PoseStamped temp_pose_stamped;
-	listener.transformPose("manipulate_frame",ros::Time::now()-(ros::Duration(0.2)), get_pose_srv.response.pose_stamped,get_pose_srv.response.pose_stamped.header.frame_id, temp_pose_stamped);
+	listener.transformPose("manipulate_frame", get_pose_srv.response.pose_stamped, temp_pose_stamped);
+	//listener.transformPose("manipulate_frame",ros::Time::now()-(ros::Duration(0.2)), get_pose_srv.response.pose_stamped,get_pose_srv.response.pose_stamped.header.frame_id, temp_pose_stamped);
 	markers_ptr->pose=temp_pose_stamped.pose;
 	ROS_INFO("save_marker_pose: %f %f %f" ,temp_pose_stamped.pose.position.x, temp_pose_stamped.pose.position.y, temp_pose_stamped.pose.position.z, 
                  temp_pose_stamped.pose.orientation.x, temp_pose_stamped.pose.orientation.y, temp_pose_stamped.pose.orientation.z, temp_pose_stamped.pose.orientation.w);
@@ -475,11 +514,11 @@ public:
   }
   void icp_connection(const ros::SingleSubscriberPublisher& pub){
     pub_reference();
-    ROS_INFO("connection abled");
+    ROS_INFO("icp_server_connected");
   }
   void icp_disconnection(const ros::SingleSubscriberPublisher& pub){  
-    ROS_INFO("connection disabled");
   }
+
   ~PointsNode() {
   }
   void t_marker_move_update(const visualization_msgs::InteractiveMarkerUpdate update)
@@ -493,9 +532,10 @@ public:
       marker_pose_stamped.header = update.markers[0].header;
       marker_set_pose_pub.publish(marker_pose_stamped);
       geometry_msgs::PoseStamped marker_pose_stamped_from_manip;
-      listener.transformPose("/manipulate_frame",ros::Time::now()-(ros::Duration(0.2)), marker_pose_stamped , marker_pose_stamped.header.frame_id, marker_pose_stamped_from_manip);
+      listener.transformPose("manipulate_frame", marker_pose_stamped, marker_pose_stamped_from_manip);
+      //listener.transformPose("/manipulate_frame",ros::Time::now()-(ros::Duration(0.2)), marker_pose_stamped , marker_pose_stamped.header.frame_id, marker_pose_stamped_from_manip);
       tf_marker=pose_to_tf(marker_pose_stamped_from_manip.pose);
-
+      pub_tf();
     }
   }
   void t_marker_move_feedback(const visualization_msgs::InteractiveMarkerFeedback feedback)
@@ -508,9 +548,10 @@ public:
       marker_pose_stamped.header = feedback.header;
       marker_set_pose_pub.publish(marker_pose_stamped);
       geometry_msgs::PoseStamped marker_pose_stamped_from_manip;
-      listener.transformPose("/manipulate_frame",ros::Time::now()-(ros::Duration(0.2)), marker_pose_stamped , marker_pose_stamped.header.frame_id, marker_pose_stamped_from_manip);
+      listener.transformPose("/manipulate_frame", marker_pose_stamped, marker_pose_stamped_from_manip);
+      //listener.transformPose("/manipulate_frame",ros::Time::now()-(ros::Duration(0.2)), marker_pose_stamped , marker_pose_stamped.header.frame_id, marker_pose_stamped_from_manip);
       tf_marker=pose_to_tf(marker_pose_stamped_from_manip.pose);
-
+      pub_tf();
     }
   }
   void marker_move_feedback(const visualization_msgs::InteractiveMarkerFeedback feedback)
@@ -520,7 +561,8 @@ public:
     temp_feedback_pose_stamped.pose = feedback.pose;
     temp_feedback_pose_stamped.header = feedback.header;
     try{
-      listener.transformPose("manipulate_frame",ros::Time::now()-(ros::Duration(0.2)), temp_feedback_pose_stamped , feedback.header.frame_id, temp_pose_stamped);
+      listener.transformPose("manipulate_frame", temp_feedback_pose_stamped, temp_pose_stamped);
+      //listener.transformPose("manipulate_frame",ros::Time::now()-(ros::Duration(0.2)), temp_feedback_pose_stamped , feedback.header.frame_id, temp_pose_stamped);
     }
     catch (tf::TransformException ex){
       ROS_ERROR("marker move failed %s",ex.what());
@@ -531,6 +573,7 @@ public:
     //ROS_INFO("feedback_header %s", feedback.header.frame_id.c_str());
     //listener.transformPose("manipulate_frame", feedback.pose,marker_pose);
     tf::poseMsgToTF(marker_pose, tf_marker);
+    pub_tf();
     //depends jsk_interactive_marker
     if(assoc_marker_flug_){
       geometry_msgs::PoseStamped t_pose_stamped;
@@ -560,6 +603,7 @@ public:
       tf_before = tf_from_base;
       tf_from_base = tf_before * tf_marker;
       tf::poseMsgToTF(marker_pose, tf_marker);
+      pub_tf();
       timer_count = 0;
     }
 
@@ -759,7 +803,8 @@ public:
       get_pose_srv.request.target_name="";
       if(get_pose_client.call(get_pose_srv)){
 	geometry_msgs::PoseStamped after_pose_;
-	listener.transformPose("marker_frame",ros::Time::now()-(ros::Duration(0.2)), get_pose_srv.response.pose_stamped, get_pose_srv.response.pose_stamped.header.frame_id, after_pose_);
+	listener.transformPose("marker_frame", get_pose_srv.response.pose_stamped, after_pose_);
+	//listener.transformPose("marker_frame",ros::Time::now()-(ros::Duration(0.2)), get_pose_srv.response.pose_stamped, get_pose_srv.response.pose_stamped.header.frame_id, after_pose_);
 	tf_object_constraint = pose_to_tf(after_pose_.pose);
       }
     }
@@ -850,7 +895,8 @@ public:
       reference_num = markers_array.size() - 1;
       reference_hit=false;
     }
-    listener.transformPose(base_link_name,ros::Time::now()-(ros::Duration(0.2)), before_pose_, before_pose_.header.frame_id, after_pose_);
+    listener.transformPose(base_link_name, before_pose_, after_pose_);
+    //listener.transformPose(base_link_name,ros::Time::now()-(ros::Duration(0.2)), before_pose_, before_pose_.header.frame_id, after_pose_);
     // listener.waitForTransform(base_link_name, before_pose_.header.frame_id, ros::Time(0), ros::Duration(10.0));
     // listener.transformPose(base_link_name, before_pose_,after_pose_);
     tf_before = tf_from_base;
@@ -864,6 +910,7 @@ public:
 
     tf_from_base = tf_from_base;//*transform_camera_to_optical;
     tf_marker = tf::Transform(tf::Quaternion(0, 0, 0, 1));
+    pub_tf();
     timer_count = 0; 
     //move point_cloud
     try
@@ -1176,17 +1223,16 @@ public:
 
 
   void timerCallback(const ros::TimerEvent&){
-    ros::Time a = ros::Time::now() - (ros::Duration(0.05));
-    br.sendTransform(tf::StampedTransform(tf_calc(), ros::Time::now(), base_link_name, "manipulate_frame"));
-    br.sendTransform(tf::StampedTransform(tf_calc()*tf_marker, ros::Time::now(), base_link_name, "marker_frame"));
-    if (timer_count == 30){
+    //br.sendTransform(tf::StampedTransform(tf_calc(), ros::Time::now(), base_link_name, "manipulate_frame"));
+    //br.sendTransform(tf::StampedTransform(tf_calc()*tf_marker, ros::Time::now(), base_link_name, "marker_frame"));
+    if (timer_count == 3){
       sensor_msgs::PointCloud2 manip_cloud_msg;
       pcl::toROSMsg(*reference_cloud, manip_cloud_msg);
       manip_cloud_msg.header.frame_id = "manipulate_frame";
       manip_cloud_msg.header.stamp = ros::Time::now();
       _pointsPub.publish(manip_cloud_msg);
     }
-    if (timer_count < 250){
+    if (timer_count < 25){
       timer_count++;
     }
   }
