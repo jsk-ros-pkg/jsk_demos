@@ -456,7 +456,6 @@ public:
     ros_output.header.stamp = ros::Time::now();
     ros_output.header.frame_id = "manipulate_frame";
     _debug_cloud_pub.publish(ros_output);
-    _pointsPub.publish(ros_output);
     if(!reference_hit){
       _pointsArrayPub.publish(ros_output);
       reference_hit = true;
@@ -490,11 +489,11 @@ public:
       if (get_pose_client.call(get_pose_srv)){
         ROS_INFO("pose service succeed");
 	geometry_msgs::PoseStamped temp_pose_stamped;
-	listener.transformPose("manipulate_frame", get_pose_srv.response.pose_stamped, temp_pose_stamped);
-	//listener.transformPose("manipulate_frame",ros::Time::now()-(ros::Duration(0.2)), get_pose_srv.response.pose_stamped,get_pose_srv.response.pose_stamped.header.frame_id, temp_pose_stamped);
+	//listener.transformPose("manipulate_frame", get_pose_srv.response.pose_stamped, temp_pose_stamped);
+        ros::Time now = ros::Time::now();
+        listener.waitForTransform("manipulate_frame", get_pose_srv.response.pose_stamped.header.frame_id, now, ros::Duration(2.0));
+        listener.transformPose("manipulate_frame", now, get_pose_srv.response.pose_stamped,get_pose_srv.response.pose_stamped.header.frame_id, temp_pose_stamped);
 	markers_ptr->pose=temp_pose_stamped.pose;
-	ROS_INFO("save_marker_pose: %f %f %f" ,temp_pose_stamped.pose.position.x, temp_pose_stamped.pose.position.y, temp_pose_stamped.pose.position.z, 
-                 temp_pose_stamped.pose.orientation.x, temp_pose_stamped.pose.orientation.y, temp_pose_stamped.pose.orientation.z, temp_pose_stamped.pose.orientation.w);
       }
       else{
         ROS_INFO("save failed");
@@ -532,8 +531,10 @@ public:
       marker_pose_stamped.header = update.markers[0].header;
       marker_set_pose_pub.publish(marker_pose_stamped);
       geometry_msgs::PoseStamped marker_pose_stamped_from_manip;
-      listener.transformPose("manipulate_frame", marker_pose_stamped, marker_pose_stamped_from_manip);
-      //listener.transformPose("/manipulate_frame",ros::Time::now()-(ros::Duration(0.2)), marker_pose_stamped , marker_pose_stamped.header.frame_id, marker_pose_stamped_from_manip);
+      //listener.transformPose("manipulate_frame", marker_pose_stamped, marker_pose_stamped_from_manip);
+      ros::Time now = ros::Time::now();
+      listener.waitForTransform("manipulate_frame", marker_pose_stamped.header.frame_id, now, ros::Duration(2.0));
+      listener.transformPose("/manipulate_frame",now, marker_pose_stamped , marker_pose_stamped.header.frame_id, marker_pose_stamped_from_manip);
       tf_marker=pose_to_tf(marker_pose_stamped_from_manip.pose);
       pub_tf();
     }
@@ -548,8 +549,10 @@ public:
       marker_pose_stamped.header = feedback.header;
       marker_set_pose_pub.publish(marker_pose_stamped);
       geometry_msgs::PoseStamped marker_pose_stamped_from_manip;
-      listener.transformPose("/manipulate_frame", marker_pose_stamped, marker_pose_stamped_from_manip);
-      //listener.transformPose("/manipulate_frame",ros::Time::now()-(ros::Duration(0.2)), marker_pose_stamped , marker_pose_stamped.header.frame_id, marker_pose_stamped_from_manip);
+      //listener.transformPose("/manipulate_frame", marker_pose_stamped, marker_pose_stamped_from_manip);
+      ros::Time now = ros::Time::now();
+      listener.waitForTransform("manipulate_frame", marker_pose_stamped.header.frame_id, now, ros::Duration(2.0));
+      listener.transformPose("/manipulate_frame", now, marker_pose_stamped , marker_pose_stamped.header.frame_id, marker_pose_stamped_from_manip);
       tf_marker=pose_to_tf(marker_pose_stamped_from_manip.pose);
       pub_tf();
     }
@@ -561,8 +564,10 @@ public:
     temp_feedback_pose_stamped.pose = feedback.pose;
     temp_feedback_pose_stamped.header = feedback.header;
     try{
-      listener.transformPose("manipulate_frame", temp_feedback_pose_stamped, temp_pose_stamped);
-      //listener.transformPose("manipulate_frame",ros::Time::now()-(ros::Duration(0.2)), temp_feedback_pose_stamped , feedback.header.frame_id, temp_pose_stamped);
+      //listener.transformPose("manipulate_frame", temp_feedback_pose_stamped, temp_pose_stamped);
+      ros::Time now = ros::Time::now();
+      listener.waitForTransform("manipulate_frame", feedback.header.frame_id, now, ros::Duration(2.0));
+      listener.transformPose("manipulate_frame", now, temp_feedback_pose_stamped , feedback.header.frame_id, temp_pose_stamped);
     }
     catch (tf::TransformException ex){
       ROS_ERROR("marker move failed %s",ex.what());
@@ -803,8 +808,10 @@ public:
       get_pose_srv.request.target_name="";
       if(get_pose_client.call(get_pose_srv)){
 	geometry_msgs::PoseStamped after_pose_;
-	listener.transformPose("marker_frame", get_pose_srv.response.pose_stamped, after_pose_);
-	//listener.transformPose("marker_frame",ros::Time::now()-(ros::Duration(0.2)), get_pose_srv.response.pose_stamped, get_pose_srv.response.pose_stamped.header.frame_id, after_pose_);
+	//listener.transformPose("marker_frame", get_pose_srv.response.pose_stamped, after_pose_);
+        ros::Time now = ros::Time::now();
+        listener.waitForTransform("marker_frame", get_pose_srv.response.pose_stamped.header.frame_id, now, ros::Duration(2.0));
+	listener.transformPose("marker_frame",now, get_pose_srv.response.pose_stamped, get_pose_srv.response.pose_stamped.header.frame_id, after_pose_);
 	tf_object_constraint = pose_to_tf(after_pose_.pose);
       }
     }
@@ -892,11 +899,13 @@ public:
       ROS_INFO("new pose");
       markers_ptr = boost::make_shared<IntMarkers> ();
       //markers_array.push_back(markers_ptr);
-      reference_num = markers_array.size() - 1;
+      reference_num = markers_array.size();
       reference_hit=false;
     }
-    listener.transformPose(base_link_name, before_pose_, after_pose_);
-    //listener.transformPose(base_link_name,ros::Time::now()-(ros::Duration(0.2)), before_pose_, before_pose_.header.frame_id, after_pose_);
+    //listener.transformPose(base_link_name, before_pose_, after_pose_);
+    ros::Time now = ros::Time::now();
+    listener.waitForTransform(base_link_name, before_pose_.header.frame_id, now, ros::Duration(2.0));
+    listener.transformPose(base_link_name,ros::Time::now()-(ros::Duration(0.2)), before_pose_, before_pose_.header.frame_id, after_pose_);
     // listener.waitForTransform(base_link_name, before_pose_.header.frame_id, ros::Time(0), ros::Duration(10.0));
     // listener.transformPose(base_link_name, before_pose_,after_pose_);
     tf_before = tf_from_base;
