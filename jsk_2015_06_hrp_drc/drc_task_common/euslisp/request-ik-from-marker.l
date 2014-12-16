@@ -12,6 +12,7 @@
 (ros::roseus-add-srvs "jsk_interactive_marker")
 (ros::roseus-add-msgs "drc_task_common")
 (ros::roseus-add-srvs "drc_task_common")
+(ros::roseus-add-msgs "visualization_msgs")
 
 (ros::roseus "request_ik_from_marker")
 
@@ -29,6 +30,7 @@
   (ros::advertise "urdf_control_marker/set_pose" geometry_msgs::PoseStamped 1)
   (ros::advertise "/jsk_model_marker_interface/hrp2/reset_joint_states_and_root" sensor_msgs::JointState 1)
   (ros::advertise "/midi_config_player/set_feedback" sensor_msgs::JoyFeedbackArray 1)
+  (ros::advertise "/executive_visible_map" visualization_msgs::Marker 1)
   (ros::subscribe "/solve_ik_command" std_msgs::empty #'solve-ik-command 1)
   (ros::subscribe "/save_obj_command" std_msgs::empty #'save-obj-command 1)
   (ros::subscribe "/send_angle_command" std_msgs::empty #'send-angle-command 1)
@@ -43,6 +45,7 @@
   (ros::subscribe "/object_handle_variable_rot" std_msgs::Float32 #'set-object-handle-rot-from-variable)
   (ros::subscribe "/object_approach_variable" std_msgs::Float32 #'set-object-approach-from-variable)
   (ros::advertise-service "/set_handle_reverse" std_srvs::Empty #'set-handle-reverse)
+  (ros::advertise-service "/set_exec_mode" std_srvs::Empty #'set-exec-mode-cb)
   (ros::advertise-service "/assoc_object_to_robot" std_srvs::Empty #'assoc-object-to-robot)
   (ros::advertise-service "/dissoc_object_to_robot" std_srvs::Empty #'dissoc-object-to-robot)
   (ros::advertise-service "/set_object_mode_next" std_srvs::Empty #'set-obj-mode-next)
@@ -85,13 +88,13 @@
   ;; ik
   (setq *ik-arm* :rarm)
   (setq *ik-result* nil)
-
   ;; todo
   (setq *ik-pose-list* nil)
-  
-
-
-
+  ;;executive map
+  (setq *map-step-dist* (float-vector 200 200 100))
+  (setq *map-max-point* (list 400 800 10))
+  (setq *map-min-point* (list -300 -600 0))
+  (setq *executive-map-mode* nil)
   (init-robot-model)
   (ros::wait-for-service (format nil "~a~a" *ns* "/get_pose"))
   (ros::wait-for-service (format nil "~a~a" *ns* "/get_type"))
@@ -162,18 +165,18 @@
 
 ;; get base coords for assoc obj
 (defun get-assoc-obj-coords
-  ()
+  (&key (robot-coords *robot-coords*))
   (let* ((ts (ros::time-now)))
     (unless (send *tfl* :wait-for-transform *assoc-frame-id* *frame-id* ts 1) (return-from get-assoc-obj-coords nil))
     (setq *assoc-obj-coords*
           (send (send (send *tfl* :lookup-transform *assoc-frame-id* *frame-id* ts) :inverse-transformation)
-                :transformation (get-obj-coords :relative-to-robot nil) :local))))
+                :transformation (get-obj-coords :robot-coords robot-coords :relative-to-robot nil) :local))))
 
 ;; object model ;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;; get object model pose relative to robot
 (defun get-obj-coords
-  (&key (relative-to-robot t) (saved-object nil))
+  (&key (relative-to-robot t) (saved-object nil) (robot-coords *robot-coords*))
   (let* ((get-pose-req (instance jsk_interactive_marker::GetTransformableMarkerPoseRequest :init))
          get-pose-res
          obj-coords)
@@ -181,7 +184,7 @@
       (send get-pose-req :target_name *saved-obj-name*))
     (setq get-pose-res (ros::service-call (format nil "~a~a" *ns* "/get_pose") get-pose-req))
     (setq *obj-coords* (ros::tf-pose->coords (send (send get-pose-res :pose_stamped) :pose)))
-    (setq obj-coords (send *obj-coords* :transformation *robot-coords* :local))
+    (setq obj-coords (send *obj-coords* :transformation robot-coords :local))
     (setq obj-coords (send obj-coords :transformation (make-coords) :local))
     (if relative-to-robot obj-coords *obj-coords*)
     )
@@ -189,9 +192,9 @@
 
 ;; update object pose
 (defun update-object-pose
-  ()
+  (&key (robot-coords *robot-coords*))
   (send *obj* :newcoords
-        (send (send (get-obj-coords) :copy-worldcoords) :transform (send (send (find-if #'(lambda (x) (equal (send x :name) :origin)) (send *obj* :descendants)) :copy-worldcoords) :inverse-transformation) :local))
+        (send (send (get-obj-coords :robot-coords robot-coords) :copy-worldcoords) :transform (send (send (find-if #'(lambda (x) (equal (send x :name) :origin)) (send *obj* :descendants)) :copy-worldcoords) :inverse-transformation) :local))
   )
 
 ;; generate object model
@@ -313,8 +316,30 @@
     (setq *handle-reverse-flag* (not *handle-reverse-flag*))
     (generate-object-with-new-dimensions)
     res))
+(defun set-exec-mode-cb
+  (req) 
+  (let* ((res (send req :response)))
+    (set-exec-mode)
+    res)
+  )
 
-
+(defun set-exec-mode
+  ()
+  (if *executive-map-mode*
+      (progn
+	(setq *executive-coords-list* nil)
+	(setq *executive-map-mode* nil)
+	(ros::ros-info "exec-map disable"))
+    (progn
+      (setq *executive-map-mode* t)
+      (executive-map-init)
+      (ros::ros-info "exec-map driven")
+      )
+    )
+    (show-executive-map)
+  )
+  
+  
 ;; obj mode ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun set-obj-mode-next
   (req)
@@ -395,7 +420,7 @@
 
 ;; service server callback for assoc (not used now)
 (defun assoc-object-to-robot
-  (req)
+  (req )
   (let* ((res (send req :response)))
     (get-assoc-obj-coords)
     (setq *assoc-obj-flag* t)
@@ -467,7 +492,7 @@
 ;; ik ;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; ik one
 (defun request-ik-from-marker-one
-  (&key (initial-pose :reset-manip-pose))
+  (&key (initial-pose :reset-manip-pose) (robot-coords *robot-coords*))
   (let* (original-av original-coords interpolate-mode)
     (warning-message 2 "[request-ik] send solve-ik service.~%")
     (when (equal (elt *obj-mode-list* *obj-mode-index*) :assoc)
@@ -480,7 +505,7 @@
     (when initial-pose (send *robot* initial-pose))
     (send *robot* :fix-leg-to-coords (make-coords))
     (generate-object-with-new-dimensions-from-service)
-    (update-object-pose)
+    (update-object-pose :robot-coords robot-coords)
     (when *draw-viewer-flag* (objects (list *obj* *robot*)))
     ;; check mode 
     (let* ((get-marker-existence-req (instance jsk_interactive_marker::GetTransformableMarkerExistenceRequest :init)))
@@ -498,9 +523,10 @@
            (send *robot* :newcoords original-coords)
            ))
     (setq *solve-ik-command-flag* nil)
+    *ik-result*
     ))
 (defun request-ik-from-pose-one
-  (&key (initial-pose :reset-manip-pose))
+  (&key (initial-pose :reset-manip-pose) (robot-coords *robot-coords*))
   (let* (original-av original-coords)
     (warning-message 2 "[request-ik] send solve-ik service.~%")
     (setq original-av (send *robot* :angle-vector))
@@ -523,7 +549,7 @@
 
 ;; set start pose
 (defun save-obj-model-one
-  ()
+  (&key (robot-coords *robot-coords*))
   (when *obj-type*
     (let* (original-name
            (marker-operate-req (instance jsk_rviz_plugins::RequestMarkerOperateRequest :init))
@@ -553,7 +579,7 @@
   ))
   ;; save object coords
   (generate-object-with-new-dimensions-from-service)
-  (update-object-pose)
+  (update-object-pose :robot-coords robot-coords)
   (setq *saved-obj* (make-cascoords :coords (send (send *obj* :worldcoords) :copy-worldcoords)))
   (send *saved-obj* :assoc
         (make-cascoords :coords (send (find-if #'(lambda (x) (equal (send x :name) :handle)) (send *obj* :descendants)) :copy-worldcoords) :name :handle))
@@ -710,9 +736,10 @@
   ()
   (let* ((title
           (format nil "Robot Menu~%"))
-         (menu-list (list "cancel" "switch arm" "current pos" ":reset-pose" ":reset-manip-pose" ":init-pose" ":reach-drill-walk-pose" ":reach-drill-pre-pose" ":pierce-drill-pre-pose"))
-         (switch-arm-index 1)
+         (menu-list (list "cancel" "switch arm" "current pos" "executive-map-mode" ":reset-pose" ":reset-manip-pose" ":init-pose" ":reach-drill-walk-pose" ":reach-drill-pre-pose" ":pierce-drill-pre-pose"))
+         (switch-arm-index 1) 
          (current-pos-index 2)
+	 (executive-map-mode-index 3)
          (req (instance drc_task_common::RvizMenuCallRequest :init :title title :menu_list menu-list))
          res res-index res-value)
     (setq res (ros::service-call "rviz_menu_call" req))
@@ -724,16 +751,68 @@
            (publish-obj-mode-text))
           ((equal res-index current-pos-index)
            (set-robot-current-pos))
+	  ((equal res-index executive-map-mode-index)
+	   (set-exec-mode))
           ((find-method *robot* (read-from-string res-value))
            (eval (list 'send '*robot* '(read-from-string res-value)))
            (setq *ik-result* (list (send-all (send *robot* :joint-list) :joint-angle)))
            (send-joint-states-to-marker)))
     (setq *robot-menu-command-flag* nil)
     ))
+(defun make-xy-coords (x y)
+  (send (send *robot-coords* :copy-worldcoords) :translate (float-vector x y 0) :local)
+  ;(make-coords :pos (float-vector x y 0))
+  )
+(defun executive-map-init ()
+  (let* (map-list-x map-list-y)
+      (dotimes (ix (round (/ (- (elt *map-max-point* 0) (elt *map-min-point* 0)) (elt *map-step-dist* 0))))
+	(dotimes (iy (round (/ (- (elt *map-max-point* 1) (elt *map-min-point* 1)) (elt *map-step-dist* 1))))
+	  (push (+ (* (* 1.0 ix) (elt *map-step-dist* 0)) (elt *map-min-point* 0))  map-list-x)
+	  (push (+ (* (* 1.0 iy) (elt *map-step-dist* 1)) (elt *map-min-point* 1))  map-list-y)
+	  ))
+      (setq *executive-coords-list* (mapcar #'make-xy-coords map-list-x map-list-y))
+      )
+  )
+(defun show-executive-map ()
+  (let* ((msg (instance visualization_msgs::marker :init))
+         (pose-msg (instance geometry_msgs::pose :init))
+         points-list-msg colors-list-msg
+         )
+    (send msg :header (instance std_msgs::header :init
+                                :stamp (ros::time-now) :frame_id *frame-id*))
+    (send msg :lifetime (ros::time 0.0))
+    (send msg :frame_locked t)
+    (send msg :type 6) ;; cube_list
+    (send msg :action 0)
+    (send pose-msg :orientation :w 1.0)
+    (send msg :pose pose-msg)
+    (send msg :scale (instance geometry_msgs::vector3 :init
+                               :x (* 0.5 (* 0.001 (elt *map-step-dist* 0)))
+                               :y (* 0.5 (* 0.001 (elt *map-step-dist* 1)))
+                               :z (* 0.5 (* 0.001 (elt *map-step-dist* 2)))
+))
+    (dotimes (i (length *executive-coords-list*))
+      (push (instance geometry_msgs::point :init
+                      :x (* 0.001 (elt (send (elt *executive-coords-list* i) :pos) 0))
+                      :y (* 0.001 (elt (send (elt *executive-coords-list* i) :pos) 1))
+                      :z (* 0.001 (elt (send (elt *executive-coords-list* i) :pos) 2)))
+            points-list-msg)
+      (push (vector->rgba (float-vector 1 0 1)) colors-list-msg)
+      )
+    (send msg :points points-list-msg)
+    (send msg :colors colors-list-msg)
+    (ros::publish "/executive_visible_map" msg)
+    (ros::ros-info "publush done"))
+   )
+   
+   
+   
 
+  
 
 ;; main ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (request-ik-from-marker-init)
+
 (while t
   (ros::spin-once)
   (x::window-main-one)
@@ -749,9 +828,37 @@
       (publish-object-approach :frame-id frame-id)
       ))
   (when *solve-ik-command-flag*
-    (request-ik-from-marker-one))  
+    (cond
+     (*executive-map-mode* 
+      (let* ((executive-coords-list-temp nil))
+	(dotimes (i (length *executive-coords-list*))
+	  (if (request-ik-from-marker-one :robot-coords (elt *executive-coords-list* i))
+	      (push (elt *executive-coords-list* i) executive-coords-list-temp)
+	    )
+	  )
+	(setq *executive-coords-list* executive-coords-list-temp)
+	(show-executive-map)
+	))
+     (t
+      (request-ik-from-marker-one))       
+     )
+    )
   (when *solve-ik-from-grasp-pose-command-flag*
-    (request-ik-from-pose-one))
+    (cond
+     (*executive-map-mode* 
+      (let* ((executive-coords-list-temp nil))
+	(dotimes (i (length *executive-coords-list*))
+	  (if (request-ik-from-pose-one :robot-coords (elt *executive-coords-list* i))
+	      (push (elt *executive-coords-list* i) executive-coords-list-temp)
+	    )
+	  )
+	(setq *executive-coords-list* executive-coords-list-temp)
+	(show-executive-map)
+	))
+     (t
+      (request-ik-from-pose-one))       
+     )
+    )
   (when *save-obj-command-flag*
     (save-obj-model-one))
   (when *send-angle-command-flag*
