@@ -1,0 +1,20 @@
+<launch>
+  <arg name="debug" default="false" />
+
+  <!-- launch nodes to detect cans -->
+  <include file="$(find detect_cans_in_fridge_201202)/launch/startup.launch">
+    <arg name="execute" value="false" />
+  </include>
+
+  <!-- planner -->
+  <include file="$(find task_compiler)/launch/execute-pddl.launch">
+    <arg name="action" value="$(find detect_cans_in_fridge_201202)/euslisp/pddl-action.l" />
+    <arg name="description" value="$(find pddl_planner)/demos/2013_fridge_demo/solve-bring-can.l" />
+    <arg name="planner" value="downward" />
+    <arg name="debug" value="$(arg debug)" />
+  </include>
+
+  <!-- planner viewer -->
+  <node name="$(anon pddl_planner_viewer)"
+        pkg="pddl_planner_viewer" type="pddl_planner_viewer.py" />
+</launch>
