@@ -802,10 +802,11 @@
 
 (warn ";; define grasp-can")
 (defvar *use-arm-navigation* nil)
-(defun grasp-can (&key (move t) (rotation 20) (use-arm :rarm))
+(defun grasp-can (&key (move t) (pre-move t) (post-move t) (move-only nil)
+                       (rotation 20) (use-arm :rarm))
   ;; move-to spot for grasping
   (if (eq use-arm :larm) (setq rotation (- rotation)))
-  (when move
+  (when (and move pre-move)
     (send *ri* :ros-wait 0.0 :spin-self t :spin t) ;; attention-check ...
     (ros::ros-info "GO POS UNSAFE for grasping can")
     (case use-arm
@@ -822,62 +823,64 @@
   (send *ri* :ros-wait 0.0 :spin-self t :spin t) ;; attention-check ...
   (send *pr2* :angle-vector (send *ri* :state :potentio-vector))
 
-  (let (isgrasp)
-    (dotimes (trial 10)
-      ;; detect cans which was indicated by ( type )
-      ;;(when (not (setq cds (check-detection :type *type* :single t)))
-      ;;(setq cds (check-detection :type *type* :tf-force t :timeout 30 :single t)))
-      (let (cds)
-        (unless (setq cds (check-detection :speak-name *type*
-                           :type *type* :tf-force t :timeout 35 :single t
-                           :detection-topic "/openni_c2/depth_registered/ObjectDetection"))
-          (setq cds (check-detection :speak-name *type*
-                     :type *type* :tf-force t :timeout 70 :single t
-                     :detection-topic "/openni_c2/depth_registered/ObjectDetection")))
-        (send *ri* :ros-wait 0.0 :spin-self t :spin t) ;; attention-check ...
-        (when cds
-          ;; (speak-jp (format nil "~A を とりだします" *type*))
-          (send *obj* :reset-coords)
-          (send *obj* :transform cds)
-          (warn ";; print check cans~%")
-          (dump-structure *standard-output*
-                          (list (send *pr2* :copy-worldcoords)
-                                (send cds :copy-worldcoords)))
-          (unless (boundp '*tfb*)
-            (setq *tfb* (instance ros::transform-broadcaster :init)))
-          (send *tfb* :send-transform
-                cds "/base_footprint" "/object_pose_frame")
+  (when (not move-only)
+    (let (isgrasp)
+      (dotimes (trial 10)
+        ;; detect cans which was indicated by ( type )
+        ;;(when (not (setq cds (check-detection :type *type* :single t)))
+        ;;(setq cds (check-detection :type *type* :tf-force t :timeout 30 :single t)))
+        (let (cds)
+          (unless (setq cds (check-detection :speak-name *type*
+                                             :type *type* :tf-force t :timeout 35 :single t
+                                             :detection-topic "/openni_c2/depth_registered/ObjectDetection"))
+            (setq cds (check-detection :speak-name *type*
+                                       :type *type* :tf-force t :timeout 70 :single t
+                                       :detection-topic "/openni_c2/depth_registered/ObjectDetection")))
           (send *ri* :ros-wait 0.0 :spin-self t :spin t) ;; attention-check ...
-          (send *pr2* :angle-vector (send *ri* :state :potentio-vector))
-          (send cds :transform (send *pr2* :worldcoords) :world)
-          (setq *last-can-coords* cds)
-          (grasp-can-single cds :rotation rotation :use-arm use-arm)
-          (setq isgrasp (< 10 (send *ri* :start-grasp use-arm)))
-          (when isgrasp
-            (when move
-              (case use-arm
-                (:rarm
-                 (send *ri* :go-pos-unsafe -0.3 0.05 (- rotation)))
-                (:larm
-                 (send *ri* :go-pos-unsafe -0.3 -0.2 (- rotation)))))
+          (when cds
+            ;; (speak-jp (format nil "~A を とりだします" *type*))
+            (send *obj* :reset-coords)
+            (send *obj* :transform cds)
+            (warn ";; print check cans~%")
+            (dump-structure *standard-output*
+                            (list (send *pr2* :copy-worldcoords)
+                                  (send cds :copy-worldcoords)))
+            (unless (boundp '*tfb*)
+              (setq *tfb* (instance ros::transform-broadcaster :init)))
+            (send *tfb* :send-transform
+                  cds "/base_footprint" "/object_pose_frame")
             (send *ri* :ros-wait 0.0 :spin-self t :spin t) ;; attention-check ...
-            (return-from grasp-can t))
-          ;; (unix::sleep 2)
-          (if (and (boundp '*use-voicetext*) *use-voicetext*)
-              (cond
-               ((and (boundp '*use-english*) *use-english*)
-                (speak-jp "I failed to pick up. I will retry."))
-               (t (speak-jp "失敗しましたもう一度やってみます。")))
-            (speak-jp "しっぱいしました  もういちど やって みます"));;
-          ) ;; / (when cds
-        )))
-  (if (and (boundp '*use-voicetext*) *use-voicetext*)
-      (cond
-       ((and (boundp '*use-english*) *use-english*)
-        (speak-jp (format nil "I could no pick up ~A" *type*)))
-       (t (speak-jp (format nil "~Aを取り出しませんでした。" *type*))))
-    (speak-jp (format nil "~A を とりだし ません でした" *type*)))
-  (when move
+            (send *pr2* :angle-vector (send *ri* :state :potentio-vector))
+            (send cds :transform (send *pr2* :worldcoords) :world)
+            (setq *last-can-coords* cds)
+            (grasp-can-single cds :rotation rotation :use-arm use-arm)
+            (setq isgrasp (< 10 (send *ri* :start-grasp use-arm)))
+            (when isgrasp
+              (when move
+                (case use-arm
+                      (:rarm
+                       (send *ri* :go-pos-unsafe -0.3 0.05 (- rotation)))
+                      (:larm
+                       (send *ri* :go-pos-unsafe -0.3 -0.2 (- rotation)))))
+              (send *ri* :ros-wait 0.0 :spin-self t :spin t) ;; attention-check ...
+              (return-from grasp-can t))
+            ;; (unix::sleep 2)
+            (if (and (boundp '*use-voicetext*) *use-voicetext*)
+                (cond
+                 ((and (boundp '*use-english*) *use-english*)
+                  (speak-jp "I failed to pick up. I will retry."))
+                 (t (speak-jp "失敗しましたもう一度やってみます。")))
+              (speak-jp "しっぱいしました  もういちど やって みます"));;
+            ) ;; / (when cds
+          )))
+    (if (and (boundp '*use-voicetext*) *use-voicetext*)
+        (cond
+         ((and (boundp '*use-english*) *use-english*)
+          (speak-jp (format nil "I could no pick up ~A" *type*)))
+         (t (speak-jp (format nil "~Aを取り出しませんでした。" *type*))))
+      (speak-jp (format nil "~A を とりだし ません でした" *type*)))
+    )
+  (when (and move post-move)
     (case use-arm
       (:rarm
        (send *ri* :go-pos-unsafe -0.3 0.05 (- rotation)))
