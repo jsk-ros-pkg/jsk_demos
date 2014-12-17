@@ -8,7 +8,7 @@
 (defun move-to (from to)
   (when (eql from 'start)
     (when (eql to 'frontfridge)
-      (goto-frint-of-fridge)))
+      (goto-front-of-fridge)))
   (when (eql from 'frontfridge)
     (when (eql to 'pregrasp)
       (grasp-can :move-only t :pre-move t)))
