@@ -10,6 +10,8 @@
   <include file="$(find task_compiler)/launch/execute-pddl.launch">
     <arg name="action" value="$(find detect_cans_in_fridge_201202)/euslisp/pddl-action.l" />
     <arg name="description" value="$(find pddl_planner)/demos/2013_fridge_demo/solve-bring-can.l" />
+    <arg name="return_success" value="t" />
+    <arg name="return_fail" value="nil" />
     <arg name="planner" value="downward" />
     <arg name="debug" value="$(arg debug)" />
   </include>
