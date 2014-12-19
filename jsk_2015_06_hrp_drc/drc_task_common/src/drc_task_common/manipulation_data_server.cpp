@@ -15,6 +15,7 @@
 #include <jsk_interactive_marker/GetTransformableMarkerPose.h>
 #include <jsk_interactive_marker/GetMarkerDimensions.h>
 #include <jsk_interactive_marker/GetType.h>
+#include <std_msgs/Empty.h>
 #include <message_filters/subscriber.h>
 #include <message_filters/time_synchronizer.h>
 #include <message_filters/synchronizer.h>
@@ -78,6 +79,7 @@ protected:
   Subscriber _sub_pose_feedback;
   Subscriber _sub_object_pose_update;
   Subscriber _sub_object_pose_feedback;
+  Subscriber _sub_reverse_hand_command;
   Publisher _pointsPub;
   Publisher _pointsArrayPub;
   Publisher _debug_cloud_pub;
@@ -183,6 +185,7 @@ public:
     _menu_handler_grasp.insert("do_grasp", boost::bind(&ManipulationDataServer::do_grasp_cb, this, _1));   
     _menu_handler_grasp.insert("Remove", boost::bind(&ManipulationDataServer::remove_cb, this, _1));
     _menu_handler_grasp.insert("Reset Pose", boost::bind(&ManipulationDataServer::reset_pose_cb, this, _1));
+    _menu_handler_grasp.insert("Reverse Hand", boost::bind(&ManipulationDataServer::reverse_hand_menu_cb, this, _1));
     _menu_handler_push.insert("do_push", boost::bind(&ManipulationDataServer::do_push_cb, this, _1));
     _menu_handler_push.insert("Remove", boost::bind(&ManipulationDataServer::remove_cb, this, _1));
     _menu_handler_push.insert("Reset Pose", boost::bind(&ManipulationDataServer::reset_pose_cb, this, _1));
@@ -219,6 +222,7 @@ public:
     _sub_pose_feedback = _node.subscribe("/interactive_point_cloud/feedback", 1, &ManipulationDataServer::marker_move_feedback, this);
     _sub_object_pose_update = _node.subscribe("/simple_marker/update", 1, &ManipulationDataServer::t_marker_move_update, this);
     _sub_object_pose_feedback = _node.subscribe("/simple_marker/feedback", 1, &ManipulationDataServer::t_marker_move_feedback, this);
+    _sub_reverse_hand_command = _node.subscribe("/reverse_hand_command", 1, &ManipulationDataServer::reverse_hand_cb, this);
     _align_icp_server = _node.advertiseService("icp_apply", &ManipulationDataServer::align_cb, this);
     _save_server = _node.advertiseService("save_manipulation", &ManipulationDataServer::save_cb, this);
     _assoc_server = _node.advertiseService("assoc_points", &ManipulationDataServer::assoc_object_to_marker_cb, this);
@@ -365,6 +369,20 @@ public:
     }else{
       return false;
     }
+  }
+  void reverse_hand_menu_cb(const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback){
+    reverse_hand();
+  }
+  void reverse_hand_cb(const std_msgs::EmptyConstPtr empty_msg_ptr){
+    reverse_hand();
+  }
+  void reverse_hand(){
+    //get grab marker
+    InteractiveMarker int_marker_tmp;
+    _server->get("grasp_pose", int_marker_tmp);
+    int_marker_tmp.pose = tf_to_pose(pose_to_tf(int_marker_tmp.pose)*tf::Transform(tf::Quaternion(1, 0, 0, 0)));
+    _server->insert(int_marker_tmp);
+    _server->applyChanges();
   }
   void icp_connection(const ros::SingleSubscriberPublisher& pub){
     pub_reference();
