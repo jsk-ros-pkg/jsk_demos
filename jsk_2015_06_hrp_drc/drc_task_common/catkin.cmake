@@ -11,13 +11,13 @@ add_service_files(DIRECTORY srv FILES RvizMenuCall.srv RvizMenuSelect.srv EusCom
 generate_messages(DEPENDENCIES ${PCL_MSGS} std_msgs std_srvs visualization_msgs sensor_msgs geometry_msgs jsk_pcl_ros jsk_interactive_marker)
 
 
+catkin_package(
+  CATKIN_DEPENDS message_runtime INCLUDE_DIRS
+)
+
 include_directories(
   include
   ${catkin_INCLUDE_DIRS}
-)
-
-catkin_package(
-  CATKIN_DEPENDS message_runtime INCLUDE_DIRS
 )
 
 link_directories(${catkin_LIBRARY_DIRS})
