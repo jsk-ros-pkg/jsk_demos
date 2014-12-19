@@ -48,163 +48,20 @@
 #include <ros/serialization.h>
 #include <pcl/io/pcd_io.h>
 #include <dynamic_tf_publisher/SetDynamicTF.h>
+#include <drc_task_common/manipulation_data_helpers.h>
 
 using namespace std;
 using namespace ros;
 using namespace visualization_msgs;
+using namespace manip_helpers;
 
-//int marker array and objects struct
-typedef struct Imarkers{
-  //marker (maybe bynaly because the date is too big) 
-  drc_task_common::InteractiveMarkerArray int_marker_array;
-  //point_cloud
-  pcl::PointCloud<pcl::PointXYZRGB> cloud;
-  //box for model
-  jsk_interactive_marker::MarkerDimensions dim;
-  //pose for model
-  geometry_msgs::Pose pose;
-}IntMarkers;
-
-YAML::Emitter& operator << (YAML::Emitter& out, const geometry_msgs::Pose pose){
-  out << YAML::BeginMap;
-  out << YAML::Key << "position" << YAML::Value;
-  out << YAML::Flow << YAML::BeginSeq << pose.position.x << pose.position.y << pose.position.z << YAML::EndSeq;
-  out << YAML::Key << "orientation" << YAML::Value;
-  out << YAML::Flow << YAML::BeginSeq << pose.orientation.x << pose.orientation.y << pose.orientation.z << pose.orientation.w << YAML::EndSeq;
-  out << YAML::EndMap;
-  return out;
-}
-
-void operator >> (const YAML::Node& node, geometry_msgs::Pose& pose)
-{
-  const YAML::Node& position = node["position"];
-  position[0] >> pose.position.x;
-  position[1] >> pose.position.y;
-  position[2] >> pose.position.z;
-  const YAML::Node& orientation = node["orientation"];
-  orientation[0] >> pose.orientation.x;
-  orientation[1] >> pose.orientation.y;
-  orientation[2] >> pose.orientation.z;
-  orientation[3] >> pose.orientation.w;
-}
-
-YAML::Emitter& operator << (YAML::Emitter& out, const jsk_interactive_marker::MarkerDimensions dim){
-  out << YAML::BeginMap;
-  out << YAML::Key << "dimensions" << YAML::Value;
-  out << YAML::Flow << YAML::BeginSeq << dim.x << dim.y << dim.z << dim.radius << dim.small_radius << dim.type << YAML::EndSeq;
-  out << YAML::EndMap;
-  return out;
-}
-
-void operator >> (const YAML::Node& node, jsk_interactive_marker::MarkerDimensions& dim)
-{
-  const YAML::Node& dimensions = node["dimensions"];
-  dimensions[0] >> dim.x;
-  dimensions[1] >> dim.y;
-  dimensions[2] >> dim.z;
-  dimensions[3] >> dim.radius;
-  dimensions[4] >> dim.small_radius;
-  dimensions[5] >> dim.type;
-}
-
-
-bool read_marker(const std::string& file_name, IntMarkers& int_markers){
-  std::ifstream fin((file_name + string(".yaml")).c_str());
-  if (!fin.good()){
-    ROS_INFO("Unable to open yaml file", file_name.c_str());
-    return false;
-  }
-  YAML::Parser parser(fin);
-  if (!parser) {
-    ROS_INFO("Unable to create YAML parser for marker_set");
-    return false;
-  }
-  YAML::Node doc;
-  parser.GetNextDocument(doc);
-  doc["pose"] >> int_markers.pose;
-  doc["dim"] >> int_markers.dim;
-  if( pcl::io::loadPCDFile<pcl::PointXYZRGB> (
-					      (file_name+string(".pcd")).c_str(), int_markers.cloud) == -1){
-    ROS_INFO("couldn't load pcd: %s", file_name.c_str());
-    return false;
-  }
-  std::ifstream ifs((file_name+string(".mkr")).c_str(), std::ios::in|std::ios::binary);
-  if(!ifs){
-    ROS_INFO("couldn't read marker");
-    ifs.close();
-  }
-  else{
-   ifs.seekg (0, std::ios::end);
-    std::streampos end = ifs.tellg();
-    ifs.seekg (0, std::ios::beg);
-    std::streampos begin = ifs.tellg();
-    uint32_t file_size = end-begin;
-    boost::shared_array<uint8_t> ibuffer(new uint8_t[file_size]);
-    ifs.read((char*) ibuffer.get(), file_size);
-    ros::serialization::IStream istream(ibuffer.get(), file_size);
-    ros::serialization::deserialize(istream, int_markers.int_marker_array);
-    ifs.close();
-  }
-  return true;
-}
-
-
-
-bool read_marker(int file_index, IntMarkers &imk){
-  char file_name[32];
-  sprintf(file_name, "sample%02d", file_index);
-  return read_marker(std::string(file_name), imk);
-}
-
-
-bool write_marker(const std::string& file_name, IntMarkers &imk){
-  std::ofstream out((file_name+std::string(".yaml")).c_str());
-  if (!out.is_open())
-    {
-      ROS_ERROR("Unable to open file [%s] for writing", file_name.c_str());
-      return false;
-    }
-  YAML::Emitter emitter;
-  emitter << YAML::BeginMap;
-  emitter << YAML::Key << "pose" << YAML::Value << imk.pose;
-  emitter << YAML::Key << "dim" << YAML::Value << imk.dim;
-  emitter << YAML::EndMap;
-  out << emitter.c_str();
-  pcl::io::savePCDFileASCII((file_name+string(".pcd")).c_str(), imk.cloud);
-  // Write to File
-  std::ofstream ofs((file_name+string(".mkr")).c_str(),  std::ios::out|std::ios::binary);
-  uint32_t serial_size = ros::serialization::serializationLength(imk.int_marker_array);
-  boost::shared_array<uint8_t> obuffer(new uint8_t[serial_size]);
-  ros::serialization::OStream ostream(obuffer.get(), serial_size);
-  ros::serialization::serialize(ostream, imk.int_marker_array);
-  ofs.write((char*) obuffer.get(), serial_size);
-  ofs.close();
-  out.close();
-  return true;
-}
-
-bool write_marker(int file_index, IntMarkers &imk){
-  char file_name[32];
-  sprintf(file_name, "sample%02d", file_index);
-  return write_marker(std::string(file_name), imk);
-}
 
 inline float SIGN(float x) {return (x >= 0.0f) ? +1.0f : -1.0f;}
 inline float NORM(float a, float b, float c) {return sqrt(a * a + b * b + c * c);}
 inline float NORM(float a, float b, float c, float d) {return sqrt(a * a + b * b + c * c + d * d);}
-inline tf::Transform pose_to_tf(geometry_msgs::Pose pose){
-  return tf::Transform(tf::Quaternion(pose.orientation.x, pose.orientation.y, pose.orientation.z, pose.orientation.w), tf::Vector3(pose.position.x, pose.position.y, pose.position.z));
-}
-inline geometry_msgs::Pose tf_to_pose(tf::Transform transform){
-  geometry_msgs::Pose pose;
-  tf::Quaternion q;
-  transform.getBasis().getRotation(q);
-  pose.orientation.x = q.getX(); pose.orientation.y=q.getY(); pose.orientation.z=q.getZ(), pose.orientation.w=q.getW();
-  pose.position.x=transform.getOrigin().getX(), pose.position.y=transform.getOrigin().getY(), pose.position.z=transform.getOrigin().getZ();
-  return pose;
-}
 
-class PointsNode
+
+class ManipulationDataServer
 {
 public:
   tf::TransformBroadcaster br;
@@ -266,8 +123,8 @@ protected:
   geometry_msgs::Pose grasp_pose;
   std::string base_link_name;
   // marker 
-  std::vector<boost::shared_ptr<IntMarkers> > markers_array;
-  boost::shared_ptr<IntMarkers> markers_ptr;
+  std::vector<boost::shared_ptr<ManipulationData> > markers_array;
+  boost::shared_ptr<ManipulationData> markers_ptr;
   // now reference marker's ptr ;
   int timer_count;
   bool reference_hit;
@@ -308,7 +165,7 @@ public:
   }
 
 
-  PointsNode():timer_count(100),tf_timer(_node.createTimer(ros::Duration(0.1), &PointsNode::timerCallback, this)), reference_cloud(new pcl::PointCloud<pcl::PointXYZRGB>), reference_cloud_normals(new pcl::PointCloud<pcl::Normal>), reference_kd_tree(new pcl::search::KdTree<pcl::PointXYZRGB>)
+  ManipulationDataServer():timer_count(100),tf_timer(_node.createTimer(ros::Duration(0.1), &ManipulationDataServer::timerCallback, this)), reference_cloud(new pcl::PointCloud<pcl::PointXYZRGB>), reference_cloud_normals(new pcl::PointCloud<pcl::Normal>), reference_kd_tree(new pcl::search::KdTree<pcl::PointXYZRGB>)
   {
     //init_reference_end=false;
     init_reference();
@@ -321,16 +178,16 @@ public:
     local_nh.param("BASE_FRAME_ID", base_link_name, std::string("/camera_link"));
     ROS_INFO("base_link_name: %s", base_link_name.c_str());
     server.reset(new interactive_markers::InteractiveMarkerServer("manip","",false) );
-    menu_handler_first.insert("Grasp", boost::bind(&PointsNode::grasp_cb, this, _1));
-    menu_handler_first.insert("Push", boost::bind(&PointsNode::push_cb, this, _1));
-    menu_handler_first.insert("Remove", boost::bind(&PointsNode::remove_cb, this, _1));
-    menu_handler_first.insert("Reset Pose", boost::bind(&PointsNode::reset_pose_cb, this, _1));
-    menu_handler_grasp.insert("do_grasp", boost::bind(&PointsNode::do_grasp_cb, this, _1));   
-    menu_handler_grasp.insert("Remove", boost::bind(&PointsNode::remove_cb, this, _1));
-    menu_handler_grasp.insert("Reset Pose", boost::bind(&PointsNode::reset_pose_cb, this, _1));
-    menu_handler_push.insert("do_push", boost::bind(&PointsNode::do_push_cb, this, _1));
-    menu_handler_push.insert("Remove", boost::bind(&PointsNode::remove_cb, this, _1));
-    menu_handler_push.insert("Reset Pose", boost::bind(&PointsNode::reset_pose_cb, this, _1));
+    menu_handler_first.insert("Grasp", boost::bind(&ManipulationDataServer::grasp_cb, this, _1));
+    menu_handler_first.insert("Push", boost::bind(&ManipulationDataServer::push_cb, this, _1));
+    menu_handler_first.insert("Remove", boost::bind(&ManipulationDataServer::remove_cb, this, _1));
+    menu_handler_first.insert("Reset Pose", boost::bind(&ManipulationDataServer::reset_pose_cb, this, _1));
+    menu_handler_grasp.insert("do_grasp", boost::bind(&ManipulationDataServer::do_grasp_cb, this, _1));   
+    menu_handler_grasp.insert("Remove", boost::bind(&ManipulationDataServer::remove_cb, this, _1));
+    menu_handler_grasp.insert("Reset Pose", boost::bind(&ManipulationDataServer::reset_pose_cb, this, _1));
+    menu_handler_push.insert("do_push", boost::bind(&ManipulationDataServer::do_push_cb, this, _1));
+    menu_handler_push.insert("Remove", boost::bind(&ManipulationDataServer::remove_cb, this, _1));
+    menu_handler_push.insert("Reset Pose", boost::bind(&ManipulationDataServer::reset_pose_cb, this, _1));
     _subPoints.subscribe(_node , "/selected_pointcloud", 1);
     _pointsPub = _node.advertise<sensor_msgs::PointCloud2>("/manip_points", 10);
     _pointsArrayPub = _node.advertise<sensor_msgs::PointCloud2>("/icp_registration/input_reference_add", 10);
@@ -340,7 +197,7 @@ public:
     debug_pose_pub = _node.advertise<geometry_msgs::PoseStamped>("/debug_pose", 10);
     debug_point_pub = _node.advertise<geometry_msgs::PointStamped>("/debug_point", 10);
     reset_pose_pub = _node.advertise<std_msgs::String>("/reset_pose_command", 1);
-    reset_pub = _node.advertise<jsk_pcl_ros::PointsArray>("/icp_registration/input_reference_array", 1, boost::bind( &PointsNode::icp_connection, this, _1), boost::bind( &PointsNode::icp_disconnection, this, _1));
+    reset_pub = _node.advertise<jsk_pcl_ros::PointsArray>("/icp_registration/input_reference_array", 1, boost::bind( &ManipulationDataServer::icp_connection, this, _1), boost::bind( &ManipulationDataServer::icp_disconnection, this, _1));
     move_pose_pub = _node.advertise<geometry_msgs::PoseStamped>("/move_pose", 1);
     feedback_pub = _node.advertise<visualization_msgs::InteractiveMarkerFeedback>("/interactive_point_cloud/feedback", 1);
     usleep(100000);
@@ -352,22 +209,22 @@ public:
    
     sync_->connectInput(_subPoints, _subBox);
     sync_->registerCallback(boost::bind(
-					&PointsNode::set_reference,
+					&ManipulationDataServer::set_reference,
 					this, _1, _2));
     client = _node.serviceClient<jsk_pcl_ros::ICPAlignWithBox>("/icp_registration/icp_service");
     get_type_client = _node.serviceClient<jsk_interactive_marker::GetType>("/transformable_interactive_server/get_type");
     get_pose_client = _node.serviceClient<jsk_interactive_marker::GetTransformableMarkerPose>("/transformable_interactive_server/get_pose");
     get_dim_client = _node.serviceClient<jsk_interactive_marker::GetMarkerDimensions>("/transformable_interactive_server/get_dimensions");
     tf_publish_client_ = _node.serviceClient<dynamic_tf_publisher::SetDynamicTF>("/manipulation_data_server/set_dynamic_tf");
-    _subSelectedPoints = _node.subscribe("/selected_points",1,&PointsNode::set_menu_cloud,this);
-    _subSelectedPose = _node.subscribe("/interactive_point_cloud/left_click_point_relative", 1, &PointsNode::set_menu_point, this);
-    _sub_pose_feedback = _node.subscribe("/interactive_point_cloud/feedback", 1, &PointsNode::marker_move_feedback, this);
-    _sub_object_pose_update = _node.subscribe("/simple_marker/update", 1, &PointsNode::t_marker_move_update, this);
-    _sub_object_pose_feedback = _node.subscribe("/simple_marker/feedback", 1, &PointsNode::t_marker_move_feedback, this);
-    align_icp_server = _node.advertiseService("icp_apply", &PointsNode::align_cb, this);
-    save_server = _node.advertiseService("save_manipulation", &PointsNode::save_cb, this);
-    assoc_server = _node.advertiseService("assoc_points", &PointsNode::assoc_object_to_marker_cb, this);
-    disassoc_server = _node.advertiseService("disassoc_points", &PointsNode::disassoc_object_to_marker_cb, this);
+    _subSelectedPoints = _node.subscribe("/selected_points",1,&ManipulationDataServer::set_menu_cloud,this);
+    _subSelectedPose = _node.subscribe("/interactive_point_cloud/left_click_point_relative", 1, &ManipulationDataServer::set_menu_point, this);
+    _sub_pose_feedback = _node.subscribe("/interactive_point_cloud/feedback", 1, &ManipulationDataServer::marker_move_feedback, this);
+    _sub_object_pose_update = _node.subscribe("/simple_marker/update", 1, &ManipulationDataServer::t_marker_move_update, this);
+    _sub_object_pose_feedback = _node.subscribe("/simple_marker/feedback", 1, &ManipulationDataServer::t_marker_move_feedback, this);
+    align_icp_server = _node.advertiseService("icp_apply", &ManipulationDataServer::align_cb, this);
+    save_server = _node.advertiseService("save_manipulation", &ManipulationDataServer::save_cb, this);
+    assoc_server = _node.advertiseService("assoc_points", &ManipulationDataServer::assoc_object_to_marker_cb, this);
+    disassoc_server = _node.advertiseService("disassoc_points", &ManipulationDataServer::disassoc_object_to_marker_cb, this);
     pub_tf();
     //
     // ros::Rate poll_rate(100);
@@ -387,7 +244,7 @@ public:
       }
     }
     for(size_t i=0; i<pcd_files.size(); i++){
-      boost::shared_ptr<Imarkers> temp_marker(new Imarkers);
+      boost::shared_ptr<ManipulationData> temp_marker(new ManipulationData);
       if(read_marker(pcd_files[i].c_str(), *temp_marker)){
 	markers_array.push_back(temp_marker);
       }
@@ -397,7 +254,7 @@ public:
     jsk_pcl_ros::PointsArray reset_points;
     pcl::PointCloud <pcl::PointXYZRGB> all_points;
     for(size_t i=0; i<markers_array.size(); i++){
-      boost::shared_ptr<Imarkers> temp_marker = markers_array[i];
+      boost::shared_ptr<ManipulationData> temp_marker = markers_array[i];
       sensor_msgs::PointCloud2 temp_cloud_msg;
       all_points += temp_marker->cloud;
       pcl::toROSMsg(temp_marker->cloud, temp_cloud_msg);
@@ -518,7 +375,7 @@ public:
   void icp_disconnection(const ros::SingleSubscriberPublisher& pub){  
   }
 
-  ~PointsNode() {
+  ~ManipulationDataServer() {
   }
   void t_marker_move_update(const visualization_msgs::InteractiveMarkerUpdate update)
   {
@@ -629,16 +486,7 @@ public:
     int_marker.pose = menu_pose;
     visualization_msgs::InteractiveMarkerControl push_control;
     push_control.always_visible = true;
-    visualization_msgs::Marker arrow_marker;
-    arrow_marker.type = Marker::ARROW;
-    arrow_marker.scale.x = 0.11;
-    arrow_marker.scale.y = 0.04;
-    arrow_marker.scale.z = 0.04;
-    arrow_marker.color.r = .8; arrow_marker.color.g = .8; arrow_marker.color.b = .8; arrow_marker.color.a = 1.0;
-    arrow_marker.pose.position.x = -.11;
-    arrow_marker.pose.position.y = 0.0;
-    arrow_marker.pose.position.z = 0.0;
-    push_control.markers.push_back(arrow_marker);
+    push_control.markers.push_back(makeArrow(int_marker));
     
     push_control.interaction_mode = visualization_msgs::InteractiveMarkerControl::MOVE_ROTATE_3D;
     int_marker.controls.push_back(push_control);
@@ -716,18 +564,8 @@ public:
     int_marker.pose = menu_pose;
     visualization_msgs::InteractiveMarkerControl grab_control;
     grab_control.always_visible = true;
-    grab_control.markers.push_back(makegrab(int_marker.scale*.6, int_marker.scale*.3, int_marker.scale*.3,
-				       0, 0, 1,
-				       int_marker.scale*.3, int_marker.scale*.3, 0
-				      ));
-    grab_control.markers.push_back(makegrab(int_marker.scale*.6, int_marker.scale*.3, int_marker.scale*.3,
-				      1, 0, 0,
-				       int_marker.scale*.3, -int_marker.scale*.3, 0
-				      ));
-    grab_control.markers.push_back(makegrab(int_marker.scale*.3, int_marker.scale*.9, int_marker.scale*.3,
-				       0, 1, 0,
-				      int_marker.scale*-.15, 0, 0
-				       ));
+    std::vector <visualization_msgs::Marker> grab_marker = make_grab(int_marker); 
+    grab_control.markers.insert(grab_control.markers.end(), grab_marker.begin(), grab_marker.end());
     grab_control.interaction_mode = visualization_msgs::InteractiveMarkerControl::MOVE_ROTATE_3D;
     int_marker.controls.push_back(grab_control);
     
@@ -882,7 +720,7 @@ public:
       int num  = atoi(srv.response.result.name.c_str());
       ROS_INFO("reference_num was %d", num);
       reference_num = num;
-      boost::shared_ptr<IntMarkers> markers = markers_array[num];
+      boost::shared_ptr<ManipulationData> markers = markers_array[num];
       markers_ptr = markers_array[num];
       for(std::vector<InteractiveMarker>::iterator marker_one_ptr = markers->int_marker_array.int_markers.begin() ; marker_one_ptr!= markers->int_marker_array.int_markers.end() ;marker_one_ptr++){
 	server->insert(*marker_one_ptr);
@@ -897,7 +735,7 @@ public:
       before_pose_.pose = box_ptr->pose;
       before_pose_.header = box_ptr->header;
       ROS_INFO("new pose");
-      markers_ptr = boost::make_shared<IntMarkers> ();
+      markers_ptr = boost::make_shared<ManipulationData> ();
       //markers_array.push_back(markers_ptr);
       reference_num = markers_array.size();
       reference_hit=false;
@@ -1213,7 +1051,24 @@ public:
     marker.color.a = 1.0;
     return marker;
   }
-  visualization_msgs::Marker makegrab(float s_x, float s_y, float s_z, float r, float g, float b, float x, float y, float z)
+  std::vector<visualization_msgs::Marker> make_grab(visualization_msgs::InteractiveMarker &int_marker)
+  {
+    std::vector<visualization_msgs::Marker> markers;
+    markers.push_back(make_box(int_marker.scale*.6, int_marker.scale*.3, int_marker.scale*.3,
+				       0, 0, 1,
+				       int_marker.scale*.3, int_marker.scale*.3, 0
+				      ));
+    markers.push_back(make_box(int_marker.scale*.6, int_marker.scale*.3, int_marker.scale*.3,
+				      1, 0, 0,
+				       int_marker.scale*.3, -int_marker.scale*.3, 0
+				      ));
+    markers.push_back(make_box(int_marker.scale*.3, int_marker.scale*.9, int_marker.scale*.3,
+				       0, 1, 0,
+				      int_marker.scale*-.15, 0, 0
+				       ));
+    return markers;
+  }
+  visualization_msgs::Marker make_box(float s_x, float s_y, float s_z, float r, float g, float b, float x, float y, float z)
   {
     visualization_msgs::Marker marker;
     marker.type = visualization_msgs::Marker::CUBE;
@@ -1261,11 +1116,10 @@ public:
 
 int main(int argc, char **argv)
 {
-  ros::init(argc,argv,"points_and_menu");    
-  boost::shared_ptr<PointsNode> pointsnode(new PointsNode());
-  Imarkers imk;
+  ros::init(argc,argv,"manipulation_data_server");    
+  boost::shared_ptr<ManipulationDataServer> server_node(new ManipulationDataServer());
+  ManipulationData imk;
   ros::spin();
-  // tf_change()
-  pointsnode.reset();
+  server_node.reset();
   return 0;
 }
