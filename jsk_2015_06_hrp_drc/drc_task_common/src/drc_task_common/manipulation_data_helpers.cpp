@@ -165,7 +165,7 @@ visualization_msgs::Marker make_box(float s_x, float s_y, float s_z, float r, fl
   return marker;
 }
   
-visualization_msgs::Marker makeCircle(visualization_msgs::InteractiveMarker &msg ){
+visualization_msgs::Marker make_circle(visualization_msgs::InteractiveMarker &msg ){
   visualization_msgs::Marker marker;
   marker.type = visualization_msgs::Marker::SPHERE;
   marker.scale.x = msg.scale * 0.45;
@@ -178,7 +178,7 @@ visualization_msgs::Marker makeCircle(visualization_msgs::InteractiveMarker &msg
   marker.pose.orientation.w = 1.0;
   return marker;
 }
-visualization_msgs::Marker makeArrow(visualization_msgs::InteractiveMarker &msg ){
+visualization_msgs::Marker make_arrow(visualization_msgs::InteractiveMarker &msg ){
   visualization_msgs::Marker marker;
   marker.type = Marker::ARROW;
   marker.scale.x = 0.11;
