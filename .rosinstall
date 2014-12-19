@@ -16,7 +16,7 @@
 - git:
     uri: https://github.com/knowrob/knowrob.git
     local-name: knowrob
-- git:
-    uri: https://github.com/SharedAutonomyToolkit/shared_autonomy_manipulation.git
-    local-name: SharedAutonomyToolkit/shared_autonomy_manipulation
-    version: hydro-devel
+# - git:
+#     uri: https://github.com/SharedAutonomyToolkit/shared_autonomy_manipulation.git
+#     local-name: SharedAutonomyToolkit/shared_autonomy_manipulation
+#     version: hydro-devel
