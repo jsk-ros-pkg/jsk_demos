@@ -1,0 +1,8 @@
+<launch>
+   <node pkg="interactive_behavior_201409"
+         type="main.l"
+         name="interactive_behavior_main" />
+   <node pkg="interactive_behavior_201409"
+         type="sound-localize.l"
+         name="sound_localizer" />
+</launch>
