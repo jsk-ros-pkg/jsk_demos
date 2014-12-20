@@ -16,6 +16,7 @@
 - git:
     uri: https://github.com/knowrob/knowrob.git
     local-name: knowrob
-- svn:
-    uri: http://svn.code.sf.net/p/bosch-ros-pkg/code/trunk/stacks/bosch_shared_autonomy
-    local-name: bosch-ros-pkg/stacks/bosch_shared_autonomy
+# - git:
+#     uri: https://github.com/SharedAutonomyToolkit/shared_autonomy_manipulation.git
+#     local-name: SharedAutonomyToolkit/shared_autonomy_manipulation
+#     version: hydro-devel
