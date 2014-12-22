@@ -31,6 +31,7 @@
   <build_depend>rviz</build_depend>
   <build_depend>eigen_conversions</build_depend>
   <build_depend>dynamic_tf_publisher</build_depend>
+  <build_depend>jsk_teleop_joy</build_depend>
   <run_depend>rosbuild</run_depend>
   <run_depend>mk</run_depend>
   <run_depend>roseus</run_depend>
@@ -55,6 +56,7 @@
   <run_depend>rviz</run_depend>
   <run_depend>eigen_conversions</run_depend>
   <run_depend>dynamic_tf_publisher</run_depend>
+  <run_depend>jsk_teleop_joy</run_depend>
   <export>
     <rqt_gui plugin="${prefix}/plugin.xml"/>
     <rviz plugin="${prefix}/plugin_description.xml"/>  
