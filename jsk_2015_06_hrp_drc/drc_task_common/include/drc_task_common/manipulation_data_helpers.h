@@ -47,7 +47,7 @@ bool write_marker(int file_index, ManipulationData &imk);
 std::vector<visualization_msgs::Marker> make_grab(visualization_msgs::InteractiveMarker &int_marker);
 visualization_msgs::Marker make_box(float s_x, float s_y, float s_z, float r, float g, float b, float x, float y, float z);
 visualization_msgs::Marker make_circle(visualization_msgs::InteractiveMarker &msg );
-visualization_msgs::Marker make_arrow(visualization_msgs::InteractiveMarker &msg );
+ visualization_msgs::Marker make_arrow(visualization_msgs::InteractiveMarker &msg, float arrow_offset_x_pos=-0.11, float r=0.8, float g=0.8, float b=0.8);
 
 
 tf::Transform pose_to_tf(geometry_msgs::Pose pose);
