@@ -7,6 +7,7 @@
 #include <tf/transform_listener.h>
 #include <std_msgs/String.h>
 #include <geometry_msgs/PointStamped.h>
+#include <geometry_msgs/PoseArray.h>
 #include <visualization_msgs/MarkerArray.h>
 #include <drc_task_common/InteractiveMarkerArray.h>
 #include <drc_task_common/ICPService.h>
@@ -85,6 +86,7 @@ protected:
   Publisher _debug_cloud_pub;
   Publisher _grasp_pose_pub;
   Publisher _push_pose_pub;
+  Publisher _move_by_axial_restraint_pose_pub;
   Publisher _reset_pose_pub;
   Publisher _debug_pose_pub;
   Publisher _debug_grasp_pub;
@@ -114,9 +116,11 @@ protected:
   interactive_markers::MenuHandler _menu_handler_first;
   interactive_markers::MenuHandler _menu_handler_grasp;
   interactive_markers::MenuHandler _menu_handler_push;
+  interactive_markers::MenuHandler _menu_handler_axial_restraint;
   pcl::PointCloud<pcl::PointXYZRGB>::Ptr _reference_cloud;
   pcl::PointCloud<pcl::Normal>::Ptr _reference_cloud_normals;
   pcl::search::KdTree<pcl::PointXYZRGB>::Ptr _reference_kd_tree;
+  geometry_msgs::Vector3 _reference_box_size;
   int _reference_num;
   geometry_msgs::Pose _menu_pose;
   geometry_msgs::Pose _marker_pose;
@@ -180,21 +184,27 @@ public:
     _server.reset(new interactive_markers::InteractiveMarkerServer("manip","",false) );
     _menu_handler_first.insert("Grasp", boost::bind(&ManipulationDataServer::grasp_cb, this, _1));
     _menu_handler_first.insert("Push", boost::bind(&ManipulationDataServer::push_cb, this, _1));
+    _menu_handler_first.insert("Axial Restraint", boost::bind(&ManipulationDataServer::axial_cb, this, _1));
     _menu_handler_first.insert("Remove", boost::bind(&ManipulationDataServer::remove_cb, this, _1));
     _menu_handler_first.insert("Reset Pose", boost::bind(&ManipulationDataServer::reset_pose_cb, this, _1));
     _menu_handler_grasp.insert("do_grasp", boost::bind(&ManipulationDataServer::do_grasp_cb, this, _1));   
     _menu_handler_grasp.insert("Remove", boost::bind(&ManipulationDataServer::remove_cb, this, _1));
     _menu_handler_grasp.insert("Reset Pose", boost::bind(&ManipulationDataServer::reset_pose_cb, this, _1));
     _menu_handler_grasp.insert("Reverse Hand", boost::bind(&ManipulationDataServer::reverse_hand_menu_cb, this, _1));
+    _menu_handler_grasp.insert("Move", boost::bind(&ManipulationDataServer::move_hand_menu_cb, this, _1));
     _menu_handler_push.insert("do_push", boost::bind(&ManipulationDataServer::do_push_cb, this, _1));
     _menu_handler_push.insert("Remove", boost::bind(&ManipulationDataServer::remove_cb, this, _1));
     _menu_handler_push.insert("Reset Pose", boost::bind(&ManipulationDataServer::reset_pose_cb, this, _1));
+    _menu_handler_axial_restraint.insert("move (by axial_restraint)", boost::bind(&ManipulationDataServer::do_move_by_axial_restraion_cb, this, _1));
+    _menu_handler_axial_restraint.insert("Remove", boost::bind(&ManipulationDataServer::remove_cb, this, _1));
+
     _subPoints.subscribe(_node , "/selected_pointcloud", 1);
     _pointsPub = _node.advertise<sensor_msgs::PointCloud2>("/manip_points", 10);
     _pointsArrayPub = _node.advertise<sensor_msgs::PointCloud2>("/icp_registration/input_reference_add", 10);
     _debug_cloud_pub = _node.advertise<sensor_msgs::PointCloud2>("/manip/debug_cloud", 10);
     _grasp_pose_pub = _node.advertise<geometry_msgs::PoseStamped>("/grasp_pose", 10);
     _push_pose_pub = _node.advertise<geometry_msgs::PoseStamped>("/push_pose", 10);
+    _move_by_axial_restraint_pose_pub = _node.advertise<geometry_msgs::PoseArray>("/move_by_axial_restraint_pose", 10);
     _debug_pose_pub = _node.advertise<geometry_msgs::PoseStamped>("/debug_pose", 10);
     _debug_point_pub = _node.advertise<geometry_msgs::PointStamped>("/debug_point", 10);
     _reset_pose_pub = _node.advertise<std_msgs::String>("/reset_pose_command", 1);
@@ -338,6 +348,9 @@ public:
       if(_server->get("push_pose", int_marker_tmp)){
 	_manip_data_ptr->int_marker_array.int_markers.push_back(int_marker_tmp);
       }
+      if(_server->get("axial_restraint", int_marker_tmp)){
+	_manip_data_ptr->int_marker_array.int_markers.push_back(int_marker_tmp);
+      }
       _manip_data_ptr->cloud = *_reference_cloud;
       jsk_interactive_marker::GetMarkerDimensions get_dim_srv;
       jsk_interactive_marker::GetTransformableMarkerPose get_pose_srv;
@@ -460,31 +473,31 @@ public:
       _t_marker_set_pose_pub.publish(t_pose_stamped);
     }
     if(feedback.menu_entry_id==1){
-      geometry_msgs::PoseStamped move_pose;
-      move_pose.header = feedback.header;
-      move_pose.header.frame_id=std::string("marker_frame");
-      move_pose.pose = _grasp_pose;
-      _move_pose_pub.publish(move_pose);
-      //pub zero feedback
-      _marker_pose.position.x=_marker_pose.position.y=_marker_pose.position.z=0;
-      _marker_pose.orientation.x=_marker_pose.orientation.y=_marker_pose.orientation.z=0;_marker_pose.orientation.w=1;
-      // visualization_msgs::InteractiveMarkerFeedback feedback_temp = feedback;
-      // feedback_temp.menu_entry_id=0;
-      // feedback_temp.pose = _marker_pose;
-      // feedback_temp.header.stamp=ros::Time::now();
-      // _feedback_pub.publish(feedback_tp);
-      //move manip frame
-      sensor_msgs::PointCloud2 manip_cloud_msg;
-      pcl::toROSMsg(*_reference_cloud, manip_cloud_msg);
-      manip_cloud_msg.header = feedback.header;
-      _pointsPub.publish(manip_cloud_msg);
-      _tf_before = _tf_from_base;
-      _tf_from_base = _tf_before * _tf_marker;
-      tf::poseMsgToTF(_marker_pose, _tf_marker);
-      pub_tf();
-      _timer_count = 0;
+      marker_move_function(feedback.header);
     }
-
+  }
+  void move_hand_menu_cb(const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback){
+    marker_move_function(feedback->header);
+  }
+  void marker_move_function(std_msgs::Header header){
+    geometry_msgs::PoseStamped move_pose;
+    move_pose.header = header;
+    move_pose.header.frame_id=std::string("marker_frame");
+    move_pose.pose = _grasp_pose;
+    _move_pose_pub.publish(move_pose);
+    //pub zero feedback
+    _marker_pose.position.x=_marker_pose.position.y=_marker_pose.position.z=0;
+    _marker_pose.orientation.x=_marker_pose.orientation.y=_marker_pose.orientation.z=0;_marker_pose.orientation.w=1;
+    
+    sensor_msgs::PointCloud2 manip_cloud_msg;
+    pcl::toROSMsg(*_reference_cloud, manip_cloud_msg);
+    manip_cloud_msg.header = header;
+    _pointsPub.publish(manip_cloud_msg);
+    _tf_before = _tf_from_base;
+    _tf_from_base = _tf_before * _tf_marker;
+    tf::poseMsgToTF(_marker_pose, _tf_marker);
+    pub_tf();
+    _timer_count = 0;
   }
   void reset_pose_cb(const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback){
     std_msgs::String a;
@@ -543,8 +556,94 @@ public:
     _server->insert(int_marker);
     _menu_handler_push.apply( *_server , "push_pose");
     _server->applyChanges();
-    
-    // Todo
+  }
+  void axial_cb(const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback){
+    ROS_INFO("axial_cb driven");
+    //remove circle marker
+    _server->erase("first_menu");
+    //add grasp marker
+    visualization_msgs::InteractiveMarker int_marker;
+    int_marker.header.frame_id = feedback->header.frame_id;
+    int_marker.scale = 0.14;
+    int_marker.name = "axial_restraint";
+    int_marker.pose.position = _menu_pose.position;
+    if(_reference_box_size.x > _reference_box_size.y && _reference_box_size.x > _reference_box_size.z){
+      if (_menu_pose.position.x < 0){
+	int_marker.pose.orientation.x = 0;
+	int_marker.pose.orientation.y = 1;
+	int_marker.pose.orientation.z = 0;
+	int_marker.pose.orientation.w = 0;
+      }else{
+       	int_marker.pose.orientation.x = 0;
+	int_marker.pose.orientation.y = 0;
+	int_marker.pose.orientation.z = 0;
+	int_marker.pose.orientation.w = 1;
+      }
+    }else if(_reference_box_size.y > _reference_box_size.z){
+      if (_menu_pose.position.y < 0){
+	int_marker.pose.orientation.x = 0;
+	int_marker.pose.orientation.y = 0;
+	int_marker.pose.orientation.z = -0.7071;
+	int_marker.pose.orientation.w = 0.7071;
+      }else{
+	int_marker.pose.orientation.x = 0;
+	int_marker.pose.orientation.y = 0;
+	int_marker.pose.orientation.z = 0.7071;
+	int_marker.pose.orientation.w = 0.7071;
+      }
+    }
+    else{
+      if (_menu_pose.position.z < 0){
+	int_marker.pose.orientation.x = 0;
+	int_marker.pose.orientation.y = 0.7071;
+	int_marker.pose.orientation.z = 0;
+	int_marker.pose.orientation.w = 0.7071;
+      }else{
+	int_marker.pose.orientation.x = 0;
+	int_marker.pose.orientation.y = -0.7071;
+	int_marker.pose.orientation.z = 0;
+	int_marker.pose.orientation.w = 0.7071;
+      }
+    }
+    visualization_msgs::InteractiveMarkerControl axial_control;
+    axial_control.always_visible = true;
+    axial_control.markers.push_back(make_arrow(int_marker, 0, 1.0, 0.5, 0.5));
+    axial_control.interaction_mode = visualization_msgs::InteractiveMarkerControl::MOVE_ROTATE_3D;
+    int_marker.controls.push_back(axial_control);
+    visualization_msgs::InteractiveMarkerControl control;
+    control.orientation.w = 1;
+    control.orientation.x = 1;
+    control.orientation.y = 0;
+    control.orientation.z = 0;
+    control.name = "rotate_x";
+    control.interaction_mode = InteractiveMarkerControl::ROTATE_AXIS;
+    int_marker.controls.push_back(control);
+    control.name = "move_x";
+    control.interaction_mode = InteractiveMarkerControl::MOVE_AXIS;
+    int_marker.controls.push_back(control);
+    control.orientation.w = 1;
+    control.orientation.x = 0;
+    control.orientation.y = 1;
+    control.orientation.z = 0;
+    control.name = "rotate_z";
+    control.interaction_mode = InteractiveMarkerControl::ROTATE_AXIS;
+    int_marker.controls.push_back(control);
+    control.name = "move_z";
+    control.interaction_mode = InteractiveMarkerControl::MOVE_AXIS;
+    int_marker.controls.push_back(control);
+    control.orientation.w = 1;
+    control.orientation.x = 0;
+    control.orientation.y = 0;
+    control.orientation.z = 1;
+    control.name = "rotate_y";
+    control.interaction_mode = InteractiveMarkerControl::ROTATE_AXIS;
+    int_marker.controls.push_back(control);
+    control.name = "move_y";
+    control.interaction_mode = InteractiveMarkerControl::MOVE_AXIS;
+    int_marker.controls.push_back(control);
+    _server->insert(int_marker);
+    _menu_handler_axial_restraint.apply( *_server , "axial_restraint");
+    _server->applyChanges();
   }
   void remove_cb(const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback){
     ROS_INFO("remove_cb driven");
@@ -567,6 +666,29 @@ public:
     pose_msg.pose = feedback->pose;
     _push_pose_pub.publish(pose_msg);
   }
+  void do_move_by_axial_restraion_cb(const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback){
+    geometry_msgs::PoseArray move_pose_array;
+    move_pose_array.header = feedback->header;
+    move_pose_array.header.frame_id=std::string("marker_frame");
+    move_pose_array.poses.push_back(_grasp_pose);
+    move_pose_array.poses.push_back(feedback->pose);
+    _move_by_axial_restraint_pose_pub.publish(move_pose_array);
+    //_move_pose_pub.publish(move_pose);
+    
+    //pub zero feedback
+    _marker_pose.position.x=_marker_pose.position.y=_marker_pose.position.z=0;
+    _marker_pose.orientation.x=_marker_pose.orientation.y=_marker_pose.orientation.z=0;_marker_pose.orientation.w=1;
+    sensor_msgs::PointCloud2 manip_cloud_msg;
+    pcl::toROSMsg(*_reference_cloud, manip_cloud_msg);
+    manip_cloud_msg.header = feedback->header;
+    _pointsPub.publish(manip_cloud_msg);
+    _tf_before = _tf_from_base;
+    _tf_from_base = _tf_before * _tf_marker;
+    tf::poseMsgToTF(_marker_pose, _tf_marker);
+    pub_tf();
+    _timer_count = 0;
+  }
+
   void grasp_cb(const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback)
   {
     ROS_INFO("grasp_cb driven");
@@ -725,6 +847,7 @@ public:
     _server->erase("first_menu");
     _server->erase("grasp_pose");
     _server->erase("push_pose");
+    _server->erase("axial_restraint");
     _server->applyChanges();
 
     if (_icp_client.call(srv) && srv.response.result.score < 0.000075){
@@ -744,6 +867,7 @@ public:
       _menu_handler_first.apply( *_server , "first_menu");
       _menu_handler_grasp.apply( *_server , "grasp_pose");
       _menu_handler_push.apply( *_server , "push_pose");
+      _menu_handler_axial_restraint.apply( *_server , "axial_restraint");
       _server->applyChanges();
       _reference_hit=true;      
     }
@@ -782,7 +906,7 @@ public:
     			      *_reference_cloud, offset,
 			      _listener);
 	Eigen::Affine3f offset_inverse = offset.inverse();
-      
+	
 	pcl::NormalEstimation<pcl::PointXYZRGB, pcl::Normal> ne;
 	_reference_kd_tree.reset(new pcl::search::KdTree<pcl::PointXYZRGB>);
 	ne.setInputCloud(_reference_cloud);
@@ -792,6 +916,7 @@ public:
 	//hoge
 	_reference_cloud_normals.reset(new pcl::PointCloud<pcl::Normal>);
 	ne.compute(*_reference_cloud_normals);
+	_reference_box_size = box_ptr->dimensions;
 	pcl::PointCloud<pcl::PointXYZRGBNormal> concatenated_cloud;
 	concatenated_cloud.points.resize(_reference_cloud->points.size());
 	concatenated_cloud.width = _reference_cloud->width;
