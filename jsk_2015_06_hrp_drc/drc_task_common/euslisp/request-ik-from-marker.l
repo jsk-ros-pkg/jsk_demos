@@ -441,14 +441,18 @@
 (defun solve-ik-from-grasp-pose-command 
   (msg)
   (solve-ik-from-pose-common msg)
-  (setq *initial-pose-coords* (send (send *target-pose-coords* :copy-worldcoords) :translate (float-vector -60 0 0) :local))
+  (setq *initial-pose-coords* (send (send *target-pose-coords* :copy-worldcoords) :translate (float-vector -100 0 0) :local))
   (setq *solve-ik-from-grasp-pose-command-flag* t)
   )
 (defun solve-ik-from-move-pose-command 
   (msg)
-  (solve-ik-from-pose-common msg)
-  (setq *initial-pose-coords* (send *robot* *ik-arm* :end-coords :worldcoords))
-  (setq *solve-ik-from-grasp-pose-command-flag* t)
+  (let ((original-av (send *robot* :angle-vector)))
+    (send *robot* :angle-vector (send *ri* :state :potentio-vector))
+    (solve-ik-from-pose-common msg)
+    (setq *initial-pose-coords* (send *robot* *ik-arm* :end-coords :worldcoords))
+    (send *robot* :angle-vector original-av)
+    (setq *solve-ik-from-grasp-pose-command-flag* t)
+    )
   )
 (defun solve-ik-from-push-pose-command 
   (msg)
@@ -537,7 +541,7 @@
     (when *draw-viewer-flag* (objects (list *robot* *target-pose-coords* *initial-pose-coords*)))
     ;; check mode 
     ;; solve ik
-    (setq *ik-result* (send-ik-request :target-coords *target-pose-coords* :initial-coords *initial-pose-coords* :rotation-axis (list t t t)))
+    (setq *ik-result* (send-ik-request :target-coords *target-pose-coords* :initial-coords *initial-pose-coords* :rotation-axis (list t t t) :interpolate-mode :from-pose-one))
     (cond (*ik-result*
            (send-joint-states-to-marker))
           (t
