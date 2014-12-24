@@ -748,11 +748,21 @@
        (*ik-result*
         (dotimes (i (length *ik-result*))
           (mapcar #'(lambda (j a) (send j :joint-angle a)) (send *robot* :joint-list) (elt *ik-result* i))
-          (send *ri* :angle-vector (send *robot* :angle-vector) (/ (float int-time) (length *ik-result*)))
-          (cond ((= i (- (length *ik-result*) 1))
-                 (send *ri* :wait-interpolation))
-                (t
-                 (unix::usleep (round (* (* (/ (float int-time) (length *ik-result*)) 1000) 0.8)))))
+          (cond
+           ;; interpolation mode and first time ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+           ((and (= i 0) (> (length *ik-result*) 1))
+            (send *ri* :angle-vector (send *robot* :angle-vector) (float int-time))
+            (unix::usleep (round (* (* int-time 1000) 0.8)))
+            )
+           ;; original ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+           (t
+            (send *ri* :angle-vector (send *robot* :angle-vector) (/ (float int-time) (length *ik-result*)))
+            (cond ((= i (- (length *ik-result*) 1))
+                   (send *ri* :wait-interpolation))
+                  (t
+                   (unix::usleep (round (* (* (/ (float int-time) (length *ik-result*)) 1000) 0.8)))))
+            )
+           )
           ))
        (t
         (send *ri* :angle-vector (send *robot* :angle-vector) int-time)
