@@ -489,8 +489,8 @@
 		   :transformation *robot-coords* :local) :transformation (make-coords) :local)
 	    )
       (if (equal *ik-arm* :rarm)
-	(send hand-temp-coords :rotate (* (/ -1.0 4) pi) :z :local)
-	(send hand-temp-coords :rotate (* (/ 1.0 4) pi) :z :local)
+          (progn (send hand-temp-coords :translate (float-vector 30 60 0)) (send hand-temp-coords :rotate (* (/ -1.0 4) pi) :z :local))
+	(progn (send hand-temp-coords :translate (float-vector 30 -60 0)) (send hand-temp-coords :rotate (* (/ 1.0 4) pi) :z :local))
 	)
       (setq *solve-ik-from-grasp-pose-command-flag* t)
       (setq *move-target-from-hand* (send (send (send *target-pose-coords* :copy-worldcoords) :transformation hand-temp-coords :local) :transformation (make-coords) :local))
@@ -512,8 +512,8 @@
 		 :transformation *robot-coords* :local) :transformation (make-coords) :local)
 	  )
     (if (equal *ik-arm* :rarm)
-	(send *target-pose-coords* :rotate (* (/ -1.0 4) pi) :z :local)
-      (send *target-pose-coords* :rotate (* (/ 1.0 4) pi) :z :local)
+        (progn (send *target-pose-coords* :translate (float-vector 30 60 0)) (send *target-pose-coords* :rotate (* (/ -1.0 4) pi) :z :local))
+      (progn (send *target-pose-coords* :translate (float-vector 30 -60 0)) (send *target-pose-coords* :rotate (* (/ 1.0 4) pi) :z :local))
       ))
   )
 (defun save-obj-command
@@ -749,12 +749,11 @@
         (dotimes (i (length *ik-result*))
           (mapcar #'(lambda (j a) (send j :joint-angle a)) (send *robot* :joint-list) (elt *ik-result* i))
           (cond
-           ;; interpolation mode and first time ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+           ;; interpolation mode and first time
            ((and (= i 0) (> (length *ik-result*) 1))
             (send *ri* :angle-vector (send *robot* :angle-vector) (float int-time))
             (unix::usleep (round (* (* int-time 1000) 0.8)))
             )
-           ;; original ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
            (t
             (send *ri* :angle-vector (send *robot* :angle-vector) (/ (float int-time) (length *ik-result*)))
             (cond ((= i (- (length *ik-result*) 1))
