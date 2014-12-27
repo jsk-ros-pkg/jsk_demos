@@ -37,11 +37,13 @@
   (ros::subscribe "/object_menu_command" std_msgs::empty #'object-menu-command 1)
   (ros::subscribe "/robot_menu_command" std_msgs::empty #'robot-menu-command 1)
   (ros::subscribe "/grasp_pose" geometry_msgs::PoseStamped #'solve-ik-from-grasp-pose-command 1)
+  (ros::subscribe "/grasp_pose_z_free" geometry_msgs::PoseStamped #'solve-ik-from-grasp-pose-command-z-free 1)
   (ros::subscribe "/push_pose" geometry_msgs::PoseStamped #'solve-ik-from-push-pose-command 1)
   (ros::subscribe "/move_pose" geometry_msgs::PoseStamped #'solve-ik-from-move-pose-command 1)
   (ros::subscribe "/move_by_axial_restraint_pose" geometry_msgs::PoseArray #'solve-ik-from-move-by-axial-pose-command 1)
   (ros::advertise "/object_handle" geometry_msgs::PoseStamped 1)
   (ros::advertise "/object_approach" geometry_msgs::PoseStamped 1)
+  (ros::advertise "/grasp_pose_feedback" geometry_msgs::PoseStamped 1)
   (ros::subscribe "/object_handle_variable_pos" std_msgs::Float32 #'set-object-handle-pos-from-variable)
   (ros::subscribe "/object_handle_variable_rot" std_msgs::Float32 #'set-object-handle-rot-from-variable)
   (ros::subscribe "/object_approach_variable" std_msgs::Float32 #'set-object-approach-from-variable)
@@ -91,7 +93,8 @@
   (setq *ik-arm* :rarm)
   (setq *ik-result* nil)
   (setq *rotation-axis* (list t t t))
-  (setq *rotation-axis-default* (list t t :z))
+  (setq *rotation-axis-default* (list :z t t))
+  (setq *pub-grasp-pose-feedback-flag* nil)
   ;; todo
   (setq *ik-pose-list* nil)
   ;;executive map
@@ -438,6 +441,31 @@
 ;; request ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; callback ;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; ik
+
+(defun pub-grasp-pose-feedback
+  ()
+  (ros::ros-info "pub-grasp-pose-feedback")
+  (if *ik-result*
+      (progn
+        (let 
+            ((original-av (send *robot* :angle-vector)) hand-temp-coords)
+          (mapcar #'(lambda (j a) (send j :joint-angle a)) (send *robot* :joint-list) (elt *ik-result* (- (length *ik-result*) 1)))
+          (setq hand-temp-coords (send (send *robot* *ik-arm* :end-coords :worldcoords) :copy-worldcoords))
+          (if (equal *ik-arm* :rarm)
+              (progn (send hand-temp-coords :rotate (* (/ 1.0 3) pi) :z :local) (send hand-temp-coords :translate (float-vector -30 -50 0) :local))
+            (progn (send hand-temp-coords :rotate (* (/ -1.0 3) pi) :z :local)  (send hand-temp-coords :translate (float-vector -30 50 0) :local))
+            )
+          ;(send hand-temp-coords :transform *robot-coords*)
+          (setq hand-temp-coords (send (send *robot-coords* :copy-worldcoords) :transform hand-temp-coords))
+          (ros::publish "/grasp_pose_feedback" (instance geometry_msgs::PoseStamped :init :pose (ros::coords->tf-pose hand-temp-coords) :header (instance std_msgs::Header :init :frame_id *frame-id*;"/hrp2_marker_root"
+                                                                                                                                                          :stamp (ros::time-now))))
+          (ros::ros-info "grasp feedback pose pubed")
+          (send *robot* :angle-vector original-av)
+          )
+        )
+    )
+  ;(setq *pub-grasp-pose-feedback-flag* (not *pub-grasp-pose-feedback-flag*))
+  )
 (defun solve-ik-command
   (msg)
   (setq *solve-ik-command-flag* t))
@@ -445,10 +473,20 @@
 (defun solve-ik-from-grasp-pose-command 
   (msg)
   (solve-ik-from-pose-common msg)
-  (setq *initial-pose-coords* (send (send *target-pose-coords* :copy-worldcoords) :translate (float-vector -100 0 0) :local))
+  (if (equal *ik-arm* :rarm)
+      (setq *initial-pose-coords* (send (send *target-pose-coords* :copy-worldcoords) :translate (float-vector -140 -80 0) :local))
+    (setq *initial-pose-coords* (send (send *target-pose-coords* :copy-worldcoords) :translate (float-vector -140 80 0) :local))
+    )
   (setq *solve-ik-from-grasp-pose-command-flag* t)
-  (setq *move-target-from-hand* (make-coords))
   (setq *rotation-axis* (list t t t))
+  (setq *pub-grasp-pose-feedback-flag* t)
+  (setq *solve-ik-command-flag* t)
+  )
+(defun solve-ik-from-grasp-pose-command-z-free
+  (msg)
+  (solve-ik-from-grasp-pose-command msg)
+  (setq *pub-grasp-pose-feedback-flag* t)
+  (setq *rotation-axis* (list :z t t))
   )
 (defun solve-ik-from-move-pose-command 
   (msg)
@@ -458,7 +496,6 @@
     (setq *initial-pose-coords* (send *robot* *ik-arm* :end-coords :worldcoords))
     (send *robot* :angle-vector original-av)
     (setq *solve-ik-from-grasp-pose-command-flag* t)
-    (setq *move-target-from-hand* (make-coords))
     (setq *rotation-axis* (list t t t))
     )
   )
@@ -469,7 +506,6 @@
   (send *target-pose-coords* :translate (float-vector -10 0 0) :local) ;; length of finger
   (setq *initial-pose-coords* (send (send *target-pose-coords* :copy-worldcoords) :translate (float-vector -60 0 0) :local))
   (setq *solve-ik-from-grasp-pose-command-flag* t)
-  (setq *move-target-from-hand* (make-coords))
   (setq *rotation-axis* (list t t t));;
   )
 (defun solve-ik-from-move-by-axial-pose-command
@@ -489,15 +525,16 @@
 		   :transformation *robot-coords* :local) :transformation (make-coords) :local)
 	    )
       (if (equal *ik-arm* :rarm)
-	(send hand-temp-coords :rotate (* (/ -1.0 4) pi) :z :local)
-	(send hand-temp-coords :rotate (* (/ 1.0 4) pi) :z :local)
+          (progn (send hand-temp-coords :translate (float-vector 30 50 0)
+                       :local) (send hand-temp-coords :rotate (* (/ -1.0 3) pi) :z :local))
+	(progn (send hand-temp-coords :translate (float-vector 30 -50 0) :local) (send hand-temp-coords :rotate (* (/ 1.0 3) pi) :z :local))
 	)
+      (setq *move-target-from-hand* (send (send (send *target-pose-coords* :copy-worldcoords) :transformation hand-temp-coords :local) :transformation (make-coords) :local)) 
       (setq *solve-ik-from-grasp-pose-command-flag* t)
-      (setq *move-target-from-hand* (send (send (send *target-pose-coords* :copy-worldcoords) :transformation hand-temp-coords :local) :transformation (make-coords) :local))
-
       (send *robot* :angle-vector (send *ri* :state :potentio-vector))
       (setq *initial-pose-coords* (send (send (send *robot* *ik-arm* :end-coords) :copy-worldcoords) :transform *move-target-from-hand*))
       (send *robot* :angle-vector original-av) 
+      (setq *pub-grasp-pose-feedback-flag* nil)
       (setq *rotation-axis* (list :x t t))
       ))
   )
@@ -512,10 +549,14 @@
 		 :transformation *robot-coords* :local) :transformation (make-coords) :local)
 	  )
     (if (equal *ik-arm* :rarm)
-	(send *target-pose-coords* :rotate (* (/ -1.0 4) pi) :z :local)
-      (send *target-pose-coords* :rotate (* (/ 1.0 4) pi) :z :local)
-      ))
+        (setq *move-target-from-hand* (send (send (make-coords) :rotate (* (/ 1.0 3) pi) :z :local) :translate (float-vector -30 -50 0))) ;;for grasp
+      (setq *move-target-from-hand* (send (send (make-coords) :rotate (* (/ -1.0 3) pi) :z :local) :translate (float-vector -30 50 0))) ;;for grasp     
+      ;;(progn (send *target-pose-coords* :translate (float-vector 30 60 0) :local) (send *target-pose-coords* :rotate (* (/ -1.0 4) pi) :z :local))
+      ;;(progn (send *target-pose-coords* :translate (float-vector 30 -60 0) :local) (send *target-pose-coords* :rotate (* (/ 1.0 4) pi) :z :local))
+      )
+    )
   )
+  
 (defun save-obj-command
   (msg)
   (setq *save-obj-command-flag* t))
@@ -559,6 +600,7 @@
       (setq interpolate-mode :approach))
     ;; solve ik
     (setq *ik-result* (send-ik-request :interpolate-mode interpolate-mode))
+    ;(if *pub-grasp-pose-feedback-flag* (pub-grasp-pose-feedback))
     (cond (*ik-result*
            (send-joint-states-to-marker))
           (t
@@ -581,12 +623,14 @@
     ;; check mode 
     ;; solve ik
     (setq *ik-result* (send-ik-request :target-coords *target-pose-coords* :initial-coords *initial-pose-coords* :rotation-axis *rotation-axis* :interpolate-mode :from-pose-one :move-target-from-hand *move-target-from-hand*))
+    (if *pub-grasp-pose-feedback-flag* (pub-grasp-pose-feedback))
     (cond (*ik-result*
            (send-joint-states-to-marker))
           (t
            (send *robot* :angle-vector original-av)
            (send *robot* :newcoords original-coords)
-           ))
+           )
+          )
     (setq *solve-ik-from-grasp-pose-command-flag* nil)
     *ik-result*
     ))
@@ -749,12 +793,11 @@
         (dotimes (i (length *ik-result*))
           (mapcar #'(lambda (j a) (send j :joint-angle a)) (send *robot* :joint-list) (elt *ik-result* i))
           (cond
-           ;; interpolation mode and first time ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+           ;; interpolation mode and first time
            ((and (= i 0) (> (length *ik-result*) 1))
             (send *ri* :angle-vector (send *robot* :angle-vector) (float int-time))
             (unix::usleep (round (* (* int-time 1000) 0.8)))
             )
-           ;; original ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
            (t
             (send *ri* :angle-vector (send *robot* :angle-vector) (/ (float int-time) (length *ik-result*)))
             (cond ((= i (- (length *ik-result*) 1))

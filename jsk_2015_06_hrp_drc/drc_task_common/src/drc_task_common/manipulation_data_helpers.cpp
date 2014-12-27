@@ -178,13 +178,13 @@ visualization_msgs::Marker make_circle(visualization_msgs::InteractiveMarker &ms
   marker.pose.orientation.w = 1.0;
   return marker;
 }
-visualization_msgs::Marker make_arrow(visualization_msgs::InteractiveMarker &msg, float arrow_offset_x_pos, float r, float g, float b){
+visualization_msgs::Marker make_arrow(visualization_msgs::InteractiveMarker &msg, float arrow_offset_x_pos, float r, float g, float b, float a, float arrow_length){
   visualization_msgs::Marker marker;
   marker.type = Marker::ARROW;
-  marker.scale.x = 0.11;
+  marker.scale.x = arrow_length;
   marker.scale.y = 0.04;
   marker.scale.z = 0.04;
-  marker.color.r = r; marker.color.g = g; marker.color.b = b; marker.color.a = 1.0;
+  marker.color.r = r; marker.color.g = g; marker.color.b = b; marker.color.a = a;
   marker.pose.position.x = arrow_offset_x_pos;
   marker.pose.position.y = 0.0;
   marker.pose.position.z = 0.0;
