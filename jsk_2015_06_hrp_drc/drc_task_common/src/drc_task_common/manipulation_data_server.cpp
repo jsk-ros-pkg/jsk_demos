@@ -135,6 +135,7 @@ protected:
   int _timer_count;
   bool _reference_hit;
   bool _assoc_marker_flug;
+  bool _all_manual;
   //bool init_reference_end;
 public:
   bool transform_pointcloud_in_bouding_box(
@@ -182,6 +183,7 @@ public:
     ROS_INFO("start interface");
     ros::NodeHandle local_nh("~");
     local_nh.param("BASE_FRAME_ID", _base_link_name, std::string("/camera_link"));
+    local_nh.param("ALL_MANUAL", _all_manual, false);
     ROS_INFO("base_link_name: %s", _base_link_name.c_str());
     _server.reset(new interactive_markers::InteractiveMarkerServer("manip","",false) );
     _menu_handler_first.insert("Grasp", boost::bind(&ManipulationDataServer::grasp_cb, this, _1));
@@ -577,7 +579,6 @@ public:
     _server->applyChanges();
   }
   void axial_cb(const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback){
-    ROS_INFO("axial_cb driven");
     //remove circle marker
     _server->erase("first_menu");
     //add grasp marker
@@ -623,6 +624,12 @@ public:
 	int_marker.pose.orientation.z = 0;
 	int_marker.pose.orientation.w = 0.7071;
       }
+    }
+    if(_all_manual){
+      int_marker.pose.orientation.x = 0;
+      int_marker.pose.orientation.y = 0;
+      int_marker.pose.orientation.z = 0;
+      int_marker.pose.orientation.w = 1;
     }
     visualization_msgs::InteractiveMarkerControl axial_control;
     axial_control.always_visible = true;
@@ -683,6 +690,12 @@ public:
     int_marker.scale = 0.14;
     int_marker.name = "axial_restraint";
     int_marker.pose = tf_to_pose(pose_to_tf(_grasp_pose) * tf::Transform(tf::Quaternion(1, 0, 0, 0)) *tf::Transform(tf::Quaternion(0, 0.7071, 0, 0.7071)));//_grasp_pose.position;
+    if(_all_manual){
+      int_marker.pose.orientation.x = 0;
+      int_marker.pose.orientation.y = 0;
+      int_marker.pose.orientation.z = 0;
+      int_marker.pose.orientation.w = 1;
+    }
     visualization_msgs::InteractiveMarkerControl axial_control;
     axial_control.always_visible = true;
     axial_control.markers.push_back(make_arrow(int_marker, 0, 1.0, 0.5, 0.5, 0.5, 0.3));
@@ -737,6 +750,12 @@ public:
     int_marker.scale = 0.14;
     int_marker.name = "axial_restraint";
     int_marker.pose = tf_to_pose(pose_to_tf(_grasp_pose) * tf::Transform(tf::Quaternion(1, 0, 0, 0)) *tf::Transform(tf::Quaternion(0, 0.7071, 0, 0.7071)));//_grasp_pose.position;
+    if(_all_manual){
+      int_marker.pose.orientation.x = 0;
+      int_marker.pose.orientation.y = 0;
+      int_marker.pose.orientation.z = 0;
+      int_marker.pose.orientation.w = 1;
+    }
     visualization_msgs::InteractiveMarkerControl axial_control;
     axial_control.always_visible = true;
     axial_control.markers.push_back(make_arrow(int_marker, 0, 1.0, 0.5, 0.5, 0.5, 0.3));
@@ -1242,11 +1261,14 @@ public:
     hand_marker.colors.push_back(temp_color);
     
     _debug_grasp_pub.publish(hand_marker);
-    _menu_pose.orientation.x= min_qua.getX();
-    _menu_pose.orientation.y= min_qua.getY();
-    _menu_pose.orientation.z= min_qua.getZ();
-    _menu_pose.orientation.w= min_qua.getW();
-    
+    _menu_pose.orientation.x = min_qua.getX();
+    _menu_pose.orientation.y = min_qua.getY();
+    _menu_pose.orientation.z = min_qua.getZ();
+    _menu_pose.orientation.w = min_qua.getW();
+    if(_all_manual){
+      _menu_pose.orientation.x = _menu_pose.orientation.y = _menu_pose.orientation.z = 0.0;
+      _menu_pose.orientation.w = 1.0;
+    }
     visualization_msgs::InteractiveMarker int_marker;
     int_marker.header.frame_id = "/marker_frame";
     int_marker.scale = 0.2;
