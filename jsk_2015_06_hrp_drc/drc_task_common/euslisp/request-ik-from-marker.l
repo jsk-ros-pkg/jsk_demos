@@ -812,6 +812,8 @@
         (send *ri* :wait-interpolation)))
       ;; service call for task state manager
       (ros::service-call "call_task_state_event" (instance drc_task_common::StringRequestRequest :init :data "FinishAngleVec"))
+      (ros::ros-info (format nil "request angle: ~A" (send *robot* :angle-vector)))
+      (ros::ros-info (format nil "true angle: ~A" (send *ri* :state :potentio-vector)))
       ))
   (setq *send-angle-command-flag* nil)
   (warning-message 2 "[request-ik] finished sending angle-vector.~%")
