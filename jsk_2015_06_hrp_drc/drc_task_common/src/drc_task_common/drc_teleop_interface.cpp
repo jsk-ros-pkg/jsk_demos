@@ -132,7 +132,8 @@ namespace drc_task_common
   };
 
   void DRCTeleopInterfaceAction::callRequestGraspGrippePose(){
-    std::string command("(progn (send *robot* :hand :arms :grasp-pose) (send *ri* :hand-angle-vector (apply #\'concatenate float-vector (send *robot* :hand :arms :angle-vector))))");
+    std::string command("(progn (send *robot* :hand :arms :distal-pose2) (send *ri* :hand-angle-vector (apply #\'concatenate float-vector (send *robot* :hand :arms :angle-vector))) (send *ri* :hand-wait-interpolation) (send *robot* :hand :arms :grasp-pose) (send *ri* :hand-angle-vector (apply #\'concatenate float-vector (send *robot* :hand :arms :angle-vector))))");
+    // std::string command("(progn (send *robot* :hand :arms :grasp-pose) (send *ri* :hand-angle-vector (apply #\'concatenate float-vector (send *robot* :hand :arms :angle-vector))))");
     callRequestEusCommand(command);
   };
 
@@ -152,7 +153,8 @@ namespace drc_task_common
   };
 
   void DRCTeleopInterfaceAction::callRequestStartIMPforDrill(){
-    std::string command("(send *ri* :start-impedance :rarm :force-gain #f(1 0 0) :moment-gain #f(0 0 0) :k-p 600 :d-p 60)");
+    // std::string command("(send *ri* :start-impedance :rarm :force-gain #f(1 0 0) :moment-gain #f(0 0 0) :k-p 600 :d-p 60)");
+    std::string command("(send *ri* :start-impedance :rarm :force-gain #f(1 0 0) :moment-gain #f(0 0 0) :k-p 1000 :d-p 400)");
     callRequestEusCommand(command);
   };
 
