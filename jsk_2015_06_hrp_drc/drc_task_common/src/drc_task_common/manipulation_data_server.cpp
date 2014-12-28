@@ -197,6 +197,7 @@ public:
     _menu_handler_grasp.insert("Reset Pose", boost::bind(&ManipulationDataServer::reset_pose_cb, this, _1));
     _menu_handler_grasp.insert("Reverse Hand", boost::bind(&ManipulationDataServer::reverse_hand_menu_cb, this, _1));
     _menu_handler_grasp.insert("Move", boost::bind(&ManipulationDataServer::move_hand_menu_cb, this, _1));
+    _menu_handler_grasp.insert("Revise Model", boost::bind(&ManipulationDataServer::revise_model_cb, this, _1));
     _menu_handler_push.insert("do_push", boost::bind(&ManipulationDataServer::do_push_cb, this, _1));
     _menu_handler_push.insert("Remove", boost::bind(&ManipulationDataServer::remove_cb, this, _1));
     _menu_handler_push.insert("Reset Pose", boost::bind(&ManipulationDataServer::reset_pose_cb, this, _1));
@@ -464,6 +465,35 @@ public:
       pub_tf();
     }
   }
+  void revise_model_cb(const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback)
+  {
+    geometry_msgs::PoseStamped grasp_marker_before_pose, grasp_marker_after_pose;
+    grasp_marker_before_pose.header.frame_id = "manipulate_frame";
+    grasp_marker_before_pose.pose = _grasp_pose;//feedback->pose;
+    visualization_msgs::InteractiveMarker int_marker_tmp;
+    if(_server->get("grasp_pose", int_marker_tmp)){
+      try{
+        ros::Time now = ros::Time::now(); 
+        _listener.waitForTransform(feedback->header.frame_id, "manipulate_frame", now, ros::Duration(2.0));
+        _listener.transformPose(feedback->header.frame_id, now, grasp_marker_before_pose ,"manipulate_frame",  grasp_marker_after_pose); 
+      }
+      catch(tf::TransformException ex){
+        ROS_ERROR("revise model failed %s",ex.what());
+        return;
+      }
+      ROS_INFO("before pose, %f %f %f, after pose %f %f %f", int_marker_tmp.pose.position.x, int_marker_tmp.pose.position.y, int_marker_tmp.pose.position.z, grasp_marker_after_pose.pose.position.x, grasp_marker_after_pose.pose.position.y, grasp_marker_after_pose.pose.position.z);
+      int_marker_tmp.pose = grasp_marker_after_pose.pose;
+      ROS_INFO("get grasp succeeded");
+    }else{
+      ROS_INFO("get grasp failed");
+      return;
+    }
+    marker_move_function(feedback->header);
+    _grasp_pose = grasp_marker_after_pose.pose;
+    _server->insert(int_marker_tmp);
+    _server->applyChanges();
+  }
+
   void marker_move_feedback(const visualization_msgs::InteractiveMarkerFeedback feedback)
   {
     //
@@ -497,6 +527,7 @@ public:
       marker_move_function(feedback.header);
     }
   }
+ 
   void move_hand_menu_cb(const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback){
     marker_move_function(feedback->header);
   }
