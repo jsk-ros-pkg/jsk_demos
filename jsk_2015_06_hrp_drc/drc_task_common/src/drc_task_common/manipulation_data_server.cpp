@@ -80,7 +80,6 @@ protected:
   Subscriber _sub_pose_feedback;
   Subscriber _sub_object_pose_update;
   Subscriber _sub_object_pose_feedback;
-  Subscriber _sub_reverse_hand_command;
   Subscriber _sub_grasp_pose_feedback;
   Subscriber _sub_grasp_pose_dual_feedback;
   Publisher _pointsPub;
@@ -248,7 +247,6 @@ public:
     _sub_pose_feedback = _node.subscribe("/interactive_point_cloud/feedback", 1, &ManipulationDataServer::marker_move_feedback, this);
     _sub_object_pose_update = _node.subscribe("/simple_marker/update", 1, &ManipulationDataServer::t_marker_move_update, this);
     _sub_object_pose_feedback = _node.subscribe("/simple_marker/feedback", 1, &ManipulationDataServer::t_marker_move_feedback, this);
-    _sub_reverse_hand_command = _node.subscribe("/reverse_hand_command", 1, &ManipulationDataServer::reverse_hand_cb, this);
     _sub_grasp_pose_feedback = _node.subscribe("/grasp_pose_feedback", 1, &ManipulationDataServer::grasp_pose_feedback_cb, this);
     _sub_grasp_pose_dual_feedback = _node.subscribe("/grasp_pose_dual_feedback", 1, &ManipulationDataServer::grasp_pose_dual_feedback_cb, this);
     _align_icp_server = _node.advertiseService("icp_apply", &ManipulationDataServer::align_cb, this);
@@ -357,6 +355,9 @@ public:
       if(_server->get("grasp_pose", int_marker_tmp)){
 	_manip_data_ptr->int_marker_array.int_markers.push_back(int_marker_tmp);
       }
+      if(_server->get("grasp_pose_2", int_marker_tmp)){
+	_manip_data_ptr->int_marker_array.int_markers.push_back(int_marker_tmp);
+      }
       if(_server->get("push_pose", int_marker_tmp)){
 	_manip_data_ptr->int_marker_array.int_markers.push_back(int_marker_tmp);
       }
@@ -396,15 +397,13 @@ public:
     }
   }
   void reverse_hand_menu_cb(const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback){
-    reverse_hand();
+    reverse_hand(feedback->marker_name);
   }
-  void reverse_hand_cb(const std_msgs::EmptyConstPtr empty_msg_ptr){
-    reverse_hand();
-  }
-  void reverse_hand(){
+
+  void reverse_hand(std::string marker_name){
     //get grab marker
     InteractiveMarker int_marker_tmp;
-    _server->get("grasp_pose", int_marker_tmp);
+    _server->get(marker_name, int_marker_tmp);
     int_marker_tmp.pose = tf_to_pose(pose_to_tf(int_marker_tmp.pose)*tf::Transform(tf::Quaternion(1, 0, 0, 0)));
     _server->insert(int_marker_tmp);
     _server->applyChanges();
@@ -448,7 +447,6 @@ public:
       _listener.waitForTransform("/manipulate_frame", pose_msg.header.frame_id, now, ros::Duration(2.0));
       _listener.transformPose("/manipulate_frame",now, pose_msg , pose_msg.header.frame_id, handle_pose_temp);
       int_marker_tmp.pose = handle_pose_temp.pose;
-      _grasp_pose = handle_pose_temp.pose;
       _server->insert(int_marker_tmp);
       _server->applyChanges();
     }
@@ -519,14 +517,38 @@ public:
       ROS_INFO("before pose, %f %f %f, after pose %f %f %f", int_marker_tmp.pose.position.x, int_marker_tmp.pose.position.y, int_marker_tmp.pose.position.z, grasp_marker_after_pose.pose.position.x, grasp_marker_after_pose.pose.position.y, grasp_marker_after_pose.pose.position.z);
       int_marker_tmp.pose = grasp_marker_after_pose.pose;
       ROS_INFO("get grasp succeeded");
+      marker_move_function(feedback->header);
+      _grasp_pose = grasp_marker_after_pose.pose;
+      _server->insert(int_marker_tmp);
+      _server->applyChanges();
     }else{
       ROS_INFO("get grasp failed");
       return;
     }
-    marker_move_function(feedback->header);
-    _grasp_pose = grasp_marker_after_pose.pose;
-    _server->insert(int_marker_tmp);
-    _server->applyChanges();
+    if(_server->get("grasp_pose_2", int_marker_tmp)){
+      try{
+        grasp_marker_before_pose.header.frame_id = "manipulate_frame";
+        grasp_marker_before_pose.pose = int_marker_tmp.pose;//feedback->pose;
+        ros::Time now = ros::Time::now(); 
+        _listener.waitForTransform(feedback->header.frame_id, "manipulate_frame", now, ros::Duration(2.0));
+        _listener.transformPose(feedback->header.frame_id, now, grasp_marker_before_pose ,"manipulate_frame",  grasp_marker_after_pose); 
+      }
+      catch(tf::TransformException ex){
+        ROS_ERROR("revise model failed %s",ex.what());
+        return;
+      }
+      ROS_INFO("before pose, %f %f %f, after pose %f %f %f", int_marker_tmp.pose.position.x, int_marker_tmp.pose.position.y, int_marker_tmp.pose.position.z, grasp_marker_after_pose.pose.position.x, grasp_marker_after_pose.pose.position.y, grasp_marker_after_pose.pose.position.z);
+      int_marker_tmp.pose = grasp_marker_after_pose.pose;
+      ROS_INFO("get grasp succeeded");
+      marker_move_function(feedback->header);
+      _grasp_pose = grasp_marker_after_pose.pose;
+      _server->insert(int_marker_tmp);
+      _server->applyChanges();
+    }else{
+      ROS_INFO("get grasp failed");
+      return;
+    }
+
   }
 
   void marker_move_feedback(const visualization_msgs::InteractiveMarkerFeedback feedback)
@@ -906,7 +928,7 @@ public:
         pose_array_msg.header.frame_id = std::string("manipulate_frame");
         pose_array_msg.poses.push_back(int_marker_tmp.pose);
         pose_array_msg.poses.push_back(feedback->pose);
-        _grasp_pose_dual_pub.publish(pose_array_msg);
+        _grasp_pose_dual_z_free_pub.publish(pose_array_msg);
       } 
     }
   }
@@ -1152,6 +1174,7 @@ public:
     //save_marker();
     _server->erase("first_menu");
     _server->erase("grasp_pose");
+    _server->erase("grasp_pose_2");
     _server->erase("push_pose");
     _server->erase("axial_restraint");
     _server->applyChanges();
@@ -1172,6 +1195,7 @@ public:
       }
       _menu_handler_first.apply( *_server , "first_menu");
       _menu_handler_grasp.apply( *_server , "grasp_pose");
+      _menu_handler_grasp.apply( *_server , "grasp_pose_2");
       _menu_handler_push.apply( *_server , "push_pose");
       _menu_handler_axial_restraint.apply( *_server , "axial_restraint");
       _server->applyChanges();
