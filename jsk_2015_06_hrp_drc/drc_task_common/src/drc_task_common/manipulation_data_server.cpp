@@ -82,10 +82,13 @@ protected:
   Subscriber _sub_object_pose_feedback;
   Subscriber _sub_reverse_hand_command;
   Subscriber _sub_grasp_pose_feedback;
+  Subscriber _sub_grasp_pose_dual_feedback;
   Publisher _pointsPub;
   Publisher _pointsArrayPub;
   Publisher _debug_cloud_pub;
   Publisher _grasp_pose_pub;
+  Publisher _grasp_pose_dual_pub;
+  Publisher _grasp_pose_dual_z_free_pub;
   Publisher _grasp_pose_z_free_pub;
   Publisher _push_pose_pub;
   Publisher _move_by_axial_restraint_pose_pub;
@@ -94,6 +97,7 @@ protected:
   Publisher _debug_grasp_pub;
   Publisher _reset_pub;
   Publisher _move_pose_pub;
+  Publisher _move_pose_dual_pub;
   Publisher _feedback_pub;
   Publisher _debug_point_pub;
   Publisher _marker_set_pose_pub;
@@ -187,6 +191,7 @@ public:
     ROS_INFO("base_link_name: %s", _base_link_name.c_str());
     _server.reset(new interactive_markers::InteractiveMarkerServer("manip","",false) );
     _menu_handler_first.insert("Grasp", boost::bind(&ManipulationDataServer::grasp_cb, this, _1));
+    _menu_handler_first.insert("Grasp_Assist", boost::bind(&ManipulationDataServer::grasp_cb_2, this, _1));
     _menu_handler_first.insert("Push", boost::bind(&ManipulationDataServer::push_cb, this, _1));
     _menu_handler_first.insert("Axial Restraint", boost::bind(&ManipulationDataServer::axial_cb, this, _1));
     _menu_handler_first.insert("Remove", boost::bind(&ManipulationDataServer::remove_cb, this, _1));
@@ -209,6 +214,8 @@ public:
     _pointsArrayPub = _node.advertise<sensor_msgs::PointCloud2>("/icp_registration/input_reference_add", 10);
     _debug_cloud_pub = _node.advertise<sensor_msgs::PointCloud2>("/manip/debug_cloud", 10);
     _grasp_pose_pub = _node.advertise<geometry_msgs::PoseStamped>("/grasp_pose", 10);
+    _grasp_pose_dual_pub = _node.advertise<geometry_msgs::PoseArray>("/grasp_dual_pose", 10);
+    _grasp_pose_dual_z_free_pub = _node.advertise<geometry_msgs::PoseArray>("/grasp_dual_pose_z_free", 10);
     _grasp_pose_z_free_pub = _node.advertise<geometry_msgs::PoseStamped>("/grasp_pose_z_free", 10);
     _push_pose_pub = _node.advertise<geometry_msgs::PoseStamped>("/push_pose", 10);
     _move_by_axial_restraint_pose_pub = _node.advertise<geometry_msgs::PoseArray>("/move_by_axial_restraint_pose", 10);
@@ -217,8 +224,10 @@ public:
     _reset_pose_pub = _node.advertise<std_msgs::String>("/reset_pose_command", 1);
     _reset_pub = _node.advertise<jsk_pcl_ros::PointsArray>("/icp_registration/input_reference_array", 1, boost::bind( &ManipulationDataServer::icp_connection, this, _1), boost::bind( &ManipulationDataServer::icp_disconnection, this, _1));
     _move_pose_pub = _node.advertise<geometry_msgs::PoseStamped>("/move_pose", 1);
+    _move_pose_dual_pub = _node.advertise<geometry_msgs::PoseArray>("/move_dual_pose", 1);
     _feedback_pub = _node.advertise<visualization_msgs::InteractiveMarkerFeedback>("/interactive_point_cloud/feedback", 1);
     usleep(100000);
+
     _debug_grasp_pub = _node.advertise<visualization_msgs::Marker>("/debug_grasp", 1);
     _marker_set_pose_pub = _node.advertise<geometry_msgs::PoseStamped>("/interactive_point_cloud/set_marker_pose", 1);
     _t_marker_set_pose_pub = _node.advertise<geometry_msgs::PoseStamped>("/transformable_interactive_server/set_pose", 1);
@@ -241,18 +250,13 @@ public:
     _sub_object_pose_feedback = _node.subscribe("/simple_marker/feedback", 1, &ManipulationDataServer::t_marker_move_feedback, this);
     _sub_reverse_hand_command = _node.subscribe("/reverse_hand_command", 1, &ManipulationDataServer::reverse_hand_cb, this);
     _sub_grasp_pose_feedback = _node.subscribe("/grasp_pose_feedback", 1, &ManipulationDataServer::grasp_pose_feedback_cb, this);
+    _sub_grasp_pose_dual_feedback = _node.subscribe("/grasp_pose_dual_feedback", 1, &ManipulationDataServer::grasp_pose_dual_feedback_cb, this);
     _align_icp_server = _node.advertiseService("icp_apply", &ManipulationDataServer::align_cb, this);
     _save_server = _node.advertiseService("save_manipulation", &ManipulationDataServer::save_cb, this);
     _assoc_server = _node.advertiseService("assoc_points", &ManipulationDataServer::assoc_object_to_marker_cb, this);
     _disassoc_server = _node.advertiseService("disassoc_points", &ManipulationDataServer::disassoc_object_to_marker_cb, this);
     pub_tf();
-    //
-    // ros::Rate poll_rate(100);
-    // ROS_INFO("num sub %d", _reset_pub.getNumSubscribers());
-    // while(_reset_pub.getNumSubscribers() == 0){
-    //   poll_rate.sleep();
-    // }
-    // pub_reference();
+
   }
   void init_reference(){
     std::vector<std::string> pcd_files;
@@ -419,6 +423,37 @@ public:
       _server->applyChanges();
     }
   }
+  void grasp_pose_dual_feedback_cb(geometry_msgs::PoseArray pose_array_msg){
+    //change grasp pose
+    InteractiveMarker int_marker_tmp;
+    if(_server->get("grasp_pose", int_marker_tmp)){
+      geometry_msgs::PoseStamped handle_pose_temp;
+      ros::Time now = ros::Time::now();
+      geometry_msgs::PoseStamped pose_msg;
+      pose_msg.pose = pose_array_msg.poses[0];
+      pose_msg.header = pose_array_msg.header;
+      _listener.waitForTransform("/manipulate_frame", pose_msg.header.frame_id, now, ros::Duration(2.0));
+      _listener.transformPose("/manipulate_frame",now, pose_msg , pose_msg.header.frame_id, handle_pose_temp);
+      int_marker_tmp.pose = handle_pose_temp.pose;
+      _grasp_pose = handle_pose_temp.pose;
+      _server->insert(int_marker_tmp);
+      _server->applyChanges();
+    }
+    if(_server->get("grasp_pose_2", int_marker_tmp)){
+      geometry_msgs::PoseStamped handle_pose_temp;
+      ros::Time now = ros::Time::now();
+      geometry_msgs::PoseStamped pose_msg;
+      pose_msg.pose = pose_array_msg.poses[1];
+      pose_msg.header = pose_array_msg.header;
+      _listener.waitForTransform("/manipulate_frame", pose_msg.header.frame_id, now, ros::Duration(2.0));
+      _listener.transformPose("/manipulate_frame",now, pose_msg , pose_msg.header.frame_id, handle_pose_temp);
+      int_marker_tmp.pose = handle_pose_temp.pose;
+      _grasp_pose = handle_pose_temp.pose;
+      _server->insert(int_marker_tmp);
+      _server->applyChanges();
+    }
+
+  }
   void icp_connection(const ros::SingleSubscriberPublisher& pub){
     pub_reference();
     ROS_INFO("icp_server_connected");
@@ -529,7 +564,8 @@ public:
   }
  
   void move_hand_menu_cb(const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback){
-    marker_move_function(feedback->header);
+    if(feedback->marker_name=="grasp_pose")marker_move_function(feedback->header);
+    if(feedback->marker_name=="grasp_pose_2")marker_move_dual_function(feedback->header);
   }
   void marker_move_function(std_msgs::Header header){
     geometry_msgs::PoseStamped move_pose;
@@ -538,9 +574,26 @@ public:
     move_pose.pose = _grasp_pose;
     _move_pose_pub.publish(move_pose);
     //pub zero feedback
+    pub_zero_feedback(header);
+  }
+  void marker_move_dual_function(std_msgs::Header header){
+    visualization_msgs::InteractiveMarker int_marker_tmp;
+    geometry_msgs::PoseArray pose_array_msg;
+    pose_array_msg.header = header;
+    if (_server->get("grasp_pose", int_marker_tmp)){
+      pose_array_msg.header.frame_id = int_marker_tmp.header.frame_id;
+      pose_array_msg.poses.push_back(int_marker_tmp.pose);
+    }else return;
+    if (_server->get("grasp_pose_2", int_marker_tmp)){
+      pose_array_msg.poses.push_back(int_marker_tmp.pose);
+    }else return;
+    _move_pose_dual_pub.publish(pose_array_msg);
+    //pub zero feedback
+    pub_zero_feedback(header);
+  }
+  void pub_zero_feedback(std_msgs::Header header){
     _marker_pose.position.x=_marker_pose.position.y=_marker_pose.position.z=0;
-    _marker_pose.orientation.x=_marker_pose.orientation.y=_marker_pose.orientation.z=0;_marker_pose.orientation.w=1;
-    
+    _marker_pose.orientation.x=_marker_pose.orientation.y=_marker_pose.orientation.z=0;_marker_pose.orientation.w=1;    
     sensor_msgs::PointCloud2 manip_cloud_msg;
     pcl::toROSMsg(*_reference_cloud, manip_cloud_msg);
     manip_cloud_msg.header = header;
@@ -708,124 +761,154 @@ public:
     _server->applyChanges();
   }
   void do_grasp_cb(const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback){
-    geometry_msgs::PoseStamped pose_msg;
-    pose_msg.header = feedback->header;
-    pose_msg.header.frame_id = std::string("manipulate_frame");
-    pose_msg.pose = feedback->pose;
-    _grasp_pose_pub.publish(pose_msg);
-    // mode change 
-    _grasp_pose = feedback->pose;
-    // insert axial restraint
-    visualization_msgs::InteractiveMarker int_marker;
-    int_marker.header.frame_id = feedback->header.frame_id;
-    int_marker.scale = 0.14;
-    int_marker.name = "axial_restraint";
-    int_marker.pose = tf_to_pose(pose_to_tf(_grasp_pose) * tf::Transform(tf::Quaternion(1, 0, 0, 0)) *tf::Transform(tf::Quaternion(0, 0.7071, 0, 0.7071)));//_grasp_pose.position;
-    if(_all_manual){
-      int_marker.pose.orientation.x = 0;
+    if (feedback->marker_name=="grasp_pose"){
+      geometry_msgs::PoseStamped pose_msg;
+      pose_msg.header = feedback->header;
+      pose_msg.header.frame_id = std::string("manipulate_frame");
+      pose_msg.pose = feedback->pose;
+      _grasp_pose_pub.publish(pose_msg);
+      // mode change 
+      _grasp_pose = feedback->pose;
+      // insert axial restraint
+      visualization_msgs::InteractiveMarker int_marker;
+      int_marker.header.frame_id = feedback->header.frame_id;
+      int_marker.scale = 0.14;
+      int_marker.name = "axial_restraint";
+      int_marker.pose = tf_to_pose(pose_to_tf(_grasp_pose) * tf::Transform(tf::Quaternion(1, 0, 0, 0)) *tf::Transform(tf::Quaternion(0, 0.7071, 0, 0.7071)));//_grasp_pose.position;
+      if(_all_manual){
+        int_marker.pose.orientation.x = 0;
       int_marker.pose.orientation.y = 0;
       int_marker.pose.orientation.z = 0;
       int_marker.pose.orientation.w = 1;
-    }
-    visualization_msgs::InteractiveMarkerControl axial_control;
-    axial_control.always_visible = true;
-    axial_control.markers.push_back(make_arrow(int_marker, 0, 1.0, 0.5, 0.5, 0.5, 0.3));
-    axial_control.interaction_mode = visualization_msgs::InteractiveMarkerControl::MOVE_ROTATE_3D;
-    int_marker.controls.push_back(axial_control);
-    visualization_msgs::InteractiveMarkerControl control;
-    control.orientation.w = 1;
-    control.orientation.x = 1;
-    control.orientation.y = 0;
-    control.orientation.z = 0;
-    control.name = "rotate_x";
-    control.interaction_mode = InteractiveMarkerControl::ROTATE_AXIS;
-    int_marker.controls.push_back(control);
-    control.name = "move_x";
-    control.interaction_mode = InteractiveMarkerControl::MOVE_AXIS;
-    int_marker.controls.push_back(control);
-    control.orientation.w = 1;
-    control.orientation.x = 0;
-    control.orientation.y = 1;
-    control.orientation.z = 0;
-    control.name = "rotate_z";
-    control.interaction_mode = InteractiveMarkerControl::ROTATE_AXIS;
-    int_marker.controls.push_back(control);
-    control.name = "move_z";
-    control.interaction_mode = InteractiveMarkerControl::MOVE_AXIS;
-    int_marker.controls.push_back(control);
-    control.orientation.w = 1;
-    control.orientation.x = 0;
-    control.orientation.y = 0;
-    control.orientation.z = 1;
-    control.name = "rotate_y";
-    control.interaction_mode = InteractiveMarkerControl::ROTATE_AXIS;
-    int_marker.controls.push_back(control);
-    control.name = "move_y";
-    control.interaction_mode = InteractiveMarkerControl::MOVE_AXIS;
-    int_marker.controls.push_back(control);
-    _server->insert(int_marker);
-    _menu_handler_axial_restraint.apply( *_server , "axial_restraint");
+      }
+      visualization_msgs::InteractiveMarkerControl axial_control;
+      axial_control.always_visible = true;
+      axial_control.markers.push_back(make_arrow(int_marker, 0, 1.0, 0.5, 0.5, 0.5, 0.3));
+      axial_control.interaction_mode = visualization_msgs::InteractiveMarkerControl::MOVE_ROTATE_3D;
+      int_marker.controls.push_back(axial_control);
+      visualization_msgs::InteractiveMarkerControl control;
+      control.orientation.w = 1;
+      control.orientation.x = 1;
+      control.orientation.y = 0;
+      control.orientation.z = 0;
+      control.name = "rotate_x";
+      control.interaction_mode = InteractiveMarkerControl::ROTATE_AXIS;
+      int_marker.controls.push_back(control);
+      control.name = "move_x";
+      control.interaction_mode = InteractiveMarkerControl::MOVE_AXIS;
+      int_marker.controls.push_back(control);
+      control.orientation.w = 1;
+      control.orientation.x = 0;
+      control.orientation.y = 1;
+      control.orientation.z = 0;
+      control.name = "rotate_z";
+      control.interaction_mode = InteractiveMarkerControl::ROTATE_AXIS;
+      int_marker.controls.push_back(control);
+      control.name = "move_z";
+      control.interaction_mode = InteractiveMarkerControl::MOVE_AXIS;
+      int_marker.controls.push_back(control);
+      control.orientation.w = 1;
+      control.orientation.x = 0;
+      control.orientation.y = 0;
+      control.orientation.z = 1;
+      control.name = "rotate_y";
+      control.interaction_mode = InteractiveMarkerControl::ROTATE_AXIS;
+      int_marker.controls.push_back(control);
+      control.name = "move_y";
+      control.interaction_mode = InteractiveMarkerControl::MOVE_AXIS;
+      int_marker.controls.push_back(control);
+      _server->insert(int_marker);
+      _menu_handler_axial_restraint.apply( *_server , "axial_restraint");
     _server->applyChanges();
+    }
+    else {
+      // _grasp_pose_2 will be reserved, but for now, it is not needed
+      InteractiveMarker int_marker_tmp;
+      if (_server->get("grasp_pose", int_marker_tmp)){
+        _grasp_pose = int_marker_tmp.pose;
+        geometry_msgs::PoseArray pose_array_msg;
+        pose_array_msg.header = feedback->header;
+        pose_array_msg.header.frame_id = std::string("manipulate_frame");
+        pose_array_msg.poses.push_back(int_marker_tmp.pose);
+        pose_array_msg.poses.push_back(feedback->pose);
+        _grasp_pose_dual_pub.publish(pose_array_msg);
+      } 
+      else return;
+    }
   }
   void do_grasp_z_free_cb(const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback){
-    geometry_msgs::PoseStamped pose_msg;
-    pose_msg.header = feedback->header;
-    pose_msg.header.frame_id = std::string("manipulate_frame");
-    pose_msg.pose = feedback->pose;
-    _grasp_pose_z_free_pub.publish(pose_msg);
-    // mode change 
-    _grasp_pose = feedback->pose;
-    // insert axial restraint
-    visualization_msgs::InteractiveMarker int_marker;
-    int_marker.header.frame_id = feedback->header.frame_id;
-    int_marker.scale = 0.14;
-    int_marker.name = "axial_restraint";
-    int_marker.pose = tf_to_pose(pose_to_tf(_grasp_pose) * tf::Transform(tf::Quaternion(1, 0, 0, 0)) *tf::Transform(tf::Quaternion(0, 0.7071, 0, 0.7071)));//_grasp_pose.position;
-    if(_all_manual){
-      int_marker.pose.orientation.x = 0;
-      int_marker.pose.orientation.y = 0;
-      int_marker.pose.orientation.z = 0;
-      int_marker.pose.orientation.w = 1;
+    if(feedback->marker_name=="grasp_pose"){
+      geometry_msgs::PoseStamped pose_msg;
+      pose_msg.header = feedback->header;
+      pose_msg.header.frame_id = std::string("manipulate_frame");
+      pose_msg.pose = feedback->pose;
+      _grasp_pose_z_free_pub.publish(pose_msg);
+      // mode change 
+      _grasp_pose = feedback->pose;
+      // insert axial restraint
+      visualization_msgs::InteractiveMarker int_marker;
+      int_marker.header.frame_id = feedback->header.frame_id;
+      int_marker.scale = 0.14;
+      int_marker.name = "axial_restraint";
+      int_marker.pose = tf_to_pose(pose_to_tf(_grasp_pose) * tf::Transform(tf::Quaternion(1, 0, 0, 0)) *tf::Transform(tf::Quaternion(0, 0.7071, 0, 0.7071)));//_grasp_pose.position;
+      if(_all_manual){
+        int_marker.pose.orientation.x = 0;
+        int_marker.pose.orientation.y = 0;
+        int_marker.pose.orientation.z = 0;
+        int_marker.pose.orientation.w = 1;
+      }
+      visualization_msgs::InteractiveMarkerControl axial_control;
+      axial_control.always_visible = true;
+      axial_control.markers.push_back(make_arrow(int_marker, 0, 1.0, 0.5, 0.5, 0.5, 0.3));
+      axial_control.interaction_mode = visualization_msgs::InteractiveMarkerControl::MOVE_ROTATE_3D;
+      int_marker.controls.push_back(axial_control);
+      visualization_msgs::InteractiveMarkerControl control;
+      control.orientation.w = 1;
+      control.orientation.x = 1;
+      control.orientation.y = 0;
+      control.orientation.z = 0;
+      control.name = "rotate_x";
+      control.interaction_mode = InteractiveMarkerControl::ROTATE_AXIS;
+      int_marker.controls.push_back(control);
+      control.name = "move_x";
+      control.interaction_mode = InteractiveMarkerControl::MOVE_AXIS;
+      int_marker.controls.push_back(control);
+      control.orientation.w = 1;
+      control.orientation.x = 0;
+      control.orientation.y = 1;
+      control.orientation.z = 0;
+      control.name = "rotate_z";
+      control.interaction_mode = InteractiveMarkerControl::ROTATE_AXIS;
+      int_marker.controls.push_back(control);
+      control.name = "move_z";
+      control.interaction_mode = InteractiveMarkerControl::MOVE_AXIS;
+      int_marker.controls.push_back(control);
+      control.orientation.w = 1;
+      control.orientation.x = 0;
+      control.orientation.y = 0;
+      control.orientation.z = 1;
+      control.name = "rotate_y";
+      control.interaction_mode = InteractiveMarkerControl::ROTATE_AXIS;
+      int_marker.controls.push_back(control);
+      control.name = "move_y";
+      control.interaction_mode = InteractiveMarkerControl::MOVE_AXIS;
+      int_marker.controls.push_back(control);
+      _server->insert(int_marker);
+      _menu_handler_axial_restraint.apply( *_server , "axial_restraint");
+      _server->applyChanges();
     }
-    visualization_msgs::InteractiveMarkerControl axial_control;
-    axial_control.always_visible = true;
-    axial_control.markers.push_back(make_arrow(int_marker, 0, 1.0, 0.5, 0.5, 0.5, 0.3));
-    axial_control.interaction_mode = visualization_msgs::InteractiveMarkerControl::MOVE_ROTATE_3D;
-    int_marker.controls.push_back(axial_control);
-    visualization_msgs::InteractiveMarkerControl control;
-    control.orientation.w = 1;
-    control.orientation.x = 1;
-    control.orientation.y = 0;
-    control.orientation.z = 0;
-    control.name = "rotate_x";
-    control.interaction_mode = InteractiveMarkerControl::ROTATE_AXIS;
-    int_marker.controls.push_back(control);
-    control.name = "move_x";
-    control.interaction_mode = InteractiveMarkerControl::MOVE_AXIS;
-    int_marker.controls.push_back(control);
-    control.orientation.w = 1;
-    control.orientation.x = 0;
-    control.orientation.y = 1;
-    control.orientation.z = 0;
-    control.name = "rotate_z";
-    control.interaction_mode = InteractiveMarkerControl::ROTATE_AXIS;
-    int_marker.controls.push_back(control);
-    control.name = "move_z";
-    control.interaction_mode = InteractiveMarkerControl::MOVE_AXIS;
-    int_marker.controls.push_back(control);
-    control.orientation.w = 1;
-    control.orientation.x = 0;
-    control.orientation.y = 0;
-    control.orientation.z = 1;
-    control.name = "rotate_y";
-    control.interaction_mode = InteractiveMarkerControl::ROTATE_AXIS;
-    int_marker.controls.push_back(control);
-    control.name = "move_y";
-    control.interaction_mode = InteractiveMarkerControl::MOVE_AXIS;
-    int_marker.controls.push_back(control);
-    _server->insert(int_marker);
-    _menu_handler_axial_restraint.apply( *_server , "axial_restraint");
-    _server->applyChanges();
+    if(feedback->marker_name=="grasp_pose_2"){
+      InteractiveMarker int_marker_tmp;
+      if (_server->get("grasp_pose", int_marker_tmp)){
+        _grasp_pose = int_marker_tmp.pose;
+        geometry_msgs::PoseArray pose_array_msg;
+        pose_array_msg.header = feedback->header;
+        pose_array_msg.header.frame_id = std::string("manipulate_frame");
+        pose_array_msg.poses.push_back(int_marker_tmp.pose);
+        pose_array_msg.poses.push_back(feedback->pose);
+        _grasp_pose_dual_pub.publish(pose_array_msg);
+      } 
+    }
   }
   void do_push_cb(const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback){
     geometry_msgs::PoseStamped pose_msg;
@@ -911,6 +994,61 @@ public:
   
     _server->insert(int_marker);
     _menu_handler_grasp.apply( *_server , "grasp_pose");
+    _server->applyChanges();
+  }
+  void grasp_cb_2(const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback){
+    ROS_INFO("grasp_cb_2 driven");
+    //remove circle marker
+    _server->erase("first_menu");
+    //add grasp marker
+    visualization_msgs::InteractiveMarker int_marker;
+    int_marker.header.frame_id = feedback->header.frame_id;
+    int_marker.scale = 0.2;
+    int_marker.name = "grasp_pose_2";
+    int_marker.pose = _menu_pose;
+    visualization_msgs::InteractiveMarkerControl grab_control;
+    grab_control.always_visible = true;
+    std::vector <visualization_msgs::Marker> grab_marker = make_grab(int_marker, 0.5);
+    grab_control.markers.insert(grab_control.markers.end(), grab_marker.begin(), grab_marker.end());
+    grab_control.interaction_mode = visualization_msgs::InteractiveMarkerControl::MOVE_ROTATE_3D;
+    int_marker.controls.push_back(grab_control);
+    
+    visualization_msgs::InteractiveMarkerControl control;
+    control.orientation.w = 1;
+    control.orientation.x = 1;
+    control.orientation.y = 0;
+    control.orientation.z = 0;
+    control.name = "rotate_x";
+    control.interaction_mode = InteractiveMarkerControl::ROTATE_AXIS;
+    int_marker.controls.push_back(control);
+    control.name = "move_x";
+    control.interaction_mode = InteractiveMarkerControl::MOVE_AXIS;
+    int_marker.controls.push_back(control);
+
+    control.orientation.w = 1;
+    control.orientation.x = 0;
+    control.orientation.y = 1;
+    control.orientation.z = 0;
+    control.name = "rotate_z";
+    control.interaction_mode = InteractiveMarkerControl::ROTATE_AXIS;
+    int_marker.controls.push_back(control);
+    control.name = "move_z";
+    control.interaction_mode = InteractiveMarkerControl::MOVE_AXIS;
+    int_marker.controls.push_back(control);
+
+    control.orientation.w = 1;
+    control.orientation.x = 0;
+    control.orientation.y = 0;
+    control.orientation.z = 1;
+    control.name = "rotate_y";
+    control.interaction_mode = InteractiveMarkerControl::ROTATE_AXIS;
+    int_marker.controls.push_back(control);
+    control.name = "move_y";
+    control.interaction_mode = InteractiveMarkerControl::MOVE_AXIS;
+    int_marker.controls.push_back(control);
+
+    _server->insert(int_marker);
+    _menu_handler_grasp.apply( *_server , "grasp_pose_2");
     _server->applyChanges();
   }
   bool align_cb(drc_task_common::ICPService::Request& req,
@@ -1361,40 +1499,6 @@ public:
     marker.color.a = 1.0;
     return marker;
   }
-  std::vector<visualization_msgs::Marker> make_grab(visualization_msgs::InteractiveMarker &int_marker)
-  {
-    std::vector<visualization_msgs::Marker> markers;
-    markers.push_back(make_box(int_marker.scale*.6, int_marker.scale*.3, int_marker.scale*.3,
-				       0, 0, 1,
-				       int_marker.scale*.3, int_marker.scale*.3, 0
-				      ));
-    markers.push_back(make_box(int_marker.scale*.6, int_marker.scale*.3, int_marker.scale*.3,
-				      1, 0, 0,
-				       int_marker.scale*.3, -int_marker.scale*.3, 0
-				      ));
-    markers.push_back(make_box(int_marker.scale*.3, int_marker.scale*.9, int_marker.scale*.3,
-				       0, 1, 0,
-				      int_marker.scale*-.15, 0, 0
-				       ));
-    return markers;
-  }
-  visualization_msgs::Marker make_box(float s_x, float s_y, float s_z, float r, float g, float b, float x, float y, float z)
-  {
-    visualization_msgs::Marker marker;
-    marker.type = visualization_msgs::Marker::CUBE;
-    marker.scale.x = s_x;
-    marker.scale.y = s_y;
-    marker.scale.z = s_z;
-    marker.color.r = r;
-    marker.color.g = g;
-    marker.color.b = b;
-    marker.color.a = 1.0;
-    marker.pose.position.x = x;
-    marker.pose.position.y = y;
-    marker.pose.position.z = z;
-    return marker;
-  }
-
 
   void timerCallback(const ros::TimerEvent&){
     //br.sendTransform(tf::StampedTransform(tf_calc(), ros::Time::now(), _base_link_name, "manipulate_frame"));

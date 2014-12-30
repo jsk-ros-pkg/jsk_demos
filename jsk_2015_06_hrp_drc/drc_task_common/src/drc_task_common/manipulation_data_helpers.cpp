@@ -129,19 +129,19 @@ bool write_marker(int file_index, ManipulationData &imk){
   return write_marker(std::string(file_name), imk);
 }
 
-std::vector<visualization_msgs::Marker> make_grab(visualization_msgs::InteractiveMarker &int_marker)
+std::vector<visualization_msgs::Marker> make_grab(visualization_msgs::InteractiveMarker &int_marker, float brightness)
 {
   std::vector<visualization_msgs::Marker> markers;
   markers.push_back(make_box(int_marker.scale*.6, int_marker.scale*.3, int_marker.scale*.3,
-			     0, 0, 1,
+			     0, 0, 1*brightness,
 			     int_marker.scale*.3, int_marker.scale*.3, 0
 			     ));
   markers.push_back(make_box(int_marker.scale*.6, int_marker.scale*.3, int_marker.scale*.3,
-			     1, 0, 0,
+			     1*brightness, 0, 0,
 			     int_marker.scale*.3, -int_marker.scale*.3, 0
 			     ));
   markers.push_back(make_box(int_marker.scale*.3, int_marker.scale*.9, int_marker.scale*.3,
-			     0, 1, 0,
+			     0, 1*brightness, 0,
 			     int_marker.scale*-.15, 0, 0
 			     ));
   return markers;
