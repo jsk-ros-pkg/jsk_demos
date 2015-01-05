@@ -6,6 +6,7 @@
   <arg name="app_manager" default="false" />
   <arg name="run_behavior" default="true" />
   <arg name="fridge_show" default="true" />
+  <arg name="roi" default="true" />
   <include file="$(find pr2_machine)/$(env ROBOT).machine" />
   <!-- <arg name="app_manager" default="true" /> -->
 
@@ -28,7 +29,7 @@
            to="/openni_c2/rgb/screenpoint"/>
   </anode>
 
-  <node pkg="jsk_pcl_ros" type="attention_clipper" name="attention_clipper" output="screen">
+  <node pkg="jsk_pcl_ros" type="attention_clipper" name="attention_clipper" output="screen" if="$(arg roi)">
     <remap from="~input" to="/openni_c2/rgb/camera_info" />
     <rosparam>
       dimension_x: 0.3
@@ -38,7 +39,7 @@
     </rosparam>
   </node>
 
-  <node pkg="jsk_pcl_ros" type="roi_clipper" name="roi_attention_clipper" output="screen">
+  <node pkg="jsk_pcl_ros" type="roi_clipper" name="roi_attention_clipper" output="screen" if="$(arg roi)">
     <remap from="~input/image" to="/openni_c2/rgb/image_rect_color" />
     <remap from="~input/camera_info" to="/attention_clipper/output" />
   </node>
@@ -50,7 +51,7 @@
           machine="c2" >
       <remap from="/openni/rgb/image" to="/openni_c2/rgb/image_rect_color" />
       <remap from="/openni/rgb/camera_info" to="/openni_c2/rgb/camera_info"/>
-      <param name="use_mask" value="true" />
+      <param name="use_mask" value="$(arg roi)" />
       <remap from="mask" to="/attention_clipper/output/mask"/>
     </node>
     <node pkg="jsk_perception" type="point_pose_extractor" machien="c2"
