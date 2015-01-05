@@ -26,6 +26,7 @@
 
   <include file="$(find detect_cans_in_fridge_201202)/launch/perception.launch">
     <arg name="fridge_show" value="false" />
+    <arg name="roi" value="false" />
   </include>
 
   <group unless="$(arg execute)" >
