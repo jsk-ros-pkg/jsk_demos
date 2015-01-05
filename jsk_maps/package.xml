@@ -8,12 +8,10 @@
   <license>BSD</license>
   <url>http://ros.org/wiki/jsk_maps</url>
   <buildtool_depend>catkin</buildtool_depend>
-  <build_depend>roseus</build_depend>
-  <build_depend>multi_map_server</build_depend>
+  <build_depend>euslisp</build_depend>
   <build_depend>imagemagick</build_depend>
   <build_depend>geometry_msgs</build_depend>
-  <run_depend>roseus</run_depend>
-  <run_depend>multi_map_server</run_depend>
+  <run_depend>euslisp</run_depend>
   <run_depend>imagemagick</run_depend>
   <run_depend>geometry_msgs</run_depend>
 </package>

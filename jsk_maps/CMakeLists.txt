@@ -3,28 +3,38 @@ cmake_minimum_required(VERSION 2.8.3)
 project(jsk_maps)
 
 find_package(catkin REQUIRED COMPONENTS
-  roseus multi_map_server geometry_msgs)
+  euslisp)
 
-if(roseus_SOURCE_DIR)
-  set(roseus_PACKAGE_PATH ${roseus_SOURCE_DIR})
-elseif(roseus_SOURCE_PREFIX)
-  set(roseus_PACKAGE_PATH ${roseus_SOURCE_PREFIX})
-else(roseus_SOURCE_PREFIX)
-  set(roseus_PACKAGE_PATH ${roseus_PREFIX}/share/roseus)
+if(${CMAKE_SYSTEM_NAME} MATCHES Linux)
+  execute_process(COMMAND gcc -dumpmachine OUTPUT_VARIABLE GCC_MACHINE OUTPUT_STRIP_TRAILING_WHITESPACE)
+  message("-- Set GCC_MACHINE to ${GCC_MACHINE}")
+  if(${GCC_MACHINE} MATCHES x86_64-linux-gnu)
+    set(ARCHDIR Linux64)
+  elseif(${GCC_MACHINE} MATCHES i686-linux-gnu)
+    set(ARCHDIR Linux)
+  elseif(${CMAKE_SYSTEM_PROCESSOR} MATCHES amd64* OR
+      ${CMAKE_SYSTEM_PROCESSOR} MATCHES x86_64* )
+    set(ARCHDIR Linux64)
+  else()
+    set(ARCHDIR Linux)
+  endif()
+elseif(${CMAKE_SYSTEM_NAME} MATCHES Darwin)
+  set(ARCHDIR Darwin)
+elseif(${CMAKE_SYSTEM_NAME} MATCHES Cygwin)
+  set(ARCHDIR Cygwin)
+else()
+  set(ARCHDIR Generic)
 endif()
-  
 
-if(EXISTS ${roseus_PREFIX}/bin/roseus)
-  set(_roseus_exe ${roseus_PREFIX}/bin/roseus)
-else(EXISTS ${roseus_PACKAGE_PATH}/bin/roseus)
-  set(_roseus_exe ${roseus_PACKAGE_PATH}/bin/roseus)
-endif()
-
-if(EXISTS ${roseus_PREFIX}/scripts/generate-all-msg-srv.sh)
-  set(_geneus_msg_exe ${roseus_PREFIX}/scripts/generate-all-msg-srv.sh)
-else(EXISTS ${roseus_PACKAGE_PATH}/scripts/generate-all-msg-srv.sh)
-  set(_geneus_msg_exe ${roseus_PACKAGE_PATH}/scripts/generate-all-msg-srv.sh)
-endif()
+if (EXISTS ${euslisp_SOURCE_DIR}/jskeus/eus/${ARCHDIR}/bin/irteusgl)
+  set(_eus_exe ${euslisp_SOURCE_DIR}/jskeus/eus/${ARCHDIR}/bin/irteusgl)
+elseif (EXISTS ${euslisp_SOURCE_PREFIX}/jskeus/eus/${ARCHDIR}/bin/irteusgl)
+  set(_eus_exe ${euslisp_SOURCE_PREFIX}/jskeus/eus/${ARCHDIR}/bin/irteusgl)
+elseif (EXISTS ${euslisp_PREFIX}/share/euslisp/jskeus/eus/${ARCHDIR}/bin/irteusgl)
+  set(_eus_exe ${euslisp_PREFIX}/share/euslisp/jskeus/eus/${ARCHDIR}/bin/irteusgl)
+else (EXISTS ${euslisp_SOURCE_DIR}/jskeus/eus/${ARCHDIR}/bin/irteusgl)
+  message(FATAL_ERROR "cannot find irteusgl")
+endif(EXISTS ${euslisp_SOURCE_DIR}/jskeus/eus/${ARCHDIR}/bin/irteusgl)
 
 catkin_package()
 
@@ -37,9 +47,9 @@ set(_generated_files
   ${PROJECT_SOURCE_DIR}/raw_maps/eng8-6f-0.05.yaml
   ${PROJECT_SOURCE_DIR}/raw_maps/eng2-1f-0.05.yaml
   ${PROJECT_SOURCE_DIR}/raw_maps/eng2-3f-0.05.yaml
-  ${PROJECT_SOURCE_DIR}/raw_maps/eng2-8f-0.05.yaml 
+  ${PROJECT_SOURCE_DIR}/raw_maps/eng2-8f-0.05.yaml
   ${PROJECT_SOURCE_DIR}/raw_maps/eng6-2f-0.05.yaml
-  ${PROJECT_SOURCE_DIR}/raw_maps/eng6-4f-0.05.yaml 
+  ${PROJECT_SOURCE_DIR}/raw_maps/eng6-4f-0.05.yaml
   ${PROJECT_SOURCE_DIR}/raw_maps/eng8-1f-0.05.yaml
   ${PROJECT_SOURCE_DIR}/raw_maps/ eng8-b1f-0.05.yaml
   ${PROJECT_SOURCE_DIR}/launch/start_map_eng2_main.launch
@@ -47,12 +57,12 @@ set(_generated_files
   ${PROJECT_SOURCE_DIR}/launch/start_map_eng8_main.launch
   )
 
-set(_eus_cmd "\"(progn;(setq;*src*;\\\"${PROJECT_SOURCE_DIR}\\\");(load;\\\"${PROJECT_SOURCE_DIR}/src/catkin-build-util.l\\\"))\"")
-
+set(_eus_cmd "\"(progn;(make-package;\\\"ROS\\\");(setq;*src*;\\\"${PROJECT_SOURCE_DIR}\\\");(load;\\\"${PROJECT_SOURCE_DIR}/src/catkin-build-util.l\\\"))\"")
+message("_eus_exe => ${_eus_exe}")
 add_custom_command(
   OUTPUT ${_generated_files}
-  COMMAND ${_roseus_exe} ${_eus_cmd}
-  DEPENDS ${ALL_GEN_OUTPUT_FILES_eus}
+  COMMAND ${_eus_exe} ${_eus_cmd}
+  DEPENDS ${_eus_exe}
   WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
 )
 
