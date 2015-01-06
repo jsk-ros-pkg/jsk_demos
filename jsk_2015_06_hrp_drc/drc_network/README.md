@@ -44,15 +44,15 @@ ACKのような確認パケットを送る仕組みを用意しなくてはい�
 
 Data Type                      | Data Size(bit)     | Num per sec in 10kbps
 -------------------------------|--------------------|----------------------
-Image (RGB,VGA)                | `640*480*3*8=7.2M` | 0.0001
-Image (RGB,QVGA)               | `320*240*3*8=1.8M` | 0.0006
-Image (Mono,VGA)               | `640*480*1*8=2.4M` | 0.0004
-Image (Mono,QVGA)              | `320*240*1*8=0.6M` | 0.002
-Image (Mono,20x20)             | `20*20*8=0.4K`     | 0.32
-Image (Mono,10x10)             | `10*10*8=0.1K`     | 1.28
-Float                          | `32`               | 32
-Angle Vector (32 Float array)  | `1024`             | 1
-Bool                           | `1`                | 1024
-Int                            | `64`               | 16
-OK-Warn-Error Status           | `2`                | 512
-Character                      | `8`                | 128
+Image (RGB,VGA)                | `640*480*3*8=7.2M` | 0.001
+Image (RGB,QVGA)               | `320*240*3*8=1.8M` | 0.006
+Image (Mono,VGA)               | `640*480*1*8=2.4M` | 0.004
+Image (Mono,QVGA)              | `320*240*1*8=0.6M` | 0.02
+Image (Mono,20x20)             | `20*20*8=0.4K`     | 3
+Image (Mono,10x10)             | `10*10*8=0.1K`     | 12
+Float                          | `32`               | 300
+Angle Vector (32 Float array)  | `1024`             | 9
+Bool                           | `1`                | 9600
+Int                            | `64`               | 150
+OK-Warn-Error Status           | `2`                | 4800
+Character                      | `8`                | 1200
