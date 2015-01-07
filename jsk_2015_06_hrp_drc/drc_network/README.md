@@ -53,6 +53,44 @@ ACKのような確認パケットを送る仕組みを用意しなくてはい�
 #### パケット構造
 UDPのヘッダは8byteである。IP層も含めると36byteである。
 
+### ROS
+ROSのパケットはかなり軽量である。
+
+簡単なメッセージは以下のようなサイズである.
+8 byteのオフセットがヘッダとして追加される。
+
+---
+    Message Type                | Data Size (bit)
+--------------------------------|---------------
+`std_msgs/Int32`                | 64
+`std_msgs/Int64`                | 96
+`std_msgs/String` (0 character) | 64
+`std_msgs/String` (8 character) | 128
+`std_msgs/Header` (empty frame) | 160
+
+---
+```python
+In [14]: b = StringIO.StringIO()
+In [15]: rospy.msg.serialize_message(b, 0, String())
+In [16]: b.len
+Out[16]: 8
+
+In [18]: b = StringIO.StringIO()
+In [19]: rospy.msg.serialize_message(b, 0, String(data='hogehoge'))
+In [20]: b.len
+Out[20]: 16
+
+In [7]: b = StringIO.StringIO()
+In [8]: rospy.msg.serialize_message(b, 0, Int32(data=10))
+In [9]: b.len
+Out[9]: 8
+
+In [10]: b = StringIO.StringIO()
+In [11]: rospy.msg.serialize_message(b, 0, Int64(data=10))
+In [12]: b.len
+Out[12]: 12
+```
+
 ## 通信量の観点から
 10kbpsは厳しい帯域制限である。
 
