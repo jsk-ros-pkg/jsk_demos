@@ -1,5 +1,10 @@
 # DRCでのネットワークについて
-本ドキュメントは[DRC Finals Rules](http://www.theroboticschallenge.org/sites/default/files/2014_12_3_Comms_Doc_For_Teams_DISTAR_Case_23912.pdf)に基づいたものである。
+本ドキュメントは[DRC Finals Rules](http://www.theroboticschallenge.org/sites/default/files/2014_12_3_Comms_Doc_For_Teams_DISTAR_Case_23912.pdf),
+および[DRC Q&A](http://www.theroboticschallenge.org/files/2015_01_05_DRC_QA.pdf)に基づいたものである。
+
+![](images/drc_network_overview_by_darpa.png)
+
+(This image is provided by darpa in [this document](http://www.theroboticschallenge.org/sites/default/files/2014_12_3_Comms_Doc_For_Teams_DISTAR_Case_23912.pdf))
 
 ## ルール概要
 ![](images/network_overview.png)
@@ -12,8 +17,8 @@
 
 特に2と3の間で提供される通信は特殊である。
 ![](images/network_fc_ocs.png)
-* (0~1023 port) 常時2と3へ10kbpsから2kbpsの間の通信, 遅延についての記述はなし
-* (16384~24575 port) 3から4へ、1Gbps, 遅延なしの通信。
+* (0~1023 port) 常時2と3へ10kbpsから2kbpsの間の通信, 遅延なしの通信。
+* (16384~24575 port) 3から4へ、1秒間の300Mbps, 遅延なしの通信。
 ただしこれは300Mbitの"burst"通信が1秒から30秒の間で
 ランダムに通信可能になる。
 
