@@ -54,10 +54,14 @@ ACKのような確認パケットを送る仕組みを用意しなくてはい�
 UDPのヘッダは8byteである。IP層も含めると36byteである。
 
 ### ROS
-ROSのパケットはかなり軽量である。
+ROSのパケットは可変長データとしての最小の構成となる。
+
+* [ROS Header](http://wiki.ros.org/ROS/Connection%20Header)
+
+ヘッダの構成は`4-byte length + [4-byte field length + field=value ]*`となる.
 
 簡単なメッセージは以下のようなサイズである.
-8 byteのオフセットがヘッダとして追加される。
+1fieldのため、8 byteのオフセットがヘッダとして追加される。
 
 ---
     Message Type                | Data Size (bit)
