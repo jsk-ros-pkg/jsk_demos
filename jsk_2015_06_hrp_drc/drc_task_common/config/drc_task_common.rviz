@@ -151,6 +151,7 @@ Visualization Manager:
       Transport Hint: raw
       Value: false
       Visibility:
+        "": true
         BoundingBoxArray: true
         CameraInfo: true
         Grid: true
@@ -594,6 +595,7 @@ Visualization Manager:
       Value: false
     - Class: jsk_rviz_plugin/CameraInfo
       Enabled: false
+      Image Topic: ""
       Name: CameraInfo
       Topic: /jsk_model_marker_interface/hrp2/camera/depth_registered/camera_info
       Value: false
@@ -601,7 +603,28 @@ Visualization Manager:
       color: 85; 255; 255
       edge color: 255; 255; 0
       far clip: 1
+      not show side polygons: true
+      show edges: true
       show polygons: false
+      use image: false
+    - Class: rviz/InteractiveMarkers
+      Enable Transparency: true
+      Enabled: false
+      Name: InteractiveMarkers
+      Show Axes: false
+      Show Descriptions: true
+      Show Visual Aids: false
+      Update Topic: /interactive_point_cloud/update
+      Value: false
+    - Class: rviz/InteractiveMarkers
+      Enable Transparency: true
+      Enabled: false
+      Name: InteractiveMarkers
+      Show Axes: false
+      Show Descriptions: true
+      Show Visual Aids: false
+      Update Topic: /manip/update
+      Value: false
   Enabled: true
   Global Options:
     Background Color: 48; 48; 48
@@ -639,10 +662,10 @@ Visualization Manager:
         Z: 2.6226e-06
       Name: Current View
       Near Clip Distance: 0.01
-      Pitch: 0.644797
+      Pitch: 0.299797
       Target Frame: <Fixed Frame>
       Value: XYOrbit (rviz)
-      Yaw: 1.8904
+      Yaw: 4.4754
     Saved: ~
 Window Geometry:
   Camera:
@@ -668,5 +691,5 @@ Window Geometry:
   Views:
     collapsed: true
   Width: 2560
-  X: -8
+  X: -7
   Y: 24
