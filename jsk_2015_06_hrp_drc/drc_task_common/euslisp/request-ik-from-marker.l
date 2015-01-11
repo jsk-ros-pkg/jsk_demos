@@ -30,7 +30,7 @@
   (ros::advertise "urdf_control_marker/set_pose" geometry_msgs::PoseStamped 1)
   (ros::advertise "/jsk_model_marker_interface/hrp2/reset_joint_states_and_root" sensor_msgs::JointState 1)
   (ros::advertise "/midi_config_player/set_feedback" sensor_msgs::JoyFeedbackArray 1)
-  (ros::advertise "/executive_visible_map" visualization_msgs::Marker 1)
+  (ros::advertise "/inverse_reachablity_visible_map" visualization_msgs::Marker 1)
   (ros::subscribe "/solve_ik_command" std_msgs::empty #'solve-ik-command 1)
   (ros::subscribe "/save_obj_command" std_msgs::empty #'save-obj-command 1)
   (ros::subscribe "/send_angle_command" std_msgs::empty #'send-angle-command 1)
@@ -111,7 +111,7 @@
   (setq *map-step-dist* (float-vector 200 200 100))
   (setq *map-max-point* (list 400 800 10))
   (setq *map-min-point* (list -300 -600 0))
-  (setq *executive-map-mode* nil)
+  (setq *inverse-reachablity-map-mode* nil)
   (init-robot-model)
   (ros::wait-for-service (format nil "~a~a" *ns* "/get_pose"))
   (ros::wait-for-service (format nil "~a~a" *ns* "/get_type"))
@@ -342,18 +342,18 @@
 
 (defun set-exec-mode
   ()
-  (if *executive-map-mode*
+  (if *inverse-reachablity-map-mode*
       (progn
-	(setq *executive-coords-list* nil)
-	(setq *executive-map-mode* nil)
+	(setq *inverse-reachablity-coords-list* nil)
+	(setq *inverse-reachablity-map-mode* nil)
 	(ros::ros-info "exec-map disable"))
     (progn
-      (setq *executive-map-mode* t)
-      (executive-map-init)
+      (setq *inverse-reachablity-map-mode* t)
+      (inverse-reachablity-map-init)
       (ros::ros-info "exec-map driven")
       )
     )
-    (show-executive-map)
+    (show-inverse-reachablity-map)
   )
   
   
@@ -466,7 +466,7 @@
             (progn (send hand-temp-coords :rotate (* (/ -1.0 3) pi) :z :local)  (send hand-temp-coords :translate (float-vector -30 50 0) :local))
             )
           ;(send hand-temp-coords :transform *robot-coords*)
-          (setq hand-temp-coords (send (send *robot-coords* :copy-worldcoords) :transform hand-temp-coords))
+          (setq hand-temp-coords (send (send *robot-coords* :copy-worldcoords) :transform (send hand-temp-coords :copy-worldcoords)))
           (ros::publish "/grasp_pose_feedback" (instance geometry_msgs::PoseStamped :init :pose (ros::coords->tf-pose hand-temp-coords) :header (instance std_msgs::Header :init :frame_id *frame-id*
                                                                                                                                                           :stamp (ros::time-now))))
           (ros::ros-info "grasp feedback pose pubed")
@@ -526,14 +526,9 @@
   )
 (defun solve-ik-from-move-pose-command 
   (msg)
-  (let ((original-av (send *robot* :angle-vector)))
-    (send *robot* :angle-vector (send *ri* :state :potentio-vector))
-    (solve-ik-from-pose-common msg)
-    (setq *initial-pose-coords* (send *robot* *ik-arm* :end-coords :worldcoords))
-    (send *robot* :angle-vector original-av)
-    (setq *solve-ik-from-pose-command-flag* t)
-    (setq *rotation-axis* (list t t t))
-    )
+  (get-current-pose-common)
+  (setq *solve-ik-from-pose-command-flag* t)
+  (setq *rotation-axis* (list t t t))
   )
 
 (defun solve-ik-from-push-pose-command 
@@ -546,20 +541,15 @@
   )
 (defun solve-ik-from-move-by-axial-pose-command
   (msg)
-  (let* ((ts (ros::time-now)) (original-av (send *robot* :angle-vector))
+  (let* ((ts (ros::time-now))
 	 )
     (unless (send *tfl* :wait-for-transform *frame-id* (send msg :header :frame_id) ts 1) (return-from solve-ik-from-move-by-axial-pose-command nil))
     (let* ((transform (send *tfl* :lookup-transform *frame-id* (send msg :header :frame_id) ts)) hand-temp-coords)
       (setq *target-pose-coords*
-	    (send 
-	     (send (send (send transform :copy-worldcoords) :transform (ros::tf-pose->coords (elt (send msg :poses) 1)))
-		   :transformation *robot-coords* :local) :transformation (make-coords) :local)
-	    )
+            (send (send transform :copy-worldcoords) :transform (ros::tf-pose->coords (elt (send msg :poses) 1))))
       (setq hand-temp-coords
-	    (send 
-	     (send (send (send transform :copy-worldcoords) :transform (ros::tf-pose->coords (elt (send msg :poses) 0)))
-		   :transformation *robot-coords* :local) :transformation (make-coords) :local)
-	    )
+            (send (send transform :copy-worldcoords) :transform (ros::tf-pose->coords (elt (send msg :poses) 0))))
+	
       (if (equal *ik-arm* :rarm)
           (progn (send hand-temp-coords :translate (float-vector 30 50 0)
                        :local) (send hand-temp-coords :rotate (* (/ -1.0 3) pi) :z :local))
@@ -567,12 +557,22 @@
 	)
       (setq *move-target-from-hand* (send (send (send *target-pose-coords* :copy-worldcoords) :transformation hand-temp-coords :local) :transformation (make-coords) :local)) 
       (setq *solve-ik-from-pose-command-flag* t)
-      (send *robot* :angle-vector (send *ri* :state :potentio-vector))
-      (setq *initial-pose-coords* (send (send (send *robot* *ik-arm* :end-coords) :copy-worldcoords) :transform *move-target-from-hand*))
-      (send *robot* :angle-vector original-av) 
+      (get-current-pose-common)
+      (send *initial-pose-coords* :transform *move-target-from-hand*)
       (setq *pub-grasp-pose-feedback-flag* nil)
       (setq *rotation-axis* (list :x t t))
       ))
+  )
+(defun get-current-pose-common
+  ()
+  (let ((original-av (send *robot* :angle-vector)))
+    (send *robot* :angle-vector (send *ri* :state :potentio-vector))
+    ;(setq hand-temp-coords (send (send *robot-coords* :copy-worldcoords) :transform (send hand-temp-coords :copy-worldcoords)))
+    ;(setq *initial-pose-coords* (send (send *robot-coords* :copy-worldcoords) :transform (send (send *robot* *ik-arm* :end-coords :worldcoords) :copy-worldcoords)))
+    (setq *initial-pose-coords* (send (send *robot-coords* :copy-worldcoords) :transform (send (send *robot* *ik-arm* :end-coords :worldcoords) :copy-worldcoords)))
+    (setq *initial-pose-coords-for-second-arm* (send (send *robot-coords* :copy-worldcoords) :transform (send (send *robot* (find-if-not #'(lambda (x) (equal x *ik-arm*)) (list :rarm :larm)) :end-coords :worldcoords) :copy-worldcoords)))
+    (send *robot* :angle-vector original-av)
+    )
   )
 (defun solve-ik-from-pose-common
   (msg)
@@ -580,10 +580,10 @@
 	 )
     (unless (send *tfl* :wait-for-transform *frame-id* (send msg :header :frame_id) ts 1) (return-from solve-ik-from-pose-common nil))
     (setq *target-pose-coords*
-          (send 
-	   (send (send (send *tfl* :lookup-transform *frame-id* (send msg :header :frame_id) ts) :transform (ros::tf-pose->coords(send msg :pose)))
-		 :transformation *robot-coords* :local) :transformation (make-coords) :local)
-	  )
+          (send (send *tfl* :lookup-transform *frame-id* (send msg :header :frame_id) ts) :transform (ros::tf-pose->coords(send msg :pose)
+                                                                                                                          )
+                )
+          )
     (if (equal *ik-arm* :rarm)
         (setq *move-target-from-hand* (send (send (make-coords) :rotate (* (/ 1.0 3) pi) :z :local) :translate (float-vector -30 -50 0))) ;;for grasp
       (setq *move-target-from-hand* (send (send (make-coords) :rotate (* (/ -1.0 3) pi) :z :local) :translate (float-vector -30 50 0))) ;;for grasp     
@@ -618,16 +618,8 @@
 (defun solve-ik-from-move-dual-pose-command
   (msg)
   (solve-ik-from-dual-pose-common msg)
-  (let ((original-av (send *robot* :angle-vector)))
-    (send *robot* :angle-vector (send *ri* :state :potentio-vector))
-    (setq *initial-pose-coords* (send *robot* *ik-arm* :end-coords :worldcoords))
-    (if (equal *ik-arm* :rarm)
-        (setq *initial-pose-coords-for-second-arm* (send *robot* :larm :end-coords :worldcoords))
-      (setq *initial-pose-coords-for-second-arm* (send *robot* :rarm :end-coords :worldcoords))
-      )
-    (send *robot* :angle-vector original-av)
-    (setq *rotation-axis* (list t t t t))
-    )
+  (get-current-pose-common)
+  (setq *rotation-axis* (list t t t t))
   (setq *solve-ik-from-dual-pose-command-flag* t)
   )
 (defun solve-ik-from-dual-pose-common
@@ -636,18 +628,14 @@
 	 )
     (unless (send *tfl* :wait-for-transform *frame-id* (send msg :header :frame_id) ts 1) (return-from solve-ik-from-dual-pose-common nil))
     (setq *target-pose-coords*
-          (send 
-	   (send (send (send *tfl* :lookup-transform *frame-id* (send msg :header :frame_id) ts) :transform (ros::tf-pose->coords (elt (send msg :poses) 0)))
-		 :transformation *robot-coords* :local) :transformation (make-coords) :local)
-	  )
+          (send (send *tfl* :lookup-transform *frame-id* (send msg :header :frame_id) ts) :transform (ros::tf-pose->coords (elt (send msg :poses) 0)))
+          )
     (setq *target-pose-coords-for-second-arm*
-          (send 
-	   (send (send (send *tfl* :lookup-transform *frame-id* (send msg :header :frame_id) ts) :transform (ros::tf-pose->coords (elt (send msg :poses) 1)))
-		 :transformation *robot-coords* :local) :transformation (make-coords) :local)
-	  )
+          (send (send *tfl* :lookup-transform *frame-id* (send msg :header :frame_id) ts) :transform (ros::tf-pose->coords (elt (send msg :poses) 1)))
+          )
     (if (equal *ik-arm* :rarm)
         (progn (setq *move-target-from-hand* (send (send (make-coords) :rotate (* (/ 1.0 3) pi) :z :local) :translate (float-vector -30 -50 0))) (setq *move-target-from-second-hand* (send (send (make-coords) :rotate (* (/ -1.0 3) pi) :z :local) :translate (float-vector -30 50 0)))) ;;for grasp
-      (progn (setq *move-target-from-hand* (send (send (make-coords) :rotate (* (/ -1.0 3) pi) :z :local) :translate (float-vector -30 50 0))) (setq *move-target-from-hand* (send (send (make-coords) :rotate (* (/ 1.0 3) pi) :z :local) :translate (float-vector -30 -50 0)))) ;;for grasp
+      (progn (setq *move-target-from-hand* (send (send (make-coords) :rotate (* (/ -1.0 3) pi) :z :local) :translate (float-vector -30 50 0))) (setq *move-target-from-second-hand* (send (send (make-coords) :rotate (* (/ 1.0 3) pi) :z :local) :translate (float-vector -30 -50 0)))) ;;for grasp
       )
     )
   )
@@ -706,7 +694,7 @@
     *ik-result*
     ))
 (defun request-ik-from-pose-one
-  (&key (initial-pose :reset-manip-pose) (robot-coords *robot-coords*) target-pose-coords-for-second-arm initial-pose-coords-for-second-arm move-target-from-second-hand)
+  (&key (initial-pose :reset-manip-pose) (robot-coords (send *robot-coords* :copy-worldcoords)) (target-pose-coords (send *target-pose-coords* :copy-worldcoords)) (initial-pose-coords (send *initial-pose-coords* :copy-worldcoords)) target-pose-coords-for-second-arm initial-pose-coords-for-second-arm move-target-from-second-hand)
   (let* (original-av original-coords)
     (warning-message 2 "[request-ik] send solve-ik service.~%")
     (setq original-av (send *robot* :angle-vector))
@@ -714,10 +702,16 @@
     ;; regenerate move coords
     (when initial-pose (send *robot* initial-pose))
     (send *robot* :fix-leg-to-coords (make-coords))
-    (when *draw-viewer-flag* (objects (list *robot* *target-pose-coords* *initial-pose-coords*)))
     ;; check mode 
     ;; solve ik
-    (setq *ik-result* (send-ik-request :target-coords *target-pose-coords* :initial-coords *initial-pose-coords* :rotation-axis *rotation-axis* :interpolate-mode :from-pose-one :move-target-from-hand *move-target-from-hand*
+    (setq target-pose-coords (send (send target-pose-coords :transformation robot-coords :local) :transformation (make-coords) :local))
+    (setq initial-pose-coords (send (send initial-pose-coords :transformation robot-coords :local) :transformation (make-coords) :local))
+    (if target-pose-coords-for-second-arm (setq target-pose-coords-for-second-arm (send (send target-pose-coords-for-second-arm :transformation robot-coords :local) :transformation (make-coords) :local)))
+    (if initial-pose-coords-for-second-arm (setq initial-pose-coords-for-second-arm (send (send initial-pose-coords-for-second-arm :transformation robot-coords :local) :transformation (make-coords) :local)))
+
+
+    (when *draw-viewer-flag* (objects (list *robot* target-pose-coords initial-pose-coords)))
+    (setq *ik-result* (send-ik-request :target-coords target-pose-coords :initial-coords initial-pose-coords :rotation-axis *rotation-axis* :interpolate-mode :from-pose-one :move-target-from-hand *move-target-from-hand*
                                        :target-coords-for-second-arm target-pose-coords-for-second-arm :initial-coords-for-second-arm initial-pose-coords-for-second-arm :move-target-from-second-hand move-target-from-second-hand))
     (if *pub-grasp-pose-feedback-flag* (pub-grasp-pose-feedback))
     (if *pub-grasp-dual-pose-feedback-flag* (pub-grasp-dual-pose-feedback))
@@ -837,6 +831,7 @@
                        :rotation-axis rotation-axis
                        :max (float-vector  500  500  0  20  20  10)
                        :warnp t
+                       :stop 60
                        ))
             
             (setq ik-res (= (send res :error_code :val) moveit_msgs::MoveItErrorCodes::*SUCCESS*))
@@ -876,6 +871,7 @@
                      :rotation-axis rotation-axis
                      :max (float-vector  500  500  0  20  20  10)
                      :warnp t
+                     :stop 45
                      ))
           
           (setq ik-res (= (send res :error_code :val) moveit_msgs::MoveItErrorCodes::*SUCCESS*))
@@ -990,10 +986,10 @@
   ()
   (let* ((title
           (format nil "Robot Menu~%"))
-         (menu-list (list "cancel" "switch arm" "current pos" "executive-map-mode" ":reset-pose" ":reset-manip-pose" ":init-pose" ":reach-drill-walk-pose" ":reach-drill-pre-pose" ":pierce-drill-pre-pose"))
+         (menu-list (list "cancel" "switch arm" "current pos" "inverse-reachablity-map-mode" ":reset-pose" ":reset-manip-pose" ":init-pose" ":reach-drill-walk-pose" ":reach-drill-pre-pose" ":pierce-drill-pre-pose"))
          (switch-arm-index 1) 
          (current-pos-index 2)
-	 (executive-map-mode-index 3)
+	 (inverse-reachablity-map-mode-index 3)
          (req (instance drc_task_common::RvizMenuCallRequest :init :title title :menu_list menu-list))
          res res-index res-value)
     (setq res (ros::service-call "rviz_menu_call" req))
@@ -1005,7 +1001,7 @@
            (publish-obj-mode-text))
           ((equal res-index current-pos-index)
            (set-robot-current-pos))
-	  ((equal res-index executive-map-mode-index)
+	  ((equal res-index inverse-reachablity-map-mode-index)
 	   (set-exec-mode))
           ((find-method *robot* (read-from-string res-value))
            (eval (list 'send '*robot* '(read-from-string res-value)))
@@ -1017,17 +1013,17 @@
   (send (send *robot-coords* :copy-worldcoords) :translate (float-vector x y 0) :local)
   ;(make-coords :pos (float-vector x y 0))
   )
-(defun executive-map-init ()
+(defun inverse-reachablity-map-init ()
   (let* (map-list-x map-list-y)
       (dotimes (ix (round (/ (- (elt *map-max-point* 0) (elt *map-min-point* 0)) (elt *map-step-dist* 0))))
 	(dotimes (iy (round (/ (- (elt *map-max-point* 1) (elt *map-min-point* 1)) (elt *map-step-dist* 1))))
 	  (push (+ (* (* 1.0 ix) (elt *map-step-dist* 0)) (elt *map-min-point* 0))  map-list-x)
 	  (push (+ (* (* 1.0 iy) (elt *map-step-dist* 1)) (elt *map-min-point* 1))  map-list-y)
 	  ))
-      (setq *executive-coords-list* (mapcar #'make-xy-coords map-list-x map-list-y))
+      (setq *inverse-reachablity-coords-list* (mapcar #'make-xy-coords map-list-x map-list-y))
       )
   )
-(defun show-executive-map ()
+(defun show-inverse-reachablity-map ()
   (let* ((msg (instance visualization_msgs::marker :init))
          (pose-msg (instance geometry_msgs::pose :init))
          points-list-msg colors-list-msg
@@ -1045,17 +1041,17 @@
                                :y (* 0.5 (* 0.001 (elt *map-step-dist* 1)))
                                :z (* 0.5 (* 0.001 (elt *map-step-dist* 2)))
 ))
-    (dotimes (i (length *executive-coords-list*))
+    (dotimes (i (length *inverse-reachablity-coords-list*))
       (push (instance geometry_msgs::point :init
-                      :x (* 0.001 (elt (send (elt *executive-coords-list* i) :pos) 0))
-                      :y (* 0.001 (elt (send (elt *executive-coords-list* i) :pos) 1))
-                      :z (* 0.001 (elt (send (elt *executive-coords-list* i) :pos) 2)))
+                      :x (* 0.001 (elt (send (elt *inverse-reachablity-coords-list* i) :pos) 0))
+                      :y (* 0.001 (elt (send (elt *inverse-reachablity-coords-list* i) :pos) 1))
+                      :z (* 0.001 (elt (send (elt *inverse-reachablity-coords-list* i) :pos) 2)))
             points-list-msg)
       (push (vector->rgba (float-vector 1 0 1)) colors-list-msg)
       )
     (send msg :points points-list-msg)
     (send msg :colors colors-list-msg)
-    (ros::publish "/executive_visible_map" msg)
+    (ros::publish "/inverse_reachablity_visible_map" msg)
    )
   )
    
@@ -1083,15 +1079,15 @@
       ))
   (when *solve-ik-command-flag*
     (cond
-     (*executive-map-mode* 
-      (let* ((executive-coords-list-temp nil))
-	(dotimes (i (length *executive-coords-list*))
-	  (if (request-ik-from-marker-one :robot-coords (elt *executive-coords-list* i))
-	      (push (elt *executive-coords-list* i) executive-coords-list-temp)
+     (*inverse-reachablity-map-mode* 
+      (let* ((inverse-reachablity-coords-list-temp nil))
+	(dotimes (i (length *inverse-reachablity-coords-list*))
+	  (if (request-ik-from-marker-one :robot-coords (elt *inverse-reachablity-coords-list* i))
+	      (push (elt *inverse-reachablity-coords-list* i) inverse-reachablity-coords-list-temp)
 	    )
 	  )
-	(setq *executive-coords-list* executive-coords-list-temp)
-	(show-executive-map)
+	(setq *inverse-reachablity-coords-list* inverse-reachablity-coords-list-temp)
+	(show-inverse-reachablity-map)
 	))
      (t
       (request-ik-from-marker-one))       
@@ -1099,24 +1095,42 @@
     )
   (when *solve-ik-from-pose-command-flag*
     (cond
-     (*executive-map-mode* 
-      (let* ((executive-coords-list-temp nil))
-	(dotimes (i (length *executive-coords-list*))
-	  (if (request-ik-from-pose-one :robot-coords (elt *executive-coords-list* i))
-	      (push (elt *executive-coords-list* i) executive-coords-list-temp)
-	    )
-	  )
-	(setq *executive-coords-list* executive-coords-list-temp)
-	(show-executive-map)
-	))
-     (t
-      (request-ik-from-pose-one))       
-     )
+     (*inverse-reachablity-map-mode* 
       (setq *pub-grasp-pose-feedback-flag* nil)
       (setq *pub-grasp-dual-pose-feedback-flag* nil)
+      (let* ((inverse-reachablity-coords-list-temp nil))
+	(dotimes (i (length *inverse-reachablity-coords-list*))
+	  (if (request-ik-from-pose-one :robot-coords (elt *inverse-reachablity-coords-list* i))
+	      (push (elt *inverse-reachablity-coords-list* i) inverse-reachablity-coords-list-temp)
+	    )
+	  )
+	(setq *inverse-reachablity-coords-list* inverse-reachablity-coords-list-temp)
+	(show-inverse-reachablity-map)
+	))
+     (t
+      (request-ik-from-pose-one)) 
+     )
+    (setq *pub-grasp-pose-feedback-flag* nil)
+    (setq *pub-grasp-dual-pose-feedback-flag* nil)
     )
   (when *solve-ik-from-dual-pose-command-flag*
-    (request-ik-from-pose-one :target-pose-coords-for-second-arm *target-pose-coords-for-second-arm* :initial-pose-coords-for-second-arm *initial-pose-coords-for-second-arm* :move-target-from-second-hand *move-target-from-second-hand*)
+    (cond
+     (*inverse-reachablity-map-mode*
+      (setq *pub-grasp-pose-feedback-flag* nil)
+      (setq *pub-grasp-dual-pose-feedback-flag* nil)
+      (let* ((inverse-reachablity-coords-list-temp nil))
+	(dotimes (i (length *inverse-reachablity-coords-list*))
+	  (if (request-ik-from-pose-one :target-pose-coords-for-second-arm *target-pose-coords-for-second-arm* :initial-pose-coords-for-second-arm *initial-pose-coords-for-second-arm* :move-target-from-second-hand *move-target-from-second-hand* :robot-coords (elt *inverse-reachablity-coords-list* i))
+	      (push (elt *inverse-reachablity-coords-list* i) inverse-reachablity-coords-list-temp)
+	    )
+	  )
+	(setq *inverse-reachablity-coords-list* inverse-reachablity-coords-list-temp)
+	(show-inverse-reachablity-map)
+	))
+     (t
+        (request-ik-from-pose-one :target-pose-coords-for-second-arm *target-pose-coords-for-second-arm* :initial-pose-coords-for-second-arm *initial-pose-coords-for-second-arm* :move-target-from-second-hand *move-target-from-second-hand*))
+     )
+    (setq *pub-grasp-pose-feedback-flag* nil)
     (setq *pub-grasp-dual-pose-feedback-flag* nil)
     )
   (when *save-obj-command-flag*
