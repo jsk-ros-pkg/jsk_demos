@@ -1,0 +1,10 @@
+<launch>
+  <arg name="IP" default="133.11.216.47" />
+  <include file="$(find mini_maxwell)/launch/drc_2015_environment.launch">
+    <arg name="IP" value="$(arg IP)" />
+  </include>
+  <node pkg="jsk_rqt_plugins" type="rqt_drc_mini_maxwell" 
+	name="rqt_drc_mini_maxwell" />
+  <node pkg="drc_com_common" type="rqt_reconfigure_for_mini_maxwell.sh" 
+	name="rqt_reconfigure_for_mini_maxwell" />
+</launch>

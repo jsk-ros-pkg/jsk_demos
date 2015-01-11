@@ -1,0 +1,9 @@
+
+[Desktop Entry]
+
+Version=1.0
+Type=Application
+Terminal=true
+Name=Mini Maxwell
+Exec=/bin/bash -i -c "roslaunch drc_com_common mini_maxwell.launch"
+Icon=/usr/share/icons/Humanity/apps/128/internet-feed-reader.svg
