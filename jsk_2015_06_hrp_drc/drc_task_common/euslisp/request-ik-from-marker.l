@@ -112,6 +112,7 @@
   (setq *map-max-point* (list 400 800 10))
   (setq *map-min-point* (list -300 -600 0))
   (setq *inverse-reachability-map-mode* nil)
+  (setq *reachability-map-mode* nil)
   (init-robot-model)
   (ros::wait-for-service (format nil "~a~a" *ns* "/get_pose"))
   (ros::wait-for-service (format nil "~a~a" *ns* "/get_type"))
@@ -348,6 +349,7 @@
 	(setq *inverse-reachability-map-mode* nil)
 	(ros::ros-info "exec-map disable"))
     (progn
+      (setq *reachability-map-mode* nil)
       (setq *inverse-reachability-map-mode* t)
       (inverse-reachability-map-init)
       (ros::ros-info "exec-map driven")
@@ -404,6 +406,7 @@
   ()
   (let* (obj-mode-text
          ik-mode-text
+         exec-mode-text
          (text-msg (instance jsk_rviz_plugins::OverlayText :init)))
     (cond ((equal (elt *obj-mode-list* *obj-mode-index*) :autoset)
            (setq obj-mode-text "AutoSet"))
@@ -417,7 +420,13 @@
            (setq ik-mode-text "Reach"))
           ((equal (elt *ik-mode-list* *ik-mode-index*) :release)
            (setq ik-mode-text "Release")))
-    (send text-msg :text (format nil "Mode: ~a / ~a / ~a" obj-mode-text (string *ik-arm*) ik-mode-text))
+    (cond (*inverse-reachability-map-mode*
+           (setq exec-mode-text "IR"))
+          (*reachability-map-mode*
+           (setq exec-mode-text "DR"))
+          (t (setq exec-mode-text ""))
+          )
+    (send text-msg :text (format nil "Mode: ~a / ~a / ~a / ~a" obj-mode-text (string *ik-arm*) ik-mode-text exec-mode-text))
     (send text-msg :top 70)
     (send text-msg :left 10)
     (send text-msg :width 750)
@@ -799,7 +808,7 @@
                   (setq initial-coords target-coords)
                   (setq target-coords tmp))
                 ))))
-  (let* (ik-res ik-angle-list (divide-num (if interpolate-mode 5 1)))
+  (let* (ik-res ik-angle-list (divide-num (if (and (not *reachability-map-mode*) interpolate-mode) 5 1)) (ik-server-service-name (if *reachability-map-mode* "/calc_dynamic_reachability" "/solve_ik")))
     ;; service call for task state manager
     (ros::service-call "call_task_state_event" (instance drc_task_common::StringRequestRequest :init :data "SolveIK"))
     ;; loop for interpolation
@@ -823,6 +832,7 @@
                (setq *assoc-frame-id* "jsk_model_marker_interface/hrp2/LARM_LINK6")))
             ;; service call for ik server
             (setq res (ik-server-call
+                       :ik-server-service-name ik-server-service-name
                        :target-coords tc
                        :move-target mt
                        :link-list ll
@@ -863,6 +873,7 @@
                  (setq *assoc-frame-id* "jsk_model_marker_interface/hrp2/LARM_LINK6")))
           ;; service call for ik server
           (setq res (ik-server-call
+                     :ik-server-service-name ik-server-service-name
                      :target-coords tc
                      :move-target mt
                      :link-list ll
@@ -986,10 +997,11 @@
   ()
   (let* ((title
           (format nil "Robot Menu~%"))
-         (menu-list (list "cancel" "switch arm" "current pos" "inverse-reachability-map-mode" ":reset-pose" ":reset-manip-pose" ":init-pose" ":reach-drill-walk-pose" ":reach-drill-pre-pose" ":pierce-drill-pre-pose"))
+         (menu-list (list "cancel" "switch arm" "current pos" "inverse-reachability-map-mode" "reachability-map-mode" ":reset-pose" ":reset-manip-pose" ":init-pose" ":reach-drill-walk-pose" ":reach-drill-pre-pose" ":pierce-drill-pre-pose"))
          (switch-arm-index 1) 
          (current-pos-index 2)
 	 (inverse-reachability-map-mode-index 3)
+         (reachability-map-mode-index 4)
          (req (instance drc_task_common::RvizMenuCallRequest :init :title title :menu_list menu-list))
          res res-index res-value)
     (setq res (ros::service-call "rviz_menu_call" req))
@@ -1003,11 +1015,14 @@
            (set-robot-current-pos))
 	  ((equal res-index inverse-reachability-map-mode-index)
 	   (set-exec-mode))
+	  ((equal res-index reachability-map-mode-index)
+	   (setq *reachability-map-mode* (if *reachability-map-mode* nil t)))
           ((find-method *robot* (read-from-string res-value))
            (eval (list 'send '*robot* '(read-from-string res-value)))
            (setq *ik-result* (list (send-all (send *robot* :joint-list) :joint-angle)))
            (send-joint-states-to-marker)))
     (setq *robot-menu-command-flag* nil)
+    (publish-obj-mode-text)
     ))
 (defun make-xy-coords (x y)
   (send (send *robot-coords* :copy-worldcoords) :translate (float-vector x y 0) :local)
@@ -1092,6 +1107,8 @@
      (t
       (request-ik-from-marker-one))       
      )
+    (setq *reachability-map-mode* nil)
+    (setq *inverse-reachability-map-mode* nil)
     )
   (when *solve-ik-from-pose-command-flag*
     (cond
@@ -1112,6 +1129,8 @@
      )
     (setq *pub-grasp-pose-feedback-flag* nil)
     (setq *pub-grasp-dual-pose-feedback-flag* nil)
+    (setq *reachability-map-mode* nil)
+    (setq *inverse-reachability-map-mode* nil)
     )
   (when *solve-ik-from-dual-pose-command-flag*
     (cond
@@ -1132,6 +1151,8 @@
      )
     (setq *pub-grasp-pose-feedback-flag* nil)
     (setq *pub-grasp-dual-pose-feedback-flag* nil)
+    (setq *reachability-map-mode* nil)
+    (setq *inverse-reachability-map-mode* nil)
     )
   (when *save-obj-command-flag*
     (save-obj-model-one))
