@@ -30,7 +30,7 @@
   (ros::advertise "urdf_control_marker/set_pose" geometry_msgs::PoseStamped 1)
   (ros::advertise "/jsk_model_marker_interface/hrp2/reset_joint_states_and_root" sensor_msgs::JointState 1)
   (ros::advertise "/midi_config_player/set_feedback" sensor_msgs::JoyFeedbackArray 1)
-  (ros::advertise "/inverse_reachablity_visible_map" visualization_msgs::Marker 1)
+  (ros::advertise "/inverse_reachability_visible_map" visualization_msgs::Marker 1)
   (ros::subscribe "/solve_ik_command" std_msgs::empty #'solve-ik-command 1)
   (ros::subscribe "/save_obj_command" std_msgs::empty #'save-obj-command 1)
   (ros::subscribe "/send_angle_command" std_msgs::empty #'send-angle-command 1)
@@ -111,7 +111,8 @@
   (setq *map-step-dist* (float-vector 200 200 100))
   (setq *map-max-point* (list 400 800 10))
   (setq *map-min-point* (list -300 -600 0))
-  (setq *inverse-reachablity-map-mode* nil)
+  (setq *inverse-reachability-map-mode* nil)
+  (setq *reachability-map-mode* nil)
   (init-robot-model)
   (ros::wait-for-service (format nil "~a~a" *ns* "/get_pose"))
   (ros::wait-for-service (format nil "~a~a" *ns* "/get_type"))
@@ -342,18 +343,19 @@
 
 (defun set-exec-mode
   ()
-  (if *inverse-reachablity-map-mode*
+  (if *inverse-reachability-map-mode*
       (progn
-	(setq *inverse-reachablity-coords-list* nil)
-	(setq *inverse-reachablity-map-mode* nil)
+	(setq *inverse-reachability-coords-list* nil)
+	(setq *inverse-reachability-map-mode* nil)
 	(ros::ros-info "exec-map disable"))
     (progn
-      (setq *inverse-reachablity-map-mode* t)
-      (inverse-reachablity-map-init)
+      (setq *reachability-map-mode* nil)
+      (setq *inverse-reachability-map-mode* t)
+      (inverse-reachability-map-init)
       (ros::ros-info "exec-map driven")
       )
     )
-    (show-inverse-reachablity-map)
+    (show-inverse-reachability-map)
   )
   
   
@@ -404,6 +406,7 @@
   ()
   (let* (obj-mode-text
          ik-mode-text
+         exec-mode-text
          (text-msg (instance jsk_rviz_plugins::OverlayText :init)))
     (cond ((equal (elt *obj-mode-list* *obj-mode-index*) :autoset)
            (setq obj-mode-text "AutoSet"))
@@ -417,7 +420,13 @@
            (setq ik-mode-text "Reach"))
           ((equal (elt *ik-mode-list* *ik-mode-index*) :release)
            (setq ik-mode-text "Release")))
-    (send text-msg :text (format nil "Mode: ~a / ~a / ~a" obj-mode-text (string *ik-arm*) ik-mode-text))
+    (cond (*inverse-reachability-map-mode*
+           (setq exec-mode-text "IR"))
+          (*reachability-map-mode*
+           (setq exec-mode-text "DR"))
+          (t (setq exec-mode-text ""))
+          )
+    (send text-msg :text (format nil "Mode: ~a / ~a / ~a / ~a" obj-mode-text (string *ik-arm*) ik-mode-text exec-mode-text))
     (send text-msg :top 70)
     (send text-msg :left 10)
     (send text-msg :width 750)
@@ -799,7 +808,7 @@
                   (setq initial-coords target-coords)
                   (setq target-coords tmp))
                 ))))
-  (let* (ik-res ik-angle-list (divide-num (if interpolate-mode 5 1)))
+  (let* (ik-res ik-angle-list (divide-num (if (and (not *reachability-map-mode*) interpolate-mode) 5 1)) (ik-server-service-name (if *reachability-map-mode* "/calc_dynamic_reachability" "/solve_ik")))
     ;; service call for task state manager
     (ros::service-call "call_task_state_event" (instance drc_task_common::StringRequestRequest :init :data "SolveIK"))
     ;; loop for interpolation
@@ -823,6 +832,7 @@
                (setq *assoc-frame-id* "jsk_model_marker_interface/hrp2/LARM_LINK6")))
             ;; service call for ik server
             (setq res (ik-server-call
+                       :ik-server-service-name ik-server-service-name
                        :target-coords tc
                        :move-target mt
                        :link-list ll
@@ -863,6 +873,7 @@
                  (setq *assoc-frame-id* "jsk_model_marker_interface/hrp2/LARM_LINK6")))
           ;; service call for ik server
           (setq res (ik-server-call
+                     :ik-server-service-name ik-server-service-name
                      :target-coords tc
                      :move-target mt
                      :link-list ll
@@ -986,10 +997,11 @@
   ()
   (let* ((title
           (format nil "Robot Menu~%"))
-         (menu-list (list "cancel" "switch arm" "current pos" "inverse-reachablity-map-mode" ":reset-pose" ":reset-manip-pose" ":init-pose" ":reach-drill-walk-pose" ":reach-drill-pre-pose" ":pierce-drill-pre-pose"))
+         (menu-list (list "cancel" "switch arm" "current pos" "inverse-reachability-map-mode" "reachability-map-mode" ":reset-pose" ":reset-manip-pose" ":init-pose" ":reach-drill-walk-pose" ":reach-drill-pre-pose" ":pierce-drill-pre-pose"))
          (switch-arm-index 1) 
          (current-pos-index 2)
-	 (inverse-reachablity-map-mode-index 3)
+	 (inverse-reachability-map-mode-index 3)
+         (reachability-map-mode-index 4)
          (req (instance drc_task_common::RvizMenuCallRequest :init :title title :menu_list menu-list))
          res res-index res-value)
     (setq res (ros::service-call "rviz_menu_call" req))
@@ -1001,29 +1013,32 @@
            (publish-obj-mode-text))
           ((equal res-index current-pos-index)
            (set-robot-current-pos))
-	  ((equal res-index inverse-reachablity-map-mode-index)
+	  ((equal res-index inverse-reachability-map-mode-index)
 	   (set-exec-mode))
+	  ((equal res-index reachability-map-mode-index)
+	   (setq *reachability-map-mode* (if *reachability-map-mode* nil t)))
           ((find-method *robot* (read-from-string res-value))
            (eval (list 'send '*robot* '(read-from-string res-value)))
            (setq *ik-result* (list (send-all (send *robot* :joint-list) :joint-angle)))
            (send-joint-states-to-marker)))
     (setq *robot-menu-command-flag* nil)
+    (publish-obj-mode-text)
     ))
 (defun make-xy-coords (x y)
   (send (send *robot-coords* :copy-worldcoords) :translate (float-vector x y 0) :local)
   ;(make-coords :pos (float-vector x y 0))
   )
-(defun inverse-reachablity-map-init ()
+(defun inverse-reachability-map-init ()
   (let* (map-list-x map-list-y)
       (dotimes (ix (round (/ (- (elt *map-max-point* 0) (elt *map-min-point* 0)) (elt *map-step-dist* 0))))
 	(dotimes (iy (round (/ (- (elt *map-max-point* 1) (elt *map-min-point* 1)) (elt *map-step-dist* 1))))
 	  (push (+ (* (* 1.0 ix) (elt *map-step-dist* 0)) (elt *map-min-point* 0))  map-list-x)
 	  (push (+ (* (* 1.0 iy) (elt *map-step-dist* 1)) (elt *map-min-point* 1))  map-list-y)
 	  ))
-      (setq *inverse-reachablity-coords-list* (mapcar #'make-xy-coords map-list-x map-list-y))
+      (setq *inverse-reachability-coords-list* (mapcar #'make-xy-coords map-list-x map-list-y))
       )
   )
-(defun show-inverse-reachablity-map ()
+(defun show-inverse-reachability-map ()
   (let* ((msg (instance visualization_msgs::marker :init))
          (pose-msg (instance geometry_msgs::pose :init))
          points-list-msg colors-list-msg
@@ -1041,17 +1056,17 @@
                                :y (* 0.5 (* 0.001 (elt *map-step-dist* 1)))
                                :z (* 0.5 (* 0.001 (elt *map-step-dist* 2)))
 ))
-    (dotimes (i (length *inverse-reachablity-coords-list*))
+    (dotimes (i (length *inverse-reachability-coords-list*))
       (push (instance geometry_msgs::point :init
-                      :x (* 0.001 (elt (send (elt *inverse-reachablity-coords-list* i) :pos) 0))
-                      :y (* 0.001 (elt (send (elt *inverse-reachablity-coords-list* i) :pos) 1))
-                      :z (* 0.001 (elt (send (elt *inverse-reachablity-coords-list* i) :pos) 2)))
+                      :x (* 0.001 (elt (send (elt *inverse-reachability-coords-list* i) :pos) 0))
+                      :y (* 0.001 (elt (send (elt *inverse-reachability-coords-list* i) :pos) 1))
+                      :z (* 0.001 (elt (send (elt *inverse-reachability-coords-list* i) :pos) 2)))
             points-list-msg)
       (push (vector->rgba (float-vector 1 0 1)) colors-list-msg)
       )
     (send msg :points points-list-msg)
     (send msg :colors colors-list-msg)
-    (ros::publish "/inverse_reachablity_visible_map" msg)
+    (ros::publish "/inverse_reachability_visible_map" msg)
    )
   )
    
@@ -1079,59 +1094,65 @@
       ))
   (when *solve-ik-command-flag*
     (cond
-     (*inverse-reachablity-map-mode* 
-      (let* ((inverse-reachablity-coords-list-temp nil))
-	(dotimes (i (length *inverse-reachablity-coords-list*))
-	  (if (request-ik-from-marker-one :robot-coords (elt *inverse-reachablity-coords-list* i))
-	      (push (elt *inverse-reachablity-coords-list* i) inverse-reachablity-coords-list-temp)
+     (*inverse-reachability-map-mode* 
+      (let* ((inverse-reachability-coords-list-temp nil))
+	(dotimes (i (length *inverse-reachability-coords-list*))
+	  (if (request-ik-from-marker-one :robot-coords (elt *inverse-reachability-coords-list* i))
+	      (push (elt *inverse-reachability-coords-list* i) inverse-reachability-coords-list-temp)
 	    )
 	  )
-	(setq *inverse-reachablity-coords-list* inverse-reachablity-coords-list-temp)
-	(show-inverse-reachablity-map)
+	(setq *inverse-reachability-coords-list* inverse-reachability-coords-list-temp)
+	(show-inverse-reachability-map)
 	))
      (t
       (request-ik-from-marker-one))       
      )
+    (setq *reachability-map-mode* nil)
+    (setq *inverse-reachability-map-mode* nil)
     )
   (when *solve-ik-from-pose-command-flag*
     (cond
-     (*inverse-reachablity-map-mode* 
+     (*inverse-reachability-map-mode* 
       (setq *pub-grasp-pose-feedback-flag* nil)
       (setq *pub-grasp-dual-pose-feedback-flag* nil)
-      (let* ((inverse-reachablity-coords-list-temp nil))
-	(dotimes (i (length *inverse-reachablity-coords-list*))
-	  (if (request-ik-from-pose-one :robot-coords (elt *inverse-reachablity-coords-list* i))
-	      (push (elt *inverse-reachablity-coords-list* i) inverse-reachablity-coords-list-temp)
+      (let* ((inverse-reachability-coords-list-temp nil))
+	(dotimes (i (length *inverse-reachability-coords-list*))
+	  (if (request-ik-from-pose-one :robot-coords (elt *inverse-reachability-coords-list* i))
+	      (push (elt *inverse-reachability-coords-list* i) inverse-reachability-coords-list-temp)
 	    )
 	  )
-	(setq *inverse-reachablity-coords-list* inverse-reachablity-coords-list-temp)
-	(show-inverse-reachablity-map)
+	(setq *inverse-reachability-coords-list* inverse-reachability-coords-list-temp)
+	(show-inverse-reachability-map)
 	))
      (t
       (request-ik-from-pose-one)) 
      )
     (setq *pub-grasp-pose-feedback-flag* nil)
     (setq *pub-grasp-dual-pose-feedback-flag* nil)
+    (setq *reachability-map-mode* nil)
+    (setq *inverse-reachability-map-mode* nil)
     )
   (when *solve-ik-from-dual-pose-command-flag*
     (cond
-     (*inverse-reachablity-map-mode*
+     (*inverse-reachability-map-mode*
       (setq *pub-grasp-pose-feedback-flag* nil)
       (setq *pub-grasp-dual-pose-feedback-flag* nil)
-      (let* ((inverse-reachablity-coords-list-temp nil))
-	(dotimes (i (length *inverse-reachablity-coords-list*))
-	  (if (request-ik-from-pose-one :target-pose-coords-for-second-arm *target-pose-coords-for-second-arm* :initial-pose-coords-for-second-arm *initial-pose-coords-for-second-arm* :move-target-from-second-hand *move-target-from-second-hand* :robot-coords (elt *inverse-reachablity-coords-list* i))
-	      (push (elt *inverse-reachablity-coords-list* i) inverse-reachablity-coords-list-temp)
+      (let* ((inverse-reachability-coords-list-temp nil))
+	(dotimes (i (length *inverse-reachability-coords-list*))
+	  (if (request-ik-from-pose-one :target-pose-coords-for-second-arm *target-pose-coords-for-second-arm* :initial-pose-coords-for-second-arm *initial-pose-coords-for-second-arm* :move-target-from-second-hand *move-target-from-second-hand* :robot-coords (elt *inverse-reachability-coords-list* i))
+	      (push (elt *inverse-reachability-coords-list* i) inverse-reachability-coords-list-temp)
 	    )
 	  )
-	(setq *inverse-reachablity-coords-list* inverse-reachablity-coords-list-temp)
-	(show-inverse-reachablity-map)
+	(setq *inverse-reachability-coords-list* inverse-reachability-coords-list-temp)
+	(show-inverse-reachability-map)
 	))
      (t
         (request-ik-from-pose-one :target-pose-coords-for-second-arm *target-pose-coords-for-second-arm* :initial-pose-coords-for-second-arm *initial-pose-coords-for-second-arm* :move-target-from-second-hand *move-target-from-second-hand*))
      )
     (setq *pub-grasp-pose-feedback-flag* nil)
     (setq *pub-grasp-dual-pose-feedback-flag* nil)
+    (setq *reachability-map-mode* nil)
+    (setq *inverse-reachability-map-mode* nil)
     )
   (when *save-obj-command-flag*
     (save-obj-model-one))
