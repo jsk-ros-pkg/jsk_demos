@@ -1,5 +1,5 @@
 <launch>
-  <arg name="IP" default="133.11.216.47" />
+  <arg name="IP" default="192.168.96.101" />
   <include file="$(find mini_maxwell)/launch/drc_2015_environment.launch">
     <arg name="IP" value="$(arg IP)" />
   </include>
