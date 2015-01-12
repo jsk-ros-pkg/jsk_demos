@@ -31,6 +31,7 @@ namespace drc_task_common
     void callRequestResetGripperPose();
     void callRequestHookGrippePose();
     void callRequestGraspGrippePose();
+    void callRequestGraspGrippePoseForDrill();
 
     void callRequestStartABC();
     void callRequestStartST();
