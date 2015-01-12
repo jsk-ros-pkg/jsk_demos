@@ -57,6 +57,7 @@
   (ros::advertise-service "/dissoc_object_to_robot" std_srvs::Empty #'dissoc-object-to-robot)
   (ros::advertise-service "/set_object_mode_next" std_srvs::Empty #'set-obj-mode-next)
   (ros::advertise-service "/set_ik_mode_next" std_srvs::Empty #'set-ik-mode-next)
+  (ros::advertise-service "/get_ik_arm" drc_task_common::GetIKArm #'get-ik-arm)
   (ros::advertise (format nil "~a~a" *ns* "/set_pose") geometry_msgs::PoseStamped 1)
   (ros::advertise "obj_state_text" jsk_rviz_plugins::OverlayText 1)
   ;; object
@@ -377,6 +378,11 @@
     (when (= *ik-mode-index* (length *ik-mode-list*))
       (setq *ik-mode-index* 0))
     (publish-obj-mode-text)
+    res))
+(defun get-ik-arm
+  (req)
+  (let* ((res (send req :response)))
+    (send res :ik_arm (if (equal *ik-arm* :rarm) ":rarm" ":larm"))
     res))
 
 (defun set-obj-mode
