@@ -38,6 +38,9 @@
   <!-- teleop interface -->
   <include file="$(find drc_task_common)/launch/teleop_interface.launch" />
 
+  <!-- data server -->
+  <include file="$(find drc_task_common)/launch/manipulation_data_processor.launch" />
+
   <group>
     <remap from="robotsound" to="robotsound_ocs" />
 
