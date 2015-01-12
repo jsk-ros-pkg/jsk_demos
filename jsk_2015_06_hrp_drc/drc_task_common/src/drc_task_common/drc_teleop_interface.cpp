@@ -1,11 +1,10 @@
-#include <stdio.h>
-
 #include "rviz/config.h"
 #include "drc_teleop_interface.h"
 #include "ros/time.h"
 #include <ros/package.h>
 
 #include "ui_drc_teleop_interface.h"
+#include "drc_task_common/GetIKArm.h"
 
 using namespace rviz;
 namespace drc_task_common
@@ -136,17 +135,36 @@ namespace drc_task_common
     callRequestEusCommand(command);
   };
 
+  std::string DRCTeleopInterfaceAction::getIKArm(){
+    ros::ServiceClient client = nh_.serviceClient<drc_task_common::GetIKArm>("/get_ik_arm", true);
+    drc_task_common::GetIKArm srv;
+    if(client.call(srv)){
+      ROS_INFO("Get Arm Call Success (%s)", srv.response.ik_arm.c_str());
+      return srv.response.ik_arm;
+    }
+    else{
+      ROS_ERROR("Get Arm Service call FAIL");
+      return std::string(":arms");
+    }
+  }
   void DRCTeleopInterfaceAction::callRequestGraspGrippePose(){
-    //std::string command("(progn (send *robot* :hand :arms :grasp-pose) (send *ri* :hand-angle-vector (apply #\'concatenate float-vector (send *robot* :hand :arms :angle-vector))))");
-    std::string command("(progn (send *robot* :hand :arms :extension-pose) (send *ri* :hand-angle-vector (apply #\'concatenate float-vector (send *robot* :hand :arms :angle-vector))) (send *ri* :hand-wait-interpolation) (send *robot* :hand :arms :grasp-pose) (send *ri* :hand-angle-vector (apply #\'concatenate float-vector (send *robot* :hand :arms :angle-vector))))");
-    // std::string command("(progn (send *robot* :hand :arms :grasp-pose) (send *ri* :hand-angle-vector (apply #\'concatenate float-vector (send *robot* :hand :arms :angle-vector))))");
-    callRequestEusCommand(command);
+    char command_str[512];
+    std::string arm_string = getIKArm();
+    sprintf(command_str, 
+            "(progn (send *robot* :hand %s :extension-pose) (send *ri* :hand-angle-vector (apply #\'concatenate float-vector (send *robot* :hand :arms :angle-vector))) (send *ri* :hand-wait-interpolation) (send *robot* :hand %s :grasp-pose) (send *ri* :hand-angle-vector (apply #\'concatenate float-vector (send *robot* :hand :arms :angle-vector))))"
+            , arm_string.c_str(), arm_string.c_str()
+      );
+    callRequestEusCommand(std::string(command_str));
   };
   void DRCTeleopInterfaceAction::callRequestGraspGrippePoseForDrill(){
-    //std::string command("(progn (send *robot* :hand :arms :grasp-pose) (send *ri* :hand-angle-vector (apply #\'concatenate float-vector (send *robot* :hand :arms :angle-vector))))");
-    std::string command("(progn (send *robot* :hand :arms :distal-pose2) (send *ri* :hand-angle-vector (apply #\'concatenate float-vector (send *robot* :hand :arms :angle-vector))) (send *ri* :hand-wait-interpolation) (send *robot* :hand :arms :grasp-pose) (send *ri* :hand-angle-vector (apply #\'concatenate float-vector (send *robot* :hand :arms :angle-vector))))");
-    //std::string command("(progn (send *robot* :hand :arms :grasp-pose) (send *ri* :hand-angle-vector (apply #\'concatenate float-vector (send *robot* :hand :arms :angle-vector))))");
-    callRequestEusCommand(command);
+    char command_str[512];
+    std::string arm_string = getIKArm();
+    arm_string = std::string(":arms");
+    sprintf(command_str, 
+            "(progn (send *robot* :hand %s :distal-pose2) (send *ri* :hand-angle-vector (apply #\'concatenate float-vector (send *robot* :hand :arms :angle-vector))) (send *ri* :hand-wait-interpolation) (send *robot* :hand %s :grasp-pose) (send *ri* :hand-angle-vector (apply #\'concatenate float-vector (send *robot* :hand :arms :angle-vector))))"
+            , arm_string.c_str(), arm_string.c_str()
+      );
+    callRequestEusCommand(std::string(command_str));
   };
 
 

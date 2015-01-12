@@ -6,7 +6,7 @@ catkin_python_setup()
 
 add_message_files(DIRECTORY msg FILES StringMultiArray.msg)
 add_message_files(DIRECTORY msg FILES InteractiveMarkerArray.msg)
-add_service_files(DIRECTORY srv FILES RvizMenuCall.srv RvizMenuSelect.srv EusCommand.srv StringRequest.srv ICPService.srv)
+add_service_files(DIRECTORY srv FILES RvizMenuCall.srv RvizMenuSelect.srv EusCommand.srv StringRequest.srv ICPService.srv GetIKArm.srv)
 
 generate_messages(DEPENDENCIES ${PCL_MSGS} std_msgs std_srvs visualization_msgs sensor_msgs geometry_msgs jsk_pcl_ros jsk_interactive_marker)
 
@@ -40,6 +40,7 @@ set(SOURCE_FILES
 )
 
 add_library(${PROJECT_NAME} ${SOURCE_FILES} ${UIC_FILES})
+add_dependencies(${PROJECT_NAME} ${PROJECT_NAME}_gencpp)
 target_link_libraries(${PROJECT_NAME} ${QT_LIBRARIES} ${catkin_LIBRARIES})
 
 install(TARGETS
