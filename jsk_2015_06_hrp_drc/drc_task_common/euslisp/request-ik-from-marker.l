@@ -39,6 +39,7 @@
   (ros::subscribe "/grasp_pose" geometry_msgs::PoseStamped #'solve-ik-from-grasp-pose-command 1)
   (ros::subscribe "/grasp_pose_z_free" geometry_msgs::PoseStamped #'solve-ik-from-grasp-pose-command-z-free 1)
   (ros::subscribe "/push_pose" geometry_msgs::PoseStamped #'solve-ik-from-push-pose-command 1)
+  (ros::subscribe "/push_pose_with_assist" geometry_msgs::PoseStamped #'solve-ik-from-push-pose-with-assist-command 1)
   (ros::subscribe "/move_pose" geometry_msgs::PoseStamped #'solve-ik-from-move-pose-command 1)
   (ros::subscribe "/move_by_axial_restraint_pose" geometry_msgs::PoseArray #'solve-ik-from-move-by-axial-pose-command 1)
   (ros::subscribe "/grasp_dual_pose" geometry_msgs::PoseArray #'solve-ik-from-grasp-dual-pose-command 1)
@@ -549,10 +550,23 @@
 (defun solve-ik-from-push-pose-command 
   (msg)
   (solve-ik-from-pose-common msg)
-  (send *target-pose-coords* :translate (float-vector -10 0 0) :local) ;; length of finger
+  ;;(send *target-pose-coords* :translate (float-vector -10 0 0) :local) ;; length of finger
   (setq *initial-pose-coords* (send (send *target-pose-coords* :copy-worldcoords) :translate (float-vector -60 0 0) :local))
+  (setq *move-target-from-hand* (make-coords :pos (float-vector 115 0 45)))
   (setq *solve-ik-from-pose-command-flag* t)
-  (setq *rotation-axis* (list t t t));;
+  (setq *rotation-axis* (list :x t t));;
+  )
+(defun solve-ik-from-push-pose-with-assist-command 
+  (msg)
+  (solve-ik-from-pose-common msg)
+  (setq *target-pose-coords-for-second-arm* (send *target-pose-coords* :copy-worldcoords))
+  ;;(send *target-pose-coords-for-second-arm* :translate (float-vector -10 0 0) :local) ;; length of finger
+  (get-current-pose-common)
+  (setq *initial-pose-coords-for-second-arm* (send (send *target-pose-coords-for-second-arm* :copy-worldcoords) :translate (float-vector -60 0 0) :local))
+  (setq *target-pose-coords* (send *initial-pose-coords* :copy-worldcoords))
+  (setq *rotation-axis* (list t :x t t))
+  (setq *solve-ik-from-dual-pose-command-flag* t)
+  (setq *move-target-from-second-hand* (make-coords :pos (float-vector 115 0 45)))
   )
 (defun solve-ik-from-move-by-axial-pose-command
   (msg)
@@ -600,10 +614,8 @@
                 )
           )
     (if (equal *ik-arm* :rarm)
-        (setq *move-target-from-hand* (send (send (make-coords) :rotate (* (/ 1.0 3) pi) :z :local) :translate (float-vector -30 -50 0))) ;;for grasp
-      (setq *move-target-from-hand* (send (send (make-coords) :rotate (* (/ -1.0 3) pi) :z :local) :translate (float-vector -30 50 0))) ;;for grasp     
-      ;;(progn (send *target-pose-coords* :translate (float-vector 30 60 0) :local) (send *target-pose-coords* :rotate (* (/ -1.0 4) pi) :z :local))
-      ;;(progn (send *target-pose-coords* :translate (float-vector 30 -60 0) :local) (send *target-pose-coords* :rotate (* (/ 1.0 4) pi) :z :local))
+        (setq *move-target-from-hand* (send (send (make-coords) :rotate (* (/ 1.0 3) pi) :z :local) :translate (float-vector -30 -50 0) :local)) ;;for grasp
+      (setq *move-target-from-hand* (send (send (make-coords) :rotate (* (/ -1.0 3) pi) :z :local) :translate (float-vector -30 50 0) :local)) ;;for grasp     
       )
     )
   )
