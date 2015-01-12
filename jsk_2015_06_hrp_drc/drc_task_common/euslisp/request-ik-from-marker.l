@@ -841,7 +841,7 @@
                        :rotation-axis rotation-axis
                        :max (float-vector  500  500  0  20  20  10)
                        :warnp t
-                       :stop 60
+                       :stop (if (or *reachability-map-mode* *inverse-reachability-map-mode*) 15 30)
                        ))
             
             (setq ik-res (= (send res :error_code :val) moveit_msgs::MoveItErrorCodes::*SUCCESS*))
@@ -882,7 +882,7 @@
                      :rotation-axis rotation-axis
                      :max (float-vector  500  500  0  20  20  10)
                      :warnp t
-                     :stop 45
+                     :stop (if (or *reachability-map-mode* *inverse-reachability-map-mode*) 30 60)
                      ))
           
           (setq ik-res (= (send res :error_code :val) moveit_msgs::MoveItErrorCodes::*SUCCESS*))
