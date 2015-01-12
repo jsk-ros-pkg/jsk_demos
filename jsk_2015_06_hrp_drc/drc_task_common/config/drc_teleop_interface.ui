@@ -102,6 +102,19 @@
               </property>
             </widget>
           </item>
+          <item>
+            <widget class="QToolButton" name="hand_grasp_pose_for_drill_button">
+              <property name="text">
+                <string>Grasp Drill Pose</string>
+              </property>
+              <property name="iconSize">
+                <size>
+                  <width>80</width>
+                  <height>80</height>
+                </size>
+              </property>
+            </widget>
+          </item>
           <!-- Hrpsys Command -->
           <item>
             <widget class="QToolButton" name="hrpsys_start_abc_button">
