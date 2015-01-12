@@ -39,6 +39,7 @@
   (ros::subscribe "/grasp_pose" geometry_msgs::PoseStamped #'solve-ik-from-grasp-pose-command 1)
   (ros::subscribe "/grasp_pose_z_free" geometry_msgs::PoseStamped #'solve-ik-from-grasp-pose-command-z-free 1)
   (ros::subscribe "/push_pose" geometry_msgs::PoseStamped #'solve-ik-from-push-pose-command 1)
+  (ros::subscribe "/push_pose_with_assist" geometry_msgs::PoseStamped #'solve-ik-from-push-pose-with-assist-command 1)
   (ros::subscribe "/move_pose" geometry_msgs::PoseStamped #'solve-ik-from-move-pose-command 1)
   (ros::subscribe "/move_by_axial_restraint_pose" geometry_msgs::PoseArray #'solve-ik-from-move-by-axial-pose-command 1)
   (ros::subscribe "/grasp_dual_pose" geometry_msgs::PoseArray #'solve-ik-from-grasp-dual-pose-command 1)
@@ -57,6 +58,7 @@
   (ros::advertise-service "/dissoc_object_to_robot" std_srvs::Empty #'dissoc-object-to-robot)
   (ros::advertise-service "/set_object_mode_next" std_srvs::Empty #'set-obj-mode-next)
   (ros::advertise-service "/set_ik_mode_next" std_srvs::Empty #'set-ik-mode-next)
+  (ros::advertise-service "/get_ik_arm" drc_task_common::GetIKArm #'get-ik-arm)
   (ros::advertise (format nil "~a~a" *ns* "/set_pose") geometry_msgs::PoseStamped 1)
   (ros::advertise "obj_state_text" jsk_rviz_plugins::OverlayText 1)
   ;; object
@@ -378,6 +380,11 @@
       (setq *ik-mode-index* 0))
     (publish-obj-mode-text)
     res))
+(defun get-ik-arm
+  (req)
+  (let* ((res (send req :response)))
+    (send res :ik_arm (if (equal *ik-arm* :rarm) ":rarm" ":larm"))
+    res))
 
 (defun set-obj-mode
   ()
@@ -543,10 +550,23 @@
 (defun solve-ik-from-push-pose-command 
   (msg)
   (solve-ik-from-pose-common msg)
-  (send *target-pose-coords* :translate (float-vector -10 0 0) :local) ;; length of finger
+  ;;(send *target-pose-coords* :translate (float-vector -10 0 0) :local) ;; length of finger
   (setq *initial-pose-coords* (send (send *target-pose-coords* :copy-worldcoords) :translate (float-vector -60 0 0) :local))
+  (setq *move-target-from-hand* (make-coords :pos (float-vector 115 0 45)))
   (setq *solve-ik-from-pose-command-flag* t)
-  (setq *rotation-axis* (list t t t));;
+  (setq *rotation-axis* (list :x t t));;
+  )
+(defun solve-ik-from-push-pose-with-assist-command 
+  (msg)
+  (solve-ik-from-pose-common msg)
+  (setq *target-pose-coords-for-second-arm* (send *target-pose-coords* :copy-worldcoords))
+  ;;(send *target-pose-coords-for-second-arm* :translate (float-vector -10 0 0) :local) ;; length of finger
+  (get-current-pose-common)
+  (setq *initial-pose-coords-for-second-arm* (send (send *target-pose-coords-for-second-arm* :copy-worldcoords) :translate (float-vector -60 0 0) :local))
+  (setq *target-pose-coords* (send *initial-pose-coords* :copy-worldcoords))
+  (setq *rotation-axis* (list t :x t t))
+  (setq *solve-ik-from-dual-pose-command-flag* t)
+  (setq *move-target-from-second-hand* (make-coords :pos (float-vector 115 0 45)))
   )
 (defun solve-ik-from-move-by-axial-pose-command
   (msg)
@@ -594,10 +614,8 @@
                 )
           )
     (if (equal *ik-arm* :rarm)
-        (setq *move-target-from-hand* (send (send (make-coords) :rotate (* (/ 1.0 3) pi) :z :local) :translate (float-vector -30 -50 0))) ;;for grasp
-      (setq *move-target-from-hand* (send (send (make-coords) :rotate (* (/ -1.0 3) pi) :z :local) :translate (float-vector -30 50 0))) ;;for grasp     
-      ;;(progn (send *target-pose-coords* :translate (float-vector 30 60 0) :local) (send *target-pose-coords* :rotate (* (/ -1.0 4) pi) :z :local))
-      ;;(progn (send *target-pose-coords* :translate (float-vector 30 -60 0) :local) (send *target-pose-coords* :rotate (* (/ 1.0 4) pi) :z :local))
+        (setq *move-target-from-hand* (send (send (make-coords) :rotate (* (/ 1.0 3) pi) :z :local) :translate (float-vector -30 -50 0) :local)) ;;for grasp
+      (setq *move-target-from-hand* (send (send (make-coords) :rotate (* (/ -1.0 3) pi) :z :local) :translate (float-vector -30 50 0) :local)) ;;for grasp     
       )
     )
   )
@@ -841,7 +859,7 @@
                        :rotation-axis rotation-axis
                        :max (float-vector  500  500  0  20  20  10)
                        :warnp t
-                       :stop 60
+                       :stop (if (or *reachability-map-mode* *inverse-reachability-map-mode*) 15 30)
                        ))
             
             (setq ik-res (= (send res :error_code :val) moveit_msgs::MoveItErrorCodes::*SUCCESS*))
@@ -882,7 +900,7 @@
                      :rotation-axis rotation-axis
                      :max (float-vector  500  500  0  20  20  10)
                      :warnp t
-                     :stop 45
+                     :stop (if (or *reachability-map-mode* *inverse-reachability-map-mode*) 30 60)
                      ))
           
           (setq ik-res (= (send res :error_code :val) moveit_msgs::MoveItErrorCodes::*SUCCESS*))

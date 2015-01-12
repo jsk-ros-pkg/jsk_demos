@@ -1,11 +1,10 @@
-#include <stdio.h>
-
 #include "rviz/config.h"
 #include "drc_teleop_interface.h"
 #include "ros/time.h"
 #include <ros/package.h>
 
 #include "ui_drc_teleop_interface.h"
+#include "drc_task_common/GetIKArm.h"
 
 using namespace rviz;
 namespace drc_task_common
@@ -24,6 +23,7 @@ namespace drc_task_common
       hand_reset_pose_button_icon_name,
       hand_hook_pose_button_icon_name,
       hand_grasp_pose_button_icon_name,
+      hand_grasp_pose_for_drill_button_icon_name,
       hrpsys_start_abc_button_icon_name,
       hrpsys_start_st_button_icon_name,
       hrpsys_start_imp_button_icon_name,
@@ -40,6 +40,7 @@ namespace drc_task_common
     nh.param<std::string>("/hand_reset_pose_icon", hand_reset_pose_button_icon_name, ros::package::getPath("drc_task_common")+std::string("/icons/hand-reset-pose.jpg"));
     nh.param<std::string>("/hand_hook_pose_icon", hand_hook_pose_button_icon_name, ros::package::getPath("drc_task_common")+std::string("/icons/hand-hook-pose.jpg"));
     nh.param<std::string>("/hand_grasp_pose_icon", hand_grasp_pose_button_icon_name, ros::package::getPath("drc_task_common")+std::string("/icons/hand-grasp-pose.jpg"));
+    nh.param<std::string>("/hand_grasp_pose_for_drill_icon", hand_grasp_pose_for_drill_button_icon_name, ros::package::getPath("drc_task_common")+std::string("/icons/hand-grasp-pose.jpg"));
     nh.param<std::string>("/start_abc_icon", hrpsys_start_abc_button_icon_name, ros::package::getPath("drc_task_common")+std::string("/icons/start-abc.png"));
     nh.param<std::string>("/start_st_icon", hrpsys_start_st_button_icon_name, ros::package::getPath("drc_task_common")+std::string("/icons/start-st.png"));
     nh.param<std::string>("/start_imp_icon", hrpsys_start_imp_button_icon_name, ros::package::getPath("drc_task_common")+std::string("/icons/start-imp.png"));
@@ -63,6 +64,8 @@ namespace drc_task_common
     ui_->hand_hook_pose_button->setIcon(QIcon(QPixmap(QString(hand_hook_pose_button_icon_name.c_str()))));
     ui_->hand_grasp_pose_button->setToolButtonStyle(Qt::ToolButtonTextUnderIcon);
     ui_->hand_grasp_pose_button->setIcon(QIcon(QPixmap(QString(hand_grasp_pose_button_icon_name.c_str()))));
+    ui_->hand_grasp_pose_for_drill_button->setToolButtonStyle(Qt::ToolButtonTextUnderIcon);
+    ui_->hand_grasp_pose_for_drill_button->setIcon(QIcon(QPixmap(QString(hand_grasp_pose_for_drill_button_icon_name.c_str()))));
     ui_->hrpsys_start_abc_button->setToolButtonStyle(Qt::ToolButtonTextUnderIcon);
     ui_->hrpsys_start_abc_button->setIcon(QIcon(QPixmap(QString(hrpsys_start_abc_button_icon_name.c_str()))));
     ui_->hrpsys_start_st_button->setToolButtonStyle(Qt::ToolButtonTextUnderIcon);
@@ -91,6 +94,7 @@ namespace drc_task_common
     connect( ui_->hand_reset_pose_button, SIGNAL( clicked() ), this, SLOT(  callRequestResetGripperPose()));
     connect( ui_->hand_hook_pose_button, SIGNAL( clicked() ), this, SLOT(  callRequestHookGrippePose()));
     connect( ui_->hand_grasp_pose_button, SIGNAL( clicked() ), this, SLOT(  callRequestGraspGrippePose()));
+    connect( ui_->hand_grasp_pose_for_drill_button, SIGNAL( clicked() ), this, SLOT(  callRequestGraspGrippePoseForDrill()));
 
     connect( ui_->hrpsys_start_abc_button, SIGNAL( clicked() ), this, SLOT(  callRequestStartABC()));
     connect( ui_->hrpsys_start_st_button, SIGNAL( clicked() ), this, SLOT(  callRequestStartST()));
@@ -131,11 +135,38 @@ namespace drc_task_common
     callRequestEusCommand(command);
   };
 
+  std::string DRCTeleopInterfaceAction::getIKArm(){
+    ros::ServiceClient client = nh_.serviceClient<drc_task_common::GetIKArm>("/get_ik_arm", true);
+    drc_task_common::GetIKArm srv;
+    if(client.call(srv)){
+      ROS_INFO("Get Arm Call Success (%s)", srv.response.ik_arm.c_str());
+      return srv.response.ik_arm;
+    }
+    else{
+      ROS_ERROR("Get Arm Service call FAIL");
+      return std::string(":arms");
+    }
+  }
   void DRCTeleopInterfaceAction::callRequestGraspGrippePose(){
-    std::string command("(progn (send *robot* :hand :arms :distal-pose2) (send *ri* :hand-angle-vector (apply #\'concatenate float-vector (send *robot* :hand :arms :angle-vector))) (send *ri* :hand-wait-interpolation) (send *robot* :hand :arms :grasp-pose) (send *ri* :hand-angle-vector (apply #\'concatenate float-vector (send *robot* :hand :arms :angle-vector))))");
-    // std::string command("(progn (send *robot* :hand :arms :grasp-pose) (send *ri* :hand-angle-vector (apply #\'concatenate float-vector (send *robot* :hand :arms :angle-vector))))");
-    callRequestEusCommand(command);
+    char command_str[512];
+    std::string arm_string = getIKArm();
+    sprintf(command_str, 
+            "(progn (send *robot* :hand %s :extension-pose) (send *ri* :hand-angle-vector (apply #\'concatenate float-vector (send *robot* :hand :arms :angle-vector))) (send *ri* :hand-wait-interpolation) (send *robot* :hand %s :grasp-pose) (send *ri* :hand-angle-vector (apply #\'concatenate float-vector (send *robot* :hand :arms :angle-vector))))"
+            , arm_string.c_str(), arm_string.c_str()
+      );
+    callRequestEusCommand(std::string(command_str));
   };
+  void DRCTeleopInterfaceAction::callRequestGraspGrippePoseForDrill(){
+    char command_str[512];
+    std::string arm_string = getIKArm();
+    arm_string = std::string(":arms");
+    sprintf(command_str, 
+            "(progn (send *robot* :hand %s :distal-pose2) (send *ri* :hand-angle-vector (apply #\'concatenate float-vector (send *robot* :hand :arms :angle-vector))) (send *ri* :hand-wait-interpolation) (send *robot* :hand %s :grasp-pose) (send *ri* :hand-angle-vector (apply #\'concatenate float-vector (send *robot* :hand :arms :angle-vector))))"
+            , arm_string.c_str(), arm_string.c_str()
+      );
+    callRequestEusCommand(std::string(command_str));
+  };
+
 
   void DRCTeleopInterfaceAction::callRequestStartABC(){
     std::string command("(send *ri* :start-auto-balancer)");

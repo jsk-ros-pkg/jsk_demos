@@ -90,6 +90,7 @@ protected:
   Publisher _grasp_pose_dual_z_free_pub;
   Publisher _grasp_pose_z_free_pub;
   Publisher _push_pose_pub;
+  Publisher _push_pose_with_assist_pub;
   Publisher _move_by_axial_restraint_pose_pub;
   Publisher _reset_pose_pub;
   Publisher _debug_pose_pub;
@@ -203,6 +204,7 @@ public:
     _menu_handler_grasp.insert("Move", boost::bind(&ManipulationDataServer::move_hand_menu_cb, this, _1));
     _menu_handler_grasp.insert("Revise Model", boost::bind(&ManipulationDataServer::revise_model_cb, this, _1));
     _menu_handler_push.insert("do_push", boost::bind(&ManipulationDataServer::do_push_cb, this, _1));
+    _menu_handler_push.insert("do_push(with assist)", boost::bind(&ManipulationDataServer::do_push_with_assist_cb, this, _1));
     _menu_handler_push.insert("Remove", boost::bind(&ManipulationDataServer::remove_cb, this, _1));
     _menu_handler_push.insert("Reset Pose", boost::bind(&ManipulationDataServer::reset_pose_cb, this, _1));
     _menu_handler_axial_restraint.insert("move (by axial_restraint)", boost::bind(&ManipulationDataServer::do_move_by_axial_restraion_cb, this, _1));
@@ -217,6 +219,7 @@ public:
     _grasp_pose_dual_z_free_pub = _node.advertise<geometry_msgs::PoseArray>("/grasp_dual_pose_z_free", 10);
     _grasp_pose_z_free_pub = _node.advertise<geometry_msgs::PoseStamped>("/grasp_pose_z_free", 10);
     _push_pose_pub = _node.advertise<geometry_msgs::PoseStamped>("/push_pose", 10);
+    _push_pose_with_assist_pub = _node.advertise<geometry_msgs::PoseStamped>("/push_pose_with_assist", 10);
     _move_by_axial_restraint_pose_pub = _node.advertise<geometry_msgs::PoseArray>("/move_by_axial_restraint_pose", 10);
     _debug_pose_pub = _node.advertise<geometry_msgs::PoseStamped>("/debug_pose", 10);
     _debug_point_pub = _node.advertise<geometry_msgs::PointStamped>("/debug_point", 10);
@@ -938,6 +941,13 @@ public:
     pose_msg.header.frame_id = std::string("manipulate_frame");
     pose_msg.pose = feedback->pose;
     _push_pose_pub.publish(pose_msg);
+  }
+  void do_push_with_assist_cb(const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback){
+    geometry_msgs::PoseStamped pose_msg;
+    pose_msg.header = feedback->header;
+    pose_msg.header.frame_id = std::string("manipulate_frame");
+    pose_msg.pose = feedback->pose;
+    _push_pose_with_assist_pub.publish(pose_msg);
   }
   void do_move_by_axial_restraion_cb(const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback){
     geometry_msgs::PoseArray move_pose_array;

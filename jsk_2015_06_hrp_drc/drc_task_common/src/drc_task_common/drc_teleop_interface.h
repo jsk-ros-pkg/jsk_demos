@@ -5,6 +5,7 @@
 #include <rviz/panel.h>
 #include <QtGui>
 #include <jsk_rviz_plugins/EusCommand.h>
+#include <stdio.h>
 
 namespace Ui
 {
@@ -30,7 +31,10 @@ namespace drc_task_common
 
     void callRequestResetGripperPose();
     void callRequestHookGrippePose();
+
+    std::string getIKArm();
     void callRequestGraspGrippePose();
+    void callRequestGraspGrippePoseForDrill();
 
     void callRequestStartABC();
     void callRequestStartST();
