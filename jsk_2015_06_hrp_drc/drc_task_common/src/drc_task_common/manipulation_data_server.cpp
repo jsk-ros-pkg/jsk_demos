@@ -11,6 +11,7 @@
 #include <visualization_msgs/MarkerArray.h>
 #include <drc_task_common/InteractiveMarkerArray.h>
 #include <drc_task_common/ICPService.h>
+#include <drc_task_common/TMarkerInfo.h>
 #include <jsk_pcl_ros/BoundingBox.h>
 #include <jsk_interactive_marker/MarkerDimensions.h>
 #include <jsk_interactive_marker/GetTransformableMarkerPose.h>
@@ -101,6 +102,8 @@ protected:
   Publisher _debug_point_pub;
   Publisher _marker_set_pose_pub;
   Publisher _t_marker_set_pose_pub;
+  Publisher _t_marker_box_pub;
+  Publisher _t_marker_information_pub;
   ServiceClient _tf_publish_client;
   ServiceClient _icp_client;
   ServiceClient _get_type_client;
@@ -228,6 +231,8 @@ public:
     _debug_grasp_pub = _node.advertise<visualization_msgs::Marker>("/debug_grasp", 1);
     _marker_set_pose_pub = _node.advertise<geometry_msgs::PoseStamped>("/interactive_point_cloud/set_marker_pose", 1);
     _t_marker_set_pose_pub = _node.advertise<geometry_msgs::PoseStamped>("/transformable_interactive_server/set_pose", 1);
+    _t_marker_box_pub = _node.advertise<jsk_pcl_ros::BoundingBox>("/passed_selected_box", 1);
+    _t_marker_information_pub = _node.advertise<drc_task_common::TMarkerInfo>("/t_marker_information", 1);
     _subBox.subscribe(_node, "/bounding_box_marker/selected_box", 1);
     _sync = boost::make_shared<message_filters::Synchronizer<SyncPolicy> >(100);
    
@@ -1087,24 +1092,6 @@ public:
     _server->applyChanges();
   }
   
-  bool align_cb(drc_task_common::ICPService::Request& req,
-		drc_task_common::ICPService::Response& res)
-  {
-    set_icp((req.points), (req.box), request_icp(&(req.points), &(req.box)));
-    if(_reference_hit){
-      geometry_msgs::PoseStamped temp_pose_stamped;
-      geometry_msgs::Pose temp_pose, marker_pose = _manip_data_ptr->pose;
-      tf::Transform tf_transformable_marker(tf::Quaternion(marker_pose.orientation.x, marker_pose.orientation.y, marker_pose.orientation.z, marker_pose.orientation.w), tf::Vector3(marker_pose.position.x, marker_pose.position.y, marker_pose.position.z));
-      tf::Transform tf_marker_to_camera = _tf_from_camera * tf_transformable_marker;
-      temp_pose_stamped.header = req.points.header;
-      temp_pose_stamped.pose = tf_to_pose(tf_marker_to_camera);
-      res.dim = _manip_data_ptr->dim;
-      res.pose_stamped = temp_pose_stamped;
-      return true;
-    }else{
-      return false;
-    }
-  }
   bool assoc_object_to_marker_cb(std_srvs::Empty::Request& req, std_srvs::Empty::Response& res){
     return assoc_object_to_marker();
   }
@@ -1142,20 +1129,60 @@ public:
     else{
       jsk_pcl_ros::ICPResult icp_result;
       icp_result.score = 1.0;
+      icp_result.header = box_msg_ptr->header;
+      icp_result.pose = box_msg_ptr->pose;
       icp_result.name = std::string("NONE");
       return icp_result;
     }
   }
+  void pub_t_marker(jsk_pcl_ros::BoundingBox& box, jsk_pcl_ros::ICPResult& icp_result){
+    if(_reference_hit){   
+      geometry_msgs::PoseStamped temp_pose_stamped;
+      geometry_msgs::Pose temp_pose, marker_pose = _manip_data_ptr->pose;
+      tf::Transform tf_transformable_marker(tf::Quaternion(marker_pose.orientation.x, marker_pose.orientation.y, marker_pose.orientation.z, marker_pose.orientation.w), tf::Vector3(marker_pose.position.x, marker_pose.position.y, marker_pose.position.z));
+      tf::Transform tf_marker_to_camera = _tf_from_camera * tf_transformable_marker;
+      //pub marker
+      drc_task_common::TMarkerInfo t_marker_info;
+      t_marker_info.marker_pose_stamped.pose = tf_to_pose(tf_marker_to_camera);
+      t_marker_info.marker_pose_stamped.header = box.header;
+      t_marker_info.marker_dim = _manip_data_ptr->dim;
+      _t_marker_information_pub.publish(t_marker_info);
+    }
+    else{
+      //pub b_box
+      _t_marker_box_pub.publish(box);
+    }
+  }
+
+  bool align_cb(drc_task_common::ICPService::Request& req,
+		drc_task_common::ICPService::Response& res){
+    jsk_pcl_ros::ICPResult icp_result = request_icp(&(req.points), &(req.box));
+    set_icp((req.points), (req.box), icp_result);
+    set_point_cloud(&(req.points), icp_result.pose, icp_result.header);
+    if(_reference_hit){
+      geometry_msgs::PoseStamped temp_pose_stamped;
+      geometry_msgs::Pose temp_pose, marker_pose = _manip_data_ptr->pose;
+      tf::Transform tf_transformable_marker(tf::Quaternion(marker_pose.orientation.x, marker_pose.orientation.y, marker_pose.orientation.z, marker_pose.orientation.w), tf::Vector3(marker_pose.position.x, marker_pose.position.y, marker_pose.position.z));
+      tf::Transform tf_marker_to_camera = _tf_from_camera * tf_transformable_marker;
+      temp_pose_stamped.header = req.points.header;
+      temp_pose_stamped.pose = tf_to_pose(tf_marker_to_camera);
+      res.dim = _manip_data_ptr->dim;
+      res.pose_stamped = temp_pose_stamped;
+      return true;
+    }else{
+      return false;
+    }
+  }
+
   void set_reference(const sensor_msgs::PointCloud2ConstPtr& msg_ptr, const jsk_pcl_ros::BoundingBoxConstPtr& box_ptr){
     sensor_msgs::PointCloud2 msg = *msg_ptr;
     jsk_pcl_ros::BoundingBox box = *box_ptr;
+    jsk_pcl_ros::ICPResult icp_result = request_icp(&msg, &box);
     set_icp(msg, box, request_icp(&msg, &box));
+    set_point_cloud(&msg, icp_result.pose, icp_result.header);
+    pub_t_marker(box, icp_result);
   }
-  void pub_box(jsk_pcl_ros::BoundingBox& box, jsk_pcl_ros::ICPResult icp_result){
-    if (icp_result.score < 0.000075 && icp_result.name != "NONE"){
-      
-    }
-  }
+
   void set_icp(sensor_msgs::PointCloud2& msg, jsk_pcl_ros::BoundingBox& box, jsk_pcl_ros::ICPResult icp_result){
     sensor_msgs::PointCloud2* msg_ptr = &msg;
     jsk_pcl_ros::BoundingBox* box_ptr = &box;
@@ -1202,7 +1229,6 @@ public:
       _reference_num = _manip_data_array.size();
       _reference_hit=false;
     }
-    ROS_INFO("after using icp");
     //_listener.transformPose(_base_link_name, before_pose_, after_pose_);
     ros::Time now = ros::Time::now();
     _listener.waitForTransform(_base_link_name, before_pose_.header.frame_id, now, ros::Duration(2.0));
@@ -1219,15 +1245,17 @@ public:
     pub_tf();
     _timer_count = 0; 
     //move point_cloud
-    set_point_cloud(msg_ptr, &before_pose_);
     _reference_box_size = box_ptr->dimensions;
   }
-  void set_point_cloud(sensor_msgs::PointCloud2 *msg_ptr, geometry_msgs::PoseStamped *transform_pose){
+  void set_point_cloud(sensor_msgs::PointCloud2 *msg_ptr, geometry_msgs::Pose transform_pose, std_msgs::Header header){
     try
     {
+      ROS_INFO("pose_qua %f %f %f %f", transform_pose.orientation.x, transform_pose.orientation.y, transform_pose.orientation.z, transform_pose.orientation.w);
       Eigen::Affine3f offset;
+      geometry_msgs::PoseStamped transform_pose_stamped;
+      transform_pose_stamped.header = header; transform_pose_stamped.pose = transform_pose;
       transform_pointcloud_in_bounding_box(
-        * transform_pose, *msg_ptr,
+        transform_pose_stamped, *msg_ptr,
         *_reference_cloud, offset,
         _listener);
       Eigen::Affine3f offset_inverse = offset.inverse();
