@@ -93,7 +93,6 @@ protected:
   Publisher _push_pose_with_assist_pub;
   Publisher _move_by_axial_restraint_pose_pub;
   Publisher _reset_pose_pub;
-  Publisher _debug_pose_pub;
   Publisher _debug_grasp_pub;
   Publisher _reset_pub;
   Publisher _move_pose_pub;
@@ -142,16 +141,13 @@ protected:
   bool _all_manual;
   //bool init_reference_end;
 public:
-  bool transform_pointcloud_in_bouding_box(
-					const jsk_pcl_ros::BoundingBox& box_msg,
+  bool transform_pointcloud_in_bounding_box(
+    const geometry_msgs::PoseStamped& box_pose,
     const sensor_msgs::PointCloud2& cloud_msg,
     pcl::PointCloud<pcl::PointXYZRGB>& output,
     Eigen::Affine3f& offset,
     tf::TransformListener& tf_listener)
   {
-    geometry_msgs::PoseStamped box_pose;
-    box_pose.header = box_msg.header;
-    box_pose.pose = box_msg.pose;
     // transform box_pose into msg frame
     geometry_msgs::PoseStamped box_pose_respected_to_cloud;
     tf_listener.transformPose(cloud_msg.header.frame_id,
@@ -221,7 +217,6 @@ public:
     _push_pose_pub = _node.advertise<geometry_msgs::PoseStamped>("/push_pose", 10);
     _push_pose_with_assist_pub = _node.advertise<geometry_msgs::PoseStamped>("/push_pose_with_assist", 10);
     _move_by_axial_restraint_pose_pub = _node.advertise<geometry_msgs::PoseArray>("/move_by_axial_restraint_pose", 10);
-    _debug_pose_pub = _node.advertise<geometry_msgs::PoseStamped>("/debug_pose", 10);
     _debug_point_pub = _node.advertise<geometry_msgs::PointStamped>("/debug_point", 10);
     _reset_pose_pub = _node.advertise<std_msgs::String>("/reset_pose_command", 1);
     _reset_pub = _node.advertise<jsk_pcl_ros::PointsArray>("/icp_registration/input_reference_array", 1, boost::bind( &ManipulationDataServer::icp_connection, this, _1), boost::bind( &ManipulationDataServer::icp_disconnection, this, _1));
@@ -379,14 +374,23 @@ public:
 	geometry_msgs::PoseStamped temp_pose_stamped;
 	//listener.transformPose("manipulate_frame", get_pose_srv.response.pose_stamped, temp_pose_stamped);
         ros::Time now = ros::Time::now();
-        _listener.waitForTransform("manipulate_frame", get_pose_srv.response.pose_stamped.header.frame_id, now, ros::Duration(2.0));
-        _listener.transformPose("manipulate_frame", now, get_pose_srv.response.pose_stamped,get_pose_srv.response.pose_stamped.header.frame_id, temp_pose_stamped);
-	_manip_data_ptr->pose=temp_pose_stamped.pose;
-      }
+        try{
+          _listener.waitForTransform("manipulate_frame", get_pose_srv.response.pose_stamped.header.frame_id, now, ros::Duration(2.0));
+          _listener.transformPose("manipulate_frame", now, get_pose_srv.response.pose_stamped,get_pose_srv.response.pose_stamped.header.frame_id, temp_pose_stamped);
+        }
+        catch (tf::TransformException ex){
+          ROS_ERROR("orientations may be 0s %s",ex.what());
+          _manip_data_ptr->pose.orientation.x = 0;
+          _manip_data_ptr->pose.orientation.y = 0;
+          _manip_data_ptr->pose.orientation.z = 0;
+          _manip_data_ptr->pose.orientation.w = 1;
+        }
+        _manip_data_ptr->pose=temp_pose_stamped.pose;    
+      }  
       else{
         ROS_INFO("save failed");
-	_manip_data_ptr->pose.orientation.x = 0;
-	_manip_data_ptr->pose.orientation.y = 0;
+        _manip_data_ptr->pose.orientation.x = 0;
+        _manip_data_ptr->pose.orientation.y = 0;
         _manip_data_ptr->pose.orientation.z = 0;
         _manip_data_ptr->pose.orientation.w = 1;
       }
@@ -1083,12 +1087,12 @@ public:
     _menu_handler_grasp.apply( *_server , "grasp_pose_2");
     _server->applyChanges();
   }
+  
   bool align_cb(drc_task_common::ICPService::Request& req,
 		drc_task_common::ICPService::Response& res)
   {
     set_icp((req.points), (req.box));
     if(_reference_hit){
-      res.dim = _manip_data_ptr->dim;
       geometry_msgs::PoseStamped temp_pose_stamped;
       geometry_msgs::Pose temp_pose, marker_pose = _manip_data_ptr->pose;
       ROS_INFO("marker_pose, %f %f %f %f %f %f %f", marker_pose.position.x, marker_pose.position.y, marker_pose.position.z, marker_pose.orientation.x, marker_pose.orientation.y, marker_pose.orientation.z, marker_pose.orientation.w );
@@ -1105,7 +1109,7 @@ public:
       temp_pose.orientation.w = temp_qua.getW();
       temp_pose_stamped.header = req.points.header;
       temp_pose_stamped.pose = temp_pose;
-      _debug_pose_pub.publish(temp_pose_stamped);
+      res.dim = _manip_data_ptr->dim;
       res.pose_stamped = temp_pose_stamped;
       return true;
     }else{
@@ -1144,31 +1148,6 @@ public:
     sensor_msgs::PointCloud2 msg = *msg_ptr;
     jsk_pcl_ros::BoundingBox box = *box_ptr;
     set_icp(msg, box);
-    if(_reference_hit){
-      //res.dim = _manip_data_ptr->dim;
-      geometry_msgs::PoseStamped temp_pose_stamped;
-      geometry_msgs::Pose temp_pose, marker_pose = _manip_data_ptr->pose;
-      tf::Transform tf_transformable_marker(tf::Quaternion(marker_pose.orientation.x, marker_pose.orientation.y, marker_pose.orientation.z, marker_pose.orientation.w), tf::Vector3(marker_pose.position.x, marker_pose.position.y, marker_pose.position.z));
-      ROS_INFO("marker_pose:%f %f %f", marker_pose.position.x, marker_pose.position.y, marker_pose.position.z);
-      tf::Transform _tf_marker_to_camera = _tf_from_camera * tf_transformable_marker;
-      temp_pose.position.x = _tf_marker_to_camera.getOrigin().getX();
-      temp_pose.position.y = _tf_marker_to_camera.getOrigin().getY();
-      temp_pose.position.z = _tf_marker_to_camera.getOrigin().getZ();
-      tf::Quaternion temp_qua;
-      _tf_marker_to_camera.getBasis().getRotation(temp_qua);
-      temp_pose.orientation.x = temp_qua.getX();
-      temp_pose.orientation.y = temp_qua.getY();
-      temp_pose.orientation.z = temp_qua.getZ();
-      temp_pose.orientation.w = temp_qua.getW();
-      temp_pose_stamped.header = msg.header;
-      temp_pose_stamped.pose = temp_pose;
-      _debug_pose_pub.publish(temp_pose_stamped);
-      //res.pose_stamped = temp_pose_stamped;
-      //return true;
-    }else{
-      //return false;
-    }
-
   }
   void set_icp(sensor_msgs::PointCloud2& msg, jsk_pcl_ros::BoundingBox& box){
     sensor_msgs::PointCloud2* msg_ptr = &msg;
@@ -1209,7 +1188,7 @@ public:
       _menu_handler_push.apply( *_server , "push_pose");
       _menu_handler_axial_restraint.apply( *_server , "axial_restraint");
       _server->applyChanges();
-      _reference_hit=true;      
+      _reference_hit=true;
     }
     else {
       before_pose_.pose = box_ptr->pose;
@@ -1231,8 +1210,6 @@ public:
     _tf_from_base.setRotation(tf::Quaternion(after_pose_.pose.orientation.x, after_pose_.pose.orientation.y, after_pose_.pose.orientation.z, after_pose_.pose.orientation.w));
     _tf_from_camera.setOrigin(tf::Vector3(before_pose_.pose.position.x,before_pose_.pose.position.y, before_pose_.pose.position.z));
     _tf_from_camera.setRotation(tf::Quaternion(before_pose_.pose.orientation.x, before_pose_.pose.orientation.y, before_pose_.pose.orientation.z, before_pose_.pose.orientation.w));
-
-
     _tf_from_base = _tf_from_base;//*transform_camera_to_optical;
     _tf_marker = tf::Transform(tf::Quaternion(0, 0, 0, 1));
     pub_tf();
@@ -1241,8 +1218,8 @@ public:
     try
       {
 	Eigen::Affine3f offset;
-	transform_pointcloud_in_bouding_box(
-   			      *box_ptr, *msg_ptr,
+	transform_pointcloud_in_bounding_box(
+   			      before_pose_, *msg_ptr,
     			      *_reference_cloud, offset,
 			      _listener);
 	Eigen::Affine3f offset_inverse = offset.inverse();
@@ -1421,7 +1398,6 @@ public:
 	  min_qua = temp_qua;
 	  best_mat = temp_mat;
 	}
-	ROS_INFO("rad=%f, width=%f", theta_,before_w);
 	geometry_msgs::Point temp_point;
 	std_msgs::ColorRGBA temp_color;
 	temp_color.r=0; temp_color.g=0; temp_color.b=1; temp_color.a=1;
