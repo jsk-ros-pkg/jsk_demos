@@ -522,7 +522,6 @@ public:
         ROS_ERROR("revise model failed %s",ex.what());
         return;
       }
-      ROS_INFO("before pose, %f %f %f, after pose %f %f %f", int_marker_tmp.pose.position.x, int_marker_tmp.pose.position.y, int_marker_tmp.pose.position.z, grasp_marker_after_pose.pose.position.x, grasp_marker_after_pose.pose.position.y, grasp_marker_after_pose.pose.position.z);
       int_marker_tmp.pose = grasp_marker_after_pose.pose;
       ROS_INFO("get grasp succeeded");
       marker_move_function(feedback->header);
@@ -545,7 +544,6 @@ public:
         ROS_ERROR("revise model failed %s",ex.what());
         return;
       }
-      ROS_INFO("before pose, %f %f %f, after pose %f %f %f", int_marker_tmp.pose.position.x, int_marker_tmp.pose.position.y, int_marker_tmp.pose.position.z, grasp_marker_after_pose.pose.position.x, grasp_marker_after_pose.pose.position.y, grasp_marker_after_pose.pose.position.z);
       int_marker_tmp.pose = grasp_marker_after_pose.pose;
       ROS_INFO("get grasp succeeded");
       marker_move_function(feedback->header);
@@ -1096,7 +1094,6 @@ public:
     if(_reference_hit){
       geometry_msgs::PoseStamped temp_pose_stamped;
       geometry_msgs::Pose temp_pose, marker_pose = _manip_data_ptr->pose;
-      ROS_INFO("marker_pose, %f %f %f %f %f %f %f", marker_pose.position.x, marker_pose.position.y, marker_pose.position.z, marker_pose.orientation.x, marker_pose.orientation.y, marker_pose.orientation.z, marker_pose.orientation.w );
       tf::Transform tf_transformable_marker(tf::Quaternion(marker_pose.orientation.x, marker_pose.orientation.y, marker_pose.orientation.z, marker_pose.orientation.w), tf::Vector3(marker_pose.position.x, marker_pose.position.y, marker_pose.position.z));
       tf::Transform tf_marker_to_camera = _tf_from_camera * tf_transformable_marker;
       temp_pose_stamped.header = req.points.header;
@@ -1343,8 +1340,6 @@ public:
       pose_respected_to_tf.orientation.y = temp_qua.getY();
       pose_respected_to_tf.orientation.z = temp_qua.getZ();
       pose_respected_to_tf.orientation.w = temp_qua.getW();
-      ROS_INFO("affine_orig, %f %f %f", x, y, z);
-
       Eigen::Affine3d box_pose_respected_to_cloud_eigend;
       tf::poseMsgToEigen(pose_respected_to_tf,
 			 box_pose_respected_to_cloud_eigend);
@@ -1477,10 +1472,8 @@ public:
   {
     ROS_INFO("points selected with marker");
     geometry_msgs::PointStamped after_point;
-    ROS_INFO("before_set_menu");
     //_listener.transformPoint("/manipulate_frame", ros::Time::now() - (ros::Duration(0.05)) ,*msg_ptr, msg_ptr->header.frame_id,  after_point);
     after_point = *msg_ptr;
-    ROS_INFO("after_set_menu");
     set_menu(after_point.point.x, after_point.point.y, after_point.point.z, msg_ptr->header);
     pcl::PointXYZRGB searchPoint;
   }
