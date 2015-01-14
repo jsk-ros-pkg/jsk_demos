@@ -42,12 +42,14 @@
   (ros::subscribe "/push_pose_with_assist" geometry_msgs::PoseStamped #'solve-ik-from-push-pose-with-assist-command 1)
   (ros::subscribe "/move_pose" geometry_msgs::PoseStamped #'solve-ik-from-move-pose-command 1)
   (ros::subscribe "/move_by_axial_restraint_pose" geometry_msgs::PoseArray #'solve-ik-from-move-by-axial-pose-command 1)
+  (ros::subscribe "/move_by_axial_restraint_not_allow_slip_pose" geometry_msgs::PoseArray #'solve-ik-from-move-by-axial-not-allow-slip-pose-command 1)
   (ros::subscribe "/grasp_dual_pose" geometry_msgs::PoseArray #'solve-ik-from-grasp-dual-pose-command 1)
   (ros::subscribe "/grasp_dual_pose_z_free" geometry_msgs::PoseArray #'solve-ik-from-grasp-dual-pose-command-z-free 1)
   (ros::subscribe "/move_dual_pose" geometry_msgs::PoseArray #'solve-ik-from-move-dual-pose-command 1)
   (ros::advertise "/object_handle" geometry_msgs::PoseStamped 1)
   (ros::advertise "/object_approach" geometry_msgs::PoseStamped 1)
   (ros::advertise "/grasp_pose_feedback" geometry_msgs::PoseStamped 1)
+  (ros::advertise "/grasp_not_allow_slip_pose_feedback" geometry_msgs::PoseStamped 1)
   (ros::advertise "/grasp_pose_dual_feedback" geometry_msgs::PoseArray 1)
   (ros::subscribe "/object_handle_variable_pos" std_msgs::Float32 #'set-object-handle-pos-from-variable)
   (ros::subscribe "/object_handle_variable_rot" std_msgs::Float32 #'set-object-handle-rot-from-variable)
@@ -106,6 +108,7 @@
   (setq *rotation-axis* (list t t t))
   (setq *rotation-axis-default* (list :z t t))
   (setq *pub-grasp-pose-feedback-flag* nil)
+  (setq *pub-grasp-not-allow-slip-pose-feedback-pose-flag* nil)
   (setq *pub-grasp-dual-pose-feedback-flag* nil)
   ;; todo
   (setq *ik-pose-list* nil)
@@ -492,6 +495,30 @@
     )
   ;(setq *pub-grasp-pose-feedback-flag* (not *pub-grasp-pose-feedback-flag*))
   )
+(defun pub-grasp-not-allow-slip-pose-feedback
+  ()
+  (ros::ros-info "pub-grasp-pose-feedback")
+  (if *ik-result*
+      (progn
+        (let 
+            ((original-av (send *robot* :angle-vector)) hand-temp-coords)
+          (mapcar #'(lambda (j a) (send j :joint-angle a)) (send *robot* :joint-list) (elt *ik-result* (- (length *ik-result*) 1)))
+          (setq hand-temp-coords (send (send *robot* *ik-arm* :end-coords :worldcoords) :copy-worldcoords))
+          (if (equal *ik-arm* :rarm)
+              (progn (send hand-temp-coords :rotate (* (/ 1.0 3) pi) :z :local) (send hand-temp-coords :translate (float-vector -30 -50 0) :local))
+            (progn (send hand-temp-coords :rotate (* (/ -1.0 3) pi) :z :local)  (send hand-temp-coords :translate (float-vector -30 50 0) :local))
+            )
+          ;(send hand-temp-coords :transform *robot-coords*)
+          (setq hand-temp-coords (send (send *robot-coords* :copy-worldcoords) :transform (send hand-temp-coords :copy-worldcoords)))
+          (ros::publish "/grasp_not_allow_slip_pose_feedback" (instance geometry_msgs::PoseStamped :init :pose (ros::coords->tf-pose hand-temp-coords) :header (instance std_msgs::Header :init :frame_id *frame-id*
+                                                                                                                                                          :stamp (ros::time-now))))
+          (ros::ros-info "grasp not allow slip feedback pose pubed")
+          (send *robot* :angle-vector original-av)
+          )
+        )
+    )
+  ;(setq *pub-grasp-pose-feedback-flag* (not *pub-grasp-pose-feedback-flag*))
+  )
 (defun pub-grasp-dual-pose-feedback
   ()
   (ros::ros-info "pub-grasp-pose-feedback")
@@ -591,6 +618,11 @@
       (setq *pub-grasp-pose-feedback-flag* nil)
       (setq *rotation-axis* (list :x t t))
       ))
+  )
+(defun solve-ik-from-move-by-axial-not-allow-slip-pose-command
+  (msg)
+  (solve-ik-from-move-by-axial-pose-command msg)
+  (setq *pub-grasp-not-allow-slip-pose-feedback-pose-flag* t)
   )
 (defun get-current-pose-common
   ()
@@ -741,6 +773,7 @@
     (setq *ik-result* (send-ik-request :target-coords target-pose-coords :initial-coords initial-pose-coords :rotation-axis *rotation-axis* :interpolate-mode :from-pose-one :move-target-from-hand *move-target-from-hand*
                                        :target-coords-for-second-arm target-pose-coords-for-second-arm :initial-coords-for-second-arm initial-pose-coords-for-second-arm :move-target-from-second-hand move-target-from-second-hand))
     (if *pub-grasp-pose-feedback-flag* (pub-grasp-pose-feedback))
+    (if *pub-grasp-not-allow-slip-pose-feedback-pose-flag* (pub-grasp-not-allow-slip-pose-feedback))
     (if *pub-grasp-dual-pose-feedback-flag* (pub-grasp-dual-pose-feedback))
     (cond (*ik-result*
            (send-joint-states-to-marker))
@@ -1132,6 +1165,7 @@
     (cond
      (*inverse-reachability-map-mode* 
       (setq *pub-grasp-pose-feedback-flag* nil)
+      (setq *pub-grasp-not-allow-slip-pose-feedback-pose-flag* nil)
       (setq *pub-grasp-dual-pose-feedback-flag* nil)
       (let* ((inverse-reachability-coords-list-temp nil))
 	(dotimes (i (length *inverse-reachability-coords-list*))
@@ -1146,6 +1180,7 @@
       (request-ik-from-pose-one)) 
      )
     (setq *pub-grasp-pose-feedback-flag* nil)
+    (setq *pub-grasp-not-allow-slip-pose-feedback-pose-flag* nil)
     (setq *pub-grasp-dual-pose-feedback-flag* nil)
     (setq *reachability-map-mode* nil)
     (setq *inverse-reachability-map-mode* nil)
@@ -1154,6 +1189,7 @@
     (cond
      (*inverse-reachability-map-mode*
       (setq *pub-grasp-pose-feedback-flag* nil)
+      (setq *pub-grasp-not-allow-slip-pose-feedback-pose-flag* nil)
       (setq *pub-grasp-dual-pose-feedback-flag* nil)
       (let* ((inverse-reachability-coords-list-temp nil))
 	(dotimes (i (length *inverse-reachability-coords-list*))
@@ -1168,6 +1204,7 @@
         (request-ik-from-pose-one :target-pose-coords-for-second-arm *target-pose-coords-for-second-arm* :initial-pose-coords-for-second-arm *initial-pose-coords-for-second-arm* :move-target-from-second-hand *move-target-from-second-hand*))
      )
     (setq *pub-grasp-pose-feedback-flag* nil)
+    (setq *pub-grasp-not-allow-slip-pose-feedback-pose-flag* nil)
     (setq *pub-grasp-dual-pose-feedback-flag* nil)
     (setq *reachability-map-mode* nil)
     (setq *inverse-reachability-map-mode* nil)
