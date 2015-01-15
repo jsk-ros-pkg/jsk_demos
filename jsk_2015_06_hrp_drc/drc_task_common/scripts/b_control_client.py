@@ -78,6 +78,9 @@ def b_control_client_init():
     ts.registerCallback(selected_box_cb)
     #rospy.Subscriber('bounding_box_marker/selected_box', BoundingBox, selected_box_cb)
     rospy.Subscriber('/bounding_box_color_histogram/selected_box', BoundingBox, selected_only_box_cb)
+    rospy.Subscriber('/passed_selected_box', BoundingBox, selected_only_box_cb)
+    rospy.Subscriber('/t_marker_info', TMarkerInfo, marker_info_cb)
+    
     tf_listener = tf.TransformListener()
     get_type_srv = rospy.ServiceProxy(ns+'/get_type', GetType)
     set_pose_srv = rospy.ServiceProxy(ns+'/set_pose', SetTransformableMarkerPose)
@@ -277,6 +280,34 @@ def selected_box_cb(msg, points_msg):
         print "ICP Service call failed: %s"%e
     # pose
     selected_only_box_cb(msg)
+def marker_info_cb(msg):
+    erase_all_marker()
+    x=msg.marker_dim.x
+    y=msg.marker_dim.y
+    z=msg.marker_dim.z
+    r=msg.marker_dim.radius
+    sr=msg.marker_dim.small_radius
+    midi_feedback=[]
+    if(msg.marker_dim.type==0):
+        insert_marker(shape_type=TransformableMarkerOperate.BOX, name='box1', description='')
+        midi_feedback.append(JoyFeedback(id=0, intensity=(x-x_min)/(x_max-x_min)))
+        midi_feedback.append(JoyFeedback(id=1, intensity=(y-y_min)/(y_max-y_min)))
+        midi_feedback.append(JoyFeedback(id=2, intensity=(z-z_min)/(z_max-z_min)))
+    elif(msg.marker_dim.type==1):
+        insert_marker(shape_type=TransformableMarkerOperate.CYLINDER, name='cylinder1', description='')
+        midi_feedback.append(JoyFeedback(id=0, intensity=(r-r_min)/(r_max-r_min)))
+        midi_feedback.append(JoyFeedback(id=1, intensity=(z-z_min)/(z_max-z_min)))
+    else:
+        insert_marker(shape_type=TransformableMarkerOperate.TORUS, name='torus1', description='')
+        set_dim_srv(dimensions=MarkerDimensions(radius=r, small_radius=sr))
+        midi_feedback.append(JoyFeedback(id=0, intensity=(r-r_min)/(r_max-r_min)))
+        midi_feedback.append(JoyFeedback(id=1, intensity=(sr-sr_min)/(sr_max-sr_min)))
+    midi_feedback_pub.publish(midi_feedback)
+    color = ColorRGBA(r=1.0, g=0.0, b=0.0, a=0.6)
+    set_color_pub.publish(color)
+    set_pose_srv(pose_stamped=msg.marker_pose_stamped)
+    set_dim_srv(dimensions=msg.marker_dim)
+
 def selected_only_box_cb(msg):
     pose_stamped_msg = PoseStamped()
     pose_stamped_msg.header = msg.header
