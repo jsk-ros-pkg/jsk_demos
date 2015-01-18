@@ -40,6 +40,7 @@
   (ros::subscribe "/grasp_pose_z_free" geometry_msgs::PoseStamped #'solve-ik-from-grasp-pose-command-z-free 1)
   (ros::subscribe "/push_pose" geometry_msgs::PoseStamped #'solve-ik-from-push-pose-command 1)
   (ros::subscribe "/push_pose_with_assist" geometry_msgs::PoseStamped #'solve-ik-from-push-pose-with-assist-command 1)
+  (ros::subscribe "/push_pose_with_assist_push_many" geometry_msgs::PoseStamped #'solve-ik-from-push-pose-with-assist-command-push-many 1)
   (ros::subscribe "/move_pose" geometry_msgs::PoseStamped #'solve-ik-from-move-pose-command 1)
   (ros::subscribe "/move_by_axial_restraint_pose" geometry_msgs::PoseArray #'solve-ik-from-move-by-axial-pose-command 1)
   (ros::subscribe "/move_by_axial_restraint_not_allow_slip_pose" geometry_msgs::PoseArray #'solve-ik-from-move-by-axial-not-allow-slip-pose-command 1)
@@ -101,7 +102,7 @@
   (setq *target-pose-coords-for-second-arm* (make-coords))
   (setq *initial-pose-coords-for-second-arm* (make-coords))
   (setq *move-target-from-second-hand* (make-coords))
- 
+  (setq *push-many-flag* nil)
   ;; hand coords that depends robots
   (setq *move-target-from-hand-for-grasp* (make-hash-table))
   (setf (gethash :rarm *move-target-from-hand-for-grasp*) (send (send (make-coords) :rotate (* (/ 0.0 3) pi) :z :local) :translate (float-vector -10 -20 0) :local))
@@ -605,6 +606,11 @@
   (setq *solve-ik-from-pose-command-flag* t)
   (setq *rotation-axis* (list *rotation-axis-for-push* t t));;
   )
+(defun solve-ik-from-push-pose-with-assist-command-push-many
+  (msg)
+  (solve-ik-from-push-pose-with-assist-command msg)
+  (setq *push-many-flag* t)
+  )
 (defun solve-ik-from-push-pose-with-assist-command 
   (msg)
   (solve-ik-from-pose-common msg)
@@ -810,9 +816,24 @@
         (setq initial-pose-coords-for-second-arm temp-coords)
         ))
     (when *draw-viewer-flag* (objects (list *robot* target-pose-coords initial-pose-coords)))
+    ;; if push some
+    (cond (*push-many-flag*
+	   (setq *ik-result* nil)
+	   (dotimes (ix 3)
+	     (dotimes (iy 3) 
+	       (setq *ik-result* (append *ik-result* (send-ik-request :target-coords target-pose-coords :rotation-axis *rotation-axis* :move-target-from-hand *move-target-from-hand* :target-coords-for-second-arm (send (send target-pose-coords-for-second-arm :copy-worldcoords) :translate (float-vector -100 (* (- ix 1) 10) (* (- iy 1) 10)) :local) :move-target-from-second-hand move-target-from-second-hand)))
+	       (setq *ik-result* (append *ik-result* (send-ik-request :target-coords target-pose-coords :rotation-axis *rotation-axis* :move-target-from-hand *move-target-from-hand* :target-coords-for-second-arm (send (send target-pose-coords-for-second-arm :copy-worldcoords) :translate (float-vector 0 (* (- ix 1) 10) (* (- iy 1) 10)) :local) :move-target-from-second-hand move-target-from-second-hand)))
+	       )
+	     )
+	   )
+	  (t
+	   (setq *ik-result* (send-ik-request :target-coords target-pose-coords :initial-coords initial-pose-coords :rotation-axis *rotation-axis* :interpolate-mode :from-pose-one :move-target-from-hand *move-target-from-hand*
+					      :target-coords-for-second-arm target-pose-coords-for-second-arm :initial-coords-for-second-arm initial-pose-coords-for-second-arm :move-target-from-second-hand move-target-from-second-hand))
+	   )
+	  )
+    ;; end push some
     
-    (setq *ik-result* (send-ik-request :target-coords target-pose-coords :initial-coords initial-pose-coords :rotation-axis *rotation-axis* :interpolate-mode :from-pose-one :move-target-from-hand *move-target-from-hand*
-                                       :target-coords-for-second-arm target-pose-coords-for-second-arm :initial-coords-for-second-arm initial-pose-coords-for-second-arm :move-target-from-second-hand move-target-from-second-hand))
+
     (if *pub-grasp-pose-feedback-flag* (pub-grasp-pose-feedback))
     (if *pub-grasp-not-allow-slip-pose-feedback-pose-flag* (pub-grasp-not-allow-slip-pose-feedback))
     (if *pub-grasp-dual-pose-feedback-flag* (pub-grasp-dual-pose-feedback))
@@ -1058,6 +1079,7 @@
         (send *ri* :angle-vector (send *robot* :angle-vector) int-time)
         (send *ri* :wait-interpolation)))
       (setq *last-exec-angle-vector* (send *robot* :angle-vector))
+      (setq *push-many-flag* nil)
       ;; service call for task state manager
       (ros::service-call "call_task_state_event" (instance drc_task_common::StringRequestRequest :init :data "FinishAngleVec"))
       (ros::ros-info (format nil "request angle: ~A" (send *robot* :angle-vector)))
