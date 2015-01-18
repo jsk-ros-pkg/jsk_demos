@@ -131,6 +131,7 @@
   (setq *inverse-reachability-map-mode* nil)
   (setq *reachability-map-mode* nil)
   (init-robot-model)
+  (setq *last-exec-angle-vector* (send *ri* :state :potentio-vector))
   (ros::wait-for-service (format nil "~a~a" *ns* "/get_pose"))
   (ros::wait-for-service (format nil "~a~a" *ns* "/get_type"))
   (ros::wait-for-service (format nil "~a~a" *ns* "/get_dimensions"))
@@ -643,7 +644,7 @@
       (setq *solve-ik-from-pose-command-flag* t)
       ;;(get-current-pose-common)
       (let ((original-av (send *robot* :angle-vector)))
-        (send *robot* :angle-vector (send *ri* :state :potentio-vector))
+        (send *robot* :angle-vector *last-exec-angle-vector*)
         
         (setq *initial-pose-coords* (send (send *robot-coords* :copy-worldcoords) :transform (send (send *robot* *ik-arm* :end-coords :worldcoords) :copy-worldcoords)))
         )
@@ -660,7 +661,7 @@
 (defun get-current-pose-common
   ()
   (let ((original-av (send *robot* :angle-vector)))
-    (send *robot* :angle-vector (send *ri* :state :potentio-vector))
+    (send *robot* :angle-vector *last-exec-angle-vector*)
     ;(setq hand-temp-coords (send (send *robot-coords* :copy-worldcoords) :transform (send hand-temp-coords :copy-worldcoords)))
     ;(setq *initial-pose-coords* (send (send *robot-coords* :copy-worldcoords) :transform (send (send *robot* *ik-arm* :end-coords :worldcoords) :copy-worldcoords)))
     (setq *initial-pose-coords* (send (send *robot-coords* :copy-worldcoords) :transform (send (send *robot* *ik-arm* :end-coords :worldcoords) :copy-worldcoords)))
@@ -1056,6 +1057,7 @@
        (t
         (send *ri* :angle-vector (send *robot* :angle-vector) int-time)
         (send *ri* :wait-interpolation)))
+      (setq *last-exec-angle-vector* (send *robot* :angle-vector))
       ;; service call for task state manager
       (ros::service-call "call_task_state_event" (instance drc_task_common::StringRequestRequest :init :data "FinishAngleVec"))
       (ros::ros-info (format nil "request angle: ~A" (send *robot* :angle-vector)))
