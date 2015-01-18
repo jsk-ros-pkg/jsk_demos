@@ -101,6 +101,7 @@ protected:
   Publisher _move_pose_pub;
   Publisher _move_pose_dual_pub;
   Publisher _feedback_pub;
+  Publisher _box_pub;
   Publisher _debug_point_pub;
   Publisher _marker_set_pose_pub;
   Publisher _t_marker_set_pose_pub;
@@ -195,11 +196,13 @@ public:
     _menu_handler_first.insert("Push", boost::bind(&ManipulationDataServer::push_cb, this, _1));
     _menu_handler_first.insert("Axial Restraint", boost::bind(&ManipulationDataServer::axial_cb, this, _1));
     _menu_handler_first.insert("Remove", boost::bind(&ManipulationDataServer::remove_cb, this, _1));
+    _menu_handler_first.insert("Set Pose With Tracking", boost::bind(&ManipulationDataServer::set_pose_cb, this, _1));
     _menu_handler_first.insert("Reset Pose", boost::bind(&ManipulationDataServer::reset_pose_cb, this, _1));
     _menu_handler_grasp.insert("do_grasp", boost::bind(&ManipulationDataServer::do_grasp_cb, this, _1));
     _menu_handler_grasp.insert("do_grasp_z_free", boost::bind(&ManipulationDataServer::do_grasp_z_free_cb, this, _1));   
     _menu_handler_grasp.insert("Remove", boost::bind(&ManipulationDataServer::remove_cb, this, _1));
     _menu_handler_grasp.insert("Reset Pose", boost::bind(&ManipulationDataServer::reset_pose_cb, this, _1));
+    _menu_handler_grasp.insert("Set Pose With Tracking", boost::bind(&ManipulationDataServer::set_pose_cb, this, _1));
     _menu_handler_grasp.insert("Reverse Hand", boost::bind(&ManipulationDataServer::reverse_hand_menu_cb, this, _1));
     _menu_handler_grasp.insert("Move", boost::bind(&ManipulationDataServer::move_hand_menu_cb, this, _1));
     _menu_handler_grasp.insert("Revise Model", boost::bind(&ManipulationDataServer::revise_model_cb, this, _1));
@@ -228,6 +231,7 @@ public:
     _reset_pub = _node.advertise<jsk_pcl_ros::PointsArray>("/icp_registration/input_reference_array", 1, boost::bind( &ManipulationDataServer::icp_connection, this, _1), boost::bind( &ManipulationDataServer::icp_disconnection, this, _1));
     _move_pose_pub = _node.advertise<geometry_msgs::PoseStamped>("/move_pose", 1);
     _move_pose_dual_pub = _node.advertise<geometry_msgs::PoseArray>("/move_dual_pose", 1);
+    _box_pub = _node.advertise<jsk_pcl_ros::BoundingBox>("/particle_filter_tracker/renew_box", 1);
     _feedback_pub = _node.advertise<visualization_msgs::InteractiveMarkerFeedback>("/interactive_point_cloud/feedback", 1);
     usleep(100000);
 
@@ -653,6 +657,33 @@ public:
     tf::poseMsgToTF(_marker_pose, _tf_marker);
     pub_tf();
     _timer_count = 0;
+  }
+  void set_pose_cb(const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback){
+    tf::Transform tfTransformation;
+    tf::StampedTransform tfTransformationStamped;
+    ros::Time now = ros::Time::now();
+    try {
+      _listener.waitForTransform(_base_link_name, "track_result", now, ros::Duration(2.0));
+      _listener.lookupTransform(_base_link_name, "track_result", now, tfTransformationStamped); 
+      tf::Transform tfTransformation_diff =  _tf_from_base.inverse()*tfTransformationStamped;
+      visualization_msgs::InteractiveMarker int_marker_tmp;
+      if(_server->get("grasp_pose", int_marker_tmp)){
+        int_marker_tmp.pose = tf_to_pose(tfTransformation_diff.inverse()*pose_to_tf(int_marker_tmp.pose));
+        ROS_INFO("get grasp succeeded");
+        _grasp_pose = int_marker_tmp.pose;
+        _server->insert(int_marker_tmp);
+        _server->applyChanges();
+      }else{
+        ROS_INFO("get grasp failed");
+        return;
+      }
+      _tf_from_base = (tf::Transform) tfTransformationStamped;
+      pub_tf();
+    }
+    catch(tf::TransformException ex) {
+      ROS_ERROR("%s",ex.what());
+      tfTransformation = tf::Transform(tf::Quaternion(0, 0, 0, 1));
+    }
   }
   void reset_pose_cb(const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback){
     std_msgs::String a;
@@ -1240,6 +1271,7 @@ public:
       _menu_handler_axial_restraint.apply( *_server , "axial_restraint");
       _server->applyChanges();
       _reference_hit=true;
+      box.pose = icp_result.pose;
     }
     else {
       before_pose_.pose = box_ptr->pose;
@@ -1250,6 +1282,7 @@ public:
       _reference_num = _manip_data_array.size();
       _reference_hit=false;
     }
+    _box_pub.publish(box);
     //_listener.transformPose(_base_link_name, before_pose_, after_pose_);
     ros::Time now = ros::Time::now();
     _listener.waitForTransform(_base_link_name, before_pose_.header.frame_id, now, ros::Duration(2.0));
