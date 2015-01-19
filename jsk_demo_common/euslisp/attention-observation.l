@@ -178,7 +178,7 @@
               (send sm-inspector :state-machine :execute mydata :step -1)
               (if (send (send sm-inspector :state-machine :active-state) :submachine)
                   (let ((sub (send (send sm-inspector :state-machine :active-state) :submachine)))
-                    (when (eql (send sub :start-state)
+                    (when (eq (send sub :start-state)
                                (send sub :active-state))
                       (push (send sm-inspector :state-machine :active-state) state-history)))
                   (push (send sm-inspector :state-machine :active-state) state-history))
