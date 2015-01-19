@@ -176,7 +176,12 @@
               (if (boundp '*ri*) (send *ri* :ros-wait 0.0 :spin t :spin-self t))
               (send sm-inspector :publish-status mydata)
               (send sm-inspector :state-machine :execute mydata :step -1)
-              (push (send sm-inspector :state-machine :active-state) state-history)
+              (if (send (send sm-inspector :state-machine :active-state) :submachine)
+                  (let ((sub (send (send sm-inspector :state-machine :active-state) :submachine)))
+                    (when (eq (send sub :start-state)
+                               (send sub :active-state))
+                      (push (send sm-inspector :state-machine :active-state) state-history)))
+                  (push (send sm-inspector :state-machine :active-state) state-history))
               ;; loop check
               (let (ret)
                 (when (setq ret (loop-check state-history))
