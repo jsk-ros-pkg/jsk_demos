@@ -490,3 +490,5 @@
     )
   )
 |#
+
+(provide :attention-observation)
