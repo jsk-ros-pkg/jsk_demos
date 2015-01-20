@@ -2,7 +2,6 @@
   <arg name="b_control_joy_topic" default="/b_control/joy" />
   <arg name="spacenav_joy_topic" default="/spacenav/joy" />
   <arg name="default_frame_id" default="odom_on_ground" />
-  <arg name="TRACKBALL_DEVICE_FILE" default="/dev/input/mouse0" />
 
   <!-- publish spacenav topic -->
   <node pkg="spacenav_node" type="spacenav_node" name="spacenav">
@@ -52,6 +51,5 @@
 
   <!-- trackball client node -->
   <include file="$(find jsk_teleop_joy)/launch/hrp2_trackball_head.launch" >
-    <arg name="DEV" value="$(arg TRACKBALL_DEVICE_FILE)" />
   </include>
 </launch>
