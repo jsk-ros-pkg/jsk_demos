@@ -3,6 +3,9 @@
   <arg name="spacenav_joy_topic" default="/spacenav/joy" />
   <arg name="default_frame_id" default="odom_on_ground" />
 
+  <!-- robot specific setting -->
+  <arg name="trackball_head_launch" default="hrp2_trackball_head.launch" />
+
   <!-- publish spacenav topic -->
   <node pkg="spacenav_node" type="spacenav_node" name="spacenav">
   </node>
@@ -50,6 +53,6 @@
   </node>
 
   <!-- trackball client node -->
-  <include file="$(find jsk_teleop_joy)/launch/hrp2_trackball_head.launch" >
+  <include file="$(find jsk_teleop_joy)/launch/$(arg trackball_head_launch)" >
   </include>
 </launch>

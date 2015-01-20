@@ -1,8 +1,10 @@
 #!/usr/bin/env roseus
 
+(ros::roseus "request_ik_from_marker")
+
 (load "package://jsk_ik_server/euslisp/fullbody-ik-client.l")
-(load "package://hrpsys_ros_bridge_tutorials/euslisp/hrp2jsknts-interface.l")
 (load "package://drc_task_common/euslisp/drc-task-common-util.l")
+(generate-robot-interface)
 
 (ros::roseus-add-msgs "jsk_rviz_plugins")
 (ros::roseus-add-srvs "jsk_rviz_plugins")
@@ -13,8 +15,6 @@
 (ros::roseus-add-msgs "drc_task_common")
 (ros::roseus-add-srvs "drc_task_common")
 (ros::roseus-add-msgs "visualization_msgs")
-
-(ros::roseus "request_ik_from_marker")
 
 ;; initialization ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun request-ik-from-marker-init
@@ -145,8 +145,6 @@
 ;; robot model initialization
 (defun init-robot-model
   ()
-  (hrp2jsknts-init)
-  (setq *robot* *hrp2jsknts*)
   (defvar *end-coords-without-toe*
     (mapcar
      #'(lambda (k)
@@ -908,19 +906,35 @@
               ((equal arm :larm)
                (setq *assoc-frame-id* "jsk_model_marker_interface/hrp2/LARM_LINK6")))
             ;; service call for ik server
-            (setq res (ik-server-call
-                       :ik-server-service-name ik-server-service-name
-                       :target-coords tc
-                       :move-target mt
-                       :link-list ll
-                       :debug-view :no-message
-                       :translation-axis translation-axis
-                       :rotation-axis rotation-axis
-                       :max (float-vector  500  500  0  20  20  10)
-                       :warnp t
-                       :stop (if (or *reachability-map-mode* *inverse-reachability-map-mode*) 15 30)
-                       ))
-            
+            (cond ((string= *robot-name* "hrp2jsknts")
+                   (setq res (ik-server-call
+                              :ik-server-service-name ik-server-service-name
+                              :target-coords tc
+                              :move-target mt
+                              :link-list ll
+                              :debug-view :no-message
+                              :translation-axis translation-axis
+                              :rotation-axis rotation-axis
+                              :max (float-vector  500  500  0  20  20  10)
+                              :warnp t
+                              :stop (if (or *reachability-map-mode* *inverse-reachability-map-mode*) 15 30)
+                              )))
+                  ((string= *robot-name* "staro")
+                   (setq res (ik-server-call
+                              :ik-server-service-name ik-server-service-name
+                              :target-coords tc
+                              :move-target mt
+                              :link-list ll
+                              :debug-view :no-message
+                              :translation-axis translation-axis
+                              :rotation-axis rotation-axis
+                              ;; temporary for staro
+                              :additional-weight-list
+                              (list (list (send *robot* :torso :waist-y :child-link) 0)
+                                    (list (send *robot* :torso :waist-p :child-link) 0))
+                              :warnp t
+                              :stop (if (or *reachability-map-mode* *inverse-reachability-map-mode*) 15 30)
+                              ))))
             (setq ik-res (= (send res :error_code :val) moveit_msgs::MoveItErrorCodes::*SUCCESS*))
             (send (send (elt *end-coords-from-hand* arm-index) :parent) :dissoc end-coords-2)
             (unless ik-res (return))
