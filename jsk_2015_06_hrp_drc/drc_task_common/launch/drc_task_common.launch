@@ -8,10 +8,14 @@
   <arg name="robot_model_config" default="$(find drc_task_common)/config/hrp2_interactive_marker.yaml" />
   <arg name="ik_server_launch" default="hrp2jsknts-ik-server.launch" />
   <arg name="trackball_head_launch" default="hrp2_trackball_head.launch" />
+  <arg name="multi_plane_segmentation_input" default="/move_group/filtered_cloud" />
+  <arg name="multi_plane_segmentation_base_frame_id" default="odom" />
 
   <!-- object detection -->
   <include file="$(find drc_task_common)/launch/object_detect.launch" >
     <arg name="only_recognition_with_openni" default="$(arg only_recognition_with_openni)" />
+    <arg name="INPUT" value="$(arg multi_plane_segmentation_input)" />
+    <arg name="BASE_FRAME_ID" default="$(arg multi_plane_segmentation_base_frame_id)" />
   </include>
 
   <!-- robot motion -->
