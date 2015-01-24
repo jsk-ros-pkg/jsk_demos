@@ -58,8 +58,6 @@
        )
      ))
   )
-
-
 (when (boundp 'hrp2jsknts-robot)
   (defmethod hrp2jsknts-robot
     (:reach-drill-walk-pose
@@ -75,6 +73,12 @@
      (send self :angle-vector
            #f(0.0 0.0 -26.0 50.0 -24.0 0.0 0.0 0.0 0.0 -26.0 50.0 -24.0 0.0 0.0 0.0 0.0 0.0 40.0 1.19212 -20.9065 -5.36626 -98.3812 -17.2023 6.28459 -83.1406 60.0 50.0 30.0 10.0 -120.0 25.0 5.0 -20.0 -60.0)))
     )
+  (:overhand-grip-drill-pose
+   ()
+   (send self :angle-vector
+         #f(0.0 0.0 -26.0 50.0 -24.0 0.0 0.0 0.0 0.0 -26.0 50.0 -24.0 0.0 0.0 0.0 0.0 0.0 40.0 50.0 -30.0 -10.0 -130.0 -25.0 -5.0 80.0 60.0 50.0 30.0 10.0 -120.0 25.0 5.0 -20.0 -60.0)
+         ))   
+
   )
 
 (when (boundp 'staro-robot)
@@ -88,6 +92,7 @@
     (:pierce-drill-pre-pose
      ()
      )
+    (:overhand-grip-drill-pose
     )
   )
 
