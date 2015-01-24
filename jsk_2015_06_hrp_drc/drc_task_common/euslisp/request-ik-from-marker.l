@@ -47,8 +47,8 @@
   (ros::subscribe "/grasp_dual_pose" geometry_msgs::PoseArray #'solve-ik-from-grasp-dual-pose-command 1)
   (ros::subscribe "/grasp_dual_pose_z_free" geometry_msgs::PoseArray #'solve-ik-from-grasp-dual-pose-command-z-free 1)
   (ros::subscribe "/move_dual_pose" geometry_msgs::PoseArray #'solve-ik-from-move-dual-pose-command 1)
-  (ros::subscribe "/rhsensor" geometry_msgs::WrenchStamped #'get-rf-sensor 1)
-  (ros::subscribe "/lhsensor" geometry_msgs::WrenchStamped #'get-lf-sensor 1)
+  ;;(ros::subscribe "/rhsensor" geometry_msgs::WrenchStamped #'get-rf-sensor 1)
+  ;;(ros::subscribe "/lhsensor" geometry_msgs::WrenchStamped #'get-lf-sensor 1)
   (ros::advertise "/object_handle" geometry_msgs::PoseStamped 1)
   (ros::advertise "/object_approach" geometry_msgs::PoseStamped 1)
   (ros::advertise "/grasp_pose_feedback" geometry_msgs::PoseStamped 1)
@@ -587,11 +587,11 @@
   )
 (defun get-rf-sensor
   (msg)
-  (setq *r-force-x* (send msg :force :x))
+  (setq *r-force-x* (send msg :wrence :force :x))
   )
 (defun get-lf-sensor
   (msg)
-  (setq *l-force-x* (send msg :force :x))
+  (setq *l-force-x* (send msg :wrence :force :x))
   )
 (defun solve-ik-command
   (msg)
