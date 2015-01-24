@@ -1,6 +1,10 @@
 #!/usr/bin/env roseus
 
 (ros::roseus "walk_to_object")
+
+(load "package://drc_task_common/euslisp/drc-task-common-util.l")
+(generate-robot-interface)
+
 (ros::roseus-add-msgs "sensor_msgs")
 (ros::roseus-add-msgs "jsk_rviz_plugins")
 (ros::roseus-add-srvs "jsk_rviz_plugins")
@@ -13,8 +17,6 @@
 
 (defun walk-to-object-init
   ()
-  (load "package://hrpsys_ros_bridge_tutorials/euslisp/hrp2jsknts-interface.l")
-  (hrp2jsknts-init)
   (send *ri* :set-gait-generator-param :stride-parameter (float-vector 0.10 0.05 10.0 0.05))
 
   (setq *tfl* (instance ros::transform-listener :init))

@@ -2,6 +2,9 @@
 
 (ros::roseus "eus_commandserver")
 
+(load "package://drc_task_common/euslisp/drc-task-common-util.l")
+(generate-robot-interface)
+
 (ros::roseus-add-msgs "jsk_rviz_plugins")
 (ros::roseus-add-srvs "jsk_rviz_plugins")
 (ros::roseus-add-msgs "jsk_pcl_ros")
@@ -13,10 +16,7 @@
 
 (defun eus-command-init
   ()
-  (load "package://hrpsys_ros_bridge_tutorials/euslisp/hrp2jsknts-interface.l")
   (load "package://drc_task_common/euslisp/set-recog-param.l")
-  (hrp2jsknts-init)
-  (setq *robot* *hrp2jsknts*)
   (ros::advertise-service "/eus_command" drc_task_common::EusCommand #'eus-command-call)
 
   (warning-message 2 "[eus-command-server] initialize eus-command-server.~%")
