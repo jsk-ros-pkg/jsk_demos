@@ -12,6 +12,7 @@
 #include <drc_task_common/InteractiveMarkerArray.h>
 #include <drc_task_common/ICPService.h>
 #include <drc_task_common/TMarkerInfo.h>
+#include <drc_task_common/GetIKArmPose.h>
 #include <jsk_pcl_ros/BoundingBox.h>
 #include <jsk_interactive_marker/MarkerDimensions.h>
 #include <jsk_interactive_marker/GetTransformableMarkerPose.h>
@@ -93,6 +94,7 @@ protected:
   Publisher _grasp_pose_z_free_pub;
   Publisher _push_pose_pub;
   Publisher _push_pose_with_assist_pub;
+  Publisher _push_pose_with_assist_many_times_pub;
   Publisher _move_by_axial_restraint_pose_pub;
   Publisher _move_by_axial_restraint_not_allow_slip_pose_pub;
   Publisher _reset_pose_pub;
@@ -101,6 +103,7 @@ protected:
   Publisher _move_pose_pub;
   Publisher _move_pose_dual_pub;
   Publisher _feedback_pub;
+  Publisher _box_pub;
   Publisher _debug_point_pub;
   Publisher _marker_set_pose_pub;
   Publisher _t_marker_set_pose_pub;
@@ -195,16 +198,20 @@ public:
     _menu_handler_first.insert("Push", boost::bind(&ManipulationDataServer::push_cb, this, _1));
     _menu_handler_first.insert("Axial Restraint", boost::bind(&ManipulationDataServer::axial_cb, this, _1));
     _menu_handler_first.insert("Remove", boost::bind(&ManipulationDataServer::remove_cb, this, _1));
+    _menu_handler_first.insert("Set Pose With Tracking", boost::bind(&ManipulationDataServer::set_pose_cb, this, _1));
     _menu_handler_first.insert("Reset Pose", boost::bind(&ManipulationDataServer::reset_pose_cb, this, _1));
     _menu_handler_grasp.insert("do_grasp", boost::bind(&ManipulationDataServer::do_grasp_cb, this, _1));
     _menu_handler_grasp.insert("do_grasp_z_free", boost::bind(&ManipulationDataServer::do_grasp_z_free_cb, this, _1));   
     _menu_handler_grasp.insert("Remove", boost::bind(&ManipulationDataServer::remove_cb, this, _1));
     _menu_handler_grasp.insert("Reset Pose", boost::bind(&ManipulationDataServer::reset_pose_cb, this, _1));
+    _menu_handler_grasp.insert("Set Pose With Tracking", boost::bind(&ManipulationDataServer::set_pose_cb, this, _1));
+    _menu_handler_grasp.insert("Set Grasp Pose", boost::bind(&ManipulationDataServer::set_grasp_pose_cb, this, _1));
     _menu_handler_grasp.insert("Reverse Hand", boost::bind(&ManipulationDataServer::reverse_hand_menu_cb, this, _1));
     _menu_handler_grasp.insert("Move", boost::bind(&ManipulationDataServer::move_hand_menu_cb, this, _1));
     _menu_handler_grasp.insert("Revise Model", boost::bind(&ManipulationDataServer::revise_model_cb, this, _1));
     _menu_handler_push.insert("do_push", boost::bind(&ManipulationDataServer::do_push_cb, this, _1));
     _menu_handler_push.insert("do_push(with assist)", boost::bind(&ManipulationDataServer::do_push_with_assist_cb, this, _1));
+    _menu_handler_push.insert("do_push(with assist, many times)", boost::bind(&ManipulationDataServer::do_push_with_assist_many_times_cb, this, _1));
     _menu_handler_push.insert("Remove", boost::bind(&ManipulationDataServer::remove_cb, this, _1));
     _menu_handler_push.insert("Reset Pose", boost::bind(&ManipulationDataServer::reset_pose_cb, this, _1));
     _menu_handler_axial_restraint.insert("move (by axial_restraint)", boost::bind(&ManipulationDataServer::do_move_by_axial_restraion_cb, this, _1));
@@ -220,7 +227,8 @@ public:
     _grasp_pose_dual_z_free_pub = _node.advertise<geometry_msgs::PoseArray>("/grasp_dual_pose_z_free", 10);
     _grasp_pose_z_free_pub = _node.advertise<geometry_msgs::PoseStamped>("/grasp_pose_z_free", 10);
     _push_pose_pub = _node.advertise<geometry_msgs::PoseStamped>("/push_pose", 10);
-    _push_pose_with_assist_pub = _node.advertise<geometry_msgs::PoseStamped>("/push_pose_with_assist", 10);
+    _push_pose_with_assist_pub = _node.advertise<geometry_msgs::PoseArray>("/push_pose_with_assist", 10);
+    _push_pose_with_assist_many_times_pub = _node.advertise<geometry_msgs::PoseArray>("/push_pose_with_assist_many_times", 10);
     _move_by_axial_restraint_pose_pub = _node.advertise<geometry_msgs::PoseArray>("/move_by_axial_restraint_pose", 10);
     _move_by_axial_restraint_not_allow_slip_pose_pub = _node.advertise<geometry_msgs::PoseArray>("/move_by_axial_restraint_not_allow_slip_pose", 10);
     _debug_point_pub = _node.advertise<geometry_msgs::PointStamped>("/debug_point", 10);
@@ -228,6 +236,7 @@ public:
     _reset_pub = _node.advertise<jsk_pcl_ros::PointsArray>("/icp_registration/input_reference_array", 1, boost::bind( &ManipulationDataServer::icp_connection, this, _1), boost::bind( &ManipulationDataServer::icp_disconnection, this, _1));
     _move_pose_pub = _node.advertise<geometry_msgs::PoseStamped>("/move_pose", 1);
     _move_pose_dual_pub = _node.advertise<geometry_msgs::PoseArray>("/move_dual_pose", 1);
+    _box_pub = _node.advertise<jsk_pcl_ros::BoundingBox>("/particle_filter_tracker/renew_box", 1);
     _feedback_pub = _node.advertise<visualization_msgs::InteractiveMarkerFeedback>("/interactive_point_cloud/feedback", 1);
     usleep(100000);
 
@@ -654,6 +663,59 @@ public:
     pub_tf();
     _timer_count = 0;
   }
+  void set_pose_cb(const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback){
+    tf::Transform tfTransformation;
+    tf::StampedTransform tfTransformationStamped;
+    ros::Time now = ros::Time::now();
+    try {
+      _listener.waitForTransform(_base_link_name, "track_result", now, ros::Duration(2.0));
+      _listener.lookupTransform(_base_link_name, "track_result", now, tfTransformationStamped); 
+      tf::Transform tfTransformation_diff =  _tf_from_base.inverse()*tfTransformationStamped;
+      visualization_msgs::InteractiveMarker int_marker_tmp;
+      if(_server->get("grasp_pose", int_marker_tmp)){
+        int_marker_tmp.pose = tf_to_pose(tfTransformation_diff.inverse()*pose_to_tf(int_marker_tmp.pose));
+        ROS_INFO("get grasp succeeded");
+        _grasp_pose = int_marker_tmp.pose;
+        _server->insert(int_marker_tmp);
+        _server->applyChanges();
+      }else{
+      }
+      _tf_from_base = (tf::Transform) tfTransformationStamped;
+      pub_tf();
+    }
+    catch(tf::TransformException ex) {
+      ROS_ERROR("%s",ex.what());
+    }
+  }
+
+  void set_grasp_pose_cb(const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback){
+    tf::Transform tfTransformation;
+    tf::StampedTransform tfTransformationStamped;
+    ros::Time now = ros::Time::now();
+    try {
+      ros::ServiceClient client = _node.serviceClient<drc_task_common::GetIKArmPose>("get_ik_arm_pose");
+      drc_task_common::GetIKArmPose srv;
+      if(!client.call(srv)){
+        ROS_INFO("cannot get ik arm pose");
+        return;
+      }
+      geometry_msgs::PoseStamped grasp_pose_stamped;
+      _listener.waitForTransform("manipulate_frame", srv.response.pose_stamped.header.frame_id, now, ros::Duration(2.0));
+      _listener.transformPose("manipulate_frame",now, srv.response.pose_stamped, srv.response.pose_stamped.header.frame_id, grasp_pose_stamped);
+      visualization_msgs::InteractiveMarker int_marker_tmp;
+      if(_server->get("grasp_pose", int_marker_tmp)){
+        int_marker_tmp.pose = grasp_pose_stamped.pose;
+        ROS_INFO("get grasp succeeded");
+        _grasp_pose = grasp_pose_stamped.pose;
+        _server->insert(int_marker_tmp);
+        _server->applyChanges();
+      }else{
+      }
+    }
+    catch(tf::TransformException ex) {
+      ROS_ERROR("%s",ex.what());
+    }
+  }
   void reset_pose_cb(const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback){
     std_msgs::String a;
     _reset_pose_pub.publish(a);
@@ -967,12 +1029,27 @@ public:
     pose_msg.pose = feedback->pose;
     _push_pose_pub.publish(pose_msg);
   }
-  void do_push_with_assist_cb(const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback){
+  void do_push_with_assist_many_times_cb(const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback){
     geometry_msgs::PoseStamped pose_msg;
+    geometry_msgs::PoseArray pose_array_msg;
     pose_msg.header = feedback->header;
     pose_msg.header.frame_id = std::string("manipulate_frame");
     pose_msg.pose = feedback->pose;
-    _push_pose_with_assist_pub.publish(pose_msg);
+    pose_array_msg.header = pose_msg.header;
+    pose_array_msg.poses.push_back(pose_msg.pose);
+    pose_array_msg.poses.push_back(_grasp_pose);
+    _push_pose_with_assist_many_times_pub.publish(pose_array_msg);
+  }
+  void do_push_with_assist_cb(const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback){
+    geometry_msgs::PoseStamped pose_msg;
+    geometry_msgs::PoseArray pose_array_msg;
+    pose_msg.header = feedback->header;
+    pose_msg.header.frame_id = std::string("manipulate_frame");
+    pose_msg.pose = feedback->pose;
+    pose_array_msg.header = pose_msg.header;
+    pose_array_msg.poses.push_back(pose_msg.pose);
+    pose_array_msg.poses.push_back(_grasp_pose);
+    _push_pose_with_assist_pub.publish(pose_array_msg);
   }
   geometry_msgs::PoseArray do_move_by_axial_restraion_common(std_msgs::Header header, geometry_msgs::Pose pose){
     geometry_msgs::PoseArray move_pose_array;
@@ -1240,6 +1317,7 @@ public:
       _menu_handler_axial_restraint.apply( *_server , "axial_restraint");
       _server->applyChanges();
       _reference_hit=true;
+      box.pose = icp_result.pose;
     }
     else {
       before_pose_.pose = box_ptr->pose;
@@ -1250,6 +1328,7 @@ public:
       _reference_num = _manip_data_array.size();
       _reference_hit=false;
     }
+    _box_pub.publish(box);
     //_listener.transformPose(_base_link_name, before_pose_, after_pose_);
     ros::Time now = ros::Time::now();
     _listener.waitForTransform(_base_link_name, before_pose_.header.frame_id, now, ros::Duration(2.0));
