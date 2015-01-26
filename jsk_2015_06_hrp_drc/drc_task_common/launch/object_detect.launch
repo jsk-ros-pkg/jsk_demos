@@ -5,10 +5,12 @@
   <arg name="TRACKING" default="false" />
   <arg unless="$(arg only_recognition_with_openni)" name="INPUT" default="/move_group/filtered_cloud" />
   <arg if="$(arg only_recognition_with_openni)" name="INPUT" default="/camera/depth_registered/points" />
- 
+  <arg name="BASE_FRAME_ID" default="odom" />
+
 
   <include file="$(find jsk_pcl_ros)/launch/organized_multi_plane_segmentation.launch">
     <arg name="INPUT" value="$(arg INPUT)" />
+    <arg name="BASE_FRAME_ID" value="$(arg BASE_FRAME_ID)" />
     <arg name="COLOR_HISTOGRAM" value="$(arg COLOR_HISTOGRAM)" />
     <arg name="ICP_REGISTRATION" value="true" />
   </include>
