@@ -1,0 +1,47 @@
+<package>
+  <name>jsk_2011_07_pr2_semantic</name>
+  <version>0.0.0</version>
+  <description>jsk_2011_07_pr2_semantic</description>
+  <maintainer email="k-okada@jsk.t.u-tokyo.ac.jp">Kei Okada</maintainer>
+
+  <license>BSD</license>
+
+  <url type="website">http://ros.org/wiki/jsk_2011_07_pr2_semantic</url>
+  <!-- <url type="bugtracker"></url> -->
+
+  <author email="sait@jsk.t.u-tokyo.ac.jp">Manabu Saito</author>
+  <author email="kunze@jsk.t.u-tokyo.ac.jp">Lars Kunze</author>
+  <author email="chen@jsk.t.u-tokyo.ac.jp">Haseru Chen</author>
+
+  <!-- Dependencies which this package needs to build itself. -->
+  <buildtool_depend>catkin</buildtool_depend>
+
+  <!-- Dependencies needed to compile this package. -->
+  <build_depend>pr2eus</build_depend>
+  <build_depend>json_prolog</build_depend>
+  <build_depend>jsk_semantic_maps</build_depend>
+  <build_depend>jsk_pcl_ros</build_depend>
+  <build_depend>pr2eus_openrave</build_depend>
+  <build_depend>pr2_gripper_sensor_action</build_depend>
+
+  <!-- Dependencies needed after this package is compiled. -->
+  <run_depend>pr2eus</run_depend>
+  <run_depend>json_prolog</run_depend>
+  <run_depend>jsk_semantic_maps</run_depend>
+  <run_depend>jsk_pcl_ros</run_depend>
+  <run_depend>pr2eus_openrave</run_depend>
+  <run_depend>pr2_gripper_sensor_action</run_depend>
+
+  <!-- Dependencies needed only for running tests. -->
+  <!-- <test_depend>pr2eus</test_depend> -->
+  <!-- <test_depend>json_prolog</test_depend> -->
+  <!-- <test_depend>jsk_semantic_maps</test_depend> -->
+  <!-- <test_depend>jsk_pcl_ros</test_depend> -->
+  <!-- <test_depend>pr2eus_openrave</test_depend> -->
+  <!-- <test_depend>pr2_gripper_sensor_action</test_depend> -->
+
+<export>
+    <rosdoc config="rosdoc.yaml"/>
+</export>
+
+</package>

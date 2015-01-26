@@ -1,0 +1,44 @@
+<package>
+  <name>jsk_semantic_maps</name>
+  <version>0.0.0</version>
+  <description>Semantic maps of different rooms at the JSK lab at the University of Tokyo.</description>
+  <maintainer email="k-okada@jsk.t.u-tokyo.ac.jp">Kei Okada</maintainer>
+
+  <license>BSD</license>
+
+  <url type="website">http://ros.org/wiki/jsk_semantic_maps</url>
+  <!-- <url type="bugtracker"></url> -->
+
+  <maintainer email="kunze@jsk.t.u.tokyo.ac.jp">Lars Kunze</maintainer>
+
+  <!-- Dependencies which this package needs to build itself. -->
+  <buildtool_depend>catkin</buildtool_depend>
+
+  <!-- Dependencies needed to compile this package. -->
+  <build_depend>ias_knowledge_base</build_depend>
+  <build_depend>comp_spatial</build_depend>
+  <build_depend>comp_temporal</build_depend>
+  <build_depend>mod_vis</build_depend>
+  <build_depend>comp_semantic_map</build_depend>
+  <build_depend>knowrob_omics</build_depend>
+  <build_depend>json_prolog</build_depend>
+
+  <!-- Dependencies needed after this package is compiled. -->
+  <run_depend>ias_knowledge_base</run_depend>
+  <run_depend>comp_spatial</run_depend>
+  <run_depend>comp_temporal</run_depend>
+  <run_depend>mod_vis</run_depend>
+  <run_depend>comp_semantic_map</run_depend>
+  <run_depend>knowrob_omics</run_depend>
+  <run_depend>json_prolog</run_depend>
+
+  <!-- Dependencies needed only for running tests. -->
+  <!-- <test_depend>ias_knowledge_base</test_depend> -->
+  <!-- <test_depend>comp_spatial</test_depend> -->
+  <!-- <test_depend>comp_temporal</test_depend> -->
+  <!-- <test_depend>mod_vis</test_depend> -->
+  <!-- <test_depend>comp_semantic_map</test_depend> -->
+  <!-- <test_depend>knowrob_omics</test_depend> -->
+  <!-- <test_depend>json_prolog</test_depend> -->
+
+</package>
