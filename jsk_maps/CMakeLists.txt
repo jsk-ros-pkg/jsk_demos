@@ -61,7 +61,7 @@ set(_eus_cmd "\"(progn;(make-package;\\\"ROS\\\");(setq;*src*;\\\"${PROJECT_SOUR
 message("_eus_exe => ${_eus_exe}")
 add_custom_command(
   OUTPUT ${_generated_files}
-  COMMAND ${_eus_exe} ${_eus_cmd}
+  COMMAND DISPLAY= ${_eus_exe} ${_eus_cmd}
   DEPENDS ${_eus_exe}
   WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
 )
