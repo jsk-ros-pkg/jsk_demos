@@ -11,6 +11,7 @@
        (let ((as (cdr (assoc 'current-action-state args)))
              (motion-name (symbol-name ',name)))
          (ros::ros-info "args: ~A" args)
+         (ros::ros-info "catchcatch: ~A" (sys::list-all-catchers))
          (if (find-if #'(lambda (s)
                               (and (stringp s) (string= motion-name s))) as)
              (progn
@@ -146,7 +147,7 @@
     (send sm-task :add-transition prev-action-name :goal :goal)
     sm-task))
 
-(defun execute-task (task &key state userdata (hz 1))
+(defun execute-task (task &key state userdata (hz 1) (loop-check-error-p t))
   (let ((sm-inspector (instance state-machine-inspector :init task))
         task-state action-state)
     (if state
@@ -158,6 +159,6 @@
       (push '(action-state . nil) userdata))
     (ros::ros-info "userdata: ~A" userdata)
     (unix:sleep 1)
-    (exec-smach-with-interrupt sm-inspector :state state :mydata userdata :hz hz)))
+    (exec-smach-with-interrupt sm-inspector :state state :mydata userdata :hz hz :loop-check-error-p loop-check-error-p)))
 
 (provide :preemptive-task-execution)
