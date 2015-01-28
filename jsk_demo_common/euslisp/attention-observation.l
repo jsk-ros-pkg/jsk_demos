@@ -150,7 +150,7 @@
     nil
     ))
 
-(defun exec-smach-with-interrupt (sm-inspector &key state mydata (hz 1))
+(defun exec-smach-with-interrupt (sm-inspector &key state mydata (hz 1) (loop-check-error-p t))
   (let (ret state-history)
     (if state
         (send sm-inspector :reset-state :on-state state :user-data mydata) ;; set start-state
@@ -186,7 +186,8 @@
               (let (ret)
                 (when (setq ret (loop-check state-history))
                   (warn ";; loop found ~A~%" ret)
-                  (throw :all-barrier :loop)))
+                  (when loop-check-error-p
+                    (throw :all-barrier :loop))))
               )
             :finish
             ))
