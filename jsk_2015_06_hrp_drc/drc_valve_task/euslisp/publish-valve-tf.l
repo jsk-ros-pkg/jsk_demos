@@ -2,7 +2,7 @@
 
 (ros::roseus "spacenav_tf_publisher")
 (ros::roseus-add-msgs "sensor_msgs")
-(ros::roseus-add-msgs "jsk_pcl_ros")
+(ros::roseus-add-msgs "jsk_recognition_msgs")
 
 (defun init-valve-tf
   ()
@@ -12,7 +12,7 @@
   (setq *control-coords* (make-coords))
   (setq *selected-box-coords* (make-coords))
   (ros::subscribe "/spacenav/joy" sensor_msgs::Joy #'spacenav-callback)
-  (ros::subscribe "bounding_box_marker/selected_box" jsk_pcl_ros::BoundingBox #'selected-box-cb)
+  (ros::subscribe "bounding_box_marker/selected_box" jsk_recognition_msgs::BoundingBox #'selected-box-cb)
   (ros::advertise "/valve_model_pose" geometry_msgs::PoseStamped 1)
   (ros::advertise "/set_valve_model_radius" std_msgs::Float32 1)
   )
