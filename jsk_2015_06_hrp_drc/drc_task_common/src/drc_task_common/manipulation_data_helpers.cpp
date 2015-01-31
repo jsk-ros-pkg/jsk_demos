@@ -18,14 +18,27 @@ YAML::Emitter& operator << (YAML::Emitter& out, const geometry_msgs::Pose pose){
 void operator >> (const YAML::Node& node, geometry_msgs::Pose& pose)
 {
   const YAML::Node& position = node["position"];
+#ifdef USE_OLD_YAML
   position[0] >> pose.position.x;
   position[1] >> pose.position.y;
   position[2] >> pose.position.z;
+#else
+  pose.position.x = position[0].as<double>();
+  pose.position.y = position[1].as<double>();
+  pose.position.z = position[2].as<double>();
+#endif
   const YAML::Node& orientation = node["orientation"];
+#ifdef USE_OLD_YAML
   orientation[0] >> pose.orientation.x;
   orientation[1] >> pose.orientation.y;
   orientation[2] >> pose.orientation.z;
   orientation[3] >> pose.orientation.w;
+#else
+  pose.orientation.x = orientation[0].as<double>();
+  pose.orientation.y = orientation[1].as<double>();
+  pose.orientation.z = orientation[2].as<double>();
+  pose.orientation.w = orientation[3].as<double>();
+#endif
 }
 
 YAML::Emitter& operator << (YAML::Emitter& out, const jsk_interactive_marker::MarkerDimensions dim){
@@ -39,16 +52,27 @@ YAML::Emitter& operator << (YAML::Emitter& out, const jsk_interactive_marker::Ma
 void operator >> (const YAML::Node& node, jsk_interactive_marker::MarkerDimensions& dim)
 {
   const YAML::Node& dimensions = node["dimensions"];
+#ifdef USE_OLD_YAML
   dimensions[0] >> dim.x;
   dimensions[1] >> dim.y;
   dimensions[2] >> dim.z;
   dimensions[3] >> dim.radius;
   dimensions[4] >> dim.small_radius;
   dimensions[5] >> dim.type;
+#else
+  dim.x = dimensions[0].as<float>();
+  dim.y = dimensions[1].as<float>();
+  dim.z = dimensions[2].as<float>();
+  dim.radius = dimensions[3].as<float>();
+  dim.small_radius = dimensions[4].as<float>();
+  dim.type = dimensions[5].as<float>();
+#endif
 }
 
 
 bool read_marker(const std::string& file_name, ManipulationData& int_markers){
+  YAML::Node doc;
+#ifdef USE_OLD_YAML
   std::ifstream fin((file_name + string(".yaml")).c_str());
   if (!fin.good()){
     ROS_INFO("Unable to open yaml file", file_name.c_str());
@@ -59,8 +83,11 @@ bool read_marker(const std::string& file_name, ManipulationData& int_markers){
     ROS_INFO("Unable to create YAML parser for marker_set");
     return false;
   }
-  YAML::Node doc;
   parser.GetNextDocument(doc);
+#else
+  // yaml-cpp is greater than 0.5.0
+  doc = YAML::LoadFile(file_name + string(".yaml"));
+#endif
   doc["pose"] >> int_markers.pose;
   doc["dim"] >> int_markers.dim;
   if( pcl::io::loadPCDFile<pcl::PointXYZRGB> (
