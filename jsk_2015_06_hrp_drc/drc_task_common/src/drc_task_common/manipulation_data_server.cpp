@@ -13,7 +13,7 @@
 #include <drc_task_common/ICPService.h>
 #include <drc_task_common/TMarkerInfo.h>
 #include <drc_task_common/GetIKArmPose.h>
-#include <jsk_pcl_ros/BoundingBox.h>
+#include <jsk_recognition_msgs/BoundingBox.h>
 #include <jsk_interactive_marker/MarkerDimensions.h>
 #include <jsk_interactive_marker/GetTransformableMarkerPose.h>
 #include <jsk_interactive_marker/GetMarkerDimensions.h>
@@ -36,7 +36,7 @@
 #include <pcl/kdtree/kdtree_flann.h>
 #include <pcl/common/transforms.h>
 #include <pcl/filters/passthrough.h>
-#include <jsk_pcl_ros/PointsArray.h>
+#include <jsk_recognition_msgs/PointsArray.h>
 #include <jsk_pcl_ros/ICPAlignWithBox.h>
 #include <jsk_pcl_ros/pcl_conversion_util.h>
 #include <eigen_conversions/eigen_msg.h>
@@ -70,13 +70,13 @@ class ManipulationDataServer
 public:
   tf::TransformBroadcaster _br;
   typedef message_filters::sync_policies::ExactTime< sensor_msgs::PointCloud2,
-						     jsk_pcl_ros::BoundingBox > SyncPolicy;
+						     jsk_recognition_msgs::BoundingBox > SyncPolicy;
   tf::TransformListener _listener;
 protected:
   boost::mutex _mutex;
   ros::NodeHandle _node;
   message_filters::Subscriber <sensor_msgs::PointCloud2> _subPoints;
-  message_filters::Subscriber <jsk_pcl_ros::BoundingBox> _subBox;
+  message_filters::Subscriber <jsk_recognition_msgs::BoundingBox> _subBox;
   Subscriber _subSelectedPoints;
   Subscriber _subSelectedPose;
   Subscriber _sub_pose_feedback;
@@ -233,17 +233,17 @@ public:
     _move_by_axial_restraint_not_allow_slip_pose_pub = _node.advertise<geometry_msgs::PoseArray>("/move_by_axial_restraint_not_allow_slip_pose", 10);
     _debug_point_pub = _node.advertise<geometry_msgs::PointStamped>("/debug_point", 10);
     _reset_pose_pub = _node.advertise<std_msgs::String>("/reset_pose_command", 1);
-    _reset_pub = _node.advertise<jsk_pcl_ros::PointsArray>("/icp_registration/input_reference_array", 1, boost::bind( &ManipulationDataServer::icp_connection, this, _1), boost::bind( &ManipulationDataServer::icp_disconnection, this, _1));
+    _reset_pub = _node.advertise<jsk_recognition_msgs::PointsArray>("/icp_registration/input_reference_array", 1, boost::bind( &ManipulationDataServer::icp_connection, this, _1), boost::bind( &ManipulationDataServer::icp_disconnection, this, _1));
     _move_pose_pub = _node.advertise<geometry_msgs::PoseStamped>("/move_pose", 1);
     _move_pose_dual_pub = _node.advertise<geometry_msgs::PoseArray>("/move_dual_pose", 1);
-    _box_pub = _node.advertise<jsk_pcl_ros::BoundingBox>("/particle_filter_tracker/renew_box", 1);
+    _box_pub = _node.advertise<jsk_recognition_msgs::BoundingBox>("/particle_filter_tracker/renew_box", 1);
     _feedback_pub = _node.advertise<visualization_msgs::InteractiveMarkerFeedback>("/interactive_point_cloud/feedback", 1);
     usleep(100000);
 
     _debug_grasp_pub = _node.advertise<visualization_msgs::Marker>("/debug_grasp", 1);
     _marker_set_pose_pub = _node.advertise<geometry_msgs::PoseStamped>("/interactive_point_cloud/set_marker_pose", 1);
     _t_marker_set_pose_pub = _node.advertise<geometry_msgs::PoseStamped>("/transformable_interactive_server/set_pose", 1);
-    _t_marker_box_pub = _node.advertise<jsk_pcl_ros::BoundingBox>("/passed_selected_box", 1);
+    _t_marker_box_pub = _node.advertise<jsk_recognition_msgs::BoundingBox>("/passed_selected_box", 1);
     _t_marker_information_pub = _node.advertise<drc_task_common::TMarkerInfo>("/t_marker_information", 1);
     _subBox.subscribe(_node, "/bounding_box_marker/selected_box", 1);
     _sync = boost::make_shared<message_filters::Synchronizer<SyncPolicy> >(100);
@@ -289,7 +289,7 @@ public:
     }
   }
   void pub_reference(){
-    jsk_pcl_ros::PointsArray reset_points;
+    jsk_recognition_msgs::PointsArray reset_points;
     pcl::PointCloud <pcl::PointXYZRGB> all_points;
     for(size_t i=0; i<_manip_data_array.size(); i++){
       boost::shared_ptr<ManipulationData> temp_marker = _manip_data_array[i];
@@ -1217,7 +1217,7 @@ public:
     _assoc_marker_flug=false;
     return true;
   }
-  jsk_pcl_ros::ICPResult request_icp(sensor_msgs::PointCloud2 *cloud_msg_ptr, jsk_pcl_ros::BoundingBox *box_msg_ptr){
+  jsk_recognition_msgs::ICPResult request_icp(sensor_msgs::PointCloud2 *cloud_msg_ptr, jsk_recognition_msgs::BoundingBox *box_msg_ptr){
     jsk_pcl_ros::ICPAlignWithBox srv; 
     srv.request.target_cloud = *cloud_msg_ptr;
     srv.request.target_box = *box_msg_ptr;
@@ -1225,7 +1225,7 @@ public:
       return srv.response.result;
     }
     else{
-      jsk_pcl_ros::ICPResult icp_result;
+      jsk_recognition_msgs::ICPResult icp_result;
       icp_result.score = 1.0;
       icp_result.header = box_msg_ptr->header;
       icp_result.pose = box_msg_ptr->pose;
@@ -1233,7 +1233,7 @@ public:
       return icp_result;
     }
   }
-  void pub_t_marker(jsk_pcl_ros::BoundingBox& box, jsk_pcl_ros::ICPResult& icp_result){
+  void pub_t_marker(jsk_recognition_msgs::BoundingBox& box, jsk_recognition_msgs::ICPResult& icp_result){
     if(_reference_hit){   
       geometry_msgs::PoseStamped temp_pose_stamped;
       geometry_msgs::Pose temp_pose, marker_pose = _manip_data_ptr->pose;
@@ -1254,7 +1254,7 @@ public:
 
   bool align_cb(drc_task_common::ICPService::Request& req,
 		drc_task_common::ICPService::Response& res){
-    jsk_pcl_ros::ICPResult icp_result = request_icp(&(req.points), &(req.box));
+    jsk_recognition_msgs::ICPResult icp_result = request_icp(&(req.points), &(req.box));
     set_icp((req.points), (req.box), icp_result);
     set_point_cloud(&(req.points), icp_result.pose, icp_result.header);
     if(_reference_hit){
@@ -1272,18 +1272,18 @@ public:
     }
   }
 
-  void set_reference(const sensor_msgs::PointCloud2ConstPtr& msg_ptr, const jsk_pcl_ros::BoundingBoxConstPtr& box_ptr){
+  void set_reference(const sensor_msgs::PointCloud2ConstPtr& msg_ptr, const jsk_recognition_msgs::BoundingBoxConstPtr& box_ptr){
     sensor_msgs::PointCloud2 msg = *msg_ptr;
-    jsk_pcl_ros::BoundingBox box = *box_ptr;
-    jsk_pcl_ros::ICPResult icp_result = request_icp(&msg, &box);
+    jsk_recognition_msgs::BoundingBox box = *box_ptr;
+    jsk_recognition_msgs::ICPResult icp_result = request_icp(&msg, &box);
     set_icp(msg, box, request_icp(&msg, &box));
     set_point_cloud(&msg, icp_result.pose, icp_result.header);
     pub_t_marker(box, icp_result);
   }
 
-  void set_icp(sensor_msgs::PointCloud2& msg, jsk_pcl_ros::BoundingBox& box, jsk_pcl_ros::ICPResult icp_result){
+  void set_icp(sensor_msgs::PointCloud2& msg, jsk_recognition_msgs::BoundingBox& box, jsk_recognition_msgs::ICPResult icp_result){
     sensor_msgs::PointCloud2* msg_ptr = &msg;
-    jsk_pcl_ros::BoundingBox* box_ptr = &box;
+    jsk_recognition_msgs::BoundingBox* box_ptr = &box;
     //believes that header is same
     //maybe check diference, if there are none, box_ptr will be selected 
     //marker_init
