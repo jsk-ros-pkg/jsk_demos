@@ -1,0 +1,39 @@
+<package>
+  <name>elevator_move_base_pr2</name>
+  <version>0.0.0</version>
+  <description>elevator_move_base_pr2</description>
+  <maintainer email="k-okada@jsk.t.u-tokyo.ac.jp">Kei Okada</maintainer>
+  <author email="k-okada@jsk.t.u-tokyo.ac.jp">Manabu Saito</author>
+
+  <license>BSD</license>
+
+  <url type="website">http://ros.org/wiki/elevator_move_base_pr2</url>
+
+  <!-- Dependencies which this package needs to build itself. -->
+  <buildtool_depend>catkin</buildtool_depend>
+
+  <!-- Dependencies needed to compile this package. -->
+  <build_depend>roseus</build_depend>
+  <build_depend>rospy</build_depend>
+  <build_depend>roscpp</build_depend>
+  <build_depend>pr2eus</build_depend>
+  <build_depend>roseus_smach</build_depend>
+  <build_depend>jsk_maps</build_depend>
+  <build_depend>jsk_perception</build_depend>
+  <build_depend>move_base_msgs</build_depend>
+  <build_depend>sound_play</build_depend>
+  <build_depend>std_srvs</build_depend>
+  <build_depend>nav_msgs</build_depend>
+  <build_depend>image_geometry</build_depend>
+  <build_depend>image_transport</build_depend>
+  <build_depend>roseus_smach</build_depend>
+  <build_depend>cv_bridge</build_depend>
+
+  <!-- Dependencies needed after this package is compiled. -->
+  <test_depend>rostest</test_depend>
+
+<export>
+    <rosdoc config="rosdoc.yaml"/>
+</export>
+
+</package>

@@ -14,7 +14,7 @@ import imp
 imp.find_module('jsk_teleop_joy')
 from jsk_teleop_joy.b_control_status import BControl2Status
 from geometry_msgs.msg import *
-from jsk_pcl_ros.msg import BoundingBox
+from jsk_recognition_msgs.msg import BoundingBox
 from sensor_msgs.msg import Joy, JoyFeedback, JoyFeedbackArray, PointCloud2
 from std_msgs.msg import Float32, ColorRGBA, Bool
 import tf
