@@ -16,6 +16,13 @@ catkin_package(
   CATKIN_DEPENDS message_runtime INCLUDE_DIRS
 )
 
+find_package(PkgConfig)
+pkg_check_modules(yaml_cpp yaml-cpp REQUIRED)
+if(${yaml_cpp_VERSION} VERSION_LESS "0.5.0")
+## indigo yaml-cpp : 0.5.0 /  hydro yaml-cpp : 0.3.0
+  add_definitions("-DUSE_OLD_YAML")
+endif()
+
 include_directories(
   include
   ${catkin_INCLUDE_DIRS}
