@@ -2,8 +2,8 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(jsk_maps)
 
-find_package(catkin REQUIRED COMPONENTS
-  euslisp)
+find_package(catkin REQUIRED)
+find_package(euslisp REQUIRED)
 
 if(${CMAKE_SYSTEM_NAME} MATCHES Linux)
   execute_process(COMMAND gcc -dumpmachine OUTPUT_VARIABLE GCC_MACHINE OUTPUT_STRIP_TRAILING_WHITESPACE)
