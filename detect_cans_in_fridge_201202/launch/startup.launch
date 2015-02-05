@@ -9,7 +9,7 @@
   <!-- <arg name="app_manager" default="true" /> -->
 
   <!-- sample data for test -->
-  <anode pkg="rosbag" type="play" name="play"
+  <node pkg="rosbag" type="play" name="play"
          args="-l -r 0.1 /home/leus/work/rits/refrig-kinect-c.bag" />
 
   <!-- for desktop -->

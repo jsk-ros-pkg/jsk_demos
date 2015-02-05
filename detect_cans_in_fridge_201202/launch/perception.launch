@@ -11,7 +11,7 @@
   <!-- <arg name="app_manager" default="true" /> -->
 
   <!-- sample data for test -->
-  <!-- <anode pkg="rosbag" type="play" name="play" -->
+  <!-- <node pkg="rosbag" type="play" name="play" -->
   <!--        args="-l -r 0.1 /home/leus/work/rits/refrig-kinect-c.bag" /> -->
 
   <node pkg="roseus" type="roseus" name="marker_publish" output="screen" if="$(arg fridge_show)"
@@ -22,12 +22,12 @@
   </node>
 
   <!-- reference white -->
-  <anode pkg="image_view2" type="image_view2" name="select_ref_white" machine="c2">
+  <node pkg="image_view2" type="image_view2" name="select_ref_white" machine="c2">
     <remap from="image" to="/openni_c2/rgb/image_rect_color"/>
     <remap from="camera_info" to="/openni_c2/rgb/camera_info"/>
     <remap from="/openni_c2/rgb/image_rect_color/screenpoint"
            to="/openni_c2/rgb/screenpoint"/>
-  </anode>
+  </node>
 
   <node pkg="jsk_pcl_ros" type="attention_clipper" name="attention_clipper" output="screen" if="$(arg roi)">
     <remap from="~input" to="/openni_c2/rgb/camera_info" />
@@ -54,7 +54,7 @@
       <param name="use_mask" value="$(arg roi)" />
       <remap from="mask" to="/attention_clipper/output/mask"/>
     </node>
-    <node pkg="jsk_perception" type="point_pose_extractor" machien="c2"
+    <node pkg="jsk_perception" type="point_pose_extractor" machine="c2"
           name="fridge_detector">
       <param name="template_filename" value="$(find detect_cans_in_fridge_201202)/data/openni_rgb_fridge.png"/>
       <param name="window_name" value="fridge_handle_upper"/>
