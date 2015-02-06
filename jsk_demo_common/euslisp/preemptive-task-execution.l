@@ -119,8 +119,8 @@
     (send sm-action :add-transition prev-motion-name :mark-action-done :success)
     sm-action))
 
-(defmacro action (name &rest actions)
-  `(cons ',name (make-action (symbol-name ',name) ,@actions)))
+(defmacro action (name &rest motions)
+  `(cons ',name (make-action (symbol-name ',name) ,@motions)))
 
 (defun task (actions)
   (let ((sm-task (instance state-machine :init))
