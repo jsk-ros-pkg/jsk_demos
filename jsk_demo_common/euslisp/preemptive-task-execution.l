@@ -119,8 +119,8 @@
     (send sm-action :add-transition prev-motion-name :mark-action-done :success)
     sm-action))
 
-(defmacro action (name &rest actions)
-  `(cons ',name (make-action (symbol-name ',name) ,@actions)))
+(defmacro action (name &rest motions)
+  `(cons ',name (make-action (symbol-name ',name) ,@motions)))
 
 (defun task (actions)
   (let ((sm-task (instance state-machine :init))
@@ -147,11 +147,11 @@
     (send sm-task :add-transition prev-action-name :goal :goal)
     sm-task))
 
-(defun execute-task (task &key state userdata (hz 1) (loop-check-error-p t))
+(defun execute-task (task &key start-state userdata (hz 1) (loop-check-error-p t))
   (let ((sm-inspector (instance state-machine-inspector :init task))
         task-state action-state)
-    (if state
-        (send sm-inspector :reset-state :on-state state :user-data userdata)
+    (if start-state
+        (send sm-inspector :reset-state :on-state start-state :user-data userdata)
         (send sm-inspector :reset-state :user-data userdata))
 
     (when (null userdata)
@@ -159,6 +159,6 @@
       (push '(action-state . nil) userdata))
     (ros::ros-info "userdata: ~A" userdata)
     (unix:sleep 1)
-    (exec-smach-with-interrupt sm-inspector :state state :mydata userdata :hz hz :loop-check-error-p loop-check-error-p)))
+    (exec-smach-with-interrupt sm-inspector :state start-state :mydata userdata :hz hz :loop-check-error-p loop-check-error-p)))
 
 (provide :preemptive-task-execution)
