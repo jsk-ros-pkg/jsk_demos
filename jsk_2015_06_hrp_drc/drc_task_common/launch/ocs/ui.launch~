@@ -1,0 +1,6 @@
+<launch>
+  <node pkg="rqt_gui" type="rqt_gui" name="rqt_image_view_button"
+        args="--perspective-file $(find jsk_rqt_plugins)/resources/rqt_image_view2_button.perspective">
+  </node>
+</launch>
+
