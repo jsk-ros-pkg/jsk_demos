@@ -36,4 +36,6 @@ tmux-newwindow remote_server "roslaunch drc_task_common remote_server.launch"
 tmux-newwindow manipulation_processor "roslaunch drc_task_common manipulation_data_processor.launch"
 tmux-newwindow rviz "rviz -d `rospack find drc_task_common`/config/drc_task_common.rviz"
 
+
+
 tmux send-keys -t drc:tmp "exit" C-m

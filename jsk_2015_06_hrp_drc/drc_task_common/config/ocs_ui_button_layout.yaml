@@ -1,0 +1,9 @@
+- name: 'Go pos'
+  service: 'go_pos'
+  column: 0
+- name: 'exec'
+  service: 'exec'
+  column: 1
+- name: 'cancel'
+  service: 'cancel'
+  column: 1

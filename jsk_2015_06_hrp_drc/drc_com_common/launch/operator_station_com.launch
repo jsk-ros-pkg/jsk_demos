@@ -1,6 +1,12 @@
 <launch>
+  <!-- required Argument -->
+  <arg name="OCS_IP" default="localhost"/>
+  <arg name="FC_IP" default="localhost"/>
+  <arg name="OCS_TO_FC_PORT" default="11700"/>
+  <arg name="FC_TO_OCS_PORT" default="11701"/>
+
   <node pkg="jsk_network_tools" type="silverhammer_highspeed_receiver.py"
-        output="screen"
+        output="screen" if="false"
         name="highspeed_receiver">
     <rosparam>
       message: drc_com_common/FC2OCSLarge
@@ -8,6 +14,23 @@
       receive_ip: "0.0.0.0"
     </rosparam>
   </node>
-  <!-- relay -->
-  <include file="$(find drc_com_common)/launch/ocs_relay.launch" if="false"/>
+  <node pkg="jsk_network_tools" type="silverhammer_lowspeed_receiver.py"
+        output="screen"
+        name="ocs_from_fc_low_speed">
+    <rosparam subst_value="true">
+      message: drc_com_common/FC2OCSSmall
+      receive_port: $(arg FC_TO_OCS_PORT)
+      receive_ip: $(arg OCS_IP)
+    </rosparam>
+  </node>
+  <node pkg="jsk_network_tools" type="silverhammer_lowspeed_streamer.py"
+        output="screen"
+        name="ocs_to_fc_low_speed">
+    <rosparam subst_value="true">
+      message: drc_com_common/OCS2FCSmall
+      to_port: $(arg OCS_TO_FC_PORT)
+      to_ip: $(arg FC_IP)
+    </rosparam>
+  </node>
+
 </launch>
