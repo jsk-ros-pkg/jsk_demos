@@ -82,16 +82,27 @@ Right-Click it, then you can make other Marker, if you Right-Click this Marker, 
 
 #### Markers
 
+##### Cloud Marker
+![](images/none_marker.png)
+
+You can move this with 6-Dof Control, you can select points of cloud for create menu marker
+
 ##### Menu Marker
 show menu, this marker creates other markers.
 
 ##### Push Marker
+![](images/push_marker.png)
+
 show push point
 
-##### Grasp Marker
+##### Grasp Marke
+![](images/grasp_marker.png)
+
 show grasp point
 
 ##### Restraint Marker
+![](images/restraint_marker.png)
+
 show restraint, robot may solve ik with :x by this arrow.
 
 #### Trable shoot for this interface
