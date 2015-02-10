@@ -17,7 +17,7 @@
   </node>
 
   <!-- dynamic reachability map server -->
-  <node pkg="drc_task_common" type="dynamic_reachability_publisher.l" name="dynamic_reachability_publisher" output="screen" >
+  <node pkg="drc_task_common" type="dynamic_reachability_publisher.l" name="dynamic_reachability_publisher" output="screen" if="false">
   </node>
   
   <!-- go-pos -->
