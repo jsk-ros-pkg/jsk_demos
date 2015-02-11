@@ -24,6 +24,9 @@
     </node>
     <node pkg="jsk_topic_tools" type="snapshot" name="snapshot">
       <remap from="~input" to="centroid_publisher/output/pose"/>
+      <rosparam>
+        latch: true
+      </rosparam>
     </node>
     <node pkg="image_view" type="image_view" name="debug_view">
       <remap from="image" to="rect_to_mask_image/output"/>
