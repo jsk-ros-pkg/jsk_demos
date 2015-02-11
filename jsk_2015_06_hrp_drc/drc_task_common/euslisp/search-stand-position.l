@@ -8,8 +8,8 @@
   (set-valve-enviroment)
 
   (send *obj* :rotate (deg2rad 20) :z :world)
-  (setq *map-min-point* (list -300 -300 0))
-  (setq *map-max-point* (list 300 300 0))
+  (setq *map-min-point* (list -600 -600 0))
+  (setq *map-max-point* (list 600 600 0))
   (setq *map-step-dist* (float-vector 50 50 0))
   (setq *map-point-list* nil)
   (setq *max-list* nil)
@@ -33,10 +33,34 @@
         (warning-message 2 "after :~a~%" (send (send *robot* :foot-midcoords) :copy-worldcoords))
         (max-list-index)
         (push map-point *map-point-list*)
-        (push (car (cdr *max-index*)) *max-list*)
+        (if (equal (car (cdr *max-index*)) 20)
+            (push 9 *max-list*)
+            (push (car (cdr *max-index*)) *max-list*))
         (warn "ix=~a~%" ix)
         (warn "iy=~a~%" iy)
         (objects (list *robot* *obj* *ground*))
         )))  
 )
+
+
+(defun load-log
+  ()
+  (load "package://euslib/demo/otsubo/log-map-0.l"))
+
+(defun draw-inverse-rv-map
+  ()
+  (setq *c-list* nil)
   
+  ;; (dotimes (i (length *max-list*))    
+  ;;   (when (equal (nth i *max-list*) 20)
+  ;;     (setq (nth i *max-list*) 10)))
+  
+  (dotimes (i (length *max-list*))
+    (setq ci (make-cube 40 40 2))
+    (send ci :locate (nth i *map-point-list*))
+    (send ci :set-color (float-vector (/ (nth i *max-list*) 9.0) 0 (- 1.0 (/ (nth i *max-list*) 9.0))))
+    (push ci *c-list*)
+    )
+  (objects (append (list *obj* *robot* *ground*) *c-list*))
+  )  
+

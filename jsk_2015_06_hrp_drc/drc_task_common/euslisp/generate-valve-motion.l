@@ -241,4 +241,4 @@
 
 (defun get-angle-vector
   ()
-  (
+  )
