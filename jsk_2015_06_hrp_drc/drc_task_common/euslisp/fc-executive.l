@@ -6,6 +6,7 @@
 (ros::roseus-add-msgs "geometry_msgs")
 (ros::roseus-add-msgs "drc_com_common")
 (load "package://drc_task_common/euslisp/util.l")
+(load "package://drc_task_common/euslisp/robot-util.l")
 
 (defun get-ocs2fc-rect (msg)
   (let ((x1 (elt (send msg :image_roi_info) 0))

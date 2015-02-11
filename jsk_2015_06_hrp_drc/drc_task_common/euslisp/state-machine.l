@@ -28,6 +28,7 @@
                                         (send (send trans :to) :name)))
                                 candidate-transitions)))))
   (:go-to (next-state)
+    (format t "next state: ~A~%" next-state)
     (send self :active-state (send self :node next-state)))
   (:lookup-transitions (start-state)
     (remove-if-not #'(lambda (trans)
