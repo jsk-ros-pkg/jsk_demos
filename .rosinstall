@@ -1,12 +1,15 @@
 - git:
-    uri: https://github.com/jsk-ros-pkg/jsk_planning.git
-    local-name: jsk-ros-pkg/jsk_planning
-- git:
     uri: https://github.com/jsk-ros-pkg/openrave_planning.git
     local-name: jsk-ros-pkg/openrave_planning
 - git:
+    uri: https://github.com/jsk-ros-pkg/jsk_pr2eus.git
+    local-name: jsk-ros-pkg/jsk_pr2eus
+- git:
     uri: https://github.com/jsk-ros-pkg/jsk_smart_apps.git
     local-name: jsk-ros-pkg/jsk_smart_apps
+# - git:
+#     uri: https://github.com/start-jsk/rtmros_common.git
+#     local-name: rtm-ros-robotics/rtmros_common
 # - svn:
 #     uri: https://svn.code.sf.net/p/tum-ros-pkg/code/perception/
 #     local-name: tum-ros-pkg/perception
