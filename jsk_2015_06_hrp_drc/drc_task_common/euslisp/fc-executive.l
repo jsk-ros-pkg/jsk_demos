@@ -6,6 +6,7 @@
 (ros::roseus-add-msgs "geometry_msgs")
 (ros::roseus-add-msgs "drc_com_common")
 (load "package://drc_task_common/euslisp/util.l")
+
 (defun get-ocs2fc-rect (msg)
   (let ((x1 (elt (send msg :image_roi_info) 0))
         (y1 (elt (send msg :image_roi_info) 1))
@@ -32,16 +33,35 @@
     self)
   (:narrow-message-callback (msg)
     (cond
-     ((eq (send msg :action_type) drc_com_common::OCS2FCSmall::*GO_POS_REGION*)
-      ;; enable snapshot
-      (call-empty-service "/go_pos_recognition/snapshot/request")
+     ((and (eq (send msg :action_type) drc_com_common::OCS2FCSmall::*GO_POS_REGION*)
+           (eq state :initial))
       ;; convert OCS2FCSmall into geometry_msgs/Polygon
       (ros::publish (format nil "~A/output/go_pos_rect" (ros::get-name)) (get-ocs2fc-rect msg))
-      (setq state :wait-for-go-pos-result)
-      ))
+      ;; enable snapshot
+      (call-empty-service "/go_pos_recognition/snapshot/request")
+      (setq state :recognizing-go-pos-location)
+      )
+     ((and (eq (send msg :action_type) drc_com_common::OCS2FCSmall::*GO_POS_EXEC*)
+           (eq state :initial))
+      (let ((goal-coords (float-vector-to-coords (send msg :float_params))))
+        (setq state :executing-go-pos)
+        (format t "go-pos ~A ~A ~A~%"
+                (* 0.001 (elt (send goal-coords :worldpos) 0))
+                (* 0.001 (elt (send goal-coords :worldpos) 1))
+                (rad2deg (elt (car (send goal-coords :rpy-angle)) 0)))
+        (send *ri* :go-pos 
+              (* 0.001 (elt (send goal-coords :worldpos) 0))
+              (* 0.001 (elt (send goal-coords :worldpos) 1))
+              (rad2deg (elt (car (send goal-coords :rpy-angle)) 0)))
+        )
+      (let ((msg (instance drc_com_common::FC2OCSSmall :init)))
+        (send msg :type drc_com_common::FC2OCSSmall::*GO_POS_FINISHED*)
+        (send self :send-to-ocs msg))
+      (setq state :initial))
+     )
     )
   (:go-pos-recog-callback (msg)         ;geometry_msgs/PoseStamped
-    (when (eq state :wait-for-go-pos-result)
+    (when (eq state :recognizing-go-pos-location)
       (let ((trans (send *tf* :lookup-transform "BODY" 
                          (send msg :header :frame_id) (send msg :header :stamp))))
         (unless trans
@@ -76,22 +96,24 @@
                           "/go_pos_goal"
                           (ros::coords->tf-pose-stamped offset-goal "BODY"))
                         (setq go-pos-goal offset-goal)
-                        (send self :return-go-pos-goal)
-                        (print offset-goal))))))))))))
-  (:return-go-pos-goal ()
-    (let ((msg (instance drc_com_common::FC2OCSSmall :init)))
-      (send msg :type drc_com_common::FC2OCSSmall::*GO_POS_POSE*)
-      (setf (elt (send msg :params) 0) (elt (send go-pos-goal :worldpos) 0))
-      (setf (elt (send msg :params) 1) (elt (send go-pos-goal :worldpos) 1))
-      (setf (elt (send msg :params) 2) (elt (send go-pos-goal :worldpos) 2))
-      (setf (elt (send msg :params) 3) (elt (car (send go-pos-goal :rpy-angle)) 0))
-      (setf (elt (send msg :params) 4) (elt (car (send go-pos-goal :rpy-angle)) 1))
-      (setf (elt (send msg :params) 5) (elt (car (send go-pos-goal :rpy-angle)) 2))
-      (ros::publish "/fc_to_ocs_low_speed/input" msg)
-      )
-    )
+                        (print offset-goal)
+                        (let ((msg (instance drc_com_common::FC2OCSSmall :init)))
+                          (send msg :type drc_com_common::FC2OCSSmall::*GO_POS_POSE*)
+                          (setf (elt (send msg :params) 0) (elt (send go-pos-goal :worldpos) 0))
+                          (setf (elt (send msg :params) 1) (elt (send go-pos-goal :worldpos) 1))
+                          (setf (elt (send msg :params) 2) (elt (send go-pos-goal :worldpos) 2))
+                          (setf (elt (send msg :params) 3) (elt (car (send go-pos-goal :rpy-angle)) 0))
+                          (setf (elt (send msg :params) 4) (elt (car (send go-pos-goal :rpy-angle)) 1))
+                          (setf (elt (send msg :params) 5) (elt (car (send go-pos-goal :rpy-angle)) 2))
+                          (send self :send-to-ocs msg)
+                          (setq state :initial)
+                          ))))))))))))
+  (:send-to-ocs (msg)
+    (ros::publish "/fc_to_ocs_low_speed/input" msg))
   )
 
+
+(init-robot-from-name "HRP2JSKNTS")
 
 (setq *go-pos-offset* 1000)
 (setq *app* (instance fc-executive-app :init))
