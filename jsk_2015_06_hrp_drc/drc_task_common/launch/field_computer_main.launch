@@ -6,6 +6,8 @@
   <arg name="USE_COM" default="true" />
   <node pkg="drc_task_common" type="fc-executive.l" name="fc_executive" output="screen">
   </node>
+  <node pkg="drc_task_common" type="robot-main.l" name="robot_main" output="screen">
+  </node>
   <include file="$(find drc_task_common)/launch/fc/go_pos_recog.launch">
   </include>
   <!-- communication -->
