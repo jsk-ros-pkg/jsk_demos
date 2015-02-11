@@ -30,6 +30,7 @@
   <build_depend>pcl_conversions</build_depend>
   <build_depend>yaml-cpp</build_depend>
   <build_depend>message_generation</build_depend>
+  <build_depend>topic_tools</build_depend>
   <build_depend>jsk_topic_tools</build_depend>
   <build_depend>rviz</build_depend>
   <build_depend>eigen_conversions</build_depend>
@@ -59,6 +60,7 @@
   <run_depend>pcl_conversions</run_depend>
   <run_depend>yaml-cpp</run_depend>
   <run_depend>message_runtime</run_depend>
+  <run_depend>topic_tools</run_depend>
   <run_depend>jsk_topic_tools</run_depend>
   <run_depend>rviz</run_depend>
   <run_depend>eigen_conversions</run_depend>

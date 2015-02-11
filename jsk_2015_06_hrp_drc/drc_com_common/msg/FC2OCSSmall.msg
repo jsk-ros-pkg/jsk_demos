@@ -7,6 +7,7 @@ float32[16] params
 
 # type
 uint8 GO_POS_POSE=1
+uint8 GO_POS_FINISHED=2
 # when type==GO_POS_POSE, 
 # params = [x, y, z, yaw, pitch, roll]
 # unit is mm.
