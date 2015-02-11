@@ -8,8 +8,8 @@
 
 (ros::roseus-add-msgs "jsk_rviz_plugins")
 (ros::roseus-add-srvs "jsk_rviz_plugins")
-(ros::roseus-add-msgs "jsk_pcl_ros")
-(ros::roseus-add-srvs "jsk_pcl_ros")
+(ros::roseus-add-msgs "jsk_recognition_msgs")
+;(ros::roseus-add-srvs "jsk_recognition_msgs")
 (ros::roseus-add-msgs "jsk_interactive_marker")
 (ros::roseus-add-srvs "jsk_interactive_marker")
 (ros::roseus-add-msgs "drc_task_common")
@@ -425,10 +425,9 @@
     (setq ik-arm-coords (send (send *robot* *ik-arm* :end-coords :worldcoords) :copy-worldcoords))
     (send ik-arm-coords :transform (send (gethash *ik-arm* *move-target-from-hand-for-grasp*) :copy-worldcoords))
 
-    (send res :pose_stamped (instance geometry_msgs::PoseStamped :init :pose (ros::coords->tf-pose (send (send (send (send *hrp2jsknts* :body_lk) :worldcoords) :copy-worldcoords) :transformation ik-arm-coords :local)) :header (instance std_msgs::Header :init :frame_id "BODY"
+    (send res :pose_stamped (instance geometry_msgs::PoseStamped :init :pose (ros::coords->tf-pose (send (send (send (send *robot* :body_lk) :worldcoords) :copy-worldcoords) :transformation ik-arm-coords :local)) :header (instance std_msgs::Header :init :frame_id "BODY"
                                                                                                                :stamp (ros::time-now))))
 
-;; (send (send (send (send *hrp2jsknts* :body_lk) :worldcoords) :copy-worldcoords) :transformation (send (send *hrp2jsknts* :larm :end-coords) :copy-worldcoords) :local)
     (send *robot* :angle-vector original-av)
     res))
 
@@ -1000,7 +999,7 @@
               ((equal arm :larm)
                (setq *assoc-frame-id* "jsk_model_marker_interface/hrp2/LARM_LINK6")))
             ;; service call for ik server
-            (cond ((string= *robot-name* "hrp2jsknts")
+            (cond ((or (string= *robot-name* "hrp2jsknts") (string= *robot-name* "hrp2jsknt"))
                    (setq res (ik-server-call
                               :ik-server-service-name ik-server-service-name
                               :target-coords tc
