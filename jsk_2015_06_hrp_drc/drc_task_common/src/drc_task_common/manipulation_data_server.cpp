@@ -60,6 +60,8 @@ using namespace ros;
 using namespace visualization_msgs;
 using namespace manip_helpers;
 
+// input cloud may should be same with icp and box
+// for drc, all msg in odom_on_ground may be convenient
 
 inline float SIGN(float x) {return (x >= 0.0f) ? +1.0f : -1.0f;}
 inline float NORM(float a, float b, float c) {return sqrt(a * a + b * b + c * c);}
@@ -72,12 +74,15 @@ public:
   tf::TransformBroadcaster _br;
   typedef message_filters::sync_policies::ExactTime< sensor_msgs::PointCloud2,
 						     jsk_recognition_msgs::BoundingBox > SyncPolicy;
+  typedef message_filters::sync_policies::ExactTime< jsk_recognition_msgs::BoundingBox,
+																										 jsk_recognition_msgs::ICPResult> SyncPolicy_b_i;
   tf::TransformListener _listener;
 protected:
   boost::mutex _mutex;
   ros::NodeHandle _node;
   message_filters::Subscriber <sensor_msgs::PointCloud2> _subPoints;
   message_filters::Subscriber <jsk_recognition_msgs::BoundingBox> _subBox;
+	message_filters::Subscriber <jsk_reconnition_msgs::ICPResult> _subICP;
   Subscriber _subSelectedPoints;
   Subscriber _subSelectedPose;
   Subscriber _sub_pose_feedback;
@@ -149,21 +154,16 @@ protected:
   bool _all_manual;
   //bool init_reference_end;
 public:
-  bool transform_pointcloud_in_bounding_box(
-    const geometry_msgs::PoseStamped& box_pose,
+  bool transform_pointcloud_in_frame(
+    tf::Transform transform,
     const sensor_msgs::PointCloud2& cloud_msg,
     pcl::PointCloud<pcl::PointXYZRGB>& output,
     Eigen::Affine3f& offset,
     tf::TransformListener& tf_listener)
   {
-    // transform box_pose into msg frame
-    geometry_msgs::PoseStamped box_pose_respected_to_cloud;
-    tf_listener.transformPose(cloud_msg.header.frame_id,
-                                box_pose,
-                                box_pose_respected_to_cloud);
     // convert the pose into eigen
     Eigen::Affine3d box_pose_respected_to_cloud_eigend;
-    tf::poseMsgToEigen(box_pose_respected_to_cloud.pose,
+    tf::poseMsgToEigen(tf_to_pose(transform),
                        box_pose_respected_to_cloud_eigend);
     Eigen::Affine3d box_pose_respected_to_cloud_eigend_inversed
       = box_pose_respected_to_cloud_eigend.inverse();
@@ -219,7 +219,6 @@ public:
     _menu_handler_axial_restraint.insert("move (by axial_restraint, not allow slip)", boost::bind(&ManipulationDataServer::do_move_by_axial_restraion_not_allow_slip_cb, this, _1));
     _menu_handler_axial_restraint.insert("Remove", boost::bind(&ManipulationDataServer::remove_cb, this, _1));
 
-    _subPoints.subscribe(_node , "/selected_pointcloud", 1);
     _pointsPub = _node.advertise<sensor_msgs::PointCloud2>("/manip_points", 10);
     _pointsArrayPub = _node.advertise<sensor_msgs::PointCloud2>("/icp_registration/input_reference_add", 10);
     _debug_cloud_pub = _node.advertise<sensor_msgs::PointCloud2>("/manip/debug_cloud", 10);
@@ -246,13 +245,7 @@ public:
     _t_marker_set_pose_pub = _node.advertise<geometry_msgs::PoseStamped>("/transformable_interactive_server/set_pose", 1);
     _t_marker_box_pub = _node.advertise<jsk_recognition_msgs::BoundingBox>("/passed_selected_box", 1);
     _t_marker_information_pub = _node.advertise<drc_task_common::TMarkerInfo>("/t_marker_information", 1);
-    _subBox.subscribe(_node, "/bounding_box_marker/selected_box", 1);
-    _sync = boost::make_shared<message_filters::Synchronizer<SyncPolicy> >(100);
-   
-    _sync->connectInput(_subPoints, _subBox);
-    _sync->registerCallback(boost::bind(
-					&ManipulationDataServer::set_reference,
-					this, _1, _2));
+		subscribe_cloud_and_box();
     _icp_client = _node.serviceClient<jsk_pcl_ros::ICPAlignWithBox>("/icp_registration/icp_service");
     _get_type_client = _node.serviceClient<jsk_interactive_marker::GetType>("/transformable_interactive_server/get_type");
     _get_pose_client = _node.serviceClient<jsk_interactive_marker::GetTransformableMarkerPose>("/transformable_interactive_server/get_pose");
@@ -273,6 +266,19 @@ public:
     pub_tf();
 
   }
+	void subscribe_cloud_and_box(){
+    _subPoints.subscribe(_node , "/selected_pointcloud", 1);
+    _subBox.subscribe(_node, "/bounding_box_marker/selected_box", 1);
+    _sync = boost::make_shared<message_filters::Synchronizer<SyncPolicy> >(100);
+		if(true){
+			_sync->connectInput(_subPoints, _subBox);
+			_sync->registerCallback(boost::bind(
+																&ManipulationDataServer::set_reference,
+																this, _1, _2));
+		}else{ // for drc_commu
+			
+		}
+	}
   void init_reference(){
     std::vector<std::string> pcd_files;
     if (!jsk_topic_tools::readVectorParameter(_node, "models", pcd_files)){
@@ -1256,8 +1262,8 @@ public:
   bool align_cb(drc_task_common::ICPService::Request& req,
 		drc_task_common::ICPService::Response& res){
     jsk_recognition_msgs::ICPResult icp_result = request_icp(&(req.points), &(req.box));
-    set_icp((req.points), (req.box), icp_result);
-    set_point_cloud(&(req.points), icp_result.pose, icp_result.header);
+    set_icp((req.box), icp_result);
+    set_point_cloud(&(req.points), _tf_from_base);
     if(_reference_hit){
       geometry_msgs::PoseStamped temp_pose_stamped;
       geometry_msgs::Pose temp_pose, marker_pose = _manip_data_ptr->pose;
@@ -1277,13 +1283,13 @@ public:
     sensor_msgs::PointCloud2 msg = *msg_ptr;
     jsk_recognition_msgs::BoundingBox box = *box_ptr;
     jsk_recognition_msgs::ICPResult icp_result = request_icp(&msg, &box);
-    set_icp(msg, box, request_icp(&msg, &box));
-    set_point_cloud(&msg, icp_result.pose, icp_result.header);
+    set_icp(box, request_icp(&msg, &box));
+    set_point_cloud(&msg, _tf_from_base);
     pub_t_marker(box, icp_result);
   }
 
-  void set_icp(sensor_msgs::PointCloud2& msg, jsk_recognition_msgs::BoundingBox& box, jsk_recognition_msgs::ICPResult icp_result){
-    sensor_msgs::PointCloud2* msg_ptr = &msg;
+  void set_icp(jsk_recognition_msgs::BoundingBox& box, jsk_recognition_msgs::ICPResult icp_result){
+    //sensor_msgs::PointCloud2* msg_ptr = &msg;
     jsk_recognition_msgs::BoundingBox* box_ptr = &box;
     //believes that header is same
     //maybe check diference, if there are none, box_ptr will be selected 
@@ -1347,62 +1353,59 @@ public:
     //move point_cloud
     _reference_box_size = box_ptr->dimensions;
   }
-  void set_point_cloud(sensor_msgs::PointCloud2 *msg_ptr, geometry_msgs::Pose transform_pose, std_msgs::Header header){
+  void set_point_cloud(sensor_msgs::PointCloud2 *msg_ptr, tf::Transform transform){
     try
     {
-      ROS_INFO("pose_qua %f %f %f %f", transform_pose.orientation.x, transform_pose.orientation.y, transform_pose.orientation.z, transform_pose.orientation.w);
       Eigen::Affine3f offset;
-      geometry_msgs::PoseStamped transform_pose_stamped;
-      transform_pose_stamped.header = header; transform_pose_stamped.pose = transform_pose;
-      transform_pointcloud_in_bounding_box(
-        transform_pose_stamped, *msg_ptr,
+      transform_pointcloud_in_frame(
+        transform, *msg_ptr,
         *_reference_cloud, offset,
         _listener);
       Eigen::Affine3f offset_inverse = offset.inverse();
       
-	pcl::NormalEstimation<pcl::PointXYZRGB, pcl::Normal> ne;
-	_reference_kd_tree.reset(new pcl::search::KdTree<pcl::PointXYZRGB>);
-	ne.setInputCloud(_reference_cloud);
-	ne.setSearchMethod(_reference_kd_tree);
-	ne.setRadiusSearch(0.02);
-	ne.setViewPoint(offset.translation().x(), offset.translation().y(), offset.translation().z());//after_orig.point.x, after_orig.point.y, after_orig.point.z);
-	//hoge
-	_reference_cloud_normals.reset(new pcl::PointCloud<pcl::Normal>);
-	ne.compute(*_reference_cloud_normals);
-	pcl::PointCloud<pcl::PointXYZRGBNormal> concatenated_cloud;
-	concatenated_cloud.points.resize(_reference_cloud->points.size());
-	concatenated_cloud.width = _reference_cloud->width;
-	concatenated_cloud.height = _reference_cloud->height;
-	concatenated_cloud.is_dense = _reference_cloud->is_dense;
+			pcl::NormalEstimation<pcl::PointXYZRGB, pcl::Normal> ne;
+			_reference_kd_tree.reset(new pcl::search::KdTree<pcl::PointXYZRGB>);
+			ne.setInputCloud(_reference_cloud);
+			ne.setSearchMethod(_reference_kd_tree);
+			ne.setRadiusSearch(0.02);
+			ne.setViewPoint(offset.translation().x(), offset.translation().y(), offset.translation().z());//after_orig.point.x, after_orig.point.y, after_orig.point.z);
+			//hoge
+			_reference_cloud_normals.reset(new pcl::PointCloud<pcl::Normal>);
+			ne.compute(*_reference_cloud_normals);
+			pcl::PointCloud<pcl::PointXYZRGBNormal> concatenated_cloud;
+			concatenated_cloud.points.resize(_reference_cloud->points.size());
+			concatenated_cloud.width = _reference_cloud->width;
+			concatenated_cloud.height = _reference_cloud->height;
+			concatenated_cloud.is_dense = _reference_cloud->is_dense;
 	
-	for (size_t i = 0; i < concatenated_cloud.points.size(); i++) {
-	  pcl::PointXYZRGBNormal point;
-	  point.x = _reference_cloud->points[i].x;
-	  point.y = _reference_cloud->points[i].y;
-	  point.z = _reference_cloud->points[i].z;
-	  point.rgb = _reference_cloud->points[i].rgb;
-	  point.normal_x = _reference_cloud_normals->points[i].normal_x;
-	  point.normal_y = _reference_cloud_normals->points[i].normal_y;
-	  point.normal_z = _reference_cloud_normals->points[i].normal_z;
-	  point.curvature = _reference_cloud_normals->points[i].curvature;
-	  concatenated_cloud.points[i] = point;
-	}
-	sensor_msgs::PointCloud2 output_debug_cloud;
-	pcl::toROSMsg(concatenated_cloud,output_debug_cloud);
-	output_debug_cloud.header = msg_ptr->header;
-	output_debug_cloud.header.frame_id = "manipulate_frame";
-	_debug_cloud_pub.publish(output_debug_cloud);
-	//pub_offset_pose_.publish(box_pose_respected_to_cloud);
-      }
+			for (size_t i = 0; i < concatenated_cloud.points.size(); i++) {
+				pcl::PointXYZRGBNormal point;
+				point.x = _reference_cloud->points[i].x;
+				point.y = _reference_cloud->points[i].y;
+				point.z = _reference_cloud->points[i].z;
+				point.rgb = _reference_cloud->points[i].rgb;
+				point.normal_x = _reference_cloud_normals->points[i].normal_x;
+				point.normal_y = _reference_cloud_normals->points[i].normal_y;
+				point.normal_z = _reference_cloud_normals->points[i].normal_z;
+				point.curvature = _reference_cloud_normals->points[i].curvature;
+				concatenated_cloud.points[i] = point;
+			}
+			sensor_msgs::PointCloud2 output_debug_cloud;
+			pcl::toROSMsg(concatenated_cloud,output_debug_cloud);
+			output_debug_cloud.header = msg_ptr->header;
+			output_debug_cloud.header.frame_id = "manipulate_frame";
+			_debug_cloud_pub.publish(output_debug_cloud);
+			//pub_offset_pose_.publish(box_pose_respected_to_cloud);
+		}
     catch (tf2::ConnectivityException &e)
-      {
-	ROS_INFO("Transform error: %s", e.what());
+		{
+			ROS_INFO("Transform error: %s", e.what());
       }
     catch (tf2::InvalidArgumentException &e)
-      {
-	ROS_INFO("Transform error: %s", e.what());
-      } 
-    
+		{
+			ROS_INFO("Transform error: %s", e.what());
+		}  
+		_timer_count = 0;
   }
   void set_menu(float p_x, float p_y, float p_z, std_msgs::Header header){
     pcl::PointXYZRGB searchPoint;
