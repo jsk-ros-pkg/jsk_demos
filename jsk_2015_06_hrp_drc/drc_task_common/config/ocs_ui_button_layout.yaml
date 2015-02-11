@@ -1,9 +1,16 @@
 - name: 'Go pos'
   service: 'go_pos'
+  image: "package://drc_task_common/icons/gopos.png"
+  column: 0
+- name: 'Look at'
+  service: 'look_at'
+  image: "package://drc_task_common/icons/lookat.png"
   column: 0
 - name: 'exec'
   service: 'exec'
+  image: "package://drc_task_common/icons/exec.png"
   column: 1
 - name: 'cancel'
   service: 'cancel'
+  image: "package://drc_task_common/icons/cancel.png"
   column: 1
