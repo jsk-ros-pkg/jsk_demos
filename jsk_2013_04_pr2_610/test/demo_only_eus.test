@@ -1,0 +1,4 @@
+<launch>
+  <test test-name="jsk_2013_04_pr2_610_euslisp" pkg="roseus" type="roseus" args="$(find jsk_2013_04_pr2_610)/test/demo_only_eus.l"
+        time-limit="600" />
+</launch>

@@ -13,6 +13,9 @@
   <depend package="laser_filters_jsk_patch" />
   <depend package="jsk_perception" />
   <depend package="pddl_planner" />
+  <depend package="posedetection_msgs" />
+  <depend package="jsk_smart_gui" />
+  <depend package="pr2_gripper_sensor_msgs" />
 
 </package>
 
