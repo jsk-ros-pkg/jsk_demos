@@ -6,8 +6,13 @@ uint8[34] angles
 float32[16] params
 
 # type
+# go-pos
 uint8 GO_POS_POSE=1
 uint8 GO_POS_FINISHED=2
+# look-at
+uint8 LOOK_AT_POS=3
+uint8 LOOK_AT_FINISHED=4
+
 # when type==GO_POS_POSE, 
 # params = [x, y, z, yaw, pitch, roll]
 # unit is mm.
