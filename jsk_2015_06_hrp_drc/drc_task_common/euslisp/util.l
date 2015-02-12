@@ -53,3 +53,37 @@
         (send p2 :y y2)
         (send ret :polygon :points (list p1 p2))
         ret))))
+
+
+;; message handler
+(defclass narrowband-message-handler
+  :super propertied-object
+  :slots (deligate-map))
+
+(defmethod narrowband-message-handler
+  (:init ()
+    (setq deligate-map nil)
+    self)
+  (:root-callback (msg)
+    (let ((type (send msg :type)))
+      (print (assoc type deligate-map))
+      (if (assoc type deligate-map)
+          (send (car (cdr (assoc type deligate-map)))
+                (cdr (cdr (assoc type deligate-map)))
+                msg)
+        (ros::ros-warn "received unknown type ~A" type))))
+  (:register-callback (type deligate-object deligate-method)
+    (if (assoc type deligate-map)
+        (error "you've already registered ~A" type))
+    (setq deligate-map (append
+                        (list (cons type
+                                    (cons deligate-object
+                                          deligate-method)))
+                        deligate-map))
+    )
+  (:register-callbacks (&rest specs)
+    (dolist (spec specs)
+      (ros::ros-warn "registering ~A" spec)
+      (send* self :register-callback spec)))
+  )
+

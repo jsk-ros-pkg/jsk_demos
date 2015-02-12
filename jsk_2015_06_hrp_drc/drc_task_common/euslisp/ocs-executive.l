@@ -18,15 +18,27 @@
 
 (defclass ocs-executive-app
   :super propertied-object
-  :slots (state task rectangle-region go-pos-coords smachine look-at-pos))
+  :slots (state task rectangle-region go-pos-coords smachine look-at-pos
+                fc2ocs-message-handler))
 
 (defmethod ocs-executive-app
   (:init ()
     ;;(setq state :initial)
+    (setq fc2ocs-message-handler (instance narrowband-message-handler :init))
+    (send fc2ocs-message-handler :register-callbacks
+          (list drc_com_common::FC2OCSSmall::*GO_POS_POSE*
+                self :go-pos-pose-result-callback)
+          (list drc_com_common::FC2OCSSmall::*GO_POS_FINISHED*
+                self :go-pos-finished-callback)
+          (list drc_com_common::FC2OCSSmall::*LOOK_AT_POS*
+                self :look-at-pose-result-callback)
+          (list drc_com_common::FC2OCSSmall::*LOOK_AT_FINISHED*
+                self :look-at-finished-callback))
     (setq smachine (make-ocs-state-machine))
     (send smachine :register-initial-hook self :initial-callback)
     (send smachine :go-to :initial)     ;force to move to initial state
     self)
+  (:fc2ocs-message-handler () fc2ocs-message-handler)
   (:initial-callback ()
     (send self :set-image-view2-mode :none)
     (send self :show-text-on-image "")
@@ -80,7 +92,7 @@
     (setq rectangle-region msg)
     ;; send to FC to recognize pos
     (let ((fc-msg (instance drc_com_common::OCS2FCSmall :init)))
-      (send fc-msg :action_type drc_com_common::OCS2FCSmall::*GO_POS_REGION*)
+      (send fc-msg :type drc_com_common::OCS2FCSmall::*GO_POS_REGION*)
       (send fc-msg :image_roi_info (rect-polygon-stamped-to-integer-vector
                                     msg (length (send fc-msg :image_roi_info))))
       (send self :send-to-fc fc-msg)
@@ -89,7 +101,7 @@
     (setq rectangle-region msg)
     ;; send to FC to recognize pos
     (let ((fc-msg (instance drc_com_common::OCS2FCSmall :init)))
-      (send fc-msg :action_type drc_com_common::OCS2FCSmall::*LOOK_AT_REGION*)
+      (send fc-msg :type drc_com_common::OCS2FCSmall::*LOOK_AT_REGION*)
       (send fc-msg :image_roi_info (rect-polygon-stamped-to-integer-vector
                                     msg (length (send fc-msg :image_roi_info))))
       (send self :send-to-fc fc-msg)
@@ -114,13 +126,13 @@
     (send req :response))
   (:exec-go-pos-button-callback ()
     (let ((msg (instance drc_com_common::OCS2FCSmall :init)))
-      (send msg :action_type drc_com_common::OCS2FCSmall::*GO_POS_EXEC*)
+      (send msg :type drc_com_common::OCS2FCSmall::*GO_POS_EXEC*)
       (send msg :float_params (coords-to-float-vector go-pos-coords))
       (send self :send-to-fc msg)
       (send smachine :go-to :executing-go-pos)))
   (:exec-look-at-button-callback ()
     (let ((msg (instance drc_com_common::OCS2FCSmall :init)))
-      (send msg :action_type drc_com_common::OCS2FCSmall::*LOOK_AT_EXEC*)
+      (send msg :type drc_com_common::OCS2FCSmall::*LOOK_AT_EXEC*)
       (send msg :float_params (pos-to-float-vector look-at-pos (length (send msg :float_params))))
       (send self :send-to-fc msg)
       (send smachine :go-to :executing-look-at)))
@@ -135,17 +147,19 @@
      )
     (send req :response))
   (:look-at-pose-result-callback (msg)
-    (let ((params (send msg :params)))
-      (send self :show-text-on-image 
+    (when (eq (send smachine :state) :recognizing-look-at-point)
+      (let ((params (send msg :params)))
+        (send self :show-text-on-image 
               (format nil "look-at ~f ~f ~f" 
                       (* 0.001 (elt params 0))
                       (* 0.001 (elt params 1))
                       (* 0.001 (elt params 2))))
-      (setq look-at-pos (float-vector (elt params 0)
-                                      (elt params 1)
-                                      (elt params 2)))
-      (send smachine :go-to :selecting-exec-for-look-at)))
+        (setq look-at-pos (float-vector (elt params 0)
+                                        (elt params 1)
+                                        (elt params 2)))
+        (send smachine :go-to :selecting-exec-for-look-at))))
   (:go-pos-pose-result-callback (msg)
+    (when (eq (send smachine :state) :recognizing-go-pos-goal)
     (let ((params (send msg :params)))
         ;; show go pos pose in image
         (setq go-pos-coords (make-coords :pos (float-vector (elt params 0)
@@ -160,32 +174,18 @@
                       (* 0.001 (elt (send msg :params) 1))
                       (rad2deg (elt (send msg :params) 3))
                       ))
-        (send smachine :go-to :selecting-exec-for-go-pos)))
+        (send smachine :go-to :selecting-exec-for-go-pos))))
   (:go-pos-finished-callback (msg)
-    (send smachine :go-to :initial))
+    (when (eq (send smachine :state) :executing-go-pos)
+      (send smachine :go-to :initial)))
   (:look-at-finished-callback (msg)
-    (send smachine :go-to :initial))
-  (:narrow-message-callback (msg)
-    (cond
-     ((and (eq (send msg :type) drc_com_common::FC2OCSSmall::*GO_POS_POSE*)
-           (eq (send smachine :state) :recognizing-go-pos-goal))
-      (send self :go-pos-pose-result-callback msg))
-     ((and (eq (send msg :type) drc_com_common::FC2OCSSmall::*GO_POS_FINISHED*)
-           (eq (send smachine :state) :executing-go-pos))
-      (send self :go-pos-finished-callback msg))
-     ((and (eq (send msg :type) drc_com_common::FC2OCSSmall::*LOOK_AT_POS*)
-           (eq (send smachine :state) :recognizing-look-at-point))
-      (send self :look-at-pose-result-callback msg))
-     ((and (eq (send msg :type) drc_com_common::FC2OCSSmall::*LOOK_AT_FINISHED*)
-           (eq (send smachine :state) :executing-look-at))
-      (send self :look-at-finished-callback msg))
-     )
-    )
+    (when (eq (send smachine :state) :executing-look-at)
+      (send smachine :go-to :initial)))
   (:go-pos-command-from-rviz-interface (req)
     ;; go to :executing-go-pos from :initial directory
     (when (eq (send smachine :state) :initial)
       (let ((msg (instance drc_com_common::OCS2FCSmall :init)))
-        (send msg :action_type drc_com_common::OCS2FCSmall::*GO_POS_EXEC*)
+        (send msg :type drc_com_common::OCS2FCSmall::*GO_POS_EXEC*)
         (send msg :float_params (coords-to-float-vector (ros::tf-pose->coords (send req :goal))))
         (send self :send-to-fc msg))
       (send smachine :go-to :executing-go-pos))
@@ -222,7 +222,7 @@
 (ros::subscribe "/multisense/left/image_rect_color/screenrectangle" geometry_msgs::PolygonStamped
   #'send *app* :rectangle-callback)
 (ros::subscribe "/ocs_from_fc_low_speed/output" drc_com_common::FC2OCSSmall
-  #'send *app* :narrow-message-callback)
+  #'send (send *app* :fc2ocs-message-handler) :root-callback)
 
 (ros::rate 10)
 (ros::spin)
