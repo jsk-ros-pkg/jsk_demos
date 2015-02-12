@@ -12,6 +12,9 @@ uint8 GO_POS_FINISHED=2
 # look-at
 uint8 LOOK_AT_POS=3
 uint8 LOOK_AT_FINISHED=4
+# valve
+uint8 VALVE_POSE=5
+uint8 VALVE_FINISHED=6
 
 # when type==GO_POS_POSE, 
 # params = [x, y, z, yaw, pitch, roll]

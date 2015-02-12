@@ -10,3 +10,6 @@ uint8 GO_POS_EXEC=2
 # look-at
 uint8 LOOK_AT_REGION=3
 uint8 LOOK_AT_EXEC=4
+# valve
+uint8 VALVE_REGION=5
+uint8 VALVE_EXEC=6

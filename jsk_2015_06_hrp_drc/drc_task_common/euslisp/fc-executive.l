@@ -5,6 +5,7 @@
 (ros::roseus-add-msgs "image_view2")
 (ros::roseus-add-msgs "geometry_msgs")
 (ros::roseus-add-msgs "drc_com_common")
+(ros::roseus-add-msgs "jsk_recognition_msgs")
 (load "package://drc_task_common/euslisp/util.l")
 (load "package://drc_task_common/euslisp/robot-util.l")
 
@@ -25,9 +26,22 @@
           (list drc_com_common::OCS2FCSmall::*LOOK_AT_REGION*
                 self :look-at-region-command-callback)
           (list drc_com_common::OCS2FCSmall::*LOOK_AT_EXEC*
-                self :look-at-exec-command-callback))
+                self :look-at-exec-command-callback)
+          (list drc_com_common::OCS2FCSmall::*VALVE_REGION*
+                self :valve-region-command-callback)
+          (list drc_com_common::OCS2FCSmall::*VALVE_EXEC*
+                self :valve-exec-command-callback))
     self)
   (:ocs2fc-message-handler () ocs2fc-message-handler)
+  (:valve-region-command-callback (msg)
+    (when (eq state :initial)
+      ;; convert OCS2FCSmall into geometry_msgs/Polygon
+      (ros::publish "/valve_recognition/input_rect"
+        (integer-vector-to-rect-polygon-stamped msg))
+      ;; enable snapshot
+      (call-empty-service "/valve_recognition/snapshot/request")
+      (setq state :recognizing-valve-pose)
+      ))
   (:go-pos-region-command-callback (msg)
     (when (eq state :initial)
       ;; convert OCS2FCSmall into geometry_msgs/Polygon
@@ -37,6 +51,22 @@
       (call-empty-service "/go_pos_recognition/snapshot/request")
       (setq state :recognizing-go-pos-location)
       ))
+  (:valve-exec-command-callback (msg)
+    (when (eq state :initial)
+      (multiple-value-bind 
+       (coords radius)
+       (float-vector-to-torus (send msg :float_params))
+       (setq state :executing-valve)
+       (ros::ros-info "rotating valve at ~A,~A,~A~%"
+         (send coords :worldpos)
+         (car (send coords :rpy-angle))
+         radius)
+       ;; TODO: currently no motion!
+       (let ((msg (instance drc_com_common::FC2OCSSmall :init)))
+         (send msg :type drc_com_common::FC2OCSSmall::*VALVE_FINISHED*)
+         (send self :send-to-ocs msg))
+       (setq state :initial)
+       )))
   (:go-pos-exec-command-callback (msg)
     (when (eq state :initial)
       (let ((goal-coords (float-vector-to-coords (send msg :float_params))))
@@ -85,6 +115,23 @@
           (send self :send-to-ocs msg))
         (setq state :initial)
         )))
+  (:valve-recog-callback (msg)
+    (when (eq state :recognizing-valve-pose)
+      (let ((trans (send *tf* :lookup-transform "BODY" 
+                         (send msg :header :frame_id) (send msg :header :stamp))))
+        (unless trans
+          (setq trans (send *tf* :lookup-transform "BODY" 
+                            (send msg :header :frame_id) (ros::time 0))))
+        (let ((coords (ros::tf-pose->coords (send msg :pose))))
+          (let ((from-body-coords (send trans :transform coords)))
+            (let ((fc-msg (instance drc_com_common::FC2OCSSmall :init)))
+              (send fc-msg :params (torus-to-float-vector 
+                                    coords (send msg :large_radius)
+                                    (length (send fc-msg :params))))
+              (send fc-msg :type drc_com_common::FC2OCSSmall::*VALVE_POSE*)
+              (send self :send-to-ocs fc-msg)
+              (setq state :initial)
+              ))))))
   (:look-at-recog-callback (msg)
     (when (eq state :recognizing-look-at-point)
       (let ((trans (send *tf* :lookup-transform "BODY" 
@@ -170,6 +217,7 @@
 
 (ros::advertise "/go_pos_recognition/input_rect" geometry_msgs::PolygonStamped)
 (ros::advertise "/look_at_recognition/input_rect" geometry_msgs::PolygonStamped)
+(ros::advertise "/valve_recognition/input_rect" geometry_msgs::PolygonStamped)
 (ros::advertise "/fc_to_ocs_low_speed/input" drc_com_common::FC2OCSSmall)
 (ros::subscribe "/fc_from_ocs_low_speed/output" drc_com_common::OCS2FCSmall
   #'send (send *app* :ocs2fc-message-handler) :root-callback)
@@ -177,6 +225,8 @@
   #'send *app* :go-pos-recog-callback)
 (ros::subscribe "/look_at_recognition/snapshot/output" geometry_msgs::PoseStamped
   #'send *app* :look-at-recog-callback)
+(ros::subscribe "/valve_recognition/snapshot/output" jsk_recognition_msgs::Torus
+  #'send *app* :valve-recog-callback)
 (ros::advertise "/go_pos_goal" geometry_msgs::PoseStamped)
 (ros::rate 10)
 (ros::spin)
