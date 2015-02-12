@@ -11,7 +11,7 @@
 
 (defclass task-state-machine
   :super state-machine
-  :slots (transitions output-image-file))
+  :slots (transitions output-image-file initial-hook-obj initial-hook-method))
 
 (defmethod task-state-machine
   (:init (&optional output)
@@ -23,6 +23,11 @@
   (:state ()
     "return current state"
     (send (send self :active-state) :name))
+  (:register-initial-hook
+    (obj method)
+    (setq initial-hook-obj obj)
+    (setq initial-hook-method method)
+    )
   (:next? (next-state)
     "return t if state machine can go to next-state from the current state"
     (let ((candidate-transitions (send self :lookup-transitions active-state)))
@@ -35,6 +40,9 @@
     (send self :active-state (send self :node next-state))
     (if output-image-file
         (send self :write-to-png output-image-file))
+    (if (eq (send self :active-state) (send self :start-state))
+        (if (and initial-hook-obj initial-hook-method)
+            (send initial-hook-obj initial-hook-method)))
     )
   (:lookup-transitions (start-state)
     (remove-if-not #'(lambda (trans)
@@ -168,19 +176,36 @@ Usage:
 
 (defun make-ocs-state-machine ()
   (make-state-machine
-   '((:initial -> :selecting-region-for-go-pos) ; click go-pos
+   '(                                           
+     ;; go-pos
+     (:initial -> :selecting-region-for-go-pos) ; click go-pos
      (:selecting-region-for-go-pos -> :initial) ; cancel
      (:selecting-region-for-go-pos -> :recognizing-go-pos-goal)
      ;;(:recognizing-go-pos-goal -> :initial) ; cancel
      (:recognizing-go-pos-goal -> :selecting-exec-for-go-pos) ; recognition done
-     (:selecting-exec-for-go-pos -> :executing-go-pos) ; exec
-     (:selecting-exec-for-go-pos -> :initial) ; cancel
-     (:initial -> :executing-go-pos) ; from rviz interface
-     (:executing-go-pos -> :initial) ; go pos done
+     (:selecting-exec-for-go-pos -> :executing-go-pos)        ; exec
+     (:selecting-exec-for-go-pos -> :initial)                 ; cancel
+     (:initial -> :executing-go-pos)    ; from rviz interface
+     (:executing-go-pos -> :initial)    ; go pos done
+     ;; look-at
+     (:initial -> :selecting-region-for-look-at)
+     (:selecting-region-for-look-at -> :initial) ;cancel
+     (:selecting-region-for-look-at -> :recognizing-look-at-point)
+     (:recognizing-look-at-point -> :selecting-exec-for-look-at) ;recognition done
+     (:selecting-exec-for-look-at -> :executing-go-pos)          ;exec
+     (:selecting-exec-for-look-at -> :initial)                   ;cancel
+     (:executing-look-at -> :initial)                            ;done
      )
    '((:initial :initial)
+     ;; go-pos
      (:selecting-exec-for-go-pos :go-pos)
      (:selecting-region-for-go-pos :go-pos)
      (:recognizing-go-pos-goal :go-pos)
-     (:executing-go-pos :go-pos))
+     (:executing-go-pos :go-pos)
+     ;; look-at
+     (:selecting-region-for-look-at :look-at)
+     (:recognizing-look-at-point :look-at)
+     (:selecting-exec-for-look-at :look-at)
+     (:executing-look-at :look-at)
+     )
    :initial "ocs_state.png"))
