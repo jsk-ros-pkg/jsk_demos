@@ -6,6 +6,9 @@
 (ros::roseus-add-msgs "geometry_msgs")
 (ros::roseus-add-srvs "topic_tools")
 (ros::roseus-add-msgs "drc_com_common")
+(ros::roseus-add-msgs "jsk_recognition_msgs")
+(ros::roseus-add-msgs "jsk_interactive_marker")
+(ros::load-ros-manifest "drc_task_common")
 (load "package://drc_task_common/euslisp/util.l")
 (load "package://drc_task_common/euslisp/state-machine.l")
 ;; state
@@ -21,14 +24,15 @@
   (:init ()
     ;;(setq state :initial)
     (setq smachine (make-state-machine
-                    '((:initial -> :selecting-region-for-go-pos) ;click go-pos
+                    '((:initial -> :selecting-region-for-go-pos) ; click go-pos
                       (:selecting-region-for-go-pos -> :initial) ; cancel
                       (:selecting-region-for-go-pos -> :recognizing-go-pos-goal)
                       ;;(:recognizing-go-pos-goal -> :initial) ; cancel
-                      (:recognizing-go-pos-goal -> :selecting-exec-for-go-pos) ;recognition done
-                      (:selecting-exec-for-go-pos -> :executing-go-pos) ;exec
-                      (:selecting-exec-for-go-pos -> :initial) ;cancel
-                      (:executing-go-pos -> :initial) ;go pos done
+                      (:recognizing-go-pos-goal -> :selecting-exec-for-go-pos) ; recognition done
+                      (:selecting-exec-for-go-pos -> :executing-go-pos) ; exec
+                      (:selecting-exec-for-go-pos -> :initial) ; cancel
+                      (:initial -> :executing-go-pos) ; from rviz interface
+                      (:executing-go-pos -> :initial) ; go pos done
                       )
                     '((:initial :initial)
                       (:selecting-exec-for-go-pos :go-pos)
@@ -52,9 +56,11 @@
   (:show-text-on-image (text)
     (let ((msg (instance image_view2::ImageMarker2 :init)))
       (send msg :type image_view2::ImageMarker2::*TEXT*)
-      (send msg :position :x 300)
-      (send msg :position :y 50)
-      (send msg :scale 2)
+      (send msg :position :x 0)
+      (send msg :position :y 100)
+      (send msg :scale 5)
+      (send msg :filled 5)
+      (send msg :left_up_origin t)
       (send msg :text text)
       (ros::publish "/image_marker" msg)
       )
@@ -135,6 +141,16 @@
       (send smachine :go-to :initial))
      )
     )
+  (:go-pos-command-from-rviz-interface (req)
+    ;; go to :executing-go-pos from :initial directory
+    (when (eq (send smachine :state) :initial)
+      (let ((msg (instance drc_com_common::OCS2FCSmall :init)))
+        (send msg :action_type drc_com_common::OCS2FCSmall::*GO_POS_EXEC*)
+        (send msg :float_params (coords-to-float-vector (ros::tf-pose->coords (send req :goal))))
+        (send self :send-to-fc msg))
+      (send smachine :go-to :executing-go-pos))
+    (send req :response)
+    )
   )
 
 (defun go-pos-callback (req)
@@ -150,7 +166,6 @@
   (send *app* :cancel-callback)
   (send req :response))
 
-
 (setq *app* (instance ocs-executive-app :init))
 
 ;; advertise
@@ -160,6 +175,7 @@
 (ros::advertise-service "go_pos" std_srvs::Empty #'go-pos-callback)
 (ros::advertise-service "exec" std_srvs::Empty #'exec-callback)
 (ros::advertise-service "cancel" std_srvs::Empty #'cancel-callback)
+(ros::advertise-service "go_pos_command_from_rviz_interface" drc_task_common::GoPosCommand #'send *app* :go-pos-command-from-rviz-interface)
 
 ;; subscribing image_view2 ROI stuff
 (ros::subscribe "/multisense/left/image_rect_color/screenrectangle" geometry_msgs::PolygonStamped
