@@ -23,23 +23,8 @@
 (defmethod ocs-executive-app
   (:init ()
     ;;(setq state :initial)
-    (setq smachine (make-state-machine
-                    '((:initial -> :selecting-region-for-go-pos) ; click go-pos
-                      (:selecting-region-for-go-pos -> :initial) ; cancel
-                      (:selecting-region-for-go-pos -> :recognizing-go-pos-goal)
-                      ;;(:recognizing-go-pos-goal -> :initial) ; cancel
-                      (:recognizing-go-pos-goal -> :selecting-exec-for-go-pos) ; recognition done
-                      (:selecting-exec-for-go-pos -> :executing-go-pos) ; exec
-                      (:selecting-exec-for-go-pos -> :initial) ; cancel
-                      (:initial -> :executing-go-pos) ; from rviz interface
-                      (:executing-go-pos -> :initial) ; go pos done
-                      )
-                    '((:initial :initial)
-                      (:selecting-exec-for-go-pos :go-pos)
-                      (:selecting-region-for-go-pos :go-pos)
-                      (:recognizing-go-pos-goal :go-pos)
-                      (:executing-go-pos :go-pos))
-                    :initial))
+    (setq smachine (make-ocs-state-machine))
+    (send smachine :go-to :initial)     ;force to move to initial state
     self)
   (:set-image-view2-mode (mode)
     (cond 
