@@ -24,8 +24,12 @@
   (:init ()
     ;;(setq state :initial)
     (setq smachine (make-ocs-state-machine))
+    (send smachine :register-initial-hook self :initial-callback)
     (send smachine :go-to :initial)     ;force to move to initial state
     self)
+  (:initial-callback ()
+    (send self :set-image-view2-mode :none)
+    )
   (:set-image-view2-mode (mode)
     (cond 
      ((eq mode :rectangle)
@@ -34,6 +38,8 @@
       (call-empty-service "/rqt_image_view2_engine/grabcut_rect_mode"))
      ((eq mode :line)
       (call-empty-service "/rqt_image_view2_engine/line_mode"))
+     ((eq mode :none)
+      (call-empty-service "/rqt_image_view2_engine/none_mode"))
      (t
       (error "unknown mode: ~A" mode)
       ))
@@ -60,8 +66,7 @@
       )
     )
   (:send-to-fc (msg)
-    (ros::publish "/ocs_to_fc_low_speed/input" msg)
-    )
+    (ros::publish "/ocs_to_fc_low_speed/input" msg))
   (:rectangle-callback (msg)            ;msg = geometry_msgs/PolygonStamped
     (cond
      ((eq (send smachine :state) :selecting-region-for-go-pos)
