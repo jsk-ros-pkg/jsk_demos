@@ -31,7 +31,7 @@
   (:go-pos-region-command-callback (msg)
     (when (eq state :initial)
       ;; convert OCS2FCSmall into geometry_msgs/Polygon
-      (ros::publish (format nil "~A/output/go_pos_rect" (ros::get-name)) 
+      (ros::publish "/go_pos_recognition/input_rect"
         (integer-vector-to-rect-polygon-stamped msg))
       ;; enable snapshot
       (call-empty-service "/go_pos_recognition/snapshot/request")
@@ -57,7 +57,7 @@
   (:look-at-region-command-callback (msg)
     (when (eq state :initial)
       ;; convert OCS2FCSmall into geometry_msgs/Polygon
-      (ros::publish (format nil "~A/output/look_at_rect" (ros::get-name)) 
+      (ros::publish "/look_at_recognition/input_rect"
         (integer-vector-to-rect-polygon-stamped msg))
       ;; enable snapshot
       (call-empty-service "/look_at_recognition/snapshot/request")
@@ -168,8 +168,8 @@
 (setq *app* (instance fc-executive-app :init))
 (setq *tf* (instance ros::transform-listener :init))
 
-(ros::advertise (format nil "~A/output/go_pos_rect" (ros::get-name)) geometry_msgs::PolygonStamped)
-(ros::advertise (format nil "~A/output/look_at_rect" (ros::get-name)) geometry_msgs::PolygonStamped)
+(ros::advertise "/go_pos_recognition/input_rect" geometry_msgs::PolygonStamped)
+(ros::advertise "/look_at_recognition/input_rect" geometry_msgs::PolygonStamped)
 (ros::advertise "/fc_to_ocs_low_speed/input" drc_com_common::FC2OCSSmall)
 (ros::subscribe "/fc_from_ocs_low_speed/output" drc_com_common::OCS2FCSmall
   #'send (send *app* :ocs2fc-message-handler) :root-callback)
