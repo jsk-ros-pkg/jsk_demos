@@ -192,7 +192,7 @@ Usage:
      (:selecting-region-for-look-at -> :initial) ;cancel
      (:selecting-region-for-look-at -> :recognizing-look-at-point)
      (:recognizing-look-at-point -> :selecting-exec-for-look-at) ;recognition done
-     (:selecting-exec-for-look-at -> :executing-go-pos)          ;exec
+     (:selecting-exec-for-look-at -> :executing-look-at)          ;exec
      (:selecting-exec-for-look-at -> :initial)                   ;cancel
      (:executing-look-at -> :initial)                            ;done
      )
