@@ -10,6 +10,8 @@
   </node>
   <include file="$(find drc_task_common)/launch/fc/go_pos_recog.launch">
   </include>
+  <include file="$(find drc_task_common)/launch/fc/look_at_recog.launch">
+  </include>
   <!-- communication -->
   <include if="$(arg USE_COM)"
            file="$(find drc_com_common)/launch/field_computer_com.launch" />

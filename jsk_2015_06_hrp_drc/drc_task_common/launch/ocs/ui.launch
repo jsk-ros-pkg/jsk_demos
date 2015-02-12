@@ -11,7 +11,7 @@
   </node>
 
   <node pkg="image_view2" type="image_view2" name="rqt_image_view2_engine"
-        output="screen">
+        output="log">
     <remap from="image_marked" to="~image_marked" />
     <remap from="image" to="$(arg INPUT_IMAGE)" />
     <param name="use_window" value="false" />

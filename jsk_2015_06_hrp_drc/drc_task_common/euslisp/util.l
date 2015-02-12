@@ -1,7 +1,10 @@
+;; utility function
+
 (defun call-empty-service (srv)
   (let ((req (instance std_srvs::EmptyRequest :init)))
     (ros::service-call srv req)))
 
+;; topic <---> compressed message conversion
 
 (defun coords-to-float-vector (coords)
   (float-vector (elt (send coords :worldpos) 0)
@@ -16,3 +19,37 @@
   (make-coords :pos (subseq fv 0 3)
                :rpy (subseq fv 3 6)))
 
+(defun pos-to-float-vector (pos length)
+  (let ((ret (instantiate float-vector length)))
+    (setf (elt ret 0) (elt pos 0))
+    (setf (elt ret 1) (elt pos 1))
+    (setf (elt ret 1) (elt pos 1))
+    ret))
+
+(defun rect-polygon-stamped-to-integer-vector (msg length)
+  (let ((point-a (list (send (elt (send msg :polygon :points) 0) :x)
+                       (send (elt (send msg :polygon :points) 0) :y)))
+        (point-b (list (send (elt (send msg :polygon :points) 1) :x)
+                       (send (elt (send msg :polygon :points) 1) :y))))
+    (coerce (append (list (floor (elt point-a 0))
+                          (floor (elt point-a 1))
+                          (floor (elt point-b 0))
+                          (floor (elt point-b 1)))
+                    (make-list (- length 4) :initial-element 0))
+            integer-vector)))
+
+(defun integer-vector-to-rect-polygon-stamped (msg)
+  (let ((x1 (elt (send msg :image_roi_info) 0))
+        (y1 (elt (send msg :image_roi_info) 1))
+        (x2 (elt (send msg :image_roi_info) 2))
+        (y2 (elt (send msg :image_roi_info) 3)))
+    (let ((ret (instance geometry_msgs::PolygonStamped :init)))
+      (send ret :header :stamp (ros::time-now))
+      (let ((p1 (instance geometry_msgs::Point32 :init))
+            (p2 (instance geometry_msgs::Point32 :init)))
+        (send p1 :x x1)
+        (send p1 :y y1)
+        (send p2 :x x2) 
+        (send p2 :y y2)
+        (send ret :polygon :points (list p1 p2))
+        ret))))

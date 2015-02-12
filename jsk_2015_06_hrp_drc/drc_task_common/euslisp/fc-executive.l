@@ -8,22 +8,6 @@
 (load "package://drc_task_common/euslisp/util.l")
 (load "package://drc_task_common/euslisp/robot-util.l")
 
-(defun get-ocs2fc-rect (msg)
-  (let ((x1 (elt (send msg :image_roi_info) 0))
-        (y1 (elt (send msg :image_roi_info) 1))
-        (x2 (elt (send msg :image_roi_info) 2))
-        (y2 (elt (send msg :image_roi_info) 3)))
-    (let ((ret (instance geometry_msgs::PolygonStamped :init)))
-      (send ret :header :stamp (ros::time-now))
-      (let ((p1 (instance geometry_msgs::Point32 :init))
-            (p2 (instance geometry_msgs::Point32 :init)))
-        (send p1 :x x1)
-        (send p1 :y y1)
-        (send p2 :x x2) 
-        (send p2 :y y2)
-        (send ret :polygon :points (list p1 p2))
-        ret))))
-
 (defclass fc-executive-app
   :super propertied-object
   :slots (state go-pos-goal))
@@ -32,19 +16,16 @@
   (:init ()
     (setq state :initial)
     self)
-  (:narrow-message-callback (msg)
-    (cond
-     ((and (eq (send msg :action_type) drc_com_common::OCS2FCSmall::*GO_POS_REGION*)
-           (eq state :initial))
-      ;; convert OCS2FCSmall into geometry_msgs/Polygon
-      (ros::publish (format nil "~A/output/go_pos_rect" (ros::get-name)) (get-ocs2fc-rect msg))
-      ;; enable snapshot
-      (call-empty-service "/go_pos_recognition/snapshot/request")
-      (setq state :recognizing-go-pos-location)
-      )
-     ((and (eq (send msg :action_type) drc_com_common::OCS2FCSmall::*GO_POS_EXEC*)
-           (eq state :initial))
-      (let ((goal-coords (float-vector-to-coords (send msg :float_params))))
+  (:go-pos-region-command-callback (msg)
+    ;; convert OCS2FCSmall into geometry_msgs/Polygon
+    (ros::publish (format nil "~A/output/go_pos_rect" (ros::get-name)) 
+      (integer-vector-to-rect-polygon-stamped msg))
+    ;; enable snapshot
+    (call-empty-service "/go_pos_recognition/snapshot/request")
+    (setq state :recognizing-go-pos-location)
+    )
+  (:go-pos-exec-command-callback (msg)
+    (let ((goal-coords (float-vector-to-coords (send msg :float_params))))
         (setq state :executing-go-pos)
         (format t "go-pos ~A ~A ~A~%"
                 (* 0.001 (elt (send goal-coords :worldpos) 0))
@@ -59,8 +40,71 @@
         (send msg :type drc_com_common::FC2OCSSmall::*GO_POS_FINISHED*)
         (send self :send-to-ocs msg))
       (setq state :initial))
+  (:look-at-region-command-callback (msg)
+    ;; convert OCS2FCSmall into geometry_msgs/Polygon
+    (ros::publish (format nil "~A/output/look_at_rect" (ros::get-name)) 
+      (integer-vector-to-rect-polygon-stamped msg))
+    ;; enable snapshot
+    (call-empty-service "/look_at_recognition/snapshot/request")
+    (setq state :recognizing-look-at-point))
+  (:look-at-exec-command-callback (msg)
+    (let ((pos (float-vector (elt (send msg :float_params) 0)
+                             (elt (send msg :float_params) 1)
+                             (elt (send msg :float_params) 2))))
+      ;; position is respected to BODY. need to convert to tf...
+      ;; update model
+      (send *robot* :angle-vector (send *ri* :state :reference-vector))
+      ;; fix leg to coords
+      (send *robot* :fix-leg-to-coords (make-coords) '(:lleg :rleg))
+      (let ((origin-to-body 
+             (send (send *robot* :body_lk) :copy-worldcoords)))
+        (let ((pos-from-origin (send origin-to-body :transform-vector pos)))
+          (ros::ros-info "looking at ~A" pos-from-origin)
+          (send *robot* :head :look-at pos-from-origin)
+          (send *ri* :angle-vector (send *robot* :angle-vector) 5000) ;5 sec
+          (send *ri* :wait-interpolation)))
+      (let ((msg (instance drc_com_common::FC2OCSSmall :init)))
+        (send msg :type drc_com_common::FC2OCSSmall::*LOOK_AT_FINISHED*)
+        (send self :send-to-ocs msg))
+      (setq state :initial)
+      ))
+  (:narrow-message-callback (msg)
+    (cond
+     ((and (eq (send msg :action_type) drc_com_common::OCS2FCSmall::*GO_POS_REGION*)
+           (eq state :initial))
+      (send self :go-pos-region-command-callback msg))
+     ((and (eq (send msg :action_type) drc_com_common::OCS2FCSmall::*GO_POS_EXEC*)
+           (eq state :initial))
+      (send self :go-pos-exec-command-callback msg))
+     ((and (eq (send msg :action_type) drc_com_common::OCS2FCSmall::*LOOK_AT_REGION*)
+           (eq state :initial))
+      (send self :look-at-region-command-callback msg))
+     ((and (eq (send msg :action_type) drc_com_common::OCS2FCSmall::*LOOK_AT_EXEC*)
+           (eq state :initial))
+      (send self :look-at-exec-command-callback msg))
      )
     )
+  (:look-at-recog-callback (msg)
+    (when (eq state :recognizing-look-at-point)
+      (let ((trans (send *tf* :lookup-transform "BODY" 
+                         (send msg :header :frame_id) (send msg :header :stamp))))
+        (unless trans
+          (setq trans (send *tf* :lookup-transform "BODY" 
+                            (send msg :header :frame_id) (ros::time 0))))
+        (let ((coords (ros::tf-pose-stamped->coords msg)))
+          (let ((from-body-coords (send trans :transform coords)))
+            ;; only position is important
+            (let ((pos (float-vector (elt (send from-body-coords :worldpos) 0)
+                                     (elt (send from-body-coords :worldpos) 1)
+                                     (elt (send from-body-coords :worldpos) 2))))
+              (let ((msg (instance drc_com_common::FC2OCSSmall :init)))
+                (send msg :type drc_com_common::FC2OCSSmall::*LOOK_AT_POS*)
+                (setf (elt (send msg :params) 0) (elt pos 0))
+                (setf (elt (send msg :params) 1) (elt pos 1))
+                (setf (elt (send msg :params) 2) (elt pos 2))
+                (send self :send-to-ocs msg)
+                (setq state :initial)
+                )))))))
   (:go-pos-recog-callback (msg)         ;geometry_msgs/PoseStamped
     (when (eq state :recognizing-go-pos-location)
       (let ((trans (send *tf* :lookup-transform "BODY" 
@@ -92,7 +136,8 @@
                                           (elt (send goal-oriented-coords :worldpos) 1))))
                                  (send (send goal-oriented-coords :copy-worldcoords)
                                        :translate (float-vector (- *go-pos-offset*) 0 0))
-                               (send goal-oriented-coords :copy-worldcoords))))
+                               (send goal-oriented-coords :copy-worldcoords) ;it's wrong probably...
+                               )))
                         (ros::publish   ;for debug
                           "/go_pos_goal"
                           (ros::coords->tf-pose-stamped offset-goal "BODY"))
@@ -121,11 +166,14 @@
 (setq *app* (instance fc-executive-app :init))
 (setq *tf* (instance ros::transform-listener :init))
 (ros::advertise (format nil "~A/output/go_pos_rect" (ros::get-name)) geometry_msgs::PolygonStamped)
+(ros::advertise (format nil "~A/output/look_at_rect" (ros::get-name)) geometry_msgs::PolygonStamped)
 (ros::advertise "/fc_to_ocs_low_speed/input" drc_com_common::FC2OCSSmall)
 (ros::subscribe "/fc_from_ocs_low_speed/output" drc_com_common::OCS2FCSmall
   #'send *app* :narrow-message-callback)
 (ros::subscribe "/go_pos_recognition/snapshot/output" geometry_msgs::PoseStamped
   #'send *app* :go-pos-recog-callback)
+(ros::subscribe "/look_at_recognition/snapshot/output" geometry_msgs::PoseStamped
+  #'send *app* :look-at-recog-callback)
 (ros::advertise "/go_pos_goal" geometry_msgs::PoseStamped)
 (ros::rate 10)
 (ros::spin)
