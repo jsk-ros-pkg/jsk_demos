@@ -114,6 +114,7 @@
   )
 
 
+(load (robot-file "HRP2JSKNTS"))
 (init-robot-from-name "HRP2JSKNTS")
 
 (setq *go-pos-offset* 1000)

@@ -76,31 +76,32 @@
              (ik-ret-dist nil)
              ))
       ;; check valve handle
-      (setq tc
-            (list
-             (send *obj* :get :grasp-coords)
-             (send *robot* :rleg :end-coords :copy-worldcoords)
-             (send *robot* :lleg :end-coords :copy-worldcoords)))
-      (with-move-target-link-list
-       (mt ll *robot* '(:rarm :rleg :lleg))
-       (setq ik-ret 
-             (send *robot*
-                   :fullbody-inverse-kinematics tc
-                   ;;:look-at-target t    
-                   :move-target mt :link-list ll
-                   :additional-weight-list
-                   (list (list (send *robot* :rleg :toe-p :child-link) 0)
-                         (list (send *robot* :lleg :toe-p :child-link) 0))
-                   :root-link-virtual-joint-weight #f(0.1 0.1 0.1 0.1 0.5 0.5)
-                   :target-centroid-pos (apply #'midpoint 0.5 (send *robot* :legs :end-coords :worldpos))
-                   ;;:centroid-offset-func #'(lambda () (send *robot* :calc-static-balance-point (list #f(0 0 0) #f(0 0 0)))) 
-                   ;;translation-axis can reduced translation constraint                                                              
-                   :translation-axis (list t t t)
-                   ;; rotation-axis can reduce rotation constraint                                                                    
-                   :rotation-axis (list :z t t)
-                   :stop 50
-                   :debug-view nil
-                   )))
+      (send (send *obj* :get :grasp-coords) :draw-on :flush t)
+      ;; (setq tc
+      ;;       (list
+      ;;        (send *obj* :get :grasp-coords)
+      ;;        (send *robot* :rleg :end-coords :copy-worldcoords)
+      ;;        (send *robot* :lleg :end-coords :copy-worldcoords)))
+      ;; (with-move-target-link-list
+      ;;  (mt ll *robot* '(:rarm :rleg :lleg))
+      ;;  (setq ik-ret 
+      ;;        (send *robot*
+      ;;              :fullbody-inverse-kinematics tc
+      ;;              ;;:look-at-target t    
+      ;;              :move-target mt :link-list ll
+      ;;              :additional-weight-list
+      ;;              (list (list (send *robot* :rleg :toe-p :child-link) 0)
+      ;;                    (list (send *robot* :lleg :toe-p :child-link) 0))
+      ;;              :root-link-virtual-joint-weight #f(0.1 0.1 0.1 0.1 0.5 0.5)
+      ;;              :target-centroid-pos (apply #'midpoint 0.5 (send *robot* :legs :end-coords :worldpos))
+      ;;              ;;:centroid-offset-func #'(lambda () (send *robot* :calc-static-balance-point (list #f(0 0 0) #f(0 0 0)))) 
+      ;;              ;;translation-axis can reduced translation constraint                                                              
+      ;;              :translation-axis (list t t t)
+      ;;              ;; rotation-axis can reduce rotation constraint                                                                    
+      ;;              :rotation-axis (list :z t t)
+      ;;              :stop 50
+      ;;              :debug-view nil
+      ;;              )))
       ;; check reaching point
       (setq tc
             (list
