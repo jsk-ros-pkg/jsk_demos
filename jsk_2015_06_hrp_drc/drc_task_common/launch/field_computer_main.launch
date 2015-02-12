@@ -8,10 +8,14 @@
   </node>
   <node pkg="drc_task_common" type="robot-main.l" name="robot_main" output="screen" if="false">
   </node>
-  <include file="$(find drc_task_common)/launch/fc/go_pos_recog.launch">
-  </include>
-  <include file="$(find drc_task_common)/launch/fc/look_at_recog.launch">
-  </include>
+  <group ns="go_pos_recognition">
+    <include file="$(find drc_task_common)/launch/fc/centroid_of_pointcloud_in_rect.launch">
+    </include>
+  </group>
+  <group ns="look_at_recognition">
+    <include file="$(find drc_task_common)/launch/fc/centroid_of_pointcloud_in_rect.launch">
+    </include>
+  </group>
   <!-- communication -->
   <include if="$(arg USE_COM)"
            file="$(find drc_com_common)/launch/field_computer_com.launch" />
