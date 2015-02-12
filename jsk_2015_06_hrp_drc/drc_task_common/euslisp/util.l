@@ -6,14 +6,16 @@
 
 ;; topic <---> compressed message conversion
 
-(defun coords-to-float-vector (coords)
-  (float-vector (elt (send coords :worldpos) 0)
-                (elt (send coords :worldpos) 1)
-                (elt (send coords :worldpos) 2)
-                (elt (car (send coords :rpy-angle)) 0)
-                (elt (car (send coords :rpy-angle)) 1)
-                (elt (car (send coords :rpy-angle)) 2)
-                0 0))
+(defun coords-to-float-vector (coords length)
+  ;6 parameters are filled
+  (let ((ret (instantiate float-vector length))) 
+    (setf (elt ret 0) (elt (send coords :worldpos) 0))
+    (setf (elt ret 1) (elt (send coords :worldpos) 1))
+    (setf (elt ret 2) (elt (send coords :worldpos) 2))
+    (setf (elt ret 3) (elt (car (send coords :rpy-angle)) 0))
+    (setf (elt ret 4) (elt (car (send coords :rpy-angle)) 1))
+    (setf (elt ret 5) (elt (car (send coords :rpy-angle)) 2))
+    ret))
 
 (defun float-vector-to-coords (fv)
   (make-coords :pos (subseq fv 0 3)
@@ -54,6 +56,16 @@
         (send ret :polygon :points (list p1 p2))
         ret))))
 
+;; It's a circle actually
+(defun torus-to-float-vector (coords radius length)
+  (let ((ret (coords-to-float-vector coords length))) ;6 parameters are filled
+    (setf (elt ret 6) radius)
+    ret))
+
+(defun float-vector-to-torus (params)
+  (let ((coords (float-vector-to-coords params))
+        (radius (elt params 6)))
+    (list coords radius)))
 
 ;; message handler
 (defclass narrowband-message-handler

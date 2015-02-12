@@ -195,6 +195,14 @@ Usage:
      (:selecting-exec-for-look-at -> :executing-look-at)          ;exec
      (:selecting-exec-for-look-at -> :initial)                   ;cancel
      (:executing-look-at -> :initial)                            ;done
+     ;; valve
+     (:initial -> :selecting-region-for-valve)
+     (:selecting-region-for-valve -> :initial) ;cancel
+     (:selecting-region-for-valve -> :recognizing-valve-pose)
+     (:recognizing-valve-pose -> :selecting-exec-for-valve) ;recognition done
+     (:selecting-exec-for-valve -> :executing-valve)          ;exec
+     (:selecting-exec-for-valve -> :initial)                   ;cancel
+     (:executing-valve -> :initial)                            ;done
      )
    '((:initial :initial)
      ;; go-pos
@@ -207,5 +215,10 @@ Usage:
      (:recognizing-look-at-point :look-at)
      (:selecting-exec-for-look-at :look-at)
      (:executing-look-at :look-at)
+     ;; valve
+     (:selecting-region-for-valve :valve)
+     (:recognizing-valve-pose :valve)
+     (:selecting-exec-for-valve :valve)
+     (:executing-valve :valve)
      )
    :initial "ocs_state.png"))

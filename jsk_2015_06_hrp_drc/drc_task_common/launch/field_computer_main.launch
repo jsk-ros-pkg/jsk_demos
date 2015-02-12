@@ -16,6 +16,8 @@
     <include file="$(find drc_task_common)/launch/fc/centroid_of_pointcloud_in_rect.launch">
     </include>
   </group>
+  <include file="$(find drc_task_common)/launch/fc/valve_recognition.launch">
+  </include>
   <!-- communication -->
   <include if="$(arg USE_COM)"
            file="$(find drc_com_common)/launch/field_computer_com.launch" />
