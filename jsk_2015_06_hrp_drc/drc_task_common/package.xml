@@ -70,6 +70,7 @@
   <run_depend>jsk_ik_server</run_depend>
   <run_depend>roseus_smach</run_depend>
   <run_depend>pr2eus</run_depend>
+  <run_depend>spacenav_node</run_depend>
   <export>
     <rqt_gui plugin="${prefix}/plugin.xml"/>
     <rviz plugin="${prefix}/plugin_description.xml"/>  
