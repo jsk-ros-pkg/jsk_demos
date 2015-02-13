@@ -134,6 +134,17 @@
                             (elt params 8))))
     (list coords size)))
 
+(defun cylinder-to-float-vector (coords radius height length)
+  (let ((ret (coords-to-float-vector coords length)))
+    (setf (elt ret 6) radius)
+    (setf (elt ret 7) height)
+    ret))
+
+(defun float-vector-to-cylinder (params)
+  (let ((coords (float-vector-to-coords params))
+        (radius (elt params 6))
+        (height (elt params 7)))
+    (list coords radius height)))
 
 ;; message handler
 (defclass narrowband-message-handler

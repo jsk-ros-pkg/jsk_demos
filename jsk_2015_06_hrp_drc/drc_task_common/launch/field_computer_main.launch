@@ -29,15 +29,20 @@
     <arg name="INPUT_HINT_POINT_CLOUD" value="/stereo_preprocessing/normal_estimation/output_with_xyz" />
     <arg name="INPUT_POINT_CLOUD" value="/stereo_preprocessing/normal_estimation/output_with_xyz" />
   </include>
+  <group ns="debri_recognition">
+    <include file="$(find drc_task_common)/launch/fc/debri_recognition.launch">
+    </include>
+  </group>
   <!-- communication -->
   <include if="$(arg USE_COM)"
            file="$(find drc_com_common)/launch/field_computer_com.launch" />
   <group if="false">
-
+<group if="false">
   <!-- object detection -->
   <include file="$(find drc_task_common)/launch/object_detect.launch" />
 
   <!-- remote server -->
   <include file="$(find drc_task_common)/launch/remote_server.launch" />
+  </group>
   </group>
 </launch>

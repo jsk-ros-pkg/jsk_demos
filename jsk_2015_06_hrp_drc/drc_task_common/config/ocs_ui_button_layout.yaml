@@ -4,6 +4,9 @@
 - name: 'door'
   service: 'door'
   column: 0
+- name: 'debri'
+  service: 'debri'
+  column: 0
 - name: 'Go pos'
   service: 'go_pos'
   image: "package://drc_task_common/icons/gopos.png"
