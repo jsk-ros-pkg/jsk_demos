@@ -19,17 +19,29 @@
   <build_depend>roseus</build_depend>
   <build_depend>jsk_perception</build_depend>
   <build_depend>jsk_pcl_ros</build_depend>
-  <build_depend>robot_self_filter_color</build_depend>
+  <build_depend>pr2_navigation_self_filter</build_depend>
   <build_depend>jsk_pr2_startup</build_depend>
-  <build_depend>SnapMapICP</build_depend>
+  <build_depend>snap_map_icp</build_depend>
+  <build_depend>jsk_demo_common</build_depend>
+  <build_depend>pr2eus</build_depend>
+  <build_depend>jsk_tools</build_depend>
+  <build_depend>pr2_gripper_sensor_msgs</build_depend>
+  <build_depend>pcl_msgs</build_depend>
+  <build_depend>posedetection_msgs</build_depend>
 
   <!-- Dependencies needed after this package is compiled. -->
   <run_depend>roseus</run_depend>
   <run_depend>jsk_perception</run_depend>
   <run_depend>jsk_pcl_ros</run_depend>
-  <run_depend>robot_self_filter_color</run_depend>
+  <run_depend>pr2_navigation_self_filter</run_depend>
   <run_depend>jsk_pr2_startup</run_depend>
-  <run_depend>SnapMapICP</run_depend>
+  <run_depend>snap_map_icp</run_depend>
+  <run_depend>jsk_demo_common</run_depend>
+  <run_depend>pr2eus</run_depend>
+  <run_depend>jsk_tools</run_depend>
+  <run_depend>pr2_gripper_sensor_msgs</run_depend>
+  <run_depend>pcl_msgs</run_depend>
+  <run_depend>posedetection_msgs</run_depend>
 
   <!-- Dependencies needed only for running tests. -->
   <!-- <test_depend>roseus</test_depend> -->
