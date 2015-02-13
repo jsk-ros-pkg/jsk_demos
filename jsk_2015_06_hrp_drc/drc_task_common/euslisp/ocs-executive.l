@@ -18,8 +18,10 @@
 
 (defclass ocs-executive-app
   :super propertied-object
-  :slots (state task rectangle-region go-pos-coords smachine look-at-pos
-                fc2ocs-message-handler valve-params))
+  :slots (state task go-pos-coords smachine look-at-pos
+                fc2ocs-message-handler valve-params
+                foreground-bacground-sync-obj
+                door-params))
 
 (defmethod ocs-executive-app
   (:init ()
@@ -37,11 +39,21 @@
           (list drc_com_common::FC2OCSSmall::*VALVE_POSE*
                 self :valve-recognition-finished-callback)
           (list drc_com_common::FC2OCSSmall::*VALVE_FINISHED*
-                self :valve-exec-finished-callback))
+                self :valve-exec-finished-callback)
+          (list drc_com_common::FC2OCSSmall::*DOOR_POSE*
+                self :door-pose-result-callback)
+          (list drc_com_common::FC2OCSSmall::*DOOR_FINISHED*
+                self :door-exec-finished-callback))
     (setq smachine (make-ocs-state-machine))
     (send smachine :register-initial-hook self :initial-callback)
     (send smachine :go-to :initial)     ;force to move to initial state
     self)
+  (:subscribe-foreground-backggrond-topics (topics)
+    (setq foreground-bacground-sync-obj
+          (instance foreground-background-synchronizer :init
+                    topics
+                    self
+                    :foreground-background-callback)))
   (:fc2ocs-message-handler () fc2ocs-message-handler)
   (:initial-callback ()
     (send self :set-image-view2-mode :none)
@@ -82,6 +94,12 @@
       (send smachine :go-to :selecting-region-for-go-pos)
       )
     (send req :response))
+  (:door-button-callback (req)
+    (when (send smachine :next? :selecting-region-for-door)
+      (send self :set-image-view2-mode :grabcut-rect)
+      (send self :show-text-on-image "Select rectangle two region for door")
+      (send smachine :go-to :selecting-region-for-door))
+    (send req :response))
   (:valve-button-callback (req)
     (when (send smachine :next? :selecting-region-for-valve)
       (send self :set-image-view2-mode :rectangle)
@@ -99,7 +117,6 @@
   (:send-to-fc (msg)
     (ros::publish "/ocs_to_fc_low_speed/input" msg))
   (:rectangle-callback-for-go-pos-region (msg)
-    (setq rectangle-region msg)
     ;; send to FC to recognize pos
     (let ((fc-msg (instance drc_com_common::OCS2FCSmall :init)))
       (send fc-msg :type drc_com_common::OCS2FCSmall::*GO_POS_REGION*)
@@ -108,7 +125,6 @@
       (send self :send-to-fc fc-msg)
       (send smachine :go-to :recognizing-go-pos-goal)))
   (:rectangle-callback-for-look-at-region (msg)
-    (setq rectangle-region msg)
     ;; send to FC to recognize pos
     (let ((fc-msg (instance drc_com_common::OCS2FCSmall :init)))
       (send fc-msg :type drc_com_common::OCS2FCSmall::*LOOK_AT_REGION*)
@@ -117,7 +133,6 @@
       (send self :send-to-fc fc-msg)
       (send smachine :go-to :recognizing-look-at-point)))
   (:rectangle-callback-for-valve-region (msg)
-    (setq rectangle-region msg)
     ;; send to FC to recognize pos
     (let ((fc-msg (instance drc_com_common::OCS2FCSmall :init)))
       (send fc-msg :type drc_com_common::OCS2FCSmall::*VALVE_REGION*)
@@ -125,6 +140,20 @@
                                     msg (length (send fc-msg :image_roi_info))))
       (send self :send-to-fc fc-msg)
       (send smachine :go-to :recognizing-valve-pose)))
+  (:double-rectangles-callback-for-door-recognition (foreground background)
+    ;;(print (list foreground background))
+    (let ((fc-msg (instance drc_com_common::OCS2FCSmall :init)))
+      (send fc-msg :type drc_com_common::OCS2FCSmall::*DOOR_REGION*)
+      (send fc-msg :image_roi_info (double-rect-polygon-stamped-to-integer-vector
+                                    foreground background (length (send fc-msg :image_roi_info))))
+      (send self :send-to-fc fc-msg)
+      (send smachine :go-to :recognizing-door-pose)))
+  (:foreground-background-callback (foreground background)
+    (cond
+     ((eq (send smachine :state) :selecting-region-for-door)
+      (send self :double-rectangles-callback-for-door-recognition foreground background))
+     )
+    )
   (:rectangle-callback (msg)            ;msg = geometry_msgs/PolygonStamped
     (cond
      ((eq (send smachine :state) :selecting-region-for-go-pos)
@@ -141,6 +170,8 @@
      ((eq (send smachine :state) :selecting-exec-for-go-pos)
       (send smachine :go-to :initial))
      ((eq (send smachine :state) :selecting-exec-for-look-at)
+      (send smachine :go-to :initial))
+     ((eq (send smachine :state) :selecting-exec-for-door)
       (send smachine :go-to :initial))
      )
     ;; clear text message
@@ -167,6 +198,14 @@
                                (length (send msg :float_params))))
       (send self :send-to-fc msg)
       (send smachine :go-to :executing-valve)))
+  (:exec-door-button-callback ()
+    (let ((msg (instance drc_com_common::OCS2FCSmall :init)))
+      (send msg :type drc_com_common::OCS2FCSmall::*DOOR_EXEC*)
+      (send msg :float_params (box-to-float-vector 
+                               (car door-params) (cadr door-params)
+                               (length (send msg :float_params))))
+      (send self :send-to-fc msg)
+      (send smachine :go-to :executing-door)))
   (:exec-button-callback (req)
     (cond
      ((eq (send smachine :state) :selecting-exec-for-go-pos)
@@ -175,8 +214,20 @@
       (send self :exec-look-at-button-callback))                          
      ((eq (send smachine :state) :selecting-exec-for-valve)
       (send self :exec-valve-button-callback))
+     ((eq (send smachine :state) :selecting-exec-for-door)
+      (send self :exec-door-button-callback))
      )
     (send req :response))
+  (:door-pose-result-callback (msg)
+    (when (eq (send smachine :state) :recognizing-door-pose)
+      (let ((params (send msg :params)))
+        (multiple-value-bind
+         (coords size) (float-vector-to-box params)
+         (send self :show-text-on-image (format nil "door: ~A" params))
+         ;; TODO: publish BoundingBox to visualize
+         (setq door-params (list coords size))
+         (send smachine :go-to :selecting-exec-for-door)))
+      ))
   (:look-at-pose-result-callback (msg)
     (when (eq (send smachine :state) :recognizing-look-at-point)
       (let ((params (send msg :params)))
@@ -208,6 +259,9 @@
         (send smachine :go-to :selecting-exec-for-go-pos))))
   (:valve-exec-finished-callback (msg)
     (when (eq (send smachine :state) :executing-valve)
+      (send smachine :go-to :initial)))
+  (:door-exec-finished-callback (msg)
+    (when (eq (send smachine :state) :executing-door)
       (send smachine :go-to :initial)))
   (:go-pos-finished-callback (msg)
     (when (eq (send smachine :state) :executing-go-pos)
@@ -241,16 +295,19 @@
       (send smachine :go-to :executing-go-pos))
     (send req :response)
     )
+
   )
 
-(setq *app* (instance ocs-executive-app :init))
 
 ;; advertise
 (ros::advertise "/image_marker" image_view2::ImageMarker2)
+(setq *app* (instance ocs-executive-app :init))
+
 (ros::advertise "/ocs_to_fc_low_speed/input" drc_com_common::OCS2FCSmall)
 ;; registering services for button UIs
 (ros::advertise-service "go_pos" std_srvs::Empty #'send *app* :go-pos-button-callback)
 (ros::advertise-service "valve" std_srvs::Empty #'send *app* :valve-button-callback)
+(ros::advertise-service "door" std_srvs::Empty #'send *app* :door-button-callback)
 (ros::advertise-service "look_at" std_srvs::Empty #'send *app* :look-at-button-callback)
 (ros::advertise-service "exec" std_srvs::Empty #'send *app* :exec-button-callback)
 (ros::advertise-service "cancel" std_srvs::Empty #'send *app* :cancel-button-callback)
@@ -259,8 +316,15 @@
 ;; subscribing image_view2 ROI stuff
 (ros::subscribe "/multisense/left/image_rect_color/screenrectangle" geometry_msgs::PolygonStamped
   #'send *app* :rectangle-callback)
+(ros::subscribe "/multisense/left/image_rect_color/foreground_rect" geometry_msgs::PolygonStamped
+  #'send *app* :foreground-rect-callback)
+(ros::subscribe "/multisense/left/image_rect_color/background_rect" geometry_msgs::PolygonStamped
+  #'send *app* :background-rect-callback)
 (ros::subscribe "/ocs_from_fc_low_speed/output" drc_com_common::FC2OCSSmall
   #'send (send *app* :fc2ocs-message-handler) :root-callback)
+(send *app* :subscribe-foreground-backggrond-topics 
+      (list (list "/multisense/left/image_rect_color/foreground_rect" geometry_msgs::PolygonStamped)
+            (list "/multisense/left/image_rect_color/background_rect" geometry_msgs::PolygonStamped)))
 
 (ros::rate 10)
 (ros::spin)

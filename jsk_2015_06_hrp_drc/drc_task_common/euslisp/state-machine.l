@@ -203,6 +203,14 @@ Usage:
      (:selecting-exec-for-valve -> :executing-valve)          ;exec
      (:selecting-exec-for-valve -> :initial)                   ;cancel
      (:executing-valve -> :initial)                            ;done
+     ;; door
+     (:initial -> :selecting-region-for-door)
+     (:selecting-region-for-door -> :initial) ;cancel
+     (:selecting-region-for-door -> :recognizing-door-pose)
+     (:recognizing-door-pose -> :selecting-exec-for-door) ;recognition done
+     (:selecting-exec-for-door -> :executing-door)          ;exec
+     (:selecting-exec-for-door -> :initial)                   ;cancel
+     (:executing-door -> :initial)                            ;done
      )
    '((:initial :initial)
      ;; go-pos
@@ -220,5 +228,10 @@ Usage:
      (:recognizing-valve-pose :valve)
      (:selecting-exec-for-valve :valve)
      (:executing-valve :valve)
+     ;; door
+     (:selecting-region-for-door :door)
+     (:recognizing-door-pose :door)
+     (:selecting-exec-for-door :door)
+     (:executing-door :door)
      )
    :initial "ocs_state.png"))
