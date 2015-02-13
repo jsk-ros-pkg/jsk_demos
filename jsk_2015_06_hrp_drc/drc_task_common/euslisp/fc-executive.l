@@ -6,6 +6,7 @@
 (ros::roseus-add-msgs "geometry_msgs")
 (ros::roseus-add-msgs "drc_com_common")
 (ros::roseus-add-msgs "jsk_recognition_msgs")
+(ros::roseus-add-msgs "pcl_msgs")
 (load "package://drc_task_common/euslisp/util.l")
 (load "package://drc_task_common/euslisp/robot-util.l")
 
@@ -34,9 +35,21 @@
           (list drc_com_common::OCS2FCSmall::*DOOR_REGION*
                 self :door-region-command-callback)
           (list drc_com_common::OCS2FCSmall::*DOOR_EXEC*
-                self :door-exec-command-callback))
+                self :door-exec-command-callback)
+          (list drc_com_common::OCS2FCSmall::*DEBRI_LINE*
+                self :debri-line-command-callback)
+          (list drc_com_common::OCS2FCSmall::*DEBRI_EXEC*
+                self :debri-exec-command-callback))
     self)
   (:ocs2fc-message-handler () ocs2fc-message-handler)
+  (:debri-line-command-callback (msg)
+    (when (eq state :initial)
+      (ros::publish "/debri_recognition/input_line"
+        (integer-vector-to-rect-polygon-stamped msg))
+      ;; enable snapshot
+      (call-empty-service "/debri_recognition/snapshot/request")
+      (setq state :recognizing-debri-pose)
+      ))
   (:door-region-command-callback (msg)
     (when (eq state :initial)
       (multiple-value-bind
@@ -67,6 +80,19 @@
       (call-empty-service "/go_pos_recognition/snapshot/request")
       (setq state :recognizing-go-pos-location)
       ))
+  (:debri-exec-command-callback (msg)
+    (when (eq state :initial)
+      (multiple-value-bind
+       (coords r h)
+       (float-vector-to-cylinder (send msg :float_params))
+       (setq state :executing-debri)
+       (ros::ros-info "removing debri at ~A ~A ~A" coords r h)
+       ;; TODO: REMOVE DEBRI!
+       (let ((msg (instance drc_com_common::FC2OCSSmall :init)))
+         (send msg :type drc_com_common::FC2OCSSmall::*DEBRI_FINISHED*)
+         (send self :send-to-ocs msg))
+       (setq state :initial)
+       )))
   (:door-exec-command-callback (msg)
     (when (eq state :initial)
       (multiple-value-bind
@@ -151,6 +177,28 @@
           (setq trans (send *tf* :lookup-transform "BODY" 
                             (send header :frame_id) (ros::time 0))))
         trans))
+  (:debri-recog-callback (msg)
+    (when (eq state :recognizing-debri-pose)
+      (let ((trans (send self :lookup-from-body-transform (send msg :header)))
+            (coefficients (send msg :values)))
+        ;; make coordinates from coefficients
+        ;; coefficients := [cx, cy, cz, dx, dy, dz, r, h]
+        (let ((pos (scale 0.001 (float-vector (elt coefficients 0)
+                                              (elt coefficients 1)
+                                              (elt coefficients 2)))))
+          (let ((coords (make-coords :pos pos)))
+            (orient-coords-to-axis coords 
+                                   (float-vector (elt coefficients 3)
+                                                 (elt coefficients 4)
+                                                 (elt coefficients 5)))
+            (let ((from-body-coords (send trans :transform coords)))
+              (let ((fc-msg (instance drc_com_common::FC2OCSSmall :init)))
+                (send fc-msg :type drc_com_common::FC2OCSSmall::*DEBRI_POSE*)
+                (send fc-msg :params (cylinder-to-float-vector
+                                      from-body-coords (elt coefficients 6) (elt coefficients 7)
+                                      (length (send fc-msg :params))))
+                (send self :send-to-ocs fc-msg)
+                (setq state :initial))))))))
   (:door-recog-callback (msg)
     (when (eq state :recognizing-door-pose)
       (let ((trans (send self :lookup-from-body-transform (send msg :header))))
@@ -160,7 +208,7 @@
               (let ((fc-msg (instance drc_com_common::FC2OCSSmall :init)))
                 (send fc-msg :type drc_com_common::FC2OCSSmall::*DOOR_POSE*)
                 (send fc-msg :params (box-to-float-vector
-                                      coords (ros::tf-point->pos (send box :dimensions))
+                                      from-body-coords (ros::tf-point->pos (send box :dimensions))
                                       (length (send fc-msg :params))))
                 (send self :send-to-ocs fc-msg)
                 (setq state :initial))))))))
@@ -175,7 +223,7 @@
           (let ((from-body-coords (send trans :transform coords)))
             (let ((fc-msg (instance drc_com_common::FC2OCSSmall :init)))
               (send fc-msg :params (torus-to-float-vector 
-                                    coords (send msg :large_radius)
+                                    from-body-coords (send msg :large_radius)
                                     (length (send fc-msg :params))))
               (send fc-msg :type drc_com_common::FC2OCSSmall::*VALVE_POSE*)
               (send self :send-to-ocs fc-msg)
@@ -269,6 +317,7 @@
 (ros::advertise "/valve_recognition/input_rect" geometry_msgs::PolygonStamped)
 (ros::advertise "/door_recognition/input_support_plane_rect" geometry_msgs::PolygonStamped)
 (ros::advertise "/door_recognition/input_target_rect" geometry_msgs::PolygonStamped)
+(ros::advertise "/debri_recognition/input_line" geometry_msgs::PolygonStamped)
 (ros::advertise "/fc_to_ocs_low_speed/input" drc_com_common::FC2OCSSmall)
 (ros::subscribe "/fc_from_ocs_low_speed/output" drc_com_common::OCS2FCSmall
   #'send (send *app* :ocs2fc-message-handler) :root-callback)
@@ -280,6 +329,8 @@
   #'send *app* :valve-recog-callback)
 (ros::subscribe "/door_recognition/snapshot/output" jsk_recognition_msgs::BoundingBoxArray
   #'send *app* :door-recog-callback)
+(ros::subscribe "/debri_recognition/snapshot/output" pcl_msgs::ModelCoefficients
+  #'send *app* :debri-recog-callback)
 (ros::advertise "/go_pos_goal" geometry_msgs::PoseStamped)
 (ros::rate 10)
 (ros::spin)

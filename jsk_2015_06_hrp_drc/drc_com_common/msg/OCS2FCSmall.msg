@@ -16,3 +16,6 @@ uint8 VALVE_EXEC=6
 # door
 uint8 DOOR_REGION=7
 uint8 DOOR_EXEC=8
+# debri
+uint8 DEBRI_LINE=9
+uint8 DEBRI_EXEC=10

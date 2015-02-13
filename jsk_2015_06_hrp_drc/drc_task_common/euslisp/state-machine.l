@@ -211,6 +211,14 @@ Usage:
      (:selecting-exec-for-door -> :executing-door)          ;exec
      (:selecting-exec-for-door -> :initial)                   ;cancel
      (:executing-door -> :initial)                            ;done
+     ;; debri
+     (:initial -> :selecting-region-for-debri)
+     (:selecting-region-for-debri -> :initial) ;cancel
+     (:selecting-region-for-debri -> :recognizing-debri-pose)
+     (:recognizing-debri-pose -> :selecting-exec-for-debri) ;recognition done
+     (:selecting-exec-for-debri -> :executing-debri)          ;exec
+     (:selecting-exec-for-debri -> :initial)                   ;cancel
+     (:executing-debri -> :initial)                            ;done
      )
    '((:initial :initial)
      ;; go-pos
@@ -233,5 +241,10 @@ Usage:
      (:recognizing-door-pose :door)
      (:selecting-exec-for-door :door)
      (:executing-door :door)
+     ;; debri
+     (:selecting-region-for-debri :debri)
+     (:recognizing-debri-pose :debri)
+     (:selecting-exec-for-debri :debri)
+     (:executing-debri :debri)
      )
    :initial "ocs_state.png"))

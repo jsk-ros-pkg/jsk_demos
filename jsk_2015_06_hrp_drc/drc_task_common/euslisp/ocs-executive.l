@@ -21,7 +21,7 @@
   :slots (state task go-pos-coords smachine look-at-pos
                 fc2ocs-message-handler valve-params
                 foreground-bacground-sync-obj
-                door-params))
+                door-params debri-params))
 
 (defmethod ocs-executive-app
   (:init ()
@@ -43,7 +43,11 @@
           (list drc_com_common::FC2OCSSmall::*DOOR_POSE*
                 self :door-pose-result-callback)
           (list drc_com_common::FC2OCSSmall::*DOOR_FINISHED*
-                self :door-exec-finished-callback))
+                self :door-exec-finished-callback)
+          (list drc_com_common::FC2OCSSmall::*DEBRI_POSE*
+                self :debri-pose-result-callback)
+          (list drc_com_common::FC2OCSSmall::*DEBRI_FINISHED*
+                self :debri-exec-finished-callback))
     (setq smachine (make-ocs-state-machine))
     (send smachine :register-initial-hook self :initial-callback)
     (send smachine :go-to :initial)     ;force to move to initial state
@@ -100,6 +104,12 @@
       (send self :show-text-on-image "Select rectangle two region for door")
       (send smachine :go-to :selecting-region-for-door))
     (send req :response))
+  (:debri-button-callback (req)
+    (when (send smachine :next? :selecting-region-for-debri)
+      (send self :set-image-view2-mode :line)
+      (send self :show-text-on-image "Select line for debri")
+      (send smachine :go-to :selecting-region-for-debri))
+    (send req :response))
   (:valve-button-callback (req)
     (when (send smachine :next? :selecting-region-for-valve)
       (send self :set-image-view2-mode :rectangle)
@@ -154,6 +164,17 @@
       (send self :double-rectangles-callback-for-door-recognition foreground background))
      )
     )
+  (:line-callback-for-debri-line (msg)
+    (let ((fc-msg (instance drc_com_common::OCS2FCSmall :init)))
+      (send fc-msg :type drc_com_common::OCS2FCSmall::*DEBRI_LINE*)
+      (send fc-msg :image_roi_info (rect-polygon-stamped-to-integer-vector
+                                    msg (length (send fc-msg :image_roi_info))))
+      (send self :send-to-fc fc-msg)
+      (send smachine :go-to :recognizing-debri-pose)))
+  (:line-callback (msg)            ;msg = geometry_msgs/PolygonStamped
+    (cond
+     ((eq (send smachine :state) :selecting-region-for-debri)
+      (send self :line-callback-for-debri-line msg))))
   (:rectangle-callback (msg)            ;msg = geometry_msgs/PolygonStamped
     (cond
      ((eq (send smachine :state) :selecting-region-for-go-pos)
@@ -172,6 +193,8 @@
      ((eq (send smachine :state) :selecting-exec-for-look-at)
       (send smachine :go-to :initial))
      ((eq (send smachine :state) :selecting-exec-for-door)
+      (send smachine :go-to :initial))
+     ((eq (send smachine :state) :selecting-exec-for-debri)
       (send smachine :go-to :initial))
      )
     ;; clear text message
@@ -206,6 +229,14 @@
                                (length (send msg :float_params))))
       (send self :send-to-fc msg)
       (send smachine :go-to :executing-door)))
+  (:exec-debri-button-callback ()
+    (let ((msg (instance drc_com_common::OCS2FCSmall :init)))
+      (send msg :type drc_com_common::OCS2FCSmall::*DEBRI_EXEC*)
+      (send msg :float_params (cylinder-to-float-vector
+                               (car debri-params) (cadr debri-params) (caddr debri-params)
+                               (length (send msg :float_params))))
+      (send self :send-to-fc msg)
+      (send smachine :go-to :executing-debri)))
   (:exec-button-callback (req)
     (cond
      ((eq (send smachine :state) :selecting-exec-for-go-pos)
@@ -216,8 +247,19 @@
       (send self :exec-valve-button-callback))
      ((eq (send smachine :state) :selecting-exec-for-door)
       (send self :exec-door-button-callback))
+     ((eq (send smachine :state) :selecting-exec-for-debri)
+      (send self :exec-debri-button-callback))
      )
     (send req :response))
+  (:debri-pose-result-callback (msg)
+    (when (eq (send smachine :state) :recognizing-debri-pose)
+      (let ((params (send msg :params)))
+        (multiple-value-bind
+         (coords r h) (float-vector-to-cylinder params)
+         (send self :show-text-on-image (format nil "debri: ~A" params))
+         ;; TODO: publish Marker to visualize
+         (setq debri-params (list coords r h))
+         (send smachine :go-to :selecting-exec-for-debri)))))
   (:door-pose-result-callback (msg)
     (when (eq (send smachine :state) :recognizing-door-pose)
       (let ((params (send msg :params)))
@@ -257,6 +299,9 @@
                       (rad2deg (elt (send msg :params) 3))
                       ))
         (send smachine :go-to :selecting-exec-for-go-pos))))
+  (:debri-exec-finished-callback (msg)
+    (when (eq (send smachine :state) :executing-debri)
+      (send smachine :go-to :initial)))
   (:valve-exec-finished-callback (msg)
     (when (eq (send smachine :state) :executing-valve)
       (send smachine :go-to :initial)))
@@ -308,6 +353,7 @@
 (ros::advertise-service "go_pos" std_srvs::Empty #'send *app* :go-pos-button-callback)
 (ros::advertise-service "valve" std_srvs::Empty #'send *app* :valve-button-callback)
 (ros::advertise-service "door" std_srvs::Empty #'send *app* :door-button-callback)
+(ros::advertise-service "debri" std_srvs::Empty #'send *app* :debri-button-callback)
 (ros::advertise-service "look_at" std_srvs::Empty #'send *app* :look-at-button-callback)
 (ros::advertise-service "exec" std_srvs::Empty #'send *app* :exec-button-callback)
 (ros::advertise-service "cancel" std_srvs::Empty #'send *app* :cancel-button-callback)
@@ -316,6 +362,8 @@
 ;; subscribing image_view2 ROI stuff
 (ros::subscribe "/multisense/left/image_rect_color/screenrectangle" geometry_msgs::PolygonStamped
   #'send *app* :rectangle-callback)
+(ros::subscribe "/multisense/left/image_rect_color/line" geometry_msgs::PolygonStamped
+  #'send *app* :line-callback)
 (ros::subscribe "/multisense/left/image_rect_color/foreground_rect" geometry_msgs::PolygonStamped
   #'send *app* :foreground-rect-callback)
 (ros::subscribe "/multisense/left/image_rect_color/background_rect" geometry_msgs::PolygonStamped
