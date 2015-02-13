@@ -8,6 +8,13 @@
   </node>
   <node pkg="drc_task_common" type="robot-main.l" name="robot_main" output="screen" if="false">
   </node>
+
+  <!-- recognition -->
+  <group ns="stereo_preprocessing">
+    <include file="$(find drc_task_common)/launch/fc/stereo_preprocess.launch">
+      <arg name="INPUT_POINT_CLOUD" value="/multisense/resize_1_4/points" />
+    </include>
+  </group>
   <group ns="go_pos_recognition">
     <include file="$(find drc_task_common)/launch/fc/centroid_of_pointcloud_in_rect.launch">
     </include>
@@ -17,6 +24,10 @@
     </include>
   </group>
   <include file="$(find drc_task_common)/launch/fc/valve_recognition.launch">
+  </include>
+  <include file="$(find drc_task_common)/launch/fc/door_recognition.launch">
+    <arg name="INPUT_HINT_POINT_CLOUD" value="/stereo_preprocessing/normal_estimation/output_with_xyz" />
+    <arg name="INPUT_POINT_CLOUD" value="/stereo_preprocessing/normal_estimation/output_with_xyz" />
   </include>
   <!-- communication -->
   <include if="$(arg USE_COM)"

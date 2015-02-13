@@ -1,0 +1,15 @@
+<launch>
+  <!-- stereo preprocessing -->
+  <arg name="INPUT_POINT_CLOUD" default="/multisense/resize_1_4/points" />
+  <!-- compute normal -->
+  <node pkg="nodelet" type="nodelet" name="preprocessing_manager"
+        args="manager" output="screen"/>
+  <node pkg="nodelet" type="nodelet" args="load jsk_topic_tools/Relay preprocessing_manager"
+        name="relay">
+    <remap from="~input" to="$(arg INPUT_POINT_CLOUD)" />
+  </node>
+  <node pkg="nodelet" type="nodelet" args="load jsk_pcl/NormalEstimationIntegralImage  preprocessing_manager"
+        name="normal_estimation">
+    <remap from="~input" to="relay/output" />
+  </node>
+</launch>

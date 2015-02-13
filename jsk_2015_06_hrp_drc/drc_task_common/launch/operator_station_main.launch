@@ -12,7 +12,7 @@
   <arg name="robot_model_config" default="$(find drc_task_common)/config/hrp2_interactive_marker.yaml" />
   <arg name="ik_server_launch" default="hrp2jsknts-ik-server.launch" />
   <arg name="trackball_head_launch" default="hrp2_trackball_head.launch" />
-
+  <arg name="USE_RVIZ_UI" default="true" />
   <include file="$(find drc_task_common)/launch/ocs/ui.launch">
     <arg name="INPUT_IMAGE" value="$(arg INPUT_IMAGE)" />
   </include>
@@ -23,60 +23,60 @@
   <!-- communication -->
   <include if="$(arg USE_COM)"
            file="$(find drc_com_common)/launch/operator_station_com.launch" />
+  <group if="$(arg USE_RVIZ_UI)">
+    <!-- robot motion -->
+    <include file="$(find drc_task_common)/launch/robot_motion.launch" >
+      <arg name="default_frame_id" default="$(arg default_frame_id)" />
+      <arg name="robot_name" value="$(arg robot_name)" />
+      <arg name="ik_server_launch" default="$(arg ik_server_launch)" />
+    </include>
 
-  <!-- robot motion -->
-  <include file="$(find drc_task_common)/launch/robot_motion.launch" >
-    <arg name="default_frame_id" default="$(arg default_frame_id)" />
-    <arg name="robot_name" value="$(arg robot_name)" />
-    <arg name="ik_server_launch" default="$(arg ik_server_launch)" />
-  </include>
+    <!-- object model -->
+    <include file="$(find drc_task_common)/launch/transformable_model.launch" >
+      <arg name="default_frame_id" default="$(arg default_frame_id)" />
+    </include>
 
-  <!-- object model -->
-  <include file="$(find drc_task_common)/launch/transformable_model.launch" >
-    <arg name="default_frame_id" default="$(arg default_frame_id)" />
-  </include>
+    <!-- robot model -->
+    <include file="$(find drc_task_common)/launch/robot_model.launch" >
+      <arg name="default_frame_id" default="$(arg default_frame_id)" />
+      <arg name="robot_model_config" default="$(arg robot_model_config)" />
+      <arg name="ROBOT_URDF_MODEL" default="$(arg ROBOT_URDF_MODEL)" />
+    </include>
 
-  <!-- robot model -->
-  <include file="$(find drc_task_common)/launch/robot_model.launch" >
-    <arg name="default_frame_id" default="$(arg default_frame_id)" />
-    <arg name="robot_model_config" default="$(arg robot_model_config)" />
-    <arg name="ROBOT_URDF_MODEL" default="$(arg ROBOT_URDF_MODEL)" />
-  </include>
+    <!-- teleop device -->
+    <include file="$(find drc_task_common)/launch/teleop_device.launch" >
+      <arg name="default_frame_id" default="$(arg default_frame_id)" />
+      <arg name="trackball_head_launch" default="$(arg trackball_head_launch)" />
+    </include>
 
-  <!-- teleop device -->
-  <include file="$(find drc_task_common)/launch/teleop_device.launch" >
-    <arg name="default_frame_id" default="$(arg default_frame_id)" />
-    <arg name="trackball_head_launch" default="$(arg trackball_head_launch)" />
-  </include>
+    <!-- teleop interface -->
+    <include file="$(find drc_task_common)/launch/teleop_interface.launch" />
 
-  <!-- teleop interface -->
-  <include file="$(find drc_task_common)/launch/teleop_interface.launch" />
+    <!-- remote server -->
+    <include file="$(find drc_task_common)/launch/remote_server.launch">
+      <arg name="robot_name" value="$(arg robot_name)" />
+    </include>
 
-  <!-- remote server -->
-  <include file="$(find drc_task_common)/launch/remote_server.launch">
-    <arg name="robot_name" value="$(arg robot_name)" />
-  </include>
+    <!-- rviz -->
+    <node pkg="rviz" type="rviz" name="operator_rviz" args="-d $(find drc_task_common)/config/drc_task_common.rviz"/>
 
-  <!-- rviz -->
-  <node pkg="rviz" type="rviz" name="operator_rviz" args="-d $(find drc_task_common)/config/drc_task_common.rviz"/>
+    <group if="false">
 
-  <group if="false">
+      <include if="false"
+               file="$(find jsk_hrp2_ros_bridge)/launch/hrp2017_local.launch" />
 
-    <include if="false"
-             file="$(find jsk_hrp2_ros_bridge)/launch/hrp2017_local.launch" />
+      <!-- data server -->
+      <include file="$(find drc_task_common)/launch/manipulation_data_processor.launch"/>
 
-    <!-- data server -->
-    <include file="$(find drc_task_common)/launch/manipulation_data_processor.launch"/>
+      <group>
+        <remap from="robotsound" to="robotsound_ocs" />
 
-    <group>
-      <remap from="robotsound" to="robotsound_ocs" />
+        <!-- google translation talk -->
+        <include file="$(find sound_play)/soundplay_node.launch" />
 
-      <!-- google translation talk -->
-      <include file="$(find sound_play)/soundplay_node.launch" />
-
-      <!-- timer talker -->
-      <node pkg="drc_task_common" name="timer_talker" type="timer_talker.py" args="" output="screen" />
+        <!-- timer talker -->
+        <node pkg="drc_task_common" name="timer_talker" type="timer_talker.py" args="" output="screen" />
+      </group>
     </group>
   </group>
-
 </launch>

@@ -30,9 +30,25 @@
           (list drc_com_common::OCS2FCSmall::*VALVE_REGION*
                 self :valve-region-command-callback)
           (list drc_com_common::OCS2FCSmall::*VALVE_EXEC*
-                self :valve-exec-command-callback))
+                self :valve-exec-command-callback)
+          (list drc_com_common::OCS2FCSmall::*DOOR_REGION*
+                self :door-region-command-callback)
+          (list drc_com_common::OCS2FCSmall::*DOOR_EXEC*
+                self :door-exec-command-callback))
     self)
   (:ocs2fc-message-handler () ocs2fc-message-handler)
+  (:door-region-command-callback (msg)
+    (when (eq state :initial)
+      (multiple-value-bind
+       (foreground background) (integer-vector-to-double-rect-polygon-stamped msg)
+       (ros::publish "/door_recognition/input_support_plane_rect"
+         foreground)
+       (ros::publish "/door_recognition/input_target_rect"
+         background)
+       ;; enable snapshot
+       (call-empty-service "/door_recognition/snapshot/request")
+       (setq state :recognizing-door-pose)
+       )))
   (:valve-region-command-callback (msg)
     (when (eq state :initial)
       ;; convert OCS2FCSmall into geometry_msgs/Polygon
@@ -51,6 +67,19 @@
       (call-empty-service "/go_pos_recognition/snapshot/request")
       (setq state :recognizing-go-pos-location)
       ))
+  (:door-exec-command-callback (msg)
+    (when (eq state :initial)
+      (multiple-value-bind
+       (coords size)
+       (float-vector-to-box (send msg :float_params))
+       (setq state :executing-door)
+       (ros::ros-info "opening door at ~A ~A" coords size)
+       ;; TODO: OPEN DOOR!
+       (let ((msg (instance drc_com_common::FC2OCSSmall :init)))
+         (send msg :type drc_com_common::FC2OCSSmall::*DOOR_FINISHED*)
+         (send self :send-to-ocs msg))
+       (setq state :initial)
+       )))
   (:valve-exec-command-callback (msg)
     (when (eq state :initial)
       (multiple-value-bind 
@@ -115,6 +144,26 @@
           (send self :send-to-ocs msg))
         (setq state :initial)
         )))
+  (:lookup-from-body-transform (header)
+    (let ((trans (send *tf* :lookup-transform "BODY" 
+                       (send header :frame_id) (send header :stamp))))
+        (unless trans
+          (setq trans (send *tf* :lookup-transform "BODY" 
+                            (send header :frame_id) (ros::time 0))))
+        trans))
+  (:door-recog-callback (msg)
+    (when (eq state :recognizing-door-pose)
+      (let ((trans (send self :lookup-from-body-transform (send msg :header))))
+        (let ((box (elt (send msg :boxes) 0)))
+          (let ((coords (ros::tf-pose->coords (send box :pose))))
+            (let ((from-body-coords (send trans :transform coords)))
+              (let ((fc-msg (instance drc_com_common::FC2OCSSmall :init)))
+                (send fc-msg :type drc_com_common::FC2OCSSmall::*DOOR_POSE*)
+                (send fc-msg :params (box-to-float-vector
+                                      coords (ros::tf-point->pos (send box :dimensions))
+                                      (length (send fc-msg :params))))
+                (send self :send-to-ocs fc-msg)
+                (setq state :initial))))))))
   (:valve-recog-callback (msg)
     (when (eq state :recognizing-valve-pose)
       (let ((trans (send *tf* :lookup-transform "BODY" 
@@ -218,6 +267,8 @@
 (ros::advertise "/go_pos_recognition/input_rect" geometry_msgs::PolygonStamped)
 (ros::advertise "/look_at_recognition/input_rect" geometry_msgs::PolygonStamped)
 (ros::advertise "/valve_recognition/input_rect" geometry_msgs::PolygonStamped)
+(ros::advertise "/door_recognition/input_support_plane_rect" geometry_msgs::PolygonStamped)
+(ros::advertise "/door_recognition/input_target_rect" geometry_msgs::PolygonStamped)
 (ros::advertise "/fc_to_ocs_low_speed/input" drc_com_common::FC2OCSSmall)
 (ros::subscribe "/fc_from_ocs_low_speed/output" drc_com_common::OCS2FCSmall
   #'send (send *app* :ocs2fc-message-handler) :root-callback)
@@ -227,6 +278,8 @@
   #'send *app* :look-at-recog-callback)
 (ros::subscribe "/valve_recognition/snapshot/output" jsk_recognition_msgs::Torus
   #'send *app* :valve-recog-callback)
+(ros::subscribe "/door_recognition/snapshot/output" jsk_recognition_msgs::BoundingBoxArray
+  #'send *app* :door-recog-callback)
 (ros::advertise "/go_pos_goal" geometry_msgs::PoseStamped)
 (ros::rate 10)
 (ros::spin)

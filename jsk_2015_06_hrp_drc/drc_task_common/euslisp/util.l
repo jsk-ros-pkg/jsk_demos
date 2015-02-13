@@ -40,6 +40,27 @@
                     (make-list (- length 4) :initial-element 0))
             integer-vector)))
 
+(defun double-rect-polygon-stamped-to-integer-vector (msg0 msg1 length)
+  (let ((point-a (list (send (elt (send msg0 :polygon :points) 0) :x)
+                       (send (elt (send msg0 :polygon :points) 0) :y)))
+        (point-b (list (send (elt (send msg0 :polygon :points) 1) :x)
+                       (send (elt (send msg0 :polygon :points) 1) :y)))
+        (point-c (list (send (elt (send msg1 :polygon :points) 0) :x)
+                       (send (elt (send msg1 :polygon :points) 0) :y)))
+        (point-d (list (send (elt (send msg1 :polygon :points) 1) :x)
+                       (send (elt (send msg1 :polygon :points) 1) :y))))
+    (coerce (append (list (floor (elt point-a 0))
+                          (floor (elt point-a 1))
+                          (floor (elt point-b 0))
+                          (floor (elt point-b 1))
+                          (floor (elt point-c 0))
+                          (floor (elt point-c 1))
+                          (floor (elt point-d 0))
+                          (floor (elt point-d 1)))
+                    (make-list (- length 4) :initial-element 0))
+            integer-vector)))
+
+
 (defun integer-vector-to-rect-polygon-stamped (msg)
   (let ((x1 (elt (send msg :image_roi_info) 0))
         (y1 (elt (send msg :image_roi_info) 1))
@@ -56,6 +77,36 @@
         (send ret :polygon :points (list p1 p2))
         ret))))
 
+(defun integer-vector-to-double-rect-polygon-stamped (msg)
+  (let ((x1 (elt (send msg :image_roi_info) 0))
+        (y1 (elt (send msg :image_roi_info) 1))
+        (x2 (elt (send msg :image_roi_info) 2))
+        (y2 (elt (send msg :image_roi_info) 3))
+        (x3 (elt (send msg :image_roi_info) 4))
+        (y3 (elt (send msg :image_roi_info) 5))
+        (x4 (elt (send msg :image_roi_info) 6))
+        (y4 (elt (send msg :image_roi_info) 7)))
+    (let ((fore (instance geometry_msgs::PolygonStamped :init))
+          (back (instance geometry_msgs::PolygonStamped :init))
+          (now (ros::time-now)))
+      (send fore :header :stamp now)
+      (send back :header :stamp now)
+      (let ((p1 (instance geometry_msgs::Point32 :init))
+            (p2 (instance geometry_msgs::Point32 :init))
+            (p3 (instance geometry_msgs::Point32 :init))
+            (p4 (instance geometry_msgs::Point32 :init)))
+        (send p1 :x x1)
+        (send p1 :y y1)
+        (send p2 :x x2)
+        (send p2 :y y2)
+        (send p3 :x x3)
+        (send p3 :y y3)
+        (send p4 :x x4)
+        (send p4 :y y4)
+        (send fore :polygon :points (list p1 p2))
+        (send back :polygon :points (list p3 p4))
+        (list fore back)))))
+
 ;; It's a circle actually
 (defun torus-to-float-vector (coords radius length)
   (let ((ret (coords-to-float-vector coords length))) ;6 parameters are filled
@@ -66,6 +117,23 @@
   (let ((coords (float-vector-to-coords params))
         (radius (elt params 6)))
     (list coords radius)))
+
+(defun box-to-float-vector (coords dimensions length)
+  "dimensions := geometry_msgs/Vector3"
+  (let ((ret (coords-to-float-vector coords length)))
+    (setf (elt ret 6) (elt dimensions 0))
+    (setf (elt ret 7) (elt dimensions 1))
+    (setf (elt ret 8) (elt dimensions 2))
+    ret))
+
+(defun float-vector-to-box (params)
+  "returns (coords #f(width height depth))"
+  (let ((coords (float-vector-to-coords params))
+        (size (float-vector (elt params 6)
+                            (elt params 7)
+                            (elt params 8))))
+    (list coords size)))
+
 
 ;; message handler
 (defclass narrowband-message-handler
@@ -99,3 +167,18 @@
       (send* self :register-callback spec)))
   )
 
+;; class to synchronize foreground rect topic and
+;; background rect topic
+(defclass foreground-background-synchronizer
+  :super exact-time-message-filter
+  :slots (deligate callback))
+
+(defmethod foreground-background-synchronizer
+  (:init (topics deligate-object callback-method)
+    (setq deligate deligate-object)
+    (setq callback callback-method)
+    (send-super :init topics)
+    )
+  (:callback (foreground background)
+    (send deligate callback foreground background)
+    ))

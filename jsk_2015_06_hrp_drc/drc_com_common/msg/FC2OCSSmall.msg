@@ -15,6 +15,9 @@ uint8 LOOK_AT_FINISHED=4
 # valve
 uint8 VALVE_POSE=5
 uint8 VALVE_FINISHED=6
+# door
+uint8 DOOR_POSE=7
+uint8 DOOR_FINISHED=8
 
 # when type==GO_POS_POSE, 
 # params = [x, y, z, yaw, pitch, roll]
