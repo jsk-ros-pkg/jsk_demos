@@ -13,9 +13,9 @@
 # - svn:
 #     uri: https://svn.code.sf.net/p/tum-ros-pkg/code/perception/
 #     local-name: tum-ros-pkg/perception
-# - git:
-#     uri: https://github.com/code-iai/SnapMapICP.git
-#     local-name: tum-ros-pkg/highlevel/SnapMapICP
+- git:
+    uri: https://github.com/code-iai/snap_map_icp.git
+    local-name: snap_map_icp
 - git:
     uri: https://github.com/knowrob/knowrob.git
     local-name: knowrob
