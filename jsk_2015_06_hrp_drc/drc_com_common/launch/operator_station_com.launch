@@ -10,7 +10,7 @@
         name="highspeed_receiver">
     <rosparam>
       message: drc_com_common/FC2OCSLarge
-      topic_prefix: "/fc"
+      topic_prefix: "/ocs"
       receive_ip: "0.0.0.0"
     </rosparam>
   </node>
@@ -32,5 +32,4 @@
       to_ip: $(arg FC_IP)
     </rosparam>
   </node>
-
 </launch>
