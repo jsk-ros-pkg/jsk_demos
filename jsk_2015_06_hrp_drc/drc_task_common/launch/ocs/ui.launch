@@ -1,6 +1,8 @@
 <launch>
   <!-- REQUIRED: INPUT_IMAGE input image topic -->
   <arg name="INPUT_IMAGE" />
+  <arg name="INPUT_IMAGE_WIDTH_SCALE" />
+  <arg name="INPUT_IMAGE_HEIGHT_SCALE" />
   <node pkg="rqt_gui" type="rqt_gui" name="rqt_image_view_button"
         args="--perspective-file $(find jsk_rqt_plugins)/resource/rqt_image_view2_button.perspective">
     <remap from="event" to="rqt_image_view2_engine/event" />
@@ -16,7 +18,58 @@
     <remap from="image" to="$(arg INPUT_IMAGE)" />
     <param name="use_window" value="false" />
   </node>
-
+  
+  
+  <group ns="interaction_scale">
+    <!--
+    we need to scale interaction from image_view2
+      1. screenractangle
+      2. foreground
+      3. background
+      4. line
+    -->
+    <!-- 1. screenractangle -->
+    <node pkg="image_view2" type="scale_interaction.py" name="scale_screenractangle">
+      <remap from="~input" to="$(arg INPUT_IMAGE)/screenrectangle" />
+      <remap from="~output" to="$(arg INPUT_IMAGE)/screenrectangle/scaled" />
+      <remap from="~input/width_scale" to="$(arg INPUT_IMAGE_WIDTH_SCALE)" />
+      <remap from="~input/height_scale" to="$(arg INPUT_IMAGE_HEIGHT_SCALE)" />
+      <rosparam>
+        inverse: true
+      </rosparam>
+    </node>
+    <!-- 2. foreground -->
+    <node pkg="image_view2" type="scale_interaction.py" name="scale_foreground">
+      <remap from="~input" to="$(arg INPUT_IMAGE)/foreground_rect" />
+      <remap from="~output" to="$(arg INPUT_IMAGE)/foreground_rect/scaled" />
+      <remap from="~input/width_scale" to="$(arg INPUT_IMAGE_WIDTH_SCALE)" />
+      <remap from="~input/height_scale" to="$(arg INPUT_IMAGE_HEIGHT_SCALE)" />
+      <rosparam>
+        inverse: true
+      </rosparam>
+    </node>
+    <!-- 3. background -->
+    <node pkg="image_view2" type="scale_interaction.py" name="scale_background">
+      <remap from="~input" to="$(arg INPUT_IMAGE)/background_rect" />
+      <remap from="~output" to="$(arg INPUT_IMAGE)/background_rect/scaled" />
+      <remap from="~input/width_scale" to="$(arg INPUT_IMAGE_WIDTH_SCALE)" />
+      <remap from="~input/height_scale" to="$(arg INPUT_IMAGE_HEIGHT_SCALE)" />
+      <rosparam>
+        inverse: true
+      </rosparam>
+    </node>
+    <!-- 4. line -->
+    <node pkg="image_view2" type="scale_interaction.py" name="scale_line">
+      <remap from="~input" to="$(arg INPUT_IMAGE)/line" />
+      <remap from="~output" to="$(arg INPUT_IMAGE)/line/scaled" />
+      <remap from="~input/width_scale" to="$(arg INPUT_IMAGE_WIDTH_SCALE)" />
+      <remap from="~input/height_scale" to="$(arg INPUT_IMAGE_HEIGHT_SCALE)" />
+      <rosparam>
+        inverse: true
+      </rosparam>
+    </node>
+  </group>
+  
   <!-- visualize state -->
   <node pkg="image_view" type="image_view" name="state_viewer">
     <remap from="image" to="state_image"/>

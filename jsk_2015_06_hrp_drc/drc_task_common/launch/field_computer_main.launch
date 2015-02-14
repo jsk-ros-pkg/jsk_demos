@@ -2,6 +2,9 @@
   <!--
       This is a launch file for Main PC of Field Computer (FC)
   -->
+  
+  <arg name="FC_IP" default="localhost" />
+  <arg name="OCS_IP" default="localhost" />
 
   <arg name="USE_COM" default="true" />
   <node pkg="drc_task_common" type="fc-executive.l" name="fc_executive" output="screen">
@@ -34,15 +37,18 @@
     </include>
   </group>
   <!-- communication -->
-  <include if="$(arg USE_COM)"
-           file="$(find drc_com_common)/launch/field_computer_com.launch" />
+  <include file="$(find drc_com_common)/launch/field_computer_com.launch" 
+           if="$(arg USE_COM)">
+    <arg name="FC_IP" value="$(arg FC_IP)" />
+    <arg name="OCS_IP" value="$(arg OCS_IP)" />
+  </include>
   <group if="false">
-<group if="false">
-  <!-- object detection -->
-  <include file="$(find drc_task_common)/launch/object_detect.launch" />
+    <group if="false">
+      <!-- object detection -->
+      <include file="$(find drc_task_common)/launch/object_detect.launch" />
 
-  <!-- remote server -->
-  <include file="$(find drc_task_common)/launch/remote_server.launch" />
-  </group>
+      <!-- remote server -->
+      <include file="$(find drc_task_common)/launch/remote_server.launch" />
+    </group>
   </group>
 </launch>
