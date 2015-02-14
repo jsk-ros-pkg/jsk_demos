@@ -2,7 +2,9 @@
   <!--
       This is a launch file for Main PC of Operator Control Station (OCS)
   -->
-
+  <arg name="FC_IP" default="localhost" />
+  <arg name="OCS_IP" default="localhost" />
+  
   <arg name="USE_COM" default="true" />
   
   <arg name="default_frame_id" default="odom_on_ground" />
@@ -26,7 +28,10 @@
 
   <!-- communication -->
   <include if="$(arg USE_COM)"
-           file="$(find drc_com_common)/launch/operator_station_com.launch" />
+           file="$(find drc_com_common)/launch/operator_station_com.launch">
+    <arg name="FC_IP" value="$(arg FC_IP)" />
+    <arg name="OCS_IP" value="$(arg OCS_IP)" />
+  </include>
   <group if="$(arg USE_RVIZ_UI)">
     <!-- robot motion -->
     <include file="$(find drc_task_common)/launch/robot_motion.launch" >
