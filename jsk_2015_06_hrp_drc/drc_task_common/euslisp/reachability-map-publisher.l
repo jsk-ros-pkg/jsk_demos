@@ -59,7 +59,7 @@
 
 (defun load-rv-map
   ()
-  (load "package://euslib/demo/otsubo/hrp2/DRC/log-rv-map.l"))
+  (load "package://drc_task_common/euslisp/log-rv-map.l"))
 
 
 
