@@ -8,10 +8,13 @@
 (ros::roseus-add-msgs "drc_com_common")
 (ros::roseus-add-msgs "jsk_recognition_msgs")
 (ros::roseus-add-msgs "jsk_interactive_marker")
+(ros::roseus-add-msgs "jsk_rviz_plugins")
+(ros::roseus-add-srvs "jsk_rviz_plugins")
 (ros::load-ros-manifest "drc_task_common")
 (load "package://drc_task_common/euslisp/util.l")
 (load "package://drc_task_common/euslisp/state-machine.l")
 (load "package://drc_task_common/euslisp/generate-valve-motion.l")
+(load "package://drc_task_common/euslisp/primitive-marker-util.l")
 ;; state
 ;;  :initial -> ...
 ;;  :go-pos-region-select -> :wait-for-exec-or-cancel [rectangle-callback]
@@ -28,6 +31,8 @@
   (:init ()
     ;;(setq state :initial)
     (setq fc2ocs-message-handler (instance narrowband-message-handler :init))
+    (send fc2ocs-message-handler :register-always-callback self 
+          :compressed-joint-angle-callback)
     (send fc2ocs-message-handler :register-callbacks
           (list drc_com_common::FC2OCSSmall::*GO_POS_POSE*
                 self :go-pos-pose-result-callback)
@@ -53,6 +58,11 @@
     (send smachine :register-initial-hook self :initial-callback)
     (send smachine :go-to :initial)     ;force to move to initial state
     self)
+  (:compressed-joint-angle-callback (msg)
+    "msg is FC2OCSSmall.msg"
+    (let ((pubmsg (instance drc_com_common::HumanoidJointAngles :init)))
+      (send pubmsg :angles (send msg :angles))
+      (ros::publish "/ocs/joint_states_compressed" pubmsg)))
   (:subscribe-foreground-backggrond-topics (topics)
     (setq foreground-bacground-sync-obj
           (instance foreground-background-synchronizer :init
@@ -195,6 +205,8 @@
       (send smachine :go-to :initial))
      ((eq (send smachine :state) :selecting-exec-for-door)
       (send smachine :go-to :initial))
+     ((eq (send smachine :state) :selecting-exec-for-valve)
+      (send smachine :go-to :initial))
      ((eq (send smachine :state) :selecting-exec-for-debri)
       (send smachine :go-to :initial))
      )
@@ -320,14 +332,17 @@
       (let ((params (send msg :params)))
         (multiple-value-bind
          (coords radius) (float-vector-to-torus params)
-         (print 11111111111111111111111111111111)
-         (print params)
          (send self :show-text-on-image 
               (format nil "valve ~A ~A ~f" 
                       (send coords :worldpos)
                       (reverse (car (send coords :rpy-angle)))
                       radius))
-         ;; TODO: publish torus pose
+         ;; publish torus pose
+         (erase-all-primitive-marker)
+         (insert-primitive-marker :shape-type jsk_rviz_plugins::TransformableMarkerOperate::*TORUS* :name "torus1" :description "")
+         (set-primitive-marker-dimensions :radius (* 0.001 radius) :small-radius (* 0.1 (* 0.001 radius)))
+         (set-primitive-marker-pose coords "BODY")
+         (set-primitive-marker-color :r 1.0 :g 1.0 :b 0.0 :a 0.6)
          ;; store result
          (setq valve-params (list coords radius))
          ;; publish valve-motion to rviz
@@ -363,6 +378,8 @@
 
 (ros::advertise "/ocs_to_fc_low_speed/input" drc_com_common::OCS2FCSmall)
 (ros::advertise "/jsk_model_marker_interface/hrp2/reset_joint_states_and_root" sensor_msgs::JointState 1)
+(ros::advertise "/ocs/joint_states_compressed" drc_com_common::HumanoidJointAngles)
+(ros::advertise "/transformable_interactive_server/set_color" std_msgs::ColorRGBA)
 
 ;; registering services for button UIs
 (ros::advertise-service "go_pos" std_srvs::Empty #'send *app* :go-pos-button-callback)

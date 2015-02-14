@@ -37,9 +37,10 @@
 ;;(warning-message 2 "(set-valve-environment)~%")
 
 (defun set-valve-environment-for-fc
-  (&key (valve-r 200)
-        (valve-coords (make-coords :pos #f(500 0 1200) :rpy (list 0 pi/2 0)))
-        (draw? nil))
+  (valve-r
+   valve-coords
+   &key
+   (draw? nil))
   (let* (valve-worldcoords)
     ;; place robot and valve to initial coords
     (set-valve-environment :valve-r valve-r :draw? draw?)
@@ -192,18 +193,16 @@
 ;;(warning-message 2 "(get-valve-motion)~%")
 
 (defun get-valve-motion-for-fc
-  (&key (valve-r 200)
-        (valve-coords (make-coords :pos #f(500 0 1200) :rpy (list 0 pi/2 0))))
-  (set-valve-environment-for-fc :valve-r valve-r :valve-coords valve-coords :draw? nil)
+  (valve-r valve-coords)
+  (set-valve-environment-for-fc valve-r valve-coords :draw? nil)
   (generate-valve-motion :draw? nil)
   (get-valve-motion)
   )
 ;;(warning-message 2 "(get-valve-motion-for-fc)~%")
 
 (defun get-valve-motion-for-ocs
-  (&key (valve-r 200)
-        (valve-coords (make-coords :pos #f(500 0 1200) :rpy (list 0 pi/2 0))))
-  (set-valve-environment-for-fc :valve-r valve-r :valve-coords valve-coords :draw? nil)
+  (valve-r valve-coords)
+  (set-valve-environment-for-fc valve-r valve-coords :draw? nil)
   (generate-valve-motion :draw? nil)
   (get-valve-motion)
   )
@@ -212,7 +211,7 @@
 (defun send-valve-motion
   (radius coords &key (real? t))
   (let* ((rotate-num 3)
-         (valve-motion-av-list (get-valve-motion-for-fc :valve-r radius :valve-coords coords))
+         (valve-motion-av-list (get-valve-motion-for-fc radius coords))
          (valve-motion-length (length valve-motion-av-list)))
     (when (not (= valve-motion-length 0))
       ;; first reaching
@@ -254,7 +253,7 @@
 (defun publish-valve-motion
   (&key radius coords (step-time 400) (update? nil))
   (when update?
-    (get-valve-motion-for-ocs :valve-r radius :valve-coords coords))
+    (get-valve-motion-for-ocs radius coords))
   (dolist (av *valve-motion*)
     (publish-model-joint-states :av av)
     (unix::usleep (* step-time 1000))

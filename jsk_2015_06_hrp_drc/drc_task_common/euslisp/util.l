@@ -149,13 +149,18 @@
 ;; message handler
 (defclass narrowband-message-handler
   :super propertied-object
-  :slots (deligate-map))
+  :slots (deligate-map always-deligate-object always-deligate-method))
 
 (defmethod narrowband-message-handler
   (:init ()
     (setq deligate-map nil)
     self)
+  (:register-always-callback (obj method)
+    (setq always-deligate-object obj)
+    (setq always-deligate-method method))
   (:root-callback (msg)
+    (if (and always-deligate-object always-deligate-method)
+        (send always-deligate-object always-deligate-method msg))
     (let ((type (send msg :type)))
       (print (assoc type deligate-map))
       (if (assoc type deligate-map)
