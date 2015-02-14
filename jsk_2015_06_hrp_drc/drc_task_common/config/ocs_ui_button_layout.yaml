@@ -25,5 +25,5 @@
   column: 2
 - name: 'show_motion'
   service: '/publish_motion_joint_states'
-  image: "package://drc_task_common/icons/cancel.png"
+  image: "package://drc_task_common/icons/refresh.png"
   column: 2
