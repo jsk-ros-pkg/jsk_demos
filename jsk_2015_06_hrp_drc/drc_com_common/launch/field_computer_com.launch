@@ -33,4 +33,13 @@
     </rosparam>
   </node>
   <include file="$(find drc_com_common)/launch/fc_relay.launch" />
+  
+  <!-- joint angles -->
+  <node pkg="jsk_network_tools" type="joint-state-compressor.l" 
+        name="joint_state_compressor">
+    <rosparam>
+      message_type: drc_com_common/HumanoidJointAngles
+      robot: hrp2jsknts
+    </rosparam>
+  </node>
 </launch>

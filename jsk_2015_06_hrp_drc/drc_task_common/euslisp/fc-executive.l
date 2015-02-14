@@ -302,7 +302,11 @@
                           (send self :send-to-ocs msg)
                           (setq state :initial)
                           ))))))))))))
+  (:joint-states-compressed-callback (msg)
+    (setq latest-joint-angles (send msg :angles)))
   (:send-to-ocs (msg)
+    (if latest-joint-angles
+        (send msg :angles latest-joint-angles))
     (ros::publish "/fc_to_ocs_low_speed/input" msg))
   )
 
@@ -334,6 +338,8 @@
   #'send *app* :door-recog-callback)
 (ros::subscribe "/debri_recognition/snapshot/output" pcl_msgs::ModelCoefficients
   #'send *app* :debri-recog-callback)
+(ros::subscribe "/joint_states_compressed" drc_com_common::HumanoidJointAngles
+  #'send *app* :joint-states-compressed-callback)
 (ros::advertise "/go_pos_goal" geometry_msgs::PoseStamped)
 (ros::rate 10)
 (ros::spin)

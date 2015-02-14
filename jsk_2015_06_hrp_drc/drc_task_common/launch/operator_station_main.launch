@@ -25,7 +25,17 @@
 
   <node pkg="drc_task_common" type="ocs-executive.l" name="ocs_executive" output="screen">
   </node>
-
+  
+  <!-- tf -->
+  <group ns="ocs">
+    <arg name="CALIB_FILE" value="hrp2017_multisense_calib_20150208.yaml" />
+    <param name="robot_description" command="$(find euscollada)/scripts/urdf_patch.py patch $(find hrpsys_ros_bridge_tutorials)/models/HRP2JSKNTS_WH_SENSORS.urdf $(find jsk_hrp2_ros_bridge)/calib_data/$(arg CALIB_FILE)" />
+    <node pkg="robot_state_publisher" type="robot_state_publisher" name="ocs_robot_state_publisher">
+      <remap from="/joint_states" to="/ocs/joint_states" />
+      <remap from="/tf" to="/ocs/tf"/>
+      <remap from="/robot_description" to="/ocs/robot_description" />
+    </node>
+  </group>
   <!-- communication -->
   <include if="$(arg USE_COM)"
            file="$(find drc_com_common)/launch/operator_station_com.launch">
