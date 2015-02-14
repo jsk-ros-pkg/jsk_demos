@@ -1,4 +1,5 @@
 (load "package://hrpsys_ros_bridge_tutorials/euslisp/hrp2jsknts-interface.l")
+(load "package://drc_task_common/euslisp/robot-util.l")
 
 (defun set-valve-environment
   (&key (valve-r 200)
@@ -21,7 +22,7 @@
   ;; atattch handle to valve
   (send *valve* :put :grasp-coords
         (make-cascoords
-         :coords (make-coords :pos (float-vector valve-r 0 0) :rpy (list 0 0 pi/2))
+         :coords (make-coords :pos (float-vector valve-r 0 0) :rpy (list pi/2 -pi/2 0))
          :parent *valve*))
   ;; place valve to valve-coords
   (send *valve* :newcoords valve-coords)
@@ -41,10 +42,11 @@
         (draw? nil))
   (let* (valve-worldcoords)
     ;; place robot and valve to initial coords
+    (set-valve-environment :valve-r valve-r :draw? draw?)
     (send *robot* :angle-vector (send *ri* :state :potentio-vector))
     (send *robot* :fix-leg-to-coords (make-coords) '(:lleg :rleg))
-    (setq valve-worldcoords (send (send (send *robot* :body_lk) :copy-worldcoords) :transform valve-coords :local))
-    (set-valve-environment :valve-r valve-r :valve-coords valve-worldcoords :draw? draw?)
+    (send *valve* :newcoords (send (send (send *robot* :body_lk) :copy-worldcoords) :transform valve-coords :local))
+    (when draw? (send *irtviewer* :draw-objects))
     ))
 
 (defun reset-valve-angle
@@ -68,7 +70,7 @@
   (reset-valve-angle)
   ;; loop
   (let* ((devide-num 10)
-         (reach-dist 70)
+         (reach-dist 100)
          (ik-results nil)
          (ik-list nil)
          (original-foot-midcoords (send (send *robot* :foot-midcoords) :copy-worldcoords)))
@@ -77,10 +79,9 @@
       (send *robot* :reset-manip-pose)
       (send *robot* :fix-leg-to-coords original-foot-midcoords)
       ;; solve ik
-      (let* ((ik-ret nil)
-             (ik-ret-reach nil)
-             (tc nil)
-             )
+      (let* (ik-ret-in
+             ik-ret-out
+             (tc nil))
         ;; check valve handle
         (when draw? (send (send *valve* :get :grasp-coords) :draw-on :flush t))
         (setq tc
@@ -90,7 +91,7 @@
                (send *robot* :lleg :end-coords :copy-worldcoords)))
         (with-move-target-link-list
          (mt ll *robot* '(:rarm :rleg :lleg))
-         (setq ik-ret 
+         (setq ik-ret-in
                (send *robot*
                      :fullbody-inverse-kinematics tc
                      ;;:look-at-target t    
@@ -104,42 +105,42 @@
                      ;;translation-axis can reduced translation constraint                                                              
                      :translation-axis (list t t t)
                      ;; rotation-axis can reduce rotation constraint                                                                    
-                     :rotation-axis (list :z t t)
+                     :rotation-axis (list t t t)
+                     ;;:rotation-axis (list :z t t)
                      :stop 50
                      :debug-view nil
                      )))
         ;; check reaching point
         (setq tc
               (list
-               (send (send (send *valve* :get :grasp-coords) :copy-worldcoords) :translate (float-vector reach-dist 0 0) :local)
+               (send (send (send *valve* :get :grasp-coords) :copy-worldcoords) :translate (float-vector (- reach-dist) (- reach-dist) 0) :local)
                (send *robot* :rleg :end-coords :copy-worldcoords)
                (send *robot* :lleg :end-coords :copy-worldcoords)))
-        (setq
-         ik-ret-reach
-         (and ik-ret
-              (with-move-target-link-list
-               (mt ll *robot* '(:rarm :rleg :lleg))
-               (setq ik-ret 
-                     (send *robot*
-                           :fullbody-inverse-kinematics tc
-                           ;;:look-at-target t    
-                           :move-target mt :link-list ll
-                           :additional-weight-list
-                           (list (list (send *robot* :rleg :toe-p :child-link) 0)
-                                 (list (send *robot* :lleg :toe-p :child-link) 0))
-                           :root-link-virtual-joint-weight #f(0.1 0.1 0.1 0.1 0.5 0.5)
-                           :target-centroid-pos (apply #'midpoint 0.5 (send *robot* :legs :end-coords :worldpos))
-                           ;;:centroid-offset-func #'(lambda () (send *robot* :calc-static-balance-point (list #f(0 0 0) #f(0 0 0)))) 
-                           ;;translation-axis can reduced translation constraint                                                              
-                           :translation-axis (list t t t)
-                           ;; rotation-axis can reduce rotation constraint                                                                    
-                           :rotation-axis (list :z t t)
-                           :stop 50
-                           :debug-view nil
-                           )))))
+        (when ik-ret-in
+          (with-move-target-link-list
+           (mt ll *robot* '(:rarm :rleg :lleg))
+           (setq ik-ret-out
+                 (send *robot*
+                       :fullbody-inverse-kinematics tc
+                       ;;:look-at-target t    
+                       :move-target mt :link-list ll
+                       :additional-weight-list
+                       (list (list (send *robot* :rleg :toe-p :child-link) 0)
+                             (list (send *robot* :lleg :toe-p :child-link) 0))
+                       :root-link-virtual-joint-weight #f(0.1 0.1 0.1 0.1 0.5 0.5)
+                       :target-centroid-pos (apply #'midpoint 0.5 (send *robot* :legs :end-coords :worldpos))
+                       ;;:centroid-offset-func #'(lambda () (send *robot* :calc-static-balance-point (list #f(0 0 0) #f(0 0 0)))) 
+                       ;;translation-axis can reduced translation constraint                                                              
+                       :translation-axis (list t t t)
+                       ;; rotation-axis can reduce rotation constraint                                                                    
+                       :rotation-axis (list t t t)
+                       ;;:rotation-axis (list :z t t)
+                       :stop 50
+                       :debug-view nil
+                       ))))
         ;; draw
         (when draw? (send *irtviewer* :draw-objects :flush t))
-        (push (list i (not (null ik-ret)) ik-ret ik-ret-reach) ik-results)
+        (push (list i (not (null (and ik-ret-in ik-ret-out))) ik-ret-in ik-ret-out) ik-results)
         )
       (setq *valve-ik-results* (reverse ik-results))
       ;; rotate valve
@@ -185,6 +186,7 @@
       (setq rotable-point-idx (mod (+ rotable-point-idx 1) (length *valve-rotable-success-num*)))
       )
     (setq angle-vector-ret (append (reverse angle-vector-ret) angle-vector-ret-reach))
+    (setq *valve-motion* angle-vector-ret)
     angle-vector-ret
     ))
 ;;(warning-message 2 "(get-valve-motion)~%")
@@ -198,10 +200,14 @@
   )
 ;;(warning-message 2 "(get-valve-motion-for-fc)~%")
 
-(defun publish-valve-motion-joint-states
-  (radius coords)
-  
+(defun get-valve-motion-for-ocs
+  (&key (valve-r 200)
+        (valve-coords (make-coords :pos #f(500 0 1200) :rpy (list 0 pi/2 0))))
+  (set-valve-environment-for-fc :valve-r valve-r :valve-coords valve-coords :draw? nil)
+  (generate-valve-motion :draw? nil)
+  (get-valve-motion)
   )
+;;(warning-message 2 "(get-valve-motion-for-ocs)~%")
 
 (defun send-valve-motion
   (radius coords &key (real? t))
@@ -211,36 +217,48 @@
     (when (not (= valve-motion-length 0))
       ;; first reaching
       (send *robot* :hand :arms :hook-pose) ;; hand hook-pose
-      (hand-model2real)
+      (when real? (hand-model2real))
       (send *robot* :reset-manip-pose)
-      (model2real :time 3000)
-      (send *ri* :start-impedance :arms :moment-gain #f(0 0 0) :k-p 1000 :d-p 400) ;; start imp
+      (when real? (model2real :time 3000))
+      (when real? (send *ri* :start-impedance :arms :moment-gain #f(0 0 0) :k-p 1000 :d-p 400)) ;; start imp)
       (send *robot* :angle-vector (car (last valve-motion-av-list)))
-      (model2real :time 3000)
+      (when real? (model2real :time 5000))
       (dotimes (i rotate-num)
         ;; grasp
         (send *robot* :angle-vector (car valve-motion-av-list))
-        (model2real :time 3000)
+        (when real? (model2real :time 3000))
         (send *robot* :hand :arms :grasp-pose) ;; hand grasp-pose
-        (hand-model2real)
+        (when real? (hand-model2real))
         ;; rotate
-        (send *ri* :angle-vector-sequence (subseq valve-motion-av-list 0 (/ valve-motion-length 2)) (make-list (/ valve-motion-length 2) :initial-element 2000))
+        (when real?
+          (send *ri* :angle-vector-sequence (subseq valve-motion-av-list 0 (/ valve-motion-length 2)) (make-list (/ valve-motion-length 2) :initial-element 2000))
+          (send *ri* :wait-interpolation))
         ;; relese
         (send *robot* :hand :arms :hook-pose) ;; hand hook-pose
-        (hand-model2real)
+        (when real? (hand-model2real))
         (send *robot* :angle-vector (car (subseq valve-motion-av-list (/ valve-motion-length 2))))
-        (model2real :time 3000)
+        (when real? (model2real :time 3000))
         (cond ((= i (1- rotate-num))
                ;; last releasing
                (send *robot* :reset-manip-pose)
-               (model2real :time 3000))
+               (when real? (model2real :time 5000)))
               (t
                ;; reverse
-               (send *ri* :angle-vector-sequence (subseq valve-motion-av-list (/ valve-motion-length 2)) (make-list (/ valve-motion-length 2) :initial-element 2000))
+               (when real?
+                 (send *ri* :angle-vector-sequence (subseq valve-motion-av-list (/ valve-motion-length 2)) (make-list (/ valve-motion-length 2) :initial-element 2000))
+                 (send *ri* :wait-interpolation))
                ))
         )))
   )
 
+(defun publish-valve-motion
+  (&key radius coords (step-time 400) (update? nil))
+  (when update?
+    (get-valve-motion-for-ocs :valve-r radius :valve-coords coords))
+  (dolist (av *valve-motion*)
+    (publish-model-joint-states :av av)
+    (unix::usleep (* step-time 1000))
+    ))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; source code above here is used in ocs/fc--executive.l ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

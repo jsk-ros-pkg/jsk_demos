@@ -6,7 +6,7 @@
   <arg name="FC_TO_OCS_PORT" default="11701"/>
 
   <node pkg="jsk_network_tools" type="silverhammer_highspeed_receiver.py"
-        output="screen"
+        output="log"
         name="highspeed_receiver">
     <rosparam>
       message: drc_com_common/FC2OCSLarge

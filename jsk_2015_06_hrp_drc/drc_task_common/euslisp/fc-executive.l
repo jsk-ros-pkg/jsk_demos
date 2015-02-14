@@ -112,7 +112,6 @@
       (multiple-value-bind 
        (coords radius) (float-vector-to-torus (send msg :float_params))
        (setq state :executing-valve)
-       (ros::ros-info "rotating valve at ~A~%" (send msg :float_params))
        (ros::ros-info "rotating valve at ~A,~A,~A~%"
          (send coords :worldpos)
          (car (send coords :rpy-angle))

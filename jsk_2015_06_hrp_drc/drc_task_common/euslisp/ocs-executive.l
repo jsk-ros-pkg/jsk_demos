@@ -11,6 +11,7 @@
 (ros::load-ros-manifest "drc_task_common")
 (load "package://drc_task_common/euslisp/util.l")
 (load "package://drc_task_common/euslisp/state-machine.l")
+(load "package://drc_task_common/euslisp/generate-valve-motion.l")
 ;; state
 ;;  :initial -> ...
 ;;  :go-pos-region-select -> :wait-for-exec-or-cancel [rectangle-callback]
@@ -319,6 +320,8 @@
       (let ((params (send msg :params)))
         (multiple-value-bind
          (coords radius) (float-vector-to-torus params)
+         (print 11111111111111111111111111111111)
+         (print params)
          (send self :show-text-on-image 
               (format nil "valve ~A ~A ~f" 
                       (send coords :worldpos)
@@ -326,9 +329,10 @@
                       radius))
          ;; TODO: publish torus pose
          ;; store result
-         (setq valve-params (list coords radius))))
-      ;; publish valve-motion to rviz
-      (appy #'publish-valve-motion-joint-states valve-params)
+         (setq valve-params (list coords radius))
+         ;; publish valve-motion to rviz
+         (publish-valve-motion :radius radius :coords coords :update? t)
+         ))
       (send smachine :go-to :selecting-exec-for-valve)))
   (:look-at-finished-callback (msg)
     (when (eq (send smachine :state) :executing-look-at)
@@ -344,6 +348,12 @@
       (send smachine :go-to :executing-go-pos))
     (send req :response)
     )
+  (:publish-motion-joint-states-cb (req)
+    (cond ((eq (send smachine :state) :selecting-exec-for-valve)
+           (publish-valve-motion)
+           ))
+    (send req :response)
+    )
   )
 
 
@@ -352,6 +362,8 @@
 (setq *app* (instance ocs-executive-app :init))
 
 (ros::advertise "/ocs_to_fc_low_speed/input" drc_com_common::OCS2FCSmall)
+(ros::advertise "/jsk_model_marker_interface/hrp2/reset_joint_states_and_root" sensor_msgs::JointState 1)
+
 ;; registering services for button UIs
 (ros::advertise-service "go_pos" std_srvs::Empty #'send *app* :go-pos-button-callback)
 (ros::advertise-service "valve" std_srvs::Empty #'send *app* :valve-button-callback)
@@ -361,6 +373,7 @@
 (ros::advertise-service "exec" std_srvs::Empty #'send *app* :exec-button-callback)
 (ros::advertise-service "cancel" std_srvs::Empty #'send *app* :cancel-button-callback)
 (ros::advertise-service "go_pos_command_from_rviz_interface" drc_task_common::GoPosCommand #'send *app* :go-pos-command-from-rviz-interface)
+(ros::advertise-service "publish_motion_joint_states" std_srvs::Empty #'send *app* :publish-motion-joint-states-cb)
 
 ;; subscribing image_view2 ROI stuff
 (ros::subscribe "/ocs/communication/image_rect_color/screenrectangle/scaled" geometry_msgs::PolygonStamped
