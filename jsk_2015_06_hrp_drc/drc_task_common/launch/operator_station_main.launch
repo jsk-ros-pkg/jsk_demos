@@ -2,11 +2,15 @@
   <!--
       This is a launch file for Main PC of Operator Control Station (OCS)
   -->
-
+  <arg name="FC_IP" default="localhost" />
+  <arg name="OCS_IP" default="localhost" />
+  
   <arg name="USE_COM" default="true" />
-
+  
   <arg name="default_frame_id" default="odom_on_ground" />
-  <arg name="INPUT_IMAGE" value="/multisense/left/image_rect_color"/>
+  <arg name="INPUT_IMAGE" value="/ocs/communication/image_rect_color" />
+  <arg name="INPUT_IMAGE_WIDTH_SCALE" value="/ocs/communication/image_width_scale" />
+  <arg name="INPUT_IMAGE_HEIGHT_SCALE" value="/ocs/communication/image_height_scale" />
   <arg name="robot_name" default="hrp2jsknts" />
   <arg name="ROBOT_URDF_MODEL" default="$(find hrpsys_ros_bridge_tutorials)/models/HRP2JSKNTS.urdf.xacro" />
   <arg name="robot_model_config" default="$(find drc_task_common)/config/hrp2_interactive_marker.yaml" />
@@ -15,14 +19,19 @@
   <arg name="USE_RVIZ_UI" default="true" />
   <include file="$(find drc_task_common)/launch/ocs/ui.launch">
     <arg name="INPUT_IMAGE" value="$(arg INPUT_IMAGE)" />
+    <arg name="INPUT_IMAGE_WIDTH_SCALE" value="$(arg INPUT_IMAGE_WIDTH_SCALE)" />
+    <arg name="INPUT_IMAGE_HEIGHT_SCALE" value="$(arg INPUT_IMAGE_HEIGHT_SCALE)" />
   </include>
-  
+
   <node pkg="drc_task_common" type="ocs-executive.l" name="ocs_executive" output="screen">
   </node>
 
   <!-- communication -->
   <include if="$(arg USE_COM)"
-           file="$(find drc_com_common)/launch/operator_station_com.launch" />
+           file="$(find drc_com_common)/launch/operator_station_com.launch">
+    <arg name="FC_IP" value="$(arg FC_IP)" />
+    <arg name="OCS_IP" value="$(arg OCS_IP)" />
+  </include>
   <group if="$(arg USE_RVIZ_UI)">
     <!-- robot motion -->
     <include file="$(find drc_task_common)/launch/robot_motion.launch" >

@@ -340,7 +340,6 @@
       (send smachine :go-to :executing-go-pos))
     (send req :response)
     )
-
   )
 
 
@@ -360,19 +359,19 @@
 (ros::advertise-service "go_pos_command_from_rviz_interface" drc_task_common::GoPosCommand #'send *app* :go-pos-command-from-rviz-interface)
 
 ;; subscribing image_view2 ROI stuff
-(ros::subscribe "/multisense/left/image_rect_color/screenrectangle" geometry_msgs::PolygonStamped
+(ros::subscribe "/ocs/communication/image_rect_color/screenrectangle/scaled" geometry_msgs::PolygonStamped
   #'send *app* :rectangle-callback)
-(ros::subscribe "/multisense/left/image_rect_color/line" geometry_msgs::PolygonStamped
+(ros::subscribe "/ocs/communication/image_rect_color/line/scaled" geometry_msgs::PolygonStamped
   #'send *app* :line-callback)
-(ros::subscribe "/multisense/left/image_rect_color/foreground_rect" geometry_msgs::PolygonStamped
-  #'send *app* :foreground-rect-callback)
-(ros::subscribe "/multisense/left/image_rect_color/background_rect" geometry_msgs::PolygonStamped
-  #'send *app* :background-rect-callback)
+;; (ros::subscribe "/ocs/communication/image_rect_color/foreground_rect/scaled" geometry_msgs::PolygonStamped
+;;   #'send *app* :foreground-rect-callback)
+;; (ros::subscribe "/ocs/communication/image_rect_color/background_rect/scaled" geometry_msgs::PolygonStamped
+;;   #'send *app* :background-rect-callback)
 (ros::subscribe "/ocs_from_fc_low_speed/output" drc_com_common::FC2OCSSmall
   #'send (send *app* :fc2ocs-message-handler) :root-callback)
 (send *app* :subscribe-foreground-backggrond-topics 
-      (list (list "/multisense/left/image_rect_color/foreground_rect" geometry_msgs::PolygonStamped)
-            (list "/multisense/left/image_rect_color/background_rect" geometry_msgs::PolygonStamped)))
+      (list (list "/ocs/communication/image_rect_color/foreground_rect/scaled" geometry_msgs::PolygonStamped)
+            (list "/ocs/communication/image_rect_color/background_rect/scaled" geometry_msgs::PolygonStamped)))
 
 (ros::rate 10)
 (ros::spin)
