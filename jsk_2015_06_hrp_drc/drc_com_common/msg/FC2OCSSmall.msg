@@ -2,7 +2,8 @@ uint8 type
 uint8 seq
 uint8 robot_state
 # Joint angles of the robot
-uint8[34] angles
+uint8[35] angles
+# Parameters
 float32[16] params
 
 # type
