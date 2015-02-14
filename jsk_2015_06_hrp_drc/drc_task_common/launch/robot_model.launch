@@ -50,6 +50,6 @@
   </node>
 
   <!-- publish reachable map -->
-  <node pkg="drc_valve_task" type="reachability-map-publisher.l" name="reachability_map_publisher" />
+  <node pkg="drc_task_common" type="reachability-map-publisher.l" name="reachability_map_publisher" />
 
 </launch>
