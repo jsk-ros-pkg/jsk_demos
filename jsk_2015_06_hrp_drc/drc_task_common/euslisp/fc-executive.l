@@ -9,6 +9,7 @@
 (ros::roseus-add-msgs "pcl_msgs")
 (load "package://drc_task_common/euslisp/util.l")
 (load "package://drc_task_common/euslisp/robot-util.l")
+(load "package://drc_task_common/euslisp/generate-valve-motion.l")
 
 (defclass fc-executive-app
   :super propertied-object
@@ -109,14 +110,16 @@
   (:valve-exec-command-callback (msg)
     (when (eq state :initial)
       (multiple-value-bind 
-       (coords radius)
-       (float-vector-to-torus (send msg :float_params))
+       (coords radius) (float-vector-to-torus (send msg :float_params))
        (setq state :executing-valve)
+       (ros::ros-info "rotating valve at ~A~%" (send msg :float_params))
        (ros::ros-info "rotating valve at ~A,~A,~A~%"
          (send coords :worldpos)
          (car (send coords :rpy-angle))
          radius)
-       ;; TODO: currently no motion!
+       ;; send motion to real robot
+       (send-valve-motion radius coords)
+       ;; send finish signal to ocs
        (let ((msg (instance drc_com_common::FC2OCSSmall :init)))
          (send msg :type drc_com_common::FC2OCSSmall::*VALVE_FINISHED*)
          (send self :send-to-ocs msg))
@@ -223,12 +226,13 @@
           (let ((from-body-coords (send trans :transform coords)))
             (let ((fc-msg (instance drc_com_common::FC2OCSSmall :init)))
               (send fc-msg :params (torus-to-float-vector 
-                                    from-body-coords (send msg :large_radius)
+                                    from-body-coords (* (send msg :large_radius) 1000)
                                     (length (send fc-msg :params))))
               (send fc-msg :type drc_com_common::FC2OCSSmall::*VALVE_POSE*)
               (send self :send-to-ocs fc-msg)
               (setq state :initial)
-              ))))))
+              ))))
+      ))
   (:look-at-recog-callback (msg)
     (when (eq state :recognizing-look-at-point)
       (let ((trans (send *tf* :lookup-transform "BODY" 
