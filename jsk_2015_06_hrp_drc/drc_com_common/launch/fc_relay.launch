@@ -3,7 +3,7 @@
   <arg name="IMAGE_TOPIC" default="/multisense/left/image_rect_color" />
   <group ns="communication">
     <node pkg="resized_image_transport" type="image_resizer" name="color_image_resizer">
-      <remap from="~input/ipmage" to="$(arg IMAGE_TOPIC)" />
+      <remap from="~input/image" to="$(arg IMAGE_TOPIC)" />
       <remap from="~output/image" to="image_rect_color" />
       <remap from="~output/width_scale" to="image_width_scale" />
       <remap from="~output/height_scale" to="image_height_scale" />
