@@ -34,6 +34,8 @@
     (send fc2ocs-message-handler :register-always-callback self 
           :compressed-joint-angle-callback)
     (send fc2ocs-message-handler :register-callbacks
+          (list drc_com_common::FC2OCSSmall::*REPORT*
+                self :report-callback)
           (list drc_com_common::FC2OCSSmall::*GO_POS_POSE*
                 self :go-pos-pose-result-callback)
           (list drc_com_common::FC2OCSSmall::*GO_POS_FINISHED*
@@ -58,6 +60,9 @@
     (send smachine :register-initial-hook self :initial-callback)
     (send smachine :go-to :initial)     ;force to move to initial state
     self)
+  (:report-callback (msg)
+    ;; do nothing
+    )
   (:compressed-joint-angle-callback (msg)
     "msg is FC2OCSSmall.msg"
     (let ((pubmsg (instance drc_com_common::HumanoidJointAngles :init)))
