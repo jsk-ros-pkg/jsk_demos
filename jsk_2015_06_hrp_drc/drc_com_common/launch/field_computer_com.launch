@@ -10,6 +10,7 @@
     <rosparam subst_value="true">
       message: drc_com_common/FC2OCSLarge
       to_ip: "$(arg OCS_IP)"
+      send_rate: 2
     </rosparam>
   </node>
   
@@ -31,4 +32,5 @@
       to_ip: $(arg OCS_IP)
     </rosparam>
   </node>
+  <include file="$(find drc_com_common)/launch/fc_relay.launch" />
 </launch>
