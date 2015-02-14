@@ -1,5 +1,5 @@
 sensor_msgs/PointCloud2 communication__point_cloud
-sensor_msgs/CompressedImage communication__image_rect_color__compressed
+sensor_msgs/CompressedImage communication__image_rect_color
 std_msgs/Float32 communication__image_width_scale
 std_msgs/Float32 communication__image_height_scale
 #sensor_msgs/JointState joint_states
