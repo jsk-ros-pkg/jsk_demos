@@ -1,7 +1,15 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(jsk_2013_04_pr2_610)
 
-find_package(catkin REQUIRED COMPONENTS roseus)
+find_package(catkin REQUIRED COMPONENTS
+  geometry_msgs
+  message_generation
+  jsk_demo_common
+  jsk_perception
+  pddl_planner
+  pr2eus
+  roseus_smach
+  roseus)
 
 add_message_files(
   FILES
@@ -15,10 +23,7 @@ generate_messages(
 )
 
 catkin_package(
-#  INCLUDE_DIRS include
-#  LIBRARIES jsk_2013_04_pr2_610
-#  CATKIN_DEPENDS
-#  DEPENDS system_lib
+CATKIN_DEPENDS geometry_msgs message_runtime roseus jsk_demo_common jsk_perception pddl_planner pr2eus roseus_smach
 )
 
 ###########
