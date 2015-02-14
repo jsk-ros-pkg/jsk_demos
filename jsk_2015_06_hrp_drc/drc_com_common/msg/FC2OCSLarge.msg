@@ -1,3 +1,3 @@
-sensor_msgs/PointCloud2 camera_remote__depth_registered_half__points
-sensor_msgs/Image camera_remote__rgb_half__image_rect_color
+sensor_msgs/PointCloud2 multisense__organized_image_points2_color
+sensor_msgs/Image multisense__left__image_rect_color
 #sensor_msgs/JointState joint_states
