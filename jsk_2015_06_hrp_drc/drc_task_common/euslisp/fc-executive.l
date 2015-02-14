@@ -13,7 +13,7 @@
 
 (defclass fc-executive-app
   :super propertied-object
-  :slots (state go-pos-goal ocs2fc-message-handler))
+  :slots (state go-pos-goal ocs2fc-message-handler latest-joint-angles))
 
 (defmethod fc-executive-app
   (:init ()
@@ -308,6 +308,10 @@
     (if latest-joint-angles
         (send msg :angles latest-joint-angles))
     (ros::publish "/fc_to_ocs_low_speed/input" msg))
+  (:report ()
+    (let ((msg (instance drc_com_common::FC2OCSSmall :init)))
+      (send msg :type drc_com_common::FC2OCSSmall::*REPORT*)
+      (send self :send-to-ocs msg)))
   )
 
 
@@ -341,6 +345,10 @@
 (ros::subscribe "/joint_states_compressed" drc_com_common::HumanoidJointAngles
   #'send *app* :joint-states-compressed-callback)
 (ros::advertise "/go_pos_goal" geometry_msgs::PoseStamped)
+
 (ros::rate 10)
-(ros::spin)
+(while (ros::ok)
+  (ros::sleep)
+  (send *app* :report)
+  (ros::spin-once))
 

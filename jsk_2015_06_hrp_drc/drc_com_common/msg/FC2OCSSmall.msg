@@ -8,6 +8,7 @@ float32[16] params
 
 # type
 # go-pos
+uint8 REPORT=0
 uint8 GO_POS_POSE=1
 uint8 GO_POS_FINISHED=2
 # look-at
