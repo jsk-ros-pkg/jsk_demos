@@ -216,9 +216,11 @@
   (:exec-valve-button-callback ()
     (let ((msg (instance drc_com_common::OCS2FCSmall :init)))
       (send msg :type drc_com_common::OCS2FCSmall::*VALVE_EXEC*)
-      (send msg :float_params (torus-to-float-vector 
-                               (car valve-params) (cadr valve-params)
-                               (length (send msg :float_params))))
+      (send msg :float_params
+            (torus-to-float-vector 
+             (car valve-params) (cadr valve-params)
+             (length (send msg :float_params)))
+            )
       (send self :send-to-fc msg)
       (send smachine :go-to :executing-valve)))
   (:exec-door-button-callback ()
@@ -325,6 +327,8 @@
          ;; TODO: publish torus pose
          ;; store result
          (setq valve-params (list coords radius))))
+      ;; publish valve-motion to rviz
+      (appy #'publish-valve-motion-joint-states valve-params)
       (send smachine :go-to :selecting-exec-for-valve)))
   (:look-at-finished-callback (msg)
     (when (eq (send smachine :state) :executing-look-at)

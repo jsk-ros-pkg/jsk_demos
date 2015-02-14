@@ -22,3 +22,12 @@
      (t (error "uknown robot ~A" name))
      )))
 
+
+(defun model2real (&key (time 5000) (wait? t) (mode :real))
+  (send *ri* :angle-vector (send *robot* :angle-vector) time)
+  (when wait? (send *ri* :wait-interpolation)))
+
+(defun hand-model2real (&key (time 1000) (wait? t) (mode :real))
+  (send *ri* :hand-angle-vector (apply #'concatenate float-vector (send *robot* :hand :arms :angle-vector)) time)
+  (when wait? (send *ri* :hand-wait-interpolation)))
+
