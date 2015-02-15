@@ -1,19 +1,36 @@
 # drc_task_common
 
+## Setup
+1. Setup your account allowing sudo without password.
+
+  It's required to use socket port 1-1023.
+
+  Run following command
+   ```
+$ sudo visudo
+```
+
+  And add this line:
+  ```
+  YOUR_ACCOUNT ALL=(ALL) NOPASSWD:ALL
+  ```
+
+  And restart your computer.
+
 ## Introduction
 provides drc\_task\_ common task programs.
 
 ## drc_task_common.launch
 
 ### DEVICE
-this program needs 
+this program needs
 * 3D mouse (for move t-marker)
 * B-Controll (for some bottuns)
 * Track ball mouse (for move robot head)
 
 ### DEPEND
 sudo aptitude install python-pygame
-sudo pip install fysom   
+sudo pip install fysom
 
 ### How to launch
 You should put two commands in the defferent terminal
@@ -32,7 +49,7 @@ B-Controll provides 2x8 Buttons and 8 bars. This Section Introduces how to use b
 
 ![](images/b_control_real.jpg)
 
-for more details, please read source codes 
+for more details, please read source codes
 https://github.com/jsk-ros-pkg/jsk_demos/blob/master/jsk_2015_06_hrp_drc/drc_task_common/scripts/b_control_client.py provides bottun interface
 
 #### Upper, (1, 2, 3) From the Left,(Box, Cylinder, Torus) Button
@@ -60,14 +77,14 @@ current mode is displayed on rviz.
 
 
 #### Lower, 2 From the Left, Mode Button
-Change Marker Setting Mode, 
+Change Marker Setting Mode,
 * autoset (object will be set by click b-box)
 * manuset (manual set object with 3d mouse)
 * assoc (object will be assoced to robot hand coords)
 current mode is displayed on rviz.
 
 #### Lower, 3 From the Left, Menu Button
-Launch Menu 
+Launch Menu
 * reverse (reverse object coords (z-axis will be reversed))
 * chancel (close menu)
 
