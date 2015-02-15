@@ -15,6 +15,7 @@ $ sudo visudo
   YOUR_ACCOUNT ALL=(ALL) NOPASSWD:ALL
   Defaults env_keep += "PYTHONPATH"
   Defaults env_keep += "ROS_PACKAGE_PATH"
+  Defaults env_keep += "ROS_MASTER_URI"
   ```
 
   And restart your computer.
