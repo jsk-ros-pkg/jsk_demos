@@ -1,0 +1,87 @@
+<launch>
+  <arg name="INPUT_IMAGE" default="/multisense/left/image_rect_color"/>
+  <arg name="INPUT_CAMERA_INFO" default="/multisense/left/camera_info"/>
+  <arg name="INPUT_POINT_CLOUD" default="/multisense/resize_1_1/points" />
+  <arg name="INPUT_HINT_POINT_CLOUD" default="/multisense/resize_1_1/points" />
+  <arg name="DEBUG_VIEW" default="false" />
+  <group ns="door_recognition">
+    <node pkg="jsk_perception" type="rect_to_mask_image"
+          name="rect_to_mask_image" output="screen">
+      <remap from="~input" to="input_support_plane_rect" />
+      <remap from="~input/camera_info" to="$(arg INPUT_CAMERA_INFO)" />
+    </node>
+    <node pkg="jsk_pcl_ros" type="mask_image_filter" name="mask_image_filter">
+      <remap from="~input" to="$(arg INPUT_HINT_POINT_CLOUD)"/>
+      <remap from="~input/mask" to="rect_to_mask_image/output"/>
+      <remap from="~input/camera_info" to="$(arg INPUT_CAMERA_INFO)" />
+    </node>
+    <node pkg="nodelet" type="nodelet" name="filtered_cloud"
+          args="standalone pcl/ExtractIndices">
+      <remap from="~input" to="$(arg INPUT_HINT_POINT_CLOUD)"/>
+      <remap from="~indices" to="mask_image_filter/output"/>
+    </node>
+    
+    <node pkg="jsk_pcl_ros" type="hinted_plane_detector" name="door_plane_detector"
+          output="screen">
+      <remap from="~input" to="$(arg INPUT_POINT_CLOUD)" />
+      <remap from="~input/hint/cloud" to="filtered_cloud/output" />
+    </node>
+
+    <node pkg="jsk_perception" type="rect_to_mask_image"
+          name="target_rect_to_mask_image" output="screen">
+      <remap from="~input" to="input_target_rect" />
+      <remap from="~input/camera_info" to="$(arg INPUT_CAMERA_INFO)" />
+    </node>
+    <node pkg="jsk_pcl_ros" type="mask_image_filter" name="target_mask_image_filter">
+      <remap from="~input" to="$(arg INPUT_POINT_CLOUD)"/>
+      <remap from="~input/mask" to="target_rect_to_mask_image/output"/>
+      <remap from="~input/camera_info" to="$(arg INPUT_CAMERA_INFO)" />
+    </node>
+    <node pkg="nodelet" type="nodelet" name="target_filtered_cloud"
+          args="standalone pcl/ExtractIndices">
+      <remap from="~input" to="$(arg INPUT_POINT_CLOUD)"/>
+      <remap from="~indices" to="target_mask_image_filter/output"/>
+    </node>
+    
+    <node pkg="jsk_pcl_ros" type="polygon_array_wrapper" name="door_polygon_array_wrapper">
+      <remap from="~input_polygon" to="door_plane_detector/output/polygon" />
+      <remap from="~input_coefficients" to="door_plane_detector/output/coefficients" />
+    </node>
+
+    <node pkg="jsk_pcl_ros" name="target_plane_extraction" type="multi_plane_extraction">
+      <remap from="~input" to="target_filtered_cloud/output" />
+      <remap from="~input_polygons" to="door_polygon_array_wrapper/output_polygons" />
+      <remap from="~input_coefficients" to="door_polygon_array_wrapper/output_coefficients" />
+      <rosparam>
+        use_indices: false
+        min_height: 0.025
+        max_height: 0.2
+      </rosparam>
+    </node>
+    
+    <node pkg="jsk_pcl_ros" type="pointcloud_to_cluster_point_indices" name="target_cloud_to_indices">
+      <remap from="~input" to="target_plane_extraction/output" />
+    </node>
+    
+    <node pkg="jsk_pcl_ros" type="cluster_point_indices_decomposer" name="boundingbox_estimator">
+      <remap from="~input" to="target_plane_extraction/output" />
+      <remap from="~target" to="target_cloud_to_indices/output" />
+      <remap from="~align_planes" to="door_polygon_array_wrapper/output_polygons" />
+      <remap from="~align_planes_coefficients"
+             to="door_polygon_array_wrapper/output_coefficients" />
+    <rosparam>
+      align_boxes: true
+      use_pca: true
+      publish_clouds: false
+      publish_tf: false
+    </rosparam>
+    </node>
+
+    <node pkg="jsk_topic_tools" type="snapshot" name="snapshot">
+      <remap from="~input" to="boundingbox_estimator/boxes"/>
+      <rosparam>
+        latch: true
+      </rosparam>
+    </node>
+  </group>
+</launch>

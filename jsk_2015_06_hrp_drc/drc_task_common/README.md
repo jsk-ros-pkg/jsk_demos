@@ -1,18 +1,31 @@
 # drc_task_common
 
 ## Introduction
-provides drc\_task\_ common interface
+provides drc\_task\_ common task programs.
 
 ## drc_task_common.launch
 
-### NEADS
+### DEVICE
 this program needs 
 * 3D mouse (for move t-marker)
 * B-Controll (for some bottuns)
-* some mouse (for move robot head)
+* Track ball mouse (for move robot head)
 
-### INSTALL
-preparing...
+### DEPEND
+sudo aptitude install python-pygame
+sudo pip install fysom   
+
+### How to launch
+You should put two commands in the defferent terminal
+```
+roslaunch drc_task_common drc_task_common_hrp2jsknts.launch
+roscd drc_task_common/config; rosrun rviz rviz -d drc_task_common.rviz
+```
+
+### Launch file components
+drc\_task\_common is made up of 8 components,
+preparing... Please read drc_task_common.launch
+
 
 ### How to Use B-Controll Interface
 B-Controll provides 2x8 Buttons and 8 bars. This Section Introduces how to use buttons
@@ -37,6 +50,14 @@ SAVE CURRENT OBJECT POSE(for moving object)
 
 #### Upper, 7 From the Left, TOGGLE Button
 Not Used
+
+#### Lower, 1 From the Left, APPROACH Button
+Change IK mode
+* None (Simply solve IK with the coords)
+* Reach (Solve IK to Reach object coords)
+* Release (Solve IK to Release object)
+current mode is displayed on rviz.
+
 
 #### Lower, 2 From the Left, Mode Button
 Change Marker Setting Mode, 
@@ -105,14 +126,76 @@ show grasp point
 
 show restraint, robot may solve ik with :x by this arrow.
 
-#### Trable shoot for this interface
+#### Trouble shoot for this interface
 Q. I can not select points !
 
 A. We cannot select points over other Interactive marker, so please move Cloud Marker or delete other markers
 
 Q. The IK Result is different from the result I thought.
 
-A. This Interface provides two Base Frame, grasp commands and push command uses manipulate_frame and move command uses marker_frame. Before move commands done, robot thinks that The objects doesn't move.
+A. This Interface provides two Base Frame, grasp commands and push command uses manipulate_frame and move command uses marker_frame. Before move commands done, robot thinks that The objects doesn't move. In other words, manipulate_frame does moves when move-object Event Driven.
 
 ### Trouble Shoot
-preparing...
+
+Q. I can't move robot-head.
+
+A. You should change mode for mouse, first, to know if mouse is connected
+```
+sudo hexdump mouse0
+```
+then, you should put command
+```
+sudo chmod 644 mouse0
+```
+
+Q. The following error occurred.
+```
+Traceback (most recent call last):
+  File "/home/leus/ros/hydro/src/jsk-ros-pkg/jsk_control/jsk_teleop_joy/scripts/midi_config_player.py", line 97, in <module>
+    main()
+  File "/home/leus/ros/hydro/src/jsk-ros-pkg/jsk_control/jsk_teleop_joy/scripts/midi_config_player.py", line 63, in main
+    controller = openMIDIInputByName(config["device_name"])
+  File "/home/leus/ros/hydro/src/jsk-ros-pkg/jsk_control/jsk_teleop_joy/src/jsk_teleop_joy/midi_util.py", line 83, in openMIDIInputByName
+    return openMIDIByName(device_name, 1)
+  File "/home/leus/ros/hydro/src/jsk-ros-pkg/jsk_control/jsk_teleop_joy/src/jsk_teleop_joy/midi_util.py", line 97, in openMIDIByName
+    raise MIDIException("Cannot find the device: %s" % (device_name))
+```
+
+A. MIDI controller （B-CONTROL) is not connected.
+
+Q. The following error occurred.
+
+```
+Traceback (most recent call last):
+  File "/home/leus/ros/hydro/src/jsk-ros-pkg/jsk_control/joy_mouse/scripts/mouse.py", line 20, in <module>
+    rospy.get_param("~frame_id", "mouse"))
+  File "/home/leus/ros/hydro/src/jsk-ros-pkg/jsk_control/joy_mouse/src/joy_mouse/joy.py", line 33, in main
+    with open(device_name, "rb" ) as tp_file:
+IOError: [Errno 13] Permission denied: '/dev/input/mouse0'
+```
+
+A. Track Ball is not connected.
+
+Q. The following error occurred.
+
+```
+Traceback (most recent call last):
+  File "/home/leus/ros/hydro/src/jsk-ros-pkg/jsk_control/jsk_teleop_joy/scripts/head_control_by_trackball.py", line 153, in <module>
+    main()
+  File "/home/leus/ros/hydro/src/jsk-ros-pkg/jsk_control/jsk_teleop_joy/scripts/head_control_by_trackball.py", line 148, in main
+    controller.main()
+  File "/home/leus/ros/hydro/src/jsk-ros-pkg/jsk_control/jsk_teleop_joy/scripts/head_control_by_trackball.py", line 132, in main
+    self.enableHeadGroupControl()
+  File "/home/leus/ros/hydro/src/jsk-ros-pkg/jsk_control/jsk_teleop_joy/scripts/head_control_by_trackball.py", line 83, in enableHeadGr
+oupControl
+    self.enable_head_joint_group_srv(gname='head', jnames=[self.pitch_joint_name, self.yaw_joint_name])
+  File "/opt/ros/hydro/lib/python2.7/dist-packages/rospy/impl/tcpros_service.py", line 435, in __call__
+    return self.call(*args, **kwds)
+  File "/opt/ros/hydro/lib/python2.7/dist-packages/rospy/impl/tcpros_service.py", line 495, in call
+    service_uri = self._get_service_uri(request)
+  File "/opt/ros/hydro/lib/python2.7/dist-packages/rospy/impl/tcpros_service.py", line 463, in _get_service_uri
+    raise ServiceException("service [%s] unavailable"%self.resolved_name)
+rospy.service.ServiceException: service [/SequencePlayerServiceROSBridge/addJointGroup] unavailable
+```
+
+A. hrpsys_ros_bridge is not launched.

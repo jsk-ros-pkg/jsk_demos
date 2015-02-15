@@ -3,7 +3,6 @@
 (ros::roseus "walk_to_object")
 
 (load "package://drc_task_common/euslisp/drc-task-common-util.l")
-(generate-robot-interface)
 
 (ros::roseus-add-msgs "sensor_msgs")
 (ros::roseus-add-msgs "jsk_rviz_plugins")
@@ -17,7 +16,7 @@
 
 (defun walk-to-object-init
   ()
-  (send *ri* :set-gait-generator-param :stride-parameter (float-vector 0.10 0.05 10.0 0.05))
+  ;;(send *ri* :set-gait-generator-param :stride-parameter (float-vector 0.10 0.05 10.0 0.05))
 
   (setq *tfl* (instance ros::transform-listener :init))
   (setq *go-pos-command-flag* nil)
@@ -39,25 +38,27 @@
       (ros::spin-once))
     (setq dest-coords
           (send dest-coords :transformation (make-coords) :local))
-    (setq dest-x (* 0.001 (elt (send dest-coords :pos) 0)))
-    (setq dest-y (* 0.001 (elt (send dest-coords :pos) 1)))
-    (setq dest-yaw (rad2deg (elt (car (rpy-angle (send dest-coords :rot))) 0)))
-    (let* ((title
-            (format nil "Go pos to (~4,1f ~4,1f ~4,1f). OK?~%" dest-x dest-y dest-yaw))
-           (menu-list (list "cancel" "yes"))
-           (yes-index 1)
-           (req (instance drc_task_common::RvizMenuCallRequest :init :title title :menu_list menu-list))
-           (res (ros::service-call "rviz_menu_call" req))
-           (res-index (send res :index)))
-      (warning-message 2 title)
-      (when (equal res-index yes-index)
-        ;; service call for task state manager
-        (ros::service-call "call_task_state_event" (instance drc_task_common::StringRequestRequest :init :data "ExecGoPos"))
-        ;; send go pos command
-        (send *ri* :go-pos dest-x dest-y dest-yaw)
-        ;; service call for task state manager
-        (ros::service-call "call_task_state_event" (instance drc_task_common::StringRequestRequest :init :data "FinishGoPos"))
-        ))
+    (ros::service-call "go_pos_command_from_rviz_interface"
+      (instance drc_task_common::GoPosCommandRequest :init :goal (ros::coords->tf-pose dest-coords)))
+    ;; (setq dest-x (* 0.001 (elt (send dest-coords :pos) 0)))
+    ;; (setq dest-y (* 0.001 (elt (send dest-coords :pos) 1)))
+    ;; (setq dest-yaw (rad2deg (elt (car (rpy-angle (send dest-coords :rot))) 0)))
+    ;; (let* ((title
+    ;;         (format nil "Go pos to (~4,1f ~4,1f ~4,1f). OK?~%" dest-x dest-y dest-yaw))
+    ;;        (menu-list (list "cancel" "yes"))
+    ;;        (yes-index 1)
+    ;;        (req (instance drc_task_common::RvizMenuCallRequest :init :title title :menu_list menu-list))
+    ;;        (res (ros::service-call "rviz_menu_call" req))
+    ;;        (res-index (send res :index)))
+    ;;   (warning-message 2 title)
+    ;;   (when (equal res-index yes-index)
+    ;;     ;; service call for task state manager
+    ;;     (ros::service-call "call_task_state_event" (instance drc_task_common::StringRequestRequest :init :data "ExecGoPos"))
+    ;;     ;; send go pos command
+    ;;     (send *ri* :go-pos dest-x dest-y dest-yaw)
+    ;;     ;; service call for task state manager
+    ;;     (ros::service-call "call_task_state_event" (instance drc_task_common::StringRequestRequest :init :data "FinishGoPos"))
+    ;;     ))
     )
   (setq *go-pos-command-flag* nil)
   (warning-message 2 "[walk-to-object] finished sending go-pos command~%")

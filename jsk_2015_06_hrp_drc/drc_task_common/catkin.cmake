@@ -1,13 +1,14 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(drc_task_common)
 
-find_package(catkin REQUIRED COMPONENTS cmake_modules message_generation std_msgs std_srvs geometry_msgs roscpp rospy sensor_msgs visualization_msgs message_filters message_generation jsk_pcl_ros interactive_markers pcl_conversions jsk_topic_tools rviz eigen_conversions dynamic_tf_publisher jsk_interactive_marker jsk_recognition_msgs move_base_msgs rosgraph_msgs topic_tools jsk_topic_tools roseus)
+find_package(catkin REQUIRED COMPONENTS cmake_modules message_generation std_msgs std_srvs geometry_msgs roscpp rospy sensor_msgs visualization_msgs message_filters message_generation jsk_pcl_ros interactive_markers pcl_conversions jsk_topic_tools rviz eigen_conversions dynamic_tf_publisher jsk_interactive_marker jsk_recognition_msgs move_base_msgs rosgraph_msgs topic_tools jsk_topic_tools jsk_ik_server pcl_msgs roseus)
+
 catkin_python_setup()
 
 add_message_files(DIRECTORY msg FILES StringMultiArray.msg)
 add_message_files(DIRECTORY msg FILES InteractiveMarkerArray.msg)
 add_message_files(DIRECTORY msg FILES TMarkerInfo.msg)
-add_service_files(DIRECTORY srv FILES RvizMenuCall.srv RvizMenuSelect.srv EusCommand.srv StringRequest.srv ICPService.srv GetIKArm.srv GetIKArmPose.srv)
+add_service_files(DIRECTORY srv FILES RvizMenuCall.srv RvizMenuSelect.srv EusCommand.srv StringRequest.srv ICPService.srv GetIKArm.srv GetIKArmPose.srv GoPosCommand.srv)
 
 generate_messages(DEPENDENCIES ${PCL_MSGS} std_msgs std_srvs visualization_msgs sensor_msgs geometry_msgs jsk_pcl_ros jsk_interactive_marker jsk_recognition_msgs move_base_msgs)
 

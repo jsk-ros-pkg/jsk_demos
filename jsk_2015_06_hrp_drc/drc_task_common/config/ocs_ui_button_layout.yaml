@@ -1,9 +1,29 @@
+- name: 'valve'
+  service: 'valve'
+  column: 0
+- name: 'door'
+  service: 'door'
+  column: 0
+- name: 'debri'
+  service: 'debri'
+  column: 0
 - name: 'Go pos'
   service: 'go_pos'
-  column: 0
+  image: "package://drc_task_common/icons/gopos.png"
+  column: 1
+- name: 'Look at'
+  service: 'look_at'
+  image: "package://drc_task_common/icons/lookat.png"
+  column: 1
 - name: 'exec'
   service: 'exec'
-  column: 1
+  image: "package://drc_task_common/icons/exec.png"
+  column: 2
 - name: 'cancel'
   service: 'cancel'
-  column: 1
+  image: "package://drc_task_common/icons/cancel.png"
+  column: 2
+- name: 'show_motion'
+  service: '/publish_motion_joint_states'
+  image: "package://drc_task_common/icons/refresh.png"
+  column: 2

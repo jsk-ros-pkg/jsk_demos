@@ -525,7 +525,7 @@
           
           (send hand-temp-coords :transform (send (gethash *ik-arm* *move-target-from-hand-for-grasp*) :copy-worldcoords))
           (setq hand-temp-coords (send (send *robot-coords* :copy-worldcoords) :transform (send hand-temp-coords :copy-worldcoords)))
-          (send hand-temp-coords :transform (send (send (gethash *ik-arm* *ik-offset*) :inverse-transformation)) :world)
+          (send hand-temp-coords :transform (send (gethash *ik-arm* *ik-offset*) :inverse-transformation) :world)
           (ros::publish "/grasp_pose_feedback" (instance geometry_msgs::PoseStamped :init :pose (ros::coords->tf-pose hand-temp-coords) :header (instance std_msgs::Header :init :frame_id *frame-id*
                                                                                                                                                           :stamp (ros::time-now))))
           (ros::ros-info "grasp feedback pose pubed")
@@ -545,7 +545,7 @@
           (mapcar #'(lambda (j a) (send j :joint-angle a)) (send *robot* :joint-list) (elt *ik-result* (- (length *ik-result*) 1)))
           (setq hand-temp-coords (send (send *robot* *ik-arm* :end-coords :worldcoords) :copy-worldcoords))
           (send hand-temp-coords :transform (send (gethash *ik-arm* *move-target-from-hand-for-grasp*) :copy-worldcoords))
-          (send hand-temp-coords :transform (send (send (gethash *ik-arm* *ik-offset*) :inverse-transformation)) :world)
+          (send hand-temp-coords :transform (send (gethash *ik-arm* *ik-offset*) :inverse-transformation) :world)
           (setq hand-temp-coords (send (send *robot-coords* :copy-worldcoords) :transform (send hand-temp-coords :copy-worldcoords)))
           (ros::publish "/grasp_not_allow_slip_pose_feedback" (instance geometry_msgs::PoseStamped :init :pose (ros::coords->tf-pose hand-temp-coords) :header (instance std_msgs::Header :init :frame_id *frame-id*
                                                                                                                                                           :stamp (ros::time-now))))

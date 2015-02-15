@@ -5,16 +5,17 @@
   <arg name="FC_TO_OCS_PORT" default="11701"/>
 
   <node pkg="jsk_network_tools" type="silverhammer_highspeed_streamer.py"
-        output="screen" if="false"
+        output="log"
         name="highspeed_streamer">
     <rosparam subst_value="true">
       message: drc_com_common/FC2OCSLarge
       to_ip: "$(arg OCS_IP)"
+      send_rate: 2
     </rosparam>
   </node>
   
   <node pkg="jsk_network_tools" type="silverhammer_lowspeed_receiver.py"
-        output="screen"
+        output="log"
         name="fc_from_ocs_low_speed">
     <rosparam subst_value="true">
       message: drc_com_common/OCS2FCSmall
@@ -23,12 +24,22 @@
     </rosparam>
   </node>
   <node pkg="jsk_network_tools" type="silverhammer_lowspeed_streamer.py"
-        output="screen"
+        output="log"
         name="fc_to_ocs_low_speed">
     <rosparam subst_value="true">
       message: drc_com_common/FC2OCSSmall
       to_port: $(arg FC_TO_OCS_PORT)
       to_ip: $(arg OCS_IP)
+    </rosparam>
+  </node>
+  <include file="$(find drc_com_common)/launch/fc_relay.launch" />
+  
+  <!-- joint angles -->
+  <node pkg="jsk_network_tools" type="joint-state-compressor.l" 
+        name="joint_state_compressor">
+    <rosparam>
+      message_type: drc_com_common/HumanoidJointAngles
+      robot: hrp2jsknts
     </rosparam>
   </node>
 </launch>

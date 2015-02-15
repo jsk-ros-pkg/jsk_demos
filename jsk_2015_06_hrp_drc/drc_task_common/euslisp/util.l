@@ -1,34 +1,200 @@
-(ros::roseus-add-msgs "rosgraph_msgs")
+;; utility function
 
 (defun call-empty-service (srv)
   (let ((req (instance std_srvs::EmptyRequest :init)))
     (ros::service-call srv req)))
 
-(setq *robot-model-files*
-      (list "package://pr2eus/pr2-interface.l"
-            "package://hrpsys_ros_bridge_tutorials/euslisp/hrp2jsk-interface.l"
-            "package://hrpsys_ros_bridge_tutorials/euslisp/hrp2jsknt-interface.l"
-            "package://hrpsys_ros_bridge_tutorials/euslisp/hrp2jsknts-interface.l"
-            "package://hrpsys_ros_bridge_tutorials/euslisp/staro-interface.l"
-            "package://hrpsys_ros_bridge_tutorials/euslisp/urataleg-interface.l"
-            "package://hrpsys_ros_bridge_tutorials/euslisp/samplerobot-interface.l"
-            "package://hrpsys_ros_bridge_tutorials/euslisp/hrp2w-interface.l"))
+;; topic <---> compressed message conversion
 
-(dolist (f *robot-model-files*)
-  (when (probe-file (ros::resolve-ros-path f))
-    (ros::ros-info "loading ~A" f)
-    (load f)))
-
-(defun coords-to-float-vector (coords)
-  (float-vector (elt (send coords :worldpos) 0)
-                (elt (send coords :worldpos) 1)
-                (elt (send coords :worldpos) 2)
-                (elt (car (send coords :rpy-angle)) 0)
-                (elt (car (send coords :rpy-angle)) 1)
-                (elt (car (send coords :rpy-angle)) 2)
-                0 0))
+(defun coords-to-float-vector (coords length)
+  ;6 parameters are filled
+  (let ((ret (instantiate float-vector length))) 
+    (setf (elt ret 0) (elt (send coords :worldpos) 0))
+    (setf (elt ret 1) (elt (send coords :worldpos) 1))
+    (setf (elt ret 2) (elt (send coords :worldpos) 2))
+    (setf (elt ret 3) (elt (car (send coords :rpy-angle)) 0))
+    (setf (elt ret 4) (elt (car (send coords :rpy-angle)) 1))
+    (setf (elt ret 5) (elt (car (send coords :rpy-angle)) 2))
+    ret))
 
 (defun float-vector-to-coords (fv)
   (make-coords :pos (subseq fv 0 3)
                :rpy (subseq fv 3 6)))
 
+(defun pos-to-float-vector (pos length)
+  (let ((ret (instantiate float-vector length)))
+    (setf (elt ret 0) (elt pos 0))
+    (setf (elt ret 1) (elt pos 1))
+    (setf (elt ret 1) (elt pos 1))
+    ret))
+
+(defun rect-polygon-stamped-to-integer-vector (msg length)
+  (let ((point-a (list (send (elt (send msg :polygon :points) 0) :x)
+                       (send (elt (send msg :polygon :points) 0) :y)))
+        (point-b (list (send (elt (send msg :polygon :points) 1) :x)
+                       (send (elt (send msg :polygon :points) 1) :y))))
+    (coerce (append (list (floor (elt point-a 0))
+                          (floor (elt point-a 1))
+                          (floor (elt point-b 0))
+                          (floor (elt point-b 1)))
+                    (make-list (- length 4) :initial-element 0))
+            integer-vector)))
+
+(defun double-rect-polygon-stamped-to-integer-vector (msg0 msg1 length)
+  (let ((point-a (list (send (elt (send msg0 :polygon :points) 0) :x)
+                       (send (elt (send msg0 :polygon :points) 0) :y)))
+        (point-b (list (send (elt (send msg0 :polygon :points) 1) :x)
+                       (send (elt (send msg0 :polygon :points) 1) :y)))
+        (point-c (list (send (elt (send msg1 :polygon :points) 0) :x)
+                       (send (elt (send msg1 :polygon :points) 0) :y)))
+        (point-d (list (send (elt (send msg1 :polygon :points) 1) :x)
+                       (send (elt (send msg1 :polygon :points) 1) :y))))
+    (coerce (append (list (floor (elt point-a 0))
+                          (floor (elt point-a 1))
+                          (floor (elt point-b 0))
+                          (floor (elt point-b 1))
+                          (floor (elt point-c 0))
+                          (floor (elt point-c 1))
+                          (floor (elt point-d 0))
+                          (floor (elt point-d 1)))
+                    (make-list (- length 4) :initial-element 0))
+            integer-vector)))
+
+
+(defun integer-vector-to-rect-polygon-stamped (msg)
+  (let ((x1 (elt (send msg :image_roi_info) 0))
+        (y1 (elt (send msg :image_roi_info) 1))
+        (x2 (elt (send msg :image_roi_info) 2))
+        (y2 (elt (send msg :image_roi_info) 3)))
+    (let ((ret (instance geometry_msgs::PolygonStamped :init)))
+      (send ret :header :stamp (ros::time-now))
+      (let ((p1 (instance geometry_msgs::Point32 :init))
+            (p2 (instance geometry_msgs::Point32 :init)))
+        (send p1 :x x1)
+        (send p1 :y y1)
+        (send p2 :x x2) 
+        (send p2 :y y2)
+        (send ret :polygon :points (list p1 p2))
+        ret))))
+
+(defun integer-vector-to-double-rect-polygon-stamped (msg)
+  (let ((x1 (elt (send msg :image_roi_info) 0))
+        (y1 (elt (send msg :image_roi_info) 1))
+        (x2 (elt (send msg :image_roi_info) 2))
+        (y2 (elt (send msg :image_roi_info) 3))
+        (x3 (elt (send msg :image_roi_info) 4))
+        (y3 (elt (send msg :image_roi_info) 5))
+        (x4 (elt (send msg :image_roi_info) 6))
+        (y4 (elt (send msg :image_roi_info) 7)))
+    (let ((fore (instance geometry_msgs::PolygonStamped :init))
+          (back (instance geometry_msgs::PolygonStamped :init))
+          (now (ros::time-now)))
+      (send fore :header :stamp now)
+      (send back :header :stamp now)
+      (let ((p1 (instance geometry_msgs::Point32 :init))
+            (p2 (instance geometry_msgs::Point32 :init))
+            (p3 (instance geometry_msgs::Point32 :init))
+            (p4 (instance geometry_msgs::Point32 :init)))
+        (send p1 :x x1)
+        (send p1 :y y1)
+        (send p2 :x x2)
+        (send p2 :y y2)
+        (send p3 :x x3)
+        (send p3 :y y3)
+        (send p4 :x x4)
+        (send p4 :y y4)
+        (send fore :polygon :points (list p1 p2))
+        (send back :polygon :points (list p3 p4))
+        (list fore back)))))
+
+;; It's a circle actually
+(defun torus-to-float-vector (coords radius length)
+  (let ((ret (coords-to-float-vector coords length))) ;6 parameters are filled
+    (setf (elt ret 6) radius)
+    ret))
+
+(defun float-vector-to-torus (params)
+  (let ((coords (float-vector-to-coords params))
+        (radius (elt params 6)))
+    (list coords radius)))
+
+(defun box-to-float-vector (coords dimensions length)
+  "dimensions := geometry_msgs/Vector3"
+  (let ((ret (coords-to-float-vector coords length)))
+    (setf (elt ret 6) (elt dimensions 0))
+    (setf (elt ret 7) (elt dimensions 1))
+    (setf (elt ret 8) (elt dimensions 2))
+    ret))
+
+(defun float-vector-to-box (params)
+  "returns (coords #f(width height depth))"
+  (let ((coords (float-vector-to-coords params))
+        (size (float-vector (elt params 6)
+                            (elt params 7)
+                            (elt params 8))))
+    (list coords size)))
+
+(defun cylinder-to-float-vector (coords radius height length)
+  (let ((ret (coords-to-float-vector coords length)))
+    (setf (elt ret 6) radius)
+    (setf (elt ret 7) height)
+    ret))
+
+(defun float-vector-to-cylinder (params)
+  (let ((coords (float-vector-to-coords params))
+        (radius (elt params 6))
+        (height (elt params 7)))
+    (list coords radius height)))
+
+;; message handler
+(defclass narrowband-message-handler
+  :super propertied-object
+  :slots (deligate-map always-deligate-object always-deligate-method))
+
+(defmethod narrowband-message-handler
+  (:init ()
+    (setq deligate-map nil)
+    self)
+  (:register-always-callback (obj method)
+    (setq always-deligate-object obj)
+    (setq always-deligate-method method))
+  (:root-callback (msg)
+    (if (and always-deligate-object always-deligate-method)
+        (send always-deligate-object always-deligate-method msg))
+    (let ((type (send msg :type)))
+      (print (assoc type deligate-map))
+      (if (assoc type deligate-map)
+          (send (car (cdr (assoc type deligate-map)))
+                (cdr (cdr (assoc type deligate-map)))
+                msg)
+        (ros::ros-warn "received unknown type ~A" type))))
+  (:register-callback (type deligate-object deligate-method)
+    (if (assoc type deligate-map)
+        (error "you've already registered ~A" type))
+    (setq deligate-map (append
+                        (list (cons type
+                                    (cons deligate-object
+                                          deligate-method)))
+                        deligate-map))
+    )
+  (:register-callbacks (&rest specs)
+    (dolist (spec specs)
+      (ros::ros-warn "registering ~A" spec)
+      (send* self :register-callback spec)))
+  )
+
+;; class to synchronize foreground rect topic and
+;; background rect topic
+(defclass foreground-background-synchronizer
+  :super exact-time-message-filter
+  :slots (deligate callback))
+
+(defmethod foreground-background-synchronizer
+  (:init (topics deligate-object callback-method)
+    (setq deligate deligate-object)
+    (setq callback callback-method)
+    (send-super :init topics)
+    )
+  (:callback (foreground background)
+    (send deligate callback foreground background)
+    ))

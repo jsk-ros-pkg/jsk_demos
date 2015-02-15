@@ -2,63 +2,100 @@
   <!--
       This is a launch file for Main PC of Operator Control Station (OCS)
   -->
-
+  <arg name="FC_IP" default="localhost" />
+  <arg name="OCS_IP" default="localhost" />
+  
   <arg name="USE_COM" default="true" />
-
+  
   <arg name="default_frame_id" default="odom_on_ground" />
-  <arg name="INPUT_IMAGE" value="/multisense/left/image_rect_color"/>
-
+  <arg name="INPUT_IMAGE" value="/ocs/communication/image_rect_color" />
+  <arg name="INPUT_IMAGE_WIDTH_SCALE" value="/ocs/communication/image_width_scale" />
+  <arg name="INPUT_IMAGE_HEIGHT_SCALE" value="/ocs/communication/image_height_scale" />
+  <arg name="robot_name" default="hrp2jsknts" />
+  <arg name="ROBOT_URDF_MODEL" default="$(find hrpsys_ros_bridge_tutorials)/models/HRP2JSKNTS.urdf.xacro" />
+  <arg name="robot_model_config" default="$(find drc_task_common)/config/hrp2_interactive_marker.yaml" />
+  <arg name="ik_server_launch" default="hrp2jsknts-ik-server.launch" />
+  <arg name="trackball_head_launch" default="hrp2_trackball_head.launch" />
+  <arg name="USE_RVIZ_UI" default="true" />
   <include file="$(find drc_task_common)/launch/ocs/ui.launch">
     <arg name="INPUT_IMAGE" value="$(arg INPUT_IMAGE)" />
+    <arg name="INPUT_IMAGE_WIDTH_SCALE" value="$(arg INPUT_IMAGE_WIDTH_SCALE)" />
+    <arg name="INPUT_IMAGE_HEIGHT_SCALE" value="$(arg INPUT_IMAGE_HEIGHT_SCALE)" />
   </include>
-  
+
   <node pkg="drc_task_common" type="ocs-executive.l" name="ocs_executive" output="screen">
   </node>
+  
+  <!-- tf -->
+  <group ns="ocs">
+    <arg name="CALIB_FILE" value="hrp2017_multisense_calib_20150208.yaml" />
+    <param name="robot_description" command="$(find euscollada)/scripts/urdf_patch.py patch $(find hrpsys_ros_bridge_tutorials)/models/HRP2JSKNTS_WH_SENSORS.urdf $(find jsk_hrp2_ros_bridge)/calib_data/$(arg CALIB_FILE)" />
+    <node pkg="robot_state_publisher" type="robot_state_publisher" name="ocs_robot_state_publisher">
+      <remap from="/joint_states" to="/ocs/joint_states" />
+      <remap from="/tf" to="/ocs/tf"/>
+      <remap from="/robot_description" to="/ocs/robot_description" />
+    </node>
+  </group>
   <!-- communication -->
   <include if="$(arg USE_COM)"
-           file="$(find drc_com_common)/launch/operator_station_com.launch" />
-
-  <group if="false">
-
-  <include if="false"
-           file="$(find jsk_hrp2_ros_bridge)/launch/hrp2017_local.launch" />
-
-  <!-- -->
-  <!-- robot motion -->
-  <include file="$(find drc_task_common)/launch/robot_motion.launch">
-    <arg name="default_frame_id" default="$(arg default_frame_id)" />
+           file="$(find drc_com_common)/launch/operator_station_com.launch">
+    <arg name="FC_IP" value="$(arg FC_IP)" />
+    <arg name="OCS_IP" value="$(arg OCS_IP)" />
   </include>
+  <group if="$(arg USE_RVIZ_UI)">
+    <!-- robot motion -->
+    <include file="$(find drc_task_common)/launch/robot_motion.launch" >
+      <arg name="default_frame_id" default="$(arg default_frame_id)" />
+      <arg name="robot_name" value="$(arg robot_name)" />
+      <arg name="ik_server_launch" default="$(arg ik_server_launch)" />
+    </include>
 
-  <!-- robot model -->
-  <include file="$(find drc_task_common)/launch/robot_model.launch">
-    <arg name="default_frame_id" default="$(arg default_frame_id)" />
-  </include>
+    <!-- object model -->
+    <include file="$(find drc_task_common)/launch/transformable_model.launch" >
+      <arg name="default_frame_id" default="$(arg default_frame_id)" />
+    </include>
 
-  <!-- object model -->
-  <include file="$(find drc_task_common)/launch/transformable_model.launch">
-    <arg name="default_frame_id" default="$(arg default_frame_id)" />
-  </include>
+    <!-- robot model -->
+    <include file="$(find drc_task_common)/launch/robot_model.launch" >
+      <arg name="default_frame_id" default="$(arg default_frame_id)" />
+      <arg name="robot_model_config" default="$(arg robot_model_config)" />
+      <arg name="ROBOT_URDF_MODEL" default="$(arg ROBOT_URDF_MODEL)" />
+    </include>
 
-  <!-- teleop device -->
-  <include file="$(find drc_task_common)/launch/teleop_device.launch">
-    <arg name="default_frame_id" value="$(arg default_frame_id)" />
-    <arg name="TRACKBALL_DEVICE_FILE" value="/dev/input/mouse2" />
-  </include>
+    <!-- teleop device -->
+    <include file="$(find drc_task_common)/launch/teleop_device.launch" >
+      <arg name="default_frame_id" default="$(arg default_frame_id)" />
+      <arg name="trackball_head_launch" default="$(arg trackball_head_launch)" />
+    </include>
 
-  <!-- teleop interface -->
-  <include file="$(find drc_task_common)/launch/teleop_interface.launch"/>
+    <!-- teleop interface -->
+    <include file="$(find drc_task_common)/launch/teleop_interface.launch" />
 
-  <!-- data server -->
-  <include file="$(find drc_task_common)/launch/manipulation_data_processor.launch"/>
+    <!-- remote server -->
+    <include file="$(find drc_task_common)/launch/remote_server.launch">
+      <arg name="robot_name" value="$(arg robot_name)" />
+    </include>
 
-  <group>
-    <remap from="robotsound" to="robotsound_ocs" />
+    <!-- rviz -->
+    <node pkg="rviz" type="rviz" name="operator_rviz" args="-d $(find drc_task_common)/config/drc_task_common.rviz"/>
 
-    <!-- google translation talk -->
-    <include file="$(find sound_play)/soundplay_node.launch" />
+    <group if="false">
 
-    <!-- timer talker -->
-    <node pkg="drc_task_common" name="timer_talker" type="timer_talker.py" args="" output="screen" />
-  </group>
+      <include if="false"
+               file="$(find jsk_hrp2_ros_bridge)/launch/hrp2017_local.launch" />
+
+      <!-- data server -->
+      <include file="$(find drc_task_common)/launch/manipulation_data_processor.launch"/>
+
+      <group>
+        <remap from="robotsound" to="robotsound_ocs" />
+
+        <!-- google translation talk -->
+        <include file="$(find sound_play)/soundplay_node.launch" />
+
+        <!-- timer talker -->
+        <node pkg="drc_task_common" name="timer_talker" type="timer_talker.py" args="" output="screen" />
+      </group>
+    </group>
   </group>
 </launch>
