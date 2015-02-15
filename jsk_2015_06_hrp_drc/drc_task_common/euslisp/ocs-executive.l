@@ -32,8 +32,6 @@
   (:init ()
     ;;(setq state :initial)
     (setq fc2ocs-message-handler (instance narrowband-message-handler :init))
-    (send fc2ocs-message-handler :register-always-callback self 
-          :compressed-joint-angle-callback)
     (send fc2ocs-message-handler :register-callbacks
           (list drc_com_common::FC2OCSSmall::*REPORT*
                 self :report-callback)
@@ -64,11 +62,6 @@
   (:report-callback (msg)
     ;; do nothing
     )
-  (:compressed-joint-angle-callback (msg)
-    "msg is FC2OCSSmall.msg"
-    (let ((pubmsg (instance drc_com_common::HumanoidJointAngles :init)))
-      (send pubmsg :angles (send msg :angles))
-      (ros::publish "/ocs/joint_states_compressed" pubmsg)))
   (:subscribe-foreground-backggrond-topics (topics)
     (setq foreground-bacground-sync-obj
           (instance foreground-background-synchronizer :init
@@ -231,6 +224,9 @@
     ;; clear text message
     (send req :response))
   (:exec-go-pos-button-callback ()
+    ;; update latest go-pos coords
+    (setq go-pos-coords (send *tf* :lookup-transform "hrp2_marker_root" "ground" (ros::time 0)))
+    (setq go-pos-coords (send go-pos-coords :transformation (make-coords) :local))
     (let ((msg (instance drc_com_common::OCS2FCSmall :init)))
       (send msg :type drc_com_common::OCS2FCSmall::*GO_POS_EXEC*)
       (send msg :float_params 
@@ -330,11 +326,14 @@
                                          :rpy (float-vector (elt params 3)
                                                             (elt params 4)
                                                             (elt params 5))))
+        ;; move robot model on rviz
+        (print params)
+        (send self :move-robot-model go-pos-coords "ground")
         (send self :show-text-on-image 
               (format nil "go-pos ~f ~f ~f" 
-                      (* 0.001 (elt (send msg :params) 0))
-                      (* 0.001 (elt (send msg :params) 1))
-                      (rad2deg (elt (send msg :params) 3))
+                      (* 0.001 (elt params 0))
+                      (* 0.001 (elt params 1))
+                      (rad2deg (elt params 3))
                       ))
         (send smachine :go-to :selecting-exec-for-go-pos))))
   (:debri-exec-finished-callback (msg)
@@ -367,9 +366,10 @@
          (set-primitive-marker-pose coords "BODY")
          (set-primitive-marker-color :r 1.0 :g 1.0 :b 0.0 :a 0.6)
          (apply-primitive-dimensions-to-midi-device)
+         (send self :move-robot-model-to-current-pos)
          ;; store result
          (setq valve-params (list coords radius))
-         ;; publish valve-motion to rviz
+         ;; publish valve motion to robot model on rviz
          (publish-valve-motion :radius (cadr valve-params) :coords (car valve-params) :update? t)
          ))
       (send smachine :go-to :selecting-exec-for-valve)))
@@ -393,10 +393,26 @@
            (setq valve-params
                  (list (get-primitive-marker-pose :frame-id "BODY")
                        (elt (get-primitive-marker-dimensions) 3)))
-           ;; publish valve-motion to rviz
+           ;; publish valve motion to robot model on rviz
            (publish-valve-motion :radius (cadr valve-params) :coords (car valve-params) :update? t)))
     (send req :response)
     )
+  (:move-robot-model
+    (coords frame-id)
+    (let* ((header (instance std_msgs::Header :init :stamp (ros::time-now) :frame_id frame-id))
+           (msg (instance geometry_msgs::PoseStamped :init :header header :pose (ros::coords->tf-pose coords))))
+      (ros::publish "/urdf_control_marker/set_pose" msg)
+      ))
+  (:move-robot-model-to-current-pos
+    ()
+    (let* ((base-frame "/odom_on_ground") (target-frame "/ground")
+           (header (instance std_msgs::Header :init :stamp (ros::time-now) :frame_id base-frame))
+           (msg (instance geometry_msgs::PoseStamped :init :header header))
+           coords)
+      (setq coords (send (send *tf* :lookup-transform target-frame base-frame (ros::time 0)) :inverse-transformation))
+      (send msg :pose (ros::coords->tf-pose coords))
+      (ros::publish "/urdf_control_marker/set_pose" msg)
+      ))
   )
 
 
@@ -407,9 +423,9 @@
 
 (ros::advertise "/ocs_to_fc_low_speed/input" drc_com_common::OCS2FCSmall)
 (ros::advertise "/jsk_model_marker_interface/hrp2/reset_joint_states_and_root" sensor_msgs::JointState 1)
-(ros::advertise "/ocs/joint_states_compressed" drc_com_common::HumanoidJointAngles)
 (ros::advertise "/transformable_interactive_server/set_color" std_msgs::ColorRGBA)
 (ros::advertise "/midi_config_player/set_feedback" sensor_msgs::JoyFeedbackArray)
+(ros::advertise "/urdf_control_marker/set_pose" geometry_msgs::PoseStamped 1)
 
 ;; registering services for button UIs
 (ros::advertise-service "go_pos" std_srvs::Empty #'send *app* :go-pos-button-callback)
