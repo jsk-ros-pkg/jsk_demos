@@ -2,10 +2,10 @@
   <arg name="b_control_joy_topic" default="/b_control/joy" />
   <arg name="spacenav_joy_topic" default="/spacenav/joy" />
   <arg name="default_frame_id" default="odom_on_ground" />
-
+  <arg name="use_icp" default="true" />
   <!-- robot specific setting -->
   <arg name="trackball_head_launch" default="hrp2_trackball_head.launch" />
-
+  
   <!-- publish spacenav topic -->
   <node pkg="spacenav_node" type="spacenav_node" name="spacenav">
   </node>
@@ -22,6 +22,9 @@
   <node pkg="drc_task_common" type="b_control_client.py" name="b_control_client"
         output="screen">
     <remap from="input_joy" to="$(arg b_control_joy_topic)"/>
+    <remap if="$(arg use_icp)" from="selected_box" to="/passed_selected_box" />
+    <remap unless="$(arg use_icp)" from="selected_box" to="/bounding_box_marker/selected_box" />
+    <remap if="$(arg use_icp)" from="t_marker_info" to="/t_marker_information" />
     <!-- range of marker dimensions -->
     <param name="transformable_interactive_server_nodename" value="transformable_interactive_server"/>
     <param name="default_frame_id" value="$(arg default_frame_id)"/>
