@@ -1,24 +1,11 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(detect_cans_in_fridge_201202)
 
-find_package(catkin REQUIRED COMPONENTS
-  jsk_perception
-  jsk_pcl_ros
-  pr2_navigation_self_filter
-  jsk_pr2_startup
-  snap_map_icp
-  jsk_demo_common
-  pr2eus
-  jsk_tools
-  pr2_gripper_sensor_msgs
-  pcl_msgs
-  posedetection_msgs
-  roseus
-  )
+find_package(catkin REQUIRED)
 
 catkin_package(
     DEPENDS
-    CATKIN_DEPENDS jsk_perception jsk_pcl_ros pr2_navigation_self_filter jsk_pr2_startup snap_map_icp jsk_demo_common pr2eus jsk_tools pr2_gripper_sensor_msgs pcl_msgs posedetection_msgs roseus
+    CATKIN_DEPENDS #
     INCLUDE_DIRS # TODO include
     LIBRARIES # TODO
 )
