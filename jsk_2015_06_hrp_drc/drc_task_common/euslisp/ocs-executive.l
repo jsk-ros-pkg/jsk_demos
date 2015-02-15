@@ -23,7 +23,8 @@
 (defclass ocs-executive-app
   :super propertied-object
   :slots (state task go-pos-coords smachine look-at-pos
-                fc2ocs-message-handler valve-params
+                fc2ocs-message-handler
+                valve-params ;; (list coords radius)
                 foreground-bacground-sync-obj
                 door-params debri-params))
 
@@ -161,6 +162,7 @@
   (:rectangle-callback-for-valve-region (msg)
     ;; send to FC to recognize pos
     (let ((fc-msg (instance drc_com_common::OCS2FCSmall :init)))
+      (send self :show-text-on-image "Wait valve recognition")
       (send fc-msg :type drc_com_common::OCS2FCSmall::*VALVE_REGION*)
       (send fc-msg :image_roi_info (rect-polygon-stamped-to-integer-vector
                                     msg (length (send fc-msg :image_roi_info))))
@@ -214,6 +216,17 @@
       (send smachine :go-to :initial))
      ((eq (send smachine :state) :selecting-exec-for-debri)
       (send smachine :go-to :initial))
+     ;; TODO : cancel recognition from button
+     ((eq (send smachine :state) :recognizing-look-at-point)
+      (send smachine :go-to :initial))
+     ((eq (send smachine :state) :recognizing-valve-pose)
+      (send smachine :go-to :initial))
+     ((eq (send smachine :state) :recognizing-door-pose)
+      (send smachine :go-to :initial))
+     ((eq (send smachine :state) :recognizing-debri-pose)
+      (send smachine :go-to :initial))
+     ((eq (send smachine :state) :recognizing-go-pos-goal)
+      (send smachine :go-to :initial))
      )
     ;; clear text message
     (send req :response))
@@ -232,6 +245,11 @@
       (send self :send-to-fc msg)
       (send smachine :go-to :executing-look-at)))
   (:exec-valve-button-callback ()
+    ;; update latest valve coords and radius
+    (setq valve-params
+          (list (get-primitive-marker-pose :frame-id "BODY")
+                (elt (get-primitive-marker-dimensions) 3)))
+    ;; send valve params to fc
     (let ((msg (instance drc_com_common::OCS2FCSmall :init)))
       (send msg :type drc_com_common::OCS2FCSmall::*VALVE_EXEC*)
       (send msg :float_params
@@ -345,13 +363,14 @@
          ;; publish torus pose
          (erase-all-primitive-marker)
          (insert-primitive-marker :shape-type jsk_rviz_plugins::TransformableMarkerOperate::*TORUS* :name "torus1" :description "")
-         (set-primitive-marker-dimensions :radius (* 0.001 radius) :small-radius (* 0.1 (* 0.001 radius)))
+         (set-primitive-marker-dimensions :radius radius :small-radius (* 0.1 radius))
          (set-primitive-marker-pose coords "BODY")
          (set-primitive-marker-color :r 1.0 :g 1.0 :b 0.0 :a 0.6)
+         (apply-primitive-dimensions-to-midi-device)
          ;; store result
          (setq valve-params (list coords radius))
          ;; publish valve-motion to rviz
-         (publish-valve-motion :radius radius :coords coords :update? t)
+         (publish-valve-motion :radius (cadr valve-params) :coords (car valve-params) :update? t)
          ))
       (send smachine :go-to :selecting-exec-for-valve)))
   (:look-at-finished-callback (msg)
@@ -368,10 +387,14 @@
       (send smachine :go-to :executing-go-pos))
     (send req :response)
     )
-  (:publish-motion-joint-states-cb (req)
+  (:reflesh-button-callback (req)
     (cond ((eq (send smachine :state) :selecting-exec-for-valve)
-           (publish-valve-motion)
-           ))
+           ;; update latest valve coords and radius
+           (setq valve-params
+                 (list (get-primitive-marker-pose :frame-id "BODY")
+                       (elt (get-primitive-marker-dimensions) 3)))
+           ;; publish valve-motion to rviz
+           (publish-valve-motion :radius (cadr valve-params) :coords (car valve-params) :update? t)))
     (send req :response)
     )
   )
@@ -380,11 +403,13 @@
 ;; advertise
 (ros::advertise "/image_marker" image_view2::ImageMarker2)
 (setq *app* (instance ocs-executive-app :init))
+(setq *tf* (instance ros::transform-listener :init))
 
 (ros::advertise "/ocs_to_fc_low_speed/input" drc_com_common::OCS2FCSmall)
 (ros::advertise "/jsk_model_marker_interface/hrp2/reset_joint_states_and_root" sensor_msgs::JointState 1)
 (ros::advertise "/ocs/joint_states_compressed" drc_com_common::HumanoidJointAngles)
 (ros::advertise "/transformable_interactive_server/set_color" std_msgs::ColorRGBA)
+(ros::advertise "/midi_config_player/set_feedback" sensor_msgs::JoyFeedbackArray)
 
 ;; registering services for button UIs
 (ros::advertise-service "go_pos" std_srvs::Empty #'send *app* :go-pos-button-callback)
@@ -394,8 +419,8 @@
 (ros::advertise-service "look_at" std_srvs::Empty #'send *app* :look-at-button-callback)
 (ros::advertise-service "exec" std_srvs::Empty #'send *app* :exec-button-callback)
 (ros::advertise-service "cancel" std_srvs::Empty #'send *app* :cancel-button-callback)
+(ros::advertise-service "reflesh" std_srvs::Empty #'send *app* :reflesh-button-callback)
 (ros::advertise-service "go_pos_command_from_rviz_interface" drc_task_common::GoPosCommand #'send *app* :go-pos-command-from-rviz-interface)
-(ros::advertise-service "publish_motion_joint_states" std_srvs::Empty #'send *app* :publish-motion-joint-states-cb)
 
 ;; subscribing image_view2 ROI stuff
 (ros::subscribe "/ocs/communication/image_rect_color/screenrectangle/scaled" geometry_msgs::PolygonStamped

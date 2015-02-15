@@ -6,9 +6,7 @@ Panels:
       Expanded:
         - /Global Options1
         - /PointCloud21
-        - /PointCloud21/Status1
         - /TF1/Frames1
-        - /TorusArray1
       Splitter Ratio: 0.629252
     Tree Height: 1084
   - Class: rviz/Selection
@@ -152,7 +150,6 @@ Visualization Manager:
       Transport Hint: raw
       Value: false
       Visibility:
-        "": true
         BoundingBoxArray: true
         CameraInfo: true
         Grid: true
@@ -167,6 +164,7 @@ Visualization Manager:
         QuietInteractiveMarker: true
         RobotModel: true
         TF: true
+        TorusArray: true
         Value: true
       Zoom Factor: 1
     - Alpha: 1
@@ -526,6 +524,7 @@ Visualization Manager:
       color: 25; 255; 0
       line width: 0.005
       only edge: true
+      show coords: true
     - Class: rviz/TF
       Enabled: false
       Frame Timeout: 15
@@ -714,10 +713,10 @@ Visualization Manager:
       Update Topic: /manip/update
       Value: false
     - Class: jsk_rviz_plugin/TorusArray
-      Enabled: true
+      Enabled: false
       Name: TorusArray
       Topic: /valve_recognition/valve_finder/output/array
-      Value: true
+      Value: false
       alpha: 0.8
       auto color: false
       color: 25; 255; 0
@@ -749,22 +748,22 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/XYOrbit
-      Distance: 3.19561
+      Distance: 3.7392
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.06
         Stereo Focal Distance: 1
         Swap Stereo Eyes: false
         Value: false
       Focal Point:
-        X: 0.380644
-        Y: 0.240537
-        Z: 1.49011e-06
+        X: 0.721533
+        Y: 0.413562
+        Z: 1.19209e-06
       Name: Current View
       Near Clip Distance: 0.01
-      Pitch: 0.229798
+      Pitch: 0.769798
       Target Frame: <Fixed Frame>
       Value: XYOrbit (rviz)
-      Yaw: 3.7804
+      Yaw: 3.69039
     Saved: ~
 Window Geometry:
   Camera:
@@ -788,5 +787,5 @@ Window Geometry:
   Views:
     collapsed: true
   Width: 2560
-  X: 0
+  X: -7
   Y: 24

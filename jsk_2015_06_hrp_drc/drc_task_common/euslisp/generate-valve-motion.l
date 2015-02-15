@@ -108,7 +108,7 @@
                      ;; rotation-axis can reduce rotation constraint                                                                    
                      :rotation-axis (list t t t)
                      ;;:rotation-axis (list :z t t)
-                     :stop 50
+                     :stop 10
                      :debug-view nil
                      )))
         ;; check reaching point
@@ -136,7 +136,7 @@
                        ;; rotation-axis can reduce rotation constraint                                                                    
                        :rotation-axis (list t t t)
                        ;;:rotation-axis (list :z t t)
-                       :stop 50
+                       :stop 10
                        :debug-view nil
                        ))))
         ;; draw

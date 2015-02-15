@@ -1,5 +1,11 @@
 ;; utility function
 
+(defun xy-distance2 (coords)
+  (+ (* (elt (send coords :worldpos) 0)
+        (elt (send coords :worldpos) 0))
+     (* (elt (send coords :worldpos) 1)
+        (elt (send coords :worldpos) 1))))
+
 (defun call-empty-service (srv)
   (let ((req (instance std_srvs::EmptyRequest :init)))
     (ros::service-call srv req)))

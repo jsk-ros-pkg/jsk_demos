@@ -1,3 +1,5 @@
+;; send ;;;;;;;;;;;;;;;;;;;;
+
 (defun insert-primitive-marker
   (&key (shape-type jsk_rviz_plugins::TransformableMarkerOperate::*BOX*) (name "default_name") (description "default_description"))
   (let* ((req (instance jsk_rviz_plugins::RequestMarkerOperateRequest :init)))
@@ -20,11 +22,11 @@
   (&key x y z radius small-radius)
   (let* ((req (instance jsk_interactive_marker::SetMarkerDimensionsRequest :init))
          (req-dim (instance jsk_interactive_marker::MarkerDimensions :init)))
-    (when x (send req-dim :x x))
-    (when y (send req-dim :y y))
-    (when z (send req-dim :z z))
-    (when radius (send req-dim :radius radius))
-    (when small-radius (send req-dim :small_radius small-radius))
+    (when x (send req-dim :x (* 0.001 x)))
+    (when y (send req-dim :y (* 0.001 y)))
+    (when z (send req-dim :z (* 0.001 z)))
+    (when radius (send req-dim :radius (* 0.001 radius)))
+    (when small-radius (send req-dim :small_radius (* 0.001 small-radius)))
     (send req :dimensions req-dim)
     (ros::service-call "/transformable_interactive_server/set_dimensions" req)
     ))
@@ -43,3 +45,63 @@
   (&key (r 0) (b 0) (g 0) (a 0))
   (let* ((msg (instance std_msgs::ColorRGBA :init :r r :g g :b b :a a)))
     (ros::publish "/transformable_interactive_server/set_color" msg)))
+
+
+;; receive ;;;;;;;;;;;;;;;;;;;;
+
+(defun get-primitive-marker-pose
+  (&key name frame-id)
+  (let* ((req (instance jsk_interactive_marker::GetTransformableMarkerPoseRequest :init))
+         pose-st coords)
+    (when name (send req :target_name name))
+    (setq pose-st (send (ros::service-call "/transformable_interactive_server/get_pose" req) :pose_stamped))
+    (setq coords (ros::tf-pose->coords (send pose-st :pose)))
+    (when frame-id
+      (let ((trans (send *tf* :lookup-transform "BODY" 
+                         (send pose-st :header :frame_id) (send pose-st :header :stamp))))
+        (unless trans
+          (setq trans (send *tf* :lookup-transform "BODY" 
+                            (send pose-st :header :frame_id) (ros::time 0))))
+        (setq coords (send trans :transform coords))
+        ))
+    coords))
+
+(defun get-primitive-marker-dimensions
+  (&key name)
+  (let* ((req (instance jsk_interactive_marker::GetMarkerDimensionsRequest :init))
+         dim)
+    (when name (send req :target_name name))
+    (setq dim (send (ros::service-call "/transformable_interactive_server/get_dimensions" req) :dimensions))
+    (list (* 1000 (send dim :x)) (* 1000 (send dim :y)) (* 1000 (send dim :z))
+          (* 1000 (send dim :radius)) (* 1000 (send dim :small_radius)) (send dim :type))
+    ))
+
+
+;; device ;;;;;;;;;;;;;;;;;;;;
+
+(defun apply-primitive-dimensions-to-midi-device
+  (&key name)
+  (let* ((dim (get-primitive-marker-dimensions :name name))
+         (x (elt dim 0)) (y (elt dim 1)) (z (elt dim 2)) (r (elt dim 3)) (sr (elt dim 4)) (type (elt dim 5))
+         (x-max (* 1000 1.5)) (y-max (* 1000 1.5)) (z-max (* 1000 1.5)) (r-max (* 1000 1.0)) (sr-max (* 1000 0.2))
+         (x-min  (* 1000 0.01)) (y-min (* 1000 0.01)) (z-min (* 1000 0.01)) (r-min (* 1000 0.01)) (sr-min (* 1000 0.001))
+         (msg (instance sensor_msgs::JoyFeedbackArray :init)) msg-array)
+    (print (list type jsk_rviz_plugins::TransformableMarkerOperate::*BOX* jsk_rviz_plugins::TransformableMarkerOperate::*CYLINDER* jsk_rviz_plugins::TransformableMarkerOperate::*TORUS*))
+    (print (list x y z r sr))
+    (print (list x-min y-min z-min r-min sr-min))
+    (print (list x-max y-max z-max r-max sr-max))
+    (cond
+     ((equal type jsk_rviz_plugins::TransformableMarkerOperate::*BOX*)
+      (push (instance sensor_msgs::JoyFeedback :init :id 0 :intensity (/ (- x x-min) (- x-max x-min))) msg-array)
+      (push (instance sensor_msgs::JoyFeedback :init :id 1 :intensity (/ (- y y-min) (- y-max y-min))) msg-array)
+      (push (instance sensor_msgs::JoyFeedback :init :id 2 :intensity (/ (- z z-min) (- z-max z-min))) msg-array))
+     ((equal type jsk_rviz_plugins::TransformableMarkerOperate::*CYLINDER*)
+      (push (instance sensor_msgs::JoyFeedback :init :id 0 :intensity (/ (- r r-min) (- r-max r-min))) msg-array)
+      (push (instance sensor_msgs::JoyFeedback :init :id 1 :intensity (/ (- z z-min) (- z-max z-min))) msg-array))
+     ((equal type jsk_rviz_plugins::TransformableMarkerOperate::*TORUS*)
+      (push (instance sensor_msgs::JoyFeedback :init :id 0 :intensity (/ (- r r-min) (- r-max r-min))) msg-array)
+      (push (instance sensor_msgs::JoyFeedback :init :id 1 :intensity (/ (- sr sr-min) (- sr-max sr-min))) msg-array)))
+    (send msg :array msg-array)
+    (ros::publish "/midi_config_player/set_feedback" msg)
+    ))
+
