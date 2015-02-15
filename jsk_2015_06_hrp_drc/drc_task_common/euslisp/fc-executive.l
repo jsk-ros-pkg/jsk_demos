@@ -13,7 +13,7 @@
 
 (defclass fc-executive-app
   :super propertied-object
-  :slots (state go-pos-goal ocs2fc-message-handler latest-joint-angles))
+  :slots (state go-pos-goal ocs2fc-message-handler))
 
 (defmethod fc-executive-app
   (:init ()
@@ -179,6 +179,13 @@
           (setq trans (send *tf* :lookup-transform "BODY" 
                             (send header :frame_id) (ros::time 0))))
         trans))
+  (:lookup-from-ground-transform (header)
+    (let ((trans (send *tf* :lookup-transform "ground" 
+                       (send header :frame_id) (send header :stamp))))
+        (unless trans
+          (setq trans (send *tf* :lookup-transform "ground" 
+                            (send header :frame_id) (ros::time 0))))
+        trans))
   (:debri-recog-callback (msg)
     (when (eq state :recognizing-debri-pose)
       (let ((trans (send self :lookup-from-body-transform (send msg :header)))
@@ -255,11 +262,7 @@
                 )))))))
   (:go-pos-recog-callback (msg)         ;geometry_msgs/PoseStamped
     (when (eq state :recognizing-go-pos-location)
-      (let ((trans (send *tf* :lookup-transform "BODY" 
-                         (send msg :header :frame_id) (send msg :header :stamp))))
-        (unless trans
-          (setq trans (send *tf* :lookup-transform "BODY" 
-                            (send msg :header :frame_id) (ros::time 0))))
+      (let ((trans (send self :lookup-from-ground-transform (send msg :header))))
         (let ((coords (ros::tf-pose-stamped->coords msg)))
           (let ((from-body-coords (send trans :transform coords)))
             (let ((theta (atan2 (elt (send from-body-coords :pos) 1)
@@ -277,36 +280,25 @@
                            (make-coords :pos (send from-body-coords :worldpos)
                                         :rot mat)))
                       (let ((offset-goal
-                             (if (< (* *go-pos-offset* *go-pos-offset*)
-                                    (+ (* (elt (send goal-oriented-coords :worldpos) 0)
-                                          (elt (send goal-oriented-coords :worldpos) 0))
-                                       (* (elt (send goal-oriented-coords :worldpos) 1)
-                                          (elt (send goal-oriented-coords :worldpos) 1))))
-                                 (send (send goal-oriented-coords :copy-worldcoords)
-                                       :translate (float-vector (- *go-pos-offset*) 0 0))
-                               (send goal-oriented-coords :copy-worldcoords) ;it's wrong probably...
-                               )))
+                             (send (send goal-oriented-coords :copy-worldcoords)
+                                   :translate (float-vector (- *go-pos-offset*) 0 0))))
                         (ros::publish   ;for debug
                           "/go_pos_goal"
-                          (ros::coords->tf-pose-stamped offset-goal "BODY"))
+                          (ros::coords->tf-pose-stamped offset-goal "ground"))
                         (setq go-pos-goal offset-goal)
                         (print offset-goal)
                         (let ((msg (instance drc_com_common::FC2OCSSmall :init)))
                           (send msg :type drc_com_common::FC2OCSSmall::*GO_POS_POSE*)
+                          ;; x, y and yaw is active
                           (setf (elt (send msg :params) 0) (elt (send go-pos-goal :worldpos) 0))
                           (setf (elt (send msg :params) 1) (elt (send go-pos-goal :worldpos) 1))
-                          (setf (elt (send msg :params) 2) (elt (send go-pos-goal :worldpos) 2))
+                          (setf (elt (send msg :params) 2) 0) ;force to set zero
                           (setf (elt (send msg :params) 3) (elt (car (send go-pos-goal :rpy-angle)) 0))
-                          (setf (elt (send msg :params) 4) (elt (car (send go-pos-goal :rpy-angle)) 1))
-                          (setf (elt (send msg :params) 5) (elt (car (send go-pos-goal :rpy-angle)) 2))
+                          (setf (elt (send msg :params) 4) 0) ;force to set zero
+                          (setf (elt (send msg :params) 5) 0) ;force to set zero
                           (send self :send-to-ocs msg)
-                          (setq state :initial)
-                          ))))))))))))
-  (:joint-states-compressed-callback (msg)
-    (setq latest-joint-angles (send msg :angles)))
+                          (setq state :initial)))))))))))))
   (:send-to-ocs (msg)
-    (if latest-joint-angles
-        (send msg :angles latest-joint-angles))
     (ros::publish "/fc_to_ocs_low_speed/input" msg))
   (:report ()
     (let ((msg (instance drc_com_common::FC2OCSSmall :init)))
@@ -342,13 +334,12 @@
   #'send *app* :door-recog-callback)
 (ros::subscribe "/debri_recognition/snapshot/output" pcl_msgs::ModelCoefficients
   #'send *app* :debri-recog-callback)
-(ros::subscribe "/joint_states_compressed" drc_com_common::HumanoidJointAngles
-  #'send *app* :joint-states-compressed-callback)
 (ros::advertise "/go_pos_goal" geometry_msgs::PoseStamped)
 
 (ros::rate 10)
-(while (ros::ok)
-  (ros::sleep)
-  (send *app* :report)
-  (ros::spin-once))
+;; (while (ros::ok)
+;;   (ros::sleep)
+;;   ;;(send *app* :report)
+;;   (ros::spin-once))
 
+(ros::spin)

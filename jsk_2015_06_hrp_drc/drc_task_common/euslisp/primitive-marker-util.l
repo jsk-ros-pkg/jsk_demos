@@ -86,10 +86,6 @@
          (x-max (* 1000 1.5)) (y-max (* 1000 1.5)) (z-max (* 1000 1.5)) (r-max (* 1000 1.0)) (sr-max (* 1000 0.2))
          (x-min  (* 1000 0.01)) (y-min (* 1000 0.01)) (z-min (* 1000 0.01)) (r-min (* 1000 0.01)) (sr-min (* 1000 0.001))
          (msg (instance sensor_msgs::JoyFeedbackArray :init)) msg-array)
-    (print (list type jsk_rviz_plugins::TransformableMarkerOperate::*BOX* jsk_rviz_plugins::TransformableMarkerOperate::*CYLINDER* jsk_rviz_plugins::TransformableMarkerOperate::*TORUS*))
-    (print (list x y z r sr))
-    (print (list x-min y-min z-min r-min sr-min))
-    (print (list x-max y-max z-max r-max sr-max))
     (cond
      ((equal type jsk_rviz_plugins::TransformableMarkerOperate::*BOX*)
       (push (instance sensor_msgs::JoyFeedback :init :id 0 :intensity (/ (- x x-min) (- x-max x-min))) msg-array)
@@ -104,4 +100,3 @@
     (send msg :array msg-array)
     (ros::publish "/midi_config_player/set_feedback" msg)
     ))
-
