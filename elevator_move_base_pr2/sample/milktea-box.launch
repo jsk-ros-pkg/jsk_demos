@@ -1,0 +1,2 @@
+<launch><include file="/home/furushchev/ros/hydro/src/jsk-ros-pkg/jsk_demos/elevator_move_base_pr2///template/_614ce80_lipton_milktea_box.xml"/>
+</launch>

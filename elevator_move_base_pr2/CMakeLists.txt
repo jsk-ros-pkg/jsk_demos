@@ -32,18 +32,16 @@ catkin_package(
     LIBRARIES # TODO
 )
 
-install(DIRECTORY launch test scripts elevator_numbers
+add_custom_command(
+  OUTPUT  ${PROJECT_SOURCE_DIR}/template
+  DEPENDS ${PROJECT_SOURCE_DIR}/src/eusmodel_template_gen.l
+  COMMAND DISPLAY= ${PROJECT_SOURCE_DIR}/src/eusmodel_template_gen.sh
+  WORKING_DIRECTORY ${PROJECT_SOURCE_DIR})
+add_custom_target(eusmodel_template ALL DEPENDS ${PROJECT_SOURCE_DIR}/template)
+
+install(DIRECTORY launch test scripts elevator_numbers template
   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
   USE_SOURCE_PERMISSIONS)
 
 install(TARGETS color_point_detector
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
-
-if(CATKIN_ENABLE_TESTING)
-  find_package(rostest REQUIRED)
-  if(DEFINED ENV{DISPLAY})
-    add_rostest(test/test-panel-pose-detection.launch)
-    add_rostest(test/test-button-light.launch)
-  endif()
-  add_rostest(test/test-color-point-detector.launch)
-endif()
