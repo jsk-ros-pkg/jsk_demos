@@ -73,7 +73,6 @@
   (let* ((devide-num 10)
          (reach-dist 100)
          (ik-results nil)
-         (ik-list nil)
          (original-foot-midcoords (send (send *robot* :foot-midcoords) :copy-worldcoords)))
     ;; rotate valve
     (dotimes (i devide-num)
@@ -83,7 +82,7 @@
       (let* (ik-ret-in
              ik-ret-out
              (tc nil))
-        ;; check valve handle
+        ;; solve ik for valve handle
         (when draw? (send (send *valve* :get :grasp-coords) :draw-on :flush t))
         (setq tc
               (list
@@ -115,7 +114,7 @@
            (setq ik-ret-in
                  (send *robot* :look-at-target (send *valve* :worldcoords))))
          )
-        ;; check reaching point
+        ;; solve ik for valve reaching point
         (setq tc
               (list
                (send (send (send *valve* :get :grasp-coords) :copy-worldcoords) :translate (float-vector (- reach-dist) (- reach-dist) 0) :local)
@@ -205,15 +204,14 @@
   (generate-valve-motion :draw? nil)
   (get-valve-motion)
   )
-;;(warning-message 2 "(get-valve-motion-for-fc)~%")
 
 (defun get-valve-motion-for-ocs
   (valve-r valve-coords)
+  ;; TODO : robot-interface is unavailable in ocs
   (set-valve-environment-for-fc valve-r valve-coords :draw? nil)
   (generate-valve-motion :draw? nil)
   (get-valve-motion)
   )
-;;(warning-message 2 "(get-valve-motion-for-ocs)~%")
 
 (defun send-valve-motion
   (radius coords &key (real? t))
@@ -226,7 +224,7 @@
       (when real? (hand-model2real))
       (send *robot* :reset-manip-pose)
       (when real? (model2real :time 3000))
-      (when real? (send *ri* :start-impedance :arms :moment-gain #f(0 0 0) :k-p 1000 :d-p 400)) ;; start imp)
+      (when real? (send *ri* :start-impedance :arms :moment-gain #f(0 0 0) :k-p 1000 :d-p 400)) ;; start imp
       (send *robot* :angle-vector (car (last valve-motion-av-list)))
       (when real? (model2real :time 5000))
       (dotimes (i rotate-num)

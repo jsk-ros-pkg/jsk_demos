@@ -10,6 +10,7 @@
 (load "package://drc_task_common/euslisp/util.l")
 (load "package://drc_task_common/euslisp/robot-util.l")
 (load "package://drc_task_common/euslisp/generate-valve-motion.l")
+(load "package://drc_task_common/euslisp/generate-debri-motion.l")
 
 (defclass fc-executive-app
   :super propertied-object
@@ -44,13 +45,14 @@
     self)
   (:ocs2fc-message-handler () ocs2fc-message-handler)
   (:debri-line-command-callback (msg)
-    (when (eq state :initial)
-      (ros::publish "/debri_recognition/input_line"
-        (integer-vector-to-rect-polygon-stamped msg))
+    ;;(when (eq state :initial)
       ;; enable snapshot
       (call-empty-service "/debri_recognition/snapshot/request")
+      (ros::publish "/debri_recognition/input_line"
+        (integer-vector-to-rect-polygon-stamped msg))
       (setq state :recognizing-debri-pose)
-      ))
+      )
+  ;;)
   (:door-region-command-callback (msg)
     (when (eq state :initial)
       (multiple-value-bind
@@ -84,11 +86,12 @@
   (:debri-exec-command-callback (msg)
     (when (eq state :initial)
       (multiple-value-bind
-       (coords r h)
-       (float-vector-to-cylinder (send msg :float_params))
+       (coords r h) (float-vector-to-cylinder (send msg :float_params))
        (setq state :executing-debri)
        (ros::ros-info "removing debri at ~A ~A ~A" coords r h)
-       ;; TODO: REMOVE DEBRI!
+       ;; send motion to real robot
+       (send-debri-motion coords r h 0.9)
+       ;; send finish signal to ocs
        (let ((msg (instance drc_com_common::FC2OCSSmall :init)))
          (send msg :type drc_com_common::FC2OCSSmall::*DEBRI_FINISHED*)
          (send self :send-to-ocs msg))
@@ -157,7 +160,7 @@
                                (elt (send msg :float_params) 2))))
         ;; position is respected to BODY. need to convert to tf...
         ;; update model
-        (send *robot* :angle-vector (send *ri* :state :reference-vector))
+        (send *robot* :angle-vector (send *ri* :state :potentio-vector))
         ;; fix leg to coords
         (send *robot* :fix-leg-to-coords (make-coords) '(:lleg :rleg))
         (let ((origin-to-body 
@@ -165,7 +168,7 @@
           (let ((pos-from-origin (send origin-to-body :transform-vector pos)))
             (ros::ros-info "looking at ~A" pos-from-origin)
             (send *robot* :head :look-at pos-from-origin)
-            (send *ri* :angle-vector (send *robot* :angle-vector) 5000) ;5 sec
+            (send *ri* :angle-vector (send *robot* :angle-vector) 3000) ;; 3 sec
             (send *ri* :wait-interpolation)))
         (let ((msg (instance drc_com_common::FC2OCSSmall :init)))
           (send msg :type drc_com_common::FC2OCSSmall::*LOOK_AT_FINISHED*)
@@ -192,9 +195,9 @@
             (coefficients (send msg :values)))
         ;; make coordinates from coefficients
         ;; coefficients := [cx, cy, cz, dx, dy, dz, r, h]
-        (let ((pos (scale 0.001 (float-vector (elt coefficients 0)
-                                              (elt coefficients 1)
-                                              (elt coefficients 2)))))
+        (let ((pos (scale 1000 (float-vector (elt coefficients 0)
+                                             (elt coefficients 1)
+                                             (elt coefficients 2)))))
           (let ((coords (make-coords :pos pos)))
             (orient-coords-to-axis coords 
                                    (float-vector (elt coefficients 3)
@@ -204,7 +207,7 @@
               (let ((fc-msg (instance drc_com_common::FC2OCSSmall :init)))
                 (send fc-msg :type drc_com_common::FC2OCSSmall::*DEBRI_POSE*)
                 (send fc-msg :params (cylinder-to-float-vector
-                                      from-body-coords (elt coefficients 6) (elt coefficients 7)
+                                      from-body-coords (* (elt coefficients 6) 1000) (* (elt coefficients 7) 1000)
                                       (length (send fc-msg :params))))
                 (send self :send-to-ocs fc-msg)
                 (setq state :initial))))))))
@@ -286,7 +289,6 @@
                           "/go_pos_goal"
                           (ros::coords->tf-pose-stamped offset-goal "ground"))
                         (setq go-pos-goal offset-goal)
-                        (print offset-goal)
                         (let ((msg (instance drc_com_common::FC2OCSSmall :init)))
                           (send msg :type drc_com_common::FC2OCSSmall::*GO_POS_POSE*)
                           ;; x, y and yaw is active
@@ -310,7 +312,7 @@
 (load (robot-file "HRP2JSKNTS"))
 (init-robot-from-name "HRP2JSKNTS")
 
-(setq *go-pos-offset* 1000)
+(setq *go-pos-offset* 700)
 (ros::advertise "image_marker" image_view2::ImageMarker2)
 (setq *app* (instance fc-executive-app :init))
 (setq *tf* (instance ros::transform-listener :init))

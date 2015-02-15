@@ -14,6 +14,7 @@
 (load "package://drc_task_common/euslisp/util.l")
 (load "package://drc_task_common/euslisp/state-machine.l")
 (load "package://drc_task_common/euslisp/generate-valve-motion.l")
+(load "package://drc_task_common/euslisp/generate-debri-motion.l")
 (load "package://drc_task_common/euslisp/primitive-marker-util.l")
 ;; state
 ;;  :initial -> ...
@@ -291,8 +292,18 @@
         (multiple-value-bind
          (coords r h) (float-vector-to-cylinder params)
          (send self :show-text-on-image (format nil "debri: ~A" params))
-         ;; TODO: publish Marker to visualize
+         ;; publish torus pose
+         (erase-all-primitive-marker)
+         (insert-primitive-marker :shape-type jsk_rviz_plugins::TransformableMarkerOperate::*CYLINDER* :name "cylinder1" :description "")
+         (set-primitive-marker-dimensions :radius r :z h)
+         (set-primitive-marker-pose coords "BODY")
+         (set-primitive-marker-color :r 1.0 :g 1.0 :b 0.0 :a 0.6)
+         (apply-primitive-dimensions-to-midi-device)
+         (send self :move-robot-model-to-current-pos)
+         ;; store result
          (setq debri-params (list coords r h))
+         ;; publish valve motion to robot model on rviz
+         (publish-debri-motion :coords coords :radius r :height h :handle-ratio 0.9 :update? t)
          (send smachine :go-to :selecting-exec-for-debri)))))
   (:door-pose-result-callback (msg)
     (when (eq (send smachine :state) :recognizing-door-pose)
@@ -327,7 +338,6 @@
                                                             (elt params 4)
                                                             (elt params 5))))
         ;; move robot model on rviz
-        (print params)
         (send self :move-robot-model go-pos-coords "ground")
         (send self :show-text-on-image 
               (format nil "go-pos ~f ~f ~f" 
@@ -394,7 +404,16 @@
                  (list (get-primitive-marker-pose :frame-id "BODY")
                        (elt (get-primitive-marker-dimensions) 3)))
            ;; publish valve motion to robot model on rviz
-           (publish-valve-motion :radius (cadr valve-params) :coords (car valve-params) :update? t)))
+           (publish-valve-motion :radius (cadr valve-params) :coords (car valve-params) :update? t))
+          ((eq (send smachine :state) :selecting-exec-for-debri)
+           ;; update latest debri coords and radius
+           (setq debri-params
+                 (list (get-primitive-marker-pose :frame-id "BODY")
+                       (elt (get-primitive-marker-dimensions) 3)
+                       (elt (get-primitive-marker-dimensions) 2)))
+           ;; publish valve motion to robot model on rviz
+           (publish-debri-motion :coords (elt debri-params 0) :radius (elt debri-params 1) :height (elt debri-params 2) :handle-ratio 0.9 :update? t))
+          )
     (send req :response)
     )
   (:move-robot-model
