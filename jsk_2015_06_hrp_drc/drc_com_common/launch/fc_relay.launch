@@ -8,8 +8,8 @@
       <remap from="~output/width_scale" to="image_width_scale" />
       <remap from="~output/height_scale" to="image_height_scale" />
       <rosparam>
-        resize_scale_x: 0.1
-        resize_scale_y: 0.1
+        resize_scale_x: 0.2
+        resize_scale_y: 0.2
       </rosparam>
     </node>
   </group>

@@ -1,11 +1,12 @@
 <launch>
   <arg name="OCS_IP" default="localhost"/>
   <arg name="FC_IP" default="localhost"/>
-  <arg name="OCS_TO_FC_PORT" default="11700"/>
-  <arg name="FC_TO_OCS_PORT" default="11701"/>
+  <arg name="OCS_TO_FC_PORT" default="700"/>
+  <arg name="FC_TO_OCS_PORT" default="701"/>
+  <arg name="FC_TO_OCS_BASIC_PORT" default="702"/>
 
   <node pkg="jsk_network_tools" type="silverhammer_highspeed_streamer.py"
-        output="log"
+        output="log" launch-prefix="sudo"
         name="highspeed_streamer">
     <rosparam subst_value="true">
       message: drc_com_common/FC2OCSLarge
@@ -15,7 +16,7 @@
   </node>
   
   <node pkg="jsk_network_tools" type="silverhammer_lowspeed_receiver.py"
-        output="log"
+        output="log" launch-prefix="sudo"
         name="fc_from_ocs_low_speed">
     <rosparam subst_value="true">
       message: drc_com_common/OCS2FCSmall
@@ -23,8 +24,9 @@
       receive_ip: $(arg FC_IP)
     </rosparam>
   </node>
+
   <node pkg="jsk_network_tools" type="silverhammer_lowspeed_streamer.py"
-        output="log"
+        output="log" launch-prefix="sudo"
         name="fc_to_ocs_low_speed">
     <rosparam subst_value="true">
       message: drc_com_common/FC2OCSSmall
@@ -32,11 +34,26 @@
       to_ip: $(arg OCS_IP)
     </rosparam>
   </node>
+
+  <node pkg="jsk_network_tools" type="silverhammer_lowspeed_streamer.py"
+        output="log" launch-prefix="sudo"
+        name="fc_to_ocs_basic_low_speed">
+    <rosparam subst_value="true">
+      message: drc_com_common/FC2OCSBasicInfoSmall
+      to_port: $(arg FC_TO_OCS_BASIC_PORT)
+      to_ip: $(arg OCS_IP)
+      send_rate: 1.0
+    </rosparam>
+  </node>
+
+
   <include file="$(find drc_com_common)/launch/fc_relay.launch" />
   
   <!-- joint angles -->
+  <node pkg="jsk_calibration" type="joint_states_appender.py" name="joint_states_appender" />
   <node pkg="jsk_network_tools" type="joint-state-compressor.l" 
         name="joint_state_compressor">
+    <remap from="/joint_states" to="/joint_states_appended" />
     <rosparam>
       message_type: drc_com_common/HumanoidJointAngles
       robot: hrp2jsknts

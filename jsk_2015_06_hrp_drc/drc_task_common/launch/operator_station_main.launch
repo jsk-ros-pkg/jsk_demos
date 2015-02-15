@@ -2,6 +2,8 @@
   <!--
       This is a launch file for Main PC of Operator Control Station (OCS)
   -->
+  <!-- <remap from="/tf" to="/ocs/tf" /> -->
+  <!-- <remap from="/joint_states" to="/ocs/joint_states" /> -->
   <arg name="FC_IP" default="localhost" />
   <arg name="OCS_IP" default="localhost" />
   
@@ -25,6 +27,8 @@
 
   <node pkg="drc_task_common" type="ocs-executive.l" name="ocs_executive" output="screen">
   </node>
+  <node pkg="drc_task_common" type="ocs-basic-info-subscriber.l" name="ocs_basic_info_publisher" output="screen">
+  </node>
   
   <!-- tf -->
   <group ns="ocs">
@@ -33,7 +37,28 @@
     <node pkg="robot_state_publisher" type="robot_state_publisher" name="ocs_robot_state_publisher">
       <remap from="/joint_states" to="/ocs/joint_states" />
       <remap from="/tf" to="/ocs/tf"/>
-      <remap from="/robot_description" to="/ocs/robot_description" />
+    </node>
+    <node pkg="dynamic_tf_publisher" type="tf_publish.py" name="dynamic_tf_publisher">
+      <remap from="/tf" to="/ocs/tf" />
+      <remap from="/set_dynamic_tf" to="/ocs/set_dynamic_tf" />
+      <remap from="/assoc_tf" to="/ocs/assoc_tf" />
+      <remap from="/publish_tf" to="/ocs/publish_tf" />
+      <remap from="/dissoc_tf" to="/ocs/dissoc_tf" />
+      <remap from="/delete_tf" to="/ocs/delete_tf" />
+      <rosparam>
+        use_cache: false
+      </rosparam>
+    </node>
+    <node pkg="jsk_topic_tools" type="topic_buffer_client" name="joint_states_buffer_client" output="log">
+      <remap from="/update" to="/sample_topic_buffer_server/update"/>
+      <remap from="/ocs/joint_states_decompressed_update" to="/ocs/joint_states_decompressed"/>
+      <remap from="/ocs/joint_states_decompressed_buffered" to="/ocs/joint_states"/>
+      <rosparam>
+        topics: ["/ocs/joint_states_decompressed"]
+        fixed_rate: 0.01
+        use_service: false
+        debug: true
+      </rosparam>
     </node>
   </group>
   <!-- communication -->

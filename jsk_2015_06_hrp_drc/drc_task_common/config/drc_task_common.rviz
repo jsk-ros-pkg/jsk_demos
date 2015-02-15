@@ -595,7 +595,7 @@ Visualization Manager:
       Axes Radius: 0.02
       Class: rviz/Pose
       Color: 255; 25; 0
-      Enabled: true
+      Enabled: false
       Head Length: 0.3
       Head Radius: 0.1
       Name: Pose
@@ -603,13 +603,13 @@ Visualization Manager:
       Shaft Radius: 0.05
       Shape: Axes
       Topic: /object_handle
-      Value: true
+      Value: false
     - Alpha: 1
       Axes Length: 0.05
       Axes Radius: 0.02
       Class: rviz/Pose
       Color: 255; 25; 0
-      Enabled: true
+      Enabled: false
       Head Length: 0.3
       Head Radius: 0.1
       Name: Pose
@@ -617,7 +617,7 @@ Visualization Manager:
       Shaft Radius: 0.05
       Shape: Axes
       Topic: /object_approach
-      Value: true
+      Value: false
     - Background Alpha: 0.8
       Background Color: 0; 0; 0
       Class: jsk_rviz_plugin/OverlayText
@@ -723,6 +723,43 @@ Visualization Manager:
       normal length: 0.1
       show normal: true
       uv-smooth: 50
+    - Class: rviz/Marker
+      Enabled: false
+      Marker Topic: /debri_recognition/hinted_stick_finder/debug/cylinder_marker
+      Name: Marker
+      Namespaces:
+        {}
+      Queue Size: 100
+      Value: false
+    - Alpha: 1
+      Autocompute Intensity Bounds: true
+      Autocompute Value Bounds:
+        Max Value: 10
+        Min Value: -10
+        Value: true
+      Axis: Z
+      Channel Name: intensity
+      Class: rviz/PointCloud2
+      Color: 255; 255; 255
+      Color Transformer: ""
+      Decay Time: 0
+      Enabled: false
+      Invert Rainbow: false
+      Max Color: 255; 255; 255
+      Max Intensity: 4096
+      Min Color: 0; 0; 0
+      Min Intensity: 0
+      Name: PointCloud2
+      Position Transformer: ""
+      Queue Size: 10
+      Selectable: true
+      Size (Pixels): 3
+      Size (m): 0.01
+      Style: Flat Squares
+      Topic: /debri_recognition/hinted_stick_finder/debug/line_filtered_normal
+      Use Fixed Frame: true
+      Use rainbow: true
+      Value: false
   Enabled: true
   Global Options:
     Background Color: 48; 48; 48
@@ -748,22 +785,22 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/XYOrbit
-      Distance: 3.7392
+      Distance: 2.56439
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.06
         Stereo Focal Distance: 1
         Swap Stereo Eyes: false
         Value: false
       Focal Point:
-        X: 0.721533
-        Y: 0.413562
-        Z: 1.19209e-06
+        X: 0.76527
+        Y: 0.141464
+        Z: 9.53671e-07
       Name: Current View
       Near Clip Distance: 0.01
-      Pitch: 0.769798
+      Pitch: 0.419797
       Target Frame: <Fixed Frame>
       Value: XYOrbit (rviz)
-      Yaw: 3.69039
+      Yaw: 2.28857
     Saved: ~
 Window Geometry:
   Camera:

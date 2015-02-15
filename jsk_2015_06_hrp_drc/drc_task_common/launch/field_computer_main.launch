@@ -9,6 +9,8 @@
   <arg name="USE_COM" default="true" />
   <node pkg="drc_task_common" type="fc-executive.l" name="fc_executive" output="screen">
   </node>
+  <node pkg="drc_task_common" type="fc-basic-info-publisher.l" name="fc_basic_info_publisher">
+  </node>
   <node pkg="drc_task_common" type="robot-main.l" name="robot_main" output="screen" if="false">
   </node>
 

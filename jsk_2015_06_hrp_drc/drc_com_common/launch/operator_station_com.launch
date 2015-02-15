@@ -2,11 +2,12 @@
   <!-- required Argument -->
   <arg name="OCS_IP" default="localhost"/>
   <arg name="FC_IP" default="localhost"/>
-  <arg name="OCS_TO_FC_PORT" default="11700"/>
-  <arg name="FC_TO_OCS_PORT" default="11701"/>
-
+  <arg name="OCS_TO_FC_PORT" default="700"/>
+  <arg name="FC_TO_OCS_PORT" default="701"/>
+  <arg name="FC_TO_OCS_BASIC_PORT" default="702"/>
+  
   <node pkg="jsk_network_tools" type="silverhammer_highspeed_receiver.py"
-        output="log"
+        output="log" launch-prefix="sudo"
         name="highspeed_receiver">
     <rosparam>
       message: drc_com_common/FC2OCSLarge
@@ -15,7 +16,7 @@
     </rosparam>
   </node>
   <node pkg="jsk_network_tools" type="silverhammer_lowspeed_receiver.py"
-        output="log"
+        output="log" launch-prefix="sudo"
         name="ocs_from_fc_low_speed">
     <rosparam subst_value="true">
       message: drc_com_common/FC2OCSSmall
@@ -23,8 +24,19 @@
       receive_ip: $(arg OCS_IP)
     </rosparam>
   </node>
+
+  <node pkg="jsk_network_tools" type="silverhammer_lowspeed_receiver.py"
+        output="log" launch-prefix="sudo"
+        name="ocs_from_fc_basic_low_speed">
+    <rosparam subst_value="true">
+      message: drc_com_common/FC2OCSBasicInfoSmall
+      receive_port: $(arg FC_TO_OCS_BASIC_PORT)
+      receive_ip: $(arg OCS_IP)
+    </rosparam>
+  </node>
+
   <node pkg="jsk_network_tools" type="silverhammer_lowspeed_streamer.py"
-        output="log"
+        output="log" launch-prefix="sudo"
         name="ocs_to_fc_low_speed">
     <rosparam subst_value="true">
       message: drc_com_common/OCS2FCSmall
@@ -36,7 +48,7 @@
   <node pkg="jsk_network_tools" type="joint-state-decompressor.l" 
         name="joint_state_decompressor">
     <remap from="/joint_states_compressed" to="/ocs/joint_states_compressed" />
-    <remap from="/joint_states_decompressed" to="/ocs/joint_states" />
+    <remap from="/joint_states_decompressed" to="/ocs/joint_states_decompressed" /> <!-- it will be input to buffer client-->
     <rosparam>
       message_type: drc_com_common/HumanoidJointAngles
       robot: hrp2jsknts
