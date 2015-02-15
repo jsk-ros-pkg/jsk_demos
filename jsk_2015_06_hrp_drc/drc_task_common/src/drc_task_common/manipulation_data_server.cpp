@@ -82,7 +82,7 @@ protected:
   ros::NodeHandle _node;
   message_filters::Subscriber <sensor_msgs::PointCloud2> _subPoints;
   message_filters::Subscriber <jsk_recognition_msgs::BoundingBox> _subBox;
-	message_filters::Subscriber <jsk_reconnition_msgs::ICPResult> _subICP;
+  message_filters::Subscriber <jsk_recognition_msgs::ICPResult> _subICP;
   Subscriber _subSelectedPoints;
   Subscriber _subSelectedPose;
   Subscriber _sub_pose_feedback;
@@ -91,6 +91,7 @@ protected:
   Subscriber _sub_grasp_pose_feedback;
   Subscriber _sub_grasp_pose_feedback_not_allow_slip;
   Subscriber _sub_grasp_pose_dual_feedback;
+  Subscriber _sub_clouds;
   Publisher _pointsPub;
   Publisher _pointsArrayPub;
   Publisher _debug_cloud_pub;
@@ -125,6 +126,7 @@ protected:
   ServiceServer _assoc_server;
   ServiceServer _disassoc_server;
   boost::shared_ptr<message_filters::Synchronizer<SyncPolicy> >_sync;
+  boost::shared_ptr<message_filters::Synchronizer<SyncPolicy_b_i> >_sync_b_i;
   tf::Transform _tf_from_base;
   tf::Transform _tf_marker;
   tf::Transform _tf_from_camera;
@@ -266,19 +268,26 @@ public:
     pub_tf();
 
   }
-	void subscribe_cloud_and_box(){
-    _subPoints.subscribe(_node , "/selected_pointcloud", 1);
-    _subBox.subscribe(_node, "/bounding_box_marker/selected_box", 1);
-    _sync = boost::make_shared<message_filters::Synchronizer<SyncPolicy> >(100);
-		if(true){
-			_sync->connectInput(_subPoints, _subBox);
-			_sync->registerCallback(boost::bind(
-																&ManipulationDataServer::set_reference,
-																this, _1, _2));
-		}else{ // for drc_commu
-			
-		}
-	}
+  void subscribe_cloud_and_box(){
+    if(0){
+      _subPoints.subscribe(_node , "/selected_pointcloud", 1);
+      _subBox.subscribe(_node, "/bounding_box_marker/selected_box", 1);
+      _sync = boost::make_shared<message_filters::Synchronizer<SyncPolicy> >(100);
+      _sync->connectInput(_subPoints, _subBox);
+      _sync->registerCallback(boost::bind(
+					  &ManipulationDataServer::set_reference,
+					  this, _1, _2));
+    }else{ // for drc_comm
+      _subICP.subscribe(_node, "/icp_registration/icp_result", 1);
+      _subBox.subscribe(_node, "/bounding_box_marker/selected_box", 1);
+      _sync_b_i = boost::make_shared<message_filters::Synchronizer<SyncPolicy_b_i> >(100);
+      _sync_b_i->connectInput(_subBox, _subICP);
+      _sync_b_i->registerCallback(boost::bind(
+					  &ManipulationDataServer::set_with_icp_result,
+					  this, _1, _2));
+      _sub_clouds = _node.subscribe("/selected_pointcloud", 1, &ManipulationDataServer::set_cloud_cb, this);
+    }
+  }
   void init_reference(){
     std::vector<std::string> pcd_files;
     if (!jsk_topic_tools::readVectorParameter(_node, "models", pcd_files)){
@@ -1286,6 +1295,17 @@ public:
     set_icp(box, request_icp(&msg, &box));
     set_point_cloud(&msg, _tf_from_base);
     pub_t_marker(box, icp_result);
+  }
+  void set_with_icp_result(const jsk_recognition_msgs::BoundingBoxConstPtr& box_ptr, const jsk_recognition_msgs::ICPResultConstPtr& icp_ptr){
+    jsk_recognition_msgs::BoundingBox box = *box_ptr;
+    jsk_recognition_msgs::ICPResult icp_result = *icp_ptr;
+    set_icp(box, icp_result);
+    //set_point_cloud(&msg, _tf_from_base);
+    pub_t_marker(box, icp_result);
+  }
+  void set_cloud_cb(const sensor_msgs::PointCloud2ConstPtr& cloud_ptr){
+    sensor_msgs::PointCloud2 cloud = *cloud_ptr;
+    set_point_cloud(&cloud, _tf_from_base);
   }
 
   void set_icp(jsk_recognition_msgs::BoundingBox& box, jsk_recognition_msgs::ICPResult icp_result){
