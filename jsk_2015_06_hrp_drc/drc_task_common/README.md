@@ -1,7 +1,7 @@
 # drc_task_common
 
 ## Setup
-1. Setup your account allowing sudo without password.
+1. Setup your account allowing sudo without password and keep environmental variable.
 
   It's required to use socket port 1-1023.
 
@@ -10,9 +10,11 @@
 $ sudo visudo
 ```
 
-  And add this line:
+  And add these lines:
   ```
   YOUR_ACCOUNT ALL=(ALL) NOPASSWD:ALL
+  Defaults env_keep += "PYTHONPATH"
+  Defaults env_keep += "ROS_PACKAGE_PATH"
   ```
 
   And restart your computer.
