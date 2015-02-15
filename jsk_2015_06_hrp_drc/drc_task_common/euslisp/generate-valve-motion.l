@@ -95,7 +95,7 @@
          (setq ik-ret-in
                (send *robot*
                      :fullbody-inverse-kinematics tc
-                     ;;:look-at-target t    
+                     ;;:look-at-target (send *valve* :worldcoords)
                      :move-target mt :link-list ll
                      :additional-weight-list
                      (list (list (send *robot* :rleg :toe-p :child-link) 0)
@@ -110,7 +110,11 @@
                      ;;:rotation-axis (list :z t t)
                      :stop 10
                      :debug-view nil
-                     )))
+                     ))
+         (when ik-ret-in
+           (setq ik-ret-in
+                 (send *robot* :look-at-target (send *valve* :worldcoords))))
+         )
         ;; check reaching point
         (setq tc
               (list
@@ -123,7 +127,7 @@
            (setq ik-ret-out
                  (send *robot*
                        :fullbody-inverse-kinematics tc
-                       ;;:look-at-target t    
+                       ;;:look-at-target (send *valve* :worldcoords)
                        :move-target mt :link-list ll
                        :additional-weight-list
                        (list (list (send *robot* :rleg :toe-p :child-link) 0)
@@ -138,7 +142,10 @@
                        ;;:rotation-axis (list :z t t)
                        :stop 10
                        :debug-view nil
-                       ))))
+                       ))
+           (when ik-ret-out
+             (setq ik-ret-out
+                   (send *robot* :look-at-target (send *valve* :worldcoords))))))
         ;; draw
         (when draw? (send *irtviewer* :draw-objects :flush t))
         (push (list i (not (null (and ik-ret-in ik-ret-out))) ik-ret-in ik-ret-out) ik-results)

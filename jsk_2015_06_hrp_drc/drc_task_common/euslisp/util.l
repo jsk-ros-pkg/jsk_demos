@@ -31,7 +31,7 @@
   (let ((ret (instantiate float-vector length)))
     (setf (elt ret 0) (elt pos 0))
     (setf (elt ret 1) (elt pos 1))
-    (setf (elt ret 1) (elt pos 1))
+    (setf (elt ret 2) (elt pos 2))
     ret))
 
 (defun rect-polygon-stamped-to-integer-vector (msg length)
