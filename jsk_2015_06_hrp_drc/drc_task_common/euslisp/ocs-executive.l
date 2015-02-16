@@ -242,7 +242,7 @@
       (send self :send-to-fc msg)
       (send smachine :go-to :executing-look-at)))
   (:exec-valve-button-callback ()
-    ;; update latest valve coords and radius
+    ;; update latest valve params
     (setq valve-params
           (list (get-primitive-marker-pose :frame-id "BODY")
                 (elt (get-primitive-marker-dimensions) 3)))
@@ -265,10 +265,15 @@
       (send self :send-to-fc msg)
       (send smachine :go-to :executing-door)))
   (:exec-debri-button-callback ()
+    ;; update latest debri params
+    (let* ((dim (get-primitive-marker-dimensions)))
+      (setq debri-params
+            (list (get-primitive-marker-pose :frame-id "BODY") (elt dim 3) (elt dim 2))))
+    ;; send valve params to fc
     (let ((msg (instance drc_com_common::OCS2FCSmall :init)))
       (send msg :type drc_com_common::OCS2FCSmall::*DEBRI_EXEC*)
       (send msg :float_params (cylinder-to-float-vector
-                               (car debri-params) (cadr debri-params) (caddr debri-params)
+                               (elt debri-params 0) (elt debri-params 1) (elt debri-params 2)
                                (length (send msg :float_params))))
       (send self :send-to-fc msg)
       (send smachine :go-to :executing-debri)))
@@ -407,10 +412,9 @@
            (publish-valve-motion :radius (cadr valve-params) :coords (car valve-params) :update? t))
           ((eq (send smachine :state) :selecting-exec-for-debri)
            ;; update latest debri coords and radius
-           (setq debri-params
-                 (list (get-primitive-marker-pose :frame-id "BODY")
-                       (elt (get-primitive-marker-dimensions) 3)
-                       (elt (get-primitive-marker-dimensions) 2)))
+           (let* ((dim (get-primitive-marker-dimensions)))
+             (setq debri-params
+                   (list (get-primitive-marker-pose :frame-id "BODY") (elt dim 3) (elt dim 2))))
            ;; publish valve motion to robot model on rviz
            (publish-debri-motion :coords (elt debri-params 0) :radius (elt debri-params 1) :height (elt debri-params 2) :handle-ratio 0.9 :update? t))
           )

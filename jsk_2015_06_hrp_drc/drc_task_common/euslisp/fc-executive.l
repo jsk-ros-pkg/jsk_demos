@@ -160,7 +160,7 @@
                                (elt (send msg :float_params) 2))))
         ;; position is respected to BODY. need to convert to tf...
         ;; update model
-        (send *robot* :angle-vector (send *ri* :state :potentio-vector))
+        (send *robot* :angle-vector (send *ri* :state :reference-vector))
         ;; fix leg to coords
         (send *robot* :fix-leg-to-coords (make-coords) '(:lleg :rleg))
         (let ((origin-to-body 

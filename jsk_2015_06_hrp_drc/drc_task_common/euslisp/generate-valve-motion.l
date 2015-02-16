@@ -210,6 +210,8 @@
   ;; TODO : robot-interface is unavailable in ocs
   (set-valve-environment-for-fc valve-r valve-coords :draw? nil)
   (generate-valve-motion :draw? nil)
+  ;; TODO : draw ik result
+  (ros::ros-info "~a~%" *valve-ik-results*)
   (get-valve-motion)
   )
 
