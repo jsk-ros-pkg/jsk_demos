@@ -1,6 +1,7 @@
 <!-- This launch file is automatically generated. -->
 <launch>
   <arg name="IMAGE_TOPIC" default="/multisense/left/image_rect_color" />
+  <arg name="POINT_CLOUD_TOPIC" default="/multisense/resize_1_4/points" />
   <group ns="communication">
     <node pkg="resized_image_transport" type="image_resizer" name="color_image_resizer">
       <remap from="~input/image" to="$(arg IMAGE_TOPIC)" />
@@ -11,6 +12,10 @@
         resize_scale_x: 0.2
         resize_scale_y: 0.2
       </rosparam>
+    </node>
+    <node pkg="jsk_topic_tools" type="relay" name="point_cloud_relay" >
+      <remap from="~input" to="$(arg POINT_CLOUD_TOPIC)" />
+      <remap from="~output" to="point_cloud" />
     </node>
   </group>
 </launch>
