@@ -17,13 +17,17 @@
           (send msg :angles latest-joint-states))
       ;; lookup body -> odom_on_ground
       (let ((trans (send *tf* :lookup-transform "BODY" "odom_on_ground" (ros::time 0))))
-        (if trans
-            (send msg :odom_on_ground (coords-to-float-vector 
-                                       trans
-                                       (length (send msg :odom_on_ground))))))
+        (when trans
+          (ros::ros-info ":odom_on_ground ~A" (send msg :odom_on_ground))
+          (ros::ros-info "trans ~A" trans)
+          (send msg :odom_on_ground (coords-to-float-vector 
+                                     trans
+                                     (length (send msg :odom_on_ground))))))
       ;; lookup body -> ground
       (let ((trans (send *tf* :lookup-transform "BODY" "ground" (ros::time 0))))
-        (if trans
+        (when trans
+          (ros::ros-info ":ground ~A" (send msg :ground))
+          (ros::ros-info "trans ~A" trans)
             (send msg :ground (coords-to-float-vector 
                                trans
                                (length (send msg :ground))))))
