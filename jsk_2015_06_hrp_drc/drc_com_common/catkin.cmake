@@ -5,6 +5,7 @@ find_package(catkin REQUIRED COMPONENTS cmake_modules message_generation std_msg
 
 add_message_files(FILES 
   FC2OCSLarge.msg FC2OCSSmall.msg OCS2FCSmall.msg
+  FC2OCSBasicInfoSmall.msg
   HumanoidJointAngles.msg)
 generate_messages(DEPENDENCIES sensor_msgs)
 
