@@ -35,15 +35,19 @@
                                     (eq next-state
                                         (send (send trans :to) :name)))
                                 candidate-transitions)))))
-  (:go-to (next-state)
+  (:go-to! (next-state)
     (format t "next state: ~A~%" next-state)
     (send self :active-state (send self :node next-state))
     (if output-image-file
         (send self :write-to-png output-image-file))
     (if (eq (send self :active-state) (send self :start-state))
         (if (and initial-hook-obj initial-hook-method)
-            (send initial-hook-obj initial-hook-method)))
-    )
+            (send initial-hook-obj initial-hook-method))))
+  (:go-to (next-state)
+    (if (send self :next? next-state)
+        (send self :go-to! next-state)
+      (error "Cannot change state from ~A to ~A"
+             (send self :state) next-state)))
   (:lookup-transitions (start-state)
     (remove-if-not #'(lambda (trans)
                        (eq (send trans :from) start-state))
