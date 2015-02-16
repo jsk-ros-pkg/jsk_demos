@@ -8,6 +8,7 @@
   -->
   <remap from="/tf" to="/ocs/tf" />
   <remap from="/joint_states" to="/ocs/joint_states" />
+  <remap from="/robot_description" to="/ocs/robot_description" />
   
   <arg name="FC_IP" default="localhost" />
   <arg name="OCS_IP" default="localhost" />
@@ -62,7 +63,17 @@
         topics: ["/ocs/joint_states_decompressed"]
         fixed_rate: 0.01
         use_service: false
-        debug: true
+      </rosparam>
+    </node>
+    <!-- is it required? -->
+    <node pkg="jsk_topic_tools" type="topic_buffer_client" name="point_cloud_buffer_client" output="log"
+          if="false">
+      <remap from="/update" to="/sample_topic_buffer_server/update"/>
+      <remap from="/ocs/communication/point_cloud_update" to="/ocs/communication/point_cloud"/>
+      <rosparam>
+        topics: ["/ocs/communication/point_cloud"]
+        fixed_rate: 0.1
+        use_service: false
       </rosparam>
     </node>
   </group>
@@ -107,7 +118,8 @@
     </include>
 
     <!-- rviz -->
-    <node pkg="rviz" type="rviz" name="operator_rviz" args="-d $(find drc_task_common)/config/drc_task_common.rviz"/>
+    <node pkg="rviz" type="rviz" name="operator_rviz" args="-d $(find drc_task_common)/config/drc_task_common.rviz"
+          respawn="true"/>
 
     <group if="false">
 
