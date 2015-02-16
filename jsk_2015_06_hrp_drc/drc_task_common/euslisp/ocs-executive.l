@@ -15,6 +15,7 @@
 (load "package://drc_task_common/euslisp/state-machine.l")
 (load "package://drc_task_common/euslisp/generate-valve-motion.l")
 (load "package://drc_task_common/euslisp/generate-debri-motion.l")
+(load "package://drc_task_common/euslisp/generate-hose-motion.l")
 (load "package://drc_task_common/euslisp/primitive-marker-util.l")
 ;; state
 ;;  :initial -> ...
@@ -26,8 +27,11 @@
   :slots (state task go-pos-coords smachine look-at-pos
                 fc2ocs-message-handler
                 valve-params ;; (list coords radius)
+                door-params
+                debri-params ;; (list coords radius height)
+                hose-grasp-params ;; (list coords)
                 foreground-bacground-sync-obj
-                door-params debri-params))
+                ))
 
 (defmethod ocs-executive-app
   (:init ()
@@ -37,11 +41,11 @@
           (list drc_com_common::FC2OCSSmall::*REPORT*
                 self :report-callback)
           (list drc_com_common::FC2OCSSmall::*GO_POS_POSE*
-                self :go-pos-pose-result-callback)
+                self :go-pos-recognition-finished-callback)
           (list drc_com_common::FC2OCSSmall::*GO_POS_FINISHED*
                 self :go-pos-finished-callback)
           (list drc_com_common::FC2OCSSmall::*LOOK_AT_POS*
-                self :look-at-pose-result-callback)
+                self :look-at-recognition-finished-callback)
           (list drc_com_common::FC2OCSSmall::*LOOK_AT_FINISHED*
                 self :look-at-finished-callback)
           (list drc_com_common::FC2OCSSmall::*VALVE_POSE*
@@ -49,13 +53,17 @@
           (list drc_com_common::FC2OCSSmall::*VALVE_FINISHED*
                 self :valve-exec-finished-callback)
           (list drc_com_common::FC2OCSSmall::*DOOR_POSE*
-                self :door-pose-result-callback)
+                self :door-recognition-finished-callback)
           (list drc_com_common::FC2OCSSmall::*DOOR_FINISHED*
                 self :door-exec-finished-callback)
           (list drc_com_common::FC2OCSSmall::*DEBRI_POSE*
-                self :debri-pose-result-callback)
+                self :debri-recognition-finished-callback)
           (list drc_com_common::FC2OCSSmall::*DEBRI_FINISHED*
-                self :debri-exec-finished-callback))
+                self :debri-exec-finished-callback)
+          (list drc_com_common::FC2OCSSmall::*HOSE_GRASP_POSE*
+                self :hose-grasp-recognition-finished-callback)
+          (list drc_com_common::FC2OCSSmall::*HOSE_GRASP_FINISHED*
+                self :hose-grasp-exec-finished-callback))
     (setq smachine (make-ocs-state-machine))
     (send smachine :register-initial-hook self :initial-callback)
     (send smachine :go-to :initial)     ;force to move to initial state
@@ -121,6 +129,12 @@
       (send self :show-text-on-image "Select line for debri")
       (send smachine :go-to :selecting-region-for-debri))
     (send req :response))
+  (:hose-grasp-button-callback (req)
+    (when (send smachine :next? :selecting-region-for-hose-grasp)
+      (send self :set-image-view2-mode :rectangle)
+      (send self :show-text-on-image "Select line for hose")
+      (send smachine :go-to :selecting-region-for-hose-grasp))
+    (send req :response))
   (:valve-button-callback (req)
     (when (send smachine :next? :selecting-region-for-valve)
       (send self :set-image-view2-mode :rectangle)
@@ -138,6 +152,7 @@
   (:send-to-fc (msg)
     (ros::publish "/ocs_to_fc_low_speed/input" msg))
   (:rectangle-callback-for-go-pos-region (msg)
+    (send self :show-text-on-image "Wait for go-pos recognition")
     ;; send to FC to recognize pos
     (let ((fc-msg (instance drc_com_common::OCS2FCSmall :init)))
       (send fc-msg :type drc_com_common::OCS2FCSmall::*GO_POS_REGION*)
@@ -146,6 +161,7 @@
       (send self :send-to-fc fc-msg)
       (send smachine :go-to :recognizing-go-pos-goal)))
   (:rectangle-callback-for-look-at-region (msg)
+    (send self :show-text-on-image "Wait for look-at recognition")
     ;; send to FC to recognize pos
     (let ((fc-msg (instance drc_com_common::OCS2FCSmall :init)))
       (send fc-msg :type drc_com_common::OCS2FCSmall::*LOOK_AT_REGION*)
@@ -154,9 +170,9 @@
       (send self :send-to-fc fc-msg)
       (send smachine :go-to :recognizing-look-at-point)))
   (:rectangle-callback-for-valve-region (msg)
+    (send self :show-text-on-image "Wait for valve recognition")
     ;; send to FC to recognize pos
     (let ((fc-msg (instance drc_com_common::OCS2FCSmall :init)))
-      (send self :show-text-on-image "Wait valve recognition")
       (send fc-msg :type drc_com_common::OCS2FCSmall::*VALVE_REGION*)
       (send fc-msg :image_roi_info (rect-polygon-stamped-to-integer-vector
                                     msg (length (send fc-msg :image_roi_info))))
@@ -170,6 +186,15 @@
                                     foreground background (length (send fc-msg :image_roi_info))))
       (send self :send-to-fc fc-msg)
       (send smachine :go-to :recognizing-door-pose)))
+  (:rectangle-callback-for-hose-grasp-region (msg)
+    (send self :show-text-on-image "Wait for hose recognition")
+    ;; send to FC to recognize pos
+    (let ((fc-msg (instance drc_com_common::OCS2FCSmall :init)))
+      (send fc-msg :type drc_com_common::OCS2FCSmall::*HOSE_GRASP_REGION*)
+      (send fc-msg :image_roi_info (rect-polygon-stamped-to-integer-vector
+                                    msg (length (send fc-msg :image_roi_info))))
+      (send self :send-to-fc fc-msg)
+      (send smachine :go-to :recognizing-hose-grasp-pose)))
   (:foreground-background-callback (foreground background)
     (cond
      ((eq (send smachine :state) :selecting-region-for-door)
@@ -177,6 +202,8 @@
      )
     )
   (:line-callback-for-debri-line (msg)
+    (send self :show-text-on-image "Wait for debri recognition")
+    ;; send to FC to recognize pos
     (let ((fc-msg (instance drc_com_common::OCS2FCSmall :init)))
       (send fc-msg :type drc_com_common::OCS2FCSmall::*DEBRI_LINE*)
       (send fc-msg :image_roi_info (rect-polygon-stamped-to-integer-vector
@@ -195,6 +222,8 @@
       (send self :rectangle-callback-for-look-at-region msg))
      ((eq (send smachine :state) :selecting-region-for-valve)
       (send self :rectangle-callback-for-valve-region msg))
+     ((eq (send smachine :state) :selecting-region-for-hose-grasp)
+      (send self :rectangle-callback-for-hose-grasp-region msg))
      ))
   (:cancel-button-callback (req)
     (cond
@@ -210,6 +239,8 @@
       (send smachine :go-to :initial))
      ((eq (send smachine :state) :selecting-exec-for-debri)
       (send smachine :go-to :initial))
+     ((eq (send smachine :state) :selecting-exec-for-hose-grasp)
+      (send smachine :go-to :initial))
      ;; TODO : cancel recognition from button
      ((eq (send smachine :state) :recognizing-look-at-point)
       (send smachine :go-to :initial))
@@ -220,6 +251,8 @@
      ((eq (send smachine :state) :recognizing-debri-pose)
       (send smachine :go-to :initial))
      ((eq (send smachine :state) :recognizing-go-pos-goal)
+      (send smachine :go-to :initial))
+     ((eq (send smachine :state) :recognizing-hose-grasp-pose)
       (send smachine :go-to :initial))
      )
     ;; clear text message
@@ -269,7 +302,7 @@
     (let* ((dim (get-primitive-marker-dimensions)))
       (setq debri-params
             (list (get-primitive-marker-pose :frame-id "BODY") (elt dim 3) (elt dim 2))))
-    ;; send valve params to fc
+    ;; send debri params to fc
     (let ((msg (instance drc_com_common::OCS2FCSmall :init)))
       (send msg :type drc_com_common::OCS2FCSmall::*DEBRI_EXEC*)
       (send msg :float_params (cylinder-to-float-vector
@@ -277,6 +310,19 @@
                                (length (send msg :float_params))))
       (send self :send-to-fc msg)
       (send smachine :go-to :executing-debri)))
+  (:exec-hose-grasp-button-callback ()
+    ;; update latest hose-grasp params
+    (setq hose-grasp-params
+          (list (get-primitive-marker-pose :frame-id "BODY")))
+    ;; send hose-grasp params to fc
+    (let ((msg (instance drc_com_common::OCS2FCSmall :init)))
+      (send msg :type drc_com_common::OCS2FCSmall::*HOSE_GRASP_EXEC*)
+      (let ((pos (send (elt hose-grasp-params 0) :worldpos)))
+        (setf (elt (send msg :float_params) 0) (elt pos 0))
+        (setf (elt (send msg :float_params) 1) (elt pos 1))
+        (setf (elt (send msg :float_params) 2) (elt pos 2)))
+      (send self :send-to-fc msg)
+      (send smachine :go-to :executing-hose-grasp)))
   (:exec-button-callback (req)
     (cond
      ((eq (send smachine :state) :selecting-exec-for-go-pos)
@@ -289,9 +335,11 @@
       (send self :exec-door-button-callback))
      ((eq (send smachine :state) :selecting-exec-for-debri)
       (send self :exec-debri-button-callback))
+     ((eq (send smachine :state) :selecting-exec-for-hose-grasp)
+      (send self :exec-hose-grasp-button-callback))
      )
     (send req :response))
-  (:debri-pose-result-callback (msg)
+  (:debri-recognition-finished-callback (msg)
     (when (eq (send smachine :state) :recognizing-debri-pose)
       (let ((params (send msg :params)))
         (multiple-value-bind
@@ -310,7 +358,7 @@
          ;; publish valve motion to robot model on rviz
          (publish-debri-motion :coords coords :radius r :height h :handle-ratio 0.9 :update? t)
          (send smachine :go-to :selecting-exec-for-debri)))))
-  (:door-pose-result-callback (msg)
+  (:door-recognition-finished-callback (msg)
     (when (eq (send smachine :state) :recognizing-door-pose)
       (let ((params (send msg :params)))
         (multiple-value-bind
@@ -320,7 +368,7 @@
          (setq door-params (list coords size))
          (send smachine :go-to :selecting-exec-for-door)))
       ))
-  (:look-at-pose-result-callback (msg)
+  (:look-at-recognition-finished-callback (msg)
     (when (eq (send smachine :state) :recognizing-look-at-point)
       (let ((params (send msg :params)))
         (send self :show-text-on-image 
@@ -332,7 +380,7 @@
                                         (elt params 1)
                                         (elt params 2)))
         (send smachine :go-to :selecting-exec-for-look-at))))
-  (:go-pos-pose-result-callback (msg)
+  (:go-pos-recognition-finished-callback (msg)
     (when (eq (send smachine :state) :recognizing-go-pos-goal)
       (let ((params (send msg :params)))
         ;; show go pos pose in image
@@ -363,6 +411,9 @@
   (:go-pos-finished-callback (msg)
     (when (eq (send smachine :state) :executing-go-pos)
       (send smachine :go-to :initial)))
+  (:hose-grasp-exec-finished-callback (msg)
+    (when (eq (send smachine :state) :executing-hose-grasp)
+      (send smachine :go-to :initial)))
   (:valve-recognition-finished-callback (msg)
     (when (eq (send smachine :state) :recognizing-valve-pose)
       ;; show it
@@ -370,10 +421,10 @@
         (multiple-value-bind
          (coords radius) (float-vector-to-torus params)
          (send self :show-text-on-image 
-              (format nil "valve ~A ~A ~f" 
-                      (send coords :worldpos)
-                      (reverse (car (send coords :rpy-angle)))
-                      radius))
+               (format nil "valve ~A ~A ~f" 
+                       (send coords :worldpos)
+                       (reverse (car (send coords :rpy-angle)))
+                       radius))
          ;; publish torus pose
          (erase-all-primitive-marker)
          (insert-primitive-marker :shape-type jsk_rviz_plugins::TransformableMarkerOperate::*TORUS* :name "torus1" :description "")
@@ -388,6 +439,30 @@
          (publish-valve-motion :radius (cadr valve-params) :coords (car valve-params) :update? t)
          ))
       (send smachine :go-to :selecting-exec-for-valve)))
+  (:hose-grasp-recognition-finished-callback (msg)
+    ;; TODO : receive all hose information
+    (when (eq (send smachine :state) :recognizing-hose-grasp-pose)
+      (let* ((params (send msg :params))
+            (coords (make-coords :pos (float-vector (elt params 0) (elt params 1) (elt params 2)))))
+        (send self :show-text-on-image 
+              (format nil "hose pos ~f ~f ~f" 
+                      (* 0.001 (elt params 0))
+                      (* 0.001 (elt params 1))
+                      (* 0.001 (elt params 2))))
+        ;; store result
+        (setq hose-grasp-params (list coords))
+        ;; publish torus pose
+        (erase-all-primitive-marker)
+        (insert-primitive-marker :shape-type jsk_rviz_plugins::TransformableMarkerOperate::*CYLINDER* :name "cylinder1" :description "")
+        (set-primitive-marker-dimensions :radius 30 :z 120)
+        (set-primitive-marker-pose coords "BODY")
+        (set-primitive-marker-color :r 1.0 :g 1.0 :b 0.0 :a 0.6)
+        (apply-primitive-dimensions-to-midi-device)
+        (send self :move-robot-model-to-current-pos)
+        ;; publish hose motion to robot model on rviz
+        (publish-hose-grasp-motion :coords (elt hose-grasp-params 0) :update? t)
+        (send smachine :go-to :selecting-exec-for-hose-grasp))
+      ))
   (:look-at-finished-callback (msg)
     (when (eq (send smachine :state) :executing-look-at)
       (send smachine :go-to :initial)))
@@ -404,20 +479,26 @@
     )
   (:reflesh-button-callback (req)
     (cond ((eq (send smachine :state) :selecting-exec-for-valve)
-           ;; update latest valve coords and radius
+           ;; update latest valve params
            (setq valve-params
                  (list (get-primitive-marker-pose :frame-id "BODY")
                        (elt (get-primitive-marker-dimensions) 3)))
            ;; publish valve motion to robot model on rviz
            (publish-valve-motion :radius (cadr valve-params) :coords (car valve-params) :update? t))
           ((eq (send smachine :state) :selecting-exec-for-debri)
-           ;; update latest debri coords and radius
+           ;; update latest debri params
            (let* ((dim (get-primitive-marker-dimensions)))
              (setq debri-params
                    (list (get-primitive-marker-pose :frame-id "BODY") (elt dim 3) (elt dim 2))))
            ;; publish valve motion to robot model on rviz
            (publish-debri-motion :coords (elt debri-params 0) :radius (elt debri-params 1) :height (elt debri-params 2) :handle-ratio 0.9 :update? t))
-          )
+          ((eq (send smachine :state) :selecting-exec-for-hose-grasp)
+           ;; update latest hose-grasp params
+           (setq hose-grasp-params
+                 (list (get-primitive-marker-pose :frame-id "BODY")))
+           ;; publish valve motion to robot model on rviz
+           (publish-hose-grasp-motion :coords (elt hose-grasp-params 0) :update? t)
+           ))
     (send req :response)
     )
   (:move-robot-model
@@ -455,6 +536,7 @@
 (ros::advertise-service "valve" std_srvs::Empty #'send *app* :valve-button-callback)
 (ros::advertise-service "door" std_srvs::Empty #'send *app* :door-button-callback)
 (ros::advertise-service "debri" std_srvs::Empty #'send *app* :debri-button-callback)
+(ros::advertise-service "hose_grasp" std_srvs::Empty #'send *app* :hose-grasp-button-callback)
 (ros::advertise-service "look_at" std_srvs::Empty #'send *app* :look-at-button-callback)
 (ros::advertise-service "exec" std_srvs::Empty #'send *app* :exec-button-callback)
 (ros::advertise-service "cancel" std_srvs::Empty #'send *app* :cancel-button-callback)

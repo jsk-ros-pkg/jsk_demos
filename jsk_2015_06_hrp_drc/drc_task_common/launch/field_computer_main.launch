@@ -28,6 +28,10 @@
     <include file="$(find drc_task_common)/launch/fc/centroid_of_pointcloud_in_rect.launch">
     </include>
   </group>
+  <group ns="hose_grasp_recognition">
+    <include file="$(find drc_task_common)/launch/fc/centroid_of_pointcloud_in_rect.launch">
+    </include>
+  </group>
   <include file="$(find drc_task_common)/launch/fc/valve_recognition.launch">
   </include>
   <include file="$(find drc_task_common)/launch/fc/door_recognition.launch">

@@ -258,7 +258,7 @@
   )
 
 (defun publish-valve-motion
-  (&key radius coords (step-time 400) (update? nil))
+  (&key radius coords (step-time 400) (update? t))
   (when update?
     (get-valve-motion-for-ocs radius coords))
   (dolist (av *valve-motion*)

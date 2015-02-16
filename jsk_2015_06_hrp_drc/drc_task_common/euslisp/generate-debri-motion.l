@@ -26,6 +26,7 @@
          :parent *debri*))
   ;; place debri to debri-coords
   (send *debri* :newcoords debri-coords)
+  (send *debri* :translate (float-vector 0 0 (* -0.5 debri-h)) :local) ;; treat the difference of origin  between eus and recognition program
   ;; draw
   (when draw?
     (setq *ground* (make-cube 5000 5000 1))
@@ -48,7 +49,6 @@
     (send *robot* :angle-vector (send *ri* :state :potentio-vector))
     (send *robot* :fix-leg-to-coords (make-coords) '(:lleg :rleg))
     (send *debri* :newcoords (send (send (send *robot* :body_lk) :copy-worldcoords) :transform debri-coords :local))
-    (send *debri* :translate (float-vector 0 0 (* -0.5 debri-h)) :local) ;; treat the difference of origin  between eus and recognition program
     (when draw? (send *irtviewer* :draw-objects))
     ))
 
@@ -122,16 +122,16 @@
 
 (defun get-debri-motion-for-fc
   (debri-r debri-h debri-coords handle-ratio)
-  (set-debri-environment-for-fc debri-r debri-h debri-coords handle-ratio :draw? t)
-  (generate-debri-motion :draw? t)
+  (set-debri-environment-for-fc debri-r debri-h debri-coords handle-ratio :draw? nil)
+  (generate-debri-motion :draw? nil)
   (get-debri-motion)
   )
 
 (defun get-debri-motion-for-ocs
   (debri-r debri-h debri-coords handle-ratio)
   ;; TODO : robot-interface is unavailable in ocs
-  (set-debri-environment-for-fc debri-r debri-h debri-coords handle-ratio :draw? t)
-  (generate-debri-motion :draw? t)
+  (set-debri-environment-for-fc debri-r debri-h debri-coords handle-ratio :draw? nil)
+  (generate-debri-motion :draw? nil)
   (get-debri-motion)
   )
 
@@ -165,11 +165,14 @@
       (when real? (model2real :time 6000))
       (send *robot* :hand :arms :hook-pose) ;; hand hook-pose
       (when real? (hand-model2real))
+      ;; reset-manip-pose
+      (send *robot* :reset-manip-pose)
+      (when real? (model2real :time 5000))
       ))
   )
 
 (defun publish-debri-motion
-  (&key coords radius height handle-ratio (step-time 400) (update? nil))
+  (&key coords radius height handle-ratio (step-time 400) (update? t))
   (when update?
     (get-debri-motion-for-ocs radius height coords handle-ratio))
   (dolist (av *debri-motion*)
