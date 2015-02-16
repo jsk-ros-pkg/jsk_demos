@@ -14,6 +14,7 @@
   <build_depend>message_generation</build_depend>
   <build_depend>roslib</build_depend>
   <build_depend>rospy</build_depend>
+  <build_depend>jsk_network_tools</build_depend>
   <build_depend>cmake_modules</build_depend>
   <run_depend>mk</run_depend>
   <run_depend>rosbuild</run_depend>
@@ -21,4 +22,5 @@
   <run_depend>message_runtime</run_depend>
   <run_depend>roslib</run_depend>
   <run_depend>rospy</run_depend>
+  <run_depend>jsk_network_tools</run_depend>
 </package>
