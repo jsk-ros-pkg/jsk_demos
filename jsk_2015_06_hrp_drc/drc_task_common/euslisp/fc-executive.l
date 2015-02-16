@@ -11,6 +11,7 @@
 (load "package://drc_task_common/euslisp/robot-util.l")
 (load "package://drc_task_common/euslisp/generate-valve-motion.l")
 (load "package://drc_task_common/euslisp/generate-debri-motion.l")
+(load "package://drc_task_common/euslisp/generate-hose-motion.l")
 
 (defclass fc-executive-app
   :super propertied-object
@@ -41,7 +42,11 @@
           (list drc_com_common::OCS2FCSmall::*DEBRI_LINE*
                 self :debri-line-command-callback)
           (list drc_com_common::OCS2FCSmall::*DEBRI_EXEC*
-                self :debri-exec-command-callback))
+                self :debri-exec-command-callback)
+          (list drc_com_common::OCS2FCSmall::*HOSE_GRASP_REGION*
+                self :hose-grasp-region-command-callback)
+          (list drc_com_common::OCS2FCSmall::*HOSE_GRASP_EXEC*
+                self :hose-grasp-exec-command-callback))
     self)
   (:ocs2fc-message-handler () ocs2fc-message-handler)
   (:debri-line-command-callback (msg)
@@ -51,8 +56,17 @@
       (ros::publish "/debri_recognition/input_line"
         (integer-vector-to-rect-polygon-stamped msg))
       (setq state :recognizing-debri-pose)
-      )
-  ;;)
+      ;;)
+  )
+  (:hose-grasp-region-command-callback (msg)
+    (when (eq state :initial)
+      ;; convert OCS2FCSmall into geometry_msgs/Polygon
+      (ros::publish "/hose_grasp_recognition/input_rect"
+        (integer-vector-to-rect-polygon-stamped msg))
+      ;; enable snapshot
+      (call-empty-service "/hose_grasp_recognition/snapshot/request")
+      (setq state :recognizing-hose-grasp-pose)
+      ))
   (:door-region-command-callback (msg)
     (when (eq state :initial)
       (multiple-value-bind
@@ -97,6 +111,21 @@
          (send self :send-to-ocs msg))
        (setq state :initial)
        )))
+  (:hose-grasp-exec-command-callback (msg)
+    (when (eq state :initial)
+      (let* ((params (send msg :float_params))
+             (coords (make-coords :pos (float-vector (elt params 0) (elt params 1) (elt params 2)))))
+        (ros::ros-info "grasping hose at ~A" coords)
+        (setq state :executing-hose)
+        ;; send motion to real robot
+        (send-hose-grasp-motion coords)
+        ;; send finish signal to ocs
+        (let ((msg (instance drc_com_common::FC2OCSSmall :init)))
+          (send msg :type drc_com_common::FC2OCSSmall::*HOSE_GRASP_FINISHED*)
+          (send self :send-to-ocs msg))
+        (setq state :initial)
+        ))
+    )
   (:door-exec-command-callback (msg)
     (when (eq state :initial)
       (multiple-value-bind
@@ -226,50 +255,60 @@
                 (setq state :initial))))))))
   (:valve-recog-callback (msg)
     (when (eq state :recognizing-valve-pose)
-      (let ((trans (send *tf* :lookup-transform "BODY" 
-                         (send msg :header :frame_id) (send msg :header :stamp))))
-        (unless trans
-          (setq trans (send *tf* :lookup-transform "BODY" 
-                            (send msg :header :frame_id) (ros::time 0))))
-        (let ((coords (ros::tf-pose->coords (send msg :pose))))
-          (let ((from-body-coords (send trans :transform coords)))
-            (let ((fc-msg (instance drc_com_common::FC2OCSSmall :init)))
-              (send fc-msg :params (torus-to-float-vector 
-                                    from-body-coords (* (send msg :large_radius) 1000)
-                                    (length (send fc-msg :params))))
-              (send fc-msg :type drc_com_common::FC2OCSSmall::*VALVE_POSE*)
-              (send self :send-to-ocs fc-msg)
-              (setq state :initial)
-              ))))
+      (let* ((trans (send self :lookup-from-body-transform (send msg :header)))
+             (coords (ros::tf-pose->coords (send msg :pose)))
+             (from-body-coords (send trans :transform coords)))
+        (let ((fc-msg (instance drc_com_common::FC2OCSSmall :init)))
+          (send fc-msg :params (torus-to-float-vector 
+                                from-body-coords (* (send msg :large_radius) 1000)
+                                (length (send fc-msg :params))))
+          (send fc-msg :type drc_com_common::FC2OCSSmall::*VALVE_POSE*)
+          (send self :send-to-ocs fc-msg)
+          (setq state :initial)
+          ))
       ))
+  (:hose-grasp-recog-callback (msg)         ;geometry_msgs/PoseStamped
+    (when (eq state :recognizing-hose-grasp-pose)
+      ;; TODO : recognize hose
+      (let* ((trans (send self :lookup-from-body-transform (send msg :header)))
+             (coords (ros::tf-pose-stamped->coords msg))
+             (from-body-coords (send trans :transform coords)))
+        ;; only position is important in the temporary recognition
+        (let ((pos (float-vector (elt (send from-body-coords :worldpos) 0)
+                                 (elt (send from-body-coords :worldpos) 1)
+                                 (elt (send from-body-coords :worldpos) 2))))
+          (let ((msg (instance drc_com_common::FC2OCSSmall :init)))
+            (send msg :type drc_com_common::FC2OCSSmall::*HOSE_GRASP_POSE*)
+            (setf (elt (send msg :params) 0) (elt pos 0))
+            (setf (elt (send msg :params) 1) (elt pos 1))
+            (setf (elt (send msg :params) 2) (elt pos 2))
+            (send self :send-to-ocs msg)
+            (setq state :initial)
+            )))))
   (:look-at-recog-callback (msg)
     (when (eq state :recognizing-look-at-point)
-      (let ((trans (send *tf* :lookup-transform "BODY" 
-                         (send msg :header :frame_id) (send msg :header :stamp))))
-        (unless trans
-          (setq trans (send *tf* :lookup-transform "BODY" 
-                            (send msg :header :frame_id) (ros::time 0))))
-        (let ((coords (ros::tf-pose-stamped->coords msg)))
-          (let ((from-body-coords (send trans :transform coords)))
-            ;; only position is important
-            (let ((pos (float-vector (elt (send from-body-coords :worldpos) 0)
-                                     (elt (send from-body-coords :worldpos) 1)
-                                     (elt (send from-body-coords :worldpos) 2))))
-              (let ((msg (instance drc_com_common::FC2OCSSmall :init)))
-                (send msg :type drc_com_common::FC2OCSSmall::*LOOK_AT_POS*)
-                (setf (elt (send msg :params) 0) (elt pos 0))
-                (setf (elt (send msg :params) 1) (elt pos 1))
-                (setf (elt (send msg :params) 2) (elt pos 2))
-                (send self :send-to-ocs msg)
-                (setq state :initial)
-                )))))))
+      (let* ((trans (send self :lookup-from-body-transform (send msg :header)))
+             (coords (ros::tf-pose-stamped->coords msg))
+             (from-body-coords (send trans :transform coords)))
+        ;; only position is important
+        (let ((pos (float-vector (elt (send from-body-coords :worldpos) 0)
+                                 (elt (send from-body-coords :worldpos) 1)
+                                 (elt (send from-body-coords :worldpos) 2))))
+          (let ((msg (instance drc_com_common::FC2OCSSmall :init)))
+            (send msg :type drc_com_common::FC2OCSSmall::*LOOK_AT_POS*)
+            (setf (elt (send msg :params) 0) (elt pos 0))
+            (setf (elt (send msg :params) 1) (elt pos 1))
+            (setf (elt (send msg :params) 2) (elt pos 2))
+            (send self :send-to-ocs msg)
+            (setq state :initial)
+            )))))
   (:go-pos-recog-callback (msg)         ;geometry_msgs/PoseStamped
     (when (eq state :recognizing-go-pos-location)
       (let ((trans (send self :lookup-from-ground-transform (send msg :header))))
         (let ((coords (ros::tf-pose-stamped->coords msg)))
-          (let ((from-body-coords (send trans :transform coords)))
-            (let ((theta (atan2 (elt (send from-body-coords :pos) 1)
-                                (elt (send from-body-coords :pos) 0))))
+          (let ((from-ground-coords (send trans :transform coords)))
+            (let ((theta (atan2 (elt (send from-ground-coords :pos) 1)
+                                (elt (send from-ground-coords :pos) 0))))
               (let ((ux (float-vector (cos theta)
                                       (sin theta)
                                       0))
@@ -280,7 +319,7 @@
                     (setf (matrix-column mat 1) uy)
                     (setf (matrix-column mat 2) uz)
                     (let ((goal-oriented-coords
-                           (make-coords :pos (send from-body-coords :worldpos)
+                           (make-coords :pos (send from-ground-coords :worldpos)
                                         :rot mat)))
                       (let ((offset-goal
                              (send (send goal-oriented-coords :copy-worldcoords)
@@ -318,6 +357,7 @@
 (setq *tf* (instance ros::transform-listener :init))
 
 (ros::advertise "/go_pos_recognition/input_rect" geometry_msgs::PolygonStamped)
+(ros::advertise "/hose_grasp_recognition/input_rect" geometry_msgs::PolygonStamped)
 (ros::advertise "/look_at_recognition/input_rect" geometry_msgs::PolygonStamped)
 (ros::advertise "/valve_recognition/input_rect" geometry_msgs::PolygonStamped)
 (ros::advertise "/door_recognition/input_support_plane_rect" geometry_msgs::PolygonStamped)
@@ -336,6 +376,8 @@
   #'send *app* :door-recog-callback)
 (ros::subscribe "/debri_recognition/snapshot/output" pcl_msgs::ModelCoefficients
   #'send *app* :debri-recog-callback)
+(ros::subscribe "/hose_grasp_recognition/snapshot/output" geometry_msgs::PoseStamped
+  #'send *app* :hose-grasp-recog-callback)
 (ros::advertise "/go_pos_goal" geometry_msgs::PoseStamped)
 
 (ros::rate 10)

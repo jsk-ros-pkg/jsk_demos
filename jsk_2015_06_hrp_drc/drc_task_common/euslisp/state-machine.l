@@ -219,6 +219,14 @@ Usage:
      (:selecting-exec-for-debri -> :executing-debri)          ;exec
      (:selecting-exec-for-debri -> :initial)                   ;cancel
      (:executing-debri -> :initial)                            ;done
+     ;; hose
+     (:initial -> :selecting-region-for-hose-grasp)
+     (:selecting-region-for-hose-grasp -> :initial) ;cancel
+     (:selecting-region-for-hose-grasp -> :recognizing-hose-grasp-pose)
+     (:recognizing-hose-grasp-pose -> :selecting-exec-for-hose-grasp) ;recognition done
+     (:selecting-exec-for-hose-grasp -> :executing-hose-grasp)          ;exec
+     (:selecting-exec-for-hose-grasp -> :initial)                   ;cancel
+     (:executing-hose-grasp -> :initial)                            ;done
      )
    '((:initial :initial)
      ;; go-pos
@@ -246,5 +254,10 @@ Usage:
      (:recognizing-debri-pose :debri)
      (:selecting-exec-for-debri :debri)
      (:executing-debri :debri)
+     ;; hose
+     (:selecting-region-for-hose-grasp :hose-grasp)
+     (:recognizing-hose-grasp-pose :hose-grasp)
+     (:selecting-exec-for-hose-grasp :hose-grasp)
+     (:executing-hose-grasp :hose-grasp)
      )
    :initial "ocs_state.png"))

@@ -18,9 +18,12 @@ uint8 VALVE_FINISHED=6
 # door
 uint8 DOOR_POSE=7
 uint8 DOOR_FINISHED=8
-# line
+# debri
 uint8 DEBRI_POSE=9
 uint8 DEBRI_FINISHED=10
+# hose
+uint8 HOSE_GRASP_POSE=11
+uint8 HOSE_GRASP_FINISHED=12
 
 # when type==GO_POS_POSE, 
 # params = [x, y, z, yaw, pitch, roll]
