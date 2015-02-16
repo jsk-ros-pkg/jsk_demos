@@ -8,10 +8,10 @@
   ;; generate robot
   (unless (boundp '*robot*)
     (cond (generate-ri?
-           (hrp2jsknts-init))
+           (hrp2jsknts-init)
+           (setq *robot* *hrp2jsknts*))
           (t
-           (setq *robot* (instance hrp2jsknts-robot :init))))
-    (setq *robot* *hrp2jsknts*))
+           (setq *robot* (instance hrp2jsknts-robot :init)))))
   ;; place robot to origin
   (send *robot* :reset-manip-pose)
   (send *robot* :fix-leg-to-coords (make-coords))
@@ -36,15 +36,19 @@
   )
 ;;(warning-message 2 "(set-valve-environment)~%")
 
-(defun set-valve-environment-for-fc
+(defun set-valve-environment-full
   (valve-r
    valve-coords
    &key
-   (draw? nil))
+   (draw? nil)
+   (use-ri? t))
   (let* (valve-worldcoords)
     ;; place robot and valve to initial coords
-    (set-valve-environment :valve-r valve-r :draw? draw?)
-    (send *robot* :angle-vector (send *ri* :state :potentio-vector))
+    (set-valve-environment :valve-r valve-r :draw? draw? :generate-ri? use-ri?)
+    (cond (use-ri?
+           (send *robot* :angle-vector (send *ri* :state :potentio-vector)))
+          (t
+           (send *robot* :angle-vector (get-potentio-vector-from-joint-states))))
     (send *robot* :fix-leg-to-coords (make-coords) '(:lleg :rleg))
     (send *valve* :newcoords (send (send (send *robot* :body_lk) :copy-worldcoords) :transform valve-coords :local))
     (when draw? (send *irtviewer* :draw-objects))
@@ -200,15 +204,14 @@
 
 (defun get-valve-motion-for-fc
   (valve-r valve-coords)
-  (set-valve-environment-for-fc valve-r valve-coords :draw? nil)
+  (set-valve-environment-full valve-r valve-coords :draw? nil)
   (generate-valve-motion :draw? nil)
   (get-valve-motion)
   )
 
 (defun get-valve-motion-for-ocs
   (valve-r valve-coords)
-  ;; TODO : robot-interface is unavailable in ocs
-  (set-valve-environment-for-fc valve-r valve-coords :draw? nil)
+  (set-valve-environment-full valve-r valve-coords :draw? nil :use-ri? nil)
   (generate-valve-motion :draw? nil)
   ;; TODO : draw ik result
   (ros::ros-info "~a~%" *valve-ik-results*)

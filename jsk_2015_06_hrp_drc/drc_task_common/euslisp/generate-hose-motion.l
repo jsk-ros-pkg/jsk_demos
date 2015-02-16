@@ -9,10 +9,10 @@
   ;; generate robot
   (unless (boundp '*robot*)
     (cond (generate-ri?
-           (hrp2jsknts-init))
+           (hrp2jsknts-init)
+           (setq *robot* *hrp2jsknts*))
           (t
-           (setq *robot* (instance hrp2jsknts-robot :init))))
-    (setq *robot* *hrp2jsknts*))
+           (setq *robot* (instance hrp2jsknts-robot :init)))))
   ;; place robot to origin
   (send *robot* :reset-manip-pose)
   (send *robot* :fix-leg-to-coords (make-coords))
@@ -39,14 +39,18 @@
     )
   )
 
-(defun set-hose-grasp-environment-for-fc
+(defun set-hose-grasp-environment-full
   (hose-coords
    &key
-   (draw? nil))
+   (draw? nil)
+   (use-ri? t))
   (let* (hose-worldcoords)
     ;; place robot and hose to initial coords
-    (set-hose-grasp-environment :draw? draw?)
-    (send *robot* :angle-vector (send *ri* :state :potentio-vector))
+    (set-hose-grasp-environment :draw? draw? :generate-ri? use-ri?)
+    (cond (use-ri?
+           (send *robot* :angle-vector (send *ri* :state :potentio-vector)))
+          (t
+           (send *robot* :angle-vector (get-potentio-vector-from-joint-states))))
     (send *robot* :fix-leg-to-coords (make-coords) '(:lleg :rleg))
     (send *hose* :newcoords (send (send (send *robot* :body_lk) :copy-worldcoords) :transform hose-coords :local))
     (when draw? (send *irtviewer* :draw-objects))
@@ -118,7 +122,7 @@
 
 (defun get-hose-grasp-motion-for-fc
   (hose-coords)
-  (set-hose-grasp-environment-for-fc hose-coords :draw? nil)
+  (set-hose-grasp-environment-full hose-coords :draw? nil)
   (generate-hose-grasp-motion :draw? nil)
   (get-hose-grasp-motion)
   )
@@ -126,7 +130,7 @@
 (defun get-hose-grasp-motion-for-ocs
   (hose-coords)
   ;; TODO : robot-interface is unavailable in ocs
-  (set-hose-grasp-environment-for-fc hose-coords :draw? nil)
+  (set-hose-grasp-environment-full hose-coords :draw? nil :use-ri? nil)
   (generate-hose-grasp-motion :draw? nil)
   (get-hose-grasp-motion)
   )

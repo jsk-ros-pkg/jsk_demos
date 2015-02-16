@@ -557,6 +557,7 @@
 (send *app* :subscribe-foreground-backggrond-topics 
       (list (list "/ocs/communication/image_rect_color/foreground_rect/scaled" geometry_msgs::PolygonStamped)
             (list "/ocs/communication/image_rect_color/background_rect/scaled" geometry_msgs::PolygonStamped)))
+(ros::subscribe "/joint_states" sensor_msgs::JointState #'joint-states-callback)
 
 (ros::rate 10)
 (ros::spin)
