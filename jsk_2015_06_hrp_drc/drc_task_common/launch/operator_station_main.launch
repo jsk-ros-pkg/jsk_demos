@@ -2,8 +2,13 @@
   <!--
       This is a launch file for Main PC of Operator Control Station (OCS)
   -->
-  <!-- <remap from="/tf" to="/ocs/tf" /> -->
-  <!-- <remap from="/joint_states" to="/ocs/joint_states" /> -->
+
+  <!-- 
+       Remap tf and joint_states for ocs settings
+  -->
+  <remap from="/tf" to="/ocs/tf" />
+  <remap from="/joint_states" to="/ocs/joint_states" />
+  
   <arg name="FC_IP" default="localhost" />
   <arg name="OCS_IP" default="localhost" />
   
