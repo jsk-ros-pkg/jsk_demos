@@ -9,10 +9,10 @@
   ;; generate robot
   (unless (boundp '*robot*)
     (cond (generate-ri?
-           (hrp2jsknts-init))
+           (hrp2jsknts-init)
+           (setq *robot* *hrp2jsknts*))
           (t
-           (setq *robot* (instance hrp2jsknts-robot :init))))
-    (setq *robot* *hrp2jsknts*))
+           (setq *robot* (instance hrp2jsknts-robot :init)))))
   ;; place robot to origin
   (send *robot* :reset-manip-pose)
   (send *robot* :fix-leg-to-coords (make-coords))
@@ -36,17 +36,21 @@
     )
   )
 
-(defun set-debri-environment-for-fc
+(defun set-debri-environment-full
   (debri-r
    debri-h
    debri-coords
    handle-ratio
    &key
-   (draw? nil))
+   (draw? nil)
+   (use-ri? t))
   (let* (debri-worldcoords)
     ;; place robot and debri to initial coords
-    (set-debri-environment :debri-r debri-r :debri-h debri-h :draw? draw?)
-    (send *robot* :angle-vector (send *ri* :state :potentio-vector))
+    (set-debri-environment :debri-r debri-r :debri-h debri-h :draw? draw? :generate-ri? use-ri?)
+    (cond (use-ri?
+           (send *robot* :angle-vector (send *ri* :state :potentio-vector)))
+          (t
+           (send *robot* :angle-vector (get-potentio-vector-from-joint-states))))
     (send *robot* :fix-leg-to-coords (make-coords) '(:lleg :rleg))
     (send *debri* :newcoords (send (send (send *robot* :body_lk) :copy-worldcoords) :transform debri-coords :local))
     (when draw? (send *irtviewer* :draw-objects))
@@ -122,7 +126,7 @@
 
 (defun get-debri-motion-for-fc
   (debri-r debri-h debri-coords handle-ratio)
-  (set-debri-environment-for-fc debri-r debri-h debri-coords handle-ratio :draw? nil)
+  (set-debri-environment-full debri-r debri-h debri-coords handle-ratio :draw? nil)
   (generate-debri-motion :draw? nil)
   (get-debri-motion)
   )
@@ -130,7 +134,7 @@
 (defun get-debri-motion-for-ocs
   (debri-r debri-h debri-coords handle-ratio)
   ;; TODO : robot-interface is unavailable in ocs
-  (set-debri-environment-for-fc debri-r debri-h debri-coords handle-ratio :draw? nil)
+  (set-debri-environment-full debri-r debri-h debri-coords handle-ratio :draw? nil :use-ri? nil)
   (generate-debri-motion :draw? nil)
   (get-debri-motion)
   )

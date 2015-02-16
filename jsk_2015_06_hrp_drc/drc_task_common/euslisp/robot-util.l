@@ -41,3 +41,12 @@
     (ros::spin-once))
   )
 
+(defun get-potentio-vector-from-joint-states
+  ()
+  *potentio-vector*)
+
+(defun joint-states-callback
+  (msg)
+  (setq *potentio-vector* (coerce (mapcar #'rad2deg (coerce (send msg :position) cons)) float-vector))
+  )
+
