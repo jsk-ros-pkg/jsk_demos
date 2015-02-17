@@ -33,7 +33,7 @@
     )
   ;; draw
   (when draw?
-    (setq *ground* (make-cube 5000 5000 1))
+    (setq *ground* (make-cube 1000 1000 1))
     (objects (list *robot* *hose* *ground*))
     (send *irtviewer* :draw-objects)
     (send *irtviewer* :change-background (float-vector 1 1 1))
@@ -94,7 +94,7 @@
                    :max (float-vector  500  500  0  20  20  10) ;; for hrp2
                    :min (float-vector  -500  -500  -200  -20  -20  -10) ;; for hrp2
                    :stop 100
-                   :debug-view nil
+                   :debug-view (if draw? :no-message nil)
                    ))
        (when ik-ret
          (setq ik-ret
@@ -186,8 +186,17 @@
   ;; place robot to origin
   (send *robot* :reset-manip-pose)
   (send *robot* :fix-leg-to-coords (make-coords))
+  ;; attach handle to robot
+  (send *robot* :put :larm-hose-coords
+        (make-cascoords
+         :coords (send (send (send *robot* :larm :end-coords) :copy-worldcoords) :translate (float-vector 55.0 -25.0 0.0) :local)
+         :parent (send (send *robot* :larm :end-coords) :parent)))
+  (send *robot* :put :rarm-hose-coords
+        (make-cascoords
+         :coords (send (send (send *robot* :rarm :end-coords) :copy-worldcoords) :translate (float-vector 55.0 25.0 0.0) :local)
+         :parent (send (send *robot* :rarm :end-coords) :parent)))
   ;; hose setting
-  (let* ((hose-r 30) (hose-h 120))
+  (let* ((hose-r 30) (hose-h 50))
     ;; generate hose
     (setq *hose* (make-cylinder hose-r hose-h))
     (send *hose* :set-color (float-vector 1 1 0))
@@ -203,7 +212,7 @@
     )
   ;; draw
   (when draw?
-    (setq *ground* (make-cube 5000 5000 1))
+    (setq *ground* (make-cube 1000 1000 1))
     (objects (list *robot* *hose* *ground*))
     (send *irtviewer* :draw-objects)
     (send *irtviewer* :change-background (float-vector 1 1 1))
@@ -235,8 +244,8 @@
   (let* ((ik-results nil)
          (original-foot-midcoords (send (send *robot* :foot-midcoords) :copy-worldcoords))
          (connect-interpolation-num 4)
-         (connect-minus-distance -200)
-         (connect-plus-distance 10)
+         (connect-minus-distance -120)
+         (connect-plus-distance 20)
          (connect-distance (- connect-plus-distance connect-minus-distance)))
     (when draw? (send (send *hose* :get :connect-coords) :draw-on :flush t))
     ;; loop
@@ -254,6 +263,7 @@
                (send *robot* :lleg :end-coords :copy-worldcoords)))
         (with-move-target-link-list
          (mt ll *robot* '(:larm :rleg :lleg))
+         (setf (elt mt 0) (send *robot* :get :larm-hose-coords))
          (setq ik-ret
                (send *robot*
                      :fullbody-inverse-kinematics tc
@@ -269,7 +279,7 @@
                      :max (float-vector  500  500  0  20  20  10) ;; for hrp2
                      :min (float-vector  -500  -500  -200  -20  -20  -10) ;; for hrp2
                      :stop 100
-                     :debug-view nil
+                     :debug-view (if draw? :no-message nil)
                      ))
          (when ik-ret
            (setq ik-ret
@@ -305,8 +315,8 @@
 
 (defun get-hose-connect-motion-for-ocs
   (hose-coords)
-  (set-hose-connect-environment-full hose-coords :draw? nil :use-ri? nil)
-  (generate-hose-connect-motion :draw? nil)
+  (set-hose-connect-environment-full hose-coords :draw? t :use-ri? nil)
+  (generate-hose-connect-motion :draw? t)
   (get-hose-connect-motion)
   )
 
@@ -315,14 +325,19 @@
   (let* ((hose-motion-av-list (get-hose-connect-motion-for-fc coords))
          (hose-motion-length (length hose-motion-av-list)))
     (when (not (= hose-motion-length 0))
-      (when real? (send *ri* :start-impedance :arms :moment-gain (float-vector 0 0 0) :k-p 1000 :d-p 400)) ;; start imp
+      (when real? (send *ri* :start-impedance :larm :moment-gain (float-vector 1 1 1) :k-p 200 :d-p 100 :k-r 10 :d-r 5 :m-r 1)) ;; start imp
       ;; hose-reset-pose
       (send *robot* :angle-vector (elt hose-motion-av-list 0))
+      (when real? (model2real :time 3000))
+      ;; connect first pose
+      (send *robot* :angle-vector (elt hose-motion-av-list 1))
       (when real? (model2real :time 5000))
       ;; connect
       (when real?
         (send *ri* :angle-vector-sequence (subseq *hose-motion* 1 (/ hose-motion-length 2)) (make-list (1- (/ hose-motion-length 2)) :initial-element 2000))
         (send *ri* :wait-interpolation))
+      (send *robot* :hand :arms :hook-pose) ;; hand hook-pose
+      (when real? (hand-model2real))
       ;; release
       (when real?
         (send *ri* :angle-vector-sequence (subseq *hose-motion* (/ hose-motion-length 2) (1- hose-motion-length)) (make-list (1- (/ hose-motion-length 2)) :initial-element 2000))
@@ -330,6 +345,7 @@
       ;; reset-manip-pose
       (send *robot* :angle-vector (elt hose-motion-av-list (1- hose-motion-length)))
       (when real? (model2real :time 5000))
+      (when real? (send *ri* :start-impedance :arms :moment-gain (float-vector 0 0 0) :k-p 1000 :d-p 400)) ;; set default imp param
       ))
   )
 
@@ -337,6 +353,7 @@
   (&key coords (step-time 400) (update? t))
   (when update?
     (get-hose-connect-motion-for-ocs coords))
+  (warning-message 2 "hose-ik-results: ~a~%" *hose-ik-results*)
   (dolist (av *hose-motion*)
     (publish-model-joint-states :av av)
     (unix::usleep (* step-time 1000))
