@@ -99,8 +99,8 @@
     (do-until-key
      (send msg :header (instance std_msgs::header :init
                                  :stamp (ros::time-now) :frame_id "/hrp2_marker_root"))
-     (ros::publish "reachable_visible_map" msg))
-    (ros::sleep)
+     (ros::publish "reachable_visible_map" msg)
+     (ros::sleep))
     )
   )
 

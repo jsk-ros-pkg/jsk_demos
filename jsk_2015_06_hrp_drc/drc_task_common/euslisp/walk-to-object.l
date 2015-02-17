@@ -70,7 +70,9 @@
 
 
 (walk-to-object-init)
+(ros::rate 10)
 (while t
+  (ros::sleep)
   (ros::spin-once)
   (when *go-pos-command-flag*
     (walk-to-object-one))
