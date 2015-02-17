@@ -30,6 +30,7 @@
                 door-params
                 debri-params ;; (list coords radius height)
                 hose-grasp-params ;; (list coords)
+                hose-connect-params ;; (list coords)
                 foreground-bacground-sync-obj
                 ))
 
@@ -63,7 +64,11 @@
           (list drc_com_common::FC2OCSSmall::*HOSE_GRASP_POSE*
                 self :hose-grasp-recognition-finished-callback)
           (list drc_com_common::FC2OCSSmall::*HOSE_GRASP_FINISHED*
-                self :hose-grasp-exec-finished-callback))
+                self :hose-grasp-exec-finished-callback)
+          (list drc_com_common::FC2OCSSmall::*HOSE_CONNECT_POSE*
+                self :hose-connect-recognition-finished-callback)
+          (list drc_com_common::FC2OCSSmall::*HOSE_CONNECT_FINISHED*
+                self :hose-connect-exec-finished-callback))
     (setq smachine (make-ocs-state-machine))
     (send smachine :register-initial-hook self :initial-callback)
     (send smachine :go-to :initial)     ;force to move to initial state
@@ -132,8 +137,14 @@
   (:hose-grasp-button-callback (req)
     (when (send smachine :next? :selecting-region-for-hose-grasp)
       (send self :set-image-view2-mode :rectangle)
-      (send self :show-text-on-image "Select line for hose")
+      (send self :show-text-on-image "Select rectangle for hose")
       (send smachine :go-to :selecting-region-for-hose-grasp))
+    (send req :response))
+  (:hose-connect-button-callback (req)
+    (when (send smachine :next? :selecting-region-for-hose-connect)
+      (send self :set-image-view2-mode :rectangle)
+      (send self :show-text-on-image "Select rectangle for hose")
+      (send smachine :go-to :selecting-region-for-hose-connect))
     (send req :response))
   (:valve-button-callback (req)
     (when (send smachine :next? :selecting-region-for-valve)
@@ -187,7 +198,7 @@
       (send self :send-to-fc fc-msg)
       (send smachine :go-to :recognizing-door-pose)))
   (:rectangle-callback-for-hose-grasp-region (msg)
-    (send self :show-text-on-image "Wait for hose recognition")
+    (send self :show-text-on-image "Wait for hose-grasp recognition")
     ;; send to FC to recognize pos
     (let ((fc-msg (instance drc_com_common::OCS2FCSmall :init)))
       (send fc-msg :type drc_com_common::OCS2FCSmall::*HOSE_GRASP_REGION*)
@@ -195,6 +206,15 @@
                                     msg (length (send fc-msg :image_roi_info))))
       (send self :send-to-fc fc-msg)
       (send smachine :go-to :recognizing-hose-grasp-pose)))
+  (:rectangle-callback-for-hose-connect-region (msg)
+    (send self :show-text-on-image "Wait for hose-connect recognition")
+    ;; send to FC to recognize pos
+    (let ((fc-msg (instance drc_com_common::OCS2FCSmall :init)))
+      (send fc-msg :type drc_com_common::OCS2FCSmall::*HOSE_CONNECT_REGION*)
+      (send fc-msg :image_roi_info (rect-polygon-stamped-to-integer-vector
+                                    msg (length (send fc-msg :image_roi_info))))
+      (send self :send-to-fc fc-msg)
+      (send smachine :go-to :recognizing-hose-connect-pose)))
   (:foreground-background-callback (foreground background)
     (cond
      ((eq (send smachine :state) :selecting-region-for-door)
@@ -224,6 +244,8 @@
       (send self :rectangle-callback-for-valve-region msg))
      ((eq (send smachine :state) :selecting-region-for-hose-grasp)
       (send self :rectangle-callback-for-hose-grasp-region msg))
+     ((eq (send smachine :state) :selecting-region-for-hose-connect)
+      (send self :rectangle-callback-for-hose-connect-region msg))
      ))
   (:cancel-button-callback (req)
     (cond
@@ -241,6 +263,8 @@
       (send smachine :go-to :initial))
      ((eq (send smachine :state) :selecting-exec-for-hose-grasp)
       (send smachine :go-to :initial))
+     ((eq (send smachine :state) :selecting-exec-for-hose-connect)
+      (send smachine :go-to :initial))
      ;; TODO : cancel recognition from button
      ((eq (send smachine :state) :recognizing-look-at-point)
       (send smachine :go-to :initial))
@@ -253,6 +277,8 @@
      ((eq (send smachine :state) :recognizing-go-pos-goal)
       (send smachine :go-to :initial))
      ((eq (send smachine :state) :recognizing-hose-grasp-pose)
+      (send smachine :go-to :initial))
+     ((eq (send smachine :state) :recognizing-hose-connect-pose)
       (send smachine :go-to :initial))
      )
     ;; clear text message
@@ -323,6 +349,19 @@
         (setf (elt (send msg :float_params) 2) (elt pos 2)))
       (send self :send-to-fc msg)
       (send smachine :go-to :executing-hose-grasp)))
+  (:exec-hose-connect-button-callback ()
+    ;; update latest hose-connect params
+    (setq hose-connect-params
+          (list (get-primitive-marker-pose :frame-id "BODY")))
+    ;; send hose-connect params to fc
+    (let ((msg (instance drc_com_common::OCS2FCSmall :init)))
+      (send msg :type drc_com_common::OCS2FCSmall::*HOSE_CONNECT_EXEC*)
+      (let ((pos (send (elt hose-connect-params 0) :worldpos)))
+        (setf (elt (send msg :float_params) 0) (elt pos 0))
+        (setf (elt (send msg :float_params) 1) (elt pos 1))
+        (setf (elt (send msg :float_params) 2) (elt pos 2)))
+      (send self :send-to-fc msg)
+      (send smachine :go-to :executing-hose-connect)))
   (:exec-button-callback (req)
     (cond
      ((eq (send smachine :state) :selecting-exec-for-go-pos)
@@ -337,6 +376,8 @@
       (send self :exec-debri-button-callback))
      ((eq (send smachine :state) :selecting-exec-for-hose-grasp)
       (send self :exec-hose-grasp-button-callback))
+     ((eq (send smachine :state) :selecting-exec-for-hose-connect)
+      (send self :exec-hose-connect-button-callback))
      )
     (send req :response))
   (:debri-recognition-finished-callback (msg)
@@ -414,6 +455,9 @@
   (:hose-grasp-exec-finished-callback (msg)
     (when (eq (send smachine :state) :executing-hose-grasp)
       (send smachine :go-to :initial)))
+  (:hose-connect-exec-finished-callback (msg)
+    (when (eq (send smachine :state) :executing-hose-connect)
+      (send smachine :go-to :initial)))
   (:valve-recognition-finished-callback (msg)
     (when (eq (send smachine :state) :recognizing-valve-pose)
       ;; show it
@@ -440,10 +484,10 @@
          ))
       (send smachine :go-to :selecting-exec-for-valve)))
   (:hose-grasp-recognition-finished-callback (msg)
-    ;; TODO : receive all hose information
     (when (eq (send smachine :state) :recognizing-hose-grasp-pose)
       (let* ((params (send msg :params))
-            (coords (make-coords :pos (float-vector (elt params 0) (elt params 1) (elt params 2)))))
+             ;; TODO : receive all hose information
+            (coords (make-coords :pos (float-vector (elt params 0) (elt params 1) (elt params 2)) :rpy (list 0 pi 0))))
         (send self :show-text-on-image 
               (format nil "hose pos ~f ~f ~f" 
                       (* 0.001 (elt params 0))
@@ -462,6 +506,30 @@
         ;; publish hose motion to robot model on rviz
         (publish-hose-grasp-motion :coords (elt hose-grasp-params 0) :update? t)
         (send smachine :go-to :selecting-exec-for-hose-grasp))
+      ))
+  (:hose-connect-recognition-finished-callback (msg)
+    ;; TODO : receive all hose information
+    (when (eq (send smachine :state) :recognizing-hose-connect-pose)
+      (let* ((params (send msg :params))
+             (coords (make-coords :pos (float-vector (elt params 0) (elt params 1) (elt params 2)) :rot (list 0 pi/2 0))))
+        (send self :show-text-on-image 
+              (format nil "hose pos ~f ~f ~f" 
+                      (* 0.001 (elt params 0))
+                      (* 0.001 (elt params 1))
+                      (* 0.001 (elt params 2))))
+        ;; store result
+        (setq hose-connect-params (list coords))
+        ;; publish torus pose
+        (erase-all-primitive-marker)
+        (insert-primitive-marker :shape-type jsk_rviz_plugins::TransformableMarkerOperate::*CYLINDER* :name "cylinder1" :description "")
+        (set-primitive-marker-dimensions :radius 30 :z 120)
+        (set-primitive-marker-pose coords "BODY")
+        (set-primitive-marker-color :r 1.0 :g 1.0 :b 0.0 :a 0.6)
+        (apply-primitive-dimensions-to-midi-device)
+        (send self :move-robot-model-to-current-pos)
+        ;; publish hose motion to robot model on rviz
+        (publish-hose-connect-motion :coords (elt hose-connect-params 0) :update? t)
+        (send smachine :go-to :selecting-exec-for-hose-connect))
       ))
   (:look-at-finished-callback (msg)
     (when (eq (send smachine :state) :executing-look-at)
@@ -498,6 +566,13 @@
                  (list (get-primitive-marker-pose :frame-id "BODY")))
            ;; publish valve motion to robot model on rviz
            (publish-hose-grasp-motion :coords (elt hose-grasp-params 0) :update? t)
+           )
+          ((eq (send smachine :state) :selecting-exec-for-hose-connect)
+           ;; update latest hose-connect params
+           (setq hose-connect-params
+                 (list (get-primitive-marker-pose :frame-id "BODY")))
+           ;; publish valve motion to robot model on rviz
+           (publish-hose-connect-motion :coords (elt hose-connect-params 0) :update? t)
            ))
     (send req :response)
     )
@@ -537,6 +612,7 @@
 (ros::advertise-service "door" std_srvs::Empty #'send *app* :door-button-callback)
 (ros::advertise-service "debri" std_srvs::Empty #'send *app* :debri-button-callback)
 (ros::advertise-service "hose_grasp" std_srvs::Empty #'send *app* :hose-grasp-button-callback)
+(ros::advertise-service "hose_connect" std_srvs::Empty #'send *app* :hose-connect-button-callback)
 (ros::advertise-service "look_at" std_srvs::Empty #'send *app* :look-at-button-callback)
 (ros::advertise-service "exec" std_srvs::Empty #'send *app* :exec-button-callback)
 (ros::advertise-service "cancel" std_srvs::Empty #'send *app* :cancel-button-callback)

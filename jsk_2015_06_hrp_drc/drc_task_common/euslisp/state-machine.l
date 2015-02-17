@@ -30,11 +30,12 @@
     )
   (:next? (next-state)
     "return t if state machine can go to next-state from the current state"
-    (let ((candidate-transitions (send self :lookup-transitions active-state)))
-      (not (null (remove-if-not #'(lambda (trans)
-                                    (eq next-state
-                                        (send (send trans :to) :name)))
-                                candidate-transitions)))))
+    (or (eq (send self :state) next-state)
+        (let ((candidate-transitions (send self :lookup-transitions active-state)))
+          (not (null (remove-if-not #'(lambda (trans)
+                                        (eq next-state
+                                            (send (send trans :to) :name)))
+                                    candidate-transitions))))))
   (:go-to! (next-state)
     (format t "next state: ~A~%" next-state)
     (send self :active-state (send self :node next-state))
@@ -223,7 +224,7 @@ Usage:
      (:selecting-exec-for-debri -> :executing-debri)          ;exec
      (:selecting-exec-for-debri -> :initial)                   ;cancel
      (:executing-debri -> :initial)                            ;done
-     ;; hose
+     ;; hose-grasp
      (:initial -> :selecting-region-for-hose-grasp)
      (:selecting-region-for-hose-grasp -> :initial) ;cancel
      (:selecting-region-for-hose-grasp -> :recognizing-hose-grasp-pose)
@@ -231,6 +232,14 @@ Usage:
      (:selecting-exec-for-hose-grasp -> :executing-hose-grasp)          ;exec
      (:selecting-exec-for-hose-grasp -> :initial)                   ;cancel
      (:executing-hose-grasp -> :initial)                            ;done
+     ;; hose-connect
+     (:initial -> :selecting-region-for-hose-connect)
+     (:selecting-region-for-hose-connect -> :initial) ;cancel
+     (:selecting-region-for-hose-connect -> :recognizing-hose-connect-pose)
+     (:recognizing-hose-connect-pose -> :selecting-exec-for-hose-connect) ;recognition done
+     (:selecting-exec-for-hose-connect -> :executing-hose-connect)          ;exec
+     (:selecting-exec-for-hose-connect -> :initial)                   ;cancel
+     (:executing-hose-connect -> :initial)                            ;done
      )
    '((:initial :initial)
      ;; go-pos
@@ -258,10 +267,15 @@ Usage:
      (:recognizing-debri-pose :debri)
      (:selecting-exec-for-debri :debri)
      (:executing-debri :debri)
-     ;; hose
+     ;; hose-grasp
      (:selecting-region-for-hose-grasp :hose-grasp)
      (:recognizing-hose-grasp-pose :hose-grasp)
      (:selecting-exec-for-hose-grasp :hose-grasp)
      (:executing-hose-grasp :hose-grasp)
+     ;; hose-connect
+     (:selecting-region-for-hose-connect :hose-connect)
+     (:recognizing-hose-connect-pose :hose-connect)
+     (:selecting-exec-for-hose-connect :hose-connect)
+     (:executing-hose-connect :hose-connect)
      )
    :initial "ocs_state.png"))

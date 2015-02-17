@@ -3,7 +3,7 @@
 
 (defun set-debri-environment
   (&key (debri-r 40) (debri-h 1000)
-        (debri-coords (make-coords :pos #f(500 -100 0) :rpy (list 0 0 0.3)))
+        (debri-coords (make-coords :pos (float-vector 500 -100 0) :rpy (list 0 0 0.3)))
         (handle-ratio 0.8)
         (generate-ri? t) (draw? t))
   ;; generate robot
@@ -18,7 +18,7 @@
   (send *robot* :fix-leg-to-coords (make-coords))
   ;; generate debri
   (setq *debri* (make-cylinder debri-r debri-h))
-  (send *debri* :set-color #f(1 1 0))
+  (send *debri* :set-color (float-vector 1 1 0))
   ;; atattch handle to debri
   (send *debri* :put :grasp-coords
         (make-cascoords
@@ -26,20 +26,21 @@
          :parent *debri*))
   ;; place debri to debri-coords
   (send *debri* :newcoords debri-coords)
-  (send *debri* :translate (float-vector 0 0 (* -0.5 debri-h)) :local) ;; treat the difference of origin  between eus and recognition program
+  ;; treat the difference of origin  between eus and recognition program
+  (send *debri* :translate (float-vector 0 0 (* -0.5 debri-h)) :local)
   ;; draw
   (when draw?
     (setq *ground* (make-cube 5000 5000 1))
     (objects (list *robot* *debri* *ground*))
     (send *irtviewer* :draw-objects)
-    (send *irtviewer* :change-background #f(1 1 1))
+    (send *irtviewer* :change-background (float-vector 1 1 1))
     )
   )
 
 (defun set-debri-environment-full
   (debri-r
    debri-h
-   debri-coords
+   debri-coords ;; body relative
    handle-ratio
    &key
    (draw? nil)
@@ -53,6 +54,8 @@
            (send *robot* :angle-vector (get-potentio-vector-from-joint-states))))
     (send *robot* :fix-leg-to-coords (make-coords) '(:lleg :rleg))
     (send *debri* :newcoords (send (send (send *robot* :body_lk) :copy-worldcoords) :transform debri-coords :local))
+    ;; treat the difference of origin between eus and recognition program
+    (send *debri* :translate (float-vector 0 0 (* -0.5 (elt (send *debri* :body-type) 2))) :local)
     (when draw? (send *irtviewer* :draw-objects))
     ))
 
@@ -87,14 +90,16 @@
                      :additional-weight-list
                      (list (list (send *robot* :rleg :toe-p :child-link) 0)
                            (list (send *robot* :lleg :toe-p :child-link) 0))
-                     :root-link-virtual-joint-weight #f(0.1 0.1 0.1 0.1 0.5 0.5)
+                     :root-link-virtual-joint-weight (float-vector 0.1 0.1 0.1 0.1 0.5 0.5)
                      :target-centroid-pos (apply #'midpoint 0.5 (send *robot* :legs :end-coords :worldpos))
-                     ;;:centroid-offset-func #'(lambda () (send *robot* :calc-static-balance-point (list #f(0 0 0) #f(0 0 0)))) 
+                     ;;:centroid-offset-func #'(lambda () (send *robot* :calc-static-balance-point (list (float-vector 0 0 0) (float-vector 0 0 0)))) 
                      ;;translation-axis can reduced translation constraint                                                              
                      :translation-axis (list t t t)
                      ;; rotation-axis can reduce rotation constraint                                                                    
                      :rotation-axis (list :z t t)
-                     :stop 10
+                     :max (float-vector  500  500  0  20  20  10) ;; for hrp2
+                     :min (float-vector  -500  -500  -200  -20  -20  -10) ;; for hrp2
+                     :stop 50
                      :debug-view nil
                      ))
          (when ik-ret
@@ -133,7 +138,6 @@
 
 (defun get-debri-motion-for-ocs
   (debri-r debri-h debri-coords handle-ratio)
-  ;; TODO : robot-interface is unavailable in ocs
   (set-debri-environment-full debri-r debri-h debri-coords handle-ratio :draw? nil :use-ri? nil)
   (generate-debri-motion :draw? nil)
   (get-debri-motion)
@@ -149,10 +153,10 @@
       (when real? (hand-model2real))
       (send *robot* :reset-manip-pose)
       (when real? (model2real :time 3000))
-      (when real? (send *ri* :start-impedance :arms :moment-gain #f(0 0 0) :k-p 1000 :d-p 400)) ;; start imp
+      (when real? (send *ri* :start-impedance :arms :moment-gain (float-vector 0 0 0) :k-p 1000 :d-p 400)) ;; start imp
       ;; pre grasp pose
       (send *robot* :angle-vector (car debri-motion-av-list))
-      (send *robot* :rarm :move-end-pos #f(-100 -100 0) :local)
+      (send *robot* :rarm :move-end-pos (float-vector -100 -100 0) :local)
       (when real? (model2real :time 5000))
       ;; grasp
       (send *robot* :angle-vector (car debri-motion-av-list))
@@ -164,8 +168,7 @@
         (send *ri* :angle-vector-sequence debri-motion-av-list (make-list debri-motion-length :initial-element 2000))
         (send *ri* :wait-interpolation))
       ;; relese
-      (send *robot* :angle-vector
-            #f(0.0 0.0 -26.0 50.0 -24.0 0.0 0.0 0.0 0.0 -26.0 50.0 -24.0 0.0 0.0 0.0 0.0 0.0 40.0 60.0 -10.7092 -87.7993 -121.883 -54.9239 -34.0184 16.2622 60.0 50.0 30.0 10.0 -120.0 25.0 5.0 -20.0 -60.0)) ;; debri-relese-pose
+      (send *robot* :angle-vector (get-debri-release-pose)) ;; debri-relese-pose
       (when real? (model2real :time 6000))
       (send *robot* :hand :arms :hook-pose) ;; hand hook-pose
       (when real? (hand-model2real))
@@ -184,5 +187,9 @@
     (unix::usleep (* step-time 1000))
     ))
 
-;;(publish-debri-motion :coords (make-coords :pos #f(500 -100 -400) :rpy (list 0 0 0.3)) :radius 10 :height 1000 :update? t)
+;; debri util ;;;;
+
+(defun get-debri-release-pose ()
+  (float-vector 0.0 0.0 -26.0 50.0 -24.0 0.0 0.0 0.0 0.0 -26.0 50.0 -24.0 0.0 0.0 0.0 0.0 0.0 40.0 60.0 -10.7092 -87.7993 -121.883 -54.9239 -34.0184 16.2622 60.0 50.0 30.0 10.0 -120.0 25.0 5.0 -20.0 -60.0))
+
 
