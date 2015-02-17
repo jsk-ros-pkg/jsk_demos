@@ -1,12 +1,11 @@
 <launch>
   <!-- REQUIRED: INPUT_IMAGE input image topic -->
   <arg name="INPUT_IMAGE" />
+  <arg name="INPUT_PANORAMA_IMAGE" default="/ocs/communication/panorama_image"/>
   <arg name="INPUT_IMAGE_WIDTH_SCALE" />
   <arg name="INPUT_IMAGE_HEIGHT_SCALE" />
   <node pkg="rqt_gui" type="rqt_gui" name="rqt_image_view_button"
-        args="--perspective-file $(find jsk_rqt_plugins)/resource/rqt_image_view2_button.perspective">
-    <remap from="event" to="rqt_image_view2_engine/event" />
-    <remap from="image_marked" to="rqt_image_view2_engine/image_marked" />
+        args="--perspective-file $(find drc_task_common)/config/rqt_ui.perspective">
     <rosparam>
       layout_file: "package://drc_task_common/config/ocs_ui_button_layout.yaml"
     </rosparam>
@@ -14,8 +13,12 @@
 
   <node pkg="image_view2" type="image_view2" name="rqt_image_view2_engine"
         output="log">
-    <remap from="image_marked" to="~image_marked" />
     <remap from="image" to="$(arg INPUT_IMAGE)" />
+    <param name="use_window" value="false" />
+  </node>
+  <node pkg="image_view2" type="image_view2" name="rqt_panorama_image_view2_engine"
+        output="log">
+    <remap from="image" to="$(arg INPUT_PANORAMA_IMAGE)" />
     <param name="use_window" value="false" />
   </node>
   
