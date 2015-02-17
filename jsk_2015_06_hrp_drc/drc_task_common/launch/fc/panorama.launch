@@ -26,7 +26,7 @@
       latch: true
     </rosparam>
   </node>
-
+  
   <node pkg="image_view2" type="image_view2" name="panorama_view" if="$(arg DEBUG_VIEW)">
     <remap from="image" to="panorama_processing/output" />
   </node>
