@@ -10,6 +10,9 @@
 - name: 'hose_grasp'
   service: 'hose_grasp'
   column: 0
+- name: 'hose_connect'
+  service: 'hose_connect'
+  column: 0
 - name: 'Go pos'
   service: 'go_pos'
   image: "package://drc_task_common/icons/gopos.png"

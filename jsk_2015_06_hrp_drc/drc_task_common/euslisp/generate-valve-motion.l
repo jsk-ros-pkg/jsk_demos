@@ -3,7 +3,7 @@
 
 (defun set-valve-environment
   (&key (valve-r 200)
-        (valve-coords (make-coords :pos #f(500 0 1200) :rpy (list 0 pi/2 0)))
+        (valve-coords (make-coords :pos (float-vector 500 0 1200) :rpy (list 0 pi/2 0)))
         (generate-ri? t) (draw? t))
   ;; generate robot
   (unless (boundp '*robot*)
@@ -31,14 +31,14 @@
     (setq *ground* (make-cube 5000 5000 1))
     (objects (list *robot* *valve* *ground*))
     (send *irtviewer* :draw-objects)
-    (send *irtviewer* :change-background #f(1 1 1))
+    (send *irtviewer* :change-background (float-vector 1 1 1))
     )
   )
 ;;(warning-message 2 "(set-valve-environment)~%")
 
 (defun set-valve-environment-full
   (valve-r
-   valve-coords
+   valve-coords ;; body relative
    &key
    (draw? nil)
    (use-ri? t))
@@ -103,14 +103,16 @@
                      :additional-weight-list
                      (list (list (send *robot* :rleg :toe-p :child-link) 0)
                            (list (send *robot* :lleg :toe-p :child-link) 0))
-                     :root-link-virtual-joint-weight #f(0.1 0.1 0.1 0.1 0.5 0.5)
+                     :root-link-virtual-joint-weight (float-vector 0.1 0.1 0.1 0.1 0.5 0.5)
                      :target-centroid-pos (apply #'midpoint 0.5 (send *robot* :legs :end-coords :worldpos))
-                     ;;:centroid-offset-func #'(lambda () (send *robot* :calc-static-balance-point (list #f(0 0 0) #f(0 0 0)))) 
+                     ;;:centroid-offset-func #'(lambda () (send *robot* :calc-static-balance-point (list (float-vector 0 0 0) (float-vector 0 0 0)))) 
                      ;;translation-axis can reduced translation constraint                                                              
                      :translation-axis (list t t t)
                      ;; rotation-axis can reduce rotation constraint                                                                    
                      :rotation-axis (list t t t)
                      ;;:rotation-axis (list :z t t)
+                     :max (float-vector  500  500  0  20  20  10) ;; for hrp2
+                     :min (float-vector  -500  -500  -200  -20  -20  -10) ;; for hrp2
                      :stop 10
                      :debug-view nil
                      ))
@@ -135,14 +137,16 @@
                        :additional-weight-list
                        (list (list (send *robot* :rleg :toe-p :child-link) 0)
                              (list (send *robot* :lleg :toe-p :child-link) 0))
-                       :root-link-virtual-joint-weight #f(0.1 0.1 0.1 0.1 0.5 0.5)
+                       :root-link-virtual-joint-weight (float-vector 0.1 0.1 0.1 0.1 0.5 0.5)
                        :target-centroid-pos (apply #'midpoint 0.5 (send *robot* :legs :end-coords :worldpos))
-                       ;;:centroid-offset-func #'(lambda () (send *robot* :calc-static-balance-point (list #f(0 0 0) #f(0 0 0)))) 
+                       ;;:centroid-offset-func #'(lambda () (send *robot* :calc-static-balance-point (list (float-vector 0 0 0) (float-vector 0 0 0)))) 
                        ;;translation-axis can reduced translation constraint                                                              
                        :translation-axis (list t t t)
                        ;; rotation-axis can reduce rotation constraint                                                                    
                        :rotation-axis (list t t t)
                        ;;:rotation-axis (list :z t t)
+                       :max (float-vector  500  500  0  20  20  10) ;; for hrp2
+                       :min (float-vector  -500  -500  -200  -20  -20  -10) ;; for hrp2
                        :stop 10
                        :debug-view nil
                        ))
@@ -229,7 +233,7 @@
       (when real? (hand-model2real))
       (send *robot* :reset-manip-pose)
       (when real? (model2real :time 3000))
-      (when real? (send *ri* :start-impedance :arms :moment-gain #f(0 0 0) :k-p 1000 :d-p 400)) ;; start imp
+      (when real? (send *ri* :start-impedance :arms :moment-gain (float-vector 0 0 0) :k-p 1000 :d-p 400)) ;; start imp
       (send *robot* :angle-vector (car (last valve-motion-av-list)))
       (when real? (model2real :time 5000))
       (dotimes (i rotate-num)
@@ -301,7 +305,7 @@
          draw-polygon-edges)
     (dotimes (i (/ (length *valve-ik-results*) 2))
       (when (car (cdr (nth i *valve-ik-results*)))
-        (send (send *valve* :get :grasp-coords) :draw-on :flush t :color #f(1 0 0) :width 5 :size 50)
+        (send (send *valve* :get :grasp-coords) :draw-on :flush t :color (float-vector 1 0 0) :width 5 :size 50)
         (push (send (send (send *valve* :get :grasp-coords) :copy-worldcoords) :worldpos) draw-polygon-edges)
         )
       (send *valve* :rotate (+ (deg2rad (/ 360.0 (- (/ (length *valve-ik-results*) 2) 1)))) :z :local)
@@ -310,7 +314,7 @@
     ;; (push (send *valve* :worldpos) draw-polygon-edges)
     ;; (setq b draw-polygon-edges)
     ;; (setq a (quickhull draw-polygon-edges))
-    ;; (send (make-prism draw-polygon-edges (send (send *valve* :worldcoords) :rotate-vector #f(0 0 1))) :draw-on :flush t :color #f(1 0 0) :width 5)
+    ;; (send (make-prism draw-polygon-edges (send (send *valve* :worldcoords) :rotate-vector (float-vector 0 0 1))) :draw-on :flush t :color (float-vector 1 0 0) :width 5)
     )
   )
 ;;(warning-message 2 "(draw-ik-results)~%")
@@ -325,7 +329,7 @@
          buf)
     (dotimes (i (/ (length *valve-ik-results*) 2))
       (when (car (cdr (nth i *valve-ik-results*)))
-        ;;(send (send *valve* :get :grasp-coords) :draw-on :flush t :color #f(1 0 0) :width 5 :size 50)
+        ;;(send (send *valve* :get :grasp-coords) :draw-on :flush t :color (float-vector 1 0 0) :width 5 :size 50)
         (push (send (send (send *valve* :get :grasp-coords) :copy-worldcoords) :worldpos) draw-polygon-edges)
         )
       (send *valve* :rotate (+ (deg2rad (/ 360.0 (- (/ (length *valve-ik-results*) 2) 1)))) :z :local)
@@ -334,13 +338,13 @@
      buf
      (mapcar
       '(lambda (p1 p2)
-         (make-prism (list (send *valve* :worldpos) p1 p2) (send (send *valve* :worldcoords) :rotate-vector #f(0 0 1))))
+         (make-prism (list (send *valve* :worldpos) p1 p2) (send (send *valve* :worldcoords) :rotate-vector (float-vector 0 0 1))))
       (append (last draw-polygon-edges) (butlast draw-polygon-edges))
       draw-polygon-edges))
     ;; (push (send *valve* :worldpos) draw-polygon-edges)
-    ;; (send (make-prism draw-polygon-edges (send (send *valve* :worldcoords) :rotate-vector #f(0 0 1))) :draw-on :flush t :color #f(1 0 0) :width 5)
-    (send-all buf :draw-on :flush t :color #F(1 0 0) :width 5)
-    (send-all buf :set-color #F(0 1 0))
+    ;; (send (make-prism draw-polygon-edges (send (send *valve* :worldcoords) :rotate-vector (float-vector 0 0 1))) :draw-on :flush t :color (float-vector 1 0 0) :width 5)
+    (send-all buf :draw-on :flush t :color (float-vector 1 0 0) :width 5)
+    (send-all buf :set-color (float-vector 0 1 0))
     buf
     )
 ;;  (objects (append (draw-ik-results2) (list *robot* *valve*)))

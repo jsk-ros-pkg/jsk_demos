@@ -19,6 +19,9 @@ uint8 DOOR_EXEC=8
 # debri
 uint8 DEBRI_LINE=9
 uint8 DEBRI_EXEC=10
-# hose
+# hose_grasp
 uint8 HOSE_GRASP_REGION=11
 uint8 HOSE_GRASP_EXEC=12
+# hose_connect
+uint8 HOSE_CONNECT_REGION=13
+uint8 HOSE_CONNECT_EXEC=14

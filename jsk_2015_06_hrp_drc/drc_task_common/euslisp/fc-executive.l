@@ -46,7 +46,11 @@
           (list drc_com_common::OCS2FCSmall::*HOSE_GRASP_REGION*
                 self :hose-grasp-region-command-callback)
           (list drc_com_common::OCS2FCSmall::*HOSE_GRASP_EXEC*
-                self :hose-grasp-exec-command-callback))
+                self :hose-grasp-exec-command-callback)
+          (list drc_com_common::OCS2FCSmall::*HOSE_CONNECT_REGION*
+                self :hose-connect-region-command-callback)
+          (list drc_com_common::OCS2FCSmall::*HOSE_CONNECT_EXEC*
+                self :hose-connect-exec-command-callback))
     self)
   (:ocs2fc-message-handler () ocs2fc-message-handler)
   (:debri-line-command-callback (msg)
@@ -66,6 +70,15 @@
       ;; enable snapshot
       (call-empty-service "/hose_grasp_recognition/snapshot/request")
       (setq state :recognizing-hose-grasp-pose)
+      ))
+  (:hose-connect-region-command-callback (msg)
+    (when (eq state :initial)
+      ;; convert OCS2FCSmall into geometry_msgs/Polygon
+      (ros::publish "/hose_connect_recognition/input_rect"
+        (integer-vector-to-rect-polygon-stamped msg))
+      ;; enable snapshot
+      (call-empty-service "/hose_connect_recognition/snapshot/request")
+      (setq state :recognizing-hose-connect-pose)
       ))
   (:door-region-command-callback (msg)
     (when (eq state :initial)
@@ -114,7 +127,8 @@
   (:hose-grasp-exec-command-callback (msg)
     (when (eq state :initial)
       (let* ((params (send msg :float_params))
-             (coords (make-coords :pos (float-vector (elt params 0) (elt params 1) (elt params 2)))))
+             ;; TODO : receive all hose information
+             (coords (make-coords :pos (float-vector (elt params 0) (elt params 1) (elt params 2)) :rpy (list 0 pi 0))))
         (ros::ros-info "grasping hose at ~A" coords)
         (setq state :executing-hose)
         ;; send motion to real robot
@@ -122,6 +136,21 @@
         ;; send finish signal to ocs
         (let ((msg (instance drc_com_common::FC2OCSSmall :init)))
           (send msg :type drc_com_common::FC2OCSSmall::*HOSE_GRASP_FINISHED*)
+          (send self :send-to-ocs msg))
+        (setq state :initial)
+        ))
+    )
+  (:hose-connect-exec-command-callback (msg)
+    (when (eq state :initial)
+      (let* ((params (send msg :float_params))
+             (coords (make-coords :pos (float-vector (elt params 0) (elt params 1) (elt params 2)) :rot (list 0 pi/2 0))))
+        (ros::ros-info "connecting hose at ~A" coords)
+        (setq state :executing-hose)
+        ;; send motion to real robot
+        (send-hose-connect-motion coords)
+        ;; send finish signal to ocs
+        (let ((msg (instance drc_com_common::FC2OCSSmall :init)))
+          (send msg :type drc_com_common::FC2OCSSmall::*HOSE_CONNECT_FINISHED*)
           (send self :send-to-ocs msg))
         (setq state :initial)
         ))
@@ -285,6 +314,24 @@
             (send self :send-to-ocs msg)
             (setq state :initial)
             )))))
+  (:hose-connect-recog-callback (msg)         ;geometry_msgs/PoseStamped
+    (when (eq state :recognizing-hose-connect-pose)
+      ;; TODO : recognize hose
+      (let* ((trans (send self :lookup-from-body-transform (send msg :header)))
+             (coords (ros::tf-pose-stamped->coords msg))
+             (from-body-coords (send trans :transform coords)))
+        ;; only position is important in the temporary recognition
+        (let ((pos (float-vector (elt (send from-body-coords :worldpos) 0)
+                                 (elt (send from-body-coords :worldpos) 1)
+                                 (elt (send from-body-coords :worldpos) 2))))
+          (let ((msg (instance drc_com_common::FC2OCSSmall :init)))
+            (send msg :type drc_com_common::FC2OCSSmall::*HOSE_CONNECT_POSE*)
+            (setf (elt (send msg :params) 0) (elt pos 0))
+            (setf (elt (send msg :params) 1) (elt pos 1))
+            (setf (elt (send msg :params) 2) (elt pos 2))
+            (send self :send-to-ocs msg)
+            (setq state :initial)
+            )))))
   (:look-at-recog-callback (msg)
     (when (eq state :recognizing-look-at-point)
       (let* ((trans (send self :lookup-from-body-transform (send msg :header)))
@@ -358,6 +405,7 @@
 
 (ros::advertise "/go_pos_recognition/input_rect" geometry_msgs::PolygonStamped)
 (ros::advertise "/hose_grasp_recognition/input_rect" geometry_msgs::PolygonStamped)
+(ros::advertise "/hose_connect_recognition/input_rect" geometry_msgs::PolygonStamped)
 (ros::advertise "/look_at_recognition/input_rect" geometry_msgs::PolygonStamped)
 (ros::advertise "/valve_recognition/input_rect" geometry_msgs::PolygonStamped)
 (ros::advertise "/door_recognition/input_support_plane_rect" geometry_msgs::PolygonStamped)
@@ -378,6 +426,8 @@
   #'send *app* :debri-recog-callback)
 (ros::subscribe "/hose_grasp_recognition/snapshot/output" geometry_msgs::PoseStamped
   #'send *app* :hose-grasp-recog-callback)
+(ros::subscribe "/hose_connect_recognition/snapshot/output" geometry_msgs::PoseStamped
+  #'send *app* :hose-connect-recog-callback)
 (ros::advertise "/go_pos_goal" geometry_msgs::PoseStamped)
 
 (ros::rate 10)
