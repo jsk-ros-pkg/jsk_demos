@@ -186,7 +186,7 @@ Usage:
      (:initial -> :selecting-region-for-go-pos) ; click go-pos
      (:selecting-region-for-go-pos -> :initial) ; cancel
      (:selecting-region-for-go-pos -> :recognizing-go-pos-goal)
-     ;;(:recognizing-go-pos-goal -> :initial) ; cancel
+     (:recognizing-go-pos-goal -> :initial) ; cancel
      (:recognizing-go-pos-goal -> :selecting-exec-for-go-pos) ; recognition done
      (:selecting-exec-for-go-pos -> :executing-go-pos)        ; exec
      (:selecting-exec-for-go-pos -> :initial)                 ; cancel
@@ -197,6 +197,7 @@ Usage:
      (:selecting-region-for-look-at -> :initial) ;cancel
      (:selecting-region-for-look-at -> :recognizing-look-at-point)
      (:recognizing-look-at-point -> :selecting-exec-for-look-at) ;recognition done
+     (:recognizing-look-at-point -> :initial) ;cancel
      (:selecting-exec-for-look-at -> :executing-look-at)          ;exec
      (:selecting-exec-for-look-at -> :initial)                   ;cancel
      (:executing-look-at -> :initial)                            ;done
@@ -205,6 +206,7 @@ Usage:
      (:selecting-region-for-valve -> :initial) ;cancel
      (:selecting-region-for-valve -> :recognizing-valve-pose)
      (:recognizing-valve-pose -> :selecting-exec-for-valve) ;recognition done
+     (:recognizing-valve-pose -> :initial) ;cancel
      (:selecting-exec-for-valve -> :executing-valve)          ;exec
      (:selecting-exec-for-valve -> :initial)                   ;cancel
      (:executing-valve -> :initial)                            ;done
@@ -213,6 +215,7 @@ Usage:
      (:selecting-region-for-door -> :initial) ;cancel
      (:selecting-region-for-door -> :recognizing-door-pose)
      (:recognizing-door-pose -> :selecting-exec-for-door) ;recognition done
+     (:recognizing-door-pose -> :initial) ;cancel
      (:selecting-exec-for-door -> :executing-door)          ;exec
      (:selecting-exec-for-door -> :initial)                   ;cancel
      (:executing-door -> :initial)                            ;done
@@ -221,6 +224,7 @@ Usage:
      (:selecting-region-for-debri -> :initial) ;cancel
      (:selecting-region-for-debri -> :recognizing-debri-pose)
      (:recognizing-debri-pose -> :selecting-exec-for-debri) ;recognition done
+     (:recognizing-debri-pose -> :initial) ;cancel
      (:selecting-exec-for-debri -> :executing-debri)          ;exec
      (:selecting-exec-for-debri -> :initial)                   ;cancel
      (:executing-debri -> :initial)                            ;done
@@ -229,6 +233,7 @@ Usage:
      (:selecting-region-for-hose-grasp -> :initial) ;cancel
      (:selecting-region-for-hose-grasp -> :recognizing-hose-grasp-pose)
      (:recognizing-hose-grasp-pose -> :selecting-exec-for-hose-grasp) ;recognition done
+     (:recognizing-hose-grasp-pose -> :initial) ;cancel
      (:selecting-exec-for-hose-grasp -> :executing-hose-grasp)          ;exec
      (:selecting-exec-for-hose-grasp -> :initial)                   ;cancel
      (:executing-hose-grasp -> :initial)                            ;done
@@ -237,6 +242,7 @@ Usage:
      (:selecting-region-for-hose-connect -> :initial) ;cancel
      (:selecting-region-for-hose-connect -> :recognizing-hose-connect-pose)
      (:recognizing-hose-connect-pose -> :selecting-exec-for-hose-connect) ;recognition done
+     (:recognizing-hose-connect-pose -> :initial) ;cancel
      (:selecting-exec-for-hose-connect -> :executing-hose-connect)          ;exec
      (:selecting-exec-for-hose-connect -> :initial)                   ;cancel
      (:executing-hose-connect -> :initial)                            ;done
