@@ -1277,8 +1277,9 @@
 
 ;; main ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (request-ik-from-marker-init)
-
+(ros::rate 10)
 (while t
+  (ros::sleep)
   (ros::spin-once)
   (x::window-main-one)
   (when (and *obj* (find-if #'(lambda (x) (equal (send x :name) :handle)) (send *obj* :descendants)))

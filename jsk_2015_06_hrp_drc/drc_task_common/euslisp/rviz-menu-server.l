@@ -114,6 +114,8 @@
 
 
 (rviz-menu-init)
+(ros::rate 10)
 (while t
+  (ros::sleep)
   (ros::spin-once)
   )
