@@ -23,6 +23,7 @@
       <rosparam>
         resize_scale_x: 0.2
         resize_scale_y: 0.2
+        use_camera_info: false
       </rosparam>
     </node>
     

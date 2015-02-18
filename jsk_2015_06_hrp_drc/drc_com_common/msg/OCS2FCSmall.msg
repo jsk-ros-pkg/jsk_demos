@@ -1,6 +1,9 @@
 # OCS -> FC
 uint8 type
 uint8 seq
+uint8 image_type
+uint8 IMAGE_RECT=0
+uint8 PANORAMA_VIEW=1
 uint32[8] image_roi_info
 float32[10] float_params
 # action type
