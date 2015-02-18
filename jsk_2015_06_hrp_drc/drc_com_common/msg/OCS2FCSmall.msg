@@ -28,3 +28,5 @@ uint8 HOSE_GRASP_EXEC=12
 # hose_connect
 uint8 HOSE_CONNECT_REGION=13
 uint8 HOSE_CONNECT_EXEC=14
+# drill
+uint8 DRILL_REGION=15
