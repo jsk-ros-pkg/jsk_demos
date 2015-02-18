@@ -151,20 +151,12 @@
 
 (defun test-15cm-block-hrp2jsknts (&key (stair-once t))
   (print ";; up")
-  (walking-pose *robot* :root-link-height-offset -70)
-  (send *ri* :angle-vector (send *robot* :angle-vector) 2000)
-  (send *ri* :wait-interpolation)
-  (test-stair-2-up *robot* :stair-once stair-once)
+  (test-stair-walk-2-up *robot* :stair-once stair-once)
   (print ";; go pos fwd")
   (read-line)
-  (walking-pose *robot*
-                :root-link-height-offset -60
-                :root-link-pitch-offset 10)
-  (send *ri* :angle-vector (send *robot* :angle-vector) 2000)
-  (send *ri* :wait-interpolation)
   (send *ri* :go-pos 0.2 0 0)
   (print ";; down")
   (read-line)
-  (test-stair-2-down *robot* :stair-once stair-once :fwd-stride 220)
+  (test-stair-walk-2-down *robot* :stair-once stair-once :fwd-stride 240)
   )
 
