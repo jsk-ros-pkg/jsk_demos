@@ -68,7 +68,9 @@
           (list drc_com_common::FC2OCSSmall::*HOSE_CONNECT_POSE*
                 self :hose-connect-recognition-finished-callback)
           (list drc_com_common::FC2OCSSmall::*HOSE_CONNECT_FINISHED*
-                self :hose-connect-exec-finished-callback))
+                self :hose-connect-exec-finished-callback)
+          (list drc_com_common::FC2OCSSmall::*LOOK_AROUND_FINISHED*
+                self :look-around-finished-callback))
     (setq smachine (make-ocs-state-machine))
     (send smachine :register-initial-hook self :initial-callback)
     (send smachine :go-to :initial)     ;force to move to initial state
@@ -167,6 +169,13 @@
       (send self :show-text-on-image "Select rectangle region to look")
       (send smachine :go-to :selecting-region-for-look-at)
       )
+    (send req :response))
+  (:look-around-button-callback (req)
+    (when (send smachine :next? :executing-look-around)
+      (let ((fc-msg (instance drc_com_common::OCS2FCSmall :init)))
+        (send fc-msg :type drc_com_common::OCS2FCSmall::*LOOK_AROUND_EXEC*)
+        (send self :send-to-fc fc-msg)
+        (send smachine :go-to :executing-look-around)))
     (send req :response))
   (:send-to-fc (msg)
     (ros::publish "/ocs_to_fc_low_speed/input" msg))
@@ -457,6 +466,10 @@
                       (rad2deg (elt params 3))
                       ))
         (send smachine :go-to :selecting-exec-for-go-pos))))
+  (:look-around-finished-callback (msg)
+    (when (eq (send smachine :state) :executing-look-around)
+      (send smachine :go-to :initial)
+      ))
   (:debri-exec-finished-callback (msg)
     (when (eq (send smachine :state) :executing-debri)
       (send smachine :go-to :initial)))
@@ -631,6 +644,7 @@
 (ros::advertise-service "hose_grasp" std_srvs::Empty #'send *app* :hose-grasp-button-callback)
 (ros::advertise-service "hose_connect" std_srvs::Empty #'send *app* :hose-connect-button-callback)
 (ros::advertise-service "look_at" std_srvs::Empty #'send *app* :look-at-button-callback)
+(ros::advertise-service "look_around" std_srvs::Empty #'send *app* :look-around-button-callback)
 (ros::advertise-service "exec" std_srvs::Empty #'send *app* :exec-button-callback)
 (ros::advertise-service "cancel" std_srvs::Empty #'send *app* :cancel-button-callback)
 (ros::advertise-service "reflesh" std_srvs::Empty #'send *app* :reflesh-button-callback)
