@@ -246,6 +246,10 @@ Usage:
      (:selecting-exec-for-hose-connect -> :executing-hose-connect)          ;exec
      (:selecting-exec-for-hose-connect -> :initial)                   ;cancel
      (:executing-hose-connect -> :initial)                            ;done
+     ;; drill
+     (:initial -> :selecting-region-for-drill-grasp)
+     (:selecting-region-for-drill-grasp -> :initial) ;cancel
+     (:selecting-region-for-drill-grasp -> :recognizing-region-for-drill) 
      )
    '((:initial :initial)
      ;; go-pos
