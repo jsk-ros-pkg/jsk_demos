@@ -85,22 +85,29 @@
   (:fc2ocs-message-handler () fc2ocs-message-handler)
   (:initial-callback ()
     (send self :set-image-view2-mode :none)
+    (send self :set-image-view2-mode :none :panorama-view)
     (send self :show-text-on-image "")
     )
-  (:set-image-view2-mode (mode)
-    (cond 
-     ((eq mode :rectangle)
-      (call-empty-service "/rqt_image_view2_engine/rectangle_mode"))
-     ((eq mode :grabcut-rect)
-      (call-empty-service "/rqt_image_view2_engine/grabcut_rect_mode"))
-     ((eq mode :line)
-      (call-empty-service "/rqt_image_view2_engine/line_mode"))
-     ((eq mode :none)
-      (call-empty-service "/rqt_image_view2_engine/none_mode"))
-     (t
-      (error "unknown mode: ~A" mode)
+  (:set-image-view2-mode (mode &optional (type :image-rect))
+    "type should be :image-rect or :panorama-view"
+    (let ((node (cond 
+                 ((eq type :image-rect)
+                  "/image_rect/rqt_image_view2_engine")
+                 ((eq type :panorama-view)
+                  "/panorama_view/rqt_panorama_image_view2_engine"))))
+      (cond
+       ((eq mode :rectangle)
+        (call-empty-service (format nil "~A/rectangle_mode" node)))
+       ((eq mode :grabcut-rect)
+        (call-empty-service (format nil "~A/grabcut_rect_mode"  node)))
+       ((eq mode :line)
+        (call-empty-service (format nil "~A/line_mode" node)))
+       ((eq mode :none)
+        (call-empty-service (format nil "~A/none_mode" node)))
+       (t
+        (error "unknown mode: ~A" mode)
+        ))
       ))
-    )
   (:show-text-on-image (text)
     (let ((msg (instance image_view2::ImageMarker2 :init)))
       (send msg :type image_view2::ImageMarker2::*TEXT*)
@@ -111,7 +118,7 @@
       (send msg :left_up_origin t)
       (send msg :ratio_scale t)
       (send msg :text text)
-      (ros::publish "/image_marker" msg)
+      (ros::publish "/image_rect/image_marker" msg)
       )
     )
   (:go-pos-button-callback (req)
@@ -156,6 +163,7 @@
     (when (send smachine :next? :selecting-region-for-look-at)
       ;; force to use rectangle mode
       (send self :set-image-view2-mode :rectangle)
+      (send self :set-image-view2-mode :rectangle :panorama-view) ;we support panorama view
       (send self :show-text-on-image "Select rectangle region to look")
       (send smachine :go-to :selecting-region-for-look-at)
       )
@@ -171,6 +179,15 @@
                                     msg (length (send fc-msg :image_roi_info))))
       (send self :send-to-fc fc-msg)
       (send smachine :go-to :recognizing-go-pos-goal)))
+  (:panorama-rectangle-callback (msg)
+    (send self :show-text-on-image "Wait for go-pos recognition")
+    (let ((fc-msg (instance drc_com_common::OCS2FCSmall :init)))
+      (send fc-msg :type drc_com_common::OCS2FCSmall::*LOOK_AT_REGION*)
+      (send fc-msg :image_roi_info (rect-polygon-stamped-to-integer-vector
+                                    msg (length (send fc-msg :image_roi_info))))
+      (send fc-msg :image_type drc_com_common::OCS2FCSmall::*PANORAMA_VIEW*)
+      (send self :send-to-fc fc-msg)
+      (send smachine :go-to :recognizing-look-at-point)))
   (:rectangle-callback-for-look-at-region (msg)
     (send self :show-text-on-image "Wait for look-at recognition")
     ;; send to FC to recognize pos
@@ -596,7 +613,7 @@
 
 
 ;; advertise
-(ros::advertise "/image_marker" image_view2::ImageMarker2)
+(ros::advertise "/image_rect/image_marker" image_view2::ImageMarker2)
 (setq *app* (instance ocs-executive-app :init))
 (setq *tf* (instance ros::transform-listener :init))
 
@@ -622,6 +639,8 @@
 ;; subscribing image_view2 ROI stuff
 (ros::subscribe "/ocs/communication/image_rect_color/screenrectangle/scaled" geometry_msgs::PolygonStamped
   #'send *app* :rectangle-callback)
+(ros::subscribe "/ocs/communication/panorama_image/screenrectangle/scaled" geometry_msgs::PolygonStamped
+  #'send *app* :panorama-rectangle-callback)
 (ros::subscribe "/ocs/communication/image_rect_color/line/scaled" geometry_msgs::PolygonStamped
   #'send *app* :line-callback)
 ;; (ros::subscribe "/ocs/communication/image_rect_color/foreground_rect/scaled" geometry_msgs::PolygonStamped

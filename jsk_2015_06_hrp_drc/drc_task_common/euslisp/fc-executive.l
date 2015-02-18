@@ -204,12 +204,23 @@
       (setq state :initial)))
   (:look-at-region-command-callback (msg)
     (when (eq state :initial)
-      ;; convert OCS2FCSmall into geometry_msgs/Polygon
-      (ros::publish "/look_at_recognition/input_rect"
-        (integer-vector-to-rect-polygon-stamped msg))
-      ;; enable snapshot
-      (call-empty-service "/look_at_recognition/snapshot/request")
-      (setq state :recognizing-look-at-point)))
+      (cond
+       ((eq (send msg :image_type) drc_com_common::OCS2FCSmall::*IMAGE_RECT*)
+        ;; convert OCS2FCSmall into geometry_msgs/Polygon
+        (ros::publish "/look_at_recognition/input_rect"
+          (integer-vector-to-rect-polygon-stamped msg))
+        ;; enable snapshot
+        (call-empty-service "/look_at_recognition/snapshot/request")
+        (setq state :recognizing-look-at-point))
+       ((eq (send msg :image_type) drc_com_common::OCS2FCSmall::*PANORAMA_VIEW*)
+        (ros::publish "/panorama/panorama_processing/output/screenrectangle"
+          (integer-vector-to-rect-polygon-stamped msg))
+        ;; enable snapshot
+        (call-empty-service "/panorama/snapshot/request")
+        (setq state :recognizing-look-at-point-panorama))
+       (t
+        (error "unknown image type: ~A" (send msg :image_type)))
+       )))
   (:look-at-exec-command-callback (msg)
     (when (eq state :initial)
       (setq state :executing-look-at)
@@ -332,6 +343,10 @@
             (send self :send-to-ocs msg)
             (setq state :initial)
             )))))
+  (:look-at-panorama-recog-callback (msg)
+    (ros::ros-warn "panorama callback!")
+    (setq state :recognizing-look-at-point)
+    (send self :look-at-recog-callback msg))
   (:look-at-recog-callback (msg)
     (when (eq state :recognizing-look-at-point)
       (let* ((trans (send self :lookup-from-body-transform (send msg :header)))
@@ -407,17 +422,21 @@
 (ros::advertise "/hose_grasp_recognition/input_rect" geometry_msgs::PolygonStamped)
 (ros::advertise "/hose_connect_recognition/input_rect" geometry_msgs::PolygonStamped)
 (ros::advertise "/look_at_recognition/input_rect" geometry_msgs::PolygonStamped)
+(ros::advertise "/panorama/panorama_processing/output/screenrectangle" geometry_msgs::PolygonStamped)
 (ros::advertise "/valve_recognition/input_rect" geometry_msgs::PolygonStamped)
 (ros::advertise "/door_recognition/input_support_plane_rect" geometry_msgs::PolygonStamped)
 (ros::advertise "/door_recognition/input_target_rect" geometry_msgs::PolygonStamped)
 (ros::advertise "/debri_recognition/input_line" geometry_msgs::PolygonStamped)
 (ros::advertise "/fc_to_ocs_low_speed/input" drc_com_common::FC2OCSSmall)
+
 (ros::subscribe "/fc_from_ocs_low_speed/output" drc_com_common::OCS2FCSmall
   #'send (send *app* :ocs2fc-message-handler) :root-callback)
 (ros::subscribe "/go_pos_recognition/snapshot/output" geometry_msgs::PoseStamped
   #'send *app* :go-pos-recog-callback)
 (ros::subscribe "/look_at_recognition/snapshot/output" geometry_msgs::PoseStamped
   #'send *app* :look-at-recog-callback)
+(ros::subscribe "/panorama/snapshot/output" geometry_msgs::PoseStamped
+  #'send *app* :look-at-panorama-recog-callback)
 (ros::subscribe "/valve_recognition/snapshot/output" jsk_recognition_msgs::Torus
   #'send *app* :valve-recog-callback)
 (ros::subscribe "/door_recognition/snapshot/output" jsk_recognition_msgs::BoundingBoxArray
