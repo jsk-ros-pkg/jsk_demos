@@ -12,7 +12,7 @@ uint8 GO_POS_REGION=1
 uint8 GO_POS_EXEC=2
 # look-at
 uint8 LOOK_AT_REGION=3
-uint8 LOOK_AT_EXEC=4
+#uint8 LOOK_AT_EXEC=4
 # valve
 uint8 VALVE_REGION=5
 uint8 VALVE_EXEC=6
@@ -28,3 +28,5 @@ uint8 HOSE_GRASP_EXEC=12
 # hose_connect
 uint8 HOSE_CONNECT_REGION=13
 uint8 HOSE_CONNECT_EXEC=14
+# look-around
+uint8 LOOK_AROUND_EXEC=15
