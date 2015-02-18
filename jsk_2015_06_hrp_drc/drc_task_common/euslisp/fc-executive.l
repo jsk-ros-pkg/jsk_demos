@@ -178,7 +178,7 @@
   (:hose-connect-exec-command-callback (msg)
     (when (eq state :initial)
       (let* ((params (send msg :float_params))
-             (coords (make-coords :pos (float-vector (elt params 0) (elt params 1) (elt params 2)) :rot (list 0 pi/2 0))))
+             (coords (make-coords :pos (float-vector (elt params 0) (elt params 1) (elt params 2)) :rpy (list 0 pi/2 0))))
         (ros::ros-info "connecting hose at ~A" coords)
         (setq state :executing-hose)
         ;; send motion to real robot

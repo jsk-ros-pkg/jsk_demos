@@ -43,6 +43,8 @@
 
 (defun get-potentio-vector-from-joint-states
   ()
+  (while (not (boundp '*potentio-vector*))
+    (ros::spin-once))
   *potentio-vector*)
 
 (defun joint-states-callback

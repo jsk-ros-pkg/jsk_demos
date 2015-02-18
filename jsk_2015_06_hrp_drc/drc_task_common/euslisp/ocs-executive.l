@@ -515,7 +515,7 @@
     ;; TODO : receive all hose information
     (when (eq (send smachine :state) :recognizing-hose-connect-pose)
       (let* ((params (send msg :params))
-             (coords (make-coords :pos (float-vector (elt params 0) (elt params 1) (elt params 2)) :rot (list 0 pi/2 0))))
+             (coords (make-coords :pos (float-vector (elt params 0) (elt params 1) (elt params 2)) :rpy (list 0 pi/2 0))))
         (send self :show-text-on-image 
               (format nil "hose pos ~f ~f ~f" 
                       (* 0.001 (elt params 0))
@@ -526,7 +526,7 @@
         ;; publish torus pose
         (erase-all-primitive-marker)
         (insert-primitive-marker :shape-type jsk_rviz_plugins::TransformableMarkerOperate::*CYLINDER* :name "cylinder1" :description "")
-        (set-primitive-marker-dimensions :radius 30 :z 120)
+        (set-primitive-marker-dimensions :radius 30 :z 50)
         (set-primitive-marker-pose coords "BODY")
         (set-primitive-marker-color :r 1.0 :g 1.0 :b 0.0 :a 0.6)
         (apply-primitive-dimensions-to-midi-device)
