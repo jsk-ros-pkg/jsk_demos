@@ -29,8 +29,6 @@
                 self :go-pos-exec-command-callback)
           (list drc_com_common::OCS2FCSmall::*LOOK_AT_REGION*
                 self :look-at-region-command-callback)
-          (list drc_com_common::OCS2FCSmall::*LOOK_AT_EXEC*
-                self :look-at-exec-command-callback)
           (list drc_com_common::OCS2FCSmall::*VALVE_REGION*
                 self :valve-region-command-callback)
           (list drc_com_common::OCS2FCSmall::*VALVE_EXEC*
@@ -258,29 +256,6 @@
        (t
         (error "unknown image type: ~A" (send msg :image_type)))
        )))
-  (:look-at-exec-command-callback (msg)
-    (when (eq state :initial)
-      (setq state :executing-look-at)
-      (let ((pos (float-vector (elt (send msg :float_params) 0)
-                               (elt (send msg :float_params) 1)
-                               (elt (send msg :float_params) 2))))
-        ;; position is respected to BODY. need to convert to tf...
-        ;; update model
-        (send *robot* :angle-vector (send *ri* :state :reference-vector))
-        ;; fix leg to coords
-        (send *robot* :fix-leg-to-coords (make-coords) '(:lleg :rleg))
-        (let ((origin-to-body 
-               (send (send *robot* :body_lk) :copy-worldcoords)))
-          (let ((pos-from-origin (send origin-to-body :transform-vector pos)))
-            (ros::ros-info "looking at ~A" pos-from-origin)
-            (send *robot* :head :look-at pos-from-origin)
-            (send *ri* :angle-vector (send *robot* :angle-vector) 3000) ;; 3 sec
-            (send *ri* :wait-interpolation)))
-        (let ((msg (instance drc_com_common::FC2OCSSmall :init)))
-          (send msg :type drc_com_common::FC2OCSSmall::*LOOK_AT_FINISHED*)
-          (send self :send-to-ocs msg))
-        (setq state :initial)
-        )))
   (:lookup-from-body-transform (header)
     (let ((trans (send *tf* :lookup-transform "BODY" 
                        (send header :frame_id) (send header :stamp))))
@@ -393,14 +368,18 @@
         (let ((pos (float-vector (elt (send from-body-coords :worldpos) 0)
                                  (elt (send from-body-coords :worldpos) 1)
                                  (elt (send from-body-coords :worldpos) 2))))
-          (let ((msg (instance drc_com_common::FC2OCSSmall :init)))
-            (send msg :type drc_com_common::FC2OCSSmall::*LOOK_AT_POS*)
-            (setf (elt (send msg :params) 0) (elt pos 0))
-            (setf (elt (send msg :params) 1) (elt pos 1))
-            (setf (elt (send msg :params) 2) (elt pos 2))
-            (send self :send-to-ocs msg)
-            (setq state :initial)
-            )))))
+          (send *robot* :angle-vector (send *ri* :state :reference-vector))
+          (send *robot* :fix-leg-to-coords (make-coords) '(:lleg :rleg))
+          (let ((origin-to-body
+                 (send (send *robot* :body_lk) :copy-worldcoords)))
+            (let ((pos-from-origin (send origin-to-body :transform-vector pos)))
+              (send *robot* :head :look-at pos-from-origin)
+              (send *ri* :angle-vector (send *robot* :angle-vector) 1000) ;; 1 sec
+              (send *ri* :wait-interpolation)))))
+      (let ((msg (instance drc_com_common::FC2OCSSmall :init)))
+        (send msg :type drc_com_common::FC2OCSSmall::*LOOK_AT_FINISHED*)
+          (send self :send-to-ocs msg))
+      (setq state :initial)))
   (:go-pos-recog-callback (msg)         ;geometry_msgs/PoseStamped
     (when (eq state :recognizing-go-pos-location)
       (let ((trans (send self :lookup-from-ground-transform (send msg :header))))
