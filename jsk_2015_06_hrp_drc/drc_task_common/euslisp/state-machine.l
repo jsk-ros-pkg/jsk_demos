@@ -28,6 +28,8 @@
     (setq initial-hook-obj obj)
     (setq initial-hook-method method)
     )
+  (:state? (st)
+    (eq (send self :state) st))
   (:next? (next-state)
     "return t if state machine can go to next-state from the current state"
     (or (eq (send self :state) next-state)
@@ -133,6 +135,103 @@
   (:context () context)
   )
 
+;; timered state machine
+;; timered-state-machine and timered-node provide
+;; state machine with time limit.
+;; You can spcify following attributes to state:
+;;   1. time limit
+;;   2. next state when time limit has come
+;;   3. hook method and object to be called when time limit has come
+(defclass timered-state-machine
+  :super task-state-machine
+  :slots ())
+
+(defmethod timered-state-machine
+  (:proc ()
+    "check current state has timelimit and if it has timelimit,
+state machine automatticaly transition to next state"
+    (let ((current-state (send self :active-state)))
+      (when (send current-state :has-timelimit-p)
+        (when (send current-state :check-timelimit)
+          (ros::ros-info "automatically transition to ~A"
+            (send current-state :timelimit-next-state))
+          (send current-state :call-hook)
+          (send self :go-to (send current-state :timelimit-next-state))
+          )))
+    )
+  (:go-to (next)
+    "call :enter hook method"
+    (send-super :go-to next)
+    (send (send self :node next) :enter))
+  )
+
+(defclass timered-state
+  :super task-state
+  :slots (timelimit deligate-object deligate-method
+          timelimit-next-state started-time end-time))
+
+(defmethod timered-state
+  (:timelimit-next-state ()
+    timelimit-next-state)
+  (:add-timelimit (timelimit-duration next-state
+                   &key
+                   ((:deligate-object adeligate-object) nil)
+                   ((:deligate-method adeligate-method) nil))
+    "add timelimit to state"
+    (setq timelimit timelimit-duration)
+    (setq timelimit-next-state next-state)
+    (if (and adeligate-object adeligate-method)
+        (progn
+          (setq deligate-object adeligate-object)
+          (setq deligate-method adeligate-method))))
+  (:has-timelimit-p ()
+    "return t if state has timelimit"
+    (not (null timelimit)))
+  (:enter ()
+    "should be called when this state is activated"
+    (ros::ros-info "entering ~A" (send self :name))
+    (setq started-time (ros::time-now))
+    (if timelimit
+        (setq end-time (ros::time+ started-time (ros::time timelimit))))
+    )
+  (:check-timelimit ()
+    "return t if timelimit has come"
+    (ros::time> (ros::time-now) end-time))
+  (:call-hook ()
+    "call hook method if deligate-object and deligate-method are
+specified"
+    (if (and deligate-object deligate-method)
+        (send deligate-object deligate-method))
+    )
+  )
+  
+#|
+;; sample of timered-state-machine
+(load "state-machine.l")
+(setq white-rabbit-state (make-state-machine
+                          '((:initial -> :tea-party)
+                            (:tea-party -> :duchess)
+                            (:duchess -> :heart-trial)
+                            (:heart-trial -> :initial))
+                          '((:initial :alice-in-wonderland)
+                            (:tea-party :alice-in-wonderland)
+                            (:duchess :alice-in-wonderland)
+                            (:heart-trial :alice-in-wonderland))
+                          :initial nil))
+(send (send white-rabbit-state :node :initial)
+      :add-timelimit 10 :tea-party)
+(send (send white-rabbit-state :node :tea-party)
+      :add-timelimit 10 :duchess)
+(send (send white-rabbit-state :node :duchess)
+      :add-timelimit 10 :heart-trial)
+(send (send white-rabbit-state :node :heart-trial)
+      :add-timelimit 10 :initial)
+(send white-rabbit-state :go-to :initial)
+(do-until-key
+   (send white-rabbit-state :proc))
+|#
+
+
 (defun make-state-machine (graph-list context-map initial-state &optional output-file)
   "
 Utility function to make state machine.
@@ -147,7 +246,7 @@ Usage:
                         (d taask3))
                        'a)
 "
-  (let ((sm (instance task-state-machine :init output-file)))
+  (let ((sm (instance timered-state-machine :init output-file)))
     ;; list up all the states
     (let ((all-states (unique
                        (flatten
@@ -165,7 +264,8 @@ Usage:
           (unless context
             (warning-message 2 "Cannot find context for ~A~%" state-name)
             (error))
-          (send sm :add-node (instance task-state :init state-name context)))))
+          (send sm :add-node (instance timered-state
+                                       :init state-name context)))))
     ;; register transition
     (dolist (connection graph-list)
       (send sm :register-transition
@@ -177,7 +277,7 @@ Usage:
     (send sm :start-state (send sm :node initial-state))
     (send sm :active-state (send sm :start-state))
     sm))
-      
+
 
 (defun make-ocs-state-machine ()
   (make-state-machine
