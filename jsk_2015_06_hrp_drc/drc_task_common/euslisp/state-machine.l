@@ -195,10 +195,7 @@ Usage:
      ;; look-at
      (:initial -> :selecting-region-for-look-at)
      (:selecting-region-for-look-at -> :initial) ;cancel
-     (:selecting-region-for-look-at -> :recognizing-look-at-point)
-     (:recognizing-look-at-point -> :selecting-exec-for-look-at) ;recognition done
-     (:selecting-exec-for-look-at -> :executing-look-at)          ;exec
-     (:selecting-exec-for-look-at -> :initial)                   ;cancel
+     (:selecting-region-for-look-at -> :executing-look-at)
      (:executing-look-at -> :initial)                            ;done
      ;; look-around
      (:initial -> :executing-look-around)
@@ -252,8 +249,6 @@ Usage:
      (:executing-go-pos :go-pos)
      ;; look-at
      (:selecting-region-for-look-at :look-at)
-     (:recognizing-look-at-point :look-at)
-     (:selecting-exec-for-look-at :look-at)
      (:executing-look-at :look-at)
      ;; look-around
      (:executing-look-around :look-around)

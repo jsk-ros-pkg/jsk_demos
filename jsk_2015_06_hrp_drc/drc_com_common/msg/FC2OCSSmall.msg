@@ -10,7 +10,7 @@ uint8 REPORT=0
 uint8 GO_POS_POSE=1
 uint8 GO_POS_FINISHED=2
 # look-at
-uint8 LOOK_AT_POS=3
+# uint8 LOOK_AT_POS=3
 uint8 LOOK_AT_FINISHED=4
 # valve
 uint8 VALVE_POSE=5
