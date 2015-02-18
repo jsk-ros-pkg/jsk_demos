@@ -40,6 +40,9 @@
   <build_depend>jsk_ik_server</build_depend>
   <build_depend>pr2eus</build_depend>
   <build_depend>pcl_msgs</build_depend>
+  <build_depend>jsk_footstep_msgs</build_depend>
+  <build_depend>jsk_footstep_planner</build_depend>
+  <build_depend>jsk_footstep_controller</build_depend>
   <run_depend>rosbuild</run_depend>
   <run_depend>mk</run_depend>
   <run_depend>roseus</run_depend>
@@ -71,6 +74,9 @@
   <run_depend>roseus_smach</run_depend>
   <run_depend>pr2eus</run_depend>
   <run_depend>spacenav_node</run_depend>
+  <run_depend>jsk_footstep_msgs</run_depend>
+  <run_depend>jsk_footstep_planner</run_depend>
+  <run_depend>jsk_footstep_controller</run_depend>
   <export>
     <rqt_gui plugin="${prefix}/plugin.xml"/>
     <rviz plugin="${prefix}/plugin_description.xml"/>  
