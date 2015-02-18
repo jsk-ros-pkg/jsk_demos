@@ -8,8 +8,7 @@
   (setq *robot* *hrp2jsknts*)
   )
 
-(format t "(init-robot-for-grasp)~%")
-
+;; grasp with pose
 (defun pose-grasp
   (poses)
   (dotimes (i (length poses))
@@ -19,31 +18,50 @@
     )
   )
 
+;; grasp-data
+;; thumb grasp
 (setq *t-grasp-data* (make-hash-table))
-(setf (gethash :pose *t-grasp-data*) (list :hook-pose :extension-pose :grasp-pose))
-(setf (gethash :false-answer *t-grasp-data*) (float-vector -11.4 50.3))
-(setf (gethash :index *t-grasp-data*) (list 1 5))
-(setf (gethash :threshold *t-grasp-data*) 100)
-;
-(defun grasp-from-data ;thumb grasp
-  (&key (data *t-grasp-data*) (calib nil))
-  (pose-grasp (gethash :pose *t-grasp-data*))
+(setf (gethash :pose-list *t-grasp-data*) (list :hook-pose :extension-pose :grasp-pose)) ;; do grasp pose sequence
+(setf (gethash :link-index *t-grasp-data*) (list 1 5)) ;; reference link index for calc error
+(setf (gethash :answer-vector-list *t-grasp-data*) (list (float-vector -11.4 50.3) (float-vector 34 45))) ;; learned angle
+(setf 
+ (gethash :answer-list *t-grasp-data*) (list :free :grasp) ;;(list nil t)
+      ) ;; learned pose name
+
+
+(defun grasp-from-data 
+  (data &key (learn nil))
+  (pose-grasp (gethash :pose-list *t-grasp-data*))
   ; service to get arm pose
-  (let (res (state-vec (copy-object (gethash :false-answer *t-grasp-data*))) error-vec)
+  (let (res (state-vec (copy-object (elt (gethash :answer-vector-list data) 0))) error-vec (answer nil))
     (setq res (ros::service-call "/HRP3HandControllerServiceROSBridge/getRobotState" (instance jsk_hrp2_ros_bridge::OpenHRP_HRP3HandControllerService_getRobotStateRequest :init)))
-    (dotimes (i (length (gethash :index *t-grasp-data*))) 
-      (setf (elt state-vec i) (elt (send res :potentio) (elt (gethash :index *t-grasp-data*) i)))
+    (dotimes (i (length (gethash :link-index data))) 
+      (setf (elt state-vec i) (elt (send res :potentio) (elt (gethash :link-index data) i)))
       )
-    ;; (setq state-vec (float-vector (elt (send res :potentio) 1) (elt (send res :potentio) 5)))
-    (if calib (setf (gethash :false-answer *t-grasp-data*) state-vec))
-    (setq error-vec (v- (gethash :false-answer *t-grasp-data*) state-vec))
-    (if (<  (gethash :threshold *t-grasp-data*) (v. error-vec error-vec))
-        (progn (ros::ros-info "grasp succeeded") )
-      (progn (ros::ros-info "grasp failed") nil)
+    (ros::ros-info (format nil "state-vec ~A" state-vec))
+    ;;calc error with learned poses
+    (let ((min-error 100000))
+      (dotimes (i (length (gethash :link-index data)))
+	(setq error-vec (v- (elt (gethash :answer-vector-list data) i) state-vec))
+	(when (> min-error (v. error-vec error-vec))
+	  (setq min-error (v. error-vec error-vec))
+	  (setq answer (elt (gethash :answer-list data) i))
+	  )
+	)
+      (when learn ;; learn new pose 
+	(if (> min-error 60) 
+	    (progn
+	      (push state-vec (gethash :answer-vector-list data))
+	      (push learn (gethash :answer-list data))
+              (ros::ros-info (format nil "learn ~A pose (vector: ~A)" learn state-vec)))
+          (ros::ros-info "data already exists")
+	  )
+	) 
       )
+    answer ;;return pose
     )
   )
-
 (unless (boundp '*robot*) (init-robot-for-grasp))
 
-(format t "(grasp-from-data)~%")
+(format t "(grasp-from-data *t-grasp-data*
+)~%")
