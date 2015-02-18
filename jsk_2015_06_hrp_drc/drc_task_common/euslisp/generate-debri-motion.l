@@ -11,6 +11,15 @@
   ;; place robot to origin
   (send *robot* :reset-manip-pose)
   (send *robot* :fix-leg-to-coords (make-coords))
+  ;; attach handle to robot
+  (send *robot* :put :larm-debri-coords
+        (make-cascoords
+         :coords (send (send (send *robot* :larm :end-coords) :copy-worldcoords) :translate (float-vector 25.0 5.0 0.0) :local)
+         :parent (send (send *robot* :larm :end-coords) :parent)))
+  (send *robot* :put :rarm-debri-coords
+        (make-cascoords
+         :coords (send (send (send *robot* :rarm :end-coords) :copy-worldcoords) :translate (float-vector 25.0 -5.0 0.0) :local)
+         :parent (send (send *robot* :rarm :end-coords) :parent)))
   ;; generate debri
   (setq *debri* (make-cylinder debri-r debri-h))
   (send *debri* :set-color (float-vector 1 1 0))
@@ -19,10 +28,11 @@
         (make-cascoords
          :coords (make-coords :pos (float-vector 0 0 (* debri-h handle-ratio)) :rpy (list 0 0 0))
          :parent *debri*))
-  ;; place debri to debri-coords
-  (send *debri* :newcoords debri-coords)
-  ;; treat the difference of origin  between eus and recognition program
-  (send *debri* :translate (float-vector 0 0 (* -0.5 debri-h)) :local)
+    ;; place debri to debri-coords
+  (when debri-coords
+    (send *debri* :newcoords debri-coords)
+    ;; treat the difference of origin  between eus and recognition program
+    (send *debri* :translate (float-vector 0 0 (* -0.5 debri-h)) :local))
   ;; draw
   (when draw?
     (setq *ground* (make-cube 5000 5000 1))
@@ -77,6 +87,7 @@
   ;; loop
   (let* ((step-dist 60)
          (max-dist 600)
+         (reach-dist 120)
          (ik-results nil)
          (original-foot-midcoords (send (send *robot* :foot-midcoords) :copy-worldcoords)))
     ;; pull debri
@@ -88,19 +99,6 @@
              tc)
         (when draw? (send (send *debri* :get :grasp-coords) :draw-on :flush t))
         ;; solve ik for debri handle
-        (when (= i 0)
-          (setq tc
-                (list
-                 (send (send (send *debri* :get :grasp-coords) :copy-worldcoords) :translate (float-vector -100 -100 0) :local)
-                 (send *robot* :rleg :end-coords :copy-worldcoords)
-                 (send *robot* :lleg :end-coords :copy-worldcoords)))
-          (with-move-target-link-list
-           (mt ll *robot* '(:rarm :rleg :lleg))
-           (setq ik-ret (fullbody-inverse-kinematics-for-debri tc mt ll :draw? draw?))
-           (when ik-ret
-             (setq ik-ret (send *robot* :look-at-target (send *debri* :worldcoords)))))
-          (push-back (list i (not (null ik-ret)) ik-ret) ik-results))
-        ;; solve ik for debri handle
         (setq tc
               (list
                (send *debri* :get :grasp-coords)
@@ -108,10 +106,25 @@
                (send *robot* :lleg :end-coords :copy-worldcoords)))
         (with-move-target-link-list
          (mt ll *robot* '(:rarm :rleg :lleg))
+         (setf (elt mt 0) (send *robot* :get :rarm-debri-coords))
          (setq ik-ret (fullbody-inverse-kinematics-for-debri tc mt ll :draw? draw?))
          (when ik-ret
            (setq ik-ret (send *robot* :look-at-target (send *debri* :worldcoords)))))
         (push-back (list i (not (null ik-ret)) ik-ret) ik-results)
+        ;; solve ik for reaching point
+        (when (and (= i 0) ik-ret)
+          (setq tc
+                (list
+                 (send (send (send *robot* :rarm :end-coords) :copy-worldcoords) :translate (float-vector (- reach-dist) (- reach-dist) 0) :local)
+                 (send *robot* :rleg :end-coords :copy-worldcoords)
+                 (send *robot* :lleg :end-coords :copy-worldcoords)))
+          (with-move-target-link-list
+           (mt ll *robot* '(:rarm :rleg :lleg))
+           (setf (elt mt 0) (send *robot* :get :rarm-debri-coords))
+           (setq ik-ret (fullbody-inverse-kinematics-for-debri tc mt ll :draw? draw?))
+           (when ik-ret
+             (setq ik-ret (send *robot* :look-at-target (send *debri* :worldcoords)))))
+          (push (list i (not (null ik-ret)) ik-ret) ik-results))
         ;; draw
         (when draw? (send *irtviewer* :draw-objects :flush t))
         )
@@ -185,6 +198,6 @@
 ;; debri util ;;;;
 
 (defun get-debri-release-pose ()
-  (float-vector 0.0 0.0 -26.0 50.0 -24.0 0.0 0.0 0.0 0.0 -26.0 50.0 -24.0 0.0 0.0 0.0 0.0 0.0 40.0 60.0 -10.7092 -87.7993 -121.883 -54.9239 -34.0184 16.2622 60.0 50.0 30.0 10.0 -120.0 25.0 5.0 -20.0 -60.0))
+  (float-vector 0.0 0.0 -26.0 50.0 -24.0 0.0 0.0 0.0 0.0 -26.0 50.0 -24.0 0.0 0.0 0.0 0.0 0.0 40.0 59.9996 -27.7207 -85.0007 -125.779 16.8005 1.11049 76.5611 60.0 50.0 30.0 10.0 -120.0 25.0 5.0 -20.0 -60.0))
 
 

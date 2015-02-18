@@ -42,7 +42,7 @@
   (when wait? (send *ri* :hand-wait-interpolation)))
 
 (defun send-angle-vector-sequence-with-time
-  (av-seq (&key (time 5000) (wait? t)))
+  (av-seq &key (time 5000) (wait? t))
   (send *ri* :angle-vector-sequence av-seq (make-list (length av-seq) :initial-element time))
   (when wait? (send *ri* :wait-interpolation)))
 
@@ -74,6 +74,21 @@
 (defun check-angle-vector-distance ;; return t when distance is smaller than thre
   (&key
    (dest-av (send *robot* :angle-vector))
-   (thre 5)) ;; [deg]
-  (< (abs (apply #'max (coerce (v- dest-av (send *ri* :state :reference-vector)) cons))) thre))
+   (thre 5) ;; [deg]
+   (ignore-head? t))
+  (let* ((original-av (send *robot* :angle-vector))
+         (current-av (send *ri* :state :reference-vector)))
+    (when ignore-head?
+      (send *robot* :angle-vector dest-av)
+      (send *robot* :head :angle-vector (fill (send *robot* :head :angle-vector) 0))
+      (setq dest-av (send *robot* :angle-vector))
+      (send *robot* :angle-vector current-av)
+      (send *robot* :head :angle-vector (fill (send *robot* :head :angle-vector) 0))
+      (setq current-av (send *robot* :angle-vector))
+      )
+    ;; set original angle-vector
+    (send *robot* :angle-vector original-av)
+    ;; compare
+    (< (abs (apply #'max (coerce (v- dest-av current-av) cons))) thre)
+    ))
 

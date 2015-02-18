@@ -10,6 +10,15 @@
   ;; place robot to origin
   (send *robot* :reset-manip-pose)
   (send *robot* :fix-leg-to-coords (make-coords))
+  ;; attach handle to robot
+  (send *robot* :put :larm-valve-coords
+        (make-cascoords
+         :coords (send (send (send *robot* :larm :end-coords) :copy-worldcoords) :translate (float-vector 25.0 5.0 0.0) :local)
+         :parent (send (send *robot* :larm :end-coords) :parent)))
+  (send *robot* :put :rarm-valve-coords
+        (make-cascoords
+         :coords (send (send (send *robot* :rarm :end-coords) :copy-worldcoords) :translate (float-vector 25.0 -5.0 0.0) :local)
+         :parent (send (send *robot* :rarm :end-coords) :parent)))
   ;; generate valve
   (let* ((valve-sr (* 0.1 valve-r)))
     (setq *valve* (make-ring valve-r valve-sr :segments 16))
@@ -109,6 +118,7 @@
                (send *robot* :lleg :end-coords :copy-worldcoords)))
         (with-move-target-link-list
          (mt ll *robot* '(:rarm :rleg :lleg))
+         (setf (elt mt 0) (send *robot* :get :rarm-valve-coords))
          (setq ik-ret-in (fullbody-inverse-kinematics-for-valve tc mt ll :draw? draw?))
          (when ik-ret-in
            (setq ik-ret-in (send *robot* :look-at-target (send *valve* :worldcoords)))))
@@ -121,6 +131,7 @@
         (when ik-ret-in
           (with-move-target-link-list
            (mt ll *robot* '(:rarm :rleg :lleg))
+           (setf (elt mt 0) (send *robot* :get :rarm-valve-coords))
            (setq ik-ret-out (fullbody-inverse-kinematics-for-valve tc mt ll :draw? draw?))
            (when ik-ret-out
              (setq ik-ret-out (send *robot* :look-at-target (send *valve* :worldcoords))))))
