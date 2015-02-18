@@ -27,6 +27,8 @@ uint8 HOSE_GRASP_FINISHED=12
 # hose_connect
 uint8 HOSE_CONNECT_POSE=13
 uint8 HOSE_CONNECT_FINISHED=14
+# look_around
+uint8 LOOK_AROUND_FINISHED=15
 
 # when type==GO_POS_POSE, 
 # params = [x, y, z, yaw, pitch, roll]

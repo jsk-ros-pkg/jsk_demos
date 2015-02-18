@@ -200,6 +200,9 @@ Usage:
      (:selecting-exec-for-look-at -> :executing-look-at)          ;exec
      (:selecting-exec-for-look-at -> :initial)                   ;cancel
      (:executing-look-at -> :initial)                            ;done
+     ;; look-around
+     (:initial -> :executing-look-around)
+     (:executing-look-around -> :initial)                            ;done
      ;; valve
      (:initial -> :selecting-region-for-valve)
      (:selecting-region-for-valve -> :initial) ;cancel
@@ -252,6 +255,8 @@ Usage:
      (:recognizing-look-at-point :look-at)
      (:selecting-exec-for-look-at :look-at)
      (:executing-look-at :look-at)
+     ;; look-around
+     (:executing-look-around :look-around)
      ;; valve
      (:selecting-region-for-valve :valve)
      (:recognizing-valve-pose :valve)
