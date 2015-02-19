@@ -189,7 +189,7 @@
 ;; hose connect ;;;;
 
 (defun set-hose-connect-environment
-  (&key (hose-coords (make-coords :pos (float-vector 500 0 800) :rpy (list 0 pi/2 0)))
+  (&key (hose-coords (make-coords :pos (float-vector 0 0 800) :rpy (list 0 pi/2 0)))
         (generate-ri? t) (draw? t)
         (robot-name "HRP2JSKNTS"))
   ;; generate robot
@@ -271,7 +271,7 @@
   )
 
 (defun generate-hose-connect-motion
-  (&key (draw? t))
+  (&key (draw? t) (try-all-ik? nil))
   (let* ((reach-dist 50)
          (ik-results nil)
          (original-foot-midcoords (send (send *robot* :foot-midcoords) :copy-worldcoords))
@@ -283,6 +283,8 @@
     ;; loop
     (dotimes (i connect-interpolation-num)
       ;; solve ik to connect hose
+      (send *robot* :reset-manip-pose)
+      (send *robot* :fix-leg-to-coords original-foot-midcoords)
       (let* (ik-ret
              tc
              (connect-interpolation-ratio (/ (float i) connect-interpolation-num))
@@ -304,29 +306,31 @@
         ;; draw
         (when draw? (send *irtviewer* :draw-objects :flush t))
         ))
-    (when (every #'eval (mapcar #'(lambda (x) (elt x 1)) ik-results))
+    (when (or try-all-ik? (every #'eval (mapcar #'(lambda (x) (elt x 1)) ik-results)))
       (let* ((ik-results-orig (copy-seq ik-results)))
         (dotimes (i connect-interpolation-num)
+          ;; solve ik for hose connector handle
           (let* (ik-ret
                  tc)
-            ;; solve ik for hose connector handle
-            (send *robot* :angle-vector (elt (elt (reverse ik-results-orig) i) 2))
-            (send *robot* :fix-leg-to-coords (make-coords))
-            (setq tc
-                  (list
-                   (send (send (send *robot* :larm :end-coords) :copy-worldcoords) :translate (float-vector (- reach-dist) reach-dist 0) :local)
-                   (send *robot* :rleg :end-coords :copy-worldcoords)
-                   (send *robot* :lleg :end-coords :copy-worldcoords)))
-            (with-move-target-link-list
-             (mt ll *robot* '(:larm :rleg :lleg))
-             (setq ik-ret (fullbody-inverse-kinematics-for-hose-connect tc mt ll :draw? draw?))
-             (when ik-ret
-               (setq ik-ret
-                     (send *robot* :look-at-target (send *hose* :worldcoords)))))
+            (when (elt (elt (reverse ik-results-orig) i) 1)
+              (send *robot* :angle-vector (elt (elt (reverse ik-results-orig) i) 2))
+              (send *robot* :fix-leg-to-coords original-foot-midcoords)
+              (setq tc
+                    (list
+                     (send (send (send *robot* :larm :end-coords) :copy-worldcoords) :translate (float-vector (- reach-dist) reach-dist 0) :local)
+                     (send *robot* :rleg :end-coords :copy-worldcoords)
+                     (send *robot* :lleg :end-coords :copy-worldcoords)))
+              (with-move-target-link-list
+               (mt ll *robot* '(:larm :rleg :lleg))
+               (setq ik-ret (fullbody-inverse-kinematics-for-hose-connect tc mt ll :draw? draw?))
+               (when ik-ret
+                 (setq ik-ret
+                       (send *robot* :look-at-target (send *hose* :worldcoords))))))
             (push-back (list i (not (null ik-ret)) ik-ret) ik-results) ;; connect pose
             ;; draw
             (when draw? (send *irtviewer* :draw-objects :flush t))
-            ))))
+            )))
+      )
     (setq *hose-ik-num* connect-interpolation-num)
     (setq *hose-ik-results* ik-results))
   )
