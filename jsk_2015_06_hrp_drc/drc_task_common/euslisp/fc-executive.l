@@ -9,16 +9,21 @@
 (ros::roseus-add-msgs "pcl_msgs")
 (load "package://drc_task_common/euslisp/util.l")
 (load "package://drc_task_common/euslisp/robot-util.l")
+(load "package://drc_task_common/euslisp/state-machine.l")
 (load "package://drc_task_common/euslisp/generate-valve-motion.l")
 (load "package://drc_task_common/euslisp/generate-debri-motion.l")
 (load "package://drc_task_common/euslisp/generate-hose-motion.l")
 
 (defclass fc-executive-app
   :super propertied-object
-  :slots (state go-pos-goal ocs2fc-message-handler))
+  :slots (state go-pos-goal ocs2fc-message-handler smachine))
 
 (defmethod fc-executive-app
   (:init ()
+
+    ;; prepare state machine
+    (setq smachine (make-fc-state-machine))
+    (send self :register-timelimits smachine)
     (setq state :initial)
     (setq ocs2fc-message-handler (instance narrowband-message-handler :init))
     ;; register callbacks
@@ -53,6 +58,10 @@
                 self :look-around-exec-command-callback)
           )
     self)
+  (:register-timelimits (sm)
+    ;; sm is a instance of state machine
+    
+    )
   (:ocs2fc-message-handler () ocs2fc-message-handler)
   (:debri-line-command-callback (msg)
     ;;(when (eq state :initial)
