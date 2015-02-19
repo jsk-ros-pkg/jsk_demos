@@ -54,6 +54,10 @@
                 self :hose-connect-exec-command-callback)
           (list drc_com_common::OCS2FCSmall::*LOOK_AROUND_EXEC*
                 self :look-around-exec-command-callback)
+          (list drc_com_common::OCS2FCSmall::*DRILL_GRASP_REGION*
+                self :drill-grasp-region-command-callback)
+          (list drc_com_common::OCS2FCSmall::*DRILL_GRASP_EXEC*
+                self :drill-grasp-exec-command-callback)
           )
     self)
   (:register-timelimits (sm)
@@ -68,6 +72,10 @@
           :deligate-method :report-recognition-failure-to-ocs)
     (send (send smachine :node :recognizing-hose-connect-pose)
           :add-timelimit 10 :initial
+          :deligate-object self
+          :deligate-method :report-recognition-failure-to-ocs)
+    (send (send smachine :node :recognizing-drill-grasp-pose)
+          :add-timelimit 30 :initial ; too long because template_drill_points are big now
           :deligate-object self
           :deligate-method :report-recognition-failure-to-ocs)
     (send (send smachine :node :recognizing-door-pose)
@@ -125,6 +133,15 @@
       ;; enable snapshot
       (call-empty-service "/hose_connect_recognition/snapshot/request")
       (send smachine :go-to :recognizing-hose-connect-pose)
+      ))
+  (:drill-grasp-region-command-callback (msg)
+    (when (send smachine :state? :initial)
+      ;; convert OCS2FCSmall into geometry_msgs/Polygon
+      (ros::publish "/drill_recognition/input_rect"
+        (integer-vector-to-rect-polygon-stamped msg))
+      ;; enable snapshot
+      (call-empty-service "/drill_recognition/snapshot/request")
+      (send smachine :go-to :recognizing-drill-grasp-pose)
       ))
   (:panorama-clear ()
     (call-empty-service "/panorama/panorama_processing/clear"))
@@ -234,6 +251,22 @@
         ;; send finish signal to ocs
         (let ((msg (instance drc_com_common::FC2OCSSmall :init)))
           (send msg :type drc_com_common::FC2OCSSmall::*HOSE_CONNECT_FINISHED*)
+          (send self :send-to-ocs msg))
+        (send smachine :go-to :initial)
+        ))
+    )
+  (:drill-grasp-exec-command-callback (msg)
+    (when (send smachine :state? :initial)
+      (let* ((params (send msg :float_params))
+             (coords (make-coords :pos (float-vector (elt params 0) (elt params 1) (elt params 2)) :rpy (list 0 pi 0))))
+        (ros::ros-info "grasp drill at ~A" coords)
+        (send smachine :go-to :executing-drill-grasp)
+        ;; send motion to real robot
+        ;; TODO make drill motion
+        ;;(send-drill-grasp-motion coords)
+        ;; send finish signal to ocs
+        (let ((msg (instance drc_com_common::FC2OCSSmall :init)))
+          (send msg :type drc_com_common::FC2OCSSmall::*DRILL_GRASP_FINISHED*)
           (send self :send-to-ocs msg))
         (send smachine :go-to :initial)
         ))
@@ -405,6 +438,24 @@
             (send self :send-to-ocs msg)
             (send smachine :go-to :initial)
             )))))
+  (:drill-grasp-recog-callback (msg)         ;geometry_msgs/PoseStamped
+    (when (send smachine :state? :recognizing-drill-grasp-pose)
+      (let* ((trans (send self :lookup-from-body-transform (send msg :header)))
+             (coords (ros::tf-pose-stamped->coords msg))
+             (from-body-coords (send trans :transform coords)))
+        ;; only position is important in the temporary recognition
+        (let ((pos (float-vector (elt (send from-body-coords :worldpos) 0)
+                                 (elt (send from-body-coords :worldpos) 1)
+                                 (elt (send from-body-coords :worldpos) 2))))
+          (let ((msg (instance drc_com_common::FC2OCSSmall :init)))
+            (send msg :type drc_com_common::FC2OCSSmall::*DRILL_GRASP_POSE*)
+            (setf (elt (send msg :params) 0) (elt pos 0))
+            (setf (elt (send msg :params) 1) (elt pos 1))
+            (setf (elt (send msg :params) 2) (elt pos 2))
+            (send self :send-to-ocs msg)
+            (send smachine :go-to :initial)
+            )))))
+
   (:look-at-panorama-recog-callback (msg)
     (ros::ros-warn "panorama callback!")
     (send smachine :go-to :recognizing-look-at-point)
@@ -489,6 +540,7 @@
 (ros::advertise "/door_recognition/input_support_plane_rect" geometry_msgs::PolygonStamped)
 (ros::advertise "/door_recognition/input_target_rect" geometry_msgs::PolygonStamped)
 (ros::advertise "/debri_recognition/input_line" geometry_msgs::PolygonStamped)
+(ros::advertise "/drill_recognition/input_rect" geometry_msgs::PolygonStamped)
 (ros::advertise "/fc_to_ocs_low_speed/input" drc_com_common::FC2OCSSmall)
 
 (ros::subscribe "/fc_from_ocs_low_speed/output" drc_com_common::OCS2FCSmall
@@ -509,6 +561,8 @@
   #'send *app* :hose-grasp-recog-callback)
 (ros::subscribe "/hose_connect_recognition/snapshot/output" geometry_msgs::PoseStamped
   #'send *app* :hose-connect-recog-callback)
+(ros::subscribe "/drill_recognition/snapshot/output" geometry_msgs::PoseStamped
+  #'send *app* :drill-grasp-recog-callback)
 (ros::advertise "/go_pos_goal" geometry_msgs::PoseStamped)
 
 (ros::rate 10)

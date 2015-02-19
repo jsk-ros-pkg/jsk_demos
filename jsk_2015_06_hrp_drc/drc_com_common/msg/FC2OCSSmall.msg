@@ -29,9 +29,12 @@ uint8 HOSE_CONNECT_POSE=13
 uint8 HOSE_CONNECT_FINISHED=14
 # look_around
 uint8 LOOK_AROUND_FINISHED=15
+# drill_grasp
+uint8 DRILL_GRASP_POSE=16
+uint8 DRILL_GRASP_FINISHED=17
 
 # failed
-uint8 RECOGNITION_FAILED=16
+uint8 RECOGNITION_FAILED=18
 
 # when type==GO_POS_POSE, 
 # params = [x, y, z, yaw, pitch, roll]
