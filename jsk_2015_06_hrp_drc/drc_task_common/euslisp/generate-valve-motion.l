@@ -91,7 +91,7 @@
         :rotation-axis (list t t t)
         :max (float-vector  500  500  0  20  20  10) ;; for hrp2
         :min (float-vector  -500  -500  -200  -20  -20  -10) ;; for hrp2
-        :stop 10
+        :stop 20
         :debug-view (if draw? :no-message nil)
         :warnp (if draw? t nil)
         ))
@@ -192,7 +192,7 @@
 
 (defun get-valve-stand-coords ;; relative to valve
   ()
-  (make-coords :pos (float-vector 0 200 -400)) ;; dependent on arm
+  (make-coords :pos (float-vector -500 120 0) :rpy (list (deg2rad 0) 0 0)) ;; dependent on arm
   )
 
 (defun get-valve-motion-full
@@ -204,10 +204,16 @@
     (get-valve-motion :draw? draw?)
     ;; when motion is not good, change stand position
     (unless (> (get-rotatable-angle) rotatable-angle-thre)
-      (let* ((coords (send (send *valve* :copy-worldcoords) :transform (get-valve-stand-coords) :local))
-             (pos (send coords :pos))
-             (rpy (elt (send coords :rpy-angle) 0)))
-        (setq *valve-stand-coords* (make-coords :pos (float-vector (elt pos 0) (elt pos 1) 0) :rpy (list (elt rpy 0) 0 0))))
+      (let* ((x-vec (send (send (send *valve* :worldcoords) :copy-worldcoords) :rotate-vector (float-vector 0 0 1)))
+             (z-vec (float-vector 0 0 1))
+             (y-vec (v* z-vec x-vec))
+             (valve-coords-stand-rot (make-coords :pos (send (send *valve* :copy-worldcoords) :worldpos) :rot (transpose (matrix x-vec y-vec z-vec))))
+             (stand-coords (send (send valve-coords-stand-rot :copy-worldcoords) :transform (get-valve-stand-coords) :local))
+             (stand-pos (send stand-coords :worldpos))
+             (stand-rpy (elt (send stand-coords :rpy-angle) 0))
+             )
+        (setq *valve-stand-coords* (make-coords :pos (float-vector (elt stand-pos 0) (elt stand-pos 1) 0) :rpy (list (elt stand-rpy 0) 0 0)))
+        )
       (ros::ros-warn "change stand position to ~a for valve motion.~%" *valve-stand-coords*)
       (send *robot* :fix-leg-to-coords *valve-stand-coords*)
       (get-valve-motion :draw? draw?))
@@ -231,7 +237,7 @@
         (let* ((pos (scale 0.001 (send *valve-stand-coords* :worldpos)))
                (rpy (mapcar #'rad2deg (car (send *valve-stand-coords* :rpy-angle)))))
           (ros::ros-warn "go-pos to ~a ~a ~a for valve~%" (elt pos 0) (elt pos 1) (elt rpy 0))
-          ;;(when real? (send *ri* :go-pos (elt pos 0) (elt pos 1) (elt rpy 0)))
+          (when real? (send *ri* :go-pos (elt pos 0) (elt pos 1) (elt rpy 0)))
           ))
       ;; pre grasp
       (send *robot* :angle-vector (car (last valve-motion-av-list)))
