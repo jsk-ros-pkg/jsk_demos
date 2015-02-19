@@ -55,12 +55,24 @@
     (ros::spin-once))
   )
 
-(defun publish-motion-joint-states (motion &key (step-time 400))
+(defun publish-motion-joint-states (motion &key (step-time 400)) ;; motion is list of angle-vector
   (dolist (av motion)
     (publish-model-joint-states :av av)
     (unix::usleep (* step-time 1000))
     )
   )
+
+(defun play-motion-on-eus-viewer (motion &key (step-time 400) (wait? nil)) ;; motion is list of angle-vector
+  (unless (boundp '*irtviewer*)
+    (warning-message 1 "irtviewer is not generated.~%")
+    (return-from play-motion-on-eus-viewer nil))
+  (dolist (av motion)
+    (send *robot* :angle-vector av)
+    (send *robot* :fix-leg-to-coords (make-coords))
+    (send *irtviewer* :draw-objects)
+    (cond (wait? (read-line))
+          (t (unix::usleep (* step-time 1000))))
+    ))
 
 (defun get-potentio-vector-from-joint-states ()
   (while (not (boundp '*potentio-vector*))

@@ -600,6 +600,9 @@
   )
 
 
+;; generate *robot*
+(generate-robot "HRP2JSKNTS" :generate-ri? nil)
+
 ;; advertise
 (ros::advertise "/image_rect/image_marker" image_view2::ImageMarker2)
 (setq *app* (instance ocs-executive-app :init))
