@@ -160,9 +160,9 @@
 
 (defun get-debri-motion-full
   (debri-r debri-h debri-coords handle-ratio
-           &key (use-ri? t))
-  (set-debri-environment-full debri-r debri-h debri-coords handle-ratio :draw? nil :use-ri? use-ri?)
-  (generate-debri-motion :draw? nil)
+           &key (draw? nil) (use-ri? t))
+  (set-debri-environment-full debri-r debri-h debri-coords handle-ratio :draw? draw? :use-ri? use-ri?)
+  (generate-debri-motion :draw? draw?)
   (get-debri-motion)
   )
 

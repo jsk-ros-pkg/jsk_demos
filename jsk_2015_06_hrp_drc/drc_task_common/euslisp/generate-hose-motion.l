@@ -145,9 +145,9 @@
     ))
 
 (defun get-hose-grasp-motion-full
-  (hose-coords &key (use-ri? t))
-  (set-hose-grasp-environment-full hose-coords :draw? nil :use-ri? use-ri?)
-  (generate-hose-grasp-motion :draw? nil)
+  (hose-coords &key (draw? nil) (use-ri? t))
+  (set-hose-grasp-environment-full hose-coords :draw? draw? :use-ri? use-ri?)
+  (generate-hose-grasp-motion :draw? draw?)
   (get-hose-grasp-motion)
   )
 
@@ -345,10 +345,10 @@
       (dolist (av (mapcar #'(lambda (x) (elt x 2)) *hose-ik-results*))
         (push-back av angle-vector-ret))
       ;; reset-manip-pose pre1
-      (send *robot* :torso :waist-y :joint-angle 30 :relative t) ;; dependent to arm
+      (send *robot* :torso :waist-y :joint-angle 30 :relative t) ;; dependent on arm
       (push-back (send *robot* :angle-vector) angle-vector-ret)
       ;; reset-manip-pose pre2
-      (send *robot* :larm :angle-vector #f(50.0 30.0 10.0 -120.0 25.0 5.0 -20.0 -60.0)) ;; dependent to arm
+      (send *robot* :larm :angle-vector #f(50.0 30.0 10.0 -120.0 25.0 5.0 -20.0 -60.0)) ;; dependent on arm
       (push-back (send *robot* :angle-vector) angle-vector-ret)
       ;; reset-manip-pose
       (push-back (send *robot* :reset-manip-pose) angle-vector-ret))
@@ -357,9 +357,9 @@
 
 (defun get-hose-connect-motion-full
   (hose-coords
-   &key (use-ri? t))
-  (set-hose-connect-environment-full hose-coords :draw? nil :use-ri? use-ri?)
-  (generate-hose-connect-motion :draw? nil)
+   &key (draw? nil) (use-ri? t))
+  (set-hose-connect-environment-full hose-coords :draw? draw? :use-ri? use-ri?)
+  (generate-hose-connect-motion :draw? draw?)
   (get-hose-connect-motion)
   )
 
