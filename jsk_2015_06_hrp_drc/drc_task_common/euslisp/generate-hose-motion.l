@@ -136,7 +136,8 @@
   )
 
 (defun get-hose-grasp-motion
-  ()
+  (&key (draw? nil))
+  (generate-hose-grasp-motion :draw? draw?)
   (let* (angle-vector-ret)
     (when (every #'eval (mapcar #'(lambda (x) (elt x 1)) *hose-ik-results*))
       (setq angle-vector-ret (mapcar #'(lambda (x) (elt x 2)) *hose-ik-results*)))
@@ -147,8 +148,7 @@
 (defun get-hose-grasp-motion-full
   (hose-coords &key (draw? nil) (use-ri? t))
   (set-hose-grasp-environment-full hose-coords :draw? draw? :use-ri? use-ri?)
-  (generate-hose-grasp-motion :draw? draw?)
-  (get-hose-grasp-motion)
+  (get-hose-grasp-motion :draw? draw?)
   )
 
 (defun send-hose-grasp-motion
@@ -336,7 +336,8 @@
   )
 
 (defun get-hose-connect-motion
-  ()
+  (&key (draw? nil))
+  (generate-hose-connect-motion :draw? draw?)
   (let* (angle-vector-ret)
     (when (every #'eval (mapcar #'(lambda (x) (elt x 1)) *hose-ik-results*))
       ;; hose-reset-pose
@@ -359,8 +360,7 @@
   (hose-coords
    &key (draw? nil) (use-ri? t))
   (set-hose-connect-environment-full hose-coords :draw? draw? :use-ri? use-ri?)
-  (generate-hose-connect-motion :draw? draw?)
-  (get-hose-connect-motion)
+  (get-hose-connect-motion :draw? draw?)
   )
 
 (defun send-hose-connect-motion

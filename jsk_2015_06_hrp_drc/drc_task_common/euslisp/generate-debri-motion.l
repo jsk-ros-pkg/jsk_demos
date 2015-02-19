@@ -138,7 +138,8 @@
     ))
 
 (defun get-debri-motion
-  ()
+  (&key (draw? nil))
+  (generate-debri-motion :draw? draw?)
   (let* (angle-vector-ret)
     (when (and (elt (elt *debri-ik-results* 0) 1) (elt (elt *debri-ik-results* 1) 1))
       ;; reset-manip-pose
@@ -162,8 +163,7 @@
   (debri-r debri-h debri-coords handle-ratio
            &key (draw? nil) (use-ri? t))
   (set-debri-environment-full debri-r debri-h debri-coords handle-ratio :draw? draw? :use-ri? use-ri?)
-  (generate-debri-motion :draw? draw?)
-  (get-debri-motion)
+  (get-debri-motion :draw? draw?)
   )
 
 (defun send-debri-motion

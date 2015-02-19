@@ -216,6 +216,7 @@
         )
       (ros::ros-warn "change stand position to ~a for valve motion.~%" *valve-stand-coords*)
       (send *robot* :fix-leg-to-coords *valve-stand-coords*)
+      (when draw? (send *irtviewer* :draw-objects))
       (get-valve-motion :draw? draw?))
     *valve-motion*))
 

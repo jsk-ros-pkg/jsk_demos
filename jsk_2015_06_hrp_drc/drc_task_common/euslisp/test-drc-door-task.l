@@ -1,11 +1,11 @@
 (load "~/prog/euslib/irteus_proposals/motion-lib-proposal.l")
-(defun setup-door-open ()
+(defun setup-door-open (&key (draw t))
   (load "package://hrpsys_ros_bridge_tutorials/euslisp/hrp2jsknts-interface.l")
   (hrp2jsknts-init)
   (setq *robot* *hrp2jsknts*)
   ;;(make-drc-box2-door)
   ;;(make-drc-test-door-right)
-  (objects (list *robot*))
+  (when draw (objects (list *robot*)))
   ;; initialize end-coords for door-grasp
   (mapcar #'(lambda (arm trs)
               (let ((mc (make-cascoords
@@ -128,7 +128,7 @@
     (send *robot* :angle-vector (cadr (memq :angle-vector rs)))
     (send *robot* :hand-angle-vector (cadr (memq :hand-angle-vector rs)))
     (send *robot* :move-coords (cadr (memq :root-coords rs)) (car (send *robot* :links)))
-    (send *irtviewer* :draw-objects)
+    (when (boundp '*irtviewer*) (send *irtviewer* :draw-objects))
     (if real
         (bench
          (send *ri* :hand-angle-vector (send *robot* :hand-angle-vector) (cadr (memq :time rs)))
@@ -185,7 +185,7 @@
     (send (send *door* :joint :door-knob-joint) :joint-angle 0)
     (send *robot* :reset-manip-pose)
     (send *robot* :torso :waist-y :joint-angle initial-waist-y)
-    (send *robot* :fix-leg-to-coords initial-standing-coords)
+    (send *robot* :fix-leg-to-coords (send (send *door* :copy-worldcoords) :transform initial-standing-coords :local))
     (send *robot* arm :move-end-rot (case arm (:larm 90) (t -90)) :x)
     (send *robot* arm :move-end-pos (float-vector 100 0 50) :world)
     (send *robot* arm :move-end-rot (case arm (:larm 10) (t -10)) :z)
@@ -193,7 +193,7 @@
       (:larm (send *robot* :rarm :angle-vector *rarm-avoid-pose*))
       (:rarm (send *robot* :larm :angle-vector *larm-avoid-pose*)))
     (send (send *robot* :hand arm) :angle-vector *door-grasp-preshape-pose*)
-    (objects (list *robot* *door*))
+    (when (boundp '*irtviewer*) (objects (list *robot* *door*)))
     (exec-robot-state-list (list (get-current-robot-state 5000)) :real real)
     ))
 
@@ -215,7 +215,7 @@
       (if (= way-point-num 1) (setq cds-list (cdr cds-list)))
       (dolist (cds cds-list)
         (fullbody-ik-for-door-open cds :arm arm :rotation-axis (list (if (= (position cds cds-list) 0) :z t) t t))
-        (send *irtviewer* :draw-objects)
+        (when (boundp '*irtviewer*) (send *irtviewer* :draw-objects))
         (push (get-current-robot-state 2000) rs-list)
         ))
     ;; grasp
@@ -245,7 +245,7 @@
                                  :rotate (case arm (:larm (deg2rad 10)) (t (deg2rad -10))) :z)))) ;; way point 1
       (dolist (cds cds-list)
         (fullbody-ik-for-door-open cds :arm arm)
-        (send *irtviewer* :draw-objects)
+        (when (boundp '*irtviewer*) (send *irtviewer* :draw-objects))
         (push (get-current-robot-state 2000) rs-list)
         ))
     ;; grasp
@@ -312,7 +312,7 @@
       (send *robot* :fix-leg-to-coords
             (make-coords :pos ref-fm-pos
                          :rpy (list ref-yaw (elt act-fm-ypr 1) (elt act-fm-ypr 2))))
-      (send *irtviewer* :draw-objects)
+      (when (boundp '*irtviewer*) (send *irtviewer* :draw-objects))
       )))
 
 (defun estimate-hand-diff-pos
@@ -378,11 +378,11 @@
        (list (get-current-robot-state 1000)) :real t)
       ret)))
 
-(defun test-door-open-drcbox2-door (&key (walk-p t))
+(defun test-door-open-drcbox2-door (&key (walk-p t) (wait t) (draw t))
   "Test for drc box2 door"
   (print ";; Initial pose")
   (make-drc-box2-door)
-  (objects (list *robot* *door*))
+  (when draw (objects (list *robot* *door*)))
   ;; (send *door* :move-coords
   ;;       (send (send (send (send (car (send *robot* :links)) :copy-worldcoords) :transform (make-coords :pos (float-vector 642.373 43.578 296.552) :rpy (list -1.343 -0.009 -1.602))) :rotate (deg2rad 90) :y) :rotate (deg2rad 180) :z)
   ;;       (send *door* :handle :larm-knob-handle))
@@ -391,7 +391,7 @@
   (initialize-pose-for-door-open :real nil :arm :larm :initial-standing-coords *init-standing-coords* :initial-waist-y 0)
   (exec-robot-state-list (list (get-current-robot-state 3000)) :real t)
   (print ";; Reaching and open. Press Enter")
-  (read-line)
+  (when wait (read-line))
   (setq *rs-list* (reach-grasp-door :real nil))
   (exec-robot-state-list *rs-list* :real t)
   (let ((push/pull (door-push-pull-detection :arm :larm)))
@@ -400,7 +400,7 @@
       (exec-robot-state-list *rs-list* :real t)
       (when walk-p
         (print ";; go-velocity Press Enter")
-        (read-line)
+        (when wait (read-line))
         (let ((rc (send (send *robot* :foot-midcoords) :transformation (send *robot* :larm :end-coords))))
           (send *ri* :set-auto-balancer-param :graspless-manip-arm "larm"
                 :graspless-manip-mode t
@@ -419,7 +419,7 @@
         )
       ))
     (print ";; release")
-    (read-line)
+    (when wait (read-line))
     (setq *rs-list* (release-grasp-door :real nil :arm :larm :initial-standing-coords *init-standing-coords*))
     (exec-robot-state-list *rs-list* :real t)
     )
