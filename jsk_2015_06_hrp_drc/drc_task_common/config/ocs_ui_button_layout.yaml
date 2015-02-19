@@ -24,6 +24,9 @@
   service: 'look_at'
   image: "package://drc_task_common/icons/lookat.png"
   column: 1
+- name: 'Look around'
+  service: 'look_around'
+  column: 1
 - name: 'exec'
   service: 'exec'
   image: "package://drc_task_common/icons/exec.png"

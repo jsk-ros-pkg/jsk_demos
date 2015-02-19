@@ -45,8 +45,6 @@
                 self :go-pos-recognition-finished-callback)
           (list drc_com_common::FC2OCSSmall::*GO_POS_FINISHED*
                 self :go-pos-finished-callback)
-          (list drc_com_common::FC2OCSSmall::*LOOK_AT_POS*
-                self :look-at-recognition-finished-callback)
           (list drc_com_common::FC2OCSSmall::*LOOK_AT_FINISHED*
                 self :look-at-finished-callback)
           (list drc_com_common::FC2OCSSmall::*VALVE_POSE*
@@ -68,7 +66,9 @@
           (list drc_com_common::FC2OCSSmall::*HOSE_CONNECT_POSE*
                 self :hose-connect-recognition-finished-callback)
           (list drc_com_common::FC2OCSSmall::*HOSE_CONNECT_FINISHED*
-                self :hose-connect-exec-finished-callback))
+                self :hose-connect-exec-finished-callback)
+          (list drc_com_common::FC2OCSSmall::*LOOK_AROUND_FINISHED*
+                self :look-around-finished-callback))
     (setq smachine (make-ocs-state-machine))
     (send smachine :register-initial-hook self :initial-callback)
     (send smachine :go-to :initial)     ;force to move to initial state
@@ -175,6 +175,13 @@
       (send smachine :go-to :selecting-region-for-look-at)
       )
     (send req :response))
+  (:look-around-button-callback (req)
+    (when (send smachine :next? :executing-look-around)
+      (let ((fc-msg (instance drc_com_common::OCS2FCSmall :init)))
+        (send fc-msg :type drc_com_common::OCS2FCSmall::*LOOK_AROUND_EXEC*)
+        (send self :send-to-fc fc-msg)
+        (send smachine :go-to :executing-look-around)))
+    (send req :response))
   (:send-to-fc (msg)
     (ros::publish "/ocs_to_fc_low_speed/input" msg))
   (:rectangle-callback-for-go-pos-region (msg)
@@ -194,7 +201,7 @@
                                     msg (length (send fc-msg :image_roi_info))))
       (send fc-msg :image_type drc_com_common::OCS2FCSmall::*PANORAMA_VIEW*)
       (send self :send-to-fc fc-msg)
-      (send smachine :go-to :recognizing-look-at-point)))
+      (send smachine :go-to :executing-look-at)))
   (:rectangle-callback-for-look-at-region (msg)
     (send self :show-text-on-image "Wait for look-at recognition")
     ;; send to FC to recognize pos
@@ -203,7 +210,7 @@
       (send fc-msg :image_roi_info (rect-polygon-stamped-to-integer-vector
                                     msg (length (send fc-msg :image_roi_info))))
       (send self :send-to-fc fc-msg)
-      (send smachine :go-to :recognizing-look-at-point)))
+      (send smachine :go-to :executing-look-at)))
   (:rectangle-callback-for-valve-region (msg)
     (send self :show-text-on-image "Wait for valve recognition")
     ;; send to FC to recognize pos
@@ -277,8 +284,6 @@
       (send smachine :go-to :initial))
      ((eq (send smachine :state) :selecting-exec-for-go-pos)
       (send smachine :go-to :initial))
-     ((eq (send smachine :state) :selecting-exec-for-look-at)
-      (send smachine :go-to :initial))
      ((eq (send smachine :state) :selecting-exec-for-door)
       (send smachine :go-to :initial))
      ((eq (send smachine :state) :selecting-exec-for-valve)
@@ -290,8 +295,6 @@
      ((eq (send smachine :state) :selecting-exec-for-hose-connect)
       (send smachine :go-to :initial))
      ;; TODO : cancel recognition from button
-     ((eq (send smachine :state) :recognizing-look-at-point)
-      (send smachine :go-to :initial))
      ((eq (send smachine :state) :recognizing-valve-pose)
       (send smachine :go-to :initial))
      ((eq (send smachine :state) :recognizing-door-pose)
@@ -318,12 +321,6 @@
              go-pos-coords (length (send msg :float_params))))
       (send self :send-to-fc msg)
       (send smachine :go-to :executing-go-pos)))
-  (:exec-look-at-button-callback ()
-    (let ((msg (instance drc_com_common::OCS2FCSmall :init)))
-      (send msg :type drc_com_common::OCS2FCSmall::*LOOK_AT_EXEC*)
-      (send msg :float_params (pos-to-float-vector look-at-pos (length (send msg :float_params))))
-      (send self :send-to-fc msg)
-      (send smachine :go-to :executing-look-at)))
   (:exec-valve-button-callback ()
     ;; update latest valve params
     (setq valve-params
@@ -390,8 +387,6 @@
     (cond
      ((eq (send smachine :state) :selecting-exec-for-go-pos)
       (send self :exec-go-pos-button-callback))
-     ((eq (send smachine :state) :selecting-exec-for-look-at)
-      (send self :exec-look-at-button-callback))                          
      ((eq (send smachine :state) :selecting-exec-for-valve)
       (send self :exec-valve-button-callback))
      ((eq (send smachine :state) :selecting-exec-for-door)
@@ -433,18 +428,6 @@
          (setq door-params (list coords size))
          (send smachine :go-to :selecting-exec-for-door)))
       ))
-  (:look-at-recognition-finished-callback (msg)
-    (when (eq (send smachine :state) :recognizing-look-at-point)
-      (let ((params (send msg :params)))
-        (send self :show-text-on-image 
-              (format nil "look-at ~f ~f ~f" 
-                      (* 0.001 (elt params 0))
-                      (* 0.001 (elt params 1))
-                      (* 0.001 (elt params 2))))
-        (setq look-at-pos (float-vector (elt params 0)
-                                        (elt params 1)
-                                        (elt params 2)))
-        (send smachine :go-to :selecting-exec-for-look-at))))
   (:go-pos-recognition-finished-callback (msg)
     (when (eq (send smachine :state) :recognizing-go-pos-goal)
       (let ((params (send msg :params)))
@@ -464,6 +447,10 @@
                       (rad2deg (elt params 3))
                       ))
         (send smachine :go-to :selecting-exec-for-go-pos))))
+  (:look-around-finished-callback (msg)
+    (when (eq (send smachine :state) :executing-look-around)
+      (send smachine :go-to :initial)
+      ))
   (:debri-exec-finished-callback (msg)
     (when (eq (send smachine :state) :executing-debri)
       (send smachine :go-to :initial)))
@@ -639,6 +626,7 @@
 (ros::advertise-service "hose_connect" std_srvs::Empty #'send *app* :hose-connect-button-callback)
 (ros::advertise-service "drill" std_srvs::Empty #'send *app* :drill-button-callback)
 (ros::advertise-service "look_at" std_srvs::Empty #'send *app* :look-at-button-callback)
+(ros::advertise-service "look_around" std_srvs::Empty #'send *app* :look-around-button-callback)
 (ros::advertise-service "exec" std_srvs::Empty #'send *app* :exec-button-callback)
 (ros::advertise-service "cancel" std_srvs::Empty #'send *app* :cancel-button-callback)
 (ros::advertise-service "reflesh" std_srvs::Empty #'send *app* :reflesh-button-callback)
