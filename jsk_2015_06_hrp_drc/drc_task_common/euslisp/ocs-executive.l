@@ -431,8 +431,9 @@
                                          :rpy (float-vector (elt params 3)
                                                             (elt params 4)
                                                             (elt params 5))))
-        ;; move robot model on rviz
+        ;; move robot model on rviz and send potentio-vector
         (send self :move-robot-model go-pos-coords "ground")
+        (publish-model-joint-states :av (get-potentio-vector-from-joint-states))
         (send self :show-text-on-image 
               (format nil "go-pos ~f ~f ~f" 
                       (* 0.001 (elt params 0))
