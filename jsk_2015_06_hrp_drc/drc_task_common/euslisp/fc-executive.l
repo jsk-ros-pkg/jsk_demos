@@ -102,18 +102,21 @@
         (send *robot* :angle-vector (send *ri* :state :reference-vector))
         (let ((initial-av (send *robot* :angle-vector)))
           (send *robot* :head :neck-p :joint-angle 0)
-          (send *robot* :head :neck-y :joint-angle (+ 5 (send *robot* :head :neck-y :min-angle)))
+          (send *robot* :head :neck-y :joint-angle (- (send *robot* :head :neck-y :max-angle) 10))
           (send *ri* :angle-vector (send *robot* :angle-vector) tm)
           (send *ri* :wait-interpolation)
           (send self :panorama-shutter)
+          
           (send *robot* :head :neck-y :joint-angle 0)
           (send *ri* :angle-vector (send *robot* :angle-vector) tm)
           (send *ri* :wait-interpolation)
           (send self :panorama-shutter)
-          (send *robot* :head :neck-y :joint-angle (- (send *robot* :head :neck-y :max-angle) 5))
+          
+          (send *robot* :head :neck-y :joint-angle (+ 10 (send *robot* :head :neck-y :min-angle)))
           (send *ri* :angle-vector (send *robot* :angle-vector) tm)
           (send *ri* :wait-interpolation)
           (send self :panorama-shutter)
+
           (send *robot* :angle-vector initial-av)
           (send *ri* :angle-vector (send *robot* :angle-vector) tm)
           (send *ri* :wait-interpolation))
@@ -307,6 +310,8 @@
         (let ((box (elt (send msg :boxes) 0)))
           (let ((coords (ros::tf-pose->coords (send box :pose))))
             (let ((from-body-coords (send trans :transform coords)))
+              (print from-body-coords)
+              (ros::ros-info "coords ~A" from-body-coords)
               (let ((fc-msg (instance drc_com_common::FC2OCSSmall :init)))
                 (send fc-msg :type drc_com_common::FC2OCSSmall::*DOOR_POSE*)
                 (send fc-msg :params (box-to-float-vector
