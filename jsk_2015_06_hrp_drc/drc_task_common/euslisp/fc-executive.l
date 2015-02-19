@@ -74,6 +74,10 @@
           :add-timelimit 10 :initial
           :deligate-object self
           :deligate-method :report-recognition-failure-to-ocs)
+    (send (send smachine :node :recognizing-drill-grasp-pose)
+          :add-timelimit 30 :initial ; too long because template_drill_points are big now
+          :deligate-object self
+          :deligate-method :report-recognition-failure-to-ocs)
     (send (send smachine :node :recognizing-door-pose)
           :add-timelimit 10 :initial
           :deligate-object self
@@ -131,13 +135,13 @@
       (send smachine :go-to :recognizing-hose-connect-pose)
       ))
   (:drill-grasp-region-command-callback (msg)
-    (when (eq state :initial)
+    (when (send smachine :state? :initial)
       ;; convert OCS2FCSmall into geometry_msgs/Polygon
       (ros::publish "/drill_recognition/input_rect"
         (integer-vector-to-rect-polygon-stamped msg))
       ;; enable snapshot
       (call-empty-service "/drill_recognition/snapshot/request")
-      (setq state :recognizing-drill-grasp-pose)
+      (send smachine :go-to :recognizing-drill-grasp-pose)
       ))
   (:panorama-clear ()
     (call-empty-service "/panorama/panorama_processing/clear"))
@@ -252,11 +256,11 @@
         ))
     )
   (:drill-grasp-exec-command-callback (msg)
-    (when (eq state :initial)
+    (when (send smachine :state? :initial)
       (let* ((params (send msg :float_params))
              (coords (make-coords :pos (float-vector (elt params 0) (elt params 1) (elt params 2)) :rpy (list 0 pi 0))))
         (ros::ros-info "grasp drill at ~A" coords)
-        (setq state :executing-drill)
+        (send smachine :go-to :executing-drill-grasp)
         ;; send motion to real robot
         ;; TODO make drill motion
         ;;(send-drill-grasp-motion coords)
@@ -264,7 +268,7 @@
         (let ((msg (instance drc_com_common::FC2OCSSmall :init)))
           (send msg :type drc_com_common::FC2OCSSmall::*DRILL_GRASP_FINISHED*)
           (send self :send-to-ocs msg))
-        (setq state :initial)
+        (send smachine :go-to :initial)
         ))
     )
   (:door-exec-command-callback (msg)
@@ -435,7 +439,7 @@
             (send smachine :go-to :initial)
             )))))
   (:drill-grasp-recog-callback (msg)         ;geometry_msgs/PoseStamped
-    (when (eq state :recognizing-drill-grasp-pose)
+    (when (send smachine :state? :recognizing-drill-grasp-pose)
       (let* ((trans (send self :lookup-from-body-transform (send msg :header)))
              (coords (ros::tf-pose-stamped->coords msg))
              (from-body-coords (send trans :transform coords)))
@@ -449,7 +453,7 @@
             (setf (elt (send msg :params) 1) (elt pos 1))
             (setf (elt (send msg :params) 2) (elt pos 2))
             (send self :send-to-ocs msg)
-            (setq state :initial)
+            (send smachine :go-to :initial)
             )))))
 
   (:look-at-panorama-recog-callback (msg)

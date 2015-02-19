@@ -1,7 +1,7 @@
 <launch>
   <arg name="INPUT_IMAGE" default="/multisense/left/image_rect_color"/>
   <arg name="INPUT_CAMERA_INFO" default="/multisense/left/camera_info"/>
-  <arg name="INPUT_POINT_CLOUD" default="/multisense/resize_1_2/points" />
+  <arg name="INPUT_POINT_CLOUD" default="/multisense/resize_1_4/points" />
   <arg name="CAMERA_FRAME_ID" default="/left_camera_optical_frame" />
   <arg name="IMU" default="/multisense/imu/imu_data" />
   <arg name="LAUNCH_MANAGER" default="true" />

@@ -164,7 +164,7 @@
   (:drill-button-callback (req)
     (when (send smachine :next? :selecting-region-for-drill-grasp)
       (send self :set-image-view2-mode :rectangle)
-      (send self :show-text-on-image "Select rectangle region for drill")
+      (send self :show-text "Select rectangle region for drill")
       (send smachine :go-to :selecting-region-for-drill-grasp))
     (send req :response))
   (:valve-button-callback (req)
@@ -254,7 +254,7 @@
       (send self :send-to-fc fc-msg)
       (send smachine :go-to :recognizing-hose-connect-pose)))
   (:rectangle-callback-for-drill-grasp-region (msg)
-    (send self :show-text-on-image "Wait for drill recognition")
+    (send self :show-text "Wait for drill recognition")
     ;; send to FC to recognize pos
     (let ((fc-msg (instance drc_com_common::OCS2FCSmall :init)))
       (send fc-msg :type drc_com_common::OCS2FCSmall::*DRILL_GRASP_REGION*)
@@ -592,7 +592,7 @@
       (let* ((params (send msg :params))
              ;; TODO : receive all hose information
             (coords (make-coords :pos (float-vector (elt params 0) (elt params 1) (elt params 2)) :rpy (list 0 pi 0))))
-        (send self :show-text-on-image 
+        (send self :show-text 
               (format nil "drill pos ~f ~f ~f" 
                       (* 0.001 (elt params 0))
                       (* 0.001 (elt params 1))

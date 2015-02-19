@@ -34,7 +34,7 @@ uint8 DRILL_GRASP_POSE=16
 uint8 DRILL_GRASP_FINISHED=17
 
 # failed
-uint8 RECOGNITION_FAILED=16
+uint8 RECOGNITION_FAILED=18
 
 # when type==GO_POS_POSE, 
 # params = [x, y, z, yaw, pitch, roll]

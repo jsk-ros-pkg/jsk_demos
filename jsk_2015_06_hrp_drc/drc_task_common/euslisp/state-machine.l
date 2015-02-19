@@ -412,6 +412,9 @@ Usage:
      (:initial -> :recognizing-hose-connect-pose)
      (:recognizing-hose-connect-pose -> :initial)
 
+     (:initial -> :recognizing-drill-grasp-pose)
+     (:recognizing-drill-grasp-pose -> :initial)
+
      (:initial -> :recognizing-door-pose)
      (:recognizing-door-pose -> :initial)
 
@@ -429,6 +432,9 @@ Usage:
 
      (:initial -> :executing-hose-connect)
      (:executing-hose-connect -> :initial)
+
+     (:initial -> :executing-drill-grasp)
+     (:executing-drill-grasp -> :initial)
      
      (:initial -> :executing-door)
      (:executing-door -> :initial)
@@ -456,8 +462,11 @@ Usage:
      
      (:recognizing-hose-grasp-pose :hose)
      (:recognizing-hose-connect-pose :hose)
-     (:executing-hose-connect :hose)
      (:executing-hose-grasp :hose)
+     (:executing-hose-connect :hose)
+
+     (:recognizing-drill-grasp-pose :hose)
+     (:executing-drill-grasp :hose)
 
      (:recognizing-door-pose :door)
      (:executing-door :door)
