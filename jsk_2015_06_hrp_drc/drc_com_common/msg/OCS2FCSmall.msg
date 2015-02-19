@@ -31,5 +31,5 @@ uint8 HOSE_CONNECT_EXEC=14
 # look-around
 uint8 LOOK_AROUND_EXEC=15
 # drill
-uint8 DRILL_REGION=16
+uint8 DRILL_GRASP_REGION=16
 

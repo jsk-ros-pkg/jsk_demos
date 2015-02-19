@@ -156,10 +156,9 @@
   (:drill-button-callback (req)
     (when (send smachine :next? :selecting-region-for-drill-grasp)
       (send self :set-image-view2-mode :rectangle)
-      (send self :show-text-on-image "Select rectangle for drill")
+      (send self :show-text-on-image "Select rectangle region for drill")
       (send smachine :go-to :selecting-region-for-drill-grasp))
     (send req :response))
-    )
   (:valve-button-callback (req)
     (when (send smachine :next? :selecting-region-for-valve)
       (send self :set-image-view2-mode :rectangle)
@@ -246,6 +245,15 @@
                                     msg (length (send fc-msg :image_roi_info))))
       (send self :send-to-fc fc-msg)
       (send smachine :go-to :recognizing-hose-connect-pose)))
+  (:rectangle-callback-for-drill-grasp-region (msg)
+    (send self :show-text-on-image "Wait for drill recognition")
+    ;; send to FC to recognize pos
+    (let ((fc-msg (instance drc_com_common::OCS2FCSmall :init)))
+      (send fc-msg :type drc_com_common::OCS2FCSmall::*DRILL_REGION*)
+      (send fc-msg :image_roi_info (rect-polygon-stamped-to-integer-vector
+                                    msg (length (send fc-msg :image_roi_info))))
+      (send self :send-to-fc fc-msg)
+      (send smachine :go-to :recognizing-drill-grasp-pose)))
   (:foreground-background-callback (foreground background)
     (cond
      ((eq (send smachine :state) :selecting-region-for-door)
@@ -277,6 +285,8 @@
       (send self :rectangle-callback-for-hose-grasp-region msg))
      ((eq (send smachine :state) :selecting-region-for-hose-connect)
       (send self :rectangle-callback-for-hose-connect-region msg))
+     ((eq (send smachine :state) :selecting-region-for-drill)
+      (send self :rectangle-callback-for-drill-grasp-region msg))
      ))
   (:cancel-button-callback (req)
     (cond

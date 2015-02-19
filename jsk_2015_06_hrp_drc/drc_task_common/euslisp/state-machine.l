@@ -348,7 +348,12 @@ Usage:
      ;; drill
      (:initial -> :selecting-region-for-drill-grasp)
      (:selecting-region-for-drill-grasp -> :initial) ;cancel
-     (:selecting-region-for-drill-grasp -> :recognizing-region-for-drill) 
+     (:selecting-region-for-drill-grasp -> :recognizing-drill-grasp-pose) 
+     (:recognizing-drill-grasp-pose -> :selecting-exec-for-drill-grasp) ;recognition done
+     (:recognizing-drill-grasp-pose -> :initial) ;cancel
+     (:selecting-exec-for-drill-grasp -> :executing-drill-grasp)          ;exec
+     (:selecting-exec-for-drill-grasp -> :initial)                   ;cancel
+     (:executing-drill-grasp -> :initial)                            ;done
      )
    '((:initial :initial)
      ;; go-pos
