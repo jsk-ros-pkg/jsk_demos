@@ -56,6 +56,6 @@
   </node>
 
   <!-- trackball client node -->
-  <include file="$(find jsk_teleop_joy)/launch/$(arg trackball_head_launch)" >
+  <include if="$(arg trackball_head_launch)" file="$(find jsk_teleop_joy)/launch/$(arg trackball_head_launch)">
   </include>
 </launch>
