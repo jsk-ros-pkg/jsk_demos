@@ -1,4 +1,5 @@
 (load "package://drc_task_common/euslisp/robot-util.l")
+(load "package://drc_task_common/euslisp/util.l")
 
 (defun set-debri-environment
   (&key (debri-r 40) (debri-h 1000)
@@ -89,9 +90,10 @@
          (max-dist 600)
          (reach-dist 120)
          (ik-results nil)
-         (original-foot-midcoords (send (send *robot* :foot-midcoords) :copy-worldcoords)))
+         (original-foot-midcoords (send (send *robot* :foot-midcoords) :copy-worldcoords))
+         (pull-interpolation-num (round (/ max-dist step-dist))))
     ;; pull debri
-    (dotimes (i (round (/ max-dist step-dist)))
+    (dotimes (i pull-interpolation-num)
       (send *robot* :reset-manip-pose)
       (send *robot* :fix-leg-to-coords original-foot-midcoords)
       ;; solve ik to pull debri
@@ -132,15 +134,25 @@
       ;; pull debri
       (send *debri* :translate (float-vector 0 0 step-dist) :local)
       )
+      (setq *debri-ik-num* pull-interpolation-num)
     ))
 
 (defun get-debri-motion
   ()
   (let* (angle-vector-ret)
-    (dolist (result *debri-ik-results*)
-      ;; break if ik result is fail
-      (unless (elt result 1) (return-from nil nil))
-      (push-back (elt result 2) angle-vector-ret)
+    (when (and (elt (elt *debri-ik-results* 0) 1) (elt (elt *debri-ik-results* 1) 1))
+      ;; reset-manip-pose
+      (push-back (send *robot* :reset-manip-pose) angle-vector-ret)
+      ;; pull
+      (dolist (result *debri-ik-results*)
+        ;; break if ik result is fail
+        (unless (elt result 1) (return-from nil nil))
+        (push-back (elt result 2) angle-vector-ret)
+        )
+      ;; debri-release-pose
+      (push-back (get-debri-release-pose) angle-vector-ret)
+      ;; reset-manip-pose
+      (push-back (send *robot* :reset-manip-pose) angle-vector-ret)
       )
     (setq *debri-motion* angle-vector-ret)
     *debri-motion*
@@ -157,32 +169,33 @@
 (defun send-debri-motion
   (coords radius height handle-ratio &key (real? t))
   (let* ((debri-motion-av-list (get-debri-motion-full radius height coords handle-ratio))
-         (debri-motion-length (length debri-motion-av-list)))
+         (debri-motion-length (length debri-motion-av-list))
+         (debri-ik-num *debri-ik-num*))
     (when (not (= debri-motion-length 0))
       ;; first reaching
       (send *robot* :hand :arms :hook-pose) ;; hand hook-pose
       (when real? (hand-model2real))
-      (send *robot* :reset-manip-pose)
+      (send *robot* :angle-vector (elt debri-motion-av-list 0))
       (unless (check-angle-vector-distance)
         (when real? (model2real :time 3000)))
       (when real? (send *ri* :start-impedance :arms :moment-gain (float-vector 0 0 0) :k-p 800 :d-p 400)) ;; start imp
       ;; pre grasp pose
-      (send *robot* :angle-vector (elt debri-motion-av-list 0))
+      (send *robot* :angle-vector (elt debri-motion-av-list 1))
       (when real? (model2real :time 5000))
       ;; grasp
-      (send *robot* :angle-vector (elt debri-motion-av-list 1))
+      (send *robot* :angle-vector (elt debri-motion-av-list 2))
       (when real? (model2real :time 3000))
       (send *robot* :hand :arms :grasp-pose) ;; hand grasp-pose
       (when real? (hand-model2real))
       ;; pull
-      (when real? (send-angle-vector-sequence-with-time (subseq debri-motion-av-list 2) :time 1000 :wait? t))
+      (when real? (send-angle-vector-sequence-with-time (cdr (subseq debri-motion-av-list 2 (+ *debri-ik-num* 2))) :time 1000 :wait? t))
       ;; relese
-      (send *robot* :angle-vector (get-debri-release-pose)) ;; debri-relese-pose
+      (send *robot* :angle-vector (elt debri-motion-av-list (- debri-motion-length 2))) ;; debri-relese-pose
       (when real? (model2real :time 6000))
       (send *robot* :hand :arms :hook-pose) ;; hand hook-pose
       (when real? (hand-model2real))
       ;; reset-manip-pose
-      (send *robot* :reset-manip-pose)
+      (send *robot* :angle-vector (elt debri-motion-av-list (- debri-motion-length 1)))
       (when real? (model2real :time 4000))
       ))
   )
