@@ -30,6 +30,9 @@ uint8 HOSE_CONNECT_FINISHED=14
 # look_around
 uint8 LOOK_AROUND_FINISHED=15
 
+# failed
+uint8 RECOGNITION_FAILED=16
+
 # when type==GO_POS_POSE, 
 # params = [x, y, z, yaw, pitch, roll]
 # unit is mm.
