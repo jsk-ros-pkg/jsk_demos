@@ -32,6 +32,7 @@
                 hose-grasp-params ;; (list coords)
                 hose-connect-params ;; (list coords)
                 foreground-bacground-sync-obj
+                show-text-buffer
                 ))
 
 (defmethod ocs-executive-app
@@ -68,7 +69,9 @@
           (list drc_com_common::FC2OCSSmall::*HOSE_CONNECT_FINISHED*
                 self :hose-connect-exec-finished-callback)
           (list drc_com_common::FC2OCSSmall::*LOOK_AROUND_FINISHED*
-                self :look-around-finished-callback))
+                self :look-around-finished-callback)
+          (list drc_com_common::FC2OCSSmall::*RECOGNITION_FAILED*
+                self :recognition-failed-callback))
     (setq smachine (make-ocs-state-machine))
     (send smachine :register-initial-hook self :initial-callback)
     (send smachine :go-to :initial)     ;force to move to initial state
@@ -86,7 +89,7 @@
   (:initial-callback ()
     (send self :set-image-view2-mode :none)
     (send self :set-image-view2-mode :none :panorama-view)
-    (send self :show-text "")
+    ;;(send self :show-text "")
     )
   (:set-image-view2-mode (mode &optional (type :image-rect))
     "type should be :image-rect or :panorama-view"
@@ -109,10 +112,18 @@
         ))
       ))
   (:show-text (text)
+    (setq show-text-buffer (cons text show-text-buffer))
+    ;; buffer limit is 3
+    (if (> (length show-text-buffer) 3)
+        (setq show-text-buffer (subseq show-text-buffer 0 3)))
     (let ((msg (instance std_msgs::String :init)))
-      (send msg :data text)
-      (ros::publish "/ocs/status_text" msg))
-    )
+      ;; TODO: should use stream
+      (let ((full-text ""))
+        (dolist (tx (reverse show-text-buffer))
+          (setq full-text (format nil "~A~%~A" tx full-text)))
+        (send msg :data full-text)
+        (ros::publish "/ocs/status_text" msg))
+      ))
   (:go-pos-button-callback (req)
     (when (send smachine :next? :selecting-region-for-go-pos)
       ;; force to use rectangle mode
@@ -437,6 +448,10 @@
     (when (eq (send smachine :state) :executing-look-around)
       (send smachine :go-to :initial)
       ))
+  (:recognition-failed-callback (msg)
+    (when (send smachine :next? :initial)
+      (send self :show-text "Recognition failed, go to :initial state")
+      (send smachine :go-to :initial)))
   (:debri-exec-finished-callback (msg)
     (when (eq (send smachine :state) :executing-debri)
       (send smachine :go-to :initial)))
