@@ -276,8 +276,20 @@
      ))
   (:cancel-button-callback (req)
     (cond
+     ;; from selecting-region state to initial state
      ((eq (send smachine :state) :selecting-region-for-go-pos)
       (send smachine :go-to :initial))
+     ((eq (send smachine :state) :selecting-region-for-door)
+      (send smachine :go-to :initial))
+     ((eq (send smachine :state) :selecting-region-for-valve)
+      (send smachine :go-to :initial))
+     ((eq (send smachine :state) :selecting-region-for-debri)
+      (send smachine :go-to :initial))
+     ((eq (send smachine :state) :selecting-region-for-hose-grasp)
+      (send smachine :go-to :initial))
+     ((eq (send smachine :state) :selecting-region-for-hose-connect)
+      (send smachine :go-to :initial))
+     ;; from selecting-exec state to initial state
      ((eq (send smachine :state) :selecting-exec-for-go-pos)
       (send smachine :go-to :initial))
      ((eq (send smachine :state) :selecting-exec-for-door)
@@ -290,6 +302,7 @@
       (send smachine :go-to :initial))
      ((eq (send smachine :state) :selecting-exec-for-hose-connect)
       (send smachine :go-to :initial))
+     ;; from recgnizing state to initial state
      ;; TODO : cancel recognition from button
      ((eq (send smachine :state) :recognizing-valve-pose)
       (send smachine :go-to :initial))
