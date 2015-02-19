@@ -418,7 +418,7 @@
          (set-primitive-marker-pose coords "BODY")
          (set-primitive-marker-color :r 1.0 :g 1.0 :b 0.0 :a 0.6)
          (apply-primitive-dimensions-to-midi-device)
-         (send self :move-robot-model-to-current-pos)
+         (move-robot-model-to-current-pos)
          ;; store result
          (setq debri-params (list coords r h))
          ;; publish valve motion to robot model on rviz
@@ -445,7 +445,7 @@
                                                             (elt params 4)
                                                             (elt params 5))))
         ;; move robot model on rviz and send potentio-vector
-        (send self :move-robot-model go-pos-coords "ground")
+        (move-robot-model go-pos-coords "ground")
         (publish-model-joint-states :av (get-potentio-vector-from-joint-states))
         (send self :show-text-on-image 
               (format nil "go-pos ~f ~f ~f" 
@@ -494,7 +494,7 @@
          (set-primitive-marker-pose coords "BODY")
          (set-primitive-marker-color :r 1.0 :g 1.0 :b 0.0 :a 0.6)
          (apply-primitive-dimensions-to-midi-device)
-         (send self :move-robot-model-to-current-pos)
+         (move-robot-model-to-current-pos)
          ;; store result
          (setq valve-params (list coords radius))
          ;; publish valve motion to robot model on rviz
@@ -520,7 +520,7 @@
         (set-primitive-marker-pose coords "BODY")
         (set-primitive-marker-color :r 1.0 :g 1.0 :b 0.0 :a 0.6)
         (apply-primitive-dimensions-to-midi-device)
-        (send self :move-robot-model-to-current-pos)
+        (move-robot-model-to-current-pos)
         ;; publish hose motion to robot model on rviz
         (publish-hose-grasp-motion :coords (elt hose-grasp-params 0) :update? t)
         (send smachine :go-to :selecting-exec-for-hose-grasp))
@@ -544,7 +544,7 @@
         (set-primitive-marker-pose coords "BODY")
         (set-primitive-marker-color :r 1.0 :g 1.0 :b 0.0 :a 0.6)
         (apply-primitive-dimensions-to-midi-device)
-        (send self :move-robot-model-to-current-pos)
+        (move-robot-model-to-current-pos)
         ;; publish hose motion to robot model on rviz
         (publish-hose-connect-motion :coords (elt hose-connect-params 0) :update? t)
         (send smachine :go-to :selecting-exec-for-hose-connect))
@@ -594,22 +594,6 @@
            ))
     (send req :response)
     )
-  (:move-robot-model
-    (coords frame-id)
-    (let* ((header (instance std_msgs::Header :init :stamp (ros::time-now) :frame_id frame-id))
-           (msg (instance geometry_msgs::PoseStamped :init :header header :pose (ros::coords->tf-pose coords))))
-      (ros::publish "/urdf_control_marker/set_pose" msg)
-      ))
-  (:move-robot-model-to-current-pos
-    ()
-    (let* ((base-frame "/odom_on_ground") (target-frame "/ground")
-           (header (instance std_msgs::Header :init :stamp (ros::time-now) :frame_id base-frame))
-           (msg (instance geometry_msgs::PoseStamped :init :header header))
-           coords)
-      (setq coords (send (send *tf* :lookup-transform target-frame base-frame (ros::time 0)) :inverse-transformation))
-      (send msg :pose (ros::coords->tf-pose coords))
-      (ros::publish "/urdf_control_marker/set_pose" msg)
-      ))
   )
 
 
