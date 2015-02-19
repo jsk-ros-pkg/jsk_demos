@@ -9,17 +9,20 @@
 (ros::roseus-add-msgs "pcl_msgs")
 (load "package://drc_task_common/euslisp/util.l")
 (load "package://drc_task_common/euslisp/robot-util.l")
+(load "package://drc_task_common/euslisp/state-machine.l")
 (load "package://drc_task_common/euslisp/generate-valve-motion.l")
 (load "package://drc_task_common/euslisp/generate-debri-motion.l")
 (load "package://drc_task_common/euslisp/generate-hose-motion.l")
 
 (defclass fc-executive-app
   :super propertied-object
-  :slots (state go-pos-goal ocs2fc-message-handler))
+  :slots (state go-pos-goal ocs2fc-message-handler smachine))
 
 (defmethod fc-executive-app
   (:init ()
-    (setq state :initial)
+    ;; prepare state machine
+    (setq smachine (make-fc-state-machine))
+    (send self :register-timelimits smachine)
     (setq ocs2fc-message-handler (instance narrowband-message-handler :init))
     ;; register callbacks
     (send ocs2fc-message-handler :register-callbacks
@@ -57,33 +60,75 @@
                 self :drill-grasp-exec-command-callback)
           )
     self)
+  (:register-timelimits (sm)
+    ;; sm is a instance of state machine
+    (send (send smachine :node :recognizing-debri-pose)
+          :add-timelimit 10 :initial
+          :deligate-object self
+          :deligate-method :report-recognition-failure-to-ocs)
+    (send (send smachine :node :recognizing-hose-grasp-pose)
+          :add-timelimit 10 :initial
+          :deligate-object self
+          :deligate-method :report-recognition-failure-to-ocs)
+    (send (send smachine :node :recognizing-hose-connect-pose)
+          :add-timelimit 10 :initial
+          :deligate-object self
+          :deligate-method :report-recognition-failure-to-ocs)
+    (send (send smachine :node :recognizing-door-pose)
+          :add-timelimit 10 :initial
+          :deligate-object self
+          :deligate-method :report-recognition-failure-to-ocs)
+    (send (send smachine :node :recognizing-go-pos-location)
+          :add-timelimit 10 :initial
+          :deligate-object self
+          :deligate-method :report-recognition-failure-to-ocs)
+    (send (send smachine :node :recognizing-valve-pose)
+          :add-timelimit 10 :initial
+          :deligate-object self
+          :deligate-method :report-recognition-failure-to-ocs)
+    (send (send smachine :node :recognizing-look-at-point)
+          :add-timelimit 10 :initial
+          :deligate-object self
+          :deligate-method :report-recognition-failure-to-ocs)
+    (send (send smachine :node :recognizing-look-at-point-panorama)
+          :add-timelimit 10 :initial
+          :deligate-object self
+          :deligate-method :report-recognition-failure-to-ocs)
+    )
+  (:report-recognition-failure-to-ocs ()
+    (let ((msg (instance drc_com_common::FC2OCSSmall :init)))
+      (send msg :type drc_com_common::FC2OCSSmall::*RECOGNITION_FAILED*)
+      (send self :send-to-ocs msg))
+    )
+  (:state-machine ()
+    smachine)
   (:ocs2fc-message-handler () ocs2fc-message-handler)
   (:debri-line-command-callback (msg)
-    ;;(when (eq state :initial)
+    ;;(when (send smachine :state? :initial)
       ;; enable snapshot
       (call-empty-service "/debri_recognition/snapshot/request")
       (ros::publish "/debri_recognition/input_line"
         (integer-vector-to-rect-polygon-stamped msg))
-      (setq state :recognizing-debri-pose)
+      (send smachine :go-to :recognizing-debri-pose)
       ;;)
   )
   (:hose-grasp-region-command-callback (msg)
-    (when (eq state :initial)
+    (when (send smachine :state? :initial)
       ;; convert OCS2FCSmall into geometry_msgs/Polygon
       (ros::publish "/hose_grasp_recognition/input_rect"
         (integer-vector-to-rect-polygon-stamped msg))
       ;; enable snapshot
       (call-empty-service "/hose_grasp_recognition/snapshot/request")
-      (setq state :recognizing-hose-grasp-pose)
+      (send smachine :go-to :recognizing-hose-grasp-pose)
       ))
   (:hose-connect-region-command-callback (msg)
-    (when (eq state :initial)
+    (when (send smachine :state? :initial)
       ;; convert OCS2FCSmall into geometry_msgs/Polygon
       (ros::publish "/hose_connect_recognition/input_rect"
         (integer-vector-to-rect-polygon-stamped msg))
       ;; enable snapshot
       (call-empty-service "/hose_connect_recognition/snapshot/request")
-      (setq state :recognizing-hose-connect-pose)
+      (send smachine :go-to :recognizing-hose-connect-pose)
       ))
   (:drill-grasp-region-command-callback (msg)
     (when (eq state :initial)
@@ -99,14 +144,14 @@
   (:panorama-shutter ()
     (call-empty-service "/panorama/panorama_processing/shutter"))
   (:look-around-exec-command-callback (msg)
-    (when (eq state :initial)           ;no need to check it?
+    (when (send smachine :state? :initial)           ;no need to check it?
       (let ((tm 1000))
         (send self :panorama-clear)
-        (setq state :executing-look-around)
+        (send smachine :go-to :executing-look-around)
         (send *robot* :angle-vector (send *ri* :state :reference-vector))
         (let ((initial-av (send *robot* :angle-vector)))
           (send *robot* :head :neck-p :joint-angle 0)
-          (send *robot* :head :neck-y :joint-angle (- (send *robot* :head :neck-y :max-angle) 10))
+          (send *robot* :head :neck-y :joint-angle (- (send *robot* :head :neck-y :max-angle) 1))
           (send *ri* :angle-vector (send *robot* :angle-vector) tm)
           (send *ri* :wait-interpolation)
           (send self :panorama-shutter)
@@ -116,7 +161,7 @@
           (send *ri* :wait-interpolation)
           (send self :panorama-shutter)
           
-          (send *robot* :head :neck-y :joint-angle (+ 10 (send *robot* :head :neck-y :min-angle)))
+          (send *robot* :head :neck-y :joint-angle (+ 1 (send *robot* :head :neck-y :min-angle)))
           (send *ri* :angle-vector (send *robot* :angle-vector) tm)
           (send *ri* :wait-interpolation)
           (send self :panorama-shutter)
@@ -128,11 +173,11 @@
         (let ((msg (instance drc_com_common::FC2OCSSmall :init)))
           (send msg :type drc_com_common::FC2OCSSmall::*LOOK_AROUND_FINISHED*)
           (send self :send-to-ocs msg))
-        (setq state :initial)
+        (send smachine :go-to :initial)
         )                               ;done
       ))
   (:door-region-command-callback (msg)
-    (when (eq state :initial)
+    (when (send smachine :state? :initial)
       (multiple-value-bind
        (foreground background) (integer-vector-to-double-rect-polygon-stamped msg)
        (ros::publish "/door_recognition/input_support_plane_rect"
@@ -141,31 +186,31 @@
          background)
        ;; enable snapshot
        (call-empty-service "/door_recognition/snapshot/request")
-       (setq state :recognizing-door-pose)
+       (send smachine :go-to :recognizing-door-pose)
        )))
   (:valve-region-command-callback (msg)
-    (when (eq state :initial)
+    (when (send smachine :state? :initial)
       ;; convert OCS2FCSmall into geometry_msgs/Polygon
       (ros::publish "/valve_recognition/input_rect"
         (integer-vector-to-rect-polygon-stamped msg))
       ;; enable snapshot
       (call-empty-service "/valve_recognition/snapshot/request")
-      (setq state :recognizing-valve-pose)
+      (send smachine :go-to :recognizing-valve-pose)
       ))
   (:go-pos-region-command-callback (msg)
-    (when (eq state :initial)
+    (when (send smachine :state? :initial)
       ;; convert OCS2FCSmall into geometry_msgs/Polygon
       (ros::publish "/go_pos_recognition/input_rect"
         (integer-vector-to-rect-polygon-stamped msg))
       ;; enable snapshot
       (call-empty-service "/go_pos_recognition/snapshot/request")
-      (setq state :recognizing-go-pos-location)
+      (send smachine :go-to :recognizing-go-pos-location)
       ))
   (:debri-exec-command-callback (msg)
-    (when (eq state :initial)
+    (when (send smachine :state? :initial)
       (multiple-value-bind
        (coords r h) (float-vector-to-cylinder (send msg :float_params))
-       (setq state :executing-debri)
+       (send smachine :go-to :executing-debri)
        (ros::ros-info "removing debri at ~A ~A ~A" coords r h)
        ;; send motion to real robot
        (send-debri-motion coords r h 0.9)
@@ -173,37 +218,37 @@
        (let ((msg (instance drc_com_common::FC2OCSSmall :init)))
          (send msg :type drc_com_common::FC2OCSSmall::*DEBRI_FINISHED*)
          (send self :send-to-ocs msg))
-       (setq state :initial)
+       (send smachine :go-to :initial)
        )))
   (:hose-grasp-exec-command-callback (msg)
-    (when (eq state :initial)
+    (when (send smachine :state? :initial)
       (let* ((params (send msg :float_params))
              ;; TODO : receive all hose information
              (coords (make-coords :pos (float-vector (elt params 0) (elt params 1) (elt params 2)) :rpy (list 0 pi 0))))
         (ros::ros-info "grasping hose at ~A" coords)
-        (setq state :executing-hose)
+        (send smachine :go-to :executing-hose-grasp)
         ;; send motion to real robot
         (send-hose-grasp-motion coords)
         ;; send finish signal to ocs
         (let ((msg (instance drc_com_common::FC2OCSSmall :init)))
           (send msg :type drc_com_common::FC2OCSSmall::*HOSE_GRASP_FINISHED*)
           (send self :send-to-ocs msg))
-        (setq state :initial)
+        (send smachine :go-to :initial)
         ))
     )
   (:hose-connect-exec-command-callback (msg)
-    (when (eq state :initial)
+    (when (send smachine :state? :initial)
       (let* ((params (send msg :float_params))
              (coords (make-coords :pos (float-vector (elt params 0) (elt params 1) (elt params 2)) :rpy (list 0 pi/2 0))))
         (ros::ros-info "connecting hose at ~A" coords)
-        (setq state :executing-hose)
+        (send smachine :go-to :executing-hose-connect)
         ;; send motion to real robot
         (send-hose-connect-motion coords)
         ;; send finish signal to ocs
         (let ((msg (instance drc_com_common::FC2OCSSmall :init)))
           (send msg :type drc_com_common::FC2OCSSmall::*HOSE_CONNECT_FINISHED*)
           (send self :send-to-ocs msg))
-        (setq state :initial)
+        (send smachine :go-to :initial)
         ))
     )
   (:drill-grasp-exec-command-callback (msg)
@@ -223,23 +268,23 @@
         ))
     )
   (:door-exec-command-callback (msg)
-    (when (eq state :initial)
+    (when (send smachine :state? :initial)
       (multiple-value-bind
        (coords size)
        (float-vector-to-box (send msg :float_params))
-       (setq state :executing-door)
+       (send smachine :go-to :executing-door)
        (ros::ros-info "opening door at ~A ~A" coords size)
        ;; TODO: OPEN DOOR!
        (let ((msg (instance drc_com_common::FC2OCSSmall :init)))
          (send msg :type drc_com_common::FC2OCSSmall::*DOOR_FINISHED*)
          (send self :send-to-ocs msg))
-       (setq state :initial)
+       (send smachine :go-to :initial)
        )))
   (:valve-exec-command-callback (msg)
-    (when (eq state :initial)
+    (when (send smachine :state? :initial)
       (multiple-value-bind 
        (coords radius) (float-vector-to-torus (send msg :float_params))
-       (setq state :executing-valve)
+       (send smachine :go-to :executing-valve)
        (ros::ros-info "rotating valve at ~A,~A,~A~%"
          (send coords :worldpos)
          (car (send coords :rpy-angle))
@@ -250,12 +295,12 @@
        (let ((msg (instance drc_com_common::FC2OCSSmall :init)))
          (send msg :type drc_com_common::FC2OCSSmall::*VALVE_FINISHED*)
          (send self :send-to-ocs msg))
-       (setq state :initial)
+       (send smachine :go-to :initial)
        )))
   (:go-pos-exec-command-callback (msg)
-    (when (eq state :initial)
+    (when (send smachine :state? :initial)
       (let ((goal-coords (float-vector-to-coords (send msg :float_params))))
-        (setq state :executing-go-pos)
+        (send smachine :go-to :executing-go-pos)
         (format t "go-pos ~A ~A ~A~%"
                 (* 0.001 (elt (send goal-coords :worldpos) 0))
                 (* 0.001 (elt (send goal-coords :worldpos) 1))
@@ -268,9 +313,9 @@
       (let ((msg (instance drc_com_common::FC2OCSSmall :init)))
         (send msg :type drc_com_common::FC2OCSSmall::*GO_POS_FINISHED*)
         (send self :send-to-ocs msg))
-      (setq state :initial)))
+      (send smachine :go-to :initial)))
   (:look-at-region-command-callback (msg)
-    (when (eq state :initial)
+    (when (send smachine :state? :initial)
       (cond
        ((eq (send msg :image_type) drc_com_common::OCS2FCSmall::*IMAGE_RECT*)
         ;; convert OCS2FCSmall into geometry_msgs/Polygon
@@ -278,13 +323,13 @@
           (integer-vector-to-rect-polygon-stamped msg))
         ;; enable snapshot
         (call-empty-service "/look_at_recognition/snapshot/request")
-        (setq state :recognizing-look-at-point))
+        (send smachine :go-to :recognizing-look-at-point))
        ((eq (send msg :image_type) drc_com_common::OCS2FCSmall::*PANORAMA_VIEW*)
         (ros::publish "/panorama/panorama_processing/output/screenrectangle"
           (integer-vector-to-rect-polygon-stamped msg))
         ;; enable snapshot
         (call-empty-service "/panorama/snapshot/request")
-        (setq state :recognizing-look-at-point-panorama))
+        (send smachine :go-to :recognizing-look-at-point-panorama))
        (t
         (error "unknown image type: ~A" (send msg :image_type)))
        )))
@@ -303,7 +348,7 @@
                             (send header :frame_id) (ros::time 0))))
         trans))
   (:debri-recog-callback (msg)
-    (when (eq state :recognizing-debri-pose)
+    (when (send smachine :state? :recognizing-debri-pose)
       (let ((trans (send self :lookup-from-body-transform (send msg :header)))
             (coefficients (send msg :values)))
         ;; make coordinates from coefficients
@@ -323,9 +368,9 @@
                                       from-body-coords (* (elt coefficients 6) 1000) (* (elt coefficients 7) 1000)
                                       (length (send fc-msg :params))))
                 (send self :send-to-ocs fc-msg)
-                (setq state :initial))))))))
+                (send smachine :go-to :initial))))))))
   (:door-recog-callback (msg)
-    (when (eq state :recognizing-door-pose)
+    (when (send smachine :state? :recognizing-door-pose)
       (let ((trans (send self :lookup-from-body-transform (send msg :header))))
         (let ((box (elt (send msg :boxes) 0)))
           (let ((coords (ros::tf-pose->coords (send box :pose))))
@@ -338,9 +383,9 @@
                                       from-body-coords (ros::tf-point->pos (send box :dimensions))
                                       (length (send fc-msg :params))))
                 (send self :send-to-ocs fc-msg)
-                (setq state :initial))))))))
+                (send smachine :go-to :initial))))))))
   (:valve-recog-callback (msg)
-    (when (eq state :recognizing-valve-pose)
+    (when (send smachine :state? :recognizing-valve-pose)
       (let* ((trans (send self :lookup-from-body-transform (send msg :header)))
              (coords (ros::tf-pose->coords (send msg :pose)))
              (from-body-coords (send trans :transform coords)))
@@ -350,11 +395,11 @@
                                 (length (send fc-msg :params))))
           (send fc-msg :type drc_com_common::FC2OCSSmall::*VALVE_POSE*)
           (send self :send-to-ocs fc-msg)
-          (setq state :initial)
+          (send smachine :go-to :initial)
           ))
       ))
   (:hose-grasp-recog-callback (msg)         ;geometry_msgs/PoseStamped
-    (when (eq state :recognizing-hose-grasp-pose)
+    (when (send smachine :state? :recognizing-hose-grasp-pose)
       ;; TODO : recognize hose
       (let* ((trans (send self :lookup-from-body-transform (send msg :header)))
              (coords (ros::tf-pose-stamped->coords msg))
@@ -369,10 +414,10 @@
             (setf (elt (send msg :params) 1) (elt pos 1))
             (setf (elt (send msg :params) 2) (elt pos 2))
             (send self :send-to-ocs msg)
-            (setq state :initial)
+            (send smachine :go-to :initial)
             )))))
   (:hose-connect-recog-callback (msg)         ;geometry_msgs/PoseStamped
-    (when (eq state :recognizing-hose-connect-pose)
+    (when (send smachine :state? :recognizing-hose-connect-pose)
       ;; TODO : recognize hose
       (let* ((trans (send self :lookup-from-body-transform (send msg :header)))
              (coords (ros::tf-pose-stamped->coords msg))
@@ -387,7 +432,7 @@
             (setf (elt (send msg :params) 1) (elt pos 1))
             (setf (elt (send msg :params) 2) (elt pos 2))
             (send self :send-to-ocs msg)
-            (setq state :initial)
+            (send smachine :go-to :initial)
             )))))
   (:drill-grasp-recog-callback (msg)         ;geometry_msgs/PoseStamped
     (when (eq state :recognizing-drill-grasp-pose)
@@ -409,10 +454,10 @@
 
   (:look-at-panorama-recog-callback (msg)
     (ros::ros-warn "panorama callback!")
-    (setq state :recognizing-look-at-point)
+    (send smachine :go-to :recognizing-look-at-point)
     (send self :look-at-recog-callback msg))
   (:look-at-recog-callback (msg)
-    (when (eq state :recognizing-look-at-point)
+    (when (send smachine :state? :recognizing-look-at-point)
       (let* ((trans (send self :lookup-from-body-transform (send msg :header)))
              (coords (ros::tf-pose-stamped->coords msg))
              (from-body-coords (send trans :transform coords)))
@@ -431,9 +476,9 @@
       (let ((msg (instance drc_com_common::FC2OCSSmall :init)))
         (send msg :type drc_com_common::FC2OCSSmall::*LOOK_AT_FINISHED*)
           (send self :send-to-ocs msg))
-      (setq state :initial)))
+      (send smachine :go-to :initial)))
   (:go-pos-recog-callback (msg)         ;geometry_msgs/PoseStamped
-    (when (eq state :recognizing-go-pos-location)
+    (when (send smachine :state? :recognizing-go-pos-location)
       (let ((trans (send self :lookup-from-ground-transform (send msg :header))))
         (let ((coords (ros::tf-pose-stamped->coords msg)))
           (let ((from-ground-coords (send trans :transform coords)))
@@ -468,13 +513,9 @@
                           (setf (elt (send msg :params) 4) 0) ;force to set zero
                           (setf (elt (send msg :params) 5) 0) ;force to set zero
                           (send self :send-to-ocs msg)
-                          (setq state :initial)))))))))))))
+                          (send smachine :go-to :initial)))))))))))))
   (:send-to-ocs (msg)
     (ros::publish "/fc_to_ocs_low_speed/input" msg))
-  (:report ()
-    (let ((msg (instance drc_com_common::FC2OCSSmall :init)))
-      (send msg :type drc_com_common::FC2OCSSmall::*REPORT*)
-      (send self :send-to-ocs msg)))
   )
 
 
@@ -521,9 +562,11 @@
 (ros::advertise "/go_pos_goal" geometry_msgs::PoseStamped)
 
 (ros::rate 10)
-;; (while (ros::ok)
-;;   (ros::sleep)
-;;   ;;(send *app* :report)
-;;   (ros::spin-once))
 
-(ros::spin)
+;;(ros::spin)
+(while (ros::ok)
+  (ros::sleep)
+  (ros::spin-once)
+  (send (send *app* :state-machine) :proc)
+  )
+  

@@ -399,3 +399,79 @@ Usage:
 
      )
    :initial "ocs_state.png"))
+
+(defun make-fc-state-machine ()
+  (make-state-machine
+   '(
+     (:initial -> :recognizing-debri-pose)
+     (:recognizing-debri-pose -> :initial)
+     
+     (:initial -> :recognizing-hose-grasp-pose)
+     (:recognizing-hose-grasp-pose -> :initial)
+     
+     (:initial -> :recognizing-hose-connect-pose)
+     (:recognizing-hose-connect-pose -> :initial)
+
+     (:initial -> :recognizing-door-pose)
+     (:recognizing-door-pose -> :initial)
+
+     (:initial -> :recognizing-valve-pose)
+     (:recognizing-valve-pose -> :initial)
+
+     (:initial -> :recognizing-go-pos-location)
+     (:recognizing-go-pos-location -> :initial)
+     
+     (:initial -> :executing-debri)
+     (:executing-debri -> :initial)
+
+     (:initial -> :executing-hose-grasp)
+     (:executing-hose-grasp -> :initial)
+
+     (:initial -> :executing-hose-connect)
+     (:executing-hose-connect -> :initial)
+     
+     (:initial -> :executing-door)
+     (:executing-door -> :initial)
+
+     (:initial -> :executing-valve)
+     (:executing-valve -> :initial)
+
+     (:initial -> :executing-go-pos)
+     (:executing-go-pos -> :initial)
+     
+     (:initial -> :recognizing-look-at-point)
+     (:recognizing-look-at-point -> :initial)
+
+     (:initial -> :recognizing-look-at-point-panorama)
+     (:recognizing-look-at-point-panorama -> :initial)
+     
+     
+     (:initial -> :executing-look-around)
+     (:executing-look-around -> :initial)
+     )
+   '((:initial :initial)
+     
+     (:recognizing-debri-pose :debri)
+     (:executing-debri :debri)
+     
+     (:recognizing-hose-grasp-pose :hose)
+     (:recognizing-hose-connect-pose :hose)
+     (:executing-hose-connect :hose)
+     (:executing-hose-grasp :hose)
+
+     (:recognizing-door-pose :door)
+     (:executing-door :door)
+     
+     (:recognizing-go-pos-location :go-pos)
+     (:executing-go-pos :go-pos)
+     
+     (:recognizing-valve-pose :valve)
+     (:executing-valve :valve)
+
+     (:recognizing-look-at-point :look-at)
+     (:recognizing-look-at-point-panorama :look-at)
+     
+     (:executing-look-around :look-around)
+     )
+   :initial
+   ))
