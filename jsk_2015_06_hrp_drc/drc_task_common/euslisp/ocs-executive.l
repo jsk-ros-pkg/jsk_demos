@@ -70,7 +70,8 @@
                 self :hose-connect-exec-finished-callback)
           (list drc_com_common::FC2OCSSmall::*DRILL_GRASP_POSE*
                 self :drill-grasp-recognition-finished-callback)
-
+          (list drc_com_common::FC2OCSSmall::*DRILL_GRASP_FINISHED*
+                self :drill-grasp-exec-finished-callback)
           (list drc_com_common::FC2OCSSmall::*LOOK_AROUND_FINISHED*
                 self :look-around-finished-callback))
     (setq smachine (make-ocs-state-machine))
@@ -253,7 +254,7 @@
     (send self :show-text-on-image "Wait for drill recognition")
     ;; send to FC to recognize pos
     (let ((fc-msg (instance drc_com_common::OCS2FCSmall :init)))
-      (send fc-msg :type drc_com_common::OCS2FCSmall::*DRILL_REGION*)
+      (send fc-msg :type drc_com_common::OCS2FCSmall::*DRILL_GRASP_REGION*)
       (send fc-msg :image_roi_info (rect-polygon-stamped-to-integer-vector
                                     msg (length (send fc-msg :image_roi_info))))
       (send self :send-to-fc fc-msg)
@@ -289,7 +290,7 @@
       (send self :rectangle-callback-for-hose-grasp-region msg))
      ((eq (send smachine :state) :selecting-region-for-hose-connect)
       (send self :rectangle-callback-for-hose-connect-region msg))
-     ((eq (send smachine :state) :selecting-region-for-drill)
+     ((eq (send smachine :state) :selecting-region-for-drill-grasp)
       (send self :rectangle-callback-for-drill-grasp-region msg))
      ))
   (:cancel-button-callback (req)
@@ -308,6 +309,8 @@
       (send smachine :go-to :initial))
      ((eq (send smachine :state) :selecting-exec-for-hose-connect)
       (send smachine :go-to :initial))
+     ((eq (send smachine :state) :selecting-exec-for-drill-grasp)
+      (send smachine :go-to :initial))
      ;; TODO : cancel recognition from button
      ((eq (send smachine :state) :recognizing-valve-pose)
       (send smachine :go-to :initial))
@@ -320,6 +323,8 @@
      ((eq (send smachine :state) :recognizing-hose-grasp-pose)
       (send smachine :go-to :initial))
      ((eq (send smachine :state) :recognizing-hose-connect-pose)
+      (send smachine :go-to :initial))
+     ((eq (send smachine :state) :recognizing-drill-grasp-pose)
       (send smachine :go-to :initial))
      )
     ;; clear text message
@@ -404,12 +409,12 @@
     ;; send hose-grasp params to fc
     (let ((msg (instance drc_com_common::OCS2FCSmall :init)))
       (send msg :type drc_com_common::OCS2FCSmall::*DRILL_GRASP_EXEC*)
-      (let ((pos (send (elt hose-grasp-params 0) :worldpos)))
+      (let ((pos (send (elt drill-grasp-params 0) :worldpos)))
         (setf (elt (send msg :float_params) 0) (elt pos 0))
         (setf (elt (send msg :float_params) 1) (elt pos 1))
         (setf (elt (send msg :float_params) 2) (elt pos 2)))
       (send self :send-to-fc msg)
-      (send smachine :go-to :executing-hose-grasp)))
+      (send smachine :go-to :executing-drill-grasp)))
   (:exec-button-callback (req)
     (cond
      ((eq (send smachine :state) :selecting-exec-for-go-pos)
@@ -499,6 +504,9 @@
   (:hose-connect-exec-finished-callback (msg)
     (when (eq (send smachine :state) :executing-hose-connect)
       (send smachine :go-to :initial)))
+  (:drill-grasp-exec-finished-callback (msg)
+    (when (eq (send smachine :state) :executing-drill-grasp)
+      (send smachine :go-to :initial)))
   (:valve-recognition-finished-callback (msg)
     (when (eq (send smachine :state) :recognizing-valve-pose)
       ;; show it
@@ -587,12 +595,13 @@
         ;; publish torus pose
         (erase-all-primitive-marker)
         (insert-primitive-marker :shape-type jsk_rviz_plugins::TransformableMarkerOperate::*CYLINDER* :name "cylinder1" :description "")
-        (set-primitive-marker-dimensions :radius 30 :z 120)
+        (set-primitive-marker-dimensions :radius 30 :z 320)
         (set-primitive-marker-pose coords "BODY")
         (set-primitive-marker-color :r 1.0 :g 1.0 :b 0.0 :a 0.6)
         (apply-primitive-dimensions-to-midi-device)
         (send self :move-robot-model-to-current-pos)
         ;; publish hose motion to robot model on rviz
+        ;; TODO generate drill grasp motion
         ;; (publish-drill-grasp-motion :coords (elt drill-grasp-params 0) :update? t)
         (send smachine :go-to :selecting-exec-for-drill-grasp))
       ))
@@ -638,6 +647,14 @@
                  (list (get-primitive-marker-pose :frame-id "BODY")))
            ;; publish valve motion to robot model on rviz
            (publish-hose-connect-motion :coords (elt hose-connect-params 0) :update? t)
+           )
+          ((eq (send smachine :state) :selecting-exec-for-drill-grasp)
+           ;; update latest drill-grasp params
+           (setq drill-grasp-params
+                 (list (get-primitive-marker-pose :frame-id "BODY")))
+           ;; publish valve motion to robot model on rviz
+           ;; TODO 
+           ;; (publish-drill-grasp-motion :coords (elt drill-grasp-params 0) :update? t)
            ))
     (send req :response)
     )

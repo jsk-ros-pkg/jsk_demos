@@ -1,8 +1,8 @@
 <launch>
   <arg name="INPUT_IMAGE" default="/multisense/left/image_rect_color"/>
   <arg name="INPUT_CAMERA_INFO" default="/multisense/left/camera_info"/>
-  <arg name="INPUT_POINT_CLOUD" default="/multisense/resize_1_8/points" />
-  <arg name="CAMERA_FRAME_ID" default="/multisense/left_camera_optical_frame" />
+  <arg name="INPUT_POINT_CLOUD" default="/multisense/resize_1_2/points" />
+  <arg name="CAMERA_FRAME_ID" default="/left_camera_optical_frame" />
   <arg name="IMU" default="/multisense/imu/imu_data" />
   <arg name="LAUNCH_MANAGER" default="true" />
   <arg name="MANAGER" default="drill_manager" />
@@ -104,11 +104,11 @@
         ]
       </rosparam>
     </node>
-    <node pkg="jsk_topic_tools" type="static_transform_pose_stamped" name="static_transform_pose_stamped" 
-          args="0 0 -0.25 0 0 0 /drill_recognition/icp_registration/output_pose /drill_recognition/icp_registration/output/pose_origin"
-          />
+    <!-- <node pkg="jsk_topic_tools" type="static_transform_pose_stamped" name="static_transform_pose_stamped"  -->
+    <!--       args="0 0 -0.25 0 0 0 /drill_recognition/icp_registration/output_pose /drill_recognition/icp_registration/output_pose_origin" -->
+    <!--       /> -->
     <node pkg="jsk_topic_tools" type="snapshot" name="snapshot">
-      <remap from="~input" to="icp_registration/output/pose_origin"/>
+      <remap from="~input" to="icp_registration/output_pose"/>
       <rosparam>
         latch: true
       </rosparam>

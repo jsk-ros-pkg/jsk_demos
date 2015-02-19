@@ -391,5 +391,11 @@ Usage:
      (:recognizing-hose-connect-pose :hose-connect)
      (:selecting-exec-for-hose-connect :hose-connect)
      (:executing-hose-connect :hose-connect)
+     ;; drill-grasp
+     (:selecting-region-for-drill-grasp :drill-grasp)
+     (:recognizing-drill-grasp-pose :drill-grasp)
+     (:selecting-exec-for-drill-grasp :drill-grasp)
+     (:executing-drill-grasp :drill-grasp)
+
      )
    :initial "ocs_state.png"))
