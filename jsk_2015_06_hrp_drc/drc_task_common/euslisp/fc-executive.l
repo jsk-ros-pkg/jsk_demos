@@ -138,7 +138,7 @@
         (send *robot* :angle-vector (send *ri* :state :reference-vector))
         (let ((initial-av (send *robot* :angle-vector)))
           (send *robot* :head :neck-p :joint-angle 0)
-          (send *robot* :head :neck-y :joint-angle (- (send *robot* :head :neck-y :max-angle) 10))
+          (send *robot* :head :neck-y :joint-angle (- (send *robot* :head :neck-y :max-angle) 1))
           (send *ri* :angle-vector (send *robot* :angle-vector) tm)
           (send *ri* :wait-interpolation)
           (send self :panorama-shutter)
@@ -148,7 +148,7 @@
           (send *ri* :wait-interpolation)
           (send self :panorama-shutter)
           
-          (send *robot* :head :neck-y :joint-angle (+ 10 (send *robot* :head :neck-y :min-angle)))
+          (send *robot* :head :neck-y :joint-angle (+ 1 (send *robot* :head :neck-y :min-angle)))
           (send *ri* :angle-vector (send *robot* :angle-vector) tm)
           (send *ri* :wait-interpolation)
           (send self :panorama-shutter)
