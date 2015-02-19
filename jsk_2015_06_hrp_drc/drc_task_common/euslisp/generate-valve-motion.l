@@ -3,7 +3,7 @@
 
 (defun set-valve-environment
   (&key (valve-r 200)
-        (valve-coords (make-coords :pos (float-vector 500 0 1200) :rpy (list 0 pi/2 0)))
+        (valve-coords (make-coords :pos (float-vector 0 0 1200) :rpy (list 0 pi/2 0)))
         (generate-ri? t) (draw? t)
         (robot-name "HRP2JSKNTS"))
   ;; generate robot

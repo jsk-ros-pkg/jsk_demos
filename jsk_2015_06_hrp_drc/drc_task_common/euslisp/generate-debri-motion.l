@@ -3,7 +3,7 @@
 
 (defun set-debri-environment
   (&key (debri-r 40) (debri-h 1000)
-        (debri-coords (make-coords :pos (float-vector 500 -100 0) :rpy (list 0 0 0.3)))
+        (debri-coords (make-coords :pos (float-vector 0 -100 300) :rpy (list 0 0 0.3)))
         (handle-ratio 0.8)
         (generate-ri? t) (draw? t)
         (robot-name "HRP2JSKNTS"))
