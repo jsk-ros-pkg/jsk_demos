@@ -86,7 +86,7 @@
   (:initial-callback ()
     (send self :set-image-view2-mode :none)
     (send self :set-image-view2-mode :none :panorama-view)
-    (send self :show-text-on-image "")
+    (send self :show-text "")
     )
   (:set-image-view2-mode (mode &optional (type :image-rect))
     "type should be :image-rect or :panorama-view"
@@ -108,55 +108,47 @@
         (error "unknown mode: ~A" mode)
         ))
       ))
-  (:show-text-on-image (text)
-    (let ((msg (instance image_view2::ImageMarker2 :init)))
-      (send msg :type image_view2::ImageMarker2::*TEXT*)
-      (send msg :position :x 0)
-      (send msg :position :y 0.1)
-      (send msg :scale 0.02)
-      (send msg :filled 2)
-      (send msg :left_up_origin t)
-      (send msg :ratio_scale t)
-      (send msg :text text)
-      (ros::publish "/image_rect/image_marker" msg)
-      )
+  (:show-text (text)
+    (let ((msg (instance std_msgs::String :init)))
+      (send msg :data text)
+      (ros::publish "/ocs/status_text" msg))
     )
   (:go-pos-button-callback (req)
     (when (send smachine :next? :selecting-region-for-go-pos)
       ;; force to use rectangle mode
       (send self :set-image-view2-mode :rectangle)
-      (send self :show-text-on-image "Select rectangle region to go")
+      (send self :show-text "Select rectangle region to go")
       (send smachine :go-to :selecting-region-for-go-pos)
       )
     (send req :response))
   (:door-button-callback (req)
     (when (send smachine :next? :selecting-region-for-door)
       (send self :set-image-view2-mode :grabcut-rect)
-      (send self :show-text-on-image "Select rectangle two region for door")
+      (send self :show-text "Select rectangle two region for door")
       (send smachine :go-to :selecting-region-for-door))
     (send req :response))
   (:debri-button-callback (req)
     (when (send smachine :next? :selecting-region-for-debri)
       (send self :set-image-view2-mode :line)
-      (send self :show-text-on-image "Select line for debri")
+      (send self :show-text "Select line for debri")
       (send smachine :go-to :selecting-region-for-debri))
     (send req :response))
   (:hose-grasp-button-callback (req)
     (when (send smachine :next? :selecting-region-for-hose-grasp)
       (send self :set-image-view2-mode :rectangle)
-      (send self :show-text-on-image "Select rectangle for hose")
+      (send self :show-text "Select rectangle for hose")
       (send smachine :go-to :selecting-region-for-hose-grasp))
     (send req :response))
   (:hose-connect-button-callback (req)
     (when (send smachine :next? :selecting-region-for-hose-connect)
       (send self :set-image-view2-mode :rectangle)
-      (send self :show-text-on-image "Select rectangle for hose")
+      (send self :show-text "Select rectangle for hose")
       (send smachine :go-to :selecting-region-for-hose-connect))
     (send req :response))
   (:valve-button-callback (req)
     (when (send smachine :next? :selecting-region-for-valve)
       (send self :set-image-view2-mode :rectangle)
-      (send self :show-text-on-image "Select rectangle region of valve")
+      (send self :show-text "Select rectangle region of valve")
       (send smachine :go-to :selecting-region-for-valve))
     (send req :response))
   (:look-at-button-callback (req)
@@ -164,7 +156,7 @@
       ;; force to use rectangle mode
       (send self :set-image-view2-mode :rectangle)
       (send self :set-image-view2-mode :rectangle :panorama-view) ;we support panorama view
-      (send self :show-text-on-image "Select rectangle region to look")
+      (send self :show-text "Select rectangle region to look")
       (send smachine :go-to :selecting-region-for-look-at)
       )
     (send req :response))
@@ -178,7 +170,7 @@
   (:send-to-fc (msg)
     (ros::publish "/ocs_to_fc_low_speed/input" msg))
   (:rectangle-callback-for-go-pos-region (msg)
-    (send self :show-text-on-image "Wait for go-pos recognition")
+    (send self :show-text "Wait for go-pos recognition")
     ;; send to FC to recognize pos
     (let ((fc-msg (instance drc_com_common::OCS2FCSmall :init)))
       (send fc-msg :type drc_com_common::OCS2FCSmall::*GO_POS_REGION*)
@@ -187,7 +179,7 @@
       (send self :send-to-fc fc-msg)
       (send smachine :go-to :recognizing-go-pos-goal)))
   (:panorama-rectangle-callback (msg)
-    (send self :show-text-on-image "Wait for go-pos recognition")
+    (send self :show-text "Wait for go-pos recognition")
     (let ((fc-msg (instance drc_com_common::OCS2FCSmall :init)))
       (send fc-msg :type drc_com_common::OCS2FCSmall::*LOOK_AT_REGION*)
       (send fc-msg :image_roi_info (rect-polygon-stamped-to-integer-vector
@@ -196,7 +188,7 @@
       (send self :send-to-fc fc-msg)
       (send smachine :go-to :executing-look-at)))
   (:rectangle-callback-for-look-at-region (msg)
-    (send self :show-text-on-image "Wait for look-at recognition")
+    (send self :show-text "Wait for look-at recognition")
     ;; send to FC to recognize pos
     (let ((fc-msg (instance drc_com_common::OCS2FCSmall :init)))
       (send fc-msg :type drc_com_common::OCS2FCSmall::*LOOK_AT_REGION*)
@@ -205,7 +197,7 @@
       (send self :send-to-fc fc-msg)
       (send smachine :go-to :executing-look-at)))
   (:rectangle-callback-for-valve-region (msg)
-    (send self :show-text-on-image "Wait for valve recognition")
+    (send self :show-text "Wait for valve recognition")
     ;; send to FC to recognize pos
     (let ((fc-msg (instance drc_com_common::OCS2FCSmall :init)))
       (send fc-msg :type drc_com_common::OCS2FCSmall::*VALVE_REGION*)
@@ -222,7 +214,7 @@
       (send self :send-to-fc fc-msg)
       (send smachine :go-to :recognizing-door-pose)))
   (:rectangle-callback-for-hose-grasp-region (msg)
-    (send self :show-text-on-image "Wait for hose-grasp recognition")
+    (send self :show-text "Wait for hose-grasp recognition")
     ;; send to FC to recognize pos
     (let ((fc-msg (instance drc_com_common::OCS2FCSmall :init)))
       (send fc-msg :type drc_com_common::OCS2FCSmall::*HOSE_GRASP_REGION*)
@@ -231,7 +223,7 @@
       (send self :send-to-fc fc-msg)
       (send smachine :go-to :recognizing-hose-grasp-pose)))
   (:rectangle-callback-for-hose-connect-region (msg)
-    (send self :show-text-on-image "Wait for hose-connect recognition")
+    (send self :show-text "Wait for hose-connect recognition")
     ;; send to FC to recognize pos
     (let ((fc-msg (instance drc_com_common::OCS2FCSmall :init)))
       (send fc-msg :type drc_com_common::OCS2FCSmall::*HOSE_CONNECT_REGION*)
@@ -246,7 +238,7 @@
      )
     )
   (:line-callback-for-debri-line (msg)
-    (send self :show-text-on-image "Wait for debri recognition")
+    (send self :show-text "Wait for debri recognition")
     ;; send to FC to recognize pos
     (let ((fc-msg (instance drc_com_common::OCS2FCSmall :init)))
       (send fc-msg :type drc_com_common::OCS2FCSmall::*DEBRI_LINE*)
@@ -397,7 +389,7 @@
       (let ((params (send msg :params)))
         (multiple-value-bind
          (coords r h) (float-vector-to-cylinder params)
-         (send self :show-text-on-image (format nil "debri: ~A" params))
+         (send self :show-text (format nil "debri: ~A" params))
          ;; publish torus pose
          (erase-all-primitive-marker)
          (insert-primitive-marker :shape-type jsk_rviz_plugins::TransformableMarkerOperate::*CYLINDER* :name "cylinder1" :description "")
@@ -416,7 +408,7 @@
       (let ((params (send msg :params)))
         (multiple-value-bind
          (coords size) (float-vector-to-box params)
-         (send self :show-text-on-image (format nil "door: ~A" params))
+         (send self :show-text (format nil "door: ~A" params))
          ;; TODO: publish BoundingBox to visualize
          (setq door-params (list coords size))
          (send smachine :go-to :selecting-exec-for-door)))
@@ -434,7 +426,7 @@
         ;; move robot model on rviz and send potentio-vector
         (send self :move-robot-model go-pos-coords "ground")
         (publish-model-joint-states :av (get-potentio-vector-from-joint-states))
-        (send self :show-text-on-image 
+        (send self :show-text 
               (format nil "go-pos ~f ~f ~f" 
                       (* 0.001 (elt params 0))
                       (* 0.001 (elt params 1))
@@ -469,7 +461,7 @@
       (let ((params (send msg :params)))
         (multiple-value-bind
          (coords radius) (float-vector-to-torus params)
-         (send self :show-text-on-image 
+         (send self :show-text 
                (format nil "valve ~A ~A ~f" 
                        (send coords :worldpos)
                        (reverse (car (send coords :rpy-angle)))
@@ -493,7 +485,7 @@
       (let* ((params (send msg :params))
              ;; TODO : receive all hose information
             (coords (make-coords :pos (float-vector (elt params 0) (elt params 1) (elt params 2)) :rpy (list 0 pi 0))))
-        (send self :show-text-on-image 
+        (send self :show-text 
               (format nil "hose pos ~f ~f ~f" 
                       (* 0.001 (elt params 0))
                       (* 0.001 (elt params 1))
@@ -517,7 +509,7 @@
     (when (eq (send smachine :state) :recognizing-hose-connect-pose)
       (let* ((params (send msg :params))
              (coords (make-coords :pos (float-vector (elt params 0) (elt params 1) (elt params 2)) :rpy (list 0 pi/2 0))))
-        (send self :show-text-on-image 
+        (send self :show-text 
               (format nil "hose pos ~f ~f ~f" 
                       (* 0.001 (elt params 0))
                       (* 0.001 (elt params 1))
@@ -604,7 +596,7 @@
 (generate-robot "HRP2JSKNTS" :generate-ri? nil)
 
 ;; advertise
-(ros::advertise "/image_rect/image_marker" image_view2::ImageMarker2)
+(ros::advertise "/ocs/status_text" std_msgs::String)
 (setq *app* (instance ocs-executive-app :init))
 (setq *tf* (instance ros::transform-listener :init))
 
