@@ -53,6 +53,8 @@
                 self :look-around-exec-command-callback)
           (list drc_com_common::OCS2FCSmall::*DRILL_GRASP_REGION*
                 self :drill-grasp-region-command-callback)
+          (list drc_com_common::OCS2FCSmall::*DRILL_GRASP_EXEC*
+                self :drill-grasp-exec-command-callback)
           )
     self)
   (:ocs2fc-message-handler () ocs2fc-message-handler)
@@ -186,22 +188,6 @@
         (setq state :initial)
         ))
     )
-  (:hose-grasp-exec-command-callback (msg)
-    (when (eq state :initial)
-      (let* ((params (send msg :float_params))
-             ;; TODO : receive all hose information
-             (coords (make-coords :pos (float-vector (elt params 0) (elt params 1) (elt params 2)) :rpy (list 0 pi 0))))
-        (ros::ros-info "grasping hose at ~A" coords)
-        (setq state :executing-hose)
-        ;; send motion to real robot
-        (send-hose-grasp-motion coords)
-        ;; send finish signal to ocs
-        (let ((msg (instance drc_com_common::FC2OCSSmall :init)))
-          (send msg :type drc_com_common::FC2OCSSmall::*HOSE_GRASP_FINISHED*)
-          (send self :send-to-ocs msg))
-        (setq state :initial)
-        ))
-    )
   (:hose-connect-exec-command-callback (msg)
     (when (eq state :initial)
       (let* ((params (send msg :float_params))
@@ -213,6 +199,22 @@
         ;; send finish signal to ocs
         (let ((msg (instance drc_com_common::FC2OCSSmall :init)))
           (send msg :type drc_com_common::FC2OCSSmall::*HOSE_CONNECT_FINISHED*)
+          (send self :send-to-ocs msg))
+        (setq state :initial)
+        ))
+    )
+  (:drill-grasp-exec-command-callback (msg)
+    (when (eq state :initial)
+      (let* ((params (send msg :float_params))
+             ;; TODO : receive all hose information
+             (coords (make-coords :pos (float-vector (elt params 0) (elt params 1) (elt params 2)) :rpy (list 0 pi 0))))
+        (ros::ros-info "grasp drill at ~A" coords)
+        (setq state :executing-drill)
+        ;; send motion to real robot
+        ;;(send-drill-grasp-motion coords)
+        ;; send finish signal to ocs
+        (let ((msg (instance drc_com_common::FC2OCSSmall :init)))
+          (send msg :type drc_com_common::FC2OCSSmall::*DRILL_GRASP_FINISHED*)
           (send self :send-to-ocs msg))
         (setq state :initial)
         ))
