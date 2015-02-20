@@ -16,6 +16,7 @@
 (load "package://drc_task_common/euslisp/generate-valve-motion.l")
 (load "package://drc_task_common/euslisp/generate-debri-motion.l")
 (load "package://drc_task_common/euslisp/generate-hose-motion.l")
+(load "package://drc_task_common/euslisp/generate-drill-motion.l")
 (load "package://drc_task_common/euslisp/primitive-marker-util.l")
 ;; state
 ;;  :initial -> ...
@@ -622,7 +623,7 @@
         (send self :move-robot-model-to-current-pos)
         ;; publish hose motion to robot model on rviz
         ;; TODO generate drill grasp motion
-        ;; (publish-drill-grasp-motion :coords (elt drill-grasp-params 0) :update? t)
+	(publish-drill-grasp-motion :coords (elt drill-grasp-params 0) :update? t)
         (send smachine :go-to :selecting-exec-for-drill-grasp))
       ))
   (:look-at-finished-callback (msg)
@@ -674,7 +675,7 @@
                  (list (get-primitive-marker-pose :frame-id "BODY")))
            ;; publish valve motion to robot model on rviz
            ;; TODO 
-           ;; (publish-drill-grasp-motion :coords (elt drill-grasp-params 0) :update? t)
+           (publish-drill-grasp-motion :coords (elt drill-grasp-params 0) :update? t)
            ))
     (send req :response)
     )

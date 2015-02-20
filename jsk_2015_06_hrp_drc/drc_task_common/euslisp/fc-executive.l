@@ -263,7 +263,7 @@
         (send smachine :go-to :executing-drill-grasp)
         ;; send motion to real robot
         ;; TODO make drill motion
-        ;;(send-drill-grasp-motion coords)
+        (send-drill-grasp-motion coords)
         ;; send finish signal to ocs
         (let ((msg (instance drc_com_common::FC2OCSSmall :init)))
           (send msg :type drc_com_common::FC2OCSSmall::*DRILL_GRASP_FINISHED*)

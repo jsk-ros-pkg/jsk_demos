@@ -5,7 +5,7 @@
 ;; drill grasp ;;;;
 
 (defun set-drill-grasp-environment
-  (&key (drill-coords (make-coords :pos (float-vector 200 -500 800) :rpy (list 0 0 0)))
+  (&key (drill-coords (make-coords :pos (float-vector 600 0 800) :rpy (list 0 0 0)))
         (generate-ri? t) (draw? t)
         (robot-name "HRP2JSKNTS"))
   ;; generate robot
@@ -87,7 +87,7 @@
 
 (defun generate-drill-grasp-motion
   (&key (draw? t))
-  (let* ((reach-dist 200)
+  (let* ((reach-dist 150)
 	 (grasp-up-dist 300)
          (ik-results nil)
          (original-foot-midcoords (send (send *robot* :foot-midcoords) :copy-worldcoords)))
@@ -101,7 +101,7 @@
       ;; solve ik for grasp
       (setq tc
             (list
-             (send *drill* :get :grasp-coords)
+             (send (send (send *drill* :get :grasp-coords) :copy-worldcoords) :rotate pi :x)
              (send *robot* :rleg :end-coords :copy-worldcoords)
              (send *robot* :lleg :end-coords :copy-worldcoords)))
       (with-move-target-link-list
@@ -116,7 +116,7 @@
       (let ((robot-angle-vector (send *robot* :angle-vector)))
 	(setq tc
 	      (list
-	       (send (send (send *robot* :rarm :end-coords) :copy-worldcoords) :translate (float-vector (- reach-dist) reach-dist 0) :local)
+	       (send (send (send *robot* :rarm :end-coords) :copy-worldcoords) :translate (float-vector (- reach-dist) (- reach-dist) 0) :local)
 		   (send *robot* :rleg :end-coords :copy-worldcoords)
 		   (send *robot* :lleg :end-coords :copy-worldcoords)))
 	(with-move-target-link-list
@@ -127,8 +127,8 @@
 	   (setq ik-ret
 		 (send *robot* :look-at-target (send *drill* :worldcoords)))))
 	(push (list 0 (not (null ik-ret)) ik-ret) ik-results)
-	;; solve ik for grasp up
-	
+	(send *robot* :angle-vector robot-angle-vector)
+	;; solve ik for grasp up	
 	(setq tc
 	      (list
 	       (send (send (send *robot* :rarm :end-coords) :copy-worldcoords) :translate (float-vector 0 0 grasp-up-dist) :world)
@@ -141,14 +141,13 @@
 	 (when ik-ret
 	   (setq ik-ret
 		 (send *robot* :look-at-target (send *drill* :worldcoords)))))
-	(push (list 2 (not (null ik-ret)) ik-ret) ik-results)
+	(push-back (list 2 (not (null ik-ret)) ik-ret) ik-results)
 	(send *robot* :angle-vector robot-angle-vector)
-
 	)
       ;; draw
       (when draw? (send *irtviewer* :draw-objects :flush t))
       ;; drill-reset-pose
-      (send *robot* :angle-vector (get-pierce-drill-pre-pose))
+      (send *robot* :angle-vector (get-push-drill-pre-pose))
       (send *robot* :fix-leg-to-coords original-foot-midcoords)
       (push-back (list 3 t (send *robot* :angle-vector)) ik-results)
       (setq *drill-ik-results* ik-results)
@@ -218,6 +217,18 @@
   (float-vector -8.144307e-06 -0.000153 -36.5591 70.8929 -34.3338 0.000178 0.0 8.144307e-06 0.000153 -36.5591 70.8929 -34.3338 -0.000178 0.0 40.0 0.0 0.0 40.0 -56.1706 -73.4951 92.0 -127.965 106.0 37.3389 20.1853 60.0 50.0 30.0 10.0 -120.0 25.0 5.0 -20.0 -60.0)
   )
 (defun get-pierce-drill-pre-pose ()
-  (float-vector 0.0 0.0 -26.0 50.0 -24.0 0.0 0.0 0.0 0.0 -26.0 50.0 -24.0 0.0 0.0 0.0 0.0 0.0 40.0 1.19212 -20.9065 -5.36626 -98.3812 -17.2023 6.28459 -83.1406 60.0 50.0 30.0 10.0 -120.0 25.0 5.0 -20.0 -60.0
-   )
+  (float-vector 0.0 0.0 -26.0 50.0 -24.0 0.0 0.0 0.0 0.0 -26.0 50.0 -24.0 0.0 0.0 0.0 0.0 0.0 40.0 1.19212 -20.9065 -5.36626 -98.3812 50.0 6.28459 -83.1406 60.0 -17.0 30.0 10.0 -120.0 25.0 5.0 -20.0 -60.0)
+  )
+(defun get-push-drill-pre-pose ()
+(float-vector 0.0 0.0 -26.0 50.0 -24.0 0.0 0.0 0.0 0.0 -26.0 50.0 -24.0 0.0 0.0 0.0 0.0 0.0 40.0 -23.0209 -7.67889 10.4985 -75.8274 97.2715 -28.3553 -71.5569 60.0 50.0 30.0 10.0 -120.0 25.0 5.0 -20.0 -60.0)
+  )
+(defun get-overhand-grasp-pre-pose()
+#f(0.0 0.0 -26.0 50.0 -24.0 0.0 0.0 0.0 0.0 -26.0 50.0 -24.0 0.0 0.0 0.0 0.0 0.0 40.0 50.0 -30.0 -10.0 -130.0 -25.0 -5.0 80.0 60.0 50.0 30.0 10.0 -120.0 25.0 5.0 -20.0 -60.0)
+  )
 ;;TODO pre-push-pose
+(defun test-drill-grasp-motion ()
+  (set-drill-grasp-environment)
+  (generate-drill-grasp-motion)
+  (get-drill-grasp-motion)
+  (play-motion-on-eus-viewer *drill-motion*)
+  )
