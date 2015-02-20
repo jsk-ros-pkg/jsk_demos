@@ -309,7 +309,7 @@
          (original-foot-midcoords (send (send *robot* :foot-midcoords) :copy-worldcoords))
          (connect-interpolation-num 4)
          (connect-minus-distance -150)
-         (connect-plus-distance 30)
+         (connect-plus-distance 80)
          (connect-distance (- connect-plus-distance connect-minus-distance)))
     (when draw? (send (send *hose* :get :connect-coords) :draw-on :flush t))
     ;; loop
