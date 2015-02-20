@@ -17,6 +17,7 @@
 (load "package://drc_task_common/euslisp/generate-debri-motion.l")
 (load "package://drc_task_common/euslisp/generate-hose-motion.l")
 (load "package://drc_task_common/euslisp/generate-drill-motion.l")
+(load "package://drc_task_common/euslisp/generate-door-motion.l")
 (load "package://drc_task_common/euslisp/primitive-marker-util.l")
 ;; state
 ;;  :initial -> ...
@@ -28,7 +29,7 @@
   :slots (state task go-pos-coords smachine look-at-pos
                 fc2ocs-message-handler
                 valve-params ;; (list coords radius)
-                door-params
+                door-params ;; (list coords size)
                 debri-params ;; (list coords radius height)
                 hose-grasp-params ;; (list coords)
                 hose-connect-params ;; (list coords)
@@ -312,6 +313,8 @@
       (send smachine :go-to :initial))
      ((eq (send smachine :state) :selecting-region-for-hose-connect)
       (send smachine :go-to :initial))
+     ((eq (send smachine :state) :selecting-region-for-drill-grasp)
+      (send smachine :go-to :initial))
      ;; from selecting-exec state to initial state
      ((eq (send smachine :state) :selecting-exec-for-go-pos)
       (send smachine :go-to :initial))
@@ -475,8 +478,19 @@
         (multiple-value-bind
          (coords size) (float-vector-to-box params)
          (send self :show-text (format nil "door: ~A" params))
-         ;; TODO: publish BoundingBox to visualize
+         ;; publish box pose
+         ;; publish torus pose
+         (erase-all-primitive-marker)
+         (insert-primitive-marker :shape-type jsk_rviz_plugins::TransformableMarkerOperate::*BOX* :name "box1" :description "")
+         (set-primitive-marker-dimensions :x (elt size 0) :y (elt size 1) :z (elt size 2))
+         (set-primitive-marker-pose coords "BODY")
+         (set-primitive-marker-color :r 1.0 :g 1.0 :b 0.0 :a 0.6)
+         (apply-primitive-dimensions-to-midi-device)
+         (move-robot-model-to-current-pos)
+         ;; store result
          (setq door-params (list coords size))
+         ;; publish door motion to robot model on rviz
+         (publish-door-motion :coords (elt door-params 0) :knob-size (elt door-params 1) :update? t)
          (send smachine :go-to :selecting-exec-for-door)))
       ))
   (:go-pos-recognition-finished-callback (msg)
@@ -557,7 +571,7 @@
     (when (eq (send smachine :state) :recognizing-hose-grasp-pose)
       (let* ((params (send msg :params))
              ;; TODO : receive all hose information
-            (coords (make-coords :pos (float-vector (elt params 0) (elt params 1) (elt params 2)) :rpy (list 0 pi 0))))
+             (coords (make-coords :pos (float-vector (elt params 0) (elt params 1) (elt params 2)) :rpy (list 0 pi 0))))
         (send self :show-text 
               (format nil "hose pos ~f ~f ~f" 
                       (* 0.001 (elt params 0))
@@ -605,7 +619,7 @@
     (when (eq (send smachine :state) :recognizing-drill-grasp-pose)
       (let* ((params (send msg :params))
              ;; TODO : receive all hose information
-            (coords (make-coords :pos (float-vector (elt params 0) (elt params 1) (elt params 2)) :rpy (list 0 pi 0))))
+             (coords (make-coords :pos (float-vector (elt params 0) (elt params 1) (elt params 2)) :rpy (list 0 pi 0))))
         (send self :show-text 
               (format nil "drill pos ~f ~f ~f" 
                       (* 0.001 (elt params 0))
@@ -673,10 +687,18 @@
            ;; update latest drill-grasp params
            (setq drill-grasp-params
                  (list (get-primitive-marker-pose :frame-id "BODY")))
-           ;; publish valve motion to robot model on rviz
-           ;; TODO 
+           ;; publish dirll motion to robot model on rviz
            (publish-drill-grasp-motion :coords (elt drill-grasp-params 0) :update? t)
-           ))
+           )
+          ((eq (send smachine :state) :selecting-exec-for-door)
+           ;; update latest door params
+           (let* ((dim (get-primitive-marker-dimensions)))
+             (setq door-params
+                   (list (get-primitive-marker-pose :frame-id "BODY") (float-vector (elt dim 0) (elt dim 1) (elt dim 2)))))
+           ;; publish door motion to robot model on rviz
+           (publish-door-motion :coords (elt door-params 0) :knob-size (elt door-params 1) :update? t)
+           (send smachine :go-to :selecting-exec-for-door))
+          )
     (send req :response)
     )
   )

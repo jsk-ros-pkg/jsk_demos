@@ -62,7 +62,6 @@
         (unless trans
           (setq trans (send *tf* :lookup-transform "BODY" 
                             (send pose-st :header :frame_id) (ros::time 0))))
-        (ros::ros-info "hoge ~a~%" trans)
         (setq coords (send trans :transform coords))
         ))
     coords))
