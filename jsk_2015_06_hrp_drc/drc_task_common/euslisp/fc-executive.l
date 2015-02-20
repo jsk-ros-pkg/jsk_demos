@@ -13,6 +13,7 @@
 (load "package://drc_task_common/euslisp/generate-valve-motion.l")
 (load "package://drc_task_common/euslisp/generate-debri-motion.l")
 (load "package://drc_task_common/euslisp/generate-hose-motion.l")
+(load "package://drc_task_common/euslisp/generate-door-motion.l")
 
 (defclass fc-executive-app
   :super propertied-object
@@ -277,8 +278,10 @@
        (coords size)
        (float-vector-to-box (send msg :float_params))
        (send smachine :go-to :executing-door)
-       (ros::ros-info "opening door at ~A ~A" coords size)
-       ;; TODO: OPEN DOOR!
+       (ros::ros-info "opening door at ~A ~A~%" coords size)
+       ;; send motion to real robot
+       (send-door-motion size coords)
+       ;; send finish signal to ocs
        (let ((msg (instance drc_com_common::FC2OCSSmall :init)))
          (send msg :type drc_com_common::FC2OCSSmall::*DOOR_FINISHED*)
          (send self :send-to-ocs msg))
