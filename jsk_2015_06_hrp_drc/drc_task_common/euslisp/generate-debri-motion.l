@@ -34,6 +34,7 @@
     (send *debri* :newcoords debri-coords)
     ;; treat the difference of origin  between eus and recognition program
     (send *debri* :translate (float-vector 0 0 (* -0.5 debri-h)) :local))
+  (setq *debri-stand-coords* nil)
   ;; draw
   (when draw?
     (setq *ground* (make-cube 5000 5000 1))
@@ -179,6 +180,13 @@
       (unless (check-angle-vector-distance)
         (when real? (model2real :time 3000)))
       (when real? (send *ri* :start-impedance :arms :moment-gain (float-vector 0 0 0) :k-p 800 :d-p 400)) ;; start imp
+      ;; walk
+      (when *debri-stand-coords*
+        (let* ((pos (scale 0.001 (send *debri-stand-coords* :worldpos)))
+               (rpy (mapcar #'rad2deg (car (send *debri-stand-coords* :rpy-angle)))))
+          (ros::ros-warn "go-pos to ~a ~a ~a for debri~%" (elt pos 0) (elt pos 1) (elt rpy 0))
+          (when real? (send *ri* :go-pos (elt pos 0) (elt pos 1) (elt rpy 0)))
+          ))
       ;; pre grasp pose
       (send *robot* :angle-vector (elt debri-motion-av-list 1))
       (when real? (model2real :time 5000))
@@ -204,7 +212,10 @@
   (&key coords radius height handle-ratio (step-time 400) (update? t))
   (when update?
     (get-debri-motion-full radius height coords handle-ratio :use-ri? nil))
+  (ros::ros-info "debri-stand-coords: ~a~%" *debri-stand-coords*)
   (ros::ros-info "debri-ik-results: ~a~%" *debri-ik-results*)
+  (when *debri-stand-coords*
+    (move-robot-model *debri-stand-coords* "ground"))
   (publish-motion-joint-states *debri-motion* :step-time step-time)
   )
 
