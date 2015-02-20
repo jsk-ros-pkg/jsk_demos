@@ -100,7 +100,7 @@
     <!--       args="load jsk_pcl/PointcloudDatabaseServer /$(arg MANAGER)"> -->
     <node pkg="jsk_pcl_ros" type="pointcloud_database_server" name="pointcloud_server" >
       <rosparam subst_value="true">
-        models: ["$(find drc_task_common)/pcds/drill_full.pcd",
+        models: ["$(find drc_task_common)/pcds/drill.pcd",
         ]
       </rosparam>
     </node>

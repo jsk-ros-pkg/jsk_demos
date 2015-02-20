@@ -12,6 +12,7 @@
 (load "package://drc_task_common/euslisp/state-machine.l")
 (load "package://drc_task_common/euslisp/generate-valve-motion.l")
 (load "package://drc_task_common/euslisp/generate-debri-motion.l")
+(load "package://drc_task_common/euslisp/generate-drill-motion.l")
 (load "package://drc_task_common/euslisp/generate-hose-motion.l")
 (load "package://drc_task_common/euslisp/generate-door-motion.l")
 
@@ -76,7 +77,7 @@
           :deligate-object self
           :deligate-method :report-recognition-failure-to-ocs)
     (send (send smachine :node :recognizing-drill-grasp-pose)
-          :add-timelimit 30 :initial ; too long because template_drill_points are big now
+          :add-timelimit 40 :initial ; too long because template_drill_points are big now
           :deligate-object self
           :deligate-method :report-recognition-failure-to-ocs)
     (send (send smachine :node :recognizing-door-pose)
@@ -264,7 +265,7 @@
         (send smachine :go-to :executing-drill-grasp)
         ;; send motion to real robot
         ;; TODO make drill motion
-        ;;(send-drill-grasp-motion coords)
+        (send-drill-grasp-motion coords)
         ;; send finish signal to ocs
         (let ((msg (instance drc_com_common::FC2OCSSmall :init)))
           (send msg :type drc_com_common::FC2OCSSmall::*DRILL_GRASP_FINISHED*)
