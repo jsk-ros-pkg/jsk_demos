@@ -12,6 +12,7 @@
 (load "package://drc_task_common/euslisp/state-machine.l")
 (load "package://drc_task_common/euslisp/generate-valve-motion.l")
 (load "package://drc_task_common/euslisp/generate-debri-motion.l")
+(load "package://drc_task_common/euslisp/generate-drill-motion.l")
 (load "package://drc_task_common/euslisp/generate-hose-motion.l")
 
 (defclass fc-executive-app
@@ -75,7 +76,7 @@
           :deligate-object self
           :deligate-method :report-recognition-failure-to-ocs)
     (send (send smachine :node :recognizing-drill-grasp-pose)
-          :add-timelimit 30 :initial ; too long because template_drill_points are big now
+          :add-timelimit 40 :initial ; too long because template_drill_points are big now
           :deligate-object self
           :deligate-method :report-recognition-failure-to-ocs)
     (send (send smachine :node :recognizing-door-pose)

@@ -620,7 +620,7 @@
         (set-primitive-marker-pose coords "BODY")
         (set-primitive-marker-color :r 1.0 :g 1.0 :b 0.0 :a 0.6)
         (apply-primitive-dimensions-to-midi-device)
-        (send self :move-robot-model-to-current-pos)
+        (move-robot-model-to-current-pos)
         ;; publish hose motion to robot model on rviz
         ;; TODO generate drill grasp motion
 	(publish-drill-grasp-motion :coords (elt drill-grasp-params 0) :update? t)

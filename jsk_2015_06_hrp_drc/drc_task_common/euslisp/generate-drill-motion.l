@@ -101,7 +101,8 @@
       ;; solve ik for grasp
       (setq tc
             (list
-             (send (send (send *drill* :get :grasp-coords) :copy-worldcoords) :rotate pi :x)
+             ;; todo reverse if
+             (send (send (send (send *drill* :get :grasp-coords) :copy-worldcoords) :translate (float-vector 0 0 -100) :local) :rotate 0 :x)
              (send *robot* :rleg :end-coords :copy-worldcoords)
              (send *robot* :lleg :end-coords :copy-worldcoords)))
       (with-move-target-link-list
