@@ -37,6 +37,7 @@
       (send *hose* :newcoords hose-coords)
       ;; treat the difference of origin between eus and recognition program
       (send *hose* :translate (float-vector 0 0 (* -0.5 hose-h)) :local))
+    (setq *hose-stand-coords* nil)
     )
   ;; draw
   (when draw?
@@ -145,9 +146,25 @@
     angle-vector-ret
     ))
 
+(defun get-hose-grasp-stand-coords ;; relative to hose
+  ()
+  (make-coords :pos (float-vector -690 -245 0) :rpy (list 0 0 0)) ;; dependent on arm
+  )
+
 (defun get-hose-grasp-motion-full
   (hose-coords &key (draw? nil) (use-ri? t))
   (set-hose-grasp-environment-full hose-coords :draw? draw? :use-ri? use-ri?)
+  ;; change stand position
+  (let* ((hose-coords-stand-rot (send (send *hose* :copy-worldcoords) :rotate pi :y))
+         (stand-coords (send (send hose-coords-stand-rot :copy-worldcoords) :transform (get-hose-grasp-stand-coords) :local))
+         (stand-pos (send stand-coords :worldpos))
+         (stand-rpy (elt (send stand-coords :rpy-angle) 0))
+         )
+    (setq *hose-stand-coords* (make-coords :pos (float-vector (elt stand-pos 0) (elt stand-pos 1) 0) :rpy (list (elt stand-rpy 0) 0 0)))
+    )
+  (ros::ros-warn "change stand position to ~a for hose-grasp motion.~%" *hose-stand-coords*)
+  (send *robot* :fix-leg-to-coords *hose-stand-coords*)
+  (when draw? (send *irtviewer* :draw-objects))
   (get-hose-grasp-motion :draw? draw?)
   )
 
@@ -163,6 +180,13 @@
       (unless (check-angle-vector-distance)
         (when real? (model2real :time 3000)))
       (when real? (send *ri* :start-impedance :arms :moment-gain (float-vector 0 0 0) :k-p 1000 :d-p 400)) ;; start imp
+      ;; walk
+      (when *hose-stand-coords*
+        (let* ((pos (scale 0.001 (send *hose-stand-coords* :worldpos)))
+               (rpy (mapcar #'rad2deg (car (send *hose-stand-coords* :rpy-angle)))))
+          (ros::ros-warn "go-pos to ~a ~a ~a for hose~%" (elt pos 0) (elt pos 1) (elt rpy 0))
+          (when real? (send *ri* :go-pos (elt pos 0) (elt pos 1) (elt rpy 0)))
+          ))
       ;; pre-reach
       (send *robot* :angle-vector (elt hose-motion-av-list 0))
       (when real? (model2real :time 5000))
@@ -182,7 +206,10 @@
   (&key coords (step-time 400) (update? t))
   (when update?
     (get-hose-grasp-motion-full coords :use-ri? nil))
+  (ros::ros-info "hose-stand-coords: ~a~%" *hose-stand-coords*)
   (ros::ros-info "hose-ik-results: ~a~%" *hose-ik-results*)
+  (when *hose-stand-coords*
+    (move-robot-model *hose-stand-coords* "ground"))
   (publish-motion-joint-states *hose-motion* :step-time step-time))
 
 
@@ -221,6 +248,7 @@
       (send *hose* :newcoords hose-coords)
       ;; treat the difference of origin between eus and recognition program
       (send *hose* :translate (float-vector 0 0 (* -0.5 hose-h)) :local))
+    (setq *hose-stand-coords* nil)
     )
   ;; draw
   (when draw?
@@ -265,8 +293,12 @@
         :rotation-axis (list :z t t)
         :max (float-vector  500  500  0  20  20  10) ;; for hrp2
         :min (float-vector  -500  -500  -200  -20  -20  -10) ;; for hrp2
-        :stop 500
+        :stop 100
         :debug-view (if draw? :no-message nil)
+        :thre (list 10 1 1)
+        :rthre (list (deg2rad 5) (deg2rad 1) (deg2rad 1))
+        :centroid-thre 10
+        :cog-gain 5.0
         )
   )
 
@@ -277,14 +309,14 @@
          (original-foot-midcoords (send (send *robot* :foot-midcoords) :copy-worldcoords))
          (connect-interpolation-num 4)
          (connect-minus-distance -150)
-         (connect-plus-distance 0)
+         (connect-plus-distance 30)
          (connect-distance (- connect-plus-distance connect-minus-distance)))
     (when draw? (send (send *hose* :get :connect-coords) :draw-on :flush t))
     ;; loop
+    (send *robot* :reset-manip-pose)
+    (send *robot* :fix-leg-to-coords original-foot-midcoords)
     (dotimes (i connect-interpolation-num)
       ;; solve ik to connect hose
-      (send *robot* :reset-manip-pose)
-      (send *robot* :fix-leg-to-coords original-foot-midcoords)
       (let* (ik-ret
              tc
              (connect-interpolation-ratio (/ (float i) connect-interpolation-num))
@@ -346,7 +378,7 @@
       (dolist (av (mapcar #'(lambda (x) (elt x 2)) *hose-ik-results*))
         (push-back av angle-vector-ret))
       ;; reset-manip-pose pre1
-      (send *robot* :torso :waist-y :joint-angle 30 :relative t) ;; dependent on arm
+      (send *robot* :torso :waist-y :joint-angle 20 :relative t) ;; dependent on arm
       (push-back (send *robot* :angle-vector) angle-vector-ret)
       ;; reset-manip-pose pre2
       (send *robot* :larm :angle-vector #f(50.0 30.0 10.0 -120.0 25.0 5.0 -20.0 -60.0)) ;; dependent on arm
@@ -356,12 +388,32 @@
     (setq *hose-motion* angle-vector-ret)
     angle-vector-ret))
 
+(defun get-hose-connect-stand-coords ;; relative to hose
+  ()
+  (make-coords :pos (float-vector -405 -525 0) :rpy (list 0 0 0)) ;; dependent on arm
+  )
+
 (defun get-hose-connect-motion-full
   (hose-coords
    &key (draw? nil) (use-ri? t))
   (set-hose-connect-environment-full hose-coords :draw? draw? :use-ri? use-ri?)
+  ;; change stand position
+  (let* ((x-vec (send (send (send *hose* :worldcoords) :copy-worldcoords) :rotate-vector (float-vector 0 0 1)))
+         (z-vec (float-vector 0 0 1))
+         (y-vec (v* z-vec x-vec))
+         (hose-coords-stand-rot (make-coords :pos (send (send *hose* :copy-worldcoords) :worldpos) :rot (transpose (matrix x-vec y-vec z-vec))))
+         (stand-coords (send (send hose-coords-stand-rot :copy-worldcoords) :transform (get-hose-connect-stand-coords) :local))
+         (stand-pos (send stand-coords :worldpos))
+         (stand-rpy (elt (send stand-coords :rpy-angle) 0))
+         )
+    (setq *hose-stand-coords* (make-coords :pos (float-vector (elt stand-pos 0) (elt stand-pos 1) 0) :rpy (list (elt stand-rpy 0) 0 0)))
+    )
+  (ros::ros-warn "change stand position to ~a for hose-connect motion.~%" *hose-stand-coords*)
+  (send *robot* :fix-leg-to-coords *hose-stand-coords*)
+  (when draw? (send *irtviewer* :draw-objects))
   (get-hose-connect-motion :draw? draw?)
   )
+;;send (send (send *hose* :worldcoords) :copy-worldcoords) :transform a :local
 
 (defun send-hose-connect-motion
   (coords &key (real? t))
@@ -374,6 +426,13 @@
       (send *robot* :angle-vector (elt hose-motion-av-list 0))
       (unless (check-angle-vector-distance)
         (when real? (model2real :time 3000)))
+      ;; walk
+      (when *hose-stand-coords*
+        (let* ((pos (scale 0.001 (send *hose-stand-coords* :worldpos)))
+               (rpy (mapcar #'rad2deg (car (send *hose-stand-coords* :rpy-angle)))))
+          (ros::ros-warn "go-pos to ~a ~a ~a for hose~%" (elt pos 0) (elt pos 1) (elt rpy 0))
+          (when real? (send *ri* :go-pos (elt pos 0) (elt pos 1) (elt rpy 0)))
+          ))
       ;; connect first pose
       (send *robot* :angle-vector (elt hose-motion-av-list 1))
       (when real? (model2real :time 5000))
@@ -400,7 +459,10 @@
   (&key coords (step-time 400) (update? t))
   (when update?
     (get-hose-connect-motion-full coords :use-ri? nil))
+  (ros::ros-info "hose-stand-coords: ~a~%" *hose-stand-coords*)
   (ros::ros-info "hose-ik-results: ~a~%" *hose-ik-results*)
+  (when *hose-stand-coords*
+    (move-robot-model *hose-stand-coords* "ground"))
   (publish-motion-joint-states *hose-motion* :step-time step-time)
 )
 
@@ -410,3 +472,18 @@
 (defun get-hose-reset-pose ()
   (float-vector 0.0 0.0 -26.0 50.0 -24.0 0.0 0.0 0.0 0.0 -26.0 50.0 -24.0 0.0 0.0 0.0 0.0 0.0 40.0 50.0 -30.0 -10.0 -120.0 -25.0 -5.0 -20.0 60.0 -11.8504 28.6898 -41.2121 -109.707 -61.224 -14.2529 43.9426 -60.0))
 
+(defun test-hose-grasp-motion1
+  ()
+  (get-hose-grasp-motion-full (make-coords :pos (float-vector 700 250 350) :rpy (list pi 0 pi)) :draw? nil :use-ri? t)
+  (when *hose-stand-coords*
+    (send *robot* :fix-leg-to-coords *hose-stand-coords*))
+  (play-motion-on-eus-viewer *hose-motion*)
+  )
+
+(defun test-hose-connect-motion1
+  ()
+  (get-hose-connect-motion-full (make-coords :pos (float-vector 400 550 405) :rpy (list 0.0 1.571 0.0)) :draw? nil :use-ri? t)
+  (when *hose-stand-coords*
+    (send *robot* :fix-leg-to-coords *hose-stand-coords*))
+  (play-motion-on-eus-viewer *hose-motion*)
+  )
