@@ -1,6 +1,6 @@
 <launch>
   <include file="$(find drc_task_common)/launch/operator_station_main.launch">
-    <arg name="FC_IP" value="192.168.96.103" />
-    <arg name="OCS_IP" value="0.0.0.0" />
+    <arg name="FC_IP" value="fc2" />
+    <arg name="OCS_IP" value="ocs2" />
   </include>
 </launch>
