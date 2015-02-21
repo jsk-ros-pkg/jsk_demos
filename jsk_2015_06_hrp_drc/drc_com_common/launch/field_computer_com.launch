@@ -6,7 +6,7 @@
   <arg name="FC_TO_OCS_BASIC_PORT" default="702"/>
 
   <node pkg="jsk_network_tools" type="silverhammer_highspeed_streamer.py"
-        output="log" launch-prefix="sudo"
+        output="log"
         name="highspeed_streamer">
     <rosparam subst_value="true">
       message: drc_com_common/FC2OCSLarge
@@ -22,13 +22,13 @@
     <rosparam subst_value="true">
       message: drc_com_common/OCS2FCSmall
       receive_port: $(arg OCS_TO_FC_PORT)
-      receive_ip: $(arg FC_IP)
+      receive_ip: "0.0.0.0"
       event_driven: true
     </rosparam>
   </node>
 
   <node pkg="jsk_network_tools" type="silverhammer_lowspeed_streamer.py"
-        output="log" launch-prefix="sudo"
+        output="log"
         name="fc_to_ocs_low_speed">
     <rosparam subst_value="true">
       message: drc_com_common/FC2OCSSmall
@@ -38,7 +38,7 @@
   </node>
 
   <node pkg="jsk_network_tools" type="silverhammer_lowspeed_streamer.py"
-        output="log" launch-prefix="sudo"
+        output="log"
         name="fc_to_ocs_basic_low_speed">
     <rosparam subst_value="true">
       message: drc_com_common/FC2OCSBasicInfoSmall
