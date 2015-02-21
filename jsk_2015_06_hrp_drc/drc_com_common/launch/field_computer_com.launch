@@ -23,6 +23,7 @@
       message: drc_com_common/OCS2FCSmall
       receive_port: $(arg OCS_TO_FC_PORT)
       receive_ip: $(arg FC_IP)
+      event_driven: true
     </rosparam>
   </node>
 
