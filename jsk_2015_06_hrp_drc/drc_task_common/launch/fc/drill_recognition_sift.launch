@@ -2,20 +2,29 @@
   <arg name="feature_node" default="imagesift" />
   <arg name="image" default="/multisense/left/image_rect_color" />
   <arg name="camera_info" default="/multisense/left/camera_info" />
-  <node name="imagefeature" pkg="imagesift" type="$(arg feature_node)"
-respawn="false" output="screen" launch-prefix="nice -n 10">
-    <remap from="image" to="$(arg image)" />
-    <remap from="camera_info" to="$(arg camera_info)" />
-  </node>
-
-  <node name="point_pose_extractor" pkg="jsk_perception" type="point_pose_extractor"
+  <group ns="drill_recognition">
+    <node name="imagefeature" pkg="imagesift" type="$(arg feature_node)"
+	  respawn="false" output="screen" launch-prefix="nice -n 10">
+      <remap from="image" to="$(arg image)" />
+      <remap from="camera_info" to="$(arg camera_info)" />
+    </node>
+    <node name="point_pose_extractor" pkg="jsk_perception" type="point_pose_extractor"
         respawn="false" output="screen">
-    <param name="template_filename" value="$(find drc_task_common)/templates/drill_template.jpg" />
+      <param name="template_filename" value="$(find drc_task_common)/templates/drill_template.jpg" />
     <rosparam>
       object_width: 0.2
       object_height: 0.5
       error_threshold: 250.0
       publish_null_object_detection: true
     </rosparam>
-  </node>
+    </node>
+    <node name="interpreter" pkg="drc_task_common" type="object_detection_interpreter.py"> 
+    </node>
+        <node pkg="jsk_topic_tools" type="snapshot" name="snapshot">
+      <remap from="~input" to="object_pose"/>
+      <rosparam>
+        latch: true
+      </rosparam>
+    </node>
+  </group>
 </launch>
