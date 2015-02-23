@@ -13,6 +13,7 @@
       message: drc_com_common/FC2OCSLarge
       topic_prefix: "/ocs"
       receive_ip: "0.0.0.0"
+      receive_port: 16485
     </rosparam>
   </node>
   <node pkg="jsk_network_tools" type="silverhammer_lowspeed_receiver.py"
