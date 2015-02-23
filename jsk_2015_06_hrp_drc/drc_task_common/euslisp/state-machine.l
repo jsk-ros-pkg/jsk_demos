@@ -449,6 +449,7 @@ Usage:
      (:recognizing-look-at-point -> :initial)
 
      (:initial -> :recognizing-look-at-point-panorama)
+     (:recognizing-look-at-point-panorama -> :recognizing-look-at-point)
      (:recognizing-look-at-point-panorama -> :initial)
      
      
