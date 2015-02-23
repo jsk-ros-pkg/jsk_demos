@@ -13,8 +13,8 @@
 - name: 'hose_connect'
   service: 'hose_connect'
   column: 0
-- name: 'drill'
-  service: 'drill'
+- name: 'drill-grasp'
+  service: 'drill_grasp'
   column: 0
 - name: 'Go pos'
   service: 'go_pos'
