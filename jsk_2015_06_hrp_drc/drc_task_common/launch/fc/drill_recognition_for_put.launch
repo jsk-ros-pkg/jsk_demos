@@ -7,7 +7,7 @@
   <group ns="drill_recognition_for_put">
     <node pkg="jsk_perception" type="rect_to_mask_image"
           name="rect_to_mask_image" output="screen">
-      <remap from="~input" to="input_support_plane_rect" />
+      <remap from="~input" to="input_plane_rect" />
       <remap from="~input/camera_info" to="$(arg INPUT_CAMERA_INFO)" />
     </node>
     <node pkg="jsk_pcl_ros" type="mask_image_filter" name="mask_image_filter">
@@ -27,9 +27,9 @@
       <remap from="~input/hint/cloud" to="filtered_cloud/output" />
     </node>
     <node pkg="drc_task_common" type="polygon_to_center_pose.py" name="polygon_to_center_pose">
-      <remap from="polygon" to="plane_detector/output/polygon" />
+      <remap from="polygon" to="plane_detector/output/hint/polygon" />
     </node>
-<node pkg="jsk_topic_tools" type="snapshot" name="snapshot">
+    <node pkg="jsk_topic_tools" type="snapshot" name="snapshot">
       <remap from="~input" to="plane_centroid_pose"/>
       <rosparam>
         latch: true
