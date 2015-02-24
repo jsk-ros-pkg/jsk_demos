@@ -12,10 +12,11 @@
         respawn="false" output="screen">
       <param name="template_filename" value="$(find drc_task_common)/templates/drill_template.jpg" />
     <rosparam>
-      object_width: 0.2
-      object_height: 0.5
+      object_width: 0.14
+      object_height: 0.33
       error_threshold: 250.0
       publish_null_object_detection: true
+      relative_pose: 0.165 0.07 0 0 0 0 1
     </rosparam>
     </node>
     <node name="interpreter" pkg="drc_task_common" type="object_detection_interpreter.py"> 
