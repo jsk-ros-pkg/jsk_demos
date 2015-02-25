@@ -34,6 +34,7 @@
                 hose-grasp-params ;; (list coords)
                 hose-connect-params ;; (list coords)
 		drill-grasp-params
+		drill-put-params
                 foreground-bacground-sync-obj
                 show-text-buffer
                 ))
@@ -75,6 +76,10 @@
                 self :drill-grasp-recognition-finished-callback)
           (list drc_com_common::FC2OCSSmall::*DRILL_GRASP_FINISHED*
                 self :drill-grasp-exec-finished-callback)
+          (list drc_com_common::FC2OCSSmall::*DRILL_PUT_POSE*
+                self :drill-put-recognition-finished-callback)
+          (list drc_com_common::FC2OCSSmall::*DRILL_PUT_FINISHED*
+                self :drill-put-exec-finished-callback)
           (list drc_com_common::FC2OCSSmall::*LOOK_AROUND_FINISHED*
                 self :look-around-finished-callback)
           (list drc_com_common::FC2OCSSmall::*RECOGNITION_FAILED*
@@ -172,11 +177,17 @@
       (send self :show-text "Select rectangle for hose-connect")
       (send smachine :go-to :selecting-region-for-hose-connect))
     (send req :response))
-  (:drill-button-callback (req)
+  (:drill-grasp-button-callback (req)
     (when (send smachine :next? :selecting-region-for-drill-grasp)
       (send self :set-image-view2-mode :rectangle)
       (send self :show-text "Select rectangle region for drill-grasp")
       (send smachine :go-to :selecting-region-for-drill-grasp))
+    (send req :response))
+  (:drill-put-button-callback (req)
+    (when (send smachine :next? :selecting-region-for-drill-put)
+      (send self :set-image-view2-mode :rectangle)
+      (send self :show-text "Select rectangle region for drill-put")
+      (send smachine :go-to :selecting-region-for-drill-put))
     (send req :response))
   (:go-pos-button-callback (req)
     (when (send smachine :next? :selecting-region-for-go-pos)
@@ -225,6 +236,8 @@
       (send self :rectangle-callback-for-hose-connect-region msg))
      ((eq (send smachine :state) :selecting-region-for-drill-grasp)
       (send self :rectangle-callback-for-drill-grasp-region msg))
+     ((eq (send smachine :state) :selecting-region-for-drill-put)
+      (send self :rectangle-callback-for-drill-put-region msg))
      ))
   (:rectangle-callback-for-valve-region (msg)
     (send self :show-text "Wait for valve recognition")
@@ -280,6 +293,15 @@
                                     msg (length (send fc-msg :image_roi_info))))
       (send self :send-to-fc fc-msg)
       (send smachine :go-to :recognizing-drill-grasp-pose)))
+  (:rectangle-callback-for-drill-put-region (msg)
+    (send self :show-text "Wait for drill-put recognition")
+    ;; send to FC to recognize pos
+    (let ((fc-msg (instance drc_com_common::OCS2FCSmall :init)))
+      (send fc-msg :type drc_com_common::OCS2FCSmall::*DRILL_PUT_REGION*)
+      (send fc-msg :image_roi_info (rect-polygon-stamped-to-integer-vector
+                                    msg (length (send fc-msg :image_roi_info))))
+      (send self :send-to-fc fc-msg)
+      (send smachine :go-to :recognizing-drill-put-pose)))
   (:rectangle-callback-for-go-pos-region (msg)
     (send self :show-text "Wait for go-pos recognition")
     ;; send to FC to recognize pos
@@ -327,6 +349,8 @@
       (send smachine :go-to :initial))
      ((eq (send smachine :state) :selecting-region-for-drill-grasp)
       (send smachine :go-to :initial))
+     ((eq (send smachine :state) :selecting-region-for-drill-put)
+      (send smachine :go-to :initial))
      ((eq (send smachine :state) :selecting-region-for-go-pos)
       (send smachine :go-to :initial))
      ((eq (send smachine :state) :selecting-region-for-look-at)
@@ -346,6 +370,8 @@
       (send smachine :go-to :initial))
      ((eq (send smachine :state) :recognizing-drill-grasp-pose)
       (send smachine :go-to :initial))
+     ((eq (send smachine :state) :recognizing-drill-put-pose)
+      (send smachine :go-to :initial))
      ((eq (send smachine :state) :recognizing-go-pos-goal)
       (send smachine :go-to :initial))
      ;; there is no recognition state for look-at and look-around
@@ -361,6 +387,8 @@
      ((eq (send smachine :state) :selecting-exec-for-hose-connect)
       (send smachine :go-to :initial))
      ((eq (send smachine :state) :selecting-exec-for-drill-grasp)
+      (send smachine :go-to :initial))
+     ((eq (send smachine :state) :selecting-exec-for-drill-put)
       (send smachine :go-to :initial))
      ((eq (send smachine :state) :selecting-exec-for-go-pos)
       (send smachine :go-to :initial))
@@ -449,12 +477,20 @@
     ;; send drill-grasp params to fc
     (let ((msg (instance drc_com_common::OCS2FCSmall :init)))
       (send msg :type drc_com_common::OCS2FCSmall::*DRILL_GRASP_EXEC*)
-      (let ((pos (send (elt drill-grasp-params 0) :worldpos)))
-        (setf (elt (send msg :float_params) 0) (elt pos 0))
-        (setf (elt (send msg :float_params) 1) (elt pos 1))
-        (setf (elt (send msg :float_params) 2) (elt pos 2)))
+      (send msg :float_params (coords-to-float-vector (elt drill-grasp-params 0) (length (send msg :float_params))))
       (send self :send-to-fc msg)
       (send smachine :go-to :executing-drill-grasp)))
+  (:exec-drill-put-button-callback ()
+    (send self :show-text "Execute drill-put motion")  
+    ;; update latest drill-put params
+    (setq drill-put-params
+          (list (get-primitive-marker-pose :frame-id "BODY")))
+    ;; send drill-put params to fc
+    (let ((msg (instance drc_com_common::OCS2FCSmall :init)))
+      (send msg :type drc_com_common::OCS2FCSmall::*DRILL_PUT_EXEC*)
+      (send msg :float_params (coords-to-float-vector (elt drill-put-params 0) (length (send msg :float_params))))
+      (send self :send-to-fc msg)
+      (send smachine :go-to :executing-drill-put)))
   (:exec-go-pos-button-callback ()
     ;; update latest go-pos coords
     (setq go-pos-coords (send *tf* :lookup-transform "hrp2_marker_root" "ground" (ros::time 0)))
@@ -481,6 +517,8 @@
       (send self :exec-hose-connect-button-callback))
      ((eq (send smachine :state) :selecting-exec-for-drill-grasp)
       (send self :exec-drill-grasp-button-callback))
+     ((eq (send smachine :state) :selecting-exec-for-drill-put)
+      (send self :exec-drill-put-button-callback))
      ((eq (send smachine :state) :selecting-exec-for-go-pos)
       (send self :exec-go-pos-button-callback))
      )
@@ -597,7 +635,7 @@
   (:drill-grasp-recognition-finished-callback (msg)
     (when (eq (send smachine :state) :recognizing-drill-grasp-pose)
       (let* ((params (send msg :params))
-             (coords (make-coords :pos (float-vector (elt params 0) (elt params 1) (elt params 2)) :rpy (list 0 pi 0))))
+             (coords (float-vector-to-coords params)))
         (send self :show-text 
               (format nil "Recognize drill. pos:~A" (send coords :worldpos)))
         ;; store result
@@ -605,7 +643,7 @@
         ;; publish object marker
         (erase-all-primitive-marker)
         (insert-primitive-marker :shape-type jsk_rviz_plugins::TransformableMarkerOperate::*CYLINDER* :name "cylinder1" :description "")
-        (set-primitive-marker-dimensions :radius 30 :z 320)
+        (set-primitive-marker-dimensions :radius 30 :z 300)
         (set-primitive-marker-pose coords "BODY")
         (set-primitive-marker-color :r 1.0 :g 1.0 :b 0.0 :a 0.6)
         (apply-primitive-dimensions-to-midi-device)
@@ -613,6 +651,27 @@
         ;; publish motion to robot model on rviz
 	(publish-drill-grasp-motion :coords (elt drill-grasp-params 0) :update? t)
         (send smachine :go-to :selecting-exec-for-drill-grasp))
+      ))
+  (:drill-put-recognition-finished-callback (msg)
+    (when (eq (send smachine :state) :recognizing-drill-put-pose)
+      (let* ((params (send msg :params))
+             (coords (float-vector-to-coords params)))
+        (send self :show-text 
+              (format nil "Recognize drill. pos:~A" (send coords :worldpos)))
+        ;; store result
+        (setq drill-put-params (list coords))
+        ;; publish object marker
+        (erase-all-primitive-marker)
+        (insert-primitive-marker :shape-type jsk_rviz_plugins::TransformableMarkerOperate::*CYLINDER* :name "cylinder1" :description "")
+        (set-primitive-marker-dimensions :radius 30 :z 300)
+        (set-primitive-marker-pose coords "BODY")
+        (set-primitive-marker-color :r 1.0 :g 1.0 :b 0.0 :a 0.6)
+        (apply-primitive-dimensions-to-midi-device)
+        (move-robot-model-to-current-pos)
+        ;; publish motion to robot model on rviz
+        ;; todo
+	;; (publish-drill-put-motion :coords (elt drill-put-params 0) :update? t)
+        (send smachine :go-to :selecting-exec-for-drill-put))
       ))
   (:go-pos-recognition-finished-callback (msg)
     (when (eq (send smachine :state) :recognizing-go-pos-goal)
@@ -656,6 +715,10 @@
   (:drill-grasp-exec-finished-callback (msg)
     (when (eq (send smachine :state) :executing-drill-grasp)
       (send self :show-text "Finished drill-grasp motion")
+      (send smachine :go-to :initial)))
+  (:drill-put-exec-finished-callback (msg)
+    (when (eq (send smachine :state) :executing-drill-put)
+      (send self :show-text "Finished drill-put motion")
       (send smachine :go-to :initial)))
   (:go-pos-finished-callback (msg)
     (when (eq (send smachine :state) :executing-go-pos)
@@ -710,6 +773,15 @@
            ;; publish dirll motion to robot model on rviz
            (publish-drill-grasp-motion :coords (elt drill-grasp-params 0) :update? t)
            )
+          ((eq (send smachine :state) :selecting-exec-for-drill-put)
+           ;; update latest drill-put params
+           (setq drill-put-params
+                 (list (get-primitive-marker-pose :frame-id "BODY")))
+           ;; publish dirll motion to robot model on rviz
+           ;; todo
+           ;; (publish-drill-put-motion :coords (elt drill-put-params 0) :update? t)
+           
+           )
           ((eq (send smachine :state) :selecting-exec-for-door)
            ;; update latest door params
            (let* ((dim (get-primitive-marker-dimensions)))
@@ -758,7 +830,8 @@
 (ros::advertise-service "debri" std_srvs::Empty #'send *app* :debri-button-callback)
 (ros::advertise-service "hose_grasp" std_srvs::Empty #'send *app* :hose-grasp-button-callback)
 (ros::advertise-service "hose_connect" std_srvs::Empty #'send *app* :hose-connect-button-callback)
-(ros::advertise-service "drill_grasp" std_srvs::Empty #'send *app* :drill-button-callback)
+(ros::advertise-service "drill_grasp" std_srvs::Empty #'send *app* :drill-grasp-button-callback)
+(ros::advertise-service "drill_put" std_srvs::Empty #'send *app* :drill-put-button-callback)
 (ros::advertise-service "go_pos" std_srvs::Empty #'send *app* :go-pos-button-callback)
 (ros::advertise-service "look_at" std_srvs::Empty #'send *app* :look-at-button-callback)
 (ros::advertise-service "look_around" std_srvs::Empty #'send *app* :look-around-button-callback)
