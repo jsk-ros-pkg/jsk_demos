@@ -32,6 +32,10 @@
           (make-cascoords
            :coords (make-coords :pos (float-vector 0 0 (* drill-h 0.5)))
            :parent *drill*))
+    (send *drill* :put :button-coords
+          (make-cascoords
+           :coords (make-coords :pos (float-vector 25 25 10))
+           :parent *drill*))
     ;; place drill to drill-coords
     (when drill-coords
       (send *drill* :newcoords drill-coords)
@@ -180,28 +184,28 @@
       (send *robot* :hand :arms :hook-pose) ;; hand hook-pose
       (when real? (hand-model2real))
       (send *robot* :reset-manip-pose))
-      (unless (check-angle-vector-distance)
-        (when real? (model2real :time 3000)))
-      (send *robot* :angle-vector (get-reach-drill-pre-pose))
-      (unless (check-angle-vector-distance)
-        (when real? (model2real :time 3000)))
-      (when real? (send *ri* :start-impedance :arms :moment-gain (float-vector 0 0 0) :k-p 1000 :d-p 400)) ;; start imp
-      ;; pre-reach
-      (send *robot* :angle-vector (elt drill-motion-av-list 0))
-      (when real? (model2real :time 5000))
-      ;; reach
-      (send *robot* :angle-vector (elt drill-motion-av-list 1))
-      (when real? (model2real :time 3000))
-      ;; grasp
-      (send *robot* :hand :arms :grasp-pose) ;; hand grasp-pose
-      (when real? (hand-model2real))
-      ;; grasp-up
-      (send *robot* :angle-vector (elt drill-motion-av-list 2))
-      (when real? (model2real :time 3000))      
-      ;; drill-reset-pose
-      (send *robot* :angle-vector (elt drill-motion-av-list 3))
-      (when real? (model2real :time 5000))
-      ))
+    (unless (check-angle-vector-distance)
+      (when real? (model2real :time 3000)))
+    (send *robot* :angle-vector (get-reach-drill-pre-pose))
+    (unless (check-angle-vector-distance)
+      (when real? (model2real :time 3000)))
+    (when real? (send *ri* :start-impedance :arms :moment-gain (float-vector 0 0 0) :k-p 1000 :d-p 400)) ;; start imp
+    ;; pre-reach
+    (send *robot* :angle-vector (elt drill-motion-av-list 0))
+    (when real? (model2real :time 5000))
+    ;; reach
+    (send *robot* :angle-vector (elt drill-motion-av-list 1))
+    (when real? (model2real :time 3000))
+    ;; grasp
+    (send *robot* :hand :arms :grasp-pose) ;; hand grasp-pose
+    (when real? (hand-model2real))
+    ;; grasp-up
+    (send *robot* :angle-vector (elt drill-motion-av-list 2))
+    (when real? (model2real :time 3000))      
+    ;; drill-reset-pose
+    (send *robot* :angle-vector (elt drill-motion-av-list 3))
+    (when real? (model2real :time 5000))
+    )
   )
 
 (defun publish-drill-grasp-motion
@@ -233,3 +237,43 @@
   (get-drill-grasp-motion)
   (play-motion-on-eus-viewer *drill-motion*)
   )
+
+
+
+;; (defun tmp-drill
+;;   ()
+;;   (send *robot* :hand :rarm :hook-pose)
+;;   (send *drill* :move-coords (send (send *robot* :get :rarm-drill-grasp-coords) :copy-worldcoords) (send (send *drill* :get :grasp-coords) :copy-worldcoords))
+
+ 
+;;   (send (send *drill* :get :button-coords) :copy-worldcoords)
+
+
+;;   (send (send (send *drill* :get :button-coords) :copy-worldcoords) :draw-on :flush t :color #f(1 0 0))
+;;   )
+
+
+;; (with-move-target-link-list
+;;  (mt ll *robot* '(:rarm :larm :rleg :lleg))
+;;  (setq tc
+;;        (list
+;;         (send *robot* :rarm :end-coords :copy-worldcoords)
+;;         (send (send *drill* :get :button-coords) :copy-worldcoords)
+;;         ;;(send *robot* :larm :end-coords :copy-worldcoords)
+;;         (send *robot* :rleg :end-coords :copy-worldcoords)
+;;         (send *robot* :lleg :end-coords :copy-worldcoords)))
+;;  (send *robot*
+;;        :fullbody-inverse-kinematics tc
+;;        :move-target mt :link-list ll
+;;        :additional-weight-list
+;;        (list (list (send *robot* :rleg :toe-p :child-link) 0)
+;;              (list (send *robot* :lleg :toe-p :child-link) 0))
+;;        :root-link-virtual-joint-weight (float-vector 0.1 0.1 0.1 0.1 0.5 0.5)
+;;        :target-centroid-pos (apply #'midpoint 0.5 (send *robot* :legs :end-coords :worldpos))
+;;        :translation-axis (list t t t t)
+;;        :rotation-axis (list t t t t)
+;;        :max (float-vector  500  500  0  20  20  10) ;; for hrp2
+;;        :min (float-vector  -500  -500  -200  -20  -20  -10) ;; for hrp2
+;;        :stop 100
+;;        :debug-view nil
+;;        ))
