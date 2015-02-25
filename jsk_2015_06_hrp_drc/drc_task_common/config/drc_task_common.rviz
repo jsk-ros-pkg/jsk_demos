@@ -760,6 +760,17 @@ Visualization Manager:
       Use Fixed Frame: true
       Use rainbow: true
       Value: false
+    - Class: jsk_rviz_plugin/BoundingBoxArray
+      Enabled: false
+      Name: BoundingBoxArray
+      Topic: /door_recognition/snapshot/output
+      Value: false
+      alpha: 0.8
+      auto color: false
+      color: 25; 255; 0
+      line width: 0.005
+      only edge: false
+      show coords: true
   Enabled: true
   Global Options:
     Background Color: 48; 48; 48
@@ -785,22 +796,22 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/XYOrbit
-      Distance: 2.56439
+      Distance: 2.16615
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.06
         Stereo Focal Distance: 1
         Swap Stereo Eyes: false
         Value: false
       Focal Point:
-        X: 0.76527
-        Y: 0.141464
-        Z: 9.53671e-07
+        X: 0.829056
+        Y: 0.274593
+        Z: 1.70891e-06
       Name: Current View
       Near Clip Distance: 0.01
-      Pitch: 0.419797
+      Pitch: 0.849797
       Target Frame: <Fixed Frame>
       Value: XYOrbit (rviz)
-      Yaw: 2.28857
+      Yaw: 4.14356
     Saved: ~
 Window Geometry:
   Camera:
