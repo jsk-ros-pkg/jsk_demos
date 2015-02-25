@@ -7,6 +7,7 @@
 (ros::roseus-add-msgs "drc_com_common")
 (ros::roseus-add-msgs "jsk_recognition_msgs")
 (ros::roseus-add-msgs "pcl_msgs")
+
 (load "package://drc_task_common/euslisp/util.l")
 (load "package://drc_task_common/euslisp/robot-util.l")
 (load "package://drc_task_common/euslisp/state-machine.l")
@@ -260,7 +261,7 @@
   (:drill-grasp-exec-command-callback (msg)
     (when (send smachine :state? :initial)
       (let* ((params (send msg :float_params))
-             (coords (make-coords :pos (float-vector (elt params 0) (elt params 1) (elt params 2)) :rpy (list 0 pi 0))))
+             (coords (float-vector-to-coords params)))
         (ros::ros-info "grasp drill at ~A" coords)
         (send smachine :go-to :executing-drill-grasp)
         ;; send motion to real robot
@@ -447,18 +448,13 @@
       (let* ((trans (send self :lookup-from-body-transform (send msg :header)))
              (coords (ros::tf-pose-stamped->coords msg))
              (from-body-coords (send trans :transform coords)))
-        ;; only position is important in the temporary recognition
-        (let ((pos (float-vector (elt (send from-body-coords :worldpos) 0)
-                                 (elt (send from-body-coords :worldpos) 1)
-                                 (elt (send from-body-coords :worldpos) 2))))
-          (let ((msg (instance drc_com_common::FC2OCSSmall :init)))
-            (send msg :type drc_com_common::FC2OCSSmall::*DRILL_GRASP_POSE*)
-            (setf (elt (send msg :params) 0) (elt pos 0))
-            (setf (elt (send msg :params) 1) (elt pos 1))
-            (setf (elt (send msg :params) 2) (elt pos 2))
-            (send self :send-to-ocs msg)
-            (send smachine :go-to :initial)
-            )))))
+	
+	(let ((msg (instance drc_com_common::FC2OCSSmall :init)))
+	  (send msg :type drc_com_common::FC2OCSSmall::*DRILL_GRASP_POSE*)
+	  (send msg :params (coords-to-float-vector from-body-coords (length (send msg :params))))
+	  (send self :send-to-ocs msg)
+	  (send smachine :go-to :initial)
+	  ))))
 
   (:look-at-panorama-recog-callback (msg)
     (ros::ros-warn "panorama callback!")

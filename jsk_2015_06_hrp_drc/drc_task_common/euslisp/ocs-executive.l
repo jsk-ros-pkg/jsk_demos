@@ -449,10 +449,7 @@
     ;; send drill-grasp params to fc
     (let ((msg (instance drc_com_common::OCS2FCSmall :init)))
       (send msg :type drc_com_common::OCS2FCSmall::*DRILL_GRASP_EXEC*)
-      (let ((pos (send (elt drill-grasp-params 0) :worldpos)))
-        (setf (elt (send msg :float_params) 0) (elt pos 0))
-        (setf (elt (send msg :float_params) 1) (elt pos 1))
-        (setf (elt (send msg :float_params) 2) (elt pos 2)))
+      (send msg :float_params (coords-to-float-vector (elt drill-grasp-params 0) (length (send msg :float_params))))
       (send self :send-to-fc msg)
       (send smachine :go-to :executing-drill-grasp)))
   (:exec-go-pos-button-callback ()
@@ -597,7 +594,7 @@
   (:drill-grasp-recognition-finished-callback (msg)
     (when (eq (send smachine :state) :recognizing-drill-grasp-pose)
       (let* ((params (send msg :params))
-             (coords (make-coords :pos (float-vector (elt params 0) (elt params 1) (elt params 2)) :rpy (list 0 pi 0))))
+             (coords (float-vector-to-coords params)))
         (send self :show-text 
               (format nil "Recognize drill. pos:~A" (send coords :worldpos)))
         ;; store result
@@ -605,7 +602,7 @@
         ;; publish object marker
         (erase-all-primitive-marker)
         (insert-primitive-marker :shape-type jsk_rviz_plugins::TransformableMarkerOperate::*CYLINDER* :name "cylinder1" :description "")
-        (set-primitive-marker-dimensions :radius 30 :z 320)
+        (set-primitive-marker-dimensions :radius 30 :z 300)
         (set-primitive-marker-pose coords "BODY")
         (set-primitive-marker-color :r 1.0 :g 1.0 :b 0.0 :a 0.6)
         (apply-primitive-dimensions-to-midi-device)
