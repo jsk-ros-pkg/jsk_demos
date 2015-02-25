@@ -345,7 +345,7 @@ Usage:
      (:selecting-exec-for-hose-connect -> :executing-hose-connect)          ;exec
      (:selecting-exec-for-hose-connect -> :initial)                   ;cancel
      (:executing-hose-connect -> :initial)                            ;done
-     ;; drill
+     ;; drill_grasp
      (:initial -> :selecting-region-for-drill-grasp)
      (:selecting-region-for-drill-grasp -> :initial) ;cancel
      (:selecting-region-for-drill-grasp -> :recognizing-drill-grasp-pose) 
@@ -354,6 +354,15 @@ Usage:
      (:selecting-exec-for-drill-grasp -> :executing-drill-grasp)          ;exec
      (:selecting-exec-for-drill-grasp -> :initial)                   ;cancel
      (:executing-drill-grasp -> :initial)                            ;done
+     ;; drill_put
+     (:initial -> :selecting-region-for-drill-put)
+     (:selecting-region-for-drill-put -> :initial) ;cancel
+     (:selecting-region-for-drill-put -> :recognizing-drill-put-pose) 
+     (:recognizing-drill-put-pose -> :selecting-exec-for-drill-put) ;recognition done
+     (:recognizing-drill-put-pose -> :initial) ;cancel
+     (:selecting-exec-for-drill-put -> :executing-drill-put)          ;exec
+     (:selecting-exec-for-drill-put -> :initial)                   ;cancel
+     (:executing-drill-put -> :initial)                            ;done
      )
    '((:initial :initial)
      ;; go-pos
@@ -396,6 +405,11 @@ Usage:
      (:recognizing-drill-grasp-pose :drill-grasp)
      (:selecting-exec-for-drill-grasp :drill-grasp)
      (:executing-drill-grasp :drill-grasp)
+     ;; drill-put
+     (:selecting-region-for-drill-put :drill-put)
+     (:recognizing-drill-put-pose :drill-put)
+     (:selecting-exec-for-drill-put :drill-put)
+     (:executing-drill-put :drill-put)
 
      )
    :initial "ocs_state.png"))
@@ -414,6 +428,9 @@ Usage:
 
      (:initial -> :recognizing-drill-grasp-pose)
      (:recognizing-drill-grasp-pose -> :initial)
+
+     (:initial -> :recognizing-drill-put-pose)
+     (:recognizing-drill-put-pose -> :initial)
 
      (:initial -> :recognizing-door-pose)
      (:recognizing-door-pose -> :initial)
@@ -435,6 +452,9 @@ Usage:
 
      (:initial -> :executing-drill-grasp)
      (:executing-drill-grasp -> :initial)
+
+     (:initial -> :executing-drill-put)
+     (:executing-drill-put -> :initial)
      
      (:initial -> :executing-door)
      (:executing-door -> :initial)
@@ -466,8 +486,11 @@ Usage:
      (:executing-hose-grasp :hose)
      (:executing-hose-connect :hose)
 
-     (:recognizing-drill-grasp-pose :hose)
-     (:executing-drill-grasp :hose)
+     (:recognizing-drill-grasp-pose :drill)
+     (:executing-drill-grasp :drill)
+     (:recognizing-drill-put-pose :drill)
+     (:executing-drill-put :drill)
+
 
      (:recognizing-door-pose :door)
      (:executing-door :door)
