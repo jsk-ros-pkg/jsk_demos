@@ -669,7 +669,8 @@
         (apply-primitive-dimensions-to-midi-device)
         (move-robot-model-to-current-pos)
         ;; publish motion to robot model on rviz
-	(publish-drill-put-motion :coords (elt drill-put-params 0) :update? t)
+        ;; todo
+	;; (publish-drill-put-motion :coords (elt drill-put-params 0) :update? t)
         (send smachine :go-to :selecting-exec-for-drill-put))
       ))
   (:go-pos-recognition-finished-callback (msg)
@@ -777,7 +778,8 @@
            (setq drill-put-params
                  (list (get-primitive-marker-pose :frame-id "BODY")))
            ;; publish dirll motion to robot model on rviz
-           (publish-drill-put-motion :coords (elt drill-put-params 0) :update? t)
+           ;; todo
+           ;; (publish-drill-put-motion :coords (elt drill-put-params 0) :update? t)
            )
           ((eq (send smachine :state) :selecting-exec-for-door)
            ;; update latest door params
