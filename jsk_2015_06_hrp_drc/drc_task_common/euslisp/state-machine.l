@@ -17,6 +17,10 @@
   (:init (&optional output)
     (setq output-image-file output)
     self)
+  (:nodes-from-context (context)
+    (remove-if-not #'(lambda (n)
+                       (eq (send n :context) context))
+                   nodes))
   (:context ()
     "return current context"
     (send (send self :active-state) :context))
@@ -67,7 +71,62 @@
       (send self :write-to-dot dot-fname result-path title)
       (unix:system (format nil "dot ~A -Tpng -o ~A" dot-fname fname))
       t))
+  (:write-to-dot-org (&rest args)
+    (send-super* :write-to-dot args))
   (:write-to-dot (fname &optional result-path (title "output"))
+    ;; list up all the nodes now we are interested in
+    (let* ((initial-nodes (send self :nodes-from-context (send self :context)))
+           ;; extend nodes which can be arrived at from initial-nodes
+           (next-nodes (flatten (mapcar #'(lambda (n)
+                                            (mapcar #'cdr (send n :successors)))
+                                        initial-nodes)))
+           (target-nodes (unique (append initial-nodes next-nodes))))
+      (let ((node-alist          ; ((node . symbol) (node . symbol) ...)
+             (mapcar #'(lambda (n)
+                         (cons n (string (gensym))))
+                     target-nodes)))
+        (labels ((graphviz-node-name
+                  (n)
+                  (cdr (assoc n node-alist))))
+          (with-open-file (f fname :direction :output)
+            (format f "digraph ~A {~%" title)
+            (dolist (target-node target-nodes)
+              (format f "   ")
+              (if (eq target-node (send self :active-state))
+                  (format f "~A [label = \"~s\", color = red];~%"
+                          (graphviz-node-name target-node)
+                          (send target-node :name))
+                ;; hoge = "hoge";
+                (format f "~A [label = \"~s\"];~%"
+                        (graphviz-node-name target-node)
+                        (send target-node :name))
+                ))
+            (let ((drawed-arc nil))
+              (dolist (target-node target-nodes)
+                (let ((neighbors
+                       (mapcar #'cdr (send self :successors target-node))))
+                  (dolist (neighbor neighbors)
+                    (when (and (not (or (find (cons target-node neighbor) drawed-arc
+                                              :test #'equal)
+                                        (find (cons neighbor target-node) drawed-arc
+                                              :test #'equal)))
+                               (member neighbor target-nodes))
+                      (if (member target-node
+                                  (mapcar #'cdr (send self :successors neighbor)))
+                          (progn
+                            (format f "   ")
+                            (format f "~A -> ~A [dir = both];~%"
+                                    (graphviz-node-name target-node)
+                                    (graphviz-node-name neighbor)))
+                        (progn
+                          (format f "   ")
+                          (format f "~A -> ~A;~%"
+                                  (graphviz-node-name target-node)
+                                  (graphviz-node-name neighbor))))
+                      (push (cons target-node neighbor) drawed-arc)))))
+              (format f "}~%")
+              t))))))
+  (:write-to-dot-full (fname &optional result-path (title "output"))
     (let ((node-alist          ; ((node . symbol) (node . symbol) ...)
            (mapcar #'(lambda (n)
                        (cons n (string (gensym))))
