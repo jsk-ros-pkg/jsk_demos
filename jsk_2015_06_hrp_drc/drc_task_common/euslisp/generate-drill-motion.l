@@ -92,7 +92,7 @@
 (defun generate-drill-grasp-motion
   (&key (draw? t))
   (let* ((reach-dist 150)
-	 (grasp-up-dist 300)
+	 (grasp-up-dist 180)
          (ik-results nil)
          (original-foot-midcoords (send (send *robot* :foot-midcoords) :copy-worldcoords)))
     ;; grasp drill
@@ -106,7 +106,7 @@
       (setq tc
             (list
              ;; todo reverse if
-             (send (send (send (send *drill* :get :grasp-coords) :copy-worldcoords) :translate (float-vector 0 0 -100) :local) :rotate 0 :x)
+             (send (send (send (send *drill* :get :grasp-coords) :copy-worldcoords) :translate (float-vector 0 0 0) :local) :rotate pi :x)
              (send *robot* :rleg :end-coords :copy-worldcoords)
              (send *robot* :lleg :end-coords :copy-worldcoords)))
       (with-move-target-link-list
@@ -136,7 +136,7 @@
 	;; solve ik for grasp up	
 	(setq tc
 	      (list
-	       (send (send (send *robot* :rarm :end-coords) :copy-worldcoords) :translate (float-vector 0 0 grasp-up-dist) :world)
+	       (send (send (send *robot* :rarm :end-coords) :copy-worldcoords) :translate (float-vector (/ (- grasp-up-dist) 2.0) 0 grasp-up-dist) :world)
 	       (send *robot* :rleg :end-coords :copy-worldcoords)
 	       (send *robot* :lleg :end-coords :copy-worldcoords)))
 	(with-move-target-link-list
