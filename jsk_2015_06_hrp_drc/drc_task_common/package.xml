@@ -44,7 +44,6 @@
   <build_depend>jsk_footstep_planner</build_depend>
   <build_depend>jsk_footstep_controller</build_depend>
   <build_depend>drc_com_common</build_depend>
-  <build_depend>roslint</build_depend>
   <build_depend>jsk_perception</build_depend>
   <build_depend>jsk_calibration</build_depend>
   <build_depend>resized_image_transport</build_depend>
