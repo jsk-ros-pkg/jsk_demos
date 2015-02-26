@@ -82,7 +82,7 @@
           :deligate-object self
           :deligate-method :report-recognition-failure-to-ocs)
     (send (send smachine :node :recognizing-drill-grasp-pose)
-          :add-timelimit 10 :initial
+          :add-timelimit 15 :initial
           :deligate-object self
           :deligate-method :report-recognition-failure-to-ocs)
     (send (send smachine :node :recognizing-drill-put-pose)
@@ -157,10 +157,10 @@
   (:drill-put-region-command-callback (msg)
     (when (send smachine :state? :initial)
       ;; convert OCS2FCSmall into geometry_msgs/Polygon
-      (ros::publish "/drill_recognition/input_rect"
+      (ros::publish "/drill_recognition_for_put/input_rect"
         (integer-vector-to-rect-polygon-stamped msg))
       ;; enable snapshot
-      (call-empty-service "/drill_recognition/snapshot/request")
+      (call-empty-service "/drill_recognition_for_put/snapshot/request")
       (send smachine :go-to :recognizing-drill-put-pose)
       ))
   (:panorama-clear ()
@@ -282,7 +282,6 @@
         (ros::ros-info "grasp drill at ~A" coords)
         (send smachine :go-to :executing-drill-grasp)
         ;; send motion to real robot
-        ;; TODO make drill motion
         (send-drill-grasp-motion coords)
         ;; send finish signal to ocs
         (let ((msg (instance drc_com_common::FC2OCSSmall :init)))
@@ -299,7 +298,7 @@
         (send smachine :go-to :executing-drill-put)
         ;; send motion to real robot
         ;; TODO make drill motion
-        (send-drill-put-motion coords)
+        ;;(send-drill-put-motion coords)
         ;; send finish signal to ocs
         (let ((msg (instance drc_com_common::FC2OCSSmall :init)))
           (send msg :type drc_com_common::FC2OCSSmall::*DRILL_PUT_FINISHED*)
@@ -587,7 +586,7 @@
 (ros::advertise "/door_recognition/input_target_rect" geometry_msgs::PolygonStamped)
 (ros::advertise "/debri_recognition/input_line" geometry_msgs::PolygonStamped)
 (ros::advertise "/drill_recognition/input_rect" geometry_msgs::PolygonStamped)
-(ros::advertise "/drill_recognition_put/input_rect" geometry_msgs::PolygonStamped)
+(ros::advertise "/drill_recognition_for_put/input_rect" geometry_msgs::PolygonStamped)
 (ros::advertise "/fc_to_ocs_low_speed/input" drc_com_common::FC2OCSSmall)
 
 (ros::subscribe "/fc_from_ocs_low_speed/output" drc_com_common::OCS2FCSmall
@@ -610,7 +609,7 @@
   #'send *app* :hose-connect-recog-callback)
 (ros::subscribe "/drill_recognition/snapshot/output" geometry_msgs::PoseStamped
   #'send *app* :drill-grasp-recog-callback)
-(ros::subscribe "/drill_recognition/snapshot/output" geometry_msgs::PoseStamped
+(ros::subscribe "/drill_recognition_for_put/snapshot/output" geometry_msgs::PoseStamped
   #'send *app* :drill-put-recog-callback)
 (ros::advertise "/go_pos_goal" geometry_msgs::PoseStamped)
 
