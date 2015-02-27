@@ -52,6 +52,30 @@ add_library(${PROJECT_NAME} ${SOURCE_FILES} ${UIC_FILES})
 add_dependencies(${PROJECT_NAME} ${PROJECT_NAME}_gencpp)
 target_link_libraries(${PROJECT_NAME} ${QT_LIBRARIES} ${catkin_LIBRARIES})
 
+add_executable(manipulation_data_server src/drc_task_common/manipulation_data_server.cpp src/drc_task_common/manipulation_data_helpers.cpp)
+target_link_libraries(manipulation_data_server
+   ${catkin_LIBRARIES}
+   yaml-cpp
+)
+add_dependencies(manipulation_data_server ${PROJECT_NAME}_gencpp)
+add_executable(manipulation_data_visualizer src/drc_task_common/manipulation_data_visualizer.cpp src/drc_task_common/manipulation_data_helpers.cpp)
+target_link_libraries(manipulation_data_visualizer
+   ${catkin_LIBRARIES}
+   yaml-cpp
+)
+add_dependencies(manipulation_data_visualizer ${PROJECT_NAME}_gencpp)
+
+execute_process(
+  COMMAND mkdir -p ${PROJECT_SOURCE_DIR}/pcds)
+catkin_download_test_data(drill_pcd
+  http://www.jsk.t.u-tokyo.ac.jp/~ueda/dataset/2015/02/drill.pcd
+  DESTINATION ${PROJECT_SOURCE_DIR}/pcds)
+catkin_download_test_data(drill_full_pcd
+  http://www.jsk.t.u-tokyo.ac.jp/~ueda/dataset/2015/02/drill_full.pcd
+  DESTINATION ${PROJECT_SOURCE_DIR}/pcds)
+add_custom_target(all_drc_task_common_downloads ALL DEPENDS
+  drill_pcd drill_full_pcd)
+
 install(TARGETS
   ${PROJECT_NAME}
   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
@@ -68,16 +92,3 @@ install(DIRECTORY icons/
 install(DIRECTORY scripts launch
   DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
   USE_SOURCE_PERMISSIONS)
-
-add_executable(manipulation_data_server src/drc_task_common/manipulation_data_server.cpp src/drc_task_common/manipulation_data_helpers.cpp)
-target_link_libraries(manipulation_data_server
-   ${catkin_LIBRARIES}
-   yaml-cpp
-)
-add_dependencies(manipulation_data_server ${PROJECT_NAME}_gencpp)
-add_executable(manipulation_data_visualizer src/drc_task_common/manipulation_data_visualizer.cpp src/drc_task_common/manipulation_data_helpers.cpp)
-target_link_libraries(manipulation_data_visualizer
-   ${catkin_LIBRARIES}
-   yaml-cpp
-)
-add_dependencies(manipulation_data_visualizer ${PROJECT_NAME}_gencpp)
