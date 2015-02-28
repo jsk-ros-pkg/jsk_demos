@@ -27,7 +27,7 @@ def polygon_cb(polygon_msg):
     if direction[2] < 0.99:
         rotation_direction = numpy.cross(numpy.array([0, 0, 1]), direction)
         rotation_direction = rotation_direction / numpy.linalg.norm(rotation_direction)    
-        rotation_deg = numpy.arccos(numpy.dot(numpy.array([1, 0, 0]), direction))
+        rotation_deg = numpy.arccos(numpy.dot(numpy.array([0, 0, 1]), direction))
         normal_centroid_pose.orientation.x = numpy.sin(rotation_deg/2)*rotation_direction[0]
         normal_centroid_pose.orientation.y = numpy.sin(rotation_deg/2)*rotation_direction[1]
         normal_centroid_pose.orientation.z = numpy.sin(rotation_deg/2)*rotation_direction[2]

@@ -642,11 +642,11 @@
         (setq drill-grasp-params (list coords))
         ;; publish object marker
         (erase-all-primitive-marker)
-        (insert-primitive-marker :shape-type jsk_rviz_plugins::TransformableMarkerOperate::*CYLINDER* :name "cylinder1" :description "")
-        (set-primitive-marker-dimensions :radius 30 :z 300)
+        (insert-primitive-marker :shape-type jsk_rviz_plugins::TransformableMarkerOperate::*MESH_RESOURCE* :name "drill" :description "" :resource "package://hrpsys_gazebo_tutorials/environment_models/dewalt_dc550ka/meshes/dewalt_dc550ka.dae" :use-material t)
+        ;(set-primitive-marker-dimensions :radius 30 :z 300)
         (set-primitive-marker-pose coords "BODY")
-        (set-primitive-marker-color :r 1.0 :g 1.0 :b 0.0 :a 0.6)
-        (apply-primitive-dimensions-to-midi-device)
+        ;; (set-primitive-marker-color :r 1.0 :g 1.0 :b 0.0 :a 0.6)
+        ;; (apply-primitive-dimensions-to-midi-device)
         (move-robot-model-to-current-pos)
         ;; publish motion to robot model on rviz
 	(publish-drill-grasp-motion :coords (elt drill-grasp-params 0) :update? t)
@@ -663,7 +663,7 @@
         ;; publish object marker
         (erase-all-primitive-marker)
         (insert-primitive-marker :shape-type jsk_rviz_plugins::TransformableMarkerOperate::*CYLINDER* :name "cylinder1" :description "")
-        (set-primitive-marker-dimensions :radius 30 :z 300)
+        (set-primitive-marker-dimensions :radius 300 :z 30) ;; show plane as circle
         (set-primitive-marker-pose coords "BODY")
         (set-primitive-marker-color :r 1.0 :g 1.0 :b 0.0 :a 0.6)
         (apply-primitive-dimensions-to-midi-device)
