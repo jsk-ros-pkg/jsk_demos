@@ -158,11 +158,11 @@
         use_async: true
       </rosparam>
     </node>
-    <!-- <node pkg="jsk_topic_tools" type="static_transform_pose_stamped" name="static_transform_pose_stamped"  -->
-    <!--       args="0 0 -0.25 0 0 0 /drill_recognition/icp_registration/output_pose /drill_recognition/icp_registration/output_pose_origin" -->
-    <!--       /> -->
+    <node pkg="jsk_topic_tools" type="static_transform_pose_stamped" name="static_transform_pose_stamped"
+          args="0 0 -0.12 0 0 0 /drill_recognition/icp_registration/output_pose /drill_recognition/icp_registration/output_pose_origin"
+          />
     <node pkg="jsk_topic_tools" type="snapshot" name="snapshot">
-      <remap from="~input" to="icp_registration/output_pose"/>
+      <remap from="~input" to="icp_registration/output_pose_origin"/>
       <rosparam>
         latch: true
       </rosparam>

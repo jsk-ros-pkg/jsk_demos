@@ -1,11 +1,11 @@
 ;; send ;;;;;;;;;;;;;;;;;;;;
 
 (defun insert-primitive-marker
-  (&key (shape-type jsk_rviz_plugins::TransformableMarkerOperate::*BOX*) (name "default_name") (description "default_description"))
+  (&key (shape-type jsk_rviz_plugins::TransformableMarkerOperate::*BOX*) (name "default_name") (description "default_description") (resource "") (use-material t))
   (let* ((req (instance jsk_rviz_plugins::RequestMarkerOperateRequest :init)))
     (send req :operate
           (instance jsk_rviz_plugins::TransformableMarkerOperate :init
-                    :type shape-type :action jsk_rviz_plugins::TransformableMarkerOperate::*INSERT* :frame_id "odom_on_ground" :name name :description description))
+                    :type shape-type :action jsk_rviz_plugins::TransformableMarkerOperate::*INSERT* :frame_id "odom_on_ground" :name name :description description :mesh_resource resource :mesh_use_embedded_materials use-material))
     (ros::service-call "/transformable_interactive_server/request_marker_operate" req)
     ))
 
