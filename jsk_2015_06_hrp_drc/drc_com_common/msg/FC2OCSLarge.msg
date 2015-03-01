@@ -7,6 +7,6 @@ std_msgs/Float32 communication__panorama_width_scale
 std_msgs/Float32 communication__panorama_height_scale
 
 # status of robot
-std_msgs/Int32 communication__robot_status
-int32 ROBOT_IDLE=1
-int32 ROBOT_MOVING=2
+std_msgs/UInt8 communication__robot_status
+uint8 ROBOT_IDLE=1
+uint8 ROBOT_MOVING=2

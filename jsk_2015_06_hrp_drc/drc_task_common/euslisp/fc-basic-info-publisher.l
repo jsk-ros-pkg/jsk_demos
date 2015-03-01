@@ -4,13 +4,17 @@
 (ros::roseus-add-msgs "drc_com_common")
 (defclass fc-basic-info-publisher
   :super propertied-object
-  :slots (latest-joint-states))
+  :slots (latest-joint-states robot-state))
+
 (defmethod fc-basic-info-publisher
   (:init ()
+    (setq robot-state 0)
     self)
-  
   (:joint-states-compressed-callback (msg)
     (setq latest-joint-states (send msg :angles)))
+  (:robot-state-callback (msg)
+    (setq robot-state (send msg :data))
+    )
   (:report ()
     (let ((msg (instance drc_com_common::FC2OCSBasicInfoSmall :init)))
       (if latest-joint-states
@@ -31,6 +35,7 @@
             (send msg :ground (coords-to-float-vector 
                                trans
                                (length (send msg :ground))))))
+      (send msg :robot_state robot-state)
       (ros::publish "/fc_to_ocs_basic_low_speed/input" msg)))
   )
 
@@ -41,6 +46,8 @@
   drc_com_common::FC2OCSBasicInfoSmall)
 (ros::subscribe "/joint_states_compressed" drc_com_common::HumanoidJointAngles
   #'send *app* :joint-states-compressed-callback)
+(ros::subscribe "/robot_status" std_msgs::Int32
+  #'send *app* :robot-state-callback)
 
 (ros::rate 10)
 (while (ros::ok)

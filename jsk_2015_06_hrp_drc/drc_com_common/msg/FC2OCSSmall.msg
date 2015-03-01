@@ -1,6 +1,5 @@
 uint8 type
 uint8 seq
-uint8 robot_state
 # Parameters
 float32[16] params
 
@@ -38,7 +37,7 @@ uint8 DRILL_PUT_FINISHED=19
 # failed
 uint8 RECOGNITION_FAILED=20
 
-# when type==GO_POS_POSE, 
+# when type==GO_POS_POSE,
 # params = [x, y, z, yaw, pitch, roll]
 # unit is mm.
 
