@@ -216,6 +216,15 @@
                 }
               }, 
               "groups": {}
+            },
+            "plugin": {
+              "keys": {
+                "active_topic": {
+                  "type": "repr", 
+                  "repr": "u'/ocs/robot_status'"
+                }
+              }, 
+              "groups": {}
             }
           }
         }, 
@@ -321,6 +330,15 @@
                 "parent": {
                   "type": "repr", 
                   "repr": "1"
+                }
+              }, 
+              "groups": {}
+            },
+            "plugin": {
+              "keys": {
+                "active_topic": {
+                  "type": "repr", 
+                  "repr": "u'/ocs/communication/robot_status'"
                 }
               }, 
               "groups": {}
