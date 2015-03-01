@@ -50,5 +50,28 @@
       file_name: "ocs_state.png"
     </rosparam>
   </node>
+
+  <node pkg="drc_task_common" type="time_update_text.py" name="highspeed_time_text">
+    <remap from="~time" to="/highspeed_receiver/last_received_time" />
+    <rosparam>
+      prefix: "Highspeed updated "
+      suffix: " Sec before"
+    </rosparam>
+  </node>
+  <node pkg="drc_task_common" type="time_update_text.py" name="low_speed_basic_time_text">
+    <remap from="~time" to="/ocs_from_fc_basic_low_speed/last_received_time" />
+    <rosparam>
+      prefix: "BasicInfo updated "
+      suffix: " Sec before"
+    </rosparam>
+  </node>
+  <node pkg="drc_task_common" type="time_update_text.py" name="low_speed_time_text">
+    <remap from="~time" to="/ocs_from_fc_low_speed/last_received_time" />
+    <rosparam>
+      prefix: "Lowspeed updated "
+      suffix: " Sec before"
+    </rosparam>
+  </node>
+
 </launch>
 
