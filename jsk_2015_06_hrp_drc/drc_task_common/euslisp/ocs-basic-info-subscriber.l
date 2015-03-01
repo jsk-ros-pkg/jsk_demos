@@ -34,6 +34,9 @@
           (send req :cur_tf target-transform)
           (ros::service-call "/ocs/set_dynamic_tf" req)
           )))
+    (let ((pubmsg (instance std_msgs::UInt8 :init)))
+      (send pubmsg :data (send msg :robot_state))
+      (ros::publish "/ocs/robot_status" pubmsg))
     )
   )
 
@@ -43,7 +46,9 @@
 (setq *app* (instance ocs-basic-info-publisher :init))
 (ros::advertise "/ocs/tf_odom_on_ground" tf2_msgs::TFMessage)
 (ros::advertise "/ocs/joint_states_compressed" drc_com_common::HumanoidJointAngles)
+(ros::advertise "/ocs/robot_status" std_msgs::UInt8)
 (ros::subscribe "/ocs_from_fc_basic_low_speed/output"
   drc_com_common::FC2OCSBasicInfoSmall #'send *app* :callback)
+
 (ros::rate 10)
 (ros::spin)

@@ -6,7 +6,7 @@ import rospy
 from threading import Lock
 from actionlib_msgs.msg import GoalStatusArray, GoalStatus
 from drc_com_common.msg import FC2OCSLarge
-from std_msgs.msg import Int32
+from std_msgs.msg import UInt8
 rospy.init_node("robot_idle_watch")
 
 lock = Lock() # lock is required because subscribers run in subthreads
@@ -26,13 +26,13 @@ def controllerCallback(msg):
         # If the message does not have GoalStatus.Active, 
         # we should change status to IDLE
         is_robot_moving = False
-pub = rospy.Publisher("robot_status", Int32)
+pub = rospy.Publisher("robot_status", UInt8)
 sub = rospy.Subscriber(watch_controller + "/status", GoalStatusArray, controllerCallback)
 
 r = rospy.Rate(rate)
 while not rospy.is_shutdown():
     with lock:
-        msg = Int32()
+        msg = UInt8()
         if is_robot_moving:
             msg.data = FC2OCSLarge.ROBOT_MOVING
         else:

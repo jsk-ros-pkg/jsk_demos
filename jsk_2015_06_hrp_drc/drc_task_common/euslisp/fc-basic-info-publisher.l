@@ -1,16 +1,20 @@
 #!/usr/bin/env roseus
 
 (load "package://drc_task_common/euslisp/util.l")
+(ros::roseus-add-msgs "std_msgs")
 (ros::roseus-add-msgs "drc_com_common")
 (defclass fc-basic-info-publisher
   :super propertied-object
-  :slots (latest-joint-states))
+  :slots (latest-joint-states robot-state-value))
+
 (defmethod fc-basic-info-publisher
   (:init ()
+    (setq robot-state-value 0)
     self)
-  
   (:joint-states-compressed-callback (msg)
     (setq latest-joint-states (send msg :angles)))
+  (:robot-state-callback (msg)
+    (setq robot-state-value (send msg :data)))
   (:report ()
     (let ((msg (instance drc_com_common::FC2OCSBasicInfoSmall :init)))
       (if latest-joint-states
@@ -18,19 +22,16 @@
       ;; lookup body -> odom_on_ground
       (let ((trans (send *tf* :lookup-transform "BODY" "odom_on_ground" (ros::time 0))))
         (when trans
-          (ros::ros-info ":odom_on_ground ~A" (send msg :odom_on_ground))
-          (ros::ros-info "trans ~A" trans)
           (send msg :odom_on_ground (coords-to-float-vector 
                                      trans
-                                     (length (send msg :odom_on_ground))))))
+                                     6))))
       ;; lookup body -> ground
       (let ((trans (send *tf* :lookup-transform "BODY" "ground" (ros::time 0))))
         (when trans
-          (ros::ros-info ":ground ~A" (send msg :ground))
-          (ros::ros-info "trans ~A" trans)
             (send msg :ground (coords-to-float-vector 
                                trans
-                               (length (send msg :ground))))))
+                               6))))
+      (send msg :robot_state robot-state-value)
       (ros::publish "/fc_to_ocs_basic_low_speed/input" msg)))
   )
 
@@ -41,6 +42,8 @@
   drc_com_common::FC2OCSBasicInfoSmall)
 (ros::subscribe "/joint_states_compressed" drc_com_common::HumanoidJointAngles
   #'send *app* :joint-states-compressed-callback)
+(ros::subscribe "/communication/robot_status" std_msgs::UInt8
+  #'send *app* :robot-state-callback)
 
 (ros::rate 10)
 (while (ros::ok)
