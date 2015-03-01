@@ -53,6 +53,7 @@
   <group ns="panorama">
     <include file="$(find drc_task_common)/launch/fc/panorama.launch" />
   </group>
+  <include file="$(find drc_task_common)/launch/fc/misc.launch" />
   <!-- communication -->
   <include file="$(find drc_com_common)/launch/field_computer_com.launch" 
            if="$(arg USE_COM)">
@@ -60,12 +61,10 @@
     <arg name="OCS_IP" value="$(arg OCS_IP)" />
   </include>
   <group if="false">
-    <group if="false">
-      <!-- object detection -->
-      <include file="$(find drc_task_common)/launch/object_detect.launch" />
-
-      <!-- remote server -->
-      <include file="$(find drc_task_common)/launch/remote_server.launch" />
-    </group>
+    <!-- object detection -->
+    <include file="$(find drc_task_common)/launch/object_detect.launch" />
+    
+    <!-- remote server -->
+    <include file="$(find drc_task_common)/launch/remote_server.launch" />
   </group>
 </launch>
