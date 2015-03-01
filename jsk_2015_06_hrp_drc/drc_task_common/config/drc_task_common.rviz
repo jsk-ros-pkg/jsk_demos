@@ -9,7 +9,7 @@ Panels:
         - /Group1
         - /Group1/OverlayText1
         - /Group1/OverlayText2
-        - /Group1/OverlayText3
+        - /Group1/OverlayText6
       Splitter Ratio: 0.629252
     Tree Height: 1084
   - Class: rviz/Selection
@@ -30,7 +30,7 @@ Panels:
     Experimental: false
     Name: Time
     SyncMode: 0
-    SyncSource: PointCloud2
+    SyncSource: ""
   - Class: jsk_rviz_plugin/TransformableMarkerOperatorAction
     Name: TransformableMarkerOperatorAction
   - Class: drc_task_common/DRCTeleopInterfaceAction
@@ -821,6 +821,24 @@ Visualization Manager:
           Name: OverlayText
           Overtake Color Properties: false
           Overtake Position Properties: true
+          Topic: /ocs/rviz/visualization/ocs_executive_message
+          Value: true
+          font: DejaVu Sans Mono
+          height: 1000
+          left: 10
+          line width: 2
+          text size: 18
+          top: 400
+          width: 500
+        - Background Alpha: 0.8
+          Background Color: 0; 0; 0
+          Class: jsk_rviz_plugin/OverlayText
+          Enabled: true
+          Foreground Alpha: 0.8
+          Foreground Color: 25; 255; 240
+          Name: OverlayText
+          Overtake Color Properties: false
+          Overtake Position Properties: true
           Topic: /ocs/rviz/visualization/lowspeed_updated_time
           Value: true
           font: DejaVu Sans Mono
@@ -929,7 +947,7 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/XYOrbit
-      Distance: 3.59487
+      Distance: 2.67998
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.06
         Stereo Focal Distance: 1
@@ -941,10 +959,10 @@ Visualization Manager:
         Z: 1.70891e-06
       Name: Current View
       Near Clip Distance: 0.01
-      Pitch: 0.544797
+      Pitch: 1.2398
       Target Frame: <Fixed Frame>
       Value: XYOrbit (rviz)
-      Yaw: 1.58856
+      Yaw: 5.03175
     Saved: ~
 Window Geometry:
   Camera:
@@ -968,5 +986,5 @@ Window Geometry:
   Views:
     collapsed: true
   Width: 2560
-  X: -7
-  Y: 24
+  X: 225
+  Y: 132

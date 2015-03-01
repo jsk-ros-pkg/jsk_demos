@@ -33,8 +33,8 @@
                 debri-params ;; (list coords radius height)
                 hose-grasp-params ;; (list coords)
                 hose-connect-params ;; (list coords)
-		drill-grasp-params
-		drill-put-params
+                drill-grasp-params
+                drill-put-params
                 foreground-bacground-sync-obj
                 show-text-buffer
                 ))
@@ -128,13 +128,15 @@
     ;; buffer limit is 3
     (if (> (length show-text-buffer) 3)
         (setq show-text-buffer (subseq show-text-buffer 0 3)))
-    (let ((msg (instance std_msgs::String :init)))
+    (let ((msg (instance jsk_rviz_plugins::OverlayText :init)))
       ;; TODO: should use stream
       (let ((full-text ""))
         (dolist (tx (reverse show-text-buffer))
           (setq full-text (format nil "~A~%~A" tx full-text)))
-        (send msg :data full-text)
-        (ros::publish "/ocs/status_text" msg))
+        (send msg :text full-text)
+        (send msg :fg_color *success-color*)
+        (send msg :bg_color *transparent-color*)
+        (ros::publish "/ocs/rviz/visualization/ocs_executive_message" msg))
       ))
   (:send-to-fc (msg)
     (ros::publish "/ocs_to_fc_low_speed/input" msg))
@@ -813,7 +815,8 @@
 (generate-robot "HRP2JSKNTS" :generate-ri? nil)
 
 ;; advertise
-(ros::advertise "/ocs/status_text" std_msgs::String)
+(ros::advertise "/ocs/rviz/visualization/ocs_executive_message"
+  jsk_rviz_plugins::OverlayText)
 (setq *app* (instance ocs-executive-app :init))
 (setq *tf* (instance ros::transform-listener :init))
 
