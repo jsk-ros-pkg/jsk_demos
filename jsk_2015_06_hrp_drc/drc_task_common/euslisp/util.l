@@ -1,4 +1,18 @@
 ;; utility function
+(ros::roseus-add-msgs "std_msgs")
+
+(defun ros-rgba (r g b a)
+  (let ((color (instance std_msgs::ColorRGBA :init)))
+    (send color :r (/ r 255.0))
+    (send color :g (/ g 255.0))
+    (send color :b (/ b 255.0))
+    (send color :a a)
+    color))
+
+(setq *success-color* (ros-rgba 91 255 255 1.0))
+(setq *warn-color* (ros-rgba 255 202 0 1.0))
+(setq *unknown-color* (ros-rgba 251 221 221 1.0))
+(setq *transparent-color* (ros-rgba 0 0 0 0))
 
 (defun xy-distance2 (coords)
   (+ (* (elt (send coords :worldpos) 0)
