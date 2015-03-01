@@ -5,8 +5,11 @@ Panels:
     Property Tree Widget:
       Expanded:
         - /Global Options1
-        - /PointCloud21
         - /TF1/Frames1
+        - /Group1
+        - /Group1/OverlayText1
+        - /Group1/OverlayText2
+        - /Group1/OverlayText3
       Splitter Ratio: 0.629252
     Tree Height: 1084
   - Class: rviz/Selection
@@ -153,6 +156,9 @@ Visualization Manager:
         BoundingBoxArray: true
         CameraInfo: true
         Grid: true
+        Group:
+          OverlayText: true
+          Value: true
         InteractiveMarkers: true
         Marker: true
         OverlayImage: true
@@ -424,6 +430,14 @@ Visualization Manager:
           Alpha: 1
           Show Axes: false
           Show Trail: false
+        center_bottom_led_frame:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        center_top_led_frame:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
         gyro:
           Alpha: 1
           Show Axes: false
@@ -437,10 +451,19 @@ Visualization Manager:
           Alpha: 1
           Show Axes: false
           Show Trail: false
+        head_hokuyo_frame:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
         head_root:
           Alpha: 1
           Show Axes: false
           Show Trail: false
+        hokuyo_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
         larm_end_coords:
           Alpha: 1
           Show Axes: false
@@ -450,6 +473,10 @@ Visualization Manager:
           Show Axes: false
           Show Trail: false
         left_camera_optical_frame:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        left_led_frame:
           Alpha: 1
           Show Axes: false
           Show Trail: false
@@ -466,6 +493,10 @@ Visualization Manager:
           Show Axes: false
           Show Trail: false
         mag:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        motor:
           Alpha: 1
           Show Axes: false
           Show Trail: false
@@ -489,7 +520,15 @@ Visualization Manager:
           Alpha: 1
           Show Axes: false
           Show Trail: false
+        right_led_frame:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
         rleg_end_coords:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        spindle:
           Alpha: 1
           Show Axes: false
           Show Trail: false
@@ -541,22 +580,22 @@ Visualization Manager:
       Value: false
     - Class: rviz/InteractiveMarkers
       Enable Transparency: true
-      Enabled: true
+      Enabled: false
       Name: InteractiveMarkers
       Show Axes: false
       Show Descriptions: true
       Show Visual Aids: false
       Update Topic: /jsk_model_marker_interface/update
-      Value: true
+      Value: false
     - Class: rviz/InteractiveMarkers
       Enable Transparency: true
-      Enabled: true
+      Enabled: false
       Name: InteractiveMarkers
       Show Axes: false
       Show Descriptions: true
       Show Visual Aids: false
       Update Topic: /urdf_control_marker/update
-      Value: true
+      Value: false
     - Class: jsk_rviz_plugin/QuietInteractiveMarker
       Enable Transparency: true
       Enabled: true
@@ -578,13 +617,13 @@ Visualization Manager:
       width: 320
     - Class: rviz/InteractiveMarkers
       Enable Transparency: true
-      Enabled: true
+      Enabled: false
       Name: InteractiveMarkers
       Show Axes: false
       Show Descriptions: true
       Show Visual Aids: false
       Update Topic: /simple_marker/update
-      Value: true
+      Value: false
     - Class: jsk_rviz_plugin/OverlayMenu
       Enabled: true
       Name: OverlayMenu
@@ -771,6 +810,100 @@ Visualization Manager:
       line width: 0.005
       only edge: false
       show coords: true
+    - Class: rviz/Group
+      Displays:
+        - Background Alpha: 0.8
+          Background Color: 0; 0; 0
+          Class: jsk_rviz_plugin/OverlayText
+          Enabled: true
+          Foreground Alpha: 0.8
+          Foreground Color: 25; 255; 240
+          Name: OverlayText
+          Overtake Color Properties: false
+          Overtake Position Properties: true
+          Topic: /ocs/rviz/visualization/lowspeed_updated_time
+          Value: true
+          font: DejaVu Sans Mono
+          height: 128
+          left: 10
+          line width: 2
+          text size: 12
+          top: 270
+          width: 500
+        - Background Alpha: 0.8
+          Background Color: 0; 0; 0
+          Class: jsk_rviz_plugin/OverlayText
+          Enabled: true
+          Foreground Alpha: 0.8
+          Foreground Color: 25; 255; 240
+          Name: OverlayText
+          Overtake Color Properties: false
+          Overtake Position Properties: true
+          Topic: /ocs/rviz/visualization/burst_updated_time
+          Value: true
+          font: DejaVu Sans Mono
+          height: 128
+          left: 10
+          line width: 2
+          text size: 12
+          top: 220
+          width: 400
+        - Background Alpha: 0.8
+          Background Color: 0; 0; 0
+          Class: jsk_rviz_plugin/OverlayText
+          Enabled: true
+          Foreground Alpha: 0.8
+          Foreground Color: 25; 255; 240
+          Name: OverlayText
+          Overtake Color Properties: false
+          Overtake Position Properties: true
+          Topic: /ocs/rviz/visualization/continuous_updated_time
+          Value: true
+          font: DejaVu Sans Mono
+          height: 128
+          left: 10
+          line width: 2
+          text size: 12
+          top: 245
+          width: 400
+        - Background Alpha: 0.8
+          Background Color: 0; 0; 0
+          Class: jsk_rviz_plugin/OverlayText
+          Enabled: true
+          Foreground Alpha: 0.8
+          Foreground Color: 25; 255; 240
+          Name: OverlayText
+          Overtake Color Properties: false
+          Overtake Position Properties: true
+          Topic: /ocs/rviz/visualization/burst_robot_status
+          Value: true
+          font: DejaVu Sans Mono
+          height: 128
+          left: 10
+          line width: 2
+          text size: 24
+          top: 350
+          width: 400
+        - Background Alpha: 0.8
+          Background Color: 0; 0; 0
+          Class: jsk_rviz_plugin/OverlayText
+          Enabled: true
+          Foreground Alpha: 0.8
+          Foreground Color: 25; 255; 240
+          Name: OverlayText
+          Overtake Color Properties: false
+          Overtake Position Properties: true
+          Topic: /ocs/rviz/visualization/continuous_robot_status
+          Value: true
+          font: DejaVu Sans Mono
+          height: 50
+          left: 10
+          line width: 2
+          text size: 24
+          top: 300
+          width: 400
+      Enabled: true
+      Name: Group
   Enabled: true
   Global Options:
     Background Color: 48; 48; 48
@@ -796,7 +929,7 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/XYOrbit
-      Distance: 2.16615
+      Distance: 3.59487
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.06
         Stereo Focal Distance: 1
@@ -808,10 +941,10 @@ Visualization Manager:
         Z: 1.70891e-06
       Name: Current View
       Near Clip Distance: 0.01
-      Pitch: 0.849797
+      Pitch: 0.544797
       Target Frame: <Fixed Frame>
       Value: XYOrbit (rviz)
-      Yaw: 4.14356
+      Yaw: 1.58856
     Saved: ~
 Window Geometry:
   Camera:
