@@ -61,7 +61,10 @@ def continuousDataUpdatedTimeCallnack(msg):
     diff = (now - msg.data).to_sec()
     text.bg_color = TRANSPARENT_COLOR
     text.text = "CONTINUOUS DATA: Updated %0.1f secs before" % (diff)
-    text.fg_color = OK_COLOR
+    if diff <= 1.0:
+        text.fg_color = OK_COLOR
+    else:
+        text.fg_color = WARN_COLOR
     pub_continuous_data_updated_time.publish(text)
 sub_continuous_data_updated_time = rospy.Subscriber("/ocs_from_fc_basic_low_speed/last_received_time", 
                                                     Time, continuousDataUpdatedTimeCallnack)
@@ -87,7 +90,10 @@ def burstDataUpdatedTimeCallnack(msg):
     diff = (now - msg.data).to_sec()
     text.bg_color = TRANSPARENT_COLOR
     text.text = "BURST DATA: Updated %0.1f secs before" % (diff)
-    text.fg_color = OK_COLOR
+    if diff <= 30.0:
+        text.fg_color = OK_COLOR
+    else:
+        text.fg_color = WARN_COLOR
     pub_burst_data_updated_time.publish(text)
 sub_burst_data_updated_time = rospy.Subscriber("/highspeed_receiver/last_received_time", Time,
                                                burstDataUpdatedTimeCallnack)
