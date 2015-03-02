@@ -1283,15 +1283,7 @@
         (return-from pick-tray nil))
       )))
 
-;; currently pr2_gripper_sensor_msgs is only available groovy
-(if (not (equal (unix::getenv "ROS_DISTRO") "groovy"))
-    (progn
-      ;; set dummy package
-      (make-package "PR2_GRIPPER_SENSOR_MSGS")
-      (make-package "PR2_GRIPPER_SENSOR_MSGS::PR2GRIPPEREVENTDETECTORCOMMAND")
-      )
-  (ros::roseus-add-msgs "pr2_gripper_sensor_msgs"))
-
+(ros::roseus-add-msgs "pr2_gripper_sensor_msgs")
 (defun wait-for-hand-impact (arm &key (timeout 30))
   (let* ((action-name (format nil "/~c_gripper_sensor_controller/event_detector" (if (eq arm :larm) #\l #\r)))
          (client (instance ros::simple-action-client :init action-name pr2_gripper_sensor_msgs::PR2GripperEventDetectorAction))
