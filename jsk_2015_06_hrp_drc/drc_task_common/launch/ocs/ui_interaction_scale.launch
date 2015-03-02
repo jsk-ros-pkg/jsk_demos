@@ -8,6 +8,7 @@
       2. foreground
       3. background
       4. line
+      5. poly
     -->
     <!-- 1. screenractangle -->
     <node pkg="image_view2" type="scale_interaction.py" name="scale_screenractangle"
@@ -47,6 +48,17 @@
           output="log">
       <remap from="~input" to="$(arg INPUT_IMAGE)/line" />
       <remap from="~output" to="$(arg INPUT_IMAGE)/line/scaled" />
+      <remap from="~input/width_scale" to="$(arg INPUT_IMAGE_WIDTH_SCALE)" />
+      <remap from="~input/height_scale" to="$(arg INPUT_IMAGE_HEIGHT_SCALE)" />
+      <rosparam>
+        inverse: true
+      </rosparam>
+    </node>
+    <!-- 5. line -->
+    <node pkg="image_view2" type="scale_interaction.py" name="scale_poly"
+          output="log">
+      <remap from="~input" to="$(arg INPUT_IMAGE)/poly" />
+      <remap from="~output" to="$(arg INPUT_IMAGE)/poly/scaled" />
       <remap from="~input/width_scale" to="$(arg INPUT_IMAGE_WIDTH_SCALE)" />
       <remap from="~input/height_scale" to="$(arg INPUT_IMAGE_HEIGHT_SCALE)" />
       <rosparam>

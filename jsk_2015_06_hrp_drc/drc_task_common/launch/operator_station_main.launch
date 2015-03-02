@@ -6,9 +6,10 @@
   <!-- 
        Remap tf and joint_states for ocs settings
   -->
-  <remap from="/tf" to="/ocs/tf" />
-  <remap from="/joint_states" to="/ocs/joint_states" />
-  <remap from="/robot_description" to="/ocs/robot_description" />
+  <!-- temporary 2015/03/02 -->
+  <!-- <remap from="/tf" to="/ocs/tf" /> -->
+  <!-- <remap from="/joint_states" to="/ocs/joint_states" /> -->
+  <!-- <remap from="/robot_description" to="/ocs/robot_description" /> -->
   
   <arg name="FC_IP" default="localhost" />
   <arg name="OCS_IP" default="localhost" />

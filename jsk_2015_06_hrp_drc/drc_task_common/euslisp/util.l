@@ -60,6 +60,22 @@
                     (make-list (- length 4) :initial-element 0))
             integer-vector)))
 
+(defun polygon-stamped-to-integer-vector (msg length)
+  (let ((points
+         (mapcar #'(lambda (p)
+                     (list (send p :x) (send p :y)))
+                 (send msg :polygon :points))))
+    (if (> (* 2 (length points)) length)
+        (progn
+          (ros::ros-warn "Maximum number of points supported is ~A"
+                         (/ length 2))
+          nil)
+      (let ((ret (instantiate integer-vector length)))
+        (let ((flat-points (apply #'append points)))
+          (dotimes (i (length flat-points))
+            (setf (elt ret i) (elt flat-points i))))
+        ret))))
+
 (defun double-rect-polygon-stamped-to-integer-vector (msg0 msg1 length)
   (let ((point-a (list (send (elt (send msg0 :polygon :points) 0) :x)
                        (send (elt (send msg0 :polygon :points) 0) :y)))
@@ -96,6 +112,24 @@
         (send p2 :y y2)
         (send ret :polygon :points (list p1 p2))
         ret))))
+
+(defun integer-vector-to-polygon-stamped (msg)
+  (let ((params nil))
+    (dotimes (i (/ (length (send msg :image_roi_info)) 2))
+      (let ((x (elt (send msg :image_roi_info) (* i 2)))
+            (y (elt (send msg :image_roi_info) (1+ (* i 2)))))
+        (if (and (= x 0) (= y 0))
+            (return-from nil nil)       ;break
+          (setq params (append params (list (list x y)))))))
+    (let ((ret (instance geometry_msgs::PolygonStamped :init)))
+      (send ret :polygon :points (mapcar #'(lambda (p)
+                                             (let ((point (instance geometry_msgs::Point32 :init)))
+                                               (send point :x (car p))
+                                               (send point :y (cadr p))
+                                               point))
+                                         params))
+      (send ret :header :stamp (ros::time-now))
+      ret)))
 
 (defun integer-vector-to-double-rect-polygon-stamped (msg)
   (let ((x1 (elt (send msg :image_roi_info) 0))

@@ -80,6 +80,10 @@
                 self :drill-put-recognition-finished-callback)
           (list drc_com_common::FC2OCSSmall::*DRILL_PUT_FINISHED*
                 self :drill-put-exec-finished-callback)
+          (list drc_com_common::FC2OCSSmall::*DRILL_WALL_POSE*
+                self :drill-wall-recognition-finished-callback)
+          (list drc_com_common::FC2OCSSmall::*DRILL_WALL_FINISHED*
+                self :drill-wall-exec-finished-callback)
           (list drc_com_common::FC2OCSSmall::*LOOK_AROUND_FINISHED*
                 self :look-around-finished-callback)
           (list drc_com_common::FC2OCSSmall::*RECOGNITION_FAILED*
@@ -117,13 +121,15 @@
         (call-empty-service (format nil "~A/grabcut_rect_mode"  node)))
        ((eq mode :line)
         (call-empty-service (format nil "~A/line_mode" node)))
+       ((eq mode :polygon)
+        (call-empty-service (format nil "~A/poly_mode" node)))
        ((eq mode :none)
         (call-empty-service (format nil "~A/none_mode" node)))
        (t
         (error "unknown mode: ~A" mode)
         ))
       ))
-  (:show-text (text)
+  (:show-text (text &optional (color :success))
     (setq show-text-buffer (cons text show-text-buffer))
     ;; buffer limit is 3
     (if (> (length show-text-buffer) 3)
@@ -134,7 +140,13 @@
         (dolist (tx (reverse show-text-buffer))
           (setq full-text (format nil "~A~%~A" tx full-text)))
         (send msg :text full-text)
-        (send msg :fg_color *success-color*)
+        (cond
+         ((eq color :success)
+          (send msg :fg_color *success-color*))
+         ((eq color :warn)
+          (send msg :fg_color *warn-color*))
+         ((eq color :unknown)
+          (send msg :fg_color *unknown-color*)))
         (send msg :bg_color *transparent-color*)
         (ros::publish "/ocs/rviz/visualization/ocs_executive_message" msg))
       ))
@@ -191,6 +203,12 @@
       (send self :show-text "Select rectangle region for drill-put")
       (send smachine :go-to :selecting-region-for-drill-put))
     (send req :response))
+  (:drill-wall-button-callback (req)
+    (when (send smachine :next? :selecting-region-for-drill-wall)
+      (send self :set-image-view2-mode :polygon)
+      (send self :show-text "Select points for drill-wall")
+      (send smachine :go-to :selecting-region-for-drill-wall))
+    (send req :response))
   (:go-pos-button-callback (req)
     (when (send smachine :next? :selecting-region-for-go-pos)
       ;; force to use rectangle mode
@@ -224,6 +242,10 @@
     (cond
      ((eq (send smachine :state) :selecting-region-for-debri)
       (send self :line-callback-for-debri-line msg))))
+  (:polygon-callback (msg)
+    (cond
+     ((eq (send smachine :state) :selecting-region-for-drill-wall)
+      (send self :polygon-callback-for-drill-wall msg))))
   (:rectangle-callback (msg) ;; msg = geometry_msgs/PolygonStamped
     (cond
      ((eq (send smachine :state) :selecting-region-for-go-pos)
@@ -268,6 +290,21 @@
                                     msg (length (send fc-msg :image_roi_info))))
       (send self :send-to-fc fc-msg)
       (send smachine :go-to :recognizing-debri-pose)))
+  (:polygon-callback-for-drill-wall (msg)
+    (let ((fc-msg (instance drc_com_common::OCS2FCSmall :init)))
+      (send fc-msg :type drc_com_common::OCS2FCSmall::*DRILL_WALL_POINTS*)
+      (let ((poly-integer-vector (polygon-stamped-to-integer-vector
+                                  msg (length (send fc-msg :image_roi_info)))))
+        (if poly-integer-vector
+            (progn
+              (send self :show-text "Wait for wall recognition")
+              (send fc-msg :image_roi_info poly-integer-vector)
+              (send self :send-to-fc fc-msg)
+              (send smachine :go-to :recognizing-drill-wall))
+          (progn
+            (send self :show-text "Failed to convert to integer vector, too many points" :warn)
+            nil)
+          ))))
   (:rectangle-callback-for-hose-grasp-region (msg)
     (send self :show-text "Wait for hose-grasp recognition")
     ;; send to FC to recognize pos
@@ -834,6 +871,7 @@
 (ros::advertise-service "hose_connect" std_srvs::Empty #'send *app* :hose-connect-button-callback)
 (ros::advertise-service "drill_grasp" std_srvs::Empty #'send *app* :drill-grasp-button-callback)
 (ros::advertise-service "drill_put" std_srvs::Empty #'send *app* :drill-put-button-callback)
+(ros::advertise-service "drill_wall" std_srvs::Empty #'send *app* :drill-wall-button-callback)
 (ros::advertise-service "go_pos" std_srvs::Empty #'send *app* :go-pos-button-callback)
 (ros::advertise-service "look_at" std_srvs::Empty #'send *app* :look-at-button-callback)
 (ros::advertise-service "look_around" std_srvs::Empty #'send *app* :look-around-button-callback)
@@ -849,6 +887,8 @@
   #'send *app* :panorama-rectangle-callback)
 (ros::subscribe "/ocs/communication/image_rect_color/line/scaled" geometry_msgs::PolygonStamped
   #'send *app* :line-callback)
+(ros::subscribe "/ocs/communication/image_rect_color/poly/scaled" geometry_msgs::PolygonStamped
+  #'send *app* :polygon-callback)
 ;; (ros::subscribe "/ocs/communication/image_rect_color/foreground_rect/scaled" geometry_msgs::PolygonStamped
 ;;   #'send *app* :foreground-rect-callback)
 ;; (ros::subscribe "/ocs/communication/image_rect_color/background_rect/scaled" geometry_msgs::PolygonStamped

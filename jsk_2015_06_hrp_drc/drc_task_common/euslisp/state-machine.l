@@ -422,6 +422,15 @@ Usage:
      (:selecting-exec-for-drill-put -> :executing-drill-put)          ;exec
      (:selecting-exec-for-drill-put -> :initial)                   ;cancel
      (:executing-drill-put -> :initial)                            ;done
+     ;; drill_wall
+     (:initial -> :selecting-region-for-drill-wall)
+     (:selecting-region-for-drill-wall -> :initial) ;cancel
+     (:selecting-region-for-drill-wall -> :recognizing-drill-wall)
+     (:recognizing-drill-wall -> :selecting-exec-for-drill-wall) ;recognition done
+     (:recognizing-drill-wall -> :initial) ;cancel
+     (:selecting-exec-for-drill-wall -> :executing-drill-wall)          ;exec
+     (:selecting-exec-for-drill-wall -> :initial)                   ;cancel
+     (:executing-drill-wall -> :initial)                            ;done
      )
    '((:initial :initial)
      ;; go-pos
@@ -469,7 +478,11 @@ Usage:
      (:recognizing-drill-put-pose :drill-put)
      (:selecting-exec-for-drill-put :drill-put)
      (:executing-drill-put :drill-put)
-
+     ;; drill-wall
+     (:selecting-region-for-drill-wall :drill-wall)
+     (:recognizing-drill-wall :drill-wall)
+     (:selecting-exec-for-drill-wall :drill-wall)
+     (:executing-drill-wall :drill-wall)
      )
    :initial "ocs_state.png"))
 
@@ -490,6 +503,9 @@ Usage:
 
      (:initial -> :recognizing-drill-put-pose)
      (:recognizing-drill-put-pose -> :initial)
+
+     (:initial -> :recognizing-drill-wall)
+     (:recognizing-drill-wall -> :initial)
 
      (:initial -> :recognizing-door-pose)
      (:recognizing-door-pose -> :initial)
@@ -514,6 +530,9 @@ Usage:
 
      (:initial -> :executing-drill-put)
      (:executing-drill-put -> :initial)
+
+     (:initial -> :executing-drill-wall)
+     (:executing-drill-wall -> :initial)
      
      (:initial -> :executing-door)
      (:executing-door -> :initial)
@@ -530,7 +549,6 @@ Usage:
      (:initial -> :recognizing-look-at-point-panorama)
      (:recognizing-look-at-point-panorama -> :recognizing-look-at-point)
      (:recognizing-look-at-point-panorama -> :initial)
-     
      
      (:initial -> :executing-look-around)
      (:executing-look-around -> :initial)
@@ -549,6 +567,8 @@ Usage:
      (:executing-drill-grasp :drill)
      (:recognizing-drill-put-pose :drill)
      (:executing-drill-put :drill)
+     (:recognizing-drill-wall :drill)
+     (:executing-drill-wall :drill)
 
 
      (:recognizing-door-pose :door)
