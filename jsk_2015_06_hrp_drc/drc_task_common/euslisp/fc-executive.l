@@ -522,16 +522,17 @@
              (coords-set (mapcar #'(lambda (ros-pose)
                                      (ros::tf-pose->coords ros-pose))
                                  (send msg :poses)))
-             (from-body-coords-set (mapcar #'(lambda (c)
-                                               (send (send trans :copy-worldcoords) :transform c))
-                                           coords-set)))
-	(let ((msg (instance drc_com_common::FC2OCSSmall :init)))
-	  (send msg :type drc_com_common::FC2OCSSmall::*DRILL_WALL_POSE*)
-	  (send msg :params (coords-set-to-float-vector from-body-coords-set (length (send msg :params))))
+             (from-body-coords-set
+              (mapcar #'(lambda (c)
+                          (send (send trans :copy-worldcoords) :transform c))
+                      coords-set)))
+        (let ((msg (instance drc_com_common::FC2OCSSmall :init)))
+          (send msg :type drc_com_common::FC2OCSSmall::*DRILL_WALL_POSE*)
+          (send msg :params (coords-set-to-float-vector
+                             from-body-coords-set (length (send msg :params))))
           (if (send msg :params)
               (progn
-                (send self :send-to-ocs msg)
-                )
+                (send self :send-to-ocs msg))
             (progn
               ;; failed because of too many poses
               (send self :report-recognition-failure-to-ocs)))

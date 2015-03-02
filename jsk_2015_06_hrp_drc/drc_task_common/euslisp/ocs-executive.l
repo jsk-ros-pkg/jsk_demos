@@ -564,7 +564,7 @@
     (send req :response))
   )
 
-;; recognition finised callback ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; recognition finised callback ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defmethod ocs-executive-app
   (:valve-recognition-finished-callback (msg)
     (when (eq (send smachine :state) :recognizing-valve-pose)
@@ -588,6 +588,14 @@
          (publish-valve-motion :radius (cadr valve-params) :coords (car valve-params) :update? t)
          ))
       (send smachine :go-to :selecting-exec-for-valve)))
+  (:drill-wall-recognition-finished-callback (msg)
+    (when (eq (send smachine :state) :recognizing-drill-wall)
+      (let ((params (send msg :params)))
+        (let ((coords-set (float-vector-to-coords-set params)))
+          
+          ))
+      )
+    )
   (:door-recognition-finished-callback (msg)
     (when (eq (send smachine :state) :recognizing-door-pose)
       (let ((params (send msg :params)))

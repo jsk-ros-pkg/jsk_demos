@@ -25,16 +25,18 @@
     (ros::service-call srv req)))
 
 ;; topic <---> compressed message conversion
-
+(defun fill-coords-float-vector (coords fv start)
+  (setf (elt ret (+ start 0)) (elt (send coords :worldpos) 0))
+  (setf (elt ret (+ start 1)) (elt (send coords :worldpos) 1))
+  (setf (elt ret (+ start 2)) (elt (send coords :worldpos) 2))
+  (setf (elt ret (+ start 3)) (elt (car (send coords :rpy-angle)) 0))
+  (setf (elt ret (+ start 4)) (elt (car (send coords :rpy-angle)) 1))
+  (setf (elt ret (+ start 5)) (elt (car (send coords :rpy-angle)) 2))
+  )
 (defun coords-to-float-vector (coords length)
   ;6 parameters are filled
-  (let ((ret (instantiate float-vector length))) 
-    (setf (elt ret 0) (elt (send coords :worldpos) 0))
-    (setf (elt ret 1) (elt (send coords :worldpos) 1))
-    (setf (elt ret 2) (elt (send coords :worldpos) 2))
-    (setf (elt ret 3) (elt (car (send coords :rpy-angle)) 0))
-    (setf (elt ret 4) (elt (car (send coords :rpy-angle)) 1))
-    (setf (elt ret 5) (elt (car (send coords :rpy-angle)) 2))
+  (let ((ret (instantiate float-vector length)))
+    (fill-coords-float-vector coords ret 0)
     ret))
 
 (defun float-vector-to-coords (fv)
@@ -130,6 +132,16 @@
                                          params))
       (send ret :header :stamp (ros::time-now))
       ret)))
+
+(defun coords-set-to-float-vector (coords-set length)
+  (if (> (* 6 (length coords-set)) length)
+      (progn
+        (ros::ros-warn "Maximum number to convert is ~A" (/ length 6))))
+  (let ((ret (instantiate float-vector length)))
+    (dotimes (i (length coords-set))
+      (if (<= (* (1+ i) 6) length)
+          (fill-coords-float-vector (elt coords-set i) ret (* i 6))))
+    ret))
 
 (defun integer-vector-to-double-rect-polygon-stamped (msg)
   (let ((x1 (elt (send msg :image_roi_info) 0))
