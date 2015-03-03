@@ -47,9 +47,9 @@
     (ros::publish "/transformable_interactive_server/set_color" msg)))
 
 (defun set-primitive-marker-control-relative-pose
-  (coords
+  (coords)
    (ros::publish "/transformable_interactive_server/set_control_relative_pose" (ros::coords->tf-pose coords)))
-   )
+   
 ;; receive ;;;;;;;;;;;;;;;;;;;;
 
 (defun get-primitive-marker-pose
