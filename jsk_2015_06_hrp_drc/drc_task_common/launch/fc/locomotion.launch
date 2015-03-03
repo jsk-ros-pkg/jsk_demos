@@ -15,8 +15,21 @@
       correspondence_distance: 0.1
     </rosparam>
   </node>
+  
+  <!-- first, remove upper pointcloud -->
+  <node pkg="nodelet" type="nodelet" name="z_filter"
+        args="standalone pcl/PassThrough">
+    <remap from="~input" to="/full_cloud2" />
+    <rosparam>
+      filter_field_name: z
+      filter_limit_min: 0.2
+      filter_limit_max: 100.0
+      filter_limit_negative: true
+      input_frame: HEAD_LINK0
+    </rosparam>
+  </node>
   <node pkg="jsk_pcl_ros" type="attention_clipper" name="laser_self_filter">
-    <remap from="~input/points" to="/full_cloud2" />
+    <remap from="~input/points" to="z_filter/output" />
     <remap from="~input/box" to="/robot_bbox" />
     <rosparam>
       not_sync: true
@@ -24,7 +37,7 @@
   </node>
   <node pkg="nodelet" type="nodelet" name="laser_self_filter_points"
         args="standalone pcl/ExtractIndices">
-    <remap from="~input" to="/full_cloud2" />
+    <remap from="~input" to="z_filter/output" />
     <remap from="~indices" to="laser_self_filter/output/point_indices" />
     <rosparam>
       negative: true
