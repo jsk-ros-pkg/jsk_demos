@@ -39,6 +39,11 @@
   <include file="$(find drc_task_common)/launch/fc/valve_recognition.launch">
   </include>
   <include file="$(find drc_task_common)/launch/fc/drill_recognition.launch">
+    <arg name="DRILL_RECOGNITION_NAMESPACE" value="drill_recognition" />
+  </include>
+  <include file="$(find drc_task_common)/launch/fc/drill_recognition.launch">
+    <arg name="DRILL_RECOGNITION_NAMESPACE" value="drill_recognition_for_button" />
+    <arg name="LAUNCH_MANAGER" value="false" />
   </include>
   <include file="$(find drc_task_common)/launch/fc/drill_recognition_for_wall.launch">
   </include>

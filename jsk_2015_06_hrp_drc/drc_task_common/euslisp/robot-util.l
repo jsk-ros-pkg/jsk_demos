@@ -78,7 +78,9 @@
 (defun get-potentio-vector-from-joint-states ()
   (while (not (boundp '*potentio-vector*))
     (ros::spin-once))
-  *potentio-vector*)
+  ;;*potentio-vector*
+  (send *ri* :state :potentio-vector) ;; temp
+  )
 
 (defun joint-states-callback (msg)
   (setq *potentio-vector* (coerce (mapcar #'rad2deg (coerce (send msg :position) cons)) float-vector))
@@ -122,3 +124,82 @@
     (send msg :pose (ros::coords->tf-pose coords))
     (ros::publish "/urdf_control_marker/set_pose" msg)
     ))
+
+(load "package://hrpsys_ros_bridge/euslisp/rtm-ros-robot-interface.l")
+(defmethod rtm-ros-robot-interface
+  (:reach-until-touch
+   (limb dir
+         &key (thre 10) (max-dist 150) (dist-step 10) (time-step 200)
+         (coords-system :world) (ik-mode :limb) (rotation-axis t) (debug nil))
+   (unless (consp limb) (setq limb (list limb)))
+   (unless (consp dir) (setq dir (list dir)))
+   (let* ((tmp-robot (copy-object robot))
+          (ndir (mapcar #'normalize-vector dir))
+          (initial-force (mapcar #'(lambda (l) (send self :state :absolute-force-vector l)) limb))
+          (finish-condition (make-list (length limb) :initial-element nil)))
+     ;; 1. initialize
+     (send tmp-robot :angle-vector (send self :state :reference-vector))
+     ;; (send tmp-robot :angle-vector (send self :state :potentio-vector))
+     (send tmp-robot :fix-leg-to-coords (make-coords))
+     ;;(send self :set-interpolation-mode ":linear")
+     (when debug (warn ";; ndir: ~a initial-force: ~a~%" ndir initial-force))
+     ;; 2. loop
+     (dotimes (i (round (/ max-dist dist-step)))
+      ;; 2.1 check whether end condition is satisfied
+      (let* ((current-force (mapcar #'(lambda (l) (send self :state :absolute-force-vector l)) limb))
+             (diff-force (mapcar #'v- current-force initial-force))
+             (diff-dired-force (mapcar #'(lambda (l df nd) (- (v. df (if (equal coords-system :world) nd (send (send (send tmp-robot l :end-coords) :copy-worldcoords) :rotate-vector nd))))) limb diff-force ndir)))
+        (setq finish-condition (mapcar #'(lambda (l fc ddf) (or fc (when (> ddf thre) (warn "limb ~a touched~%" l) t)))
+                                       limb finish-condition diff-dired-force))
+        (when debug (warn ";; diff-dired-force: ~a thre: ~a finish-cond: ~a~%" diff-dired-force thre finish-condition))
+        (unless (some #'not finish-condition)
+          (return-from nil nil)))
+      ;; 2.2 solve ik and move real robot
+      (let* (ik-res)
+        (cond
+         ((equal ik-mode :fullbody)
+          (let* ((all-limb (list :rarm :larm :rleg :lleg)))
+            (with-move-target-link-list
+             (mt ll tmp-robot all-limb)
+             (setq tc (mapcar #'(lambda (l) (send (send tmp-robot l :end-coords) :copy-worldcoords)) all-limb))
+             (dotimes (i (length limb))
+               (let* ((l (elt limb i))
+                      (nd (elt ndir i)))
+                 (when (position l all-limb)
+                   (send (elt tc (position l all-limb)) :translate (scale dist-step nd) coords-system))))
+             (setq ik-res
+                   (send tmp-robot
+                         :fullbody-inverse-kinematics tc
+                         :move-target mt :link-list ll
+                         :additional-weight-list ;; for hrp2
+                         (list (list (send tmp-robot :rleg :toe-p :child-link) 0)
+                               (list (send tmp-robot :lleg :toe-p :child-link) 0))
+                         :root-link-virtual-joint-weight (float-vector 0.1 0.1 0.1 0.1 0.5 0.5)
+                         :target-centroid-pos (apply #'midpoint 0.5 (send tmp-robot :legs :end-coords :worldpos))
+                         :translation-axis (list t t t t)
+                         :rotation-axis (list t t t t)
+                         :max (float-vector  500  500  0  20  20  10) ;; for hrp2
+                         :min (float-vector  -500  -500  -200  -20  -20  -10) ;; for hrp2
+                         :stop 100
+                         :debug-view nil
+                         ))))
+            (unless ik-res
+              (warn ";; fullbody-ik failed~%")
+              (return-from nil nil)))
+         ((equal ik-mode :limb)
+          (setq ik-res
+                (mapcar #'(lambda (l nd fc) (or fc (send tmp-robot l :move-end-pos (scale dist-step nd) coords-system))) limb ndir finish-condition))
+          (dotimes (i (length ik-res))
+            (unless (elt ik-res i)
+              (warn ";; ik failed in ~a~%" (elt limb i))
+              (setf (elt finish-condition i) t))))))
+      (send self :angle-vector (send tmp-robot :angle-vector) time-step)
+      (unix::usleep (round (* (* time-step 1000) 0.8)))
+      )
+     ;; 3. send final posture again
+     ;;(send self :angle-vector (send self :state :potentio-vector) 500)
+     (send self :wait-interpolation)
+     (unix::usleep (* 100 1000))
+     ;;(send self :set-interpolation-mode ":hoffarbib")
+     )
+   ))

@@ -431,6 +431,15 @@ Usage:
      (:selecting-exec-for-drill-wall -> :executing-drill-wall)          ;exec
      (:selecting-exec-for-drill-wall -> :initial)                   ;cancel
      (:executing-drill-wall -> :initial)                            ;done
+     ;; drill_button
+     (:initial -> :selecting-region-for-drill-button)
+     (:selecting-region-for-drill-button -> :initial) ;cancel
+     (:selecting-region-for-drill-button -> :recognizing-drill-button-pose)
+     (:recognizing-drill-button-pose -> :selecting-exec-for-drill-button) ;recognition done
+     (:recognizing-drill-button-pose -> :initial) ;cancel
+     (:selecting-exec-for-drill-button -> :executing-drill-button)          ;exec
+     (:selecting-exec-for-drill-button -> :initial)                   ;cancel
+     (:executing-drill-button -> :initial)                            ;done
      )
    '((:initial :initial)
      ;; go-pos
@@ -483,6 +492,11 @@ Usage:
      (:recognizing-drill-wall :drill-wall)
      (:selecting-exec-for-drill-wall :drill-wall)
      (:executing-drill-wall :drill-wall)
+     ;; drill-button
+     (:selecting-region-for-drill-button :drill-button)
+     (:recognizing-drill-button-pose :drill-button)
+     (:selecting-exec-for-drill-button :drill-button)
+     (:executing-drill-button :drill-button)
      )
    :initial "ocs_state.png"))
 
@@ -506,6 +520,9 @@ Usage:
 
      (:initial -> :recognizing-drill-wall)
      (:recognizing-drill-wall -> :initial)
+
+     (:initial -> :recognizing-drill-button-pose)
+     (:recognizing-drill-button-pose -> :initial)
 
      (:initial -> :recognizing-door-pose)
      (:recognizing-door-pose -> :initial)
@@ -533,6 +550,9 @@ Usage:
 
      (:initial -> :executing-drill-wall)
      (:executing-drill-wall -> :initial)
+
+     (:initial -> :executing-drill-button)
+     (:executing-drill-button -> :initial)
      
      (:initial -> :executing-door)
      (:executing-door -> :initial)
@@ -569,6 +589,8 @@ Usage:
      (:executing-drill-put :drill)
      (:recognizing-drill-wall :drill)
      (:executing-drill-wall :drill)
+     (:recognizing-drill-button-pose :drill)
+     (:executing-drill-button :drill)
 
 
      (:recognizing-door-pose :door)

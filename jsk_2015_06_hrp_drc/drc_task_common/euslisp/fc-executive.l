@@ -69,6 +69,10 @@
                 self :drill-wall-points-command-callback)
           (list drc_com_common::OCS2FCSmall::*DRILL_WALL_EXEC*
                 self :drill-wall-exec-command-callback)
+          (list drc_com_common::OCS2FCSmall::*DRILL_BUTTON_REGION*
+                self :drill-button-region-command-callback)
+          (list drc_com_common::OCS2FCSmall::*DRILL_BUTTON_EXEC*
+                self :drill-button-exec-command-callback)
           )
     self)
   (:register-timelimits (sm)
@@ -93,6 +97,10 @@
           :add-timelimit 10 :initial
           :deligate-object self
           :deligate-method :report-recognition-failure-to-ocs)
+    (send (send smachine :node :recognizing-drill-button-pose)
+          :add-timelimit 15 :initial
+          :deligate-object self
+          :deligate-method :report-recognition-failure-to-ocs)
     (send (send smachine :node :recognizing-door-pose)
           :add-timelimit 10 :initial
           :deligate-object self
@@ -114,6 +122,10 @@
           :deligate-object self
           :deligate-method :report-recognition-failure-to-ocs)
     (send (send smachine :node :recognizing-drill-wall)
+          :add-timelimit 10 :initial
+          :deligate-object self
+          :deligate-method :report-recognition-failure-to-ocs)
+    (send (send smachine :node :recognizing-drill-button-pose)
           :add-timelimit 10 :initial
           :deligate-object self
           :deligate-method :report-recognition-failure-to-ocs)
@@ -179,6 +191,15 @@
       ;; enable snapshot
       (call-empty-service "/drill_recognition_for_wall/snapshot/request")
       (send smachine :go-to :recognizing-drill-wall)
+      ))
+  (:drill-button-region-command-callback (msg)
+    (when (send smachine :state? :initial)
+      ;; convert OCS2FCSmall into geometry_msgs/Polygon
+      (ros::publish "/drill_recognition_for_button/input_rect"
+        (integer-vector-to-rect-polygon-stamped msg))
+      ;; enable snapshot
+      (call-empty-service "/drill_recognition_for_button/snapshot/request")
+      (send smachine :go-to :recognizing-drill-button-pose)
       ))
   (:panorama-clear ()
     (call-empty-service "/panorama/panorama_processing/clear"))
@@ -331,6 +352,21 @@
         (ros::ros-info "Target coords are: ~A" coords-set))
       (send smachine :go-to :initial)
       ))
+  (:drill-button-exec-command-callback (msg)
+    (when (send smachine :state? :initial)
+      (let* ((params (send msg :float_params))
+             (coords (float-vector-to-coords params)))
+        (ros::ros-info "button drill at ~A" coords)
+        (send smachine :go-to :executing-drill-button)
+        ;; send motion to real robot
+        (send-drill-button-motion coords)
+        ;; send finish signal to ocs
+        (let ((msg (instance drc_com_common::FC2OCSSmall :init)))
+          (send msg :type drc_com_common::FC2OCSSmall::*DRILL_BUTTON_FINISHED*)
+          (send self :send-to-ocs msg))
+        (send smachine :go-to :initial)
+        ))
+    )
   (:door-exec-command-callback (msg)
     (when (send smachine :state? :initial)
       (multiple-value-bind
@@ -517,7 +553,6 @@
       (let* ((trans (send self :lookup-from-body-transform (send msg :header)))
              (coords (ros::tf-pose-stamped->coords msg))
              (from-body-coords (send trans :transform coords)))
-	
 	(let ((msg (instance drc_com_common::FC2OCSSmall :init)))
 	  (send msg :type drc_com_common::FC2OCSSmall::*DRILL_PUT_POSE*)
 	  (send msg :params (coords-to-float-vector from-body-coords (length (send msg :params))))
@@ -546,6 +581,17 @@
               ;; failed because of too many poses
               (send self :report-recognition-failure-to-ocs)))
           (send smachine :go-to :initial)))))
+  (:drill-button-recog-callback (msg)         ;geometry_msgs/PoseStamped
+    (when (send smachine :state? :recognizing-drill-button-pose)
+      (let* ((trans (send self :lookup-from-body-transform (send msg :header)))
+             (coords (ros::tf-pose-stamped->coords msg))
+             (from-body-coords (send trans :transform coords)))
+	(let ((msg (instance drc_com_common::FC2OCSSmall :init)))
+	  (send msg :type drc_com_common::FC2OCSSmall::*DRILL_BUTTON_POSE*)
+	  (send msg :params (coords-to-float-vector from-body-coords (length (send msg :params))))
+	  (send self :send-to-ocs msg)
+	  (send smachine :go-to :initial)
+	  ))))
   (:look-at-panorama-recog-callback (msg)
     (ros::ros-warn "panorama callback!")
     (send smachine :go-to :recognizing-look-at-point)
@@ -613,8 +659,8 @@
   )
 
 
-(load (robot-file "HRP2JSKNTS"))
-(init-robot-from-name "HRP2JSKNTS")
+(load (robot-file "HRP2JSKNT"))
+(init-robot-from-name "HRP2JSKNT")
 
 (setq *go-pos-offset* 700)
 (ros::advertise "image_marker" image_view2::ImageMarker2)
@@ -631,6 +677,7 @@
 (ros::advertise "/door_recognition/input_target_rect" geometry_msgs::PolygonStamped)
 (ros::advertise "/debri_recognition/input_line" geometry_msgs::PolygonStamped)
 (ros::advertise "/drill_recognition/input_rect" geometry_msgs::PolygonStamped)
+(ros::advertise "/drill_recognition_for_button/input_rect" geometry_msgs::PolygonStamped)
 (ros::advertise "/drill_recognition_for_put/input_rect" geometry_msgs::PolygonStamped)
 (ros::advertise "/drill_recognition_for_wall/input_poly" geometry_msgs::PolygonStamped)
 (ros::advertise "/fc_to_ocs_low_speed/input" drc_com_common::FC2OCSSmall)
@@ -655,6 +702,8 @@
   #'send *app* :hose-connect-recog-callback)
 (ros::subscribe "/drill_recognition/snapshot/output" geometry_msgs::PoseStamped
   #'send *app* :drill-grasp-recog-callback)
+(ros::subscribe "/drill_recognition_for_button/snapshot/output" geometry_msgs::PoseStamped
+  #'send *app* :drill-button-recog-callback)
 (ros::subscribe "/drill_recognition_for_put/snapshot/output" geometry_msgs::PoseStamped
   #'send *app* :drill-put-recog-callback)
 (ros::subscribe "/drill_recognition_for_wall/snapshot/output" geometry_msgs::PoseArray
