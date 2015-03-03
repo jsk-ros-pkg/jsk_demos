@@ -5,7 +5,7 @@ uint8 image_type
 uint8 IMAGE_RECT=0
 uint8 PANORAMA_VIEW=1
 uint32[8] image_roi_info
-float32[10] float_params
+float32[32] float_params
 # action type
 # go-pos
 uint8 GO_POS_REGION=1
@@ -36,3 +36,6 @@ uint8 DRILL_GRASP_EXEC=17
 # drill put
 uint8 DRILL_PUT_REGION=18
 uint8 DRILL_PUT_EXEC=19
+# drill wall
+uint8 DRILL_WALL_POINTS=20
+uint8 DRILL_WALL_EXEC=21

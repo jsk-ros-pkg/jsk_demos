@@ -80,6 +80,10 @@
                 self :drill-put-recognition-finished-callback)
           (list drc_com_common::FC2OCSSmall::*DRILL_PUT_FINISHED*
                 self :drill-put-exec-finished-callback)
+          (list drc_com_common::FC2OCSSmall::*DRILL_WALL_POSE*
+                self :drill-wall-recognition-finished-callback)
+          (list drc_com_common::FC2OCSSmall::*DRILL_WALL_FINISHED*
+                self :drill-wall-exec-finished-callback)
           (list drc_com_common::FC2OCSSmall::*LOOK_AROUND_FINISHED*
                 self :look-around-finished-callback)
           (list drc_com_common::FC2OCSSmall::*RECOGNITION_FAILED*
@@ -117,13 +121,15 @@
         (call-empty-service (format nil "~A/grabcut_rect_mode"  node)))
        ((eq mode :line)
         (call-empty-service (format nil "~A/line_mode" node)))
+       ((eq mode :polygon)
+        (call-empty-service (format nil "~A/poly_mode" node)))
        ((eq mode :none)
         (call-empty-service (format nil "~A/none_mode" node)))
        (t
         (error "unknown mode: ~A" mode)
         ))
       ))
-  (:show-text (text)
+  (:show-text (text &optional (color :success))
     (setq show-text-buffer (cons text show-text-buffer))
     ;; buffer limit is 3
     (if (> (length show-text-buffer) 3)
@@ -134,7 +140,13 @@
         (dolist (tx (reverse show-text-buffer))
           (setq full-text (format nil "~A~%~A" tx full-text)))
         (send msg :text full-text)
-        (send msg :fg_color *success-color*)
+        (cond
+         ((eq color :success)
+          (send msg :fg_color *success-color*))
+         ((eq color :warn)
+          (send msg :fg_color *warn-color*))
+         ((eq color :unknown)
+          (send msg :fg_color *unknown-color*)))
         (send msg :bg_color *transparent-color*)
         (ros::publish "/ocs/rviz/visualization/ocs_executive_message" msg))
       ))
@@ -191,6 +203,12 @@
       (send self :show-text "Select rectangle region for drill-put")
       (send smachine :go-to :selecting-region-for-drill-put))
     (send req :response))
+  (:drill-wall-button-callback (req)
+    (when (send smachine :next? :selecting-region-for-drill-wall)
+      (send self :set-image-view2-mode :polygon)
+      (send self :show-text "Select points for drill-wall")
+      (send smachine :go-to :selecting-region-for-drill-wall))
+    (send req :response))
   (:go-pos-button-callback (req)
     (when (send smachine :next? :selecting-region-for-go-pos)
       ;; force to use rectangle mode
@@ -224,6 +242,10 @@
     (cond
      ((eq (send smachine :state) :selecting-region-for-debri)
       (send self :line-callback-for-debri-line msg))))
+  (:polygon-callback (msg)
+    (cond
+     ((eq (send smachine :state) :selecting-region-for-drill-wall)
+      (send self :polygon-callback-for-drill-wall msg))))
   (:rectangle-callback (msg) ;; msg = geometry_msgs/PolygonStamped
     (cond
      ((eq (send smachine :state) :selecting-region-for-go-pos)
@@ -268,6 +290,21 @@
                                     msg (length (send fc-msg :image_roi_info))))
       (send self :send-to-fc fc-msg)
       (send smachine :go-to :recognizing-debri-pose)))
+  (:polygon-callback-for-drill-wall (msg)
+    (let ((fc-msg (instance drc_com_common::OCS2FCSmall :init)))
+      (send fc-msg :type drc_com_common::OCS2FCSmall::*DRILL_WALL_POINTS*)
+      (let ((poly-integer-vector (polygon-stamped-to-integer-vector
+                                  msg (length (send fc-msg :image_roi_info)))))
+        (if poly-integer-vector
+            (progn
+              (send self :show-text "Wait for wall recognition")
+              (send fc-msg :image_roi_info poly-integer-vector)
+              (send self :send-to-fc fc-msg)
+              (send smachine :go-to :recognizing-drill-wall))
+          (progn
+            (send self :show-text "Failed to convert to integer vector, too many points" :warn)
+            nil)
+          ))))
   (:rectangle-callback-for-hose-grasp-region (msg)
     (send self :show-text "Wait for hose-grasp recognition")
     ;; send to FC to recognize pos
@@ -353,6 +390,8 @@
       (send smachine :go-to :initial))
      ((eq (send smachine :state) :selecting-region-for-drill-put)
       (send smachine :go-to :initial))
+     ((eq (send smachine :state) :selecting-region-for-drill-wall)
+      (send smachine :go-to :initial))
      ((eq (send smachine :state) :selecting-region-for-go-pos)
       (send smachine :go-to :initial))
      ((eq (send smachine :state) :selecting-region-for-look-at)
@@ -374,6 +413,8 @@
       (send smachine :go-to :initial))
      ((eq (send smachine :state) :recognizing-drill-put-pose)
       (send smachine :go-to :initial))
+     ((eq (send smachine :state) :recognizing-drill-wall)
+      (send smachine :go-to :initial))
      ((eq (send smachine :state) :recognizing-go-pos-goal)
       (send smachine :go-to :initial))
      ;; there is no recognition state for look-at and look-around
@@ -391,6 +432,8 @@
      ((eq (send smachine :state) :selecting-exec-for-drill-grasp)
       (send smachine :go-to :initial))
      ((eq (send smachine :state) :selecting-exec-for-drill-put)
+      (send smachine :go-to :initial))
+     ((eq (send smachine :state) :selecting-exec-for-drill-wall)
       (send smachine :go-to :initial))
      ((eq (send smachine :state) :selecting-exec-for-go-pos)
       (send smachine :go-to :initial))
@@ -493,6 +536,15 @@
       (send msg :float_params (coords-to-float-vector (elt drill-put-params 0) (length (send msg :float_params))))
       (send self :send-to-fc msg)
       (send smachine :go-to :executing-drill-put)))
+  (:exec-drill-wall-button-callback ()
+    (send self :show-text "Execute drill-wall motion")  
+    ;; do something magical!!
+    ;; send drill-wall params to fc
+    (let ((msg (instance drc_com_common::OCS2FCSmall :init)))
+      (send msg :type drc_com_common::OCS2FCSmall::*DRILL_WALL_EXEC*)
+      (send msg :float_params (coords-set-to-float-vector drill-wall-target-coords (length (send msg :float_params))))
+      (send self :send-to-fc msg)
+      (send smachine :go-to :executing-drill-wall)))
   (:exec-go-pos-button-callback ()
     ;; update latest go-pos coords
     (setq go-pos-coords (send *tf* :lookup-transform "hrp2_marker_root" "ground" (ros::time 0)))
@@ -521,13 +573,15 @@
       (send self :exec-drill-grasp-button-callback))
      ((eq (send smachine :state) :selecting-exec-for-drill-put)
       (send self :exec-drill-put-button-callback))
+     ((eq (send smachine :state) :selecting-exec-for-drill-wall)
+      (send self :exec-drill-wall-button-callback))
      ((eq (send smachine :state) :selecting-exec-for-go-pos)
       (send self :exec-go-pos-button-callback))
      )
     (send req :response))
   )
 
-;; recognition finised callback ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; recognition finised callback ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defmethod ocs-executive-app
   (:valve-recognition-finished-callback (msg)
     (when (eq (send smachine :state) :recognizing-valve-pose)
@@ -551,6 +605,13 @@
          (publish-valve-motion :radius (cadr valve-params) :coords (car valve-params) :update? t)
          ))
       (send smachine :go-to :selecting-exec-for-valve)))
+  (:drill-wall-recognition-finished-callback (msg)
+    (when (eq (send smachine :state) :recognizing-drill-wall)
+      (let ((params (send msg :params)))
+        ;; TODO: Here you have coords-set, Do something magical
+        (let ((coords-set (float-vector-to-coords-set params)))
+          (setq drill-wall-target-coords coords-set)
+          (send smachine :go-to :selecting-exec-for-drill-wall)))))
   (:door-recognition-finished-callback (msg)
     (when (eq (send smachine :state) :recognizing-door-pose)
       (let ((params (send msg :params)))
@@ -688,7 +749,7 @@
         (send smachine :go-to :selecting-exec-for-go-pos))))
   (:recognition-failed-callback (msg)
     (when (send smachine :next? :initial)
-      (send self :show-text "Recognition failed, go to :initial state")
+      (send self :show-text "Recognition failed, go to :initial state" :warn)
       (send smachine :go-to :initial)))
   )
 
@@ -834,6 +895,7 @@
 (ros::advertise-service "hose_connect" std_srvs::Empty #'send *app* :hose-connect-button-callback)
 (ros::advertise-service "drill_grasp" std_srvs::Empty #'send *app* :drill-grasp-button-callback)
 (ros::advertise-service "drill_put" std_srvs::Empty #'send *app* :drill-put-button-callback)
+(ros::advertise-service "drill_wall" std_srvs::Empty #'send *app* :drill-wall-button-callback)
 (ros::advertise-service "go_pos" std_srvs::Empty #'send *app* :go-pos-button-callback)
 (ros::advertise-service "look_at" std_srvs::Empty #'send *app* :look-at-button-callback)
 (ros::advertise-service "look_around" std_srvs::Empty #'send *app* :look-around-button-callback)
@@ -849,6 +911,8 @@
   #'send *app* :panorama-rectangle-callback)
 (ros::subscribe "/ocs/communication/image_rect_color/line/scaled" geometry_msgs::PolygonStamped
   #'send *app* :line-callback)
+(ros::subscribe "/ocs/communication/image_rect_color/poly/scaled" geometry_msgs::PolygonStamped
+  #'send *app* :polygon-callback)
 ;; (ros::subscribe "/ocs/communication/image_rect_color/foreground_rect/scaled" geometry_msgs::PolygonStamped
 ;;   #'send *app* :foreground-rect-callback)
 ;; (ros::subscribe "/ocs/communication/image_rect_color/background_rect/scaled" geometry_msgs::PolygonStamped

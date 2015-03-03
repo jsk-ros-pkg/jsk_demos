@@ -65,6 +65,10 @@
                 self :drill-put-region-command-callback)
           (list drc_com_common::OCS2FCSmall::*DRILL_PUT_EXEC*
                 self :drill-put-exec-command-callback)
+          (list drc_com_common::OCS2FCSmall::*DRILL_WALL_POINTS*
+                self :drill-wall-points-command-callback)
+          (list drc_com_common::OCS2FCSmall::*DRILL_WALL_EXEC*
+                self :drill-wall-exec-command-callback)
           )
     self)
   (:register-timelimits (sm)
@@ -106,6 +110,10 @@
           :deligate-object self
           :deligate-method :report-recognition-failure-to-ocs)
     (send (send smachine :node :recognizing-look-at-point-panorama)
+          :add-timelimit 10 :initial
+          :deligate-object self
+          :deligate-method :report-recognition-failure-to-ocs)
+    (send (send smachine :node :recognizing-drill-wall)
           :add-timelimit 10 :initial
           :deligate-object self
           :deligate-method :report-recognition-failure-to-ocs)
@@ -162,6 +170,15 @@
       ;; enable snapshot
       (call-empty-service "/drill_recognition_for_put/snapshot/request")
       (send smachine :go-to :recognizing-drill-put-pose)
+      ))
+  (:drill-wall-points-command-callback (msg)
+    (when (send smachine :state? :initial)
+      ;; convert OCS2FCSmall into geometry_msgs/Polygon
+      (ros::publish "/drill_recognition_for_wall/input_poly"
+        (integer-vector-to-polygon-stamped msg))
+      ;; enable snapshot
+      (call-empty-service "/drill_recognition_for_wall/snapshot/request")
+      (send smachine :go-to :recognizing-drill-wall)
       ))
   (:panorama-clear ()
     (call-empty-service "/panorama/panorama_processing/clear"))
@@ -306,6 +323,14 @@
         (send smachine :go-to :initial)
         ))
     )
+  (:drill-wall-exec-command-callback (msg)
+    (when (send smachine :next? :executing-drill-wall)
+      (send smachine :go-to :executing-drill-wall)
+      ;; TODO: do something great!
+      (let ((coords-set (float-vector-to-coords-set (send msg :float_params))))
+        (ros::ros-info "Target coords are: ~A" coords-set))
+      (send smachine :go-to :initial)
+      ))
   (:door-exec-command-callback (msg)
     (when (send smachine :state? :initial)
       (multiple-value-bind
@@ -499,8 +524,28 @@
 	  (send self :send-to-ocs msg)
 	  (send smachine :go-to :initial)
 	  ))))
-
-
+  (:drill-wall-recog-callback (msg)
+    (ros::ros-info ":drill-wall-recog-callback")
+    (when (send smachine :state? :recognizing-drill-wall)
+      (let* ((trans (send self :lookup-from-body-transform (send msg :header)))
+             (coords-set (mapcar #'(lambda (ros-pose)
+                                     (ros::tf-pose->coords ros-pose))
+                                 (send msg :poses)))
+             (from-body-coords-set
+              (mapcar #'(lambda (c)
+                          (send (send trans :copy-worldcoords) :transform c))
+                      coords-set)))
+        (let ((msg (instance drc_com_common::FC2OCSSmall :init)))
+          (send msg :type drc_com_common::FC2OCSSmall::*DRILL_WALL_POSE*)
+          (send msg :params (coords-set-to-float-vector
+                             from-body-coords-set (length (send msg :params))))
+          (if (send msg :params)
+              (progn
+                (send self :send-to-ocs msg))
+            (progn
+              ;; failed because of too many poses
+              (send self :report-recognition-failure-to-ocs)))
+          (send smachine :go-to :initial)))))
   (:look-at-panorama-recog-callback (msg)
     (ros::ros-warn "panorama callback!")
     (send smachine :go-to :recognizing-look-at-point)
@@ -587,6 +632,7 @@
 (ros::advertise "/debri_recognition/input_line" geometry_msgs::PolygonStamped)
 (ros::advertise "/drill_recognition/input_rect" geometry_msgs::PolygonStamped)
 (ros::advertise "/drill_recognition_for_put/input_rect" geometry_msgs::PolygonStamped)
+(ros::advertise "/drill_recognition_for_wall/input_poly" geometry_msgs::PolygonStamped)
 (ros::advertise "/fc_to_ocs_low_speed/input" drc_com_common::FC2OCSSmall)
 
 (ros::subscribe "/fc_from_ocs_low_speed/output" drc_com_common::OCS2FCSmall
@@ -611,6 +657,8 @@
   #'send *app* :drill-grasp-recog-callback)
 (ros::subscribe "/drill_recognition_for_put/snapshot/output" geometry_msgs::PoseStamped
   #'send *app* :drill-put-recog-callback)
+(ros::subscribe "/drill_recognition_for_wall/snapshot/output" geometry_msgs::PoseArray
+  #'send *app* :drill-wall-recog-callback)
 (ros::advertise "/go_pos_goal" geometry_msgs::PoseStamped)
 
 (ros::rate 10)

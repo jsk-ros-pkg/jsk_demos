@@ -1,7 +1,7 @@
 uint8 type
 uint8 seq
 # Parameters
-float32[16] params
+float32[32] params
 
 # type
 # go-pos
@@ -33,6 +33,8 @@ uint8 DRILL_GRASP_POSE=16
 uint8 DRILL_GRASP_FINISHED=17
 uint8 DRILL_PUT_POSE=18
 uint8 DRILL_PUT_FINISHED=19
+uint8 DRILL_WALL_POSE=21
+uint8 DRILL_WALL_FINISHED=22
 
 # failed
 uint8 RECOGNITION_FAILED=20

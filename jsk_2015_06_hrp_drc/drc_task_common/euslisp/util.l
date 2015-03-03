@@ -25,16 +25,19 @@
     (ros::service-call srv req)))
 
 ;; topic <---> compressed message conversion
+(defun fill-coords-float-vector (coords fv start)
+  (setf (elt fv (+ start 0)) (elt (send coords :worldpos) 0))
+  (setf (elt fv (+ start 1)) (elt (send coords :worldpos) 1))
+  (setf (elt fv (+ start 2)) (elt (send coords :worldpos) 2))
+  (setf (elt fv (+ start 3)) (elt (car (send coords :rpy-angle)) 0))
+  (setf (elt fv (+ start 4)) (elt (car (send coords :rpy-angle)) 1))
+  (setf (elt fv (+ start 5)) (elt (car (send coords :rpy-angle)) 2))
+  )
 
 (defun coords-to-float-vector (coords length)
   ;6 parameters are filled
-  (let ((ret (instantiate float-vector length))) 
-    (setf (elt ret 0) (elt (send coords :worldpos) 0))
-    (setf (elt ret 1) (elt (send coords :worldpos) 1))
-    (setf (elt ret 2) (elt (send coords :worldpos) 2))
-    (setf (elt ret 3) (elt (car (send coords :rpy-angle)) 0))
-    (setf (elt ret 4) (elt (car (send coords :rpy-angle)) 1))
-    (setf (elt ret 5) (elt (car (send coords :rpy-angle)) 2))
+  (let ((ret (instantiate float-vector length)))
+    (fill-coords-float-vector coords ret 0)
     ret))
 
 (defun float-vector-to-coords (fv)
@@ -59,6 +62,22 @@
                           (floor (elt point-b 1)))
                     (make-list (- length 4) :initial-element 0))
             integer-vector)))
+
+(defun polygon-stamped-to-integer-vector (msg length)
+  (let ((points
+         (mapcar #'(lambda (p)
+                     (list (send p :x) (send p :y)))
+                 (send msg :polygon :points))))
+    (if (> (* 2 (length points)) length)
+        (progn
+          (ros::ros-warn "Maximum number of points supported is ~A"
+                         (/ length 2))
+          nil)
+      (let ((ret (instantiate integer-vector length)))
+        (let ((flat-points (apply #'append points)))
+          (dotimes (i (length flat-points))
+            (setf (elt ret i) (elt flat-points i))))
+        ret))))
 
 (defun double-rect-polygon-stamped-to-integer-vector (msg0 msg1 length)
   (let ((point-a (list (send (elt (send msg0 :polygon :points) 0) :x)
@@ -96,6 +115,57 @@
         (send p2 :y y2)
         (send ret :polygon :points (list p1 p2))
         ret))))
+
+(defun integer-vector-to-polygon-stamped (msg)
+  (let ((params nil))
+    (dotimes (i (/ (length (send msg :image_roi_info)) 2))
+      (let ((x (elt (send msg :image_roi_info) (* i 2)))
+            (y (elt (send msg :image_roi_info) (1+ (* i 2)))))
+        (if (and (= x 0) (= y 0))
+            (return-from nil nil)       ;break
+          (setq params (append params (list (list x y)))))))
+    (let ((ret (instance geometry_msgs::PolygonStamped :init)))
+      (send ret :polygon :points (mapcar #'(lambda (p)
+                                             (let ((point (instance geometry_msgs::Point32 :init)))
+                                               (send point :x (car p))
+                                               (send point :y (cadr p))
+                                               point))
+                                         params))
+      (send ret :header :stamp (ros::time-now))
+      ret)))
+
+(defun coords-set-to-float-vector (coords-set length)
+  (if (> (* 6 (length coords-set)) length)
+      (progn
+        (ros::ros-warn "Maximum number to convert is ~A" (/ length 6))))
+  (let ((ret (instantiate float-vector length)))
+    (dotimes (i (length coords-set))
+      (if (<= (* (1+ i) 6) length)
+          (fill-coords-float-vector (elt coords-set i) ret (* i 6))))
+    ret))
+
+(defun float-vector-to-coords-set (params)
+  (let ((coords-set nil))
+    (dotimes (i (/ (length params) 6))
+      (let ((param0 (elt params (+ 0 (* i 6))))
+            (param1 (elt params (+ 1 (* i 6))))
+            (param2 (elt params (+ 2 (* i 6))))
+            (param3 (elt params (+ 3 (* i 6))))
+            (param4 (elt params (+ 4 (* i 6))))
+            (param5 (elt params (+ 5 (* i 6)))))
+        (if (and (= param0 0)
+                 (= param1 0)
+                 (= param2 0)
+                 (= param3 0)
+                 (= param4 0)
+                 (= param5 0))
+            (return-from nil nil)     ; all zero means end of coords set
+          (setq coords-set (append coords-set (list (float-vector-to-coords 
+                                                     (float-vector param0 param1 param2
+                                                                   param3 param4 param5))))))
+        ))
+    coords-set))
+  
 
 (defun integer-vector-to-double-rect-polygon-stamped (msg)
   (let ((x1 (elt (send msg :image_roi_info) 0))
