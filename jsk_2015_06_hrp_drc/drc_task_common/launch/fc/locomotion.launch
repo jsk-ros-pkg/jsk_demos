@@ -1,6 +1,8 @@
 <launch>
+  <node pkg="drc_task_common" type="robot-boundingbox.l" name="robot_bbox">
+  </node>
   <node pkg="jsk_pcl_ros" type="pointcloud_localization" name="pointcloud_localization" output="screen">
-    <remap from="~input" to="/full_cloud2" />
+    <remap from="~input" to="laser_self_filter_points/output" />
     <remap from="~icp_align" to="icp_localization/icp_align" />
     <rosparam>
       leaf_size: 0.02
@@ -11,4 +13,20 @@
       use_flipped_initial_pose: false
     </rosparam>
   </node>
+  <node pkg="jsk_pcl_ros" type="attention_clipper" name="laser_self_filter">
+    <remap from="~input/points" to="/full_cloud2" />
+    <remap from="~input/box" to="/robot_bbox" />
+    <rosparam>
+      not_sync: true
+    </rosparam>
+  </node>
+  <node pkg="nodelet" type="nodelet" name="laser_self_filter_points"
+        args="standalone pcl/ExtractIndices">
+    <remap from="~input" to="/full_cloud2" />
+    <remap from="~indices" to="laser_self_filter/output/point_indices" />
+    <rosparam>
+      negative: true
+    </rosparam>
+  </node>
+  
 </launch>
