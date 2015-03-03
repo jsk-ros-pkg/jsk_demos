@@ -1,0 +1,14 @@
+<launch>
+  <node pkg="jsk_pcl_ros" type="pointcloud_localization" name="pointcloud_localization" output="screen">
+    <remap from="~input" to="/full_cloud2" />
+    <remap from="~icp_align" to="icp_localization/icp_align" />
+    <rosparam>
+      leaf_size: 0.02
+    </rosparam>
+  </node>
+  <node pkg="jsk_pcl_ros" type="icp_registration" name="icp_localization" output="screen">
+    <rosparam>
+      use_flipped_initial_pose: false
+    </rosparam>
+  </node>
+</launch>
