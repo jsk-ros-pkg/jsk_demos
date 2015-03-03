@@ -14,7 +14,7 @@ from visualization_msgs.msg import Marker
 from geometry_msgs.msg import *    
 
 if __name__ == "__main__":
-    rospy.init_node('polygon_to_centroid', anonymous=True)
+    rospy.init_node('drill_button_publisher', anonymous=True)
     marker_pub = rospy.Publisher('/button_marker', Marker)
     marker = Marker(ns="button", id=0, type=Marker.ARROW, action=Marker.ADD, frame_locked=True)
     marker.header = std_msgs.msg.Header(frame_id="drill")
