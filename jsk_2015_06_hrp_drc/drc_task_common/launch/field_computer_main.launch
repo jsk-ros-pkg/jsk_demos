@@ -40,6 +40,8 @@
   </include>
   <include file="$(find drc_task_common)/launch/fc/drill_recognition.launch">
   </include>
+  <include file="$(find drc_task_common)/launch/fc/drill_recognition_for_wall.launch">
+  </include>
   <include file="$(find drc_task_common)/launch/fc/drill_recognition_for_put.launch">
   </include>
   <include file="$(find drc_task_common)/launch/fc/door_recognition.launch">

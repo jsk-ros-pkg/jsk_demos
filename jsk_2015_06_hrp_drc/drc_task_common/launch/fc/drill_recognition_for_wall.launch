@@ -1,8 +1,8 @@
 <launch>
-  <arg name="INPUT_IMAGE" to="/multisense/left/image_rect_color" />
-  <arg name="INPUT_POINT_CLOUD" to="/multisense/resize_1_1/points" />
-  <arg name="INPUT_DOWNSAMPLED_POINT_CLOUD" to="/multisense/resize_1_8/points" />
-  <group ns="drill_wall_recognition">
+  <arg name="INPUT_IMAGE" value="/multisense/left/image_rect_color" />
+  <arg name="INPUT_POINT_CLOUD" value="/multisense/resize_1_1/points" />
+  <arg name="INPUT_DOWNSAMPLED_POINT_CLOUD" value="/multisense/resize_1_8/points" />
+  <group ns="drill_recognition_for_wall">
     <node pkg="jsk_pcl_ros" type="pointcloud_screenpoint" name="screenpoint" output="screen">
       <remap from="~poly" to="input_poly"/>
       <remap from="~points" to="$(arg INPUT_POINT_CLOUD)" /> <!--need to use original size-->
@@ -13,6 +13,7 @@
     <node pkg="jsk_pcl_ros" type="organized_multi_plane_segmentation" name="plane_segmentation">
       <remap from="~input" to="$(arg INPUT_DOWNSAMPLED_POINT_CLOUD)" />
       <rosparam>
+        min_size: 300
         max_curvature: 0.01
         estimate_normal: true
       </rosparam>
@@ -23,7 +24,7 @@
       <remap from="~input/convex_align_polygon" to="screenpoint/output_polygon" />
     </node>
     <node pkg="jsk_topic_tools" type="snapshot" name="snapshot">
-      <remap from="~input" to="snapit/output_convex_aligned_pose_array"/>
+      <remap from="~input" to="snapit/output/convex_aligned_pose_array"/>
       <rosparam>
         latch: true
       </rosparam>

@@ -174,10 +174,10 @@
   (:drill-wall-points-command-callback (msg)
     (when (send smachine :state? :initial)
       ;; convert OCS2FCSmall into geometry_msgs/Polygon
-      (ros::publish "/drill_wall_recognition/input_poly"
+      (ros::publish "/drill_recognition_for_wall/input_poly"
         (integer-vector-to-polygon-stamped msg))
       ;; enable snapshot
-      (call-empty-service "/drill_wall_recognition/snapshot/request")
+      (call-empty-service "/drill_recognition_for_wall/snapshot/request")
       (send smachine :go-to :recognizing-drill-wall)
       ))
   (:panorama-clear ()
@@ -323,6 +323,14 @@
         (send smachine :go-to :initial)
         ))
     )
+  (:drill-wall-exec-command-callback (msg)
+    (when (send smachine :next? :executing-drill-wall)
+      (send smachine :go-to :executing-drill-wall)
+      ;; TODO: do something great!
+      (let ((coords-set (float-vector-to-coords-set (send msg :float_params))))
+        (ros::ros-info "Target coords are: ~A" coords-set))
+      (send smachine :go-to :initial)
+      ))
   (:door-exec-command-callback (msg)
     (when (send smachine :state? :initial)
       (multiple-value-bind
@@ -517,6 +525,7 @@
 	  (send smachine :go-to :initial)
 	  ))))
   (:drill-wall-recog-callback (msg)
+    (ros::ros-info ":drill-wall-recog-callback")
     (when (send smachine :state? :recognizing-drill-wall)
       (let* ((trans (send self :lookup-from-body-transform (send msg :header)))
              (coords-set (mapcar #'(lambda (ros-pose)
@@ -623,6 +632,7 @@
 (ros::advertise "/debri_recognition/input_line" geometry_msgs::PolygonStamped)
 (ros::advertise "/drill_recognition/input_rect" geometry_msgs::PolygonStamped)
 (ros::advertise "/drill_recognition_for_put/input_rect" geometry_msgs::PolygonStamped)
+(ros::advertise "/drill_recognition_for_wall/input_poly" geometry_msgs::PolygonStamped)
 (ros::advertise "/fc_to_ocs_low_speed/input" drc_com_common::FC2OCSSmall)
 
 (ros::subscribe "/fc_from_ocs_low_speed/output" drc_com_common::OCS2FCSmall
@@ -647,7 +657,7 @@
   #'send *app* :drill-grasp-recog-callback)
 (ros::subscribe "/drill_recognition_for_put/snapshot/output" geometry_msgs::PoseStamped
   #'send *app* :drill-put-recog-callback)
-(ros::subscribe "/drill_wall_recognition/snapshot/output" geometry_msgs::PolygonStamped
+(ros::subscribe "/drill_recognition_for_wall/snapshot/output" geometry_msgs::PoseArray
   #'send *app* :drill-wall-recog-callback)
 (ros::advertise "/go_pos_goal" geometry_msgs::PoseStamped)
 

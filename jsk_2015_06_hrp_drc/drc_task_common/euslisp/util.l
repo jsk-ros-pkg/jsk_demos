@@ -26,13 +26,14 @@
 
 ;; topic <---> compressed message conversion
 (defun fill-coords-float-vector (coords fv start)
-  (setf (elt ret (+ start 0)) (elt (send coords :worldpos) 0))
-  (setf (elt ret (+ start 1)) (elt (send coords :worldpos) 1))
-  (setf (elt ret (+ start 2)) (elt (send coords :worldpos) 2))
-  (setf (elt ret (+ start 3)) (elt (car (send coords :rpy-angle)) 0))
-  (setf (elt ret (+ start 4)) (elt (car (send coords :rpy-angle)) 1))
-  (setf (elt ret (+ start 5)) (elt (car (send coords :rpy-angle)) 2))
+  (setf (elt fv (+ start 0)) (elt (send coords :worldpos) 0))
+  (setf (elt fv (+ start 1)) (elt (send coords :worldpos) 1))
+  (setf (elt fv (+ start 2)) (elt (send coords :worldpos) 2))
+  (setf (elt fv (+ start 3)) (elt (car (send coords :rpy-angle)) 0))
+  (setf (elt fv (+ start 4)) (elt (car (send coords :rpy-angle)) 1))
+  (setf (elt fv (+ start 5)) (elt (car (send coords :rpy-angle)) 2))
   )
+
 (defun coords-to-float-vector (coords length)
   ;6 parameters are filled
   (let ((ret (instantiate float-vector length)))
@@ -142,6 +143,29 @@
       (if (<= (* (1+ i) 6) length)
           (fill-coords-float-vector (elt coords-set i) ret (* i 6))))
     ret))
+
+(defun float-vector-to-coords-set (params)
+  (let ((coords-set nil))
+    (dotimes (i (/ (length params) 6))
+      (let ((param0 (elt params (+ 0 (* i 6))))
+            (param1 (elt params (+ 1 (* i 6))))
+            (param2 (elt params (+ 2 (* i 6))))
+            (param3 (elt params (+ 3 (* i 6))))
+            (param4 (elt params (+ 4 (* i 6))))
+            (param5 (elt params (+ 5 (* i 6)))))
+        (if (and (= param0 0)
+                 (= param1 0)
+                 (= param2 0)
+                 (= param3 0)
+                 (= param4 0)
+                 (= param5 0))
+            (return-from nil nil)     ; all zero means end of coords set
+          (setq coords-set (append coords-set (list (float-vector-to-coords 
+                                                     (float-vector param0 param1 param2
+                                                                   param3 param4 param5))))))
+        ))
+    coords-set))
+  
 
 (defun integer-vector-to-double-rect-polygon-stamped (msg)
   (let ((x1 (elt (send msg :image_roi_info) 0))

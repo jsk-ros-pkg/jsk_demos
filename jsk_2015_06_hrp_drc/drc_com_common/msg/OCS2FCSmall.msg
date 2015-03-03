@@ -5,7 +5,7 @@ uint8 image_type
 uint8 IMAGE_RECT=0
 uint8 PANORAMA_VIEW=1
 uint32[8] image_roi_info
-float32[10] float_params
+float32[32] float_params
 # action type
 # go-pos
 uint8 GO_POS_REGION=1
