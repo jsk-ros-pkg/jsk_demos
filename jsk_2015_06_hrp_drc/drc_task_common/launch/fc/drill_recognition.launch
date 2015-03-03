@@ -6,12 +6,13 @@
   <arg name="IMU" default="/multisense/imu/imu_data" />
   <arg name="LAUNCH_MANAGER" default="true" />
   <arg name="MANAGER" default="drill_manager" />
+  <arg name="DRILL_RECOGNITION_NAMESPACE" default="drill_recognition" />
   <group if="$(arg LAUNCH_MANAGER)">
     <node pkg="nodelet" type="nodelet" name="$(arg MANAGER)"
           args="manager"
           output="screen"/>
   </group>
-  <group ns="drill_recognition">
+  <group ns="$(arg DRILL_RECOGNITION_NAMESPACE)">
     <!-- clustering -->
     <!-- <node pkg="image_view2" type="image_view2" name="image_view2"> -->
     <!--   <remap from="image" to="/multisense/left/image_rect_color" /> -->
@@ -159,7 +160,7 @@
       </rosparam>
     </node>
     <node pkg="jsk_topic_tools" type="static_transform_pose_stamped" name="static_transform_pose_stamped"
-          args="0 0 -0.12 0 0 0 /drill_recognition/icp_registration/output_pose /drill_recognition/icp_registration/output_pose_origin"
+          args="0 0 -0.12 0 0 0 /$(arg DRILL_RECOGNITION_NAMESPACE)/icp_registration/output_pose /$(arg DRILL_RECOGNITION_NAMESPACE)/icp_registration/output_pose_origin"
           />
     <node pkg="jsk_topic_tools" type="snapshot" name="snapshot">
       <remap from="~input" to="icp_registration/output_pose_origin"/>

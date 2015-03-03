@@ -60,10 +60,10 @@
     (setq pose-st (send (ros::service-call "/transformable_interactive_server/get_pose" req) :pose_stamped))
     (setq coords (ros::tf-pose->coords (send pose-st :pose)))
     (when frame-id
-      (let ((trans (send *tf* :lookup-transform "BODY" 
+      (let ((trans (send *tf* :lookup-transform frame-id
                          (send pose-st :header :frame_id) (send pose-st :header :stamp))))
         (unless trans
-          (setq trans (send *tf* :lookup-transform "BODY" 
+          (setq trans (send *tf* :lookup-transform frame-id
                             (send pose-st :header :frame_id) (ros::time 0))))
         (setq coords (send trans :transform coords))
         ))

@@ -16,6 +16,9 @@
 - name: 'drill-grasp'
   service: 'drill_grasp'
   column: 0
+- name: 'drill-button'
+  service: 'drill_button'
+  column: 0
 - name: 'drill-wall'
   service: 'drill_wall'
   column: 0
