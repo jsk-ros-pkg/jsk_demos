@@ -3,14 +3,18 @@
   <arg name="INPUT_POINT_CLOUD" value="/multisense/resize_1_1/points" />
   <arg name="INPUT_DOWNSAMPLED_POINT_CLOUD" value="/multisense/resize_1_8/points" />
   <group ns="drill_recognition_for_wall">
-    <node pkg="jsk_pcl_ros" type="pointcloud_screenpoint" name="screenpoint" output="screen">
+    <node pkg="nodelet" type="nodelet" name="manager" args="manager" output="screen">
+    </node>
+    <node pkg="nodelet" type="nodelet" name="screenpoint"
+          args="load jsk_pcl/PointcloudScreenpoint">
       <remap from="~poly" to="input_poly"/>
       <remap from="~points" to="$(arg INPUT_POINT_CLOUD)" /> <!--need to use original size-->
       <rosparam>
         use_poly: true
       </rosparam>
     </node>
-    <node pkg="jsk_pcl_ros" type="organized_multi_plane_segmentation" name="plane_segmentation">
+    <node pkg="nodelet" type="nodelet" name="plane_segmentation"
+          args="load jsk_pcl/OrganizedMultiPlaneSegmentation manager">
       <remap from="~input" to="$(arg INPUT_DOWNSAMPLED_POINT_CLOUD)" />
       <rosparam>
         min_size: 300
@@ -18,7 +22,8 @@
         estimate_normal: true
       </rosparam>
     </node>
-    <node pkg="jsk_pcl_ros" type="snapit" name="snapit">
+    <node pkg="nodelet" type="nodelet" name="snapit"
+          args="load jsk_pcl/SnapIt manager">
       <remap from="~input/polygons" to="plane_segmentation/output_refined_polygon" />
       <remap from="~input/polygon_coefficients" to="plane_segmentation/output_refined_coefficients" />
       <remap from="~input/convex_align_polygon" to="screenpoint/output_polygon" />
