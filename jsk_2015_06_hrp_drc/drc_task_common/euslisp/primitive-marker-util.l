@@ -46,7 +46,10 @@
   (let* ((msg (instance std_msgs::ColorRGBA :init :r r :g g :b b :a a)))
     (ros::publish "/transformable_interactive_server/set_color" msg)))
 
-
+(defun set-primitive-marker-control-relative-pose
+  (coords)
+   (ros::publish "/transformable_interactive_server/set_control_relative_pose" (ros::coords->tf-pose coords)))
+   
 ;; receive ;;;;;;;;;;;;;;;;;;;;
 
 (defun get-primitive-marker-pose

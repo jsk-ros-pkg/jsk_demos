@@ -742,6 +742,7 @@
         ;; publish object marker
         (erase-all-primitive-marker)
         (insert-primitive-marker :shape-type jsk_rviz_plugins::TransformableMarkerOperate::*MESH_RESOURCE* :name "drill" :description "" :resource "package://hrpsys_gazebo_tutorials/environment_models/dewalt_dc550ka/meshes/dewalt_dc550ka.dae" :use-material t)
+	(set-primitive-marker-control-relative-pose (make-coords :pos (float-vector -25 30 95) :rpy (float-vector 0 0 pi/2))) ;;Todo more precise pose for button
         ;(set-primitive-marker-dimensions :radius 30 :z 300)
         (set-primitive-marker-pose coords "BODY")
         ;; (set-primitive-marker-color :r 1.0 :g 1.0 :b 0.0 :a 0.6)
@@ -790,6 +791,7 @@
         ;; publish object marker
         (erase-all-primitive-marker)
         (insert-primitive-marker :shape-type jsk_rviz_plugins::TransformableMarkerOperate::*MESH_RESOURCE* :name "drill" :description "" :resource "package://hrpsys_gazebo_tutorials/environment_models/dewalt_dc550ka/meshes/dewalt_dc550ka.dae" :use-material t)
+	(set-primitive-marker-control-relative-pose (make-coords :pos (float-vector -25 80 95) :rpy (float-vector 0 0 pi/2))) ;;Todo more precise pose for button
         ;;(set-primitive-marker-pose coords "BODY") ;; comment out because pose is not correct
         (move-robot-model-to-current-pos)
         ;; publish motion to robot model on rviz
@@ -960,6 +962,7 @@
 (ros::advertise "/transformable_interactive_server/set_color" std_msgs::ColorRGBA)
 (ros::advertise "/midi_config_player/set_feedback" sensor_msgs::JoyFeedbackArray)
 (ros::advertise "/urdf_control_marker/set_pose" geometry_msgs::PoseStamped 1)
+(ros::advertise "/transformable_interactive_server/set_control_relative_pose" geometry_msgs::Pose 1)
 
 ;; registering services for button UIs
 (ros::advertise-service "valve" std_srvs::Empty #'send *app* :valve-button-callback)
