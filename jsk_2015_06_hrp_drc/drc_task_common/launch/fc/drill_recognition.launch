@@ -34,7 +34,7 @@
     </node>
 
     <node pkg="nodelet" type="nodelet" name="supervoxel_normal"
-	  args="standalone pcl/NormalEstimation">
+	  args="load pcl/NormalEstimation $(arg MANAGER)">
       <remap from="~input" to="supervoxel_segmentation/output/cloud" />
       <rosparam>
         k_search: 0
@@ -62,7 +62,7 @@
       <remap from="~input/camera_info" to="$(arg INPUT_CAMERA_INFO)" />
     </node>
     <node pkg="nodelet" type="nodelet" name="filtered_cloud"
-          args="standalone pcl/ExtractIndices">
+          args="load pcl/ExtractIndices $(arg MANAGER)">
       <remap from="~input" to="supervoxel_normal_concat/output"/>
       <remap from="~indices" to="mask_image_cluster_filter/output"/>
     </node>
@@ -109,7 +109,8 @@
           name="box_array_to_box">
       <remap from="bounding_box_array" to="cluster_decomposer_one/boxes" />
     </node>
-    <node pkg="jsk_pcl_ros" type="icp_registration" name="icp_registration">
+    <node pkg="nodelet" type="nodelet" name="icp_registration"
+          args="load jsk_pcl/ICPRegistration $(arg MANAGER)">
       <remap from="~input" to="filtered_cloud/output" />
       <remap from="~input_box" to="bounding_box" />
       <remap from="~input_reference" to="template_normal_concat/output" />
@@ -127,7 +128,7 @@
     <!-- <node pkg="nodelet" type="nodelet" name="pointcloud_server" -->
     <!--       args="load jsk_pcl/PointcloudDatabaseServer /$(arg MANAGER)"> -->
     <node pkg="nodelet" type="nodelet" name="pointcloud_server_org"
-          args="standalone pcl/PCDReader">
+          args="load pcl/PCDReader $(arg MANAGER)">
       <rosparam subst_value="true">
         publish_rate: 1
         tf_frame: "map"
@@ -136,7 +137,7 @@
       </rosparam>
     </node>
     <node pkg="nodelet" type="nodelet" name="pointcloud_server"
-          args="standalone pcl/VoxelGrid">
+          args="load pcl/VoxelGrid $(arg MANAGER)">
       <remap from="~input" to="pointcloud_server_org/output"/>
       <rosparam subst_value="true">
         leaf_size: 0.01
@@ -144,7 +145,7 @@
     </node>
     <!-- apply normal estimation to output of db -->
     <node pkg="nodelet" type="nodelet" name="template_normal_estimation"
-	  args="standalone pcl/NormalEstimation">
+	  args="load pcl/NormalEstimation $(arg MANAGER)">
       <remap from="~input" to="pointcloud_server/output" />
       <rosparam>
         k_search: 0
