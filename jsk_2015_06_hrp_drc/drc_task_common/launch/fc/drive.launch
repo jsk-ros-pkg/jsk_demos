@@ -1,0 +1,44 @@
+<launch>
+  <arg name="INPUT_IMAGE" default="/multisense/left/image_rect_color" />
+  <arg name="INPUT_CAMERA_INFO" default="/multisense/left/camera_info" />
+  <arg name="INPUT_POINT_CLOUD" default="/multisense/resize_1_4/points" />
+  <arg name="CAMERA_FRAME" default="multisense/left_camera_optical_frame" />
+  <arg name="DEBUG" default="true" />
+  <group ns="drive">
+    <node pkg="nodelet" type="nodelet" name="manager" args="manager" />
+    <node pkg="image_view2" type="image_view2"  name="image_view2" if="$(arg DEBUG)">
+      <remap from="image" to="$(arg INPUT_IMAGE)" />
+    </node>
+    <node pkg="image_view" type="image_view" name="mask_image_view" if="$(arg DEBUG)">
+      <remap from="image" to="rect_to_mask_image/output" />
+    </node>
+    <node pkg="nodelet" type="nodelet" name="rect_to_mask_image"
+          args="load jsk_perception/RectToMaskImage manager">
+      <remap from="~input" to="$(arg INPUT_IMAGE)/screenrectangle" />
+      <remap from="~input/camera_info" to="$(arg INPUT_CAMERA_INFO)" />
+    </node>
+    <node pkg="nodelet" type="nodelet"
+          args="load jsk_pcl/MaskImageFilter manager"
+          name="mask_image_filter">
+      <remap from="~input" to="$(arg INPUT_POINT_CLOUD)"/>
+      <remap from="~input/mask" to="rect_to_mask_image/output"/>
+      <remap from="~input/camera_info" to="$(arg INPUT_CAMERA_INFO)" />
+    </node>
+    <node pkg="nodelet" type="nodelet" name="mask_image_filter_points"
+          args="load pcl/ExtractIndices manager">
+      <remap from="~input" to="$(arg INPUT_POINT_CLOUD)" />
+      <remap from="~indices" to="mask_image_filter/output" />
+    </node>
+    <node pkg="nodelet" type="nodelet"
+          args="load jsk_pcl/TorusFinder manager"
+          name="handle_detector">
+      <remap from="~input" to="mask_image_filter_points/output" />
+      <rosparam>
+        min_radius: 0.174
+        max_radius: 0.175
+        max_iterations: 1000
+        outlier_threshold: 0.005
+      </rosparam>
+    </node>
+  </group>
+</launch>
