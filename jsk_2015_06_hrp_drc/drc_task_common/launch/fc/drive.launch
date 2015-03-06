@@ -34,10 +34,12 @@
           name="handle_detector">
       <remap from="~input" to="mask_image_filter_points/output" />
       <rosparam>
-        min_radius: 0.174
+        min_radius: 0.17
         max_radius: 0.175
         max_iterations: 1000
-        outlier_threshold: 0.005
+        outlier_threshold: 0.01
+        use_hint: true
+        initial_axis_hint: [0, 0, 1]
       </rosparam>
     </node>
   </group>
