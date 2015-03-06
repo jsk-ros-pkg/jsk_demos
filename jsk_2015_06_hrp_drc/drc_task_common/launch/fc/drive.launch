@@ -29,10 +29,31 @@
       <remap from="~input" to="$(arg INPUT_POINT_CLOUD)" />
       <remap from="~indices" to="mask_image_filter/output" />
     </node>
+    <!-- normal -->
+    <node pkg="nodelet" type="nodelet" name="normal_estimation"
+          args="load pcl/NormalEstimationOMP manager">
+      <remap from="~input" to="mask_image_filter_points/output"/>
+      <rosparam>
+        k_search: 0
+        radius_search: 0.1
+        spatial_locator: 0
+      </rosparam>
+    </node>
+
+    <node pkg="nodelet" type="nodelet" name="normal_concat"
+        args="load jsk_pcl/NormalConcatenater manager">
+    <remap from="~input" to="mask_image_filter_points/output" />
+    <remap from="~normal" to="normal_estimation/output" />
+    <rosparam>
+      use_async: false
+    </rosparam>
+  </node>
+
+
     <node pkg="nodelet" type="nodelet"
           args="load jsk_pcl/TorusFinder manager"
           name="handle_detector">
-      <remap from="~input" to="mask_image_filter_points/output" />
+      <remap from="~input" to="normal_concat/output" />
       <rosparam>
         min_radius: 0.17
         max_radius: 0.175
@@ -40,6 +61,7 @@
         outlier_threshold: 0.01
         use_hint: true
         initial_axis_hint: [0, 0, 1]
+        use_normal: true
       </rosparam>
     </node>
   </group>
