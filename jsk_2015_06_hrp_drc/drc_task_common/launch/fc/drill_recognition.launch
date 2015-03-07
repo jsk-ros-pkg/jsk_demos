@@ -2,7 +2,7 @@
   <arg name="INPUT_IMAGE" default="/multisense/left/image_rect_color"/>
   <arg name="INPUT_CAMERA_INFO" default="/multisense/left/camera_info"/>
   <arg name="INPUT_POINT_CLOUD" default="/multisense/resize_1_4/points" />
-  <arg name="CAMERA_FRAME_ID" default="/left_camera_optical_frame" />
+  <arg name="CAMERA_FRAME_ID" default="/multisense/left_camera_optical_frame" />
   <arg name="IMU" default="/multisense/imu/imu_data" />
   <arg name="LAUNCH_MANAGER" default="true" />
   <arg name="MANAGER" default="drill_manager" />
@@ -34,7 +34,7 @@
     </node>
 
     <node pkg="nodelet" type="nodelet" name="supervoxel_normal"
-	  args="load pcl/NormalEstimation $(arg MANAGER)">
+	  args="standalone pcl/NormalEstimation">
       <remap from="~input" to="supervoxel_segmentation/output/cloud" />
       <rosparam>
         k_search: 0
@@ -62,7 +62,8 @@
       <remap from="~input/camera_info" to="$(arg INPUT_CAMERA_INFO)" />
     </node>
     <node pkg="nodelet" type="nodelet" name="filtered_cloud"
-          args="load pcl/ExtractIndices $(arg MANAGER)">
+          args="standalone pcl/ExtractIndices"> <!-- for debug  -->
+          <!-- args="load pcl/ExtractIndices $(arg MANAGER)"> -->
       <remap from="~input" to="supervoxel_normal_concat/output"/>
       <remap from="~indices" to="mask_image_cluster_filter/output"/>
     </node>
@@ -72,11 +73,10 @@
     <node pkg="jsk_pcl_ros" type="calculate_polygon_from_imu.py"
           name="calc_polygon">
       <remap from="imu_data" to="$(arg IMU)" />
-      <!-- <remap from="camera_info" to="$(arg INPUT_CAMERA_INFO)" /> -->
-      <remap from="points" to="filtered_cloud/output" />
     </node>
     <node pkg="nodelet" type="nodelet" name="polygon_transformer"
-          args="load jsk_pcl/PolygonArrayTransformer /$(arg MANAGER)">
+          args="standalone jsk_pcl/PolygonArrayTransformer" >
+          <!-- args="load jsk_pcl/PolygonArrayTransformer /$(arg MANAGER)"> -->
       <remap from="~input_polygons" to="polygon_array"/>
       <remap from="~input_coefficients" to="model_coefficients_array" />
       <param name="frame_id" value="$(arg CAMERA_FRAME_ID)" />
@@ -91,12 +91,18 @@
     <!--       name="cluster_decomposer_one" -->
     <!--       args="load jsk_pcl/ClusterPointIndicesDecomposer $(arg MANAGER)" -->
     <!--     output="screen"> -->
+    <node pkg="drc_task_common" type="time_ensync_for_recognition.py" name="time_ensync" >
+      <remap from="timer" to="filtered_cloud/output" />
+      <remap from="planes" to="polygon_transformer/output_polygons" />
+      <remap from="planes_coefficients"
+             to="polygon_transformer/output_coefficients" />
+    </node>
     <node pkg="jsk_pcl_ros" type="cluster_point_indices_decomposer" name="cluster_decomposer_one">
       <remap from="~input" to="filtered_cloud/output" />
       <remap from="~target" to="add_cluster/output" />
-      <remap from="~align_planes" to="polygon_transformer/output_polygons" />
+      <remap from="~align_planes" to="ensynced_planes" />
       <remap from="~align_planes_coefficients"
-             to="polygon_transformer/output_coefficients" />
+             to="ensynced_planes_coefficients" />
       <rosparam>
         align_boxes: true
         use_pca: true
@@ -104,13 +110,13 @@
         publish_tf: false
       </rosparam>
     </node>
-    
+
     <node pkg="jsk_pcl_ros" type="box_array_to_box.py"
           name="box_array_to_box">
       <remap from="bounding_box_array" to="cluster_decomposer_one/boxes" />
     </node>
     <node pkg="nodelet" type="nodelet" name="icp_registration"
-          args="load jsk_pcl/ICPRegistration $(arg MANAGER)">
+          args="standalone jsk_pcl/ICPRegistration">
       <remap from="~input" to="filtered_cloud/output" />
       <remap from="~input_box" to="bounding_box" />
       <remap from="~input_reference" to="template_normal_concat/output" />
@@ -128,7 +134,7 @@
     <!-- <node pkg="nodelet" type="nodelet" name="pointcloud_server" -->
     <!--       args="load jsk_pcl/PointcloudDatabaseServer /$(arg MANAGER)"> -->
     <node pkg="nodelet" type="nodelet" name="pointcloud_server_org"
-          args="load pcl/PCDReader $(arg MANAGER)">
+          args="standalone pcl/PCDReader">
       <rosparam subst_value="true">
         publish_rate: 1
         tf_frame: "map"
@@ -137,7 +143,7 @@
       </rosparam>
     </node>
     <node pkg="nodelet" type="nodelet" name="pointcloud_server"
-          args="load pcl/VoxelGrid $(arg MANAGER)">
+          args="standalone pcl/VoxelGrid">
       <remap from="~input" to="pointcloud_server_org/output"/>
       <rosparam subst_value="true">
         leaf_size: 0.01
@@ -145,7 +151,7 @@
     </node>
     <!-- apply normal estimation to output of db -->
     <node pkg="nodelet" type="nodelet" name="template_normal_estimation"
-	  args="load pcl/NormalEstimation $(arg MANAGER)">
+	  args="standalone pcl/NormalEstimation">
       <remap from="~input" to="pointcloud_server/output" />
       <rosparam>
         k_search: 0
