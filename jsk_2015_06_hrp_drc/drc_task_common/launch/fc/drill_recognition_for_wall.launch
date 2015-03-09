@@ -6,7 +6,7 @@
     <node pkg="nodelet" type="nodelet" name="manager" args="manager" output="screen">
     </node>
     <node pkg="nodelet" type="nodelet" name="screenpoint"
-          args="load jsk_pcl/PointcloudScreenpoint">
+          args="load jsk_pcl/PointcloudScreenpoint manager">
       <remap from="~poly" to="input_poly"/>
       <remap from="~points" to="$(arg INPUT_POINT_CLOUD)" /> <!--need to use original size-->
       <rosparam>
