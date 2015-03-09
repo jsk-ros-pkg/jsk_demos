@@ -23,7 +23,7 @@
       </rosparam>
     </node>
     <node pkg="nodelet" type="nodelet" name="snapit"
-          args="load jsk_pcl/SnapIt manager">
+          args="load jsk_pcl/Snapit manager">
       <remap from="~input/polygons" to="plane_segmentation/output_refined_polygon" />
       <remap from="~input/polygon_coefficients" to="plane_segmentation/output_refined_coefficients" />
       <remap from="~input/convex_align_polygon" to="screenpoint/output_polygon" />
