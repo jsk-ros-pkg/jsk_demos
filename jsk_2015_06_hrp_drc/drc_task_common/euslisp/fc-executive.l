@@ -94,7 +94,7 @@
           :deligate-object self
           :deligate-method :report-recognition-failure-to-ocs)
     (send (send smachine :node :recognizing-drill-put-pose)
-          :add-timelimit 10 :initial
+          :add-timelimit 25 :initial ;; at present, too long!
           :deligate-object self
           :deligate-method :report-recognition-failure-to-ocs)
     (send (send smachine :node :recognizing-drill-button-pose)
@@ -335,8 +335,7 @@
         (ros::ros-info "put drill at ~A" coords)
         (send smachine :go-to :executing-drill-put)
         ;; send motion to real robot
-        ;; TODO make drill motion
-        ;;(send-drill-put-motion coords)
+        (send-drill-put-motion coords)
         ;; send finish signal to ocs
         (let ((msg (instance drc_com_common::FC2OCSSmall :init)))
           (send msg :type drc_com_common::FC2OCSSmall::*DRILL_PUT_FINISHED*)

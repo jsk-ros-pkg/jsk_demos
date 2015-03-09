@@ -8,6 +8,7 @@
 (ros::roseus-add-msgs "drc_com_common")
 (ros::roseus-add-msgs "jsk_recognition_msgs")
 (ros::roseus-add-msgs "jsk_interactive_marker")
+(ros::roseus-add-srvs "jsk_interactive_marker")
 (ros::roseus-add-msgs "jsk_rviz_plugins")
 (ros::roseus-add-srvs "jsk_rviz_plugins")
 (ros::load-ros-manifest "drc_task_common")
@@ -742,7 +743,7 @@
         ;; publish object marker
         (erase-all-primitive-marker)
         (insert-primitive-marker :shape-type jsk_rviz_plugins::TransformableMarkerOperate::*MESH_RESOURCE* :name "drill" :description "" :resource "package://hrpsys_gazebo_tutorials/environment_models/dewalt_dc550ka/meshes/dewalt_dc550ka.dae" :use-material t)
-	(set-primitive-marker-control-relative-pose (make-coords :pos (float-vector -25 30 95) :rpy (float-vector 0 0 pi/2))) ;;Todo more precise pose for button
+	(set-primitive-marker-control-relative-pose (make-coords :pos (float-vector -22 30 97) :rpy (float-vector 0 0 pi/2))) ;;Todo more precise pose for button
         ;(set-primitive-marker-dimensions :radius 30 :z 300)
         (set-primitive-marker-pose coords "BODY")
         ;; (set-primitive-marker-color :r 1.0 :g 1.0 :b 0.0 :a 0.6)
@@ -769,8 +770,7 @@
         (apply-primitive-dimensions-to-midi-device)
         (move-robot-model-to-current-pos)
         ;; publish motion to robot model on rviz
-        ;; todo
-	;; (publish-drill-put-motion :coords (elt drill-put-params 0) :update? t)
+	(publish-drill-put-motion :coords (elt drill-put-params 0) :update? t)
         (send smachine :go-to :selecting-exec-for-drill-put))
       ))
   (:drill-wall-recognition-finished-callback (msg)
@@ -910,8 +910,7 @@
            (setq drill-put-params
                  (list (get-primitive-marker-pose :frame-id "BODY")))
            ;; publish dirll motion to robot model on rviz
-           ;; todo
-           ;; (publish-drill-put-motion :coords (elt drill-put-params 0) :update? t)
+           (publish-drill-put-motion :coords (elt drill-put-params 0) :update? t)
            )
           ((eq (send smachine :state) :selecting-exec-for-drill-button)
            ;; update latest drill-button params
