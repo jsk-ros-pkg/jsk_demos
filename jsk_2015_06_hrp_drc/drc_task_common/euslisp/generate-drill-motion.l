@@ -97,7 +97,7 @@
 (defun generate-drill-grasp-motion
   (&key (draw? t))
   (let* ((reach-dist 100)
-	 (grasp-up-dist 300)
+	 (grasp-up-dist 150)
          (ik-results nil)
          (original-foot-midcoords (send (send *robot* :foot-midcoords) :copy-worldcoords)))
     ;; grasp drill
@@ -110,7 +110,6 @@
       ;; solve ik for grasp
       (setq tc
             (list
-             ;; todo reverse if
              (send (send *drill* :get :grasp-coords) :copy-worldcoords)
              (send *robot* :rleg :end-coords :copy-worldcoords)
              (send *robot* :lleg :end-coords :copy-worldcoords)))
@@ -157,9 +156,9 @@
       ;; draw
       (when draw? (send *irtviewer* :draw-objects :flush t))
       ;; drill-reset-pose
-      (send *robot* :angle-vector (get-look-drill-pose))
+      ;(send *robot* :angle-vector (get-look-drill-pose))
       (send *robot* :fix-leg-to-coords original-foot-midcoords)
-      (push-back (list 3 t (send *robot* :angle-vector)) ik-results)
+      ;(push-back (list 3 t (send *robot* :angle-vector)) ik-results)
       (setq *drill-ik-results* ik-results)
       ))
   )
@@ -176,7 +175,7 @@
 
 (defun get-drill-grasp-stand-coords ;; relative to drill
   ()
-  (make-coords :pos (float-vector -600 120 0) :rpy (list (deg2rad 30) 0 0)) ;; dependent on arm
+  (make-coords :pos (float-vector -600 300 0) :rpy (list (deg2rad 0) 0 0)) ;; dependent on arm
   )
 
 (defun get-drill-grasp-motion-full
@@ -185,15 +184,6 @@
   (let* ((drill-motion-av-list (get-drill-grasp-motion :draw? draw?))
          (drill-motion-length (length drill-motion-av-list)))
     (when (= drill-motion-length 0)
-      ;; (let* ((x-vec (send (send (send *drill* :worldcoords) :copy-worldcoords) :rotate-vector (float-vector 0 0 1)))
-      ;;        (z-vec (float-vector 0 0 1))
-      ;;        (y-vec (v* z-vec x-vec))
-      ;;        (drill-grasp-coords-stand-rot (make-coords :pos (send (send *drill* :copy-worldcoords) :worldpos) :rot (transpose (matrix x-vec y-vec z-vec))))
-      ;;        (stand-coords (send (send drill-grasp-coords-stand-rot :copy-worldcoords) :transform (get-drill-grasp-stand-coords) :local))
-      ;;        (stand-pos (send stand-coords :worldpos))
-      ;;        (stand-rpy (elt (send stand-coords :rpy-angle) 0))
-      ;;        )
-      ;;   (setq *drill-grasp-stand-coords* (make-coords :pos (float-vector (elt stand-pos 0) (elt stand-pos 1) 0) :rpy (list (elt stand-rpy 0) 0 0))
         (let ((theta (atan2 (elt (send drill-coords :pos) 1)
                             (elt (send drill-coords :pos) 0))))
           (let ((ux (float-vector (cos theta)
@@ -209,8 +199,10 @@
                        (make-coords :pos (send drill-coords :worldpos)
                                     :rot mat)))
 
-                  (setq *drill-grasp-stand-coords* (send (send drill-oriented-coords :copy-worldcoords)
-                                                         :transform (get-drill-grasp-stand-coords)))
+                  (let ((drill-grasp-coords (send (send drill-oriented-coords :copy-worldcoords)
+                                                         :transform (get-drill-grasp-stand-coords))))
+                    (setq *drill-grasp-stand-coords* (make-coords :pos (float-vector (elt (send drill-grasp-coords :worldpos) 0) (elt (send drill-grasp-coords :worldpos) 1) 0) :rpy (float-vector (elt (car (send drill-grasp-coords :rpy-angle)) 0) 0 0)))
+                    )
                   )))))
       (ros::ros-warn "change stand position to ~a for valve motion.~%" *drill-grasp-stand-coords*)
       (send *robot* :fix-leg-to-coords *drill-grasp-stand-coords*)
@@ -226,11 +218,18 @@
   (coords &key (real? t))
   (let* ((drill-motion-av-list (get-drill-grasp-motion-full coords))
          (drill-motion-length (length drill-motion-av-list)))
-    (when (not (= drill-motion-length 0))
-      ;; first reaching
-      (send *robot* :hand :arms :hook-pose) ;; hand hook-pose
-      (when real? (hand-model2real))
-      (send *robot* :reset-manip-pose))
+    (when (= drill-motion-length 0) (return-from send-drill-grasp-motion))
+    (send *robot* :hand :arms :hook-pose) ;; hand hook-pose
+    (when real? (hand-model2real))
+    (send *robot* :reset-manip-pose)
+    (when *drill-grasp-stand-coords*
+      (let* ((pos (scale 0.001 (send *drill-grasp-stand-coords* :worldpos)))
+             (rpy (mapcar #'rad2deg (car (send *drill-grasp-stand-coords* :rpy-angle)))))
+        (ros::ros-warn "go-pos to ~a ~a ~a for valve~%" (elt pos 0) (elt pos 1) (elt rpy 0))
+        (when real? (send *ri* :go-pos (elt pos 0) (elt pos 1) (elt rpy 0)))
+        ))
+    
+    ;; first reaching
     (unless (check-angle-vector-distance)
       (when real? (model2real :time 3000)))
     (send *robot* :angle-vector (get-reach-drill-pre-pose))
@@ -238,13 +237,6 @@
       (when real? (model2real :time 3000)))
     (when real? (send *ri* :start-impedance :arms :moment-gain (float-vector 0 0 0) :k-p 1000 :d-p 400)) ;; start imp
     ;; walk
-    (when *drill-grasp-stand-coords*
-      (let* ((pos (scale 0.001 (send *drill-grasp-stand-coords* :worldpos)))
-             (rpy (mapcar #'rad2deg (car (send *drill-grasp-stand-coords* :rpy-angle)))))
-        (ros::ros-warn "go-pos to ~a ~a ~a for valve~%" (elt pos 0) (elt pos 1) (elt rpy 0))
-        (when real? (send *ri* :go-pos (elt pos 0) (elt pos 1) (elt rpy 0)))
-        ))
-
     ;; pre-reach
     (send *robot* :angle-vector (elt drill-motion-av-list 0))
     (when real? (model2real :time 5000))
@@ -518,7 +510,7 @@
 ;; TODO pre-push-pose
 (defun test-drill-grasp-motion ()
   ;(get-drill-grasp-motion-full (make-coords :pos (float-vector 700 -150 800) :rpy (list 0 0 0)) :draw? t)
-  (setq *answer-for-grasp-test* (get-drill-grasp-motion-full (make-coords :pos (float-vector 600 -150 0) :rpy (list 0 0 0)) :draw? t))
+  (setq *answer-for-grasp-test* (get-drill-grasp-motion-full (make-coords :pos (float-vector 1000 -150 200) :rpy (list 0 0 0)) :draw? t))
   (play-motion-on-eus-viewer *drill-motion*)
   )
 
