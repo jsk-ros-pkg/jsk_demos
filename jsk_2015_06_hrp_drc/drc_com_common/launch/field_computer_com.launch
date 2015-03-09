@@ -12,7 +12,7 @@
       message: drc_com_common/FC2OCSLarge
       to_port: 16485
       to_ip: "$(arg OCS_IP)"
-      send_rate: 2
+      send_rate: 10
       packet_interval: 0.00005
     </rosparam>
   </node>
