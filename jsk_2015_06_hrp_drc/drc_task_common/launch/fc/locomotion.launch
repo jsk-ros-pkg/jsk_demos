@@ -1,5 +1,5 @@
 <launch>
-  <arg name="INPUT_POINT_CLOUD" to="/full_cloud2" />
+  <arg name="INPUT_POINT_CLOUD" default="/full_cloud2" />
   <group ns="locomotion">
     <node pkg="nodelet" type="nodelet" name="manager" args="manager" output="screen"/>
 
