@@ -1,7 +1,4 @@
 <launch>
-  <!--
-      This is a launch file for Main PC of Field Computer (FC)
-  -->
 
   <!-- recognition -->
   <group ns="stereo_preprocessing">

@@ -2,7 +2,7 @@
   <arg name="INPUT_IMAGE" default="/multisense/left/image_rect_color"/>
   <arg name="INPUT_CAMERA_INFO" default="/multisense/left/camera_info"/>
   <arg name="INPUT_POINT_CLOUD" default="/multisense/resize_1_4/points" />
-  <arg name="CAMERA_FRAME_ID" default="/multisense/left_camera_optical_frame" />
+  <arg name="CAMERA_FRAME_ID" default="/left_camera_optical_frame" />
   <arg name="IMU" default="/multisense/imu/imu_data" />
   <arg name="LAUNCH_MANAGER" default="true" />
   <arg name="MANAGER" default="drill_manager" />
@@ -91,7 +91,7 @@
     <!--       name="cluster_decomposer_one" -->
     <!--       args="load jsk_pcl/ClusterPointIndicesDecomposer $(arg MANAGER)" -->
     <!--     output="screen"> -->
-    <node pkg="drc_task_common" type="time_ensync_for_recognition.py" name="time_ensync" >
+    <node pkg="jsk_pcl_ros" type="plane_time_ensync_for_recognition.py" name="time_ensync" >
       <remap from="timer" to="filtered_cloud/output" />
       <remap from="planes" to="polygon_transformer/output_polygons" />
       <remap from="planes_coefficients"
