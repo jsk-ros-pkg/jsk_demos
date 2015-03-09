@@ -1,6 +1,45 @@
 <launch>
+  <arg name="INPUT_POINT_CLOUD" to="/full_cloud2" />
   <group ns="locomotion">
     <node pkg="nodelet" type="nodelet" name="manager" args="manager" output="screen"/>
+
+    <node pkg="nodelet" type="nodelet"
+          name="x_filter"
+          args="load pcl/PassThrough manager">
+      <remap from="~input" to="$(arg INPUT_POINT_CLOUD)" />
+      <rosparam>
+        filter_field_name: x
+        filter_limit_min: -3
+        filter_limit_max: 3
+        filter_limit_negative: false
+      </rosparam>
+    </node>
+    <node pkg="nodelet" type="nodelet"
+          name="y_filter"
+          args="load pcl/PassThrough manager">
+      <remap from="~input" to="x_filter/output" />
+      <rosparam>
+        filter_field_name: y
+        filter_limit_min: -3
+        filter_limit_max: 3
+        filter_limit_negative: false
+      </rosparam>
+    </node>
+
+    <!-- first, remove upper pointcloud -->
+    <node pkg="nodelet" type="nodelet"
+          name="z_filter"
+          args="load pcl/PassThrough manager">
+      <remap from="~input" to="y_filter/output" />
+      <rosparam>
+        filter_field_name: z
+        filter_limit_min: 0.2
+        filter_limit_max: 100.0
+        filter_limit_negative: true
+        input_frame: HEAD_LINK0
+      </rosparam>
+    </node>
+    
     <node pkg="drc_task_common" type="robot-boundingbox.l" name="robot_bbox">
     </node>
     <node pkg="nodelet" type="nodelet"
@@ -21,19 +60,6 @@
       </rosparam>
     </node>
     
-    <!-- first, remove upper pointcloud -->
-    <node pkg="nodelet" type="nodelet"
-          name="z_filter"
-          args="load pcl/PassThrough manager">
-      <remap from="~input" to="/full_cloud2" />
-      <rosparam>
-        filter_field_name: z
-        filter_limit_min: 0.2
-        filter_limit_max: 100.0
-        filter_limit_negative: true
-        input_frame: HEAD_LINK0
-      </rosparam>
-    </node>
     <node pkg="nodelet" type="nodelet"
           name="laser_self_filter"
           args="load jsk_pcl/AttentionClipper manager">
