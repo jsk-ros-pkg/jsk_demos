@@ -221,14 +221,14 @@
     (when (= drill-motion-length 0) (return-from send-drill-grasp-motion))
     (send *robot* :hand :arms :hook-pose) ;; hand hook-pose
     (when real? (hand-model2real))
-    (send *robot* :reset-manip-pose)
+    ;; walk
     (when *drill-grasp-stand-coords*
       (let* ((pos (scale 0.001 (send *drill-grasp-stand-coords* :worldpos)))
              (rpy (mapcar #'rad2deg (car (send *drill-grasp-stand-coords* :rpy-angle)))))
         (ros::ros-warn "go-pos to ~a ~a ~a for valve~%" (elt pos 0) (elt pos 1) (elt rpy 0))
         (when real? (send *ri* :go-pos (elt pos 0) (elt pos 1) (elt rpy 0)))
         ))
-    
+    (send *robot* :reset-manip-pose)    
     ;; first reaching
     (unless (check-angle-vector-distance)
       (when real? (model2real :time 3000)))
@@ -236,7 +236,6 @@
     (unless (check-angle-vector-distance)
       (when real? (model2real :time 3000)))
     (when real? (send *ri* :start-impedance :arms :moment-gain (float-vector 0 0 0) :k-p 1000 :d-p 400)) ;; start imp
-    ;; walk
     ;; pre-reach
     (send *robot* :angle-vector (elt drill-motion-av-list 0))
     (when real? (model2real :time 5000))
@@ -249,9 +248,9 @@
     ;; grasp-up
     (send *robot* :angle-vector (elt drill-motion-av-list 2))
     (when real? (model2real :time 3000))      
-    ;; drill-reset-pose
-    (send *robot* :angle-vector (elt drill-motion-av-list 3))
-    (when real? (model2real :time 5000))
+    ;; ;; drill-reset-pose
+    ;; (send *robot* :angle-vector (elt drill-motion-av-list 3))
+    ;; (when real? (model2real :time 5000))
     )
   )
 
@@ -264,6 +263,63 @@
   (when *drill-grasp-stand-coords*
     (move-robot-model *drill-grasp-stand-coords* "ground"))
   (publish-motion-joint-states *drill-motion* :step-time step-time))
+
+
+
+;; drill put
+;; almost same with grasp at present
+(defun send-drill-put-motion
+  (coords &key (real? t))
+  (let* ((drill-motion-av-list (get-drill-grasp-motion-full coords))
+         (drill-motion-length (length drill-motion-av-list)))
+    (when (= drill-motion-length 0) (return-from send-drill-grasp-motion))
+    ;; walk
+    (when *drill-grasp-stand-coords*
+      (let* ((pos (scale 0.001 (send *drill-grasp-stand-coords* :worldpos)))
+             (rpy (mapcar #'rad2deg (car (send *drill-grasp-stand-coords* :rpy-angle)))))
+        (ros::ros-warn "go-pos to ~a ~a ~a for valve~%" (elt pos 0) (elt pos 1) (elt rpy 0))
+        (when real? (send *ri* :go-pos (elt pos 0) (elt pos 1) (elt rpy 0)))
+        ))
+    
+    ;; first reaching
+    (when real? (send *ri* :start-impedance :arms :moment-gain (float-vector 0 0 0) :k-p 1000 :d-p 400)) ;; start imp
+
+    ;; ;; drill-reset-pose
+    ;; (send *robot* :angle-vector (elt drill-motion-av-list 3))
+    ;; (when real? (model2real :time 5000))
+    ;; put-up
+    (send *robot* :angle-vector (elt drill-motion-av-list 2))
+    (when real? (model2real :time 3000))      
+    ;; put
+    (send *robot* :angle-vector (elt drill-motion-av-list 1))
+    (when real? (model2real :time 3000))
+    ;; hook
+    (send *robot* :hand :arms :hook-pose) ;; hand hook-pose
+    (when real? (hand-model2real))
+    ;; release
+    (send *robot* :angle-vector (elt drill-motion-av-list 0))
+    (when real? (model2real :time 5000))
+    (send *robot* :angle-vector (get-reach-drill-pre-pose))
+    (unless (check-angle-vector-distance)
+      (when real? (model2real :time 3000)))
+    (send *robot* :reset-manip-pose)
+    (unless (check-angle-vector-distance)
+      (when real? (model2real :time 3000)))
+    )
+  )
+
+(defun publish-drill-put-motion
+  (&key coords (step-time 400) (update? t))
+  (when update?
+    (get-drill-grasp-motion-full coords :use-ri? nil))
+  (ros::ros-info "drill-grasp-stand-coords: ~a~%" *drill-grasp-stand-coords*)
+  (ros::ros-info "drill-ik-results: ~a~%" *drill-ik-results*)
+  (when *drill-grasp-stand-coords*
+    (move-robot-model *drill-grasp-stand-coords* "ground"))
+  (setq *drill-motion* (reverse *drill-motion*))
+  (publish-motion-joint-states *drill-motion* :step-time step-time))
+
+
 
 ;; drill button ;;;;
 
