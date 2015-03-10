@@ -1,5 +1,6 @@
 <launch>
   <arg name="INPUT_POINT_CLOUD" default="/full_cloud2" />
+  <arg name="MULTISENSE_STANDALONE" default="false" />
   <group ns="locomotion">
     <node pkg="nodelet" type="nodelet" name="manager" args="manager" output="screen"/>
 
@@ -36,8 +37,10 @@
         filter_limit_min: 0.2
         filter_limit_max: 100.0
         filter_limit_negative: true
-        input_frame: HEAD_LINK0
       </rosparam>
+      <param name="input_frame" value="HEAD_LINK0" unless="$(arg MULTISENSE_STANDALONE)"/>
+      <param name="input_frame" value="multisense/head_root"
+             if="$(arg MULTISENSE_STANDALONE)"/>
     </node>
     
     <node pkg="drc_task_common" type="robot-boundingbox.l" name="robot_bbox">
@@ -47,6 +50,8 @@
           args="load jsk_pcl/PointCloudLocalization manager">
       <remap from="~input" to="laser_self_filter_points/output" />
       <remap from="~icp_align" to="icp_localization/icp_align" />
+      <param name="odom_frame" value="multisense/head_root"
+             if="$(arg MULTISENSE_STANDALONE)" />
       <rosparam>
         leaf_size: 0.02
       </rosparam>
@@ -56,7 +61,8 @@
           name="icp_localization" output="screen">
       <rosparam>
         use_flipped_initial_pose: false
-        correspondence_distance: 0.1
+        correspondence_distance: 1.0
+        max_iteration: 10000
       </rosparam>
     </node>
     
@@ -68,6 +74,9 @@
       <rosparam>
         not_sync: true
       </rosparam>
+      <param name="frame_id" value="multisense/head_root"
+             if="$(arg MULTISENSE_STANDALONE)" />
+
     </node>
     <node pkg="nodelet" type="nodelet" name="laser_self_filter_points"
           args="load pcl/ExtractIndices manager">
