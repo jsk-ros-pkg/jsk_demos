@@ -27,6 +27,6 @@ def pose_cb(pose_msg):
 if __name__ == "__main__":
     rospy.init_node('calc_drive_tf', anonymous=True)
     # posepub = rospy.Publisher('plane_centroid_pose', PoseStamped)
-    set_tf = rospy.ServiceProxy('set_dynamic_tf', SetDynamicTF)
+    set_tf = rospy.ServiceProxy('/set_dynamic_tf', SetDynamicTF)
     rospy.Subscriber("pose", PoseStamped,  pose_cb)
     rospy.spin()

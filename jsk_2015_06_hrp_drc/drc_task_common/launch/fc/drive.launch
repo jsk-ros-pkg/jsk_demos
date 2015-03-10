@@ -4,6 +4,7 @@
   <arg name="INPUT_POINT_CLOUD" default="/multisense/resize_1_4/points" />
   <arg name="CAMERA_FRAME" default="multisense/left_camera_optical_frame" />
   <arg name="DEBUG" default="true" />
+  <arg name="LAUNCH_DYNAMIC_TF_PUBLISHER" default="true" />
   <group ns="drive">
     <node pkg="nodelet" type="nodelet" name="manager" args="manager" />
     <node pkg="image_view2" type="image_view2"  name="image_view2" if="$(arg DEBUG)">
@@ -66,8 +67,8 @@
     </node>
     <node pkg="dynamic_tf_publisher" type="tf_publish.py" 
 	  name="drive_tf_publisher"
+          if="$(arg LAUNCH_DYNAMIC_TF_PUBLISHER)"
 	  >
-      <remap from="/set_dynamic_tf" to="/drive/set_dynamic_tf" />
     </node>
     <node pkg="drc_task_common" type="calc_drive_tf.py"
 	  name="calc_tf" 
