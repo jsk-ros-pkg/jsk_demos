@@ -77,6 +77,14 @@
     </node>
     <node pkg="jsk_interactive_marker" type="transformable_server_sample" 
 	  name="handle_server" />
-    
+    <node pkg="drc_task_common" type="request_handle_marker.py"
+          name="request_handle" />
+    <node pkg="jsk_topic_tools" type="snapshot" name="snapshot">
+      <remap from="~input" to="handle_detector/output/pose"/>
+      <remap from="~output" to="handle_server/set_pose" />
+      <rosparam>
+        latch: true
+      </rosparam>
+    </node>
   </group>
 </launch>
