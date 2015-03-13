@@ -13,7 +13,7 @@
       to_port: 16485
       to_ip: "$(arg OCS_IP)"
       send_rate: 10
-      packet_interval: 0.00005
+      bandwidth: 280000000
     </rosparam>
   </node>
   
