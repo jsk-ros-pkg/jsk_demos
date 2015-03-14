@@ -197,3 +197,7 @@ Character                      | `8`                | 1200                  | 25
     * 3-4回メッセージを送った後にbuffer bloatが発生。送信しているデータは文字列で288bit. ヘッダを含めても2000bitは行かない。
 * 考察
   * 2000bpsではroconは無理。
+
+# testbed
+testbedでのネットワークを図にまとめた
+![](images/testbed-network.png)
