@@ -2,31 +2,31 @@
 
 ;; (defvar *color-scale* 0.5)
 
-(defun gen-bar-1
+(defun gen-drc-testbed-debris-bar-1
   nil
   (let* ((c (make-cube 85 40 1220)))
     (send c :set-color (float-vector (/ (* #xFD 1.0) #xFF) (/ (* #xFD 1.0) #xFF) (/ (* #xFC 1.0) #xFF)))
     c))
 
-(defun gen-bar-2
+(defun gen-drc-testbed-debris-bar-2
   nil
   (let* ((c (make-cube 75 75 1220)))
     (send c :set-color (float-vector (/ (* #xFD 1.0) #xFF) (/ (* #xFD 1.0) #xFF) (/ (* #xFC 1.0) #xFF)))
     c))
 
-(defun gen-bar-3
+(defun gen-drc-testbed-debris-bar-3
   nil
   (let* ((c (make-cube 75 39 1220)))
     (send c :set-color (float-vector (/ (* #xD3 1.0) #xFF) (/ (* #xD9 1.0) #xFF) (/ (* #xDB 1.0) #xFF)))
     c))
 
-(defun gen-bar-4
+(defun gen-drc-testbed-debris-bar-4
   nil
   (let* ((c (make-cube 90 35 1220)))
     (send c :set-color (float-vector (/ (* #xFD 1.0) #xFF) (/ (* #xFD 1.0) #xFF) (/ (* #xFC 1.0) #xFF)))
     c))
 
-(defun gen-trapezoid-bar-1
+(defun gen-drc-testbed-debris-trapezoid-bar-1
   nil
   (let* ((c (make-prism (list (float-vector (/ 85 2.0) (/ -35 2.0) (/ -1180 2.0))
 			      (float-vector (/ -85 2.0) (/ -35 2.0) (/ -1180 2.0))
@@ -36,25 +36,25 @@
     (send c :set-color (float-vector (/ (* #xFD 1.0) #xFF) (/ (* #xFD 1.0) #xFF) (/ (* #xFC 1.0) #xFF)))
     c))
 
-(defun gen-pole-1
+(defun gen-drc-testbed-debris-pole-1
   nil
   (let* ((c (make-cylinder (/ 60 2.0) 1520)))
     (send c :set-color (float-vector (/ (* #xFE 1.0) #xFF) (/ (* #xFE 1.0) #xFF) (/ (* #xFD 1.0) #xFF)))
     c))
 
-(defun gen-pole-2
+(defun gen-drc-testbed-debris-pole-2
   nil
   (let* ((c (make-cylinder (/ 35 2.0) 1220)))
     (send c :set-color (float-vector (/ (* #x8A 1.0) #xFF) (/ (* #x96 1.0) #xFF) (/ (* #xA2 1.0) #xFF)))
     c))
 
-(defun gen-pole-3
+(defun gen-drc-testbed-debris-pole-3
   nil
   (let* ((c (make-cylinder (/ 120 2.0) 980)))
     (send c :set-color (float-vector (/ (* #xA9 1.0) #xFF) (/ (* #x77 1.0) #xFF) (/ (* #x6B 1.0) #xFF)))
     c))
 
-(defun gen-pipe-1
+(defun gen-drc-testbed-debris-pipe-1
   nil
   (let* ((a (make-cylinder (/ 110 2.0) 650))
 	 (b (make-cylinder (/ 110 2.0) 205)))
@@ -65,7 +65,7 @@
     (send a :assoc b)
     (instance bodyset :init (make-cascoords) :bodies (list a b))))
 
-(defun make-arc
+(defun make-drc-testbed-debris-arc
   (radius-min radius-max
 	      &key
 	      (start-rad 0)
@@ -90,50 +90,11 @@
    (cdr buf) buf)
   (instance bodyset :init (make-cascoords) :bodies buf))
 
-(defun gen-arc-pipe-1
+(defun gen-drc-testbed-debris-arc-pipe-1
   nil
-  (make-arc (/ 115 2.0) 800 :end-rad 72))
+  (make-drc-testbed-debris-arc (/ 115 2.0) 800 :end-rad 72))
 
-(defun four-leg-pole-1
-  nil
-  (labels
-   ((in
-     (&key
-      (rot 45)
-      (phi 50)
-      (len 400)
-      (phi-min 15)
-      (len-min (/ 200 (sin (deg2rad rot))))
-      (pole (make-cylinder (/ phi 2.0) len))
-      (pole-min-1 (make-cylinder (/ phi-min 2.0) len-min))
-      (pole-min-2 (make-cylinder (/ phi-min 2.0) len-min))
-      )
-     ;; (send pole :translate (float-vector 0 -100 0) :world)
-     (send pole-min-1 :rotate (deg2rad rot) :x)
-     (send pole-min-2 :rotate (deg2rad (+ 90 rot)) :x)
-     (send pole-min-1 :translate (float-vector 0 0 0) :world)
-     (send pole-min-2 :translate (float-vector 0 0 (- 400 0)) :world)
-     (send-all (list pole pole-min-1 pole-min-2)
-	       :set-color (float-vector (/ (* #xFE 1.0) #xFF) (/ (* #xFE 1.0) #xFF) (/ (* #xFD 1.0) #xFF)))
-     (send pole :assoc pole-min-1)
-     (send pole :assoc pole-min-2)
-     (instance bodyset :init (make-cascoords)
-	       :bodies (list pole pole-min-1 pole-min-2))
-     ))
-   (let* ((rot 0) (step 90) tmp (buf nil))
-     (dotimes (i (/ 360 step))
-       (setq tmp (in))
-       (if buf (send tmp :newcoords (send (car buf) :copy-worldcoords)))
-       (send tmp :rotate (deg2rad (* -1 step)) :z)
-       (send tmp :translate (float-vector 200 0 0) :local)
-       (push tmp buf))
-     (setq buf (send-all buf :bodies))
-     (mapcar #'(lambda (obj) (send (caar buf) :assoc (car obj))) (cdr buf))
-     (instance bodyset :init (make-cascoords)
-	       :bodies (flatten buf))
-     )))
-
-(defun gen-four-leg-pole-1
+(defun gen-drc-testbed-debris-four-leg-pole-1
   (&key
    (pole-min-cnt 2)
    (len 400)
@@ -195,11 +156,11 @@
 	       :bodies (flatten buf))
      )))
 
-(defun gen-four-leg-pole-2
+(defun gen-drc-testbed-debris-four-leg-pole-2
   nil
-  (gen-four-leg-pole-1 :pole-min-cnt 3 :len 580))
+  (gen-drc-testbed-debris-four-leg-pole-1 :pole-min-cnt 3 :len 580))
 
-(defun gen-suihanki
+(defun gen-drc-testbed-debris-suihanki
   nil
   (let* ((base (make-cube 180 260 10))
 	 (pole (make-cylinder 75 200))
@@ -223,7 +184,7 @@
 		(make-coords
 		 :pos (scale 1000 (random-vector))
 		 :rpy (scale 1.57 (random-vector))))))
-    '(gen-suihanki gen-four-leg-pole-2 gen-four-leg-pole-1 gen-arc-pipe-1 gen-arc-pipe-1 gen-pipe-1 gen-pole-3 gen-pole-2 gen-pole-1 gen-pole-1 gen-bar-4 gen-bar-3 gen-bar-2 gen-bar-2 gen-bar-2 gen-bar-1)))
+    '(gen-drc-testbed-debris-suihanki gen-drc-testbed-debris-four-leg-pole-2 gen-drc-testbed-debris-four-leg-pole-1 gen-drc-testbed-debris-arc-pipe-1 gen-drc-testbed-debris-arc-pipe-1 gen-drc-testbed-debris-pipe-1 gen-drc-testbed-debris-pole-3 gen-drc-testbed-debris-pole-2 gen-drc-testbed-debris-pole-1 gen-drc-testbed-debris-pole-1 gen-drc-testbed-debris-bar-4 gen-drc-testbed-debris-bar-3 gen-drc-testbed-debris-bar-2 gen-drc-testbed-debris-bar-2 gen-drc-testbed-debris-bar-2 gen-drc-testbed-debris-bar-1)))
   (send *viewer* :draw-objects))
 
 
