@@ -197,3 +197,17 @@ Character                      | `8`                | 1200                  | 25
     * 3-4回メッセージを送った後にbuffer bloatが発生。送信しているデータは文字列で288bit. ヘッダを含めても2000bitは行かない。
 * 考察
   * 2000bpsではroconは無理。
+
+# testbed
+testbedでのネットワークを図にまとめた
+![](images/testbed-network.png)
+## JSKでのtestbedネットワーク環境の再現
+* 環境
+  * fortigate60DのinternalとDMZポートを使い、それぞれOCSとFC/Robot用にDHCPを振ることでサブネットマスクを24のまま相互に通信する
+  * fortigateの設定はconfigsディレクトリに保存してある。
+  * DMZは1ポートしかないのでbuffaloの無線ルータをブリッジモードにして使用
+  * fortigateのDMZポートとbuffaloの間にMaxwellをはさみ遅延環境を再現
+* 実験結果
+  * 有線で10.N.2.xと10.N.3.x間は934Mbps前後でている。
+* 考察
+  * 10.N.3.xのDHCPサーバがMaxwellを挟んでOCS側にあるため、遅延した時にFC/Robot側でDHCPを振ることができにくい。
