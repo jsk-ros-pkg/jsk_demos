@@ -8,14 +8,19 @@
 ;; State is not a subgraph of context because graph is only composed from
 ;; connection of state and we do not consider connection between contexts.
 (require :state-machine "package://roseus_smach/src/state-machine.l")
+(require :state-machine-ros "package://roseus_smach/src/state-machine-ros.l") ;; for smach visualize only
+
+(ros::roseus "state_machine")
 
 (defclass task-state-machine
   :super state-machine
-  :slots (transitions output-image-file initial-hook-obj initial-hook-method))
+  :slots (transitions output-image-file initial-hook-obj initial-hook-method smach-visualizer))
 
 (defmethod task-state-machine
-  (:init (&optional output)
+  (:init (&optional output smach-visualize-p)
     (setq output-image-file output)
+    (when smach-visualize-p
+      (setq smach-visualizer (instance state-machine-inspector :init nil)))
     self)
   (:nodes-from-context (context)
     (remove-if-not #'(lambda (n)
@@ -45,6 +50,8 @@
   (:go-to! (next-state)
     (format t "next state: ~A~%" next-state)
     (send self :active-state (send self :node next-state))
+    (if smach-visualizer
+        (send smach-visualizer :publish-status nil self))
     (if output-image-file
         (send self :write-to-png output-image-file))
     (if (eq (send self :active-state) (send self :start-state))
@@ -178,6 +185,13 @@
                   (push (cons target-node neighbor) drawed-arc)))))
           (format f "}~%")
           t)))))
+  (:reset-state ()
+   (send-super :reset-state)
+   (when smach-visualizer
+     (unix:usleep 100000) ;; omajinai
+     (send smach-visualizer :publish-structure self)
+     (send smach-visualizer :publish-status nil self))
+   self)
   )
 
 (defclass task-state
@@ -291,7 +305,7 @@ specified"
 |#
 
 
-(defun make-state-machine (graph-list context-map initial-state &optional output-file)
+(defun make-state-machine (graph-list context-map initial-state &optional output-file smach-visualize-p)
   "
 Utility function to make state machine.
 
@@ -305,7 +319,7 @@ Usage:
                         (d taask3))
                        'a)
 "
-  (let ((sm (instance timered-state-machine :init output-file)))
+  (let ((sm (instance timered-state-machine :init output-file smach-visualize-p)))
     ;; list up all the states
     (let ((all-states (unique
                        (flatten
@@ -334,7 +348,7 @@ Usage:
       (warning-message 2 "connection ~A => ~A~%"
                        (car connection) (caddr connection)))
     (send sm :start-state (send sm :node initial-state))
-    (send sm :active-state (send sm :start-state))
+    (send sm :reset-state)
     sm))
 
 
@@ -498,7 +512,7 @@ Usage:
      (:selecting-exec-for-drill-button :drill-button)
      (:executing-drill-button :drill-button)
      )
-   :initial "ocs_state.png"))
+   :initial "ocs_state.png" t))
 
 (defun make-fc-state-machine ()
   (make-state-machine
@@ -607,5 +621,5 @@ Usage:
      
      (:executing-look-around :look-around)
      )
-   :initial
+   :initial nil t
    ))
