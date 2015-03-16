@@ -14,7 +14,7 @@
 
 (defclass task-state-machine
   :super state-machine
-  :slots (transitions output-image-file initial-hook-obj initial-hook-method smach-visualizer))
+  :slots (transitions contexts output-image-file initial-hook-obj initial-hook-method smach-visualizer))
 
 (defmethod task-state-machine
   (:init (&optional output smach-visualize-p)
@@ -51,7 +51,7 @@
     (format t "next state: ~A~%" next-state)
     (send self :active-state (send self :node next-state))
     (if smach-visualizer
-        (send smach-visualizer :publish-status nil self))
+        (send smach-visualizer :publish-status self))
     (if output-image-file
         (send self :write-to-png output-image-file))
     (if (eq (send self :active-state) (send self :start-state))
@@ -62,14 +62,19 @@
         (send self :go-to! next-state)
       (error "Cannot change state from ~A to ~A"
              (send self :state) next-state)))
-  (:lookup-transitions (start-state)
+  (:lookup-transitions (start-state &key (:direction :from))
     (remove-if-not #'(lambda (trans)
-                       (eq (send trans :from) start-state))
+                       (eq (send trans :direction) start-state))
                    transitions))
   (:register-transition (trans)
-    (setq transitions (cons trans transitions)))
+    (setq transitions (cons trans transitions))
+    (setq contexts (union contexts
+                          (list (send (send trans :from) :context)
+                                (send (send trans :to) :context)))))
   (:transitions ()
     transitions)
+  (:contexts ()
+    contexts)
   (:write-to-png (fname &optional result-path
                         (title (string-right-trim ".png" fname)))
     (ros::ros-info "writing to ~A" fname)
@@ -188,11 +193,84 @@
   (:reset-state ()
    (send-super :reset-state)
    (when smach-visualizer
-     (unix:usleep 100000) ;; omajinai
+     (unix:sleep 1) ;; omajinai
      (send smach-visualizer :publish-structure self)
-     (send smach-visualizer :publish-status nil self))
+     (send smach-visualizer :publish-status self))
    self)
   )
+
+(defmethod state-machine-inspector
+  (:publish-status-org
+   (&optional (userdata nil) (machine sm) (path (format nil "/~A" root-name)))
+   (send-super* self userdata machine path))
+  (:publish-status
+   (machine &optional only-context (path (format nil "/~A" root-name)))
+   (let* ((context (or only-context (send (send machine :start-state) :context)))
+          (msg (instance smach_msgs::SmachContainerStatus :init))
+          (node-names (send-all (send machine :nodes-from-context context) :name))
+          (active "None")
+          (initial "None"))
+     (send msg :header :seq (incf state-counter))
+     (send msg :header :stamp (ros::time-now))
+     (send msg :path path)
+     (if only-context
+         (dolist (tr (send machine :transitions))
+           (when (and (eq only-context (send (send tr :to) :context))
+                      (not (eq only-context (send (send tr :from) :context))))
+             (setq initial (send (send machine :start-state) :name))
+             (return)))
+       (setq initial (send (send machine :active-state) :name)))
+     (send msg :initial_states (list (string initial)))
+     (cond
+      ((eq (send (send machine :active-state) :context) only-context)
+       (setq active (send (send machine :active-state) :name)))
+      ((eq (send (send machine :active-state) :context) :initial)
+       (setq active :initial)))
+     (send msg :active_states (list (string active)))
+     (send msg :local_data (pickle::dump nil))
+     (ros::publish (concatenate string srv-name "/smach/container_status") msg)
+     ;; recursive call for publish structure for subgraphs
+     (when (not only-context)
+       (let ((contexts-w/o-current-context
+              (remove context (send machine :contexts))))
+         (dolist (ctx contexts-w/o-current-context)
+           (send self :publish-status machine ctx
+                 (format nil "~A/~A" path (string ctx))))))))
+  (:publish-structure-org
+   (&optional (machine sm) (path (format nil "/~A" root-name)))
+   (send-super* self :publish-structure machine path))
+  (:publish-structure
+   (machine &optional only-context (path (format nil "/~A" root-name)))
+   (let* ((context (or only-context (send (send machine :start-state) :context)))
+          (msg (instance smach_msgs::SmachContainerStructure :init))
+          (nodes (send machine :nodes-from-context context))
+          transitions from-nodes to-nodes)
+     (send msg :header :seq (incf structure-counter))
+     (send msg :header :stamp (ros::time-now))
+     (send msg :path path)
+     (dolist (n nodes)
+       (dolist (tr (send n :arc-list))
+         (push (string (send tr :name)) transitions)
+         (push (send (send tr :from) :name) from-nodes)
+         (if (eq (send (send tr :to) :context) context)
+             (push (send (send tr :to) :name) to-nodes)
+           (push (send (send tr :to) :context) to-nodes))))
+     (send msg :internal_outcomes transitions)
+     (send msg :outcomes_from (mapcar #'string from-nodes))
+     (send msg :outcomes_to (mapcar #'string to-nodes))
+     (send msg :children (mapcar #'string
+                                 (union
+                                  (union from-nodes to-nodes)
+                                  (send-all nodes :name))))
+     (print-ros-msg msg)
+     (ros::publish (concatenate string srv-name "/smach/container_structure") msg)
+     ;; recursive call for publish structure for subgraphs
+     (when (not only-context)
+       (let ((contexts-w/o-current-context
+              (remove context (send machine :contexts))))
+         (dolist (ctx contexts-w/o-current-context)
+           (send self :publish-structure machine ctx
+                 (format nil "~A/~A" path (string ctx)))))))))
 
 (defclass task-state
   :super state
