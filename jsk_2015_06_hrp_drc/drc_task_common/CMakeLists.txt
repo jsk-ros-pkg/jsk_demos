@@ -81,8 +81,11 @@ catkin_download_test_data(gun_drill_dae
 catkin_download_test_data(gun_drill_jpg
   http://www.jsk.t.u-tokyo.ac.jp/~ohara/dataset/2015/03/gun_drill_color.jpg
   DESTINATION ${PROJECT_SOURCE_DIR}/models)
+catkin_download_test_data(gun_drill_model
+  http://www.jsk.t.u-tokyo.ac.jp/~ohara/dataset/2015/03/gun-drill.l
+  DESTINATION ${PROJECT_SOURCE_DIR}/models)
 add_custom_target(all_drc_task_common_downloads ALL DEPENDS
-  drill_pcd drill_full_pcd gun_drill_dae gun_drill_jpg)
+  drill_pcd drill_full_pcd gun_drill_dae gun_drill_jpg gun_drill_model)
 
 install(TARGETS
   ${PROJECT_NAME}
