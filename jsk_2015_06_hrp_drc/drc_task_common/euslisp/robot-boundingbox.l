@@ -7,12 +7,17 @@
 (load "package://drc_task_common/euslisp/robot-util.l")
 ;; publish bounding box of robot
 
-(setq *use-x* nil)
+
 
 (load (robot-file (unix::getenv "ROBOT")))
-;;(init-robot-from-name (unix::getenv "ROBOT"))
+
+;; parameters
+(setq *use-x* (ros::get-param "~use_x" nil))
 (setq *robot* (make-robot-model-from-name (unix::getenv "ROBOT")))
-(setq *use-links* (ros::get-param "~links"))
+(setq *use-links* (ros::get-param "~links" nil))
+(setq *padding-x* (ros::get-param "~padding_x" 0.0))
+(setq *padding-y* (ros::get-param "~padding_y" 0.0))
+(setq *padding-z* (ros::get-param "~padding_z" 0.0))
 
 (when *use-x*
   (objects (list *robot*)))
@@ -54,9 +59,9 @@
             (send bbox-msg :pose :position :x (elt center 0))
             (send bbox-msg :pose :position :y (elt center 1))
             (send bbox-msg :pose :position :z (elt center 2))
-            (send bbox-msg :dimensions :x (elt dimensions 0))
-            (send bbox-msg :dimensions :y (elt dimensions 1))
-            (send bbox-msg :dimensions :z (elt dimensions 2))
+            (send bbox-msg :dimensions :x (+ (* 2 *padding-x*) (elt dimensions 0)))
+            (send bbox-msg :dimensions :y (+ (* 2 *padding-y*) (elt dimensions 1)))
+            (send bbox-msg :dimensions :z (+ (* 2 *padding-z*) (elt dimensions 2)))
             (ros::publish "/robot_bbox" bbox-msg)
             (send bbox-msg-array :boxes (list bbox-msg))
             (send bbox-msg-array :header (send bbox-msg :header))
