@@ -1,3 +1,6 @@
+(load "package://drc_task_common/euslisp/drc-testbed-models.l")
+(load "package://jsk_footstep_planner/euslisp/footstep_planner_util.l")
+
 ;;;;;;;;;;;;;;;;
 ;; utilities
 ;;;;;;;;;;;;;;;;
@@ -158,7 +161,14 @@
         :default-step-height 0.03)
   (send *ri* :set-auto-balancer-param :default-zmp-offsets (list (float-vector 5 30 0) (float-vector 5 -30 0)))
   )
+
+(defun setup-terrain-walk-real-hrp2jsknt
+  ()
+  (setup-terrain-walk-real-hrp2jsknts)
+  )
+
 (warn ";; (setup-terrain-walk-real-hrp2jsknts)~%")
+(warn ";; (setup-terrain-walk-real-hrp2jsknt)~%")
 
 (defun test-15cm-block-hrp2jsknts (&key (stair-once t))
   (print ";; up")
@@ -297,7 +307,75 @@
         :default-step-height 0.03)
     ))
 
+(defun make-sole-body (robot leg)
+  (instance bodyset :init (make-cascoords :coords (send robot leg :end-coords :copy-worldcoords))
+            :bodies (list (let ((b (make-prism (butlast (send (send robot :support-polygon leg) :vertices)) 5)))
+                            (send b :set-color (case leg (:rleg :red) (:lleg :green)))
+                            b))
+            :name (read-from-string (format nil "~A-sole" leg))
+            ))
+
+;; Before terrain simulation, please execute
+;;   $ rtmtest -t hrpsys_tools _gen_project.launch INPUT:=${CVSDIR}/OpenHRP/etc/HRP2JSKNT_for_OpenHRP3/HRP2JSKNTmain.wrl OUTPUT:=/tmp/HRP2JSKNT_for_DRCBlock.xml OBJECT_MODELS:="`rospack find hrpsys`/share/hrpsys/samples/environments/DRCTestbedTerrainJPBlock.wrl,0.4,-2.0,0,1,0,0,0, `rospack find openhrp3`/share/OpenHRP-3.1/sample/model/longfloor.wrl,0,0,0,1,0,0,0" CORBA_PORT:=15005 INTEGRATE:=false
+;;   $ rtmlaunch hrpsys_ros_bridge_tutorials hrp2jsknt.launch PROJECT_FILE:=/tmp/HRP2JSKNT_for_DRCBlock.xml
+
+(defun setup-drc-testbed-terrain-simulation-hrp2jsknt ()
+  (unless (boundp '*terrain*) (make-drc-terrain-japanese-block-ver))
+  (setup-terrain-walk-hrp2jsknt)
+  (setup-terrain-walk-real-hrp2jsknts)
+  (send *robot* :fix-leg-to-coords (make-coords))
+  (send *terrain* :newcoords (make-coords :pos (float-vector 400 -2000 0)))
+  (setq *rleg-sole* (make-sole-body *robot* :rleg))
+  (setq *lleg-sole* (make-sole-body *robot* :lleg))
+  (setq *terrain-faces* (send *terrain* :get-all-terrain-top-faces))
+  (objects (list *robot* *rleg-sole* *lleg-sole* *terrain*))
+  )
+
+(defun test-drc-testbed-terrain-simulation-hrp2jsknt-one
+  (rleg-fwd-offset lleg-fwd-offset)
+  (setq *prev-rleg-coords* (send *rleg-sole* :copy-worldcoords))
+  (send *rleg-sole* :newcoords
+        (car (project-coords-on-to-plane
+              (send (send *robot* :rleg :end-coords :copy-worldcoords) :translate (float-vector rleg-fwd-offset 0 200) :world)
+              *terrain-faces*
+              (float-vector 0 0 1))))
+  (send *lleg-sole* :newcoords
+        (car (project-coords-on-to-plane
+              (send (send *robot* :lleg :end-coords :copy-worldcoords) :translate (float-vector lleg-fwd-offset 0 200) :world)
+              *terrain-faces*
+              (float-vector 0 0 1))))
+  (send *ri* :set-foot-steps
+        (list (make-coords :coords *prev-rleg-coords* :name :rleg)
+              (make-coords :coords (send *lleg-sole* :copy-worldcoords) :name :lleg)
+              (make-coords :coords (send *rleg-sole* :copy-worldcoords) :name :rleg)))
+  )
+
+(defun test-drc-testbed-terrain-simulation-hrp2jsknt ()
+  (setup-drc-testbed-terrain-simulation-hrp2jsknt)
+  (test-drc-testbed-terrain-simulation-hrp2jsknt-one 280 280)
+  (test-drc-testbed-terrain-simulation-hrp2jsknt-one 400 400)
+  )
+
 ;; (pprint (mapcar #'(lambda (s) (if (derivedp s hrpsys_ros_bridge::openhrp_autobalancerservice_footstep) (send *ri* :abc-footstep->eus-footstep s))) (mapcar #'cdr (send (send (send *ri* :autobalancerservice_getfootstepparam) :i_param) :slots))))
+#|
+(send *ri* :set-foot-steps
+      (list (make-coords :pos (send (send (send (send (car (send *block* :bodies)) :copy-worldcoords) :rotate -pi/2 :z) :translate (scale -2 (cadr (memq :default-half-offset (send *robot* :get :footstep-parameter))))) :worldpos) :name :rleg)
+      (make-coords :coords (send (send (car (send *block* :bodies)) :copy-worldcoords) :rotate -pi/2 :z) :name :lleg)
+      (make-coords :coords (send (send (send (car (send *block* :bodies)) :copy-worldcoords) :rotate -pi/2 :z) :translate (scale -2 (cadr (memq :default-half-offset (send *robot* :get :footstep-parameter))))) :name :rleg)))
+
+
+(send *ri* :set-foot-steps
+      (list (make-coords :coords (send (send (car (send *block* :bodies)) :copy-worldcoords) :rotate -pi/2 :z) :name :lleg)
+            (make-coords :coords (send (send (send (car (send *block* :bodies)) :copy-worldcoords) :rotate -pi/2 :z) :translate (scale -2 (cadr (memq :default-half-offset (send *robot* :get :footstep-parameter))))) :name :rleg)
+            (make-coords :coords (send (send (car (send *block* :bodies)) :copy-worldcoords) :rotate -pi/2 :z) :name :lleg)))
+
+
+(send *rI* :set-foot-steps
+      (list
+      (make-coords :coords (send (send (send (car (send *block* :bodies)) :copy-worldcoords) :rotate -pi/2 :z) :translate (scale -2 (cadr (memq :default-half-offset (send *robot* :get :footstep-parameter))))) :name :rleg)
+      (make-coords :pos (send (send (send (send (car (send *block* :bodies)) :copy-worldcoords) :rotate -pi/2 :z) :translate (scale 0 (cadr (memq :default-half-offset (send *robot* :get :footstep-parameter))))) :worldpos) :name :lleg)
+      (make-coords :pos (v+ (send (send (send (send (car (send *block* :bodies)) :copy-worldcoords) :rotate -pi/2 :z) :translate (scale 0 (cadr (memq :default-half-offset (send *robot* :get :footstep-parameter))))) :worldpos) (scale -2 (cadr (memq :default-half-offset (send *robot* :get :footstep-parameter))))) :name :rleg)))
+|#
 
 #|
 (send *ri* :set-foot-steps
