@@ -393,15 +393,15 @@
 
 (defclass drc-terrain
   :super cascaded-link
-  :slots (block-dimensions)
+  :slots (block-dimensions block-bodies)
   )
 
 (defmethod drc-terrain
   (:init
-   (&rest args &key (name "drc-terrain") &allow-other-keys)
+   (&rest args &key (name "drc-terrain") ((:block-dimensions bd) (list 390 195 140)) &allow-other-keys)
    (prog1
        (send-super* :init :name name args)
-     (setq block-dimensions (list 390 195 140))
+     (setq block-dimensions bd)
      (let* ((l (send self :make-drc-terrain-block-bodies)))
        (send self :assoc (car l))
        (setq links l)
@@ -454,8 +454,7 @@
    )
   (:make-drc-terrain-block-bodies
    ()
-   (let* ((blist nil)
-          (orientation-map (list (list 1 2 3 0 1 2)
+   (let* ((orientation-map (list (list 1 2 3 0 1 2)
                                  (list 2 3 0 1 2 3)
                                  (list 3 0 1 2 3 0)
                                  (list 0 1 2 3 0 1)
@@ -476,9 +475,15 @@
            (let* ((block-set (send self :make-drc-block-set-one)))
              (send block-set :rotate (* (elt (elt orientation-map i) j) pi/2) :z :world)
              (send block-set :translate (float-vector (* i block-set-region-x) (* j block-set-region-y) (* (elt (elt height-map i) j) (elt block-dimensions 2))) :world)
-             (push block-set blist)))))
-     (dolist (b (cdr blist)) (send (car blist) :assoc b))
-     blist)
+             (push block-set block-bodies)))))
+     (dolist (b (cdr block-bodies)) (send (car block-bodies) :assoc b))
+     block-bodies)
+   )
+  (:block-bodies () block-bodies)
+  (:get-terrain-top-face-for-one-block-body
+   (block-body)
+   (let ((fs (remove-if-not #'(lambda (x) (memq :top (send x :id))) (send block-body :faces))))
+     (list (elt fs 1) (elt fs 4)))
    )
   )
 
@@ -734,6 +739,10 @@
 
 (defun make-drc-terrain ()
   (setq *terrain* (instance drc-terrain :init))
+  )
+
+(defun make-drc-terrain-japanese-block-ver ()
+  (setq *terrain* (instance drc-terrain :init :block-dimensions (list 390 190 150)))
   )
 
 (defun make-drc-valve ()

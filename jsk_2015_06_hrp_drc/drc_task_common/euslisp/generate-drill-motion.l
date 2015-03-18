@@ -1,13 +1,54 @@
 (load "package://drc_task_common/euslisp/robot-util.l")
 (load "package://drc_task_common/euslisp/util.l")
 (load "package://drc_task_common/models/dewalt_dc550ka.l")
+(load "package://drc_task_common/models/gun-drill.l")
+
+
+;; takenoko drill
+(defun init-takenoko-drill (drill-coords)
+  (setq *drill* (dewalt_dc550ka-robot))
+  ;; generate drill
+  (send-all (send *drill* :bodies) :set-color #f(0.7 0.6 0.0))
+  ;; atattch handle to drill
+  (send *drill* :put :grasp-coords
+        (make-cascoords
+         :coords (make-coords :pos #f(0 0 190) :rpy (list 0 pi 0))
+         :parent *drill*))
+  ;; place drill to drill-coords
+  (send *drill* :put :button-coords
+        (make-cascoords
+         ;; :coords (make-coords :pos #f(-25 30 93) :rpy (list 0 0 pi/2)) ;; center of hole
+         :coords (make-coords :pos #f(-22 30 97) :rpy (list 0 0 pi/2)) ;; center of button
+         :parent *drill*))
+  (when drill-coords
+    (send *drill* :newcoords drill-coords))
+  )
+;; gun drill
+
+(defun init-gun-drill (drill-coords)
+  (setq *drill* (gun-drill))
+  ;; generate drill
+  (send-all (send *drill* :bodies) :set-color #f(0.0 0.6 0.7))
+  ;; atattch handle to drill
+  (send *drill* :put :grasp-coords
+        (make-cascoords
+         :coords (make-coords :pos #f(0 0 -60) :rpy (list 0 0 0))
+         :parent *drill*))
+  ;; place drill to drill-coords
+  (send *drill* :put :button-coords 
+        (make-cascoords
+         :coords (make-coords :pos #f(0 0 0) :rpy (list 0 0 0))
+         :parent *drill*))
+  (when drill-coords
+    (send *drill* :newcoords drill-coords))  
+  )
 
 ;; drill grasp ;;;;
-
 (defun set-drill-grasp-environment
   (&key (drill-coords (make-coords :pos (float-vector 700 -150 800) :rpy (list 0 0 0)))
         (generate-ri? t) (draw? t)
-        (robot-name "HRP2JSKNT"))
+        (robot-name "HRP2JSKNT")
+        (drill-type :takenoko))
   ;; generate robot
   (generate-robot robot-name :generate-ri? generate-ri?)
   ;; place robot to origin
@@ -19,34 +60,12 @@
         (make-cascoords
          :coords (send (send (send *robot* :rarm :end-coords) :copy-worldcoords) :translate (float-vector 48.0 12.0 0.0) :local)
          :parent (send (send *robot* :rarm :end-coords) :parent)))
+  (cond ((equal drill-type :takenoko) (init-takenoko-drill drill-coords))
+        ((equal drill-type :gun) (init-gun-drill drill-coords))
+        )
+        
   ;; drill setting
-  ;; generate drill
-  (setq *drill* (dewalt_dc550ka-robot))
-  (send-all (send *drill* :bodies) :set-color #f(0.7 0.6 0.0))
-  ;; atattch handle to drill
-  (send *drill* :put :grasp-coords
-        (make-cascoords
-         :coords (make-coords :pos #f(0 0 190) :rpy (list 0 pi 0))
-         :parent *drill*))
-  ;; place drill to drill-coords
-  (when drill-coords
-    (send *drill* :newcoords drill-coords))
   (setq *drill-grasp-stand-coords* nil)
-  ;; (let* ((drill-r 30) (drill-h 120))
-  ;;   ;; generate drill
-  ;;   (setq *drill* (make-cylinder drill-r drill-h))
-  ;;   (send *drill* :set-color (float-vector 1 1 0))
-  ;;   ;; atattch handle to drill
-  ;;   (send *drill* :put :grasp-coords
-  ;;         (make-cascoords
-  ;;          :coords (make-coords :pos (float-vector 0 0 (* drill-h 0.5)))
-  ;;          :parent *drill*))
-  ;;   ;; place drill to drill-coords
-  ;;   (when drill-coords
-  ;;     (send *drill* :newcoords drill-coords)
-  ;;     ;; treat the difference of origin between eus and recognition program
-  ;;     (send *drill* :translate (float-vector 0 0 (* -0.5 drill-h)) :local))
-  ;;   )
   ;; draw
   (when draw?
     (setq *ground* (make-cube 1000 1000 1))
@@ -60,10 +79,11 @@
   (drill-coords ;; body relative
    &key
    (draw? nil)
-   (use-ri? t))
+   (use-ri? t)
+   (drill-type :takenoko))
   (let* (drill-worldcoords)
     ;; place robot and drill to initial coords
-    (set-drill-grasp-environment :drill-coords nil :draw? draw? :generate-ri? use-ri?)
+    (set-drill-grasp-environment :drill-coords nil :draw? draw? :generate-ri? use-ri? :drill-type drill-type)
     (cond (use-ri?
            (send *robot* :angle-vector (send *ri* :state :potentio-vector)))
           (t
@@ -86,7 +106,7 @@
         :root-link-virtual-joint-weight (float-vector 0.1 0.1 0.1 0.1 0.5 0.5)
         :target-centroid-pos (apply #'midpoint 0.5 (send *robot* :legs :end-coords :worldpos))
         :translation-axis (list t t t)
-        :rotation-axis (list :z t t)
+        :rotation-axis (list t t t)
         :max (float-vector  500  500  0  20  20  10) ;; for hrp2
         :min (float-vector  -500  -500  -200  -20  -20  -10) ;; for hrp2
         :stop 100
@@ -179,8 +199,8 @@
   )
 
 (defun get-drill-grasp-motion-full
-  (drill-coords &key (draw? nil) (use-ri? t))
-  (set-drill-grasp-environment-full drill-coords :draw? draw? :use-ri? use-ri?)
+  (drill-coords &key (draw? nil) (use-ri? t) (drill-type :takenoko))
+  (set-drill-grasp-environment-full drill-coords :draw? draw? :use-ri? use-ri? :drill-type drill-type)
   (let* ((drill-motion-av-list (get-drill-grasp-motion :draw? draw?))
          (drill-motion-length (length drill-motion-av-list)))
     (when (= drill-motion-length 0)
@@ -215,8 +235,8 @@
   
 
 (defun send-drill-grasp-motion
-  (coords &key (real? t))
-  (let* ((drill-motion-av-list (get-drill-grasp-motion-full coords))
+  (coords &key (real? t) (drill-type :takenoko))
+  (let* ((drill-motion-av-list (get-drill-grasp-motion-full coords :drill-type drill-type))
          (drill-motion-length (length drill-motion-av-list)))
     (when (= drill-motion-length 0) (return-from send-drill-grasp-motion))
     (send *robot* :hand :arms :hook-pose) ;; hand hook-pose
@@ -232,9 +252,11 @@
     ;; first reaching
     (unless (check-angle-vector-distance)
       (when real? (model2real :time 3000)))
-    (send *robot* :angle-vector (get-reach-drill-pre-pose))
-    (unless (check-angle-vector-distance)
-      (when real? (model2real :time 3000)))
+    (when (equal drill-type :takenoko)
+      (send *robot* :angle-vector (get-reach-drill-pre-pose))
+      (unless (check-angle-vector-distance)
+        (when real? (model2real :time 3000)))
+      )
     (when real? (send *ri* :start-impedance :arms :moment-gain (float-vector 0 0 0) :k-p 1000 :d-p 400)) ;; start imp
     ;; pre-reach
     (send *robot* :angle-vector (elt drill-motion-av-list 0))
@@ -255,13 +277,15 @@
   )
 
 (defun publish-drill-grasp-motion
-  (&key coords (step-time 400) (update? t))
+  (&key coords (step-time 400) (update? t) (drill-type :takenoko))
   (when update?
-    (get-drill-grasp-motion-full coords :use-ri? nil))
+    (get-drill-grasp-motion-full coords :use-ri? nil :drill-type drill-type))
   (ros::ros-info "drill-grasp-stand-coords: ~a~%" *drill-grasp-stand-coords*)
   (ros::ros-info "drill-ik-results: ~a~%" *drill-ik-results*)
-  (when *drill-grasp-stand-coords*
-    (move-robot-model *drill-grasp-stand-coords* "ground"))
+  (if *drill-grasp-stand-coords*
+    (move-robot-model *drill-grasp-stand-coords* "ground")
+    (move-robot-model (make-coords) "ground"))
+  
   (publish-motion-joint-states *drill-motion* :step-time step-time))
 
 
@@ -326,7 +350,8 @@
 (defun set-drill-button-environment
   (&key (drill-coords (make-coords :pos (float-vector 700 -150 800) :rpy (list 0 0 0)))
         (generate-ri? t) (draw? t)
-        (robot-name "HRP2JSKNT"))
+        (robot-name "HRP2JSKNT")
+        (drill-type :takenoko))
   ;; generate robot
   (generate-robot robot-name :generate-ri? generate-ri?)
   ;; place robot to origin
@@ -353,17 +378,9 @@
          :parent (send (send *robot* :larm :end-coords) :parent)))
   ;; drill setting
   ;; generate drill
-  (setq *drill* (dewalt_dc550ka-robot))
-  (send-all (send *drill* :bodies) :set-color #f(0.7 0.6 0.0))
-  ;; atattch handle to drill
-  (send *drill* :put :button-coords
-        (make-cascoords
-         ;; :coords (make-coords :pos #f(-25 30 93) :rpy (list 0 0 pi/2)) ;; center of hole
-         :coords (make-coords :pos #f(-22 30 97) :rpy (list 0 0 pi/2)) ;; center of button
-         :parent *drill*))
-  ;; place drill to drill-coords
-  (when drill-coords
-    (send *drill* :newcoords drill-coords))
+  (cond ((equal drill-type :takenoko) (init-takenoko-drill drill-coords))
+        ((equal drill-type :gun) (init-gun-drill drill-coords))
+        ) 
   ;; draw
   (when draw?
     (setq *ground* (make-cube 1000 1000 1))
@@ -566,7 +583,7 @@
 ;; TODO pre-push-pose
 (defun test-drill-grasp-motion ()
   ;(get-drill-grasp-motion-full (make-coords :pos (float-vector 700 -150 800) :rpy (list 0 0 0)) :draw? t)
-  (setq *answer-for-grasp-test* (get-drill-grasp-motion-full (make-coords :pos (float-vector 1000 -150 200) :rpy (list 0 0 0)) :draw? t))
+  (setq *answer-for-grasp-test* (get-drill-grasp-motion-full (make-coords :pos (float-vector 1000 -150 200) :rpy (list 0 0 0)) :draw? t :drill-type :gun))
   (play-motion-on-eus-viewer *drill-motion*)
   )
 
