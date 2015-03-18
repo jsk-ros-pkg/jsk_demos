@@ -50,6 +50,7 @@
       <remap from="/robot_bbox" to="/robot_legs_bbox" />
       <remap from="/robot_bbox_array" to="/robot_legs_bbox_array" />
       <rosparam>
+        padding_z: 0.1 # 10cm padding
         links: ["RLEG_LINK0", "RLEG_LINK1", "RLEG_LINK2", "RLEG_LINK3", "RLEG_LINK4", "RLEG_LINK5",
                 "LLEG_LINK0", "LLEG_LINK1", "LLEG_LINK2", "LLEG_LINK3", "LLEG_LINK4", "LLEG_LINK5"]
       </rosparam>
