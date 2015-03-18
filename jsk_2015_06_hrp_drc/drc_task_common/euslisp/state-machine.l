@@ -62,9 +62,9 @@
         (send self :go-to! next-state)
       (error "Cannot change state from ~A to ~A"
              (send self :state) next-state)))
-  (:lookup-transitions (start-state &key (:direction :from))
+  (:lookup-transitions (start-state &key (direction :from))
     (remove-if-not #'(lambda (trans)
-                       (eq (send trans :direction) start-state))
+                       (eq (send trans direction) start-state))
                    transitions))
   (:register-transition (trans)
     (setq transitions (cons trans transitions))
@@ -208,8 +208,7 @@
    (let* ((context (or only-context (send (send machine :start-state) :context)))
           (msg (instance smach_msgs::SmachContainerStatus :init))
           (node-names (send-all (send machine :nodes-from-context context) :name))
-          (active "None")
-          (initial "None"))
+          active initial)
      (send msg :header :seq (incf state-counter))
      (send msg :header :stamp (ros::time-now))
      (send msg :path path)
@@ -217,20 +216,25 @@
          (dolist (tr (send machine :transitions))
            (when (and (eq only-context (send (send tr :to) :context))
                       (not (eq only-context (send (send tr :from) :context))))
-             (setq initial (send (send machine :start-state) :name))
+             (push (send (send tr :to) :name) initial)
              (return)))
-       (setq initial (send (send machine :active-state) :name)))
-     (send msg :initial_states (list (string initial)))
+       (push (send (send machine :active-state) :name) initial))
+     (send msg :initial_states (mapcar #'string initial))
      (cond
-      ((eq (send (send machine :active-state) :context) only-context)
+      ((eq (send (send machine :active-state) :context) context)
        (setq active (send (send machine :active-state) :name)))
       ((eq (send (send machine :active-state) :context) :initial)
        (setq active :initial)))
-     (send msg :active_states (list (string active)))
+     (when active
+       (send msg :active_states (list (string active))))
      (send msg :local_data (pickle::dump nil))
+     (when (eq only-context (send (send machine :active-state) :context))
+       (send msg :info path))
+     (when (eq (send (send machine :active-state) :context) :initial)
+       (send msg :info (format nil "/~A" root-name)))
      (ros::publish (concatenate string srv-name "/smach/container_status") msg)
      ;; recursive call for publish structure for subgraphs
-     (when (not only-context)
+     (unless only-context
        (let ((contexts-w/o-current-context
               (remove context (send machine :contexts))))
          (dolist (ctx contexts-w/o-current-context)
@@ -262,10 +266,9 @@
                                  (union
                                   (union from-nodes to-nodes)
                                   (send-all nodes :name))))
-     (print-ros-msg msg)
      (ros::publish (concatenate string srv-name "/smach/container_structure") msg)
      ;; recursive call for publish structure for subgraphs
-     (when (not only-context)
+     (unless only-context
        (let ((contexts-w/o-current-context
               (remove context (send machine :contexts))))
          (dolist (ctx contexts-w/o-current-context)
