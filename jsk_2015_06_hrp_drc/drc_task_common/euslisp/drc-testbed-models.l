@@ -402,9 +402,11 @@
    (prog1
        (send-super* :init :name name args)
      (setq block-dimensions bd)
-     (let* ((l (send self :make-drc-terrain-block-bodies)))
-       (send self :assoc (car l))
-       (setq links l)
+     (let* ((l (instance bodyset-link :init (make-cascoords)
+                         :name :root-link
+                         :bodies (send self :make-drc-terrain-block-bodies))))
+       (send self :assoc l)
+       (setq links (list l))
        (setq joint-list (list))
        (send self :init-ending)
        self)))
@@ -476,6 +478,7 @@
              (send block-set :rotate (* (elt (elt orientation-map i) j) pi/2) :z :world)
              (send block-set :translate (float-vector (* i block-set-region-x) (* j block-set-region-y) (* (elt (elt height-map i) j) (elt block-dimensions 2))) :world)
              (push block-set block-bodies)))))
+     (setq block-bodies (flatten (send-all block-bodies :bodies)))
      (dolist (b (cdr block-bodies)) (send (car block-bodies) :assoc b))
      block-bodies)
    )
