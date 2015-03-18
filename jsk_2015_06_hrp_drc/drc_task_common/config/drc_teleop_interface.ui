@@ -90,6 +90,19 @@
             </widget>
           </item>
           <item>
+            <widget class="QToolButton" name="hand_hook_pose_after_5sec_button">
+              <property name="text">
+                <string>Hook Pose After 5sec</string>
+              </property>
+              <property name="iconSize">
+                <size>
+                  <width>80</width>
+                  <height>80</height>
+                </size>
+              </property>
+            </widget>
+          </item>
+          <item>
             <widget class="QToolButton" name="hand_grasp_pose_button">
               <property name="text">
                 <string>Grasp Pose</string>

@@ -31,6 +31,7 @@ namespace drc_task_common
 
     void callRequestResetGripperPose();
     void callRequestHookGrippePose();
+    void callRequestHookGrippePoseAfter5sec();
 
     std::string getIKArm();
     void callRequestGraspGrippePose();
