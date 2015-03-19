@@ -1,6 +1,8 @@
 #!/usr/bin/env runeus
 ;; -*- mode: EusLisp; coding: utf-8-unix; -*-
 
+(ros::load-ros-manifest "detect_cans_in_fridge_201202")
+
 (setq ros::*compile-message* t) ;; switch for compile
 
 (if (string= (unix::getenv "ROS_DISTRO") "groovy")
