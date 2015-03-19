@@ -483,11 +483,15 @@
      block-bodies)
    )
   (:block-bodies () block-bodies)
-  (:get-terrain-top-face-for-one-block-body
-   (block-body)
-   (let ((fs (remove-if-not #'(lambda (x) (memq :top (send x :id))) (send block-body :faces))))
-     (list (elt fs 1) (elt fs 4)))
+  (:get-terrain-top-face-from-block-idx
+   (block-idx)
+   (list (elt (send (elt block-bodies (* 3 block-idx)) :faces) 6)
+         (elt (send (elt block-bodies (+ (* 3 block-idx) 1)) :faces) 6))
    )
+  (:get-all-terrain-top-faces
+   ()
+   (let ((ret -1))
+     (flatten (mapcar #'(lambda (x) (send self :get-terrain-top-face-from-block-idx (incf ret))) (make-list (/ (length block-bodies) 3))))))
   )
 
 
