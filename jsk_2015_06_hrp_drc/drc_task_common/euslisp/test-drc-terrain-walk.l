@@ -316,13 +316,14 @@
             ))
 
 ;; Before terrain simulation, please execute
-;;   $ rtmtest -t hrpsys_tools _gen_project.launch INPUT:=${CVSDIR}/OpenHRP/etc/HRP2JSKNT_for_OpenHRP3/HRP2JSKNTmain.wrl OUTPUT:=/tmp/HRP2JSKNT_for_DRCBlock.xml OBJECT_MODELS:="`rospack find hrpsys`/share/hrpsys/samples/environments/DRCTestbedTerrainJPBlock.wrl,0.4,-2.0,0,1,0,0,0, `rospack find openhrp3`/share/OpenHRP-3.1/sample/model/longfloor.wrl,0,0,0,1,0,0,0" CORBA_PORT:=15005 INTEGRATE:=false
-;;   $ rtmlaunch hrpsys_ros_bridge_tutorials hrp2jsknt.launch PROJECT_FILE:=/tmp/HRP2JSKNT_for_DRCBlock.xml
+;;   $ rtmtest -t hrpsys_tools _gen_project.launch INPUT:=${CVSDIR}/OpenHRP/etc/HRP2JSKNT_for_OpenHRP3/HRP2JSKNTmain.wrl OUTPUT:=/tmp/HRP2JSKNT_for_DRCTestbedBlock.xml OBJECT_MODELS:="`rospack find hrpsys`/share/hrpsys/samples/environments/DRCTestbedTerrainJPBlock.wrl,0.4,-2.0,0,1,0,0,0, `rospack find openhrp3`/share/OpenHRP-3.1/sample/model/longfloor.wrl,0,0,0,1,0,0,0" CORBA_PORT:=15005 INTEGRATE:=false
+;;   $ rtmlaunch hrpsys_ros_bridge_tutorials hrp2jsknt.launch PROJECT_FILE:=/tmp/HRP2JSKNT_for_DRCTestbedBlock.xml
 
 (defun setup-drc-testbed-terrain-simulation-hrp2jsknt ()
   (unless (boundp '*terrain*) (make-drc-terrain-japanese-block-ver))
   (setup-terrain-walk-hrp2jsknt)
   (setup-terrain-walk-real-hrp2jsknts)
+  (walking-pose *robot* :root-link-height-offset -70) ;; <= -70mm
   (send *robot* :fix-leg-to-coords (make-coords))
   (send *terrain* :newcoords (make-coords :pos (float-vector 400 -2000 0)))
   (setq *rleg-sole* (make-sole-body *robot* :rleg))
@@ -334,16 +335,20 @@
 (defun test-drc-testbed-terrain-simulation-hrp2jsknt-one
   (rleg-fwd-offset lleg-fwd-offset)
   (setq *prev-rleg-coords* (send *rleg-sole* :copy-worldcoords))
-  (send *rleg-sole* :newcoords
-        (car (project-coords-on-to-plane
-              (send (send *robot* :rleg :end-coords :copy-worldcoords) :translate (float-vector rleg-fwd-offset 0 200) :world)
+  (let ((crds (car (project-coords-on-to-plane
+                    (send (send *robot* :rleg :end-coords :copy-worldcoords) :translate (float-vector rleg-fwd-offset 0 300) :world)
               *terrain-faces*
-              (float-vector 0 0 1))))
-  (send *lleg-sole* :newcoords
-        (car (project-coords-on-to-plane
-              (send (send *robot* :lleg :end-coords :copy-worldcoords) :translate (float-vector lleg-fwd-offset 0 200) :world)
+              (float-vector 0 0 1)))))
+    (if crds
+        (send *rleg-sole* :newcoords crds)
+      (error ";; Cannot snap ~A~%" rleg-fwd-offset)))
+  (let ((crds (car (project-coords-on-to-plane
+              (send (send *robot* :lleg :end-coords :copy-worldcoords) :translate (float-vector lleg-fwd-offset 0 300) :world)
               *terrain-faces*
-              (float-vector 0 0 1))))
+              (float-vector 0 0 1)))))
+    (if crds
+        (send *lleg-sole* :newcoords crds)
+      (error ";; Cannot snap ~A~%" lleg-fwd-offset)))
   (send *ri* :set-foot-steps
         (list (make-coords :coords *prev-rleg-coords* :name :rleg)
               (make-coords :coords (send *lleg-sole* :copy-worldcoords) :name :lleg)
