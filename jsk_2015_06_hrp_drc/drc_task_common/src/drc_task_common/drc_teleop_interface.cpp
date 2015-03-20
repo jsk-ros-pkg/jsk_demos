@@ -62,6 +62,8 @@ namespace drc_task_common
     ui_->hand_reset_pose_button->setIcon(QIcon(QPixmap(QString(hand_reset_pose_button_icon_name.c_str()))));
     ui_->hand_hook_pose_button->setToolButtonStyle(Qt::ToolButtonTextUnderIcon);
     ui_->hand_hook_pose_button->setIcon(QIcon(QPixmap(QString(hand_hook_pose_button_icon_name.c_str()))));
+    ui_->hand_hook_pose_after_5sec_button->setToolButtonStyle(Qt::ToolButtonTextUnderIcon);
+    ui_->hand_hook_pose_after_5sec_button->setIcon(QIcon(QPixmap(QString(hand_hook_pose_button_icon_name.c_str()))));
     ui_->hand_grasp_pose_button->setToolButtonStyle(Qt::ToolButtonTextUnderIcon);
     ui_->hand_grasp_pose_button->setIcon(QIcon(QPixmap(QString(hand_grasp_pose_button_icon_name.c_str()))));
     ui_->hand_grasp_pose_for_drill_button->setToolButtonStyle(Qt::ToolButtonTextUnderIcon);
@@ -93,6 +95,7 @@ namespace drc_task_common
 
     connect( ui_->hand_reset_pose_button, SIGNAL( clicked() ), this, SLOT(  callRequestResetGripperPose()));
     connect( ui_->hand_hook_pose_button, SIGNAL( clicked() ), this, SLOT(  callRequestHookGrippePose()));
+    connect( ui_->hand_hook_pose_after_5sec_button, SIGNAL( clicked() ), this, SLOT(  callRequestHookGrippePoseAfter5sec()));
     connect( ui_->hand_grasp_pose_button, SIGNAL( clicked() ), this, SLOT(  callRequestGraspGrippePose()));
     connect( ui_->hand_grasp_pose_for_drill_button, SIGNAL( clicked() ), this, SLOT(  callRequestGraspGrippePoseForDrill()));
 
@@ -132,6 +135,10 @@ namespace drc_task_common
 
   void DRCTeleopInterfaceAction::callRequestHookGrippePose(){
     std::string command("(progn (send *robot* :hand :arms :hook-pose) (send *ri* :hand-angle-vector (apply #\'concatenate float-vector (send *robot* :hand :arms :angle-vector))))");
+    callRequestEusCommand(command);
+  };
+  void DRCTeleopInterfaceAction::callRequestHookGrippePoseAfter5sec(){
+    std::string command("(progn (unix::sleep 5) (send *robot* :hand :arms :hook-pose) (send *ri* :hand-angle-vector (apply #\'concatenate float-vector (send *robot* :hand :arms :angle-vector))))");
     callRequestEusCommand(command);
   };
 
