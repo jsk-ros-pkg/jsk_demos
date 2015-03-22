@@ -3,15 +3,16 @@
 (load "package://drc_task_common/models/dewalt_dc550ka.l")
 (load "package://drc_task_common/models/gun-drill.l")
 
-(setq *drill-main-arm* :larm)
-(setq *drill-support-arm* :rarm)
+(setq *drill-main-arm* :rarm)
+(setq *drill-support-arm* :larm)
 
 ;; takenoko drill
-(defun init-takenoko-drill (drill-coords)
+(defun init-takenoko-drill ()
   (setq *drill* (dewalt_dc550ka-robot))
   ;; generate drill
   (send-all (send *drill* :bodies) :set-color #f(0.7 0.6 0.0))
   ;; atattch handle to drill
+  (send *drill* :put :type :takenoko)
   (send *drill* :put :grasp-coords
         (make-cascoords
          :coords (make-coords :pos #f(0 0 190) :rpy (list 0 pi 0))
@@ -19,19 +20,28 @@
   ;; place drill to drill-coords
   (send *drill* :put :button-coords
         (make-cascoords
-         ;; :coords (make-coords :pos #f(-25 30 93) :rpy (list 0 0 pi/2)) ;; center of hole
-         :coords (make-coords :pos #f(-22 30 97) :rpy (list 0 0 pi/2)) ;; center of button
+         :coords (make-coords :pos #f(-22 30 97) :rpy (list 0 0 pi/2))
          :parent *drill*))
-  (when drill-coords
-    (send *drill* :newcoords drill-coords))
+  ;; place drill to drill-coords
+  (send *drill* :put :put-coords
+        (make-cascoords
+         :coords (make-coords :pos #f(0 0 0) :rpy (list 0 0 0))
+         :parent *drill*))
+  (send *drill* :put :origin-coords
+        (make-cascoords
+         :coords (make-coords :pos #f(0 0 0) :rpy (list 0 0 0))
+         :parent *drill*))
+  ;; (when drill-coords
+  ;;   (send *drill* :newcoords drill-coords))
   )
 ;; gun drill
 
-(defun init-gun-drill (drill-coords)
+(defun init-gun-drill ()
   (setq *drill* (gun-drill))
   ;; generate drill
   (send-all (send *drill* :bodies) :set-color #f(0.0 0.6 0.7))
   ;; atattch handle to drill
+  (send *drill* :put :type :gun)
   (send *drill* :put :grasp-coords
         (make-cascoords
          :coords (make-coords :pos #f(0 0 -10) :rpy (list 0 0 0))
@@ -41,8 +51,21 @@
         (make-cascoords
          :coords (make-coords :pos #f(0 0 0) :rpy (list 0 0 0))
          :parent *drill*))
-  (when drill-coords
-    (send *drill* :newcoords drill-coords))  
+  (send *drill* :put :put-coords
+        (make-cascoords
+         :coords (make-coords :pos #f(0 0 -150) :rpy (list 0 0 0)) 
+         :parent *drill*))
+  (send *drill* :put :origin-coords
+        (make-cascoords
+         :coords (make-coords :pos #f(0 0 0) :rpy (list 0 0 0)) 
+         :parent *drill*))
+
+  ;; (when drill-coords
+  ;;   (send *drill* :newcoords drill-coords))  
+  )
+
+(defun get-drill-coords-with-symbol (coords symbol)
+  (send (send coords :copy-worldcoords) :transform (send (send (send *drill* :get symbol) :copy-worldcoords) :inverse-transformation))
   )
 
 ;; drill grasp ;;;;
@@ -50,7 +73,8 @@
   (&key (drill-coords (make-coords :pos (float-vector 700 -150 800) :rpy (list 0 0 0)))
         (generate-ri? t) (draw? t)
         (robot-name "HRP2JSKNT")
-        (drill-type :takenoko))
+        (drill-type :takenoko)
+        (recognized-coords-symbol :origin-coords))
   ;; generate robot
   (generate-robot robot-name :generate-ri? generate-ri?)
   ;; place robot to origin
@@ -69,9 +93,12 @@
          :parent (send (send *robot* :larm :end-coords) :parent)))
 
 
-  (cond ((equal drill-type :takenoko) (init-takenoko-drill drill-coords))
-        ((equal drill-type :gun) (init-gun-drill drill-coords))
+  (cond ((equal drill-type :takenoko) (init-takenoko-drill))
+        ((equal drill-type :gun) (init-gun-drill))
         )
+  (ros::ros-info (format nil "recognized-symbol ~A" recognized-coords-symbol))
+  (when drill-coords 
+     (send *drill* :newcoords (get-drill-coords-with-symbol drill-coords recognized-coords-symbol)))
   ;; drill setting
   (setq *drill-grasp-stand-coords* nil)
   ;; draw
@@ -88,16 +115,17 @@
    &key
    (draw? nil)
    (use-ri? t)
-   (drill-type :takenoko))
+   (drill-type :takenoko)
+   (recognized-coords-symbol :origin-coords))
   (let* (drill-worldcoords)
     ;; place robot and drill to initial coords
-    (set-drill-grasp-environment :drill-coords nil :draw? draw? :generate-ri? use-ri? :drill-type drill-type)
+    (set-drill-grasp-environment :drill-coords nil :draw? draw? :generate-ri? use-ri? :drill-type drill-type :recognized-coords-symbol recognized-coords-symbol)
     (cond (use-ri?
            (send *robot* :angle-vector (send *ri* :state :potentio-vector)))
           (t
            (send *robot* :angle-vector (get-potentio-vector-from-joint-states))))
     (send *robot* :fix-leg-to-coords (make-coords) '(:lleg :rleg))
-    (send *drill* :newcoords (send (send (send *robot* :body_lk) :copy-worldcoords) :transform drill-coords :local))
+    (send *drill* :newcoords (send (send (send *robot* :body_lk) :copy-worldcoords) :transform (get-drill-coords-with-symbol drill-coords recognized-coords-symbol) :local)) 
     ;; treat the difference of origin between eus and recognition program
     ;;(send *drill* :translate (float-vector 0 0 (* -0.5 (elt (send *drill* :body-type) 2))) :local)
     (when draw? (send *irtviewer* :draw-objects))
@@ -232,8 +260,8 @@
   (if (equal *drill-main-arm* :rarm) (make-coords :pos (float-vector -600 300 0) :rpy (list (deg2rad 0) 0 0)) (make-coords :pos (float-vector -600 -300 0) :rpy (list (deg2rad 0) 0 0)))
   )
 (defun get-drill-grasp-motion-full
-  (drill-coords &key (draw? nil) (use-ri? t) (drill-type :takenoko))
-  (set-drill-grasp-environment-full drill-coords :draw? draw? :use-ri? use-ri? :drill-type drill-type)
+  (drill-coords &key (draw? nil) (use-ri? t) (drill-type :takenoko) (recognized-coords-symbol :origin-coords))
+  (set-drill-grasp-environment-full drill-coords :draw? draw? :use-ri? use-ri? :drill-type drill-type :recognized-coords-symbol recognized-coords-symbol)
   (let* ((drill-motion-av-list (get-drill-grasp-motion :draw? draw?))
          (drill-motion-length (length drill-motion-av-list)))
     (when (= drill-motion-length 0)
@@ -335,7 +363,7 @@
 ;; almost same with grasp at present
 (defun send-drill-put-motion
   (coords &key (real? t))
-  (let* ((drill-motion-av-list (get-drill-grasp-motion-full coords))
+  (let* ((drill-motion-av-list (get-drill-grasp-motion-full coords :drill-tupe drill-type :recognized-coords-symbol :put-coords))
          (drill-motion-length (length drill-motion-av-list)))
     (when (= drill-motion-length 0) (return-from send-drill-grasp-motion))
     ;; walk
@@ -376,7 +404,7 @@
 (defun publish-drill-put-motion
   (&key coords (step-time 400) (update? t))
   (when update?
-    (get-drill-grasp-motion-full coords :use-ri? nil))
+    (get-drill-grasp-motion-full coords :use-ri? nil :recognized-coords-symbol :put-coords))
   (ros::ros-info "drill-grasp-stand-coords: ~a~%" *drill-grasp-stand-coords*)
   (ros::ros-info "drill-ik-results: ~a~%" *drill-ik-results*)
   (when *drill-grasp-stand-coords*
@@ -420,9 +448,11 @@
          :parent (send (send *robot* *drill-support-arm* :end-coords) :parent)))
   ;; drill setting
   ;; generate drill
-  (cond ((equal drill-type :takenoko) (init-takenoko-drill drill-coords))
-        ((equal drill-type :gun) (init-gun-drill drill-coords))
+  (cond ((equal drill-type :takenoko) (init-takenoko-drill))
+        ((equal drill-type :gun) (init-gun-drill))
         ) 
+  (when drill-coords
+    (send *drill* :newcoords drill-coords))
   ;; draw
   (when draw?
     (setq *ground* (make-cube 1000 1000 1))
@@ -626,6 +656,12 @@
 (defun test-drill-grasp-motion ()
   ;(get-drill-grasp-motion-full (make-coords :pos (float-vector 700 -150 800) :rpy (list 0 0 0)) :draw? t)
   (setq *answer-for-grasp-test* (get-drill-grasp-motion-full (make-coords :pos (float-vector 1000 -150 200) :rpy (list 0 0 0)) :draw? t :drill-type :gun))
+  (play-motion-on-eus-viewer *drill-motion*)
+  )
+(defun test-drill-put-motion ()
+  ;(get-drill-grasp-motion-full (make-coords :pos (float-vector 700 -150 800) :rpy (list 0 0 0)) :draw? t)
+  (setq *answer-for-grasp-test* (get-drill-grasp-motion-full (make-coords :pos (float-vector 1000 -150 200) :rpy (list 0 0 0)) :draw? t :drill-type :gun :recognized-coords-symbol :put-coords))
+  
   (play-motion-on-eus-viewer *drill-motion*)
   )
 (defun re-test ()
