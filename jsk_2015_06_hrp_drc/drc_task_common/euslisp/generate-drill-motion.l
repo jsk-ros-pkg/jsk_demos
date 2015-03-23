@@ -5,6 +5,7 @@
 
 (setq *drill-main-arm* :rarm)
 (setq *drill-support-arm* :larm)
+(setq *default-drill-type* :gun)
 
 ;; takenoko drill
 (defun init-takenoko-drill ()
@@ -30,6 +31,11 @@
   (send *drill* :put :origin-coords
         (make-cascoords
          :coords (make-coords :pos #f(0 0 0) :rpy (list 0 0 0))
+         :parent *drill*))
+  (send *drill* :put :edge-coords
+        (make-cascoords
+         ;;:coords (make-coords :pos #f(0 0 0) :rpy (list 0 0 0))
+         :coords (make-coords :pos #f(0 0 340) :rpy (list 0 0 0))
          :parent *drill*))
   ;; (when drill-coords
   ;;   (send *drill* :newcoords drill-coords))
@@ -70,6 +76,7 @@
   )
 
 (defun get-drill-coords-with-symbol (coords symbol)
+  (ros::ros-info (format nil "got coords ~A symbol ~A drill ~A" (send *drill* :get symbol) symbol *drill*))
   (send (send coords :copy-worldcoords) :transform (send (send (send *drill* :get symbol) :copy-coords) :inverse-transformation))
   )
 
@@ -78,7 +85,7 @@
   (&key (drill-coords (make-coords :pos (float-vector 700 -150 800) :rpy (list 0 0 0)))
         (generate-ri? t) (draw? t)
         (robot-name "HRP2JSKNT")
-        (drill-type :takenoko)
+        (drill-type *default-drill-type*)
         (recognized-coords-symbol :origin-coords))
   ;; generate robot
   (generate-robot robot-name :generate-ri? generate-ri?)
@@ -101,7 +108,6 @@
   (cond ((equal drill-type :takenoko) (init-takenoko-drill))
         ((equal drill-type :gun) (init-gun-drill))
         )
-  (ros::ros-info (format nil "recognized-symbol ~A" recognized-coords-symbol))
   (when drill-coords 
      (send *drill* :newcoords (get-drill-coords-with-symbol drill-coords recognized-coords-symbol)))
   ;; drill setting
@@ -120,7 +126,7 @@
    &key
    (draw? nil)
    (use-ri? t)
-   (drill-type :takenoko)
+   (drill-type *default-drill-type*)
    (recognized-coords-symbol :origin-coords))
   ;; place robot and drill to initial coords
   (set-drill-environment :drill-coords nil :draw? draw? :generate-ri? use-ri? :drill-type drill-type :recognized-coords-symbol recognized-coords-symbol)
@@ -129,6 +135,7 @@
         (t
            (send *robot* :angle-vector (get-potentio-vector-from-joint-states))))
   (send *robot* :fix-leg-to-coords (make-coords) '(:lleg :rleg))
+  (ros::ros-info (format nil "drill coords ~A" drill-coords))
   (send *drill* :newcoords (send (send (send *robot* :body_lk) :copy-worldcoords) :transform 
                                  (get-drill-coords-with-symbol drill-coords recognized-coords-symbol)
                                  :local))
@@ -266,7 +273,7 @@
   (if (equal *drill-main-arm* :rarm) (make-coords :pos (float-vector -600 300 0) :rpy (list (deg2rad 0) 0 0)) (make-coords :pos (float-vector -600 -300 0) :rpy (list (deg2rad 0) 0 0)))
   )
 (defun get-drill-grasp-motion-full
-  (drill-coords &key (draw? nil) (use-ri? t) (drill-type :takenoko) (recognized-coords-symbol :origin-coords))
+  (drill-coords &key (draw? nil) (use-ri? t) (drill-type *default-drill-type*) (recognized-coords-symbol :origin-coords))
   (set-drill-environment-full drill-coords :draw? draw? :use-ri? use-ri? :drill-type drill-type :recognized-coords-symbol recognized-coords-symbol)
   
   (let* ((drill-motion-av-list (get-drill-grasp-motion :draw? draw?))
@@ -303,7 +310,7 @@
   
 
 (defun send-drill-grasp-motion
-  (coords &key (real? t) (drill-type :takenoko))
+  (coords &key (real? t) (drill-type *default-drill-type*))
   (let* ((drill-motion-av-list (get-drill-grasp-motion-full coords :drill-type drill-type))
          (drill-motion-length (length drill-motion-av-list)))
     (when (= drill-motion-length 0) (return-from send-drill-grasp-motion))
@@ -353,7 +360,7 @@
   )
 
 (defun publish-drill-grasp-motion
-  (&key coords (step-time 400) (update? t) (drill-type :takenoko))
+  (&key coords (step-time 400) (update? t) (drill-type *default-drill-type*))
   (when update?
     (get-drill-grasp-motion-full coords :use-ri? nil :drill-type drill-type))
   (ros::ros-info "drill-grasp-stand-coords: ~a~%" *drill-stand-coords*)
@@ -411,7 +418,7 @@
 (defun publish-drill-put-motion
   (&key coords (step-time 400) (update? t))
   (when update?
-    (get-drill-grasp-motion-full coords :use-ri? nil :recognized-coords-symbol :put-coords))
+    (get-drill-grasp-motion-full coords :use-ri? nil :recognized-coords-symbol :put-coords :drill-type :gun))
   (ros::ros-info "drill-grasp-stand-coords: ~a~%" *drill-stand-coords*)
   (ros::ros-info "drill-ik-results: ~a~%" *drill-ik-results*)
   (when *drill-stand-coords*
@@ -427,7 +434,7 @@
   (&key (drill-coords (make-coords :pos (float-vector 700 -150 800) :rpy (list 0 0 0)))
         (generate-ri? t) (draw? t)
         (robot-name "HRP2JSKNT")
-        (drill-type :takenoko))
+        (drill-type *default-drill-type*))
   ;; generate robot
   (generate-robot robot-name :generate-ri? generate-ri?)
   ;; place robot to origin
@@ -666,6 +673,7 @@
       (dotimes (i dt-coords-length)
         (send *drill* :newcoords (elt dt-coords-list i))
         ;;(send *drill* :newcoords (send (send (send *robot* :body_lk) :copy-worldcoords) :transform (get-drill-coords-with-symbol (elt dt-coords-list i) :origin-coords) :local))
+        
         (setq tc
             (list
              (send (send *drill* :get :grasp-coords) :copy-worldcoords)
@@ -721,7 +729,8 @@
   (if (equal *drill-main-arm* :rarm) (make-coords :pos (float-vector -600 300 0) :rpy (list (deg2rad 0) 0 0)) (make-coords :pos (float-vector -600 -300 0) :rpy (list (deg2rad 0) 0 0)))
   )
 (defun get-drill-wall-motion-full
-  (drill-coords-list &key (draw? nil) (use-ri? t) (drill-type :takenoko) (recognized-coords-symbol :edge-coords))
+  (drill-coords-list &key (draw? nil) (use-ri? t) (drill-type *default-drill-type*) (recognized-coords-symbol :edge-coords))
+  (when (equal (length drill-coords-list) 0) (ros::ros-info "wall coords are empty") (return-from nil nil))
   (set-drill-environment-full (send (elt drill-coords-list 0) :copy-worldcoords) :draw? draw? :use-ri? use-ri? :drill-type drill-type :recognized-coords-symbol recognized-coords-symbol)
   ;(send *drill* :put :destination-coords-list drill-coords-list)
   (let ((dest-coords-list nil))
@@ -773,8 +782,8 @@
   
 
 (defun send-drill-wall-motion
-  (coords-list &key (real? t) (drill-type :takenoko))
-  (let* ((drill-motion-av-list (get-drill-wall-motion-full coords-list :drill-type drill-type))
+  (coords-list &key (real? t) (drill-type *default-drill-type*))
+  (let* ((drill-motion-av-list (get-drill-wall-motion-full coords-list :drill-type drill-type :recognized-coords-symbol :edge-coords))
          (drill-motion-length (length drill-motion-av-list)))
     (when (= drill-motion-length 0) (return-from send-drill-wall-motion))
     (send *robot* :hand :arms :hook-pose) ;; hand hook-pose
@@ -820,9 +829,9 @@
   )
 
 (defun publish-drill-wall-motion
-  (&key coords-list (step-time 400) (update? t) (drill-type :takenoko))
+  (&key coords-list (step-time 400) (update? t) (drill-type *default-drill-type*))
   (when update?
-    (get-drill-wall-motion-full coords-list :use-ri? nil :drill-type drill-type))
+    (get-drill-wall-motion-full coords-list :use-ri? nil :drill-type drill-type :recognized-coords-symbol :edge-coords))
   (ros::ros-info "drill-wall-stand-coords: ~a~%" *drill-stand-coords*)
   (ros::ros-info "drill-ik-results: ~a~%" *drill-ik-results*)
   (if *drill-stand-coords*

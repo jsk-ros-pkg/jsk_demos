@@ -783,8 +783,10 @@
     (when (eq (send smachine :state) :recognizing-drill-wall)
       (let ((params (send msg :params)))
         ;; TODO: Here you have coords-set, Do something magical
+      
         (let ((coords-set (float-vector-to-coords-set params)))
           (setq drill-wall-target-coords coords-set)
+          (publish-drill-wall-motion :coords-list coords-set :update? t)
           (send smachine :go-to :selecting-exec-for-drill-wall)))))
   (:drill-button-recognition-finished-callback (msg)
     (when (eq (send smachine :state) :recognizing-drill-button-pose)
@@ -924,6 +926,13 @@
                  (list (get-primitive-marker-pose :frame-id "BODY")))
            ;; publish dirll motion to robot model on rviz
            (publish-drill-button-motion :coords (elt drill-button-params 0) :update? t)
+           )
+          ((eq (send smachine :state) :selecting-exec-for-drill-wall)
+           ;; update latest drill-button params
+           ;; (setq drill-wall-params
+           ;;       (list (get-primitive-marker-pose :frame-id "BODY")))
+           ;; publish dirll motion to robot model on rviz
+           (publish-drill-wall-motion :coords-list (elt drill-wall-params 0) :update? t)
            )
           ((eq (send smachine :state) :selecting-exec-for-door)
            ;; update latest door params
