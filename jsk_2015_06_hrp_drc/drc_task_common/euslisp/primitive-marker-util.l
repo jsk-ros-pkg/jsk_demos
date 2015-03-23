@@ -103,3 +103,11 @@
     (send msg :array msg-array)
     (ros::publish "/midi_config_player/set_feedback" msg)
     ))
+
+(defun publish-coords-list (coords-list)
+  (let ((pose-list (instance geometry_msgs::PoseArray :init)))
+    (let (pose)
+      (ros::publish "/drill-pose-list" pose-list)
+      )
+    )
+  )

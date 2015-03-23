@@ -782,8 +782,9 @@
   (:drill-wall-recognition-finished-callback (msg)
     (when (eq (send smachine :state) :recognizing-drill-wall)
       (let ((params (send msg :params)))
-        ;; TODO: Here you have coords-set, Do something magical
         (let ((coords-set (float-vector-to-coords-set params)))
+	  (send self :show-text 
+		(format nil "Recognize wall coords"))
           (setq drill-wall-target-coords coords-set)
           (send smachine :go-to :selecting-exec-for-drill-wall)))))
   (:drill-button-recognition-finished-callback (msg)
