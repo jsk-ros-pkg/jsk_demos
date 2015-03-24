@@ -785,6 +785,7 @@
         (let ((coords-set (float-vector-to-coords-set params)))
 	  (send self :show-text 
 		(format nil "Recognize wall coords"))
+          (publish-coords-list pose-list "BODY")
           (setq drill-wall-target-coords coords-set)
           (send smachine :go-to :selecting-exec-for-drill-wall)))))
   (:drill-button-recognition-finished-callback (msg)
@@ -975,6 +976,7 @@
 (ros::advertise "/midi_config_player/set_feedback" sensor_msgs::JoyFeedbackArray)
 (ros::advertise "/urdf_control_marker/set_pose" geometry_msgs::PoseStamped 1)
 (ros::advertise "/transformable_interactive_server/set_control_relative_pose" geometry_msgs::Pose 1)
+(ros::advertise "/drill_pose_list" geometry_msgs::PoseArray 1)
 
 ;; registering services for button UIs
 (ros::advertise-service "valve" std_srvs::Empty #'send *app* :valve-button-callback)
