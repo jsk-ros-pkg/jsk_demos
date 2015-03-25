@@ -126,18 +126,25 @@
     ))
 
 (load "package://hrpsys_ros_bridge/euslisp/rtm-ros-robot-interface.l")
+
+(defmethod rtm-ros-robot-interface
+  (:get-initial-force-list
+    (limb)
+    (unless (consp limb) (setq limb (list limb)))
+    (mapcar #'(lambda (l) (send self :state :absolute-force-vector l)) limb)
+   )
 (defmethod rtm-ros-robot-interface
   (:reach-until-touch
    (limb dir
          &key (thre 10) (max-dist 150) (dist-step 10) (time-step 200)
-         (coords-system :world) (ik-mode :limb) (rotation-axis t) (debug nil))
+         (coords-system :world) (ik-mode :limb) (rotation-axis t) (debug nil) (initial-force nil))
    (unless (consp limb) (setq limb (list limb)))
    (unless (consp dir) (setq dir (list dir)))
    (let* ((tmp-robot (copy-object robot))
           (ndir (mapcar #'normalize-vector dir))
-          (initial-force (mapcar #'(lambda (l) (send self :state :absolute-force-vector l)) limb))
           (finish-condition (make-list (length limb) :initial-element nil)))
      ;; 1. initialize
+     (unless inritial-force (setq initial-force (get-initial-force-list limb)))
      (send tmp-robot :angle-vector (send self :state :reference-vector))
      ;; (send tmp-robot :angle-vector (send self :state :potentio-vector))
      (send tmp-robot :fix-leg-to-coords (make-coords))
