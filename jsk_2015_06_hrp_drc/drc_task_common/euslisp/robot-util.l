@@ -136,7 +136,8 @@
    (let* ((tmp-robot (copy-object robot))
           (ndir (mapcar #'normalize-vector dir))
           (initial-force (mapcar #'(lambda (l) (send self :state :absolute-force-vector l)) limb))
-          (finish-condition (make-list (length limb) :initial-element nil)))
+          (finish-condition (make-list (length limb) :initial-element nil))
+          (dist-result 0))
      ;; 1. initialize
      (send tmp-robot :angle-vector (send self :state :reference-vector))
      ;; (send tmp-robot :angle-vector (send self :state :potentio-vector))
@@ -195,11 +196,12 @@
               (setf (elt finish-condition i) t))))))
       (send self :angle-vector (send tmp-robot :angle-vector) time-step)
       (unix::usleep (round (* (* time-step 1000) 0.8)))
+      (setq dist-result (+ dist-result dist-step))
       )
      ;; 3. send final posture again
      ;;(send self :angle-vector (send self :state :potentio-vector) 500)
      (send self :wait-interpolation)
      (unix::usleep (* 100 1000))
      ;;(send self :set-interpolation-mode ":hoffarbib")
-     )
+     dist-result)
    ))
