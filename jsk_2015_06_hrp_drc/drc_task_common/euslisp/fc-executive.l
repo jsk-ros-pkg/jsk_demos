@@ -346,9 +346,10 @@
   (:drill-wall-exec-command-callback (msg)
     (when (send smachine :next? :executing-drill-wall)
       (send smachine :go-to :executing-drill-wall)
-      ;; TODO: do something great!
       (let ((coords-set (float-vector-to-coords-set (send msg :float_params))))
-        (ros::ros-info "Target coords are: ~A" coords-set))
+        (ros::ros-info "Target coords are: ~A" coords-set)
+        (send-drill-wall-motion coords-set)
+        )
       (send smachine :go-to :initial)
       ))
   (:drill-button-exec-command-callback (msg)

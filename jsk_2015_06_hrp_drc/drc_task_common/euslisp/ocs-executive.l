@@ -782,9 +782,12 @@
   (:drill-wall-recognition-finished-callback (msg)
     (when (eq (send smachine :state) :recognizing-drill-wall)
       (let ((params (send msg :params)))
-        ;; TODO: Here you have coords-set, Do something magical
         (let ((coords-set (float-vector-to-coords-set params)))
+	  (send self :show-text 
+		(format nil "Recognize wall coords"))
+          (publish-coords-list coords-set "BODY")
           (setq drill-wall-target-coords coords-set)
+          (publish-drill-wall-motion :coords-list coords-set :update? t)
           (send smachine :go-to :selecting-exec-for-drill-wall)))))
   (:drill-button-recognition-finished-callback (msg)
     (when (eq (send smachine :state) :recognizing-drill-button-pose)
@@ -925,6 +928,13 @@
            ;; publish dirll motion to robot model on rviz
            (publish-drill-button-motion :coords (elt drill-button-params 0) :update? t)
            )
+          ((eq (send smachine :state) :selecting-exec-for-drill-wall)
+           ;; update latest drill-button params
+           ;; (setq drill-wall-params
+           ;;       (list (get-primitive-marker-pose :frame-id "BODY")))
+           ;; publish dirll motion to robot model on rviz
+           (publish-drill-wall-motion :coords-list drill-wall-target-coords :update? t)
+           )
           ((eq (send smachine :state) :selecting-exec-for-door)
            ;; update latest door params
            (let* ((dim (get-primitive-marker-dimensions)))
@@ -974,6 +984,7 @@
 (ros::advertise "/midi_config_player/set_feedback" sensor_msgs::JoyFeedbackArray)
 (ros::advertise "/urdf_control_marker/set_pose" geometry_msgs::PoseStamped 1)
 (ros::advertise "/transformable_interactive_server/set_control_relative_pose" geometry_msgs::Pose 1)
+(ros::advertise "/drill_pose_list" geometry_msgs::PoseArray 1)
 
 ;; registering services for button UIs
 (ros::advertise-service "valve" std_srvs::Empty #'send *app* :valve-button-callback)
