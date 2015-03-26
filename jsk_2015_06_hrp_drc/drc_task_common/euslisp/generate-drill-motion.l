@@ -214,7 +214,9 @@
     ;; (if (not (send *ri* :reach-until-touch *drill-main-arm* (float-vector 0 0 reach-dist-z) :max-dist (+ 0 100) :debug debug :thre 1 :dist-step 2)) (return-from nil nil))
     ;; (if (not (send *ri* :reach-until-touch *drill-main-arm* (float-vector 0 0 -1) :max-dist (+ 30) :debug debug :thre 13 :dist-step 2)) (return-from nil nil))
     ;; t
-    (send *ri* :reach-until-touch :larm (float-vector 1 -1 1) :max-dist (+ 0 250) :debug t :thre 0.1 :dist-step 0.5 :time-step 20 :p-control t)
+    (if (equal *drill-main-arm* :rarm) (send *ri* :reach-until-touch :rarm (float-vector 1 1 1) :max-dist (+ 0 250) :debug t :thre 0.1 :dist-step 0.5 :time-step 20 :p-control t)
+      (send *ri* :reach-until-touch :larm (float-vector 1 -1 1) :max-dist (+ 0 250) :debug t :thre 0.1 :dist-step 0.5 :time-step 20 :p-control t)
+      )
     )
   )
 
@@ -346,9 +348,11 @@
     (unix::usleep 500000)
     (send *robot* :hand *drill-main-arm* :angle-vector (float-vector 90.0 90.0 -10.0 0.0 -40.0 90.0))
     (when real? (hand-model2real))
-    ;; grasp-up
-    ;; (send *robot* :angle-vector (elt drill-motion-av-list 3))
-    ;; (when real? (model2real :time 3000))      
+    ;;grasp-up
+    (send *robot* :angle-vector (elt drill-motion-av-list 3))
+    (when real? (model2real :time 3000))
+    ;; ref-force todo
+    
     ;; ;; drill-reset-pose
     ;; (send *robot* :angle-vector (elt drill-motion-av-list 4))
     ;; (when real? (model2real :time 5000))
@@ -869,6 +873,11 @@
   (send *robot* :angle-vector (elt *drill-motion* 1))
   )
 (defun drill-hook () ;; test code
+  (send *robot* :hand *drill-main-arm* :angle-vector (float-vector 90.0 90.0 -10.0 0.0 -40.0 -40.0))
+  (hand-model2real)
+  )
+(defun drill-hook-a5 () ;; test code
+  (unix::sleep 5)
   (send *robot* :hand *drill-main-arm* :angle-vector (float-vector 90.0 90.0 -10.0 0.0 -40.0 -40.0))
   (hand-model2real)
   )
