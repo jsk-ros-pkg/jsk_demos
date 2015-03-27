@@ -126,19 +126,26 @@
     ))
 
 (load "package://hrpsys_ros_bridge/euslisp/rtm-ros-robot-interface.l")
+
+(defmethod rtm-ros-robot-interface
+  (:get-initial-force-list
+    (limb)
+    (unless (consp limb) (setq limb (list limb)))
+    (mapcar #'(lambda (l) (send self :state :absolute-force-vector l)) limb)
+   ))
 (defmethod rtm-ros-robot-interface
   (:reach-until-touch
    (limb dir
          &key (thre 10) (max-dist 150) (dist-step 10) (time-step 200)
-         (coords-system :world) (ik-mode :limb) (rotation-axis t) (debug nil))
+         (coords-system :world) (ik-mode :limb) (rotation-axis t) (debug nil) (initial-force nil) (p-control nil))
    (unless (consp limb) (setq limb (list limb)))
    (unless (consp dir) (setq dir (list dir)))
    (let* ((tmp-robot (copy-object robot))
           (ndir (mapcar #'normalize-vector dir))
-          (initial-force (mapcar #'(lambda (l) (send self :state :absolute-force-vector l)) limb))
           (finish-condition (make-list (length limb) :initial-element nil))
           (dist-result 0))
      ;; 1. initialize
+     (unless initial-force (setq initial-force (send* self :get-initial-force-list limb)))
      (send tmp-robot :angle-vector (send self :state :reference-vector))
      ;; (send tmp-robot :angle-vector (send self :state :potentio-vector))
      (send tmp-robot :fix-leg-to-coords (make-coords))
@@ -148,11 +155,24 @@
      (dotimes (i (round (/ max-dist dist-step)))
       ;; 2.1 check whether end condition is satisfied
       (let* ((current-force (mapcar #'(lambda (l) (send self :state :absolute-force-vector l)) limb))
-             (diff-force (mapcar #'v- current-force initial-force))
-             (diff-dired-force (mapcar #'(lambda (l df nd) (- (v. df (if (equal coords-system :world) nd (send (send (send tmp-robot l :end-coords) :copy-worldcoords) :rotate-vector nd))))) limb diff-force ndir)))
-        (setq finish-condition (mapcar #'(lambda (l fc ddf) (or fc (when (> ddf thre) (warn "limb ~a touched~%" l) t)))
-                                       limb finish-condition diff-dired-force))
-        (when debug (warn ";; diff-dired-force: ~a thre: ~a finish-cond: ~a~%" diff-dired-force thre finish-condition))
+             (relative-force (mapcar #'v- current-force initial-force)))
+        (if (not p-control)
+          (let ((relative-dired-force (mapcar #'(lambda (l df nd) (- (v. df (if (equal coords-system :world) nd (send (send (send tmp-robot l :end-coords) :copy-worldcoords) :rotate-vector nd))))) limb relative-force ndir)))      
+            (setq finish-condition (mapcar #'(lambda (l fc rdf) (or fc (when (> rdf thre) (warn "limb ~a touched~%" l) t)))
+                                           limb finish-condition relative-dired-force))
+            (when debug (warn ";; relative-dired-force: ~a thre: ~a finish-cond: ~a~%" relative-dired-force thre finish-condition)))
+          
+          (let*
+              ((target-force-vector (mapcar #'(lambda (d) (scale -1 d)) dir)) 
+               (diff-force (mapcar #'v- relative-force target-force-vector))
+               (mag-of-diff-force (mapcar #'norm diff-force)))
+            (setq finish-condition (mapcar #'(lambda (l fc ddf) (or fc (when (< ddf thre) (warn "limb ~a touched~%" l) t)))
+                                           limb finish-condition mag-of-diff-force))
+            ;(setq ndir (mapcar #'(lambda (target diff) (scale (/ 1.0 (norm target)) diff)) target-force-vector diff-force))
+            (setq ndir (mapcar #'normalize-vector diff-force))
+            (when debug (warn ";; mag-of-diff-force: ~a thre: ~a finish-cond: ~a ndir: ~a target ~a relative ~a~%" mag-of-diff-force thre finish-condition ndir target-force-vector relative-force))
+            )
+          )
         (unless (some #'not finish-condition)
           (return-from nil nil)))
       ;; 2.2 solve ik and move real robot
