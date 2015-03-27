@@ -137,13 +137,14 @@
   (:reach-until-touch
    (limb dir
          &key (thre 10) (max-dist 150) (dist-step 10) (time-step 200)
-         (coords-system :world) (ik-mode :limb) (rotation-axis t) (debug nil) (initial-force nil) (p-control nil))
+         (coords-system :world) (ik-mode :limb) (rotation-axis t) (debug nil) (initial-force nil) (p-control nil) (try-dist max-dist))
    (unless (consp limb) (setq limb (list limb)))
    (unless (consp dir) (setq dir (list dir)))
    (let* ((tmp-robot (copy-object robot))
           (ndir (mapcar #'normalize-vector dir))
           (finish-condition (make-list (length limb) :initial-element nil))
-          (dist-result 0))
+          (dist-result 0)
+          (initial-pos (mapcar #'(lambda (l) (send (send tmp-robot l :end-coords) :worldpos)) limb)))
      ;; 1. initialize
      (unless initial-force (setq initial-force (send* self :get-initial-force-list limb)))
      (send tmp-robot :angle-vector (send self :state :reference-vector))
@@ -152,7 +153,7 @@
      ;;(send self :set-interpolation-mode ":linear")
      (when debug (warn ";; ndir: ~a initial-force: ~a~%" ndir initial-force))
      ;; 2. loop
-     (dotimes (i (round (/ max-dist dist-step)))
+     (dotimes (i (round (/ try-dist dist-step)))
       ;; 2.1 check whether end condition is satisfied
       (let* ((current-force (mapcar #'(lambda (l) (send self :state :absolute-force-vector l)) limb))
              (relative-force (mapcar #'v- current-force initial-force)))
@@ -166,7 +167,9 @@
               ((target-force-vector (mapcar #'(lambda (d) (scale -1 d)) dir)) 
                (diff-force (mapcar #'v- relative-force target-force-vector))
                (mag-of-diff-force (mapcar #'norm diff-force)))
-            (setq finish-condition (mapcar #'(lambda (l fc ddf) (or fc (when (< ddf thre) (warn "limb ~a touched~%" l) t)))
+            (setq finish-condition (mapcar #'(lambda (l fc ip) (or fc (when (> (norm (v- (send (send tmp-robot l :end-coords) :worldpos) ip)) max-dist) (warn "over max-dist~%" l) t))) limb finish-condition initial-pos))
+
+            (setq finish-condition (mapcar #'(lambda (l fc mdf) (or fc (when (< mdf thre) (warn "limb ~a touched~%" l) t)))
                                            limb finish-condition mag-of-diff-force))
             ;(setq ndir (mapcar #'(lambda (target diff) (scale (/ 1.0 (norm target)) diff)) target-force-vector diff-force))
             (setq ndir (mapcar #'normalize-vector diff-force))
