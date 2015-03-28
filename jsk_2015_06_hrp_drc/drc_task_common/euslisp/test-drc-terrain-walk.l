@@ -8,13 +8,14 @@
   (robot
    &key (root-link-height-offset 0)
         (root-link-pitch-offset 0)
+        (root-link-roll-offset 0)
         (fix-coords (make-coords))
         (default-pose-method :reset-manip-pose))
   "Generate and set walking pose.
    default-pose-method is initial pose, reset-manip-pose by default.
    Generated pose is near from default-pose-method pose.
    root-link-height-offset is root height offset [mm] from default-pose-method.
-   root-link-pitch-offset is root pitch offset [deg] from default-pose-method."
+   root-link-pitch-offset and root-link-roll-offset are root pitch and roll offset [deg] from default-pose-method."
   (send robot default-pose-method)
   (send robot :fix-leg-to-coords fix-coords)
   (let ((lc (mapcar #'(lambda (l)
@@ -22,9 +23,11 @@
                     '(:rleg :lleg))))
     (send robot :move-coords
           (send
-           (send (send (car (send robot :links)) :copy-worldcoords)
-                 :translate (float-vector 0 0 root-link-height-offset))
-           :rotate (deg2rad root-link-pitch-offset) :y)
+           (send
+            (send (send (car (send robot :links)) :copy-worldcoords)
+                  :translate (float-vector 0 0 root-link-height-offset))
+            :rotate (deg2rad root-link-pitch-offset) :y)
+           :rotate (deg2rad root-link-roll-offset) :x)
           (car (send robot :links)))
     (mapcar #'(lambda (l c)
                 (send robot l :inverse-kinematics c))
