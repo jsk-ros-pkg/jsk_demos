@@ -189,13 +189,17 @@
 
 (defmethod drc-stair
   (:init
-   ()
+   (&key (add-groud-p nil))
    (let* ((blist (append (send self :make-stair-bodies)
                          (send self :make-top-stair-bodies)
                          (send self :make-handrail-bodies)
                          (send self :make-small-handrail-bodies :l/r :right)
                          (send self :make-small-handrail-bodies)
                          (send self :make-top-handrail-bodies))))
+     (if add-groud-p
+         (let ((b (make-cube 1000 1200 10)))
+           (send b :translate (float-vector 0 0 -5))
+           (push b blist)))
      (dolist (b (cdr blist)) (send (car blist) :assoc b))
      (send-super :init :name "drc-stair" :bodies blist)))
   (:make-stair-bodies
@@ -398,13 +402,20 @@
 
 (defmethod drc-terrain
   (:init
-   (&rest args &key (name "drc-terrain") ((:block-dimensions bd) (list 390 195 140)) &allow-other-keys)
+   (&rest args &key (name "drc-terrain") ((:block-dimensions bd) (list 390 195 140)) (add-groud-p nil) &allow-other-keys)
    (prog1
        (send-super* :init :name name args)
      (setq block-dimensions bd)
-     (let* ((l (instance bodyset-link :init (make-cascoords)
+     (let* ((blist (send self :make-drc-terrain-block-bodies))
+            (l))
+       (if add-groud-p
+           (let ((b (make-cube 3700 3300 10)))
+             (send b :translate (float-vector 1200 1050 -5))
+             (send (car blist) :assoc b)
+             (setq blist (append blist (list b)))))
+       (setq l (instance bodyset-link :init (make-cascoords)
                          :name :root-link
-                         :bodies (send self :make-drc-terrain-block-bodies))))
+                         :bodies blist))
        (send self :assoc l)
        (setq links (list l))
        (setq joint-list (list))
@@ -718,8 +729,8 @@
 ;;;;;;;;;;;;;;;;
 ;; Model generation functions
 ;;;;;;;;;;;;;;;;
-(defun make-drc-stair ()
-  (setq *stair* (instance drc-stair :init))
+(defun make-drc-stair (&key (add-groud-p))
+  (setq *stair* (instance drc-stair :init :add-groud-p add-groud-p))
   )
 
 (defun make-drc-door ()
@@ -744,12 +755,12 @@
   (setq *drill-wall* (instance drc-drill-wall :init))
   )
 
-(defun make-drc-terrain ()
-  (setq *terrain* (instance drc-terrain :init))
+(defun make-drc-terrain (&key (add-groud-p))
+  (setq *terrain* (instance drc-terrain :init :add-groud-p add-groud-p))
   )
 
-(defun make-drc-terrain-japanese-block-ver ()
-  (setq *terrain* (instance drc-terrain :init :block-dimensions (list 390 190 150)))
+(defun make-drc-terrain-japanese-block-ver (&key (add-groud-p))
+  (setq *terrain* (instance drc-terrain :init :block-dimensions (list 390 190 150) :add-groud-p add-groud-p))
   )
 
 (defun make-drc-valve ()
