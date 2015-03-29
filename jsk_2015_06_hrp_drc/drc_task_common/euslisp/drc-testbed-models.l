@@ -183,13 +183,14 @@
   )
 
 (defclass drc-stair
-  :slots ()
+  :slots (stair-top-faces)
   :super single-link-model
   )
 
 (defmethod drc-stair
   (:init
    (&key (add-groud-p nil))
+   (setq stair-top-faces nil)
    (let* ((blist (append (send self :make-stair-bodies)
                          (send self :make-top-stair-bodies)
                          (send self :make-handrail-bodies)
@@ -211,12 +212,22 @@
      (send s1 :translate (float-vector (/ 290 2.0) 0 (/ 225 2.0)) :world)
      (send s2 :translate (float-vector (+ 290 (/ 290 2.0)) 0 (+ 225 (/ 230 2.0))) :world)
      (send s3 :translate (float-vector (+ 290 290 (/ 270 2.0)) 0 (+ 225 230 (/ 230 2.0))) :world)
+     (setq stair-top-faces
+           (append stair-top-faces
+                   (mapcar #'(lambda (b)
+                               (find-if #'(lambda (x) (memq :top (send x :id))) (send b :faces)))
+                   (list s1 s2 s3))))
      (list s1 s2 s3)
      ))
   (:make-top-stair-bodies
    ()
    (let ((s1 (make-cube 1205 2430 85)))
      (send s1 :translate (float-vector (+ 290 290 270 (/ 1205 2.0)) (+ 85 (+ (/ 1080 2.0) (- (/ 2430 2.0)))) (+ 225 230 230 (/ 85 2.0) -85 220)))
+     (setq stair-top-faces
+           (append stair-top-faces
+                   (mapcar #'(lambda (b)
+                               (find-if #'(lambda (x) (memq :top (send x :id))) (send b :faces)))
+                   (list s1))))
      (list s1)
      ))
   (:make-small-handrail-bodies
@@ -299,6 +310,9 @@
            b7 b8 b9 b10 b11 b12
            b13 b14)
      ))
+  (:get-all-stair-top-faces
+   ()
+   stair-top-faces)
   )
 
 (defclass drc-hose-wall
