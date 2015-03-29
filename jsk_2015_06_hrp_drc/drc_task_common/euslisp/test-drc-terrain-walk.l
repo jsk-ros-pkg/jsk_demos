@@ -178,6 +178,16 @@
   )
 (warn ";; (setup-terrain-walk-hrp2jsknt)~%")
 
+(defun setup-terrain-walk-hrp2jsk
+  ()
+  (load "package://hrpsys_ros_bridge_tutorials/euslisp/hrp2jsk-interface.l")
+  (hrp2jsk-init)
+  (setq *robot* *hrp2jsk*)
+  (objects (list *robot*))
+  (walking-pose *robot* :root-link-height-offset -70)
+  )
+(warn ";; (setup-terrain-walk-hrp2jsk)~%")
+
 (defun setup-terrain-walk-jaxon
   ()
   (load "package://hrpsys_ros_bridge_tutorials/euslisp/jaxon-interface.l")
