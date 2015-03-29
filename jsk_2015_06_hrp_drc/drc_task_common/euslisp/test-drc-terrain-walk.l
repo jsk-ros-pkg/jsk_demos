@@ -36,6 +36,35 @@
     (send robot :angle-vector)
     ))
 
+(defun walking-pose-with-toe-joint ;; this should be method
+  (robot
+   &key (root-link-height-offset 0)
+        (root-link-pitch-offset 0)
+        (root-link-roll-offset 0)
+        (fix-coords (make-coords))
+        (default-pose-method :reset-manip-pose)
+        ;;
+        (toe-joint-angles (list 0 0))) ;; rleg lleg
+  "Generate and set walking pose with setting toe joint angles.
+   "
+  (walking-pose robot
+                :root-link-height-offset root-link-height-offset
+                :root-link-pitch-offset root-link-pitch-offset
+                :root-link-roll-offset root-link-roll-offset
+                :fix-coords fix-coords :default-pose-method default-pose-method)
+  (let ((lc (mapcar #'(lambda (l)
+                        (send robot l :end-coords :copy-worldcoords))
+                    '(:rleg :lleg))))
+    (mapcar #'(lambda (l ja)
+                (send robot l :toe-p :joint-angle ja))
+            '(:rleg :lleg) toe-joint-angles)
+    (mapcar #'(lambda (l c)
+                (send robot l :inverse-kinematics c))
+            '(:rleg :lleg) lc)
+    (send robot :move-centroid-on-foot :both '(:rleg :lleg))
+    (send robot :angle-vector)
+    ))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Stair walking functions
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -430,6 +459,30 @@
   )
 (warn ";; (test-drc-testbed-terrain-simulation-hrp2jsknt-one 280 280)~%")
 
+(defun test-drc-testbed-stair-simulation-hrp2jsknt-one
+  (rleg-fwd-offset lleg-fwd-offset &key (set-foot-steps t))
+  (setq *prev-rleg-coords* (send *rleg-sole* :copy-worldcoords))
+  (let ((crds (car (project-coords-on-to-plane
+                    (send (send *robot* :rleg :end-coords :copy-worldcoords) :translate (float-vector rleg-fwd-offset 0 1200) :world)
+                    *stair-faces*
+              (float-vector 0 0 1)))))
+    (if crds
+        (send *rleg-sole* :newcoords crds)
+      (error ";; Cannot snap ~A~%" rleg-fwd-offset)))
+  (let ((crds (car (project-coords-on-to-plane
+              (send (send *robot* :lleg :end-coords :copy-worldcoords) :translate (float-vector lleg-fwd-offset 0 1200) :world)
+              *stair-faces*
+              (float-vector 0 0 1)))))
+    (if crds
+        (send *lleg-sole* :newcoords crds)
+      (error ";; Cannot snap ~A~%" lleg-fwd-offset)))
+  (if set-foot-steps
+      (send *ri* :set-foot-steps
+            (list (make-coords :coords *prev-rleg-coords* :name :rleg)
+                  (make-coords :coords (send *lleg-sole* :copy-worldcoords) :name :lleg)
+                  (make-coords :coords (send *rleg-sole* :copy-worldcoords) :name :rleg))))
+  )
+
 (defun test-drc-testbed-terrain-simulation-jaxon-one
   (rleg-fwd-offset lleg-fwd-offset)
   (test-drc-testbed-terrain-simulation-hrp2jsknt-one rleg-fwd-offset lleg-fwd-offset)
@@ -765,6 +818,41 @@
 (defun test-drc-testbed-terrain-simulation-staro-landing
   (&key (landing-foot-midpos (float-vector 3200 0 0)))
   (test-drc-testbed-terrain-simulation-hrp2jsknt-landing :landing-foot-midpos landing-foot-midpos)
+  )
+
+(defun setup-drc-testbed-stair-simulation-hrp2jsknt ()
+  (unless (boundp '*stair*) (make-drc-stair))
+  (setup-terrain-walk-hrp2jsknt)
+  (walking-pose *robot* :root-link-pitch-offset -10)
+  (setup-terrain-walk-real-hrp2jsknt)
+  ;;(walking-pose *robot* :root-link-height-offset -70) ;; <= -70mm
+  (send *robot* :fix-leg-to-coords (make-coords))
+  (send *stair* :newcoords (make-coords :pos (float-vector 180 0 0)))
+  (setq *rleg-sole* (make-sole-body *robot* :rleg))
+  (setq *lleg-sole* (make-sole-body *robot* :lleg))
+  (setq *stair-faces* (send *stair* :get-all-stair-top-faces))
+  (objects (list *robot* *rleg-sole* *lleg-sole* *stair*))
+  ;;
+  (test-drc-testbed-stair-simulation-hrp2jsknt-one 250 250 :set-foot-steps nil)
+  (walking-pose *robot* :root-link-height-offset 0)
+  (send *ri* :angle-vector (send *robot* :angle-vector) 2000)
+  (send *ri* :wait-interpolation)
+  (walking-pose *robot* :root-link-height-offset -100 :root-link-pitch-offset 10)
+  (send *ri* :angle-vector (send *robot* :angle-vector) 4000)
+  (send *ri* :set-foot-steps
+        (list (make-coords :coords (send *robot* :rleg :end-coords :copy-worldcoords) :name :rleg)
+              (make-coords :coords (send *lleg-sole* :copy-worldcoords) :name :lleg)))
+  (send *ri* :set-auto-balancer-param :default-zmp-offsets (list (float-vector 95 30 0) (float-vector 5 -30 0)))
+  (unix:sleep 2)
+  (walking-pose-with-toe-joint *robot* :root-link-height-offset -60 :root-link-pitch-offset 10 :toe-joint-angles (list -30 0))
+  (send *ri* :angle-vector (send *robot* :angle-vector) 3000)
+  (send *ri* :wait-interpolation)
+  (send *ri* :set-foot-steps
+        (list (make-coords :coords (send *lleg-sole* :copy-worldcoords) :name :lleg)
+              (make-coords :coords (send *rleg-sole* :copy-worldcoords) :name :rleg)))
+  (walking-pose-with-toe-joint *robot* :root-link-height-offset -60 :root-link-pitch-offset 10 :toe-joint-angles (list 0 0))
+  (send *ri* :angle-vector (send *robot* :angle-vector) 3000)
+  (send *ri* :wait-interpolation)
   )
 
 
