@@ -18,7 +18,7 @@
        (send-super :init :name name)
      (setq links (list (instance bodyset-link :init (make-cascoords)
                                  :bodies bs :name :root-link)))
-     (send self :assoc (car bs))
+     (send self :assoc (car links))
      (send self :init-ending)
      ))
   )
@@ -200,6 +200,7 @@
          (let ((b (make-cube 1000 1200 10)))
            (send b :translate (float-vector 0 0 -5))
            (push b blist)))
+     (dolist (b blist) (send b :set-color :gray))
      (dolist (b (cdr blist)) (send (car blist) :assoc b))
      (send-super :init :name "drc-stair" :bodies blist)))
   (:make-stair-bodies
@@ -411,6 +412,7 @@
        (if add-groud-p
            (let ((b (make-cube 3700 3300 10)))
              (send b :translate (float-vector 1200 1050 -5))
+             (send b :set-color :gray)
              (send (car blist) :assoc b)
              (setq blist (append blist (list b)))))
        (setq l (instance bodyset-link :init (make-cascoords)
