@@ -375,7 +375,7 @@
     (unix::usleep 500000)
     (send *robot* :hand *drill-main-arm* :angle-vector (float-vector 90.0 90.0 -10.0 0.0 -40.0 90.0))
     (when real? (hand-model2real))
-    (when real? (drill-full-grasp))
+    (when real? (drill-full-grasp2))
     ;;grasp-up
     ;(send *ri* :set-ref-force #f(0 0 -20) 1000 *drill-main-arm*)
     (send *robot* :angle-vector (elt drill-motion-av-list 3))
@@ -942,6 +942,10 @@
   )
 (defun drill-full-grasp (&key (arm *drill-main-arm*)) ;; test code
   (send *robot* :hand arm :angle-vector (float-vector 90.0 0.0 30.0 0.0 90.0 90.0))
+  (hand-model2real)
+  )
+(defun drill-full-grasp2 (&key (arm *drill-main-arm*)) ;; grasp without index finger
+  (send *robot* :hand arm :angle-vector (float-vector 90.0 0.0 -10.0 0.0 -40.0 90.0))
   (hand-model2real)
   )
 
