@@ -965,9 +965,9 @@
 (defun setup-drc-testbed-stair-simulation-hrp2jsknt ()
   (unless (boundp '*stair*) (make-drc-stair))
   (setup-terrain-walk-hrp2jsknt)
-  (walking-pose *robot* :root-link-pitch-offset -10)
+  (setq *pitch-off* 15) ;; [deg]
+  (walking-pose *robot* :root-link-pitch-offset *pitch-off*)
   (setup-terrain-walk-real-hrp2jsknt)
-  ;;(walking-pose *robot* :root-link-height-offset -70) ;; <= -70mm
   (send *robot* :fix-leg-to-coords (make-coords))
   (send *stair* :newcoords (make-coords :pos (float-vector 180 0 0)))
   (setq *rleg-sole* (make-sole-body *robot* :rleg))
@@ -976,26 +976,27 @@
   (objects (list *robot* *rleg-sole* *lleg-sole* *stair*))
   ;;
   (test-drc-testbed-stair-simulation-hrp2jsknt-one 250 250 :set-foot-steps nil)
-  (walking-pose *robot* :root-link-height-offset 0)
+  (walking-pose *robot* :root-link-height-offset 0 :root-link-pitch-offset *pitch-off*)
   (send *ri* :angle-vector (send *robot* :angle-vector) 2000)
   (send *ri* :wait-interpolation)
-  (walking-pose *robot* :root-link-height-offset -100 :root-link-pitch-offset 10)
+  (walking-pose *robot* :root-link-height-offset -100 :root-link-pitch-offset *pitch-off*)
   (send *ri* :angle-vector (send *robot* :angle-vector) 4000)
   (send *ri* :set-foot-steps
         (list (make-coords :coords (send *robot* :rleg :end-coords :copy-worldcoords) :name :rleg)
               (make-coords :coords (send *lleg-sole* :copy-worldcoords) :name :lleg)))
   (send *ri* :set-auto-balancer-param :default-zmp-offsets (list (float-vector 95 30 0) (float-vector 5 -30 0)))
   (unix:sleep 2)
-  (walking-pose-with-toe-joint *robot* :root-link-height-offset -60 :root-link-pitch-offset 10 :toe-joint-angles (list -30 0))
+  (walking-pose-with-toe-joint *robot* :root-link-height-offset -50 :root-link-pitch-offset *pitch-off* :toe-joint-angles (list -30 0))
   (send *ri* :angle-vector (send *robot* :angle-vector) 3000)
   (send *ri* :wait-interpolation)
   (send *ri* :set-foot-steps
         (list (make-coords :coords (send *lleg-sole* :copy-worldcoords) :name :lleg)
               (make-coords :coords (send *rleg-sole* :copy-worldcoords) :name :rleg)))
-  (walking-pose-with-toe-joint *robot* :root-link-height-offset -60 :root-link-pitch-offset 10 :toe-joint-angles (list 0 0))
+  (walking-pose-with-toe-joint *robot* :root-link-height-offset -50 :root-link-pitch-offset *pitch-off* :toe-joint-angles (list 0 0))
   (send *ri* :angle-vector (send *robot* :angle-vector) 3000)
   (send *ri* :wait-interpolation)
   )
+
 
 
 ;; (pprint (mapcar #'(lambda (s) (if (derivedp s hrpsys_ros_bridge::openhrp_autobalancerservice_footstep) (send *ri* :abc-footstep->eus-footstep s))) (mapcar #'cdr (send (send (send *ri* :autobalancerservice_getfootstepparam) :i_param) :slots))))
