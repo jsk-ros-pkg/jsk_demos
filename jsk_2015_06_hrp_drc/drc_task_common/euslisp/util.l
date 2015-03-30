@@ -1,6 +1,6 @@
 ;; utility function
 (ros::roseus-add-msgs "std_msgs")
-
+(ros::roseus-add-msgs "smach_msgs")
 (defun ros-rgba (r g b a)
   (let ((color (instance std_msgs::ColorRGBA :init)))
     (send color :r (/ r 255.0))

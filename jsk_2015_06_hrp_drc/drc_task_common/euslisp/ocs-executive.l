@@ -2,6 +2,7 @@
 
 (ros::roseus "ocs_executive")
 (ros::roseus-add-srvs "std_srvs")
+(ros::roseus-add-msgs "jsk_footstep_msgs")
 (ros::roseus-add-msgs "image_view2")
 (ros::roseus-add-msgs "geometry_msgs")
 (ros::roseus-add-srvs "topic_tools")
