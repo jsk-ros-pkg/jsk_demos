@@ -1,0 +1,69 @@
+<launch>
+  <arg name="REFINE_FOOTSTEP" default="true" />
+  <group>
+    <!-- Footstep planner -->
+    <node pkg="jsk_footstep_planner"
+          type="footstep-planner-node.l"
+          name="footstep_planner"
+          respawn="false"
+          output="screen">
+      <rosparam command="load" file="$(find jsk_footstep_controller)/config/hrp2jsknt_sim.yaml" />
+      <remap from="planes" to="/env_server/occlusion_result_polygons" />
+      <rosparam subst_value="true">
+        use_planes: false
+        use_env_server: true
+        use_gui: true
+        timeout: 10.0
+        global_frame_id: ground
+      </rosparam>
+      <remap from="grid_maps" to="/locomotion/env_server/output" />
+      <remap from="footstep_planner/result" to="footstep_planner/result_non_refined" if="$(arg REFINE_FOOTSTEP)"/>
+    </node>
+    <!-- marker -->
+    <node pkg="jsk_interactive_marker"
+          type="footstep_marker"
+          name="footstep_marker"
+          output="screen"
+          >
+      <remap from="~grid_arrays" to="/locomotion/env_server/output" />
+      <remap from="~planes_coefficients" to="/locomotion/plane_concatenator/output/coefficients" />
+      <!-- <remap from="move_marker" to="$(arg POSE_REMAP)" /> -->
+      <!-- <param name="wait_snapit_server" value="false" /> -->
+      <rosparam command="load" file="$(find jsk_footstep_controller)/config/hrp2jsknt_sim.yaml" />
+      <rosparam>
+        use_plane_snap: true
+        use_footstep_planner: true
+        use_footstep_controller: true
+        use_initial_footstep_tf: true
+        initial_reference_frame: '/ground'
+        footstep_margin: 0.21
+        foot_size_z: 0.01
+      </rosparam>
+      <param name="frame_id" value="/ground" />
+    </node>
+    <!-- controller -->
+    <node pkg="jsk_footstep_controller"
+          type="footstep-controller.l"
+          name="footstep_controller"
+          respawn="true"
+          clear_params="true"
+          output="screen">
+      <rosparam subst_value="true">
+        interruptible_mode: false
+        interface_file: "package://hrpsys_ros_bridge_tutorials/euslisp/hrp2jsk-interface.l"
+        interface_class: "hrp2jsk-interface"
+      </rosparam>
+    </node>
+    <node pkg="jsk_footstep_controller" type="footstep-refinement.l"
+          name="footstep_refinement" if="$(arg REFINE_FOOTSTEP)">
+      <remap from="planner_result" to="footstep_planner/result_non_refined"/>
+      <remap from="refined_footstep_result" to="footstep_planner/result" />
+    </node>
+    <node pkg="jsk_footstep_controller" type="footstep-overlay-text.l"
+          name="footstep_overlay_text">
+    </node>
+    <node pkg="roseus" type="roseus" name="lookaround_ground"
+          args="$(find jsk_footstep_controller)/euslisp/lookaround-ground.l" if="false">
+    </node>
+  </group>
+</launch>
