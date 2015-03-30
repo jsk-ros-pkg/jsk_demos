@@ -229,6 +229,11 @@
   (setup-terrain-walk-real-hrp2jsknts)
   )
 
+(defun setup-terrain-walk-real-hrp2jsk
+  ()
+  (setup-terrain-walk-real-hrp2jsknts)
+  )
+
 (defun setup-terrain-walk-real-jaxon
   ()
   (setup-terrain-walk-real-hrp2jsknts)
@@ -241,6 +246,7 @@
 
 (warn ";; (setup-terrain-walk-real-hrp2jsknts)~%")
 (warn ";; (setup-terrain-walk-real-hrp2jsknt)~%")
+(warn ";; (setup-terrain-walk-real-hrp2jsk)~%")
 
 (defun test-15cm-block-hrp2jsknts (&key (stair-once t))
   (print ";; up")
@@ -393,6 +399,10 @@
 ;;   $ rtmtest -t hrpsys_tools _gen_project.launch INPUT:=${CVSDIR}/OpenHRP/etc/HRP2JSKNT_for_OpenHRP3/HRP2JSKNTmain.wrl OUTPUT:=/tmp/HRP2JSKNT_for_DRCTestbedBlock.xml OBJECT_MODELS:="`rospack find hrpsys`/share/hrpsys/samples/environments/DRCTestbedTerrainJPBlock.wrl,0.4,-2.0,0,1,0,0,0, `rospack find openhrp3`/share/OpenHRP-3.1/sample/model/longfloor.wrl,0,0,0,1,0,0,0" CORBA_PORT:=15005 INTEGRATE:=false
 ;;   $ rtmlaunch hrpsys_ros_bridge_tutorials hrp2jsknt.launch PROJECT_FILE:=/tmp/HRP2JSKNT_for_DRCTestbedBlock.xml
 
+;; For hrp2jsk
+;;   $ rtmtest -t hrpsys_tools _gen_project.launch INPUT:=${CVSDIR}/OpenHRP/etc/HRP2JSK_for_OpenHRP3/HRP2JSKmain.wrl OUTPUT:=/tmp/HRP2JSK_for_DRCTestbedBlock.xml OBJECT_MODELS:="`rospack find hrpsys`/share/hrpsys/samples/environments/DRCTestbedTerrainJPBlock.wrl,0.4,-2.0,0,1,0,0,0, `rospack find openhrp3`/share/OpenHRP-3.1/sample/model/longfloor.wrl,0,0,0,1,0,0,0" CORBA_PORT:=15005 INTEGRATE:=false
+;;   $ rtmlaunch hrpsys_ros_bridge_tutorials hrp2jsk.launch PROJECT_FILE:=/tmp/HRP2JSK_for_DRCTestbedBlock.xml
+
 ;; For jaxon
 ;;   $ rtmtest -t hrpsys_tools _gen_project.launch INPUT:=${CVSDIR}/euslib/rbrain/jaxon/JAXONmain.wrl OUTPUT:=/tmp/JAXON_for_DRCTestbedBlock.xml OBJECT_MODELS:="`rospack find hrpsys`/share/hrpsys/samples/environments/DRCTestbedTerrainJPBlock.wrl,0.4,-2.0,0,1,0,0,0, `rospack find openhrp3`/share/OpenHRP-3.1/sample/model/longfloor.wrl,0,0,0,1,0,0,0" CORBA_PORT:=15005 CONF_DT_OPTION:="--dt 0.002" SIMULATION_TIMESTEP_OPTION:="--timeStep 0.002" INTEGRATE:=false
 ;;   $ rtmlaunch hrpsys_ros_bridge_tutorials jaxon.launch PROJECT_FILE:=/tmp/JAXON_for_DRCTestbedBlock.xml
@@ -401,7 +411,9 @@
 ;;   $ rtmtest -t hrpsys_tools _gen_project.launch INPUT:=${CVSDIR}/euslib/rbrain/staro/STAROmain.wrl OUTPUT:=/tmp/STARO_for_DRCTestbedBlock.xml OBJECT_MODELS:="`rospack find hrpsys`/share/hrpsys/samples/environments/DRCTestbedTerrainJPBlock.wrl,0.4,-2.0,0,1,0,0,0, `rospack find openhrp3`/share/OpenHRP-3.1/sample/model/longfloor.wrl,0,0,0,1,0,0,0" CORBA_PORT:=15005 CONF_DT_OPTION:="--dt 0.002" SIMULATION_TIMESTEP_OPTION:="--timeStep 0.002" INTEGRATE:=false
 ;;   $ rtmlaunch hrpsys_ros_bridge_tutorials staro.launch PROJECT_FILE:=/tmp/STARO_for_DRCTestbedBlock.xml
 
-(warn ";; Following simulations for hrp2jsknt, jaxon, staro~%")
+(warn "~%;; Following simulations for hrp2jsknt, hrp2jsk, jaxon, staro~%~%")
+
+(warn ";; Load each robot interface.l and Send walking-pose and (objects (list *robot* *rleg-sole* *lleg-sole* *terrain*))~%")
 
 (defun setup-drc-testbed-terrain-simulation-hrp2jsknt ()
   (unless (boundp '*terrain*) (make-drc-terrain-japanese-block-ver))
@@ -416,6 +428,20 @@
   (objects (list *robot* *rleg-sole* *lleg-sole* *terrain*))
   )
 (warn ";; (setup-drc-testbed-terrain-simulation-hrp2jsknt)~%")
+
+(defun setup-drc-testbed-terrain-simulation-hrp2jsk ()
+  (unless (boundp '*terrain*) (make-drc-terrain-japanese-block-ver))
+  (setup-terrain-walk-hrp2jsk)
+  (setup-terrain-walk-real-hrp2jsk)
+  (walking-pose *robot* :root-link-height-offset -70) ;; <= -70mm
+  (send *robot* :fix-leg-to-coords (make-coords))
+  (send *terrain* :newcoords (make-coords :pos (float-vector 400 -2000 0)))
+  (setq *rleg-sole* (make-sole-body *robot* :rleg))
+  (setq *lleg-sole* (make-sole-body *robot* :lleg))
+  (setq *terrain-faces* (send *terrain* :get-all-terrain-top-faces))
+  (objects (list *robot* *rleg-sole* *lleg-sole* *terrain*))
+  )
+(warn ";; (setup-drc-testbed-terrain-simulation-hrp2jsk)~%")
 
 (defun setup-drc-testbed-terrain-simulation-jaxon ()
   (unless (boundp '*terrain*) (make-drc-terrain-japanese-block-ver))
@@ -444,6 +470,9 @@
   (objects (list *robot* *rleg-sole* *lleg-sole* *terrain*))
   )
 (warn ";; (setup-drc-testbed-terrain-simulation-staro)~%")
+
+(warn "~%;; One step terrain walk simulation for each robot by footstep~%")
+(warn ";; Footstep arguments are (rleg-fwd-offset[mm] lleg-fwd-offset[mm])~%")
 
 (defun test-drc-testbed-terrain-simulation-hrp2jsknt-one
   (rleg-fwd-offset lleg-fwd-offset)
@@ -493,6 +522,12 @@
                   (make-coords :coords (send *rleg-sole* :copy-worldcoords) :name :rleg))))
   )
 
+(defun test-drc-testbed-terrain-simulation-hrp2jsk-one
+  (rleg-fwd-offset lleg-fwd-offset)
+  (test-drc-testbed-terrain-simulation-hrp2jsknt-one rleg-fwd-offset lleg-fwd-offset)
+  )
+(warn ";; (test-drc-testbed-terrain-simulation-hrp2jsk-one 280 280)~%")
+
 (defun test-drc-testbed-terrain-simulation-jaxon-one
   (rleg-fwd-offset lleg-fwd-offset)
   (test-drc-testbed-terrain-simulation-hrp2jsknt-one rleg-fwd-offset lleg-fwd-offset)
@@ -505,11 +540,7 @@
   )
 (warn ";; (test-drc-testbed-terrain-simulation-staro-one 280 280)~%")
 
-;; (defun test-drc-testbed-terrain-simulation-hrp2jsknt ()
-;;   (setup-drc-testbed-terrain-simulation-hrp2jsknt)
-;;   (test-drc-testbed-terrain-simulation-hrp2jsknt-one 280 280)
-;;   (test-drc-testbed-terrain-simulation-hrp2jsknt-one 400 400)
-;;   )
+(warn "~%;; One through terrain walk simulation by some steps for each robot by footstep~%")
 
 ;; In the case of hrp2jsknt simulation, at 2nd block, 4th block and 6th block,
 ;; left foot sinks into blocks due to the saturation of lleg-ankle-r max-angle (20deg).
@@ -606,6 +637,102 @@
   ;; (send *ri* :wait-interpolation)
   )
 (warn ";; (test-drc-testbed-terrain-simulation-hrp2jsknt)~%")
+
+;; In the case of hrp2jsk simulation, at 2nd block, 4th block and 6th block,
+;; either foot sinks into blocks due to the saturation of ankle-r max-angle (20deg).
+(defun test-drc-testbed-terrain-simulation-hrp2jsk ()
+  (warn ";; Step 1~%")
+  (warn ";; (test-drc-testbed-terrain-simulation-hrp2jsk-one 280 280)~%")
+  (read-line)
+  (test-drc-testbed-terrain-simulation-hrp2jsk-one 280 280)
+  (send *irtviewer* :draw-objects)
+  ;; (send *ri* :wait-interpolation)
+  (warn ";; Step 2~%")
+  (warn ";; (test-drc-testbed-terrain-simulation-hrp2jsk-one 440 440)~%")
+  (read-line)
+  (test-drc-testbed-terrain-simulation-hrp2jsk-one 440 440)
+  (send *irtviewer* :draw-objects)
+  ;; (send *ri* :wait-interpolation)
+  (warn ";; Step 3~%")
+  (warn ";; (test-drc-testbed-terrain-simulation-hrp2jsk-one 720 720)~%")
+  (read-line)
+  (test-drc-testbed-terrain-simulation-hrp2jsk-one 720 720)
+  (send *irtviewer* :draw-objects)
+  ;; (send *ri* :wait-interpolation)
+  (warn ";; Step 4~%")
+  (warn ";; (test-drc-testbed-terrain-simulation-hrp2jsk-one 840 840)~%")
+  (read-line)
+  (test-drc-testbed-terrain-simulation-hrp2jsk-one 840 840)
+  (send *irtviewer* :draw-objects)
+  ;; (send *ri* :wait-interpolation)
+  (warn ";; Step 5~%")
+  (warn ";; (test-drc-testbed-terrain-simulation-hrp2jsk-one 1150 1150)~%")
+  (read-line)
+  (test-drc-testbed-terrain-simulation-hrp2jsk-one 1150 1150)
+  (send *irtviewer* :draw-objects)
+  ;; (send *ri* :wait-interpolation)
+  (warn ";; Step 6~%")
+  (warn ";; (test-drc-testbed-terrain-simulation-hrp2jsk-one 1260 1260)~%")
+  (read-line)
+  (test-drc-testbed-terrain-simulation-hrp2jsk-one 1260 1260)
+  (send *irtviewer* :draw-objects)
+  ;; (send *ri* :wait-interpolation)
+  (warn ";; Step 7~%")
+  (warn ";; (test-drc-testbed-terrain-simulation-hrp2jsk-one 1520 1520)~%")
+  (read-line)
+  (test-drc-testbed-terrain-simulation-hrp2jsk-one 1520 1520)
+  (send *irtviewer* :draw-objects)
+  ;; (send *ri* :wait-interpolation)
+  (warn ";; Step 8~%")
+  (warn ";; (test-drc-testbed-terrain-simulation-hrp2jsk-one 1600 1600)~%")
+  (read-line)
+  (test-drc-testbed-terrain-simulation-hrp2jsk-one 1600 1600)
+  (send *irtviewer* :draw-objects)
+  ;; (send *ri* :wait-interpolation)
+  (warn ";; Step 9~%")
+  (warn ";; (test-drc-testbed-terrain-simulation-hrp2jsk-one 1900 1900)~%")
+  (read-line)
+  (test-drc-testbed-terrain-simulation-hrp2jsk-one 1900 1900)
+  (send *irtviewer* :draw-objects)
+  ;; (send *ri* :wait-interpolation)
+  (warn ";; Step 10~%")
+  (warn ";; (test-drc-testbed-terrain-simulation-hrp2jsk-one 2070 2070)~%")
+  (read-line)
+  (test-drc-testbed-terrain-simulation-hrp2jsk-one 2070 2070)
+  (send *irtviewer* :draw-objects)
+  ;; (send *ri* :wait-interpolation)
+  (warn ";; Step 11~%")
+  (warn ";; (test-drc-testbed-terrain-simulation-hrp2jsk-one 2320 2320)~%")
+  (read-line)
+  (test-drc-testbed-terrain-simulation-hrp2jsk-one 2320 2320)
+  (send *irtviewer* :draw-objects)
+  ;; (send *ri* :wait-interpolation)
+  (warn ";; Step 12~%")
+  (warn ";; (test-drc-testbed-terrain-simulation-hrp2jsk-one 2460 2460)~%")
+  (read-line)
+  (test-drc-testbed-terrain-simulation-hrp2jsk-one 2460 2460)
+  (send *irtviewer* :draw-objects)
+  ;; (send *ri* :wait-interpolation)
+  (warn ";; Step 13~%")
+  (warn ";; (test-drc-testbed-terrain-simulation-hrp2jsk-one 2750 2750)~%")
+  (read-line)
+  (test-drc-testbed-terrain-simulation-hrp2jsk-one 2750 2750)
+  (send *irtviewer* :draw-objects)
+  ;; (send *ri* :wait-interpolation)
+  (warn ";; Step 14~%")
+  (warn ";; (test-drc-testbed-terrain-simulation-hrp2jsk-one 2900 2900)~%")
+  (read-line)
+  (test-drc-testbed-terrain-simulation-hrp2jsk-one 2900 2900)
+  (send *irtviewer* :draw-objects)
+  ;; (send *ri* :wait-interpolation)
+  (warn ";; Final Step (Landing)~%")
+  (warn ";; (test-drc-testbed-terrain-simulation-hrp2jsk-landing)~%")
+  (read-line)
+  (test-drc-testbed-terrain-simulation-hrp2jsk-landing)
+  (send *irtviewer* :draw-objects)
+  ;; (send *ri* :wait-interpolation)
+  )
+(warn ";; (test-drc-testbed-terrain-simulation-hrp2jsk)~%")
 
 ;; In the case of jaxon simulation,
 ;; for example on 1st block->2nd block, 2nd block->3rd block, 5th block->6th block,
@@ -818,6 +945,11 @@
         (list (make-coords :coords *prev-rleg-coords* :name :rleg)
               (make-coords :coords (send *lleg-sole* :copy-worldcoords) :name :lleg)
               (make-coords :coords (send *rleg-sole* :copy-worldcoords) :name :rleg)))
+  )
+
+(defun test-drc-testbed-terrain-simulation-hrp2jsk-landing
+  (&key (landing-foot-midpos (float-vector 3200 0 0)))
+  (test-drc-testbed-terrain-simulation-hrp2jsknt-landing :landing-foot-midpos landing-foot-midpos)
   )
 
 (defun test-drc-testbed-terrain-simulation-jaxon-landing
