@@ -16,10 +16,10 @@ def gen_hosts(team_no, my_hostname):
 %s
     """
     fc_hostnames = "\n".join(["10.%s.3.%s fc%s" % (team_no, i, i)
-                              for i in range(0, 255)
+                              for i in range(20, 255)
                               if not "fc%s" % i == my_hostname])
     ocs_hostnames = "\n".join(["10.%s.2.%s ocs%s" % (team_no, i, i)
-                               for i in range(0, 255)
+                               for i in range(10, 255)
                                if not "ocs%s" % i == my_hostname])
     print hosts_str % (my_hostname, fc_hostnames, ocs_hostnames)
         
