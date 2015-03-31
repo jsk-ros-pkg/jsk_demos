@@ -183,7 +183,7 @@
   )
 
 (defclass drc-stair
-  :slots (stair-top-faces)
+  :slots (stair-top-faces ground-body)
   :super single-link-model
   )
 
@@ -200,6 +200,9 @@
      (if add-groud-p
          (let ((b (make-cube 1000 1200 10)))
            (send b :translate (float-vector 0 0 -5))
+           (setq ground-body b)
+           (setq stair-top-faces (append stair-top-faces
+                                         (list (find-if #'(lambda (x) (memq :top (send x :id))) (send ground-body :faces)))))
            (push b blist)))
      (dolist (b blist) (send b :set-color :gray))
      (dolist (b (cdr blist)) (send (car blist) :assoc b))
@@ -412,7 +415,7 @@
 
 (defclass drc-terrain
   :super cascaded-link
-  :slots (block-dimensions block-bodies)
+  :slots (block-dimensions block-bodies ground-body)
   )
 
 (defmethod drc-terrain
@@ -427,6 +430,7 @@
            (let ((b (make-cube 3700 3300 10)))
              (send b :translate (float-vector 1200 1050 -5))
              (send b :set-color :gray)
+             (setq ground-body b)
              (send (car blist) :assoc b)
              (setq blist (append blist (list b)))))
        (setq l (instance bodyset-link :init (make-cascoords)
@@ -518,7 +522,8 @@
   (:get-all-terrain-top-faces
    ()
    (let ((ret -1))
-     (flatten (mapcar #'(lambda (x) (send self :get-terrain-top-face-from-block-idx (incf ret))) (make-list (/ (length block-bodies) 3))))))
+     (flatten (append (mapcar #'(lambda (x) (send self :get-terrain-top-face-from-block-idx (incf ret))) (make-list (/ (length block-bodies) 3)))
+                      (list (find-if #'(lambda (x) (memq :top (send x :id))) (send ground-body :faces)))))))
   )
 
 
