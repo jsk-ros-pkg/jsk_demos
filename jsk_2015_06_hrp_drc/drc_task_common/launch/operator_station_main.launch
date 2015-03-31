@@ -24,7 +24,6 @@
   <arg name="ROBOT_URDF_MODEL" default="$(find hrpsys_ros_bridge_tutorials)/models/HRP2JSKNTS.urdf.xacro" />
   <arg name="robot_model_config" default="$(find drc_task_common)/config/hrp2_interactive_marker.yaml" />
   <arg name="ik_server_launch" default="hrp2jsknts-ik-server.launch" />
-  <arg name="trackball_head_launch" default="false" />
   <arg name="USE_RVIZ_UI" default="true" />
   <include file="$(find drc_task_common)/launch/ocs/ui.launch">
     <arg name="INPUT_IMAGE" value="$(arg INPUT_IMAGE)" />
@@ -110,7 +109,7 @@
     <!-- teleop device -->
     <include file="$(find drc_task_common)/launch/teleop_device.launch" >
       <arg name="default_frame_id" default="$(arg default_frame_id)" />
-      <arg name="trackball_head_launch" default="$(arg trackball_head_launch)" />
+      <arg name="enable_trackball_head" default="false" />
     </include>
 
     <!-- teleop interface -->
