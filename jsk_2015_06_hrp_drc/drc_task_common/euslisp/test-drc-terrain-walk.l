@@ -1050,7 +1050,8 @@
         (move-base-up-until-ik-fail :target-coords tc
                                     :target-centroid-pos (apply #'midpoint 0.5 (send-all tc :worldpos))
                                     :limbs (list leg (case leg (:rleg :lleg) (:lleg :rleg))))
-        (push (list :angle-vector (send *robot* :angle-vector) :root-coords (send (car (send *robot* :links)) :copy-worldcoords) :time 0.0) rs-list))
+        ;;(push (list :angle-vector (send *robot* :angle-vector) :root-coords (send (car (send *robot* :links)) :copy-worldcoords) :time 0.0) rs-list))
+        (push (list :angle-vector (send *robot* :angle-vector) :root-coords (send (car (send *robot* :links)) :copy-worldcoords) :time default-step-time) rs-list))
       ;;(load "~/prog/euslib/rbrain/virtual_interpolator.l")
       (let ((tc (list (make-coords :pos
                                    (float-vector (* 0.5 (+ (elt (send prev-foot-coords :worldpos) 0) (elt (send next-foot-coords :worldpos) 0)))
@@ -1066,7 +1067,8 @@
         (move-base-up-until-ik-fail :target-coords tc
                                     :target-centroid-pos (apply #'midpoint 0.9 (send-all tc :worldpos))
                                     :limbs (list leg (case leg (:rleg :lleg) (:lleg :rleg))))
-        (push (list :angle-vector (send *robot* :angle-vector) :root-coords (send (car (send *robot* :links)) :copy-worldcoords) :time default-step-time) rs-list))
+        ;;(push (list :angle-vector (send *robot* :angle-vector) :root-coords (send (car (send *robot* :links)) :copy-worldcoords) :time default-step-time) rs-list))
+        (push (list :angle-vector (send *robot* :angle-vector) :root-coords (send (car (send *robot* :links)) :copy-worldcoords) :time (* 1.5 default-step-time)) rs-list))
       (let ((tc (list (send next-foot-coords :copy-worldcoords)
                       (case leg
                         (:rleg (send *robot* :lleg :end-coords :copy-worldcoords))
@@ -1076,6 +1078,7 @@
         (move-base-up-until-ik-fail :target-coords tc
                                     :target-centroid-pos (apply #'midpoint 0.5 (send-all tc :worldpos))
                                     :limbs (list leg (case leg (:rleg :lleg) (:lleg :rleg))))
+        ;;(push (list :angle-vector (send *robot* :angle-vector) :root-coords (send (car (send *robot* :links)) :copy-worldcoords) :time (* 2 default-step-time)) rs-list))
         (push (list :angle-vector (send *robot* :angle-vector) :root-coords (send (car (send *robot* :links)) :copy-worldcoords) :time (* 2 default-step-time)) rs-list))
       ;;(dolist (rs *rs-list*) (send *robot* :angle-vector (cadr (memq :angle-vector rs))) (send *robot* :move-coords (cadr (memq :root-coords rs)) (car (send *robot* :links))) (send *irtviewer* :draw-objects) (read-line))
       (reverse rs-list)
@@ -1098,11 +1101,14 @@
    &key (robot-host) (robot-user) (y-or-n-p t))
   (send *ri* :set-gait-generator-param :default-step-height (* 1e-3 default-step-height) :default-step-time default-step-time)
   (setq *rs-list* (check-leg-reachability-for-one-step prev-foot-coords next-foot-coords leg default-step-height default-step-time))
-  (dump-seq-pattern-file *rs-list* "/tmp/test-one-step-walk" :initial-sync-time 0.0)
-  (if (and robot-host robot-user)
-      (unix:system (format nil "scp /tmp/test-one-step-walk.* ~A@~A:/tmp/" robot-user robot-host)))
+  ;;(dump-seq-pattern-file *rs-list* "/tmp/test-one-step-walk" :initial-sync-time 0.0)
+  ;; (if (and robot-host robot-user)
+  ;;     (unix:system (format nil "scp /tmp/test-one-step-walk.* ~A@~A:/tmp/" robot-user robot-host)))
   (if y-or-n-p (unless (y-or-n-p ";; Exec angle-vectors and foot steps?") (return-from calc-and-exec-walk-with-auto-root-height-tune-one nil)))
-  (send *rI* :load-pattern "/tmp/test-one-step-walk")
+  ;;(send *rI* :load-pattern "/tmp/test-one-step-walk")
+  (send *ri* :angle-vector-sequence
+        (mapcar #'(lambda (rs) (cadr (memq :angle-vector rs))) *rs-list*)
+        (let ((tm-list (mapcar #'(lambda (rs) (* 1e3 (cadr (memq :time rs)))) *rs-list*))) (mapcar #'(lambda (tm0 tm1) (- tm1 tm0)) (append (list 0) (butlast tm-list)) tm-list)))
   (send *ri* :set-foot-steps
         (list (make-coords :coords (send *robot* (case leg (:rleg :lleg) (:lleg :rleg)) :end-coords :copy-worldcoords) :name (case leg (:rleg :lleg) (:lleg :rleg)))
               (make-coords :coords next-foot-coords :name leg)))
