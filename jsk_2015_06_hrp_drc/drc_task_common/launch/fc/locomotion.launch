@@ -82,7 +82,7 @@
     <node pkg="drc_task_common" type="robot-boundingbox.l" name="robot_bbox">
       <rosparam>
         analysis_level: each_link
-        padding_x: 0.05
+        padding_x: 0.00
         padding_y: 0.05
         use_x: false
       </rosparam>

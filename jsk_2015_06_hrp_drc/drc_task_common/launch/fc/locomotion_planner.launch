@@ -6,6 +6,7 @@
           type="footstep-planner-node.l"
           name="footstep_planner"
           respawn="false"
+          cwd="node"
           output="screen">
       <rosparam command="load" file="$(find jsk_footstep_controller)/config/hrp2jsknt_sim.yaml" />
       <remap from="planes" to="/env_server/occlusion_result_polygons" />
@@ -13,7 +14,7 @@
         use_planes: false
         use_env_server: true
         use_gui: true
-        timeout: 10.0
+        timeout: 20.0
         global_frame_id: ground
       </rosparam>
       <remap from="grid_maps" to="/locomotion/env_server/output" />
@@ -36,6 +37,10 @@
         use_footstep_controller: true
         use_initial_footstep_tf: true
         initial_reference_frame: '/ground'
+        # HRP2JSK
+        foot_size_x: 0.235
+        lfoot_offset: [0.02, 0.01, -0.105, 0, 0, 0, 1]
+        rfoot_offset: [0.02, -0.01, -0.105, 0, 0, 0, 1]
         footstep_margin: 0.21
         foot_size_z: 0.01
       </rosparam>
@@ -49,7 +54,7 @@
           clear_params="true"
           output="screen">
       <rosparam subst_value="true">
-        interruptible_mode: false
+        interruptible_mode: true
         interface_file: "package://hrpsys_ros_bridge_tutorials/euslisp/hrp2jsk-interface.l"
         interface_class: "hrp2jsk-interface"
       </rosparam>
@@ -63,7 +68,7 @@
           name="footstep_overlay_text">
     </node>
     <node pkg="roseus" type="roseus" name="lookaround_ground"
-          args="$(find jsk_footstep_controller)/euslisp/lookaround-ground.l" if="false">
+          args="$(find jsk_footstep_controller)/euslisp/lookaround-ground.l">
     </node>
   </group>
 </launch>
