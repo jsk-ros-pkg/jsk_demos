@@ -396,19 +396,19 @@
 ;; Before terrain simulation, please execute
 
 ;; For hrp2jsknt
-;;   $ rtmtest -t hrpsys_tools _gen_project.launch INPUT:=${CVSDIR}/OpenHRP/etc/HRP2JSKNT_for_OpenHRP3/HRP2JSKNTmain.wrl OUTPUT:=/tmp/HRP2JSKNT_for_DRCTestbedBlock.xml OBJECT_MODELS:="`rospack find hrpsys`/share/hrpsys/samples/environments/DRCTestbedTerrainJPBlock.wrl,0.4,-2.0,0,1,0,0,0, `rospack find openhrp3`/share/OpenHRP-3.1/sample/model/longfloor.wrl,0,0,0,1,0,0,0" CORBA_PORT:=15005 INTEGRATE:=false
+;;   $ rtmtest -t hrpsys_tools _gen_project.launch INPUT:=${CVSDIR}/OpenHRP/etc/HRP2JSKNT_for_OpenHRP3/HRP2JSKNTmain.wrl OUTPUT:=/tmp/HRP2JSKNT_for_DRCTestbedBlock.xml OBJECT_MODELS:="`rospack find hrpsys`/share/hrpsys/samples/environments/DRCTestbedTerrainJPBlock.wrl,0.4,-2.0,0,1,0,0,0," CORBA_PORT:=15005 INTEGRATE:=false
 ;;   $ rtmlaunch hrpsys_ros_bridge_tutorials hrp2jsknt.launch PROJECT_FILE:=/tmp/HRP2JSKNT_for_DRCTestbedBlock.xml
 
 ;; For hrp2jsk
-;;   $ rtmtest -t hrpsys_tools _gen_project.launch INPUT:=${CVSDIR}/OpenHRP/etc/HRP2JSK_for_OpenHRP3/HRP2JSKmain.wrl OUTPUT:=/tmp/HRP2JSK_for_DRCTestbedBlock.xml OBJECT_MODELS:="`rospack find hrpsys`/share/hrpsys/samples/environments/DRCTestbedTerrainJPBlock.wrl,0.4,-2.0,0,1,0,0,0, `rospack find openhrp3`/share/OpenHRP-3.1/sample/model/longfloor.wrl,0,0,0,1,0,0,0" CORBA_PORT:=15005 INTEGRATE:=false
+;;   $ rtmtest -t hrpsys_tools _gen_project.launch INPUT:=${CVSDIR}/OpenHRP/etc/HRP2JSK_for_OpenHRP3/HRP2JSKmain.wrl OUTPUT:=/tmp/HRP2JSK_for_DRCTestbedBlock.xml OBJECT_MODELS:="`rospack find hrpsys`/share/hrpsys/samples/environments/DRCTestbedTerrainJPBlock.wrl,0.4,-2.0,0,1,0,0,0," CORBA_PORT:=15005 INTEGRATE:=false
 ;;   $ rtmlaunch hrpsys_ros_bridge_tutorials hrp2jsk.launch PROJECT_FILE:=/tmp/HRP2JSK_for_DRCTestbedBlock.xml
 
 ;; For jaxon
-;;   $ rtmtest -t hrpsys_tools _gen_project.launch INPUT:=${CVSDIR}/euslib/rbrain/jaxon/JAXONmain.wrl OUTPUT:=/tmp/JAXON_for_DRCTestbedBlock.xml OBJECT_MODELS:="`rospack find hrpsys`/share/hrpsys/samples/environments/DRCTestbedTerrainJPBlock.wrl,0.4,-2.0,0,1,0,0,0, `rospack find openhrp3`/share/OpenHRP-3.1/sample/model/longfloor.wrl,0,0,0,1,0,0,0" CORBA_PORT:=15005 CONF_DT_OPTION:="--dt 0.002" SIMULATION_TIMESTEP_OPTION:="--timeStep 0.002" INTEGRATE:=false
+;;   $ rtmtest -t hrpsys_tools _gen_project.launch INPUT:=${CVSDIR}/euslib/rbrain/jaxon/JAXONmain.wrl OUTPUT:=/tmp/JAXON_for_DRCTestbedBlock.xml OBJECT_MODELS:="`rospack find hrpsys`/share/hrpsys/samples/environments/DRCTestbedTerrainJPBlock.wrl,0.4,-2.0,0,1,0,0,0," CORBA_PORT:=15005 CONF_DT_OPTION:="--dt 0.002" SIMULATION_TIMESTEP_OPTION:="--timeStep 0.002" INTEGRATE:=false
 ;;   $ rtmlaunch hrpsys_ros_bridge_tutorials jaxon.launch PROJECT_FILE:=/tmp/JAXON_for_DRCTestbedBlock.xml
 
 ;; For staro
-;;   $ rtmtest -t hrpsys_tools _gen_project.launch INPUT:=${CVSDIR}/euslib/rbrain/staro/STAROmain.wrl OUTPUT:=/tmp/STARO_for_DRCTestbedBlock.xml OBJECT_MODELS:="`rospack find hrpsys`/share/hrpsys/samples/environments/DRCTestbedTerrainJPBlock.wrl,0.4,-2.0,0,1,0,0,0, `rospack find openhrp3`/share/OpenHRP-3.1/sample/model/longfloor.wrl,0,0,0,1,0,0,0" CORBA_PORT:=15005 CONF_DT_OPTION:="--dt 0.002" SIMULATION_TIMESTEP_OPTION:="--timeStep 0.002" INTEGRATE:=false
+;;   $ rtmtest -t hrpsys_tools _gen_project.launch INPUT:=${CVSDIR}/euslib/rbrain/staro/STAROmain.wrl OUTPUT:=/tmp/STARO_for_DRCTestbedBlock.xml OBJECT_MODELS:="`rospack find hrpsys`/share/hrpsys/samples/environments/DRCTestbedTerrainJPBlock.wrl,0.4,-2.0,0,1,0,0,0," CORBA_PORT:=15005 CONF_DT_OPTION:="--dt 0.002" SIMULATION_TIMESTEP_OPTION:="--timeStep 0.002" INTEGRATE:=false
 ;;   $ rtmlaunch hrpsys_ros_bridge_tutorials staro.launch PROJECT_FILE:=/tmp/STARO_for_DRCTestbedBlock.xml
 
 (warn "~%;; Following simulations for hrp2jsknt, hrp2jsk, jaxon, staro~%~%")
@@ -1092,30 +1092,38 @@
       (error ";; Cannot snap ~A~%" leg))
     ))
 
-(defun test-walk-with-auto-base-height-tune
+(defun calc-and-exec-walk-with-auto-root-height-tune-one
+  (prev-foot-coords next-foot-coords leg
+   default-step-height default-step-time
+   &key (robot-host) (robot-user) (y-or-n-p t))
+  (send *ri* :set-gait-generator-param :default-step-height (* 1e-3 default-step-height) :default-step-time default-step-time)
+  (setq *rs-list* (check-leg-reachability-for-one-step prev-foot-coords next-foot-coords leg default-step-height default-step-time))
+  (dump-seq-pattern-file *rs-list* "/tmp/test-one-step-walk" :initial-sync-time 0.0)
+  (if (and robot-host robot-user)
+      (unix:system (format nil "scp /tmp/test-one-step-walk.* ~A@~A:/tmp/" robot-user robot-host)))
+  (if y-or-n-p (unless (y-or-n-p ";; Exec angle-vectors and foot steps?") (return-from test-walk-with-auto-base-height-tune-one nil)))
+  (send *rI* :load-pattern "/tmp/test-one-step-walk")
+  (send *ri* :set-foot-steps
+        (list (make-coords :coords (send *robot* (case leg (:rleg :lleg) (:lleg :rleg)) :end-coords :copy-worldcoords) :name (case leg (:rleg :lleg) (:lleg :rleg)))
+              (make-coords :coords next-foot-coords :name leg)))
+  t)
+
+(defun test-walk-with-auto-root-height-tune
   ()
   ;;(progn (load "test-drc-terrain-walk.l") (walking-pose *robot*) (setq *rs-list* (check-leg-ik (send *robot* :rleg :end-coords :copy-worldcoords) *rleg-sole* :rleg 30 1.3)))
+  ;;(dump-seq-pattern-file (list (list :angle-vector (send *robot* :angle-vector) :root-coords (send (car (send *robot* :links)) :copy-worldcoords) :time 2.0)) "/tmp/test-one-step-walk" :initial-sync-time 2.0)
+  ;; (progn (walking-pose *robot*) (test-walk-with-auto-base-height-tune-one
+  ;;                                (send *robot* :rleg :end-coords :copy-worldcoords)
+  ;;                                (send (send *robot* :rleg :end-coords :copy-worldcoords) :translate (float-vector 100 0 0))
+  ;;                                :rleg 30 1.3 :robot-host "hrp2007c"))
   (project-sole-on-faces
    :rleg *terrain-faces* (send (make-coords :pos (float-vector 0 -105 0)) :translate (float-vector 280 0 300) :world))
-  (let ((sh 30) (st 1.3))
-    (send *ri* :set-gait-generator-param :default-step-height (* 1e-3 sh) :default-step-time st)
-    (setq *rs-list* (check-leg-reachability-for-one-step *prev-rleg-coords* *rleg-sole* :rleg sh st)))
-  (dump-seq-pattern-file *rs-list* "/tmp/hoge" :initial-sync-time 0.0)
-  (send *rI* :load-pattern "/tmp/hoge")
-  (send *ri* :set-foot-steps
-        (list (make-coords :coords (send *lleg-sole* :copy-worldcoords) :name :lleg)
-              (make-coords :coords (send *rleg-sole* :copy-worldcoords) :name :rleg)))
+  (calc-and-exec-walk-with-auto-root-height-tune-one
+   *prev-rleg-coords* *rleg-sole* :rleg 30 1.3)
   (project-sole-on-faces
    :lleg *terrain-faces* (send (make-coords :pos (float-vector 0 105 0)) :translate (float-vector 280 0 300) :world))
-  (let ((sh 30) (st 1.3))
-    (send *ri* :set-gait-generator-param :default-step-height (* 1e-3 sh) :default-step-time st)
-    (setq *rs-list* (check-leg-reachability-for-one-step *prev-lleg-coords* *lleg-sole* :lleg sh st)))
-  (dump-seq-pattern-file *rs-list* "/tmp/hoge" :initial-sync-time 0.0)
-  (send *rI* :load-pattern "/tmp/hoge")
-  (send *ri* :set-foot-steps
-        (list (make-coords :coords (send *rleg-sole* :copy-worldcoords) :name :rleg)
-              (make-coords :coords (send *lleg-sole* :copy-worldcoords) :name :lleg)
-              ))
+  (calc-and-exec-walk-with-auto-root-height-tune-one
+   *prev-lleg-coords* *lleg-sole* :lleg 30 1.3)
   )
 
 ;; (pprint (mapcar #'(lambda (s) (if (derivedp s hrpsys_ros_bridge::openhrp_autobalancerservice_footstep) (send *ri* :abc-footstep->eus-footstep s))) (mapcar #'cdr (send (send (send *ri* :autobalancerservice_getfootstepparam) :i_param) :slots))))
