@@ -1,11 +1,11 @@
 <launch>
-  <include file="$(find drc_task_common)/launch/drc_task_common.launch" >
-    <arg name="robot_name" value="hrp2jsknt" />
-    <arg name="ROBOT_URDF_MODEL" value="$(find hrpsys_ros_bridge_tutorials)/models/HRP2JSKNT.urdf.xacro" />
+  <include file="$(find drc_task_common)/launch/deprecated/drc_task_common.launch" >
+    <arg name="robot_name" value="hrp2jsknts" />
+    <arg name="ROBOT_URDF_MODEL" value="$(find hrpsys_ros_bridge_tutorials)/models/HRP2JSKNTS.urdf.xacro" />
     <arg name="robot_model_config" value="$(find drc_task_common)/config/hrp2_interactive_marker.yaml" />
     <arg name="ik_server_launch" value="hrp2jsknts-ik-server.launch" />
     <arg name="trackball_head_launch" value="hrp2_trackball_head.launch" />
-    <arg name="multi_plane_segmentation_input" value="/move_group/filtered_cloud" />
+    <arg name="multi_plane_segmentation_input" value="/multisense/resize_1_4/points" />
     <arg name="multi_plane_segmentation_base_frame_id" value="odom" />
   </include>
 </launch>
