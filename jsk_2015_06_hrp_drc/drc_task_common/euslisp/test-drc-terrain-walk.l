@@ -396,11 +396,11 @@
 ;; Before terrain simulation, please execute
 
 ;; For hrp2jsknt
-;;   $ rtmtest -t hrpsys_tools _gen_project.launch INPUT:=${CVSDIR}/OpenHRP/etc/HRP2JSKNT_for_OpenHRP3/HRP2JSKNTmain.wrl OUTPUT:=/tmp/HRP2JSKNT_for_DRCTestbedBlock.xml OBJECT_MODELS:="`rospack find hrpsys`/share/hrpsys/samples/environments/DRCTestbedTerrainJPBlock.wrl,0.4,-2.0,0,1,0,0,0," CORBA_PORT:=15005 INTEGRATE:=false
+;;   $ rtmtest -t hrpsys_tools _gen_project.launch INPUT:=${CVSDIR}/OpenHRP/etc/HRP2JSKNT_for_OpenHRP3/HRP2JSKNTmain.wrl OUTPUT:=/tmp/HRP2JSKNT_for_DRCTestbedBlock.xml OBJECT_MODELS:="`rospack find hrpsys`/share/hrpsys/samples/environments/DRCTestbedTerrainJPBlock.wrl,0.4,-2.0,0,1,0,0,0," CORBA_PORT:=15005 INTEGRATE:=false CONF_DT_OPTION:="--dt 0.004" SIMULATION_TIMESTEP_OPTION:="--timeStep 0.004"
 ;;   $ rtmlaunch hrpsys_ros_bridge_tutorials hrp2jsknt.launch PROJECT_FILE:=/tmp/HRP2JSKNT_for_DRCTestbedBlock.xml
 
 ;; For hrp2jsk
-;;   $ rtmtest -t hrpsys_tools _gen_project.launch INPUT:=${CVSDIR}/OpenHRP/etc/HRP2JSK_for_OpenHRP3/HRP2JSKmain.wrl OUTPUT:=/tmp/HRP2JSK_for_DRCTestbedBlock.xml OBJECT_MODELS:="`rospack find hrpsys`/share/hrpsys/samples/environments/DRCTestbedTerrainJPBlock.wrl,0.4,-2.0,0,1,0,0,0," CORBA_PORT:=15005 INTEGRATE:=false
+;;   $ rtmtest -t hrpsys_tools _gen_project.launch INPUT:=${CVSDIR}/OpenHRP/etc/HRP2JSK_for_OpenHRP3/HRP2JSKmain.wrl OUTPUT:=/tmp/HRP2JSK_for_DRCTestbedBlock.xml OBJECT_MODELS:="`rospack find hrpsys`/share/hrpsys/samples/environments/DRCTestbedTerrainJPBlock.wrl,0.4,-2.0,0,1,0,0,0," CORBA_PORT:=15005 INTEGRATE:=false CONF_DT_OPTION:="--dt 0.004" SIMULATION_TIMESTEP_OPTION:="--timeStep 0.004"
 ;;   $ rtmlaunch hrpsys_ros_bridge_tutorials hrp2jsk.launch PROJECT_FILE:=/tmp/HRP2JSK_for_DRCTestbedBlock.xml
 
 ;; For jaxon
@@ -1101,7 +1101,7 @@
   (dump-seq-pattern-file *rs-list* "/tmp/test-one-step-walk" :initial-sync-time 0.0)
   (if (and robot-host robot-user)
       (unix:system (format nil "scp /tmp/test-one-step-walk.* ~A@~A:/tmp/" robot-user robot-host)))
-  (if y-or-n-p (unless (y-or-n-p ";; Exec angle-vectors and foot steps?") (return-from test-walk-with-auto-base-height-tune-one nil)))
+  (if y-or-n-p (unless (y-or-n-p ";; Exec angle-vectors and foot steps?") (return-from calc-and-exec-walk-with-auto-root-height-tune-one nil)))
   (send *rI* :load-pattern "/tmp/test-one-step-walk")
   (send *ri* :set-foot-steps
         (list (make-coords :coords (send *robot* (case leg (:rleg :lleg) (:lleg :rleg)) :end-coords :copy-worldcoords) :name (case leg (:rleg :lleg) (:lleg :rleg)))
@@ -1112,7 +1112,7 @@
   ()
   ;;(progn (load "test-drc-terrain-walk.l") (walking-pose *robot*) (setq *rs-list* (check-leg-ik (send *robot* :rleg :end-coords :copy-worldcoords) *rleg-sole* :rleg 30 1.3)))
   ;;(dump-seq-pattern-file (list (list :angle-vector (send *robot* :angle-vector) :root-coords (send (car (send *robot* :links)) :copy-worldcoords) :time 2.0)) "/tmp/test-one-step-walk" :initial-sync-time 2.0)
-  ;; (progn (walking-pose *robot*) (test-walk-with-auto-base-height-tune-one
+  ;; (progn (walking-pose *robot*) (calc-and-exec-walk-with-auto-root-height-tune-one
   ;;                                (send *robot* :rleg :end-coords :copy-worldcoords)
   ;;                                (send (send *robot* :rleg :end-coords :copy-worldcoords) :translate (float-vector 100 0 0))
   ;;                                :rleg 30 1.3 :robot-host "hrp2007c"))
