@@ -16,6 +16,7 @@
     ;; angle
     (let ((pubmsg (instance drc_com_common::HumanoidJointAngles :init)))
       (send pubmsg :angles (send msg :angles))
+      (send pubmsg :effort (send msg :effort))
       (ros::publish "/ocs/joint_states_compressed" pubmsg))
     ;; tf
     (let ((coords (float-vector-to-coords (send msg :odom_on_ground))))

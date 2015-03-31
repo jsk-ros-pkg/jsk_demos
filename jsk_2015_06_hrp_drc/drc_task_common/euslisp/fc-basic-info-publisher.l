@@ -12,13 +12,14 @@
     (setq robot-state-value 0)
     self)
   (:joint-states-compressed-callback (msg)
-    (setq latest-joint-states (send msg :angles)))
+    (setq latest-joint-states msg))
   (:robot-state-callback (msg)
     (setq robot-state-value (send msg :data)))
   (:report ()
     (let ((msg (instance drc_com_common::FC2OCSBasicInfoSmall :init)))
-      (if latest-joint-states
-          (send msg :angles latest-joint-states))
+      (when latest-joint-states
+        (send msg :angles (send latest-joint-states :angles))
+        (send msg :effort (send latest-joint-states :effort)))
       ;; lookup body -> odom_on_ground
       (let ((trans (send *tf* :lookup-transform "BODY" "odom_on_ground" (ros::time 0))))
         (when trans
