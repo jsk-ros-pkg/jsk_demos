@@ -965,7 +965,7 @@
 
 
 ;; generate *robot*
-(generate-robot "HRP2JSKNT" :generate-ri? t) ;; tmp
+(generate-robot "HRP2JSKNT" :generate-ri? nil)
 
 ;; advertise
 (ros::advertise "/ocs/rviz/visualization/ocs_executive_message"
