@@ -49,19 +49,6 @@
               </property>
             </widget>
           </item>
-          <item>
-            <widget class="QToolButton" name="init_pose_button">
-              <property name="text">
-                <string>Init Pose</string>
-              </property>
-              <property name="iconSize">
-                <size>
-                  <width>80</width>
-                  <height>80</height>
-                </size>
-              </property>
-            </widget>
-          </item>
           <!-- Hand Pose Command -->
           <item>
             <widget class="QToolButton" name="hand_reset_pose_button">
@@ -115,19 +102,6 @@
               </property>
             </widget>
           </item>
-          <item>
-            <widget class="QToolButton" name="hand_grasp_pose_for_drill_button">
-              <property name="text">
-                <string>Grasp Drill Pose</string>
-              </property>
-              <property name="iconSize">
-                <size>
-                  <width>80</width>
-                  <height>80</height>
-                </size>
-              </property>
-            </widget>
-          </item>
           <!-- Hrpsys Command -->
           <item>
             <widget class="QToolButton" name="hrpsys_start_abc_button">
@@ -159,19 +133,6 @@
             <widget class="QToolButton" name="hrpsys_start_imp_button">
               <property name="text">
                 <string>Start IMP</string>
-              </property>
-              <property name="iconSize">
-                <size>
-                  <width>80</width>
-                  <height>80</height>
-                </size>
-              </property>
-            </widget>
-          </item>
-          <item>
-            <widget class="QToolButton" name="hrpsys_start_imp_for_drill_button">
-              <property name="text">
-                <string>IMP for Drill</string>
               </property>
               <property name="iconSize">
                 <size>
@@ -221,9 +182,9 @@
             </widget>
           </item>
           <item>
-            <widget class="QToolButton" name="recog_param_drill_button">
+            <widget class="QToolButton" name="display_manip_button">
               <property name="text">
-                <string>Recog Drill</string>
+                <string>Display Manip</string>
               </property>
               <property name="iconSize">
                 <size>
@@ -234,22 +195,9 @@
             </widget>
           </item>
           <item>
-            <widget class="QToolButton" name="recog_param_handle_button">
+            <widget class="QToolButton" name="hide_manip_button">
               <property name="text">
-                <string>Recog Handle</string>
-              </property>
-              <property name="iconSize">
-                <size>
-                  <width>80</width>
-                  <height>80</height>
-                </size>
-              </property>
-            </widget>
-          </item>
-          <item>
-            <widget class="QToolButton" name="recog_param_valve_button">
-              <property name="text">
-                <string>Recog Valve</string>
+                <string>Hide Manip</string>
               </property>
               <property name="iconSize">
                 <size>

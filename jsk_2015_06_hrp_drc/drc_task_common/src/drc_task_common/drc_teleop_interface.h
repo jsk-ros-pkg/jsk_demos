@@ -27,7 +27,6 @@ namespace drc_task_common
 
     void callRequestResetPose();
     void callRequestManipPose();
-    void callRequestInitPose();
 
     void callRequestResetGripperPose();
     void callRequestHookGrippePose();
@@ -35,23 +34,20 @@ namespace drc_task_common
 
     std::string getIKArm();
     void callRequestGraspGrippePose();
-    void callRequestGraspGrippePoseForDrill();
 
     void callRequestStartABC();
     void callRequestStartST();
     void callRequestStartIMP();
-    void callRequestStartIMPforDrill();
 
     void callRequestStopABC();
     void callRequestStopST();
     void callRequestStopIMP();
 
-    void callRequestRecogParamDrill();
-    void callRequestRecogParamHandle();
-    void callRequestRecogParamValve();
-
+    void callRequestDisplayManip();
+    void callRequestHideManip();
+    
     void callRequestEusCommand(std::string command);
-
+    
   protected:
     // The ROS node handle.
     ros::NodeHandle nh_;
