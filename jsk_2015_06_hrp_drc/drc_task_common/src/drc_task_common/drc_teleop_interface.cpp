@@ -43,8 +43,8 @@ namespace drc_task_common
     nh.param<std::string>("/stop_abc_icon", hrpsys_stop_abc_button_icon_name, ros::package::getPath("drc_task_common")+std::string("/icons/stop-abc.png"));
     nh.param<std::string>("/stop_st_icon", hrpsys_stop_st_button_icon_name, ros::package::getPath("drc_task_common")+std::string("/icons/stop-st.png"));
     nh.param<std::string>("/stop_imp_icon", hrpsys_stop_imp_button_icon_name, ros::package::getPath("drc_task_common")+std::string("/icons/stop-imp.png"));
-    nh.param<std::string>("/display_manip", display_manip_icon_name, ros::package::getPath("drc_task_common")+std::string("/icons/recog-param-valve.png"));
-    nh.param<std::string>("/hide_manip", hide_manip_icon_name, ros::package::getPath("drc_task_common")+std::string("/icons/recog-param-valve.png"));
+    nh.param<std::string>("/display_manip", display_manip_icon_name, ros::package::getPath("drc_task_common")+std::string("/icons/display_6dof.png"));
+    nh.param<std::string>("/hide_manip", hide_manip_icon_name, ros::package::getPath("drc_task_common")+std::string("/icons/hide_6dof.png"));
 
 
     ui_->reset_pose_button->setToolButtonStyle(Qt::ToolButtonTextUnderIcon);
