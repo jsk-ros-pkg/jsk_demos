@@ -1098,7 +1098,10 @@
 (defun calc-and-exec-walk-with-auto-root-height-tune-one
   (prev-foot-coords next-foot-coords leg
    default-step-height default-step-time
-   &key (robot-host) (robot-user) (y-or-n-p t))
+   &key (robot-host) (robot-user) (y-or-n-p t) (ts-ratio 1.0) (tdbl 0.208) (t-updown 0.7))
+  ;; (let ((ts (+ t-updown (* ts-ratio (/ (calc-approximated-gg-stair-path-length default-step-height (send prev-foot-coords :worldpos) (send next-foot-coords :worldpos)) 100.0)))))
+  ;;   (format t ";; ~A ~A ~A[s] ~A~%" ts tdbl (+ ts tdbl) (/ tdbl (+ ts tdbl)))
+  ;;   (send *ri* :set-gait-generator-param :default-step-height (* 1e-3 default-step-height) :default-step-time (+ ts tdbl) :default-double-support-ratio (/ tdbl (+ ts tdbl))))
   (send *ri* :set-gait-generator-param :default-step-height (* 1e-3 default-step-height) :default-step-time default-step-time)
   (setq *rs-list* (check-leg-reachability-for-one-step prev-foot-coords next-foot-coords leg default-step-height default-step-time))
   ;;(dump-seq-pattern-file *rs-list* "/tmp/test-one-step-walk" :initial-sync-time 0.0)
@@ -1113,6 +1116,13 @@
         (list (make-coords :coords (send *robot* (case leg (:rleg :lleg) (:lleg :rleg)) :end-coords :copy-worldcoords) :name (case leg (:rleg :lleg) (:lleg :rleg)))
               (make-coords :coords next-foot-coords :name leg)))
   t)
+
+(defun calc-approximated-gg-stair-path-length
+  (default-step-height start-pos goal-pos)
+  (+ ;;(* 2 default-step-height)
+   (abs (- (elt goal-pos 2) (elt start-pos 2)))
+   (norm (float-vector (- (elt goal-pos 0) (elt start-pos 0)) (- (elt goal-pos 1) (elt start-pos 1)))))
+  )
 
 (defun test-walk-with-auto-root-height-tune
   ()
