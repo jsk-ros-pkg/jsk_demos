@@ -1,5 +1,5 @@
 <launch>
-  <include file="$(find drc_task_common)/launch/drc_task_common.launch" >
+  <include file="$(find drc_task_common)/launch/deprecated/drc_task_common.launch" >
     <arg name="robot_name" value="staro" />
     <arg name="ROBOT_URDF_MODEL" value="$(find hrpsys_ros_bridge_tutorials)/models/STARO.urdf.xacro" />
     <arg name="robot_model_config" value="$(find drc_task_common)/config/staro_interactive_marker.yaml" />
