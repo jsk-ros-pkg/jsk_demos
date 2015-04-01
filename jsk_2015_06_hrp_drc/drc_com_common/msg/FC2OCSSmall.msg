@@ -40,12 +40,13 @@ uint8 DRILL_WALL_FINISHED=22
 # drill button
 uint8 DRILL_BUTTON_POSE=23
 uint8 DRILL_BUTTON_FINISHED=24
+# angle-vector
+uint8 ANGLE_VECTOR_FINISHED=25
+# for rviz plugins msgs(see src/drc_teleop_interface.cpp)
+uint8 RVIZ_MENU_FINISHED=26
 
 # failed
 uint8 RECOGNITION_FAILED=20
-
-# for rviz plugins msgs(see src/drc_teleop_interface.cpp)
-uint8 RVIZ_MENU_FINISHED=25
 
 # when type==GO_POS_POSE,
 # params = [x, y, z, yaw, pitch, roll]

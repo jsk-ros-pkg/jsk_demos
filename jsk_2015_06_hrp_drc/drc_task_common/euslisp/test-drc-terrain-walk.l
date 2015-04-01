@@ -396,11 +396,11 @@
 ;; Before terrain simulation, please execute
 
 ;; For hrp2jsknt
-;;   $ rtmtest -t hrpsys_tools _gen_project.launch INPUT:=${CVSDIR}/OpenHRP/etc/HRP2JSKNT_for_OpenHRP3/HRP2JSKNTmain.wrl OUTPUT:=/tmp/HRP2JSKNT_for_DRCTestbedBlock.xml OBJECT_MODELS:="`rospack find hrpsys`/share/hrpsys/samples/environments/DRCTestbedTerrainJPBlock.wrl,0.4,-2.0,0,1,0,0,0," CORBA_PORT:=15005 INTEGRATE:=false
+;;   $ rtmtest -t hrpsys_tools _gen_project.launch INPUT:=${CVSDIR}/OpenHRP/etc/HRP2JSKNT_for_OpenHRP3/HRP2JSKNTmain.wrl OUTPUT:=/tmp/HRP2JSKNT_for_DRCTestbedBlock.xml OBJECT_MODELS:="`rospack find hrpsys`/share/hrpsys/samples/environments/DRCTestbedTerrainJPBlock.wrl,0.4,-2.0,0,1,0,0,0," CORBA_PORT:=15005 INTEGRATE:=false CONF_DT_OPTION:="--dt 0.004" SIMULATION_TIMESTEP_OPTION:="--timeStep 0.004"
 ;;   $ rtmlaunch hrpsys_ros_bridge_tutorials hrp2jsknt.launch PROJECT_FILE:=/tmp/HRP2JSKNT_for_DRCTestbedBlock.xml
 
 ;; For hrp2jsk
-;;   $ rtmtest -t hrpsys_tools _gen_project.launch INPUT:=${CVSDIR}/OpenHRP/etc/HRP2JSK_for_OpenHRP3/HRP2JSKmain.wrl OUTPUT:=/tmp/HRP2JSK_for_DRCTestbedBlock.xml OBJECT_MODELS:="`rospack find hrpsys`/share/hrpsys/samples/environments/DRCTestbedTerrainJPBlock.wrl,0.4,-2.0,0,1,0,0,0," CORBA_PORT:=15005 INTEGRATE:=false
+;;   $ rtmtest -t hrpsys_tools _gen_project.launch INPUT:=${CVSDIR}/OpenHRP/etc/HRP2JSK_for_OpenHRP3/HRP2JSKmain.wrl OUTPUT:=/tmp/HRP2JSK_for_DRCTestbedBlock.xml OBJECT_MODELS:="`rospack find hrpsys`/share/hrpsys/samples/environments/DRCTestbedTerrainJPBlock.wrl,0.4,-2.0,0,1,0,0,0," CORBA_PORT:=15005 INTEGRATE:=false CONF_DT_OPTION:="--dt 0.004" SIMULATION_TIMESTEP_OPTION:="--timeStep 0.004"
 ;;   $ rtmlaunch hrpsys_ros_bridge_tutorials hrp2jsk.launch PROJECT_FILE:=/tmp/HRP2JSK_for_DRCTestbedBlock.xml
 
 ;; For jaxon
@@ -1050,7 +1050,8 @@
         (move-base-up-until-ik-fail :target-coords tc
                                     :target-centroid-pos (apply #'midpoint 0.5 (send-all tc :worldpos))
                                     :limbs (list leg (case leg (:rleg :lleg) (:lleg :rleg))))
-        (push (list :angle-vector (send *robot* :angle-vector) :root-coords (send (car (send *robot* :links)) :copy-worldcoords) :time 0.0) rs-list))
+        ;;(push (list :angle-vector (send *robot* :angle-vector) :root-coords (send (car (send *robot* :links)) :copy-worldcoords) :time 0.0) rs-list))
+        (push (list :angle-vector (send *robot* :angle-vector) :root-coords (send (car (send *robot* :links)) :copy-worldcoords) :time default-step-time) rs-list))
       ;;(load "~/prog/euslib/rbrain/virtual_interpolator.l")
       (let ((tc (list (make-coords :pos
                                    (float-vector (* 0.5 (+ (elt (send prev-foot-coords :worldpos) 0) (elt (send next-foot-coords :worldpos) 0)))
@@ -1066,7 +1067,8 @@
         (move-base-up-until-ik-fail :target-coords tc
                                     :target-centroid-pos (apply #'midpoint 0.9 (send-all tc :worldpos))
                                     :limbs (list leg (case leg (:rleg :lleg) (:lleg :rleg))))
-        (push (list :angle-vector (send *robot* :angle-vector) :root-coords (send (car (send *robot* :links)) :copy-worldcoords) :time default-step-time) rs-list))
+        ;;(push (list :angle-vector (send *robot* :angle-vector) :root-coords (send (car (send *robot* :links)) :copy-worldcoords) :time default-step-time) rs-list))
+        (push (list :angle-vector (send *robot* :angle-vector) :root-coords (send (car (send *robot* :links)) :copy-worldcoords) :time (* 1.5 default-step-time)) rs-list))
       (let ((tc (list (send next-foot-coords :copy-worldcoords)
                       (case leg
                         (:rleg (send *robot* :lleg :end-coords :copy-worldcoords))
@@ -1076,6 +1078,7 @@
         (move-base-up-until-ik-fail :target-coords tc
                                     :target-centroid-pos (apply #'midpoint 0.5 (send-all tc :worldpos))
                                     :limbs (list leg (case leg (:rleg :lleg) (:lleg :rleg))))
+        ;;(push (list :angle-vector (send *robot* :angle-vector) :root-coords (send (car (send *robot* :links)) :copy-worldcoords) :time (* 2 default-step-time)) rs-list))
         (push (list :angle-vector (send *robot* :angle-vector) :root-coords (send (car (send *robot* :links)) :copy-worldcoords) :time (* 2 default-step-time)) rs-list))
       ;;(dolist (rs *rs-list*) (send *robot* :angle-vector (cadr (memq :angle-vector rs))) (send *robot* :move-coords (cadr (memq :root-coords rs)) (car (send *robot* :links))) (send *irtviewer* :draw-objects) (read-line))
       (reverse rs-list)
@@ -1095,35 +1098,52 @@
 (defun calc-and-exec-walk-with-auto-root-height-tune-one
   (prev-foot-coords next-foot-coords leg
    default-step-height default-step-time
-   &key (robot-host) (robot-user) (y-or-n-p t))
+   &key (robot-host) (robot-user) (y-or-n-p t) (ts-ratio 1.0) (tdbl 0.208) (t-updown 0.7)
+        (support-foot-coords))
+  ;; (let ((ts (+ t-updown (* ts-ratio (/ (calc-approximated-gg-stair-path-length default-step-height (send prev-foot-coords :worldpos) (send next-foot-coords :worldpos)) 100.0)))))
+  ;;   (format t ";; ~A ~A ~A[s] ~A~%" ts tdbl (+ ts tdbl) (/ tdbl (+ ts tdbl)))
+  ;;   (send *ri* :set-gait-generator-param :default-step-height (* 1e-3 default-step-height) :default-step-time (+ ts tdbl) :default-double-support-ratio (/ tdbl (+ ts tdbl))))
   (send *ri* :set-gait-generator-param :default-step-height (* 1e-3 default-step-height) :default-step-time default-step-time)
   (setq *rs-list* (check-leg-reachability-for-one-step prev-foot-coords next-foot-coords leg default-step-height default-step-time))
-  (dump-seq-pattern-file *rs-list* "/tmp/test-one-step-walk" :initial-sync-time 0.0)
-  (if (and robot-host robot-user)
-      (unix:system (format nil "scp /tmp/test-one-step-walk.* ~A@~A:/tmp/" robot-user robot-host)))
-  (if y-or-n-p (unless (y-or-n-p ";; Exec angle-vectors and foot steps?") (return-from test-walk-with-auto-base-height-tune-one nil)))
-  (send *rI* :load-pattern "/tmp/test-one-step-walk")
+  ;;(dump-seq-pattern-file *rs-list* "/tmp/test-one-step-walk" :initial-sync-time 0.0)
+  ;; (if (and robot-host robot-user)
+  ;;     (unix:system (format nil "scp /tmp/test-one-step-walk.* ~A@~A:/tmp/" robot-user robot-host)))
+  (if y-or-n-p (unless (y-or-n-p ";; Exec angle-vectors and foot steps?") (return-from calc-and-exec-walk-with-auto-root-height-tune-one nil)))
+  ;;(send *rI* :load-pattern "/tmp/test-one-step-walk")
+  (send *ri* :angle-vector-sequence
+        (mapcar #'(lambda (rs) (cadr (memq :angle-vector rs))) *rs-list*)
+        (let ((tm-list (mapcar #'(lambda (rs) (* 1e3 (cadr (memq :time rs)))) *rs-list*))) (mapcar #'(lambda (tm0 tm1) (- tm1 tm0)) (append (list 0) (butlast tm-list)) tm-list)))
   (send *ri* :set-foot-steps
-        (list (make-coords :coords (send *robot* (case leg (:rleg :lleg) (:lleg :rleg)) :end-coords :copy-worldcoords) :name (case leg (:rleg :lleg) (:lleg :rleg)))
-              (make-coords :coords next-foot-coords :name leg)))
+        (if support-foot-coords
+            (list (make-coords :coords (send support-foot-coords :copy-worldcoords) :name (case leg (:rleg :lleg) (:lleg :rleg)))
+                  (make-coords :coords (send next-foot-coords :copy-worldcoords) :name leg))
+          (list (make-coords :coords (send *robot* (case leg (:rleg :lleg) (:lleg :rleg)) :end-coords :copy-worldcoords) :name (case leg (:rleg :lleg) (:lleg :rleg)))
+                (make-coords :coords next-foot-coords :name leg))))
   t)
+
+(defun calc-approximated-gg-stair-path-length
+  (default-step-height start-pos goal-pos)
+  (+ ;;(* 2 default-step-height)
+   (abs (- (elt goal-pos 2) (elt start-pos 2)))
+   (norm (float-vector (- (elt goal-pos 0) (elt start-pos 0)) (- (elt goal-pos 1) (elt start-pos 1)))))
+  )
 
 (defun test-walk-with-auto-root-height-tune
   ()
   ;;(progn (load "test-drc-terrain-walk.l") (walking-pose *robot*) (setq *rs-list* (check-leg-ik (send *robot* :rleg :end-coords :copy-worldcoords) *rleg-sole* :rleg 30 1.3)))
   ;;(dump-seq-pattern-file (list (list :angle-vector (send *robot* :angle-vector) :root-coords (send (car (send *robot* :links)) :copy-worldcoords) :time 2.0)) "/tmp/test-one-step-walk" :initial-sync-time 2.0)
-  ;; (progn (walking-pose *robot*) (test-walk-with-auto-base-height-tune-one
+  ;; (progn (walking-pose *robot*) (calc-and-exec-walk-with-auto-root-height-tune-one
   ;;                                (send *robot* :rleg :end-coords :copy-worldcoords)
   ;;                                (send (send *robot* :rleg :end-coords :copy-worldcoords) :translate (float-vector 100 0 0))
   ;;                                :rleg 30 1.3 :robot-host "hrp2007c"))
   (project-sole-on-faces
    :rleg *terrain-faces* (send (make-coords :pos (float-vector 0 -105 0)) :translate (float-vector 280 0 300) :world))
   (calc-and-exec-walk-with-auto-root-height-tune-one
-   *prev-rleg-coords* *rleg-sole* :rleg 30 1.3)
+   *prev-rleg-coords* *rleg-sole* :rleg 30 1.3 :support-foot-coords *lleg-sole*)
   (project-sole-on-faces
    :lleg *terrain-faces* (send (make-coords :pos (float-vector 0 105 0)) :translate (float-vector 280 0 300) :world))
   (calc-and-exec-walk-with-auto-root-height-tune-one
-   *prev-lleg-coords* *lleg-sole* :lleg 30 1.3)
+   *prev-lleg-coords* *lleg-sole* :lleg 30 1.3 :support-foot-coords *rleg-sole*)
   )
 
 ;; (pprint (mapcar #'(lambda (s) (if (derivedp s hrpsys_ros_bridge::openhrp_autobalancerservice_footstep) (send *ri* :abc-footstep->eus-footstep s))) (mapcar #'cdr (send (send (send *ri* :autobalancerservice_getfootstepparam) :i_param) :slots))))

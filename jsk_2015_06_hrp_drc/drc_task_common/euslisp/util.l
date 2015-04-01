@@ -25,6 +25,19 @@
     (ros::service-call srv req)))
 
 ;; topic <---> compressed message conversion
+(defun angle-vector-to-float-vector (av time length)
+  (let ((ret (instantiate float-vector length)))
+    (dotimes (i (length av))
+      (setf (elt ret i) (elt av i)))
+    (setf (elt ret (length av)) time)
+    ret)
+  )
+
+(defun float-vector-to-angle-vector (fv)
+  (let ((av (subseq fv 0 (length (send *robot* :joint-list))))
+        (time (elt fv (length (send *robot* :joint-list)))))
+    (list av time)))
+
 (defun fill-coords-float-vector (coords fv start)
   (setf (elt fv (+ start 0)) (elt (send coords :worldpos) 0))
   (setf (elt fv (+ start 1)) (elt (send coords :worldpos) 1))
