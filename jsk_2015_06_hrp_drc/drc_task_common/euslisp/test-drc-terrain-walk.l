@@ -1098,7 +1098,8 @@
 (defun calc-and-exec-walk-with-auto-root-height-tune-one
   (prev-foot-coords next-foot-coords leg
    default-step-height default-step-time
-   &key (robot-host) (robot-user) (y-or-n-p t) (ts-ratio 1.0) (tdbl 0.208) (t-updown 0.7))
+   &key (robot-host) (robot-user) (y-or-n-p t) (ts-ratio 1.0) (tdbl 0.208) (t-updown 0.7)
+        (support-foot-coords))
   ;; (let ((ts (+ t-updown (* ts-ratio (/ (calc-approximated-gg-stair-path-length default-step-height (send prev-foot-coords :worldpos) (send next-foot-coords :worldpos)) 100.0)))))
   ;;   (format t ";; ~A ~A ~A[s] ~A~%" ts tdbl (+ ts tdbl) (/ tdbl (+ ts tdbl)))
   ;;   (send *ri* :set-gait-generator-param :default-step-height (* 1e-3 default-step-height) :default-step-time (+ ts tdbl) :default-double-support-ratio (/ tdbl (+ ts tdbl))))
@@ -1113,8 +1114,11 @@
         (mapcar #'(lambda (rs) (cadr (memq :angle-vector rs))) *rs-list*)
         (let ((tm-list (mapcar #'(lambda (rs) (* 1e3 (cadr (memq :time rs)))) *rs-list*))) (mapcar #'(lambda (tm0 tm1) (- tm1 tm0)) (append (list 0) (butlast tm-list)) tm-list)))
   (send *ri* :set-foot-steps
-        (list (make-coords :coords (send *robot* (case leg (:rleg :lleg) (:lleg :rleg)) :end-coords :copy-worldcoords) :name (case leg (:rleg :lleg) (:lleg :rleg)))
-              (make-coords :coords next-foot-coords :name leg)))
+        (if support-foot-coords
+            (list (make-coords :coords (send support-foot-coords :copy-worldcoords) :name (case leg (:rleg :lleg) (:lleg :rleg)))
+                  (make-coords :coords (send next-foot-coords :copy-worldcoords) :name leg))
+          (list (make-coords :coords (send *robot* (case leg (:rleg :lleg) (:lleg :rleg)) :end-coords :copy-worldcoords) :name (case leg (:rleg :lleg) (:lleg :rleg)))
+                (make-coords :coords next-foot-coords :name leg))))
   t)
 
 (defun calc-approximated-gg-stair-path-length
@@ -1135,11 +1139,11 @@
   (project-sole-on-faces
    :rleg *terrain-faces* (send (make-coords :pos (float-vector 0 -105 0)) :translate (float-vector 280 0 300) :world))
   (calc-and-exec-walk-with-auto-root-height-tune-one
-   *prev-rleg-coords* *rleg-sole* :rleg 30 1.3)
+   *prev-rleg-coords* *rleg-sole* :rleg 30 1.3 :support-foot-coords *lleg-sole*)
   (project-sole-on-faces
    :lleg *terrain-faces* (send (make-coords :pos (float-vector 0 105 0)) :translate (float-vector 280 0 300) :world))
   (calc-and-exec-walk-with-auto-root-height-tune-one
-   *prev-lleg-coords* *lleg-sole* :lleg 30 1.3)
+   *prev-lleg-coords* *lleg-sole* :lleg 30 1.3 :support-foot-coords *rleg-sole*)
   )
 
 ;; (pprint (mapcar #'(lambda (s) (if (derivedp s hrpsys_ros_bridge::openhrp_autobalancerservice_footstep) (send *ri* :abc-footstep->eus-footstep s))) (mapcar #'cdr (send (send (send *ri* :autobalancerservice_getfootstepparam) :i_param) :slots))))
