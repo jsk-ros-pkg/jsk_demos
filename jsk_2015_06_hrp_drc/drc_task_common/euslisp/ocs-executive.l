@@ -95,7 +95,9 @@
           (list drc_com_common::FC2OCSSmall::*LOOK_AROUND_FINISHED*
                 self :look-around-finished-callback)
           (list drc_com_common::FC2OCSSmall::*RECOGNITION_FAILED*
-                self :recognition-failed-callback))
+                self :recognition-failed-callback)
+          (list drc_com_common::FC2OCSSmall::*ANGLE_VECTOR_FINISHED*
+                self :angle-vector-finished-callback))
     (setq smachine (make-ocs-state-machine))
     (send smachine :register-initial-hook self :initial-callback)
     (send smachine :go-to :initial) ;; force to move to initial state
@@ -875,6 +877,8 @@
       (send self :show-text "Finished look-around motion")
       (send smachine :go-to :initial)
       ))
+  (:angle-vector-finished-callback (msg)
+   )
   )
 
 ;; reflesh callback ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -949,18 +953,29 @@
     )
   )
 
+;; rviz interface ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defmethod ocs-executive-app
-  (:go-pos-command-from-rviz-interface (req)
-    ;; go to :executing-go-pos from :initial directory
-    (when (eq (send smachine :state) :initial)
-      (let ((msg (instance drc_com_common::OCS2FCSmall :init)))
-        (send msg :type drc_com_common::OCS2FCSmall::*GO_POS_EXEC*)
-        (send msg :float_params 
-              (coords-to-float-vector (ros::tf-pose->coords (send req :goal)) (length (send msg :float_params))))
-        (send self :send-to-fc msg))
-      (send smachine :go-to :executing-go-pos))
-    (send req :response)
-    )
+  (:go-pos-command-from-rviz-interface
+   (req)
+   ;; go to :executing-go-pos from :initial directory
+   (when (eq (send smachine :state) :initial)
+     (let ((msg (instance drc_com_common::OCS2FCSmall :init)))
+       (send msg :type drc_com_common::OCS2FCSmall::*GO_POS_EXEC*)
+       (send msg :float_params 
+             (coords-to-float-vector (ros::tf-pose->coords (send req :goal)) (length (send msg :float_params))))
+       (send self :send-to-fc msg))
+     (send smachine :go-to :executing-go-pos))
+   (send req :response)
+   )
+  (:angle-vector-command-from-ocs
+   (req)
+   (let ((msg (instance drc_com_common::OCS2FCSmall :init)))
+     (send msg :type drc_com_common::OCS2FCSmall::*ANGLE_VECTOR_SEND*)
+     (send msg :float_params 
+           (angle-vector-to-float-vector (send (send req :angle_vector) :data) (send (send req :interpolation_time) :data) (length (send msg :float_params))))
+     (send self :send-to-fc msg))
+   (send req :response)
+   )
   )
 
 
@@ -1004,6 +1019,7 @@
 (ros::advertise-service "cancel" std_srvs::Empty #'send *app* :cancel-button-callback)
 (ros::advertise-service "reflesh" std_srvs::Empty #'send *app* :reflesh-button-callback)
 (ros::advertise-service "go_pos_command_from_rviz_interface" drc_task_common::GoPosCommand #'send *app* :go-pos-command-from-rviz-interface)
+(ros::advertise-service "angle_vector_command_from_ocs" drc_task_common::AngleVectorCommand #'send *app* :angle-vector-command-from-ocs)
 
 ;; subscribing image_view2 ROI stuff
 (ros::subscribe "/ocs/communication/image_rect_color/screenrectangle/scaled" geometry_msgs::PolygonStamped

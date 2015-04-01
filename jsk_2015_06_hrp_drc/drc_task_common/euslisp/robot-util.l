@@ -1,4 +1,8 @@
 (ros::roseus-add-msgs "rosgraph_msgs")
+(ros::roseus-add-msgs "jsk_recognition_msgs")
+(ros::roseus-add-msgs "jsk_interactive_marker")
+(ros::roseus-add-msgs "jsk_rviz_plugins")
+(ros::roseus-add-srvs "drc_task_common")
 
 (defun robot-file (name)
   (let ((lower-name (string-downcase name)))
@@ -78,7 +82,9 @@
 ;; send angle-vector from ocs
 (defun send-angle-vector-from-ocs
   (av time)
-  (ros::publish "/angle_vector_command" msg))
+  (ros::service-call "/angle_vector_command_from_ocs"
+                     (instance drc_task_common::AngleVectorCommandRequest :init :angle_vector (instance std_msgs::Float32MultiArray :init :data av) :interpolation_time (instance std_msgs::Uint32 :init :data (round time))))
+  )
 
 (defun wait-interpolation-from-ocs
   ()
