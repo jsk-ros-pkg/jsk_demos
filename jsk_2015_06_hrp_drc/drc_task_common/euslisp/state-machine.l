@@ -667,6 +667,9 @@ Usage:
      
      (:initial -> :executing-look-around)
      (:executing-look-around -> :initial)
+
+     (:initial -> :executing-angle-vector)
+     (:executing-angle-vector -> :initial)
      )
    '((:initial :initial)
      
@@ -701,6 +704,8 @@ Usage:
      (:recognizing-look-at-point-panorama :look-at)
      
      (:executing-look-around :look-around)
+
+     (:executing-angle-vector :angle-vector)
      )
    :initial nil t
    ))

@@ -1,0 +1,4 @@
+std_msgs/Float32MultiArray angle_vector
+std_msgs/UInt32 interpolation_time
+---
+

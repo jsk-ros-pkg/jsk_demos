@@ -73,6 +73,8 @@
                 self :drill-button-region-command-callback)
           (list drc_com_common::OCS2FCSmall::*DRILL_BUTTON_EXEC*
                 self :drill-button-exec-command-callback)
+          (list drc_com_common::OCS2FCSmall::*ANGLE_VECTOR_SEND*
+                self :angle-vector-send-command-callback)
           )
     self)
   (:register-timelimits (sm)
@@ -657,6 +659,20 @@
                           (setf (elt (send msg :params) 5) 0) ;force to set zero
                           (send self :send-to-ocs msg)
                           (send smachine :go-to :initial)))))))))))))
+  (:angle-vector-send-command-callback
+   (msg)
+   (when (send smachine :state? :initial)
+     (multiple-value-bind 
+         (av time) (float-vector-to-angle-vector (send msg :float_params))
+       (send smachine :go-to :executing-angle-vector)
+       (format t "angle-vector ~A ~A~%" av time)
+       (send *ri* :angle-vector av time)
+       )
+     (let ((msg (instance drc_com_common::FC2OCSSmall :init)))
+       (send msg :type drc_com_common::FC2OCSSmall::*ANGLE_VECTOR_FINISHED*)
+       (send self :send-to-ocs msg))
+     (send smachine :go-to :initial))
+   )
   (:send-to-ocs (msg)
     (ros::publish "/fc_to_ocs_low_speed/input" msg))
   )
