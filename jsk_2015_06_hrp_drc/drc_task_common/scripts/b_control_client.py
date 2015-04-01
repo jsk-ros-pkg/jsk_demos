@@ -36,7 +36,7 @@ def b_control_client_init():
     # object marker
     ## insert / erase
     global req_marker_operate_srv, set_color_pub
-    global get_pose_srv, set_pose_pub, save_manip_srv
+    global get_pose_srv, set_pose_pub
     rospy.wait_for_service(ns+'/request_marker_operate')
     rospy.wait_for_service(ns+'/get_pose')
     rospy.wait_for_service(ns+'/set_dimensions')
@@ -44,7 +44,6 @@ def b_control_client_init():
     set_color_pub = rospy.Publisher(ns+'/set_color', ColorRGBA)
     get_pose_srv = rospy.ServiceProxy(ns+'/get_pose', GetTransformableMarkerPose)
     set_pose_pub = rospy.Publisher(ns+'/set_pose', PoseStamped)
-    save_manip_srv = rospy.ServiceProxy('/save_manipulation', srv.Empty)
     global default_frame_id
     default_frame_id = rospy.get_param('~default_frame_id', 'odom')
     ## configuration
@@ -160,9 +159,6 @@ def b_control_joy_cb(msg):
         current_pose_stamped.header.stamp = rospy.Time.now()
         current_pose_stamped.pose = current_pose
         set_pose_pub.publish(current_pose_stamped)
-    ## save manipulation
-    if status.buttonU7 != prev_status.buttonU7:
-        save_manip_srv()
     # change marker configuration
     v1 = Float32()
     v2 = Float32()

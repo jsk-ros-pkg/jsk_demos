@@ -2,13 +2,12 @@
 
 (ros::roseus "eus_commandserver")
 
-(load "package://drc_task_common/euslisp/drc-task-common-util.l")
-(generate-robot-interface)
+(load "package://drc_task_common/euslisp/robot-util.l")
+(generate-robot "HRP2JSKNT" :generate-ri? t)
 
 (ros::roseus-add-msgs "jsk_rviz_plugins")
 (ros::roseus-add-srvs "jsk_rviz_plugins")
 (ros::roseus-add-msgs "jsk_recognition_msgs")
-;(ros::roseus-add-srvs "jsk_recongition_msgs")
 (ros::roseus-add-msgs "jsk_interactive_marker")
 (ros::roseus-add-srvs "jsk_interactive_marker")
 (ros::roseus-add-msgs "drc_task_common")
