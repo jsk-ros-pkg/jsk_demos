@@ -6,6 +6,7 @@
 (ros::roseus-add-msgs "image_view2")
 (ros::roseus-add-msgs "geometry_msgs")
 (ros::roseus-add-srvs "topic_tools")
+(ros::roseus-add-srvs "drc_task_common")
 (ros::roseus-add-msgs "drc_com_common")
 (ros::roseus-add-msgs "jsk_recognition_msgs")
 (ros::roseus-add-msgs "jsk_interactive_marker")
@@ -95,7 +96,10 @@
           (list drc_com_common::FC2OCSSmall::*LOOK_AROUND_FINISHED*
                 self :look-around-finished-callback)
           (list drc_com_common::FC2OCSSmall::*RECOGNITION_FAILED*
-                self :recognition-failed-callback))
+                self :recognition-failed-callback)
+          (list drc_com_common::FC2OCSSmall::*RVIZ_MENU_FINISHED*
+                self :rviz-finished-callback)
+          )
     (setq smachine (make-ocs-state-machine))
     (send smachine :register-initial-hook self :initial-callback)
     (send smachine :go-to :initial) ;; force to move to initial state
@@ -822,6 +826,9 @@
     (when (send smachine :next? :initial)
       (send self :show-text "Recognition failed, go to :initial state" :warn)
       (send smachine :go-to :initial)))
+  (:rviz-finished-callback (msg)
+    (send self :show-text "rviz menu succeeded!")
+    )
   )
 
 ;; exec finised callback ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -962,6 +969,14 @@
     (send req :response)
     )
   )
+(defmethod ocs-executive-app
+  (:uint8-request-callback (req)
+    (let ((msg (instance drc_com_common::OCS2FCSmall :init)))
+      (send msg :type (send req :type))
+      (send self :send-to-fc msg))
+    (send self :show-text "uint8 command send")
+    (send req :response)   
+  )
 
 
 ;; generate *robot*
@@ -1004,6 +1019,8 @@
 (ros::advertise-service "cancel" std_srvs::Empty #'send *app* :cancel-button-callback)
 (ros::advertise-service "reflesh" std_srvs::Empty #'send *app* :reflesh-button-callback)
 (ros::advertise-service "go_pos_command_from_rviz_interface" drc_task_common::GoPosCommand #'send *app* :go-pos-command-from-rviz-interface)
+(ros::advertise-service "uint8_command" drc_task_common::Uint8Request #'send *app* :uint8-request-callback)
+
 
 ;; subscribing image_view2 ROI stuff
 (ros::subscribe "/ocs/communication/image_rect_color/screenrectangle/scaled" geometry_msgs::PolygonStamped

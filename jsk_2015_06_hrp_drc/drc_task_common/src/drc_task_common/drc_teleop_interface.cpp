@@ -2,9 +2,7 @@
 #include "drc_teleop_interface.h"
 #include "ros/time.h"
 #include <ros/package.h>
-
 #include "ui_drc_teleop_interface.h"
-#include "drc_task_common/GetIKArm.h"
 #include "dynamic_reconfigure/Reconfigure.h"
 
 using namespace rviz;
@@ -98,79 +96,50 @@ namespace drc_task_common
   }
 
   void DRCTeleopInterfaceAction::callRequestResetPose(){
-    std::string command("(send *ri* :angle-vector (send *robot* :reset-pose) 5000))");
-    callRequestEusCommand(command);
+    callRequestUint8Request(drc_com_common::OCS2FCSmall::RESET_POSE);
   };
 
   void DRCTeleopInterfaceAction::callRequestManipPose(){
-    std::string command("(send *ri* :angle-vector (send *robot* :reset-manip-pose) 5000)");
-    callRequestEusCommand(command);
+    callRequestUint8Request(drc_com_common::OCS2FCSmall::RESET_MANIP_POSE);
   };
 
   void DRCTeleopInterfaceAction::callRequestResetGripperPose(){
-    std::string command("(progn (send *robot* :hand :arms :reset-pose) (send *ri* :hand-angle-vector (apply #\'concatenate float-vector (send *robot* :hand :arms :angle-vector))))");
-    callRequestEusCommand(command);
+    callRequestUint8Request(drc_com_common::OCS2FCSmall::HAND_RESET_POSE);
   };
 
   void DRCTeleopInterfaceAction::callRequestHookGrippePose(){
-    std::string command("(progn (send *robot* :hand :arms :hook-pose) (send *ri* :hand-angle-vector (apply #\'concatenate float-vector (send *robot* :hand :arms :angle-vector))))");
-    callRequestEusCommand(command);
+    callRequestUint8Request(drc_com_common::OCS2FCSmall::HAND_HOOK_POSE);
   };
   void DRCTeleopInterfaceAction::callRequestHookGrippePoseAfter5sec(){
-    std::string command("(progn (unix::sleep 5) (send *robot* :hand :arms :hook-pose) (send *ri* :hand-angle-vector (apply #\'concatenate float-vector (send *robot* :hand :arms :angle-vector))))");
-    callRequestEusCommand(command);
+    callRequestUint8Request(drc_com_common::OCS2FCSmall::HAND_HOOK_AFTER_POSE);
   };
 
-  std::string DRCTeleopInterfaceAction::getIKArm(){
-    ros::ServiceClient client = nh_.serviceClient<drc_task_common::GetIKArm>("/get_ik_arm", true);
-    drc_task_common::GetIKArm srv;
-    if(client.call(srv)){
-      ROS_INFO("Get Arm Call Success (%s)", srv.response.ik_arm.c_str());
-      return srv.response.ik_arm;
-    }
-    else{
-      ROS_ERROR("Get Arm Service call FAIL");
-      return std::string(":arms");
-    }
-  }
   void DRCTeleopInterfaceAction::callRequestGraspGrippePose(){
-    char command_str[512];
-    std::string arm_string = getIKArm();
-    sprintf(command_str, 
-            "(progn (send *robot* :hand %s :extension-pose) (send *ri* :hand-angle-vector (apply #\'concatenate float-vector (send *robot* :hand :arms :angle-vector))) (send *ri* :hand-wait-interpolation) (send *robot* :hand %s :grasp-pose) (send *ri* :hand-angle-vector (apply #\'concatenate float-vector (send *robot* :hand :arms :angle-vector))))"
-            , arm_string.c_str(), arm_string.c_str()
-      );
-    callRequestEusCommand(std::string(command_str));
+    callRequestUint8Request(drc_com_common::OCS2FCSmall::HAND_GRASP_POSE);
   };
 
   void DRCTeleopInterfaceAction::callRequestStartABC(){
-    std::string command("(send *ri* :start-auto-balancer)");
-    callRequestEusCommand(command);
+    callRequestUint8Request(drc_com_common::OCS2FCSmall::HRPSYS_START_ABC);
   };
 
   void DRCTeleopInterfaceAction::callRequestStartST(){
-    std::string command("(send *ri* :start-st)");
-    callRequestEusCommand(command);
+    callRequestUint8Request(drc_com_common::OCS2FCSmall::HRPSYS_START_ST);
   };
 
   void DRCTeleopInterfaceAction::callRequestStartIMP(){
-    std::string command("(send *ri* :start-impedance :arms :moment-gain #f(0 0 0) :k-p 1000 :d-p 400)");
-    callRequestEusCommand(command);
+    callRequestUint8Request(drc_com_common::OCS2FCSmall::HRPSYS_START_ABC);
   };
 
   void DRCTeleopInterfaceAction::callRequestStopABC(){
-    std::string command("(send *ri* :stop-auto-balancer)");
-    callRequestEusCommand(command);
+    callRequestUint8Request(drc_com_common::OCS2FCSmall::HRPSYS_STOP_ABC);
   };
 
   void DRCTeleopInterfaceAction::callRequestStopST(){
-    std::string command("(send *ri* :stop-st)");
-    callRequestEusCommand(command);
+    callRequestUint8Request(drc_com_common::OCS2FCSmall::HRPSYS_STOP_ST);
   };
 
   void DRCTeleopInterfaceAction::callRequestStopIMP(){
-    std::string command("(send *ri* :stop-impedance :arms)");
-    callRequestEusCommand(command);
+    callRequestUint8Request(drc_com_common::OCS2FCSmall::HRPSYS_STOP_IMP);
   };
 
   void DRCTeleopInterfaceAction::callRequestDisplayManip(){
@@ -205,10 +174,10 @@ namespace drc_task_common
     };
   };
 
-  void DRCTeleopInterfaceAction::callRequestEusCommand(std::string command){
-    ros::ServiceClient client = nh_.serviceClient<jsk_rviz_plugins::EusCommand>("/uint8_command", true);
-    jsk_rviz_plugins::EusCommand srv;
-    srv.request.command = command;
+  void DRCTeleopInterfaceAction::callRequestUint8Request(uint type){
+    ros::ServiceClient client = nh_.serviceClient<drc_task_common::Uint8Request>("/uint8_command", true);
+    drc_task_common::Uint8Request srv;
+    srv.request.type = type;
     if(client.call(srv))
       {
         ROS_INFO("Call Success");
