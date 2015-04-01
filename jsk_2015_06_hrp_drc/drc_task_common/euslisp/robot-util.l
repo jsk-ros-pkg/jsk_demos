@@ -44,7 +44,7 @@
 (defun send-angle-vector-sequence-with-time
   (av-seq &key (time 5000) (wait? t))
   (send *ri* :angle-vector-sequence av-seq (make-list (length av-seq) :initial-element time))
-  (when wait? (send *ri* :wait-interpolation)))
+  (when wait? (send *ri* :wait-interpolation)))    
 
 (defun publish-model-joint-states (&key (av nil))
   (let* ((msg (instance sensor_msgs::JointState :init)))
@@ -75,6 +75,16 @@
             (t (unix::usleep (* step-time 1000))))
       )))
 
+;; send angle-vector from ocs
+(defun send-angle-vector-from-ocs
+  (av time)
+  (ros::publish "/angle_vector_command" msg))
+
+(defun wait-interpolation-from-ocs
+  ()
+  )
+
+;; get potentio-vector from ocs
 (defun get-potentio-vector-from-joint-states ()
   (while (not (boundp '*potentio-vector*))
     (ros::spin-once))
