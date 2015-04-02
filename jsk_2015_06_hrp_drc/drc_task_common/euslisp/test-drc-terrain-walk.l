@@ -997,14 +997,72 @@
   (send *ri* :wait-interpolation)
   )
 
+(defun setup-drc-testbed-stair-simulation-jaxon ()
+  (unless (boundp '*stair*) (make-drc-stair :add-groud-p t))
+  (setup-terrain-walk-jaxon)
+  ;;(setq *pitch-off* 15) ;; [deg]
+  (setq *pitch-off* 20) ;; [deg]
+  (walking-pose *robot* :root-link-pitch-offset *pitch-off*)
+  (setup-terrain-walk-real-jaxon)
+  (send *robot* :fix-leg-to-coords (make-coords))
+  (send *stair* :newcoords (make-coords :pos (float-vector 200 0 0)))
+  (setq *rleg-sole* (make-sole-body *robot* :rleg))
+  (setq *lleg-sole* (make-sole-body *robot* :lleg))
+  (setq *stair-faces* (send *stair* :get-all-stair-top-faces))
+  (objects (list *robot* *rleg-sole* *lleg-sole* *stair*))
+  )
+
+(defun test-drc-testbed-stair-simulation-jaxon
+  ()
+  (setup-drc-testbed-stair-simulation-jaxon)
+  (project-sole-on-faces
+   :rleg *stair-faces* (send (make-coords :pos (float-vector 0 -100 0)) :translate (float-vector 300 0 300) :world))
+  (calc-and-exec-walk-with-auto-root-height-tune-one
+   *prev-rleg-coords* *rleg-sole* :rleg 30 1.3 :support-foot-coords *lleg-sole* :root-link-pitch-offset *pitch-off*)
+  (project-sole-on-faces
+   :lleg *stair-faces* (send (make-coords :pos (float-vector 0 100 0)) :translate (float-vector 300 0 300) :world))
+  (calc-and-exec-walk-with-auto-root-height-tune-one
+   *prev-lleg-coords* *lleg-sole* :lleg 30 1.3 :support-foot-coords *rleg-sole* :root-link-pitch-offset *pitch-off*)
+  )
+
+(defun test-drc-testbed-stair-check-base-height-jaxon
+  ()
+  (setup-drc-testbed-terrain-simulation-jaxon)
+  (dolist (xx (list 280 460 720 840 1150 1260 1520 1600 1900 2070 2320 2460 2750 2900 3100))
+    (project-sole-on-faces
+     :rleg *terrain-faces* (send (make-coords :pos (float-vector 0 -100 0)) :translate (float-vector xx 0 300) :world))
+    (check-leg-reachability-for-one-step
+     *prev-rleg-coords* *rleg-sole* :rleg 30 1.3)
+    (project-sole-on-faces
+     :lleg *terrain-faces* (send (make-coords :pos (float-vector 0 100 0)) :translate (float-vector xx 0 300) :world))
+    (check-leg-reachability-for-one-step
+     *prev-lleg-coords* *lleg-sole* :lleg 30 1.3)
+    )
+  )
+
+(defun test-drc-testbed-stair-check-base-height-jaxon
+  ()
+  (setup-drc-testbed-stair-simulation-jaxon)
+  (dolist (xx (list 300 600 900 1200))
+    (project-sole-on-faces
+     :rleg *stair-faces* (send (make-coords :pos (float-vector 0 -100 0)) :translate (float-vector xx 0 300) :world))
+    (check-leg-reachability-for-one-step
+     *prev-rleg-coords* *rleg-sole* :rleg 30 1.3)
+    (project-sole-on-faces
+     :lleg *stair-faces* (send (make-coords :pos (float-vector 0 100 0)) :translate (float-vector xx 0 300) :world))
+    (check-leg-reachability-for-one-step
+     *prev-lleg-coords* *lleg-sole* :lleg 30 1.3)
+    )
+  )
+
 (defun move-base-up-until-ik-fail
   (&key (target-coords (mapcar #'(lambda (l) (send *robot* l :end-coords :copy-worldcoords)) '(:rleg :lleg)))
         (target-centroid-pos (apply #'midpoint ratio (send-all target-coords :worldpos)))
         (limbs '(:rleg :lleg)))
   (let* ((rs-list)
-         (ret nil)
+         (ret nil) (once-solved nil)
          (count 0))
-    (send *robot* :translate (float-vector 0 0 -100) :world)
+    (send *robot* :translate (float-vector 0 0 -125) :world)
     (while (or (setq ret (send *robot* :fullbody-inverse-kinematics
                                target-coords
                                :joint-args (list :absolute-p t)
@@ -1015,10 +1073,12 @@
                                :root-link-virtual-joint-weight #f(0.1 0.1 0 0 0 0)
                                :move-target (mapcar #'(lambda (l) (send *robot* l :end-coords)) limbs)
                                :link-list (mapcar #'(lambda (l) (send *robot* :link-list (send *robot* l :end-coords :parent))) limbs)))
-               (< count 9))
+               (and (not once-solved) (< count 11)))
       (incf count)
-      (if ret
-          (push (list :angle-vector (send *robot* :angle-vector) :root-coords (send (car (send *robot* :links)) :copy-worldcoords)) rs-list))
+      (when ret
+        (setq once-solved t)
+        (push (list :angle-vector (send *robot* :angle-vector) :root-coords (send (car (send *robot* :links)) :copy-worldcoords)) rs-list))
+      ;;(print (list ret count))
       (send *robot* :translate (float-vector 0 0 25) :world)
       )
     (let ((idx 2))
@@ -1030,7 +1090,8 @@
 
 (defun check-leg-reachability-for-one-step
   (prev-foot-coords next-foot-coords leg default-step-height default-step-time)
-  (let ((rs-list))
+  (let ((rs-list)
+        (root-height-off 800))
     (labels ((tmp-fullbody-ik
               (tc target-centroid-pos)
               (send *robot* :fullbody-inverse-kinematics
@@ -1038,20 +1099,24 @@
                     :joint-args (list :absolute-p t)
                     :dif-pos-ratio 0.5 :dif-rot-ratio 0.5
                     :target-centroid-pos target-centroid-pos
-                    :root-link-virtual-joint-weight #f(0.1 0.1 0.1 0 0 0)
+                    ;;:debug-view :no-message
+                    :root-link-virtual-joint-weight #f(0.1 0.1 1 0 0 0)
                     :move-target (list (send *robot* leg :end-coords) (send *robot* (case leg (:rleg :lleg) (:lleg :rleg)) :end-coords))
                     :link-list (mapcar #'(lambda (l) (send *robot* :link-list (send *robot* l :end-coords :parent))) (list leg (case leg (:rleg :lleg) (:lleg :rleg)))))))
       (let ((tc (list (send prev-foot-coords :copy-worldcoords)
                       (case leg
                         (:rleg (send *robot* :lleg :end-coords :copy-worldcoords))
                         (:lleg (send *robot* :rleg :end-coords :copy-worldcoords))))))
-        (walking-pose *robot* :fix-coords (orient-coords-to-axis (apply #'midcoords 0.5 tc) (float-vector 0 0 1)))
+        (send *robot* :translate (v- (v+ (float-vector 0 0 root-height-off) (apply #'midpoint 0.5 (send-all tc :worldpos))) (send (car (send *robot* :links)) :worldpos)) :world)
+        ;;(print "a")(send *irtviewer* :draw-objects)(read-line)
         (tmp-fullbody-ik tc (apply #'midpoint 0.5 (send-all tc :worldpos)))
+        ;;(print "a")(send *irtviewer* :draw-objects)(read-line)
         (move-base-up-until-ik-fail :target-coords tc
                                     :target-centroid-pos (apply #'midpoint 0.5 (send-all tc :worldpos))
                                     :limbs (list leg (case leg (:rleg :lleg) (:lleg :rleg))))
         ;;(push (list :angle-vector (send *robot* :angle-vector) :root-coords (send (car (send *robot* :links)) :copy-worldcoords) :time 0.0) rs-list))
-        (push (list :angle-vector (send *robot* :angle-vector) :root-coords (send (car (send *robot* :links)) :copy-worldcoords) :time default-step-time) rs-list))
+        ;;(push (list :angle-vector (send *robot* :angle-vector) :root-coords (send (car (send *robot* :links)) :copy-worldcoords) :time default-step-time) rs-list))
+        (push (list :angle-vector (send *robot* :angle-vector) :root-coords (send (car (send *robot* :links)) :copy-worldcoords) :time 0.0) rs-list))
       ;;(load "~/prog/euslib/rbrain/virtual_interpolator.l")
       (let ((tc (list (make-coords :pos
                                    (float-vector (* 0.5 (+ (elt (send prev-foot-coords :worldpos) 0) (elt (send next-foot-coords :worldpos) 0)))
@@ -1062,24 +1127,29 @@
                       (case leg
                         (:rleg (send *robot* :lleg :end-coords :copy-worldcoords))
                         (:lleg (send *robot* :rleg :end-coords :copy-worldcoords))))))
-        (walking-pose *robot* :fix-coords (orient-coords-to-axis (apply #'midcoords 0.5 tc) (float-vector 0 0 1)))
+        (send *robot* :translate (v- (v+ (float-vector 0 0 root-height-off) (apply #'midpoint 0.5 (send-all tc :worldpos))) (send (car (send *robot* :links)) :worldpos)) :world)
+        ;;(print "b")(send *irtviewer* :draw-objects)(read-line)
         (tmp-fullbody-ik tc (apply #'midpoint 0.9 (send-all tc :worldpos)))
+        ;;(print "b")(send *irtviewer* :draw-objects)(read-line)
         (move-base-up-until-ik-fail :target-coords tc
                                     :target-centroid-pos (apply #'midpoint 0.9 (send-all tc :worldpos))
                                     :limbs (list leg (case leg (:rleg :lleg) (:lleg :rleg))))
         ;;(push (list :angle-vector (send *robot* :angle-vector) :root-coords (send (car (send *robot* :links)) :copy-worldcoords) :time default-step-time) rs-list))
+        ;;(push (list :angle-vector (send *robot* :angle-vector) :root-coords (send (car (send *robot* :links)) :copy-worldcoords) :time (* 1.5 default-step-time)) rs-list))
         (push (list :angle-vector (send *robot* :angle-vector) :root-coords (send (car (send *robot* :links)) :copy-worldcoords) :time (* 1.5 default-step-time)) rs-list))
       (let ((tc (list (send next-foot-coords :copy-worldcoords)
                       (case leg
                         (:rleg (send *robot* :lleg :end-coords :copy-worldcoords))
                         (:lleg (send *robot* :rleg :end-coords :copy-worldcoords))))))
-        (walking-pose *robot* :fix-coords (orient-coords-to-axis (apply #'midcoords 0.5 tc) (float-vector 0 0 1)))
+        (send *robot* :translate (v- (v+ (float-vector 0 0 root-height-off) (apply #'midpoint 0.5 (send-all tc :worldpos))) (send (car (send *robot* :links)) :worldpos)) :world)
         (tmp-fullbody-ik tc (apply #'midpoint 0.5 (send-all tc :worldpos)))
+        ;;(print "c")(send *irtviewer* :draw-objects)(read-line)
         (move-base-up-until-ik-fail :target-coords tc
                                     :target-centroid-pos (apply #'midpoint 0.5 (send-all tc :worldpos))
                                     :limbs (list leg (case leg (:rleg :lleg) (:lleg :rleg))))
         ;;(push (list :angle-vector (send *robot* :angle-vector) :root-coords (send (car (send *robot* :links)) :copy-worldcoords) :time (* 2 default-step-time)) rs-list))
-        (push (list :angle-vector (send *robot* :angle-vector) :root-coords (send (car (send *robot* :links)) :copy-worldcoords) :time (* 2 default-step-time)) rs-list))
+        ;;(push (list :angle-vector (send *robot* :angle-vector) :root-coords (send (car (send *robot* :links)) :copy-worldcoords) :time (* 2 default-step-time)) rs-list))
+        (push (list :angle-vector (send *robot* :angle-vector) :root-coords (send (car (send *robot* :links)) :copy-worldcoords) :time (* 3 default-step-time)) rs-list))
       ;;(dolist (rs *rs-list*) (send *robot* :angle-vector (cadr (memq :angle-vector rs))) (send *robot* :move-coords (cadr (memq :root-coords rs)) (car (send *robot* :links))) (send *irtviewer* :draw-objects) (read-line))
       (reverse rs-list)
       )))
@@ -1110,9 +1180,11 @@
   ;;     (unix:system (format nil "scp /tmp/test-one-step-walk.* ~A@~A:/tmp/" robot-user robot-host)))
   (if y-or-n-p (unless (y-or-n-p ";; Exec angle-vectors and foot steps?") (return-from calc-and-exec-walk-with-auto-root-height-tune-one nil)))
   ;;(send *rI* :load-pattern "/tmp/test-one-step-walk")
+  (send *ri* :angle-vector (cadr (memq :angle-vector (car *rs-list*))) 1500)
+  (send *ri* :wait-interpolation)
   (send *ri* :angle-vector-sequence
-        (mapcar #'(lambda (rs) (cadr (memq :angle-vector rs))) *rs-list*)
-        (let ((tm-list (mapcar #'(lambda (rs) (* 1e3 (cadr (memq :time rs)))) *rs-list*))) (mapcar #'(lambda (tm0 tm1) (- tm1 tm0)) (append (list 0) (butlast tm-list)) tm-list)))
+        (mapcar #'(lambda (rs) (cadr (memq :angle-vector rs))) (cdr *rs-list*))
+        (let ((tm-list (mapcar #'(lambda (rs) (* 1e3 (cadr (memq :time rs)))) *rs-list*))) (mapcar #'(lambda (tm0 tm1) (- tm1 tm0)) (butlast tm-list) (cdr tm-list))))
   (send *ri* :set-foot-steps
         (if support-foot-coords
             (list (make-coords :coords (send support-foot-coords :copy-worldcoords) :name (case leg (:rleg :lleg) (:lleg :rleg)))
