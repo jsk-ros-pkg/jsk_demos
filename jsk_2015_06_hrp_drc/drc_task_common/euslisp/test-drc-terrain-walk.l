@@ -997,6 +997,64 @@
   (send *ri* :wait-interpolation)
   )
 
+(defun setup-drc-testbed-stair-simulation-jaxon ()
+  (unless (boundp '*stair*) (make-drc-stair :add-groud-p t))
+  (setup-terrain-walk-jaxon)
+  ;;(setq *pitch-off* 15) ;; [deg]
+  (setq *pitch-off* 20) ;; [deg]
+  (walking-pose *robot* :root-link-pitch-offset *pitch-off*)
+  (setup-terrain-walk-real-jaxon)
+  (send *robot* :fix-leg-to-coords (make-coords))
+  (send *stair* :newcoords (make-coords :pos (float-vector 200 0 0)))
+  (setq *rleg-sole* (make-sole-body *robot* :rleg))
+  (setq *lleg-sole* (make-sole-body *robot* :lleg))
+  (setq *stair-faces* (send *stair* :get-all-stair-top-faces))
+  (objects (list *robot* *rleg-sole* *lleg-sole* *stair*))
+  )
+
+(defun test-drc-testbed-stair-simulation-jaxon
+  ()
+  (setup-drc-testbed-stair-simulation-jaxon)
+  (project-sole-on-faces
+   :rleg *stair-faces* (send (make-coords :pos (float-vector 0 -100 0)) :translate (float-vector 300 0 300) :world))
+  (calc-and-exec-walk-with-auto-root-height-tune-one
+   *prev-rleg-coords* *rleg-sole* :rleg 30 1.3 :support-foot-coords *lleg-sole* :root-link-pitch-offset *pitch-off*)
+  (project-sole-on-faces
+   :lleg *stair-faces* (send (make-coords :pos (float-vector 0 100 0)) :translate (float-vector 300 0 300) :world))
+  (calc-and-exec-walk-with-auto-root-height-tune-one
+   *prev-lleg-coords* *lleg-sole* :lleg 30 1.3 :support-foot-coords *rleg-sole* :root-link-pitch-offset *pitch-off*)
+  )
+
+(defun test-drc-testbed-stair-check-base-height-jaxon
+  ()
+  (setup-drc-testbed-terrain-simulation-jaxon)
+  (dolist (xx (list 280 460 720 840 1150 1260 1520 1600 1900 2070 2320 2460 2750 2900 3100))
+    (project-sole-on-faces
+     :rleg *terrain-faces* (send (make-coords :pos (float-vector 0 -100 0)) :translate (float-vector xx 0 300) :world))
+    (check-leg-reachability-for-one-step
+     *prev-rleg-coords* *rleg-sole* :rleg 30 1.3)
+    (project-sole-on-faces
+     :lleg *terrain-faces* (send (make-coords :pos (float-vector 0 100 0)) :translate (float-vector xx 0 300) :world))
+    (check-leg-reachability-for-one-step
+     *prev-lleg-coords* *lleg-sole* :lleg 30 1.3)
+    )
+  )
+
+(defun test-drc-testbed-stair-check-base-height-jaxon
+  ()
+  (setup-drc-testbed-stair-simulation-jaxon)
+  (dolist (xx (list 300 600 900 1200))
+    (project-sole-on-faces
+     :rleg *stair-faces* (send (make-coords :pos (float-vector 0 -100 0)) :translate (float-vector xx 0 300) :world))
+    (check-leg-reachability-for-one-step
+     *prev-rleg-coords* *rleg-sole* :rleg 30 1.3)
+    (project-sole-on-faces
+     :lleg *stair-faces* (send (make-coords :pos (float-vector 0 100 0)) :translate (float-vector xx 0 300) :world))
+    (check-leg-reachability-for-one-step
+     *prev-lleg-coords* *lleg-sole* :lleg 30 1.3)
+    )
+  )
+
 (defun move-base-up-until-ik-fail
   (&key (target-coords (mapcar #'(lambda (l) (send *robot* l :end-coords :copy-worldcoords)) '(:rleg :lleg)))
         (target-centroid-pos (apply #'midpoint ratio (send-all target-coords :worldpos)))
