@@ -839,7 +839,7 @@
     ;; pre-reach
     (dotimes (i (length drill-motion-av-list))
       (send *robot* :angle-vector (elt drill-motion-av-list i))
-      (when real? (model2real :time 5000))
+      (when real? (model2real :time 15000))
       )
     )
   )

@@ -9,7 +9,7 @@ add_message_files(DIRECTORY msg FILES StringMultiArray.msg)
 add_message_files(DIRECTORY msg FILES InteractiveMarkerArray.msg)
 add_message_files(DIRECTORY msg FILES TMarkerInfo.msg)
 add_message_files(DIRECTORY msg FILES Float32ArrayStamped.msg)
-add_service_files(DIRECTORY srv FILES RvizMenuCall.srv RvizMenuSelect.srv EusCommand.srv StringRequest.srv ICPService.srv GetIKArm.srv GetIKArmPose.srv GoPosCommand.srv AngleVectorCommand.srv)
+add_service_files(DIRECTORY srv FILES RvizMenuCall.srv RvizMenuSelect.srv EusCommand.srv StringRequest.srv ICPService.srv GetIKArm.srv GetIKArmPose.srv GoPosCommand.srv Uint8Request.srv AngleVectorCommand.srv)
 
 generate_messages(DEPENDENCIES ${PCL_MSGS} std_msgs std_srvs visualization_msgs sensor_msgs geometry_msgs jsk_pcl_ros jsk_interactive_marker jsk_recognition_msgs move_base_msgs)
 

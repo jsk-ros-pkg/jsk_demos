@@ -42,6 +42,8 @@ uint8 DRILL_BUTTON_POSE=23
 uint8 DRILL_BUTTON_FINISHED=24
 # angle-vector
 uint8 ANGLE_VECTOR_FINISHED=25
+# for rviz plugins msgs(see src/drc_teleop_interface.cpp)
+uint8 RVIZ_MENU_FINISHED=26
 
 # failed
 uint8 RECOGNITION_FAILED=20

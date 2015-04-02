@@ -4,7 +4,8 @@
 #include <ros/ros.h>
 #include <rviz/panel.h>
 #include <QtGui>
-#include <jsk_rviz_plugins/EusCommand.h>
+#include <drc_task_common/Uint8Request.h>
+#include <drc_com_common/OCS2FCSmall.h>
 #include <stdio.h>
 
 namespace Ui
@@ -27,31 +28,26 @@ namespace drc_task_common
 
     void callRequestResetPose();
     void callRequestManipPose();
-    void callRequestInitPose();
 
     void callRequestResetGripperPose();
     void callRequestHookGrippePose();
     void callRequestHookGrippePoseAfter5sec();
 
-    std::string getIKArm();
     void callRequestGraspGrippePose();
-    void callRequestGraspGrippePoseForDrill();
 
     void callRequestStartABC();
     void callRequestStartST();
     void callRequestStartIMP();
-    void callRequestStartIMPforDrill();
 
     void callRequestStopABC();
     void callRequestStopST();
     void callRequestStopIMP();
 
-    void callRequestRecogParamDrill();
-    void callRequestRecogParamHandle();
-    void callRequestRecogParamValve();
-
-    void callRequestEusCommand(std::string command);
-
+    void callRequestDisplayManip();
+    void callRequestHideManip();
+    
+    void callRequestUint8Request(uint type);
+    
   protected:
     // The ROS node handle.
     ros::NodeHandle nh_;

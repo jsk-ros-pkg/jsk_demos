@@ -6,8 +6,8 @@
 (ros::roseus-add-msgs "image_view2")
 (ros::roseus-add-msgs "geometry_msgs")
 (ros::roseus-add-srvs "topic_tools")
-(ros::roseus-add-msgs "drc_com_common")
 (ros::roseus-add-msgs "jsk_recognition_msgs")
+(ros::roseus-add-msgs "drc_com_common")
 (ros::roseus-add-msgs "jsk_interactive_marker")
 (ros::roseus-add-srvs "jsk_interactive_marker")
 (ros::roseus-add-msgs "jsk_rviz_plugins")
@@ -96,6 +96,8 @@
                 self :look-around-finished-callback)
           (list drc_com_common::FC2OCSSmall::*RECOGNITION_FAILED*
                 self :recognition-failed-callback)
+          (list drc_com_common::FC2OCSSmall::*RVIZ_MENU_FINISHED*
+                self :rviz-finished-callback)
           (list drc_com_common::FC2OCSSmall::*ANGLE_VECTOR_FINISHED*
                 self :angle-vector-finished-callback))
     (setq smachine (make-ocs-state-machine))
@@ -824,6 +826,9 @@
     (when (send smachine :next? :initial)
       (send self :show-text "Recognition failed, go to :initial state" :warn)
       (send smachine :go-to :initial)))
+  (:rviz-finished-callback (msg)
+    (send self :show-text "rviz menu succeeded!")
+    )
   )
 
 ;; exec finised callback ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -977,6 +982,15 @@
    (send req :response)
    )
   )
+(defmethod ocs-executive-app
+  (:uint8-request-callback (req)
+    (let ((msg (instance drc_com_common::OCS2FCSmall :init)))
+      (send msg :type (send req :type))
+      (send self :send-to-fc msg))
+    (send self :show-text "uint8 command send")
+    (send req :response)
+    )
+  )
 
 
 ;; generate *robot*
@@ -1019,6 +1033,7 @@
 (ros::advertise-service "cancel" std_srvs::Empty #'send *app* :cancel-button-callback)
 (ros::advertise-service "reflesh" std_srvs::Empty #'send *app* :reflesh-button-callback)
 (ros::advertise-service "go_pos_command_from_rviz_interface" drc_task_common::GoPosCommand #'send *app* :go-pos-command-from-rviz-interface)
+(ros::advertise-service "uint8_command" drc_task_common::Uint8Request #'send *app* :uint8-request-callback)
 (ros::advertise-service "angle_vector_command_from_ocs" drc_task_common::AngleVectorCommand #'send *app* :angle-vector-command-from-ocs)
 
 ;; subscribing image_view2 ROI stuff

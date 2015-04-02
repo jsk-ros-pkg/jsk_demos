@@ -73,6 +73,31 @@
                 self :drill-button-region-command-callback)
           (list drc_com_common::OCS2FCSmall::*DRILL_BUTTON_EXEC*
                 self :drill-button-exec-command-callback)
+          ;; rviz plugins
+          (list drc_com_common::OCS2FCSmall::*RESET_POSE*
+                self :reset-pose-command-callback)
+          (list drc_com_common::OCS2FCSmall::*RESET_MANIP_POSE*
+                self :reset-manip-pose-command-callback)
+          (list drc_com_common::OCS2FCSmall::*HAND_RESET_POSE*
+                self :hand-reset-pose-command-callback)
+          (list drc_com_common::OCS2FCSmall::*HAND_HOOK_POSE*
+                self :hand-hook-pose-command-callback)
+          (list drc_com_common::OCS2FCSmall::*HAND_HOOK_AFTER_POSE*
+                self :hand-hook-after-pose-command-callback)
+          (list drc_com_common::OCS2FCSmall::*HAND_GRASP_POSE*
+                self :hand-grasp-pose-command-callback)
+          (list drc_com_common::OCS2FCSmall::*HRPSYS_START_ABC*
+                self :hrpsys-start-abc-command-cb)
+          (list drc_com_common::OCS2FCSmall::*HRPSYS_START_ST*
+                self :hrpsys-start-st-command-cb)
+          (list drc_com_common::OCS2FCSmall::*HRPSYS_START_IMP*
+                self :hrpsys-start-imp-command-cb)
+          (list drc_com_common::OCS2FCSmall::*HRPSYS_STOP_ABC*
+                self :hrpsys-stop-abc-command-cb)
+          (list drc_com_common::OCS2FCSmall::*HRPSYS_STOP_ST*
+                self :hrpsys-stop-st-command-cb)
+          (list drc_com_common::OCS2FCSmall::*HRPSYS_STOP_IMP*
+                self :hrpsys-stop-imp-command-cb)
           (list drc_com_common::OCS2FCSmall::*ANGLE_VECTOR_SEND*
                 self :angle-vector-send-command-callback)
           )
@@ -659,6 +684,55 @@
                           (setf (elt (send msg :params) 5) 0) ;force to set zero
                           (send self :send-to-ocs msg)
                           (send smachine :go-to :initial)))))))))))))
+  (:reset-pose-command-callback (msg)
+    (send *ri* :angle-vector (send *robot* :reset-pose) 10000)
+    (send *ri* :wait-interpolation)
+    (send self :send-rviz-button-finished-to-ocs))
+  (:reset-manip-pose-command-callback (msg)
+    (send *ri* :angle-vector (send *robot* :reset-manip-pose) 10000)
+    (send *ri* :wait-interpolation)
+    (send self :send-rviz-button-finished-to-ocs))
+  (:hand-reset-pose-command-callback (msg)
+    (send *robot* :hand :arms :reset-pose)
+    (hand-model2real)
+    (send self :send-rviz-button-finished-to-ocs))
+  (:hand-hook-pose-command-callback (msg)
+    (send *robot* :hand :arms :hook-pose)
+    (hand-model2real)
+    (send self :send-rviz-button-finished-to-ocs))
+  (:hand-hook-after-pose-command-callback (msg)
+    (unix::sleep 5)
+    (send *robot* :hand :arms :hook-pose)
+    (hand-model2real)
+    (send self :send-rviz-button-finished-to-ocs))
+  (:hand-grasp-pose-command-callback (msg)
+    (send *robot* :hand :arms :grasp-pose)
+    (hand-model2real)
+    (send self :send-rviz-button-finished-to-ocs))
+  (:hrpsys-start-abc-command-cb (msg)
+    (send *ri* :start-auto-balancer)
+    (send self :send-rviz-button-finished-to-ocs))
+  (:hrpsys-start-st-command-cb (msg)
+    (send *ri* :start-st)
+    (send self :send-rviz-button-finished-to-ocs))
+  (:hrpsys-start-imp-command-cb (msg)
+    (send *ri* :start-impedance :arms :moment-gain #f(0 0 0) :k-p 1000 :d-p 400)
+    (send self :send-rviz-button-finished-to-ocs))
+  (:hrpsys-stop-abc-command-cb (msg)
+    (send *ri* :stop-auto-balancer)
+    (send self :send-rviz-button-finished-to-ocs))
+  (:hrpsys-stop-st-command-cb (msg)
+    (send *ri* :stop-st)
+    (send self :send-rviz-button-finished-to-ocs))
+  (:hrpsys-stop-imp-command-cb (msg)
+    (send *ri* :stop-impedance :arms)
+    (send self :send-rviz-button-finished-to-ocs))
+  (:send-rviz-button-finished-to-ocs ()
+    (let ((msg (instance drc_com_common::FC2OCSSmall :init)))
+      (send msg :type drc_com_common::FC2OCSSmall::*RVIZ_MENU_FINISHED*)
+      (send self :send-to-ocs msg)
+      )
+    )
   (:angle-vector-send-command-callback
    (msg)
    (when (send smachine :state? :initial)
