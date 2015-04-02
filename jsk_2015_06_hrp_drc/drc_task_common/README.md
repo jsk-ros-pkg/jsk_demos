@@ -219,3 +219,96 @@ rospy.service.ServiceException: service [/SequencePlayerServiceROSBridge/addJoin
 ```
 
 A. hrpsys_ros_bridge is not launched.
+
+## test-drc-terrain-walk.l
+This is kinematics (not dynamics) simulator of test terrain walk for DRC
+
+### How to launch
+You should generate xml file from wrl files, and launch the following for each robot
+
+#### hrp2jsknt
+```
+rtmtest -t hrpsys_tools _gen_project.launch INPUT:=${CVSDIR}/OpenHRP/etc/HRP2JSKNT_for_OpenHRP3/HRP2JSKNTmain.wrl OUTPUT:=/tmp/HRP2JSKNT_for_DRCTestbedBlock.xml OBJECT_MODELS:="`rospack find hrpsys`/share/hrpsys/samples/environments/DRCTestbedTerrainJPBlock.wrl,0.4,-2.0,0,1,0,0,0, `rospack find openhrp3`/share/OpenHRP-3.1/sample/model/longfloor.wrl,0,0,0,1,0,0,0" CORBA_PORT:=15005 INTEGRATE:=false
+rtmlaunch hrpsys_ros_bridge_tutorials hrp2jsknt.launch PROJECT_FILE:=/tmp/HRP2JSKNT_for_DRCTestbedBlock.xml
+```
+
+![](images/hrp2jsknt_sim.png)
+
+#### hrp2jsk
+```
+rtmtest -t hrpsys_tools _gen_project.launch INPUT:=${CVSDIR}/OpenHRP/etc/HRP2JSK_for_OpenHRP3/HRP2JSKmain.wrl OUTPUT:=/tmp/HRP2JSK_for_DRCTestbedBlock.xml OBJECT_MODELS:="`rospack find hrpsys`/share/hrpsys/samples/environments/DRCTestbedTerrainJPBlock.wrl,0.4,-2.0,0,1,0,0,0," CORBA_PORT:=15005 INTEGRATE:=false CONF_DT_OPTION:="--dt 0.004" SIMULATION_TIMESTEP_OPTION:="--timeStep 0.004"
+rtmlaunch hrpsys_ros_bridge_tutorials hrp2jsk.launch PROJECT_FILE:=/tmp/HRP2JSK_for_DRCTestbedBlock.xml
+```
+
+![](images/hrp2jsk_sim.png)
+
+#### jaxon
+```
+rtmtest -t hrpsys_tools _gen_project.launch INPUT:=${CVSDIR}/euslib/rbrain/jaxon/JAXONmain.wrl OUTPUT:=/tmp/JAXON_for_DRCTestbedBlock.xml OBJECT_MODELS:="`rospack find hrpsys`/share/hrpsys/samples/environments/DRCTestbedTerrainJPBlock.wrl,0.4,-2.0,0,1,0,0,0, `rospack find openhrp3`/share/OpenHRP-3.1/sample/model/longfloor.wrl,0,0,0,1,0,0,0" CORBA_PORT:=15005 CONF_DT_OPTION:="--dt 0.002" SIMULATION_TIMESTEP_OPTION:="--timeStep 0.002" INTEGRATE:=false
+rtmlaunch hrpsys_ros_bridge_tutorials jaxon.launch PROJECT_FILE:=/tmp/JAXON_for_DRCTestbedBlock.xml
+```
+
+![](images/jaxon_sim.png)
+
+#### staro
+```
+rtmtest -t hrpsys_tools _gen_project.launch INPUT:=${CVSDIR}/euslib/rbrain/staro/STAROmain.wrl OUTPUT:=/tmp/STARO_for_DRCTestbedBlock.xml OBJECT_MODELS:="`rospack find hrpsys`/share/hrpsys/samples/environments/DRCTestbedTerrainJPBlock.wrl,0.4,-2.0,0,1,0,0,0, `rospack find openhrp3`/share/OpenHRP-3.1/sample/model/longfloor.wrl,0,0,0,1,0,0,0" CORBA_PORT:=15005 CONF_DT_OPTION:="--dt 0.002" SIMULATION_TIMESTEP_OPTION:="--timeStep 0.002" INTEGRATE:=false
+rtmlaunch hrpsys_ros_bridge_tutorials staro.launch PROJECT_FILE:=/tmp/STARO_for_DRCTestbedBlock.xml
+```
+
+![](images/staro_sim.png)
+
+### Load euslisp
+Load main euslisp program "test-drc-terrain-walk.l"
+
+First,you should start roseus
+```
+roscd drc_task_common/euslisp
+git pull origin master
+roseus
+```
+And load "test-drc-terrain-walk.l"
+```
+(load "test-drc-terrain-walk.l")
+```
+
+### Try test-drc-terrain-walk simulation
+Try terrain walking simulation for each robot (hrp2jsknt, hrp2jsk, jaxon, staro)
+
+#### Setup pose
+Load each robot interface.l and send walking-pose and command (objects (list *robot* *rleg-sole* *lleg-sole* *terrain*))
+```
+(setup-drc-testbed-terrain-simulation-hrp2jsknt)
+(setup-drc-testbed-terrain-simulation-hrp2jsk)
+(setup-drc-testbed-terrain-simulation-jaxon)
+(setup-drc-testbed-terrain-simulation-staro)
+```
+
+For example, jaxon
+![](images/setup_jaxon.png)
+
+#### Walk 1 step
+One step terrain walk simulation for each robot by footstep
+
+Footstep arguments are (rleg-fwd-offset[mm] lleg-fwd-offset[mm])
+```
+(test-drc-testbed-terrain-simulation-hrp2jsknt-one 280 280)
+(test-drc-testbed-terrain-simulation-hrp2jsk-one 280 280)
+(test-drc-testbed-terrain-simulation-jaxon-one 280 280)
+(test-drc-testbed-terrain-simulation-staro-one 280 280)
+```
+
+For example, jaxon
+![](images/1_step_jaxon.png)
+
+#### Walk straight by some steps
+One through terrain walk simulation by some steps for each robot by footstep
+```
+(test-drc-testbed-terrain-simulation-hrp2jsknt)
+(test-drc-testbed-terrain-simulation-hrp2jsk)
+(test-drc-testbed-terrain-simulation-jaxon)
+(test-drc-testbed-terrain-simulation-staro)
+```
+
+For example, jaxon
+![](images/1_through_jaxon.png)
