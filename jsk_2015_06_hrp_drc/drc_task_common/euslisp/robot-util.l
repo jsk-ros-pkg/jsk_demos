@@ -88,6 +88,23 @@
 
 (defun wait-interpolation-from-ocs
   ()
+  (unless (boundp '*wait-interpolation-from-ocs-inited*)
+    (ros::advertise-service "/angle_vector_finished" std_srvs::Empty #'angle-vector-finished-cb)
+    (setq *wait-interpolation-from-ocs-inited* t))
+  (setq *angle-vector-finished* nil)
+  (while (not *angle-vector-finished*) 
+    (ros::sleep)
+    (ros::spin-once))
+  )
+
+(defun angle-vector-finished-cb
+  (req)
+  (setq *angle-vector-finished* t)
+  (send req :response))
+
+(defun send-angle-vector-finished-service
+  ()
+  (ros::service-call "/angle_vector_finished" (instance std_srvs::EmptyRequest :init))
   )
 
 ;; get potentio-vector from ocs

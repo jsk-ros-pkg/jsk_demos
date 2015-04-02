@@ -741,6 +741,7 @@
        (send smachine :go-to :executing-angle-vector)
        (format t "angle-vector ~A ~A~%" av time)
        (send *ri* :angle-vector av time)
+       (send *ri* :wait-interpolation)
        )
      (let ((msg (instance drc_com_common::FC2OCSSmall :init)))
        (send msg :type drc_com_common::FC2OCSSmall::*ANGLE_VECTOR_FINISHED*)
