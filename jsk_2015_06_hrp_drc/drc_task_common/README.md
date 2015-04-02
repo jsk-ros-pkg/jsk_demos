@@ -284,9 +284,6 @@ Load each robot interface.l and send walking-pose and command (objects (list *ro
 (setup-drc-testbed-terrain-simulation-staro)
 ```
 
-For example, jaxon
-![](images/setup_jaxon.png)
-
 #### Walk 1 step
 One step terrain walk simulation for each robot by footstep
 
@@ -299,6 +296,7 @@ Footstep arguments are (rleg-fwd-offset[mm] lleg-fwd-offset[mm])
 ```
 
 For example, jaxon
+
 ![](images/1_step_jaxon.png)
 
 #### Walk straight by some steps
@@ -311,4 +309,5 @@ One through terrain walk simulation by some steps for each robot by footstep
 ```
 
 For example, jaxon
+
 ![](images/1_through_jaxon.png)
