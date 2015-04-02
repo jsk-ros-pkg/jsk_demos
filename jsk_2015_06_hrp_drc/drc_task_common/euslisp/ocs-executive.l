@@ -883,6 +883,7 @@
       (send smachine :go-to :initial)
       ))
   (:angle-vector-finished-callback (msg)
+      (send-angle-vector-finished-service)
    )
   )
 

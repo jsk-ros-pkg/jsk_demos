@@ -643,8 +643,8 @@
               (cond (*use-robot-interface-flag*
                      (send *ri* :wait-interpolation))
                     (t
-                     (unix::usleep (round (* (/ (float int-time) (length *ik-result*)) 1000)))
-                     ;;(wait-interpolation-from-ocs)
+                     ;;(unix::usleep (round (* (/ (float int-time) (length *ik-result*)) 1000)))
+                     (wait-interpolation-from-ocs)
                      ))
               )
 	     (t
