@@ -115,11 +115,6 @@
     <!-- teleop interface -->
     <include file="$(find drc_task_common)/launch/teleop_interface.launch" />
 
-    <!-- remote server -->
-    <include file="$(find drc_task_common)/launch/remote_server.launch">
-      <arg name="robot_name" value="$(arg robot_name)" />
-    </include>
-
     <!-- rviz -->
     <node pkg="rviz" type="rviz" name="operator_rviz" args="-d $(find drc_task_common)/config/drc_task_common.rviz"
           respawn="true"/>

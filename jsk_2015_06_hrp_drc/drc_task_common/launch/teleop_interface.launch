@@ -8,13 +8,6 @@
   <!-- <node pkg="drc_task_common" type="drc_teleop_interface" name="drc_teleop_interface" output="screen" > -->
   <!-- </node> -->
 
-  <!-- eus command searver -->
-  <!-- <node pkg="drc_task_common" type="eus-command-server.l" name="eus_command_server" output="screen" > -->
-  <!--   <rosparam command="load" file="$(find drc_task_common)/config/recog-param-for-valve.yaml" /> -->
-  <!--   <rosparam command="load" file="$(find drc_task_common)/config/recog-param-for-drill.yaml" /> -->
-  <!--   <rosparam command="load" file="$(find drc_task_common)/config/recog-param-for-handle.yaml" /> -->
-  <!-- </node> -->
-
   <!-- task state manager -->
   <node pkg="drc_task_common" type="task_state_manager.py" name="task_state_manager" output="screen" >
   </node>
