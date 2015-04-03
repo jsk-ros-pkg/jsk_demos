@@ -38,6 +38,10 @@
            (setq *robot* (make-robot-model-from-name name))))))
 
 (defun model2real (&key (time 5000) (wait? t))
+  (ros::spin-once)
+  (when (and (boundp '*cancel-motion-flag*) *cancel-motion-flag*) 
+    (setq *cancel-motion-flag* nil)
+    (return-from exit :exit-with-flug))
   (send *ri* :angle-vector (send *robot* :angle-vector) time)
   (when wait? (send *ri* :wait-interpolation)))
 

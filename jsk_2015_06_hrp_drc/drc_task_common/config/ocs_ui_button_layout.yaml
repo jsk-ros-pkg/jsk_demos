@@ -44,6 +44,10 @@
   service: 'cancel'
   image: "package://drc_task_common/icons/cancel.png"
   column: 2
+- name: 'cancel-motion-now'
+  service: 'cancel_motion_now'
+  image: "package://drc_task_common/icons/cancel.png" # todo
+  column: 2
 - name: 'show_motion'
   service: 'reflesh'
   image: "package://drc_task_common/icons/refresh.png"

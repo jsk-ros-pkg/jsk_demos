@@ -100,6 +100,8 @@
                 self :hrpsys-stop-imp-command-cb)
           (list drc_com_common::OCS2FCSmall::*ANGLE_VECTOR_SEND*
                 self :angle-vector-send-command-callback)
+          (list drc_com_common::OCS2FCSmall::*CANCEL_MOTION_NOW*
+                self :cancel-motion-now-command-callback)
           )
     self)
   (:register-timelimits (sm)
@@ -300,6 +302,8 @@
       (multiple-value-bind
        (coords r h) (float-vector-to-cylinder (send msg :float_params))
        (send smachine :go-to :executing-debri)
+       (setq *cancel-motion-flag* nil)
+       (block exit-block
        (ros::ros-info "removing debri at ~A ~A ~A" coords r h)
        ;; send motion to real robot
        (send-debri-motion coords r h 0.9)
@@ -307,6 +311,7 @@
        (let ((msg (instance drc_com_common::FC2OCSSmall :init)))
          (send msg :type drc_com_common::FC2OCSSmall::*DEBRI_FINISHED*)
          (send self :send-to-ocs msg))
+       )
        (send smachine :go-to :initial)
        )))
   (:hose-grasp-exec-command-callback (msg)
@@ -316,12 +321,15 @@
              (coords (make-coords :pos (float-vector (elt params 0) (elt params 1) (elt params 2)) :rpy (list 0 pi 0))))
         (ros::ros-info "grasping hose at ~A" coords)
         (send smachine :go-to :executing-hose-grasp)
+        (setq *cancel-motion-flag* t)
+        (block exit-block
         ;; send motion to real robot
         (send-hose-grasp-motion coords)
         ;; send finish signal to ocs
         (let ((msg (instance drc_com_common::FC2OCSSmall :init)))
           (send msg :type drc_com_common::FC2OCSSmall::*HOSE_GRASP_FINISHED*)
           (send self :send-to-ocs msg))
+        )
         (send smachine :go-to :initial)
         ))
     )
@@ -331,6 +339,8 @@
              (coords (make-coords :pos (float-vector (elt params 0) (elt params 1) (elt params 2)) :rpy (list 0 pi/2 0))))
         (ros::ros-info "connecting hose at ~A" coords)
         (send smachine :go-to :executing-hose-connect)
+        (setq *cancel-motion-flag* t)
+        (block exit-block
         ;; send motion to real robot
         (send-hose-connect-motion coords)
         ;; send finish signal to ocs
@@ -338,6 +348,7 @@
           (send msg :type drc_com_common::FC2OCSSmall::*HOSE_CONNECT_FINISHED*)
           (send self :send-to-ocs msg))
         (send smachine :go-to :initial)
+        )
         ))
     )
   (:drill-grasp-exec-command-callback (msg)
@@ -346,12 +357,15 @@
              (coords (float-vector-to-coords params)))
         (ros::ros-info "grasp drill at ~A" coords)
         (send smachine :go-to :executing-drill-grasp)
+        (setq *cancel-motion-flag* t)
+        (block exit-block
         ;; send motion to real robot
         (send-drill-grasp-motion coords :drill-type *drill-type*)
         ;; send finish signal to ocs
         (let ((msg (instance drc_com_common::FC2OCSSmall :init)))
           (send msg :type drc_com_common::FC2OCSSmall::*DRILL_GRASP_FINISHED*)
           (send self :send-to-ocs msg))
+        )
         (send smachine :go-to :initial)
         ))
     )
@@ -361,18 +375,23 @@
              (coords (float-vector-to-coords params)))
         (ros::ros-info "put drill at ~A" coords)
         (send smachine :go-to :executing-drill-put)
+        (setq *cancel-motion-flag* t)
+        (block exit-block
         ;; send motion to real robot
         (send-drill-put-motion coords)
         ;; send finish signal to ocs
         (let ((msg (instance drc_com_common::FC2OCSSmall :init)))
           (send msg :type drc_com_common::FC2OCSSmall::*DRILL_PUT_FINISHED*)
           (send self :send-to-ocs msg))
-        (send smachine :go-to :initial)
+        )
+        (send smachine :go-to :initial)        
         ))
     )
   (:drill-wall-exec-command-callback (msg)
     (when (send smachine :next? :executing-drill-wall)
       (send smachine :go-to :executing-drill-wall)
+      (setq *cancel-motion-flag* t)
+      (block exit-block
       (let ((coords-set (float-vector-to-coords-set (send msg :float_params))))
         (ros::ros-info "Target coords are: ~A" coords-set)
         (send-drill-wall-motion coords-set)
@@ -380,6 +399,7 @@
           (send msg :type drc_com_common::FC2OCSSmall::*DRILL_WALL_FINISHED*)
           (send self :send-to-ocs msg))
         )
+      )
       (send smachine :go-to :initial)
       ))
   (:drill-button-exec-command-callback (msg)
@@ -388,12 +408,15 @@
              (coords (float-vector-to-coords params)))
         (ros::ros-info "button drill at ~A" coords)
         (send smachine :go-to :executing-drill-button)
+        (setq *cancel-motion-flag* t)
+        (block exit-block
         ;; send motion to real robot
         (send-drill-button-motion coords)
         ;; send finish signal to ocs
         (let ((msg (instance drc_com_common::FC2OCSSmall :init)))
           (send msg :type drc_com_common::FC2OCSSmall::*DRILL_BUTTON_FINISHED*)
           (send self :send-to-ocs msg))
+        )
         (send smachine :go-to :initial)
         ))
     )
@@ -403,6 +426,8 @@
        (coords size)
        (float-vector-to-box (send msg :float_params))
        (send smachine :go-to :executing-door)
+       (setq *cancel-motion-flag* t)
+       (block exit-block
        (ros::ros-info "opening door at ~A ~A~%" coords size)
        ;; send motion to real robot
        (send-door-motion size coords)
@@ -410,6 +435,7 @@
        (let ((msg (instance drc_com_common::FC2OCSSmall :init)))
          (send msg :type drc_com_common::FC2OCSSmall::*DOOR_FINISHED*)
          (send self :send-to-ocs msg))
+       )
        (send smachine :go-to :initial)
        )))
   (:valve-exec-command-callback (msg)
@@ -417,6 +443,8 @@
       (multiple-value-bind 
        (coords radius) (float-vector-to-torus (send msg :float_params))
        (send smachine :go-to :executing-valve)
+       (setq *cancel-motion-flag* t)
+       (block exit-block
        (ros::ros-info "rotating valve at ~A,~A,~A~%"
          (send coords :worldpos)
          (car (send coords :rpy-angle))
@@ -427,7 +455,8 @@
        (let ((msg (instance drc_com_common::FC2OCSSmall :init)))
          (send msg :type drc_com_common::FC2OCSSmall::*VALVE_FINISHED*)
          (send self :send-to-ocs msg))
-       (send smachine :go-to :initial)
+       )
+       (send smachine :go-to :initial)       
        )))
   (:go-pos-exec-command-callback (msg)
     (when (send smachine :state? :initial)
@@ -748,6 +777,10 @@
        (send self :send-to-ocs msg))
      (send smachine :go-to :initial))
    )
+  (:cancel-motion-now-command-callback
+    (msg)
+    (setq *cancel-motion-flag* t)
+    )
   (:send-to-ocs (msg)
     (ros::publish "/fc_to_ocs_low_speed/input" msg))
   )
