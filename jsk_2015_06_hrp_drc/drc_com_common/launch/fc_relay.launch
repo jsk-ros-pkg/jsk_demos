@@ -3,6 +3,7 @@
   <arg name="IMAGE_TOPIC" default="/multisense/left/image_rect_color" />
   <arg name="PANORAMA_IMAGE_TOPIC" default="/panorama/panorama_processing/output" />
   <arg name="POINT_CLOUD_TOPIC" default="/multisense/resize_1_4/points" />
+  <arg name="LASER_POINT_CLOUD_TOPIC" default="/laser_preprocess/odom_cloud/output" />
   <group ns="communication">
     <node pkg="resized_image_transport" type="image_resizer" name="color_image_resizer">
       <remap from="~input/image" to="$(arg IMAGE_TOPIC)" />
@@ -30,6 +31,11 @@
     <node pkg="jsk_topic_tools" type="relay" name="point_cloud_relay" >
       <remap from="~input" to="$(arg POINT_CLOUD_TOPIC)" />
       <remap from="~output" to="point_cloud" />
+    </node>
+
+    <node pkg="jsk_topic_tools" type="relay" name="laser_cloud_relay" >
+      <remap from="~input" to="$(arg LASER_POINT_CLOUD_TOPIC)" />
+      <remap from="~output" to="laser_cloud" />
     </node>
   </group>
 </launch>
