@@ -31,8 +31,10 @@
       <!-- <remap from="move_marker" to="$(arg POSE_REMAP)" /> -->
       <!-- <param name="wait_snapit_server" value="false" /> -->
       <rosparam command="load" file="$(find jsk_footstep_controller)/config/hrp2jsknt_sim.yaml" />
+      <remap from="project_footprint" to="/footstep_planner/project_footprint" />
       <rosparam>
         use_plane_snap: true
+        use_projection_service: true
         use_footstep_planner: true
         use_footstep_controller: true
         use_initial_footstep_tf: true
