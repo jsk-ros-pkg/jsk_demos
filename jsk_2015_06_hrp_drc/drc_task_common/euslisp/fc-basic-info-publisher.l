@@ -20,17 +20,20 @@
       (if latest-joint-states
           (send msg :angles latest-joint-states))
       ;; lookup body -> odom_on_ground
-      (let ((trans (send *tf* :lookup-transform "BODY" "odom_on_ground" (ros::time 0))))
+      (let ((trans (send *tf* :lookup-transform "BODY" "odom_on_ground"
+                         (ros::time 0))))
         (when trans
           (send msg :odom_on_ground (coords-to-float-vector 
-                                     trans
-                                     6))))
+                                     trans 6))))
       ;; lookup body -> ground
       (let ((trans (send *tf* :lookup-transform "BODY" "ground" (ros::time 0))))
         (when trans
             (send msg :ground (coords-to-float-vector 
-                               trans
-                               6))))
+                               trans 6))))
+      (let ((trans (send *tf* :lookup-transform "BODY" "odom" (ros::time 0))))
+        (when trans
+            (send msg :odom (coords-to-float-vector
+                             trans 6))))
       (send msg :robot_state robot-state-value)
       (ros::publish "/fc_to_ocs_basic_low_speed/input" msg)))
   )
