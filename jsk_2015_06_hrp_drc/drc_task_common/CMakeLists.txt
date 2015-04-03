@@ -71,9 +71,9 @@ execute_process(
 catkin_download_test_data(drill_pcd
   http://www.jsk.t.u-tokyo.ac.jp/~ueda/dataset/2015/02/drill.pcd
   DESTINATION ${PROJECT_SOURCE_DIR}/pcds)
-catkin_download_test_data(drill_full_pcd
-  http://www.jsk.t.u-tokyo.ac.jp/~ueda/dataset/2015/02/drill_full.pcd
-  DESTINATION ${PROJECT_SOURCE_DIR}/pcds)
+# catkin_download_test_data(drill_full_pcd
+#   http://www.jsk.t.u-tokyo.ac.jp/~ueda/dataset/2015/02/drill_full.pcd
+#   DESTINATION ${PROJECT_SOURCE_DIR}/pcds)
 execute_process(
   COMMAND mkdir -p ${PROJECT_SOURCE_DIR}/models)
 catkin_download_test_data(gun_drill_dae
@@ -85,8 +85,19 @@ catkin_download_test_data(gun_drill_jpg
 catkin_download_test_data(gun_drill_model
   http://www.jsk.t.u-tokyo.ac.jp/~ohara/dataset/2015/03/gun-drill.l
   DESTINATION ${PROJECT_SOURCE_DIR}/models)
+catkin_download_test_data(takenoko_drill_dae
+  http://www.jsk.t.u-tokyo.ac.jp/~ohara/dataset/2015/03/takenoko_drill.dae
+  DESTINATION ${PROJECT_SOURCE_DIR}/models)
+catkin_download_test_data(takenoko_drill_jpg
+  http://www.jsk.t.u-tokyo.ac.jp/~ohara/dataset/2015/03/dewalt_takenoko_new-best-exported01.jpg
+  DESTINATION ${PROJECT_SOURCE_DIR}/models)
+catkin_download_test_data(takenoko_drill_model
+  http://www.jsk.t.u-tokyo.ac.jp/~ohara/dataset/2015/03/takenoko-drill.l
+  DESTINATION ${PROJECT_SOURCE_DIR}/models)
 add_custom_target(all_drc_task_common_downloads ALL DEPENDS
-  drill_pcd drill_full_pcd gun_drill_dae gun_drill_jpg gun_drill_model)
+  drill_pcd # todo old now
+  # drill_full_pcd 
+  gun_drill_dae gun_drill_jpg gun_drill_model takenoko_drill_dae takenoko_drill_jpg takenoko_drill_model)
 
 install(TARGETS
   ${PROJECT_NAME}
