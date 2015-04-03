@@ -17,6 +17,8 @@
       "package://hrpsys_ros_bridge_tutorials/euslisp/hrp2jsknts-interface.l")
      ((string= lower-name "staro")
       "package://hrpsys_ros_bridge_tutorials/euslisp/staro-interface.l")
+     ((string= lower-name "jaxon")
+      "package://hrpsys_ros_bridge_tutorials/euslisp/jaxon-interface.l")
      ((string= lower-name "urataleg")
       "package://hrpsys_ros_bridge_tutorials/euslisp/urataleg-interface.l")
      ((string= lower-name "samplerobot")
