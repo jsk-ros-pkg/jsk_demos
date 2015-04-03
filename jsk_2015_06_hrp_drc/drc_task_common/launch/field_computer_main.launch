@@ -20,6 +20,8 @@
       <arg name="INPUT_POINT_CLOUD" value="/multisense/resize_1_4/points" />
     </include>
   </group>
+  <include file="$(find drc_task_common)/launch/fc/laser_preprocess.launch">
+  </include>
   <group ns="go_pos_recognition">
     <include file="$(find drc_task_common)/launch/fc/centroid_of_pointcloud_in_rect.launch">
     </include>
