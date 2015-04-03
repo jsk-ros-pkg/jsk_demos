@@ -4,7 +4,7 @@ uint8 seq
 uint8 image_type
 uint8 IMAGE_RECT=0
 uint8 PANORAMA_VIEW=1
-uint32[8] image_roi_info
+uint32[16] image_roi_info
 float32[36] float_params
 # action type
 # go-pos

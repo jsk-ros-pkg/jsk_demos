@@ -43,7 +43,9 @@
   (ros::spin-once)
   (when (and (boundp '*cancel-motion-flag*) *cancel-motion-flag*) 
     (setq *cancel-motion-flag* nil)
-    (return-from exit :exit-with-flug))
+    (ros::ros-info "cancel driven")
+    (throw 'exit :exit-with-flug)
+    )
   (send *ri* :angle-vector (send *robot* :angle-vector) time)
   (when wait? (send *ri* :wait-interpolation)))
 

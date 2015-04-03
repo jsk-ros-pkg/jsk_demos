@@ -303,7 +303,7 @@
        (coords r h) (float-vector-to-cylinder (send msg :float_params))
        (send smachine :go-to :executing-debri)
        (setq *cancel-motion-flag* nil)
-       (block exit-block
+       (catch 'exit
        (ros::ros-info "removing debri at ~A ~A ~A" coords r h)
        ;; send motion to real robot
        (send-debri-motion coords r h 0.9)
@@ -321,8 +321,8 @@
              (coords (make-coords :pos (float-vector (elt params 0) (elt params 1) (elt params 2)) :rpy (list 0 pi 0))))
         (ros::ros-info "grasping hose at ~A" coords)
         (send smachine :go-to :executing-hose-grasp)
-        (setq *cancel-motion-flag* t)
-        (block exit-block
+        (setq *cancel-motion-flag* nil)
+        (catch 'exit
         ;; send motion to real robot
         (send-hose-grasp-motion coords)
         ;; send finish signal to ocs
@@ -339,8 +339,8 @@
              (coords (make-coords :pos (float-vector (elt params 0) (elt params 1) (elt params 2)) :rpy (list 0 pi/2 0))))
         (ros::ros-info "connecting hose at ~A" coords)
         (send smachine :go-to :executing-hose-connect)
-        (setq *cancel-motion-flag* t)
-        (block exit-block
+        (setq *cancel-motion-flag* nil)
+        (catch 'exit
         ;; send motion to real robot
         (send-hose-connect-motion coords)
         ;; send finish signal to ocs
@@ -357,8 +357,8 @@
              (coords (float-vector-to-coords params)))
         (ros::ros-info "grasp drill at ~A" coords)
         (send smachine :go-to :executing-drill-grasp)
-        (setq *cancel-motion-flag* t)
-        (block exit-block
+        (setq *cancel-motion-flag* nil)
+        (catch 'exit
         ;; send motion to real robot
         (send-drill-grasp-motion coords :drill-type *drill-type*)
         ;; send finish signal to ocs
@@ -375,8 +375,8 @@
              (coords (float-vector-to-coords params)))
         (ros::ros-info "put drill at ~A" coords)
         (send smachine :go-to :executing-drill-put)
-        (setq *cancel-motion-flag* t)
-        (block exit-block
+        (setq *cancel-motion-flag* nil)
+        (catch 'exit
         ;; send motion to real robot
         (send-drill-put-motion coords)
         ;; send finish signal to ocs
@@ -390,8 +390,8 @@
   (:drill-wall-exec-command-callback (msg)
     (when (send smachine :next? :executing-drill-wall)
       (send smachine :go-to :executing-drill-wall)
-      (setq *cancel-motion-flag* t)
-      (block exit-block
+      (setq *cancel-motion-flag* nil)
+      (catch 'exit
       (let ((coords-set (float-vector-to-coords-set (send msg :float_params))))
         (ros::ros-info "Target coords are: ~A" coords-set)
         (send-drill-wall-motion coords-set)
@@ -408,8 +408,8 @@
              (coords (float-vector-to-coords params)))
         (ros::ros-info "button drill at ~A" coords)
         (send smachine :go-to :executing-drill-button)
-        (setq *cancel-motion-flag* t)
-        (block exit-block
+        (setq *cancel-motion-flag* nil)
+        (catch 'exit
         ;; send motion to real robot
         (send-drill-button-motion coords)
         ;; send finish signal to ocs
@@ -426,8 +426,8 @@
        (coords size)
        (float-vector-to-box (send msg :float_params))
        (send smachine :go-to :executing-door)
-       (setq *cancel-motion-flag* t)
-       (block exit-block
+       (setq *cancel-motion-flag* nil)
+       (catch 'exit
        (ros::ros-info "opening door at ~A ~A~%" coords size)
        ;; send motion to real robot
        (send-door-motion size coords)
@@ -443,8 +443,8 @@
       (multiple-value-bind 
        (coords radius) (float-vector-to-torus (send msg :float_params))
        (send smachine :go-to :executing-valve)
-       (setq *cancel-motion-flag* t)
-       (block exit-block
+       (setq *cancel-motion-flag* nil)
+       (catch 'exit
        (ros::ros-info "rotating valve at ~A,~A,~A~%"
          (send coords :worldpos)
          (car (send coords :rpy-angle))
@@ -735,7 +735,8 @@
     (hand-model2real)
     (send self :send-rviz-button-finished-to-ocs))
   (:hand-grasp-pose-command-callback (msg)
-    (send *robot* :hand :arms :grasp-pose)
+    (send *robot* :hand arm :angle-vector (float-vector 90.0 0.0 0.0 0.0 90.0 90.0))
+    ;(send *robot* :hand :arms :grasp-pose)
     (hand-model2real)
     (send self :send-rviz-button-finished-to-ocs))
   (:hrpsys-start-abc-command-cb (msg)
