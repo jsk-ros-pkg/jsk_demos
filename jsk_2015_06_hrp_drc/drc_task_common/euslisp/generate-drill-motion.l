@@ -1,6 +1,7 @@
 (load "package://drc_task_common/euslisp/robot-util.l")
 (load "package://drc_task_common/euslisp/util.l")
-(load "package://drc_task_common/models/dewalt_dc550ka.l")
+;(load "package://drc_task_common/models/dewalt_dc550ka.l")
+(load "package://drc_task_common/models/takenoko-drill")
 (load "package://drc_task_common/models/gun-drill.l")
 
 (setq *drill-main-arm* :rarm)
@@ -11,7 +12,7 @@
 
 ;; takenoko drill
 (defun init-takenoko-drill ()
-  (setq *drill* (dewalt_dc550ka-robot))
+  (setq *drill* (takenoko-drill))
   ;; generate drill
   (send-all (send *drill* :bodies) :set-color #f(0.7 0.6 0.0))
   ;; atattch handle to drill
@@ -946,7 +947,7 @@
   (hand-model2real)
   )
 (defun drill-full-grasp (&key (arm *drill-main-arm*)) ;; test code
-  (send *robot* :hand arm :angle-vector (float-vector 90.0 0.0 30.0 0.0 90.0 90.0))
+  (send *robot* :hand arm :angle-vector (float-vector 90.0 0.0 0.0 0.0 90.0 90.0))
   (hand-model2real)
   )
 (defun drill-full-grasp2 (&key (arm *drill-main-arm*)) ;; grasp without index finger
