@@ -5,7 +5,7 @@
   <arg name="OCS_TO_FC_PORT" default="700"/>
   <arg name="FC_TO_OCS_PORT" default="701"/>
   <arg name="FC_TO_OCS_BASIC_PORT" default="702"/>
-  
+  <arg name="USE_FLOAT_JOINT_ANGLES" default="true" />
   <node pkg="jsk_network_tools" type="silverhammer_highspeed_receiver.py"
         output="log"
         name="highspeed_receiver">
@@ -48,7 +48,7 @@
   </node>
   
   <node pkg="jsk_network_tools" type="joint-state-decompressor.l" 
-        name="joint_state_decompressor">
+        name="joint_state_decompressor" unless="$(arg USE_FLOAT_JOINT_ANGLES)">
     <remap from="/joint_states_compressed" to="/ocs/joint_states_compressed" />
     <remap from="/joint_states_decompressed" to="/ocs/joint_states_decompressed" /> <!-- it will be input to buffer client-->
     <rosparam>
