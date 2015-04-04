@@ -1,0 +1,98 @@
+#!/usr/bin/env roseus
+
+(load "package://hrpsys_ros_bridge_tutorials/euslisp/hrp2jsk-interface.l")
+(load "package://drc_task_common/euslisp/vehicle/robot-driving-motion.l")
+(load "package://drc_task_common/euslisp/vehicle/polaris-xp900-with-handle.l")
+
+(defclass hrp2jsk-driving-motion-on-polaris-xp900
+  :super robot-driving-motion
+  )
+
+(defmethod hrp2jsk-driving-motion-on-polaris-xp900
+  (:init
+   (&key ((:robot tmp-robot) nil) ((:car tmp-car) nil) ((:real tmp-real) nil) (grasp-arm :rarm) (grasp-point :handle-top))
+   (unless tmp-robot
+     (hrp2jsk-init)
+     (setq tmp-robot *hrp2jsk*)
+     )
+   (unless tmp-car
+     (setq tmp-car (instance polaris-xp900-with-handle :init :handle-mode :left))
+     )
+   (send-super :init :robot tmp-robot :car tmp-car :real tmp-real :grasp-arm grasp-arm :grasp-point grasp-point)
+   )
+  (:ride
+   (&key (init-pose t))
+   ;; (send robot :move-to (make-coords :pos (float-vector 0 370.0 200) :rpy (float-vector 0.0 0.0 0.0)) :world)
+   (send robot :move-to (make-coords :pos (float-vector 180 370.0 80) :rpy (float-vector 0.0 (- (/ pi 16)) 0.0)) :world)
+   (when init-pose
+     (send self :drive-init-pose)
+     )
+   )
+  (:drive-init-pose
+   (&key (tm 20000))
+   ;; (send robot :reset-manip-pose)
+   ;; (send robot :legs :angle-vector #f(0.0 0.0 -90.0 64.0 6.5 0.0 0.0))
+   
+   (send robot :reset-manip-pose)
+   (send robot :legs :crotch-p :joint-angle -85)
+   (send robot :legs :knee-p :joint-angle 80)
+   (send robot :legs :ankle-p :joint-angle 0)
+   (send robot :rarm :shoulder-p :joint-angle -100)
+
+   (when real
+     (send *ri* :angle-vector (send robot :angle-vector) tm)
+     (send *ri* :wait-interpolation)
+     )
+   )
+  (:open-hand
+   (limb)
+   (when real
+     (send robot :hand limb :hook-pose)
+     (send *ri* :hand-angle-vector (send robot :hand-angle-vector) 1000)
+     (send *ri* :wait-interpolation)
+     )
+   )
+  (:close-hand
+   (limb)
+   (when real
+     (send robot :hand limb :close-pose)
+     (send *ri* :hand-angle-vector (send robot :hand-angle-vector) 1000)
+     (send *ri* :wait-interpolation)
+     )
+   )
+  (:set-impedance-for-handle
+   (limb)
+   (send *ri* :start-impedance limb :moment-gain #f(0 0 0) :D-p 400 :K-p 800)
+   )
+  (:approach-accel-pedal
+   (&key (tm 10000) (debug-view nil))
+   ;; (send robot :rleg :angle-vector #f(0.271875 0.261 -86.08 62.4348 2.384 -0.234 -0.384)) ;; adjusted joint-angles in real hrp2jsknt
+   (send robot :rleg :angle-vector #f(0.269775 0.256892 -84.3383 59.7212 -4.02795 -0.229299 -0.384)) ;; adjusted joint-angles in real hrp2jsknt   
+   (when real
+     (send *ri* :angle-vector (send robot :angle-vector) tm)
+     (send *ri* :wait-interpolation)
+     )
+   )
+  (:approach-brake-pedal
+   (&key (tm 10000) (debug-view nil))
+   (send robot :lleg :angle-vector #f(0.0375 -0.5235 -83.014 80.541 9.842 0.6048 -0.564)) ;; adjusted joint-angles in real hrp2jsknt
+   (when real
+     (send *ri* :angle-vector (send robot :angle-vector) tm)
+     (send *ri* :wait-interpolation)
+     )
+   )
+  (:step-accel-pedal
+   (move-mm &key (time 1000) (relative t) (use-controller t))
+   (send robot :rleg :move-end-pos (float-vector 0 0 move-mm) :local)
+   (when real
+     (if use-controller
+         (send *ri* :angle-vector (send robot :angle-vector) time :rleg-controller)
+       (send *ri* :angle-vector (send robot :angle-vector) time)
+       )
+     (send *ri* :wait-interpolation)
+     )
+   )
+  )
+
+;; (setq *ctrlr* (instance hrp2jsknt-driving-motion-controller-on-polaris-xp900 :init :real nil))
+
