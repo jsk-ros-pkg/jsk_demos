@@ -1,7 +1,7 @@
 #!/usr/bin/env roseus
 
-(load "package://drc_task_common/euslisp/drive-simulator-environment.l")
-(load "package://drc_task_common/euslisp/misumi-ranger-xp900-chair.l")
+(load "package://drc_task_common/euslisp/vehicle/drive-simulator-environment.l")
+(load "package://drc_task_common/euslisp/vehicle/misumi-ranger-xp900-chair.l")
 
 ;; front: the position which have handle/pedal and display
 ;; left: y+ when front is defined as x+

@@ -1,6 +1,6 @@
 #!/usr/bin/env roseus
 
-(load "package://drc_task_common/euslisp/robot-driving-motion.l")
+(load "package://drc_task_common/euslisp/vehicle/robot-driving-motion.l")
 (ros::roseus-add-msgs "std_msgs")
 (ros::roseus-add-msgs "geometry_msgs")
 

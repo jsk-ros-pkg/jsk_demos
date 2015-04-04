@@ -1,7 +1,7 @@
 #!/usr/bin/env roseus
 
-(load "package://drc_task_common/euslisp/robot-driving-controller.l")
-(load "package://drc_task_common/euslisp/hrp2jsk-driving-motion-on-polaris-xp900.l")
+(load "package://drc_task_common/euslisp/vehicle/robot-driving-controller.l")
+(load "package://drc_task_common/euslisp/vehicle/hrp2jsk-driving-motion-on-polaris-xp900.l")
 
 (defclass hrp2jsk-driving-controller-on-polaris-xp900
   :super robot-driving-controller

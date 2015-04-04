@@ -1,6 +1,6 @@
 #!/usr/bin/env roseus
 
-(load "package://drc_task_common/euslisp/drive-simulator-environment.l")
+(load "package://drc_task_common/euslisp/vehicle/drive-simulator-environment.l")
 
 (defclass polaris-xp900-with-handle
   :super drive-simulator

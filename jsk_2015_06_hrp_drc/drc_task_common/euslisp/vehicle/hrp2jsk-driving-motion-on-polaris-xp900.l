@@ -1,8 +1,8 @@
 #!/usr/bin/env roseus
 
 (load "package://hrpsys_ros_bridge_tutorials/euslisp/hrp2jsk-interface.l")
-(load "package://drc_task_common/euslisp/robot-driving-motion.l")
-(load "package://drc_task_common/euslisp/polaris-xp900-with-handle.l")
+(load "package://drc_task_common/euslisp/vehicle/robot-driving-motion.l")
+(load "package://drc_task_common/euslisp/vehicle/polaris-xp900-with-handle.l")
 
 (defclass hrp2jsk-driving-motion-on-polaris-xp900
   :super robot-driving-motion

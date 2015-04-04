@@ -1,7 +1,7 @@
 #!/usr/bin/env roseus
 
-(load "package://drc_task_common/euslisp/staro-driving-controller.l")
-(load "package://drc_task_common/euslisp/staro-driving-motion-on-polaris-xp900.l")
+(load "package://drc_task_common/euslisp/vehicle/staro-driving-controller.l")
+(load "package://drc_task_common/euslisp/vehicle/staro-driving-motion-on-polaris-xp900.l")
 
 (defclass staro-driving-controller-on-polaris-xp900
   :super staro-driving-controller

@@ -1,8 +1,8 @@
 #!/usr/bin/env roseus
 
-(load "package://drc_task_common/euslisp/robot-driving-motion.l")
+(load "package://drc_task_common/euslisp/vehicle/robot-driving-motion.l")
 (load "package://hrpsys_ros_bridge_tutorials/euslisp/staro-interface.l")
-(load "package://drc_task_common/euslisp/drive-simulator-environment-ranger-xp900-size.l")
+(load "package://drc_task_common/euslisp/vehicle/drive-simulator-environment-ranger-xp900-size.l")
 
 (defclass staro-driving-motion
   :super robot-driving-motion

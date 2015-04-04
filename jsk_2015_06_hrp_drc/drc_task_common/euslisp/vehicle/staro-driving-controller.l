@@ -1,8 +1,8 @@
 #!/usr/bin/env roseus
 
-(load "package://drc_task_common/euslisp/staro-driving-motion.l")
-(load "package://drc_task_common/euslisp/robot-driving-controller.l")
-;; (load "package://drc_task_common/euslisp/staro-ps3joy-adjustment.l")
+(load "package://drc_task_common/euslisp/vehicle/staro-driving-motion.l")
+(load "package://drc_task_common/euslisp/vehicle/robot-driving-controller.l")
+;; (load "package://drc_task_common/euslisp/vehicle/staro-ps3joy-adjustment.l")
 (ros::roseus-add-msgs "std_msgs")
 (ros::roseus-add-msgs "geometry_msgs")
 
