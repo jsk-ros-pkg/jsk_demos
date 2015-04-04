@@ -461,8 +461,10 @@ Usage:
      (:recognizing-valve-pose -> :selecting-exec-for-valve) ;recognition done
      (:recognizing-valve-pose -> :initial) ;cancel
      (:selecting-exec-for-valve -> :executing-valve)          ;exec
+     (:executing-valve -> :selecting-exec-for-valve)          ;cancel
      (:selecting-exec-for-valve -> :initial)                   ;cancel
      (:executing-valve -> :initial)                            ;done
+
      ;; door
      (:initial -> :selecting-region-for-door)
      (:selecting-region-for-door -> :initial) ;cancel
@@ -470,6 +472,7 @@ Usage:
      (:recognizing-door-pose -> :selecting-exec-for-door) ;recognition done
      (:recognizing-door-pose -> :initial) ;cancel
      (:selecting-exec-for-door -> :executing-door)          ;exec
+     (:executing-door -> :selecting-exec-for-door)          ;cancel
      (:selecting-exec-for-door -> :initial)                   ;cancel
      (:executing-door -> :initial)                            ;done
      ;; debri
@@ -479,6 +482,7 @@ Usage:
      (:recognizing-debri-pose -> :selecting-exec-for-debri) ;recognition done
      (:recognizing-debri-pose -> :initial) ;cancel
      (:selecting-exec-for-debri -> :executing-debri)          ;exec
+     (:executing-debri -> :selecting-exec-for-debri)          ;cancel
      (:selecting-exec-for-debri -> :initial)                   ;cancel
      (:executing-debri -> :initial)                            ;done
      ;; hose-grasp
@@ -488,6 +492,7 @@ Usage:
      (:recognizing-hose-grasp-pose -> :selecting-exec-for-hose-grasp) ;recognition done
      (:recognizing-hose-grasp-pose -> :initial) ;cancel
      (:selecting-exec-for-hose-grasp -> :executing-hose-grasp)          ;exec
+     (:executing-hose-grasp -> :selecting-exec-for-hose-grasp)          ;cancel
      (:selecting-exec-for-hose-grasp -> :initial)                   ;cancel
      (:executing-hose-grasp -> :initial)                            ;done
      ;; hose-connect
@@ -496,7 +501,8 @@ Usage:
      (:selecting-region-for-hose-connect -> :recognizing-hose-connect-pose)
      (:recognizing-hose-connect-pose -> :selecting-exec-for-hose-connect) ;recognition done
      (:recognizing-hose-connect-pose -> :initial) ;cancel
-     (:selecting-exec-for-hose-connect -> :executing-hose-connect)          ;exec
+     (:selecting-exec-for-hose-connect -> :executing-hose-connect)          ;exe
+     (:executing-hose-connect -> :selecting-exec-for-hose-connect)          ;cancel
      (:selecting-exec-for-hose-connect -> :initial)                   ;cancel
      (:executing-hose-connect -> :initial)                            ;done
      ;; drill_grasp
@@ -506,6 +512,7 @@ Usage:
      (:recognizing-drill-grasp-pose -> :selecting-exec-for-drill-grasp) ;recognition done
      (:recognizing-drill-grasp-pose -> :initial) ;cancel
      (:selecting-exec-for-drill-grasp -> :executing-drill-grasp)          ;exec
+     (:executing-drill-grasp -> :selecting-exec-for-drill-grasp)          ;cancel
      (:selecting-exec-for-drill-grasp -> :initial)                   ;cancel
      (:executing-drill-grasp -> :initial)                            ;done
      ;; drill_put
@@ -515,6 +522,7 @@ Usage:
      (:recognizing-drill-put-pose -> :selecting-exec-for-drill-put) ;recognition done
      (:recognizing-drill-put-pose -> :initial) ;cancel
      (:selecting-exec-for-drill-put -> :executing-drill-put)          ;exec
+     (:executing-drill-put -> :selecting-exec-for-drill-put)          ;cancel
      (:selecting-exec-for-drill-put -> :initial)                   ;cancel
      (:executing-drill-put -> :initial)                            ;done
      ;; drill_wall
@@ -524,6 +532,7 @@ Usage:
      (:recognizing-drill-wall -> :selecting-exec-for-drill-wall) ;recognition done
      (:recognizing-drill-wall -> :initial) ;cancel
      (:selecting-exec-for-drill-wall -> :executing-drill-wall)          ;exec
+     (:executing-drill-wall -> :selecting-exec-for-drill-wall)          ;cancel
      (:selecting-exec-for-drill-wall -> :initial)                   ;cancel
      (:executing-drill-wall -> :initial)                            ;done
      ;; drill_button
@@ -533,6 +542,7 @@ Usage:
      (:recognizing-drill-button-pose -> :selecting-exec-for-drill-button) ;recognition done
      (:recognizing-drill-button-pose -> :initial) ;cancel
      (:selecting-exec-for-drill-button -> :executing-drill-button)          ;exec
+     (:executing-drill-button -> :selecting-exec-for-drill-button)          ;cancel
      (:selecting-exec-for-drill-button -> :initial)                   ;cancel
      (:executing-drill-button -> :initial)                            ;done
      )

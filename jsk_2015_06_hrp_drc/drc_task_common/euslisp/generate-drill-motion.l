@@ -4,8 +4,8 @@
 (load "package://drc_task_common/models/takenoko-drill")
 (load "package://drc_task_common/models/gun-drill.l")
 
-(setq *drill-main-arm* :rarm)
-(setq *drill-support-arm* :larm)
+(setq *drill-main-arm* :larm)
+(setq *drill-support-arm* :rarm)
 (setq *default-drill-type* :takenoko)
 (setq *use-dual-arm-ik* nil)
 (setq *use-f-sensor-search* t)

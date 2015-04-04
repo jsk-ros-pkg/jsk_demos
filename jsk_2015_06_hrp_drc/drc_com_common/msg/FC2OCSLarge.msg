@@ -1,4 +1,5 @@
 sensor_msgs/PointCloud2 communication__point_cloud
+sensor_msgs/PointCloud2 communication__laser_cloud
 sensor_msgs/Image communication__image_rect_color
 std_msgs/Float32 communication__image_width_scale
 std_msgs/Float32 communication__image_height_scale

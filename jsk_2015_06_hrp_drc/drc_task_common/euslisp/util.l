@@ -11,8 +11,14 @@
 
 (setq *success-color* (ros-rgba 91 255 255 1.0))
 (setq *warn-color* (ros-rgba 255 202 0 1.0))
+(setq *fatal-color* (ros-rgba 230 10 10 1.0))
+(setq *select-color* (ros-rgba 150 230 100 1.0))
+(setq *wait-color* (ros-rgba 200 230 50 1.0))
+(setq *recognize-color* (ros-rgba 50 250 100 1.0))
+(setq *execute-color* (ros-rgba 230 0 230 1.0))
 (setq *unknown-color* (ros-rgba 251 221 221 1.0))
 (setq *transparent-color* (ros-rgba 0 0 0 0))
+(setq *execute-color* (ros-rgba 91 255 255 1.0))
 
 (defun xy-distance2 (coords)
   (+ (* (elt (send coords :worldpos) 0)

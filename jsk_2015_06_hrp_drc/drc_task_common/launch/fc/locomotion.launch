@@ -87,7 +87,7 @@
         use_x: false
       </rosparam>
     </node>
-    <node pkg="drc_task_common" type="robot-boundingbox.l" name="robot_leg_bbox">
+    <node pkg="drc_task_common" type="robot-boundingbox.l" name="robot_leg_bbox" if="false">
       <remap from="/robot_bbox" to="/robot_legs_bbox" />
       <remap from="/robot_bbox_array" to="/robot_legs_bbox_array" />
       <rosparam>
@@ -148,6 +148,7 @@
     <node pkg="jsk_pcl_ros" type="add_point_indices" name="add_point_indices">
       <remap from="~input/src1" to="laser_self_filter/output/point_indices" />
       <remap from="~input/src2" to="footprint_point_extraction/output/indices" />
+
     </node>
     
     <node pkg="nodelet" type="nodelet" name="laser_self_filter_points"
@@ -186,46 +187,17 @@
         max_queue_size: 50
       </rosparam>
     </node>
-    
-    <node pkg="nodelet" type="nodelet"
-          name="pointcloud_localization"
-          args="standalone jsk_pcl/PointCloudLocalization manager"
-          output="screen">
-      <remap from="~input" to="normal_concat/output" />
-      <remap from="~icp_align" to="icp_localization/icp_align" />
-      <param name="odom_frame" value="multisense/head_root"
-             if="$(arg MULTISENSE_STANDALONE)" />
-      <param name="initialize_from_tf" value="true"
-             unless="$(arg MULTISENSE_STANDALONE)" />
-      <rosparam>
-        leaf_size: 0.02
-        initialize_tf: "ground"
-        use_normal: true
-        clip_unseen_pointcloud: true
-        sensor_frame: ground
-      </rosparam>
-    </node>
-    <node pkg="nodelet" type="nodelet"
-          args="standalone jsk_pcl/ICPRegistration manager"
-          name="icp_localization" output="screen">
-      <rosparam>
-        use_flipped_initial_pose: false
-        correspondence_distance: 1.0
-        max_iteration: 10000
-        use_normal: true
-      </rosparam>
-    </node>
-    
+        
     <node pkg="nodelet" type="nodelet"
           name="laser_self_filter"
-          args="standalone jsk_pcl/AttentionClipper manager">
+          args="load jsk_pcl/AttentionClipper manager">
       <remap from="~input/points" to="odom_cloud/output" />
       <remap from="~input/box_array" to="/robot_bbox_array" />
       <rosparam>
         use_multiple_attention: true
         not_sync: true
         negative: true
-#        frame_id: ground
+        frame_id: BODY
       </rosparam>
       <param name="frame_id" value="multisense/head_root"
              if="$(arg MULTISENSE_STANDALONE)" />
@@ -233,7 +205,7 @@
     
     <!-- plane estimation -->
     <node pkg="nodelet" type="nodelet" name="normal_direction_filter"
-          args="standalone jsk_pcl/NormalDirectionFilter manager">
+          args="load jsk_pcl/NormalDirectionFilter manager">
       <remap from="~input" to="pointcloud_concatenator/output" />
       <remap from="~input_imu" to="/multisense/imu/imu_data" />
       <rosparam>
@@ -242,7 +214,7 @@
       </rosparam>
     </node>
     <node pkg="nodelet" type="nodelet" name="normal_filtered_points"
-          args="standalone pcl/ExtractIndices manager">
+          args="load pcl/ExtractIndices manager">
       <remap from="~input" to="pointcloud_concatenator/output" />
       <remap from="~indices" to="normal_direction_filter/output" />
       <rosparam>
@@ -250,7 +222,7 @@
       </rosparam>
     </node>
     <node pkg="nodelet" type="nodelet" name="plane_estimation"
-          args="standalone jsk_pcl/RegionGrowingMultiplePlaneSegmentation manager" >
+          args="load jsk_pcl/RegionGrowingMultiplePlaneSegmentation manager" >
       <remap from="~input" to="normal_filtered_points/output" />
       <remap from="~input_normal" to="normal_filtered_points/output" />
       <rosparam>
@@ -261,7 +233,7 @@
       </rosparam>
     </node>
     <node pkg="nodelet" type="nodelet" name="plane_concatenator"
-          args="standalone jsk_pcl/PlaneConcatenator manager" >
+          args="load jsk_pcl/PlaneConcatenator manager" >
       <remap from="~input" to="normal_filtered_points/output" />
       <remap from="~input/indices" to="plane_estimation/output/inliers" />
       <remap from="~input/polygons" to="plane_estimation/output/polygons" />
@@ -270,21 +242,6 @@
       </rosparam>
     </node>
     
-    <!-- stereo -->
-    <node pkg="jsk_pcl_ros" type="organized_multi_plane_segmentation" name="stereo_plane_segmentation">
-      <remap from="~input" to="/multisense/resize_1_4/points" />
-      <rosparam>
-        min_size: 400
-      </rosparam>
-    </node>
-    <node pkg="nodelet" type="nodelet" name="snap_footstep_on_stereo"
-          args="standalone jsk_pcl/Snapit manager">
-      <remap from="~input/polygons" to="stereo_plane_segmentation/output_refined_polygon" />
-      <remap from="~input/polygon_coefficients" to="stereo_plane_segmentation/output_refined_coefficients" />
-      <rosparam>
-        use_service: true
-      </rosparam>
-    </node>
     <node pkg="jsk_pcl_ros" type="environment_plane_modeling" name="env_server" output="screen">
       <remap from="~input" to="normal_filtered_points/output"/>
       <remap from="~input/full_cloud" to="pointcloud_concatenator/output" />
@@ -294,9 +251,10 @@
       <remap from="~input/coefficients" to="plane_concatenator/output/coefficients" />
       <remap from="~input/leg_bounding_box" to="/robot_legs_bbox" />
       <rosparam>
-        resolution: 0.02
+        resolution: 0.01
         complete_footprint_region: false
         morphological_filter_size: 2
+        erode_filter_size: 0
         footprint_frames: ["lleg_end_coords", "rleg_end_coords"]
       </rosparam>
     </node>
@@ -309,6 +267,5 @@
         negative: true
       </rosparam>
     </node>
-    
   </group>
 </launch>

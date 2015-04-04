@@ -1,10 +1,10 @@
-# OCS -> FC
+ # OCS -> FC
 uint8 type
 uint8 seq
 uint8 image_type
 uint8 IMAGE_RECT=0
 uint8 PANORAMA_VIEW=1
-uint32[8] image_roi_info
+uint32[16] image_roi_info
 float32[36] float_params
 # action type
 # go-pos
@@ -57,3 +57,4 @@ uint8 HRPSYS_STOP_ST=34
 uint8 HRPSYS_STOP_IMP=35
 # angle-vector
 uint8 ANGLE_VECTOR_SEND=36
+uint8 CANCEL_MOTION_NOW=37
