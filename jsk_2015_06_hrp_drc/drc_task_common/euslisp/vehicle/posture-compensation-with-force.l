@@ -1,6 +1,6 @@
 #!/usr/bin/env roseus
 
-(load "package://jsk_hrpsys_ros_bridge/euslisp/staro-interface.l")
+(load "package://hrpsys_ros_bridge_tutorials/euslisp/staro-interface.l")
 
 (setq *robot* nil)
 (setq *old-ref-force* #f(0 0 0))
