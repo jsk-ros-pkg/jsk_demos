@@ -103,6 +103,7 @@
     (setq smachine (make-ocs-state-machine))
     (send smachine :register-initial-hook self :initial-callback)
     (send smachine :go-to :initial) ;; force to move to initial state
+    (send self :show-text "initialized" :success)
     self)
   (:report-callback (msg)
     ;; do nothing
@@ -141,7 +142,7 @@
         (error "unknown mode: ~A" mode)
         ))
       ))
-  (:show-text (text &optional (color :success))
+   (:show-text (text &optional (color :success))
     (setq show-text-buffer (cons text show-text-buffer))
     ;; buffer limit is 3
     (if (> (length show-text-buffer) 3)
@@ -150,16 +151,26 @@
       ;; TODO: should use stream
       (let ((full-text ""))
         (dolist (tx (reverse show-text-buffer))
-          (setq full-text (format nil "~A~%~A" tx full-text)))
+          (setq full-text (format nil "* ~A~%~A" tx full-text)))
         (send msg :text full-text)
         (cond
+         ((eq color :select)
+          (send msg :fg_color *select-color*))
+         ((eq color :wait)
+          (send msg :fg_color *wait-color*))
+         ((eq color :recognize)
+          (send msg :fg_color *recognize-color*))
+         ((eq color :execute)
+          (send msg :fg_color *execute-color*))
          ((eq color :success)
           (send msg :fg_color *success-color*))
          ((eq color :warn)
           (send msg :fg_color *warn-color*))
-         ((eq color :unknown)
+         ((eq color :fatal)
+          (send msg :fg_color *fatal-color*))
+         (t
           (send msg :fg_color *unknown-color*)))
-        (send msg :bg_color *transparent-color*)
+        (send msg :bg_color (ros-rgba 110 100 210 0.2))
         (ros::publish "/ocs/rviz/visualization/ocs_executive_message" msg))
       ))
   (:send-to-fc (msg)
@@ -176,62 +187,62 @@
   (:valve-button-callback (req)
     (when (send smachine :next? :selecting-region-for-valve)
       (send self :set-image-view2-mode :rectangle)
-      (send self :show-text "Select rectangle region of valve")
+      (send self :show-text "Select rectangle region of valve" :select)
       (send smachine :go-to :selecting-region-for-valve))
     (send req :response))
   (:door-button-callback (req)
     (when (send smachine :next? :selecting-region-for-door)
       (send self :set-image-view2-mode :grabcut-rect)
-      (send self :show-text "Select rectangle two region for door")
+      (send self :show-text "Select rectangle two region for door" :select)
       (send smachine :go-to :selecting-region-for-door))
     (send req :response))
   (:debri-button-callback (req)
     (when (send smachine :next? :selecting-region-for-debri)
       (send self :set-image-view2-mode :line)
-      (send self :show-text "Select line for debri")
+      (send self :show-text "Select line for debri" :select)
       (send smachine :go-to :selecting-region-for-debri))
     (send req :response))
   (:hose-grasp-button-callback (req)
     (when (send smachine :next? :selecting-region-for-hose-grasp)
       (send self :set-image-view2-mode :rectangle)
-      (send self :show-text "Select rectangle for hose-grasp")
+      (send self :show-text "Select rectangle for hose-grasp" :select)
       (send smachine :go-to :selecting-region-for-hose-grasp))
     (send req :response))
   (:hose-connect-button-callback (req)
     (when (send smachine :next? :selecting-region-for-hose-connect)
       (send self :set-image-view2-mode :rectangle)
-      (send self :show-text "Select rectangle for hose-connect")
+      (send self :show-text "Select rectangle for hose-connect" :select)
       (send smachine :go-to :selecting-region-for-hose-connect))
     (send req :response))
   (:drill-grasp-button-callback (req)
     (when (send smachine :next? :selecting-region-for-drill-grasp)
       (send self :set-image-view2-mode :rectangle)
-      (send self :show-text "Select rectangle region for drill-grasp")
+      (send self :show-text "Select rectangle region for drill-grasp" :select)
       (send smachine :go-to :selecting-region-for-drill-grasp))
     (send req :response))
   (:drill-put-button-callback (req)
     (when (send smachine :next? :selecting-region-for-drill-put)
       (send self :set-image-view2-mode :rectangle)
-      (send self :show-text "Select rectangle region for drill-put")
+      (send self :show-text "Select rectangle region for drill-put" :select)
       (send smachine :go-to :selecting-region-for-drill-put))
     (send req :response))
   (:drill-wall-button-callback (req)
     (when (send smachine :next? :selecting-region-for-drill-wall)
       (send self :set-image-view2-mode :polygon)
-      (send self :show-text "Select points for drill-wall")
+      (send self :show-text "Select points for drill-wall" :select)
       (send smachine :go-to :selecting-region-for-drill-wall))
     (send req :response))
   (:drill-button-button-callback (req)
     (when (send smachine :next? :selecting-region-for-drill-button)
       (send self :set-image-view2-mode :rectangle)
-      (send self :show-text "Select rectangle for drill-button ;; not implemented yet")
+      (send self :show-text "Select rectangle for drill-button ;; not implemented yet" :select)
       (send smachine :go-to :selecting-region-for-drill-button))
     (send req :response))
   (:go-pos-button-callback (req)
     (when (send smachine :next? :selecting-region-for-go-pos)
       ;; force to use rectangle mode
       (send self :set-image-view2-mode :rectangle)
-      (send self :show-text "Select rectangle region to go-pos")
+      (send self :show-text "Select rectangle region to go-pos" :select)
       (send smachine :go-to :selecting-region-for-go-pos)
       )
     (send req :response))
@@ -240,13 +251,13 @@
       ;; force to use rectangle mode
       (send self :set-image-view2-mode :rectangle)
       (send self :set-image-view2-mode :rectangle :panorama-view) ;; we support panorama view
-      (send self :show-text "Select rectangle region to look-at")
+      (send self :show-text "Select rectangle region to look-at" :select)
       (send smachine :go-to :selecting-region-for-look-at)
       )
     (send req :response))
   (:look-around-button-callback (req)
     (when (send smachine :next? :executing-look-around)
-      (send self :show-text "Execute look-around motion")
+      (send self :show-text "Execute look-around motion" :execute)
       (let ((fc-msg (instance drc_com_common::OCS2FCSmall :init)))
         (send fc-msg :type drc_com_common::OCS2FCSmall::*LOOK_AROUND_EXEC*) ;; go to EXEC state directory in look-around
         (send self :send-to-fc fc-msg)
@@ -284,7 +295,7 @@
       (send self :rectangle-callback-for-drill-button-region msg))
      ))
   (:rectangle-callback-for-valve-region (msg)
-    (send self :show-text "Wait for valve recognition")
+    (send self :show-text "Wait for valve recognition" :wait)
     ;; send to FC to recognize pos
     (let ((fc-msg (instance drc_com_common::OCS2FCSmall :init)))
       (send fc-msg :type drc_com_common::OCS2FCSmall::*VALVE_REGION*)
@@ -293,7 +304,7 @@
       (send self :send-to-fc fc-msg)
       (send smachine :go-to :recognizing-valve-pose)))
   (:double-rectangles-callback-for-door-recognition (foreground background)
-    (send self :show-text "Wait for door recognition")
+    (send self :show-text "Wait for door recognition" :wait)
     ;;(print (list foreground background))
     (let ((fc-msg (instance drc_com_common::OCS2FCSmall :init)))
       (send fc-msg :type drc_com_common::OCS2FCSmall::*DOOR_REGION*)
@@ -302,7 +313,7 @@
       (send self :send-to-fc fc-msg)
       (send smachine :go-to :recognizing-door-pose)))
   (:line-callback-for-debri-line (msg)
-    (send self :show-text "Wait for debri recognition")
+    (send self :show-text "Wait for debri recognition" :wait)
     ;; send to FC to recognize pos
     (let ((fc-msg (instance drc_com_common::OCS2FCSmall :init)))
       (send fc-msg :type drc_com_common::OCS2FCSmall::*DEBRI_LINE*)
@@ -317,16 +328,16 @@
                                   msg (length (send fc-msg :image_roi_info)))))
         (if poly-integer-vector
             (progn
-              (send self :show-text "Wait for wall recognition")
+              (send self :show-text "Wait for wall recognition" :wait)
               (send fc-msg :image_roi_info poly-integer-vector)
               (send self :send-to-fc fc-msg)
               (send smachine :go-to :recognizing-drill-wall))
           (progn
-            (send self :show-text "Failed to convert to integer vector, too many points" :warn)
+            (send self :show-text "Failed to convert to integer vector, too many points" :fatal)
             nil)
           ))))
   (:rectangle-callback-for-hose-grasp-region (msg)
-    (send self :show-text "Wait for hose-grasp recognition")
+    (send self :show-text "Wait for hose-grasp recognition" :wait)
     ;; send to FC to recognize pos
     (let ((fc-msg (instance drc_com_common::OCS2FCSmall :init)))
       (send fc-msg :type drc_com_common::OCS2FCSmall::*HOSE_GRASP_REGION*)
@@ -335,7 +346,7 @@
       (send self :send-to-fc fc-msg)
       (send smachine :go-to :recognizing-hose-grasp-pose)))
  (:rectangle-callback-for-hose-connect-region (msg)
-    (send self :show-text "Wait for hose-connect recognition")
+    (send self :show-text "Wait for hose-connect recognition" :wait)
     ;; send to FC to recognize pos
     (let ((fc-msg (instance drc_com_common::OCS2FCSmall :init)))
       (send fc-msg :type drc_com_common::OCS2FCSmall::*HOSE_CONNECT_REGION*)
@@ -344,7 +355,7 @@
       (send self :send-to-fc fc-msg)
       (send smachine :go-to :recognizing-hose-connect-pose)))
   (:rectangle-callback-for-drill-grasp-region (msg)
-    (send self :show-text "Wait for drill-grasp recognition")
+    (send self :show-text "Wait for drill-grasp recognition" :wait)
     ;; send to FC to recognize pos
     (let ((fc-msg (instance drc_com_common::OCS2FCSmall :init)))
       (send fc-msg :type drc_com_common::OCS2FCSmall::*DRILL_GRASP_REGION*)
@@ -353,7 +364,7 @@
       (send self :send-to-fc fc-msg)
       (send smachine :go-to :recognizing-drill-grasp-pose)))
   (:rectangle-callback-for-drill-put-region (msg)
-    (send self :show-text "Wait for drill-put recognition")
+    (send self :show-text "Wait for drill-put recognition" :wait)
     ;; send to FC to recognize pos
     (let ((fc-msg (instance drc_com_common::OCS2FCSmall :init)))
       (send fc-msg :type drc_com_common::OCS2FCSmall::*DRILL_PUT_REGION*)
@@ -362,7 +373,7 @@
       (send self :send-to-fc fc-msg)
       (send smachine :go-to :recognizing-drill-put-pose)))
   (:rectangle-callback-for-drill-button-region (msg)
-    (send self :show-text "Wait for drill-button recognition")
+    (send self :show-text "Wait for drill-button recognition" :wait)
     ;; send to FC to recognize pos
     (let ((fc-msg (instance drc_com_common::OCS2FCSmall :init)))
       (send fc-msg :type drc_com_common::OCS2FCSmall::*DRILL_BUTTON_REGION*)
@@ -371,7 +382,7 @@
       (send self :send-to-fc fc-msg)
       (send smachine :go-to :recognizing-drill-button-pose)))
   (:rectangle-callback-for-go-pos-region (msg)
-    (send self :show-text "Wait for go-pos recognition")
+    (send self :show-text "Wait for go-pos recognition" :wait)
     ;; send to FC to recognize pos
     (let ((fc-msg (instance drc_com_common::OCS2FCSmall :init)))
       (send fc-msg :type drc_com_common::OCS2FCSmall::*GO_POS_REGION*)
@@ -380,7 +391,7 @@
       (send self :send-to-fc fc-msg)
       (send smachine :go-to :recognizing-go-pos-goal)))
   (:rectangle-callback-for-look-at-region (msg)
-    (send self :show-text "Wait for look-at recognition")
+    (send self :show-text "Wait for look-at recognition" :wait)
     ;; send to FC to recognize pos
     (let ((fc-msg (instance drc_com_common::OCS2FCSmall :init)))
       (send fc-msg :type drc_com_common::OCS2FCSmall::*LOOK_AT_REGION*)
@@ -389,7 +400,7 @@
       (send self :send-to-fc fc-msg)
       (send smachine :go-to :executing-look-at))) ;; go to executing state directory in look-at
   (:panorama-rectangle-callback (msg)
-    (send self :show-text "Wait for look-at recognition")
+    (send self :show-text "Wait for look-at recognition" :wait)
     (let ((fc-msg (instance drc_com_common::OCS2FCSmall :init)))
       (send fc-msg :type drc_com_common::OCS2FCSmall::*LOOK_AT_REGION*)
       (send fc-msg :image_roi_info (rect-polygon-stamped-to-integer-vector
@@ -402,7 +413,7 @@
 ;; cancel callback ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defmethod ocs-executive-app
   (:cancel-button-callback (req)
-    (send self :show-text "Canceled")
+    (send self :show-text "Canceled" :warn)
     (cond
      ;; from selecting-region state to initial state ;;;;
      ((eq (send smachine :state) :selecting-region-for-valve)
@@ -481,7 +492,7 @@
 ;; exec callback ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defmethod ocs-executive-app
   (:exec-valve-button-callback ()
-    (send self :show-text "Execute valve motion")
+    (send self :show-text "Execute valve motion" :execute)
     ;; update latest valve params
     (setq valve-params
           (list (get-primitive-marker-pose :frame-id "BODY")
@@ -497,7 +508,7 @@
       (send self :send-to-fc msg)
       (send smachine :go-to :executing-valve)))
   (:exec-door-button-callback ()
-    (send self :show-text "Execute door motion")
+    (send self :show-text "Execute door motion" :execute)
     ;; TODO : update latest door params
     ;; TODO : send door params to fc
     (let ((msg (instance drc_com_common::OCS2FCSmall :init)))
@@ -508,7 +519,7 @@
       (send self :send-to-fc msg)
       (send smachine :go-to :executing-door)))
   (:exec-debri-button-callback ()
-    (send self :show-text "Execute debri motion")
+    (send self :show-text "Execute debri motion" :execute)
     ;; update latest debri params
     (let* ((dim (get-primitive-marker-dimensions)))
       (setq debri-params
@@ -522,7 +533,7 @@
       (send self :send-to-fc msg)
       (send smachine :go-to :executing-debri)))
   (:exec-hose-grasp-button-callback ()
-    (send self :show-text "Execute hose-grasp motion")
+    (send self :show-text "Execute hose-grasp motion" :execute)
     ;; update latest hose-grasp params
     (setq hose-grasp-params
           (list (get-primitive-marker-pose :frame-id "BODY")))
@@ -536,7 +547,7 @@
       (send self :send-to-fc msg)
       (send smachine :go-to :executing-hose-grasp)))
   (:exec-hose-connect-button-callback ()
-    (send self :show-text "Execute hose-connect motion")  
+    (send self :show-text "Execute hose-connect motion" :execute)
     ;; update latest hose-connect params
     (setq hose-connect-params
           (list (get-primitive-marker-pose :frame-id "BODY")))
@@ -550,7 +561,7 @@
       (send self :send-to-fc msg)
       (send smachine :go-to :executing-hose-connect)))
   (:exec-drill-grasp-button-callback ()
-    (send self :show-text "Execute drill-grasp motion")  
+    (send self :show-text "Execute drill-grasp motion" :execute)
     ;; update latest drill-grasp params
     (setq drill-grasp-params
           (list (get-primitive-marker-pose :frame-id "BODY")))
@@ -561,7 +572,7 @@
       (send self :send-to-fc msg)
       (send smachine :go-to :executing-drill-grasp)))
   (:exec-drill-put-button-callback ()
-    (send self :show-text "Execute drill-put motion")  
+    (send self :show-text "Execute drill-put motion" :execute)
     ;; update latest drill-put params
     (setq drill-put-params
           (list (get-primitive-marker-pose :frame-id "BODY")))
@@ -572,7 +583,7 @@
       (send self :send-to-fc msg)
       (send smachine :go-to :executing-drill-put)))
   (:exec-drill-wall-button-callback ()
-    (send self :show-text "Execute drill-wall motion")  
+    (send self :show-text "Execute drill-wall motion" :execute)
     ;; do something magical!!
     ;; send drill-wall params to fc
     (let ((msg (instance drc_com_common::OCS2FCSmall :init)))
@@ -581,7 +592,7 @@
       (send self :send-to-fc msg)
       (send smachine :go-to :executing-drill-wall)))
   (:exec-drill-button-button-callback ()
-    (send self :show-text "Execute drill-button motion")  
+    (send self :show-text "Execute drill-button motion" :execute)
     ;; update latest drill-button params
     (setq drill-button-params
           (list (get-primitive-marker-pose :frame-id "BODY")))
@@ -638,8 +649,8 @@
         (multiple-value-bind
          (coords radius) (float-vector-to-torus params)
          (send self :show-text 
-               (format nil "Recognize valve. pos:~A rpy:~A r:~f"
-                       (send coords :worldpos) (reverse (car (send coords :rpy-angle))) radius))
+               (format nil "Recognize valve. pos:~A rpy:~A r:~1f"
+                       (send coords :worldpos) (reverse (car (send coords :rpy-angle))) radius) :recognize)
          ;; publish object marker
          (erase-all-primitive-marker)
          (insert-primitive-marker :shape-type jsk_rviz_plugins::TransformableMarkerOperate::*TORUS* :name "torus1" :description "")
@@ -659,7 +670,7 @@
       (let ((params (send msg :params)))
         (multiple-value-bind
          (coords size) (float-vector-to-box params)
-         (send self :show-text (format nil "Recognize door. param:~A" params))
+         (send self :show-text (format nil "Recognize door. param:~A" params) :recognize)
          ;; publish object marker
          (erase-all-primitive-marker)
          (insert-primitive-marker :shape-type jsk_rviz_plugins::TransformableMarkerOperate::*BOX* :name "box1" :description "")
@@ -681,7 +692,7 @@
          (coords r h) (float-vector-to-cylinder params)
          (send self :show-text
                (format nil
-                       "Recognize debri. pos:~A rpy:~A r:~f h:~f" (send coords :worldpos) (reverse (car (send coords :rpy-angle))) r h))
+                       "Recognize debri. pos:~A rpy:~A r:~1f h:~1f" (send coords :worldpos) (reverse (car (send coords :rpy-angle))) r h) :recognize)
          ;; publish object marker
          (erase-all-primitive-marker)
          (insert-primitive-marker :shape-type jsk_rviz_plugins::TransformableMarkerOperate::*CYLINDER* :name "cylinder1" :description "")
@@ -701,7 +712,7 @@
       (let* ((params (send msg :params))
              (coords (make-coords :pos (float-vector (elt params 0) (elt params 1) (elt params 2)) :rpy (list 0 pi 0))))
         (send self :show-text 
-              (format nil "Recognize hose. pos:~A" (send coords :worldpos)))
+              (format nil "Recognize hose. pos:~A" (send coords :worldpos)) :recognize)
         ;; store result
         (setq hose-grasp-params (list coords))
         ;; publish object marker
@@ -722,7 +733,7 @@
       (let* ((params (send msg :params))
              (coords (make-coords :pos (float-vector (elt params 0) (elt params 1) (elt params 2)) :rpy (list 0 pi/2 0))))
         (send self :show-text 
-              (format nil "Recognize hose. pos:~A" (send coords :worldpos)))
+              (format nil "Recognize hose. pos:~A" (send coords :worldpos)) :recognize)
         ;; store result
         (setq hose-connect-params (list coords))
         ;; publish object marker
@@ -742,7 +753,7 @@
       (let* ((params (send msg :params))
              (coords (float-vector-to-coords params)))
         (send self :show-text 
-              (format nil "Recognize drill. pos:~A" (send coords :worldpos)))
+              (format nil "Recognize drill. pos:~A" (send coords :worldpos)) :recognize)
         ;; store result
         (setq drill-grasp-params (list coords))
         ;; publish object marker
@@ -769,7 +780,7 @@
       (let* ((params (send msg :params))
              (coords (float-vector-to-coords params)))
         (send self :show-text 
-              (format nil "Recognize drill. pos:~A" (send coords :worldpos)))
+              (format nil "Recognize drill. pos:~A" (send coords :worldpos)) :recognize)
         ;; store result
         (setq drill-put-params (list coords))
         ;; publish object marker
@@ -789,7 +800,7 @@
       (let ((params (send msg :params)))
         (let ((coords-set (float-vector-to-coords-set params)))
 	  (send self :show-text 
-		(format nil "Recognize wall coords"))
+		(format nil "Recognize wall coords") :recognize)
           (publish-coords-list coords-set "BODY")
           (setq drill-wall-target-coords coords-set)
           (publish-drill-wall-motion :coords-list coords-set :update? t)
@@ -799,7 +810,7 @@
       (let* ((params (send msg :params))
              (coords (float-vector-to-coords params)))
         (send self :show-text 
-              (format nil "Recognize drill-button. pos:~A rpy:~A" (send coords :worldpos) (reverse (car (send coords :rpy-angle)))))
+              (format nil "Recognize drill-button. pos:~A rpy:~A" (send coords :worldpos) (reverse (car (send coords :rpy-angle)))) :recognize)
         ;; store result
         (setq drill-button-params (list coords))
         ;; publish object marker
@@ -817,69 +828,69 @@
         (setq go-pos-coords (make-coords :pos (float-vector (elt params 0) (elt params 1) (elt params 2))
                                          :rpy (float-vector (elt params 3) (elt params 4) (elt params 5))))
         (send self :show-text 
-              (format nil "Recognize go-pos ~f ~f ~f" (* 0.001 (elt params 0)) (* 0.001 (elt params 1)) (rad2deg (elt params 3))))
+              (format nil "Recognize go-pos ~1f ~1f ~1f" (* 0.001 (elt params 0)) (* 0.001 (elt params 1)) (rad2deg (elt params 3))) :recognize)
         ;; move robot model on rviz and send potentio-vector
         (move-robot-model go-pos-coords "ground")
         (publish-model-joint-states :av (get-potentio-vector-from-joint-states))
         (send smachine :go-to :selecting-exec-for-go-pos))))
   (:recognition-failed-callback (msg)
     (when (send smachine :next? :initial)
-      (send self :show-text "Recognition failed, go to :initial state" :warn)
+      (send self :show-text "Recognition failed, go to :initial state" :fatal)
       (send smachine :go-to :initial)))
   (:rviz-finished-callback (msg)
-    (send self :show-text "rviz menu succeeded!")
+    (send self :show-text "rviz menu succeeded!" :success)
     )
   )
 
 ;; exec finised callback ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defmethod ocs-executive-app
   (:valve-exec-finished-callback (msg)
-    (when (eq (send smachine :state) :executing-valve)
+    (when (eq (send smachine :state) :executing-valve :success)
       (send self :show-text "Finished valve motion")
       (send smachine :go-to :initial)))
   (:door-exec-finished-callback (msg)
     (when (eq (send smachine :state) :executing-door)
-      (send self :show-text "Finished door motion")
+      (send self :show-text "Finished door motion" :success)
       (send smachine :go-to :initial)))
   (:debri-exec-finished-callback (msg)
     (when (eq (send smachine :state) :executing-debri)
-      (send self :show-text "Finished debri motion")
+      (send self :show-text "Finished debri motion" :success)
       (send smachine :go-to :initial)))
   (:hose-grasp-exec-finished-callback (msg)
     (when (eq (send smachine :state) :executing-hose-grasp)
-      (send self :show-text "Finished hose-grasp motion")
+      (send self :show-text "Finished hose-grasp motion" :success)
       (send smachine :go-to :initial)))
   (:hose-connect-exec-finished-callback (msg)
     (when (eq (send smachine :state) :executing-hose-connect)
-      (send self :show-text "Finished hose-connect motion")
+      (send self :show-text "Finished hose-connect motion" :success)
       (send smachine :go-to :initial)))
   (:drill-grasp-exec-finished-callback (msg)
     (when (eq (send smachine :state) :executing-drill-grasp)
-      (send self :show-text "Finished drill-grasp motion")
+      (send self :show-text "Finished drill-grasp motion" :success)
       (send smachine :go-to :initial)))
   (:drill-put-exec-finished-callback (msg)
     (when (eq (send smachine :state) :executing-drill-put)
-      (send self :show-text "Finished drill-put motion")
+      (send self :show-text "Finished drill-put motion" :success)
       (send smachine :go-to :initial)))
   (:drill-wall-exec-finished-callback (msg)
     (when (eq (send smachine :state) :executing-drill-wall)
-      (send self :show-text "Finished drill-wall motion")
+      (send self :show-text "Finished drill-wall motion" :success)
       (send smachine :go-to :initial)))
   (:drill-button-exec-finished-callback (msg)
     (when (eq (send smachine :state) :executing-drill-button)
-      (send self :show-text "Finished drill-button motion")
+      (send self :show-text "Finished drill-button motion" :success)
       (send smachine :go-to :initial)))
   (:go-pos-finished-callback (msg)
     (when (eq (send smachine :state) :executing-go-pos)
-      (send self :show-text "Finished go-pos motion")
+      (send self :show-text "Finished go-pos motion" :success)
       (send smachine :go-to :initial)))
   (:look-at-finished-callback (msg)
     (when (eq (send smachine :state) :executing-look-at)
-      (send self :show-text "Finished look-at motion")
+      (send self :show-text "Finished look-at motion" :success)
       (send smachine :go-to :initial)))
   (:look-around-finished-callback (msg)
     (when (eq (send smachine :state) :executing-look-around)
-      (send self :show-text "Finished look-around motion")
+      (send self :show-text "Finished look-around motion" :success)
       (send smachine :go-to :initial)
       ))
   (:angle-vector-finished-callback (msg)
@@ -1012,7 +1023,7 @@
     (let ((msg (instance drc_com_common::OCS2FCSmall :init)))
       (send msg :type (send req :type))
       (send self :send-to-fc msg))
-    (send self :show-text "uint8 command send")
+    (send self :show-text "uint8 command send" :success)
     (send req :response)
     )
   )
