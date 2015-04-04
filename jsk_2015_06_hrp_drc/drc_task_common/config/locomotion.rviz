@@ -1,0 +1,1006 @@
+Panels:
+  - Class: rviz/Displays
+    Help Height: 78
+    Name: Displays
+    Property Tree Widget:
+      Expanded:
+        - /Global Options1
+        - /SimpleOccupancyGridArray1
+        - /PointCloud21
+        - /PointCloud21/Status1
+        - /PointCloud22
+        - /BoundingBoxArray1
+        - /Camera1
+        - /TF1
+        - /TF1/Frames1
+        - /InteractiveMarkers1
+        - /Footstep1
+      Splitter Ratio: 0.493124
+    Tree Height: 1061
+  - Class: rviz/Selection
+    Name: Selection
+  - Class: rviz/Tool Properties
+    Expanded:
+      - /2D Pose Estimate1
+      - /2D Nav Goal1
+      - /Publish Point1
+    Name: Tool Properties
+    Splitter Ratio: 0.588679
+  - Class: rviz/Views
+    Expanded:
+      - /Current View1
+    Name: Views
+    Splitter Ratio: 0.5
+  - Class: rviz/Time
+    Experimental: false
+    Name: Time
+    SyncMode: 0
+    SyncSource: PointCloud2
+Visualization Manager:
+  Class: ""
+  Displays:
+    - Alpha: 1
+      Cell Size: 0.1
+      Class: rviz/Grid
+      Color: 160; 160; 164
+      Enabled: true
+      Line Style:
+        Line Width: 0.03
+        Value: Lines
+      Name: Grid
+      Normal Cell Count: 0
+      Offset:
+        X: 0
+        Y: 0
+        Z: 0
+      Plane: XY
+      Plane Cell Count: 100
+      Reference Frame: <Fixed Frame>
+      Value: true
+    - Alpha: 1
+      Auto Color: true
+      Class: jsk_rviz_plugin/SimpleOccupancyGridArray
+      Enabled: true
+      Name: SimpleOccupancyGridArray
+      Topic: /locomotion/env_server/output
+      Value: true
+    - Alpha: 1
+      Autocompute Intensity Bounds: false
+      Autocompute Value Bounds:
+        Max Value: 10
+        Min Value: -10
+        Value: true
+      Axis: Z
+      Channel Name: x
+      Class: rviz/PointCloud2
+      Color: 255; 255; 255
+      Color Transformer: RGB8
+      Decay Time: 0
+      Enabled: false
+      Invert Rainbow: false
+      Max Color: 255; 255; 255
+      Max Intensity: 1
+      Min Color: 0; 0; 0
+      Min Intensity: 0
+      Name: PointCloud2
+      Position Transformer: XYZ
+      Queue Size: 10
+      Selectable: true
+      Size (Pixels): 3
+      Size (m): 0.01
+      Style: Flat Squares
+      Topic: /multisense/resize_1_4/points
+      Use Fixed Frame: true
+      Use rainbow: true
+      Value: false
+    - Alpha: 1
+      Autocompute Intensity Bounds: true
+      Autocompute Value Bounds:
+        Max Value: 6.60505
+        Min Value: -0.0744644
+        Value: true
+      Axis: Z
+      Channel Name: z
+      Class: rviz/PointCloud2
+      Color: 255; 255; 127
+      Color Transformer: Intensity
+      Decay Time: 0
+      Enabled: false
+      Invert Rainbow: false
+      Max Color: 255; 255; 255
+      Max Intensity: 0.865177
+      Min Color: 0; 0; 0
+      Min Intensity: -0.752532
+      Name: PointCloud2
+      Position Transformer: XYZ
+      Queue Size: 10
+      Selectable: true
+      Size (Pixels): 3
+      Size (m): 0.005
+      Style: Flat Squares
+      Topic: /laser_preprocess/odom_cloud/output
+      Use Fixed Frame: true
+      Use rainbow: true
+      Value: false
+    - Alpha: 1
+      Auto Color: false
+      Class: jsk_rviz_plugin/SimpleOccupancyGridArray
+      Enabled: false
+      Name: SimpleOccupancyGridArray
+      Topic: /locomotion/env_server/debug/noeroded_grid_map
+      Value: false
+    - Alpha: 0.8
+      Class: rviz/RobotModel
+      Collision Enabled: false
+      Enabled: true
+      Links:
+        All Links Enabled: true
+        BODY:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        CHEST_LINK0:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        CHEST_LINK1:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        Expand Joint Details: false
+        Expand Link Details: false
+        Expand Tree: false
+        HEAD_LINK0:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        HEAD_LINK1:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        LARM_LINK0:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        LARM_LINK1:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        LARM_LINK2:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        LARM_LINK3:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        LARM_LINK4:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        LARM_LINK5:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        LARM_LINK6:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        LARM_LINK7:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        LARM_cb_jig:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        LLEG_LINK0:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        LLEG_LINK1:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        LLEG_LINK2:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        LLEG_LINK3:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        LLEG_LINK4:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        LLEG_LINK5:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        Link Tree Style: Links in Alphabetic Order
+        RARM_LINK0:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        RARM_LINK1:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        RARM_LINK2:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        RARM_LINK3:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        RARM_LINK4:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        RARM_LINK5:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        RARM_LINK6:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        RARM_LINK7:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        RARM_cb_jig:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        RLEG_LINK0:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        RLEG_LINK1:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        RLEG_LINK2:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        RLEG_LINK3:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        RLEG_LINK4:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        RLEG_LINK5:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        accel:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        center_bottom_led_frame:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        center_top_led_frame:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        gyro:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        head:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        head_end_coords:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        head_hokuyo_frame:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        head_root:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        hokuyo_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        larm_end_coords:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        left_camera_frame:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        left_camera_optical_frame:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        left_led_frame:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        lleg_end_coords:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        mag:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        motor:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        rarm_end_coords:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        right_camera_frame:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        right_camera_optical_frame:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        right_led_frame:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        rleg_end_coords:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        spindle:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        torso_end_coords:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+      Name: RobotModel
+      Robot Description: robot_description
+      TF Prefix: ""
+      Update Interval: 0
+      Value: true
+      Visual Enabled: true
+    - Class: jsk_rviz_plugin/BoundingBoxArray
+      Enabled: false
+      Name: BoundingBoxArray
+      Topic: /robot_bbox_array
+      Value: false
+      alpha: 0.5
+      auto color: true
+      color: 25; 255; 0
+      line width: 0.005
+      only edge: false
+      show coords: false
+    - Alpha: 1
+      Class: jsk_rviz_plugin/PolygonArray
+      Color: 25; 255; 0
+      Enabled: false
+      Name: PolygonArray
+      Topic: /locomotion/plane_concatenator/output/polygons
+      Value: false
+      auto color: true
+      normal length: 0.1
+      only border: true
+      show normal: true
+    - Alpha: 1
+      Class: jsk_rviz_plugin/NormalDisplay
+      Color: 255; 255; 255
+      Display Rate (%): 10
+      Enabled: false
+      Max Color: 255; 0; 0
+      MinColor: 0; 255; 0
+      Name: NormalDisplay
+      Scale: 0.3
+      Style: DirectionColor
+      Topic: /locomotion/pointcloud_concatenator/output
+      Use Rainbow: true
+      Value: false
+    - Alpha: 1
+      Class: jsk_rviz_plugin/PolygonArray
+      Color: 25; 255; 0
+      Enabled: false
+      Name: PolygonArray
+      Topic: /locomotion/plane_estimation/output/polygons
+      Value: false
+      auto color: false
+      normal length: 0.1
+      only border: true
+      show normal: true
+    - Class: rviz/Camera
+      Enabled: false
+      Image Rendering: background and overlay
+      Image Topic: /multisense/left/image_rect_color
+      Name: Camera
+      Overlay Alpha: 0
+      Queue Size: 2
+      Transport Hint: raw
+      Value: false
+      Visibility:
+        Axes: true
+        BoundingBoxArray: true
+        CameraInfo: true
+        Footstep: false
+        Grid: true
+        InteractiveMarkers: false
+        LaserScan: true
+        NormalDisplay: true
+        OverlayText: false
+        PointCloud2: true
+        PolygonArray: true
+        Pose: true
+        RobotModel: false
+        SimpleOccupancyGridArray: true
+        TF: true
+        Value: true
+      Zoom Factor: 1
+    - Alpha: 1
+      Auto Color: true
+      Class: jsk_rviz_plugin/SimpleOccupancyGridArray
+      Enabled: false
+      Name: SimpleOccupancyGridArray
+      Topic: /locomotion/env_server/debug/raw_grid_map
+      Value: false
+    - Alpha: 1
+      Class: jsk_rviz_plugin/PolygonArray
+      Color: 25; 255; 0
+      Enabled: false
+      Name: PolygonArray
+      Topic: /locomotion/plane_estimation/output/polygons
+      Value: false
+      auto color: true
+      normal length: 0.1
+      only border: false
+      show normal: true
+    - Alpha: 1
+      Autocompute Intensity Bounds: true
+      Autocompute Value Bounds:
+        Max Value: 10
+        Min Value: -10
+        Value: true
+      Axis: Z
+      Channel Name: intensity
+      Class: rviz/PointCloud2
+      Color: 255; 255; 255
+      Color Transformer: Intensity
+      Decay Time: 0
+      Enabled: false
+      Invert Rainbow: false
+      Max Color: 255; 255; 255
+      Max Intensity: 4096
+      Min Color: 0; 0; 0
+      Min Intensity: 0
+      Name: PointCloud2
+      Position Transformer: XYZ
+      Queue Size: 10
+      Selectable: true
+      Size (Pixels): 3
+      Size (m): 0.005
+      Style: Flat Squares
+      Topic: /locomotion/icp_localization/debug/result
+      Use Fixed Frame: true
+      Use rainbow: true
+      Value: false
+    - Alpha: 1
+      Class: jsk_rviz_plugin/PolygonArray
+      Color: 25; 255; 0
+      Enabled: false
+      Name: PolygonArray
+      Topic: /locomotion/footprint_magnifier/output
+      Value: false
+      auto color: true
+      normal length: 0.1
+      only border: true
+      show normal: true
+    - Class: rviz/Axes
+      Enabled: false
+      Length: 1
+      Name: Axes
+      Radius: 0.1
+      Reference Frame: <Fixed Frame>
+      Value: false
+    - Alpha: 1
+      Axes Length: 1
+      Axes Radius: 0.1
+      Class: rviz/Pose
+      Color: 255; 25; 0
+      Enabled: false
+      Head Length: 0.3
+      Head Radius: 0.1
+      Name: Pose
+      Shaft Length: 1
+      Shaft Radius: 0.05
+      Shape: Axes
+      Topic: /footstep_simple/goal
+      Value: false
+    - Alpha: 1
+      Class: jsk_rviz_plugin/NormalDisplay
+      Color: 85; 170; 255
+      Display Rate (%): 100
+      Enabled: false
+      Max Color: 255; 0; 0
+      MinColor: 0; 255; 0
+      Name: NormalDisplay
+      Scale: 0.01
+      Style: FlatColor
+      Topic: /locomotion/footprint_point_sampler/output
+      Use Rainbow: true
+      Value: false
+    - Class: rviz/TF
+      Enabled: true
+      Frame Timeout: 15
+      Frames:
+        All Enabled: false
+        BODY:
+          Value: false
+        CAMERA_L:
+          Value: false
+        CAMERA_R:
+          Value: false
+        CHEST_LINK0:
+          Value: false
+        CHEST_LINK1:
+          Value: false
+        HEAD_LINK0:
+          Value: false
+        HEAD_LINK1:
+          Value: false
+        LARM_LINK0:
+          Value: false
+        LARM_LINK1:
+          Value: false
+        LARM_LINK2:
+          Value: false
+        LARM_LINK3:
+          Value: false
+        LARM_LINK4:
+          Value: false
+        LARM_LINK5:
+          Value: false
+        LARM_LINK6:
+          Value: false
+        LARM_LINK7:
+          Value: false
+        LARM_cb_jig:
+          Value: false
+        LLEG_LINK0:
+          Value: false
+        LLEG_LINK1:
+          Value: false
+        LLEG_LINK2:
+          Value: false
+        LLEG_LINK3:
+          Value: false
+        LLEG_LINK4:
+          Value: false
+        LLEG_LINK5:
+          Value: false
+        RARM_LINK0:
+          Value: false
+        RARM_LINK1:
+          Value: false
+        RARM_LINK2:
+          Value: false
+        RARM_LINK3:
+          Value: false
+        RARM_LINK4:
+          Value: false
+        RARM_LINK5:
+          Value: false
+        RARM_LINK6:
+          Value: false
+        RARM_LINK7:
+          Value: false
+        RARM_cb_jig:
+          Value: false
+        RLEG_LINK0:
+          Value: false
+        RLEG_LINK1:
+          Value: false
+        RLEG_LINK2:
+          Value: false
+        RLEG_LINK3:
+          Value: false
+        RLEG_LINK4:
+          Value: false
+        RLEG_LINK5:
+          Value: false
+        accel:
+          Value: false
+        base_footprint:
+          Value: false
+        center_bottom_led_frame:
+          Value: false
+        center_top_led_frame:
+          Value: false
+        ground:
+          Value: true
+        gsensor:
+          Value: false
+        gyro:
+          Value: false
+        gyrometer:
+          Value: false
+        head:
+          Value: false
+        head_end_coords:
+          Value: false
+        head_hokuyo_frame:
+          Value: false
+        head_root:
+          Value: false
+        hokuyo_link:
+          Value: false
+        larm_end_coords:
+          Value: false
+        left_camera_frame:
+          Value: false
+        left_camera_optical_frame:
+          Value: false
+        left_led_frame:
+          Value: false
+        lfsensor:
+          Value: false
+        lhsensor:
+          Value: false
+        lleg_end_coords:
+          Value: false
+        mag:
+          Value: false
+        map:
+          Value: false
+        motor:
+          Value: false
+        odom:
+          Value: false
+        odom_on_ground:
+          Value: false
+        rarm_end_coords:
+          Value: false
+        rfsensor:
+          Value: false
+        rhsensor:
+          Value: false
+        right_camera_frame:
+          Value: false
+        right_camera_optical_frame:
+          Value: false
+        right_led_frame:
+          Value: false
+        rleg_end_coords:
+          Value: false
+        spindle:
+          Value: false
+        torso_end_coords:
+          Value: false
+      Marker Scale: 1
+      Name: TF
+      Show Arrows: true
+      Show Axes: true
+      Show Names: true
+      Tree:
+        map:
+          odom:
+            base_footprint:
+              BODY:
+                CHEST_LINK0:
+                  CHEST_LINK1:
+                    HEAD_LINK0:
+                      HEAD_LINK1:
+                        CAMERA_L:
+                          {}
+                        CAMERA_R:
+                          {}
+                        head_end_coords:
+                          {}
+                        head_root:
+                          accel:
+                            {}
+                          gyro:
+                            {}
+                          head:
+                            center_bottom_led_frame:
+                              {}
+                            center_top_led_frame:
+                              {}
+                            left_camera_frame:
+                              left_camera_optical_frame:
+                                motor:
+                                  spindle:
+                                    hokuyo_link:
+                                      head_hokuyo_frame:
+                                        {}
+                            left_led_frame:
+                              {}
+                            right_camera_frame:
+                              right_camera_optical_frame:
+                                {}
+                            right_led_frame:
+                              {}
+                          mag:
+                            {}
+                    LARM_LINK0:
+                      LARM_LINK1:
+                        LARM_LINK2:
+                          LARM_LINK3:
+                            LARM_LINK4:
+                              LARM_LINK5:
+                                LARM_LINK6:
+                                  LARM_LINK7:
+                                    {}
+                                  LARM_cb_jig:
+                                    {}
+                                  larm_end_coords:
+                                    {}
+                                  lhsensor:
+                                    {}
+                    RARM_LINK0:
+                      RARM_LINK1:
+                        RARM_LINK2:
+                          RARM_LINK3:
+                            RARM_LINK4:
+                              RARM_LINK5:
+                                RARM_LINK6:
+                                  RARM_LINK7:
+                                    {}
+                                  RARM_cb_jig:
+                                    {}
+                                  rarm_end_coords:
+                                    {}
+                                  rhsensor:
+                                    {}
+                    gsensor:
+                      {}
+                    gyrometer:
+                      {}
+                    torso_end_coords:
+                      {}
+                LLEG_LINK0:
+                  LLEG_LINK1:
+                    LLEG_LINK2:
+                      LLEG_LINK3:
+                        LLEG_LINK4:
+                          LLEG_LINK5:
+                            lfsensor:
+                              {}
+                            lleg_end_coords:
+                              {}
+                RLEG_LINK0:
+                  RLEG_LINK1:
+                    RLEG_LINK2:
+                      RLEG_LINK3:
+                        RLEG_LINK4:
+                          RLEG_LINK5:
+                            rfsensor:
+                              {}
+                            rleg_end_coords:
+                              {}
+            ground:
+              {}
+            odom_on_ground:
+              {}
+      Update Interval: 0
+      Value: true
+    - Class: rviz/InteractiveMarkers
+      Enable Transparency: true
+      Enabled: true
+      Name: InteractiveMarkers
+      Show Axes: false
+      Show Descriptions: true
+      Show Visual Aids: false
+      Update Topic: /footstep_marker/update
+      Value: true
+    - Alpha: 1
+      Class: jsk_rviz_plugin/Footstep
+      Enabled: true
+      Name: Footstep
+      Show Name: true
+      Topic: /footstep_planner/footstep
+      Use Group Coloring: false
+      Value: true
+      Width: 0.15
+      depth: 0.3
+      height: 0.01
+    - Background Alpha: 0.8
+      Background Color: 0; 0; 0
+      Class: jsk_rviz_plugin/OverlayText
+      Enabled: true
+      Foreground Alpha: 0.8
+      Foreground Color: 25; 255; 240
+      Name: OverlayText
+      Overtake Color Properties: false
+      Overtake Position Properties: true
+      Topic: /footstep_text
+      Value: true
+      font: DejaVu Sans Mono
+      height: 1000
+      left: 0
+      line width: 2
+      text size: 12
+      top: 0
+      width: 500
+    - Class: jsk_rviz_plugin/CameraInfo
+      Enabled: false
+      Image Topic: ""
+      Name: CameraInfo
+      Topic: /multisense/left/camera_info
+      Value: false
+      alpha: 0.5
+      color: 85; 255; 255
+      edge color: 85; 255; 255
+      far clip: 1
+      not show side polygons: true
+      show edges: true
+      show polygons: false
+      use image: false
+    - Alpha: 1
+      Autocompute Intensity Bounds: true
+      Autocompute Value Bounds:
+        Max Value: 10
+        Min Value: -10
+        Value: true
+      Axis: Z
+      Channel Name: intensity
+      Class: rviz/LaserScan
+      Color: 255; 255; 255
+      Color Transformer: Intensity
+      Decay Time: 5
+      Enabled: false
+      Invert Rainbow: false
+      Max Color: 255; 255; 255
+      Max Intensity: 4767
+      Min Color: 0; 0; 0
+      Min Intensity: 68
+      Name: LaserScan
+      Position Transformer: XYZ
+      Queue Size: 10
+      Selectable: true
+      Size (Pixels): 3
+      Size (m): 0.005
+      Style: Flat Squares
+      Topic: /multisense/lidar_scan
+      Use Fixed Frame: true
+      Use rainbow: true
+      Value: false
+    - Alpha: 1
+      Autocompute Intensity Bounds: true
+      Autocompute Value Bounds:
+        Max Value: 10
+        Min Value: -10
+        Value: true
+      Axis: Z
+      Channel Name: intensity
+      Class: rviz/LaserScan
+      Color: 255; 255; 255
+      Color Transformer: FlatColor
+      Decay Time: 5
+      Enabled: false
+      Invert Rainbow: false
+      Max Color: 255; 255; 255
+      Max Intensity: 4101
+      Min Color: 0; 0; 0
+      Min Intensity: 135
+      Name: LaserScan
+      Position Transformer: XYZ
+      Queue Size: 10
+      Selectable: true
+      Size (Pixels): 3
+      Size (m): 0.01
+      Style: Flat Squares
+      Topic: /multisense/lidar_scan_filtered
+      Use Fixed Frame: true
+      Use rainbow: true
+      Value: false
+  Enabled: true
+  Global Options:
+    Background Color: 48; 48; 48
+    Fixed Frame: ground
+    Frame Rate: 30
+  Name: root
+  Tools:
+    - Class: rviz/Interact
+      Hide Inactive Objects: true
+    - Class: rviz/MoveCamera
+    - Class: rviz/Select
+    - Class: rviz/FocusCamera
+    - Class: rviz/Measure
+    - Class: rviz/SetInitialPose
+      Topic: /initialpose
+    - Class: rviz/SetGoal
+      Topic: /move_base_simple/goal
+    - Class: rviz/PublishPoint
+      Single click: true
+      Topic: /clicked_point
+    - Class: jsk_rviz_plugin/CloseAll
+  Value: true
+  Views:
+    Current:
+      Class: rviz/Orbit
+      Distance: 3.95353
+      Enable Stereo Rendering:
+        Stereo Eye Separation: 0.06
+        Stereo Focal Distance: 1
+        Swap Stereo Eyes: false
+        Value: false
+      Focal Point:
+        X: 0.672348
+        Y: 0.151525
+        Z: -0.0598188
+      Name: Current View
+      Near Clip Distance: 0.01
+      Pitch: 0.989796
+      Target Frame: <Fixed Frame>
+      Value: Orbit (rviz)
+      Yaw: 2.38409
+    Saved: ~
+Window Geometry:
+  Camera:
+    collapsed: false
+  Displays:
+    collapsed: false
+  Height: 1364
+  Hide Left Dock: false
+  Hide Right Dock: false
+  QMainWindow State: 000000ff00000000fd000000040000000000000249000004b4fc0200000008fb0000001200530065006c0065006300740069006f006e00000001e10000009b0000006400fffffffb0000001e0054006f006f006c002000500072006f007000650072007400690065007302000001ed000001df00000185000000a3fb000000120056006900650077007300200054006f006f02000001df000002110000018500000122fb000000200054006f006f006c002000500072006f0070006500720074006900650073003203000002880000011d000002210000017afc00000041000004b4000000dd00fffffffa000000010100000002fb0000000c00430061006d00650072006102000000620000010d0000033d000003c9fb000000100044006900730070006c0061007900730100000000000002010000010f00fffffffb0000002000730065006c0065006300740069006f006e00200062007500660066006500720200000138000000aa0000023a00000294fb00000014005700690064006500530074006500720065006f02000000e6000000d2000003ee0000030bfb0000000c004b0069006e0065006300740200000186000001060000030c00000261000000010000010f000002abfc0200000003fb0000001e0054006f006f006c002000500072006f00700065007200740069006500730100000041000000780000000000000000fb0000000a005600690065007700730000000041000002ab000000b000fffffffb0000001200530065006c0065006300740069006f006e010000025a000000b200000000000000000000000200000490000000a9fc0100000001fb0000000a00560069006500770073030000004e00000080000002e1000001970000000300000a000000003bfc0100000002fb0000000800540069006d0065010000000000000a00000002f600fffffffb0000000800540069006d00650100000000000004500000000000000000000007b1000004b400000004000000040000000800000008fc0000000100000002000000010000000a0054006f006f006c00730100000000ffffffff0000000000000000
+  Selection:
+    collapsed: false
+  Time:
+    collapsed: false
+  Tool Properties:
+    collapsed: false
+  Views:
+    collapsed: false
+  Width: 2560
+  X: -8
+  Y: 24
