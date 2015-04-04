@@ -1,0 +1,17 @@
+<launch>
+  <arg name="CONTROLLER_DEV" default="/dev/input/js0"/>
+  <group ns="driving_force_gt">
+  <node pkg="joy" type="joy_node" name="handle_joy" output="screen">
+    <param name="~dev" value="$(arg CONTROLLER_DEV)" />
+    <param name="~deadzone" value="0.0" />
+    <param name="~coalesce_interval" value="0.001" />
+    <param name="~autorepeat_rate" value="20" />
+    <remap from="joy" to="joy_raw" />
+  </node>
+  </group>
+
+  <node pkg="topic_tools" type="throttle" name="joy_throttle"
+        args="messages /driving_force_gt/joy_raw 1 /driving_force_gt/joy" />
+
+  <node pkg="drc_task_common" type="HandleControllerPublisher.py" name="handle_controller" output="screen"/>
+</launch>
