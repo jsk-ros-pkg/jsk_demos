@@ -12,4 +12,20 @@
         name="normal_estimation">
     <remap from="~input" to="relay/output" />
   </node>
+  <node pkg="nodelet" type="nodelet" args="load jsk_pcl/TfTransformCloud preprocessing_manager"
+        name="stereo_ground_cloud">
+    <remap from="~input" to="relay/output" />
+    <rosparam>
+      target_frame_id: ground
+    </rosparam>
+  </node>
+  <node pkg="nodelet" type="nodelet" args="load pcl/VoxelGrid preprocessing_manager"
+        name="stereo_downsampled_ground_cloud">
+    <remap from="~input" to="stereo_ground_cloud/outputt" />
+    <rosparam>
+      leaf_size: 0.02
+      filter_limit_min: -100
+      filter_limit_max: 100
+    </rosparam>
+  </node>
 </launch>
