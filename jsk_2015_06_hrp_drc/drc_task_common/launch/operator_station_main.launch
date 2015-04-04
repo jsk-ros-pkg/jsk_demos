@@ -38,8 +38,8 @@
   
   <!-- tf -->
   <group ns="ocs">
-    <arg name="CALIB_FILE" value="hrp2017_multisense_calib_20150208.yaml" />
-    <param name="robot_description" command="$(find euscollada)/scripts/urdf_patch.py patch $(find hrpsys_ros_bridge_tutorials)/models/HRP2JSKNTS_WH_SENSORS.urdf $(find jsk_hrp2_ros_bridge)/calib_data/$(arg CALIB_FILE)" />
+    <arg name="CALIB_FILE" value="hrp2016_multisense_calib_20150401.yaml" />
+    <param name="robot_description" command="$(find euscollada)/scripts/urdf_patch.py patch $(find hrpsys_ros_bridge_tutorials)/models/HRP2JSKNT_WH_SENSORS.urdf $(find jsk_hrp2_ros_bridge)/calib_data/$(arg CALIB_FILE)" />
     <node pkg="robot_state_publisher" type="robot_state_publisher" name="ocs_robot_state_publisher">
       <remap from="/joint_states" to="/ocs/joint_states" />
       <remap from="/tf" to="/ocs/tf"/>
