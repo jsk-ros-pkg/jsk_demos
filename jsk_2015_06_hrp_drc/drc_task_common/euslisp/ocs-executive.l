@@ -982,6 +982,30 @@
      (send self :send-to-fc msg))
    (send req :response)
    )
+  (:cancel-motion-now
+    (req)
+    (let ((msg (instance drc_com_common::OCS2FCSmall :init)))
+     (send msg :type drc_com_common::OCS2FCSmall::*CANCEL_MOTION_NOW*)
+     (send self :show-text "cancel command send")
+     (send self :change-state-before-exec)
+     ;; todo change state 
+     (send self :send-to-fc msg))
+    (send req :response)
+    )
+  (:change-state-before-exec
+    ()
+    (cond
+     ((eq (send smachine :state) :executing-door) (send smachine :go-to :selecting-exec-for-door))
+     ((eq (send smachine :state) :executing-valve) (send smachine :go-to :selecting-exec-for-valve))
+     ((eq (send smachine :state) :executing-debri) (send smachine :go-to :selecting-exec-for-debri))
+     ((eq (send smachine :state) :executing-hose-grasp) (send smachine :go-to :selecting-exec-for-hose-grasp))
+     ((eq (send smachine :state) :executing-hose-connect) (send smachine :go-to :selecting-exec-for-hose-connect))
+     ((eq (send smachine :state) :executing-drill-grasp) (send smachine :go-to :selecting-exec-for-drill-grasp))
+     ((eq (send smachine :state) :executing-drill-put) (send smachine :go-to :selecting-exec-for-drill-put))
+     ((eq (send smachine :state) :executing-drill-wall) (send smachine :go-to :selecting-exec-for-drill-wall))
+     ((eq (send smachine :state) :executing-drill-button) (send smachine :go-to :selecting-exec-for-drill-button))
+     )
+    )
   )
 (defmethod ocs-executive-app
   (:uint8-request-callback (req)
@@ -1036,6 +1060,7 @@
 (ros::advertise-service "go_pos_command_from_rviz_interface" drc_task_common::GoPosCommand #'send *app* :go-pos-command-from-rviz-interface)
 (ros::advertise-service "uint8_command" drc_task_common::Uint8Request #'send *app* :uint8-request-callback)
 (ros::advertise-service "angle_vector_command_from_ocs" drc_task_common::AngleVectorCommand #'send *app* :angle-vector-command-from-ocs)
+(ros::advertise-service "cancel_motion_now" std_srvs::Empty #'send *app* :cancel-motion-now)
 
 ;; subscribing image_view2 ROI stuff
 (ros::subscribe "/ocs/communication/image_rect_color/screenrectangle/scaled" geometry_msgs::PolygonStamped
