@@ -735,7 +735,7 @@
     (hand-model2real)
     (send self :send-rviz-button-finished-to-ocs))
   (:hand-grasp-pose-command-callback (msg)
-    (send *robot* :hand arm :angle-vector (float-vector 90.0 0.0 0.0 0.0 90.0 90.0))
+    (send *robot* :hand :arms :angle-vector (float-vector 90.0 0.0 0.0 0.0 90.0 90.0))
     ;(send *robot* :hand :arms :grasp-pose)
     (hand-model2real)
     (send self :send-rviz-button-finished-to-ocs))
