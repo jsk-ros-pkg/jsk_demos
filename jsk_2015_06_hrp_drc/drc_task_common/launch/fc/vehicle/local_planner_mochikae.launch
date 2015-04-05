@@ -12,7 +12,7 @@
   <rosparam param="tread"> 1.32 </rosparam>
   
   <!-- KdTree and Visualization Marker for obstacle detection -->
-  <node name="simplified_local_planner_mochikae" pkg="drive_recognition" type="simplified_local_planner_mochikae" output="screen" >
+  <node name="simplified_local_planner_mochikae" pkg="drc_task_common" type="simplified_local_planner_mochikae" output="screen" >
     <remap from="points" to="/local_planner/kdtree_curve/input" />
     <remap from="steering" to="/staro_drive/hand_wheel/steering_angle" />
     <remap from="goal_dir" to="/cheat_goal_dir/ang" />
@@ -24,19 +24,19 @@
   </node>
   
   <!-- publish and Visualize steering angle -->
-  <node pkg="drive_recognition" type="SteeringAngleMarker.py" name="steering_angle_marker" output="screen" >
+  <node pkg="drc_task_common" type="SteeringAngleMarker.py" name="steering_angle_marker" output="screen" >
     <remap from="cmd" to="/hand_wheel/local_planner/input" />
     <remap from="marker_array" to="/local_planner/steering/marker_array" />
   </node>
   
   <!-- switch input cloud of local planner -->
-  <node name="switch_input_cloud" pkg="drive_recognition" type="switch_input_cloud" output="screen" >
+  <node name="switch_input_cloud" pkg="drc_task_common" type="switch_input_cloud" output="screen" >
     <remap from="passthrough/points" to="/passthrough/stereo/remove_xz" />
     <remap from="raw/points" to="/transform_cloud/points2" />
     <remap from="kdtree_curve/input" to="/local_planner/kdtree_curve/input" />
   </node>
 
   <group if="$(arg VIEW)">
-    <include file="$(find drive_recognition)/launch/visualize_local_planner_viso2.launch" />
+    <include file="$(find drc_task_common)/launch/visualize_local_planner_viso2.launch" />
   </group>
 </launch>

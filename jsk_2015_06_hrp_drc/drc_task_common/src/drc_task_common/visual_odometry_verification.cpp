@@ -3,7 +3,7 @@
 #include <std_msgs/Float64.h>
 #include <std_msgs/Bool.h>
 #include <dynamic_reconfigure/server.h>
-#include <drive_recognition/VisualOdometryVerificationConfig.h>
+#include <drc_task_common/VisualOdometryVerificationConfig.h>
 #include <cmath>
 #include <deque>
 
@@ -21,8 +21,8 @@ private:
   double filtered_linear_velocity;
   double filtered_angular_velocity;
   double filtered_steering_angle;
-  dynamic_reconfigure::Server<drive_recognition::VisualOdometryVerificationConfig> server;
-  dynamic_reconfigure::Server<drive_recognition::VisualOdometryVerificationConfig>::CallbackType f;
+  dynamic_reconfigure::Server<drc_task_common::VisualOdometryVerificationConfig> server;
+  dynamic_reconfigure::Server<drc_task_common::VisualOdometryVerificationConfig>::CallbackType f;
   double wheelbase;
   double stop_threshold;
   double wheel_steering_weight;
@@ -61,7 +61,7 @@ public:
   
   
   /* dynamic_reconfigure for parameter tuning */
-  void dynamic_reconfigure_cb(drive_recognition::VisualOdometryVerificationConfig &config, uint32_t level) {
+  void dynamic_reconfigure_cb(drc_task_common::VisualOdometryVerificationConfig &config, uint32_t level) {
     // set LPF_vel_weight
     LPF_vel_weight = config.LPF_vel_weight;
     ROS_INFO("LPF_vel_weight = %f", config.LPF_vel_weight);

@@ -66,7 +66,7 @@ scan_filter_chain:
 
     <!-- Obstacle Extraction using my passthrough filter -->
     <!--  My PassThrough Flter for removng stereo points in x axis -->
-    <include file="$(find drive_recognition)/launch/passthrough_car_body.launch">
+    <include file="$(find drc_task_common)/launch/passthrough_car_body.launch">
       <arg name="INPUT_POINTS" value="/passthrough/stereo/remove_z"/>
       <arg name="OUTPUT_POINTS" value="/passthrough/stereo/remove_xz"/>
     </include>
@@ -90,7 +90,7 @@ scan_filter_chain:
 
   <group if="$(arg USE_VRC)">
     <!-- hsi color filter -->
-    <include file="$(find drive_recognition)/launch/hsi_color_filter_for_VRC" />
+    <include file="$(find drc_task_common)/launch/hsi_color_filter_for_VRC" />
 
     <!-- PassThrough Flter for removng stereo points in x axis -->
     <node pkg="nodelet" type="nodelet" name="stereo_passthrough_x"

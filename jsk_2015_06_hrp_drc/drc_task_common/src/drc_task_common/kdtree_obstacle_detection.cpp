@@ -11,7 +11,7 @@
 #include <sensor_msgs/Imu.h>
 #include <tf/transform_listener.h>
 #include <dynamic_reconfigure/server.h>
-#include <drive_recognition/ObstacleDetectionParamsConfig.h>
+#include <drc_task_common/ObstacleDetectionParamsConfig.h>
 #include <cmath>
 #include <deque>
 
@@ -35,8 +35,8 @@ private:
     float ave_y;
     float ave_z;
   } points;
-  dynamic_reconfigure::Server<drive_recognition::ObstacleDetectionParamsConfig> server;
-  dynamic_reconfigure::Server<drive_recognition::ObstacleDetectionParamsConfig>::CallbackType f;
+  dynamic_reconfigure::Server<drc_task_common::ObstacleDetectionParamsConfig> server;
+  dynamic_reconfigure::Server<drc_task_common::ObstacleDetectionParamsConfig>::CallbackType f;
   bool working;
   double front_margin;
   double side_margin;
@@ -65,7 +65,7 @@ public:
   }
   
   /* dynamic_reconfigure for parameter tuning */
-  void dynamic_reconfigure_cb(drive_recognition::ObstacleDetectionParamsConfig &config, uint32_t level) {
+  void dynamic_reconfigure_cb(drc_task_common::ObstacleDetectionParamsConfig &config, uint32_t level) {
     // set working
     working = config.obstacle_detection;
     ROS_INFO("obstacle_detection = %s", config.obstacle_detection?"True":"False");

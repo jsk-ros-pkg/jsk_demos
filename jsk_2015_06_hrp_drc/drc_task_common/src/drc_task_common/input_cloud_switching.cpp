@@ -4,7 +4,7 @@
 #include <pcl/point_cloud.h>
 #include <pcl/point_types.h>
 #include <dynamic_reconfigure/server.h>
-#include <drive_recognition/SwitchInputCloudConfig.h>
+#include <drc_task_common/SwitchInputCloudConfig.h>
 
 class SwitchInputCloud{
 private:
@@ -13,8 +13,8 @@ private:
   ros::Subscriber raw_sub;
   ros::Publisher point_pub;
   sensor_msgs::PointCloud2 pub_msg;
-  dynamic_reconfigure::Server<drive_recognition::SwitchInputCloudConfig> server;
-  dynamic_reconfigure::Server<drive_recognition::SwitchInputCloudConfig>::CallbackType f;
+  dynamic_reconfigure::Server<drc_task_common::SwitchInputCloudConfig> server;
+  dynamic_reconfigure::Server<drc_task_common::SwitchInputCloudConfig>::CallbackType f;
   bool debug_flag;
 
 
@@ -33,7 +33,7 @@ public:
   
   
   /* dynamic_reconfigure */
-  void dynamic_reconfigure_cb(drive_recognition::SwitchInputCloudConfig &config, uint32_t level) {
+  void dynamic_reconfigure_cb(drc_task_common::SwitchInputCloudConfig &config, uint32_t level) {
     // set debug
     debug_flag = config.debug_flag;
     ROS_INFO("debug_flag = %s", config.debug_flag?"True":"False");

@@ -10,9 +10,9 @@
 #include <std_msgs/MultiArrayLayout.h>
 #include <std_msgs/MultiArrayDimension.h>
 #include <std_msgs/Float64MultiArray.h>
-#include <drive_recognition/Int8Float64.h>
+#include <drc_task_common/Int8Float64.h>
 #include <dynamic_reconfigure/server.h>
-#include <drive_recognition/LocalPlannerMochikaeParamsConfig.h>
+#include <drc_task_common/LocalPlannerMochikaeParamsConfig.h>
 #include <cmath>
 #include <algorithm>
 #include <deque>
@@ -44,8 +44,8 @@ private:
   std::deque<double> steering_output;
   sensor_msgs::PointCloud2 pub_msg; // for debug
   boost::mutex mutex;
-  dynamic_reconfigure::Server<drive_recognition::LocalPlannerMochikaeParamsConfig> server;
-  dynamic_reconfigure::Server<drive_recognition::LocalPlannerMochikaeParamsConfig>::CallbackType f;
+  dynamic_reconfigure::Server<drc_task_common::LocalPlannerMochikaeParamsConfig> server;
+  dynamic_reconfigure::Server<drc_task_common::LocalPlannerMochikaeParamsConfig>::CallbackType f;
   double mochikae_max_s;
   double mochikae_min_s;
   std::vector<double> option_s;
@@ -94,7 +94,7 @@ public:
     // gaspedal_state_sub = n.subscribe("gaspedal/state", 1, &LocalPlanner::gaspedal_state_cb, this);
     // brakepedal_state_sub = n.subscribe("brakepedal/state", 1, &LocalPlanner::brakepedal_state_cb, this);
     point_pub = n.advertise<sensor_msgs::PointCloud2>("curve_path/points2", 1);
-    steering_with_index_pub = n.advertise<drive_recognition::Int8Float64>("local_planner/steering/index_cmd", 1);
+    steering_with_index_pub = n.advertise<drc_task_common::Int8Float64>("local_planner/steering/index_cmd", 1);
     steering_pub = n.advertise<std_msgs::Float64>("local_planner/steering/cmd", 1);
     mochikae_order_pub = n.advertise<std_msgs::Bool>("real_robot/mochikae/flag", 1);
     // torso_yaw_pub = n.advertise<std_msgs::Float64>("/look_around_angle", 1);
@@ -149,7 +149,7 @@ public:
   
   
   /* dynamic_reconfigure for parameter tuning */
-  void dynamic_reconfigure_cb(drive_recognition::LocalPlannerMochikaeParamsConfig &config, uint32_t level) {
+  void dynamic_reconfigure_cb(drc_task_common::LocalPlannerMochikaeParamsConfig &config, uint32_t level) {
     // set visualize_path
     if (config.visualize_path <= path_num) {
       visualize_path = config.visualize_path;
@@ -367,7 +367,7 @@ public:
     steering_output_ave = (double)steering_output_ave / steering_output.size() * steering_output_gain;
     
     
-    drive_recognition::Int8Float64 pub_steering_with_index_msg;
+    drc_task_common::Int8Float64 pub_steering_with_index_msg;
     pub_steering_with_index_msg.index = ret_idx;
     pub_steering_with_index_msg.data = alpha_to_s_transformation(steering_output_ave);
     steering_with_index_pub.publish(pub_steering_with_index_msg);

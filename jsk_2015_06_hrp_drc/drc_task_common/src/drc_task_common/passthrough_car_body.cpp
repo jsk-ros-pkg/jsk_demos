@@ -6,7 +6,7 @@
 #include <pcl/filters/passthrough.h>
 #include <pcl/kdtree/kdtree_flann.h>
 #include <dynamic_reconfigure/server.h>
-#include <drive_recognition/PassthroughCarBodyConfig.h>
+#include <drc_task_common/PassthroughCarBodyConfig.h>
 #include <cmath>
 
 class PassthroughCarBody{
@@ -15,8 +15,8 @@ private:
   ros::Subscriber point_sub;
   ros::Publisher point_pub;
   double steering_state;
-  dynamic_reconfigure::Server<drive_recognition::PassthroughCarBodyConfig> server;
-  dynamic_reconfigure::Server<drive_recognition::PassthroughCarBodyConfig>::CallbackType f;
+  dynamic_reconfigure::Server<drc_task_common::PassthroughCarBodyConfig> server;
+  dynamic_reconfigure::Server<drc_task_common::PassthroughCarBodyConfig>::CallbackType f;
 
   double min_x;
   double max_x;
@@ -39,7 +39,7 @@ public:
   
   
   /* dynamic_reconfigure for parameter tuning */
-  void dynamic_reconfigure_cb(drive_recognition::PassthroughCarBodyConfig &config, uint32_t level) {
+  void dynamic_reconfigure_cb(drc_task_common::PassthroughCarBodyConfig &config, uint32_t level) {
     // set min_x
     min_x = config.min_x;
     ROS_INFO("min_x = %f", config.min_x);
