@@ -360,7 +360,7 @@
         (setq *cancel-motion-flag* nil)
         (catch 'exit
         ;; send motion to real robot
-        (send-drill-grasp-motion coords :drill-type *drill-type*)
+        (send-drill-grasp-motion coords)
         ;; send finish signal to ocs
         (let ((msg (instance drc_com_common::FC2OCSSmall :init)))
           (send msg :type drc_com_common::FC2OCSSmall::*DRILL_GRASP_FINISHED*)
@@ -791,7 +791,7 @@
 (init-robot-from-name "HRP2JSKNT")
 
 (setq *go-pos-offset* 700)
-(let ((drill-type-string (ros::get-param "~drill_type" "gun")))
+(let ((drill-type-string (ros::get-param "~drill_type" "takenoko")))
   (cond
    ((equal drill-type-string "gun") (setq *drill-type* :gun))
    ((equal drill-type-string "takenoko") (setq *drill-type* :takenoko))
