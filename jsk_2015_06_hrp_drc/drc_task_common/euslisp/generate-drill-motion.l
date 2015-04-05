@@ -361,7 +361,7 @@
                                     :rot mat)))
 
                   (let ((drill-grasp-coords (send (send drill-oriented-coords :copy-worldcoords)
-                                                         :transform (get-drill-grasp-stand-coords))))
+                                                         :transform (get-drill-grasp-stand-coords :drill-type drill-type))))
                     (setq *drill-stand-coords* (make-coords :pos (float-vector (elt (send drill-grasp-coords :worldpos) 0) (elt (send drill-grasp-coords :worldpos) 1) 0) :rpy (float-vector (elt (car (send drill-grasp-coords :rpy-angle)) 0) 0 0)))
                     )
                   )))))
@@ -817,7 +817,7 @@
                                     :rot mat)))
 
                   (let ((drill-wall-coords (send (send drill-oriented-coords :copy-worldcoords)
-                                                         :transform (get-drill-wall-stand-coords))))
+                                                         :transform (get-drill-wall-stand-coords :drill-type drill-type))))
                     (setq *drill-stand-coords* (make-coords :pos (float-vector (elt (send drill-wall-coords :worldpos) 0) (elt (send drill-wall-coords :worldpos) 1) 0) :rpy (float-vector (elt (car (send drill-wall-coords :rpy-angle)) 0) 0 0)))
                     )
                   )))))

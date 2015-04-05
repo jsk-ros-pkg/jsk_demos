@@ -767,11 +767,11 @@
         ;; publish object marker
         (erase-all-primitive-marker)
         (cond 
-         ((equal *drill-type* :gun)
+         (nil ;(equal *drill-type* :gun) ;;todo
           (insert-primitive-marker :shape-type jsk_rviz_plugins::TransformableMarkerOperate::*MESH_RESOURCE* :name "drill" :description "" :resource "package://drc_task_common/models/takenoko_drill.dae" :use-material t)
           )
-         ((equal *drill-type* :takenoko)
-          (insert-primitive-marker :shape-type jsk_rviz_plugins::TransformableMarkerOperate::*MESH_RESOURCE* :name "drill" :description "" :resource "package://hrpsys_gazebo_tutorials/environment_models/dewalt_dc550ka/meshes/dewalt_dc550ka.dae" :use-material t)
+         (t ;(equal *drill-type* :takenoko) ;;todo
+          (insert-primitive-marker :shape-type jsk_rviz_plugins::TransformableMarkerOperate::*MESH_RESOURCE* :name "drill" :description "" :resource "package://drc_task_common/models/takenoko_drill.dae" :use-material t)
           (set-primitive-marker-control-relative-pose (make-coords :pos (float-vector -22 30 97) :rpy (float-vector 0 0 pi/2))) ;;Todo more precise pose for button
           ))
         ;(set-primitive-marker-dimensions :radius 30 :z 300)
@@ -780,7 +780,7 @@
         ;; (apply-primitive-dimensions-to-midi-device)
         (move-robot-model-to-current-pos)
         ;; publish motion to robot model on rviz
-	(publish-drill-grasp-motion :coords (elt drill-grasp-params 0) :update? t :drill-type *drill-type*)
+	(publish-drill-grasp-motion :coords (elt drill-grasp-params 0) :update? t) ;todo drill-type
         (send smachine :go-to :selecting-exec-for-drill-grasp))
       ))
   (:drill-put-recognition-finished-callback (msg)
@@ -942,7 +942,7 @@
            (setq drill-grasp-params
                  (list (get-primitive-marker-pose :frame-id "BODY")))
            ;; publish dirll motion to robot model on rviz
-           (publish-drill-grasp-motion :coords (elt drill-grasp-params 0) :update? t :drill-type *drill-type*)
+           (publish-drill-grasp-motion :coords (elt drill-grasp-params 0) :update? t) ;;drill-type
            )
           ((eq (send smachine :state) :selecting-exec-for-drill-put)
            ;; update latest drill-put params
@@ -1069,7 +1069,8 @@
 ;; advertise
 (ros::advertise "/ocs/rviz/visualization/ocs_executive_message"
   jsk_rviz_plugins::OverlayText)
-(let ((drill-type-string (ros::get-param "~drill_type" "gun")))
+;; TODO
+(let ((drill-type-string (ros::get-param "~drill_type" "takenoko")))
   (cond
    ((equal drill-type-string "gun") (setq *drill-type* :gun))
    ((equal drill-type-string "takenoko") (setq *drill-type* :takenoko))
