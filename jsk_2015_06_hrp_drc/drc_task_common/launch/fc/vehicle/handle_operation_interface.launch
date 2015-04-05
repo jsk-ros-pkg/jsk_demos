@@ -8,8 +8,8 @@
 
   <node pkg="drc_task_common" type="DriveCmdInterrupter.py" name="drive_cmd_interrupter" output="screen"/>
 
-  <node pkg="topic_tools" type="throttle" name="handle_throttle" args="messages /staro_drive/operation/handle_cmd_raw 100 /staro_drive/operation/handle_cmd" />
-  <node pkg="topic_tools" type="throttle" name="accel_throttle" args="messages /staro_drive/operation/accel_cmd_raw 100 /staro_drive/operation/accel_cmd" />
-  <node pkg="topic_tools" type="throttle" name="brake_throttle" args="messages /staro_drive/operation/brake_cmd_raw 100 /staro_drive/operation/brake_cmd" />
+  <node pkg="topic_tools" type="throttle" name="handle_throttle" args="messages /drive/operation/handle_cmd_raw 100 /drive/operation/handle_cmd" />
+  <node pkg="topic_tools" type="throttle" name="accel_throttle" args="messages /drive/operation/accel_cmd_raw 100 /drive/operation/accel_cmd" />
+  <node pkg="topic_tools" type="throttle" name="brake_throttle" args="messages /drive/operation/brake_cmd_raw 100 /drive/operation/brake_cmd" />
   
 </launch>

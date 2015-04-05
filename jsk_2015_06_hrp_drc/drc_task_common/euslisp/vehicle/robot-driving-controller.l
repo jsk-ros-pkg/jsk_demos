@@ -58,22 +58,22 @@
          )
 
    ;; subscriber for operator command
-   (ros::subscribe "/staro_drive/operation/accel_cmd"
+   (ros::subscribe "/drive/operation/accel_cmd"
                    std_msgs::Float64
                    #'send self :accel-callback)
-   (ros::subscribe "/staro_drive/operation/brake_cmd"
+   (ros::subscribe "/drive/operation/brake_cmd"
                    std_msgs::Float64
                    #'send self :brake-callback)
-   (ros::subscribe "/staro_drive/operation/grasp_cmd"
+   (ros::subscribe "/drive/operation/grasp_cmd"
                    std_msgs::String
                    #'send self :grasp-callback)
-   (ros::subscribe "/staro_drive/operation/handle_cmd"
+   (ros::subscribe "/drive/operation/handle_cmd"
                    std_msgs::Float64
                    #'send self :handle-callback)
    (ros::subscribe "/rfsensor"
                    geometry_msgs::WrenchStamped
                    #'send self :rfsensor-callback)
-   (ros::advertise "/staro_drive/pedal_state" std_msgs::Bool 1)
+   (ros::advertise "/drive/pedal_state" std_msgs::Bool 1)
    )
 
   ;; handle command
@@ -182,7 +182,7 @@
      )
    (let ((pub-msg (instance std_msgs::Bool :init)))
      (send pub-msg :data accel-flag)
-     (ros::publish "/staro_drive/pedal_state" pub-msg)
+     (ros::publish "/drive/pedal_state" pub-msg)
      )
    )
   (:brake-callback
