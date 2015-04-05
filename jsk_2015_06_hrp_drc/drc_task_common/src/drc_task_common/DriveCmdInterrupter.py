@@ -19,15 +19,15 @@ class DriveCmdInterrupter:
         rospy.Subscriber("/handle_controller/accel", Float64, self.accel_cmd_callback)
         rospy.Subscriber("/handle_controller/brake", Float64, self.brake_cmd_callback)
         rospy.Subscriber("/handle_controller/gear", Int8, self.recognition_flag_callback)
-        rospy.Subscriber("/staro_drive/grasp_cmd", String, self.grasp_cmd_callback)
+        rospy.Subscriber("/drive/grasp_cmd", String, self.grasp_cmd_callback)
         
         # publisher
-        self.handle_publisher = rospy.Publisher("/staro_drive/operation/handle_cmd_raw", Float64)
-        self.accel_publisher = rospy.Publisher("/staro_drive/operation/accel_cmd_raw", Float64)
-        self.brake_publisher = rospy.Publisher("/staro_drive/operation/brake_cmd_raw", Float64)
-        self.grasp_publisher = rospy.Publisher("/staro_drive/operation/grasp_cmd", String)
-        self.operation_flag_handle_publisher = rospy.Publisher("/staro_drive/operation/flag/handle", Bool)
-        self.operation_flag_pedal_publisher = rospy.Publisher("/staro_drive/operation/flag/pedal", Bool)
+        self.handle_publisher = rospy.Publisher("/drive/operation/handle_cmd_raw", Float64)
+        self.accel_publisher = rospy.Publisher("/drive/operation/accel_cmd_raw", Float64)
+        self.brake_publisher = rospy.Publisher("/drive/operation/brake_cmd_raw", Float64)
+        self.grasp_publisher = rospy.Publisher("/drive/operation/grasp_cmd", String)
+        self.operation_flag_handle_publisher = rospy.Publisher("/drive/operation/flag/handle", Bool)
+        self.operation_flag_pedal_publisher = rospy.Publisher("/drive/operation/flag/pedal", Bool)
         
     def set_operation_flag(self, pub, flag):
         operation_flag = Bool()
