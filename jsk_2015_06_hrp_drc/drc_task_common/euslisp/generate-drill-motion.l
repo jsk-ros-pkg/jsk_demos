@@ -4,8 +4,8 @@
 (load "package://drc_task_common/models/takenoko-drill")
 (load "package://drc_task_common/models/gun-drill.l")
 
-(setq *drill-main-arm* :larm)
-(setq *drill-support-arm* :rarm)
+(setq *drill-main-arm* :rarm)
+(setq *drill-support-arm* :larm)
 (setq *default-drill-type* :takenoko)
 (setq *use-dual-arm-ik* nil)
 (setq *use-f-sensor-search* t)
@@ -19,20 +19,19 @@
   (send *drill* :put :type :takenoko)
   (send *drill* :put :grasp-coords
         (make-cascoords
-         :coords (make-coords :pos #f(-20 0 190) :rpy (list 0 pi 0))
+         :coords (make-coords :pos #f(0 0 170) :rpy (list (deg2rad -40) 0 pi))
          :parent *drill*))
   (send *drill* :put :support-grasp-coords
         (make-cascoords
-         :coords (make-coords :pos #f(0 0 190) :rpy (list 0 pi 0))
+         :coords (make-coords :pos #f(0 0 170) :rpy (list 0 0 pi))
          :parent *drill*))
   (send *drill* :put :pre-support-grasp-coords
         (make-cascoords
          :coords (send (send (send *drill* :get :support-grasp-coords) :copy-coords) :translate (float-vector -100 (if (equal *drill-main-arm* :rarm) 100 -100) 0) :local)
          :parent *drill*))
-  
   (send *drill* :put :button-coords
         (make-cascoords
-         :coords (make-coords :pos #f(-22 30 97) :rpy (list 0 0 pi/2))
+         :coords (make-coords :pos #f(-22 30 77) :rpy (list 0 0 pi/2))
          :parent *drill*))
   (send *drill* :put :put-coords
         (make-cascoords
@@ -106,20 +105,47 @@
         (recognized-coords-symbol :origin-coords))
   ;; generate robot
   (generate-robot robot-name :generate-ri? generate-ri?)
-  ;; place robot to origin
-  (send *robot* :reset-manip-pose)
+  ;; place robot to origin:
+  (send *robot* :angle-vector (get-drill-grasp-pre-pose))
   (send *robot* :fix-leg-to-coords (make-coords))
   (send *robot* :hand :arms :reset-pose) ;; this is neccesary for assoc coords to finger
   ;; attach handle to robot
   (setq *arm-drill-grasp-coords* (make-hash-table))
   (setf (gethash :rarm *arm-drill-grasp-coords*)
         (make-cascoords
-         :coords (send (send (send *robot* :rarm :end-coords) :copy-worldcoords) :translate (float-vector 48.0 12.0 0.0) :local)
+         :coords (send (send (send *robot* :rarm :end-coords) :copy-worldcoords) :translate (float-vector 39.0 3.0 0.0) :local)
          :parent (send (send *robot* :rarm :end-coords) :parent)))
   (setf (gethash :larm *arm-drill-grasp-coords*)
         (make-cascoords
-         :coords (send (send (send *robot* :larm :end-coords) :copy-worldcoords) :translate (float-vector 48.0 -12.0 0.0) :local)
+         :coords (send (send (send *robot* :larm :end-coords) :copy-worldcoords) :translate (float-vector 39.0 -3.0 0.0) :local)
          :parent (send (send *robot* :larm :end-coords) :parent)))
+  (send *robot* :hand :arms :hook-pose) ;; this is neccesary for assoc coords to finger
+  ;; attach handle to robot
+  ;; for hrp2jsknt
+  ;; (send *robot* :put :support-arm-drill-button-coords
+  ;;       (make-cascoords
+  ;;        :coords (send (send (send (send (send (send *robot* *drill-support-arm* :end-coords) :copy-worldcoords) :translate #f(121 -21 24) :local)
+  ;;                                  :rotate (deg2rad 25) :z :local) :rotate pi/2 :x :local) :rotate 0 :z :local)
+  ;;        :parent (send *robot* :hand *drill-support-arm* :link "L_INDEXPIP_R_LINK")))
+  ;; for hrp2jsknts
+  ;; (send *robot* :put :support-arm-drill-button-coords
+  ;;       (make-cascoords
+  ;;        :coords (send (send (send (send (send (send *robot* *drill-support-arm* :end-coords) :copy-worldcoords) :translate #f(120 -23 23) :local)
+  ;;                                  :rotate (deg2rad 25) :z :local) :rotate pi/2 :x :local) :rotate 0 :z :local)
+  ;; (send *robot* :put :support-arm-drill-button-coords
+  ;;       (make-cascoords
+  ;;        :coords (send (send (send (send (send (send *robot* *drill-support-arm* :end-coords) :copy-worldcoords) :translate #f(120 -0 0) :local)
+  ;;                                  :rotate pi/2 :y :local) :rotate pi :z :local) :rotate 0 :z :local)
+  ;;        :parent (send *robot* :hand *drill-support-arm* :link "L_INDEXPIP_R_LINK")))
+  ;; (send *robot* :put :support-arm-drill-button-coords
+  ;;       (make-cascoords
+  ;;        :coords (send (send (send *robot* *drill-support-arm* :end-coords) :copy-worldcoords) :translate #f(50 87.5 80) :local)
+  ;;        :coords (send (send (send *robot* *drill-support-arm* :end-coords) :copy-worldcoords) :translate #f(50 62 80) :local)
+  (send *robot* :put :support-arm-drill-button-coords
+        (make-cascoords
+         ;; :coords (send (send (send *robot* *drill-support-arm* :end-coords) :copy-worldcoords) :translate #f(50 87.5 80) :local)
+         :coords (send (send (send (send (send *robot* *drill-support-arm* :end-coords) :copy-worldcoords) :translate #f(120 62 -80) :local) :rotate (deg2rad 180) :y) :rotate (deg2rad -90) :z)
+         :parent (send (send *robot* *drill-support-arm* :end-coords) :parent)))
 
 
   (cond ((equal drill-type :takenoko) (init-takenoko-drill))
@@ -134,7 +160,7 @@
     (setq *ground* (make-cube 1000 1000 1))
     (objects (list *robot* *drill* *ground*))
     (send *irtviewer* :draw-objects)
-    (send *irtviewer* :change-background (float-vector 1 1 1))
+    (send *irtviewer* :change-background (float-vector 0.5 0.5 1))
     )
   )
 
@@ -158,7 +184,6 @@
                                  :local))
   ;treat the difference of origin between eus and recognition program
   ;(send *drill* :translate (float-vector 0 0 (* -0.5 (elt (send *drill* :body-type) 2))) :local)
-  (when draw? (send *irtviewer* :draw-objects))
   )
 
 (defun fullbody-inverse-kinematics-for-drill-grasp
@@ -196,7 +221,7 @@
              (send *robot* :look-at-target (send *drill* :worldcoords)))))
     ik-ret))
 (defun fullbody-inverse-kinematics-for-drill-grasp-dual
-  (&key (arm-symbol :grasp-coords) (support-arm-symbol :support-grasp-coords) (arm-tc (send (send *drill* :get arm-symbol) :copy-worldcoords)) (support-arm-tc (send (send *drill* :get support-arm-symbol) :copy-worldcoords)) (draw? t))
+  (&key (arm-symbol :grasp-coords) (support-arm-symbol :support-grasp-coords) (arm-tc (send (send *drill* :get arm-symbol) :copy-worldcoords)) (support-arm-tc (send (send *drill* :get support-arm-symbol) :copy-worldcoords)) (draw? t) (main-arm-coords (gethash *drill-main-arm* *arm-drill-grasp-coords*)) (suppor-arm-coords (gethash *drill-support-arm* *arm-drill-grasp-coords*)))
   (let 
       ((tc (list
            arm-tc
@@ -205,8 +230,8 @@
            (send *robot* :lleg :end-coords :copy-worldcoords))))
     (with-move-target-link-list
      (mt ll *robot* (list *drill-main-arm* *drill-support-arm* :rleg :lleg))
-     (setf (elt mt 0) (gethash *drill-main-arm* *arm-drill-grasp-coords*))
-     (setf (elt mt 1) (gethash *drill-support-arm* *arm-drill-grasp-coords*))
+     (setf (elt mt 0) main-arm-coords)
+     (setf (elt mt 1) support-arm-coords)
      (setq ik-ret (fullbody-inverse-kinematics-for-drill-grasp tc mt ll :draw? draw? :translation-axis (list t t t t) :rotation-axis (list t t t t)))
      (when ik-ret
        (setq ik-ret
@@ -236,52 +261,63 @@
   )
 (defun generate-drill-grasp-motion
   (&key (draw? t))
-  (let* ((reach-dist 100)
-	 (grasp-up-dist 100)
+  (let* ((reach-dist 50)
+	 (grasp-up-dist 50)
          (ik-results nil)
          (original-foot-midcoords (send (send *robot* :foot-midcoords) :copy-worldcoords))
          (original-drill-coords (send *drill* :copy-worldcoords))
-         (drill-type *default-drill-type*))
+         (drill-type *default-drill-type*)
+         (fin? t))
     ;; grasp drill
-    (send *robot* :reset-manip-pose)
+    (send *robot* :angle-vector (get-drill-grasp-pre-pose))
     (send *robot* :fix-leg-to-coords original-foot-midcoords)
     ;; solve ik to grasp drill
+    (block drill-ik
     (let* (ik-ret
            tc)
       (when draw? (send (send *drill* :get :grasp-coords) :draw-on :flush t))
       ;; solve ik for grasp
       (setq ik-ret (fullbody-inverse-kinematics-for-drill-grasp-single :draw? draw?))
       (push-back (list 2 (not (null ik-ret)) ik-ret) ik-results)
+      (when (and fin? (not ik-ret)) (return-from drill-ik nil))
       ;; solve ik for pre grasp
       (let ((robot-angle-vector (send *robot* :angle-vector)))
         (setq ik-ret (fullbody-inverse-kinematics-for-drill-grasp-single :arm-tc (send (send (send *robot* *drill-main-arm* :end-coords) :copy-worldcoords) :translate (float-vector (- 15) (if (equal *drill-main-arm* :rarm) (- 15) 15) -15) :local) :draw? draw?))
         (push (list 1 (not (null ik-ret)) ik-ret) ik-results)
+        (when (and fin? (not ik-ret)) (return-from drill-ik nil))
 	(send *robot* :angle-vector robot-angle-vector)
         (setq ik-ret (fullbody-inverse-kinematics-for-drill-grasp-single :arm-tc (send (send (send *robot* *drill-main-arm* :end-coords) :copy-worldcoords) :translate (float-vector (- reach-dist) (if (equal *drill-main-arm* :rarm) (- reach-dist) reach-dist) -15) :local) :draw? draw?))
+        (when (and fin? (not ik-ret)) (return-from drill-ik nil))
 	(push (list 0 (not (null ik-ret)) ik-ret) ik-results)
 	(send *robot* :angle-vector robot-angle-vector)
 	;; solve ik for grasp up	
         (send *drill* :translate (float-vector 0 0 grasp-up-dist) :world)
         (setq ik-ret (fullbody-inverse-kinematics-for-drill-grasp-single :draw? draw?))
 	(push-back (list 3 (not (null ik-ret)) ik-ret) ik-results)
+        (when (and fin? (not ik-ret)) (return-from drill-ik nil))
         (if (equal drill-type :gun) (send *drill* :newcoords (send (send (send *robot* :foot-midcoords) :copy-worldcoords) :transform (make-coords :pos (float-vector 450 0 1100)) :local)))
         (setq ik-ret (fullbody-inverse-kinematics-for-drill-grasp-single :draw? draw?))
 	(push-back (list 4 (not (null ik-ret)) ik-ret) ik-results)
+        (when (and fin? (not ik-ret)) (return-from drill-ik nil))
 	(send *robot* :angle-vector robot-angle-vector)
 	)
       (when *use-dual-arm-ik*
         (setq ik-ret (fullbody-inverse-kinematics-for-drill-grasp-dual :support-arm-symbol :pre-support-grasp-coords :draw? draw?))
+        (when (and fin? (not ik-ret)) (return-from drill-ik nil))
 	(push-back (list 5 (not (null ik-ret)) ik-ret) ik-results)
         (setq ik-ret (fullbody-inverse-kinematics-for-drill-grasp-dual :draw? draw?))
+        (when (and fin? (not ik-ret)) (return-from drill-ik nil))
 	(push-back (list 6 (not (null ik-ret)) ik-ret) ik-results)
         )
       ;; draw
-      (when draw? (send *irtviewer* :draw-objects :flush t))
+      )
+    )
+    (when draw? (send *irtviewer* :draw-objects :flush t))
       ;; drill-reset-pose
       (send *robot* :fix-leg-to-coords original-foot-midcoords)
       (send *drill* :newcoords original-drill-coords)
       (setq *drill-ik-results* ik-results)
-      )))
+      ))
 
 (defun get-drill-grasp-motion
   (&key (draw? t))
@@ -296,7 +332,7 @@
 (defun get-drill-grasp-stand-coords ;; relative to drill
   (&key (drill-type *default-drill-type*))
   (if (equal drill-type :takenoko)
-      (if (equal *drill-main-arm* :rarm) (make-coords :pos (float-vector -450 50 0) :rpy (list (deg2rad 0) 0 0)) (make-coords :pos (float-vector -450 -50 0) :rpy (list (deg2rad 0) 0 0))
+      (if (equal *drill-main-arm* :rarm) (make-coords :pos (float-vector -500 0 0) :rpy (list (deg2rad 30) 0 0)) (make-coords :pos (float-vector -500 0 0) :rpy (list (deg2rad -30) 0 0))
           )
     (if (equal *drill-main-arm* :rarm) (make-coords :pos (float-vector -600 100 0) :rpy (list (deg2rad 0) 0 0)) (make-coords :pos (float-vector -600 -100 0) :rpy (list (deg2rad 0) 0 0))
           )
@@ -345,7 +381,7 @@
          (drill-motion-length (length drill-motion-av-list)))
     (when (= drill-motion-length 0) (return-from send-drill-grasp-motion))
     (drill-hook :arm :arms)
-    (send *robot* :reset-manip-pose)
+    (send *robot* :angle-vector (get-drill-grasp-pre-pose))
     (unless (check-angle-vector-distance)
       (when real? (model2real :time 3000)))
     (when (equal drill-type :takenoko)
@@ -467,7 +503,7 @@
     (send *robot* :angle-vector (get-reach-drill-pre-pose))
     (unless (check-angle-vector-distance)
       (when real? (model2real :time 3000)))
-    (send *robot* :reset-manip-pose)
+    (send *robot* :angle-vector (get-drill-grasp-pre-pose))
     (unless (check-angle-vector-distance)
       (when real? (model2real :time 3000)))
     )
@@ -487,51 +523,9 @@
 
 
 ;; drill button ;;;;
-
-(defun set-drill-button-environment
-  (&key (drill-coords (make-coords :pos (float-vector 700 -150 800) :rpy (list 0 0 0)))
-        (generate-ri? t) (draw? t)
-        (robot-name "HRP2JSKNT")
-        (drill-type *default-drill-type*))
-  ;; generate robot
-  (generate-robot robot-name :generate-ri? generate-ri?)
-  ;; place robot to origin
-  (send *robot* :reset-manip-pose)
-  (send *robot* :fix-leg-to-coords (make-coords))
-  (send *robot* :hand :arms :reset-pose) ;; this is neccesary for assoc coords to finger
-  ;; attach handle to robot
-  ;; for hrp2jsknt
-  ;; (send *robot* :put :larm-drill-button-coords
-  ;;       (make-cascoords
-  ;;        :coords (send (send (send (send (send (send *robot* *drill-support-arm* :end-coords) :copy-worldcoords) :translate #f(121 -21 24) :local)
-  ;;                                  :rotate (deg2rad 25) :z :local) :rotate pi/2 :x :local) :rotate 0 :z :local)
-  ;;        :parent (send *robot* :hand *drill-support-arm* :link "L_INDEXPIP_R_LINK")))
-  ;; for hrp2jsknts
-  ;; (send *robot* :put :larm-drill-button-coords
-  ;;       (make-cascoords
-  ;;        :coords (send (send (send (send (send (send *robot* *drill-support-arm* :end-coords) :copy-worldcoords) :translate #f(120 -23 23) :local)
-  ;;                                  :rotate (deg2rad 25) :z :local) :rotate pi/2 :x :local) :rotate 0 :z :local)
-  ;;        :parent (send *robot* :hand *drill-support-arm* :link "L_INDEXPIP_R_LINK")))
-  ;; TODO change to use *drill-main-arm*
-  (send *robot* :put :larm-drill-button-coords
-        (make-cascoords
-         :coords (send (send (send *robot* *drill-support-arm* :end-coords) :copy-worldcoords) :translate #f(50 87.5 80) :local)
-         ;;:coords (send (send (send *robot* *drill-support-arm* :end-coords) :copy-worldcoords) :translate #f(50 62 80) :local)
-         :parent (send (send *robot* *drill-support-arm* :end-coords) :parent)))
-  ;; drill setting
-  ;; generate drill
-  (cond ((equal drill-type :takenoko) (init-takenoko-drill))
-        ((equal drill-type :gun) (init-gun-drill))
-        )
-  (when drill-coords
-    (send *drill* :newcoords drill-coords))
-  ;; draw
-  (when draw?
-    (setq *ground* (make-cube 1000 1000 1))
-    (objects (list *robot* *drill* *ground*))
-    (send *irtviewer* :draw-objects)
-    (send *irtviewer* :change-background (float-vector 1 1 1))
-    )
+(defun set-drill-default-coords
+  (&key (arm *drill-main-arm*))
+  (send *drill* :newcoords (send (send (send *robot* *drill-main-arm* :end-coords) :copy-worldcoords) :transform (send (send (send *drill* :get :grasp-coords) :copy-coords) :inverse-transformation)))
   )
 
 (defun set-drill-button-environment-full
@@ -541,15 +535,24 @@
    (use-ri? t))
   (let* (drill-worldcoords)
     ;; place robot and drill to initial coords
-    (set-drill-button-environment :drill-coords nil :draw? draw? :generate-ri? use-ri?)
+    (set-drill-environment :drill-coords nil :draw? draw? :generate-ri? use-ri?)
     (cond (use-ri?
            (send *robot* :angle-vector (send *ri* :state :potentio-vector)))
           (t
            (send *robot* :angle-vector (get-potentio-vector-from-joint-states))))
     (send *robot* :fix-leg-to-coords (make-coords) '(:lleg :rleg))
     (send (send *robot* *drill-main-arm* :end-coords) :dissoc *drill*)
-    (send *drill* :newcoords (send (send (send *robot* :body_lk) :copy-worldcoords) :transform drill-coords :local))
-    (send (send *robot* *drill-main-arm* :end-coords) :assoc *drill*)
+    (if use-ri? (send *robot* :angle-vector (send *ri* :state :reference-vector)))
+    (if drill-coords
+        (progn (send *drill* :newcoords (send (send (send *robot* :body_lk) :copy-worldcoords) :transform drill-coords :local))
+               (send *drill* :put :grasp-coords
+                     (make-cascoords
+                      :coords (send (gethash *drill-main-arm* *arm-drill-grasp-coords*) :copy-worldcoords)
+                      :parent *drill*)))
+      (set-drill-default-coords)
+      )
+
+    ;(send (send *robot* *drill-main-arm* :end-coords) :assoc *drill*)
     (when draw? (send *irtviewer* :draw-objects))
     ))
 
@@ -558,10 +561,12 @@
   (let* (ret)
     (with-move-target-link-list
      (mt ll *robot* (list *drill-main-arm* *drill-support-arm* :rleg :lleg))
-     (setf (elt mt 1) (send *robot* :get :larm-drill-button-coords))
+     (setf (elt mt 0) (gethash *drill-main-arm* *arm-drill-grasp-coords*))
+     (setf (elt mt 1) (send *robot* :get :support-arm-drill-button-coords))
      (setq tc
            (list
-            (send *robot* *drill-main-arm* :end-coords :copy-worldcoords)
+            ;(send *robot* *drill-main-arm* :end-coords :copy-worldcoords)
+            (send (send *drill* :get :grasp-coords) :copy-worldcoords)
             (send (send (send (send *drill* :get :button-coords) :copy-worldcoords)
                         :translate (float-vector x-offset y-offset z-offset) :local) :rotate (deg2rad 150) :z :local)
             (send *robot* :rleg :end-coords :copy-worldcoords)
@@ -592,7 +597,7 @@
   (let* (ik-results
          (original-foot-midcoords (send (send *robot* :foot-midcoords) :copy-worldcoords)))
     ;; push buton
-    (send *robot* :reset-manip-pose)
+    (send *robot* :angle-vector (get-drill-grasp-pre-pose))
     (send *robot* :fix-leg-to-coords original-foot-midcoords)
     (let* (ik-ret)
       ;; pre-push1
@@ -715,9 +720,10 @@
   (&key (draw? t) (drill-type *default-drill-type*))
   (let* (
          (ik-results nil)
-         (original-foot-midcoords (send (send *robot* :foot-midcoords) :copy-worldcoords)))
+         (original-foot-midcoords (send (send *robot* :foot-midcoords) :copy-worldcoords))
+         (fin? t))
     ;; wall drill
-    (send *robot* :reset-manip-pose)
+    (send *robot* :angle-vector (get-drill-grasp-pre-pose))
     (send *robot* :fix-leg-to-coords original-foot-midcoords)
     ;; solve ik to wall drill
     (let* (ik-ret
@@ -727,12 +733,14 @@
       (when draw? (send (send *drill* :get :grasp-coords) :draw-on :flush t))
       ;; solve ik for walls
       (ros::ros-info (format nil "dt-coords-list ~A" dt-coords-list))
+      (block drill-ik
       (dotimes (i dt-coords-length)
         (send *drill* :newcoords (send (elt dt-coords-list i) :copy-worldcoords))
         ;;(send *drill* :newcoords (send (send (send *robot* :body_lk) :copy-worldcoords) :transform (get-drill-coords-with-symbol (elt dt-coords-list i) :origin-coords) :local))
         (if (equal drill-type :gun) (set-drill-rotation :deg 20))
         (setq ik-ret (if *use-dual-arm-ik* (fullbody-inverse-kinematics-for-drill-grasp-dual :draw? draw?) (fullbody-inverse-kinematics-for-drill-grasp-single :draw? draw? :rotation-axis (if (equal drill-type :takenoko) '(:z t t) '(t t t)))))
         (push-back (list (+ i 1) (not (null ik-ret)) ik-ret) ik-results)
+        (when (and fin? (not ik-ret)) (return-from drill-ik nil))
         (when (or (equal i 0) (equal i (- dt-coords-length 1)))
           (send *drill* :translate (float-vector -150 0 0) :world)
           (setq ik-ret (if *use-dual-arm-ik* (fullbody-inverse-kinematics-for-drill-grasp-dual :draw? draw?) (fullbody-inverse-kinematics-for-drill-grasp-single :draw? draw? :rotation-axis (if (equal drill-type :takenoko) '(:z t t) '(t t t)))))
@@ -742,16 +750,16 @@
           (if (equal i 0) (push (list 0 (not (null ik-ret)) ik-ret) ik-results))
           (if (or (equal i (- dt-coords-length 1)) (equal dt-coords-length 0)) (push-back (list (+ dt-coords-length 1) (not (null ik-ret)) ik-ret) ik-results))
           )
-        )
+      )
       ;; draw
       (when draw? (send *irtviewer* :draw-objects :flush t))
       ;; drill-reset-pose
-      ;(send *robot* :angle-vector (get-look-drill-pose))
+                                        ;(send *robot* :angle-vector (get-look-drill-pose))
       (send *robot* :fix-leg-to-coords original-foot-midcoords)
       ;(push-back (list 3 t (send *robot* :angle-vector)) ik-results)
       (setq *drill-ik-results* ik-results)
-      ))
-  )
+      )))
+
 
 (defun get-drill-wall-motion
   (&key (draw? t))
@@ -767,7 +775,7 @@
   (&key (drill-type *default-drill-type*))
   (if (equal drill-type :gun)
       (if (equal *drill-main-arm* :rarm) (make-coords :pos (float-vector -580 0 0) :rpy (list (deg2rad 0) 0 0)) (make-coords :pos (float-vector -580 0 0) :rpy (list (deg2rad 0) 0 0)))
-    (if (equal *drill-main-arm* :rarm) (make-coords :pos (float-vector -680 0 0) :rpy (list (deg2rad 0) 0 0)) (make-coords :pos (float-vector -680 0 0) :rpy (list (deg2rad 0) 0 0)))
+    (if (equal *drill-main-arm* :rarm) (make-coords :pos (float-vector -680 200 0) :rpy (list (deg2rad 0) 0 0)) (make-coords :pos (float-vector -680 -200 0) :rpy (list (deg2rad 0) 0 0)))
     )
   )
 (defun get-drill-wall-motion-full
@@ -880,6 +888,13 @@
   #f(-1.73786 12.7998 -28.717 58.3273 -27.2775 -3.19394 0.0 -1.75078 13.1089 -32.0242 64.2536 -29.8937 -3.50327 0.0 -18.0177 40.9471 -15.5394 -20.0 -71.9257 -1.63271 9.57461 -68.7006 -18.7947 12.8132 13.4518 60.0 -67.3083 63.2485 -56.2882 -89.6456 -32.2721 16.8311 -17.2177 -60.0)
   ;;#f(0.0 0.0 -26.0 50.0 -24.0 0.0 0.0 0.0 0.0 -26.0 50.0 -24.0 0.0 0.0 0.0 0.0 -20.0 40.0 -16.9174 -3.95202 39.3961 -81.2715 -74.5661 -40.3588 -35.2676 60.0 50.0 30.0 10.0 -120.0 25.0 5.0 -20.0 -60.0)
   )
+(defun get-drill-grasp-pre-pose (&key (arm *drill-main-arm*) (drill-type *default-drill-type*))
+  (cond ((equal arm :rarm)
+        #f(0.0 0.0 -26.0 50.0 -24.0 0.0 0.0 0.0 0.0 -26.0 50.0 -24.0 0.0 0.0 0.0 0.0 0.0 40.0 49.2654 -15.6889 -8.04143 -131.198 78.4518 -8.73041 1.4443 60.0 50.0 30.0 10.0 -120.0 25.0 5.0 -20.0 -60.0))
+        ((equal arm :larm) #f(0.0 0.0 -26.0 50.0 -24.0 0.0 0.0 0.0 0.0 -26.0 50.0 -24.0 0.0 0.0 0.0 0.0 0.0 40.0 50.0 -30.0 -10.0 -120.0 -25.0 -5.0 -20.0 60.0 49.3037 15.7767 8.00799 -131.215 -78.4251 8.75576 1.53598 -60.0)
+         )
+        (t #f(0.0 0.0 -26.0 50.0 -24.0 0.0 0.0 0.0 0.0 -26.0 50.0 -24.0 0.0 0.0 0.0 0.0 0.0 40.0 50.8516 -36.1267 0.371474 -131.17 72.8481 -13.9098 21.4063 60.0 50.8516 36.1267 -0.371464 -131.17 -72.8481 13.9098 21.4063 -60.0)))
+  )
 
 (defun get-button-drill-pre-pose ()
   #f(-3.00133 2.02892 -27.2933 50.8864 -23.7853 -2.19867 0.0 -3.00129 2.03943 -27.2041 49.4034 -22.3915 -2.20917 0.0 39.4881 32.13 -45.0 17.2412 -18.1543 -92.9917 30.9097 -118.766 87.4559 26.6536 47.0384 60.0 50.0 30.0 10.0 -120.0 25.0 5.0 -20.0 -60.0)
@@ -903,18 +918,21 @@
 ;; TODO pre-push-pose
 (defun test-drill-grasp-motion ()
   ;(get-drill-grasp-motion-full (make-coords :pos (float-vector 700 -150 800) :rpy (list 0 0 0)) :draw? t)
-  (setq *answer-for-grasp-test* (get-drill-grasp-motion-full (make-coords :pos (float-vector 1000 -150 200) :rpy (list (deg2rad -90) 0 0)) :draw? t :drill-type :takenoko))
-  (play-motion-on-eus-viewer *drill-motion*)
+  (setq *answer-for-grasp-test* (get-drill-grasp-motion-full (make-coords :pos (float-vector 1000 -150 100) :rpy (list (deg2rad 90) 0 0)) :draw? t :drill-type :takenoko))
+  (send *robot* :hand :arms :hook-pose)
+  ;(play-motion-on-eus-viewer *drill-motion*)
   )
 (defun test-drill-put-motion ()
   ;(get-drill-grasp-motion-full (make-coords :pos (float-vector 700 -150 800) :rpy (list 0 0 0)) :draw? t)
   (setq *answer-for-grasp-test* (get-drill-grasp-motion-full (make-coords :pos (float-vector 1000 -150 200) :rpy (list 0 0 0)) :draw? t :drill-type :takenoko :recognized-coords-symbol :put-coords))
-  (play-motion-on-eus-viewer *drill-motion*)
+  (send *robot* :hand :arms :hook-pose)
+  ;(play-motion-on-eus-viewer *drill-motion*)
   )
 (defun test-drill-wall-motion ()
   (setq *drill-coords-list* (list (make-coords :pos (float-vector 1000 -150 400) :rpy (list 0 pi/2 0)) (make-coords :pos (float-vector 1000 -250 500) :rpy (list 0 pi/2 0)) (make-coords :pos (float-vector 1000 -250 400) :rpy (list 0 pi/2 0)) (make-coords :pos (float-vector 1000 -50 500) :rpy (list 0 pi/2 0))))
   (setq *answer-for-grasp-test* (get-drill-wall-motion-full *drill-coords-list* :draw? t :drill-type :takenoko :recognized-coords-symbol :edge-coords))
-  (play-motion-on-eus-viewer *drill-motion*)
+  (send *robot* :hand :arms :hook-pose)
+  ;(play-motion-on-eus-viewer *drill-motion*)
   )
 (defun re-view ()
   (play-motion-on-eus-viewer *drill-motion*)
@@ -1092,7 +1110,7 @@
 ;;   (&optional (x-offset 0) (y-offset 0))
 ;;   (with-move-target-link-list
 ;;    (mt ll *robot* (list *drill-main-arm* *drill-support-arm* :rleg :lleg))
-;;    (setf (elt mt 1) (send *robot* :get :larm-drill-button-coords))
+;;    (setf (elt mt 1) (send *robot* :get :support-arm-drill-button-coords))
 ;;    (setq tc
 ;;          (list
 ;;           (send *robot* *drill-main-arm* :end-coords :copy-worldcoords)
@@ -1126,7 +1144,7 @@
 ;;   (&optional (x-offset 0) (y-offset 0))
 ;;   (with-move-target-link-list
 ;;    (mt ll *robot* (list *drill-main-arm* *drill-support-arm* :rleg :lleg))
-;;    (setf (elt mt 1) (send *robot* :get :larm-drill-button-coords))
+;;    (setf (elt mt 1) (send *robot* :get :support-arm-drill-button-coords))
 ;;    (setq tc
 ;;          (list
 ;;           (send *robot* *drill-main-arm* :end-coords :copy-worldcoords)
