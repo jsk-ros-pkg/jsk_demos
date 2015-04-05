@@ -1,3 +1,6 @@
+- name: 'drive'
+  service: 'drive'
+  column: 0
 - name: 'valve'
   service: 'valve'
   column: 0

@@ -58,3 +58,5 @@ uint8 HRPSYS_STOP_IMP=35
 # angle-vector
 uint8 ANGLE_VECTOR_SEND=36
 uint8 CANCEL_MOTION_NOW=37
+# drive
+uint8 DRIVE_COMMAND=38

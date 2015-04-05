@@ -40,6 +40,9 @@
                 drill-wall-target-coords ;; list of coords
                 drill-button-params ;; (list coords)
                 foreground-bacground-sync-obj
+                ;; For driving task
+                latest-handle-angle
+                latest-accell-angle
                 show-text-buffer
                 ))
 
@@ -184,6 +187,11 @@
 
 ;; button callback ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defmethod ocs-executive-app
+  (:drive-button-callback (req)
+    (when (send smachine :next? :driving)
+      (send self :show-text "Driving mode" :select)
+      (send smachine :go-to :driving))
+    )
   (:valve-button-callback (req)
     (when (send smachine :next? :selecting-region-for-valve)
       (send self :set-image-view2-mode :rectangle)
@@ -1028,6 +1036,32 @@
     )
   )
 
+;; Driving callback
+(defmethod ocs-executive-app
+  (:drive-handle-angle-callback (msg)
+    (when (send smachine :state? :vehicle)
+      (setq latest-handle-angle (send msg :data))
+      (send self :relay-drive-message-to-fc)))
+  (:drive-accell-angle-callback (msg)
+    (when (send smachine :state? :vehicle)
+      (setq latest-accell-angle (send msg :data))
+      (send self :relay-drive-message-to-fc)))
+  (:drive-brake-angle-callback (msg)
+    (when (send smachine :state? :vehicle)
+      (setq latest-brake-angle (send msg :data))
+      (send self :relay-drive-message-to-fc)))
+  (:relay-drive-message-to-fc ()
+    (let ((msg (instance OCS2FCSmall :init)))
+      (send msg :type drc_com_common::OCS2FCSmall::*DRIVE_COMMAND*)
+      (when (and latest-handle-angle latest-accell-angle latest-brake-angle)
+        (setf (elt (send msg :float_params) 0) latest-handle-angle)
+        (setf (elt (send msg :float_params) 1) latest-accell-angle)
+        (setf (elt (send msg :float_params) 2) latest-brake-angle)
+        (setq latest-handle-angle nil)
+        (setq latest-accell-angle nil)
+        (setq latest-brake-angle nil))
+      (send self :send-to-fc msg)))
+  )
 
 ;; generate *robot*
 (generate-robot "HRP2JSKNT" :generate-ri? nil)
@@ -1053,6 +1087,7 @@
 (ros::advertise "/drill_pose_list" geometry_msgs::PoseArray 1)
 
 ;; registering services for button UIs
+(ros::advertise-service "drive" std_srvs::Empty #'send *app* :drive-button-callback)
 (ros::advertise-service "valve" std_srvs::Empty #'send *app* :valve-button-callback)
 (ros::advertise-service "door" std_srvs::Empty #'send *app* :door-button-callback)
 (ros::advertise-service "debri" std_srvs::Empty #'send *app* :debri-button-callback)
@@ -1073,6 +1108,10 @@
 (ros::advertise-service "angle_vector_command_from_ocs" drc_task_common::AngleVectorCommand #'send *app* :angle-vector-command-from-ocs)
 (ros::advertise-service "cancel_motion_now" std_srvs::Empty #'send *app* :cancel-motion-now)
 
+;; Drive joystick controller topics
+(ros::subscribe "/ocs/drive/operation/handle_cmd" std_msgs::Float64 #'send *app* :drive-handle-angle-callback)
+(ros::subscribe "/ocs/drive/operation/accel_cmd" std_msgs::Float64 #'send *app* :drive-accell-angle-callback)
+(ros::subscribe "/ocs/drive/operation/brake_cmd" std_msgs::Float64 #'send *app* :drive-brake-angle-callback)
 ;; subscribing image_view2 ROI stuff
 (ros::subscribe "/ocs/communication/image_rect_color/screenrectangle/scaled" geometry_msgs::PolygonStamped
   #'send *app* :rectangle-callback)

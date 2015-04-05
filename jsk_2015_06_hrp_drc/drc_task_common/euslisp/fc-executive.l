@@ -102,7 +102,8 @@
                 self :angle-vector-send-command-callback)
           (list drc_com_common::OCS2FCSmall::*CANCEL_MOTION_NOW*
                 self :cancel-motion-now-command-callback)
-          )
+          (list drc_com_common::OCS2FCSmall::*DRIVE_COMMAND*
+                self :drive-command-callback))
     self)
   (:register-timelimits (sm)
     ;; sm is a instance of state machine
@@ -778,6 +779,17 @@
        (send self :send-to-ocs msg))
      (send smachine :go-to :initial))
    )
+  (:drive-command-callback (msg)
+    (when (send smachine :state? :initial) ;initial??, should it change to :executing-vehicle?
+      (let ((handle-angle (elt (send msg :float_params) 0))
+            (accell-angle (elt (send msg :float_params) 1))
+            (brake-angle (elt (send msg :float_params) 2)))
+        (ros::publish "/drive/operation/handle_cmd"
+          (instance std_msgs::Float64 :init :data handle-angle))
+        (ros::publish "/drive/operation/accell_cmd"
+          (instance std_msgs::Float64 :init :data accell-angle))
+        (ros::publish "/drive/operation/brake_cmd"
+          (instance std_msgs::Float64 :init :data brake-angle)))))
   (:cancel-motion-now-command-callback
     (msg)
     (setq *cancel-motion-flag* t)
@@ -815,6 +827,9 @@
 (ros::advertise "/drill_recognition_for_put/input_rect" geometry_msgs::PolygonStamped)
 (ros::advertise "/drill_recognition_for_wall/input_poly" geometry_msgs::PolygonStamped)
 (ros::advertise "/fc_to_ocs_low_speed/input" drc_com_common::FC2OCSSmall)
+(ros::advertise "/drive/operation/handle_cmd" std_msgs::Float64)
+(ros::advertise "/drive/operation/accel_cmd" std_msgs::Float64)
+(ros::advertise "/drive/operation/brake_cmd" std_msgs::Float64)
 
 (ros::subscribe "/fc_from_ocs_low_speed/output" drc_com_common::OCS2FCSmall
   #'send (send *app* :ocs2fc-message-handler) :root-callback)

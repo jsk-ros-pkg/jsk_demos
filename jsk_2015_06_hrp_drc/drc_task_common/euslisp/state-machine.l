@@ -545,6 +545,9 @@ Usage:
      (:executing-drill-button -> :selecting-exec-for-drill-button)          ;cancel
      (:selecting-exec-for-drill-button -> :initial)                   ;cancel
      (:executing-drill-button -> :initial)                            ;done
+     ;; driving
+     (:initial -> :vehicle)
+     (:vehicle -> :initial)
      )
    '((:initial :initial)
      ;; go-pos
@@ -602,6 +605,8 @@ Usage:
      (:recognizing-drill-button-pose :drill-button)
      (:selecting-exec-for-drill-button :drill-button)
      (:executing-drill-button :drill-button)
+     ;; driving
+     (:vehicle :vehicle)
      )
    :initial "ocs_state.png" t))
 
@@ -680,6 +685,9 @@ Usage:
 
      (:initial -> :executing-angle-vector)
      (:executing-angle-vector -> :initial)
+
+     (:initial -> :executing-vehicle)
+     (:executing-vehicle -> :initial)
      )
    '((:initial :initial)
      
@@ -716,6 +724,8 @@ Usage:
      (:executing-look-around :look-around)
 
      (:executing-angle-vector :angle-vector)
+
+     (:executing-vehicle :vehicle)
      )
    :initial nil t
    ))
