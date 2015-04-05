@@ -22,12 +22,12 @@ class DriveCmdInterrupter:
         rospy.Subscriber("/drive/grasp_cmd", String, self.grasp_cmd_callback)
         
         # publisher
-        self.handle_publisher = rospy.Publisher("/drive/operation/handle_cmd_raw", Float64)
-        self.accel_publisher = rospy.Publisher("/drive/operation/accel_cmd_raw", Float64)
-        self.brake_publisher = rospy.Publisher("/drive/operation/brake_cmd_raw", Float64)
-        self.grasp_publisher = rospy.Publisher("/drive/operation/grasp_cmd", String)
-        self.operation_flag_handle_publisher = rospy.Publisher("/drive/operation/flag/handle", Bool)
-        self.operation_flag_pedal_publisher = rospy.Publisher("/drive/operation/flag/pedal", Bool)
+        self.handle_publisher = rospy.Publisher("drive/operation/handle_cmd_raw", Float64)
+        self.accel_publisher = rospy.Publisher("drive/operation/accel_cmd_raw", Float64)
+        self.brake_publisher = rospy.Publisher("drive/operation/brake_cmd_raw", Float64)
+        self.grasp_publisher = rospy.Publisher("drive/operation/grasp_cmd", String)
+        self.operation_flag_handle_publisher = rospy.Publisher("drive/operation/flag/handle", Bool)
+        self.operation_flag_pedal_publisher = rospy.Publisher("drive/operation/flag/pedal", Bool)
         
     def set_operation_flag(self, pub, flag):
         operation_flag = Bool()
