@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(drc_task_common)
 
-find_package(catkin REQUIRED COMPONENTS cmake_modules message_generation std_msgs std_srvs geometry_msgs roscpp rospy sensor_msgs visualization_msgs message_filters message_generation jsk_pcl_ros interactive_markers pcl_conversions jsk_topic_tools rviz eigen_conversions dynamic_tf_publisher jsk_interactive_marker jsk_recognition_msgs move_base_msgs rosgraph_msgs topic_tools jsk_topic_tools jsk_ik_server pcl_msgs dynamic_tf_publisher jsk_footstep_msgs drc_com_common jsk_perception jsk_calibration resized_image_transport smach_msgs roseus)
+find_package(catkin REQUIRED COMPONENTS cmake_modules message_generation std_msgs std_srvs geometry_msgs roscpp rospy sensor_msgs visualization_msgs message_filters message_generation jsk_pcl_ros interactive_markers pcl_conversions jsk_topic_tools rviz eigen_conversions dynamic_tf_publisher jsk_interactive_marker jsk_recognition_msgs move_base_msgs rosgraph_msgs topic_tools jsk_topic_tools jsk_ik_server pcl_msgs jsk_footstep_msgs drc_com_common jsk_perception jsk_calibration resized_image_transport smach_msgs roseus pcl_ros nav_msgs tf dynamic_reconfigure)
 
 catkin_python_setup()
 
@@ -9,10 +9,18 @@ add_message_files(DIRECTORY msg FILES StringMultiArray.msg)
 add_message_files(DIRECTORY msg FILES InteractiveMarkerArray.msg)
 add_message_files(DIRECTORY msg FILES TMarkerInfo.msg)
 add_message_files(DIRECTORY msg FILES Float32ArrayStamped.msg)
+add_message_files(DIRECTORY msg FILES Int8Float64.msg)
 add_service_files(DIRECTORY srv FILES RvizMenuCall.srv RvizMenuSelect.srv EusCommand.srv StringRequest.srv ICPService.srv GetIKArm.srv GetIKArmPose.srv GoPosCommand.srv Uint8Request.srv AngleVectorCommand.srv)
 
 generate_messages(DEPENDENCIES ${PCL_MSGS} std_msgs std_srvs visualization_msgs sensor_msgs geometry_msgs jsk_pcl_ros jsk_interactive_marker jsk_recognition_msgs move_base_msgs)
 
+generate_dynamic_reconfigure_options(
+  config/vehicle/LocalPlannerMochikaeParams.cfg
+  config/vehicle/ObstacleDetectionParams.cfg
+  config/vehicle/PassthroughCarBody.cfg
+  config/vehicle/SwitchInputCloud.cfg
+  config/vehicle/VisualOdometryVerification.cfg
+)
 
 catkin_package(
   CATKIN_DEPENDS message_runtime INCLUDE_DIRS
@@ -65,6 +73,27 @@ target_link_libraries(manipulation_data_visualizer
    yaml-cpp
 )
 add_dependencies(manipulation_data_visualizer ${PROJECT_NAME}_gencpp)
+
+
+add_executable(kdtree_obstacle src/drc_task_common/kdtree_obstacle_detection.cpp)
+add_dependencies(kdtree_obstacle ${PROJECT_NAME}_gencfg ${PROJECT_NAME}_gencpp)
+target_link_libraries(kdtree_obstacle ${catkin_LIBRARIES})
+
+add_executable(simplified_local_planner_mochikae src/drc_task_common/simplified_local_planner_mochikae.cpp)
+add_dependencies(simplified_local_planner_mochikae ${PROJECT_NAME}_gencfg ${PROJECT_NAME}_gencpp)
+target_link_libraries(simplified_local_planner_mochikae ${catkin_LIBRARIES})
+
+add_executable(switch_input_cloud src/drc_task_common/input_cloud_switching.cpp)
+add_dependencies(switch_input_cloud ${PROJECT_NAME}_gencfg ${PROJECT_NAME}_gencpp)
+target_link_libraries(switch_input_cloud  ${catkin_LIBRARIES})
+
+add_executable(visual_odometry_verification src/drc_task_common/visual_odometry_verification.cpp)
+add_dependencies(visual_odometry_verification ${PROJECT_NAME}_gencfg ${PROJECT_NAME}_gencpp)
+target_link_libraries(visual_odometry_verification ${catkin_LIBRARIES})
+
+add_executable(passthrough_car_body src/drc_task_common/passthrough_car_body.cpp)
+add_dependencies(passthrough_car_body ${PROJECT_NAME}_gencfg ${PROJECT_NAME}_gencpp)
+target_link_libraries(passthrough_car_body ${catkin_LIBRARIES})
 
 execute_process(
   COMMAND mkdir -p ${PROJECT_SOURCE_DIR}/pcds)
