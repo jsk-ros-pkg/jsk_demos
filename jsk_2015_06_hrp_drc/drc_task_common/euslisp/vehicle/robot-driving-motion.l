@@ -64,7 +64,7 @@
    ;; (send robot limb :angle-vector #f(0.0 0.0 -86.0 65.0 15.0 0.0))
    ;; (send robot limb :angle-vector #f(-2.592494e-06 3.642189e-05 -84.2409 62.8969 15.344 -3.722199e-05)) ;; move-end-pos #f(0 0 -10)
    (when real
-     (send *ri* :start-impedance limb :M-p 100 :D-p 300 :K-p 700)
+     (send self :set-impedance-for-support limb)
      )
    (send robot limb :move-end-pos #f(0 0 -10) :world)
    (when real
@@ -488,6 +488,10 @@
   (:set-impedance-for-handle
    (limb)
    (send *ri* :start-impedance limb :M-p 200 :D-p 600 :K-p 1400)
+   )
+  (:set-impedance-for-support
+   (limb)
+   (send *ri* :start-impedance limb :M-p 100 :D-p 600 :K-p 700)
    )
   (:update-handle-angle-coords-table
    (&optional (step 5))
