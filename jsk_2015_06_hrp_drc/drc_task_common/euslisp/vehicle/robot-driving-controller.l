@@ -263,10 +263,16 @@
   
   (:execute
     ()
-    (do-until-key
-     (warn "current-angle: ~A~%" (send motion :estimate-current-handle-angle))
-     (ros::spin-once)
-     (ros::sleep)
-     )
+    (let ((count 0))
+      (do-until-key
+       (when (> count 10)
+         (warn "current-angle: ~A~%" (send motion :estimate-current-handle-angle))
+         (setq count 0)
+         )
+       (ros::spin-once)
+       (ros::sleep)
+       (setq count (+ count 1))
+       )
+      )
     )
   )
