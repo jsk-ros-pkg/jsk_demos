@@ -51,8 +51,8 @@
       <remap from="~input" to="gsensor_cloud/output" />
       <rosparam>
         filter_field_name: x
-        filter_limit_min: -3
-        filter_limit_max: 3
+        filter_limit_min: -10
+        filter_limit_max: 10
         filter_limit_negative: false
       </rosparam>
     </node>
@@ -62,8 +62,8 @@
       <remap from="~input" to="x_filter/output" />
       <rosparam>
         filter_field_name: y
-        filter_limit_min: -3
-        filter_limit_max: 3
+        filter_limit_min: -10
+        filter_limit_max: 10
         filter_limit_negative: false
       </rosparam>
     </node>
@@ -76,7 +76,7 @@
       <rosparam>
         filter_field_name: z
         filter_limit_negative: true
-        filter_limit_min: 1.5
+        filter_limit_min: 3.0
         filter_limit_max: 100.0
       </rosparam>
     </node>
