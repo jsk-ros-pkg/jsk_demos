@@ -23,7 +23,7 @@
   (:ride
    (&key (init-pose t))
    ;; (send robot :move-to (make-coords :pos (float-vector 0 370.0 200) :rpy (float-vector 0.0 0.0 0.0)) :world)
-   (send robot :move-to (make-coords :pos (float-vector 180 370.0 80) :rpy (float-vector 0.0 (- (/ pi 16)) 0.0)) :world)
+   (send robot :move-to (make-coords :pos (float-vector 180 370.0 50) :rpy (float-vector 0.0 (- (/ pi 16)) 0.0)) :world)
    (when init-pose
      (send self :drive-init-pose)
      )
@@ -32,13 +32,12 @@
    (&key (tm 20000))
    ;; (send robot :reset-manip-pose)
    ;; (send robot :legs :angle-vector #f(0.0 0.0 -90.0 64.0 6.5 0.0 0.0))
-   
    (send robot :reset-manip-pose)
    (send robot :legs :crotch-p :joint-angle -85)
    (send robot :legs :knee-p :joint-angle 80)
    (send robot :legs :ankle-p :joint-angle 0)
    (send robot :rarm :shoulder-p :joint-angle -100)
-
+   (send robot :torso :waist-p :joint-angle 10)
    (when real
      (send *ri* :angle-vector (send robot :angle-vector) tm)
      (send *ri* :wait-interpolation)

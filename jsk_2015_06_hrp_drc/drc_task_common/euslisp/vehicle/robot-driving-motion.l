@@ -58,7 +58,21 @@
      (send *ri* :wait-interpolation)
      )
    (send self :update-handle-angle-coords-table)
-   )  
+   )
+  (:drive-init-pose-support-by-leg
+   (&key (tm 10000) (limb :lleg))
+   ;; (send robot limb :angle-vector #f(0.0 0.0 -86.0 65.0 15.0 0.0))
+   ;; (send robot limb :angle-vector #f(-2.592494e-06 3.642189e-05 -84.2409 62.8969 15.344 -3.722199e-05)) ;; move-end-pos #f(0 0 -10)
+   (when real
+     (send *ri* :start-impedance limb :M-p 100 :D-p 300 :K-p 700)
+     )
+   (send robot limb :move-end-pos #f(0 0 -10) :world)
+   (when real
+     (send *ri* :angle-vector (send robot :angle-vector) tm)
+     (send *ri* :wait-interpolation)
+     (send *ri* :set-ref-force #f(0 0 80) 10000 :lleg)
+     )
+   )
 
   ;; wrapper function for hand
   (:open-hand
@@ -73,7 +87,7 @@
   ;; handling
   (:approach-handle
    (&key (limb (send self :get :grasp-arm)) (target-handle (send self :get :grasp-point)) (sync-controller nil)
-         (tm 15000) (offset #f(-150 0 0)) (debug-view nil) (rotation-axis t) (start-impedance nil) (stop-impedance t)
+         (tm 15000) (offset #f(-150 0 0)) (debug-view nil) (rotation-axis t) (start-impedance nil) (stop-impedance nil)
          (null-space #f(-0.06 -0.3 0.0 -0.18 0.16 0.0 0.0 0.0))
          )
    (when start-impedance
