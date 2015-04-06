@@ -549,6 +549,7 @@
                           :max (float-vector  500  500  0  20  20  10)
                           :warnp t
                           :stop 30
+                          :look-at-target (copy-seq (send (elt tc 0) :worldpos))
                           )))
               ((string= *robot-name* "staro")
                (setq res (ik-server-call
@@ -565,6 +566,7 @@
                                 (list (send *robot* :torso :waist-p :child-link) 0))
                           :warnp t
                           :stop 30
+                          :look-at-target (copy-seq (send (elt tc 0) :worldpos))
                           ))))
         (setq ik-res (= (send res :error_code :val) moveit_msgs::MoveItErrorCodes::*SUCCESS*))
         (unless ik-res (return))
