@@ -12,7 +12,7 @@
 (ros::roseus-add-srvs "jsk_interactive_marker")
 (ros::roseus-add-msgs "jsk_rviz_plugins")
 (ros::roseus-add-srvs "jsk_rviz_plugins")
-(ros::load-ros-manifest "drc_task_common")
+;;(ros::load-ros-manifest "drc_task_common")
 (load "package://drc_task_common/euslisp/util.l")
 (load "package://drc_task_common/euslisp/state-machine.l")
 (load "package://drc_task_common/euslisp/generate-valve-motion.l")
@@ -21,6 +21,7 @@
 (load "package://drc_task_common/euslisp/generate-drill-motion.l")
 (load "package://drc_task_common/euslisp/generate-door-motion.l")
 (load "package://drc_task_common/euslisp/primitive-marker-util.l")
+
 ;; state
 ;;  :initial -> ...
 ;;  :go-pos-region-select -> :wait-for-exec-or-cancel [rectangle-callback]
