@@ -1,11 +1,12 @@
 <launch>
   <arg name="CONTROLLER_DEV" default="/dev/input/js0"/>
+  <arg name="OCS_NS" default="ocs"/>  
   
   <!-- handle controller -->
   <include file="$(find drc_task_common)/launch/fc/vehicle/driving_force_gt.launch">
     <arg name="CONTROLLER_DEV" default="$(arg CONTROLLER_DEV)"/>
   </include>
-  <group ns="ocs">
+  <group ns="$(arg OCS_NS)">
     <node pkg="drc_task_common" type="DriveCmdInterrupter.py" name="drive_cmd_interrupter" output="screen">
     </node>
     <node pkg="topic_tools" type="throttle" name="handle_throttle" args="messages drive/operation/handle_cmd_raw 100 drive/operation/handle_cmd" />
