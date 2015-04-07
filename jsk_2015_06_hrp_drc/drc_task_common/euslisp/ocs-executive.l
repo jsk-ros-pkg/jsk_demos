@@ -1037,7 +1037,7 @@
       (send *robot* :angle-vector (get-potentio-vector-from-joint-states))
       (init-takenoko-drill)
       (set-drill-default-coords)
-      (let ((coords (send (send *drill* :copy-worldcoords) :transform (send (send (send *robot* :body_lk) :copy-worldcoords) :inverse-transformation))))
+      (let ((coords (send (send (send (send *robot* :body_lk) :copy-worldcoords) :inverse-transformation) :transform (send *drill* :copy-worldcoords))))
               (send self :show-text 
               (format nil "Recognize drill-button. pos:~A rpy:~A" (send coords :worldpos) (reverse (car (send coords :rpy-angle)))) :recognize)
         ;; store result
