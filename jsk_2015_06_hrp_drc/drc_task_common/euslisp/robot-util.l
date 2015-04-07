@@ -118,7 +118,8 @@
 ;; get potentio-vector from ocs
 (defun get-potentio-vector-from-joint-states ()
   (while (not (boundp '*potentio-vector*))
-    (ros::spin-once))
+    (ros::spin-once)
+    (ros::sleep))
   *potentio-vector*
   )
 
