@@ -102,7 +102,7 @@
      )
    (let ((check-links (subseq (send robot limb :links) 3 6)) (distance-threshold 100)
          (body-link (elt (send robot :links) 0))
-         (handle-link (find-if #'(lambda (h) (eq (send h :name) :handle-link)) (send (send *car* :drive-simulator-handle) :links)))
+         (handle-link (find-if #'(lambda (h) (eq (send h :name) :handle-link)) (send (send *car* :vehicle-handle) :links)))
          (offset-target-handle-coords
           (send (send (send self :rotate-grasp-point-by-grasp-arm (send car target-handle)) :copy-worldcoords)
                 :locate offset))
@@ -269,7 +269,7 @@
            (dolist (coord steering-coords)
              (let ((check-links (subseq (send robot limb :links) 3 6)) (distance-threshold 100)
                    (body-link (elt (send robot :links) 0)) (ik-ret)
-                   (handle-link (find-if #'(lambda (h) (eq (send h :name) :handle-link)) (send (send *car* :drive-simulator-handle) :links)))
+                   (handle-link (find-if #'(lambda (h) (eq (send h :name) :handle-link)) (send (send *car* :vehicle-handle) :links)))
                    )
                (setq ik-ret
                      (send robot :inverse-kinematics coord

@@ -226,7 +226,7 @@
 ;; origin of coords: front center of handle base
 (defclass drive-sim-handle
   :super cascaded-link
-  :slots (handle reclining-joint slide-joint)
+  :slots (handle steering-radius reclining-joint slide-joint)
   )
 (defmethod drive-sim-handle
   (:init
@@ -272,33 +272,33 @@
    )
   (:make-handle-link
    (&optional (arg-handle-ring-r 110) (arg-handle-axis-length 100))
-   (let ((handle-ring-r arg-handle-ring-r) ;; default: (/ 220 2)
-	 (handle-pipe-r (/ 35 2))
-	 (handle-axis-length arg-handle-axis-length) ;; defualt: 100
-	 (handle-axis-r (/ 52 2))
-	 (handle-bar-thickness 26)
-	 (handle-bar-hor-height 59)
-	 (handle-bar-ver-width 50)
-	 (handle-upper-handle-angle 35)
-	 handle-list
-	 handle-left-handle
-	 handle-right-handle
-	 handle-left-upper-handle
-	 handle-right-upper-handle
-	 handle-link)
+   (let ((handle-pipe-r (/ 35 2))
+         (handle-axis-length arg-handle-axis-length) ;; defualt: 100
+         (handle-axis-r (/ 52 2))
+         (handle-bar-thickness 26)
+         (handle-bar-hor-height 59)
+         (handle-bar-ver-width 50)
+         (handle-upper-handle-angle 35)
+         handle-list
+         handle-left-handle
+         handle-right-handle
+         handle-left-upper-handle
+         handle-right-upper-handle
+         handle-link)
+     (setq steering-radius arg-handle-ring-r) ;; set handle radius 
      ;; make handle-list ;;;;;;;;;;;;;;;;;
-     (let* ((handle-ring (make-ring handle-ring-r handle-pipe-r))
+     (let* ((handle-ring (make-ring steering-radius handle-pipe-r))
             (handle-axis (make-cylinder handle-axis-r handle-axis-length))
-            (handle-bar-hor (make-cube handle-bar-hor-height (* handle-ring-r 2) handle-bar-thickness))
-            (handle-bar-ver (make-cube handle-ring-r handle-bar-ver-width handle-bar-thickness))
+            (handle-bar-hor (make-cube handle-bar-hor-height (* steering-radius 2) handle-bar-thickness))
+            (handle-bar-ver (make-cube steering-radius handle-bar-ver-width handle-bar-thickness))
             (handle-grasp-offset (+ handle-pipe-r 0))
-            (handle-rotation-r (+ handle-ring-r handle-grasp-offset))
+            (handle-rotation-r (+ steering-radius handle-grasp-offset))
             (lr-upper-handle-angle (deg2rad 45))
             (lr-handle-angle (deg2rad 135))
             )
        ;; move each body
        (send handle-axis :translate (float-vector 0 0 (- handle-axis-length)))
-       (send handle-bar-ver :translate (float-vector (- (/ handle-ring-r 2)) 0 0))
+       (send handle-bar-ver :translate (float-vector (- (/ steering-radius 2)) 0 0))
        ;; define handle
        (setq handle-center-handle
              (make-cascoords :coords
@@ -356,14 +356,14 @@
        ;; (setq handle-left-upper-handle 
        ;;       (make-cascoords :coords (send (send (send (send handle-ring :copy-worldcoords)
        ;;                                                 :rotate (deg2rad 90) :y)
-       ;;                                           :translate (float-vector 0 (* (+ handle-ring-r handle-grasp-offset) (cos (deg2rad handle-upper-handle-angle)))
-       ;;                                                                    (* (+ handle-ring-r handle-grasp-offset) (sin (deg2rad handle-upper-handle-angle)))))
+       ;;                                           :translate (float-vector 0 (* (+ steering-radius handle-grasp-offset) (cos (deg2rad handle-upper-handle-angle)))
+       ;;                                                                    (* (+ steering-radius handle-grasp-offset) (sin (deg2rad handle-upper-handle-angle)))))
        ;;                                     :rotate (deg2rad handle-upper-handle-angle) :x) :name :handle-left-upper))
        ;; (setq handle-right-upper-handle 
        ;;       (make-cascoords :coords (send (send (send (send handle-ring :copy-worldcoords)
        ;;                                                 :rotate (deg2rad 90) :y)
-       ;;                                           :translate (float-vector 0 (- (* (+ handle-ring-r handle-grasp-offset) (cos (deg2rad handle-upper-handle-angle))))
-       ;;                                                                    (* (+ handle-ring-r handle-grasp-offset) (sin (deg2rad handle-upper-handle-angle)))))
+       ;;                                           :translate (float-vector 0 (- (* (+ steering-radius handle-grasp-offset) (cos (deg2rad handle-upper-handle-angle))))
+       ;;                                                                    (* (+ steering-radius handle-grasp-offset) (sin (deg2rad handle-upper-handle-angle)))))
        ;;                                     :rotate (- (deg2rad handle-upper-handle-angle)) :x) :name :handle-right-upper))
        (send handle-ring :assoc handle-center-handle)
        (send handle-ring :assoc handle-top-handle)
@@ -460,6 +460,7 @@
   (:handle-crank () (find-if #'(lambda (h) (eq (send h :name) :handle-crank)) handle))
   ;; methods to send message to joints ;;;;;;;;;;;;;;;;; ;;;;;;;;;;;;;;;;;  
   (:handle-joint (&rest args) (forward-message-to handle-joint args))
+  (:steering-radius () steering-radius)
   )
 
 
@@ -910,11 +911,11 @@
      )
    )
   ;; methods to get drive seat objects
-  (:drive-simulator-base () base)
-  (:drive-simulator-seat () seat)
-  (:drive-simulator-handle () handle)
-  (:drive-simulator-pedal () pedal)
-  (:drive-simulator-door () door)
+  (:vehicle-base (&rest args) (forward-message-to base args))
+  (:vehicle-seat (&rest args) (forward-message-to seat args))
+  (:vehicle-handle (&rest args) (forward-message-to handle args))
+  (:vehicle-pedal (&rest args) (forward-message-to pedal args))
+  (:vehicle-door (&rest args) (forward-message-to door args))
   ;; methods to get handle ;;;;;;;;;;;;;;;;; ;;;;;;;;;;;;;;;;;  
   (:handle-center () (send handle :handle-center))
   (:handle-top () (send handle :handle-top))
