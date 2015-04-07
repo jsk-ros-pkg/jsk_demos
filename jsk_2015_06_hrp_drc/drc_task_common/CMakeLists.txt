@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(drc_task_common)
 
-find_package(catkin REQUIRED COMPONENTS cmake_modules message_generation std_msgs std_srvs geometry_msgs roscpp rospy sensor_msgs visualization_msgs message_filters message_generation jsk_pcl_ros interactive_markers pcl_conversions jsk_topic_tools rviz eigen_conversions dynamic_tf_publisher jsk_interactive_marker jsk_recognition_msgs move_base_msgs rosgraph_msgs topic_tools jsk_topic_tools jsk_ik_server pcl_msgs jsk_footstep_msgs drc_com_common jsk_perception jsk_calibration resized_image_transport smach_msgs roseus pcl_ros nav_msgs tf dynamic_reconfigure)
+find_package(catkin REQUIRED COMPONENTS cmake_modules message_generation std_msgs std_srvs geometry_msgs roscpp rospy sensor_msgs visualization_msgs message_filters message_generation jsk_pcl_ros interactive_markers pcl_conversions jsk_topic_tools rviz eigen_conversions dynamic_tf_publisher jsk_interactive_marker jsk_recognition_msgs move_base_msgs rosgraph_msgs topic_tools jsk_topic_tools jsk_ik_server pcl_msgs jsk_footstep_msgs drc_com_common jsk_perception jsk_calibration resized_image_transport smach_msgs pcl_ros nav_msgs tf dynamic_reconfigure roseus)
 
 catkin_python_setup()
 
@@ -12,7 +12,10 @@ add_message_files(DIRECTORY msg FILES Float32ArrayStamped.msg)
 add_message_files(DIRECTORY msg FILES Int8Float64.msg)
 add_service_files(DIRECTORY srv FILES RvizMenuCall.srv RvizMenuSelect.srv EusCommand.srv StringRequest.srv ICPService.srv GetIKArm.srv GetIKArmPose.srv GoPosCommand.srv Uint8Request.srv AngleVectorCommand.srv)
 
-generate_messages(DEPENDENCIES ${PCL_MSGS} std_msgs std_srvs visualization_msgs sensor_msgs geometry_msgs jsk_pcl_ros jsk_interactive_marker jsk_recognition_msgs move_base_msgs)
+# Generate msg file from DRCParametersConfig file
+execute_process(
+  COMMAND ${PROJECT_SOURCE_DIR}/scripts/gen_reconfigure_msg.py ${PROJECT_SOURCE_DIR}/msg/DRCParametersMessage.msg
+  ${PROJECT_SOURCE_DIR}/msg/DRCParametersMessage.msg)
 
 generate_dynamic_reconfigure_options(
   config/vehicle/LocalPlannerMochikaeParams.cfg
@@ -21,6 +24,10 @@ generate_dynamic_reconfigure_options(
   config/vehicle/SwitchInputCloud.cfg
   config/vehicle/VisualOdometryVerification.cfg
 )
+
+add_message_files(DIRECTORY msg FILES DRCParametersMessage.msg)
+
+generate_messages(DEPENDENCIES ${PCL_MSGS} std_msgs std_srvs visualization_msgs sensor_msgs geometry_msgs jsk_pcl_ros jsk_interactive_marker jsk_recognition_msgs move_base_msgs)
 
 catkin_package(
   CATKIN_DEPENDS message_runtime INCLUDE_DIRS
@@ -125,7 +132,7 @@ catkin_download_test_data(takenoko_drill_model
   DESTINATION ${PROJECT_SOURCE_DIR}/models)
 add_custom_target(all_drc_task_common_downloads ALL DEPENDS
   drill_pcd # todo old now
-  # drill_full_pcd 
+  # drill_full_pcd
   gun_drill_dae gun_drill_jpg gun_drill_model takenoko_drill_dae takenoko_drill_jpg takenoko_drill_model)
 
 install(TARGETS

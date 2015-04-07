@@ -79,4 +79,7 @@
     <!-- remote server -->
     <include file="$(find drc_task_common)/launch/remote_server.launch" />
   </group>
+
+  <!-- reconfigure -->
+  <node pkg="drc_task_common" name="fc_dynamic_reconfigure" type="fc_dynamic_reconfigure.py" />
 </launch>
