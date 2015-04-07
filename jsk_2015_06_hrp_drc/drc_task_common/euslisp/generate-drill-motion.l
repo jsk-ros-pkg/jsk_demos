@@ -287,8 +287,8 @@
         (when (and fin? (not ik-ret)) (return-from drill-ik nil))
 	(send *robot* :angle-vector robot-angle-vector)
         (setq ik-ret (fullbody-inverse-kinematics-for-drill-grasp-single :arm-tc (send (send (send *robot* *drill-main-arm* :end-coords) :copy-worldcoords) :translate (float-vector (- reach-dist) (if (equal *drill-main-arm* :rarm) (- reach-dist) reach-dist) -40) :local) :draw? draw?))
-        (when (and fin? (not ik-ret)) (return-from drill-ik nil))
 	(push (list 0 (not (null ik-ret)) ik-ret) ik-results)
+        (when (and fin? (not ik-ret)) (return-from drill-ik nil))
 	(send *robot* :angle-vector robot-angle-vector)
 	;; solve ik for grasp up	
         (send *drill* :translate (float-vector 0 0 grasp-up-dist) :world)
@@ -303,11 +303,11 @@
 	)
       (when *use-dual-arm-ik*
         (setq ik-ret (fullbody-inverse-kinematics-for-drill-grasp-dual :support-arm-symbol :pre-support-grasp-coords :draw? draw?))
-        (when (and fin? (not ik-ret)) (return-from drill-ik nil))
 	(push-back (list 5 (not (null ik-ret)) ik-ret) ik-results)
-        (setq ik-ret (fullbody-inverse-kinematics-for-drill-grasp-dual :draw? draw?))
         (when (and fin? (not ik-ret)) (return-from drill-ik nil))
+        (setq ik-ret (fullbody-inverse-kinematics-for-drill-grasp-dual :draw? draw?))
 	(push-back (list 6 (not (null ik-ret)) ik-ret) ik-results)
+        (when (and fin? (not ik-ret)) (return-from drill-ik nil))
         )
       ;; draw
       )
