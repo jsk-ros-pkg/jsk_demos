@@ -17,6 +17,18 @@ def setDynamicReconfigure(srv, name, type, value):
         param.value = value
         config.doubles = [param]
         srv(config)
+    elif type == "bool":
+        param = BoolParameter()
+        param.name = name
+        param.value = value
+        config.bools = [param]
+        srv(config)
+    elif type == "int":
+        param = IntParameter()
+        param.name = name
+        param.value = value
+        config.ints = [param]
+        srv(config)
     else:
         raise Exception("Unsupported type: %s" % (type))
 
