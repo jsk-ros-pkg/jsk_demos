@@ -226,7 +226,7 @@
 ;; origin of coords: front center of handle base
 (defclass drive-sim-handle
   :super cascaded-link
-  :slots (handle steering-radius reclining-joint slide-joint)
+  :slots (handle steering-center steering-radius reclining-joint slide-joint)
   )
 (defmethod drive-sim-handle
   (:init
@@ -460,6 +460,7 @@
   (:handle-crank () (find-if #'(lambda (h) (eq (send h :name) :handle-crank)) handle))
   ;; methods to send message to joints ;;;;;;;;;;;;;;;;; ;;;;;;;;;;;;;;;;;  
   (:handle-joint (&rest args) (forward-message-to handle-joint args))
+  (:steering-center () (send (car (send (find-if #'(lambda (h) (eq (send h :name) :handle-link)) links) :bodies)) :copy-worldcoords))
   (:steering-radius () steering-radius)
   )
 
