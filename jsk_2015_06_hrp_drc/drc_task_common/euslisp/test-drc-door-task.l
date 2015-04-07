@@ -16,8 +16,10 @@
                 (send (send (send *robot* arm :end-coords) :parent) :assoc mc)
                 ))
           '(:rarm :larm) (list #f(50 -25 0) #f(50 25 0)))
-  (defvar *rarm-avoid-pose* #f(50.0 -10.0 0.0 -90.0 0.0 0.0 0.0 0.0))
-  (defvar *larm-avoid-pose* #f(50.0 10.0 0.0 -90.0 0.0 0.0 0.0 0.0))
+  (defvar *rarm-avoid-pose* #f(40.1007 -29.388 4.91744 -71.6494 -22.7883 -2.70865 7.77037 15.0))
+  (defvar *larm-avoid-pose* #f(40.1007 29.388 -4.91744 -71.6494 22.7883 2.70865 7.77037 15.0))
+  ;; (defvar *rarm-avoid-pose* #f(50.0 -10.0 0.0 -90.0 0.0 0.0 0.0 0.0))
+  ;; (defvar *larm-avoid-pose* #f(50.0 10.0 0.0 -90.0 0.0 0.0 0.0 0.0))
   (defvar *larm-reset-manip-pose* #f(50.0 30.0 10.0 -120.0 25.0 5.0 -20.0 -60.0))
   (defvar *rarm-reset-manip-pose* #f(50.0 -30.0 -10.0 -120.0 -25.0 -5.0 -20.0 60.0))
   (defvar *door-grasp-preshape-pose* #f(0.0 70.0 0.0 -10.0 30.0 30.0))
@@ -49,7 +51,7 @@
   (:init
     (door-width door-knob-depth door-knob-width door-knob-height
      door-knob-pos door-handle-pos
-     &key (handle-l/r :left))
+     &key (hinge-l/r :right) (handle-l/r :left))
     (send-super :init)
     (let* ((door-depth 30) (door-height 1800)
            (b0 (make-cube 1 1 1))
@@ -69,7 +71,7 @@
              (l2 (instance bodyset-link :init (make-cascoords) :bodies (list b2) :name :door-knob)))
         (send l2 :locate door-knob-pos :world)
         (let ((j0 (instance rotational-joint :init :name :door-hinge-joint
-                            :parent-link l0 :child-link l1 :axis :z))
+                            :parent-link l0 :child-link l1 :axis (case handle-l/r (:left :-z) (t :z))))
               (j1 (instance rotational-joint :init :name :door-knob-joint
                             :parent-link l1 :child-link l2 :axis (case handle-l/r (:left :-x) (t :x))))
               (h0 (make-cascoords :pos door-handle-pos :rpy (list 0 (deg2rad 0) pi/2) :name :larm-knob-handle))
@@ -118,6 +120,13 @@
   (setq *door* (instance param-door :init 840 60 120 20
                          (float-vector 0 800 940)
                          (float-vector -60 740 940)
+                         :handle-l/r :left)))
+
+(defun make-drc-sagami-door ()
+  "drc door in sagami full-task-course environment"
+  (setq *door* (instance param-door :init 895 60 110 20
+                         (float-vector 0 800 1120)
+                         (float-vector -60 740 1120)
                          :handle-l/r :left)))
 
 (defun exec-robot-state-list
@@ -205,10 +214,10 @@
     ;; reaching poses
     (let* ((knob-target-coords (send *door* :handle (read-from-string (format nil "~A-knob-handle" arm))))
            (cds-list (list (send (send knob-target-coords :copy-worldcoords)
-                               :translate (case arm (:larm (float-vector -50 200 150)) (t (float-vector -50 0 150))) :world)
+                               :translate (case arm (:larm (float-vector -50 -200 150)) (t (float-vector -50 0 150))) :world)
                            (send (send (send knob-target-coords :copy-worldcoords)
                                        ;;:translate (case arm (:larm (float-vector -50 50 150)) (t (float-vector -50 -50 150))) :world)
-                                       :translate (case arm (:larm (float-vector -50 100 100)) (t (float-vector -50 0 150))) :world)
+                                       :translate (case arm (:larm (float-vector -50 -100 100)) (t (float-vector -50 0 150))) :world)
                                  :rotate (case arm (:larm (deg2rad 10)) (t (deg2rad -10))) :z) ;; way point2
                            knob-target-coords ;; target point
                            )))
@@ -231,7 +240,7 @@
          (make-coords :pos (float-vector -650 -450 0)
                       :rpy (list (deg2rad -15) 0 0)))
         (release-way-point (case arm
-                             (:larm (float-vector -50 100 100))
+                             (:larm (float-vector -50 -100 100))
                              (t (float-vector -50 100 100))))
         (initialize-p t))
   (let ((rs-list))
@@ -541,6 +550,58 @@
     )
   )
 
+(defun test-door-open-drc-sagami-door (&key (walk-p nil) (real t))
+  "drc door in sagami full-task-course environment"
+  (make-drc-sagami-door)
+  (objects (list *robot* *door*))
+  (setq *init-standing-coords* (make-coords :pos (float-vector -600 400 0) :rpy (list (deg2rad -20) 0 0)))
+  ;;(setq *init-standing-coords* (make-coords :pos (float-vector -750 650 0) :rpy (list (deg2rad -10) 0 0)))
+  (initialize-pose-for-door-open :real nil :arm :larm :initial-standing-coords *init-standing-coords* :initial-waist-y -20)
+  (send *robot* :head :look-at (send (send (send *door* :joint :door-knob-joint) :child-link) :worldpos))
+  (exec-robot-state-list (list (get-current-robot-state 3000)) :real real)
+  (print ";; reach and open")
+  (read-line)
+  (setq *rs-list* (reach-grasp-door :real nil :arm :larm))
+  (exec-robot-state-list *rs-list* :real real)
+  (let ((push/pull :push))
+    (when push/pull
+      ;;(read-line)
+      (setq *rs-list* (pull-push-door-by-arm :arm :larm :initial-standing-coords *init-standing-coords* :push/pull push/pull :angle-list (list 0 -5 -10)))
+      (exec-robot-state-list *rs-list* :real real))
+    ;;(read-line)
+    (setq *rs-list* (release-grasp-door :real nil :arm :larm :initial-standing-coords *init-standing-coords*))
+    (exec-robot-state-list *rs-list* :real real)
+    (send (send *robot* :hand :larm) :angle-vector *door-grasp-pose*)
+    (exec-robot-state-list (list (get-current-robot-state 1000)) :real real))
+  (when walk-p
+    (print ";; go-pos fwd")
+    (read-line)
+    (dotimes (i 2)
+      (let* ((fwd-param (float-vector 50 0 0))
+             (go-pos-param (send (send *robot* :foot-midcoords) :inverse-rotate-vector fwd-param)))
+        (send *ri* :go-pos (* 1e-3 (elt go-pos-param 0)) (* 1e-3 (elt go-pos-param 1)) 0)
+        (send *robot* :translate fwd-param)))
+    (print ";; move door by rarm")
+    (read-line)
+    (initialize-pose-for-door-open :real nil :arm :larm :initial-standing-coords *init-standing-coords* :initial-waist-y 0)
+    (send *robot* :larm :angle-vector *rarm-reset-manip-pose*)
+    (send *robot* :larm :move-end-pos #f(300 100 0) :world :rotation-axis nil)
+    (send (send *robot* :hand :larm) :angle-vector *door-grasp-pose*)
+    (exec-robot-state-list (list (get-current-robot-state 2000)) :real real)
+    (initialize-pose-for-door-open :real nil :arm :larm :initial-standing-coords *init-standing-coords* :initial-waist-y 0)
+    (send *robot* :larm :angle-vector *rarm-reset-manip-pose*)
+    (send (send *robot* :hand :larm) :angle-vector *door-grasp-pose*)
+    (exec-robot-state-list (list (get-current-robot-state 1000)) :real real)
+    (print ";; go-pos rotate")
+    (read-line)
+    ;;(send *ri* :go-pos 0 0 70)
+    (dotimes (i 3)
+      (send *ri* :go-pos 0 0 20))
+    ;; (send *ri* :go-pos 0 0 20)
+    ;; (send *ri* :go-pos 0 -0.5 0)
+    ;; (send *ri* :go-pos 0 -0.5 0)
+    )
+  )
 
 #|
 (defun door-initial-open
