@@ -263,6 +263,7 @@
   (&key (draw? t))
   (let* ((reach-dist 70)
 	 (grasp-up-dist 100)
+         (push-dist 30)
          (ik-results nil)
          (original-foot-midcoords (send (send *robot* :foot-midcoords) :copy-worldcoords))
          (original-drill-coords (send *drill* :copy-worldcoords))
@@ -278,6 +279,7 @@
       (when draw? (send (send *drill* :get :grasp-coords) :draw-on :flush t))
       ;; solve ik for grasp
       (setq ik-ret (fullbody-inverse-kinematics-for-drill-grasp-single :draw? draw?))
+      (setq ik-ret (fullbody-inverse-kinematics-for-drill-grasp-single :arm-tc (send (send (send *robot* *drill-main-arm* :end-coords) :copy-worldcoords) :translate (float-vector push-dist (if (equal *drill-main-arm* :rarm) push-dist (- push-dist)) 25) :local) :arm-mt (send *robot* *drill-main-arm* :end-coords) :draw? draw?)) ;; push!
       (push-back (list 3 (not (null ik-ret)) ik-ret) ik-results)
       (when (and fin? (not ik-ret)) (return-from drill-ik nil))
       ;; solve ik for pre grasp
