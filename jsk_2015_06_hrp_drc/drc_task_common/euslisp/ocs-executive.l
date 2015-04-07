@@ -1008,10 +1008,52 @@
      (send msg :type drc_com_common::OCS2FCSmall::*CANCEL_MOTION_NOW*)
      (send self :show-text "cancel command send")
      (send self :change-state-before-exec)
-     ;; todo change state 
      (send self :send-to-fc msg))
     (send req :response)
     )
+  (:skip-recog
+   (req)
+   ;todo something more precise
+    (cond
+     ((eq (send smachine :state) :selecting-region-for-door)
+      (send smachine :go-to! :selecting-exec-for-door))
+     ((eq (send smachine :state) :selecting-region-for-valve)
+      (send smachine :go-to! :selecting-exec-for-valve))
+     ((eq (send smachine :state) :selecting-region-for-debri)
+      (send smachine :go-to! :selecting-exec-for-debri))
+     ((eq (send smachine :state) :selecting-region-for-hose-grasp)
+      (send smachine :go-to! :selecting-exec-for-hose-grasp))
+     ((eq (send smachine :state) :selecting-region-for-hose-connect)
+      (send smachine :go-to! :selecting-exec-for-hose-connect))
+     ((eq (send smachine :state) :selecting-region-for-drill-grasp)
+      (send smachine :go-to! :selecting-exec-for-drill-grasp)
+      (erase-all-primitive-marker)
+      (insert-primitive-marker :shape-type jsk_rviz_plugins::TransformableMarkerOperate::*MESH_RESOURCE* :name "drill" :description "" :resource "package://drc_task_common/models/takenoko_drill.dae" :use-material t))
+     ((eq (send smachine :state) :selecting-region-for-drill-put)
+      (send smachine :go-to! :selecting-exec-for-drill-put))
+     ;; ((eq (send smachine :state) :selecting-region-for-drill-wall)
+     ;;  (send smachine :go-to! :selecting-exec-for-drill-wall)) ;; because of not using interactive-marker
+     ((eq (send smachine :state) :selecting-region-for-drill-button)
+      (send *robot* :angle-vector (get-potentio-vector-from-joint-states))
+      (init-takenoko-drill)
+      (set-drill-default-coords)
+      (let ((coords (send (send *drill* :copy-worldcoords) :transform (send (send (send *robot* :body_lk) :copy-worldcoords) :inverse-transformation))))
+              (send self :show-text 
+              (format nil "Recognize drill-button. pos:~A rpy:~A" (send coords :worldpos) (reverse (car (send coords :rpy-angle)))) :recognize)
+        ;; store result
+        (setq drill-button-params (list coords))
+        ;; publish object marker
+        (erase-all-primitive-marker)
+        (insert-primitive-marker :shape-type jsk_rviz_plugins::TransformableMarkerOperate::*MESH_RESOURCE* :name "drill" :description "" :resource "package://drc_task_common/models/takenoko_drill.dae" :use-material t)
+        (set-primitive-marker-pose coords "BODY")
+        (move-robot-model-to-current-pos)
+        ;(send smachine :go-to :selecting-exec-for-drill-button)
+	)
+      (send smachine :go-to! :selecting-exec-for-drill-button))
+     )
+    (send self :show-text "SKIP RECOG! SET AND MOVE MARKER MANUALLY")
+    (send req :response)
+   )
   (:change-state-before-exec
     ()
     (cond
@@ -1109,6 +1151,7 @@
 (ros::advertise-service "uint8_command" drc_task_common::Uint8Request #'send *app* :uint8-request-callback)
 (ros::advertise-service "angle_vector_command_from_ocs" drc_task_common::AngleVectorCommand #'send *app* :angle-vector-command-from-ocs)
 (ros::advertise-service "cancel_motion_now" std_srvs::Empty #'send *app* :cancel-motion-now)
+(ros::advertise-service "skip_recog" std_srvs::Empty #'send *app* :skip-recog)
 
 ;; Drive joystick controller topics
 (ros::subscribe "/ocs/drive/operation/handle_cmd" std_msgs::Float64 #'send *app* :drive-handle-angle-callback)
