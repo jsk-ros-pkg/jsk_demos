@@ -99,14 +99,6 @@
      (send *ri* :wait-interpolation)
      )
    )
-  (:grasp-frame
-   (&key (limb :larm) (grasp-point :left-frame-center) (debug-view nil) (tm 20000))
-   (send robot limb :inverse-kinematics (send car grasp-point) :debug-view debug-view)
-   (when real
-     (send *ri* :angle-vector (send robot :angle-vector) tm)
-     (send *ri* :wait-interpolation)
-     )
-   )
   )
 
 ;; (setq *motion* (instance jaxon-driving-motion-on-polaris-xp900 :init :real nil))

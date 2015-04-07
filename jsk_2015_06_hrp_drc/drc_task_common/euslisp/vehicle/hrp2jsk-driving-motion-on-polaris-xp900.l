@@ -23,7 +23,7 @@
   (:ride
    (&key (init-pose t))
    ;; (send robot :move-to (make-coords :pos (float-vector 0 370.0 200) :rpy (float-vector 0.0 0.0 0.0)) :world)
-   (send robot :move-to (make-coords :pos (float-vector 180 370.0 50) :rpy (float-vector 0.0 (- (/ pi 16)) 0.0)) :world)
+   (send robot :move-to (make-coords :pos (float-vector 180 370.0 80) :rpy (float-vector 0.0 (- (/ pi 16)) 0.0)) :world)
    (when init-pose
      (send self :drive-init-pose)
      )
@@ -96,5 +96,5 @@
    )
   )
 
-;; (setq *ctrlr* (instance hrp2jsknt-driving-motion-controller-on-polaris-xp900 :init :real nil))
+;; (setq *motion* (instance hrp2jsk-driving-motion-on-polaris-xp900 :init :real nil))
 

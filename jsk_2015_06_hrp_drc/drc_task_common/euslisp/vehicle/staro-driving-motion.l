@@ -175,8 +175,8 @@
    )
 
   ;; holding car frame
-  (:approach-car-frame
-   (&key (limb :rarm) (handle :seil-left) (time 10000) (use-controller t) (offset #f(100 0 250)) (debug-view nil))
+  (:approach-frame
+   (&key (limb :rarm) (target-handle :seil-left) (time 10000) (use-controller t) (offset #f(100 0 250)) (debug-view nil))
    (send self :open-hand :rarm)
    (send robot :rarm :angle-vector #f(-6.46278 93.9017 69.7888 -2.8307 -92.3049 -4.90419 -66.9425 -52.3743))
    (when real
@@ -185,8 +185,8 @@
      (send *viewer* :draw-objects)
      )
    )
-  (:grasp-car-frame
-   (&key (limb :rarm) (handle :seil-left) (time 5000) (use-controller t) (offset #f(0 0 250)) (debug-view nil))
+  (:grasp-frame
+   (&key (limb :rarm) (target-handle :seil-left) (time 5000) (use-controller t) (offset #f(0 0 250)) (debug-view nil))
    (send robot :rarm :angle-vector #f(-9.42783 97.3642 24.7373 -7.26613 -92.4082 -6.29007 -21.6825 -51.7752))
    (when real
      (send *ri* :angle-vector (send robot :angle-vector) time)
