@@ -19,7 +19,7 @@
 
 (defclass fc-executive-app
   :super propertied-object
-  :slots (state go-pos-goal ocs2fc-message-handler smachine))
+  :slots (state go-pos-goal ocs2fc-message-handler smachine head-overwrite-mode))
 
 (defmethod fc-executive-app
   (:init ()
@@ -103,7 +103,12 @@
           (list drc_com_common::OCS2FCSmall::*CANCEL_MOTION_NOW*
                 self :cancel-motion-now-command-callback)
           (list drc_com_common::OCS2FCSmall::*DRIVE_COMMAND*
-                self :drive-command-callback))
+                self :drive-command-callback)
+          (list drc_com_common::OCS2FCSmall::*ENABLE_OVERWRITE_HEAD_JOINT*
+                self :enable-overwrite-head-joint-command-callback)
+          (list drc_com_common::OCS2FCSmall::*DISABLE_OVERWRITE_HEAD_JOINT*
+                self :disable-overwrite-head-joint-command-callback)
+          )
     self)
   (:register-timelimits (sm)
     ;; sm is a instance of state machine
@@ -244,23 +249,47 @@
         (let ((initial-av (send *robot* :angle-vector)))
           (send *robot* :head :neck-p :joint-angle 0)
           (send *robot* :head :neck-y :joint-angle (- (send *robot* :head :neck-y :max-angle) 1))
-          (send *ri* :angle-vector (send *robot* :angle-vector) tm)
-          (send *ri* :wait-interpolation)
+          (cond
+           (head-overwrite-mode
+            (send *ri* :set-joint-angles-of-group "head_for_teleop" (coerce (mapcar #'deg2rad (coerce (send *robot* :head :angle-vector) cons)) float-vector) (* 0.001 tm))
+            (send *ri* :wait-interpolation-of-group "head_for_teleop")
+            )
+           (t
+            (send *ri* :angle-vector (send *robot* :angle-vector) tm)
+            (send *ri* :wait-interpolation)))
           (send self :panorama-shutter)
-          
+
           (send *robot* :head :neck-y :joint-angle 0)
-          (send *ri* :angle-vector (send *robot* :angle-vector) tm)
-          (send *ri* :wait-interpolation)
+          (cond
+           (head-overwrite-mode
+            (send *ri* :set-joint-angles-of-group "head_for_teleop" (coerce (mapcar #'deg2rad (coerce (send *robot* :head :angle-vector) cons)) float-vector) (* 0.001 tm))
+            (send *ri* :wait-interpolation-of-group "head_for_teleop")
+            )
+           (t
+            (send *ri* :angle-vector (send *robot* :angle-vector) tm)
+            (send *ri* :wait-interpolation)))
           (send self :panorama-shutter)
-          
+
           (send *robot* :head :neck-y :joint-angle (+ 1 (send *robot* :head :neck-y :min-angle)))
-          (send *ri* :angle-vector (send *robot* :angle-vector) tm)
-          (send *ri* :wait-interpolation)
+          (cond
+           (head-overwrite-mode
+            (send *ri* :set-joint-angles-of-group "head_for_teleop" (coerce (mapcar #'deg2rad (coerce (send *robot* :head :angle-vector) cons)) float-vector) (* 0.001 tm))
+            (send *ri* :wait-interpolation-of-group "head_for_teleop")
+            )
+           (t
+            (send *ri* :angle-vector (send *robot* :angle-vector) tm)
+            (send *ri* :wait-interpolation)))
           (send self :panorama-shutter)
 
           (send *robot* :angle-vector initial-av)
-          (send *ri* :angle-vector (send *robot* :angle-vector) tm)
-          (send *ri* :wait-interpolation))
+          (cond
+           (head-overwrite-mode
+            (send *ri* :set-joint-angles-of-group "head_for_teleop" (coerce (mapcar #'deg2rad (coerce (send *robot* :head :angle-vector) cons)) float-vector) (* 0.001 tm))
+            (send *ri* :wait-interpolation-of-group "head_for_teleop")
+            )
+           (t
+            (send *ri* :angle-vector (send *robot* :angle-vector) tm)
+            (send *ri* :wait-interpolation))))
         ;; send back done information
         (let ((msg (instance drc_com_common::FC2OCSSmall :init)))
           (send msg :type drc_com_common::FC2OCSSmall::*LOOK_AROUND_FINISHED*)
@@ -671,8 +700,15 @@
                  (send (send *robot* :body_lk) :copy-worldcoords)))
             (let ((pos-from-origin (send origin-to-body :transform-vector pos)))
               (send *robot* :head :look-at pos-from-origin)
-              (send *ri* :angle-vector (send *robot* :angle-vector) 1000) ;; 1 sec
-              (send *ri* :wait-interpolation)))))
+              (cond
+               (head-overwrite-mode
+                (send *ri* :set-joint-angles-of-group "head_for_teleop" (coerce (mapcar #'deg2rad (coerce (send *robot* :head :angle-vector) cons)) float-vector) 1.0)
+                (send *ri* :wait-interpolation-of-group "head_for_teleop")
+                )
+               (t
+                (send *ri* :angle-vector (send *robot* :angle-vector) 1000)
+                (send *ri* :wait-interpolation)))
+              ))))
       (let ((msg (instance drc_com_common::FC2OCSSmall :init)))
         (send msg :type drc_com_common::FC2OCSSmall::*LOOK_AT_FINISHED*)
           (send self :send-to-ocs msg))
@@ -714,6 +750,9 @@
                           (setf (elt (send msg :params) 5) 0) ;force to set zero
                           (send self :send-to-ocs msg)
                           (send smachine :go-to :initial)))))))))))))
+  )
+
+(defmethod fc-executive-app
   (:reset-pose-command-callback (msg)
     (send *ri* :angle-vector (send *robot* :reset-pose) 10000)
     (send *ri* :wait-interpolation)
@@ -794,6 +833,16 @@
     (msg)
     (setq *cancel-motion-flag* t)
     )
+  (:enable-overwrite-head-joint-command-callback
+   (msg)
+   (unless head-overwrite-mode (send *ri* :add-joint-group "head_for_teleop" (send-all (send *robot* :head :joint-list) :name)))
+   (setq head-overwrite-mode t)
+   )
+  (:disable-overwrite-head-joint-command-callback
+   (msg)
+   (when head-overwrite-mode (send *ri* :remove-joint-group "head_for_teleop"))
+   (setq head-overwrite-mode nil)
+   )
   (:send-to-ocs (msg)
     (ros::publish "/fc_to_ocs_low_speed/input" msg))
   )

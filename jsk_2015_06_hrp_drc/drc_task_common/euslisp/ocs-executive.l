@@ -1054,6 +1054,22 @@
     (send self :show-text "SKIP RECOG! SET AND MOVE MARKER MANUALLY")
     (send req :response)
    )
+  (:enable-head-overwrite
+   (req)
+   (let ((msg (instance drc_com_common::OCS2FCSmall :init)))
+     (send msg :type drc_com_common::OCS2FCSmall::*ENABLE_OVERWRITE_HEAD_JOINT*)
+     (send self :show-text "enable head overwrite")
+     (send self :send-to-fc msg))
+   (send req :response)
+   )
+  (:disable-head-overwrite
+   (req)
+   (let ((msg (instance drc_com_common::OCS2FCSmall :init)))
+     (send msg :type drc_com_common::OCS2FCSmall::*DISABLE_OVERWRITE_HEAD_JOINT*)
+     (send self :show-text "disable head overwrite")
+     (send self :send-to-fc msg))
+   (send req :response)
+   )
   (:change-state-before-exec
     ()
     (cond
@@ -1069,6 +1085,7 @@
      )
     )
   )
+
 (defmethod ocs-executive-app
   (:uint8-request-callback (req)
     (let ((msg (instance drc_com_common::OCS2FCSmall :init)))
@@ -1152,6 +1169,8 @@
 (ros::advertise-service "angle_vector_command_from_ocs" drc_task_common::AngleVectorCommand #'send *app* :angle-vector-command-from-ocs)
 (ros::advertise-service "cancel_motion_now" std_srvs::Empty #'send *app* :cancel-motion-now)
 (ros::advertise-service "skip_recog" std_srvs::Empty #'send *app* :skip-recog)
+(ros::advertise-service "enable_head_overwrite" std_srvs::Empty #'send *app* :enable-head-overwrite)
+(ros::advertise-service "disable_head_overwrite" std_srvs::Empty #'send *app* :disable-head-overwrite)
 
 ;; Drive joystick controller topics
 (ros::subscribe "/ocs/drive/operation/handle_cmd" std_msgs::Float64 #'send *app* :drive-handle-angle-callback)
