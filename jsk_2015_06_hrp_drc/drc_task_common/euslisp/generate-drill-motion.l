@@ -415,7 +415,7 @@
              (when real? (model2real :time 2000)))
       )
     ;grasp
-    (when real? (drill-t-grasp))
+    (when (and (equal drill-type :gun) real?) (drill-t-grasp))
     (unix::usleep 500000)
     (send *robot* :hand *drill-main-arm* :angle-vector (float-vector 90.0 90.0 -10.0 0.0 -40.0 90.0))
     (when real? (hand-model2real))
