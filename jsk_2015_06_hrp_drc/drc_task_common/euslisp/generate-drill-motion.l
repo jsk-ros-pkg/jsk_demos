@@ -602,9 +602,12 @@
     (send *robot* :fix-leg-to-coords original-foot-midcoords)
     (let* (ik-ret)
       ;; pre-push1
-      (send *robot* :angle-vector (get-look-drill-pose))
-      (send *robot* :fix-leg-to-coords (make-coords))
-      (setq ik-ret (send *robot* *drill-main-arm* :move-end-rot -20 :z :world))
+      ;; (send *robot* :angle-vector (get-look-drill-pose))
+      ;; (send *robot* :fix-leg-to-coords (make-coords))
+      ;; (setq ik-ret (send *robot* *drill-main-arm* :move-end-rot -20 :z :world))
+
+      (send *drill* :newcoords (send (send (send *robot* :body_lk) :copy-worldcoords) :transform (make-coords :pos (float-vector 400 0 0) :rpy (list 0 0 pi/2)) :local))
+      (setq ik-ret (fullbody-inverse-kinematics-for-drill-button :x-offset 42.5 :y-offset -15 :z-offset -100 :draw? draw?))
       (push-back (list 0 (not (null ik-ret)) (send *robot* :angle-vector)) ik-results)
       ;; pre-push2
       (setq ik-ret (fullbody-inverse-kinematics-for-drill-button :x-offset 42.5 :y-offset -15 :z-offset -100 :draw? draw?))
@@ -645,6 +648,7 @@
     (when (not (= drill-motion-length 0))
       (when real? (send *ri* :start-impedance *drill-support-arm* :moment-gain (float-vector 0 0 0) :k-p 2000 :d-p 400))
       ;; pre-push1
+      (drill-full-grasp :arm *drill-support-arm*)
       (send *robot* :angle-vector (elt drill-motion-av-list 0))
       (when (boundp '*irtviewer*) (send *irtviewer* :draw-objects))
       (when real? (model2real :time 2000))
@@ -928,6 +932,10 @@
   (setq *answer-for-grasp-test* (get-drill-grasp-motion-full (make-coords :pos (float-vector 1000 -150 200) :rpy (list 0 0 0)) :draw? t :drill-type :takenoko :recognized-coords-symbol :put-coords))
   (send *robot* :hand :arms :hook-pose)
   ;(play-motion-on-eus-viewer *drill-motion*)
+  )
+(defun test-drill-button-motion ()
+  (set-drill-button-environment-full nil)
+  (setq *answer-for-grasp-test* (generate-drill-button-motion :draw? t))
   )
 (defun test-drill-wall-motion ()
   (setq *drill-coords-list* (list (make-coords :pos (float-vector 1000 -150 400) :rpy (list 0 pi/2 0)) (make-coords :pos (float-vector 1000 -250 500) :rpy (list 0 pi/2 0)) (make-coords :pos (float-vector 1000 -250 400) :rpy (list 0 pi/2 0)) (make-coords :pos (float-vector 1000 -50 500) :rpy (list 0 pi/2 0))))
