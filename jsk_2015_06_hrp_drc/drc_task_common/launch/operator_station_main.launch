@@ -138,4 +138,7 @@
       </group>
     </group>
   </group>
+
+  <!-- dynamic_reconfigure -->
+  <node pkg="drc_task_common" name="ocs_dynamic_reconfigure" type="ocs_dynamic_reconfigure.py" />
 </launch>

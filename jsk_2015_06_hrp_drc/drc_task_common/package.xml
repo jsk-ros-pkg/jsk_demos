@@ -35,6 +35,7 @@
   <build_depend>rviz</build_depend>
   <build_depend>eigen_conversions</build_depend>
   <build_depend>dynamic_tf_publisher</build_depend>
+  <build_depend>dynamic_reconfigure</build_depend>
   <build_depend>jsk_teleop_joy</build_depend>
   <build_depend>jsk_recognition_msgs</build_depend>
   <build_depend>jsk_ik_server</build_depend>
@@ -92,6 +93,7 @@
   <run_depend>jsk_rqt_plugins</run_depend>
   <run_depend>jsk_rviz_plugins</run_depend>
   <run_depend>smach_msgs</run_depend>
+  <run_depend>dynamic_reconfigure</run_depend>
   <export>
     <rqt_gui plugin="${prefix}/plugin.xml"/>
     <rviz plugin="${prefix}/plugin_description.xml"/>  

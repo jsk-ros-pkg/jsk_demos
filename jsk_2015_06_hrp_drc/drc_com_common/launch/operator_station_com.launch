@@ -57,4 +57,15 @@
     </rosparam>
   </node>
 
+  <node pkg="jsk_network_tools" type="silverhammer_lowspeed_streamer.py"
+        output="log"
+        name="ocs_to_fc_reconfigure">
+    <rosparam subst_value="true">
+      message: drc_task_common/DRCParametersMessage
+      to_port: 703
+      to_ip: $(arg FC_IP)
+      event_driven: true      
+    </rosparam>
+  </node>
+  
 </launch>

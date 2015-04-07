@@ -16,6 +16,8 @@
   <build_depend>rospy</build_depend>
   <build_depend>jsk_network_tools</build_depend>
   <build_depend>cmake_modules</build_depend>
+  <build_depend>dynamic_reconfigure</build_depend>
+  
   <run_depend>mk</run_depend>
   <run_depend>rosbuild</run_depend>
   <run_depend>roseus</run_depend>
@@ -23,4 +25,5 @@
   <run_depend>roslib</run_depend>
   <run_depend>rospy</run_depend>
   <run_depend>jsk_network_tools</run_depend>
+  <run_depend>dynamic_reconfigure</run_depend>
 </package>
