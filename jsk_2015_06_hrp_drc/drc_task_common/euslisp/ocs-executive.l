@@ -518,11 +518,14 @@
       (send smachine :go-to :executing-valve)))
   (:exec-door-button-callback ()
     (send self :show-text "Execute door motion" :execute)
-    ;; TODO : update latest door params
-    ;; TODO : send door params to fc
+    ;; update latest door params
+    (let* ((dim (get-primitive-marker-dimensions)))
+      (setq door-params
+            (list (get-primitive-marker-pose :frame-id "BODY") (float-vector (elt dim 0) (elt dim 1) (elt dim 2)))))
+    ;; send door params to fc
     (let ((msg (instance drc_com_common::OCS2FCSmall :init)))
       (send msg :type drc_com_common::OCS2FCSmall::*DOOR_EXEC*)
-      (send msg :float_params (box-to-float-vector 
+      (send msg :float_params (box-to-float-vector
                                (car door-params) (cadr door-params)
                                (length (send msg :float_params))))
       (send self :send-to-fc msg)

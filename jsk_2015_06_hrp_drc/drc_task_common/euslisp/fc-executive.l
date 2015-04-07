@@ -537,7 +537,6 @@
         (let ((box (elt (send msg :boxes) 0)))
           (let ((coords (ros::tf-pose->coords (send box :pose))))
             (let ((from-body-coords (send trans :transform coords)))
-              (print from-body-coords)
               (ros::ros-info "coords ~A" from-body-coords)
               (let ((fc-msg (instance drc_com_common::FC2OCSSmall :init)))
                 (send fc-msg :type drc_com_common::FC2OCSSmall::*DOOR_POSE*)

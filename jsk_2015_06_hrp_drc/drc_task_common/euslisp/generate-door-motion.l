@@ -16,7 +16,8 @@
   ;; setup door motion
   (setup-door-open :draw nil)
   ;; generate door
-  (setq *door* (make-drc-box2-door))
+  (setq *door* (make-drc-sagami-door))
+  ;;(setq *door* (make-drc-box2-door))
   ;; place door to door-coords
   (when door-coords
     (send *door* :newcoords door-coords))
@@ -49,7 +50,6 @@
           (send (send (send (send (send *robot* :body_lk) :copy-worldcoords) :transform door-coords :local)
                       :rotate (deg2rad 90) :y) :rotate (deg2rad 180) :z)
           (send *door* :handle :larm-knob-handle))
-    (send *door* :translate #f(20 -50 0) :world)
     (when draw? (send *irtviewer* :draw-objects))
     )
   )
@@ -58,18 +58,13 @@
   (knob-size
    coords
    &key (draw? nil) (use-ri? t))
-  ;; TODO : this is necessary for randomness of x-axis in door recognition result
-  (let* ((x-axis-vec (float-vector 1 0 0))
-         (coords-x-axis-vec (send (send coords :copy-worldcoords) :rotate-vector x-axis-vec))
-         (expected-x-axis-vec (float-vector 0 -1 0)))
-    (when (< (v. coords-x-axis-vec expected-x-axis-vec) 0)
-      (send coords :rotate pi :z :local)))
   (set-door-environment-full knob-size coords :draw? draw? :use-ri? use-ri?)
   ;; TODO : implement (generate-door-motion) and (get-door-motion)
   (setq *door-ik-results* nil)
   (setq *door-motion* (list (send *robot* :reset-manip-pose)))
   ;; this is copied from test-drc-door-task.l
-  (setq *init-standing-coords* (make-coords :pos (float-vector -650 -450 0) :rpy (list (deg2rad -15) 0 0))) ;; relative to door
+  (setq *init-standing-coords* (make-coords :pos (float-vector -600 400 0) :rpy (list (deg2rad -20) 0 0))) ;; for sagami-door
+  ;;(setq *init-standing-coords* (make-coords :pos (float-vector -650 -450 0) :rpy (list (deg2rad -15) 0 0))) ;; for drcbox2-door
   (setq *door-stand-coords* (send (send *door* :copy-worldcoords) :transform *init-standing-coords* :local))
   (ros::ros-warn "change stand position to ~a for door motion.~%" *door-stand-coords*)
   (send *robot* :fix-leg-to-coords *door-stand-coords*)
@@ -89,11 +84,12 @@
            (rpy (mapcar #'rad2deg (car (send *door-stand-coords* :rpy-angle)))))
       (ros::ros-warn "go-pos to ~a ~a ~a for door~%" (elt pos 0) (elt pos 1) (elt rpy 0))
       (when real? (send *ri* :go-pos (elt pos 0) (elt pos 1) (elt rpy 0)))
-      ))  
+      ))
   ;; set controller param for door
   (setup-door-open-real)
   ;; door motion
-  (test-door-open-drcbox2-door :walk-p nil :wait nil :draw nil)
+  (test-door-open-drc-sagami-door :walk-p nil :wait nil :draw nil)
+  ;; (test-door-open-drcbox2-door :walk-p nil :wait nil :draw nil)
   )
 
 (defun publish-door-motion
