@@ -255,33 +255,44 @@
   ;; steering estimation
   (:estimate-steering
    (&key (limb :larm))
-   (let ((tmp-robot (copy-object (send motion :robot)))
+   (let* ((tmp-robot (copy-object (send motion :robot)))
          (polygon-stamped-msg (instance geometry_msgs::PolygonStamped :init))
          (header (send polygon-stamped-msg :header))
          (polygon (send polygon-stamped-msg :polygon))
          (body-coords (send (car (send (send motion :robot) :links)) :copy-worldcoords))
-         body-relative-ec tmp-ec tmp-pos tmp-point32 tmp-point32-list
+         (steering-coords (send motion :car :vehicle-handle :steering-center))
+         body-relative-ec ec-relative-steering-coords tmp-ec tmp-pos tmp-point32 tmp-point32-list
          end-coords-list)
      ;; collect end-coords of real robot
+     (warn "start recording~%")
      (do-until-key
        (send tmp-robot :angle-vector (send *ri* :state :angle-vector))
        (push (send (send tmp-robot limb :end-coords) :copy-worldcoords) end-coords-list)
        )
+     (warn "finish recording~%")
+     ;; translate end-coords: worldcoords of grasp-point -> body related coords of steering-point
      (dolist (ec (reverse end-coords-list))
        (setq tmp-ec (send ec :copy-worldcoords))
+       (setq ec-relative-steering-coords (send tmp-ec :transformation steering-coords :local))
+       (send tmp-ec :translate (float-vector 0 0 (elt (send ec-relative-steering-coords :pos) 2)) :local) ;; project end-coords(estimated as grasp-point) to same plane as steering
        (setq body-relative-ec (send body-coords :transformation tmp-ec :local)) ;; make relative coords from body-link to end-coords
        (setq tmp-pos (send body-relative-ec :pos))
        ;; (setq tmp-pos (send ec :pos))
        (setq tmp-point32 (instance geometry_msgs::Point32 :init))
-       (send tmp-point32 :x (* (elt tmp-pos 0) 0.001))
-       (send tmp-point32 :y (* (elt tmp-pos 1) 0.001))
-       (send tmp-point32 :z (* (elt tmp-pos 2) 0.001))
+       (setq tmp-pos (scale 0.001 tmp-pos))
+       (send tmp-point32 :x (elt tmp-pos 0))
+       (send tmp-point32 :y (elt tmp-pos 1))
+       (send tmp-point32 :z (elt tmp-pos 2))
        (push tmp-point32 tmp-point32-list)
        )
+     ;; publish
+     (warn "publish data~%")
      (send polygon :points tmp-point32-list)
      (send header :stamp (ros::time-now))
      (send header :frame_id "BODY")
      (ros::publish "/drive/torus_finder/input/polygon" polygon-stamped-msg)
+     (ros::spin-once)
+     (ros::sleep)
      )
    )
   (:torus-finder-callback
