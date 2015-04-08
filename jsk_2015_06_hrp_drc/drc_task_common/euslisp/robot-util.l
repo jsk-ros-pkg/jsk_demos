@@ -118,12 +118,16 @@
 ;; get potentio-vector from ocs
 (defun get-potentio-vector-from-joint-states ()
   (while (not (boundp '*potentio-vector*))
-    (ros::spin-once))
+    (ros::spin-once)
+    (ros::sleep))
   *potentio-vector*
   )
 
 (defun joint-states-callback (msg)
-  (setq *potentio-vector* (coerce (mapcar #'rad2deg (coerce (send msg :position) cons)) float-vector))
+  ;; check sanity of *robot*
+  (when (boundp '*robot*)
+    (when (<= (length (send *robot* :joint-list)) (length (send msg :name)))
+      (setq *potentio-vector* (coerce (mapcar #'rad2deg (coerce (send msg :position) cons)) float-vector))))
   )
 
 (defun check-angle-vector-distance ;; return t when distance is smaller than thre
