@@ -10,8 +10,6 @@
 (require :state-machine "package://roseus_smach/src/state-machine.l")
 (require :state-machine-ros "package://roseus_smach/src/state-machine-ros.l") ;; for smach visualize only
 
-(ros::roseus "state_machine")
-
 (defclass task-state-machine
   :super state-machine
   :slots (transitions contexts output-image-file initial-hook-obj initial-hook-method smach-visualizer))
