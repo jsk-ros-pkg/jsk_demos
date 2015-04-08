@@ -1,6 +1,6 @@
 (load "package://drc_task_common/euslisp/robot-util.l")
 (load "package://drc_task_common/euslisp/util.l")
-;(load "package://drc_task_common/models/dewalt_dc550ka.l")
+ ;(load "package://drc_task_common/models/dewalt_dc550ka.l")
 (load "package://drc_task_common/models/takenoko-drill")
 (load "package://drc_task_common/models/gun-drill.l")
 
@@ -106,7 +106,7 @@
   ;; generate robot
   (generate-robot robot-name :generate-ri? generate-ri?)
   ;; place robot to origin:
-  (send *robot* :angle-vector (get-drill-grasp-pre-pose))
+  (send *robot* :angle-vector (get-drill-reset-pose))
   (send *robot* :fix-leg-to-coords (make-coords))
   (send *robot* :hand :arms :reset-pose) ;; this is neccesary for assoc coords to finger
   ;; attach handle to robot
@@ -270,7 +270,7 @@
          (drill-type *default-drill-type*)
          (fin? t))
     ;; grasp drill
-    (send *robot* :angle-vector (get-drill-grasp-pre-pose))
+    (send *robot* :angle-vector (get-drill-reset-pose))
     (send *robot* :fix-leg-to-coords original-foot-midcoords)
     ;; solve ik to grasp drill
     (block drill-ik
@@ -387,7 +387,7 @@
          (drill-motion-length (length drill-motion-av-list)))
     (when (= drill-motion-length 0) (return-from send-drill-grasp-motion))
     (drill-hook :arm :arms)
-    (send *robot* :angle-vector (get-drill-grasp-pre-pose))
+    (send *robot* :angle-vector (get-drill-reset-pose))
     (unless (check-angle-vector-distance)
       (when real? (model2real :time 3000)))
     (when (equal drill-type :takenoko)
@@ -446,8 +446,11 @@
       ;;todo? change drill manip coords with some recog methods
       )
     
-    (when nil ;;(equal drill-type :takenoko)
+    (when (equal drill-type :takenoko)
       (send *robot* :angle-vector (get-reach-drill-pre-pose))
+      (unless (check-angle-vector-distance)
+        (when real? (model2real :time 3000)))
+      (send *robot* :angle-vector (get-watch-drill-pre-pose))
       (unless (check-angle-vector-distance)
         (when real? (model2real :time 3000)))
       )
@@ -479,6 +482,9 @@
   (let* ((drill-motion-av-list (get-drill-grasp-motion-full coords :drill-tupe drill-type :recognized-coords-symbol :put-coords))
          (drill-motion-length (length drill-motion-av-list)))
     (when (= drill-motion-length 0) (return-from send-drill-grasp-motion))
+    (send *robot* :angle-vector (get-reach-drill-pre-pose))
+    (unless (check-angle-vector-distance)
+      (when real? (model2real :time 3000)))
     ;; walk
     (when *drill-stand-coords*
       (let* ((pos (scale 0.001 (send *drill-stand-coords* :worldpos)))
@@ -515,7 +521,7 @@
     (send *robot* :angle-vector (get-reach-drill-pre-pose))
     (unless (check-angle-vector-distance)
       (when real? (model2real :time 3000)))
-    (send *robot* :angle-vector (get-drill-grasp-pre-pose))
+    (send *robot* :angle-vector (get-drill-reset-pose))
     (unless (check-angle-vector-distance)
       (when real? (model2real :time 3000)))
     )
@@ -609,7 +615,7 @@
   (let* (ik-results
          (original-foot-midcoords (send (send *robot* :foot-midcoords) :copy-worldcoords)))
     ;; push buton
-    (send *robot* :angle-vector (get-drill-grasp-pre-pose))
+    (send *robot* :angle-vector (get-drill-reset-pose))
     (send *robot* :fix-leg-to-coords original-foot-midcoords)
     (let* (ik-ret)
       ;; pre-push1
@@ -617,7 +623,7 @@
       ;; (send *robot* :fix-leg-to-coords (make-coords))
       ;; (setq ik-ret (send *robot* *drill-main-arm* :move-end-rot -20 :z :world))
 
-      (send *drill* :newcoords (send (send (send *robot* :body_lk) :copy-worldcoords) :transform (make-coords :pos (float-vector 400 0 300) :rpy (list 0 0 pi/2)) :local))
+      (send *drill* :newcoords (send (send (send *robot* :body_lk) :copy-worldcoords) :transform (make-coords :pos (float-vector 500 0 200) :rpy (list 0 (deg2rad -30) pi/2)) :local))
       (setq ik-ret (fullbody-inverse-kinematics-for-drill-button :x-offset 42.5 :y-offset -15 :z-offset -100 :draw? draw?))
       (push-back (list 0 (not (null ik-ret)) (send *robot* :angle-vector)) ik-results)
       ;; pre-push2
@@ -739,7 +745,7 @@
          (original-foot-midcoords (send (send *robot* :foot-midcoords) :copy-worldcoords))
          (fin? t))
     ;; wall drill
-    (send *robot* :angle-vector (get-drill-grasp-pre-pose))
+    (send *robot* :angle-vector (get-drill-reset-pose))
     (send *robot* :fix-leg-to-coords original-foot-midcoords)
     ;; solve ik to wall drill
     (let* (ik-ret
@@ -852,6 +858,12 @@
   (let* ((drill-motion-av-list (get-drill-wall-motion-full coords-list :drill-type drill-type :recognized-coords-symbol :edge-coords))
          (drill-motion-length (length drill-motion-av-list)))
     (when (= drill-motion-length 0) (return-from send-drill-wall-motion))
+    (when (eq drill-type :takenoko)
+      (send *robot* :angle-vector (get-reach-drill-pre-pose))
+      (when real? (model2real :time 15000))
+      (send *robot* :angle-vector (get-pierce-drill-pre-pose))
+      (when real? (model2real :time 15000))
+      )
     ;; walk
     (when *drill-stand-coords*
       (let* ((pos (scale 0.001 (send *drill-stand-coords* :worldpos)))
@@ -859,7 +871,7 @@
         (ros::ros-warn "go-pos to ~a ~a ~a for valve~%" (elt pos 0) (elt pos 1) (elt rpy 0))
         (when real? (send *ri* :go-pos (elt pos 0) (elt pos 1) (elt rpy 0)))
         ))
-
+    
     (when real? (send *ri* :start-impedance :arms :moment-gain (float-vector 0 0 0) :k-p 1000 :d-p 400)) ;; start imp
     ;; pre-reach
     (dotimes (i (length drill-motion-av-list))
@@ -889,7 +901,8 @@
   #f(0.0 0.0 -26.0 50.0 -24.0 0.0 0.0 0.0 0.0 -26.0 50.0 -24.0 0.0 0.0 0.0 0.0 0.0 40.0 -29.0596 -86.9801 78.8826 -136.118 101.324 -9.8847 55.9352 60.0 50.0 30.0 10.0 -120.0 25.0 5.0 -20.0 -60.0)
   )
 (defun get-pierce-drill-pre-pose ()
-  (float-vector 0.0 0.0 -26.0 50.0 -24.0 0.0 0.0 0.0 0.0 -26.0 50.0 -24.0 0.0 0.0 0.0 0.0 0.0 40.0 1.19212 -20.9065 -5.36626 -98.3812 50.0 6.28459 -83.1406 60.0 -17.0 30.0 10.0 -120.0 25.0 5.0 -20.0 -60.0)
+  ;; (float-vector 0.0 0.0 -26.0 50.0 -24.0 0.0 0.0 0.0 0.0 -26.0 50.0 -24.0 0.0 0.0 0.0 0.0 0.0 40.0 1.19212 -20.9065 -5.36626 -98.3812 50.0 6.28459 -83.1406 60.0 -17.0 30.0 10.0 -120.0 25.0 5.0 -20.0 -60.0)
+  #f(0.0 0.0 -26.0 50.0 -24.0 0.0 0.0 0.0 0.0 -26.0 50.0 -24.0 0.0 0.0 0.0 0.0 0.0 40.0 -15.8902 -24.0028 13.0297 -91.879 5.61774 -4.8117 -73.0948 60.0 50.0 30.0 10.0 -120.0 25.0 5.0 -20.0 -60.0)
   )
 (defun get-push-drill-pre-pose ()
 (float-vector 0.0 0.0 -26.0 50.0 -24.0 0.0 0.0 0.0 0.0 -26.0 50.0 -24.0 0.0 0.0 0.0 0.0 0.0 40.0 -23.0209 -7.67889 10.4985 -75.8274 97.2715 -28.3553 -71.5569 60.0 50.0 30.0 10.0 -120.0 25.0 5.0 -20.0 -60.0)
@@ -904,16 +917,20 @@
   #f(-1.73786 12.7998 -28.717 58.3273 -27.2775 -3.19394 0.0 -1.75078 13.1089 -32.0242 64.2536 -29.8937 -3.50327 0.0 -18.0177 40.9471 -15.5394 -20.0 -71.9257 -1.63271 9.57461 -68.7006 -18.7947 12.8132 13.4518 60.0 -67.3083 63.2485 -56.2882 -89.6456 -32.2721 16.8311 -17.2177 -60.0)
   ;;#f(0.0 0.0 -26.0 50.0 -24.0 0.0 0.0 0.0 0.0 -26.0 50.0 -24.0 0.0 0.0 0.0 0.0 -20.0 40.0 -16.9174 -3.95202 39.3961 -81.2715 -74.5661 -40.3588 -35.2676 60.0 50.0 30.0 10.0 -120.0 25.0 5.0 -20.0 -60.0)
   )
-(defun get-drill-grasp-pre-pose (&key (arm *drill-main-arm*) (drill-type *default-drill-type*))
+(defun get-drill-reset-pose (&key (arm *drill-main-arm*) (drill-type *default-drill-type*))
   (cond ((equal arm :rarm)
-        #f(0.0 0.0 -26.0 50.0 -24.0 0.0 0.0 0.0 0.0 -26.0 50.0 -24.0 0.0 0.0 0.0 0.0 0.0 40.0 49.2654 -15.6889 -8.04143 -131.198 78.4518 -8.73041 1.4443 60.0 50.0 30.0 10.0 -120.0 25.0 5.0 -20.0 -60.0))
+        #f(0.0 0.0 -26.0 50.0 -24.0 0.0 0.0 0.0 0.0 -26.0 50.0 -24.0 0.0 0.0 0.0 0.0 0.0 20.0 49.2654 -15.6889 -8.04143 -131.198 78.4518 -8.73041 1.4443 60.0 50.0 30.0 10.0 -120.0 25.0 5.0 -20.0 -60.0))
         ((equal arm :larm) #f(0.0 0.0 -26.0 50.0 -24.0 0.0 0.0 0.0 0.0 -26.0 50.0 -24.0 0.0 0.0 0.0 0.0 0.0 40.0 50.0 -30.0 -10.0 -120.0 -25.0 -5.0 -20.0 60.0 49.3037 15.7767 8.00799 -131.215 -78.4251 8.75576 1.53598 -60.0)
          )
-        (t #f(0.0 0.0 -26.0 50.0 -24.0 0.0 0.0 0.0 0.0 -26.0 50.0 -24.0 0.0 0.0 0.0 0.0 0.0 40.0 50.8516 -36.1267 0.371474 -131.17 72.8481 -13.9098 21.4063 60.0 50.8516 36.1267 -0.371464 -131.17 -72.8481 13.9098 21.4063 -60.0)))
+        (t #f(0.0 0.0 -26.0 50.0 -24.0 0.0 0.0 0.0 0.0 -26.0 50.0 -24.0 0.0 0.0 0.0 0.0 0.0 20.0 50.8516 -36.1267 0.371474 -131.17 72.8481 -13.9098 21.4063 60.0 50.8516 36.1267 -0.371464 -131.17 -72.8481 13.9098 21.4063 -60.0)))
   )
+()
 
 (defun get-button-drill-pre-pose ()
   #f(-3.00133 2.02892 -27.2933 50.8864 -23.7853 -2.19867 0.0 -3.00129 2.03943 -27.2041 49.4034 -22.3915 -2.20917 0.0 39.4881 32.13 -45.0 17.2412 -18.1543 -92.9917 30.9097 -118.766 87.4559 26.6536 47.0384 60.0 50.0 30.0 10.0 -120.0 25.0 5.0 -20.0 -60.0)
+  )
+(defun get-watch-drill-pose ()
+  #f(-1.38133 5.04464 -28.5655 52.7906 -23.2636 -5.40806 0.0 -1.38071 5.00818 -27.1647 49.5024 -21.3763 -5.3716 0.0 22.1862 23.6363 -22.5578 43.5 -11.4883 -6.82302 22.4676 -115.948 82.417 18.2691 48.5902 60.0 -58.2284 33.3699 -40.8042 -81.4217 5.90815 -41.9868 -46.7235 -60.0)
   )
 
 (defun get-grasp-drill-hand-pose ()
@@ -924,12 +941,12 @@
   #f(90.0 90.0 0.0 0.0 0.0 115.0)
   ;;#f(90.0 0.0 0.0 0.0 0.0 115.0)
   )
-(defun get-drill-test-pose ()
-  #f(4.991507e-32 2.204884e-30 -26.0 50.0 -24.0 4.587941e-33 -1.378053e-31 2.552867e-32 1.247877e-32 -26.0 50.0 -24.0 -9.841308e-33 -6.315679e-31 3.719923e-32 -5.951877e-31 2.570109e-33 40.0 -3.98489 -10.7817 30.9963 -74.3163 -14.2952 -23.9135 -18.2156 60.0 50.0 30.0 10.0 -120.0 25.0 5.0 -20.0 -60.0)
-  )
-(defun get-drill-larm-test-pose()
-  #f(6.353318e-47 1.511780e-45 -26.0 50.0 -24.0 -1.024111e-48 -9.448623e-47 9.628560e-48 1.588330e-47 -26.0 50.0 -24.0 -5.407690e-48 5.445592e-46 -3.615974e-47 5.785559e-46 -4.503218e-48 6.202082e-14 33.8752 -23.3947 -2.34573 -71.2747 -14.0104 2.82435 13.9053 15.0 17.6065 18.0935 -5.46659 -81.6239 14.0 5.0 -26.5981 -15.0)
-  )
+;; (defun get-drill-test-pose ()
+;;   #f(4.991507e-32 2.204884e-30 -26.0 50.0 -24.0 4.587941e-33 -1.378053e-31 2.552867e-32 1.247877e-32 -26.0 50.0 -24.0 -9.841308e-33 -6.315679e-31 3.719923e-32 -5.951877e-31 2.570109e-33 40.0 -3.98489 -10.7817 30.9963 -74.3163 -14.2952 -23.9135 -18.2156 60.0 50.0 30.0 10.0 -120.0 25.0 5.0 -20.0 -60.0)
+;;   )
+;; (defun get-drill-larm-test-pose()
+;;   #f(6.353318e-47 1.511780e-45 -26.0 50.0 -24.0 -1.024111e-48 -9.448623e-47 9.628560e-48 1.588330e-47 -26.0 50.0 -24.0 -5.407690e-48 5.445592e-46 -3.615974e-47 5.785559e-46 -4.503218e-48 6.202082e-14 33.8752 -23.3947 -2.34573 -71.2747 -14.0104 2.82435 13.9053 15.0 17.6065 18.0935 -5.46659 -81.6239 14.0 5.0 -26.5981 -15.0)
+;;   )
 
 ;; TODO pre-push-pose
 (defun test-drill-grasp-motion ()
