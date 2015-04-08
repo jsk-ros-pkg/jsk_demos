@@ -65,7 +65,7 @@
 
     <node pkg="jsk_network_tools" type="silverhammer_lowspeed_receiver.py"
         output="log"
-        name="fc_from_ocs_reconfigure">
+        name="fc_from_ocs_reconfigure" launch-prefix="sudo">
     <rosparam subst_value="true">
       message: drc_task_common/DRCParametersMessage
       receive_port: 703
