@@ -58,7 +58,7 @@
   (:go-to (next-state)
     (if (send self :next? next-state)
         (send self :go-to! next-state)
-      (error "Cannot change state from ~A to ~A"
+      (ros::ros-warn "Cannot change state from ~A to ~A"
              (send self :state) next-state)))
   (:lookup-transitions (start-state &key (direction :from))
     (remove-if-not #'(lambda (trans)
