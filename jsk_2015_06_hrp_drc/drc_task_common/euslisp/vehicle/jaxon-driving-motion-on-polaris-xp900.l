@@ -82,18 +82,7 @@
      ;; (send *ri* :start-grasp limb)
      ;; (send *ri* :hand-close limb)
      )
-   )
-  (:approach-handle
-   (&key (limb (send self :get :grasp-arm)) (target-handle (send self :get :grasp-point)) (sync-controller nil)
-         (tm 15000) (offset #f(-50 0 0)) (debug-view nil) (rotation-axis t) (start-impedance nil) (stop-impedance nil)
-         (null-space #f(-0.06 -0.3 0.0 -0.18 0.16 0.0 0.0 0.0))
-         )
-   (send-super :approach-handle
-               :limb limb :target-handle target-handle :sync-controller sync-controller
-               :tm tm :offset offset :debug-view debug-view :rotation-axis rotation-axis
-               :start-impedance start-impedance :stop-impedance stop-impedance :null-space null-space
-               )
-   )
+   )  
   (:set-impedance-for-handle
    (limb)
    (send *ri* :start-impedance limb :M-p 200 :D-p 600 :K-p 1400)
