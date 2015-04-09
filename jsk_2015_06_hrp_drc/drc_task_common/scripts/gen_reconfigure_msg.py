@@ -12,6 +12,12 @@ output_file = sys.argv[1]
 def msgType(tp):
   if tp == "double" or tp == "float":
     return "float32"
+  elif tp == "int":
+    return "int32"
+  elif tp == "str" or tp == "string":
+    raise Exception("String is not supported")
+  elif tp == "bool":
+    return "bool"
   else:
     raise Exception("Unknown type: %s" % (tp))
 
