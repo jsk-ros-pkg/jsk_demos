@@ -19,7 +19,7 @@
    ;; make links links and assoc all links
    (setq base (send self :make-base-link))
    (setq seat (send self :make-seat-link))
-   (setq handle (instance drive-sim-handle :init -100 350 -50 (/ 345 2) 400))
+   (setq handle (instance drive-sim-handle :init -140 325 -30 (/ 345 2) 400))
    (setq pedal (instance drive-sim-pedal :init))
    ;; (setq base (send self :make-drive-simulator-base))
    ;; (setq door (send self :make-drive-simulator-door))
