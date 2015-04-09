@@ -1,0 +1,5 @@
+<launch>
+  <group ns="drive">
+    <node pkg="jsk_pcl_ros" type="torus_finder" name="torus_finder"/>
+  </group>
+</launch>
