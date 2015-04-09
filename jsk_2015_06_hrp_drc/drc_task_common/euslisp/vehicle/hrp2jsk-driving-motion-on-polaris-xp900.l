@@ -23,7 +23,8 @@
   (:ride
    (&key (init-pose t))
    ;; (send robot :move-to (make-coords :pos (float-vector 0 370.0 200) :rpy (float-vector 0.0 0.0 0.0)) :world)
-   (send robot :move-to (make-coords :pos (float-vector 180 370.0 80) :rpy (float-vector 0.0 (- (/ pi 16)) 0.0)) :world)
+   ;; (send robot :move-to (make-coords :pos (float-vector 180 370.0 80) :rpy (float-vector 0.0 (- (/ pi 16)) 0.0)) :world)
+   (send robot :move-to (make-coords :pos (float-vector -80 370.0 80) :rpy (float-vector 0.0 0.0 0.0)) :world)
    (when init-pose
      (send self :drive-init-pose)
      )
@@ -37,7 +38,7 @@
    (send robot :legs :knee-p :joint-angle 80)
    (send robot :legs :ankle-p :joint-angle 0)
    (send robot :rarm :shoulder-p :joint-angle -100)
-   (send robot :torso :waist-p :joint-angle 10)
+   ;; (send robot :torso :waist-p :joint-angle 10)
    (send robot :head :neck-p :joint-angle -5)
    (when real
      (send *ri* :angle-vector (send robot :angle-vector) tm)
@@ -67,9 +68,9 @@
   (:approach-accel-pedal
    (&key (tm 10000) (debug-view nil))
    ;; (send robot :rleg :angle-vector #f(0.271875 0.261 -86.08 62.4348 2.384 -0.234 -0.384)) ;; adjusted joint-angles in real hrp2jsknt
-   (send robot :rleg :angle-vector #f(0.269775 0.256892 -84.3383 59.7212 -4.02795 -0.229299 -0.384)) ;; adjusted joint-angles in real hrp2jsknt
    ;; (send robot :rleg :angle-vector #f(0.269905 0.257049 -84.7676 56.5701 -0.447684 -0.229449 -0.384)) ;; adjusted joint-angles in real hrp2jsknt for new seat (testbed version)
-   (send robot :rleg :angle-vector #f(0.274637 0.265758 -88.9665 55.0 -2.68319 -0.239387 -0.384)) ;; adjusted joint-angles in real hrp2jsknt for new seat (testbed version)   
+   ;; (send robot :rleg :angle-vector #f(0.274637 0.265758 -88.9665 55.0 -2.68319 -0.239387 -0.384)) ;; adjusted joint-angles in real hrp2jsknt for new seat (testbed version)
+   (send robot :rleg :angle-vector #f(0.277593 0.269639 -91.1699 48.9728 5.54723 -0.244199 -0.384))
    (when real
      (send *ri* :angle-vector (send robot :angle-vector) tm)
      (send *ri* :wait-interpolation)
@@ -77,7 +78,8 @@
    )
   (:approach-brake-pedal
    (&key (tm 10000) (debug-view nil))
-   (send robot :lleg :angle-vector #f(0.0375 -0.5235 -83.014 80.541 9.842 0.6048 -0.564)) ;; adjusted joint-angles in real hrp2jsknt
+   ;; (send robot :lleg :angle-vector #f(0.0375 -0.5235 -83.014 80.541 9.842 0.6048 -0.564)) ;; adjusted joint-angles in real hrp2jsknt
+   (send robot :lleg :angle-vector #f(0.398437 -1.4895 -97.47 76.7502 20.0 1.5876 -1.548))
    (when real
      (send *ri* :angle-vector (send robot :angle-vector) tm)
      (send *ri* :wait-interpolation)
