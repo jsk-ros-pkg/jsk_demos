@@ -1,8 +1,9 @@
 (load "~/prog/euslib/irteus_proposals/motion-lib-proposal.l")
-(defun setup-door-open (&key (draw t))
-  (load "package://hrpsys_ros_bridge_tutorials/euslisp/hrp2jsknts-interface.l")
-  (hrp2jsknts-init)
-  (setq *robot* *hrp2jsknts*)
+(defun setup-door-open (&key (draw t) (generate-robot t))
+  (when generate-robot
+    (load "package://hrpsys_ros_bridge_tutorials/euslisp/hrp2jsknts-interface.l")
+    (hrp2jsknts-init)
+    (setq *robot* *hrp2jsknts*))
   ;;(make-drc-box2-door)
   ;;(make-drc-test-door-right)
   (when draw (objects (list *robot*)))
@@ -25,22 +26,46 @@
   (defvar *door-grasp-preshape-pose* #f(0.0 70.0 0.0 -10.0 30.0 30.0))
   (defvar *door-grasp-pose* #f(0.0 -20.0 10.0 -10.0 120.0 120.0))
   )
-(warn ";; (setup-door-open)~%")
+;;(warn ";; (setup-door-open)~%")
 
-(defun setup-door-open-real ()
+(defun setup-door-open-real (&key (start-abc-st t))
   ;; ABC, ST, IMP param
-  ;;(send *ri* :set-auto-balancer-param :default-zmp-offsets (list (float-vector 0 -10 0) (float-vector 0 10 0)))
-  ;;(send *ri* :set-gait-generator-param :default-step-time 1.0 :default-double-support-ratio 0.35)
+  ;; save original parameter of ABC and ST
+  (let* ((gait-generator-param (send (send *ri* :get-gait-generator-param) :slots))
+         (auto-balancer-param (send (send *ri* :get-auto-balancer-param) :slots)))
+    (setq *original-default-step-time*
+          (cdr (assoc 'ros::_default_step_time gait-generator-param)))
+    (setq *original-default-double-support-ratio*
+          (cdr (assoc 'ros::_default_double_support_ratio gait-generator-param)))
+    (setq *original-default-zmp-offsets*
+          (list (subseq (scale 1000 (send (cdr (assoc 'ros::_default_zmp_offsets auto-balancer-param)) :data)) 0 3)
+                (subseq (scale 1000 (send (cdr (assoc 'ros::_default_zmp_offsets auto-balancer-param)) :data)) 3 6)))
+    )
+  ;; set new parameter
   (send *ri* :set-gait-generator-param :default-step-time 0.9 :default-double-support-ratio 0.32)
   (send *ri* :set-auto-balancer-param :default-zmp-offsets (list (float-vector 0 10 0) (float-vector 0 -10 0)))
+  ;;(send *ri* :set-gait-generator-param :default-step-time 1.0 :default-double-support-ratio 0.35)
+  ;;(send *ri* :set-auto-balancer-param :default-zmp-offsets (list (float-vector 0 -10 0) (float-vector 0 10 0)))
   (send *ri* :set-impedance-controller-param :arms :k-p 200 :d-p 180 :m-p 5 :m-r 1 :d-r 15 :k-r 20)
   (send *ri* :start-impedance :arms)
-  (send *ri* :start-auto-balancer :limbs '(:rleg :lleg :rarm :larm))
-  (send *ri* :start-st)
+  (when start-abc-st
+    (send *ri* :start-auto-balancer :limbs '(:rleg :lleg :rarm :larm))
+    (send *ri* :start-st))
   ;; (send *ri* :remove-force-sensor-offset)
   ;; (send *ri* :reset-force-moment-offset-arms)
   )
-(warn ";; (setup-door-open-real)~%")
+;;(warn ";; (setup-door-open-real)~%")
+
+(defun set-original-abc-st-param-from-door
+  ()
+  (when (and (boundp '*original-default-step-time*) (boundp '*original-default-double-support-ratio*))
+    (send *ri* :set-gait-generator-param
+          :default-step-time *original-default-step-time*
+          :default-double-support-ratio *original-default-double-support-ratio*))
+  (when (boundp '*original-default-zmp-offsets*)
+    (send *ri* :set-auto-balancer-param
+          :default-zmp-offsets *original-default-zmp-offsets*))
+  )
 
 (defclass param-door
   :super cascaded-link
@@ -126,8 +151,10 @@
   "drc door in sagami full-task-course environment"
   (setq *door* (instance param-door :init 895 60 110 20
                          (float-vector 0 800 1120)
-                         (float-vector -60 740 1120)
-                         :handle-l/r :left)))
+                         (float-vector -50 760 1120)
+                         ;; (float-vector -60 740 1120)
+                         :handle-l/r :left))
+  )
 
 (defun exec-robot-state-list
   (rs-list &key (real nil))
@@ -194,10 +221,11 @@
     (send (send *door* :joint :door-knob-joint) :joint-angle 0)
     (send *robot* :reset-manip-pose)
     (send *robot* :torso :waist-y :joint-angle initial-waist-y)
-    (send *robot* :fix-leg-to-coords (send (send *door* :copy-worldcoords) :transform initial-standing-coords :local))
+    (send *robot* :fix-leg-to-coords (make-coords))
     (send *robot* arm :move-end-rot (case arm (:larm 90) (t -90)) :x)
-    (send *robot* arm :move-end-pos (float-vector 50 0 50) :world)
-    (send *robot* arm :move-end-rot (case arm (:larm 20) (t -20)) :z)
+    (send *robot* arm :move-end-rot (case arm (:larm 30) (t -30)) :z)
+    (send *robot* arm :move-end-pos (float-vector 25 0 50) :world)
+    (send *robot* :fix-leg-to-coords (send (send *door* :copy-worldcoords) :transform initial-standing-coords :local))
     (case arm
       (:larm (send *robot* :rarm :angle-vector *rarm-avoid-pose*))
       (:rarm (send *robot* :larm :angle-vector *larm-avoid-pose*)))
@@ -550,57 +578,55 @@
     )
   )
 
-(defun test-door-open-drc-sagami-door (&key (walk-p nil) (wait t) (draw t) (real t))
+(defun test-door-open-drc-sagami-door (&key (walk-p t) (wait t) (draw t) (real t))
   "drc door in sagami full-task-course environment"
   (make-drc-sagami-door)
   (when draw (objects (list *robot* *door*)))
   (setq *init-standing-coords* (make-coords :pos (float-vector -600 400 0) :rpy (list (deg2rad -20) 0 0)))
   ;;(setq *init-standing-coords* (make-coords :pos (float-vector -750 650 0) :rpy (list (deg2rad -10) 0 0)))
+  ;; initial pose
   (initialize-pose-for-door-open :real nil :arm :larm :initial-standing-coords *init-standing-coords* :initial-waist-y -20)
   (send *robot* :head :look-at (send (send (send *door* :joint :door-knob-joint) :child-link) :worldpos))
   (exec-robot-state-list (list (get-current-robot-state 3000)) :real real)
   (print ";; reach and open")
   (when wait (read-line))
+  ;; reach
   (setq *rs-list* (reach-grasp-door :real nil :arm :larm))
   (exec-robot-state-list *rs-list* :real real)
+  ;; push
   (let ((push/pull :push))
     (when push/pull
-      ;;(when wait (read-line))
       (setq *rs-list* (pull-push-door-by-arm :arm :larm :initial-standing-coords *init-standing-coords* :push/pull push/pull :angle-list (list 0 -5 -10 -15)))
       (exec-robot-state-list *rs-list* :real real))
-    ;;(when wait (read-line))
     (setq *rs-list* (release-grasp-door :real nil :arm :larm :initial-standing-coords *init-standing-coords*))
     (exec-robot-state-list *rs-list* :real real)
     (send (send *robot* :hand :larm) :angle-vector *door-grasp-pose*)
     (exec-robot-state-list (list (get-current-robot-state 1000)) :real real))
+  ;; walk
   (when walk-p
-    (print ";; go-pos fwd")
     (when wait (read-line))
-    (dotimes (i 2)
-      (let* ((fwd-param (float-vector 50 0 0))
-             (go-pos-param (send (send *robot* :foot-midcoords) :inverse-rotate-vector fwd-param)))
-        (send *ri* :go-pos (* 1e-3 (elt go-pos-param 0)) (* 1e-3 (elt go-pos-param 1)) 0)
-        (send *robot* :translate fwd-param)))
-    (print ";; move door by larm")
-    (when wait (read-line))
-    (initialize-pose-for-door-open :real nil :arm :larm :initial-standing-coords *init-standing-coords* :initial-waist-y 0)
-    (send *robot* :larm :angle-vector *larm-reset-manip-pose*)
-    (send *robot* :larm :move-end-pos #f(300 100 0) :world :rotation-axis nil)
-    (send (send *robot* :hand :larm) :angle-vector *door-grasp-pose*)
-    (exec-robot-state-list (list (get-current-robot-state 2000)) :real real)
-    (initialize-pose-for-door-open :real nil :arm :larm :initial-standing-coords *init-standing-coords* :initial-waist-y 0)
-    (send *robot* :larm :angle-vector *larm-reset-manip-pose*)
-    (send (send *robot* :hand :larm) :angle-vector *door-grasp-pose*)
-    (exec-robot-state-list (list (get-current-robot-state 1000)) :real real)
-    (print ";; go-pos rotate")
-    (read-line)
-    ;;(send *ri* :go-pos 0 0 70)
-    (dotimes (i 3)
-      (send *ri* :go-pos 0 0 20))
-    ;; (send *ri* :go-pos 0 0 20)
-    ;; (send *ri* :go-pos 0 -0.5 0)
-    ;; (send *ri* :go-pos 0 -0.5 0)
-    )
+    (let* ((walk-pos (float-vector 100 0 0)))
+      (setq walk-pos (send (send *door* :copy-worldcoords) :rotate-vector walk-pos))
+      (send *ri* :go-pos (* 1e-3 (elt walk-pos 0)) (* 1e-3 (elt walk-pos 1)) 0)
+      (send *robot* :translate walk-pos :local)))
+  ;; punch
+  (initialize-pose-for-door-open :real nil :arm :larm
+                                 :initial-standing-coords *init-standing-coords* :initial-waist-y 0)
+  (send *robot* :larm :angle-vector *larm-reset-manip-pose*)
+  (send *robot* :larm :move-end-pos #f(200 0 0) :local :rotation-axis nil)
+  (send (send *robot* :hand :larm) :angle-vector *door-grasp-pose*)
+  (exec-robot-state-list (list (get-current-robot-state 2000)) :real real)
+  (initialize-pose-for-door-open :real nil :arm :larm
+                                 :initial-standing-coords *init-standing-coords* :initial-waist-y 0)
+  (send *robot* :larm :angle-vector *larm-reset-manip-pose*)
+  (send *robot* :larm :move-end-pos #f(350 0 0) :local :rotation-axis nil)
+  (send (send *robot* :hand :larm) :angle-vector *door-grasp-pose*)
+  (exec-robot-state-list (list (get-current-robot-state 1000)) :real real)
+  (initialize-pose-for-door-open :real nil :arm :larm
+                                 :initial-standing-coords *init-standing-coords* :initial-waist-y 0)
+  (send *robot* :larm :angle-vector *larm-reset-manip-pose*)
+  (send (send *robot* :hand :larm) :angle-vector *door-grasp-pose*)
+  (exec-robot-state-list (list (get-current-robot-state 1000)) :real real)
   )
 
 #|

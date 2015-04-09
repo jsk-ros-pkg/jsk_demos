@@ -14,7 +14,7 @@
   (send *robot* :reset-manip-pose)
   (send *robot* :fix-leg-to-coords (make-coords))
   ;; setup door motion
-  (setup-door-open :draw nil)
+  (setup-door-open :draw nil :generate-robot nil)
   ;; generate door
   (setq *door* (make-drc-sagami-door))
   ;;(setq *door* (make-drc-box2-door))
@@ -46,10 +46,19 @@
           (t
            (send *robot* :angle-vector (get-potentio-vector-from-joint-states))))
     (send *robot* :fix-leg-to-coords (make-coords) '(:lleg :rleg))
-    (send *door* :move-coords
+    (setq door-worldcoords
           (send (send (send (send (send *robot* :body_lk) :copy-worldcoords) :transform door-coords :local)
-                      :rotate (deg2rad 90) :y) :rotate (deg2rad 180) :z)
-          (send *door* :handle :larm-knob-handle))
+                      :rotate (deg2rad 90) :y) :rotate (deg2rad 180) :z))
+    ;; fix door handle coords to become horizontal
+    ;; :new-x => :new-yと:old-zと垂直
+    ;; :new-y => #f(0 0 1)
+    ;; :new-z => :new-x, :new-yと垂直
+    (let* ((y-vec (float-vector 0 0 1))
+           (x-vec (v* y-vec (send door-worldcoords :rotate-vector (float-vector 0 0 1))))
+           (z-vec (v* x-vec y-vec)))
+      (setq door-worldcoords
+            (make-coords :pos (send door-worldcoords :pos) :rot (transpose (matrix x-vec y-vec z-vec)))))
+    (send *door* :move-coords door-worldcoords (send *door* :handle :larm-knob-handle))
     (when draw? (send *irtviewer* :draw-objects))
     )
   )
@@ -88,8 +97,9 @@
   ;; set controller param for door
   (setup-door-open-real)
   ;; door motion
-  (test-door-open-drc-sagami-door :walk-p nil :wait nil :draw nil)
+  (test-door-open-drc-sagami-door :wait nil :draw nil)
   ;; (test-door-open-drcbox2-door :walk-p nil :wait nil :draw nil)
+  (set-original-abc-st-param-from-door)
   )
 
 (defun publish-door-motion
