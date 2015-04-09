@@ -49,6 +49,11 @@
      command-move-mm
      )
    )
+  (:step-brake
+   (&optional (angle step-brake-angle))
+   (warn "Real Vehicle Mode: Brake Disabled~%")
+   (send self :step-accel 0.0) ;; release accel forcely
+   )
   )
 
 ;; (setq *controller* (instance hrp2jsk-driving-controller-on-polaris-xp900 :init :real nil))
