@@ -87,6 +87,7 @@
    (when real
      (send *ri* :angle-vector (send robot :angle-vector) tm)
      (send *ri* :wait-interpolation)
+     (send self :set-impedance-for-support :lleg)
      )
    )
   (:step-accel-pedal
