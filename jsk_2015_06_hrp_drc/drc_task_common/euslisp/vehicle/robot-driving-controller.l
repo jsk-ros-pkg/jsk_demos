@@ -61,6 +61,8 @@
          step-brake-angle 20
          release-brake-angle 5
          )
+   ;; for handle angle estimation
+   (send self :update-handle-angle-coords-table)
 
    ;; subscriber for operator command
    (ros::subscribe "/drive/operation/accel_cmd"
@@ -78,12 +80,15 @@
    (ros::subscribe "/rfsensor"
                    geometry_msgs::WrenchStamped
                    #'send self :rfsensor-callback)
+   (ros::advertise "/drive/pedal_state" std_msgs::Bool 1)
+   ;; handle-angle commands
+   (ros::advertise "/drive/controller/target_handle_angle" std_msgs::Float64 1)
+   (ros::advertise "/drive/controller/estimated_handle_angle" std_msgs::Float64 1)
+   ;; for steering estimation
    (ros::subscribe "/drive/torus_finder/output/pose"
                    geometry_msgs::PoseStamped
                    #'send self :torus-finder-callback)
-   (ros::advertise "/drive/pedal_state" std_msgs::Bool 1)
    (ros::advertise "/drive/torus_finder/input/polygon" geometry_msgs::PolygonStamped 1)
-   (send self :update-handle-angle-coords-table)
    )
 
   ;; handle command
@@ -101,8 +106,9 @@
    (unless grasped-flag
      (warn "Robot do not grasp handle~%")
      (return-from :turn)
-     )   
-   (let (handle-deg real-handle-deg)
+     )
+   (let ((pub-msg (instance std_msgs::Float64 :init))
+         handle-deg real-handle-deg)
      ;; if radius, transform to deg
      (if rad
          (setq handle-deg (/ (rad2deg angle) weight))
@@ -134,6 +140,9 @@
      (warn "turn ~A[deg]~%" real-handle-deg)
      (send motion :turn-handle real-handle-deg :relative nil :use-controller t)
      (setq old-handle-deg real-handle-deg)
+     ;; publish target angle
+     (send pub-msg :data real-handle-deg)
+     (ros::publish "/drive/controller/target_handle_angle" pub-msg)
      )
    )
   ;; approach
@@ -386,6 +395,7 @@
          (estimated-angle nil)
          (current-angle old-estimated-handle-angle)
          (use-flag nil) (half-range 180)
+         (pub-msg (instance std_msgs::Float64 :init))
          selected-handle-angle-coords-table
          current-end-coords  min-elem max-elem
          )
@@ -415,6 +425,9 @@
          )
        )
      (setq old-estimated-handle-angle estimated-angle)
+     ;; publish estimated angle
+     (send pub-msg :data estimated-angle)
+     (ros::publish "/drive/controller/estimated_handle_angle" pub-msg)
      estimated-angle
      )
    )
