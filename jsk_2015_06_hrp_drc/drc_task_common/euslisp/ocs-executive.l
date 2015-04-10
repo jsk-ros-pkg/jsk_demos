@@ -493,6 +493,31 @@
      ((eq (send smachine :state) :selecting-exec-for-go-pos)
       (send smachine :go-to :initial))
      ;; there is no selecting-region state for look-at and look-around
+     ;; from selecting-region state to initial state ;;;;
+     ((eq (send smachine :state) :executing-valve)
+      (send smachine :go-to :initial))
+     ((eq (send smachine :state) :executing-door)
+      (send smachine :go-to :initial))
+     ((eq (send smachine :state) :executing-debri)
+      (send smachine :go-to :initial))
+     ((eq (send smachine :state) :executing-hose-grasp)
+      (send smachine :go-to :initial))
+     ((eq (send smachine :state) :executing-hose-connect)
+      (send smachine :go-to :initial))
+     ((eq (send smachine :state) :executing-drill-grasp)
+      (send smachine :go-to :initial))
+     ((eq (send smachine :state) :executing-drill-put)
+      (send smachine :go-to :initial))
+     ((eq (send smachine :state) :executing-drill-wall)
+      (send smachine :go-to :initial))
+     ((eq (send smachine :state) :executing-drill-button)
+      (send smachine :go-to :initial))
+     ((eq (send smachine :state) :executing-go-pos)
+      (send smachine :go-to :initial))
+     ((eq (send smachine :state) :executing-look-at)
+      (send smachine :go-to :initial))
+     ((eq (send smachine :state) :executing-look-around)
+      (send smachine :go-to :initial))
      )
     ;; clear text message
     (send req :response))
@@ -518,11 +543,14 @@
       (send smachine :go-to :executing-valve)))
   (:exec-door-button-callback ()
     (send self :show-text "Execute door motion" :execute)
-    ;; TODO : update latest door params
-    ;; TODO : send door params to fc
+    ;; update latest door params
+    (let* ((dim (get-primitive-marker-dimensions)))
+      (setq door-params
+            (list (get-primitive-marker-pose :frame-id "BODY") (float-vector (elt dim 0) (elt dim 1) (elt dim 2)))))
+    ;; send door params to fc
     (let ((msg (instance drc_com_common::OCS2FCSmall :init)))
       (send msg :type drc_com_common::OCS2FCSmall::*DOOR_EXEC*)
-      (send msg :float_params (box-to-float-vector 
+      (send msg :float_params (box-to-float-vector
                                (car door-params) (cadr door-params)
                                (length (send msg :float_params))))
       (send self :send-to-fc msg)

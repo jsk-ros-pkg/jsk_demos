@@ -10,8 +10,6 @@
 (require :state-machine "package://roseus_smach/src/state-machine.l")
 (require :state-machine-ros "package://roseus_smach/src/state-machine-ros.l") ;; for smach visualize only
 
-(ros::roseus "state_machine")
-
 (defclass task-state-machine
   :super state-machine
   :slots (transitions contexts output-image-file initial-hook-obj initial-hook-method smach-visualizer))
@@ -60,7 +58,7 @@
   (:go-to (next-state)
     (if (send self :next? next-state)
         (send self :go-to! next-state)
-      (error "Cannot change state from ~A to ~A"
+      (ros::ros-warn "Cannot change state from ~A to ~A"
              (send self :state) next-state)))
   (:lookup-transitions (start-state &key (direction :from))
     (remove-if-not #'(lambda (trans)

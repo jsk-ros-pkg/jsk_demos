@@ -26,7 +26,7 @@
      )
    (send self :put :grasp-arm grasp-arm)
    (send self :put :grasp-point grasp-point)
-   (send self :ride)
+   (send self :ride :init-pose t)
    (send self :update-handle-angle-coords-table)
    (objects (list robot car))   
    )  
@@ -44,7 +44,7 @@
      )
    )
   (:drive-init-pose-crank
-   (&key (limb (send self :get :grasp-arm)) (tm 10000) (drive-init-pose nil))
+   (&key (limb (send self :get :grasp-arm)) (tm 10000) (drive-init-pose nil) (move-arm t))
    (when (not (equal limb (send self :get :grasp-arm)))
      (send self :grasp-arm limb)
      )
@@ -52,7 +52,9 @@
    (when drive-init-pose
      (send self :drive-init-pose)
      )
-   (send robot limb :move-end-pos #f(100 0 100) :world)
+   (when move-arm
+     (send robot limb :move-end-pos #f(100 0 100) :world)
+     )
    (when real
      (send *ri* :angle-vector (send robot :angle-vector) tm)
      (send *ri* :wait-interpolation)
@@ -102,7 +104,7 @@
      )
    (let ((check-links (subseq (send robot limb :links) 3 6)) (distance-threshold 100)
          (body-link (elt (send robot :links) 0))
-         (handle-link (find-if #'(lambda (h) (eq (send h :name) :handle-link)) (send (send *car* :drive-simulator-handle) :links)))
+         (handle-link (find-if #'(lambda (h) (eq (send h :name) :handle-link)) (send (send *car* :vehicle-handle) :links)))
          (offset-target-handle-coords
           (send (send (send self :rotate-grasp-point-by-grasp-arm (send car target-handle)) :copy-worldcoords)
                 :locate offset))
@@ -113,7 +115,7 @@
            (send robot :inverse-kinematics offset-target-handle-coords
                  :move-target (send robot limb :end-coords)
                  :link-list (send robot :link-list (send robot limb :end-coords :parent) (send robot limb :root-link))
-                 :rotation-axis rotation-axis :debug-view debug-view
+                 :rotation-axis nil :debug-view debug-view
                  ;; :null-space null-space ;; avoid rarm to outside
                  ;; :null-space #f(30.0 -150.0 0.0 90.0 80.0 0.0 20.0 0.0) ;; avoid rarm to outside
                  )
@@ -269,7 +271,7 @@
            (dolist (coord steering-coords)
              (let ((check-links (subseq (send robot limb :links) 3 6)) (distance-threshold 100)
                    (body-link (elt (send robot :links) 0)) (ik-ret)
-                   (handle-link (find-if #'(lambda (h) (eq (send h :name) :handle-link)) (send (send *car* :drive-simulator-handle) :links)))
+                   (handle-link (find-if #'(lambda (h) (eq (send h :name) :handle-link)) (send (send *car* :vehicle-handle) :links)))
                    )
                (setq ik-ret
                      (send robot :inverse-kinematics coord

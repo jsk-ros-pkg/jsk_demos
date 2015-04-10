@@ -21,7 +21,7 @@
   </node>
   <node pkg="nodelet" type="nodelet" args="load pcl/VoxelGrid preprocessing_manager"
         name="stereo_downsampled_ground_cloud">
-    <remap from="~input" to="stereo_ground_cloud/outputt" />
+    <remap from="~input" to="stereo_ground_cloud/output" />
     <rosparam>
       leaf_size: 0.02
       filter_limit_min: -100

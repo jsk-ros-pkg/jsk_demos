@@ -60,7 +60,7 @@
 
   <node pkg="jsk_network_tools" type="silverhammer_lowspeed_streamer.py"
         output="log"
-        name="ocs_to_fc_reconfigure">
+        name="ocs_to_fc_reconfigure" launch-prefix="sudo">
     <rosparam subst_value="true">
       message: drc_task_common/DRCParametersMessage
       to_port: 703
