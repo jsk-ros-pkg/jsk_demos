@@ -14,6 +14,7 @@
           grasped-flag accel-flag
           max-turn-angle max-turn-angle-diff-deg
           old-handle-deg
+          steering-compensation-flag
           ) 
   )
 
@@ -302,19 +303,26 @@
    (let ((pose (send msg :pose))
          (body-coords (send (car (send (send motion :robot) :links)) :copy-worldcoords))
          (steering-coords (send motion :car :vehicle-handle :steering-center))
-         body-relative-steering-coords real-steering-worldcoords)
+         body-relative-steering-coords real-steering-worldcoords steering-relative-body-coords real-body-worldcoords)
      (setq body-relative-steering-coords (make-coords
-                                          :pos (scale 1000 (float-vector (send pose :position :x) (send pose :position :y) (send pose :position :z)))
+                                          :pos (scale 1000 (float-vector (send pose :position :x) (send pose :position :y) (send pose :position :z))) ;; ros[m] -> eus[mm]
                                           :rot (quaternion2matrix (float-vector (send pose :orientation :w) (send pose :orientation :x)
                                                                                 (send pose :orientation :y) (send pose :orientation :z)))
                                           )
-           ) ;; ros[m] -> eus[mm]
+           )
      (warn "trans: ~A~%" body-relative-steering-coords)
-     (setq real-steering-worldcoords (send body-coords :transform body-relative-steering-coords :local))
-     (warn "steering: ~A~%" real-steering-worldcoords)
-     (send motion :car :vehicle-handle :transform (send steering-coords :transformation real-steering-worldcoords :world) :world)
+     ;; (setq real-steering-worldcoords (send body-coords :transform body-relative-steering-coords :local))
+     ;; (warn "steering: ~A~%" real-steering-worldcoords)
+     (setq steering-relative-body-coords (send body-relative-steering-coords :inverse-transformation))
+     (setq real-body-worldcoords (send steering-coords :transform steering-relative-body-coords :local))
+     (warn "new body: ~A~%" real-body-worldcoords)
+     (when steering-compensation-flag
+       (send (send motion :robot) :transform (send body-coords :transformation real-body-worldcoords :world) :world)
+       )
+     (warn "new robot: ~A~%" (send (send motion :robot) :copy-worldcoords))
+     ;; (send robot :transform (send steering-coords :transformation real-steering-worldcoords :world) :world)
+     ;; (send motion :car :vehicle-handle :transform (send steering-coords :transformation real-steering-worldcoords :world) :world)
      ;; (send motion :car :vehicle-handle :newcoords  body-relative-handle-coords)
-     (warn "new: ~A~%" (send motion :car :vehicle-handle :copy-worldcoords))
      )
    )
   
@@ -330,6 +338,7 @@
   (:max-turn-angle-diff (&optional (val nil)) (when val (setq max-turn-angle-diff-deg val)) max-turn-angle-diff-deg)
   (:grasped-flag (&optional (val 0)) (unless (equal val 0) (setq grasped-flag val)) grasped-flag)
   (:accel-flag (&optional (val 0)) (unless (equal val 0) (setq accel-flag val)) accel-flag)
+  (:steering-compensation-flag (&optional (val 0)) (unless (equal val 0) (setq steering-compensation-flag val)) steering-compensation-flag)
   
   (:execute
     ()
