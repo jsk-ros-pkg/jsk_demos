@@ -642,7 +642,7 @@
       (send smachine :go-to :executing-drill-button)))
   (:exec-go-pos-button-callback ()
     ;; update latest go-pos coords
-    (setq go-pos-coords (send *tf* :lookup-transform "hrp2_marker_root" "ground" (ros::time 0)))
+    (setq go-pos-coords (send *tf* :lookup-transform "robot_marker_root" "ground" (ros::time 0)))
     (setq go-pos-coords (send go-pos-coords :transformation (make-coords) :local))
     ;; send go-pos coords to fc
     (let ((msg (instance drc_com_common::OCS2FCSmall :init)))

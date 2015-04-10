@@ -78,7 +78,7 @@
          ;;                       (instance std_msgs::ColorRGBA :init :r 0 :g 0 :b 1 :a 0.1)))
          )
     (send msg :header (instance std_msgs::header :init
-                                :stamp (ros::time-now) :frame_id "/hrp2_marker_root"))
+                                :stamp (ros::time-now) :frame_id "/robot_marker_root"))
     (send msg :frame_locked t)
     (send msg :type 6) ;; cube_list
     (send msg :action 0)
@@ -98,7 +98,7 @@
     (send msg :colors colors-list-msg)
     (do-until-key
      (send msg :header (instance std_msgs::header :init
-                                 :stamp (ros::time-now) :frame_id "/hrp2_marker_root"))
+                                 :stamp (ros::time-now) :frame_id "/robot_marker_root"))
      (ros::publish "reachable_visible_map" msg)
      (ros::sleep))
     )

@@ -1,5 +1,5 @@
 - name: "hrp2"
-  frame-id: "/hrp2_marker_root"
+  frame-id: "/robot_marker_root"
   robot: false
   mode: "visualization"
   # mode: "registration"
