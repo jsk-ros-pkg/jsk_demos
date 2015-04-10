@@ -34,6 +34,7 @@
    (send self :ride-half-sitting)
    )
 
+  ;; sitting with hip attachment
   (:drive-init-pose-hip-attachment
    ()
    (send robot :reset-manip-pose)
@@ -55,7 +56,8 @@
    ;; for jaxon
    (send robot :move-to (make-coords :pos (float-vector 500 450 30) :rpy (float-vector 0.0 (- (deg2rad 24.0)) 0.0)) :world) ;; fix z coords for BODY 24deg version
    )
-  
+
+  ;; sitting with left leg out of car
   (:drive-init-pose-half-sitting
    ()
    (send robot :angle-vector
@@ -67,6 +69,52 @@
   (:ride-half-sitting
    ()
    (send robot :move-to (make-coords :pos (float-vector 0 730 -70) :rpy (float-vector 0.0 0.0 0.0)) :world)
+   )
+
+  ;; sitting in front of car straightly
+  (:drive-init-pose-in-front-of-handle
+   ()
+   (send robot :angle-vector 
+         #f(0.08997 -1.53106 -90.3158 70.1032 -7.83593 1.52475 -3.215627e-06 1.692475e-05 -89.2384 81.6771 9.56135 -1.759062e-05 0.0 0.0 0.0 0.0 0.0 0.0 0.0 -20.0 -90.0 -100.0 -25.0 0.0 -45.0 0.0 55.0 20.0 15.0 -100.0 25.0 0.0 -45.0)
+         )
+   )
+  (:ride-in-front-of-handle
+   ()
+   (send robot :move-to (make-coords :pos (float-vector 30 450 -50) :rpy (float-vector 0.0 0.0 0.0)) :world)
+   )
+  
+  ;; sitting on right of car
+  (:drive-init-pose-right-of-car
+   ()
+   (send robot :angle-vector
+         #f(0.08997 -1.53106 -90.3158 70.1032 -7.83593 1.52475 -3.215627e-06 1.692475e-05 -89.2384 81.6771 9.56135 -1.759062e-05 0.0 0.0 0.0 0.0 0.0 0.0 0.0 -20.0 -90.0 -100.0 -25.0 0.0 -45.0 0.0 55.0 20.0 15.0 -100.0 25.0 0.0 -45.0))
+   (let* ((lav (copy-seq (send robot :lleg :angle-vector)))
+          (rav (copy-seq (send robot :rleg :angle-vector)))
+          (laav (copy-seq (send robot :larm :angle-vector)))
+          (raav (copy-seq (send robot :rarm :angle-vector))))
+     (send robot :rleg :angle-vector lav)
+     (send robot :lleg :angle-vector rav)
+     ;; (send robot :rarm :angle-vector laav)
+     ;; (send robot :larm :angle-vector raav)
+     )
+   (send robot :larm :shoulder-p :joint-angle 0)
+   (send robot :larm :elbow-y :joint-angle 90)
+   (send robot :fix-leg-to-coords (make-coords) :rleg)
+   (send robot :rleg :move-end-pos (float-vector 0 -100 0) :local)
+   (send robot :lleg :move-end-pos (float-vector 0 400 0) :local)
+   )
+  (:ride-right-of-car
+   ()
+   (send robot :move-to (make-coords :pos (float-vector 30 -300 -50) :rpy (float-vector 0.0 0.0 0.0)) :world)
+   )
+
+  (:approach-handle-right-of-car
+   (&rest args &key (offset #f(150 0 0)) (rot-offset (deg2rad 180)) &allow-other-keys)
+   (send-super* :approach-handle :offset offset :rot-offset rot-offset args)
+   )
+  (:grasp-handle-right-of-car
+   (&rest args &key (rotation-axis :z) &allow-other-keys)
+   (send-super* :grasp-handle :rotation-axis rotation-axis args)
    )
   
   (:open-hand
@@ -82,7 +130,7 @@
      ;; (send *ri* :start-grasp limb)
      ;; (send *ri* :hand-close limb)
      )
-   )  
+   )
   (:set-impedance-for-handle
    (limb)
    (send *ri* :start-impedance limb :M-p 200 :D-p 600 :K-p 1400)
