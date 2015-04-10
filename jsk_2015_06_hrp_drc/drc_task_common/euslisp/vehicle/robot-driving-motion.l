@@ -273,6 +273,9 @@
                                         target-degree)
                                    )
            )
+     (unless (= real-target-degree target-degree)
+       (warn "target-angle is limited by handle min/max: ~A[deg] -> ~A[deg]~%" target-degree real-target-degree)
+       )
      ;; calculate target-coords for steering
      (setq steering-coords
            (send self :get-steering-coords
