@@ -14,7 +14,8 @@
           grasped-flag accel-flag
           max-turn-angle max-turn-angle-diff-deg
           old-handle-deg
-          steering-compensation-flag
+          polygon-stamped-msg
+          estimated-robot-coords
           ) 
   )
 
@@ -257,14 +258,15 @@
   (:estimate-steering
    (&key (limb :larm))
    (let* ((tmp-robot (copy-object (send motion :robot)))
-         (polygon-stamped-msg (instance geometry_msgs::PolygonStamped :init))
-         (header (send polygon-stamped-msg :header))
-         (polygon (send polygon-stamped-msg :polygon))
-         (body-coords (send (car (send (send motion :robot) :links)) :copy-worldcoords))
-         (steering-coords (send motion :car :vehicle-handle :steering-center))
-         body-relative-ec ec-relative-steering-coords tmp-ec tmp-pos tmp-point32 tmp-point32-list
-         end-coords-list)
+          (body-coords (send (car (send (send motion :robot) :links)) :copy-worldcoords))
+          (steering-coords (send motion :car :vehicle-handle :steering-center))
+          header polygon
+          body-relative-ec ec-relative-steering-coords tmp-ec tmp-pos tmp-point32 tmp-point32-list
+          end-coords-list)
      ;; collect end-coords of real robot
+     (setq polygon-stamped-msg (instance geometry_msgs::PolygonStamped :init))
+     (setq header (send polygon-stamped-msg :header))
+     (setq polygon (send polygon-stamped-msg :polygon))
      (warn "start recording~%")
      (do-until-key
        (send tmp-robot :angle-vector (send *ri* :state :angle-vector))
@@ -299,11 +301,12 @@
   (:torus-finder-callback
    (msg)
    (warn "Update handle coordinates according to torus_finder~%")
-   (warn "old: ~A~%" (send motion :car :vehicle-handle :copy-worldcoords))
-   (let ((pose (send msg :pose))
+   (let ((pose (send msg :pose)) (tmp-robot (copy-object (send motion :robot)))
          (body-coords (send (car (send (send motion :robot) :links)) :copy-worldcoords))
          (steering-coords (send motion :car :vehicle-handle :steering-center))
          body-relative-steering-coords real-steering-worldcoords steering-relative-body-coords real-body-worldcoords)
+     ;; (warn "old: ~A~%" (send motion :car :vehicle-handle :copy-worldcoords))
+     (warn "old: ~A~%" (send tmp-robot :copy-worldcoords))
      (setq body-relative-steering-coords (make-coords
                                           :pos (scale 1000 (float-vector (send pose :position :x) (send pose :position :y) (send pose :position :z))) ;; ros[m] -> eus[mm]
                                           :rot (quaternion2matrix (float-vector (send pose :orientation :w) (send pose :orientation :x)
@@ -316,13 +319,33 @@
      (setq steering-relative-body-coords (send body-relative-steering-coords :inverse-transformation))
      (setq real-body-worldcoords (send steering-coords :transform steering-relative-body-coords :local))
      (warn "new body: ~A~%" real-body-worldcoords)
-     (when steering-compensation-flag
-       (send (send motion :robot) :transform (send body-coords :transformation real-body-worldcoords :world) :world)
-       )
-     (warn "new robot: ~A~%" (send (send motion :robot) :copy-worldcoords))
+     (send tmp-robot :transform (send body-coords :transformation real-body-worldcoords :world) :world)
+     (setq estimated-robot-coords (send tmp-robot :copy-worldcoords))
+     (warn "new robot: ~A~%" estimated-robot-coords)
      ;; (send robot :transform (send steering-coords :transformation real-steering-worldcoords :world) :world)
      ;; (send motion :car :vehicle-handle :transform (send steering-coords :transformation real-steering-worldcoords :world) :world)
      ;; (send motion :car :vehicle-handle :newcoords  body-relative-handle-coords)
+     )
+   )
+  (:republish-steering-trajectory
+   ()
+   (ros::publish "/drive/torus_finder/input/polygon" polygon-stamped-msg)
+   )
+  (:apply-steering-estimation
+   ()
+   (ros::spin-once)
+   (unless estimated-robot-coords
+       (warn "steering estimation was not executed~%")
+       (return-from :apply-steering-estimation nil)
+       )
+   (let ((old-robot-coords (send motion :robot :copy-worldcoords))
+          )
+     (send motion :robot :newcoords estimated-robot-coords)
+     (send *viewer* :draw-objects)
+     (unless (y-or-n-p)
+       (send motion :robot :newcoords old-robot-coords) ;; revert
+       )
+     (send motion :robot :copy-worldcoords)
      )
    )
   
@@ -338,7 +361,6 @@
   (:max-turn-angle-diff (&optional (val nil)) (when val (setq max-turn-angle-diff-deg val)) max-turn-angle-diff-deg)
   (:grasped-flag (&optional (val 0)) (unless (equal val 0) (setq grasped-flag val)) grasped-flag)
   (:accel-flag (&optional (val 0)) (unless (equal val 0) (setq accel-flag val)) accel-flag)
-  (:steering-compensation-flag (&optional (val 0)) (unless (equal val 0) (setq steering-compensation-flag val)) steering-compensation-flag)
   
   (:execute
     ()
