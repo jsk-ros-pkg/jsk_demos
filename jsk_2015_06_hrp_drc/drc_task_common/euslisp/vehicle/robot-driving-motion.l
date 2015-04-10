@@ -7,7 +7,6 @@
   :slots (robot ;; robot model
           car ;; car model
           real ;; use real robot or not
-          handle-angle-coords-table
           ) 
   )
 
@@ -19,7 +18,8 @@
    (setq *car* tmp-car)
    (setq robot tmp-robot
          car tmp-car
-         real tmp-real)
+         real tmp-real
+         )
    (when real
      (send *ri* :set-interpolation-mode :linear) ;; avoid sudden change in joint angles when steering
      (unix::sleep 10) ;; wait activation
@@ -27,7 +27,6 @@
    (send self :put :grasp-arm grasp-arm)
    (send self :put :grasp-point grasp-point)
    (send self :ride :init-pose t)
-   (send self :update-handle-angle-coords-table)
    (objects (list robot car))   
    )  
 
@@ -55,11 +54,10 @@
    (when move-arm
      (send robot limb :move-end-pos #f(100 0 100) :world)
      )
-   (when real
+   (when (and real move-arm)
      (send *ri* :angle-vector (send robot :angle-vector) tm)
      (send *ri* :wait-interpolation)
      )
-   (send self :update-handle-angle-coords-table)
    )
   (:drive-init-pose-support-by-leg
    (&key (tm 10000) (limb :lleg))
@@ -230,11 +228,27 @@
      )
    )
   (:overwrite-handle-angle-forcely ;; CAUTION: this function do not consider appropriateness between handle-coords and end-coords of grasp-arm
-   (new-angle)
+   (new-angle &key (use-real-robot-angle nil))
    (let ((real-robot-angle-vector (send *ri* :state :potentio-vector))
          )
-     (send robot :angle-vector real-robot-angle-vector)
+     (when use-real-robot-angle
+       (send robot :angle-vector real-robot-angle-vector)
+       )
      (send car :handle-joint :joint-angle new-angle)
+     )
+   )
+  (:fix-handle-overturn
+   (overturn &key (use-real-robot-angle nil))   
+   (let ((current-handle-angle (send car :handle-joint :joint-angle))
+         new-angle
+         )
+     (setq new-angle (max (send (send car :handle-joint) :min-angle)
+                          (min (send (send car :handle-joint) :max-angle)
+                               (+ current-handle-angle (* overturn 360))
+                               )
+                          )
+           )
+     (send self :overwrite-handle-angle-forcely new-angle :use-real-robot-angle use-real-robot-angle)
      )
    )
   (:turn-handle
@@ -259,6 +273,9 @@
                                         target-degree)
                                    )
            )
+     (unless (= real-target-degree target-degree)
+       (warn "target-angle is limited by handle min/max: ~A[deg] -> ~A[deg]~%" target-degree real-target-degree)
+       )
      ;; calculate target-coords for steering
      (setq steering-coords
            (send self :get-steering-coords
@@ -317,12 +334,12 @@
        (send *viewer* :draw-objects)
        )
      ;; calc remaining handle degree
-     (setq remain-angle (abs target-degree))
+     (setq remain-angle (abs real-target-degree))
      (dolist (av avs)
        (setq remain-angle (max (- remain-angle resolution) 0))
        )
      ;; (if (> target-degree 0) remain-angle (- remain-angle))
-     (when (< target-degree 0)
+     (when (< real-target-degree 0)
        (setq remain-angle (- remain-angle))
        )
      (send car :handle-joint :joint-angle (- remain-angle) :relative t) ;; resume handle-joint by remain-angle
@@ -523,48 +540,6 @@
   (:set-impedance-for-support
    (limb)
    (send *ri* :start-impedance limb :M-p 100 :D-p 600 :K-p 700)
-   )
-  (:update-handle-angle-coords-table
-   (&optional (step 5))
-   (let ((handle-joint (send car :handle-joint))
-         (handle-angle-table-max 360)
-         (handle-angle 0.0)
-         current-handle-angle
-         )
-     (setq handle-angle-coords-table nil)
-     (setq current-handle-angle (send handle-joint :joint-angle))
-     (send handle-joint :joint-angle 0.0)
-     (while (<= handle-angle handle-angle-table-max)
-       (send handle-joint :joint-angle handle-angle :relative nil)
-       (push (cons handle-angle (send (send self :rotate-grasp-point-by-grasp-arm (send car (send self :grasp-point))) :copy-worldcoords)) handle-angle-coords-table)
-       (setq handle-angle (+ handle-angle step))
-       )
-     (send handle-joint :joint-angle current-handle-angle) ;; resume handle angle
-     )
-   )
-  (:estimate-current-handle-angle
-   ()
-   (let ((tmp-robot (copy-object (send self :robot)))         
-         (dist 0)
-         (min-dist nil)
-         (estimated-angle nil)
-         current-end-coords
-         )
-     (send tmp-robot :angle-vector (send *ri* :state :potentio-vector))
-     (setq current-end-coords (send tmp-robot (send self :grasp-arm) :end-coords :copy-worldcoords))
-     ;; search nearest handle-coods to end-coords
-     (dolist (handle-angle-coords handle-angle-coords-table)
-       (setq dist (norm (v- (send (cdr handle-angle-coords) :worldpos) (send current-end-coords :worldpos))))
-       (unless min-dist
-         (setq min-dist dist)
-         )
-       (when (<= dist min-dist)
-         (setq min-dist dist)
-         (setq estimated-angle (car handle-angle-coords))
-         )
-       )
-     estimated-angle
-     )
    )
   (:draw-centroid-on
    (&key (mode nil) (use-real nil))
