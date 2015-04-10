@@ -90,7 +90,10 @@ def lowspeedDataUpdatedTimeCallnack(msg):
         diff = 100
     else:
         text.text = "LOWSPEED DATA: Updated %0.1f secs before" % (diff)
-    text.fg_color = OK_COLOR
+    if diff <= 1.0:
+        text.fg_color = OK_COLOR
+    else:
+        text.fg_color = WARN_COLOR
     text.bg_color = UPDATED_TIME_BG_COLOR
     pub_lowspeed_data_updated_time.publish(text)
 sub_lowspeed_data_updated_time = rospy.Subscriber("/ocs_from_fc_low_speed/last_received_time", 
