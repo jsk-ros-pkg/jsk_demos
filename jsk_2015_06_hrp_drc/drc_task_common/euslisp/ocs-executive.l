@@ -1107,7 +1107,8 @@
   )
 
 ;; generate *robot*
-(generate-robot "HRP2JSKNT" :generate-ri? nil)
+(setq *robot-name* (string-upcase (unix::get-env "ROBOT")))
+(generate-robot *robot-name* :generate-ri? nil)
 
 ;; advertise
 (ros::advertise "/ocs/rviz/visualization/ocs_executive_message"
