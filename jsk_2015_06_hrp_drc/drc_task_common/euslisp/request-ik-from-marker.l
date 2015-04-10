@@ -20,18 +20,18 @@
   ;; select ocs/fc
   (setq *use-robot-interface-flag* (ros::get-param "~use_robot_interface" nil))
   ;; robot
-  (generate-robot "HRP2JSKNT" :generate-ri? *use-robot-interface-flag*)
-  (setq *robot-name* "hrp2jsknt")
+  (setq *robot-name* (string-upcase (unix::getenv "ROBOT")))
+  (generate-robot *robot-name* :generate-ri? *use-robot-interface-flag*)
   ;; ros
   (setq *ns* (ros::get-param "~transformable_interactive_server_nodename" "/transformable_interactive_server"))
   (setq *frame-id* (ros::get-param "~default_frame_id" "/odom_on_ground"))
-  (setq *assoc-frame-id* "jsk_model_marker_interface/hrp2/RARM_LINK6")
+  (setq *assoc-frame-id* (format nil "jsk_model_marker_interface/robot/~a" (send (send *robot* :larm :end-coords :parent) :name)))
   (setq *tfl* (instance ros::transform-listener :init))
   (ros::subscribe (format nil "~a~a" *ns* "/marker_dimensions") jsk_interactive_marker::MarkerDimensions #'generate-object-with-new-dimensions-from-topic)
   (ros::advertise (format nil "~a~a" *ns* "/set_color") std_msgs::ColorRGBA 1)
   (ros::subscribe "/urdf_control_marker/pose" geometry_msgs::PoseStamped #'robot-pose-cb)
   (ros::advertise "urdf_control_marker/set_pose" geometry_msgs::PoseStamped 1)
-  (ros::advertise "/jsk_model_marker_interface/hrp2/reset_joint_states_and_root" sensor_msgs::JointState 1)
+  (ros::advertise "/jsk_model_marker_interface/robot/reset_joint_states_and_root" sensor_msgs::JointState 1)
   (ros::advertise "/midi_config_player/set_feedback" sensor_msgs::JoyFeedbackArray 1)
   (ros::advertise "/inverse_reachability_visible_map" visualization_msgs::Marker 1)
   (ros::subscribe "/solve_ik_command" std_msgs::empty #'solve-ik-command 1)
@@ -533,11 +533,11 @@
              res)
         (setf (elt tc 0) (send (midcoords (/ (float (+ i 1)) divide-num) initial-coords target-coords) :copy-worldcoords))
         (cond ((equal arm :rarm)
-               (setq *assoc-frame-id* "jsk_model_marker_interface/hrp2/RARM_LINK6"))
+               (setq *assoc-frame-id* (format nil "jsk_model_marker_interface/robot/~a" (send (send *robot* :rarm :end-coords :parent) :name))))
               ((equal arm :larm)
-               (setq *assoc-frame-id* "jsk_model_marker_interface/hrp2/LARM_LINK6")))
+               (setq *assoc-frame-id* (format nil "jsk_model_marker_interface/robot/~a" (send (send *robot* :larm :end-coords :parent) :name)))))
         ;; service call for ik server
-        (cond ((or (string= *robot-name* "hrp2jsknts") (string= *robot-name* "hrp2jsknt"))
+        (cond ((or (string= *robot-name* "HRP2JSKNTS") (string= *robot-name* "HRP2JSKNT"))
                (setq res (ik-server-call
                           :ik-server-service-name "/solve_ik"
                           :target-coords tc
@@ -551,7 +551,7 @@
                           :stop 30
                           :look-at-target (copy-seq (send (elt tc 0) :worldpos))
                           )))
-              ((string= *robot-name* "staro")
+              ((or (string= *robot-name* "JAXON") (string= *robot-name* "STARO"))
                (setq res (ik-server-call
                           :ik-server-service-name "/solve_ik"
                           :target-coords tc
@@ -560,10 +560,10 @@
                           :debug-view :no-message
                           :translation-axis translation-axis
                           :rotation-axis rotation-axis
-                          ;; temporary for staro
                           :additional-weight-list
-                          (list (list (send *robot* :torso :waist-y :child-link) 0)
-                                (list (send *robot* :torso :waist-p :child-link) 0))
+                          (list (list (send *robot* :torso :waist-r :child-link) 0)
+                                (list (send *robot* :torso :waist-p :child-link) 0)
+                                (list (send *robot* :torso :waist-y :child-link) 0))
                           :warnp t
                           :stop 30
                           :look-at-target (copy-seq (send (elt tc 0) :worldpos))
@@ -589,7 +589,7 @@
       (send msg :header (instance std_msgs::Header :init :stamp (ros::time 0.0)))
       (send msg :name (send-all (send *robot* :joint-list) :name))
       (send msg :position (mapcar #'deg2rad (elt *ik-result* i)))
-      (ros::publish "/jsk_model_marker_interface/hrp2/reset_joint_states_and_root" msg)
+      (ros::publish "/jsk_model_marker_interface/robot/reset_joint_states_and_root" msg)
       (ros::spin-once))
     (when (= i (- (length *ik-result*) 1))
       (return))

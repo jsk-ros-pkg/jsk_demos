@@ -83,7 +83,7 @@
     (send msg :header (instance std_msgs::Header :init :stamp (ros::time 0.0)))
     (send msg :name (send-all (send *robot* :joint-list) :name))
     (send msg :position (mapcar #'deg2rad (coerce (if av av (send *robot* :angle-vector)) cons)))
-    (ros::publish "/jsk_model_marker_interface/hrp2/reset_joint_states_and_root" msg)
+    (ros::publish "/jsk_model_marker_interface/robot/reset_joint_states_and_root" msg)
     (ros::spin-once))
   )
 

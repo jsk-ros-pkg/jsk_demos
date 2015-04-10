@@ -2,7 +2,6 @@
   <arg name="default_frame_id" default="odom_on_ground" />
 
   <!-- robot specific setting -->
-  <arg name="robot_name" default="hrp2jsknts" />
   <arg name="ik_server_launch" default="hrp2jsknts-ik-server.launch" />
 
   <!-- inverse kinematics server -->
@@ -13,15 +12,11 @@
     <param name="default_frame_id" value="$(arg default_frame_id)"/>
     <param name="transformable_interactive_server_nodename" value="transformable_interactive_server"/>
     <param name="draw_viewer" value="false"/>
-    <param name="robot_name" value="$(arg robot_name)"/>
   </node>
 
   <!-- dynamic reachability map server -->
-  <node pkg="drc_task_common" type="dynamic_reachability_publisher.l" name="dynamic_reachability_publisher" output="screen" if="false">
-  </node>
+  <node pkg="drc_task_common" type="dynamic_reachability_publisher.l" name="dynamic_reachability_publisher" output="screen" if="false" />
   
   <!-- go-pos -->
-  <node pkg="drc_task_common" type="walk-to-object.l" name="walk_to_object" output="screen">
-    <param name="robot_name" value="$(arg robot_name)"/>
-  </node>
+  <node pkg="drc_task_common" type="walk-to-object.l" name="walk_to_object" output="screen" />
 </launch>
