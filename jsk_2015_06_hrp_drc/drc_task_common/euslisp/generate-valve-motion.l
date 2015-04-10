@@ -12,14 +12,20 @@
   (send *robot* :reset-manip-pose)
   (send *robot* :fix-leg-to-coords (make-coords))
   ;; attach handle to robot
-  (send *robot* :put :larm-valve-coords
-        (make-cascoords
-         :coords (send (send (send *robot* :larm :end-coords) :copy-worldcoords) :translate (float-vector 25.0 5.0 0.0) :local)
-         :parent (send (send *robot* :larm :end-coords) :parent)))
-  (send *robot* :put :rarm-valve-coords
-        (make-cascoords
-         :coords (send (send (send *robot* :rarm :end-coords) :copy-worldcoords) :translate (float-vector 25.0 -5.0 0.0) :local)
-         :parent (send (send *robot* :rarm :end-coords) :parent)))
+  (let* ((larm-valve-coords-offset (float-vector 25.0 5.0 0.0))
+         (rarm-valve-coords-offset (float-vector 25.0 -5.0 0.0)))
+    (cond ((or (equal *robot-name* "JAXON") (equal *robot-name* "STARO"))
+           (setq larm-valve-coords-offset (float-vector 10.0 10.0 0.0))
+           (setq rarm-valve-coords-offset (float-vector -10.0 -10.0 0.0))
+           ))
+    (send *robot* :put :larm-valve-coords
+          (make-cascoords
+           :coords (send (send (send *robot* :larm :end-coords) :copy-worldcoords) :translate larm-valve-coords-offset :local)
+           :parent (send (send *robot* :larm :end-coords) :parent)))
+    (send *robot* :put :rarm-valve-coords
+          (make-cascoords
+           :coords (send (send (send *robot* :rarm :end-coords) :copy-worldcoords) :translate rarm-valve-coords-offset :local)
+           :parent (send (send *robot* :rarm :end-coords) :parent))))
   ;; generate valve
   (let* ((valve-sr (* 0.1 valve-r)))
     (setq *valve* (make-ring valve-r valve-sr :segments 16))
@@ -77,24 +83,58 @@
     )
   )
 
+
 (defun fullbody-inverse-kinematics-for-valve
+  (tc mt ll &key (draw? nil))
+  (cond ((or (equal *robot-name* "HRP2JSKNT") (equal *robot-name* "HRP2JSKNTS"))
+         (fullbody-inverse-kinematics-for-valve-for-hrp2 tc mt ll :draw? draw?))
+        ((or (equal *robot-name* "JAXON") (equal *robot-name* "STARO"))
+         (fullbody-inverse-kinematics-for-valve-for-jaxon tc mt ll :draw? draw?))
+        ))
+
+(defun fullbody-inverse-kinematics-for-valve-for-hrp2
   (tc mt ll &key (draw? nil))
   (send *robot*
         :fullbody-inverse-kinematics tc
         :move-target mt :link-list ll
-        :additional-weight-list
-        (list (list (send *robot* :rleg :toe-p :child-link) 0)
-              (list (send *robot* :lleg :toe-p :child-link) 0))
         :root-link-virtual-joint-weight (float-vector 0.1 0.1 0.1 0.1 0.5 0.5)
         :target-centroid-pos (apply #'midpoint 0.5 (send *robot* :legs :end-coords :worldpos))
         :translation-axis (list t t t)
         :rotation-axis (list t t t)
-        :max (float-vector  500  500  0  20  20  10) ;; for hrp2
-        :min (float-vector  -500  -500  -200  -20  -20  -10) ;; for hrp2
+        :warnp (if draw? t nil)
+        :additional-weight-list
+        (list (list (send *robot* :rleg :toe-p :child-link) 0)
+              (list (send *robot* :lleg :toe-p :child-link) 0))
+        :max (float-vector  500  500  0  20  20  10)
+        :min (float-vector  -500  -500  -200  -20  -20  -10)
         :stop 20
         :debug-view (if draw? :no-message nil)
-        :warnp (if draw? t nil)
         ))
+
+(defun fullbody-inverse-kinematics-for-valve-for-jaxon
+  (tc mt ll &key (draw? nil))
+  (let (ret)
+    (setq ret
+          (send *robot*
+                :fullbody-inverse-kinematics tc
+                :move-target mt :link-list ll
+                :root-link-virtual-joint-weight (float-vector 0.15 0.15 0.15 0.15 0.5 0.5)
+                :target-centroid-pos (apply #'midpoint 0.5 (send *robot* :legs :end-coords :worldpos))
+                :translation-axis (list t t t)
+                :rotation-axis (list t t t)
+                :warnp (if draw? t nil)
+                :additional-weight-list
+                (list (list (send *robot* :torso :waist-r :child-link) 0)
+                      (list (send *robot* :torso :waist-y :child-link) 0)
+                      (list (send *robot* :torso :waist-p :child-link) 0))
+                :max (float-vector  500  500  25  20  20  10)
+                :min (float-vector  -500  -500  -500  -20  -20  -10)
+                :stop 50
+                :debug-view (if draw? :no-message nil)
+                ))
+    (when (and ret (send *robot* :self-collision-check)) (setq ret nil))
+    ret)
+  )
 
 (defun generate-valve-motion
   (&key (draw? t))
@@ -227,8 +267,7 @@
          (valve-motion-length (length valve-motion-av-list)))
     (when (not (= valve-motion-length 0))
       ;; reset-manip-pose
-      (send *robot* :hand :arms :hook-pose) ;; hand hook-pose
-      (when real? (hand-model2real))
+      (hand-stop-grasp :real? real?)
       (send *robot* :reset-manip-pose)
       (unless (check-angle-vector-distance)
         (when real? (model2real :time 3000)))
@@ -247,15 +286,11 @@
         ;; grasp
         (send *robot* :angle-vector (car valve-motion-av-list))
         (when real? (model2real :time 3000))
-        (send *robot* :hand :arms :extension-pose) ;; hand extension-pose
-        (when real? (hand-model2real))
-        (send *robot* :hand :arms :grasp-pose) ;; hand grasp-pose
-        (when real? (hand-model2real))
+        (hand-start-grasp :real? real?)
         ;; rotate
         (when real? (send-angle-vector-sequence-with-time (cdr (subseq valve-motion-av-list 0 (/ valve-motion-length 2))) :time 1500 :wait? t))
         ;; relese
-        (send *robot* :hand :arms :hook-pose) ;; hand hook-pose
-        (when real? (hand-model2real))
+        (hand-stop-grasp :real? real?)
         (send *robot* :angle-vector (car (subseq valve-motion-av-list (/ valve-motion-length 2))))
         (when real? (model2real :time 3000))
         (cond ((= i (1- rotate-num))
