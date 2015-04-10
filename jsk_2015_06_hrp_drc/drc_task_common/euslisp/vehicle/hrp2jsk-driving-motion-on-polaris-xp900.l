@@ -61,6 +61,10 @@
      (send *ri* :wait-interpolation)
      )
    )
+  (:approach-handle
+   (&rest args &key (offset #f(-50 30 30)) &allow-other-keys)
+   (send-super* :approach-handle :offset offset args)
+   )
   (:set-impedance-for-handle
    (limb)
    (send *ri* :start-impedance limb :moment-gain #f(0 0 0) :D-p 400 :K-p 800)
