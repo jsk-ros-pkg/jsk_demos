@@ -40,7 +40,7 @@
   (:next? (next-state)
     "return t if state machine can go to next-state from the current state"
     (or (eq (send self :state) next-state)
-        (let ((candidate-transitions (send self :lookup-transitions active-state)))
+        (let ((candidate-transitions (send self :lookup-transitions (send self :active-state))))
           (not (null (remove-if-not #'(lambda (trans)
                                         (eq next-state
                                             (send (send trans :to) :name)))
