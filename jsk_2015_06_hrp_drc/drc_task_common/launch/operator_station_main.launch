@@ -6,10 +6,14 @@
   <!-- 
        Remap tf and joint_states for ocs settings
   -->
-  <!-- temporary 2015/03/02 -->
   <remap from="/tf" to="/ocs/tf" />
   <remap from="/joint_states" to="/ocs/joint_states" />
   <remap from="/robot_description" to="/ocs/robot_description" />
+
+  <arg name="ik_server_launch" default="hrp2jsknts-ik-server.launch" />
+  <arg name="ROBOT_URDF_MODEL" default="$(find hrpsys_ros_bridge_tutorials)/models/HRP2JSKNT_WH_SENSORS.urdf" />
+  <arg name="USE_CALIB_FILE" default="true" />
+  <arg name="CALIB_FILE" default="$(find jsk_hrp2_ros_bridge)/calib_data/hrp2016_multisense_calib_20150406.yaml" />
   
   <arg name="FC_IP" default="localhost" />
   <arg name="OCS_IP" default="localhost" />
@@ -17,13 +21,10 @@
   <arg name="USE_COM" default="true" />
   
   <arg name="default_frame_id" default="odom_on_ground" />
+  <arg name="robot_model_config" default="$(find drc_task_common)/config/robot_interactive_marker.yaml" />
   <arg name="INPUT_IMAGE" value="/ocs/communication/image_rect_color" />
   <arg name="INPUT_IMAGE_WIDTH_SCALE" value="/ocs/communication/image_width_scale" />
   <arg name="INPUT_IMAGE_HEIGHT_SCALE" value="/ocs/communication/image_height_scale" />
-  <arg name="robot_name" default="hrp2jsknts" />
-  <arg name="ROBOT_URDF_MODEL" default="$(find hrpsys_ros_bridge_tutorials)/models/HRP2JSKNTS.urdf.xacro" />
-  <arg name="robot_model_config" default="$(find drc_task_common)/config/hrp2_interactive_marker.yaml" />
-  <arg name="ik_server_launch" default="hrp2jsknts-ik-server.launch" />
   <arg name="USE_RVIZ_UI" default="true" />
   <include file="$(find drc_task_common)/launch/ocs/ui.launch">
     <arg name="INPUT_IMAGE" value="$(arg INPUT_IMAGE)" />
@@ -38,8 +39,8 @@
   
   <!-- tf -->
   <group ns="ocs">
-    <arg name="CALIB_FILE" value="hrp2016_multisense_calib_20150406.yaml" />
-    <param name="robot_description" command="$(find euscollada)/scripts/urdf_patch.py patch $(find hrpsys_ros_bridge_tutorials)/models/HRP2JSKNT_WH_SENSORS.urdf $(find jsk_hrp2_ros_bridge)/calib_data/$(arg CALIB_FILE)" />
+    <param name="robot_description" command="$(find euscollada)/scripts/urdf_patch.py patch $(arg ROBOT_URDF_MODEL) $(arg CALIB_FILE)" if="$(arg USE_CALIB_FILE)"/>
+    <param name="robot_description" textfile="$(arg ROBOT_URDF_MODEL)" unless="$(arg USE_CALIB_FILE)"/>
     <node pkg="robot_state_publisher" type="robot_state_publisher" name="ocs_robot_state_publisher">
       <remap from="/joint_states" to="/ocs/joint_states" />
       <remap from="/tf" to="/ocs/tf"/>
@@ -90,7 +91,6 @@
     <!-- robot motion -->
     <include file="$(find drc_task_common)/launch/robot_motion.launch" >
       <arg name="default_frame_id" default="$(arg default_frame_id)" />
-      <arg name="robot_name" value="$(arg robot_name)" />
       <arg name="ik_server_launch" default="$(arg ik_server_launch)" />
     </include>
 
@@ -118,25 +118,6 @@
     <!-- rviz -->
     <node pkg="rviz" type="rviz" name="operator_rviz" args="-d $(find drc_task_common)/config/drc_task_common.rviz"
           respawn="true"/>
-
-    <group if="false">
-
-      <include if="false"
-               file="$(find jsk_hrp2_ros_bridge)/launch/hrp2017_local.launch" />
-
-      <!-- data server -->
-      <include file="$(find drc_task_common)/launch/manipulation_data_processor.launch"/>
-
-      <group>
-        <remap from="robotsound" to="robotsound_ocs" />
-
-        <!-- google translation talk -->
-        <include file="$(find sound_play)/soundplay_node.launch" />
-
-        <!-- timer talker -->
-        <node pkg="drc_task_common" name="timer_talker" type="timer_talker.py" args="" output="screen" />
-      </group>
-    </group>
   </group>
 
   <!-- dynamic_reconfigure -->

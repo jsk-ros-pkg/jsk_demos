@@ -515,11 +515,11 @@ n	  ))
             (send (send (elt *end-coords-from-hand* arm-index) :parent) :assoc end-coords-2)
             (setf (elt mt 0) end-coords-2)	      
             (cond ((equal arm :rarm)
-                   (setq *assoc-frame-id* "jsk_model_marker_interface/hrp2/RARM_LINK6"))
+                   (setq *assoc-frame-id* "jsk_model_marker_interface/robot/RARM_LINK6"))
               ((equal arm :larm)
-               (setq *assoc-frame-id* "jsk_model_marker_interface/hrp2/LARM_LINK6")))
+               (setq *assoc-frame-id* "jsk_model_marker_interface/robot/LARM_LINK6")))
             ;; service call for ik server
-            (cond ((or (string= *robot-name* "hrp2jsknts") (string= *robot-name* "hrp2jsknt"))
+            (cond ((or (string= *robot-name* "HRP2JSKNTS") (string= *robot-name* "HRP2JSKNT"))
                    (setq res (ik-server-call
                               :ik-server-service-name ik-server-service-name
                               :target-coords tc
@@ -572,9 +572,9 @@ n	  ))
           (setf (elt mt 1) end-coords-3)
           (send end-coords-3 :transform move-target-from-second-hand :local)
           (cond ((equal arm :rarm)
-                 (setq *assoc-frame-id* "jsk_model_marker_interface/hrp2/RARM_LINK6"))
+                 (setq *assoc-frame-id* "jsk_model_marker_interface/robot/RARM_LINK6"))
                 ((equal arm :larm)
-                 (setq *assoc-frame-id* "jsk_model_marker_interface/hrp2/LARM_LINK6")))
+                 (setq *assoc-frame-id* "jsk_model_marker_interface/robot/LARM_LINK6")))
           ;; service call for ik server
           (setq res (ik-server-call
                      :ik-server-service-name ik-server-service-name

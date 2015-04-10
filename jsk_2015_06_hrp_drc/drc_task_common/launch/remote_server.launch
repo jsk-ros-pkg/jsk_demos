@@ -1,14 +1,10 @@
 <launch>
 
-  <!-- robot specific setting -->
-  <arg name="robot_name" default="hrp2jsknts" />
-
   <!-- eus command searver -->
   <node pkg="drc_task_common" type="eus-command-server.l" name="eus_command_server" output="screen" >
     <rosparam command="load" file="$(find drc_task_common)/config/recog-param-for-valve.yaml" />
     <rosparam command="load" file="$(find drc_task_common)/config/recog-param-for-drill.yaml" />
     <rosparam command="load" file="$(find drc_task_common)/config/recog-param-for-handle.yaml" />
-    <param name="robot_name" value="$(arg robot_name)"/>
   </node>
 
 </launch>

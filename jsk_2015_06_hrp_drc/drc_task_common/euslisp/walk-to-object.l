@@ -28,9 +28,9 @@
          dest-x dest-y dest-yaw)
     (while (not dest-coords)
       (let* ((ts (ros::time-now)))
-        (send *tfl* :wait-for-transform "hrp2_marker_root" "ground" ts 1)
+        (send *tfl* :wait-for-transform "robot_marker_root" "ground" ts 1)
         (setq dest-coords
-              (send *tfl* :lookup-transform "hrp2_marker_root" "ground" ts)))
+              (send *tfl* :lookup-transform "robot_marker_root" "ground" ts)))
       (ros::spin-once))
     (setq dest-coords
           (send dest-coords :transformation (make-coords) :local))

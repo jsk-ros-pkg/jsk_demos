@@ -28,7 +28,7 @@
          points-list-msg colors-list-msg
          )
     (send msg :header (instance std_msgs::header :init
-                                :stamp (ros::time-now) :frame_id "/jsk_model_marker_interface/hrp2/BODY"))
+                                :stamp (ros::time-now) :frame_id "/jsk_model_marker_interface/robot/BODY"))
     (send msg :lifetime (ros::time 0.0))
     (send msg :frame_locked t)
     (send msg :type 6) ;; cube_list

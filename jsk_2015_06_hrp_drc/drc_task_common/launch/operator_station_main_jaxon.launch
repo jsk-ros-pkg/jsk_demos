@@ -1,0 +1,12 @@
+<launch>
+  <arg name="ik_server_launch" default="hrp2jsknts-ik-server.launch" />
+  <arg name="ROBOT_URDF_MODEL" default="$(find hrpsys_ros_bridge_tutorials)/models/JAXON.urdf" />
+  <arg name="USE_CALIB_FILE" default="false" />
+  <!-- <arg name="CALIB_FILE" default="$(find jsk_hrp2_ros_bridge)/calib_data/hrp2016_multisense_calib_20150406.yaml" /> -->
+
+  <include file="$(find drc_task_common)/launch/operator_station_main.launch" >
+    <arg name="ik_server_launch" value="$(arg ik_server_launch)" />
+    <arg name="ROBOT_URDF_MODEL" value="$(arg ROBOT_URDF_MODEL)" />
+    <arg name="USE_CALIB_FILE" value="$(arg USE_CALIB_FILE)" />
+  </include>
+</launch>

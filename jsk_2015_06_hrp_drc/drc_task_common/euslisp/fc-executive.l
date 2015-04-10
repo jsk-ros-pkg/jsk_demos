@@ -797,9 +797,8 @@
     (ros::publish "/fc_to_ocs_low_speed/input" msg))
   )
 
-
-(load (robot-file "HRP2JSKNT"))
-(init-robot-from-name "HRP2JSKNT")
+(setq *robot-name* (string-upcase (unix::getenv "ROBOT")))
+(generate-robot *robot-name* :generate-ri? t)
 
 (setq *go-pos-offset* 700)
 (let ((drill-type-string (ros::get-param "~drill_type" "takenoko")))

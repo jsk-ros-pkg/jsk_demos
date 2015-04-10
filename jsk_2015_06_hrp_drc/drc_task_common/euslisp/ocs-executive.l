@@ -642,7 +642,7 @@
       (send smachine :go-to :executing-drill-button)))
   (:exec-go-pos-button-callback ()
     ;; update latest go-pos coords
-    (setq go-pos-coords (send *tf* :lookup-transform "hrp2_marker_root" "ground" (ros::time 0)))
+    (setq go-pos-coords (send *tf* :lookup-transform "robot_marker_root" "ground" (ros::time 0)))
     (setq go-pos-coords (send go-pos-coords :transformation (make-coords) :local))
     ;; send go-pos coords to fc
     (let ((msg (instance drc_com_common::OCS2FCSmall :init)))
@@ -1135,7 +1135,7 @@
   )
 
 ;; generate *robot*
-(setq *robot-name* (string-upcase (unix::get-env "ROBOT")))
+(setq *robot-name* (string-upcase (unix::getenv "ROBOT")))
 (generate-robot *robot-name* :generate-ri? nil)
 
 ;; advertise
@@ -1152,7 +1152,7 @@
 (setq *tf* (instance ros::transform-listener :init))
 
 (ros::advertise "/ocs_to_fc_low_speed/input" drc_com_common::OCS2FCSmall)
-(ros::advertise "/jsk_model_marker_interface/hrp2/reset_joint_states_and_root" sensor_msgs::JointState 1)
+(ros::advertise "/jsk_model_marker_interface/robot/reset_joint_states_and_root" sensor_msgs::JointState 1)
 (ros::advertise "/transformable_interactive_server/set_color" std_msgs::ColorRGBA)
 (ros::advertise "/midi_config_player/set_feedback" sensor_msgs::JoyFeedbackArray)
 (ros::advertise "/urdf_control_marker/set_pose" geometry_msgs::PoseStamped 1)
