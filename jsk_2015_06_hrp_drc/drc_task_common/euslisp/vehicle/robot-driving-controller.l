@@ -16,6 +16,8 @@
           old-handle-deg
           polygon-stamped-msg
           estimated-robot-coords
+          handle-angle-coords-table
+          old-estimated-handle-angle
           ) 
   )
 
@@ -51,6 +53,7 @@
          max-turn-angle tmp-max-turn-angle
          max-turn-angle-diff-deg tmp-max-turn-angle-diff
          old-handle-deg 0.0
+         old-estimated-handle-angle 0.0
          )
    ;; set defalut value for pedaling
    (setq step-accel-angle 28
@@ -80,6 +83,7 @@
                    #'send self :torus-finder-callback)
    (ros::advertise "/drive/pedal_state" std_msgs::Bool 1)
    (ros::advertise "/drive/torus_finder/input/polygon" geometry_msgs::PolygonStamped 1)
+   (send self :update-handle-angle-coords-table)
    )
 
   ;; handle command
@@ -87,6 +91,9 @@
    ()
    (send motion :grasp-handle)
    (setq grasped-flag t)
+   ;; handle-angle is estimated to be right when grasped
+   (setq old-estimated-handle-angle (send motion :car :handle-joint :joint-angle))
+   (send self :update-handle-angle-coords-table)
    )
   (:turn
    (angle &key (weight 1.0) (rad nil) (supress-diff-max t))
@@ -348,6 +355,69 @@
      (send motion :robot :copy-worldcoords)
      )
    )
+
+  ;; handle-angle estimation
+  (:update-handle-angle-coords-table
+   (&key (step 5) (min-angle -480) (max-angle 480))
+   (let* ((handle-joint (send motion :car :handle-joint))
+          (handle-angle-table-max max-angle)
+          (handle-angle-table-min min-angle)
+          (handle-angle min-angle)
+          current-handle-angle
+          )
+     (setq handle-angle-coords-table nil)
+     (setq current-handle-angle (send handle-joint :joint-angle))
+     (send handle-joint :joint-angle handle-angle-table-min)
+     (while (<= handle-angle handle-angle-table-max)
+       (send handle-joint :joint-angle handle-angle :relative nil)
+       (push (cons handle-angle
+                   (send (send motion :rotate-grasp-point-by-grasp-arm (send motion :car (send motion :grasp-point))) :copy-worldcoords)
+                   ) handle-angle-coords-table)
+       (setq handle-angle (+ handle-angle step))
+       )
+     (send handle-joint :joint-angle current-handle-angle) ;; resume handle angle
+     )
+   )
+  (:estimate-current-handle-angle
+   ()
+   (let ((tmp-robot (copy-object (send motion :robot)))
+         (dist 0)
+         (min-dist nil)
+         (estimated-angle nil)
+         (current-angle old-estimated-handle-angle)
+         (use-flag nil) (half-range 180)
+         selected-handle-angle-coords-table
+         current-end-coords  min-elem max-elem
+         )
+     ;; get current end-coords
+     (send tmp-robot :angle-vector (send *ri* :state :potentio-vector))
+     (setq current-end-coords (send tmp-robot (send motion :grasp-arm) :end-coords :copy-worldcoords))
+     ;; get handle-angle-coords-table in using range (current plus/minus half-range[deg])
+     (setq max-elem (assoc (+ current-angle half-range) handle-angle-coords-table :test #'>=))
+     (unless max-elem
+       (setq max-elem (car handle-angle-coords-table))
+       )
+     (setq min-elem (assoc (- current-angle half-range) handle-angle-coords-table :test #'>=))
+     (unless min-elem
+       (setq min-elem (car (last handle-angle-coords-table)))
+       )
+     (setq selected-handle-angle-coords-table
+           (subseq handle-angle-coords-table (position max-elem handle-angle-coords-table) (position min-elem handle-angle-coords-table)))
+     ;; search nearest handle-coods to end-coords
+     (dolist (handle-angle-coords selected-handle-angle-coords-table)
+       (setq dist (norm (v- (send (cdr handle-angle-coords) :worldpos) (send current-end-coords :worldpos))))
+       (unless min-dist
+         (setq min-dist dist)
+         )
+       (when (<= dist min-dist)
+         (setq min-dist dist)
+         (setq estimated-angle (car handle-angle-coords))
+         )
+       )
+     (setq old-estimated-handle-angle estimated-angle)
+     estimated-angle
+     )
+   )
   
   ;; accessor
   (:controller () controller)
@@ -366,8 +436,8 @@
     ()
     (let ((count 0))
       (do-until-key
-       (when (> count 10)
-         (warn "current-angle: ~A~%" (send motion :estimate-current-handle-angle))
+       (when (and (> count 10) grasped-flag)
+         (warn "current-angle: ~A~%" (send self :estimate-current-handle-angle))
          (setq count 0)
          )
        (ros::spin-once)
