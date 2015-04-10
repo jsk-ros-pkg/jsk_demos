@@ -33,6 +33,7 @@
    &key (generate-ri? nil))
   ;; generate robot
   (unless (boundp '*robot*)
+    (setq *robot-name* (string-upcase name))
     (load (robot-file name))
     (cond (generate-ri?
            (init-robot-from-name name))
@@ -53,10 +54,29 @@
   (send *ri* :hand-angle-vector (apply #'concatenate float-vector (send *robot* :hand :arms :angle-vector)) time)
   (when wait? (send *ri* :hand-wait-interpolation)))
 
+(defun hand-start-grasp (&key (arm :arms) (real? nil) (time 500) (wait? t))
+  (cond ((or (equal *robot-name* "HRP2JSKNT") (equal *robot-name* "HRP2JSKNTS"))
+         (send *robot* :hand arm :hook-pose) ;; hand hook-pose
+         (when real? (hand-model2real :time time :wait? wait?)))
+        ((or (equal *robot-name* "JAXON") (equal *robot-name* "STARO"))
+         (when real? (send *ri* :stop-grasp arm :wait wait?)))
+        ))
+
+(defun hand-stop-grasp (&key (arm :arms) (real? nil) (time 500) (wait? t))
+  (cond ((or (equal *robot-name* "HRP2JSKNT") (equal *robot-name* "HRP2JSKNTS"))
+         (send *robot* :hand :arms :extension-pose) ;; hand extension-pose
+         (when real? (hand-model2real :time time :wait? t))
+         (send *robot* :hand :arms :grasp-pose) ;; hand grasp-pose
+         (when real? (hand-model2real :time time :wait? wait?))
+)
+        ((or (equal *robot-name* "JAXON") (equal *robot-name* "STARO"))
+         (when real? (send *ri* :stop-grasp arm :wait wait?)))
+        ))
+
 (defun send-angle-vector-sequence-with-time
   (av-seq &key (time 5000) (wait? t))
   (send *ri* :angle-vector-sequence av-seq (make-list (length av-seq) :initial-element time))
-  (when wait? (send *ri* :wait-interpolation)))    
+  (when wait? (send *ri* :wait-interpolation)))
 
 (defun publish-model-joint-states (&key (av nil))
   (let* ((msg (instance sensor_msgs::JointState :init)))
