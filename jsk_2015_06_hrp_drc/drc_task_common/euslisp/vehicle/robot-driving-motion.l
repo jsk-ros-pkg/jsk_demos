@@ -375,8 +375,8 @@
    (send self :approach-pedal :rleg :accel-pedal :tm tm :debug-view debug-view)
    )
   (:step-accel-pedal
-   (deg &key (time 1000) (relative t) (use-controller t) (no-wait t))
-   (send robot :rleg-ankle-p :joint-angle deg :relative relative)
+   (command &key (time 1000) (relative t) (use-controller t) (no-wait t))
+   (send robot :rleg-ankle-p :joint-angle command :relative relative)
    (when real
      (if use-controller
          (send *ri* :angle-vector (send robot :angle-vector) time :rleg-controller)
@@ -385,13 +385,25 @@
      (unless no-wait (send *ri* :wait-interpolation))
      )
    )
+  (:detatch-accel-pedal
+   (&key (time 1000) (use-controller t) (no-wait t) (distance 100))
+   (send robot :rleg :move-end-pos (float-vector 0 0 distance) :local)
+   (when real
+     (if use-controller
+         (send *ri* :angle-vector (send robot :angle-vector) time :rleg-controller)
+       (send *ri* :angle-vector (send robot :angle-vector) time)
+       )
+     (unless no-wait (send *ri* :wait-interpolation))
+     )
+   )
+
   (:approach-brake-pedal
    (&key (tm 3000) (debug-view nil))
    (send self :approach-pedal :lleg :brake-pedal :tm tm :debug-view debug-view)
    )
   (:step-brake-pedal
-   (deg &key (time 1000) (relative t) (use-controller t))
-   (send robot :lleg-ankle-p :joint-angle deg :relative relative)
+   (command &key (time 1000) (relative t) (use-controller t))
+   (send robot :lleg-ankle-p :joint-angle command :relative relative)
    (when real
      (if use-controller
          (send *ri* :angle-vector (send robot :angle-vector) time :lleg-controller)

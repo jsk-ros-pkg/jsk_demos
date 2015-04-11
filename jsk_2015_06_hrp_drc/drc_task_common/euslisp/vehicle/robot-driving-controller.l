@@ -164,6 +164,10 @@
    (command)
    (send motion :step-accel-pedal command :relative nil :use-controller t) ;; step accel
    )
+  (:detatch-accel
+   ()
+   (send motion :detatch-accel-pedal :use-controller t) ;; detatch accel for emergency
+   )
   (:step-brake
    (command)
    (send motion :step-brake-pedal command :relative nil :use-controller t) ;; step brake
