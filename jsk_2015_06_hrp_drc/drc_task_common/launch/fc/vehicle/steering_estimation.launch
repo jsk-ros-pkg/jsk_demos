@@ -1,5 +1,13 @@
 <launch>
   <group ns="drive">
-    <node pkg="jsk_pcl_ros" type="torus_finder" name="torus_finder"/>
+    <node pkg="jsk_pcl_ros" type="torus_finder" name="torus_finder" >
+      <param name="min_radius" value="0.1" />
+      <param name="max_radius" value="0.2" />
+      <param name="outer_threshold" value="0.01" />
+      <param name="max_iterations" value="100" />
+      <param name="eps_hint_angle" value="0.1" />
+      <param name="voxel_grid_sampling" value="true" /> 
+      <param name="voxel_size" value="0.002" />
+    </node>
   </group>
 </launch>
