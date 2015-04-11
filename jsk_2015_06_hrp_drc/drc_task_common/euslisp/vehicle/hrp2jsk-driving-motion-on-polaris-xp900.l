@@ -46,7 +46,7 @@
      )
    )
   (:open-hand
-   (limb)
+   (&optional (limb (send self :grasp-arm)))
    (when real
      (send robot :hand limb :hook-pose)
      (send *ri* :hand-angle-vector (send robot :hand-angle-vector) 1000)
@@ -54,7 +54,7 @@
      )
    )
   (:close-hand
-   (limb)
+   (&optional (limb (send self :grasp-arm)))
    (when real
      (send robot :hand limb :close-pose)
      (send *ri* :hand-angle-vector (send robot :hand-angle-vector) 1000)

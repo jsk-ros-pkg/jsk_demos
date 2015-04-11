@@ -97,14 +97,14 @@
 
   ;; for robotiq hand
   (:open-hand
-   (limb)
+   (&optional (limb (send self :grasp-arm)))
    (when real
      (send *ri* :hand limb :open)
      (send *ri* :hand limb :wait)
      )
    )
   (:close-hand
-   (limb)
+   (&optional (limb (send self :grasp-arm)))
    (when real
      (send *ri* :hand limb :close)
      (send *ri* :hand limb :wait)
