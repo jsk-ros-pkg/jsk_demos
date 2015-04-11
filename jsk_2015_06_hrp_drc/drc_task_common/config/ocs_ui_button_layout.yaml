@@ -47,6 +47,10 @@
   service: 'cancel'
   image: "package://drc_task_common/icons/cancel.png"
   column: 2
+- name: 'show_motion'
+  service: 'reflesh'
+  image: "package://drc_task_common/icons/refresh.png"
+  column: 2
 - name: 'cancel-motion-now'
   service: 'cancel_motion_now'
   #image: "package://drc_task_common/icons/cancel.png" # todo
@@ -54,7 +58,11 @@
 - name: 'skip-recog'
   service: 'skip_recog'
   column: 2
-- name: 'show_motion'
-  service: 'reflesh'
-  image: "package://drc_task_common/icons/refresh.png"
+- name: 'enable-head-overwrite'
+  service: 'enable_head_overwrite'
+  image: "package://drc_task_common/icons/enable-head-overwrite.png"
+  column: 2
+- name: 'disable-head-overwrite'
+  service: 'disable_head_overwrite'
+  image: "package://drc_task_common/icons/disable-head-overwrite.png"
   column: 2
