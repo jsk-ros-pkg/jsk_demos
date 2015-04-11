@@ -19,7 +19,7 @@
   (send *drill* :put :type :takenoko)
   (send *drill* :put :grasp-coords
         (make-cascoords
-         :coords (make-coords :pos #f(0 0 170) :rpy (list (deg2rad -40) 0 pi))
+         :coords (make-coords :pos #f(0 0 170) :rpy (list (deg2rad 40) 0 0))
          :parent *drill*))
   (send *drill* :put :support-grasp-coords
         (make-cascoords
@@ -338,7 +338,9 @@
 (defun get-drill-grasp-stand-coords ;; relative to drill
   (&key (drill-type *default-drill-type*))
   (if (equal drill-type :takenoko)
-      (if (equal *drill-main-arm* :rarm) (make-coords :pos (float-vector -650 0 0) :rpy (list (deg2rad 0) 0 0)) (make-coords :pos (float-vector -650 0 0) :rpy (list (deg2rad -0) 0 0))
+      ;; (if (equal *drill-main-arm* :rarm) (make-coords :pos (float-vector -650 0 0) :rpy (list (deg2rad 0) 0 0)) (make-coords :pos (float-vector -650 0 0) :rpy (list (deg2rad -0) 0 0))
+      ;;     )
+      (if (equal *drill-main-arm* :rarm) (make-coords :pos (float-vector -650 0 0) :rpy (list (deg2rad 90) 0 0)) (make-coords :pos (float-vector -650 0 0) :rpy (list (deg2rad -0) 0 0))
           )
     (if (equal *drill-main-arm* :rarm) (make-coords :pos (float-vector -600 100 0) :rpy (list (deg2rad 0) 0 0)) (make-coords :pos (float-vector -600 -100 0) :rpy (list (deg2rad 0) 0 0))
           )
@@ -797,7 +799,8 @@
   (&key (drill-type *default-drill-type*))
   (if (equal drill-type :gun)
       (if (equal *drill-main-arm* :rarm) (make-coords :pos (float-vector -580 0 0) :rpy (list (deg2rad 0) 0 0)) (make-coords :pos (float-vector -580 0 0) :rpy (list (deg2rad 0) 0 0)))
-    (if (equal *drill-main-arm* :rarm) (make-coords :pos (float-vector -680 200 0) :rpy (list (deg2rad 0) 0 0)) (make-coords :pos (float-vector -680 -200 0) :rpy (list (deg2rad 0) 0 0)))
+    ;; (if (equal *drill-main-arm* :rarm) (make-coords :pos (float-vector -680 200 0) :rpy (list (deg2rad 0) 0 0)) (make-coords :pos (float-vector -680 -200 0) :rpy (list (deg2rad 0) 0 0)))
+      (if (equal *drill-main-arm* :rarm) (make-coords :pos (float-vector -750 500 0) :rpy (list (deg2rad -20) 0 0)) (make-coords :pos (float-vector -750 -500 0) :rpy (list (deg2rad 20) 0 0)))
     )
   )
 (defun get-drill-wall-motion-full
@@ -917,6 +920,9 @@
   #f(-1.73786 12.7998 -28.717 58.3273 -27.2775 -3.19394 0.0 -1.75078 13.1089 -32.0242 64.2536 -29.8937 -3.50327 0.0 -18.0177 40.9471 -15.5394 -20.0 -71.9257 -1.63271 9.57461 -68.7006 -18.7947 12.8132 13.4518 60.0 -67.3083 63.2485 -56.2882 -89.6456 -32.2721 16.8311 -17.2177 -60.0)
   ;;#f(0.0 0.0 -26.0 50.0 -24.0 0.0 0.0 0.0 0.0 -26.0 50.0 -24.0 0.0 0.0 0.0 0.0 -20.0 40.0 -16.9174 -3.95202 39.3961 -81.2715 -74.5661 -40.3588 -35.2676 60.0 50.0 30.0 10.0 -120.0 25.0 5.0 -20.0 -60.0)
   )
+(defun get-test-drill-button-pose ()
+  #f(0.59214 1.27329 -31.1491 53.397 -22.4072 -0.218713 -7.103630e-32 0.592151 1.27702 -31.4606 54.2527 -22.9514 -0.222441 8.448493e-32 -5.36723 12.1833 -2.205876e-32 20.0 -32.1809 3.41271 19.6491 -63.67 -79.641 23.6402 -15.3413 60.0 -30.2688 9.72047 -28.8943 -97.1086 -3.57328 -24.9216 -6.62067 -60.0)
+  )
 (defun get-drill-reset-pose (&key (arm *drill-main-arm*) (drill-type *default-drill-type*))
   (cond ((equal arm :rarm)
         #f(0.0 0.0 -26.0 50.0 -24.0 0.0 0.0 0.0 0.0 -26.0 50.0 -24.0 0.0 0.0 0.0 0.0 0.0 20.0 49.2654 -15.6889 -8.04143 -131.198 78.4518 -8.73041 1.4443 60.0 50.0 30.0 10.0 -120.0 25.0 5.0 -20.0 -60.0))
@@ -924,7 +930,7 @@
          )
         (t #f(0.0 0.0 -26.0 50.0 -24.0 0.0 0.0 0.0 0.0 -26.0 50.0 -24.0 0.0 0.0 0.0 0.0 0.0 20.0 50.8516 -36.1267 0.371474 -131.17 72.8481 -13.9098 21.4063 60.0 50.8516 36.1267 -0.371464 -131.17 -72.8481 13.9098 21.4063 -60.0)))
   )
-()
+
 
 (defun get-button-drill-pre-pose ()
   #f(-3.00133 2.02892 -27.2933 50.8864 -23.7853 -2.19867 0.0 -3.00129 2.03943 -27.2041 49.4034 -22.3915 -2.20917 0.0 39.4881 32.13 -45.0 17.2412 -18.1543 -92.9917 30.9097 -118.766 87.4559 26.6536 47.0384 60.0 50.0 30.0 10.0 -120.0 25.0 5.0 -20.0 -60.0)
@@ -951,13 +957,13 @@
 ;; TODO pre-push-pose
 (defun test-drill-grasp-motion ()
   ;(get-drill-grasp-motion-full (make-coords :pos (float-vector 700 -150 800) :rpy (list 0 0 0)) :draw? t)
-  (setq *answer-for-grasp-test* (get-drill-grasp-motion-full (make-coords :pos (float-vector 1000 -150 100) :rpy (list (deg2rad 90) 0 0)) :draw? t :drill-type :takenoko))
+  (setq *answer-for-grasp-test* (get-drill-grasp-motion-full (make-coords :pos (float-vector 1000 -150 100) :rpy (list (deg2rad 90) 0 0)) :draw? t :drill-type :takenoko  :rotation-axis (list :z t t)))
   (send *robot* :hand :arms :hook-pose)
   ;(play-motion-on-eus-viewer *drill-motion*)
   )
 (defun test-send-drill-grasp-motion ()
-  (send-drill-grasp-motion (make-coords :pos (float-vector 1000 -150 100) :rpy (list (deg2rad 90) 0 0)) :drill-type :takenoko :real? t)
-  )
+  (send-drill-grasp-motion (make-coords :pos (float-vector 1000 -150 100) :rpy (list (deg2rad 90) 0 0)) :drill-type :takenoko :real? t :rotation-axis (list :z t t)))
+  
 (defun test-drill-put-motion ()
   ;(get-drill-grasp-motion-full (make-coords :pos (float-vector 700 -150 800) :rpy (list 0 0 0)) :draw? t)
   (setq *answer-for-grasp-test* (get-drill-grasp-motion-full (make-coords :pos (float-vector 1000 -150 200) :rpy (list 0 0 0)) :draw? t :drill-type :takenoko :recognized-coords-symbol :put-coords :rotation-axis (list :z t t)))

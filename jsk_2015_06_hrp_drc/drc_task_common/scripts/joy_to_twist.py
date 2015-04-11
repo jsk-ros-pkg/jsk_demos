@@ -18,6 +18,7 @@ twist = Twist()
 def timer_cb(event):
     pub_twist()
 def pub_twist():
+    global twist
     twist_pub.publish(twist)
 def joy_cb(msg):
     global twist
@@ -27,12 +28,12 @@ def joy_cb(msg):
     # twist.angular.x = msg.axes[3]
     # twist.linear.y = (msg.axes[5] - msg.axes[2])/2.0 + msg.axes[6]
     # twist.linear.z = msg.axes[7] 
-    twist.linear.x = msg.buttons[1] - msg.buttons[0] + msg.buttons[3]
+    twist.linear.z = msg.buttons[1] - msg.buttons[0] + msg.buttons[3]
     twist.angular.z = -msg.axes[3]
     twist.angular.y = msg.axes[4]
     twist.angular.x = - (msg.axes[5] - msg.axes[2])/2.0 
     twist.linear.y = msg.axes[0]
-    twist.linear.z = msg.axes[1] 
+    twist.linear.x = msg.axes[1] 
     
 if __name__ == "__main__":
     rospy.init_node('joy_to_twist', anonymous=True)
