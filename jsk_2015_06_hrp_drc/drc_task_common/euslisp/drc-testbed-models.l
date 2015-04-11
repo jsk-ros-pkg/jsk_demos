@@ -415,15 +415,18 @@
 
 (defclass drc-terrain
   :super cascaded-link
-  :slots (block-dimensions block-bodies ground-body)
+  :slots (block-dimensions block-bodies ground-body block-angle)
   )
 
 (defmethod drc-terrain
   (:init
-   (&rest args &key (name "drc-terrain") ((:block-dimensions bd) (list 390 195 140)) (add-groud-p nil) &allow-other-keys)
+   (&rest args &key (name "drc-terrain") ((:block-dimensions bd) (list 390 195 140)) (add-groud-p nil)
+          ((:block-angle ba) 15.0) ;; [deg]
+    &allow-other-keys)
    (prog1
        (send-super* :init :name name args)
      (setq block-dimensions bd)
+     (setq block-angle ba)
      (let* ((blist (send self :make-drc-terrain-block-bodies))
             (l))
        (if add-groud-p
@@ -466,7 +469,6 @@
    (let* ((block-x (elt block-dimensions 0))
           (block-y (elt block-dimensions 1))
           (block-z (elt block-dimensions 2))
-          (block-angle 15) ;; [deg]
           (block1 (send self :make-drc-block-one))
           (block2 (send self :make-drc-block-one))
           (base-x 90)
@@ -782,6 +784,10 @@
 
 (defun make-drc-terrain-japanese-block-ver (&key (add-groud-p))
   (setq *terrain* (instance drc-terrain :init :block-dimensions (list 390 190 150) :add-groud-p add-groud-p))
+  )
+
+(defun make-drc-terrain-japanese-block-ver-sagami (&key (add-groud-p))
+  (setq *terrain* (instance drc-terrain :init :block-dimensions (list 390 190 150) :add-groud-p add-groud-p :block-angle 12.5))
   )
 
 (defun make-drc-valve ()
