@@ -242,7 +242,7 @@
     ;; reaching poses
     (let* ((knob-target-coords (send *door* :handle (read-from-string (format nil "~A-knob-handle" arm))))
            (cds-list (list (send (send knob-target-coords :copy-worldcoords)
-                               :translate (case arm (:larm (float-vector -50 -200 150)) (t (float-vector -50 0 150))) :world)
+                               :translate (case arm (:larm (float-vector -100 -200 150)) (t (float-vector -100 0 150))) :world)
                            (send (send (send knob-target-coords :copy-worldcoords)
                                        ;;:translate (case arm (:larm (float-vector -50 50 150)) (t (float-vector -50 -50 150))) :world)
                                        :translate (case arm (:larm (float-vector -50 -100 100)) (t (float-vector -50 0 150))) :world)
@@ -613,13 +613,13 @@
   (initialize-pose-for-door-open :real nil :arm :larm
                                  :initial-standing-coords *init-standing-coords* :initial-waist-y 0)
   (send *robot* :larm :angle-vector *larm-reset-manip-pose*)
-  (send *robot* :larm :move-end-pos #f(200 0 0) :local :rotation-axis nil)
+  (send *robot* :larm :move-end-pos #f(200 -100 0) :local :rotation-axis nil)
   (send (send *robot* :hand :larm) :angle-vector *door-grasp-pose*)
   (exec-robot-state-list (list (get-current-robot-state 2000)) :real real)
   (initialize-pose-for-door-open :real nil :arm :larm
                                  :initial-standing-coords *init-standing-coords* :initial-waist-y 0)
   (send *robot* :larm :angle-vector *larm-reset-manip-pose*)
-  (send *robot* :larm :move-end-pos #f(350 0 0) :local :rotation-axis nil)
+  (send *robot* :larm :move-end-pos #f(350 -100 0) :local :rotation-axis nil)
   (send (send *robot* :hand :larm) :angle-vector *door-grasp-pose*)
   (exec-robot-state-list (list (get-current-robot-state 1000)) :real real)
   (initialize-pose-for-door-open :real nil :arm :larm
