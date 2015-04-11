@@ -66,6 +66,27 @@
    (send robot :rleg :move-end-pos (float-vector 0 -350 0) :world)
    (send robot :lleg :move-end-pos (float-vector -300 450 -300) :world :rotation-axis :z :debug-view :no-message :translation-axis :x)
    )
+  (:drive-init-pose-touch-fist-to-seat
+   (&key (init-pose nil) (tm 20000))
+   (when init-pose
+     (send self :drive-init-pose-half-sitting)
+     )
+   ;; (send robot :rarm :shoulder-p :joint-angle 90)
+   ;; (send robot :rarm :collar-y :joint-angle 25)
+   ;; (send robot :torso :waist-r :joint-angle 8)
+   (send robot :angle-vector #f(-15.2035 -27.52 -75.6295 40.9038 2.71831 31.357 29.7154 20.2146 -41.2042 74.219 -31.1754 -19.2137 0.0 0.0 0.0 0.0 0.0 13.419 53.8087 -85.6223 2.91965 -86.7433 22.0021 19.9219 25.9977 0.0 55.0 20.0 15.0 -100.0 25.0 0.0 -45.0))
+   (when real
+     (send *ri* :angle-vector (send robot :angle-vector) tm)
+     (send *ri* :wait-interpolation)
+     )
+   (send robot :angle-vector #f(-15.2035 -27.52 -75.6295 40.9038 2.71831 31.357 29.7154 20.2146 -41.2042 74.219 -31.1754 -19.2137 7.0 0.0 0.0 0.0 0.0 13.7898 60.1655 -15.8257 -1.61586 -95.3469 23.2293 19.935 32.5904 0.0 55.0 20.0 15.0 -100.0 25.0 0.0 -45.0))
+   ;; (send robot :rarm :angle-vector #f(13.419 53.8087 -15.8257 2.91965 -86.7433 22.0021 19.9219 25.9977))
+   ;; (send robot :rarm :angle-vector #f(13.4283 53.8033 -15.9801 3.11377 -86.7322 21.8079 19.7424 26.06)) ;; 
+   (when real
+     (send *ri* :angle-vector (send robot :angle-vector) tm)
+     (send *ri* :wait-interpolation)
+     )
+   )
   (:ride-half-sitting
    ()
    (send robot :move-to (make-coords :pos (float-vector 0 730 -70) :rpy (float-vector 0.0 0.0 0.0)) :world)
