@@ -98,7 +98,7 @@
      ;; (send robot :larm :angle-vector raav)
      )
    (send robot :larm :shoulder-p :joint-angle 0)
-   (send robot :larm :elbow-y :joint-angle 90)
+   (send robot :larm :shoulder-y :joint-angle 90)
    (send robot :fix-leg-to-coords (make-coords) :rleg)
    (send robot :rleg :move-end-pos (float-vector 0 -100 0) :local)
    (send robot :lleg :move-end-pos (float-vector 0 400 0) :local)
