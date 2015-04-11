@@ -1,5 +1,8 @@
 # drc_task_common
 
+## Introduction
+provides drc\_task\_ common task programs.
+
 ## Setup
 1. Setup your account allowing sudo without password and keep environmental variable.
 
@@ -20,8 +23,16 @@ $ sudo visudo
 
   And restart your computer.
 
-## Introduction
-provides drc\_task\_ common task programs.
+2. Set enviroment variable "ROBOT"
+   For example,
+   ```
+   export ROBOT=HRP2JSKNT
+   ```
+   or
+   ```
+   export ROBOT=JAXON
+   ```
+
 
 ## drc_task_common.launch
 
@@ -32,8 +43,11 @@ this program needs
 * Track ball mouse (for move robot head)
 
 ### DEPEND
-sudo aptitude install python-pygame
-sudo pip install fysom
+```
+$ sudo aptitude install python-pygame
+$ sudo pip install fysom
+$ sudo aptitude install spacenavd ros-hydro-spacenav-node
+```
 
 ### How to launch
 You should put two commands in the defferent terminal
