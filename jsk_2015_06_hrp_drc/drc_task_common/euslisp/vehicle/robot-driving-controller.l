@@ -16,6 +16,8 @@
           old-handle-deg
           polygon-stamped-msg
           estimated-robot-coords
+          handle-angle-coords-table
+          old-estimated-handle-angle
           ) 
   )
 
@@ -51,6 +53,7 @@
          max-turn-angle tmp-max-turn-angle
          max-turn-angle-diff-deg tmp-max-turn-angle-diff
          old-handle-deg 0.0
+         old-estimated-handle-angle 0.0
          )
    ;; set defalut value for pedaling
    (setq step-accel-angle 28
@@ -58,6 +61,8 @@
          step-brake-angle 20
          release-brake-angle 5
          )
+   ;; for handle angle estimation
+   (send self :update-handle-angle-coords-table)
 
    ;; subscriber for operator command
    (ros::subscribe "/drive/operation/accel_cmd"
@@ -75,10 +80,14 @@
    (ros::subscribe "/rfsensor"
                    geometry_msgs::WrenchStamped
                    #'send self :rfsensor-callback)
+   (ros::advertise "/drive/pedal_state" std_msgs::Bool 1)
+   ;; handle-angle commands
+   (ros::advertise "/drive/controller/target_handle_angle" std_msgs::Float64 1)
+   (ros::advertise "/drive/controller/estimated_handle_angle" std_msgs::Float64 1)
+   ;; for steering estimation
    (ros::subscribe "/drive/torus_finder/output/pose"
                    geometry_msgs::PoseStamped
                    #'send self :torus-finder-callback)
-   (ros::advertise "/drive/pedal_state" std_msgs::Bool 1)
    (ros::advertise "/drive/torus_finder/input/polygon" geometry_msgs::PolygonStamped 1)
    )
 
@@ -87,6 +96,9 @@
    ()
    (send motion :grasp-handle)
    (setq grasped-flag t)
+   ;; handle-angle is estimated to be right when grasped
+   (setq old-estimated-handle-angle (send motion :car :handle-joint :joint-angle))
+   (send self :update-handle-angle-coords-table)
    )
   (:turn
    (angle &key (weight 1.0) (rad nil) (supress-diff-max t))
@@ -94,8 +106,9 @@
    (unless grasped-flag
      (warn "Robot do not grasp handle~%")
      (return-from :turn)
-     )   
-   (let (handle-deg real-handle-deg)
+     )
+   (let ((pub-msg (instance std_msgs::Float64 :init))
+         handle-deg real-handle-deg)
      ;; if radius, transform to deg
      (if rad
          (setq handle-deg (/ (rad2deg angle) weight))
@@ -127,6 +140,9 @@
      (warn "turn ~A[deg]~%" real-handle-deg)
      (send motion :turn-handle real-handle-deg :relative nil :use-controller t)
      (setq old-handle-deg real-handle-deg)
+     ;; publish target angle
+     (send pub-msg :data real-handle-deg)
+     (ros::publish "/drive/controller/target_handle_angle" pub-msg)
      )
    )
   ;; approach
@@ -348,6 +364,73 @@
      (send motion :robot :copy-worldcoords)
      )
    )
+
+  ;; handle-angle estimation
+  (:update-handle-angle-coords-table
+   (&key (step 5) (min-angle -480) (max-angle 480))
+   (let* ((handle-joint (send motion :car :handle-joint))
+          (handle-angle-table-max max-angle)
+          (handle-angle-table-min min-angle)
+          (handle-angle min-angle)
+          current-handle-angle
+          )
+     (setq handle-angle-coords-table nil)
+     (setq current-handle-angle (send handle-joint :joint-angle))
+     (send handle-joint :joint-angle handle-angle-table-min)
+     (while (<= handle-angle handle-angle-table-max)
+       (send handle-joint :joint-angle handle-angle :relative nil)
+       (push (cons handle-angle
+                   (send (send motion :rotate-grasp-point-by-grasp-arm (send motion :car (send motion :grasp-point))) :copy-worldcoords)
+                   ) handle-angle-coords-table)
+       (setq handle-angle (+ handle-angle step))
+       )
+     (send handle-joint :joint-angle current-handle-angle) ;; resume handle angle
+     )
+   )
+  (:estimate-current-handle-angle
+   ()
+   (let ((tmp-robot (copy-object (send motion :robot)))
+         (dist 0)
+         (min-dist nil)
+         (estimated-angle nil)
+         (current-angle old-estimated-handle-angle)
+         (use-flag nil) (half-range 180)
+         (pub-msg (instance std_msgs::Float64 :init))
+         selected-handle-angle-coords-table
+         current-end-coords  min-elem max-elem
+         )
+     ;; get current end-coords
+     (send tmp-robot :angle-vector (send *ri* :state :potentio-vector))
+     (setq current-end-coords (send tmp-robot (send motion :grasp-arm) :end-coords :copy-worldcoords))
+     ;; get handle-angle-coords-table in using range (current plus/minus half-range[deg])
+     (setq max-elem (assoc (+ current-angle half-range) handle-angle-coords-table :test #'>=))
+     (unless max-elem
+       (setq max-elem (car handle-angle-coords-table))
+       )
+     (setq min-elem (assoc (- current-angle half-range) handle-angle-coords-table :test #'>=))
+     (unless min-elem
+       (setq min-elem (car (last handle-angle-coords-table)))
+       )
+     (setq selected-handle-angle-coords-table
+           (subseq handle-angle-coords-table (position max-elem handle-angle-coords-table) (position min-elem handle-angle-coords-table)))
+     ;; search nearest handle-coods to end-coords
+     (dolist (handle-angle-coords selected-handle-angle-coords-table)
+       (setq dist (norm (v- (send (cdr handle-angle-coords) :worldpos) (send current-end-coords :worldpos))))
+       (unless min-dist
+         (setq min-dist dist)
+         )
+       (when (<= dist min-dist)
+         (setq min-dist dist)
+         (setq estimated-angle (car handle-angle-coords))
+         )
+       )
+     (setq old-estimated-handle-angle estimated-angle)
+     ;; publish estimated angle
+     (send pub-msg :data estimated-angle)
+     (ros::publish "/drive/controller/estimated_handle_angle" pub-msg)
+     estimated-angle
+     )
+   )
   
   ;; accessor
   (:controller () controller)
@@ -366,8 +449,8 @@
     ()
     (let ((count 0))
       (do-until-key
-       (when (> count 10)
-         (warn "current-angle: ~A~%" (send motion :estimate-current-handle-angle))
+       (when (and (> count 10) grasped-flag)
+         (warn "current-angle: ~A~%" (send self :estimate-current-handle-angle))
          (setq count 0)
          )
        (ros::spin-once)
