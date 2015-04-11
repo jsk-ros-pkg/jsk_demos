@@ -59,28 +59,14 @@
      (send *ri* :wait-interpolation)
      )
    )
-  (:drive-init-pose-support-by-leg
-   (&key (tm 10000) (limb :lleg))
-   ;; (send robot limb :angle-vector #f(0.0 0.0 -86.0 65.0 15.0 0.0))
-   ;; (send robot limb :angle-vector #f(-2.592494e-06 3.642189e-05 -84.2409 62.8969 15.344 -3.722199e-05)) ;; move-end-pos #f(0 0 -10)
-   (when real
-     (send self :set-impedance-for-support limb)
-     )
-   (send robot limb :move-end-pos #f(0 0 -10) :world)
-   (when real
-     (send *ri* :angle-vector (send robot :angle-vector) tm)
-     (send *ri* :wait-interpolation)
-     (send *ri* :set-ref-force #f(0 0 80) 10000 :lleg)
-     )
-   )
 
   ;; wrapper function for hand
   (:open-hand
-   (limb)
+   (&optional (limb (send self :grasp-arm)))
    (warn ":open-hand should be impremented for each robots~%")
    )
   (:close-hand
-   (limb)
+   (&optional (limb (send self :grasp-arm)))
    (warn ":close-hand should be impremented for each robots~%")
    )
 
@@ -389,7 +375,7 @@
    (send self :approach-pedal :rleg :accel-pedal :tm tm :debug-view debug-view)
    )
   (:step-accel-pedal
-   (deg &key (time 1000) (relative t) (use-controller t) (no-wait))
+   (deg &key (time 1000) (relative t) (use-controller t) (no-wait t))
    (send robot :rleg-ankle-p :joint-angle deg :relative relative)
    (when real
      (if use-controller
@@ -498,6 +484,37 @@
      (send self :close-hand :rarm)
      )
    )
+
+  ;; leg support
+  (:approach-floor
+   (&key (limb :lleg) (time 10000) (debug-view nil) (offset #f(0 0 50))
+         (start-impedance t) (stop-ref-force nil) (start-ref-force nil))
+   (when (and real stop-ref-force)
+     (send *ri* :set-ref-force #f(0 0 0) 10000 limb)
+     )
+   (let* ((limb-endcoords (send robot limb :end-coords :copy-worldcoords))
+          (floor-coords (send (send car :floor) :copy-worldcoords))
+          )
+     (send robot limb :inverse-kinematics
+           (make-coords :pos (send limb-endcoords :pos)
+                        :rot (send floor-coords :rot))
+           )
+     (send robot limb :move-end-pos
+           (v+ (float-vector 0 0 (- (elt (send floor-coords :pos) 2) (elt (send limb-endcoords :pos) 2)))
+               offset)
+           )
+     (when real
+       (when start-impedance
+         (send self :set-impedance-for-support limb)
+         )
+       (send *ri* :angle-vector (send robot :angle-vector) time)
+       (send *ri* :wait-interpolation)
+       (when start-ref-force
+         (send self :set-ref-force-for-support limb)
+         )
+       )
+     )
+   )
   
   ;; utils
   (:sync-all-controller
@@ -545,6 +562,10 @@
   (:set-impedance-for-support
    (limb)
    (send *ri* :start-impedance limb :M-p 100 :D-p 600 :K-p 700)
+   )
+  (:set-ref-force-for-support
+   (limb)
+   (send *ri* :set-ref-force #f(0 0 80) 10000 limb)
    )
   (:draw-centroid-on
    (&key (mode nil) (use-real nil))
