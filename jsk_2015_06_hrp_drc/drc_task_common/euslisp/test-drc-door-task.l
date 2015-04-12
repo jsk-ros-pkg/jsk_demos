@@ -150,9 +150,10 @@
 (defun make-drc-sagami-door ()
   "drc door in sagami full-task-course environment"
   (setq *door* (instance param-door :init 895 60 110 20
-                         (float-vector 0 800 1120)
-                         (float-vector -50 760 1120)
-                         ;; (float-vector -60 740 1120)
+                         (float-vector 0 800 845)
+                         (float-vector -50 760 845)
+                         ;; (float-vector 0 800 1120)
+                         ;; (float-vector -50 760 1120)
                          :handle-l/r :left))
   )
 
@@ -604,18 +605,21 @@
     (exec-robot-state-list (list (get-current-robot-state 1000)) :real real))
   ;; walk
   (when walk-p
+    (print ";; walk")
     (when wait (read-line))
     (let* ((walk-pos (float-vector 100 0 0)))
       (setq walk-pos (send (send *door* :copy-worldcoords) :rotate-vector walk-pos))
-      (send *ri* :go-pos (* 1e-3 (elt walk-pos 0)) (* 1e-3 (elt walk-pos 1)) 0)
+      (when real (send *ri* :go-pos (* 1e-3 (elt walk-pos 0)) (* 1e-3 (elt walk-pos 1)) 0))
       (send *robot* :translate walk-pos :local)))
   ;; punch
+  (print ";; punch")
+  (when wait (read-line))
   (initialize-pose-for-door-open :real nil :arm :larm
                                  :initial-standing-coords *init-standing-coords* :initial-waist-y 0)
   (send *robot* :larm :angle-vector *larm-reset-manip-pose*)
   (send *robot* :larm :move-end-pos #f(200 -100 0) :local :rotation-axis nil)
   (send (send *robot* :hand :larm) :angle-vector *door-grasp-pose*)
-  (exec-robot-state-list (list (get-current-robot-state 2000)) :real real)
+  (exec-robot-state-list (list (get-current-robot-state 3000)) :real real)
   (initialize-pose-for-door-open :real nil :arm :larm
                                  :initial-standing-coords *init-standing-coords* :initial-waist-y 0)
   (send *robot* :larm :angle-vector *larm-reset-manip-pose*)
@@ -626,7 +630,10 @@
                                  :initial-standing-coords *init-standing-coords* :initial-waist-y 0)
   (send *robot* :larm :angle-vector *larm-reset-manip-pose*)
   (send (send *robot* :hand :larm) :angle-vector *door-grasp-pose*)
-  (exec-robot-state-list (list (get-current-robot-state 1000)) :real real)
+  (exec-robot-state-list (list (get-current-robot-state 3000)) :real real)
+  (send *robot* :larm :angle-vector *larm-avoid-pose*)
+  (send *robot* :rarm :angle-vector *rarm-avoid-pose*)
+  (exec-robot-state-list (list (get-current-robot-state 3000)) :real real)
   )
 
 #|
