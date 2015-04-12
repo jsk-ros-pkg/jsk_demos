@@ -39,8 +39,8 @@
   
   <!-- tf -->
   <group ns="ocs">
-    <!-- <param if="$(arg USE_CALIB_FILE)" -->
-    <!--        name="robot_description" command="$(find euscollada)/scripts/urdf_patch.py patch $(arg ROBOT_URDF_MODEL) $(arg CALIB_FILE)"/> -->
+    <param if="$(arg USE_CALIB_FILE)"
+           name="robot_description" command="$(find euscollada)/scripts/urdf_patch.py patch $(arg ROBOT_URDF_MODEL) $(arg CALIB_FILE)"/>
     <param unless="$(arg USE_CALIB_FILE)"
            name="robot_description" textfile="$(arg ROBOT_URDF_MODEL)"/>
     <node pkg="robot_state_publisher" type="robot_state_publisher" name="ocs_robot_state_publisher">
