@@ -21,6 +21,11 @@
   (:drive-init-pose
    (&key (tm 20000))
    ;; (send self :drive-init-pose-half-sitting)
+   (send self :drive-init-pose-pre-left-sitting)
+      (when real
+     (send *ri* :angle-vector (send robot :angle-vector) tm)
+     (send *ri* :wait-interpolation)
+     )
    (send self :drive-init-pose-left-sitting)
    (when real
      (send *ri* :angle-vector (send robot :angle-vector) tm)
@@ -141,6 +146,10 @@
    )
 
   ;; mid pose of sitting and egressing
+  (:drive-init-pose-pre-left-sitting
+   ()
+   (send robot :angle-vector #f(-8.78949 -17.5481 -85.7058 61.2531 -5.08475 19.7642 30.8982 -27.0106 -81.7285 82.775 0.897663 28.0243 0.0 0.0 0.0 0.0 0.0 17.0643 79.1999 -96.2707 -5.3561 -85.9563 27.0803 22.0044 22.1802 0.0 55.0 20.0 15.0 -100.0 25.0 0.0 -45.0))
+   )
   (:drive-init-pose-left-sitting
    ()
    ;; (send robot :angle-vector #f(-8.78949 -17.5481 -85.7058 61.2531 -5.08475 19.7642 30.8982 -27.0106 -81.7285 82.775 0.897663 28.0243 0.0 0.0 0.0 0.0 0.0 20.8944 56.1786 -15.8251 -5.3561 -85.9563 27.0803 22.0044 22.1802 0.0 55.0 20.0 15.0 -100.0 25.0 0.0 -45.0))
