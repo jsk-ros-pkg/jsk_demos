@@ -87,7 +87,8 @@
   ;; handling
   (:approach-handle
    (&key (limb (send self :get :grasp-arm)) (target-handle (send self :get :grasp-point)) (sync-controller nil)
-         (tm 15000) (offset #f(-150 0 0)) (debug-view nil) (rotation-axis t) (start-impedance nil) (stop-impedance nil)
+         (tm 15000) (offset #f(-150 0 0)) (rot-offset 0)
+         (debug-view nil) (rotation-axis t) (start-impedance nil) (stop-impedance nil)
          (null-space #f(-0.06 -0.3 0.0 -0.18 0.16 0.0 0.0 0.0))
          )
    (when start-impedance
@@ -104,8 +105,12 @@
          (body-link (elt (send robot :links) 0))
          (handle-link (find-if #'(lambda (h) (eq (send h :name) :handle-link)) (send (send *car* :vehicle-handle) :links)))
          (offset-target-handle-coords
-          (send (send (send self :rotate-grasp-point-by-grasp-arm (send car target-handle)) :copy-worldcoords)
-                :locate offset))
+          (send (send (send (send self :rotate-grasp-point-by-grasp-arm (send car target-handle))
+                            :copy-worldcoords)
+                      :locate offset)
+                :rotate rot-offset :z (send self :rotate-grasp-point-by-grasp-arm (send car target-handle)) ;; grasp-point is assumed to be a pole and axis :z is to be grasped (:x, :y cannot be rotated to grasp) 
+                )
+          )
          ik-result
          )
      ;; first, move roughly without collision detection
