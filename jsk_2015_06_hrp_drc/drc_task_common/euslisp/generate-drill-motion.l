@@ -289,20 +289,20 @@
 	      (make-cascoords
 	       :coords (send (gethash *drill-main-arm* *arm-drill-grasp-coords*) :copy-worldcoords)
 	       :parent *drill*)))
-      (setq ik-ret (fullbody-inverse-kinematics-for-drill-grasp-single :arm-tc (send (send (send *robot* *drill-main-arm* :end-coords) :copy-worldcoords) :translate (float-vector push-dist (if (equal *drill-main-arm* :rarm) push-dist (- push-dist)) 25) :local) :arm-mt (send *robot* *drill-main-arm* :end-coords) :draw? draw? :rotation-axis rotation-axis)) ;; push!
+      (setq ik-ret (fullbody-inverse-kinematics-for-drill-grasp-single :arm-tc (send (send (send *robot* *drill-main-arm* :end-coords) :copy-worldcoords) :translate (float-vector (/ push-dist 2) (if (equal *drill-main-arm* :rarm) push-dist (- push-dist)) 25) :local) :arm-mt (send *robot* *drill-main-arm* :end-coords) :draw? draw? :rotation-axis (list t t t))) ;; push!
       (push-back (list 3 (not (null ik-ret)) ik-ret) ik-results)
       (when (and fin? (not ik-ret)) (return-from drill-ik nil))
       ;; solve ik for pre grasp
       (let ((robot-angle-vector (send *robot* :angle-vector)))
-        (setq ik-ret (fullbody-inverse-kinematics-for-drill-grasp-single :arm-tc (send (send (send *robot* *drill-main-arm* :end-coords) :copy-worldcoords) :translate (float-vector (- 0) (if (equal *drill-main-arm* :rarm) (- 0) 0) 25) :local) :arm-mt (send *robot* *drill-main-arm* :end-coords) :draw? draw? :rotation-axis rotation-axis))
+        (setq ik-ret (fullbody-inverse-kinematics-for-drill-grasp-single :arm-tc (send (send (send *robot* *drill-main-arm* :end-coords) :copy-worldcoords) :translate (float-vector (- 0) (if (equal *drill-main-arm* :rarm) (- 0) 0) 25) :local) :arm-mt (send *robot* *drill-main-arm* :end-coords) :draw? draw? :rotation-axis (list t t t)))
         (push (list 2 (not (null ik-ret)) ik-ret) ik-results)
         (when (and fin? (not ik-ret)) (return-from drill-ik nil))
 	(send *robot* :angle-vector robot-angle-vector)
-        (setq ik-ret (fullbody-inverse-kinematics-for-drill-grasp-single :arm-tc (send (send (send *robot* *drill-main-arm* :end-coords) :copy-worldcoords) :translate (float-vector (- 7) (if (equal *drill-main-arm* :rarm) (- 30) 30) 25) :local) :arm-mt (send *robot* *drill-main-arm* :end-coords) :draw? draw? :rotation-axis rotation-axis))
+        (setq ik-ret (fullbody-inverse-kinematics-for-drill-grasp-single :arm-tc (send (send (send *robot* *drill-main-arm* :end-coords) :copy-worldcoords) :translate (float-vector (- 15) (if (equal *drill-main-arm* :rarm) (- 30) 30) 25) :local) :arm-mt (send *robot* *drill-main-arm* :end-coords) :draw? draw? :rotation-axis (list t t t)))
         (push (list 1 (not (null ik-ret)) ik-ret) ik-results)
         (when (and fin? (not ik-ret)) (return-from drill-ik nil))
 	(send *robot* :angle-vector robot-angle-vector)
-        (setq ik-ret (fullbody-inverse-kinematics-for-drill-grasp-single :arm-tc (send (send (send *robot* *drill-main-arm* :end-coords) :copy-worldcoords) :translate (float-vector (- (/ reach-dist 4)) (if (equal *drill-main-arm* :rarm) (- reach-dist) reach-dist) -20) :local) :arm-mt (send *robot* *drill-main-arm* :end-coords) :draw? draw? :rotation-axis rotation-axis))
+        (setq ik-ret (fullbody-inverse-kinematics-for-drill-grasp-single :arm-tc (send (send (send *robot* *drill-main-arm* :end-coords) :copy-worldcoords) :translate (float-vector (- (/ reach-dist 2)) (if (equal *drill-main-arm* :rarm) (- reach-dist) reach-dist) -20) :local) :arm-mt (send *robot* *drill-main-arm* :end-coords) :draw? draw? :rotation-axis (list t t t)))
 	(push (list 0 (not (null ik-ret)) ik-ret) ik-results)
         (when (and fin? (not ik-ret)) (return-from drill-ik nil))
 	(send *robot* :angle-vector robot-angle-vector)
