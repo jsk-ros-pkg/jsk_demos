@@ -265,8 +265,8 @@
     )
   )
 (defun generate-drill-grasp-motion
-  (&key (draw? t) (rotation-axis (list t t t)))
-  (let* ((reach-dist 70)
+  (&key (draw? t) (rotation-axis (if (eq *default-drill-type* :takenoko)(list :z t t) (list t t t))))
+  (let* ((reach-dist 100)
 	 (grasp-up-dist 100)
          (push-dist 30)
          (ik-results nil)
