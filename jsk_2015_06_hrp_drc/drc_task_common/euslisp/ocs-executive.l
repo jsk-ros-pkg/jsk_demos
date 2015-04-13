@@ -1063,7 +1063,13 @@
      ;;  (send smachine :go-to! :selecting-exec-for-drill-wall)) ;; because of not using interactive-marker
      ((eq (send smachine :state) :selecting-region-for-drill-button)
       (send *robot* :angle-vector (get-potentio-vector-from-joint-states))
-      (init-takenoko-drill)
+      ;; todo drill-type
+      (if (not (boundp '*drill))
+	  (if t
+	      (init-takenoko-drill)
+	    (init-gun-drill)
+	    )
+	)
       (set-drill-default-coords)
       (let ((coords (send (send (send (send *robot* :body_lk) :copy-worldcoords) :inverse-transformation) :transform (send *drill* :copy-worldcoords))))
               (send self :show-text 
