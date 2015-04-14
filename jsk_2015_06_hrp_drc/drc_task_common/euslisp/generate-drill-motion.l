@@ -462,7 +462,7 @@
       (send *robot* :angle-vector (get-reach-drill-pre-pose))
       (unless (check-angle-vector-distance)
         (when real? (model2real :time 3000)))
-      (if *support-reverse-hand* (send *robot* :angle-vector (get-look-drill-pose)) (send *robot* :angle-vector (get-watch-drill-pose)))
+      (if *support-reverse-hand* (send *robot* :angle-vector (get-watch-drill-pose)) (send *robot* :angle-vector (get-look-drill-pose)))
       (unless (check-angle-vector-distance)
         (when real? (model2real :time 3000)))
       )
