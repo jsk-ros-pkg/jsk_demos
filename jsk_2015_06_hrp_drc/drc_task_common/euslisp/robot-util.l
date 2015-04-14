@@ -40,13 +40,14 @@
           (t
            (setq *robot* (make-robot-model-from-name name))))))
 
-(defun model2real (&key (time 5000) (wait? t))
-  (ros::spin-once)
-  (when (and (boundp '*cancel-motion-flag*) *cancel-motion-flag*) 
-    (setq *cancel-motion-flag* nil)
-    (ros::ros-info "cancel driven")
-    (throw 'exit :exit-with-flug)
-    )
+(defun model2real (&key (time 5000) (wait? t) (enable-cancel? t))
+  (when enable-cancel?
+    (ros::spin-once)
+    (when (and (boundp '*cancel-motion-flag*) *cancel-motion-flag*) 
+      (setq *cancel-motion-flag* nil)
+      (ros::ros-info "cancel driven")
+      (throw 'exit :exit-with-flug)
+      ))
   (send *ri* :angle-vector (send *robot* :angle-vector) time)
   (when wait? (send *ri* :wait-interpolation)))
 
