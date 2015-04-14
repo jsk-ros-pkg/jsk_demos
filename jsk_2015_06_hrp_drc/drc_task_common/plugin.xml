@@ -9,4 +9,14 @@
       <statustip>A Python GUI plugin for DRC teleoperation.</statustip>
     </qtgui>
   </class>
+  <class name="VehicleUI" type="drc_task_common.vehicle_ui.VehicleUI" base_class_type="rqt_gui_py::Plugin">
+    <description>
+      vehicle ui
+    </description>
+    <qtgui>
+      <label>DRC vehicle  Interface</label>
+      <icon type="theme">task-past-due</icon>
+      <statustip>A Python GUI plugin for DRC vehicle task</statustip>
+    </qtgui>
+  </class>
 </library>
