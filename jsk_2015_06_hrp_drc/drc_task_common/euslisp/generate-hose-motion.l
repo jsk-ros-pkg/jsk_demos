@@ -1,4 +1,3 @@
-(load "package://hrpsys_ros_bridge_tutorials/euslisp/hrp2jsknts-interface.l")
 (load "package://drc_task_common/euslisp/robot-util.l")
 (load "package://drc_task_common/euslisp/util.l")
 
