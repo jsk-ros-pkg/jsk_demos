@@ -273,6 +273,14 @@ rtmlaunch hrpsys_ros_bridge_tutorials staro.launch PROJECT_FILE:=/tmp/STARO_for_
 
 ![](images/staro_sim.png)
 
+#### jaxon(stair)
+```
+rtmtest -t hrpsys_tools _gen_project.launch INPUT:=${CVSDIR}/euslib/rbrain/jaxon/JAXONmain.wrl OUTPUT:=/tmp/JAXON_for_DRCTestbedStair.xml OBJECT_MODELS:="`rospack find hrpsys`/share/hrpsys/samples/environments/DRCTestbedStair.wrl,0.25,0.0,0,1,0,0,0," CORBA_PORT:=15005 CONF_DT_OPTION:="--dt 0.002" SIMULATION_TIMESTEP_OPTION:="--timeStep 0.002" INTEGRATE:=false
+rtmlaunch hrpsys_ros_bridge_tutorials jaxon.launch PROJECT_FILE:=/tmp/JAXON_for_DRCTestbedStair.xml
+```
+
+![](images/jaxon_stair_sim.png)
+
 ### Load euslisp
 Load main euslisp program "test-drc-terrain-walk.l"
 
@@ -287,7 +295,7 @@ And load "test-drc-terrain-walk.l"
 (load "test-drc-terrain-walk.l")
 ```
 
-### Try test-drc-terrain-walk simulation
+### Try terrain walk simulation
 Try terrain walking simulation for each robot (hrp2jsknt, hrp2jsk, jaxon, staro)
 
 #### Setup pose
@@ -326,3 +334,24 @@ One through terrain walk simulation by some steps for each robot by footstep
 For example, jaxon
 
 ![](images/1_through_jaxon.png)
+
+### Try stair climb simulation
+Try stair climbing simulation for jaxon
+
+#### Setup pose
+Load robot interface.l and send walking-pose and command (objects (list *robot* *rleg-sole* *lleg-sole* *stair*))
+```
+(setup-drc-testbed-stair-simulation-jaxon)
+```
+
+![](images/setup_stair_jaxon.png)
+
+#### Climb stair
+Climb stair simulation for jaxon by footstep
+
+Initial position offset parameters are given by :x-offset(0.05[m] by default) and :yaw-offset(-30[deg] by default)
+```
+(test-drc-testbed-stair-simulation-jaxon :x-offset 0.05 :yaw-offset -30)
+```
+
+![](images/stair_climb_jaxon.png)
