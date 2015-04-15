@@ -47,6 +47,7 @@ this program needs
 $ sudo aptitude install python-pygame
 $ sudo pip install fysom
 $ sudo aptitude install spacenavd ros-hydro-spacenav-node
+$ sudo aptitude install python-urlgrabber
 ```
 
 ### How to launch
