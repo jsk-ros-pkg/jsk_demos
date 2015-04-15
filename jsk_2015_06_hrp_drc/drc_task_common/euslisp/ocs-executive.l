@@ -801,7 +801,7 @@
           )
          (t ;(equal *drill-type* :takenoko) ;;todo
           (insert-primitive-marker :shape-type jsk_rviz_plugins::TransformableMarkerOperate::*MESH_RESOURCE* :name "drill" :description "" :resource "package://drc_task_common/models/takenoko_drill.dae" :use-material t)
-          (set-primitive-marker-control-relative-pose (make-coords :pos (float-vector -22 30 97) :rpy (float-vector 0 0 pi/2))) ;;Todo more precise pose for button
+          (set-primitive-marker-control-relative-pose (make-coords :pos (float-vector 0 0 97) :rpy (float-vector 0 0 pi/2))) ;;Todo more precise pose for button
           ))
         ;(set-primitive-marker-dimensions :radius 30 :z 300)
         (set-primitive-marker-pose coords "BODY")
@@ -852,8 +852,8 @@
         (setq drill-button-params (list coords))
         ;; publish object marker
         (erase-all-primitive-marker)
-        (insert-primitive-marker :shape-type jsk_rviz_plugins::TransformableMarkerOperate::*MESH_RESOURCE* :name "drill" :description "" :resource "package://hrpsys_gazebo_tutorials/environment_models/dewalt_dc550ka/meshes/dewalt_dc550ka.dae" :use-material t)
-	(set-primitive-marker-control-relative-pose (make-coords :pos (float-vector -25 80 95) :rpy (float-vector 0 0 pi/2))) ;;Todo more precise pose for button
+        (insert-primitive-marker :shape-type jsk_rviz_plugins::TransformableMarkerOperate::*MESH_RESOURCE* :name "drill" :description "" :resource "package://drc_task_common/models/takenoko_drill.dae" :use-material t)
+	(set-primitive-marker-control-relative-pose (make-coords :pos (float-vector 0 0 95) :rpy (float-vector 0 0 pi/2))) ;;Todo more precise pose for button
         ;;(set-primitive-marker-pose coords "BODY") ;; comment out because pose is not correct
         (move-robot-model-to-current-pos)
         ;; publish motion to robot model on rviz
