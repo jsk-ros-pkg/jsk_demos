@@ -3,6 +3,7 @@
 (load "package://drc_task_common/euslisp/vehicle/robot-driving-motion.l")
 (ros::roseus-add-msgs "std_msgs")
 (ros::roseus-add-msgs "geometry_msgs")
+(ros::roseus-add-srvs "std_srvs")
 
 (defclass robot-driving-controller
   :super propertied-object
@@ -86,6 +87,42 @@
                    geometry_msgs::PoseStamped
                    #'send self :torus-finder-callback)
    (ros::advertise "/drive/torus_finder/input/polygon" geometry_msgs::PolygonStamped 1)
+
+   ;; for vehicle ui
+   (ros::advertise-service "/drive/initialize" std_srvs::Empty #'send self :initialize-callback)
+   (ros::advertise-service "/drive/grasp" std_srvs::Empty #'send self :grasp-callback)
+   (ros::advertise-service "/drive/release" std_srvs::Empty #'send self :release-callback)
+   (ros::advertise-service "/drive/correct" std_srvs::Empty #'send self :correct)
+   )
+
+  ;; vehicle ui callback
+  (:initialize-callback
+   (req)
+   (let ((res (send req :response)))
+     (send self :initialize)
+     res
+     )
+   )
+  (:grasp-callback
+   (req)
+   (let ((res (send req :response)))
+     (send self :grasp)
+     res
+     )
+   )
+  (:release-callback
+   (req)
+   (let ((res (send req :response)))
+     (send self :release)
+     res
+     )
+   )
+  (:correct-callback
+   (req)
+   (let ((res (send req :response)))
+     (send self :correct)
+     res
+     )
    )
 
   ;; interface command
@@ -99,6 +136,7 @@
    (send self :approach-accel)
    (send self :approach-floor)
    (send self :approach-handle)
+   nil
    )
   (:grasp
    ()
@@ -112,6 +150,10 @@
    ()
    (send motion :open-hand)
    (setq grasped-flag nil)
+   )
+  (:correct
+   ()
+   (warn "not implemented yet~%")
    )
   (:turn
    (angle &key (weight 1.0) (rad nil) (supress-diff-max nil))
@@ -210,7 +252,13 @@
      )
    )
 
-  ;; operator callback
+  ;; handle controller callback
+  (:handle-callback
+   (msg)
+   (let* ((data (send msg :data))) ;; data is estimated as radius
+       (send self :turn data :rad t :supress-diff-max t)
+     )
+   )
   (:accel-callback
    (msg)
    (if accel-flag
@@ -230,28 +278,6 @@
   (:get-pedal-angle-from-cmd
    (data min-pedal-angle max-pedal-angle) ;; data will be 0.0 from 1.0
    (+ min-pedal-angle (* data (- max-pedal-angle min-pedal-angle)))
-   )
-  (:grasp-callback
-   (msg)
-   (let ((data (send msg :data)))
-     (cond
-      ((equal data "grasp")
-       (warn "receive grasp~%")
-       (send self :grasp)
-       )
-      ((equal data "approach")
-       (warn "receive approach~%")
-       (send self :approach-handle)
-       )
-      (t nil)
-      )
-     )
-   )
-  (:handle-callback
-   (msg)
-   (let* ((data (send msg :data))) ;; data is estimated as radius
-       (send self :turn data :rad t :supress-diff-max t)
-     )
    )
 
   ;; steering estimation
