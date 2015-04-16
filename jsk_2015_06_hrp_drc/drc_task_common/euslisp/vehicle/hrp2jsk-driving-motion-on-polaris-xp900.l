@@ -29,7 +29,7 @@
      (send self :drive-init-pose)
      )
    )
-  (:drive-init-pose
+  (:drive-init-pose ;; todo: merge approach-brake pose
    (&key (tm 20000))
    ;; (send robot :reset-manip-pose)
    ;; (send robot :legs :angle-vector #f(0.0 0.0 -90.0 64.0 6.5 0.0 0.0))

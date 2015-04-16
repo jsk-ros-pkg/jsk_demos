@@ -89,6 +89,17 @@
    )
 
   ;; interface command
+  (:initialize
+   (&key (sync nil))
+   (when sync
+     (send motion :sync-all-controller)
+     )
+   (send motion :ride :init-pose t)
+   (send motion :drive-init-pose-crank :limb :larm) ;; todo: fix and remove
+   (send self :approach-accel)
+   (send self :approach-floor)
+   (send self :approach-handle)
+   )
   (:grasp
    ()
    (send motion :grasp-handle)
@@ -160,6 +171,11 @@
    ()
    (send motion :approach-brake-pedal)
    )
+  (:approach-floor
+   ()
+   (send motion :approach-floor :offset #f(0 0 50)
+         :start-impedance t :stop-ref-force t :start-ref-force nil) ;; approach to floor
+   )
   (:step-accel
    (command)
    (send motion :step-accel-pedal command :relative nil :use-controller t) ;; step accel
@@ -171,11 +187,6 @@
   (:step-brake
    (command)
    (send motion :step-brake-pedal command :relative nil :use-controller t) ;; step brake
-   )
-  (:approach-floor
-   ()
-   (send motion :approach-floor :offset #f(0 0 50)
-         :start-impedance t :stop-ref-force t :start-ref-force nil) ;; approach to floor
    )
   (:support-by-leg
    ()
