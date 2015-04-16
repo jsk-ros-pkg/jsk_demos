@@ -269,6 +269,7 @@
   (let* ((reach-dist 100)
          (x-factor 1.0)
 	 (grasp-up-dist 100)
+	 (air-grasp-up-dist 30)
          (down-dist 25)
          (push-dist 20)
          (ik-results nil)
@@ -285,39 +286,48 @@
            tc)
       (when draw? (send (send *drill* :get :grasp-coords) :draw-on :flush t))
       ;; solve ik for grasp
+ 
       (setq ik-ret (fullbody-inverse-kinematics-for-drill-grasp-single :draw? draw? :rotation-axis rotation-axis))
-      (when ik-ret 
-	(send *drill* :put :grasp-coords
-	      (make-cascoords
-	       :coords (send (gethash *drill-main-arm* *arm-drill-grasp-coords*) :copy-worldcoords)
-	       :parent *drill*)))
-      (setq ik-ret (fullbody-inverse-kinematics-for-drill-grasp-single :arm-tc (send (send (send *robot* *drill-main-arm* :end-coords) :copy-worldcoords) :translate (float-vector (* push-dist x-factor) (if (equal *drill-main-arm* :rarm) push-dist (- push-dist)) 0) :local) :arm-mt (send *robot* *drill-main-arm* :end-coords) :draw? draw? :rotation-axis (list t t t))) ;; push!
-      (push-back (list 3 (not (null ik-ret)) ik-ret) ik-results)
-      (when (and fin? (not ik-ret)) (return-from drill-ik nil))
-      ;; solve ik for pre grasp
-      (let ((robot-angle-vector (send *robot* :angle-vector)))
-        (setq ik-ret (fullbody-inverse-kinematics-for-drill-grasp-single :arm-tc (send (send (send *robot* *drill-main-arm* :end-coords) :copy-worldcoords) :translate (float-vector (- 0) (if (equal *drill-main-arm* :rarm) (- 0) 0) down-dist) :local) :arm-mt (send *robot* *drill-main-arm* :end-coords) :draw? draw? :rotation-axis (list t t t)))
+      (when (and fin? (not ik-ret)) (push-back (list 0 (not (null ik-ret)) ik-ret) ik-results) (return-from drill-ik nil))
+      (let ((robot-angle-vector ik-ret))
+	(when ik-ret 
+	  (send *drill* :put :grasp-coords
+		(make-cascoords
+		 :coords (send (gethash *drill-main-arm* *arm-drill-grasp-coords*) :copy-worldcoords)
+		 :parent *drill*)))
+	(setq ik-ret (fullbody-inverse-kinematics-for-drill-grasp-single :arm-tc (send (send (send *robot* *drill-main-arm* :end-coords) :copy-worldcoords) :translate (float-vector (* push-dist x-factor) (if (equal *drill-main-arm* :rarm) push-dist (- push-dist)) (- air-grasp-up-dist)) :local) :arm-mt (send *robot* *drill-main-arm* :end-coords) :draw? draw? :rotation-axis (list t t t))) ;; push!
+	(push-back (list 3 (not (null ik-ret)) ik-ret) ik-results)
+	(when (and fin? (not ik-ret)) (return-from drill-ik nil))
+	;; solve ik for pre grasp
+  	(send *robot* :angle-vector robot-angle-vector)
+	(send *robot* :fix-leg-to-coords original-foot-midcoords)
+        (setq ik-ret (fullbody-inverse-kinematics-for-drill-grasp-single :arm-tc (send (send (send *robot* *drill-main-arm* :end-coords) :copy-worldcoords) :translate (float-vector (* push-dist x-factor) (if (equal *drill-main-arm* :rarm) push-dist (- push-dist)) down-dist) :local) :arm-mt (send *robot* *drill-main-arm* :end-coords) :draw? draw? :rotation-axis (list t t t)))
         (push (list 2 (not (null ik-ret)) ik-ret) ik-results)
         (when (and fin? (not ik-ret)) (return-from drill-ik nil))
 	(send *robot* :angle-vector robot-angle-vector)
+	(send *robot* :fix-leg-to-coords original-foot-midcoords)
         (setq ik-ret (fullbody-inverse-kinematics-for-drill-grasp-single :arm-tc (send (send (send *robot* *drill-main-arm* :end-coords) :copy-worldcoords) :translate (float-vector (* -30 x-factor) (if (equal *drill-main-arm* :rarm) (- 30) 30) down-dist) :local) :arm-mt (send *robot* *drill-main-arm* :end-coords) :draw? draw? :rotation-axis (list t t t)))
         (push (list 1 (not (null ik-ret)) ik-ret) ik-results)
         (when (and fin? (not ik-ret)) (return-from drill-ik nil))
 	(send *robot* :angle-vector robot-angle-vector)
+	(send *robot* :fix-leg-to-coords original-foot-midcoords)
         (setq ik-ret (fullbody-inverse-kinematics-for-drill-grasp-single :arm-tc (send (send (send *robot* *drill-main-arm* :end-coords) :copy-worldcoords) :translate (float-vector (- (* reach-dist x-factor)) (if (equal *drill-main-arm* :rarm) (- reach-dist) reach-dist) -0) :local) :arm-mt (send *robot* *drill-main-arm* :end-coords) :draw? draw? :rotation-axis (list t t t)))
 	(push (list 0 (not (null ik-ret)) ik-ret) ik-results)
         (when (and fin? (not ik-ret)) (return-from drill-ik nil))
 	(send *robot* :angle-vector robot-angle-vector)
+	(send *robot* :fix-leg-to-coords original-foot-midcoords)
 	;; solve ik for grasp up	
         (send *drill* :translate (float-vector 0 0 grasp-up-dist) :world)
         (setq ik-ret (fullbody-inverse-kinematics-for-drill-grasp-single :draw? draw? :rotation-axis rotation-axis))
 	(push-back (list 4 (not (null ik-ret)) ik-ret) ik-results)
         (when (and fin? (not ik-ret)) (return-from drill-ik nil))
-        (if (equal drill-type :gun) (send *drill* :newcoords (send (send (send *robot* :foot-midcoords) :copy-worldcoords) :transform (make-coords :pos (float-vector 450 0 1100)) :local)))
-        (setq ik-ret (fullbody-inverse-kinematics-for-drill-grasp-single :draw? draw? :rotation-axis rotation-axis))
+        (when (equal drill-type :gun) 
+	  (send *drill* :newcoords (send (send (send *robot* :foot-midcoords) :copy-worldcoords) :transform (make-coords :pos (float-vector 450 0 1100)) :local))
+	  (setq ik-ret (fullbody-inverse-kinematics-for-drill-grasp-single :draw? draw? :rotation-axis rotation-axis)))
 	(push-back (list 5 (not (null ik-ret)) ik-ret) ik-results)
         (when (and fin? (not ik-ret)) (return-from drill-ik nil))
 	(send *robot* :angle-vector robot-angle-vector)
+	(send *robot* :fix-leg-to-coords original-foot-midcoords)
 	)
       (when *use-dual-arm-ik*
         (setq ik-ret (fullbody-inverse-kinematics-for-drill-grasp-dual :support-arm-symbol :pre-support-grasp-coords :draw? draw?))
@@ -433,6 +443,8 @@
       (progn (send *robot* :angle-vector (elt drill-motion-av-list 2))
              (when real? (model2real :time 2000)))
       )
+    (when real? (drill-air-grasp))
+    (unix::usleep 500000)
     ;; reach up
     (send *robot* :angle-vector (elt drill-motion-av-list 3))
     (when real? (model2real :time 2000))
