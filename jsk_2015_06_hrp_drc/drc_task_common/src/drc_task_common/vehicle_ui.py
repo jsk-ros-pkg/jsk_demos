@@ -157,7 +157,7 @@ class VehicleUIWidget(QWidget):
         step_group.setLayout(step_vbox)
         left_vbox.addWidget(step_group)
     def setUpCenterBox(self, center_box):
-        self.multisense_widget = ImageWidget("/multisense/left/image_rect_color")
+        self.multisense_widget = ROSImageWidget("/multisense/left/image_rect_color")
         # self.multisense_widget = ROSImageWidget("/cv_camera/image_raw") # for debugging
         center_box.addWidget(self.multisense_widget)
         left_splitter = QtGui.QSplitter()
