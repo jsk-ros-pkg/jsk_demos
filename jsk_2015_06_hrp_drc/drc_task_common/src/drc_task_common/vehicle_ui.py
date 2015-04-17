@@ -252,14 +252,16 @@ class VehicleUIWidget(QWidget):
         current_value = float(self.step_max_edit.text())
         try:
             update_value = rospy.ServiceProxy('/drive/controller/set_max_step', SetValue)
-            self.step_max_edit.setText(str(current_value))
+            next_value = update_value(current_value)
+            self.step_max_edit.setText(str(next_value.set_value))
         except rospy.ServiceException, e:
             self.showError("Failed to call /drive/controller/set_max_step")
     def minEditCallback(self):
         current_value = float(self.step_min_edit.text())
         try:
             update_value = rospy.ServiceProxy('/drive/controller/set_min_step', SetValue)
-            self.step_min_edit.setText(str(current_value))
+            next_value = update_value(current_value)
+            self.step_min_edit.setText(str(next_value.set_value))
         except rospy.ServiceException, e:
             self.showError("Failed to call /drive/controller/set_min_step")
     def maxUpButtonCallback(self, event):
