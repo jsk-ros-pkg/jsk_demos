@@ -1,9 +1,12 @@
 #!/usr/bin/env roseus
 
 (load "package://drc_task_common/euslisp/vehicle/robot-driving-motion.l")
-(ros::roseus-add-msgs "std_msgs")
-(ros::roseus-add-msgs "geometry_msgs")
 (ros::roseus-add-srvs "std_srvs")
+
+;; for drc_task_common
+(ros::roseus-add-msgs "jsk_recognition_msgs")
+(ros::roseus-add-msgs "jsk_interactive_marker")
+(ros::roseus-add-srvs "drc_task_common")
 
 (defclass robot-driving-controller
   :super propertied-object
@@ -78,10 +81,10 @@
    (ros::subscribe "/drive/operation/handle_cmd"
                    std_msgs::Float64
                    #'send self :handle-callback)
-   (ros::advertise "/drive/pedal_state" std_msgs::Bool 1)
+   (ros::advertise "/drive/controller/pedal_state" std_msgs::Bool 1)
    ;; handle-angle commands
-   (ros::advertise "/drive/controller/target_handle_angle" std_msgs::Float64 1)
-   (ros::advertise "/drive/controller/estimated_handle_angle" std_msgs::Float64 1)
+   (ros::advertise "/drive/controller/goal_handle_angle" std_msgs::Float32 1)
+   (ros::advertise "/drive/controller/estimated_handle_angle" std_msgs::Float32 1)
    ;; for steering estimation
    (ros::subscribe "/drive/torus_finder/output/pose"
                    geometry_msgs::PoseStamped
@@ -89,10 +92,12 @@
    (ros::advertise "/drive/torus_finder/input/polygon" geometry_msgs::PolygonStamped 1)
 
    ;; for vehicle ui
-   (ros::advertise-service "/drive/initialize" std_srvs::Empty #'send self :initialize-callback)
-   (ros::advertise-service "/drive/grasp" std_srvs::Empty #'send self :grasp-callback)
-   (ros::advertise-service "/drive/release" std_srvs::Empty #'send self :release-callback)
-   (ros::advertise-service "/drive/correct" std_srvs::Empty #'send self :correct)
+   (ros::advertise-service "/drive/controller/initialize" std_srvs::Empty #'send self :initialize-callback)
+   (ros::advertise-service "/drive/controller/grasp" std_srvs::Empty #'send self :grasp-callback)
+   (ros::advertise-service "/drive/controller/release" std_srvs::Empty #'send self :release-callback)
+   (ros::advertise-service "/drive/controller/correct" std_srvs::Empty #'send self :correct-callback)
+   (ros::advertise-service "/drive/controller/set_max_step" drc_task_common::SetValue #'send self :set-max-step-callback)
+   (ros::advertise-service "/drive/controller/set_min_step" drc_task_common::SetValue #'send self :set-min-step-callback)
    )
 
   ;; vehicle ui callback
@@ -121,6 +126,22 @@
    (req)
    (let ((res (send req :response)))
      (send self :correct)
+     res
+     )
+   )
+  (:set-max-step-callback
+   (req)
+   (let ((res (send req :response)))
+     (send res :set_value (send self :step-accel-command (send req :value)))
+     (warn "set step-accel-command to ~A~%" (send self :step-accel-command))
+     res
+     )
+   )
+  (:set-min-step-callback
+   (req)
+   (let ((res (send req :response)))
+     (send res :set_value (send self :release-accel-command (send req :value)))
+     (warn "set release-accel-command to ~A~%" (send self :release-accel-command))
      res
      )
    )
@@ -162,7 +183,7 @@
      (warn "Robot do not grasp handle~%")
      (return-from :turn)
      )
-   (let ((pub-msg (instance std_msgs::Float64 :init))
+   (let ((pub-msg (instance std_msgs::Float32 :init))
          handle-deg real-handle-deg)
      ;; if radius, transform to deg
      (if rad
@@ -197,7 +218,7 @@
      (setq old-handle-deg real-handle-deg)
      ;; publish target angle
      (send pub-msg :data real-handle-deg)
-     (ros::publish "/drive/controller/target_handle_angle" pub-msg)
+     (ros::publish "/drive/controller/goal_handle_angle" pub-msg)
      )
    )
   (:approach-handle
@@ -405,7 +426,7 @@
          (estimated-angle nil)
          (current-angle old-estimated-handle-angle)
          (use-flag nil) (half-range 180)
-         (pub-msg (instance std_msgs::Float64 :init))
+         (pub-msg (instance std_msgs::Float32 :init))
          selected-handle-angle-coords-table
          current-end-coords  min-elem max-elem
          )
