@@ -23,8 +23,8 @@
                :approach-handle approach-handle :approach-pedal approach-pedal
                :max-turn-angle tmp-max-turn-angle :max-turn-angle-diff tmp-max-turn-angle-diff
                )
-   (send self :step-accel-angle 10)
-   (send self :release-accel-angle 4)
+   (send self :step-accel-command 10)
+   (send self :release-accel-command 4)
    )
   (:step-brake
    (&optional (angle step-brake-angle))
