@@ -171,14 +171,14 @@
    )
   
   (:open-hand
-   (limb)
+   (&optional (limb (send self :grasp-arm)))
    (when real
      ;; (send *ri* :stop-grasp limb)
      ;; (send *ri* :hand-open limb)
      )
    )
   (:close-hand
-   (limb)
+   (&optional (limb (send self :grasp-arm)))
    (when real
      ;; (send *ri* :start-grasp limb)
      ;; (send *ri* :hand-close limb)

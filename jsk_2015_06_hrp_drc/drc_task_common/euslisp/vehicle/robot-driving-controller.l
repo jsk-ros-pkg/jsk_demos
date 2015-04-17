@@ -1,15 +1,19 @@
 #!/usr/bin/env roseus
 
 (load "package://drc_task_common/euslisp/vehicle/robot-driving-motion.l")
-(ros::roseus-add-msgs "std_msgs")
-(ros::roseus-add-msgs "geometry_msgs")
+(ros::roseus-add-srvs "std_srvs")
+
+;; for drc_task_common
+(ros::roseus-add-msgs "jsk_recognition_msgs")
+(ros::roseus-add-msgs "jsk_interactive_marker")
+(ros::roseus-add-srvs "drc_task_common")
 
 (defclass robot-driving-controller
   :super propertied-object
   :slots (motion
           ros-rate 
-          step-accel-angle step-brake-angle
-          release-accel-angle release-brake-angle
+          step-accel-command step-brake-command
+          release-accel-command release-brake-command
           is-handle-reached-to-target
           grasped-flag accel-flag
           max-turn-angle max-turn-angle-diff-deg
@@ -56,10 +60,10 @@
          old-estimated-handle-angle 0.0
          )
    ;; set defalut value for pedaling
-   (setq step-accel-angle 28
-         release-accel-angle 14
-         step-brake-angle 20
-         release-brake-angle 5
+   (setq step-accel-command 28
+         release-accel-command 14
+         step-brake-command 20
+         release-brake-command 5
          )
    ;; for handle angle estimation
    (send self :update-handle-angle-coords-table)
@@ -77,21 +81,84 @@
    (ros::subscribe "/drive/operation/handle_cmd"
                    std_msgs::Float64
                    #'send self :handle-callback)
-   (ros::subscribe "/rfsensor"
-                   geometry_msgs::WrenchStamped
-                   #'send self :rfsensor-callback)
-   (ros::advertise "/drive/pedal_state" std_msgs::Bool 1)
+   (ros::advertise "/drive/controller/pedal_state" std_msgs::Bool 1)
    ;; handle-angle commands
-   (ros::advertise "/drive/controller/target_handle_angle" std_msgs::Float64 1)
-   (ros::advertise "/drive/controller/estimated_handle_angle" std_msgs::Float64 1)
+   (ros::advertise "/drive/controller/goal_handle_angle" std_msgs::Float32 1)
+   (ros::advertise "/drive/controller/estimated_handle_angle" std_msgs::Float32 1)
    ;; for steering estimation
    (ros::subscribe "/drive/torus_finder/output/pose"
                    geometry_msgs::PoseStamped
                    #'send self :torus-finder-callback)
    (ros::advertise "/drive/torus_finder/input/polygon" geometry_msgs::PolygonStamped 1)
+
+   ;; for vehicle ui
+   (ros::advertise-service "/drive/controller/initialize" std_srvs::Empty #'send self :initialize-callback)
+   (ros::advertise-service "/drive/controller/grasp" std_srvs::Empty #'send self :grasp-callback)
+   (ros::advertise-service "/drive/controller/release" std_srvs::Empty #'send self :release-callback)
+   (ros::advertise-service "/drive/controller/correct" std_srvs::Empty #'send self :correct-callback)
+   (ros::advertise-service "/drive/controller/set_max_step" drc_task_common::SetValue #'send self :set-max-step-callback)
+   (ros::advertise-service "/drive/controller/set_min_step" drc_task_common::SetValue #'send self :set-min-step-callback)
    )
 
-  ;; handle command
+  ;; vehicle ui callback
+  (:initialize-callback
+   (req)
+   (let ((res (send req :response)))
+     (send self :initialize)
+     res
+     )
+   )
+  (:grasp-callback
+   (req)
+   (let ((res (send req :response)))
+     (send self :grasp)
+     res
+     )
+   )
+  (:release-callback
+   (req)
+   (let ((res (send req :response)))
+     (send self :release)
+     res
+     )
+   )
+  (:correct-callback
+   (req)
+   (let ((res (send req :response)))
+     (send self :correct)
+     res
+     )
+   )
+  (:set-max-step-callback
+   (req)
+   (let ((res (send req :response)))
+     (send res :set_value (send self :step-accel-command (send req :value)))
+     (warn "set step-accel-command to ~A~%" (send self :step-accel-command))
+     res
+     )
+   )
+  (:set-min-step-callback
+   (req)
+   (let ((res (send req :response)))
+     (send res :set_value (send self :release-accel-command (send req :value)))
+     (warn "set release-accel-command to ~A~%" (send self :release-accel-command))
+     res
+     )
+   )
+
+  ;; interface command
+  (:initialize
+   (&key (sync nil))
+   (when sync
+     (send motion :sync-all-controller)
+     )
+   (send motion :ride :init-pose t)
+   (send motion :drive-init-pose-crank :limb :larm) ;; todo: fix and remove
+   (send self :approach-accel)
+   (send self :approach-floor)
+   (send self :approach-handle)
+   nil
+   )
   (:grasp
    ()
    (send motion :grasp-handle)
@@ -100,14 +167,23 @@
    (setq old-estimated-handle-angle (send motion :car :handle-joint :joint-angle))
    (send self :update-handle-angle-coords-table)
    )
+  (:release
+   ()
+   (send motion :open-hand)
+   (setq grasped-flag nil)
+   )
+  (:correct
+   ()
+   (warn "not implemented yet~%")
+   )
   (:turn
-   (angle &key (weight 1.0) (rad nil) (supress-diff-max t))
+   (angle &key (weight 1.0) (rad nil) (supress-diff-max nil))
    ;; turn can be used only when grasped
    (unless grasped-flag
      (warn "Robot do not grasp handle~%")
      (return-from :turn)
      )
-   (let ((pub-msg (instance std_msgs::Float64 :init))
+   (let ((pub-msg (instance std_msgs::Float32 :init))
          handle-deg real-handle-deg)
      ;; if radius, transform to deg
      (if rad
@@ -142,60 +218,68 @@
      (setq old-handle-deg real-handle-deg)
      ;; publish target angle
      (send pub-msg :data real-handle-deg)
-     (ros::publish "/drive/controller/target_handle_angle" pub-msg)
+     (ros::publish "/drive/controller/goal_handle_angle" pub-msg)
      )
    )
-  ;; approach
   (:approach-handle
-   (&key (sync nil))
+   (&key (sync grasped-flag))
    (send motion :approach-handle :sync-controller sync)
    (setq grasped-flag nil)
    )
   (:approach-accel
-   (&key (sync nil))
+   ()
    (send motion :approach-accel-pedal)
    )
   (:approach-brake
-   (&key (sync nil))
+   ()
    (send motion :approach-brake-pedal)
    )
-
-  ;; pedal command
-  (:step-accel
-   (&optional (angle step-accel-angle)) 
-   (send motion :step-accel-pedal angle :relative nil :use-controller t) ;; step accel
+  (:approach-floor
+   ()
+   (send motion :approach-floor :offset #f(0 0 50)
+         :start-impedance t :stop-ref-force t :start-ref-force nil) ;; approach to floor
    )
-  (:release-accel
-   (&optional (angle release-accel-angle))
-   (send motion :step-accel-pedal angle :relative nil :use-controller t) ;; init accel
+  (:step-accel
+   (command)
+   (send motion :step-accel-pedal command :relative nil :use-controller t) ;; step accel
+   )
+  (:detatch-accel
+   ()
+   (send motion :detatch-accel-pedal :use-controller t) ;; detatch accel for emergency
    )
   (:step-brake
-   (&optional (angle step-brake-angle))
-   (send motion :step-brake-pedal angle :relative nil :use-controller t) ;; step brake
+   (command)
+   (send motion :step-brake-pedal command :relative nil :use-controller t) ;; step brake
    )
-  (:release-brake
-   (&optional (angle release-brake-angle))
-   (send motion :step-brake-pedal angle :relative nil :use-controller t) ;; init brake
+  (:support-by-leg
+   ()
+   (send motion :approach-floor :offset #f(0 0 0)
+         :start-impedance nil :stop-ref-force nil :start-ref-force t) ;; approach to floor
    )
 
+  ;; internal functions
   (:accel-cmd
    (cmd)
-   (let ((cmd-angle (send self :get-pedal-angle-from-cmd cmd release-accel-angle step-accel-angle)))
+   (let ((cmd-angle (send self :get-pedal-angle-from-cmd cmd release-accel-command step-accel-command)))
      (warn "accel ~A[cmd] -> ~A [deg]~%" cmd cmd-angle)
-     ;; (send self :step-accel cmd-angle)
-     (send motion :step-accel-pedal cmd-angle :relative nil
-	   :time 700 :no-wait t :use-controller t) ;; step accel
+     (send self :step-accel cmd-angle)
      )
    )
   (:brake-cmd
    (cmd)
-   (let ((cmd-angle (send self :get-pedal-angle-from-cmd cmd release-brake-angle step-brake-angle)))
+   (let ((cmd-angle (send self :get-pedal-angle-from-cmd cmd release-brake-command step-brake-command)))
      (warn "brake ~A[cmd] -> ~A [deg]~%" cmd cmd-angle)
      (send self :step-brake cmd-angle)
      )
    )
 
-  ;; operator callback
+  ;; handle controller callback
+  (:handle-callback
+   (msg)
+   (let* ((data (send msg :data))) ;; data is estimated as radius
+       (send self :turn data :rad t :supress-diff-max t)
+     )
+   )
   (:accel-callback
    (msg)
    (if accel-flag
@@ -215,59 +299,6 @@
   (:get-pedal-angle-from-cmd
    (data min-pedal-angle max-pedal-angle) ;; data will be 0.0 from 1.0
    (+ min-pedal-angle (* data (- max-pedal-angle min-pedal-angle)))
-   )
-  
-  (:grasp-callback
-   (msg)
-   (let ((data (send msg :data)))
-     (cond
-      ((equal data "grasp")
-       (warn "receive grasp~%")
-       (send self :grasp)
-       )
-      ((equal data "approach")
-       (warn "receive approach~%")
-       (send self :approach-handle)
-       )
-      (t nil)
-      )
-     )
-   )
-  (:handle-callback
-   (msg)
-   (let* ((data (send msg :data))) ;; data is estimated as radius
-       (send self :turn data :rad t :supress-diff-max t)
-     )
-   )
-
-  ;; sensor feedback
-  (:rfsensor-callback
-   (msg)
-   (let ((wrench (send msg :wrench)))
-     (setq rfsensor-value wrench)
-     )
-   )
-  (:adjust-accel-pedal
-   (&optional (thre 10.0) (step 1.0))
-   (unless rfsensor-value
-     (warn "no rfsensor values~%")
-     (return-from :adjust-accel-pedal)
-     )
-   (let ((force (send rfsensor-value :force)))
-     (do-until-key
-      (when (> (norm force) thre) ;; finish
-        (warn "Touch detected~%")
-        (send motion :step-accel-pedal (- step) :relative t)
-        (send *interface* :release-accel-angle (send *staro* :rleg :ankle-p :joint-angle)) ;; todo: avoid hard-cording of robot name and robot joint
-        (send self :min-accel-angle (send *interface* :release-accel-angle)) 
-        (return-from :adjust-accel-pedal t)
-        )
-      (send motion :step-accel-pedal step :relative t)
-      (ros::spin-once)
-      (ros::sleep)
-      )
-     nil
-     )
    )
 
   ;; steering estimation
@@ -395,7 +426,7 @@
          (estimated-angle nil)
          (current-angle old-estimated-handle-angle)
          (use-flag nil) (half-range 180)
-         (pub-msg (instance std_msgs::Float64 :init))
+         (pub-msg (instance std_msgs::Float32 :init))
          selected-handle-angle-coords-table
          current-end-coords  min-elem max-elem
          )
@@ -433,18 +464,19 @@
    )
   
   ;; accessor
-  (:controller () controller)
+  (:motion () motion)
 
   ;; setter
-  (:step-accel-angle (&optional (angle nil)) (when angle (setq step-accel-angle angle)) step-accel-angle)
-  (:release-accel-angle (&optional (angle nil)) (when angle (setq release-accel-angle angle)) release-accel-angle)
-  (:step-brake-angle (&optional (angle nil)) (when angle (setq step-brake-angle angle)) step-brake-angle)
-  (:release-brake-angle (&optional (angle nil)) (when angle (setq release-brake-angle angle)) release-brake-angle)
+  (:step-accel-command (&optional (angle nil)) (when angle (setq step-accel-command angle)) step-accel-command)
+  (:release-accel-command (&optional (angle nil)) (when angle (setq release-accel-command angle)) release-accel-command)
+  (:step-brake-command (&optional (angle nil)) (when angle (setq step-brake-command angle)) step-brake-command)
+  (:release-brake-command (&optional (angle nil)) (when angle (setq release-brake-command angle)) release-brake-command)
   (:max-turn-angle (&optional (val nil)) (when val (setq max-turn-angle val)) max-turn-angle)
   (:max-turn-angle-diff (&optional (val nil)) (when val (setq max-turn-angle-diff-deg val)) max-turn-angle-diff-deg)
   (:grasped-flag (&optional (val 0)) (unless (equal val 0) (setq grasped-flag val)) grasped-flag)
   (:accel-flag (&optional (val 0)) (unless (equal val 0) (setq accel-flag val)) accel-flag)
-  
+
+  ;; main loop
   (:execute
     ()
     (let ((count 0))

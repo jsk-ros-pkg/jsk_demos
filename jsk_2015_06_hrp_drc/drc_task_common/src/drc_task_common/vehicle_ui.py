@@ -94,10 +94,10 @@ class VehicleUIWidget(QWidget):
         self.grasp_button = QtGui.QPushButton("Grasp")
         self.release_button = QtGui.QPushButton("Release")
         self.correct_button = QtGui.QPushButton("Correct")
-        self.initialize_button.clicked.connect(self.service("/drive/initialize"))
-        self.grasp_button.clicked.connect(self.service("/drive/grasp"))
-        self.release_button.clicked.connect(self.service("/drive/release"))
-        self.correct_button.clicked.connect(self.service("/drive/correct"))
+        self.initialize_button.clicked.connect(self.service("/drive/controller/initialize"))
+        self.grasp_button.clicked.connect(self.service("/drive/controller/grasp"))
+        self.release_button.clicked.connect(self.service("/drive/controller/release"))
+        self.correct_button.clicked.connect(self.service("/drive/controller/correct"))
         action_vbox.addWidget(self.initialize_button)
         action_vbox.addWidget(self.grasp_button)
         action_vbox.addWidget(self.release_button)
@@ -188,8 +188,8 @@ class VehicleUIWidget(QWidget):
 
         angle_vbox = QtGui.QVBoxLayout()
         angle_container = QtGui.QWidget()
-        self.goal_angle = AngleWidget("/drive/goal_angle")
-        self.estimated_angle = AngleWidget("/drive/estimated_angle")
+        self.goal_angle = AngleWidget("/drive/controller/goal_handle_angle")
+        self.estimated_angle = AngleWidget("/drive/controller/estimated_handle_angle")
         angle_vbox.addWidget(self.goal_angle)
         angle_vbox.addWidget(self.estimated_angle)
         angle_container.setLayout(angle_vbox)
@@ -234,52 +234,54 @@ class VehicleUIWidget(QWidget):
         current_value = float(self.step_min_edit.text())
         current_value = current_value + 1.0
         try:
-            update_value = rospy.ServiceProxy('/drive/set_min_step', SetValue)
+            update_value = rospy.ServiceProxy('/drive/controller/set_min_step', SetValue)
             next_value = update_value(current_value)
-            self.step_min_edit.setText(str(next_value))
+            self.step_min_edit.setText(str(next_value.set_value))
         except rospy.ServiceException, e:
-            self.showError("Failed to call /drive/set_min_step")
+            self.showError("Failed to call /drive/controller/set_min_step")
     def minDownButtonCallback(self, event):
         current_value = float(self.step_min_edit.text())
         current_value = current_value - 1.0
         try:
-            update_value = rospy.ServiceProxy('/drive/set_min_step', SetValue)
+            update_value = rospy.ServiceProxy('/drive/controller/set_min_step', SetValue)
             next_value = update_value(current_value)
-            self.step_min_edit.setText(str(next_value))
+            self.step_min_edit.setText(str(next_value.set_value))
         except rospy.ServiceException, e:
-            self.showError("Failed to call /drive/set_min_step")
+            self.showError("Failed to call /drive/controller/set_min_step")
     def maxEditCallback(self):
         current_value = float(self.step_max_edit.text())
         try:
-            update_value = rospy.ServiceProxy('/drive/set_max_step', SetValue)
-            self.step_max_edit.setText(str(current_value))
+            update_value = rospy.ServiceProxy('/drive/controller/set_max_step', SetValue)
+            next_value = update_value(current_value)
+            self.step_max_edit.setText(str(next_value.set_value))
         except rospy.ServiceException, e:
-            self.showError("Failed to call /drive/set_max_step")
+            self.showError("Failed to call /drive/controller/set_max_step")
     def minEditCallback(self):
         current_value = float(self.step_min_edit.text())
         try:
-            update_value = rospy.ServiceProxy('/drive/set_min_step', SetValue)
-            self.step_min_edit.setText(str(current_value))
+            update_value = rospy.ServiceProxy('/drive/controller/set_min_step', SetValue)
+            next_value = update_value(current_value)
+            self.step_min_edit.setText(str(next_value.set_value))
         except rospy.ServiceException, e:
-            self.showError("Failed to call /drive/set_min_step")
+            self.showError("Failed to call /drive/controller/set_min_step")
     def maxUpButtonCallback(self, event):
         current_value = float(self.step_max_edit.text())
         current_value = current_value + 1.0
         try:
-            update_value = rospy.ServiceProxy('/drive/set_max_step', SetValue)
+            update_value = rospy.ServiceProxy('/drive/controller/set_max_step', SetValue)
             next_value = update_value(current_value)
-            self.step_max_edit.setText(str(next_value))
+            self.step_max_edit.setText(str(next_value.set_value))
         except rospy.ServiceException, e:
-            self.showError("Failed to call /drive/set_max_step")
+            self.showError("Failed to call /drive/controller/set_max_step")
     def maxDownButtonCallback(self, event):
         current_value = float(self.step_max_edit.text())
         current_value = current_value - 1.0
         try:
-            update_value = rospy.ServiceProxy('/drive/set_max_step', SetValue)
+            update_value = rospy.ServiceProxy('/drive/controller/set_max_step', SetValue)
             next_value = update_value(current_value)
-            self.step_max_edit.setText(str(next_value))
+            self.step_max_edit.setText(str(next_value.set_value))
         except rospy.ServiceException, e:
-            self.showError("Failed to call /drive/set_max_step")
+            self.showError("Failed to call /drive/controller/set_max_step")
     def showError(self, message):
         QMessageBox.about(self, "ERROR", message)
 
