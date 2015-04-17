@@ -879,11 +879,11 @@
        (send frame-door-pole :assoc door-pole-grasp-point)
        (push door-pole-grasp-point grasp-point)
 
-       (setq floor-foot-rest-point (make-cascoords :coords (send (send frame-floor :copy-worldcoords)
-                                                                 :translate (float-vector 0 0 0) :world) ;; old: (float-vector 400 350 0)
-                                                   :name :floor-foot-rest))
-       (send frame-floor :assoc floor-foot-rest-point)
-       (push floor-foot-rest-point grasp-point)
+       (setq floor-point (make-cascoords :coords (send (send frame-floor :copy-worldcoords)
+                                                       :translate (float-vector 0 0 0) :world) ;; old: (float-vector 400 350 0)
+                                                   :name :floor))
+       (send frame-floor :assoc floor-point)
+       (push floor-point grasp-point)
 
        base-link
        )
@@ -946,7 +946,7 @@
   (:seil-right () (find-if #'(lambda (h) (eq (send h :name) :seil-right)) grasp-point))
   (:seil-front () (find-if #'(lambda (h) (eq (send h :name) :seil-front)) grasp-point))
   (:door-pole () (find-if #'(lambda (h) (eq (send h :name) :door-pole)) grasp-point))
-  (:floor-foot-rest () (find-if #'(lambda (h) (eq (send h :name) :floor-foot-rest)) grasp-point))
+  (:floor () (find-if #'(lambda (h) (eq (send h :name) :floor)) grasp-point))
   ;; methods to send message to joints ;;;;;;;;;;;;;;;;; ;;;;;;;;;;;;;;;;;  
   (:slide-joint (&rest args) (forward-message-to (send seat :slide-joint) args))
   (:reclining-joint (&rest args) (forward-message-to (send seat :reclining-joint) args))

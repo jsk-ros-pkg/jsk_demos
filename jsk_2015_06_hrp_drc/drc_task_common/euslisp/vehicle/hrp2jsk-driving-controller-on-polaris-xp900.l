@@ -29,13 +29,13 @@
                :approach-handle approach-handle :approach-pedal approach-pedal
                :max-turn-angle tmp-max-turn-angle :max-turn-angle-diff tmp-max-turn-angle-diff
                )
-   (send self :step-accel-angle -25.0)
-   (send self :release-accel-angle 1.0)
+   (send self :step-accel-command -25.0)
+   (send self :release-accel-command 1.0)
    (setq current-move-mm 0.0)
    )
   (:accel-cmd
    (cmd)
-   (let ((cmd-mm (send self :get-pedal-angle-from-cmd cmd release-accel-angle step-accel-angle)))
+   (let ((cmd-mm (send self :get-pedal-angle-from-cmd cmd release-accel-command step-accel-command)))
      (warn "accel ~A[cmd] -> ~A [mm]~%" cmd cmd-mm)
      (send self :step-accel cmd-mm)
      (setq current-move-mm (+ current-move-mm cmd-mm))
@@ -50,7 +50,7 @@
      )
    )
   (:step-brake
-   (&optional (angle step-brake-angle))
+   (command)
    (warn "Real Vehicle Mode: Brake Disabled~%")
    (send self :step-accel 0.0) ;; release accel forcely
    )

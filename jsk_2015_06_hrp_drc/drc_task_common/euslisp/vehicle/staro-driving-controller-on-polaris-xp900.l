@@ -26,11 +26,11 @@
                :max-turn-angle tmp-max-turn-angle :max-turn-angle-diff tmp-max-turn-angle-diff
                )
    ;; set default accel angle
-   (send self :step-accel-angle 20)
-   (send self :release-accel-angle 0)
+   (send self :step-accel-command 20)
+   (send self :release-accel-command 0)
    )
   (:step-brake
-   (&optional (angle step-brake-angle))
+   (command)
    (warn "Real Vehicle Mode: Brake Disabled~%")
    (send self :step-accel 0.0) ;; release accel forcely
    )
