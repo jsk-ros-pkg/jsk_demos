@@ -134,11 +134,23 @@
   (setq *arm-drill-grasp-coords* (make-hash-table))
   (setf (gethash :rarm *arm-drill-grasp-coords*)
         (make-cascoords
-         :coords (send (send (send *robot* :rarm :end-coords) :copy-worldcoords) :translate (float-vector 50.0 25.0 0.0) :local)
+         :coords 
+	 (cond ((or (equal *robot-name* "HRP2JSKNT") (equal *robot-name* "HRP2JSKNT"))
+		(send (send (send (send *robot* :rarm :end-coords) :copy-worldcoords) :translate (float-vector 50.0 25.0 0.0) :local) :rotate (deg2rad -45) :z :local))
+		(t
+		 (send (send (send (send *robot* :rarm :end-coords) :copy-worldcoords) :translate (float-vector 50.0 0.0 0.0) :local) :rotate (deg2rad 0) :z :local)
+		 )
+	       )
          :parent (send (send *robot* :rarm :end-coords) :parent)))
   (setf (gethash :larm *arm-drill-grasp-coords*)
         (make-cascoords
-         :coords (send (send (send *robot* :larm :end-coords) :copy-worldcoords) :translate (float-vector 50.0 -25.0 0.0) :local)
+         :coords 
+	 (cond ((or (equal *robot-name* "HRP2JSKNT") (equal *robot-name* "HRP2JSKNT"))
+		(send (send (send (send *robot* :larm :end-coords) :copy-worldcoords) :translate (float-vector 50.0 -25.0 0.0) :local) :rotate (deg2rad 45) :z :local))
+		(t
+		 (send (send (send (send *robot* :rarm :end-coords) :copy-worldcoords) :translate (float-vector 50.0 0.0 0.0) :local) :rotate (deg2rad 0) :z :local)
+		 )		
+		)
          :parent (send (send *robot* :larm :end-coords) :parent)))
   ;; (send *robot* :hand :arms :hook-pose) ;; this is neccesary for assoc coords to finger
   ;; attach handle to robot
@@ -315,8 +327,8 @@
   )
 (defun generate-drill-grasp-motion
   (&key (draw? t) (rotation-axis (if (eq *default-drill-type* :takenoko)(list :z t t) (list t t t))))
-  (let* ((reach-dist 100)
-         (x-factor 1.0)
+  (let* ((reach-dist 140)
+         (x-factor 0.0)
 	 (grasp-up-dist 100)
 	 (air-grasp-up-dist 30)
          (down-dist 25)
