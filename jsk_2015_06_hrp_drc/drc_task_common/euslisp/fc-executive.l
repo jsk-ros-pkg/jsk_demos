@@ -35,6 +35,10 @@
                 self :go-pos-exec-command-callback)
           (list drc_com_common::OCS2FCSmall::*LOOK_AT_REGION*
                 self :look-at-region-command-callback)
+          (list drc_com_common::OCS2FCSmall::*LOOK_AT_PITCH_ANGLE*
+                self :look-at-pitch-command-callback)
+          (list drc_com_common::OCS2FCSmall::*LOOK_AT_YAW_ANGLE*
+                self :look-at-yaw-command-callback)
           (list drc_com_common::OCS2FCSmall::*VALVE_REGION*
                 self :valve-region-command-callback)
           (list drc_com_common::OCS2FCSmall::*VALVE_EXEC*
@@ -524,6 +528,32 @@
        (t
         (error "unknown image type: ~A" (send msg :image_type)))
        )))
+  (:look-at-pitch-command-callback (msg)
+    (when (send smachine :state? :initial)
+      (send *robot* :angle-vector (send *ri* :state :reference-vector))
+      (send *robot* :head :neck-p :joint-angle (elt (send msg ::float_params) 0))
+      (send self :look-at-angle-common)))
+  (:look-at-yaw-command-callback (msg)
+    (when (send smachine :state? :initial)
+      (send *robot* :angle-vector (send *ri* :state :reference-vector))
+      (send *robot* :head :neck-y :joint-angle (elt (send msg ::float_params) 0))
+      (send self :look-at-angle-common)))
+  (:look-at-angle-common ()
+    "Common method for :look-at-pitch-command-callback and :look-at-yaw-command-callback.
+It sends :angle-vector to robot and return 'finished' message to ocs"
+    (cond
+     (head-overwrite-mode
+      (send *ri* :set-joint-angles-of-group "head_for_teleop"
+            (coerce (mapcar #'deg2rad (coerce (send *robot* :head :angle-vector) cons)) float-vector) 1.0)
+      (send *ri* :wait-interpolation-of-group "head_for_teleop"))
+     (t
+      (send *ri* :angle-vector (send *robot* :angle-vector) 1000)
+      (send *ri* :wait-interpolation)))
+    ;; return
+    (let ((msg (instance drc_com_common::FC2OCSSmall :init)))
+      (send msg :type drc_com_common::FC2OCSSmall::*LOOK_AT_FINISHED*)
+        (send self :send-to-ocs msg))
+    (send smachine :go-to :initial))
   (:lookup-from-body-transform (header)
     (let ((trans (send *tf* :lookup-transform "BODY" 
                        (send header :frame_id) (send header :stamp))))

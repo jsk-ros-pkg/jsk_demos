@@ -9,6 +9,16 @@
       <statustip>A Python GUI plugin for DRC teleoperation.</statustip>
     </qtgui>
   </class>
+  <class name="robot_head" type="drc_task_common.robot_head_ui.RobotHeadPlugin" base_class_type="rqt_gui_py::Plugin">
+    <description>
+      Controlling robot head
+    </description>
+    <qtgui>
+      <label>Controlling robot head</label>
+      <icon type="theme">task-past-due</icon>
+      <statustip>Controlling Robot Head.</statustip>
+    </qtgui>
+  </class>
   <class name="VehicleUI" type="drc_task_common.vehicle_ui.VehicleUI" base_class_type="rqt_gui_py::Plugin">
     <description>
       vehicle ui
