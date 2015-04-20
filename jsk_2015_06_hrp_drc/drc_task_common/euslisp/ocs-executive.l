@@ -1063,11 +1063,12 @@
      ;;  (send smachine :go-to! :selecting-exec-for-drill-wall)) ;; because of not using interactive-marker
      ((eq (send smachine :state) :selecting-region-for-drill-button)
       (send *robot* :angle-vector (get-potentio-vector-from-joint-states))
+      (send *robot* :fix-leg-to-coords (make-coords))
       ;; todo drill-type
       (if (not (boundp '*drill))
 	  (if t
-	      (init-takenoko-drill)
-	    (init-gun-drill)
+	      (set-drill-environment :drill-type :takenoko)
+	    (set-drill-environment :drill-type :gun)
 	    )
 	)
       (set-drill-default-coords)
@@ -1079,8 +1080,9 @@
         ;; publish object marker
         (erase-all-primitive-marker)
         (insert-primitive-marker :shape-type jsk_rviz_plugins::TransformableMarkerOperate::*MESH_RESOURCE* :name "drill" :description "" :resource "package://drc_task_common/models/takenoko_drill.dae" :use-material t)
-        (set-primitive-marker-pose coords "BODY")
+        (set-primitive-marker-control-relative-pose (make-coords :pos (float-vector -22 30 77) :rpy (float-vector 0 0 pi/2))) ;;Todo more precise pose for button
         (move-robot-model-to-current-pos)
+        (set-primitive-marker-pose coords "BODY")
         ;(send smachine :go-to :selecting-exec-for-drill-button)
 	)
       (send smachine :go-to! :selecting-exec-for-drill-button))
