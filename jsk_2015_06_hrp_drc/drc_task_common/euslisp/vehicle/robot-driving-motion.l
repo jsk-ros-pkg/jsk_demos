@@ -525,11 +525,12 @@
      (send robot limb :inverse-kinematics
            (make-coords :pos (send limb-endcoords :pos)
                         :rot (send floor-coords :rot))
-           )
+           :rotation-axis :z
+           ) ;; fix x and y axis of legs to floor
      (send robot limb :move-end-pos
            (v+ (float-vector 0 0 (- (elt (send floor-coords :pos) 2) (elt (send limb-endcoords :pos) 2)))
                offset)
-           )
+           ) ;; move to floor
      (when real
        (when start-impedance
          (send self :set-impedance-for-support limb)
