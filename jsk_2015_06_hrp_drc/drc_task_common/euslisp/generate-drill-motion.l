@@ -941,16 +941,16 @@
 
 (defun get-drill-wall-stand-coords ;; relative to drill
   (&key (drill-type *default-drill-type*))
-  (cond ((or (eq *robot-name* "HRP2JSKNT") (eq *robot-name* "HRP2JSKNTS"))
+  (cond ((or (equal *robot-name* "HRP2JSKNT") (equal *robot-name* "HRP2JSKNTS"))
 	 (if (equal drill-type :gun)
 	     (if (equal *drill-main-arm* :rarm) (make-coords :pos (float-vector -680 0 0) :rpy (list (deg2rad 0) 0 0)) (make-coords :pos (float-vector -580 0 0) :rpy (list (deg2rad 0) 0 0)))
 	   (if *drill-reverse-hand*
-	       (if (equal *drill-main-arm* :rarm) (make-coords :pos (float-vector -680 200 0) :rpy (list (deg2rad 0) 0 0)) (make-coords :pos (float-vector -680 -200 0) :rpy (list (deg2rad 0) 0 0)))
+	       (if (equal *drill-main-arm* :rarm) (make-coords :pos (float-vector -780 200 0) :rpy (list (deg2rad 0) 0 0)) (make-coords :pos (float-vector -780 -200 0) :rpy (list (deg2rad 0) 0 0)))
 	     (if (equal *drill-main-arm* :rarm) (make-coords :pos (float-vector -750 600 0) :rpy (list (deg2rad -20) 0 0)) (make-coords :pos (float-vector -750 -600 0) :rpy (list (deg2rad 20) 0 0)))
 	     )
 	   ))
 	(t ;;JAXON
-	 (make-coords :pos (float-vector -980 0 0) :rpy (list (deg2rad 0) 0 0))
+	 (if (equal *drill-main-arm* :rarm) (make-coords :pos (float-vector -850 200 0) :rpy (list (deg2rad 0) 0 0)) (make-coords :pos (float-vector -850 -200 0) :rpy (list (deg2rad 0) 0 0)))
 	 )
 	)
   )
