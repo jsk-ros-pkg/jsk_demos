@@ -619,7 +619,9 @@
          ik-ret
          )
      (setq ik-ret (send tmp-robot (send self :get :grasp-arm) :inverse-kinematics
-                        (send self :rotate-grasp-point-by-grasp-arm (send (send car :vehicle-handle :steering-center) :copy-worldcoords))
+                        (send self :rotate-grasp-point-by-grasp-arm
+                              (send (send (send car :vehicle-handle :steering-center) :copy-worldcoords) :translate #f(0 0 100) :local)
+                              )
                         :rotation-axis nil
                         )
            )
