@@ -169,6 +169,10 @@
    (send robot :move-to (make-coords :pos (float-vector 20 720 -120) :rpy (float-vector 0.0 0.0 0.0)) :world) ;; adjust in real vehicle
    )
 
+  (:turn-handle
+   (deg &rest args &key (stop 100) &allow-other-keys)
+   (send-super* :turn-handle deg :stop stop args)
+   )
   (:open-hand
    (&optional (limb (send self :grasp-arm)))
    (when real
