@@ -632,6 +632,20 @@
      ik-ret
      )
    )
+  (:display-error-of-grasp-arm
+   ()
+   (let ((tmp-robot (copy-object (send self :robot)))
+         diff-angle-vector diff-coords
+         )
+     (send tmp-robot :angle-vector (send *ri* :state :potentio-vector))
+     (setq diff-angle-vector (v- (send robot (send self :grasp-arm) :angle-vector) (send tmp-robot (send self :grasp-arm) :angle-vector)))
+     (setq diff-coords (send (send robot (send self :grasp-arm) :end-coords) :transformation (send tmp-robot (send self :grasp-arm) :end-coords) :world))
+     (warn "diff-angle-vector: ~A~%" diff-angle-vector)
+     (warn "diff-angle-vector-norm: ~A~%" (norm diff-angle-vector))
+     (warn "diff-coords: ~A~%" diff-coords)
+     (warn "~%")
+     )
+   )
   
   ;; accessor
   (:robot (&rest args) (forward-message-to robot args))
