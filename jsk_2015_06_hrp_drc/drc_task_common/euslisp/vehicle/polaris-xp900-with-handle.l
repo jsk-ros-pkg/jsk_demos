@@ -62,6 +62,7 @@
    (let* (base-link
           car
           (floor-height 340)
+          (footrest-height 110)
           handle-flame-list)
      ;; make handle-flame-list ;;;;;;;;;;;;;;;;;
      ;; make bodyset-link ;;;;;;;;;;;;;;;;;
@@ -82,8 +83,12 @@
      (setq floor-grasp-point (make-cascoords :coords (send (send base-link :copy-worldcoords)
                                                                    :translate (float-vector 0 0 floor-height) :world)
                                                      :name :floor))
-     (push floor-grasp-point grasp-point)     
-     (send car :assoc floor-grasp-point)
+     (push floor-grasp-point grasp-point)
+     (setq floor-footrest-grasp-point (make-cascoords :coords (send (send base-link :copy-worldcoords)
+                                                                   :translate (float-vector 0 0 (+ floor-height footrest-height)) :world)
+                                                     :name :floor-footrest))
+     (push floor-footrest-grasp-point grasp-point)
+     (send car :assoc floor-footrest-grasp-point)
      base-link
      )
    )
@@ -127,6 +132,7 @@
   (:left-frame-center () (find-if #'(lambda (h) (eq (send h :name) :left-frame-center)) grasp-point))
   (:right-frame-center () (find-if #'(lambda (h) (eq (send h :name) :right-frame-center)) grasp-point))
   (:floor () (find-if #'(lambda (h) (eq (send h :name) :floor)) grasp-point))
+  (:floor-footrest () (find-if #'(lambda (h) (eq (send h :name) :floor-footrest)) grasp-point))
   )
 
 ;; (setq hoge (instance polaris-xp900-with-handle :init))

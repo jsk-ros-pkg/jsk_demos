@@ -144,6 +144,14 @@
    ()
    (send robot :move-to (make-coords :pos (float-vector 30 -300 -50) :rpy (float-vector 0.0 0.0 0.0)) :world)
    )
+  (:approach-handle-right-of-car
+   (&rest args &key (offset #f(150 0 0)) (rot-offset (deg2rad 180)) &allow-other-keys)
+   (send-super* :approach-handle :offset offset :rot-offset rot-offset args)
+   )
+  (:grasp-handle-right-of-car
+   (&rest args &key (rotation-axis :z) &allow-other-keys)
+   (send-super* :grasp-handle :rotation-axis rotation-axis args)
+   )
 
   ;; mid pose of sitting and egressing
   (:drive-init-pose-pre-left-sitting
@@ -161,15 +169,10 @@
    (send robot :move-to (make-coords :pos (float-vector 20 720 -120) :rpy (float-vector 0.0 0.0 0.0)) :world) ;; adjust in real vehicle
    )
 
-  (:approach-handle-right-of-car
-   (&rest args &key (offset #f(150 0 0)) (rot-offset (deg2rad 180)) &allow-other-keys)
-   (send-super* :approach-handle :offset offset :rot-offset rot-offset args)
+  (:turn-handle
+   (deg &rest args &key (stop 100) &allow-other-keys)
+   (send-super* :turn-handle deg :stop stop args)
    )
-  (:grasp-handle-right-of-car
-   (&rest args &key (rotation-axis :z) &allow-other-keys)
-   (send-super* :grasp-handle :rotation-axis rotation-axis args)
-   )
-  
   (:open-hand
    (&optional (limb (send self :grasp-arm)))
    (when real
@@ -192,7 +195,19 @@
    (limb)
    (send *ri* :start-impedance limb :M-p 100 :D-p 1200 :K-p 140)
    )
-    ;; egress
+  (:approach-accel-pedal
+   (&key (tm 10000) (debug-view nil))
+   (send robot :rleg :angle-vector #f(-13.1189 -24.4656 -83.3638 44.9385 7.33334 27.7739)) ;; rleg angle-vector in left-sitting
+   (when real
+     (send *ri* :angle-vector (send robot :angle-vector) tm)
+     (send *ri* :wait-interpolation)
+     )
+   )
+  (:approach-brake-pedal
+   (&key (tm 10000) (debug-view nil))
+   (warn "Disable approach-brake-pedal for JAXON~%")
+   )
+  ;; egress
   (:prepare-get-off
    ()
    (send *jaxon* :lleg :move-end-pos #f(0 0 40) :world)
@@ -206,34 +221,6 @@
      (send *ri* :wait-interpolation)
      )
    )
-  ;; (:approach-accel-pedal
-  ;;  (&key (tm 10000) (debug-view nil))
-  ;;  ;; (send robot :rleg :angle-vector #f(0.271875 0.261 -86.08 62.4348 2.384 -0.234 -0.384)) ;; adjusted joint-angles in real hrp2jsknt
-  ;;  (send robot :rleg :angle-vector #f(0.269775 0.256892 -84.3383 59.7212 -4.02795 -0.229299 -0.384)) ;; adjusted joint-angles in real hrp2jsknt   
-  ;;  (when real
-  ;;    (send *ri* :angle-vector (send robot :angle-vector) tm)
-  ;;    (send *ri* :wait-interpolation)
-  ;;    )
-  ;;  )
-  ;; (:approach-brake-pedal
-  ;;  (&key (tm 10000) (debug-view nil))
-  ;;  (send robot :lleg :angle-vector #f(0.0375 -0.5235 -83.014 80.541 9.842 0.6048 -0.564)) ;; adjusted joint-angles in real hrp2jsknt
-  ;;  (when real
-  ;;    (send *ri* :angle-vector (send robot :angle-vector) tm)
-  ;;    (send *ri* :wait-interpolation)
-  ;;    )
-  ;;  )
-  ;; (:step-accel-pedal
-  ;;  (move-mm &key (time 1000) (relative t) (use-controller t))
-  ;;  (send robot :rleg :move-end-pos (float-vector 0 0 move-mm) :local)
-  ;;  (when real
-  ;;    (if use-controller
-  ;;        (send *ri* :angle-vector (send robot :angle-vector) time :rleg-controller)
-  ;;      (send *ri* :angle-vector (send robot :angle-vector) time)
-  ;;      )
-  ;;    (send *ri* :wait-interpolation)
-  ;;    )
-  ;;  )
   )
 
 ;; (setq *motion* (instance jaxon-driving-motion-on-polaris-xp900 :init :real nil))
