@@ -277,7 +277,7 @@
   (:handle-callback
    (msg)
    (let* ((data (send msg :data))) ;; data is estimated as radius
-       (send self :turn data :rad t :supress-diff-max t)
+       (send self :turn data :rad t)
      )
    )
   (:accel-callback
