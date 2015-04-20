@@ -250,7 +250,7 @@
    )
   (:turn-handle
    (deg  &key (limb (send self :get :grasp-arm)) (target-handle (send self :get :grasp-point))
-         (time 100) (relative t) (debug-view nil) (use-controller t)
+         (time 100) (relative t) (debug-view nil) (use-controller t) (stop 50)
          (rotation-axis 0) (resolution 5.0) (use-ik-seed t)
          )
    (let* ((steering-coords nil) (avs nil) (tms nil) (remain-angle)
@@ -296,7 +296,7 @@
                      (send robot :inverse-kinematics coord
                            :move-target (send robot limb :end-coords)
                            :link-list (send robot :link-list (send robot limb :end-coords :parent) (send robot limb :root-link))
-                           :rotation-axis rotation-axis :debug-view debug-view
+                           :rotation-axis rotation-axis :debug-view debug-view :stop stop
                            :avoid-collision-null-gain 100
                            :avoid-collision-distance 80
                            :avoid-collision-joint-gain 0.1
