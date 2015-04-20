@@ -564,6 +564,7 @@
                           (list (list (send *robot* :torso :waist-r :child-link) 0)
                                 (list (send *robot* :torso :waist-p :child-link) 0)
                                 (list (send *robot* :torso :waist-y :child-link) 0))
+                          :max (float-vector  500  500  0  20  20  10)
                           :warnp t
                           :stop 30
                           :look-at-target (copy-seq (send (elt tc 0) :worldpos))
