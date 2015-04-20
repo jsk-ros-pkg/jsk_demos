@@ -153,7 +153,7 @@
      (send motion :sync-all-controller)
      )
    (send motion :ride :init-pose t)
-   (send motion :drive-init-pose-crank :limb :larm) ;; todo: fix and remove
+   (send motion :drive-init-pose-crank :limb :larm :move-arm nil) ;; todo: fix and remove
    (send self :approach-accel)
    (send self :approach-floor)
    (send self :approach-handle)
