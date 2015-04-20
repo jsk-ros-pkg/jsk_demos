@@ -19,8 +19,8 @@
     (cond ((or (equal *robot-name* "JAXON") (equal *robot-name* "STARO"))
            (setq larm-valve-translate-offset (float-vector 20.0 20.0 0.0))
            (setq rarm-valve-translate-offset (float-vector 20.0 -20.0 0.0))
-           (setq larm-valve-z-rotate-offset (deg2rad 60))
-           (setq rarm-valve-z-rotate-offset (deg2rad -60))
+           (setq larm-valve-z-rotate-offset (deg2rad 0))
+           (setq rarm-valve-z-rotate-offset (deg2rad -0))
            )
           (t ;; (or (equal *robot-name* "HRP2JSKNT") (equal *robot-name* "HRP2JSKNTS"))
            (larm-valve-translate-offset (float-vector 25.0 5.0 0.0))
@@ -44,6 +44,10 @@
   (send *valve* :put :grasp-coords
         (make-cascoords
          :coords (make-coords :pos (float-vector valve-r 0 0) :rpy (list pi/2 -pi/2 0))
+         :parent *valve*))
+  (send *valve* :put :center-grasp-coords
+        (make-cascoords
+         :coords (make-coords :pos (float-vector 0 0 0) :rpy (list pi/2 -pi/2 0))
          :parent *valve*))
   ;; place valve to valve-coords
   (when valve-coords
@@ -146,14 +150,18 @@
   )
 
 (defun generate-valve-motion
-  (&key (draw? t))
+  (&key (draw? t) (grasp-center? nil) (ccw? t))
   ;; reset valve angle
   (reset-valve-angle)
   ;; loop
   (let* ((devide-num 10)
          (reach-dist 100)
          (ik-results nil)
-         (original-foot-midcoords (send (send *robot* :foot-midcoords) :copy-worldcoords)))
+         (original-foot-midcoords (send (send *robot* :foot-midcoords) :copy-worldcoords))
+	 (valve-handle-name :grasp-coords)
+	 )
+    (when grasp-center?
+      (setq valve-handle-name :center-grasp-coords))
     ;; rotate valve
     (dotimes (i devide-num)
       (send *robot* :reset-manip-pose)
@@ -162,11 +170,11 @@
       (let* (ik-ret-in
              ik-ret-out
              tc)
-        (when draw? (send (send *valve* :get :grasp-coords) :draw-on :flush t))
+        (when draw? (send (send *valve* :get valve-handle-name) :draw-on :flush t))
         ;; solve ik for valve handle
         (setq tc
               (list
-               (send *valve* :get :grasp-coords)
+               (send *valve* :get valve-handle-name)
                (send *robot* :rleg :end-coords :copy-worldcoords)
                (send *robot* :lleg :end-coords :copy-worldcoords)))
         (with-move-target-link-list
@@ -179,13 +187,13 @@
         (cond ((or (equal *robot-name* "JAXON") (equal *robot-name* "STARO"))
                (setq tc
                      (list
-                      (send (send (send *valve* :get :grasp-coords) :copy-worldcoords) :translate (float-vector (* (- reach-dist) 0.2) (- reach-dist) 0) :local)
+                      (send (send (send *valve* :get valve-handle-name) :copy-worldcoords) :translate (float-vector (* (- reach-dist) 1.5) 0 0) :local)
                       (send *robot* :rleg :end-coords :copy-worldcoords)
                       (send *robot* :lleg :end-coords :copy-worldcoords))))
               (t ;; (or (equal *robot-name* "HRP2JSKNT") (equal *robot-name* "HRP2JSKNTS"))
                (setq tc
                      (list
-                      (send (send (send *valve* :get :grasp-coords) :copy-worldcoords) :translate (float-vector (- reach-dist) (- reach-dist) 0) :local)
+                      (send (send (send *valve* :get valve-handle-name) :copy-worldcoords) :translate (float-vector (- reach-dist) (- reach-dist) 0) :local)
                       (send *robot* :rleg :end-coords :copy-worldcoords)
                       (send *robot* :lleg :end-coords :copy-worldcoords)))))
         (when ik-ret-in
@@ -201,7 +209,7 @@
         )
       (setq *valve-ik-results* ik-results)
       ;; rotate valve
-      (send *valve* :rotate (+ (deg2rad (/ 360.0 devide-num))) :z :local)
+      (send *valve* :rotate (* (if ccw? -1 1) (deg2rad (/ 360.0 devide-num))) :z :local)
       )
     ))
 
@@ -229,8 +237,8 @@
   (* 360 (/ (float (apply #'max (search-rotatable-range))) (length *valve-ik-results*))))
 
 (defun get-valve-motion
-  (&key (draw? nil))
-  (generate-valve-motion :draw? draw?)
+  (&key (draw? nil) (grasp-center? nil))
+  (generate-valve-motion :draw? draw? :grasp-center? grasp-center?)
   (let* ((valve-rotatable-range (search-rotatable-range))
          (rotatable-point-max (apply #'max valve-rotatable-range))
          (rotatable-point-idx (position (apply #'max valve-rotatable-range) valve-rotatable-range))
@@ -344,5 +352,23 @@
   (get-valve-motion-full 150 (make-coords :pos #f(1000 0 250) :rpy (list 0 pi/2 0)) :draw? nil :use-ri? t)
   (when *valve-stand-coords*
     (send *robot* :fix-leg-to-coords *valve-stand-coords*))
+  (play-motion-on-eus-viewer *valve-motion*)
+  )
+
+(defun test-valve-motion-jaxon1
+  ()
+  (set-valve-environment :generate-ri? nil :robot-name "JAXON"
+                         :valve-r 110
+                         :valve-coords (make-coords :pos (float-vector 600 -500 1200) :rpy (list 0 pi/2 0)))
+  (get-valve-motion)
+  (play-motion-on-eus-viewer *valve-motion*)
+  )
+
+(defun test-valve-motion-jaxon2
+  ()
+  (set-valve-environment :generate-ri? nil :robot-name "JAXON"
+                         :valve-r 110
+                         :valve-coords (make-coords :pos (float-vector 600 -500 1200) :rpy (list 0 pi/2 0)))
+  (get-valve-motion :grasp-center? t)
   (play-motion-on-eus-viewer *valve-motion*)
   )
