@@ -514,13 +514,13 @@
 
   ;; leg support
   (:approach-floor
-   (&key (limb :lleg) (time 10000) (debug-view nil) (offset #f(0 0 50))
+   (&key (limb :lleg) (target-handle :floor) (time 10000) (debug-view nil) (offset #f(0 0 50))
          (start-impedance t) (stop-ref-force nil) (start-ref-force nil))
    (when (and real stop-ref-force)
      (send *ri* :set-ref-force #f(0 0 0) 10000 limb)
      )
    (let* ((limb-endcoords (send robot limb :end-coords :copy-worldcoords))
-          (floor-coords (send (send car :floor) :copy-worldcoords))
+          (floor-coords (send (send car target-handle) :copy-worldcoords))
           )
      (send robot limb :inverse-kinematics
            (make-coords :pos (send limb-endcoords :pos)
