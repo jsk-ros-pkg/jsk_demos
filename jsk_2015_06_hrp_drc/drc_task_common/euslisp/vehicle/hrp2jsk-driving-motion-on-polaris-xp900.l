@@ -40,6 +40,7 @@
    (send robot :rarm :shoulder-p :joint-angle -100)
    ;; (send robot :torso :waist-p :joint-angle 10)
    (send robot :head :neck-p :joint-angle -5)
+   (send robot :lleg :angle-vector #f(0.398437 -1.4895 -97.47 76.7502 20.0 1.5876 -1.548)) ;; use pedaling block for hrp2
    (when real
      (send *ri* :angle-vector (send robot :angle-vector) tm)
      (send *ri* :wait-interpolation)
@@ -64,6 +65,10 @@
   (:approach-handle
    (&rest args &key (offset #f(-50 30 30)) &allow-other-keys)
    (send-super* :approach-handle :offset offset args)
+   )
+  (:approach-floor
+   (&rest args &key (target-handle :floor-footrest) &allow-other-keys)
+   (send-super* :approach-floor :target-handle target-handle args)
    )
   (:set-impedance-for-handle
    (limb)
