@@ -435,8 +435,7 @@
      (setq current-end-coords (send (send motion :robot) (send motion :grasp-arm) :end-coords :copy-worldcoords))
      (send (send motion :robot) :angle-vector tmp-angle-vector)
      ;; fix steering-center coords to 0[deg], handle-joint is counter-clockwise
-     (setq steering-center-coords-at-zero-deg (send (send (send (send motion :car :vehicle-handle :steering-center) :copy-worldcoords)
-                                                          :rotate pi :x :local)
+     (setq steering-center-coords-at-zero-deg (send (send (send motion :car :vehicle-handle :steering-center) :copy-worldcoords)
                                                     :rotate (deg2rad (- (send motion :car :handle-joint :joint-angle))) :z :local))
      ;; get relative-coords from steering-center
      (setq steering-center-relative-end-coords
@@ -488,17 +487,13 @@
 
   ;; main loop
   (:execute
-    ()
-    (let ((count 0))
-      (do-until-key
-       (when (> count 5)
-         (send self :estimate-current-handle-angle)
-         (setq count 0)
-         )
-       (ros::spin-once)
-       (ros::sleep)
-       (setq count (+ count 1))
-       )
+   ()
+   (let ((count 0))
+     (do-until-key
+      (send self :estimate-current-handle-angle)
+      (ros::spin-once)
+      (ros::sleep)
       )
-    )
+     )
+   )
   )
