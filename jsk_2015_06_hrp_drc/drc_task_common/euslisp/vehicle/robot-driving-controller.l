@@ -20,7 +20,6 @@
           old-handle-deg
           polygon-stamped-msg
           estimated-robot-coords
-          handle-angle-coords-table
           old-estimated-handle-angle
           ) 
   )
@@ -65,9 +64,6 @@
          step-brake-command 20
          release-brake-command 5
          )
-   ;; for handle angle estimation
-   (send self :update-handle-angle-coords-table)
-
    ;; subscriber for operator command
    (ros::subscribe "/drive/operation/accel_cmd"
                    std_msgs::Float64
@@ -165,7 +161,6 @@
    (setq grasped-flag t)
    ;; handle-angle is estimated to be right when grasped
    (setq old-estimated-handle-angle (send motion :car :handle-joint :joint-angle))
-   (send self :update-handle-angle-coords-table)
    )
   (:release
    ()
@@ -393,29 +388,6 @@
        (send motion :robot :newcoords old-robot-coords) ;; revert
        )
      (send motion :robot :copy-worldcoords)
-     )
-   )
-
-  ;; handle-angle estimation
-  (:update-handle-angle-coords-table
-   (&key (step 5) (min-angle -480) (max-angle 480))
-   (let* ((handle-joint (send motion :car :handle-joint))
-          (handle-angle-table-max max-angle)
-          (handle-angle-table-min min-angle)
-          (handle-angle min-angle)
-          current-handle-angle
-          )
-     (setq handle-angle-coords-table nil)
-     (setq current-handle-angle (send handle-joint :joint-angle))
-     (send handle-joint :joint-angle handle-angle-table-min)
-     (while (<= handle-angle handle-angle-table-max)
-       (send handle-joint :joint-angle handle-angle :relative nil)
-       (push (cons handle-angle
-                   (send (send motion :rotate-grasp-point-by-grasp-arm (send motion :car (send motion :grasp-point))) :copy-worldcoords)
-                   ) handle-angle-coords-table)
-       (setq handle-angle (+ handle-angle step))
-       )
-     (send handle-joint :joint-angle current-handle-angle) ;; resume handle angle
      )
    )
   (:estimate-current-handle-angle
