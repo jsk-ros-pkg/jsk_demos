@@ -340,6 +340,7 @@
      ;; send angle-vector-sequence to real robot
      (when real
        (send *ri* :angle-vector-sequence (reverse avs) (reverse tms) controller)
+       (send *ri* :wait-interpolation controller)
        (send *viewer* :draw-objects)
        )
      ;; calc remaining handle degree
