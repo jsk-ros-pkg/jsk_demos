@@ -421,38 +421,46 @@
   (:estimate-current-handle-angle
    ()
    (let ((tmp-robot (copy-object (send motion :robot)))
-         (dist 0)
-         (min-dist nil)
-         (estimated-angle nil)
          (current-angle old-estimated-handle-angle)
-         (use-flag nil) (half-range 180)
+         (half-range 180)
          (pub-msg (instance std_msgs::Float32 :init))
-         selected-handle-angle-coords-table
-         current-end-coords  min-elem max-elem
+         current-end-coords steering-center-coords-at-zero-deg
+         steering-center-relative-end-coords relative-current-pos-from-steerint-center estimated-angle
+         steering-center-relative-grasp-point relative-grasp-point-pos-from-steerint-center estimated-angle-offset
          )
      ;; get current end-coords
      (send tmp-robot :angle-vector (send *ri* :state :potentio-vector))
      (setq current-end-coords (send tmp-robot (send motion :grasp-arm) :end-coords :copy-worldcoords))
-     ;; get handle-angle-coords-table in using range (current plus/minus half-range[deg])
-     (setq max-elem (assoc (+ current-angle half-range) handle-angle-coords-table :test #'>=))
-     (unless max-elem
-       (setq max-elem (car handle-angle-coords-table))
-       )
-     (setq min-elem (assoc (- current-angle half-range) handle-angle-coords-table :test #'>=))
-     (unless min-elem
-       (setq min-elem (car (last handle-angle-coords-table)))
-       )
-     (setq selected-handle-angle-coords-table
-           (subseq handle-angle-coords-table (position max-elem handle-angle-coords-table) (position min-elem handle-angle-coords-table)))
-     ;; search nearest handle-coods to end-coords
-     (dolist (handle-angle-coords selected-handle-angle-coords-table)
-       (setq dist (norm (v- (send (cdr handle-angle-coords) :worldpos) (send current-end-coords :worldpos))))
-       (unless min-dist
-         (setq min-dist dist)
-         )
-       (when (<= dist min-dist)
-         (setq min-dist dist)
-         (setq estimated-angle (car handle-angle-coords))
+     ;; fix steering-center coords to 0[deg], handle-joint is counter-clockwise
+     (setq steering-center-coords-at-zero-deg (send (send (send (send motion :car :vehicle-handle :steering-center) :copy-worldcoords)
+                                                          :rotate pi :x :local)
+                                                    :rotate (deg2rad (- (send motion :car :handle-joint :joint-angle))) :z :local))
+     ;; get relative-coords from steering-center
+     (setq steering-center-relative-end-coords
+           (send (send steering-center-coords-at-zero-deg :copy-worldcoords) :transformation current-end-coords :local))
+     ;; get relative angle from polar-angle
+     (setq relative-current-pos-from-steerint-center (send steering-center-relative-end-coords :pos))
+     (setq estimated-angle (rad2deg (atan (elt relative-current-pos-from-steerint-center 1) (elt relative-current-pos-from-steerint-center 0))))
+     ;; calculate offset angle from relative-coords of grasp-point
+     (setq steering-center-relative-grasp-point
+           (send (send (send motion :car :vehicle-handle :steering-center) :copy-worldcoords) :transformation (send (send motion :car (send motion :grasp-point)) :copy-worldcoords) :local))
+     (setq relative-grasp-point-pos-from-steerint-center (send steering-center-relative-grasp-point :pos))
+     (setq estimated-angle-offset (rad2deg (atan (elt relative-grasp-point-pos-from-steerint-center 1) (elt relative-grasp-point-pos-from-steerint-center 0))))
+     (setq estimated-angle (+ estimated-angle estimated-angle-offset)) ;; current estimated angle is 0-360
+     (let ((counter 0))
+       (while (not (and (<= (- old-estimated-handle-angle half-range) estimated-angle) (<= estimated-angle (+ old-estimated-handle-angle half-range))))
+         (when (< estimated-angle (- old-estimated-handle-angle half-range))
+           (setq estimated-angle (+ estimated-angle (* half-range 2)))
+           )
+         (when (> estimated-angle (+ old-estimated-handle-angle half-range))
+           (setq estimated-angle (- estimated-angle (* half-range 2)))
+           )
+         (print (list old-estimated-handle-angle estimated-angle counter))
+         (when (> counter 10)
+           (warn "cannnot estimate~%")
+           (return-from :estimate-current-handle-angle nil)
+           )
+         (setq counter (+ counter 1))
          )
        )
      (setq old-estimated-handle-angle estimated-angle)
@@ -462,7 +470,6 @@
      estimated-angle
      )
    )
-  
   ;; accessor
   (:motion () motion)
 
@@ -481,8 +488,8 @@
     ()
     (let ((count 0))
       (do-until-key
-       (when (and (> count 10) grasped-flag)
-         (warn "current-angle: ~A~%" (send self :estimate-current-handle-angle))
+       (when (> count 5)
+         (send self :estimate-current-handle-angle)
          (setq count 0)
          )
        (ros::spin-once)
