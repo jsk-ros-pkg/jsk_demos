@@ -457,7 +457,6 @@
          (when (> estimated-angle (+ old-estimated-handle-angle half-range))
            (setq estimated-angle (- estimated-angle (* half-range 2)))
            )
-         (print (list old-estimated-handle-angle estimated-angle counter))
          (when (> counter 10)
            (warn "cannnot estimate~%")
            (return-from :estimate-current-handle-angle nil)
