@@ -597,14 +597,17 @@
    )
   (:draw-centroid-on
    (&key (mode nil) (use-real nil))
-   (let (tmp-robot centroid-pos centroid-coords)
+   (let (tmp-angle-vector centroid-pos centroid-coords)
      (if use-real
-         (progn (setq tmp-robot (copy-object (send self :robot)))
-                (send tmp-robot :angle-vector (send *ri* :state :potentio-vector))
-                )
-       (setq tmp-robot (send self :robot))
+         (progn
+           (setq tmp-angle-vector (send (send self :robot) :angle-vector)) ;; save original angle-vector
+           (send (send self :robot) :angle-vector (send *ri* :state :potentio-vector))
+           (setq centroid-pos (send (send self :robot) :centroid))
+           (send (send self :robot) :angle-vector tmp-angle-vector) ;; resume
+           )
+       (setq centroid-pos (send (send self :robot) :centroid))
        )
-     (setq centroid-pos (send tmp-robot :centroid)) 
+
      (case mode
        (:seat (setf (elt centroid-pos 2) (elt (send (send (send car :seat) :copy-worldcoords) :pos) 2)))
        (:foot (setf (elt centroid-pos 2) (elt (send (apply #'midcoords 0.5 (send robot :legs :end-coords :copy-worldcoords)) :pos) 2)))
@@ -615,10 +618,10 @@
    )
   (:update-steering-arm-ik-seed
    ()
-   (let ((tmp-robot (copy-object (send self :robot)))
+   (let ((tmp-angle-vector (send (send self :robot) :angle-vector)) ;; save original angle-vector
          ik-ret
          )
-     (setq ik-ret (send tmp-robot (send self :get :grasp-arm) :inverse-kinematics
+     (setq ik-ret (send (send self :robot) (send self :get :grasp-arm) :inverse-kinematics
                         (send self :rotate-grasp-point-by-grasp-arm
                               (send (send (send car :vehicle-handle :steering-center) :copy-worldcoords) :translate #f(0 0 100) :local)
                               )
@@ -626,20 +629,22 @@
                         )
            )
      (if ik-ret
-         (setq steering-arm-ik-seed (send tmp-robot (send self :get :grasp-arm) :angle-vector))
+         (setq steering-arm-ik-seed (send (send self :robot) (send self :get :grasp-arm) :angle-vector))
        (warn "Failed to get steering-arm-ik-seed~%")
        )
+     (send (send self :robot) :angle-vector tmp-angle-vector) ;; resume
      ik-ret
      )
    )
   (:display-error-of-grasp-arm
    ()
-   (let ((tmp-robot (copy-object (send self :robot)))
+   (let ((tmp-angle-vector (send (send self :robot) :angle-vector)) ;; save original angle-vector
          diff-angle-vector diff-coords
          )
-     (send tmp-robot :angle-vector (send *ri* :state :potentio-vector))
-     (setq diff-angle-vector (v- (send robot (send self :grasp-arm) :angle-vector) (send tmp-robot (send self :grasp-arm) :angle-vector)))
-     (setq diff-coords (send (send robot (send self :grasp-arm) :end-coords) :transformation (send tmp-robot (send self :grasp-arm) :end-coords) :world))
+     (send (send self :robot) :angle-vector (send *ri* :state :potentio-vector))
+     (setq diff-angle-vector (v- (send robot (send self :grasp-arm) :angle-vector) (send (send self :robot) (send self :grasp-arm) :angle-vector)))
+     (setq diff-coords (send (send robot (send self :grasp-arm) :end-coords) :transformation (send (send self :robot) (send self :grasp-arm) :end-coords) :world))
+     (send (send self :robot) :angle-vector tmp-angle-vector) ;; resume
      (warn "diff-angle-vector: ~A~%" diff-angle-vector)
      (warn "diff-angle-vector-norm: ~A~%" (norm diff-angle-vector))
      (warn "diff-coords: ~A~%" diff-coords)
