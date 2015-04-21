@@ -311,7 +311,10 @@
                      )
                (if ik-ret
                    (progn (push (send robot :angle-vector) avs)
-                          (push time tms)
+                          (if tms
+                              (push time tms)
+                            (push (* time 5) tms)
+                            )
                           )
                  (progn (when (and steering-arm-ik-seed use-ik-seed)
                           (send robot (send self :get :grasp-arm) :angle-vector old-limb-angle-vector) ;; resume angle-vector
