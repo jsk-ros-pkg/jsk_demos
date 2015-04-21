@@ -420,17 +420,20 @@
    )
   (:estimate-current-handle-angle
    ()
-   (let ((tmp-robot (copy-object (send motion :robot)))
-         (current-angle old-estimated-handle-angle)
+   (let ((current-angle old-estimated-handle-angle)
          (half-range 180)
          (pub-msg (instance std_msgs::Float32 :init))
          current-end-coords steering-center-coords-at-zero-deg
          steering-center-relative-end-coords relative-current-pos-from-steerint-center estimated-angle
          steering-center-relative-grasp-point relative-grasp-point-pos-from-steerint-center estimated-angle-offset
+         tmp-angle-vector
          )
-     ;; get current end-coords
-     (send tmp-robot :angle-vector (send *ri* :state :potentio-vector))
-     (setq current-end-coords (send tmp-robot (send motion :grasp-arm) :end-coords :copy-worldcoords))
+     ;; preserve current angle-vector
+     (setq tmp-angle-vector (send (send motion :robot) :angle-vector))
+     ;; get current end-coords and resume angle-vector
+     (send (send motion :robot) :angle-vector (send *ri* :state :potentio-vector))
+     (setq current-end-coords (send (send motion :robot) (send motion :grasp-arm) :end-coords :copy-worldcoords))
+     (send (send motion :robot) :angle-vector tmp-angle-vector)
      ;; fix steering-center coords to 0[deg], handle-joint is counter-clockwise
      (setq steering-center-coords-at-zero-deg (send (send (send (send motion :car :vehicle-handle :steering-center) :copy-worldcoords)
                                                           :rotate pi :x :local)
