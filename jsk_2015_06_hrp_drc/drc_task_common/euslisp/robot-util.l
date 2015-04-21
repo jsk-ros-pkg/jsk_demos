@@ -172,6 +172,56 @@
     (< (abs (apply #'max (coerce (v- dest-av current-av) cons))) thre)
     ))
 
+(defun check-angle-vector-continuous
+  (start-av goal-av arm &key (xyz-thre 100) (rpy-thre (deg2rad 45)) (print? t) (draw? nil))
+  (let* ((original-foot-midcoords (send (send *robot* :foot-midcoords) :copy-worldcoords))
+         (original-av (copy-seq (send *robot* :angle-vector)))
+         (devide-num 4)
+         start-eef-coords goal-eef-coords
+         diff-between-start-goal xyzrpy-diff-between-start-goal
+         (ret t)
+         )
+    (send *robot* :angle-vector start-av)
+    (send *robot* :fix-leg-to-coords (make-coords))
+    (setq start-eef-coords
+          (send (send *robot* arm :end-coords) :copy-worldcoords))
+    (send *robot* :angle-vector goal-av)
+    (send *robot* :fix-leg-to-coords (make-coords))
+    (setq goal-eef-coords
+          (send (send *robot* arm :end-coords) :copy-worldcoords))
+    (setq diff-between-start-goal (send start-eef-coords :transformation goal-eef-coords))
+    (setq xyzrpy-diff-between-start-goal
+          (mapcar #'abs (append (coerce (send diff-between-start-goal :worldpos) cons) (car (send diff-between-start-goal :rpy-angle)))))
+    (dotimes (i devide-num)
+      (let* (tmp-eef-coords
+             diff-with-start diff-with-goal
+             xyzrpy-diff-with-start xyzrpy-diff-with-goal xyzrpy-diff)
+        (send *robot* :angle-vector
+              (midpoint (/ (float i) (1- devide-num)) start-av goal-av))
+        (send *robot* :fix-leg-to-coords (make-coords))
+        (setq tmp-eef-coords
+              (send (send *robot* arm :end-coords) :copy-worldcoords))
+        (setq diff-with-start (send tmp-eef-coords :transformation start-eef-coords))
+        (setq diff-with-goal (send tmp-eef-coords :transformation goal-eef-coords))
+        (setq xyzrpy-diff-with-start
+              (mapcar #'abs (append (coerce (send diff-with-start :worldpos) cons) (car (send diff-with-start :rpy-angle)))))
+        (setq xyzrpy-diff-with-goal
+              (mapcar #'abs (append (coerce (send diff-with-goal :worldpos) cons) (car (send diff-with-goal :rpy-angle)))))
+        (setq xyzrpy-diff (mapcar #'max xyzrpy-diff-with-start xyzrpy-diff-with-goal))
+        (when draw? (send *irtviewer* :draw-objects))
+        (when (or (> (norm (coerce (mapcar #'- (subseq xyzrpy-diff 0 3) (subseq xyzrpy-diff-between-start-goal 0 3)) float-vector)) xyz-thre)
+                  (> (norm (coerce (mapcar #'- (subseq xyzrpy-diff 3 6) (subseq xyzrpy-diff-between-start-goal 3 6)) float-vector)) rpy-thre))
+          (when print? (format t "[check-continuous] find uncontinuous angle-vector~%"))
+          (setq ret nil)
+          (return-from nil nil)
+          )
+        )
+      )
+    (send *robot* :angle-vector original-av)
+    (send *robot* :fix-leg-to-coords original-foot-midcoords)
+    ret
+    ))
+
 (defun move-robot-model
   (coords frame-id)
   (let* ((header (instance std_msgs::Header :init :stamp (ros::time-now) :frame_id frame-id))
