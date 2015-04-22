@@ -455,11 +455,11 @@
    (msg)
    (let ((trans (send tf-listener :lookup-transform "BODY" 
                       (send msg :header :frame_id)
-                      (send msg :header :stamp))) ;; cascaded-coords from tf
+                      (send msg :header :stamp))) ;; cascaded-coords: body->camera
          body-relative-handle-pose
          )
      (setq body-relative-handle-pose
-           (send trans :transform (ros::tf-pose-stamped->coords msg)))
+           (send trans :transform (ros::tf-pose-stamped->coords msg))) ;; camera->handle_pose
      (send self :calculate-new-robot-coords-from-body-relative-steering-coords
            body-relative-handle-pose
            )
