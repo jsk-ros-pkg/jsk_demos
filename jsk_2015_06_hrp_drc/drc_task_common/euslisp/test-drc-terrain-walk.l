@@ -772,7 +772,7 @@
 
 (defun test-drc-testbed-stair-simulation-jaxon
   (&key (x-offset 0.05) (yaw-offset -30))
-  (let* ((foot-width (abs (- (elt (send *robot* :lleg :end-coords :worldpos) 1) (elt (send *robot* :rleg :end-coords :worldpos) 1)))) (sole-width (abs (* foot-width (cos yaw-offset)))))
+  (let* ((foot-width (abs (- (elt (send *robot* :lleg :end-coords :worldpos) 1) (elt (send *robot* :rleg :end-coords :worldpos) 1)))) (sole-width (abs (* foot-width (cos (deg2rad yaw-offset))))))
     (warn ";; (send *ri* :go-pos ~a 0 ~a)~%" x-offset yaw-offset)
     (send *robot* :fix-leg-to-coords (send (send *robot* :foot-midcoords) :rotate (deg2rad yaw-offset) :z))
     (setq *prev-rleg-coords* (send *robot* :rleg :end-coords :copy-worldcoords))
