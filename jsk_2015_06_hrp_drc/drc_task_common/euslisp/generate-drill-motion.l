@@ -270,7 +270,10 @@
         :move-target mt :link-list ll
         :additional-weight-list
         (list (list (send *robot* :rleg :toe-p :child-link) 0)
-              (list (send *robot* :lleg :toe-p :child-link) 0))
+              (list (send *robot* :lleg :toe-p :child-link) 0)
+              (list (send *robot* :torso :waist-p :child-link) 0.1)
+              (list (send *robot* :torso :waist-y :child-link) 0.2)
+              )
         :root-link-virtual-joint-weight (float-vector 0.1 0.1 0.1 0.1 0.5 0.5)
         :target-centroid-pos (apply #'midpoint 0.5 (send *robot* :legs :end-coords :worldpos))
         :translation-axis translation-axis
@@ -958,7 +961,7 @@
 	 (if (equal drill-type :gun)
 	     (if (equal *drill-main-arm* :rarm) (make-coords :pos (float-vector -680 0 0) :rpy (list (deg2rad 0) 0 0)) (make-coords :pos (float-vector -580 0 0) :rpy (list (deg2rad 0) 0 0)))
 	   (if *drill-reverse-hand*
-	       (if (equal *drill-main-arm* :rarm) (make-coords :pos (float-vector -780 200 0) :rpy (list (deg2rad 0) 0 0)) (make-coords :pos (float-vector -780 -200 0) :rpy (list (deg2rad 0) 0 0)))
+	       (if (equal *drill-main-arm* :rarm) (make-coords :pos (float-vector -780 0 0) :rpy (list (deg2rad 0) 0 0)) (make-coords :pos (float-vector -780 -0 0) :rpy (list (deg2rad 0) 0 0)))
 	     (if (equal *drill-main-arm* :rarm) (make-coords :pos (float-vector -750 600 0) :rpy (list (deg2rad -20) 0 0)) (make-coords :pos (float-vector -750 -600 0) :rpy (list (deg2rad 20) 0 0)))
 	     )
 	   ))
