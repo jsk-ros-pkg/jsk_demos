@@ -23,10 +23,10 @@
            (setq rarm-valve-z-rotate-offset (deg2rad -0))
            )
           (t ;; (or (equal *robot-name* "HRP2JSKNT") (equal *robot-name* "HRP2JSKNTS"))
-           (larm-valve-translate-offset (float-vector 25.0 5.0 0.0))
-           (rarm-valve-translate-offset (float-vector 25.0 -5.0 0.0))
-           (larm-valve-z-rotate-offset 0)
-           (rarm-valve-z-rotate-offset 0)))
+           (setq larm-valve-translate-offset (float-vector 25.0 5.0 0.0))
+           (setq rarm-valve-translate-offset (float-vector 25.0 -5.0 0.0))
+           (setq larm-valve-z-rotate-offset 0)
+           (setq rarm-valve-z-rotate-offset 0)))
     (send *robot* :put :larm-valve-coords
           (make-cascoords
            :coords (send (send (send (send *robot* :larm :end-coords) :copy-worldcoords) :translate larm-valve-translate-offset :local) :rotate larm-valve-z-rotate-offset :z :local)
