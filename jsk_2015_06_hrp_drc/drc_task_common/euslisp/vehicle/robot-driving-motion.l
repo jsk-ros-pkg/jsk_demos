@@ -24,7 +24,6 @@
          )
    (when real
      (send *ri* :set-interpolation-mode :linear) ;; avoid sudden change in joint angles when steering
-     (unix::sleep 10) ;; wait activation
      )
    (send self :put :grasp-arm grasp-arm)
    (send self :put :grasp-point grasp-point)
