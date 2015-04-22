@@ -185,18 +185,20 @@
    )
   (:turn
    (angle &key (mode :sequence) (weight 1.0) (rad nil) (supress-diff-max nil))
-   ;; turn can be used only when grasped
-   (unless grasped-flag
-     (warn "Robot do not grasp handle~%")
-     (return-from :turn)
-     )
    (let ((pub-msg (instance std_msgs::Float32 :init))
-         handle-deg real-handle-deg)
+         handle-deg real-handle-deg remain-angle)
      ;; if radius, transform to deg
      (if rad
          (setq handle-deg (/ (rad2deg angle) weight))
        (setq handle-deg (/ angle weight))
        )
+
+     ;; turn can be used only when grasped
+     (unless grasped-flag
+       (warn "Robot do not grasp handle~%")
+       (return-from :turn nil)
+       )
+     
      ;; supress in min-max angle
      (if (> handle-deg max-turn-angle)
          (setq handle-deg max-turn-angle)
@@ -223,16 +225,19 @@
      (warn "turn ~A[deg]~%" real-handle-deg)
 
      ;; turn-handle using motion
-     (case mode
-       (:once (send motion :turn-handle-once real-handle-deg :relative nil :use-controller t))
-       (:sequence (send motion :turn-handle real-handle-deg :relative nil :use-controller t))
-       (t (send motion :turn-handle real-handle-deg :relative nil :use-controller t))
-       )
+     (setq remain-angle
+           (case mode
+             (:once (send motion :turn-handle-once real-handle-deg :relative nil :use-controller t))
+             (:sequence (send motion :turn-handle real-handle-deg :relative nil :use-controller t))
+             (t (send motion :turn-handle real-handle-deg :relative nil :use-controller t))
+             )
+           )
        
      (setq old-handle-deg real-handle-deg)
      ;; publish target angle
      (send pub-msg :data real-handle-deg)
      (ros::publish "/drive/controller/goal_handle_angle" pub-msg)
+     remain-angle
      )
    )
   (:approach-handle
