@@ -249,13 +249,30 @@
    )
   (:turn-handle
    (deg  &key (limb (send self :get :grasp-arm)) (target-handle (send self :get :grasp-point))
-         (time 100) (relative t) (debug-view nil) (use-controller t) (stop 50)
+         (time 50) (relative t) (debug-view nil) (use-controller t) (stop 50)
          (rotation-axis 0) (resolution 5.0) (use-ik-seed t)
          )
    (let* ((steering-coords nil) (avs nil) (tms nil) (remain-angle)
           (target-degree (if relative deg (- deg (send car :handle-joint :joint-angle))))
-          real-target-degree steering-ik-result
+          real-target-degree steering-ik-result controller
           )
+     ;; define controller
+     (if use-controller
+         (case limb
+           (:larm (setq controller :larm-controller))
+           (:rarm (setq controller :rarm-controller))
+           (:lleg (setq controller :lleg-controller))
+           (:rleg (setq controller :rleg-controller))
+           (t (setq controller :default-controller))
+           )
+       (setq controller :default-controller)
+       )
+     ;; check interpolation
+     (when (and real (send *ri* :interpolatingp controller))
+       (warn "Skip target-angle ~A[deg] because interpolating now~%" deg)
+       (return-from :turn-handle target-degree) ;; return remain-angle (= current target-degree)
+       )
+     
      ;; set default rotation-axis
      (when (equal rotation-axis 0)
        (case (send self :get :grasp-point)
@@ -325,21 +342,10 @@
              t ;; all ik succeed
              )
            )
-     ;; define controller
-     (if use-controller
-         (case limb
-           (:larm (setq controller :larm-controller))
-           (:rarm (setq controller :rarm-controller))
-           (:lleg (setq controller :lleg-controller))
-           (:rleg (setq controller :rleg-controller))
-           (t (setq controller :default-controller))
-           )
-       (setq controller :default-controller)
-       )
      ;; send angle-vector-sequence to real robot
      (when real
        (send *ri* :angle-vector-sequence (reverse avs) (reverse tms) controller)
-       (send *ri* :wait-interpolation controller)
+       ;; (send *ri* :wait-interpolation controller)
        (send *viewer* :draw-objects)
        )
      ;; calc remaining handle degree
