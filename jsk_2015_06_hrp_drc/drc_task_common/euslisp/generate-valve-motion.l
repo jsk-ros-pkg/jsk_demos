@@ -214,7 +214,7 @@
     ))
 
 (defun search-rotatable-range
-  ()
+  (&key (arm :rarm) (check-continuous? t))
   (let* ((ik-results-double (append *valve-ik-results* *valve-ik-results*))
          (test-point 0)
          (rotatable-point nil))
@@ -224,7 +224,14 @@
         (setq j (+ i 1))
         (when (car (cdr (nth i ik-results-double)))
           (incf test-point)
-          (while (car (cdr (nth j ik-results-double)))
+          (while (and
+                  (car (cdr (nth j ik-results-double)))
+                  (or (not check-continuous?)
+                      (check-angle-vector-continuous (elt (elt ik-results-double (1- j)) 3) (elt (elt ik-results-double j) 3) arm)
+                      ;; (and
+                      ;;  (check-angle-vector-continuous (elt (elt ik-results-double (1- j)) 2) (elt (elt ik-results-double j) 2) arm)
+                      ;;  (check-angle-vector-continuous (elt (elt ik-results-double (1- j)) 3) (elt (elt ik-results-double j) 3) arm))
+                      ))
             (incf test-point)
             (incf j)))
         (push-back test-point rotatable-point)
@@ -285,9 +292,9 @@
     *valve-motion*))
 
 (defun send-valve-motion
-  (radius coords &key (real? t))
+  (radius coords &key (real? t) (av-list nil))
   (let* ((rotate-num 3)
-         (valve-motion-av-list (get-valve-motion-full radius coords))
+         (valve-motion-av-list (if av-list av-list (get-valve-motion-full radius coords)))
          (valve-motion-length (length valve-motion-av-list)))
     (when (not (= valve-motion-length 0))
       ;; reset-manip-pose
@@ -358,7 +365,7 @@
 (defun test-valve-motion-jaxon1
   ()
   (set-valve-environment :generate-ri? nil :robot-name "JAXON"
-                         :valve-r 110
+                         :valve-r 200
                          :valve-coords (make-coords :pos (float-vector 600 -500 1200) :rpy (list 0 pi/2 0)))
   (get-valve-motion)
   (play-motion-on-eus-viewer *valve-motion*)
@@ -367,7 +374,7 @@
 (defun test-valve-motion-jaxon2
   ()
   (set-valve-environment :generate-ri? nil :robot-name "JAXON"
-                         :valve-r 110
+                         :valve-r 200
                          :valve-coords (make-coords :pos (float-vector 600 -500 1200) :rpy (list 0 pi/2 0)))
   (get-valve-motion :grasp-center? t)
   (play-motion-on-eus-viewer *valve-motion*)
