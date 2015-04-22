@@ -245,7 +245,7 @@
   )
 
 (defun c-check-for-drill
-  (&key (link-list (list (elt (send *robot* :head :links) 1) (elt (send *robot* :torso :links) 1))))
+  (&key (link-list (list (elt (send *robot* :head :links) 1) (elt (send *robot* :torso :links) 1) (elt (send *robot* *drill-main-arm* :links) 0))))
   (dotimes (i (length link-list))
     (when (equal (pqp-collision-check (elt link-list i) *drill*) 1)
 	(ros::ros-info "collision detected")
