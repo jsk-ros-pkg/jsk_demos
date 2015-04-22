@@ -77,10 +77,13 @@
    (ros::subscribe "/drive/operation/handle_cmd"
                    std_msgs::Float64
                    #'send self :handle-callback)
-   (ros::advertise "/drive/controller/pedal_state" std_msgs::Bool 1)
+   (ros::advertise "/drive/controller/pedal_state" std_msgs::Bool 1 t)
    ;; handle-angle commands
-   (ros::advertise "/drive/controller/goal_handle_angle" std_msgs::Float32 1)
-   (ros::advertise "/drive/controller/estimated_handle_angle" std_msgs::Float32 1)
+   (ros::advertise "/drive/controller/goal_handle_angle" std_msgs::Float32 1 t)
+   (ros::advertise "/drive/controller/estimated_handle_angle" std_msgs::Float32 1 t)
+   (ros::advertise "/drive/controller/step" std_msgs::Float32 1 t)
+   (ros::advertise "/drive/controller/min_step" std_msgs::Float32 1 t)
+   (ros::advertise "/drive/controller/max_step" std_msgs::Float32 1 t)
    ;; for steering estimation
    (ros::subscribe "/drive/torus_finder/output/pose"
                    geometry_msgs::PoseStamped
@@ -265,6 +268,7 @@
    (let ((cmd-angle (send self :get-pedal-angle-from-cmd cmd release-accel-command step-accel-command)))
      (warn "accel ~A[cmd] -> ~A [deg]~%" cmd cmd-angle)
      (send self :step-accel cmd-angle)
+     cmd-angle ;; return real command to robot
      )
    )
   (:brake-cmd
@@ -272,6 +276,7 @@
    (let ((cmd-angle (send self :get-pedal-angle-from-cmd cmd release-brake-command step-brake-command)))
      (warn "brake ~A[cmd] -> ~A [deg]~%" cmd cmd-angle)
      (send self :step-brake cmd-angle)
+     cmd-angle ;; return real command to robot
      )
    )
 
@@ -284,13 +289,23 @@
    )
   (:accel-callback
    (msg)
-   (if accel-flag
-       (send self :accel-cmd (send msg :data))
-     (warn "accel-cmd is disabled~%")
-     )
-   (let ((pub-msg (instance std_msgs::Bool :init)))
-     (send pub-msg :data accel-flag)
-     (ros::publish "/drive/pedal_state" pub-msg)
+   ;; (if accel-flag
+   ;;     (send self :accel-cmd (send msg :data))
+   ;;   (warn "accel-cmd is disabled~%")
+   ;;   )
+   ;; (let ((pub-msg (instance std_msgs::Bool :init)))
+   ;;   (send pub-msg :data accel-flag)
+   ;;   (ros::publish "/drive/pedal_state" pub-msg)
+   ;;   )
+   (let ((pub-msg (instance std_msgs::Float32 :init))
+         accel-command
+         )
+     (if accel-flag
+         (setq accel-command (send self :accel-cmd (send msg :data)))
+       (warn "accel-cmd is disabled~%")
+       )
+     (send pub-msg :data accel-command)
+     (ros::publish "/drive/controller/step" pub-msg)
      )
    )
   (:brake-callback
@@ -454,8 +469,29 @@
   (:motion () motion)
 
   ;; setter
-  (:step-accel-command (&optional (angle nil)) (when angle (setq step-accel-command angle)) step-accel-command)
-  (:release-accel-command (&optional (angle nil)) (when angle (setq release-accel-command angle)) release-accel-command)
+  (:step-accel-command
+   (&optional (angle nil))
+   (let ((pub-msg (instance std_msgs::Float32 :init)))
+     (when angle
+       (setq step-accel-command angle)
+       )
+     (send pub-msg :data step-accel-command)
+     (ros::publish "/drive/controller/max_step" pub-msg)
+     step-accel-command
+     )
+   )
+  (:release-accel-command
+   (&optional (angle nil))
+   (let ((pub-msg (instance std_msgs::Float32 :init)))
+     (when angle
+       (setq release-accel-command angle)
+       )
+     (send pub-msg :data release-accel-command)
+     (ros::publish "/drive/controller/min_step" pub-msg)
+     release-accel-command
+     )
+   )
+  
   (:step-brake-command (&optional (angle nil)) (when angle (setq step-brake-command angle)) step-brake-command)
   (:release-brake-command (&optional (angle nil)) (when angle (setq release-brake-command angle)) release-brake-command)
   (:max-turn-angle (&optional (val nil)) (when val (setq max-turn-angle val)) max-turn-angle)
