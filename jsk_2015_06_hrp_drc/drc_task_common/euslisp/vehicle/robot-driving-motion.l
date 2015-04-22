@@ -356,6 +356,87 @@
      remain-angle ;; return remaining handle angle
      )
    )
+  (:turn-handle-once
+   (deg  &key (limb (send self :get :grasp-arm)) (target-handle (send self :get :grasp-point))
+         (time 100) (relative t) (debug-view nil) (use-controller t) (stop 50)
+         (rotation-axis 0) (use-ik-seed t)
+         )
+   (let ((target-degree (if relative deg (- deg (send car :handle-joint :joint-angle))))
+         (check-links (subseq (send robot limb :links) 3 6)) (distance-threshold 100)
+         (body-link (elt (send robot :links) 0)) (ik-ret)
+         (handle-link (find-if #'(lambda (h) (eq (send h :name) :handle-link)) (send (send *car* :vehicle-handle) :links)))
+         old-limb-angle-vector ik-result
+         )
+     ;; set default rotation-axis
+     (when (equal rotation-axis 0)
+       (case (send self :get :grasp-point)
+         (:handle-crank (setq rotation-axis :z))
+         (t (setq rotation-axis t))
+         )
+       )
+     ;; turn angle limitation based on joint min/max
+     (setq real-target-degree (max (- (send (send car :handle-joint) :min-angle) (send (send car :handle-joint) :joint-angle))
+                                   (min (- (send (send car :handle-joint) :max-angle) (send (send car :handle-joint) :joint-angle))
+                                        target-degree)
+                                   )
+           )
+     (unless (= real-target-degree target-degree)
+       (warn "target-angle is limited by handle min/max: ~A[deg] -> ~A[deg]~%" target-degree real-target-degree)
+       )
+     (when (and steering-arm-ik-seed use-ik-seed)
+       (setq old-limb-angle-vector (send robot (send self :get :grasp-arm) :angle-vector))
+       (send robot (send self :get :grasp-arm) :angle-vector steering-arm-ik-seed) ;; use same seed for steering ik
+       )
+     ;; update handle-angle
+     (send car :handle-joint :joint-angle real-target-degree :relative t)
+
+     ;; solve ik
+     (setq ik-result
+           (send robot :inverse-kinematics (send self :rotate-grasp-point-by-grasp-arm (send car target-handle))
+                 :move-target (send robot limb :end-coords)
+                 :link-list (send robot :link-list (send robot limb :end-coords :parent) (send robot limb :root-link))
+                 :rotation-axis rotation-axis :debug-view debug-view :stop stop
+                 :avoid-collision-null-gain 100
+                 :avoid-collision-distance 80
+                 :avoid-collision-joint-gain 0.1
+                 :collision-avoidance-link-pair (concatenate cons
+                                                             (mapcar #'(lambda (x) (list x body-link)) check-links)
+                                                             (mapcar #'(lambda (x) (list x handle-link)) check-links))
+                 :additional-check
+                 #'(lambda ()
+                     (not (some #'null (mapcar #'(lambda (x) (> (car (pqp-collision-distance x body-link)) distance-threshold))
+                                               check-links))))
+                 )
+           )
+     (unless ik-result ;; ik failed
+       (progn (when (and steering-arm-ik-seed use-ik-seed)
+                (send robot (send self :get :grasp-arm) :angle-vector old-limb-angle-vector) ;; resume angle-vector
+                )
+              (send car :handle-joint :joint-angle (- real-target-degree) :relative t) ;; resume joint angle
+              (return-from :turn-handle-once real-target-degree) ;; return remain-angle (= target-angle)
+              )
+       )
+     ;; define controller
+     (if use-controller
+         (case limb
+           (:larm (setq controller :larm-controller))
+           (:rarm (setq controller :rarm-controller))
+           (:lleg (setq controller :lleg-controller))
+           (:rleg (setq controller :rleg-controller))
+           (t (setq controller :default-controller))
+           )
+       (setq controller :default-controller)
+       )
+     ;; send angle-vector-sequence to real robot
+     (when real
+       (send *ri* :angle-vector (send self :robot :angle-vector) time controller)
+       ;; (send *ri* :wait-interpolation controller)
+       (send *viewer* :draw-objects)
+       )
+     0.0 ;; return remain-angle (= zero)
+     )
+   )
+  
   (:get-steering-coords
    (relative-deg joint limb target-handle
                  &key (resolution 1.0))

@@ -172,7 +172,7 @@
    (warn "not implemented yet~%")
    )
   (:turn
-   (angle &key (weight 1.0) (rad nil) (supress-diff-max nil))
+   (angle &key (mode :sequence) (weight 1.0) (rad nil) (supress-diff-max nil))
    ;; turn can be used only when grasped
    (unless grasped-flag
      (warn "Robot do not grasp handle~%")
@@ -209,7 +209,14 @@
          )
        )
      (warn "turn ~A[deg]~%" real-handle-deg)
-     (send motion :turn-handle real-handle-deg :relative nil :use-controller t)
+
+     ;; turn-handle using motion
+     (case mode
+       (:once (send motion :turn-handle-once real-handle-deg :relative nil :use-controller t))
+       (:sequence (send motion :turn-handle real-handle-deg :relative nil :use-controller t))
+       (t (send motion :turn-handle real-handle-deg :relative nil :use-controller t))
+       )
+       
      (setq old-handle-deg real-handle-deg)
      ;; publish target angle
      (send pub-msg :data real-handle-deg)
@@ -272,7 +279,7 @@
   (:handle-callback
    (msg)
    (let* ((data (send msg :data))) ;; data is estimated as radius
-       (send self :turn data :rad t)
+       (send self :turn data :rad t :mode :once)
      )
    )
   (:accel-callback
