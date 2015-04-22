@@ -196,7 +196,7 @@
      ;; turn can be used only when grasped
      (unless grasped-flag
        (warn "Robot do not grasp handle~%")
-       (return-from :turn nil)
+       (return-from :turn nil) ;; return nil because incorrect use of function
        )
      
      ;; supress in min-max angle
