@@ -11,7 +11,7 @@
   </group>
 
   <node pkg="topic_tools" type="throttle" name="joy_throttle"
-        args="messages /driving_force_gt/joy_raw 1 /driving_force_gt/joy" />
+        args="messages /driving_force_gt/joy_raw 100 /driving_force_gt/joy" />
 
   <node pkg="drc_task_common" type="HandleControllerPublisher.py" name="handle_controller" output="screen"/>
 </launch>
