@@ -717,3 +717,26 @@
   (setq *rs-list* (release-grasp-door :real nil :arm :larm :initial-standing-coords *init-standing-coords*))
   )
 |#
+
+(defun test-lateral-walk-1m-left ()
+  (progn
+    (send *robot* :reset-pose)
+    (send *robot* :fix-leg-to-coords (make-coords))
+    (send *robot* :legs :move-end-pos (float-vector 0 0 50))
+    (send *ri* :angle-vector (send *robot* :angle-vector))
+    (send *ri* :wait-interpolation))
+  (send *ri* :set-auto-balancer-param :default-zmp-offsets (list (float-vector 0 20 0) (float-vector 0 -20 0)))
+  (let ((base 250))
+    (send *ri* :set-foot-steps
+          (list (make-coords :coords (send *robot* :rleg :end-coords :copy-worldcoords) :name :rleg)
+                (make-coords :coords (send (send *robot* :lleg :end-coords :copy-worldcoords) :translate (float-vector 0 base 0)) :name :lleg)
+                (make-coords :coords (send (send *robot* :rleg :end-coords :copy-worldcoords) :translate (float-vector 0 base 0)) :name :rleg)
+                (make-coords :coords (send (send *robot* :lleg :end-coords :copy-worldcoords) :translate (float-vector 0 (* base 2) 0)) :name :lleg)
+                (make-coords :coords (send (send *robot* :rleg :end-coords :copy-worldcoords) :translate (float-vector 0 (* base 2) 0)) :name :rleg)
+                (make-coords :coords (send (send *robot* :lleg :end-coords :copy-worldcoords) :translate (float-vector 0 (* base 3) 0)) :name :lleg)
+                (make-coords :coords (send (send *robot* :rleg :end-coords :copy-worldcoords) :translate (float-vector 0 (* base 3) 0)) :name :rleg)
+                (make-coords :coords (send (send *robot* :lleg :end-coords :copy-worldcoords) :translate (float-vector 0 (* base 4) 0)) :name :lleg)
+                (make-coords :coords (send (send *robot* :rleg :end-coords :copy-worldcoords) :translate (float-vector 0 (* base 4) 0)) :name :rleg)
+                )))
+  (send *ri* :set-auto-balancer-param :default-zmp-offsets (list (float-vector 0 0 0) (float-vector 0 0 0)))
+  )
