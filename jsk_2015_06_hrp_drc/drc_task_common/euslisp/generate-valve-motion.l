@@ -17,8 +17,8 @@
          larm-valve-z-rotate-offset
          rarm-valve-z-rotate-offset)
     (cond ((or (equal *robot-name* "JAXON") (equal *robot-name* "STARO"))
-           (setq larm-valve-translate-offset (float-vector 20.0 20.0 0.0))
-           (setq rarm-valve-translate-offset (float-vector 20.0 -20.0 0.0))
+           (setq larm-valve-translate-offset (float-vector -10.0 0.0 0.0))
+           (setq rarm-valve-translate-offset (float-vector -10.0 0.0 0.0))
            (setq larm-valve-z-rotate-offset (deg2rad 0))
            (setq rarm-valve-z-rotate-offset (deg2rad -0))
            )
@@ -302,7 +302,11 @@
       (send *robot* :reset-manip-pose)
       (unless (check-angle-vector-distance)
         (when real? (model2real :time 3000)))
-      (when real? (send *ri* :start-impedance :arms :moment-gain (float-vector 0 0 0) :k-p 800 :d-p 400)) ;; start imp
+      (when real?
+        (cond ((or (equal *robot-name* "JAXON") (equal *robot-name* "STARO"))
+               (send *ri* :start-impedance :arms :moment-gain (float-vector 0 0 0) :k-p 300 :d-p 300))
+              (t ;; (or (equal *robot-name* "HRP2JSKNT") (equal *robot-name* "HRP2JSKNTS"))
+               (send *ri* :start-impedance :arms :moment-gain (float-vector 0 0 0) :k-p 800 :d-p 400))))
       ;; walk
       (when *valve-stand-coords*
         (let* ((pos (scale 0.001 (send *valve-stand-coords* :worldpos)))

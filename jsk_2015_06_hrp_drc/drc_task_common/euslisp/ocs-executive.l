@@ -882,8 +882,8 @@
 ;; exec finised callback ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defmethod ocs-executive-app
   (:valve-exec-finished-callback (msg)
-    (when (eq (send smachine :state) :executing-valve :success)
-      (send self :show-text "Finished valve motion")
+    (when (eq (send smachine :state) :executing-valve)
+      (send self :show-text "Finished valve motion" :success)
       (send smachine :go-to :initial)))
   (:door-exec-finished-callback (msg)
     (when (eq (send smachine :state) :executing-door)
