@@ -244,6 +244,17 @@
   ;(send *drill* :translate (float-vector 0 0 (* -0.5 (elt (send *drill* :body-type) 2))) :local)
   )
 
+(defun c-check-for-drill
+  (&key (link-list (list (elt (send *robot* :head :links) 1) (elt (send *robot* :torso :links) 1) (elt (send *robot* *drill-main-arm* :links) 0))))
+  (dotimes (i (length link-list))
+    (when (equal (pqp-collision-check (elt link-list i) *drill*) 1)
+	(ros::ros-info "collision detected")
+	(return-from c-check-for-drill t)
+	)
+    )
+  nil
+  )
+
 (defun fullbody-inverse-kinematics-for-drill-grasp
   (tc mt ll &key (draw? nil) (translation-axis (list t t t)) (rotation-axis (list t t t)))
   (cond ((or (equal *robot-name* "HRP2JSKNT") (equal *robot-name* "HRP2JSKNTS"))
@@ -266,7 +277,7 @@
         :rotation-axis rotation-axis
         :max (float-vector  500  500  0  20  20  10) ;; for hrp2
         :min (float-vector  -500  -500  -200  -20  -20  -10) ;; for hrp2
-        :stop 100
+        :stop 50
         :debug-view (if draw? :no-message nil)
         )
   )
@@ -876,7 +887,7 @@
   )
 
 (defun generate-drill-wall-motion
-  (&key (draw? t) (drill-type *default-drill-type*))
+  (&key (draw? t) (drill-type *default-drill-type*) (c-check t))
   (let* (
          (ik-results nil)
          (original-foot-midcoords (send (send *robot* :foot-midcoords) :copy-worldcoords))
@@ -907,11 +918,13 @@
         ;;(send *drill* :newcoords (send (send (send *robot* :body_lk) :copy-worldcoords) :transform (get-drill-coords-with-symbol (elt dt-coords-list i) :origin-coords) :local))
         (if (equal drill-type :gun) (set-drill-rotation :deg 0))
         (setq ik-ret (if *use-dual-arm-ik* (fullbody-inverse-kinematics-for-drill-grasp-dual :draw? draw?) (fullbody-inverse-kinematics-for-drill-grasp-single :draw? draw? :rotation-axis (if (equal drill-type :takenoko) '(:z t t) '(:z t t)) :arm-mt drill-edge-mt :arm-tc (send *drill* :get :edge-coords))))
+	(when (and c-check (c-check-for-drill)) (setq ik-ret nil))
         (push-back (list (+ i 1) (not (null ik-ret)) ik-ret) ik-results)
         (when (and fin? (not ik-ret)) (return-from drill-ik nil))
         (when (or (equal i 0) (equal i (- dt-coords-length 1)))
-          (send *drill* :translate (float-vector -150 0 0) :world)
+          (send *drill* :translate (float-vector -100 0 0) :world)
           (setq ik-ret (if *use-dual-arm-ik* (fullbody-inverse-kinematics-for-drill-grasp-dual :draw? draw?) (fullbody-inverse-kinematics-for-drill-grasp-single :draw? draw? :rotation-axis (if (equal drill-type :takenoko) '(:z t t) '(:z t t)) :arm-mt drill-edge-mt :arm-tc (send *drill* :get :edge-coords))))
+	  (when (and c-check (c-check-for-drill)) (setq ik-ret nil))
            (when ik-ret
              (setq ik-ret
                    (send *robot* :look-at-target (send *drill* :worldcoords)))))
