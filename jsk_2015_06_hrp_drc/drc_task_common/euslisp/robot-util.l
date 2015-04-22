@@ -57,19 +57,19 @@
 
 (defun hand-start-grasp (&key (arm :arms) (real? nil) (time 500) (wait? t))
   (cond ((or (equal *robot-name* "HRP2JSKNT") (equal *robot-name* "HRP2JSKNTS"))
-         (send *robot* :hand arm :hook-pose) ;; hand hook-pose
-         (when real? (hand-model2real :time time :wait? wait?)))
-        ((or (equal *robot-name* "JAXON") (equal *robot-name* "STARO"))
-         (when real? (send *ri* :stop-grasp arm :wait wait?)))
-        ))
-
-(defun hand-stop-grasp (&key (arm :arms) (real? nil) (time 500) (wait? t))
-  (cond ((or (equal *robot-name* "HRP2JSKNT") (equal *robot-name* "HRP2JSKNTS"))
          (send *robot* :hand :arms :extension-pose) ;; hand extension-pose
          (when real? (hand-model2real :time time :wait? t))
          (send *robot* :hand :arms :grasp-pose) ;; hand grasp-pose
          (when real? (hand-model2real :time time :wait? wait?))
 )
+        ((or (equal *robot-name* "JAXON") (equal *robot-name* "STARO"))
+         (when real? (send *ri* :start-grasp arm :wait wait?)))
+        ))
+
+(defun hand-stop-grasp (&key (arm :arms) (real? nil) (time 500) (wait? t))
+  (cond ((or (equal *robot-name* "HRP2JSKNT") (equal *robot-name* "HRP2JSKNTS"))
+         (send *robot* :hand arm :hook-pose) ;; hand hook-pose
+         (when real? (hand-model2real :time time :wait? wait?)))
         ((or (equal *robot-name* "JAXON") (equal *robot-name* "STARO"))
          (when real? (send *ri* :stop-grasp arm :wait wait?)))
         ))
