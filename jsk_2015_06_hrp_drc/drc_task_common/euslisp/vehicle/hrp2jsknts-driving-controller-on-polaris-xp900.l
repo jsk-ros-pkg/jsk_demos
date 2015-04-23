@@ -28,6 +28,22 @@
    (send self :release-accel-command 1.0)
    (setq current-move-mm 0.0)
    )
+  (:open-hand
+   (&optional (limb (send self :grasp-arm)))
+   (when real
+     (send robot :hand limb :hook-pose)
+     (send *ri* :hand-angle-vector (send robot :hand-angle-vector) 1000)
+     (send *ri* :wait-interpolation)
+     )
+   )
+  (:close-hand
+   (&optional (limb (send self :grasp-arm)))
+   (when real
+     (send robot :hand limb :close-pose)
+     (send *ri* :hand-angle-vector (send robot :hand-angle-vector) 1000)
+     (send *ri* :wait-interpolation)
+     )
+   )
   )
 
 ;; (setq *controller* (instance hrp2jsknts-driving-controller-on-polaris-xp900 :init :real nil))
