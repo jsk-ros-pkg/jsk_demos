@@ -477,6 +477,55 @@
            )
      )
    )
+  (:execute-handle-pose-compensation
+   (&key (tm 10000) (wait-sec 30.0))
+   (let (wait-start tmp-accel-flag release-result)
+     (warn "release handle~%")
+     (setq tmp-accel-flag accel-flag)
+     (setq accel-flag nil) ;; disable accel
+     (send self :accel-cmd 0.0) ;; force stop
+     (if grasped-flag
+         (setq release-result (send self :release))
+       (setq release-result t)
+       )
+     (when release-result
+       ;; temporary ;;
+       (send (send motion :robot) (send motion :grasp-arm) :shoulder-y :joint-angle 0)
+       (when (send motion :real)
+         (send *ri* :angle-vector (send (send motion :robot) :angle-vector) tm)
+         (send *ri* :wait-interpolation)
+         )
+       ;; temporary ;;
+       (send (send motion :robot) :head :neck-p :joint-angle 40) ;; look at handle
+       (when (send motion :real)
+         (send *ri* :angle-vector (send (send motion :robot) :angle-vector) tm)
+         (send *ri* :wait-interpolation)
+         )
+       (warn "wait recognition~%")
+       (setq wait-start (ros::time-now))
+       (while (and (< (- (send (ros::time-now) :to-sec) (send wait-start :to-sec)) wait-sec)
+                   (not handle-pose-estimated-robot-coords))
+         (ros::spin-once)
+         (ros::sleep)
+         )
+       (warn "compensate robot pose~%")
+       (if handle-pose-estimated-robot-coords
+           (send self :apply-steering-estimation handle-pose-estimated-robot-coords :yes t)
+         (warn "cannot find handle_pose~%")
+         )
+       ;; resume
+       (warn "regrasp~%")
+       (send self :approach-handle)
+       (send self :grasp)
+       (send (send motion :robot) :head :neck-p :joint-angle 0) ;; look at front
+       (when (send motion :real)
+         (send *ri* :angle-vector (send (send motion :robot) :angle-vector) tm)
+         (send *ri* :wait-interpolation)
+         )
+       )
+     (setq accel-flag tmp-accel-flag)
+     )
+   )
 
   ;; handle angle estimation
   (:estimate-current-handle-angle
