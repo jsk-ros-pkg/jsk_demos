@@ -21,6 +21,7 @@
           polygon-stamped-msg
           estimated-robot-coords
           old-estimated-handle-angle
+          old-accel-command
           tf-listener
           ) 
   )
@@ -58,6 +59,7 @@
          max-turn-angle-diff-deg tmp-max-turn-angle-diff
          old-handle-deg 0.0
          old-estimated-handle-angle 0.0
+         old-accel-command nil
          )
    ;; set defalut value for pedaling
    (setq step-accel-command 28
@@ -307,23 +309,23 @@
    )
   (:accel-callback
    (msg)
-   ;; (if accel-flag
-   ;;     (send self :accel-cmd (send msg :data))
-   ;;   (warn "accel-cmd is disabled~%")
-   ;;   )
-   ;; (let ((pub-msg (instance std_msgs::Bool :init)))
-   ;;   (send pub-msg :data accel-flag)
-   ;;   (ros::publish "/drive/pedal_state" pub-msg)
-   ;;   )
-   (let ((pub-msg (instance std_msgs::Float32 :init))
-         accel-command
+   (let ((pub-step (instance std_msgs::Float32 :init))
+         (pub-pedal-state (instance std_msgs::Bool :init))
+         (threshold 0.05) ;; 0-1 range command
+         (accel-command (send msg :data))
          )
      (if accel-flag
-         (setq accel-command (send self :accel-cmd (send msg :data)))
+         (when (or (not old-accel-command)
+                   (> (abs (- accel-command old-accel-command)) threshold)
+                   )
+           (send pub-step :data (send self :accel-cmd accel-command))
+           (ros::publish "/drive/controller/step" pub-step)
+           (setq old-accel-command accel-command)
+           )
        (warn "accel-cmd is disabled~%")
        )
-     (send pub-msg :data accel-command)
-     (ros::publish "/drive/controller/step" pub-msg)
+     (send pub-pedal-state :data accel-flag)
+     (ros::publish "/drive/controller/pedal_state" pub-pedal-state)
      )
    )
   (:brake-callback
