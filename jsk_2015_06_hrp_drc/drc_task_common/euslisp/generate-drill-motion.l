@@ -131,13 +131,13 @@
         (setq *use-f-sensor-search* nil)
         (setq *drill-reverse-hand* t)
         (setq *support-reverse-hand* nil)
-        (setq *default-drill-type* :takenoko))
+        (setq *default-drill-type* drill-type))
     (progn 
       (setq *use-dual-arm-ik* nil)
       (setq *use-f-sensor-search* nil)
-      (setq *drill-reverse-hand* nil)
+      (setq *drill-reverse-hand* t)
       (setq *support-reverse-hand* nil)
-      (setq *default-drill-type* :gun))
+      (setq *default-drill-type* drill-type))
     )
   
   
@@ -280,7 +280,7 @@
         :rotation-axis rotation-axis
         :max (float-vector  500  500  0  20  20  10) ;; for hrp2
         :min (float-vector  -500  -500  -200  -20  -20  -10) ;; for hrp2
-        :stop 50
+        :stop 100
         :debug-view (if draw? :no-message nil)
         )
   )
@@ -568,14 +568,14 @@
       ;;todo? change drill manip coords with some recog methods
       )
     
-    (when (equal drill-type :takenoko)
-      (send *robot* :angle-vector (get-reach-drill-pre-pose))
-      (unless (check-angle-vector-distance)
-        (when real? (model2real :time 3000)))
-      (if *support-reverse-hand* (send *robot* :angle-vector (get-watch-drill-pose)) (send *robot* :angle-vector (get-look-drill-pose)))
-      (unless (check-angle-vector-distance)
-        (when real? (model2real :time 5000)))
-      )
+    ;; (when (equal drill-type :takenoko)
+    ;;   (send *robot* :angle-vector (get-reach-drill-pre-pose))
+    ;;   (unless (check-angle-vector-distance)
+    ;;     (when real? (model2real :time 3000)))
+    ;;   (if *support-reverse-hand* (send *robot* :angle-vector (get-watch-drill-pose)) (send *robot* :angle-vector (get-look-drill-pose)))
+    ;;   (unless (check-angle-vector-distance)
+    ;;     (when real? (model2real :time 5000)))
+    ;;   )
 
     ;; ;; drill-reset-pose
     ;; (send *robot* :angle-vector (elt drill-motion-av-list 4))
@@ -959,9 +959,9 @@
   (&key (drill-type *default-drill-type*))
   (cond ((or (equal *robot-name* "HRP2JSKNT") (equal *robot-name* "HRP2JSKNTS"))
 	 (if (equal drill-type :gun)
-	     (if (equal *drill-main-arm* :rarm) (make-coords :pos (float-vector -680 0 0) :rpy (list (deg2rad 0) 0 0)) (make-coords :pos (float-vector -580 0 0) :rpy (list (deg2rad 0) 0 0)))
+	     (if (equal *drill-main-arm* :rarm) (make-coords :pos (float-vector -680 0 0) :rpy (list (deg2rad 0) 0 0)) (make-coords :pos (float-vector -680 0 0) :rpy (list (deg2rad 0) 0 0)))
 	   (if *drill-reverse-hand*
-	       (if (equal *drill-main-arm* :rarm) (make-coords :pos (float-vector -780 0 0) :rpy (list (deg2rad 0) 0 0)) (make-coords :pos (float-vector -780 -0 0) :rpy (list (deg2rad 0) 0 0)))
+	       (if (equal *drill-main-arm* :rarm) (make-coords :pos (float-vector -830 0 0) :rpy (list (deg2rad 20) 0 0)) (make-coords :pos (float-vector -830 -0 0) :rpy (list (deg2rad -20) 0 0)))
 	     (if (equal *drill-main-arm* :rarm) (make-coords :pos (float-vector -750 600 0) :rpy (list (deg2rad -20) 0 0)) (make-coords :pos (float-vector -750 -600 0) :rpy (list (deg2rad 20) 0 0)))
 	     )
 	   ))
@@ -1030,9 +1030,9 @@
     (when (= drill-motion-length 0) (return-from send-drill-wall-motion))
     (when (equal drill-type :takenoko)
       (send *robot* :angle-vector (get-reach-drill-pre-pose))
-      (when real? (model2real :time 15000))
+      (when real? (model2real :time 5000))
       (send *robot* :angle-vector (get-pierce-drill-pre-pose))
-      (when real? (model2real :time 15000))
+      (when real? (model2real :time 5000))
       )
     (send *ri* :set-ref-force #f(0 0 -20) 2000 *drill-main-arm*)
     ;; walk
@@ -1047,7 +1047,13 @@
     ;; pre-reach
     (dotimes (i (length drill-motion-av-list))
       (send *robot* :angle-vector (elt drill-motion-av-list i))
-      (when real? (model2real :time 15000))
+      (when real? (model2real :time (if (or (equal i 0) (equal i (- (length drill-motion-av-list) 1))) 5000 15000)))
+      )
+    (when (equal drill-type :takenoko)
+      (send *robot* :angle-vector (get-reach-drill-pre-pose))
+      (when real? (model2real :time 5000))
+      (send *robot* :angle-vector (get-pierce-drill-pre-pose))
+      (when real? (model2real :time 5000))
       )
     )
   )
