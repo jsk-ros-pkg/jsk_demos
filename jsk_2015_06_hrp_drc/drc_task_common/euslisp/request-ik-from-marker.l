@@ -560,13 +560,19 @@
                           :debug-view :no-message
                           :translation-axis translation-axis
                           :rotation-axis rotation-axis
+                          :root-link-virtual-joint-weight (float-vector 0.15 0.15 0.01 0.15 0.5 0.5)
                           :additional-weight-list
-                          (list (list (send *robot* :torso :waist-r :child-link) 0)
-                                (list (send *robot* :torso :waist-p :child-link) 0)
-                                (list (send *robot* :torso :waist-y :child-link) 0))
+                          (list (list (send *robot* :torso :waist-r :child-link) 0.1)
+                                (list (send *robot* :torso :waist-y :child-link) 0.1)
+                                (list (send *robot* :torso :waist-p :child-link) 0.1))
                           :max (float-vector  500  500  0  20  20  10)
                           :warnp t
-                          :stop 30
+                          :stop 50
+                          :avoid-collision-distance 100
+                          :avoid-collision-null-gain 5.0
+                          :avoid-collision-joint-gain 0.8
+                          :collision-avoidance-link-pair
+                          (list (list (elt (send *robot* arm :links) 2) (send *robot* :link "CHEST_LINK2")))
                           :look-at-target (copy-seq (send (elt tc 0) :worldpos))
                           ))))
         (setq ik-res (= (send res :error_code :val) moveit_msgs::MoveItErrorCodes::*SUCCESS*))

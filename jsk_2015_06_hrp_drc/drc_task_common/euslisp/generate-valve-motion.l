@@ -67,6 +67,7 @@
   (valve-r
    valve-coords ;; body relative
    &key
+   (stand-coords nil)
    (draw? nil)
    (use-ri? t))
   (let* (valve-worldcoords)
@@ -76,8 +77,11 @@
            (send *robot* :angle-vector (send *ri* :state :potentio-vector)))
           (t
            (send *robot* :angle-vector (get-potentio-vector-from-joint-states))))
-    (send *robot* :fix-leg-to-coords (make-coords) '(:lleg :rleg))
+    (send *robot* :fix-leg-to-coords (make-coords))
     (send *valve* :newcoords (send (send (send *robot* :body_lk) :copy-worldcoords) :transform valve-coords :local))
+    (when stand-coords
+      (send *robot* :fix-leg-to-coords stand-coords)
+      (setq *valve-stand-coords* stand-coords))
     (when draw? (send *irtviewer* :draw-objects))
     ))
 
@@ -131,11 +135,11 @@
           (send *robot*
                 :fullbody-inverse-kinematics tc
                 :move-target mt :link-list ll
-                :root-link-virtual-joint-weight (float-vector 0.15 0.15 0.01 0.15 0.5 0.5)
                 :target-centroid-pos (apply #'midpoint 0.5 (send *robot* :legs :end-coords :worldpos))
                 :translation-axis (list t t t)
                 :rotation-axis (list t t t)
                 :warnp (if draw? t nil)
+                :root-link-virtual-joint-weight (float-vector 0.15 0.15 0.01 0.15 0.5 0.5)
                 :additional-weight-list
                 (list (list (send *robot* :torso :waist-r :child-link) 0.1)
                       (list (send *robot* :torso :waist-y :child-link) 0.1)
@@ -144,6 +148,11 @@
                 :min (float-vector  -500  -200  -200  -10  -20  -10)
                 :stop 50
                 :debug-view (if draw? :no-message nil)
+                :avoid-collision-distance 100
+                :avoid-collision-null-gain 5.0
+                :avoid-collision-joint-gain 0.8
+                :collision-avoidance-link-pair
+                (list (list (elt (send *robot* :rarm :links) 2) (send *robot* :link "CHEST_LINK2")))
                 ))
     (when (and ret (send *robot* :self-collision-check)) (setq ret nil))
     ret)
@@ -268,25 +277,30 @@
 
 (defun get-valve-stand-coords ;; relative to valve
   ()
-  (make-coords :pos (float-vector -500 120 0) :rpy (list (deg2rad 0) 0 0)) ;; dependent on arm
+  (cond ((or (equal *robot-name* "JAXON") (equal *robot-name* "STARO"))
+         (make-coords :pos (float-vector -600 500 0) :rpy (list (deg2rad 0) 0 0)) ;; dependent on arm
+         )
+        (t ;; (or (equal *robot-name* "HRP2JSKNT") (equal *robot-name* "HRP2JSKNTS"))
+         (make-coords :pos (float-vector -500 120 0) :rpy (list (deg2rad 0) 0 0)) ;; dependent on arm
+         ))
   )
 
 (defun get-valve-motion-full
   (valve-r
    valve-coords
-   &key (draw? nil) (use-ri? t))
+   &key (stand-coords nil) (overwrite-stand-coords? nil) (draw? nil) (use-ri? t))
   (let* ((rotatable-angle-thre 100))
-    (set-valve-environment-full valve-r valve-coords :draw? draw? :use-ri? use-ri?)
+    (set-valve-environment-full valve-r valve-coords :stand-coords stand-coords :draw? draw? :use-ri? use-ri?)
     (get-valve-motion :draw? draw?)
     ;; when motion is not good, change stand position
-    (unless (> (get-rotatable-angle) rotatable-angle-thre)
+    (when (and (<= (get-rotatable-angle) rotatable-angle-thre) overwrite-stand-coords?)
       (let* ((x-vec (send (send (send *valve* :worldcoords) :copy-worldcoords) :rotate-vector (float-vector 0 0 1)))
              (z-vec (float-vector 0 0 1))
              (y-vec (v* z-vec x-vec))
              (valve-coords-stand-rot (make-coords :pos (send (send *valve* :copy-worldcoords) :worldpos) :rot (transpose (matrix x-vec y-vec z-vec))))
-             (stand-coords (send (send valve-coords-stand-rot :copy-worldcoords) :transform (get-valve-stand-coords) :local))
-             (stand-pos (send stand-coords :worldpos))
-             (stand-rpy (elt (send stand-coords :rpy-angle) 0))
+             (tmp-stand-coords (send (send valve-coords-stand-rot :copy-worldcoords) :transform (get-valve-stand-coords) :local))
+             (stand-pos (send tmp-stand-coords :worldpos))
+             (stand-rpy (elt (send tmp-stand-coords :rpy-angle) 0))
              )
         (setq *valve-stand-coords* (make-coords :pos (float-vector (elt stand-pos 0) (elt stand-pos 1) 0) :rpy (list (elt stand-rpy 0) 0 0)))
         )
@@ -297,9 +311,11 @@
     *valve-motion*))
 
 (defun send-valve-motion
-  (radius coords &key (real? t) (av-list nil))
+  (radius coords &key (stand-coords nil) (overwrite-stand-coords? nil) (real? t) (av-list nil))
   (let* ((rotate-num 3)
-         (valve-motion-av-list (if av-list av-list (get-valve-motion-full radius coords)))
+         (valve-motion-av-list
+          (if av-list
+              av-list (get-valve-motion-full radius coords :stand-coords stand-coords :overwrite-stand-coords? overwrite-stand-coords?)))
          (valve-motion-length (length valve-motion-av-list)))
     (when (not (= valve-motion-length 0))
       ;; reset-manip-pose
@@ -315,9 +331,14 @@
       ;; walk
       (when *valve-stand-coords*
         (let* ((pos (scale 0.001 (send *valve-stand-coords* :worldpos)))
-               (rpy (mapcar #'rad2deg (car (send *valve-stand-coords* :rpy-angle)))))
-          (ros::ros-warn "go-pos to ~a ~a ~a for valve~%" (elt pos 0) (elt pos 1) (elt rpy 0))
-          (when real? (send *ri* :go-pos (elt pos 0) (elt pos 1) (elt rpy 0)))
+               (rpy (mapcar #'rad2deg (car (send *valve-stand-coords* :rpy-angle))))
+               (pos-thre 0.01)
+               (rpy-thre 1)
+               )
+          (when (or (> (abs (elt pos 0)) pos-thre) (> (abs (elt pos 1)) pos-thre) (> (abs (elt rpy 0)) rpy-thre))
+            (ros::ros-warn "go-pos to ~a ~a ~a for valve~%" (elt pos 0) (elt pos 1) (elt rpy 0))
+            (when real? (send *ri* :go-pos (elt pos 0) (elt pos 1) (elt rpy 0)))
+            )
           ))
       ;; pre grasp
       (send *robot* :angle-vector (car (last valve-motion-av-list)))
@@ -345,9 +366,9 @@
   )
 
 (defun publish-valve-motion
-  (&key radius coords (step-time 400) (update? t))
+  (&key radius coords (stand-coords nil) (overwrite-stand-coords? nil) (step-time 400) (update? t))
   (when update?
-    (get-valve-motion-full radius coords :use-ri? nil))
+    (get-valve-motion-full radius coords :stand-coords stand-coords :overwrite-stand-coords? overwrite-stand-coords? :use-ri? nil))
   (ros::ros-info "valve-stand-coords: ~a~%" *valve-stand-coords*)
   (ros::ros-info "valve-ik-results: ~a~%" *valve-ik-results*)
   (when *valve-stand-coords*

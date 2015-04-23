@@ -258,6 +258,15 @@
     (ros::publish "/urdf_control_marker/set_pose" msg)
     ))
 
+(defun get-robot-model-current-pos
+  ()
+  (let* ((base-frame "/ground") (target-frame "/robot_marker_root")
+         (header (instance std_msgs::Header :init :stamp (ros::time-now) :frame_id base-frame))
+         (msg (instance geometry_msgs::PoseStamped :init :header header))
+         coords)
+    (setq coords (send (send *tf* :lookup-transform target-frame base-frame (ros::time 0)) :inverse-transformation))
+    coords))
+
 (load "package://hrpsys_ros_bridge/euslisp/rtm-ros-robot-interface.l")
 
 (defmethod rtm-ros-robot-interface
