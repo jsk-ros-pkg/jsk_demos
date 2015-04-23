@@ -60,8 +60,12 @@
     ret))
 
 (defun float-vector-to-coords (fv)
-  (make-coords :pos (subseq fv 0 3)
-               :rpy (subseq fv 3 6)))
+  (cond ((>= (length fv) 6)
+         (make-coords :pos (subseq fv 0 3)
+                      :rpy (subseq fv 3 6)))
+        (t
+         nil))
+  )
 
 (defun pos-to-float-vector (pos length)
   (let ((ret (instantiate float-vector length)))

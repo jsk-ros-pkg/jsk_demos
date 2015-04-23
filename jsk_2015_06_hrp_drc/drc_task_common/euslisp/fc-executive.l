@@ -476,23 +476,25 @@
        )))
   (:valve-exec-command-callback (msg)
     (when (send smachine :state? :initial)
-      (multiple-value-bind 
-       (coords radius) (float-vector-to-torus (send msg :float_params))
-       (send smachine :go-to :executing-valve)
-       (setq *cancel-motion-flag* nil)
-       (catch 'exit
-       (ros::ros-info "rotating valve at ~A,~A,~A~%"
-         (send coords :worldpos)
-         (car (send coords :rpy-angle))
-         radius)
-       ;; send motion to real robot
-       (send-valve-motion radius coords)
-       ;; send finish signal to ocs
-       (let ((msg (instance drc_com_common::FC2OCSSmall :init)))
-         (send msg :type drc_com_common::FC2OCSSmall::*VALVE_FINISHED*)
-         (send self :send-to-ocs msg))
-       )
-       (send smachine :go-to :initial)       
+      (multiple-value-bind
+          (coords radius) (float-vector-to-torus (send msg :float_params))
+        (let* ((stand-coords (float-vector-to-coords (send msg :stand_coords))))
+          (send smachine :go-to :executing-valve)
+          (setq *cancel-motion-flag* nil)
+          (catch 'exit
+            (ros::ros-info "rotating valve at ~A,~A,~A~%"
+                           (send coords :worldpos)
+                           (car (send coords :rpy-angle))
+                           radius)
+            ;; send motion to real robot
+            (send-valve-motion radius coords :stand-coords stand-coords)
+            ;; send finish signal to ocs
+            (let ((msg (instance drc_com_common::FC2OCSSmall :init)))
+              (send msg :type drc_com_common::FC2OCSSmall::*VALVE_FINISHED*)
+              (send self :send-to-ocs msg))
+            )
+          )
+        (send smachine :go-to :initial)
        )))
   (:go-pos-exec-command-callback (msg)
     (when (send smachine :state? :initial)

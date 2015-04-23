@@ -540,6 +540,8 @@
              (car valve-params) (cadr valve-params)
              (length (send msg :float_params)))
             )
+      (send msg :stand_coords
+            (coords-to-float-vector (get-robot-model-current-pos) (length (send msg :stand_coords))))
       (send self :send-to-fc msg)
       (send smachine :go-to :executing-valve)))
   (:exec-door-button-callback ()
@@ -700,7 +702,7 @@
          ;; store result
          (setq valve-params (list coords radius))
          ;; publish motion to robot model on rviz
-         (publish-valve-motion :radius (cadr valve-params) :coords (car valve-params) :update? t)
+         (publish-valve-motion :radius (cadr valve-params) :coords (car valve-params) :stand-coords (make-coords) :overwrite-stand-coords? t :update? t)
          ))
       (send smachine :go-to :selecting-exec-for-valve)))
   (:door-recognition-finished-callback (msg)
@@ -939,13 +941,14 @@
 ;; reflesh callback ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defmethod ocs-executive-app
   (:reflesh-button-callback (req)
+    (send self :show-text "Start to replay robot motion")
     (cond ((eq (send smachine :state) :selecting-exec-for-valve)
            ;; update latest valve params
            (setq valve-params
                  (list (get-primitive-marker-pose :frame-id "BODY")
                        (elt (get-primitive-marker-dimensions) 3)))
            ;; publish valve motion to robot model on rviz
-           (publish-valve-motion :radius (cadr valve-params) :coords (car valve-params) :update? t))
+           (publish-valve-motion :radius (cadr valve-params) :coords (car valve-params) :stand-coords (get-robot-model-current-pos) :update? t))
           ((eq (send smachine :state) :selecting-exec-for-debri)
            ;; update latest debri params
            (let* ((dim (get-primitive-marker-dimensions)))
@@ -1004,6 +1007,7 @@
            (publish-door-motion :coords (elt door-params 0) :knob-size (elt door-params 1) :update? t)
            (send smachine :go-to :selecting-exec-for-door))
           )
+    (send self :show-text "Finish to replay robot motion")
     (send req :response)
     )
   )
