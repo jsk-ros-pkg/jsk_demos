@@ -39,7 +39,7 @@
      (warn "accel ~A[cmd] -> ~A [mm]~%" cmd cmd-mm)
      (send self :step-accel cmd-mm)
      (setq current-move-mm (+ current-move-mm cmd-mm))
-     cmd-mm ;; return real command to robot
+     current-move-mm ;; return total state of accel-command
      )
    )
   (:get-pedal-angle-from-cmd
