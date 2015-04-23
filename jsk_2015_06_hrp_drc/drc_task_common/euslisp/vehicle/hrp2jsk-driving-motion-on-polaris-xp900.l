@@ -49,16 +49,16 @@
   (:open-hand
    (&optional (limb (send self :grasp-arm)))
    (when real
-     (send robot :hand limb :hook-pose)
-     (send *ri* :hand-angle-vector (send robot :hand-angle-vector) 1000)
+     (send robot limb :thumb-r :joint-angle -90) ;; hrp2jsk do not have hrp3hand
+     (send *ri* :angle-vector (send robot :angle-vector) 1000)
      (send *ri* :wait-interpolation)
      )
    )
   (:close-hand
    (&optional (limb (send self :grasp-arm)))
    (when real
-     (send robot :hand limb :close-pose)
-     (send *ri* :hand-angle-vector (send robot :hand-angle-vector) 1000)
+     (send robot limb :thumb-r :joint-angle 0) ;; hrp2jsk do not have hrp3hand
+     (send *ri* :angle-vector (send robot :angle-vector) 1000)
      (send *ri* :wait-interpolation)
      )
    )
