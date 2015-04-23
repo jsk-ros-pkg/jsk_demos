@@ -190,7 +190,7 @@
          (offset #f(-100 0 0)) ;; offset should be local in end-coords
          )
    (when sync-controller
-     ;; (send *ri* :sync-controller (read-from-string (format nil ":~A-controller" (string-downcase limb))))
+     (send *ri* :sync-controller (read-from-string (format nil ":~A-controller" (string-downcase limb))))
      )
    (let (ik-result)
      (send self :open-hand)
