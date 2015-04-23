@@ -547,7 +547,7 @@
     (unix::usleep 500000)
     (when real? (drill-full-grasp))
     ;;grasp-up
-    ;(send *ri* :set-ref-force #f(0 0 -20) 1000 *drill-main-arm*)
+    (send *ri* :set-ref-force #f(0 0 -20) 2000 *drill-main-arm*)
     (send *robot* :angle-vector (elt drill-motion-av-list 4))
     (when real? (model2real :time 3000))
     (when *use-dual-arm-ik*
@@ -560,8 +560,8 @@
       (when real? (model2real :time 3000))
       (drill-t-grasp :arm *drill-support-arm*)
       (drill-full-grasp :arm *drill-support-arm*)
-      ;(send *ri* :set-ref-force #f(0 0 -10) 1000 *drill-main-arm*)
-      ;(send *ri* :set-ref-force #f(0 0 -10) 1000 *drill-support-arm*)
+      (send *ri* :set-ref-force #f(0 0 -10) 2000 *drill-main-arm*)
+      (send *ri* :set-ref-force #f(0 0 -10) 2000 *drill-support-arm*)
       ;;todo? change drill manip coords with some recog methods
       )
     
@@ -618,7 +618,7 @@
     (when *use-dual-arm-ik*
       (send *robot* :angle-vector (elt drill-motion-av-list 7))
       (when real? (model2real :time 3000))
-      ;(send *ri* :set-ref-force #f(0 0 0) 1000 *drill-support-arm*)
+      (send *ri* :set-ref-force #f(0 0 0) 2000 *drill-support-arm*)
       (drill-hook :arm *drill-support-arm*)
       (send *robot* :angle-vector (elt drill-motion-av-list 6))
       (when real? (model2real :time 3000))
@@ -632,7 +632,7 @@
     ;; put
     (send *robot* :angle-vector (elt drill-motion-av-list 3))
     (when real? (model2real :time 3000))
-    ;(send *ri* :set-ref-force #f(0 0 0) 1000 *drill-main-arm*)
+    (send *ri* :set-ref-force #f(0 0 0) 2000 *drill-main-arm*)
     ;; hook
     (drill-hook :arm *drill-main-arm*)
     ;; release
@@ -1031,6 +1031,7 @@
       (send *robot* :angle-vector (get-pierce-drill-pre-pose))
       (when real? (model2real :time 15000))
       )
+    (send *ri* :set-ref-force #f(0 0 -20) 2000 *drill-main-arm*)
     ;; walk
     (when *drill-stand-coords*
       (let* ((pos (scale 0.001 (send *drill-stand-coords* :worldpos)))
@@ -1158,7 +1159,7 @@
   ;(play-motion-on-eus-viewer *drill-motion*)
   )
 (defun test-send-drill-grasp-motion ()
-  (send-drill-grasp-motion (make-coords :pos (float-vector 1000 -150 100) :rpy (list (deg2rad 0) 0 0)) :drill-type :takenoko :real? t :rotation-axis (list :z t t)))
+  (send-drill-grasp-motion (make-coords :pos (float-vector 600 -150 100) :rpy (list (deg2rad 0) 0 0)) :drill-type :takenoko :real? t :rotation-axis (list :z t t)))
   
 (defun test-drill-put-motion ()
   ;(get-drill-grasp-motion-full (make-coords :pos (float-vector 700 -150 800) :rpy (list 0 0 0)) :draw? t)
