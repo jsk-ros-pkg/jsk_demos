@@ -31,8 +31,13 @@ class HandleControllerPublisher:
         current_brake_joy = msg.axes[2]
         current_gear_joy = msg.buttons[12] - msg.buttons[13]
         
-        if self.old_handle_joy == None or self.old_handle_joy != current_handle_joy:
-            self.publish_handle_angle(current_handle_joy)
+        self.publish_handle_angle(current_handle_joy)
+        # self.publish_accel(current_accel_joy)
+        # self.publish_brake(current_brake_joy)
+        # self.publish_gear(current_gear_joy)
+        
+        # if self.old_handle_joy == None or self.old_handle_joy != current_handle_joy:
+        #     self.publish_handle_angle(current_handle_joy)
         if self.old_accel_joy == None or self.old_accel_joy != current_accel_joy:
             self.publish_accel(current_accel_joy)
         if self.old_brake_joy == None or self.old_brake_joy != current_brake_joy:

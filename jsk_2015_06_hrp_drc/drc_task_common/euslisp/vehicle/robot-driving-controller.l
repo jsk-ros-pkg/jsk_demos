@@ -297,8 +297,12 @@
   ;; handle controller callback
   (:handle-callback
    (msg)
-   (let* ((data (send msg :data))) ;; data is estimated as radius
+   (let* ((data (send msg :data)) ;; data is estimated as radius
+          (threshold 1.0) ;; [deg]
+          )
+     (when (> (abs (- (rad2deg data) (send motion :car :handle-joint :joint-angle))) threshold)
        (send self :turn data :rad t :mode :sequence)
+       )
      )
    )
   (:accel-callback
