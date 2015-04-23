@@ -701,7 +701,7 @@
          ;; store result
          (setq valve-params (list coords radius))
          ;; publish motion to robot model on rviz
-         (publish-valve-motion :radius (cadr valve-params) :coords (car valve-params) :stand-coords (get-robot-model-current-pos) :overwrite-stand-coords? t :update? t)
+         (publish-valve-motion :radius (cadr valve-params) :coords (car valve-params) :stand-coords (make-coords) :overwrite-stand-coords? t :update? t)
          ))
       (send smachine :go-to :selecting-exec-for-valve)))
   (:door-recognition-finished-callback (msg)

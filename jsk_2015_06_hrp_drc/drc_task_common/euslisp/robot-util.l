@@ -263,8 +263,9 @@
   (let* ((base-frame "/ground") (target-frame "/robot_marker_root")
          (header (instance std_msgs::Header :init :stamp (ros::time-now) :frame_id base-frame))
          (msg (instance geometry_msgs::PoseStamped :init :header header))
-         coords)
-    (setq coords (send (send *tf* :lookup-transform target-frame base-frame (ros::time 0)) :inverse-transformation))
+         tf-trans coords)
+    (setq tf-trans (send *tf* :lookup-transform target-frame base-frame (ros::time 0)))
+    (setq coords (if tf-trans (send tf-trans :inverse-transformation) (make-coords)))
     coords))
 
 (load "package://hrpsys_ros_bridge/euslisp/rtm-ros-robot-interface.l")
