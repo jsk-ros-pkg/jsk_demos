@@ -22,6 +22,7 @@
           estimated-robot-coords
           old-estimated-handle-angle
           old-accel-command
+          old-brake-command
           tf-listener
           ) 
   )
@@ -57,9 +58,10 @@
          accel-flag t
          max-turn-angle tmp-max-turn-angle
          max-turn-angle-diff-deg tmp-max-turn-angle-diff
-         old-handle-deg 0.0
          old-estimated-handle-angle 0.0
+         old-handle-deg 0.0
          old-accel-command nil
+         old-brake-command nil
          )
    ;; set defalut value for pedaling
    (setq step-accel-command 28
@@ -330,8 +332,19 @@
    )
   (:brake-callback
    (msg)
-   (send self :brake-cmd (send msg :data))
-   (send self :accel-cmd 0.0) ;; release accel
+   (let ((pub-step (instance std_msgs::Float32 :init))
+         (threshold 0.05) ;; 0-1 range command
+         (brake-command (send msg :data))
+         )
+     (when (or (not old-brake-command)
+               (> (abs (- brake-command old-brake-command)) threshold)
+               )
+       (send self :brake-cmd brake-command)
+       (send pub-step :data (send self :accel-cmd 0.0)) ;; release accel
+       (ros::publish "/drive/controller/step" pub-step)
+       (setq old-brake-command brake-command)
+       )
+     )
    )
   (:get-pedal-angle-from-cmd
    (data min-pedal-angle max-pedal-angle) ;; data will be 0.0 from 1.0
