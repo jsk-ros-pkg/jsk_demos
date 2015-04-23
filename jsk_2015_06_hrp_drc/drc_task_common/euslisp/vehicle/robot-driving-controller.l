@@ -21,6 +21,7 @@
           polygon-stamped-msg
           estimated-robot-coords
           old-estimated-handle-angle
+          tf-listener
           ) 
   )
 
@@ -78,17 +79,25 @@
                    std_msgs::Float64
                    #'send self :handle-callback)
    (ros::advertise "/drive/controller/pedal_state" std_msgs::Bool 1 t)
+
    ;; handle-angle commands
    (ros::advertise "/drive/controller/goal_handle_angle" std_msgs::Float32 1 t)
    (ros::advertise "/drive/controller/estimated_handle_angle" std_msgs::Float32 1 t)
    (ros::advertise "/drive/controller/step" std_msgs::Float32 1 t)
    (ros::advertise "/drive/controller/min_step" std_msgs::Float32 1 t)
    (ros::advertise "/drive/controller/max_step" std_msgs::Float32 1 t)
+
    ;; for steering estimation
    (ros::subscribe "/drive/torus_finder/output/pose"
                    geometry_msgs::PoseStamped
                    #'send self :torus-finder-callback)
    (ros::advertise "/drive/torus_finder/input/polygon" geometry_msgs::PolygonStamped 1)
+
+   ;; for crank recognition
+   (setq tf-listener (instance ros::transform-listener :init))
+   (ros::subscribe "/handle_pose"
+                   geometry_msgs::PoseStamped
+                   #'send self :handle-pose-callback)
 
    ;; for vehicle ui
    (ros::advertise-service "/drive/controller/initialize" std_srvs::Empty #'send self :initialize-callback)
@@ -176,18 +185,20 @@
    )
   (:turn
    (angle &key (mode :sequence) (weight 1.0) (rad nil) (supress-diff-max nil))
-   ;; turn can be used only when grasped
-   (unless grasped-flag
-     (warn "Robot do not grasp handle~%")
-     (return-from :turn)
-     )
    (let ((pub-msg (instance std_msgs::Float32 :init))
-         handle-deg real-handle-deg)
+         handle-deg real-handle-deg remain-angle)
      ;; if radius, transform to deg
      (if rad
          (setq handle-deg (/ (rad2deg angle) weight))
        (setq handle-deg (/ angle weight))
        )
+
+     ;; turn can be used only when grasped
+     (unless grasped-flag
+       (warn "Robot do not grasp handle~%")
+       (return-from :turn nil) ;; return nil because incorrect use of function
+       )
+     
      ;; supress in min-max angle
      (if (> handle-deg max-turn-angle)
          (setq handle-deg max-turn-angle)
@@ -214,16 +225,19 @@
      (warn "turn ~A[deg]~%" real-handle-deg)
 
      ;; turn-handle using motion
-     (case mode
-       (:once (send motion :turn-handle-once real-handle-deg :relative nil :use-controller t))
-       (:sequence (send motion :turn-handle real-handle-deg :relative nil :use-controller t))
-       (t (send motion :turn-handle real-handle-deg :relative nil :use-controller t))
-       )
+     (setq remain-angle
+           (case mode
+             (:once (send motion :turn-handle-once real-handle-deg :relative nil :use-controller t))
+             (:sequence (send motion :turn-handle real-handle-deg :relative nil :use-controller t))
+             (t (send motion :turn-handle real-handle-deg :relative nil :use-controller t))
+             )
+           )
        
      (setq old-handle-deg real-handle-deg)
      ;; publish target angle
      (send pub-msg :data real-handle-deg)
      (ros::publish "/drive/controller/goal_handle_angle" pub-msg)
+     remain-angle
      )
    )
   (:approach-handle
@@ -365,30 +379,41 @@
   (:torus-finder-callback
    (msg)
    (warn "Update handle coordinates according to torus_finder~%")
-   (let ((pose (send msg :pose)) (tmp-robot (copy-object (send motion :robot)))
-         (body-coords (send (car (send (send motion :robot) :links)) :copy-worldcoords))
-         (steering-coords (send motion :car :vehicle-handle :steering-center))
-         body-relative-steering-coords real-steering-worldcoords steering-relative-body-coords real-body-worldcoords)
+   ;; (let ((pose (send msg :pose)) (tmp-robot (copy-object (send motion :robot)))
+   ;;       (body-coords (send (car (send (send motion :robot) :links)) :copy-worldcoords))
+   ;;       (steering-coords (send motion :car :vehicle-handle :steering-center))
+   ;;       body-relative-steering-coords real-steering-worldcoords steering-relative-body-coords real-body-worldcoords)
+   ;;   ;; (warn "old: ~A~%" (send motion :car :vehicle-handle :copy-worldcoords))
+   ;;   (warn "old: ~A~%" (send tmp-robot :copy-worldcoords))
+   ;;   (setq body-relative-steering-coords (make-coords
+   ;;                                        :pos (scale 1000 (float-vector (send pose :position :x) (send pose :position :y) (send pose :position :z))) ;; ros[m] -> eus[mm]
+   ;;                                        :rot (quaternion2matrix (float-vector (send pose :orientation :w) (send pose :orientation :x)
+   ;;                                                                              (send pose :orientation :y) (send pose :orientation :z)))
+   ;;                                        )
+   ;;         )
+   ;;   (warn "trans: ~A~%" body-relative-steering-coords)
+   ;;   ;; (setq real-steering-worldcoords (send body-coords :transform body-relative-steering-coords :local))
+   ;;   ;; (warn "steering: ~A~%" real-steering-worldcoords)
+   ;;   (setq steering-relative-body-coords (send body-relative-steering-coords :inverse-transformation))
+   ;;   (setq real-body-worldcoords (send steering-coords :transform steering-relative-body-coords :local))
+   ;;   (warn "new body: ~A~%" real-body-worldcoords)
+   ;;   (send tmp-robot :transform (send body-coords :transformation real-body-worldcoords :world) :world)
+   ;;   (setq estimated-robot-coords (send tmp-robot :copy-worldcoords))
+   ;;   (warn "new robot: ~A~%" estimated-robot-coords)
+   ;;   ;; (send robot :transform (send steering-coords :transformation real-steering-worldcoords :world) :world)
+   ;;   ;; (send motion :car :vehicle-handle :transform (send steering-coords :transformation real-steering-worldcoords :world) :world)
+   ;;   ;; (send motion :car :vehicle-handle :newcoords  body-relative-handle-coords)
+   ;;   )
+   (let ((pose (send msg :pose))
+         body-relative-steering-coords)
      ;; (warn "old: ~A~%" (send motion :car :vehicle-handle :copy-worldcoords))
-     (warn "old: ~A~%" (send tmp-robot :copy-worldcoords))
      (setq body-relative-steering-coords (make-coords
                                           :pos (scale 1000 (float-vector (send pose :position :x) (send pose :position :y) (send pose :position :z))) ;; ros[m] -> eus[mm]
                                           :rot (quaternion2matrix (float-vector (send pose :orientation :w) (send pose :orientation :x)
                                                                                 (send pose :orientation :y) (send pose :orientation :z)))
                                           )
            )
-     (warn "trans: ~A~%" body-relative-steering-coords)
-     ;; (setq real-steering-worldcoords (send body-coords :transform body-relative-steering-coords :local))
-     ;; (warn "steering: ~A~%" real-steering-worldcoords)
-     (setq steering-relative-body-coords (send body-relative-steering-coords :inverse-transformation))
-     (setq real-body-worldcoords (send steering-coords :transform steering-relative-body-coords :local))
-     (warn "new body: ~A~%" real-body-worldcoords)
-     (send tmp-robot :transform (send body-coords :transformation real-body-worldcoords :world) :world)
-     (setq estimated-robot-coords (send tmp-robot :copy-worldcoords))
-     (warn "new robot: ~A~%" estimated-robot-coords)
-     ;; (send robot :transform (send steering-coords :transformation real-steering-worldcoords :world) :world)
-     ;; (send motion :car :vehicle-handle :transform (send steering-coords :transformation real-steering-worldcoords :world) :world)
-     ;; (send motion :car :vehicle-handle :newcoords  body-relative-handle-coords)
+     (send self :calculate-new-robot-coords-from-body-relative-steering-coords body-relative-steering-coords)
      )
    )
   (:republish-steering-trajectory
@@ -412,6 +437,41 @@
      (send motion :robot :copy-worldcoords)
      )
    )
+  (:calculate-new-robot-coords-from-body-relative-steering-coords
+   (body-relative-steering-coords)
+   (let ((tmp-robot (copy-object (send motion :robot)))
+         (body-coords (send (car (send (send motion :robot) :links)) :copy-worldcoords))
+         (steering-coords (send motion :car :vehicle-handle :steering-center))
+         real-steering-worldcoords steering-relative-body-coords real-body-worldcoords)
+     (warn "old: ~A~%" (send tmp-robot :copy-worldcoords))     
+     (warn "trans: ~A~%" body-relative-steering-coords)
+     (setq steering-relative-body-coords (send body-relative-steering-coords :inverse-transformation))
+     (setq real-body-worldcoords (send steering-coords :transform steering-relative-body-coords :local))
+     (warn "new body: ~A~%" real-body-worldcoords)
+     (send tmp-robot :transform (send body-coords :transformation real-body-worldcoords :world) :world)
+     (setq estimated-robot-coords (send tmp-robot :copy-worldcoords))
+     (warn "new robot: ~A~%" estimated-robot-coords)
+     estimated-robot-coords
+     )   
+   )
+
+  ;; crank recognition
+  (:handle-pose-callback
+   (msg)
+   (let ((trans (send tf-listener :lookup-transform "BODY" 
+                      (send msg :header :frame_id)
+                      (send msg :header :stamp))) ;; cascaded-coords: body->camera
+         body-relative-handle-pose
+         )
+     (setq body-relative-handle-pose
+           (send trans :transform (ros::tf-pose-stamped->coords msg))) ;; camera->handle_pose
+     (send self :calculate-new-robot-coords-from-body-relative-steering-coords
+           body-relative-handle-pose
+           )
+     )
+   )
+
+  ;; handle angle estimation
   (:estimate-current-handle-angle
    ()
    (let ((current-angle old-estimated-handle-angle)
