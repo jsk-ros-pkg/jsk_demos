@@ -173,15 +173,25 @@
    )
   (:grasp
    ()
-   (send motion :grasp-handle)
-   (setq grasped-flag t)
-   ;; handle-angle is estimated to be right when grasped
-   (setq old-estimated-handle-angle (send motion :car :handle-joint :joint-angle))
+   (let (grasp-result)
+     (setq grasp-result (send motion :grasp-handle))
+     (when grasp-result
+       (setq grasped-flag t)
+       ;; handle-angle is estimated to be right when grasped
+       (setq old-estimated-handle-angle (send motion :car :handle-joint :joint-angle))
+       )
+     grasp-result
+     )
    )
   (:release
    ()
-   (send motion :release-handle)
-   (setq grasped-flag nil)
+   (let (release-result)
+     (setq release-result (send motion :release-handle))
+     (when release-result
+       (setq grasped-flag nil)
+       )
+     release-result
+     )
    )
   (:correct
    ()
