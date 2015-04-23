@@ -180,7 +180,7 @@
    )
   (:release
    ()
-   (send motion :open-hand)
+   (send motion :release-handle)
    (setq grasped-flag nil)
    )
   (:correct

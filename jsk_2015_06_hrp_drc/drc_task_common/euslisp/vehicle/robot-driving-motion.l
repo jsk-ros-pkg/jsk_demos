@@ -139,24 +139,10 @@
        )
      ik-result ;; return result of ik (nil is failed)
      )      
-   )
-  (:fix-hand-position
-   (diff-position &key (wrt :world)
-                  (limb (send self :get :grasp-arm)) (target-handle (send self :get :grasp-point))
-                  (tm 10000) (offset #f(-150 0 0)) (debug-view nil) (rotation-axis t)
-                  ;; (null-space #f(0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0))
-                  )
-   (send self :move-robot-position (scale -1 diff-position) :wrt wrt)
-   (send self :approach-handle
-         :limb limb :target-handle target-handle
-         :tm tm :offset offset :debug-view debug-view
-         :rotation-axis rotation-axis
-         ;; :null-space null-space
-         )
-   )
+   )  
   (:grasp-handle
    (&key (limb (send self :get :grasp-arm)) (target-handle (send self :get :grasp-point))
-         (debug nil) (tm 10000) (debug-view nil) (start-impedance t) (rotation-axis t) (adjust nil)
+         (debug nil) (tm 10000) (debug-view nil) (start-impedance t) (rotation-axis :z) (adjust nil)
          (update-ik-seed t))
    ;; (send self :open-hand limb)
    (when (and real start-impedance)
@@ -197,6 +183,38 @@
        )
      ik-result ;; return result of ik (nil is failed)
      ) 
+   )
+  (:release-handle
+   (&key (limb (send self :get :grasp-arm))
+         (tm 10000) (debug-view nil) (rotation-axis t) (sync-controller t)
+         (offset #f(-100 0 0)) ;; offset should be local in end-coords
+         )
+   (when sync-controller
+     ;; (send *ri* :sync-controller (read-from-string (format nil ":~A-controller" (string-downcase limb))))
+     )
+   (let (ik-result)
+     (send self :open-hand)
+     (setq ik-result (send robot limb :move-end-pos offset :local))
+     (when (and real ik-result)
+       (send *ri* :angle-vector (send robot :angle-vector) tm)
+       (send *ri* :wait-interpolation)
+       )
+     ik-result
+     )
+   )
+  (:fix-hand-position
+   (diff-position &key (wrt :world)
+                  (limb (send self :get :grasp-arm)) (target-handle (send self :get :grasp-point))
+                  (tm 10000) (offset #f(-150 0 0)) (debug-view nil) (rotation-axis t)
+                  ;; (null-space #f(0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0))
+                  )
+   (send self :move-robot-position (scale -1 diff-position) :wrt wrt)
+   (send self :approach-handle
+         :limb limb :target-handle target-handle
+         :tm tm :offset offset :debug-view debug-view
+         :rotation-axis rotation-axis
+         ;; :null-space null-space
+         )
    )
   (:adjust-real-handle-coords ;; assuming real robot is exactly grasping handle-coords (6DoF coords is exactly same as target handle-coords)
    (&key (use-real-rpy nil))
