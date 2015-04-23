@@ -326,15 +326,18 @@
          (threshold 0.05) ;; 0-1 range command
          (accel-command (send msg :data))
          )
-     (if accel-flag
-         (when (or (not old-accel-command)
-                   (> (abs (- accel-command old-accel-command)) threshold)
-                   )
-           (send pub-step :data (send self :accel-cmd accel-command))
-           (ros::publish "/drive/controller/step" pub-step)
-           (setq old-accel-command accel-command)
-           )
+     ;; check accel flag
+     (unless accel-flag
        (warn "accel-cmd is disabled~%")
+       (setq accel-command 0.0) ;; forcely stop accel
+       )
+     ;; send accel command
+     (when (or (not old-accel-command)
+               (> (abs (- accel-command old-accel-command)) threshold)
+               )
+       (send pub-step :data (send self :accel-cmd accel-command))
+       (ros::publish "/drive/controller/step" pub-step)
+       (setq old-accel-command accel-command)
        )
      (send pub-pedal-state :data accel-flag)
      (ros::publish "/drive/controller/pedal_state" pub-pedal-state)
