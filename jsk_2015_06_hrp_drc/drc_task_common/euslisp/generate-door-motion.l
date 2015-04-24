@@ -14,7 +14,7 @@
   (send *robot* :reset-manip-pose)
   (send *robot* :fix-leg-to-coords (make-coords))
   ;; setup door motion
-  (setup-door-open :draw nil :generate-robot nil)
+  (setup-door-open :draw nil :generate-robot? nil)
   ;; generate door
   (setq *door* (make-drc-sagami-door))
   ;;(setq *door* (make-drc-box2-door))
