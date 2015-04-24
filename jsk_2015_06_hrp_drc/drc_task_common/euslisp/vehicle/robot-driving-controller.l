@@ -119,7 +119,7 @@
   (:initialize-callback
    (req)
    (let ((res (send req :response)))
-     (send self :initialize)
+     (send self :initialize :sync t)
      res
      )
    )
@@ -164,7 +164,7 @@
   ;; interface command
   (:initialize
    (&key (sync nil))
-   (when sync
+   (when (and sync (not (send *ri* :simulation-modep)))
      (send motion :sync-all-controller)
      )
    (send motion :ride :init-pose t)
