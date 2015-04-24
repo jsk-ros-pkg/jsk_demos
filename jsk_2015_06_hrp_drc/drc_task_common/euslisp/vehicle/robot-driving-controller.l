@@ -21,6 +21,7 @@
           polygon-stamped-msg
           torus-finder-estimated-robot-coords
           handle-pose-estimated-robot-coords
+          handle-pose-estimate-flag
           old-estimated-handle-angle
           old-accel-command
           old-brake-command
@@ -56,7 +57,7 @@
    ;; initialize instance valiables
    (setq ros-rate tmp-ros-rate
          grasped-flag nil
-         accel-flag t
+         accel-flag nil
          max-turn-angle tmp-max-turn-angle
          max-turn-angle-diff-deg tmp-max-turn-angle-diff
          torus-finder-estimated-robot-coords nil
@@ -65,6 +66,7 @@
          old-handle-deg 0.0
          old-accel-command nil
          old-brake-command nil
+         handle-pose-estimate-flag nil
          )
    ;; set defalut value for pedaling
    (setq step-accel-command 28
@@ -119,7 +121,7 @@
   (:initialize-callback
    (req)
    (let ((res (send req :response)))
-     (send self :initialize)
+     (send self :initialize :sync t)
      res
      )
    )
@@ -164,20 +166,21 @@
   ;; interface command
   (:initialize
    (&key (sync nil))
-   (when sync
+   (when (and sync (not (send *ri* :simulation-modep)))
      (send motion :sync-all-controller)
      )
    (send motion :ride :init-pose t)
    (send motion :drive-init-pose-crank :limb :larm :move-arm nil) ;; todo: fix and remove
    (send self :approach-accel)
-   (send self :approach-floor)
+   ;; (send self :approach-floor)
+   (send self :support-by-leg :start-ref-force nil)
    (send self :approach-handle)
    nil
    )
   (:grasp
-   ()
+   (&rest args)
    (let (grasp-result)
-     (setq grasp-result (send motion :grasp-handle))
+     (setq grasp-result (send* motion :grasp-handle args))
      (when grasp-result
        (setq grasped-flag t)
        ;; handle-angle is estimated to be right when grasped
@@ -187,9 +190,9 @@
      )
    )
   (:release
-   ()
+   (&rest args)
    (let (release-result)
-     (setq release-result (send motion :release-handle))
+     (setq release-result (send* motion :release-handle args))
      (when release-result
        (setq grasped-flag nil)
        )
@@ -198,7 +201,12 @@
    )
   (:correct
    ()
-   (warn "not implemented yet~%")
+   (let (ret-result)
+     (setq handle-pose-estimate-flag t)
+     (setq ret-result (send self :execute-handle-pose-compensation))
+     (setq handle-pose-estimate-flag nil)
+     ret-result
+     )
    )
   (:turn
    (angle &key (mode :sequence) (weight 1.0) (rad nil) (supress-diff-max nil))
@@ -258,22 +266,29 @@
      )
    )
   (:approach-handle
-   (&key (sync grasped-flag))
-   (send motion :approach-handle :sync-controller sync)
-   (setq grasped-flag nil)
+   (&rest args &key (sync-controller grasped-flag) &allow-other-keys)
+   (let (approach-result)
+     (setq approach-result
+           (send* motion :approach-handle :sync-controller sync-controller args)
+           )
+     (setq grasped-flag nil)
+     approach-result
+     )
    )
   (:approach-accel
    ()
    (send motion :approach-accel-pedal)
+   (setq accel-flag t) ;; enbale accel
    )
   (:approach-brake
    ()
    (send motion :approach-brake-pedal)
    )
   (:approach-floor
-   ()
-   (send motion :approach-floor :offset #f(0 0 50)
-         :start-impedance t :stop-ref-force t :start-ref-force nil) ;; approach to floor
+   (&rest args &key (offset #f(0 0 50)) (start-impedance t) (start-ref-force nil) &allow-other-keys)
+   (send* motion :approach-floor :offset offset
+          :start-impedance start-impedance :stop-ref-force start-ref-force
+          args) ;; approach to floor
    )
   (:step-accel
    (command)
@@ -288,9 +303,10 @@
    (send motion :step-brake-pedal command :relative nil :use-controller t) ;; step brake
    )
   (:support-by-leg
-   ()
-   (send motion :approach-floor :offset #f(0 0 0)
-         :start-impedance nil :stop-ref-force nil :start-ref-force t) ;; approach to floor
+   (&rest args &key (offset #f(0 0 0)) (start-impedance t) (start-ref-force t) &allow-other-keys)
+   (send* motion :approach-floor
+          :offset offset :start-impedance start-impedance :stop-ref-force start-ref-force
+          args) ;; approach to floor
    )
 
   ;; internal functions
@@ -459,29 +475,56 @@
      (setq estimated-robot-coords (send tmp-robot :copy-worldcoords))
      (warn "new robot: ~A~%" estimated-robot-coords)
      estimated-robot-coords
-     )   
+     )
    )
 
   ;; crank recognition
   (:handle-pose-callback
    (msg)
-   (let ((trans (send tf-listener :lookup-transform "BODY" 
-                      (send msg :header :frame_id)
-                      (send msg :header :stamp))) ;; cascaded-coords: body->camera
-         body-relative-handle-pose
-         )
-     (setq body-relative-handle-pose
-           (send trans :transform (ros::tf-pose-stamped->coords msg))) ;; camera->handle_pose
-     (setq handle-pose-estimated-robot-coords
-           (send self :calculate-new-robot-coords-from-body-relative-steering-coords body-relative-handle-pose)
+   (when handle-pose-estimate-flag ;; only when handle-pose-estimate-flag is enabled
+     (let ((trans (send tf-listener :lookup-transform "BODY" 
+                        (send msg :header :frame_id)
+                        (send msg :header :stamp))) ;; cascaded-coords: body->camera
+           body-relative-handle-pose
            )
+       (unless trans
+         (warn "Failed to solve tf~%")
+         (return-from :handle-pose-callback nil)
+         )
+       (setq body-relative-handle-pose
+             (send trans :transform (ros::tf-pose-stamped->coords msg))) ;; camera->handle_pose
+       (setq handle-pose-estimated-robot-coords
+             (send self :calculate-new-robot-coords-from-body-relative-steering-coords body-relative-handle-pose)
+             )
+       )
      )
    )
   (:execute-handle-pose-compensation
-   (&key (tm 10000) (wait-sec 30.0))
-   (let (wait-start tmp-accel-flag release-result)
+   (&key (tm 2500) (wait-sec 30.0) (limb (send motion :grasp-arm))
+         (position-threshold 1000)
+         )
+   ;; wait handling   
+   (let (wait-start old-accel-flag
+         old-head-angle-vector
+         old-robot-coords old-body-coords distance
+         release-result grasp-result approach-result
+         compensation-result
+         )
+     (warn "wait interpolation~%")
+     (setq wait-start (ros::time-now))
+     (while (and (or (send *ri* :interpolatingp (read-from-string (format nil ":~A-controller" (string-downcase limb))))
+                     (send *ri* :interpolatingp))
+                 (< (- (send (ros::time-now) :to-sec) (send wait-start :to-sec)) wait-sec))
+       (ros::spin-once)
+       (ros::sleep)
+       )
+     (when (or (send *ri* :interpolatingp (read-from-string (format nil ":~A-controller" (string-downcase limb))))
+               (send *ri* :interpolatingp))
+       (warn "interpolation do not finish~%")
+       (return-from :execute-handle-pose-compensation nil)
+       )
      (warn "release handle~%")
-     (setq tmp-accel-flag accel-flag)
+     (setq old-accel-flag accel-flag)
      (setq accel-flag nil) ;; disable accel
      (send self :accel-cmd 0.0) ;; force stop
      (if grasped-flag
@@ -491,39 +534,60 @@
      (when release-result
        ;; temporary ;;
        (send (send motion :robot) (send motion :grasp-arm) :shoulder-y :joint-angle 0)
-       (when (send motion :real)
-         (send *ri* :angle-vector (send (send motion :robot) :angle-vector) tm)
-         (send *ri* :wait-interpolation)
-         )
        ;; temporary ;;
-       (send (send motion :robot) :head :neck-p :joint-angle 40) ;; look at handle
+       (setq old-head-angle-vector (send motion :robot :head :angle-vector))
+       (send (send motion :robot) :look-at-target (send motion :car :vehicle-handle :steering-center)) ;; look at handle
        (when (send motion :real)
-         (send *ri* :angle-vector (send (send motion :robot) :angle-vector) tm)
+         (send *ri* :angle-vector (send motion :robot :angle-vector) tm)
          (send *ri* :wait-interpolation)
          )
        (warn "wait recognition~%")
        (setq wait-start (ros::time-now))
+       (setq handle-pose-estimated-robot-coords nil) ;; reset recognition result
        (while (and (< (- (send (ros::time-now) :to-sec) (send wait-start :to-sec)) wait-sec)
                    (not handle-pose-estimated-robot-coords))
          (ros::spin-once)
          (ros::sleep)
          )
        (warn "compensate robot pose~%")
+       (setq old-robot-coords (send motion :robot :copy-worldcoords))
+       (setq old-body-coords (send (car (send (send motion :robot) :links)) :copy-worldcoords))
        (if handle-pose-estimated-robot-coords
-           (send self :apply-steering-estimation handle-pose-estimated-robot-coords :yes t)
-         (warn "cannot find handle_pose~%")
+           (progn (send self :apply-steering-estimation handle-pose-estimated-robot-coords :yes t)
+                  (setq compensation-result t)
+                  )
+         (progn (warn "cannot find handle_pose~%")
+                (setq compensation-result nil)
+                )
+         )
+       (setq distance (norm (v- (send (send (car (send (send motion :robot) :links)) :copy-worldcoords) :pos) (send old-body-coords :pos))))
+       (when (> distance position-threshold)
+         (warn "new body coords is too far: ~A~%" distance)
+         (setq compensation-result nil)
+         (send motion :robot :newcoords old-robot-coords) ;; revert
          )
        ;; resume
        (warn "regrasp~%")
-       (send self :approach-handle)
-       (send self :grasp)
-       (send (send motion :robot) :head :neck-p :joint-angle 0) ;; look at front
+       (setq approach-result (send self :approach-handle :tm tm))
+       (if approach-result
+           (progn (setq grasp-result (send self :grasp)) ;; grasp only when approach is succeeded
+                  (unless  grasp-result
+                    (warn "grasp failed~%")
+                    (send motion :robot :newcoords old-robot-coords) ;; revert
+                    )
+                  )
+         (progn (warn "approach failed~%")
+                (send motion :robot :newcoords old-robot-coords) ;; revert
+                )
+         )
+       (send (send motion :robot) :head :angle-vector old-head-angle-vector) ;; look at front
        (when (send motion :real)
          (send *ri* :angle-vector (send (send motion :robot) :angle-vector) tm)
          (send *ri* :wait-interpolation)
          )
        )
-     (setq accel-flag tmp-accel-flag)
+     (setq accel-flag old-accel-flag)
+     (and release-result compensation-result approach-result grasp-result) ;; return result of all compensation process
      )
    )
 
