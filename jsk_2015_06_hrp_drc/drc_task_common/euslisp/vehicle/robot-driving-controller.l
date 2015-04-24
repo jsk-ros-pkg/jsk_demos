@@ -485,6 +485,7 @@
            body-relative-handle-pose
            )
        (unless trans
+         (warn "Failed to solve tf~%")
          (return-from :handle-pose-callback nil)
          )
        (setq body-relative-handle-pose
