@@ -21,6 +21,7 @@
           polygon-stamped-msg
           torus-finder-estimated-robot-coords
           handle-pose-estimated-robot-coords
+          handle-pose-estimate-flag
           old-estimated-handle-angle
           old-accel-command
           old-brake-command
@@ -65,6 +66,7 @@
          old-handle-deg 0.0
          old-accel-command nil
          old-brake-command nil
+         handle-pose-estimate-flag nil
          )
    ;; set defalut value for pedaling
    (setq step-accel-command 28
@@ -465,22 +467,24 @@
      (setq estimated-robot-coords (send tmp-robot :copy-worldcoords))
      (warn "new robot: ~A~%" estimated-robot-coords)
      estimated-robot-coords
-     )   
+     )
    )
 
   ;; crank recognition
   (:handle-pose-callback
    (msg)
-   (let ((trans (send tf-listener :lookup-transform "BODY" 
-                      (send msg :header :frame_id)
-                      (send msg :header :stamp))) ;; cascaded-coords: body->camera
-         body-relative-handle-pose
-         )
-     (setq body-relative-handle-pose
-           (send trans :transform (ros::tf-pose-stamped->coords msg))) ;; camera->handle_pose
-     (setq handle-pose-estimated-robot-coords
-           (send self :calculate-new-robot-coords-from-body-relative-steering-coords body-relative-handle-pose)
+   (when handle-pose-estimate-flag ;; only when handle-pose-estimate-flag is enabled
+     (let ((trans (send tf-listener :lookup-transform "BODY" 
+                        (send msg :header :frame_id)
+                        (send msg :header :stamp))) ;; cascaded-coords: body->camera
+           body-relative-handle-pose
            )
+       (setq body-relative-handle-pose
+             (send trans :transform (ros::tf-pose-stamped->coords msg))) ;; camera->handle_pose
+       (setq handle-pose-estimated-robot-coords
+             (send self :calculate-new-robot-coords-from-body-relative-steering-coords body-relative-handle-pose)
+             )
+       )
      )
    )
   (:execute-handle-pose-compensation
