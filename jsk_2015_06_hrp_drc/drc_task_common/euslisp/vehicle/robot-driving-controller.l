@@ -200,7 +200,9 @@
    )
   (:correct
    ()
-   (warn "not implemented yet~%")
+   (setq handle-pose-estimate-flag t)
+   (send self :execute-handle-pose-compensation)
+   (setq handle-pose-estimate-flag nil)
    )
   (:turn
    (angle &key (mode :sequence) (weight 1.0) (rad nil) (supress-diff-max nil))
