@@ -296,7 +296,7 @@
   ;; internal functions
   (:accel-cmd
    (cmd)
-   (let ((cmd-angle (send self :get-pedal-angle-from-cmd cmd release-accel-command step-accel-command)))
+   (let ((cmd-angle (send self :get-pedal-motion-from-cmd cmd release-accel-command step-accel-command)))
      (warn "accel ~A[cmd] -> ~A [deg]~%" cmd cmd-angle)
      (send self :step-accel cmd-angle)
      cmd-angle ;; return real command to robot
@@ -304,7 +304,7 @@
    )
   (:brake-cmd
    (cmd)
-   (let ((cmd-angle (send self :get-pedal-angle-from-cmd cmd release-brake-command step-brake-command)))
+   (let ((cmd-angle (send self :get-pedal-motion-from-cmd cmd release-brake-command step-brake-command)))
      (warn "brake ~A[cmd] -> ~A [deg]~%" cmd cmd-angle)
      (send self :step-brake cmd-angle)
      cmd-angle ;; return real command to robot
@@ -362,9 +362,9 @@
        )
      )
    )
-  (:get-pedal-angle-from-cmd
-   (data min-pedal-angle max-pedal-angle) ;; data will be 0.0 from 1.0
-   (+ min-pedal-angle (* data (- max-pedal-angle min-pedal-angle)))
+  (:get-pedal-motion-from-cmd
+   (data min-pedal-command max-pedal-command) ;; data will be 0.0 from 1.0
+   (+ min-pedal-command (* data (- max-pedal-command min-pedal-command)))
    )
 
   ;; steering estimation
