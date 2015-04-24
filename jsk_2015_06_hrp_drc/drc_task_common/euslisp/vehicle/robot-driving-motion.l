@@ -74,11 +74,12 @@
 
   ;; handling
   (:approach-handle
-   (&key (limb (send self :get :grasp-arm)) (target-handle (send self :get :grasp-point)) (sync-controller nil)
-         (tm 15000) (offset #f(-150 0 0)) (rot-offset 0)
-         (debug-view nil) (rotation-axis t) (start-impedance nil) (stop-impedance nil)
-         (null-space #f(-0.06 -0.3 0.0 -0.18 0.16 0.0 0.0 0.0))
-         )
+   (&rest args &key (limb (send self :get :grasp-arm)) (target-handle (send self :get :grasp-point)) (sync-controller nil)
+          (tm 15000) (offset #f(-150 0 0)) (rot-offset 0)
+          (debug-view nil) (rotation-axis t) (start-impedance nil) (stop-impedance nil)
+          (null-space #f(-0.06 -0.3 0.0 -0.18 0.16 0.0 0.0 0.0))
+          &allow-other-keys
+          )
    (when start-impedance
      (send self :set-impedance-for-handle limb)
      )
@@ -141,9 +142,10 @@
      )      
    )  
   (:grasp-handle
-   (&key (limb (send self :get :grasp-arm)) (target-handle (send self :get :grasp-point))
-         (debug nil) (tm 10000) (debug-view nil) (start-impedance t) (rotation-axis :z) (adjust nil)
-         (update-ik-seed t))
+   (&rest args &key (limb (send self :get :grasp-arm)) (target-handle (send self :get :grasp-point))
+          (debug nil) (tm 10000) (debug-view nil) (start-impedance t) (rotation-axis :z) (adjust nil)
+          (update-ik-seed t)
+          &allow-other-keys)
    ;; (send self :open-hand limb)
    (when (and real start-impedance)
      (send self :set-impedance-for-handle limb)
@@ -185,16 +187,18 @@
      ) 
    )
   (:release-handle
-   (&key (limb (send self :get :grasp-arm))
-         (tm 10000) (debug-view nil) (rotation-axis t) (sync-controller t)
-         (offset #f(-100 0 0)) ;; offset should be local in end-coords
-         )
+   (&rest args &key (limb (send self :get :grasp-arm))
+          (tm 10000) (debug-view nil) (rotation-axis :z) (sync-controller t)
+          (offset #f(-100 0 0)) ;; offset should be local in end-coords
+          &allow-other-keys
+          )
    (when (and sync-controller (not (send *ri* :simulation-modep)))
      (send *ri* :sync-controller (read-from-string (format nil ":~A-controller" (string-downcase limb))))
      )
    (let (ik-result)
      (send self :open-hand)
-     (setq ik-result (send robot limb :move-end-pos offset :local))
+     (setq ik-result (send robot limb :move-end-pos offset :local
+                           :debug-view debug-view :rotation-axis rotation-axis))
      (when (and real ik-result)
        (send *ri* :angle-vector (send robot :angle-vector) tm)
        (send *ri* :wait-interpolation)

@@ -175,9 +175,9 @@
    nil
    )
   (:grasp
-   ()
+   (&rest args)
    (let (grasp-result)
-     (setq grasp-result (send motion :grasp-handle))
+     (setq grasp-result (send* motion :grasp-handle args))
      (when grasp-result
        (setq grasped-flag t)
        ;; handle-angle is estimated to be right when grasped
@@ -187,9 +187,9 @@
      )
    )
   (:release
-   ()
+   (&rest args)
    (let (release-result)
-     (setq release-result (send motion :release-handle))
+     (setq release-result (send* motion :release-handle args))
      (when release-result
        (setq grasped-flag nil)
        )
@@ -258,8 +258,8 @@
      )
    )
   (:approach-handle
-   (&key (sync grasped-flag))
-   (send motion :approach-handle :sync-controller sync)
+   (&rest args &key (sync-controller grasped-flag))
+   (send* motion :approach-handle :sync-controller sync-controller args)
    (setq grasped-flag nil)
    )
   (:approach-accel
