@@ -631,8 +631,8 @@
 
   ;; leg support
   (:approach-floor
-   (&key (limb :lleg) (target-handle :floor) (time 10000) (debug-view nil) (offset #f(0 0 50))
-         (start-impedance t) (stop-ref-force nil) (start-ref-force nil))
+   (&rest args &key (limb :lleg) (target-handle :floor) (time 10000) (debug-view nil) (offset #f(0 0 50))
+          (start-impedance t) (stop-ref-force nil) (start-ref-force nil) &allow-other-keys)
    (when (and real stop-ref-force)
      (send *ri* :set-ref-force #f(0 0 0) 10000 limb)
      )
