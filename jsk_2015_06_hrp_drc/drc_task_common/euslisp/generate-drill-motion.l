@@ -386,7 +386,7 @@
   (&key (draw? t) (rotation-axis (if (eq *default-drill-type* :takenoko)(list :z t t) (list t t t))))
   (let* ((reach-dist 140)
          ;(x-factor 0.0)
-	 (grasp-up-dist 100)
+	 (grasp-up-dist 120)
 	 (air-grasp-up-dist 30)
          (down-dist 25)
          (push-dist 0)
@@ -597,10 +597,10 @@
       ;;todo? change drill manip coords with some recog methods
       )
     
-    ;; (when (equal drill-type :takenoko)
-    ;;   (send *robot* :angle-vector (get-reach-drill-pre-pose))
-    ;;   (unless (check-angle-vector-distance)
-    ;;     (when real? (model2real :time 3000)))
+    (when (equal drill-type :takenoko)
+      (send *robot* :angle-vector (get-reach-drill-pre-pose))
+      (unless (check-angle-vector-distance)
+        (when real? (model2real :time 3000))))
     ;;   (if *support-reverse-hand* (send *robot* :angle-vector (get-watch-drill-pose)) (send *robot* :angle-vector (get-look-drill-pose)))
     ;;   (unless (check-angle-vector-distance)
     ;;     (when real? (model2real :time 5000)))
