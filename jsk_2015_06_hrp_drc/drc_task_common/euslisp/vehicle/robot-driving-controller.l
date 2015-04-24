@@ -490,8 +490,27 @@
      )
    )
   (:execute-handle-pose-compensation
-   (&key (tm 10000) (wait-sec 30.0))
-   (let (wait-start tmp-accel-flag tmp-head-angle-vector release-result)
+   (&key (tm 2500) (wait-sec 30.0) (limb (send motion :grasp-arm))
+         (position-threshold 1000)
+         )
+   ;; wait handling   
+   (let (wait-start tmp-accel-flag
+         tmp-head-angle-vector release-result
+         tmp-robot-coords tmp-body-coords
+         )
+     (warn "wait interpolation~%")
+     (setq wait-start (ros::time-now))
+     (while (and (or (send *ri* :interpolatingp (read-from-string (format nil ":~A-controller" (string-downcase limb))))
+                     (send *ri* :interpolatingp))
+                 (< (- (send (ros::time-now) :to-sec) (send wait-start :to-sec)) wait-sec))
+       (ros::spin-once)
+       (ros::sleep)
+       )
+     (when (or (send *ri* :interpolatingp (read-from-string (format nil ":~A-controller" (string-downcase limb))))
+               (send *ri* :interpolatingp))
+       (warn "interpolation do not finish~%")
+       (return-from :execute-handle-pose-compensation nil)
+       )
      (warn "release handle~%")
      (setq tmp-accel-flag accel-flag)
      (setq accel-flag nil) ;; disable accel
@@ -503,33 +522,40 @@
      (when release-result
        ;; temporary ;;
        (send (send motion :robot) (send motion :grasp-arm) :shoulder-y :joint-angle 0)
-       (when (send motion :real)
-         (send *ri* :angle-vector (send (send motion :robot) :angle-vector) tm)
-         (send *ri* :wait-interpolation)
-         )
        ;; temporary ;;
-       (setq tmp-head-angle-vector (send (send motion :robot) :head :angle-vector))
+       (setq tmp-head-angle-vector (send motion :robot :head :angle-vector))
        (send (send motion :robot) :look-at-target (send motion :car :vehicle-handle :steering-center)) ;; look at handle
        (when (send motion :real)
-         (send *ri* :angle-vector (send (send motion :robot) :angle-vector) tm)
+         (send *ri* :angle-vector (send motion :robot :angle-vector) tm)
          (send *ri* :wait-interpolation)
          )
        (warn "wait recognition~%")
        (setq wait-start (ros::time-now))
+       (setq handle-pose-estimated-robot-coords nil) ;; reset recognition result
        (while (and (< (- (send (ros::time-now) :to-sec) (send wait-start :to-sec)) wait-sec)
                    (not handle-pose-estimated-robot-coords))
          (ros::spin-once)
          (ros::sleep)
          )
        (warn "compensate robot pose~%")
+       (setq tmp-robot-coords (send motion :robot :copy-worldcoords))
+       (setq tmp-body-coords (send (car (send (send motion :robot) :links)) :copy-worldcoords))
        (if handle-pose-estimated-robot-coords
            (send self :apply-steering-estimation handle-pose-estimated-robot-coords :yes t)
          (warn "cannot find handle_pose~%")
          )
+       (when (> (norm (v- (send (send (car (send (send motion :robot) :links)) :copy-worldcoords) :pos) (send tmp-body-coords :pos))) position-threshold)
+         (warn "new body coords is too far~%")
+         (send motion :robot :newcoords tmp-robot-coords) ;; revert
+         )
        ;; resume
        (warn "regrasp~%")
-       (send self :approach-handle)
-       (send self :grasp)
+       (if (send self :approach-handle :tm tm)
+           (unless (send self :grasp) ;; grasp only when approach is succeeded
+             (warn "grasp failed~%")
+             )
+         (warn "approach failed~%")
+         )
        (send (send motion :robot) :head :angle-vector tmp-head-angle-vector) ;; look at front
        (when (send motion :real)
          (send *ri* :angle-vector (send (send motion :robot) :angle-vector) tm)
@@ -537,6 +563,7 @@
          )
        )
      (setq accel-flag tmp-accel-flag)
+     handle-pose-estimated-robot-coords
      )
    )
 
