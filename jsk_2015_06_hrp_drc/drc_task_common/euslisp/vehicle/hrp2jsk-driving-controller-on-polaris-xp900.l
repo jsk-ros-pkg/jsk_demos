@@ -35,17 +35,17 @@
    )
   (:accel-cmd
    (cmd)
-   (let ((cmd-mm (send self :get-pedal-angle-from-cmd cmd release-accel-command step-accel-command)))
+   (let ((cmd-mm (send self :get-pedal-motion-from-cmd cmd release-accel-command step-accel-command)))
      (warn "accel ~A[cmd] -> ~A [mm]~%" cmd cmd-mm)
      (send self :step-accel cmd-mm)
      (setq current-move-mm (+ current-move-mm cmd-mm))
      current-move-mm ;; return total state of accel-command
      )
    )
-  (:get-pedal-angle-from-cmd
-   (data min-pedal-angle max-pedal-angle) ;; data will be 0.0 from 1.0
+  (:get-pedal-motion-from-cmd
+   (data min-pedal-command max-pedal-command) ;; data will be 0.0 from 1.0
    (let (target-move-mm command-move-mm)
-     (setq target-move-mm (+ min-pedal-angle (* data (- max-pedal-angle min-pedal-angle)))) ;; valiable name is pedal angle but this value means min/max move-mm
+     (setq target-move-mm (+ min-pedal-command (* data (- max-pedal-command min-pedal-command))))
      (setq command-move-mm (- target-move-mm current-move-mm))
      command-move-mm
      )
