@@ -250,13 +250,18 @@
          (rotatable-point-max (apply #'max valve-rotatable-range))
          (rotatable-point-idx (position (apply #'max valve-rotatable-range) valve-rotatable-range))
          angle-vector-ret angle-vector-ret-release)
-    (dotimes (i (length valve-rotatable-range))
-      (when (= (elt valve-rotatable-range rotatable-point-idx) 0)
-        (return-from nil nil))
+    (dotimes (i rotatable-point-max)
       (push-back (elt (elt *valve-ik-results* rotatable-point-idx) 2) angle-vector-ret)
       (push-back (elt (elt *valve-ik-results* rotatable-point-idx) 3) angle-vector-ret-release)
       (setq rotatable-point-idx (mod (+ rotatable-point-idx 1) (length valve-rotatable-range)))
       )
+    ;; (dotimes (i (length valve-rotatable-range))
+    ;;   (when (= (elt valve-rotatable-range rotatable-point-idx) 0)
+    ;;     (return-from nil nil))
+    ;;   (push-back (elt (elt *valve-ik-results* rotatable-point-idx) 2) angle-vector-ret)
+    ;;   (push-back (elt (elt *valve-ik-results* rotatable-point-idx) 3) angle-vector-ret-release)
+    ;;   (setq rotatable-point-idx (mod (+ rotatable-point-idx 1) (length valve-rotatable-range)))
+    ;;   )
     (setq *valve-motion* (append angle-vector-ret (reverse angle-vector-ret-release)))
     *valve-motion*
     ))
@@ -363,19 +368,24 @@
   )
 
 (defun test-valve-motion-jaxon1
-  ()
+  (&key (x-pos 600) (y-pos -500) (z-pos 1260) (yaw-angle 0) (grasp-center? nil))
   (set-valve-environment :generate-ri? nil :robot-name "JAXON"
-                         :valve-r 200
-                         :valve-coords (make-coords :pos (float-vector 600 -500 1200) :rpy (list 0 pi/2 0)))
-  (get-valve-motion)
-  (play-motion-on-eus-viewer *valve-motion*)
+                         :valve-r (/ 360 2)
+                         :valve-coords (make-coords :pos (float-vector x-pos y-pos z-pos) :rpy (list yaw-angle pi/2 0))) 
+  (get-valve-motion :grasp-center? grasp-center?)
+  (play-motion-on-eus-viewer *valve-motion* :interpolation? t)
   )
 
-(defun test-valve-motion-jaxon2
+(defun test-valve-motion-jaxon-ng-pattern1
   ()
-  (set-valve-environment :generate-ri? nil :robot-name "JAXON"
-                         :valve-r 200
-                         :valve-coords (make-coords :pos (float-vector 600 -500 1200) :rpy (list 0 pi/2 0)))
-  (get-valve-motion :grasp-center? t)
-  (play-motion-on-eus-viewer *valve-motion*)
+  (test-valve-motion-jaxon1 :x-pos 420 :y-pos -600 :z-pos 1240 :yaw-angle (deg2rad 20) :grasp-center? t)
+  ;; (0 0 6 5 4 3 2 1 1 0)
   )
+
+(defun test-valve-motion-jaxon-ng-pattern2
+  ()
+  (test-valve-motion-jaxon1 :yaw-angle (deg2rad 20))
+  ;; (2 1 0 0 4 3 2 1 4 3)
+  )
+
+
