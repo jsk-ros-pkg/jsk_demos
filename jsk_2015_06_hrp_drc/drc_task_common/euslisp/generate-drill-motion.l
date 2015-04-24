@@ -821,10 +821,11 @@
   (let* ((drill-motion-av-list (get-drill-button-motion-full coords))
          (drill-motion-length (length drill-motion-av-list)))
     (when (not (= drill-motion-length 0))
-      (when real? (send *ri* :start-impedance *drill-support-arm* :moment-gain (float-vector 0 0 0) :k-p 3000 :d-p 400))
+      (when real? (send *ri* :start-impedance :arms :moment-gain (float-vector 0 0 0) :k-p 3000 :d-p 400))
+      (when real? (send *ri* :set-ref-force #f(0 0 -20) 2000 *drill-main-arm*))
       ;; first try
       ;; pre-push1
-      (if (or (equal *robot-name* "HRP2JSKNTS") (equal *robot-name* "HRP2JSKNTS")) (drill-full-grasp :arm :arms))
+      (if (or (equal *robot-name* "HRP2JSKNT") (equal *robot-name* "HRP2JSKNTS")) (drill-full-grasp :arm :arms))
       (send *robot* :angle-vector (elt drill-motion-av-list 0))
       (when (boundp '*irtviewer*) (send *irtviewer* :draw-objects))
       (when real? (model2real :time 6000))
@@ -1567,3 +1568,14 @@
 ;; (send *robot* *drill-main-arm* :move-end-rot -20 :z :world)
 ;;(tmp-drill-pre-push 0 20)
 ;;(tmp-drill-push 0 20)
+
+;; temporary ;;for jaxon drikk mnotion
+;; pre push angle
+;;#f(0.391807 0.32324 -17.5873 39.6374 -21.0175 -0.106618 0.391797 0.323802 -17.63 39.9478 -21.2852 -0.107182 -0.800099 0.0169 -0.60547 0.0 0.0 27.9269 27.1869 -33.6532 1.5015 -98.4913 -15.1283 -3.00702 -38.3624 -41.2965 36.1851 47.8688 14.3972 -103.814 -64.6653 48.1323 -27.4725)
+;; push angle
+;l#f(0.391807 0.32324 -17.5873 39.6374 -21.0175 -0.106618 0.391797 0.323802 -17.63 39.9478 -21.2852 -0.107182 -0.800099 0.0169 -0.60547 0.0 0.0 27.9269 27.1869 -33.6532 1.5015 -98.4913 -15.1283 -3.00702 -38.3624 -44.3288 33.6429 46.331 13.9252 -107.334 -68.2965 41.7428 -23.3786)
+;;jaxon impedance
+;;(send *ri* :start-impedance :arms :moment-gain (float-vector 0 0 0) :k-p 3000 :d-p 1500)
+;; jaxon 
+;; send *ri* :start-grasp :rarm :gain 40
+;; end temporary
