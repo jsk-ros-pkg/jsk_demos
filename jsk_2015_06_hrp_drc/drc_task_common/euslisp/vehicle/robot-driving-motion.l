@@ -189,7 +189,7 @@
          (tm 10000) (debug-view nil) (rotation-axis t) (sync-controller t)
          (offset #f(-100 0 0)) ;; offset should be local in end-coords
          )
-   (when sync-controller
+   (when (and sync-controller (not (send *ri* :simulation-modep)))
      (send *ri* :sync-controller (read-from-string (format nil ":~A-controller" (string-downcase limb))))
      )
    (let (ik-result)
