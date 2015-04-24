@@ -56,7 +56,7 @@
    ;; initialize instance valiables
    (setq ros-rate tmp-ros-rate
          grasped-flag nil
-         accel-flag t
+         accel-flag nil
          max-turn-angle tmp-max-turn-angle
          max-turn-angle-diff-deg tmp-max-turn-angle-diff
          torus-finder-estimated-robot-coords nil
@@ -265,6 +265,7 @@
   (:approach-accel
    ()
    (send motion :approach-accel-pedal)
+   (setq accel-flag t) ;; enbale accel
    )
   (:approach-brake
    ()
