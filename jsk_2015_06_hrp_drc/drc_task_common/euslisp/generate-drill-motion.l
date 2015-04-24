@@ -893,7 +893,7 @@
       (when try-many?
         (dotimes (ix 3)
           (dotimes (iy 3)
-            (let ((button-ik nil) (width 5))
+            (let ((button-ik nil) (width 10))
               (send *robot* :fix-leg-to-coords (make-coords))
               (push (fullbody-inverse-kinematics-for-drill-button :x-offset (+ 0 (* (- ix 1) width)) :y-offset (+ 0 (* (- iy 1) width)) :z-offset -35 :draw? nil) button-ik)
               (push (fullbody-inverse-kinematics-for-drill-button :x-offset (+ 0 (* (- ix 1) width)) :y-offset (+ 0 (* (- iy 1) width)) :z-offset 20 :draw? nil) button-ik)
@@ -1624,6 +1624,12 @@
 ;l#f(0.391807 0.32324 -17.5873 39.6374 -21.0175 -0.106618 0.391797 0.323802 -17.63 39.9478 -21.2852 -0.107182 -0.800099 0.0169 -0.60547 0.0 0.0 27.9269 27.1869 -33.6532 1.5015 -98.4913 -15.1283 -3.00702 -38.3624 -44.3288 33.6429 46.331 13.9252 -107.334 -68.2965 41.7428 -23.3786)
 ;;jaxon impedance
 ;;(send *ri* :start-impedance :arms :moment-gain (float-vector 0 0 0) :k-p 3000 :d-p 1500)
+;; error
+;; (23 #<fc-executive-app #Xcd20d48> . :drill-button-exec-command-callback)
+;; [ INFO] [1429862872.401931923]: button drill at #<coordinates #X73fb908  552.614 -85.514 91.014 / 0.252 -0.291 0.232>
+;; next state: :executing-drill-button
+;; [ INFO] [1429862872.407666118]: entering :executing-drill-button
+;; [ERROR] [1429862875.799641972]: attempted to publish to topic joint_states, which was not previously advertised. call (ros::advertise "joint_states") firs.
 ;; jaxon 
 ;; send *ri* :start-grasp :rarm :gain 40
 ;; end temporary
