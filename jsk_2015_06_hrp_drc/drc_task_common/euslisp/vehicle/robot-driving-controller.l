@@ -172,7 +172,8 @@
    (send motion :ride :init-pose t)
    (send motion :drive-init-pose-crank :limb :larm :move-arm nil) ;; todo: fix and remove
    (send self :approach-accel)
-   (send self :approach-floor)
+   ;; (send self :approach-floor)
+   (send self :support-by-leg :start-ref-force nil)
    (send self :approach-handle)
    nil
    )
@@ -284,9 +285,10 @@
    (send motion :approach-brake-pedal)
    )
   (:approach-floor
-   ()
-   (send motion :approach-floor :offset #f(0 0 50)
-         :start-impedance t :stop-ref-force t :start-ref-force nil) ;; approach to floor
+   (&rest args &key (offset #f(0 0 50)) (start-impedance t) (start-ref-force nil) &allow-other-keys)
+   (send* motion :approach-floor :offset offset
+          :start-impedance start-impedance :stop-ref-force start-ref-force
+          args) ;; approach to floor
    )
   (:step-accel
    (command)
@@ -301,9 +303,10 @@
    (send motion :step-brake-pedal command :relative nil :use-controller t) ;; step brake
    )
   (:support-by-leg
-   ()
-   (send motion :approach-floor :offset #f(0 0 0)
-         :start-impedance nil :stop-ref-force nil :start-ref-force t) ;; approach to floor
+   (&rest args &key (offset #f(0 0 0)) (start-impedance t) (start-ref-force t) &allow-other-keys)
+   (send* motion :approach-floor
+          :offset offset :start-impedance start-impedance :stop-ref-force start-ref-force
+          args) ;; approach to floor
    )
 
   ;; internal functions
