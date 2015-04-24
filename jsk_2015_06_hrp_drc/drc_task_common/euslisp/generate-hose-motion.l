@@ -207,8 +207,10 @@
     (get-hose-grasp-motion-full coords :use-ri? nil))
   (ros::ros-info "hose-stand-coords: ~a~%" *hose-stand-coords*)
   (ros::ros-info "hose-ik-results: ~a~%" *hose-ik-results*)
-  (when *hose-stand-coords*
-    (move-robot-model *hose-stand-coords* "ground"))
+  (cond (*hose-stand-coords*
+         (move-robot-model *hose-stand-coords* "ground"))
+        (t
+         (move-robot-model-to-current-pos)))
   (publish-motion-joint-states *hose-motion* :step-time step-time))
 
 
@@ -460,8 +462,10 @@
     (get-hose-connect-motion-full coords :use-ri? nil))
   (ros::ros-info "hose-stand-coords: ~a~%" *hose-stand-coords*)
   (ros::ros-info "hose-ik-results: ~a~%" *hose-ik-results*)
-  (when *hose-stand-coords*
-    (move-robot-model *hose-stand-coords* "ground"))
+  \(cond (*hose-stand-coords*
+         (move-robot-model *hose-stand-coords* "ground"))
+        (t
+         (move-robot-model-to-current-pos)))
   (publish-motion-joint-states *hose-motion* :step-time step-time)
 )
 
