@@ -258,9 +258,14 @@
      )
    )
   (:approach-handle
-   (&rest args &key (sync-controller grasped-flag))
-   (send* motion :approach-handle :sync-controller sync-controller args)
-   (setq grasped-flag nil)
+   (&rest args &key (sync-controller grasped-flag) &allow-other-keys)
+   (let (approach-result)
+     (setq approach-result
+           (send* motion :approach-handle :sync-controller sync-controller args)
+           )
+     (setq grasped-flag nil)
+     approach-result
+     )
    )
   (:approach-accel
    ()
