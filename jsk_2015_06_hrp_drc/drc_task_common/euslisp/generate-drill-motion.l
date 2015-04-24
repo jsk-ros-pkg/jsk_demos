@@ -59,7 +59,7 @@
          :parent *drill*))
   (send *drill* :put :button-coords
         (make-cascoords
-         :coords (make-coords :pos #f(-22 30 77) :rpy (list 0 0 pi/2))
+         :coords (make-coords :pos #f(-22 30 77) :rpy (list (deg2rad 30) 0 pi/2))
          :parent *drill*))
   (send *drill* :put :put-coords
         (make-cascoords
@@ -202,7 +202,7 @@
              (send *robot* :put :support-arm-drill-button-coords
                    (make-cascoords
                                         ;	     :coords (send (send (send *robot* *drill-support-arm* :end-coords) :copy-worldcoords) :translate #f(50 87.5 80) :local)
-                    :coords (send (send (send *robot* *drill-support-arm* :end-coords) :copy-worldcoords) :translate #f(80 62 80) :local)
+                    :coords (send (send (send (send *robot* *drill-support-arm* :end-coords) :copy-worldcoords) :translate #f(80 62 80) :local) :rotate (deg2rad 135) :z)
                     :parent (send (send *robot* *drill-support-arm* :end-coords) :parent)))
            (send *robot* :put :support-arm-drill-button-coords ;; ohara 4/12
                  (make-cascoords
@@ -213,7 +213,7 @@
          (send *robot* :put :support-arm-drill-button-coords
                    (make-cascoords
                                         ;	     :coords (send (send (send *robot* *drill-support-arm* :end-coords) :copy-worldcoords) :translate #f(50 87.5 80) :local)
-                    :coords (send (send (send (send (send *robot* *drill-support-arm* :end-coords) :copy-worldcoords) :translate #f(80 -75 0) :local) :rotate (deg2rad 90) :y :local) :rotate (deg2rad 0) :z :local)
+                    :coords (send (send (send (send (send *robot* *drill-support-arm* :end-coords) :copy-worldcoords) :translate #f(80 -75 0) :local) :rotate (deg2rad 90) :y :local) :rotate (deg2rad 180) :z :local)
                     :parent (send (send *robot* *drill-support-arm* :end-coords) :parent)))
          )
         )
@@ -743,7 +743,7 @@
             ;(send *robot* *drill-main-arm* :end-coords :copy-worldcoords)
             (send (send *drill* :get :grasp-coords) :copy-worldcoords)
             (send (send (send (send *drill* :get :button-coords) :copy-worldcoords)
-                        :translate (float-vector x-offset y-offset z-offset) :local) :rotate (deg2rad 180);150)
+                        :translate (float-vector x-offset y-offset z-offset) :local) :rotate (deg2rad 0);150)
                         :z :local)
             (send *robot* :rleg :end-coords :copy-worldcoords)
             (send *robot* :lleg :end-coords :copy-worldcoords)))
@@ -758,7 +758,7 @@
                         :root-link-virtual-joint-weight (float-vector 0.1 0.1 0.1 0.1 0.5 0.5)
                         :target-centroid-pos (apply #'midpoint 0.5 (send *robot* :legs :end-coords :worldpos))
                         :translation-axis (list t t t t)
-                        :rotation-axis (list t :z t t)
+                        :rotation-axis (list t t t t)
                         :max (float-vector  500  500  0  20  20  10) ;; for hrp2
                         :min (float-vector  -500  -500  -200  -20  -20  -10) ;; for hrp2
                         :stop 200
@@ -891,12 +891,12 @@
       (when real? (model2real :time 2000))
       ;; second try
       (when try-many?
-        (dotimes (ix 3)
+        (dotimes (ix 1)
           (dotimes (iy 3)
             (let ((button-ik nil) (width 10))
               (send *robot* :fix-leg-to-coords (make-coords))
-              (push (fullbody-inverse-kinematics-for-drill-button :x-offset (+ 0 (* (- ix 1) width)) :y-offset (+ 0 (* (- iy 1) width)) :z-offset -35 :draw? nil) button-ik)
-              (push (fullbody-inverse-kinematics-for-drill-button :x-offset (+ 0 (* (- ix 1) width)) :y-offset (+ 0 (* (- iy 1) width)) :z-offset 20 :draw? nil) button-ik)
+              (push (fullbody-inverse-kinematics-for-drill-button :x-offset (+ 0 (* (- ix 0) width)) :y-offset (+ 0 (* (- iy 1) width)) :z-offset -35 :draw? nil) button-ik)
+              (push (fullbody-inverse-kinematics-for-drill-button :x-offset (+ 0 (* (- ix 0) width)) :y-offset (+ 0 (* (- iy 1) width)) :z-offset 20 :draw? nil) button-ik)
               (when (and (elt button-ik 0) (elt button-ik 1))
                 (send *robot* :angle-vector (elt button-ik 1))
                 (when (boundp '*irtviewer*) (send *irtviewer* :draw-objects))
