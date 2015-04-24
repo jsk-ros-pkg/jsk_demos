@@ -479,7 +479,7 @@
    )
   (:execute-handle-pose-compensation
    (&key (tm 10000) (wait-sec 30.0))
-   (let (wait-start tmp-accel-flag release-result)
+   (let (wait-start tmp-accel-flag tmp-head-angle-vector release-result)
      (warn "release handle~%")
      (setq tmp-accel-flag accel-flag)
      (setq accel-flag nil) ;; disable accel
@@ -496,7 +496,8 @@
          (send *ri* :wait-interpolation)
          )
        ;; temporary ;;
-       (send (send motion :robot) :head :neck-p :joint-angle 40) ;; look at handle
+       (setq tmp-head-angle-vector (send (send motion :robot) :head :angle-vector))
+       (send (send motion :robot) :look-at-target (send motion :car :vehicle-handle :steering-center)) ;; look at handle
        (when (send motion :real)
          (send *ri* :angle-vector (send (send motion :robot) :angle-vector) tm)
          (send *ri* :wait-interpolation)
@@ -517,7 +518,7 @@
        (warn "regrasp~%")
        (send self :approach-handle)
        (send self :grasp)
-       (send (send motion :robot) :head :neck-p :joint-angle 0) ;; look at front
+       (send (send motion :robot) :head :angle-vector tmp-head-angle-vector) ;; look at front
        (when (send motion :real)
          (send *ri* :angle-vector (send (send motion :robot) :angle-vector) tm)
          (send *ri* :wait-interpolation)
