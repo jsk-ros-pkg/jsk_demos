@@ -100,6 +100,7 @@
                 :rotate rot-offset :z (send self :rotate-grasp-point-by-grasp-arm (send car target-handle)) ;; grasp-point is assumed to be a pole and axis :z is to be grasped (:x, :y cannot be rotated to grasp) 
                 )
           )
+         (old-angle-vector (send robot limb :angle-vector))
          ik-result
          )
      ;; first, move roughly without collision detection
@@ -130,6 +131,9 @@
                                                  check-links))))
                    )
              )
+       (unless ik-result
+         (send robot limb :angle-vector old-angle-vector) ;; revert when second ik failed
+         )
        )
      (when (and real ik-result)
        (send *ri* :angle-vector (send robot :angle-vector) tm)
