@@ -14,7 +14,7 @@
   (send *robot* :reset-manip-pose)
   (send *robot* :fix-leg-to-coords (make-coords))
   ;; setup door motion
-  (setup-door-open :draw nil :generate-robot? nil)
+  (setup-door-open :draw nil :generate-robot nil)
   ;; generate door
   (setq *door* (make-drc-sagami-door))
   ;;(setq *door* (make-drc-box2-door))
@@ -115,3 +115,99 @@
 
 ;;(set-door-environment-full (list 0 0 0) (make-coords :pos (float-vector 642.373 43.578 296.552) :rpy (list -1.343 -0.009 -1.602)))
 
+(defun do-drcbox2-door-motion-for-jaxon
+  (&key (real? nil) (draw? t) (wait? t))
+  ;; generate model
+  (setup-door-open :generate-robot? t :generate-ri? nil :robot-name "JAXON")
+  (make-drc-box2-door)
+  (objects (list *robot* *door*))
+  (setq *av-list* nil)
+  (send *robot* :reset-pose)
+  (push (send *robot* :angle-vector) *av-list*)
+  (setq *init-standing-coords* (make-coords :pos (float-vector -800 -450 0) :rpy (list (deg2rad -80) 0 0)))
+  ;; attach handle to robot
+  (let* (larm-door-translate-offset
+         rarm-door-translate-offset
+         larm-door-z-rotate-offset
+         rarm-door-z-rotate-offset)
+    (cond ((or (equal *robot-name* "JAXON") (equal *robot-name* "STARO"))
+           (setq larm-door-translate-offset (float-vector 40.0 40.0 0.0))
+           (setq rarm-door-translate-offset (float-vector 40.0 -40.0 0.0))
+           (setq larm-door-z-rotate-offset (deg2rad 0))
+           (setq rarm-door-z-rotate-offset (deg2rad -0))
+           )
+          (t ;; (or (equal *robot-name* "HRP2JSKNT") (equal *robot-name* "HRP2JSKNTS"))
+           (setq larm-door-translate-offset (float-vector 0 0 0))
+           (setq rarm-door-translate-offset (float-vector 0 0 0))
+           (setq larm-door-z-rotate-offset 0)
+           (setq rarm-door-z-rotate-offset 0)))
+    (send *robot* :put :larm-door-coords
+          (make-cascoords
+           :coords (send (send (send (send *robot* :larm :end-coords) :copy-worldcoords) :translate larm-door-translate-offset :local) :rotate larm-door-z-rotate-offset :z :local)
+           :parent (send (send *robot* :larm :end-coords) :parent)))
+    (send *robot* :put :rarm-door-coords
+          (make-cascoords
+           :coords (send (send (send (send *robot* :rarm :end-coords) :copy-worldcoords) :translate rarm-door-translate-offset :local) :rotate rarm-door-z-rotate-offset :z :local)
+           :parent (send (send *robot* :rarm :end-coords) :parent))))
+  ;; generate reaching motion
+  (let* ((trans-list
+          (list (list (float-vector -100 200 -150) -60 0)
+                (list (float-vector 0 50 -100) -90 0)
+                (list (float-vector 0 -25 -50) -90 0)
+                (list (float-vector 0 -25 -50) -90 -10)
+                (list (float-vector 0 -25 -50) -90 -20)
+                )))
+    (dolist (trans trans-list)
+      (send *robot* :reset-pose)
+      (send *robot* :fix-leg-to-coords *init-standing-coords*)
+      (send (send *door* :joint :door-hinge-joint) :joint-angle (elt trans 2))
+      (with-move-target-link-list
+       (mt ll *robot* '(:larm :rleg :lleg))
+       (setf (elt mt 0) (send *robot* :get :larm-door-coords))
+       (let* ((tc (list (send (send (send (send *door* :handle :larm-knob-handle) :copy-worldcoords)
+                                    :translate (elt trans 0) :local)
+                              :rotate (deg2rad (elt trans 1)) :z :local)
+                        (send *robot* :rleg :end-coords :copy-worldcoords)
+                        (send *robot* :lleg :end-coords :copy-worldcoords))))
+         (solve-ik-for-do-drcbox2-door-motion-for-jaxon tc mt ll))
+       )
+      )
+    )
+  (setq *av-list* (reverse *av-list*))
+  ;; send motion to real robot
+  (dolist (av *av-list*)
+    (send *robot* :angle-vector av)
+    (when draw? (send *irtviewer* :draw-objects))
+    (when wait? (read-line))
+    (when real?
+      (send *ri* :angle-vector (send *robot* :angle-vector) 10000)
+      (send *ri* :wait-interpolation)))
+  ;; (send *robot* :reset-pose)
+  ;; (play-motion-on-eus-viewer *av-list* :interpolation? t)
+  )
+
+(defun solve-ik-for-do-drcbox2-door-motion-for-jaxon
+  (tc mt ll &key (draw? nil))
+  (send *robot*
+        :fullbody-inverse-kinematics tc
+        :move-target mt :link-list ll
+        :target-centroid-pos (apply #'midpoint 0.5 (send *robot* :legs :end-coords :worldpos))
+        :translation-axis (list t t t)
+        :rotation-axis (list t t t)
+        :root-link-virtual-joint-weight (float-vector 0.15 0.15 0.01 0.15 0.5 0.5)
+        :additional-weight-list
+        (list (list (send *robot* :torso :waist-r :child-link) 0.1)
+              (list (send *robot* :torso :waist-y :child-link) 0.1)
+              (list (send *robot* :torso :waist-p :child-link) 0.1))
+        :max (float-vector  500  200  25  10  20  10)
+        :min (float-vector  -500  -200  -200  -10  -20  -10)
+        :stop 50
+        :debug-view nil
+        :avoid-collision-distance 100
+        :avoid-collision-null-gain 5.0
+        :avoid-collision-joint-gain 0.8
+        :collision-avoidance-link-pair
+        (list (list (elt (send *robot* :larm :links) 2) (send *robot* :link "CHEST_LINK2")))
+        )
+  (push (send *robot* :angle-vector) *av-list*)
+  )
