@@ -1,9 +1,14 @@
 (load "~/prog/euslib/irteus_proposals/motion-lib-proposal.l")
-(defun setup-door-open (&key (draw t) (generate-robot t))
-  (when generate-robot
-    (load "package://hrpsys_ros_bridge_tutorials/euslisp/hrp2jsknts-interface.l")
-    (hrp2jsknts-init)
-    (setq *robot* *hrp2jsknts*))
+(load "package://drc_task_common/euslisp/robot-util.l")
+
+(defun setup-door-open (&key (draw t) (generate-robot? t) (robot-name "HRP2JSKNT"))
+  (when generate-robot?
+    (cond (robot-name
+           (setq *robot-name* robot-name))
+          (t ;;(unix::getenv "ROBOT")
+           (setq *robot-name* (string-upcase (unix::getenv "ROBOT")))))
+    (generate-robot *robot-name* :generate-ri? t)
+    )
   ;;(make-drc-box2-door)
   ;;(make-drc-test-door-right)
   (when draw (objects (list *robot*)))
@@ -421,7 +426,7 @@
        (list (get-current-robot-state 1000)) :real t)
       ret)))
 
-(defun test-door-open-drcbox2-door (&key (walk-p t) (wait t) (draw t))
+(defun test-door-open-drcbox2-door (&key (walk-p t) (wait t) (draw t) (real t))
   "Test for drc box2 door"
   (print ";; Initial pose")
   (make-drc-box2-door)
@@ -430,17 +435,23 @@
   ;;       (send (send (send (send (car (send *robot* :links)) :copy-worldcoords) :transform (make-coords :pos (float-vector 642.373 43.578 296.552) :rpy (list -1.343 -0.009 -1.602))) :rotate (deg2rad 90) :y) :rotate (deg2rad 180) :z)
   ;;       (send *door* :handle :larm-knob-handle))
   ;; (send *door* :translate #f(20 -50 0) :world)
-  (setq *init-standing-coords* (make-coords :pos (float-vector -650 -450 0) :rpy (list (deg2rad -15) 0 0)))
+  (cond ((or (equal *robot-name* "JAXON") (equal *robot-name* "STARO"))
+         (setq *init-standing-coords* (make-coords :pos (float-vector -1000 -450 0) :rpy (list (deg2rad -80) 0 0)))
+         )
+        (t ;; (or (equal *robot-name* "HRP2JSKNT") (equal *robot-name* "HRP2JSKNTS"))
+         (setq *init-standing-coords* (make-coords :pos (float-vector -650 -450 0) :rpy (list (deg2rad -15) 0 0)))
+         ))
   (initialize-pose-for-door-open :real nil :arm :larm :initial-standing-coords *init-standing-coords* :initial-waist-y 0)
-  (exec-robot-state-list (list (get-current-robot-state 3000)) :real t)
+  (exec-robot-state-list (list (get-current-robot-state 3000)) :real real)
   (print ";; Reaching and open. Press Enter")
   (when wait (read-line))
   (setq *rs-list* (reach-grasp-door :real nil))
-  (exec-robot-state-list *rs-list* :real t)
-  (let ((push/pull (door-push-pull-detection :arm :larm)))
+  (exec-robot-state-list *rs-list* :real real)
+  (let ((push/pull :pull))
+  ;;(let ((push/pull (door-push-pull-detection :arm :larm)))
     (when push/pull
       (setq *rs-list* (pull-push-door-by-arm :push/pull push/pull))
-      (exec-robot-state-list *rs-list* :real t)
+      (exec-robot-state-list *rs-list* :real real)
       (when walk-p
         (print ";; go-velocity Press Enter")
         (when wait (read-line))
@@ -464,7 +475,7 @@
     (print ";; release")
     (when wait (read-line))
     (setq *rs-list* (release-grasp-door :real nil :arm :larm :initial-standing-coords *init-standing-coords*))
-    (exec-robot-state-list *rs-list* :real t)
+    (exec-robot-state-list *rs-list* :real real)
     )
 
 (defun test-door-open-drc-test-door-right (&key (walk-p t))
