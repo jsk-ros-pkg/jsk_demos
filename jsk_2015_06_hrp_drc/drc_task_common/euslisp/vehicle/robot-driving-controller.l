@@ -498,8 +498,12 @@
        (ros::spin-once)
        (ros::sleep)
        )
+     (unless torus-finder-estimated-robot-coords
+       (return-from :estimate-steering-by-torus-finder nil) ;; failed estimation
+       )
      (send self :apply-steering-estimation torus-finder-estimated-robot-coords)
      (send self :publish-body-relative-steering-coords) ;; update steering coords in rviz
+     t
      )
    )
   (:torus-finder-callback
