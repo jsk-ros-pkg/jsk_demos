@@ -24,25 +24,6 @@
                :approach-handle approach-handle :approach-pedal approach-pedal
                :max-turn-angle tmp-max-turn-angle :max-turn-angle-diff tmp-max-turn-angle-diff
                )
-   (send self :step-accel-command -25.0)
-   (send self :release-accel-command 1.0)
-   (setq current-move-mm 0.0)
-   )
-  (:open-hand
-   (&optional (limb (send self :grasp-arm)))
-   (when real
-     (send robot :hand limb :hook-pose)
-     (send *ri* :hand-angle-vector (send robot :hand-angle-vector) 1000)
-     (send *ri* :wait-interpolation)
-     )
-   )
-  (:close-hand
-   (&optional (limb (send self :grasp-arm)))
-   (when real
-     (send robot :hand limb :close-pose)
-     (send *ri* :hand-angle-vector (send robot :hand-angle-vector) 1000)
-     (send *ri* :wait-interpolation)
-     )
    )
   )
 

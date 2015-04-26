@@ -22,10 +22,13 @@
           torus-finder-estimated-robot-coords
           handle-pose-estimated-robot-coords
           handle-pose-estimate-flag
+          torus-finder-estimation-flag
           old-estimated-handle-angle
           old-accel-command
           old-brake-command
           tf-listener
+          handling-end-coords-list
+          record-handling-end-coords-flag
           ) 
   )
 
@@ -67,6 +70,9 @@
          old-accel-command nil
          old-brake-command nil
          handle-pose-estimate-flag nil
+         torus-finder-estimation-flag nil
+         handling-end-coords-list nil
+         record-handling-end-coords-flag nil
          )
    ;; set defalut value for pedaling
    (setq step-accel-command 28
@@ -96,12 +102,16 @@
    (ros::advertise "/drive/controller/min_step" std_msgs::Float32 1 t)
    (ros::advertise "/drive/controller/max_step" std_msgs::Float32 1 t)
 
+   ;; for steering visualization
+   (ros::advertise "/drive/controller/currest_steering" jsk_recognition_msgs::TorusArray 1)
+   (ros::advertise "/drive/controller/handling_trajectory" geometry_msgs::PolygonStamped 1)
+
    ;; for steering estimation
+   (ros::advertise "/drive/controller/torus_finder_input" geometry_msgs::PolygonStamped 1)
    (ros::subscribe "/drive/torus_finder/output/pose"
                    geometry_msgs::PoseStamped
                    #'send self :torus-finder-callback)
-   (ros::advertise "/drive/torus_finder/input/polygon" geometry_msgs::PolygonStamped 1)
-
+   
    ;; for crank recognition
    (setq tf-listener (instance ros::transform-listener :init))
    (ros::subscribe "/handle_pose"
@@ -175,6 +185,7 @@
    ;; (send self :approach-floor)
    (send self :support-by-leg :start-ref-force nil)
    (send self :approach-handle)
+   (send self :publish-body-relative-steering-coords)
    nil
    )
   (:grasp
@@ -383,70 +394,136 @@
    (+ min-pedal-command (* data (- max-pedal-command min-pedal-command)))
    )
 
-  ;; steering estimation
-  (:estimate-steering
-   (&key (limb :larm))
-   (let* ((tmp-robot (copy-object (send motion :robot)))
-          (body-coords (send (car (send (send motion :robot) :links)) :copy-worldcoords))
-          (steering-coords (send motion :car :vehicle-handle :steering-center))
-          header polygon
-          body-relative-ec ec-relative-steering-coords tmp-ec tmp-pos tmp-point32 tmp-point32-list
-          end-coords-list)
-     ;; collect end-coords of real robot
-     (setq polygon-stamped-msg (instance geometry_msgs::PolygonStamped :init))
-     (setq header (send polygon-stamped-msg :header))
-     (setq polygon (send polygon-stamped-msg :polygon))
-     (warn "start recording~%")
-     (do-until-key
-       (send tmp-robot :angle-vector (send *ri* :state :angle-vector))
-       (push (send (send tmp-robot limb :end-coords) :copy-worldcoords) end-coords-list)
+  ;; handling visualization
+  (:publish-body-relative-steering-coords
+   ()
+   (let* ((body-coords (send (car (send (send motion :robot) :links)) :copy-worldcoords))
+          (steering-coords (send (send motion :car :vehicle-handle :steering-center) :copy-worldcoords))
+          (torus (instance jsk_recognition_msgs::Torus :init))
+          (pose (instance geometry_msgs::Pose :init))
+          (current-ros-time (ros::time-now))
+          torus-array-msg header
+          body-relative-steering-coords
+          body-relative-steering-coords-position
+          body-relative-steering-coords-quaternion
+          )
+     ;; translate: worldcoords of center -> body related coords of steering-center
+     (setq body-relative-steering-coords (send body-coords :transformation steering-coords))
+     (setq body-relative-steering-coords-position (scale 0.001 (send body-relative-steering-coords :pos))) ;; eus[mm]->ros[m]
+     (setq body-relative-steering-coords-quaternion (matrix2quaternion (send body-relative-steering-coords :rot)))
+     ;; make torus
+     (send torus :large_radius (* 0.001 (/ 380 2)))
+     (send torus :small_radius 0.02)
+     (send pose :position
+           (instance geometry_msgs::Point :init
+                     :x (elt body-relative-steering-coords-position 0)
+                     :y (elt body-relative-steering-coords-position 1)
+                     :z (elt body-relative-steering-coords-position 2)
+                     )
+           )
+     (send pose :orientation
+           (instance geometry_msgs::Quaternion :init
+                     :x (elt body-relative-steering-coords-quaternion 1)
+                     :y (elt body-relative-steering-coords-quaternion 2)
+                     :z (elt body-relative-steering-coords-quaternion 3)
+                     :w (elt body-relative-steering-coords-quaternion 0)
+                     )
+           )
+     (send torus :header (instance std_msgs::Header :init :stamp current-ros-time :frame_id "BODY"))
+     (send torus :pose pose)
+     ;; publish
+     (setq torus-array-msg (instance jsk_recognition_msgs::TorusArray :init))
+     (send torus-array-msg :toruses (list torus))
+     (send torus-array-msg :header
+           (instance std_msgs::Header :init :stamp current-ros-time :frame_id "BODY"))
+     (ros::publish "/drive/controller/currest_steering" torus-array-msg)
+     )
+   )
+  (:record-handling-end-coords
+   (&key (reset-buffer nil))
+   (when (and record-handling-end-coords-flag grasped-flag)
+     (let* ((model-angle-vector (send motion :robot :angle-vector)))
+       (when reset-buffer
+         (setq handling-end-coords-list nil)
+         )
+       (send motion :robot :angle-vector (send *ri* :state :angle-vector))
+       (push (send (send motion :robot (send motion :grasp-arm) :end-coords) :copy-worldcoords) handling-end-coords-list)
+       (send motion :robot :angle-vector model-angle-vector) ;; resume
        )
-     (warn "finish recording~%")
+     )
+   )
+  (:publish-steering-trajectory
+   (&key (project-to-steering nil) (pub-topic nil))
+   (unless (stringp pub-topic)
+     (setq pub-topic "/drive/controller/handling_trajectory")
+     )
+   (let* ((body-coords (send (car (send (send motion :robot) :links)) :copy-worldcoords))
+          (steering-coords (send motion :car :vehicle-handle :steering-center))
+          (polygon-stamped-msg (instance geometry_msgs::PolygonStamped :init))
+          body-relative-ec ec-relative-steering-coords tmp-ec tmp-pos tmp-point32 tmp-point32-list
+          )
      ;; translate end-coords: worldcoords of grasp-point -> body related coords of steering-point
-     (dolist (ec (reverse end-coords-list))
+     (dolist (ec (reverse handling-end-coords-list))
        (setq tmp-ec (send ec :copy-worldcoords))
        (setq ec-relative-steering-coords (send tmp-ec :transformation steering-coords :local))
-       (send tmp-ec :translate (float-vector 0 0 (elt (send ec-relative-steering-coords :pos) 2)) :local) ;; project end-coords(estimated as grasp-point) to same plane as steering
+       (when project-to-steering
+         (send tmp-ec :translate (float-vector 0 0 (elt (send ec-relative-steering-coords :pos) 2)) :local) ;; project end-coords(estimated as grasp-point) to same plane as steering
+         )
        (setq body-relative-ec (send body-coords :transformation tmp-ec :local)) ;; make relative coords from body-link to end-coords
-       (setq tmp-pos (send body-relative-ec :pos))
-       ;; (setq tmp-pos (send ec :pos))
-       (setq tmp-point32 (instance geometry_msgs::Point32 :init))
-       (setq tmp-pos (scale 0.001 tmp-pos))
-       (send tmp-point32 :x (elt tmp-pos 0))
-       (send tmp-point32 :y (elt tmp-pos 1))
-       (send tmp-point32 :z (elt tmp-pos 2))
-       (push tmp-point32 tmp-point32-list)
+       (setq tmp-pos (scale 0.001 (send body-relative-ec :pos)))
+       (push (instance geometry_msgs::Point32 :init
+                       :x (elt tmp-pos 0)
+                       :y (elt tmp-pos 1)
+                       :z (elt tmp-pos 2))
+             tmp-point32-list
+             )
        )
      ;; publish
-     (warn "publish data~%")
-     (send polygon :points tmp-point32-list)
-     (send header :stamp (ros::time-now))
-     (send header :frame_id "BODY")
-     (ros::publish "/drive/torus_finder/input/polygon" polygon-stamped-msg)
-     (ros::spin-once)
-     (ros::sleep)
+     (send polygon-stamped-msg :polygon :points tmp-point32-list)
+     (send polygon-stamped-msg :header :stamp (ros::time-now))
+     (send polygon-stamped-msg :header :frame_id "BODY")
+     (ros::publish pub-topic polygon-stamped-msg)
+     )
+   )
+
+  ;; steering estimation by torus-finder
+  (:estimate-steering-by-torus-finder
+   (&key (wait-sec 30.0))
+   (let (wait-start)
+     (send self :publish-steering-trajectory :project-to-steering t :pub-topic "/drive/controller/torus_finder_input")
+     (setq torus-finder-estimated-robot-coords nil)
+     (setq wait-start (ros::time-now))
+     (while (and (< (- (send (ros::time-now) :to-sec) (send wait-start :to-sec)) wait-sec)
+                 (not torus-finder-estimated-robot-coords))
+       (ros::spin-once)
+       (ros::sleep)
+       )
+     (unless torus-finder-estimated-robot-coords
+       (return-from :estimate-steering-by-torus-finder nil) ;; failed estimation
+       )
+     (send self :apply-steering-estimation torus-finder-estimated-robot-coords)
+     (send self :publish-body-relative-steering-coords) ;; update steering coords in rviz
+     t
      )
    )
   (:torus-finder-callback
    (msg)
-   (warn "Update handle coordinates according to torus_finder~%")
-   (let ((pose (send msg :pose))
-         body-relative-steering-coords)
-     ;; (warn "old: ~A~%" (send motion :car :vehicle-handle :copy-worldcoords))
-     (setq body-relative-steering-coords (make-coords
-                                          :pos (scale 1000 (float-vector (send pose :position :x) (send pose :position :y) (send pose :position :z))) ;; ros[m] -> eus[mm]
-                                          :rot (quaternion2matrix (float-vector (send pose :orientation :w) (send pose :orientation :x)
-                                                                                (send pose :orientation :y) (send pose :orientation :z)))
-                                          )
-           )
-     (setq torus-finder-estimated-robot-coords
-           (send self :calculate-new-robot-coords-from-body-relative-steering-coords body-relative-steering-coords)
-           )
+   (when torus-finder-estimation-flag
+     (warn "Update handle coordinates according to torus_finder~%")
+     (let ((pose (send msg :pose))
+           body-relative-steering-coords)
+       ;; (warn "old: ~A~%" (send motion :car :vehicle-handle :copy-worldcoords))
+       (setq body-relative-steering-coords (make-coords
+                                            :pos (scale 1000 (float-vector (send pose :position :x) (send pose :position :y) (send pose :position :z))) ;; ros[m] -> eus[mm]
+                                            :rot (quaternion2matrix (float-vector (send pose :orientation :w) (send pose :orientation :x)
+                                                                                  (send pose :orientation :y) (send pose :orientation :z)))
+                                            )
+             )
+       (setq torus-finder-estimated-robot-coords
+             (send self :calculate-new-robot-coords-from-body-relative-steering-coords body-relative-steering-coords)
+             )
+       )
      )
-   )
-  (:republish-steering-trajectory
-   ()
-   (ros::publish "/drive/torus_finder/input/polygon" polygon-stamped-msg)
    )
   (:apply-steering-estimation
    (estimated-robot-coords &key (yes nil))
@@ -462,19 +539,18 @@
    )
   (:calculate-new-robot-coords-from-body-relative-steering-coords
    (body-relative-steering-coords)
-   (let ((tmp-robot (copy-object (send motion :robot)))
+   (let ((robot-coords (send motion :robot :copy-worldcoords))
          (body-coords (send (car (send (send motion :robot) :links)) :copy-worldcoords))
          (steering-coords (send motion :car :vehicle-handle :steering-center))
-         real-steering-worldcoords steering-relative-body-coords real-body-worldcoords estimated-robot-coords)
-     (warn "old: ~A~%" (send tmp-robot :copy-worldcoords))     
+         real-steering-worldcoords steering-relative-body-coords real-body-worldcoords)
+     (warn "old: ~A~%" robot-coords)
      (warn "trans: ~A~%" body-relative-steering-coords)
      (setq steering-relative-body-coords (send body-relative-steering-coords :inverse-transformation))
      (setq real-body-worldcoords (send steering-coords :transform steering-relative-body-coords :local))
      (warn "new body: ~A~%" real-body-worldcoords)
-     (send tmp-robot :transform (send body-coords :transformation real-body-worldcoords :world) :world)
-     (setq estimated-robot-coords (send tmp-robot :copy-worldcoords))
-     (warn "new robot: ~A~%" estimated-robot-coords)
-     estimated-robot-coords
+     (send robot-coords :transform (send body-coords :transformation real-body-worldcoords :world) :world)
+     (warn "new robot: ~A~%" robot-coords)
+     robot-coords
      )
    )
 
@@ -586,6 +662,7 @@
          (send *ri* :wait-interpolation)
          )
        )
+     (send self :publish-body-relative-steering-coords) ;; update steering coords in rviz
      (setq accel-flag old-accel-flag)
      (and release-result compensation-result approach-result grasp-result) ;; return result of all compensation process
      )
@@ -678,6 +755,14 @@
   (:max-turn-angle-diff (&optional (val nil)) (when val (setq max-turn-angle-diff-deg val)) max-turn-angle-diff-deg)
   (:grasped-flag (&optional (val 0)) (unless (equal val 0) (setq grasped-flag val)) grasped-flag)
   (:accel-flag (&optional (val 0)) (unless (equal val 0) (setq accel-flag val)) accel-flag)
+  (:record-handling-end-coords-flag
+   (&optional (val 0))
+   (unless (equal val 0)
+     (setq record-handling-end-coords-flag val)
+     (setq handling-end-coords-list nil)
+     )
+   record-handling-end-coords-flag
+   )
 
   ;; main loop
   (:execute
@@ -685,6 +770,7 @@
    (let ((count 0))
      (do-until-key
       (send self :estimate-current-handle-angle)
+      (send self :record-handling-end-coords)
       (ros::spin-once)
       (ros::sleep)
       )
