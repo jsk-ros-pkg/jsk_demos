@@ -38,7 +38,7 @@
         (make-cascoords
          ;; :coords (make-coords :pos #f(0 0 170) :rpy (if *drill-reverse-hand* (list (deg2rad 40) 0 pi) (list (deg2rad -40) 0 0)))
          :coords (make-coords 
-                  :pos #f(0 0 140) 
+                  :pos #f(0 0 150) 
                   :rpy ;;depends on button motion 
                   (cond ((or (equal *robot-name* "HRP2JSKNTS") (equal *robot-name* "HRP2JSKNT"))
                          (if *drill-reverse-hand* (if *support-reverse-hand* (list (deg2rad -20) 0 pi) (list (deg2rad 150) 0 pi)) (list (deg2rad -40) 0 0)))
@@ -198,17 +198,22 @@
   ;;                                  :rotate pi/2 :y :local) :rotate pi :z :local) :rotate 0 :z :local)
   ;;        :parent (send *robot* :hand *drill-support-arm* :link "L_INDEXPIP_R_LINK")))
   (cond ((or (equal *robot-name* "HRP2JSKNT") (equal *robot-name* "HRP2JSKNTS"))
-         (if (not *support-reverse-hand*)
+         (if t ;; finger
              (send *robot* :put :support-arm-drill-button-coords
                    (make-cascoords
-                                        ;	     :coords (send (send (send *robot* *drill-support-arm* :end-coords) :copy-worldcoords) :translate #f(50 87.5 80) :local)
-                    :coords (send (send (send (send *robot* *drill-support-arm* :end-coords) :copy-worldcoords) :translate #f(80 62 80) :local) :rotate (deg2rad 135) :z)
+                    :coords (send (send (send (send (send *robot* *drill-support-arm* :end-coords) :copy-worldcoords) :translate #f(150 2 -20) :local) :rotate (deg2rad 90) :y) :rotate (deg2rad 180) :z)
                     :parent (send (send *robot* *drill-support-arm* :end-coords) :parent)))
-           (send *robot* :put :support-arm-drill-button-coords ;; ohara 4/12
-                 (make-cascoords
-                  :coords (send (send (send (send (send *robot* *drill-support-arm* :end-coords) :copy-worldcoords) :translate #f(120 62 -80) :local) :rotate (deg2rad 180) :y) :rotate (deg2rad -90) :z)
-                  :parent (send (send *robot* *drill-support-arm* :end-coords) :parent))))
-         )
+           (if (not *support-reverse-hand*)
+               (send *robot* :put :support-arm-drill-button-coords
+                       (make-cascoords
+                                        ;	     :coords (send (send (send *robot* *drill-support-arm* :end-coords) :copy-worldcoords) :translate #f(50 87.5 80) :local)
+                        :coords (send (send (send (send *robot* *drill-support-arm* :end-coords) :copy-worldcoords) :translate #f(80 62 80) :local) :rotate (deg2rad 135) :z)
+                        :parent (send (send *robot* *drill-support-arm* :end-coords) :parent)))
+               (send *robot* :put :support-arm-drill-button-coords ;; ohara 4/12
+                     (make-cascoords
+                      :coords (send (send (send (send (send *robot* *drill-support-arm* :end-coords) :copy-worldcoords) :translate #f(120 62 -80) :local) :rotate (deg2rad 180) :y) :rotate (deg2rad -90) :z)
+                      :parent (send (send *robot* *drill-support-arm* :end-coords) :parent))))
+             ))
         (t ;; JAXON
          (send *robot* :put :support-arm-drill-button-coords
                    (make-cascoords
