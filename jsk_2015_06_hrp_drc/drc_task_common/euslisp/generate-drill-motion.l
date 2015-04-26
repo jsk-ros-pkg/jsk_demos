@@ -210,7 +210,7 @@
          (cond ((equal *drill-button-point* :finger) ;; finger
 		(send *robot* :put :support-arm-drill-button-coords
 		      (make-cascoords
-		       :coords (send (send (send (send (send *robot* *drill-support-arm* :end-coords) :copy-worldcoords) :translate #f(100 2 -20) :local) :rotate (deg2rad 90) :y) :rotate (deg2rad 180) :z)
+		       :coords (send (send (send (send (send *robot* *drill-support-arm* :end-coords) :copy-worldcoords) :translate #f(100 12 -20) :local) :rotate (deg2rad 90) :y) :rotate (deg2rad 180) :z)
 		       :parent (send (send *robot* *drill-support-arm* :end-coords) :parent))))
 	       
 	       ((equal *drill-button-point* :attachment)
@@ -888,8 +888,14 @@
 	  (cond ((equal *drill-button-point* :attachment) 
 		 (drill-full-grasp :arm :arms))
 		((equal *drill-button-point* :finger)
-		 (drill-hook :arm *drill-support-arm*))
-	))
+		 (cond ((or (equal *robot-name* "HRP2JSKNT") (equal *robot-name* "HRP2JSKNTS"))
+			(send *robot* :hand *drill-support-arm* :angle-vector (float-vector 90.0 90.0 -10.0 0.0 -40.0 -40.0))
+			(send *robot* :hand *drill-main-arm* :angle-vector (float-vector 90.0 0.0 0.0 0.0 90.0 90.0))
+			(hand-model2real)
+			))
+
+		 )
+		))
       (send *robot* :angle-vector (elt drill-motion-av-list 0))
       (when (boundp '*irtviewer*) (send *irtviewer* :draw-objects))
       (when real? (model2real :time 6000))
@@ -916,11 +922,11 @@
       ;; second try
       (when try-many?
         (dotimes (ix 1)
-          (dotimes (iy 3)
-            (let ((button-ik nil) (width 10))
+          (dotimes (iy 4)
+            (let ((button-ik nil) (width 12))
               (send *robot* :fix-leg-to-coords (make-coords))
-              (push (fullbody-inverse-kinematics-for-drill-button :x-offset (+ 0 (* (- ix 0) width)) :y-offset (+ 0 (* (- iy 1) width)) :z-offset -35 :draw? nil) button-ik)
-              (push (fullbody-inverse-kinematics-for-drill-button :x-offset (+ 0 (* (- ix 0) width)) :y-offset (+ 0 (* (- iy 1) width)) :z-offset 40 :draw? nil) button-ik)
+              (push (fullbody-inverse-kinematics-for-drill-button :x-offset (+ 0 (* (- ix 0) width)) :y-offset (+ 0 (* (- iy 1.5) width)) :z-offset -35 :draw? nil) button-ik)
+              (push (fullbody-inverse-kinematics-for-drill-button :x-offset (+ 0 (* (- ix 0) width)) :y-offset (+ 0 (* (- iy 1.5) width)) :z-offset 40 :draw? nil) button-ik)
               (when (and (elt button-ik 0) (elt button-ik 1))
                 (send *robot* :angle-vector (elt button-ik 1))
                 (when (boundp '*irtviewer*) (send *irtviewer* :draw-objects))
@@ -1251,7 +1257,8 @@
 
 (defun get-watch-drill-pose ()
   (cond ((equal *robot-name* "HRP2JSKNT")
-	 (if *drill-reverse-hand* #f(-1.38133 5.04464 -28.5655 52.7906 -23.2636 -5.40806 0.0 -1.38071 5.00818 -27.1647 49.5024 -21.3763 -5.3716 0.0 22.1862 23.6363 -22.5578 43.5 -11.4883 -6.82302 22.4676 -115.948 82.417 18.2691 48.5902 60.0 -58.2284 33.3699 -40.8042 -81.4217 5.90815 -41.9868 -46.7235 -60.0)
+	 (if *drill-reverse-hand* 
+	     #f(-2.04568 13.6629 -31.1634 64.7311 -29.6246 -4.90706 0.0 -2.06847 13.9839 -33.5693 68.8818 -31.364 -5.22875 0.0 -23.7973 16.1884 -10.6249 -28.9128 -105.319 -10.0296 34.741 -43.3425 -106.0 47.7471 65.5498 60.0 40.0869 75.2885 11.7308 -117.757 -18.2568 65.0121 0.945275 -60.0)
 	     #f(-1.38133 5.04464 -28.5655 52.7906 -23.2636 -5.40806 0.0 -1.38071 5.00818 -27.1647 49.5024 -21.3763 -5.3716 0.0 22.1862 23.6363 -22.5578 43.5 -2.7897 7.6894 8.91765 -101.289 -83.2938 0.700085 -30.2438 60.0 -58.2284 33.3699 -40.8042 -81.4217 5.90815 -41.9868 -46.7235 -60.0)
 	     )
 	 )
