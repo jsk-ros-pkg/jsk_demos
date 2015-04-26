@@ -467,7 +467,7 @@
         (t
          (move-robot-model-to-current-pos)))
   (publish-motion-joint-states *hose-motion* :step-time step-time)
-)
+  )
 
 
 ;; hose util ;;;;
