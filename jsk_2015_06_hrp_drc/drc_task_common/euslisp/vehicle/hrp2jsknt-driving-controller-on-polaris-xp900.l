@@ -25,7 +25,7 @@
                :max-turn-angle tmp-max-turn-angle :max-turn-angle-diff tmp-max-turn-angle-diff
                )
    (send self :step-accel-command -5.0)
-   (send self :release-accel-command 1.0)
+   (send self :release-accel-command 25.0)
    )
   )
 

@@ -276,7 +276,7 @@
    )
   (:turn-handle
    (deg  &key (limb (send self :get :grasp-arm)) (target-handle (send self :get :grasp-point))
-         (time 50) (relative t) (debug-view nil) (use-controller t) (stop 50)
+         (time 100) (relative t) (debug-view nil) (use-controller t) (stop 50)
          (rotation-axis 0) (resolution 5.0) (use-ik-seed t)
          )
    (let* ((steering-coords nil) (avs nil) (tms nil) (remain-angle)
