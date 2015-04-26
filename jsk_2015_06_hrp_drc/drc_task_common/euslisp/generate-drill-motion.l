@@ -45,8 +45,11 @@
 			     (cond 
 			      ((equal *drill-button-point* :attachment-r)
 			       (list (deg2rad -20) 0 pi))
-			      ((or (equal *drill-button-point* :attachment) (equal *drill-button-point* :finger))
-			        (list (deg2rad 150) 0 pi)))
+			      ((equal *drill-button-point* :attachment)
+			       (list (deg2rad 150) 0 pi))
+			      ((equal *drill-button-point* :finger)
+			       (list (deg2rad 135) 0 pi))	      
+			      )
 			   (list (deg2rad -40) 0 0)))
                         (t ;;jaxon
                          (if *drill-reverse-hand* (list (deg2rad 150) 0 pi) (list (deg2rad 60) 0 0))
@@ -821,8 +824,8 @@
 		       ((equal *drill-button-point* :attachment)
 			(send *drill* :newcoords (send (send (send *robot* :foot-midcoords) :copy-worldcoords) :transform (make-coords :pos (float-vector 348.528 -110.496 1385.46) :rpy (list -2.963 0.413 -3.02)) :local)))
 		       (t
-			(send *drill* :newcoords (send (send (send *robot* :foot-midcoords) :copy-worldcoords) :transform (make-coords :pos (float-vector 348.528 -110.496 1385.46) :rpy (list -2.963 0.413 -3.02)) :local)))
-			)
+			(send *drill* :newcoords (send (send (send *robot* :foot-midcoords) :copy-worldcoords) :transform (make-coords :pos (float-vector 348.528 0 1385.46) :rpy (list (deg2rad 210) (deg2rad 10) (deg2rad 240))) :local)))
+		       )
 	       (send *drill* :newcoords (send (send (send *robot* :body_lk) :copy-worldcoords) :transform (make-coords :pos (float-vector 500 0 300) :rpy (list 0 (deg2rad -30) pi/2)) :local)))
              )
             (t
@@ -842,7 +845,7 @@
       (setq ik-ret (fullbody-inverse-kinematics-for-drill-button :x-offset 0 :y-offset 0 :z-offset 0 :draw? draw?))
       (push-back (list 2 (not (null ik-ret)) ik-ret) ik-results)
       ;; push
-      (setq ik-ret (fullbody-inverse-kinematics-for-drill-button :x-offset 0 :y-offset 0 :z-offset 30 :draw? draw?))
+      (setq ik-ret (fullbody-inverse-kinematics-for-drill-button :x-offset 0 :y-offset 0 :z-offset 40 :draw? draw?))
       (push-back (list 3 (not (null ik-ret)) ik-ret) ik-results)
       (setq *drill-ik-results* ik-results)
       ))
@@ -881,7 +884,12 @@
       (when real? (send *ri* :set-ref-force #f(0 0 -20) 2000 *drill-main-arm*))
       ;; first try
       ;; pre-push1
-      ;(if (or (equal *robot-name* "HRP2JSKNT") (equal *robot-name* "HRP2JSKNTS")) (drill-full-grasp :arm :arms))
+      (if (or (equal *robot-name* "HRP2JSKNT") (equal *robot-name* "HRP2JSKNTS")) 
+	  (cond ((equal *drill-button-point* :attachment) 
+		 (drill-full-grasp :arm :arms))
+		((equal *drill-button-point* :finger)
+		 (drill-hook :arm *drill-support-arm*))
+	))
       (send *robot* :angle-vector (elt drill-motion-av-list 0))
       (when (boundp '*irtviewer*) (send *irtviewer* :draw-objects))
       (when real? (model2real :time 6000))
@@ -912,7 +920,7 @@
             (let ((button-ik nil) (width 10))
               (send *robot* :fix-leg-to-coords (make-coords))
               (push (fullbody-inverse-kinematics-for-drill-button :x-offset (+ 0 (* (- ix 0) width)) :y-offset (+ 0 (* (- iy 1) width)) :z-offset -35 :draw? nil) button-ik)
-              (push (fullbody-inverse-kinematics-for-drill-button :x-offset (+ 0 (* (- ix 0) width)) :y-offset (+ 0 (* (- iy 1) width)) :z-offset 30 :draw? nil) button-ik)
+              (push (fullbody-inverse-kinematics-for-drill-button :x-offset (+ 0 (* (- ix 0) width)) :y-offset (+ 0 (* (- iy 1) width)) :z-offset 40 :draw? nil) button-ik)
               (when (and (elt button-ik 0) (elt button-ik 1))
                 (send *robot* :angle-vector (elt button-ik 1))
                 (when (boundp '*irtviewer*) (send *irtviewer* :draw-objects))
@@ -1163,7 +1171,20 @@
   
   (publish-motion-joint-states *drill-motion* :step-time step-time))
 
-
+(defun check-reachability
+  (&key (width 50) (arm *drill-main-arm*))
+  (let ((result-list nil) (current-av (send *robot* :angle-vector)))
+    (dotimes (ix 3)
+      (dotimes (iy 3)
+	(dotimes (iz 3)
+	  (if (send *robot* arm :move-end-pos (float-vector (* (- ix 1) width) (* (- iy 1) width) (* (- iz 1) width)) :local :debug-view :no-message)
+	      (push-back t result-list) (push-back nil result-list)
+	    )
+	  (send *robot* :angle-vector current-av)
+	  )))
+    result-list
+    )
+  )
 
 ;; drill util ;;;;
 
