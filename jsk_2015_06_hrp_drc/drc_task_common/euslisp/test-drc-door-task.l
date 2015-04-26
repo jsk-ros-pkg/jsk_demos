@@ -1,13 +1,13 @@
 (load "~/prog/euslib/irteus_proposals/motion-lib-proposal.l")
 (load "package://drc_task_common/euslisp/robot-util.l")
 
-(defun setup-door-open (&key (draw t) (generate-robot? t) (robot-name "HRP2JSKNT"))
+(defun setup-door-open (&key (draw t) (generate-robot? t) (generate-ri? t) (robot-name "HRP2JSKNT"))
   (when generate-robot?
     (cond (robot-name
            (setq *robot-name* robot-name))
           (t ;;(unix::getenv "ROBOT")
            (setq *robot-name* (string-upcase (unix::getenv "ROBOT")))))
-    (generate-robot *robot-name* :generate-ri? t)
+    (generate-robot *robot-name* :generate-ri? generate-ri?)
     )
   ;;(make-drc-box2-door)
   ;;(make-drc-test-door-right)
