@@ -101,7 +101,8 @@
                    geometry_msgs::PoseStamped
                    #'send self :torus-finder-callback)
    (ros::advertise "/drive/torus_finder/input/polygon" geometry_msgs::PolygonStamped 1)
-
+   (ros::advertise "/drive/controller/currest_steering" jsk_recognition_msgs::TorusArray 1)
+   
    ;; for crank recognition
    (setq tf-listener (instance ros::transform-listener :init))
    (ros::subscribe "/handle_pose"
@@ -384,6 +385,50 @@
    )
 
   ;; steering estimation
+  (:publish-body-relative-steering-coords
+   ()
+   (let* ((body-coords (send (car (send (send motion :robot) :links)) :copy-worldcoords))
+          (steering-coords (send (send motion :car :vehicle-handle :steering-center) :copy-worldcoords))
+          (torus (instance jsk_recognition_msgs::Torus :init))
+          (pose (instance geometry_msgs::Pose :init))
+          (current-ros-time (ros::time-now))
+          torus-array-msg header
+          body-relative-steering-coords
+          body-relative-steering-coords-position
+          body-relative-steering-coords-quaternion
+          )
+     ;; translate: worldcoords of center -> body related coords of steering-center
+     (setq body-relative-steering-coords (send body-coords :transformation steering-coords))
+     (setq body-relative-steering-coords-position (scale 0.001 (send body-relative-steering-coords :pos))) ;; eus[mm]->ros[m]
+     (setq body-relative-steering-coords-quaternion (matrix2quaternion (send body-relative-steering-coords :rot)))
+     ;; make torus
+     (send torus :large_radius (* 0.001 (/ 380 2)))
+     (send torus :small_radius 0.02)
+     (send pose :position
+           (instance geometry_msgs::Point :init
+                     :x (elt body-relative-steering-coords-position 0)
+                     :y (elt body-relative-steering-coords-position 1)
+                     :z (elt body-relative-steering-coords-position 2)
+                     )
+           )
+     (send pose :orientation
+           (instance geometry_msgs::Quaternion :init
+                     :x (elt body-relative-steering-coords-quaternion 1)
+                     :y (elt body-relative-steering-coords-quaternion 2)
+                     :z (elt body-relative-steering-coords-quaternion 3)
+                     :w (elt body-relative-steering-coords-quaternion 0)
+                     )
+           )
+     (send torus :header (instance std_msgs::Header :init :stamp current-ros-time :frame_id "BODY"))
+     (send torus :pose pose)
+     ;; publish
+     (setq torus-array-msg (instance jsk_recognition_msgs::TorusArray :init))
+     (send torus-array-msg :toruses (list torus))
+     (send torus-array-msg :header
+           (instance std_msgs::Header :init :stamp current-ros-time :frame_id "BODY"))
+     (ros::publish "/drive/controller/currest_steering" torus-array-msg)
+     )
+   )
   (:estimate-steering
    (&key (limb :larm))
    (let* ((tmp-robot (copy-object (send motion :robot)))
