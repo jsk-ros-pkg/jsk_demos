@@ -1,6 +1,6 @@
 <launch>
   <arg name="ik_server_launch" default="jaxon-ik-server.launch" />
-  <arg name="ROBOT_URDF_MODEL" default="$(find hrpsys_ros_bridge_tutorials)/models/JAXON.urdf" />
+  <arg name="ROBOT_URDF_MODEL" default="$(find hrpsys_ros_bridge_tutorials)/models/JAXON_WH_SENSORS.urdf" />
   <arg name="USE_CALIB_FILE" default="false" />
   <arg name="CALIB_FILE" default="" />
 
