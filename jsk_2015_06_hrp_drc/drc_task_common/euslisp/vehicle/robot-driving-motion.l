@@ -25,6 +25,9 @@
    (when real
      ;; (send *ri* :set-interpolation-mode :linear) ;; avoid sudden change in joint angles when steering
      (send *ri* :set-interpolation-mode :hoffarbib)
+     ;; disable balancer plugins
+     (send *ri* :stop-st)
+     (send *ri* :stop-auto-balancer)
      )
    (send self :put :grasp-arm grasp-arm)
    (send self :put :grasp-point grasp-point)
