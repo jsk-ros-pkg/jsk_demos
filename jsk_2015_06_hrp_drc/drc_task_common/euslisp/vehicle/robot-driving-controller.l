@@ -323,18 +323,26 @@
   ;; internal functions
   (:accel-cmd
    (cmd)
-   (let ((cmd-angle (send self :get-pedal-motion-from-cmd cmd release-accel-command step-accel-command)))
-     (warn "accel ~A[cmd] -> ~A [deg]~%" cmd cmd-angle)
-     (send self :step-accel cmd-angle)
-     cmd-angle ;; return real command to robot
+   (let ((cmd-motion (send self :get-pedal-motion-from-cmd cmd release-accel-command step-accel-command)))
+     (warn "accel ~A[cmd] -> ~A[deg]~%" cmd cmd-motion)
+     (send self :step-accel cmd-motion)
+     (send self :publish-current-step cmd-motion)
+     cmd-motion ;; return real command to robot
      )
    )
   (:brake-cmd
    (cmd)
-   (let ((cmd-angle (send self :get-pedal-motion-from-cmd cmd release-brake-command step-brake-command)))
-     (warn "brake ~A[cmd] -> ~A [deg]~%" cmd cmd-angle)
-     (send self :step-brake cmd-angle)
-     cmd-angle ;; return real command to robot
+   (let ((cmd-motion (send self :get-pedal-motion-from-cmd cmd release-brake-command step-brake-command)))
+     (warn "brake ~A[cmd] -> ~A[deg]~%" cmd cmd-motion)
+     (send self :step-brake cmd-motion)
+     cmd-motion ;; return real command to robot
+     )
+   )
+  (:publish-current-step
+   (step)
+   (let ((pub-step (instance std_msgs::Float32 :init)))
+     (send pub-step :data step)
+     (ros::publish "/drive/controller/step" pub-step)
      )
    )
 
@@ -351,8 +359,7 @@
    )
   (:accel-callback
    (msg)
-   (let ((pub-step (instance std_msgs::Float32 :init))
-         (pub-pedal-state (instance std_msgs::Bool :init))
+   (let ((pub-pedal-state (instance std_msgs::Bool :init))
          (threshold 0.05) ;; 0-1 range command
          (accel-command (send msg :data))
          )
@@ -365,8 +372,7 @@
      (when (or (not old-accel-command)
                (> (abs (- accel-command old-accel-command)) threshold)
                )
-       (send pub-step :data (send self :accel-cmd accel-command))
-       (ros::publish "/drive/controller/step" pub-step)
+       (send self :accel-cmd accel-command)
        (setq old-accel-command accel-command)
        )
      (send pub-pedal-state :data accel-flag)
@@ -375,16 +381,14 @@
    )
   (:brake-callback
    (msg)
-   (let ((pub-step (instance std_msgs::Float32 :init))
-         (threshold 0.05) ;; 0-1 range command
+   (let ((threshold 0.05) ;; 0-1 range command
          (brake-command (send msg :data))
          )
      (when (or (not old-brake-command)
                (> (abs (- brake-command old-brake-command)) threshold)
                )
        (send self :brake-cmd brake-command)
-       (send pub-step :data (send self :accel-cmd 0.0)) ;; release accel
-       (ros::publish "/drive/controller/step" pub-step)
+       (send self :accel-cmd 0.0)
        (setq old-brake-command brake-command)
        )
      )
@@ -586,6 +590,10 @@
          release-result grasp-result approach-result
          compensation-result
          )
+     (warn "release accel~%")
+     (setq old-accel-flag accel-flag)
+     (setq accel-flag nil) ;; disable accel
+     (send self :accel-cmd 0.0) ;; force stop
      (warn "wait interpolation~%")
      (setq wait-start (ros::time-now))
      (while (and (or (send *ri* :interpolatingp (read-from-string (format nil ":~A-controller" (string-downcase limb))))
@@ -600,9 +608,6 @@
        (return-from :execute-handle-pose-compensation nil)
        )
      (warn "release handle~%")
-     (setq old-accel-flag accel-flag)
-     (setq accel-flag nil) ;; disable accel
-     (send self :accel-cmd 0.0) ;; force stop
      (if grasped-flag
          (setq release-result (send self :release))
        (setq release-result t)
