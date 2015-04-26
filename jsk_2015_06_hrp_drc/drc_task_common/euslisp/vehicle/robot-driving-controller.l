@@ -184,6 +184,7 @@
    ;; (send self :approach-floor)
    (send self :support-by-leg :start-ref-force nil)
    (send self :approach-handle)
+   (send self :publish-body-relative-steering-coords)
    nil
    )
   (:grasp
@@ -494,6 +495,7 @@
        (ros::sleep)
        )
      (send self :apply-steering-estimation torus-finder-estimated-robot-coords)
+     (send self :publish-body-relative-steering-coords) ;; update steering coords in rviz
      )
    )
   (:torus-finder-callback
@@ -652,6 +654,7 @@
          (send *ri* :wait-interpolation)
          )
        )
+     (send self :publish-body-relative-steering-coords) ;; update steering coords in rviz
      (setq accel-flag old-accel-flag)
      (and release-result compensation-result approach-result grasp-result) ;; return result of all compensation process
      )
