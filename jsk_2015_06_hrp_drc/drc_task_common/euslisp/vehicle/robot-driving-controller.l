@@ -452,8 +452,7 @@
    )
   (:publish-steering-trajectory
    (&key (project-to-steering nil))
-   (let* ((tmp-robot (copy-object (send motion :robot)))
-          (body-coords (send (car (send (send motion :robot) :links)) :copy-worldcoords))
+   (let* ((body-coords (send (car (send (send motion :robot) :links)) :copy-worldcoords))
           (steering-coords (send motion :car :vehicle-handle :steering-center))
           (polygon-stamped-msg (instance geometry_msgs::PolygonStamped :init))
           body-relative-ec ec-relative-steering-coords tmp-ec tmp-pos tmp-point32 tmp-point32-list
@@ -530,19 +529,18 @@
    )
   (:calculate-new-robot-coords-from-body-relative-steering-coords
    (body-relative-steering-coords)
-   (let ((tmp-robot (copy-object (send motion :robot)))
+   (let ((robot-coords (send motion :robot :copy-worldcoords))
          (body-coords (send (car (send (send motion :robot) :links)) :copy-worldcoords))
          (steering-coords (send motion :car :vehicle-handle :steering-center))
-         real-steering-worldcoords steering-relative-body-coords real-body-worldcoords estimated-robot-coords)
-     (warn "old: ~A~%" (send tmp-robot :copy-worldcoords))     
+         real-steering-worldcoords steering-relative-body-coords real-body-worldcoords)
+     (warn "old: ~A~%" robot-coords)
      (warn "trans: ~A~%" body-relative-steering-coords)
      (setq steering-relative-body-coords (send body-relative-steering-coords :inverse-transformation))
      (setq real-body-worldcoords (send steering-coords :transform steering-relative-body-coords :local))
      (warn "new body: ~A~%" real-body-worldcoords)
-     (send tmp-robot :transform (send body-coords :transformation real-body-worldcoords :world) :world)
-     (setq estimated-robot-coords (send tmp-robot :copy-worldcoords))
-     (warn "new robot: ~A~%" estimated-robot-coords)
-     estimated-robot-coords
+     (send robot-coords :transform (send body-coords :transformation real-body-worldcoords :world) :world)
+     (warn "new robot: ~A~%" robot-coords)
+     robot-coords
      )
    )
 
@@ -746,6 +744,14 @@
   (:max-turn-angle-diff (&optional (val nil)) (when val (setq max-turn-angle-diff-deg val)) max-turn-angle-diff-deg)
   (:grasped-flag (&optional (val 0)) (unless (equal val 0) (setq grasped-flag val)) grasped-flag)
   (:accel-flag (&optional (val 0)) (unless (equal val 0) (setq accel-flag val)) accel-flag)
+  (:record-handling-end-coords-flag
+   (&optional (val 0))
+   (unless (equal val 0)
+     (setq record-handling-end-coords-flag val)
+     (setq handling-end-coords-list nil)
+     )
+   record-handling-end-coords-flag
+   )
 
   ;; main loop
   (:execute
@@ -754,6 +760,9 @@
      (do-until-key
       (send self :estimate-current-handle-angle)
       (send self :record-handling-end-coords)
+      (when record-handling-end-coords-flag
+        (send self :publish-steering-trajectory)
+        )
       (ros::spin-once)
       (ros::sleep)
       )
