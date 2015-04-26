@@ -8,7 +8,7 @@
       <param name="eps_hint_angle" value="0.1" />
       <param name="voxel_grid_sampling" value="true" /> 
       <param name="voxel_size" value="0.002" />
-      <remap from="/drive/torus_finder/input/polygon" to="/drive/controller/handling_trajectory" />
+      <remap from="/drive/torus_finder/input/polygon" to="/drive/controller/torus_finder_input" />
     </node>
   </group>
 </launch>

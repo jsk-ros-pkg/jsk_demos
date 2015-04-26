@@ -107,6 +107,7 @@
    (ros::advertise "/drive/controller/handling_trajectory" geometry_msgs::PolygonStamped 1)
 
    ;; for steering estimation
+   (ros::advertise "/drive/controller/torus_finder_input" geometry_msgs::PolygonStamped 1)
    (ros::subscribe "/drive/torus_finder/output/pose"
                    geometry_msgs::PoseStamped
                    #'send self :torus-finder-callback)
@@ -452,7 +453,10 @@
      )
    )
   (:publish-steering-trajectory
-   (&key (project-to-steering nil))
+   (&key (project-to-steering nil) (pub-topic nil))
+   (unless (stringp pub-topic)
+     (setq pub-topic "/drive/controller/handling_trajectory")
+     )
    (let* ((body-coords (send (car (send (send motion :robot) :links)) :copy-worldcoords))
           (steering-coords (send motion :car :vehicle-handle :steering-center))
           (polygon-stamped-msg (instance geometry_msgs::PolygonStamped :init))
@@ -478,7 +482,7 @@
      (send polygon-stamped-msg :polygon :points tmp-point32-list)
      (send polygon-stamped-msg :header :stamp (ros::time-now))
      (send polygon-stamped-msg :header :frame_id "BODY")
-     (ros::publish "/drive/controller/handling_trajectory" polygon-stamped-msg)
+     (ros::publish pub-topic polygon-stamped-msg)
      )
    )
 
@@ -486,7 +490,7 @@
   (:estimate-steering-by-torus-finder
    (&key (wait-sec 30.0))
    (let (wait-start)
-     (send self :publish-steering-trajectory :project-to-steering t)
+     (send self :publish-steering-trajectory :project-to-steering t :pub-topic "/drive/controller/torus_finder_input")
      (setq torus-finder-estimated-robot-coords nil)
      (setq wait-start (ros::time-now))
      (while (and (< (- (send (ros::time-now) :to-sec) (send wait-start :to-sec)) wait-sec)
@@ -763,9 +767,6 @@
      (do-until-key
       (send self :estimate-current-handle-angle)
       (send self :record-handling-end-coords)
-      (when record-handling-end-coords-flag
-        (send self :publish-steering-trajectory)
-        )
       (ros::spin-once)
       (ros::sleep)
       )
