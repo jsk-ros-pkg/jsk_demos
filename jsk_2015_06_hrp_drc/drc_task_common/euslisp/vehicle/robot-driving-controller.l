@@ -546,14 +546,18 @@
    (let ((robot-coords (send motion :robot :copy-worldcoords))
          (body-coords (send (car (send (send motion :robot) :links)) :copy-worldcoords))
          (steering-coords (send motion :car :vehicle-handle :steering-center))
-         real-steering-worldcoords steering-relative-body-coords real-body-worldcoords)
-     (warn "old: ~A~%" robot-coords)
-     (warn "trans: ~A~%" body-relative-steering-coords)
+         real-steering-worldcoords steering-relative-body-coords real-body-worldcoords
+         body-relative-robot-coords
+         )
+     (warn "original robot-coords: ~A~%" robot-coords)
+     (warn "original body-coords: ~A~%" body-coords)
+     (warn "body2steering: ~A~%" body-relative-steering-coords)
      (setq steering-relative-body-coords (send body-relative-steering-coords :inverse-transformation))
      (setq real-body-worldcoords (send steering-coords :transform steering-relative-body-coords :local))
-     (warn "new body: ~A~%" real-body-worldcoords)
-     (send robot-coords :transform (send body-coords :transformation real-body-worldcoords :world) :world)
-     (warn "new robot: ~A~%" robot-coords)
+     (warn "new body-coords: ~A~%" real-body-worldcoords)
+     (setq body-relative-robot-coords (send body-coords :transformation robot-coords))
+     (setq robot-coords (send real-body-worldcoords :transform body-relative-robot-coords))
+     (warn "new robot-coords: ~A~%" robot-coords)
      robot-coords
      )
    )
@@ -566,13 +570,16 @@
                         (send msg :header :frame_id)
                         (send msg :header :stamp))) ;; cascaded-coords: body->camera
            body-relative-handle-pose
-           )
+           )       
        (unless trans
          (warn "Failed to solve tf~%")
          (return-from :handle-pose-callback nil)
          )
+       (warn "Body2Camera: ~A~%" trans)
        (setq body-relative-handle-pose
              (send trans :transform (ros::tf-pose-stamped->coords msg))) ;; camera->handle_pose
+       (warn "Camera2Handle: ~A~%" (ros::tf-pose-stamped->coords msg))
+       (warn "Body2Handle: ~A~%" body-relative-handle-pose)
        (setq handle-pose-estimated-robot-coords
              (send self :calculate-new-robot-coords-from-body-relative-steering-coords body-relative-handle-pose)
              )
@@ -581,7 +588,7 @@
    )
   (:execute-handle-pose-compensation
    (&key (tm 2500) (wait-sec 30.0) (limb (send motion :grasp-arm))
-         (position-threshold 1000)
+         (position-threshold 1000) (yes nil)
          )
    ;; wait handling   
    (let (wait-start old-accel-flag
