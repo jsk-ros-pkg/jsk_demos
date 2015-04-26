@@ -161,12 +161,14 @@
   (:drive-init-pose-left-sitting
    ()
    ;; (send robot :angle-vector #f(-8.78949 -17.5481 -85.7058 61.2531 -5.08475 19.7642 30.8982 -27.0106 -81.7285 82.775 0.897663 28.0243 0.0 0.0 0.0 0.0 0.0 20.8944 56.1786 -15.8251 -5.3561 -85.9563 27.0803 22.0044 22.1802 0.0 55.0 20.0 15.0 -100.0 25.0 0.0 -45.0))
-   (send robot :angle-vector #f(-13.1189 -24.4656 -83.3638 44.9385 7.33334 27.7739 15.5265 -14.998 -95.4989 97.065 0.433944 15.5246 11.3761 0.0 0.0 0.0 0.0 13.4594 70.6352 -15.8262 -6.09977 -111.857 21.973 21.9569 41.3552 0.0 55.0 20.0 15.0 -100.0 25.0 0.0 -45.0)) ;; adjsut in real vehicle
+   ;; (send robot :angle-vector #f(-13.1189 -24.4656 -83.3638 44.9385 7.33334 27.7739 15.5265 -14.998 -95.4989 97.065 0.433944 15.5246 11.3761 0.0 0.0 0.0 0.0 13.4594 70.6352 -15.8262 -6.09977 -111.857 21.973 21.9569 41.3552 0.0 55.0 20.0 15.0 -100.0 25.0 0.0 -45.0)) ;; adjsut in real vehicle
+   (send robot :angle-vector #f(-13.1189 -24.4656 -83.3638 44.9385 7.33334 27.7739 15.5265 -14.998 -95.4989 97.065 0.433944 15.5246 11.3761 0.0 0.0 0.0 0.0 13.4236 66.4673 -16.1854 -4.76865 -105.284 22.9836 20.8474 38.8758 0.0 55.0 20.0 15.0 -100.0 25.0 0.0 -45.0))
    )
   (:ride-left-sitting
    ()
    ;; (send robot :move-to (make-coords :pos (float-vector 20 580 -50) :rpy (float-vector 0.0 0.0 0.0)) :world)
-   (send robot :move-to (make-coords :pos (float-vector 20 720 -120) :rpy (float-vector 0.0 0.0 0.0)) :world) ;; adjust in real vehicle
+   ;; (send robot :move-to (make-coords :pos (float-vector 20 720 -120) :rpy (float-vector 0.0 0.0 0.0)) :world) ;; adjust in real vehicle
+   (send robot :move-to (make-coords :pos (float-vector 20 720 -90) :rpy (float-vector 0.0 0.0 0.0)) :world) ;; adjust in real vehicle
    )
 
   (:turn-handle
