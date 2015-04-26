@@ -152,7 +152,7 @@
   (:correct-callback
    (req)
    (let ((res (send req :response)))
-     (send self :correct)
+     (send self :correct :yes t)
      res
      )
    )
@@ -211,10 +211,10 @@
      )
    )
   (:correct
-   ()
+   (&key (yes nil))
    (let (ret-result)
      (setq handle-pose-estimate-flag t)
-     (setq ret-result (send self :execute-handle-pose-compensation))
+     (setq ret-result (send self :execute-handle-pose-compensation :yes yes))
      (setq handle-pose-estimate-flag nil)
      ret-result
      )
@@ -634,7 +634,7 @@
        (setq old-robot-coords (send motion :robot :copy-worldcoords))
        (setq old-body-coords (send (car (send (send motion :robot) :links)) :copy-worldcoords))
        (if handle-pose-estimated-robot-coords
-           (progn (send self :apply-steering-estimation handle-pose-estimated-robot-coords :yes t)
+           (progn (send self :apply-steering-estimation handle-pose-estimated-robot-coords :yes yes)
                   (setq compensation-result t)
                   )
          (progn (warn "cannot find handle_pose~%")
