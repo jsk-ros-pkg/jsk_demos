@@ -1,0 +1,5 @@
+<launch>
+  <machine name="localhost" address="localhost" />
+  <machine name="vmachine" address="hrp2007v" />
+  <machine name="cmachine" address="hrp2007c" />
+</launch>
