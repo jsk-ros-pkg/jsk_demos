@@ -29,8 +29,8 @@
                :approach-handle approach-handle :approach-pedal approach-pedal
                :max-turn-angle tmp-max-turn-angle :max-turn-angle-diff tmp-max-turn-angle-diff
                )
-   (send self :step-accel-command -25.0)
-   (send self :release-accel-command 1.0)
+   (send self :step-accel-command -1.0)
+   (send self :release-accel-command 25.0)
    (setq current-move-mm 0.0)
    )
   (:accel-cmd
@@ -39,6 +39,7 @@
      (warn "accel ~A[cmd] -> ~A [mm]~%" cmd cmd-mm)
      (send self :step-accel cmd-mm)
      (setq current-move-mm (+ current-move-mm cmd-mm))
+     (send self :publish-current-step current-move-mm)
      current-move-mm ;; return total state of accel-command
      )
    )
