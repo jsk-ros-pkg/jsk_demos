@@ -14,8 +14,7 @@
 (setq *default-drill-type* :takenoko)
 
 
-;; takenoko drill
-
+;; show attachment on HRP2HAND
 (defun set-attachment ()
   (when (or (equal *robot-name* "HRP2JSKNT") (equal *robot-name* "HRP2JSKNTS"))
     (setq *hand-attachment* (make-cube 10 10 100))
@@ -28,6 +27,9 @@
     (send *robot* :reset-pose)
     )
   )
+
+;; takenoko drill
+
 (defun init-takenoko-drill ()
   (setq *drill* (takenoko-drill))
   ;; generate drill
@@ -86,8 +88,8 @@
   ;; (when drill-coords
   ;;   (send *drill* :newcoords drill-coords))
   )
-;; gun drill
 
+;; gun drill
 (defun init-gun-drill ()
   (setq *drill* (gun-drill))
   ;; generate drill
@@ -128,12 +130,27 @@
   ;;   (send *drill* :newcoords drill-coords))  
   )
 
+;; set drill coords with symble
 (defun get-drill-coords-with-symbol (coords symbol)
   (ros::ros-info (format nil "got coords ~A symbol ~A drill ~A" (send *drill* :get symbol) symbol *drill*))
   (send (send coords :copy-worldcoords) :transform (send (send (send *drill* :get symbol) :copy-coords) :inverse-transformation))
   )
 
+;; collision check wit drill (only with a few links)
+(defun c-check-for-drill
+  (&key (link-list (list (elt (send *robot* :head :links) 1) (elt (send *robot* :torso :links) 1) (elt (send *robot* *drill-main-arm* :links) 0))))
+  (dotimes (i (length link-list))
+    (when (equal (pqp-collision-check (elt link-list i) *drill*) 1)
+	(ros::ros-info "collision detected")
+	(return-from c-check-for-drill t)
+	)
+    )
+  nil
+  )
+
+
 ;; drill grasp ;;
+;; initialize drill and robot
 (defun set-drill-environment
   (&key (drill-coords (make-coords :pos (float-vector 700 -150 800) :rpy (list 0 0 0)))
         (generate-ri? t) (draw? t)
@@ -249,6 +266,7 @@
     )
   )
 
+;; initialize drill and robot, calculate drill coords
 (defun set-drill-environment-full
   (drill-coords ;; body relative
    &key
@@ -279,17 +297,7 @@
   ;(send *drill* :translate (float-vector 0 0 (* -0.5 (elt (send *drill* :body-type) 2))) :local)
   )
 
-(defun c-check-for-drill
-  (&key (link-list (list (elt (send *robot* :head :links) 1) (elt (send *robot* :torso :links) 1) (elt (send *robot* *drill-main-arm* :links) 0))))
-  (dotimes (i (length link-list))
-    (when (equal (pqp-collision-check (elt link-list i) *drill*) 1)
-	(ros::ros-info "collision detected")
-	(return-from c-check-for-drill t)
-	)
-    )
-  nil
-  )
-
+;; drill ik with tc, mt...
 (defun fullbody-inverse-kinematics-for-drill-grasp
   (tc mt ll &key (draw? nil) (translation-axis (list t t t)) (rotation-axis (list t t t)))
   (cond ((or (equal *robot-name* "HRP2JSKNT") (equal *robot-name* "HRP2JSKNTS"))
@@ -343,6 +351,7 @@
     (when (and ret (send *robot* :self-collision-check)) (setq ret nil))
     ret)
   )
+;; ik for drill (use *drill* coords)
 (defun fullbody-inverse-kinematics-for-drill-grasp-single
   (&key (arm-symbol :grasp-coords) (arm-tc (send (send *drill* :get arm-symbol) :copy-worldcoords)) (arm-mt (gethash *drill-main-arm* *arm-drill-grasp-coords*)) (draw? t) (rotation-axis (list :z t t)))
   (let 
@@ -376,7 +385,7 @@
              (send *robot* :look-at-target (send *drill* :worldcoords)))))
     ik-ret))
 
-
+;; use f sensor and grasp (for gun drill)
 (defun search-drill-grasp-place (&key (reach-dist 100) (debug nil)) ;; thinks recognition 3cm diff
   (let ((reach-dist-x reach-dist) (reach-dist-y (if (equal *drill-main-arm* :rarm) reach-dist (- reach-dist))) (reach-dist-z (/ reach-dist 4)))
     ;; (if (not (send *ri* :reach-until-touch *drill-main-arm* (float-vector reach-dist-x reach-dist-y 0) :max-dist (- (sqrt (+ (* reach-dist-x reach-dist-x) (* reach-dist-y reach-dist-y))) -1) :debug debug :thre 0.71 :dist-step 3)) (return-from nil nil))
@@ -392,11 +401,15 @@
       )
     )
   )
+
+;; (for gun drill)
 (defun search-drill-support-grasp-place (&key (debug nil)) ;; thinks recognition 3cm diff
   (if (equal *drill-support-arm* :rarm) (send *ri* :reach-until-touch :rarm (float-vector 1 1 1) :max-dist (+ 0 120) :debug t :thre 0.1 :dist-step 0.5 :time-step 20 :p-control t :try-dist 250)
     (send *ri* :reach-until-touch :larm (float-vector 1 0 1) :max-dist (+ 0 120) :debug debug :thre 0.1 :dist-step 0.5 :time-step 20 :p-control t)
     )
   )
+
+;; genetate drill motion (with current drill coords)
 (defun generate-drill-grasp-motion
   (&key (draw? t) (rotation-axis (if (eq *default-drill-type* :takenoko)(list :z t t) (list t t t))))
   (let* ((reach-dist 140)
@@ -478,7 +491,7 @@
       (send *drill* :newcoords original-drill-coords)
       (setq *drill-ik-results* ik-results)
       ))
-
+;; calls generate-drill-grasp-motion and change results to *drill-motion*(global)
 (defun get-drill-grasp-motion
   (&key (draw? t) (rotation-axis (list :z t t)))
   (generate-drill-grasp-motion :draw? draw? :rotation-axis rotation-axis)
@@ -500,6 +513,8 @@
           )
       )
   )
+
+;; get-drill-grasp-motion with drill-coords(Body Relative)
 (defun get-drill-grasp-motion-full
   (drill-coords &key (draw? nil) (use-ri? t) (drill-type *default-drill-type*) (recognized-coords-symbol :origin-coords) (rotation-axis (if (eq drill-type :takenoko)(list :z t t) (list t t t))))
   (set-drill-environment-full drill-coords :draw? draw? :use-ri? use-ri? :drill-type drill-type :recognized-coords-symbol recognized-coords-symbol)
@@ -535,8 +550,7 @@
     drill-motion-av-list
     ))
 
-  
-
+;; send drill motion for real robot(fc side)
 (defun send-drill-grasp-motion
   (coords &key (real? t) (drill-type *default-drill-type*) (rotation-axis (list :z t t)))
   (let* ((drill-motion-av-list (get-drill-grasp-motion-full coords :drill-type drill-type :rotation-axis rotation-axis))
@@ -627,6 +641,7 @@
     )
   )
 
+;; publish drill motion in rviz(ocs-side)
 (defun publish-drill-grasp-motion
   (&key coords (step-time 400) (update? t) (drill-type *default-drill-type*))
   (when update?
@@ -643,7 +658,7 @@
 
 
 ;; drill put
-;; almost same with grasp at present
+;; almost same with grasp(at present)
 (defun send-drill-put-motion
   (coords &key (real? t) (drill-type *default-drill-type*))
   (let* ((drill-motion-av-list (get-drill-grasp-motion-full coords :drill-type drill-type :recognized-coords-symbol :put-coords :draw? t :rotation-axis (list :z t t)))
@@ -1249,8 +1264,8 @@
 	)
        (t #f(0.0 0.0 -26.0 50.0 -24.0 0.0 0.0 0.0 0.0 -26.0 50.0 -24.0 0.0 0.0 0.0 0.0 0.0 20.0 50.8516 -36.1267 0.371474 -131.17 72.8481 -13.9098 21.4063 60.0 50.8516 36.1267 -0.371464 -131.17 -72.8481 13.9098 21.4063 -60.0)))
       )
-	(t
-	 (send *robot* :reset-manip-pose))
+	(t	
+ (send *robot* :reset-manip-pose))
 	)
   )
 
