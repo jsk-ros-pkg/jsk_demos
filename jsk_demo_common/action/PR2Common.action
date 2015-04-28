@@ -2,7 +2,7 @@
 geometry_msgs/PoseStamped position
 string arm
 string rotation_axis
-float32 move_above_hright
+float32 move_above_height
 bool debug_view
 ---
 # result
