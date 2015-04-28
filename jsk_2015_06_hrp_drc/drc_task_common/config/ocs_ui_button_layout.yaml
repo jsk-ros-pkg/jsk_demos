@@ -1,59 +1,86 @@
 - name: 'drive'
   service: 'drive'
+  image: "package://drc_task_common/icons/vehicle-icon.png"
+  image_size: [80, 80]
   column: 0
 - name: 'valve'
   service: 'valve'
+  image: "package://drc_task_common/icons/valve-icon.png"
+  image_size: [80, 80]
   column: 0
 - name: 'door'
   service: 'door'
+  image: "package://drc_task_common/icons/door-icon.png"
+  image_size: [80, 80]
   column: 0
 - name: 'debri'
   service: 'debri'
+  image: "package://drc_task_common/icons/debris-icon.png"
+  image_size: [80, 80]
   column: 0
 - name: 'hose_grasp'
   service: 'hose_grasp'
+  image: "package://drc_task_common/icons/hose-icon.png"
+  image_size: [80, 80]
   column: 0
 - name: 'hose_connect'
   service: 'hose_connect'
+  image: "package://drc_task_common/icons/hose-icon.png"
+  image_size: [80, 80]
   column: 0
 - name: 'drill-grasp'
   service: 'drill_grasp'
+  image: "package://drc_task_common/icons/hose-icon.png"
+  image_size: [80, 80]
   column: 0
 - name: 'drill-button'
   service: 'drill_button'
+  image: "package://drc_task_common/icons/wall-icon.png"
+  image_size: [80, 80]
   column: 0
 - name: 'drill-wall'
   service: 'drill_wall'
+  image: "package://drc_task_common/icons/wall-icon.png"
+  image_size: [80, 80]
   column: 0
 - name: 'drill-put'
   service: 'drill_put'
+  image: "package://drc_task_common/icons/wall-icon.png"
+  image_size: [80, 80]
   column: 0
 - name: 'Go pos'
   service: 'go_pos'
   image: "package://drc_task_common/icons/gopos.png"
+  image_size: [180, 180]
   column: 1
 - name: 'Look at'
   service: 'look_at'
   image: "package://drc_task_common/icons/lookat.png"
+  image_size: [180, 180]
   column: 1
 - name: 'Look around'
   service: 'look_around'
+  image_size: [180, 180]
   column: 1
 - name: 'exec'
   service: 'exec'
   image: "package://drc_task_common/icons/exec.png"
+  image_size: [80, 80]
   column: 2
 - name: 'cancel'
   service: 'cancel'
   image: "package://drc_task_common/icons/cancel.png"
+  image_size: [80, 80]
   column: 2
 - name: 'show_motion'
   service: 'reflesh'
   image: "package://drc_task_common/icons/refresh.png"
+  image_size: [80, 80]
   column: 2
 - name: 'cancel-motion-now'
   service: 'cancel_motion_now'
   #image: "package://drc_task_common/icons/cancel.png" # todo
+  image_size: [80, 80]
   column: 2
 - name: 'skip-recog'
   service: 'skip_recog'
@@ -61,8 +88,10 @@
 - name: 'enable-head-overwrite'
   service: 'enable_head_overwrite'
   image: "package://drc_task_common/icons/enable-head-overwrite.png"
+  image_size: [80, 80]
   column: 2
 - name: 'disable-head-overwrite'
   service: 'disable_head_overwrite'
   image: "package://drc_task_common/icons/disable-head-overwrite.png"
+  image_size: [80, 80]
   column: 2
