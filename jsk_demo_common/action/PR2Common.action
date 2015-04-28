@@ -1,0 +1,12 @@
+# goal
+geometry_msgs/PoseStamped position
+string arm
+string rotation_axis
+float32 move_above_hright
+bool debug_view
+---
+# result
+float32[] joint_state
+---
+# feedback
+float32[] joint_state
