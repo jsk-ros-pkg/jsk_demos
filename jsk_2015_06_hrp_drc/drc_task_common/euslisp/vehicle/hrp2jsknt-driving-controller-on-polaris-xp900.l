@@ -10,8 +10,6 @@
 (defmethod hrp2jsknt-driving-controller-on-polaris-xp900
   (:init
    (&key ((:real tmp-real) nil) ((:rate tmp-ros-rate) 10.0) (roseus-init t)
-         ((:max-turn-angle tmp-max-turn-angle) 480.0)
-         ((:max-turn-angle-diff tmp-max-turn-angle-diff) 180.0)
          (approach-handle nil) (approach-pedal nil)
          )
    (when roseus-init
@@ -22,7 +20,6 @@
                                        :grasp-arm :rarm :grasp-point :handle-crank)
                :real tmp-real :rate tmp-ros-rate :roseus-init nil
                :approach-handle approach-handle :approach-pedal approach-pedal
-               :max-turn-angle tmp-max-turn-angle :max-turn-angle-diff tmp-max-turn-angle-diff
                )
    )
   )

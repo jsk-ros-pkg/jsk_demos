@@ -49,6 +49,32 @@
               </property>
             </widget>
           </item>
+          <item>
+            <widget class="QToolButton" name="drill_reset_pose_button">
+              <property name="text">
+                <string>Drill Reset Pose</string>
+              </property>
+              <property name="iconSize">
+                <size>
+                  <width>80</width>
+                  <height>80</height>
+                </size>
+              </property>
+            </widget>
+          </item>
+          <item>
+            <widget class="QToolButton" name="watch_drill_pose_button">
+              <property name="text">
+                <string>Watch Drill</string>
+              </property>
+              <property name="iconSize">
+                <size>
+                  <width>80</width>
+                  <height>80</height>
+                </size>
+              </property>
+            </widget>
+          </item>
           <!-- Hand Pose Command -->
           <item>
             <widget class="QToolButton" name="hand_reset_pose_button">
