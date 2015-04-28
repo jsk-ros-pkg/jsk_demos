@@ -486,7 +486,9 @@
     (when (send smachine :state? :initial)
       (multiple-value-bind
           (coords radius) (float-vector-to-torus (send msg :float_params))
-        (let* ((stand-coords (float-vector-to-coords (send msg :stand_coords))))
+        (let* ((stand-coords (float-vector-to-coords (send msg :stand_coords)))
+               (arm-side (send msg :arm_side))
+               (arm (cond ((equal arm-side drc_com_common::OCS2FCSmall::*LARM*) :larm) ((equal arm-side drc_com_common::OCS2FCSmall::*RARM*) :rarm) (t :rarm))))
           (send smachine :go-to :executing-valve)
           (setq *cancel-motion-flag* nil)
           (catch 'exit
@@ -495,7 +497,7 @@
                            (car (send coords :rpy-angle))
                            radius)
             ;; send motion to real robot
-            (send-valve-motion radius coords :stand-coords stand-coords)
+            (send-valve-motion radius coords :arm arm :stand-coords stand-coords)
             ;; send finish signal to ocs
             (let ((msg (instance drc_com_common::FC2OCSSmall :init)))
               (send msg :type drc_com_common::FC2OCSSmall::*VALVE_FINISHED*)

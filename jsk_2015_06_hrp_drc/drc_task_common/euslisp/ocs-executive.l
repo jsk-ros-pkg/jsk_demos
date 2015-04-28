@@ -535,6 +535,15 @@
     ;; send valve params to fc
     (let ((msg (instance drc_com_common::OCS2FCSmall :init)))
       (send msg :type drc_com_common::OCS2FCSmall::*VALVE_EXEC*)
+      (cond ((not (boundp '*valve-arm*))
+             (send msg :arm_side drc_com_common::OCS2FCSmall::*UNDECIDED*))
+            ((equal *valve-arm* :larm)
+             (send msg :arm_side drc_com_common::OCS2FCSmall::*LARM*))
+            ((equal *valve-arm* :rarm)
+             (send msg :arm_side drc_com_common::OCS2FCSmall::*RARM*))
+            (t
+             (send msg :arm_side drc_com_common::OCS2FCSmall::*UNDECIDED*))
+            )
       (send msg :float_params
             (torus-to-float-vector 
              (car valve-params) (cadr valve-params)
@@ -702,7 +711,7 @@
          ;; store result
          (setq valve-params (list coords radius))
          ;; publish motion to robot model on rviz
-         (publish-valve-motion :radius (cadr valve-params) :coords (car valve-params) :stand-coords (make-coords) :overwrite-stand-coords? t :update? t)
+         (publish-valve-motion :radius (cadr valve-params) :arm (get-arm-side-from-arm-mode) :coords (car valve-params) :stand-coords (make-coords) :overwrite-stand-coords? t :overwrite-arm-side? (get-arm-overwrite-from-arm-mode) :update? t)
          ))
       (send smachine :go-to :selecting-exec-for-valve)))
   (:door-recognition-finished-callback (msg)
@@ -948,7 +957,7 @@
                  (list (get-primitive-marker-pose :frame-id "BODY")
                        (elt (get-primitive-marker-dimensions) 3)))
            ;; publish valve motion to robot model on rviz
-           (publish-valve-motion :radius (cadr valve-params) :coords (car valve-params) :stand-coords (get-robot-model-current-pos) :update? t))
+           (publish-valve-motion :radius (cadr valve-params) :coords (car valve-params) :arm (get-arm-side-from-arm-mode) :stand-coords (get-robot-model-current-pos) :overwrite-arm-side? (get-arm-overwrite-from-arm-mode) :update? t))
           ((eq (send smachine :state) :selecting-exec-for-debri)
            ;; update latest debri params
            (let* ((dim (get-primitive-marker-dimensions)))
@@ -1144,6 +1153,33 @@
   )
 
 (defmethod ocs-executive-app
+  (:larm-only-checked-callback
+   (req)
+   (send self :show-text "larm only is selected" :success)
+   (setq *arm-mode* :larm-only)
+   (send req :response)
+   )
+  (:larm-preferred-checked-callback
+   (req)
+   (send self :show-text "larm preferred is selected" :success)
+   (setq *arm-mode* :larm-preferred)
+   (send req :response)
+   )
+  (:rarm-preferred-checked-callback
+   (req)
+   (send self :show-text "rarm preferred is selected" :success)
+   (setq *arm-mode* :rarm-preferred)
+   (send req :response)
+   )
+  (:rarm-only-checked-callback
+   (req)
+   (send self :show-text "rarm only is selected" :success)
+   (setq *arm-mode* :rarm-only)
+   (send req :response)
+   )
+  )
+
+(defmethod ocs-executive-app
   (:uint8-request-callback (req)
     (let ((msg (instance drc_com_common::OCS2FCSmall :init)))
       (send msg :type (send req :type))
@@ -1180,6 +1216,19 @@
       (send self :send-to-fc msg)))
   )
 
+;; util function for arm mode
+(defun get-arm-overwrite-from-arm-mode
+  ()
+  (or (equal *arm-mode* :larm-preferred) (equal *arm-mode* :rarm-preferred)))
+
+(defun get-arm-side-from-arm-mode
+  ()
+  (cond ((or (equal *arm-mode* :larm-preferred) (equal *arm-mode* :larm-only))
+         :larm)
+        ((or (equal *arm-mode* :rarm-preferred) (equal *arm-mode* :rarm-only))
+         :rarm))
+  )
+
 ;; generate *robot*
 (setq *robot-name* (string-upcase (unix::getenv "ROBOT")))
 (generate-robot *robot-name* :generate-ri? nil)
@@ -1196,6 +1245,7 @@
   )
 (setq *app* (instance ocs-executive-app :init))
 (setq *tf* (instance ros::transform-listener :init))
+(setq *arm-mode* :rarm-preferred) ;; one of (:rarm-only :rarm-preferred :larm-preferred :larm-only)
 
 (ros::advertise "/ocs_to_fc_low_speed/input" drc_com_common::OCS2FCSmall)
 (ros::advertise "/jsk_model_marker_interface/robot/reset_joint_states_and_root" sensor_msgs::JointState 1)
@@ -1231,6 +1281,10 @@
 (ros::advertise-service "disable_head_overwrite" std_srvs::Empty #'send *app* :disable-head-overwrite)
 (ros::advertise-service "set_pitch_angle" drc_task_common::SetValue #'send *app* :set-pitch-head-angle-callback)
 (ros::advertise-service "set_yaw_angle" drc_task_common::SetValue #'send *app* :set-yaw-head-angle-callback)
+(ros::advertise-service "larm_only_checked" std_srvs::Empty #'send *app* :larm-only-checked-callback)
+(ros::advertise-service "larm_preferred_checked" std_srvs::Empty #'send *app* :larm-preferred-checked-callback)
+(ros::advertise-service "rarm_preferred_checked" std_srvs::Empty #'send *app* :rarm-preferred-checked-callback)
+(ros::advertise-service "rarm_only_checked" std_srvs::Empty #'send *app* :rarm-only-checked-callback)
 
 ;; Drive joystick controller topics
 (ros::subscribe "/ocs/drive/operation/handle_cmd" std_msgs::Float64 #'send *app* :drive-handle-angle-callback)
