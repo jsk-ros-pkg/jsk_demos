@@ -53,14 +53,9 @@ $ sudo aptitude install python-urlgrabber
 ### How to launch
 You should put two commands in the defferent terminal
 ```
-roslaunch drc_task_common drc_task_common_hrp2jsknts.launch
-roscd drc_task_common/config; rosrun rviz rviz -d drc_task_common.rviz
+roslaunch drc_task_common operator_station_main.launch
+roslaunch drc_task_common field_computer_main.launch
 ```
-
-### Launch file components
-drc\_task\_common is made up of 8 components,
-preparing... Please read drc_task_common.launch
-
 
 ### How to Use B-Controll Interface
 B-Controll provides 2x8 Buttons and 8 bars. This Section Introduces how to use buttons
@@ -122,53 +117,6 @@ Launch Robot menu
 * reset pose (change robot model pose)
 * reset pose (::)
 
-
-### How to Use RVIZ Object User Interface
-This is for manipulating other objects. Based on PointCloud Marker.
-This also uses B-Control Interface for ANGLE and other Buttons.
-
-#### Needed Rviz Object
-preparing.... (may be in config/drc_task_common.rviz)
-
-#### Flow
-First, choose b-box in rviz.
-Then, Interactive Cloud Marker will be made.
-Click point in Cloud Marker, then One Circle(Menu Marker) will be made.
-Right-Click it, then you can make other Marker, if you Right-Click this Marker, You can make robot solve ik.
-
-#### Markers
-
-##### Cloud Marker
-![](images/none_marker.png)
-
-You can move this with 6-Dof Control, you can select points of cloud for create menu marker
-
-##### Menu Marker
-show menu, this marker creates other markers.
-
-##### Push Marker
-![](images/push_marker.png)
-
-show push point
-
-##### Grasp Marke
-![](images/grasp_marker.png)
-
-show grasp point
-
-##### Restraint Marker
-![](images/restraint_marker.png)
-
-show restraint, robot may solve ik with :x by this arrow.
-
-#### Trouble shoot for this interface
-Q. I can not select points !
-
-A. We cannot select points over other Interactive marker, so please move Cloud Marker or delete other markers
-
-Q. The IK Result is different from the result I thought.
-
-A. This Interface provides two Base Frame, grasp commands and push command uses manipulate_frame and move command uses marker_frame. Before move commands done, robot thinks that The objects doesn't move. In other words, manipulate_frame does moves when move-object Event Driven.
 
 ### Trouble Shoot
 

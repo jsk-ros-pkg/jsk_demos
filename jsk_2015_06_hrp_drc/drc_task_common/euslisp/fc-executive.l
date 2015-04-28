@@ -85,6 +85,10 @@
                 self :reset-pose-command-callback)
           (list drc_com_common::OCS2FCSmall::*RESET_MANIP_POSE*
                 self :reset-manip-pose-command-callback)
+          (list drc_com_common::OCS2FCSmall::*DRILL_RESET_POSE*
+                self :drill-reset-pose-command-callback)
+          (list drc_com_common::OCS2FCSmall::*WATCH_DRILL_POSE*
+                self :watch-drill-pose-command-callback)
           (list drc_com_common::OCS2FCSmall::*HAND_RESET_POSE*
                 self :hand-reset-pose-command-callback)
           (list drc_com_common::OCS2FCSmall::*HAND_HOOK_POSE*
@@ -797,6 +801,14 @@ It sends :angle-vector to robot and return 'finished' message to ocs"
     (send self :send-rviz-button-finished-to-ocs))
   (:reset-manip-pose-command-callback (msg)
     (send *ri* :angle-vector (send *robot* :reset-manip-pose) 10000)
+    (send *ri* :wait-interpolation)
+    (send self :send-rviz-button-finished-to-ocs))
+  (:drill-reset-pose-command-callback (msg)
+    (send *ri* :angle-vector (send *robot* :angle-vector (get-drill-reset-pose)) 10000)
+    (send *ri* :wait-interpolation)
+    (send self :send-rviz-button-finished-to-ocs))
+  (:watch-drill-pose-command-callback (msg)
+    (send *ri* :angle-vector (send *robot* :angle-vector (watch-drill-pose)) 10000)
     (send *ri* :wait-interpolation)
     (send self :send-rviz-button-finished-to-ocs))
   (:hand-reset-pose-command-callback (msg)

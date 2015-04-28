@@ -33,20 +33,20 @@
     <include file="$(find drc_task_common)/launch/fc/centroid_of_pointcloud_in_rect.launch">
     </include>
   </group>
-  <group ns="hose_grasp_recognition">
+  <group ns="hose_grasp_recognition" if="false">
     <include file="$(find drc_task_common)/launch/fc/centroid_of_pointcloud_in_rect.launch">
     </include>
   </group>
-  <group ns="hose_connect_recognition">
+  <group ns="hose_connect_recognition" if="false">
     <include file="$(find drc_task_common)/launch/fc/centroid_of_pointcloud_in_rect.launch">
     </include>
   </group>
   <include file="$(find drc_task_common)/launch/fc/valve_recognition.launch">
   </include>
-  <include file="$(find drc_task_common)/launch/fc/drill_recognition.launch">
+  <include file="$(find drc_task_common)/launch/fc/drill_recognition.launch" if="false">
     <arg name="DRILL_RECOGNITION_NAMESPACE" value="drill_recognition" />
   </include>
-  <include file="$(find drc_task_common)/launch/fc/drill_recognition.launch">
+  <include file="$(find drc_task_common)/launch/fc/drill_recognition.launch" if="false">
     <arg name="DRILL_RECOGNITION_NAMESPACE" value="drill_recognition_for_button" />
     <arg name="LAUNCH_MANAGER" value="false" />
   </include>
@@ -54,15 +54,15 @@
   </include>
   <include file="$(find drc_task_common)/launch/fc/drill_recognition_for_put.launch">
   </include>
-  <include file="$(find drc_task_common)/launch/fc/door_recognition.launch">
+  <include file="$(find drc_task_common)/launch/fc/door_recognition.launch" if="false">
     <arg name="INPUT_HINT_POINT_CLOUD" value="/stereo_preprocessing/normal_estimation/output_with_xyz" />
     <arg name="INPUT_POINT_CLOUD" value="/stereo_preprocessing/normal_estimation/output_with_xyz" />
   </include>
-  <group ns="debri_recognition">
+  <group ns="debri_recognition" if="false">
     <include file="$(find drc_task_common)/launch/fc/debri_recognition.launch">
     </include>
   </group>
-  <group ns="panorama">
+  <group ns="panorama" if="false">
     <include file="$(find drc_task_common)/launch/fc/panorama.launch" />
   </group>
   <group ns="locomotion">
