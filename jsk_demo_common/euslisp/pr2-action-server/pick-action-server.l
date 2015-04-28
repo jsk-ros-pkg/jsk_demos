@@ -13,7 +13,7 @@
                 :execute-cb `(lambda (s g)
                                (let ((result-msg (send s :result)))
                                  (pr2-init)
-                                 (pick (ros::tf-pose-stamped->coords  (send g :goal :pos))
+                                 (pick (ros::tf-pose-stamped->coords  (send g :goal :position))
                                        :arm (intern (string-upcase (send g :goal :arm)) *keyword-package*)
                                        :debug-view (send g :goal :debug-view))
                                  (send result-msg :result :joint_state)

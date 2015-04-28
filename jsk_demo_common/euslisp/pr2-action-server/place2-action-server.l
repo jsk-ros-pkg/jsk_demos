@@ -13,7 +13,7 @@
                 :execute-cb `(lambda (s g)
                                (let ((result-msg (send s :result)))
                                  (pr2-init)
-                                 (place2 (ros::tf-pose-stamped->coords  (send g :goal :pos))
+                                 (place2 (ros::tf-pose-stamped->coords  (send g :goal :position))
                                          :arm (intern (string-upcase (send g :goal :arm)) *keyword-package*)
                                          :rotation-axis (intern (string-upcase (send g :goal :rotation_axis))  *keyword-package*)
                                          :debug-view (send g :goal :debug_view))
