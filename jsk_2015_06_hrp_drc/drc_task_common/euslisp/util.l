@@ -1,6 +1,8 @@
 ;; utility function
 (ros::roseus-add-msgs "std_msgs")
 (ros::roseus-add-msgs "smach_msgs")
+(ros::roseus-add-srvs "jsk_topic_tools")
+
 (defun ros-rgba (r g b a)
   (let ((color (instance std_msgs::ColorRGBA :init)))
     (send color :r (/ r 255.0))
@@ -28,6 +30,10 @@
 
 (defun call-empty-service (srv)
   (let ((req (instance std_srvs::EmptyRequest :init)))
+    (ros::service-call srv req)))
+(defun call-request-duration (srv time)
+  (let ((req (instance jsk_topic_tools::PassthroughDurationRequest :init)))
+    (send req :duration (ros::time time))
     (ros::service-call srv req)))
 
 ;; topic <---> compressed message conversion

@@ -2,6 +2,7 @@
 
 (ros::roseus "ocs_executive")
 (ros::roseus-add-srvs "std_srvs")
+(ros::roseus-add-srvs "jsk_topic_tools")
 (ros::roseus-add-msgs "image_view2")
 (ros::roseus-add-msgs "geometry_msgs")
 (ros::roseus-add-msgs "drc_com_common")
@@ -208,6 +209,8 @@
       ))
   (:drill-grasp-region-command-callback (msg)
     (when (send smachine :state? :initial)
+      ;; Enable passthrough for 10seconds
+      (call-request-duration "/drill_recognition/passthrough/request_duration" 10)
       ;; convert OCS2FCSmall into geometry_msgs/Polygon
       (ros::publish "/drill_recognition/input_rect"
         (integer-vector-to-rect-polygon-stamped msg))
@@ -235,6 +238,7 @@
       ))
   (:drill-button-region-command-callback (msg)
     (when (send smachine :state? :initial)
+      (call-request-duration "/drill_recognition_for_button/passthrough/request_duration" 10)
       ;; convert OCS2FCSmall into geometry_msgs/Polygon
       (ros::publish "/drill_recognition_for_button/input_rect"
         (integer-vector-to-rect-polygon-stamped msg))
