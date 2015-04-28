@@ -28,6 +28,7 @@
           tf-listener
           handling-end-coords-list
           record-handling-end-coords-flag
+          max-turn-handle-omega
           ) 
   )
 
@@ -74,6 +75,7 @@
          release-accel-command 14
          step-brake-command 20
          release-brake-command 5
+         max-turn-handle-omega 90
          )
    ;; subscriber for operator command
    (ros::subscribe "/drive/operation/accel_cmd"
@@ -214,7 +216,7 @@
      ret-result
      )
    )
-  (:turn
+  (:turn ;; estimated as :relative nil
    (angle &key (mode :sequence) (weight 1.0) (rad nil))
    (let ((pub-msg (instance std_msgs::Float32 :init))
          handle-deg remain-angle)
@@ -237,6 +239,7 @@
            (case mode
              (:once (send motion :turn-handle-once handle-deg :relative nil :use-controller t))
              (:sequence (send motion :turn-handle handle-deg :relative nil :use-controller t))
+             (:velocity (send motion :turn-handle-velocity handle-deg max-turn-handle-omega :rate ros-rate :relative nil :use-controller t))
              (t (send motion :turn-handle handle-deg :relative nil :use-controller t))
              )
            )
@@ -325,7 +328,7 @@
           (threshold 1.0) ;; [deg]
           )
      (when (> (abs (- (rad2deg data) (send motion :car :handle-joint :joint-angle))) threshold)
-       (send self :turn data :rad t :mode :sequence)
+       (send self :turn data :rad t :mode :velocity)
        )
      )
    )
@@ -737,6 +740,7 @@
   (:release-brake-command (&optional (angle nil)) (when angle (setq release-brake-command angle)) release-brake-command)
   (:grasped-flag (&optional (val 0)) (unless (equal val 0) (setq grasped-flag val)) grasped-flag)
   (:accel-flag (&optional (val 0)) (unless (equal val 0) (setq accel-flag val)) accel-flag)
+  (:max-turn-handle-omega (&optional (val nil)) (unless val (setq max-turn-handle-omega val)) max-turn-handle-omega)
   (:record-handling-end-coords-flag
    (&optional (val 0))
    (unless (equal val 0)
