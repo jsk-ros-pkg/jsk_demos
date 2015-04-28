@@ -7,6 +7,9 @@
   <arg name="OCS_IP" default="localhost" />
 
   <arg name="USE_COM" default="true" />
+
+  <!-- Include machine tags -->
+  <include file="$(find drc_task_common)/launch/machines/$(env ROBOT).machine" />
   <node pkg="drc_task_common" type="fc-executive.l" name="fc_executive" output="screen">
   </node>
   <node pkg="drc_task_common" type="fc-basic-info-publisher.l" name="fc_basic_info_publisher" respawn="true">
