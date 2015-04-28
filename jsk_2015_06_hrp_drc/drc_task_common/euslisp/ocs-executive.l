@@ -535,6 +535,15 @@
     ;; send valve params to fc
     (let ((msg (instance drc_com_common::OCS2FCSmall :init)))
       (send msg :type drc_com_common::OCS2FCSmall::*VALVE_EXEC*)
+      (cond ((not (boundp '*valve-arm*))
+             (send msg :arm_side drc_com_common::OCS2FCSmall::*UNDECIDED*))
+            ((equal *valve-arm* :larm)
+             (send msg :arm_side drc_com_common::OCS2FCSmall::*LARM*))
+            ((equal *valve-arm* :rarm)
+             (send msg :arm_side drc_com_common::OCS2FCSmall::*RARM*))
+            (t
+             (send msg :arm_side drc_com_common::OCS2FCSmall::*UNDECIDED*))
+            )
       (send msg :float_params
             (torus-to-float-vector 
              (car valve-params) (cadr valve-params)
