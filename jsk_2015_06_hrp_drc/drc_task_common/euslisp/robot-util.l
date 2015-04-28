@@ -268,6 +268,11 @@
     (setq coords (if tf-trans (send tf-trans :inverse-transformation) (make-coords)))
     coords))
 
+(defun get-opposite-arm
+  (arm)
+  (cond ((equal arm :larm) :rarm)
+        ((equal arm :rarm) :larm)))
+
 (load "package://hrpsys_ros_bridge/euslisp/rtm-ros-robot-interface.l")
 
 (defmethod rtm-ros-robot-interface
