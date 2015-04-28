@@ -13,6 +13,25 @@
 
 (setq *default-drill-type* :takenoko)
 
+;; generate robot
+(if (not (boundp '*robot-name*))
+    (setq *robot-name* "HRP2JSKNT")
+  )
+(if (or (equal *robot-name* "HRP2JSKNT") (equal *robot-name* "HRP2JSKNTS"))
+    (progn
+      (setq *use-dual-arm-ik* nil)
+      (setq *use-f-sensor-search* nil)
+      (setq *drill-reverse-hand* t)
+      (setq *drill-button-point* :finger)
+      (setq *default-drill-type* :takenoko))
+  (progn 
+    (setq *use-dual-arm-ik* nil)
+    (setq *use-f-sensor-search* nil)
+    (setq *drill-reverse-hand* nil)
+      (setq *drill-button-point* :finger) ;; finger fixed
+      (setq *default-drill-type* :takenoko))
+  )
+
 
 ;; show attachment on HRP2HAND
 (defun set-attachment ()
@@ -156,28 +175,9 @@
         (generate-ri? t) (draw? t)
         ;(robot-name "HRP2JSKNT")
         (drill-type *default-drill-type*) ;; not used now
-        (recognized-coords-symbol :origin-coords))
-  ;; generate robot
-  (if (not (boundp '*robot-name*))
-      (setq *robot-name* "HRP2JSKNT")
-      )
+        (recognized-coords-symbol :origin-coords))  
   (generate-robot *robot-name* :generate-ri? generate-ri?)
-  (if (or (equal *robot-name* "HRP2JSKNT") (equal *robot-name* "HRP2JSKNTS"))
-      (progn
-        (setq *use-dual-arm-ik* nil)
-        (setq *use-f-sensor-search* nil)
-        (setq *drill-reverse-hand* t)
-        (setq *drill-button-point* :finger)
-        (setq *default-drill-type* drill-type))
-    (progn 
-      (setq *use-dual-arm-ik* nil)
-      (setq *use-f-sensor-search* nil)
-      (setq *drill-reverse-hand* nil)
-      (setq *drill-button-point* :finger) ;; finger fixed
-      (setq *default-drill-type* drill-type))
-    )
-  
-  
+ 
   ;; place robot to origin:
   (send *robot* :angle-vector (get-drill-reset-pose))
   
