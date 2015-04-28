@@ -51,7 +51,7 @@ namespace drc_task_common
     ui_->hide_manip_button->setIcon(QIcon(QPixmap(QString((ros::package::getPath("drc_task_common")+std::string("/icons/hide_6dof.png")).c_str()))));
     connect( ui_->reset_pose_button, SIGNAL( clicked() ), this, SLOT( callRequestResetPose()));
     connect( ui_->reset_manip_pose_button, SIGNAL( clicked() ), this, SLOT( callRequestResetManipPose()));
-    connect( ui_->drill_reset_pose_button, SIGNAL( clicked() ), this, SLOT( callRequestDrillResetManipPose()));
+    connect( ui_->drill_reset_pose_button, SIGNAL( clicked() ), this, SLOT( callRequestDrillResetPose()));
     connect( ui_->watch_drill_pose_button, SIGNAL( clicked() ), this, SLOT( callRequestWatchDrillPose()));
 
     connect( ui_->hand_reset_pose_button, SIGNAL( clicked() ), this, SLOT(  callRequestResetGripperPose()));
