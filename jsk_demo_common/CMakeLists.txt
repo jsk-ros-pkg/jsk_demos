@@ -49,3 +49,5 @@ include_directories(
 install(DIRECTORY euslisp
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
   USE_SOURCE_PERMISSIONS)
+
+add_rostest(test/test_pr2_action_server.test)

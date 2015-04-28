@@ -1,0 +1,19 @@
+<launch>
+  <arg name="use_sim" value="false" />
+
+  <!-- pick -->
+  <node name="pick_action_server" pkg="roseus" type="roseus"
+        args="$(find jsk_demo_common)/euslisp/pr2-action-server/pick-action-server.l" />
+
+  <!-- pick2 -->
+  <node name="pick2_action_server" pkg="roseus" type="roseus"
+        args="$(find jsk_demo_common)/euslisp/pr2-action-server/pick2-action-server.l" />
+
+  <!-- place -->
+  <node name="place_action_server" pkg="roseus" type="roseus"
+        args="$(find jsk_demo_common)/euslisp/pr2-action-server/place-action-server.l" />
+
+  <!-- place2 -->
+  <node name="place2_action_server" pkg="roseus" type="roseus"
+        args="$(find jsk_demo_common)/euslisp/pr2-action-server/place2-action-server.l" />
+</launch>

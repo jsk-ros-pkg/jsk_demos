@@ -1,0 +1,6 @@
+<launch>
+  <include file="$(find jsk_demo_common)/launch/pr2_action_server.launch" />
+  <test test-name="test_pick_action" pkg="roseus" type="roseus"
+        args="$(find jsk_demo_common)/test/test-pr2-action-server.l"
+        time-limit="100" />
+</launch>
