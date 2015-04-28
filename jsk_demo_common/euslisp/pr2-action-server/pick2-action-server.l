@@ -7,18 +7,19 @@
 (ros::roseus "pick2_server")
 
 (warn "pick2 server is working and press any key to stop.")
-(setq pick2-action-server (instance ros::simple-action-server :init "/pick2"
-				    jsk_demo_common::democommonaction
-				    :execute-cb `(lambda (s g)
-						   (let ((result-msg (send s :result)))
-						     (pr2-init)
-						     (pick2 (ros::tf-pose-stamped->coords  (send g :goal :pos))
-							    :arm (intern (string-upcase (send g :goal :arm)) *keyword-package*)
-							    :rotation-axis (intern (string-upcase (send g :goal :rotation_axis))  *keyword-package*)
-							    :debug-view (send g :goal :debug_view))
-						     (send result-msg :result :joint_state)
-						     (send s :set-succeeded result-msg)
-						     ))))
+(setq pick2-action-server
+      (instance ros::simple-action-server :init "/pick2"
+                jsk_demo_common::democommonaction
+                :execute-cb `(lambda (s g)
+                               (let ((result-msg (send s :result)))
+                                 (pr2-init)
+                                 (pick2 (ros::tf-pose-stamped->coords  (send g :goal :pos))
+                                        :arm (intern (string-upcase (send g :goal :arm)) *keyword-package*)
+                                        :rotation-axis (intern (string-upcase (send g :goal :rotation_axis))  *keyword-package*)
+                                        :debug-view (send g :goal :debug_view))
+                                 (send result-msg :result :joint_state)
+                                 (send s :set-succeeded result-msg)
+                                 ))))
 
 (ros::rate 10)
 (do-until-key
