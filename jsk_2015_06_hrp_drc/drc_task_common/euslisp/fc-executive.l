@@ -525,17 +525,16 @@
     (when (send smachine :state? :initial)
       (cond
        ((eq (send msg :image_type) drc_com_common::OCS2FCSmall::*IMAGE_RECT*)
-        ;; convert OCS2FCSmall into geometry_msgs/Polygon
-        (ros::publish "/look_at_recognition/input_rect"
-          (integer-vector-to-rect-polygon-stamped msg))
         ;; enable snapshot
-        (call-empty-service "/look_at_recognition/snapshot/request")
+        (call-empty-service "/look_at/snapshot/request")
+        (ros::publish "/look_at/input"
+          (compute-centroid-of-polygon-stamped
+           (integer-vector-to-rect-polygon-stamped msg)))
         (send smachine :go-to :recognizing-look-at-point))
        ((eq (send msg :image_type) drc_com_common::OCS2FCSmall::*PANORAMA_VIEW*)
         (ros::publish "/panorama/panorama_processing/output/screenrectangle"
           (integer-vector-to-rect-polygon-stamped msg))
         ;; enable snapshot
-
         (call-empty-service "/panorama/snapshot/request")
         (send smachine :go-to :recognizing-look-at-point-panorama))
        (t
@@ -726,11 +725,11 @@ It sends :angle-vector to robot and return 'finished' message to ocs"
   (:look-at-panorama-recog-callback (msg)
     (ros::ros-warn "panorama callback!")
     (send smachine :go-to :recognizing-look-at-point)
-    (send self :look-at-recog-callback msg))
+    (send self :look-at-recog-callback (pose-stamped-to-point-stamped msg)))
   (:look-at-recog-callback (msg)
     (when (send smachine :state? :recognizing-look-at-point)
       (let* ((trans (send self :lookup-from-body-transform (send msg :header)))
-             (coords (ros::tf-pose-stamped->coords msg))
+             (coords (make-coords :pos (ros::tf-point->pos (send msg :point))))
              (from-body-coords (send trans :transform coords)))
         ;; only position is important
         (let ((pos (float-vector (elt (send from-body-coords :worldpos) 0)
@@ -936,7 +935,7 @@ It sends :angle-vector to robot and return 'finished' message to ocs"
   #'send (send *app* :ocs2fc-message-handler) :root-callback)
 (ros::subscribe "/go_pos_recognition/snapshot/output" geometry_msgs::PoseStamped
   #'send *app* :go-pos-recog-callback)
-(ros::subscribe "/look_at_recognition/snapshot/output" geometry_msgs::PoseStamped
+(ros::subscribe "/look_at/snapshot/output" geometry_msgs::PointStamped
   #'send *app* :look-at-recog-callback)
 (ros::subscribe "/panorama/snapshot/output" geometry_msgs::PoseStamped
   #'send *app* :look-at-panorama-recog-callback)
