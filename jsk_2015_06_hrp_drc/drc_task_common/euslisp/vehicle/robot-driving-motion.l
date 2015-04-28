@@ -471,6 +471,27 @@
      0.0 ;; return remain-angle (= zero)
      )
    )
+  (:turn-handle-velocity
+   (deg omega-deg &key (rate 10) (time-offset 0.1) (relative t) (use-controller t))
+   (let* ((control-cycle (/ 1.0 rate)) ;; [sec]
+          (target-deg (if relative (+ deg (send car :handle-joint :joint-angle)) deg)) ;; use absolute [deg]
+          (current-deg (send car :handle-joint :joint-angle))
+          (target-omega (/ (- target-deg current-deg) control-cycle)) ;; use [deg/sec]
+          (max-omega (abs omega-deg))
+          handle-deg remain-angle
+         )
+     (when (> (abs target-omega) max-omega)
+       (setq target-omega (if (> target-omega 0) max-omega (- max-omega)))
+       )
+     (setq handle-deg (+ current-deg (* target-omega control-cycle)))
+     (setq remain-angle 
+           (send self :turn-handle-once handle-deg
+                 :relative nil :use-controller use-controller
+                 :time (* (+ control-cycle time-offset) 1000)) ;; interpolation time is [msec]
+           )
+     remain-angle
+     )
+   )
   
   (:get-steering-coords
    (relative-deg joint limb target-handle
