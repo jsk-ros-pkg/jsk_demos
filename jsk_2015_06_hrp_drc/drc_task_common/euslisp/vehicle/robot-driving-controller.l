@@ -16,7 +16,6 @@
           release-accel-command release-brake-command
           is-handle-reached-to-target
           grasped-flag accel-flag
-          max-turn-angle max-turn-angle-diff-deg
           old-handle-deg
           polygon-stamped-msg
           torus-finder-estimated-robot-coords
@@ -38,8 +37,6 @@
          ((:motion tmp-motion) nil)
          ((:rate tmp-ros-rate) 10.0) (roseus-init t)
          (approach-handle nil) (approach-pedal nil)
-         ((:max-turn-angle tmp-max-turn-angle) 45.0)
-         ((:max-turn-angle-diff tmp-max-turn-angle-diff) 15.0)
          )
    (when roseus-init
      (ros::roseus "robot_driving_controller")
@@ -61,8 +58,6 @@
    (setq ros-rate tmp-ros-rate
          grasped-flag nil
          accel-flag nil
-         max-turn-angle tmp-max-turn-angle
-         max-turn-angle-diff-deg tmp-max-turn-angle-diff
          torus-finder-estimated-robot-coords nil
          handle-pose-estimated-robot-coords nil
          old-estimated-handle-angle 0.0
@@ -220,9 +215,9 @@
      )
    )
   (:turn
-   (angle &key (mode :sequence) (weight 1.0) (rad nil) (supress-diff-max nil))
+   (angle &key (mode :sequence) (weight 1.0) (rad nil))
    (let ((pub-msg (instance std_msgs::Float32 :init))
-         handle-deg real-handle-deg remain-angle)
+         handle-deg remain-angle)
      ;; if radius, transform to deg
      (if rad
          (setq handle-deg (/ (rad2deg angle) weight))
@@ -234,48 +229,25 @@
        (warn "Robot do not grasp handle~%")
        (return-from :turn nil) ;; return nil because incorrect use of function
        )
-     
-     ;; supress in min-max angle
-     (if (> handle-deg max-turn-angle)
-         (setq handle-deg max-turn-angle)
-       (if (< handle-deg (- max-turn-angle))
-         (setq handle-deg (- max-turn-angle))
-         )
-       )
-     ;; supress difference max
-     (let ((turn-angle-diff-deg (- handle-deg old-handle-deg)))
-       (if (and (> (abs turn-angle-diff-deg) max-turn-angle-diff-deg)
-                supress-diff-max)
-           (progn (setq real-handle-deg
-                        (if (> turn-angle-diff-deg 0)
-                            (+ old-handle-deg max-turn-angle-diff-deg)
-                          (- old-handle-deg max-turn-angle-diff-deg)
-                          )
-                        )
-                  (warn "max-diff-angle limitation ~A [deg] was enabled:~% original: ~A~% real: ~A~% "
-                        max-turn-angle-diff-deg handle-deg real-handle-deg)
-                  )
-         (setq real-handle-deg handle-deg)
-         )
-       )
-     (warn "turn ~A[deg]~%" real-handle-deg)
+
+     (warn "turn ~A[deg]~%" handle-deg)
 
      ;; turn-handle using motion
      (setq remain-angle
            (case mode
-             (:once (send motion :turn-handle-once real-handle-deg :relative nil :use-controller t))
-             (:sequence (send motion :turn-handle real-handle-deg :relative nil :use-controller t))
-             (t (send motion :turn-handle real-handle-deg :relative nil :use-controller t))
+             (:once (send motion :turn-handle-once handle-deg :relative nil :use-controller t))
+             (:sequence (send motion :turn-handle handle-deg :relative nil :use-controller t))
+             (t (send motion :turn-handle handle-deg :relative nil :use-controller t))
              )
            )
        
-     (setq old-handle-deg real-handle-deg)
+     (setq old-handle-deg handle-deg)
      ;; publish target angle
-     (send pub-msg :data real-handle-deg)
+     (send pub-msg :data handle-deg)
      (ros::publish "/drive/controller/goal_handle_angle" pub-msg)
      remain-angle
      )
-   )
+   )  
   (:approach-handle
    (&rest args &key (sync-controller grasped-flag) &allow-other-keys)
    (let (approach-result)
@@ -763,8 +735,6 @@
   
   (:step-brake-command (&optional (angle nil)) (when angle (setq step-brake-command angle)) step-brake-command)
   (:release-brake-command (&optional (angle nil)) (when angle (setq release-brake-command angle)) release-brake-command)
-  (:max-turn-angle (&optional (val nil)) (when val (setq max-turn-angle val)) max-turn-angle)
-  (:max-turn-angle-diff (&optional (val nil)) (when val (setq max-turn-angle-diff-deg val)) max-turn-angle-diff-deg)
   (:grasped-flag (&optional (val 0)) (unless (equal val 0) (setq grasped-flag val)) grasped-flag)
   (:accel-flag (&optional (val 0)) (unless (equal val 0) (setq accel-flag val)) accel-flag)
   (:record-handling-end-coords-flag
