@@ -1,0 +1,16 @@
+- name: 'larm'
+  service: 'left_arm_selected'
+  image: "package://drc_task_common/icons/left-hand-icon.png"
+  image_size: [150, 100]
+  column: 0
+- name: 'auto'
+  service: 'auto_arm_selected'
+  image: "package://drc_task_common/icons/auto-hand-icon.png"
+  image_size: [150, 100]
+  column: 1
+- name: 'rarm'
+  service: 'right_arm_selected'
+  image: "package://drc_task_common/icons/right-hand-icon.png"
+  image_size: [150, 100]
+  column: 2
+  default_value: True
