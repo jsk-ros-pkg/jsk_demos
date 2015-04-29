@@ -486,7 +486,9 @@
     (when (send smachine :state? :initial)
       (multiple-value-bind
           (coords radius) (float-vector-to-torus (send msg :float_params))
-        (let* ((stand-coords (float-vector-to-coords (send msg :stand_coords))))
+        (let* ((stand-coords (float-vector-to-coords (send msg :stand_coords)))
+               (arm-side (send msg :arm_side))
+               (arm (cond ((equal arm-side drc_com_common::OCS2FCSmall::*LARM*) :larm) ((equal arm-side drc_com_common::OCS2FCSmall::*RARM*) :rarm) (t :rarm))))
           (send smachine :go-to :executing-valve)
           (setq *cancel-motion-flag* nil)
           (catch 'exit
@@ -495,7 +497,7 @@
                            (car (send coords :rpy-angle))
                            radius)
             ;; send motion to real robot
-            (send-valve-motion radius coords :stand-coords stand-coords)
+            (send-valve-motion radius coords :arm arm :stand-coords stand-coords)
             ;; send finish signal to ocs
             (let ((msg (instance drc_com_common::FC2OCSSmall :init)))
               (send msg :type drc_com_common::FC2OCSSmall::*VALVE_FINISHED*)
@@ -526,11 +528,12 @@
       (cond
        ((eq (send msg :image_type) drc_com_common::OCS2FCSmall::*IMAGE_RECT*)
         ;; enable snapshot
-        (call-empty-service "/look_at/snapshot/request")
-        (ros::publish "/look_at/input"
+        (call-request-duration "/lookat/output_passthrough/request_duration" 5)
+        (send smachine :go-to :recognizing-look-at-point)
+        (ros::publish "/lookat/input"
           (compute-centroid-of-polygon-stamped
            (integer-vector-to-rect-polygon-stamped msg)))
-        (send smachine :go-to :recognizing-look-at-point))
+        )
        ((eq (send msg :image_type) drc_com_common::OCS2FCSmall::*PANORAMA_VIEW*)
         (ros::publish "/panorama/panorama_processing/output/screenrectangle"
           (integer-vector-to-rect-polygon-stamped msg))
@@ -916,7 +919,7 @@ It sends :angle-vector to robot and return 'finished' message to ocs"
 (ros::advertise "/go_pos_recognition/input_rect" geometry_msgs::PolygonStamped)
 (ros::advertise "/hose_grasp_recognition/input_rect" geometry_msgs::PolygonStamped)
 (ros::advertise "/hose_connect_recognition/input_rect" geometry_msgs::PolygonStamped)
-(ros::advertise "/look_at_recognition/input_rect" geometry_msgs::PolygonStamped)
+(ros::advertise "/lookat/input" geometry_msgs::PointStamped)
 (ros::advertise "/panorama/panorama_processing/output/screenrectangle" geometry_msgs::PolygonStamped)
 (ros::advertise "/valve_recognition/input_rect" geometry_msgs::PolygonStamped)
 (ros::advertise "/door_recognition/input_support_plane_rect" geometry_msgs::PolygonStamped)
@@ -935,7 +938,7 @@ It sends :angle-vector to robot and return 'finished' message to ocs"
   #'send (send *app* :ocs2fc-message-handler) :root-callback)
 (ros::subscribe "/go_pos_recognition/snapshot/output" geometry_msgs::PoseStamped
   #'send *app* :go-pos-recog-callback)
-(ros::subscribe "/look_at/snapshot/output" geometry_msgs::PointStamped
+(ros::subscribe "/lookat/output_passthrough/output" geometry_msgs::PointStamped
   #'send *app* :look-at-recog-callback)
 (ros::subscribe "/panorama/snapshot/output" geometry_msgs::PoseStamped
   #'send *app* :look-at-panorama-recog-callback)
