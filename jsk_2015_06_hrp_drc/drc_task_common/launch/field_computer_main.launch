@@ -29,10 +29,10 @@
     <include file="$(find drc_task_common)/launch/fc/centroid_of_pointcloud_in_rect.launch">
     </include>
   </group>
-  <group ns="look_at_recognition">
-    <include file="$(find drc_task_common)/launch/fc/centroid_of_pointcloud_in_rect.launch">
-    </include>
-  </group>
+  <include file="$(find drc_task_common)/launch/fc/lookat.launch">
+    <arg name="INPUT_CAMERA_INFO" value="/multisense/left/camera_info" />
+    <arg name="INPUT_POINT" value="/lookat/input" />
+  </include>
   <group ns="hose_grasp_recognition" if="false">
     <include file="$(find drc_task_common)/launch/fc/centroid_of_pointcloud_in_rect.launch">
     </include>

@@ -128,6 +128,28 @@
                     (make-list (- length 4) :initial-element 0))
             integer-vector)))
 
+(defun compute-centroid-of-polygon-stamped (msg)
+  "return geometry_msgs::PointStamped"
+  (let ((output (instance geometry_msgs::PointStamped :init)))
+    (send output :header (send msg :header))
+    (let ((sum (float-vector 0 0 0))
+          (point-num (length (send msg :polygon :points))))
+      (dotimes (i point-num)
+        (let ((p (elt (send msg :polygon :points) i)))
+          (setq sum (v+ sum (float-vector (send p :x) (send p :y) (send p :z))))))
+      (let ((centroid (scale (/ 1.0 point-num) sum)))
+        (send output :point :x (elt centroid 0))
+        (send output :point :y (elt centroid 1))
+        (send output :point :z (elt centroid 2)))
+      output)))
+
+(defun pose-stamped-to-point-stamped (msg)
+  (let ((point-stamped (instance geometry_msgs::PointStamped :init)))
+    (send point-stamped :header (send msg :header))
+    (send point-stamped :point :x (send msg :pose :position :x))
+    (send point-stamped :point :y (send msg :pose :position :y))
+    (send point-stamped :point :z (send msg :pose :position :z))
+    point-stamped))
 
 (defun integer-vector-to-rect-polygon-stamped (msg)
   (let ((x1 (elt (send msg :image_roi_info) 0))
