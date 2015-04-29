@@ -28,6 +28,7 @@
       <remap from="~input" to="filtered_cloud/output" />
       <rosparam>
         max_iterations: 1000
+        min_radius: 0.05
       </rosparam>
     </node>
     <node pkg="jsk_topic_tools" type="snapshot" name="snapshot">
