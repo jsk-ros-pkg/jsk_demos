@@ -411,7 +411,7 @@
 
 ;; genetate drill motion (with current drill coords)
 (defun generate-drill-grasp-motion
-  (&key (draw? t) (rotation-axis (if (eq *default-drill-type* :takenoko)(list :z t t) (list t t t))))
+  (&key (draw? t) (rotation-axis (if (eq *default-drill-type* :takenoko)(list :z t t) (list t t t))) (fin? t))
   (let* ((reach-dist 140)
          ;(x-factor 0.0)
 	 (grasp-up-dist 120)
@@ -422,7 +422,7 @@
          (original-foot-midcoords (send (send *robot* :foot-midcoords) :copy-worldcoords))
          (original-drill-coords (send *drill* :copy-worldcoords))
          (drill-type *default-drill-type*)
-         (fin? t))
+         )
     ;; grasp drill
     (send *robot* :angle-vector (get-reach-drill-pre-pose))
     (send *robot* :fix-leg-to-coords original-foot-midcoords)
@@ -486,11 +486,11 @@
       )
     )
     (when draw? (send *irtviewer* :draw-objects :flush t))
-      ;; drill-reset-pose
-      (send *robot* :fix-leg-to-coords original-foot-midcoords)
-      (send *drill* :newcoords original-drill-coords)
-      (setq *drill-ik-results* ik-results)
-      ))
+    ;; drill-reset-pose
+    (send *robot* :fix-leg-to-coords original-foot-midcoords)
+    (send *drill* :newcoords original-drill-coords)
+    (setq *drill-ik-results* ik-results)
+    ))
 ;; calls generate-drill-grasp-motion and change results to *drill-motion*(global)
 (defun get-drill-grasp-motion
   (&key (draw? t) (rotation-axis (list :z t t)))
@@ -819,14 +819,16 @@
   )
 
 (defun generate-drill-button-motion
-  (&key (draw? t))
+  (&key (draw? t) (fin? t))
   (let* (ik-results
          (original-foot-midcoords (send (send *robot* :foot-midcoords) :copy-worldcoords)))
     ;; push buton
     (send *robot* :angle-vector (get-look-drill-pose))
     ;;(send *robot* :fix-leg-to-coords original-foot-midcoords)
     (send *robot* :fix-leg-to-coords (make-coords))
-    (let* (ik-ret)
+    (block drill-ik
+    (let* (ik-ret
+	   )
       ;; pre-push1
       ;; (send *robot* :angle-vector (get-look-drill-pose))
       ;; (send *robot* :fix-leg-to-coords (make-coords))
@@ -853,17 +855,24 @@
       (setq ik-ret (fullbody-inverse-kinematics-for-drill-button :x-offset 0 :y-offset 0 :z-offset -100 :draw? draw?))
 	
       (push-back (list 0 (not (null ik-ret)) (send *robot* :angle-vector)) ik-results)
+      (when (and fin? (not ik-ret)) (return-from drill-ik nil))
       ;; pre-push2
       (setq ik-ret (fullbody-inverse-kinematics-for-drill-button :x-offset 0 :y-offset 0 :z-offset -50 :draw? draw?))
       (push-back (list 1 (not (null ik-ret)) ik-ret) ik-results)
+      (when (and fin? (not ik-ret)) (return-from drill-ik nil))
       ;; pre-push3
       (setq ik-ret (fullbody-inverse-kinematics-for-drill-button :x-offset 0 :y-offset 0 :z-offset 0 :draw? draw?))
       (push-back (list 2 (not (null ik-ret)) ik-ret) ik-results)
+      (when (and fin? (not ik-ret)) (return-from drill-ik nil))
       ;; push
       (setq ik-ret (fullbody-inverse-kinematics-for-drill-button :x-offset 0 :y-offset 0 :z-offset 40 :draw? draw?))
       (push-back (list 3 (not (null ik-ret)) ik-ret) ik-results)
-      (setq *drill-ik-results* ik-results)
-      ))
+      (when (and fin? (not ik-ret)) (return-from drill-ik nil))
+      )
+    )
+    (setq *drill-ik-results* ik-results)
+    (send *robot* :fix-leg-to-coords (make-coords))
+    )
   )
 
 (defun get-drill-button-motion
