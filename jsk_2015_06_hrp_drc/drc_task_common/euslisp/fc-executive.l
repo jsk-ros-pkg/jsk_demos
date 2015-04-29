@@ -2,6 +2,7 @@
 
 (ros::roseus "ocs_executive")
 (ros::roseus-add-srvs "std_srvs")
+(ros::roseus-add-srvs "jsk_topic_tools")
 (ros::roseus-add-msgs "image_view2")
 (ros::roseus-add-msgs "geometry_msgs")
 (ros::roseus-add-msgs "drc_com_common")
@@ -212,6 +213,8 @@
       ))
   (:drill-grasp-region-command-callback (msg)
     (when (send smachine :state? :initial)
+      ;; Enable passthrough for 10seconds
+      (call-request-duration "/drill_recognition/passthrough/request_duration" 10)
       ;; convert OCS2FCSmall into geometry_msgs/Polygon
       (ros::publish "/drill_recognition/input_rect"
         (integer-vector-to-rect-polygon-stamped msg))
@@ -239,6 +242,7 @@
       ))
   (:drill-button-region-command-callback (msg)
     (when (send smachine :state? :initial)
+      (call-request-duration "/drill_recognition_for_button/passthrough/request_duration" 10)
       ;; convert OCS2FCSmall into geometry_msgs/Polygon
       (ros::publish "/drill_recognition_for_button/input_rect"
         (integer-vector-to-rect-polygon-stamped msg))
@@ -482,7 +486,9 @@
     (when (send smachine :state? :initial)
       (multiple-value-bind
           (coords radius) (float-vector-to-torus (send msg :float_params))
-        (let* ((stand-coords (float-vector-to-coords (send msg :stand_coords))))
+        (let* ((stand-coords (float-vector-to-coords (send msg :stand_coords)))
+               (arm-side (send msg :arm_side))
+               (arm (cond ((equal arm-side drc_com_common::OCS2FCSmall::*LARM*) :larm) ((equal arm-side drc_com_common::OCS2FCSmall::*RARM*) :rarm) (t :rarm))))
           (send smachine :go-to :executing-valve)
           (setq *cancel-motion-flag* nil)
           (catch 'exit
@@ -491,7 +497,7 @@
                            (car (send coords :rpy-angle))
                            radius)
             ;; send motion to real robot
-            (send-valve-motion radius coords :stand-coords stand-coords)
+            (send-valve-motion radius coords :arm arm :stand-coords stand-coords)
             ;; send finish signal to ocs
             (let ((msg (instance drc_com_common::FC2OCSSmall :init)))
               (send msg :type drc_com_common::FC2OCSSmall::*VALVE_FINISHED*)
@@ -800,11 +806,13 @@ It sends :angle-vector to robot and return 'finished' message to ocs"
     (send *ri* :wait-interpolation)
     (send self :send-rviz-button-finished-to-ocs))
   (:drill-reset-pose-command-callback (msg)
-    (send *ri* :angle-vector (send *robot* :angle-vector (get-drill-reset-pose)) 10000)
+    (send *robot* :angle-vector (get-drill-reset-pose))
+    (send *ri* :angle-vector (send *robot* :angle-vector) 10000)
     (send *ri* :wait-interpolation)
     (send self :send-rviz-button-finished-to-ocs))
   (:watch-drill-pose-command-callback (msg)
-    (send *ri* :angle-vector (send *robot* :angle-vector (watch-drill-pose)) 10000)
+    (send *robot* :angle-vector (get-watch-drill-pose))
+    (send *ri* :angle-vector (send *robot* :angle-vector) 10000)
     (send *ri* :wait-interpolation)
     (send self :send-rviz-button-finished-to-ocs))
   (:hand-reset-pose-command-callback (msg)
