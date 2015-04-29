@@ -559,6 +559,7 @@
     (when real? 
       (cond ((or (equal *robot-name* "HRP2JSKNTS") (equal *robot-name* "HRP2JSKNT"))
              (send *ri* :start-impedance :arms :k-p 200 :d-p 180 :m-p 5 :m-r 1 :d-r 15 :k-r 20)) ;; start imp soft
+             ;(send *ri* :start-impedance *drill-main-arm* :moment-gain (float-vector 0 0 0) :k-p 1000 :d-p 400)) ;; start imp hard
             (t
              (send *ri* :start-impedance :arms :k-p 200 :d-p 1000 :m-p 5 :m-r 1 :d-r 15 :k-r 20))))
     (drill-hook :arm :arms)
@@ -916,7 +917,7 @@
     (when (not (= drill-motion-length 0))
       (when real? 
         (cond ((or (equal *robot-name* "HRP2JSKNTS") (equal *robot-name* "HRP2JSKNT"))
-               (send *ri* :start-impedance *drill-main-arm* :moment-gain (float-vector 0 0 0) :k-p 3000 :d-p 400)) ;; start imp hard
+               (send *ri* :start-impedance :arms :moment-gain (float-vector 0 0 0) :k-p 3000 :d-p 400)) ;; start imp hard
               (t
              (send *ri* :start-impedance *drill-main-arm* :moment-gain (float-vector 0 0 0) :k-p 3000 :d-p 1500))))
       
@@ -928,7 +929,7 @@
 		 (drill-full-grasp :arm :arms))
 		((equal *drill-button-point* :finger)
 		 (cond ((or (equal *robot-name* "HRP2JSKNT") (equal *robot-name* "HRP2JSKNTS"))
-			(send *robot* :hand *drill-support-arm* :angle-vector (float-vector 90.0 90.0 -10.0 0.0 -40.0 -40.0))
+			(send *robot* :hand *drill-support-arm* :angle-vector (float-vector 90.0 90.0 50.0 0.0 90.0 -40.0))
 			(send *robot* :hand *drill-main-arm* :angle-vector (float-vector 90.0 0.0 0.0 0.0 90.0 90.0))
 			(hand-model2real)
 			))
