@@ -209,7 +209,7 @@
   )
 
 (defun publish-debri-motion
-  (&key coords radius height handle-ratio (step-time 400) (update? t))
+  (&key coords radius height handle-ratio (step-time 200) (update? t))
   (when update?
     (get-debri-motion-full radius height coords handle-ratio :use-ri? nil))
   (ros::ros-info "debri-stand-coords: ~a~%" *debri-stand-coords*)

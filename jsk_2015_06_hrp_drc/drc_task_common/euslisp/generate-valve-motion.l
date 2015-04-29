@@ -393,7 +393,7 @@
   )
 
 (defun publish-valve-motion
-  (&key radius coords (arm :rarm) (stand-coords nil) (overwrite-stand-coords? nil) (overwrite-arm-side? nil) (step-time 400) (update? t))
+  (&key radius coords (arm :rarm) (stand-coords nil) (overwrite-stand-coords? nil) (overwrite-arm-side? nil) (step-time 200) (update? t))
   (when update?
     (get-valve-motion-full radius coords :arm arm :stand-coords stand-coords :overwrite-stand-coords? overwrite-stand-coords? :overwrite-arm-side? overwrite-arm-side? :use-ri? nil))
   (ros::ros-info "valve-stand-coords: ~a~%" *valve-stand-coords*)
