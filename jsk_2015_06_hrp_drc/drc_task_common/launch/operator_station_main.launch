@@ -144,6 +144,7 @@
       <remap from="~input" to="/ocs/communication/laser_cloud" />
       <rosparam>
         target_frame_id: ground
+        use_latest_tf: true
       </rosparam>
     </node>
     <node pkg="jsk_pcl_ros" type="multi_plane_extraction" name="ground_extraction">
