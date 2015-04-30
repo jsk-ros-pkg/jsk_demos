@@ -1,0 +1,16 @@
+<launch>
+  <arg name="PINNED_LINK" default="BODY" />
+  
+  <!-- launch staro in gazebo with drc_vehicle -->
+  <include file="$(find hrpsys_gazebo_tutorials)/launch/drc_practice_task_1_staro.launch"/>
+  <!-- launch hrpsys -->
+  <node pkg="hrpsys_ros_bridge" type="rtmlaunch" name="staro_hrpsys"
+        args="$(find hrpsys_gazebo_tutorials)/launch/staro_hrpsys_bringup.launch" />
+  <!-- launch handle -->
+  <include file="$(find gazebo_drive_simulator)/launch/handle_controller.launch">
+    <arg name="CMD_NAMESPACE" default="/drc_vehicle_xp900"/>
+  </include>
+  
+  <!-- Add static TF car_center -->
+  <node pkg="tf" type="static_transform_publisher" name="TF_car_center" args="-0.05 0.0 -1.2 0 0 0 $(arg PINNED_LINK) car_center 10" /> <!-- because initial position is x: 0.1, y: -0.3, z: -0.05 // start_staro_drive_shimulator.sh -->
+</launch>

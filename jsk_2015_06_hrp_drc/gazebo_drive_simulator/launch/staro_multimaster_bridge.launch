@@ -1,0 +1,7 @@
+<launch>
+  <arg name="master" />
+  <node pkg="multimaster" type="master_sync.py" name="staro_drive_simulator_bridge" output="screen"> 
+    <param name="foreign_master" value="http://$(arg master):11311" />      
+    <rosparam command="load" file="$(find gazebo_drive_simulator)/config/staro_drive_simulator_bridge_config.yaml" />
+  </node>
+</launch>

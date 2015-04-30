@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<launch>
+  <arg name="SIMULATION_LAUNCH" default="$(find drcsim_gazebo)/launch/vrc_task_1.launch"/>
+  <arg name="USE_HANDLE" default="true"/>
+  <arg name="CONTROLLER_DEV" default="/dev/input/js0"/>
+  <arg name="CMD_NAMESPACE" default="/drc_vehicle_xp900"/>
+  <arg name="ROSBAG_RECORD" default="false"/>
+  <arg name="ROOT_LINK" default="pelvis" />
+  <arg name="PINNED_LINK" default="pelvis" />
+  <!-- <arg name="PINNED_LINK" default="utorso" /> -->
+  
+  <rosparam param="use_sim_time" subst_value="True" />
+  
+  <!-- simulation environment -->
+  <include file="$(arg SIMULATION_LAUNCH)"/>
+
+  <!-- <node pkg="rostopic" type="rostopic" name="disable_handle_brake"
+       args="pub /drc_vehicle/hand_brake/cmd std_msgs/Float64 '{data: 0}'" output="screen" /> -->
+  <!-- <node pkg="rostopic" type="rostopic" name="ride_on_vehicle"
+       args="pub /drc_world/robot_enter_car geometry_msgs/Pose '{}'" output="screen" /> -->
+
+  <!-- handle controller -->
+  <group if="$(arg USE_HANDLE)">
+    <include file="$(find gazebo_drive_simulator)/launch/handle_controller.launch">
+      <arg name="CONTROLLER_DEV" value="$(arg CONTROLLER_DEV)"/>
+      <arg name="CMD_NAMESPACE" value="$(arg CMD_NAMESPACE)"/>
+    </include>
+  </group>
+
+  <!-- robot view point -->
+  <node pkg="image_view" type="image_view" name="robot_perspective">
+    <remap from="image" to="multisense/left/image_rect_color" />
+  </node>
+
+  <!-- robot_pose_ekf for publishing odom_combined -->
+  <node pkg="robot_pose_ekf" type="robot_pose_ekf" name="robot_pose_ekf">
+    <param name="output_frame" value="odom"/>
+    <param name="freq" value="10.0"/>
+    <param name="sensor_timeout" value="1.0"/>
+    <param name="odom_used" value="false"/>
+    <param name="imu_used" value="true"/>
+    <param name="vo_used" value="true"/>
+    <param name="debug" value="false"/>
+    <param name="self_diagnose" value="false"/>
+    <remap from="imu_data" to="/atlas/imu" />
+    <remap from="vo" to="/viso_node/odometry" />
+  </node>
+
+  <!-- Add static TF for base_footprint and car_center -->
+  <node pkg="tf" type="static_transform_publisher" name="base_footprint_pinned_link" args="0 0 0 0 0 0 base_footprint $(arg ROOT_LINK) 100" />
+  <node pkg="tf" type="static_transform_publisher" name="TF_car_center" args="0.05 0.3 -1.05 0 0 0 $(arg PINNED_LINK) car_center 100" /> <!-- because initial position is y : -0.6, z : -0.2 // start_gazebo_drive_shimulator.sh -->
+  <!-- <node pkg="tf" type="static_transform_publisher" name="TF_car_center" args="0.05 0.3 -1.25 0 0 0 $(arg PINNED_LINK) car_center 10" /> --> <!-- because initial position is y : -0.6 // start_gazebo_drive_shimulator.sh  0.3 (atlas is right side of the car, and -0.3 left -->
+
+  <!-- run rosbag -->
+  <node if="$(arg ROSBAG_RECORD)"
+        pkg="gazebo_drive_simulator"
+        type="rosbag_record_gazebo_drive_simulator.sh"
+        args="--split --size=1024 -o gazebo_drive_simulator_rosbag"
+        output="screen" name="gazebo_drive_simulator_rosbag_record" />
+
+</launch>

@@ -1,0 +1,8 @@
+<launch>
+  <!-- launch atlas -->
+  <remap from="/odom" to="/hrpsys_odom"/>
+  <include file="$(find hrpsys_gazebo_atlas)/launch/atlas_v0_hrpsys_bringup.launch"/>
+  <!-- launch handle controller -->
+  <node pkg="gazebo_drive_simulator" type="atlas-drive-simulator-handle-joy.l" name="atlas_drive_simulator_eus"/>
+  
+</launch>
