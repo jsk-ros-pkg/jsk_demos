@@ -125,15 +125,43 @@
   <!-- dynamic_reconfigure -->
   <node pkg="drc_task_common" name="ocs_dynamic_reconfigure" type="ocs_dynamic_reconfigure.py" />
 
-  <!-- ground visualization -->
-  <node pkg="nodelet" type="nodelet" name="ground_polygon_publisher"
-        args="standalone jsk_pcl/StaticPolygonArrayPublisher">
-    <rosparam>
-      use_message: false
-      use_periodic: true
-      frame_ids: [ground]
-      # Be careful, the order is reversed
-      polygon_array: [[[5, 5, 0], [-5, 5, 0], [-5, -5, 0], [5, -5, 0]]]
-    </rosparam>
-  </node>
+  
+  <group ns="ocs">
+    <!-- ground visualization -->
+    <node pkg="nodelet" type="nodelet" name="ground_polygon_publisher"
+          args="standalone jsk_pcl/StaticPolygonArrayPublisher">
+      <rosparam>
+        use_message: false
+        use_periodic: true
+        frame_ids: [ground]
+        # Be careful, the order is reversed
+        polygon_array: [[[5, 5, 0], [-5, 5, 0], [-5, -5, 0], [5, -5, 0]]]
+      </rosparam>
+    </node>
+
+    <!-- Remove ground points -->
+    <node pkg="jsk_pcl_ros" type="tf_transform_cloud" name="ground_cloud">
+      <remap from="~input" to="/ocs/communication/laser_cloud" />
+      <rosparam>
+        target_frame_id: ground
+      </rosparam>
+    </node>
+    <node pkg="jsk_pcl_ros" type="multi_plane_extraction" name="ground_extraction">
+      <remap from="~input_polygons" to="ground_polygon_publisher/output_polygons" />
+      <remap from="~input_coefficients" to="ground_polygon_publisher/output_coefficients" />
+      <remap from="~input" to="/ocs/ground_cloud/output" />
+      <rosparam>
+        use_async: true
+        use_indices: false
+      </rosparam>
+    </node>
+    <node pkg="nodelet" type="nodelet" name="non_ground_points"
+          args="standalone pcl/ExtractIndices">
+      <remap from="~input" to="/ocs/ground_cloud/output" />
+      <remap from="~indices" to="ground_extraction/output/indices" />
+      <rosparam>
+        negative: true
+      </rosparam>
+    </node>
+  </group>
 </launch>
