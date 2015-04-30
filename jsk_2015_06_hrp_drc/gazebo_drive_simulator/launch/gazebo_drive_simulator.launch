@@ -8,9 +8,9 @@
   <arg name="ROOT_LINK" default="pelvis" />
   <arg name="PINNED_LINK" default="pelvis" />
   <!-- <arg name="PINNED_LINK" default="utorso" /> -->
-  
+
   <rosparam param="use_sim_time" subst_value="True" />
-  
+
   <!-- simulation environment -->
   <include file="$(arg SIMULATION_LAUNCH)"/>
 
@@ -21,9 +21,9 @@
 
   <!-- handle controller -->
   <group if="$(arg USE_HANDLE)">
-    <include file="$(find gazebo_drive_simulator)/launch/handle_controller.launch">
+    <include file="$(find drc_task_common)/launch/fc/vehicle/handle_operation_interface.launch">
       <arg name="CONTROLLER_DEV" value="$(arg CONTROLLER_DEV)"/>
-      <arg name="CMD_NAMESPACE" value="$(arg CMD_NAMESPACE)"/>
+      <arg name="OCS_NS" value="$(arg CMD_NAMESPACE)"/>
     </include>
   </group>
 
