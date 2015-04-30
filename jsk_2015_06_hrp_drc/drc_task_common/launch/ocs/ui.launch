@@ -12,6 +12,9 @@
       service_button_layout_file: "package://drc_task_common/config/ocs_ui_button_layout.yaml"
     </rosparam>
     <rosparam>
+      service_optional_button_layout_file: "package://drc_task_common/config/ocs_ui_optional_button_layout.yaml"
+    </rosparam>
+    <rosparam>
       service_radio_button_layout_file: "package://drc_task_common/config/ocs_ui_radio_button_layout.yaml"
     </rosparam>
   </node>
@@ -75,6 +78,5 @@
       suffix: " Sec before"
     </rosparam>
   </node>
-
 </launch>
 
