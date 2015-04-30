@@ -58,11 +58,18 @@
       <param name="input_frame" value="multisense/head_root"
              if="$(arg MULTISENSE_STANDALONE)"/>
     </node>
-
+    <node pkg="nodelet" type="nodelet"
+          name="remove_outlier"
+          args="load pcl/RadiusOutlierRemoval manager">
+      <rosparam>
+        radius_search: 0.05
+        min_neighbors: 20
+      </rosparam>
+    </node>
     <node pkg="nodelet" type="nodelet"
           name="odom_cloud"
           args="load jsk_pcl/TfTransformCloud manager">
-      <remap from="~input" to="z_filter/output" />
+      <remap from="~input" to="remove_outlier/output" />
       <rosparam>
         target_frame_id: ground
       </rosparam>
