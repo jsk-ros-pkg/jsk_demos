@@ -1,0 +1,8 @@
+<launch>
+  <node pkg="roseus" type="roseus" name="driving_im_robot_interface"
+        args="$(find gazebo_drive_simulator)/euslisp/execute-staro-drive-demo.l"
+        output="screen" />
+  <include file="$(find ps3joy)/launch/ps3.launch" />
+  <node pkg="rosbag" type="record" args="-a --split --size=1024 -o staro_data"
+        output="screen" name="staro_rosbag_record" />
+</launch>

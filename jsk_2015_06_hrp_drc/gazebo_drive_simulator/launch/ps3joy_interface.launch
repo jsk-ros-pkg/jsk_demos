@@ -1,0 +1,9 @@
+<launch>
+  <arg name="CONTROLLER_DEV" default="/dev/input/js0"/>
+  <group ns="ps3joy">
+    <node pkg="joy" type="joy_node" name="ps3joy_drive" output="screen">
+      <param name="dev" value="$(arg CONTROLLER_DEV)" />
+      <param name="deadzone" value="0.0" />
+    </node>
+  </group>
+</launch>
