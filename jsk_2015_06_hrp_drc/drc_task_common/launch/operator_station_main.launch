@@ -124,4 +124,16 @@
 
   <!-- dynamic_reconfigure -->
   <node pkg="drc_task_common" name="ocs_dynamic_reconfigure" type="ocs_dynamic_reconfigure.py" />
+
+  <!-- ground visualization -->
+  <node pkg="nodelet" type="nodelet" name="ground_polygon_publisher"
+        args="standalone jsk_pcl/StaticPolygonArrayPublisher">
+    <rosparam>
+      use_message: false
+      use_periodic: true
+      frame_ids: [ground]
+      # Be careful, the order is reversed
+      polygon_array: [[[5, 5, 0], [-5, 5, 0], [-5, -5, 0], [5, -5, 0]]]
+    </rosparam>
+  </node>
 </launch>
