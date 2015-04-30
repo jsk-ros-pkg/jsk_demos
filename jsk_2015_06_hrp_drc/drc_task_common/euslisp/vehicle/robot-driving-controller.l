@@ -753,16 +753,28 @@
   ;; main loop
   (:execute
    (&key (publish-steering-trajectory nil))
-   (let ((count 0))
-     (do-until-key
-      (send self :estimate-current-handle-angle)
-      (send self :record-handling-end-coords)
-      (when publish-steering-trajectory
-        (send self :publish-steering-trajectory)
-        )
-      (ros::spin-once)
-      (ros::sleep)
+   (do-until-key
+    (send self :estimate-current-handle-angle)
+    (send self :record-handling-end-coords)
+    (when publish-steering-trajectory
+      (send self :publish-steering-trajectory)
       )
-     )
+    (ros::spin-once)
+    (ros::sleep)
+    )
    )
+  )
+
+(defun robot-vehicle-main
+  (&key (robot-name "robot") (real t) (postfix nil))
+  (let (controller-name)
+    (setq controller-name (format nil "~A-driving-controller" (string-downcase robot-name)))
+    (when postfix
+      (setq controller-name (format nil "~A-~A" controller-name (string-downcase postfix)))
+      )
+    (warn "make controller: ~A~%" controller-name)
+    (setq *controller* (eval (list 'instance (read-from-string controller-name) :init :real real)))
+    (send *controller* :initialize)
+    (send *controller* :execute)
+    )
   )

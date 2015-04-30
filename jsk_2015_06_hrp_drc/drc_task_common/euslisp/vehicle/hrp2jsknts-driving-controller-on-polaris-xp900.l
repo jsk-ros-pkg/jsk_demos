@@ -24,4 +24,9 @@
    )
   )
 
+(defun hrp2jsknts-vehicle-main
+  (&key (real t))
+  (robot-vehicle-main :robot-name "hrp2jsknts" :postfix "on-polaris-xp900" :real real)
+  )
+
 ;; (setq *controller* (instance hrp2jsknts-driving-controller-on-polaris-xp900 :init :real nil))
