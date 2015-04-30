@@ -268,6 +268,56 @@
     (setq coords (if tf-trans (send tf-trans :inverse-transformation) (make-coords)))
     coords))
 
+(defun get-opposite-arm
+  (arm)
+  (cond ((equal arm :larm) :rarm)
+        ((equal arm :rarm) :larm)))
+
+(defun get-mirror-angle-vector
+  ()
+  (let* ((joint-name-list
+          (list (cons :rarm (list :collar-y
+                                  :shoulder-r :shoulder-p :shoulder-y
+                                  :elbow-r :elbow-p :elbow-y
+                                  :wrist-r :wrist-p :wrist-y))
+                (cons :larm (list :collar-y
+                                  :shoulder-r :shoulder-p :shoulder-y
+                                  :elbow-r :elbow-p :elbow-y
+                                  :wrist-r :wrist-p :wrist-y))
+                (cons :rleg (list :crotch-r :crotch-p :crotch-y
+                                  :knee-r :knee-p :knee-y
+                                  :ankle-r :ankle-p :ankle-y
+                                  :toe-p))
+                (cons :lleg (list :crotch-r :crotch-p :crotch-y
+                                  :knee-r :knee-p :knee-y
+                                  :ankle-r :ankle-p :ankle-y
+                                  :toe-p))
+                (cons :head (list :neck-r :neck-p :neck-y))
+                (cons :torso (list :waist-r :waist-p :waist-y
+                                   :chest-r :chest-p :chest-y
+                                   ))
+                ))
+         (original-av (copy-seq (send *robot* :angle-vector)))
+         )
+    (unless (boundp '*tmp-robot*)
+      (setq *tmp-robot* (copy-object *robot*)))
+    (dolist (jn joint-name-list)
+      (let* ((limb (car jn))
+             (jnlist (cdr jn))
+             )
+        (mapcar
+         #'(lambda (k)
+             (when (find (read-from-string (format nil "~a-~a" limb (string k)))
+                         (send *robot* :methods))
+               (send *tmp-robot* limb k :joint-angle (* (if (or (substringp "-r" (format nil "~a" k)) (substringp "-y" (format nil "~a" k))) -1.0 +1.0) (send *robot* (case limb (:larm :rarm) (:rarm :larm) (:lleg :rleg) (:rleg :lleg) (t limb)) k :joint-angle)))
+               ))
+         jnlist)
+
+        ))
+    (send *robot* :angle-vector (send *tmp-robot* :angle-vector))
+    )
+  )
+
 (load "package://hrpsys_ros_bridge/euslisp/rtm-ros-robot-interface.l")
 
 (defmethod rtm-ros-robot-interface

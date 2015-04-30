@@ -202,7 +202,7 @@
   )
 
 (defun publish-hose-grasp-motion
-  (&key coords (step-time 400) (update? t))
+  (&key coords (step-time 200) (update? t))
   (when update?
     (get-hose-grasp-motion-full coords :use-ri? nil))
   (ros::ros-info "hose-stand-coords: ~a~%" *hose-stand-coords*)
@@ -457,7 +457,7 @@
   )
 
 (defun publish-hose-connect-motion
-  (&key coords (step-time 400) (update? t))
+  (&key coords (step-time 200) (update? t))
   (when update?
     (get-hose-connect-motion-full coords :use-ri? nil))
   (ros::ros-info "hose-stand-coords: ~a~%" *hose-stand-coords*)

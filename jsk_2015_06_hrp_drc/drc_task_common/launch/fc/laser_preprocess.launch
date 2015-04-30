@@ -6,6 +6,7 @@
     <node pkg="nodelet" type="nodelet"
           name="tilt_laser_listener"
           args="load jsk_pcl/TiltLaserListener laser_preprocess_manager"
+          machine="vmachine"
           output="screen">
       <remap from="~input" to="/joint_states" />
       <rosparam>
@@ -19,6 +20,7 @@
 
     <node pkg="laser_assembler" type="laser_scan_assembler"
           name="laser_scan_assembler_node"
+          machine="vmachine"
           output="screen" >
       <remap from="scan" to="/multisense/lidar_scan_filtered"/>
       <param name="tf_cache_time_secs" value="20" />
@@ -26,8 +28,9 @@
       <param name="fixed_frame" value="$(arg ODOM_FRAME)" />
     </node>
 
-        <node pkg="nodelet" type="nodelet"
+    <node pkg="nodelet" type="nodelet"
           name="downsampler"
+          machine="vmachine"
           args="load pcl/VoxelGrid laser_preprocess_manager">
       <remap from="~input" to="tilt_laser_listener/output_cloud" />
       <rosparam>
@@ -38,6 +41,7 @@
     </node>
     <node pkg="nodelet" type="nodelet"
           name="gsensor_cloud"
+          machine="vmachine"
           args="load jsk_pcl/TfTransformCloud laser_preprocess_manager">
       <remap from="~input" to="downsampler/output" />
       <rosparam>
@@ -47,6 +51,7 @@
 
     <node pkg="nodelet" type="nodelet"
           name="x_filter"
+          machine="vmachine"
           args="load pcl/PassThrough laser_preprocess_manager">
       <remap from="~input" to="gsensor_cloud/output" />
       <rosparam>
@@ -58,6 +63,7 @@
     </node>
     <node pkg="nodelet" type="nodelet"
           name="y_filter"
+          machine="vmachine"
           args="load pcl/PassThrough laser_preprocess_manager">
       <remap from="~input" to="x_filter/output" />
       <rosparam>
@@ -71,6 +77,7 @@
     <!-- first, remove upper pointcloud -->
     <node pkg="nodelet" type="nodelet"
           name="z_filter"
+          machine="vmachine"
           args="load pcl/PassThrough laser_preprocess_manager">
       <remap from="~input" to="y_filter/output" />
       <rosparam>
@@ -83,15 +90,12 @@
 
     <node pkg="nodelet" type="nodelet"
           name="odom_cloud"
+          machine="vmachine"
           args="load jsk_pcl/TfTransformCloud laser_preprocess_manager">
       <remap from="~input" to="z_filter/output" />
       <rosparam>
         target_frame_id: odom
       </rosparam>
     </node>
-
-
-    
   </group>
-  
 </launch>

@@ -27,7 +27,9 @@ namespace drc_task_common
   protected Q_SLOTS:
 
     void callRequestResetPose();
-    void callRequestManipPose();
+    void callRequestResetManipPose();
+    void callRequestDrillResetPose();
+    void callRequestWatchDrillPose();
 
     void callRequestResetGripperPose();
     void callRequestHookGrippePose();

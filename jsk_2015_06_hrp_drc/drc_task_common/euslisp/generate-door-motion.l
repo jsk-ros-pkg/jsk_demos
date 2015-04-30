@@ -103,7 +103,7 @@
   )
 
 (defun publish-door-motion
-  (&key knob-size coords (step-time 400) (update? t))
+  (&key knob-size coords (step-time 200) (update? t))
   (when update?
     (get-door-motion-full knob-size coords :use-ri? nil :draw? nil))
   (ros::ros-info "door-stand-coords: ~a~%" *door-stand-coords*)

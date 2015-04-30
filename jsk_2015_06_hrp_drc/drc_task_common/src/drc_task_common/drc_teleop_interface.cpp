@@ -16,66 +16,43 @@ namespace drc_task_common
     ui_->verticalLayout->setAlignment(Qt::AlignLeft);
 
     ros::NodeHandle nh("~");
-    std::string reset_pose_button_icon_name,
-      reset_manip_pose_button_icon_name,
-      hand_reset_pose_button_icon_name,
-      hand_hook_pose_button_icon_name,
-      hand_grasp_pose_button_icon_name,
-      hrpsys_start_abc_button_icon_name,
-      hrpsys_start_st_button_icon_name,
-      hrpsys_start_imp_button_icon_name,
-      hrpsys_stop_abc_button_icon_name,
-      hrpsys_stop_st_button_icon_name,
-      hrpsys_stop_imp_button_icon_name,
-      display_manip_icon_name,
-      hide_manip_icon_name;
     
-    nh.param<std::string>("/reset_pose_icon", reset_pose_button_icon_name, ros::package::getPath("drc_task_common")+std::string("/icons/reset-pose.jpg"));
-    nh.param<std::string>("/reset_manip_pose_icon", reset_manip_pose_button_icon_name, ros::package::getPath("drc_task_common")+std::string("/icons/reset-manip-pose.jpg"));
-    nh.param<std::string>("/hand_reset_pose_icon", hand_reset_pose_button_icon_name, ros::package::getPath("drc_task_common")+std::string("/icons/hand-reset-pose.jpg"));
-    nh.param<std::string>("/hand_hook_pose_icon", hand_hook_pose_button_icon_name, ros::package::getPath("drc_task_common")+std::string("/icons/hand-hook-pose.jpg"));
-    nh.param<std::string>("/hand_grasp_pose_icon", hand_grasp_pose_button_icon_name, ros::package::getPath("drc_task_common")+std::string("/icons/hand-grasp-pose.jpg"));
-    nh.param<std::string>("/start_abc_icon", hrpsys_start_abc_button_icon_name, ros::package::getPath("drc_task_common")+std::string("/icons/start-abc.png"));
-    nh.param<std::string>("/start_st_icon", hrpsys_start_st_button_icon_name, ros::package::getPath("drc_task_common")+std::string("/icons/start-st.png"));
-    nh.param<std::string>("/start_imp_icon", hrpsys_start_imp_button_icon_name, ros::package::getPath("drc_task_common")+std::string("/icons/start-imp.png"));
-    nh.param<std::string>("/stop_abc_icon", hrpsys_stop_abc_button_icon_name, ros::package::getPath("drc_task_common")+std::string("/icons/stop-abc.png"));
-    nh.param<std::string>("/stop_st_icon", hrpsys_stop_st_button_icon_name, ros::package::getPath("drc_task_common")+std::string("/icons/stop-st.png"));
-    nh.param<std::string>("/stop_imp_icon", hrpsys_stop_imp_button_icon_name, ros::package::getPath("drc_task_common")+std::string("/icons/stop-imp.png"));
-    nh.param<std::string>("/display_manip", display_manip_icon_name, ros::package::getPath("drc_task_common")+std::string("/icons/display_6dof.png"));
-    nh.param<std::string>("/hide_manip", hide_manip_icon_name, ros::package::getPath("drc_task_common")+std::string("/icons/hide_6dof.png"));
-
-
     ui_->reset_pose_button->setToolButtonStyle(Qt::ToolButtonTextUnderIcon);
-    ui_->reset_pose_button->setIcon(QIcon(QPixmap(QString(reset_pose_button_icon_name.c_str()))));
+    ui_->reset_pose_button->setIcon(QIcon(QPixmap(QString((ros::package::getPath("drc_task_common")+std::string("/icons/reset-pose.jpg")).c_str()))));
     ui_->reset_manip_pose_button->setToolButtonStyle(Qt::ToolButtonTextUnderIcon);
-    ui_->reset_manip_pose_button->setIcon(QIcon(QPixmap(QString(reset_manip_pose_button_icon_name.c_str()))));
+    ui_->reset_manip_pose_button->setIcon(QIcon(QPixmap(QString((ros::package::getPath("drc_task_common")+std::string("/icons/reset-manip-pose.jpg")).c_str()))));
+    ui_->drill_reset_pose_button->setToolButtonStyle(Qt::ToolButtonTextUnderIcon);
+    ui_->drill_reset_pose_button->setIcon(QIcon(QPixmap(QString((ros::package::getPath("drc_task_common")+std::string("/icons/drill-reset-pose.jpg")).c_str()))));
+    ui_->watch_drill_pose_button->setToolButtonStyle(Qt::ToolButtonTextUnderIcon);
+    ui_->watch_drill_pose_button->setIcon(QIcon(QPixmap(QString((ros::package::getPath("drc_task_common")+std::string("/icons/watch-drill-pose.jpg")).c_str()))));
     ui_->hand_reset_pose_button->setToolButtonStyle(Qt::ToolButtonTextUnderIcon);
-    ui_->hand_reset_pose_button->setIcon(QIcon(QPixmap(QString(hand_reset_pose_button_icon_name.c_str()))));
+    ui_->hand_reset_pose_button->setIcon(QIcon(QPixmap(QString((ros::package::getPath("drc_task_common")+std::string("/icons/hand-reset-pose.jpg")).c_str()))));
     ui_->hand_hook_pose_button->setToolButtonStyle(Qt::ToolButtonTextUnderIcon);
-    ui_->hand_hook_pose_button->setIcon(QIcon(QPixmap(QString(hand_hook_pose_button_icon_name.c_str()))));
+    ui_->hand_hook_pose_button->setIcon(QIcon(QPixmap(QString((ros::package::getPath("drc_task_common")+std::string("/icons/hand-hook-pose.jpg")).c_str()))));
     ui_->hand_hook_pose_after_5sec_button->setToolButtonStyle(Qt::ToolButtonTextUnderIcon);
-    ui_->hand_hook_pose_after_5sec_button->setIcon(QIcon(QPixmap(QString(hand_hook_pose_button_icon_name.c_str()))));
+    ui_->hand_hook_pose_after_5sec_button->setIcon(QIcon(QPixmap(QString((ros::package::getPath("drc_task_common")+std::string("/icons/hand-hook-pose.jpg")).c_str()))));
     ui_->hand_grasp_pose_button->setToolButtonStyle(Qt::ToolButtonTextUnderIcon);
-    ui_->hand_grasp_pose_button->setIcon(QIcon(QPixmap(QString(hand_grasp_pose_button_icon_name.c_str()))));
+    ui_->hand_grasp_pose_button->setIcon(QIcon(QPixmap(QString((ros::package::getPath("drc_task_common")+std::string("/icons/hand-grasp-pose.jpg")).c_str()))));
     ui_->hrpsys_start_abc_button->setToolButtonStyle(Qt::ToolButtonTextUnderIcon);
-    ui_->hrpsys_start_abc_button->setIcon(QIcon(QPixmap(QString(hrpsys_start_abc_button_icon_name.c_str()))));
+    ui_->hrpsys_start_abc_button->setIcon(QIcon(QPixmap(QString((ros::package::getPath("drc_task_common")+std::string("/icons/start-abc.png")).c_str()))));
     ui_->hrpsys_start_st_button->setToolButtonStyle(Qt::ToolButtonTextUnderIcon);
-    ui_->hrpsys_start_st_button->setIcon(QIcon(QPixmap(QString(hrpsys_start_st_button_icon_name.c_str()))));
+    ui_->hrpsys_start_st_button->setIcon(QIcon(QPixmap(QString((ros::package::getPath("drc_task_common")+std::string("/icons/start-st.png")).c_str()))));
     ui_->hrpsys_start_imp_button->setToolButtonStyle(Qt::ToolButtonTextUnderIcon);
-    ui_->hrpsys_start_imp_button->setIcon(QIcon(QPixmap(QString(hrpsys_start_imp_button_icon_name.c_str()))));
+    ui_->hrpsys_start_imp_button->setIcon(QIcon(QPixmap(QString((ros::package::getPath("drc_task_common")+std::string("/icons/start-imp.png")).c_str()))));
     ui_->hrpsys_stop_abc_button->setToolButtonStyle(Qt::ToolButtonTextUnderIcon);
-    ui_->hrpsys_stop_abc_button->setIcon(QIcon(QPixmap(QString(hrpsys_stop_abc_button_icon_name.c_str()))));
+    ui_->hrpsys_stop_abc_button->setIcon(QIcon(QPixmap(QString((ros::package::getPath("drc_task_common")+std::string("/icons/stop-abc.png")).c_str()))));
     ui_->hrpsys_stop_st_button->setToolButtonStyle(Qt::ToolButtonTextUnderIcon);
-    ui_->hrpsys_stop_st_button->setIcon(QIcon(QPixmap(QString(hrpsys_stop_st_button_icon_name.c_str()))));
+    ui_->hrpsys_stop_st_button->setIcon(QIcon(QPixmap(QString((ros::package::getPath("drc_task_common")+std::string("/icons/stop-st.png")).c_str()))));
     ui_->hrpsys_stop_imp_button->setToolButtonStyle(Qt::ToolButtonTextUnderIcon);
-    ui_->hrpsys_stop_imp_button->setIcon(QIcon(QPixmap(QString(hrpsys_stop_imp_button_icon_name.c_str()))));
-    ui_->display_manip_button->setIcon(QIcon(QPixmap(QString(display_manip_icon_name.c_str()))));
+    ui_->hrpsys_stop_imp_button->setIcon(QIcon(QPixmap(QString((ros::package::getPath("drc_task_common")+std::string("/icons/stop-imp.png")).c_str()))));
     ui_->display_manip_button->setToolButtonStyle(Qt::ToolButtonTextUnderIcon);
-    ui_->hide_manip_button->setIcon(QIcon(QPixmap(QString(hide_manip_icon_name.c_str()))));
+    ui_->display_manip_button->setIcon(QIcon(QPixmap(QString((ros::package::getPath("drc_task_common")+std::string("/icons/display_6dof.png")).c_str()))));
     ui_->hide_manip_button->setToolButtonStyle(Qt::ToolButtonTextUnderIcon);
-
+    ui_->hide_manip_button->setIcon(QIcon(QPixmap(QString((ros::package::getPath("drc_task_common")+std::string("/icons/hide_6dof.png")).c_str()))));
     connect( ui_->reset_pose_button, SIGNAL( clicked() ), this, SLOT( callRequestResetPose()));
-    connect( ui_->reset_manip_pose_button, SIGNAL( clicked() ), this, SLOT( callRequestManipPose()));
+    connect( ui_->reset_manip_pose_button, SIGNAL( clicked() ), this, SLOT( callRequestResetManipPose()));
+    connect( ui_->drill_reset_pose_button, SIGNAL( clicked() ), this, SLOT( callRequestDrillResetPose()));
+    connect( ui_->watch_drill_pose_button, SIGNAL( clicked() ), this, SLOT( callRequestWatchDrillPose()));
 
     connect( ui_->hand_reset_pose_button, SIGNAL( clicked() ), this, SLOT(  callRequestResetGripperPose()));
     connect( ui_->hand_hook_pose_button, SIGNAL( clicked() ), this, SLOT(  callRequestHookGrippePose()));
@@ -99,8 +76,16 @@ namespace drc_task_common
     callRequestUint8Request(drc_com_common::OCS2FCSmall::RESET_POSE);
   };
 
-  void DRCTeleopInterfaceAction::callRequestManipPose(){
+  void DRCTeleopInterfaceAction::callRequestResetManipPose(){
     callRequestUint8Request(drc_com_common::OCS2FCSmall::RESET_MANIP_POSE);
+  };
+
+  void DRCTeleopInterfaceAction::callRequestDrillResetPose(){
+    callRequestUint8Request(drc_com_common::OCS2FCSmall::DRILL_RESET_POSE);
+  };
+
+  void DRCTeleopInterfaceAction::callRequestWatchDrillPose(){
+    callRequestUint8Request(drc_com_common::OCS2FCSmall::WATCH_DRILL_POSE);
   };
 
   void DRCTeleopInterfaceAction::callRequestResetGripperPose(){
