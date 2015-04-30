@@ -11,9 +11,6 @@
   <remap from="/robot_description" to="/ocs/robot_description" />
 
   <arg name="ik_server_launch" default="hrp2jsknts-ik-server.launch" />
-  <arg name="ROBOT_URDF_MODEL" default="$(find hrpsys_ros_bridge_tutorials)/models/HRP2JSKNT_WH_SENSORS.urdf" />
-  <arg name="USE_CALIB_FILE" default="true" />
-  <arg name="CALIB_FILE" default="$(find jsk_hrp2_ros_bridge)/calib_data/hrp2016_multisense_calib_20150406.yaml" />
   
   <arg name="FC_IP" default="localhost" />
   <arg name="OCS_IP" default="localhost" />
@@ -39,10 +36,7 @@
   
   <!-- tf -->
   <group ns="ocs">
-    <param if="$(arg USE_CALIB_FILE)"
-           name="robot_description" command="$(find euscollada)/scripts/urdf_patch.py patch $(arg ROBOT_URDF_MODEL) $(arg CALIB_FILE)"/>
-    <param unless="$(arg USE_CALIB_FILE)"
-           name="robot_description" textfile="$(arg ROBOT_URDF_MODEL)"/>
+    <include file="$(find drc_task_common)/launch/ocs/models/$(env ROBOT).launch" />
     <node pkg="robot_state_publisher" type="robot_state_publisher" name="ocs_robot_state_publisher">
       <remap from="/joint_states" to="/ocs/joint_states" />
       <remap from="/tf" to="/ocs/tf"/>
@@ -105,7 +99,6 @@
     <include file="$(find drc_task_common)/launch/robot_model.launch" >
       <arg name="default_frame_id" default="$(arg default_frame_id)" />
       <arg name="robot_model_config" default="$(arg robot_model_config)" />
-      <arg name="ROBOT_URDF_MODEL" default="$(arg ROBOT_URDF_MODEL)" />
     </include>
 
     <!-- teleop device -->
