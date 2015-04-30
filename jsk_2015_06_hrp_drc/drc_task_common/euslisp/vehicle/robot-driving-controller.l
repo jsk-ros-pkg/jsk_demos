@@ -765,7 +765,7 @@
    )
   )
 
-(defun vehicle-main
+(defun robot-vehicle-main
   (&key (robot-name "robot") (real t) (postfix nil))
   (let (controller-name)
     (setq controller-name (format nil "~A-driving-controller" (string-downcase robot-name)))
