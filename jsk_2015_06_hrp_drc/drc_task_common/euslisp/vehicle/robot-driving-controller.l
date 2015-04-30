@@ -753,16 +753,14 @@
   ;; main loop
   (:execute
    (&key (publish-steering-trajectory nil))
-   (let ((count 0))
-     (do-until-key
-      (send self :estimate-current-handle-angle)
-      (send self :record-handling-end-coords)
-      (when publish-steering-trajectory
-        (send self :publish-steering-trajectory)
-        )
-      (ros::spin-once)
-      (ros::sleep)
+   (do-until-key
+    (send self :estimate-current-handle-angle)
+    (send self :record-handling-end-coords)
+    (when publish-steering-trajectory
+      (send self :publish-steering-trajectory)
       )
-     )
+    (ros::spin-once)
+    (ros::sleep)
+    )
    )
   )
