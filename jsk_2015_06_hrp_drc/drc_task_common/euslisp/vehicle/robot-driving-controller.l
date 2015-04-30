@@ -764,3 +764,17 @@
     )
    )
   )
+
+(defun vehicle-main
+  (&key (robot-name "robot") (real t) (postfix nil))
+  (let (controller-name)
+    (setq controller-name (format nil "~A-driving-controller" (string-downcase robot-name)))
+    (when postfix
+      (setq controller-name (format nil "~A-~A" controller-name (string-downcase postfix)))
+      )
+    (warn "make controller: ~A~%" controller-name)
+    (setq *controller* (eval (list 'instance (read-from-string controller-name) :init :real real)))
+    (send *controller* :initialize)
+    (send *controller* :execute)
+    )
+  )
