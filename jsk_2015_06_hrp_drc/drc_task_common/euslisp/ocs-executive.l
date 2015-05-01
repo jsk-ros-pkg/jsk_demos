@@ -42,6 +42,8 @@
                 drill-wall-target-coords ;; list of coords
                 drill-button-params ;; (list coords)
                 foreground-bacground-sync-obj
+                arm-mode ;; one of (:rarm-only :rarm-preferred :larm-preferred :larm-only)
+                valve-grasp-mode ;; one of (:edge-grasp-only :edge-grasp-preferred :center-grasp-preferred :center-grasp-only)
                 ;; For driving task
                 latest-handle-angle
                 latest-accell-angle
@@ -108,6 +110,8 @@
     (setq smachine (make-ocs-state-machine))
     (send smachine :register-initial-hook self :initial-callback)
     (send smachine :go-to :initial) ;; force to move to initial state
+    (setq arm-mode :rarm-preferred)
+    (setq valve-grasp-mode :edge-grasp-preferred)
     (send self :show-text "initialized" :success)
     self)
   (:report-callback (msg)
@@ -544,11 +548,18 @@
             (t
              (send msg :arm_side drc_com_common::OCS2FCSmall::*UNDECIDED*))
             )
-      (send msg :float_params
-            (torus-to-float-vector 
-             (car valve-params) (cadr valve-params)
-             (length (send msg :float_params)))
-            )
+      (let (valve-grasp-mode-idx)
+        (cond ((not (boundp '*valve-grasp-mode*))
+               (setq valve-grasp-mode-idx drc_com_common::OCS2FCSmall::*UNDECIDED*))
+              ((equal *valve-grasp-mode* :center-grasp)
+               (setq valve-grasp-mode-idx drc_com_common::OCS2FCSmall::*VALVE_CENTER_GRASP*))
+              ((equal *valve-grasp-mode* :edge-grasp)
+               (setq valve-grasp-mode-idx drc_com_common::OCS2FCSmall::*VALVE_EDGE_GRASP*))
+              (t
+               (setq valve-grasp-mode-idx drc_com_common::OCS2FCSmall::*UNDECIDED*))
+              )
+        (send msg :float_params
+              (valve-params-to-float-vector valve-params valve-grasp-mode-idx (length (send msg :float_params)))))
       (send msg :stand_coords
             (coords-to-float-vector (get-robot-model-current-pos) (length (send msg :stand_coords))))
       (send self :send-to-fc msg)
@@ -711,7 +722,11 @@
          ;; store result
          (setq valve-params (list coords radius))
          ;; publish motion to robot model on rviz
-         (publish-valve-motion :radius (cadr valve-params) :arm (get-arm-side-from-arm-mode) :coords (car valve-params) :stand-coords (make-coords) :overwrite-stand-coords? t :overwrite-arm-side? (get-arm-overwrite-from-arm-mode) :update? t)
+         (publish-valve-motion :radius (cadr valve-params) :coords (car valve-params)
+                               :arm (send self :get-arm-side) :overwrite-arm-side? (send self :is-arm-overwrite)
+                               :stand-coords (make-coords) :overwrite-stand-coords? t
+                               :grasp-center? (send self :is-valve-grasp-center) :overwrite-grasp-mode? (send self :is-valve-grasp-overwrite)
+                               :update? t)
          ))
       (send smachine :go-to :selecting-exec-for-valve)))
   (:door-recognition-finished-callback (msg)
@@ -957,7 +972,11 @@
                  (list (get-primitive-marker-pose :frame-id "BODY")
                        (elt (get-primitive-marker-dimensions) 3)))
            ;; publish valve motion to robot model on rviz
-           (publish-valve-motion :radius (cadr valve-params) :coords (car valve-params) :arm (get-arm-side-from-arm-mode) :stand-coords (get-robot-model-current-pos) :overwrite-arm-side? (get-arm-overwrite-from-arm-mode) :update? t))
+           (publish-valve-motion :radius (cadr valve-params) :coords (car valve-params)
+                                 :arm (send self :get-arm-side) :overwrite-arm-side? (send self :is-arm-overwrite)
+                                 :stand-coords (get-robot-model-current-pos) :overwrite-stand-coords? nil
+                                 :grasp-center? (send self :is-valve-grasp-center) :overwrite-grasp-mode? (send self :is-valve-grasp-overwrite)
+                                 :update? t))
           ((eq (send smachine :state) :selecting-exec-for-debri)
            ;; update latest debri params
            (let* ((dim (get-primitive-marker-dimensions)))
@@ -1152,31 +1171,73 @@
     )
   )
 
+;; select arm
 (defmethod ocs-executive-app
   (:larm-only-checked-callback
    (req)
    (send self :show-text "larm only is selected" :success)
-   (setq *arm-mode* :larm-only)
+   (setq arm-mode :larm-only)
    (send req :response)
    )
   (:larm-preferred-checked-callback
    (req)
    (send self :show-text "larm preferred is selected" :success)
-   (setq *arm-mode* :larm-preferred)
+   (setq arm-mode :larm-preferred)
    (send req :response)
    )
   (:rarm-preferred-checked-callback
    (req)
    (send self :show-text "rarm preferred is selected" :success)
-   (setq *arm-mode* :rarm-preferred)
+   (setq arm-mode :rarm-preferred)
    (send req :response)
    )
   (:rarm-only-checked-callback
    (req)
    (send self :show-text "rarm only is selected" :success)
-   (setq *arm-mode* :rarm-only)
+   (setq arm-mode :rarm-only)
    (send req :response)
    )
+  (:is-arm-overwrite
+   ()
+   (or (equal arm-mode :larm-preferred) (equal arm-mode :rarm-preferred)))
+  (:get-arm-side
+   ()
+   (cond ((or (equal arm-mode :larm-preferred) (equal arm-mode :larm-only)) :larm)
+         ((or (equal arm-mode :rarm-preferred) (equal arm-mode :rarm-only)) :rarm)))
+  )
+
+;; optional button
+(defmethod ocs-executive-app
+  (:valve-edge-grasp-only-callback
+   (req)
+   (setf valve-grasp-mode :edge-grasp-only)
+   (send self :show-text "valve edge grasp only" :success)
+   (send req :response)
+   )
+  (:valve-edge-grasp-preferred-callback
+   (req)
+   (setf valve-grasp-mode :edge-grasp-preferred)
+   (send self :show-text "valve edge grasp preferred" :success)
+   (send req :response)
+   )
+  (:valve-center-grasp-preferred-callback
+   (req)
+   (setf valve-grasp-mode :center-grasp-preferred)
+   (send self :show-text "valve center grasp preferred" :success)
+   (send req :response)
+   )
+  (:valve-center-grasp-only-callback
+   (req)
+   (setf valve-grasp-mode :center-grasp-only)
+   (send self :show-text "valve center grasp only" :success)
+   (send req :response)
+   )
+  (:is-valve-grasp-center
+   ()
+   (or (equal valve-grasp-mode :center-grasp-only) (equal valve-grasp-mode :center-grasp-preferred)))
+  (:is-valve-grasp-overwrite
+   ()
+   (or (equal valve-grasp-mode :edge-grasp-preferred) (equal valve-grasp-mode :center-grasp-preferred)))
   )
 
 (defmethod ocs-executive-app
@@ -1216,18 +1277,6 @@
       (send self :send-to-fc msg)))
   )
 
-;; util function for arm mode
-(defun get-arm-overwrite-from-arm-mode
-  ()
-  (or (equal *arm-mode* :larm-preferred) (equal *arm-mode* :rarm-preferred)))
-
-(defun get-arm-side-from-arm-mode
-  ()
-  (cond ((or (equal *arm-mode* :larm-preferred) (equal *arm-mode* :larm-only))
-         :larm)
-        ((or (equal *arm-mode* :rarm-preferred) (equal *arm-mode* :rarm-only))
-         :rarm))
-  )
 
 ;; generate *robot*
 (setq *robot-name* (string-upcase (unix::getenv "ROBOT")))
@@ -1245,7 +1294,6 @@
   )
 (setq *app* (instance ocs-executive-app :init))
 (setq *tf* (instance ros::transform-listener :init))
-(setq *arm-mode* :rarm-preferred) ;; one of (:rarm-only :rarm-preferred :larm-preferred :larm-only)
 
 (ros::advertise "/ocs_to_fc_low_speed/input" drc_com_common::OCS2FCSmall)
 (ros::advertise "/jsk_model_marker_interface/robot/reset_joint_states_and_root" sensor_msgs::JointState 1)
@@ -1285,6 +1333,10 @@
 (ros::advertise-service "larm_preferred_checked" std_srvs::Empty #'send *app* :larm-preferred-checked-callback)
 (ros::advertise-service "rarm_preferred_checked" std_srvs::Empty #'send *app* :rarm-preferred-checked-callback)
 (ros::advertise-service "rarm_only_checked" std_srvs::Empty #'send *app* :rarm-only-checked-callback)
+(ros::advertise-service "valve_edge_grasp_only" std_srvs::Empty #'send *app* :valve-edge-grasp-only-callback)
+(ros::advertise-service "valve_edge_grasp_preferred" std_srvs::Empty #'send *app* :valve-edge-grasp-preferred-callback)
+(ros::advertise-service "valve_center_grasp_preferred" std_srvs::Empty #'send *app* :valve-center-grasp-preferred-callback)
+(ros::advertise-service "valve_center_grasp_only" std_srvs::Empty #'send *app* :valve-center-grasp-only-callback)
 
 ;; Drive joystick controller topics
 (ros::subscribe "/ocs/drive/operation/handle_cmd" std_msgs::Float64 #'send *app* :drive-handle-angle-callback)

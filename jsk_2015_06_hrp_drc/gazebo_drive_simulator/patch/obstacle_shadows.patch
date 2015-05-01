@@ -1,0 +1,32 @@
+--- ../../../../../../../.gazebo/models/drc_practice_white_jersey_barrier/model.sdf.orig	2014-11-28 14:43:55.652068079 +0900
++++ ../../../../../../../.gazebo/models/drc_practice_white_jersey_barrier/model.sdf	2014-11-28 14:36:14.828075418 +0900
+@@ -4,6 +4,7 @@
+     <static>true</static>
+     <link name="link">
+       <visual name="visual">
++        <cast_shadows>false</cast_shadows>
+         <geometry>
+           <mesh>
+             <uri>model://drc_practice_white_jersey_barrier/meshes/jersey_barrier.dae</uri>
+\ No newline at end of file
+--- ../../../../../../../.gazebo/models/drc_practice_blue_cylinder/model.sdf.orig	2014-11-28 14:48:43.548063494 +0900
++++ ../../../../../../../.gazebo/models/drc_practice_blue_cylinder/model.sdf	2014-11-28 14:37:39.188074075 +0900
+@@ -4,6 +4,7 @@
+     <static>true</static>
+     <link name="link">
+       <visual name="visual">
++        <cast_shadows>false</cast_shadows>
+         <geometry>
+           <mesh>
+             <uri>model://drc_practice_blue_cylinder/meshes/cylinder.dae</uri>
+\ No newline at end of file
+--- ../../../../../../../.gazebo/models/drc_practice_orange_jersey_barrier/model.sdf.orig	2014-11-28 14:50:13.880062055 +0900
++++ ../../../../../../../.gazebo/models/drc_practice_orange_jersey_barrier/model.sdf	2014-11-28 14:36:52.524074818 +0900
+@@ -4,6 +4,7 @@
+     <static>true</static>
+     <link name="link">
+       <visual name="visual">
++        <cast_shadows>false</cast_shadows>
+         <geometry>
+           <mesh>
+             <uri>model://drc_practice_orange_jersey_barrier/meshes/jersey_barrier.dae</uri>

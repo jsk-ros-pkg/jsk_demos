@@ -552,7 +552,8 @@
 
 ;; send drill motion for real robot(fc side)
 (defun send-drill-grasp-motion
-  (coords &key (real? t) (drill-type *default-drill-type*) (rotation-axis (list :z t t)))
+  (coords &key (real? t) (drill-type *default-drill-type*) (rotation-axis (list :z t t))
+	  (rotate-drill nil))
   (let* ((drill-motion-av-list (get-drill-grasp-motion-full coords :drill-type drill-type :rotation-axis rotation-axis))
          (drill-motion-length (length drill-motion-av-list)))
     (when (= drill-motion-length 0) (return-from send-drill-grasp-motion))
@@ -626,7 +627,36 @@
       (send *ri* :set-ref-force #f(0 0 -10) 2000 *drill-support-arm*)
       ;;todo? change drill manip coords with some recog methods
       )
-    
+    (read-line) ;temp!!!
+    (when rotate-drill
+      (let* ((original-foot-midcoords (send (send *robot* :foot-midcoords) :copy-worldcoords))
+	     (original-drill-coords (send *drill* :copy-worldcoords))
+	     (grasp-up-dist 120)
+	     (turn-deg 10) ;;todo :z -> t angle
+	     (draw? t)
+	     )
+	(when draw? (objects (list *drill* *robot*)))
+	;(generate-drill-grasp-motion)
+	(send *drill* :rotate (deg2rad turn-deg) :z)
+	(when (null (fullbody-inverse-kinematics-for-drill-grasp-single :rotation-axis (list t t t)))
+	  (progn (send *drill* :rotate (deg2rad (- turn-deg)) :z)
+		 (format t "fullbody-ik cannnot solve")
+		 ))
+	(when draw? (send *irtviewer* :draw-objects :flush t))
+	(when real? (model2real :time 10000)) ;;temp
+	
+	(send *robot* :fix-leg-to-coords original-foot-midcoords)
+	(send *drill* :translate (float-vector 0 0 (- grasp-up-dist)) :world)
+	(fullbody-inverse-kinematics-for-drill-grasp-single :rotation-axis (list t t t))
+	(when draw? (send *irtviewer* :draw-objects :flush t))
+	(when real? (model2real :time 10000)) ;;temp
+	(send *robot* :fix-leg-to-coords original-foot-midcoords)
+	(send *robot* :angle-vector (get-reach-drill-pre-pose))
+	(when draw? (send *irtviewer* :draw-objects :flush t))
+	(when real? (model2real :time 10000)) ;;temp
+	(send *robot* :fix-leg-to-coords original-foot-midcoords)
+	)
+      )
     (when (equal drill-type :takenoko)
       (send *robot* :angle-vector (get-reach-drill-pre-pose))
       (unless (check-angle-vector-distance)
@@ -1353,8 +1383,8 @@
       (send *robot* :hand :arms :hook-pose))
   ;(play-motion-on-eus-viewer *drill-motion*)
   )
-(defun test-send-drill-grasp-motion ()
-  (send-drill-grasp-motion (make-coords :pos (float-vector 600 -150 100) :rpy (list (deg2rad 0) 0 0)) :drill-type :takenoko :real? t :rotation-axis (list :z t t)))
+(defun test-send-drill-grasp-motion (&key rotate-drill? nil)
+  (send-drill-grasp-motion (make-coords :pos (float-vector 600 -150 100) :rpy (list (deg2rad 0) 0 0)) :drill-type :takenoko :real? t :rotation-axis (list :z t t) :rotate-drill? rotate-drill))
   
 (defun test-drill-put-motion ()
   ;(get-drill-grasp-motion-full (make-coords :pos (float-vector 700 -150 800) :rpy (list 0 0 0)) :draw? t)

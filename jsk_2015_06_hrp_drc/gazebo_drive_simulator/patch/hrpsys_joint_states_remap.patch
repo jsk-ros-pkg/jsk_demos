@@ -1,0 +1,21 @@
+diff --git hrpsys_gazebo_atlas/launch/atlas_hrpsys_bringup.launch hrpsys_gazebo_atlas/launch/atlas_hrpsys_bringup.launch
+index 0f1f19c..85755fc 100644
+--- hrpsys_gazebo_atlas/launch/atlas_hrpsys_bringup.launch
++++ hrpsys_gazebo_atlas/launch/atlas_hrpsys_bringup.launch
+@@ -26,12 +26,16 @@
+             file="$(arg CONTROLLER_CONFIG_FILE)" />
+ 
+   <!-- hrpsys_ros_bridge -->
++  <group>
++    <remap from="/joint_states" to="/hrpsys_joint_states" />
+   <include file="$(find hrpsys_gazebo_atlas)/launch/atlas_hrpsys_ros_bridge.launch">
+     <arg name="ROBOT_NAME" value="$(arg ROBOT_NAME)" />
+     <arg name="USE_ROBOTHARDWARE" value="true" />
+     <arg name="USE_DIAGNOSTICS" value="false" />
+     <arg name="USE_COLLISIONCHECK" value="false" />
++    
+   </include>
++  </group>
+   <!-- start diagnostics -->
+   <include file="$(find hrpsys_gazebo_atlas)/launch/atlas_hrpsys_diagnostics.launch">
+   </include>

@@ -345,6 +345,11 @@
   (let* ((rotatable-angle-thre 100))
     (when set-environment?
       (set-valve-environment-full valve-r valve-coords :arm arm :stand-coords stand-coords :draw? draw? :use-ri? use-ri?))
+    ;; overwrite of grasp-mode is not implemented yet
+    (cond (grasp-center?
+           (setq *valve-grasp-mode* :center-grasp))
+          (t
+           (setq *valve-grasp-mode* :edge-grasp)))
     ;; first trial
     (get-valve-motion :grasp-center? grasp-center? :draw? draw?)
     ;; change arm
@@ -370,11 +375,16 @@
     *valve-motion*))
 
 (defun send-valve-motion
-  (radius coords &key (arm :rarm) (stand-coords nil) (overwrite-stand-coords? nil) (overwrite-arm-side? nil) (real? t) (av-list nil))
+  (radius
+   coords
+   &key (arm :rarm) (overwrite-arm-side? nil)
+   (stand-coords nil) (overwrite-stand-coords? nil)
+   (grasp-center? nil) (overwrite-grasp-mode? nil)
+   (real? t) (av-list nil))
   (let* ((rotate-num 3)
          (valve-motion-av-list
           (if av-list
-              av-list (get-valve-motion-full radius coords :arm arm :stand-coords stand-coords :overwrite-stand-coords? overwrite-stand-coords? :overwrite-arm-side? overwrite-arm-side?)))
+              av-list (get-valve-motion-full radius coords :arm arm :grasp-center? grasp-center? :stand-coords stand-coords :overwrite-stand-coords? overwrite-stand-coords? :overwrite-arm-side? overwrite-arm-side?)))
          (valve-motion-length (length valve-motion-av-list)))
     (when (not (= valve-motion-length 0))
       ;; reset-manip-pose
@@ -425,9 +435,13 @@
   )
 
 (defun publish-valve-motion
-  (&key radius coords (arm :rarm) (stand-coords nil) (overwrite-stand-coords? nil) (overwrite-arm-side? nil) (step-time 200) (update? t))
+  (&key radius coords
+        (arm :rarm) (overwrite-arm-side? nil)
+        (stand-coords nil) (overwrite-stand-coords? nil)
+        (grasp-center? nil) (overwrite-grasp-mode? nil)
+        (step-time 200) (update? t))
   (when update?
-    (get-valve-motion-full radius coords :arm arm :stand-coords stand-coords :overwrite-stand-coords? overwrite-stand-coords? :overwrite-arm-side? overwrite-arm-side? :use-ri? nil))
+    (get-valve-motion-full radius coords :arm arm :grasp-center? grasp-center? :stand-coords stand-coords :overwrite-stand-coords? overwrite-stand-coords? :overwrite-arm-side? overwrite-arm-side? :use-ri? nil))
   (ros::ros-info "valve-stand-coords: ~a~%" *valve-stand-coords*)
   (ros::ros-info "valve-ik-results: ~a~%" *valve-ik-results*)
   (when *valve-stand-coords*
