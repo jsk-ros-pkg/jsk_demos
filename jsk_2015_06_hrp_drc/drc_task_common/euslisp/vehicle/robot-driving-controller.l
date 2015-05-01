@@ -90,15 +90,20 @@
    (ros::subscribe "/drive/operation/handle_cmd"
                    std_msgs::Float64
                    #'send self :handle-callback)
-   (ros::advertise "/drive/controller/pedal_state" std_msgs::Bool 1 t)
+   (ros::subscribe "/drive/operation/neck_cmd"
+                   std_msgs::Float64
+                   #'send self :neck-callback)
 
    ;; handle-angle commands
    (ros::advertise "/drive/controller/goal_handle_angle" std_msgs::Float32 1 t)
    (ros::advertise "/drive/controller/estimated_handle_angle" std_msgs::Float32 1 t)
+
+   ;; pedal angle commands
    (ros::advertise "/drive/controller/step" std_msgs::Float32 1 t)
    (ros::advertise "/drive/controller/min_step" std_msgs::Float32 1 t)
    (ros::advertise "/drive/controller/max_step" std_msgs::Float32 1 t)
-
+   (ros::advertise "/drive/controller/pedal_state" std_msgs::Bool 1 t)
+   
    ;; for steering visualization
    (ros::advertise "/drive/controller/currest_steering" jsk_recognition_msgs::TorusArray 1)
    (ros::advertise "/drive/controller/handling_trajectory" geometry_msgs::PolygonStamped 1)
@@ -368,9 +373,17 @@
        )
      )
    )
+  
   (:get-pedal-motion-from-cmd
    (data min-pedal-command max-pedal-command) ;; data will be 0.0 from 1.0
    (+ min-pedal-command (* data (- max-pedal-command min-pedal-command)))
+   )
+
+  (:neck-callback
+   (msg)
+   (let ((neck-command (send msg :data)))
+     (send motion :look-around neck-command :neck-y :relative nil :time (* (+ (/ 1.0 ros-rate) 0.1) 1000)) ;; estimated as absolute value
+     )
    )
 
   ;; handling visualization
