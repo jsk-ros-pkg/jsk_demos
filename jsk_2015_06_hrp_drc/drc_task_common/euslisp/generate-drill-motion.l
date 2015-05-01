@@ -4,8 +4,8 @@
 (load "package://drc_task_common/models/takenoko-drill")
 (load "package://drc_task_common/models/gun-drill.l")
 
-(setq *drill-main-arm* :larm)
-(setq *drill-support-arm* :rarm)
+(setq *drill-main-arm* :rarm)
+(setq *drill-support-arm* :larm)
 ;; (setq *use-dual-arm-ik* nil)
 ;; (setq *use-f-sensor-search* nil)
 ;; (setq *drill-reverse-hand* t)
@@ -553,7 +553,7 @@
 ;; send drill motion for real robot(fc side)
 (defun send-drill-grasp-motion
   (coords &key (real? t) (drill-type *default-drill-type*) (rotation-axis (list :z t t))
-	  (rotate-drill nil))
+	  (rotate-drill? nil))
   (let* ((drill-motion-av-list (get-drill-grasp-motion-full coords :drill-type drill-type :rotation-axis rotation-axis))
          (drill-motion-length (length drill-motion-av-list)))
     (when (= drill-motion-length 0) (return-from send-drill-grasp-motion))
@@ -627,8 +627,7 @@
       (send *ri* :set-ref-force #f(0 0 -10) 2000 *drill-support-arm*)
       ;;todo? change drill manip coords with some recog methods
       )
-    (read-line) ;temp!!!
-    (when rotate-drill
+    (when rotate-drill?
       (let* ((original-foot-midcoords (send (send *robot* :foot-midcoords) :copy-worldcoords))
 	     (original-drill-coords (send *drill* :copy-worldcoords))
 	     (grasp-up-dist 120)
@@ -1383,8 +1382,8 @@
       (send *robot* :hand :arms :hook-pose))
   ;(play-motion-on-eus-viewer *drill-motion*)
   )
-(defun test-send-drill-grasp-motion (&key rotate-drill? nil)
-  (send-drill-grasp-motion (make-coords :pos (float-vector 600 -150 100) :rpy (list (deg2rad 0) 0 0)) :drill-type :takenoko :real? t :rotation-axis (list :z t t) :rotate-drill? rotate-drill))
+(defun test-send-drill-grasp-motion (&key (rotate-drill? nil))
+  (send-drill-grasp-motion (make-coords :pos (float-vector 600 -150 100) :rpy (list (deg2rad 0) 0 0)) :drill-type :takenoko :real? t :rotation-axis (list :z t t) :rotate-drill? rotate-drill?))
   
 (defun test-drill-put-motion ()
   ;(get-drill-grasp-motion-full (make-coords :pos (float-vector 700 -150 800) :rpy (list 0 0 0)) :draw? t)
