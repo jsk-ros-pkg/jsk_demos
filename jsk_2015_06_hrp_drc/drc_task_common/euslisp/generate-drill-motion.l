@@ -552,9 +552,9 @@
 
 ;; send drill motion for real robot(fc side)
 (defun send-drill-grasp-motion
-  (coords &key (real? t) (drill-type *default-drill-type*) (rotation-axis (list :z t t))
+  (coords &key (real? t) (drill-type *default-drill-type*) (rotation-axis (list :z t t) (arm :rarm))
 	  (rotate-drill nil))
-  (let* ((drill-motion-av-list (get-drill-grasp-motion-full coords :drill-type drill-type :rotation-axis rotation-axis))
+  (let* ((drill-motion-av-list (get-drill-grasp-motion-full coords :drill-type drill-type :rotation-axis rotation-axis :arm arm))
          (drill-motion-length (length drill-motion-av-list)))
     (when (= drill-motion-length 0) (return-from send-drill-grasp-motion))
     (when real? 
@@ -674,9 +674,9 @@
 
 ;; publish drill motion in rviz(ocs-side)
 (defun publish-drill-grasp-motion
-  (&key coords (step-time 400) (update? t) (drill-type *default-drill-type*))
+  (&key coords (step-time 400) (update? t) (drill-type *default-drill-type*) (arm :rarm) (stand-coords nil))
   (when update?
-    (get-drill-grasp-motion-full coords :use-ri? nil :drill-type drill-type :draw? t))
+    (get-drill-grasp-motion-full coords :arm arm :use-ri? nil :drill-type drill-type :draw? t))
   (ros::ros-info "drill-grasp-stand-coords: ~a~%" *drill-stand-coords*)
   (ros::ros-info "drill-ik-results: ~a~%" *drill-ik-results*)
   (ros::ros-info "drill coords ~a" (send (send *drill* :get :grasp-coords) :copy-coords))
