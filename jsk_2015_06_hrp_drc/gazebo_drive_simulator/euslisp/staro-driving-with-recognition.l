@@ -1,7 +1,7 @@
 #!/usr/bin/env roseus
 
-(load "package://gazebo_drive_simulator/euslisp/staro-driving-controller.l")
-(ros::roseus-add-msgs "drive_recognition")
+(load "package://drc_task_common/euslisp/vehicle/staro-driving-controller.l")
+(ros::roseus-add-msgs "drc_task_common")
 (ros::roseus-add-msgs "std_msgs")
 
 ;; for demo
@@ -42,13 +42,13 @@
    (ros::subscribe "/offset_estimation/relative_steering_angle"
                    std_msgs::Float64
                    #'send self :handle-diff-callback)
-   (ros::subscribe "/staro_drive/gas_pedal/cmd_angle"
+   (ros::subscribe "/drive/gas_pedal/cmd_angle"
                    std_msgs::Float64
                    #'send self :pedal-feedback-callback)
-   (ros::subscribe "/staro_drive/operation/flag/handle"
+   (ros::subscribe "/drive/operation/flag/handle"
                    std_msgs::Bool
                    #'send self :operation-flag-handle-callback)
-   (ros::subscribe "/staro_drive/operation/flag/pedal"
+   (ros::subscribe "/drive/operation/flag/pedal"
                    std_msgs::Bool
                    #'send self :operation-flag-pedal-callback)
    (ros::subscribe "/obstacle_detection/stop_real_robot_cmd"

@@ -20,12 +20,12 @@ roslaunch gazebo_drive_simulator robot_pose_ekf_gazebo_drive_simulator.launch &
 
 roslaunch gazebo_drive_simulator staro_multisense_relay.launch &
 
-roslaunch drive_recognition extract_obstacle_cloud.launch &
-roslaunch drive_recognition obstacle_detection.launch &
+roslaunch drc_task_common extract_obstacle_cloud.launch &
+roslaunch drc_task_common obstacle_detection.launch &
 # rosrun drive_recognition CalculateVelocityFromOdometry.py &
 # roslaunch drive_recognition cheat_goal_direction.launch &
 roslaunch gazebo_drive_simulator polaris_interactive_marker.launch &
-rosrun roseus roseus `rospack find drive_recognition`/euslisp/staro-look-around.l "(demo-main)" &
+# rosrun roseus roseus `rospack find drive_recognition`/euslisp/staro-look-around.l "(demo-main)" &
 sleep 20
 rostopic pub --once /staro_look_around/neck_p_angle std_msgs/Float64 '{ data : 15.0 }' # disable hand brake
 
