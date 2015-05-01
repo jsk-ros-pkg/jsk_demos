@@ -17,6 +17,9 @@
     <rosparam>
       service_radio_button_layout_file: "package://drc_task_common/config/ocs_ui_radio_button_layout.yaml"
     </rosparam>
+    <rosparam>
+      service_optional_radio_button_layout_file: "package://drc_task_common/config/ocs_ui_optional_radio_button_layout.yaml"
+    </rosparam>
   </node>
   <group ns="image_rect">
     <node pkg="image_view2" type="image_view2" name="rqt_image_view2_engine"
