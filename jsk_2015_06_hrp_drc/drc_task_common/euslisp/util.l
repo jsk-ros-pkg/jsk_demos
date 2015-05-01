@@ -287,6 +287,19 @@
         (height (elt params 7)))
     (list coords radius height)))
 
+(defun valve-params-to-float-vector             
+  (valve-params valve-grasp-mode length)
+  (let (ret)
+    (setq ret (torus-to-float-vector (elt valve-params 0) (elt valve-params 1) length))
+    (setf (elt ret 7) valve-grasp-mode)
+    ret))
+
+(defun float-vector-to-valve-params
+  (params)
+  (let ((ret (float-vector-to-torus params)))
+    (append ret (list (elt params 7)))
+    ))
+
 ;; message handler
 (defclass narrowband-message-handler
   :super propertied-object

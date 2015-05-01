@@ -309,9 +309,7 @@
          #'(lambda (k)
              (when (find (read-from-string (format nil "~a-~a" limb (string k)))
                          (send *robot* :methods))
-               (send *tmp-robot* limb k :joint-angle (send *robot* (case limb (:larm :rarm) (:rarm :larm) (:lleg :rleg) (:rleg :lleg) (t limb)) k :joint-angle))
-               (when (or (substringp "-r" (format nil "~a" k)) (substringp "-y" (format nil "~a" k)))
-                 (send *tmp-robot* limb k :joint-angle (- (send *tmp-robot* limb k :joint-angle))))
+               (send *tmp-robot* limb k :joint-angle (* (if (or (substringp "-r" (format nil "~a" k)) (substringp "-y" (format nil "~a" k))) -1.0 +1.0) (send *robot* (case limb (:larm :rarm) (:rarm :larm) (:lleg :rleg) (:rleg :lleg) (t limb)) k :joint-angle)))
                ))
          jnlist)
 

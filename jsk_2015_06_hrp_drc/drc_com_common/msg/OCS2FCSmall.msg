@@ -8,6 +8,8 @@ uint8 arm_side
 uint8 UNDECIDED=0
 uint8 LARM=1
 uint8 RARM=2
+uint8 VALVE_CENTER_GRASP=1
+uint8 VALVE_EDGE_GRASP=2
 uint32[16] image_roi_info
 float32[36] float_params
 float32[6] stand_coords

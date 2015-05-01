@@ -30,4 +30,9 @@
    )
   )
 
+(defun jaxon-vehicle-main
+  (&key (real t))
+  (robot-vehicle-main :robot-name "jaxon" :postfix "on-polaris-xp900" :real real)
+  )
+
 ;; (setq *controller* (instance jaxon-driving-controller-on-polaris-xp900 :init :real nil))

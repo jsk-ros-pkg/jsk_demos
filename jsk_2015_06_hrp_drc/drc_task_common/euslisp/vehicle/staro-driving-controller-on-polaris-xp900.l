@@ -33,4 +33,9 @@
    )
   )
 
+(defun staro-vehicle-main
+  (&key (real t))
+  (robot-vehicle-main :robot-name "staro" :postfix "on-polaris-xp900" :real real)
+  )
+
 ;; (setq *controller* (instance staro-driving-controller-on-polaris-xp900 :init :real nil))

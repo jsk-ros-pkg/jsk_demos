@@ -1,0 +1,11 @@
+<launch>
+  <arg name="master" />
+  <include file="$(find gazebo_drive_simulator)/launch/staro_multimaster_bridge.launch">
+    <arg name="master" value="$(arg master)" />      
+  </include>
+  <node pkg="roseus" type="roseus" name="staro_driving_with_recognition_demo"
+        args="$(find gazebo_drive_simulator)/euslisp/staro-driving-with-recognition.l '(demo-main)'"> 
+    <remap from="/wheel_cmd" to="/hand_wheel/local_planner/input"/>
+    <remap from="/pedal_state" to="/staro_drive/pedal_state"/>
+  </node>
+</launch>

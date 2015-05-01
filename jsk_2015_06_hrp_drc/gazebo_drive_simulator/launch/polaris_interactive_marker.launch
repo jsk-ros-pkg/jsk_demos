@@ -1,0 +1,33 @@
+<launch>
+  <!-- to publish tf -->
+  <arg name="LAUNCH_DYNAMIC_TF_PUBLISHER" default="true" />
+  <arg name="default_frame_id" default="car_center" />
+  
+  <node pkg="jsk_interactive_marker" type="urdf_control_marker" name="polaris_interactive_marker" output="screen" alaunch-prefix="xterm -e gdb --args">
+    <param name="use_dynamic_tf" value="$(arg LAUNCH_DYNAMIC_TF_PUBLISHER)"/>
+    <param name="move_2d" value="true"/>
+    <param name="frame_id" value="$(arg default_frame_id)"/>
+    <param name="marker_frame_id" value="polaris_marker"/>
+    <param name="marker_scale" value="4.0"/>
+    <param name="center_marker" value="package://gazebo_drive_simulator/models/polaris.stl"/>
+    <rosparam>
+      center_marker_color:
+        r: 0.25
+        g: 0.25
+        b: 0.25
+        a: 0.8
+      center_marker_pose:
+        orientation:
+         x: 0.0
+         y: 0.0
+         z: -1.0
+         w: 1.0
+    </rosparam>
+  </node>
+
+  <group if="$(arg LAUNCH_DYNAMIC_TF_PUBLISHER)">
+    <node pkg="dynamic_tf_publisher" type="tf_publish.py" name="dynamic_tf_publisher_for_polaris_interactive_marker">
+      <param name="use_cache" type="bool" value="false"/>
+    </node>
+  </group>
+</launch>

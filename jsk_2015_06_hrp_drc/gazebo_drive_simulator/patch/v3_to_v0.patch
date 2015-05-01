@@ -1,0 +1,15 @@
+--- /opt/ros/hydro/share/drcsim_gazebo/launch/drc_practice.launch	2014-09-12 02:49:48.000000000 +0900
++++ /opt/ros/hydro/share/drcsim_gazebo/launch/drc_practice_bak.launch	2014-10-15 21:21:42.279941886 +0900
+@@ -21,7 +21,10 @@
+   <param name="/atlas/delay_max_per_step" type="double" value="0.025"/>
+ 
+   <!-- Robot Description -->
+-  <param name="robot_description" command="$(find xacro)/xacro.py '$(find atlas_description)/robots/atlas_v3_sandia_hands.urdf.xacro'" />
++  <!-- <param name="robot_description" command="$(find xacro)/xacro.py '$(find atlas_description)/robots/atlas_v3_sandia_hands.urdf.xacro'" /> -->
++  <param name="robot_description" command="$(find xacro)/xacro.py '$(find atlas_description)/robots/atlas_sandia_hands.urdf.xacro'" />
++
++  <!-- <include file="$(find drcsim_gazebo)/launch/atlas_v3_sandia_hands_bringup.launch"/> -->
++  <include file="$(find drcsim_gazebo)/launch/atlas_sandia_hands_bringup.launch"/>
+ 
+-  <include file="$(find drcsim_gazebo)/launch/atlas_v3_sandia_hands_bringup.launch"/>
+ </launch>

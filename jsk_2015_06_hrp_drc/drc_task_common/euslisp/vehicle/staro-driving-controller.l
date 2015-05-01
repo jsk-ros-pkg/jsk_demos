@@ -30,5 +30,10 @@
    )
   )
 
+(defun staro-vehicle-main
+  (&key (real t))
+  (robot-vehicle-main :robot-name "staro" :postfix nil :real real)
+  )
+
 ;; (setq *controller* (instance staro-driving-controller :init :real nil))
 

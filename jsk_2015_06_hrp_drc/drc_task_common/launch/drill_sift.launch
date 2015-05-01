@@ -1,0 +1,30 @@
+<launch>
+  <node name="drill_sift" pkg="imagesift"
+        type="imagesift_sift"
+        atype="imagesurf"
+        launch-prefix="nice -n +10" output="screen" >
+    <remap from="image" to="/multisense/left/image_rect_color" />
+    <remap from="camera_info" to="/multisense/left/camera_info"/>
+    <param name="use_mask" value="false" />
+    <remap from="mask" to="/attention_clipper/output/mask"/>
+  </node>
+  <node pkg="jsk_perception" type="point_pose_extractor"
+        output="screen"
+        name="drill_detector">
+    <param name="template_filename" value="$(find drc_task_common)/data/drill5.jpg"/>
+    <param name="window_name" value="drill"/>
+    <param name="object_width" value="0.0389"/>
+    <param name="object_height" value="0.0858"/>
+    <!-- <param name="object_width" value="0.0391"/> -->
+    <!-- <param name="object_height" value="0.086"/> -->
+    <param name="relative_pose" value="0 0 0 0 0 0 1"/>
+  <param name="viewer_window" value="false" />
+  </node>
+
+  <node pkg="image_view" type="image_view" name="debug_view">
+    <remap from="image" to="/drill_detector/debug_image" />
+  </node>
+  <node pkg="image_view" type="image_view" name="multi_view">
+    <remap from="image" to="/multisense/left/image_rect_color" />
+  </node>
+</launch>
