@@ -517,10 +517,10 @@
    (limb target-pedal &key (tm 2500) (debug-view nil))
    ;; (send robot limb :inverse-kinematics (send (send car target-pedal) :copy-worldcoords) :rotation-axis t :debug-view debug-view)
    (send robot :inverse-kinematics (send (send car target-pedal) :copy-worldcoords)
-            :move-target (send robot limb :end-coords)
-            :link-list (send robot :link-list (send robot limb :end-coords :parent) (send robot limb :knee-p :child-link))
-            :debug-view debug-view :rotation-axis t :thre 80
-            )
+         :move-target (send robot limb :end-coords)
+         :link-list (send robot :link-list (send robot limb :end-coords :parent) (send robot limb :knee-p :child-link))
+         :debug-view debug-view :rotation-axis t :thre 80
+         )
    (when real
      (send *ri* :angle-vector (send robot :angle-vector) tm)
      (send *ri* :wait-interpolation)
@@ -684,7 +684,25 @@
        )
      )
    )
-  
+
+  ;; look around
+  (:look-around
+   (angle axis &key (relative nil) (time 5000) (use-controller nil) (rad nil))
+   (when rad 
+     (setq angle (rad2deg angle)) ;; robot angle-vector is [deg]
+     )
+   (send robot :head axis :joint-angle angle :relative relative)
+   (when real
+     (let ((controller :default-controller))
+       (when use-controller
+         (setq controller :head-controller)
+         )
+       (send *ri* :angle-vector (send robot :angle-vector) time controller)
+       (send *viewer* :draw-objects)
+       )
+     )
+   )
+
   ;; utils
   (:sync-all-controller
    ()
@@ -715,15 +733,7 @@
        )
      ret-coords
      )
-   )
-  (:look-around
-   (angle &key (real nil) (relative nil) (tm 5000))
-   (send robot :head :neck-p :joint-angle angle :relative relative)
-   (when real
-     (send *ri* :angle-vector (send robot :angle-vector) tm)
-     (send *viewer* :draw-objects)
-     )
-   )
+   )  
   (:set-impedance-for-handle
    (limb)
    (send *ri* :start-impedance limb :M-p 200 :D-p 600 :K-p 1400)
