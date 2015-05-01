@@ -516,14 +516,19 @@
   (:approach-pedal
    (limb target-pedal &key (tm 2500) (debug-view nil))
    ;; (send robot limb :inverse-kinematics (send (send car target-pedal) :copy-worldcoords) :rotation-axis t :debug-view debug-view)
-   (send robot :inverse-kinematics (send (send car target-pedal) :copy-worldcoords)
-         :move-target (send robot limb :end-coords)
-         :link-list (send robot :link-list (send robot limb :end-coords :parent) (send robot limb :knee-p :child-link))
-         :debug-view debug-view :rotation-axis t :thre 80
-         )
-   (when real
-     (send *ri* :angle-vector (send robot :angle-vector) tm)
-     (send *ri* :wait-interpolation)
+   (let (approach-result)
+     (setq approach-result
+           (send robot :inverse-kinematics (send (send car target-pedal) :copy-worldcoords)
+                 :move-target (send robot limb :end-coords)
+                 :link-list (send robot :link-list (send robot limb :end-coords :parent) (send robot limb :knee-p :child-link))
+                 :debug-view debug-view :rotation-axis t :thre 80
+                 )
+           )
+     (when (and approach-result real)
+       (send *ri* :angle-vector (send robot :angle-vector) tm)
+       (send *ri* :wait-interpolation)
+       )
+     approach-result
      )
    )
   (:approach-accel-pedal
