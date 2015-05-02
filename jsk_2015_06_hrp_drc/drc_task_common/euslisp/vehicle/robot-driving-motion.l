@@ -559,7 +559,7 @@
      )
    )
   (:detatch-accel-pedal
-   (&key (time 1000) (use-controller t) (no-wait t) (distance 100))
+   (&key (time 5000) (use-controller t) (no-wait t) (distance 50))
    (send robot :rleg :move-end-pos (float-vector 0 0 distance) :local)
    (when real
      (if use-controller
