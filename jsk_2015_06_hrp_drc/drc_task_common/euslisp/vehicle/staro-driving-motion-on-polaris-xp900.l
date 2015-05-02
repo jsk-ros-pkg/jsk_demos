@@ -60,23 +60,47 @@
      )   
    )
   
-  (:approach-accel-pedal
-   (&key (tm 10000) (debug-view nil))
-   ;; (send *staro* :rleg :angle-vector #f(0.0 0.0 -82.8 41.0 14.0 0.0)) ;; chuned parameters for accel
-   (send *staro* :rleg :angle-vector #f(0.0 0.0 -85.0 46.0 0.0 0.0))
-   (when real
-     (send *ri* :angle-vector (send robot :angle-vector) tm)
-     (send *ri* :wait-interpolation)
+  ;; (:approach-accel-pedal
+  ;;  (&key (tm 10000) (debug-view nil))
+  ;;  ;; (send *staro* :rleg :angle-vector #f(0.0 0.0 -82.8 41.0 14.0 0.0)) ;; chuned parameters for accel
+  ;;  (send *staro* :rleg :angle-vector #f(0.0 0.0 -85.0 46.0 0.0 0.0))
+  ;;  (when real
+  ;;    (send *ri* :angle-vector (send robot :angle-vector) tm)
+  ;;    (send *ri* :wait-interpolation)
+  ;;    )
+  ;;  )
+  ;; (:approach-brake-pedal
+  ;;  (&key (tm 10000) (debug-view nil))
+  ;;  (send *staro* :lleg :angle-vector #f(0.0 0.0 -86.0 65.0 15.0 0.0)) ;; launch to floor
+  ;;  (when real
+  ;;    (send *ri* :angle-vector (send robot :angle-vector) tm)
+  ;;    (send *ri* :wait-interpolation)
+  ;;    )
+  ;;  )
+  (:approach-pedal
+   (limb target-pedal &key (tm 2500) (debug-view nil))
+   (let (approach-result)
+     (case target-pedal
+       (:accel-pedal
+        (send robot :rleg :angle-vector #f(0.0 0.0 -85.0 46.0 0.0 0.0))
+        (setq approach-result t)
+        )
+       (:brake-pedal
+        (send robot :lleg :angle-vector #f(0.0 0.0 -86.0 65.0 15.0 0.0)) ;; launch to floor
+        (return-from :approach-pedal nil)
+        )
+       (t
+        (warn "Invalid pedal name~%")
+        (return-from :approach-pedal nil)
+        )
+       )
+     (when (and real approach-result)
+       (send *ri* :angle-vector (send robot :angle-vector) tm)
+       (send *ri* :wait-interpolation)
+       )
      )
    )
-  (:approach-brake-pedal
-   (&key (tm 10000) (debug-view nil))
-   (send *staro* :lleg :angle-vector #f(0.0 0.0 -86.0 65.0 15.0 0.0)) ;; launch to floor
-   (when real
-     (send *ri* :angle-vector (send robot :angle-vector) tm)
-     (send *ri* :wait-interpolation)
-     )
-   )
+  
   )
 
 ;; (setq *motion* (instance staro-driving-motion-on-polaris-xp900 :init :real nil))

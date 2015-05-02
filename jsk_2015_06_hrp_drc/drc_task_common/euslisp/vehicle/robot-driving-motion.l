@@ -1,6 +1,7 @@
 #!/usr/bin/env roseus
 
 (load "package://hrpsys_ros_bridge/euslisp/rtm-ros-robot-interface.l")
+(load "package://drc_task_common/euslisp/robot-util.l")
 
 (defclass robot-driving-motion
   :super propertied-object
@@ -516,19 +517,35 @@
   (:approach-pedal
    (limb target-pedal &key (tm 2500) (debug-view nil))
    ;; (send robot limb :inverse-kinematics (send (send car target-pedal) :copy-worldcoords) :rotation-axis t :debug-view debug-view)
-   (send robot :inverse-kinematics (send (send car target-pedal) :copy-worldcoords)
-         :move-target (send robot limb :end-coords)
-         :link-list (send robot :link-list (send robot limb :end-coords :parent) (send robot limb :knee-p :child-link))
-         :debug-view debug-view :rotation-axis t :thre 80
-         )
-   (when real
-     (send *ri* :angle-vector (send robot :angle-vector) tm)
-     (send *ri* :wait-interpolation)
+   (let (approach-result)
+     (setq approach-result
+           (send robot :inverse-kinematics (send (send car target-pedal) :copy-worldcoords)
+                 :move-target (send robot limb :end-coords)
+                 :link-list (send robot :link-list (send robot limb :end-coords :parent) (send robot limb :knee-p :child-link))
+                 :debug-view debug-view :rotation-axis t :thre 80
+                 )
+           )
+     (when (and approach-result real)
+       (send *ri* :angle-vector (send robot :angle-vector) tm)
+       (send *ri* :wait-interpolation)
+       )
+     approach-result
      )
    )
   (:approach-accel-pedal
-   (&key (tm 3000) (debug-view nil))
-   (send self :approach-pedal :rleg :accel-pedal :tm tm :debug-view debug-view)
+   (&key (limb :rleg) (tm 5000) (debug-view nil) (reach-until-touch nil))
+   (let (approach-result)
+     (setq approach-result
+           (send self :approach-pedal limb :accel-pedal :tm tm :debug-view debug-view)
+           )
+     (when (and real reach-until-touch approach-result)
+       (send *ri* :reach-until-touch limb
+             (send (send robot limb :end-coords :copy-worldcoords) :rotate-vector #f(0 0 1))
+             :rotation-axis :z
+             ) ;; todo: reach-until-touch uses copy-object
+       )
+     approach-result
+     )
    )
   (:step-accel-pedal
    (command &key (time 1000) (relative t) (use-controller t) (no-wait t))
@@ -552,10 +569,20 @@
      (unless no-wait (send *ri* :wait-interpolation))
      )
    )
-
   (:approach-brake-pedal
-   (&key (tm 3000) (debug-view nil))
-   (send self :approach-pedal :lleg :brake-pedal :tm tm :debug-view debug-view)
+   (&key (limb :lleg) (tm 5000) (debug-view nil) (reach-until-touch nil))
+   (let (approach-result)
+     (setq approach-result
+           (send self :approach-pedal limb :brake-pedal :tm tm :debug-view debug-view)
+           )
+     (when (and real reach-until-touch approach-result)
+       (send *ri* :reach-until-touch limb
+             (send (send robot limb :end-coords :copy-worldcoords) :rotate-vector #f(0 0 1))
+             :rotation-axis :z
+             ) ;; todo: reach-until-touch uses copy-object
+       )
+     approach-result
+     )
    )
   (:step-brake-pedal
    (command &key (time 1000) (relative t) (use-controller t))
@@ -656,7 +683,7 @@
   ;; leg support
   (:approach-floor
    (&rest args &key (limb :lleg) (target-handle :floor) (time 10000) (debug-view nil) (offset #f(0 0 50))
-          (start-impedance t) (stop-ref-force nil) (start-ref-force nil) &allow-other-keys)
+          (start-impedance t) (stop-ref-force nil) (start-ref-force nil) (reach-until-touch nil) &allow-other-keys)
    (when (and real stop-ref-force)
      (send *ri* :set-ref-force #f(0 0 0) 10000 limb)
      )
@@ -673,6 +700,12 @@
                offset)
            ) ;; move to floor
      (when real
+       (when reach-until-touch
+         (send *ri* :reach-until-touch limb
+               (send (send robot limb :end-coords :copy-worldcoords) :rotate-vector #f(0 0 1))
+               :rotation-axis :z
+               ) ;; todo: reach-until-touch uses copy-object
+         )
        (when start-impedance
          (send self :set-impedance-for-support limb)
          )

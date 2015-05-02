@@ -201,17 +201,41 @@
    (limb)
    (send *ri* :start-impedance limb :M-p 100 :D-p 1200 :K-p 140)
    )
-  (:approach-accel-pedal
-   (&key (tm 10000) (debug-view nil))
-   (send robot :rleg :angle-vector #f(-13.1189 -24.4656 -83.3638 44.9385 7.33334 27.7739)) ;; rleg angle-vector in left-sitting
-   (when real
-     (send *ri* :angle-vector (send robot :angle-vector) tm)
-     (send *ri* :wait-interpolation)
+  ;; (:approach-accel-pedal
+  ;;  (&key (tm 10000) (debug-view nil))
+  ;;  (send robot :rleg :angle-vector #f(-13.1189 -24.4656 -83.3638 44.9385 7.33334 27.7739)) ;; rleg angle-vector in left-sitting
+  ;;  (when real
+  ;;    (send *ri* :angle-vector (send robot :angle-vector) tm)
+  ;;    (send *ri* :wait-interpolation)
+  ;;    )
+  ;;  )
+  ;; (:approach-brake-pedal
+  ;;  (&key (tm 10000) (debug-view nil))
+  ;;  (warn "Disable approach-brake-pedal for JAXON~%")
+  ;;  )
+  (:approach-pedal
+   (limb target-pedal &key (tm 2500) (debug-view nil))
+   (let (approach-result)
+     (case target-pedal
+       (:accel-pedal
+        (send robot :rleg :angle-vector #f(-13.1189 -24.4656 -83.3638 44.9385 7.33334 27.7739)) ;; rleg angle-vector in left-sitting
+        (setq approach-result t)
+        )
+       (:brake-pedal
+        (warn "Disable approach-brake-pedal for JAXON~%")
+        (return-from :approach-pedal nil)
+        )
+       (t
+        (warn "Invalid pedal name~%")
+        (return-from :approach-pedal nil)
+        )
+       )
+     (when (and real approach-result)
+       (send *ri* :angle-vector (send robot :angle-vector) tm)
+       (send *ri* :wait-interpolation)
+       )
+     approach-result
      )
-   )
-  (:approach-brake-pedal
-   (&key (tm 10000) (debug-view nil))
-   (warn "Disable approach-brake-pedal for JAXON~%")
    )
   ;; egress
   (:prepare-get-off
