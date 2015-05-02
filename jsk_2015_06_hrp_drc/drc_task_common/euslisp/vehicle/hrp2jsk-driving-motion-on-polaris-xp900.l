@@ -24,7 +24,8 @@
    (&key (init-pose t))
    ;; (send robot :move-to (make-coords :pos (float-vector 0 370.0 200) :rpy (float-vector 0.0 0.0 0.0)) :world)
    ;; (send robot :move-to (make-coords :pos (float-vector 180 370.0 80) :rpy (float-vector 0.0 (- (/ pi 16)) 0.0)) :world)
-   (send robot :move-to (make-coords :pos (float-vector -80 370.0 80) :rpy (float-vector 0.0 0.0 0.0)) :world)
+   ;; (send robot :move-to (make-coords :pos (float-vector -80 370.0 80) :rpy (float-vector 0.0 0.0 0.0)) :world)
+   (send robot :move-to (make-coords :pos (float-vector -80 470.0 80) :rpy (float-vector 0.0 0.0 0.0)) :world) ;; condier egress
    (when init-pose
      (send self :drive-init-pose)
      )
@@ -40,7 +41,9 @@
    (send robot :rarm :shoulder-p :joint-angle -100)
    ;; (send robot :torso :waist-p :joint-angle 10)
    (send robot :head :neck-p :joint-angle -5)
-   (send robot :lleg :angle-vector #f(0.398437 -1.4895 -97.47 76.7502 20.0 1.5876 -1.548)) ;; use pedaling block for hrp2
+   ;; (send robot :lleg :angle-vector #f(0.398437 -1.4895 -97.47 76.7502 20.0 1.5876 -1.548)) ;; use pedaling block for hrp2
+   ;; (send robot :lleg :angle-vector #f(0.059286 7.53038 -101.538 72.9173 30.1805 -7.533 -1.548)) ;; fix for egress
+   (send robot :lleg :angle-vector #f(5.00812 -1.07931 -97.6734 68.4796 28.4724 1.1772 -1.548)) ;; fix for egress using crotch
    (when real
      (send *ri* :angle-vector (send robot :angle-vector) tm)
      (send *ri* :wait-interpolation)
@@ -100,11 +103,14 @@
    (let (approach-result)
      (case target-pedal
        (:accel-pedal
-        (send robot :rleg :angle-vector #f(0.277593 0.269639 -91.1699 48.9728 5.54723 -0.244199 -0.384))
+        ;; (send robot :rleg :angle-vector #f(0.277593 0.269639 -91.1699 48.9728 5.54723 -0.244199 -0.384))
+        ;; (send robot :rleg :angle-vector #f(-8.96161 -11.923 -84.9409 37.2658 10.0798 15.014 -0.384))
+        (send robot :rleg :angle-vector #f(-10.0 0.269639 -91.1699 48.9728 5.54723 -0.244199 -0.384))
         (setq approach-result t)
         )
        (:brake-pedal
-        (send robot :lleg :angle-vector #f(0.398437 -1.4895 -97.47 76.7502 20.0 1.5876 -1.548))
+        ;; (send robot :lleg :angle-vector #f(0.398437 -1.4895 -97.47 76.7502 20.0 1.5876 -1.548))
+        (warn "Approach brake is disabled in hrp2jsk~%")
         (return-from :approach-pedal nil)
         )
        (t
