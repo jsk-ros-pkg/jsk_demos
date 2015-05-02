@@ -406,7 +406,7 @@
         ;; send motion to real robot
         (let* (;(stand-coords (float-vector-to-coords (send msg :stand_coords)))
                (arm-side (send msg :arm_side))
-               (arm (cond ((equal arm-side drc_com_common::OCS2FCSmall::*LARM*) :larm) ((equal arm-side drc_com_common::OCS2FCSmall::*RARM*) :rarm) (t nil)))
+               (arm (cond ((equal arm-side drc_com_common::OCS2FCSmall::*LARM*) :larm) ((equal arm-side drc_com_common::OCS2FCSmall::*RARM*) :rarm) (t nil))))
 	       (if arm
 		   (send-drill-grasp-motion coords :arm arm)
 		 )
