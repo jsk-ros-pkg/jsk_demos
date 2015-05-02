@@ -629,6 +629,17 @@
     (let ((msg (instance drc_com_common::OCS2FCSmall :init)))
       (send msg :type drc_com_common::OCS2FCSmall::*DRILL_GRASP_EXEC*)
       (send msg :float_params (coords-to-float-vector (elt drill-grasp-params 0) (length (send msg :float_params))))
+      (send msg :stand_coords
+            (coords-to-float-vector (get-robot-model-current-pos) (length (send msg :stand_coords))))
+      (cond ((not (boundp '*drill-main-arm*))
+             (send msg :arm_side drc_com_common::OCS2FCSmall::*UNDECIDED*))
+            ((equal *drill-main-arm* :larm)
+             (send msg :arm_side drc_com_common::OCS2FCSmall::*LARM*))
+            ((equal *drill-main-arm* :rarm)
+             (send msg :arm_side drc_com_common::OCS2FCSmall::*RARM*))
+            (t
+             (send msg :arm_side drc_com_common::OCS2FCSmall::*UNDECIDED*))
+            )
       (send self :send-to-fc msg)
       (send smachine :go-to :executing-drill-grasp)))
   (:exec-drill-put-button-callback ()
@@ -640,6 +651,8 @@
     (let ((msg (instance drc_com_common::OCS2FCSmall :init)))
       (send msg :type drc_com_common::OCS2FCSmall::*DRILL_PUT_EXEC*)
       (send msg :float_params (coords-to-float-vector (elt drill-put-params 0) (length (send msg :float_params))))
+      (send msg :stand_coords
+            (coords-to-float-vector (get-robot-model-current-pos) (length (send msg :stand_coords))))
       (send self :send-to-fc msg)
       (send smachine :go-to :executing-drill-put)))
   (:exec-drill-wall-button-callback ()
@@ -649,6 +662,8 @@
     (let ((msg (instance drc_com_common::OCS2FCSmall :init)))
       (send msg :type drc_com_common::OCS2FCSmall::*DRILL_WALL_EXEC*)
       (send msg :float_params (coords-set-to-float-vector drill-wall-target-coords (length (send msg :float_params))))
+      (send msg :stand_coords
+            (coords-to-float-vector (get-robot-model-current-pos) (length (send msg :stand_coords))))
       (send self :send-to-fc msg)
       (send smachine :go-to :executing-drill-wall)))
   (:exec-drill-button-button-callback ()
@@ -836,7 +851,7 @@
         ;; (apply-primitive-dimensions-to-midi-device)
         (move-robot-model-to-current-pos)
         ;; publish motion to robot model on rviz
-	(publish-drill-grasp-motion :coords (elt drill-grasp-params 0) :update? t) ;todo drill-type
+	(publish-drill-grasp-motion :coords (elt drill-grasp-params 0) :update? t :arm (send self :get-arm-side) :stand-coords (make-coords) :overwrite-stand-coords? t) ;todo drill-type
         (send smachine :go-to :selecting-exec-for-drill-grasp))
       ))
   (:drill-put-recognition-finished-callback (msg)
@@ -856,7 +871,7 @@
         (apply-primitive-dimensions-to-midi-device)
         (move-robot-model-to-current-pos)
         ;; publish motion to robot model on rviz
-	(publish-drill-put-motion :coords (elt drill-put-params 0) :update? t)
+	(publish-drill-put-motion :coords (elt drill-put-params 0) :update? t :stand-coords (make-coords) :overwrite-stand-coords? t)
         (send smachine :go-to :selecting-exec-for-drill-put))
       ))
   (:drill-wall-recognition-finished-callback (msg)
@@ -867,7 +882,7 @@
 		(format nil "Recognize wall coords") :recognize)
           (publish-coords-list coords-set "BODY")
           (setq drill-wall-target-coords coords-set)
-          (publish-drill-wall-motion :coords-list coords-set :update? t)
+          (publish-drill-wall-motion :coords-list coords-set :update? t :stand-coords (make-coords) :overwrite-stand-coords? t)
           (send smachine :go-to :selecting-exec-for-drill-wall)))))
   (:drill-button-recognition-finished-callback (msg)
     (when (eq (send smachine :state) :recognizing-drill-button-pose)
@@ -1003,14 +1018,14 @@
            (setq drill-grasp-params
                  (list (get-primitive-marker-pose :frame-id "BODY")))
            ;; publish dirll motion to robot model on rviz
-           (publish-drill-grasp-motion :coords (elt drill-grasp-params 0) :update? t) ;;drill-type
+           (publish-drill-grasp-motion :coords (elt drill-grasp-params 0) :update? t :arm (send self :get-arm-side) :stand-coords (get-robot-model-current-pos) :overwrite-stand-coords? nil) ;;drill-type
            )
           ((eq (send smachine :state) :selecting-exec-for-drill-put)
            ;; update latest drill-put params
            (setq drill-put-params
                  (list (get-primitive-marker-pose :frame-id "BODY")))
            ;; publish dirll motion to robot model on rviz
-           (publish-drill-put-motion :coords (elt drill-put-params 0) :update? t)
+           (publish-drill-put-motion :coords (elt drill-put-params 0) :update? t :stand-coords (get-robot-model-current-pos) :overwrite-stand-coords? nil)
            )
           ((eq (send smachine :state) :selecting-exec-for-drill-button)
            ;; update latest drill-button params
@@ -1024,7 +1039,7 @@
            ;; (setq drill-wall-params
            ;;       (list (get-primitive-marker-pose :frame-id "BODY")))
            ;; publish dirll motion to robot model on rviz
-           (publish-drill-wall-motion :coords-list drill-wall-target-coords :update? t)
+           (publish-drill-wall-motion :coords-list drill-wall-target-coords :update? t :stand-coords (get-robot-model-current-pos) :overwrite-stand-coords? nil)
            )
           ((eq (send smachine :state) :selecting-exec-for-door)
            ;; update latest door params

@@ -398,13 +398,21 @@
   (:drill-grasp-exec-command-callback (msg)
     (when (send smachine :state? :initial)
       (let* ((params (send msg :float_params))
+             (stand-coords (float-vector-to-coords (send msg :stand_coords)))
              (coords (float-vector-to-coords params)))
         (ros::ros-info "grasp drill at ~A" coords)
         (send smachine :go-to :executing-drill-grasp)
         (setq *cancel-motion-flag* nil)
         (catch 'exit
         ;; send motion to real robot
-        (send-drill-grasp-motion coords)
+        (let* (;(stand-coords (float-vector-to-coords (send msg :stand_coords)))
+               (arm-side (send msg :arm_side))
+               (arm (cond ((equal arm-side drc_com_common::OCS2FCSmall::*LARM*) :larm) ((equal arm-side drc_com_common::OCS2FCSmall::*RARM*) :rarm) (t nil))))
+	       (if arm
+		   (send-drill-grasp-motion coords :arm arm :stand-coords stand-coords)
+                 (ros::ros-info "arm side empty")
+		 )
+	       )
         ;; send finish signal to ocs
         (let ((msg (instance drc_com_common::FC2OCSSmall :init)))
           (send msg :type drc_com_common::FC2OCSSmall::*DRILL_GRASP_FINISHED*)
@@ -416,13 +424,14 @@
   (:drill-put-exec-command-callback (msg)
     (when (send smachine :state? :initial)
       (let* ((params (send msg :float_params))
-             (coords (float-vector-to-coords params)))
+             (coords (float-vector-to-coords params))
+             (stand-coords (float-vector-to-coords (send msg :stand_coords))))
         (ros::ros-info "put drill at ~A" coords)
         (send smachine :go-to :executing-drill-put)
         (setq *cancel-motion-flag* nil)
         (catch 'exit
         ;; send motion to real robot
-        (send-drill-put-motion coords)
+        (send-drill-put-motion coords :stand-coords stand-coords)
         ;; send finish signal to ocs
         (let ((msg (instance drc_com_common::FC2OCSSmall :init)))
           (send msg :type drc_com_common::FC2OCSSmall::*DRILL_PUT_FINISHED*)
@@ -436,9 +445,10 @@
       (send smachine :go-to :executing-drill-wall)
       (setq *cancel-motion-flag* nil)
       (catch 'exit
-      (let ((coords-set (float-vector-to-coords-set (send msg :float_params))))
+      (let ((coords-set (float-vector-to-coords-set (send msg :float_params)))
+            (stand-coords (float-vector-to-coords (send msg :stand_coords))))
         (ros::ros-info "Target coords are: ~A" coords-set)
-        (send-drill-wall-motion coords-set)
+        (send-drill-wall-motion coords-set :stand-coords stand-coords)
         (let ((msg (instance drc_com_common::FC2OCSSmall :init)))
           (send msg :type drc_com_common::FC2OCSSmall::*DRILL_WALL_FINISHED*)
           (send self :send-to-ocs msg))
