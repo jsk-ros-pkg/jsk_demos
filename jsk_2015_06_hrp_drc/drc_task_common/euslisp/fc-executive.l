@@ -404,7 +404,13 @@
         (setq *cancel-motion-flag* nil)
         (catch 'exit
         ;; send motion to real robot
-        (send-drill-grasp-motion coords)
+        (let* (;(stand-coords (float-vector-to-coords (send msg :stand_coords)))
+               (arm-side (send msg :arm_side))
+               (arm (cond ((equal arm-side drc_com_common::OCS2FCSmall::*LARM*) :larm) ((equal arm-side drc_com_common::OCS2FCSmall::*RARM*) :rarm) (t nil)))
+	       (if arm
+		   (send-drill-grasp-motion coords :arm arm)
+		 )
+	       )
         ;; send finish signal to ocs
         (let ((msg (instance drc_com_common::FC2OCSSmall :init)))
           (send msg :type drc_com_common::FC2OCSSmall::*DRILL_GRASP_FINISHED*)

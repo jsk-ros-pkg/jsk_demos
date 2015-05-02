@@ -630,6 +630,15 @@
       (send msg :type drc_com_common::OCS2FCSmall::*DRILL_GRASP_EXEC*)
       (send msg :float_params (coords-to-float-vector (elt drill-grasp-params 0) (length (send msg :float_params))))
       (send self :send-to-fc msg)
+      (cond ((not (boundp '*drill-main-arm*))
+             (send msg :arm_side drc_com_common::OCS2FCSmall::*UNDECIDED*))
+            ((equal *drill-main-arm* :larm)
+             (send msg :arm_side drc_com_common::OCS2FCSmall::*LARM*))
+            ((equal *drill-main-arm* :rarm)
+             (send msg :arm_side drc_com_common::OCS2FCSmall::*RARM*))
+            (t
+             (send msg :arm_side drc_com_common::OCS2FCSmall::*UNDECIDED*))
+            )
       (send smachine :go-to :executing-drill-grasp)))
   (:exec-drill-put-button-callback ()
     (send self :show-text "Execute drill-put motion" :execute)
@@ -836,7 +845,7 @@
         ;; (apply-primitive-dimensions-to-midi-device)
         (move-robot-model-to-current-pos)
         ;; publish motion to robot model on rviz
-	(publish-drill-grasp-motion :coords (elt drill-grasp-params 0) :update? t) ;todo drill-type
+	(publish-drill-grasp-motion :coords (elt drill-grasp-params 0) :update? t :arm (send self :get-arm-side)) ;todo drill-type
         (send smachine :go-to :selecting-exec-for-drill-grasp))
       ))
   (:drill-put-recognition-finished-callback (msg)
@@ -1003,7 +1012,7 @@
            (setq drill-grasp-params
                  (list (get-primitive-marker-pose :frame-id "BODY")))
            ;; publish dirll motion to robot model on rviz
-           (publish-drill-grasp-motion :coords (elt drill-grasp-params 0) :update? t) ;;drill-type
+           (publish-drill-grasp-motion :coords (elt drill-grasp-params 0) :update? t :arm (send self :get-arm-side)) ;;drill-type
            )
           ((eq (send smachine :state) :selecting-exec-for-drill-put)
            ;; update latest drill-put params
