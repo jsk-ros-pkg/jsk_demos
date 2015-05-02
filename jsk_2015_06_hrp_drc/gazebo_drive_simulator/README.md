@@ -13,12 +13,17 @@ $ catkin build gazebo_drive_simulator
 ```
 ### start atlas simulation
 ```bash
-$ rosrun gazebo_drive_simulator start_drc_practice_task_1.launch
+$ rosrun gazebo_drive_simulator start_drc_practice_task_1.sh
 ```
 
 ### start staro simulation
+First, you have to make world file for staro in gazebo.
+```bash
+rosrun hrpsys_gazebo_tutorials convert_drc_world.sh
+```
+
 ```bash
 $ source `rospack find hrpsys_gazebo_tutorials`/setup.sh
 $ roslaunch hrpsys_gazebo_tutorials drc_practice_task_1_staro.laucnh
-$ rosrun gazebo_drive_simulator start_staro_drive_simulator.launch
+$ rosrun gazebo_drive_simulator start_staro_drive_simulator.sh
 ```
