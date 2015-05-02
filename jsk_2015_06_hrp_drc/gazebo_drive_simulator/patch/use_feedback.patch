@@ -1,0 +1,14 @@
+--- ../launch/handle_controller.launch	2015-01-08 14:57:23.998625603 +0900
++++ ../launch/handle_controller_feedback.launch	2015-01-09 17:38:16.730298662 +0900
+@@ -24,9 +24,9 @@
+   <node pkg="gazebo_drive_simulator" type="SwitchPedalPlanner.py" name="pedal_planner_switch" output="screen">
+     <remap from="/hand_wheel/output" to="$(arg CMD_NAMESPACE)/hand_wheel/cmd"/>
+     <remap from="/hand_wheel/handle/input" to="/hand_wheel/handle/input"/>
+-    <remap from="/hand_wheel/local_planner/ref_angle" to="/hand_wheel/local_planner/raw_cmd_angle"/>
++    <!-- <remap from="/hand_wheel/local_planner/ref_angle" to="/hand_wheel/local_planner/raw_cmd_angle"/> -->
+     <!-- if you use feedback for controlling steering angle you should use following topic name -->
+-    <!-- <remap from="/hand_wheel/local_planner/ref_angle" to="/hand_wheel/correction/steering_angle"/> -->
++    <remap from="/hand_wheel/local_planner/ref_angle" to="/hand_wheel/correction/steering_angle"/>
+   </node>
+ 
+ </launch>

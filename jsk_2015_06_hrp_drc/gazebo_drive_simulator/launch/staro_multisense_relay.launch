@@ -1,0 +1,62 @@
+<launch>
+  <arg name="MULTISENSE_NS" default="/multisense" />
+  <!-- Fake Calibration
+  <node pkg="rostopic" type="rostopic" name="fake_joint_calibration"
+        args="pub /calibrated std_msgs/Bool true" />
+  -->
+  <!-- Controllers that come up started
+  <node name="atlas_controller_spawner"
+        pkg="pr2_controller_manager" type="spawner" output="log"
+        args="- -wait-for=/calibrated atlas_controller" />
+  -->
+
+  <!-- Stereo image processing -->
+  <node ns="$(arg MULTISENSE_NS)" name="stereo_proc" pkg="stereo_image_proc" type="stereo_image_proc" respawn="false" output="log">
+        <param name="disparity_range" type="int" value="128"/>
+        <param name="approximate_sync" type="bool" value="false"/>
+  </node>
+
+  <!-- relay for multisense simulation topics
+       hardware publishes to /joint_states, sim legacy publishes to /multisense/joint_states -->
+  <node name="multisense_joint_states_relay" pkg="topic_tools" type="relay"
+        args="/joint_states /multisense/joint_states" respawn="false" output="screen">
+    <param name="lazy" type="bool" value="True"/>
+  </node>
+
+  <!-- relay for multisense simulation topics
+       hardware publishes to multisense/lidar_scan, sim legacy publishes to /multisense/lidar_scan -->
+  <!-- <node name="multisense_laser_scan_relay" pkg="topic_tools" type="relay" -->
+  <!--       args="/laser/scan $(arg MULTISENSE_NS)/lidar_scan" respawn="false" output="screen"> -->
+  <!--   <param name="lazy" type="bool" value="True"/> -->
+  <!-- </node> -->
+
+  <!-- relay for multisense simulation topics
+       hardware publishes to /multisense/camera/[left|right]/[image_raw|camera_info],
+       sim legacy publishes to /multisense/[left|right]/[image_raw|camera_info] -->
+  <node name="multisense_left_image_raw_relay" pkg="topic_tools" type="relay"
+        args="/multisense/camera/left/image_raw $(arg MULTISENSE_NS)/left/image_raw" respawn="false" output="screen">
+    <param name="lazy" type="bool" value="True"/>
+  </node>
+  <node name="multisense_left_camera_info_relay" pkg="topic_tools" type="relay"
+        args="/multisense/camera/left/camera_info $(arg MULTISENSE_NS)/left/camera_info" respawn="false" output="screen">
+    <param name="lazy" type="bool" value="True"/>
+  </node>
+  <node name="multisense_right_image_raw_relay" pkg="topic_tools" type="relay"
+        args="/multisense/camera/right/image_raw $(arg MULTISENSE_NS)/right/image_raw" respawn="false" output="screen">
+    <param name="lazy" type="bool" value="True"/>
+  </node>
+  <node name="multisense_right_camera_info_relay" pkg="topic_tools" type="relay"
+        args="/multisense/camera/right/camera_info $(arg MULTISENSE_NS)/right/camera_info" respawn="false" output="screen">
+    <param name="lazy" type="bool" value="True"/>
+  </node>
+  <node name="multisense_points2_relay" pkg="topic_tools" type="relay"
+        args="$(arg MULTISENSE_NS)/points2 $(arg MULTISENSE_NS)/organized_image_points2_color" respawn="false" output="screen">
+    <param name="lazy" type="bool" value="True"/>
+  </node>
+
+  <!-- rviz -->
+  <node name="atlas_rviz" pkg="rviz" type="rviz" respawn="true"
+        args="-sync -d $(find gazebo_drive_simulator)/launch/atlas_drc_practice_task_1.rviz"
+        />
+
+</launch>

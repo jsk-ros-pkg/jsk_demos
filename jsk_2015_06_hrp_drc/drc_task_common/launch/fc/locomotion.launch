@@ -1,5 +1,5 @@
 <launch>
-  <arg name="INPUT_POINT_CLOUD" default="/full_cloud2" />
+  <arg name="INPUT_POINT_CLOUD" default="/laser_downsampler/output" />
   <arg name="MULTISENSE_STANDALONE" default="false" />
   <group ns="locomotion">
     <node pkg="nodelet" type="nodelet" name="manager" args="manager" output="screen"/>
@@ -10,21 +10,10 @@
           args="load jsk_topic_tools/Snapshot manager">
       <remap from="~input" to="$(arg INPUT_POINT_CLOUD)" />
     </node>
-    <!-- First, downsample -->
-    <node pkg="nodelet" type="nodelet"
-          name="downsampler"
-          args="load pcl/VoxelGrid manager">
-      <remap from="~input" to="input/output" />
-      <rosparam>
-        leaf_size: 0.02
-        filter_limit_min: -100
-        filter_limit_max: 100
-      </rosparam>
-    </node>
     <node pkg="nodelet" type="nodelet"
           name="gsensor_cloud"
           args="load jsk_pcl/TfTransformCloud manager">
-      <remap from="~input" to="downsampler/output" />
+      <remap from="~input" to="input/output" />
       <rosparam>
         target_frame_id: ground
       </rosparam>
@@ -69,11 +58,18 @@
       <param name="input_frame" value="multisense/head_root"
              if="$(arg MULTISENSE_STANDALONE)"/>
     </node>
-
+    <node pkg="nodelet" type="nodelet"
+          name="remove_outlier"
+          args="load pcl/RadiusOutlierRemoval manager">
+      <rosparam>
+        radius_search: 0.05
+        min_neighbors: 20
+      </rosparam>
+    </node>
     <node pkg="nodelet" type="nodelet"
           name="odom_cloud"
           args="load jsk_pcl/TfTransformCloud manager">
-      <remap from="~input" to="z_filter/output" />
+      <remap from="~input" to="remove_outlier/output" />
       <rosparam>
         target_frame_id: ground
       </rosparam>

@@ -1,0 +1,52 @@
+--- ../src/SwitchPedalPlanner.py	2015-01-09 16:29:55.082409132 +0900
++++ ../src/SwitchPedalPlanner_real.py	2015-01-09 17:18:07.250331237 +0900
+@@ -27,7 +27,7 @@
+     def switch_inputs(self):
+         # rospy.logwarn("%s", type(self.planner_input))
+         pub_msg = Float64()
+-        handle_not_published_time = 5
++        handle_not_published_time = 10000
+ 
+         self.planner_lock.acquire()
+         self.handle_lock.acquire()
+\ No newline at end of file
+--- ../../drive_recognition/launch/local_planner.launch	2015-01-09 16:31:36.474406401 +0900
++++ ../../drive_recognition/launch/local_planner_real.launch	2015-01-09 17:22:28.494324201 +0900
+@@ -8,8 +8,8 @@
+   <rosparam param="wheelbase"> 2.05 </rosparam>
+   <rosparam param="tread"> 1.4 </rosparam>
+   <rosparam param="min_r"> 6.5 </rosparam>
+-  <!-- <rosparam param="use_real_robot"> true </rosparam> -->
+-  <rosparam param="use_real_robot"> false </rosparam>
++  <rosparam param="use_real_robot"> true </rosparam>
++  <!-- <rosparam param="use_real_robot"> false </rosparam> -->
+ 
+   <!-- KdTree and Visualization Marker for obstacle detection -->
+   <node name="simplified_local_planner" pkg="drive_recognition" type="simplified_local_planner" output="screen" >
+\ No newline at end of file
+--- ../../drive_recognition/launch/obstacle_detection.launch   2015-01-11 16:55:32.488697313 +0900
++++ ../../drive_recognition/launch/obstacle_detection_real.launch         2015-01-27 21:24:54.259029661 +0900
+@@ -2,7 +2,7 @@
+   <!-- KdTree and Visualization Marker for obstacle detection -->
+   <node name="obstacle_detection" pkg="drive_recognition" type="kdtree_obstacle" output="screen" >
+     <remap from="points" to="/passthrough/stereo/remove_xz" />
+-    <remap from="stop_cmd" to="/brake_pedal/obstacle/input" />
++    <remap from="stop_cmd" to="/brake_pedal/obstacle/input_dummy" />
+     <remap from="stop_real_robot_cmd" to="/obstacle_detection/stop_real_robot_cmd" />
+   </node>
+ </launch>
+\ No newline at end of file
+--- ../../drive_recognition/launch/offset_steering_calculation.launch  2015-01-27 21:48:05.438992193 +0900
++++ ../../drive_recognition/launch/offset_steering_calculation_real.launch        2015-01-27 21:49:07.090990532 +0900
+@@ -19,7 +19,7 @@
+   </node>
+ 
+   <!-- cheet feedback test command publisher -->
+-  <node pkg="drive_recognition" type="FeedbackTestCommandPublisher.py" name="feedback_test_cmd_publisher" output="screen" >
+-    <remap from="feedback/test_cmd" to="/hand_wheel/local_planner/raw_cmd_angle" />
+-  </node>
++  <!-- <node pkg="drive_recognition" type="FeedbackTestCommandPublisher.py" name="feedback_test_cmd_publisher" output="screen" > -->
++  <!--   <remap from="feedback/test_cmd" to="/hand_wheel/local_planner/raw_cmd_angle" /> -->
++  <!-- </node> -->
+ 
+ </launch>

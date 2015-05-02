@@ -203,18 +203,18 @@ class VehicleUIWidget(QWidget):
         self.step_gage_label.setFixedHeight(50)
         
         right_vbox.addWidget(self.step_gage_label)
-        self.step_gage = StepGageWidget("/drive/step",
-                                        "/drive/max_step",
-                                        "/drive/min_step")
+        self.step_gage = StepGageWidget("/drive/controller/step",
+                                        "/drive/controller/max_step",
+                                        "/drive/controller/min_step")
         right_vbox.addWidget(self.step_gage)
     # Message callback
     def setupSubscribers(self):
         self.step_gage_value_sub = rospy.Subscriber(
-            "/drive/step", std_msgs.msg.Float32, self.stepGageValueCallback)
+            "/drive/controller/step", std_msgs.msg.Float32, self.stepGageValueCallback)
         self.min_step_value_sub = rospy.Subscriber(
-            "/drive/min_step", std_msgs.msg.Float32, self.minStepGageValueCallback)
+            "/drive/controller/min_step", std_msgs.msg.Float32, self.minStepGageValueCallback)
         self.max_step_value_sub = rospy.Subscriber(
-            "/drive/max_step", std_msgs.msg.Float32, self.maxStepGageValueCallback)
+            "/drive/controller/max_step", std_msgs.msg.Float32, self.maxStepGageValueCallback)
         self.lleg_force_sub = rospy.Subscriber(
             "/lfsensor", geometry_msgs.msg.WrenchStamped, self.lfsensorCallback)
         self.rleg_force_sub = rospy.Subscriber(

@@ -37,9 +37,9 @@
   ;; load building scene by existing TF frame
   (unix::sleep 1) ;; wait for recieving TF messages
   (let ((frames (send *tfl* :get-frame-strings)))
-    (cond ((find "/eng2" frames :test #'string=)
+    (cond ((find "eng2" frames :test #'string=)
 	   (setq *scene* (make-eng2-scene)))
-	  ((find "/eng8" frames :test #'string=)
+	  ((find "eng8" frames :test #'string=)
 	   (setq *scene* (make-eng8-scene)))
 	  (t
 	   (ros::ros-error "There is no building frame-id in TF tree.")

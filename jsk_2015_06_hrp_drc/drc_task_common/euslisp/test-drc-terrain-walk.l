@@ -452,8 +452,6 @@
   (send *terrain* :newcoords (make-coords :pos (float-vector 400 -2000 0)))
   (setq *rleg-sole* (make-sole-body *robot* :rleg))
   (setq *lleg-sole* (make-sole-body *robot* :lleg))
-  (setq *prev-lleg-coords* (send *lleg-sole* :copy-worldcoords))
-  (setq *prev-rleg-coords* (send *rleg-sole* :copy-worldcoords))
   (setq *terrain-faces* (send *terrain* :get-all-terrain-top-faces))
   (objects (list *robot* *rleg-sole* *lleg-sole* *terrain*))
   )
@@ -468,8 +466,6 @@
   (send *terrain* :newcoords (make-coords :pos (float-vector 400 -2000 0)))
   (setq *rleg-sole* (make-sole-body *robot* :rleg))
   (setq *lleg-sole* (make-sole-body *robot* :lleg))
-  (setq *prev-lleg-coords* (send *lleg-sole* :copy-worldcoords))
-  (setq *prev-rleg-coords* (send *rleg-sole* :copy-worldcoords))
   (setq *terrain-faces* (send *terrain* :get-all-terrain-top-faces))
   (objects (list *robot* *rleg-sole* *lleg-sole* *terrain*))
   )
@@ -479,14 +475,23 @@
   (unless (boundp '*terrain*) (make-drc-terrain-japanese-block-ver :add-groud-p t))
   (setup-terrain-walk-jaxon)
   (setup-terrain-walk-real-jaxon)
-  (walking-pose *robot* :root-link-height-offset -70) ;;  <= -70mm
+  ;;(walking-pose *robot* :root-link-height-offset -70) ;;  <= -70mm
+  (walking-pose *robot* :root-link-height-offset -120 :default-pose-method :reset-pose) ;;  <= -70mm
+  (send *ri* :angle-vector (send *robot* :angle-vector) 3000)
+  (send *ri* :wait-interpolation)
   (send *robot* :fix-leg-to-coords (make-coords))
   (send *terrain* :newcoords (make-coords :pos (float-vector 400 -2000 0)))
   (setq *rleg-sole* (make-sole-body *robot* :rleg))
   (setq *lleg-sole* (make-sole-body *robot* :lleg))
-  (setq *prev-lleg-coords* (send *lleg-sole* :copy-worldcoords))
-  (setq *prev-rleg-coords* (send *rleg-sole* :copy-worldcoords))
   (setq *terrain-faces* (send *terrain* :get-all-terrain-top-faces))
+  (objects (list *robot* *rleg-sole* *lleg-sole* *terrain*))
+  )
+
+(defun setup-drc-testbed-stair-model-init-jaxon
+  ()
+  (walking-pose *robot* :root-link-height-offset -120 :default-pose-method :reset-pose) ;;  <= -70mm
+  (setq *rleg-sole* (make-sole-body *robot* :rleg))
+  (setq *lleg-sole* (make-sole-body *robot* :lleg))
   (objects (list *robot* *rleg-sole* *lleg-sole* *terrain*))
   )
 (warn ";; (setup-drc-testbed-terrain-simulation-jaxon)~%")
@@ -500,8 +505,6 @@
   (send *terrain* :newcoords (make-coords :pos (float-vector 400 -2000 0)))
   (setq *rleg-sole* (make-sole-body *robot* :rleg))
   (setq *lleg-sole* (make-sole-body *robot* :lleg))
-  (setq *prev-lleg-coords* (send *lleg-sole* :copy-worldcoords))
-  (setq *prev-rleg-coords* (send *rleg-sole* :copy-worldcoords))
   (setq *terrain-faces* (send *terrain* :get-all-terrain-top-faces))
   (objects (list *robot* *rleg-sole* *lleg-sole* *terrain*))
   )
@@ -509,94 +512,61 @@
 
 (warn "~%;; One step terrain walk simulation for each robot by footstep~%")
 (warn ";; Footstep arguments are (rleg-fwd-offset[mm] lleg-fwd-offset[mm])~%")
+(warn ";; (test-drc-testbed-simulation-common-one 280 280)~%")
 
-(defun test-drc-testbed-terrain-simulation-hrp2jsknt-one
-  (rleg-fwd-offset lleg-fwd-offset)
-  (setq *prev-rleg-coords* (send *rleg-sole* :copy-worldcoords))
-  (let ((crds (car (project-coords-on-to-plane
-                    (send (send *robot* :rleg :end-coords :copy-worldcoords) :translate (float-vector rleg-fwd-offset 0 300) :world)
-              *terrain-faces*
-              (float-vector 0 0 1)))))
-    (if crds
-        (send *rleg-sole* :newcoords crds)
-      (error ";; Cannot snap ~A~%" rleg-fwd-offset)))
-  (let ((crds (car (project-coords-on-to-plane
-              (send (send *robot* :lleg :end-coords :copy-worldcoords) :translate (float-vector lleg-fwd-offset 0 300) :world)
-              *terrain-faces*
-              (float-vector 0 0 1)))))
-    (if crds
-        (send *lleg-sole* :newcoords crds)
-      (error ";; Cannot snap ~A~%" lleg-fwd-offset)))
-  (send *ri* :set-foot-steps
-        (list (make-coords :coords *prev-rleg-coords* :name :rleg)
-              (make-coords :coords (send *lleg-sole* :copy-worldcoords) :name :lleg)
-              (make-coords :coords (send *rleg-sole* :copy-worldcoords) :name :rleg)))
-  )
-(warn ";; (test-drc-testbed-terrain-simulation-hrp2jsknt-one 280 280)~%")
-
-(defun test-drc-testbed-stair-simulation-hrp2jsknt-one
-  (rleg-fwd-offset lleg-fwd-offset &key (set-foot-steps t))
-  (setq *prev-rleg-coords* (send *rleg-sole* :copy-worldcoords))
-  (let ((crds (car (project-coords-on-to-plane
-                    (send (send *robot* :rleg :end-coords :copy-worldcoords) :translate (float-vector rleg-fwd-offset 0 1200) :world)
-                    *stair-faces*
-              (float-vector 0 0 1)))))
-    (if crds
-        (send *rleg-sole* :newcoords crds)
-      (error ";; Cannot snap ~A~%" rleg-fwd-offset)))
-  (let ((crds (car (project-coords-on-to-plane
-              (send (send *robot* :lleg :end-coords :copy-worldcoords) :translate (float-vector lleg-fwd-offset 0 1200) :world)
-              *stair-faces*
-              (float-vector 0 0 1)))))
-    (if crds
-        (send *lleg-sole* :newcoords crds)
-      (error ";; Cannot snap ~A~%" lleg-fwd-offset)))
-  (if set-foot-steps
-      (send *ri* :set-foot-steps
-            (list (make-coords :coords *prev-rleg-coords* :name :rleg)
-                  (make-coords :coords (send *lleg-sole* :copy-worldcoords) :name :lleg)
-                  (make-coords :coords (send *rleg-sole* :copy-worldcoords) :name :rleg))))
-  )
-
-(defun test-drc-testbed-terrain-simulation-hrp2jsk-one
-  (rleg-fwd-offset lleg-fwd-offset)
-  (test-drc-testbed-terrain-simulation-hrp2jsknt-one rleg-fwd-offset lleg-fwd-offset)
-  )
-(warn ";; (test-drc-testbed-terrain-simulation-hrp2jsk-one 280 280)~%")
-
-(defun test-drc-testbed-terrain-simulation-jaxon-one
-  (rleg-fwd-offset lleg-fwd-offset)
-  (test-drc-testbed-terrain-simulation-hrp2jsknt-one rleg-fwd-offset lleg-fwd-offset)
-  )
-(warn ";; (test-drc-testbed-terrain-simulation-jaxon-one 280 280)~%")
-
-(defun test-drc-testbed-terrain-simulation-staro-one
-  (rleg-fwd-offset lleg-fwd-offset)
-  (test-drc-testbed-terrain-simulation-hrp2jsknt-one rleg-fwd-offset lleg-fwd-offset)
-  )
-(warn ";; (test-drc-testbed-terrain-simulation-staro-one 280 280)~%")
-
+(defun test-drc-testbed-simulation-common-one
+  (rleg-fwd-offset lleg-fwd-offset
+   &key (set-foot-steps t) (stair-once t) (top-faces *terrain-faces*) (height 300)
+        (initial-support-leg :rleg))
+  (let ((prev-leg-coords (case initial-support-leg (:rleg (send *rleg-sole* :copy-worldcoords)) (:lleg (send *lleg-sole* :copy-worldcoords)))))
+    (let ((crds (car (project-coords-on-to-plane
+                      (send (send *robot* :rleg :end-coords :copy-worldcoords) :translate (float-vector rleg-fwd-offset 0 height) :world)
+                      top-faces
+                      (float-vector 0 0 1)))))
+      (if crds
+          (send *rleg-sole* :newcoords crds)
+        (error ";; Cannot snap ~A~%" rleg-fwd-offset)))
+    (let ((crds (car (project-coords-on-to-plane
+                      (send (send *robot* :lleg :end-coords :copy-worldcoords) :translate (float-vector lleg-fwd-offset 0 height) :world)
+                      top-faces
+                      (float-vector 0 0 1)))))
+      (if crds
+          (send *lleg-sole* :newcoords crds)
+        (error ";; Cannot snap ~A~%" lleg-fwd-offset)))
+    (send *irtviewer* :draw-objects)
+    (let* ((leg0 initial-support-leg)
+           (leg1 (case initial-support-leg (:rleg :lleg) (:lleg :rleg)))
+           (leg-coords0 (send (eval (read-from-string (format nil "*~A-sole*" (string-downcase leg0)))) :copy-worldcoords))
+           (leg-coords1 (send (eval (read-from-string (format nil "*~A-sole*" (string-downcase leg1)))) :copy-worldcoords)))
+    (if set-foot-steps
+        (if stair-once
+            (send *ri* :set-foot-steps
+                  (list (make-coords :coords prev-leg-coords :name leg0)
+                        (make-coords :coords leg-coords1 :name leg1)
+                        (make-coords :coords leg-coords0 :name initial-support-leg)))
+          (progn
+            (send *ri* :set-foot-steps
+                  (list (make-coords :coords prev-leg-coords :name leg0)
+                        (make-coords :coords leg-coords1 :name leg1)))
+            (send *ri* :set-foot-steps
+                  (list (make-coords :coords leg-coords1 :name leg1)
+                        (make-coords :coords leg-coords0 :name leg0))))
+          ))
+    )))
 (warn "~%;; One through terrain walk simulation by some steps for each robot by footstep~%")
 
 ;; In the case of hrp2jsknt simulation, at 2nd block, 4th block and 6th block,
 ;; left foot sinks into blocks due to the saturation of lleg-ankle-r max-angle (20deg).
 (defun test-drc-testbed-terrain-simulation-hrp2jsknt ()
   (let* ((i 1))
-    (dolist (legs-fwd-offset '(280 440 720 840 1150 1260 1520 1600 1900 2070 2320 2460 2750 2900))
+    (dolist (legs-fwd-offset '(280 440 720 840 1150 1260 1520 1600 1900 2070 2320 2460 2750 2900 3150))
       (warn ";; Step ~a~%" i)
       (warn ";; (test-drc-testbed-terrain-simulation-hrp2jsknt-one ~a ~a)~%" legs-fwd-offset legs-fwd-offset)
       (read-line)
-      (test-drc-testbed-terrain-simulation-hrp2jsknt-one legs-fwd-offset legs-fwd-offset)
-      (send *irtviewer* :draw-objects)
+      (test-drc-testbed-simulation-common-one legs-fwd-offset legs-fwd-offset)
       ;;(send *ri* :wait-interpolation)
       (incf i)
       )
-    (warn ";; Final Step (Landing)~%")
-    (warn ";; (test-drc-testbed-terrain-simulation-hrp2jsknt-landing)~%")
-    (read-line)
-    (test-drc-testbed-terrain-simulation-hrp2jsknt-landing)
-    (send *irtviewer* :draw-objects)
-    ;;(send *ri* :wait-interpolation)
     ))
 (warn ";; (test-drc-testbed-terrain-simulation-hrp2jsknt)~%")
 
@@ -604,21 +574,14 @@
 ;; either foot sinks into blocks due to the saturation of ankle-r max-angle (20deg).
 (defun test-drc-testbed-terrain-simulation-hrp2jsk ()
   (let* ((i 1))
-    (dolist (legs-fwd-offset '(280 440 720 840 1150 1260 1520 1600 1900 2070 2320 2460 2750 2900))
+    (dolist (legs-fwd-offset '(280 440 720 840 1150 1260 1520 1600 1900 2070 2320 2460 2750 2900 3150))
       (warn ";; Step ~a~%" i)
       (warn ";; (test-drc-testbed-terrain-simulation-hrp2jsk-one ~a ~a)~%" legs-fwd-offset legs-fwd-offset)
       (read-line)
-      (test-drc-testbed-terrain-simulation-hrp2jsk-one legs-fwd-offset legs-fwd-offset)
-      (send *irtviewer* :draw-objects)
+      (test-drc-testbed-simulation-common-one legs-fwd-offset legs-fwd-offset)
       ;;(send *ri* :wait-interpolation)
       (incf i)
       )
-    (warn ";; Final Step (Landing)~%")
-    (warn ";; (test-drc-testbed-terrain-simulation-hrp2jsk-landing)~%")
-    (read-line)
-    (test-drc-testbed-terrain-simulation-hrp2jsk-landing)
-    (send *irtviewer* :draw-objects)
-    ;;(send *ri* :wait-interpolation)
     ))
 (warn ";; (test-drc-testbed-terrain-simulation-hrp2jsk)~%")
 
@@ -627,21 +590,14 @@
 ;; foot collides with the edge of block due to probably the trajectory planner of end-effector.
 (defun test-drc-testbed-terrain-simulation-jaxon ()
   (let* ((i 1))
-    (dolist (legs-fwd-offset '(280 440 720 840 1150 1260 1520 1600 1900 2070 2320 2460 2750 2900))
+    (dolist (legs-fwd-offset '(280 440 720 840 1150 1260 1520 1600 1900 2070 2320 2460 2750 2900 3150))
       (warn ";; Step ~a~%" i)
       (warn ";; (test-drc-testbed-terrain-simulation-jaxon-one ~a ~a)~%" legs-fwd-offset legs-fwd-offset)
       (read-line)
-      (test-drc-testbed-terrain-simulation-jaxon-one legs-fwd-offset legs-fwd-offset)
-      (send *irtviewer* :draw-objects)
+      (test-drc-testbed-simulation-common-one legs-fwd-offset legs-fwd-offset)
       ;;(send *ri* :wait-interpolation)
       (incf i)
       )
-    (warn ";; Final Step (Landing)~%")
-    (warn ";; (test-drc-testbed-terrain-simulation-jaxon-landing)~%")
-    (read-line)
-    (test-drc-testbed-terrain-simulation-jaxon-landing)
-    (send *irtviewer* :draw-objects)
-    ;;(send *ri* :wait-interpolation)
     ))
 (warn ";; (test-drc-testbed-terrain-simulation-jaxon)~%")
 
@@ -650,57 +606,16 @@
 ;; the edge of staro foot collides with the edge of block due to probably the trajectory planner of end-effector.
 (defun test-drc-testbed-terrain-simulation-staro ()
   (let* ((i 1))
-    (dolist (legs-fwd-offset '(280 440 720 840 1150 1260 1520 1600 1900 2070 2320 2460 2750 2900))
+    (dolist (legs-fwd-offset '(280 440 720 840 1150 1260 1520 1600 1900 2070 2320 2460 2750 2900 3150))
       (warn ";; Step ~a~%" i)
       (warn ";; (test-drc-testbed-terrain-simulation-staro-one ~a ~a)~%" legs-fwd-offset legs-fwd-offset)
       (read-line)
-      (test-drc-testbed-terrain-simulation-staro-one legs-fwd-offset legs-fwd-offset)
-      (send *irtviewer* :draw-objects)
+      (test-drc-testbed-simulation-common-one legs-fwd-offset legs-fwd-offset)
       ;;(send *ri* :wait-interpolation)
       (incf i)
       )
-    (warn ";; Final Step (Landing)~%")
-    (warn ";; (test-drc-testbed-terrain-simulation-staro-landing)~%")
-    (read-line)
-    (test-drc-testbed-terrain-simulation-staro-landing)
-    (send *irtviewer* :draw-objects)
-    ;;(send *ri* :wait-interpolation)
     ))
 (warn ";; (test-drc-testbed-terrain-simulation-staro)~%")
-
-(defun test-drc-testbed-terrain-simulation-hrp2jsknt-landing
-  (&key (landing-foot-midpos (float-vector 3200 0 0)))
-  (setq *prev-rleg-coords* (send *rleg-sole* :copy-worldcoords))
-  (send *robot* :fix-leg-to-coords (make-coords :pos landing-foot-midpos))
-  (let ((crds (send *robot* :rleg :end-coords :copy-worldcoords)))
-    (if crds
-        (send *rleg-sole* :newcoords crds)
-      (error ";; Cannot snap ~A~%" rleg-fwd-offset)))
-  (let ((crds (send *robot* :lleg :end-coords :copy-worldcoords)))
-    (if crds
-        (send *lleg-sole* :newcoords crds)
-      (error ";; Cannot snap ~A~%" lleg-fwd-offset)))
-  (send *irtviewer* :draw-objects)
-  (send *ri* :set-foot-steps
-        (list (make-coords :coords *prev-rleg-coords* :name :rleg)
-              (make-coords :coords (send *lleg-sole* :copy-worldcoords) :name :lleg)
-              (make-coords :coords (send *rleg-sole* :copy-worldcoords) :name :rleg)))
-  )
-
-(defun test-drc-testbed-terrain-simulation-hrp2jsk-landing
-  (&key (landing-foot-midpos (float-vector 3200 0 0)))
-  (test-drc-testbed-terrain-simulation-hrp2jsknt-landing :landing-foot-midpos landing-foot-midpos)
-  )
-
-(defun test-drc-testbed-terrain-simulation-jaxon-landing
-  (&key (landing-foot-midpos (float-vector 3200 0 0)))
-  (test-drc-testbed-terrain-simulation-hrp2jsknt-landing :landing-foot-midpos landing-foot-midpos)
-  )
-
-(defun test-drc-testbed-terrain-simulation-staro-landing
-  (&key (landing-foot-midpos (float-vector 3200 0 0)))
-  (test-drc-testbed-terrain-simulation-hrp2jsknt-landing :landing-foot-midpos landing-foot-midpos)
-  )
 
 (warn "~%;; Stair climb simulation for each robot by footstep~%")
 
@@ -772,7 +687,7 @@
 
 (defun test-drc-testbed-stair-simulation-jaxon
   (&key (x-offset 0.05) (yaw-offset -30))
-  (let* ((foot-width (abs (- (elt (send *robot* :lleg :end-coords :worldpos) 1) (elt (send *robot* :rleg :end-coords :worldpos) 1)))) (sole-width (abs (* foot-width (cos yaw-offset)))))
+  (let* ((foot-width (abs (- (elt (send *robot* :lleg :end-coords :worldpos) 1) (elt (send *robot* :rleg :end-coords :worldpos) 1)))) (sole-width (abs (* foot-width (cos (deg2rad yaw-offset))))))
     (warn ";; (send *ri* :go-pos ~a 0 ~a)~%" x-offset yaw-offset)
     (send *robot* :fix-leg-to-coords (send (send *robot* :foot-midcoords) :rotate (deg2rad yaw-offset) :z))
     (setq *prev-rleg-coords* (send *robot* :rleg :end-coords :copy-worldcoords))
@@ -1040,6 +955,67 @@
    :lleg *terrain-faces* (send (make-coords :pos (float-vector 0 105 0)) :translate (float-vector 280 0 300) :world))
   (calc-and-exec-walk-with-auto-root-height-tune-one
    *prev-lleg-coords* *lleg-sole* :lleg 30 1.3 :support-foot-coords *rleg-sole*)
+  )
+
+;;
+(defun test-terrain-real-robot-jaxon ()
+  ;; initialize
+  ;; (load "test-drc-terrain-walk.l")
+  ;; (setup-drc-testbed-terrain-simulation-jaxon)
+  (setup-drc-testbed-stair-model-init-jaxon)
+  (send *ri* :set-gait-generator-param :default-step-height 0.05)
+  (test-drc-testbed-simulation-common-one 280 280 :set-foot-steps t :stair-once t :initial-support-leg :lleg)
+  (y-or-n-p ";; next?~%")
+  (send *ri* :set-gait-generator-param :default-step-height 0.14)
+  (test-drc-testbed-simulation-common-one 460 460 :set-foot-steps t :stair-once t)
+  (y-or-n-p ";; next?~%")
+  (test-drc-testbed-simulation-common-one 730 730 :set-foot-steps t :stair-once t)
+  (y-or-n-p ";; next?~%")
+  (test-drc-testbed-simulation-common-one 850 850 :set-foot-steps t :stair-once t)
+  (y-or-n-p ";; next?~%")
+  (test-drc-testbed-simulation-common-one 1150 1150 :set-foot-steps t :stair-once t :initial-support-leg :lleg)
+  (y-or-n-p ";; next?~%")
+  (test-drc-testbed-simulation-common-one 1280 1280 :set-foot-steps t :stair-once t)
+  (y-or-n-p ";; next?~%")
+  (test-drc-testbed-simulation-common-one 1500 1500 :set-foot-steps t :stair-once t)
+  (y-or-n-p ";; next?~%")
+  (test-drc-testbed-simulation-common-one 1630 1630 :set-foot-steps t :stair-once t)
+  (y-or-n-p ";; next?~%")
+  (test-drc-testbed-simulation-common-one 1900 1900 :set-foot-steps t :stair-once t)
+  (y-or-n-p ";; next?~%")
+  (test-drc-testbed-simulation-common-one 2050 2050 :set-foot-steps t :stair-once t)
+  (y-or-n-p ";; next?~%")
+  (test-drc-testbed-simulation-common-one 2300 2300 :set-foot-steps t :stair-once t)
+  )
+
+(defun test-stair-real-robot-jaxon
+  ()
+  (y-or-n-p ";; initial pose?~%")
+  (walking-pose *robot* :root-link-pitch-offset 0 :root-link-height-offset -100)
+  (send *robot* :arms :shoulder-p :joint-angle -60)
+  (send *robot* :arms :elbow-p :joint-angle -110)
+  (send *robot* :move-centroid-on-foot :both '(:rleg :lleg))
+  (send *ri* :angle-vector (send *robot* :angle-vector) 4000)
+  (send *ri* :wait-interpolation)
+  (y-or-n-p ";; sitting pose?~%")
+  (walking-pose *robot* :root-link-pitch-offset 25 :root-link-height-offset -140)
+  (send *robot* :arms :shoulder-p :joint-angle -60)
+  (send *robot* :arms :elbow-p :joint-angle -110)
+  (send *robot* :move-centroid-on-foot :both '(:rleg :lleg))
+  (send *ri* :angle-vector (send *robot* :angle-vector) 4000)
+  (send *ri* :wait-interpolation)
+  (y-or-n-p ";; walk?~%")
+  (send *ri* :set-foot-steps
+        (list (make-coords :name :rleg :coords (send *robot* :rleg :end-coords :copy-worldcoords))
+              (make-coords :name :lleg :coords (send (send *robot* :lleg :end-coords :copy-worldcoords) :translate (float-vector 270 0 230)))
+              (make-coords :name :rleg :coords (send (send *robot* :rleg :end-coords :copy-worldcoords) :translate (float-vector 270 0 230)))))
+  (y-or-n-p ";; initial pose?~%")
+  (walking-pose *robot* :root-link-pitch-offset 0 :root-link-height-offset -100)
+  (send *robot* :arms :shoulder-p :joint-angle -60)
+  (send *robot* :arms :elbow-p :joint-angle -110)
+  (send *robot* :move-centroid-on-foot :both '(:rleg :lleg))
+  (send *ri* :angle-vector (send *robot* :angle-vector) 4000)
+  (send *ri* :wait-interpolation)
   )
 
 ;; (pprint (mapcar #'(lambda (s) (if (derivedp s hrpsys_ros_bridge::openhrp_autobalancerservice_footstep) (send *ri* :abc-footstep->eus-footstep s))) (mapcar #'cdr (send (send (send *ri* :autobalancerservice_getfootstepparam) :i_param) :slots))))
