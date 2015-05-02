@@ -629,7 +629,8 @@
     (let ((msg (instance drc_com_common::OCS2FCSmall :init)))
       (send msg :type drc_com_common::OCS2FCSmall::*DRILL_GRASP_EXEC*)
       (send msg :float_params (coords-to-float-vector (elt drill-grasp-params 0) (length (send msg :float_params))))
-      (send self :send-to-fc msg)
+      (send msg :stand_coords
+            (coords-to-float-vector (get-robot-model-current-pos) (length (send msg :stand_coords))))
       (cond ((not (boundp '*drill-main-arm*))
              (send msg :arm_side drc_com_common::OCS2FCSmall::*UNDECIDED*))
             ((equal *drill-main-arm* :larm)
@@ -639,6 +640,7 @@
             (t
              (send msg :arm_side drc_com_common::OCS2FCSmall::*UNDECIDED*))
             )
+      (send self :send-to-fc msg)
       (send smachine :go-to :executing-drill-grasp)))
   (:exec-drill-put-button-callback ()
     (send self :show-text "Execute drill-put motion" :execute)
@@ -649,6 +651,8 @@
     (let ((msg (instance drc_com_common::OCS2FCSmall :init)))
       (send msg :type drc_com_common::OCS2FCSmall::*DRILL_PUT_EXEC*)
       (send msg :float_params (coords-to-float-vector (elt drill-put-params 0) (length (send msg :float_params))))
+      (send msg :stand_coords
+            (coords-to-float-vector (get-robot-model-current-pos) (length (send msg :stand_coords))))
       (send self :send-to-fc msg)
       (send smachine :go-to :executing-drill-put)))
   (:exec-drill-wall-button-callback ()
@@ -658,6 +662,8 @@
     (let ((msg (instance drc_com_common::OCS2FCSmall :init)))
       (send msg :type drc_com_common::OCS2FCSmall::*DRILL_WALL_EXEC*)
       (send msg :float_params (coords-set-to-float-vector drill-wall-target-coords (length (send msg :float_params))))
+      (send msg :stand_coords
+            (coords-to-float-vector (get-robot-model-current-pos) (length (send msg :stand_coords))))
       (send self :send-to-fc msg)
       (send smachine :go-to :executing-drill-wall)))
   (:exec-drill-button-button-callback ()
