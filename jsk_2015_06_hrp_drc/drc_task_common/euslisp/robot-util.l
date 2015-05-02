@@ -32,7 +32,7 @@
   (name
    &key (generate-ri? nil))
   ;; generate robot
-  (when (or (not (boundp '*robot*)) (not (boundp '*robot-name*)) (not (equal *robot-name* (string-upcase name))))
+  (when (or (not (boundp '*robot*)) (not *robot*))
     (setq *robot-name* (string-upcase name))
     (load (robot-file name))
     (cond (generate-ri?
@@ -63,7 +63,8 @@
          (when real? (hand-model2real :time time :wait? wait?))
 )
         ((or (equal *robot-name* "JAXON") (equal *robot-name* "STARO"))
-         (when real? (send *ri* :start-grasp arm :wait wait?)))
+         (when (and real? (find-method *ri* :start-grasp))
+           (send *ri* :start-grasp arm :wait wait?)))
         ))
 
 (defun hand-stop-grasp (&key (arm :arms) (real? nil) (time 500) (wait? t))
@@ -71,7 +72,8 @@
          (send *robot* :hand arm :hook-pose) ;; hand hook-pose
          (when real? (hand-model2real :time time :wait? wait?)))
         ((or (equal *robot-name* "JAXON") (equal *robot-name* "STARO"))
-         (when real? (send *ri* :stop-grasp arm :wait wait?)))
+         (when (and real? (find-method *ri* :stop-grasp))
+           (send *ri* :stop-grasp arm :wait wait?)))
         ))
 
 (defun send-angle-vector-sequence-with-time
