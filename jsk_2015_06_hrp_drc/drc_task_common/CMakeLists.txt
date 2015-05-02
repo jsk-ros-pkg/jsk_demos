@@ -24,6 +24,7 @@ generate_dynamic_reconfigure_options(
   config/vehicle/PassthroughCarBody.cfg
   config/vehicle/SwitchInputCloud.cfg
   config/vehicle/VisualOdometryVerification.cfg
+  cfg/StandingDrillDetector.cfg
 )
 
 add_message_files(DIRECTORY msg FILES DRCParametersMessage.msg)
@@ -70,10 +71,16 @@ add_dependencies(${PROJECT_NAME} ${PROJECT_NAME}_gencpp)
 target_link_libraries(${PROJECT_NAME} ${QT_LIBRARIES} ${catkin_LIBRARIES})
 
 add_executable(manipulation_data_server src/drc_task_common/manipulation_data_server.cpp src/drc_task_common/manipulation_data_helpers.cpp)
+
 target_link_libraries(manipulation_data_server
    ${catkin_LIBRARIES}
    yaml-cpp
-)
+   )
+add_executable(standing_drill_detector src/drc_task_common/standing_drill_detector.cpp)
+target_link_libraries(standing_drill_detector
+  ${catkin_LIBRARIES}
+  yaml-cpp
+  )
 add_dependencies(manipulation_data_server ${PROJECT_NAME}_gencpp)
 add_executable(manipulation_data_visualizer src/drc_task_common/manipulation_data_visualizer.cpp src/drc_task_common/manipulation_data_helpers.cpp)
 target_link_libraries(manipulation_data_visualizer
