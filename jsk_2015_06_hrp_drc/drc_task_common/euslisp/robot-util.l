@@ -32,7 +32,7 @@
   (name
    &key (generate-ri? nil))
   ;; generate robot
-  (unless (boundp '*robot*)
+  (when (or (not (boundp '*robot*)) (not (boundp '*robot-name*)) (not (equal *robot-name* (string-upcase name))))
     (setq *robot-name* (string-upcase name))
     (load (robot-file name))
     (cond (generate-ri?
@@ -102,20 +102,24 @@
   (let* ((original-foot-midcoords (send (send *robot* :foot-midcoords) :copy-worldcoords)))
     (dolist (av motion)
       (cond (interpolation?
-             (send-angle-vector-with-interpolation (copy-seq (send *robot* :angle-vector)) av))
+             (send-angle-vector-with-interpolation
+              (copy-seq (send *robot* :angle-vector)) av
+              :foot-midcoords (send (send *robot* :foot-midcoords) :copy-worldcoords)))
             (t
              (send *robot* :angle-vector av)))
       (send *robot* :fix-leg-to-coords original-foot-midcoords)
       (send *irtviewer* :draw-objects)
       (cond (wait? (read-line))
-            (t (unix::usleep (* step-time 1000))))
+            ((not interpolation?) (unix::usleep (* step-time 1000))))
       )))
 
 (defun send-angle-vector-with-interpolation
-  (start-av goal-av &key (devide-num 10))
+  (start-av goal-av &key (devide-num 10) (foot-midcoords))
   (dotimes (i devide-num)
     (send *robot* :angle-vector
           (midpoint (/ (float i) (1- devide-num)) start-av goal-av))
+    (when foot-midcoords
+      (send *robot* :fix-leg-to-coords foot-midcoords))
     (send *irtviewer* :draw-objects)
     )
   )

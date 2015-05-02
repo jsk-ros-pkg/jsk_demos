@@ -722,7 +722,7 @@
          ;; store result
          (setq valve-params (list coords radius))
          ;; publish motion to robot model on rviz
-         (publish-valve-motion :radius (cadr valve-params) :coords (car valve-params)
+         (publish-valve-motion (cadr valve-params) (car valve-params)
                                :arm (send self :get-arm-side) :overwrite-arm-side? (send self :is-arm-overwrite)
                                :stand-coords (make-coords) :overwrite-stand-coords? t
                                :grasp-center? (send self :is-valve-grasp-center) :overwrite-grasp-mode? (send self :is-valve-grasp-overwrite)
@@ -972,7 +972,7 @@
                  (list (get-primitive-marker-pose :frame-id "BODY")
                        (elt (get-primitive-marker-dimensions) 3)))
            ;; publish valve motion to robot model on rviz
-           (publish-valve-motion :radius (cadr valve-params) :coords (car valve-params)
+           (publish-valve-motion (cadr valve-params) (car valve-params)
                                  :arm (send self :get-arm-side) :overwrite-arm-side? (send self :is-arm-overwrite)
                                  :stand-coords (get-robot-model-current-pos) :overwrite-stand-coords? nil
                                  :grasp-center? (send self :is-valve-grasp-center) :overwrite-grasp-mode? (send self :is-valve-grasp-overwrite)
