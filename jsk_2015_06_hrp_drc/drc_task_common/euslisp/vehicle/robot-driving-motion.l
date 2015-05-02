@@ -540,9 +540,11 @@
            )
      (when (and real reach-until-touch approach-result)
        (send *ri* :reach-until-touch limb
-             (send (send robot limb :end-coords :copy-worldcoords) :rotate-vector #f(0 0 1))
-             :rotation-axis :z
+             (send (send robot limb :end-coords :copy-worldcoords) :rotate-vector #f(0 0 -1))
+             :rotation-axis :z :time-step 500 :max-dist 50
              ) ;; todo: reach-until-touch uses copy-object
+       (send *ri* :state) ;; update 
+       (send robot limb :angle-vector (send *ri* :robot limb :angle-vector)) ;; reflect reach-until-touch result
        )
      approach-result
      )
@@ -577,9 +579,11 @@
            )
      (when (and real reach-until-touch approach-result)
        (send *ri* :reach-until-touch limb
-             (send (send robot limb :end-coords :copy-worldcoords) :rotate-vector #f(0 0 1))
-             :rotation-axis :z
+             (send (send robot limb :end-coords :copy-worldcoords) :rotate-vector #f(0 0 -1))
+             :rotation-axis :z :time-step 500 :max-dist 50
              ) ;; todo: reach-until-touch uses copy-object
+       (send *ri* :state) ;; update 
+       (send robot limb :angle-vector (send *ri* :robot limb :angle-vector)) ;; reflect reach-until-touch result
        )
      approach-result
      )
@@ -683,38 +687,67 @@
   ;; leg support
   (:approach-floor
    (&rest args &key (limb :lleg) (target-handle :floor) (time 10000) (debug-view nil) (offset #f(0 0 50))
-          (start-impedance t) (stop-ref-force nil) (start-ref-force nil) (reach-until-touch nil) &allow-other-keys)
+          (start-impedance t) (stop-ref-force nil) (start-ref-force nil)
+          (reach-until-touch nil) (use-imu nil)
+          &allow-other-keys)
    (when (and real stop-ref-force)
      (send *ri* :set-ref-force #f(0 0 0) 10000 limb)
      )
    (let* ((limb-endcoords (send robot limb :end-coords :copy-worldcoords))
           (floor-coords (send (send car target-handle) :copy-worldcoords))
+          ik-result old-angle-vector floor-rot robot-ypr floor-ypr
           )
-     (send robot limb :inverse-kinematics
-           (make-coords :pos (send limb-endcoords :pos)
-                        :rot (send floor-coords :rot))
-           :rotation-axis :z
-           ) ;; fix x and y axis of legs to floor
-     (send robot limb :move-end-pos
-           (v+ (float-vector 0 0 (- (elt (send floor-coords :pos) 2) (elt (send limb-endcoords :pos) 2)))
-               offset)
-           ) ;; move to floor
-     (when real
-       (when reach-until-touch
-         (send *ri* :reach-until-touch limb
-               (send (send robot limb :end-coords :copy-worldcoords) :rotate-vector #f(0 0 1))
-               :rotation-axis :z
-               ) ;; todo: reach-until-touch uses copy-object
-         )
-       (when start-impedance
-         (send self :set-impedance-for-support limb)
-         )
-       (send *ri* :angle-vector (send robot :angle-vector) time)
-       (send *ri* :wait-interpolation)
-       (when start-ref-force
-         (send self :set-ref-force-for-support limb)
-         )
+     (setq old-angle-vector (send robot :angle-vector)) ;; preserve original angle-vector
+     ;; calculate floor-rotation
+     (if use-imu
+         (progn 
+           (send *ri* :state) ;; update
+           (setq robot-ypr (car (send (send *ri* :robot :worldcoords) :rpy-angle)))
+           (setq floor-ypr (car (send floor-coords :rpy-angle)))
+           (setq floor-rot (rpy-matrix (elt floor-ypr 0) (- (elt floor-ypr 1) (elt robot-ypr 1)) (- (elt floor-ypr 2) (elt robot-ypr 2))))
+           )
+       (setq floor-rot (send floor-coords :rot))
        )
+     ;; solve ik
+     (setq ik-result
+           (send robot limb :inverse-kinematics
+                 (make-coords :pos (send limb-endcoords :pos)
+                              :rot floor-rot)
+                 :rotation-axis :z
+                 ) ;; fix x and y axis of legs to floor
+           )
+     (when ik-result
+       (setq ik-result
+             (send robot limb :move-end-pos
+                   (v+ (float-vector 0 0 (- (elt (send floor-coords :pos) 2) (elt (send limb-endcoords :pos) 2)))
+                       offset)
+                   ) ;; move to floor
+             )
+       )
+     (if ik-result
+         (when real 
+           (send *ri* :angle-vector (send robot :angle-vector) time)
+           (send *ri* :wait-interpolation)
+           ;; reach-until-touch
+           (when reach-until-touch
+             (send *ri* :reach-until-touch limb
+                   (send (send robot limb :end-coords :copy-worldcoords) :rotate-vector #f(0 0 -1))
+                   :rotation-axis :z :time-step 500 :max-dist 50
+                   ) ;; todo: reach-until-touch uses copy-object
+             (send *ri* :state) ;; update 
+             (send robot limb :angle-vector (send *ri* :robot limb :angle-vector)) ;; reflect reach-until-touch result
+             )
+           ;; impedance
+           (when start-impedance
+             (send self :set-impedance-for-support limb)
+             )
+           (when start-ref-force
+             (send self :set-ref-force-for-support limb)
+             )
+           )
+       (send robot :angle-vector old-angle-vector) ;; resume
+       )
+     ik-result
      )
    )
 
