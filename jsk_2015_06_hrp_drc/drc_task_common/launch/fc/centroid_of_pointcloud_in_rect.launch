@@ -1,7 +1,7 @@
 <launch>
   <arg name="INPUT_IMAGE" default="/multisense/left/image_rect_color"/>
   <arg name="INPUT_CAMERA_INFO" default="/multisense/left/camera_info"/>
-  <arg name="INPUT_POINT_CLOUD" default="/multisense/resize_1_1/points" />
+  <arg name="INPUT_POINT_CLOUD" default="/multisense/organized_image_points2_color" />
   <arg name="DEBUG_VIEW" default="false" />
   <node pkg="jsk_perception" type="rect_to_mask_image"
         name="rect_to_mask_image" output="screen">
