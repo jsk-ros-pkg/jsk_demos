@@ -37,7 +37,7 @@
            (send *robot* :fix-leg-to-coords (make-coords))
            (send *valve* :newcoords (send (send (send *robot* :body_lk) :copy-worldcoords) :transform valve-coords :local))
            )))
-  ;; set robot standcoords
+  ;; set robot stand-coords
   (setq *valve-stand-coords* (if stand-coords stand-coords (make-coords)))
   (send *robot* :fix-leg-to-coords *valve-stand-coords*)
   ;; draw
@@ -52,49 +52,49 @@
 
 (defun attach-handle-to-robot-for-valve
   ()
-  (let* (larm-valve-translate-offset
-         rarm-valve-translate-offset
-         larm-valve-z-rotate-offset
-         rarm-valve-z-rotate-offset)
+  (let* (larm-translate-offset
+         rarm-translate-offset
+         larm-z-rotate-offset
+         rarm-z-rotate-offset)
     ;; handle for valve edge
     (cond ((or (equal *robot-name* "JAXON") (equal *robot-name* "STARO"))
-           (setq larm-valve-translate-offset (float-vector -10.0 0.0 0.0))
-           (setq rarm-valve-translate-offset (float-vector -10.0 0.0 0.0))
-           (setq larm-valve-z-rotate-offset (deg2rad 0))
-           (setq rarm-valve-z-rotate-offset (deg2rad -0))
+           (setq larm-translate-offset (float-vector -10.0 0.0 0.0))
+           (setq rarm-translate-offset (float-vector -10.0 0.0 0.0))
+           (setq larm-z-rotate-offset (deg2rad 0))
+           (setq rarm-z-rotate-offset (deg2rad -0))
            )
           (t ;; (or (equal *robot-name* "HRP2JSKNT") (equal *robot-name* "HRP2JSKNTS"))
-           (setq larm-valve-translate-offset (float-vector 25.0 5.0 0.0))
-           (setq rarm-valve-translate-offset (float-vector 25.0 -5.0 0.0))
-           (setq larm-valve-z-rotate-offset 0)
-           (setq rarm-valve-z-rotate-offset 0)))
+           (setq larm-translate-offset (float-vector 25.0 5.0 0.0))
+           (setq rarm-translate-offset (float-vector 25.0 -5.0 0.0))
+           (setq larm-z-rotate-offset 0)
+           (setq rarm-z-rotate-offset 0)))
     (send *robot* :put :larm-valve-coords
           (make-cascoords
-           :coords (send (send (send (send (send *robot* :larm :end-coords) :copy-worldcoords) :translate larm-valve-translate-offset :local) :rotate pi :x :local) :rotate larm-valve-z-rotate-offset :z :local)
+           :coords (send (send (send (send (send *robot* :larm :end-coords) :copy-worldcoords) :translate larm-translate-offset :local) :rotate pi :x :local) :rotate larm-z-rotate-offset :z :local)
            :parent (send (send *robot* :larm :end-coords) :parent)))
     (send *robot* :put :rarm-valve-coords
           (make-cascoords
-           :coords (send (send (send (send *robot* :rarm :end-coords) :copy-worldcoords) :translate rarm-valve-translate-offset :local) :rotate rarm-valve-z-rotate-offset :z :local)
+           :coords (send (send (send (send *robot* :rarm :end-coords) :copy-worldcoords) :translate rarm-translate-offset :local) :rotate rarm-z-rotate-offset :z :local)
            :parent (send (send *robot* :rarm :end-coords) :parent)))
     ;; handle for valve center
     (cond ((or (equal *robot-name* "JAXON") (equal *robot-name* "STARO"))
-           (setq larm-valve-translate-offset (float-vector -10.0 0.0 0.0))
-           (setq rarm-valve-translate-offset (float-vector -10.0 0.0 0.0))
-           (setq larm-valve-z-rotate-offset (deg2rad 0))
-           (setq rarm-valve-z-rotate-offset (deg2rad -0))
+           (setq larm-translate-offset (float-vector -10.0 0.0 0.0))
+           (setq rarm-translate-offset (float-vector -10.0 0.0 0.0))
+           (setq larm-z-rotate-offset (deg2rad 0))
+           (setq rarm-z-rotate-offset (deg2rad -0))
            )
           (t ;; (or (equal *robot-name* "HRP2JSKNT") (equal *robot-name* "HRP2JSKNTS"))
-           (setq larm-valve-translate-offset (float-vector 40.0 -15.0 0.0))
-           (setq rarm-valve-translate-offset (float-vector 40.0 15.0 0.0))
-           (setq larm-valve-z-rotate-offset (deg2rad -55))
-           (setq rarm-valve-z-rotate-offset (deg2rad 55))))
+           (setq larm-translate-offset (float-vector 40.0 -15.0 0.0))
+           (setq rarm-translate-offset (float-vector 40.0 15.0 0.0))
+           (setq larm-z-rotate-offset (deg2rad -55))
+           (setq rarm-z-rotate-offset (deg2rad 55))))
     (send *robot* :put :larm-valve-coords-for-center
           (make-cascoords
-           :coords (send (send (send (send *robot* :larm :end-coords) :copy-worldcoords) :translate larm-valve-translate-offset :local) :rotate larm-valve-z-rotate-offset :z :local)
+           :coords (send (send (send (send *robot* :larm :end-coords) :copy-worldcoords) :translate larm-translate-offset :local) :rotate larm-z-rotate-offset :z :local)
            :parent (send (send *robot* :larm :end-coords) :parent)))
     (send *robot* :put :rarm-valve-coords-for-center
           (make-cascoords
-           :coords (send (send (send (send *robot* :rarm :end-coords) :copy-worldcoords) :translate rarm-valve-translate-offset :local) :rotate rarm-valve-z-rotate-offset :z :local)
+           :coords (send (send (send (send *robot* :rarm :end-coords) :copy-worldcoords) :translate rarm-translate-offset :local) :rotate rarm-z-rotate-offset :z :local)
            :parent (send (send *robot* :rarm :end-coords) :parent)))
     )
   )
@@ -129,8 +129,10 @@
 
 (defun fullbody-inverse-kinematics-for-valve
   (tc mt ll &key (draw? nil))
-  (cond ((or (equal *robot-name* "JAXON") (equal *robot-name* "STARO"))
+  (cond ((equal *robot-name* "JAXON")
          (fullbody-inverse-kinematics-for-valve-for-jaxon tc mt ll :draw? draw?))
+        ((equal *robot-name* "STARO")
+         (fullbody-inverse-kinematics-for-valve-for-staro tc mt ll :draw? draw?))
         (t ;; (or (equal *robot-name* "HRP2JSKNT") (equal *robot-name* "HRP2JSKNTS"))
          (fullbody-inverse-kinematics-for-valve-for-hrp2 tc mt ll :draw? draw?))
         ))
@@ -179,6 +181,36 @@
                 :avoid-collision-joint-gain 0.8
                 :collision-avoidance-link-pair
                 (list (list (elt (send *robot* *valve-arm* :links) 2) (send *robot* :link "CHEST_LINK2")))
+                ))
+    (when (and ret (send *robot* :self-collision-check)) (setq ret nil))
+    ret)
+  )
+
+(defun fullbody-inverse-kinematics-for-valve-for-staro
+  (tc mt ll &key (draw? nil))
+  (let (ret)
+    (setq ret
+          (send *robot*
+                :fullbody-inverse-kinematics tc
+                :move-target mt :link-list ll
+                :target-centroid-pos (apply #'midpoint 0.5 (send *robot* :legs :end-coords :worldpos))
+                :translation-axis (list t t t)
+                :rotation-axis (list t t t)
+                :warnp (if draw? t nil)
+                :root-link-virtual-joint-weight #f(0.1 0.1 0.1 0.1 0.5 0.5)
+                :additional-weight-list
+                (list (list (send *robot* :torso :waist-y :child-link) 0)
+                      (list (send *robot* :torso :waist-p :child-link) 0))
+                :max (float-vector  500  200  25  10  20  10)
+                :min (float-vector  -500  -200  -200  -10  -20  -10)
+                :stop 50
+                :debug-view (if draw? :no-message nil)
+                :avoid-collision-distance 100
+                :avoid-collision-null-gain 5.0
+                :avoid-collision-joint-gain 3.0
+                :collision-avoidance-link-pair
+                (list (list (caddr (send *robot* :lleg :links))
+                            (car (last (send *robot* :larm :links)))))
                 ))
     (when (and ret (send *robot* :self-collision-check)) (setq ret nil))
     ret)
@@ -292,13 +324,6 @@
       (push-back (elt (elt *valve-ik-results* rotatable-point-idx) 3) angle-vector-ret-release)
       (setq rotatable-point-idx (mod (+ rotatable-point-idx 1) (length valve-rotatable-range)))
       )
-    ;; (dotimes (i (length valve-rotatable-range))
-    ;;   (when (= (elt valve-rotatable-range rotatable-point-idx) 0)
-    ;;     (return-from nil nil))
-    ;;   (push-back (elt (elt *valve-ik-results* rotatable-point-idx) 2) angle-vector-ret)
-    ;;   (push-back (elt (elt *valve-ik-results* rotatable-point-idx) 3) angle-vector-ret-release)
-    ;;   (setq rotatable-point-idx (mod (+ rotatable-point-idx 1) (length valve-rotatable-range)))
-    ;;   )
     (setq *valve-motion* (append angle-vector-ret (reverse angle-vector-ret-release)))
     *valve-motion*
     ))
@@ -326,7 +351,7 @@
          ))
   )
 
-(defun move-valve-with-stand-coords
+(defun move-robot-with-stand-coords-for-valve
   (stand-coords)
   (let* ((x-vec (send (send (send *valve* :worldcoords) :copy-worldcoords) :rotate-vector (float-vector 0 0 1)))
          (z-vec (float-vector 0 0 1))
@@ -368,14 +393,14 @@
     ;; revert arm, change stand position
     (when (and overwrite-stand-coords? (<= (get-rotatable-angle) rotatable-angle-thre))
       (when overwrite-arm-side? (setq *valve-arm* (get-opposite-arm *valve-arm*)))
-      (move-valve-with-stand-coords (get-valve-stand-coords :grasp-center? grasp-center?))
+      (move-robot-with-stand-coords-for-valve (get-valve-stand-coords :grasp-center? grasp-center?))
       (ros::ros-warn "change stand position to ~a for valve motion. (arm side is ~a.)~%" *valve-stand-coords* *valve-arm*)
       (get-valve-motion :grasp-center? grasp-center? :draw? draw?)
       )
     ;; change arm, change stand position
     (when (and overwrite-arm-side? overwrite-stand-coords? (<= (get-rotatable-angle) rotatable-angle-thre))
       (when overwrite-arm-side? (setq *valve-arm* (get-opposite-arm *valve-arm*)))
-      (move-valve-with-stand-coords (get-valve-stand-coords :grasp-center? grasp-center?))
+      (move-robot-with-stand-coords-for-valve (get-valve-stand-coords :grasp-center? grasp-center?))
       (ros::ros-warn "change arm side to ~a and stand position to ~a for valve motion.~%" *valve-arm* *valve-stand-coords*)
       (get-valve-motion :grasp-center? grasp-center? :draw? draw?)
       )
@@ -387,11 +412,18 @@
    &key (arm :rarm) (overwrite-arm-side? nil)
    (stand-coords nil) (overwrite-stand-coords? nil)
    (grasp-center? nil) (overwrite-grasp-mode? nil)
-   (real? t) (av-list nil))
+   (real? t) (test-mode? nil) (av-list nil))
   (let* ((rotate-num 3)
          (valve-motion-av-list
           (if av-list
-              av-list (get-valve-motion-full radius coords :arm arm :grasp-center? grasp-center? :stand-coords stand-coords :overwrite-stand-coords? overwrite-stand-coords? :overwrite-arm-side? overwrite-arm-side?)))
+              av-list
+            (get-valve-motion-full
+             radius coords
+             :valve-coords-system :body
+             :arm arm :overwrite-arm-side? overwrite-arm-side?
+             :stand-coords stand-coords :overwrite-stand-coords? overwrite-stand-coords?
+             :grasp-center? grasp-center? :draw-environment? test-mode?
+             )))
          (valve-motion-length (length valve-motion-av-list)))
     (when (not (= valve-motion-length 0))
       ;; reset-manip-pose
@@ -403,7 +435,8 @@
         (cond ((or (equal *robot-name* "JAXON") (equal *robot-name* "STARO"))
                (send *ri* :start-impedance :arms :moment-gain (float-vector 0 0 0) :k-p 300 :d-p 300))
               (t ;; (or (equal *robot-name* "HRP2JSKNT") (equal *robot-name* "HRP2JSKNTS"))
-               (send *ri* :start-impedance :arms :moment-gain (float-vector 0 0 0) :k-p 800 :d-p 400))))
+               (send *ri* :start-impedance :arms :moment-gain (float-vector 0 0 0) :k-p 800 :d-p 400)
+               )))
       ;; walk
       (when *valve-stand-coords*
         (let* ((pos (scale 0.001 (send *valve-stand-coords* :worldpos)))
@@ -447,9 +480,14 @@
    &key (arm :rarm) (overwrite-arm-side? nil)
    (stand-coords nil) (overwrite-stand-coords? nil)
    (grasp-center? nil) (overwrite-grasp-mode? nil)
-   (step-time 200) (update? t))
+   (step-time 200) (update? t) (test-mode? nil))
   (when update?
-    (get-valve-motion-full radius coords :arm arm :grasp-center? grasp-center? :stand-coords stand-coords :overwrite-stand-coords? overwrite-stand-coords? :overwrite-arm-side? overwrite-arm-side? :use-ri? nil))
+    (get-valve-motion-full
+     radius coords
+     :valve-coords-system :body :arm arm
+     :stand-coords stand-coords :grasp-center? grasp-center?
+     :overwrite-stand-coords? overwrite-stand-coords? :overwrite-arm-side? overwrite-arm-side?
+     :use-ri? (if test-mode? t nil)))
   (ros::ros-info "valve-stand-coords: ~a~%" *valve-stand-coords*)
   (ros::ros-info "valve-ik-results: ~a~%" *valve-ik-results*)
   (when *valve-stand-coords*

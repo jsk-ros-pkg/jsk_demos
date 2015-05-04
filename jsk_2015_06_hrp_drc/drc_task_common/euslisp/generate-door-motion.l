@@ -2,12 +2,28 @@
 (load "package://drc_task_common/euslisp/util.l")
 (load "package://drc_task_common/euslisp/test-drc-door-task.l")
 
+(defun generate-door-from-name
+  (door-name)
+  (cond ((equal door-name :drc-box2)
+         (make-drc-box2-door))
+        ((equal door-name :drc-test)
+         (make-drc-test-door-right))
+        ((equal door-name :drc-test-mirror)
+         (make-drc-test-door-left))
+        ((equal door-name :drc-sagami)
+         (make-drc-sagami-door))
+        ((equal door-name :drc-sagami-mirror)
+         (make-drc-sagami-door-mirror))
+        ))
+
 (defun set-door-environment
-  (&key (door-width 895) (handle-l/r :left)
+  (&key (door-name nil)
+        (door-width 895)
+        (handle-l/r :left)
         (door-knob-size (float-vector 60 110 20))
         (door-knob-pos (float-vector 0 800 845))
-        (door-coords (make-coords :pos (float-vector 650 -450 0) :rpy (list (deg2rad 15) 0 0)))
-        (door-coords-system :world)
+        (door-coords (make-coords))
+        (door-coords-system :origin-from-world)
         (stand-coords nil)
         (generate-ri? t) (draw? t) (use-ri? t)
         (arm :rarm)
@@ -23,29 +39,35 @@
   ;; attach handle to robot
   (attach-handle-to-robot-for-door)
   ;; generate door, attach handle to door
-  (let* ((door-handle-pos
-          (float-vector (* -0.8 (elt door-knob-size 0)) (+ (elt door-knob-pos 1) (* (if (equal handle-l/r :left) -0.5 0.5) (elt door-knob-size 1))) (elt door-knob-pos 2))))
-    (setq *door* (instance param-door :init door-width (elt door-knob-size 0) (elt door-knob-size 1) (elt door-knob-size 2)
-                           door-knob-pos
-                           door-handle-pos
-                           :handle-l/r handle-l/r))
-    (send *door* :put :handle-l/r handle-l/r)
-    )
+  (cond (door-name
+         (generate-door-from-name door-name)
+         )
+        (t
+         (let* ((door-handle-pos
+                 (float-vector (+ (elt door-knob-pos 0) (* -0.8 (elt door-knob-size 0)))
+                               (+ (elt door-knob-pos 1) (* (if (equal handle-l/r :left) -0.5 0.5) (elt door-knob-size 1)))
+                               (elt door-knob-pos 2))))
+           (setq *door* (instance param-door :init
+                                  door-width (elt door-knob-size 0) (elt door-knob-size 1) (elt door-knob-size 2)
+                                  door-knob-pos
+                                  door-handle-pos
+                                  :handle-l/r handle-l/r)))
+         ))
   ;; place door to door-coords
   (when door-coords
-    (cond ((equal door-coords-system :world)
-           (send *door* :newcoords door-coords)
-           )
-          (t ;; (equal door-coords-system :body)
+    (cond ((equal door-coords-system :knob-from-body)
            (let* (door-worldcoords)
              (cond (use-ri?
                     (send *robot* :angle-vector (send *ri* :state :potentio-vector)))
                    (t
                     (send *robot* :angle-vector (get-potentio-vector-from-joint-states))))
              (send *robot* :fix-leg-to-coords (make-coords))
+             ;; transfrom door-coords to become relative to world
              (setq door-worldcoords
-                   (send (send (send (send (send *robot* :body_lk) :copy-worldcoords) :transform door-coords :local)
-                               :rotate (deg2rad 90) :y) :rotate (deg2rad 180) :z))
+                   (send (send (send *robot* :body_lk) :copy-worldcoords) :transform door-coords :local))
+             ;; transfrom door-coords because the knob coords direction of eus model and recognitin result is different
+             (setq door-worldcoords
+                   (send (send door-worldcoords :rotate (deg2rad 90) :y) :rotate (deg2rad 180) :z))
              ;; fix door handle coords to become horizontal
              ;; :new-x => :new-yと:old-zと垂直
              ;; :new-y => #f(0 0 1)
@@ -55,9 +77,12 @@
                     (z-vec (v* x-vec y-vec)))
                (setq door-worldcoords
                      (make-coords :pos (send door-worldcoords :pos) :rot (transpose (matrix x-vec y-vec z-vec)))))
-             (send *door* :move-coords door-worldcoords (send *door* :handle :larm-knob-handle))
-             )
-           )))
+             (send *door* :move-coords door-worldcoords (send *door* :handle :knob-handle))
+             ))
+          (t ;; (equal door-coords-system :origin-from-world)
+           (send *door* :newcoords door-coords)
+           ))
+    )
   ;; set robot stand-coords
   (setq *door-stand-coords* (if stand-coords stand-coords (make-coords)))
   (send *robot* :fix-leg-to-coords *door-stand-coords*)
@@ -224,29 +249,31 @@
           (cond 
            ((equal push/pull :push)
             (list (list (float-vector -100 200 150) 0 0 0)
-                  (list (float-vector 0 50 100) 0 0 0)
-                  (list (float-vector 0 -25 50) 0 0 0)
-                  (list (float-vector 0 -25 50) 0 0 -25)
-                  (list (float-vector 0 -25 50) 0 0 -50)
-                  (list (float-vector 0 -25 50) 0 10 -50)
-                  (list (float-vector 0 -25 50) 0 15 -50)
-                  (list (float-vector 0 -25 50) 0 15 -25)
-                  (list (float-vector 0 -25 50) 0 15 0)
-                  (list (float-vector 0 0 50) 0 15 0)
-                  (list (float-vector 0 50 50) 0 15 0)
+                  (list (float-vector 0 50 50) 0 0 0)
+                  (list (float-vector 0 -25 -50) 0 0 0)
+                  (list (float-vector 0 -25 -50) 0 0 -25) ;; start grasp before this
+                  (list (float-vector 0 -25 -50) 0 0 -50)
+                  (list (float-vector 0 -25 -50) 0 10 -50)
+                  (list (float-vector 0 -25 -50) 0 15 -50)
+                  (list (float-vector 0 -25 -50) 0 15 -25)
+                  (list (float-vector 0 -25 -50) 0 15 0)
+                  (list (float-vector 0 50 50) 0 15 0) ;; stop grasp before this
+                  (list (float-vector 0 100 50) 0 15 0)
+                  (list (float-vector -100 100 50) 0 15 0)
                   ))
            ((equal push/pull :pull)
             (list (list (float-vector -100 200 150) 0 0 0)
-                  (list (float-vector 0 50 100) 0 0 0)
-                  (list (float-vector 0 -25 50) 0 0 0)
-                  (list (float-vector 0 -25 50) 0 0 -25)
-                  (list (float-vector 0 -25 50) 0 0 -50)
-                  (list (float-vector 0 -25 50) 0 -10 -50)
-                  (list (float-vector 0 -25 50) 0 -20 -50)
-                  (list (float-vector 0 -25 50) 0 -20 -25)
-                  (list (float-vector 0 -25 50) 0 -20 0)
-                  (list (float-vector 0 0 50) 0 -20 0)
-                  (list (float-vector 0 50 50) 0 -20 0)
+                  (list (float-vector 0 50 50) 0 0 0)
+                  (list (float-vector 0 -25 -50) 0 0 0)
+                  (list (float-vector 0 -25 -50) 0 0 -25) ;; start grasp before this
+                  (list (float-vector 0 -25 -50) 0 0 -50)
+                  (list (float-vector 0 -25 -50) 0 -10 -50)
+                  (list (float-vector 0 -25 -50) 0 -20 -50)
+                  (list (float-vector 0 -25 -50) 0 -20 -25)
+                  (list (float-vector 0 -25 -50) 0 -20 0)
+                  (list (float-vector 0 50 50) 0 -20 0) ;; stop grasp before this
+                  (list (float-vector 0 100 50) 0 -20 0)
+                  (list (float-vector -100 100 50) 0 -20 0)
                   ))
            ))
          )
@@ -269,7 +296,7 @@
          (setf (elt mt 0) (send *robot* :get (read-from-string (format nil "~a-door-coords" *door-arm*))))
          (setq ik-ret (fullbody-inverse-kinematics-for-door tc mt ll :draw? draw?))
          (when ik-ret
-           (setq ik-ret (send *robot* :look-at-target (send *door* :handle :larm-knob-handle))))
+           (setq ik-ret (send *robot* :look-at-target (send *door* :handle :knob-handle))))
          (push-back (list i (not (null ik-ret)) ik-ret) ik-results)
          (when (and (not try-all-ik?) (not ik-ret))
            (return-from nil nil))
@@ -370,16 +397,21 @@
   )
 
 (defun get-door-motion-full
-  (&key (door-width 895) (handle-l/r :left) (push/pull :push)
+  (&key (door-name nil)
+        (door-width 895)
+        (handle-l/r :left)
         (door-knob-size (float-vector 60 110 20))
         (door-knob-pos (float-vector 0 800 845))
-        (door-coords (make-coords :pos (float-vector 650 -450 0) :rpy (list (deg2rad 15) 0 0)))
-        (door-coords-system :world) (arm :rarm) (stand-coords nil)
-        (overwrite-stand-coords? nil) (overwrite-arm-side? nil) (draw? nil) (draw-environment? nil) (use-ri? t)
+        (door-coords (make-coords))
+        (door-coords-system :knob-from-body)
+        (arm :rarm) (push/pull :push)
+        (stand-coords nil)
+        (overwrite-stand-coords? nil) (overwrite-arm-side? nil)
+        (draw? nil) (draw-environment? nil) (use-ri? t)
         (robot-name "HRP2JSKNTS")
         )
   (set-door-environment
-   :door-width door-width :handle-l/r handle-l/r
+   :door-name door-name :door-width door-width :handle-l/r handle-l/r
    :door-knob-size door-knob-size :door-knob-pos door-knob-pos
    :door-coords door-coords :door-coords-system door-coords-system
    :stand-coords stand-coords :arm arm :draw? (or draw? draw-environment?)
@@ -394,45 +426,98 @@
   ;; revert arm, change stand position
   (when (and overwrite-stand-coords? (not *door-motion*))
     (when overwrite-arm-side? (setq *door-arm* (get-opposite-arm *door-arm*)))
-    (move-robot-with-stand-coords-for-door (get-door-stand-coords :handle-l/r handle-l/r :push/pull push/pull))
+    (move-robot-with-stand-coords-for-door (get-door-stand-coords :handle-l/r (send *door* :get :handle-l/r) :push/pull push/pull))
     (ros::ros-warn "change stand position to ~a for door motion. (arm side is ~a.)~%" *door-stand-coords* *door-arm*)
     (get-door-motion :push/pull push/pull :draw? draw?)
     )
   ;; change arm, change stand position
   (when (and overwrite-arm-side? overwrite-stand-coords? (not *door-motion*))
     (when overwrite-arm-side? (setq *door-arm* (get-opposite-arm *door-arm*)))
-    (move-robot-with-stand-coords-for-door (get-door-stand-coords :handle-l/r handle-l/r :push/pull push/pull))
+    (move-robot-with-stand-coords-for-door (get-door-stand-coords :handle-l/r (send *door* :get :handle-l/r) :push/pull push/pull))
     (ros::ros-warn "change arm side to ~a and stand position to ~a for door motion.~%" *door-arm* *door-stand-coords*)
     (get-door-motion :push/pull push/pull :draw? draw?)
     )
   *door-motion*)
 
 (defun send-door-motion
-  (knob-size coords &key (real? t))
-  (get-door-motion-full knob-size coords)
+  (&key (door-name nil)
+        (door-width 895)
+        (handle-l/r :left)
+        (door-knob-size (float-vector 60 110 20))
+        (door-knob-pos (float-vector 0 800 845))
+        (door-coords (make-coords :pos (float-vector 650 -450 0) :rpy (list (deg2rad 15) 0 0)))
+        (push/pull :push)
+        (arm :rarm) (overwrite-arm-side? nil)
+        (stand-coords nil) (overwrite-stand-coords? nil)
+        (real? t) (test-mode? nil) (av-list nil)
+        )
+  (let* ((door-motion-av-list
+          (if av-list
+              av-list
+            (get-door-motion-full
+             :door-name door-name :door-width door-width :handle-l/r handle-l/r :push/pull push/pull
+             :door-knob-size door-knob-size :door-knob-pos door-knob-pos
+             :door-coords door-coords :door-coords-system :knob-from-body :arm arm :overwrite-arm-side? overwrite-arm-side?
+             :stand-coords stand-coords :overwrite-stand-coords? overwrite-stand-coords?
+             :draw-environment? test-mode?))))
+    )
   ;; reset-manip-pose
+  (hand-start-grasp :real? real? :type :door-grasp-preshape)
   (send *robot* :reset-manip-pose)
   (unless (check-angle-vector-distance)
     (when real? (model2real :time 3000)))
+  (when real?
+    (cond ((or (equal *robot-name* "JAXON") (equal *robot-name* "STARO"))
+           (send *ri* :start-impedance :arms :moment-gain (float-vector 0 0 0) :k-p 300 :d-p 300))
+          (t ;; (or (equal *robot-name* "HRP2JSKNT") (equal *robot-name* "HRP2JSKNTS"))
+           (send *ri* :start-impedance :arms :k-p 200 :d-p 180 :m-p 5 :m-r 1 :d-r 15 :k-r 20)
+           )))
   ;; walk
   (when *door-stand-coords*
     (let* ((pos (scale 0.001 (send *door-stand-coords* :worldpos)))
-           (rpy (mapcar #'rad2deg (car (send *door-stand-coords* :rpy-angle)))))
-      (ros::ros-warn "go-pos to ~a ~a ~a for door~%" (elt pos 0) (elt pos 1) (elt rpy 0))
-      (when real? (send *ri* :go-pos (elt pos 0) (elt pos 1) (elt rpy 0)))
+           (rpy (mapcar #'rad2deg (car (send *door-stand-coords* :rpy-angle))))
+           (pos-thre 0.01)
+           (rpy-thre 1)
+           )
+      (when (or (> (abs (elt pos 0)) pos-thre) (> (abs (elt pos 1)) pos-thre) (> (abs (elt rpy 0)) rpy-thre))
+        (ros::ros-warn "go-pos to ~a ~a ~a for door~%" (elt pos 0) (elt pos 1) (elt rpy 0))
+        (when real? (send *ri* :go-pos (elt pos 0) (elt pos 1) (elt rpy 0)))
+        )
       ))
-  ;; set controller param for door
-  (setup-door-open-real)
-  ;; door motion
-  (test-door-open-drc-sagami-door :wait nil :draw nil)
-  ;; (test-door-open-drcbox2-door :walk-p nil :wait nil :draw nil)
-  (set-original-abc-st-param-from-door)
+  (dotimes (i (length *door-motion*))
+    (cond ((= i 3)
+           (hand-start-grasp :real? real? :type :door-grasp))
+          ((= i 9)
+           (hand-start-grasp :real? real? :type :door-grasp-preshape))
+          )
+    (send *ri* :state)
+    (warning-message 1 "(send *robot* :angle-vector ~a) ;; reference-vector ~a~%" (send *ri* :reference-vector) i)
+    (warning-message 1 "(send *robot* :angle-vector ~a) ;; potentio-vector ~a~%" (send *ri* :potentio-vector) i)
+    (send *robot* :angle-vector (elt *door-motion* i))
+    (when real? (model2real :time 3000))
+    )
+  (send *robot* :reset-manip-pose)
+  (when real? (model2real :time 5000))
   )
 
 (defun publish-door-motion
-  (&key knob-size coords (step-time 200) (update? t))
+  (&key (door-name nil)
+        (door-width 895)
+        (handle-l/r :left)
+        (door-knob-size (float-vector 60 110 20))
+        (door-knob-pos (float-vector 0 800 845))
+        (door-coords (make-coords :pos (float-vector 650 -450 0) :rpy (list (deg2rad 15) 0 0)))
+        (push/pull :push)
+        (arm :rarm) (overwrite-arm-side? nil)
+        (stand-coords nil) (overwrite-stand-coords? nil)
+        (step-time 200) (update? t) (test-mode? nil))
   (when update?
-    (get-door-motion-full knob-size coords :use-ri? nil :draw? nil))
+    (get-door-motion-full
+     :door-name door-name :door-width door-width :handle-l/r handle-l/r :push/pull push/pull
+     :door-knob-size door-knob-size :door-knob-pos door-knob-pos
+     :door-coords door-coords :door-coords-system :knob-from-body :arm arm :overwrite-arm-side? overwrite-arm-side?
+     :stand-coords stand-coords :overwrite-stand-coords? overwrite-stand-coords?
+     :use-ri? (if test-mode? t nil)))
   (ros::ros-info "door-stand-coords: ~a~%" *door-stand-coords*)
   (ros::ros-info "door-ik-results: ~a~%" *door-ik-results*)
   (when *door-stand-coords*
