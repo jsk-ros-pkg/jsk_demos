@@ -88,7 +88,7 @@
      (send self :set-impedance-for-handle limb)
      )
    (send self :open-hand limb)
-   (when sync-controller
+   (when (and sync-controller (not (send *ri* :simulation-modep)))
      (if (equal limb :larm)
          (send *ri* :sync-controller :larm-controller)
        (send *ri* :sync-controller :rarm-controller)
