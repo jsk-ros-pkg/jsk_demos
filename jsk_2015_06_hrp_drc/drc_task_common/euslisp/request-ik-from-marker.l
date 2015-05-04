@@ -236,6 +236,19 @@
            (send *obj* :assoc (make-cascoords :coords approach-coords :name :approach)))
          (send *obj* :put :type :torus)
          )
+        ((equal *obj-type* jsk_rviz_plugins::TransformableMarkerOperate::*MESH_RESOURCE*) ;; hand mesh
+         (setq *obj* (make-cube 100 100 100)) ;; dummy eus object instad of hand mesh
+         (let* ((hand-trans))
+           (setq hand-trans
+                 (send (send (send (send *robot* *ik-arm* :end-coords) :parent) :copy-worldcoords)
+                       :transformation (send (send *robot* *ik-arm* :end-coords) :copy-worldcoords)))
+           (send *obj* :assoc (make-cascoords :coords (make-coords) :name :origin))
+           ;; same with :origin
+           (send *obj* :assoc (make-cascoords :coords hand-trans :name :handle))
+           (send *obj* :assoc (make-cascoords :coords hand-trans :name :approach))
+           )
+         (send *obj* :put :type :hand-mesh)
+         )
         )
   (when *handle-reverse-flag*
     (send (find-if #'(lambda (x) (equal (send x :name) :handle)) (send *obj* :descendants)) :rotate pi :x))
@@ -499,7 +512,7 @@
     (unless (equal (elt *ik-mode-list* *ik-mode-index*) :none)
       (setq interpolate-mode :approach))
     ;; solve ik
-    (setq *ik-result* (send-ik-request :interpolate-mode interpolate-mode))
+    (setq *ik-result* (send-ik-request :interpolate-mode interpolate-mode :rotation-axis (if (equal (send *obj* :get :type) :hand-mesh) (list t t t) (list :z t t))))
     ;(if *pub-grasp-pose-feedback-flag* (pub-grasp-pose-feedback))
     (cond (*ik-result*
            (send-joint-states-to-marker))
@@ -742,7 +755,10 @@
             ((equal (send *obj* :get :type) :cylinder)
              (setq frame-id "cylinder1"))
             ((equal (send *obj* :get :type) :torus)
-             (setq frame-id "torus1")))
+             (setq frame-id "torus1"))
+            ((equal (send *obj* :get :type) :hand-mesh)
+             (setq frame-id "hand1"))
+            )
       (publish-object-handle :frame-id frame-id)
       (publish-object-approach :frame-id frame-id)
       ))
