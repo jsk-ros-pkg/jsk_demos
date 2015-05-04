@@ -541,7 +541,7 @@
      (when (and real reach-until-touch approach-result)
        (send *ri* :reach-until-touch limb
              (send (send robot limb :end-coords :copy-worldcoords) :rotate-vector #f(0 0 -1))
-             :rotation-axis :z :time-step 500 :max-dist 50
+             :rotation-axis :z :time-step 1000 :max-dist 50 :dist-step 5
              ) ;; todo: reach-until-touch uses copy-object
        (send *ri* :state) ;; update 
        (send robot limb :angle-vector (send *ri* :robot limb :angle-vector)) ;; reflect reach-until-touch result
@@ -580,7 +580,7 @@
      (when (and real reach-until-touch approach-result)
        (send *ri* :reach-until-touch limb
              (send (send robot limb :end-coords :copy-worldcoords) :rotate-vector #f(0 0 -1))
-             :rotation-axis :z :time-step 500 :max-dist 50
+             :rotation-axis :z :time-step 1000 :max-dist 50 :dist-step 5
              ) ;; todo: reach-until-touch uses copy-object
        (send *ri* :state) ;; update 
        (send robot limb :angle-vector (send *ri* :robot limb :angle-vector)) ;; reflect reach-until-touch result
@@ -728,19 +728,20 @@
          (when real 
            (send *ri* :angle-vector (send robot :angle-vector) time)
            (send *ri* :wait-interpolation)
-           ;; reach-until-touch
-           (when reach-until-touch
-             (send *ri* :reach-until-touch limb
-                   (send (send robot limb :end-coords :copy-worldcoords) :rotate-vector #f(0 0 -1))
-                   :rotation-axis :z :time-step 500 :max-dist 50
-                   ) ;; todo: reach-until-touch uses copy-object
-             (send *ri* :state) ;; update 
-             (send robot limb :angle-vector (send *ri* :robot limb :angle-vector)) ;; reflect reach-until-touch result
-             )
            ;; impedance
            (when start-impedance
              (send self :set-impedance-for-support limb)
              )
+           ;; reach-until-touch
+           (when reach-until-touch
+             (send *ri* :reach-until-touch limb
+                   (send (send robot limb :end-coords :copy-worldcoords) :rotate-vector #f(0 0 -1))
+                   :rotation-axis :z :time-step 1000 :max-dist 50 :dist-step 5
+                   ) ;; todo: reach-until-touch uses copy-object
+             (send *ri* :state) ;; update 
+             (send robot limb :angle-vector (send *ri* :robot limb :angle-vector)) ;; reflect reach-until-touch result
+             )
+           ;; ref-force
            (when start-ref-force
              (send self :set-ref-force-for-support limb)
              )
