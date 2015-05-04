@@ -37,7 +37,7 @@ If you want to use atlas with robot driving controller in euslisp, execute follo
 $ rosrun gazebo_drive_simulator start_drc_practice_task_1.sh false
 $ roslaunch drc_task_common vehicle.launch ROBOT:=<robotname>
 ```
-<robotname> does not matter in euslisp mode.
+robotname does not matter in euslisp mode.
 
 If you want to use staro, execute following command:
 ```bash
