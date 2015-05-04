@@ -1,6 +1,8 @@
 ;; utility function
 (ros::roseus-add-msgs "std_msgs")
 (ros::roseus-add-msgs "smach_msgs")
+(ros::roseus-add-srvs "jsk_topic_tools")
+
 (defun ros-rgba (r g b a)
   (let ((color (instance std_msgs::ColorRGBA :init)))
     (send color :r (/ r 255.0))
@@ -28,6 +30,10 @@
 
 (defun call-empty-service (srv)
   (let ((req (instance std_srvs::EmptyRequest :init)))
+    (ros::service-call srv req)))
+(defun call-request-duration (srv time)
+  (let ((req (instance jsk_topic_tools::PassthroughDurationRequest :init)))
+    (send req :duration (ros::time time))
     (ros::service-call srv req)))
 
 ;; topic <---> compressed message conversion
@@ -60,8 +66,12 @@
     ret))
 
 (defun float-vector-to-coords (fv)
-  (make-coords :pos (subseq fv 0 3)
-               :rpy (subseq fv 3 6)))
+  (cond ((>= (length fv) 6)
+         (make-coords :pos (subseq fv 0 3)
+                      :rpy (subseq fv 3 6)))
+        (t
+         nil))
+  )
 
 (defun pos-to-float-vector (pos length)
   (let ((ret (instantiate float-vector length)))
@@ -118,6 +128,28 @@
                     (make-list (- length 4) :initial-element 0))
             integer-vector)))
 
+(defun compute-centroid-of-polygon-stamped (msg)
+  "return geometry_msgs::PointStamped"
+  (let ((output (instance geometry_msgs::PointStamped :init)))
+    (send output :header (send msg :header))
+    (let ((sum (float-vector 0 0 0))
+          (point-num (length (send msg :polygon :points))))
+      (dotimes (i point-num)
+        (let ((p (elt (send msg :polygon :points) i)))
+          (setq sum (v+ sum (float-vector (send p :x) (send p :y) (send p :z))))))
+      (let ((centroid (scale (/ 1.0 point-num) sum)))
+        (send output :point :x (elt centroid 0))
+        (send output :point :y (elt centroid 1))
+        (send output :point :z (elt centroid 2)))
+      output)))
+
+(defun pose-stamped-to-point-stamped (msg)
+  (let ((point-stamped (instance geometry_msgs::PointStamped :init)))
+    (send point-stamped :header (send msg :header))
+    (send point-stamped :point :x (send msg :pose :position :x))
+    (send point-stamped :point :y (send msg :pose :position :y))
+    (send point-stamped :point :z (send msg :pose :position :z))
+    point-stamped))
 
 (defun integer-vector-to-rect-polygon-stamped (msg)
   (let ((x1 (elt (send msg :image_roi_info) 0))
@@ -254,6 +286,19 @@
         (radius (elt params 6))
         (height (elt params 7)))
     (list coords radius height)))
+
+(defun valve-params-to-float-vector             
+  (valve-params valve-grasp-mode length)
+  (let (ret)
+    (setq ret (torus-to-float-vector (elt valve-params 0) (elt valve-params 1) length))
+    (setf (elt ret 7) valve-grasp-mode)
+    ret))
+
+(defun float-vector-to-valve-params
+  (params)
+  (let ((ret (float-vector-to-torus params)))
+    (append ret (list (elt params 7)))
+    ))
 
 ;; message handler
 (defclass narrowband-message-handler

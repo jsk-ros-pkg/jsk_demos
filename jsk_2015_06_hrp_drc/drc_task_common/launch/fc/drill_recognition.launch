@@ -25,7 +25,9 @@
       <remap from="~input" to="/multisense/left/image_rect_color/screenrectangle" if="$(arg STAND_ALONE)"/>
       <remap from="~input/camera_info" to="$(arg INPUT_CAMERA_INFO)" />
     </node>
-    
+    <node pkg="jsk_topic_tools" type="passthrough" name="passthrough">
+      <remap from="~input" to="$(arg INPUT_POINT_CLOUD)" />
+    </node>
     <!-- <node pkg="jsk_perception" type="rect_to_mask_image" -->
     <!--     name="rect_to_mask_image" output="screen"> -->
     <!--   <remap from="~input" to="input_rect" /> -->
@@ -33,7 +35,7 @@
     <!-- </node> -->
     <node pkg="jsk_pcl_ros" type="supervoxel_segmentation" name="supervoxel_segmentation"
           output="screen">
-      <remap from="~input" to="$(arg INPUT_POINT_CLOUD)" />
+      <remap from="~input" to="passthrough/output" />
     </node>
     
     <node pkg="nodelet" type="nodelet" name="supervoxel_normal"

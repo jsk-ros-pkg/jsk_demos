@@ -17,6 +17,23 @@
      )
    (send-super :init :robot *hrp2jsknts* :car tmp-car :real tmp-real :grasp-arm grasp-arm :grasp-point grasp-point)
    )
+  (:open-hand
+   (&optional (limb (send self :grasp-arm)))
+   (when real
+     (send robot :hand limb :hook-pose)
+     (send *ri* :hand-angle-vector (send robot :hand-angle-vector) 1000)
+     (send *ri* :wait-interpolation)
+     )
+   )
+  (:close-hand
+   (&optional (limb (send self :grasp-arm)))
+   (when real
+     ;; (send robot :hand limb :close-pose)
+     (send robot :hand limb :angle-vector #f(65.0 0.0 0.0 0.0 10.0 90.0)) ;; do not use index finger
+     (send *ri* :hand-angle-vector (send robot :hand-angle-vector) 1000)
+     (send *ri* :wait-interpolation)
+     )
+   )
   )
 
 ;; (setq *motion* (instance hrp2jsknts-driving-motion-on-polaris-xp900 :init :real nil))

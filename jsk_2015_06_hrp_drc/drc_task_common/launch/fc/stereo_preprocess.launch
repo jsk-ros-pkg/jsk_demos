@@ -19,7 +19,12 @@
       target_frame_id: ground
     </rosparam>
   </node>
+  <node pkg="nodelet" type="nodelet" args="load jsk_topic_tools/Relay preprocessing_manager"
+        name="stereo_downsampled_ground_cloud">
+    <remap from="~input" to="stereo_ground_cloud/output" />
+  </node>
   <node pkg="nodelet" type="nodelet" args="load pcl/VoxelGrid preprocessing_manager"
+        if="false"
         name="stereo_downsampled_ground_cloud">
     <remap from="~input" to="stereo_ground_cloud/output" />
     <rosparam>

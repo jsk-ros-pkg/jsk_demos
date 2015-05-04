@@ -12,6 +12,7 @@
 (ros::roseus-add-srvs "jsk_interactive_marker")
 (ros::roseus-add-msgs "jsk_rviz_plugins")
 (ros::roseus-add-srvs "jsk_rviz_plugins")
+(ros::roseus-add-srvs "drc_task_common")
 ;;(ros::load-ros-manifest "drc_task_common")
 (load "package://drc_task_common/euslisp/util.l")
 (load "package://drc_task_common/euslisp/state-machine.l")
@@ -38,9 +39,12 @@
                 hose-connect-params ;; (list coords)
                 drill-grasp-params
                 drill-put-params
+                drill-wall-params
                 drill-wall-target-coords ;; list of coords
                 drill-button-params ;; (list coords)
                 foreground-bacground-sync-obj
+                arm-mode ;; one of (:rarm-only :rarm-preferred :larm-preferred :larm-only)
+                valve-grasp-mode ;; one of (:edge-grasp-only :edge-grasp-preferred :center-grasp-preferred :center-grasp-only)
                 ;; For driving task
                 latest-handle-angle
                 latest-accell-angle
@@ -107,6 +111,8 @@
     (setq smachine (make-ocs-state-machine))
     (send smachine :register-initial-hook self :initial-callback)
     (send smachine :go-to :initial) ;; force to move to initial state
+    (setq arm-mode :rarm-preferred)
+    (setq valve-grasp-mode :edge-grasp-preferred)
     (send self :show-text "initialized" :success)
     self)
   (:report-callback (msg)
@@ -534,11 +540,29 @@
     ;; send valve params to fc
     (let ((msg (instance drc_com_common::OCS2FCSmall :init)))
       (send msg :type drc_com_common::OCS2FCSmall::*VALVE_EXEC*)
-      (send msg :float_params
-            (torus-to-float-vector 
-             (car valve-params) (cadr valve-params)
-             (length (send msg :float_params)))
+      (cond ((not (boundp '*valve-arm*))
+             (send msg :arm_side drc_com_common::OCS2FCSmall::*UNDECIDED*))
+            ((equal *valve-arm* :larm)
+             (send msg :arm_side drc_com_common::OCS2FCSmall::*LARM*))
+            ((equal *valve-arm* :rarm)
+             (send msg :arm_side drc_com_common::OCS2FCSmall::*RARM*))
+            (t
+             (send msg :arm_side drc_com_common::OCS2FCSmall::*UNDECIDED*))
             )
+      (let (valve-grasp-mode-idx)
+        (cond ((not (boundp '*valve-grasp-mode*))
+               (setq valve-grasp-mode-idx drc_com_common::OCS2FCSmall::*UNDECIDED*))
+              ((equal *valve-grasp-mode* :center-grasp)
+               (setq valve-grasp-mode-idx drc_com_common::OCS2FCSmall::*VALVE_CENTER_GRASP*))
+              ((equal *valve-grasp-mode* :edge-grasp)
+               (setq valve-grasp-mode-idx drc_com_common::OCS2FCSmall::*VALVE_EDGE_GRASP*))
+              (t
+               (setq valve-grasp-mode-idx drc_com_common::OCS2FCSmall::*UNDECIDED*))
+              )
+        (send msg :float_params
+              (valve-params-to-float-vector valve-params valve-grasp-mode-idx (length (send msg :float_params)))))
+      (send msg :stand_coords
+            (coords-to-float-vector (get-robot-model-current-pos) (length (send msg :stand_coords))))
       (send self :send-to-fc msg)
       (send smachine :go-to :executing-valve)))
   (:exec-door-button-callback ()
@@ -606,6 +630,17 @@
     (let ((msg (instance drc_com_common::OCS2FCSmall :init)))
       (send msg :type drc_com_common::OCS2FCSmall::*DRILL_GRASP_EXEC*)
       (send msg :float_params (coords-to-float-vector (elt drill-grasp-params 0) (length (send msg :float_params))))
+      (send msg :stand_coords
+            (coords-to-float-vector (get-robot-model-current-pos) (length (send msg :stand_coords))))
+      (cond ((not (boundp '*drill-main-arm*))
+             (send msg :arm_side drc_com_common::OCS2FCSmall::*UNDECIDED*))
+            ((equal *drill-main-arm* :larm)
+             (send msg :arm_side drc_com_common::OCS2FCSmall::*LARM*))
+            ((equal *drill-main-arm* :rarm)
+             (send msg :arm_side drc_com_common::OCS2FCSmall::*RARM*))
+            (t
+             (send msg :arm_side drc_com_common::OCS2FCSmall::*UNDECIDED*))
+            )
       (send self :send-to-fc msg)
       (send smachine :go-to :executing-drill-grasp)))
   (:exec-drill-put-button-callback ()
@@ -617,15 +652,21 @@
     (let ((msg (instance drc_com_common::OCS2FCSmall :init)))
       (send msg :type drc_com_common::OCS2FCSmall::*DRILL_PUT_EXEC*)
       (send msg :float_params (coords-to-float-vector (elt drill-put-params 0) (length (send msg :float_params))))
+      (send msg :stand_coords
+            (coords-to-float-vector (get-robot-model-current-pos) (length (send msg :stand_coords))))
       (send self :send-to-fc msg)
       (send smachine :go-to :executing-drill-put)))
   (:exec-drill-wall-button-callback ()
     (send self :show-text "Execute drill-wall motion" :execute)
     ;; do something magical!!
     ;; send drill-wall params to fc
+    (setq drill-wall-params
+          (list (get-primitive-marker-pose :frame-id "BODY")))
     (let ((msg (instance drc_com_common::OCS2FCSmall :init)))
       (send msg :type drc_com_common::OCS2FCSmall::*DRILL_WALL_EXEC*)
-      (send msg :float_params (coords-set-to-float-vector drill-wall-target-coords (length (send msg :float_params))))
+      (send msg :float_params (coords-set-to-float-vector (get-coords-list-with-center (elt drill-wall-params 0) drill-wall-target-coords) (length (send msg :float_params))))
+      (send msg :stand_coords
+            (coords-to-float-vector (get-robot-model-current-pos) (length (send msg :stand_coords))))
       (send self :send-to-fc msg)
       (send smachine :go-to :executing-drill-wall)))
   (:exec-drill-button-button-callback ()
@@ -699,7 +740,11 @@
          ;; store result
          (setq valve-params (list coords radius))
          ;; publish motion to robot model on rviz
-         (publish-valve-motion :radius (cadr valve-params) :coords (car valve-params) :update? t)
+         (publish-valve-motion (cadr valve-params) (car valve-params)
+                               :arm (send self :get-arm-side) :overwrite-arm-side? (send self :is-arm-overwrite)
+                               :stand-coords (make-coords) :overwrite-stand-coords? t
+                               :grasp-center? (send self :is-valve-grasp-center) :overwrite-grasp-mode? (send self :is-valve-grasp-overwrite)
+                               :update? t)
          ))
       (send smachine :go-to :selecting-exec-for-valve)))
   (:door-recognition-finished-callback (msg)
@@ -809,7 +854,7 @@
         ;; (apply-primitive-dimensions-to-midi-device)
         (move-robot-model-to-current-pos)
         ;; publish motion to robot model on rviz
-	(publish-drill-grasp-motion :coords (elt drill-grasp-params 0) :update? t) ;todo drill-type
+	(publish-drill-grasp-motion :coords (elt drill-grasp-params 0) :update? t :arm (send self :get-arm-side) :stand-coords (make-coords) :overwrite-stand-coords? t) ;todo drill-type
         (send smachine :go-to :selecting-exec-for-drill-grasp))
       ))
   (:drill-put-recognition-finished-callback (msg)
@@ -829,18 +874,28 @@
         (apply-primitive-dimensions-to-midi-device)
         (move-robot-model-to-current-pos)
         ;; publish motion to robot model on rviz
-	(publish-drill-put-motion :coords (elt drill-put-params 0) :update? t)
+	(publish-drill-put-motion :coords (elt drill-put-params 0) :update? t :stand-coords (make-coords) :overwrite-stand-coords? t)
         (send smachine :go-to :selecting-exec-for-drill-put))
       ))
   (:drill-wall-recognition-finished-callback (msg)
     (when (eq (send smachine :state) :recognizing-drill-wall)
       (let ((params (send msg :params)))
-        (let ((coords-set (float-vector-to-coords-set params)))
+        (let ((coords-set (float-vector-to-coords-set params)) center-coords)
 	  (send self :show-text 
 		(format nil "Recognize wall coords") :recognize)
           (publish-coords-list coords-set "BODY")
-          (setq drill-wall-target-coords coords-set)
-          (publish-drill-wall-motion :coords-list coords-set :update? t)
+          ;; marker 
+          (erase-all-primitive-marker)
+          (insert-primitive-marker :shape-type jsk_rviz_plugins::TransformableMarkerOperate::*CYLINDER* :name "cylinder1" :description "")
+          (set-primitive-marker-dimensions :radius 300 :z 30) ;; show plane as circle
+          (setq center-coords (get-center-coords coords-set))
+          (set-primitive-marker-pose center-coords "BODY")
+          (set-primitive-marker-color :r 1.0 :g 1.0 :b 0.0 :a 0.6)
+          (apply-primitive-dimensions-to-midi-device)
+          (move-robot-model-to-current-pos)
+          ;; end marker
+          (setq drill-wall-target-coords (get-relative-coords-list center-coords coords-set))
+          (publish-drill-wall-motion :coords-list coords-set :update? t :stand-coords (make-coords) :overwrite-stand-coords? t)
           (send smachine :go-to :selecting-exec-for-drill-wall)))))
   (:drill-button-recognition-finished-callback (msg)
     (when (eq (send smachine :state) :recognizing-drill-button-pose)
@@ -938,13 +993,18 @@
 ;; reflesh callback ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defmethod ocs-executive-app
   (:reflesh-button-callback (req)
+    (send self :show-text "Start to replay robot motion")
     (cond ((eq (send smachine :state) :selecting-exec-for-valve)
            ;; update latest valve params
            (setq valve-params
                  (list (get-primitive-marker-pose :frame-id "BODY")
                        (elt (get-primitive-marker-dimensions) 3)))
            ;; publish valve motion to robot model on rviz
-           (publish-valve-motion :radius (cadr valve-params) :coords (car valve-params) :update? t))
+           (publish-valve-motion (cadr valve-params) (car valve-params)
+                                 :arm (send self :get-arm-side) :overwrite-arm-side? (send self :is-arm-overwrite)
+                                 :stand-coords (get-robot-model-current-pos) :overwrite-stand-coords? nil
+                                 :grasp-center? (send self :is-valve-grasp-center) :overwrite-grasp-mode? (send self :is-valve-grasp-overwrite)
+                                 :update? t))
           ((eq (send smachine :state) :selecting-exec-for-debri)
            ;; update latest debri params
            (let* ((dim (get-primitive-marker-dimensions)))
@@ -971,14 +1031,14 @@
            (setq drill-grasp-params
                  (list (get-primitive-marker-pose :frame-id "BODY")))
            ;; publish dirll motion to robot model on rviz
-           (publish-drill-grasp-motion :coords (elt drill-grasp-params 0) :update? t) ;;drill-type
+           (publish-drill-grasp-motion :coords (elt drill-grasp-params 0) :update? t :arm (send self :get-arm-side) :stand-coords (get-robot-model-current-pos) :overwrite-stand-coords? nil) ;;drill-type
            )
           ((eq (send smachine :state) :selecting-exec-for-drill-put)
            ;; update latest drill-put params
            (setq drill-put-params
                  (list (get-primitive-marker-pose :frame-id "BODY")))
            ;; publish dirll motion to robot model on rviz
-           (publish-drill-put-motion :coords (elt drill-put-params 0) :update? t)
+           (publish-drill-put-motion :coords (elt drill-put-params 0) :update? t :stand-coords (get-robot-model-current-pos) :overwrite-stand-coords? nil)
            )
           ((eq (send smachine :state) :selecting-exec-for-drill-button)
            ;; update latest drill-button params
@@ -989,10 +1049,10 @@
            )
           ((eq (send smachine :state) :selecting-exec-for-drill-wall)
            ;; update latest drill-button params
-           ;; (setq drill-wall-params
-           ;;       (list (get-primitive-marker-pose :frame-id "BODY")))
+           (setq drill-wall-params
+                  (list (get-primitive-marker-pose :frame-id "BODY")))
            ;; publish dirll motion to robot model on rviz
-           (publish-drill-wall-motion :coords-list drill-wall-target-coords :update? t)
+           (publish-drill-wall-motion :coords-list (get-coords-list-with-center (elt drill-wall-params 0) drill-wall-target-coords) :update? t :stand-coords (get-robot-model-current-pos) :overwrite-stand-coords? nil)
            )
           ((eq (send smachine :state) :selecting-exec-for-door)
            ;; update latest door params
@@ -1003,6 +1063,7 @@
            (publish-door-motion :coords (elt door-params 0) :knob-size (elt door-params 1) :update? t)
            (send smachine :go-to :selecting-exec-for-door))
           )
+    (send self :show-text "Finish to replay robot motion")
     (send req :response)
     )
   )
@@ -1062,15 +1123,15 @@
      ;; ((eq (send smachine :state) :selecting-region-for-drill-wall)
      ;;  (send smachine :go-to! :selecting-exec-for-drill-wall)) ;; because of not using interactive-marker
      ((eq (send smachine :state) :selecting-region-for-drill-button)
-      (send *robot* :angle-vector (get-potentio-vector-from-joint-states))
-      (send *robot* :fix-leg-to-coords (make-coords))
       ;; todo drill-type
-      (if (not (boundp '*drill))
+      (if (not (boundp '*drill*))
 	  (if t
 	      (set-drill-environment :drill-type :takenoko)
 	    (set-drill-environment :drill-type :gun)
 	    )
 	)
+      (send *robot* :angle-vector (get-potentio-vector-from-joint-states))
+      (send *robot* :fix-leg-to-coords (make-coords))
       (set-drill-default-coords)
       (let ((coords (send (send (send (send *robot* :body_lk) :copy-worldcoords) :inverse-transformation) :transform (send *drill* :copy-worldcoords))))
               (send self :show-text 
@@ -1106,6 +1167,22 @@
      (send self :send-to-fc msg))
    (send req :response)
    )
+  (:set-pitch-head-angle-callback (req)
+    (let ((msg (instance drc_com_common::OCS2FCSmall :init)))
+      (send msg :type drc_com_common::OCS2FCSmall::*LOOK_AT_PITCH_ANGLE*)
+      (setf (elt (send msg :float_params) 0) (rad2deg (send req :value)))
+      (send self :show-text "Moving head pitch angle")
+      (send self :send-to-fc msg)
+      (send smachine :go-to! :executing-look-at)
+      (send req :response)))
+  (:set-yaw-head-angle-callback (req)
+    (let ((msg (instance drc_com_common::OCS2FCSmall :init)))
+      (send msg :type drc_com_common::OCS2FCSmall::*LOOK_AT_YAW_ANGLE*)
+      (setf (elt (send msg :float_params) 0) (rad2deg (send req :value)))
+      (send self :show-text "Moving head yaw angle")
+      (send self :send-to-fc msg)
+      (send smachine :go-to! :executing-look-at)
+      (send req :response)))
   (:change-state-before-exec
     ()
     (cond
@@ -1120,6 +1197,75 @@
      ((eq (send smachine :state) :executing-drill-button) (send smachine :go-to :selecting-exec-for-drill-button))
      )
     )
+  )
+
+;; select arm
+(defmethod ocs-executive-app
+  (:larm-only-checked-callback
+   (req)
+   (send self :show-text "larm only is selected" :success)
+   (setq arm-mode :larm-only)
+   (send req :response)
+   )
+  (:larm-preferred-checked-callback
+   (req)
+   (send self :show-text "larm preferred is selected" :success)
+   (setq arm-mode :larm-preferred)
+   (send req :response)
+   )
+  (:rarm-preferred-checked-callback
+   (req)
+   (send self :show-text "rarm preferred is selected" :success)
+   (setq arm-mode :rarm-preferred)
+   (send req :response)
+   )
+  (:rarm-only-checked-callback
+   (req)
+   (send self :show-text "rarm only is selected" :success)
+   (setq arm-mode :rarm-only)
+   (send req :response)
+   )
+  (:is-arm-overwrite
+   ()
+   (or (equal arm-mode :larm-preferred) (equal arm-mode :rarm-preferred)))
+  (:get-arm-side
+   ()
+   (cond ((or (equal arm-mode :larm-preferred) (equal arm-mode :larm-only)) :larm)
+         ((or (equal arm-mode :rarm-preferred) (equal arm-mode :rarm-only)) :rarm)))
+  )
+
+;; optional button
+(defmethod ocs-executive-app
+  (:valve-edge-grasp-only-callback
+   (req)
+   (setf valve-grasp-mode :edge-grasp-only)
+   (send self :show-text "valve edge grasp only" :success)
+   (send req :response)
+   )
+  (:valve-edge-grasp-preferred-callback
+   (req)
+   (setf valve-grasp-mode :edge-grasp-preferred)
+   (send self :show-text "valve edge grasp preferred" :success)
+   (send req :response)
+   )
+  (:valve-center-grasp-preferred-callback
+   (req)
+   (setf valve-grasp-mode :center-grasp-preferred)
+   (send self :show-text "valve center grasp preferred" :success)
+   (send req :response)
+   )
+  (:valve-center-grasp-only-callback
+   (req)
+   (setf valve-grasp-mode :center-grasp-only)
+   (send self :show-text "valve center grasp only" :success)
+   (send req :response)
+   )
+  (:is-valve-grasp-center
+   ()
+   (or (equal valve-grasp-mode :center-grasp-only) (equal valve-grasp-mode :center-grasp-preferred)))
+  (:is-valve-grasp-overwrite
+   ()
+   (or (equal valve-grasp-mode :edge-grasp-preferred) (equal valve-grasp-mode :center-grasp-preferred)))
   )
 
 (defmethod ocs-executive-app
@@ -1158,6 +1304,7 @@
         (setq latest-brake-angle nil))
       (send self :send-to-fc msg)))
   )
+
 
 ;; generate *robot*
 (setq *robot-name* (string-upcase (unix::getenv "ROBOT")))
@@ -1208,6 +1355,16 @@
 (ros::advertise-service "skip_recog" std_srvs::Empty #'send *app* :skip-recog)
 (ros::advertise-service "enable_head_overwrite" std_srvs::Empty #'send *app* :enable-head-overwrite)
 (ros::advertise-service "disable_head_overwrite" std_srvs::Empty #'send *app* :disable-head-overwrite)
+(ros::advertise-service "set_pitch_angle" drc_task_common::SetValue #'send *app* :set-pitch-head-angle-callback)
+(ros::advertise-service "set_yaw_angle" drc_task_common::SetValue #'send *app* :set-yaw-head-angle-callback)
+(ros::advertise-service "larm_only_checked" std_srvs::Empty #'send *app* :larm-only-checked-callback)
+(ros::advertise-service "larm_preferred_checked" std_srvs::Empty #'send *app* :larm-preferred-checked-callback)
+(ros::advertise-service "rarm_preferred_checked" std_srvs::Empty #'send *app* :rarm-preferred-checked-callback)
+(ros::advertise-service "rarm_only_checked" std_srvs::Empty #'send *app* :rarm-only-checked-callback)
+(ros::advertise-service "valve_edge_grasp_only" std_srvs::Empty #'send *app* :valve-edge-grasp-only-callback)
+(ros::advertise-service "valve_edge_grasp_preferred" std_srvs::Empty #'send *app* :valve-edge-grasp-preferred-callback)
+(ros::advertise-service "valve_center_grasp_preferred" std_srvs::Empty #'send *app* :valve-center-grasp-preferred-callback)
+(ros::advertise-service "valve_center_grasp_only" std_srvs::Empty #'send *app* :valve-center-grasp-only-callback)
 
 ;; Drive joystick controller topics
 (ros::subscribe "/ocs/drive/operation/handle_cmd" std_msgs::Float64 #'send *app* :drive-handle-angle-callback)

@@ -49,6 +49,8 @@
   (ros::advertise-service "/dissoc_object_to_robot" std_srvs::Empty #'dissoc-object-to-robot)
   (ros::advertise-service "/set_object_mode_next" std_srvs::Empty #'set-obj-mode-next)
   (ros::advertise-service "/set_ik_mode_next" std_srvs::Empty #'set-ik-mode-next)
+  (ros::advertise-service "/get_ik_arm" drc_task_common::GetIKArm #'get-ik-arm)
+  (ros::advertise-service "/get_ik_arm_pose" drc_task_common::GetIKArmPose #'get-ik-arm-pose)
   (ros::advertise (format nil "~a~a" *ns* "/set_pose") geometry_msgs::PoseStamped 1)
   (ros::advertise "obj_state_text" jsk_rviz_plugins::OverlayText 1)
   ;; object
@@ -234,6 +236,19 @@
            (send *obj* :assoc (make-cascoords :coords approach-coords :name :approach)))
          (send *obj* :put :type :torus)
          )
+        ((equal *obj-type* jsk_rviz_plugins::TransformableMarkerOperate::*MESH_RESOURCE*) ;; hand mesh
+         (setq *obj* (make-cube 100 100 100)) ;; dummy eus object instad of hand mesh
+         (let* ((hand-trans))
+           (setq hand-trans
+                 (send (send (send (send *robot* *ik-arm* :end-coords) :parent) :copy-worldcoords)
+                       :transformation (send (send *robot* *ik-arm* :end-coords) :copy-worldcoords)))
+           (send *obj* :assoc (make-cascoords :coords (make-coords) :name :origin))
+           ;; same with :origin
+           (send *obj* :assoc (make-cascoords :coords hand-trans :name :handle))
+           (send *obj* :assoc (make-cascoords :coords hand-trans :name :approach))
+           )
+         (send *obj* :put :type :hand-mesh)
+         )
         )
   (when *handle-reverse-flag*
     (send (find-if #'(lambda (x) (equal (send x :name) :handle)) (send *obj* :descendants)) :rotate pi :x))
@@ -364,6 +379,18 @@
       (setq *ik-mode-index* 0))
     (publish-obj-mode-text)
     res))
+(defun get-ik-arm
+  (req)
+  (let* ((res (send req :response)))
+    (send res :ik_arm (if (equal *ik-arm* :rarm) ":rarm" ":larm"))
+    res))
+(defun get-ik-arm-pose
+  (req)
+  (let* ((res (send req :response)) (original-av (send *robot* :angle-vector)) ik-arm-coords)
+    (setq ik-arm-coords (send (send *robot* *ik-arm* :end-coords :worldcoords) :copy-worldcoords))
+    (send res :pose_stamped (instance geometry_msgs::PoseStamped :init :pose (ros::coords->tf-pose (send (send (send (send *robot* :body_lk) :worldcoords) :copy-worldcoords) :transformation ik-arm-coords :local)) :header (instance std_msgs::Header :init :frame_id "BODY" :stamp (ros::time-now))))
+    (send *robot* :angle-vector original-av)
+    res))
 
 (defun set-obj-mode
   ()
@@ -485,7 +512,7 @@
     (unless (equal (elt *ik-mode-list* *ik-mode-index*) :none)
       (setq interpolate-mode :approach))
     ;; solve ik
-    (setq *ik-result* (send-ik-request :interpolate-mode interpolate-mode))
+    (setq *ik-result* (send-ik-request :interpolate-mode interpolate-mode :rotation-axis (if (equal (send *obj* :get :type) :hand-mesh) (list t t t) (list :z t t))))
     ;(if *pub-grasp-pose-feedback-flag* (pub-grasp-pose-feedback))
     (cond (*ik-result*
            (send-joint-states-to-marker))
@@ -560,13 +587,19 @@
                           :debug-view :no-message
                           :translation-axis translation-axis
                           :rotation-axis rotation-axis
+                          :root-link-virtual-joint-weight (float-vector 0.15 0.15 0.01 0.15 0.5 0.5)
                           :additional-weight-list
-                          (list (list (send *robot* :torso :waist-r :child-link) 0)
-                                (list (send *robot* :torso :waist-p :child-link) 0)
-                                (list (send *robot* :torso :waist-y :child-link) 0))
+                          (list (list (send *robot* :torso :waist-r :child-link) 0.1)
+                                (list (send *robot* :torso :waist-y :child-link) 0.1)
+                                (list (send *robot* :torso :waist-p :child-link) 0.1))
                           :max (float-vector  500  500  0  20  20  10)
                           :warnp t
-                          :stop 30
+                          :stop 50
+                          :avoid-collision-distance 100
+                          :avoid-collision-null-gain 5.0
+                          :avoid-collision-joint-gain 0.8
+                          :collision-avoidance-link-pair
+                          (list (list (elt (send *robot* arm :links) 2) (send *robot* :link "CHEST_LINK2")))
                           :look-at-target (copy-seq (send (elt tc 0) :worldpos))
                           ))))
         (setq ik-res (= (send res :error_code :val) moveit_msgs::MoveItErrorCodes::*SUCCESS*))
@@ -722,7 +755,10 @@
             ((equal (send *obj* :get :type) :cylinder)
              (setq frame-id "cylinder1"))
             ((equal (send *obj* :get :type) :torus)
-             (setq frame-id "torus1")))
+             (setq frame-id "torus1"))
+            ((equal (send *obj* :get :type) :hand-mesh)
+             (setq frame-id "hand1"))
+            )
       (publish-object-handle :frame-id frame-id)
       (publish-object-approach :frame-id frame-id)
       ))

@@ -16,10 +16,21 @@ find_package(catkin REQUIRED COMPONENTS
   message_generation
 )
 
+add_action_files(
+  DIRECTORY action
+  FILES DemoCommon.action
+)
+
+## Generate added messages and services with any dependencies listed here       
+generate_messages(
+  DEPENDENCIES geometry_msgs actionlib_msgs
+)
+
+
 catkin_package(
 #  INCLUDE_DIRS include
 #  LIBRARIES jsk_demo_common
-  CATKIN_DEPENDS control_msgs jsk_hark_msgs jsk_maps jsk_perception pddl_planner pr2eus roseus roseus_smach
+  CATKIN_DEPENDS control_msgs jsk_hark_msgs jsk_maps jsk_perception pddl_planner pr2eus roseus roseus_smach message_runtime
 #  DEPENDS system_lib
 )
 

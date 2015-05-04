@@ -1,0 +1,16 @@
+<launch>
+  <arg name="INPUT_CAMERA_INFO" default="/multisense/left/camera_info" />
+  <arg name="INPUT_POINT" default="/lookat/input" /> <!--geometry_msgs/PointStamped-->
+  <group ns="lookat">
+    <node pkg="jsk_perception" type="project_image_point" name="project_image_point">
+      <remap from="~input/camera_info" to="$(arg INPUT_CAMERA_INFO)" />
+      <remap from="~input" to="$(arg INPUT_POINT)" />
+    </node>
+    <node pkg="jsk_topic_tools" type="passthrough" name="output_passthrough">
+      <remap from="~input" to="project_image_point/output"/>
+      <rosparam>
+        latch: true
+      </rosparam>
+    </node>
+  </group>
+</launch>

@@ -1,26 +1,39 @@
 <launch>
-   <group ns="vehicle_handle" clear_params="true">
-    <param name="display" type="int" value="1"/>
-    <param name="rect0_size_x" type="double" value="0.014"/>
-    <param name="rect0_size_y" type="double" value="0.014"/>
-    <param name="grid0_size_x" type="int" value="3"/>
-    <param name="grid0_size_y" type="int" value="5"/>
-    <param name="board_type" value="acircle" />
-    <param name="use_P" value="true" />
-    <param name="type0" type="string" value="data/ricebox.kinbody.xml"/>
-    <node pkg="checkerboard_detector" name="checkerboard_detector" type="checkerboard_detector" respawn="false">
-      <remap from="camera_info" to="/multisense/left/camera_info"/>
-      <remap from="image" to="/multisense/left/image_rect_color"/>
-      <remap from="objectdetection_pose" to="handle_marker_pose" />
-    </node>
+  <arg name="CONTROLLER_DEV" default="/dev/input/js0" />
+  <arg name="OCS_NS" default="ocs" />
+  <arg name="LAUNCH_UI" default="false" />
+  <arg name="LAUNCH_STEERING" default="false" />
+  <arg name="LAUNCH_PS3JOY" default="false" />
+  <arg name="LAUNCH_EUS" default="true" />
+  <arg name="ROBOT" default="robot" />
+  
+  <!-- detect handle_pose from marker on crank -->
+  <include file="$(find drc_task_common)/launch/fc/vehicle/handle_pose_detector.launch"/>
+
+  <!-- vehicle_ui -->
+  <group if="$(arg LAUNCH_UI)">
+    <node pkg="drc_task_common" type="vehicle_ui" name="vehicle_ui" />
   </group>
-   <node pkg="jsk_topic_tools" type="static_transform_pose_stamped"
-         name="handle_pose"
-         args="0.034 0.034 0 3.14 0 0 vehicle_handle/handle_marker_pose handle_pose">
-   </node>
-  <node pkg="jsk_topic_tools" type="static_transform_pose_stamped"
-        name="crank_pose"
-        args="-0.11 0 0 0 0 0 handle_pose crank_pose">
-    <remap from="~input" to="handle_marker_pose/output" />
-  </node>
+
+  <!-- handle controller -->
+  <group if="$(arg LAUNCH_STEERING)">
+    <include file="$(find drc_task_common)/launch/fc/vehicle/handle_operation_interface.launch">
+      <arg name="CONTROLLER_DEV" default="$(arg CONTROLLER_DEV)"/>
+      <arg name="OCS_NS" default="$(arg OCS_NS)"/>  
+    </include>
+  </group>
+
+  <!-- ps3joy controller -->
+  <group if="$(arg LAUNCH_PS3JOY)">
+    <include file="$(find jsk_teleop_joy)/launch/vehicle.launch">
+      <arg name="CONTROLLER_DEV" default="$(arg CONTROLLER_DEV)"/>
+      <arg name="OCS_NS" default="$(arg OCS_NS)"/>
+    </include>
+  </group>
+  
+  <!-- eus -->
+  <group if="$(arg LAUNCH_EUS)">
+    <node pkg="roseus" type="roseus" name="drive_controller"
+          args="$(find drc_task_common)/euslisp/vehicle/$(arg ROBOT)-driving-controller-on-polaris-xp900.l '($(arg ROBOT)-vehicle-main)'" />
+  </group>
 </launch>

@@ -32,7 +32,7 @@
   (name
    &key (generate-ri? nil))
   ;; generate robot
-  (unless (boundp '*robot*)
+  (when (or (not (boundp '*robot*)) (not *robot*))
     (setq *robot-name* (string-upcase name))
     (load (robot-file name))
     (cond (generate-ri?
@@ -63,7 +63,8 @@
          (when real? (hand-model2real :time time :wait? wait?))
 )
         ((or (equal *robot-name* "JAXON") (equal *robot-name* "STARO"))
-         (when real? (send *ri* :start-grasp arm :wait wait?)))
+         (when (and real? (find-method *ri* :start-grasp))
+           (send *ri* :start-grasp arm :wait wait?)))
         ))
 
 (defun hand-stop-grasp (&key (arm :arms) (real? nil) (time 500) (wait? t))
@@ -71,7 +72,8 @@
          (send *robot* :hand arm :hook-pose) ;; hand hook-pose
          (when real? (hand-model2real :time time :wait? wait?)))
         ((or (equal *robot-name* "JAXON") (equal *robot-name* "STARO"))
-         (when real? (send *ri* :stop-grasp arm :wait wait?)))
+         (when (and real? (find-method *ri* :stop-grasp))
+           (send *ri* :stop-grasp arm :wait wait?)))
         ))
 
 (defun send-angle-vector-sequence-with-time
@@ -95,18 +97,34 @@
     )
   )
 
-(defun play-motion-on-eus-viewer (motion &key (step-time 400) (wait? nil)) ;; motion is list of angle-vector
+(defun play-motion-on-eus-viewer (motion &key (step-time 400) (wait? nil) (interpolation? nil)) ;; motion is list of angle-vector
   (unless (boundp '*irtviewer*)
     (warning-message 1 "irtviewer is not generated.~%")
     (return-from play-motion-on-eus-viewer nil))
   (let* ((original-foot-midcoords (send (send *robot* :foot-midcoords) :copy-worldcoords)))
     (dolist (av motion)
-      (send *robot* :angle-vector av)
+      (cond (interpolation?
+             (send-angle-vector-with-interpolation
+              (copy-seq (send *robot* :angle-vector)) av
+              :foot-midcoords (send (send *robot* :foot-midcoords) :copy-worldcoords)))
+            (t
+             (send *robot* :angle-vector av)))
       (send *robot* :fix-leg-to-coords original-foot-midcoords)
       (send *irtviewer* :draw-objects)
       (cond (wait? (read-line))
-            (t (unix::usleep (* step-time 1000))))
+            ((not interpolation?) (unix::usleep (* step-time 1000))))
       )))
+
+(defun send-angle-vector-with-interpolation
+  (start-av goal-av &key (devide-num 10) (foot-midcoords))
+  (dotimes (i devide-num)
+    (send *robot* :angle-vector
+          (midpoint (/ (float i) (1- devide-num)) start-av goal-av))
+    (when foot-midcoords
+      (send *robot* :fix-leg-to-coords foot-midcoords))
+    (send *irtviewer* :draw-objects)
+    )
+  )
 
 ;; send angle-vector from ocs
 (defun send-angle-vector-from-ocs
@@ -173,10 +191,10 @@
     ))
 
 (defun check-angle-vector-continuous
-  (start-av goal-av arm &key (xyz-thre 100) (rpy-thre (deg2rad 45)) (print? t) (draw? nil))
+  (start-av goal-av arm &key (xyz-thre 100) (rpy-thre (deg2rad 30)) (print? nil) (draw? nil))
   (let* ((original-foot-midcoords (send (send *robot* :foot-midcoords) :copy-worldcoords))
          (original-av (copy-seq (send *robot* :angle-vector)))
-         (devide-num 4)
+         (devide-num 2)
          start-eef-coords goal-eef-coords
          diff-between-start-goal xyzrpy-diff-between-start-goal
          (ret t)
@@ -197,7 +215,7 @@
              diff-with-start diff-with-goal
              xyzrpy-diff-with-start xyzrpy-diff-with-goal xyzrpy-diff)
         (send *robot* :angle-vector
-              (midpoint (/ (float i) (1- devide-num)) start-av goal-av))
+              (midpoint (/ (float (1+ i)) (1+ devide-num)) start-av goal-av))
         (send *robot* :fix-leg-to-coords (make-coords))
         (setq tmp-eef-coords
               (send (send *robot* arm :end-coords) :copy-worldcoords))
@@ -209,6 +227,12 @@
               (mapcar #'abs (append (coerce (send diff-with-goal :worldpos) cons) (car (send diff-with-goal :rpy-angle)))))
         (setq xyzrpy-diff (mapcar #'max xyzrpy-diff-with-start xyzrpy-diff-with-goal))
         (when draw? (send *irtviewer* :draw-objects))
+        (when print?
+          (format t "[check-continuous] xyz: ~a/~a rpy: ~a/~a~%"
+                  (norm (coerce (mapcar #'- (subseq xyzrpy-diff 0 3) (subseq xyzrpy-diff-between-start-goal 0 3)) float-vector)) xyz-thre
+                  (norm (coerce (mapcar #'- (subseq xyzrpy-diff 3 6) (subseq xyzrpy-diff-between-start-goal 3 6)) float-vector)) rpy-thre
+                  )
+          )
         (when (or (> (norm (coerce (mapcar #'- (subseq xyzrpy-diff 0 3) (subseq xyzrpy-diff-between-start-goal 0 3)) float-vector)) xyz-thre)
                   (> (norm (coerce (mapcar #'- (subseq xyzrpy-diff 3 6) (subseq xyzrpy-diff-between-start-goal 3 6)) float-vector)) rpy-thre))
           (when print? (format t "[check-continuous] find uncontinuous angle-vector~%"))
@@ -239,6 +263,66 @@
     (send msg :pose (ros::coords->tf-pose coords))
     (ros::publish "/urdf_control_marker/set_pose" msg)
     ))
+
+(defun get-robot-model-current-pos
+  ()
+  (let* ((base-frame "/ground") (target-frame "/robot_marker_root")
+         (header (instance std_msgs::Header :init :stamp (ros::time-now) :frame_id base-frame))
+         (msg (instance geometry_msgs::PoseStamped :init :header header))
+         tf-trans coords)
+    (setq tf-trans (send *tf* :lookup-transform target-frame base-frame (ros::time 0)))
+    (setq coords (if tf-trans (send tf-trans :inverse-transformation) (make-coords)))
+    coords))
+
+(defun get-opposite-arm
+  (arm)
+  (cond ((equal arm :larm) :rarm)
+        ((equal arm :rarm) :larm)))
+
+(defun get-mirror-angle-vector
+  ()
+  (let* ((joint-name-list
+          (list (cons :rarm (list :collar-y
+                                  :shoulder-r :shoulder-p :shoulder-y
+                                  :elbow-r :elbow-p :elbow-y
+                                  :wrist-r :wrist-p :wrist-y))
+                (cons :larm (list :collar-y
+                                  :shoulder-r :shoulder-p :shoulder-y
+                                  :elbow-r :elbow-p :elbow-y
+                                  :wrist-r :wrist-p :wrist-y))
+                (cons :rleg (list :crotch-r :crotch-p :crotch-y
+                                  :knee-r :knee-p :knee-y
+                                  :ankle-r :ankle-p :ankle-y
+                                  :toe-p))
+                (cons :lleg (list :crotch-r :crotch-p :crotch-y
+                                  :knee-r :knee-p :knee-y
+                                  :ankle-r :ankle-p :ankle-y
+                                  :toe-p))
+                (cons :head (list :neck-r :neck-p :neck-y))
+                (cons :torso (list :waist-r :waist-p :waist-y
+                                   :chest-r :chest-p :chest-y
+                                   ))
+                ))
+         (original-av (copy-seq (send *robot* :angle-vector)))
+         )
+    (unless (boundp '*tmp-robot*)
+      (setq *tmp-robot* (copy-object *robot*)))
+    (dolist (jn joint-name-list)
+      (let* ((limb (car jn))
+             (jnlist (cdr jn))
+             )
+        (mapcar
+         #'(lambda (k)
+             (when (find (read-from-string (format nil "~a-~a" limb (string k)))
+                         (send *robot* :methods))
+               (send *tmp-robot* limb k :joint-angle (* (if (or (substringp "-r" (format nil "~a" k)) (substringp "-y" (format nil "~a" k))) -1.0 +1.0) (send *robot* (case limb (:larm :rarm) (:rarm :larm) (:lleg :rleg) (:rleg :lleg) (t limb)) k :joint-angle)))
+               ))
+         jnlist)
+
+        ))
+    (send *robot* :angle-vector (send *tmp-robot* :angle-vector))
+    )
+  )
 
 (load "package://hrpsys_ros_bridge/euslisp/rtm-ros-robot-interface.l")
 

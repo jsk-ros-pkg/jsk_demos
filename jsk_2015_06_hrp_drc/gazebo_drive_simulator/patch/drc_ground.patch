@@ -1,0 +1,93 @@
+--- /opt/ros/hydro/share/drcsim_model_resources/media/materials/scripts/vrc_final.material.org	2014-09-12 02:49:48.000000000 +0900
++++ /opt/ros/hydro/share/drcsim_model_resources/media/materials/scripts/vrc_final.material	2014-09-12 02:49:48.000000000 +0900
+@@ -148,3 +148,25 @@
+     }
+ 	}
+ }
++
++material Gazebo/RoadforStereo
++{
++  technique
++  {
++    pass
++    {
++      ambient 0.1 0.1 0.1 1.0
++      diffuse 0.8 0.8 0.8 1.0
++      specular 0.01 0.01 0.01 1.0 2.0
++
++      texture_unit
++      {
++#        texture  residential.jpg
++        texture  stereo_projection_pattern_high_res_red.png
++        rotate 90
++        scale 0.02 0.04
++        ##filtering trilinear
++      }
++    }
++  }
++}
+\ No newline at end of file
+--- /opt/ros/hydro/share/drcsim_model_resources/worlds/drc_practice_task_1.world.org	2014-09-12 02:49:48.000000000 +0900
++++ /opt/ros/hydro/share/drcsim_model_resources/worlds/drc_practice_task_1.world	2014-09-12 02:49:48.000000000 +0900
+@@ -24,4 +24,29 @@
+     <include>
+       <uri>model://sun</uri>
+     </include>
++    <light name='directional_light_0' type='directional'>
++      <pose>-15 3.5 10 0 -1.05462 0</pose>
++      <diffuse>0.498039 0.498039 0.498039 1</diffuse>
++      <specular>0.0980392 0.0980392 0.0980392 1</specular>
++      <attenuation>
++        <range>100</range>
++        <constant>0.5</constant>
++        <linear>0.01</linear>
++        <quadratic>0.001</quadratic>
++      </attenuation>
++      <direction>0 0 -1</direction>
++    </light>
++    <light name='directional_light_1' type='directional'>
++      <pose>-15 -3.5 10 0 -1.05462 0</pose>
++      <diffuse>0.498039 0.498039 0.498039 1</diffuse>
++      <specular>0.0980392 0.0980392 0.0980392 1</specular>
++      <attenuation>
++        <range>100</range>
++        <constant>0.5</constant>
++        <linear>0.01</linear>
++        <quadratic>0.001</quadratic>
++      </attenuation>
++      <direction>0 0 -1</direction>
++    </light>
++
+ 
+@@ -28,12 +28,13 @@
+     <!-- A ground plane -->
+     <model name="ground_plane">
+       <static>true</static>
++      <pose>60 0 0 0 0 0</pose>
+       <link name="link">
+         <collision name="collision">
+           <geometry>
+             <plane>
+               <normal>0 0 1</normal>
+-              <size>300 50</size>
++              <size>1500 250</size>
+             </plane>
+           </geometry>
+           <surface>
+@@ -50,13 +51,13 @@
+           <geometry>
+             <plane>
+               <normal>0 0 1</normal>
+-              <size>300 50</size>
++              <size>1500 250</size>
+             </plane>
+           </geometry>
+           <material>
+             <script>
+-              <uri>file://media/materials/scripts/gazebo.material</uri>
+-              <name>Gazebo/Grey</name>
++              <uri>file://media/materials/scripts/vrc_final.material</uri>
++              <name>Gazebo/RoadforStereo</name>
+             </script>
+           </material>
+         </visual>
