@@ -23,7 +23,7 @@ class HandleControllerPublisher:
         self.accel_publisher = rospy.Publisher("~accel", Float64)
         self.brake_publisher = rospy.Publisher("~brake", Float64)
         self.gear_publisher = rospy.Publisher("~gear", Int8)
-        rospy.Subscriber("/driving_force_gt/joy", Joy, self.callback)
+        rospy.Subscriber("driving_force_gt/joy", Joy, self.callback)
 
     def callback(self, msg):
         current_handle_joy = msg.axes[0]
