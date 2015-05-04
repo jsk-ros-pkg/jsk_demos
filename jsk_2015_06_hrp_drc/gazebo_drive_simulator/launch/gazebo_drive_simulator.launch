@@ -42,6 +42,17 @@
     </node>
   </group>
 
+  <group unless="$(arg USE_HANDLE)" ns="$(arg CMD_NAMESPACE)">
+    <node pkg="gazebo_drive_simulator" type="DrivingControllerToGazeboDriveSimulatorBridge.py" name="drive_controller_to_gazebo_drive_simulator_bridge" output="screen">
+      <remap from="~driving_controller_handle" to="/drive/controller/goal_handle_angle"/>
+      <remap from="~driving_controller_accel" to="/drive/controller/step"/>
+      <remap from="~driving_controller_min_step" to="/drive/controller/min_step"/>
+      <remap from="~driving_controller_max_step" to="/drive/controller/max_step"/>
+      <remap from="~handle_cmd" to="$(arg CMD_NAMESPACE)/hand_wheel/cmd"/>
+      <remap from="~accel_cmd" to="$(arg CMD_NAMESPACE)/gas_pedal/cmd"/>
+    </node>
+  </group>    
+
   <!-- robot view point -->
   <node pkg="image_view" type="image_view" name="robot_perspective">
     <remap from="image" to="multisense/left/image_rect_color" />
