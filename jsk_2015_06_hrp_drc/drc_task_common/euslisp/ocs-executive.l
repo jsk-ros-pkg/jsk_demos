@@ -539,15 +539,6 @@
     ;; send valve params to fc
     (let ((msg (instance drc_com_common::OCS2FCSmall :init)))
       (send msg :type drc_com_common::OCS2FCSmall::*VALVE_EXEC*)
-      (cond ((not (boundp '*valve-arm*))
-             (send msg :arm_side drc_com_common::OCS2FCSmall::*UNDECIDED*))
-            ((equal *valve-arm* :larm)
-             (send msg :arm_side drc_com_common::OCS2FCSmall::*LARM*))
-            ((equal *valve-arm* :rarm)
-             (send msg :arm_side drc_com_common::OCS2FCSmall::*RARM*))
-            (t
-             (send msg :arm_side drc_com_common::OCS2FCSmall::*UNDECIDED*))
-            )
       (let (valve-grasp-mode-idx)
         (cond ((not (boundp '*valve-grasp-mode*))
                (setq valve-grasp-mode-idx drc_com_common::OCS2FCSmall::*UNDECIDED*))
@@ -560,6 +551,15 @@
               )
         (send msg :float_params
               (valve-params-to-float-vector valve-params valve-grasp-mode-idx (length (send msg :float_params)))))
+      (cond ((not (boundp '*valve-arm*))
+             (send msg :arm_side drc_com_common::OCS2FCSmall::*UNDECIDED*))
+            ((equal *valve-arm* :larm)
+             (send msg :arm_side drc_com_common::OCS2FCSmall::*LARM*))
+            ((equal *valve-arm* :rarm)
+             (send msg :arm_side drc_com_common::OCS2FCSmall::*RARM*))
+            (t
+             (send msg :arm_side drc_com_common::OCS2FCSmall::*UNDECIDED*))
+            )
       (send msg :stand_coords
             (coords-to-float-vector (get-robot-model-current-pos) (length (send msg :stand_coords))))
       (send self :send-to-fc msg)
@@ -576,6 +576,17 @@
       (send msg :float_params (box-to-float-vector
                                (car door-params) (cadr door-params)
                                (length (send msg :float_params))))
+      (cond ((not (boundp '*door-arm*))
+             (send msg :arm_side drc_com_common::OCS2FCSmall::*UNDECIDED*))
+            ((equal *door-arm* :larm)
+             (send msg :arm_side drc_com_common::OCS2FCSmall::*LARM*))
+            ((equal *door-arm* :rarm)
+             (send msg :arm_side drc_com_common::OCS2FCSmall::*RARM*))
+            (t
+             (send msg :arm_side drc_com_common::OCS2FCSmall::*UNDECIDED*))
+            )
+      (send msg :stand_coords
+            (coords-to-float-vector (get-robot-model-current-pos) (length (send msg :stand_coords))))
       (send self :send-to-fc msg)
       (send smachine :go-to :executing-door)))
   (:exec-debri-button-callback ()
@@ -746,7 +757,12 @@
          ;; store result
          (setq door-params (list coords size))
          ;; publish motion to robot model on rviz
-         (publish-door-motion :coords (elt door-params 0) :knob-size (elt door-params 1) :update? t)
+         (publish-door-motion
+          :door-name :drc-box2 :door-coords (elt door-params 0)
+          :arm (send self :get-arm-side) :overwrite-arm-side? (send self :is-arm-overwrite)
+          :stand-coords (make-coords) :overwrite-stand-coords? t
+          :push/pull :pull
+          :update? t)
          (send smachine :go-to :selecting-exec-for-door)))
       ))
   (:debri-recognition-finished-callback (msg)
@@ -1032,7 +1048,12 @@
              (setq door-params
                    (list (get-primitive-marker-pose :frame-id "BODY") (float-vector (elt dim 0) (elt dim 1) (elt dim 2)))))
            ;; publish door motion to robot model on rviz
-           (publish-door-motion :coords (elt door-params 0) :knob-size (elt door-params 1) :update? t)
+           (publish-door-motion
+            :door-name :drc-box2 :door-coords (elt door-params 0)
+            :arm (send self :get-arm-side) :overwrite-arm-side? (send self :is-arm-overwrite)
+            :stand-coords (get-robot-model-current-pos) :overwrite-stand-coords? nil
+            :push/pull :pull
+            :update? t)
            (send smachine :go-to :selecting-exec-for-door))
           )
     (send self :show-text "Finish to replay robot motion")

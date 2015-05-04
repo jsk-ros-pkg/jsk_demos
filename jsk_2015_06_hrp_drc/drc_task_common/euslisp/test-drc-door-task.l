@@ -127,6 +127,7 @@
           (setq links (list l0 l1 l2))
           (setq joint-list (list j0 j1))
           (setq handles (list h0 h1 h2))
+          (send self :put :handle-l/r handle-l/r)
           (send self :init-ending)
           self))))
   (:handle (name) (find name handles :test #'equal :key #'(lambda (x) (send x :name))))
@@ -146,7 +147,7 @@
                          (float-vector -60 -600 950)
                          :handle-l/r :right)))
 
-;; drc box2 door param
+;; drc test door param
 ;;   door width : 840mm
 ;;   hinge -> knob-axis : 800mm
 ;;   knob depth : 60mm
@@ -175,6 +176,14 @@
                          ;; (float-vector 0 800 1120)
                          ;; (float-vector -50 760 1120)
                          :handle-l/r :left))
+  )
+
+(defun make-drc-sagami-door-mirror ()
+  "mirror of drc door in sagami full-task-course environment"
+  (setq *door* (instance param-door :init 895 60 110 20
+                         (float-vector 0 -800 845)
+                         (float-vector -50 -760 845)
+                         :handle-l/r :right))
   )
 
 (defun exec-robot-state-list

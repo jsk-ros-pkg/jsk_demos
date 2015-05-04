@@ -55,17 +55,28 @@
   (send *ri* :hand-angle-vector (apply #'concatenate float-vector (send *robot* :hand :arms :angle-vector)) time)
   (when wait? (send *ri* :hand-wait-interpolation)))
 
-(defun hand-start-grasp (&key (arm :arms) (real? nil) (time 500) (wait? t))
+(defun hand-start-grasp (&key (arm :arms) (real? nil) (time 500) (wait? t) (type :normal))
   (cond ((or (equal *robot-name* "HRP2JSKNT") (equal *robot-name* "HRP2JSKNTS"))
-         (send *robot* :hand :arms :extension-pose) ;; hand extension-pose
-         (when real? (hand-model2real :time time :wait? t))
-         (send *robot* :hand :arms :grasp-pose) ;; hand grasp-pose
-         (when real? (hand-model2real :time time :wait? wait?))
-)
+         (cond ((equal type :door-grasp-preshape)
+                (send *robot* :hand :arms :angle-vector *door-grasp-preshape-pose*)
+                (when real? (hand-model2real :time time :wait? t))
+                )
+               ((equal type :door-grasp)
+                (send *robot* :hand :arms :angle-vector *door-grasp-pose*)
+                (when real? (hand-model2real :time time :wait? t))
+                )
+               (t ;; (equal type :normal)
+                (send *robot* :hand :arms :extension-pose) ;; hand extension-pose
+                (when real? (hand-model2real :time time :wait? t))
+                (send *robot* :hand :arms :grasp-pose) ;; hand grasp-pose
+                (when real? (hand-model2real :time time :wait? wait?))
+                ))
+         )
         ((or (equal *robot-name* "JAXON") (equal *robot-name* "STARO"))
          (when (and real? (find-method *ri* :start-grasp))
-           (send *ri* :start-grasp arm :wait wait?)))
-        ))
+           (send *ri* :start-grasp arm :wait wait?))
+         ))
+  )
 
 (defun hand-stop-grasp (&key (arm :arms) (real? nil) (time 500) (wait? t))
   (cond ((or (equal *robot-name* "HRP2JSKNT") (equal *robot-name* "HRP2JSKNTS"))
@@ -113,6 +124,7 @@
       (send *irtviewer* :draw-objects)
       (cond (wait? (read-line))
             ((not interpolation?) (unix::usleep (* step-time 1000))))
+      (x::window-main-one)
       )))
 
 (defun send-angle-vector-with-interpolation
@@ -123,6 +135,7 @@
     (when foot-midcoords
       (send *robot* :fix-leg-to-coords foot-midcoords))
     (send *irtviewer* :draw-objects)
+    (x::window-main-one)
     )
   )
 
@@ -168,6 +181,16 @@
     (when (<= (length (send *robot* :joint-list)) (length (send msg :name)))
       (setq *potentio-vector* (coerce (mapcar #'rad2deg (coerce (send msg :position) cons)) float-vector))))
   )
+
+(defun check-coords-distance ;; return t when distance is smaller than thre
+  (c1 c2)
+  (let* ((c-diff (send c1 :transformation c2))
+         (pos-diff (mapcar #'abs (coerce (send c-diff :pos) cons)))
+         (rpy-diff (mapcar #'abs (car (send c-diff :rpy-angle))))
+         (pos-thre 0.005)
+         (rpy-thre (deg2rad 2)))
+    (and (< (norm (coerce pos-diff float-vector)) pos-thre) (< (norm (coerce rpy-diff float-vector)) rpy-thre))
+    ))
 
 (defun check-angle-vector-distance ;; return t when distance is smaller than thre
   (&key
