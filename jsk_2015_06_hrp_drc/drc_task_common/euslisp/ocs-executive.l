@@ -39,6 +39,7 @@
                 hose-connect-params ;; (list coords)
                 drill-grasp-params
                 drill-put-params
+                drill-wall-params
                 drill-wall-target-coords ;; list of coords
                 drill-button-params ;; (list coords)
                 foreground-bacground-sync-obj
@@ -659,9 +660,11 @@
     (send self :show-text "Execute drill-wall motion" :execute)
     ;; do something magical!!
     ;; send drill-wall params to fc
+    (setq drill-wall-params
+          (list (get-primitive-marker-pose :frame-id "BODY")))
     (let ((msg (instance drc_com_common::OCS2FCSmall :init)))
       (send msg :type drc_com_common::OCS2FCSmall::*DRILL_WALL_EXEC*)
-      (send msg :float_params (coords-set-to-float-vector drill-wall-target-coords (length (send msg :float_params))))
+      (send msg :float_params (coords-set-to-float-vector (get-coords-list-with-center (elt drill-wall-params 0) drill-wall-target-coords) (length (send msg :float_params))))
       (send msg :stand_coords
             (coords-to-float-vector (get-robot-model-current-pos) (length (send msg :stand_coords))))
       (send self :send-to-fc msg)
@@ -877,11 +880,21 @@
   (:drill-wall-recognition-finished-callback (msg)
     (when (eq (send smachine :state) :recognizing-drill-wall)
       (let ((params (send msg :params)))
-        (let ((coords-set (float-vector-to-coords-set params)))
+        (let ((coords-set (float-vector-to-coords-set params)) center-coords)
 	  (send self :show-text 
 		(format nil "Recognize wall coords") :recognize)
           (publish-coords-list coords-set "BODY")
-          (setq drill-wall-target-coords coords-set)
+          ;; marker 
+          (erase-all-primitive-marker)
+          (insert-primitive-marker :shape-type jsk_rviz_plugins::TransformableMarkerOperate::*CYLINDER* :name "cylinder1" :description "")
+          (set-primitive-marker-dimensions :radius 300 :z 30) ;; show plane as circle
+          (setq center-coords (get-center-coords coords-set))
+          (set-primitive-marker-pose center-coords "BODY")
+          (set-primitive-marker-color :r 1.0 :g 1.0 :b 0.0 :a 0.6)
+          (apply-primitive-dimensions-to-midi-device)
+          (move-robot-model-to-current-pos)
+          ;; end marker
+          (setq drill-wall-target-coords (get-relative-coords-list center-coords coords-set))
           (publish-drill-wall-motion :coords-list coords-set :update? t :stand-coords (make-coords) :overwrite-stand-coords? t)
           (send smachine :go-to :selecting-exec-for-drill-wall)))))
   (:drill-button-recognition-finished-callback (msg)
@@ -1036,10 +1049,10 @@
            )
           ((eq (send smachine :state) :selecting-exec-for-drill-wall)
            ;; update latest drill-button params
-           ;; (setq drill-wall-params
-           ;;       (list (get-primitive-marker-pose :frame-id "BODY")))
+           (setq drill-wall-params
+                  (list (get-primitive-marker-pose :frame-id "BODY")))
            ;; publish dirll motion to robot model on rviz
-           (publish-drill-wall-motion :coords-list drill-wall-target-coords :update? t :stand-coords (get-robot-model-current-pos) :overwrite-stand-coords? nil)
+           (publish-drill-wall-motion :coords-list (get-coords-list-with-center (elt drill-wall-params 0) drill-wall-target-coords) :update? t :stand-coords (get-robot-model-current-pos) :overwrite-stand-coords? nil)
            )
           ((eq (send smachine :state) :selecting-exec-for-door)
            ;; update latest door params

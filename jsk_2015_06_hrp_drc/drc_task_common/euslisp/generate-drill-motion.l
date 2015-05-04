@@ -1101,6 +1101,34 @@
     )
   )
 
+(defun get-center-coords
+  (coords-list)
+  (let (center (center-pos (float-vector 0 0 0)))
+        (dotimes (i (length coords-list))
+                (setq center-pos (v+ center-pos (send (elt coords-list i) :worldpos)))
+                )
+        (setq center (make-coords :pos (scale (/ 1.0 (length coords-list)) center-pos) :rot (send (elt coords-list 0) :rot))) ;; rot of first, because wall recognizing
+        center
+        )
+  )
+(defun get-relative-coords-list
+  (center coords-list)
+  (let ((relative-coords-list nil))
+    (dotimes (i (length coords-list))
+      (push-back (send center :transformation (send (elt coords-list i) :copy-worldcoords)) relative-coords-list)
+      )
+    relative-coords-list
+    )
+  )
+(defun get-coords-list-with-center
+  (center relative-coords-list)
+  (let ((coords-list nil))
+    (dotimes (i (length relative-coords-list))
+      (push-back (send (send center :copy-worldcoords) :transform (send (elt relative-coords-list i) :copy-worldcoords)) coords-list)
+      )
+    coords-list
+    )
+  )
 (defun generate-drill-wall-motion
   (&key (draw? t) (drill-type *default-drill-type*) (c-check t))
   (let* (
@@ -1118,8 +1146,7 @@
     
     ;; wall drill
     (send *robot* :angle-vector (get-drill-reset-pose))
-    (send *robot* :fix-leg-to-coords original-foot-midcoords)
-    ;; solve ik to wall draill
+    (send *robot* :fix-leg-to-coords original-foot-midcoords)    ;; solve ik to wall drill
     (let* (ik-ret
            tc
            (dt-coords-list (send *drill* :get :destination-coords-list))
