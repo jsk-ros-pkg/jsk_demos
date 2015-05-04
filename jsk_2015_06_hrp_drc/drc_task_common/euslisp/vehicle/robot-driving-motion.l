@@ -807,7 +807,9 @@
    )
   (:set-impedance-for-support
    (limb)
-   (send *ri* :start-impedance limb :M-p 100 :D-p 600 :K-p 700)
+   ;; (send *ri* :start-impedance limb :M-p 100 :D-p 600 :K-p 700)
+   ;; (send *ri* :start-impedance limb :M-p 100 :D-p 2500 :K-p 3000)
+   (send *ri* :start-impedance :lleg :M-p 200 :D-p 4000 :K-p 6000 :moment-gain #(1 1 1) :M-r 100 :D-r 2000 :K-r 3000)
    )
   (:set-ref-force-for-support
    (limb)
