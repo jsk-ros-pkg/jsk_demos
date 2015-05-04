@@ -23,7 +23,7 @@ I recommend you to write them in your .bashrc.
 ```bash
 $ source `rospack find hrpsys_gazebo_tutorials`/setup.sh
 $ export VRC_CHEATS_ENABLED=1
-``
+```
 
 ## Execute
 ### launch simulation
@@ -37,9 +37,10 @@ If you want to use atlas with robot driving controller in euslisp, execute follo
 $ rosrun gazebo_drive_simulator start_drc_practice_task_1.sh false
 $ roslaunch drc_task_common vehicle.launch ROBOT:=<robotname>
 ```
+<robotname> does not matter in euslisp mode.
 
 If you want to use staro, execute following command:
-`` bash
+```bash
 $ roslaunch hrpsys_gazebo_tutorials drc_practice_task_1_staro.laucnh
 $ rosrun gazebo_drive_simulator start_staro_drive_simulator.sh
 ```
