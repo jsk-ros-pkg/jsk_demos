@@ -79,7 +79,10 @@ namespace drc_task_common
       ex.setIndices(the_indices);
       pcl::PointCloud<pcl::PointXYZRGB>::Ptr segment_cloud (new pcl::PointCloud<pcl::PointXYZRGB>);
       ex.filter(*segment_cloud);
-      ROS_INFO("segment_cloud: %lu", segment_cloud->points.size());
+      if (verbose_) {
+        ROS_INFO("segment_cloud: %lu", segment_cloud->points.size());
+      }
+      
       jsk_pcl_ros::Cylinder::Ptr cylinder = estimateStandingDrill(segment_cloud, box_msg);
     }
   }
@@ -88,7 +91,9 @@ namespace drc_task_common
     pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud,
     const jsk_recognition_msgs::BoundingBox& box)
   {
-    ROS_INFO("input cloud to detect cylinder: %lu", cloud->points.size());
+    if (verbose_) {
+      ROS_INFO("input cloud to detect cylinder: %lu", cloud->points.size());
+    }
     pcl::CropBox<pcl::PointXYZRGB> crop_box(false);
     
     Eigen::Vector4f max_points(box.dimensions.x/2,
@@ -99,23 +104,29 @@ namespace drc_task_common
                                -box.dimensions.y/2,
                                box.dimensions.z/2 - 0.05 - 0.1, // 5cm offset
                                0);
-    ROS_INFO("max: [%f, %f, %f, %f]", max_points[0], max_points[1], max_points[2], max_points[3]);
-    ROS_INFO("min: [%f, %f, %f, %f]", min_points[0], min_points[1], min_points[2], min_points[3]);
+    if (verbose_) {
+      ROS_INFO("max: [%f, %f, %f, %f]", max_points[0], max_points[1], max_points[2], max_points[3]);
+      ROS_INFO("min: [%f, %f, %f, %f]", min_points[0], min_points[1], min_points[2], min_points[3]);
+    }
     Eigen::Affine3f pose;
     tf::poseMsgToEigen(box.pose, pose);
     float roll, pitch, yaw;
     pcl::getEulerAngles(pose, roll, pitch, yaw);
     crop_box.setTranslation(pose.translation());
     crop_box.setRotation(Eigen::Vector3f(roll, pitch, yaw));
-    ROS_INFO("r, p, y: [%f, %f, %f]", roll, pitch, yaw);
-    ROS_INFO("pos: [%f, %f, %f]", crop_box.getTranslation()[0], crop_box.getTranslation()[1], crop_box.getTranslation()[2]);
+    if (verbose_) {
+      ROS_INFO("r, p, y: [%f, %f, %f]", roll, pitch, yaw);
+      ROS_INFO("pos: [%f, %f, %f]", crop_box.getTranslation()[0], crop_box.getTranslation()[1], crop_box.getTranslation()[2]);
+    }
     crop_box.setInputCloud(cloud);
     crop_box.setMax(max_points);
     crop_box.setMin(min_points);
     
     pcl::PointIndices::Ptr cropped_indices (new pcl::PointIndices);
     crop_box.filter(cropped_indices->indices);
-    ROS_INFO("cropped points: %lu", cropped_indices->indices.size());
+    if (verbose_) {
+      ROS_INFO("cropped points: %lu", cropped_indices->indices.size());
+    }
     if (cropped_indices->indices.size() == 0) {
       ROS_FATAL("no enough cropped indices");
       return jsk_pcl_ros::Cylinder::Ptr();
@@ -222,8 +233,10 @@ namespace drc_task_common
         foot_pose = foot_pose * Eigen::Translation3f(- x_direction * foot_x_offset_);
         
         double coef = computeFootCoefficients(downsampled_cloud, foot_pose, box);
-        if (coef != DBL_MAX) {
-          ROS_INFO("coef: [%f] => %f", theta / M_PI * 180, coef);
+        if (verbose_) {
+          if (coef != DBL_MAX) {
+            ROS_INFO("coef: [%f] => %f", theta / M_PI * 180, coef);
+          }
         }
         if (coef <= best_coef) {
           
@@ -232,7 +245,9 @@ namespace drc_task_common
           best_pose = foot_pose;
         }
       }
-      ROS_INFO("best_coef: %f", best_coef);
+      if (verbose_) {
+        ROS_INFO("best_coef: %f", best_coef);
+      }
       publishPoseStamped(pub_debug_foot_pose_, box.header, best_pose);
       visualization_msgs::Marker foot_marker;
       foot_marker.header = box.header;
