@@ -43,11 +43,6 @@
 
 namespace drc_task_common
 {
-  //const double drill_foot_x = 0.115;
-  const double drill_foot_x = 0.125;
-  const double drill_foot_y = 0.085;
-  const double drill_foot_z = 0.02;
-  const double drill_foot_x_offset = 0.015;
   StandingDrillDetector::StandingDrillDetector():
     pnh_("~")
   {
@@ -149,13 +144,13 @@ namespace drc_task_common
     //seg.setMethodType(pcl::SAC_LMEDS);
     //seg.setMethodType(pcl::SAC_PROSAC);
     seg.setAxis(pose.rotation() * Eigen::Vector3f::UnitZ());
-    seg.setEpsAngle(0.2);
+    seg.setEpsAngle(cylinder_eps_angle_);
     // phi 60 ~ 75
-    seg.setDistanceThreshold(0.05);
-    seg.setMaxIterations(1000000);
-    seg.setNormalDistanceWeight(0.05);
-    seg.setRadiusLimits(0.025, 0.035);
-    seg.setProbability(0.8);
+    seg.setDistanceThreshold(cylinder_distance_threshold_);
+    seg.setMaxIterations(cylinder_max_iterations_);
+    seg.setNormalDistanceWeight(cylinder_distance_normal_weight_);
+    seg.setRadiusLimits(cylinder_min_radius_, cylinder_max_radius_);
+    seg.setProbability(cylinder_probability_);
     seg.setInputCloud(cropped_cloud);
     seg.setInputNormals(normals);
     pcl::PointIndices::Ptr inliers (new pcl::PointIndices);
@@ -204,7 +199,7 @@ namespace drc_task_common
 
       Eigen::Affine3f cylinder_pose = Eigen::Translation3f(center) * pose.rotation();
       publishPoseStamped(pub_debug_cylinder_pose_, box.header, cylinder_pose);
-      const size_t resolution = 200;
+      const size_t resolution = foot_search_resolution_;
       size_t best_i = 0;
       double best_coef = DBL_MAX;
       Eigen::Affine3f best_pose = Eigen::Affine3f::Identity();
@@ -214,17 +209,17 @@ namespace drc_task_common
       pcl::PointCloud<pcl::PointXYZRGB>::Ptr downsampled_cloud(new pcl::PointCloud<pcl::PointXYZRGB>);
       pcl::VoxelGrid<pcl::PointXYZRGB> vg;
       vg.setInputCloud(cloud);
-      vg.setLeafSize(0.005, 0.005, 0.005);
+      vg.setLeafSize(foot_downsample_size_, foot_downsample_size_, foot_downsample_size_);
       vg.filter(*downsampled_cloud);
       
       for (size_t i = 0; i < resolution; i++) {
         //Eigen::Affine3f foot_pose = cylinder_pose * Eigen::Translation3f(Eigen::Vector3f(0, 0, 0.08));
-        Eigen::Affine3f foot_pose = cylinder_pose * Eigen::Translation3f(Eigen::Vector3f(0, 0.0, 0.09));
+        Eigen::Affine3f foot_pose = cylinder_pose * Eigen::Translation3f(Eigen::Vector3f(0, 0.0, foot_z_offset_));
         double theta = min_angle + (max_angle - min_angle) * i / resolution;
         //double theta = i * 2.0 * M_PI / resolution;
         foot_pose = foot_pose * Eigen::AngleAxisf(theta, Eigen::Vector3f::UnitZ());
         Eigen::Vector3f x_direction = cylinder_pose.rotation() *  Eigen::Vector3f::UnitX();
-        foot_pose = foot_pose * Eigen::Translation3f(- x_direction * drill_foot_x_offset);
+        foot_pose = foot_pose * Eigen::Translation3f(- x_direction * foot_x_offset_);
         
         double coef = computeFootCoefficients(downsampled_cloud, foot_pose, box);
         if (coef != DBL_MAX) {
@@ -242,9 +237,9 @@ namespace drc_task_common
       visualization_msgs::Marker foot_marker;
       foot_marker.header = box.header;
       tf::poseEigenToMsg(best_pose, foot_marker.pose);
-      foot_marker.scale.x = drill_foot_x;
-      foot_marker.scale.y = drill_foot_y;
-      foot_marker.scale.z = drill_foot_z;
+      foot_marker.scale.x = foot_x_;
+      foot_marker.scale.y = foot_y_;
+      foot_marker.scale.z = foot_z_;
       foot_marker.color.r = 1.0;
       foot_marker.color.a = 1.0;
       foot_marker.type = visualization_msgs::Marker::CUBE;
@@ -261,9 +256,9 @@ namespace drc_task_common
     const Eigen::Affine3f& pose,
     jsk_pcl_ros::Vertices& local_points)
   {
-    const double x = drill_foot_x / 2.0;
-    const double y = drill_foot_y / 2.0;
-    const double z = drill_foot_z / 2.0;
+    const double x = foot_x_ / 2.0;
+    const double y = foot_y_ / 2.0;
+    const double z = foot_z_ / 2.0;
     // local points
     Eigen::Vector3f Al( x,  y,  z);
     Eigen::Vector3f Bl(-x,  y,  z);
@@ -329,34 +324,15 @@ namespace drc_task_common
     Eigen::Affine3f box_pose;
     tf::poseMsgToEigen(box.pose, box_pose);
     std::vector<jsk_pcl_ros::ConvexPolygon::Ptr> side_faces = cubeSideFaces(pose, local_points);
-    // Check local_points coordinates does not violate bouding box much
-    for (size_t i = 0; i < local_points.size(); i++) {
-      // Convert local_points to box relative point
-      Eigen::Vector3f p = local_points[i];
-      Eigen::Vector3f transformed_p = box_pose.inverse() * p;
-      
-      double width = box.dimensions.x;
-      double height = box.dimensions.y;
-      
-      const double box_offset = 0.05;
-      //if (!(transformed_p[1] < 0)) {
-      if (false) {
-        if (std::abs(transformed_p[0]) > width / 2 + box_offset ||
-            std::abs(transformed_p[1]) > height / 2 + box_offset) {
-          ROS_ERROR("hypothesis violates bounding box");
-          return DBL_MAX;
-        }
-      }
-    }
     pcl::CropBox<pcl::PointXYZRGB> inner_crop_box(false), outer_crop_box(false);
     double offset = 1.0;
-    Eigen::Vector4f outer_max_points(drill_foot_x / 2 + offset,
-                                     drill_foot_y / 2 + offset,
-                                     drill_foot_z / 2,
+    Eigen::Vector4f outer_max_points(foot_x_ / 2 + offset,
+                                     foot_y_ / 2 + offset,
+                                     foot_z_ / 2,
                                      0);
-    Eigen::Vector4f outer_min_points(- drill_foot_x / 2 - offset,
-                                     - drill_foot_y / 2 - offset,
-                                     - drill_foot_z / 2,
+    Eigen::Vector4f outer_min_points(- foot_x_ / 2 - offset,
+                                     - foot_y_ / 2 - offset,
+                                     - foot_z_ / 2,
                                      0);
     outer_crop_box.setTranslation(pose.translation());
     outer_crop_box.setRotation(Eigen::Vector3f(roll, pitch, yaw));
@@ -400,50 +376,6 @@ namespace drc_task_common
     return min_distnce;
   }
   
-  double StandingDrillDetector::computeFootCoefficients2(
-    pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud,
-    const Eigen::Affine3f pose)
-  {
-    float roll, pitch, yaw;
-    pcl::getEulerAngles(pose, roll, pitch, yaw);
-    pcl::CropBox<pcl::PointXYZRGB> inner_crop_box(false), outer_crop_box(false);
-    const double offset = 0.005;
-    Eigen::Vector4f inner_max_points(drill_foot_x / 2 - offset,
-                                     drill_foot_y / 2 - offset,
-                                     drill_foot_z / 2 - offset,
-                                     0);
-    Eigen::Vector4f inner_min_points(- drill_foot_x / 2 + offset,
-                                     - drill_foot_y / 2 + offset,
-                                     - drill_foot_z / 2 + offset,
-                                     0);
-    Eigen::Vector4f outer_max_points(drill_foot_x / 2 + offset,
-                                     drill_foot_y / 2 + offset,
-                                     drill_foot_z / 2 + offset,
-                                     0);
-    Eigen::Vector4f outer_min_points(- drill_foot_x / 2 - offset,
-                                     - drill_foot_y / 2 - offset,
-                                     - drill_foot_z / 2 - offset,
-                                     0);
-    inner_crop_box.setTranslation(pose.translation());
-    inner_crop_box.setRotation(Eigen::Vector3f(roll, pitch, yaw));
-    outer_crop_box.setTranslation(pose.translation());
-    outer_crop_box.setRotation(Eigen::Vector3f(roll, pitch, yaw));
-    
-    inner_crop_box.setMax(inner_max_points);
-    inner_crop_box.setMin(inner_min_points);
-    
-    outer_crop_box.setMax(outer_max_points);
-    outer_crop_box.setMin(outer_min_points);
-    inner_crop_box.setInputCloud(cloud);
-    outer_crop_box.setInputCloud(cloud);
-    pcl::PointIndices::Ptr inner_indices (new pcl::PointIndices);
-    pcl::PointIndices::Ptr outer_indices (new pcl::PointIndices);
-    inner_crop_box.filter(inner_indices->indices);
-    outer_crop_box.filter(outer_indices->indices);
-    int num = std::max((int)outer_indices->indices.size() - (int)inner_indices->indices.size(), 0);
-    return num;
-  }
-
   void StandingDrillDetector::publishPoseStamped(
     ros::Publisher& pub,
     const std_msgs::Header& header,
@@ -453,6 +385,26 @@ namespace drc_task_common
     ros_pose.header = header;
     tf::poseEigenToMsg(pose, ros_pose.pose);
     pub.publish(ros_pose);
+  }
+
+  void StandingDrillDetector::configCallback(Config &config, uint32_t level)
+  {
+    boost::mutex::scoped_lock lock(mutex_);
+    verbose_ = config.verbose;
+    cylinder_eps_angle_ = config.cylinder_eps_angle;
+    cylinder_distance_threshold_ = config.cylinder_distance_threshold;
+    cylinder_distance_normal_weight_ = config.cylinder_distance_normal_weight;
+    cylinder_max_iterations_ = config.cylinder_max_iterations;
+    cylinder_min_radius_ = config.cylinder_min_radius;
+    cylinder_max_radius_ = config.cylinder_max_radius;
+    cylinder_probability_ = config.cylinder_probability;
+    foot_search_resolution_ = config.foot_search_resolution;
+    foot_downsample_size_ = config.foot_downsample_size;
+    foot_x_ = config.foot_x;
+    foot_y_ = config.foot_y;
+    foot_z_ = config.foot_z;
+    foot_x_offset_ = config.foot_x_offset;
+    foot_z_offset_ = config.foot_z_offset;
   }
   
 }
