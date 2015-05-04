@@ -9,7 +9,7 @@ from jsk_interactive_marker.srv import *
 from jsk_interactive_marker.msg import *
 from jsk_rviz_plugins.msg import TransformableMarkerOperate
 from jsk_rviz_plugins.srv import RequestMarkerOperate
-
+import os
 import imp
 imp.find_module('jsk_teleop_joy')
 from jsk_teleop_joy.b_control_status import BControl2Status
@@ -28,7 +28,8 @@ from drc_task_common.msg import *
 def b_control_client_init():
     rospy.init_node('b_control_client')
     ns = rospy.get_param('~transformable_interactive_server_nodename', '/transformable_interactive_server')
-
+    global robot_name
+    robot_name = os.environ["ROBOT"]
     # midi device
     global prev_status, status
     prev_status=False
@@ -36,7 +37,7 @@ def b_control_client_init():
     # object marker
     ## insert / erase
     global req_marker_operate_srv, set_color_pub
-    global get_pose_srv, set_pose_pub
+    global get_pose_srv, set_pose_pub, get_ik_arm_srv, get_ik_arm_pose_srv
     rospy.wait_for_service(ns+'/request_marker_operate')
     rospy.wait_for_service(ns+'/get_pose')
     rospy.wait_for_service(ns+'/set_dimensions')
@@ -44,6 +45,8 @@ def b_control_client_init():
     set_color_pub = rospy.Publisher(ns+'/set_color', ColorRGBA)
     get_pose_srv = rospy.ServiceProxy(ns+'/get_pose', GetTransformableMarkerPose)
     set_pose_pub = rospy.Publisher(ns+'/set_pose', PoseStamped)
+    get_ik_arm_srv = rospy.ServiceProxy('/get_ik_arm', GetIKArm)
+    get_ik_arm_pose_srv = rospy.ServiceProxy('/get_ik_arm_pose', GetIKArmPose)
     global default_frame_id
     default_frame_id = rospy.get_param('~default_frame_id', 'odom')
     ## configuration
@@ -133,11 +136,12 @@ def b_control_joy_cb(msg):
     insert_box_flag = (status.buttonU1 != prev_status.buttonU1)
     insert_cylinder_flag = (status.buttonU2 != prev_status.buttonU2)
     insert_torus_flag = (status.buttonU3 != prev_status.buttonU3)
+    insert_hand_flag = (status.buttonU7 != prev_status.buttonU7)
     if insert_box_flag or insert_cylinder_flag or insert_torus_flag:
         color = ColorRGBA(r=1.0, g=1.0, b=0.0, a=0.6)
-        current_pose = get_pose_srv('').pose_stamped.pose
-        if current_pose.orientation.x == 0 and current_pose.orientation.y == 0 and current_pose.orientation.z == 0 and current_pose.orientation.w == 0:
-            current_pose.orientation.w = 1
+        current_pose_stamped = get_pose_srv('').pose_stamped
+        if current_pose_stamped.pose.orientation.x == 0 and current_pose_stamped.pose.orientation.y == 0 and current_pose_stamped.pose.orientation.z == 0 and current_pose_stamped.pose.orientation.w == 0:
+            current_pose_stamped.pose.orientation.w = 1
         # midi_feedback_pub.publish([JoyFeedback(id=3, intensity=0.5)]) # reset handle variable in the generation timing
     ## insert box
     if insert_box_flag:
@@ -152,12 +156,41 @@ def b_control_joy_cb(msg):
         erase_all_marker()
         insert_marker(shape_type=TransformableMarkerOperate.TORUS, name='torus1', description='')
         color = ColorRGBA(r=1.0, g=1.0, b=0.0, a=0.6) # torus is triangle mesh
-    if insert_box_flag or insert_cylinder_flag or insert_torus_flag:
+    if insert_hand_flag:
+        erase_all_marker()
+        try:
+            ik_arm = get_ik_arm_srv().ik_arm
+        except rospy.ServiceException, e:
+            ik_arm = ":rarm"
+        if (ik_arm==":rarm"):
+            if robot_name=="JAXON":
+                mesh_resource_name="package://hrpsys_ros_bridge_tutorials/models/STARO_meshes/RARM_LINK7_mesh.dae"
+            elif robot_name=="STARO":
+                mesh_resource_name="package://hrpsys_ros_bridge_tutorials/models/JAXON_meshes/RARM_LINK7_mesh.dae"
+            else:
+                mesh_resource_name="package://hrpsys_ros_bridge_tutorials/models/HRP3HAND_R_meshes/RARM_LINK6_mesh.dae"
+            current_pose_stamped = PoseStamped(std_msgs.msg.Header(stamp=rospy.Time.now(), frame_id="jsk_model_marker_interface/robot/RARM_LINK6"), Pose(orientation=Quaternion(0, 0, 0, 1)))
+        else:
+            if robot_name=="JAXON":
+                mesh_resource_name="package://hrpsys_ros_bridge_tutorials/models/STARO_meshes/LARM_LINK7_mesh.dae"
+            elif robot_name=="STARO":
+                mesh_resource_name="package://hrpsys_ros_bridge_tutorials/models/JAXON_meshes/LARM_LINK7_mesh.dae"
+            else:
+                mesh_resource_name="package://hrpsys_ros_bridge_tutorials/models/HRP3HAND_L_meshes/LARM_LINK6_mesh.dae"
+            current_pose_stamped = PoseStamped(std_msgs.msg.Header(stamp=rospy.Time.now(), frame_id="jsk_model_marker_interface/robot/LARM_LINK6"), Pose(orientation=Quaternion(0, 0, 0, 1)))
+        
+        color = ColorRGBA(r=1.0, g=1.0, b=0.0, a=0.6)
+        # try:
+        #     #current_pose_stamped = get_ik_arm_pose_srv('').pose_stamped
+        #     current_pose_stamped = get_pose_srv('').pose_stamped
+        # except rospy.ServiceException, e:
+        #     current_pose_stamped = PoseStamped()
+        if current_pose_stamped.pose.orientation.x == 0 and current_pose_stamped.pose.orientation.y == 0 and current_pose_stamped.pose.orientation.z == 0 and current_pose_stamped.pose.orientation.w == 0:
+            current_pose_stamped.pose.orientation.w = 1
+        insert_marker(shape_type=TransformableMarkerOperate.MESH_RESOURCE, name='hand1', description='', mesh_resource=mesh_resource_name, mesh_use_embedded_materials=True)
+        set_x_pub.publish(1.0) # dammy
+    if insert_box_flag or insert_cylinder_flag or insert_torus_flag or insert_hand_flag:
         set_color_pub.publish(color)
-        current_pose_stamped = PoseStamped()
-        current_pose_stamped.header.frame_id = default_frame_id
-        current_pose_stamped.header.stamp = rospy.Time.now()
-        current_pose_stamped.pose = current_pose
         set_pose_pub.publish(current_pose_stamped)
     # change marker configuration
     v1 = Float32()
@@ -346,9 +379,9 @@ def disable_auto_set_mode(req):
     auto_set_mode = False
     return srv.EmptyResponse()
 
-def insert_marker(shape_type=TransformableMarkerOperate.BOX, name='default_name', description='default_description'):
+def insert_marker(shape_type=TransformableMarkerOperate.BOX, name='default_name', description='default_description', mesh_resource='', mesh_use_embedded_materials=False):
     try:
-        req_marker_operate_srv(TransformableMarkerOperate(type=shape_type, action=TransformableMarkerOperate.INSERT, frame_id=default_frame_id, name=name, description=description))
+        req_marker_operate_srv(TransformableMarkerOperate(type=shape_type, action=TransformableMarkerOperate.INSERT, frame_id=default_frame_id, name=name, description=description, mesh_resource=mesh_resource, mesh_use_embedded_materials=mesh_use_embedded_materials))
     except rospy.ServiceException, e:
         print 'insert_marker service call failed: %s'%e
 

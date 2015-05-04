@@ -3,6 +3,7 @@
  ;(load "package://drc_task_common/models/dewalt_dc550ka.l")
 (load "package://drc_task_common/models/takenoko-drill")
 (load "package://drc_task_common/models/gun-drill.l")
+(require "package://pr2eus/speak.l")
 
 (setq *drill-main-arm* :rarm)
 (setq *drill-support-arm* :larm)
@@ -10,7 +11,6 @@
 ;; (setq *use-f-sensor-search* nil)
 ;; (setq *drill-reverse-hand* t)
 ;; (setq *drill-button-point* :attachment)
-
 (setq *default-drill-type* :takenoko)
 
 ;; generate robot
@@ -427,7 +427,7 @@
 	 (grasp-up-dist 120)
 	 (air-grasp-up-dist 30)
          (down-dist 25)
-         (push-dist 0)
+         (push-dist 20)
          (ik-results nil)
          (original-foot-midcoords (send (send *robot* :foot-midcoords) :copy-worldcoords))
          (original-drill-coords (send *drill* :copy-worldcoords))
@@ -582,6 +582,8 @@
              ;(send *ri* :start-impedance *drill-main-arm* :moment-gain (float-vector 0 0 0) :k-p 1000 :d-p 400)) ;; start imp hard
             (t
              (send *ri* :start-impedance :arms :k-p 200 :d-p 1000 :m-p 5 :m-r 1 :d-r 15 :k-r 20))))
+    (send *ri* :set-ref-force #f(0 0 0) 2000 *drill-main-arm*)
+    (send *ri* :set-ref-force #f(0 0 0) 2000 *drill-support-arm*)
     (drill-hook :arm :arms)
     (send *robot* :angle-vector (get-drill-reset-pose))
     (unless (check-angle-vector-distance)
@@ -629,7 +631,17 @@
     (unix::usleep 500000)
     (when real? (drill-full-grasp))
     ;;grasp-up
-    (send *ri* :set-ref-force #f(0 0 -20) 2000 *drill-main-arm*)
+    (if (< (elt (send *ri* :state :absolute-force-vector *drill-main-arm*) 2) -10)
+        (progn
+          (speak-en "grasp succeeded, add ref force")
+          (send *ri* :set-ref-force #f(0 0 -20) 2000 *drill-main-arm*)
+          )
+      (progn
+          (speak-en "grasp failed, not add ref force")
+          (send *ri* :set-ref-force #f(0 0 0) 2000 *drill-main-arm*)
+        )
+      )
+    
     (send *robot* :angle-vector (elt drill-motion-av-list 4))
     (when real? (model2real :time 3000))
     (when *use-dual-arm-ik*
@@ -1201,7 +1213,6 @@
   (drill-coords-list &key (draw? nil) (use-ri? t) (drill-type *default-drill-type*) (recognized-coords-symbol :edge-coords)
   (overwrite-stand-coords? t) (stand-coords nil))
   (setq *drill-stand-coords* (or stand-coords (make-coords)))
-  (send *robot* :fix-leg-to-coords *drill-stand-coords*)
   (when (equal (length drill-coords-list) 0) (ros::ros-info "wall coords are empty") (return-from nil nil))
   (set-drill-environment-full (send (elt drill-coords-list 0) :copy-worldcoords) :draw? draw? :use-ri? use-ri? :drill-type drill-type :recognized-coords-symbol recognized-coords-symbol)
   ;(send *drill* :put :destination-coords-list drill-coords-list)
@@ -1220,6 +1231,7 @@
       )
     (send *drill* :put :destination-coords-list dest-coords-list)
     )
+  (send *robot* :fix-leg-to-coords *drill-stand-coords*)
   (let* ((drill-motion-av-list (get-drill-wall-motion :draw? draw?))
          (drill-motion-length (length drill-motion-av-list))
 	 (mid-dist-pos (float-vector 0 0 0)))
@@ -1266,8 +1278,8 @@
          (drill-motion-length (length drill-motion-av-list)))
     (when (= drill-motion-length 0) (return-from send-drill-wall-motion))
     (when (equal drill-type :takenoko)
-      (send *robot* :angle-vector (get-reach-drill-pre-pose))
-      (when real? (model2real :time 5000))
+      ;; (send *robot* :angle-vector (get-reach-drill-pre-pose))
+      ;; (when real? (model2real :time 5000))
       (send *robot* :angle-vector (get-pierce-drill-pre-pose))
       (when real? (model2real :time 5000))
       )
@@ -1291,10 +1303,10 @@
       (when real? (model2real :time (if (or (equal i 0) (equal i (- (length drill-motion-av-list) 1))) 5000 15000)))
       )
     (when (equal drill-type :takenoko)
-      (send *robot* :angle-vector (get-reach-drill-pre-pose))
-      (when real? (model2real :time 5000))
       (send *robot* :angle-vector (get-pierce-drill-pre-pose))
       (when real? (model2real :time 5000))
+      ;; (send *robot* :angle-vector (get-reach-drill-pre-pose))
+      ;; (when real? (model2real :time 5000))
       )
     )
   )
@@ -1307,7 +1319,7 @@
     (setq stand-coords nil)
     )
   (when update?
-    (get-drill-wall-motion-full coords-list :use-ri? nil :drill-type drill-type :recognized-coords-symbol :edge-coords :draw? t :stand-coords stand-coords :overwrite-stand-coords overwrite-stand-coords?))
+    (get-drill-wall-motion-full coords-list :use-ri? nil :drill-type drill-type :recognized-coords-symbol :edge-coords :draw? t :stand-coords stand-coords :overwrite-stand-coords? overwrite-stand-coords?))
   (ros::ros-info "drill-wall-stand-coords: ~a~%" *drill-stand-coords*)
   (ros::ros-info "drill-ik-results: ~a~%" *drill-ik-results*)
   (if (and *drill-stand-coords* (check-stand-coords *drill-stand-coords*))
@@ -1424,7 +1436,7 @@
 	)
   ))
     (send *robot* :angle-vector angle-ret)
-    (when (equal arm :larm) (setq angle-ret (get-mirror-angle-vector)))
+    (when (equal *drill-main-arm* :larm) (setq angle-ret (get-mirror-angle-vector)))
     angle-ret
     )
   )

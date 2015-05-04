@@ -49,6 +49,8 @@
   (ros::advertise-service "/dissoc_object_to_robot" std_srvs::Empty #'dissoc-object-to-robot)
   (ros::advertise-service "/set_object_mode_next" std_srvs::Empty #'set-obj-mode-next)
   (ros::advertise-service "/set_ik_mode_next" std_srvs::Empty #'set-ik-mode-next)
+  (ros::advertise-service "/get_ik_arm" drc_task_common::GetIKArm #'get-ik-arm)
+  (ros::advertise-service "/get_ik_arm_pose" drc_task_common::GetIKArmPose #'get-ik-arm-pose)
   (ros::advertise (format nil "~a~a" *ns* "/set_pose") geometry_msgs::PoseStamped 1)
   (ros::advertise "obj_state_text" jsk_rviz_plugins::OverlayText 1)
   ;; object
@@ -234,6 +236,19 @@
            (send *obj* :assoc (make-cascoords :coords approach-coords :name :approach)))
          (send *obj* :put :type :torus)
          )
+        ((equal *obj-type* jsk_rviz_plugins::TransformableMarkerOperate::*MESH_RESOURCE*) ;; hand mesh
+         (setq *obj* (make-cube 100 100 100)) ;; dummy eus object instad of hand mesh
+         (let* ((hand-trans))
+           (setq hand-trans
+                 (send (send (send (send *robot* *ik-arm* :end-coords) :parent) :copy-worldcoords)
+                       :transformation (send (send *robot* *ik-arm* :end-coords) :copy-worldcoords)))
+           (send *obj* :assoc (make-cascoords :coords (make-coords) :name :origin))
+           ;; same with :origin
+           (send *obj* :assoc (make-cascoords :coords hand-trans :name :handle))
+           (send *obj* :assoc (make-cascoords :coords hand-trans :name :approach))
+           )
+         (send *obj* :put :type :hand-mesh)
+         )
         )
   (when *handle-reverse-flag*
     (send (find-if #'(lambda (x) (equal (send x :name) :handle)) (send *obj* :descendants)) :rotate pi :x))
@@ -364,6 +379,18 @@
       (setq *ik-mode-index* 0))
     (publish-obj-mode-text)
     res))
+(defun get-ik-arm
+  (req)
+  (let* ((res (send req :response)))
+    (send res :ik_arm (if (equal *ik-arm* :rarm) ":rarm" ":larm"))
+    res))
+(defun get-ik-arm-pose
+  (req)
+  (let* ((res (send req :response)) (original-av (send *robot* :angle-vector)) ik-arm-coords)
+    (setq ik-arm-coords (send (send *robot* *ik-arm* :end-coords :worldcoords) :copy-worldcoords))
+    (send res :pose_stamped (instance geometry_msgs::PoseStamped :init :pose (ros::coords->tf-pose (send (send (send (send *robot* :body_lk) :worldcoords) :copy-worldcoords) :transformation ik-arm-coords :local)) :header (instance std_msgs::Header :init :frame_id "BODY" :stamp (ros::time-now))))
+    (send *robot* :angle-vector original-av)
+    res))
 
 (defun set-obj-mode
   ()
@@ -485,7 +512,7 @@
     (unless (equal (elt *ik-mode-list* *ik-mode-index*) :none)
       (setq interpolate-mode :approach))
     ;; solve ik
-    (setq *ik-result* (send-ik-request :interpolate-mode interpolate-mode))
+    (setq *ik-result* (send-ik-request :interpolate-mode interpolate-mode :rotation-axis (if (equal (send *obj* :get :type) :hand-mesh) (list t t t) (list :z t t))))
     ;(if *pub-grasp-pose-feedback-flag* (pub-grasp-pose-feedback))
     (cond (*ik-result*
            (send-joint-states-to-marker))
@@ -728,7 +755,10 @@
             ((equal (send *obj* :get :type) :cylinder)
              (setq frame-id "cylinder1"))
             ((equal (send *obj* :get :type) :torus)
-             (setq frame-id "torus1")))
+             (setq frame-id "torus1"))
+            ((equal (send *obj* :get :type) :hand-mesh)
+             (setq frame-id "hand1"))
+            )
       (publish-object-handle :frame-id frame-id)
       (publish-object-approach :frame-id frame-id)
       ))

@@ -1,6 +1,6 @@
 <launch>
   <arg name="INPUT_IMAGE" value="/multisense/left/image_rect_color" />
-  <arg name="INPUT_POINT_CLOUD" value="/multisense/resize_1_1/points" />
+  <arg name="INPUT_POINT_CLOUD" value="/multisense/organized_image_points2_color" />
   <arg name="INPUT_DOWNSAMPLED_POINT_CLOUD" value="/multisense/resize_1_8/points" />
   <group ns="drill_recognition_for_wall">
     <node pkg="nodelet" type="nodelet" name="manager" args="manager" output="screen">
