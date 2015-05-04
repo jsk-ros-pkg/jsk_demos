@@ -47,6 +47,9 @@
 #include <geometry_msgs/PoseStamped.h>
 #include <sensor_msgs/PointCloud.h>
 
+#include <dynamic_reconfigure/server.h>
+#include <drc_task_common/StandingDrillDetectorConfig.h>
+
 #include <pcl_ros/pcl_nodelet.h> // Include all the dependency of pcl_ros
 
 #include <jsk_pcl_ros/geo_util.h>
@@ -56,6 +59,7 @@ namespace drc_task_common
   {
   public:
     typedef boost::shared_ptr<StandingDrillDetector> Ptr;
+    typedef StandingDrillDetectorConfig Config;
     typedef message_filters::sync_policies::ExactTime<
       sensor_msgs::PointCloud2,
       jsk_recognition_msgs::BoundingBoxArray,
@@ -70,7 +74,7 @@ namespace drc_task_common
       const sensor_msgs::PointCloud2::ConstPtr& cloud_msg,
       const jsk_recognition_msgs::BoundingBoxArray::ConstPtr& box_msg,
       const jsk_recognition_msgs::ClusterPointIndices::ConstPtr& indices_msg);
-    
+    virtual void configCallback(Config &config, uint32_t level);
     virtual jsk_pcl_ros::Cylinder::Ptr estimateStandingDrill(
       pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud,
       const jsk_recognition_msgs::BoundingBox& box);
@@ -89,9 +93,7 @@ namespace drc_task_common
       const Eigen::Affine3f pose,
       const jsk_recognition_msgs::BoundingBox& box);
     
-    virtual double computeFootCoefficients2(
-      pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud,
-      const Eigen::Affine3f pose);
+    boost::shared_ptr <dynamic_reconfigure::Server<Config> > srv_;
     ros::NodeHandle nh_, pnh_;
     boost::mutex mutex_;
     boost::shared_ptr<message_filters::Synchronizer<SyncPolicy> > sync_;
@@ -102,7 +104,22 @@ namespace drc_task_common
     message_filters::Subscriber<sensor_msgs::PointCloud2> sub_cloud_;
     message_filters::Subscriber<jsk_recognition_msgs::BoundingBoxArray> sub_box_;
     message_filters::Subscriber<jsk_recognition_msgs::ClusterPointIndices> sub_indices_;
-
+    // Parmaeters
+    bool verbose_;
+    double cylinder_eps_angle_;
+    double cylinder_distance_threshold_;
+    double cylinder_distance_normal_weight_;
+    int cylinder_max_iterations_;
+    double cylinder_min_radius_;
+    double cylinder_max_radius_;
+    double cylinder_probability_;
+    int foot_search_resolution_;
+    double foot_downsample_size_;
+    double foot_x_;
+    double foot_y_;
+    double foot_z_;
+    double foot_x_offset_;
+    double foot_z_offset_;
     
   private:
     
