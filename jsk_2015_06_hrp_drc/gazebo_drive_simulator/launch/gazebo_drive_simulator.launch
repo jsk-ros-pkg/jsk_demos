@@ -20,11 +20,26 @@
        args="pub /drc_world/robot_enter_car geometry_msgs/Pose '{}'" output="screen" /> -->
 
   <!-- handle controller -->
-  <group if="$(arg USE_HANDLE)">
-    <include file="$(find drc_task_common)/launch/fc/vehicle/handle_operation_interface.launch">
-      <arg name="CONTROLLER_DEV" value="$(arg CONTROLLER_DEV)"/>
-      <arg name="OCS_NS" value="$(arg CMD_NAMESPACE)"/>
+  <group if="$(arg USE_HANDLE)" ns="$(arg CMD_NAMESPACE)">
+    <include file="$(find drc_task_common)/launch/fc/vehicle/driving_force_gt.launch">
+      <arg name="CONTROLLER_DEV" default="$(arg CONTROLLER_DEV)"/>
     </include>
+    <node name="gazebo_drive_simulator_handle_relay" pkg="topic_tools" type="relay"
+          args="handle_controller/handle hand_wheel/cmd" respawn="false" output="screen">
+      <param name="lazy" type="bool" value="false"/>
+    </node>
+    <node name="gazebo_drive_simulator_accel_relay" pkg="topic_tools" type="relay"
+          args="handle_controller/accel gas_pedal/cmd" respawn="false" output="screen">
+      <param name="lazy" type="bool" value="false"/>
+    </node>
+    <node name="gazebo_drive_simulator_brake_relay" pkg="topic_tools" type="relay"
+          args="handle_controller/brake brake_pedal/cmd" respawn="false" output="screen">
+      <param name="lazy" type="bool" value="false"/>
+    </node>
+    <node name="gazebo_drive_simulator_gear_relay" pkg="topic_tools" type="relay"
+          args="handle_controller/gear direction/cmd" respawn="false" output="screen">
+      <param name="lazy" type="bool" value="false"/>
+    </node>
   </group>
 
   <!-- robot view point -->
