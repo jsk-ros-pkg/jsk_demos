@@ -49,6 +49,8 @@
   (ros::advertise-service "/dissoc_object_to_robot" std_srvs::Empty #'dissoc-object-to-robot)
   (ros::advertise-service "/set_object_mode_next" std_srvs::Empty #'set-obj-mode-next)
   (ros::advertise-service "/set_ik_mode_next" std_srvs::Empty #'set-ik-mode-next)
+  (ros::advertise-service "/get_ik_arm" drc_task_common::GetIKArm #'get-ik-arm)
+  (ros::advertise-service "/get_ik_arm_pose" drc_task_common::GetIKArmPose #'get-ik-arm-pose)
   (ros::advertise (format nil "~a~a" *ns* "/set_pose") geometry_msgs::PoseStamped 1)
   (ros::advertise "obj_state_text" jsk_rviz_plugins::OverlayText 1)
   ;; object
@@ -363,6 +365,18 @@
     (when (= *ik-mode-index* (length *ik-mode-list*))
       (setq *ik-mode-index* 0))
     (publish-obj-mode-text)
+    res))
+(defun get-ik-arm
+  (req)
+  (let* ((res (send req :response)))
+    (send res :ik_arm (if (equal *ik-arm* :rarm) ":rarm" ":larm"))
+    res))
+(defun get-ik-arm-pose
+  (req)
+  (let* ((res (send req :response)) (original-av (send *robot* :angle-vector)) ik-arm-coords)
+    (setq ik-arm-coords (send (send *robot* *ik-arm* :end-coords :worldcoords) :copy-worldcoords))
+    (send res :pose_stamped (instance geometry_msgs::PoseStamped :init :pose (ros::coords->tf-pose (send (send (send (send *robot* :body_lk) :worldcoords) :copy-worldcoords) :transformation ik-arm-coords :local)) :header (instance std_msgs::Header :init :frame_id "BODY" :stamp (ros::time-now))))
+    (send *robot* :angle-vector original-av)
     res))
 
 (defun set-obj-mode
