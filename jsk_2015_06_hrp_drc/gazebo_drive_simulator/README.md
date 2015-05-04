@@ -26,25 +26,36 @@ $ export VRC_CHEATS_ENABLED=1
 ``
 
 ## Execute
-### start atlas simulation
+### launch simulation
+If you want to use atlas with handle controller, execute following command (handle_controller mode):
 ```bash
-$ rosrun gazebo_drive_simulator start_drc_practice_task_1.sh
+$ rosrun gazebo_drive_simulator start_drc_practice_task_1.sh true
 ```
 
-### start staro simulation
+If you want to use atlas with robot driving controller in euslisp, execute following command (euslisp mode):
+```bash
+$ rosrun gazebo_drive_simulator start_drc_practice_task_1.sh false
+$ roslaunch drc_task_common vehicle.launch ROBOT:=<robotname>
+```
+
+If you want to use staro, execute following command:
 `` bash
 $ roslaunch hrpsys_gazebo_tutorials drc_practice_task_1_staro.laucnh
 $ rosrun gazebo_drive_simulator start_staro_drive_simulator.sh
 ```
+staro have not support euslisp mode yet.
 
 ### move handle and pedal of drc_vehicle in gazebo
-You can move drc_vehicle in simulator by driving_force_gt pro.
+You can move drc_vehicle in simulator by driving_force_gt pro in handel_controller mode.
 Please make sure that handle contorller is connected as /dev/input/js0.
 ```bash
 jstest /dev/input/js0
 ```
 
-If you want to move vehicle without handle controller, you can send following command.
+You can also move drc_vehicle in simulator by robot-driving-controller in euslisp mode.
+In euslisp mode, same user interface as real drc can be used.
+
+If you want to move vehicle without handle_controller and euslisp, you can send following command.
 ```bash
 rostopic echo /drc_vehicle_xp900/hand_wheel/cmd std_msgs/Float64 "{data: <rad>}"
 rostopic echo /drc_vehicle_xp900/gas_pedal/cmd std_msgs/Float64 "{data: <percentage>}"
