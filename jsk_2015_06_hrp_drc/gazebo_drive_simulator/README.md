@@ -37,7 +37,9 @@ If you want to use atlas with robot driving controller in euslisp, execute follo
 $ rosrun gazebo_drive_simulator start_drc_practice_task_1.sh false
 $ roslaunch drc_task_common vehicle.launch ROBOT:=<robotname>
 ```
-robotname does not matter in euslisp mode.
+robotnameche does not matter in euslisp mode.
+When you want to use ps3joy locally (not OCS) as robot controller, pass LAUNCH_PS3JOY:="true" and OCS_NS:="/" to vehicle.launch.
+When you want to use driving_force_gt locally (not OCS) as robot controller, pass LAUNCH_STEERING:="true" and OCS_NS:="/" to vehicle.launch.
 
 If you want to use staro, execute following command:
 ```bash
