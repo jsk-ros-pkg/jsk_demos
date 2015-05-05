@@ -25,6 +25,9 @@
           output="screen">
       <remap from="~input" to="$(arg INPUT_POINT_CLOUD)" />
       <remap from="~input/hint/cloud" to="filtered_cloud/output" />
+      <rosparam>
+        enable_normal_filtering: false
+      </rosparam>
     </node>
 
     <node pkg="jsk_perception" type="rect_to_mask_image"
