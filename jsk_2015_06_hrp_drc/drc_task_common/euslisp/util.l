@@ -300,6 +300,19 @@
     (append ret (list (elt params 7)))
     ))
 
+(defun door-params-to-float-vector
+  (door-params door-push/pull length)
+  (let (ret)
+    (setq ret (box-to-float-vector (car door-params) (cadr door-params) length))
+    (setf (elt ret 9) door-push/pull)
+    ret))
+
+(defun float-vector-to-door-params
+  (params)
+  (let ((ret (float-vector-to-box params)))
+    (append ret (list (elt params 9)))
+    ))
+
 ;; message handler
 (defclass narrowband-message-handler
   :super propertied-object

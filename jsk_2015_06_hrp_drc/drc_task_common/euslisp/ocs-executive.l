@@ -114,6 +114,7 @@
     (setq arm-mode :rarm-preferred)
     (setq overwrite-stand-coords? nil)
     (setq valve-grasp-mode :edge-grasp-preferred)
+    (setq door-push/pull :push)
     (send self :show-text "initialized" :success)
     self)
   (:report-callback (msg)
@@ -575,9 +576,16 @@
     ;; send door params to fc
     (let ((msg (instance drc_com_common::OCS2FCSmall :init)))
       (send msg :type drc_com_common::OCS2FCSmall::*DOOR_EXEC*)
-      (send msg :float_params (box-to-float-vector
-                               (car door-params) (cadr door-params)
-                               (length (send msg :float_params))))
+      (let (door-push/pull-idx)
+        (cond ((equal door-push/pull :push)
+               (setq door-push/pull-idx drc_com_common::OCS2FCSmall::*DOOR_PUSH*))
+              ((equal door-push/pull :pull)
+               (setq door-push/pull-idx drc_com_common::OCS2FCSmall::*DOOR_PULL*))
+              (t
+               (setq door-push/pull-idx drc_com_common::OCS2FCSmall::*UNDECIDED*))
+              )
+        (send msg :float_params
+              (door-params-to-float-vector door-params door-push/pull-idx (length (send msg :float_params)))))
       (cond ((not (boundp '*door-arm*))
              (send msg :arm_side drc_com_common::OCS2FCSmall::*UNDECIDED*))
             ((equal *door-arm* :larm)
@@ -780,7 +788,7 @@
           :door-name :drc-box2 :door-coords (elt door-params 0)
           :arm (send self :get-arm-side) :overwrite-arm-side? (send self :is-arm-overwrite)
           :stand-coords (make-coords) :overwrite-stand-coords? t
-          :push/pull :pull
+          :push/pull door-push/pull
           :update? t)
          (send smachine :go-to :selecting-exec-for-door)))
       ))
@@ -1081,7 +1089,7 @@
             :door-name :drc-box2 :door-coords (elt door-params 0)
             :arm (send self :get-arm-side) :overwrite-arm-side? (send self :is-arm-overwrite)
             :stand-coords (get-robot-model-current-pos) :overwrite-stand-coords? overwrite-stand-coords?
-            :push/pull :pull
+            :push/pull door-push/pull
             :update? t)
            (send smachine :go-to :selecting-exec-for-door))
           )
@@ -1242,48 +1250,20 @@
 
 ;; optional button
 (defmethod ocs-executive-app
+  ;; stand-coords overwrite
   (:overwrite-stand-coords-callback
    (req)
-   (setf overwrite-stand-coords? t)
+   (setq overwrite-stand-coords? t)
    (send self :show-text "enable stand-coords overwrite" :success)
    (send req :response)
    )
   (:not-overwrite-stand-coords-callback
    (req)
-   (setf overwrite-stand-coords? nil)
+   (setq overwrite-stand-coords? nil)
    (send self :show-text "disable stand-coords overwrite" :success)
    (send req :response)
    )
-  (:valve-edge-grasp-only-callback
-   (req)
-   (setf valve-grasp-mode :edge-grasp-only)
-   (send self :show-text "valve edge grasp only" :success)
-   (send req :response)
-   )
-  (:valve-edge-grasp-preferred-callback
-   (req)
-   (setf valve-grasp-mode :edge-grasp-preferred)
-   (send self :show-text "valve edge grasp preferred" :success)
-   (send req :response)
-   )
-  (:valve-center-grasp-preferred-callback
-   (req)
-   (setf valve-grasp-mode :center-grasp-preferred)
-   (send self :show-text "valve center grasp preferred" :success)
-   (send req :response)
-   )
-  (:valve-center-grasp-only-callback
-   (req)
-   (setf valve-grasp-mode :center-grasp-only)
-   (send self :show-text "valve center grasp only" :success)
-   (send req :response)
-   )
-  (:is-valve-grasp-center
-   ()
-   (or (equal valve-grasp-mode :center-grasp-only) (equal valve-grasp-mode :center-grasp-preferred)))
-  (:is-valve-grasp-overwrite
-   ()
-   (or (equal valve-grasp-mode :edge-grasp-preferred) (equal valve-grasp-mode :center-grasp-preferred)))
+  ;; head overwrite
   (:enable-head-overwrite
    (req)
    (let ((msg (instance drc_com_common::OCS2FCSmall :init)))
@@ -1298,6 +1278,50 @@
      (send msg :type drc_com_common::OCS2FCSmall::*DISABLE_OVERWRITE_HEAD_JOINT*)
      (send self :show-text "disable head overwrite")
      (send self :send-to-fc msg))
+   (send req :response)
+   )
+  ;; valve grasp
+  (:valve-edge-grasp-only-callback
+   (req)
+   (setq valve-grasp-mode :edge-grasp-only)
+   (send self :show-text "valve edge grasp only" :success)
+   (send req :response)
+   )
+  (:valve-edge-grasp-preferred-callback
+   (req)
+   (setq valve-grasp-mode :edge-grasp-preferred)
+   (send self :show-text "valve edge grasp preferred" :success)
+   (send req :response)
+   )
+  (:valve-center-grasp-preferred-callback
+   (req)
+   (setq valve-grasp-mode :center-grasp-preferred)
+   (send self :show-text "valve center grasp preferred" :success)
+   (send req :response)
+   )
+  (:valve-center-grasp-only-callback
+   (req)
+   (setq valve-grasp-mode :center-grasp-only)
+   (send self :show-text "valve center grasp only" :success)
+   (send req :response)
+   )
+  (:is-valve-grasp-center
+   ()
+   (or (equal valve-grasp-mode :center-grasp-only) (equal valve-grasp-mode :center-grasp-preferred)))
+  (:is-valve-grasp-overwrite
+   ()
+   (or (equal valve-grasp-mode :edge-grasp-preferred) (equal valve-grasp-mode :center-grasp-preferred)))
+  ;; door direction
+  (:door-direction-push-callback
+   (req)
+   (setq door-push/pull :push)
+   (send self :show-text "door direction push" :success)
+   (send req :response)
+   )
+  (:door-direction-pull-callback
+   (req)
+   (setq door-push/pull :pull)
+   (send self :show-text "door direction pull" :success)
    (send req :response)
    )
   )
@@ -1401,6 +1425,8 @@
 (ros::advertise-service "valve_center_grasp_only" std_srvs::Empty #'send *app* :valve-center-grasp-only-callback)
 (ros::advertise-service "overwrite_stand_coords" std_srvs::Empty #'send *app* :overwrite-stand-coords-callback)
 (ros::advertise-service "not_overwrite_stand_coords" std_srvs::Empty #'send *app* :not-overwrite-stand-coords-callback)
+(ros::advertise-service "door_direction_push" std_srvs::Empty #'send *app* :door-direction-push-callback)
+(ros::advertise-service "door_direction_pull" std_srvs::Empty #'send *app* :door-direction-pull-callback)
 
 ;; Drive joystick controller topics
 (ros::subscribe "/ocs/drive/operation/handle_cmd" std_msgs::Float64 #'send *app* :drive-handle-angle-callback)

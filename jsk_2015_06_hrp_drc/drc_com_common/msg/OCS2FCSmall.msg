@@ -5,14 +5,19 @@ uint8 image_type
 uint8 IMAGE_RECT=0
 uint8 PANORAMA_VIEW=1
 uint8 arm_side
-uint8 UNDECIDED=0
-uint8 LARM=1
-uint8 RARM=2
-uint8 VALVE_CENTER_GRASP=1
-uint8 VALVE_EDGE_GRASP=2
 uint32[16] image_roi_info
 float32[36] float_params
 float32[6] stand_coords
+# arm
+uint8 UNDECIDED=0
+uint8 LARM=1
+uint8 RARM=2
+# valve grasp
+uint8 VALVE_CENTER_GRASP=1
+uint8 VALVE_EDGE_GRASP=2
+# door push/pull
+uint8 DOOR_PUSH=1
+uint8 DOOR_PULL=2
 # action type
 # go-pos
 uint8 GO_POS_REGION=1
