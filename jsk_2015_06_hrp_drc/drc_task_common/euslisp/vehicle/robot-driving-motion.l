@@ -533,7 +533,7 @@
      )
    )
   (:approach-accel-pedal
-   (&key (limb :rleg) (tm 5000) (debug-view nil) (reach-until-touch nil))
+   (&rest args &key (limb :rleg) (tm 5000) (debug-view nil) (reach-until-touch nil))
    (let (approach-result)
      (setq approach-result
            (send self :approach-pedal limb :accel-pedal :tm tm :debug-view debug-view)
@@ -572,7 +572,7 @@
      )
    )
   (:approach-brake-pedal
-   (&key (limb :lleg) (tm 5000) (debug-view nil) (reach-until-touch nil))
+   (&rest args &key (limb :lleg) (tm 5000) (debug-view nil) (reach-until-touch nil))
    (let (approach-result)
      (setq approach-result
            (send self :approach-pedal limb :brake-pedal :tm tm :debug-view debug-view)

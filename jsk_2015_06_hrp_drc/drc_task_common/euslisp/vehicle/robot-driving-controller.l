@@ -267,13 +267,13 @@
      )
    )
   (:approach-accel
-   ()
-   (send motion :approach-accel-pedal)
+   (&rest args)
+   (send* motion :approach-accel-pedal args)
    (setq accel-flag t) ;; enbale accel
    )
   (:approach-brake
-   ()
-   (send motion :approach-brake-pedal)
+   (&rest args)
+   (send* motion :approach-brake-pedal args)
    )
   (:approach-floor
    (&rest args &key (offset #f(0 0 50)) (start-impedance t) (start-ref-force nil) &allow-other-keys)
@@ -281,17 +281,17 @@
           :start-impedance start-impedance :stop-ref-force start-ref-force
           args) ;; approach to floor
    )
-  (:step-accel
-   (command)
-   (send motion :step-accel-pedal command :relative nil :use-controller t) ;; step accel
+  (:step-accel ;; mainly for command-line
+   (command &rest args)
+   (send* motion :step-accel-pedal command args) ;; step accel
    )
   (:detatch-accel
    ()
    (send motion :detatch-accel-pedal :use-controller t) ;; detatch accel for emergency
    )
-  (:step-brake
-   (command)
-   (send motion :step-brake-pedal command :relative nil :use-controller t) ;; step brake
+  (:step-brake ;; mainly for command-line
+   (command &rest args)
+   (send* motion :step-brake-pedal command args) ;; step brake
    )
   (:support-by-leg
    (&rest args &key (offset #f(0 0 0)) (start-impedance t) (start-ref-force t) &allow-other-keys)
