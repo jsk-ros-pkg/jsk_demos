@@ -27,10 +27,10 @@
    (send self :step-accel-command 20)
    (send self :release-accel-command 0)
    )
-  (:step-brake
-   (command)
+  (:brake-cmd
+   (cmd)
    (warn "Real Vehicle Mode: Brake Disabled~%")
-   (send self :step-accel 0.0) ;; release accel forcely
+   (send self :accel-cmd 0.0) ;; release accel forcely
    )
   )
 
