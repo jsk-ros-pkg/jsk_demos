@@ -48,6 +48,15 @@
         target_frame_id: ground
       </rosparam>
     </node>
+    <node pkg="nodelet" type="nodelet"
+          name="camera_laser_cloud"
+          machine="vmachine"
+          args="load jsk_pcl/TfTransformCloud laser_preprocess_manager">
+      <remap from="~input" to="downsampler/output" />
+      <rosparam>
+        target_frame_id: left_camera_optical_frame
+      </rosparam>
+    </node>
 
     <node pkg="nodelet" type="nodelet"
           name="x_filter"
