@@ -46,6 +46,11 @@ namespace drc_task_common
   StandingDrillDetector::StandingDrillDetector():
     pnh_("~")
   {
+    srv_ = boost::make_shared <dynamic_reconfigure::Server<Config> > (pnh_);
+    dynamic_reconfigure::Server<Config>::CallbackType f =
+      boost::bind(
+		  &StandingDrillDetector::configCallback, this, _1, _2);
+    srv_->setCallback (f);
     pub_marker_ = pnh_.advertise<visualization_msgs::Marker>("cylinder_marker", 1);
     pub_foot_marker_ = pnh_.advertise<visualization_msgs::Marker>("foot_marker", 1);
     pub_debug_cylinder_pose_ = pnh_.advertise<geometry_msgs::PoseStamped>("debug/cylinder_pose", 1);
