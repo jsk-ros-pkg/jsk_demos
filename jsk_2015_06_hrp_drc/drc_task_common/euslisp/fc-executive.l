@@ -477,32 +477,47 @@
   (:door-exec-command-callback (msg)
     (when (send smachine :state? :initial)
       (multiple-value-bind
-          (coords size) (float-vector-to-box (send msg :float_params))
-          (let* ((stand-coords (float-vector-to-coords (send msg :stand_coords)))
-                 (arm-side (send msg :arm_side))
-                 (arm (cond ((equal arm-side drc_com_common::OCS2FCSmall::*LARM*) :larm) ((equal arm-side drc_com_common::OCS2FCSmall::*RARM*) :rarm) (t :rarm))))
-            (send smachine :go-to :executing-door)
-            (setq *cancel-motion-flag* nil)
-            (catch 'exit
-              (ros::ros-info "opening door at ~A ~A~%" coords size)
-              ;; send motion to real robot
-              (send-door-motion :door-name :drc-box2 :door-coords coords :arm arm :stand-coords stand-coords :push/pull :pull)
-              ;; send finish signal to ocs
-              (let ((msg (instance drc_com_common::FC2OCSSmall :init)))
-                (send msg :type drc_com_common::FC2OCSSmall::*DOOR_FINISHED*)
-                (send self :send-to-ocs msg))
-              )
+          (coords size door-push/pull-idx door-name-idx) (float-vector-to-door-params (send msg :float_params))
+        (let* ((stand-coords (float-vector-to-coords (send msg :stand_coords)))
+               (arm-side (send msg :arm_side))
+               (arm
+                (cond ((equal arm-side drc_com_common::OCS2FCSmall::*LARM*) :larm)
+                      ((equal arm-side drc_com_common::OCS2FCSmall::*RARM*) :rarm)
+                      (t :rarm)))
+               (door-push/pull
+                (cond ((eps= (float door-push/pull-idx) (float drc_com_common::OCS2FCSmall::*DOOR_PUSH*)) :push)
+                      ((eps= (float door-push/pull-idx) (float drc_com_common::OCS2FCSmall::*DOOR_PULL*)) :pull)
+                      (t :push)))
+               (door-name
+                (cond ((eps= (float door-name-idx) (float drc_com_common::OCS2FCSmall::*DOOR_DRC_BOX2*)) :drc-box2)
+                      ((eps= (float door-name-idx) (float drc_com_common::OCS2FCSmall::*DOOR_DRC_TEST*)) :drc-test)
+                      ((eps= (float door-name-idx) (float drc_com_common::OCS2FCSmall::*DOOR_DRC_TEST_MIRROR*)) :drc-test-mirror)
+                      ((eps= (float door-name-idx) (float drc_com_common::OCS2FCSmall::*DOOR_DRC_SAGAMI*)) :drc-sagami)
+                      ((eps= (float door-name-idx) (float drc_com_common::OCS2FCSmall::*DOOR_DRC_SAGAMI_MIRROR*)) :drc-sagami-mirror)
+                      (t :drc-box2)))
+               )
+          (send smachine :go-to :executing-door)
+          (setq *cancel-motion-flag* nil)
+          (catch 'exit
+            (ros::ros-info "opening door at ~A ~A~%" coords size)
+            ;; send motion to real robot
+            (send-door-motion :door-name door-name :door-coords coords :arm arm :stand-coords stand-coords :push/pull door-push/pull)
+            ;; send finish signal to ocs
+            (let ((msg (instance drc_com_common::FC2OCSSmall :init)))
+              (send msg :type drc_com_common::FC2OCSSmall::*DOOR_FINISHED*)
+              (send self :send-to-ocs msg))
             )
+          )
         (send smachine :go-to :initial)
         )))
   (:valve-exec-command-callback (msg)
     (when (send smachine :state? :initial)
       (multiple-value-bind
-          (coords radius grasp-mode) (float-vector-to-valve-params (send msg :float_params))
+          (coords radius grasp-mode-idx) (float-vector-to-valve-params (send msg :float_params))
         (let* ((stand-coords (float-vector-to-coords (send msg :stand_coords)))
                (arm-side (send msg :arm_side))
                (arm (cond ((equal arm-side drc_com_common::OCS2FCSmall::*LARM*) :larm) ((equal arm-side drc_com_common::OCS2FCSmall::*RARM*) :rarm) (t :rarm)))
-               (grasp-center? (eps= (float grasp-mode) (float drc_com_common::OCS2FCSmall::*VALVE_CENTER_GRASP*))))
+               (grasp-center? (eps= (float grasp-mode-idx) (float drc_com_common::OCS2FCSmall::*VALVE_CENTER_GRASP*))))
           (send smachine :go-to :executing-valve)
           (setq *cancel-motion-flag* nil)
           (catch 'exit

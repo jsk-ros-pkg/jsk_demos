@@ -1,33 +1,71 @@
 - direction: 'horizontal'
-- name: 'edge only'
-  service: 'valve_edge_grasp_only'
-  image: "package://drc_task_common/icons/valve-edge.png"
-  image_size: [80, 80]
+- name: 'overwrite stand-coords'
+  service: 'overwrite_stand_coords'
+  image: "package://drc_task_common/icons/overwrite-stand-coords.png"
+  image_size: [100, 100]
   column: 0
-- name: 'edge preferred'
-  service: 'valve_edge_grasp_preferred'
-  image: "package://drc_task_common/icons/valve-edge.png"
-  image_size: [80, 80]
+- name: 'not overwrite stand-coords'
+  service: 'not_overwrite_stand_coords'
+  image: "package://drc_task_common/icons/not-overwrite-stand-coords.png"
+  image_size: [100, 100]
   column: 0
   default_value: True
-- name: 'center preferred'
-  service: 'valve_center_grasp_preferred'
-  image: "package://drc_task_common/icons/valve-center.png"
-  image_size: [80, 80]
-  column: 0
-- name: 'center only'
-  service: 'valve_center_grasp_only'
-  image: "package://drc_task_common/icons/valve-center.png"
-  image_size: [80, 80]
-  column: 0
-- name: 'enable-head-overwrite'
+- name: 'enable head overwrite'
   service: 'enable_head_overwrite'
   image: "package://drc_task_common/icons/enable-head-overwrite.png"
   image_size: [100, 100]
   column: 1
-- name: 'disable-head-overwrite'
+- name: 'disable head overwrite'
   service: 'disable_head_overwrite'
   image: "package://drc_task_common/icons/disable-head-overwrite.png"
   image_size: [100, 100]
   column: 1
   default_value: True
+- name: 'edge only'
+  service: 'valve_edge_grasp_only'
+  image: "package://drc_task_common/icons/valve-edge.png"
+  image_size: [80, 80]
+  column: 2
+- name: 'edge preferred'
+  service: 'valve_edge_grasp_preferred'
+  image: "package://drc_task_common/icons/valve-edge.png"
+  image_size: [80, 80]
+  column: 2
+  default_value: True
+- name: 'center preferred'
+  service: 'valve_center_grasp_preferred'
+  image: "package://drc_task_common/icons/valve-center.png"
+  image_size: [80, 80]
+  column: 2
+- name: 'center only'
+  service: 'valve_center_grasp_only'
+  image: "package://drc_task_common/icons/valve-center.png"
+  image_size: [80, 80]
+  column: 2
+- name: 'push door'
+  service: 'door_direction_push'
+  image: "package://drc_task_common/icons/door-push.png"
+  image_size: [100, 100]
+  column: 3
+  default_value: True
+- name: 'pull door'
+  service: 'door_direction_pull'
+  image: "package://drc_task_common/icons/door-pull.png"
+  image_size: [100, 100]
+  column: 3
+- name: 'drc-box2'
+  service: 'door_name_drc_box2'
+  column: 4
+  default_value: True
+- name: 'drc-test'
+  service: 'door_name_drc_test'
+  column: 4
+- name: 'drc-test-mirror'
+  service: 'door_name_drc_test_mirror'
+  column: 4
+- name: 'drc-sagami'
+  service: 'door_name_drc_sagami'
+  column: 4
+- name: 'drc-sagami-mirror'
+  service: 'door_name_drc_sagami_mirror'
+  column: 4

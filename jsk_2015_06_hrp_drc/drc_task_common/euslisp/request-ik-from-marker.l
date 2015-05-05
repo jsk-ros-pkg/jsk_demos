@@ -237,13 +237,13 @@
          (send *obj* :put :type :torus)
          )
         ((equal *obj-type* jsk_rviz_plugins::TransformableMarkerOperate::*MESH_RESOURCE*) ;; hand mesh
-         (setq *obj* (make-cube 100 100 100)) ;; dummy eus object instad of hand mesh
+         (setq *obj* (make-cube 100 100 100)) ;; dummy eus object instead of hand mesh
          (let* ((hand-trans))
            (setq hand-trans
                  (send (send (send (send *robot* *ik-arm* :end-coords) :parent) :copy-worldcoords)
                        :transformation (send (send *robot* *ik-arm* :end-coords) :copy-worldcoords)))
            (send *obj* :assoc (make-cascoords :coords (make-coords) :name :origin))
-           ;; same with :origin
+           ;; :handle and :approach is fixed to end-coords
            (send *obj* :assoc (make-cascoords :coords hand-trans :name :handle))
            (send *obj* :assoc (make-cascoords :coords hand-trans :name :approach))
            )
