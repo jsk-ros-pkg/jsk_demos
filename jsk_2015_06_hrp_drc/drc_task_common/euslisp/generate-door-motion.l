@@ -27,6 +27,7 @@
         (stand-coords nil)
         (generate-ri? t) (draw? t) (use-ri? t)
         (arm :rarm)
+        (use-model-z-pos? nil)
         (robot-name "HRP2JSKNTS"))
   ;; generate robot
   (generate-robot robot-name :generate-ri? generate-ri?)
@@ -78,6 +79,13 @@
                (setq door-worldcoords
                      (make-coords :pos (send door-worldcoords :pos) :rot (transpose (matrix x-vec y-vec z-vec)))))
              (send *door* :move-coords door-worldcoords (send *door* :handle :knob-handle))
+             (when use-model-z-pos?
+               (let* ((fixed-door-coords (send (send *door* :worldcoords) :copy-worldcoords))
+                      (fixed-door-pos (send fixed-door-coords :pos)))
+                 (setq fixed-door-coords
+                       (make-coords :pos (float-vector (elt fixed-door-pos 0) (elt fixed-door-pos 1) 0) :rot (send fixed-door-coords :rot)))
+                 (send *door* :newcoords fixed-door-coords)
+                 ))
              ))
           (t ;; (equal door-coords-system :origin-from-world)
            (send *door* :newcoords door-coords)
@@ -279,6 +287,9 @@
          )
     (dotimes (i (length trans-list))
       (send *robot* :reset-manip-pose)
+      (case *door-arm*
+        (:larm (send *robot* :rarm :angle-vector *rarm-avoid-pose*))
+        (:rarm (send *robot* :larm :angle-vector *larm-avoid-pose*)))
       (send *robot* :fix-leg-to-coords *door-stand-coords*) ;; this should be called after (set-robot-initial-pose-for-door)
       (let* ((trans (elt trans-list i))
              (trans-handle-pos
@@ -470,7 +481,7 @@
     (cond ((or (equal *robot-name* "JAXON") (equal *robot-name* "STARO"))
            (send *ri* :start-impedance :arms :moment-gain (float-vector 0 0 0) :k-p 300 :d-p 300))
           (t ;; (or (equal *robot-name* "HRP2JSKNT") (equal *robot-name* "HRP2JSKNTS"))
-           (send *ri* :start-impedance :arms :k-p 200 :d-p 180 :m-p 5 :m-r 1 :d-r 15 :k-r 20)
+           (send *ri* :start-impedance :arms :k-p 200 :d-p 250 :m-p 7.5 :m-r 1 :d-r 15 :k-r 20)
            )))
   ;; walk
   (when *door-stand-coords*
@@ -491,8 +502,8 @@
            (hand-start-grasp :real? real? :type :door-grasp-preshape))
           )
     (send *ri* :state)
-    (warning-message 1 "(send *robot* :angle-vector ~a) ;; reference-vector ~a~%" (send *ri* :reference-vector) i)
-    (warning-message 1 "(send *robot* :angle-vector ~a) ;; potentio-vector ~a~%" (send *ri* :potentio-vector) i)
+    ;; (warning-message 1 "(send *robot* :angle-vector ~a) ;; reference-vector ~a~%" (send *ri* :reference-vector) i)
+    ;; (warning-message 1 "(send *robot* :angle-vector ~a) ;; potentio-vector ~a~%" (send *ri* :potentio-vector) i)
     (send *robot* :angle-vector (elt *door-motion* i))
     (when real? (model2real :time 3000))
     )
