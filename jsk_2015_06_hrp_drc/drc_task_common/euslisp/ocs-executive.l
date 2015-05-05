@@ -112,6 +112,7 @@
     (send smachine :register-initial-hook self :initial-callback)
     (send smachine :go-to :initial) ;; force to move to initial state
     (setq arm-mode :rarm-preferred)
+    (setq overwrite-stand-coords? nil)
     (setq valve-grasp-mode :edge-grasp-preferred)
     (send self :show-text "initialized" :success)
     self)
@@ -1018,7 +1019,7 @@
            ;; publish valve motion to robot model on rviz
            (publish-valve-motion (cadr valve-params) (car valve-params)
                                  :arm (send self :get-arm-side) :overwrite-arm-side? (send self :is-arm-overwrite)
-                                 :stand-coords (get-robot-model-current-pos) :overwrite-stand-coords? nil
+                                 :stand-coords (get-robot-model-current-pos) :overwrite-stand-coords? overwrite-stand-coords?
                                  :grasp-center? (send self :is-valve-grasp-center) :overwrite-grasp-mode? (send self :is-valve-grasp-overwrite)
                                  :update? t))
           ((eq (send smachine :state) :selecting-exec-for-debri)
@@ -1046,29 +1047,29 @@
            ;; update latest drill-grasp params
            (setq drill-grasp-params
                  (list (get-primitive-marker-pose :frame-id "BODY")))
-           ;; publish dirll motion to robot model on rviz
-           (publish-drill-grasp-motion :coords (elt drill-grasp-params 0) :update? t :arm (send self :get-arm-side) :stand-coords (get-robot-model-current-pos) :overwrite-stand-coords? nil) ;;drill-type
+           ;; publish drill motion to robot model on rviz
+           (publish-drill-grasp-motion :coords (elt drill-grasp-params 0) :update? t :arm (send self :get-arm-side) :stand-coords (get-robot-model-current-pos) :overwrite-stand-coords? overwrite-stand-coords?) ;;drill-type
            )
           ((eq (send smachine :state) :selecting-exec-for-drill-put)
            ;; update latest drill-put params
            (setq drill-put-params
                  (list (get-primitive-marker-pose :frame-id "BODY")))
-           ;; publish dirll motion to robot model on rviz
-           (publish-drill-put-motion :coords (elt drill-put-params 0) :update? t :stand-coords (get-robot-model-current-pos) :overwrite-stand-coords? nil)
+           ;; publish drill motion to robot model on rviz
+           (publish-drill-put-motion :coords (elt drill-put-params 0) :update? t :stand-coords (get-robot-model-current-pos) :overwrite-stand-coords? overwrite-stand-coords?)
            )
           ((eq (send smachine :state) :selecting-exec-for-drill-button)
            ;; update latest drill-button params
            (setq drill-button-params
                  (list (get-primitive-marker-pose :frame-id "BODY")))
-           ;; publish dirll motion to robot model on rviz
+           ;; publish drill motion to robot model on rviz
            (publish-drill-button-motion :coords (elt drill-button-params 0) :update? t)
            )
           ((eq (send smachine :state) :selecting-exec-for-drill-wall)
            ;; update latest drill-button params
            (setq drill-wall-params
                   (list (get-primitive-marker-pose :frame-id "BODY")))
-           ;; publish dirll motion to robot model on rviz
-           (publish-drill-wall-motion :coords-list (get-coords-list-with-center (elt drill-wall-params 0) drill-wall-target-coords) :update? t :stand-coords (get-robot-model-current-pos) :overwrite-stand-coords? nil)
+           ;; publish drill motion to robot model on rviz
+           (publish-drill-wall-motion :coords-list (get-coords-list-with-center (elt drill-wall-params 0) drill-wall-target-coords) :update? t :stand-coords (get-robot-model-current-pos) :overwrite-stand-coords? overwrite-stand-coords?)
            )
           ((eq (send smachine :state) :selecting-exec-for-door)
            ;; update latest door params
@@ -1079,7 +1080,7 @@
            (publish-door-motion
             :door-name :drc-box2 :door-coords (elt door-params 0)
             :arm (send self :get-arm-side) :overwrite-arm-side? (send self :is-arm-overwrite)
-            :stand-coords (get-robot-model-current-pos) :overwrite-stand-coords? nil
+            :stand-coords (get-robot-model-current-pos) :overwrite-stand-coords? overwrite-stand-coords?
             :push/pull :pull
             :update? t)
            (send smachine :go-to :selecting-exec-for-door))
@@ -1172,22 +1173,6 @@
     (send self :show-text "SKIP RECOG! SET AND MOVE MARKER MANUALLY")
     (send req :response)
    )
-  (:enable-head-overwrite
-   (req)
-   (let ((msg (instance drc_com_common::OCS2FCSmall :init)))
-     (send msg :type drc_com_common::OCS2FCSmall::*ENABLE_OVERWRITE_HEAD_JOINT*)
-     (send self :show-text "enable head overwrite")
-     (send self :send-to-fc msg))
-   (send req :response)
-   )
-  (:disable-head-overwrite
-   (req)
-   (let ((msg (instance drc_com_common::OCS2FCSmall :init)))
-     (send msg :type drc_com_common::OCS2FCSmall::*DISABLE_OVERWRITE_HEAD_JOINT*)
-     (send self :show-text "disable head overwrite")
-     (send self :send-to-fc msg))
-   (send req :response)
-   )
   (:set-pitch-head-angle-callback (req)
     (let ((msg (instance drc_com_common::OCS2FCSmall :init)))
       (send msg :type drc_com_common::OCS2FCSmall::*LOOK_AT_PITCH_ANGLE*)
@@ -1257,6 +1242,18 @@
 
 ;; optional button
 (defmethod ocs-executive-app
+  (:overwrite-stand-coords-callback
+   (req)
+   (setf overwrite-stand-coords? t)
+   (send self :show-text "enable stand-coords overwrite" :success)
+   (send req :response)
+   )
+  (:not-overwrite-stand-coords-callback
+   (req)
+   (setf overwrite-stand-coords? nil)
+   (send self :show-text "disable stand-coords overwrite" :success)
+   (send req :response)
+   )
   (:valve-edge-grasp-only-callback
    (req)
    (setf valve-grasp-mode :edge-grasp-only)
@@ -1287,6 +1284,22 @@
   (:is-valve-grasp-overwrite
    ()
    (or (equal valve-grasp-mode :edge-grasp-preferred) (equal valve-grasp-mode :center-grasp-preferred)))
+  (:enable-head-overwrite
+   (req)
+   (let ((msg (instance drc_com_common::OCS2FCSmall :init)))
+     (send msg :type drc_com_common::OCS2FCSmall::*ENABLE_OVERWRITE_HEAD_JOINT*)
+     (send self :show-text "enable head overwrite")
+     (send self :send-to-fc msg))
+   (send req :response)
+   )
+  (:disable-head-overwrite
+   (req)
+   (let ((msg (instance drc_com_common::OCS2FCSmall :init)))
+     (send msg :type drc_com_common::OCS2FCSmall::*DISABLE_OVERWRITE_HEAD_JOINT*)
+     (send self :show-text "disable head overwrite")
+     (send self :send-to-fc msg))
+   (send req :response)
+   )
   )
 
 (defmethod ocs-executive-app
@@ -1386,6 +1399,8 @@
 (ros::advertise-service "valve_edge_grasp_preferred" std_srvs::Empty #'send *app* :valve-edge-grasp-preferred-callback)
 (ros::advertise-service "valve_center_grasp_preferred" std_srvs::Empty #'send *app* :valve-center-grasp-preferred-callback)
 (ros::advertise-service "valve_center_grasp_only" std_srvs::Empty #'send *app* :valve-center-grasp-only-callback)
+(ros::advertise-service "overwrite_stand_coords" std_srvs::Empty #'send *app* :overwrite-stand-coords-callback)
+(ros::advertise-service "not_overwrite_stand_coords" std_srvs::Empty #'send *app* :not-overwrite-stand-coords-callback)
 
 ;; Drive joystick controller topics
 (ros::subscribe "/ocs/drive/operation/handle_cmd" std_msgs::Float64 #'send *app* :drive-handle-angle-callback)
