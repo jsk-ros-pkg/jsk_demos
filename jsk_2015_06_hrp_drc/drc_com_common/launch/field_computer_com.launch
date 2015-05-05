@@ -69,7 +69,7 @@
     <rosparam subst_value="true">
       message: drc_task_common/DRCParametersMessage
       receive_port: 703
-      receive_ip: $(arg OCS_IP)
+      receive_ip: $(arg FC_IP)
 
     </rosparam>
   </node>
