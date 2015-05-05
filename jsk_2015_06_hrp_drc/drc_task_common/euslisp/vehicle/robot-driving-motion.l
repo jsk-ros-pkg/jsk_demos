@@ -554,7 +554,7 @@
      )
    )
   (:step-accel-pedal
-   (command &key (time 1000) (relative t) (use-controller t) (no-wait t))
+   (command &key (time 1000) (relative nil) (use-controller t) (no-wait t))
    (send robot :rleg-ankle-p :joint-angle command :relative relative)
    (when real
      (if use-controller
@@ -597,7 +597,7 @@
      )
    )
   (:step-brake-pedal
-   (command &key (time 1000) (relative t) (use-controller t))
+   (command &key (time 1000) (relative nil) (use-controller t))
    (send robot :lleg-ankle-p :joint-angle command :relative relative)
    (when real
      (if use-controller
