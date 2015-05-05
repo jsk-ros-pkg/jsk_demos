@@ -1,0 +1,11 @@
+uint8 arm_side
+geometry_msgs/Vector3 direction
+float32 thre
+float32 max_dist
+float32 dist_step
+float32 time_step
+bool rotation_axis
+# arm
+uint8 LARM=1
+uint8 RARM=2
+---

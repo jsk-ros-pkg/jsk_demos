@@ -107,7 +107,9 @@
           (list drc_com_common::FC2OCSSmall::*RVIZ_MENU_FINISHED*
                 self :rviz-finished-callback)
           (list drc_com_common::FC2OCSSmall::*ANGLE_VECTOR_FINISHED*
-                self :angle-vector-finished-callback))
+                self :angle-vector-finished-callback)
+          (list drc_com_common::FC2OCSSmall::*REACH_UNTIL_TOUCH_FINISHED*
+                self :reach-until-touch-finished-callback))
     (setq smachine (make-ocs-state-machine))
     (send smachine :register-initial-hook self :initial-callback)
     (send smachine :go-to :initial) ;; force to move to initial state
@@ -1016,7 +1018,11 @@
       (send smachine :go-to :initial)
       ))
   (:angle-vector-finished-callback (msg)
+      (send self :show-text "Finished send-angle-vector" :success)
       (send-angle-vector-finished-service)
+   )
+  (:reach-until-touch-finished-callback (msg)
+      (send self :show-text "Finished reach-until-touch" :success)
    )
   )
 
@@ -1117,12 +1123,32 @@
      (send smachine :go-to :executing-go-pos))
    (send req :response)
    )
-  (:angle-vector-command-from-ocs
+  (:angle-vector-command-from-ocs ;; no state check nor transition
    (req)
    (let ((msg (instance drc_com_common::OCS2FCSmall :init)))
      (send msg :type drc_com_common::OCS2FCSmall::*ANGLE_VECTOR_SEND*)
      (send msg :float_params 
            (angle-vector-to-float-vector (send (send req :angle_vector) :data) (send (send req :interpolation_time) :data) (length (send msg :float_params))))
+     (send self :send-to-fc msg))
+   (send req :response)
+   )
+  (:reach-until-touch-from-ocs ;; no state check nor transition
+   (req)
+   (let ((msg (instance drc_com_common::OCS2FCSmall :init)))
+     (send msg :type drc_com_common::OCS2FCSmall::*REACH_UNTIL_TOUCH_EXEC*)
+     (cond ((equal (send req :arm_side) drc_task_common::ReachUntilTouchCommandRequest::*LARM*)
+            (send msg :arm_side drc_com_common::OCS2FCSmall::*LARM*))
+           ((equal (send req :arm_side) drc_task_common::ReachUntilTouchCommandRequest::*RARM*)
+            (send msg :arm_side drc_com_common::OCS2FCSmall::*RARM*))
+           (t
+            (send msg :arm_side drc_com_common::OCS2FCSmall::*UNDECIDED*))
+           )
+     (send msg :float_params 
+           (reach-until-touch-params-to-float-vector
+            (ros::tf-point->pos (send req :direction))
+            (send req :thre) (send req :max_dist)
+            (send req :dist_step) (send req :time_step) (send req :rotation_axis)
+            (length (send msg :float_params))))
      (send self :send-to-fc msg))
    (send req :response)
    )
@@ -1183,7 +1209,7 @@
 	)
       (send smachine :go-to! :selecting-exec-for-drill-button))
      )
-    (send self :show-text "SKIP RECOG! SET AND MOVE MARKER MANUALLY")
+    (send self :show-text "skip recog. set and move marker manually.")
     (send req :response)
    )
   (:set-pitch-head-angle-callback (req)
@@ -1468,6 +1494,7 @@
 (ros::advertise-service "door_name_drc_test_mirror" std_srvs::Empty #'send *app* :door-name-drc-test-mirror)
 (ros::advertise-service "door_name_drc_sagami" std_srvs::Empty #'send *app* :door-name-drc-sagami)
 (ros::advertise-service "door_name_drc_sagami_mirror" std_srvs::Empty #'send *app* :door-name-drc-sagami-mirror)
+(ros::advertise-service "reach_until_touch_command_from_ocs" drc_task_common::ReachUntilTouchCommand #'send *app* :reach-until-touch-from-ocs)
 
 ;; Drive joystick controller topics
 (ros::subscribe "/ocs/drive/operation/handle_cmd" std_msgs::Float64 #'send *app* :drive-handle-angle-callback)

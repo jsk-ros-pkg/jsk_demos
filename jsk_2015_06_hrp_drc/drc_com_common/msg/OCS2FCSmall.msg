@@ -77,6 +77,7 @@ uint8 DRILL_RESET_POSE=36
 uint8 WATCH_DRILL_POSE=37
 # angle-vector
 uint8 ANGLE_VECTOR_SEND=38
+# cancel
 uint8 CANCEL_MOTION_NOW=39
 # drive
 uint8 DRIVE_COMMAND=40
@@ -86,3 +87,5 @@ uint8 DISABLE_OVERWRITE_HEAD_JOINT=42
 # lookup by angle
 uint8 LOOK_AT_PITCH_ANGLE=43
 uint8 LOOK_AT_YAW_ANGLE=44
+# reach until touch
+uint8 REACH_UNTIL_TOUCH_EXEC=45

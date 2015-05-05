@@ -37,6 +37,7 @@
   (ros::subscribe "/solve_ik_command" std_msgs::empty #'solve-ik-command 1)
   (ros::subscribe "/save_obj_command" std_msgs::empty #'save-obj-command 1)
   (ros::subscribe "/send_angle_command" std_msgs::empty #'send-angle-command 1)
+  (ros::subscribe "/reach_until_touch_command" std_msgs::empty #'reach-until-touch-command 1)
   (ros::subscribe "/object_menu_command" std_msgs::empty #'object-menu-command 1)
   (ros::subscribe "/robot_menu_command" std_msgs::empty #'robot-menu-command 1)
   (ros::advertise "/object_handle" geometry_msgs::PoseStamped 1)
@@ -53,6 +54,7 @@
   (ros::advertise-service "/get_ik_arm_pose" drc_task_common::GetIKArmPose #'get-ik-arm-pose)
   (ros::advertise (format nil "~a~a" *ns* "/set_pose") geometry_msgs::PoseStamped 1)
   (ros::advertise "obj_state_text" jsk_rviz_plugins::OverlayText 1)
+  (ros::subscribe "/joint_states" sensor_msgs::JointState #'joint-states-callback)
   ;; object
   (setq *obj-type* nil)
   (setq *obj-x* nil)
@@ -74,6 +76,7 @@
   (setq *solve-ik-command-flag* nil)
   (setq *save-obj-command-flag* nil)
   (setq *send-angle-command-flag* nil)
+  (setq *reach-until-touch-command-flag* nil)
   (setq *object-menu-command-flag* nil)
   (setq *robot-menu-command-flag* nil)
   (setq *handle-pos-variable* 0)
@@ -178,9 +181,10 @@
 ;; update object pose
 (defun update-object-pose
   (&key (robot-coords *robot-coords*))
-  (send *obj* :newcoords
-        (send (send (get-obj-coords :robot-coords robot-coords) :copy-worldcoords) :transform (send (send (find-if #'(lambda (x) (equal (send x :name) :origin)) (send *obj* :descendants)) :copy-worldcoords) :inverse-transformation) :local))
-  )
+  (let ((obj-coords (send (get-obj-coords :robot-coords robot-coords) :copy-worldcoords)))
+    (send *obj* :newcoords
+          (send obj-coords :transform (send (send (send (find-if #'(lambda (x) (equal (send x :name) :origin)) (send *obj* :descendants)) :coords) :copy-worldcoords) :inverse-transformation) :local)) ;; :coords is correct. not :worldcoords.
+    ))
 
 ;; generate object model
 (defun generate-object-with-new-dimensions
@@ -477,6 +481,9 @@
 (defun send-angle-command
   (msg)
   (setq *send-angle-command-flag* t))
+(defun reach-until-touch-command
+  (msg)
+  (setq *reach-until-touch-command-flag* t))
 ;; object menu
 (defun object-menu-command
   (msg)
@@ -695,6 +702,69 @@
   (warning-message 2 "[request-ik] finished sending angle-vector.~%")
   )
 
+;; reach until touch ;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun reach-until-touch-one
+  ()
+  (warning-message 2 "[request-ik] started reach-until-touch.~%")
+  (let* ((title (format nil "Reach until touch. Force thre : ~~4,0f [N]~%"))
+         (menu-list (list "cancel" "yes"))
+         (yes-index 1)
+         (min-force-thre 0)
+         (max-force-thre 50)
+         (menu-variable-initial 0.1)
+         (req (instance drc_task_common::RvizMenuCallRequest :init :title title :menu_list menu-list :variable_max max-force-thre :variable_min min-force-thre :variable menu-variable-initial))
+         (menu-variable-slider-id 7)
+         (joy-feedback-msg
+          (instance sensor_msgs::JoyFeedbackArray :init :array
+                    (list (instance sensor_msgs::JoyFeedback :init :id menu-variable-slider-id :intensity menu-variable-initial))))
+         res res-index
+         force-thre)
+    (ros::publish "/midi_config_player/set_feedback" joy-feedback-msg)
+    (setq res (ros::service-call "rviz_menu_call" req))
+    (setq force-thre (send res :variable_ret))
+    (setq res-index (send res :index))
+    (when (equal res-index yes-index)
+      ;; service call for task state manager
+      (ros::service-call "call_task_state_event" (instance drc_task_common::StringRequestRequest :init :data "ExecReachUntilTouch"))
+      ;; send reach-until-touch command
+      (let* (dir
+             max-dist
+             (original-av (send *robot* :angle-vector))
+             (original-coords (send (send *robot* :worldcoords) :copy-worldcoords))
+             current-eef-pose
+             target-eef-pose
+             )
+        (update-object-pose)
+        (cond (*use-robot-interface-flag*
+               (send *robot* :angle-vector (send *ri* :state :potentio-vector)))
+              (t
+               (send *robot* :angle-vector (get-potentio-vector-from-joint-states))))
+        (send *robot* :fix-leg-to-coords (make-coords))
+        (setq current-eef-pose
+              (send (send *robot* *ik-arm* :end-coords) :copy-worldcoords))
+        (setq target-eef-pose
+              (send (find-if #'(lambda (x) (equal (send x :name) :handle)) (send *obj* :descendants)) :copy-worldcoords))
+        (setq dir (v- (send target-eef-pose :worldpos) (send current-eef-pose :worldpos)))
+        (setq max-dist (norm dir))
+        (warning-message 1 "dir ~a  force-thre ~a  max-dist ~a~%" dir force-thre max-dist)
+        (cond (*use-robot-interface-flag*
+               (send *ri* :reach-until-touch
+                     *ik-arm* dir :thre force-thre :max-dist max-dist :coords-system :world)
+               )
+              (t
+               (reach-until-touch-from-ocs
+                *ik-arm* dir :thre force-thre :max-dist max-dist)
+               ))
+        (send *robot* :angle-vector original-av)
+        (send *robot* :newcoords original-coords)
+        )
+      ;; service call for task state manager
+      (ros::service-call "call_task_state_event" (instance drc_task_common::StringRequestRequest :init :data "FinishReachUntilTouch"))
+      ))
+  (setq *reach-until-touch-command-flag* nil)
+  (warning-message 2 "[request-ik] finished reach-until-touch.~%")
+  )
+
 ;; obj menu ;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun object-menu-one
   ()
@@ -768,6 +838,8 @@
     (save-obj-model-one))
   (when *send-angle-command-flag*
     (send-angle-to-real-robot-one))
+  (when *reach-until-touch-command-flag*
+    (reach-until-touch-one))
   (when *object-menu-command-flag*
     (object-menu-one))
   (when *robot-menu-command-flag*

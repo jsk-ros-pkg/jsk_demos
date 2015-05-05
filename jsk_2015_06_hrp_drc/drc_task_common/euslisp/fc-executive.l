@@ -111,6 +111,8 @@
                 self :hrpsys-stop-imp-command-cb)
           (list drc_com_common::OCS2FCSmall::*ANGLE_VECTOR_SEND*
                 self :angle-vector-send-command-callback)
+          (list drc_com_common::OCS2FCSmall::*REACH_UNTIL_TOUCH_EXEC*
+                self :reach-until-touch-command-callback)
           (list drc_com_common::OCS2FCSmall::*CANCEL_MOTION_NOW*
                 self :cancel-motion-now-command-callback)
           (list drc_com_common::OCS2FCSmall::*DRIVE_COMMAND*
@@ -898,6 +900,27 @@ It sends :angle-vector to robot and return 'finished' message to ocs"
        )
      (let ((msg (instance drc_com_common::FC2OCSSmall :init)))
        (send msg :type drc_com_common::FC2OCSSmall::*ANGLE_VECTOR_FINISHED*)
+       (send self :send-to-ocs msg))
+     (send smachine :go-to :initial))
+   )
+  (:reach-until-touch-command-callback
+   (msg)
+   (when (send smachine :state? :initial)
+     (multiple-value-bind 
+         (dir thre max-dist dist-step time-step rotation-axis)
+         (float-vector-to-reach-until-touch-params (send msg :float_params))
+       (let* ((arm-side (send msg :arm_side))
+              (arm (cond ((equal arm-side drc_com_common::OCS2FCSmall::*LARM*) :larm) ((equal arm-side drc_com_common::OCS2FCSmall::*RARM*) :rarm) (t nil))))
+         (send smachine :go-to :executing-reach-until-touch)
+         (format t "reach-until-touch ~a ~a :thre ~a :max-dist ~a :dist-step ~a :time-step ~a :rotation-axis ~a~%"
+                 arm dir thre max-dist dist-step time-step rotation-axis)
+         (send *ri* :reach-until-touch
+               arm dir :thre thre :max-dist max-dist
+               :dist-step dist-step :time-step time-step :rotation-axis rotation-axis
+               :coords-system :world)
+         ))
+     (let ((msg (instance drc_com_common::FC2OCSSmall :init)))
+       (send msg :type drc_com_common::FC2OCSSmall::*REACH_UNTIL_TOUCH_FINISHED*)
        (send self :send-to-ocs msg))
      (send smachine :go-to :initial))
    )
