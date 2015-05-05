@@ -220,6 +220,7 @@
 
 (defun setup-terrain-walk-real-hrp2jsknts
   ()
+
   (send *ri* :angle-vector (send *robot* :angle-vector) 4000)
   (send *ri* :wait-interpolation)
   (send *ri* :start-auto-balancer)
@@ -415,7 +416,7 @@
 
 (defun make-sole-body (robot leg)
   (instance bodyset :init (make-cascoords :coords (send robot leg :end-coords :copy-worldcoords))
-            :bodies (list (let ((b (make-prism (butlast (send (send robot :support-polygon leg) :vertices)) 5)))
+            :bodies (list (let ((b (make-prism (mapcar #'copy-object (butlast (send (send robot :support-polygon leg) :vertices))) 5)))
                             (send b :set-color (case leg (:rleg :red) (:lleg :green)))
                             b))
             :name (read-from-string (format nil "~A-sole" leg))
@@ -538,6 +539,9 @@
            (leg1 (case initial-support-leg (:rleg :lleg) (:lleg :rleg)))
            (leg-coords0 (send (eval (read-from-string (format nil "*~A-sole*" (string-downcase leg0)))) :copy-worldcoords))
            (leg-coords1 (send (eval (read-from-string (format nil "*~A-sole*" (string-downcase leg1)))) :copy-worldcoords)))
+      (print (list (make-coords :coords prev-leg-coords :name leg0)
+                        (make-coords :coords leg-coords1 :name leg1)
+                        (make-coords :coords leg-coords0 :name initial-support-leg)))
     (if set-foot-steps
         (if stair-once
             (send *ri* :set-foot-steps
@@ -1016,6 +1020,130 @@
   (send *robot* :move-centroid-on-foot :both '(:rleg :lleg))
   (send *ri* :angle-vector (send *robot* :angle-vector) 4000)
   (send *ri* :wait-interpolation)
+  )
+
+(defun translate-sole-models (off)
+  (send *rleg-sole* :translate off :world)
+  (send *lleg-sole* :translate off :world)
+  )
+
+;; terrain walk hrp2jsk
+(defun default-stair-param-hrp2jsk
+  ()
+  (send *ri* :set-gait-generator-param
+             :toe-angle 30 :heel-angle 5
+             :toe-heel-phase-ratio #f(0.02 0.28 0.2 0.0 0.2 0.25 0.05)
+             :stair-trajectory-way-point-offset #f(0.03 -0.0 0)
+             :swing-trajectory-delay-time-offset 0.25
+             :default-orbit-type :stair
+             :default-step-time 1.5
+             :default-double-support-ratio 0.2
+             :default-step-height 0.05)
+  )
+
+(defun high-step-stair-param-hrp2jsk
+  ()
+  (send *ri* :set-gait-generator-param
+             :toe-angle 30 :heel-angle 5
+             :toe-heel-phase-ratio #f(0.02 0.28 0.2 0.0 0.2 0.25 0.05)
+             :stair-trajectory-way-point-offset #f(0.03 -0.0 0)
+             :swing-trajectory-delay-time-offset 0.25
+             :default-orbit-type :stair
+             :default-step-time 1.5
+             :default-double-support-ratio 0.2
+             :default-step-height 0.12)
+  )
+
+(defun roll-terrain-stair-param-hrp2jsk
+  ()
+  (send *ri* :set-gait-generator-param
+             :toe-angle 0 :heel-angle 0
+             :toe-heel-phase-ratio #f(0.02 0.28 0.2 0.0 0.2 0.25 0.05)
+             :stair-trajectory-way-point-offset #f(0.03 -0.0 0)
+             :swing-trajectory-delay-time-offset 0.25
+             :default-orbit-type :stair
+             :default-step-time 0.8
+             :default-double-support-ratio 0.2
+             :default-step-height 0.05)
+  )
+
+(defun test-drc-terrain-walk-hrp2jsk ()
+  ;; initial ground
+  (default-stair-param-hrp2jsk)
+  (walking-pose *robot* :root-link-height-offset -50 :root-link-pitch-offset 5)
+  (setq *rleg-sole* (make-sole-body *robot* :rleg))
+  (setq *lleg-sole* (make-sole-body *robot* :lleg))
+  (send *ri* :angle-vector (send *robot* :angle-vector) 4000)
+  (send *ri* :wait-interpolation)
+  (objects (list *robot* *rleg-sole* *lleg-sole* *terrain*))
+
+  ;; Pitch terrain 1
+  (y-or-n-p ";; next")
+  (test-drc-testbed-simulation-common-one 270 270)
+  (y-or-n-p ";; next")
+  (test-drc-testbed-simulation-common-one 460 460)
+  (y-or-n-p ";; next")
+  ;; Roll terrain 1
+  (high-step-stair-param-hrp2jsk)
+  (test-drc-testbed-simulation-common-one 740 740 :initial-support-leg :lleg)
+  (y-or-n-p ";; next")
+  (walking-pose *robot* :root-link-height-offset -50 :root-link-pitch-offset 5 :root-link-roll-offset -5)
+  (send *ri* :angle-vector (send *robot* :angle-vector) 2500)
+  (send *ri* :wait-interpolation)
+  (roll-terrain-stair-param-hrp2jsk)
+  (test-drc-testbed-simulation-common-one 840 840 :initial-support-leg :lleg)
+  (walking-pose *robot* :root-link-height-offset -50 :root-link-pitch-offset 5 :root-link-roll-offset 0)
+  (send *ri* :angle-vector (send *robot* :angle-vector) 2500)
+  (send *ri* :wait-interpolation)
+  (high-step-stair-param-hrp2jsk)
+  (y-or-n-p ";; next")
+  ;; Pitch terrain 2
+  (test-drc-testbed-simulation-common-one 1150 1150 :initial-support-leg :rleg)
+  (y-or-n-p ";; next")
+  (default-stair-param-hrp2jsk)
+  (test-drc-testbed-simulation-common-one 1280 1280 :initial-support-leg :lleg)
+  (y-or-n-p ";; next")
+  ;; Roll terrain 2
+  (high-step-stair-param-hrp2jsk)
+  (test-drc-testbed-simulation-common-one 1520 1520 :initial-support-leg :rleg)
+  (y-or-n-p ";; next")
+  (walking-pose *robot* :root-link-height-offset -50 :root-link-pitch-offset 5 :root-link-roll-offset 5)
+  (send *ri* :angle-vector (send *robot* :angle-vector) 2500)
+  (send *ri* :wait-interpolation)
+  (roll-terrain-stair-param-hrp2jsk)
+  (test-drc-testbed-simulation-common-one 1640 1640 :initial-support-leg :rleg)
+  (walking-pose *robot* :root-link-height-offset -50 :root-link-pitch-offset 5 :root-link-roll-offset 0)
+  (send *ri* :angle-vector (send *robot* :angle-vector) 2500)
+  (send *ri* :wait-interpolation)
+  (default-stair-param-hrp2jsk)
+  (y-or-n-p ";; next")
+  ;; Pitch terrain 3
+  (default-stair-param-hrp2jsk)
+  (test-drc-testbed-simulation-common-one 1910 1910 :initial-support-leg :lleg)
+  (y-or-n-p ";; next")
+  (test-drc-testbed-simulation-common-one 2070 2070 :initial-support-leg :lleg)
+  (y-or-n-p ";; next")
+  ;; Roll terrain 3
+  (high-step-stair-param-hrp2jsk)
+  (test-drc-testbed-simulation-common-one 2330 2330 :initial-support-leg :lleg)
+  (y-or-n-p ";; next")
+  (walking-pose *robot* :root-link-height-offset -50 :root-link-pitch-offset 5 :root-link-roll-offset -5)
+  (send *ri* :angle-vector (send *robot* :angle-vector) 2500)
+  (send *ri* :wait-interpolation)
+  (roll-terrain-stair-param-hrp2jsk)
+  (test-drc-testbed-simulation-common-one 2460 2460 :initial-support-leg :lleg)
+  (walking-pose *robot* :root-link-height-offset -50 :root-link-pitch-offset 5 :root-link-roll-offset 0)
+  (send *ri* :angle-vector (send *robot* :angle-vector) 2500)
+  (send *ri* :wait-interpolation)
+  (y-or-n-p ";; next")
+  ;; Pitch terrain 4
+  (default-stair-param-hrp2jsk)
+  (test-drc-testbed-simulation-common-one 2740 2740 :initial-support-leg :rleg)
+  (y-or-n-p ";; next")
+  (test-drc-testbed-simulation-common-one 2900 2900 :initial-support-leg :rleg)
+  (y-or-n-p ";; next")
+  ;; Final ground
+  (test-drc-testbed-simulation-common-one 3150 3150 :initial-support-leg :rleg)
   )
 
 ;; (pprint (mapcar #'(lambda (s) (if (derivedp s hrpsys_ros_bridge::openhrp_autobalancerservice_footstep) (send *ri* :abc-footstep->eus-footstep s))) (mapcar #'cdr (send (send (send *ri* :autobalancerservice_getfootstepparam) :i_param) :slots))))
