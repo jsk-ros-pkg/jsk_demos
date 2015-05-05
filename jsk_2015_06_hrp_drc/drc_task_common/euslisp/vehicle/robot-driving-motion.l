@@ -541,10 +541,14 @@
      (when (and real reach-until-touch approach-result)
        (send *ri* :reach-until-touch limb
              (send (send robot limb :end-coords :copy-worldcoords) :rotate-vector #f(0 0 -1))
-             :rotation-axis :z :time-step 1000 :max-dist 50 :dist-step 5
+             :rotation-axis :z :thre 10 :time-step 1000 :max-dist 50 :dist-step 5 :debug debug-view
+             :coords-system :world
              ) ;; todo: reach-until-touch uses copy-object
        (send *ri* :state) ;; update 
        (send robot limb :angle-vector (send *ri* :robot limb :angle-vector)) ;; reflect reach-until-touch result
+       (send robot limb :move-end-pos #f(0 0 10) :local) ;; compensate overshoot
+       (send *ri* :angle-vector (send robot :angle-vector) tm)
+       (send *ri* :wait-interpolation)
        )
      approach-result
      )
@@ -580,10 +584,14 @@
      (when (and real reach-until-touch approach-result)
        (send *ri* :reach-until-touch limb
              (send (send robot limb :end-coords :copy-worldcoords) :rotate-vector #f(0 0 -1))
-             :rotation-axis :z :time-step 1000 :max-dist 50 :dist-step 5
+             :rotation-axis :z :time-step 1000 :max-dist 50 :dist-step 5 :debug debug-view
+             :coords-system :world
              ) ;; todo: reach-until-touch uses copy-object
        (send *ri* :state) ;; update 
        (send robot limb :angle-vector (send *ri* :robot limb :angle-vector)) ;; reflect reach-until-touch result
+       (send robot limb :move-end-pos #f(0 0 10) :local) ;; compensate overshoot
+       (send *ri* :angle-vector (send robot :angle-vector) tm)
+       (send *ri* :wait-interpolation)
        )
      approach-result
      )
@@ -686,7 +694,7 @@
 
   ;; leg support
   (:approach-floor
-   (&rest args &key (limb :lleg) (target-handle :floor) (time 10000) (debug-view nil) (offset #f(0 0 50))
+   (&rest args &key (limb :lleg) (target-handle :floor) (time 10000) (debug-view nil) (offset #f(0 0 50)) (offset-wrt :local)
           (start-impedance t) (stop-ref-force nil) (start-ref-force nil)
           (reach-until-touch nil) (use-imu nil)
           &allow-other-keys)
@@ -721,6 +729,7 @@
              (send robot limb :move-end-pos
                    (v+ (float-vector 0 0 (- (elt (send floor-coords :pos) 2) (elt (send limb-endcoords :pos) 2)))
                        offset)
+                   offset-wrt
                    ) ;; move to floor
              )
        )
@@ -736,10 +745,15 @@
            (when reach-until-touch
              (send *ri* :reach-until-touch limb
                    (send (send robot limb :end-coords :copy-worldcoords) :rotate-vector #f(0 0 -1))
-                   :rotation-axis :z :time-step 1000 :max-dist 50 :dist-step 5
+                   :rotation-axis :z :time-step 1000 :max-dist 50 :dist-step 5 :debug debug-view
+                   :coords-system :world
                    ) ;; todo: reach-until-touch uses copy-object
              (send *ri* :state) ;; update 
              (send robot limb :angle-vector (send *ri* :robot limb :angle-vector)) ;; reflect reach-until-touch result
+             (send robot limb :move-end-pos #f(0 0 10) :local) ;; compensate overshoot
+             (send robot limb :move-end-pos offset offset-wrt) ;; reflect offset
+             (send *ri* :angle-vector (send robot :angle-vector) time)
+             (send *ri* :wait-interpolation)
              )
            ;; ref-force
            (when start-ref-force
