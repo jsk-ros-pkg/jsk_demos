@@ -32,10 +32,10 @@ rosrun gazebo_drive_simulator traj_yaml.py `rospack find gazebo_drive_simulator`
 rostopic pub --once ${CMD_NAMESPACE}/hand_brake/cmd std_msgs/Float64 '{ data : 0 }' # disable hand brake
 roslaunch gazebo_drive_simulator multisense_sl_relay.launch & # for PointCloud2
 
-roslaunch drive_recognition extract_obstacle_cloud.launch USE_DRC:="true" USE_VRC:="false" &
-roslaunch drive_recognition obstacle_detection.launch &
-rosrun drive_recognition CalculateVelocityFromOdometry.py &
-roslaunch drive_recognition cheat_goal_direction.launch &
+roslaunch drc_task_common extract_obstacle_cloud.launch USE_DRC:="true" USE_VRC:="false" &
+roslaunch drc_task_common obstacle_detection.launch &
+rosrun gazebo_drive_simulator CalculateVelocityFromOdometry.py &
+roslaunch gazebo_drive_simulator cheat_goal_direction.launch &
 roslaunch gazebo_drive_simulator polaris_interactive_marker.launch &
 
 
