@@ -11,7 +11,8 @@
 (defclass robot-driving-controller
   :super propertied-object
   :slots (motion
-          ros-rate 
+          ros-rate
+          accel-origin brake-origin
           step-accel-command step-brake-command
           release-accel-command release-brake-command
           is-handle-reached-to-target
@@ -71,10 +72,12 @@
          record-handling-end-coords-flag nil
          )
    ;; set defalut value for pedaling
-   (setq step-accel-command 28
-         release-accel-command 14
-         step-brake-command 20
-         release-brake-command 5
+   (setq accel-origin 14
+         step-accel-command 14 ;; 28
+         release-accel-command 0 ;; 14
+         brake-origin 5
+         step-brake-command 15 ;; 20
+         release-brake-command 0 ;; 5
          max-turn-handle-omega 90
          )
    ;; subscriber for operator command
@@ -255,7 +258,7 @@
      (ros::publish "/drive/controller/goal_handle_angle" pub-msg)
      remain-angle
      )
-   )  
+   )
   (:approach-handle
    (&rest args &key (sync-controller grasped-flag) &allow-other-keys)
    (let (approach-result)
@@ -267,13 +270,13 @@
      )
    )
   (:approach-accel
-   ()
-   (send motion :approach-accel-pedal)
+   (&rest args)
+   (send* motion :approach-accel-pedal args)
    (setq accel-flag t) ;; enbale accel
    )
   (:approach-brake
-   ()
-   (send motion :approach-brake-pedal)
+   (&rest args)
+   (send* motion :approach-brake-pedal args)
    )
   (:approach-floor
    (&rest args &key (offset #f(0 0 50)) (start-impedance t) (start-ref-force nil) &allow-other-keys)
@@ -281,17 +284,17 @@
           :start-impedance start-impedance :stop-ref-force start-ref-force
           args) ;; approach to floor
    )
-  (:step-accel
-   (command)
-   (send motion :step-accel-pedal command :relative nil :use-controller t) ;; step accel
+  (:step-accel ;; mainly for command-line
+   (command &rest args)
+   (send* motion :step-accel-pedal command args) ;; step accel
    )
   (:detatch-accel
    ()
    (send motion :detatch-accel-pedal :use-controller t) ;; detatch accel for emergency
    )
-  (:step-brake
-   (command)
-   (send motion :step-brake-pedal command :relative nil :use-controller t) ;; step brake
+  (:step-brake ;; mainly for command-line
+   (command &rest args)
+   (send* motion :step-brake-pedal command args) ;; step brake
    )
   (:support-by-leg
    (&rest args &key (offset #f(0 0 0)) (start-impedance t) (start-ref-force t) &allow-other-keys)
@@ -301,20 +304,20 @@
    )
 
   ;; internal functions
-  (:accel-cmd
+  (:accel-cmd ;; convert command to motion and send to step-accel
    (cmd)
    (let ((cmd-motion (send self :get-pedal-motion-from-cmd cmd release-accel-command step-accel-command)))
      (warn "accel ~A[cmd] -> ~A[deg]~%" cmd cmd-motion)
-     (send self :step-accel cmd-motion)
+     (send self :step-accel (+ accel-origin cmd-motion) :relative nil :use-controller t)
      (send self :publish-current-step cmd-motion)
      cmd-motion ;; return real command to robot
      )
    )
-  (:brake-cmd
+  (:brake-cmd ;; convert command to motion and send to step-brake
    (cmd)
    (let ((cmd-motion (send self :get-pedal-motion-from-cmd cmd release-brake-command step-brake-command)))
      (warn "brake ~A[cmd] -> ~A[deg]~%" cmd cmd-motion)
-     (send self :step-brake cmd-motion)
+     (send self :step-brake (+ brake-origin cmd-motion) :relative nil :use-controller t)
      cmd-motion ;; return real command to robot
      )
    )
@@ -726,6 +729,13 @@
   (:motion () motion)
 
   ;; setter
+  (:accel-origin
+   (&optional (angle nil))
+   (when angle
+     (setq accel-origin angle)
+     )
+   accel-origin
+   )
   (:step-accel-command
    (&optional (angle nil))
    (let ((pub-msg (instance std_msgs::Float32 :init)))
@@ -748,7 +758,7 @@
      release-accel-command
      )
    )
-  
+  (:brake-origin (&optional (angle nil)) (when angle (setq brake-origin angle)) brake-origin)
   (:step-brake-command (&optional (angle nil)) (when angle (setq step-brake-command angle)) step-brake-command)
   (:release-brake-command (&optional (angle nil)) (when angle (setq release-brake-command angle)) release-brake-command)
   (:grasped-flag (&optional (val 0)) (unless (equal val 0) (setq grasped-flag val)) grasped-flag)
