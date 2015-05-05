@@ -25,7 +25,7 @@
 
   <!-- ps3joy controller -->
   <group if="$(arg LAUNCH_PS3JOY)">
-    <include file="$(find jsk_teleop_joy)/launch/vehicle.launch">
+    <include file="$(find jsk_teleop_joy)/launch/joy_vehicle.launch">
       <arg name="CONTROLLER_DEV" default="$(arg CONTROLLER_DEV)"/>
       <arg name="OCS_NS" default="$(arg OCS_NS)"/>
     </include>
