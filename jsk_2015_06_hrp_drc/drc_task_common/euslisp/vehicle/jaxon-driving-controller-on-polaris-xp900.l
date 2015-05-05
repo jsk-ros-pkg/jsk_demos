@@ -20,8 +20,11 @@
                :real tmp-real :rate tmp-ros-rate :roseus-init nil
                :approach-handle approach-handle :approach-pedal approach-pedal
                )
-   (send self :step-accel-command 10)
-   (send self :release-accel-command 4)
+   (send self :accel-origin 4)
+   (send self :step-accel-command 6)
+   (send self :release-accel-command 0)
+   ;; (send self :step-accel-command 10)
+   ;; (send self :release-accel-command 4)
    )
   (:step-brake
    (&optional (angle step-brake-angle))

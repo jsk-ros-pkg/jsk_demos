@@ -5,7 +5,6 @@
 
 (defclass hrp2jsk-driving-controller-on-polaris-xp900
   :super robot-driving-controller
-  :slots (current-move-mm)
   )
 
 (defmethod hrp2jsk-driving-controller-on-polaris-xp900
@@ -28,24 +27,24 @@
                )
    (send self :step-accel-command -1.0)
    (send self :release-accel-command 25.0)
-   (setq current-move-mm 0.0)
+   (send self :accel-origin 0.0) ;; accel-origin means current total move distance and origin to next relative move distance
    )
   (:accel-cmd
    (cmd)
    (let ((cmd-mm (send self :get-pedal-motion-from-cmd cmd release-accel-command step-accel-command)))
      (warn "accel ~A[cmd] -> ~A [mm]~%" cmd cmd-mm)
-     (send self :step-accel cmd-mm)
-     (setq current-move-mm (+ current-move-mm cmd-mm))
-     (send self :publish-current-step current-move-mm)
-     current-move-mm ;; return total state of accel-command
+     (send self :step-accel cmd-mm :use-controller t) ;; step-accel assumed to get relative distance to move
+     (setq accel-origin (+ accel-origin cmd-mm))
+     (send self :publish-current-step accel-origin)
+     accel-origin ;; return total state of accel-command
      )
    )
   (:get-pedal-motion-from-cmd
    (data min-pedal-command max-pedal-command) ;; data will be 0.0 from 1.0
    (let (target-move-mm command-move-mm)
      (setq target-move-mm (+ min-pedal-command (* data (- max-pedal-command min-pedal-command))))
-     (setq command-move-mm (- target-move-mm current-move-mm))
-     command-move-mm
+     (setq command-move-mm (- target-move-mm accel-origin))
+     command-move-mm ;; return relative distance to move
      )
    )
   (:step-brake
