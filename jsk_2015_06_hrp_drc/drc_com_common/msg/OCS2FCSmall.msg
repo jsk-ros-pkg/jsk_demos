@@ -18,6 +18,12 @@ uint8 VALVE_EDGE_GRASP=2
 # door push/pull
 uint8 DOOR_PUSH=1
 uint8 DOOR_PULL=2
+# door name
+uint8 DOOR_DRC_BOX2=1
+uint8 DOOR_DRC_TEST=2
+uint8 DOOR_DRC_TEST_MIRROR=3
+uint8 DOOR_DRC_SAGAMI=4
+uint8 DOOR_DRC_SAGAMI_MIRROR=5
 # action type
 # go-pos
 uint8 GO_POS_REGION=1
