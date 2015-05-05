@@ -41,7 +41,7 @@ robotname does not matter in euslisp mode.
 
 If you want to use staro, execute following command:
 ```bash
-$ roslaunch hrpsys_gazebo_tutorials drc_practice_task_1_staro.laucnh
+$ roslaunch hrpsys_gazebo_tutorials drc_practice_task_1_staro.launch
 $ rosrun gazebo_drive_simulator start_staro_drive_simulator.sh
 ```
 staro have not support euslisp mode yet.
@@ -62,3 +62,22 @@ rostopic echo /drc_vehicle_xp900/hand_wheel/cmd std_msgs/Float64 "{data: <rad>}"
 rostopic echo /drc_vehicle_xp900/gas_pedal/cmd std_msgs/Float64 "{data: <percentage>}"
 ```
 /drc_vehicle_xp900/gas_pedal/cmd requires a value from 0.0 to 1.0.
+
+### use recognition in gazebo
+If you want to use recognition in gazebo_drive_simulator, you should execute following command:
+```bash
+$ roslaunch drc_task_common local_planner_mochikae.launch
+```
+
+If the point cloud by stereo_image_proc is poor, you can change shadow of obstacles or pattern of ground:
+If you want to use recognition in gazebo_drive_simulator, you should execute following command:
+```bash
+# in gazebo_drive_simulator directory
+$ cd patch
+
+# change ground
+$ patch -p0 < drc_ground.patch
+
+# return this change
+$ patch -p0 -R < drc_ground.patch
+```
