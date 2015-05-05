@@ -5,6 +5,7 @@
   <arg name="OCS_TO_FC_PORT" default="700"/>
   <arg name="FC_TO_OCS_PORT" default="701"/>
   <arg name="FC_TO_OCS_BASIC_PORT" default="702"/>
+  <arg name="DYNAMIC_RECONFIGURE_PORT" default="703"/>
   <arg name="USE_FLOAT_JOINT_ANGLES" default="true" />
   <node pkg="jsk_network_tools" type="silverhammer_highspeed_receiver.py"
         output="log"
@@ -63,7 +64,7 @@
         name="ocs_to_fc_reconfigure" launch-prefix="sudo">
     <rosparam subst_value="true">
       message: drc_task_common/DRCParametersMessage
-      to_port: 703
+      to_port: $(arg DYNAMIC_RECONFIGURE_PORT)
       to_ip: $(arg FC_IP)
       event_driven: true      
     </rosparam>
