@@ -186,6 +186,7 @@
      )
    (send motion :ride :init-pose t)
    (send motion :drive-init-pose-crank :limb :larm :move-arm nil) ;; todo: fix and remove
+   (send self :approach-fist :reach-until-touch nil)
    (send self :approach-accel)
    ;; (send self :approach-floor)
    (send self :support-by-leg :set-ref-force nil)
@@ -283,6 +284,14 @@
    (send* motion :approach-floor :offset offset
           :start-impedance start-impedance :set-ref-force set-ref-force
           args) ;; approach to floor
+   )
+  (:approach-fist
+   (&rest args &key (offset #f(-100 100 0)) (start-impedance t)
+          (set-ref-force nil) (reach-until-touch nil) &allow-other-keys)
+   (send* motion :approach-fist :offset offset
+          :start-impedance start-impedance :set-ref-force set-ref-force
+          :reach-until-touch reach-until-touch
+          args) ;; approach fist to seat
    )
   (:step-accel ;; mainly for command-line
    (command &rest args)

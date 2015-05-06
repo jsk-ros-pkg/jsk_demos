@@ -692,6 +692,37 @@
      (send self :close-hand :rarm)
      )
    )
+  (:approach-fist
+   (&rest args &key (limb :rarm) (target-handle :seat-center) (rotation-axis t) (offset #f(-100 50 0))
+          (offset-wrt :local) (debug-view nil) (time 10000) (reach-until-touch nil)
+          (start-impedance nil) (set-ref-force nil))
+   (send self :close-hand limb)
+   (let (ik-ret)
+     (setq ik-ret (send robot limb :inverse-kinematics (send (send (send car target-handle) :copy-worldcoords) :locate offset offset-wrt)
+                        :debug-view debug-view :rotation-axis rotation-axis)
+           )
+     (when (and real ik-ret)
+       (when start-impedance
+         (send self :set-impedance-for-support limb)
+         )
+       (send *ri* :angle-vector (send robot :angle-vector) time)
+       (send *ri* :wait-interpolation)
+       (send *viewer* :draw-objects)
+       (when reach-until-touch
+         (send *ri* :reach-until-touch limb
+               (send (send robot limb :end-coords :copy-worldcoords) :rotate-vector #f(1 0 0))
+               :rotation-axis :z :time-step 1000 :max-dist 50 :dist-step 5 :debug debug-view
+               :coords-system :world
+               ) ;; todo: reach-until-touch uses copy-object
+         (send *ri* :state) ;; update
+         (send robot limb :angle-vector (send *ri* :robot limb :angle-vector)) ;; reflect reach-until-touch result
+         )
+       (when set-ref-force
+         (send self :set-ref-force-for-support limb)
+         )
+       )
+     )
+   )
 
   ;; leg support
   (:approach-floor
