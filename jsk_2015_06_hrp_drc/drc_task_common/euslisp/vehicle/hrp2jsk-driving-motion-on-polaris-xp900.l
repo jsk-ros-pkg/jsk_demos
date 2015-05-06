@@ -137,6 +137,28 @@
      (send *ri* :wait-interpolation)
      )
    )
+
+  ;; temporary: use kojima bar
+  ;; (:approach-frame
+  ;;  (&rest args &key (limb :rarm) (target-handle :rear-support-frame-attachment) (offset #f(-150 -100 50))
+  ;;         &allow-other-keys)
+  ;;  (send-super* :approach-frame :limb limb :target-handle target-handle :offset offset args)
+  ;;  )
+  ;; temporary: use nackle attachment
+  ;; (:approach-frame
+  ;;  (&rest args &key (limb :rarm) (target-handle :seat-center) (offset #f(-150 100 0)) (rotation-axis t)
+  ;;         &allow-other-keys)
+  ;;  (send-super* :approach-frame :limb limb :target-handle target-handle
+  ;;               :offset offset :rotation-axis rotation-axis args)
+  ;;  )
+
+  ;; for egress
+  (:egress-pose
+   ()
+   (send robot :angle-vector
+         #f(-2.794558e-05 0.000354 -91.9067 91.8755 0.031103 -0.000377 0.0 -7.09676 0.281819 -91.8704 92.4525 -0.582257 -0.281853 0.0 0.0 0.0 0.0 0.0 -112.8 -6.8 0.0 -70.28 -14.8452 -11.9705 0.008544 0.0 -9.6 6.8 0.0 -136.0 14.8452 11.9705 0.008544 0.0)
+         )
+   )
   )
 
 ;; (setq *motion* (instance hrp2jsk-driving-motion-on-polaris-xp900 :init :real nil))
