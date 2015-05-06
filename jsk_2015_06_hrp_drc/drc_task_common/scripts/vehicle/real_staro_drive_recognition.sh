@@ -22,9 +22,7 @@ roslaunch drc_task_common extract_obstacle_cloud.launch &
 
 sleep 10
 
-#temporary
-#rostopic pub /staro_drive/pedal_state std_msgs/Bool "True" # for local_planner.launch
-rostopic pub /staro_drive/operation/flag/handle std_msgs/Bool "False" & # for local_planner_mochikae.launch
+rostopic pub /staro_drive/operation/flag/handle std_msgs/Bool "False" & # for local_planner.launch
 rosrun drc_task_common Magnetometer2Direction.py 15 &
 
 while true

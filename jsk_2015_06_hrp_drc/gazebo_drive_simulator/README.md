@@ -68,7 +68,7 @@ $ rostopic echo /drc_vehicle_xp900/gas_pedal/cmd std_msgs/Float64 "{data: <perce
 ### use recognition in gazebo
 If you want to use recognition in gazebo_drive_simulator, you should execute following command:
 ```bash
-$ roslaunch drc_task_common local_planner_mochikae.launch
+$ roslaunch drc_task_common local_planner.launch
 ```
 
 If the point cloud by stereo_image_proc is poor, you can change shadow of obstacles or pattern of ground:
