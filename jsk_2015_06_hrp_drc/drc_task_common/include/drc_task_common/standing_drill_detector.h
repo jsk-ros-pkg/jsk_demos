@@ -100,6 +100,7 @@ namespace drc_task_common
     ros::Publisher pub_marker_;
     ros::Publisher pub_debug_cylinder_pose_;
     ros::Publisher pub_debug_foot_pose_;
+    ros::Publisher pub_origin_pose_;
     ros::Publisher pub_foot_marker_;
     message_filters::Subscriber<sensor_msgs::PointCloud2> sub_cloud_;
     message_filters::Subscriber<jsk_recognition_msgs::BoundingBoxArray> sub_box_;

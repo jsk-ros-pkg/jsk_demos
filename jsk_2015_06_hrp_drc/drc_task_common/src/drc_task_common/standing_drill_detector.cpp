@@ -55,6 +55,7 @@ namespace drc_task_common
     pub_foot_marker_ = pnh_.advertise<visualization_msgs::Marker>("foot_marker", 1);
     pub_debug_cylinder_pose_ = pnh_.advertise<geometry_msgs::PoseStamped>("debug/cylinder_pose", 1);
     pub_debug_foot_pose_ = pnh_.advertise<geometry_msgs::PoseStamped>("debug/foot_pose", 1);
+    pub_origin_pose_ = pnh_.advertise<geometry_msgs::PoseStamped>("output/pose", 1);
     sub_cloud_.subscribe(pnh_, "input", 1);
     sub_box_.subscribe(pnh_, "input/box_array", 1);
     sub_indices_.subscribe(pnh_, "input/indices", 1);
@@ -212,13 +213,27 @@ namespace drc_task_common
       cylinder->toMarker(cylinder_marker, center, support_direction, height);
       cylinder_marker.header = box.header;
       pub_marker_.publish(cylinder_marker);
-
-      Eigen::Affine3f cylinder_pose = Eigen::Translation3f(center) * pose.rotation();
+      Eigen::Affine3f cylinder_pose;
+      if (1) {
+	Eigen::Quaternionf rot;
+	rot.setFromTwoVectors(Eigen::Vector3f::UnitZ(), dir);
+	cylinder_pose = Eigen::Translation3f(center) * rot;
+	pcl::PointCloud<pcl::PointXYZ>::Ptr
+	  segmented_cloud_transformed (new pcl::PointCloud<pcl::PointXYZ>);
+	pcl::transformPointCloud(xyz_cloud, *segmented_cloud_transformed, cylinder_pose.inverse());
+	Eigen::Vector4f minpt, maxpt;
+	pcl::getMinMax3D<pcl::PointXYZ>(*segmented_cloud_transformed, minpt, maxpt);
+	Eigen::Affine3f foot_pose = cylinder_pose * Eigen::Translation3f(Eigen::Vector3f(0, 0.0, maxpt[2] - 0.1));
+      }
+      else {
+	cylinder_pose = Eigen::Translation3f(center) * pose.rotation();
+      }
       publishPoseStamped(pub_debug_cylinder_pose_, box.header, cylinder_pose);
       const size_t resolution = foot_search_resolution_;
       size_t best_i = 0;
       double best_coef = DBL_MAX;
       Eigen::Affine3f best_pose = Eigen::Affine3f::Identity();
+      Eigen::Affine3f best_output_pose = Eigen::Affine3f::Identity();
       const double min_angle = 0;
       const double max_angle = M_PI * 2.0;
       // Downsample
@@ -234,6 +249,7 @@ namespace drc_task_common
         double theta = min_angle + (max_angle - min_angle) * i / resolution;
         //double theta = i * 2.0 * M_PI / resolution;
         foot_pose = foot_pose * Eigen::AngleAxisf(theta, Eigen::Vector3f::UnitZ());
+	Eigen::Affine3f output_pose = foot_pose * Eigen::Translation3f(Eigen::Vector3f(0, 0.0, 0.1 - foot_z_offset_));
         Eigen::Vector3f x_direction = cylinder_pose.rotation() *  Eigen::Vector3f::UnitX();
         foot_pose = foot_pose * Eigen::Translation3f(- x_direction * foot_x_offset_);
         
@@ -243,17 +259,18 @@ namespace drc_task_common
             ROS_INFO("coef: [%f] => %f", theta / M_PI * 180, coef);
           }
         }
-        if (coef <= best_coef) {
-          
+        if (coef <= best_coef) {       
           best_coef = coef;
           best_i = 0;
           best_pose = foot_pose;
+	  best_output_pose = output_pose;
         }
       }
       if (verbose_) {
         ROS_INFO("best_coef: %f", best_coef);
       }
       publishPoseStamped(pub_debug_foot_pose_, box.header, best_pose);
+      publishPoseStamped(pub_origin_pose_, box.header, best_output_pose);
       visualization_msgs::Marker foot_marker;
       foot_marker.header = box.header;
       tf::poseEigenToMsg(best_pose, foot_marker.pose);
