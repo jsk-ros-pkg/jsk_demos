@@ -188,7 +188,7 @@
    (send motion :drive-init-pose-crank :limb :larm :move-arm nil) ;; todo: fix and remove
    (send self :approach-accel)
    ;; (send self :approach-floor)
-   (send self :support-by-leg :start-ref-force nil)
+   (send self :support-by-leg :set-ref-force nil)
    (send self :approach-handle)
    (send self :publish-body-relative-steering-coords)
    nil
@@ -279,9 +279,9 @@
    (send* motion :approach-brake-pedal args)
    )
   (:approach-floor
-   (&rest args &key (offset #f(0 0 50)) (start-impedance t) (start-ref-force nil) &allow-other-keys)
+   (&rest args &key (offset #f(0 0 50)) (start-impedance t) (set-ref-force nil) &allow-other-keys)
    (send* motion :approach-floor :offset offset
-          :start-impedance start-impedance :stop-ref-force start-ref-force
+          :start-impedance start-impedance :set-ref-force set-ref-force
           args) ;; approach to floor
    )
   (:step-accel ;; mainly for command-line
