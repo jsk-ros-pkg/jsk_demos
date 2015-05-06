@@ -665,11 +665,12 @@
 
   ;; holding frame
   (:approach-frame
-   (&key (limb :larm) (target-handle :left-frame-center) (time 10000) (offset #f(-150 50 0)) (debug-view nil))
-   (send self :open-hand :rarm)
+   (&rest args &key (limb :larm) (target-handle :left-frame-center) (rotation-axis :z)
+          (time 10000) (offset #f(-150 50 0)) (debug-view nil))
+   (send self :open-hand limb)
    (let (ik-ret)
      (setq ik-ret (send robot limb :inverse-kinematics (send (send (send car target-handle) :copy-worldcoords) :locate offset)
-                        :debug-view debug-view :rotation-axis :z)
+                        :debug-view debug-view :rotation-axis rotation-axis)
            )
      (when (and real ik-ret)
        (send *ri* :angle-vector (send robot :angle-vector) time)
@@ -679,7 +680,7 @@
      )
    )
   (:grasp-frame
-   (&key (limb :larm) (target-handle :left-frame-center) (time 5000) (debug-view nil))
+   (&rest args &key (limb :larm) (target-handle :left-frame-center) (time 5000) (debug-view nil))
    (let (ik-ret)
      (send robot limb :inverse-kinematics (send (send car target-handle) :copy-worldcoords)
            :debug-view debug-view :rotation-axis :z :stop 1000)
@@ -691,11 +692,42 @@
      (send self :close-hand :rarm)
      )
    )
+  (:approach-fist
+   (&rest args &key (limb :rarm) (target-handle :seat-center) (rotation-axis t) (offset #f(-100 50 0))
+          (offset-wrt :local) (debug-view nil) (time 10000) (reach-until-touch nil)
+          (start-impedance nil) (set-ref-force nil))
+   (send self :close-hand limb)
+   (let (ik-ret)
+     (setq ik-ret (send robot limb :inverse-kinematics (send (send (send car target-handle) :copy-worldcoords) :locate offset offset-wrt)
+                        :debug-view debug-view :rotation-axis rotation-axis)
+           )
+     (when (and real ik-ret)
+       (when start-impedance
+         (send self :set-impedance-for-support limb)
+         )
+       (send *ri* :angle-vector (send robot :angle-vector) time)
+       (send *ri* :wait-interpolation)
+       (send *viewer* :draw-objects)
+       (when reach-until-touch
+         (send *ri* :reach-until-touch limb
+               (send (send robot limb :end-coords :copy-worldcoords) :rotate-vector #f(1 0 0))
+               :rotation-axis :z :time-step 1000 :max-dist 50 :dist-step 5 :debug debug-view
+               :coords-system :world
+               ) ;; todo: reach-until-touch uses copy-object
+         (send *ri* :state) ;; update
+         (send robot limb :angle-vector (send *ri* :robot limb :angle-vector)) ;; reflect reach-until-touch result
+         )
+       (when set-ref-force
+         (send self :set-ref-force-for-support limb)
+         )
+       )
+     )
+   )
 
   ;; leg support
   (:approach-floor
    (&rest args &key (limb :lleg) (target-handle :floor) (time 10000) (debug-view nil) (offset #f(0 0 50)) (offset-wrt :local)
-          (start-impedance t) (stop-ref-force nil) (start-ref-force nil)
+          (start-impedance t) (stop-ref-force nil) (set-ref-force nil)
           (reach-until-touch nil) (use-imu nil)
           &allow-other-keys)
    (when (and real stop-ref-force)
@@ -751,12 +783,9 @@
              (send *ri* :state) ;; update 
              (send robot limb :angle-vector (send *ri* :robot limb :angle-vector)) ;; reflect reach-until-touch result
              (send robot limb :move-end-pos #f(0 0 10) :local) ;; compensate overshoot
-             (send robot limb :move-end-pos offset offset-wrt) ;; reflect offset
-             (send *ri* :angle-vector (send robot :angle-vector) time)
-             (send *ri* :wait-interpolation)
              )
            ;; ref-force
-           (when start-ref-force
+           (when set-ref-force
              (send self :set-ref-force-for-support limb)
              )
            )
@@ -823,7 +852,20 @@
    (limb)
    ;; (send *ri* :start-impedance limb :M-p 100 :D-p 600 :K-p 700)
    ;; (send *ri* :start-impedance limb :M-p 100 :D-p 2500 :K-p 3000)
-   (send *ri* :start-impedance :lleg :M-p 200 :D-p 4000 :K-p 6000 :moment-gain #(1 1 1) :M-r 100 :D-r 2000 :K-r 3000)
+   ;; (send *ri* :start-impedance limb :M-p 200 :D-p 4000 :K-p 6000 :moment-gain #(1 1 1) :M-r 100 :D-r 2000 :K-r 3000)
+   ;; (send *ri* :start-impedance :rarm :M-p 150 :D-p 2000 :K-p 4000 :moment-gain #(1 1 1) :M-r 100 :D-r 1500 :K-r 2000)
+   ;; (send *ri* :start-impedance :lleg :M-p 200 :D-p 4000 :K-p 6000 :moment-gain #(1 1 1) :M-r 50 :D-r 250 :K-r 400)
+   (cond
+    ((member limb (list :larm :rarm :arms))
+     (send *ri* :start-impedance limb :M-p 150 :D-p 2000 :K-p 4000 :moment-gain #(1 1 1) :M-r 25 :D-r 150 :K-r 200)
+     )
+    ((member limb (list :lleg :rleg :legs))
+     (send *ri* :start-impedance limb :M-p 200 :D-p 3000 :K-p 5000 :moment-gain #(1 1 1) :M-r 50 :D-r 250 :K-r 400)
+     )
+    (t
+     (send *ri* :start-impedance limb :M-p 200 :D-p 4000 :K-p 6000 :moment-gain #(1 1 1) :M-r 50 :D-r 250 :K-r 400) ;; default
+     )
+    )
    )
   (:set-ref-force-for-support
    (limb)

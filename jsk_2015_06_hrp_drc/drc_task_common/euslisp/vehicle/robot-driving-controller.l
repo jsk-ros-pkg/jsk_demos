@@ -186,9 +186,10 @@
      )
    (send motion :ride :init-pose t)
    (send motion :drive-init-pose-crank :limb :larm :move-arm nil) ;; todo: fix and remove
+   (send self :approach-fist :reach-until-touch nil)
    (send self :approach-accel)
    ;; (send self :approach-floor)
-   (send self :support-by-leg :start-ref-force nil)
+   (send self :support-by-leg :set-ref-force nil)
    (send self :approach-handle)
    (send self :publish-body-relative-steering-coords)
    nil
@@ -279,10 +280,18 @@
    (send* motion :approach-brake-pedal args)
    )
   (:approach-floor
-   (&rest args &key (offset #f(0 0 50)) (start-impedance t) (start-ref-force nil) &allow-other-keys)
+   (&rest args &key (offset #f(0 0 50)) (start-impedance t) (set-ref-force nil) &allow-other-keys)
    (send* motion :approach-floor :offset offset
-          :start-impedance start-impedance :stop-ref-force start-ref-force
+          :start-impedance start-impedance :set-ref-force set-ref-force
           args) ;; approach to floor
+   )
+  (:approach-fist
+   (&rest args &key (offset #f(-100 100 0)) (start-impedance t)
+          (set-ref-force nil) (reach-until-touch nil) &allow-other-keys)
+   (send* motion :approach-fist :offset offset
+          :start-impedance start-impedance :set-ref-force set-ref-force
+          :reach-until-touch reach-until-touch
+          args) ;; approach fist to seat
    )
   (:step-accel ;; mainly for command-line
    (command &rest args)
@@ -297,9 +306,9 @@
    (send* motion :step-brake-pedal command args) ;; step brake
    )
   (:support-by-leg
-   (&rest args &key (offset #f(0 0 0)) (start-impedance t) (start-ref-force t) &allow-other-keys)
+   (&rest args &key (offset #f(0 0 0)) (start-impedance t) (set-ref-force t) &allow-other-keys)
    (send* motion :approach-floor
-          :offset offset :start-impedance start-impedance :stop-ref-force start-ref-force
+          :offset offset :start-impedance start-impedance :set-ref-force set-ref-force
           args) ;; approach to floor
    )
 

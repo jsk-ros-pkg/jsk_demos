@@ -99,6 +99,11 @@
          (seat-thickness 30)
          seat-list
          seat-link
+         (rear-support-frame-height 240)
+         ;; (rear-support-frame-y -292.5)
+         ;; (rear-support-frame-y -150)
+         (rear-support-frame-y 0) ;; temporary
+         (rear-support-frame-x 50)
          )
      ;; make seat-list ;;;;;;;;;;;;;;;;;
      (let* ((seat-body (make-cube seat-length seat-width seat-thickness)))
@@ -106,14 +111,26 @@
        (send seat-body :translate (float-vector 0 0 (- (/ seat-thickness 2))))
        ;; set list and assoc
        (setq seat-list (list seat-body))
+       ;; make bodyset-link
+       (setq seat-link (instance bodyset-link :init (make-cascoords)
+                                 :bodies (append seat-list nil)
+                                 :name :seat-link))
+
+       ;; define grasp point
+       (setq seat-center-grasp-point (make-cascoords :coords (send (send seat-link :copy-worldcoords) :rotate (deg2rad 90) :y)
+                                                     :name :seat-center))
+       (push seat-center-grasp-point grasp-point)
+       (send seat-body :assoc seat-center-grasp-point)
+       (setq rear-support-frame-attachment-grasp-point (make-cascoords :coords (send (send (send seat-link :copy-worldcoords) :rotate (deg2rad 90) :y)
+                                                                                     :translate (float-vector 0 rear-support-frame-y rear-support-frame-height) :world)
+                                                                       :name :rear-support-frame-attachment))
+       (push rear-support-frame-attachment-grasp-point grasp-point)
+       (send seat-body :assoc rear-support-frame-attachment-grasp-point)
+
+       (dolist (l (send seat-link :bodies))
+         (send l :set-color color))
+       seat-link
        )
-     ;; make bodyset-link
-     (setq seat-link (instance bodyset-link :init (make-cascoords)
-                               :bodies (append seat-list nil)
-                               :name :seat-link))
-     (dolist (l (send seat-link :bodies))
-       (send l :set-color color))
-     seat-link
      )
    )  
   (:reset
@@ -133,6 +150,8 @@
   (:right-frame-center () (find-if #'(lambda (h) (eq (send h :name) :right-frame-center)) grasp-point))
   (:floor () (find-if #'(lambda (h) (eq (send h :name) :floor)) grasp-point))
   (:floor-footrest () (find-if #'(lambda (h) (eq (send h :name) :floor-footrest)) grasp-point))
+  (:seat-center () (find-if #'(lambda (h) (eq (send h :name) :seat-center)) grasp-point))
+  (:rear-support-frame-attachment () (find-if #'(lambda (h) (eq (send h :name) :rear-support-frame-attachment)) grasp-point))
   )
 
 ;; (setq hoge (instance polaris-xp900-with-handle :init))

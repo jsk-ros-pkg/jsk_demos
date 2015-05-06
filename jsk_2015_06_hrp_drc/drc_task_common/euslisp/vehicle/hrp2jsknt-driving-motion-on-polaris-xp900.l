@@ -28,7 +28,8 @@
    (&optional (limb (send self :grasp-arm)))
    (when real
      ;; (send robot :hand limb :close-pose)
-     (send robot :hand limb :angle-vector #f(65.0 0.0 0.0 0.0 10.0 90.0)) ;; do not use index finger
+     ;; (send robot :hand limb :angle-vector #f(65.0 0.0 0.0 0.0 10.0 90.0)) ;; do not use index finger
+     (send robot :hand limb :grasp-pose)
      (send *ri* :hand-angle-vector (send robot :hand-angle-vector) 1000)
      (send *ri* :wait-interpolation)
      )
