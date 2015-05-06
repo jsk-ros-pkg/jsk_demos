@@ -754,7 +754,7 @@
              (send robot limb :move-end-pos #f(0 0 10) :local) ;; compensate overshoot
              )
            ;; ref-force
-           (when start-ref-force
+           (when set-ref-force
              (send self :set-ref-force-for-support limb)
              )
            )
