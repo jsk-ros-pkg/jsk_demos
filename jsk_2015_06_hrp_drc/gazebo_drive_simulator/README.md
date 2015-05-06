@@ -79,7 +79,11 @@ $ cd patch
 
 # change ground
 $ patch -p0 < drc_ground.patch
+# remove shadows of obstacle
+$ patch -p0 < obstacle_shadows.patch
 
 # return this change
 $ patch -p0 -R < drc_ground.patch
+# return shadows of obstacle
+$ patch -p0 -R < obstacle_shadows.patch 
 ```
