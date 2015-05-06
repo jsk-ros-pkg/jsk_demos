@@ -27,8 +27,8 @@ sleep 40
 # rostopic pub --once /drc_world/robot_enter_car geometry_msgs/Pose '{position: {y: -0.6, z: -0.2}}' # '{position: {y: -0.6}}'
 # ride to drc_vehicle  # if you change initial position, you have to change gazebo_drive_simulator/launch/gazebo_drive_simulator.launch
 # sleep 20
-rostopic pub --once /atlas/control_mode std_msgs/String "User" # Modify UserMode
-rosrun gazebo_drive_simulator traj_yaml.py `rospack find gazebo_drive_simulator`/config/atlas_sitting_pose.yaml sitting-arm-up # sitting
+# rostopic pub --once /atlas/control_mode std_msgs/String "User" # Modify UserMode
+# rosrun gazebo_drive_simulator traj_yaml.py `rospack find gazebo_drive_simulator`/config/atlas_sitting_pose.yaml sitting-arm-up # sitting
 rostopic pub --once ${CMD_NAMESPACE}/hand_brake/cmd std_msgs/Float64 '{ data : 0 }' # disable hand brake
 roslaunch gazebo_drive_simulator multisense_sl_relay.launch & # for PointCloud2
 
