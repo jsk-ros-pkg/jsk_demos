@@ -665,11 +665,12 @@
 
   ;; holding frame
   (:approach-frame
-   (&key (limb :larm) (target-handle :left-frame-center) (time 10000) (offset #f(-150 50 0)) (debug-view nil))
-   (send self :open-hand :rarm)
+   (&rest args &key (limb :larm) (target-handle :left-frame-center) (rotation-axis :z)
+          (time 10000) (offset #f(-150 50 0)) (debug-view nil))
+   (send self :open-hand limb)
    (let (ik-ret)
      (setq ik-ret (send robot limb :inverse-kinematics (send (send (send car target-handle) :copy-worldcoords) :locate offset)
-                        :debug-view debug-view :rotation-axis :z)
+                        :debug-view debug-view :rotation-axis rotation-axis)
            )
      (when (and real ik-ret)
        (send *ri* :angle-vector (send robot :angle-vector) time)
@@ -679,7 +680,7 @@
      )
    )
   (:grasp-frame
-   (&key (limb :larm) (target-handle :left-frame-center) (time 5000) (debug-view nil))
+   (&rest args &key (limb :larm) (target-handle :left-frame-center) (time 5000) (debug-view nil))
    (let (ik-ret)
      (send robot limb :inverse-kinematics (send (send car target-handle) :copy-worldcoords)
            :debug-view debug-view :rotation-axis :z :stop 1000)
