@@ -188,7 +188,6 @@ def b_control_joy_cb(msg):
         if current_pose_stamped.pose.orientation.x == 0 and current_pose_stamped.pose.orientation.y == 0 and current_pose_stamped.pose.orientation.z == 0 and current_pose_stamped.pose.orientation.w == 0:
             current_pose_stamped.pose.orientation.w = 1
         insert_marker(shape_type=TransformableMarkerOperate.MESH_RESOURCE, name='hand1', description='', mesh_resource=mesh_resource_name, mesh_use_embedded_materials=True)
-        set_x_pub.publish(1.0) # dammy
     if insert_box_flag or insert_cylinder_flag or insert_torus_flag or insert_hand_flag:
         set_color_pub.publish(color)
         set_pose_pub.publish(current_pose_stamped)
