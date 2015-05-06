@@ -197,10 +197,10 @@
    (limb)
    (send *ri* :start-impedance limb :M-p 200 :D-p 600 :K-p 1400)
    )
-  (:set-impedance-for-support
-   (limb)
-   (send *ri* :start-impedance limb :M-p 100 :D-p 1200 :K-p 140)
-   )
+  ;; (:set-impedance-for-support
+  ;;  (limb)
+  ;;  (send *ri* :start-impedance limb :M-p 100 :D-p 1200 :K-p 140)
+  ;;  )
   ;; (:approach-accel-pedal
   ;;  (&key (tm 10000) (debug-view nil))
   ;;  (send robot :rleg :angle-vector #f(-13.1189 -24.4656 -83.3638 44.9385 7.33334 27.7739)) ;; rleg angle-vector in left-sitting
