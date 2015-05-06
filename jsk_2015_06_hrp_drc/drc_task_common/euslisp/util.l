@@ -50,6 +50,20 @@
         (time (elt fv (length (send *robot* :joint-list)))))
     (list av time)))
 
+(defun position-to-float-vector (pos length)
+  ;; 6 parameters are filled
+  (let ((ret (instantiate float-vector length)))
+    (setf (elt ret 0) (elt pos 0))
+    (setf (elt ret 1) (elt pos 1))
+    (setf (elt ret 2) (elt pos 2))
+    ret))
+
+(defun float-vector-to-position (fv)
+  (cond ((>= (length fv) 3)
+         (subseq fv 0 3))
+        (t
+         nil)))
+
 (defun fill-coords-float-vector (coords fv start)
   (setf (elt fv (+ start 0)) (elt (send coords :worldpos) 0))
   (setf (elt fv (+ start 1)) (elt (send coords :worldpos) 1))
@@ -60,7 +74,7 @@
   )
 
 (defun coords-to-float-vector (coords length)
-  ;6 parameters are filled
+  ;; 6 parameters are filled
   (let ((ret (instantiate float-vector length)))
     (fill-coords-float-vector coords ret 0)
     ret))
@@ -313,6 +327,25 @@
   (let ((ret (float-vector-to-box params)))
     (append ret (list (elt params 9) (elt params 10)))
     ))
+
+(defun reach-until-touch-params-to-float-vector
+  (dir thre max-dist dist-step time-step rotation-axis length)
+  (let (ret)
+    (setq ret (position-to-float-vector dir length))
+    (setf (elt ret 3) thre)
+    (setf (elt ret 4) max-dist)
+    (setf (elt ret 5) dist-step)
+    (setf (elt ret 6) time-step)
+    (setf (elt ret 7) (if rotation-axis 1 0))
+    ret))
+
+(defun float-vector-to-reach-until-touch-params
+  (params)
+  (list
+   (float-vector-to-position params)
+   (elt params 3) (elt params 4) (elt params 5) (elt params 6)
+   (if (eps= (float (elt params 7)) (float 1)) t nil))
+  )
 
 ;; message handler
 (defclass narrowband-message-handler

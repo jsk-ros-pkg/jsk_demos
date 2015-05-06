@@ -95,10 +95,11 @@ def b_control_client_init():
     handle_variable_rot_pub = rospy.Publisher('/object_handle_variable_rot', Float32)
     approach_variable_pub = rospy.Publisher('/object_approach_variable', Float32)
     # robot marker
-    global set_robot_pose_pub, solve_ik_pub, send_angle_pub, save_obj_pub, go_pos_pub, handle_reverse_srv, obj_menu_pub, robot_menu_pub, obj_mode_next_srv, ik_mode_next_srv
+    global set_robot_pose_pub, solve_ik_pub, send_angle_pub, reach_until_touch_pub, save_obj_pub, go_pos_pub, handle_reverse_srv, obj_menu_pub, robot_menu_pub, obj_mode_next_srv, ik_mode_next_srv
     set_robot_pose_pub = rospy.Publisher('urdf_control_marker/set_pose', PoseStamped)
     solve_ik_pub = rospy.Publisher('/solve_ik_command', msg.Empty)
     send_angle_pub = rospy.Publisher('/send_angle_command', msg.Empty)
+    reach_until_touch_pub = rospy.Publisher('/reach_until_touch_command', msg.Empty)
     save_obj_pub = rospy.Publisher('/save_obj_command', msg.Empty)
     go_pos_pub = rospy.Publisher('/go_pos_command', msg.Empty)
     handle_reverse_srv = rospy.ServiceProxy('/set_handle_reverse', srv.Empty)
@@ -250,6 +251,8 @@ def b_control_joy_cb(msg):
         go_pos_pub.publish()
     if status.buttonL5 != prev_status.buttonL5:
         send_angle_pub.publish()
+    if status.buttonL7 != prev_status.buttonL7:
+        reach_until_touch_pub.publish()
     if status.buttonU6 != prev_status.buttonU6:
         save_obj_pub.publish()
     if status.buttonL3 != prev_status.buttonL3:

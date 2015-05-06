@@ -684,6 +684,9 @@ Usage:
      (:initial -> :executing-angle-vector)
      (:executing-angle-vector -> :initial)
 
+     (:initial -> :executing-reach-until-touch)
+     (:executing-reach-until-touch -> :initial)
+
      (:initial -> :executing-vehicle)
      (:executing-vehicle -> :initial)
      )
@@ -722,6 +725,8 @@ Usage:
      (:executing-look-around :look-around)
 
      (:executing-angle-vector :angle-vector)
+
+     (:executing-reach-until-touch :reach-until-touch)
 
      (:executing-vehicle :vehicle)
      )

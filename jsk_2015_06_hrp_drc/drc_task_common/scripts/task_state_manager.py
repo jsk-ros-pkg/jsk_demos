@@ -20,7 +20,9 @@ def task_state_manager_init():
             {'name': 'ExecGoPos', 'src': 'none', 'dst': 'ExecGoPos'},
             {'name': 'FinishGoPos', 'src': 'none', 'dst': 'FinishGoPos'},
             {'name': 'ExecAngleVec', 'src': 'none', 'dst': 'ExecAngleVec'},
+            {'name': 'ExecReachUntilTouch', 'src': 'none', 'dst': 'ExecReachUntilTouch'},
             {'name': 'FinishAngleVec', 'src': 'none', 'dst': 'FinishAngleVec'},
+            {'name': 'FinishReachUntilTouch', 'src': 'none', 'dst': 'FinishReachUntilTouch'},
         ]
     })
     # registar chnage state callback
@@ -30,7 +32,7 @@ def task_state_manager_init():
         for src in tsm.get_all_state():
             tsm.add_event({'events':[{'name': dst, 'src': src, 'dst': dst}]})
     tsm.fatal = ['FailIK']
-    tsm.warn = ['SolveIK', 'ExecGoPos', 'ExecAngleVec']
+    tsm.warn = ['SolveIK', 'ExecGoPos', 'ExecAngleVec', 'ExecReachUntilTouch']
 
     # ROS
     global task_state_text_pub
