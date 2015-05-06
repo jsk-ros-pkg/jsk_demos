@@ -161,7 +161,7 @@
     </node>
 
     <node pkg="nodelet" type="nodelet" name="normal_estimation"
-          args="load pcl/NormalEstimationOMP manager">
+          args="load jsk_pcl/NormalEstimationOMP manager">
       <remap from="~input" to="laser_self_filter_points/output"/>
       <rosparam>
         k_search: 0
@@ -175,7 +175,7 @@
       <remap from="~input" to="laser_self_filter_points/output" />
       <remap from="~normal" to="normal_estimation/output" />
       <rosparam>
-        use_async: true # why is it required?
+        use_async: false
       </rosparam>
     </node>
     
