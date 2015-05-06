@@ -199,7 +199,7 @@
         (make-cascoords
          :coords 
 	 (cond ((or (equal *robot-name* "HRP2JSKNT") (equal *robot-name* "HRP2JSKNTS"))
-		(send (send (send (send *robot* :rarm :end-coords) :copy-worldcoords) :translate (float-vector 50.0 25.0 0.0) :local) :rotate (deg2rad 45) :z :local))
+		(send (send (send (send *robot* :rarm :end-coords) :copy-worldcoords) :translate (float-vector 70.0 2.0 0.0) :local) :rotate (deg2rad 45) :z :local))
 		(t
 		 (send (send (send (send *robot* :rarm :end-coords) :copy-worldcoords) :translate (float-vector 0.0 0.0 0.0) :local) :rotate (deg2rad 0) :z :local)
 		 )
@@ -209,7 +209,7 @@
         (make-cascoords
          :coords 
 	 (cond ((or (equal *robot-name* "HRP2JSKNT") (equal *robot-name* "HRP2JSKNTS"))
-		(send (send (send (send *robot* :larm :end-coords) :copy-worldcoords) :translate (float-vector 50.0 -25.0 0.0) :local) :rotate (deg2rad -45) :z :local))
+		(send (send (send (send *robot* :larm :end-coords) :copy-worldcoords) :translate (float-vector 70.0 -2.0 0.0) :local) :rotate (deg2rad -45) :z :local))
 		(t
 		 (send (send (send (send *robot* :rarm :end-coords) :copy-worldcoords) :translate (float-vector 0.0 0.0 0.0) :local) :rotate (deg2rad 0) :z :local)
 		 )		
@@ -517,7 +517,7 @@
   (if (equal drill-type :takenoko)
       ;; (if (equal *drill-main-arm* :rarm) (make-coords :pos (float-vector -650 0 0) :rpy (list (deg2rad 0) 0 0)) (make-coords :pos (float-vector -650 0 0) :rpy (list (deg2rad -0) 0 0))
       ;;     )
-      (if (equal *drill-main-arm* :rarm) (make-coords :pos (float-vector -650 0 0) :rpy (list (deg2rad 30) 0 0)) (make-coords :pos (float-vector -650 0 0) :rpy (list (deg2rad -30) 0 0))
+      (if (equal *drill-main-arm* :rarm) (make-coords :pos (float-vector -710 0 0) :rpy (list (deg2rad 25) 0 0)) (make-coords :pos (float-vector -710 -0 0) :rpy (list (deg2rad -25) 0 0))
           )
     (if (equal *drill-main-arm* :rarm) (make-coords :pos (float-vector -600 100 0) :rpy (list (deg2rad 0) 0 0)) (make-coords :pos (float-vector -600 -100 0) :rpy (list (deg2rad 0) 0 0))
           )
@@ -1459,7 +1459,7 @@
 ;; TODO pre-push-pose
 (defun test-drill-grasp-motion ()
   ;(get-drill-grasp-motion-full (make-coords :pos (float-vector 700 -150 800) :rpy (list 0 0 0)) :draw? t)
-  (setq *answer-for-grasp-test* (get-drill-grasp-motion-full (make-coords :pos (float-vector 1000 -150 100) :rpy (list (deg2rad 0) 0 0)) :draw? t :drill-type :takenoko))
+  (setq *answer-for-grasp-test* (get-drill-grasp-motion-full (make-coords :pos (float-vector 1000 -150 50) :rpy (list (deg2rad 0) 0 0)) :draw? t :drill-type :takenoko))
   (if (equal *robot-name* "HRPJSKNT")
       (send *robot* :hand :arms :hook-pose))
   ;(play-motion-on-eus-viewer *drill-motion*)
