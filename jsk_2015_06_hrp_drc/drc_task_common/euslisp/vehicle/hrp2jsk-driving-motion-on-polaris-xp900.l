@@ -38,7 +38,7 @@
    (send robot :legs :crotch-p :joint-angle -85)
    (send robot :legs :knee-p :joint-angle 80)
    (send robot :legs :ankle-p :joint-angle 0)
-   (send robot :rarm :shoulder-p :joint-angle -100)
+   ;; (send robot :rarm :shoulder-p :joint-angle -100)
    ;; (send robot :torso :waist-p :joint-angle 10)
    (send robot :head :neck-p :joint-angle -5)
    ;; (send robot :lleg :angle-vector #f(0.398437 -1.4895 -97.47 76.7502 20.0 1.5876 -1.548)) ;; use pedaling block for hrp2
