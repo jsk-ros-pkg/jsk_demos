@@ -105,7 +105,8 @@
        (:accel-pedal
         ;; (send robot :rleg :angle-vector #f(0.277593 0.269639 -91.1699 48.9728 5.54723 -0.244199 -0.384))
         ;; (send robot :rleg :angle-vector #f(-8.96161 -11.923 -84.9409 37.2658 10.0798 15.014 -0.384))
-        (send robot :rleg :angle-vector #f(-10.0 0.269639 -91.1699 48.9728 5.54723 -0.244199 -0.384))
+        ;; (send robot :rleg :angle-vector #f(-10.0 0.269639 -91.1699 48.9728 5.54723 -0.244199 -0.384)) ;; adjusted in real vehicle
+        (send robot :rleg :angle-vector #f(-9.79801 0.253958 -109.928 60.3974 12.8831 -0.218503 0.18)) ;; adjusted in drive simulator by reach-until-touch
         (setq approach-result t)
         )
        (:brake-pedal
@@ -127,7 +128,7 @@
   
   (:step-accel-pedal
    (move-mm &key (time 1000) (relative t) (use-controller t))
-   (send robot :rleg :move-end-pos (float-vector 0 0 move-mm) :local)
+   (send robot :rleg :move-end-pos (float-vector 0 0 move-mm) :local) ;; only relative is supported
    (when real
      (if use-controller
          (send *ri* :angle-vector (send robot :angle-vector) time :rleg-controller)

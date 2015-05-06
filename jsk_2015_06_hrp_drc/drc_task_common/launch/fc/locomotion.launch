@@ -64,9 +64,10 @@
     <node pkg="nodelet" type="nodelet"
           name="remove_outlier"
           args="load pcl/RadiusOutlierRemoval manager">
+      <remap from="~input" to="z_filter/output" />
       <rosparam>
         radius_search: 0.05
-        min_neighbors: 20
+        min_neighbors: 10
       </rosparam>
     </node>
     <node pkg="nodelet" type="nodelet"
@@ -164,7 +165,7 @@
       <remap from="~input" to="laser_self_filter_points/output"/>
       <rosparam>
         k_search: 0
-        radius_search: 0.1
+        radius_search: 0.05
         spatial_locator: 0
       </rosparam>
     </node>
@@ -174,7 +175,7 @@
       <remap from="~input" to="laser_self_filter_points/output" />
       <remap from="~normal" to="normal_estimation/output" />
       <rosparam>
-        use_async: false
+        use_async: true # why is it required?
       </rosparam>
     </node>
     
@@ -186,7 +187,13 @@
         max_queue_size: 50
       </rosparam>
     </node>
-        
+    <node pkg="nodelet" type="nodelet" name="normal_flip"
+          args="load jsk_pcl/NormalFlipToFrame manager">
+      <remap from="~input" to="pointcloud_concatenator/output" />
+      <rosparam>
+        frame_id: head_root
+      </rosparam>
+    </node>
     <node pkg="nodelet" type="nodelet"
           name="laser_self_filter"
           args="load jsk_pcl/AttentionClipper manager">
@@ -205,16 +212,17 @@
     <!-- plane estimation -->
     <node pkg="nodelet" type="nodelet" name="normal_direction_filter"
           args="load jsk_pcl/NormalDirectionFilter manager">
-      <remap from="~input" to="pointcloud_concatenator/output" />
+      <remap from="~input" to="normal_flip/output" />
       <remap from="~input_imu" to="/multisense/imu/imu_data" />
       <rosparam>
+        queue_size: 2000
         use_imu: true
         eps_angle: 0.5 # too large?
       </rosparam>
     </node>
     <node pkg="nodelet" type="nodelet" name="normal_filtered_points"
           args="load pcl/ExtractIndices manager">
-      <remap from="~input" to="pointcloud_concatenator/output" />
+      <remap from="~input" to="normal_flip/output" />
       <remap from="~indices" to="normal_direction_filter/output" />
       <rosparam>
         negative: false
@@ -227,8 +235,8 @@
       <rosparam>
         max_size: 50000
         min_size: 200
-        angular_threshold: 0.02
-        distance_threshold: 0.005
+        angular_threshold: 0.01
+        distance_threshold: 0.01
       </rosparam>
     </node>
     <node pkg="nodelet" type="nodelet" name="plane_concatenator"
@@ -243,7 +251,7 @@
     
     <node pkg="jsk_pcl_ros" type="environment_plane_modeling" name="env_server" output="screen">
       <remap from="~input" to="normal_filtered_points/output"/>
-      <remap from="~input/full_cloud" to="pointcloud_concatenator/output" />
+      <remap from="~input/full_cloud" to="normal_flip/output" />
       <!-- <remap from="~input/full_cloud" to="normal_filtered_points/output" /> -->
       <remap from="~input/polygons" to="plane_concatenator/output/polygons" />
       <remap from="~input/indices" to="plane_concatenator/output/indices" />
@@ -253,6 +261,9 @@
         resolution: 0.01
         complete_footprint_region: false
         morphological_filter_size: 2
+        distance_threshold: 0.005
+        magnify_distance: 0.05
+        normal_threshold: 0.1
         erode_filter_size: 0
         # distance_threshold: 0.02 # too large? for jaxon
         footprint_frames: ["lleg_end_coords", "rleg_end_coords"]
@@ -261,7 +272,7 @@
     
     <node pkg="nodelet" type="nodelet" name="obstacle_cloud"
           args="load pcl/ExtractIndices manager" >
-      <remap from="~input" to="pointcloud_concatenator/output" />
+      <remap from="~input" to="normal_flip/output" />
       <remap from="~indices" to="env_server/output/non_plane_indices" />
       <rosparam>
         negative: true
