@@ -121,7 +121,7 @@ namespace drc_task_common
     double foot_z_;
     double foot_x_offset_;
     double foot_z_offset_;
-    
+    bool buttom_relative_;
   private:
     
   };

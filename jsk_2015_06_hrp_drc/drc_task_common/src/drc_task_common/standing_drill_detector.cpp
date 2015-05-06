@@ -214,19 +214,22 @@ namespace drc_task_common
       cylinder_marker.header = box.header;
       pub_marker_.publish(cylinder_marker);
       Eigen::Affine3f cylinder_pose;
-      if (1) {
+      if (0) {//renew_to_cylinder_pose_) { //not used because of bad accuracy 
 	Eigen::Quaternionf rot;
+	dir = dir.normalized();
 	rot.setFromTwoVectors(Eigen::Vector3f::UnitZ(), dir);
 	cylinder_pose = Eigen::Translation3f(center) * rot;
-	pcl::PointCloud<pcl::PointXYZ>::Ptr
-	  segmented_cloud_transformed (new pcl::PointCloud<pcl::PointXYZ>);
-	pcl::transformPointCloud(xyz_cloud, *segmented_cloud_transformed, cylinder_pose.inverse());
-	Eigen::Vector4f minpt, maxpt;
-	pcl::getMinMax3D<pcl::PointXYZ>(*segmented_cloud_transformed, minpt, maxpt);
-	Eigen::Affine3f foot_pose = cylinder_pose * Eigen::Translation3f(Eigen::Vector3f(0, 0.0, maxpt[2] - 0.1));
       }
       else {
 	cylinder_pose = Eigen::Translation3f(center) * pose.rotation();
+      }
+      if (buttom_relative_) {//align_to_new_box_) 
+	pcl::PointCloud<pcl::PointXYZRGB>::Ptr
+	  cloud_transformed (new pcl::PointCloud<pcl::PointXYZRGB>);
+	pcl::transformPointCloud(*cloud, *cloud_transformed, cylinder_pose.inverse());
+	Eigen::Vector4f minpt, maxpt;
+	pcl::getMinMax3D<pcl::PointXYZRGB>(*cloud_transformed, minpt, maxpt);
+	cylinder_pose = cylinder_pose * Eigen::Translation3f(Eigen::Vector3f(0, 0.0, maxpt[2] - 0.1));
       }
       publishPoseStamped(pub_debug_cylinder_pose_, box.header, cylinder_pose);
       const size_t resolution = foot_search_resolution_;
@@ -442,6 +445,7 @@ namespace drc_task_common
     foot_z_ = config.foot_z;
     foot_x_offset_ = config.foot_x_offset;
     foot_z_offset_ = config.foot_z_offset;
+    buttom_relative_ = config.buttom_relative;
   }
   
 }
