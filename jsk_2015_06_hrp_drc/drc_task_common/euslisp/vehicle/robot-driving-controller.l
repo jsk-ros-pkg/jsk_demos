@@ -297,9 +297,9 @@
    (send* motion :step-brake-pedal command args) ;; step brake
    )
   (:support-by-leg
-   (&rest args &key (offset #f(0 0 0)) (start-impedance t) (start-ref-force t) &allow-other-keys)
+   (&rest args &key (offset #f(0 0 0)) (start-impedance t) (set-ref-force t) &allow-other-keys)
    (send* motion :approach-floor
-          :offset offset :start-impedance start-impedance :stop-ref-force start-ref-force
+          :offset offset :start-impedance start-impedance :set-ref-force set-ref-force
           args) ;; approach to floor
    )
 

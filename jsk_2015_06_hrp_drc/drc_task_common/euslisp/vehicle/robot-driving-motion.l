@@ -696,7 +696,7 @@
   ;; leg support
   (:approach-floor
    (&rest args &key (limb :lleg) (target-handle :floor) (time 10000) (debug-view nil) (offset #f(0 0 50)) (offset-wrt :local)
-          (start-impedance t) (stop-ref-force nil) (start-ref-force nil)
+          (start-impedance t) (stop-ref-force nil) (set-ref-force nil)
           (reach-until-touch nil) (use-imu nil)
           &allow-other-keys)
    (when (and real stop-ref-force)
@@ -752,9 +752,6 @@
              (send *ri* :state) ;; update 
              (send robot limb :angle-vector (send *ri* :robot limb :angle-vector)) ;; reflect reach-until-touch result
              (send robot limb :move-end-pos #f(0 0 10) :local) ;; compensate overshoot
-             (send robot limb :move-end-pos offset offset-wrt) ;; reflect offset
-             (send *ri* :angle-vector (send robot :angle-vector) time)
-             (send *ri* :wait-interpolation)
              )
            ;; ref-force
            (when start-ref-force
