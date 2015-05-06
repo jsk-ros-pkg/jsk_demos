@@ -21,7 +21,7 @@ rosrun hrpsys_gazebo_tutorials convert_drc_world.sh
 Before launch gazebo, you should setup environmental valiables.
 I recommend you to write them in your .bashrc.
 ```bash
-$ source `rospack find hrpsys_gazebo_tutorials`/setup.sh
+$ source `rospack find hrpsys_gazebo_general`/setup.sh
 $ export VRC_CHEATS_ENABLED=1
 ```
 
@@ -52,7 +52,7 @@ staro have not support euslisp mode yet.
 You can move drc_vehicle in simulator by driving_force_gt pro in handel_controller mode.
 Please make sure that handle contorller is connected as /dev/input/js0.
 ```bash
-jstest /dev/input/js0
+$ jstest /dev/input/js0
 ```
 
 You can also move drc_vehicle in simulator by robot-driving-controller in euslisp mode.
@@ -60,8 +60,8 @@ In euslisp mode, same user interface as real drc can be used.
 
 If you want to move vehicle without handle_controller and euslisp, you can send following command.
 ```bash
-rostopic echo /drc_vehicle_xp900/hand_wheel/cmd std_msgs/Float64 "{data: <rad>}"
-rostopic echo /drc_vehicle_xp900/gas_pedal/cmd std_msgs/Float64 "{data: <percentage>}"
+$ rostopic echo /drc_vehicle_xp900/hand_wheel/cmd std_msgs/Float64 "{data: <rad>}"
+$ rostopic echo /drc_vehicle_xp900/gas_pedal/cmd std_msgs/Float64 "{data: <percentage>}"
 ```
 /drc_vehicle_xp900/gas_pedal/cmd requires a value from 0.0 to 1.0.
 
