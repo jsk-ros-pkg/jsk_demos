@@ -36,4 +36,6 @@
           launch-prefix="nice -n +10"/>
   </group>
 
+  <include file="$(find elevator_move_base_pr2)/launch/check_elevator_open.xml" />
+
 </launch>

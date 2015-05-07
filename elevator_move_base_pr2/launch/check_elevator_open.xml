@@ -2,11 +2,15 @@
   <arg name="input" default="/openni_c2/depth_registered_half/points" />
   <arg name="output" default="/elevator_inside_change_cloud" />
 
-  <node name="elevator_inside_change_detector" pkg="jsk_pcl_ros" type="octree_change_publisher">
-    <param name="resolution" value="0.07" />
-    <param name="noise_filter" value="0.2" />
-    <remap from="~input" to="$(arg input)" />
-    <remap from="~octree_change_result" to="$(arg output)" />
-  </node>
+  <include file="$(find pr2_machine)/pr2.machine" />
 
+  <include file="$(find jsk_pcl_ros)/launch/octree_change_detector.launch">
+    <arg name="input_point" value="$(arg input)" />
+    <arg name="voxel_grid_filter_limit_min" value="1.0" />
+    <arg name="voxel_grid_filter_limit_max" value="3.0" />
+    <arg name="octree_resolution" value="0.3" />
+    <arg name="octree_noise_filter" value="10" />
+    <arg name="MACHINE" value="c2" />
+    <arg name="MANAGER" value="elevator_change_detecter_manager" />
+  </include>
 </launch>
