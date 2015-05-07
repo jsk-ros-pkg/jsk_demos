@@ -17,7 +17,7 @@
   
   <node pkg="jsk_pcl_ros" type="attention_clipper" name="hand_clipper">
     <remap from="~input" to="$(arg INPUT_CAMERA_INFO)" />
-    <remap from="~input/points" to="$(arg INPUT_POINT_CLOUD)" />
+    <remap from="~input/points" to="passthrough/output" />
     <remap from="~input/box" to="hand_box" />
     <param name="frame_id" value="left_camera_optical_frame" />
   </node>
@@ -41,12 +41,12 @@
   <node pkg="nodelet" type="nodelet" name="filtered_cloud"
 	args="standalone pcl/ExtractIndices">
     <!-- args="load pcl/ExtractIndices $(arg MANAGER)"> -->
-    <remap from="~input" to="$(arg INPUT_POINT_CLOUD)"/>
+    <remap from="~input" to="passthrough/output"/>
     <remap from="~indices" to="hand_clipper/output/point_indices"/>
   </node>
   <node pkg="drc_task_common" type="standing_drill_detector"
 	name="standing_drill_detector" output="screen">
-    <remap from="~input" to="$(arg INPUT_POINT_CLOUD)" />
+    <remap from="~input" to="passthrough/output" />
     <remap from="~input/box_array" to="hand_clipper/output/box_array" />
     <remap from="~input/indices" to="hand_clipper/output/cluster_point_indices" />
     <rosparam>
