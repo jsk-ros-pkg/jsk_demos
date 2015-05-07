@@ -119,66 +119,71 @@ namespace drc_task_common
     tf::poseMsgToEigen(box.pose, pose);
     Eigen::Affine3f cylinder_pose;
     Eigen::Vector3f center;
+    if (calc_cylinder_center_) {
+      float roll, pitch, yaw;
+      pcl::getEulerAngles(pose, roll, pitch, yaw);
+      crop_box.setTranslation(pose.translation());
+      crop_box.setRotation(Eigen::Vector3f(roll, pitch, yaw));
+      if (verbose_) {
+	ROS_INFO("r, p, y: [%f, %f, %f]", roll, pitch, yaw);
+	ROS_INFO("pos: [%f, %f, %f]", crop_box.getTranslation()[0], crop_box.getTranslation()[1], crop_box.getTranslation()[2]);
+      }
+      crop_box.setInputCloud(cloud);
+      crop_box.setMax(max_points);
+      crop_box.setMin(min_points);
     
-    float roll, pitch, yaw;
-    pcl::getEulerAngles(pose, roll, pitch, yaw);
-    crop_box.setTranslation(pose.translation());
-    crop_box.setRotation(Eigen::Vector3f(roll, pitch, yaw));
-    if (verbose_) {
-      ROS_INFO("r, p, y: [%f, %f, %f]", roll, pitch, yaw);
-      ROS_INFO("pos: [%f, %f, %f]", crop_box.getTranslation()[0], crop_box.getTranslation()[1], crop_box.getTranslation()[2]);
-    }
-    crop_box.setInputCloud(cloud);
-    crop_box.setMax(max_points);
-    crop_box.setMin(min_points);
+      pcl::PointIndices::Ptr cropped_indices (new pcl::PointIndices);
+      crop_box.filter(cropped_indices->indices);
+      if (verbose_) {
+	ROS_INFO("cropped points: %lu", cropped_indices->indices.size());
+      }
+      if (cropped_indices->indices.size() == 0) {
+	ROS_FATAL("no enough cropped indices");
+	//return jsk_pcl_ros::Cylinder::Ptr();
+	return;
+      }
+      pcl::ExtractIndices<pcl::PointXYZRGB> ex;
+      ex.setInputCloud(cloud);
+      ex.setIndices(cropped_indices);
+      pcl::PointCloud<pcl::PointXYZRGB>::Ptr cropped_cloud (new pcl::PointCloud<pcl::PointXYZRGB>);
+      ex.filter(*cropped_cloud);
+      // Estimate normal
+      pcl::NormalEstimationOMP<pcl::PointXYZRGB, pcl::Normal> ne;
+      ne.setInputCloud(cloud);
+      ne.setIndices(cropped_indices);
+      pcl::search::KdTree<pcl::PointXYZRGB>::Ptr tree
+	(new pcl::search::KdTree<pcl::PointXYZRGB> ());
+      ne.setSearchMethod(tree);
+      ne.setRadiusSearch(0.02);
+      pcl::PointCloud<pcl::Normal>::Ptr normals(new pcl::PointCloud<pcl::Normal>);
+      ne.compute(*normals);
     
-    pcl::PointIndices::Ptr cropped_indices (new pcl::PointIndices);
-    crop_box.filter(cropped_indices->indices);
-    if (verbose_) {
-      ROS_INFO("cropped points: %lu", cropped_indices->indices.size());
-    }
-    if (cropped_indices->indices.size() == 0) {
-      ROS_FATAL("no enough cropped indices");
-      //return jsk_pcl_ros::Cylinder::Ptr();
-      return;
-    }
-    pcl::ExtractIndices<pcl::PointXYZRGB> ex;
-    ex.setInputCloud(cloud);
-    ex.setIndices(cropped_indices);
-    pcl::PointCloud<pcl::PointXYZRGB>::Ptr cropped_cloud (new pcl::PointCloud<pcl::PointXYZRGB>);
-    ex.filter(*cropped_cloud);
-    // Estimate normal
-    pcl::NormalEstimationOMP<pcl::PointXYZRGB, pcl::Normal> ne;
-    ne.setInputCloud(cloud);
-    ne.setIndices(cropped_indices);
-    pcl::search::KdTree<pcl::PointXYZRGB>::Ptr tree
-      (new pcl::search::KdTree<pcl::PointXYZRGB> ());
-    ne.setSearchMethod(tree);
-    ne.setRadiusSearch(0.02);
-    pcl::PointCloud<pcl::Normal>::Ptr normals(new pcl::PointCloud<pcl::Normal>);
-    ne.compute(*normals);
+      pcl::SACSegmentationFromNormals<pcl::PointXYZRGB, pcl::Normal> seg;
+      seg.setOptimizeCoefficients(true);
+      seg.setModelType(pcl::SACMODEL_CYLINDER);
+      seg.setMethodType(pcl::SAC_RANSAC);
+      //seg.setMethodType(pcl::SAC_MSAC);
+      //seg.setMethodType(pcl::SAC_LMEDS);
+      //seg.setMethodType(pcl::SAC_PROSAC);
+      seg.setAxis(pose.rotation() * Eigen::Vector3f::UnitZ());
+      seg.setEpsAngle(cylinder_eps_angle_);
+      // phi 60 ~ 75
+      seg.setDistanceThreshold(cylinder_distance_threshold_);
+      seg.setMaxIterations(cylinder_max_iterations_);
+      seg.setNormalDistanceWeight(cylinder_distance_normal_weight_);
+      seg.setRadiusLimits(cylinder_min_radius_, cylinder_max_radius_);
+      seg.setProbability(cylinder_probability_);
+      seg.setInputCloud(cropped_cloud);
+      seg.setInputNormals(normals);
+      pcl::PointIndices::Ptr inliers (new pcl::PointIndices);
+      pcl::ModelCoefficients::Ptr coefficients(new pcl::ModelCoefficients);
+      seg.segment(*inliers, *coefficients);
+      if (inliers->indices.size() == 0) {
+	ROS_ERROR("Failed to detect cylinder");
+	//return jsk_pcl_ros::Cylinder::Ptr();
+	return;
+      }
     
-    pcl::SACSegmentationFromNormals<pcl::PointXYZRGB, pcl::Normal> seg;
-    seg.setOptimizeCoefficients(true);
-    seg.setModelType(pcl::SACMODEL_CYLINDER);
-    seg.setMethodType(pcl::SAC_RANSAC);
-    //seg.setMethodType(pcl::SAC_MSAC);
-    //seg.setMethodType(pcl::SAC_LMEDS);
-    //seg.setMethodType(pcl::SAC_PROSAC);
-    seg.setAxis(pose.rotation() * Eigen::Vector3f::UnitZ());
-    seg.setEpsAngle(cylinder_eps_angle_);
-    // phi 60 ~ 75
-    seg.setDistanceThreshold(cylinder_distance_threshold_);
-    seg.setMaxIterations(cylinder_max_iterations_);
-    seg.setNormalDistanceWeight(cylinder_distance_normal_weight_);
-    seg.setRadiusLimits(cylinder_min_radius_, cylinder_max_radius_);
-    seg.setProbability(cylinder_probability_);
-    seg.setInputCloud(cropped_cloud);
-    seg.setInputNormals(normals);
-    pcl::PointIndices::Ptr inliers (new pcl::PointIndices);
-    pcl::ModelCoefficients::Ptr coefficients(new pcl::ModelCoefficients);
-    seg.segment(*inliers, *coefficients);
-    if (inliers->indices.size() > 0) {
       Eigen::Vector3f dir(coefficients->values[3],
                           coefficients->values[4],
                           coefficients->values[5]);
@@ -187,12 +192,12 @@ namespace drc_task_common
       }
       
       jsk_pcl_ros::Cylinder::Ptr cylinder(new jsk_pcl_ros::Cylinder(
-                                            Eigen::Vector3f(
-                                              coefficients->values[0],
-                                              coefficients->values[1],
-                                              coefficients->values[2]),
-                                            dir,
-                                            coefficients->values[6]));
+								    Eigen::Vector3f(
+										    coefficients->values[0],
+										    coefficients->values[1],
+										    coefficients->values[2]),
+								    dir,
+								    coefficients->values[6]));
       pcl::PointIndices::Ptr cylinder_indices
         (new pcl::PointIndices);
       pcl::PointCloud<pcl::PointXYZ> xyz_cloud;
@@ -209,8 +214,8 @@ namespace drc_task_common
       double height = 0;
       
       cylinder->estimateCenterAndHeight(
-        xyz_cloud, *cylinder_indices,
-        center, height);
+					xyz_cloud, *cylinder_indices,
+					center, height);
       visualization_msgs::Marker cylinder_marker;
       Eigen::Vector3f support_direction = pose.rotation() * Eigen::Vector3f::UnitZ();
       // dir
@@ -226,87 +231,84 @@ namespace drc_task_common
       else {
     	cylinder_pose = Eigen::Translation3f(center) * pose.rotation();
       }
-    cylinder_pose = pose;
-      center = cylinder_pose.translation();
-	
-      if (buttom_estimation_method_==1) {
-	Eigen::Vector3f cylinder_direction = cylinder_pose.rotation() * Eigen::Vector3f::UnitZ();
-	Eigen::Vector3f box_buttom = (pose * Eigen::Translation3f(Eigen::Vector3f(0, 0, box.dimensions.z/2))).translation();
-	float d = - box_buttom.dot(cylinder_direction);
-	ROS_INFO ("d: %f, center.cy: %f", d, center.dot(cylinder_direction));
-	float depth = -(center.dot(cylinder_direction) + d); // /
-	ROS_INFO ("depth: %f", depth);
-	cylinder_pose = cylinder_pose * Eigen::Translation3f(Eigen::Vector3f(0, 0, depth - 0.1));
-      }
-      if (buttom_estimation_method_==2) {//align_to_new_box_) 
-	pcl::PointCloud<pcl::PointXYZRGB>::Ptr
-	  cloud_transformed (new pcl::PointCloud<pcl::PointXYZRGB>);
-	pcl::transformPointCloud(*cloud, *cloud_transformed, cylinder_pose.inverse());
-	Eigen::Vector4f minpt, maxpt;
-	pcl::getMinMax3D<pcl::PointXYZRGB>(*cloud_transformed, minpt, maxpt);
-	cylinder_pose = cylinder_pose * Eigen::Translation3f(Eigen::Vector3f(0, 0, maxpt[2] - 0.1));
-      }
-      publishPoseStamped(pub_debug_cylinder_pose_, box.header, cylinder_pose);
-      const size_t resolution = foot_search_resolution_;
-      size_t best_i = 0;
-      double best_coef = DBL_MAX;
-      Eigen::Affine3f best_pose = Eigen::Affine3f::Identity();
-      Eigen::Affine3f best_output_pose = Eigen::Affine3f::Identity();
-      const double min_angle = 0;
-      const double max_angle = M_PI * 2.0;
-      // Downsample
-      pcl::PointCloud<pcl::PointXYZRGB>::Ptr downsampled_cloud(new pcl::PointCloud<pcl::PointXYZRGB>);
-      pcl::VoxelGrid<pcl::PointXYZRGB> vg;
-      vg.setInputCloud(cloud);
-      vg.setLeafSize(foot_downsample_size_, foot_downsample_size_, foot_downsample_size_);
-      vg.filter(*downsampled_cloud);
-      
-      for (size_t i = 0; i < resolution; i++) {
-        //Eigen::Affine3f foot_pose = cylinder_pose * Eigen::Translation3f(Eigen::Vector3f(0, 0, 0.08));
-        Eigen::Affine3f foot_pose = cylinder_pose * Eigen::Translation3f(Eigen::Vector3f(0, 0.0, foot_z_offset_));
-        double theta = min_angle + (max_angle - min_angle) * i / resolution;
-        //double theta = i * 2.0 * M_PI / resolution;
-        foot_pose = foot_pose * Eigen::AngleAxisf(theta, Eigen::Vector3f::UnitZ());
-	Eigen::Affine3f output_pose = foot_pose * Eigen::Translation3f(Eigen::Vector3f(0, 0.0, 0.1 - foot_z_offset_));
-        Eigen::Vector3f x_direction = cylinder_pose.rotation() *  Eigen::Vector3f::UnitX();
-        foot_pose = foot_pose * Eigen::Translation3f(- x_direction * foot_x_offset_);
-        
-        double coef = computeFootCoefficients(downsampled_cloud, foot_pose, box);
-        if (verbose_) {
-          if (coef != DBL_MAX) {
-            ROS_INFO("coef: [%f] => %f", theta / M_PI * 180, coef);
-          }
-        }
-        if (coef <= best_coef) {       
-          best_coef = coef;
-          best_i = 0;
-          best_pose = foot_pose;
-	  best_output_pose = output_pose;
-        }
-      }
-      if (verbose_) {
-        ROS_INFO("best_coef: %f", best_coef);
-      }
-      publishPoseStamped(pub_debug_foot_pose_, box.header, best_pose);
-      publishPoseStamped(pub_origin_pose_, box.header, best_output_pose);
-      visualization_msgs::Marker foot_marker;
-      foot_marker.header = box.header;
-      tf::poseEigenToMsg(best_pose, foot_marker.pose);
-      foot_marker.scale.x = foot_x_;
-      foot_marker.scale.y = foot_y_;
-      foot_marker.scale.z = foot_z_;
-      foot_marker.color.r = 1.0;
-      foot_marker.color.a = 1.0;
-      foot_marker.type = visualization_msgs::Marker::CUBE;
-      pub_foot_marker_.publish(foot_marker);
-      //return cylinder;
-      return;
     }
     else {
-      ROS_ERROR("Failed to detect cylinder");
-      //return jsk_pcl_ros::Cylinder::Ptr();
-      return;
+      cylinder_pose = pose;
+      center = cylinder_pose.translation();
     }
+    if (buttom_estimation_method_==1) {
+      Eigen::Vector3f cylinder_direction = cylinder_pose.rotation() * Eigen::Vector3f::UnitZ();
+      Eigen::Vector3f box_buttom = (pose * Eigen::Translation3f(Eigen::Vector3f(0, 0, box.dimensions.z/2))).translation();
+      float d = - box_buttom.dot(cylinder_direction);
+      ROS_INFO ("d: %f, center.cy: %f", d, center.dot(cylinder_direction));
+      float depth = -(center.dot(cylinder_direction) + d); // /
+      ROS_INFO ("depth: %f", depth);
+      cylinder_pose = cylinder_pose * Eigen::Translation3f(Eigen::Vector3f(0, 0, depth - 0.1));
+    }
+    if (buttom_estimation_method_==2) {//align_to_new_box_) 
+      pcl::PointCloud<pcl::PointXYZRGB>::Ptr
+	cloud_transformed (new pcl::PointCloud<pcl::PointXYZRGB>);
+      pcl::transformPointCloud(*cloud, *cloud_transformed, cylinder_pose.inverse());
+      Eigen::Vector4f minpt, maxpt;
+      pcl::getMinMax3D<pcl::PointXYZRGB>(*cloud_transformed, minpt, maxpt);
+      cylinder_pose = cylinder_pose * Eigen::Translation3f(Eigen::Vector3f(0, 0, maxpt[2] - 0.1));
+    }
+    publishPoseStamped(pub_debug_cylinder_pose_, box.header, cylinder_pose);
+    const size_t resolution = foot_search_resolution_;
+    size_t best_i = 0;
+    double best_coef = DBL_MAX;
+    Eigen::Affine3f best_pose = Eigen::Affine3f::Identity();
+    Eigen::Affine3f best_output_pose = Eigen::Affine3f::Identity();
+    const double min_angle = 0;
+    const double max_angle = M_PI * 2.0;
+    // Downsample
+    pcl::PointCloud<pcl::PointXYZRGB>::Ptr downsampled_cloud(new pcl::PointCloud<pcl::PointXYZRGB>);
+    pcl::VoxelGrid<pcl::PointXYZRGB> vg;
+    vg.setInputCloud(cloud);
+    vg.setLeafSize(foot_downsample_size_, foot_downsample_size_, foot_downsample_size_);
+    vg.filter(*downsampled_cloud);
+      
+    for (size_t i = 0; i < resolution; i++) {
+      //Eigen::Affine3f foot_pose = cylinder_pose * Eigen::Translation3f(Eigen::Vector3f(0, 0, 0.08));
+      Eigen::Affine3f foot_pose = cylinder_pose * Eigen::Translation3f(Eigen::Vector3f(0, 0.0, foot_z_offset_));
+      double theta = min_angle + (max_angle - min_angle) * i / resolution;
+      //double theta = i * 2.0 * M_PI / resolution;
+      foot_pose = foot_pose * Eigen::AngleAxisf(theta, Eigen::Vector3f::UnitZ());
+      Eigen::Affine3f output_pose = foot_pose * Eigen::Translation3f(Eigen::Vector3f(0, 0.0, 0.1 - foot_z_offset_));
+      Eigen::Vector3f x_direction = cylinder_pose.rotation() *  Eigen::Vector3f::UnitX();
+      foot_pose = foot_pose * Eigen::Translation3f(- x_direction * foot_x_offset_);
+        
+      double coef = computeFootCoefficients(downsampled_cloud, foot_pose, box);
+      if (verbose_) {
+	if (coef != DBL_MAX) {
+	  ROS_INFO("coef: [%f] => %f", theta / M_PI * 180, coef);
+	}
+      }
+      if (coef <= best_coef) {       
+	best_coef = coef;
+	best_i = 0;
+	best_pose = foot_pose;
+	best_output_pose = output_pose;
+      }
+    }
+    if (verbose_) {
+      ROS_INFO("best_coef: %f", best_coef);
+    }
+    publishPoseStamped(pub_debug_foot_pose_, box.header, best_pose);
+    publishPoseStamped(pub_origin_pose_, box.header, best_output_pose);
+    visualization_msgs::Marker foot_marker;
+    foot_marker.header = box.header;
+    tf::poseEigenToMsg(best_pose, foot_marker.pose);
+    foot_marker.scale.x = foot_x_;
+    foot_marker.scale.y = foot_y_;
+    foot_marker.scale.z = foot_z_;
+    foot_marker.color.r = 1.0;
+    foot_marker.color.a = 1.0;
+    foot_marker.type = visualization_msgs::Marker::CUBE;
+    pub_foot_marker_.publish(foot_marker);
+    //return cylinder;
+    return;
+    
   }
 
   std::vector<jsk_pcl_ros::ConvexPolygon::Ptr> StandingDrillDetector::cubeSideFaces(
@@ -463,8 +465,8 @@ namespace drc_task_common
     foot_x_offset_ = config.foot_x_offset;
     foot_z_offset_ = config.foot_z_offset;
     buttom_estimation_method_ = config.buttom_estimation_method;
+    calc_cylinder_center_ = config.calc_cylinder_center;
   }
-  
 }
 
 int main(int argc, char** argv)
