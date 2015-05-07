@@ -2,9 +2,18 @@
   <arg name="INPUT_IMAGE" default="/multisense/left/image_rect_color"/>
   <arg name="INPUT_CAMERA_INFO" default="/multisense/left/camera_info"/>
   <arg name="INPUT_POINT_CLOUD" default="/multisense/resize_1_2/points" />
+  <arg name="PASS_THROUGH" default="true" />
   <group ns="drill_recognition_for_button">
   <node pkg="drc_task_common" type="hand_box_publisher.py" name="hand_box_publisher" respawn="true">
   </node>  
+
+  <node if="$(arg PASS_THROUGH)" pkg="jsk_topic_tools" type="passthrough" name="passthrough">
+    <remap from="~input" to="$(arg INPUT_POINT_CLOUD)" />
+  </node>
+  <node unless="$(arg PASS_THROUGH)" pkg="jsk_topic_tools" type="standalone jsk_topic_tools/Relay" name="passthrough">
+    <remap from="~input" to="$(arg INPUT_POINT_CLOUD)" />
+  </node>
+
   
   <node pkg="jsk_pcl_ros" type="attention_clipper" name="hand_clipper">
     <remap from="~input" to="$(arg INPUT_CAMERA_INFO)" />
@@ -43,6 +52,12 @@
     <rosparam>
       calc_cylinder_center: false
       button_estimation_method: 0
+    </rosparam>
+  </node>
+  <node pkg="jsk_topic_tools" type="snapshot" name="snapshot_cloud_for_save">
+    <remap from="~input" to="standing_drill_detector/output/pose"/>
+    <rosparam>
+      latch: true
     </rosparam>
   </node>
   </group>

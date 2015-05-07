@@ -246,8 +246,8 @@
     (when (send smachine :state? :initial)
       (call-request-duration "/drill_recognition_for_button/passthrough/request_duration" 10)
       ;; convert OCS2FCSmall into geometry_msgs/Polygon
-      (ros::publish "/drill_recognition_for_button/input_rect"
-        (integer-vector-to-rect-polygon-stamped msg))
+      ;; (ros::publish "/drill_recognition_for_button/input_rect"
+      ;;   (integer-vector-to-rect-polygon-stamped msg))
       ;; enable snapshot
       (call-empty-service "/drill_recognition_for_button/snapshot/request")
       (send smachine :go-to :recognizing-drill-button-pose)
