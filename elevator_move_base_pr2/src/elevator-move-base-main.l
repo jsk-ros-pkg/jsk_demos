@@ -91,7 +91,7 @@
     ))
 
 (defun transform-pose-to-robot-coords (coords)
-  (transform-pose-to-target-frame coords "/base_footprint"))
+  (transform-pose-to-target-frame coords "base_footprint"))
 
 (defun set-view-target (coords camera frame-id)
   (let ((msg (instance geometry_msgs::PointStamped :init))
@@ -216,7 +216,7 @@
     (while (< (send (ros::time- (ros::time-now) start) :to-sec) 30)
       (while (not *scan*) (ros::spin-once))
       ;;
-      (send *tfl* :wait-for-transform "/map" (send *scan* :header :frame_id)
+      (send *tfl* :wait-for-transform "map" (send *scan* :header :frame_id)
 	    (send *scan* :header :stamp) 0.5)
       (setq laser-pose
 	    (send *tfl* :lookup-transform "map" (send *scan* :header :frame_id)
