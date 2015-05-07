@@ -236,7 +236,7 @@ namespace drc_task_common
       cylinder_pose = pose;
       center = cylinder_pose.translation();
     }
-    if (buttom_estimation_method_==1) {
+    if (buttom_estimation_method_==0) {
       Eigen::Vector3f cylinder_direction = cylinder_pose.rotation() * Eigen::Vector3f::UnitZ();
       Eigen::Vector3f box_buttom = (pose * Eigen::Translation3f(Eigen::Vector3f(0, 0, box.dimensions.z/2))).translation();
       float d = - box_buttom.dot(cylinder_direction);
@@ -245,7 +245,7 @@ namespace drc_task_common
       ROS_INFO ("depth: %f", depth);
       cylinder_pose = cylinder_pose * Eigen::Translation3f(Eigen::Vector3f(0, 0, depth - 0.1));
     }
-    if (buttom_estimation_method_==2) {//align_to_new_box_) 
+    if (buttom_estimation_method_==1) {//align_to_new_box_) 
       pcl::PointCloud<pcl::PointXYZRGB>::Ptr
 	cloud_transformed (new pcl::PointCloud<pcl::PointXYZRGB>);
       pcl::transformPointCloud(*cloud, *cloud_transformed, cylinder_pose.inverse());
@@ -274,7 +274,7 @@ namespace drc_task_common
       double theta = min_angle + (max_angle - min_angle) * i / resolution;
       //double theta = i * 2.0 * M_PI / resolution;
       foot_pose = foot_pose * Eigen::AngleAxisf(theta, Eigen::Vector3f::UnitZ());
-      Eigen::Affine3f output_pose = foot_pose * Eigen::Translation3f(Eigen::Vector3f(0, 0.0, 0.1 - foot_z_offset_));
+      Eigen::Affine3f output_pose = foot_pose * Eigen::Translation3f(Eigen::Vector3f(0, 0.0, 0.1 - foot_z_offset_)) * Eigen::AngleAxisf(M_PI, Eigen::Vector3f::UnitZ());
       Eigen::Vector3f x_direction = cylinder_pose.rotation() *  Eigen::Vector3f::UnitX();
       foot_pose = foot_pose * Eigen::Translation3f(- x_direction * foot_x_offset_);
         

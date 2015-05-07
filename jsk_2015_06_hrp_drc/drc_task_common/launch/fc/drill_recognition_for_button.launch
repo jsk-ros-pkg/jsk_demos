@@ -12,23 +12,23 @@
     <remap from="~input/box" to="hand_box" />
     <param name="frame_id" value="left_camera_optical_frame" />
   </node>
-  <node pkg="drc_task_common" type="box_land_plane_publisher.py" name="plane_publisher">
-    <remap from="box_array" to="hand_clipper/output/box_array" />
-  </node>
-  <node pkg="nodelet" type="nodelet"
-        name="cluster_decomposer"
-        args="standalone jsk_pcl/ClusterPointIndicesDecomposer"
-        output="screen">
-    <remap from="~input" to="$(arg INPUT_POINT_CLOUD)" />
-    <remap from="~target" to="hand_clipper/output/cluster_point_indices" />
-    <remap from="~align_planes" to="polygon_array" />
-    <remap from="~align_planes_coefficients" to="model_coefficients_array" />
-    <rosparam>
-      align_boxes: true
-      publish_clouds: false
-      publish_tf: false
-    </rosparam>
-  </node>
+  <!-- <node pkg="drc_task_common" type="box_land_plane_publisher.py" name="plane_publisher"> -->
+  <!--   <remap from="box_array" to="hand_clipper/output/box_array" /> -->
+  <!-- </node> -->
+  <!-- <node pkg="nodelet" type="nodelet" -->
+  <!--       name="cluster_decomposer" -->
+  <!--       args="standalone jsk_pcl/ClusterPointIndicesDecomposer" -->
+  <!--       output="screen"> -->
+  <!--   <remap from="~input" to="$(arg INPUT_POINT_CLOUD)" /> -->
+  <!--   <remap from="~target" to="hand_clipper/output/cluster_point_indices" /> -->
+  <!--   <remap from="~align_planes" to="polygon_array" /> -->
+  <!--   <remap from="~align_planes_coefficients" to="model_coefficients_array" /> -->
+  <!--   <rosparam> -->
+  <!--     align_boxes: true -->
+  <!--     publish_clouds: false -->
+  <!--     publish_tf: false -->
+  <!--   </rosparam> -->
+  <!-- </node> -->
   <node pkg="nodelet" type="nodelet" name="filtered_cloud"
 	args="standalone pcl/ExtractIndices">
     <!-- args="load pcl/ExtractIndices $(arg MANAGER)"> -->
@@ -38,8 +38,12 @@
   <node pkg="drc_task_common" type="standing_drill_detector"
 	name="standing_drill_detector" output="screen">
     <remap from="~input" to="$(arg INPUT_POINT_CLOUD)" />
-    <remap from="~input/box_array" to="cluster_decomposer/boxes" />
+    <remap from="~input/box_array" to="hand_clipper/output/box_array" />
     <remap from="~input/indices" to="hand_clipper/output/cluster_point_indices" />
+    <rosparam>
+      calc_cylinder_center: false
+      button_estimation_method: 0
+    </rosparam>
   </node>
   </group>
 </launch>

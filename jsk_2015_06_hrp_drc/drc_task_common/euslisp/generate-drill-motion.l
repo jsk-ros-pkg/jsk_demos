@@ -199,7 +199,7 @@
         (make-cascoords
          :coords 
 	 (cond ((or (equal *robot-name* "HRP2JSKNT") (equal *robot-name* "HRP2JSKNTS"))
-		(send (send (send (send *robot* :rarm :end-coords) :copy-worldcoords) :translate (float-vector 70.0 2.0 0.0) :local) :rotate (deg2rad 45) :z :local))
+		(send (send (send (send *robot* :rarm :end-coords) :copy-worldcoords) :translate (float-vector 50.0 2.0 0.0) :local) :rotate (deg2rad 45) :z :local))
 		(t
 		 (send (send (send (send *robot* :rarm :end-coords) :copy-worldcoords) :translate (float-vector 0.0 0.0 0.0) :local) :rotate (deg2rad 0) :z :local)
 		 )
@@ -209,7 +209,7 @@
         (make-cascoords
          :coords 
 	 (cond ((or (equal *robot-name* "HRP2JSKNT") (equal *robot-name* "HRP2JSKNTS"))
-		(send (send (send (send *robot* :larm :end-coords) :copy-worldcoords) :translate (float-vector 70.0 -2.0 0.0) :local) :rotate (deg2rad -45) :z :local))
+		(send (send (send (send *robot* :larm :end-coords) :copy-worldcoords) :translate (float-vector 50.0 -2.0 0.0) :local) :rotate (deg2rad -45) :z :local))
 		(t
 		 (send (send (send (send *robot* :rarm :end-coords) :copy-worldcoords) :translate (float-vector 0.0 0.0 0.0) :local) :rotate (deg2rad 0) :z :local)
 		 )		
