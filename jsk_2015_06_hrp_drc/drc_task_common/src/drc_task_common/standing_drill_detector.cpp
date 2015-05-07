@@ -89,11 +89,12 @@ namespace drc_task_common
         ROS_INFO("segment_cloud: %lu", segment_cloud->points.size());
       }
       
-      jsk_pcl_ros::Cylinder::Ptr cylinder = estimateStandingDrill(segment_cloud, box_msg);
+      //jsk_pcl_ros::Cylinder::Ptr cylinder = estimateStandingDrill(segment_cloud, box_msg);
+      estimateStandingDrill(segment_cloud, box_msg);
     }
   }
 
-  jsk_pcl_ros::Cylinder::Ptr StandingDrillDetector::estimateStandingDrill(
+  void StandingDrillDetector::estimateStandingDrill(
     pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud,
     const jsk_recognition_msgs::BoundingBox& box)
   {
@@ -116,6 +117,9 @@ namespace drc_task_common
     }
     Eigen::Affine3f pose;
     tf::poseMsgToEigen(box.pose, pose);
+    Eigen::Affine3f cylinder_pose;
+    Eigen::Vector3f center;
+    
     float roll, pitch, yaw;
     pcl::getEulerAngles(pose, roll, pitch, yaw);
     crop_box.setTranslation(pose.translation());
@@ -135,7 +139,8 @@ namespace drc_task_common
     }
     if (cropped_indices->indices.size() == 0) {
       ROS_FATAL("no enough cropped indices");
-      return jsk_pcl_ros::Cylinder::Ptr();
+      //return jsk_pcl_ros::Cylinder::Ptr();
+      return;
     }
     pcl::ExtractIndices<pcl::PointXYZRGB> ex;
     ex.setInputCloud(cloud);
@@ -202,7 +207,6 @@ namespace drc_task_common
                                  0.015,
                                  *cylinder_indices);
       double height = 0;
-      Eigen::Vector3f center;
       
       cylinder->estimateCenterAndHeight(
         xyz_cloud, *cylinder_indices,
@@ -213,23 +217,34 @@ namespace drc_task_common
       cylinder->toMarker(cylinder_marker, center, support_direction, height);
       cylinder_marker.header = box.header;
       pub_marker_.publish(cylinder_marker);
-      Eigen::Affine3f cylinder_pose;
       if (0) {//renew_to_cylinder_pose_) { //not used because of bad accuracy 
-	Eigen::Quaternionf rot;
-	dir = dir.normalized();
-	rot.setFromTwoVectors(Eigen::Vector3f::UnitZ(), dir);
-	cylinder_pose = Eigen::Translation3f(center) * rot;
+      	Eigen::Quaternionf rot;
+      	dir = dir.normalized();
+      	rot.setFromTwoVectors(Eigen::Vector3f::UnitZ(), dir);
+      	cylinder_pose = Eigen::Translation3f(center) * rot;
       }
       else {
-	cylinder_pose = Eigen::Translation3f(center) * pose.rotation();
+    	cylinder_pose = Eigen::Translation3f(center) * pose.rotation();
       }
-      if (buttom_relative_) {//align_to_new_box_) 
+    cylinder_pose = pose;
+      center = cylinder_pose.translation();
+	
+      if (buttom_estimation_method_==1) {
+	Eigen::Vector3f cylinder_direction = cylinder_pose.rotation() * Eigen::Vector3f::UnitZ();
+	Eigen::Vector3f box_buttom = (pose * Eigen::Translation3f(Eigen::Vector3f(0, 0, box.dimensions.z/2))).translation();
+	float d = - box_buttom.dot(cylinder_direction);
+	ROS_INFO ("d: %f, center.cy: %f", d, center.dot(cylinder_direction));
+	float depth = -(center.dot(cylinder_direction) + d); // /
+	ROS_INFO ("depth: %f", depth);
+	cylinder_pose = cylinder_pose * Eigen::Translation3f(Eigen::Vector3f(0, 0, depth - 0.1));
+      }
+      if (buttom_estimation_method_==2) {//align_to_new_box_) 
 	pcl::PointCloud<pcl::PointXYZRGB>::Ptr
 	  cloud_transformed (new pcl::PointCloud<pcl::PointXYZRGB>);
 	pcl::transformPointCloud(*cloud, *cloud_transformed, cylinder_pose.inverse());
 	Eigen::Vector4f minpt, maxpt;
 	pcl::getMinMax3D<pcl::PointXYZRGB>(*cloud_transformed, minpt, maxpt);
-	cylinder_pose = cylinder_pose * Eigen::Translation3f(Eigen::Vector3f(0, 0.0, maxpt[2] - 0.1));
+	cylinder_pose = cylinder_pose * Eigen::Translation3f(Eigen::Vector3f(0, 0, maxpt[2] - 0.1));
       }
       publishPoseStamped(pub_debug_cylinder_pose_, box.header, cylinder_pose);
       const size_t resolution = foot_search_resolution_;
@@ -284,11 +299,13 @@ namespace drc_task_common
       foot_marker.color.a = 1.0;
       foot_marker.type = visualization_msgs::Marker::CUBE;
       pub_foot_marker_.publish(foot_marker);
-      return cylinder;
+      //return cylinder;
+      return;
     }
     else {
       ROS_ERROR("Failed to detect cylinder");
-      return jsk_pcl_ros::Cylinder::Ptr();
+      //return jsk_pcl_ros::Cylinder::Ptr();
+      return;
     }
   }
 
@@ -445,7 +462,7 @@ namespace drc_task_common
     foot_z_ = config.foot_z;
     foot_x_offset_ = config.foot_x_offset;
     foot_z_offset_ = config.foot_z_offset;
-    buttom_relative_ = config.buttom_relative;
+    buttom_estimation_method_ = config.buttom_estimation_method;
   }
   
 }

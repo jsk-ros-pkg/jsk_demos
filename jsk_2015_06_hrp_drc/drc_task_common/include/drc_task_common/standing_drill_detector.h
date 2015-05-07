@@ -75,7 +75,7 @@ namespace drc_task_common
       const jsk_recognition_msgs::BoundingBoxArray::ConstPtr& box_msg,
       const jsk_recognition_msgs::ClusterPointIndices::ConstPtr& indices_msg);
     virtual void configCallback(Config &config, uint32_t level);
-    virtual jsk_pcl_ros::Cylinder::Ptr estimateStandingDrill(
+    virtual void estimateStandingDrill(
       pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud,
       const jsk_recognition_msgs::BoundingBox& box);
     virtual double computeMinimumDistance(
@@ -121,7 +121,7 @@ namespace drc_task_common
     double foot_z_;
     double foot_x_offset_;
     double foot_z_offset_;
-    bool buttom_relative_;
+    int buttom_estimation_method_;
   private:
     
   };
