@@ -1,7 +1,13 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(elevator_move_base_pr2)
 
-find_package(catkin REQUIRED roscpp image_transport cv_bridge image_geometry tf geometry_msgs std_msgs)
+find_package(catkin REQUIRED roscpp image_transport cv_bridge image_geometry tf geometry_msgs std_msgs message_generation roseus)
+
+add_message_files(
+  FILES Float32Stamped.msg)
+
+generate_messages(
+  DEPENDENCIES std_msgs)
 
 catkin_package(
     DEPENDS

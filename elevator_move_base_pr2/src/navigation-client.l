@@ -14,7 +14,7 @@
 (defun check-current-floor (&optional pose) ;; :name == frame_id
   (if pose
       (setq pose (transform-pose-to-target-frame pose (send *scene* :name)))
-    (setq pose (send *tfl* :lookup-transform (send *scene* :name) "/base_footprint" (ros::time 0))))
+    (setq pose (send *tfl* :lookup-transform (send *scene* :name) "base_footprint" (ros::time 0))))
   (send *scene* :current-floor pose))
 
 (defun change-floor (target-floor &optional (topicname "/initialpose3d"))
@@ -22,7 +22,7 @@
   (unix:sleep 1);; important
   (let* ((msg (instance geometry_msgs::PoseWithCovarianceStamped :init))
 	 (current-floor-frame (check-current-floor))
-	 (robot-pose (send *tfl* :lookup-transform current-floor-frame "/base_footprint" (ros::time 0))))
+	 (robot-pose (send *tfl* :lookup-transform current-floor-frame "base_footprint" (ros::time 0))))
     (if (null robot-pose)
 	(return-from change-floor nil))
     (send msg :header :frame_id target-floor)
