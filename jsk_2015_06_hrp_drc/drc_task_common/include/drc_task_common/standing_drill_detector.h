@@ -75,7 +75,7 @@ namespace drc_task_common
       const jsk_recognition_msgs::BoundingBoxArray::ConstPtr& box_msg,
       const jsk_recognition_msgs::ClusterPointIndices::ConstPtr& indices_msg);
     virtual void configCallback(Config &config, uint32_t level);
-    virtual jsk_pcl_ros::Cylinder::Ptr estimateStandingDrill(
+    virtual void estimateStandingDrill(
       pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud,
       const jsk_recognition_msgs::BoundingBox& box);
     virtual double computeMinimumDistance(
@@ -100,6 +100,7 @@ namespace drc_task_common
     ros::Publisher pub_marker_;
     ros::Publisher pub_debug_cylinder_pose_;
     ros::Publisher pub_debug_foot_pose_;
+    ros::Publisher pub_origin_pose_;
     ros::Publisher pub_foot_marker_;
     message_filters::Subscriber<sensor_msgs::PointCloud2> sub_cloud_;
     message_filters::Subscriber<jsk_recognition_msgs::BoundingBoxArray> sub_box_;
@@ -120,7 +121,8 @@ namespace drc_task_common
     double foot_z_;
     double foot_x_offset_;
     double foot_z_offset_;
-    
+    bool calc_cylinder_center_;
+    int buttom_estimation_method_;
   private:
     
   };
