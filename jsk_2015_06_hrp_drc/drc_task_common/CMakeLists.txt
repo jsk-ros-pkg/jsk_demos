@@ -19,7 +19,7 @@ execute_process(
   ${PROJECT_SOURCE_DIR}/msg/DRCParametersMessage.msg)
 
 generate_dynamic_reconfigure_options(
-  config/vehicle/LocalPlannerMochikaeParams.cfg
+  config/vehicle/LocalPlannerParams.cfg
   config/vehicle/ObstacleDetectionParams.cfg
   config/vehicle/PassthroughCarBody.cfg
   config/vehicle/SwitchInputCloud.cfg
@@ -96,9 +96,9 @@ add_executable(kdtree_obstacle src/drc_task_common/kdtree_obstacle_detection.cpp
 add_dependencies(kdtree_obstacle ${PROJECT_NAME}_gencfg ${PROJECT_NAME}_gencpp)
 target_link_libraries(kdtree_obstacle ${catkin_LIBRARIES})
 
-add_executable(simplified_local_planner_mochikae src/drc_task_common/simplified_local_planner_mochikae.cpp)
-add_dependencies(simplified_local_planner_mochikae ${PROJECT_NAME}_gencfg ${PROJECT_NAME}_gencpp)
-target_link_libraries(simplified_local_planner_mochikae ${catkin_LIBRARIES})
+add_executable(simplified_local_planner src/drc_task_common/simplified_local_planner.cpp)
+add_dependencies(simplified_local_planner ${PROJECT_NAME}_gencfg ${PROJECT_NAME}_gencpp)
+target_link_libraries(simplified_local_planner ${catkin_LIBRARIES})
 
 add_executable(switch_input_cloud src/drc_task_common/input_cloud_switching.cpp)
 add_dependencies(switch_input_cloud ${PROJECT_NAME}_gencfg ${PROJECT_NAME}_gencpp)

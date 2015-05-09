@@ -41,7 +41,7 @@
  (when *node-debug*
    (send *pr2* :angle-vector (send *ri* :state))
    (send *irtviewer* :draw-objects)
-   (let ((camera-coords (send *tfl* :lookup-transform "/base_footprint" "/narrow_stereo_optical_frame" (ros::time 0))))
+   (let ((camera-coords (send *tfl* :lookup-transform "base_footprint" "narrow_stereo_optical_frame" (ros::time 0))))
      (when camera-coords
        (send camera-coords :draw-on :flush t :size 200)))
    (x::window-main-one)

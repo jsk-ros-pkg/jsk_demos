@@ -11,6 +11,8 @@
 
 (load "package://roseus_smach/src/state-machine-actionlib.l")
 
+(load "package://elevator_move_base_pr2/src/move-inside-elevator.l")
+
 (setq *node-debug* nil)
 ;(ros::service-call "~set_logger_level"
 ;                   (instance roscpp::SetLoggerLevelRequest
@@ -91,7 +93,7 @@
     ))
 
 (defun transform-pose-to-robot-coords (coords)
-  (transform-pose-to-target-frame coords "/base_footprint"))
+  (transform-pose-to-target-frame coords "base_footprint"))
 
 (defun set-view-target (coords camera frame-id)
   (let ((msg (instance geometry_msgs::PointStamped :init))
@@ -178,7 +180,7 @@
       (ros::spin-once)
       (when (< 0.5 (send button-state :value))
 	(pprint 'button-light) (speak-jp "ぼたんがひかりました")
-	(pr2-tuckarm-pose)
+;;	(pr2-tuckarm-pose)
 	(return))
       (unix::usleep (* 100 1000)))
     ))
@@ -216,7 +218,7 @@
     (while (< (send (ros::time- (ros::time-now) start) :to-sec) 30)
       (while (not *scan*) (ros::spin-once))
       ;;
-      (send *tfl* :wait-for-transform "/map" (send *scan* :header :frame_id)
+      (send *tfl* :wait-for-transform "map" (send *scan* :header :frame_id)
 	    (send *scan* :header :stamp) 0.5)
       (setq laser-pose
 	    (send *tfl* :lookup-transform "map" (send *scan* :header :frame_id)
@@ -300,7 +302,7 @@
   (clear-costmap)
   t)
 
-;; front-coords, outside-panel-name, outside-button, inside-coords, inside-panel-name, target-floor, outside-coords
+;; elevator-front-coords, front-coords, outside-panel-name, outside-button, inside-coords, inside-panel-name, target-floor, outside-coords
 (defun elevator-state-machine ()
   (let ((sm (instance state-machine :init))
 	(move-client (pr2-interface-move-base-action *ri*)))
@@ -313,15 +315,16 @@
 				 :remap-list '((panel-name . outside-panel-name) (button . outside-button))))
 ;;    (send sm :add-node (instance state :init :check-elevator-empty 'check-until-elevator-empty))
     (send sm :add-node (instance state :init :speak-fail '(lambda(x)(speak-jp "にふんたちました") t)))
-    (send sm :add-node (actionlib-client-state
-			:move-inside move-client :timeout 120 :retry t
-			:key 'coords->movebaseactiongoal))
-    (send (send sm :node :move-inside) :remap-list '((:goal . inside-coords)))
+    ;; (send sm :add-node (actionlib-client-state
+    ;;     		:move-inside move-client :timeout 120 :retry t
+    ;;     		:key 'coords->movebaseactiongoal))
+    ;; (send (send sm :node :move-inside) :remap-list '((:goal . inside-coords)))
 
     ;; check if elevator door open (added by furushchev 2014/04/29)
-    (send sm :add-node (instance state :init :check-elevator-open 'check-elevator-open))
-    
-    (send sm :add-node (instance state :init :push-inside (push-state-machine)
+    (send sm :add-node (instance state :init :move-inside (move-inside-state-machine)
+                                 :remap-list '((front-coords . elevator-front-coords)
+                                               (inside-coords . inside-coords))))
+        (send sm :add-node (instance state :init :push-inside (push-state-machine)
 				 :remap-list '((panel-name . inside-panel-name) (button . target-floor))))
     (send sm :add-node (instance state :init :ready-to-outside 'ready-to-outside))
     (send sm :add-node (actionlib-client-state
@@ -329,7 +332,7 @@
 			:key 'coords->movebaseactiongoal))
     (send (send sm :node :move-outside) :remap-list '((:goal . outside-coords)))
     (send sm :add-node (instance state :init :costmap-normal 'costmap-normal))
-    (send sm :arg-keys 'front-coords 'outside-panel-name 'outside-button 'inside-coords
+    (send sm :arg-keys 'elevator-front-coords 'front-coords 'outside-panel-name 'outside-button 'inside-coords
 	  'inside-panel-name 'target-floor 'outside-coords :cancel)
     (send sm :goal-state (list :success :fail-outside :fail-inside))
     (send sm :start-state :move-front)
@@ -337,16 +340,10 @@
     (send sm :add-transition :move-front :costmap-for-elevator :succeeded)
     (send sm :add-transition :move-front :fail-outside :failed)
     (send sm :add-transition :costmap-for-elevator :push-outside t)
-;    (send sm :add-transition :push-outside :check-elevator-empty :success)
-;;    (send sm :add-transition :push-outside :move-inside :success)
-    (send sm :add-transition :push-outside :check-elevator-open :success)
-    (send sm :add-transition :check-elevator-open :move-inside :success)
-    (send sm :add-transition :check-elevator-open :check-elevator-open :fail)
+    (send sm :add-transition :push-outside :move-inside :success)
+    (send sm :add-transition :move-inside :push-inside :success)
+    (send sm :add-transition :move-inside :speak-fail :fail)
     (send sm :add-transition :push-outside :push-outside :fail)
-;    (send sm :add-transition :check-elevator-empty :move-inside t)
-;    (send sm :add-transition :check-elevator-empty :move-front nil)
-    (send sm :add-transition :move-inside :push-inside :succeeded)
-    (send sm :add-transition :move-inside :speak-fail :failed)
     (send sm :add-transition :speak-fail :move-front t)
     (send sm :add-transition :push-inside :ready-to-outside :success)
     (send sm :add-transition :push-inside :push-inside :fail)
@@ -377,6 +374,11 @@
     (set-alist 'inside-panel-name "/elevator_inside_panel" userdata)
     (set-alist 'outside-panel-name "/elevator_call_panel" userdata)
     ;; transform to scene frame
+    (set-alist 'elevator-front-coords
+               (let ((coords (send *scene* :transformation (car (send *scene* :find-object (format nil "~A/elevator-outside" cur-floor))))))
+                 (send coords :name (send *scene* :name))
+                 (send coords :rotate pi :z)
+                 coords) userdata)
     (set-alist 'front-coords (let ((coords (send *scene* :transformation (car (send *scene* :find-object (format nil "~A/elevator_call_panel-front" cur-floor)))))) (send coords :name (send *scene* :name)) coords) userdata)
     (set-alist 'inside-coords (let ((coords (send *scene* :transformation (car (send *scene* :find-object (format nil "~A/elevator_inside_panel-front" cur-floor)))))) (send coords :name (send *scene* :name)) coords) userdata)
     (set-alist 'outside-coords (let ((coords (send *scene* :transformation (car (send *scene* :find-object (format nil "~A/elevator-outside" target-floor)))))) (send coords :name (send *scene* :name)) coords) userdata)
@@ -397,7 +399,7 @@
 			:timeout 600 :retry t
 			:key 'coords->movebaseactiongoal))
     (send (send sm :node :go-to) :remap-list '((:goal . target-coords)))
-    (send sm :arg-keys 'front-coords 'outside-panel-name 'outside-button 'inside-coords
+    (send sm :arg-keys 'elevator-front-coords 'front-coords 'outside-panel-name 'outside-button 'inside-coords
 	  'inside-panel-name 'target-floor 'outside-coords 'target-coords :goal :cancel)
     (send sm :goal-state (list :success :fail))
     (send sm :start-state :initial)

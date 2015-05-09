@@ -12,7 +12,7 @@
 #include <std_msgs/Float64MultiArray.h>
 #include <drc_task_common/Int8Float64.h>
 #include <dynamic_reconfigure/server.h>
-#include <drc_task_common/LocalPlannerMochikaeParamsConfig.h>
+#include <drc_task_common/LocalPlannerParamsConfig.h>
 #include <cmath>
 #include <algorithm>
 #include <deque>
@@ -26,41 +26,33 @@ private:
   ros::Subscriber steering_sub;
   ros::Subscriber goal_sub;
   ros::Subscriber stepon_gaspedal_sub;
-  ros::Subscriber mochikae_minmax_sub;
-  // ros::Subscriber gaspedal_state_sub;
-  // ros::Subscriber brakepedal_state_sub;
   ros::Publisher point_pub;
   ros::Publisher steering_with_index_pub;
   ros::Publisher steering_pub;
-  ros::Publisher mochikae_order_pub;
+
   // ros::Publisher torso_yaw_pub;
   pcl::PointCloud<pcl::PointXYZ>::Ptr cloud;
   double steering_state;
   double goal_ang;
   bool stepon_gaspedal;
-  // bool gaspedal_flag;
-  // bool brakepedal_flag;
   double steering_output_ave;
   std::deque<double> steering_output;
   sensor_msgs::PointCloud2 pub_msg; // for debug
   boost::mutex mutex;
-  dynamic_reconfigure::Server<drc_task_common::LocalPlannerMochikaeParamsConfig> server;
-  dynamic_reconfigure::Server<drc_task_common::LocalPlannerMochikaeParamsConfig>::CallbackType f;
-  double mochikae_max_s;
-  double mochikae_min_s;
-  std::vector<double> option_s;
+  dynamic_reconfigure::Server<drc_task_common::LocalPlannerParamsConfig> server;
+  dynamic_reconfigure::Server<drc_task_common::LocalPlannerParamsConfig>::CallbackType f;
+  double delta_max;
+  double delta_min;
+  std::vector<double> option_delta;
   double s_inc;
-  bool mochikae_flag;
   int grasp_zero_index;
   double grasp_zero_angle;
   double a;
   double b;
   double play;
   
-  double max_steering;
-  double mochikae_max_steering;
-  double mochikae_min_steering;
-  double mochikae_threshold_factor;
+  double alpha_max;
+  double alpha_min;
   bool empty_flag;
   int path_num;
   int field_of_vision;
@@ -69,13 +61,9 @@ private:
 
 
   int visualize_path;
-  bool use_mochikae;
   double path_margin;
   double empty_factor;
   double steering_output_gain;
-  // bool use_sigmoid;
-  // double sigmoid_gain;
-  // bool use_min_max_in_sqrt;
   double xi;
   double eta;
   double zeta;
@@ -89,32 +77,24 @@ public:
     steering_sub = n.subscribe("steering", 1, &LocalPlanner::steering_cb, this);
     goal_sub = n.subscribe("goal_dir", 1, &LocalPlanner::goal_dir_cb, this);
     stepon_gaspedal_sub = n.subscribe("real_robot/stepon_gaspedal", 1, &LocalPlanner::stepon_gaspedal_cb, this);
-    mochikae_minmax_sub = n.subscribe("real_robot/mochikae/min_max", 1, &LocalPlanner::mochikae_minmax_cb, this);
 
-    // gaspedal_state_sub = n.subscribe("gaspedal/state", 1, &LocalPlanner::gaspedal_state_cb, this);
-    // brakepedal_state_sub = n.subscribe("brakepedal/state", 1, &LocalPlanner::brakepedal_state_cb, this);
     point_pub = n.advertise<sensor_msgs::PointCloud2>("curve_path/points2", 1);
     steering_with_index_pub = n.advertise<drc_task_common::Int8Float64>("local_planner/steering/index_cmd", 1);
     steering_pub = n.advertise<std_msgs::Float64>("local_planner/steering/cmd", 1);
-    mochikae_order_pub = n.advertise<std_msgs::Bool>("real_robot/mochikae/flag", 1);
     // torso_yaw_pub = n.advertise<std_msgs::Float64>("/look_around_angle", 1);
     steering_state = 0.0;
     empty_flag = true;
     steering_output_ave = 0.0;
-    n.param("max_steering", max_steering, 2*M_PI); // -360[deg] ~ 360[deg]
-    n.param("mochikae_max_steering", mochikae_max_steering, 1.85*M_PI/3.0); // 111[deg]
-    n.param("mochikae_min_steering", mochikae_min_steering, -1.85*M_PI/3.0); // -111[deg]
-    n.param("mochikae_threshold_factor", mochikae_threshold_factor, 0.05);
+    n.param("alpha_max", alpha_max, 1.85*M_PI/3.0); // 111[deg]
+    n.param("alpha_min", alpha_min, -1.85*M_PI/3.0); // -111[deg]
     n.param("path_num", path_num, 13);
     n.param("field_of_vision", field_of_vision, 80);
     n.param("wheelbase", wheelbase, 2.05);
     n.param("tread", tread, 1.4);
-
     
     stepon_gaspedal = false;
     f = boost::bind(&LocalPlanner::dynamic_reconfigure_cb, this, _1, _2);
     server.setCallback(f);
-    mochikae_flag = true;
 
     grasp_zero_angle = 0.0;
     if (path_num > 20) {
@@ -125,23 +105,19 @@ public:
     grasp_zero_index = (path_num + 1) / 2;
     steering_output_gain = 1.0;
     
-    // temporary
-    // mochikae_max_steering = 1.85 * M_PI / 3.0;
-    // mochikae_min_steering = - 1.85 * M_PI / 3.0;
     a = 0.0258676;
     play = 0.60952311;
     b = - a * play;
-    // b = -0.0157669;
-    // play = std::fabs(b/a);
-    mochikae_max_s = std::asin(wheelbase * (a*mochikae_max_steering+b));
-    mochikae_min_s = std::asin(wheelbase * (a*mochikae_min_steering-b));
-    s_inc = (mochikae_max_s - mochikae_min_s) / (double)(path_num - 1);
+
+    delta_max = std::asin(wheelbase * (a*alpha_max+b));
+    delta_min = std::asin(wheelbase * (a*alpha_min-b));
+    s_inc = (delta_max - delta_min) / (double)(path_num - 1);
     
     for (int i=0; i <= path_num; i++) {
       if (i == 0) {
-	option_s.push_back(mochikae_max_s);
+	option_delta.push_back(delta_max);
       }
-      option_s.push_back(mochikae_max_s - s_inc * (i-1));
+      option_delta.push_back(delta_max - s_inc * (i-1));
     }
   }
   ~LocalPlanner(){
@@ -149,7 +125,7 @@ public:
   
   
   /* dynamic_reconfigure for parameter tuning */
-  void dynamic_reconfigure_cb(drc_task_common::LocalPlannerMochikaeParamsConfig &config, uint32_t level) {
+  void dynamic_reconfigure_cb(drc_task_common::LocalPlannerParamsConfig &config, uint32_t level) {
     // set visualize_path
     if (config.visualize_path <= path_num) {
       visualize_path = config.visualize_path;
@@ -158,22 +134,9 @@ public:
       visualize_path = 1;
       ROS_INFO("The number of path is not more than %d, so default(1) is set as visualize_path", config.visualize_path);
     }
-    // set use_mochikae
-    use_mochikae = config.use_mochikae;
-    ROS_INFO("use_mochikae = %s", config.use_mochikae?"True":"False");
     // set path_margin
     path_margin = config.path_margin;
     ROS_INFO("path_margin = %f", config.path_margin);
-    // set use_sigmoid
-    // use_sigmoid = config.use_sigmoid;
-    // ROS_INFO("use_sigmoid = %s", config.use_sigmoid?"True":"False");
-    // set sigmoid_gain
-    // sigmoid_gain = config.sigmoid_gain;
-    // ROS_INFO("sigmoid_gain = %f", config.sigmoid_gain);
-    // set use_min_max_in_sqrt
-    // use_min_max_in_sqrt = config.use_min_max_in_sqrt;
-    // ROS_INFO("use_min_max_in_sqrt = %s", config.use_min_max_in_sqrt?"True":"False");
-
     // set steering_curvature_slope_gain
     steering_output_gain = config.steering_output_gain;
     ROS_INFO("steering_output_gain = %f", config.steering_output_gain);
@@ -213,25 +176,6 @@ public:
   }
   
   
-  /* callback if /gas_pedal/state is subscribed */
-  // void gaspedal_state_cb(const std_msgs::Float64ConstPtr& msg){
-  //   if (msg->data > 0.01) {
-  //     gaspedal_flag = true;
-  //   } else {
-  //     gaspedal_flag = false;
-  //   }
-  // }
-  
-  /* callback if /brake_pedal/state is subscribed */
-  // void brakepedal_state_cb(const std_msgs::Float64ConstPtr& msg){
-  //   if (msg->data > 0.01) {
-  //     brakepedal_flag = true;
-  //   } else {
-  //     brakepedal_flag = false;
-  //   }
-  // }
-  
-  
   /* callback if point cloud is subscribed */
   void local_planner_cb(const sensor_msgs::PointCloud2ConstPtr& msg){
     mutex.lock();
@@ -240,29 +184,11 @@ public:
     pub_msg.header = msg->header;
     mutex.unlock();
   }
-
-  
-  /* callback if mochikae is finished */
-  void mochikae_minmax_cb(const std_msgs::Float64MultiArrayConstPtr& msg){
-    int i = 0;
-    for (std::vector<double>::const_iterator it = msg->data.begin(); it != msg->data.end(); ++it) {
-      if (i == 0) {
-	mochikae_max_steering = *it;
-      }
-      if (i == 1) {
-	mochikae_min_steering = *it;
-      }
-      i++;
-    }
-    
-    mochikae_flag = false;
-  }  
-
   
   
   /* execute function */
   void execute(){
-    ROS_INFO("local_planner_mochikae driven");
+    ROS_INFO("local_planner driven");
     mutex.lock();
 
     if (check_condition() == -1) {
@@ -277,17 +203,17 @@ public:
     
     for (int i=1; i <= path_num; i++) {
       double radius;
-      if (option_s[i] != 0){
-	radius = std::fabs(1 / s_to_kappa_calculation(option_s[i]));
+      if (option_delta[i] != 0){
+        radius = std::fabs(1 / delta2kappa_calculation(option_delta[i]));
       } else {
-	radius = 10000;
+        radius = 10000;
       }
 
       int sign;
-      if (option_s[i] >= 0) {
-	sign = 1;
+      if (option_delta[i] >= 0) {
+        sign = 1;
       } else {
-	sign = -1;
+        sign = -1;
       }
 
       pcl::PointXYZ center_point;
@@ -296,7 +222,7 @@ public:
       center_point.y = (double)sign * std::sqrt(radius*radius - wheelbase*wheelbase);
       center_point.z = 0.0;
       
-      ROS_INFO("i=%d, s=%f, radius=%f, center_point=(%.3f, %.3f, 0)", i, option_s[i], radius, center_point.x, center_point.y);
+      ROS_INFO("i=%d, s=%f, radius=%f, center_point=(%.3f, %.3f, 0)", i, option_delta[i], radius, center_point.x, center_point.y);
       obstacle_length[i] = kdtree_curve(cloud, center_point, std::fabs(radius));
 
       if (i == visualize_path) {
@@ -312,15 +238,11 @@ public:
     double cost_max = 0;
     int ret_idx = 0;
     
-    // if (use_sigmoid == true) {
-    //   normalize_sigmoid(obstacle_length);
-    // } else {
-      normalize_sqrt(obstacle_length);
-    // }
+    normalize_sqrt(obstacle_length);
 
     for (int i=1; i <= path_num; i++) {
       ROS_INFO("Path %d", i);
-      cost[i] = cost_function(steering_output_ave, option_s[i], goal_ang, obstacle_length[i]);
+      cost[i] = cost_function(steering_output_ave, option_delta[i], goal_ang, obstacle_length[i]);
 
       if (cost_max < cost[i]) {
         cost_max = cost[i];
@@ -333,26 +255,14 @@ public:
     if (stepon_gaspedal != true) {
       // change queue steering output data
       if (steering_output.size() >= queue_size) {
-	steering_output.pop_front();
+        steering_output.pop_front();
       }
       //steering_output.push_back( (double)(s_inc*(grasp_zero_index-ret_idx)));
-      steering_output.push_back(s_to_alpha_transformation(option_s[ret_idx]));
+      steering_output.push_back(delta2alpha_transformation(option_delta[ret_idx]));
     } else {
       // send joint trajectory to STARO
       // yaw_flag
     }
-    //   if (gaspedal_flag == true) {
-    //     // change queue steering output data
-    //     if (steering_output.size() >= queue_size) {
-    //       steering_output.pop_front();
-    //     }
-    //     steering_output.push_back( (double)(s_inc*(grasp_zero_index-ret_idx)) );
-    //   } else {
-    //     if (brakepedal_flag == true) {
-    //       double look_around = (steering_output_ave*M_PI/max_steering + goal_ang) / 2;
-    //     }
-    //   }
-
 
     // calculate averaged steering angle for 10-frame
     steering_output_ave = 0.0;
@@ -369,30 +279,13 @@ public:
     
     drc_task_common::Int8Float64 pub_steering_with_index_msg;
     pub_steering_with_index_msg.index = ret_idx;
-    pub_steering_with_index_msg.data = alpha_to_s_transformation(steering_output_ave);
+    pub_steering_with_index_msg.data = alpha2delta_transformation(steering_output_ave);
     steering_with_index_pub.publish(pub_steering_with_index_msg);
 
     std_msgs::Float64 pub_steering_msg;
     pub_steering_msg.data = steering_output_ave;
     steering_pub.publish(pub_steering_msg);
 
-
-    // for mochikae
-
-    // if (ret_idx == 1 || ret_idx == path_num){
-    //   if ( steering_output_ave >= (mochikae_max_steering-mochikae_threshold_factor*std::fabs(mochikae_max_steering)) ) {
-    // 	grasp_zero_angle = mochikae_max_steering;
-    //   } else if ( steering_output_ave >= (mochikae_min_steering+mochikae_threshold_factor*std::fabs(mochikae_min_steering)) ) {
-    // 	grasp_zero_angle = mochikae_min_steering;
-    //   }
-    //   if ( use_mochikae == true ){
-    // 	mochikae_flag = true;
-    //   }
-    //   std_msgs::Bool mochikae_msg;
-    //   mochikae_msg.data = true;
-    //   mochikae_order_pub.publish(mochikae_msg);
-
-    // }
   }
   // ---execute()
   
@@ -414,36 +307,27 @@ public:
       path_num = 13;
     }
 
-    if (mochikae_flag == true) {
-      ROS_INFO("mochikae is not finished. option steer angle is set.");
-      
-      mochikae_max_s = alpha_to_s_transformation(mochikae_max_steering);
-      mochikae_min_s = alpha_to_s_transformation(mochikae_min_steering);
-      s_inc = (mochikae_max_s - mochikae_min_s) / (double)(path_num - 1);
-
-      ROS_INFO("mochikae_max_s = %f, mochikae_min_s = %f, s_inc = %f", mochikae_max_s, mochikae_min_s, s_inc);
-
-      option_s[0] = mochikae_max_s; 
-      option_s[1] = mochikae_max_s; 
-      for (int i=2; i <= path_num; i++) {
-	if (i == grasp_zero_index) {
-	  option_s[i] = 0;
-	} else {
-	  option_s[i] = option_s[i-1] - s_inc;
-	}
-      }
-      if (use_mochikae != true) {
-	mochikae_flag = false;
-      }
-      
-      return -1;
-    }
+    delta_max = alpha2delta_transformation(alpha_max);
+    delta_min = alpha2delta_transformation(alpha_min);
+    s_inc = (delta_max - delta_min) / (double)(path_num - 1);
     
+    ROS_INFO("delta_max = %f, delta_min = %f, s_inc = %f", delta_max, delta_min, s_inc);
+    
+    option_delta[0] = delta_max;
+    option_delta[1] = delta_max;
+    for (int i=2; i <= path_num; i++) {
+      if (i == grasp_zero_index) {
+        option_delta[i] = 0;
+      }else {
+        option_delta[i] = option_delta[i-1] - s_inc;
+      }
+    }
+
     return 1;
   }
   
   
-  double alpha_to_kappa_table(double alpha){
+  double alpha2kappa_table(double alpha){
     // kappa = a * alpha + b (alpha > 0), kappa = a*alpha - b (alpha < 0)
     double kappa;
 
@@ -458,7 +342,7 @@ public:
     return kappa;
   }
 
-  double kappa_to_alpha_table(double kappa){
+  double kappa2alpha_table(double kappa){
     // kappa = a * alpha + b
     double alpha;
     if (kappa > 0){
@@ -473,14 +357,14 @@ public:
   }
 
   
-  double kappa_to_s_calculation(double kappa){
-    double s;
-    s = std::asin(wheelbase * kappa);
+  double kappa2delta_calculation(double kappa){
+    double delta;
+    delta = std::asin(wheelbase * kappa);
 
-    return s;
+    return delta;
   }
 
-  double s_to_kappa_calculation(double s){
+  double delta2kappa_calculation(double s){
     double kappa;
     kappa = std::sin(s) / wheelbase;
 
@@ -488,19 +372,19 @@ public:
   }
 
 
-  double s_to_alpha_transformation(double s){
+  double delta2alpha_transformation(double s){
     double alpha;
-    alpha = kappa_to_alpha_table(s_to_kappa_calculation(s));
+    alpha = kappa2alpha_table(delta2kappa_calculation(s));
 
     return alpha;
   }
 
 
-  double alpha_to_s_transformation(double alpha){
-    double s;
-    s = kappa_to_s_calculation(alpha_to_kappa_table(alpha));
+  double alpha2delta_transformation(double alpha){
+    double delta;
+    delta = kappa2delta_calculation(alpha2kappa_table(alpha));
 
-    return s;
+    return delta;
   }
 
 
@@ -604,7 +488,7 @@ public:
       nearest_dist = std::sqrt(KNN_SqDist[0]);
       ROS_INFO("nearest_dist=%lf", nearest_dist);
     }
-    double nearest_arc = calc_chord_to_arc(nearest_dist, r);
+    double nearest_arc = calc_chord2arc(nearest_dist, r);
 
     std_msgs::Header tmp_header = pub_msg.header;
     pcl::toROSMsg(*curve, pub_msg);
@@ -617,7 +501,7 @@ public:
   
   
   /* calculate arc length from chord length and radius */
-  double calc_chord_to_arc(double d, double r){
+  double calc_chord2arc(double d, double r){
     double theta = d / (2*r);
     double l = 2 * r * std::asin(theta);
     return l;
@@ -634,14 +518,6 @@ public:
   
   
   
-  // double normalize_sigmoid(std::vector<double>& obstacle){
-  //   for (int i=1; i<= path_num; i++) {
-  //     obstacle[i] = 2.0/(1 + std::exp(-sigmoid_gain*obstacle[i])) - 1;
-  //   }
-  // }
-  
-  
-  
   double normalize_sqrt(std::vector<double>& obstacle){
     double max_length = obstacle[1];
     double min_length = obstacle[1];
@@ -654,26 +530,21 @@ public:
       }
     }
     for (int i=1; i<= path_num; i++) {
-      // if (use_min_max_in_sqrt == true) {
-        obstacle[i] = std::sqrt( (obstacle[i]-min_length) / (max_length-min_length) );
-      // } else {
-      //   obstacle[i] = std::sqrt(obstacle[i]/max_length);
-      // }
+      obstacle[i] = std::sqrt( (obstacle[i]-min_length) / (max_length-min_length) );
     }
   }
   
   
   
   /* cost function for calculating each steering */
-  double cost_function(double current_steering, double option_s, double goal, double obstacle){
-    double option_steering = s_to_alpha_transformation(option_s);
+  double cost_function(double current_steering, double option_delta, double goal, double obstacle){
+    double option_steering = delta2alpha_transformation(option_delta);
 
-    double difference = ((mochikae_max_steering - mochikae_min_steering) - std::fabs(current_steering - option_steering))/(double)(mochikae_max_steering - mochikae_min_steering);
-    double heading = (2 * M_PI - std::fabs(option_s - goal)) / (2 * M_PI);
-    // double heading = ((mochikae_max_steering - mochikae_min_steering) - std::fabs(goal/M_PI*max_steering - option_steering))/(double)(mochikae_max_steering - mochikae_min_steering); // -PI < goal < PI
+    double difference = ((alpha_max - alpha_min) - std::fabs(current_steering - option_steering))/(double)(alpha_max - alpha_min);
+    double heading = (2 * M_PI - std::fabs(option_delta - goal)) / (2 * M_PI);
     
     ROS_INFO("difference  = %f, difference * factor = %f", difference, xi*difference);
-    ROS_INFO("abs(option_s - goal) = %f, heading  = %f, eta * heading = %f", std::fabs(option_s-goal), heading, eta*heading);
+    ROS_INFO("abs(option_delta - goal) = %f, heading  = %f, eta * heading = %f", std::fabs(option_delta-goal), heading, eta*heading);
     ROS_INFO("obstacle  = %f, zeta * obstacle = %f", obstacle, zeta*obstacle);
     double cost = xi * difference + eta * heading + zeta * obstacle;
     ROS_INFO("cost=%lf", cost);
@@ -688,7 +559,6 @@ int main(int argc, char **argv){
   LocalPlanner local_planner;
   ros::Rate rate(2);
   while (ros::ok()){
-    // ros::Rate rate(local_planner.publish_rate);
     local_planner.execute();
     ros::spinOnce();
     rate.sleep();
