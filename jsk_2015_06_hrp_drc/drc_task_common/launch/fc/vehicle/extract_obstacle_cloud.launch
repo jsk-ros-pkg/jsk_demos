@@ -11,7 +11,7 @@
   <node pkg="nodelet" type="nodelet" name="transform_cloud"
         args="load jsk_pcl/TfTransformCloud $(arg MANAGER)">
     <remap from="~input" to="/multisense/organized_image_points2_color" />
-    <remap from="transform_cloud/output" to="/transform_cloud/points2" />
+    <remap from="transform_cloud/output" to="/drive/recognition/transform_cloud/car_center" />
     <param name="target_frame_id" value="$(arg BASE_FRAME_ID)" />
   </node>
 
@@ -19,8 +19,8 @@
   <node pkg="nodelet" type="nodelet" name="stereo_passthrough_z"
         args="load pcl/PassThrough $(arg MANAGER)"
         clear_params="true">
-    <remap from="~input" to="/transform_cloud/points2" />
-    <remap from="~output" to="/passthrough/stereo/remove_z" />
+    <remap from="~input" to="/drive/recognition/transform_cloud/car_center" />
+    <remap from="~output" to="/drive/recognition/passthrough/remove_z" />
     <rosparam>
       filter_field_name: z
       filter_limit_min: 0.5
@@ -33,8 +33,8 @@
   <!-- Obstacle Extraction using my passthrough filter -->
   <!--  My PassThrough Flter for removng stereo points in x axis -->
   <include file="$(find drc_task_common)/launch/fc/vehicle/passthrough_car_body.launch">
-    <arg name="INPUT_POINTS" value="/passthrough/stereo/remove_z"/>
-    <arg name="OUTPUT_POINTS" value="/passthrough/stereo/remove_xz"/>
+    <arg name="INPUT_POINTS" value="/drive/recognition/passthrough/remove_z"/>
+    <arg name="OUTPUT_POINTS" value="/drive/recognition/passthrough/obstacle_cloud"/>
   </include>
     
   <!-- Obstacle Extraction using original passthrough filter -->
@@ -42,8 +42,8 @@
   <!-- <node pkg="nodelet" type="nodelet" name="stereo_passthrough_x" -->
   <!--       args="load pcl/PassThrough $(arg MANAGER)" -->
   <!--       clear_params="true"> -->
-  <!--   <remap from="~input" to="/passthrough/stereo/remove_ground_z" /> -->
-  <!--   <remap from="~output" to="/passthrough/stereo/remove_body_ground_zx" /> -->
+  <!--   <remap from="~input" to="/drive/recognition/passthrough/remove_z" /> -->
+  <!--   <remap from="~output" to="/drive/recognition/local_planner/obstacle_cloud" /> -->
   <!--   <rosparam> -->
   <!--     filter_field_name: x -->
   <!--     filter_limit_min: 2.0 -->

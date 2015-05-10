@@ -9,7 +9,7 @@ import imp
 #     import roslib;roslib.load_manifest(PKG)
 
 from visualization_msgs.msg import Marker, MarkerArray
-from std_msgs.msg import *    
+from std_msgs.msg import *
 from geometry_msgs.msg import *
 from math import pi
 

@@ -9,7 +9,6 @@
 #include <std_msgs/Float64.h>
 #include <std_msgs/Bool.h>
 #include <sensor_msgs/Imu.h>
-#include <tf/transform_listener.h>
 #include <dynamic_reconfigure/server.h>
 #include <drc_task_common/ObstacleDetectionParamsConfig.h>
 #include <cmath>
@@ -19,13 +18,9 @@ class ObstacleDetection{
 private:
   ros::NodeHandle n;
   ros::Subscriber kdtree_sub;
-  //ros::Subscriber imu_sub;
   ros::Publisher kdtree_pub;
   ros::Publisher marker_pub;
-  //ros::Publisher imu_marker_pub;
-  ros::Publisher stop_pub;
   ros::Publisher stop_real_robot_pub;
-  //  tf::TransformListener listener;
   bool brake_flag;
   struct pointsXYZ {
     std::deque<float> x;
@@ -45,11 +40,8 @@ private:
 public:
   ObstacleDetection(){
     ROS_INFO("START SUBSCRIBING");
-    //imu_sub = n.subscribe("/atlas/imu", 1, &ObstacleDetection::imu_derection_cb, this);
     kdtree_sub = n.subscribe("points", 1, &ObstacleDetection::obstacle_detection_cb, this);
     marker_pub = n.advertise<visualization_msgs::Marker>("obstacle_visualization_marker", 1000);
-    //imu_marker_pub = n.advertise<visualization_msgs::Marker>("imu_visualization_marker", 1000);
-    stop_pub = n.advertise<std_msgs::Float64>("stop_cmd", 1000);
     stop_real_robot_pub = n.advertise<std_msgs::Bool>("stop_real_robot_cmd", 1000);
     brake_flag = true;
     for (int i=0; i < 10; i++){
@@ -84,31 +76,6 @@ public:
 
   }
 
-  
-  // void imu_derection_cb(const sensor_msgs::ImuConstPtr& msg){
-  //   // Visualization Marker for IMU orientation
-  //   visualization_msgs::Marker marker;
-  //   marker.type = visualization_msgs::Marker::ARROW;
-    
-  //   marker.header=msg->header;
-  //   marker.ns = "imu_orientation";
-  //   marker.id = 1;
-    
-  //   marker.pose.position.x = 0;
-  //   marker.pose.position.y = 0;
-  //   marker.pose.position.z = 0;
-
-  //   marker.pose.orientation.x = msg->orientation.x;
-  //   marker.pose.orientation.y = msg->orientation.y;
-  //   marker.pose.orientation.z = msg->orientation.z;
-  //   marker.pose.orientation.w = msg->orientation.w;
-  //   marker.scale.x = 1.0;
-  //   marker.scale.y = 0.02;
-  //   marker.scale.z = 0.02;
-  //   marker.color.b = 1.0f;
-  //   marker.color.a = 1.0;
-  //   imu_marker_pub.publish(marker);
-  // }
 
   void obstacle_detection_cb(const sensor_msgs::PointCloud2ConstPtr& msg){
     ROS_INFO("obstacle_detection driven");
@@ -129,17 +96,6 @@ public:
     }
     pcl::KdTreeFLANN<pcl::PointXYZ> kdtree;
     kdtree.setInputCloud(cloud);
-
-    // get TF between nearest point and car_center
-    // tf::StampedTransform transform;
-    // try{
-    //   listener.waitForTransform("/car_center", "/head", msg->header.stamp, ros::Duration(10.0) );
-    //   listener.lookupTransform("/car_center", "/head", msg->header.stamp, transform);
-    // }
-    // catch (tf::TransformException ex){
-    //   ROS_ERROR("%s",ex.what());
-    //   return;
-    // }
 
     // create search point at the origin 
     pcl::PointXYZ searchPoint;
@@ -229,12 +185,9 @@ public:
 
       // publish topic to stop drc_vehicle_xp900 and for real robot to step on brake pedal
       if (brake_flag && KNNdistance < r_front){
-        std_msgs::Float64 stop;
-        stop.data = 1.0f;
-        stop_pub.publish(stop);
-	std_msgs::Bool stop_cmd_msg;
-	stop_cmd_msg.data = true;
-	stop_real_robot_pub.publish(stop_cmd_msg);
+        std_msgs::Bool stop_cmd_msg;
+        stop_cmd_msg.data = true;
+        stop_real_robot_pub.publish(stop_cmd_msg);
 
         // change marker color into red
         marker.color.r = 1.0f;
@@ -259,12 +212,9 @@ public:
 
       // publish topic for stoping drc_vehicle_xp900
       if (brake_flag && KNNdistance < r_side){
-        std_msgs::Float64 stop;
-        stop.data = 1.0f;
-        stop_pub.publish(stop);
-	std_msgs::Bool stop_cmd_msg;
-	stop_cmd_msg.data = true;
-	stop_real_robot_pub.publish(stop_cmd_msg);
+        std_msgs::Bool stop_cmd_msg;
+        stop_cmd_msg.data = true;
+        stop_real_robot_pub.publish(stop_cmd_msg);
 
         // change marker color into red
         marker.color.r = 1.0f;

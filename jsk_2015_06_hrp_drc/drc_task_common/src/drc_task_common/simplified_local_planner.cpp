@@ -23,7 +23,6 @@ class LocalPlanner{
 private:
   ros::NodeHandle n;
   ros::Subscriber point_sub;
-  ros::Subscriber steering_sub;
   ros::Subscriber goal_sub;
   ros::Subscriber stepon_gaspedal_sub;
   ros::Publisher point_pub;
@@ -32,7 +31,6 @@ private:
 
   // ros::Publisher torso_yaw_pub;
   pcl::PointCloud<pcl::PointXYZ>::Ptr cloud;
-  double steering_state;
   double goal_ang;
   bool stepon_gaspedal;
   double steering_output_ave;
@@ -73,16 +71,14 @@ private:
 public:
   LocalPlanner(){
     ROS_INFO("START SUBSCRIBING");
-    point_sub = n.subscribe("points", 1, &LocalPlanner::local_planner_cb, this);
-    steering_sub = n.subscribe("steering", 1, &LocalPlanner::steering_cb, this);
+    point_sub = n.subscribe("obstacle_points", 1, &LocalPlanner::local_planner_cb, this);
     goal_sub = n.subscribe("goal_dir", 1, &LocalPlanner::goal_dir_cb, this);
-    stepon_gaspedal_sub = n.subscribe("real_robot/stepon_gaspedal", 1, &LocalPlanner::stepon_gaspedal_cb, this);
+    stepon_gaspedal_sub = n.subscribe("stepon_gaspedal/flag", 1, &LocalPlanner::stepon_gaspedal_cb, this);
 
-    point_pub = n.advertise<sensor_msgs::PointCloud2>("curve_path/points2", 1);
-    steering_with_index_pub = n.advertise<drc_task_common::Int8Float64>("local_planner/steering/index_cmd", 1);
-    steering_pub = n.advertise<std_msgs::Float64>("local_planner/steering/cmd", 1);
+    point_pub = n.advertise<sensor_msgs::PointCloud2>("visualize_path/points2", 1);
+    steering_with_index_pub = n.advertise<drc_task_common::Int8Float64>("local_planner/cmd_with_path_num", 1);
+    steering_pub = n.advertise<std_msgs::Float64>("local_planner/steering_cmd", 1);
     // torso_yaw_pub = n.advertise<std_msgs::Float64>("/look_around_angle", 1);
-    steering_state = 0.0;
     empty_flag = true;
     steering_output_ave = 0.0;
     n.param("alpha_max", alpha_max, 1.85*M_PI/3.0); // 111[deg]
@@ -158,12 +154,6 @@ public:
   }
   
   
-  /* callback if /hand_wheel/state is subscribed */
-  void steering_cb(const std_msgs::Float64ConstPtr& msg){
-    steering_state = msg->data;
-  }
-  
-  
   /* callback if /cheat_goal_dir/ang is subscribed */
   void goal_dir_cb(const std_msgs::Float64ConstPtr& msg){
     goal_ang = msg->data;
@@ -196,7 +186,6 @@ public:
       return;
     }
     
-    double steering = steering_state;
     std::vector<double> obstacle_length(path_num+1);
     std::vector<double> cost(path_num+1);
     
