@@ -68,6 +68,7 @@ $ rostopic echo /drc_vehicle_xp900/gas_pedal/cmd std_msgs/Float64 "{data: <perce
 ### use recognition in gazebo
 If you want to use recognition in gazebo_drive_simulator, you should execute following command:
 ```bash
+$ rosrun drc_task_common real_staro_drive_recognition.sh
 $ roslaunch drc_task_common local_planner.launch
 ```
 
