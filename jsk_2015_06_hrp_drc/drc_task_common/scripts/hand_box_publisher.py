@@ -29,7 +29,7 @@ if __name__ == "__main__":
             print "tf error: %s" % e
             r.sleep()
             continue
-        box = BoundingBox(Header(stamp=rospy.Time.now(), frame_id='left_camera_optical_frame'), transed_pose.pose, Vector3(0.15, 0.15, 0.40))
+        box = BoundingBox(Header(stamp=rospy.Time.now(), frame_id='left_camera_optical_frame'), transed_pose.pose, Vector3(0.15, 0.15, 0.32))
         box_pub.publish(box)
         box_array = BoundingBoxArray(Header(stamp=rospy.Time.now(), frame_id="rarm_end_coords"), [box])
         box_array_pub.publish(box_array)
