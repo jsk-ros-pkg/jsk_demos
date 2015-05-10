@@ -27,9 +27,9 @@
   (progn 
     (setq *use-dual-arm-ik* nil)
     (setq *use-f-sensor-search* nil)
-    (setq *drill-reverse-hand* nil)
-      (setq *drill-button-point* :finger) ;; finger fixed
-      (setq *default-drill-type* :takenoko))
+    (setq *drill-reverse-hand* t)
+    (setq *drill-button-point* :finger) ;; finger fixed
+    (setq *default-drill-type* :takenoko))
   )
 
 
@@ -1455,7 +1455,12 @@
 	     #f(-1.38133 5.04464 -28.5655 52.7906 -23.2636 -5.40806 0.0 -1.38071 5.00818 -27.1647 49.5024 -21.3763 -5.3716 0.0 22.1862 23.6363 -22.5578 43.0 -2.7897 7.6894 8.91765 -101.289 -83.2938 0.700085 -30.2438 60.0 -58.2284 33.3699 -40.8042 -81.4217 5.90815 -41.9868 -46.7235 -60.0)
 	     )
 	 )
-	(t
+	((equal *robot-name* "JAXON")
+	 (if *drill-reverse-hand*
+	     #f(0.854466 2.43593 -20.9027 42.9141 -21.8248 -0.9937 0.854423 2.44909 -21.6614 44.928 -23.08 -1.00687 -4.38145 2.65829 -1.21382 0.0 0.0 24.8185 31.3379 -42.786 -0.105656 -105.654 -20.5151 5.36334 -29.4141 -40.6966 42.7178 64.5921 31.7714 -92.2503 -24.2494 28.2694 -70.7325) ;; (test-drill-button-motion) (send *robot* :angle-vector (elt *drill-motion* 0))
+	   (send *robot* :reset-manip-pose))
+	 )
+	(t 
 	 (send *robot* :reset-manip-pose))
 	)
   ))

@@ -8,9 +8,9 @@
           args="load jsk_topic_tools/Passthrough manager">
       <remap from="~input" to="$(arg INPUT_POINT_CLOUD)" />
     </node>
-    <node unless="$(arg PASS_THROUGH)" pkg="nodelet" type="nodelet" name="passthrough"
-	  args="standalone jsk_topic_tools/Relay">
-	  <!-- args="load jsk_topic_tools/Relay manager"> -->
+    <node unless="$(arg PASS_THROUGH)" pkg="nodelet" type="nodelet" 
+	  name="passthrough"
+	  args="load jsk_topic_tools/Relay manager">
       <remap from="~input" to="$(arg INPUT_POINT_CLOUD)" />
     </node>
 
@@ -34,13 +34,17 @@
         keep_organized: true
       </rosparam>
     </node>
-    <node pkg="jsk_pcl_ros" type="organized_multi_plane_segmentation"
-	  name="multi_plane_estimate">
+    <node pkg="nodelet" type="nodelet"
+	  name="multi_plane_estimate"
+	  arg="load jsk_pcl/OrganizedMultiPlaneSegmentation manager" >
       <remap from="~input" to="z_filter/output"/>
+      <rosparam>
+        min_size: 500
+      </rosparam>
     </node>
     <node pkg="nodelet" type="nodelet"
 	  name="plane_extraction"
-	  args="standalone jsk_pcl/MultiPlaneExtraction"
+	  args="load jsk_pcl/MultiPlaneExtraction manager"
 	  output="screen">
       <remap from="~input" to="z_filter/output" />
       <remap from="~input_polygons" to="plane_rejector/output_polygons" />
@@ -50,7 +54,7 @@
       </rosparam>
     </node>
     <node pkg="nodelet" type="nodelet" name="plane_rejector"
-	  args="standalone jsk_pcl/PlaneRejector">
+	  args="load jsk_pcl/PlaneRejector manager">
       <remap from="~input_polygons" to="multi_plane_estimate/output_refined_polygon" />
       <remap from="~input_coefficients" to="multi_plane_estimate/output_refined_coefficients" />
       <rosparam>
@@ -59,7 +63,7 @@
       </rosparam>
     </node>
     <node pkg="nodelet" type="nodelet" name="euclidean_clustering"
-	  args="standalone jsk_pcl/EuclideanClustering" output="screen">
+	  args="load jsk_pcl/EuclideanClustering manager" output="screen">
       <remap from="~input" to="plane_extraction/output" />
       <rosparam>
         tolerance: 0.02
@@ -70,7 +74,7 @@
     
     <node pkg="nodelet" type="nodelet"
 	  name="cluster_decomposer"
-	  args="standalone jsk_pcl/ClusterPointIndicesDecomposer"
+	  args="load jsk_pcl/ClusterPointIndicesDecomposer manager"
 	  output="screen">
       <remap from="~input" to="plane_extraction/output" />
       <remap from="~target" to="euclidean_clustering/output" />
