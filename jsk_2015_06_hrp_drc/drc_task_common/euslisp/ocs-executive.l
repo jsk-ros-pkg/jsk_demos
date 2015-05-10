@@ -1197,33 +1197,34 @@
      ;;  (send smachine :go-to! :selecting-exec-for-drill-wall)) ;; because of not using interactive-marker
      ((eq (send smachine :state) :selecting-region-for-drill-button)
       ;; todo drill-type
-      (if (not (boundp '*drill*))
-	  (if t
-	      (set-drill-environment :drill-type :takenoko)
-	    (set-drill-environment :drill-type :gun)
-	    )
-	)
-      (send *robot* :angle-vector (get-potentio-vector-from-joint-states))
-      (send *robot* :fix-leg-to-coords (make-coords))
-      (set-drill-default-coords)
-      (let ((coords (send (send (send (send *robot* :body_lk) :copy-worldcoords) :inverse-transformation) :transform (send *drill* :copy-worldcoords))))
-              (send self :show-text 
-              (format nil "Recognize drill-button. pos:~A rpy:~A" (send coords :worldpos) (reverse (car (send coords :rpy-angle)))) :recognize)
-        ;; store result
-        (setq drill-button-params (list coords))
-        ;; publish object marker
-        (erase-all-primitive-marker)
-        (insert-primitive-marker :shape-type jsk_rviz_plugins::TransformableMarkerOperate::*MESH_RESOURCE* :name "drill" :description "" :resource "package://drc_task_common/models/takenoko_drill.dae" :use-material t)
-        (set-primitive-marker-control-relative-pose (make-coords :pos (float-vector -22 30 77) :rpy (float-vector 0 0 pi/2))) ;;Todo more precise pose for button
-        (move-robot-model-to-current-pos)
-        (set-primitive-marker-pose coords "BODY")
-        ;(send smachine :go-to :selecting-exec-for-drill-button)
+      (when (not (boundp '*drill*))
+	(if t
+	    (set-drill-environment :drill-type :takenoko)
+	  (set-drill-environment :drill-type :gun)
+	  )
+	(send *robot* :angle-vector (get-potentio-vector-from-joint-states))
+	(send *robot* :fix-leg-to-coords (make-coords))
+	(set-drill-default-coords)
+	(let ((coords (send (send (send (send *robot* :body_lk) :copy-worldcoords) :inverse-transformation) :transform (send *drill* :copy-worldcoords))))
+	  (send self :show-text 
+		(format nil "Recognize drill-button. pos:~A rpy:~A" (send coords :worldpos) (reverse (car (send coords :rpy-angle)))) :recognize)
+	  ;; store result
+	  (setq drill-button-params (list coords))
+	  ;; publish object marker
+	  (erase-all-primitive-marker)
+	  (insert-primitive-marker :shape-type jsk_rviz_plugins::TransformableMarkerOperate::*MESH_RESOURCE* :name "drill" :description "" :resource "package://drc_task_common/models/takenoko_drill.dae" :use-material t)
+	  (set-primitive-marker-control-relative-pose (make-coords :pos (float-vector -22 30 77) :rpy (float-vector 0 0 pi/2))) ;;Todo more precise pose for button
+	  (move-robot-model-to-current-pos)
+	  (set-primitive-marker-pose coords "BODY")
+					;(send smachine :go-to :selecting-exec-for-drill-button)
+	  )
 	)
       (send smachine :go-to! :selecting-exec-for-drill-button))
      )
     (send self :show-text "skip recog. set and move marker manually.")
     (send req :response)
-   )
+    )
+  
   (:set-pitch-head-angle-callback (req)
     (let ((msg (instance drc_com_common::OCS2FCSmall :init)))
       (send msg :type drc_com_common::OCS2FCSmall::*LOOK_AT_PITCH_ANGLE*)
