@@ -919,7 +919,7 @@
              )
             (t
              (if *drill-reverse-hand*
-                 (send *drill* :newcoords (send (send (send *robot* :foot-midcoords) :copy-worldcoords) :transform (make-coords :pos (float-vector 488.528 -110.496 1385.46) :rpy (list -2.963 0.413 -3.02)) :local))
+                 (send *drill* :newcoords (make-coords :pos (float-vector 388 -110 1285) :rpy (list -2.828 0.17 -2.9)))
                (send *drill* :newcoords (send (send (send *robot* :body_lk) :copy-worldcoords) :transform (make-coords :pos (float-vector 550 -100 100) :rpy (list 0 (deg2rad -10) (deg2rad 20))) :local))
 	       )
 	     )
@@ -1205,7 +1205,10 @@
 	     )
 	   ))
 	(t ;;JAXON
-	 (if (equal *drill-main-arm* :rarm) (make-coords :pos (float-vector -850 200 0) :rpy (list (deg2rad 0) 0 0)) (make-coords :pos (float-vector -850 -200 0) :rpy (list (deg2rad 0) 0 0)))
+	 (if *drill-reverse-hand*  
+	     (if (equal *drill-main-arm* :rarm) (make-coords :pos (float-vector -850 200 0) :rpy (list (deg2rad 0) 0 0)) (make-coords :pos (float-vector -850 -200 0) :rpy (list (deg2rad 0) 0 0)))
+	   (if (equal *drill-main-arm* :rarm) (make-coords :pos (float-vector -830 200 0) :rpy (list (deg2rad -30) 0 0)) (make-coords :pos (float-vector -830 -200 0) :rpy (list (deg2rad 30) 0 0)))
+	   )
 	 )
 	)
   )
@@ -1406,7 +1409,7 @@
 ;;   )
 (defun get-pre-drill-button-pose ()
   (let ((angle-ret
-  (cond ((equal *robot-name* "HRP2JSKNT")
+  (cond ((or (equal *robot-name* "HRP2JSKNT") (equal *robot-name* "HRP2JSKNTS"))
 	 ;; #f(-1.73786 12.7998 -28.717 58.3273 -27.2775 -3.19394 0.0 -1.75078 13.1089 -32.0242 64.2536 -29.8937 -3.50327 0.0 -18.0177 40.9471 -15.5394 -20.0 -71.9257 -1.63271 9.57461 -68.7006 -18.7947 12.8132 13.4518 60.0 -67.3083 63.2485 -56.2882 -89.6456 -32.2721 16.8311 -17.2177 -60.0))
 	 ;; #f(-3.18801 14.0246 -30.3389 64.3646 -30.1868 -5.8666 0.0 -3.20998 14.342 -32.5966 67.7287 -31.2878 -6.18463 0.0 -6.39784 15.1167 -23.2174 -16.7713 -58.3745 -17.3128 21.0908 -111.942 -21.179 -21.2009 34.1876 60.0 -64.9891 55.4053 -56.0059 -114.503 -79.2957 19.8623 67.9176 -60.0)) ;; 04/05
          #f(-3.18801 14.0246 -30.3389 64.3646 -30.1868 -5.8666 0.0 -3.20998 14.342 -32.5966 67.7287 -31.2878 -6.18463 0.0 -6.39784 15.1167 -23.2174 -16.7713 -63.8998 -26.7475 19.7525 -93.797 -60.1496 14.1419 -8.73053 60.0 -64.9891 55.4053 -56.0059 -114.503 -79.2957 19.8623 67.9176 -60.0)) ;; 04/21
@@ -1426,7 +1429,7 @@
   )
 (defun get-drill-reset-pose (&key (arm *drill-main-arm*) (drill-type *default-drill-type*))
   (let ((angle-ret
-  (cond ((equal *robot-name* "HRP2JSKNT")
+    (cond ((or (equal *robot-name* "HRP2JSKNT") (equal *robot-name* "HRP2JSKNTS"))
       (cond 
        ((not *drill-reverse-hand*)
 	(send *robot* :reset-manip-pose))
@@ -1446,10 +1449,10 @@
 
 (defun get-watch-drill-pose ()
   (let ((angle-ret
-  (cond ((equal *robot-name* "HRP2JSKNT")
+  (cond ((or (equal *robot-name* "HRP2JSKNT") (equal *robot-name* "HRP2JSKNTS"))
 	 (if *drill-reverse-hand* 
 	     #f(-2.04568 13.6629 -31.1634 64.7311 -29.6246 -4.90706 0.0 -2.06847 13.9839 -33.5693 68.8818 -31.364 -5.22875 0.0 -23.7973 16.1884 -10.6249 -19.0 -105.319 -10.0296 34.741 -43.3425 -106.0 47.7471 65.5498 60.0 40.0869 75.2885 11.7308 -117.757 -18.2568 65.0121 0.945275 -60.0)
-	     #f(-1.38133 5.04464 -28.5655 52.7906 -23.2636 -5.40806 0.0 -1.38071 5.00818 -27.1647 49.5024 -21.3763 -5.3716 0.0 22.1862 23.6363 -22.5578 43.5 -2.7897 7.6894 8.91765 -101.289 -83.2938 0.700085 -30.2438 60.0 -58.2284 33.3699 -40.8042 -81.4217 5.90815 -41.9868 -46.7235 -60.0)
+	     #f(-1.38133 5.04464 -28.5655 52.7906 -23.2636 -5.40806 0.0 -1.38071 5.00818 -27.1647 49.5024 -21.3763 -5.3716 0.0 22.1862 23.6363 -22.5578 43.0 -2.7897 7.6894 8.91765 -101.289 -83.2938 0.700085 -30.2438 60.0 -58.2284 33.3699 -40.8042 -81.4217 5.90815 -41.9868 -46.7235 -60.0)
 	     )
 	 )
 	(t
