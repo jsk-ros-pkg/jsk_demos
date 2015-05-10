@@ -36,6 +36,7 @@
      (send self :step-accel cmd-mm :use-controller t) ;; step-accel assumed to get relative distance to move
      (setq accel-origin (+ accel-origin cmd-mm))
      (send self :publish-current-step accel-origin)
+     (send self :publish-step-on-flag cmd)
      accel-origin ;; return total state of accel-command
      )
    )

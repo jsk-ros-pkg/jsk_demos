@@ -106,6 +106,7 @@
    (ros::advertise "/drive/controller/min_step" std_msgs::Float32 1 t)
    (ros::advertise "/drive/controller/max_step" std_msgs::Float32 1 t)
    (ros::advertise "/drive/controller/pedal_state" std_msgs::Bool 1 t)
+   (ros::advertise "/drive/controller/step_on_flag" std_msgs::Bool 1 t)
    
    ;; for steering visualization
    (ros::advertise "/drive/controller/currest_steering" jsk_recognition_msgs::TorusArray 1)
@@ -319,6 +320,7 @@
      (warn "accel ~A[cmd] -> ~A[deg]~%" cmd cmd-motion)
      (send self :step-accel (+ accel-origin cmd-motion) :relative nil :use-controller t)
      (send self :publish-current-step cmd-motion)
+     (send self :publish-step-on-flag cmd)
      cmd-motion ;; return real command to robot
      )
    )
@@ -335,6 +337,13 @@
    (let ((pub-step (instance std_msgs::Float32 :init)))
      (send pub-step :data step)
      (ros::publish "/drive/controller/step" pub-step)
+     )
+   )
+  (:publish-step-on-flag
+   (cmd)
+   (let ((pub-flag (instance std_msgs::Bool :init)))
+     (send pub-flag :data (> cmd 0.5))
+     (ros::publish "/drive/controller/step_on_flag" pub-flag)
      )
    )
 
