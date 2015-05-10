@@ -888,6 +888,7 @@
         ;; (apply-primitive-dimensions-to-midi-device)
         (set-primitive-marker-pose coords "BODY" :name "cylinder1")
         (move-robot-model-to-current-pos)
+	(set-focus-marker-name "drill")
         ;; publish motion to robot model on rviz
 	(publish-drill-grasp-motion :coords (elt drill-grasp-params 0) :update? t :arm (send self :get-arm-side) :stand-coords (make-coords) :overwrite-stand-coords? t) ;todo drill-type
         (send smachine :go-to :selecting-exec-for-drill-grasp))
