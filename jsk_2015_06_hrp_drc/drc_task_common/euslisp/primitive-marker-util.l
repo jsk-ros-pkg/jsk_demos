@@ -79,6 +79,14 @@
           (* 1000 (send dim :radius)) (* 1000 (send dim :small_radius)) (send dim :type))
     ))
 
+(defun set-focus-marker-name
+  (name)
+  (let* ((req (instance jsk_interactive_marker::SetTransformableMarkerFocus :init)))
+    (send req :target_name name) 
+    (send (ros::service-call "/transformable_interactive_server/get_dimensions" req))
+    ))
+
+
 
 ;; device ;;;;;;;;;;;;;;;;;;;;
 
