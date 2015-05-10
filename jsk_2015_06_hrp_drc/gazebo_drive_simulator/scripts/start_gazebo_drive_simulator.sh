@@ -32,11 +32,6 @@ sleep 40
 rostopic pub --once ${CMD_NAMESPACE}/hand_brake/cmd std_msgs/Float64 '{ data : 0 }' # disable hand brake
 roslaunch gazebo_drive_simulator multisense_sl_relay.launch & # for PointCloud2
 
-roslaunch drc_task_common extract_obstacle_cloud.launch USE_DRC:="true" USE_VRC:="false" &
-roslaunch drc_task_common obstacle_detection.launch &
-rosrun gazebo_drive_simulator CalculateVelocityFromOdometry.py &
-roslaunch gazebo_drive_simulator cheat_goal_direction.launch &
-roslaunch gazebo_drive_simulator polaris_interactive_marker.launch &
 
 
 while true
