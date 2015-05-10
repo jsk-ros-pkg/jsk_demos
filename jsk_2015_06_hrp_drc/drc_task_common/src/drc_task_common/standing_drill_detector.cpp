@@ -236,7 +236,7 @@ namespace drc_task_common
       cylinder_pose = pose;
       center = cylinder_pose.translation();
     }
-    if (buttom_estimation_method_==0) {
+    if (buttom_estimation_method_==1) {
       Eigen::Vector3f cylinder_direction = cylinder_pose.rotation() * Eigen::Vector3f::UnitZ();
       Eigen::Vector3f box_buttom = (pose * Eigen::Translation3f(Eigen::Vector3f(0, 0, box.dimensions.z/2))).translation();
       float d = - box_buttom.dot(cylinder_direction);
@@ -245,7 +245,7 @@ namespace drc_task_common
       ROS_INFO ("depth: %f", depth);
       cylinder_pose = cylinder_pose * Eigen::Translation3f(Eigen::Vector3f(0, 0, depth - 0.1));
     }
-    if (buttom_estimation_method_==1) {//align_to_new_box_) 
+    if (buttom_estimation_method_==0) {//align_to_new_box_) 
       pcl::PointCloud<pcl::PointXYZRGB>::Ptr
 	cloud_transformed (new pcl::PointCloud<pcl::PointXYZRGB>);
       pcl::transformPointCloud(*cloud, *cloud_transformed, cylinder_pose.inverse());
