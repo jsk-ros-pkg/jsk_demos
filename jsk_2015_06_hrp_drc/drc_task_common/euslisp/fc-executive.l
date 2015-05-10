@@ -80,6 +80,10 @@
                 self :drill-button-region-command-callback)
           (list drc_com_common::OCS2FCSmall::*DRILL_BUTTON_EXEC*
                 self :drill-button-exec-command-callback)
+          (list drc_com_common::OCS2FCSmall::*DRILL_ROTATE_REGION*
+                self :drill-rotate-region-command-callback)
+          (list drc_com_common::OCS2FCSmall::*DRILL_ROTATE_EXEC*
+                self :drill-rotate-exec-command-callback)
           ;; rviz plugins
           (list drc_com_common::OCS2FCSmall::*RESET_POSE*
                 self :reset-pose-command-callback)
@@ -149,6 +153,14 @@
           :add-timelimit 15 :initial
           :deligate-object self
           :deligate-method :report-recognition-failure-to-ocs)
+    (send (send smachine :node :recognizing-drill-rotate-pose)
+          :add-timelimit 15 :initial
+          :deligate-object self
+          :deligate-method :report-recognition-failure-to-ocs)
+    (send (send smachine :node :recognizing-drill-wall)
+          :add-timelimit 15 :initial
+          :deligate-object self
+          :deligate-method :report-recognition-failure-to-ocs)
     (send (send smachine :node :recognizing-door-pose)
           :add-timelimit 10 :initial
           :deligate-object self
@@ -169,14 +181,7 @@
           :add-timelimit 10 :initial
           :deligate-object self
           :deligate-method :report-recognition-failure-to-ocs)
-    (send (send smachine :node :recognizing-drill-wall)
-          :add-timelimit 10 :initial
-          :deligate-object self
-          :deligate-method :report-recognition-failure-to-ocs)
-    (send (send smachine :node :recognizing-drill-button-pose)
-          :add-timelimit 10 :initial
-          :deligate-object self
-          :deligate-method :report-recognition-failure-to-ocs)
+
     )
   (:report-recognition-failure-to-ocs ()
     (let ((msg (instance drc_com_common::FC2OCSSmall :init)))
@@ -251,6 +256,16 @@
       ;; enable snapshot
       (call-empty-service "/drill_recognition_for_button/snapshot/request")
       (send smachine :go-to :recognizing-drill-button-pose)
+      ))
+  (:drill-rotate-region-command-callback (msg)
+    (when (send smachine :state? :initial)
+      (call-request-duration "/drill_recognition_for_button/passthrough/request_duration" 10)
+      ;; convert OCS2FCSmall into geometry_msgs/Polygon
+      ;; (ros::publish "/drill_recognition_for_button/input_rect"
+      ;;   (integer-vector-to-rect-polygon-stamped msg))
+      ;; enable snapshot
+      (call-empty-service "/drill_recognition_for_button/rotate_snapshot/request")
+      (send smachine :go-to :recognizing-drill-rotate-pose)
       ))
   (:panorama-clear ()
     (call-empty-service "/panorama/panorama_processing/clear"))
@@ -473,6 +488,22 @@
         ;; send finish signal to ocs
         (let ((msg (instance drc_com_common::FC2OCSSmall :init)))
           (send msg :type drc_com_common::FC2OCSSmall::*DRILL_BUTTON_FINISHED*)
+          (send self :send-to-ocs msg))
+        )
+        (send smachine :go-to :initial)
+        ))
+    )
+  (:drill-rotate-exec-command-callback (msg)
+    (when (send smachine :state? :initial)
+      (let* (coords-set (float-vector-to-coords-set (send msg :float_params)))
+        (send smachine :go-to :executing-drill-button)
+        (setq *cancel-motion-flag* nil)
+        (catch 'exit
+        ;; send motion to real robot
+        (send-drill-rotate-motion (elt coords-set 0) (elt coords-set 0))
+        ;; send finish signal to ocs
+        (let ((msg (instance drc_com_common::FC2OCSSmall :init)))
+          (send msg :type drc_com_common::FC2OCSSmall::*DRILL_ROTATE_FINISHED*)
           (send self :send-to-ocs msg))
         )
         (send smachine :go-to :initial)
@@ -758,6 +789,17 @@ It sends :angle-vector to robot and return 'finished' message to ocs"
 	  (send self :send-to-ocs msg)
 	  (send smachine :go-to :initial)
 	  ))))
+  (:drill-rotate-recog-callback (msg)         ;geometry_msgs/PoseStamped
+    (when (send smachine :state? :recognizing-drill-rotate-pose)
+      (let* ((trans (send self :lookup-from-body-transform (send msg :header)))
+             (coords (ros::tf-pose-stamped->coords msg))
+             (from-body-coords (send trans :transform coords)))
+	(let ((msg (instance drc_com_common::FC2OCSSmall :init)))
+	  (send msg :type drc_com_common::FC2OCSSmall::*DRILL_ROTATE_POSE*)
+	  (send msg :params (coords-to-float-vector from-body-coords (length (send msg :params))))
+	  (send self :send-to-ocs msg)
+	  (send smachine :go-to :initial)
+	  ))))
   (:look-at-panorama-recog-callback (msg)
     (ros::ros-warn "panorama callback!")
     (send smachine :go-to :recognizing-look-at-point)
@@ -1010,6 +1052,8 @@ It sends :angle-vector to robot and return 'finished' message to ocs"
   #'send *app* :drill-grasp-recog-callback)
 (ros::subscribe "/drill_recognition_for_button/snapshot/output" geometry_msgs::PoseStamped
   #'send *app* :drill-button-recog-callback)
+(ros::subscribe "/drill_recognition_for_button/rotate_snapshot/output" geometry_msgs::PoseStamped
+  #'send *app* :drill-rotate-recog-callback)
 (ros::subscribe "/drill_recognition_for_put/snapshot/output" geometry_msgs::PoseStamped
   #'send *app* :drill-put-recog-callback)
 (ros::subscribe "/drill_recognition_for_wall/snapshot/output" geometry_msgs::PoseArray

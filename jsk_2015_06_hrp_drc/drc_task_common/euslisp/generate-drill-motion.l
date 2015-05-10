@@ -1527,7 +1527,6 @@
   )
 
 
-
 (defun check-diff-angle
   ()
   (rad2deg (elt (car (send (send (send (send *drill* :get :grasp-coords-true) :copy-worldcoords) :transformation (send (gethash *drill-main-arm* *arm-drill-grasp-coords*) :copy-worldcoords)) :rpy-angle)) 0))

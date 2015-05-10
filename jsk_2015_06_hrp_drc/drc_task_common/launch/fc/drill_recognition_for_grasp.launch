@@ -99,8 +99,8 @@
     <node pkg="jsk_topic_tools" type="snapshot" name="snapshot_cloud_for_save">
       <remap from="~input" to="standing_drill_detector/output/pose"/>
       <rosparam>
-	latch: true
-    </rosparam>
+        latch: true
+      </rosparam>
     </node>
   </group>
 </launch>
