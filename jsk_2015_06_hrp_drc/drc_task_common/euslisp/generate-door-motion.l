@@ -501,7 +501,7 @@
           ((= i 9)
            (hand-start-grasp :real? real? :type :door-grasp-preshape))
           )
-    (send *ri* :state)
+    ;; (send *ri* :state)
     ;; (warning-message 1 "(send *robot* :angle-vector ~a) ;; reference-vector ~a~%" (send *ri* :reference-vector) i)
     ;; (warning-message 1 "(send *robot* :angle-vector ~a) ;; potentio-vector ~a~%" (send *ri* :potentio-vector) i)
     (send *robot* :angle-vector (elt *door-motion* i))
