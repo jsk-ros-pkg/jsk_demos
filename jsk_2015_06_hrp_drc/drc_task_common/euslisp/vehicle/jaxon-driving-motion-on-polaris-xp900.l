@@ -6,7 +6,6 @@
 
 (defclass jaxon-driving-motion-on-polaris-xp900
   :super robot-driving-motion
-  :slots (left-sitting-init-pose-flag)
   )
 
 (defmethod jaxon-driving-motion-on-polaris-xp900
@@ -21,20 +20,12 @@
   
   (:drive-init-pose
    (&key (tm 20000))
-   ;; (send self :drive-init-pose-half-sitting)
-   (unless left-sitting-init-pose-flag
-     (send self :drive-init-pose-pre-left-sitting)
-     (when real
-       (send *ri* :angle-vector (send robot :angle-vector) tm)
-       (send *ri* :wait-interpolation)
-       )
-     )
-   (send self :drive-init-pose-left-sitting)
+   ;; (send robot :angle-vector #f(-13.1189 -24.4656 -83.3638 44.9385 7.33334 27.7739 15.5265 -14.998 -95.4989 97.065 0.433944 15.5246 8.0 0.0 0.0 0.0 0.0 17.0643 79.1999 -96.2707 -5.3561 -85.9563 27.0803 22.0044 22.1802 0.0 55.0 20.0 15.0 -100.0 25.0 0.0 -45.0))
+   (send robot :angle-vector #f(-13.1189 -24.4656 -83.3638 44.9385 7.33334 27.7739 15.5265 -14.998 -95.4989 97.065 0.433944 15.5246 8.0 0.0 0.0 0.0 0.0 -13.7511 33.5688 -108.234 8.54591 -90.0 0.0 45.0 3.38633 0.0 55.0 20.0 15.0 -100.0 25.0 0.0 -45.0))
    (when real
      (send *ri* :angle-vector (send robot :angle-vector) tm)
      (send *ri* :wait-interpolation)
      )
-   (setq left-sitting-init-pose-flag t)
    )
   (:ride
    (&key (init-pose t))
