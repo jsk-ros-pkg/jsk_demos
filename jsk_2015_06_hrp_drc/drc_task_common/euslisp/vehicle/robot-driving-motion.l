@@ -814,6 +814,12 @@
      )
    )
 
+  ;; egress
+  (:go-to-egress-pose
+   ()
+   (warn ":go-to-egress should be impremented for each robots~%")
+   )
+
   ;; utils
   (:sync-all-controller
    ()
