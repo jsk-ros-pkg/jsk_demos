@@ -1511,7 +1511,7 @@
     (send *robot* :angle-vector (elt *drill-motion-in* (- rotate-length 1)))
     (push-back (send *robot* :angle-vector) *send-drill-motion*)
     (when real? (model2real :time 000))
-    (drill-full-grasp)
+    (when real? (drill-full-grasp))
     (send *robot* :angle-vector (elt *drill-motion-up* (- rotate-length 1)))
     (push-back (send *robot* :angle-vector) *send-drill-motion*)
     (when real? (model2real :time 2000))
