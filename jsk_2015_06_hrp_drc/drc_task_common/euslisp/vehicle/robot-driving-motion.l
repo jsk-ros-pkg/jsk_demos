@@ -100,7 +100,7 @@
          (offset-target-handle-coords
           (send (send (send (send self :rotate-grasp-point-by-grasp-arm (send car target-handle))
                             :copy-worldcoords)
-                      :locate offset)
+                      :translate offset)
                 :rotate rot-offset :z (send self :rotate-grasp-point-by-grasp-arm (send car target-handle)) ;; grasp-point is assumed to be a pole and axis :z is to be grasped (:x, :y cannot be rotated to grasp) 
                 )
           )
@@ -666,10 +666,10 @@
   ;; holding frame
   (:approach-frame
    (&rest args &key (limb :larm) (target-handle :left-frame-center) (rotation-axis :z)
-          (time 10000) (offset #f(-150 50 0)) (debug-view nil))
+          (time 10000) (offset #f(-150 50 0)) (offset-wrt :local) (debug-view nil))
    (send self :open-hand limb)
    (let (ik-ret)
-     (setq ik-ret (send robot limb :inverse-kinematics (send (send (send car target-handle) :copy-worldcoords) :locate offset)
+     (setq ik-ret (send robot limb :inverse-kinematics (send (send (send car target-handle) :copy-worldcoords) :translate offset offset-wrt)
                         :debug-view debug-view :rotation-axis rotation-axis)
            )
      (when (and real ik-ret)
@@ -693,12 +693,12 @@
      )
    )
   (:approach-fist
-   (&rest args &key (limb :rarm) (target-handle :seat-center) (rotation-axis t) (offset #f(-100 50 0))
-          (offset-wrt :local) (debug-view nil) (time 10000) (reach-until-touch nil)
+   (&rest args &key (limb :rarm) (target-handle :seat-left) (rotation-axis t) (offset #f(0 0 100))
+          (offset-wrt :world) (debug-view nil) (time 10000) (reach-until-touch nil)
           (start-impedance nil) (set-ref-force nil))
    (send self :close-hand limb)
    (let (ik-ret)
-     (setq ik-ret (send robot limb :inverse-kinematics (send (send (send car target-handle) :copy-worldcoords) :locate offset offset-wrt)
+     (setq ik-ret (send robot limb :inverse-kinematics (send (send (send car target-handle) :copy-worldcoords) :translate offset offset-wrt)
                         :debug-view debug-view :rotation-axis rotation-axis)
            )
      (when (and real ik-ret)
@@ -726,7 +726,8 @@
 
   ;; leg support
   (:approach-floor
-   (&rest args &key (limb :lleg) (target-handle :floor) (time 10000) (debug-view nil) (offset #f(0 0 50)) (offset-wrt :local)
+   (&rest args &key (limb :lleg) (target-handle :floor) (time 10000) (debug-view nil)
+          (offset #f(0 0 50)) (offset-wrt :local)
           (start-impedance t) (stop-ref-force nil) (set-ref-force nil)
           (reach-until-touch nil) (use-imu nil)
           &allow-other-keys)
