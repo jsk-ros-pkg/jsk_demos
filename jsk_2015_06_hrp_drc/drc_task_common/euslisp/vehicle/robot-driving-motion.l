@@ -394,7 +394,7 @@
    )
   (:turn-handle-once
    (deg  &key (limb (send self :get :grasp-arm)) (target-handle (send self :get :grasp-point))
-         (time 100) (relative t) (debug-view nil) (use-controller t) (stop 50)
+         (time 100) (relative t) (debug-view nil) (use-controller t) (stop 100)
          (rotation-axis 0) (use-ik-seed t)
          )
    (let ((target-degree (if relative deg (- deg (send car :handle-joint :joint-angle))))
