@@ -127,6 +127,14 @@ class VehicleUIWidget(QWidget):
         overwrite_group.setLayout(overwrite_vbox)
         left_vbox.addWidget(overwrite_group)
 
+        egress_vbox = QtGui.QVBoxLayout(self)
+        egress_group = QtGui.QGroupBox("", self)
+        self.egress_button = QtGui.QPushButton("Go to Egress")
+        self.egress_button.clicked.connect(self.service("/drive/controller/egress"))
+        egress_vbox.addWidget(self.egress_button)
+        egress_group.setLayout(egress_vbox)
+        left_vbox.addWidget(egress_group)
+
         step_vbox = QtGui.QVBoxLayout(self)
         step_group = QtGui.QGroupBox("step", self)
         step_max_hbox = QtGui.QHBoxLayout(self)
