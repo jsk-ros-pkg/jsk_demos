@@ -32,9 +32,57 @@
    (when init-pose
      (send self :drive-init-pose)
      )
-   ;; (send self :ride-half-sitting)
-   (send self :ride-left-sitting)
+   (send robot :move-to (make-coords :pos (float-vector 20 720 -90) :rpy (float-vector 0.0 0.0 0.0)) :world) ;; adjust in real vehicle
    )
+
+  (:turn-handle
+   (deg &rest args &key (stop 100) &allow-other-keys)
+   (send-super* :turn-handle deg :stop stop args)
+   )
+  (:open-hand
+   (&optional (limb (send self :grasp-arm)))
+   (when real
+     ;; (send *ri* :stop-grasp limb)
+     ;; (send *ri* :hand-open limb)
+     )
+   )
+  (:close-hand
+   (&optional (limb (send self :grasp-arm)))
+   (when real
+     ;; (send *ri* :start-grasp limb)
+     ;; (send *ri* :hand-close limb)
+     )
+   )
+  (:set-impedance-for-handle
+   (limb)
+   (send *ri* :start-impedance limb :M-p 200 :D-p 600 :K-p 1400)
+   )
+
+  (:approach-pedal
+   (limb target-pedal &key (tm 2500) (debug-view nil))
+   (let (approach-result)
+     (case target-pedal
+       (:accel-pedal
+        (send robot :rleg :angle-vector #f(-13.1189 -24.4656 -83.3638 44.9385 7.33334 27.7739)) ;; rleg angle-vector in left-sitting
+        (setq approach-result t)
+        )
+       (:brake-pedal
+        (warn "Disable approach-brake-pedal for JAXON~%")
+        (return-from :approach-pedal nil)
+        )
+       (t
+        (warn "Invalid pedal name~%")
+        (return-from :approach-pedal nil)
+        )
+       )
+     (when (and real approach-result)
+       (send *ri* :angle-vector (send robot :angle-vector) tm)
+       (send *ri* :wait-interpolation)
+       )
+     approach-result
+     )
+   )
+
   (:approach-fist
    (&rest args &key (rotation-axis :x) &allow-other-keys)
    (send-super* :approach-fist :rotation-axis rotation-axis args)
@@ -60,6 +108,9 @@
    )
   )
 
+
+;; obsoluted drive-init-pose
+(defmethod jaxon-driving-motion-on-polaris-xp900
   ;; sitting with hip attachment
   (:drive-init-pose-hip-attachment
    ()
@@ -82,12 +133,11 @@
    ;; for jaxon
    (send robot :move-to (make-coords :pos (float-vector 500 450 30) :rpy (float-vector 0.0 (- (deg2rad 24.0)) 0.0)) :world) ;; fix z coords for BODY 24deg version
    )
-
   ;; sitting with left leg out of car
   (:drive-init-pose-half-sitting
    ()
    (send robot :angle-vector
-      #f(0.08997 -1.53106 -90.3158 70.1032 -7.83593 1.52475 -3.215627e-06 1.692475e-05 -89.2384 81.6771 9.56135 -1.759062e-05 0.0 0.0 0.0 0.0 0.0 0.0 0.0 -20.0 -90.0 -100.0 -25.0 0.0 -45.0 0.0 55.0 20.0 15.0 -100.0 25.0 0.0 -45.0))
+         #f(0.08997 -1.53106 -90.3158 70.1032 -7.83593 1.52475 -3.215627e-06 1.692475e-05 -89.2384 81.6771 9.56135 -1.759062e-05 0.0 0.0 0.0 0.0 0.0 0.0 0.0 -20.0 -90.0 -100.0 -25.0 0.0 -45.0 0.0 55.0 20.0 15.0 -100.0 25.0 0.0 -45.0))
    (send robot :fix-leg-to-coords (make-coords) :lleg)
    (send robot :rleg :move-end-pos (float-vector 0 -350 0) :world)
    (send robot :lleg :move-end-pos (float-vector -300 450 -300) :world :rotation-axis :z :debug-view :no-message :translation-axis :x)
@@ -189,78 +239,14 @@
    ;; (send robot :move-to (make-coords :pos (float-vector 20 720 -120) :rpy (float-vector 0.0 0.0 0.0)) :world) ;; adjust in real vehicle
    (send robot :move-to (make-coords :pos (float-vector 20 720 -90) :rpy (float-vector 0.0 0.0 0.0)) :world) ;; adjust in real vehicle
    )
-
-  (:turn-handle
-   (deg &rest args &key (stop 100) &allow-other-keys)
-   (send-super* :turn-handle deg :stop stop args)
-   )
-  (:open-hand
-   (&optional (limb (send self :grasp-arm)))
-   (when real
-     ;; (send *ri* :stop-grasp limb)
-     ;; (send *ri* :hand-open limb)
-     )
-   )
-  (:close-hand
-   (&optional (limb (send self :grasp-arm)))
-   (when real
-     ;; (send *ri* :start-grasp limb)
-     ;; (send *ri* :hand-close limb)
-     )
-   )
-  (:set-impedance-for-handle
-   (limb)
-   (send *ri* :start-impedance limb :M-p 200 :D-p 600 :K-p 1400)
-   )
-  ;; (:set-impedance-for-support
-  ;;  (limb)
-  ;;  (send *ri* :start-impedance limb :M-p 100 :D-p 1200 :K-p 140)
-  ;;  )
-  ;; (:approach-accel-pedal
-  ;;  (&key (tm 10000) (debug-view nil))
-  ;;  (send robot :rleg :angle-vector #f(-13.1189 -24.4656 -83.3638 44.9385 7.33334 27.7739)) ;; rleg angle-vector in left-sitting
-  ;;  (when real
-  ;;    (send *ri* :angle-vector (send robot :angle-vector) tm)
-  ;;    (send *ri* :wait-interpolation)
-  ;;    )
-  ;;  )
-  ;; (:approach-brake-pedal
-  ;;  (&key (tm 10000) (debug-view nil))
-  ;;  (warn "Disable approach-brake-pedal for JAXON~%")
-  ;;  )
-  (:approach-pedal
-   (limb target-pedal &key (tm 2500) (debug-view nil))
-   (let (approach-result)
-     (case target-pedal
-       (:accel-pedal
-        (send robot :rleg :angle-vector #f(-13.1189 -24.4656 -83.3638 44.9385 7.33334 27.7739)) ;; rleg angle-vector in left-sitting
-        (setq approach-result t)
-        )
-       (:brake-pedal
-        (warn "Disable approach-brake-pedal for JAXON~%")
-        (return-from :approach-pedal nil)
-        )
-       (t
-        (warn "Invalid pedal name~%")
-        (return-from :approach-pedal nil)
-        )
-       )
-     (when (and real approach-result)
-       (send *ri* :angle-vector (send robot :angle-vector) tm)
-       (send *ri* :wait-interpolation)
-       )
-     approach-result
-     )
-   )
-  ;; egress
-  (:prepare-get-off
-   ()
-   (send *jaxon* :lleg :move-end-pos #f(0 0 40) :world)
+  (:drive-init-pose-left-sitting-all
+   (&key (time 10000))
+   (send self :drive-init-pose-pre-left-sitting)
    (when real
      (send *ri* :angle-vector (send robot :angle-vector) time)
      (send *ri* :wait-interpolation)
      )
-   (send *jaxon* :lleg :move-end-pos #f(0 200 0) :world)
+   (send self :drive-init-pose-left-sitting)
    (when real
      (send *ri* :angle-vector (send robot :angle-vector) time)
      (send *ri* :wait-interpolation)
