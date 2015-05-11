@@ -35,6 +35,10 @@
    ;; (send self :ride-half-sitting)
    (send self :ride-left-sitting)
    )
+  (:approach-fist
+   (&rest args &key (rotation-axis :x) &allow-other-keys)
+   (send-super* :approach-fist :rotation-axis rotation-axis args)
+   )
 
   ;; sitting with hip attachment
   (:drive-init-pose-hip-attachment
