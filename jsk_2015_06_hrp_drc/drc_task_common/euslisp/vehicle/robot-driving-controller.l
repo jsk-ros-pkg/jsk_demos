@@ -15,7 +15,6 @@
           accel-origin brake-origin
           step-accel-command step-brake-command
           release-accel-command release-brake-command
-          is-handle-reached-to-target
           grasped-flag accel-flag
           old-handle-deg
           polygon-stamped-msg
