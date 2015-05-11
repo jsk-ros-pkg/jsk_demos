@@ -815,8 +815,8 @@
    )
 
   ;; egress
-  (:go-to-egress-pose
-   ()
+  (:go-to-egress
+   (&rest args)
    (warn ":go-to-egress should be impremented for each robots~%")
    )
 
