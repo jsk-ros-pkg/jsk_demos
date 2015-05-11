@@ -105,6 +105,21 @@ class VehicleUIWidget(QWidget):
         action_group.setLayout(action_vbox)
         left_vbox.addWidget(action_group)
 
+        reach_vbox = QtGui.QVBoxLayout(self)
+        reach_group = QtGui.QGroupBox("", self)
+        self.reach_button = QtGui.QPushButton("Reach")
+        menu = QtGui.QMenu()
+        reachLegAction = QAction("Reach Leg to Floor", self)
+        reachLegAction.triggered.connect(self.service("/drive/controller/reach_leg"))
+        menu.addAction(reachLegAction)
+        reachArmAction = QAction("Reach Arm to Seat", self)
+        reachArmAction.triggered.connect(self.service("/drive/controller/reach_arm"))
+        menu.addAction(reachArmAction)
+        self.reach_button.setMenu(menu)
+        reach_vbox.addWidget(self.reach_button)
+        reach_group.setLayout(reach_vbox)
+        left_vbox.addWidget(self.reach_button)
+
         overwrite_vbox = QtGui.QVBoxLayout(self)
         overwrite_group = QtGui.QGroupBox("", self)
         self.overwrite_button = QtGui.QPushButton("Overwrite")
@@ -156,6 +171,7 @@ class VehicleUIWidget(QWidget):
         
         step_group.setLayout(step_vbox)
         left_vbox.addWidget(step_group)
+
     def setUpCenterBox(self, center_box):
         self.multisense_widget = ROSImageWidget("/multisense/left/image_rect_color")
         # self.multisense_widget = ROSImageWidget("/cv_camera/image_raw") # for debugging

@@ -129,6 +129,8 @@
    (ros::advertise-service "/drive/controller/grasp" std_srvs::Empty #'send self :grasp-callback)
    (ros::advertise-service "/drive/controller/release" std_srvs::Empty #'send self :release-callback)
    (ros::advertise-service "/drive/controller/correct" std_srvs::Empty #'send self :correct-callback)
+   (ros::advertise-service "/drive/controller/reach_leg" std_srvs::Empty #'send self :reach-leg-callback)
+   (ros::advertise-service "/drive/controller/reach_arm" std_srvs::Empty #'send self :reach-arm-callback)
    (ros::advertise-service "/drive/controller/set_max_step" drc_task_common::SetValue #'send self :set-max-step-callback)
    (ros::advertise-service "/drive/controller/set_min_step" drc_task_common::SetValue #'send self :set-min-step-callback)
    )
@@ -162,6 +164,23 @@
      res
      )
    )
+  (:reach-leg-callback
+   (req)
+   (let ((res (send req :response)))
+     (warn "reach-leg~%")
+     (send self :approach-floor :reach-until-touch t)
+     res
+     )
+   )
+  (:reach-arm-callback
+   (req)
+   (let ((res (send req :response)))
+     (warn "reach-arm~%")
+     (send self :approach-fist :reach-until-touch t)
+     res
+     )
+   )
+  
   (:set-max-step-callback
    (req)
    (let ((res (send req :response)))
