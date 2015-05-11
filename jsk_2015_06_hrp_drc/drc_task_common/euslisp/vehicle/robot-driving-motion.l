@@ -538,7 +538,7 @@
      (setq approach-result
            (send self :approach-pedal limb :accel-pedal :tm tm :debug-view debug-view)
            )
-     (when (and real reach-until-touch approach-result)
+     (when (and real reach-until-touch approach-result (not (send *ri* :simulation-modep)))
        (send *ri* :reach-until-touch limb
              (send (send robot limb :end-coords :copy-worldcoords) :rotate-vector #f(0 0 -1))
              :rotation-axis :z :thre 10 :time-step 1000 :max-dist 50 :dist-step 5 :debug debug-view
@@ -581,7 +581,7 @@
      (setq approach-result
            (send self :approach-pedal limb :brake-pedal :tm tm :debug-view debug-view)
            )
-     (when (and real reach-until-touch approach-result)
+     (when (and real reach-until-touch approach-result (not (send *ri* :simulation-modep)))
        (send *ri* :reach-until-touch limb
              (send (send robot limb :end-coords :copy-worldcoords) :rotate-vector #f(0 0 -1))
              :rotation-axis :z :time-step 1000 :max-dist 50 :dist-step 5 :debug debug-view
@@ -708,7 +708,7 @@
        (send *ri* :angle-vector (send robot :angle-vector) time)
        (send *ri* :wait-interpolation)
        (send *viewer* :draw-objects)
-       (when reach-until-touch
+       (when (and reach-until-touch (not (send *ri* :simulation-modep)))
          (send *ri* :reach-until-touch limb
                (send (send robot limb :end-coords :copy-worldcoords) :rotate-vector #f(1 0 0))
                :rotation-axis :z :time-step 1000 :max-dist 50 :dist-step 5 :debug debug-view
@@ -774,7 +774,7 @@
              (send self :set-impedance-for-support limb)
              )
            ;; reach-until-touch
-           (when reach-until-touch
+           (when (and reach-until-touch (not (send *ri* :simulation-modep)))
              (send *ri* :reach-until-touch limb
                    (send (send robot limb :end-coords :copy-worldcoords) :rotate-vector #f(0 0 -1))
                    :rotation-axis :z :time-step 1000 :max-dist 50 :dist-step 5 :debug debug-view
