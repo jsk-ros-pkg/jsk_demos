@@ -100,7 +100,7 @@
          (offset-target-handle-coords
           (send (send (send (send self :rotate-grasp-point-by-grasp-arm (send car target-handle))
                             :copy-worldcoords)
-                      :locate offset)
+                      :translate offset)
                 :rotate rot-offset :z (send self :rotate-grasp-point-by-grasp-arm (send car target-handle)) ;; grasp-point is assumed to be a pole and axis :z is to be grasped (:x, :y cannot be rotated to grasp) 
                 )
           )
@@ -394,7 +394,7 @@
    )
   (:turn-handle-once
    (deg  &key (limb (send self :get :grasp-arm)) (target-handle (send self :get :grasp-point))
-         (time 100) (relative t) (debug-view nil) (use-controller t) (stop 50)
+         (time 100) (relative t) (debug-view nil) (use-controller t) (stop 100)
          (rotation-axis 0) (use-ik-seed t)
          )
    (let ((target-degree (if relative deg (- deg (send car :handle-joint :joint-angle))))
@@ -538,7 +538,7 @@
      (setq approach-result
            (send self :approach-pedal limb :accel-pedal :tm tm :debug-view debug-view)
            )
-     (when (and real reach-until-touch approach-result)
+     (when (and real reach-until-touch approach-result (not (send *ri* :simulation-modep)))
        (send *ri* :reach-until-touch limb
              (send (send robot limb :end-coords :copy-worldcoords) :rotate-vector #f(0 0 -1))
              :rotation-axis :z :thre 10 :time-step 1000 :max-dist 50 :dist-step 5 :debug debug-view
@@ -581,7 +581,7 @@
      (setq approach-result
            (send self :approach-pedal limb :brake-pedal :tm tm :debug-view debug-view)
            )
-     (when (and real reach-until-touch approach-result)
+     (when (and real reach-until-touch approach-result (not (send *ri* :simulation-modep)))
        (send *ri* :reach-until-touch limb
              (send (send robot limb :end-coords :copy-worldcoords) :rotate-vector #f(0 0 -1))
              :rotation-axis :z :time-step 1000 :max-dist 50 :dist-step 5 :debug debug-view
@@ -666,10 +666,10 @@
   ;; holding frame
   (:approach-frame
    (&rest args &key (limb :larm) (target-handle :left-frame-center) (rotation-axis :z)
-          (time 10000) (offset #f(-150 50 0)) (debug-view nil))
+          (time 10000) (offset #f(-150 50 0)) (offset-wrt :local) (debug-view nil))
    (send self :open-hand limb)
    (let (ik-ret)
-     (setq ik-ret (send robot limb :inverse-kinematics (send (send (send car target-handle) :copy-worldcoords) :locate offset)
+     (setq ik-ret (send robot limb :inverse-kinematics (send (send (send car target-handle) :copy-worldcoords) :translate offset offset-wrt)
                         :debug-view debug-view :rotation-axis rotation-axis)
            )
      (when (and real ik-ret)
@@ -693,12 +693,12 @@
      )
    )
   (:approach-fist
-   (&rest args &key (limb :rarm) (target-handle :seat-center) (rotation-axis t) (offset #f(-100 50 0))
-          (offset-wrt :local) (debug-view nil) (time 10000) (reach-until-touch nil)
+   (&rest args &key (limb :rarm) (target-handle :seat-left) (rotation-axis t) (offset #f(0 0 100))
+          (offset-wrt :world) (debug-view nil) (time 10000) (reach-until-touch nil)
           (start-impedance nil) (set-ref-force nil))
    (send self :close-hand limb)
    (let (ik-ret)
-     (setq ik-ret (send robot limb :inverse-kinematics (send (send (send car target-handle) :copy-worldcoords) :locate offset offset-wrt)
+     (setq ik-ret (send robot limb :inverse-kinematics (send (send (send car target-handle) :copy-worldcoords) :translate offset offset-wrt)
                         :debug-view debug-view :rotation-axis rotation-axis)
            )
      (when (and real ik-ret)
@@ -708,7 +708,7 @@
        (send *ri* :angle-vector (send robot :angle-vector) time)
        (send *ri* :wait-interpolation)
        (send *viewer* :draw-objects)
-       (when reach-until-touch
+       (when (and reach-until-touch (not (send *ri* :simulation-modep)))
          (send *ri* :reach-until-touch limb
                (send (send robot limb :end-coords :copy-worldcoords) :rotate-vector #f(1 0 0))
                :rotation-axis :z :time-step 1000 :max-dist 50 :dist-step 5 :debug debug-view
@@ -726,7 +726,8 @@
 
   ;; leg support
   (:approach-floor
-   (&rest args &key (limb :lleg) (target-handle :floor) (time 10000) (debug-view nil) (offset #f(0 0 50)) (offset-wrt :local)
+   (&rest args &key (limb :lleg) (target-handle :floor) (time 10000) (debug-view nil)
+          (offset #f(0 0 50)) (offset-wrt :local)
           (start-impedance t) (stop-ref-force nil) (set-ref-force nil)
           (reach-until-touch nil) (use-imu nil)
           &allow-other-keys)
@@ -774,7 +775,7 @@
              (send self :set-impedance-for-support limb)
              )
            ;; reach-until-touch
-           (when reach-until-touch
+           (when (and reach-until-touch (not (send *ri* :simulation-modep)))
              (send *ri* :reach-until-touch limb
                    (send (send robot limb :end-coords :copy-worldcoords) :rotate-vector #f(0 0 -1))
                    :rotation-axis :z :time-step 1000 :max-dist 50 :dist-step 5 :debug debug-view

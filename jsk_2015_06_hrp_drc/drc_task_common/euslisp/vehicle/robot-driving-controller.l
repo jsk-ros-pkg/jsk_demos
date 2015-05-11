@@ -129,6 +129,8 @@
    (ros::advertise-service "/drive/controller/grasp" std_srvs::Empty #'send self :grasp-callback)
    (ros::advertise-service "/drive/controller/release" std_srvs::Empty #'send self :release-callback)
    (ros::advertise-service "/drive/controller/correct" std_srvs::Empty #'send self :correct-callback)
+   (ros::advertise-service "/drive/controller/reach_leg" std_srvs::Empty #'send self :reach-leg-callback)
+   (ros::advertise-service "/drive/controller/reach_arm" std_srvs::Empty #'send self :reach-arm-callback)
    (ros::advertise-service "/drive/controller/set_max_step" drc_task_common::SetValue #'send self :set-max-step-callback)
    (ros::advertise-service "/drive/controller/set_min_step" drc_task_common::SetValue #'send self :set-min-step-callback)
    )
@@ -162,6 +164,23 @@
      res
      )
    )
+  (:reach-leg-callback
+   (req)
+   (let ((res (send req :response)))
+     (warn "reach-leg~%")
+     (send self :approach-floor :reach-until-touch t)
+     res
+     )
+   )
+  (:reach-arm-callback
+   (req)
+   (let ((res (send req :response)))
+     (warn "reach-arm~%")
+     (send self :approach-fist :reach-until-touch t)
+     res
+     )
+   )
+  
   (:set-max-step-callback
    (req)
    (let ((res (send req :response)))
@@ -281,15 +300,14 @@
    (send* motion :approach-brake-pedal args)
    )
   (:approach-floor
-   (&rest args &key (offset #f(0 0 50)) (start-impedance t) (set-ref-force nil) &allow-other-keys)
-   (send* motion :approach-floor :offset offset
+   (&rest args &key (start-impedance t) (set-ref-force nil) &allow-other-keys)
+   (send* motion :approach-floor
           :start-impedance start-impedance :set-ref-force set-ref-force
           args) ;; approach to floor
    )
   (:approach-fist
-   (&rest args &key (offset #f(-100 100 0)) (start-impedance t)
-          (set-ref-force nil) (reach-until-touch nil) &allow-other-keys)
-   (send* motion :approach-fist :offset offset
+   (&rest args &key (start-impedance t) (set-ref-force nil) (reach-until-touch nil) &allow-other-keys)
+   (send* motion :approach-fist
           :start-impedance start-impedance :set-ref-force set-ref-force
           :reach-until-touch reach-until-touch
           args) ;; approach fist to seat

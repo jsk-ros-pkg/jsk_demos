@@ -40,12 +40,15 @@ uint8 DRILL_WALL_FINISHED=22
 # drill button
 uint8 DRILL_BUTTON_POSE=23
 uint8 DRILL_BUTTON_FINISHED=24
+# drill rotate
+uint8 DRILL_ROTATE_POSE=25
+uint8 DRILL_ROTATE_FINISHED=26
 # angle-vector
-uint8 ANGLE_VECTOR_FINISHED=25
+uint8 ANGLE_VECTOR_FINISHED=27
 # for rviz plugins msgs(see src/drc_teleop_interface.cpp)
-uint8 RVIZ_MENU_FINISHED=26
+uint8 RVIZ_MENU_FINISHED=28
 # reach until touch
-uint8 REACH_UNTIL_TOUCH_FINISHED=27
+uint8 REACH_UNTIL_TOUCH_FINISHED=29
 
 # failed
 uint8 RECOGNITION_FAILED=20

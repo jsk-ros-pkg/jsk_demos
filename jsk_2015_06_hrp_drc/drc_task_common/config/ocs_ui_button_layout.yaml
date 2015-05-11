@@ -34,6 +34,11 @@
   image: "package://drc_task_common/icons/wall-icon.png"
   image_size: [80, 80]
   column: 0
+- name: 'drill-rotate'
+  service: 'drill_rotate'
+  image: "package://drc_task_common/icons/wall-icon.png"
+  image_size: [80, 80]
+  column: 0
 - name: 'drill-button'
   service: 'drill_button'
   image: "package://drc_task_common/icons/wall-icon.png"

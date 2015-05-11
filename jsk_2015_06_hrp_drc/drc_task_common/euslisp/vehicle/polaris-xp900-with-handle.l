@@ -121,6 +121,10 @@
                                                      :name :seat-center))
        (push seat-center-grasp-point grasp-point)
        (send seat-body :assoc seat-center-grasp-point)
+       (setq seat-left-grasp-point (make-cascoords :coords (send (send seat-center-grasp-point :copy-worldcoords) :translate #f(0 50 0) :world)
+                                                   :name :seat-left))
+       (push seat-left-grasp-point grasp-point)
+       (send seat-body :assoc seat-left-grasp-point)
        (setq rear-support-frame-attachment-grasp-point (make-cascoords :coords (send (send (send seat-link :copy-worldcoords) :rotate (deg2rad 90) :y)
                                                                                      :translate (float-vector 0 rear-support-frame-y rear-support-frame-height) :world)
                                                                        :name :rear-support-frame-attachment))
@@ -151,6 +155,7 @@
   (:floor () (find-if #'(lambda (h) (eq (send h :name) :floor)) grasp-point))
   (:floor-footrest () (find-if #'(lambda (h) (eq (send h :name) :floor-footrest)) grasp-point))
   (:seat-center () (find-if #'(lambda (h) (eq (send h :name) :seat-center)) grasp-point))
+  (:seat-left () (find-if #'(lambda (h) (eq (send h :name) :seat-left)) grasp-point))
   (:rear-support-frame-attachment () (find-if #'(lambda (h) (eq (send h :name) :rear-support-frame-attachment)) grasp-point))
   )
 

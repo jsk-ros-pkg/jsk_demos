@@ -543,6 +543,16 @@ Usage:
      (:executing-drill-button -> :selecting-exec-for-drill-button)          ;cancel
      (:selecting-exec-for-drill-button -> :initial)                   ;cancel
      (:executing-drill-button -> :initial)                            ;done
+     ;; drill_rotate
+     (:initial -> :selecting-region-for-drill-rotate)
+     (:selecting-region-for-drill-rotate -> :initial) ;cancel
+     (:selecting-region-for-drill-rotate -> :recognizing-drill-rotate-pose)
+     (:recognizing-drill-rotate-pose -> :selecting-exec-for-drill-rotate) ;recognition done
+     (:recognizing-drill-rotate-pose -> :initial) ;cancel
+     (:selecting-exec-for-drill-rotate -> :executing-drill-rotate)          ;exec
+     (:executing-drill-rotate -> :selecting-exec-for-drill-rotate)          ;cancel
+     (:selecting-exec-for-drill-rotate -> :initial)                   ;cancel
+     (:executing-drill-rotate -> :initial)                            ;done
      ;; driving
      (:initial -> :vehicle)
      (:vehicle -> :initial)
@@ -603,6 +613,11 @@ Usage:
      (:recognizing-drill-button-pose :drill-button)
      (:selecting-exec-for-drill-button :drill-button)
      (:executing-drill-button :drill-button)
+     ;; drill-rotate
+     (:selecting-region-for-drill-rotate :drill-rotate)
+     (:recognizing-drill-rotate-pose :drill-rotate)
+     (:selecting-exec-for-drill-rotate :drill-rotate)
+     (:executing-drill-rotate :drill-rotate)
      ;; driving
      (:vehicle :vehicle)
      )
@@ -631,6 +646,9 @@ Usage:
 
      (:initial -> :recognizing-drill-button-pose)
      (:recognizing-drill-button-pose -> :initial)
+
+     (:initial -> :recognizing-drill-rotate-pose)
+     (:recognizing-drill-rotate-pose -> :initial)
 
      (:initial -> :recognizing-door-pose)
      (:recognizing-door-pose -> :initial)
@@ -661,6 +679,9 @@ Usage:
 
      (:initial -> :executing-drill-button)
      (:executing-drill-button -> :initial)
+
+     (:initial -> :executing-drill-rotate)
+     (:executing-drill-rotate -> :initial)
      
      (:initial -> :executing-door)
      (:executing-door -> :initial)
@@ -708,6 +729,8 @@ Usage:
      (:executing-drill-wall :drill)
      (:recognizing-drill-button-pose :drill)
      (:executing-drill-button :drill)
+     (:recognizing-drill-rotate-pose :drill)
+     (:executing-drill-rotate :drill)
 
 
      (:recognizing-door-pose :door)
