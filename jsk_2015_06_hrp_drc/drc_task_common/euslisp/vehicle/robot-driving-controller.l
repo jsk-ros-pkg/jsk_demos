@@ -287,7 +287,7 @@
           args) ;; approach to floor
    )
   (:approach-fist
-   (&rest args &key (offset #f(-100 100 0)) (start-impedance t)
+   (&rest args &key (offset #f(-100 50 0)) (start-impedance t)
           (set-ref-force nil) (reach-until-touch nil) &allow-other-keys)
    (send* motion :approach-fist :offset offset
           :start-impedance start-impedance :set-ref-force set-ref-force
