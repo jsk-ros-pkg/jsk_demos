@@ -300,15 +300,14 @@
    (send* motion :approach-brake-pedal args)
    )
   (:approach-floor
-   (&rest args &key (offset #f(0 0 50)) (start-impedance t) (set-ref-force nil) &allow-other-keys)
-   (send* motion :approach-floor :offset offset
+   (&rest args &key (start-impedance t) (set-ref-force nil) &allow-other-keys)
+   (send* motion :approach-floor
           :start-impedance start-impedance :set-ref-force set-ref-force
           args) ;; approach to floor
    )
   (:approach-fist
-   (&rest args &key (offset #f(-100 50 0)) (start-impedance t)
-          (set-ref-force nil) (reach-until-touch nil) &allow-other-keys)
-   (send* motion :approach-fist :offset offset
+   (&rest args &key (start-impedance t) (set-ref-force nil) (reach-until-touch nil) &allow-other-keys)
+   (send* motion :approach-fist
           :start-impedance start-impedance :set-ref-force set-ref-force
           :reach-until-touch reach-until-touch
           args) ;; approach fist to seat
