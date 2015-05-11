@@ -40,6 +40,26 @@
    (send-super* :approach-fist :rotation-axis rotation-axis args)
    )
 
+  ;; egress
+  (:prepare-get-off
+   ()
+   (send *jaxon* :lleg :move-end-pos #f(0 0 40) :world)
+   (when real
+     (send *ri* :angle-vector (send robot :angle-vector) time)
+     (send *ri* :wait-interpolation)
+     )
+   (send *jaxon* :lleg :move-end-pos #f(0 200 0) :world)
+   (when real
+     (send *ri* :angle-vector (send robot :angle-vector) time)
+     (send *ri* :wait-interpolation)
+     )
+   )
+  (:egress-pose
+   ()
+   (send robot :angle-vector #f(-13.1189 -24.4656 -83.3638 44.9385 7.33334 27.7739 15.5265 -14.998 -95.4989 97.065 0.433944 15.5246 11.3761 0.0 0.0 0.0 0.0 13.4236 66.4673 -16.1854 -4.76865 -105.284 22.9836 20.8474 38.8758 0.0 55.0 20.0 15.0 -100.0 25.0 0.0 -45.0))
+   )
+  )
+
   ;; sitting with hip attachment
   (:drive-init-pose-hip-attachment
    ()
