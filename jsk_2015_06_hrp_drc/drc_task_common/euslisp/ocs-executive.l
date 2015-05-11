@@ -42,6 +42,7 @@
                 drill-wall-params
                 drill-wall-target-coords ;; list of coords
                 drill-button-params ;; (list coords)
+		drill-rotate-params
                 foreground-bacground-sync-obj
                 arm-mode ;; one of (:rarm-only :rarm-preferred :larm-preferred :larm-only)
                 valve-grasp-mode ;; one of (:edge-grasp-only :edge-grasp-preferred :center-grasp-preferred :center-grasp-only)
@@ -100,6 +101,10 @@
                 self :drill-button-recognition-finished-callback)
           (list drc_com_common::FC2OCSSmall::*DRILL_BUTTON_FINISHED*
                 self :drill-button-exec-finished-callback)
+          (list drc_com_common::FC2OCSSmall::*DRILL_ROTATE_POSE*
+                self :drill-rotate-recognition-finished-callback)
+          (list drc_com_common::FC2OCSSmall::*DRILL_ROTATE_FINISHED*
+                self :drill-rotate-exec-finished-callback)
           (list drc_com_common::FC2OCSSmall::*LOOK_AROUND_FINISHED*
                 self :look-around-finished-callback)
           (list drc_com_common::FC2OCSSmall::*RECOGNITION_FAILED*
@@ -258,6 +263,12 @@
       (send self :show-text "Select rectangle for drill-button ;; not implemented yet" :select)
       (send smachine :go-to :selecting-region-for-drill-button))
     (send req :response))
+  (:drill-rotate-button-callback (req)
+    (when (send smachine :next? :selecting-region-for-drill-rotate)
+      (send self :set-image-view2-mode :rectangle)
+      (send self :show-text "Select rectangle region for drill-rotate" :select)
+      (send smachine :go-to :selecting-region-for-drill-rotate))
+    (send req :response))
   (:go-pos-button-callback (req)
     (when (send smachine :next? :selecting-region-for-go-pos)
       ;; force to use rectangle mode
@@ -313,6 +324,8 @@
       (send self :rectangle-callback-for-drill-put-region msg))
      ((eq (send smachine :state) :selecting-region-for-drill-button)
       (send self :rectangle-callback-for-drill-button-region msg))
+     ((eq (send smachine :state) :selecting-region-for-drill-rotate)
+      (send self :rectangle-callback-for-drill-rotate-region msg))
      ))
   (:rectangle-callback-for-valve-region (msg)
     (send self :show-text "Wait for valve recognition" :wait)
@@ -401,6 +414,15 @@
                                     msg (length (send fc-msg :image_roi_info))))
       (send self :send-to-fc fc-msg)
       (send smachine :go-to :recognizing-drill-button-pose)))
+  (:rectangle-callback-for-drill-rotate-region (msg)
+    (send self :show-text "Wait for drill-rotate recognition" :wait)
+    ;; send to FC to recognize pos
+    (let ((fc-msg (instance drc_com_common::OCS2FCSmall :init)))
+      (send fc-msg :type drc_com_common::OCS2FCSmall::*DRILL_ROTATE_REGION*)
+      (send fc-msg :image_roi_info (rect-polygon-stamped-to-integer-vector
+                                    msg (length (send fc-msg :image_roi_info))))
+      (send self :send-to-fc fc-msg)
+      (send smachine :go-to :recognizing-drill-rotate-pose)))
   (:rectangle-callback-for-go-pos-region (msg)
     (send self :show-text "Wait for go-pos recognition" :wait)
     ;; send to FC to recognize pos
@@ -454,6 +476,8 @@
       (send smachine :go-to :initial))
      ((eq (send smachine :state) :selecting-region-for-drill-button)
       (send smachine :go-to :initial))
+     ((eq (send smachine :state) :selecting-region-for-drill-rotate)
+      (send smachine :go-to :initial))
      ((eq (send smachine :state) :selecting-region-for-go-pos)
       (send smachine :go-to :initial))
      ((eq (send smachine :state) :selecting-region-for-look-at)
@@ -479,6 +503,8 @@
       (send smachine :go-to :initial))
      ((eq (send smachine :state) :recognizing-drill-button-pose)
       (send smachine :go-to :initial))
+     ((eq (send smachine :state) :recognizing-drill-rotate-pose)
+      (send smachine :go-to :initial))
      ((eq (send smachine :state) :recognizing-go-pos-goal)
       (send smachine :go-to :initial))
      ;; there is no recognition state for look-at and look-around
@@ -501,6 +527,8 @@
       (send smachine :go-to :initial))
      ((eq (send smachine :state) :selecting-exec-for-drill-button)
       (send smachine :go-to :initial))
+     ((eq (send smachine :state) :selecting-exec-for-drill-rotate)
+      (send smachine :go-to :initial))
      ((eq (send smachine :state) :selecting-exec-for-go-pos)
       (send smachine :go-to :initial))
      ;; there is no selecting-region state for look-at and look-around
@@ -522,6 +550,8 @@
      ((eq (send smachine :state) :executing-drill-wall)
       (send smachine :go-to :initial))
      ((eq (send smachine :state) :executing-drill-button)
+      (send smachine :go-to :initial))
+     ((eq (send smachine :state) :executing-drill-rotate)
       (send smachine :go-to :initial))
      ((eq (send smachine :state) :executing-go-pos)
       (send smachine :go-to :initial))
@@ -708,6 +738,19 @@
       (send msg :float_params (coords-to-float-vector (elt drill-button-params 0) (length (send msg :float_params))))
       (send self :send-to-fc msg)
       (send smachine :go-to :executing-drill-button)))
+  (:exec-drill-rotate-button-callback ()
+    (send self :show-text "Execute drill-rotate motion" :execute)
+    ;; update latest drill-rotate params
+    (setq drill-rotate-params
+          (list (get-primitive-marker-pose :frame-id "BODY" :name "drill") (get-primitive-marker-pose :frame-id "BODY" :name "cylinder1")))
+    ;; do something magical!!
+    ;; send drill-rotate params to fc
+    (let ((msg (instance drc_com_common::OCS2FCSmall :init)))
+      (send msg :type drc_com_common::OCS2FCSmall::*DRILL_ROTATE_EXEC*)
+      (send msg :float_params (coords-set-to-float-vector drill-button-params (length (send msg :float_params))))
+      (send self :send-to-fc msg)
+      (send smachine :go-to :executing-drill-rotate)))
+
   (:exec-go-pos-button-callback ()
     ;; update latest go-pos coords
     (setq go-pos-coords (send *tf* :lookup-transform "robot_marker_root" "ground" (ros::time 0)))
@@ -740,6 +783,8 @@
       (send self :exec-drill-wall-button-callback))
      ((eq (send smachine :state) :selecting-exec-for-drill-button)
       (send self :exec-drill-button-button-callback))
+     ((eq (send smachine :state) :selecting-exec-for-drill-rotate)
+      (send self :exec-drill-rotate-button-callback))
      ((eq (send smachine :state) :selecting-exec-for-go-pos)
       (send self :exec-go-pos-button-callback))
      )
@@ -942,14 +987,30 @@
         ;; store result
         (setq drill-button-params (list coords))
         ;; publish object marker
-        (erase-all-primitive-marker)
         (insert-primitive-marker :shape-type jsk_rviz_plugins::TransformableMarkerOperate::*MESH_RESOURCE* :name "drill" :description "" :resource "package://drc_task_common/models/takenoko_drill.dae" :use-material t)
 	(set-primitive-marker-control-relative-pose (make-coords :pos (float-vector 0 0 95) :rpy (float-vector 0 0 pi/2))) ;;Todo more precise pose for button
         ;;(set-primitive-marker-pose coords "BODY") ;; comment out because pose is not correct
         (move-robot-model-to-current-pos)
         ;; publish motion to robot model on rviz
-	;;(publish-drill-button-motion :coords (elt drill-button-params 0) :update? t) ;; comment out because pose is not correct
+	(publish-drill-button-motion :coords (elt drill-button-params 0) :update? t) 
         (send smachine :go-to :selecting-exec-for-drill-button))))
+
+ (:drill-rotate-recognition-finished-callback (msg)
+    (when (eq (send smachine :state) :recognizing-drill-rotate-pose)
+      (let* ((params (send msg :params))
+             (coords (float-vector-to-coords params)))
+        (send self :show-text 
+              (format nil "Recognize drill-rotate. pos:~A rpy:~A" (send coords :worldpos) (reverse (car (send coords :rpy-angle)))) :recognize)
+        ;; store result
+        (setq drill-rotate-params (list coords (get-primitive-marker-pose :frame-id "BODY" :name "drill")))
+        ;; publish object marker
+        (insert-primitive-marker :shape-type jsk_rviz_plugins::TransformableMarkerOperate::*MESH_RESOURCE* :name "drill" :description "" :resource "package://drc_task_common/models/takenoko_drill.dae" :use-material t)
+        (move-robot-model-to-current-pos)
+        ;; publish motion to robot model on rviz
+	(publish-drill-rotate-motion :drill-coords (elt drill-button-params 0) :plane-coords (elt drill-rotate-params 1) :update? t) 
+        (send smachine :go-to :selecting-exec-for-drill-rotate))))
+  
+  
   (:go-pos-recognition-finished-callback (msg)
     (when (eq (send smachine :state) :recognizing-go-pos-goal)
       (let ((params (send msg :params)))
@@ -1015,6 +1076,10 @@
   (:drill-button-exec-finished-callback (msg)
     (when (eq (send smachine :state) :executing-drill-button)
       (send self :show-text "Finished drill-button motion" :success)
+      (send smachine :go-to :initial)))
+  (:drill-rotate-exec-finished-callback (msg)
+    (when (eq (send smachine :state) :executing-drill-rotate)
+      (send self :show-text "Finished drill-rotate motion" :success)
       (send smachine :go-to :initial)))
   (:go-pos-finished-callback (msg)
     (when (eq (send smachine :state) :executing-go-pos)
@@ -1094,6 +1159,13 @@
                  (list (get-primitive-marker-pose :frame-id "BODY" :name "drill")))
            ;; publish drill motion to robot model on rviz
            (publish-drill-button-motion :coords (elt drill-button-params 0) :update? t)
+           )
+          ((eq (send smachine :state) :selecting-exec-for-drill-rotate)
+           ;; update latest drill-rotate params
+           (setq drill-rotate-params
+                 (list (get-primitive-marker-pose :frame-id "BODY" :name "drill") (get-primitive-marker-pose :frame-id "BODY" :name "cylinder1")))
+           ;; publish drill motion to robot model on rviz
+           (publish-drill-rotate-motion :drill-coords (elt drill-rotate-params 0) :plane-coords (elt drill-rotate-params 1) :update? t)
            )
           ((eq (send smachine :state) :selecting-exec-for-drill-wall)
            ;; update latest drill-button params
@@ -1190,6 +1262,7 @@
      ((eq (send smachine :state) :selecting-region-for-drill-grasp)
       (send smachine :go-to! :selecting-exec-for-drill-grasp)
       (erase-all-primitive-marker)
+      (insert-primitive-marker :shape-type jsk_rviz_plugins::TransformableMarkerOperate::*CYLINDER* :name "cylinder1" :description "")
       (insert-primitive-marker :shape-type jsk_rviz_plugins::TransformableMarkerOperate::*MESH_RESOURCE* :name "drill" :description "" :resource "package://drc_task_common/models/takenoko_drill.dae" :use-material t))
      ((eq (send smachine :state) :selecting-region-for-drill-put)
       (send smachine :go-to! :selecting-exec-for-drill-put))
@@ -1197,33 +1270,36 @@
      ;;  (send smachine :go-to! :selecting-exec-for-drill-wall)) ;; because of not using interactive-marker
      ((eq (send smachine :state) :selecting-region-for-drill-button)
       ;; todo drill-type
-      (if (not (boundp '*drill*))
-	  (if t
-	      (set-drill-environment :drill-type :takenoko)
-	    (set-drill-environment :drill-type :gun)
-	    )
-	)
-      (send *robot* :angle-vector (get-potentio-vector-from-joint-states))
-      (send *robot* :fix-leg-to-coords (make-coords))
-      (set-drill-default-coords)
-      (let ((coords (send (send (send (send *robot* :body_lk) :copy-worldcoords) :inverse-transformation) :transform (send *drill* :copy-worldcoords))))
-              (send self :show-text 
-              (format nil "Recognize drill-button. pos:~A rpy:~A" (send coords :worldpos) (reverse (car (send coords :rpy-angle)))) :recognize)
-        ;; store result
-        (setq drill-button-params (list coords))
-        ;; publish object marker
-        (erase-all-primitive-marker)
-        (insert-primitive-marker :shape-type jsk_rviz_plugins::TransformableMarkerOperate::*MESH_RESOURCE* :name "drill" :description "" :resource "package://drc_task_common/models/takenoko_drill.dae" :use-material t)
-        (set-primitive-marker-control-relative-pose (make-coords :pos (float-vector -22 30 77) :rpy (float-vector 0 0 pi/2))) ;;Todo more precise pose for button
-        (move-robot-model-to-current-pos)
-        (set-primitive-marker-pose coords "BODY")
-        ;(send smachine :go-to :selecting-exec-for-drill-button)
+      (when (not (boundp '*drill*))
+	(if t
+	    (set-drill-environment :drill-type :takenoko)
+	  (set-drill-environment :drill-type :gun)
+	  )
+	(send *robot* :angle-vector (get-potentio-vector-from-joint-states))
+	(send *robot* :fix-leg-to-coords (make-coords))
+	(set-drill-default-coords)
+	(let ((coords (send (send (send (send *robot* :body_lk) :copy-worldcoords) :inverse-transformation) :transform (send *drill* :copy-worldcoords))))
+	  (send self :show-text 
+		(format nil "Recognize drill-button. pos:~A rpy:~A" (send coords :worldpos) (reverse (car (send coords :rpy-angle)))) :recognize)
+	  ;; store result
+	  (setq drill-button-params (list coords))
+	  ;; publish object marker
+	  (erase-all-primitive-marker)
+	  (insert-primitive-marker :shape-type jsk_rviz_plugins::TransformableMarkerOperate::*MESH_RESOURCE* :name "drill" :description "" :resource "package://drc_task_common/models/takenoko_drill.dae" :use-material t)
+	  (set-primitive-marker-control-relative-pose (make-coords :pos (float-vector -22 30 77) :rpy (float-vector 0 0 pi/2))) ;;Todo more precise pose for button
+	  (move-robot-model-to-current-pos)
+	  (set-primitive-marker-pose coords "BODY")
+					;(send smachine :go-to :selecting-exec-for-drill-button)
+	  )
 	)
       (send smachine :go-to! :selecting-exec-for-drill-button))
      )
+     ((eq (send smachine :state) :selecting-region-for-drill-rotate)
+      (send smachine :go-to! :selecting-exec-for-drill-rotate))
     (send self :show-text "skip recog. set and move marker manually.")
     (send req :response)
-   )
+    )
+  
   (:set-pitch-head-angle-callback (req)
     (let ((msg (instance drc_com_common::OCS2FCSmall :init)))
       (send msg :type drc_com_common::OCS2FCSmall::*LOOK_AT_PITCH_ANGLE*)
@@ -1252,6 +1328,7 @@
      ((eq (send smachine :state) :executing-drill-put) (send smachine :go-to :selecting-exec-for-drill-put))
      ((eq (send smachine :state) :executing-drill-wall) (send smachine :go-to :selecting-exec-for-drill-wall))
      ((eq (send smachine :state) :executing-drill-button) (send smachine :go-to :selecting-exec-for-drill-button))
+     ((eq (send smachine :state) :executing-drill-rotate) (send smachine :go-to :selecting-exec-for-drill-rotate))
      )
     )
   )
@@ -1474,6 +1551,7 @@
 (ros::advertise-service "drill_put" std_srvs::Empty #'send *app* :drill-put-button-callback)
 (ros::advertise-service "drill_wall" std_srvs::Empty #'send *app* :drill-wall-button-callback)
 (ros::advertise-service "drill_button" std_srvs::Empty #'send *app* :drill-button-button-callback)
+(ros::advertise-service "drill_rotate" std_srvs::Empty #'send *app* :drill-rotate-button--callback)
 (ros::advertise-service "go_pos" std_srvs::Empty #'send *app* :go-pos-button-callback)
 (ros::advertise-service "look_at" std_srvs::Empty #'send *app* :look-at-button-callback)
 (ros::advertise-service "look_around" std_srvs::Empty #'send *app* :look-around-button-callback)
