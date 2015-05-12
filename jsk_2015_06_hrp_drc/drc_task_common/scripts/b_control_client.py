@@ -76,7 +76,7 @@ def b_control_client_init():
     rospy.Service('/insert_drill_marker', srv.Empty, insert_drill_marker_cb)
     rospy.Service('/insert_plane_marker', srv.Empty, insert_plane_marker_cb)
     rospy.Service('/insert_wall_marker', srv.Empty, insert_wall_marker_cb)
-    rospy.Service('/erase_all_marker', srv,Empty, erase_all_marker_cb)
+    rospy.Service('/erase_all_marker', srv.Empty, erase_all_marker_cb)
     auto_set_mode = True
     ## box_sub = message_filters.Subscriber('bounding_box_marker/selected_box', BoundingBox)
     ## points_sub = message_filters.Subscriber('/selected_pointcloud', PointCloud2)
