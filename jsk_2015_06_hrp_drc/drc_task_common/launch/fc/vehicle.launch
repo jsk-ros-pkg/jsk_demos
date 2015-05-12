@@ -12,7 +12,7 @@
 
   <!-- vehicle_ui -->
   <group if="$(arg LAUNCH_UI)">
-    <node pkg="drc_task_common" type="vehicle_ui" name="vehicle_ui" />
+    <node pkg="drc_task_common" type="vehicle_ui" name="vehicle_ui" respawn="true" />
   </group>
 
   <!-- handle controller -->
