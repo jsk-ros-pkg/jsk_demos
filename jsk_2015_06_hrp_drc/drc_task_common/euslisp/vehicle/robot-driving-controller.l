@@ -131,6 +131,7 @@
    (ros::advertise-service "/drive/controller/correct" std_srvs::Empty #'send self :correct-callback)
    (ros::advertise-service "/drive/controller/reach_leg" std_srvs::Empty #'send self :reach-leg-callback)
    (ros::advertise-service "/drive/controller/reach_arm" std_srvs::Empty #'send self :reach-arm-callback)
+   (ros::advertise-service "/drive/controller/egress" std_srvs::Empty #'send self :egress-callback)
    (ros::advertise-service "/drive/controller/set_max_step" drc_task_common::SetValue #'send self :set-max-step-callback)
    (ros::advertise-service "/drive/controller/set_min_step" drc_task_common::SetValue #'send self :set-min-step-callback)
    )
@@ -167,7 +168,6 @@
   (:reach-leg-callback
    (req)
    (let ((res (send req :response)))
-     (warn "reach-leg~%")
      (send self :approach-floor :reach-until-touch t)
      res
      )
@@ -175,8 +175,14 @@
   (:reach-arm-callback
    (req)
    (let ((res (send req :response)))
-     (warn "reach-arm~%")
      (send self :approach-fist :reach-until-touch t)
+     res
+     )
+   )
+  (:egress-callback
+   (req)
+   (let ((res (send req :response)))
+     (send self :go-to-egress)
      res
      )
    )
@@ -329,6 +335,16 @@
    (send* motion :approach-floor
           :offset offset :start-impedance start-impedance :set-ref-force set-ref-force
           args) ;; approach to floor
+   )
+  (:go-to-egress
+   (&rest args)
+   ;; stop accel
+   (send self :accel-cmd 0.0)
+   (send self :accel-flag nil)
+   ;; stop handling
+   (send self :grasped-flag nil)
+   ;; execute egress
+   (send* motion :go-to-egress args)
    )
 
   ;; internal functions

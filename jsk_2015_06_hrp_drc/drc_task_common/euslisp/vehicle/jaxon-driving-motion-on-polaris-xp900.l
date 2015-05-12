@@ -89,22 +89,25 @@
    )
 
   ;; egress
-  (:prepare-get-off
-   ()
-   (send *jaxon* :lleg :move-end-pos #f(0 0 40) :world)
-   (when real
-     (send *ri* :angle-vector (send robot :angle-vector) time)
-     (send *ri* :wait-interpolation)
-     )
-   (send *jaxon* :lleg :move-end-pos #f(0 200 0) :world)
-   (when real
-     (send *ri* :angle-vector (send robot :angle-vector) time)
-     (send *ri* :wait-interpolation)
-     )
-   )
   (:egress-pose
    ()
    (send robot :angle-vector #f(-13.1189 -24.4656 -83.3638 44.9385 7.33334 27.7739 15.5265 -14.998 -95.4989 97.065 0.433944 15.5246 11.3761 0.0 0.0 0.0 0.0 13.4236 66.4673 -16.1854 -4.76865 -105.284 22.9836 20.8474 38.8758 0.0 55.0 20.0 15.0 -100.0 25.0 0.0 -45.0))
+   )
+  (:go-to-egress
+   (&rest args &key (time 10000))
+   (let (fist-arm)
+     (if (equal (send self :grasp-arm) :larm)
+         (setq fist-arm :rarm)
+       (setq fist-arm :larm)
+       )
+     (send self :turn-handle 0 :relative nil)
+     (send self :approach-fist :limb fist-arm :offset #f(0 0 100) :offset-wrt :world :reach-until-touch nil :time time)
+     (send robot fist-arm :angle-vector #f(13.4236 66.4673 -16.1854 -4.76865 -105.284 22.9836 20.8474 38.8758)) ;; send rarm angle-vector of egress-pose
+     (when real
+       (send *ri* :angle-vector (send robot :angle-vector) time)
+       (send *ri* :wait-interpolation)
+       )
+     )
    )
   )
 
@@ -247,6 +250,23 @@
      (send *ri* :wait-interpolation)
      )
    (send self :drive-init-pose-left-sitting)
+   (when real
+     (send *ri* :angle-vector (send robot :angle-vector) time)
+     (send *ri* :wait-interpolation)
+     )
+   )
+  )
+
+;; obsoluted egress function
+(defmethod jaxon-driving-motion-on-polaris-xp900
+  (:prepare-get-off
+   ()
+   (send *jaxon* :lleg :move-end-pos #f(0 0 40) :world)
+   (when real
+     (send *ri* :angle-vector (send robot :angle-vector) time)
+     (send *ri* :wait-interpolation)
+     )
+   (send *jaxon* :lleg :move-end-pos #f(0 200 0) :world)
    (when real
      (send *ri* :angle-vector (send robot :angle-vector) time)
      (send *ri* :wait-interpolation)
