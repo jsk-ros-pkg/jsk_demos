@@ -384,16 +384,18 @@
           (t
            (setq *valve-grasp-mode* :edge-grasp)))
     ;; first trial
-    (get-valve-motion :grasp-center? grasp-center? :draw? draw?)
+    (when (not (equal overwrite-stand-coords? :force))
+      (get-valve-motion :grasp-center? grasp-center? :draw? draw?))
     ;; change arm
-    (when (and overwrite-arm-side? (<= (get-rotatable-angle) rotatable-angle-thre))
+    (when (and overwrite-arm-side? (not (equal overwrite-stand-coords? :force)) (<= (get-rotatable-angle) rotatable-angle-thre))
       (setq *valve-arm* (get-opposite-arm *valve-arm*))
       (ros::ros-warn "change arm side to ~a for valve motion. (stand position is ~a.) ~%" *valve-arm* *valve-stand-coords*)
       (get-valve-motion :grasp-center? grasp-center? :draw? draw?)
       )
     ;; revert arm, change stand position
     (when (and overwrite-stand-coords? (<= (get-rotatable-angle) rotatable-angle-thre))
-      (when overwrite-arm-side? (setq *valve-arm* (get-opposite-arm *valve-arm*)))
+      (when (and overwrite-arm-side? (not (equal overwrite-stand-coords? :force)))
+        (setq *valve-arm* (get-opposite-arm *valve-arm*)))
       (move-robot-with-stand-coords-for-valve (get-valve-stand-coords :grasp-center? grasp-center?))
       (ros::ros-warn "change stand position to ~a for valve motion. (arm side is ~a.)~%" *valve-stand-coords* *valve-arm*)
       (get-valve-motion :grasp-center? grasp-center? :draw? draw?)

@@ -1,12 +1,17 @@
 - direction: 'horizontal'
-- name: 'overwrite stand-coords'
-  service: 'overwrite_stand_coords'
-  image: "package://drc_task_common/icons/overwrite-stand-coords.png"
+- name: 'force overwrite stand-coords'
+  service: 'force_overwrite_stand_coords'
+  image: "package://drc_task_common/icons/force-overwrite-stand-coords.png"
   image_size: [100, 100]
   column: 0
-- name: 'not overwrite stand-coords'
-  service: 'not_overwrite_stand_coords'
-  image: "package://drc_task_common/icons/not-overwrite-stand-coords.png"
+- name: 'auto overwrite stand-coords'
+  service: 'auto_overwrite_stand_coords'
+  image: "package://drc_task_common/icons/auto-overwrite-stand-coords.png"
+  image_size: [100, 100]
+  column: 0
+- name: 'no overwrite stand-coords'
+  service: 'no_overwrite_stand_coords'
+  image: "package://drc_task_common/icons/no-overwrite-stand-coords.png"
   image_size: [100, 100]
   column: 0
   default_value: True
