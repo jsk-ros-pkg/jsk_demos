@@ -666,6 +666,7 @@
     (send *robot* :angle-vector (elt drill-motion-av-list 4))
     (when real? (model2real :time 3000))
     (set-ref-force-with-condition)
+    (if (equal drill-type :takenoko) (rotate-drill-horizontal))
     (when *use-dual-arm-ik*
       (send *robot* :angle-vector (elt drill-motion-av-list 5))
       (when real? (model2real :time 3000))
@@ -1513,6 +1514,7 @@
     ;(send *ri* :set-ref-force #f(0 0 -20) 2000 *drill-main-arm*)
     (set-ref-force-with-condition)
     (send (send *drill* :get :grasp-coords) :rotate (deg2rad (- (* resolution rotate-length))) :z)
+    (rotate-drill-horizontal)
     (set-drill-default-coords)
     (* resolution rotate-length)
     ))
@@ -1564,8 +1566,7 @@
                 (send *robot* :larm :inverse-kinematics (make-coords :pos (send (send (send *robot* :larm :end-coords) :copy-worldcoords) :pos) :rpy (list 0 0 pi/2))))
           )
     (when ret
-        (send *ri* :angle-vector (send *robot* :angle-vector) 3000)
-      (send *ri* :wait-interpolation)
+      (model2real :time 3000)    
       )
     (send *robot* :angle-vector original-angle-vector)
     (send *robot* :fix-leg-to-coords original-foot-coords)
