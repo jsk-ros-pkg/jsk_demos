@@ -274,6 +274,10 @@ class VehicleUIWidget(QWidget):
             "/lfsensor", geometry_msgs.msg.WrenchStamped, self.lfsensorCallback)
         self.rleg_force_sub = rospy.Subscriber(
             "/rfsensor", geometry_msgs.msg.WrenchStamped, self.rfsensorCallback)
+        self.handle_mode_sub = rospy.Subscriber(
+            "/drive/controller/handle_mode", std_msgs.msg.String, self.handleModeCallback)
+        self.accel_mode_sub = rospy.Subscriber(
+            "/drive/controller/accel_mode", std_msgs.msg.String, self.accelModeCallback)
     def lfsensorCallback(self, msg):
         self.left_force_label.setText(str(msg.wrench.force.z))
     def rfsensorCallback(self, msg):
@@ -284,6 +288,22 @@ class VehicleUIWidget(QWidget):
         self.step_min_edit.setText(str(msg.data))
     def maxStepGageValueCallback(self, msg):
         self.step_max_edit.setText(str(msg.data))
+    def handleModeCallback(self, msg):
+        for i in range(self.handle_mode_list.count()):
+            item = self.handle_mode_list.item(i)
+            item.setSelected(False)
+            if item.text() == msg.data.capitalize():
+                item.setBackground(Qt.green)
+            else:
+                item.setBackground(Qt.white)
+    def accelModeCallback(self, msg):
+        for i in range(self.accel_mode_list.count()):
+            item = self.accel_mode_list.item(i)
+            item.setSelected(False)
+            if item.text() == msg.data.capitalize():
+                item.setBackground(QtCore.Qt.green)
+            else:
+                item.setBackground(QtCore.Qt.white)
     # Event callback
     def minUpButtonCallback(self, event):
         current_value = float(self.step_min_edit.text())
