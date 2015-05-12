@@ -186,6 +186,22 @@
                          :handle-l/r :right))
   )
 
+(defun make-drc-lasvegas-door ()
+  "drc door in lasvegas indoor environment"
+  (setq *door* (instance param-door :init 800 60 110 20
+                         (float-vector 0 750 860)
+                         (float-vector -50 710 860)
+                         :handle-l/r :left))
+  )
+
+(defun make-drc-lasvegas-door-mirror ()
+  "mirror of drc door in lasvegas indoor environment"
+  (setq *door* (instance param-door :init 800 60 110 20
+                         (float-vector 0 -750 860)
+                         (float-vector -50 -710 860)
+                         :handle-l/r :right))
+  )
+
 (defun exec-robot-state-list
   (rs-list &key (real nil))
   "Execute robot state list.
