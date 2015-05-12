@@ -212,7 +212,8 @@
                 :collision-avoidance-link-pair
                 (list (list (elt (send *robot* *door-arm* :links) 2) (send *robot* :link "CHEST_LINK2")))
                 ))
-    (when (and ret (send *robot* :self-collision-check)) (setq ret nil))
+    (when (and ret (remove-if  #'(lambda (l) (or (and (eq (car l) (send *robot* :link "CHEST_LINK2")) (eq (cdr l) (send *robot* :link "HEAD_LINK1"))) (and (eq (cdr l) (send *robot* :link "CHEST_LINK2")) (eq (car l) (send *robot* :link "HEAD_LINK1"))))) (send *robot* :self-collision-check)))
+      (setq ret nil))
     ret)
   )
 
@@ -501,7 +502,7 @@
           ((= i 9)
            (hand-start-grasp :real? real? :type :door-grasp-preshape))
           )
-    (send *ri* :state)
+    ;; (send *ri* :state)
     ;; (warning-message 1 "(send *robot* :angle-vector ~a) ;; reference-vector ~a~%" (send *ri* :reference-vector) i)
     ;; (warning-message 1 "(send *robot* :angle-vector ~a) ;; potentio-vector ~a~%" (send *ri* :potentio-vector) i)
     (send *robot* :angle-vector (elt *door-motion* i))
