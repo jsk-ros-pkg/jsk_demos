@@ -447,11 +447,11 @@
 
 ;; genetate drill motion (with current drill coords)
 (defun generate-drill-grasp-motion
-  (&key (draw? t) (rotation-axis (if (eq *default-drill-type* :takenoko) (list :z t t) (list t t t))) (fin? t))
+  (&key (draw? t) (rotation-axis (if (eq *default-drill-type* :takenoko) (list t t t) (list t t t))) (fin? t))
   (let* ((reach-dist 160)
          ;(x-factor 0.0)
 	 (grasp-up-dist 120)
-	 (air-grasp-up-dist 30)
+	 (air-grasp-up-dist 60)
          (down-dist 25)
          (push-dist 20)
          (ik-results nil)
@@ -679,35 +679,6 @@
       (send *ri* :set-ref-force #f(0 0 -10) 2000 *drill-main-arm*)
       (send *ri* :set-ref-force #f(0 0 -10) 2000 (get-opposite-arm *drill-main-arm*))
       ;;todo? change drill manip coords with some recog methods
-      )
-    (when rotate-drill?
-      (let* ((original-foot-midcoords (send (send *robot* :foot-midcoords) :copy-worldcoords))
-	     (original-drill-coords (send *drill* :copy-worldcoords))
-	     (grasp-up-dist 120)
-	     (turn-deg 10) ;;todo :z -> t angle
-	     (draw? t)
-	     )
-	(when draw? (objects (list *drill* *robot*)))
-	;(generate-drill-grasp-motion)
-	(send *drill* :rotate (deg2rad turn-deg) :z)
-	(when (null (fullbody-inverse-kinematics-for-drill-grasp-single :rotation-axis (list t t t)))
-	  (progn (send *drill* :rotate (deg2rad (- turn-deg)) :z)
-		 (format t "fullbody-ik cannnot solve")
-		 ))
-	(when draw? (send *irtviewer* :draw-objects :flush t))
-	(when real? (model2real :time 10000)) ;;temp
-	
-	(send *robot* :fix-leg-to-coords original-foot-midcoords)
-	(send *drill* :translate (float-vector 0 0 (- grasp-up-dist)) :world)
-	(fullbody-inverse-kinematics-for-drill-grasp-single :rotation-axis (list t t t))
-	(when draw? (send *irtviewer* :draw-objects :flush t))
-	(when real? (model2real :time 10000)) ;;temp
-	(send *robot* :fix-leg-to-coords original-foot-midcoords)
-	(send *robot* :angle-vector (get-reach-drill-pre-pose))
-	(when draw? (send *irtviewer* :draw-objects :flush t))
-	(when real? (model2real :time 10000)) ;;temp
-	(send *robot* :fix-leg-to-coords original-foot-midcoords)
-	)
       )
     ;; (when (equal drill-type :takenoko)
     ;;   (send *robot* :angle-vector (get-reach-drill-pre-pose))
@@ -1582,7 +1553,7 @@
 ;; drill util ;;;;
 
 (defun rotate-drill-horizontal ()
-  (let (
+  (let* (
         (original-foot-coords (send *robot* :foot-midcoords))
         (original-angle-vector (send *robot* :angle-vector))
         )
@@ -1719,7 +1690,7 @@
 ;; TODO pre-push-pose
 (defun test-drill-grasp-motion ()
   ;(get-drill-grasp-motion-full (make-coords :pos (float-vector 700 -150 800) :rpy (list 0 0 0)) :draw? t)
-  (setq *answer-for-grasp-test* (get-drill-grasp-motion-full (make-coords :pos (float-vector 1000 -150 50) :rpy (list (deg2rad 0) 0 0)) :draw? t :drill-type :takenoko :use-ri? nil))
+  (setq *answer-for-grasp-test* (get-drill-grasp-motion-full (make-coords :pos (float-vector 1000 -150 50) :rpy (list (deg2rad 0) 0 0)) :draw? t :drill-type :takenoko :rotation-axis (list :z t t)))
   (if (equal *robot-name* "HRPJSKNT")
       (send *robot* :hand :arms :hook-pose))
   ;(play-motion-on-eus-viewer *drill-motion*)
@@ -1754,7 +1725,7 @@
 
 (defun test-drill-button-motion ()
   (set-drill-button-environment-full nil)
-  (setq *answer-for-grasp-test* (get-drill-button-motion-full nil :draw? t :use-ri? nil))
+  (setq *answer-for-grasp-test* (get-drill-button-motion-full nil :draw? t :use-ri? t))
   )
 (defun test-send-drill-button-motion ()
   (send-drill-button-motion nil :real? t)
