@@ -43,6 +43,7 @@
                 drill-wall-target-coords ;; list of coords
                 drill-button-params ;; (list coords)
 		drill-rotate-params
+		drill-grasp-relative-coords
                 foreground-bacground-sync-obj
                 arm-mode ;; one of (:rarm-only :rarm-preferred :larm-preferred :larm-only)
                 valve-grasp-mode ;; one of (:edge-grasp-only :edge-grasp-preferred :center-grasp-preferred :center-grasp-only)
@@ -1098,11 +1099,12 @@
       (send self :show-text "Finished drill-grasp motion" :success)
       (send smachine :go-to :initial)
       (let* ((params (send msg :params))
-             (coords (float-vector-to-coords params)))
+             (coords-set (float-vector-to-coords-set params)))
         (send self :show-text 
               (format nil "Recognize drill. pos:~A" (send coords :worldpos)) :recognize)
         ;; store result
-	(set-primitive-marker-pose coords "BODY")
+	(set-primitive-marker-pose (elt coords-set 0) "BODY")
+	(setq drill-grasp-relative-coords (elt coords-set 1))
 	))
     )
   (:drill-put-exec-finished-callback (msg)
@@ -1122,11 +1124,14 @@
       (send self :show-text "Finished drill-rotate motion" :success)
       (send smachine :go-to :initial)
       (let* ((params (send msg :params))
-             (coords (float-vector-to-coords params)))
+             (coords-set (float-vector-to-coords-set params)))
         (send self :show-text 
               (format nil "Recognize drill. pos:~A" (send coords :worldpos)) :recognize)
         ;; store result
-	(set-primitive-marker-pose coords "BODY" :name "drill"))))
+	(set-primitive-marker-pose (elt coords-set 0) "BODY" :name "drill"))
+      (setq drill-grasp-relative-coords (elt coords-set 1))
+      )
+    )
   (:go-pos-finished-callback (msg)
     (when (eq (send smachine :state) :executing-go-pos)
       (send self :show-text "Finished go-pos motion" :success)
@@ -1281,6 +1286,13 @@
             (length (send msg :float_params))))
      (send self :send-to-fc msg))
    (send req :response)
+   )
+  (:set-drill-coords
+   (req)
+   (if (and drill-grasp-relative-coords (boundp '*drill-main-arm*))
+       (if (equal *drill-main-arm* :rarm) (set-primitive-marker-pose drill-grasp-relative-coords "rarm_end_coords" :name "drill") (set-primitive-marker-pose drill-grasp-relative-coords "larm_end_coords" :name "drill")
+       )
+     )
    )
   (:cancel-motion-now
     (req)
@@ -1631,6 +1643,7 @@
 (ros::advertise-service "door_name_drc_sagami" std_srvs::Empty #'send *app* :door-name-drc-sagami)
 (ros::advertise-service "door_name_drc_sagami_mirror" std_srvs::Empty #'send *app* :door-name-drc-sagami-mirror)
 (ros::advertise-service "reach_until_touch_command_from_ocs" drc_task_common::ReachUntilTouchCommand #'send *app* :reach-until-touch-from-ocs)
+(ros::advertise-service "set_drill_coords" std_srvs::Empty #'send *app* :set-drill-coords)
 
 ;; Drive joystick controller topics
 (ros::subscribe "/ocs/drive/operation/handle_cmd" std_msgs::Float64 #'send *app* :drive-handle-angle-callback)

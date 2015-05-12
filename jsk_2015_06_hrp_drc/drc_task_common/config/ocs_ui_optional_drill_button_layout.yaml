@@ -11,3 +11,6 @@
 - name: 'erase all marker'
   service: '/erase_all_marker'
   column: 1
+- name: 'set drill coords'
+  service: '/set_drill_coords'
+  column: 1
