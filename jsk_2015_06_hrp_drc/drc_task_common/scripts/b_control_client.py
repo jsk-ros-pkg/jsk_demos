@@ -73,6 +73,10 @@ def b_control_client_init():
     global tf_listener, get_type_srv, set_pose_srv, set_dim_srv, midi_feedback_pub, auto_set_mode, send_icp_srv
     rospy.Service('enable_auto_set_mode', srv.Empty, enable_auto_set_mode)
     rospy.Service('disable_auto_set_mode', srv.Empty, disable_auto_set_mode)
+    rospy.Service('/insert_drill_marker', srv.Empty, insert_drill_marker_cb)
+    rospy.Service('/insert_plane_marker', srv.Empty, insert_plane_marker_cb)
+    rospy.Service('/insert_wall_marker', srv.Empty, insert_wall_marker_cb)
+    rospy.Service('/erase_all_marker', srv,Empty, erase_all_marker_cb)
     auto_set_mode = True
     ## box_sub = message_filters.Subscriber('bounding_box_marker/selected_box', BoundingBox)
     ## points_sub = message_filters.Subscriber('/selected_pointcloud', PointCloud2)
@@ -385,6 +389,20 @@ def disable_auto_set_mode(req):
     auto_set_mode = False
     return srv.EmptyResponse()
 
+def insert_drill_marker_cb(req):
+    insert_marker(shape_type=TransformableMarkerOperate.MESH_RESOURCE, name='drill', description='', mesh_resource="package://drc_task_common/models/takenoko_drill.dae", mesh_use_embedded_materials=True)
+    return srv.EmptyResponse()
+
+def insert_plane_marker_cb(req):
+    insert_marker(shape_type=TransformableMarkerOperate.CYLINDER, name='cylinder1', description='', mesh_resource="", mesh_use_embedded_materials=True)
+    return srv.EmptyResponse()
+
+def insert_wall_marker_cb(req):
+    insert_marker(shape_type=TransformableMarkerOperate.CYLINDER, name='drill_wall', description='', mesh_resource="", mesh_use_embedded_materials=True)
+    return srv.EmptyResponse()
+def erase_all_marker_cb(req):
+    erase_all_marker()
+    return srv.EmptyResponse()
 def insert_marker(shape_type=TransformableMarkerOperate.BOX, name='default_name', description='default_description', mesh_resource='', mesh_use_embedded_materials=False):
     try:
         req_marker_operate_srv(TransformableMarkerOperate(type=shape_type, action=TransformableMarkerOperate.INSERT, frame_id=default_frame_id, name=name, description=description, mesh_resource=mesh_resource, mesh_use_embedded_materials=mesh_use_embedded_materials))
