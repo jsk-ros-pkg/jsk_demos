@@ -46,7 +46,8 @@
                 foreground-bacground-sync-obj
                 arm-mode ;; one of (:rarm-only :rarm-preferred :larm-preferred :larm-only)
                 valve-grasp-mode ;; one of (:edge-grasp-only :edge-grasp-preferred :center-grasp-preferred :center-grasp-only)
-                ;; For driving task
+                overwrite-stand-coords? ;; one of (:force :auto nil)
+                ;; For driving taskot
                 latest-handle-angle
                 latest-accell-angle
                 show-text-buffer
@@ -1373,16 +1374,22 @@
 ;; optional button
 (defmethod ocs-executive-app
   ;; stand-coords overwrite
-  (:overwrite-stand-coords-callback
+  (:force-overwrite-stand-coords-callback
    (req)
-   (setq overwrite-stand-coords? t)
-   (send self :show-text "enable stand-coords overwrite" :success)
+   (setq overwrite-stand-coords? :force)
+   (send self :show-text "force overwrite stand-coords overwrite" :success)
    (send req :response)
    )
-  (:not-overwrite-stand-coords-callback
+  (:auto-overwrite-stand-coords-callback
+   (req)
+   (setq overwrite-stand-coords? :auto)
+   (send self :show-text "auto overwrite stand-coords overwrite" :success)
+   (send req :response)
+   )
+  (:no-overwrite-stand-coords-callback
    (req)
    (setq overwrite-stand-coords? nil)
-   (send self :show-text "disable stand-coords overwrite" :success)
+   (send self :show-text "no overwrite  stand-coords overwrite" :success)
    (send req :response)
    )
   ;; head overwrite
@@ -1589,8 +1596,9 @@
 (ros::advertise-service "valve_edge_grasp_preferred" std_srvs::Empty #'send *app* :valve-edge-grasp-preferred-callback)
 (ros::advertise-service "valve_center_grasp_preferred" std_srvs::Empty #'send *app* :valve-center-grasp-preferred-callback)
 (ros::advertise-service "valve_center_grasp_only" std_srvs::Empty #'send *app* :valve-center-grasp-only-callback)
-(ros::advertise-service "overwrite_stand_coords" std_srvs::Empty #'send *app* :overwrite-stand-coords-callback)
-(ros::advertise-service "not_overwrite_stand_coords" std_srvs::Empty #'send *app* :not-overwrite-stand-coords-callback)
+(ros::advertise-service "force_overwrite_stand_coords" std_srvs::Empty #'send *app* :force-overwrite-stand-coords-callback)
+(ros::advertise-service "auto_overwrite_stand_coords" std_srvs::Empty #'send *app* :auto-overwrite-stand-coords-callback)
+(ros::advertise-service "no_overwrite_stand_coords" std_srvs::Empty #'send *app* :no-overwrite-stand-coords-callback)
 (ros::advertise-service "door_direction_push" std_srvs::Empty #'send *app* :door-direction-push-callback)
 (ros::advertise-service "door_direction_pull" std_srvs::Empty #'send *app* :door-direction-pull-callback)
 (ros::advertise-service "door_name_drc_box2" std_srvs::Empty #'send *app* :door-name-drc-box2)
