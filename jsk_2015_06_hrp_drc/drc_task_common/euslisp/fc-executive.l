@@ -422,11 +422,13 @@
         (setq *cancel-motion-flag* nil)
         (catch 'exit
         ;; send motion to real robot
-        (let* (;(stand-coords (float-vector-to-coords (send msg :stand_coords)))
-               (arm-side (send msg :arm_side))
+        (let* ((arm-side (send msg :arm_side))
                (arm (cond ((equal arm-side drc_com_common::OCS2FCSmall::*LARM*) :larm) ((equal arm-side drc_com_common::OCS2FCSmall::*RARM*) :rarm) (t nil))))
 	       (if arm
-		   (send-drill-grasp-motion coords :arm arm :stand-coords stand-coords)
+                   (progn
+                     (setq *drill-main-arm* arm)
+                     (send-drill-grasp-motion coords :stand-coords stand-coords)
+                     )
                  (ros::ros-info "arm side empty")
 		 )
 	       )

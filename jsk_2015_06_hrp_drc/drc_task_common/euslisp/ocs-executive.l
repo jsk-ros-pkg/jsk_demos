@@ -935,7 +935,11 @@
         (move-robot-model-to-current-pos)
 	(set-focus-marker-name "drill")
         ;; publish motion to robot model on rviz
-	(publish-drill-grasp-motion :coords (elt drill-grasp-params 0) :update? t :arm (send self :get-arm-side) :stand-coords (make-coords) :overwrite-stand-coords? t) ;todo drill-type
+        (setq *drill-main-arm* (send self :get-arm-side))
+	(publish-drill-grasp-motion :coords (elt drill-grasp-params 0) :update? t :stand-coords (make-coords) :overwrite-stand-coords? t)
+
+
+ ;todo drill-type
         (send smachine :go-to :selecting-exec-for-drill-grasp))
       ))
   (:drill-put-recognition-finished-callback (msg)
@@ -1007,7 +1011,7 @@
         (insert-primitive-marker :shape-type jsk_rviz_plugins::TransformableMarkerOperate::*MESH_RESOURCE* :name "drill" :description "" :resource "package://drc_task_common/models/takenoko_drill.dae" :use-material t)
         (move-robot-model-to-current-pos)
         ;; publish motion to robot model on rviz
-	(publish-drill-rotate-motion :drill-coords (elt drill-button-params 0) :plane-coords (elt drill-rotate-params 1) :update? t) 
+	(publish-drill-rotate-motion :drill-coords (elt drill-rotate-params 0) :plane-coords (elt drill-rotate-params 1) :update? t) 
         (send smachine :go-to :selecting-exec-for-drill-rotate))))
   
   
@@ -1086,7 +1090,7 @@
         (send self :show-text 
               (format nil "Recognize drill. pos:~A" (send coords :worldpos)) :recognize)
         ;; store result
-	(set-primitive-marker-pose coords "BODY"))))
+	(set-primitive-marker-pose coords "BODY" :name "drill"))))
   (:go-pos-finished-callback (msg)
     (when (eq (send smachine :state) :executing-go-pos)
       (send self :show-text "Finished go-pos motion" :success)
