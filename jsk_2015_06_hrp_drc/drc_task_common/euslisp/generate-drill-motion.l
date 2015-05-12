@@ -1541,8 +1541,11 @@
 
 (defun publish-drill-rotate-motion
   (&key drill-coords plane-coords (step-time 400) (update? t))
-  (when update?
-    (get-drill-button-motion-full drill-coords plane-coords :use-ri? nil))
+  (when (and update?
+             (not (get-drill-rotate-motion-full drill-coords plane-coords :use-ri? nil)))
+    (return-from publish-drill-rotate-motion nil)
+    )
+
   (ros::ros-info "drill-ik-results: ~a~%" *drill-ik-results*)
   (move-robot-model (make-coords) "ground")
   (publish-motion-joint-states (append *drill-motion-in* *drill-motion-up*) :step-time step-time)
@@ -1573,7 +1576,7 @@
 
 (defun get-reach-drill-pre-pose ()
   (let ((angle-ret
-  (cond ((equal *robot-name* "HRP2JSKNT")
+  (cond ((or (equal *robot-name* "HRP2JSKNT") (equal *robot-name* "HRP2JSKNTS"))
 	 (if *drill-reverse-hand*
 	     #f(0.0 0.0 -26.0 50.0 -24.0 0.0 0.0 0.0 0.0 -26.0 50.0 -24.0 0.0 0.0 0.0 0.0 0.0 40.0 -29.0596 -86.9801 78.8826 -136.118 101.324 -9.8847 55.9352 60.0 50.0 30.0 10.0 -120.0 25.0 5.0 -20.0 -60.0)
 	     (send *robot* :reset-manip-pose)
@@ -1589,7 +1592,7 @@
 (defun get-pierce-drill-pre-pose ()
   ;; (float-vector 0.0 0.0 -26.0 50.0 -24.0 0.0 0.0 0.0 0.0 -26.0 50.0 -24.0 0.0 0.0 0.0 0.0 0.0 40.0 1.19212 -20.9065 -5.36626 -98.3812 50.0 6.28459 -83.1406 60.0 -17.0 30.0 10.0 -120.0 25.0 5.0 -20.0 -60.0)
   (let ((angle-ret
-  (cond ((equal *robot-name* "HRP2JSKNT") 
+  (cond ((or (equal *robot-name* "HRP2JSKNT") (equal *robot-name* "HRP2JSKNTS")) 
 	(if *drill-reverse-hand* #f(0.0 0.0 -26.0 50.0 -24.0 0.0 0.0 0.0 0.0 -26.0 50.0 -24.0 0.0 0.0 0.0 0.0 0.0 40.0 -15.8902 -24.0028 13.0297 -91.879 5.61774 -4.8117 -73.0948 60.0 50.0 30.0 10.0 -120.0 25.0 5.0 -20.0 -60.0)
       (send *robot* :reset-manip-pose)
       ))

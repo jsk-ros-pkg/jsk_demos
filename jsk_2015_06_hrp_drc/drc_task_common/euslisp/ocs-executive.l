@@ -747,7 +747,7 @@
     ;; send drill-rotate params to fc
     (let ((msg (instance drc_com_common::OCS2FCSmall :init)))
       (send msg :type drc_com_common::OCS2FCSmall::*DRILL_ROTATE_EXEC*)
-      (send msg :float_params (coords-set-to-float-vector drill-button-params (length (send msg :float_params))))
+      (send msg :float_params (coords-set-to-float-vector drill-rotate-params (length (send msg :float_params))))
       (send self :send-to-fc msg)
       (send smachine :go-to :executing-drill-rotate)))
 
@@ -1299,9 +1299,9 @@
 	  )
 	)
       (send smachine :go-to! :selecting-exec-for-drill-button))
-     )
      ((eq (send smachine :state) :selecting-region-for-drill-rotate)
       (send smachine :go-to! :selecting-exec-for-drill-rotate))
+     )
     (send self :show-text "skip recog. set and move marker manually.")
     (send req :response)
     )
@@ -1557,7 +1557,7 @@
 (ros::advertise-service "drill_put" std_srvs::Empty #'send *app* :drill-put-button-callback)
 (ros::advertise-service "drill_wall" std_srvs::Empty #'send *app* :drill-wall-button-callback)
 (ros::advertise-service "drill_button" std_srvs::Empty #'send *app* :drill-button-button-callback)
-(ros::advertise-service "drill_rotate" std_srvs::Empty #'send *app* :drill-rotate-button--callback)
+(ros::advertise-service "drill_rotate" std_srvs::Empty #'send *app* :drill-rotate-button-callback)
 (ros::advertise-service "go_pos" std_srvs::Empty #'send *app* :go-pos-button-callback)
 (ros::advertise-service "look_at" std_srvs::Empty #'send *app* :look-at-button-callback)
 (ros::advertise-service "look_around" std_srvs::Empty #'send *app* :look-around-button-callback)

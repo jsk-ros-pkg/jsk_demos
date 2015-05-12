@@ -495,12 +495,13 @@
     )
   (:drill-rotate-exec-command-callback (msg)
     (when (send smachine :state? :initial)
-      (let* (coords-set (float-vector-to-coords-set (send msg :float_params)))
+      (let* ((coords-set (float-vector-to-coords-set (send msg :float_params))))
+        (ros::ros-info (format nil "coords set: ~A" coords-set))
         (send smachine :go-to :executing-drill-button)
         (setq *cancel-motion-flag* nil)
         (catch 'exit
         ;; send motion to real robot
-        (send-drill-rotate-motion (elt coords-set 0) (elt coords-set 0))
+        (send-drill-rotate-motion (elt coords-set 0) (elt coords-set 1))
         ;; send finish signal to ocs
         (let ((msg (instance drc_com_common::FC2OCSSmall :init)))
 	  (send msg :params (coords-to-float-vector (send (send *drill* :copy-worldcoords) :transformation (send (send *robot* :body_lk) :copy-worldcoords)) (length (send msg :params))))
