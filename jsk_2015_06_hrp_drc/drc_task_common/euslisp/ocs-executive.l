@@ -47,6 +47,8 @@
                 arm-mode ;; one of (:rarm-only :rarm-preferred :larm-preferred :larm-only)
                 valve-grasp-mode ;; one of (:edge-grasp-only :edge-grasp-preferred :center-grasp-preferred :center-grasp-only)
                 overwrite-stand-coords? ;; one of (:force :auto nil)
+                door-name
+                force-overwrite-door-arm ;; one of (:force :auto)
                 ;; For driving taskot
                 latest-handle-angle
                 latest-accell-angle
@@ -124,6 +126,7 @@
     (setq valve-grasp-mode :edge-grasp-preferred)
     (setq door-push/pull :push)
     (setq door-name :drc-lasvegas)
+    (setq force-overwrite-door-arm :force)
     (send self :show-text "initialized" :success)
     self)
   (:report-callback (msg)
@@ -841,7 +844,7 @@
          ;; publish motion to robot model on rviz
          (publish-door-motion
           :door-name door-name :door-coords (elt door-params 0)
-          :arm (send self :get-arm-side) :overwrite-arm-side? (send self :is-arm-overwrite)
+          :arm (send self :get-arm-side) :overwrite-arm-side? (send self :is-door-arm-overwrite)
           :stand-coords (make-coords) :overwrite-stand-coords? t
           :push/pull door-push/pull
           :update? t)
@@ -1012,8 +1015,6 @@
         ;; publish motion to robot model on rviz
         (publish-drill-rotate-motion :drill-coords (elt drill-button-params 0) :plane-coords (elt drill-rotate-params 1) :update? t) 
         (send smachine :go-to :selecting-exec-for-drill-rotate))))
-  
-  
   (:go-pos-recognition-finished-callback (msg)
     (when (eq (send smachine :state) :recognizing-go-pos-goal)
       (let ((params (send msg :params)))
@@ -1185,7 +1186,7 @@
            ;; publish door motion to robot model on rviz
            (publish-door-motion
             :door-name door-name :door-coords (elt door-params 0)
-            :arm (send self :get-arm-side) :overwrite-arm-side? (send self :is-arm-overwrite)
+            :arm (send self :get-arm-side) :overwrite-arm-side? (send self :is-door-arm-overwrite)
             :stand-coords (get-robot-model-current-pos) :overwrite-stand-coords? overwrite-stand-coords?
             :push/pull door-push/pull
             :update? t)
@@ -1364,6 +1365,15 @@
   (:is-arm-overwrite
    ()
    (or (equal arm-mode :larm-preferred) (equal arm-mode :rarm-preferred)))
+  (:is-door-arm-overwrite
+   ()
+   (cond ((equal force-overwrite-door-arm :force)
+          :force)
+         ((or (equal arm-mode :larm-preferred) (equal arm-mode :rarm-preferred))
+          t)
+         (t
+          nil))
+   )
   (:get-arm-side
    ()
    (cond ((or (equal arm-mode :larm-preferred) (equal arm-mode :larm-only)) :larm)
@@ -1453,46 +1463,59 @@
    (send req :response)
    )
   ;; door name
-  (:door-name-drc-box2
+  (:door-name-drc-box2-callback
    (req)
    (setq door-name :drc-box2)
    (send self :show-text "door name drc-box2" :success)
    (send req :response)
    )
-  (:door-name-drc-test
+  (:door-name-drc-test-callback
    (req)
    (setq door-name :drc-test)
    (send self :show-text "door name drc-test" :success)
    (send req :response)
    )
-  (:door-name-drc-test-mirror
+  (:door-name-drc-test-mirror-callback
    (req)
    (setq door-name :drc-test-mirror)
    (send self :show-text "door name drc-test-mirror" :success)
    (send req :response)
    )
-  (:door-name-drc-sagami
+  (:door-name-drc-sagami-callback
    (req)
    (setq door-name :drc-sagami)
    (send self :show-text "door name drc-sagami" :success)
    (send req :response)
    )
-  (:door-name-drc-sagami-mirror
+  (:door-name-drc-sagami-mirror-callback
    (req)
    (setq door-name :drc-sagami-mirror)
    (send self :show-text "door name drc-sagami-mirror" :success)
    (send req :response)
    )
-  (:door-name-drc-lasvegas
+  (:door-name-drc-lasvegas-callback
    (req)
    (setq door-name :drc-lasvegas)
    (send self :show-text "door name drc-lasvegas" :success)
    (send req :response)
    )
-  (:door-name-drc-lasvegas-mirror
+  (:door-name-drc-lasvegas-mirror-callback
    (req)
    (setq door-name :drc-lasvegas-mirror)
    (send self :show-text "door name drc-lasvegas-mirror" :success)
+   (send req :response)
+   )
+  ;; door arm overwrite
+  (:force-overwrite-door-arm-callback
+   (req)
+   (setq force-overwrite-door-arm :force)
+   (send self :show-text "force overwrite door arm" :success)
+   (send req :response)
+   )
+  (:auto-overwrite-door-arm-callback
+   (req)
+   (setq force-overwrite-door-arm :auto)
+   (send self :show-text "auto overwrite door arm" :success)
    (send req :response)
    )
   )
@@ -1535,27 +1558,27 @@
   )
 
 (defmethod ocs-executive-app
-  (:set-door-detect-auto
+  (:set-door-detect-auto-callback
    (req)
    (send req :response)
    )
-  (:set-door-detect-semi-auto
+  (:set-door-detect-semi-auto-callback
    (req)
    (send req :response)
    )
-  (:set-valve-detect-auto
+  (:set-valve-detect-auto-callback
    (req)
    (send req :response)
    )
-  (:set-valve-detect-semi-auto
+  (:set-valve-detect-semi-auto-callback
    (req)
    (send req :response)
    )
-  (:set-drill-detect-auto
+  (:set-drill-detect-auto-callback
    (req)
    (send req :response)
    )
-  (:set-drill-detect-semi-auto
+  (:set-drill-detect-semi-auto-callback
    (req)
    (send req :response)
    )
@@ -1627,20 +1650,22 @@
 (ros::advertise-service "no_overwrite_stand_coords" std_srvs::Empty #'send *app* :no-overwrite-stand-coords-callback)
 (ros::advertise-service "door_direction_push" std_srvs::Empty #'send *app* :door-direction-push-callback)
 (ros::advertise-service "door_direction_pull" std_srvs::Empty #'send *app* :door-direction-pull-callback)
-(ros::advertise-service "door_name_drc_box2" std_srvs::Empty #'send *app* :door-name-drc-box2)
-(ros::advertise-service "door_name_drc_test" std_srvs::Empty #'send *app* :door-name-drc-test)
-(ros::advertise-service "door_name_drc_test_mirror" std_srvs::Empty #'send *app* :door-name-drc-test-mirror)
-(ros::advertise-service "door_name_drc_sagami" std_srvs::Empty #'send *app* :door-name-drc-sagami)
-(ros::advertise-service "door_name_drc_sagami_mirror" std_srvs::Empty #'send *app* :door-name-drc-sagami-mirror)
-(ros::advertise-service "door_name_drc_lasvegas" std_srvs::Empty #'send *app* :door-name-drc-lasvegas)
-(ros::advertise-service "door_name_drc_lasvegas_mirror" std_srvs::Empty #'send *app* :door-name-drc-lasvegas-mirror)
+(ros::advertise-service "door_name_drc_box2" std_srvs::Empty #'send *app* :door-name-drc-box2-callback)
+(ros::advertise-service "door_name_drc_test" std_srvs::Empty #'send *app* :door-name-drc-test-callback)
+(ros::advertise-service "door_name_drc_test_mirror" std_srvs::Empty #'send *app* :door-name-drc-test-mirror-callback)
+(ros::advertise-service "door_name_drc_sagami" std_srvs::Empty #'send *app* :door-name-drc-sagami-callback)
+(ros::advertise-service "door_name_drc_sagami_mirror" std_srvs::Empty #'send *app* :door-name-drc-sagami-mirror-callback)
+(ros::advertise-service "door_name_drc_lasvegas" std_srvs::Empty #'send *app* :door-name-drc-lasvegas-callback)
+(ros::advertise-service "door_name_drc_lasvegas_mirror" std_srvs::Empty #'send *app* :door-name-drc-lasvegas-mirror-callback)
 (ros::advertise-service "reach_until_touch_command_from_ocs" drc_task_common::ReachUntilTouchCommand #'send *app* :reach-until-touch-from-ocs)
-(ros::advertise-service "auto_door_detect" std_srvs::Empty #'send *app* :set-door-detect-auto)
-(ros::advertise-service "semi_auto_door_detect" std_srvs::Empty #'send *app* :set-door-detect-semi-auto)
-(ros::advertise-service "auto_valve_detect" std_srvs::Empty #'send *app* :set-valve-detect-auto)
-(ros::advertise-service "semi_auto_valve_detect" std_srvs::Empty #'send *app* :set-valve-detect-semi-auto)
-(ros::advertise-service "auto_drill_detect" std_srvs::Empty #'send *app* :set-drill-detect-auto)
-(ros::advertise-service "semi_auto_drill_detect" std_srvs::Empty #'send *app* :set-drill-detect-semi-auto)
+(ros::advertise-service "auto_door_detect" std_srvs::Empty #'send *app* :set-door-detect-auto-callback)
+(ros::advertise-service "semi_auto_door_detect" std_srvs::Empty #'send *app* :set-door-detect-semi-auto-callback)
+(ros::advertise-service "auto_valve_detect" std_srvs::Empty #'send *app* :set-valve-detect-auto-callback)
+(ros::advertise-service "semi_auto_valve_detect" std_srvs::Empty #'send *app* :set-valve-detect-semi-auto-callback)
+(ros::advertise-service "auto_drill_detect" std_srvs::Empty #'send *app* :set-drill-detect-auto-callback)
+(ros::advertise-service "semi_auto_drill_detect" std_srvs::Empty #'send *app* :set-drill-detect-semi-auto-callback)
+(ros::advertise-service "force_overwrite_door_arm" std_srvs::Empty #'send *app* :force-overwrite-door-arm-callback)
+(ros::advertise-service "auto_overwrite_door_arm" std_srvs::Empty #'send *app* :auto-overwrite-door-arm-callback)
 
 ;; Drive joystick controller topics
 (ros::subscribe "/ocs/drive/operation/handle_cmd" std_msgs::Float64 #'send *app* :drive-handle-angle-callback)
