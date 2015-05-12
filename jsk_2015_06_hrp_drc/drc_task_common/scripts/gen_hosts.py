@@ -3,7 +3,7 @@
 import sys
 
 def usage():
-    "gen_hosts.py TEAM_NO(13) MY_HOSTNAME(fc20)"
+    print "gen_hosts.py TEAM_NO(13) MY_HOSTNAME(fc20)"
 
 def gen_hosts(team_no, my_hostname):
     hosts_str ="""
