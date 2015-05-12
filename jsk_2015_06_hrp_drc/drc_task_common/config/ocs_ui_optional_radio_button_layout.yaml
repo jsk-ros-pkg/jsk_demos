@@ -53,19 +53,19 @@
   image: "package://drc_task_common/icons/door-pull.png"
   image_size: [100, 100]
   column: 3
-- name: 'drc-box2'
-  service: 'door_name_drc_box2'
+- name: 'drc-lasvegas'
+  service: 'door_name_drc_lasvegas'
   column: 4
   default_value: True
-- name: 'drc-test'
-  service: 'door_name_drc_test'
+- name: 'drc-lasvegas-mirror'
+  service: 'door_name_drc_lasvegas_mirror'
   column: 4
-- name: 'drc-test-mirror'
-  service: 'door_name_drc_test_mirror'
-  column: 4
-- name: 'drc-sagami'
-  service: 'door_name_drc_sagami'
+- name: 'drc-lasvegas'
+  service: 'door_name_drc_lasvegas'
   column: 4
 - name: 'drc-sagami-mirror'
   service: 'door_name_drc_sagami_mirror'
+  column: 4
+- name: 'drc-box2'
+  service: 'door_name_drc_box2'
   column: 4

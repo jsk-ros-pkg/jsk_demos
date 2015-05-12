@@ -122,7 +122,7 @@
     (setq overwrite-stand-coords? nil)
     (setq valve-grasp-mode :edge-grasp-preferred)
     (setq door-push/pull :push)
-    (setq door-name :drc-box2)
+    (setq door-name :drc-lasvegas)
     (send self :show-text "initialized" :success)
     self)
   (:report-callback (msg)
@@ -1475,6 +1475,18 @@
    (send self :show-text "door name drc-sagami-mirror" :success)
    (send req :response)
    )
+  (:door-name-drc-lasvegas
+   (req)
+   (setq door-name :drc-lasvegas)
+   (send self :show-text "door name drc-lasvegas" :success)
+   (send req :response)
+   )
+  (:door-name-drc-lasvegas-mirror
+   (req)
+   (setq door-name :drc-lasvegas-mirror)
+   (send self :show-text "door name drc-lasvegas-mirror" :success)
+   (send req :response)
+   )
   )
 
 (defmethod ocs-executive-app
@@ -1584,6 +1596,8 @@
 (ros::advertise-service "door_name_drc_test_mirror" std_srvs::Empty #'send *app* :door-name-drc-test-mirror)
 (ros::advertise-service "door_name_drc_sagami" std_srvs::Empty #'send *app* :door-name-drc-sagami)
 (ros::advertise-service "door_name_drc_sagami_mirror" std_srvs::Empty #'send *app* :door-name-drc-sagami-mirror)
+(ros::advertise-service "door_name_drc_lasvegas" std_srvs::Empty #'send *app* :door-name-drc-lasvegas)
+(ros::advertise-service "door_name_drc_lasvegas_mirror" std_srvs::Empty #'send *app* :door-name-drc-lasvegas-mirror)
 (ros::advertise-service "reach_until_touch_command_from_ocs" drc_task_common::ReachUntilTouchCommand #'send *app* :reach-until-touch-from-ocs)
 
 ;; Drive joystick controller topics
