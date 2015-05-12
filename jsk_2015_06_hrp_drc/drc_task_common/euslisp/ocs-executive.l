@@ -1080,7 +1080,13 @@
   (:drill-rotate-exec-finished-callback (msg)
     (when (eq (send smachine :state) :executing-drill-rotate)
       (send self :show-text "Finished drill-rotate motion" :success)
-      (send smachine :go-to :initial)))
+      (send smachine :go-to :initial)
+      (let* ((params (send msg :params))
+             (coords (float-vector-to-coords params)))
+        (send self :show-text 
+              (format nil "Recognize drill. pos:~A" (send coords :worldpos)) :recognize)
+        ;; store result
+	(set-primitive-marker-pose coords "BODY"))))
   (:go-pos-finished-callback (msg)
     (when (eq (send smachine :state) :executing-go-pos)
       (send self :show-text "Finished go-pos motion" :success)

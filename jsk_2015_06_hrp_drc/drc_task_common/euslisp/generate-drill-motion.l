@@ -13,26 +13,6 @@
 ;; (setq *drill-button-point* :attachment)
 (setq *default-drill-type* :takenoko)
 
-;; generate robot
-(if (not (boundp '*robot-name*))
-    (setq *robot-name* "HRP2JSKNT")
-  )
-(if (or (equal *robot-name* "HRP2JSKNT") (equal *robot-name* "HRP2JSKNTS"))
-    (progn
-      (setq *use-dual-arm-ik* nil)
-      (setq *use-f-sensor-search* nil)
-      (setq *drill-reverse-hand* t)
-      (setq *drill-button-point* :finger)
-      (setq *default-drill-type* :takenoko))
-  (progn 
-    (setq *use-dual-arm-ik* nil)
-    (setq *use-f-sensor-search* nil)
-    (setq *drill-reverse-hand* t)
-    (setq *drill-button-point* :finger) ;; finger fixed
-    (setq *default-drill-type* :takenoko))
-  )
-
-
 ;; show attachment on HRP2HAND
 (defun set-attachment ()
   (when (or (equal *robot-name* "HRP2JSKNT") (equal *robot-name* "HRP2JSKNTS"))
@@ -192,6 +172,26 @@
         (recognized-coords-symbol :origin-coords))
   ;; (setq *drill-main-arm* arm)
   ;; (setq *drill-support-arm* (get-opposite-arm arm))
+;; generate robot
+(if (not (boundp '*robot-name*))
+    (setq *robot-name* "HRP2JSKNT")
+  )
+(if (or (equal *robot-name* "HRP2JSKNT") (equal *robot-name* "HRP2JSKNTS"))
+    (progn
+      (setq *use-dual-arm-ik* nil)
+      (setq *use-f-sensor-search* nil)
+      (setq *drill-reverse-hand* t)
+      (setq *drill-button-point* :finger)
+      (setq *default-drill-type* :takenoko))
+  (progn 
+    (setq *use-dual-arm-ik* nil)
+    (setq *use-f-sensor-search* nil)
+    (setq *drill-reverse-hand* nil)
+    (setq *drill-button-point* :finger) ;; finger fixed
+    (setq *default-drill-type* :takenoko))
+  )
+
+
   (generate-robot *robot-name* :generate-ri? generate-ri?)
   (setq *drill-ik-results* (list (list nil nil nil))) ;; to prevent unpredictable motion sent, not needed in reality
   ;; place robot to origin:
@@ -315,17 +315,30 @@
 
 ;; drill ik with tc, mt...
 (defun fullbody-inverse-kinematics-for-drill-grasp
-  (tc mt ll &key (draw? nil) (translation-axis (list t t t)) (rotation-axis (list t t t)) stop)
-  (cond ((or (equal *robot-name* "HRP2JSKNT") (equal *robot-name* "HRP2JSKNTS"))
-	 (if stop 
-	     (fullbody-inverse-kinematics-for-drill-grasp-for-hrp2 tc mt ll :draw? draw? :translation-axis translation-axis :rotation-axis rotation-axis :stop stop)
-	   (fullbody-inverse-kinematics-for-drill-grasp-for-hrp2 tc mt ll :draw? draw? :translation-axis translation-axis :rotation-axis rotation-axis)
-	   ))
-	(t
-	 (if stop
-	     (fullbody-inverse-kinematics-for-drill-grasp-for-jaxon tc mt ll :draw? draw? :translation-axis translation-axis :rotation-axis rotation-axis :stop stop)
-	   (fullbody-inverse-kinematics-for-drill-grasp-for-jaxon tc mt ll :draw? draw? :translation-axis translation-axis :rotation-axis rotation-axis))
-	 ))
+  (tc mt ll &key (draw? nil) (translation-axis (list t t t)) (rotation-axis (list t t t)) (move-centroid t) (self-colision-check t) stop)
+  (let
+      ((tmp-angle-vector (send *robot* :angle-vector)) ret)
+    (setq ret
+	  (cond ((or (equal *robot-name* "HRP2JSKNT") (equal *robot-name* "HRP2JSKNTS"))
+		 (if stop 
+		     (fullbody-inverse-kinematics-for-drill-grasp-for-hrp2 tc mt ll :draw? draw? :translation-axis translation-axis :rotation-axis rotation-axis :stop stop)
+		   (fullbody-inverse-kinematics-for-drill-grasp-for-hrp2 tc mt ll :draw? draw? :translation-axis translation-axis :rotation-axis rotation-axis)
+		   ))
+		(t
+		 (if stop
+		     (fullbody-inverse-kinematics-for-drill-grasp-for-jaxon tc mt ll :draw? draw? :translation-axis translation-axis :rotation-axis rotation-axis :stop stop)
+		   (fullbody-inverse-kinematics-for-drill-grasp-for-jaxon tc mt ll :draw? draw? :translation-axis translation-axis :rotation-axis rotation-axis))
+		 ))
+	  )
+    (if (and ret move-centroid)
+	(setq ret (send *robot* :move-centroid-on-foot :both '(:lleg :rleg :larm :rarm)))
+      )
+    (if (and ret self-colision-check)
+	(send *robot* :self-collision-check)
+	)
+    (when (not ret) (send *robot* :angle-vector tmp-angle-vector))
+    ret
+    )
   )
 (defun fullbody-inverse-kinematics-for-drill-grasp-for-hrp2
   (tc mt ll &key (draw? nil) (translation-axis (list t t t)) (rotation-axis (list t t t)) (stop 100))
@@ -447,6 +460,10 @@
          (original-drill-coords (send *drill* :copy-worldcoords))
          (drill-type *default-drill-type*)
          )
+    (when (not *drill-reverse-hand*)
+      (setq down-dist (- down-dist))
+      (setq air-grasp-up-dist (- air-grasp-up-dist))
+      )
     ;; grasp drill
     (send *robot* :angle-vector (get-reach-drill-pre-pose))
     (send *robot* :fix-leg-to-coords original-foot-midcoords)
@@ -649,7 +666,7 @@
     
     (send *robot* :angle-vector (elt drill-motion-av-list 4))
     (when real? (model2real :time 3000))
-    (if (< (elt (send *ri* :state :absolute-force-vector *drill-main-arm*) 2) -10)
+    (if (< (elt (send *ri* :state :absolute-force-vector *drill-main-arm*) 2) -7)
         (progn
           (speak-en "grasp succeeded, add ref force")
           (send *ri* :set-ref-force #f(0 0 -20) 2000 *drill-main-arm*)
@@ -1378,10 +1395,12 @@
          (original-foot-midcoords (send (send *robot* :foot-midcoords) :copy-worldcoords))
 	 (original-angle-vector (send *robot* :angle-vector))
 	 (original-drill-coords (send *drill* :copy-worldcoords))
+	 (grasp-up-dist 100)
 	 )
+    (when *drill-reverse-hand* (setq grasp-up-dist (- grasp-up-dist)))
     (let* (ik-ret-out ik-ret-in ik-ret-up)
       (block reverse
-	(dotimes (index devide-num)
+	(dotimes (index (/ devide-num 4))
 	  (let ((i (* -1 index)))
 	    (send *robot* :angle-vector original-angle-vector)
 	    (send *robot* :fix-leg-to-coords original-foot-midcoords)
@@ -1396,7 +1415,7 @@
 	    (if ik-ret-out
 	      (setq ik-ret-out (send *robot* :look-at-target (send *drill* :worldcoords)))
 	      (return-from reverse nil))
-	    (setq ik-ret-up (fullbody-inverse-kinematics-for-drill-grasp-single :arm-tc (send (send (send *drill* :get :grasp-coords) :copy-worldcoords) :translate (float-vector 0 0 -100)) :rotation-axis (list t t t) :stop 30))
+	    (setq ik-ret-up (fullbody-inverse-kinematics-for-drill-grasp-single :arm-tc (send (send (send *drill* :get :grasp-coords) :copy-worldcoords) :translate (float-vector 0 0 grasp-up-dist)) :rotation-axis (list t t t) :stop 30))
 	    (if ik-ret-up
 		(setq ik-ret-up (send *robot* :look-at-target (send *drill* :worldcoords)))
 	      (return-from reverse nil))
@@ -1408,7 +1427,7 @@
 	  )
 	)
       (block front
-	(dotimes (index devide-num)
+	(dotimes (index (/ devide-num 4))
 	  (let ((i (* +1 index)))
 	    (send *robot* :angle-vector original-angle-vector)
 	    (send *robot* :fix-leg-to-coords original-foot-midcoords)
@@ -1424,7 +1443,7 @@
 	      (return-from front nil))
 	    (send *robot* :angle-vector original-angle-vector)
 	    (send *robot* :fix-leg-to-coords original-foot-midcoords)
-	    (setq ik-ret-up (fullbody-inverse-kinematics-for-drill-grasp-single :arm-tc (send (send (send *drill* :get :grasp-coords) :copy-worldcoords) :translate (float-vector 0 0 -100)) :rotation-axis (list t t t) :stop 30))
+	    (setq ik-ret-up (fullbody-inverse-kinematics-for-drill-grasp-single :arm-tc (send (send (send *drill* :get :grasp-coords) :copy-worldcoords) :translate (float-vector 0 0 grasp-up-dist)) :rotation-axis (list t t t) :stop 30))
 	    (if ik-ret-up
 		(setq ik-ret-up (send *robot* :look-at-target (send *drill* :worldcoords)))
 	      (return-from front nil))
@@ -1515,6 +1534,9 @@
     (send *robot* :angle-vector (elt *drill-motion-up* (- rotate-length 1)))
     (push-back (send *robot* :angle-vector) *send-drill-motion*)
     (when real? (model2real :time 2000))
+    (send (send *drill* :get :grasp-coords) :rotate (deg2rad (- (* resolution rotate-length))) :z)
+    (set-drill-default-coords)
+    (* resolution rotate-length)
     ))
 
 (defun publish-drill-rotate-motion
@@ -1732,7 +1754,7 @@
          (send *robot* :hand arm :angle-vector (float-vector 90.0 90.0 -10.0 0.0 -40.0 -40.0))
          (hand-model2real)
          )
-	(t (send *ri* :stop-grasp :arm arm :wait t))
+	(t (send *ri* :stop-grasp arm :wait t))
         )
   )
 (defun drill-hook2 (&key (arm *drill-main-arm*)) ;; test code
@@ -1740,7 +1762,7 @@
          (send *robot* :hand arm :angle-vector (float-vector 90.0 70.0 -10.0 0.0 -40.0 -40.0))
          (hand-model2real)
          )
-	(t (send *ri* :stop-grasp :arm arm :wait t))
+	(t (send *ri* :stop-grasp arm :wait t))
         )
   )
 (defun drill-hook-after (&key (arm *drill-main-arm*)) ;; test code
@@ -1749,7 +1771,7 @@
 	 (send *robot* :hand arm :angle-vector (float-vector 90.0 90.0 -10.0 0.0 -40.0 -40.0))
 	 (hand-model2real)
 	 )
-	(t (send *ri* :stop-grasp :arm arm :wait t))
+	(t (send *ri* :stop-grasp arm :wait t))
 	)
   )
 (defun drill-grasp (&key (arm *drill-main-arm*)) ;; test code
@@ -1757,7 +1779,7 @@
 	 (send *robot* :hand arm :angle-vector (float-vector 90.0 90.0 -10.0 0.0 -40.0 90.0))
 	 (hand-model2real)
 	 )
-	(t (send *robot* :start-grasp :arm arm :wait t))
+	(t (send *robot* :start-grasp arm :wait t))
 	)
   )
 	
@@ -1766,7 +1788,10 @@
 	 (send *robot* :hand arm :angle-vector (float-vector 90.0 45.0 -10.0 0.0 -40.0 40.0))
 	 (hand-model2real)
 	 )	
-	(t (send *ri* :start-grasp :arm arm :wait t))
+	(t
+	 (send *ri* :move-gripper arm 0.5 :effort 20 :wait t)
+	 ;(send *ri* :start-grasp arm :wait t)
+	   )
 	)
   )
 
@@ -1775,7 +1800,7 @@
 	 (send *robot* :hand arm :angle-vector (float-vector 90.0 0.0 -10.0 0.0 -40.0 -40.0))
 	 (hand-model2real)
 	 )
-	(t (send *ri* :start-grasp :arm arm :wait t))
+	(t (send *ri* :start-grasp arm :wait t))
 	)
   )
 
@@ -1784,7 +1809,7 @@
 	 (send *robot* :hand arm :angle-vector (float-vector 90.0 0.0 0.0 0.0 90.0 90.0))
 	 (hand-model2real)
 	 )
-	(t (send *ri* :start-grasp :arm arm :wait t))
+	(t (send *ri* :start-grasp arm :wait t))
 	)
   )
 (defun drill-full-grasp2 (&key (arm *drill-main-arm*)) ;; grasp without index finger
@@ -1792,7 +1817,7 @@
 	 (send *robot* :hand arm :angle-vector (float-vector 90.0 0.0 -10.0 0.0 -40.0 90.0))
 	 (hand-model2real)
 	 )
-	(t (send *ri* :start-grasp :arm arm :wait t))
+	(t (send *ri* :start-grasp arm :wait t))
 	)
   )
 
