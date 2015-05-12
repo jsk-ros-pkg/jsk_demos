@@ -42,14 +42,14 @@
   (:open-hand
    (&optional (limb (send self :grasp-arm)))
    (when real
-     ;; (send *ri* :stop-grasp limb)
+     (send *ri* :stop-grasp limb)
      ;; (send *ri* :hand-open limb)
      )
    )
   (:close-hand
    (&optional (limb (send self :grasp-arm)))
    (when real
-     ;; (send *ri* :start-grasp limb)
+     (send *ri* :start-grasp limb)
      ;; (send *ri* :hand-close limb)
      )
    )
