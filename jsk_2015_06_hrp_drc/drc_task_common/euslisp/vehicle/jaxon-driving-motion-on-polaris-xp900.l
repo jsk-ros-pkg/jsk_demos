@@ -89,6 +89,10 @@
    (&rest args &key (rotation-axis :x) &allow-other-keys)
    (send-super* :approach-fist :rotation-axis rotation-axis args)
    )
+  (:approach-floor
+   (&rest args &key (start-impedance nil) &allow-other-keys)
+   (send-super* :approach-floor :start-impedance start-impedance args)
+   )
 
   ;; egress
   (:egress-pose
