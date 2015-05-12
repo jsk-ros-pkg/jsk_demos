@@ -140,6 +140,8 @@
    (ros::advertise-service "/drive/controller/egress" std_srvs::Empty #'send self :egress-callback)
    (ros::advertise-service "/drive/controller/set_max_step" drc_task_common::SetValue #'send self :set-max-step-callback)
    (ros::advertise-service "/drive/controller/set_min_step" drc_task_common::SetValue #'send self :set-min-step-callback)
+   (ros::advertise-service "/drive/controller/set_handle_mode" drc_task_common::StringRequest #'send self :set-handle-mode-callback)
+   (ros::advertise-service "/drive/controller/set_accel_mode" drc_task_common::StringRequest #'send self :set-accel-mode-callback)
 
    ;; initialize plist
    (send self :controller-state :handle :initialize)
@@ -218,6 +220,23 @@
      )
    )
 
+  (:set-handle-mode-callback
+   (req)
+   (let ((res (send req :response)))
+     (send self :controller-mode :handle (read-from-string (format nil ":~A" (string-downcase (send req :data)))))
+     (warn "set handle-mode to ~A~%" (send self :controller-mode :handle))
+     res
+     )
+   )
+  (:set-accel-mode-callback
+   (req)
+   (let ((res (send req :response)))
+     (send self :controller-mode :accel (read-from-string (format nil ":~A" (string-downcase (send req :data)))))
+     (warn "set accel-mode to ~A~%" (send self :controller-mode :accel))
+     res
+     )
+   )
+  
   ;; interface command
   (:initialize
    (&key (sync nil))
