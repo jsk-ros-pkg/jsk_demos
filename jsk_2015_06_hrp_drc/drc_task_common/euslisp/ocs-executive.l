@@ -1526,6 +1526,33 @@
       (send self :send-to-fc msg)))
   )
 
+(defmethod ocs-executive-app
+  (:set-door-detect-auto
+   (req)
+   (send req :response)
+   )
+  (:set-door-detect-semi-auto
+   (req)
+   (send req :response)
+   )
+  (:set-valve-detect-auto
+   (req)
+   (send req :response)
+   )
+  (:set-valve-detect-semi-auto
+   (req)
+   (send req :response)
+   )
+  (:set-drill-detect-auto
+   (req)
+   (send req :response)
+   )
+  (:set-drill-detect-semi-auto
+   (req)
+   (send req :response)
+   )
+  )
+
 
 ;; generate *robot*
 (setq *robot-name* (string-upcase (unix::getenv "ROBOT")))
@@ -1599,6 +1626,12 @@
 (ros::advertise-service "door_name_drc_lasvegas" std_srvs::Empty #'send *app* :door-name-drc-lasvegas)
 (ros::advertise-service "door_name_drc_lasvegas_mirror" std_srvs::Empty #'send *app* :door-name-drc-lasvegas-mirror)
 (ros::advertise-service "reach_until_touch_command_from_ocs" drc_task_common::ReachUntilTouchCommand #'send *app* :reach-until-touch-from-ocs)
+(ros::advertise-service "auto_door_detect" std_srvs::Empty #'send *app* :set-door-detect-auto)
+(ros::advertise-service "semi_auto_door_detect" std_srvs::Empty #'send *app* :set-door-detect-semi-auto)
+(ros::advertise-service "auto_valve_detect" std_srvs::Empty #'send *app* :set-valve-detect-auto)
+(ros::advertise-service "semi_auto_valve_detect" std_srvs::Empty #'send *app* :set-valve-detect-semi-auto)
+(ros::advertise-service "auto_drill_detect" std_srvs::Empty #'send *app* :set-drill-detect-auto)
+(ros::advertise-service "semi_auto_drill_detect" std_srvs::Empty #'send *app* :set-drill-detect-semi-auto)
 
 ;; Drive joystick controller topics
 (ros::subscribe "/ocs/drive/operation/handle_cmd" std_msgs::Float64 #'send *app* :drive-handle-angle-callback)
