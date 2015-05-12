@@ -60,8 +60,8 @@
 - name: 'drc-lasvegas-mirror'
   service: 'door_name_drc_lasvegas_mirror'
   column: 4
-- name: 'drc-lasvegas'
-  service: 'door_name_drc_lasvegas'
+- name: 'drc-sagami'
+  service: 'door_name_drc_sagami'
   column: 4
 - name: 'drc-sagami-mirror'
   service: 'door_name_drc_sagami_mirror'

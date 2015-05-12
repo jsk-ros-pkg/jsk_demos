@@ -619,6 +619,8 @@
                    ((equal door-name :drc-test-mirror) drc_com_common::OCS2FCSmall::*DOOR_DRC_TEST_MIRROR*)
                    ((equal door-name :drc-sagami) drc_com_common::OCS2FCSmall::*DOOR_DRC_SAGAMI*)
                    ((equal door-name :drc-sagami-mirror) drc_com_common::OCS2FCSmall::*DOOR_DRC_SAGAMI_MIRROR*)
+                   ((equal door-name :drc-lasvegas) drc_com_common::OCS2FCSmall::*DOOR_DRC_LASVEGAS*)
+                   ((equal door-name :drc-lasvegas-mirror) drc_com_common::OCS2FCSmall::*DOOR_DRC_LASVEGAS_MIRROR*)
                    (t drc_com_common::OCS2FCSmall::*UNDECIDED*)))
             )
         (send msg :float_params
