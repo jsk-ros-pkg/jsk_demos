@@ -69,16 +69,16 @@
   image: "package://drc_task_common/icons/auto-overwrite-door-arm.png"
   image_size: [100, 100]
   column: 4
-- name: 'drc-lasvegas'
-  service: 'door_name_drc_lasvegas'
-  column: 5
-  default_value: True
-- name: 'drc-lasvegas-mirror'
-  service: 'door_name_drc_lasvegas_mirror'
-  column: 5
+# - name: 'drc-lasvegas'
+#   service: 'door_name_drc_lasvegas'
+#   column: 5
+# - name: 'drc-lasvegas-mirror'
+#   service: 'door_name_drc_lasvegas_mirror'
+#   column: 5
 - name: 'drc-sagami'
   service: 'door_name_drc_sagami'
   column: 5
+  default_value: True
 - name: 'drc-sagami-mirror'
   service: 'door_name_drc_sagami_mirror'
   column: 5

@@ -11,7 +11,8 @@
         ((equal door-name :drc-test-mirror)
          (make-drc-test-door-left))
         ((equal door-name :drc-sagami)
-         (make-drc-sagami-door))
+         ;;(make-drc-sagami-door)
+         (make-drc-lasvegas-door))
         ((equal door-name :drc-sagami-mirror)
          (make-drc-sagami-door-mirror))
         ((equal door-name :drc-lasvegas)
@@ -277,11 +278,11 @@
             (list (list (float-vector -100 200 150) 0 0 0)
                   (list (float-vector 0 50 50) 0 0 0)
                   (list (float-vector 0 -25 -50) 0 0 0)
-                  (list (float-vector 0 -25 -50) 0 0 -25) ;; start grasp before this
-                  (list (float-vector 0 -25 -50) 0 0 -50)
-                  (list (float-vector 0 -25 -50) 0 10 -50)
-                  (list (float-vector 0 -25 -50) 0 15 -50)
-                  (list (float-vector 0 -25 -50) 0 15 -25)
+                  (list (float-vector 0 -25 -50) 0 0 -35) ;; start grasp before this
+                  (list (float-vector 0 -25 -50) 0 0 -70)
+                  (list (float-vector 0 -25 -50) 0 10 -70)
+                  (list (float-vector 0 -25 -50) 0 15 -70)
+                  (list (float-vector 0 -25 -50) 0 15 -35)
                   (list (float-vector 0 -25 -50) 0 15 0)
                   (list (float-vector 0 50 50) 0 15 0) ;; stop grasp before this
                   (list (float-vector 0 100 50) 0 15 0)
