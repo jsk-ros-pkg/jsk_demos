@@ -533,7 +533,7 @@
      )
    )
   (:approach-accel-pedal
-   (&rest args &key (limb :rleg) (tm 5000) (debug-view nil) (reach-until-touch nil))
+   (&rest args &key (limb :rleg) (tm 5000) (debug-view nil) (reach-until-touch nil) (reach-until-touch-thre 10))
    (let (approach-result)
      (setq approach-result
            (send self :approach-pedal limb :accel-pedal :tm tm :debug-view debug-view)
@@ -541,8 +541,8 @@
      (when (and real reach-until-touch approach-result (not (send *ri* :simulation-modep)))
        (send *ri* :reach-until-touch limb
              (send (send robot limb :end-coords :copy-worldcoords) :rotate-vector #f(0 0 -1))
-             :rotation-axis :z :thre 10 :time-step 1000 :max-dist 50 :dist-step 5 :debug debug-view
-             :coords-system :world
+             :coords-system :world :thre reach-until-touch-thre :time-step 1000 :max-dist 50 :dist-step 5
+             :rotation-axis :z  :debug debug-view
              ) ;; todo: reach-until-touch uses copy-object
        (send *ri* :state) ;; update 
        (send robot limb :angle-vector (send *ri* :robot limb :angle-vector)) ;; reflect reach-until-touch result
@@ -576,7 +576,7 @@
      )
    )
   (:approach-brake-pedal
-   (&rest args &key (limb :lleg) (tm 5000) (debug-view nil) (reach-until-touch nil))
+   (&rest args &key (limb :lleg) (tm 5000) (debug-view nil) (reach-until-touch nil) (reach-until-touch-thre 10))
    (let (approach-result)
      (setq approach-result
            (send self :approach-pedal limb :brake-pedal :tm tm :debug-view debug-view)
@@ -584,8 +584,8 @@
      (when (and real reach-until-touch approach-result (not (send *ri* :simulation-modep)))
        (send *ri* :reach-until-touch limb
              (send (send robot limb :end-coords :copy-worldcoords) :rotate-vector #f(0 0 -1))
+             :coords-system :world :thre reach-until-touch-thre
              :rotation-axis :z :time-step 1000 :max-dist 50 :dist-step 5 :debug debug-view
-             :coords-system :world
              ) ;; todo: reach-until-touch uses copy-object
        (send *ri* :state) ;; update 
        (send robot limb :angle-vector (send *ri* :robot limb :angle-vector)) ;; reflect reach-until-touch result
@@ -694,7 +694,7 @@
    )
   (:approach-fist
    (&rest args &key (limb :rarm) (target-handle :seat-left) (rotation-axis t) (offset #f(0 0 100))
-          (offset-wrt :world) (debug-view nil) (time 10000) (reach-until-touch nil)
+          (offset-wrt :world) (debug-view nil) (time 10000) (reach-until-touch nil) (reach-until-touch-thre 10)
           (start-impedance nil) (set-ref-force nil))
    (send self :close-hand limb)
    (let (ik-ret)
@@ -711,8 +711,8 @@
        (when (and reach-until-touch (not (send *ri* :simulation-modep)))
          (send *ri* :reach-until-touch limb
                (send (send robot limb :end-coords :copy-worldcoords) :rotate-vector #f(1 0 0))
-               :rotation-axis :z :time-step 1000 :max-dist 50 :dist-step 5 :debug debug-view
-               :coords-system :world
+               :coords-system :world :thre reach-until-touch-thre :max-dist 100 :dist-step 5
+               :rotation-axis :z :time-step 1000 :debug debug-view
                ) ;; todo: reach-until-touch uses copy-object
          (send *ri* :state) ;; update
          (send robot limb :angle-vector (send *ri* :robot limb :angle-vector)) ;; reflect reach-until-touch result
@@ -728,7 +728,7 @@
   (:approach-floor
    (&rest args &key (limb :lleg) (target-handle :floor) (time 10000) (debug-view nil)
           (offset #f(0 0 50)) (offset-wrt :local)
-          (start-impedance t) (stop-ref-force nil) (set-ref-force nil)
+          (start-impedance t) (stop-ref-force nil) (set-ref-force nil) (reach-until-touch-thre 10)
           (reach-until-touch nil) (use-imu nil)
           &allow-other-keys)
    (when (and real stop-ref-force)
@@ -778,8 +778,8 @@
            (when (and reach-until-touch (not (send *ri* :simulation-modep)))
              (send *ri* :reach-until-touch limb
                    (send (send robot limb :end-coords :copy-worldcoords) :rotate-vector #f(0 0 -1))
-                   :rotation-axis :z :time-step 1000 :max-dist 50 :dist-step 5 :debug debug-view
-                   :coords-system :world
+                   :coords-system :world :thre reach-until-touch-thre :max-dist 100 :dist-step 5
+                   :rotation-axis :z :time-step 1000 :debug debug-view
                    ) ;; todo: reach-until-touch uses copy-object
              (send *ri* :state) ;; update 
              (send robot limb :angle-vector (send *ri* :robot limb :angle-vector)) ;; reflect reach-until-touch result
@@ -812,6 +812,12 @@
        (send *viewer* :draw-objects)
        )
      )
+   )
+
+  ;; egress
+  (:go-to-egress
+   (&rest args)
+   (warn ":go-to-egress should be impremented for each robots~%")
    )
 
   ;; utils

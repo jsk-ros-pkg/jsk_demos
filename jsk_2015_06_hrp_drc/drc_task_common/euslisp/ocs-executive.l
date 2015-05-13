@@ -47,7 +47,10 @@
                 foreground-bacground-sync-obj
                 arm-mode ;; one of (:rarm-only :rarm-preferred :larm-preferred :larm-only)
                 valve-grasp-mode ;; one of (:edge-grasp-only :edge-grasp-preferred :center-grasp-preferred :center-grasp-only)
-                ;; For driving task
+                overwrite-stand-coords? ;; one of (:force :auto nil)
+                door-name
+                force-overwrite-door-arm ;; one of (:force :auto)
+                ;; For driving taskot
                 latest-handle-angle
                 latest-accell-angle
                 show-text-buffer
@@ -123,7 +126,9 @@
     (setq overwrite-stand-coords? nil)
     (setq valve-grasp-mode :edge-grasp-preferred)
     (setq door-push/pull :push)
-    (setq door-name :drc-box2)
+    (setq door-name :drc-sagami)
+    ;;(setq door-name :drc-lasvegas)
+    (setq force-overwrite-door-arm :force)
     (send self :show-text "initialized" :success)
     self)
   (:report-callback (msg)
@@ -620,6 +625,8 @@
                    ((equal door-name :drc-test-mirror) drc_com_common::OCS2FCSmall::*DOOR_DRC_TEST_MIRROR*)
                    ((equal door-name :drc-sagami) drc_com_common::OCS2FCSmall::*DOOR_DRC_SAGAMI*)
                    ((equal door-name :drc-sagami-mirror) drc_com_common::OCS2FCSmall::*DOOR_DRC_SAGAMI_MIRROR*)
+                   ;;((equal door-name :drc-lasvegas) drc_com_common::OCS2FCSmall::*DOOR_DRC_LASVEGAS*)
+                   ;;((equal door-name :drc-lasvegas-mirror) drc_com_common::OCS2FCSmall::*DOOR_DRC_LASVEGAS_MIRROR*)
                    (t drc_com_common::OCS2FCSmall::*UNDECIDED*)))
             )
         (send msg :float_params
@@ -875,7 +882,7 @@
          ;; publish motion to robot model on rviz
          (publish-door-motion
           :door-name door-name :door-coords (elt door-params 0)
-          :arm (send self :get-arm-side) :overwrite-arm-side? (send self :is-arm-overwrite)
+          :arm (send self :get-arm-side) :overwrite-arm-side? (send self :is-door-arm-overwrite)
           :stand-coords (make-coords) :overwrite-stand-coords? t
           :push/pull door-push/pull
           :update? t)
@@ -965,16 +972,15 @@
         ;(set-primitive-marker-dimensions :radius 30 :z 300)
         (set-primitive-marker-pose coords "BODY")
         ;; (set-primitive-marker-color :r 1.0 :g 1.0 :b 0.0 :a 0.6)
-	(insert-primitive-marker :shape-type jsk_rviz_plugins::TransformableMarkerOperate::*CYLINDER* :name "cylinder1" :description "")
+        (insert-primitive-marker :shape-type jsk_rviz_plugins::TransformableMarkerOperate::*CYLINDER* :name "cylinder1" :description "")
         (set-primitive-marker-color :r 1.0 :g 1.0 :b 0.0 :a 0.6)
         ;; (apply-primitive-dimensions-to-midi-device)
         (set-primitive-marker-pose coords "BODY" :name "cylinder1")
         (move-robot-model-to-current-pos)
-	(set-focus-marker-name "drill")
+        (set-focus-marker-name "drill")
         ;; publish motion to robot model on rviz
         (setq *drill-main-arm* (send self :get-arm-side))
 	(publish-drill-grasp-motion :coords (elt drill-grasp-params 0) :update? t :stand-coords (make-coords) :overwrite-stand-coords? t)
-
  ;todo drill-type
         (send smachine :go-to :selecting-exec-for-drill-grasp))
       ))
@@ -995,15 +1001,15 @@
         (apply-primitive-dimensions-to-midi-device)
         (move-robot-model-to-current-pos)
         ;; publish motion to robot model on rviz
-	(publish-drill-put-motion :coords (elt drill-put-params 0) :update? t :stand-coords (make-coords) :overwrite-stand-coords? t)
+        (publish-drill-put-motion :coords (elt drill-put-params 0) :update? t :stand-coords (make-coords) :overwrite-stand-coords? t)
         (send smachine :go-to :selecting-exec-for-drill-put))
       ))
   (:drill-wall-recognition-finished-callback (msg)
     (when (eq (send smachine :state) :recognizing-drill-wall)
       (let ((params (send msg :params)))
         (let ((coords-set (float-vector-to-coords-set params)) center-coords)
-	  (send self :show-text 
-		(format nil "Recognize wall coords") :recognize)
+          (send self :show-text 
+                (format nil "Recognize wall coords") :recognize)
           (publish-coords-list coords-set "BODY")
           ;; marker 
           ;; (erase-all-primitive-marker)
@@ -1028,11 +1034,11 @@
         (setq drill-button-params (list coords))
         ;; publish object marker
         (insert-primitive-marker :shape-type jsk_rviz_plugins::TransformableMarkerOperate::*MESH_RESOURCE* :name "drill" :description "" :resource "package://drc_task_common/models/takenoko_drill.dae" :use-material t)
-	(set-primitive-marker-control-relative-pose (make-coords :pos (float-vector 0 0 95) :rpy (float-vector 0 0 pi/2))) ;;Todo more precise pose for button
+        (set-primitive-marker-control-relative-pose (make-coords :pos (float-vector 0 0 95) :rpy (float-vector 0 0 pi/2))) ;;Todo more precise pose for button
         ;;(set-primitive-marker-pose coords "BODY") ;; comment out because pose is not correct
         (move-robot-model-to-current-pos)
         ;; publish motion to robot model on rviz
-	(publish-drill-button-motion :coords (elt drill-button-params 0) :update? t) 
+        (publish-drill-button-motion :coords (elt drill-button-params 0) :update? t) 
         (send smachine :go-to :selecting-exec-for-drill-button))))
 
  (:drill-rotate-recognition-finished-callback (msg)
@@ -1049,8 +1055,6 @@
         ;; publish motion to robot model on rviz
 	(publish-drill-rotate-motion :drill-coords (elt drill-rotate-params 0) :plane-coords (elt drill-rotate-params 1) :update? t) 
         (send smachine :go-to :selecting-exec-for-drill-rotate))))
-  
-  
   (:go-pos-recognition-finished-callback (msg)
     (when (eq (send smachine :state) :recognizing-go-pos-goal)
       (let ((params (send msg :params)))
@@ -1232,7 +1236,7 @@
            ;; publish door motion to robot model on rviz
            (publish-door-motion
             :door-name door-name :door-coords (elt door-params 0)
-            :arm (send self :get-arm-side) :overwrite-arm-side? (send self :is-arm-overwrite)
+            :arm (send self :get-arm-side) :overwrite-arm-side? (send self :is-door-arm-overwrite)
             :stand-coords (get-robot-model-current-pos) :overwrite-stand-coords? overwrite-stand-coords?
             :push/pull door-push/pull
             :update? t)
@@ -1251,7 +1255,7 @@
    (when (eq (send smachine :state) :initial)
      (let ((msg (instance drc_com_common::OCS2FCSmall :init)))
        (send msg :type drc_com_common::OCS2FCSmall::*GO_POS_EXEC*)
-       (send msg :float_params 
+       (send msg :float_params
              (coords-to-float-vector (ros::tf-pose->coords (send req :goal)) (length (send msg :float_params))))
        (send self :send-to-fc msg))
      (send smachine :go-to :executing-go-pos))
@@ -1261,7 +1265,7 @@
    (req)
    (let ((msg (instance drc_com_common::OCS2FCSmall :init)))
      (send msg :type drc_com_common::OCS2FCSmall::*ANGLE_VECTOR_SEND*)
-     (send msg :float_params 
+     (send msg :float_params
            (angle-vector-to-float-vector (send (send req :angle_vector) :data) (send (send req :interpolation_time) :data) (length (send msg :float_params))))
      (send self :send-to-fc msg))
    (send req :response)
@@ -1277,7 +1281,7 @@
            (t
             (send msg :arm_side drc_com_common::OCS2FCSmall::*UNDECIDED*))
            )
-     (send msg :float_params 
+     (send msg :float_params
            (reach-until-touch-params-to-float-vector
             (ros::tf-point->pos (send req :direction))
             (send req :thre) (send req :max_dist)
@@ -1328,27 +1332,27 @@
      ((eq (send smachine :state) :selecting-region-for-drill-button)
       ;; todo drill-type
       (when (not (boundp '*drill*))
-	(if t
-	    (set-drill-environment :drill-type :takenoko)
-	  (set-drill-environment :drill-type :gun)
-	  )
-	(send *robot* :angle-vector (get-potentio-vector-from-joint-states))
-	(send *robot* :fix-leg-to-coords (make-coords))
-	(set-drill-default-coords)
-	(let ((coords (send (send (send (send *robot* :body_lk) :copy-worldcoords) :inverse-transformation) :transform (send *drill* :copy-worldcoords))))
-	  (send self :show-text 
-		(format nil "Recognize drill-button. pos:~A rpy:~A" (send coords :worldpos) (reverse (car (send coords :rpy-angle)))) :recognize)
-	  ;; store result
-	  (setq drill-button-params (list coords))
-	  ;; publish object marker
-	  (erase-all-primitive-marker)
-	  (insert-primitive-marker :shape-type jsk_rviz_plugins::TransformableMarkerOperate::*MESH_RESOURCE* :name "drill" :description "" :resource "package://drc_task_common/models/takenoko_drill.dae" :use-material t)
-	  (set-primitive-marker-control-relative-pose (make-coords :pos (float-vector -22 30 77) :rpy (float-vector 0 0 pi/2))) ;;Todo more precise pose for button
-	  (move-robot-model-to-current-pos)
-	  (set-primitive-marker-pose coords "BODY")
-					;(send smachine :go-to :selecting-exec-for-drill-button)
-	  )
-	)
+        (if t
+            (set-drill-environment :drill-type :takenoko)
+          (set-drill-environment :drill-type :gun)
+          )
+        (send *robot* :angle-vector (get-potentio-vector-from-joint-states))
+        (send *robot* :fix-leg-to-coords (make-coords))
+        (set-drill-default-coords)
+        (let ((coords (send (send (send (send *robot* :body_lk) :copy-worldcoords) :inverse-transformation) :transform (send *drill* :copy-worldcoords))))
+          (send self :show-text
+                (format nil "Recognize drill-button. pos:~A rpy:~A" (send coords :worldpos) (reverse (car (send coords :rpy-angle)))) :recognize)
+          ;; store result
+          (setq drill-button-params (list coords))
+          ;; publish object marker
+          (erase-all-primitive-marker)
+          (insert-primitive-marker :shape-type jsk_rviz_plugins::TransformableMarkerOperate::*MESH_RESOURCE* :name "drill" :description "" :resource "package://drc_task_common/models/takenoko_drill.dae" :use-material t)
+          (set-primitive-marker-control-relative-pose (make-coords :pos (float-vector -22 30 77) :rpy (float-vector 0 0 pi/2))) ;;Todo more precise pose for button
+          (move-robot-model-to-current-pos)
+          (set-primitive-marker-pose coords "BODY")
+                                        ;(send smachine :go-to :selecting-exec-for-drill-button)
+          )
+        )
       (send smachine :go-to! :selecting-exec-for-drill-button))
      ((eq (send smachine :state) :selecting-region-for-drill-rotate)
       (send smachine :go-to! :selecting-exec-for-drill-rotate))
@@ -1356,7 +1360,6 @@
     (send self :show-text "skip recog. set and move marker manually.")
     (send req :response)
     )
-  
   (:set-pitch-head-angle-callback (req)
     (let ((msg (instance drc_com_common::OCS2FCSmall :init)))
       (send msg :type drc_com_common::OCS2FCSmall::*LOOK_AT_PITCH_ANGLE*)
@@ -1419,6 +1422,15 @@
   (:is-arm-overwrite
    ()
    (or (equal arm-mode :larm-preferred) (equal arm-mode :rarm-preferred)))
+  (:is-door-arm-overwrite
+   ()
+   (cond ((equal force-overwrite-door-arm :force)
+          :force)
+         ((or (equal arm-mode :larm-preferred) (equal arm-mode :rarm-preferred))
+          t)
+         (t
+          nil))
+   )
   (:get-arm-side
    ()
    (cond ((or (equal arm-mode :larm-preferred) (equal arm-mode :larm-only)) :larm)
@@ -1428,16 +1440,22 @@
 ;; optional button
 (defmethod ocs-executive-app
   ;; stand-coords overwrite
-  (:overwrite-stand-coords-callback
+  (:force-overwrite-stand-coords-callback
    (req)
-   (setq overwrite-stand-coords? t)
-   (send self :show-text "enable stand-coords overwrite" :success)
+   (setq overwrite-stand-coords? :force)
+   (send self :show-text "force overwrite stand-coords overwrite" :success)
    (send req :response)
    )
-  (:not-overwrite-stand-coords-callback
+  (:auto-overwrite-stand-coords-callback
+   (req)
+   (setq overwrite-stand-coords? :auto)
+   (send self :show-text "auto overwrite stand-coords overwrite" :success)
+   (send req :response)
+   )
+  (:no-overwrite-stand-coords-callback
    (req)
    (setq overwrite-stand-coords? nil)
-   (send self :show-text "disable stand-coords overwrite" :success)
+   (send self :show-text "no overwrite  stand-coords overwrite" :success)
    (send req :response)
    )
   ;; head overwrite
@@ -1502,34 +1520,59 @@
    (send req :response)
    )
   ;; door name
-  (:door-name-drc-box2
+  (:door-name-drc-box2-callback
    (req)
    (setq door-name :drc-box2)
    (send self :show-text "door name drc-box2" :success)
    (send req :response)
    )
-  (:door-name-drc-test
+  (:door-name-drc-test-callback
    (req)
    (setq door-name :drc-test)
    (send self :show-text "door name drc-test" :success)
    (send req :response)
    )
-  (:door-name-drc-test-mirror
+  (:door-name-drc-test-mirror-callback
    (req)
    (setq door-name :drc-test-mirror)
    (send self :show-text "door name drc-test-mirror" :success)
    (send req :response)
    )
-  (:door-name-drc-sagami
+  (:door-name-drc-sagami-callback
    (req)
    (setq door-name :drc-sagami)
    (send self :show-text "door name drc-sagami" :success)
    (send req :response)
    )
-  (:door-name-drc-sagami-mirror
+  (:door-name-drc-sagami-mirror-callback
    (req)
    (setq door-name :drc-sagami-mirror)
    (send self :show-text "door name drc-sagami-mirror" :success)
+   (send req :response)
+   )
+  (:door-name-drc-lasvegas-callback
+   (req)
+   (setq door-name :drc-lasvegas)
+   (send self :show-text "door name drc-lasvegas" :success)
+   (send req :response)
+   )
+  (:door-name-drc-lasvegas-mirror-callback
+   (req)
+   (setq door-name :drc-lasvegas-mirror)
+   (send self :show-text "door name drc-lasvegas-mirror" :success)
+   (send req :response)
+   )
+  ;; door arm overwrite
+  (:force-overwrite-door-arm-callback
+   (req)
+   (setq force-overwrite-door-arm :force)
+   (send self :show-text "force overwrite door arm" :success)
+   (send req :response)
+   )
+  (:auto-overwrite-door-arm-callback
+   (req)
+   (setq force-overwrite-door-arm :auto)
+   (send self :show-text "auto overwrite door arm" :success)
    (send req :response)
    )
   )
@@ -1569,6 +1612,33 @@
         (setq latest-accell-angle nil)
         (setq latest-brake-angle nil))
       (send self :send-to-fc msg)))
+  )
+
+(defmethod ocs-executive-app
+  (:set-door-detect-auto-callback
+   (req)
+   (send req :response)
+   )
+  (:set-door-detect-semi-auto-callback
+   (req)
+   (send req :response)
+   )
+  (:set-valve-detect-auto-callback
+   (req)
+   (send req :response)
+   )
+  (:set-valve-detect-semi-auto-callback
+   (req)
+   (send req :response)
+   )
+  (:set-drill-detect-auto-callback
+   (req)
+   (send req :response)
+   )
+  (:set-drill-detect-semi-auto-callback
+   (req)
+   (send req :response)
+   )
   )
 
 
@@ -1632,17 +1702,28 @@
 (ros::advertise-service "valve_edge_grasp_preferred" std_srvs::Empty #'send *app* :valve-edge-grasp-preferred-callback)
 (ros::advertise-service "valve_center_grasp_preferred" std_srvs::Empty #'send *app* :valve-center-grasp-preferred-callback)
 (ros::advertise-service "valve_center_grasp_only" std_srvs::Empty #'send *app* :valve-center-grasp-only-callback)
-(ros::advertise-service "overwrite_stand_coords" std_srvs::Empty #'send *app* :overwrite-stand-coords-callback)
-(ros::advertise-service "not_overwrite_stand_coords" std_srvs::Empty #'send *app* :not-overwrite-stand-coords-callback)
+(ros::advertise-service "force_overwrite_stand_coords" std_srvs::Empty #'send *app* :force-overwrite-stand-coords-callback)
+(ros::advertise-service "auto_overwrite_stand_coords" std_srvs::Empty #'send *app* :auto-overwrite-stand-coords-callback)
+(ros::advertise-service "no_overwrite_stand_coords" std_srvs::Empty #'send *app* :no-overwrite-stand-coords-callback)
 (ros::advertise-service "door_direction_push" std_srvs::Empty #'send *app* :door-direction-push-callback)
 (ros::advertise-service "door_direction_pull" std_srvs::Empty #'send *app* :door-direction-pull-callback)
-(ros::advertise-service "door_name_drc_box2" std_srvs::Empty #'send *app* :door-name-drc-box2)
-(ros::advertise-service "door_name_drc_test" std_srvs::Empty #'send *app* :door-name-drc-test)
-(ros::advertise-service "door_name_drc_test_mirror" std_srvs::Empty #'send *app* :door-name-drc-test-mirror)
-(ros::advertise-service "door_name_drc_sagami" std_srvs::Empty #'send *app* :door-name-drc-sagami)
-(ros::advertise-service "door_name_drc_sagami_mirror" std_srvs::Empty #'send *app* :door-name-drc-sagami-mirror)
+(ros::advertise-service "door_name_drc_box2" std_srvs::Empty #'send *app* :door-name-drc-box2-callback)
+(ros::advertise-service "door_name_drc_test" std_srvs::Empty #'send *app* :door-name-drc-test-callback)
+(ros::advertise-service "door_name_drc_test_mirror" std_srvs::Empty #'send *app* :door-name-drc-test-mirror-callback)
+(ros::advertise-service "door_name_drc_sagami" std_srvs::Empty #'send *app* :door-name-drc-sagami-callback)
+(ros::advertise-service "door_name_drc_sagami_mirror" std_srvs::Empty #'send *app* :door-name-drc-sagami-mirror-callback)
+(ros::advertise-service "door_name_drc_lasvegas" std_srvs::Empty #'send *app* :door-name-drc-lasvegas-callback)
+(ros::advertise-service "door_name_drc_lasvegas_mirror" std_srvs::Empty #'send *app* :door-name-drc-lasvegas-mirror-callback)
 (ros::advertise-service "reach_until_touch_command_from_ocs" drc_task_common::ReachUntilTouchCommand #'send *app* :reach-until-touch-from-ocs)
 (ros::advertise-service "set_drill_coords" std_srvs::Empty #'send *app* :set-drill-coords)
+(ros::advertise-service "auto_door_detect" std_srvs::Empty #'send *app* :set-door-detect-auto-callback)
+(ros::advertise-service "semi_auto_door_detect" std_srvs::Empty #'send *app* :set-door-detect-semi-auto-callback)
+(ros::advertise-service "auto_valve_detect" std_srvs::Empty #'send *app* :set-valve-detect-auto-callback)
+(ros::advertise-service "semi_auto_valve_detect" std_srvs::Empty #'send *app* :set-valve-detect-semi-auto-callback)
+(ros::advertise-service "auto_drill_detect" std_srvs::Empty #'send *app* :set-drill-detect-auto-callback)
+(ros::advertise-service "semi_auto_drill_detect" std_srvs::Empty #'send *app* :set-drill-detect-semi-auto-callback)
+(ros::advertise-service "force_overwrite_door_arm" std_srvs::Empty #'send *app* :force-overwrite-door-arm-callback)
+(ros::advertise-service "auto_overwrite_door_arm" std_srvs::Empty #'send *app* :auto-overwrite-door-arm-callback)
 
 ;; Drive joystick controller topics
 (ros::subscribe "/ocs/drive/operation/handle_cmd" std_msgs::Float64 #'send *app* :drive-handle-angle-callback)

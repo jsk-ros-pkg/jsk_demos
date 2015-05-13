@@ -11,9 +11,22 @@
         ((equal door-name :drc-test-mirror)
          (make-drc-test-door-left))
         ((equal door-name :drc-sagami)
-         (make-drc-sagami-door))
+         ;;(make-drc-sagami-door)
+         (make-drc-lasvegas-door))
         ((equal door-name :drc-sagami-mirror)
          (make-drc-sagami-door-mirror))
+        ((equal door-name :drc-lasvegas)
+         (make-drc-lasvegas-door))
+        ((equal door-name :drc-lasvegas-mirror)
+         (make-drc-lasvegas-door-mirror))
+        ))
+
+(defun get-arm-from-name
+  (door-name)
+  (cond ((equal door-name :drc-lasvegas)
+         :larm)
+        (t
+         nil)
         ))
 
 (defun set-door-environment
@@ -26,7 +39,7 @@
         (door-coords-system :origin-from-world)
         (stand-coords nil)
         (generate-ri? t) (draw? t) (use-ri? t)
-        (arm :rarm)
+        (arm :rarm) (force-overwrite-arm-side? nil)
         (use-model-z-pos? nil)
         (robot-name "HRP2JSKNTS"))
   ;; generate robot
@@ -34,7 +47,11 @@
   ;; place robot to origin ;; this should be done before attaching handle to robot
   (send *robot* :reset-pose)
   (send *robot* :fix-leg-to-coords (make-coords))
-  (setq *door-arm* arm)
+  (cond ((and force-overwrite-arm-side? (get-arm-from-name door-name))
+         (setq *door-arm* (get-arm-from-name door-name))
+         (ros::ros-warn "force overwrite arm side to ~a for ~a door. ~%" *door-arm* door-name))
+        (t
+         (setq *door-arm* arm)))
   ;; attach handle to robot, define special pose
   (setup-door-open :draw? nil :generate-robot? nil)
   ;; attach handle to robot
@@ -94,6 +111,7 @@
   ;; set robot stand-coords
   (setq *door-stand-coords* (if stand-coords stand-coords (make-coords)))
   (send *robot* :fix-leg-to-coords *door-stand-coords*)
+  (setq *door-motion* nil)
   ;; draw
   (setq *ground* (make-cube 1000 1000 1))
   (when (or draw? (boundp '*irtviewer*))
@@ -260,11 +278,11 @@
             (list (list (float-vector -100 200 150) 0 0 0)
                   (list (float-vector 0 50 50) 0 0 0)
                   (list (float-vector 0 -25 -50) 0 0 0)
-                  (list (float-vector 0 -25 -50) 0 0 -25) ;; start grasp before this
-                  (list (float-vector 0 -25 -50) 0 0 -50)
-                  (list (float-vector 0 -25 -50) 0 10 -50)
-                  (list (float-vector 0 -25 -50) 0 15 -50)
-                  (list (float-vector 0 -25 -50) 0 15 -25)
+                  (list (float-vector 0 -25 -50) 0 0 -35) ;; start grasp before this
+                  (list (float-vector 0 -25 -50) 0 0 -70)
+                  (list (float-vector 0 -25 -50) 0 10 -70)
+                  (list (float-vector 0 -25 -50) 0 15 -70)
+                  (list (float-vector 0 -25 -50) 0 15 -35)
                   (list (float-vector 0 -25 -50) 0 15 0)
                   (list (float-vector 0 50 50) 0 15 0) ;; stop grasp before this
                   (list (float-vector 0 100 50) 0 15 0)
@@ -321,7 +339,6 @@
 (defun get-door-motion
   (&key (draw? nil) (push/pull :push))
   (generate-door-motion :draw? draw? :push/pull push/pull)
-  (setq *door-motion* nil)
   (when (every #'eval (mapcar #'(lambda (x) (elt x 1)) *door-ik-results*))
     (setq *door-motion* (mapcar #'(lambda (x) (elt x 2)) *door-ik-results*)))
   )
@@ -364,10 +381,10 @@
          (cond ((equal handle-l/r :left)
                 (cond ((equal push/pull :push)
                        (cond ((equal *door-arm* :larm)
-                              (make-coords :pos (float-vector -600 425 0) :rpy (list (deg2rad -20) 0 0))
+                              (make-coords :pos (float-vector -600 425 0) :rpy (list (deg2rad -25) 0 0))
                               )
                              ((equal *door-arm* :rarm)
-                              (make-coords :pos (float-vector -600 425 0) :rpy (list (deg2rad -20) 0 0))
+                              (make-coords :pos (float-vector -600 425 0) :rpy (list (deg2rad -25) 0 0))
                               )))
                       ((equal push/pull :pull)
                        (cond ((equal *door-arm* :larm)
@@ -379,10 +396,10 @@
                ((equal handle-l/r :right)
                 (cond ((equal push/pull :push)
                        (cond ((equal *door-arm* :larm)
-                              (make-coords :pos (float-vector -600 -425 0) :rpy (list (deg2rad 20) 0 0))
+                              (make-coords :pos (float-vector -600 -425 0) :rpy (list (deg2rad 25) 0 0))
                               )
                              ((equal *door-arm* :rarm)
-                              (make-coords :pos (float-vector -600 -425 0) :rpy (list (deg2rad 20) 0 0))
+                              (make-coords :pos (float-vector -600 -425 0) :rpy (list (deg2rad 25) 0 0))
                               )))
                       ((equal push/pull :pull)
                        (cond ((equal *door-arm* :larm)
@@ -426,18 +443,24 @@
    :door-name door-name :door-width door-width :handle-l/r handle-l/r
    :door-knob-size door-knob-size :door-knob-pos door-knob-pos
    :door-coords door-coords :door-coords-system door-coords-system
-   :stand-coords stand-coords :arm arm :draw? (or draw? draw-environment?)
-   :use-ri? use-ri? :generate-ri? use-ri? :robot-name robot-name)
-  (get-door-motion :push/pull push/pull :draw? draw?)
+   :stand-coords stand-coords :arm arm :force-overwrite-arm-side? (equal overwrite-arm-side? :force)
+   :draw? (or draw? draw-environment?) :use-ri? use-ri? :generate-ri? use-ri? :robot-name robot-name)
+  ;; when overwrite-arm-side? is :force, set overwrite-arm-side? nil because arm is already overwritten
+  (when (equal overwrite-arm-side? :force)
+    (setq overwrite-arm-side? nil))
+  ;; default
+  (when (not (equal overwrite-stand-coords? :force))
+    (get-door-motion :push/pull push/pull :draw? draw?))
   ;; change arm
-  (when (and overwrite-arm-side? (not *door-motion*))
+  (when (and overwrite-arm-side? (not (equal overwrite-stand-coords? :force)) (not *door-motion*))
     (setq *door-arm* (get-opposite-arm *door-arm*))
     (ros::ros-warn "change arm side to ~a for door motion. (stand position is ~a.) ~%" *door-arm* *door-stand-coords*)
     (get-door-motion :push/pull push/pull :draw? draw?)
     )
   ;; revert arm, change stand position
   (when (and overwrite-stand-coords? (not *door-motion*))
-    (when overwrite-arm-side? (setq *door-arm* (get-opposite-arm *door-arm*)))
+    (when (and overwrite-arm-side? (not (equal overwrite-stand-coords? :force)))
+      (setq *door-arm* (get-opposite-arm *door-arm*)))
     (move-robot-with-stand-coords-for-door (get-door-stand-coords :handle-l/r (send *door* :get :handle-l/r) :push/pull push/pull))
     (ros::ros-warn "change stand position to ~a for door motion. (arm side is ~a.)~%" *door-stand-coords* *door-arm*)
     (get-door-motion :push/pull push/pull :draw? draw?)
