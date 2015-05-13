@@ -1,0 +1,16 @@
+- direction: 'horizontal'
+- name: 'insert drill marker'
+  service: '/insert_drill_marker'
+  column: 0
+- name: 'insert plane marker'
+  service: '/insert_plane_marker'
+  column: 0
+- name: 'insert wall marker'
+  service: '/insert_wall_marker'
+  column: 0
+- name: 'erase all marker'
+  service: '/erase_all_marker'
+  column: 1
+- name: 'set drill coords'
+  service: '/set_drill_coords'
+  column: 1
