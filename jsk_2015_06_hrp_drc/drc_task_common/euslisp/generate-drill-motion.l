@@ -216,7 +216,7 @@
 	 (cond ((or (equal *robot-name* "HRP2JSKNT") (equal *robot-name* "HRP2JSKNTS"))
 		(send (send (send (send *robot* :larm :end-coords) :copy-worldcoords) :translate (float-vector 50.0 -2.0 0.0) :local) :rotate (deg2rad -45) :z :local))
 		(t
-		 (send (send (send (send *robot* :rarm :end-coords) :copy-worldcoords) :translate (float-vector 0.0 0.0 0.0) :local) :rotate (deg2rad 0) :z :local)
+		 (send (send (send (send *robot* :larm :end-coords) :copy-worldcoords) :translate (float-vector 0.0 0.0 0.0) :local) :rotate (deg2rad 0) :z :local)
 		 )		
 		)
          :parent (send (send *robot* :larm :end-coords) :parent)))
@@ -1009,9 +1009,11 @@
 			(send *robot* :hand *drill-main-arm* :angle-vector (float-vector 90.0 0.0 0.0 0.0 90.0 90.0))
 			(hand-model2real)
 			))
-
+                 
 		 )
-		))
+		)
+        (send *ri* :stop-grasp (get-opposite-arm *drill-main-arm*))
+        )
       (send *robot* :angle-vector (elt drill-motion-av-list 0))
       (when (boundp '*irtviewer*) (send *irtviewer* :draw-objects))
       (when real? (model2real :time 6000))
@@ -1790,7 +1792,7 @@
 	 (hand-model2real)
 	 )	
 	(t
-	 (send *ri* :move-gripper arm 0.5 :effort 20 :wait t)
+	 (send *ri* :move-gripper arm 0.65 :effort 20 :wait t)
 	 ;(send *ri* :start-grasp arm :wait t)
 	   )
 	)

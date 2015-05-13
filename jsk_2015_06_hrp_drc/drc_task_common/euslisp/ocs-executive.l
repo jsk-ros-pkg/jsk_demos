@@ -975,7 +975,6 @@
         (setq *drill-main-arm* (send self :get-arm-side))
 	(publish-drill-grasp-motion :coords (elt drill-grasp-params 0) :update? t :stand-coords (make-coords) :overwrite-stand-coords? t)
 
-
  ;todo drill-type
         (send smachine :go-to :selecting-exec-for-drill-grasp))
       ))
