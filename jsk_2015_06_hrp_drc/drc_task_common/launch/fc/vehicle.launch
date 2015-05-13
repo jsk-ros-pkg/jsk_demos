@@ -12,7 +12,12 @@
 
   <!-- vehicle_ui -->
   <group if="$(arg LAUNCH_UI)">
-    <node pkg="drc_task_common" type="vehicle_ui" name="vehicle_ui" respawn="true" />
+    <node pkg="topic_tools" type="throttle" name="vehicle_ui_lfsensor_throttle" args="messages /off_lfsensor 5 drive/throttled_off_lfsensor" />
+    <node pkg="topic_tools" type="throttle" name="vehicle_ui_rfsensor_throttle" args="messages /off_rfsensor 5 drive/throttled_off_rfsensor" />
+    <node pkg="drc_task_common" type="vehicle_ui" name="vehicle_ui" respawn="true" >
+      <remap from="/lfsensor" to="drive/throttled_off_lfsensor" />
+      <remap from="/rfsensor" to="drive/throttled_off_rfsensor" />
+    </node>
   </group>
 
   <!-- handle controller -->
