@@ -36,6 +36,15 @@ If you want to use atlas with robot driving controller in euslisp, execute follo
 ```bash
 $ rosrun gazebo_drive_simulator start_drc_practice_task_1.sh false
 $ roslaunch drc_task_common vehicle.launch ROBOT:=<robotname>
+## option
+# for OCS
+# LAUNCH_PS3JOY (default:false)
+# LAUNCH_STEERING (default:false)
+# LAUNCH_UI (default:false)
+# CONTROLLER_DEV (default:/dev/input/js0)
+# for FC
+# LAUNCH_EUS (defalut:true)
+# OCS_NS (default:/ocs)
 ```
 robotnameche does not matter in euslisp mode.
 When you want to use ps3joy locally (not OCS) as robot controller, pass LAUNCH_PS3JOY:="true" and OCS_NS:="/" to vehicle.launch.
@@ -68,6 +77,7 @@ $ rostopic echo /drc_vehicle_xp900/gas_pedal/cmd std_msgs/Float64 "{data: <perce
 ### use recognition in gazebo
 If you want to use recognition in gazebo_drive_simulator, you should execute following command:
 ```bash
+$ rosrun drc_task_common real_staro_drive_recognition.sh
 $ roslaunch drc_task_common local_planner.launch
 ```
 
@@ -78,12 +88,12 @@ If you want to use recognition in gazebo_drive_simulator, you should execute fol
 $ cd patch
 
 # change ground
-$ patch -p0 < drc_ground.patch
+$ sudo patch -p0 < drc_ground.patch
 # remove shadows of obstacle
 $ patch -p0 < obstacle_shadows.patch
 
 # return this change
-$ patch -p0 -R < drc_ground.patch
+$ sudo patch -p0 -R < drc_ground.patch
 # return shadows of obstacle
 $ patch -p0 -R < obstacle_shadows.patch 
 ```

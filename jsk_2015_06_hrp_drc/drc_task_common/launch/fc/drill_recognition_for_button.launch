@@ -53,7 +53,13 @@
         button_estimation_method: 0
       </rosparam>
     </node>
-    <node pkg="jsk_topic_tools" type="snapshot" name="snapshot_cloud_for_save">
+    <node pkg="jsk_topic_tools" type="snapshot" name="snapshot">
+      <remap from="~input" to="standing_drill_detector/output/pose"/>
+      <rosparam>
+        latch: true
+      </rosparam>
+    </node>
+    <node pkg="jsk_topic_tools" type="snapshot" name="rotate_snapshot">
       <remap from="~input" to="standing_drill_detector/output/pose"/>
       <rosparam>
         latch: true

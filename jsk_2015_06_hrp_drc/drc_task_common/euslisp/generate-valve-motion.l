@@ -40,6 +40,7 @@
   ;; set robot stand-coords
   (setq *valve-stand-coords* (if stand-coords stand-coords (make-coords)))
   (send *robot* :fix-leg-to-coords *valve-stand-coords*)
+  (setq *valve-motion* nil)
   ;; draw
   (setq *ground* (make-cube 1000 1000 1))
   (when (or draw? (boundp '*irtviewer*))
@@ -182,7 +183,8 @@
                 :collision-avoidance-link-pair
                 (list (list (elt (send *robot* *valve-arm* :links) 2) (send *robot* :link "CHEST_LINK2")))
                 ))
-    (when (and ret (send *robot* :self-collision-check)) (setq ret nil))
+    (when (and ret (remove-if  #'(lambda (l) (or (and (eq (car l) (send *robot* :link "CHEST_LINK2")) (eq (cdr l) (send *robot* :link "HEAD_LINK1"))) (and (eq (cdr l) (send *robot* :link "CHEST_LINK2")) (eq (car l) (send *robot* :link "HEAD_LINK1"))))) (send *robot* :self-collision-check)))
+      (setq ret nil))
     ret)
   )
 
@@ -253,7 +255,7 @@
         (cond ((or (equal *robot-name* "JAXON") (equal *robot-name* "STARO"))
                (setq tc
                      (list
-                      (send (send (send *valve* :get valve-handle-name) :copy-worldcoords) :translate (float-vector (* (- reach-dist) 1.5) 0 0) :local)
+                      (send (send (send *valve* :get valve-handle-name) :copy-worldcoords) :translate (float-vector (* (- reach-dist) 2.5) 0 0) :local)
                       (send *robot* :rleg :end-coords :copy-worldcoords)
                       (send *robot* :lleg :end-coords :copy-worldcoords))))
               (t ;; (or (equal *robot-name* "HRP2JSKNT") (equal *robot-name* "HRP2JSKNTS"))
@@ -383,16 +385,18 @@
           (t
            (setq *valve-grasp-mode* :edge-grasp)))
     ;; first trial
-    (get-valve-motion :grasp-center? grasp-center? :draw? draw?)
+    (when (not (equal overwrite-stand-coords? :force))
+      (get-valve-motion :grasp-center? grasp-center? :draw? draw?))
     ;; change arm
-    (when (and overwrite-arm-side? (<= (get-rotatable-angle) rotatable-angle-thre))
+    (when (and overwrite-arm-side? (not (equal overwrite-stand-coords? :force)) (<= (get-rotatable-angle) rotatable-angle-thre))
       (setq *valve-arm* (get-opposite-arm *valve-arm*))
       (ros::ros-warn "change arm side to ~a for valve motion. (stand position is ~a.) ~%" *valve-arm* *valve-stand-coords*)
       (get-valve-motion :grasp-center? grasp-center? :draw? draw?)
       )
     ;; revert arm, change stand position
     (when (and overwrite-stand-coords? (<= (get-rotatable-angle) rotatable-angle-thre))
-      (when overwrite-arm-side? (setq *valve-arm* (get-opposite-arm *valve-arm*)))
+      (when (and overwrite-arm-side? (not (equal overwrite-stand-coords? :force)))
+        (setq *valve-arm* (get-opposite-arm *valve-arm*)))
       (move-robot-with-stand-coords-for-valve (get-valve-stand-coords :grasp-center? grasp-center?))
       (ros::ros-warn "change stand position to ~a for valve motion. (arm side is ~a.)~%" *valve-stand-coords* *valve-arm*)
       (get-valve-motion :grasp-center? grasp-center? :draw? draw?)

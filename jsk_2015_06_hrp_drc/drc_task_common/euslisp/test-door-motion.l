@@ -86,16 +86,22 @@
   (test-door-motion-hrp2jsknt-pattern2 :ri-test? nil)
   (test-door-motion-hrp2jsknt-pattern3 :ri-test? nil)
   (test-door-motion-hrp2jsknt-pattern4 :ri-test? nil)
+  (test-door-motion-hrp2jsknt-pattern5 :ri-test? nil)
+  (test-door-motion-hrp2jsknt-pattern6 :ri-test? nil)
   (setq *robot* nil)
   (test-door-motion-hrp2jsknts-pattern1 :ri-test? nil)
   (test-door-motion-hrp2jsknts-pattern2 :ri-test? nil)
   (test-door-motion-hrp2jsknts-pattern3 :ri-test? nil)
   (test-door-motion-hrp2jsknts-pattern4 :ri-test? nil)
+  (test-door-motion-hrp2jsknts-pattern5 :ri-test? nil)
+  (test-door-motion-hrp2jsknts-pattern6 :ri-test? nil)
   (setq *robot* nil)
   (test-door-motion-jaxon-pattern1 :ri-test? nil)
   (test-door-motion-jaxon-pattern2 :ri-test? nil)
   (test-door-motion-jaxon-pattern3 :ri-test? nil)
   (test-door-motion-jaxon-pattern4 :ri-test? nil)
+  (test-door-motion-jaxon-pattern5 :ri-test? nil)
+  (test-door-motion-jaxon-pattern6 :ri-test? nil)
   )
 
 (defun test-door-motion-hrp2jsknt-with-ri
@@ -109,26 +115,38 @@
 
 (defun test-door-motion-hrp2jsknt-pattern1
   (&key (ri-test? nil))
-  (print "test for handle left, larm, push, overwrite stand-coords")
-  (test-door-motion :ri-test? ri-test? :robot-name "HRP2JSKNT" :door-name :drc-sagami :arm :larm :push/pull :push :overwrite-stand-coords? t)
+  (print "test for handle left, force-overwrite arm-side, push, overwrite stand-coords")
+  (test-door-motion :ri-test? ri-test? :robot-name "HRP2JSKNT" :door-name :drc-lasvegas :push/pull :push :overwrite-stand-coords? :force :overwrite-arm-side? :force)
   )
 
 (defun test-door-motion-hrp2jsknt-pattern2
   (&key (ri-test? nil))
   (print "test for handle left, larm, pull, overwrite stand-coords")
-  (test-door-motion :ri-test? ri-test? :robot-name "HRP2JSKNT" :door-name :drc-sagami :arm :larm :push/pull :pull :overwrite-stand-coords? t)
+  (test-door-motion :ri-test? ri-test? :robot-name "HRP2JSKNT" :door-name :drc-lasvegas :arm :larm :push/pull :pull :overwrite-stand-coords? :force)
   )
 
 (defun test-door-motion-hrp2jsknt-pattern3
   (&key (ri-test? nil))
-  (print "test for handle right, rarm, pull, overwrite stand-coords")
-  (test-door-motion :ri-test? ri-test? :robot-name "HRP2JSKNT" :door-name :drc-sagami-mirror :arm :rarm :push/pull :push :overwrite-stand-coords? t)
+  (print "test for handle left, larm, push, overwrite stand-coords")
+  (test-door-motion :ri-test? ri-test? :robot-name "HRP2JSKNT" :door-name :drc-sagami :arm :larm :push/pull :push :overwrite-stand-coords? :force)
   )
 
 (defun test-door-motion-hrp2jsknt-pattern4
   (&key (ri-test? nil))
+  (print "test for handle left, larm, pull, overwrite stand-coords")
+  (test-door-motion :ri-test? ri-test? :robot-name "HRP2JSKNT" :door-name :drc-sagami :arm :larm :push/pull :pull :overwrite-stand-coords? :force)
+  )
+
+(defun test-door-motion-hrp2jsknt-pattern5
+  (&key (ri-test? nil))
   (print "test for handle right, rarm, pull, overwrite stand-coords")
-  (test-door-motion :ri-test? ri-test? :robot-name "HRP2JSKNT" :door-name :drc-sagami-mirror :arm :rarm :push/pull :pull :overwrite-stand-coords? t)
+  (test-door-motion :ri-test? ri-test? :robot-name "HRP2JSKNT" :door-name :drc-sagami-mirror :arm :rarm :push/pull :push :overwrite-stand-coords? :force)
+  )
+
+(defun test-door-motion-hrp2jsknt-pattern6
+  (&key (ri-test? nil))
+  (print "test for handle right, rarm, pull, overwrite stand-coords")
+  (test-door-motion :ri-test? ri-test? :robot-name "HRP2JSKNT" :door-name :drc-sagami-mirror :arm :rarm :push/pull :pull :overwrite-stand-coords? :force)
   )
 
 (defun test-door-motion-hrp2jsknts-with-ri
@@ -142,26 +160,38 @@
 
 (defun test-door-motion-hrp2jsknts-pattern1
   (&key (ri-test? nil))
-  (print "test for handle left, larm, push, overwrite stand-coords")
-  (test-door-motion :ri-test? ri-test? :robot-name "HRP2JSKNTS" :door-name :drc-sagami :arm :larm :push/pull :push :overwrite-stand-coords? t)
+  (print "test for handle left, force-overwrite arm-side, push, overwrite stand-coords")
+  (test-door-motion :ri-test? ri-test? :robot-name "HRP2JSKNTS" :door-name :drc-lasvegas :push/pull :push :overwrite-stand-coords? :force :overwrite-arm-side? :force)
   )
 
 (defun test-door-motion-hrp2jsknts-pattern2
   (&key (ri-test? nil))
   (print "test for handle left, larm, pull, overwrite stand-coords")
-  (test-door-motion :ri-test? ri-test? :robot-name "HRP2JSKNTS" :door-name :drc-sagami :arm :larm :push/pull :pull :overwrite-stand-coords? t)
+  (test-door-motion :ri-test? ri-test? :robot-name "HRP2JSKNTS" :door-name :drc-lasvegas :arm :larm :push/pull :pull :overwrite-stand-coords? :force)
   )
 
 (defun test-door-motion-hrp2jsknts-pattern3
   (&key (ri-test? nil))
-  (print "test for handle right, rarm, pull, overwrite stand-coords")
-  (test-door-motion :ri-test? ri-test? :robot-name "HRP2JSKNTS" :door-name :drc-sagami-mirror :arm :rarm :push/pull :push :overwrite-stand-coords? t)
+  (print "test for handle left, larm, push, overwrite stand-coords")
+  (test-door-motion :ri-test? ri-test? :robot-name "HRP2JSKNTS" :door-name :drc-sagami :arm :larm :push/pull :push :overwrite-stand-coords? :force)
   )
 
 (defun test-door-motion-hrp2jsknts-pattern4
   (&key (ri-test? nil))
+  (print "test for handle left, larm, pull, overwrite stand-coords")
+  (test-door-motion :ri-test? ri-test? :robot-name "HRP2JSKNTS" :door-name :drc-sagami :arm :larm :push/pull :pull :overwrite-stand-coords? :force)
+  )
+
+(defun test-door-motion-hrp2jsknts-pattern5
+  (&key (ri-test? nil))
   (print "test for handle right, rarm, pull, overwrite stand-coords")
-  (test-door-motion :ri-test? ri-test? :robot-name "HRP2JSKNTS" :door-name :drc-sagami-mirror :arm :rarm :push/pull :pull :overwrite-stand-coords? t)
+  (test-door-motion :ri-test? ri-test? :robot-name "HRP2JSKNTS" :door-name :drc-sagami-mirror :arm :rarm :push/pull :push :overwrite-stand-coords? :force)
+  )
+
+(defun test-door-motion-hrp2jsknts-pattern6
+  (&key (ri-test? nil))
+  (print "test for handle right, rarm, pull, overwrite stand-coords")
+  (test-door-motion :ri-test? ri-test? :robot-name "HRP2JSKNTS" :door-name :drc-sagami-mirror :arm :rarm :push/pull :pull :overwrite-stand-coords? :force)
   )
 
 (defun test-door-motion-jaxon-with-ri
@@ -175,26 +205,38 @@
 
 (defun test-door-motion-jaxon-pattern1
   (&key (ri-test? nil))
-  (print "test for handle left, larm, push, overwrite stand-coords")
-  (test-door-motion :ri-test? ri-test? :robot-name "JAXON" :door-name :drc-sagami :arm :larm :push/pull :push :overwrite-stand-coords? t)
+  (print "test for handle left, force-overwrite arm-side, push, overwrite stand-coords")
+  (test-door-motion :ri-test? ri-test? :robot-name "JAXON" :door-name :drc-lasvegas :push/pull :push :overwrite-stand-coords? :force :overwrite-arm-side? :force)
   )
 
 (defun test-door-motion-jaxon-pattern2
   (&key (ri-test? nil))
   (print "test for handle left, rarm, pull, overwrite stand-coords")
-  (test-door-motion :ri-test? ri-test? :robot-name "JAXON" :door-name :drc-sagami :arm :rarm :push/pull :pull :overwrite-stand-coords? t)
+  (test-door-motion :ri-test? ri-test? :robot-name "JAXON" :door-name :drc-lasvegas :arm :rarm :push/pull :pull :overwrite-stand-coords? :force)
   )
 
 (defun test-door-motion-jaxon-pattern3
   (&key (ri-test? nil))
-  (print "test for handle right, rarm, pull, overwrite stand-coords")
-  (test-door-motion :ri-test? ri-test? :robot-name "JAXON" :door-name :drc-sagami-mirror :arm :rarm :push/pull :push :overwrite-stand-coords? t)
+  (print "test for handle left, larm, push, overwrite stand-coords")
+  (test-door-motion :ri-test? ri-test? :robot-name "JAXON" :door-name :drc-sagami :arm :larm :push/pull :push :overwrite-stand-coords? :force)
   )
 
 (defun test-door-motion-jaxon-pattern4
   (&key (ri-test? nil))
+  (print "test for handle left, rarm, pull, overwrite stand-coords")
+  (test-door-motion :ri-test? ri-test? :robot-name "JAXON" :door-name :drc-sagami :arm :rarm :push/pull :pull :overwrite-stand-coords? :force)
+  )
+
+(defun test-door-motion-jaxon-pattern5
+  (&key (ri-test? nil))
   (print "test for handle right, rarm, pull, overwrite stand-coords")
-  (test-door-motion :ri-test? ri-test? :robot-name "JAXON" :door-name :drc-sagami-mirror :arm :larm :push/pull :pull :overwrite-stand-coords? t)
+  (test-door-motion :ri-test? ri-test? :robot-name "JAXON" :door-name :drc-sagami-mirror :arm :rarm :push/pull :push :overwrite-stand-coords? :force)
+  )
+
+(defun test-door-motion-jaxon-pattern6
+  (&key (ri-test? nil))
+  (print "test for handle right, rarm, pull, overwrite stand-coords")
+  (test-door-motion :ri-test? ri-test? :robot-name "JAXON" :door-name :drc-sagami-mirror :arm :larm :push/pull :pull :overwrite-stand-coords? :force)
   )
 
 
