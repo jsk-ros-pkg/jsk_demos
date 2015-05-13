@@ -171,6 +171,7 @@ class VehicleUIWidget(QWidget):
         step_max_hbox = QtGui.QHBoxLayout(self)
         step_max_label = QtGui.QLabel("Max", self)
         step_max_vbox = QtGui.QVBoxLayout(self)
+        self.step_max_value = -1
         self.step_max_up_button = QtGui.QPushButton()
         self.step_max_up_button.setIcon(QIcon.fromTheme("go-up"))
         self.step_max_up_button.clicked.connect(self.maxUpButtonCallback)
@@ -178,7 +179,7 @@ class VehicleUIWidget(QWidget):
         self.step_max_down_button.setIcon(QIcon.fromTheme("go-down"))
         self.step_max_down_button.clicked.connect(self.maxDownButtonCallback)
         self.step_max_edit = QtGui.QLineEdit()
-        self.step_max_edit.setText("-1")
+        self.step_max_edit.setText(str(self.step_max_value))
         self.step_max_edit.returnPressed.connect(self.maxEditCallback)
         self.step_max_edit.setValidator(QtGui.QDoubleValidator(0, 100, 10))
         step_max_hbox.addWidget(step_max_label)
@@ -191,6 +192,7 @@ class VehicleUIWidget(QWidget):
         step_min_hbox = QtGui.QHBoxLayout(self)
         step_min_label = QtGui.QLabel("Min", self)
         step_min_vbox = QtGui.QVBoxLayout(self)
+        self.step_min_value = -1
         self.step_min_up_button = QtGui.QPushButton()
         self.step_min_up_button.setIcon(QIcon.fromTheme("go-up"))
         self.step_min_up_button.clicked.connect(self.minUpButtonCallback)
@@ -198,7 +200,7 @@ class VehicleUIWidget(QWidget):
         self.step_min_down_button.setIcon(QIcon.fromTheme("go-down"))
         self.step_min_down_button.clicked.connect(self.minDownButtonCallback)
         self.step_min_edit = QtGui.QLineEdit()
-        self.step_min_edit.setText("-1")
+        self.step_min_edit.setText(str(self.step_min_value))
         self.step_min_edit.returnPressed.connect(self.minEditCallback)
         self.step_min_edit.setValidator(QtGui.QDoubleValidator(0, 100, 10))
         step_min_hbox.addWidget(step_min_label)
@@ -291,9 +293,13 @@ class VehicleUIWidget(QWidget):
     def stepGageValueCallback(self, msg):
         self.step_gage_label.setText(str(msg.data))
     def minStepGageValueCallback(self, msg):
-        self.step_min_edit.setText(str(msg.data))
+        if self.step_min_value != msg.data:
+            self.step_min_value = msg.data
+            self.step_min_edit.setText(str(self.step_min_value))
     def maxStepGageValueCallback(self, msg):
-        self.step_max_edit.setText(str(msg.data))
+        if self.step_max_value != msg.data:
+            self.step_max_value = msg.data
+            self.step_max_edit.setText(str(self.step_max_value))
     def handleModeCallback(self, msg):
         for i in range(self.handle_mode_list.count()):
             item = self.handle_mode_list.item(i)
