@@ -425,15 +425,14 @@
         (let* (;(stand-coords (float-vector-to-coords (send msg :stand_coords)))
                (arm-side (send msg :arm_side))
                (arm (cond ((equal arm-side drc_com_common::OCS2FCSmall::*LARM*) :larm) ((equal arm-side drc_com_common::OCS2FCSmall::*RARM*) :rarm) (t nil))))
-	       (if arm
-		   (send-drill-grasp-motion coords :arm arm :stand-coords stand-coords)
+               (if arm
+                   (send-drill-grasp-motion coords :arm arm :stand-coords stand-coords)
                  (ros::ros-info "arm side empty")
-		 )
-	       )
+                 )
+               )
         ;; send finish signal to ocs
         (let ((msg (instance drc_com_common::FC2OCSSmall :init)))
-	  
-	  (send msg :params (coords-to-float-vector (send (send *drill* :copy-worldcoords) :transformation (send (send *robot* :body_lk) :copy-worldcoords)) (length (send msg :params))))
+          (send msg :params (coords-to-float-vector (send (send *drill* :copy-worldcoords) :transformation (send (send *robot* :body_lk) :copy-worldcoords)) (length (send msg :params))))
           (send msg :type drc_com_common::FC2OCSSmall::*DRILL_GRASP_FINISHED*)
           (send self :send-to-ocs msg))
         )
@@ -456,7 +455,7 @@
           (send msg :type drc_com_common::FC2OCSSmall::*DRILL_PUT_FINISHED*)
           (send self :send-to-ocs msg))
         )
-        (send smachine :go-to :initial)        
+        (send smachine :go-to :initial)
         ))
     )
   (:drill-wall-exec-command-callback (msg)
@@ -636,17 +635,17 @@ It sends :angle-vector to robot and return 'finished' message to ocs"
         (send self :send-to-ocs msg))
     (send smachine :go-to :initial))
   (:lookup-from-body-transform (header)
-    (let ((trans (send *tf* :lookup-transform "BODY" 
+    (let ((trans (send *tf* :lookup-transform "BODY"
                        (send header :frame_id) (send header :stamp))))
         (unless trans
-          (setq trans (send *tf* :lookup-transform "BODY" 
+          (setq trans (send *tf* :lookup-transform "BODY"
                             (send header :frame_id) (ros::time 0))))
         trans))
   (:lookup-from-ground-transform (header)
-    (let ((trans (send *tf* :lookup-transform "ground" 
+    (let ((trans (send *tf* :lookup-transform "ground"
                        (send header :frame_id) (send header :stamp))))
         (unless trans
-          (setq trans (send *tf* :lookup-transform "ground" 
+          (setq trans (send *tf* :lookup-transform "ground"
                             (send header :frame_id) (ros::time 0))))
         trans))
   (:debri-recog-callback (msg)
@@ -659,7 +658,7 @@ It sends :angle-vector to robot and return 'finished' message to ocs"
                                              (elt coefficients 1)
                                              (elt coefficients 2)))))
           (let ((coords (make-coords :pos pos)))
-            (orient-coords-to-axis coords 
+            (orient-coords-to-axis coords
                                    (float-vector (elt coefficients 3)
                                                  (elt coefficients 4)
                                                  (elt coefficients 5)))
@@ -740,24 +739,23 @@ It sends :angle-vector to robot and return 'finished' message to ocs"
       (let* ((trans (send self :lookup-from-body-transform (send msg :header)))
              (coords (ros::tf-pose-stamped->coords msg))
              (from-body-coords (send trans :transform coords)))
-	
-	(let ((msg (instance drc_com_common::FC2OCSSmall :init)))
-	  (send msg :type drc_com_common::FC2OCSSmall::*DRILL_GRASP_POSE*)
-	  (send msg :params (coords-to-float-vector from-body-coords (length (send msg :params))))
-	  (send self :send-to-ocs msg)
-	  (send smachine :go-to :initial)
-	  ))))
+        (let ((msg (instance drc_com_common::FC2OCSSmall :init)))
+          (send msg :type drc_com_common::FC2OCSSmall::*DRILL_GRASP_POSE*)
+          (send msg :params (coords-to-float-vector from-body-coords (length (send msg :params))))
+          (send self :send-to-ocs msg)
+          (send smachine :go-to :initial)
+          ))))
   (:drill-put-recog-callback (msg)         ;geometry_msgs/PoseStamped
     (when (send smachine :state? :recognizing-drill-put-pose)
       (let* ((trans (send self :lookup-from-body-transform (send msg :header)))
              (coords (ros::tf-pose-stamped->coords msg))
              (from-body-coords (send trans :transform coords)))
-	(let ((msg (instance drc_com_common::FC2OCSSmall :init)))
-	  (send msg :type drc_com_common::FC2OCSSmall::*DRILL_PUT_POSE*)
-	  (send msg :params (coords-to-float-vector from-body-coords (length (send msg :params))))
-	  (send self :send-to-ocs msg)
-	  (send smachine :go-to :initial)
-	  ))))
+        (let ((msg (instance drc_com_common::FC2OCSSmall :init)))
+          (send msg :type drc_com_common::FC2OCSSmall::*DRILL_PUT_POSE*)
+          (send msg :params (coords-to-float-vector from-body-coords (length (send msg :params))))
+          (send self :send-to-ocs msg)
+          (send smachine :go-to :initial)
+          ))))
   (:drill-wall-recog-callback (msg)
     (ros::ros-info ":drill-wall-recog-callback")
     (when (send smachine :state? :recognizing-drill-wall)
@@ -785,23 +783,23 @@ It sends :angle-vector to robot and return 'finished' message to ocs"
       (let* ((trans (send self :lookup-from-body-transform (send msg :header)))
              (coords (ros::tf-pose-stamped->coords msg))
              (from-body-coords (send trans :transform coords)))
-	(let ((msg (instance drc_com_common::FC2OCSSmall :init)))
-	  (send msg :type drc_com_common::FC2OCSSmall::*DRILL_BUTTON_POSE*)
-	  (send msg :params (coords-to-float-vector from-body-coords (length (send msg :params))))
-	  (send self :send-to-ocs msg)
-	  (send smachine :go-to :initial)
-	  ))))
+        (let ((msg (instance drc_com_common::FC2OCSSmall :init)))
+          (send msg :type drc_com_common::FC2OCSSmall::*DRILL_BUTTON_POSE*)
+          (send msg :params (coords-to-float-vector from-body-coords (length (send msg :params))))
+          (send self :send-to-ocs msg)
+          (send smachine :go-to :initial)
+          ))))
   (:drill-rotate-recog-callback (msg)         ;geometry_msgs/PoseStamped
     (when (send smachine :state? :recognizing-drill-rotate-pose)
       (let* ((trans (send self :lookup-from-body-transform (send msg :header)))
              (coords (ros::tf-pose-stamped->coords msg))
              (from-body-coords (send trans :transform coords)))
-	(let ((msg (instance drc_com_common::FC2OCSSmall :init)))
-	  (send msg :type drc_com_common::FC2OCSSmall::*DRILL_ROTATE_POSE*)
-	  (send msg :params (coords-to-float-vector from-body-coords (length (send msg :params))))
-	  (send self :send-to-ocs msg)
-	  (send smachine :go-to :initial)
-	  ))))
+        (let ((msg (instance drc_com_common::FC2OCSSmall :init)))
+          (send msg :type drc_com_common::FC2OCSSmall::*DRILL_ROTATE_POSE*)
+          (send msg :params (coords-to-float-vector from-body-coords (length (send msg :params))))
+          (send self :send-to-ocs msg)
+          (send smachine :go-to :initial)
+          ))))
   (:look-at-panorama-recog-callback (msg)
     (ros::ros-warn "panorama callback!")
     (send smachine :go-to :recognizing-look-at-point)
@@ -937,7 +935,7 @@ It sends :angle-vector to robot and return 'finished' message to ocs"
   (:angle-vector-send-command-callback
    (msg)
    (when (send smachine :state? :initial)
-     (multiple-value-bind 
+     (multiple-value-bind
          (av time) (float-vector-to-angle-vector (send msg :float_params))
        (send smachine :go-to :executing-angle-vector)
        (format t "angle-vector ~A ~A~%" av time)
@@ -952,7 +950,7 @@ It sends :angle-vector to robot and return 'finished' message to ocs"
   (:reach-until-touch-command-callback
    (msg)
    (when (send smachine :state? :initial)
-     (multiple-value-bind 
+     (multiple-value-bind
          (dir thre max-dist dist-step time-step rotation-axis)
          (float-vector-to-reach-until-touch-params (send msg :float_params))
        (let* ((arm-side (send msg :arm_side))
@@ -1070,4 +1068,4 @@ It sends :angle-vector to robot and return 'finished' message to ocs"
   (ros::spin-once)
   (send (send *app* :state-machine) :proc)
   )
-  
+

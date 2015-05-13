@@ -15,8 +15,7 @@
           accel-origin brake-origin
           step-accel-command step-brake-command
           release-accel-command release-brake-command
-          is-handle-reached-to-target
-          grasped-flag accel-flag
+          state-list mode-list
           old-handle-deg
           polygon-stamped-msg
           torus-finder-estimated-robot-coords
@@ -56,10 +55,11 @@
      (send motion :approach-accel-pedal)
      (send motion :approach-brake-pedal)
      )
+   
    ;; initialize instance valiables
    (setq ros-rate tmp-ros-rate
-         grasped-flag nil
-         accel-flag nil
+         state-list (list :initialize :release :running)
+         mode-list (list :stop :operation :recognition)
          torus-finder-estimated-robot-coords nil
          handle-pose-estimated-robot-coords nil
          old-estimated-handle-angle 0.0
@@ -80,6 +80,7 @@
          release-brake-command 0 ;; 5
          max-turn-handle-omega 90
          )
+   
    ;; subscriber for operator command
    (ros::subscribe "/drive/operation/accel_cmd"
                    std_msgs::Float64
@@ -124,6 +125,11 @@
                    geometry_msgs::PoseStamped
                    #'send self :handle-pose-callback)
 
+   ;; for controller mode
+   (ros::advertise "/drive/controller/handle_mode" std_msgs::String 1)
+   (ros::advertise "/drive/controller/accel_mode" std_msgs::String 1)
+   (ros::advertise "/drive/controller/brake_mode" std_msgs::String 1)
+   
    ;; for vehicle ui
    (ros::advertise-service "/drive/controller/initialize" std_srvs::Empty #'send self :initialize-callback)
    (ros::advertise-service "/drive/controller/grasp" std_srvs::Empty #'send self :grasp-callback)
@@ -134,6 +140,16 @@
    (ros::advertise-service "/drive/controller/egress" std_srvs::Empty #'send self :egress-callback)
    (ros::advertise-service "/drive/controller/set_max_step" drc_task_common::SetValue #'send self :set-max-step-callback)
    (ros::advertise-service "/drive/controller/set_min_step" drc_task_common::SetValue #'send self :set-min-step-callback)
+   (ros::advertise-service "/drive/controller/set_handle_mode" drc_task_common::StringRequest #'send self :set-handle-mode-callback)
+   (ros::advertise-service "/drive/controller/set_accel_mode" drc_task_common::StringRequest #'send self :set-accel-mode-callback)
+
+   ;; initialize plist
+   (send self :controller-state :handle :initialize)
+   (send self :controller-state :accel :initialize)
+   (send self :controller-state :brake :initialize)
+   (send self :controller-mode :handle :stop)
+   (send self :controller-mode :accel :stop)
+   (send self :controller-mode :brake :stop) 
    )
 
   ;; vehicle ui callback
@@ -204,6 +220,23 @@
      )
    )
 
+  (:set-handle-mode-callback
+   (req)
+   (let ((res (send req :response)))
+     (send self :controller-mode :handle (read-from-string (format nil ":~A" (string-downcase (send req :data)))))
+     (warn "set handle-mode to ~A~%" (send self :controller-mode :handle))
+     res
+     )
+   )
+  (:set-accel-mode-callback
+   (req)
+   (let ((res (send req :response)))
+     (send self :controller-mode :accel (read-from-string (format nil ":~A" (string-downcase (send req :data)))))
+     (warn "set accel-mode to ~A~%" (send self :controller-mode :accel))
+     res
+     )
+   )
+  
   ;; interface command
   (:initialize
    (&key (sync nil))
@@ -218,6 +251,9 @@
    (send self :support-by-leg :set-ref-force nil)
    (send self :approach-handle)
    (send self :publish-body-relative-steering-coords)
+   ;; enable operation
+   (send self :controller-mode :handle :operation)
+   (send self :controller-mode :accel :operation)
    nil
    )
   (:grasp
@@ -225,7 +261,7 @@
    (let (grasp-result)
      (setq grasp-result (send* motion :grasp-handle args))
      (when grasp-result
-       (setq grasped-flag t)
+       (send self :controller-state :handle :running)
        ;; handle-angle is estimated to be right when grasped
        (setq old-estimated-handle-angle (send motion :car :handle-joint :joint-angle))
        )
@@ -237,7 +273,7 @@
    (let (release-result)
      (setq release-result (send* motion :release-handle args))
      (when release-result
-       (setq grasped-flag nil)
+       (send self :controller-state :handle :release)
        )
      release-result
      )
@@ -262,7 +298,7 @@
        )
 
      ;; turn can be used only when grasped
-     (unless grasped-flag
+     (unless (equal (send self :controller-state :handle) :running)
        (warn "Robot do not grasp handle~%")
        (return-from :turn nil) ;; return nil because incorrect use of function
        )
@@ -287,23 +323,24 @@
      )
    )
   (:approach-handle
-   (&rest args &key (sync-controller grasped-flag) &allow-other-keys)
+   (&rest args &key (sync-controller (equal (send self :controller-state :handle) :running)) &allow-other-keys)
    (let (approach-result)
      (setq approach-result
            (send* motion :approach-handle :sync-controller sync-controller args)
            )
-     (setq grasped-flag nil)
+     (send self :controller-state :handle :release)
      approach-result
      )
    )
   (:approach-accel
    (&rest args)
    (send* motion :approach-accel-pedal args)
-   (setq accel-flag t) ;; enbale accel
+   (send self :controller-state :accel :running) ;; enbale accel
    )
   (:approach-brake
    (&rest args)
    (send* motion :approach-brake-pedal args)
+   (send self :controller-state :brake :running) ;; enbale brake
    )
   (:approach-floor
    (&rest args &key (start-impedance t) (set-ref-force nil) &allow-other-keys)
@@ -320,6 +357,10 @@
    )
   (:step-accel ;; mainly for command-line
    (command &rest args)
+   (unless (equal (send self :controller-state :accel) :running)
+     (warn "accel is not approached~%")
+     (return-from :step-accel nil)
+     )
    (send* motion :step-accel-pedal command args) ;; step accel
    )
   (:detatch-accel
@@ -328,6 +369,10 @@
    )
   (:step-brake ;; mainly for command-line
    (command &rest args)
+   (unless (equal (send self :controller-state :brake) :running)
+     (warn "brake is not approached~%")
+     (return-from :step-brake nil)
+     )
    (send* motion :step-brake-pedal command args) ;; step brake
    )
   (:support-by-leg
@@ -337,12 +382,12 @@
           args) ;; approach to floor
    )
   (:go-to-egress
-   (&rest args)
+   (&rest args) ;; todo: consider controller-state
    ;; stop accel
    (send self :accel-cmd 0.0)
-   (send self :accel-flag nil)
+   (send self :controller-mode :accel :stop)
    ;; stop handling
-   (send self :grasped-flag nil)
+   (send self :controller-mode :handle :stop)
    ;; execute egress
    (send* motion :go-to-egress args)
    )
@@ -387,6 +432,10 @@
    (let* ((data (send msg :data)) ;; data is estimated as radius
           (threshold 1.0) ;; [deg]
           )
+     (unless (equal (send self :controller-mode :handle) :operation)
+       (warn "handle mode is ~A~%" (send self :controller-mode :handle))
+       (return-from :handle-callback nil) ;; do not turn handle
+       )
      (when (> (abs (- (rad2deg data) (send motion :car :handle-joint :joint-angle))) threshold)
        (send self :turn data :rad t :mode :velocity)
        )
@@ -394,13 +443,11 @@
    )
   (:accel-callback
    (msg)
-   (let ((pub-pedal-state (instance std_msgs::Bool :init))
-         (threshold 0.05) ;; 0-1 range command
+   (let ((threshold 0.05) ;; 0-1 range command
          (accel-command (send msg :data))
          )
-     ;; check accel flag
-     (unless accel-flag
-       (warn "accel-cmd is disabled~%")
+     (unless (equal (send self :controller-mode :accel) :operation)
+       (warn "accel mode is ~A~%" (send self :controller-mode :accel))
        (setq accel-command 0.0) ;; forcely stop accel
        )
      ;; send accel command
@@ -410,8 +457,6 @@
        (send self :accel-cmd accel-command)
        (setq old-accel-command accel-command)
        )
-     (send pub-pedal-state :data accel-flag)
-     (ros::publish "/drive/controller/pedal_state" pub-pedal-state)
      )
    )
   (:brake-callback
@@ -488,7 +533,7 @@
    )
   (:record-handling-end-coords
    (&key (reset-buffer nil))
-   (when (and record-handling-end-coords-flag grasped-flag)
+   (when (and record-handling-end-coords-flag (equal (send self :controller-state :handle) :running))
      (let* ((model-angle-vector (send motion :robot :angle-vector)))
        (when reset-buffer
          (setq handling-end-coords-list nil)
@@ -634,16 +679,16 @@
          (position-threshold 1000) (yes nil)
          )
    ;; wait handling   
-   (let (wait-start old-accel-flag
+   (let (wait-start old-accel-mode
          old-head-angle-vector
          old-robot-coords old-body-coords distance
          release-result grasp-result approach-result
          compensation-result
          )
      (warn "release accel~%")
-     (setq old-accel-flag accel-flag)
-     (setq accel-flag nil) ;; disable accel
      (send self :accel-cmd 0.0) ;; force stop
+     (setq old-accel-mode (send self :controller-mode :accel))
+     (send self :controller-mode :accel :stop)
      (warn "wait interpolation~%")
      (setq wait-start (ros::time-now))
      (while (and (or (send *ri* :interpolatingp (read-from-string (format nil ":~A-controller" (string-downcase limb))))
@@ -658,7 +703,7 @@
        (return-from :execute-handle-pose-compensation nil)
        )
      (warn "release handle~%")
-     (if grasped-flag
+     (if (equal (send self :controller-state :handle) :running)
          (setq release-result (send self :release))
        (setq release-result t)
        )
@@ -718,7 +763,7 @@
          )
        )
      (send self :publish-body-relative-steering-coords) ;; update steering coords in rviz
-     (setq accel-flag old-accel-flag)
+     (send self :controller-mode :accel old-accel-mode) ;; resume accel mode
      (and release-result compensation-result approach-result grasp-result) ;; return result of all compensation process
      )
    )
@@ -777,6 +822,36 @@
      estimated-angle
      )
    )
+
+  ;; state management
+  (:controller-state
+   (target &optional (new-state nil))
+   ;; :initialize -> :release <-> :running
+   (let ((target-state (read-from-string (format nil ":~A-state" (string-downcase target))))) ;; plist assumes :<target>-state
+     (when (member new-state state-list)
+       (send self :put target-state new-state)
+       )
+     (send self :get target-state)
+     )
+   )  
+  
+  ;; mode management
+  (:controller-mode
+   (target &optional (new-mode nil))
+   ;; :stop, :operate, :recognize
+   (let ((target-mode (read-from-string (format nil ":~A-mode" (string-downcase target))))
+         (pub-mode (instance std_msgs::String :init))
+         ) ;; plist assumes :<target>-mode
+     (when (member new-mode mode-list)
+       (send self :put target-mode new-mode)
+       (send pub-mode :data (string-downcase (send self :get target-mode)))
+       (eval (list 'ros::publish (format nil "/drive/controller/~A_mode" (string-downcase target)) pub-mode))
+       ;; (warn (format nil "/drive/controller/~A_mode~%" (string-downcase target)))
+       )
+     (send self :get target-mode)
+     )
+   )
+  
   ;; accessor
   (:motion () motion)
 
@@ -813,8 +888,6 @@
   (:brake-origin (&optional (angle nil)) (when angle (setq brake-origin angle)) brake-origin)
   (:step-brake-command (&optional (angle nil)) (when angle (setq step-brake-command angle)) step-brake-command)
   (:release-brake-command (&optional (angle nil)) (when angle (setq release-brake-command angle)) release-brake-command)
-  (:grasped-flag (&optional (val 0)) (unless (equal val 0) (setq grasped-flag val)) grasped-flag)
-  (:accel-flag (&optional (val 0)) (unless (equal val 0) (setq accel-flag val)) accel-flag)
   (:max-turn-handle-omega (&optional (val nil)) (unless val (setq max-turn-handle-omega val)) max-turn-handle-omega)
   (:record-handling-end-coords-flag
    (&optional (val 0))

@@ -9,7 +9,7 @@ from python_qt_binding.QtGui import (QAction, QIcon, QMenu, QWidget,
 from python_qt_binding.QtCore import (Qt, QTimer, qWarning, Slot, QEvent, QSize,
                                       pyqtSignal, 
                                       pyqtSlot)
-from drc_task_common.srv import SetValue
+from drc_task_common.srv import SetValue, StringRequest
 from threading import Lock
 import rospy
 import python_qt_binding.QtCore as QtCore
@@ -82,11 +82,42 @@ class VehicleUIWidget(QWidget):
             srv()
         except rospy.ServiceException, e:
             self.showError("Failed to call %s" % name)
+
+    def handleModeClickedCallback(self, item):
+        try:
+            update_mode = rospy.ServiceProxy('/drive/controller/set_handle_mode', StringRequest)
+            update_mode(item.text())
+        except rospy.ServiceException, e:
+            self.showError("Failed to call /drive/controller/set_handle_mode")
+    def accelModeClickedCallback(self, item):
+        try:
+            update_mode = rospy.ServiceProxy('/drive/controller/set_accel_mode', StringRequest)
+            update_mode(item.text())
+        except rospy.ServiceException, e:
+            self.showError("Failed to call /drive/controller/set_accel_mode")
+    
     def setUpLeftBox(self, left_vbox):
-        self.mode_list = QListWidget()
-        self.mode_list.addItem("Manual")
-        self.mode_list.addItem("Auto")
-        left_vbox.addWidget(self.mode_list)
+        handle_mode_vbox = QtGui.QVBoxLayout(self)
+        handle_mode_group = QtGui.QGroupBox("Handle Mode", self)
+        self.handle_mode_list = QListWidget()
+        self.handle_mode_list.addItem("Operation")
+        self.handle_mode_list.addItem("Recognition")
+        self.handle_mode_list.addItem("Stop")
+        self.handle_mode_list.itemClicked.connect(self.handleModeClickedCallback)
+        handle_mode_vbox.addWidget(self.handle_mode_list)
+        handle_mode_group.setLayout(handle_mode_vbox)
+        left_vbox.addWidget(handle_mode_group)
+
+        accel_mode_vbox = QtGui.QVBoxLayout(self)
+        accel_mode_group = QtGui.QGroupBox("Accel Mode", self)
+        self.accel_mode_list = QListWidget()
+        self.accel_mode_list.addItem("Operation")
+        self.accel_mode_list.addItem("Recognition")
+        self.accel_mode_list.addItem("Stop")
+        self.accel_mode_list.itemClicked.connect(self.accelModeClickedCallback)
+        accel_mode_vbox.addWidget(self.accel_mode_list)
+        accel_mode_group.setLayout(accel_mode_vbox)
+        left_vbox.addWidget(accel_mode_group)
 
         action_vbox = QtGui.QVBoxLayout(self)
         action_group = QtGui.QGroupBox("action", self)
