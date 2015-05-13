@@ -1,8 +1,8 @@
 <launch>
   <arg name="INPUT_IMAGE" default="/multisense/left/image_rect_color"/>
   <arg name="INPUT_CAMERA_INFO" default="/multisense/left/camera_info"/>
-  <arg name="INPUT_POINT_CLOUD" default="/multisense/organized_image_points2_color" />
-  <arg name="INPUT_HINT_POINT_CLOUD" default="/multisense/organized_image_points2_color" />
+  <arg name="INPUT_POINT_CLOUD" default="/laser_camera_cloud/output" />
+  <arg name="INPUT_HINT_POINT_CLOUD" default="/laser_camera_cloud/output" />
   <arg name="DEBUG_VIEW" default="false" />
   <group ns="door_recognition">
     <node pkg="jsk_perception" type="rect_to_mask_image"
@@ -26,6 +26,7 @@
       <remap from="~input" to="$(arg INPUT_POINT_CLOUD)" />
       <remap from="~input/hint/cloud" to="filtered_cloud/output" />
       <rosparam>
+        outlier_threashold: 0.01
         enable_normal_filtering: false
       </rosparam>
     </node>
@@ -57,7 +58,7 @@
       <remap from="~input_coefficients" to="door_polygon_array_wrapper/output_coefficients" />
       <rosparam>
         use_indices: false
-        min_height: 0.025
+        min_height: 0.01
         max_height: 0.2
       </rosparam>
     </node>
@@ -86,5 +87,15 @@
         latch: true
       </rosparam>
     </node>
+    <group if="$(arg DEBUG_VIEW)">
+      <node pkg="image_view2" type="image_view2" name="image_view2">
+        <remap from="image" to="$(arg INPUT_IMAGE)" />
+        <remap from="$(arg INPUT_IMAGE)/foreground_rect" to="input_support_plane_rect" />
+        <remap from="$(arg INPUT_IMAGE)/background_rect" to="input_target_rect" />
+        <rosparam>
+          interaction_mode: grabcut_rect
+        </rosparam>
+      </node>
+    </group>
   </group>
 </launch>
