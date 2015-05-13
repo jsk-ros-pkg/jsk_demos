@@ -520,7 +520,10 @@ class StepGageWidget(QWidget):
             painter.setOpacity(0.8)
             painter.setPen(QtCore.Qt.black)
             painter.drawRect(rect)
-            step_h = float(self.value - self.min_value) / (self.max_value - self.min_value) * h
+            if (self.max_value - self.min_value) * h != 0:
+                step_h = float(self.value - self.min_value) / (self.max_value - self.min_value) * h
+            else:
+                step_h = 0.0
             fill_rect = QtCore.QRect(1, (h - step_h), w - 1, step_h)
             painter.fillRect(fill_rect, QtGui.QColor("#18FFFF"))
             painter.end()
