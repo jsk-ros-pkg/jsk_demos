@@ -10,6 +10,8 @@ find_package(catkin REQUIRED COMPONENTS
 add_message_files(FILES
   FC2OCSLarge.msg FC2OCSSmall.msg OCS2FCSmall.msg
   FC2OCSBasicInfoSmall.msg
+  VehicleOCS2FCSmall.msg
+  VehicleFC2OCSSmall.msg
   HumanoidJointAngles.msg)
 generate_messages(DEPENDENCIES sensor_msgs)
 generate_dynamic_reconfigure_options(
