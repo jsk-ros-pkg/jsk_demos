@@ -47,7 +47,12 @@
         (make-cascoords
          ;; :coords (make-coords :pos #f(0 0 170) :rpy (if *drill-reverse-hand* (list (deg2rad 40) 0 pi) (list (deg2rad -40) 0 0)))
          :coords (make-coords 
-                  :pos #f(0 0 140) 
+                  :pos (float-vector 0 0 
+			       (if *drill-reverse-hand*
+				   140
+				 185
+				 )
+			       )
                   :rpy ;;depends on button motion 
                   (cond ((or (equal *robot-name* "HRP2JSKNTS") (equal *robot-name* "HRP2JSKNT"))
                          (if *drill-reverse-hand*
@@ -204,8 +209,10 @@
   (setf (gethash :rarm *arm-drill-grasp-coords*)
         (make-cascoords
          :coords 
-	 (cond ((or (equal *robot-name* "HRP2JSKNT") (equal *robot-name* "HRP2JSKNTS"))
-		(send (send (send (send *robot* :rarm :end-coords) :copy-worldcoords) :translate (float-vector 50.0 2.0 0.0) :local) :rotate (deg2rad 45) :z :local))
+	 (cond ((equal *robot-name* "HRP2JSKNT")
+		(send (send (send (send *robot* :larm :end-coords) :copy-worldcoords) :translate (float-vector 50 -2.0 0.0) :local) :rotate (deg2rad -45) :z :local))
+	       ((equal *robot-name* "HRP2JSKNTS")
+		(send (send (send (send *robot* :larm :end-coords) :copy-worldcoords) :translate (float-vector 45 -15.0 0.0) :local) :rotate (deg2rad -45) :z :local))
 	       (t
 		(send (send (send (send *robot* :rarm :end-coords) :copy-worldcoords) :translate (float-vector 0.0 0.0 0.0) :local) :rotate (deg2rad 0) :z :local)
 		)
@@ -214,8 +221,10 @@
   (setf (gethash :larm *arm-drill-grasp-coords*)
         (make-cascoords
          :coords 
-	 (cond ((or (equal *robot-name* "HRP2JSKNT") (equal *robot-name* "HRP2JSKNTS"))
-		(send (send (send (send *robot* :larm :end-coords) :copy-worldcoords) :translate (float-vector 50.0 -2.0 0.0) :local) :rotate (deg2rad -45) :z :local))
+	 (cond ((equal *robot-name* "HRP2JSKNT")
+		(send (send (send (send *robot* :larm :end-coords) :copy-worldcoords) :translate (float-vector 50 -2.0 0.0) :local) :rotate (deg2rad -45) :z :local))
+	       ((equal *robot-name* "HRP2JSKNTS")
+		(send (send (send (send *robot* :larm :end-coords) :copy-worldcoords) :translate (float-vector 45 -15.0 0.0) :local) :rotate (deg2rad -45) :z :local))
 		(t
 		 (send (send (send (send *robot* :larm :end-coords) :copy-worldcoords) :translate (float-vector 0.0 0.0 0.0) :local) :rotate (deg2rad 0) :z :local)
 		 )		
