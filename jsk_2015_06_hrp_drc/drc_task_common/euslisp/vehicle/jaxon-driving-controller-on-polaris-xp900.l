@@ -27,6 +27,12 @@
    ;; (send self :step-accel-command 10)
    ;; (send self :release-accel-command 4)
    )
+  (:execute-handle-pose-compensation
+   (&rest args &key (release-offset #f(-200 0 0)) (shoulder-y-deg 0.0) &allow-other-keys)
+   (send-super* :execute-handle-pose-compensation
+                :release-offset release-offset :shoulder-y-deg shoulder-y-deg
+                args)
+   )
   (:brake-cmd
    (cmd)
    (warn "Real Vehicle Mode: Brake Disabled~%")
