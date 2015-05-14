@@ -1,0 +1,18 @@
+<launch>
+  <arg name="SIMULATION_MODE" default="false"/>
+  <arg name="REAL_MODE" default="false"/>
+  <arg name="ROSBAG_MODE" default="false"/>
+
+  <group if="$(arg SIMULATION_MODE)">
+    <node pkg="tf" type="static_transform_publisher" name="TF_car_center" args="0.05 0.3 -1.2 0 0 0 utorso car_center 100" /> <!-- because initial position is y : -0.6, z : -0.1 // start_gazebo_drive_shimulator.sh -->
+    <!-- <node pkg="tf" type="static_transform_publisher" name="TF_car_center" args="0.05 -0.3 -1.25 0 0 0 $(arg PINNED_LINK) car_center 10" /> --> <!-- because initial position is y : -0.6 // start_gazebo_drive_shimulator.sh  0.3 (atlas is right side of the car, and -0.3 left -->
+  </group>
+  <group if="$(arg ROSBAG_MODE)">
+    <include file="$(find drc_task_common)/launch/fc/vehicle/multisense_rosbag_static_tf_publisher.launch" />
+  </group>
+  <group if="$(arg REAL_MODE)">
+    <node pkg="tf" type="static_transform_publisher" name="TF_car_center" args="0.05 -0.3 -1.2 0 0 0 BODY car_center 100" />
+  </group>
+
+
+</launch>
