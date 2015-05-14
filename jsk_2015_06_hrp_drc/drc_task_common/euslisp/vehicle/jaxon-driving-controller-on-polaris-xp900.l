@@ -21,7 +21,7 @@
                :approach-handle approach-handle :approach-pedal approach-pedal
                )
    ;; (send self :accel-origin 4)
-   (send self :accel-origin -9.69405)
+   ;; (send self :accel-origin -9.69405)
    (send self :step-accel-command 6)
    (send self :release-accel-command 0)
    ;; (send self :step-accel-command 10)
