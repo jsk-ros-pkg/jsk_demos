@@ -666,30 +666,39 @@
   ;; holding frame
   (:approach-frame
    (&rest args &key (limb :larm) (target-handle :left-frame-center) (rotation-axis :z)
-          (time 10000) (offset #f(-150 50 0)) (offset-wrt :local) (debug-view nil))
+          (time 10000) (offset #f(-100 0 0)) (offset-wrt :local) (debug-view nil)
+          (grasp nil) (reach-until-touch nil) (reach-until-touch-thre 10)
+          )
    (send self :open-hand limb)
-   (let (ik-ret)
-     (setq ik-ret (send robot limb :inverse-kinematics (send (send (send car target-handle) :copy-worldcoords) :translate offset offset-wrt)
-                        :debug-view debug-view :rotation-axis rotation-axis)
+   (let ((check-links (subseq (send robot limb :links) 2 4))
+         (car-base-link (send car :vehicle-base))
+         ik-ret)
+     (setq ik-ret
+           (send robot limb :inverse-kinematics
+                 (send (send (send car target-handle) :copy-worldcoords) :translate offset offset-wrt)
+                 :debug-view debug-view :rotation-axis rotation-axis :stop 100
+                 :avoid-collision-null-gain 100
+                 :avoid-collision-joint-gain 1.0
+                 :collision-avoidance-link-pair (mapcar #'(lambda (x) (list x car-base-link)) check-links)
+                 )
            )
      (when (and real ik-ret)
        (send *ri* :angle-vector (send robot :angle-vector) time)
        (send *ri* :wait-interpolation)
        (send *viewer* :draw-objects)
+       (when (and reach-until-touch (not (send *ri* :simulation-modep)))
+         (send *ri* :reach-until-touch limb
+               (send (send robot limb :end-coords :copy-worldcoords) :rotate-vector #f(1 0 0))
+               :coords-system :world :thre reach-until-touch-thre :max-dist 100 :dist-step 5
+               :rotation-axis :z :time-step 1000 :debug debug-view
+               ) ;; todo: reach-until-touch uses copy-object
+         (send *ri* :state) ;; update
+         (send robot limb :angle-vector (send *ri* :robot limb :angle-vector)) ;; reflect reach-until-touch result
+         )
        )
-     )
-   )
-  (:grasp-frame
-   (&rest args &key (limb :larm) (target-handle :left-frame-center) (time 5000) (debug-view nil))
-   (let (ik-ret)
-     (send robot limb :inverse-kinematics (send (send car target-handle) :copy-worldcoords)
-           :debug-view debug-view :rotation-axis :z :stop 1000)
-     (when (and real ik-ret)
-       (send *ri* :angle-vector (send robot :angle-vector) time)
-       (send *ri* :wait-interpolation)
-       (send *viewer* :draw-objects)
+     (when grasp
+       (send self :close-hand limb)
        )
-     (send self :close-hand :rarm)
      )
    )
   (:approach-fist
