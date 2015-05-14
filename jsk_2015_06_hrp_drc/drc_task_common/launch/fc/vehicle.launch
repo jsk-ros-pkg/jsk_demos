@@ -11,7 +11,7 @@
   <include file="$(find drc_task_common)/launch/fc/vehicle/handle_pose_detector.launch"/>
 
   <!-- vehicle_ui -->
-  <group if="$(arg LAUNCH_UI)">
+  <group ns="$(arg OCS_NS)" if="$(arg LAUNCH_UI)">
     <node pkg="topic_tools" type="throttle" name="vehicle_ui_lfsensor_throttle" args="messages /off_lfsensor 5 drive/throttled_off_lfsensor" />
     <node pkg="topic_tools" type="throttle" name="vehicle_ui_rfsensor_throttle" args="messages /off_rfsensor 5 drive/throttled_off_rfsensor" />
     <node pkg="drc_task_common" type="vehicle_ui" name="vehicle_ui" respawn="true" >
