@@ -71,7 +71,7 @@
          handling-end-coords-list nil
          record-handling-end-coords-flag nil
          )
-   ;; set defalut value for pedaling
+   ;; set defalut value for pedaling (for staro)
    (setq accel-origin 14
          step-accel-command 14 ;; 28
          release-accel-command 0 ;; 14
@@ -328,8 +328,9 @@
      )
    )
   (:approach-accel
-   (&rest args)
-   (send* motion :approach-accel-pedal args)
+   (&rest args &key (limb :rleg) &allow-other-keys)
+   (send* motion :approach-accel-pedal :limb limb args)
+   (send self :accel-origin (send motion :robot limb :ankle-p :joint-angle))
    (send self :controller-state :accel :running) ;; enbale accel
    )
   (:approach-brake
