@@ -1,0 +1,21 @@
+<launch>
+  <!--
+      This is a launch file for Main PC of Operator Control Station (OCS)
+  -->
+  <arg name="FC_IP" value="localhost"/>
+  <arg name="OCS_IP" value="localhost"/>
+
+  <arg name="USE_COM" value="true"/>
+
+  <!-- executive -->
+  <node pkg="drc_task_common" type="vehicle-ocs-executive.l" name="vehicle_ocs_executive" output="screen">
+  </node>
+  
+  <!-- communication -->
+  <include if="$(arg USE_COM)"
+           file="$(find drc_com_common)/launch/vehicle_operator_station_com.launch">
+    <arg name="FC_IP" value="$(arg FC_IP)" />
+    <arg name="OCS_IP" value="$(arg OCS_IP)" />
+  </include>
+
+</launch>
