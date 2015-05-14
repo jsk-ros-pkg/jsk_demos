@@ -671,8 +671,9 @@
      )
    )
   (:execute-handle-pose-compensation
-   (&key (tm 2500) (wait-sec 30.0) (limb (send motion :grasp-arm))
-         (position-threshold 1000) (yes nil)
+   (&rest args &key (tm 2500) (wait-sec 30.0) (limb (send motion :grasp-arm))
+          (position-threshold 1000) (yes nil)
+          (release-offset #f(-100 0 0)) (shoulder-y-deg 0.0)
          )
    ;; wait handling   
    (let (wait-start old-accel-mode
@@ -700,12 +701,12 @@
        )
      (warn "release handle~%")
      (if (equal (send self :controller-state :handle) :running)
-         (setq release-result (send self :release))
+         (setq release-result (send self :release :offset release-offset))
        (setq release-result t)
        )
      (when release-result
        ;; temporary ;;
-       (send (send motion :robot) (send motion :grasp-arm) :shoulder-y :joint-angle 0)
+       (send (send motion :robot) (send motion :grasp-arm) :shoulder-y :joint-angle shoulder-y-deg)
        ;; temporary ;;
        (setq old-head-angle-vector (send motion :robot :head :angle-vector))
        (send (send motion :robot) :look-at-target (send motion :car :vehicle-handle :steering-center)) ;; look at handle
