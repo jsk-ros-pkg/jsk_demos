@@ -981,6 +981,10 @@
         ;; publish motion to robot model on rviz
         (setq *drill-main-arm* (send self :get-arm-side))
 	(publish-drill-grasp-motion :coords (elt drill-grasp-params 0) :update? t :stand-coords (make-coords) :overwrite-stand-coords? t)
+	(if (or (not (boundp '*drill-motion*)) (not *drill-motion*))
+	    (send self :show-text 
+		  "IK FAIL")
+	    )
  ;todo drill-type
         (send smachine :go-to :selecting-exec-for-drill-grasp))
       ))
@@ -1001,7 +1005,12 @@
         (apply-primitive-dimensions-to-midi-device)
         (move-robot-model-to-current-pos)
         ;; publish motion to robot model on rviz
+        (setq *drill-main-arm* (send self :get-arm-side))
         (publish-drill-put-motion :coords (elt drill-put-params 0) :update? t :stand-coords (make-coords) :overwrite-stand-coords? t)
+	(if (or (not (boundp '*drill-motion*)) (not *drill-motion*))
+	    (send self :show-text 
+		  "IK FAIL")
+	  )
         (send smachine :go-to :selecting-exec-for-drill-put))
       ))
   (:drill-wall-recognition-finished-callback (msg)
@@ -1022,7 +1031,12 @@
           (move-robot-model-to-current-pos)
           ;; end marker
           (setq drill-wall-target-coords (get-relative-coords-list center-coords coords-set))
+	  (setq *drill-main-arm* (send self :get-arm-side))
           (publish-drill-wall-motion :coords-list coords-set :update? t :stand-coords (make-coords) :overwrite-stand-coords? t)
+	  (if (or (not (boundp '*drill-motion*)) (not *drill-motion*))
+	      (send self :show-text 
+		  "IK FAIL")
+	    )
           (send smachine :go-to :selecting-exec-for-drill-wall)))))
   (:drill-button-recognition-finished-callback (msg)
     (when (eq (send smachine :state) :recognizing-drill-button-pose)
@@ -1038,7 +1052,12 @@
         ;;(set-primitive-marker-pose coords "BODY") ;; comment out because pose is not correct
         (move-robot-model-to-current-pos)
         ;; publish motion to robot model on rviz
-        (publish-drill-button-motion :coords (elt drill-button-params 0) :update? t) 
+	(setq *drill-main-arm* (send self :get-arm-side))
+        (publish-drill-button-motion :coords (elt drill-button-params 0) :update? t)
+	(if (or (not (boundp '*drill-motion*)) (not *drill-motion*))
+	    (send self :show-text 
+		  "IK FAIL")
+	  )
         (send smachine :go-to :selecting-exec-for-drill-button))))
 
  (:drill-rotate-recognition-finished-callback (msg)
@@ -1053,7 +1072,12 @@
         (insert-primitive-marker :shape-type jsk_rviz_plugins::TransformableMarkerOperate::*MESH_RESOURCE* :name "drill" :description "" :resource "package://drc_task_common/models/takenoko_drill.dae" :use-material t)
         (move-robot-model-to-current-pos)
         ;; publish motion to robot model on rviz
+	(setq *drill-main-arm* (send self :get-arm-side))
 	(publish-drill-rotate-motion :drill-coords (elt drill-rotate-params 0) :plane-coords (elt drill-rotate-params 1) :update? t) 
+	(if (or (not (boundp '*drill-motion-in*)) (not *drill-motion-in*))
+	    (send self :show-text 
+		  "IK FAIL")
+	    )
         (send smachine :go-to :selecting-exec-for-drill-rotate))))
   (:go-pos-recognition-finished-callback (msg)
     (when (eq (send smachine :state) :recognizing-go-pos-goal)
@@ -1198,35 +1222,60 @@
            (setq drill-grasp-params
                  (list (get-primitive-marker-pose :frame-id "BODY" :name "drill")))
            ;; publish drill motion to robot model on rviz
-           (publish-drill-grasp-motion :coords (elt drill-grasp-params 0) :update? t :arm (send self :get-arm-side) :stand-coords (get-robot-model-current-pos) :overwrite-stand-coords? overwrite-stand-coords?) ;;drill-type
+	   (setq *drill-main-arm* (send self :get-arm-side))
+           (publish-drill-grasp-motion :coords (elt drill-grasp-params 0) :update? t :stand-coords (get-robot-model-current-pos) :overwrite-stand-coords? overwrite-stand-coords?) ;;drill-type
+	   (if (or (not (boundp '*drill-motion*)) (not *drill-motion*))
+	       (send self :show-text 
+		  "IK FAIL")
+	     )
            )
           ((eq (send smachine :state) :selecting-exec-for-drill-put)
            ;; update latest drill-put params
            (setq drill-put-params
                  (list (get-primitive-marker-pose :frame-id "BODY" :name "cylinder1")))
            ;; publish drill motion to robot model on rviz
+	   (setq *drill-main-arm* (send self :get-arm-side))
            (publish-drill-put-motion :coords (elt drill-put-params 0) :update? t :stand-coords (get-robot-model-current-pos) :overwrite-stand-coords? overwrite-stand-coords?)
+	   (if (or (not (boundp '*drill-motion*)) (not *drill-motion*))
+	       (send self :show-text 
+		     "IK FAIL")
+	     )
            )
           ((eq (send smachine :state) :selecting-exec-for-drill-button)
            ;; update latest drill-button params
            (setq drill-button-params
                  (list (get-primitive-marker-pose :frame-id "BODY" :name "drill")))
            ;; publish drill motion to robot model on rviz
+	   (setq *drill-main-arm* (send self :get-arm-side))
            (publish-drill-button-motion :coords (elt drill-button-params 0) :update? t)
+	   (if (or (not (boundp '*drill-motion*)) (not *drill-motion*))
+	       (send self :show-text 
+		     "IK FAIL")
+	     )
            )
           ((eq (send smachine :state) :selecting-exec-for-drill-rotate)
            ;; update latest drill-rotate params
            (setq drill-rotate-params
                  (list (get-primitive-marker-pose :frame-id "BODY" :name "drill") (get-primitive-marker-pose :frame-id "BODY" :name "cylinder1")))
            ;; publish drill motion to robot model on rviz
+	   (setq *drill-main-arm* (send self :get-arm-side))
            (publish-drill-rotate-motion :drill-coords (elt drill-rotate-params 0) :plane-coords (elt drill-rotate-params 1) :update? t)
+	   (if (or (not (boundp '*drill-motion-in*)) (not *drill-motion-in*))
+	       (send self :show-text 
+		     "IK FAIL")
+	     )
            )
           ((eq (send smachine :state) :selecting-exec-for-drill-wall)
            ;; update latest drill-button params
            (setq drill-wall-params
                   (list (get-primitive-marker-pose :frame-id "BODY" :name "drill-wall")))
            ;; publish drill motion to robot model on rviz
+	   (setq *drill-main-arm* (send self :get-arm-side))
            (publish-drill-wall-motion :coords-list (get-coords-list-with-center (elt drill-wall-params 0) drill-wall-target-coords) :update? t :stand-coords (get-robot-model-current-pos) :overwrite-stand-coords? overwrite-stand-coords?)
+	   (if (or (not (boundp '*drill-motion*)) (not *drill-motion*))
+	       (send self :show-text 
+		     "IK FAIL")
+	    )
            )
           ((eq (send smachine :state) :selecting-exec-for-door)
            ;; update latest door params
