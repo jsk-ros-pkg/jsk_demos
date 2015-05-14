@@ -255,7 +255,7 @@
         (cond ((or (equal *robot-name* "JAXON") (equal *robot-name* "STARO"))
                (setq tc
                      (list
-                      (send (send (send *valve* :get valve-handle-name) :copy-worldcoords) :translate (float-vector (* (- reach-dist) 1.5) 0 0) :local)
+                      (send (send (send *valve* :get valve-handle-name) :copy-worldcoords) :translate (float-vector (* (- reach-dist) 2.5) 0 0) :local)
                       (send *robot* :rleg :end-coords :copy-worldcoords)
                       (send *robot* :lleg :end-coords :copy-worldcoords))))
               (t ;; (or (equal *robot-name* "HRP2JSKNT") (equal *robot-name* "HRP2JSKNTS"))

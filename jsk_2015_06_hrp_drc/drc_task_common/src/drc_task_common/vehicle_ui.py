@@ -121,10 +121,10 @@ class VehicleUIWidget(QWidget):
 
         action_vbox = QtGui.QVBoxLayout(self)
         action_group = QtGui.QGroupBox("action", self)
-        self.initialize_button = QtGui.QPushButton("Initialize Pose")
-        self.grasp_button = QtGui.QPushButton("Grasp")
-        self.release_button = QtGui.QPushButton("Release")
-        self.correct_button = QtGui.QPushButton("Correct")
+        self.initialize_button = QtGui.QPushButton("Initial Pose")
+        self.grasp_button = QtGui.QPushButton("Grasp Handle")
+        self.release_button = QtGui.QPushButton("Release Handle")
+        self.correct_button = QtGui.QPushButton("Correct Handle Pose")
         self.initialize_button.clicked.connect(self.service("/drive/controller/initialize"))
         self.grasp_button.clicked.connect(self.service("/drive/controller/grasp"))
         self.release_button.clicked.connect(self.service("/drive/controller/release"))
@@ -140,10 +140,10 @@ class VehicleUIWidget(QWidget):
         reach_group = QtGui.QGroupBox("", self)
         self.reach_button = QtGui.QPushButton("Reach")
         menu = QtGui.QMenu()
-        reachLegAction = QAction("Reach Leg to Floor", self)
+        reachLegAction = QAction("Reach Leg", self)
         reachLegAction.triggered.connect(self.service("/drive/controller/reach_leg"))
         menu.addAction(reachLegAction)
-        reachArmAction = QAction("Reach Arm to Seat", self)
+        reachArmAction = QAction("Reach Arm", self)
         reachArmAction.triggered.connect(self.service("/drive/controller/reach_arm"))
         menu.addAction(reachArmAction)
         self.reach_button.setMenu(menu)
@@ -222,15 +222,19 @@ class VehicleUIWidget(QWidget):
         lower_left_vbox = QtGui.QVBoxLayout()
         left_force_group = QtGui.QGroupBox("LLEG Force")
         left_force_vbox = QtGui.QVBoxLayout()
-        self.left_force_label = QtGui.QLabel("-1")
-        left_force_vbox.addWidget(self.left_force_label)
+        self.left_force_label = list()
+        for i in range(3):
+            self.left_force_label.append(QtGui.QLabel("-1"))
+            left_force_vbox.addWidget(self.left_force_label[i])
         left_force_group.setLayout(left_force_vbox)
         lower_left_vbox.addWidget(left_force_group)
 
         right_force_group = QtGui.QGroupBox("RLEG Force")
         right_force_vbox = QtGui.QVBoxLayout()
-        self.right_force_label = QtGui.QLabel("-1")
-        right_force_vbox.addWidget(self.right_force_label)
+        self.right_force_label = list()
+        for i in range(3):
+            self.right_force_label.append(QtGui.QLabel("-1"))
+            right_force_vbox.addWidget(self.right_force_label[i])
         right_force_group.setLayout(right_force_vbox)
         lower_left_vbox.addWidget(right_force_group)
         lower_left_container = QtGui.QWidget()
@@ -274,16 +278,38 @@ class VehicleUIWidget(QWidget):
             "/lfsensor", geometry_msgs.msg.WrenchStamped, self.lfsensorCallback)
         self.rleg_force_sub = rospy.Subscriber(
             "/rfsensor", geometry_msgs.msg.WrenchStamped, self.rfsensorCallback)
+        self.handle_mode_sub = rospy.Subscriber(
+            "/drive/controller/handle_mode", std_msgs.msg.String, self.handleModeCallback)
+        self.accel_mode_sub = rospy.Subscriber(
+            "/drive/controller/accel_mode", std_msgs.msg.String, self.accelModeCallback)
     def lfsensorCallback(self, msg):
-        self.left_force_label.setText(str(msg.wrench.force.z))
+        for idx, value in enumerate([str(msg.wrench.force.x), str(msg.wrench.force.y), str(msg.wrench.force.z)]):
+            self.left_force_label[idx].setText(value)
     def rfsensorCallback(self, msg):
-        self.right_force_label.setText(str(msg.wrench.force.z))
+        for idx, value in enumerate([str(msg.wrench.force.x), str(msg.wrench.force.y), str(msg.wrench.force.z)]):
+            self.right_force_label[idx].setText(value)
     def stepGageValueCallback(self, msg):
         self.step_gage_label.setText(str(msg.data))
     def minStepGageValueCallback(self, msg):
         self.step_min_edit.setText(str(msg.data))
     def maxStepGageValueCallback(self, msg):
         self.step_max_edit.setText(str(msg.data))
+    def handleModeCallback(self, msg):
+        for i in range(self.handle_mode_list.count()):
+            item = self.handle_mode_list.item(i)
+            item.setSelected(False)
+            if item.text() == msg.data.capitalize():
+                item.setBackground(Qt.green)
+            else:
+                item.setBackground(Qt.white)
+    def accelModeCallback(self, msg):
+        for i in range(self.accel_mode_list.count()):
+            item = self.accel_mode_list.item(i)
+            item.setSelected(False)
+            if item.text() == msg.data.capitalize():
+                item.setBackground(QtCore.Qt.green)
+            else:
+                item.setBackground(QtCore.Qt.white)
     # Event callback
     def minUpButtonCallback(self, event):
         current_value = float(self.step_min_edit.text())

@@ -7,12 +7,15 @@
   <arg name="ROSBAG_RECORD" default="false"/>
   <arg name="ROOT_LINK" default="pelvis" />
   <arg name="PINNED_LINK" default="utorso" />
+  <arg name="gzworld" default="drc_final_task_1" />"
   <!-- <arg name="PINNED_LINK" default="utorso" /> -->
 
   <rosparam param="use_sim_time" subst_value="True" />
 
   <!-- simulation environment -->
-  <include file="$(arg SIMULATION_LAUNCH)"/>
+  <include file="$(arg SIMULATION_LAUNCH)" >
+    <arg name="gzworld" value="$(arg gzworld)" />
+  </include>
 
   <!-- <node pkg="rostopic" type="rostopic" name="disable_handle_brake"
        args="pub /drc_vehicle/hand_brake/cmd std_msgs/Float64 '{data: 0}'" output="screen" /> -->
