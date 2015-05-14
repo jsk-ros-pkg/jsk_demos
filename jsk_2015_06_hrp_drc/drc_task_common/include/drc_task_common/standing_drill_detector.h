@@ -75,9 +75,10 @@ namespace drc_task_common
       const jsk_recognition_msgs::BoundingBoxArray::ConstPtr& box_msg,
       const jsk_recognition_msgs::ClusterPointIndices::ConstPtr& indices_msg);
     virtual void configCallback(Config &config, uint32_t level);
-    virtual void estimateStandingDrill(
+    virtual bool estimateStandingDrill(
       pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud,
-      const jsk_recognition_msgs::BoundingBox& box);
+      const jsk_recognition_msgs::BoundingBox& box,
+      Eigen::Affine3f& output);
     virtual double computeMinimumDistance(
       const pcl::PointXYZRGB& p,
       const std::vector<jsk_pcl_ros::ConvexPolygon::Ptr>& polygons);
@@ -123,6 +124,9 @@ namespace drc_task_common
     double foot_z_offset_;
     bool calc_cylinder_center_;
     int buttom_estimation_method_;
+    double drill_min_height_;
+    double drill_max_height_;
+    bool optimistic_;
   private:
     
   };
