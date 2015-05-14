@@ -422,17 +422,22 @@
         (setq *cancel-motion-flag* nil)
         (catch 'exit
         ;; send motion to real robot
-        (let* (;(stand-coords (float-vector-to-coords (send msg :stand_coords)))
-               (arm-side (send msg :arm_side))
+        (let* ((arm-side (send msg :arm_side))
                (arm (cond ((equal arm-side drc_com_common::OCS2FCSmall::*LARM*) :larm) ((equal arm-side drc_com_common::OCS2FCSmall::*RARM*) :rarm) (t nil))))
-               (if arm
-                   (send-drill-grasp-motion coords :arm arm :stand-coords stand-coords)
+	       (if arm
+                   (progn
+                     (setq *drill-main-arm* arm)
+                     (send-drill-grasp-motion coords :stand-coords stand-coords)
+                     )
                  (ros::ros-info "arm side empty")
                  )
                )
         ;; send finish signal to ocs
         (let ((msg (instance drc_com_common::FC2OCSSmall :init)))
-          (send msg :params (coords-to-float-vector (send (send *drill* :copy-worldcoords) :transformation (send (send *robot* :body_lk) :copy-worldcoords)) (length (send msg :params))))
+	  (set-drill-default-coords)
+	  (send msg :params (coords-set-to-float-vector 
+			     (list
+			      (send (send (send *robot* :body_lk) :copy-worldcoords) :transformation (send *drill* :copy-worldcoords)) (send (send (send *robot* *drill-main-arm* :end-coords) :copy-worldcoords) :transformation (send *drill* :copy-worldcoords))) (length (send msg :params))))
           (send msg :type drc_com_common::FC2OCSSmall::*DRILL_GRASP_FINISHED*)
           (send self :send-to-ocs msg))
         )
@@ -449,7 +454,16 @@
         (setq *cancel-motion-flag* nil)
         (catch 'exit
         ;; send motion to real robot
-        (send-drill-put-motion coords :stand-coords stand-coords)
+        (let* ((arm-side (send msg :arm_side))
+               (arm (cond ((equal arm-side drc_com_common::OCS2FCSmall::*LARM*) :larm) ((equal arm-side drc_com_common::OCS2FCSmall::*RARM*) :rarm) (t nil))))
+	       (if arm
+                   (progn
+                     (setq *drill-main-arm* arm)
+		     (send-drill-put-motion coords :stand-coords stand-coords)
+                     )
+                 (ros::ros-info "arm side empty")
+		 )
+	       )
         ;; send finish signal to ocs
         (let ((msg (instance drc_com_common::FC2OCSSmall :init)))
           (send msg :type drc_com_common::FC2OCSSmall::*DRILL_PUT_FINISHED*)
@@ -466,7 +480,17 @@
       (let ((coords-set (float-vector-to-coords-set (send msg :float_params)))
             (stand-coords (float-vector-to-coords (send msg :stand_coords))))
         (ros::ros-info "Target coords are: ~A" coords-set)
-        (send-drill-wall-motion coords-set :stand-coords stand-coords)
+        (let* ((arm-side (send msg :arm_side))
+               (arm (cond ((equal arm-side drc_com_common::OCS2FCSmall::*LARM*) :larm) ((equal arm-side drc_com_common::OCS2FCSmall::*RARM*) :rarm) (t nil))))
+	       (if arm
+                   (progn
+                     (setq *drill-main-arm* arm)
+		     (send-drill-wall-motion coords-set :stand-coords stand-coords)
+                     )
+                 (ros::ros-info "arm side empty")
+		 )
+	       )
+
         (let ((msg (instance drc_com_common::FC2OCSSmall :init)))
           (send msg :type drc_com_common::FC2OCSSmall::*DRILL_WALL_FINISHED*)
           (send self :send-to-ocs msg))
@@ -483,7 +507,16 @@
         (setq *cancel-motion-flag* nil)
         (catch 'exit
         ;; send motion to real robot
-        (send-drill-button-motion coords)
+        (let* ((arm-side (send msg :arm_side))
+               (arm (cond ((equal arm-side drc_com_common::OCS2FCSmall::*LARM*) :larm) ((equal arm-side drc_com_common::OCS2FCSmall::*RARM*) :rarm) (t nil))))
+	       (if arm
+                   (progn
+                     (setq *drill-main-arm* arm)
+		     (send-drill-button-motion coords)	
+                     )
+                 (ros::ros-info "arm side empty")
+		 )
+	       )
         ;; send finish signal to ocs
         (let ((msg (instance drc_com_common::FC2OCSSmall :init)))
           (send msg :type drc_com_common::FC2OCSSmall::*DRILL_BUTTON_FINISHED*)
@@ -494,15 +527,27 @@
     )
   (:drill-rotate-exec-command-callback (msg)
     (when (send smachine :state? :initial)
-      (let* (coords-set (float-vector-to-coords-set (send msg :float_params)))
+      (let* ((coords-set (float-vector-to-coords-set (send msg :float_params))))
+        (ros::ros-info (format nil "coords set: ~A" coords-set))
         (send smachine :go-to :executing-drill-button)
         (setq *cancel-motion-flag* nil)
         (catch 'exit
         ;; send motion to real robot
-        (send-drill-rotate-motion (elt coords-set 0) (elt coords-set 0))
+        (let* ((arm-side (send msg :arm_side))
+               (arm (cond ((equal arm-side drc_com_common::OCS2FCSmall::*LARM*) :larm) ((equal arm-side drc_com_common::OCS2FCSmall::*RARM*) :rarm) (t nil))))
+	       (if arm
+                   (progn
+                     (setq *drill-main-arm* arm)
+		     (send-drill-rotate-motion (elt coords-set 0) (elt coords-set 1))
+                     )
+                 (ros::ros-info "arm side empty")
+		 )
+	       )
         ;; send finish signal to ocs
         (let ((msg (instance drc_com_common::FC2OCSSmall :init)))
-          (send msg :type drc_com_common::FC2OCSSmall::*DRILL_ROTATE_FINISHED*)
+	  (send msg :params (coords-set-to-float-vector 
+			     (list							 (send (send (send *robot* :body_lk) :copy-worldcoords) :transformation (send *drill* :copy-worldcoords)) (send (send (send *robot* *drill-main-arm* :end-coords) :copy-worldcoords) :transformation (send *drill* :copy-worldcoords))) (length (send msg :params))))
+	  (send msg :type drc_com_common::FC2OCSSmall::*DRILL_ROTATE_FINISHED*)
           (send self :send-to-ocs msg))
         )
         (send smachine :go-to :initial)
