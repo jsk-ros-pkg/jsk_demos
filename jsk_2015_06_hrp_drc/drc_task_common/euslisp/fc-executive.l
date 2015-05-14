@@ -220,12 +220,13 @@
       ))
   (:drill-grasp-region-command-callback (msg)
     (when (send smachine :state? :initial)
-      ;; Enable passthrough for 10seconds
-      (call-request-duration "/drill_recognition/passthrough/request_duration" 10)
-      ;; convert OCS2FCSmall into geometry_msgs/Polygon
-      (ros::publish "/drill_recognition/input_rect"
-        (integer-vector-to-rect-polygon-stamped msg))
-      ;; enable snapshot
+      ;; We do not specify ROI region anymore
+      ;; ;; Enable passthrough for 10seconds
+      ;; (call-request-duration "/drill_recognition/passthrough/request_duration" 10)
+      ;; ;; convert OCS2FCSmall into geometry_msgs/Polygon
+      ;; (ros::publish "/drill_recognition/input_rect"
+      ;;   (integer-vector-to-rect-polygon-stamped msg))
+      ;; ;; enable snapshot
       (call-empty-service "/drill_recognition/snapshot/request")
       (send smachine :go-to :recognizing-drill-grasp-pose)
       ))

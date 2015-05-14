@@ -46,7 +46,7 @@
 		drill-grasp-relative-coords
                 foreground-bacground-sync-obj
                 arm-mode ;; one of (:rarm-only :rarm-preferred :larm-preferred :larm-only)
-                valve-grasp-mode ;; one of (:edge-grasp-only :edge-grasp-preferred :center-grasp-preferred :center-grasp-only)
+                valve-grasp-mode ;; one of (:edge-grasp-only :edge-grasp-preferred :center-grasp-preferrned :center-grasp-only)
                 overwrite-stand-coords? ;; one of (:force :auto nil)
                 door-name
                 force-overwrite-door-arm ;; one of (:force :auto)
@@ -246,10 +246,12 @@
       (send smachine :go-to :selecting-region-for-hose-connect))
     (send req :response))
   (:drill-grasp-button-callback (req)
-    (when (send smachine :next? :selecting-region-for-drill-grasp)
-      (send self :set-image-view2-mode :rectangle)
-      (send self :show-text "Select rectangle region for drill-grasp" :select)
-      (send smachine :go-to :selecting-region-for-drill-grasp))
+    (when (send smachine :next? :recognizing-drill-grasp-pose)
+      (send self :set-image-view2-mode :none)
+      (let ((fc-msg (instance drc_com_common::OCS2FCSmall :init)))
+        (send fc-msg :type drc_com_common::OCS2FCSmall::*DRILL_GRASP_REGION*) ;Should have another constant
+        (send self :send-to-fc fc-msg))
+      (send smachine :go-to :recognizing-drill-grasp-pose))
     (send req :response))
   (:drill-put-button-callback (req)
     (when (send smachine :next? :selecting-region-for-drill-put)
@@ -393,6 +395,7 @@
                                     msg (length (send fc-msg :image_roi_info))))
       (send self :send-to-fc fc-msg)
       (send smachine :go-to :recognizing-hose-connect-pose)))
+  ;; Deprecated
   (:rectangle-callback-for-drill-grasp-region (msg)
     (send self :show-text "Wait for drill-grasp recognition" :wait)
     ;; send to FC to recognize pos
@@ -976,6 +979,7 @@
         (set-primitive-marker-color :r 1.0 :g 1.0 :b 0.0 :a 0.6)
         ;; (apply-primitive-dimensions-to-midi-device)
         (set-primitive-marker-pose coords "BODY" :name "cylinder1")
+        (set-primitive-marker-dimensions :radius 400 :z 1 :name "cylinder1")
         (move-robot-model-to-current-pos)
         (set-focus-marker-name "drill")
         ;; publish motion to robot model on rviz
@@ -1320,7 +1324,8 @@
       (send smachine :go-to! :selecting-exec-for-hose-grasp))
      ((eq (send smachine :state) :selecting-region-for-hose-connect)
       (send smachine :go-to! :selecting-exec-for-hose-connect))
-     ((eq (send smachine :state) :selecting-region-for-drill-grasp)
+     ((or (eq (send smachine :state) :selecting-region-for-drill-grasp)
+          (eq (send smachine :state) :recognizing-drill-grasp-pose))
       (send smachine :go-to! :selecting-exec-for-drill-grasp)
       (erase-all-primitive-marker)
       (insert-primitive-marker :shape-type jsk_rviz_plugins::TransformableMarkerOperate::*CYLINDER* :name "cylinder1" :description "")
