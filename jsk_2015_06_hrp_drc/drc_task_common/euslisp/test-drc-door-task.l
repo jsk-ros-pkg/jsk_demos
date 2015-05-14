@@ -207,7 +207,7 @@
   (setq *door* (instance param-door :init 800 60 110 20
                          (float-vector 0 -750 860)
                          (float-vector -50 -700 860)
-                         :handle-l/r :left))
+                         :handle-l/r :right))
   )
 
 (defun make-drc-lasvegas-outdoor-door-mirror ()
@@ -215,7 +215,7 @@
   (setq *door* (instance param-door :init 795 45 120 30
                          (float-vector 0 -735 850)
                          (float-vector -45 -675 850)
-                         :handle-l/r :left))
+                         :handle-l/r :right))
   )
 
 (defun exec-robot-state-list
