@@ -24,18 +24,17 @@ private:
   ros::NodeHandle n;
   ros::Subscriber point_sub;
   ros::Subscriber goal_sub;
-  ros::Subscriber stepon_gaspedal_sub;
+  ros::Subscriber stepon_flag_sub;
   ros::Publisher point_pub;
   ros::Publisher steering_with_index_pub;
   ros::Publisher steering_pub;
 
-  // ros::Publisher torso_yaw_pub;
   pcl::PointCloud<pcl::PointXYZ>::Ptr cloud;
   double goal_ang;
-  bool stepon_gaspedal;
+  bool stepon_flag;
   double steering_output_ave;
   std::deque<double> steering_output;
-  sensor_msgs::PointCloud2 pub_msg; // for debug
+  sensor_msgs::PointCloud2 pub_msg;
   boost::mutex mutex;
   dynamic_reconfigure::Server<drc_task_common::LocalPlannerParamsConfig> server;
   dynamic_reconfigure::Server<drc_task_common::LocalPlannerParamsConfig>::CallbackType f;
@@ -48,7 +47,6 @@ private:
   double a;
   double b;
   double play;
-  
   double alpha_max;
   double alpha_min;
   bool empty_flag;
@@ -73,12 +71,12 @@ public:
     ROS_INFO("START SUBSCRIBING");
     point_sub = n.subscribe("obstacle_points", 1, &LocalPlanner::local_planner_cb, this);
     goal_sub = n.subscribe("goal_dir", 1, &LocalPlanner::goal_dir_cb, this);
-    stepon_gaspedal_sub = n.subscribe("stepon_gaspedal/flag", 1, &LocalPlanner::stepon_gaspedal_cb, this);
+    stepon_flag_sub = n.subscribe("stepon_gaspedal/flag", 1, &LocalPlanner::stepon_flag_cb, this);
 
     point_pub = n.advertise<sensor_msgs::PointCloud2>("visualize_path/points2", 1);
     steering_with_index_pub = n.advertise<drc_task_common::Int8Float64>("local_planner/cmd_with_path_num", 1);
     steering_pub = n.advertise<std_msgs::Float64>("local_planner/steering_cmd", 1);
-    // torso_yaw_pub = n.advertise<std_msgs::Float64>("/look_around_angle", 1);
+
     empty_flag = true;
     steering_output_ave = 0.0;
     n.param("alpha_max", alpha_max, 1.85*M_PI/3.0); // 111[deg]
@@ -87,8 +85,8 @@ public:
     n.param("field_of_vision", field_of_vision, 80);
     n.param("wheelbase", wheelbase, 2.05);
     n.param("tread", tread, 1.4);
-    
-    stepon_gaspedal = false;
+
+    stepon_flag = false;
     f = boost::bind(&LocalPlanner::dynamic_reconfigure_cb, this, _1, _2);
     server.setCallback(f);
 
@@ -100,7 +98,7 @@ public:
 
     grasp_zero_index = (path_num + 1) / 2;
     steering_output_gain = 1.0;
-    
+
     a = 0.0258676;
     play = 0.60952311;
     b = - a * play;
@@ -108,10 +106,10 @@ public:
     delta_max = std::asin(wheelbase * (a*alpha_max+b));
     delta_min = std::asin(wheelbase * (a*alpha_min-b));
     s_inc = (delta_max - delta_min) / (double)(path_num - 1);
-    
+
     for (int i=0; i <= path_num; i++) {
       if (i == 0) {
-	option_delta.push_back(delta_max);
+        option_delta.push_back(delta_max);
       }
       option_delta.push_back(delta_max - s_inc * (i-1));
     }
@@ -160,9 +158,9 @@ public:
   }
   
   
-  /* callback if /stepon_gaspedal is subscribed */
-  void stepon_gaspedal_cb(const std_msgs::BoolConstPtr& msg){
-    stepon_gaspedal = msg->data;
+  /* callback if /stepon_flag is subscribed */
+  void stepon_flag_cb(const std_msgs::BoolConstPtr& msg){
+    stepon_flag = msg->data;
   }
   
   
@@ -188,7 +186,6 @@ public:
     
     std::vector<double> obstacle_length(path_num+1);
     std::vector<double> cost(path_num+1);
-    
     
     for (int i=1; i <= path_num; i++) {
       double radius;
@@ -241,16 +238,12 @@ public:
 
     ROS_INFO("\n\n          Path %d, cost = %lf\n\n", ret_idx, cost_max);
 
-    if (stepon_gaspedal != true) {
+    if (stepon_flag == true) {
       // change queue steering output data
       if (steering_output.size() >= queue_size) {
         steering_output.pop_front();
       }
-      //steering_output.push_back( (double)(s_inc*(grasp_zero_index-ret_idx)));
       steering_output.push_back(delta2alpha_transformation(option_delta[ret_idx]));
-    } else {
-      // send joint trajectory to STARO
-      // yaw_flag
     }
 
     // calculate averaged steering angle for 10-frame
