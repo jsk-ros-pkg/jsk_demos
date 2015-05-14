@@ -186,20 +186,36 @@
                          :handle-l/r :right))
   )
 
-(defun make-drc-lasvegas-door ()
+(defun make-drc-lasvegas-indoor-door ()
   "drc door in lasvegas indoor environment"
   (setq *door* (instance param-door :init 800 60 110 20
                          (float-vector 0 750 860)
-                         (float-vector -50 710 860)
+                         (float-vector -50 700 860)
                          :handle-l/r :left))
   )
 
-(defun make-drc-lasvegas-door-mirror ()
-  "mirror of drc door in lasvegas indoor environment"
+(defun make-drc-lasvegas-outdoor-door ()
+  "drc door in lasvegas outdoor environment"
+  (setq *door* (instance param-door :init 795 45 120 30
+                         (float-vector 0 735 850)
+                         (float-vector -45 675 850)
+                         :handle-l/r :left))
+  )
+
+(defun make-drc-lasvegas-indoor-door-mirror ()
+  "drc door in lasvegas indoor environment"
   (setq *door* (instance param-door :init 800 60 110 20
                          (float-vector 0 -750 860)
-                         (float-vector -50 -710 860)
-                         :handle-l/r :right))
+                         (float-vector -50 -700 860)
+                         :handle-l/r :left))
+  )
+
+(defun make-drc-lasvegas-outdoor-door-mirror ()
+  "drc door in lasvegas outdoor environment"
+  (setq *door* (instance param-door :init 795 45 120 30
+                         (float-vector 0 -735 850)
+                         (float-vector -45 -675 850)
+                         :handle-l/r :left))
   )
 
 (defun exec-robot-state-list
