@@ -57,6 +57,7 @@ namespace drc_task_common
     pub_debug_cylinder_pose_ = pnh_.advertise<geometry_msgs::PoseStamped>("debug/cylinder_pose", 1);
     pub_debug_foot_pose_ = pnh_.advertise<geometry_msgs::PoseStamped>("debug/foot_pose", 1);
     pub_origin_pose_ = pnh_.advertise<geometry_msgs::PoseStamped>("output/pose", 1);
+    pub_debug_cylinder_points_ = pnh_.advertise<sensor_msgs::PointCloud2>("debug/cylinder_candidate_points", 1);
     sub_cloud_.subscribe(pnh_, "input", 1);
     sub_box_.subscribe(pnh_, "input/box_array", 1);
     sub_indices_.subscribe(pnh_, "input/indices", 1);
@@ -138,11 +139,11 @@ namespace drc_task_common
     
     Eigen::Vector4f max_points(box.dimensions.x/2,
                                box.dimensions.y/2,
-                               box.dimensions.z/2 - 0.05, // 5cm offset
+                               box.dimensions.z/2 - cylinder_z_offset_, // 5cm offset
                                0);
     Eigen::Vector4f min_points(-box.dimensions.x/2,
                                -box.dimensions.y/2,
-                               box.dimensions.z/2 - 0.05 - 0.1, // 5cm offset
+                               box.dimensions.z/2 - cylinder_z_offset_ - cylinder_length_, // 5cm offset
                                0);
     if (verbose_) {
       ROS_INFO("max: [%f, %f, %f, %f]", max_points[0], max_points[1], max_points[2], max_points[3]);
@@ -180,6 +181,10 @@ namespace drc_task_common
       ex.setIndices(cropped_indices);
       pcl::PointCloud<pcl::PointXYZRGB>::Ptr cropped_cloud (new pcl::PointCloud<pcl::PointXYZRGB>);
       ex.filter(*cropped_cloud);
+      sensor_msgs::PointCloud2 cylinder_candidate_points;
+      pcl::toROSMsg(*cropped_cloud, cylinder_candidate_points);
+      cylinder_candidate_points.header = box.header; // is it ok??
+      pub_debug_cylinder_points_.publish(cylinder_candidate_points);
       // Estimate normal
       pcl::NormalEstimationOMP<pcl::PointXYZRGB, pcl::Normal> ne;
       ne.setInputCloud(cloud);
@@ -190,7 +195,7 @@ namespace drc_task_common
       ne.setRadiusSearch(0.02);
       pcl::PointCloud<pcl::Normal>::Ptr normals(new pcl::PointCloud<pcl::Normal>);
       ne.compute(*normals);
-    
+      
       pcl::SACSegmentationFromNormals<pcl::PointXYZRGB, pcl::Normal> seg;
       seg.setOptimizeCoefficients(true);
       seg.setModelType(pcl::SACMODEL_CYLINDER);
@@ -251,17 +256,21 @@ namespace drc_task_common
         center, height);
       visualization_msgs::Marker cylinder_marker;
       Eigen::Vector3f support_direction = pose.rotation() * Eigen::Vector3f::UnitZ();
+      
       // dir
-      cylinder->toMarker(cylinder_marker, center, support_direction, height);
-      cylinder_marker.header = box.header;
-      pub_marker_.publish(cylinder_marker);
-      if (0) {//renew_to_cylinder_pose_) { //not used because of bad accuracy 
+      if (use_cylinder_axis_) {
+        cylinder->toMarker(cylinder_marker, center, dir, height);
+        cylinder_marker.header = box.header;
+        pub_marker_.publish(cylinder_marker);
         Eigen::Quaternionf rot;
         dir = dir.normalized();
         rot.setFromTwoVectors(Eigen::Vector3f::UnitZ(), dir);
         cylinder_pose = Eigen::Translation3f(center) * rot;
       }
       else {
+        cylinder->toMarker(cylinder_marker, center, support_direction, height);
+        cylinder_marker.header = box.header;
+        pub_marker_.publish(cylinder_marker);
         cylinder_pose = Eigen::Translation3f(center) * pose.rotation();
       }
     }
@@ -501,6 +510,9 @@ namespace drc_task_common
     foot_z_offset_ = config.foot_z_offset;
     buttom_estimation_method_ = config.buttom_estimation_method;
     calc_cylinder_center_ = config.calc_cylinder_center;
+    use_cylinder_axis_ = config.use_cylinder_axis;
+    cylinder_z_offset_ = config.cylinder_z_offset;
+    cylinder_length_ = config.cylinder_length;
   }
 }
 
