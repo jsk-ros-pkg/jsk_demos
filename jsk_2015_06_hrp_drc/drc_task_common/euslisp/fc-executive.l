@@ -93,6 +93,8 @@
                 self :drill-reset-pose-command-callback)
           (list drc_com_common::OCS2FCSmall::*WATCH_DRILL_POSE*
                 self :watch-drill-pose-command-callback)
+          (list drc_com_common::OCS2FCSmall::*DOOR_THROUGH_POSE*
+                self :door-through-pose-command-callback)
           (list drc_com_common::OCS2FCSmall::*HAND_RESET_POSE*
                 self :hand-reset-pose-command-callback)
           (list drc_com_common::OCS2FCSmall::*HAND_HOOK_POSE*
@@ -573,8 +575,8 @@
                       ((eps= (float door-name-idx) (float drc_com_common::OCS2FCSmall::*DOOR_DRC_TEST_MIRROR*)) :drc-test-mirror)
                       ((eps= (float door-name-idx) (float drc_com_common::OCS2FCSmall::*DOOR_DRC_SAGAMI*)) :drc-sagami)
                       ((eps= (float door-name-idx) (float drc_com_common::OCS2FCSmall::*DOOR_DRC_SAGAMI_MIRROR*)) :drc-sagami-mirror)
-                      ;;((eps= (float door-name-idx) (float drc_com_common::OCS2FCSmall::*DOOR_DRC_LASVEGAS*)) :drc-lasvegas)
-                      ;;((eps= (float door-name-idx) (float drc_com_common::OCS2FCSmall::*DOOR_DRC_LASVEGAS_MIRROR*)) :drc-lasvegas-mirror)
+                      ((eps= (float door-name-idx) (float drc_com_common::OCS2FCSmall::*DOOR_DRC_LASVEGAS*)) :drc-lasvegas)
+                      ((eps= (float door-name-idx) (float drc_com_common::OCS2FCSmall::*DOOR_DRC_LASVEGAS_MIRROR*)) :drc-lasvegas-mirror)
                       (t :drc-box2)))
                )
           (send smachine :go-to :executing-door)
@@ -934,6 +936,12 @@ It sends :angle-vector to robot and return 'finished' message to ocs"
     (send *robot* :angle-vector (get-watch-drill-pose))
     (send *ri* :angle-vector (send *robot* :angle-vector) 10000)
     (send *ri* :wait-interpolation)
+    (send self :send-rviz-button-finished-to-ocs))
+  (:door-through-pose-command-callback (msg)
+    (send *robot* :angle-vector (get-door-through-pose))
+    (send *ri* :angle-vector (send *robot* :angle-vector) 5000)
+    (send *ri* :wait-interpolation)
+    (hand-start-grasp :real? t)
     (send self :send-rviz-button-finished-to-ocs))
   (:hand-reset-pose-command-callback (msg)
     (send *robot* :hand :arms :reset-pose)

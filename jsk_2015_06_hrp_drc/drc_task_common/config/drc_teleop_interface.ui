@@ -75,6 +75,19 @@
               </property>
             </widget>
           </item>
+          <item>
+            <widget class="QToolButton" name="door_through_pose_button">
+              <property name="text">
+                <string>Door Through Pose</string>
+              </property>
+              <property name="iconSize">
+                <size>
+                  <width>80</width>
+                  <height>80</height>
+                </size>
+              </property>
+            </widget>
+          </item>
           <!-- Hand Pose Command -->
           <item>
             <widget class="QToolButton" name="hand_reset_pose_button">
