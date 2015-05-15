@@ -71,7 +71,7 @@
          handling-end-coords-list nil
          record-handling-end-coords-flag nil
          )
-   ;; set defalut value for pedaling
+   ;; set defalut value for pedaling (for staro)
    (setq accel-origin 14
          step-accel-command 14 ;; 28
          release-accel-command 0 ;; 14
@@ -88,9 +88,6 @@
    (ros::subscribe "/drive/operation/brake_cmd"
                    std_msgs::Float64
                    #'send self :brake-callback)
-   (ros::subscribe "/drive/operation/grasp_cmd"
-                   std_msgs::String
-                   #'send self :grasp-callback)
    (ros::subscribe "/drive/operation/handle_cmd"
                    std_msgs::Float64
                    #'send self :handle-callback)
@@ -106,7 +103,6 @@
    (ros::advertise "/drive/controller/step" std_msgs::Float32 1 t)
    (ros::advertise "/drive/controller/min_step" std_msgs::Float32 1 t)
    (ros::advertise "/drive/controller/max_step" std_msgs::Float32 1 t)
-   (ros::advertise "/drive/controller/pedal_state" std_msgs::Bool 1 t)
    (ros::advertise "/drive/controller/step_on_flag" std_msgs::Bool 1 t)
    
    ;; for steering visualization
@@ -247,8 +243,7 @@
    (send motion :drive-init-pose-crank :limb :larm :move-arm nil) ;; todo: fix and remove
    (send self :approach-fist :reach-until-touch nil)
    (send self :approach-accel)
-   ;; (send self :approach-floor)
-   (send self :support-by-leg :set-ref-force nil)
+   (send self :approach-floor :offset #f(0 0 0))
    (send self :approach-handle)
    (send self :publish-body-relative-steering-coords)
    ;; enable operation
@@ -333,8 +328,9 @@
      )
    )
   (:approach-accel
-   (&rest args)
-   (send* motion :approach-accel-pedal args)
+   (&rest args &key (limb :rleg) &allow-other-keys)
+   (send* motion :approach-accel-pedal :limb limb args)
+   (send self :accel-origin (send motion :robot limb :ankle-p :joint-angle))
    (send self :controller-state :accel :running) ;; enbale accel
    )
   (:approach-brake

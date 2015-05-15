@@ -7,6 +7,12 @@
 
 (setq *latest-handle-cmd* nil)
 (setq *latest-accel-cmd* nil)
+(setq *latest-initialize-request* nil)
+(setq *latest-grasp-request* nil)
+(setq *latest-release-request* nil)
+(setq *latest-correct-request* nil)
+(setq *latest-reach-arm-request* nil)
+(setq *latest-reach-leg-request* nil)
 
 (defun handle-cmd-callback (msg)
   (setq *latest-handle-cmd* (send msg :data))
@@ -15,8 +21,53 @@
   (setq *latest-accel-cmd* (send msg :data))
   )
 
+(defun initialize-service-callback
+   (req)
+   (let ((res (send req :response)))
+     (setq *latest-initialize-request* t)
+     res ;; return immediately
+     )
+   )
+
+(defun grasp-service-callback
+   (req)
+   (let ((res (send req :response)))
+     (setq *latest-grasp-request* t)
+     res ;; return immediately
+     )
+   )
+
+(defun release-service-callback
+   (req)
+   (let ((res (send req :response)))
+     (setq *latest-release-request* t)
+     res ;; return immediately
+     )
+   )
+
+(defun correct-service-callback
+   (req)
+   (let ((res (send req :response)))
+     (setq *latest-correct-request* t)
+     res ;; return immediately
+     )
+   )
+(defun reach-arm-service-callback
+   (req)
+   (let ((res (send req :response)))
+     (setq *latest-reach-arm-request* t)
+     res ;; return immediately
+     )
+   )
+(defun reach-leg-service-callback
+   (req)
+   (let ((res (send req :response)))
+     (setq *latest-reach-leg-request* t)
+     res ;; return immediately
+     )
+   )
+
 (defun fc-message-callback (msg)
-  (print msg)
   (let (tmp-msg)
     (setq tmp-msg (make-msg-from-tunnel msg :goal_handle_angle std_msgs::Float32))
     (ros::publish "/ocs/drive/controller/goal_handle_angle" tmp-msg)
@@ -38,6 +89,24 @@
                                         )
           )
     (ros::publish "/ocs/drive/controller/accel_mode" tmp-msg)
+    (when (and *latest-initialize-request* (send msg :initialize_response))
+      (setq *latest-initialize-request* nil)
+      )
+    (when (and *latest-grasp-request* (send msg :grasp_response))
+      (setq *latest-grasp-request* nil)
+      )
+    (when (and *latest-release-request* (send msg :release_response))
+      (setq *latest-release-request* nil)
+      )
+    (when (and *latest-correct-request* (send msg :correct_response))
+      (setq *latest-correct-request* nil)
+      )
+    (when (and *latest-reach-arm-request* (send msg :reach_arm_response))
+      (setq *latest-reach-arm-request* nil)
+      )
+    (when (and *latest-reach-leg-request* (send msg :reach_leg_response))
+      (setq *latest-reach-leg-request* nil)
+      )
     )
   )
 
@@ -49,6 +118,12 @@
     (when *latest-accel-cmd*
       (send msg :accel_cmd *latest-accel-cmd*)
       )
+    (send msg :initialize_request *latest-initialize-request*)
+    (send msg :grasp_request *latest-grasp-request*)
+    (send msg :release_request *latest-release-request*)
+    (send msg :correct_request *latest-correct-request*)
+    (send msg :reach_arm_request *latest-reach-arm-request*)
+    (send msg :reach_leg_request *latest-reach-leg-request*)
     (ros::publish "/ocs_to_fc_vehicle/input" msg)
     )
   )
@@ -69,6 +144,13 @@
 (ros::advertise "/ocs/drive/controller/max_step" std_msgs::Float32 1)
 (ros::advertise "/ocs/drive/controller/handle_mode" std_msgs::String 1)
 (ros::advertise "/ocs/drive/controller/accel_mode" std_msgs::String 1)
+
+(ros::advertise-service "/ocs/drive/controller/initialize" std_srvs::Empty #'initialize-service-callback)
+(ros::advertise-service "/ocs/drive/controller/grasp" std_srvs::Empty #'grasp-service-callback)
+(ros::advertise-service "/ocs/drive/controller/release" std_srvs::Empty #'release-service-callback)
+(ros::advertise-service "/ocs/drive/controller/correct" std_srvs::Empty #'correct-service-callback)
+(ros::advertise-service "/ocs/drive/controller/reach_arm" std_srvs::Empty #'reach-arm-service-callback)
+(ros::advertise-service "/ocs/drive/controller/reach_leg" std_srvs::Empty #'reach-leg-service-callback)
 
 (ros::rate 10)
 (while (ros::ok)
