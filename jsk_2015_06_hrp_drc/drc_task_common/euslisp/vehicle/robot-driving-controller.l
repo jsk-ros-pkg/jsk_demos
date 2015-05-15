@@ -16,11 +16,11 @@
           step-accel-command step-brake-command
           release-accel-command release-brake-command
           state-list mode-list
-          old-handle-deg
           polygon-stamped-msg
           torus-finder-estimated-robot-coords
           handle-pose-estimated-robot-coords
           handle-pose-estimate-flag
+          handle-pose-old-robot-coords
           torus-finder-estimation-flag
           old-estimated-handle-angle
           old-accel-command
@@ -62,8 +62,8 @@
          mode-list (list :stop :operation :recognition)
          torus-finder-estimated-robot-coords nil
          handle-pose-estimated-robot-coords nil
+         handle-pose-old-robot-coords nil
          old-estimated-handle-angle 0.0
-         old-handle-deg 0.0
          old-accel-command nil
          old-brake-command nil
          handle-pose-estimate-flag nil
@@ -173,7 +173,7 @@
   (:correct-callback
    (req)
    (let ((res (send req :response)))
-     (send self :correct :yes t)
+     (send self :correct-handle-pose :yes t)
      res
      )
    )
@@ -197,8 +197,8 @@
      (send self :go-to-egress)
      res
      )
-   )
-  
+   ) 
+    
   (:set-max-step-callback
    (req)
    (let ((res (send req :response)))
@@ -223,7 +223,8 @@
      (warn "set handle-mode to ~A~%" (send self :controller-mode :handle))
      res
      )
-   )
+   )  
+  
   (:set-accel-mode-callback
    (req)
    (let ((res (send req :response)))
@@ -231,7 +232,7 @@
      (warn "set accel-mode to ~A~%" (send self :controller-mode :accel))
      res
      )
-   )
+   )  
   
   ;; interface command
   (:initialize
@@ -273,13 +274,40 @@
      release-result
      )
    )
-  (:correct
-   (&key (yes nil))
-   (let (ret-result)
+  (:correct-handle-pose
+   (&key (yes nil) (grasp t) (time 2500))
+   (let (ret-result approach-result grasp-result)
      (setq handle-pose-estimate-flag t)
      (setq ret-result (send self :execute-handle-pose-compensation :yes yes))
+     ;; grasp in new handle coords
+     (when grasp
+       (warn "regrasp~%")
+       (setq approach-result (send self :approach-handle :tm time))
+       (if approach-result
+           (progn (setq grasp-result (send self :grasp)) ;; grasp only when approach is succeeded
+                  (unless  grasp-result
+                    (warn "grasp failed~%")
+                    (send self :resume-handle-pose)
+                    )
+                  )
+         (progn (warn "approach failed~%")
+                (send self :resume-handle-pose)
+                )
+         )
+       (when (send motion :real)
+         (send *ri* :angle-vector (send (send motion :robot) :angle-vector) time)
+         (send *ri* :wait-interpolation)
+         )
+       )
      (setq handle-pose-estimate-flag nil)
-     ret-result
+     (append ret-result (list approach-result grasp-result)) ;; return all results
+     )
+   )
+  (:resume-handle-pose
+   ()
+   (when handle-pose-old-robot-coords
+     (send motion :robot :newcoords handle-pose-old-robot-coords) ;; revert compensation result
+     (send self :publish-body-relative-steering-coords) ;; update steering coords in rviz
      )
    )
   (:turn ;; estimated as :relative nil
@@ -310,7 +338,6 @@
              )
            )
        
-     (setq old-handle-deg handle-deg)
      ;; publish target angle
      (send pub-msg :data handle-deg)
      (ros::publish "/drive/controller/goal_handle_angle" pub-msg)
@@ -671,11 +698,12 @@
      )
    )
   (:execute-handle-pose-compensation
-   (&key (tm 2500) (wait-sec 30.0) (limb (send motion :grasp-arm))
-         (position-threshold 1000) (yes nil)
+   (&rest args &key (tm 2500) (limb (send motion :grasp-arm))
+          (position-threshold 1000) (yes nil) (min-wait-sec 5.0) (max-wait-sec 30.0)
+          (release-offset #f(-100 0 0)) (shoulder-y-deg 0.0)
          )
    ;; wait handling   
-   (let (wait-start old-accel-mode
+   (let (wait-start
          old-head-angle-vector
          old-robot-coords old-body-coords distance
          release-result grasp-result approach-result
@@ -683,7 +711,6 @@
          )
      (warn "release accel~%")
      (send self :accel-cmd 0.0) ;; force stop
-     (setq old-accel-mode (send self :controller-mode :accel))
      (send self :controller-mode :accel :stop)
      (warn "wait interpolation~%")
      (setq wait-start (ros::time-now))
@@ -700,12 +727,12 @@
        )
      (warn "release handle~%")
      (if (equal (send self :controller-state :handle) :running)
-         (setq release-result (send self :release))
+         (setq release-result (send self :release :offset release-offset))
        (setq release-result t)
        )
      (when release-result
        ;; temporary ;;
-       (send (send motion :robot) (send motion :grasp-arm) :shoulder-y :joint-angle 0)
+       (send (send motion :robot) (send motion :grasp-arm) :shoulder-y :joint-angle shoulder-y-deg)
        ;; temporary ;;
        (setq old-head-angle-vector (send motion :robot :head :angle-vector))
        (send (send motion :robot) :look-at-target (send motion :car :vehicle-handle :steering-center)) ;; look at handle
@@ -716,8 +743,10 @@
        (warn "wait recognition~%")
        (setq wait-start (ros::time-now))
        (setq handle-pose-estimated-robot-coords nil) ;; reset recognition result
-       (while (and (< (- (send (ros::time-now) :to-sec) (send wait-start :to-sec)) wait-sec)
-                   (not handle-pose-estimated-robot-coords))
+       (while (or (< (- (send (ros::time-now) :to-sec) (send wait-start :to-sec)) min-wait-sec)
+                  (and (< (- (send (ros::time-now) :to-sec) (send wait-start :to-sec)) max-wait-sec)
+                       (not handle-pose-estimated-robot-coords))
+                  )
          (ros::spin-once)
          (ros::sleep)
          )
@@ -738,29 +767,15 @@
          (setq compensation-result nil)
          (send motion :robot :newcoords old-robot-coords) ;; revert
          )
-       ;; resume
-       (warn "regrasp~%")
-       (setq approach-result (send self :approach-handle :tm tm))
-       (if approach-result
-           (progn (setq grasp-result (send self :grasp)) ;; grasp only when approach is succeeded
-                  (unless  grasp-result
-                    (warn "grasp failed~%")
-                    (send motion :robot :newcoords old-robot-coords) ;; revert
-                    )
-                  )
-         (progn (warn "approach failed~%")
-                (send motion :robot :newcoords old-robot-coords) ;; revert
-                )
-         )
        (send (send motion :robot) :head :angle-vector old-head-angle-vector) ;; look at front
-       (when (send motion :real)
-         (send *ri* :angle-vector (send (send motion :robot) :angle-vector) tm)
+       (when real
+         (send *ri* :angle-vector (send motion :robot :angle-vector) time)
          (send *ri* :wait-interpolation)
          )
+       (setq handle-pose-old-robot-coords old-robot-coords) ;; save old-robot-coords to revert
        )
      (send self :publish-body-relative-steering-coords) ;; update steering coords in rviz
-     (send self :controller-mode :accel old-accel-mode) ;; resume accel mode
-     (and release-result compensation-result approach-result grasp-result) ;; return result of all compensation process
+     (and release-result compensation-result) ;; return result of all compensation process
      )
    )
 
