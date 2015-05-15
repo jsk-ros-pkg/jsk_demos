@@ -768,6 +768,10 @@
          (send motion :robot :newcoords old-robot-coords) ;; revert
          )
        (send (send motion :robot) :head :angle-vector old-head-angle-vector) ;; look at front
+       (when real
+         (send *ri* :angle-vector (send motion :robot :angle-vector) time)
+         (send *ri* :wait-interpolation)
+         )
        (setq handle-pose-old-robot-coords old-robot-coords) ;; save old-robot-coords to revert
        )
      (send self :publish-body-relative-steering-coords) ;; update steering coords in rviz
