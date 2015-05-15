@@ -293,6 +293,8 @@
                   (list (float-vector 0 -25 -50) 0 15 0)
                   (list (float-vector 0 75 50) 0 15 0) ;; stop grasp before this
                   (list (float-vector 0 150 50) 0 15 0)
+                  (list (float-vector 0 150 150) 0 15 0)
+                  (list (float-vector 0 150 150) 0 30 0)
                   (list (float-vector -100 150 50) 0 15 0)
                   ))
            ((equal push/pull :pull)
@@ -320,14 +322,15 @@
       (let* ((trans (elt trans-list i))
              (trans-handle-pos
               (float-vector (elt (elt trans 0) 0) (elt (elt trans 0) 1) (if (equal (send *door* :get :handle-l/r) :left) (elt (elt trans 0) 2) (- (elt (elt trans 0) 2)))))
-             (tc
+             tc)
+        (send (send *door* :joint :door-hinge-joint) :joint-angle (elt trans 2))
+        (send (send *door* :joint :door-knob-joint) :joint-angle (elt trans 3))
+        (setq tc
               (list (send (send
                            (send (send *door* :handle :knob-handle) :copy-worldcoords)
                            :translate trans-handle-pos :local) :rotate (deg2rad (elt trans 1)) :z :local)
                     (send *robot* :rleg :end-coords :copy-worldcoords)
-                    (send *robot* :lleg :end-coords :copy-worldcoords))))
-        (send (send *door* :joint :door-hinge-joint) :joint-angle (elt trans 2))
-        (send (send *door* :joint :door-knob-joint) :joint-angle (elt trans 3))
+                    (send *robot* :lleg :end-coords :copy-worldcoords)))
         (with-move-target-link-list
          (mt ll *robot* (list *door-arm* :rleg :lleg))
          (setf (elt mt 0) (send *robot* :get (read-from-string (format nil "~a-door-coords" *door-arm*))))
