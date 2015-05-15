@@ -514,7 +514,9 @@
   (when real?
     (set-default-impedance-param)
     (cond ((or (equal *robot-name* "JAXON") (equal *robot-name* "STARO"))
-           (send *ri* :start-impedance :arms :k-p 300 :d-p 300))
+           (send *ri* :start-impedance :arms :k-p 300 :d-p 800 :m-p 10 :m-r 2 :d-r 80 :k-r 40)
+           ;;(send *ri* :start-impedance :arms :k-p 300 :d-p 300)
+           )
           (t ;; (or (equal *robot-name* "HRP2JSKNT") (equal *robot-name* "HRP2JSKNTS"))
            (send *ri* :start-impedance :arms :k-p 200 :d-p 250 :m-p 7.5 :m-r 1 :d-r 15 :k-r 20)
            )))
