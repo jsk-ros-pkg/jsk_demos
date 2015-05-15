@@ -128,9 +128,11 @@
    
    ;; for vehicle ui
    (ros::advertise-service "/drive/controller/initialize" std_srvs::Empty #'send self :initialize-callback)
+   (ros::advertise-service "/drive/controller/approach_handle" std_srvs::Empty #'send self :approach-handle-callback)
    (ros::advertise-service "/drive/controller/grasp" std_srvs::Empty #'send self :grasp-callback)
    (ros::advertise-service "/drive/controller/release" std_srvs::Empty #'send self :release-callback)
    (ros::advertise-service "/drive/controller/correct" std_srvs::Empty #'send self :correct-callback)
+   (ros::advertise-service "/drive/controller/approach_accel" std_srvs::Empty #'send self :approach-accel-callback)
    (ros::advertise-service "/drive/controller/reach_leg" std_srvs::Empty #'send self :reach-leg-callback)
    (ros::advertise-service "/drive/controller/reach_arm" std_srvs::Empty #'send self :reach-arm-callback)
    (ros::advertise-service "/drive/controller/egress" std_srvs::Empty #'send self :egress-callback)
@@ -157,6 +159,13 @@
      res
      )
    )
+  (:approach-handle-callback
+   (req)
+   (let ((res (send req :response)) use-controller)
+     (send self :approach-handle) ;; sync-controller is checked in default parameter
+     res
+     )
+   )
   (:grasp-callback
    (req)
    (let ((res (send req :response)))
@@ -175,6 +184,13 @@
    (req)
    (let ((res (send req :response)))
      (send self :correct-handle-pose :yes t)
+     res
+     )
+   )
+  (:approach-accel-callback
+   (req)
+   (let ((res (send req :response)))
+     (send self :approach-accel) ;; sync-controller is checked in default parameter
      res
      )
    )
@@ -365,8 +381,8 @@
      )
    )
   (:approach-accel
-   (&rest args &key (limb :rleg) &allow-other-keys)
-   (send* motion :approach-accel-pedal :limb limb args)
+   (&rest args &key (limb :rleg) (sync-controller (equal (send self :controller-state :accel) :running)) &allow-other-keys)
+   (send* motion :approach-accel-pedal :limb limb :sync-controller sync-controller args)
    (send self :accel-origin (send motion :robot limb :ankle-p :joint-angle))
    (send self :controller-state :accel :running) ;; enbale accel
    )
