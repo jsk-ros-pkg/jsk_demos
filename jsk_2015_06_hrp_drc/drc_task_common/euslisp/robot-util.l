@@ -73,7 +73,7 @@
                 ))
          )
         ((or (equal *robot-name* "JAXON") (equal *robot-name* "STARO"))
-         (cond ((or (equal type :door-grasp-preshape) (equal type :door-grasp))
+         (cond ((or (equal type :door-grasp-preshape))
                 (when (and real? (find-method *ri* :stop-grasp))
                   (send *ri* :stop-grasp arm :wait wait?))
                 )
