@@ -292,9 +292,9 @@
                   (list (float-vector 0 -25 -50) 0 15 -70)
                   (list (float-vector 0 -25 -50) 0 15 -35)
                   (list (float-vector 0 -25 -50) 0 15 0)
-                  (list (float-vector 0 50 50) 0 15 0) ;; stop grasp before this
-                  (list (float-vector 0 100 50) 0 15 0)
-                  (list (float-vector -100 100 50) 0 15 0)
+                  (list (float-vector 0 75 50) 0 15 0) ;; stop grasp before this
+                  (list (float-vector 0 150 50) 0 15 0)
+                  (list (float-vector -100 150 50) 0 15 0)
                   ))
            ((equal push/pull :pull)
             (list (list (float-vector -100 200 150) 0 0 0)
@@ -306,9 +306,9 @@
                   (list (float-vector 0 -25 -50) 0 -20 -70)
                   (list (float-vector 0 -25 -50) 0 -20 -35)
                   (list (float-vector 0 -25 -50) 0 -20 0)
-                  (list (float-vector 0 50 50) 0 -20 0) ;; stop grasp before this
-                  (list (float-vector 0 100 50) 0 -20 0)
-                  (list (float-vector -100 100 50) 0 -20 0)
+                  (list (float-vector 0 75 50) 0 -20 0) ;; stop grasp before this
+                  (list (float-vector 0 150 50) 0 -20 0)
+                  (list (float-vector -100 150 50) 0 -20 0)
                   ))
            ))
          )
