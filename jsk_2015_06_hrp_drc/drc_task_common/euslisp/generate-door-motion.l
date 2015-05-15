@@ -589,8 +589,7 @@
 (defun get-door-through-pose
   ()
   (cond ((or (equal *robot-name* "JAXON") (equal *robot-name* "STARO"))
-         (send *robot* :reset-pose)
-         (send *robot* :arms :elbow-p :joint-angle -55))
+         (send *robot* :narrow-width-pose))
         (t ;; (or (equal *robot-name* "HRP2JSKNT") (equal *robot-name* "HRP2JSKNTS"))
          (send *robot* :reset-pose)
          ))
