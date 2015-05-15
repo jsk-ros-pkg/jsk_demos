@@ -510,8 +510,9 @@
   (unless (check-angle-vector-distance)
     (when real? (model2real :time 3000)))
   (when real?
+    (set-default-impedance-param)
     (cond ((or (equal *robot-name* "JAXON") (equal *robot-name* "STARO"))
-           (send *ri* :start-impedance :arms :moment-gain (float-vector 0 0 0) :k-p 300 :d-p 300))
+           (send *ri* :start-impedance :arms :k-p 300 :d-p 300))
           (t ;; (or (equal *robot-name* "HRP2JSKNT") (equal *robot-name* "HRP2JSKNTS"))
            (send *ri* :start-impedance :arms :k-p 200 :d-p 250 :m-p 7.5 :m-r 1 :d-r 15 :k-r 20)
            )))
