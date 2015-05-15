@@ -175,7 +175,7 @@
 	(setq *drill-reverse-hand* t)
 	(setq *drill-button-point* :finger)
 	(setq *default-drill-type* :takenoko))
-    (progn 
+    (progn
       (setq *use-dual-arm-ik* nil)
       (setq *use-f-sensor-search* nil)
       (setq *drill-reverse-hand* nil)
@@ -621,7 +621,7 @@
          (drill-motion-length (length drill-motion-av-list)))
     (when (= drill-motion-length 0) (return-from send-drill-grasp-motion))
     (when real? 
-      (set-default-impedance-param :arms)
+      (set-default-impedance-param)
       (cond ((or (equal *robot-name* "HRP2JSKNTS") (equal *robot-name* "HRP2JSKNT"))
              (send *ri* :start-impedance :arms :k-p 200 :d-p 180 :m-p 5 :m-r 1 :d-r 15 :k-r 20)) ;; start imp soft
              ;(send *ri* :start-impedance *drill-main-arm* :moment-gain (float-vector 0 0 0) :k-p 1000 :d-p 400)) ;; start imp hard
@@ -652,7 +652,7 @@
     (send *robot* :angle-vector (elt drill-motion-av-list 1))
     (when real? (model2real :time 5000))
     (when real? 
-      (set-default-impedance-param *drill-main-arm*)
+      (set-default-impedance-param)
       (cond ((or (equal *robot-name* "HRP2JSKNTS") (equal *robot-name* "HRP2JSKNT"))
              (send *ri* :start-impedance *drill-main-arm* :moment-gain (float-vector 0 0 0) :k-p 1000 :d-p 400)) ;; start imp hard
             (t
@@ -768,7 +768,7 @@
     
     ;; first reaching
     (when real? 
-      (set-default-impedance-param *drill-main-arm*)
+      (set-default-impedance-param)
       (cond ((or (equal *robot-name* "HRP2JSKNTS") (equal *robot-name* "HRP2JSKNT"))
              (send *ri* :start-impedance *drill-main-arm* :moment-gain (float-vector 0 0 0) :k-p 1000 :d-p 400)) ;; start imp hard
             (t
@@ -1017,10 +1017,10 @@
     (when (not (= drill-motion-length 0))
       (when real? 
         (cond ((or (equal *robot-name* "HRP2JSKNTS") (equal *robot-name* "HRP2JSKNT"))
-               (set-default-impedance-param :arms)
+               (set-default-impedance-param)
                (send *ri* :start-impedance :arms :moment-gain (float-vector 0 0 0) :k-p 3000 :d-p 400)) ;; start imp hard
               (t
-               (set-default-impedance-param *drill-main-arm*)
+               (set-default-impedance-param)
                (send *ri* :start-impedance *drill-main-arm* :moment-gain (float-vector 0 0 0) :k-p 3000 :d-p 1500))))
       
       (when real? (send *ri* :set-ref-force #f(0 0 -20) 2000 *drill-main-arm*))
@@ -1241,7 +1241,7 @@
 	(t ;;JAXON
 	 (if *drill-reverse-hand*  
 	     (if (equal *drill-main-arm* :rarm) (make-coords :pos (float-vector -850 200 0) :rpy (list (deg2rad 0) 0 0)) (make-coords :pos (float-vector -850 -200 0) :rpy (list (deg2rad 0) 0 0)))
-	   (if (equal *drill-main-arm* :rarm) (make-coords :pos (float-vector -730 600 0) :rpy (list (deg2rad -20) 0 0)) (make-coords :pos (float-vector -730 -600 0) :rpy (list (deg2rad 20) 0 0)))
+	   (if (equal *drill-main-arm* :rarm) (make-coords :pos (float-vector -730 -200 0) :rpy (list (deg2rad 20) 0 0)) (make-coords :pos (float-vector -730 200 0) :rpy (list (deg2rad -20) 0 0)))
 	   )
 	 )
 	)
@@ -1355,7 +1355,7 @@
         (when real? (send *ri* :go-pos (elt pos 0) (elt pos 1) (elt rpy 0)))
         ))
     (when real? 
-      (set-default-impedance-param *drill-main-arm*)
+      (set-default-impedance-param)
       (cond ((or (equal *robot-name* "HRP2JSKNTS") (equal *robot-name* "HRP2JSKNT"))
              (send *ri* :start-impedance *drill-main-arm* :moment-gain (float-vector 0 0 0) :k-p 1000 :d-p 400)) ;; start imp hard
 
@@ -1662,7 +1662,9 @@
 	     #f(0.0 0.0 -26.0 50.0 -24.0 0.0 0.0 0.0 0.0 -26.0 50.0 -24.0 0.0 0.0 0.0 0.0 0.0 40.0 -15.8902 -24.0028 13.0297 -91.879 5.61774 -4.8117 -73.0948 60.0 50.0 30.0 10.0 -120.0 25.0 5.0 -20.0 -60.0)
 	     #f(-2.38692 3.44954 -31.3438 59.374 -27.6708 -1.8005 0.0 -2.38708 3.47463 -32.0978 59.782 -27.3249 -1.82558 0.0 10.0735 8.75398 -17.663 20.7846 -37.6601 10.0 29.6919 -68.3126 -97.3465 -3.31063 -19.3263 60.0 29.0864 29.9297 2.98779 -118.271 21.1947 0.852295 -11.3978 -60.0)
 	     ))
-	(t #f(4.84419 -4.66142 -32.4409 59.53 -26.5455 2.90721 0.0 4.84358 -4.59759 -31.3846 59.6267 -27.6986 2.84338 0.0 -14.8285 11.0271 13.145 18.9604 26.6782 -30.9445 -0.750449 -117.656 -21.3026 -1.7524 -10.3101 60.0 -35.8162 -10.0 -31.1661 -76.3258 98.6332 12.8843 -13.7993 -60.0))
+	(t 
+         #f(1.8474 -2.65775 -26.6226 45.4555 -22.888 1.96534 1.84848 -2.64244 -25.6546 44.674 -23.0745 1.95 4.97106 9.06265 14.0558 -33.0 40.0 5.44788 41.1171 -56.4215 -5.75946 -108.854 -115.061 15.0282 27.2784 1.11288 44.8267 41.7962 -9.91826 -101.245 33.2679 14.7361 -39.3661)
+         )
 	)))
     (send *robot* :angle-vector angle-ret)
     (when (equal *drill-main-arm* :larm) (setq angle-ret (get-mirror-angle-vector)))
