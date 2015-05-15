@@ -275,14 +275,14 @@
      )
    )
   (:correct-handle-pose
-   (&key (yes nil) (grasp t))
+   (&key (yes nil) (grasp t) (time 2500))
    (let (ret-result approach-result grasp-result)
      (setq handle-pose-estimate-flag t)
      (setq ret-result (send self :execute-handle-pose-compensation :yes yes))
      ;; grasp in new handle coords
      (when grasp
        (warn "regrasp~%")
-       (setq approach-result (send self :approach-handle :tm tm))
+       (setq approach-result (send self :approach-handle :tm time))
        (if approach-result
            (progn (setq grasp-result (send self :grasp)) ;; grasp only when approach is succeeded
                   (unless  grasp-result
@@ -295,7 +295,7 @@
                 )
          )
        (when (send motion :real)
-         (send *ri* :angle-vector (send (send motion :robot) :angle-vector) tm)
+         (send *ri* :angle-vector (send (send motion :robot) :angle-vector) time)
          (send *ri* :wait-interpolation)
          )
        )
