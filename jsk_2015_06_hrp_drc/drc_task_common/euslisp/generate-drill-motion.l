@@ -5,7 +5,7 @@
 (load "package://drc_task_common/models/gun-drill.l")
 (require "package://pr2eus/speak.l")
 
-(setq *drill-main-arm* :larm)
+(setq *drill-main-arm* :rarm)
 (setq *use-dual-arm-ik* nil)
 (setq *use-f-sensor-search* nil)
 (setq *drill-reverse-hand* t)
@@ -13,19 +13,6 @@
 (setq *default-drill-type* :takenoko))
 (setq *default-drill-type* :takenoko)
 
-;; show attachment on HRP2HAND
-(defun set-attachment ()
-  (when (or (equal *robot-name* "HRP2JSKNT") (equal *robot-name* "HRP2JSKNTS"))
-    (setq *hand-attachment* (make-cube 10 10 100))
-    (objects (list *robot* *hand-attachment* *drill*))
-    (send *hand-attachment* :set-color #f(1 0 0))
-    (send *hand-attachment* :newcoords (send (send (send *robot* :larm
-							 :end-coords) :copy-worldcoords) :translate #f(80 62 50)))
-    (send (send (send *robot* :larm :end-coords) :parent) :assoc *hand-attachment*)
-    (send *robot* :reset-manip-pose)
-    (send *robot* :reset-pose)
-    )
-  )
 
 (defun check-stand-coords (stand-coords)
   (let* ((pos (scale 0.001 (send stand-coords :worldpos)))
@@ -102,7 +89,7 @@
   (send *drill* :put :edge-coords
         (make-cascoords
          ;;:coords (make-coords :pos #f(0 0 0) :rpy (list 0 0 0))
-         :coords (make-coords :pos #f(0 0 340) :rpy (list 0 0 0))
+         :coords (make-coords :pos #f(0 0 290) :rpy (list 0 0 0))
          :parent *drill*))
   ;; (when drill-coords
   ;;   (send *drill* :newcoords drill-coords))
@@ -185,7 +172,7 @@
       (progn
 	(setq *use-dual-arm-ik* nil)
 	(setq *use-f-sensor-search* nil)
-	(setq *drill-reverse-hand* nil)
+	(setq *drill-reverse-hand* t)
 	(setq *drill-button-point* :finger)
 	(setq *default-drill-type* :takenoko))
     (progn 
@@ -210,9 +197,9 @@
         (make-cascoords
          :coords 
 	 (cond ((equal *robot-name* "HRP2JSKNT")
-		(send (send (send (send *robot* :larm :end-coords) :copy-worldcoords) :translate (float-vector 50 -2.0 0.0) :local) :rotate (deg2rad -45) :z :local))
+		(send (send (send (send *robot* :rarm :end-coords) :copy-worldcoords) :translate (float-vector 50 2.0 0.0) :local) :rotate (deg2rad -45) :z :local))
 	       ((equal *robot-name* "HRP2JSKNTS")
-		(send (send (send (send *robot* :larm :end-coords) :copy-worldcoords) :translate (float-vector 45 -15.0 0.0) :local) :rotate (deg2rad -45) :z :local))
+		(send (send (send (send *robot* :rarm :end-coords) :copy-worldcoords) :translate (float-vector 45 15.0 0.0) :local) :rotate (deg2rad -45) :z :local))
 	       (t
 		(send (send (send (send *robot* :rarm :end-coords) :copy-worldcoords) :translate (float-vector 0.0 0.0 0.0) :local) :rotate (deg2rad 0) :z :local)
 		)
@@ -284,7 +271,6 @@
   (when draw?
     (setq *ground* (make-cube 1000 1000 1))
     (objects (list *robot* *drill* *ground*))
-    (set-attachment)
     (send *irtviewer* :draw-objects)
     (send *irtviewer* :change-background (float-vector 0.5 0.5 1))
     )
@@ -466,7 +452,7 @@
 ;; genetate drill motion (with current drill coords)
 (defun generate-drill-grasp-motion
   (&key (draw? t) (rotation-axis (if (eq *default-drill-type* :takenoko) (list t t t) (list t t t))) (fin? t))
-  (let* ((reach-dist 60)
+  (let* ((reach-dist 160)
          ;(x-factor 0.0)
 	 (grasp-up-dist 120)
 	 (air-grasp-up-dist 60)
@@ -516,7 +502,7 @@
         (when (and fin? (not ik-ret)) (return-from drill-ik nil))
 	(send *robot* :angle-vector robot-angle-vector)
 	(send *robot* :fix-leg-to-coords original-foot-midcoords)
-        (setq ik-ret (fullbody-inverse-kinematics-for-drill-grasp-single :arm-tc (send (send (gethash *drill-main-arm* *arm-drill-grasp-coords*) :copy-worldcoords) :translate (float-vector (- reach-dist) 0 (if (not *drill-reverse-hand*) 100 0)) :local) :draw? draw? :rotation-axis (list t t t)))
+        (setq ik-ret (fullbody-inverse-kinematics-for-drill-grasp-single :arm-tc (send (send (gethash *drill-main-arm* *arm-drill-grasp-coords*) :copy-worldcoords) :translate (float-vector (- reach-dist) 0 (if (not *drill-reverse-hand*) 100 -100)) :local) :draw? draw? :rotation-axis (list t t t)))
 	(push (list 0 (not (null ik-ret)) ik-ret) ik-results)
         (when (and fin? (not ik-ret)) (return-from drill-ik nil))
 	(send *robot* :angle-vector robot-angle-vector)
@@ -623,13 +609,15 @@
 
 ;; send drill motion for real robot(fc side)
 (defun send-drill-grasp-motion
-  (coords &key (real? t) (drill-type *default-drill-type*) (rotation-axis (list :z t t)) (arm *drill-main-arm*) (stand-coords nil) (overwrite-stand-coords? nil)
+  (coords &key (real? t) (drill-type *default-drill-type*) (rotation-axis (list :z t t)) (arm *drill-main-arm*) (stand-coords nil) (overwrite-stand-coords? nil) (draw? nil)
 	  (rotate-drill? nil))
   (when (and stand-coords (not (check-stand-coords stand-coords)))
     (setq stand-coords nil)
     )
-  (setq stand-coords (make-coords :pos (float-vector (elt (send stand-coords :worldpos) 0) (elt (send stand-coords :worldpos) 1) 0) :rpy (float-vector (elt (car (send stand-coords :rpy-angle)) 0) 0 0)))
-  (let* ((drill-motion-av-list (or (get-drill-grasp-motion-full coords :drill-type drill-type :rotation-axis (list t t t) :arm arm :stand-coords stand-coords :overwrite-stand-coords? overwrite-stand-coords?) (get-drill-grasp-motion-full coords :drill-type drill-type :rotation-axis rotation-axis :arm arm :stand-coords stand-coords :overwrite-stand-coords? overwrite-stand-coords?)))
+  (when stand-coords
+    (setq stand-coords (make-coords :pos (float-vector (elt (send stand-coords :worldpos) 0) (elt (send stand-coords :worldpos) 1) 0) :rpy (float-vector (elt (car (send stand-coords :rpy-angle)) 0) 0 0)))
+    )
+  (let* ((drill-motion-av-list (or (get-drill-grasp-motion-full coords :drill-type drill-type :rotation-axis (list t t t) :arm arm :stand-coords stand-coords :overwrite-stand-coords? overwrite-stand-coords?) (get-drill-grasp-motion-full coords :drill-type drill-type :rotation-axis rotation-axis :arm arm :stand-coords stand-coords :overwrite-stand-coords? overwrite-stand-coords? :draw? draw?)))
          (drill-motion-length (length drill-motion-av-list)))
     (when (= drill-motion-length 0) (return-from send-drill-grasp-motion))
     (when real? 
@@ -714,7 +702,9 @@
     ;;   (unless (check-angle-vector-distance)
     ;;     (when real? (model2real :time 5000)))
     ;;   )
-
+    (when rotate-drill?
+      (send-drill-rotate-motion (get-body-relative-coords (send *drill* :copy-worldcoords)) (get-body-relative-coords (send *drill* :copy-worldcoords)))
+      )
     ;; ;; drill-reset-pose
     ;; (send *robot* :angle-vector (elt drill-motion-av-list 4))
     ;; (when real? (model2real :time 5000))
@@ -1070,12 +1060,12 @@
       (when real? (model2real :time 2000))
       ;; second try
       (when try-many?
-        (dotimes (ix 1)
-          (dotimes (iy 4)
-            (let ((button-ik nil) (width 12))
+        (dotimes (ix 3)
+          (dotimes (iy 5)
+            (let ((button-ik nil) (width 12) (width-x 30))
               (send *robot* :fix-leg-to-coords (make-coords))
-              (push (fullbody-inverse-kinematics-for-drill-button :x-offset (+ 0 (* (- ix 0) width)) :y-offset (+ 0 (* (- iy 1.5) width)) :z-offset -35 :draw? nil) button-ik)
-              (push (fullbody-inverse-kinematics-for-drill-button :x-offset (+ 0 (* (- ix 0) width)) :y-offset (+ 0 (* (- iy 1.5) width)) :z-offset 40 :draw? nil) button-ik)	      
+              (push (fullbody-inverse-kinematics-for-drill-button :x-offset (+ 0 (* (- ix 1) width-x)) :y-offset (+ 0 (* (- iy 2) width)) :z-offset -35 :draw? nil) button-ik)
+              (push (fullbody-inverse-kinematics-for-drill-button :x-offset (+ 0 (* (- ix 1) width-x)) :y-offset (+ 0 (* (- iy 2) width)) :z-offset 40 :draw? nil) button-ik)	      
               (when (and (elt button-ik 0) (elt button-ik 1))
                 (send *robot* :angle-vector (elt button-ik 1))
                 (when (boundp '*irtviewer*) (send *irtviewer* :draw-objects))
@@ -1203,7 +1193,7 @@
         (push-back (list (+ i 1) (not (null ik-ret)) ik-ret) ik-results)
         (when (and fin? (not ik-ret)) (return-from drill-ik nil))
         (when (or (equal i 0) (equal i (- dt-coords-length 1)))
-          (send *drill* :translate (float-vector -100 0 0) :world)
+          (send *drill* :translate (float-vector 0 0 -130) :local)
           (setq ik-ret (if *use-dual-arm-ik* (fullbody-inverse-kinematics-for-drill-grasp-dual :draw? draw?) (fullbody-inverse-kinematics-for-drill-grasp-single :draw? draw? :rotation-axis (if (equal drill-type :takenoko) '(:z t t) '(:z t t)) :arm-mt drill-edge-mt :arm-tc (send *drill* :get :edge-coords))))
 	  (when (and c-check (c-check-for-drill)) (setq ik-ret nil))
            (when ik-ret
@@ -1240,7 +1230,7 @@
 	     (if (equal *drill-main-arm* :rarm) (make-coords :pos (float-vector -680 0 0) :rpy (list (deg2rad 0) 0 0)) (make-coords :pos (float-vector -680 0 0) :rpy (list (deg2rad 0) 0 0)))
 	   (if *drill-reverse-hand*
 	       (if (equal *drill-main-arm* :rarm) (make-coords :pos (float-vector -830 -200 0) :rpy (list (deg2rad 20) 0 0)) (make-coords :pos (float-vector -830 200 0) :rpy (list (deg2rad -20) 0 0)))
-	     (if (equal *drill-main-arm* :rarm) (make-coords :pos (float-vector -850 -150 0) :rpy (list (deg2rad 50) 0 0)) (make-coords :pos (float-vector -850 150 0) :rpy (list (deg2rad -50) 0 0)))
+	     (if (equal *drill-main-arm* :rarm) (make-coords :pos (float-vector -700 -265 0) :rpy (list (deg2rad 50) 0 0)) (make-coords :pos (float-vector -700 250 0) :rpy (list (deg2rad -65) 0 0)))
 	     )
 	   ))
 	(t ;;JAXON
@@ -1310,9 +1300,9 @@
 	;; 	      (make-coords :pos (send (elt drill-coords-list 0) :worldpos)
 	;; 			   :rot mat))))))
 	
-	(let ((ux (matrix-row (send (elt drill-coords-list 0) :rot) 2))
+	(let ((ux (matrix-column (send (elt drill-coords-list 0) :rot) 2))
 	      (uz (float-vector 0 0 1)))
-	  (setq ux (scale -1.0 ux))
+	  ;(setq ux (scale -1.0 ux))
 	  (let ((uy (v* uz ux)))
 	    (let ((mat (make-matrix 3 3)))
 	      (setf (matrix-column mat 0) ux)
@@ -1337,11 +1327,11 @@
   
 
 (defun send-drill-wall-motion
-  (coords-list &key (real? t) (drill-type *default-drill-type*) (stand-coords nil) (overwrite-stand-coords? nil) (devide-num 3))
+  (coords-list &key (real? t) (drill-type *default-drill-type*) (stand-coords nil) (overwrite-stand-coords? nil) (devide-num 3) (draw? nil))
   (when (and stand-coords (not (check-stand-coords stand-coords)))
     (setq stand-coords nil)
     )  
-  (let* ((drill-motion-av-list (get-drill-wall-motion-full coords-list :drill-type drill-type :recognized-coords-symbol :edge-coords :stand-coords stand-coords :overwrite-stand-coords? overwrite-stand-coords? :devide-num devide-num))
+  (let* ((drill-motion-av-list (get-drill-wall-motion-full coords-list :drill-type drill-type :recognized-coords-symbol :edge-coords :stand-coords stand-coords :overwrite-stand-coords? overwrite-stand-coords? :devide-num devide-num :draw? draw?))
          (drill-motion-length (length drill-motion-av-list)))
     (when (= drill-motion-length 0) (return-from send-drill-wall-motion))
     (when (equal drill-type :takenoko)
@@ -1350,7 +1340,8 @@
       (send *robot* :angle-vector (get-pierce-drill-pre-pose))
       (when real? (model2real :time 5000))
       )
-    (send *ri* :set-ref-force #f(0 0 -20) 2000 *drill-main-arm*)
+   
+    ;(send *ri* :set-ref-force #f(0 0 -20) 2000 *drill-main-arm*)
     ;; walk
     (when (and *drill-stand-coords* (check-stand-coords *drill-stand-coords*))
       (let* ((pos (scale 0.001 (send *drill-stand-coords* :worldpos)))
@@ -1361,10 +1352,19 @@
     (when real? 
       (cond ((or (equal *robot-name* "HRP2JSKNTS") (equal *robot-name* "HRP2JSKNT"))
              (send *ri* :start-impedance *drill-main-arm* :moment-gain (float-vector 0 0 0) :k-p 1000 :d-p 400)) ;; start imp hard
+
             (t
              (send *ri* :start-impedance *drill-main-arm* :moment-gain (float-vector 0 0 0) :k-p 1000 :d-p 1500))))
-    
+    (send *ri* :start-impedance *drill-main-arm* :force-gain #f(0.1 0.1 1) :k-p 150 :d-p 160)
     ;; pre-reach
+  
+    (let* ((drill-dir (matrix-column (send (send (send (if stand-coords stand-coords (make-coords)) :copy-worldcoords) :transformation (send (elt coords-list 0) :copy-worldcoords)) :rot) 2))
+          (ref-dir (v- (float-vector 0 0 -20) (scale 3.0 (normalize-vector drill-dir)))))
+      (send *ri* :set-ref-force ref-dir 2000 *drill-main-arm*)
+      (ros::ros-info (format nil "ref force ~A ~A ~A" (elt ref-dir 0) (elt ref-dir 1) (elt ref-dir 2)))
+      (speak-en (format nil "ref force ~A ~A ~A" (elt ref-dir 0) (elt ref-dir 1) (elt ref-dir 2)))
+      )
+    ;;todo
     (let ((i 0))
       (while (< i (length drill-motion-av-list))
 	(cond ((or (equal i 0) (equal i (- (length drill-motion-av-list) 1)))
@@ -1382,6 +1382,7 @@
     ;;   (send *robot* :angle-vector (elt drill-motion-av-list i))
     ;;   (when real? (model2real :time (if (or (equal i 0) (equal i (- (length drill-motion-av-list) 1))) 5000 15000)))
     ;;   )
+    (send *ri* :set-impedance-controller-param *drill-main-arm* :force-gain (float-vector 1 1 1))
     (when (equal drill-type :takenoko)
       (send *robot* :angle-vector (get-pierce-drill-pre-pose))
       (when real? (model2real :time 5000))
@@ -1412,14 +1413,13 @@
 ;; todo grasp-coords rotate
 ;; set-drill-environment
 (defun generate-drill-rotate-motion
-  (&key (draw? t) (devide-num 20))
+  (&key (draw? t) (devide-num 20) (grasp-up-dist 100))
   (let* (ik-results
 	 ik-results-before
 	 ik-results-after
          (original-foot-midcoords (send (send *robot* :foot-midcoords) :copy-worldcoords))
 	 (original-angle-vector (send *robot* :angle-vector))
 	 (original-drill-coords (send *drill* :copy-worldcoords))
-	 (grasp-up-dist 100)
 	 )
     (when *drill-reverse-hand* (setq grasp-up-dist (- grasp-up-dist)))
     (let* (ik-ret-out ik-ret-in ik-ret-up)
@@ -1503,7 +1503,7 @@
   )
 
 (defun get-drill-rotate-motion-full
-  (drill-coords plane-coords &key (draw? t) (use-ri? t) (devide-num 20)) ;; tmp draw
+  (drill-coords plane-coords &key (draw? t) (use-ri? t) (devide-num 20) (grasp-up-dist 100) (thre 20)) ;; tmp draw
   (set-drill-environment-full drill-coords :draw? draw? :use-ri? use-ri?)
   (cond (use-ri?
 	 (send *robot* :angle-vector (send *ri* :state :potentio-vector)))
@@ -1511,7 +1511,10 @@
            (send *robot* :angle-vector (get-potentio-vector-from-joint-states))))
   (let ((diff-deg (check-diff-angle)))
       (send (send *drill* :get :grasp-coords) :rotate (deg2rad diff-deg) :z)
-
+      (when (< diff-deg thre)
+        (ros::ros-info "diff-deg small")
+        (return-from get-drill-rotate-motion-full)
+        )
       (send *drill* :newcoords (send (send (send *robot* :body_lk) :copy-worldcoords) :transform (get-drill-coords-with-symbol plane-coords :put-coords) :local))
       (if (not (fullbody-inverse-kinematics-for-drill-grasp-single))
 	  (return-from get-drill-rotate-motion-full nil)
@@ -1531,12 +1534,21 @@
   (drill-coords plane-coords &key (real? t))
   (setq *send-drill-motion* nil)
   (let* ((diff-deg (get-drill-rotate-motion-full drill-coords plane-coords :devide-num 20))
-	 (resolution (/ 360.0 20.0))
-	 (ik-length (length *drill-motion-up*))
-	 (diff-length (round (abs (+ (/ diff-deg resolution) 0.5))))
-	 (rotate-length (min ik-length diff-length)))
+         resolution
+         ik-length
+         rotate-length
+         )
+    (when (or (not diff-deg) (equal diff-deg 0.0)) 
+      (ros::ros-info "diff deg 0 or ik failed")
+      (return-from send-drill-rotate-motion nil)
+      )
+    (setq resolution (/ 360.0 20.0))
+    (setq ik-length (length *drill-motion-up*))
+    (ros::ros-info (format nil "ik-length: ~A" ik-length))
+    (setq diff-length (+ (round (abs (+ (/ diff-deg resolution) 0.5))) 1));ik length needed to rotate
+    (setq rotate-length (min ik-length diff-length))
+    (when (< rotate-length 2) (return-from send-drill-rotate-motion nil))
     (ros::ros-info (format nil "rotate-length: ~A" rotate-length))
-    (when (equal ik-length 0) (return-from send-drill-rotate-motion nil))
     (when (< diff-deg 0)
       (setq *drill-motion-up* (reverse *drill-motion-up*))
       (setq *drill-motion-in* (reverse *drill-motion-in*))
@@ -1612,7 +1624,7 @@
     (if (and use-current? real?) (send *robot* :angle-vector (send *ri* :state :reference-vector)))
     (send *robot* :fix-leg-to-coords (make-coords))
     (setq ret 
-	  (send *robot* :rarm :inverse-kinematics (make-coords :pos (send (send (send *robot* :rarm :end-coords) :copy-worldcoords) :pos) :rpy (list 0 0 (* pi/2 (if *drill-reverse-hand* 1 -1) (if (equal *drill-main-arm* :rarm) -1 1))))))
+	  (send *robot* :rarm :inverse-kinematics (make-coords :pos (send (send (send *robot* *drill-main-arm* :end-coords) :copy-worldcoords) :pos) :rpy (list 0 0 (* pi/2 (if *drill-reverse-hand* 1 -1) (if (equal *drill-main-arm* :rarm) -1 1))))))
     (when (and ret real?)
       (model2real :time 3000)    
       )
@@ -1640,10 +1652,11 @@
   ;; (float-vector 0.0 0.0 -26.0 50.0 -24.0 0.0 0.0 0.0 0.0 -26.0 50.0 -24.0 0.0 0.0 0.0 0.0 0.0 40.0 1.19212 -20.9065 -5.36626 -98.3812 50.0 6.28459 -83.1406 60.0 -17.0 30.0 10.0 -120.0 25.0 5.0 -20.0 -60.0)
   (let ((angle-ret
   (cond ((or (equal *robot-name* "HRP2JSKNT") (equal *robot-name* "HRP2JSKNTS")) 
-	(if *drill-reverse-hand* #f(0.0 0.0 -26.0 50.0 -24.0 0.0 0.0 0.0 0.0 -26.0 50.0 -24.0 0.0 0.0 0.0 0.0 0.0 40.0 -15.8902 -24.0028 13.0297 -91.879 5.61774 -4.8117 -73.0948 60.0 50.0 30.0 10.0 -120.0 25.0 5.0 -20.0 -60.0)
-      (send *robot* :reset-manip-pose)
-      ))
-	(t (send *robot* :reset-manip-pose))
+	 (if *drill-reverse-hand* 
+	     #f(0.0 0.0 -26.0 50.0 -24.0 0.0 0.0 0.0 0.0 -26.0 50.0 -24.0 0.0 0.0 0.0 0.0 0.0 40.0 -15.8902 -24.0028 13.0297 -91.879 5.61774 -4.8117 -73.0948 60.0 50.0 30.0 10.0 -120.0 25.0 5.0 -20.0 -60.0)
+	     #f(-2.38692 3.44954 -31.3438 59.374 -27.6708 -1.8005 0.0 -2.38708 3.47463 -32.0978 59.782 -27.3249 -1.82558 0.0 10.0735 8.75398 -17.663 20.7846 -37.6601 10.0 29.6919 -68.3126 -97.3465 -3.31063 -19.3263 60.0 29.0864 29.9297 2.98779 -118.271 21.1947 0.852295 -11.3978 -60.0)
+	     ))
+	(t #f(4.84419 -4.66142 -32.4409 59.53 -26.5455 2.90721 0.0 4.84358 -4.59759 -31.3846 59.6267 -27.6986 2.84338 0.0 -14.8285 11.0271 13.145 18.9604 26.6782 -30.9445 -0.750449 -117.656 -21.3026 -1.7524 -10.3101 60.0 -35.8162 -10.0 -31.1661 -76.3258 98.6332 12.8843 -13.7993 -60.0))
 	)))
     (send *robot* :angle-vector angle-ret)
     (when (equal *drill-main-arm* :larm) (setq angle-ret (get-mirror-angle-vector)))
@@ -1704,7 +1717,7 @@
   (cond ((or (equal *robot-name* "HRP2JSKNT") (equal *robot-name* "HRP2JSKNTS"))
 	 (if *drill-reverse-hand* 
 	     #f(-2.04568 13.6629 -31.1634 64.7311 -29.6246 -4.90706 0.0 -2.06847 13.9839 -33.5693 68.8818 -31.364 -5.22875 0.0 -23.7973 16.1884 -10.6249 -19.0 -105.319 -10.0296 34.741 -43.3425 -106.0 47.7471 65.5498 60.0 40.0869 75.2885 11.7308 -117.757 -18.2568 65.0121 0.945275 -60.0)
-	     #f(-1.38133 5.04464 -28.5655 52.7906 -23.2636 -5.40806 0.0 -1.38071 5.00818 -27.1647 49.5024 -21.3763 -5.3716 0.0 22.1862 23.6363 -22.5578 43.0 -2.7897 7.6894 8.91765 -101.289 -83.2938 0.700085 -30.2438 60.0 -58.2284 33.3699 -40.8042 -81.4217 5.90815 -41.9868 -46.7235 -60.0)
+	     #f(-0.173437 9.3105 -27.542 65.2878 -34.038 -0.18 -0.324 -0.182812 9.432 -30.568 71.6022 -37.316 -0.3528 -0.036 -34.1485 9.39775 -23.2875 20.0 -29.6116 -18.9393 21.046 -113.361 -66.5677 -36.78 20.4044 60.0 -61.8932 48.1149 -54.1074 -126.033 -9.9503 -35.1643 0.847727 -60.0)
 	     )
 	 )
 	((equal *robot-name* "JAXON")
@@ -1755,10 +1768,10 @@
       (send *robot* :hand :arms :hook-pose))
   ;(play-motion-on-eus-viewer *drill-motion*)
   )
-(defun test-send-drill-grasp-motion (&key (rotate-drill? nil))
+(defun test-send-drill-grasp-motion (&key (rotate-drill? nil) (high? nil))
   (test-init)
   (send *robot* :fix-leg-to-coords (make-coords))
-  (send-drill-grasp-motion (get-body-relative-coords (make-coords :pos (float-vector 1200 0 (if high? 1100 830)) :rpy (list (deg2rad 90) 0 0))) :rotate-drill? rotate-drill?))
+  (send-drill-grasp-motion (get-body-relative-coords (make-coords :pos (float-vector 900 0 (if high? 1100 830)) :rpy (list (deg2rad 90) 0 0))) :rotate-drill? rotate-drill?) :draw? t)
   
 (defun test-send-drill-rotate-motion ()
   (test-send-drill-grasp-motion)
@@ -1772,7 +1785,7 @@
   (send *robot* :angle-vector (get-drill-reset-pose))
   (fullbody-inverse-kinematics-for-drill-grasp-single :rotation-axis (list t t t))
   (send *ri* :angle-vector (send *robot* :angle-vector) 10000)
-  (send *drill* :rotate (deg2rad 60) :z)
+  (send *drill* :rotate (deg2rad 130) :z)
   (send-drill-rotate-motion (get-body-relative-coords (send *drill* :copy-worldcoords)) (get-body-relative-coords (send *drill* :copy-worldcoords)))
   )
 (defun test-drill-put-motion ()
@@ -1803,8 +1816,9 @@
   ;(play-motion-on-eus-viewer *drill-motion*)
   )
 (defun test-send-drill-wall-motion ()
-  (setq *drill-coords-list* (list (make-coords :pos (float-vector 1000 -150 400) :rpy (list 0 pi/2 0)) (make-coords :pos (float-vector 1000 -250 500) :rpy (list 0 pi/2 0)) (make-coords :pos (float-vector 1000 -250 400) :rpy (list 0 pi/2 0)) (make-coords :pos (float-vector 1000 -50 500) :rpy (list 0 pi/2 0))))
-  (send-drill-wall-motion *drill-coords-list* :real? t :overwrite-stand-coords? t)
+  (test-init)
+  (setq *drill-coords-list* (list (get-body-relative-coords (make-coords :pos (float-vector 1000 -100 1000) :rpy (list 0 pi/2 0))) (get-body-relative-coords (make-coords :pos (float-vector 1000 100 1000) :rpy (list 0 pi/2 0))) (get-body-relative-coords (make-coords :pos (float-vector 1000 100 1200) :rpy (list 0 pi/2 0))) (get-body-relative-coords (make-coords :pos (float-vector 1000 -100 1200) :rpy (list 0 pi/2 0)))))
+  (send-drill-wall-motion *drill-coords-list* :real? t :overwrite-stand-coords? t :draw? t)
   )
 (defun re-view ()
   (play-motion-on-eus-viewer *drill-motion*)
@@ -2158,20 +2172,4 @@
 ;l#f(0.391807 0.32324 -17.5873 39.6374 -21.0175 -0.106618 0.391797 0.323802 -17.63 39.9478 -21.2852 -0.107182 -0.800099 0.0169 -0.60547 0.0 0.0 27.9269 27.1869 -33.6532 1.5015 -98.4913 -15.1283 -3.00702 -38.3624 -44.3288 33.6429 46.331 13.9252 -107.334 -68.2965 41.7428 -23.3786)
 ;;jaxon impedance
 ;;(send *ri* :start-impedance :arms :moment-gain (float-vector 0 0 0) :k-p 3000 :d-p 1500)
-;; error
-;; (23 #<fc-executive-app #Xcd20d48> . :drill-button-exec-command-callback)
-;; [ INFO] [1429862872.401931923]: button drill at #<coordinates #X73fb908  552.614 -85.514 91.014 / 0.252 -0.291 0.232>
-;; next state: :executing-drill-button
-;; [ INFO] [1429862872.407666118]: entering :executing-drill-button
-;; [ERROR] [1429862875.799641972]: attempted to publish to topic joint_states, which was not previously advertised. call (ros::advertise "joint_states") firs.
 ;; jaxon 
-;; send *ri* :start-grasp :rarm :gain 40
-;; end temporary
-
-
-;; todo list
-;; can change drill wall coords
-;; wall no mannnaka soutai
-;; junte hrp2jsknts wall angle
-;; #f(-11.5045 -1.70687 -12.0694 56.8931 -35.7233 -0.70678 0.0 -11.5468 -1.44319 -14.7762 57.028 -33.1525 -0.973814 0.0 33.3949 7.75655 -20.2314 39.3842 -6.6050 -4.75214 -11.1533 -105.718 -91.8006 -29.2184 36.2161 60.0 41.5975 27.3434 9.2279 -121.413 22.1257 4.14353 -17.9148 -60.0)
-;; #f(-14.8934 -0.4484 -14.6727 60.0386 -36.5944 -2.02597 0.0 -14.9593 -0.021241 -17.9565 59.819 -33.0913 -2.45818 0.0 37.0801 9.07653 -16.7118 23.5304 -49.8153 -7.46017 -8.97671 -55.8839 -79.5063 -32.5273 34.2148 60.0 37.8975 27.2725 7.85449 -121.223 21.3149 4.0472 -15.8401 -60.0)
