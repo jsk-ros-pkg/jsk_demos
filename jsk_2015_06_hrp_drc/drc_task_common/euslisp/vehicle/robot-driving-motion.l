@@ -38,7 +38,7 @@
 
   ;; initial methods
   (:drive-init-pose ;; initial pose for driving task
-   (&key (tm 20000))
+   (&key (tm 10000))
    (warn ":drive-init-pose should be impremented for each robots~%")
    )
   (:ride ;; move robot onto the car in model environment
@@ -49,7 +49,7 @@
      )
    )
   (:drive-init-pose-crank
-   (&key (limb (send self :get :grasp-arm)) (tm 10000) (drive-init-pose nil) (move-arm t))
+   (&key (limb (send self :get :grasp-arm)) (tm 5000) (drive-init-pose nil) (move-arm t))
    (when (not (equal limb (send self :get :grasp-arm)))
      (send self :grasp-arm limb)
      )
@@ -79,7 +79,7 @@
   ;; handling
   (:approach-handle
    (&rest args &key (limb (send self :get :grasp-arm)) (target-handle (send self :get :grasp-point)) (sync-controller nil)
-          (tm 15000) (offset #f(-150 0 0)) (rot-offset 0)
+          (tm 7500) (offset #f(-150 0 0)) (rot-offset 0)
           (debug-view nil) (rotation-axis t) (start-impedance nil) (stop-impedance nil)
           (null-space #f(-0.06 -0.3 0.0 -0.18 0.16 0.0 0.0 0.0))
           &allow-other-keys
@@ -151,7 +151,7 @@
    )  
   (:grasp-handle
    (&rest args &key (limb (send self :get :grasp-arm)) (target-handle (send self :get :grasp-point))
-          (debug nil) (tm 10000) (debug-view nil) (start-impedance t) (rotation-axis :z) (adjust nil)
+          (debug nil) (tm 7000) (debug-view nil) (start-impedance t) (rotation-axis :z) (adjust nil)
           (update-ik-seed t)
           &allow-other-keys)
    ;; (send self :open-hand limb)
@@ -196,7 +196,7 @@
    )
   (:release-handle
    (&rest args &key (limb (send self :get :grasp-arm))
-          (tm 10000) (debug-view nil) (rotation-axis :z) (sync-controller t)
+          (tm 7000) (debug-view nil) (rotation-axis :z) (sync-controller t)
           (offset #f(-100 0 0)) ;; offset should be local in end-coords
           &allow-other-keys
           )
@@ -515,7 +515,7 @@
 
   ;; pedaling
   (:approach-pedal
-   (limb target-pedal &key (tm 2500) (debug-view nil))
+   (limb target-pedal &key (tm 2000) (debug-view nil))
    ;; (send robot limb :inverse-kinematics (send (send car target-pedal) :copy-worldcoords) :rotation-axis t :debug-view debug-view)
    (let (approach-result)
      (setq approach-result
@@ -533,7 +533,7 @@
      )
    )
   (:approach-accel-pedal
-   (&rest args &key (limb :rleg) (tm 5000) (debug-view nil) (reach-until-touch nil) (reach-until-touch-thre 10))
+   (&rest args &key (limb :rleg) (tm 2500) (debug-view nil) (reach-until-touch nil) (reach-until-touch-thre 10))
    (let (approach-result)
      (setq approach-result
            (send self :approach-pedal limb :accel-pedal :tm tm :debug-view debug-view)
@@ -554,7 +554,7 @@
      )
    )
   (:step-accel-pedal
-   (command &key (time 1000) (relative nil) (use-controller t) (no-wait t))
+   (command &key (time 500) (relative nil) (use-controller t) (no-wait t))
    (send robot :rleg-ankle-p :joint-angle command :relative relative)
    (when real
      (if use-controller
@@ -576,7 +576,7 @@
      )
    )
   (:approach-brake-pedal
-   (&rest args &key (limb :lleg) (tm 5000) (debug-view nil) (reach-until-touch nil) (reach-until-touch-thre 10))
+   (&rest args &key (limb :lleg) (tm 2500) (debug-view nil) (reach-until-touch nil) (reach-until-touch-thre 10))
    (let (approach-result)
      (setq approach-result
            (send self :approach-pedal limb :brake-pedal :tm tm :debug-view debug-view)
@@ -597,7 +597,7 @@
      )
    )
   (:step-brake-pedal
-   (command &key (time 1000) (relative nil) (use-controller t))
+   (command &key (time 500) (relative nil) (use-controller t))
    (send robot :lleg-ankle-p :joint-angle command :relative relative)
    (when real
      (if use-controller
