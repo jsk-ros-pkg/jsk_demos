@@ -192,7 +192,7 @@
          )
        )
      ik-result ;; return result of ik (nil is failed)
-     ) 
+     )
    )
   (:release-handle
    (&rest args &key (limb (send self :get :grasp-arm))
@@ -254,14 +254,25 @@
      (send robot :transform (send real-handle-coords :transformation model-handle-coords :world))
      )
    )
-  (:overwrite-handle-angle-forcely ;; CAUTION: this function do not consider appropriateness between handle-coords and end-coords of grasp-arm
-   (new-angle &key (use-real-robot-angle nil))
+  (:overwrite-handle-angle ;; CAUTION: this function do not consider appropriateness between handle-coords and end-coords of grasp-arm
+   (new-angle &key (use-real-robot-angle t) (use-controller t) (regrasp-handle nil) (time 5000))
    (let ((real-robot-angle-vector (send *ri* :state :potentio-vector))
-         )
+         (limb-controller (read-from-string (format nil ":~A-controller" (string-downcase (send self :grasp-arm)))))
+         )     
+     (send car :handle-joint :joint-angle new-angle)
      (when use-real-robot-angle
        (send robot :angle-vector real-robot-angle-vector)
+       (when (and real (not regrasp-handle))
+         (if use-controller
+             (send *ri* :angle-vector (send robot :angle-vector) time limb-controller)
+           (send *ri* :angle-vector (send robot :angle-vector) time)
+           )
+         )
        )
-     (send car :handle-joint :joint-angle new-angle)
+     (if regrasp-handle
+         (send self :grasp-handle)       
+       )
+     (send car :handle-joint :joint-angle new-angle) ;; return new handle angle
      )
    )
   (:fix-handle-overturn
@@ -275,7 +286,7 @@
                                )
                           )
            )
-     (send self :overwrite-handle-angle-forcely new-angle :use-real-robot-angle use-real-robot-angle)
+     (send self :overwrite-handle-angle new-angle :use-real-robot-angle use-real-robot-angle)
      )
    )
   (:turn-handle

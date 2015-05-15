@@ -138,6 +138,7 @@
    (ros::advertise-service "/drive/controller/set_min_step" drc_task_common::SetValue #'send self :set-min-step-callback)
    (ros::advertise-service "/drive/controller/set_handle_mode" drc_task_common::StringRequest #'send self :set-handle-mode-callback)
    (ros::advertise-service "/drive/controller/set_accel_mode" drc_task_common::StringRequest #'send self :set-accel-mode-callback)
+   (ros::advertise-service "/drive/controller/overwrite_handle_angle" drc_task_common::SetValue #'send self :overwrite-handle-angle-callback)
 
    ;; initialize plist
    (send self :controller-state :handle :initialize)
@@ -223,7 +224,7 @@
      (warn "set handle-mode to ~A~%" (send self :controller-mode :handle))
      res
      )
-   )  
+   )
   
   (:set-accel-mode-callback
    (req)
@@ -232,7 +233,16 @@
      (warn "set accel-mode to ~A~%" (send self :controller-mode :accel))
      res
      )
-   )  
+   )
+
+  (:overwrite-handle-angle-callback
+   (req)
+   (let ((res (send req :response)))
+     (send res :set_value (send motion :overwrite-handle-angle (send req :value)))
+     (warn "overwrite handle angle to ~A~%" (send motion :car :handle-joint :joint-angle))
+     res
+     )
+   )
   
   ;; interface command
   (:initialize
