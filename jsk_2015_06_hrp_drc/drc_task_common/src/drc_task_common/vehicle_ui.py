@@ -289,37 +289,44 @@ class VehicleUIWidget(QWidget):
         self.accel_mode_sub = rospy.Subscriber(
             "drive/controller/accel_mode", std_msgs.msg.String, self.accelModeCallback)
     def lfsensorCallback(self, msg):
-        for idx, value in enumerate([str(msg.wrench.force.x), str(msg.wrench.force.y), str(msg.wrench.force.z)]):
-            self.left_force_label[idx].setText(value)
+        with self.lock:
+            for idx, value in enumerate([str(msg.wrench.force.x), str(msg.wrench.force.y), str(msg.wrench.force.z)]):
+                self.left_force_label[idx].setText(value)
     def rfsensorCallback(self, msg):
-        for idx, value in enumerate([str(msg.wrench.force.x), str(msg.wrench.force.y), str(msg.wrench.force.z)]):
-            self.right_force_label[idx].setText(value)
+        with self.lock:
+            for idx, value in enumerate([str(msg.wrench.force.x), str(msg.wrench.force.y), str(msg.wrench.force.z)]):
+                self.right_force_label[idx].setText(value)
     def stepGageValueCallback(self, msg):
-        self.step_gage_label.setText(str(msg.data))
+        with self.lock:
+            self.step_gage_label.setText(str(msg.data))
     def minStepGageValueCallback(self, msg):
-        if self.step_min_value != msg.data:
-            self.step_min_value = msg.data
-            self.step_min_edit.setText(str(self.step_min_value))
+        with self.lock:
+            if self.step_min_value != msg.data:
+                self.step_min_value = msg.data
+                self.step_min_edit.setText(str(self.step_min_value))
     def maxStepGageValueCallback(self, msg):
-        if self.step_max_value != msg.data:
-            self.step_max_value = msg.data
-            self.step_max_edit.setText(str(self.step_max_value))
+        with self.lock:
+            if self.step_max_value != msg.data:
+                self.step_max_value = msg.data
+                self.step_max_edit.setText(str(self.step_max_value))
     def handleModeCallback(self, msg):
-        for i in range(self.handle_mode_list.count()):
-            item = self.handle_mode_list.item(i)
-            item.setSelected(False)
-            if item.text() == msg.data.capitalize():
-                item.setBackground(Qt.green)
-            else:
-                item.setBackground(Qt.white)
+        with self.lock:
+            for i in range(self.handle_mode_list.count()):
+                item = self.handle_mode_list.item(i)
+                item.setSelected(False)
+                if item.text() == msg.data.capitalize():
+                    item.setBackground(Qt.green)
+                else:
+                    item.setBackground(Qt.white)
     def accelModeCallback(self, msg):
-        for i in range(self.accel_mode_list.count()):
-            item = self.accel_mode_list.item(i)
-            item.setSelected(False)
-            if item.text() == msg.data.capitalize():
-                item.setBackground(QtCore.Qt.green)
-            else:
-                item.setBackground(QtCore.Qt.white)
+        with self.lock:
+            for i in range(self.accel_mode_list.count()):
+                item = self.accel_mode_list.item(i)
+                item.setSelected(False)
+                if item.text() == msg.data.capitalize():
+                    item.setBackground(QtCore.Qt.green)
+                else:
+                    item.setBackground(QtCore.Qt.white)
     # Event callback
     def minUpButtonCallback(self, event):
         current_value = float(self.step_min_edit.text())
@@ -327,7 +334,8 @@ class VehicleUIWidget(QWidget):
         try:
             update_value = rospy.ServiceProxy('drive/controller/set_min_step', SetValue)
             next_value = update_value(current_value)
-            self.step_min_edit.setText(str(next_value.set_value))
+            with self.lock:
+                self.step_min_edit.setText(str(next_value.set_value))
         except rospy.ServiceException, e:
             self.showError("Failed to call drive/controller/set_min_step")
     def minDownButtonCallback(self, event):
@@ -336,7 +344,8 @@ class VehicleUIWidget(QWidget):
         try:
             update_value = rospy.ServiceProxy('drive/controller/set_min_step', SetValue)
             next_value = update_value(current_value)
-            self.step_min_edit.setText(str(next_value.set_value))
+            with self.lock:
+                self.step_min_edit.setText(str(next_value.set_value))
         except rospy.ServiceException, e:
             self.showError("Failed to call drive/controller/set_min_step")
     def maxEditCallback(self):
@@ -344,26 +353,31 @@ class VehicleUIWidget(QWidget):
         try:
             update_value = rospy.ServiceProxy('drive/controller/set_max_step', SetValue)
             next_value = update_value(current_value)
-            self.step_max_edit.setText(str(next_value.set_value))
+            with self.lock:
+                self.step_max_edit.setText(str(next_value.set_value))
         except rospy.ServiceException, e:
             self.showError("Failed to call drive/controller/set_max_step")
-            self.step_max_edit.setText(str(self.step_max_value))
+            with self.lock:
+                self.step_max_edit.setText(str(self.step_max_value))
     def minEditCallback(self):
         current_value = float(self.step_min_edit.text())
         try:
             update_value = rospy.ServiceProxy('drive/controller/set_min_step', SetValue)
             next_value = update_value(current_value)
-            self.step_min_edit.setText(str(next_value.set_value))
+            with self.lock:
+                self.step_min_edit.setText(str(next_value.set_value))
         except rospy.ServiceException, e:
             self.showError("Failed to call drive/controller/set_min_step")
-            self.step_min_edit.setText(str(self.step_min_value))
+            with self.lock:
+                self.step_min_edit.setText(str(self.step_min_value))
     def maxUpButtonCallback(self, event):
         current_value = float(self.step_max_edit.text())
         current_value = current_value + 1.0
         try:
             update_value = rospy.ServiceProxy('drive/controller/set_max_step', SetValue)
             next_value = update_value(current_value)
-            self.step_max_edit.setText(str(next_value.set_value))
+            with self.lock:
+                self.step_max_edit.setText(str(next_value.set_value))
         except rospy.ServiceException, e:
             self.showError("Failed to call drive/controller/set_max_step")
     def maxDownButtonCallback(self, event):
@@ -372,7 +386,8 @@ class VehicleUIWidget(QWidget):
         try:
             update_value = rospy.ServiceProxy('drive/controller/set_max_step', SetValue)
             next_value = update_value(current_value)
-            self.step_max_edit.setText(str(next_value.set_value))
+            with self.lock:
+                self.step_max_edit.setText(str(next_value.set_value))
         except rospy.ServiceException, e:
             self.showError("Failed to call drive/controller/set_max_step")
     def overwriteButtonCallback(self, event):
@@ -381,7 +396,8 @@ class VehicleUIWidget(QWidget):
         try:
             update_value = rospy.ServiceProxy('drive/controller/overwrite_handle_angle', SetValue)
             next_value = update_value(current_value)
-            self.overwrite_edit.setText(str(next_value.set_value))
+            with self.lock:
+                self.overwrite_edit.setText(str(next_value.set_value))
         except rospy.ServiceException, e:
             self.showError("Failed to call drive/controller/overwrite_handle_angle")
             
