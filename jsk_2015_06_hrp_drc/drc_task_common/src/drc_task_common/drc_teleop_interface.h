@@ -30,6 +30,7 @@ namespace drc_task_common
     void callRequestResetManipPose();
     void callRequestDrillResetPose();
     void callRequestWatchDrillPose();
+    void callRequestDoorThroughPose();
 
     void callRequestResetGripperPose();
     void callRequestHookGrippePose();

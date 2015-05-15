@@ -540,9 +540,8 @@
     (send *robot* :angle-vector (elt *door-motion* i))
     (when real? (model2real :time 3000))
     )
-  (get-door-walk-through-pose)
+  (send *robot* :reset-manip-pose)
   (when real? (model2real :time 5000))
-  (hand-start-grasp :real? real?)
   )
 
 (defun publish-door-motion
@@ -570,7 +569,7 @@
   (publish-motion-joint-states *door-motion* :step-time step-time)
   )
 
-(defun get-door-walk-through-pose
+(defun get-door-through-pose
   ()
   (cond ((or (equal *robot-name* "JAXON") (equal *robot-name* "STARO"))
          (send *robot* :reset-pose)
