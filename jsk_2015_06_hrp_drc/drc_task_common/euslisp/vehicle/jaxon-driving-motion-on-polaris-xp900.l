@@ -19,7 +19,7 @@
    )    
   
   (:drive-init-pose
-   (&key (tm 20000))
+   (&key (tm 10000))
    ;; (send robot :angle-vector #f(-13.1189 -24.4656 -83.3638 44.9385 7.33334 27.7739 15.5265 -14.998 -95.4989 97.065 0.433944 15.5246 8.0 0.0 0.0 0.0 0.0 17.0643 79.1999 -96.2707 -5.3561 -85.9563 27.0803 22.0044 22.1802 0.0 55.0 20.0 15.0 -100.0 25.0 0.0 -45.0))
    ;; (send robot :angle-vector #f(-13.1189 -24.4656 -83.3638 44.9385 7.33334 27.7739 15.5265 -14.998 -95.4989 97.065 0.433944 15.5246 8.0 0.0 0.0 0.0 0.0 -13.7511 33.5688 -108.234 8.54591 -90.0 0.0 45.0 3.38633 0.0 55.0 20.0 15.0 -100.0 25.0 0.0 -45.0)) ;; fixed pose in driving-simulator
    ;; (send robot :angle-vector #f(-13.2762 -24.7025 -92.0869 71.704 -10.7745 28.0506 36.0874 -21.6131 -90.5514 112.587 -19.1011 14.1156 8.0 0.0 0.0 0.0 0.0 -13.7511 33.5688 -108.234 8.54591 -90.0 0.0 45.0 3.38633 0.0 55.0 20.0 15.0 -100.0 25.0 0.0 -45.0)) ;; move legs -100 in x axis from above
@@ -60,11 +60,12 @@
    )
   (:set-impedance-for-handle
    (limb)
-   (send *ri* :start-impedance limb :M-p 200 :D-p 600 :K-p 1400)
+   ;; (send *ri* :start-impedance limb :M-p 200 :D-p 600 :K-p 1400)
+   (send *ri* :start-impedance limb :M-p 200 :D-p 1200 :K-p 2000)
    )
 
   (:approach-pedal
-   (limb target-pedal &key (tm 2500) (debug-view nil))
+   (limb target-pedal &key (tm 2000) (debug-view nil))
    (let (approach-result)
      (case target-pedal
        (:accel-pedal
