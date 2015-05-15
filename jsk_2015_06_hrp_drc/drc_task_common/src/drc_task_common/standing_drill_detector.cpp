@@ -40,6 +40,7 @@
 #include <pcl/segmentation/sac_segmentation.h>
 #include <pcl/filters/voxel_grid.h>
 #include <visualization_msgs/Marker.h>
+#include <jsk_topic_tools/log_utils.h>
 
 namespace drc_task_common
 {
@@ -49,7 +50,7 @@ namespace drc_task_common
     srv_ = boost::make_shared <dynamic_reconfigure::Server<Config> > (pnh_);
     dynamic_reconfigure::Server<Config>::CallbackType f =
       boost::bind(
-		  &StandingDrillDetector::configCallback, this, _1, _2);
+        &StandingDrillDetector::configCallback, this, _1, _2);
     srv_->setCallback (f);
     pub_marker_ = pnh_.advertise<visualization_msgs::Marker>("cylinder_marker", 1);
     pub_foot_marker_ = pnh_.advertise<visualization_msgs::Marker>("foot_marker", 1);
@@ -69,6 +70,11 @@ namespace drc_task_common
     const jsk_recognition_msgs::BoundingBoxArray::ConstPtr& box_array_msg,
     const jsk_recognition_msgs::ClusterPointIndices::ConstPtr& indices_msg)
   {
+    JSK_ROS_INFO("detect");
+    if (box_array_msg->boxes.size() == 0) {
+      JSK_ROS_WARN("0 boxes");
+      return;
+    }
     boost::mutex::scoped_lock lock(mutex_);
     pcl::PointCloud<pcl::PointXYZRGB>::Ptr
       cloud(new pcl::PointCloud<pcl::PointXYZRGB>);
@@ -76,27 +82,54 @@ namespace drc_task_common
     std::vector<pcl::PointIndices::Ptr> indices
       = pcl_conversions::convertToPCLPointIndices(
         indices_msg->cluster_indices);
-    
-    for (size_t i = 0; i < indices.size(); i++) {
-      pcl::PointIndices::Ptr the_indices = indices[i];
-      jsk_recognition_msgs::BoundingBox box_msg = box_array_msg->boxes[i];
-      pcl::ExtractIndices<pcl::PointXYZRGB> ex;
-      ex.setInputCloud(cloud);
-      ex.setIndices(the_indices);
-      pcl::PointCloud<pcl::PointXYZRGB>::Ptr segment_cloud (new pcl::PointCloud<pcl::PointXYZRGB>);
-      ex.filter(*segment_cloud);
-      if (verbose_) {
-        ROS_INFO("segment_cloud: %lu", segment_cloud->points.size());
-      }
+    if (box_array_msg->boxes.size() == indices.size()) {
+      for (size_t i = 0; i < indices.size(); i++) {
+        pcl::PointIndices::Ptr the_indices = indices[i];
+        jsk_recognition_msgs::BoundingBox box_msg = box_array_msg->boxes[i];
+        if (box_msg.dimensions.z < drill_min_height_ ||
+            box_msg.dimensions.z > drill_max_height_) {
+          JSK_ROS_INFO("box size is not good");
+          continue;
+        }
+        pcl::ExtractIndices<pcl::PointXYZRGB> ex;
+        ex.setInputCloud(cloud);
+        ex.setIndices(the_indices);
+        pcl::PointCloud<pcl::PointXYZRGB>::Ptr segment_cloud (new pcl::PointCloud<pcl::PointXYZRGB>);
+        ex.filter(*segment_cloud);
+        if (verbose_) {
+          ROS_INFO("segment_cloud: %lu", segment_cloud->points.size());
+        }
       
-      //jsk_pcl_ros::Cylinder::Ptr cylinder = estimateStandingDrill(segment_cloud, box_msg);
-      estimateStandingDrill(segment_cloud, box_msg);
+        //jsk_pcl_ros::Cylinder::Ptr cylinder = estimateStandingDrill(segment_cloud, box_msg);
+        Eigen::Affine3f output;
+        bool ret = estimateStandingDrill(segment_cloud, box_msg, output);
+        if (ret) {
+          // Is it ok?
+          publishPoseStamped(pub_origin_pose_, box_msg.header, output);
+          return;
+        }
+      }
+    }
+    else {
+      ROS_WARN("indices and boxes are not same length");
+    }
+    if (optimistic_) {
+      jsk_recognition_msgs::BoundingBox box_msg
+        = box_array_msg->boxes[0];
+      Eigen::Affine3f box_pose;
+      tf::poseMsgToEigen(box_msg.pose, box_pose);
+      // need to flip?
+      //Eigen::AngleAxisf rot (M_PI, Eigen::Vector3f::UnitX());
+      box_pose = box_pose * Eigen::Translation3f(0, 0, box_msg.dimensions.z / 2.0);
+      publishPoseStamped(pub_origin_pose_, box_msg.header, box_pose);
+                            
     }
   }
 
-  void StandingDrillDetector::estimateStandingDrill(
+  bool StandingDrillDetector::estimateStandingDrill(
     pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud,
-    const jsk_recognition_msgs::BoundingBox& box)
+    const jsk_recognition_msgs::BoundingBox& box,
+    Eigen::Affine3f& output)
   {
     if (verbose_) {
       ROS_INFO("input cloud to detect cylinder: %lu", cloud->points.size());
@@ -125,8 +158,8 @@ namespace drc_task_common
       crop_box.setTranslation(pose.translation());
       crop_box.setRotation(Eigen::Vector3f(roll, pitch, yaw));
       if (verbose_) {
-	ROS_INFO("r, p, y: [%f, %f, %f]", roll, pitch, yaw);
-	ROS_INFO("pos: [%f, %f, %f]", crop_box.getTranslation()[0], crop_box.getTranslation()[1], crop_box.getTranslation()[2]);
+        ROS_INFO("r, p, y: [%f, %f, %f]", roll, pitch, yaw);
+        ROS_INFO("pos: [%f, %f, %f]", crop_box.getTranslation()[0], crop_box.getTranslation()[1], crop_box.getTranslation()[2]);
       }
       crop_box.setInputCloud(cloud);
       crop_box.setMax(max_points);
@@ -135,12 +168,12 @@ namespace drc_task_common
       pcl::PointIndices::Ptr cropped_indices (new pcl::PointIndices);
       crop_box.filter(cropped_indices->indices);
       if (verbose_) {
-	ROS_INFO("cropped points: %lu", cropped_indices->indices.size());
+        ROS_INFO("cropped points: %lu", cropped_indices->indices.size());
       }
       if (cropped_indices->indices.size() == 0) {
-	ROS_FATAL("no enough cropped indices");
-	//return jsk_pcl_ros::Cylinder::Ptr();
-	return;
+        ROS_FATAL("no enough cropped indices");
+        //return jsk_pcl_ros::Cylinder::Ptr();
+        return false;
       }
       pcl::ExtractIndices<pcl::PointXYZRGB> ex;
       ex.setInputCloud(cloud);
@@ -152,7 +185,7 @@ namespace drc_task_common
       ne.setInputCloud(cloud);
       ne.setIndices(cropped_indices);
       pcl::search::KdTree<pcl::PointXYZRGB>::Ptr tree
-	(new pcl::search::KdTree<pcl::PointXYZRGB> ());
+        (new pcl::search::KdTree<pcl::PointXYZRGB> ());
       ne.setSearchMethod(tree);
       ne.setRadiusSearch(0.02);
       pcl::PointCloud<pcl::Normal>::Ptr normals(new pcl::PointCloud<pcl::Normal>);
@@ -179,9 +212,9 @@ namespace drc_task_common
       pcl::ModelCoefficients::Ptr coefficients(new pcl::ModelCoefficients);
       seg.segment(*inliers, *coefficients);
       if (inliers->indices.size() == 0) {
-	ROS_ERROR("Failed to detect cylinder");
-	//return jsk_pcl_ros::Cylinder::Ptr();
-	return;
+        ROS_ERROR("Failed to detect cylinder");
+        //return jsk_pcl_ros::Cylinder::Ptr();
+        return false;
       }
     
       Eigen::Vector3f dir(coefficients->values[3],
@@ -192,12 +225,12 @@ namespace drc_task_common
       }
       
       jsk_pcl_ros::Cylinder::Ptr cylinder(new jsk_pcl_ros::Cylinder(
-								    Eigen::Vector3f(
-										    coefficients->values[0],
-										    coefficients->values[1],
-										    coefficients->values[2]),
-								    dir,
-								    coefficients->values[6]));
+                                            Eigen::Vector3f(
+                                              coefficients->values[0],
+                                              coefficients->values[1],
+                                              coefficients->values[2]),
+                                            dir,
+                                            coefficients->values[6]));
       pcl::PointIndices::Ptr cylinder_indices
         (new pcl::PointIndices);
       pcl::PointCloud<pcl::PointXYZ> xyz_cloud;
@@ -214,8 +247,8 @@ namespace drc_task_common
       double height = 0;
       
       cylinder->estimateCenterAndHeight(
-					xyz_cloud, *cylinder_indices,
-					center, height);
+        xyz_cloud, *cylinder_indices,
+        center, height);
       visualization_msgs::Marker cylinder_marker;
       Eigen::Vector3f support_direction = pose.rotation() * Eigen::Vector3f::UnitZ();
       // dir
@@ -223,13 +256,13 @@ namespace drc_task_common
       cylinder_marker.header = box.header;
       pub_marker_.publish(cylinder_marker);
       if (0) {//renew_to_cylinder_pose_) { //not used because of bad accuracy 
-      	Eigen::Quaternionf rot;
-      	dir = dir.normalized();
-      	rot.setFromTwoVectors(Eigen::Vector3f::UnitZ(), dir);
-      	cylinder_pose = Eigen::Translation3f(center) * rot;
+        Eigen::Quaternionf rot;
+        dir = dir.normalized();
+        rot.setFromTwoVectors(Eigen::Vector3f::UnitZ(), dir);
+        cylinder_pose = Eigen::Translation3f(center) * rot;
       }
       else {
-    	cylinder_pose = Eigen::Translation3f(center) * pose.rotation();
+        cylinder_pose = Eigen::Translation3f(center) * pose.rotation();
       }
     }
     else {
@@ -247,7 +280,7 @@ namespace drc_task_common
     }
     if (buttom_estimation_method_==0) {//align_to_new_box_) 
       pcl::PointCloud<pcl::PointXYZRGB>::Ptr
-	cloud_transformed (new pcl::PointCloud<pcl::PointXYZRGB>);
+        cloud_transformed (new pcl::PointCloud<pcl::PointXYZRGB>);
       pcl::transformPointCloud(*cloud, *cloud_transformed, cylinder_pose.inverse());
       Eigen::Vector4f minpt, maxpt;
       pcl::getMinMax3D<pcl::PointXYZRGB>(*cloud_transformed, minpt, maxpt);
@@ -280,22 +313,22 @@ namespace drc_task_common
         
       double coef = computeFootCoefficients(downsampled_cloud, foot_pose, box);
       if (verbose_) {
-	if (coef != DBL_MAX) {
-	  ROS_INFO("coef: [%f] => %f", theta / M_PI * 180, coef);
-	}
+        if (coef != DBL_MAX) {
+          ROS_INFO("coef: [%f] => %f", theta / M_PI * 180, coef);
+        }
       }
       if (coef <= best_coef) {       
-	best_coef = coef;
-	best_i = 0;
-	best_pose = foot_pose;
-	best_output_pose = output_pose;
+        best_coef = coef;
+        best_i = 0;
+        best_pose = foot_pose;
+        best_output_pose = output_pose;
       }
     }
     if (verbose_) {
       ROS_INFO("best_coef: %f", best_coef);
     }
     publishPoseStamped(pub_debug_foot_pose_, box.header, best_pose);
-    publishPoseStamped(pub_origin_pose_, box.header, best_output_pose);
+    output = best_output_pose;
     visualization_msgs::Marker foot_marker;
     foot_marker.header = box.header;
     tf::poseEigenToMsg(best_pose, foot_marker.pose);
@@ -307,8 +340,7 @@ namespace drc_task_common
     foot_marker.type = visualization_msgs::Marker::CUBE;
     pub_foot_marker_.publish(foot_marker);
     //return cylinder;
-    return;
-    
+    return true;
   }
 
   std::vector<jsk_pcl_ros::ConvexPolygon::Ptr> StandingDrillDetector::cubeSideFaces(
@@ -450,6 +482,9 @@ namespace drc_task_common
   {
     boost::mutex::scoped_lock lock(mutex_);
     verbose_ = config.verbose;
+    optimistic_ = config.optimistic;
+    drill_min_height_ = config.drill_min_height;
+    drill_max_height_ = config.drill_max_height;
     cylinder_eps_angle_ = config.cylinder_eps_angle;
     cylinder_distance_threshold_ = config.cylinder_distance_threshold;
     cylinder_distance_normal_weight_ = config.cylinder_distance_normal_weight;

@@ -38,6 +38,7 @@
       message: drc_com_common/FC2OCSBasicInfoSmall
       receive_port: $(arg FC_TO_OCS_BASIC_PORT)
       receive_ip: "0.0.0.0"
+      receive_buffer_size: 1024
     </rosparam>
   </node>
 

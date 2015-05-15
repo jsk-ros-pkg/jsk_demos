@@ -1,0 +1,348 @@
+--- /opt/ros/hydro/share/drcsim_model_resources/worlds/drc_final_task_1.world.orig	1969-12-31 16:00:00.000000000 -0800
++++ /opt/ros/hydro/share/drcsim_model_resources/worlds/drc_final_task_1.world	2015-05-12 11:30:06.003531340 -0700
+@@ -0,0 +1,345 @@
++<?xml version="1.0" ?>
++<sdf version="1.4">
++  <world name="final_task_1">
++    <physics type="ode">
++      <gravity>0 0 -9.81</gravity>
++      <ode>
++        <solver>
++          <use_dynamic_moi_rescaling>true</use_dynamic_moi_rescaling>
++          <type>quick</type>
++          <iters>50</iters>
++          <sor>1.4</sor>
++        </solver>
++        <constraints>
++          <cfm>0.0</cfm>
++          <erp>0.2</erp>
++          <contact_max_correcting_vel>100.0</contact_max_correcting_vel>
++          <contact_surface_layer>0.0</contact_surface_layer>
++        </constraints>
++      </ode>
++      <real_time_update_rate>1000</real_time_update_rate>
++      <max_step_size>0.001</max_step_size>
++    </physics>
++
++    <!--A global light source -->
++    <include>
++      <uri>model://sun</uri>
++    </include>
++    <light name='directional_light_0' type='directional'>
++      <pose>-15 3.5 10 0 -1.05462 0</pose>
++      <diffuse>0.498039 0.498039 0.498039 1</diffuse>
++      <specular>0.0980392 0.0980392 0.0980392 1</specular>
++      <attenuation>
++        <range>100</range>
++        <constant>0.5</constant>
++        <linear>0.01</linear>
++        <quadratic>0.001</quadratic>
++      </attenuation>
++      <direction>0 0 -1</direction>
++    </light>
++    <light name='directional_light_1' type='directional'>
++      <pose>-15 -3.5 10 0 -1.05462 0</pose>
++      <diffuse>0.498039 0.498039 0.498039 1</diffuse>
++      <specular>0.0980392 0.0980392 0.0980392 1</specular>
++      <attenuation>
++        <range>100</range>
++        <constant>0.5</constant>
++        <linear>0.01</linear>
++        <quadratic>0.001</quadratic>
++      </attenuation>
++      <direction>0 0 -1</direction>
++    </light>
++
++
++    <!-- A ground plane -->
++    <model name="ground_plane">
++      <static>true</static>
++      <pose>60 0 0 0 0 0</pose>
++      <link name="link">
++        <collision name="collision">
++          <geometry>
++            <plane>
++              <normal>0 0 1</normal>
++              <size>1500 250</size>
++            </plane>
++          </geometry>
++          <surface>
++            <friction>
++              <ode>
++                <mu>100</mu>
++                <mu2>50</mu2>
++              </ode>
++            </friction>
++          </surface>
++        </collision>
++        <visual name="visual">
++          <cast_shadows>false</cast_shadows>
++          <geometry>
++            <plane>
++              <normal>0 0 1</normal>
++              <size>1500 250</size>
++            </plane>
++          </geometry>
++          <material>
++            <script>
++              <uri>file://media/materials/scripts/vrc_final.material</uri>
++              <name>Gazebo/RoadforStereo</name>
++            </script>
++          </material>
++        </visual>
++      </link>
++    </model>
++
++    <include>
++      <uri>model://drc_vehicle_xp900</uri>
++      <pose>3 0 0 0 0 0</pose>
++    </include>
++
++    <include>
++      <uri>model://drc_practice_orange_jersey_barrier</uri>
++      <name>barrier_1</name>
++      <pose>0 0 0 0 0 0</pose>
++    </include>
++
++    <include>
++      <uri>model://drc_practice_orange_jersey_barrier</uri>
++      <name>barrier_2</name>
++      <pose>0.008324 1.764856 0 0 0 0</pose>
++    </include>
++
++    <include>
++      <uri>model://drc_practice_orange_jersey_barrier</uri>
++      <name>barrier_3</name>
++      <pose>-0.009518 -1.764856 0 0 0 0</pose>
++    </include>
++
++    <include>
++      <uri>model://drc_practice_orange_jersey_barrier</uri>
++      <name>barrier_4</name>
++      <pose>1 3.3 0 0 0 -1.5707</pose>
++    </include>
++    <include>
++      <uri>model://drc_practice_orange_jersey_barrier</uri>
++      <name>barrier_5</name>
++      <pose>5 3.3 0 0 0 -1.5707</pose>
++    </include>
++    <include>
++      <uri>model://drc_practice_orange_jersey_barrier</uri>
++      <name>barrier_4</name>
++      <pose>1 -3.3 0 0 0 -1.5707</pose>
++    </include>
++    <include>
++      <uri>model://drc_practice_orange_jersey_barrier</uri>
++      <name>barrier_5</name>
++      <pose>5 -3.3 0 0 0 -1.5707</pose>
++    </include>
++
++    <!-- Left row of parking blocks -->
++    <include>
++      <uri>model://drc_practice_orange_jersey_barrier</uri>
++      <name>block_1</name>
++      <pose>9 3.3 0 0 0 1.570796</pose>
++    </include>
++    <include>
++      <uri>model://drc_practice_orange_jersey_barrier</uri>
++      <name>block_2</name>
++      <pose>13 3.3 0 0 0 1.570796</pose>
++    </include>
++    <include>
++      <uri>model://drc_practice_orange_jersey_barrier</uri>
++      <name>block_3</name>
++      <pose>17 3.3 0 0 0 1.570796</pose>
++    </include>
++    <include>
++      <uri>model://drc_practice_orange_jersey_barrier</uri>
++      <name>block_4</name>
++      <pose>21 3.3 0 0 0 1.570796</pose>
++    </include>
++    <include>
++      <uri>model://drc_practice_orange_jersey_barrier</uri>
++      <name>block_5</name>
++      <pose>25 3.3 0 0 0 1.570796</pose>
++    </include>
++    <include>
++      <uri>model://drc_practice_orange_jersey_barrier</uri>
++      <name>block_6</name>
++      <pose>29 3.3 0 0 0 1.570796</pose>
++    </include>
++    <include>
++      <uri>model://drc_practice_orange_jersey_barrier</uri>
++      <name>block_7</name>
++      <pose>33 3.3 0 0 0 1.570796</pose>
++    </include>
++    <include>
++      <uri>model://drc_practice_orange_jersey_barrier</uri>
++      <name>block_8</name>
++      <pose>37 3.3 0 0 0 1.570796</pose>
++    </include>
++    <include>
++      <uri>model://drc_practice_white_jersey_barrier</uri>
++      <name>block_10</name>
++      <pose>38.8 3.05 0 0 0 1.570796</pose>
++    </include>
++    <include>
++      <uri>model://drc_practice_white_jersey_barrier</uri>
++      <name>block_11</name>
++      <pose>40.6 3.05 0 0 0 1.570796</pose>
++    </include>
++    <include>
++      <uri>model://drc_practice_white_jersey_barrier</uri>
++      <name>block_12</name>
++      <pose>42.4 3.05 0 0 0 1.570796</pose>
++    </include>
++    <include>
++      <uri>model://drc_practice_white_jersey_barrier</uri>
++      <name>block_13</name>
++      <pose>44.2 3.05 0 0 0 1.570796</pose>
++    </include>
++    <include>
++      <uri>model://drc_practice_white_jersey_barrier</uri>
++      <name>block_14</name>
++      <pose>46 3.05 0 0 0 1.570796</pose>
++    </include>
++
++
++    <!-- Right row of parking blocks -->
++    <include>
++      <uri>model://drc_practice_orange_jersey_barrier</uri>
++      <name>block_15</name>
++      <pose>9 -3.3 0 0 0 1.570796</pose>
++    </include>
++    <include>
++      <uri>model://drc_practice_orange_jersey_barrier</uri>
++      <name>block_16</name>
++      <pose>13 -3.3 0 0 0 1.570796</pose>
++    </include>
++    <include>
++      <uri>model://drc_practice_orange_jersey_barrier</uri>
++      <name>block_17</name>
++      <pose>17 -3.3 0 0 0 1.570796</pose>
++    </include>
++    <include>
++      <uri>model://drc_practice_orange_jersey_barrier</uri>
++      <name>block_18</name>
++      <pose>21 -3.3 0 0 0 1.570796</pose>
++    </include>
++    <include>
++      <uri>model://drc_practice_orange_jersey_barrier</uri>
++      <name>block_19</name>
++      <pose>25 -3.3 0 0 0 1.570796</pose>
++    </include>
++    <include>
++      <uri>model://drc_practice_orange_jersey_barrier</uri>
++      <name>block_20</name>
++      <pose>29 -3.3 0 0 0 1.570796</pose>
++    </include>
++    <include>
++      <uri>model://drc_practice_orange_jersey_barrier</uri>
++      <name>block_21</name>
++      <pose>33 -3.3 0 0 0 1.570796</pose>
++    </include>
++    <include>
++      <uri>model://drc_practice_orange_jersey_barrier</uri>
++      <name>block_22</name>
++      <pose>37 -3.3 0 0 0 1.570796</pose>
++    </include>
++    <include>
++      <uri>model://drc_practice_white_jersey_barrier</uri>
++      <name>block_24</name>
++      <pose>38.8 -3.05 0 0 0 1.570796</pose>
++    </include>
++    <include>
++      <uri>model://drc_practice_white_jersey_barrier</uri>
++      <name>block_25</name>
++      <pose>40.6 -3.05 0 0 0 1.570796</pose>
++    </include>
++    <include>
++      <uri>model://drc_practice_white_jersey_barrier</uri>
++      <name>block_26</name>
++      <pose>42.4 -3.05 0 0 0 1.570796</pose>
++    </include>
++
++    <!-- end barrier -->
++    <include>
++      <uri>model://drc_practice_white_jersey_barrier</uri>
++      <name>block_27</name>
++      <pose>47 -1.7648 0 0 0 0</pose>
++    </include>
++    <include>
++      <uri>model://drc_practice_white_jersey_barrier</uri>
++      <name>block_28</name>
++      <pose>47 0 0 0 0 0</pose>
++    </include>
++    <include>
++      <uri>model://drc_practice_white_jersey_barrier</uri>
++      <name>block_29</name>
++      <pose>47 1.7648 0 0 0 0</pose>
++    </include>
++
++    <!-- obstacle -->
++    <include>
++      <uri>model://drc_practice_white_jersey_barrier</uri>
++      <name>block_30</name>
++      <pose>17.5 2.1 0 0 0 0</pose>
++    </include>
++    <include>
++      <uri>model://drc_practice_orange_jersey_barrier</uri>
++      <name>block_31</name>
++      <pose>18.2 1.4 0 0 0 0</pose>
++    </include>
++    <include>
++      <uri>model://drc_practice_orange_jersey_barrier</uri>
++      <name>block_32</name>
++      <pose>28.32 -2.1 0 0 0 0</pose>
++    </include>
++    <include>
++      <uri>model://drc_practice_white_jersey_barrier</uri>
++      <name>block_33</name>
++      <pose>28.92 -1.4 0 0 0 0</pose>
++    </include>
++
++    <!-- door -->
++    <include>
++      <uri>model://drc_practice_weighted_door</uri>
++      <name>weighted_push_door</name>
++      <pose>44.5 -3.05 0 0 0 0</pose>
++    </include>
++
++    <plugin filename="libVRCPlugin.so" name="vrc_plugin">
++      <atlas>
++        <model_name>atlas</model_name>
++        <pin_link>utorso</pin_link>
++      </atlas>
++      <drc_vehicle>
++        <model_name>drc_vehicle_xp900</model_name>
++        <seat_link>polaris_ranger_xp900::chassis</seat_link>
++      </drc_vehicle>
++      <drc_fire_hose>
++        <fire_hose_model>fire_hose</fire_hose_model>
++        <coupling_link>coupling</coupling_link>
++        <standpipe_model>standpipe</standpipe_model>
++        <spout_link>standpipe</spout_link>
++        <thread_pitch>-1000</thread_pitch>
++        <coupling_relative_pose>1.17038e-05 -0.125623 0.35 -0.0412152 -1.57078 1.61199</coupling_relative_pose>
++      </drc_fire_hose>
++    </plugin>
++
++  </world>
++</sdf>
++
++<!--
++    This world shows a representative configuration for the Driving challenge.  A road course will be designed to show the robot's capability to operate the physical controls of a vehicle to drive through a simple obstacle course.
++
++NOTES:
++- material/collision properties have been left at their default values
++
++- Course:
++* collision and visual geometries use the same mesh data
++- it is possible for other parts to become embedded within this model, which is incorrect.
++* obstacles are modeled as static objects and will not move if impacted by vehicle or robot.
++- Vehicle:
++* this model does not include a vehicle.  Use the model from the VRC until an updated model is provided.
++
++DISCLAIMER:
++The models are intended to represent the type of obstacles to be encountered during the DRC trials, but may not match the exact configurations used in the trial events.  DARPA reserves the right to change any elements of these tasks without updating these model files.
++-->
