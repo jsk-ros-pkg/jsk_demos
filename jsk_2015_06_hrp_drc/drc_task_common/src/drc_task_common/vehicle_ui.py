@@ -151,13 +151,19 @@ class VehicleUIWidget(QWidget):
         reach_group.setLayout(reach_vbox)
         left_vbox.addWidget(self.reach_button)
 
-        overwrite_vbox = QtGui.QVBoxLayout(self)
+        # overwrite_vbox = QtGui.QVBoxLayout(self)
+        overwrite_hbox = QtGui.QHBoxLayout(self)
         overwrite_group = QtGui.QGroupBox("", self)
         self.overwrite_button = QtGui.QPushButton("Overwrite")
-        overwrite_vbox.addWidget(self.overwrite_button)
-        overwrite_group.setLayout(overwrite_vbox)
+        self.overwrite_button.clicked.connect(self.overwriteButtonCallback)
+        self.overwrite_edit = QtGui.QLineEdit()
+        self.overwrite_edit.setText("0.0")
+        self.overwrite_edit.setValidator(QtGui.QDoubleValidator(-540, 540, 10))
+        overwrite_hbox.addWidget(self.overwrite_button)
+        overwrite_hbox.addWidget(self.overwrite_edit)
+        overwrite_group.setLayout(overwrite_hbox)
         left_vbox.addWidget(overwrite_group)
-
+        
         egress_vbox = QtGui.QVBoxLayout(self)
         egress_group = QtGui.QGroupBox("", self)
         self.egress_button = QtGui.QPushButton("Go to Egress")
@@ -215,7 +221,6 @@ class VehicleUIWidget(QWidget):
 
     def setUpCenterBox(self, center_box):
         self.multisense_widget = ROSImageWidget("/multisense/left/image_rect_color")
-        # self.multisense_widget = ROSImageWidget("/cv_camera/image_raw") # for debugging
         center_box.addWidget(self.multisense_widget)
         left_splitter = QtGui.QSplitter()
         right_splitter = QtGui.QSplitter()
@@ -243,8 +248,7 @@ class VehicleUIWidget(QWidget):
         lower_left_container.setLayout(lower_left_vbox)
         left_splitter.addWidget(lower_left_container)
         
-        # self.fisheye_widget = ROSImageWidget("/cv_camera/image_raw") # for debugging
-        self.fisheye_widget = ROSImageWidget("/chest_camera/image_rect_color")
+        self.fisheye_widget = ROSImageWidget("/chest_camera/image_color")
         right_splitter.addWidget(self.fisheye_widget)
 
         angle_vbox = QtGui.QVBoxLayout()
@@ -371,6 +375,16 @@ class VehicleUIWidget(QWidget):
             self.step_max_edit.setText(str(next_value.set_value))
         except rospy.ServiceException, e:
             self.showError("Failed to call drive/controller/set_max_step")
+    def overwriteButtonCallback(self, event):
+        current_value = float(self.overwrite_edit.text())
+        print current_value
+        try:
+            update_value = rospy.ServiceProxy('drive/controller/overwrite_handle_angle', SetValue)
+            next_value = update_value(current_value)
+            self.overwrite_edit.setText(str(next_value.set_value))
+        except rospy.ServiceException, e:
+            self.showError("Failed to call drive/controller/overwrite_handle_angle")
+            
     def showError(self, message):
         QMessageBox.about(self, "ERROR", message)
 
