@@ -11,8 +11,11 @@
     <include file="$(find drc_task_common)/launch/fc/vehicle/multisense_rosbag_static_tf_publisher.launch" />
   </group>
   <group if="$(arg REAL_MODE)">
-    <node pkg="tf" type="static_transform_publisher" name="TF_car_center" args="0.05 -0.3 -1.2 0 0 0 BODY car_center 100" />
+    <node pkg="roseus" type="roseus" name="TF_BODY_marker"
+          args="$(find drc_task_common)/euslisp/vehicle/car_center_publisher.l" >
+      <remap from="car_pose_marker" to="/drive/recognition/marker/car_pose" />
+    </node>
+    <node pkg="tf" type="static_transform_publisher" name="TF_marker_car_center" args="0.0 1.322075 0.205468 -1.571 -1.074 -3.142 car_marker car_center 100" />
+    <!-- <node pkg="tf" type="static_transform_publisher" name="TF_car_center" args="0.05 -0.3 -1.2 0 0 0 BODY car_center 100" /> -->
   </group>
-
-
 </launch>
