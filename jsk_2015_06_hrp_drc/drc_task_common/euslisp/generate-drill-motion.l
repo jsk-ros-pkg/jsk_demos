@@ -9,10 +9,8 @@
 (setq *use-dual-arm-ik* nil)
 (setq *use-f-sensor-search* nil)
 (setq *drill-reverse-hand* t)
-(setq *drill-button-point* :finger)
-(setq *default-drill-type* :takenoko))
-(setq *default-drill-type* :takenoko)
-
+(setq *drill-button-point* :finger) ;; one of (:attachment-r :attachment :finger)
+(setq *default-drill-type* :takenoko) ;; one of (:takenoko :gun)
 
 ;; takenoko drill
 (defun init-takenoko-drill ()
@@ -384,7 +382,8 @@
       ((tc (list
            arm-tc
            (send *robot* :rleg :end-coords :copy-worldcoords)
-           (send *robot* :lleg :end-coords :copy-worldcoords))))
+           (send *robot* :lleg :end-coords :copy-worldcoords)))
+       ik-ret)
     (with-move-target-link-list
      (mt ll *robot* (list *drill-main-arm* :rleg :lleg))
      (setf (elt mt 0) arm-mt)
@@ -403,7 +402,8 @@
            arm-tc
            support-arm-tc
            (send *robot* :rleg :end-coords :copy-worldcoords)
-           (send *robot* :lleg :end-coords :copy-worldcoords))))
+           (send *robot* :lleg :end-coords :copy-worldcoords)))
+       ik-ret)
     (with-move-target-link-list
      (mt ll *robot* (list *drill-main-arm* (get-opposite-arm *drill-main-arm*) :rleg :lleg))
      (setf (elt mt 0) main-arm-coords)
