@@ -196,9 +196,9 @@
         (make-cascoords
          :coords 
 	 (cond ((equal *robot-name* "HRP2JSKNT")
-		(send (send (send (send *robot* :rarm :end-coords) :copy-worldcoords) :translate (float-vector 50 2.0 0.0) :local) :rotate (deg2rad -45) :z :local))
+		(send (send (send (send *robot* :rarm :end-coords) :copy-worldcoords) :translate (float-vector 50 2.0 0.0) :local) :rotate (deg2rad 45) :z :local))
 	       ((equal *robot-name* "HRP2JSKNTS")
-		(send (send (send (send *robot* :rarm :end-coords) :copy-worldcoords) :translate (float-vector 45 15.0 0.0) :local) :rotate (deg2rad -45) :z :local))
+		(send (send (send (send *robot* :rarm :end-coords) :copy-worldcoords) :translate (float-vector 50 25.0 0.0) :local) :rotate (deg2rad 45) :z :local))
 	       (t
 		(send (send (send (send *robot* :rarm :end-coords) :copy-worldcoords) :translate (float-vector 0.0 0.0 0.0) :local) :rotate (deg2rad 0) :z :local)
 		)
@@ -210,7 +210,7 @@
 	 (cond ((equal *robot-name* "HRP2JSKNT")
 		(send (send (send (send *robot* :larm :end-coords) :copy-worldcoords) :translate (float-vector 50 -2.0 0.0) :local) :rotate (deg2rad -45) :z :local))
 	       ((equal *robot-name* "HRP2JSKNTS")
-		(send (send (send (send *robot* :larm :end-coords) :copy-worldcoords) :translate (float-vector 45 -15.0 0.0) :local) :rotate (deg2rad -45) :z :local))
+		(send (send (send (send *robot* :larm :end-coords) :copy-worldcoords) :translate (float-vector 50 -25.0 0.0) :local) :rotate (deg2rad -45) :z :local))
 		(t
 		 (send (send (send (send *robot* :larm :end-coords) :copy-worldcoords) :translate (float-vector 0.0 0.0 0.0) :local) :rotate (deg2rad 0) :z :local)
 		 )		
@@ -451,7 +451,7 @@
 ;; genetate drill motion (with current drill coords)
 (defun generate-drill-grasp-motion
   (&key (draw? t) (rotation-axis (if (eq *default-drill-type* :takenoko) (list t t t) (list t t t))) (fin? t))
-  (let* ((reach-dist 160)
+  (let* ((reach-dist 150)
          ;(x-factor 0.0)
 	 (grasp-up-dist 120)
 	 (air-grasp-up-dist 60)
