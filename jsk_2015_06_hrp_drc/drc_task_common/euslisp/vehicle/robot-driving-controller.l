@@ -267,11 +267,16 @@
    (when (and sync (not (send *ri* :simulation-modep)))
      (send motion :sync-all-controller)
      )
+   (warn "init-pose~%")
    (send motion :ride :init-pose t)
    (send motion :drive-init-pose-crank :limb :larm :move-arm nil) ;; todo: fix and remove
+   (warn "approach-fist~%")
    (send self :approach-fist :reach-until-touch nil)
+   (warn "approach-accel~%")
    (send self :approach-accel)
+   (warn "approach-floor~%")
    (send self :approach-floor :offset #f(0 0 0))
+   (warn "approach-handle~%")
    (send self :approach-handle)
    (send self :publish-body-relative-steering-coords)
    ;; enable operation
