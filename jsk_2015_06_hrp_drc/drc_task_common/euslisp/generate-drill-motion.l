@@ -13,7 +13,6 @@
 (setq *default-drill-type* :takenoko))
 (setq *default-drill-type* :takenoko)
 
-
 (defun check-stand-coords (stand-coords)
   (let* ((pos (scale 0.001 (send stand-coords :worldpos)))
 	 (rpy (mapcar #'rad2deg (car (send stand-coords :rpy-angle))))
@@ -887,7 +886,7 @@
                         :rotation-axis (list t t t t)
                         :max (float-vector  500  500  0  20  20  10) ;; for hrp2
                         :min (float-vector  -500  -500  -200  -20  -20  -10) ;; for hrp2
-                        :stop 200
+                        :stop 50
                         :centroid-thre 50
                         :debug-view (if draw? :no-message nil)
                         :warnp (if draw? t nil)
@@ -902,6 +901,7 @@
                         :rotation-axis (list t t t t)
                         :warnp (if draw? t nil)
                         :additional-weight-list
+                        :warnp nil
                         (list (list (send *robot* :torso :waist-r :child-link) 0.1)
                               (list (send *robot* :torso :waist-y :child-link) 0.1)
                               (list (send *robot* :torso :waist-p :child-link) 0.1))
