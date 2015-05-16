@@ -13,16 +13,8 @@
 (setq *default-drill-type* :takenoko))
 (setq *default-drill-type* :takenoko)
 
-(defun check-stand-coords (stand-coords)
-  (let* ((pos (scale 0.001 (send stand-coords :worldpos)))
-         (rpy (mapcar #'rad2deg (car (send stand-coords :rpy-angle))))
-           (pos-thre 0.01)
-           (rpy-thre 1)
-           )
-    (or (> (abs (elt pos 0)) pos-thre) (> (abs (elt pos 1)) pos-thre) (> (abs (elt rpy 0)) rpy-thre))))
 
 ;; takenoko drill
-
 (defun init-takenoko-drill ()
   (setq *drill* (takenoko-drill))
   ;; generate drill
@@ -49,14 +41,12 @@
                                (list (deg2rad 150) 0 pi))
                               ((equal *drill-button-point* :finger)
                                (list (deg2rad (if (equal *drill-main-arm* :rarm) 135 45)) 0 pi)))
-                           
                            (list (deg2rad (if (equal *drill-main-arm* :rarm) 80 160)) 0 0) ;; for finger only
                            ))
                         (t ;;jaxon
                          (if *drill-reverse-hand* (list (deg2rad (if (equal *drill-main-arm* :rarm) 150 30)) 0 pi) (list (deg2rad (if (equal *drill-main-arm* :rarm) 60 210)) 0 0))
                          )
                         ))
-         
          ;; :coords (make-coords :pos #f(0 0 170) :rpy (if *drill-reverse-hand* (list (deg2rad 180) 0 pi) (list (deg2rad 90) 0 0)))
          :parent *drill*))
   (send *drill* :put :grasp-coords-true 

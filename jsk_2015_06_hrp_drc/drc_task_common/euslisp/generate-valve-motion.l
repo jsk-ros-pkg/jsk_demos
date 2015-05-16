@@ -446,10 +446,8 @@
       (when *valve-stand-coords*
         (let* ((pos (scale 0.001 (send *valve-stand-coords* :worldpos)))
                (rpy (mapcar #'rad2deg (car (send *valve-stand-coords* :rpy-angle))))
-               (pos-thre 0.01)
-               (rpy-thre 1)
                )
-          (when (or (> (abs (elt pos 0)) pos-thre) (> (abs (elt pos 1)) pos-thre) (> (abs (elt rpy 0)) rpy-thre))
+          (when (check-stand-coords *valve-stand-coords*)
             (ros::ros-warn "go-pos to ~a ~a ~a for valve~%" (elt pos 0) (elt pos 1) (elt rpy 0))
             (when real? (send *ri* :go-pos (elt pos 0) (elt pos 1) (elt rpy 0)))
             )
