@@ -15,9 +15,13 @@
 
   <!-- vehicle_ui -->
   <group ns="$(arg OCS_NS)" if="$(arg LAUNCH_UI)">
+    <node pkg="topic_tools" type="throttle" name="vehicle_ui_lhsensor_throttle" args="messages /off_lhsensor 1 drive/throttled_off_lhsensor" />
+    <node pkg="topic_tools" type="throttle" name="vehicle_ui_rhsensor_throttle" args="messages /off_rhsensor 1 drive/throttled_off_rhsensor" />
     <node pkg="topic_tools" type="throttle" name="vehicle_ui_lfsensor_throttle" args="messages /off_lfsensor 1 drive/throttled_off_lfsensor" />
     <node pkg="topic_tools" type="throttle" name="vehicle_ui_rfsensor_throttle" args="messages /off_rfsensor 1 drive/throttled_off_rfsensor" />
     <node pkg="drc_task_common" type="vehicle_ui" name="vehicle_ui" respawn="true" >
+      <remap from="/lhsensor" to="drive/throttled_off_lhsensor" />
+      <remap from="/rhsensor" to="drive/throttled_off_rhsensor" />
       <remap from="/lfsensor" to="drive/throttled_off_lfsensor" />
       <remap from="/rfsensor" to="drive/throttled_off_rfsensor" />
     </node>

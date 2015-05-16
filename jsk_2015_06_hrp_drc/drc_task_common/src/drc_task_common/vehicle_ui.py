@@ -233,23 +233,39 @@ class VehicleUIWidget(QWidget):
         left_container = QtGui.QWidget()
         right_container = QtGui.QWidget()
         lower_left_vbox = QtGui.QVBoxLayout()
-        left_force_group = QtGui.QGroupBox("LLEG Force")
-        left_force_vbox = QtGui.QVBoxLayout()
-        self.left_force_label = list()
-        for i in range(3):
-            self.left_force_label.append(QtGui.QLabel("-1"))
-            left_force_vbox.addWidget(self.left_force_label[i])
-        left_force_group.setLayout(left_force_vbox)
-        lower_left_vbox.addWidget(left_force_group)
 
-        right_force_group = QtGui.QGroupBox("RLEG Force")
-        right_force_vbox = QtGui.QVBoxLayout()
-        self.right_force_label = list()
+        lhsensor_group = QtGui.QGroupBox("LARM Force")
+        lhsensor_vbox = QtGui.QVBoxLayout()
+        self.lhsensor_label = list()
         for i in range(3):
-            self.right_force_label.append(QtGui.QLabel("-1"))
-            right_force_vbox.addWidget(self.right_force_label[i])
-        right_force_group.setLayout(right_force_vbox)
-        lower_left_vbox.addWidget(right_force_group)
+            self.lhsensor_label.append(QtGui.QLabel("-1"))
+            lhsensor_vbox.addWidget(self.lhsensor_label[i])
+        lhsensor_group.setLayout(lhsensor_vbox)
+        lower_left_vbox.addWidget(lhsensor_group)
+        rhsensor_group = QtGui.QGroupBox("RARM Force")
+        rhsensor_vbox = QtGui.QVBoxLayout()
+        self.rhsensor_label = list()
+        for i in range(3):
+            self.rhsensor_label.append(QtGui.QLabel("-1"))
+            rhsensor_vbox.addWidget(self.rhsensor_label[i])
+        rhsensor_group.setLayout(rhsensor_vbox)
+        lower_left_vbox.addWidget(rhsensor_group)
+        lfsensor_group = QtGui.QGroupBox("LLEG Force")
+        lfsensor_vbox = QtGui.QVBoxLayout()
+        self.lfsensor_label = list()
+        for i in range(3):
+            self.lfsensor_label.append(QtGui.QLabel("-1"))
+            lfsensor_vbox.addWidget(self.lfsensor_label[i])
+        lfsensor_group.setLayout(lfsensor_vbox)
+        lower_left_vbox.addWidget(lfsensor_group)
+        rfsensor_group = QtGui.QGroupBox("RLEG Force")
+        rfsensor_vbox = QtGui.QVBoxLayout()
+        self.rfsensor_label = list()
+        for i in range(3):
+            self.rfsensor_label.append(QtGui.QLabel("-1"))
+            rfsensor_vbox.addWidget(self.rfsensor_label[i])
+        rfsensor_group.setLayout(rfsensor_vbox)
+        lower_left_vbox.addWidget(rfsensor_group)
         lower_left_container = QtGui.QWidget()
         lower_left_container.setLayout(lower_left_vbox)
         left_splitter.addWidget(lower_left_container)
@@ -287,6 +303,10 @@ class VehicleUIWidget(QWidget):
         self.max_step_value_sub = rospy.Subscriber(
             "drive/controller/max_step", std_msgs.msg.Float32, self.maxStepGageValueCallback)
         self.lleg_force_sub = rospy.Subscriber(
+            "/lhsensor", geometry_msgs.msg.WrenchStamped, self.lhsensorCallback)
+        self.rleg_force_sub = rospy.Subscriber(
+            "/rhsensor", geometry_msgs.msg.WrenchStamped, self.rhsensorCallback)
+        self.lleg_force_sub = rospy.Subscriber(
             "/lfsensor", geometry_msgs.msg.WrenchStamped, self.lfsensorCallback)
         self.rleg_force_sub = rospy.Subscriber(
             "/rfsensor", geometry_msgs.msg.WrenchStamped, self.rfsensorCallback)
@@ -294,14 +314,22 @@ class VehicleUIWidget(QWidget):
             "drive/controller/handle_mode", std_msgs.msg.String, self.handleModeCallback)
         self.accel_mode_sub = rospy.Subscriber(
             "drive/controller/accel_mode", std_msgs.msg.String, self.accelModeCallback)
+    def lhsensorCallback(self, msg):
+        with self.lock:
+            for idx, value in enumerate([str(msg.wrench.force.x), str(msg.wrench.force.y), str(msg.wrench.force.z)]):
+                self.lhsensor_label[idx].setText(value)
+    def rhsensorCallback(self, msg):
+        with self.lock:
+            for idx, value in enumerate([str(msg.wrench.force.x), str(msg.wrench.force.y), str(msg.wrench.force.z)]):
+                self.rhsensor_label[idx].setText(value)
     def lfsensorCallback(self, msg):
         with self.lock:
             for idx, value in enumerate([str(msg.wrench.force.x), str(msg.wrench.force.y), str(msg.wrench.force.z)]):
-                self.left_force_label[idx].setText(value)
+                self.lfsensor_label[idx].setText(value)
     def rfsensorCallback(self, msg):
         with self.lock:
             for idx, value in enumerate([str(msg.wrench.force.x), str(msg.wrench.force.y), str(msg.wrench.force.z)]):
-                self.right_force_label[idx].setText(value)
+                self.rfsensor_label[idx].setText(value)
     def stepGageValueCallback(self, msg):
         with self.lock:
             self.step_gage_label.setText(str(msg.data))
