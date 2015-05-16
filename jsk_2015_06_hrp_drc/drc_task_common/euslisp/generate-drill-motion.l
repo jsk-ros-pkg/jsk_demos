@@ -141,7 +141,6 @@
   nil
   )
 
-
 ;; drill grasp ;;
 ;; initialize drill and robot
 (defun set-drill-environment
@@ -155,109 +154,40 @@
   (if (not (boundp '*robot-name*))
       (setq *robot-name* "HRP2JSKNTS")
     )
-  (if (or (equal *robot-name* "HRP2JSKNT") (equal *robot-name* "HRP2JSKNTS"))
-      (progn
-        (setq *use-dual-arm-ik* nil)
-        (setq *use-f-sensor-search* nil)
-        (setq *drill-reverse-hand* t)
-        (setq *drill-button-point* :finger)
-        (setq *default-drill-type* :takenoko))
-    (progn
-      (setq *use-dual-arm-ik* nil)
-      (setq *use-f-sensor-search* nil)
-      (setq *drill-reverse-hand* nil)
-      (setq *drill-button-point* :finger) ;; finger fixed
-      (setq *default-drill-type* :takenoko))
-    )
-
-
-  (generate-robot *robot-name* :generate-ri? generate-ri?)
+  (cond ((or (equal *robot-name* "HRP2JSKNT") (equal *robot-name* "HRP2JSKNTS"))
+         (setq *use-dual-arm-ik* nil)
+         (setq *use-f-sensor-search* nil)
+         (setq *drill-reverse-hand* t)
+         (setq *drill-button-point* :finger)
+         (setq *default-drill-type* :takenoko)
+         )
+        (t ;; (or (equal *robot-name* "JAXON") (equal *robot-name* "STARO"))
+         (setq *use-dual-arm-ik* nil)
+         (setq *use-f-sensor-search* nil)
+         (setq *drill-reverse-hand* nil)
+         (setq *drill-button-point* :finger) ;; finger fixed
+         (setq *default-drill-type* :takenoko)
+         ))
   (setq *drill-ik-results* (list (list nil nil nil))) ;; to prevent unpredictable motion sent, not needed in reality
-  ;; place robot to origin:
+  (generate-robot *robot-name* :generate-ri? generate-ri?)
+  ;; place robot to origin
   (send *robot* :angle-vector (get-drill-reset-pose))
-
   (send *robot* :fix-leg-to-coords (make-coords))
   ;; (send *robot* :hand :arms :reset-pose) ;; this is neccesary for assoc coords to finger
   ;; attach handle to robot
-  (setq *arm-drill-grasp-coords* (make-hash-table))
-  (setf (gethash :rarm *arm-drill-grasp-coords*)
-        (make-cascoords
-         :coords
-         (cond ((equal *robot-name* "HRP2JSKNT")
-                (send (send (send (send *robot* :rarm :end-coords) :copy-worldcoords) :translate (float-vector 50 2.0 0.0) :local) :rotate (deg2rad 45) :z :local))
-               ((equal *robot-name* "HRP2JSKNTS")
-                (send (send (send (send *robot* :rarm :end-coords) :copy-worldcoords) :translate (float-vector 50 25.0 0.0) :local) :rotate (deg2rad 45) :z :local))
-               (t
-                (send (send (send (send *robot* :rarm :end-coords) :copy-worldcoords) :translate (float-vector 0.0 0.0 0.0) :local) :rotate (deg2rad 0) :z :local)
-                )
-               )
-         :parent (send (send *robot* :rarm :end-coords) :parent)))
-  (setf (gethash :larm *arm-drill-grasp-coords*)
-        (make-cascoords
-         :coords
-         (cond ((equal *robot-name* "HRP2JSKNT")
-                (send (send (send (send *robot* :larm :end-coords) :copy-worldcoords) :translate (float-vector 50 -2.0 0.0) :local) :rotate (deg2rad -45) :z :local))
-               ((equal *robot-name* "HRP2JSKNTS")
-                (send (send (send (send *robot* :larm :end-coords) :copy-worldcoords) :translate (float-vector 50 -25.0 0.0) :local) :rotate (deg2rad -45) :z :local))
-                (t
-                 (send (send (send (send *robot* :larm :end-coords) :copy-worldcoords) :translate (float-vector 0.0 0.0 0.0) :local) :rotate (deg2rad 0) :z :local)
-                 )
-                )
-         :parent (send (send *robot* :larm :end-coords) :parent)))
-  ;; (send *robot* :hand :arms :hook-pose) ;; this is neccesary for assoc coords to finger
-  ;; attach handle to robot
-  ;; for hrp2jsknt
-  ;; (send *robot* :put :support-arm-drill-button-coords
-  ;;       (make-cascoords
-  ;;        :coords (send (send (send (send (send (send *robot* (get-opposite-arm *drill-main-arm*) :end-coords) :copy-worldcoords) :translate #f(121 -21 24) :local)
-  ;;                                  :rotate (deg2rad 25) :z :local) :rotate pi/2 :x :local) :rotate 0 :z :local)
-  ;;        :parent (send *robot* :hand (get-opposite-arm *drill-main-arm*) :link "L_INDEXPIP_R_LINK")))
-  ;; for hrp2jsknts
-  ;; (send *robot* :put :support-arm-drill-button-coords
-  ;;       (make-cascoords
-  ;;        :coords (send (send (send (send (send (send *robot* (get-opposite-arm *drill-main-arm*) :end-coords) :copy-worldcoords) :translate #f(120 -23 23) :local)
-  ;;                                  :rotate (deg2rad 25) :z :local) :rotate pi/2 :x :local) :rotate 0 :z :local)
-  ;; (send *robot* :put :support-arm-drill-button-coords
-  ;;       (make-cascoords
-  ;;        :coords (send (send (send (send (send (send *robot* (get-opposite-arm *drill-main-arm*) :end-coords) :copy-worldcoords) :translate #f(120 -0 0) :local)
-  ;;                                  :rotate pi/2 :y :local) :rotate pi :z :local) :rotate 0 :z :local)
-  ;;        :parent (send *robot* :hand (get-opposite-arm *drill-main-arm*) :link "L_INDEXPIP_R_LINK")))
-  (cond ((or (equal *robot-name* "HRP2JSKNT") (equal *robot-name* "HRP2JSKNTS"))
-         (cond ((equal *drill-button-point* :finger) ;; finger
-                (send *robot* :put :support-arm-drill-button-coords
-                      (make-cascoords
-                       :coords (send (send (send (send (send (send *robot* (get-opposite-arm *drill-main-arm*) :end-coords) :copy-worldcoords) :translate #f(100 12 -35) :local) :rotate (deg2rad 90) :y) :rotate (deg2rad (if (equal *drill-main-arm* :rarm) 180 0)) :z) :rotate (deg2rad (if *drill-reverse-hand* 0 180)) :x :world)
-                       :parent (send (send *robot* (get-opposite-arm *drill-main-arm*) :end-coords) :parent))))
-
-               ((equal *drill-button-point* :attachment)
-                (send *robot* :put :support-arm-drill-button-coords
-                      (make-cascoords
-                       :coords (send (send (send (send *robot* (get-opposite-arm *drill-main-arm*) :end-coords) :copy-worldcoords) :translate #f(80 62 80) :local) :rotate (deg2rad 135) :z)
-                       :parent (send (send *robot* (get-opposite-arm *drill-main-arm*) :end-coords) :parent))))
-               (t
-                       (send *robot* :put :support-arm-drill-button-coords ;; ohara 4/12
-                             (make-cascoords
-                              :coords (send (send (send (send (send *robot* (get-opposite-arm *drill-main-arm*) :end-coords) :copy-worldcoords) :translate #f(120 62 -80) :local) :rotate (deg2rad 180) :y) :rotate (deg2rad -90) :z)
-                      :parent (send (send *robot* (get-opposite-arm *drill-main-arm*) :end-coords) :parent))))
-             ))
-        (t ;; JAXON
-         (send *robot* :put :support-arm-drill-button-coords
-                   (make-cascoords
-                                        ;             :coords (send (send (send *robot* (get-opposite-arm *drill-main-arm*) :end-coords) :copy-worldcoords) :translate #f(50 87.5 80) :local)
-                    :coords (send (send (send (send (send (send *robot* (get-opposite-arm *drill-main-arm*) :end-coords) :copy-worldcoords) :translate (float-vector 80 (if (equal *drill-main-arm* :rarm) -75 75) 0) :local) :rotate (deg2rad (if (equal *drill-main-arm* :rarm) 90 90)) :y :local) :rotate (deg2rad (if (equal *drill-main-arm* :rarm) 180 180)) :z :local) :rotate (deg2rad (if (equal *drill-main-arm* :rarm) 0 180)) :z :local)
-                    :parent (send (send *robot* (get-opposite-arm *drill-main-arm*) :end-coords) :parent)))
-         )
-        )
+  (attach-handle-to-robot-for-drill)
+  ;; generate drill and attach handle to drill
   (cond ((equal *default-drill-type* :takenoko) (init-takenoko-drill))
         ((equal *default-drill-type* :gun) (init-gun-drill))
         )
+  ;; place drill to drill-coords
   (when drill-coords
      (send *drill* :newcoords (get-drill-coords-with-symbol drill-coords recognized-coords-symbol)))
-    ;; drill setting
   ;; draw
+  (setq *ground* (make-cube 1000 1000 1))
+  (when (or draw? (boundp '*irtviewer*))
+    (objects (list *robot* *drill* *ground*)))
   (when draw?
-    (setq *ground* (make-cube 1000 1000 1))
-    (objects (list *robot* *drill* *ground*))
     (send *irtviewer* :draw-objects)
     (send *irtviewer* :change-background (float-vector 0.5 0.5 1))
     )
@@ -294,6 +224,79 @@
   ;treat the difference of origin between eus and recognition program
   ;(send *drill* :translate (float-vector 0 0 (* -0.5 (elt (send *drill* :body-type) 2))) :local)
   )
+
+(attach-handle-to-robot-for-drill
+ ()
+ (setq *arm-drill-grasp-coords* (make-hash-table))
+ (setf (gethash :rarm *arm-drill-grasp-coords*)
+       (make-cascoords
+        :coords
+        (cond ((equal *robot-name* "HRP2JSKNT")
+               (send (send (send (send *robot* :rarm :end-coords) :copy-worldcoords) :translate (float-vector 50 2.0 0.0) :local) :rotate (deg2rad 45) :z :local))
+              ((equal *robot-name* "HRP2JSKNTS")
+               (send (send (send (send *robot* :rarm :end-coords) :copy-worldcoords) :translate (float-vector 50 25.0 0.0) :local) :rotate (deg2rad 45) :z :local))
+              (t ;; (or (equal *robot-name* "JAXON") (equal *robot-name* "STARO"))
+               (send (send (send (send *robot* :rarm :end-coords) :copy-worldcoords) :translate (float-vector 0.0 0.0 0.0) :local) :rotate (deg2rad 0) :z :local)
+               )
+              )
+        :parent (send (send *robot* :rarm :end-coords) :parent)))
+ (setf (gethash :larm *arm-drill-grasp-coords*)
+       (make-cascoords
+        :coords
+        (cond ((equal *robot-name* "HRP2JSKNT")
+               (send (send (send (send *robot* :larm :end-coords) :copy-worldcoords) :translate (float-vector 50 -2.0 0.0) :local) :rotate (deg2rad -45) :z :local))
+              ((equal *robot-name* "HRP2JSKNTS")
+               (send (send (send (send *robot* :larm :end-coords) :copy-worldcoords) :translate (float-vector 50 -25.0 0.0) :local) :rotate (deg2rad -45) :z :local))
+              (t ;; (or (equal *robot-name* "JAXON") (equal *robot-name* "STARO"))
+               (send (send (send (send *robot* :larm :end-coords) :copy-worldcoords) :translate (float-vector 0.0 0.0 0.0) :local) :rotate (deg2rad 0) :z :local)
+               )
+              )
+        :parent (send (send *robot* :larm :end-coords) :parent)))
+ ;; (send *robot* :hand :arms :hook-pose) ;; this is neccesary for assoc coords to finger
+ ;; attach handle to robot
+ ;; for hrp2jsknt
+ ;; (send *robot* :put :support-arm-drill-button-coords
+ ;;       (make-cascoords
+ ;;        :coords (send (send (send (send (send (send *robot* (get-opposite-arm *drill-main-arm*) :end-coords) :copy-worldcoords) :translate #f(121 -21 24) :local)
+ ;;                                  :rotate (deg2rad 25) :z :local) :rotate pi/2 :x :local) :rotate 0 :z :local)
+ ;;        :parent (send *robot* :hand (get-opposite-arm *drill-main-arm*) :link "L_INDEXPIP_R_LINK")))
+ ;; for hrp2jsknts
+ ;; (send *robot* :put :support-arm-drill-button-coords
+ ;;       (make-cascoords
+ ;;        :coords (send (send (send (send (send (send *robot* (get-opposite-arm *drill-main-arm*) :end-coords) :copy-worldcoords) :translate #f(120 -23 23) :local)
+ ;;                                  :rotate (deg2rad 25) :z :local) :rotate pi/2 :x :local) :rotate 0 :z :local)
+ ;; (send *robot* :put :support-arm-drill-button-coords
+ ;;       (make-cascoords
+ ;;        :coords (send (send (send (send (send (send *robot* (get-opposite-arm *drill-main-arm*) :end-coords) :copy-worldcoords) :translate #f(120 -0 0) :local)
+ ;;                                  :rotate pi/2 :y :local) :rotate pi :z :local) :rotate 0 :z :local)
+ ;;        :parent (send *robot* :hand (get-opposite-arm *drill-main-arm*) :link "L_INDEXPIP_R_LINK")))
+ (cond ((or (equal *robot-name* "HRP2JSKNT") (equal *robot-name* "HRP2JSKNTS"))
+        (cond ((equal *drill-button-point* :finger) ;; finger
+               (send *robot* :put :support-arm-drill-button-coords
+                     (make-cascoords
+                      :coords (send (send (send (send (send (send *robot* (get-opposite-arm *drill-main-arm*) :end-coords) :copy-worldcoords) :translate #f(100 12 -35) :local) :rotate (deg2rad 90) :y) :rotate (deg2rad (if (equal *drill-main-arm* :rarm) 180 0)) :z) :rotate (deg2rad (if *drill-reverse-hand* 0 180)) :x :world)
+                      :parent (send (send *robot* (get-opposite-arm *drill-main-arm*) :end-coords) :parent))))
+
+              ((equal *drill-button-point* :attachment)
+               (send *robot* :put :support-arm-drill-button-coords
+                     (make-cascoords
+                      :coords (send (send (send (send *robot* (get-opposite-arm *drill-main-arm*) :end-coords) :copy-worldcoords) :translate #f(80 62 80) :local) :rotate (deg2rad 135) :z)
+                      :parent (send (send *robot* (get-opposite-arm *drill-main-arm*) :end-coords) :parent))))
+              (t
+               (send *robot* :put :support-arm-drill-button-coords ;; ohara 4/12
+                     (make-cascoords
+                      :coords (send (send (send (send (send *robot* (get-opposite-arm *drill-main-arm*) :end-coords) :copy-worldcoords) :translate #f(120 62 -80) :local) :rotate (deg2rad 180) :y) :rotate (deg2rad -90) :z)
+                      :parent (send (send *robot* (get-opposite-arm *drill-main-arm*) :end-coords) :parent))))
+              ))
+       (t ;; (or (equal *robot-name* "JAXON") (equal *robot-name* "STARO"))
+        (send *robot* :put :support-arm-drill-button-coords
+              (make-cascoords
+                                        ;             :coords (send (send (send *robot* (get-opposite-arm *drill-main-arm*) :end-coords) :copy-worldcoords) :translate #f(50 87.5 80) :local)
+               :coords (send (send (send (send (send (send *robot* (get-opposite-arm *drill-main-arm*) :end-coords) :copy-worldcoords) :translate (float-vector 80 (if (equal *drill-main-arm* :rarm) -75 75) 0) :local) :rotate (deg2rad (if (equal *drill-main-arm* :rarm) 90 90)) :y :local) :rotate (deg2rad (if (equal *drill-main-arm* :rarm) 180 180)) :z :local) :rotate (deg2rad (if (equal *drill-main-arm* :rarm) 0 180)) :z :local)
+               :parent (send (send *robot* (get-opposite-arm *drill-main-arm*) :end-coords) :parent)))
+        )
+       )
+ )
 
 ;; drill ik with tc, mt...
 (defun fullbody-inverse-kinematics-for-drill-grasp
