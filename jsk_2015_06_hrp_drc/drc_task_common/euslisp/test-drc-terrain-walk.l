@@ -9,6 +9,8 @@
    &key (root-link-height-offset 0)
         (root-link-pitch-offset 0)
         (root-link-roll-offset 0)
+        (chest-link-pitch-offset 0)
+        (chest-link-roll-offset 0)
         (fix-coords (make-coords))
         (default-pose-method :reset-manip-pose))
   "Generate and set walking pose.
@@ -29,6 +31,8 @@
             :rotate (deg2rad root-link-pitch-offset) :y)
            :rotate (deg2rad root-link-roll-offset) :x)
           (car (send robot :links)))
+    (if (find-method robot :torso-waist-p) (send robot :torso-waist-p :joint-angle chest-link-pitch-offset))
+    (if (find-method robot :torso-waist-r) (send robot :torso-waist-r :joint-angle chest-link-roll-offset))
     (mapcar #'(lambda (l c)
                 (send robot l :inverse-kinematics c))
             '(:rleg :lleg) lc)
