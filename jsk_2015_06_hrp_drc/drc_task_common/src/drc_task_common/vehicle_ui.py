@@ -303,6 +303,9 @@ class VehicleUIWidget(QWidget):
                                         "drive/controller/max_step",
                                         "drive/controller/min_step")
         right_vbox.addWidget(self.step_gage)
+        self.set_current_step_as_max_button = QtGui.QPushButton("Set Current Step as Max")
+        self.set_current_step_as_max_button.clicked.connect(self.setCurrentStepAsMaxCallback)
+        right_vbox.addWidget(self.set_current_step_as_max_button)
     # Message callback
     def setupSubscribers(self):
         self.step_gage_value_sub = rospy.Subscriber(
@@ -488,6 +491,16 @@ class VehicleUIWidget(QWidget):
                 self.overwrite_edit.setText(str(next_value.set_value))
         except rospy.ServiceException, e:
             self.showError("Failed to call drive/controller/overwrite_handle_angle")
+
+    def setCurrentStepAsMaxCallback(self, event):
+        current_step = float(self.step_gage_label.text())
+        try:
+            update_value = rospy.ServiceProxy('drive/controller/set_max_step', SetValue)
+            next_value = update_value(current_step)
+            with self.lock:
+                self.step_max_edit.setText(str(next_value.set_value))
+        except rospy.ServiceException, e:
+            self.showError("Failed to call drive/controller/set_max_step")
             
     def showError(self, message):
         QMessageBox.about(self, "ERROR", message)
