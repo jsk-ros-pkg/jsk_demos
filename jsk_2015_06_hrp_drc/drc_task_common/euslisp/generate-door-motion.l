@@ -524,10 +524,8 @@
   (when *door-stand-coords*
     (let* ((pos (scale 0.001 (send *door-stand-coords* :worldpos)))
            (rpy (mapcar #'rad2deg (car (send *door-stand-coords* :rpy-angle))))
-           (pos-thre 0.01)
-           (rpy-thre 1)
            )
-      (when (or (> (abs (elt pos 0)) pos-thre) (> (abs (elt pos 1)) pos-thre) (> (abs (elt rpy 0)) rpy-thre))
+      (when (check-stand-coords *door-stand-coords*)
         (ros::ros-warn "go-pos to ~a ~a ~a for door~%" (elt pos 0) (elt pos 1) (elt rpy 0))
         (when real? (send *ri* :go-pos (elt pos 0) (elt pos 1) (elt rpy 0)))
         )

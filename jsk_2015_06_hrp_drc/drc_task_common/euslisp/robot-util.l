@@ -379,6 +379,15 @@
         )
   )
 
+(defun check-stand-coords
+  (stand-coords)
+  (let* ((pos (scale 0.001 (send stand-coords :worldpos)))
+         (rpy (mapcar #'rad2deg (car (send stand-coords :rpy-angle))))
+         (pos-thre 0.01)
+         (rpy-thre 1)
+         )
+    (or (> (abs (elt pos 0)) pos-thre) (> (abs (elt pos 1)) pos-thre) (> (abs (elt rpy 0)) rpy-thre))))
+
 (load "package://hrpsys_ros_bridge/euslisp/rtm-ros-robot-interface.l")
 
 (defmethod rtm-ros-robot-interface
