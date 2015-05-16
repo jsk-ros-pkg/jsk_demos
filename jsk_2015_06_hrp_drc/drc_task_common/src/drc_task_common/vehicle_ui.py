@@ -236,34 +236,32 @@ class VehicleUIWidget(QWidget):
 
         lhsensor_group = QtGui.QGroupBox("LARM Force")
         lhsensor_vbox = QtGui.QVBoxLayout()
-        self.lhsensor_label = list()
-        for i in range(3):
-            self.lhsensor_label.append(QtGui.QLabel("-1"))
-            lhsensor_vbox.addWidget(self.lhsensor_label[i])
+        font = QtGui.QFont()
+        font.setPointSize(16)
+        self.lhsensor_label = QtGui.QLabel("-1")
+        self.lhsensor_label.setFont(font)
+        lhsensor_vbox.addWidget(self.lhsensor_label)
         lhsensor_group.setLayout(lhsensor_vbox)
         lower_left_vbox.addWidget(lhsensor_group)
         rhsensor_group = QtGui.QGroupBox("RARM Force")
         rhsensor_vbox = QtGui.QVBoxLayout()
-        self.rhsensor_label = list()
-        for i in range(3):
-            self.rhsensor_label.append(QtGui.QLabel("-1"))
-            rhsensor_vbox.addWidget(self.rhsensor_label[i])
+        self.rhsensor_label = QtGui.QLabel("-1")
+        self.rhsensor_label.setFont(font)
+        rhsensor_vbox.addWidget(self.rhsensor_label)
         rhsensor_group.setLayout(rhsensor_vbox)
         lower_left_vbox.addWidget(rhsensor_group)
         lfsensor_group = QtGui.QGroupBox("LLEG Force")
         lfsensor_vbox = QtGui.QVBoxLayout()
-        self.lfsensor_label = list()
-        for i in range(3):
-            self.lfsensor_label.append(QtGui.QLabel("-1"))
-            lfsensor_vbox.addWidget(self.lfsensor_label[i])
+        self.lfsensor_label = QtGui.QLabel("-1")
+        self.lfsensor_label.setFont(font)
+        lfsensor_vbox.addWidget(self.lfsensor_label)
         lfsensor_group.setLayout(lfsensor_vbox)
         lower_left_vbox.addWidget(lfsensor_group)
         rfsensor_group = QtGui.QGroupBox("RLEG Force")
         rfsensor_vbox = QtGui.QVBoxLayout()
-        self.rfsensor_label = list()
-        for i in range(3):
-            self.rfsensor_label.append(QtGui.QLabel("-1"))
-            rfsensor_vbox.addWidget(self.rfsensor_label[i])
+        self.rfsensor_label = QtGui.QLabel("-1")
+        self.rfsensor_label.setFont(font)
+        rfsensor_vbox.addWidget(self.rfsensor_label)
         rfsensor_group.setLayout(rfsensor_vbox)
         lower_left_vbox.addWidget(rfsensor_group)
         lower_left_container = QtGui.QWidget()
@@ -283,7 +281,9 @@ class VehicleUIWidget(QWidget):
         handle_diff_av_container = QtGui.QWidget()
         self.handle_diff_av_value = 0.0
         handle_diff_av_label = QtGui.QLabel("Steering Diff Angle Vector:", self)
+        handle_diff_av_label.setFont(font)
         self.handle_diff_av_value_label = QtGui.QLabel(str(self.handle_diff_av_value))
+        self.handle_diff_av_value_label.setFont(font)
         handle_diff_av_hbox.addWidget(handle_diff_av_label)
         handle_diff_av_hbox.addWidget(self.handle_diff_av_value_label)
         handle_diff_av_container.setLayout(handle_diff_av_hbox)
@@ -326,34 +326,40 @@ class VehicleUIWidget(QWidget):
         self.handle_angle_vector_diff_sub = rospy.Subscriber(
             "drive/controller/steering_diff_angle_vector", std_msgs.msg.Float32, self.steeringDiffAngleVectorCallback)
     def lhsensorCallback(self, msg):
-        self.updateSensor(self.lhsensor_label, msg)
+        self.updateForceSensor(self.lhsensor_label, msg)
     def rhsensorCallback(self, msg):
-        self.updateSensor(self.rhsensor_label, msg)
+        self.updateForceSensor(self.rhsensor_label, msg)
     def lfsensorCallback(self, msg):
-        self.updateSensor(self.lfsensor_label, msg)
+        self.updateForceSensor(self.lfsensor_label, msg)
     def rfsensorCallback(self, msg):
-        self.updateSensor(self.rfsensor_label, msg)
-    def updateSensor(self, label, msg):
+        self.updateForceSensor(self.rfsensor_label, msg)
+    def updateForceSensor(self, label, msg):
+        max_force = None
+        max_direction = None
+        index_to_direction = {0:":x", 1:":y", 2:":z"}
+        for idx, value in enumerate([str(msg.wrench.force.x), str(msg.wrench.force.y), str(msg.wrench.force.z)]):
+            if max_force == None or abs(float(value)) > abs(max_force):
+                max_force = float(value)
+                max_direction = index_to_direction[idx]
         with self.lock:
-            for idx, value in enumerate([str(msg.wrench.force.x), str(msg.wrench.force.y), str(msg.wrench.force.z)]):
-                label[idx].setText(value)
-                if abs(float(value)) > 150.0: # threshould
-                     label[idx].setAutoFillBackground(True);
-                     palette = QtGui.QPalette()
-                     palette.setColor(QtGui.QPalette.Background,QtCore.Qt.red)
-                     label[idx].setPalette(palette)
-                elif abs(float(value)) > 100.0: # threshould
-                     label[idx].setAutoFillBackground(True);
-                     palette = QtGui.QPalette()
-                     palette.setColor(QtGui.QPalette.Background,QtCore.Qt.yellow)
-                     label[idx].setPalette(palette)
-                elif abs(float(value)) > 50.0: # threshould
-                     label[idx].setAutoFillBackground(True);
-                     palette = QtGui.QPalette()
-                     palette.setColor(QtGui.QPalette.Background,QtCore.Qt.green)
-                     label[idx].setPalette(palette)
-                else:
-                    label[idx].setAutoFillBackground(False);
+            label.setText(max_direction + " " + str(max_force))
+            if abs(max_force) > 150.0: # threshould
+                label.setAutoFillBackground(True);
+                palette = QtGui.QPalette()
+                palette.setColor(QtGui.QPalette.Background,QtCore.Qt.red)
+                label.setPalette(palette)
+            elif abs(max_force) > 100.0: # threshould
+                label.setAutoFillBackground(True);
+                palette = QtGui.QPalette()
+                palette.setColor(QtGui.QPalette.Background,QtCore.Qt.yellow)
+                label.setPalette(palette)
+            elif abs(max_force) > 50.0: # threshould
+                label.setAutoFillBackground(True);
+                palette = QtGui.QPalette()
+                palette.setColor(QtGui.QPalette.Background,QtCore.Qt.green)
+                label.setPalette(palette)
+            else:
+                label.setAutoFillBackground(False);
     
     def stepGageValueCallback(self, msg):
         with self.lock:
