@@ -89,10 +89,7 @@
      )
    (send self :open-hand limb)
    (when (and sync-controller (not (send *ri* :simulation-modep)))
-     (if (equal limb :larm)
-         (send *ri* :sync-controller :larm-controller)
-       (send *ri* :sync-controller :rarm-controller)
-       )
+     (send *ri* :sync-controller (read-from-string (format nil ":~A-controller" (string-downcase limb))))
      )
    (let ((check-links (subseq (send robot limb :links) 3 6)) (distance-threshold 100)
          (body-link (elt (send robot :links) 0))
@@ -544,8 +541,12 @@
      )
    )
   (:approach-accel-pedal
-   (&rest args &key (limb :rleg) (tm 2500) (debug-view nil) (reach-until-touch nil) (reach-until-touch-thre 10))
+   (&rest args &key (limb :rleg) (tm 2500) (debug-view nil)
+          (reach-until-touch nil) (reach-until-touch-thre 10) (sync-controller nil))
    (let (approach-result)
+     (when (and sync-controller (not (send *ri* :simulation-modep)))
+       (send *ri* :sync-controller (read-from-string (format nil ":~A-controller" (string-downcase limb))))
+       )
      (setq approach-result
            (send self :approach-pedal limb :accel-pedal :tm tm :debug-view debug-view)
            )
@@ -587,7 +588,11 @@
      )
    )
   (:approach-brake-pedal
-   (&rest args &key (limb :lleg) (tm 2500) (debug-view nil) (reach-until-touch nil) (reach-until-touch-thre 10))
+   (&rest args &key (limb :lleg) (tm 2500) (debug-view nil) 
+          (reach-until-touch nil) (reach-until-touch-thre 10) (sync-controller nil))
+   (when (and sync-controller (not (send *ri* :simulation-modep)))
+       (send *ri* :sync-controller (read-from-string (format nil ":~A-controller" (string-downcase limb))))
+       )
    (let (approach-result)
      (setq approach-result
            (send self :approach-pedal limb :brake-pedal :tm tm :debug-view debug-view)
