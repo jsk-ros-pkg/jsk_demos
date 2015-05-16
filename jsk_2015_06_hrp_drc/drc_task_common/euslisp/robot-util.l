@@ -73,7 +73,7 @@
                 ))
          )
         ((or (equal *robot-name* "JAXON") (equal *robot-name* "STARO"))
-         (cond ((or (equal type :door-grasp-preshape) (equal type :door-grasp))
+         (cond ((or (equal type :door-grasp-preshape))
                 (when (and real? (find-method *ri* :stop-grasp))
                   (send *ri* :stop-grasp arm :wait wait?))
                 )
@@ -376,7 +376,6 @@
         :m-r 5.0 :d-r 100.0 :k-r 200.0
         :force-gain #f(1.0 1.0 1.0) :moment-gain #f(1.0 1.0 1.0)
         :sr-gain 1.0 :avoid-gain 0.001 :reference-gain 0.01  :manipulability-limit 0.1  :controller-mode 0
-        :ik-optional-weight-vector #f(1.0 1.0 1.0 1.0 1.0 1.0 1.0)
         )
   )
 
