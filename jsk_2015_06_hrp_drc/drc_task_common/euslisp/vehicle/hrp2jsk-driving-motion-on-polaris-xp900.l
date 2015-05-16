@@ -25,25 +25,33 @@
    ;; (send robot :move-to (make-coords :pos (float-vector 0 370.0 200) :rpy (float-vector 0.0 0.0 0.0)) :world)
    ;; (send robot :move-to (make-coords :pos (float-vector 180 370.0 80) :rpy (float-vector 0.0 (- (/ pi 16)) 0.0)) :world)
    ;; (send robot :move-to (make-coords :pos (float-vector -80 370.0 80) :rpy (float-vector 0.0 0.0 0.0)) :world)
-   (send robot :move-to (make-coords :pos (float-vector -80 470.0 80) :rpy (float-vector 0.0 0.0 0.0)) :world) ;; condier egress
+   ;; (send robot :move-to (make-coords :pos (float-vector -80 470.0 80) :rpy (float-vector 0.0 0.0 0.0)) :world) ;; condier egress in driving-simulator
+   (send robot :move-to (make-coords :pos (float-vector -80 470.0 180) :rpy (float-vector 0.0 (deg2rad 5.0) 0.0)) :world) ;; adjusted in real polaris in lasvegas
    (when init-pose
      (send self :drive-init-pose)
      )
    )
   (:drive-init-pose ;; todo: merge approach-brake pose
    (&key (tm 20000))
+   ;; ;; (send robot :reset-manip-pose)
+   ;; ;; (send robot :legs :angle-vector #f(0.0 0.0 -90.0 64.0 6.5 0.0 0.0))
    ;; (send robot :reset-manip-pose)
-   ;; (send robot :legs :angle-vector #f(0.0 0.0 -90.0 64.0 6.5 0.0 0.0))
-   (send robot :reset-manip-pose)
-   (send robot :legs :crotch-p :joint-angle -85)
-   (send robot :legs :knee-p :joint-angle 80)
-   (send robot :legs :ankle-p :joint-angle 0)
-   ;; (send robot :rarm :shoulder-p :joint-angle -100)
-   ;; (send robot :torso :waist-p :joint-angle 10)
-   (send robot :head :neck-p :joint-angle -5)
-   ;; (send robot :lleg :angle-vector #f(0.398437 -1.4895 -97.47 76.7502 20.0 1.5876 -1.548)) ;; use pedaling block for hrp2
-   ;; (send robot :lleg :angle-vector #f(0.059286 7.53038 -101.538 72.9173 30.1805 -7.533 -1.548)) ;; fix for egress
-   (send robot :lleg :angle-vector #f(5.00812 -1.07931 -97.6734 68.4796 28.4724 1.1772 -1.548)) ;; fix for egress using crotch
+   ;; (send robot :legs :crotch-p :joint-angle -85)
+   ;; (send robot :legs :knee-p :joint-angle 80)
+   ;; (send robot :legs :ankle-p :joint-angle 0)
+   ;; ;; (send robot :rarm :shoulder-p :joint-angle -100)
+   ;; ;; (send robot :torso :waist-p :joint-angle 10)
+   ;; (send robot :head :neck-p :joint-angle -5)
+   ;; ;; (send robot :lleg :angle-vector #f(0.398437 -1.4895 -97.47 76.7502 20.0 1.5876 -1.548)) ;; use pedaling block for hrp2
+   ;; ;; (send robot :lleg :angle-vector #f(0.059286 7.53038 -101.538 72.9173 30.1805 -7.533 -1.548)) ;; fix for egress
+   ;; (send robot :lleg :angle-vector #f(5.00812 -1.07931 -97.6734 68.4796 28.4724 1.1772 -1.548)) ;; fix for egress using crotch
+   ;; (send robot :angle-vector #f(0.0 0.0 -85.0 80.0 0.0 0.0 0.0 5.00812 -1.07931 -97.6734 68.4796 28.4724 1.1772 -1.548 0.0 0.0 0.0 -5.0 50.0 -30.0 -10.0 -120.0 -25.0 -5.0 -20.0 60.0 50.0 30.0 10.0 -120.0 25.0 5.0 -20.0 -60.0)) ;; old drive-init-pose adjusted in drive-simulation-environment
+
+   (send robot :reset-manip-pose) ;; adjusted in real polaris in lasvegas
+   (send robot :lleg :angle-vector #f(4.8375 -1.095 -88.646 72.6426 10.4 1.0224 0.216)) 
+   (send robot :rleg :angle-vector #f(-9.04768 1.17199 -100.84 58.9158 10.7088 -1.14559 -0.108))
+   (send robot :rarm :angle-vector #f(35.9754 -42.1297 8.69405 -74.6325 -43.4673 3.3033 35.8167 0.0))
+   
    (when real
      (send *ri* :angle-vector (send robot :angle-vector) tm)
      (send *ri* :wait-interpolation)
@@ -106,7 +114,8 @@
         ;; (send robot :rleg :angle-vector #f(0.277593 0.269639 -91.1699 48.9728 5.54723 -0.244199 -0.384))
         ;; (send robot :rleg :angle-vector #f(-8.96161 -11.923 -84.9409 37.2658 10.0798 15.014 -0.384))
         ;; (send robot :rleg :angle-vector #f(-10.0 0.269639 -91.1699 48.9728 5.54723 -0.244199 -0.384)) ;; adjusted in real vehicle
-        (send robot :rleg :angle-vector #f(-9.79801 0.253958 -109.928 60.3974 12.8831 -0.218503 0.18)) ;; adjusted in drive simulator by reach-until-touch
+        ;; (send robot :rleg :angle-vector #f(-9.79801 0.253958 -109.928 60.3974 12.8831 -0.218503 0.18)) ;; adjusted in drive simulator by reach-until-touch
+        (send robot :rleg :angle-vector #f(-9.04768 1.17199 -100.84 58.9158 10.7088 -1.14559 -0.108)) ;; adjusted in real polaris in lasvegas
         (setq approach-result t)
         )
        (:brake-pedal
