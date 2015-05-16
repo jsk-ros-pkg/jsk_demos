@@ -218,7 +218,7 @@
   (jaxon-init)
   (setq *robot* *jaxon*)
   (objects (list *robot*))
-  (walking-pose *robot* :root-link-pitch-offset 25 :root-link-height-offset -120)
+  (walking-pose *robot* :root-link-pitch-offset 15 :chest-link-pitch-offset 20 :root-link-height-offset -150 :default-pose-method :narrow-width-pose)
   )
 (warn ";; (setup-stair-climb-jaxon)~%")
 
@@ -270,14 +270,8 @@
   (send *ri* :wait-interpolation)
   (send *ri* :start-auto-balancer)
   (send *ri* :start-st)
-  (send *ri* :set-gait-generator-param
-        :stair-trajectory-way-point-offset #f(0.03 -0.0 0)
-        :swing-trajectory-delay-time-offset 0.25
-        :default-orbit-type :stair
-        :default-step-time 1.3
-        :default-double-support-ratio 0.16
-        :default-step-height 0.05)
-  (send *ri* :set-auto-balancer-param :default-zmp-offsets (list (float-vector 5 30 0) (float-vector 5 -30 0)))
+  (default-stair-param-hrp2jsk)
+  (send *ri* :set-auto-balancer-param :default-zmp-offsets (list (float-vector -20 0 0) (float-vector -20 0 0)))
   )
 (warn ";; (setup-stair-climb-real-jaxon)~%")
 
@@ -694,7 +688,7 @@
 ;;   )
 
 (defun test-drc-testbed-stair-simulation-jaxon
-  (&key (x-offset 0.05) (yaw-offset -30))
+  (&key (x-offset 0.05) (yaw-offset 0))
   (let* ((foot-width (abs (- (elt (send *robot* :lleg :end-coords :worldpos) 1) (elt (send *robot* :rleg :end-coords :worldpos) 1)))) (sole-width (abs (* foot-width (cos (deg2rad yaw-offset))))))
     (warn ";; (send *ri* :go-pos ~a 0 ~a)~%" x-offset yaw-offset)
     (send *robot* :fix-leg-to-coords (send (send *robot* :foot-midcoords) :rotate (deg2rad yaw-offset) :z))
