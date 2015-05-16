@@ -81,7 +81,36 @@
      )
     )
    )
-  
+
+  (:approach-pedal
+   (limb target-pedal &key (tm 2000) (debug-view nil))
+   (let (approach-result)
+     (case target-pedal
+       (:accel-pedal
+        ;; (send robot :rleg :angle-vector #f(-13.1189 -24.4656 -83.3638 44.9385 7.33334 27.7739)) ;; rleg angle-vector in left-sitting
+        ;; (send robot :rleg :angle-vector #f(-13.2762 -24.7025 -92.0869 71.704 -10.7745 28.0506)) ;; move legs -100 in x axis from above
+        ;; (send robot :rleg :angle-vector #f(-10.8755 -20.9737 -94.5136 76.5544 -12.2659 23.7151)) ;; move torso -50
+        ;; (send robot :rleg :angle-vector #f(-8.43548 -16.9475 -96.4631 80.3675 -13.336 19.0749)) ;; move torso -100
+        (send robot :rleg :angle-vector #f(-8.75369 -17.4852 -99.9228 80.091 -9.69405 19.6926)) ;; fixed in real polaris
+        (setq approach-result t)
+        )
+       (:brake-pedal
+        (warn "Disable approach-brake-pedal for JAXON~%")
+        (return-from :approach-pedal nil)
+        )
+       (t
+        (warn "Invalid pedal name~%")
+        (return-from :approach-pedal nil)
+        )
+       )
+     (when (and real approach-result)
+       (send *ri* :angle-vector (send robot :angle-vector) tm)
+       (send *ri* :wait-interpolation)
+       )
+     approach-result
+     )
+   )
+
   (:approach-fist
    (&rest args &key (rotation-axis :x) &allow-other-keys)
    (send-super* :approach-fist :rotation-axis rotation-axis args)
