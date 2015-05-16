@@ -892,7 +892,7 @@
 
   ;; calculate diff
   (:calc-error-of-grasp-arm
-   (&rest args &key (mode :angle-vector))
+   (&rest args &key (mode :angle-vector) &allow-other-keys)
    (let (diff-av
          (pub-diff (instance std_msgs::Float32 :init))
          )
