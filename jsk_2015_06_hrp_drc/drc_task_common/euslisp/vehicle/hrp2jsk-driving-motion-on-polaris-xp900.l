@@ -102,7 +102,8 @@
      (send *ri* :start-impedance limb :M-p 200 :D-p 4000 :K-p 6000 :moment-gain #(1 1 1) :M-r 50 :D-r 250 :K-r 400) ;; M = 0 temporarily for impedance follow-up
      )
     )
-   )  ;; (:approach-accel-pedal
+   )
+  ;; (:approach-accel-pedal
   ;;  (&key (tm 10000) (debug-view nil))
   ;;  ;; (send robot :rleg :angle-vector #f(0.271875 0.261 -86.08 62.4348 2.384 -0.234 -0.384)) ;; adjusted joint-angles in real hrp2jsknt
   ;;  ;; (send robot :rleg :angle-vector #f(0.269905 0.257049 -84.7676 56.5701 -0.447684 -0.229449 -0.384)) ;; adjusted joint-angles in real hrp2jsknt for new seat (testbed version)
