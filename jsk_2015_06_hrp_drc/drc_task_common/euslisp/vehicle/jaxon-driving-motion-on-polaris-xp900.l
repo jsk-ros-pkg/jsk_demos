@@ -61,38 +61,27 @@
   (:set-impedance-for-handle
    (limb)
    ;; (send *ri* :start-impedance limb :M-p 200 :D-p 600 :K-p 1400)
-   (send *ri* :start-impedance limb :M-p 200 :D-p 1200 :K-p 2000)
+   ;; (send *ri* :start-impedance limb :M-p 200 :D-p 1200 :K-p 2000)
+   (send *ri* :start-impedance limb :M-p 0 :D-p 1200 :K-p 2000 :M-r 0.0) ;; M = 0 temporarily for impedance follow-up
    )
-
-  (:approach-pedal
-   (limb target-pedal &key (tm 2000) (debug-view nil))
-   (let (approach-result)
-     (case target-pedal
-       (:accel-pedal
-        ;; (send robot :rleg :angle-vector #f(-13.1189 -24.4656 -83.3638 44.9385 7.33334 27.7739)) ;; rleg angle-vector in left-sitting
-        ;; (send robot :rleg :angle-vector #f(-13.2762 -24.7025 -92.0869 71.704 -10.7745 28.0506)) ;; move legs -100 in x axis from above
-        ;; (send robot :rleg :angle-vector #f(-10.8755 -20.9737 -94.5136 76.5544 -12.2659 23.7151)) ;; move torso -50
-        ;; (send robot :rleg :angle-vector #f(-8.43548 -16.9475 -96.4631 80.3675 -13.336 19.0749)) ;; move torso -100
-        (send robot :rleg :angle-vector #f(-8.75369 -17.4852 -99.9228 80.091 -9.69405 19.6926)) ;; fixed in real polaris
-        (setq approach-result t)
-        )
-       (:brake-pedal
-        (warn "Disable approach-brake-pedal for JAXON~%")
-        (return-from :approach-pedal nil)
-        )
-       (t
-        (warn "Invalid pedal name~%")
-        (return-from :approach-pedal nil)
-        )
-       )
-     (when (and real approach-result)
-       (send *ri* :angle-vector (send robot :angle-vector) tm)
-       (send *ri* :wait-interpolation)
-       )
-     approach-result
+  (:set-impedance-for-support
+   (limb)
+   (cond
+    ((member limb (list :larm :rarm :arms))
+     ;; (send *ri* :start-impedance limb :M-p 150 :D-p 2000 :K-p 4000 :moment-gain #(1 1 1) :M-r 25 :D-r 150 :K-r 200)
+     (send *ri* :start-impedance limb :M-p 0 :D-p 2000 :K-p 4000 :moment-gain #(1 1 1) :M-r 0 :D-r 150 :K-r 200) ;; M = 0 temporarily for impedance follow-up
      )
+    ((member limb (list :lleg :rleg :legs))
+     ;; (send *ri* :start-impedance limb :M-p 200 :D-p 4000 :K-p 5000 :moment-gain #(1 1 1) :M-r 50 :D-r 500 :K-r 600)
+     (send *ri* :start-impedance limb :M-p 0 :D-p 4000 :K-p 5000 :moment-gain #(1 1 1) :M-r 0 :D-r 500 :K-r 600) ;; M = 0 temporarily for impedance follow-up
+     )
+    (t ;; default
+     ;; (send *ri* :start-impedance limb :M-p 200 :D-p 4000 :K-p 6000 :moment-gain #(1 1 1) :M-r 50 :D-r 250 :K-r 400)
+     (send *ri* :start-impedance limb :M-p 0 :D-p 4000 :K-p 6000 :moment-gain #(1 1 1) :M-r 0 :D-r 250 :K-r 400) ;; M = 0 temporarily for impedance follow-up
+     )
+    )
    )
-
+  
   (:approach-fist
    (&rest args &key (rotation-axis :x) &allow-other-keys)
    (send-super* :approach-fist :rotation-axis rotation-axis args)
