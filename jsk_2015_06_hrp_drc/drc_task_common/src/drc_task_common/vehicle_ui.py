@@ -315,21 +315,35 @@ class VehicleUIWidget(QWidget):
         self.accel_mode_sub = rospy.Subscriber(
             "drive/controller/accel_mode", std_msgs.msg.String, self.accelModeCallback)
     def lhsensorCallback(self, msg):
-        with self.lock:
-            for idx, value in enumerate([str(msg.wrench.force.x), str(msg.wrench.force.y), str(msg.wrench.force.z)]):
-                self.lhsensor_label[idx].setText(value)
+        self.updateSensor(self.lhsensor_label, msg)
     def rhsensorCallback(self, msg):
-        with self.lock:
-            for idx, value in enumerate([str(msg.wrench.force.x), str(msg.wrench.force.y), str(msg.wrench.force.z)]):
-                self.rhsensor_label[idx].setText(value)
+        self.updateSensor(self.rhsensor_label, msg)
     def lfsensorCallback(self, msg):
-        with self.lock:
-            for idx, value in enumerate([str(msg.wrench.force.x), str(msg.wrench.force.y), str(msg.wrench.force.z)]):
-                self.lfsensor_label[idx].setText(value)
+        self.updateSensor(self.lfsensor_label, msg)
     def rfsensorCallback(self, msg):
+        self.updateSensor(self.rfsensor_label, msg)
+    def updateSensor(self, label, msg):
         with self.lock:
             for idx, value in enumerate([str(msg.wrench.force.x), str(msg.wrench.force.y), str(msg.wrench.force.z)]):
-                self.rfsensor_label[idx].setText(value)
+                label[idx].setText(value)
+                if abs(float(value)) > 150.0: # threshould
+                     label[idx].setAutoFillBackground(True);
+                     palette = QtGui.QPalette()
+                     palette.setColor(QtGui.QPalette.Background,QtCore.Qt.red)
+                     label[idx].setPalette(palette)
+                elif abs(float(value)) > 100.0: # threshould
+                     label[idx].setAutoFillBackground(True);
+                     palette = QtGui.QPalette()
+                     palette.setColor(QtGui.QPalette.Background,QtCore.Qt.yellow)
+                     label[idx].setPalette(palette)
+                elif abs(float(value)) > 50.0: # threshould
+                     label[idx].setAutoFillBackground(True);
+                     palette = QtGui.QPalette()
+                     palette.setColor(QtGui.QPalette.Background,QtCore.Qt.green)
+                     label[idx].setPalette(palette)
+                else:
+                    label[idx].setAutoFillBackground(False);
+    
     def stepGageValueCallback(self, msg):
         with self.lock:
             self.step_gage_label.setText(str(msg.data))
@@ -349,7 +363,7 @@ class VehicleUIWidget(QWidget):
                 item = self.handle_mode_list.item(i)
                 item.setSelected(False)
                 if item.text() == msg.data.capitalize():
-                    item.setBackground(Qt.green)
+                    item.setBackground(QtGui.QColor("#18FFFF"))
                 else:
                     item.setBackground(Qt.white)
     def accelModeCallback(self, msg):
@@ -358,7 +372,7 @@ class VehicleUIWidget(QWidget):
                 item = self.accel_mode_list.item(i)
                 item.setSelected(False)
                 if item.text() == msg.data.capitalize():
-                    item.setBackground(QtCore.Qt.green)
+                    item.setBackground(QtGui.QColor("#18FFFF"))
                 else:
                     item.setBackground(QtCore.Qt.white)
     # Event callback
