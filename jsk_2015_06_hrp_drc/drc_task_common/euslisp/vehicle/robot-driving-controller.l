@@ -95,11 +95,12 @@
                    std_msgs::Float64
                    #'send self :neck-callback)
 
-   ;; handle-angle commands
+   ;; handle-angle topics
    (ros::advertise "/drive/controller/goal_handle_angle" std_msgs::Float32 1 t)
    (ros::advertise "/drive/controller/estimated_handle_angle" std_msgs::Float32 1 t)
+   (ros::advertise "/drive/controller/steering_diff_angle_vector" std_msgs::Float32 1 t)
 
-   ;; pedal angle commands
+   ;; pedal angle topics
    (ros::advertise "/drive/controller/step" std_msgs::Float32 1 t)
    (ros::advertise "/drive/controller/min_step" std_msgs::Float32 1 t)
    (ros::advertise "/drive/controller/max_step" std_msgs::Float32 1 t)
@@ -888,6 +889,19 @@
      (send self :get target-mode)
      )
    )
+
+  ;; calculate diff
+  (:calc-error-of-grasp-arm
+   (&rest args &key (mode :angle-vector))
+   (let (diff-av
+         (pub-diff (instance std_msgs::Float32 :init))
+         )
+     (setq diff-av (send* motion :calc-error-of-grasp-arm :mode mode args))
+     (send pub-diff :data (norm diff-av))
+     (ros::publish "/drive/controller/steering_diff_angle_vector" pub-diff)
+     diff-av
+     )
+   )
   
   ;; accessor
   (:motion () motion)
@@ -940,6 +954,7 @@
    (&key (publish-steering-trajectory nil))
    (do-until-key
     (send self :estimate-current-handle-angle)
+    (send self :calc-error-of-grasp-arm)
     (send self :record-handling-end-coords)
     (when publish-steering-trajectory
       (send self :publish-steering-trajectory)
