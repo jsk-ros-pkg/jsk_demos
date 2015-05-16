@@ -159,6 +159,7 @@
       <remap from="~input/indices"
              to="boundingbox_clipper/output/cluster_point_indices"/>
       <rosparam>
+        optimistic: true
         cylinder_max_iterations: 1000
         cylinder_min_radius: 0.02
         cylinder_max_radius: 0.04
@@ -169,5 +170,11 @@
           type="static_transform_pose_stamped"
           args="0 0 0 0 3.14 0 standing_drill_detector/output/pose drill_pose"
           />
+    <node pkg="jsk_topic_tools" type="snapshot" name="snapshot">
+      <remap from="~input" to="drill_pose"/>
+      <rosparam>
+        latch: true
+      </rosparam>
+    </node>
   </group>
 </launch>
