@@ -1159,8 +1159,8 @@
         (send self :show-text 
               (format nil "Recognize drill. pos:~A" (send (elt coords-set 0) :worldpos)) :recognize)
         ;; store result
+        (setq drill-grasp-relative-coords (elt coords-set 1))
 	(set-primitive-marker-pose (elt coords-set 0) "BODY" :name "drill"))
-      (setq drill-grasp-relative-coords (elt coords-set 1))
       )
     )
   (:go-pos-finished-callback (msg)

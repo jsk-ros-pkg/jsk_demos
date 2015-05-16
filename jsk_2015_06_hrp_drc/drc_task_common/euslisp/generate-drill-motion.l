@@ -88,7 +88,7 @@
   (send *drill* :put :edge-coords
         (make-cascoords
          ;;:coords (make-coords :pos #f(0 0 0) :rpy (list 0 0 0))
-         :coords (make-coords :pos #f(0 0 290) :rpy (list 0 0 0))
+         :coords (make-coords :pos #f(0 0 260) :rpy (list 0 0 0))
          :parent *drill*))
   ;; (when drill-coords
   ;;   (send *drill* :newcoords drill-coords))
@@ -1458,7 +1458,7 @@
         )
       (block front
         (dotimes (index (/ devide-num 4))
-          (let ((i (* +1 index)))
+          (let ((i (+ (* +1 index) 1)))
             (send *robot* :angle-vector original-angle-vector)
             (send *robot* :fix-leg-to-coords original-foot-midcoords)
             (send *drill* :newcoords (send original-drill-coords :copy-worldcoords))
