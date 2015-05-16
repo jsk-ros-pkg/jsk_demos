@@ -946,7 +946,7 @@
      )
    )
   (:calc-error-of-grasp-arm
-   (&rest args &key (mode :angle-vector))
+   (&rest args &key (mode :angle-vector) (display-result nil))
    (let ((original-angle-vector (send (send self :robot) :angle-vector)) ;; save original angle-vector
          (original-arm-angle-vector (send (send self :robot) (send self :grasp-arm) :angle-vector))
          (original-end-coords (send (send self :robot) (send self :grasp-arm) :end-coords :copy-worldcoords))
@@ -956,13 +956,17 @@
      (case mode
        (:angle-vector
         (setq diff-angle-vector (v- (send robot (send self :grasp-arm) :angle-vector) original-arm-angle-vector))
-        (warn "diff-angle-vector: ~A~%" diff-angle-vector)
-        (warn "diff-angle-vector-norm: ~A~%" (norm diff-angle-vector))
+        (when display-result
+          (warn "diff-angle-vector: ~A~%" diff-angle-vector)
+          (warn "diff-angle-vector-norm: ~A~%" (norm diff-angle-vector))
+          )
         (setq retval diff-angle-vector)
         )
        (:coords
          (setq diff-coords (send original-end-coords :transformation (send robot (send self :grasp-arm) :end-coords :copy-worldcoords) :local))
-         (warn "diff-coords: ~A~%" diff-coords)
+         (when display-result
+           (warn "diff-coords: ~A~%" diff-coords)
+           )
          (setq retval diff-coords)
          )
        )

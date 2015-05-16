@@ -954,7 +954,7 @@
    (&key (publish-steering-trajectory nil))
    (do-until-key
     (send self :estimate-current-handle-angle)
-    (send self :calc-error-of-grasp-arm)
+    (send self :calc-error-of-grasp-arm :display-result nil)
     (send self :record-handling-end-coords)
     (when publish-steering-trajectory
       (send self :publish-steering-trajectory)
