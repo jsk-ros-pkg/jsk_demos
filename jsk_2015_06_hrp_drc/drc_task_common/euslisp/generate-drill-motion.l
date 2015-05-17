@@ -852,7 +852,7 @@
     ))
 
 (defun fullbody-inverse-kinematics-for-drill-button
-  (&key (x-offset 0) (y-offset 0) (z-offset 0) (draw? t) (self-colision-check t (stop 150)))
+  (&key (x-offset 0) (y-offset 0) (z-offset 0) (draw? t) (self-colision-check t) (stop 150))
   (let* (ret)
     (with-move-target-link-list
      (mt ll *robot* (list *drill-main-arm* (get-opposite-arm *drill-main-arm*) :rleg :lleg))
