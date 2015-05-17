@@ -577,7 +577,7 @@
   (:neck-p-callback
    (msg)
    (let ((neck-command (send msg :data)))
-     (send self :neck-cmd (- neck-command) :neck-p) ;; head goes down when neck-p is positive
+     (send self :neck-cmd neck-command :neck-p)
      )
    )
 
