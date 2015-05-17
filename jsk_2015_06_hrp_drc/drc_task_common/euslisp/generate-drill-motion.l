@@ -864,7 +864,7 @@
     ))
 
 (defun fullbody-inverse-kinematics-for-drill-button
-  (&key (x-offset 0) (y-offset 0) (z-offset 0) (draw? t) (self-colision-check t))
+  (&key (x-offset 0) (y-offset 0) (z-offset 0) (draw? t) (self-colision-check t (stop 150)))
   (let* (ret)
     (with-move-target-link-list
      (mt ll *robot* (list *drill-main-arm* (get-opposite-arm *drill-main-arm*) :rleg :lleg))
@@ -894,7 +894,7 @@
                         :rotation-axis (list t t t t)
                         :max (float-vector  500  500  0  20  20  10) ;; for hrp2
                         :min (float-vector  -500  -500  -200  -20  -20  -10) ;; for hrp2
-                        :stop 50
+                        :stop stop
                         :centroid-thre 50
                         :debug-view (if draw? :no-message nil)
                         :warnp (if draw? t nil)
@@ -909,13 +909,12 @@
                         :rotation-axis (list t t t t)
                         :warnp (if draw? t nil)
                         :additional-weight-list
-                        :warnp nil
                         (list (list (send *robot* :torso :waist-r :child-link) 0.1)
                               (list (send *robot* :torso :waist-y :child-link) 0.1)
                               (list (send *robot* :torso :waist-p :child-link) 0.1))
                         :max (float-vector  500  200  25  10  20  10)
                         :min (float-vector  -500  -200  -200  -10  -20  -10)
-                        :stop 150
+                        :stop stop
                         :debug-view (if draw? :no-message nil)))
                  ))
     (if (and ret self-colision-check (send *robot* :self-collision-check))
