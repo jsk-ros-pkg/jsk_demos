@@ -54,6 +54,8 @@
   </include>
   <include file="$(find drc_task_common)/launch/fc/drill_recognition_for_put.launch">
   </include>
+  <include file="$(find drc_task_common)/launch/fc/drill_button_checker.launch">
+  </include>
   <include file="$(find drc_task_common)/launch/fc/door_recognition.launch">
     <arg name="INPUT_HINT_POINT_CLOUD" value="/laser_preprocess/camera_laser_cloud/output" />
     <arg name="INPUT_POINT_CLOUD" value="/laser_preprocess/camera_laser_cloud/output" />

@@ -1720,7 +1720,7 @@
 (ros::advertise "/urdf_control_marker/set_pose" geometry_msgs::PoseStamped 1)
 (ros::advertise "/transformable_interactive_server/set_control_relative_pose" geometry_msgs::Pose 1)
 (ros::advertise "/drill_pose_list" geometry_msgs::PoseArray 1)
-
+(ros::advertise "/robotsound" sound_play::SoundRequest 5)
 ;; registering services for button UIs
 (ros::advertise-service "drive" std_srvs::Empty #'send *app* :drive-button-callback)
 (ros::advertise-service "valve" std_srvs::Empty #'send *app* :valve-button-callback)
