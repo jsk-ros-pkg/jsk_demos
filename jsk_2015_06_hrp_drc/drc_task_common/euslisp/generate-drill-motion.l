@@ -78,8 +78,6 @@
          ;;:coords (make-coords :pos #f(0 0 0) :rpy (list 0 0 0))
          :coords (make-coords :pos #f(0 0 290) :rpy (list 0 0 0))
          :parent *drill*))
-  ;; (when drill-coords
-  ;;   (send *drill* :newcoords drill-coords))
   )
 
 ;; gun drill
@@ -119,8 +117,6 @@
          :coords (make-coords :pos #f(120 0 50) :rpy (list 0 pi/2 0))
          :parent *drill*))
   (send *drill* :put :destination-coords-list nil)
-  ;; (when drill-coords
-  ;;   (send *drill* :newcoords drill-coords))
   )
 
 ;; set drill coords with symble
@@ -225,7 +221,7 @@
   ;(send *drill* :translate (float-vector 0 0 (* -0.5 (elt (send *drill* :body-type) 2))) :local)
   )
 
-(attach-handle-to-robot-for-drill
+(defun attach-handle-to-robot-for-drill
  ()
  (setq *arm-drill-grasp-coords* (make-hash-table))
  (setf (gethash :rarm *arm-drill-grasp-coords*)
@@ -468,7 +464,6 @@
            tc)
       (when draw? (send (send *drill* :get :grasp-coords) :draw-on :flush t))
       ;; solve ik for grasp
-
       (setq ik-ret (fullbody-inverse-kinematics-for-drill-grasp-single :draw? draw? :rotation-axis rotation-axis))
       (when (and fin? (not ik-ret)) (push-back (list 0 (not (null ik-ret)) ik-ret) ik-results) (return-from drill-ik nil))
       (let ((robot-angle-vector ik-ret))
@@ -482,7 +477,7 @@
         (push-back (list 3 (not (null ik-ret)) ik-ret) ik-results)
         (when (and fin? (not ik-ret)) (return-from drill-ik nil))
         ;; solve ik for pre grasp
-          (send *robot* :angle-vector robot-angle-vector)
+        (send *robot* :angle-vector robot-angle-vector)
         (send *robot* :fix-leg-to-coords original-foot-midcoords)
         (setq ik-ret (fullbody-inverse-kinematics-for-drill-grasp-single :arm-tc (send (send (gethash *drill-main-arm* *arm-drill-grasp-coords*) :copy-worldcoords) :translate (float-vector push-dist 0 down-dist) :local) :draw? draw? :rotation-axis (list t t t)))
         (push (list 2 (not (null ik-ret)) ik-ret) ik-results)
@@ -519,9 +514,9 @@
         (push-back (list 7 (not (null ik-ret)) ik-ret) ik-results)
         (when (and fin? (not ik-ret)) (return-from drill-ik nil))
         )
-      ;; draw
       )
     )
+    ;; draw
     (when draw? (send *irtviewer* :draw-objects :flush t))
     ;; drill-reset-pose
     (send *robot* :fix-leg-to-coords original-foot-midcoords)
@@ -549,7 +544,7 @@
                  (if (equal *drill-main-arm* :rarm) (make-coords :pos (float-vector -710 0 0) :rpy (list (deg2rad 25) 0 0)) (make-coords :pos (float-vector -710 -0 0) :rpy (list (deg2rad -25) 0 0)))
                (if (equal *drill-main-arm* :rarm) (make-coords :pos (float-vector -610 -300 0) :rpy (list (deg2rad 55) 0 0)) (make-coords :pos (float-vector -710 200 0) :rpy (list (deg2rad -35) 0 0))))
              )
-            ((or (equal *robot-name* "JAXON") (equal *robot-name* "STARO"))
+            (t ;; (or (equal *robot-name* "JAXON") (equal *robot-name* "STARO"))
              (if (equal *drill-main-arm* :rarm) (make-coords :pos (float-vector -710 -200 0) :rpy (list (deg2rad 35) 0 0)) (make-coords :pos (float-vector -710 200 0) :rpy (list (deg2rad -35) 0 0))))
             )
     (if (equal *drill-main-arm* :rarm) (make-coords :pos (float-vector -600 100 0) :rpy (list (deg2rad 0) 0 0)) (make-coords :pos (float-vector -600 -100 0) :rpy (list (deg2rad 0) 0 0))
