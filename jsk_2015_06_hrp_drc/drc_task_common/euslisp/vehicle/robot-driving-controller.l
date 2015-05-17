@@ -811,7 +811,7 @@
          (send motion :robot :newcoords old-robot-coords) ;; revert
          )
        (send (send motion :robot) :head :angle-vector old-head-angle-vector) ;; look at front
-       (when real
+       (when (send motion :real)
          (send *ri* :angle-vector (send motion :robot :angle-vector) time)
          (send *ri* :wait-interpolation)
          )
