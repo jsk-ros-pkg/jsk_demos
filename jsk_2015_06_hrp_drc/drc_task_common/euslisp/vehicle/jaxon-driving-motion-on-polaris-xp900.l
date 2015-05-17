@@ -112,12 +112,12 @@
    )
 
   (:approach-fist
-   (&rest args &key (rotation-axis :x) &allow-other-keys)
-   (send-super* :approach-fist :rotation-axis rotation-axis args)
+   (&rest args &key (rotation-axis :x) (reach-until-touch-thre 80) (max-dist 100) &allow-other-keys)
+   (send-super* :approach-fist :rotation-axis rotation-axis :reach-until-touch-thre reach-until-touch-thre :max-dist max-dist args)
    )
   (:approach-floor
-   (&rest args &key (start-impedance nil) &allow-other-keys)
-   (send-super* :approach-floor :start-impedance start-impedance args)
+   (&rest args &key (start-impedance nil) (offset #f(0 0 10)) (reach-until-touch-thre 80) (max-dist 100) &allow-other-keys)
+   (send-super* :approach-floor :start-impedance start-impedance :offset offset :reach-until-touch-thre reach-until-touch-thre :max-dist max-dist args)
    )
 
   ;; egress
