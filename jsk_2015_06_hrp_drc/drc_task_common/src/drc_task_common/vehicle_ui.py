@@ -272,13 +272,22 @@ class VehicleUIWidget(QWidget):
         
         self.fisheye_widget = ROSImageWidget("/chest_camera/image_color")
         right_splitter.addWidget(self.fisheye_widget)
-
+       
         angle_vbox = QtGui.QVBoxLayout()
         angle_container = QtGui.QWidget()
         self.goal_angle = AngleWidget("drive/controller/goal_handle_angle")
         self.estimated_angle = AngleWidget("drive/controller/estimated_handle_angle")
-        angle_vbox.addWidget(self.goal_angle)
-        angle_vbox.addWidget(self.estimated_angle)
+        angle_vbox.addWidget(self.goal_angle, 5)
+        angle_vbox.addWidget(self.estimated_angle, 5)
+        handle_diff_av_hbox = QtGui.QHBoxLayout()
+        handle_diff_av_container = QtGui.QWidget()
+        self.handle_diff_av_value = 0.0
+        handle_diff_av_label = QtGui.QLabel("Steering Diff Angle Vector:", self)
+        self.handle_diff_av_value_label = QtGui.QLabel(str(self.handle_diff_av_value))
+        handle_diff_av_hbox.addWidget(handle_diff_av_label)
+        handle_diff_av_hbox.addWidget(self.handle_diff_av_value_label)
+        handle_diff_av_container.setLayout(handle_diff_av_hbox)
+        angle_vbox.addWidget(handle_diff_av_container, 1)
         angle_container.setLayout(angle_vbox)
         right_splitter.addWidget(angle_container)
         left_splitter.addWidget(right_splitter)
@@ -314,6 +323,8 @@ class VehicleUIWidget(QWidget):
             "drive/controller/handle_mode", std_msgs.msg.String, self.handleModeCallback)
         self.accel_mode_sub = rospy.Subscriber(
             "drive/controller/accel_mode", std_msgs.msg.String, self.accelModeCallback)
+        self.handle_angle_vector_diff_sub = rospy.Subscriber(
+            "drive/controller/steering_diff_angle_vector", std_msgs.msg.Float32, self.steeringDiffAngleVectorCallback)
     def lhsensorCallback(self, msg):
         self.updateSensor(self.lhsensor_label, msg)
     def rhsensorCallback(self, msg):
@@ -375,6 +386,29 @@ class VehicleUIWidget(QWidget):
                     item.setBackground(QtGui.QColor("#18FFFF"))
                 else:
                     item.setBackground(QtCore.Qt.white)
+    def steeringDiffAngleVectorCallback(self, msg):
+        with self.lock:
+            if self.handle_diff_av_value != msg.data:
+                self.handle_diff_av_value = msg.data
+                self.handle_diff_av_value_label.setText(str(msg.data))
+                if abs(float(self.handle_diff_av_value)) > 40.0: # threshould
+                     self.handle_diff_av_value_label.setAutoFillBackground(True);
+                     palette = QtGui.QPalette()
+                     palette.setColor(QtGui.QPalette.Background,QtCore.Qt.red)
+                     self.handle_diff_av_value_label.setPalette(palette)
+                elif abs(float(self.handle_diff_av_value)) > 15.0: # threshould
+                     self.handle_diff_av_value_label.setAutoFillBackground(True);
+                     palette = QtGui.QPalette()
+                     palette.setColor(QtGui.QPalette.Background,QtCore.Qt.yellow)
+                     self.handle_diff_av_value_label.setPalette(palette)
+                elif abs(float(self.handle_diff_av_value)) > 5.0: # threshould
+                     self.handle_diff_av_value_label.setAutoFillBackground(True);
+                     palette = QtGui.QPalette()
+                     palette.setColor(QtGui.QPalette.Background,QtCore.Qt.green)
+                     self.handle_diff_av_value_label.setPalette(palette)
+                else:
+                    self.handle_diff_av_value_label.setAutoFillBackground(False);
+
     # Event callback
     def minUpButtonCallback(self, event):
         current_value = float(self.step_min_edit.text())
