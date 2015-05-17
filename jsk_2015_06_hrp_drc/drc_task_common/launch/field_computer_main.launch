@@ -5,7 +5,7 @@
   
   <arg name="FC_IP" default="localhost" />
   <arg name="OCS_IP" default="localhost" />
-
+  <arg name="USE_LOCALHOST" default="false" />
   <arg name="USE_COM" default="true" />
 
   <!-- Include machine tags -->
@@ -24,6 +24,7 @@
     </include>
   </group>
   <include file="$(find drc_task_common)/launch/fc/laser_preprocess.launch">
+    <arg name="USE_LOCALHOST" value="$(arg USE_LOCALHOST)" />
   </include>
   <group ns="go_pos_recognition">
     <include file="$(find drc_task_common)/launch/fc/centroid_of_pointcloud_in_rect.launch">

@@ -73,7 +73,7 @@
                 ))
          )
         ((or (equal *robot-name* "JAXON") (equal *robot-name* "STARO"))
-         (cond ((or (equal type :door-grasp-preshape) (equal type :door-grasp))
+         (cond ((or (equal type :door-grasp-preshape))
                 (when (and real? (find-method *ri* :stop-grasp))
                   (send *ri* :stop-grasp arm :wait wait?))
                 )
@@ -114,7 +114,11 @@
     )
   )
 
-(defun play-motion-on-eus-viewer (motion &key (step-time 400) (wait? nil) (interpolation? nil)) ;; motion is list of angle-vector
+(defun play-motion-on-eus-viewer
+  (motion
+   &key
+   (step-time 400) (wait? nil) (interpolation? nil)
+   (collision-check? nil) (collision-check-robot-link-list nil) (collision-check-obj-link nil)) ;; motion is list of angle-vector
   (unless (boundp '*irtviewer*)
     (warning-message 1 "irtviewer is not generated.~%")
     (return-from play-motion-on-eus-viewer nil))
@@ -126,6 +130,8 @@
               :foot-midcoords (send (send *robot* :foot-midcoords) :copy-worldcoords)))
             (t
              (send *robot* :angle-vector av)))
+      (when collision-check?
+        (collision-check-with-obj :robot-link-list collision-check-robot-link-list :obj-link collision-check-obj-link))
       (send *robot* :fix-leg-to-coords original-foot-midcoords)
       (send *irtviewer* :draw-objects)
       (cond (wait? (read-line))
@@ -144,6 +150,13 @@
     (x::window-main-one)
     )
   )
+
+(defun collision-check-with-obj
+  (&key (robot-link-list (send *robot* :links)) (obj-link nil))
+  (dotimes (i (length robot-link-list))
+    (when (equal (pqp-collision-check (elt robot-link-list i) obj-link) 1)
+      (ros::ros-warn "collision detected between obj and ~a" (send (elt robot-link-list i) :name)))
+    ))
 
 ;; send angle-vector from ocs
 (defun send-angle-vector-from-ocs
@@ -376,9 +389,17 @@
         :m-r 5.0 :d-r 100.0 :k-r 200.0
         :force-gain #f(1.0 1.0 1.0) :moment-gain #f(1.0 1.0 1.0)
         :sr-gain 1.0 :avoid-gain 0.001 :reference-gain 0.01  :manipulability-limit 0.1  :controller-mode 0
-        :ik-optional-weight-vector #f(1.0 1.0 1.0 1.0 1.0 1.0 1.0)
         )
   )
+
+(defun check-stand-coords
+  (stand-coords)
+  (let* ((pos (scale 0.001 (send stand-coords :worldpos)))
+         (rpy (mapcar #'rad2deg (car (send stand-coords :rpy-angle))))
+         (pos-thre 0.01)
+         (rpy-thre 1)
+         )
+    (or (> (abs (elt pos 0)) pos-thre) (> (abs (elt pos 1)) pos-thre) (> (abs (elt rpy 0)) rpy-thre))))
 
 (load "package://hrpsys_ros_bridge/euslisp/rtm-ros-robot-interface.l")
 

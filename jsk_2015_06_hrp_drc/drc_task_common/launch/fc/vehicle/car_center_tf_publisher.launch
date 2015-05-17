@@ -2,6 +2,8 @@
   <arg name="SIMULATION_MODE" default="false"/>
   <arg name="REAL_MODE" default="false"/>
   <arg name="ROSBAG_MODE" default="false"/>
+  <arg name="JAXON" default="true"/>
+  <arg name="HRP2" default="false"/>
 
   <group if="$(arg SIMULATION_MODE)">
     <node pkg="tf" type="static_transform_publisher" name="TF_car_center" args="0.05 0.3 -1.2 0 0 0 utorso car_center 100" /> <!-- because initial position is y : -0.6, z : -0.1 // start_gazebo_drive_shimulator.sh -->
@@ -11,8 +13,20 @@
     <include file="$(find drc_task_common)/launch/fc/vehicle/multisense_rosbag_static_tf_publisher.launch" />
   </group>
   <group if="$(arg REAL_MODE)">
-    <node pkg="tf" type="static_transform_publisher" name="TF_car_center" args="0.05 -0.3 -1.2 0 0 0 BODY car_center 100" />
+    <group ns="/drive/recognition">
+      <node pkg="dynamic_tf_publisher" type="tf_publish.py" name="marker_dynamic_tf_publisher" />
+    </group>
+    <node pkg="roseus" type="roseus" name="TF_BODY_marker"
+          args="$(find drc_task_common)/euslisp/vehicle/car_center_publisher.l" >
+      <remap from="car_pose_marker" to="/drive/recognition/marker/car_pose" />
+    </node>
+    <group if="$(arg JAXON)">
+      <node pkg="tf" type="static_transform_publisher" name="TF_marker_car_center" args="0.0 1.322075 0.205468 -1.571 -1.074 -3.142 car_marker car_center 100" />
+    </group>
+    <group if="$(arg HRP2)">
+      <node pkg="tf" type="static_transform_publisher" name="TF_marker_car_center" args="0.0 1.322075 0.205468 -1.571 -1.074 -3.142 car_marker car_center 100" />
+    </group>
+
+
   </group>
-
-
 </launch>

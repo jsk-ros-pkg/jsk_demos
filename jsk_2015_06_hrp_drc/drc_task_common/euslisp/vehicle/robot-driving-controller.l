@@ -16,11 +16,11 @@
           step-accel-command step-brake-command
           release-accel-command release-brake-command
           state-list mode-list
-          old-handle-deg
           polygon-stamped-msg
           torus-finder-estimated-robot-coords
           handle-pose-estimated-robot-coords
           handle-pose-estimate-flag
+          handle-pose-old-robot-coords
           torus-finder-estimation-flag
           old-estimated-handle-angle
           old-accel-command
@@ -62,8 +62,8 @@
          mode-list (list :stop :operation :recognition)
          torus-finder-estimated-robot-coords nil
          handle-pose-estimated-robot-coords nil
+         handle-pose-old-robot-coords nil
          old-estimated-handle-angle 0.0
-         old-handle-deg 0.0
          old-accel-command nil
          old-brake-command nil
          handle-pose-estimate-flag nil
@@ -71,7 +71,7 @@
          handling-end-coords-list nil
          record-handling-end-coords-flag nil
          )
-   ;; set defalut value for pedaling
+   ;; set defalut value for pedaling (for staro)
    (setq accel-origin 14
          step-accel-command 14 ;; 28
          release-accel-command 0 ;; 14
@@ -95,11 +95,12 @@
                    std_msgs::Float64
                    #'send self :neck-callback)
 
-   ;; handle-angle commands
+   ;; handle-angle topics
    (ros::advertise "/drive/controller/goal_handle_angle" std_msgs::Float32 1 t)
    (ros::advertise "/drive/controller/estimated_handle_angle" std_msgs::Float32 1 t)
+   (ros::advertise "/drive/controller/steering_diff_angle_vector" std_msgs::Float32 1 t)
 
-   ;; pedal angle commands
+   ;; pedal angle topics
    (ros::advertise "/drive/controller/step" std_msgs::Float32 1 t)
    (ros::advertise "/drive/controller/min_step" std_msgs::Float32 1 t)
    (ros::advertise "/drive/controller/max_step" std_msgs::Float32 1 t)
@@ -128,9 +129,12 @@
    
    ;; for vehicle ui
    (ros::advertise-service "/drive/controller/initialize" std_srvs::Empty #'send self :initialize-callback)
+   (ros::advertise-service "/drive/controller/approach_handle" std_srvs::Empty #'send self :approach-handle-callback)
    (ros::advertise-service "/drive/controller/grasp" std_srvs::Empty #'send self :grasp-callback)
    (ros::advertise-service "/drive/controller/release" std_srvs::Empty #'send self :release-callback)
    (ros::advertise-service "/drive/controller/correct" std_srvs::Empty #'send self :correct-callback)
+   (ros::advertise-service "/drive/controller/resume" std_srvs::Empty #'send self :resume-callback)
+   (ros::advertise-service "/drive/controller/approach_accel" std_srvs::Empty #'send self :approach-accel-callback)
    (ros::advertise-service "/drive/controller/reach_leg" std_srvs::Empty #'send self :reach-leg-callback)
    (ros::advertise-service "/drive/controller/reach_arm" std_srvs::Empty #'send self :reach-arm-callback)
    (ros::advertise-service "/drive/controller/egress" std_srvs::Empty #'send self :egress-callback)
@@ -138,6 +142,7 @@
    (ros::advertise-service "/drive/controller/set_min_step" drc_task_common::SetValue #'send self :set-min-step-callback)
    (ros::advertise-service "/drive/controller/set_handle_mode" drc_task_common::StringRequest #'send self :set-handle-mode-callback)
    (ros::advertise-service "/drive/controller/set_accel_mode" drc_task_common::StringRequest #'send self :set-accel-mode-callback)
+   (ros::advertise-service "/drive/controller/overwrite_handle_angle" drc_task_common::SetValue #'send self :overwrite-handle-angle-callback)
 
    ;; initialize plist
    (send self :controller-state :handle :initialize)
@@ -153,6 +158,13 @@
    (req)
    (let ((res (send req :response)))
      (send self :initialize :sync t)
+     res
+     )
+   )
+  (:approach-handle-callback
+   (req)
+   (let ((res (send req :response)) use-controller)
+     (send self :approach-handle) ;; sync-controller is checked in default parameter
      res
      )
    )
@@ -173,7 +185,21 @@
   (:correct-callback
    (req)
    (let ((res (send req :response)))
-     (send self :correct :yes t)
+     (send self :correct-handle-pose :yes t)
+     res
+     )
+   )
+  (:resume-callback
+   (req)
+   (let ((res (send req :response)))
+     (send self :resume-handle-pose)
+     res
+     )
+   )
+  (:approach-accel-callback
+   (req)
+   (let ((res (send req :response)))
+     (send self :approach-accel) ;; sync-controller is checked in default parameter
      res
      )
    )
@@ -197,8 +223,8 @@
      (send self :go-to-egress)
      res
      )
-   )
-  
+   ) 
+    
   (:set-max-step-callback
    (req)
    (let ((res (send req :response)))
@@ -224,11 +250,21 @@
      res
      )
    )
+  
   (:set-accel-mode-callback
    (req)
    (let ((res (send req :response)))
      (send self :controller-mode :accel (read-from-string (format nil ":~A" (string-downcase (send req :data)))))
      (warn "set accel-mode to ~A~%" (send self :controller-mode :accel))
+     res
+     )
+   )
+
+  (:overwrite-handle-angle-callback
+   (req)
+   (let ((res (send req :response)))
+     (send res :set_value (send motion :overwrite-handle-angle (send req :value)))
+     (warn "overwrite handle angle to ~A~%" (send motion :car :handle-joint :joint-angle))
      res
      )
    )
@@ -239,11 +275,16 @@
    (when (and sync (not (send *ri* :simulation-modep)))
      (send motion :sync-all-controller)
      )
+   (warn "init-pose~%")
    (send motion :ride :init-pose t)
    (send motion :drive-init-pose-crank :limb :larm :move-arm nil) ;; todo: fix and remove
+   (warn "approach-fist~%")
    (send self :approach-fist :reach-until-touch nil)
+   (warn "approach-accel~%")
    (send self :approach-accel)
+   (warn "approach-floor~%")
    (send self :approach-floor :offset #f(0 0 0))
+   (warn "approach-handle~%")
    (send self :approach-handle)
    (send self :publish-body-relative-steering-coords)
    ;; enable operation
@@ -273,13 +314,43 @@
      release-result
      )
    )
-  (:correct
-   (&key (yes nil))
-   (let (ret-result)
+  (:correct-handle-pose
+   (&key (yes nil) (grasp t) (time 2500))
+   (let (ret-result approach-result grasp-result)
      (setq handle-pose-estimate-flag t)
      (setq ret-result (send self :execute-handle-pose-compensation :yes yes))
+     ;; grasp in new handle coords
+     (when grasp
+       (warn "regrasp~%")
+       (setq approach-result (send self :approach-handle :tm time))
+       (if approach-result
+           (progn (setq grasp-result (send self :grasp)) ;; grasp only when approach is succeeded
+                  (unless  grasp-result
+                    (warn "grasp failed~%")
+                    (send self :resume-handle-pose)
+                    )
+                  )
+         (progn (warn "approach failed~%")
+                (send self :resume-handle-pose)
+                )
+         )
+       (when (send motion :real)
+         (send *ri* :angle-vector (send (send motion :robot) :angle-vector) time)
+         (send *ri* :wait-interpolation)
+         )
+       )
      (setq handle-pose-estimate-flag nil)
-     ret-result
+     (append ret-result (list approach-result grasp-result)) ;; return all results
+     )
+   )
+  (:resume-handle-pose
+   ()
+   (if handle-pose-old-robot-coords
+       (progn
+         (send motion :robot :newcoords handle-pose-old-robot-coords) ;; revert compensation result
+         (send self :publish-body-relative-steering-coords) ;; update steering coords in rviz
+         )
+     (warn "previous handle pose does not exists~%")
      )
    )
   (:turn ;; estimated as :relative nil
@@ -310,7 +381,6 @@
              )
            )
        
-     (setq old-handle-deg handle-deg)
      ;; publish target angle
      (send pub-msg :data handle-deg)
      (ros::publish "/drive/controller/goal_handle_angle" pub-msg)
@@ -328,8 +398,9 @@
      )
    )
   (:approach-accel
-   (&rest args)
-   (send* motion :approach-accel-pedal args)
+   (&rest args &key (limb :rleg) (sync-controller (equal (send self :controller-state :accel) :running)) &allow-other-keys)
+   (send* motion :approach-accel-pedal :limb limb :sync-controller sync-controller args)
+   (send self :accel-origin (send motion :robot limb :ankle-p :joint-angle))
    (send self :controller-state :accel :running) ;; enbale accel
    )
   (:approach-brake
@@ -670,11 +741,12 @@
      )
    )
   (:execute-handle-pose-compensation
-   (&key (tm 2500) (wait-sec 30.0) (limb (send motion :grasp-arm))
-         (position-threshold 1000) (yes nil)
+   (&rest args &key (tm 2500) (limb (send motion :grasp-arm))
+          (position-threshold 1000) (yes nil) (min-wait-sec 5.0) (max-wait-sec 30.0)
+          (release-offset #f(-100 0 0)) (shoulder-y-deg 0.0)
          )
    ;; wait handling   
-   (let (wait-start old-accel-mode
+   (let (wait-start
          old-head-angle-vector
          old-robot-coords old-body-coords distance
          release-result grasp-result approach-result
@@ -682,7 +754,6 @@
          )
      (warn "release accel~%")
      (send self :accel-cmd 0.0) ;; force stop
-     (setq old-accel-mode (send self :controller-mode :accel))
      (send self :controller-mode :accel :stop)
      (warn "wait interpolation~%")
      (setq wait-start (ros::time-now))
@@ -699,12 +770,12 @@
        )
      (warn "release handle~%")
      (if (equal (send self :controller-state :handle) :running)
-         (setq release-result (send self :release))
+         (setq release-result (send self :release :offset release-offset))
        (setq release-result t)
        )
      (when release-result
        ;; temporary ;;
-       (send (send motion :robot) (send motion :grasp-arm) :shoulder-y :joint-angle 0)
+       (send (send motion :robot) (send motion :grasp-arm) :shoulder-y :joint-angle shoulder-y-deg)
        ;; temporary ;;
        (setq old-head-angle-vector (send motion :robot :head :angle-vector))
        (send (send motion :robot) :look-at-target (send motion :car :vehicle-handle :steering-center)) ;; look at handle
@@ -715,8 +786,10 @@
        (warn "wait recognition~%")
        (setq wait-start (ros::time-now))
        (setq handle-pose-estimated-robot-coords nil) ;; reset recognition result
-       (while (and (< (- (send (ros::time-now) :to-sec) (send wait-start :to-sec)) wait-sec)
-                   (not handle-pose-estimated-robot-coords))
+       (while (or (< (- (send (ros::time-now) :to-sec) (send wait-start :to-sec)) min-wait-sec)
+                  (and (< (- (send (ros::time-now) :to-sec) (send wait-start :to-sec)) max-wait-sec)
+                       (not handle-pose-estimated-robot-coords))
+                  )
          (ros::spin-once)
          (ros::sleep)
          )
@@ -737,29 +810,15 @@
          (setq compensation-result nil)
          (send motion :robot :newcoords old-robot-coords) ;; revert
          )
-       ;; resume
-       (warn "regrasp~%")
-       (setq approach-result (send self :approach-handle :tm tm))
-       (if approach-result
-           (progn (setq grasp-result (send self :grasp)) ;; grasp only when approach is succeeded
-                  (unless  grasp-result
-                    (warn "grasp failed~%")
-                    (send motion :robot :newcoords old-robot-coords) ;; revert
-                    )
-                  )
-         (progn (warn "approach failed~%")
-                (send motion :robot :newcoords old-robot-coords) ;; revert
-                )
-         )
        (send (send motion :robot) :head :angle-vector old-head-angle-vector) ;; look at front
        (when (send motion :real)
-         (send *ri* :angle-vector (send (send motion :robot) :angle-vector) tm)
+         (send *ri* :angle-vector (send motion :robot :angle-vector) time)
          (send *ri* :wait-interpolation)
          )
+       (setq handle-pose-old-robot-coords old-robot-coords) ;; save old-robot-coords to revert
        )
      (send self :publish-body-relative-steering-coords) ;; update steering coords in rviz
-     (send self :controller-mode :accel old-accel-mode) ;; resume accel mode
-     (and release-result compensation-result approach-result grasp-result) ;; return result of all compensation process
+     (and release-result compensation-result) ;; return result of all compensation process
      )
    )
 
@@ -846,6 +905,19 @@
      (send self :get target-mode)
      )
    )
+
+  ;; calculate diff
+  (:calc-error-of-grasp-arm
+   (&rest args &key (mode :angle-vector) &allow-other-keys)
+   (let (diff-av
+         (pub-diff (instance std_msgs::Float32 :init))
+         )
+     (setq diff-av (send* motion :calc-error-of-grasp-arm :mode mode args))
+     (send pub-diff :data (norm diff-av))
+     (ros::publish "/drive/controller/steering_diff_angle_vector" pub-diff)
+     diff-av
+     )
+   )
   
   ;; accessor
   (:motion () motion)
@@ -898,6 +970,7 @@
    (&key (publish-steering-trajectory nil))
    (do-until-key
     (send self :estimate-current-handle-angle)
+    (send self :calc-error-of-grasp-arm :display-result nil)
     (send self :record-handling-end-coords)
     (when publish-steering-trajectory
       (send self :publish-steering-trajectory)

@@ -505,6 +505,7 @@ Usage:
      (:executing-hose-connect -> :initial)                            ;done
      ;; drill_grasp
      (:initial -> :selecting-region-for-drill-grasp)
+     (:initial -> :recognizing-drill-grasp-pose)
      (:selecting-region-for-drill-grasp -> :initial) ;cancel
      (:selecting-region-for-drill-grasp -> :recognizing-drill-grasp-pose) 
      (:recognizing-drill-grasp-pose -> :selecting-exec-for-drill-grasp) ;recognition done

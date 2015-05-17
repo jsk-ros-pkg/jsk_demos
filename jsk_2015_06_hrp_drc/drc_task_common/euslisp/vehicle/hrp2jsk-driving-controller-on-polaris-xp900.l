@@ -25,9 +25,15 @@
                :real tmp-real :rate tmp-ros-rate :roseus-init nil
                :approach-handle approach-handle :approach-pedal approach-pedal
                )
-   (send self :step-accel-command -1.0)
-   (send self :release-accel-command 25.0)
+   (send self :step-accel-command -150.0)
+   (send self :release-accel-command 0.0)
+   ;; (send self :accel-origin 0.0)
+   )
+  (:approach-accel
+   (&rest args &key (limb :rleg) &allow-other-keys)
+   (send* motion :approach-accel-pedal :limb limb args)
    (send self :accel-origin 0.0) ;; accel-origin means current total move distance and origin to next relative move distance
+   (send self :controller-state :accel :running) ;; enbale accel
    )
   (:accel-cmd
    (cmd)

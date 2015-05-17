@@ -21,7 +21,7 @@ if __name__ == "__main__":
     r = rospy.Rate(1)
     while not rospy.is_shutdown():
         now = rospy.Time.now()
-        pose_stamped = PoseStamped(Header(stamp=now, frame_id="rarm_end_coords"), Pose(Point(0.05, 0.002, 0), Quaternion(0, 0, 0, 1)))
+        pose_stamped = PoseStamped(Header(stamp=now, frame_id="larm_end_coords"), Pose(Point(0.045, -0.015, 0), Quaternion(0, 0, 0, -1)))
         try:
             listener.waitForTransform('left_camera_optical_frame', pose_stamped.header.frame_id,  now, rospy.Duration(1))
             transed_pose = listener.transformPose('left_camera_optical_frame', pose_stamped)
