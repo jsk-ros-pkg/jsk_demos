@@ -26,7 +26,7 @@
       (set-drill-default-coords)
       (send *drill* :transform (make-coords :pos (float-vector (* 200 (- ix 1)) (* 200 (- iy 1)) (* 200 (- iz 1))) :rpy (list (deg2rad (* 45 ir)) (deg2rad (* 45 ip)) (deg2rad (* 45 iy2)))))
       (ros::ros-info (format nil "i ~A ix ~A iy ~A iz ~A ir ~A ip ~A iy ~A answer-size ~A" i ix iy iz ir ip iy2 (length *answers*)))
-      (let ((ik-result (fullbody-inverse-kinematics-for-drill-button :draw? nil)))
+      (let ((ik-result (fullbody-inverse-kinematics-for-drill-button :draw? nil :stop 40)))
         (when ik-result
           (format t "IK SUCCEEDED")
           (push ik-result *answers*)
