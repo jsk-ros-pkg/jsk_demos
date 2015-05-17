@@ -133,6 +133,7 @@
    (ros::advertise-service "/drive/controller/grasp" std_srvs::Empty #'send self :grasp-callback)
    (ros::advertise-service "/drive/controller/release" std_srvs::Empty #'send self :release-callback)
    (ros::advertise-service "/drive/controller/correct" std_srvs::Empty #'send self :correct-callback)
+   (ros::advertise-service "/drive/controller/resume" std_srvs::Empty #'send self :resume-callback)
    (ros::advertise-service "/drive/controller/approach_accel" std_srvs::Empty #'send self :approach-accel-callback)
    (ros::advertise-service "/drive/controller/reach_leg" std_srvs::Empty #'send self :reach-leg-callback)
    (ros::advertise-service "/drive/controller/reach_arm" std_srvs::Empty #'send self :reach-arm-callback)
@@ -185,6 +186,13 @@
    (req)
    (let ((res (send req :response)))
      (send self :correct-handle-pose :yes t)
+     res
+     )
+   )
+  (:resume-callback
+   (req)
+   (let ((res (send req :response)))
+     (send self :resume-handle-pose)
      res
      )
    )
@@ -267,11 +275,16 @@
    (when (and sync (not (send *ri* :simulation-modep)))
      (send motion :sync-all-controller)
      )
+   (warn "init-pose~%")
    (send motion :ride :init-pose t)
    (send motion :drive-init-pose-crank :limb :larm :move-arm nil) ;; todo: fix and remove
+   (warn "approach-fist~%")
    (send self :approach-fist :reach-until-touch nil)
+   (warn "approach-accel~%")
    (send self :approach-accel)
+   (warn "approach-floor~%")
    (send self :approach-floor :offset #f(0 0 0))
+   (warn "approach-handle~%")
    (send self :approach-handle)
    (send self :publish-body-relative-steering-coords)
    ;; enable operation
@@ -332,9 +345,12 @@
    )
   (:resume-handle-pose
    ()
-   (when handle-pose-old-robot-coords
-     (send motion :robot :newcoords handle-pose-old-robot-coords) ;; revert compensation result
-     (send self :publish-body-relative-steering-coords) ;; update steering coords in rviz
+   (if handle-pose-old-robot-coords
+       (progn
+         (send motion :robot :newcoords handle-pose-old-robot-coords) ;; revert compensation result
+         (send self :publish-body-relative-steering-coords) ;; update steering coords in rviz
+         )
+     (warn "previous handle pose does not exists~%")
      )
    )
   (:turn ;; estimated as :relative nil
