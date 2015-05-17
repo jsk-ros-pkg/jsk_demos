@@ -3,11 +3,11 @@
 from rqt_gui_py.plugin import Plugin
 import python_qt_binding.QtGui as QtGui
 from python_qt_binding.QtGui import (QAction, QIcon, QMenu, QWidget,
-                                     QPainter, QColor, QFont, QBrush, 
+                                     QPainter, QColor, QFont, QBrush,
                                      QPen, QMessageBox, QSizePolicy,
                                      QListWidget, QLineEdit, QImage, QPixmap)
 from python_qt_binding.QtCore import (Qt, QTimer, qWarning, Slot, QEvent, QSize,
-                                      pyqtSignal, 
+                                      pyqtSignal,
                                       pyqtSlot)
 from drc_task_common.srv import SetValue, StringRequest
 from threading import Lock
@@ -402,7 +402,7 @@ class VehicleUIWidget(QWidget):
         with self.lock:
             if self.handle_diff_av_value != msg.data:
                 self.handle_diff_av_value = msg.data
-                self.handle_diff_av_value_label.setText(str(msg.data))
+                self.handle_diff_av_value_label.setText(str(int(msg.data)))
                 if abs(float(self.handle_diff_av_value)) > 40.0: # threshould
                      self.handle_diff_av_value_label.setAutoFillBackground(True);
                      palette = QtGui.QPalette()
@@ -565,7 +565,7 @@ class ROSImageWidget(QWidget):
                 
 class AngleWidget(QWidget):
     """
-    QWidget to visualize angle of stearing handle
+    QWidget to visualize angle of stearin handle
     """
     def __init__(self, topic_name):
         super(AngleWidget, self).__init__()

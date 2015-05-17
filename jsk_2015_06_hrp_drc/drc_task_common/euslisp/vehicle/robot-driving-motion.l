@@ -558,7 +558,7 @@
              ) ;; todo: reach-until-touch uses copy-object
        (send *ri* :state) ;; update 
        (send robot limb :angle-vector (send *ri* :robot limb :angle-vector)) ;; reflect reach-until-touch result
-       (send robot limb :move-end-pos #f(0 0 10) :local) ;; compensate overshoot
+       (send robot limb :move-end-pos #f(0 0 10) :local) ;; pedal should not be touched at first
        (send *ri* :angle-vector (send robot :angle-vector) tm)
        (send *ri* :wait-interpolation)
        )
@@ -605,7 +605,7 @@
              ) ;; todo: reach-until-touch uses copy-object
        (send *ri* :state) ;; update 
        (send robot limb :angle-vector (send *ri* :robot limb :angle-vector)) ;; reflect reach-until-touch result
-       (send robot limb :move-end-pos #f(0 0 10) :local) ;; compensate overshoot
+       (send robot limb :move-end-pos #f(0 0 10) :local) ;; pedal should not be touched at first
        (send *ri* :angle-vector (send robot :angle-vector) tm)
        (send *ri* :wait-interpolation)
        )
@@ -808,7 +808,6 @@
                    ) ;; todo: reach-until-touch uses copy-object
              (send *ri* :state) ;; update 
              (send robot limb :angle-vector (send *ri* :robot limb :angle-vector)) ;; reflect reach-until-touch result
-             (send robot limb :move-end-pos #f(0 0 10) :local) ;; compensate overshoot
              )
            ;; ref-force
            (when set-ref-force
