@@ -759,7 +759,7 @@
      (setq wait-start (ros::time-now))
      (while (and (or (send *ri* :interpolatingp (read-from-string (format nil ":~A-controller" (string-downcase limb))))
                      (send *ri* :interpolatingp))
-                 (< (- (send (ros::time-now) :to-sec) (send wait-start :to-sec)) wait-sec))
+                 (< (- (send (ros::time-now) :to-sec) (send wait-start :to-sec)) min-wait-sec))
        (ros::spin-once)
        (ros::sleep)
        )
