@@ -860,7 +860,7 @@
          ;; publish motion to robot model on rviz
          (publish-valve-motion (cadr valve-params) (car valve-params)
                                :arm (send self :get-arm-side) :overwrite-arm-side? (send self :is-arm-overwrite)
-                               :stand-coords (make-coords) :overwrite-stand-coords? t
+                               :stand-coords (make-coords) :overwrite-stand-coords? :force ;; overwrite stand-coords forcibly in valve motion
                                :grasp-center? (send self :is-valve-grasp-center) :overwrite-grasp-mode? (send self :is-valve-grasp-overwrite)
                                :update? t)
          ))
@@ -885,7 +885,7 @@
          (publish-door-motion
           :door-name door-name :door-coords (elt door-params 0)
           :arm (send self :get-arm-side) :overwrite-arm-side? (send self :is-door-arm-overwrite)
-          :stand-coords (make-coords) :overwrite-stand-coords? t
+          :stand-coords (make-coords) :overwrite-stand-coords? :force ;; overwrite stand-coords forcibly in door motion
           :push/pull door-push/pull
           :update? t)
          (send smachine :go-to :selecting-exec-for-door)))

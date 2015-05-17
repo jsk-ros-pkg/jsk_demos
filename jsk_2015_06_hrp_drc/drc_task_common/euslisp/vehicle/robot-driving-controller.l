@@ -95,11 +95,12 @@
                    std_msgs::Float64
                    #'send self :neck-callback)
 
-   ;; handle-angle commands
+   ;; handle-angle topics
    (ros::advertise "/drive/controller/goal_handle_angle" std_msgs::Float32 1 t)
    (ros::advertise "/drive/controller/estimated_handle_angle" std_msgs::Float32 1 t)
+   (ros::advertise "/drive/controller/steering_diff_angle_vector" std_msgs::Float32 1 t)
 
-   ;; pedal angle commands
+   ;; pedal angle topics
    (ros::advertise "/drive/controller/step" std_msgs::Float32 1 t)
    (ros::advertise "/drive/controller/min_step" std_msgs::Float32 1 t)
    (ros::advertise "/drive/controller/max_step" std_msgs::Float32 1 t)
@@ -132,6 +133,7 @@
    (ros::advertise-service "/drive/controller/grasp" std_srvs::Empty #'send self :grasp-callback)
    (ros::advertise-service "/drive/controller/release" std_srvs::Empty #'send self :release-callback)
    (ros::advertise-service "/drive/controller/correct" std_srvs::Empty #'send self :correct-callback)
+   (ros::advertise-service "/drive/controller/resume" std_srvs::Empty #'send self :resume-callback)
    (ros::advertise-service "/drive/controller/approach_accel" std_srvs::Empty #'send self :approach-accel-callback)
    (ros::advertise-service "/drive/controller/reach_leg" std_srvs::Empty #'send self :reach-leg-callback)
    (ros::advertise-service "/drive/controller/reach_arm" std_srvs::Empty #'send self :reach-arm-callback)
@@ -184,6 +186,13 @@
    (req)
    (let ((res (send req :response)))
      (send self :correct-handle-pose :yes t)
+     res
+     )
+   )
+  (:resume-callback
+   (req)
+   (let ((res (send req :response)))
+     (send self :resume-handle-pose)
      res
      )
    )
@@ -266,11 +275,16 @@
    (when (and sync (not (send *ri* :simulation-modep)))
      (send motion :sync-all-controller)
      )
+   (warn "init-pose~%")
    (send motion :ride :init-pose t)
    (send motion :drive-init-pose-crank :limb :larm :move-arm nil) ;; todo: fix and remove
+   (warn "approach-fist~%")
    (send self :approach-fist :reach-until-touch nil)
+   (warn "approach-accel~%")
    (send self :approach-accel)
+   (warn "approach-floor~%")
    (send self :approach-floor :offset #f(0 0 0))
+   (warn "approach-handle~%")
    (send self :approach-handle)
    (send self :publish-body-relative-steering-coords)
    ;; enable operation
@@ -331,9 +345,12 @@
    )
   (:resume-handle-pose
    ()
-   (when handle-pose-old-robot-coords
-     (send motion :robot :newcoords handle-pose-old-robot-coords) ;; revert compensation result
-     (send self :publish-body-relative-steering-coords) ;; update steering coords in rviz
+   (if handle-pose-old-robot-coords
+       (progn
+         (send motion :robot :newcoords handle-pose-old-robot-coords) ;; revert compensation result
+         (send self :publish-body-relative-steering-coords) ;; update steering coords in rviz
+         )
+     (warn "previous handle pose does not exists~%")
      )
    )
   (:turn ;; estimated as :relative nil
@@ -794,7 +811,7 @@
          (send motion :robot :newcoords old-robot-coords) ;; revert
          )
        (send (send motion :robot) :head :angle-vector old-head-angle-vector) ;; look at front
-       (when real
+       (when (send motion :real)
          (send *ri* :angle-vector (send motion :robot :angle-vector) time)
          (send *ri* :wait-interpolation)
          )
@@ -888,6 +905,19 @@
      (send self :get target-mode)
      )
    )
+
+  ;; calculate diff
+  (:calc-error-of-grasp-arm
+   (&rest args &key (mode :angle-vector) &allow-other-keys)
+   (let (diff-av
+         (pub-diff (instance std_msgs::Float32 :init))
+         )
+     (setq diff-av (send* motion :calc-error-of-grasp-arm :mode mode args))
+     (send pub-diff :data (norm diff-av))
+     (ros::publish "/drive/controller/steering_diff_angle_vector" pub-diff)
+     diff-av
+     )
+   )
   
   ;; accessor
   (:motion () motion)
@@ -940,6 +970,7 @@
    (&key (publish-steering-trajectory nil))
    (do-until-key
     (send self :estimate-current-handle-angle)
+    (send self :calc-error-of-grasp-arm :display-result nil)
     (send self :record-handling-end-coords)
     (when publish-steering-trajectory
       (send self :publish-steering-trajectory)

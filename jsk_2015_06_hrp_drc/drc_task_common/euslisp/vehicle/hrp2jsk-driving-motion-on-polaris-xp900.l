@@ -26,7 +26,8 @@
    ;; (send robot :move-to (make-coords :pos (float-vector 180 370.0 80) :rpy (float-vector 0.0 (- (/ pi 16)) 0.0)) :world)
    ;; (send robot :move-to (make-coords :pos (float-vector -80 370.0 80) :rpy (float-vector 0.0 0.0 0.0)) :world)
    ;; (send robot :move-to (make-coords :pos (float-vector -80 470.0 80) :rpy (float-vector 0.0 0.0 0.0)) :world) ;; condier egress in driving-simulator
-   (send robot :move-to (make-coords :pos (float-vector -80 470.0 180) :rpy (float-vector 0.0 (deg2rad 5.0) 0.0)) :world) ;; adjusted in real polaris in lasvegas
+   ;; (send robot :move-to (make-coords :pos (float-vector -80 470.0 180) :rpy (float-vector 0.0 (deg2rad 5.0) 0.0)) :world) ;; adjusted in real polaris in lasvegas
+   (send robot :move-to (make-coords :pos (float-vector -80 420.0 180) :rpy (float-vector 0.0 (deg2rad 5.0) 0.0)) :world)
    (when init-pose
      (send self :drive-init-pose)
      )
@@ -48,8 +49,13 @@
    ;; (send robot :angle-vector #f(0.0 0.0 -85.0 80.0 0.0 0.0 0.0 5.00812 -1.07931 -97.6734 68.4796 28.4724 1.1772 -1.548 0.0 0.0 0.0 -5.0 50.0 -30.0 -10.0 -120.0 -25.0 -5.0 -20.0 60.0 50.0 30.0 10.0 -120.0 25.0 5.0 -20.0 -60.0)) ;; old drive-init-pose adjusted in drive-simulation-environment
 
    (send robot :reset-manip-pose) ;; adjusted in real polaris in lasvegas
-   (send robot :lleg :angle-vector #f(4.8375 -1.095 -88.646 72.6426 10.4 1.0224 0.216)) 
-   (send robot :rleg :angle-vector #f(-9.04768 1.17199 -100.84 58.9158 10.7088 -1.14559 -0.108))
+
+   ;; (send robot :lleg :angle-vector #f(4.8375 -1.095 -88.646 72.6426 10.4 1.0224 0.216))
+   ;; (send robot :rleg :angle-vector #f(-9.04768 1.17199 -100.84 58.9158 10.7088 -1.14559 -0.108))
+   ;; (send robot :rarm :angle-vector #f(35.9754 -42.1297 8.69405 -74.6325 -43.4673 3.3033 35.8167 0.0))
+
+   (send robot :lleg :angle-vector #f(5.66017 7.49564 -86.8436 69.5621 12.0391 -7.95977 0.216))
+   (send robot :rleg :angle-vector #f(-5.32243 7.27429 -102.357 61.9889 8.87751 -8.28873 -0.108))
    (send robot :rarm :angle-vector #f(35.9754 -42.1297 8.69405 -74.6325 -43.4673 3.3033 35.8167 0.0))
    
    (when real
@@ -83,7 +89,25 @@
    )
   (:set-impedance-for-handle
    (limb)
-   (send *ri* :start-impedance limb :moment-gain #f(0 0 0) :D-p 400 :K-p 800)
+   ;; (send *ri* :start-impedance limb :moment-gain #f(0 0 0) :D-p 400 :K-p 800)
+   (send *ri* :start-impedance limb :moment-gain #f(0 0 0) :M-p 0.0 :D-p 400 :K-p 800) ;; M = 0 temporarily for impedance follow-up
+   )
+  (:set-impedance-for-support
+   (limb)
+   (cond
+    ((member limb (list :larm :rarm :arms))
+     ;; (send *ri* :start-impedance limb :M-p 150 :D-p 2000 :K-p 4000 :moment-gain #(1 1 1) :M-r 25 :D-r 150 :K-r 200)
+     (send *ri* :start-impedance limb :M-p 0 :D-p 2000 :K-p 4000 :moment-gain #(1 1 1) :M-r 0 :D-r 150 :K-r 200) ;; M = 0 temporarily for impedance follow-up
+     )
+    ((member limb (list :lleg :rleg :legs))
+     ;; (send *ri* :start-impedance limb :M-p 200 :D-p 3000 :K-p 5000 :moment-gain #(1 1 1) :M-r 50 :D-r 500 :K-r 400)
+     (send *ri* :start-impedance limb :M-p 0 :D-p 4000 :K-p 5000 :moment-gain #(1 1 1) :M-r 0 :D-r 500 :K-r 600) ;; M = 0 temporarily for impedance follow-up
+     )
+    (t
+     ;; (send *ri* :start-impedance limb :M-p 200 :D-p 4000 :K-p 6000 :moment-gain #(1 1 1) :M-r 50 :D-r 250 :K-r 400) ;; default
+     (send *ri* :start-impedance limb :M-p 0 :D-p 4000 :K-p 6000 :moment-gain #(1 1 1) :M-r 0 :D-r 250 :K-r 400) ;; M = 0 temporarily for impedance follow-up
+     )
+    )
    )
   ;; (:approach-accel-pedal
   ;;  (&key (tm 10000) (debug-view nil))
@@ -115,7 +139,8 @@
         ;; (send robot :rleg :angle-vector #f(-8.96161 -11.923 -84.9409 37.2658 10.0798 15.014 -0.384))
         ;; (send robot :rleg :angle-vector #f(-10.0 0.269639 -91.1699 48.9728 5.54723 -0.244199 -0.384)) ;; adjusted in real vehicle
         ;; (send robot :rleg :angle-vector #f(-9.79801 0.253958 -109.928 60.3974 12.8831 -0.218503 0.18)) ;; adjusted in drive simulator by reach-until-touch
-        (send robot :rleg :angle-vector #f(-9.04768 1.17199 -100.84 58.9158 10.7088 -1.14559 -0.108)) ;; adjusted in real polaris in lasvegas
+        ;; (send robot :rleg :angle-vector #f(-9.04768 1.17199 -100.84 58.9158 10.7088 -1.14559 -0.108)) ;; adjusted in real polaris in lasvegas
+        (send robot :rleg :angle-vector #f(-5.32243 7.27429 -102.357 61.9889 8.87751 -8.28873 -0.108))
         (setq approach-result t)
         )
        (:brake-pedal

@@ -26,7 +26,11 @@
           :arm arm :push/pull push/pull :use-ri? nil
           :robot-name robot-name :draw-environment? t
           :overwrite-stand-coords? overwrite-stand-coords? :overwrite-arm-side? overwrite-arm-side?)
-         (play-motion-on-eus-viewer *door-motion* :interpolation? t)
+         (play-motion-on-eus-viewer
+          *door-motion*
+          :interpolation? t :collision-check? t
+          :collision-check-robot-link-list (send *robot* *door-arm* :links)
+          :collision-check-obj-link (send *door* :link :root-link))
          )
         (t ;; ri-test?
          (unless (boundp '*roscore-checked*)
