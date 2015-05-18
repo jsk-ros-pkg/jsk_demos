@@ -28,7 +28,7 @@
                   :pos (float-vector 0 0
                                (if *drill-reverse-hand*
                                    145 ;; 20150516 on rviz
-                                 140
+                                 (if (equal *robot-name* "HRP2JSKNTS") 185 125)
                                  )
                                )
                   :rpy ;;depends on button motion
@@ -241,7 +241,7 @@
               ((equal *robot-name* "HRP2JSKNTS")
                (send (send (send (send *robot* :rarm :end-coords) :copy-worldcoords) :translate (float-vector 50 25.0 0.0) :local) :rotate (deg2rad 45) :z :local))
               (t ;; (or (equal *robot-name* "JAXON") (equal *robot-name* "STARO"))
-               (send (send (send (send *robot* :rarm :end-coords) :copy-worldcoords) :translate (float-vector 0.0 0.0 0.0) :local) :rotate (deg2rad 0) :z :local)
+               (send (send (send (send *robot* :rarm :end-coords) :copy-worldcoords) :translate (float-vector -5.0 -10.0 0.0) :local) :rotate (deg2rad 0) :z :local)
                )
               )
         :parent (send (send *robot* :rarm :end-coords) :parent)))
@@ -253,7 +253,7 @@
               ((equal *robot-name* "HRP2JSKNTS")
                (send (send (send (send *robot* :larm :end-coords) :copy-worldcoords) :translate (float-vector 50 -25.0 0.0) :local) :rotate (deg2rad -45) :z :local))
               (t ;; (or (equal *robot-name* "JAXON") (equal *robot-name* "STARO"))
-               (send (send (send (send *robot* :larm :end-coords) :copy-worldcoords) :translate (float-vector 0.0 0.0 0.0) :local) :rotate (deg2rad 0) :z :local)
+               (send (send (send (send *robot* :larm :end-coords) :copy-worldcoords) :translate (float-vector -5.0 10.0 0.0) :local) :rotate (deg2rad 0) :z :local)
                )
               )
         :parent (send (send *robot* :larm :end-coords) :parent)))
@@ -454,7 +454,7 @@
          (grasp-up-dist 120)
          (air-grasp-up-dist 60)
          (down-dist 25)
-         (push-dist 20)
+         (push-dist (if (or (equal *robot-name* "HRP2JSKNTS") (equal *robot-name* "HRP2JSKNT")) 20 -10)))
          (ik-results nil)
          (original-foot-midcoords (send (send *robot* :foot-midcoords) :copy-worldcoords))
          (original-drill-coords (send *drill* :copy-worldcoords))
