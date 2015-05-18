@@ -1,0 +1,9 @@
+<launch>
+  <!-- visualization of steering angle -->
+  <node name="steering_angle_throttle" pkg="topic_tools" type="throttle" output="screen"
+        args="messages /drive/recognition/local_planner/steering_cmd 1 /steering_throttle"
+        />
+  <node name="handle_viewer" pkg="gazebo_drive_simulator" type="SteeringWheelViewer.py" output="screen" >
+    <remap from="steering" to="/steering_throttle" />
+  </node>
+</launch>
