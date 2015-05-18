@@ -307,6 +307,8 @@
             (incf j)))
         (push-back test-point rotatable-point)
         ))
+    (unless rotatable-point
+      (setq rotatable-point (list 0)))
     rotatable-point
     ))
 
