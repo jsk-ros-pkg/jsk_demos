@@ -78,7 +78,8 @@
         cylinder_max_iterations: 1000
         cylinder_probability: 0.03
         foot_z_offset: 0.13
-        use_cylinder_axis: Falsecylinder_z_offset: 0.05
+        use_cylinder_axis: False
+        cylinder_z_offset: 0.05
         cylinder_length: 0.2
         calc_cylinder_center: true
         button_estimation_method: 2
