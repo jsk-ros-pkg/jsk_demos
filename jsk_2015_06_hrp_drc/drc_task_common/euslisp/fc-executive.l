@@ -430,7 +430,7 @@
 	       (if arm
                    (progn
                      (setq *drill-main-arm* arm)
-                     (send-drill-grasp-motion coords :stand-coords stand-coords:drill-rotate-num (send msg :image_type))
+                     (send-drill-grasp-motion coords :stand-coords stand-coords :drill-rotate-num (send msg :image_type))
                      )
                  (ros::ros-info "arm side empty")
                  )
