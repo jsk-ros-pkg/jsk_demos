@@ -323,10 +323,7 @@
      (warn "init-head~%")
      (send self :neck-cmd 0.0 :neck-p :time 2000)
      (send self :neck-cmd 0.0 :neck-y :time 2000)
-     (when real
-       (send *ri* :angle-vector (send (send motion :robot) :angle-vector) time)
-       (send *ri* :wait-interpolation)
-       )
+     (send motion :model2real :time time :wait-interpolation t :real real) ;; send *ri* :angle-vector if real is t
      (send motion :real real :use-real-robot-angle nil) ;; set real as argument
      )
    ;; initialize joy_vehicle if exists
@@ -388,10 +385,7 @@
                 (send self :resume-handle-pose)
                 )
          )
-       (when (send motion :real)
-         (send *ri* :angle-vector (send (send motion :robot) :angle-vector) time)
-         (send *ri* :wait-interpolation)
-         )
+       (send motion :model2real :time time :wait-interpolation t)
        )
      (setq handle-pose-estimate-flag nil)
      (append ret-result (list approach-result grasp-result)) ;; return all results
@@ -862,10 +856,7 @@
        ;; temporary ;;
        (setq old-head-angle-vector (send motion :robot :head :angle-vector))
        (send (send motion :robot) :look-at-target (send motion :car :vehicle-handle :steering-center)) ;; look at handle
-       (when (send motion :real)
-         (send *ri* :angle-vector (send motion :robot :angle-vector) tm)
-         (send *ri* :wait-interpolation)
-         )
+       (send motion :model2real :time tm :wait-interpolation t) ;; execute look-at
        (warn "wait recognition~%")
        (setq wait-start (ros::time-now))
        (setq handle-pose-estimated-robot-coords nil) ;; reset recognition result
@@ -894,10 +885,7 @@
          (send motion :robot :newcoords old-robot-coords) ;; revert
          )
        (send (send motion :robot) :head :angle-vector old-head-angle-vector) ;; look at front
-       (when (send motion :real)
-         (send *ri* :angle-vector (send motion :robot :angle-vector) time)
-         (send *ri* :wait-interpolation)
-         )
+       (send motion :model2real :time tm :wait-interpolation t) ;; resume head
        (setq handle-pose-old-robot-coords old-robot-coords) ;; save old-robot-coords to revert
        )
      (send self :publish-body-relative-steering-coords) ;; update steering coords in rviz
