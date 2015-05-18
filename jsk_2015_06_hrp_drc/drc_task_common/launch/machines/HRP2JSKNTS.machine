@@ -1,5 +1,5 @@
 <launch>
   <machine name="localhost" address="localhost" />
-  <machine name="vmachine" address="hrp2017v" />
   <machine name="cmachine" address="hrp2017c" />
+  <machine name="vmachine" address="hrp2017v" env-loader="/home/hrpuser/ros/hydro/devel/env.sh" />
 </launch>

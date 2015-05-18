@@ -91,9 +91,12 @@
    (ros::subscribe "/drive/operation/handle_cmd"
                    std_msgs::Float64
                    #'send self :handle-callback)
-   (ros::subscribe "/drive/operation/neck_cmd"
+   (ros::subscribe "/drive/operation/neck_y_cmd"
                    std_msgs::Float64
-                   #'send self :neck-callback)
+                   #'send self :neck-y-callback)
+   (ros::subscribe "/drive/operation/neck_p_cmd"
+                   std_msgs::Float64
+                   #'send self :neck-p-callback)
 
    ;; handle-angle topics
    (ros::advertise "/drive/controller/goal_handle_angle" std_msgs::Float32 1 t)
@@ -105,6 +108,10 @@
    (ros::advertise "/drive/controller/min_step" std_msgs::Float32 1 t)
    (ros::advertise "/drive/controller/max_step" std_msgs::Float32 1 t)
    (ros::advertise "/drive/controller/step_on_flag" std_msgs::Bool 1 t)
+
+   ;; neck command topics
+   (ros::advertise "/drive/controller/neck_y_angle" std_msgs::Float32 1 t)
+   (ros::advertise "/drive/controller/neck_p_angle" std_msgs::Float32 1 t)
    
    ;; for steering visualization
    (ros::advertise "/drive/controller/currest_steering" jsk_recognition_msgs::TorusArray 1)
@@ -150,7 +157,7 @@
    (send self :controller-state :brake :initialize)
    (send self :controller-mode :handle :stop)
    (send self :controller-mode :accel :stop)
-   (send self :controller-mode :brake :stop) 
+   (send self :controller-mode :brake :stop)
    )
 
   ;; vehicle ui callback
@@ -287,6 +294,10 @@
    (warn "approach-handle~%")
    (send self :approach-handle)
    (send self :publish-body-relative-steering-coords)
+   ;; move head front
+   (warn "init-head~%")
+   (send self :neck-cmd 0.0 :neck-p :time 2000)
+   (send self :neck-cmd 0.0 :neck-y :time 2000)
    ;; enable operation
    (send self :controller-mode :handle :operation)
    (send self :controller-mode :accel :operation)
@@ -477,6 +488,18 @@
      cmd-motion ;; return real command to robot
      )
    )
+  (:neck-cmd
+   (angle axis &key (time (* (+ (/ 1.0 ros-rate) 0.1) 1000))) ;; default time is rate-sec + offset
+   (let ((pub-msg (instance std_msgs::Float32 :init))
+         (topic-name (format nil "/drive/controller/neck_~A_angle" (string-trim "neck-" (string-downcase axis))))
+         current-angle
+         )
+     (setq current-angle (send motion :look-around angle axis :relative nil :time time))
+     (send pub-msg :data current-angle)
+     (ros::publish topic-name pub-msg)
+     )
+   )
+  
   (:publish-current-step
    (step)
    (let ((pub-step (instance std_msgs::Float32 :init)))
@@ -544,11 +567,17 @@
    (data min-pedal-command max-pedal-command) ;; data will be 0.0 from 1.0
    (+ min-pedal-command (* data (- max-pedal-command min-pedal-command)))
    )
-
-  (:neck-callback
+  
+  (:neck-y-callback
    (msg)
    (let ((neck-command (send msg :data)))
-     (send motion :look-around neck-command :neck-y :relative nil :time (* (+ (/ 1.0 ros-rate) 0.1) 1000)) ;; estimated as absolute value
+     (send self :neck-cmd neck-command :neck-y)
+     )
+   )
+  (:neck-p-callback
+   (msg)
+   (let ((neck-command (send msg :data)))
+     (send self :neck-cmd neck-command :neck-p)
      )
    )
 

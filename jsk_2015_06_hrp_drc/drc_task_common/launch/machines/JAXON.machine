@@ -1,5 +1,5 @@
 <launch>
   <machine name="localhost" address="localhost" />
-  <machine name="vmachine" address="transvm" />
-  <machine name="cmachine" address="jaxonvision" />
+  <machine name="cmachine" address="transvm" />
+  <machine name="vmachine" address="jaxonvision" env-loader="/home/leus/ros/hydro/devel/env.sh"/>
 </launch>
