@@ -171,7 +171,7 @@
                 :root-link-virtual-joint-weight (float-vector 0.15 0.15 0.01 0.15 0.5 0.5)
                 :additional-weight-list
                 (list (list (send *robot* :torso :waist-r :child-link) 0.1)
-                      ;; (list (send *robot* :torso :waist-y :child-link) 0.1)
+                      (list (send *robot* :torso :waist-y :child-link) 0.1)
                       (list (send *robot* :torso :waist-p :child-link) 0.1)
                       (list (send *robot* :rarm :shoulder-p :child-link) 0)
                       (list (send *robot* :larm :shoulder-p :child-link) 0)
@@ -337,9 +337,9 @@
   (&key (grasp-center? nil))
   (cond ((or (equal *robot-name* "JAXON") (equal *robot-name* "STARO"))
          (cond ((equal *valve-arm* :larm)
-                (make-coords :pos (float-vector -600 -600 0) :rpy (list (deg2rad 0) 0 0)))
+                (make-coords :pos (float-vector -600 -400 0) :rpy (list (deg2rad -10) 0 0)))
                ((equal *valve-arm* :rarm)
-                (make-coords :pos (float-vector -600 +600 0) :rpy (list (deg2rad 0) 0 0))))
+                (make-coords :pos (float-vector -600 +400 0) :rpy (list (deg2rad +10) 0 0))))
          )
         (t ;; (or (equal *robot-name* "HRP2JSKNT") (equal *robot-name* "HRP2JSKNTS"))
          (cond (grasp-center?
