@@ -9,5 +9,8 @@ bool initialize_request
 bool grasp_request
 bool release_request
 bool correct_request
+bool resume_request
+bool approach_handle_request
+bool approach_accel_request
 bool reach_arm_request
 bool reach_leg_request

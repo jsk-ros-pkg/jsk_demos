@@ -15,5 +15,8 @@ bool initialize_response
 bool grasp_response
 bool release_response
 bool correct_response
+bool resume_response
+bool approach_handle_response
+bool approach_accel_response
 bool reach_arm_response
 bool reach_leg_response
