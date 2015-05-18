@@ -119,6 +119,7 @@
   (setq *door-stand-coords* (if stand-coords stand-coords (make-coords)))
   (send *robot* :fix-leg-to-coords *door-stand-coords*)
   (setq *door-motion* nil)
+  (setq *door-ik-results* nil)
   ;; draw
   (setq *ground* (make-cube 1000 1000 1))
   (when (or draw? (boundp '*irtviewer*))
@@ -347,11 +348,17 @@
   )
 
 (defun get-door-motion
-  (&key (draw? nil) (push/pull :push))
+  (&key (draw? nil) (push/pull :push) (check-continuous? t))
   (generate-door-motion :draw? draw? :push/pull push/pull)
   (when (every #'eval (mapcar #'(lambda (x) (elt x 1)) *door-ik-results*))
     (setq *door-motion* (mapcar #'(lambda (x) (elt x 2)) *door-ik-results*)))
-  )
+  (when (and check-continuous? *door-motion*)
+    (dotimes (i (1- (length *door-motion*)))
+      (unless (check-angle-vector-continuous (elt *door-motion* i) (elt *door-motion* (1+ i)) *door-arm*)
+        (setq *door-motion* nil)
+        (return-from nil nil)
+        ))
+    ))
 
 (defun get-door-stand-coords ;; relative to door
   (&key (handle-l/r :left) (push/pull :push))

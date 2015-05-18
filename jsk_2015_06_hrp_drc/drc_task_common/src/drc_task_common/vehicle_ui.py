@@ -307,8 +307,11 @@ class VehicleUIWidget(QWidget):
                                         "drive/controller/min_step")
         right_vbox.addWidget(self.step_gage)
         self.set_current_step_as_max_button = QtGui.QPushButton("Set Current Step as Max")
-        self.set_current_step_as_max_button.clicked.connect(self.setCurrentStepAsMaxCallback)
+        self.set_current_step_as_max_button.clicked.connect(self.setCurrentStepAsMaxButtonCallback)
+        self.set_current_step_as_min_button = QtGui.QPushButton("Set Current Step as Min")
+        self.set_current_step_as_min_button.clicked.connect(self.setCurrentStepAsMinButtonCallback)
         right_vbox.addWidget(self.set_current_step_as_max_button)
+        right_vbox.addWidget(self.set_current_step_as_min_button)
     # Message callback
     def setupSubscribers(self):
         self.step_gage_value_sub = rospy.Subscriber(
@@ -425,85 +428,79 @@ class VehicleUIWidget(QWidget):
     def minUpButtonCallback(self, event):
         current_value = float(self.step_min_edit.text())
         current_value = current_value + 1.0
-        try:
-            update_value = rospy.ServiceProxy('drive/controller/set_min_step', SetValue)
-            next_value = update_value(current_value)
+        next_value = self.callSetValueService('drive/controller/set_min_step', current_value)
+        if next_value != None:
             with self.lock:
-                self.step_min_edit.setText(str(next_value.set_value))
-        except rospy.ServiceException, e:
-            self.showError("Failed to call drive/controller/set_min_step")
+                self.step_min_edit.setText(str(next_value))
     def minDownButtonCallback(self, event):
         current_value = float(self.step_min_edit.text())
         current_value = current_value - 1.0
-        try:
-            update_value = rospy.ServiceProxy('drive/controller/set_min_step', SetValue)
-            next_value = update_value(current_value)
+        next_value = self.callSetValueService('drive/controller/set_min_step', current_value)
+        if next_value != None:
             with self.lock:
-                self.step_min_edit.setText(str(next_value.set_value))
-        except rospy.ServiceException, e:
-            self.showError("Failed to call drive/controller/set_min_step")
-    def maxEditCallback(self):
-        current_value = float(self.step_max_edit.text())
-        try:
-            update_value = rospy.ServiceProxy('drive/controller/set_max_step', SetValue)
-            next_value = update_value(current_value)
-            with self.lock:
-                self.step_max_edit.setText(str(next_value.set_value))
-        except rospy.ServiceException, e:
-            self.showError("Failed to call drive/controller/set_max_step")
-            with self.lock:
-                self.step_max_edit.setText(str(self.step_max_value))
+                self.step_min_edit.setText(str(next_value))
     def minEditCallback(self):
         current_value = float(self.step_min_edit.text())
-        try:
-            update_value = rospy.ServiceProxy('drive/controller/set_min_step', SetValue)
-            next_value = update_value(current_value)
+        next_value = self.callSetValueService('drive/controller/set_min_step', current_value)
+        if next_value != None:
             with self.lock:
-                self.step_min_edit.setText(str(next_value.set_value))
-        except rospy.ServiceException, e:
-            self.showError("Failed to call drive/controller/set_min_step")
+                self.step_min_edit.setText(str(next_value))
+        else:
             with self.lock:
                 self.step_min_edit.setText(str(self.step_min_value))
+
     def maxUpButtonCallback(self, event):
         current_value = float(self.step_max_edit.text())
         current_value = current_value + 1.0
-        try:
-            update_value = rospy.ServiceProxy('drive/controller/set_max_step', SetValue)
-            next_value = update_value(current_value)
+        next_value = self.callSetValueService('drive/controller/set_max_step', current_value)
+        if next_value != None:
             with self.lock:
-                self.step_max_edit.setText(str(next_value.set_value))
-        except rospy.ServiceException, e:
-            self.showError("Failed to call drive/controller/set_max_step")
+                self.step_max_edit.setText(str(next_value))
     def maxDownButtonCallback(self, event):
         current_value = float(self.step_max_edit.text())
         current_value = current_value - 1.0
-        try:
-            update_value = rospy.ServiceProxy('drive/controller/set_max_step', SetValue)
-            next_value = update_value(current_value)
+        next_value = self.callSetValueService('drive/controller/set_max_step', current_value)
+        if next_value != None:
             with self.lock:
-                self.step_max_edit.setText(str(next_value.set_value))
-        except rospy.ServiceException, e:
-            self.showError("Failed to call drive/controller/set_max_step")
-    def overwriteButtonCallback(self, event):
-        current_value = float(self.overwrite_edit.text())
-        print current_value
-        try:
-            update_value = rospy.ServiceProxy('drive/controller/overwrite_handle_angle', SetValue)
-            next_value = update_value(current_value)
+                self.step_max_edit.setText(str(next_value))
+    def maxEditCallback(self):
+        current_value = float(self.step_max_edit.text())
+        next_value = self.callSetValueService('drive/controller/set_max_step', current_value)
+        if next_value != None:
             with self.lock:
-                self.overwrite_edit.setText(str(next_value.set_value))
-        except rospy.ServiceException, e:
-            self.showError("Failed to call drive/controller/overwrite_handle_angle")
+                self.step_max_edit.setText(str(next_value))
+        else:
+            with self.lock:
+                self.step_max_edit.setText(str(self.step_max_value))
 
-    def setCurrentStepAsMaxCallback(self, event):
-        current_step = float(self.step_gage_label.text())
-        try:
-            update_value = rospy.ServiceProxy('drive/controller/set_max_step', SetValue)
-            next_value = update_value(current_step)
+    def overwriteButtonCallback(self, event):
+        current_handle = float(self.overwrite_edit.text())
+        next_value = self.callSetValueService('drive/controller/overwrite_handle_angle', current_handle)
+        if next_value != None:
             with self.lock:
-                self.step_max_edit.setText(str(next_value.set_value))
+                self.overwrite_edit.setText(str(next_value))
+
+    def setCurrentStepAsMaxButtonCallback(self, event):
+        current_step = float(self.step_gage_label.text())
+        next_value = self.callSetValueService('drive/controller/set_max_step', current_step)
+        if next_value != None:
+            with self.lock:
+                self.step_max_edit.setText(str(next_value))
+    def setCurrentStepAsMinButtonCallback(self, event):
+        current_step = float(self.step_gage_label.text())
+        next_value = self.callSetValueService('drive/controller/set_min_step', current_step)
+        if next_value != None:
+            with self.lock:
+                self.step_min_edit.setText(str(next_value))
+        
+    def callSetValueService(self, service_name, value):
+        try:
+            update_value = rospy.ServiceProxy(service_name, SetValue)
+            next_value = update_value(value)
+            return next_value.set_value
         except rospy.ServiceException, e:
-            self.showError("Failed to call drive/controller/set_max_step")
+            self.showError("Failed to call " + service_name)
+            return None
             
     def showError(self, message):
         QMessageBox.about(self, "ERROR", message)
@@ -585,7 +582,7 @@ class AngleWidget(QWidget):
         self.update()
     def paintEvent(self, event):
         with self.lock:
-            line_width = 4
+            line_width = 10
             w = self.width() - line_width
             h = self.height() - line_width
             r = min(w, h) / 2.0

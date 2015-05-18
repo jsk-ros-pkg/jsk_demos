@@ -42,7 +42,6 @@ class MagnetometerToDirection:
         for i in range(5):
             self.q.append(self.offset_ang)
         
-        
     def execute(self):
         while not rospy.is_shutdown():
             if self.ang_msg != None:
@@ -101,7 +100,7 @@ class MagnetometerToDirection:
         dacor_ang = -(ang - self.start_ang - self.offset_ang -self.neck_y_ang)
         ave_ang = self.calc_average(dacor_ang)
        
-        rospy.loginfo("goal_direction_angle = %f [deg]", ave_ang * 180 / pi)
+        # rospy.loginfo("goal_direction_angle = %f [deg]", ave_ang * 180 / pi)
         
         self.ang_msg.data = ave_ang
 
