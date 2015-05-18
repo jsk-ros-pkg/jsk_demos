@@ -72,7 +72,7 @@
           clear_params="true"
           output="screen">
       <rosparam subst_value="true">
-        interruptible_mode: true
+        interruptible_mode: ":full-interruptible"
       </rosparam>
       <rosparam if="$(arg USE_HRP2JSK)">
         interface_file: "package://hrpsys_ros_bridge_tutorials/euslisp/hrp2jsk-interface.l"
