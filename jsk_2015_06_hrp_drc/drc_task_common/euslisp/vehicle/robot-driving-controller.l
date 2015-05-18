@@ -366,10 +366,10 @@
      )
    )
   (:correct-handle-pose
-   (&key (yes nil) (grasp t) (time 2500))
+   (&key (yes nil) (grasp t) (time 2500) (look-at-handle t))
    (let (ret-result approach-result grasp-result)     
      (setq handle-pose-estimate-flag t)
-     (setq ret-result (send self :execute-handle-pose-compensation :yes yes))
+     (setq ret-result (send self :execute-handle-pose-compensation :yes yes :look-at-handle look-at-handle))
      ;; grasp in new handle coords
      (when grasp
        (warn "regrasp~%")
@@ -818,7 +818,7 @@
   (:execute-handle-pose-compensation
    (&rest args &key (tm 2500) (limb (send motion :grasp-arm))
           (position-threshold 1000) (yes nil) (min-wait-sec 5.0) (max-wait-sec 30.0)
-          (release-offset #f(-100 0 0)) (shoulder-y-deg 0.0)
+          (release-offset #f(-100 0 0)) (shoulder-y-deg 0.0) (look-at-handle t)
          )
    ;; wait handling   
    (let (wait-start
@@ -853,10 +853,13 @@
      (when release-result
        ;; temporary ;;
        (send (send motion :robot) (send motion :grasp-arm) :shoulder-y :joint-angle shoulder-y-deg)
+       (send motion :model2real :time tm :wait-interpolation t) ;; execute shoulder-y avoidance
        ;; temporary ;;
-       (setq old-head-angle-vector (send motion :robot :head :angle-vector))
-       (send (send motion :robot) :look-at-target (send motion :car :vehicle-handle :steering-center)) ;; look at handle
-       (send motion :model2real :time tm :wait-interpolation t) ;; execute look-at
+       (when look-at-handle
+         (setq old-head-angle-vector (send motion :robot :head :angle-vector))
+         (send (send motion :robot) :look-at-target (send motion :car :vehicle-handle :steering-center)) ;; look at handle
+         (send motion :model2real :time tm :wait-interpolation t) ;; execute look-at
+         )
        (warn "wait recognition~%")
        (setq wait-start (ros::time-now))
        (setq handle-pose-estimated-robot-coords nil) ;; reset recognition result
@@ -884,8 +887,10 @@
          (setq compensation-result nil)
          (send motion :robot :newcoords old-robot-coords) ;; revert
          )
-       (send (send motion :robot) :head :angle-vector old-head-angle-vector) ;; look at front
-       (send motion :model2real :time tm :wait-interpolation t) ;; resume head
+       (when look-at-handle
+         (send (send motion :robot) :head :angle-vector old-head-angle-vector) ;; look at front
+         (send motion :model2real :time tm :wait-interpolation t) ;; resume head
+         )
        (setq handle-pose-old-robot-coords old-robot-coords) ;; save old-robot-coords to revert
        )
      (send self :publish-body-relative-steering-coords) ;; update steering coords in rviz
