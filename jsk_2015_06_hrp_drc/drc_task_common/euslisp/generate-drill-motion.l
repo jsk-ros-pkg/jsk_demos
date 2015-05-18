@@ -193,7 +193,7 @@
   (when (or draw? (boundp '*irtviewer*))
     (objects (list *robot* *drill* *ground*)))
   (when draw?
-    (send *irtviewer* :draw-objects)
+    (when (boundp '*irtviewer*) (send *irtviewer* :draw-objects))
     (send *irtviewer* :change-background (float-vector 0.5 0.5 1))
     )
   )
@@ -526,7 +526,7 @@
       )
     )
     ;; draw
-    (when draw? (send *irtviewer* :draw-objects :flush t))
+    (when draw? (when (boundp '*irtviewer*) (send *irtviewer* :draw-objects :flush t)))
     ;; drill-reset-pose
     (send *robot* :fix-leg-to-coords original-foot-midcoords)
     (send *drill* :newcoords original-drill-coords)
@@ -600,7 +600,7 @@
       (setq *drill-stand-coords* (get-drill-grasp-stand-coords-full (send *drill* :copy-worldcoords)))
       (ros::ros-warn "change stand position to ~a for drill motion.~%" *drill-stand-coords*)
       (send *robot* :fix-leg-to-coords *drill-stand-coords*)
-      (when draw? (send *irtviewer* :draw-objects))
+      (when draw? (when (boundp '*irtviewer*) (send *irtviewer* :draw-objects)))
       (setq drill-motion-av-list (get-drill-grasp-motion :draw? draw? :rotation-axis rotation-axis))
       )
     drill-motion-av-list
@@ -901,7 +901,7 @@
       )
 
     ;(send (send *robot* *drill-main-arm* :end-coords) :assoc *drill*)
-    (when draw? (send *irtviewer* :draw-objects))
+    (when draw? (when (boundp '*irtviewer*) (send *irtviewer* :draw-objects)))
     ))
 
 (defun fullbody-inverse-kinematics-for-drill-button
@@ -1005,7 +1005,7 @@
       ;; end place drill
       (if (equal *drill-main-arm* :larm) (mirror-drill))
       (setq ik-ret (fullbody-inverse-kinematics-for-drill-button :x-offset 0 :y-offset 0 :z-offset -100 :draw? draw?))
-      (when draw? (send *irtviewer* :draw-objects))
+      (when draw? (when (boundp '*irtviewer*) (send *irtviewer* :draw-objects)))
       (push-back (list 0 (not (null ik-ret)) (send *robot* :angle-vector)) ik-results)
       (when (and fin? (not ik-ret)) (return-from drill-ik nil))
       ;; pre-push2
@@ -1260,7 +1260,7 @@
           )
       )
       ;; draw
-      (when draw? (send *irtviewer* :draw-objects :flush t))
+      (when draw? (when (boundp '*irtviewer*) (send *irtviewer* :draw-objects :flush t)))
       ;; drill-reset-pose
                                         ;(send *robot* :angle-vector (get-pre-drill-button-pose))
       (send *robot* :fix-leg-to-coords original-foot-midcoords)
@@ -1376,7 +1376,7 @@
       (setq *drill-stand-coords* (get-drill-wall-stand-coords-full drill-coords-list))
       (ros::ros-warn "change stand position to ~a for drill motion.~%" *drill-stand-coords*)
       (send *robot* :fix-leg-to-coords *drill-stand-coords*)
-      (when draw? (send *irtviewer* :draw-objects))
+      (when draw? (when (boundp '*irtviewer*) (send *irtviewer* :draw-objects)))
       (setq drill-motion-av-list (get-drill-wall-motion :draw? draw?))
       )
     drill-motion-av-list
@@ -1505,7 +1505,7 @@
             (when (not (and ik-ret-out ik-ret-in ik-ret-up))
                        (return-from reverse nil))
             (push-back (list i (not (null (and ik-ret-out ik-ret-in ik-ret-up))) ik-ret-out ik-ret-in ik-ret-up) ik-results-before)
-            (when draw? (send *irtviewer* :draw-objects :flush t))
+            ;(when draw? (send *irtviewer* :draw-objects :flush t))
             )
           )
         )
@@ -1533,7 +1533,7 @@
             (when (not (and ik-ret-out ik-ret-in ik-ret-up))
               (return-from front nil))
             (push-back (list i (not (null (and ik-ret-out ik-ret-in ik-ret-up))) ik-ret-out ik-ret-in ik-ret-up) ik-results-after)
-            (when draw? (send *irtviewer* :draw-objects :flush t))
+            (when draw? (when (boundp '*irtviewer) (send *irtviewer* :draw-objects :flush t)))
             )
           )
         )
@@ -1664,10 +1664,9 @@
       (return-from publish-drill-rotate-motion ret)
       )
     (ros::ros-info "drill-ik-results: ~a~%" *drill-ik-results*)
-    (when publish?
-      (move-robot-model? (move-robot-model (make-coords) "ground"))
-      (publish-motion-joint-states (append *drill-motion-in* *drill-motion-up*) :step-time step-time)
-      )
+    (when (and publish? move-robot-model?) (move-robot-model (make-coords) "ground")
+          (publish-motion-joint-states (append *drill-motion-in* *drill-motion-up*) :step-time step-time))
+    
     (when (and (consp ret) (boundp '*app*))
       (send *app* :show-text (format nil "result, ~A" (elt ret 0)))
       (when (equal (elt ret 0) :rotate)
@@ -2168,7 +2167,7 @@
       ))
   (dolist (av *av-list*)
     (send *robot* :angle-vector av)
-    (when draw? (send *irtviewer* :draw-objects))
+    (when draw? (when (boundp '*irtviewer*) (send *irtviewer* :draw-objects)))
     (when real?
       (send *ri* :angle-vector (send *robot* :angle-vector) 2000)
       (send *ri* :wait-interpolation))
@@ -2182,7 +2181,7 @@
         :rotation-axis :z)
   (push (send *robot* :angle-vector) *av-list*)
   ;;(send (make-coords :pos (float-vector x y z) :rpy (list -pi/2 0 -pi/2)) :draw-on :flush t :size 200 :width 5)
-  ;;(send *irtviewer* :draw-objects)
+  ;;(when (boundp '*irtviewer*) (send *irtviewer* :draw-objects))
   )
 
 ;; (defun tmp-drill
