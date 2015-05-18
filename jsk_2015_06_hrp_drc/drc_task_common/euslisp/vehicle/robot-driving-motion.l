@@ -836,6 +836,7 @@
        (send *viewer* :draw-objects)
        )
      )
+   (send robot :head axis :joint-angle) ;; return current angle
    )
 
   ;; egress
