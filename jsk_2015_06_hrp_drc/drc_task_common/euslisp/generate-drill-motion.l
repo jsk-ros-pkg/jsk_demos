@@ -1607,6 +1607,7 @@
          (diff-deg (elt rotate-result 3)))
       (while (and (< 0 drill-rotate-num) (< 1 diff-length))
         (let ((rotate-length (min diff-length ik-length)))
+          ;; check-coords-distance
           (send *robot* :angle-vector (elt *drill-motion-up* 0))
           (when real? (model2real :time 3000))
           (send *robot* :angle-vector (elt *drill-motion-in* 0))
