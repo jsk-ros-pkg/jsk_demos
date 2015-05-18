@@ -80,6 +80,13 @@
          release-brake-command 0 ;; 5
          max-turn-handle-omega 90
          )
+
+   ;; initialize joy controller values if exists
+   (when (ros::wait-for-service "/drive/operation/initialize" 1)
+     (let ((req (instance std_srvs::EmptyRequest :init)))
+       (ros::service-call "/drive/operation/initialize" req t)
+       )
+     )
    
    ;; subscriber for operator command
    (ros::subscribe "/drive/operation/accel_cmd"
@@ -298,6 +305,12 @@
    (warn "init-head~%")
    (send self :neck-cmd 0.0 :neck-p :time 2000)
    (send self :neck-cmd 0.0 :neck-y :time 2000)
+   ;; initialize joy_vehicle 
+   (when (ros::wait-for-service "/drive/operation/initialize" 1)
+     (let ((req (instance std_srvs::EmptyRequest :init)))
+       (ros::service-call "/drive/operation/initialize" req t)
+       )
+     )
    ;; enable operation
    (send self :controller-mode :handle :operation)
    (send self :controller-mode :accel :operation)
@@ -306,6 +319,11 @@
   (:grasp
    (&rest args)
    (let (grasp-result)
+     (when (ros::wait-for-service "/drive/operation/synchronize" 1)
+       (let ((req (instance std_srvs::EmptyRequest :init)))
+         (ros::service-call "/drive/operation/synchronize" req t)
+         )
+       )
      (setq grasp-result (send* motion :grasp-handle args))
      (when grasp-result
        (send self :controller-state :handle :running)
