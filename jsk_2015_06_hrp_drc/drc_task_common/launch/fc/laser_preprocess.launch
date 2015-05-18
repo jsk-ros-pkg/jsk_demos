@@ -1,9 +1,11 @@
 <launch>
-  <include file="$(find drc_task_common)/launch/machines/JAXON.machine" />
+
   <arg name="ODOM_FRAME" default="odom" />
   <arg name="USE_LOCALHOST" default="false" />
+  <include file="$(find drc_task_common)/launch/machines/$(env ROBOT).machine" />
   <arg name="machine" value="vmachine" unless="$(arg USE_LOCALHOST)" />
   <arg name="machine" value="localhost" if="$(arg USE_LOCALHOST)" />
+
   <group ns="laser_preprocess">
     <node pkg="nodelet" type="nodelet" name="laser_preprocess_manager"
           machine="$(arg machine)"
