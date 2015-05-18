@@ -37,24 +37,17 @@
    (&key ((:real tmp-real) nil)
          ((:motion tmp-motion) nil)
          ((:rate tmp-ros-rate) 10.0) (roseus-init t)
-         (approach-handle nil) (approach-pedal nil)
+         (initialize t)
          )
    (when roseus-init
      (ros::roseus "robot_driving_controller")
      (ros::rate tmp-ros-rate)
      )
    (unless tmp-motion
-     (setq tmp-motion (instance robot-driving-motion :init :real tmp-real))
+     (setq tmp-motion (instance robot-driving-motion :init :real nil)) ;; real is set as tmp-real after initialization (motion is assumed to be pass with :real nil. if not, initialization process would be executed twice
      )
    (setq *motion* tmp-motion)
    (setq motion *motion*)
-   (when approach-handle
-     (send motion :approach-handle)
-     )
-   (when approach-pedal
-     (send motion :approach-accel-pedal)
-     (send motion :approach-brake-pedal)
-     )
    
    ;; initialize instance valiables
    (setq ros-rate tmp-ros-rate
@@ -168,6 +161,11 @@
    (send self :controller-mode :accel :stop)
    (send self :controller-mode :brake :stop)
    (send self :controller-mode :neck :stop)
+
+   ;; initialize
+   (when initialize
+     (send self :initialize :sync nil :real tmp-real)
+     )
    )
 
   ;; vehicle ui callback
@@ -303,27 +301,32 @@
   
   ;; interface command
   (:initialize
-   (&key (sync nil))
+   (&key (sync nil) (time 10000) (real (send motion :real)))
    (when (and sync (not (send *ri* :simulation-modep)))
      (send motion :sync-all-controller)
      )
-   (warn "init-pose~%")
-   (send motion :ride :init-pose t)
-   (send motion :drive-init-pose-crank :limb :larm :move-arm nil) ;; todo: fix and remove
-   (warn "approach-fist~%")
-   (send self :approach-fist :reach-until-touch nil)
-   (warn "approach-accel~%")
-   (send self :approach-accel)
-   (warn "approach-floor~%")
-   (send self :approach-floor :offset #f(0 0 0))
-   (warn "approach-handle~%")
-   (send self :approach-handle)
-   (send self :publish-body-relative-steering-coords)
-   ;; move head front
-   (warn "init-head~%")
-   (send self :neck-cmd 0.0 :neck-p :time 2000)
-   (send self :neck-cmd 0.0 :neck-y :time 2000)
-   ;; initialize joy_vehicle 
+   (let ()
+     (send motion :real nil :use-real-robot-angle nil) ;; temporary disable (send *ri* :angle-vector)
+     (warn "init-pose~%")
+     (send motion :ride :init-pose t)
+     (send motion :drive-init-pose-crank :limb :larm :move-arm nil) ;; todo: fix and remove
+     (warn "approach-fist~%")
+     (send self :approach-fist :reach-until-touch nil)
+     (warn "approach-accel~%")
+     (send self :approach-accel)
+     (warn "approach-floor~%")
+     (send self :approach-floor :offset #f(0 0 0))
+     (warn "approach-handle~%")
+     (send self :approach-handle)
+     (send self :publish-body-relative-steering-coords)
+     ;; move head front
+     (warn "init-head~%")
+     (send self :neck-cmd 0.0 :neck-p :time 2000)
+     (send self :neck-cmd 0.0 :neck-y :time 2000)
+     (send motion :model2real :time time :wait-interpolation t :real real) ;; send *ri* :angle-vector if real is t
+     (send motion :real real :use-real-robot-angle nil) ;; set real as argument
+     )
+   ;; initialize joy_vehicle if exists
    (when (ros::wait-for-service "/drive/operation/initialize" 1)
      (let ((req (instance std_srvs::EmptyRequest :init)))
        (ros::service-call "/drive/operation/initialize" req t)
@@ -363,10 +366,10 @@
      )
    )
   (:correct-handle-pose
-   (&key (yes nil) (grasp t) (time 2500))
+   (&key (yes nil) (grasp t) (time 2500) (look-at-handle t))
    (let (ret-result approach-result grasp-result)     
      (setq handle-pose-estimate-flag t)
-     (setq ret-result (send self :execute-handle-pose-compensation :yes yes))
+     (setq ret-result (send self :execute-handle-pose-compensation :yes yes :look-at-handle look-at-handle))
      ;; grasp in new handle coords
      (when grasp
        (warn "regrasp~%")
@@ -382,10 +385,7 @@
                 (send self :resume-handle-pose)
                 )
          )
-       (when (send motion :real)
-         (send *ri* :angle-vector (send (send motion :robot) :angle-vector) time)
-         (send *ri* :wait-interpolation)
-         )
+       (send motion :model2real :time time :wait-interpolation t)
        )
      (setq handle-pose-estimate-flag nil)
      (append ret-result (list approach-result grasp-result)) ;; return all results
@@ -818,7 +818,7 @@
   (:execute-handle-pose-compensation
    (&rest args &key (tm 2500) (limb (send motion :grasp-arm))
           (position-threshold 1000) (yes nil) (min-wait-sec 5.0) (max-wait-sec 30.0)
-          (release-offset #f(-100 0 0)) (shoulder-y-deg 0.0)
+          (release-offset #f(-100 0 0)) (shoulder-y-deg 0.0) (look-at-handle t)
          )
    ;; wait handling   
    (let (wait-start
@@ -853,12 +853,12 @@
      (when release-result
        ;; temporary ;;
        (send (send motion :robot) (send motion :grasp-arm) :shoulder-y :joint-angle shoulder-y-deg)
+       (send motion :model2real :time tm :wait-interpolation t) ;; execute shoulder-y avoidance
        ;; temporary ;;
-       (setq old-head-angle-vector (send motion :robot :head :angle-vector))
-       (send (send motion :robot) :look-at-target (send motion :car :vehicle-handle :steering-center)) ;; look at handle
-       (when (send motion :real)
-         (send *ri* :angle-vector (send motion :robot :angle-vector) tm)
-         (send *ri* :wait-interpolation)
+       (when look-at-handle
+         (setq old-head-angle-vector (send motion :robot :head :angle-vector))
+         (send (send motion :robot) :look-at-target (send motion :car :vehicle-handle :steering-center)) ;; look at handle
+         (send motion :model2real :time tm :wait-interpolation t) ;; execute look-at
          )
        (warn "wait recognition~%")
        (setq wait-start (ros::time-now))
@@ -887,10 +887,9 @@
          (setq compensation-result nil)
          (send motion :robot :newcoords old-robot-coords) ;; revert
          )
-       (send (send motion :robot) :head :angle-vector old-head-angle-vector) ;; look at front
-       (when (send motion :real)
-         (send *ri* :angle-vector (send motion :robot :angle-vector) time)
-         (send *ri* :wait-interpolation)
+       (when look-at-handle
+         (send (send motion :robot) :head :angle-vector old-head-angle-vector) ;; look at front
+         (send motion :model2real :time tm :wait-interpolation t) ;; resume head
          )
        (setq handle-pose-old-robot-coords old-robot-coords) ;; save old-robot-coords to revert
        )
