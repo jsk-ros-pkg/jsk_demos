@@ -288,9 +288,15 @@
 
   (:overwrite-handle-angle-callback
    (req)
-   (let ((res (send req :response)))
-     (send res :set_value (send motion :overwrite-handle-angle (send req :value)))
+   (let ((res (send req :response)) (pub-msg (instance std_msgs::Float32 :init)))
+     (send pub-msg :data (send res :set_value (send motion :overwrite-handle-angle (send req :value))))
      (warn "overwrite handle angle to ~A~%" (send motion :car :handle-joint :joint-angle))
+     (ros::publish "/drive/controller/goal_handle_angle" pub-msg)
+     (when (ros::wait-for-service "/drive/operation/synchronize" 1)
+       (let ((req (instance std_srvs::EmptyRequest :init)))
+         (ros::service-call "/drive/operation/synchronize" req t)
+         )
+       )
      res
      )
    )
