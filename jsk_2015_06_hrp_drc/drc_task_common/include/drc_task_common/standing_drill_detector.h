@@ -103,6 +103,7 @@ namespace drc_task_common
     ros::Publisher pub_debug_foot_pose_;
     ros::Publisher pub_origin_pose_;
     ros::Publisher pub_foot_marker_;
+    ros::Publisher pub_debug_cylinder_points_;
     message_filters::Subscriber<sensor_msgs::PointCloud2> sub_cloud_;
     message_filters::Subscriber<jsk_recognition_msgs::BoundingBoxArray> sub_box_;
     message_filters::Subscriber<jsk_recognition_msgs::ClusterPointIndices> sub_indices_;
@@ -127,6 +128,9 @@ namespace drc_task_common
     double drill_min_height_;
     double drill_max_height_;
     bool optimistic_;
+    bool use_cylinder_axis_;
+    double cylinder_z_offset_;
+    double cylinder_length_;
   private:
     
   };
