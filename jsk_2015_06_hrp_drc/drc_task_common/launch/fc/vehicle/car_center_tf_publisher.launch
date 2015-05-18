@@ -6,27 +6,45 @@
   <arg name="HRP2" default="false"/>
 
   <group if="$(arg SIMULATION_MODE)">
-    <node pkg="tf" type="static_transform_publisher" name="TF_car_center" args="0.05 0.3 -1.2 0 0 0 utorso car_center 100" /> <!-- because initial position is y : -0.6, z : -0.1 // start_gazebo_drive_shimulator.sh -->
-    <!-- <node pkg="tf" type="static_transform_publisher" name="TF_car_center" args="0.05 -0.3 -1.25 0 0 0 $(arg PINNED_LINK) car_center 10" /> --> <!-- because initial position is y : -0.6 // start_gazebo_drive_shimulator.sh  0.3 (atlas is right side of the car, and -0.3 left -->
+    <!-- static tf "car_center" (parent link: utorso) publisher for gazebo_drive_simulator -->
+    <node pkg="tf" type="static_transform_publisher" name="TF_car_center" args="0.05 0.3 -1.2 0 0 0 utorso car_center 100" /> <!-- initial position is y : -0.6, z : -0.1 // start_gazebo_drive_shimulator.sh -->
   </group>
+
   <group if="$(arg ROSBAG_MODE)">
+    <!-- static tf "car_center" (parent link: multisense/head_root) publisher for ROSbags -->
     <include file="$(find drc_task_common)/launch/fc/vehicle/multisense_rosbag_static_tf_publisher.launch" />
   </group>
   <group if="$(arg REAL_MODE)">
     <group ns="/drive/recognition">
+      <!-- dynamic_tf_publisher -->
       <node pkg="dynamic_tf_publisher" type="tf_publish.py" name="marker_dynamic_tf_publisher" />
+      <!-- checkerboard_detector -->
+      <param name="display" type="int" value="1"/>
+      <param name="rect0_size_x" type="double" value="0.0152"/>
+      <param name="rect0_size_y" type="double" value="0.0152"/>
+      <param name="grid0_size_x" type="int" value="3"/>
+      <param name="grid0_size_y" type="int" value="5"/>
+      <param name="board_type" value="acircle" />
+      <param name="use_P" value="true" />
+      <param name="invert_color" value="true" />
+      <param name="type0" type="string" value="data/ricebox.kinbody.xml"/>
+      <node pkg="checkerboard_detector" name="checkerboard_detector" type="checkerboard_detector" respawn="false">
+        <remap from="camera_info" to="/multisense/left/camera_info"/>
+        <remap from="image" to="/multisense/left/image_rect_color"/>
+        <remap from="objectdetection_pose" to="marker/car_pose" />
+      </node>
     </group>
+    <!-- tf "car_marker" publisher from PoseStamped -->
     <node pkg="roseus" type="roseus" name="TF_BODY_marker"
           args="$(find drc_task_common)/euslisp/vehicle/car_center_publisher.l" >
       <remap from="car_pose_marker" to="/drive/recognition/marker/car_pose" />
     </node>
+    <!-- static tf "car_center" (parent link: car_marker) publisher -->
     <group if="$(arg JAXON)">
       <node pkg="tf" type="static_transform_publisher" name="TF_marker_car_center" args="0.0 1.322075 0.205468 -1.571 -1.074 -3.142 car_marker car_center 100" />
     </group>
     <group if="$(arg HRP2)">
       <node pkg="tf" type="static_transform_publisher" name="TF_marker_car_center" args="0.0 1.322075 0.205468 -1.571 -1.074 -3.142 car_marker car_center 100" />
     </group>
-
-
   </group>
 </launch>
