@@ -989,6 +989,19 @@
      )
    real
    )
+  (:model2real
+   (&key (time 10000) (controller :default-controller) (wait-interpolation t) ((:real tmp-real) real))
+   (let ((retval nil))
+     (when tmp-real
+       (setq retval (send *ri* :angle-vector (send self :robot :angle-vector) time controller))
+       (when wait-interpolation
+         (send *ri* :wait-interpolation controller)
+         )
+       (send *viewer* :draw-objects)
+       )
+     retval
+     )
+   )
   (:grasp-arm 
    (&optional val) 
    (when val
