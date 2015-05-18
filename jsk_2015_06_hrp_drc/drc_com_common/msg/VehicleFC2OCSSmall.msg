@@ -9,6 +9,7 @@ float32 min_step # drive/controller/min_step
 float32 max_step # drive/controller/max_step
 uint8 handle_mode # drive/controller/handle_mode
 uint8 accel_mode # drive/controller/accel_mode
+uint8 neck_mode # drive/controller/neck_mode
 
 # to vehicle_ui
 bool initialize_response
