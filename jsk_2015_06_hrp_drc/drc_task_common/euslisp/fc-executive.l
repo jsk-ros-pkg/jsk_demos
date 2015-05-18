@@ -440,7 +440,11 @@
 	  (set-drill-default-coords)
 	  (send msg :params (coords-set-to-float-vector 
 			     (list
-			      (send (send (send *robot* :body_lk) :copy-worldcoords) :transformation (send *drill* :copy-worldcoords)) (send (send (send *robot* *drill-main-arm* :end-coords) :copy-worldcoords) :transformation (send *drill* :copy-worldcoords))) (length (send msg :params))))
+			      (send (send (send *robot* :body_lk) :copy-worldcoords) :transformation (send *drill* :copy-worldcoords)) 
+                              (send (send (send *robot* *drill-main-arm* :end-coords) :copy-worldcoords) :transformation (send *drill* :copy-worldcoords))
+                              (make-coords :pos (float-vector (check-diff-angle) 0 0))
+                              ) (length (send msg :params))
+                              ))
           (send msg :type drc_com_common::FC2OCSSmall::*DRILL_GRASP_FINISHED*)
           (send self :send-to-ocs msg))
         )
@@ -549,7 +553,10 @@
         ;; send finish signal to ocs
         (let ((msg (instance drc_com_common::FC2OCSSmall :init)))
 	  (send msg :params (coords-set-to-float-vector 
-			     (list							 (send (send (send *robot* :body_lk) :copy-worldcoords) :transformation (send *drill* :copy-worldcoords)) (send (send (send *robot* *drill-main-arm* :end-coords) :copy-worldcoords) :transformation (send *drill* :copy-worldcoords))) (length (send msg :params))))
+			     (list			   
+                              (send (send (send *robot* :body_lk) :copy-worldcoords) :transformation (send *drill* :copy-worldcoords))
+                              (send (send (send *robot* *drill-main-arm* :end-coords) :copy-worldcoords) :transformation (send *drill* :copy-worldcoords))
+                              ) (length (send msg :params))))
 	  (send msg :type drc_com_common::FC2OCSSmall::*DRILL_ROTATE_FINISHED*)
           (send self :send-to-ocs msg))
         )

@@ -1139,7 +1139,7 @@
       (let* ((params (send msg :params))
              (coords-set (float-vector-to-coords-set params)))
         (send self :show-text 
-              (format nil "Recognize drill. pos:~A" (send (elt coords-set 0) :worldpos)) :recognize)
+              (format nil "drill grasp succeeded. Left Rotation :~A" (elt (send (elt coords-set 2) :worldpos) 0)))
         ;; store result
 	(set-primitive-marker-pose (elt coords-set 0) "BODY" :name "drill")
 	(setq drill-grasp-relative-coords (elt coords-set 1))
@@ -1164,7 +1164,7 @@
       (let* ((params (send msg :params))
              (coords-set (float-vector-to-coords-set params)))
         (send self :show-text 
-              (format nil "Recognize drill. pos:~A" (send (elt coords-set 0) :worldpos)) :recognize)
+              (format nil "drill grasp succeeded. Left Rotation :~A" (elt (send (elt coords-set 2) :worldpos) 0)))
         ;; store result
         (setq drill-grasp-relative-coords (elt coords-set 1))
 	(set-primitive-marker-pose (elt coords-set 0) "BODY" :name "drill"))
