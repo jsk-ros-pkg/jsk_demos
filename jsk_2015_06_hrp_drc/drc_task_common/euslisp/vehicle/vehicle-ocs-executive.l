@@ -3,6 +3,7 @@
 (load "package://drc_task_common/euslisp/vehicle/vehicle-executive-utils.l")
 
 (ros::roseus-add-msgs "drc_com_common")
+(ros::roseus-add-srvs "drc_task_common")
 (ros::roseus "vehicle_ocs_executive")
 
 (setq *latest-handle-cmd* nil)
@@ -16,6 +17,9 @@
 (setq *approach-accel-service-server* (instance empty-service-server :init "/ocs/drive/controller/approach_accel"))
 (setq *reach-arm-service-server* (instance empty-service-server :init "/ocs/drive/controller/reach_arm"))
 (setq *reach-leg-service-server* (instance empty-service-server :init "/ocs/drive/controller/reach_leg"))
+(setq *set-max-step-service-server* (instance set-value-service-server :init "/ocs/drive/controller/set_max_value"))
+(setq *set-min-step-service-server* (instance set-value-service-server :init "/ocs/drive/controller/set_min_value"))
+(setq *overwrite-handle-angle-service-server* (instance set-value-service-server :init "/ocs/drive/controller/overwrite_handle_angle"))
 
 (defun handle-cmd-callback (msg)
   (setq *latest-handle-cmd* (send msg :data))
@@ -56,6 +60,9 @@
     (send *approach-accel-service-server* :receive (send msg :approach_accel_response))
     (send *reach-arm-service-server* :receive (send msg :reach_arm_response))
     (send *reach-leg-service-server* :receive (send msg :reach_leg_response))
+    (send *set-max-step-service-server* :receive (send msg :set_max_step_response))
+    (send *set-min-step-service-server* :receive (send msg :set_min_step_response))
+    (send *overwrite-handle-angle-service-server* :receive (send msg :overwrite_handle_angle_response))    
     )
   )
 
@@ -76,6 +83,12 @@
     (send msg :approach_accel_request (send *approach-accel-service-server* :request))
     (send msg :reach_arm_request (send *reach-arm-service-server* :request))
     (send msg :reach_leg_request (send *reach-leg-service-server* :request))
+    (send msg :set_max_step_request (send *set-max-step-service-server* :request))
+    (send msg :set_max_step_request_value (send *set-max-step-service-server* :request_value))
+    (send msg :set_min_step_request (send *set-min-step-service-server* :request))
+    (send msg :set_min_step_request_value (send *set-min-step-service-server* :request_value))
+    (send msg :overwrite_handle_angle_request (send *overwrite-handle-angle-service-server* :request))
+    (send msg :overwrite_handle_angle_request_value (send *overwrite-handle-angle-service-server* :request_value))
     (ros::publish "/ocs_to_fc_vehicle/input" msg)
     )
   )
@@ -106,6 +119,9 @@
 (ros::advertise-service "/ocs/drive/controller/approach_accel" std_srvs::Empty #'send *approach-accel-service-server* :callback)
 (ros::advertise-service "/ocs/drive/controller/reach_arm" std_srvs::Empty #'send *reach-arm-service-server* :callback)
 (ros::advertise-service "/ocs/drive/controller/reach_leg" std_srvs::Empty #'send *reach-leg-service-server* :callback)
+(ros::advertise-service "/ocs/drive/controller/set_max_step" drc_task_common::SetValue #'send *set-max-step-service-server* :callback)
+(ros::advertise-service "/ocs/drive/controller/set_min_step" drc_task_common::SetValue #'send *set-min-step-service-server* :callback)
+(ros::advertise-service "/ocs/drive/controller/overwrite_handle_angle" drc_task_common::SetValue #'send *overwrite-handle-angle-service-server* :callback)
 
 (ros::rate 10)
 (while (ros::ok)
