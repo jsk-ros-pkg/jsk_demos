@@ -14,3 +14,9 @@ bool approach_handle_request
 bool approach_accel_request
 bool reach_arm_request
 bool reach_leg_request
+bool set_max_step_request
+float32 set_max_step_request_value
+bool set_min_step_request
+float32 set_min_step_request_value
+bool overwrite_handle_angle_request
+float32 overwrite_handle_angle_request_value
