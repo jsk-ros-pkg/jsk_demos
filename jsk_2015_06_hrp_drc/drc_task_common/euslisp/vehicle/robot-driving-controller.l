@@ -140,6 +140,7 @@
    (ros::advertise "/drive/controller/handle_mode" std_msgs::String 1)
    (ros::advertise "/drive/controller/accel_mode" std_msgs::String 1)
    (ros::advertise "/drive/controller/brake_mode" std_msgs::String 1)
+   (ros::advertise "/drive/controller/neck_mode" std_msgs::String 1)
    
    ;; for vehicle ui
    (ros::advertise-service "/drive/controller/initialize" std_srvs::Empty #'send self :initialize-callback)
@@ -156,6 +157,7 @@
    (ros::advertise-service "/drive/controller/set_min_step" drc_task_common::SetValue #'send self :set-min-step-callback)
    (ros::advertise-service "/drive/controller/set_handle_mode" drc_task_common::StringRequest #'send self :set-handle-mode-callback)
    (ros::advertise-service "/drive/controller/set_accel_mode" drc_task_common::StringRequest #'send self :set-accel-mode-callback)
+   (ros::advertise-service "/drive/controller/set_neck_mode" drc_task_common::StringRequest #'send self :set-neck-mode-callback)
    (ros::advertise-service "/drive/controller/overwrite_handle_angle" drc_task_common::SetValue #'send self :overwrite-handle-angle-callback)
 
    ;; initialize plist
@@ -165,6 +167,7 @@
    (send self :controller-mode :handle :stop)
    (send self :controller-mode :accel :stop)
    (send self :controller-mode :brake :stop)
+   (send self :controller-mode :neck :stop)
    )
 
   ;; vehicle ui callback
@@ -274,6 +277,15 @@
      )
    )
 
+  (:set-neck-mode-callback
+   (req)
+   (let ((res (send req :response)))
+     (send self :controller-mode :neck (read-from-string (format nil ":~A" (string-downcase (send req :data)))))
+     (warn "set neck-mode to ~A~%" (send self :controller-mode :neck))
+     res
+     )
+   )
+
   (:overwrite-handle-angle-callback
    (req)
    (let ((res (send req :response)))
@@ -314,6 +326,7 @@
    ;; enable operation
    (send self :controller-mode :handle :operation)
    (send self :controller-mode :accel :operation)
+   (send self :controller-mode :neck :operation)
    nil
    )
   (:grasp
@@ -345,7 +358,7 @@
    )
   (:correct-handle-pose
    (&key (yes nil) (grasp t) (time 2500))
-   (let (ret-result approach-result grasp-result)
+   (let (ret-result approach-result grasp-result)     
      (setq handle-pose-estimate-flag t)
      (setq ret-result (send self :execute-handle-pose-compensation :yes yes))
      ;; grasp in new handle coords
@@ -556,6 +569,7 @@
      (unless (equal (send self :controller-mode :accel) :operation)
        (warn "accel mode is ~A~%" (send self :controller-mode :accel))
        (setq accel-command 0.0) ;; forcely stop accel
+       (return-from :accel-callback nil) ;; do not accel
        )
      ;; send accel command
      (when (or (not old-accel-command)
@@ -588,12 +602,20 @@
   
   (:neck-y-callback
    (msg)
+   (unless (equal (send self :controller-mode :neck) :operation)
+     (warn "neck mode is ~A~%" (send self :controller-mode :neck))
+     (return-from :neck-y-callback nil) ;; do not turn handle
+     )
    (let ((neck-command (send msg :data)))
      (send self :neck-cmd neck-command :neck-y)
      )
    )
   (:neck-p-callback
    (msg)
+   (unless (equal (send self :controller-mode :neck) :operation)
+     (warn "neck mode is ~A~%" (send self :controller-mode :neck))
+     (return-from :neck-p-callback nil) ;; do not turn handle
+     )
    (let ((neck-command (send msg :data)))
      (send self :neck-cmd neck-command :neck-p)
      )
@@ -799,6 +821,8 @@
          release-result grasp-result approach-result
          compensation-result
          )
+     (warn "stop neck control~%")
+     (send self :controller-mode :neck :stop)
      (warn "release accel~%")
      (send self :accel-cmd 0.0) ;; force stop
      (send self :controller-mode :accel :stop)
