@@ -969,6 +969,7 @@ It sends :angle-vector to robot and return 'finished' message to ocs"
     (send *ri* :start-st)
     (send self :send-rviz-button-finished-to-ocs))
   (:hrpsys-start-imp-command-cb (msg)
+    (set-default-impedance-param)
     (send *ri* :start-impedance :arms :moment-gain #f(0 0 0) :k-p 1000 :d-p 400)
     (send self :send-rviz-button-finished-to-ocs))
   (:hrpsys-stop-abc-command-cb (msg)

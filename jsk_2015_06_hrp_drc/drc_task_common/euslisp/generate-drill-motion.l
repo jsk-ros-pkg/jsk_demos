@@ -1004,12 +1004,11 @@
          (drill-motion-length (length drill-motion-av-list)))
     (when (not (= drill-motion-length 0))
       (when real?
+        (set-default-impedance-param)
         (cond ((or (equal *robot-name* "HRP2JSKNTS") (equal *robot-name* "HRP2JSKNT"))
-               (set-default-impedance-param)
                (send *ri* :start-impedance :arms :moment-gain (float-vector 0 0 0) :k-p 3000 :d-p 400)) ;; start imp hard
               (t
-               (set-default-impedance-param)
-               (send *ri* :start-impedance *drill-main-arm* :moment-gain (float-vector 0 0 0) :k-p 3000 :d-p 1500))))
+               (send *ri* :start-impedance :arms :moment-gain (float-vector 0 0 0) :k-p 3000 :d-p 1500))))
 
       (when real? (send *ri* :set-ref-force #f(0 0 -20) 2000 *drill-main-arm*))
       ;; first try
