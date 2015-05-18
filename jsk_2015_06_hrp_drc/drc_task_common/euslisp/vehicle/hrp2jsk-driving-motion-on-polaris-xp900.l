@@ -27,7 +27,8 @@
    ;; (send robot :move-to (make-coords :pos (float-vector -80 370.0 80) :rpy (float-vector 0.0 0.0 0.0)) :world)
    ;; (send robot :move-to (make-coords :pos (float-vector -80 470.0 80) :rpy (float-vector 0.0 0.0 0.0)) :world) ;; condier egress in driving-simulator
    ;; (send robot :move-to (make-coords :pos (float-vector -80 470.0 180) :rpy (float-vector 0.0 (deg2rad 5.0) 0.0)) :world) ;; adjusted in real polaris in lasvegas
-   (send robot :move-to (make-coords :pos (float-vector -80 420.0 180) :rpy (float-vector 0.0 (deg2rad 5.0) 0.0)) :world)
+   ;; (send robot :move-to (make-coords :pos (float-vector -80 420.0 180) :rpy (float-vector 0.0 (deg2rad 5.0) 0.0)) :world)
+   (send robot :move-to (make-coords :pos (float-vector -140 420.0 180) :rpy (float-vector 0.0 (deg2rad 5.0) 0.0)) :world)
    (when init-pose
      (send self :drive-init-pose)
      )
