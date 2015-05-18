@@ -320,6 +320,14 @@
     (ros::publish "/urdf_control_marker/set_pose" msg)
     ))
 
+(defun convert-coords-frame
+  (coords &key (base-frame "/ground") (target-frame "/odom-on-ground"))
+  (setq tf-trans (send (send *tf* :lookup-transform target-frame base-frame (ros::time 0)) :inverse-transformation))
+  (setq coords (if tf-trans (send tf-trans :inverse-transformation) (make-coords)))
+  coords
+  )
+
+
 (defun get-robot-model-current-pos
   ()
   (let* ((base-frame "/ground") (target-frame "/robot_marker_root")

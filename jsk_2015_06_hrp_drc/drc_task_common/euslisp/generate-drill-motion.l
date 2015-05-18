@@ -44,7 +44,7 @@
                            (list (deg2rad (if (equal *drill-main-arm* :rarm) 80 160)) 0 0) ;; for finger only
                            ))
                         (t ;;jaxon
-                         (if *drill-reverse-hand* (list (deg2rad (if (equal *drill-main-arm* :rarm) 150 30)) 0 pi) (list (deg2rad (if (equal *drill-main-arm* :rarm) 60 210)) 0 0))
+                         (if *drill-reverse-hand* (list (deg2rad (if (equal *drill-main-arm* :rarm) 150 30)) 0 pi) (list (deg2rad (if (equal *drill-main-arm* :rarm) 30 210)) 0 0))
                          )
                         ))
          ;; :coords (make-coords :pos #f(0 0 170) :rpy (if *drill-reverse-hand* (list (deg2rad 180) 0 pi) (list (deg2rad 90) 0 0)))
@@ -722,7 +722,7 @@
   )
 (defun set-ref-force-with-condition
   ()
-  ;(return-from set-ref-force-with-condition nil)
+  (return-from set-ref-force-with-condition nil);; for test
   (if (< (elt (send *ri* :state :absolute-force-vector *drill-main-arm*) 2) -7)
       (progn
         (speak-en "grasp succeeded, add ref force")
@@ -998,14 +998,14 @@
             (t
              (if *drill-reverse-hand*
                  (send *drill* :newcoords (make-coords :pos (float-vector 388 -110 1285) :rpy (list -2.828 0.17 -2.9)))
-               (send *drill* :newcoords (send (send (send *robot* :body_lk) :copy-worldcoords) :transform (make-coords :pos (float-vector 550 -100 100) :rpy (list 0 (deg2rad -10) (deg2rad 20))) :local))
+               (send *drill* :newcoords (send (send (send (send *robot* :body_lk) :copy-worldcoords) :transform (make-coords :pos (float-vector 550 -100 100) :rpy (list 0 (deg2rad -10) (deg2rad 20))) :local) :rotate (deg2rad 0) :x))
                )
              )
             )
       ;; end place drill
       (if (equal *drill-main-arm* :larm) (mirror-drill))
       (setq ik-ret (fullbody-inverse-kinematics-for-drill-button :x-offset 0 :y-offset 0 :z-offset -100 :draw? draw?))
-
+      (when draw? (send *irtviewer* :draw-objects))
       (push-back (list 0 (not (null ik-ret)) (send *robot* :angle-vector)) ik-results)
       (when (and fin? (not ik-ret)) (return-from drill-ik nil))
       ;; pre-push2
@@ -1824,7 +1824,7 @@
         ((equal *robot-name* "JAXON")
          (if *drill-reverse-hand*
              (send *robot* :reset-manip-pose)
-           #f(0.854466 2.43593 -20.9027 42.9141 -21.8248 -0.9937 0.854423 2.44909 -21.6614 44.928 -23.08 -1.00687 -4.38145 2.65829 -1.21382 0.0 0.0 24.8185 31.3379 -42.786 -0.105656 -105.654 -20.5151 5.36334 -29.4141 -40.6966 42.7178 64.5921 31.7714 -92.2503 -24.2494 28.2694 -70.7325) ;; (test-drill-button-motion) (send *robot* :angle-vector (elt *drill-motion* 0))
+           #f(2.03272 -1.10746 -18.4222 37.4121 -20.1829 0.277957 2.03297 -1.09553 -17.1498 35.9931 -20.0362 0.266026 -0.035991 0.125934 -0.881805 0.0 0.0 28.2077 13.0974 -49.5278 -7.69838 -84.5153 -39.5325 44.8648 -37.8297 -14.7322 55.1311 42.536 20.5925 -113.521 111.075 -25.9983 27.7244)
            )
          )
         (t
@@ -1834,6 +1834,21 @@
     (send *robot* :angle-vector angle-ret)
     (when (equal *drill-main-arm* :larm) (setq angle-ret (get-mirror-angle-vector)))
     angle-ret
+    )
+  )
+
+(defun test-drill-button-motion-reachability
+  ()
+  (set-drill-button-environment-full nil)
+  (setq *answer-list* nil)
+  (dotimes (i 36)
+    (send (send *drill* :get :grasp-coords) :rotate (deg2rad 10) :z)
+    (send *ri* :angle-vector (send *robot* :reset-pose))
+    (set-drill-default-coords)
+    (setq *answer-for-grasp-test* (get-drill-button-motion-full (get-body-relative-coords (send *drill* :copy-worldcoords)) :draw? t :use-ri? t))
+    (if *drill-motion*
+        (push (* i 10) *answer-list*)
+      )
     )
   )
 
@@ -1876,7 +1891,8 @@
 (defun test-send-drill-grasp-motion (&key (rotate-drill? nil) (high? nil))
   (test-init)
   (send *robot* :fix-leg-to-coords (make-coords))
-  (send-drill-grasp-motion (get-body-relative-coords (make-coords :pos (float-vector 900 0 (if high? 1100 830)) :rpy (list (deg2rad 90) 0 0))) :rotate-drill? rotate-drill?) :draw? t)
+  (send-drill-grasp-motion (get-body-relative-coords (make-coords :pos (float-vector 900 0 (if high? 1100 830)) :rpy (list (deg2rad 90) 0 0))) :drill-rotate-num 2 :draw? t)
+  )
 (defun test-send-drill-grasp-motion-with-rot ()
   (send-drill-grasp-motion (make-coords :pos (float-vector 700 0 200)) :drill-rotate-num 3 :draw? t)
   )
