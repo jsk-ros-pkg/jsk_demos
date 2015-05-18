@@ -1159,8 +1159,8 @@
         (send self :show-text 
               (format nil "Recognize drill. pos:~A" (send (elt coords-set 0) :worldpos)) :recognize)
         ;; store result
+        (setq drill-grasp-relative-coords (elt coords-set 1))
 	(set-primitive-marker-pose (elt coords-set 0) "BODY" :name "drill"))
-      (setq drill-grasp-relative-coords (elt coords-set 1))
       )
     )
   (:go-pos-finished-callback (msg)
@@ -1720,7 +1720,7 @@
 (ros::advertise "/urdf_control_marker/set_pose" geometry_msgs::PoseStamped 1)
 (ros::advertise "/transformable_interactive_server/set_control_relative_pose" geometry_msgs::Pose 1)
 (ros::advertise "/drill_pose_list" geometry_msgs::PoseArray 1)
-
+(ros::advertise "/robotsound" sound_play::SoundRequest 5)
 ;; registering services for button UIs
 (ros::advertise-service "drive" std_srvs::Empty #'send *app* :drive-button-callback)
 (ros::advertise-service "valve" std_srvs::Empty #'send *app* :valve-button-callback)
