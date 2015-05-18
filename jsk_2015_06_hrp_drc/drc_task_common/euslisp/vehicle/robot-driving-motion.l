@@ -980,10 +980,12 @@
   (:car (&rest args) (forward-message-to car args))
   (:handle-angle () (send car :handle-joint :joint-angle))
   (:real
-   (&optional (val 0))
+   (&optional (val 0) &key (use-real-robot-angle t))
    (unless (equal val 0)
      (setq real val)
-     (send robot :angle-vector (send *ri* :state :potentio-vector)) ;; sync model angle-vector to real
+     (when use-real-robot-angle
+       (send robot :angle-vector (send *ri* :state :potentio-vector)) ;; sync model angle-vector to real
+       )
      )
    real
    )
