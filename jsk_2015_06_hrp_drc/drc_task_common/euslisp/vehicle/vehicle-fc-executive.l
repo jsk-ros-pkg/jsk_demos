@@ -12,6 +12,7 @@
 (setq *latest-max-step* nil)
 (setq *latest-handle-mode* nil)
 (setq *latest-accel-mode* nil)
+(setq *latest-neck-mode* nil)
 (setq *initialize-service-client* (instance empty-service-client :init "/drive/controller/initialize"))
 (setq *grasp-service-client* (instance empty-service-client :init "/drive/controller/grasp"))
 (setq *release-service-client* (instance empty-service-client :init "/drive/controller/release"))
@@ -68,6 +69,9 @@
 (defun accel-mode-callback (msg)
   (setq *latest-accel-mode* (convert-mode-to-uint8 (send msg :data)))
   )
+(defun neck-mode-callback (msg)
+  (setq *latest-neck-mode* (convert-mode-to-uint8 (send msg :data)))
+  )
 
 (defun main-spin-once ()
   (let ((msg (instance drc_com_common::VehicleFC2OCSSmall :init)))
@@ -91,6 +95,9 @@
       )
     (when *latest-accel-mode*
       (send msg :accel_mode *latest-accel-mode*)
+      )
+    (when *latest-neck-mode*
+      (send msg :neck_mode *latest-neck-mode*)
       )
     (send msg :initialize_response (send *initialize-service-client* :response))
     (send msg :grasp_response (send *grasp-service-client* :response))
@@ -124,6 +131,7 @@
 (ros::subscribe "/drive/controller/max_step" std_msgs::Float32 #'max-step-callback)
 (ros::subscribe "/drive/controller/handle_mode" std_msgs::String #'handle-mode-callback)
 (ros::subscribe "/drive/controller/accel_mode" std_msgs::String #'accel-mode-callback)
+(ros::subscribe "/drive/controller/neck_mode" std_msgs::String #'neck-mode-callback)
 
 (ros::rate 10)
 (while (ros::ok)

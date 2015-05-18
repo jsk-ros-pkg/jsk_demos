@@ -50,7 +50,11 @@
                                         )
           )
     (ros::publish "/ocs/drive/controller/accel_mode" tmp-msg)
-
+    (setq tmp-msg (make-msg-from-tunnel msg :neck_mode std_msgs::String
+                                        :convert #'convert-uint8-to-mode
+                                        )
+          )
+    (ros::publish "/ocs/drive/controller/neck_mode" tmp-msg)
     (send *initialize-service-server* :receive (send msg :initialize_response))
     (send *grasp-service-server* :receive (send msg :grasp_response))
     (send *release-service-server* :receive (send msg :release_response))
@@ -109,6 +113,7 @@
 (ros::advertise "/ocs/drive/controller/max_step" std_msgs::Float32 1)
 (ros::advertise "/ocs/drive/controller/handle_mode" std_msgs::String 1)
 (ros::advertise "/ocs/drive/controller/accel_mode" std_msgs::String 1)
+(ros::advertise "/ocs/drive/controller/neck_mode" std_msgs::String 1)
 
 (ros::advertise-service "/ocs/drive/controller/initialize" std_srvs::Empty #'send *initialize-service-server* :callback)
 (ros::advertise-service "/ocs/drive/controller/grasp" std_srvs::Empty #'send *grasp-service-server* :callback)
