@@ -41,6 +41,7 @@
   (setq *valve-stand-coords* (if stand-coords stand-coords (make-coords)))
   (send *robot* :fix-leg-to-coords *valve-stand-coords*)
   (setq *valve-motion* nil)
+  (setq *valve-ik-results* nil)
   ;; draw
   (setq *ground* (make-cube 1000 1000 1))
   (when (or draw? (boundp '*irtviewer*))
