@@ -415,7 +415,7 @@
 
 (defclass drc-terrain
   :super cascaded-link
-  :slots (block-dimensions block-bodies ground-body block-angle)
+  :slots (block-dimensions block-bodies ground-bodies block-angle)
   )
 
 (defmethod drc-terrain
@@ -433,9 +433,22 @@
            (let ((b (make-cube 3700 3300 10)))
              (send b :translate (float-vector 1200 1050 -5))
              (send b :set-color :gray)
-             (setq ground-body b)
+             (setq ground-bodies (list b))
              (send (car blist) :assoc b)
              (setq blist (append blist (list b)))))
+       (if (eq add-groud-p :test-field)
+           (let ((b1 (make-cube 400 3300 30))
+                 (b2 (make-cube 400 3300 30)))
+             (send b1 :translate (float-vector -380 1050 15))
+             (send b1 :set-color :darkgoldenrod)
+             (send b2 :translate (float-vector 2800 1050 15))
+             (send b2 :set-color :darkgoldenrod)
+             (send (car blist) :assoc b1)
+             (send (car blist) :assoc b2)
+             (setq ground-bodies (append ground-bodies (list b1 b2)))
+             (setq blist (append blist (list b1 b2)))
+             (send (car blist) :translate (float-vector 0 0 -30))
+             ))
        (setq l (instance bodyset-link :init (make-cascoords)
                          :name :root-link
                          :bodies blist))
@@ -525,7 +538,7 @@
    ()
    (let ((ret -1))
      (flatten (append (mapcar #'(lambda (x) (send self :get-terrain-top-face-from-block-idx (incf ret))) (make-list (/ (length block-bodies) 3)))
-                      (list (find-if #'(lambda (x) (memq :top (send x :id))) (send ground-body :faces)))))))
+                      (mapcar #'(lambda (gb) (find-if #'(lambda (x) (memq :top (send x :id))) gb)) (send ground-bodies :faces))))))
   )
 
 
@@ -799,8 +812,8 @@
   (setq *terrain* (instance drc-terrain :init :block-dimensions (list 390 190 150) :add-groud-p add-groud-p :block-angle 12.5))
   )
 
-(defun make-drc-terrain-test-field-ver (&key (add-groud-p))
-  (setq *terrain* (instance drc-terrain :init :block-dimensions (list 395 195 195) :add-groud-p add-groud-p :block-angle 15))
+(defun make-drc-terrain-test-field-ver (&key (add-groud-p :test-field))
+  (setq *terrain* (instance drc-terrain :init :block-dimensions (list 395 195 190) :add-groud-p add-groud-p :block-angle 15))
   )
 
 (defun make-drc-valve ()
