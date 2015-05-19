@@ -506,6 +506,17 @@
      (instance bodyset :init (make-cascoords) :bodies (list block1 block2 base))
      )
    )
+  (:calc-block-set-region
+   ()
+   (let* ((b0 (send self :make-drc-block-set-one)) ;; dummy
+          (b1 (send (make-bounding-box (flatten (send-all (send b0 :bodies) :vertices))) :body)))
+     ;; average of x and y
+     (/ (+ (- (elt (find-extream (send b1 :vertices) #'(lambda (x) (elt x 0)) #'>) 0)
+              (elt (find-extream (send b1 :vertices) #'(lambda (x) (elt x 0)) #'<) 0))
+           (- (elt (find-extream (send b1 :vertices) #'(lambda (x) (elt x 1)) #'>) 1)
+              (elt (find-extream (send b1 :vertices) #'(lambda (x) (elt x 1)) #'<) 1)))
+        2.0)
+     ))
   (:make-drc-terrain-block-bodies
    ()
    (let* ((orientation-map (list (list 1 2 3 0 1 2)
@@ -522,8 +533,9 @@
                             (list 1 2 1 1 2 1)
                             (list 1 1 1 1 1 1)
                             (list 0 0 0 0 0 0))))
-     (let* ((block-set-region-x 400)
-            (block-set-region-y 400))
+     (let* ((region (send self :calc-block-set-region))
+            (block-set-region-x region)
+            (block-set-region-y region))
        (dotimes (i (length orientation-map))
          (dotimes (j (length (elt orientation-map i)))
            (let* ((block-set (send self :make-drc-block-set-one)))
