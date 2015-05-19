@@ -37,7 +37,6 @@
    (&key ((:real tmp-real) nil)
          ((:motion tmp-motion) nil)
          ((:rate tmp-ros-rate) 10.0) (roseus-init t)
-         (initialize nil)
          )
    (when roseus-init
      (ros::roseus "robot_driving_controller")
