@@ -11,7 +11,6 @@
   (:init
    (&key ((:motion tmp-motion) nil)
          ((:real tmp-real) nil) ((:rate tmp-ros-rate) 10.0) (roseus-init t)
-         (initialize t)
          )
    (when roseus-init
      (ros::roseus "hrp2jsknt_driving_interface_on_polaris_xp900")
@@ -23,7 +22,6 @@
      )
    (send-super :init :motion tmp-motion
                :real tmp-real :rate tmp-ros-rate :roseus-init nil
-               :initialize initialize
                )
    (send self :step-accel-command -150.0)
    (send self :release-accel-command 0.0)

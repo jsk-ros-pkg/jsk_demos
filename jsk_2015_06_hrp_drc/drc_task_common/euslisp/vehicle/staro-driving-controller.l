@@ -23,7 +23,7 @@
      (setq tmp-motion (instance staro-driving-motion :init :real nil))
      )
    (send-super :init :real tmp-real :motion tmp-motion
-               :rate tmp-ros-rate :roseus-init nil :initialize initialize
+               :rate tmp-ros-rate :roseus-init nil
                )
    )
   )

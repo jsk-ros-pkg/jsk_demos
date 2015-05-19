@@ -457,6 +457,20 @@
   )
 (warn ";; (setup-drc-testbed-terrain-simulation-hrp2jsknt)~%")
 
+(defun setup-drc-testbed-terrain-simulation-hrp2jsknts ()
+  (unless (boundp '*terrain*) (make-drc-terrain-japanese-block-ver :add-groud-p t))
+  (setup-terrain-walk-hrp2jsknts)
+  (setup-terrain-walk-real-hrp2jsknts)
+  (walking-pose *robot* :root-link-height-offset -70) ;; <= -70mm
+  (send *robot* :fix-leg-to-coords (make-coords))
+  (send *terrain* :newcoords (make-coords :pos (float-vector 400 -2000 0)))
+  (setq *rleg-sole* (make-sole-body *robot* :rleg))
+  (setq *lleg-sole* (make-sole-body *robot* :lleg))
+  (setq *terrain-faces* (send *terrain* :get-all-terrain-top-faces))
+  (objects (list *robot* *rleg-sole* *lleg-sole* *terrain*))
+  )
+(warn ";; (setup-drc-testbed-terrain-simulation-hrp2jsknts)~%")
+
 (defun setup-drc-testbed-terrain-simulation-hrp2jsk ()
   (unless (boundp '*terrain*) (make-drc-terrain-japanese-block-ver :add-groud-p t))
   (setup-terrain-walk-hrp2jsk)

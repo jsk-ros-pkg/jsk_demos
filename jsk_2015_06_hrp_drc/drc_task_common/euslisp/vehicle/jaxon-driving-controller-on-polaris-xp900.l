@@ -10,14 +10,14 @@
 (defmethod jaxon-driving-controller-on-polaris-xp900
   (:init
    (&key ((:real tmp-real) nil) ((:rate tmp-ros-rate) 10.0)
-         (roseus-init t) (initialize t)
+         (roseus-init t)
          )
    (when roseus-init
      (ros::roseus "jaxon_driving_interface_on_polaris_xp900")
      (ros::rate tmp-ros-rate)
      )
    (send-super :init :motion (instance jaxon-driving-motion-on-polaris-xp900 :init :real nil)
-               :real tmp-real :rate tmp-ros-rate :roseus-init nil :initialize initialize
+               :real tmp-real :rate tmp-ros-rate :roseus-init nil
                )
    ;; (send self :accel-origin 4)
    ;; (send self :accel-origin -9.69405)
