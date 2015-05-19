@@ -9,7 +9,7 @@
 
 (defmethod hrp2jsknt-driving-controller-on-polaris-xp900
   (:init
-   (&key ((:real tmp-real) nil) ((:rate tmp-ros-rate) 10.0) (roseus-init t) (initialize t)
+   (&key ((:real tmp-real) nil) ((:rate tmp-ros-rate) 10.0) (roseus-init t)
          )
    (when roseus-init
      (ros::roseus "hrp2jsknt_driving_interface_on_polaris_xp900")
@@ -17,7 +17,7 @@
      )
    (send-super :init :motion (instance hrp2jsknt-driving-motion-on-polaris-xp900 :init :real nil
                                        :grasp-arm :rarm :grasp-point :handle-crank)
-               :real tmp-real :rate tmp-ros-rate :roseus-init nil :initialize initialize
+               :real tmp-real :rate tmp-ros-rate :roseus-init nil
                )
    )
   )
