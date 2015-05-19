@@ -1,6 +1,6 @@
 (load "package://drc_task_common/euslisp/robot-util.l")
 (load "package://drc_task_common/euslisp/util.l")
- ;(load "package://drc_task_common/models/dewalt_dc550ka.l")
+;(load "package://drc_task_common/models/dewalt_dc550ka.l")
 (load "package://drc_task_common/models/takenoko-drill")
 (load "package://drc_task_common/models/gun-drill.l")
 (ros::roseus-add-srvs "drc_task_common")
@@ -1295,7 +1295,7 @@
   (let (drill-oriented-coords
         (mid-dist-pos (float-vector 0 0 0)))
     (if (equal (length drill-coords-list) 1)
-        (setq mid-dist-pos (send (eld drill-coords-list 0) :pos))
+        (setq mid-dist-pos (send (elt drill-coords-list 0) :pos))
       (progn
         (dotimes (i (- (length drill-coords-list) 1))
           (setq mid-dist-pos (v+ mid-dist-pos (send (elt drill-coords-list i) :pos))))
