@@ -37,7 +37,7 @@
    (&key ((:real tmp-real) nil)
          ((:motion tmp-motion) nil)
          ((:rate tmp-ros-rate) 10.0) (roseus-init t)
-         (initialize t)
+         (initialize nil)
          )
    (when roseus-init
      (ros::roseus "robot_driving_controller")
@@ -162,10 +162,8 @@
    (send self :controller-mode :brake :stop)
    (send self :controller-mode :neck :stop)
 
-   ;; initialize
-   (when initialize
-     (send self :initialize :sync nil :real tmp-real)
-     )
+   ;; set real flag without moving model
+   (send motion :real tmp-real :use-real-robot-angle nil)
    )
 
   ;; vehicle ui callback
