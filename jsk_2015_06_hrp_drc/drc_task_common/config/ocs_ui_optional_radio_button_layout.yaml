@@ -9,12 +9,12 @@
   image: "package://drc_task_common/icons/auto-overwrite-stand-coords.png"
   image_size: [100, 100]
   column: 0
+  default_value: True
 - name: 'no overwrite stand-coords'
   service: 'no_overwrite_stand_coords'
   image: "package://drc_task_common/icons/no-overwrite-stand-coords.png"
   image_size: [100, 100]
   column: 0
-  default_value: True
 - name: 'enable head overwrite'
   service: 'enable_head_overwrite'
   image: "package://drc_task_common/icons/enable-head-overwrite.png"
@@ -85,3 +85,17 @@
 - name: 'drc-box2'
   service: 'door_name_drc_box2'
   column: 5
+
+- name: 'drill-rotate-zero'
+  service: 'drill-rotate-zero'
+  column: 6
+- name: 'drill-rotate-one'
+  service: 'drill-rotate-one'
+  column: 6
+- name: 'drill-rotate-two'
+  service: 'drill-rotate-two'
+  column: 6
+  default_value: True
+- name: 'drill-rotate-three'
+  service: 'drill-rotate-three'
+  column: 6

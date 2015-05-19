@@ -72,15 +72,7 @@
           clear_params="true"
           output="screen">
       <rosparam subst_value="true">
-        interruptible_mode: true
-      </rosparam>
-      <rosparam if="$(arg USE_HRP2JSK)">
-        interface_file: "package://hrpsys_ros_bridge_tutorials/euslisp/hrp2jsk-interface.l"
-        interface_class: "hrp2jsk-interface"
-      </rosparam>
-      <rosparam if="$(arg USE_JAXON)">
-        interface_file: "package://hrpsys_ros_bridge_tutorials/euslisp/jaxon-interface.l"
-        interface_class: "jaxon-interface"
+        interruptible_mode: ":full-interruptible"
       </rosparam>
     </node>
     <node pkg="jsk_footstep_controller" type="footstep-refinement.l"

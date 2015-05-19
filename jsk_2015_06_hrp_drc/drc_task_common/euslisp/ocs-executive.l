@@ -48,6 +48,7 @@
                 arm-mode ;; one of (:rarm-only :rarm-preferred :larm-preferred :larm-only)
                 valve-grasp-mode ;; one of (:edge-grasp-only :edge-grasp-preferred :center-grasp-preferrned :center-grasp-only)
                 overwrite-stand-coords? ;; one of (:force :auto nil)
+                drill-rotate-num
                 door-name
                 force-overwrite-door-arm ;; one of (:force :auto)
                 ;; For driving taskot
@@ -129,6 +130,7 @@
     (setq door-name :drc-lasvegas)
     (setq force-overwrite-door-arm :force)
     (send self :show-text "initialized" :success)
+    (setq drill-rotate-num 1)
     self)
   (:report-callback (msg)
     ;; do nothing
@@ -719,7 +721,7 @@
     (let ((msg (instance drc_com_common::OCS2FCSmall :init)))
       (send msg :type drc_com_common::OCS2FCSmall::*DRILL_PUT_EXEC*)
       (send msg :float_params (coords-to-float-vector (elt drill-put-params 0) (length (send msg :float_params))))
-      (send msg :stand_coords
+    s  (send msg :stand_coords
             (coords-to-float-vector (get-robot-model-current-pos) (length (send msg :stand_coords))))
       (cond ((not (boundp '*drill-main-arm*))
              (send msg :arm_side drc_com_common::OCS2FCSmall::*UNDECIDED*))
@@ -764,6 +766,7 @@
     (let ((msg (instance drc_com_common::OCS2FCSmall :init)))
       (send msg :type drc_com_common::OCS2FCSmall::*DRILL_BUTTON_EXEC*)
       (send msg :float_params (coords-to-float-vector (elt drill-button-params 0) (length (send msg :float_params))))
+      (send msg :image_type drill-rotate-num)
       (cond ((not (boundp '*drill-main-arm*))
              (send msg :arm_side drc_com_common::OCS2FCSmall::*UNDECIDED*))
             ((equal *drill-main-arm* :larm)
@@ -785,6 +788,7 @@
     (let ((msg (instance drc_com_common::OCS2FCSmall :init)))
       (send msg :type drc_com_common::OCS2FCSmall::*DRILL_ROTATE_EXEC*)
       (send msg :float_params (coords-set-to-float-vector drill-rotate-params (length (send msg :float_params))))
+      (send msg :image_type (min 1 drill-rotate-num))
       (cond ((not (boundp '*drill-main-arm*))
              (send msg :arm_side drc_com_common::OCS2FCSmall::*UNDECIDED*))
             ((equal *drill-main-arm* :larm)
@@ -983,11 +987,12 @@
         (set-focus-marker-name "drill")
         ;; publish motion to robot model on rviz
         (setq *drill-main-arm* (send self :get-arm-side))
-	(publish-drill-grasp-motion :coords (elt drill-grasp-params 0) :update? t :stand-coords (make-coords) :overwrite-stand-coords? t)
+	(publish-drill-grasp-motion :coords (elt drill-grasp-params 0) :update? t :stand-coords (make-coords) :overwrite-stand-coords? t :drill-rotate-num drill-rotate-num)
 	(if (or (not (boundp '*drill-motion*)) (not *drill-motion*))
 	    (send self :show-text 
 		  "IK FAIL")
-	    )
+          (send self :show-text (format nil "IK SUCCESS diff-deg ~Adeg" *drill-diff-angle*))
+          )
  ;todo drill-type
         (send smachine :go-to :selecting-exec-for-drill-grasp))
       ))
@@ -1013,6 +1018,7 @@
 	(if (or (not (boundp '*drill-motion*)) (not *drill-motion*))
 	    (send self :show-text 
 		  "IK FAIL")
+          (send self :show-text "IK SUCCESS")
 	  )
         (send smachine :go-to :selecting-exec-for-drill-put))
       ))
@@ -1061,9 +1067,9 @@
 	(if (or (not (boundp '*drill-motion*)) (not *drill-motion*))
 	    (send self :show-text 
 		  "IK FAIL")
+          (send self :show-text "IK SUCCESS")
 	  )
         (send smachine :go-to :selecting-exec-for-drill-button))))
-
  (:drill-rotate-recognition-finished-callback (msg)
     (when (eq (send smachine :state) :recognizing-drill-rotate-pose)
       (let* ((params (send msg :params))
@@ -1077,13 +1083,14 @@
         (move-robot-model-to-current-pos)
         ;; publish motion to robot model on rviz
 	(setq *drill-main-arm* (send self :get-arm-side))
-	(publish-drill-rotate-motion :drill-coords (elt drill-rotate-params 0) :plane-coords (elt drill-rotate-params 1) :update? t) 
+	(publish-drill-rotate-motion :drill-coords (elt drill-rotate-params 0) :plane-coords (elt drill-rotate-params 1) :update? t)
 	(if (or (not (boundp '*drill-motion-in*)) (not *drill-motion-in*))
 	    (send self :show-text 
 		  "IK FAIL")
-	    )
+          (send self :show-text "IK SUCCESS")
+          )
         (send smachine :go-to :selecting-exec-for-drill-rotate))))
-  (:go-pos-recognition-finished-callback (msg)
+ (:go-pos-recognition-finished-callback (msg)
     (when (eq (send smachine :state) :recognizing-go-pos-goal)
       (let ((params (send msg :params)))
         (setq go-pos-coords (make-coords :pos (float-vector (elt params 0) (elt params 1) (elt params 2))
@@ -1227,11 +1234,12 @@
                  (list (get-primitive-marker-pose :frame-id "BODY" :name "drill")))
            ;; publish drill motion to robot model on rviz
 	   (setq *drill-main-arm* (send self :get-arm-side))
-           (publish-drill-grasp-motion :coords (elt drill-grasp-params 0) :update? t :stand-coords (get-robot-model-current-pos) :overwrite-stand-coords? overwrite-stand-coords?) ;;drill-type
+           (publish-drill-grasp-motion :coords (elt drill-grasp-params 0) :update? t :stand-coords (get-robot-model-current-pos) :overwrite-stand-coords? overwrite-stand-coords? :drill-rotate-num drill-rotate-num) ;;drill-type
 	   (if (or (not (boundp '*drill-motion*)) (not *drill-motion*))
 	       (send self :show-text 
 		  "IK FAIL")
-	     )
+             (send self :show-text (format nil "IK SUCCESS diff-deg ~Adeg" *drill-diff-angle*))
+             )
            )
           ((eq (send smachine :state) :selecting-exec-for-drill-put)
            ;; update latest drill-put params
@@ -1264,6 +1272,7 @@
            ;; publish drill motion to robot model on rviz
 	   (setq *drill-main-arm* (send self :get-arm-side))
            (publish-drill-rotate-motion :drill-coords (elt drill-rotate-params 0) :plane-coords (elt drill-rotate-params 1) :update? t)
+           
 	   (if (or (not (boundp '*drill-motion-in*)) (not *drill-motion-in*))
 	       (send self :show-text 
 		     "IK FAIL")
@@ -1616,6 +1625,26 @@
    (send self :show-text "door name drc-lasvegas-mirror" :success)
    (send req :response)
    )
+  (:drill-rotate-zero-callback
+   (req)
+   (setq drill-rotate-num 0)
+   (send req :response)
+   )
+  (:drill-rotate-one-callback
+   (req)
+   (setq drill-rotate-num 1)
+   (send req :response)
+   )
+  (:drill-rotate-two-callback
+   (req)
+   (setq drill-rotate-num 2)
+   (send req :response)
+   )
+  (:drill-rotate-three-callback
+   (req)
+   (setq drill-rotate-num 3)
+   (send req :response)
+   )
   ;; door arm overwrite
   (:force-overwrite-door-arm-callback
    (req)
@@ -1768,6 +1797,12 @@
 (ros::advertise-service "door_name_drc_sagami_mirror" std_srvs::Empty #'send *app* :door-name-drc-sagami-mirror-callback)
 (ros::advertise-service "door_name_drc_lasvegas" std_srvs::Empty #'send *app* :door-name-drc-lasvegas-callback)
 (ros::advertise-service "door_name_drc_lasvegas_mirror" std_srvs::Empty #'send *app* :door-name-drc-lasvegas-mirror-callback)
+(ros::advertise-service "drill_rotate_zero" std_srvs::Empty #'send *app* :drill-rotate-zero-callback)
+(ros::advertise-service "drill_rotate_one" std_srvs::Empty #'send *app* :drill-rotate-one-callback)
+(ros::advertise-service "drill_rotate_two" std_srvs::Empty #'send *app* :drill-rotate-two-callback)
+(ros::advertise-service "drill_rotate_three" std_srvs::Empty #'send *app* :drill-rotate-three-callback)
+
+
 (ros::advertise-service "reach_until_touch_command_from_ocs" drc_task_common::ReachUntilTouchCommand #'send *app* :reach-until-touch-from-ocs)
 (ros::advertise-service "set_drill_coords" std_srvs::Empty #'send *app* :set-drill-coords)
 (ros::advertise-service "auto_door_detect" std_srvs::Empty #'send *app* :set-door-detect-auto-callback)

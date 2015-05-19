@@ -980,12 +980,27 @@
   (:car (&rest args) (forward-message-to car args))
   (:handle-angle () (send car :handle-joint :joint-angle))
   (:real
-   (&optional (val 0))
+   (&optional (val 0) &key (use-real-robot-angle t))
    (unless (equal val 0)
      (setq real val)
-     (send robot :angle-vector (send *ri* :state :potentio-vector)) ;; sync model angle-vector to real
+     (when use-real-robot-angle
+       (send robot :angle-vector (send *ri* :state :potentio-vector)) ;; sync model angle-vector to real
+       )
      )
    real
+   )
+  (:model2real
+   (&key (time 10000) (controller :default-controller) (wait-interpolation t) ((:real tmp-real) real))
+   (let ((retval nil))
+     (when tmp-real
+       (setq retval (send *ri* :angle-vector (send self :robot :angle-vector) time controller))
+       (when wait-interpolation
+         (send *ri* :wait-interpolation controller)
+         )
+       (send *viewer* :draw-objects)
+       )
+     retval
+     )
    )
   (:grasp-arm 
    (&optional val) 
