@@ -94,7 +94,14 @@
         ))
 
 (defun send-angle-vector-sequence-with-time
-  (av-seq &key (time 5000) (wait? t))
+  (av-seq &key (time 5000) (wait? t) (enable-cancel? t))
+  (when enable-cancel?
+    (ros::spin-once)
+    (when (and (boundp '*cancel-motion-flag*) *cancel-motion-flag*) 
+      (setq *cancel-motion-flag* nil)
+      (ros::ros-info "cancel driven")
+      (throw 'exit :exit-with-flug)
+      ))
   (send *ri* :angle-vector-sequence av-seq (make-list (length av-seq) :initial-element time))
   (when wait? (send *ri* :wait-interpolation)))
 
