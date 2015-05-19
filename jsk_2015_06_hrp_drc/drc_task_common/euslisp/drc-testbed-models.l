@@ -799,6 +799,10 @@
   (setq *terrain* (instance drc-terrain :init :block-dimensions (list 390 190 150) :add-groud-p add-groud-p :block-angle 12.5))
   )
 
+(defun make-drc-terrain-test-field-ver (&key (add-groud-p))
+  (setq *terrain* (instance drc-terrain :init :block-dimensions (list 395 195 195) :add-groud-p add-groud-p :block-angle 15))
+  )
+
 (defun make-drc-valve ()
   (setq *drc-valve* (instance valve :init :radius (/ 260 2.0) :thick (/ (- 260 205) 2.0) :ring-color :red))
   )
