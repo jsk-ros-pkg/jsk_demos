@@ -6,6 +6,12 @@
   <arg name="INPUT_IMAGE_HEIGHT_SCALE" default="/ocs/communication/image_height_scale"/>
   <arg name="INPUT_PANORAMA_IMAGE_WIDTH_SCALE" default="/ocs/communication/panorama_width_scale"/>
   <arg name="INPUT_PANORAMA_IMAGE_HEIGHT_SCALE" default="/ocs/communication/panorama_height_scale"/>
+
+  <remap from="/tf" to="/ocs/tf" />
+  <remap from="/joint_states" to="/ocs/joint_states" />
+  <remap from="/robot_description" to="/ocs/robot_description" />
+
+  
   <node pkg="rqt_gui" type="rqt_gui" name="rqt_image_view_button"
         args="--perspective-file $(find drc_task_common)/config/rqt_ui.perspective">
     <rosparam>

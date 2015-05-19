@@ -10,6 +10,11 @@
   <arg name="EUS_INPUT_PORT" default="705"/>
 
   <arg name="USE_FLOAT_JOINT_ANGLES" default="true" />
+  
+  <remap from="/tf" to="/ocs/tf" />
+  <remap from="/joint_states" to="/ocs/joint_states" />
+  <remap from="/robot_description" to="/ocs/robot_description" />
+  
   <node pkg="jsk_network_tools" type="silverhammer_highspeed_receiver.py"
         output="log"
         name="highspeed_receiver">

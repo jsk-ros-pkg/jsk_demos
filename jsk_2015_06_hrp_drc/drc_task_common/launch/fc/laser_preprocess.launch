@@ -1,5 +1,5 @@
 <launch>
-  <include file="$(find drc_task_common)/launch/machines/JAXON.machine" />
+  <include file="$(find drc_task_common)/launch/machines/$(env ROBOT).machine" />
   <arg name="ODOM_FRAME" default="odom" />
   <arg name="USE_LOCALHOST" default="false" />
   <arg name="machine" value="vmachine" unless="$(arg USE_LOCALHOST)" />

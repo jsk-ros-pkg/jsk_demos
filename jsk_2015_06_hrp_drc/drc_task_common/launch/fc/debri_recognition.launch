@@ -3,24 +3,26 @@
   <arg name="INPUT_CAMERA_INFO" default="/multisense/left/camera_info"/>
   <arg name="INPUT_POINT_CLOUD" default="/multisense/organized_image_points2_color" />
   <arg name="DEBUG_VIEW" default="false" />
-  <node pkg="jsk_pcl_ros" type="hinted_stick_finder" name="hinted_stick_finder" output="screen">
-    <remap from="~input" to="$(arg INPUT_POINT_CLOUD)" />
-    <remap from="~input/hint/line" to="input_line" />
-    <remap from="~input/camera_info" to="$(arg INPUT_CAMERA_INFO)" />
-    <rosparam>
-      min_radius: 0.01
-      max_radius: 0.05
-      max_iteration: 1000
-      outlier_threshold: 0.05
-      eps_angle: 3.14
-      eps_2d_angle: 3.14
-    </rosparam>
-  </node>
-  <!-- ...? coefficients? -->
-  <node pkg="jsk_topic_tools" type="snapshot" name="snapshot">
-    <remap from="~input" to="hinted_stick_finder/output/coefficients"/>
-    <rosparam>
-      latch: true
-    </rosparam>
-  </node>
+  <group ns="debri_recognition">
+    <node pkg="jsk_pcl_ros" type="hinted_stick_finder" name="hinted_stick_finder" output="screen">
+      <remap from="~input" to="$(arg INPUT_POINT_CLOUD)" />
+      <remap from="~input/hint/line" to="input_line" />
+      <remap from="~input/camera_info" to="$(arg INPUT_CAMERA_INFO)" />
+      <rosparam>
+        min_radius: 0.01
+        max_radius: 0.05
+        max_iteration: 1000
+        outlier_threshold: 0.05
+        eps_angle: 3.14
+        eps_2d_angle: 3.14
+      </rosparam>
+    </node>
+    <!-- ...? coefficients? -->
+    <node pkg="jsk_topic_tools" type="snapshot" name="snapshot">
+      <remap from="~input" to="hinted_stick_finder/output/coefficients"/>
+      <rosparam>
+        latch: true
+      </rosparam>
+    </node>
+  </group>
 </launch>
