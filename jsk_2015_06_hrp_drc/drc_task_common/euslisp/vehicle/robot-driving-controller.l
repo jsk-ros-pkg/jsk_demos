@@ -197,7 +197,7 @@
   (:correct-callback
    (req)
    (let ((res (send req :response)))
-     (send self :correct-handle-pose :yes t)
+     (send self :correct-handle-pose :yes t :look-at-handle nil)
      res
      )
    )
