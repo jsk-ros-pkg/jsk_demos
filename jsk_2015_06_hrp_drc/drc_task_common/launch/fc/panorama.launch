@@ -4,30 +4,32 @@
   <arg name="INPUT_POINT_CLOUD" default="/multisense/organized_image_points2_color" />
   <arg name="DEBUG_VIEW" default="false" />
 
-  <node pkg="jsk_pcl_ros" type="intermittent_image_annotator" name="panorama_processing"
-        output="screen">
-    <remap from="~input/image" to="$(arg INPUT_IMAGE)" />
-    <remap from="~input/camera_info" to="$(arg INPUT_CAMERA_INFO)" />
-    <remap from="~input/cloud" to="$(arg INPUT_POINT_CLOUD)" />
-    <rosparam>
-      fixed_frame_id: odom_on_ground
-      store_pointcloud: true
-      keep_organized: true
-      passthrough: false
-      max_image_buffer: 3
-    </rosparam>
-  </node>
-  <node pkg="jsk_pcl_ros" type="centroid_publisher" name="centroid_publisher">
-    <remap from="~input" to="panorama_processing/output/cloud" />
-  </node>
-  <node pkg="jsk_topic_tools" type="snapshot" name="snapshot">
-    <remap from="~input" to="centroid_publisher/output/pose"/>
-    <rosparam>
-      latch: true
-    </rosparam>
-  </node>
-  
-  <node pkg="image_view2" type="image_view2" name="panorama_view" if="$(arg DEBUG_VIEW)">
-    <remap from="image" to="panorama_processing/output" />
-  </node>
+  <group ns="panorama">
+    <node pkg="jsk_pcl_ros" type="intermittent_image_annotator" name="panorama_processing"
+          output="screen">
+      <remap from="~input/image" to="$(arg INPUT_IMAGE)" />
+      <remap from="~input/camera_info" to="$(arg INPUT_CAMERA_INFO)" />
+      <remap from="~input/cloud" to="$(arg INPUT_POINT_CLOUD)" />
+      <rosparam>
+        fixed_frame_id: odom_on_ground
+        store_pointcloud: true
+        keep_organized: true
+        passthrough: false
+        max_image_buffer: 3
+      </rosparam>
+    </node>
+    <node pkg="jsk_pcl_ros" type="centroid_publisher" name="centroid_publisher">
+      <remap from="~input" to="panorama_processing/output/cloud" />
+    </node>
+    <node pkg="jsk_topic_tools" type="snapshot" name="snapshot">
+      <remap from="~input" to="centroid_publisher/output/pose"/>
+      <rosparam>
+        latch: true
+      </rosparam>
+    </node>
+    
+    <node pkg="image_view2" type="image_view2" name="panorama_view" if="$(arg DEBUG_VIEW)">
+      <remap from="image" to="panorama_processing/output" />
+    </node>
+  </group>
 </launch>

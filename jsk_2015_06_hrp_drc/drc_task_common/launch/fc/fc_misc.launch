@@ -1,0 +1,16 @@
+<launch>
+  <group ns="communication">
+    <node pkg="drc_task_common" type="robot_idle_watch.py" name="robot_idle_watch">
+    </node>
+  </group>
+  <!-- reconfigure -->
+  <node pkg="drc_task_common" name="fc_dynamic_reconfigure" type="fc_dynamic_reconfigure.py" />
+
+  <!-- fisheye image_view -->
+  <node type="nodelet" pkg="nodelet" name="fisheye_sphere"
+        args="load jsk_pcl/FisheyeSpherePublisher fisheye_manager" output="screen">
+    <remap from="~input" to="/chest_camera/image_color"/>
+  </node>
+  <node pkg="drc_task_common" type="fc-basic-info-publisher.l" name="fc_basic_info_publisher" respawn="true">
+  </node>
+</launch>
