@@ -1,0 +1,8 @@
+<launch>
+  <remap from="/tf" to="/ocs/tf" />
+  <remap from="/joint_states" to="/ocs/joint_states" />
+  <remap from="/robot_description" to="/ocs/robot_description" />
+
+  <node pkg="drc_task_common" type="ocs-executive.l" name="ocs_executive" output="screen">
+  </node>
+</launch>

@@ -1,8 +1,10 @@
 <launch>
   <arg name="INPUT_IMAGE" default="/multisense/left/image_rect_color"/>
   <arg name="INPUT_CAMERA_INFO" default="/multisense/left/camera_info"/>
-  <arg name="INPUT_POINT_CLOUD" default="/laser_camera_cloud/output" />
-  <arg name="INPUT_HINT_POINT_CLOUD" default="/laser_camera_cloud/output" />
+  <!-- <arg name="INPUT_POINT_CLOUD" default="/laser_camera_cloud/output" /> -->
+  <!-- <arg name="INPUT_HINT_POINT_CLOUD" default="/laser_camera_cloud/output" /> -->
+  <arg name="INPUT_HINT_POINT_CLOUD" default="/laser_preprocess/camera_laser_cloud/output" />
+  <arg name="INPUT_POINT_CLOUD" default="/laser_preprocess/camera_laser_cloud/output" />
   <arg name="DEBUG_VIEW" default="false" />
   <group ns="door_recognition">
     <node pkg="jsk_perception" type="rect_to_mask_image"

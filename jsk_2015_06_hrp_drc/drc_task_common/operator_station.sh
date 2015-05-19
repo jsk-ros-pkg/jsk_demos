@@ -1,5 +1,18 @@
 #!/usr/bin/env bash
 
+DRC_TASK_COMMON_LAUNCHES="ocs_executive.launch ui.launch ocs_rviz.launch ocs_misc.launch"
+CMDNAME=$(basename $0)
+FC_IP=localhost
+OCS_IP=localhost
+while getopts hf:o: OPT
+do
+    case $OPT in
+        "f") FC_IP="$OPTARG";;
+        "o") OCS_IP="$OPTARG";;
+        "h") echo "Usage: $CMDNAME [-f FC_IP] [-o OCS_IP]";;
+    esac
+done
+
 tmux-newwindow() {
     if [ `tmux list-windows | grep $1 | sed -e 's/ //g'` ]; then
         echo $1 "already exists"
@@ -26,8 +39,9 @@ else
     tmux new-session -d -s ocs -n tmp
 fi
 
-tmux-newwindow task_ocs "roslaunch drc_task_common operator_station_main.launch"
-tmux-newwindow robot_local "roslaunch jsk_hrp2_ros_bridge hrp2017_local.launch"
-tmux-newwindow com_ocs "roslaunch drc_com_common operator_station_com.launch"
-tmux-newwindow rviz "rviz -d `rospack find drc_task_common`/config/drc_task_common.rviz"
+for l in $DRC_TASK_COMMON_LAUNCHES
+do
+    tmux-newwindow $(basename $l .launch)_ocs "roslaunch drc_task_common $l"
+done
+tmux-newwindow operator_station_com_ocs "roslaunch drc_com_common operator_station_com.launch FC_IP:=${FC_IP} OCS_IP:=${OCS_IP}"
 tmux send-keys -t ocs:tmp "exit" C-m
