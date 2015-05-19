@@ -45,8 +45,8 @@
   service: '/set_drill_coords'
   column: 1
 
-- name: 'drill auto gopos(NONE)'
-  service: '/drill_auto_gopos'
+- name: 'drill auto go pos(NONE)'
+  service: '/drill_auto_go_pos'
   column: 2
 - name: 'drill ref force(NONE)'
   service: '/drill_ref_force'

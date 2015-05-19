@@ -124,7 +124,7 @@
     (send smachine :register-initial-hook self :initial-callback)
     (send smachine :go-to :initial) ;; force to move to initial state
     (setq arm-mode :rarm-preferred)
-    (setq overwrite-stand-coords? :auto)
+    (setq overwrite-stand-coords? nil)
     ;(setq overwrite-stand-coords? nil)
     (setq valve-grasp-mode :edge-grasp-preferred)
     (setq door-push/pull :push)
@@ -988,7 +988,7 @@
         (set-focus-marker-name "drill")
         ;; publish motion to robot model on rviz
         (setq *drill-main-arm* (send self :get-arm-side))
-	(publish-drill-grasp-motion :coords (elt drill-grasp-params 0) :update? t :stand-coords (make-coords) :overwrite-stand-coords? t :drill-rotate-num drill-rotate-num)
+	(publish-drill-grasp-motion :coords (elt drill-grasp-params 0) :update? t :stand-coords (make-coords) :overwrite-stand-coords? :force :drill-rotate-num drill-rotate-num)
 	(if (or (not (boundp '*drill-motion*)) (not *drill-motion*))
 	    (send self :show-text 
 		  "IK FAIL")
@@ -1042,7 +1042,7 @@
           ;; end marker
           (setq drill-wall-target-coords (get-relative-coords-list center-coords coords-set))
 	  (setq *drill-main-arm* (send self :get-arm-side))
-          (publish-drill-wall-motion :coords-list coords-set :update? t :stand-coords (make-coords) :overwrite-stand-coords? t)
+          (publish-drill-wall-motion :coords-list coords-set :update? t :stand-coords (make-coords) :overwrite-stand-coords? :force)
 	  (if (or (not (boundp '*drill-motion*)) (not *drill-motion*))
 	      (send self :show-text 
 		  "IK FAIL")
@@ -1648,6 +1648,12 @@
    (setq drill-rotate-num 3)
    (send req :response)
    )
+  (:drill-auto-go-pos-callback
+   ()
+   (req)
+   (send smachine :go-to! :selecting-region-for-go-pos)
+   (send req :response)
+   )
   ;; door arm overwrite
   (:force-overwrite-door-arm-callback
    (req)
@@ -1804,7 +1810,7 @@
 (ros::advertise-service "drill_rotate_one" std_srvs::Empty #'send *app* :drill-rotate-one-callback)
 (ros::advertise-service "drill_rotate_two" std_srvs::Empty #'send *app* :drill-rotate-two-callback)
 (ros::advertise-service "drill_rotate_three" std_srvs::Empty #'send *app* :drill-rotate-three-callback)
-
+(ros::advertise-service "drill_auto_go_pos" std_srvs::Empty #'send *app* :drill-auto-go-pos-callback)
 
 (ros::advertise-service "reach_until_touch_command_from_ocs" drc_task_common::ReachUntilTouchCommand #'send *app* :reach-until-touch-from-ocs)
 (ros::advertise-service "set_drill_coords" std_srvs::Empty #'send *app* :set-drill-coords)
