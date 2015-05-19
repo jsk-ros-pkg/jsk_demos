@@ -24,6 +24,7 @@ generate_dynamic_reconfigure_options(
   config/vehicle/PassthroughCarBody.cfg
   config/vehicle/SwitchInputCloud.cfg
   config/vehicle/VisualOdometryVerification.cfg
+  config/vehicle/ObstacleIndicatorParams.cfg
   cfg/StandingDrillDetector.cfg
 )
 
@@ -111,6 +112,10 @@ target_link_libraries(visual_odometry_verification ${catkin_LIBRARIES})
 add_executable(passthrough_car_body src/drc_task_common/passthrough_car_body.cpp)
 add_dependencies(passthrough_car_body ${PROJECT_NAME}_gencfg ${PROJECT_NAME}_gencpp)
 target_link_libraries(passthrough_car_body ${catkin_LIBRARIES})
+
+add_executable(obstacle_indicator src/drc_task_common/obstacle_indicator.cpp)
+add_dependencies(obstacle_indicator ${PROJECT_NAME}_gencfg ${PROJECT_NAME}_gencpp)
+target_link_libraries(obstacle_indicator ${catkin_LIBRARIES})
 
 execute_process(
   COMMAND mkdir -p ${PROJECT_SOURCE_DIR}/pcds)

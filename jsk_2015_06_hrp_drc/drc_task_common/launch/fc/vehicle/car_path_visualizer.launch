@@ -1,7 +1,0 @@
-<launch>
-  <!-- visualize car path from steering wheel angle -->
-  <node pkg="drc_task_common" type="car_path_visualizer.py" name="car_path_visualizer" output="screen" >
-    <remap from="car_steering_wheel" to="/drive/controller/goal_handle_angle" />
-    <remap from="car_path_marker" to="/drive/recognition/predicted_path/marker" />
-  </node>
-</launch>

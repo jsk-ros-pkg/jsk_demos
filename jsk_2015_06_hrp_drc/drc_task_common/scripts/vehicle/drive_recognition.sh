@@ -33,6 +33,7 @@ fi
 roslaunch drc_task_common extract_obstacle_cloud.launch &
 # roslaunch drc_task_common obstacle_detection.launch &
 roslaunch drc_task_common local_planner.launch &
+roslaunch drc_task_common driver_assist.launch &
 sleep 5
 rosrun rqt_reconfigure rqt_reconfigure &
 
