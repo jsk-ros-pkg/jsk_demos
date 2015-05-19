@@ -41,6 +41,7 @@
                 drill-put-params
                 drill-wall-params
                 drill-wall-target-coords ;; list of coords
+                drill-stand-coords-list ;; list of (list symbol coords), base is odom_on_ground
                 drill-button-params ;; (list coords)
 		drill-rotate-params
 		drill-grasp-relative-coords
@@ -125,7 +126,7 @@
     (send smachine :go-to :initial) ;; force to move to initial state
     (setq arm-mode :rarm-preferred)
     (setq overwrite-stand-coords? nil)
-    ;(setq overwrite-stand-coords? nil)
+    (setq drill-wall-target-coords nil)
     (setq valve-grasp-mode :edge-grasp-preferred)
     (setq door-push/pull :push)
     (setq door-name :drc-lasvegas)
@@ -252,6 +253,7 @@
       (send self :set-image-view2-mode :none)
       (let ((fc-msg (instance drc_com_common::OCS2FCSmall :init)))
         (send fc-msg :type drc_com_common::OCS2FCSmall::*DRILL_GRASP_REGION*) ;Should have another constant
+        (send self :show-text "recognizing drill grasp coords" :select)
         (send self :send-to-fc fc-msg))
       (send smachine :go-to :recognizing-drill-grasp-pose))
     (send req :response))
@@ -336,6 +338,8 @@
       (send self :rectangle-callback-for-drill-button-region msg))
      ((eq (send smachine :state) :selecting-region-for-drill-rotate)
       (send self :rectangle-callback-for-drill-rotate-region msg))
+     ((t
+       (send self :show-text "rectangle selected but no mean" :color :warn)))
      ))
   (:rectangle-callback-for-valve-region (msg)
     (send self :show-text "Wait for valve recognition" :wait)
@@ -838,6 +842,7 @@
       (send self :exec-drill-rotate-button-callback))
      ((eq (send smachine :state) :selecting-exec-for-go-pos)
       (send self :exec-go-pos-button-callback))
+     ((t (send self :show-text "exec selected but no mean" :color :warn)))
      )
     (send req :response))
   )
@@ -1008,7 +1013,7 @@
         ;; publish object marker
         (erase-all-primitive-marker)
         (insert-primitive-marker :shape-type jsk_rviz_plugins::TransformableMarkerOperate::*CYLINDER* :name "cylinder1" :description "")
-        (set-primitive-marker-dimensions :radius 300 :z 30) ;; show plane as circle
+        (set-primitive-marker-dimensions :radius 400 :z 1 :name "cylinder1")
         (set-primitive-marker-pose coords "BODY")
         (set-primitive-marker-color :r 1.0 :g 1.0 :b 0.0 :a 0.6)
         (apply-primitive-dimensions-to-midi-device)
@@ -1306,6 +1311,8 @@
             :push/pull door-push/pull
             :update? t)
            (send smachine :go-to :selecting-exec-for-door))
+          ((t (send self :show-text "refresh selected but no mean" :color :warn)
+              (send req :response)))
           )
     (send self :show-text "Finish to replay robot motion")
     (send req :response)
@@ -1390,6 +1397,7 @@
       (send smachine :go-to! :selecting-exec-for-drill-grasp)
       (erase-all-primitive-marker)
       (insert-primitive-marker :shape-type jsk_rviz_plugins::TransformableMarkerOperate::*CYLINDER* :name "cylinder1" :description "")
+      (set-primitive-marker-dimensions :radius 300 :z 30) ;; show plane as circle
       (insert-primitive-marker :shape-type jsk_rviz_plugins::TransformableMarkerOperate::*MESH_RESOURCE* :name "drill" :description "" :resource "package://drc_task_common/models/takenoko_drill.dae" :use-material t))
      ((eq (send smachine :state) :selecting-region-for-drill-put)
       (send smachine :go-to! :selecting-exec-for-drill-put))
@@ -1422,6 +1430,7 @@
       (send smachine :go-to! :selecting-exec-for-drill-button))
      ((eq (send smachine :state) :selecting-region-for-drill-rotate)
       (send smachine :go-to! :selecting-exec-for-drill-rotate))
+     ((t (send self :show-text "skip recog selected but no mean" :color :warn)))
      )
     (send self :show-text "skip recog. set and move marker manually.")
     (send req :response)
