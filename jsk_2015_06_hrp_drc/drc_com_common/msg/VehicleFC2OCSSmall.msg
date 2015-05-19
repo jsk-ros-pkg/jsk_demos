@@ -26,3 +26,7 @@ bool reach_leg_response
 bool set_max_step_response
 bool set_min_step_response
 bool overwrite_handle_angle_response
+
+bool set_handle_mode_response
+bool set_accel_mode_response
+bool set_neck_mode_response
