@@ -42,6 +42,7 @@
                 drill-wall-params
                 drill-wall-target-coords ;; list of coords
                 drill-stand-coords-list ;; list of (list symbol coords), base is odom_on_ground
+                drill-stand-coords-index ;; referenced stand coords
                 drill-button-params ;; (list coords)
 		drill-rotate-params
 		drill-grasp-relative-coords
@@ -994,12 +995,22 @@
         ;; publish motion to robot model on rviz
         (setq *drill-main-arm* (send self :get-arm-side))
 	(publish-drill-grasp-motion :coords (elt drill-grasp-params 0) :update? t :stand-coords (make-coords) :overwrite-stand-coords? :force :drill-rotate-num drill-rotate-num)
+        (let ((index (position-if #'(lambda (x) (equal (elt x 0) :grasp)) drill-stand-coords-list)))
+          (if index
+              (progn
+                (setf (elt drill-stand-coords-list index) (list :grasp (convert-coords-frame (get-robot-model-current-pos))))
+                (setq drill-stand-coords-index index))
+            (progn
+              (push-back drill-stand-coords-list (list :grasp (convert-coords-frame (get-robot-model-current-pos))))
+              (setq drill-stand-coords-index (- (length drill-stand-coords-list) 1))
+              )))
 	(if (or (not (boundp '*drill-motion*)) (not *drill-motion*))
 	    (send self :show-text 
 		  "IK FAIL")
           (send self :show-text (format nil "IK SUCCESS diff-deg ~Adeg" *drill-diff-angle*))
           )
  ;todo drill-type
+        
         (send smachine :go-to :selecting-exec-for-drill-grasp))
       ))
   (:drill-put-recognition-finished-callback (msg)
@@ -1048,6 +1059,15 @@
           (setq drill-wall-target-coords (get-relative-coords-list center-coords coords-set))
 	  (setq *drill-main-arm* (send self :get-arm-side))
           (publish-drill-wall-motion :coords-list coords-set :update? t :stand-coords (make-coords) :overwrite-stand-coords? :force)
+          (let ((index (position-if #'(lambda (x) (equal (elt x 0) :grasp)) drill-stand-coords-list)))
+            (if index
+                (progn
+                  (setf (elt drill-stand-coords-list index) (list :grasp (convert-coords-frame (get-robot-model-current-pos))))
+                  (setq drill-stand-coords-index index))
+              (progn
+                (push-back drill-stand-coords-list (list :wall (convert-coords-frame (get-robot-model-current-pos))))
+                (setq drill-stand-coords-index (- (length drill-stand-coords-list) 1))
+              )))
 	  (if (or (not (boundp '*drill-motion*)) (not *drill-motion*))
 	      (send self :show-text 
 		  "IK FAIL")
@@ -1149,7 +1169,13 @@
         ;; store result
 	(set-primitive-marker-pose (elt coords-set 0) "BODY" :name "drill")
 	(setq drill-grasp-relative-coords (elt coords-set 1))
-	))
+        (when (< (abs (elt (send (elt coords-set 2) :worldpos) 0)) 20)
+          (push-back drill-stand-coords-list (list :button (convert-coords-frame (make-coords :pos (float-vector -500 0 0)))))
+          (setq drill-stand-coords-index (- (length drill-stand-coords-list) 1))
+          (send self :show-text "GOPOS AUTO TO BUTTON FAISE")
+          )
+        )
+      )
     )
   (:drill-put-exec-finished-callback (msg)
     (when (eq (send smachine :state) :executing-drill-put)
@@ -1174,6 +1200,11 @@
         (send self :show-text 
               (format nil "drill grasp succeeded. Left Rotation :~A" (elt (send (elt coords-set 2) :worldpos) 0)))
         ;; store result
+        (when (< (abs (elt (send (elt coords-set 2) :worldpos) 0)) 20)
+          (push-back drill-stand-coords-list (list :button (convert-coords-frame (make-coords :pos (float-vector -500 0 0)))))
+          (setq drill-stand-coords-index (- (length drill-stand-coords-list) 1))
+          (send self :show-text "GOPOS AUTO TO BUTTON FAISE")
+          )
         (setq drill-grasp-relative-coords (elt coords-set 1))
 	(set-primitive-marker-pose (elt coords-set 0) "BODY" :name "drill"))
       )
@@ -1658,9 +1689,12 @@
    (send req :response)
    )
   (:drill-auto-go-pos-callback
-   ()
    (req)
    (send smachine :go-to! :selecting-region-for-go-pos)
+   (when drill-stand-coords-list
+     (move-robot-model (elt (elt drill-stand-coords-list drill-stand-coords-index) 1) "/odom_on_ground")
+     (setq drill-stand-coords-index (mod (+ drill-stand-coords-index) (length drill-stand-coords-list)))
+     )
    (send req :response)
    )
   ;; door arm overwrite
