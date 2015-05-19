@@ -415,7 +415,7 @@
 
 (defclass drc-terrain
   :super cascaded-link
-  :slots (block-dimensions block-bodies ground-body block-angle)
+  :slots (block-dimensions block-bodies ground-bodies block-angle)
   )
 
 (defmethod drc-terrain
@@ -429,13 +429,32 @@
      (setq block-angle ba)
      (let* ((blist (send self :make-drc-terrain-block-bodies))
             (l))
-       (if add-groud-p
-           (let ((b (make-cube 3700 3300 10)))
-             (send b :translate (float-vector 1200 1050 -5))
-             (send b :set-color :gray)
-             (setq ground-body b)
-             (send (car blist) :assoc b)
-             (setq blist (append blist (list b)))))
+       (case
+        add-groud-p
+        (:test-field
+         (let ((b0 (make-cube 2780 3300 10))
+               (b1 (make-cube 400 3300 30))
+               (b2 (make-cube 400 3300 30)))
+           (send b0 :translate (float-vector 1200 1050 -5))
+           (send b0 :set-color :gray)
+           (send b1 :translate (float-vector -380 1050 15))
+           (send b1 :set-color :darkgoldenrod)
+           (send b2 :translate (float-vector 2800 1050 15))
+           (send b2 :set-color :darkgoldenrod)
+           (send (car blist) :assoc b0)
+           (send (car blist) :assoc b1)
+           (send (car blist) :assoc b2)
+           (setq ground-bodies (list b0 b1 b2))
+           (setq blist (append blist (list b0 b1 b2)))
+           (send (car blist) :translate (float-vector 0 0 -30))
+           ))
+        (t
+         (let ((b (make-cube 3700 3300 10)))
+           (send b :translate (float-vector 1200 1050 -5))
+           (send b :set-color :gray)
+           (setq ground-bodies (list b))
+           (send (car blist) :assoc b)
+           (setq blist (append blist (list b))))))
        (setq l (instance bodyset-link :init (make-cascoords)
                          :name :root-link
                          :bodies blist))
@@ -487,6 +506,17 @@
      (instance bodyset :init (make-cascoords) :bodies (list block1 block2 base))
      )
    )
+  (:calc-block-set-region
+   ()
+   (let* ((b0 (send self :make-drc-block-set-one)) ;; dummy
+          (b1 (send (make-bounding-box (flatten (send-all (send b0 :bodies) :vertices))) :body)))
+     ;; average of x and y
+     (/ (+ (- (elt (find-extream (send b1 :vertices) #'(lambda (x) (elt x 0)) #'>) 0)
+              (elt (find-extream (send b1 :vertices) #'(lambda (x) (elt x 0)) #'<) 0))
+           (- (elt (find-extream (send b1 :vertices) #'(lambda (x) (elt x 1)) #'>) 1)
+              (elt (find-extream (send b1 :vertices) #'(lambda (x) (elt x 1)) #'<) 1)))
+        2.0)
+     ))
   (:make-drc-terrain-block-bodies
    ()
    (let* ((orientation-map (list (list 1 2 3 0 1 2)
@@ -503,8 +533,9 @@
                             (list 1 2 1 1 2 1)
                             (list 1 1 1 1 1 1)
                             (list 0 0 0 0 0 0))))
-     (let* ((block-set-region-x 400)
-            (block-set-region-y 400))
+     (let* ((region (send self :calc-block-set-region))
+            (block-set-region-x region)
+            (block-set-region-y region))
        (dotimes (i (length orientation-map))
          (dotimes (j (length (elt orientation-map i)))
            (let* ((block-set (send self :make-drc-block-set-one)))
@@ -525,7 +556,7 @@
    ()
    (let ((ret -1))
      (flatten (append (mapcar #'(lambda (x) (send self :get-terrain-top-face-from-block-idx (incf ret))) (make-list (/ (length block-bodies) 3)))
-                      (list (find-if #'(lambda (x) (memq :top (send x :id))) (send ground-body :faces)))))))
+                      (mapcar #'(lambda (gb) (find-if #'(lambda (x) (memq :top (send x :id))) gb)) (send-all ground-bodies :faces))))))
   )
 
 
@@ -797,6 +828,10 @@
 
 (defun make-drc-terrain-japanese-block-ver-sagami (&key (add-groud-p))
   (setq *terrain* (instance drc-terrain :init :block-dimensions (list 390 190 150) :add-groud-p add-groud-p :block-angle 12.5))
+  )
+
+(defun make-drc-terrain-test-field-ver (&key (add-groud-p :test-field))
+  (setq *terrain* (instance drc-terrain :init :block-dimensions (list 395 195 190) :add-groud-p add-groud-p :block-angle 15))
   )
 
 (defun make-drc-valve ()
