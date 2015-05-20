@@ -19,11 +19,12 @@ def callback(box_array, coef_array):
         if (box_array.boxes[0].header.frame_id == coef_array.coefficients[0].header.frame_id):
             box = box_array.boxes[0]
             box_pos = numpy.array([box.pose.position.x, box.pose.position.y, box.pose.position.z])
-            coef = coef_array.coef_arrayefficients[0].values
+            coef = coef_array.coefficients[0].values
             n = numpy.array([coef[0], coef[1], coef[2]])
-            d = (abs(coef[0] * box_pos[0] + coef[1] * box_pos[1] + coef[2] * box_pos[2]) /
+            d = (coef[0] * box_pos[0] + coef[1] * box_pos[1] + coef[2] * box_pos[2] + coef[3] /
                  math.sqrt(coef[0] * coef[0] + coef[1] * coef[1] + coef[2] * coef[2]))
             required_distance = distance - d
+            rospy.loginfo("required_distance: %f" % (required_distance))
             new_box_pos = required_distance * n + box_pos
             box.pose.position.x = new_box_pos[0]
             box.pose.position.y = new_box_pos[1]

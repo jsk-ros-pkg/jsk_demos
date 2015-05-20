@@ -1,8 +1,8 @@
 <launch>
   <arg name="INPUT_IMAGE" default="/multisense/left/image_rect_color"/>
   <arg name="INPUT_CAMERA_INFO" default="/multisense/left/camera_info"/>
-  <arg name="INPUT_POINT_CLOUD" default="/laser_camera_cloud/output" />
-  <arg name="INPUT_HINT_POINT_CLOUD" default="/laser_camera_cloud/output" />
+  <arg name="INPUT_POINT_CLOUD" default="/laser_preprocess/camera_laser_cloud/output" />
+  <arg name="INPUT_HINT_POINT_CLOUD" default="/laser_preprocess/camera_laser_cloud/output" />
   <arg name="DEBUG_VIEW" default="false" />
   <group ns="door_recognition">
     <node pkg="jsk_perception" type="rect_to_mask_image"
@@ -73,11 +73,11 @@
       <remap from="~input/box_array" to="boundingbox_estimator/boxes" />
       <remap from="~input/coefficients" to="door_polygon_array_wrapper/output_coefficients" />
       <rosparam>
-        distance: 0.02
+        distance: 0.03
       </rosparam>
     </node>
     <node pkg="jsk_topic_tools" type="snapshot" name="snapshot">
-      <remap from="~input" to="offset_box_from_plane/output/box_array"/>
+      <remap from="~input" to="offset_bbox_from_plane/output/box_array"/>
       <rosparam>
         latch: true
       </rosparam>
