@@ -29,6 +29,8 @@
 (setq *set-handle-mode-service-client* (instance set-controller-mode-service-client :init "/drive/controller/set_handle_mode"))
 (setq *set-accel-mode-service-client* (instance set-controller-mode-service-client :init "/drive/controller/set_accel_mode"))
 (setq *set-neck-mode-service-client* (instance set-controller-mode-service-client :init "/drive/controller/set_neck_mode"))
+(setq *operation-initialize-service-server* (instance empty-service-server :init "/drive/operation/initilaize"))
+(setq *operation-synchronize-service-server* (instance operation-synchronize-service-server :init "/drive/operation/synchronize"))
 
 (defun ocs-message-callback (msg)
   (let (tmp-msg)
@@ -36,7 +38,6 @@
     (ros::publish "/drive/operation/handle_cmd" tmp-msg)
     (setq tmp-msg (make-msg-from-tunnel msg :accel_cmd std_msgs::Float64))
     (ros::publish "/drive/operation/accel_cmd" tmp-msg)
-    ;; (call-initialize-service (send msg :initialize_request))
     (send *initialize-service-client* :call (send msg :initialize_request))
     (send *grasp-service-client* :call (send msg :grasp_request))
     (send *release-service-client* :call (send msg :release_request))
@@ -50,7 +51,9 @@
     (send *overwrite-handle-angle-service-client* :call (send msg :overwrite_handle_angle_request) (send msg :overwrite_handle_angle_request_value))
     (send *set-handle-mode-service-client* :call (send msg :set_handle_mode_request) (send msg :set_handle_mode_request_value))
     (send *set-accel-mode-service-client* :call (send msg :set_accel_mode_request) (send msg :set_accel_mode_request_value))
-    (send *set-neck-mode-service-client* :call (send msg :set_neck_mode_request) (send msg :set_neck_mode_request_value))    
+    (send *set-neck-mode-service-client* :call (send msg :set_neck_mode_request) (send msg :set_neck_mode_request_value))
+    (send *operation-initialize-service-server* :receive (send msg :operation_initialize_response))
+    (send *operation-synchronize-service-server* :receive (send msg :operation_synchronize_response))
     )
   )
 
@@ -127,6 +130,10 @@
     (send msg :set_handle_mode_response (send *set-handle-mode-service-client* :response))
     (send msg :set_accel_mode_response (send *set-accel-mode-service-client* :response))
     (send msg :set_neck_mode_response (send *set-neck-mode-service-client* :response))
+
+    (send msg :operation_initialize_request (send *operation-initialize-service-server* :request))
+    (send msg :operation_synchronize_request (send *operation-synchronize-service-server* :request))
+    (send msg :operation_synchronize_request_value (send *operation-synchronize-service-server* :request_value))
     (ros::publish "/fc_to_ocs_vehicle/input" msg)
     )
   )
@@ -150,8 +157,13 @@
 (ros::subscribe "/drive/controller/accel_mode" std_msgs::String #'accel-mode-callback)
 (ros::subscribe "/drive/controller/neck_mode" std_msgs::String #'neck-mode-callback)
 
+;; service to operation
+(ros::advertise-service "/drive/operation/initialize" std_srvs::Empty #'send *operation-initialize-service-server* :callback)
+(ros::advertise-service "/drive/operation/synchronize" drc_task_common::StringRequest #'send *operation-synchronize-service-server* :callback)
+
 (ros::rate 10)
 (while (ros::ok)
   (ros::spin-once)
   (main-spin-once)
   (ros::sleep))
+
