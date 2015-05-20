@@ -301,7 +301,7 @@
   ;; interface command
   (:initialize
    (&rest args &key (sync nil) (time 10000) (real (send motion :real)) (fist-offset #f(0 0 25)) (floor-offset #f(0 0 0)))
-   (let ()
+   (let () ;; sync is executed according to controller-mode, not real flag
      (send motion :real nil :use-real-robot-angle nil) ;; temporary disable (send *ri* :angle-vector)
      (warn "init-pose~%")
      (send motion :ride :init-pose t)
