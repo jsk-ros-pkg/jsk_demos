@@ -16,9 +16,10 @@ count = 0
 
 def fft_cb(fft_msg):
     fft_array = np.array(fft_msg.data)
-    normal = np.linalg.norm(fft_array[96:128])
+    normal1 = np.linalg.norm(fft_array[96:128])
+    normal2 = np.linalg.norm(fft_array[0:95])
     global count
-    if (normal > 30):
+    if (normal1 > normal2 * 0.5):
         ##rospy.loginfo("button pushed! normal %f" % normal)
         if (count < 1000):
             count = count + 1
