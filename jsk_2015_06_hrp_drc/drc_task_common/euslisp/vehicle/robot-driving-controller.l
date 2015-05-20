@@ -760,7 +760,9 @@
           )
      (send motion :robot :newcoords estimated-robot-coords)
      (send *viewer* :draw-objects)
+     (warn "apply new robot coords~%")
      (unless (or yes (y-or-n-p)) ;; y-or-n-p is not evaluated when yes is t
+       (warn "revert old robot coords~%")
        (send motion :robot :newcoords old-robot-coords) ;; revert
        )
      (send motion :robot :copy-worldcoords)
@@ -795,7 +797,7 @@
                         (send msg :header :frame_id)
                         (send msg :header :stamp))) ;; cascaded-coords: body->camera
            body-relative-handle-pose
-           )       
+           )
        (unless trans
          (warn "Failed to solve tf~%")
          (return-from :handle-pose-callback nil)
@@ -842,10 +844,11 @@
        (return-from :execute-handle-pose-compensation nil)
        )
      (warn "release handle~%")
-     (if (equal (send self :controller-state :handle) :running)
-         (setq release-result (send self :release :offset release-offset))
-       (setq release-result t)
-       )
+     ;; (if (equal (send self :controller-state :handle) :running)
+     ;;     (setq release-result (send self :release :offset release-offset))
+     ;;   (setq release-result t)
+     ;;   )
+     (setq release-result (send self :release :offset release-offset))
      (when release-result
        ;; temporary ;;
        (send (send motion :robot) (send motion :grasp-arm) :shoulder-y :joint-angle shoulder-y-deg)
