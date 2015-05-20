@@ -1077,7 +1077,9 @@
   (:execute
    (&key (publish-steering-trajectory nil))
    (do-until-key
-    (send self :estimate-current-handle-angle)
+    (when (equal (send self :controller-state :handle) :running) ;; estimate handle angle only when handling
+      (send self :estimate-current-handle-angle)
+      )
     (send self :calc-error-of-grasp-arm :display-result nil)
     (send self :record-handling-end-coords)
     (when publish-steering-trajectory
