@@ -27,6 +27,12 @@
    (send self :release-accel-command 0.0)
    ;; (send self :accel-origin 0.0)
    )
+  (:initialize
+   (&rest args &key (fist-offset #f(0 0 100)) (floor-offset #f(0 0 0))  &allow-other-keys)
+   (send-super* :initialize
+                :fist-offset fist-offset :floor-offset floor-offset
+                args)
+   )
   (:approach-accel
    (&rest args &key (limb :rleg) &allow-other-keys)
    (send* motion :approach-accel-pedal :limb limb args)
