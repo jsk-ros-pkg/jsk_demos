@@ -329,10 +329,10 @@
        (ros::service-call "/drive/operation/initialize" req t)
        )
      )
-   ;; enable operation
-   (send self :controller-mode :handle :operation)
-   (send self :controller-mode :accel :operation)
-   (send self :controller-mode :neck :operation)
+   ;; init operation mode
+   (send self :controller-mode :handle :stop)
+   (send self :controller-mode :accel :stop)
+   (send self :controller-mode :neck :stop)
    nil
    )
   (:grasp
