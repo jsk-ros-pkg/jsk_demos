@@ -322,8 +322,12 @@
      (warn "init-head~%")
      (send self :neck-cmd 0.0 :neck-p :time 2000)
      (send self :neck-cmd 0.0 :neck-y :time 2000)
-     (send motion :model2real :time time :wait-interpolation t :real real) ;; send *ri* :angle-vector if real is t
+     (warn "send-initial-pose~%")
      (send motion :real real :use-real-robot-angle nil) ;; set real as argument
+     (send motion :model2real :time time :wait-interpolation t) ;; send *ri* :angle-vector if real is t (default :real is set above)
+     (warn "init-hand~%")
+     (send motion :open-hand (send motion :grasp-arm))
+     (send motion :close-hand (get-opposite-arm (send motion :grasp-arm)))
      )
    ;; initialize joy_vehicle if exists
    (when (ros::wait-for-service "/drive/operation/initialize" 1)
