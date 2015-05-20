@@ -56,19 +56,23 @@
 (defun test-valve-motion-without-ri
   ()
   (setq *robot* nil)
+  (test-valve-motion-hrp2jsknt-lasvegas :ri-test? nil)
   (test-valve-motion-hrp2jsknt-pattern1 :ri-test? nil)
   (test-valve-motion-hrp2jsknt-pattern2 :ri-test? nil)
   (test-valve-motion-hrp2jsknt-pattern3 :ri-test? nil)
   (setq *robot* nil)
+  (test-valve-motion-hrp2jsknts-lasvegas :ri-test? nil)
   (test-valve-motion-hrp2jsknts-pattern4 :ri-test? nil)
   (test-valve-motion-hrp2jsknts-pattern5 :ri-test? nil)
   (test-valve-motion-hrp2jsknts-pattern6 :ri-test? nil)
   (setq *robot* nil)
+  (test-valve-motion-jaxon-lasvegas :ri-test? nil)
   (test-valve-motion-jaxon-pattern1 :ri-test? nil)
   (test-valve-motion-jaxon-pattern2 :ri-test? nil)
   (test-valve-motion-jaxon-pattern3 :ri-test? nil)
   (test-valve-motion-jaxon-pattern4 :ri-test? nil)
   (setq *robot* nil)
+  (test-valve-motion-staro-lasvegas :ri-test? nil)
   (test-valve-motion-staro-pattern1 :ri-test? nil)
   (test-valve-motion-staro-pattern2 :ri-test? nil)
   (test-valve-motion-staro-pattern3 :ri-test? nil)
@@ -121,7 +125,7 @@
 (defun test-valve-motion-hrp2jsknt-lasvegas
   (&key (ri-test? nil))
   (print "drc environment in las vegas")
-  (test-valve-motion :ri-test? ri-test? :robot-name "HRP2JSKNT" :valve-r 130 :x-pos 500 :y-pos -120 :z-pos 1200 :overwrite-stand-coords? t)
+  (test-valve-motion :ri-test? ri-test? :robot-name "HRP2JSKNT" :valve-r 130 :x-pos 500 :y-pos -120 :z-pos 1200 :overwrite-stand-coords? :force)
   )
 
 (defun test-valve-motion-hrp2jsknts-with-ri
@@ -170,7 +174,7 @@
 (defun test-valve-motion-hrp2jsknts-lasvegas
   (&key (ri-test? nil))
   (print "drc environment in las vegas")
-  (test-valve-motion :ri-test? ri-test? :robot-name "HRP2JSKNTS" :valve-r 130 :x-pos 500 :y-pos -120 :z-pos 1200 :overwrite-stand-coords? t)
+  (test-valve-motion :ri-test? ri-test? :robot-name "HRP2JSKNTS" :valve-r 130 :x-pos 500 :y-pos -120 :z-pos 1200 :overwrite-stand-coords? :force)
   )
 
 (defun test-valve-motion-jaxon-with-ri
@@ -210,7 +214,7 @@
 (defun test-valve-motion-jaxon-lasvegas
   (&key (ri-test? nil))
   (print "drc environment in las vegas")
-  (test-valve-motion :ri-test? ri-test? :robot-name "JAXON" :valve-r 130 :x-pos 600 :y-pos -500 :z-pos 1200 :overwrite-stand-coords? t)
+  (test-valve-motion :ri-test? ri-test? :robot-name "JAXON" :valve-r 130 :x-pos 600 :y-pos -500 :z-pos 1200 :overwrite-stand-coords? :force)
   )
 
 (defun test-valve-motion-staro-with-ri
@@ -250,7 +254,7 @@
 (defun test-valve-motion-staro-lasvegas
   (&key (ri-test? nil))
   (print "drc environment in las vegas")
-  (test-valve-motion :ri-test? ri-test? :robot-name "STARO" :valve-r 130 :x-pos 600 :y-pos -500 :z-pos 1200 :overwrite-stand-coords? t)
+  (test-valve-motion :ri-test? ri-test? :robot-name "STARO" :valve-r 130 :x-pos 600 :y-pos -500 :z-pos 1200 :overwrite-stand-coords? :force)
   )
 
 (warning-message 2 ";; test without ri~%")
