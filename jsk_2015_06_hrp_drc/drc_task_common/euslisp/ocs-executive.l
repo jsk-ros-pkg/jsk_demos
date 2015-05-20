@@ -1413,6 +1413,7 @@
        (if (equal *drill-main-arm* :rarm) (set-primitive-marker-pose drill-grasp-relative-coords "rarm_end_coords" :name "drill") (set-primitive-marker-pose drill-grasp-relative-coords "larm_end_coords" :name "drill")
        )
      )
+    (send req :response)
    )
   (:cancel-motion-now
     (req)
