@@ -430,7 +430,7 @@
 	       (if arm
                    (progn
                      (setq *drill-main-arm* arm)
-                     (send-drill-grasp-motion coords :stand-coords stand-coords)
+                     (send-drill-grasp-motion coords :stand-coords stand-coords :drill-rotate-num (send msg :image_type))
                      )
                  (ros::ros-info "arm side empty")
                  )
@@ -541,7 +541,7 @@
 	       (if arm
                    (progn
                      (setq *drill-main-arm* arm)
-		     (send-drill-rotate-motion (elt coords-set 0) (elt coords-set 1))
+		     (send-drill-rotate-motion (elt coords-set 0) (elt coords-set 1) :drill-rotate-num (send msg :image_type))
                      )
                  (ros::ros-info "arm side empty")
 		 )
@@ -934,9 +934,12 @@ It sends :angle-vector to robot and return 'finished' message to ocs"
     (send *ri* :wait-interpolation)
     (send self :send-rviz-button-finished-to-ocs))
   (:watch-drill-pose-command-callback (msg)
+    (when (or (equal *robot-name* "HRP2JSKNTS") (equal *robot-name* "HRP2JSKNT"))
+      (send *robot* :angle-vector (get-reach-drill-prepose))
+      (model2real :time 5000)
+      )
     (send *robot* :angle-vector (get-watch-drill-pose))
-    (send *ri* :angle-vector (send *robot* :angle-vector) 10000)
-    (send *ri* :wait-interpolation)
+    (model2real :time 5000)
     (send self :send-rviz-button-finished-to-ocs))
   (:door-through-pose-command-callback (msg)
     (send *robot* :angle-vector (get-door-through-pose))

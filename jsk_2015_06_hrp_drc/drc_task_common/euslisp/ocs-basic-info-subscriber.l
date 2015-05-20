@@ -89,6 +89,7 @@
       (ros::publish "/ocs/robot_status" pubmsg))
     (let ((motor-states (instance hrpsys_ros_bridge::MotorStates :init)))
       (send motor-states :temperature (coerce (send msg :temperature) float-vector))
+      (send motor-states :name (send-all (send *robot* :joint-list) :name))
       (ros::publish "/ocs/motor_states" motor-states)
       )
     ;; forces

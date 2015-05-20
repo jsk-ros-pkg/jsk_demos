@@ -105,7 +105,11 @@
   (valve-r)
   (send *valve* :put :grasp-coords
         (make-cascoords
-         :coords (make-coords :pos (float-vector valve-r 0 0) :rpy (list pi/2 -pi/2 0))
+         :coords
+         (cond ((or (equal *robot-name* "JAXON") (equal *robot-name* "STARO"))
+                (send (make-coords :pos (float-vector valve-r 0 0) :rpy (list pi/2 -pi/2 0)) :rotate (deg2rad 10) :z :local))
+               (t ;; (or (equal *robot-name* "HRP2JSKNT") (equal *robot-name* "HRP2JSKNTS"))
+                (make-coords :pos (float-vector valve-r 0 0) :rpy (list pi/2 -pi/2 0))))
          :parent *valve*))
   (send *valve* :put :center-grasp-coords
         (make-cascoords
@@ -169,15 +173,15 @@
                 :translation-axis (list t t t)
                 :rotation-axis (list t t t)
                 :warnp (if draw? t nil)
-                :root-link-virtual-joint-weight (float-vector 0.15 0.15 0.01 0.15 0.5 0.5)
+                :root-link-virtual-joint-weight (float-vector 0.15 0.15 0.02 0.15 0.5 0.5)
                 :additional-weight-list
-                (list (list (send *robot* :torso :waist-r :child-link) 0.1)
+                (list (list (send *robot* :torso :waist-r :child-link) 0.01)
                       (list (send *robot* :torso :waist-y :child-link) 0.1)
                       (list (send *robot* :torso :waist-p :child-link) 0.1)
                       (list (send *robot* :rarm :shoulder-p :child-link) 0)
                       (list (send *robot* :larm :shoulder-p :child-link) 0)
                       )
-                :max (float-vector  500  200  25  10  20  10)
+                :max (float-vector  500  200  15  10  20  10)
                 :min (float-vector  -500  -200  -200  -10  -20  -10)
                 :stop 50
                 :debug-view (if draw? :no-message nil)
@@ -259,7 +263,7 @@
         (cond ((or (equal *robot-name* "JAXON") (equal *robot-name* "STARO"))
                (setq tc
                      (list
-                      (send (send (send *valve* :get valve-handle-name) :copy-worldcoords) :translate (float-vector (* (- reach-dist) 2.5) 0 0) :local)
+                      (send (send (send *valve* :get valve-handle-name) :copy-worldcoords) :translate (float-vector (* (- reach-dist) 2.0) 0 0) :local)
                       (send *robot* :rleg :end-coords :copy-worldcoords)
                       (send *robot* :lleg :end-coords :copy-worldcoords))))
               (t ;; (or (equal *robot-name* "HRP2JSKNT") (equal *robot-name* "HRP2JSKNTS"))
@@ -311,6 +315,8 @@
             (incf j)))
         (push-back test-point rotatable-point)
         ))
+    (unless rotatable-point
+      (setq rotatable-point (list 0)))
     rotatable-point
     ))
 
@@ -338,9 +344,9 @@
   (&key (grasp-center? nil))
   (cond ((or (equal *robot-name* "JAXON") (equal *robot-name* "STARO"))
          (cond ((equal *valve-arm* :larm)
-                (make-coords :pos (float-vector -600 -400 0) :rpy (list (deg2rad -10) 0 0)))
+                (make-coords :pos (float-vector -600 -500 0) :rpy (list (deg2rad -10) 0 0)))
                ((equal *valve-arm* :rarm)
-                (make-coords :pos (float-vector -600 +400 0) :rpy (list (deg2rad +10) 0 0))))
+                (make-coords :pos (float-vector -600 +500 0) :rpy (list (deg2rad +10) 0 0))))
          )
         (t ;; (or (equal *robot-name* "HRP2JSKNT") (equal *robot-name* "HRP2JSKNTS"))
          (cond (grasp-center?

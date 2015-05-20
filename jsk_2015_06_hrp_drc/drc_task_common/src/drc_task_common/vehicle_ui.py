@@ -95,6 +95,12 @@ class VehicleUIWidget(QWidget):
             update_mode(item.text())
         except rospy.ServiceException, e:
             self.showError("Failed to call drive/controller/set_accel_mode")
+    def neckModeClickedCallback(self, item):
+        try:
+            update_mode = rospy.ServiceProxy('drive/controller/set_neck_mode', StringRequest)
+            update_mode(item.text())
+        except rospy.ServiceException, e:
+            self.showError("Failed to call drive/controller/set_neck_mode")
     
     def setUpLeftBox(self, left_vbox):
         handle_mode_vbox = QtGui.QVBoxLayout(self)
@@ -119,6 +125,17 @@ class VehicleUIWidget(QWidget):
         accel_mode_group.setLayout(accel_mode_vbox)
         left_vbox.addWidget(accel_mode_group)
 
+        neck_mode_vbox = QtGui.QVBoxLayout(self)
+        neck_mode_group = QtGui.QGroupBox("Neck Mode", self)
+        self.neck_mode_list = QListWidget()
+        self.neck_mode_list.addItem("Operation")
+        self.neck_mode_list.addItem("Recognition")
+        self.neck_mode_list.addItem("Stop")
+        self.neck_mode_list.itemClicked.connect(self.neckModeClickedCallback)
+        neck_mode_vbox.addWidget(self.neck_mode_list)
+        neck_mode_group.setLayout(neck_mode_vbox)
+        left_vbox.addWidget(neck_mode_group)
+        
         action_vbox = QtGui.QVBoxLayout(self)
         action_group = QtGui.QGroupBox("action", self)
         self.initialize_button = QtGui.QPushButton("Initial Pose")
@@ -332,6 +349,8 @@ class VehicleUIWidget(QWidget):
             "drive/controller/handle_mode", std_msgs.msg.String, self.handleModeCallback)
         self.accel_mode_sub = rospy.Subscriber(
             "drive/controller/accel_mode", std_msgs.msg.String, self.accelModeCallback)
+        self.neck_mode_sub = rospy.Subscriber(
+            "drive/controller/neck_mode", std_msgs.msg.String, self.neckModeCallback)
         self.handle_angle_vector_diff_sub = rospy.Subscriber(
             "drive/controller/steering_diff_angle_vector", std_msgs.msg.Float32, self.steeringDiffAngleVectorCallback)
     def lhsensorCallback(self, msg):
@@ -396,6 +415,15 @@ class VehicleUIWidget(QWidget):
         with self.lock:
             for i in range(self.accel_mode_list.count()):
                 item = self.accel_mode_list.item(i)
+                item.setSelected(False)
+                if item.text() == msg.data.capitalize():
+                    item.setBackground(QtGui.QColor("#18FFFF"))
+                else:
+                    item.setBackground(QtCore.Qt.white)
+    def neckModeCallback(self, msg):
+        with self.lock:
+            for i in range(self.neck_mode_list.count()):
+                item = self.neck_mode_list.item(i)
                 item.setSelected(False)
                 if item.text() == msg.data.capitalize():
                     item.setBackground(QtGui.QColor("#18FFFF"))

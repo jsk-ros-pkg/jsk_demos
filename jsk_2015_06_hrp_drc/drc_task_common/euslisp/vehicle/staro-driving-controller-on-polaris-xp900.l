@@ -11,16 +11,14 @@
   (:init
    (&key ((:real tmp-real) nil)
          ((:rate tmp-ros-rate) 10.0) (roseus-init t)
-         (approach-handle nil) (approach-pedal nil)
          )
    (when roseus-init
      (ros::roseus "staro_driving_controller_on_polaris_xp900")
      (ros::rate tmp-ros-rate)
      )
-   (send-super :init :motion (instance staro-driving-motion-on-polaris-xp900 :init :real tmp-real
+   (send-super :init :motion (instance staro-driving-motion-on-polaris-xp900 :init :real nil
                                        :grasp-arm :rarm :grasp-point :handle-crank)
                :real tmp-real :rate tmp-ros-rate :roseus-init nil
-               :approach-handle approach-handle :approach-pedal approach-pedal
                )
    ;; set default accel angle
    ;; (send self :accel-origin 0)

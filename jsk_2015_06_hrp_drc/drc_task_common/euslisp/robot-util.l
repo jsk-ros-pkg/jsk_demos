@@ -218,15 +218,13 @@
   )
 
 (defun check-coords-distance ;; return t when distance is smaller than thre
-  (c1 c2)
+  (c1 c2 &key (pos-thre 0.005) (rpy-thre (deg2rad 2)))
   (let* ((c-diff (send c1 :transformation c2))
          (pos-diff (mapcar #'abs (coerce (send c-diff :pos) cons)))
          (rpy-diff (mapcar #'abs (car (send c-diff :rpy-angle))))
-         (pos-thre 0.005)
-         (rpy-thre (deg2rad 2)))
+         )
     (and (< (norm (coerce pos-diff float-vector)) pos-thre) (< (norm (coerce rpy-diff float-vector)) rpy-thre))
     ))
-
 (defun check-angle-vector-distance ;; return t when distance is smaller than thre
   (&key
    (dest-av (send *robot* :angle-vector))
@@ -321,6 +319,14 @@
     (send msg :pose (ros::coords->tf-pose coords))
     (ros::publish "/urdf_control_marker/set_pose" msg)
     ))
+
+(defun convert-coords-frame
+  (coords &key (base-frame "/ground") (target-frame "/odom-on-ground"))
+  (setq tf-trans (send (send *tf* :lookup-transform target-frame base-frame (ros::time 0)) :inverse-transformation))
+  (setq coords (if tf-trans (send tf-trans :inverse-transformation) (make-coords)))
+  coords
+  )
+
 
 (defun get-robot-model-current-pos
   ()
