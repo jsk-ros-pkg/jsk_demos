@@ -301,9 +301,6 @@
   ;; interface command
   (:initialize
    (&rest args &key (sync nil) (time 10000) (real (send motion :real)) (fist-offset #f(0 0 25)) (floor-offset #f(0 0 0)))
-   (when (and sync (not (send *ri* :simulation-modep)))
-     (send motion :sync-all-controller)
-     )
    (let ()
      (send motion :real nil :use-real-robot-angle nil) ;; temporary disable (send *ri* :angle-vector)
      (warn "init-pose~%")
@@ -312,11 +309,11 @@
      (warn "approach-fist~%")
      (send self :approach-fist :offset fist-offset :reach-until-touch nil)
      (warn "approach-accel~%")
-     (send self :approach-accel)
+     (send self :approach-accel) ;; sync is executed when (equal (send self :controller-state :accel) :running)
      (warn "approach-floor~%")
      (send self :approach-floor :offset floor-offset :reach-until-touch nil)
      (warn "approach-handle~%")
-     (send self :approach-handle)
+     (send self :approach-handle) ;; sync is executed when (equal (send self :controller-state :handle) :running)
      (send self :publish-body-relative-steering-coords)
      ;; move head front
      (warn "init-head~%")
@@ -495,6 +492,21 @@
    (send self :controller-mode :accel :stop)
    ;; stop handling
    (send self :controller-mode :handle :stop)
+   ;; sync
+   (when (and sync (not (send *ri* :simulation-modep)))
+     (let ((sync-list nil))
+       (when (equal (send self :controller-state :handle) :running)
+         (push (send motion :grasp-arm) sync-list)
+         )
+       (when (equal (send self :controller-state :accel) :running)
+         (push :rleg sync-list)
+         )
+       (when (equal (send self :controller-state :brake) :running)
+         (push :lleg sync-list)
+         )
+       (send motion :sync-all-controller sync-list)
+       )
+     )
    ;; execute egress
    (send* motion :go-to-egress args)
    )
