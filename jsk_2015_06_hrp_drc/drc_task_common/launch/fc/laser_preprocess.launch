@@ -1,5 +1,4 @@
 <launch>
-
   <arg name="ODOM_FRAME" default="odom" />
   <arg name="USE_LOCALHOST" default="false" />
   <include file="$(find drc_task_common)/launch/machines/$(env ROBOT).machine" />
