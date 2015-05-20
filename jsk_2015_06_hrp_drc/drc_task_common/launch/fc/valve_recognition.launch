@@ -10,25 +10,28 @@
     </node>
     <node pkg="nodelet" type="nodelet" name="valve_manager"
           args="manager" />
-    <node pkg="jsk_perception" type="rect_to_mask_image"
-        name="rect_to_mask_image" output="screen">
-    <remap from="~input" to="input_rect" />
-    <remap from="~input/camera_info" to="$(arg INPUT_CAMERA_INFO)" />
+    <node pkg="nodelet" type="nodelet"
+          name="rect_to_mask_image"
+          args="load jsk_perception/RectToMaskImage valve_manager">
+      <remap from="~input" to="input_rect" />
+      <remap from="~input/camera_info" to="$(arg INPUT_CAMERA_INFO)" />
     </node>
-    <node pkg="jsk_pcl_ros" type="mask_image_filter" name="mask_image_filter">
+    <node pkg="nodelet" type="nodelet"
+          args="load jsk_pcl/MaskImageFilter valve_manager"
+          name="mask_image_filter">
       <remap from="~input" to="$(arg INPUT_POINT_CLOUD)"/>
       <remap from="~input/mask" to="rect_to_mask_image/output"/>
       <remap from="~input/camera_info" to="$(arg INPUT_CAMERA_INFO)" />
     </node>
     <node pkg="nodelet" type="nodelet" name="filtered_cloud"
-          args="standalone pcl/ExtractIndices">
+          args="load pcl/ExtractIndices valve_manager">
       <remap from="~input" to="$(arg INPUT_POINT_CLOUD)"/>
       <remap from="~indices" to="mask_image_filter/output"/>
     </node>
 
-    <node pkg="jsk_pcl_ros"
-          type="normal_estimation_omp"
-          name="normal_estimation">
+    <node pkg="nodelet" type="nodelet"
+          name="normal_estimation"
+          args="load jsk_pcl/NormalEstimationOMP valve_manager">
       <remap from="~input" to="filtered_cloud/output" />
       <rosparam>
         k_search: 0
@@ -36,9 +39,9 @@
       </rosparam>
     </node>
 
-        <node pkg="jsk_pcl_ros"
-          type="normal_direction_filter"
-          name="normal_direction_filter">
+    <node pkg="nodelet" type="nodelet"
+          name="normal_direction_filter"
+          args="load jsk_pcl/NormalDirectionFilter valve_manager">
       <remap from="~input" to="normal_estimation/output_with_xyz" />
       <remap from="~input_imu" to="/multisense/imu/imu_data" />
       <rosparam>
@@ -51,7 +54,7 @@
 
     <node pkg="nodelet"
           type="nodelet"
-          args="standalone pcl/ExtractIndices valve_manager"
+          args="load pcl/ExtractIndices valve_manager"
           name="filtered_points">
       <remap from="~input" to="normal_estimation/output_with_xyz" />
       <remap from="~indices" to="normal_direction_filter/output" />
@@ -59,7 +62,7 @@
 
     <node pkg="nodelet"
           type="nodelet"
-          args="standalone jsk_pcl/EuclideanClustering valve_manager"
+          args="load jsk_pcl/EuclideanClustering valve_manager"
           name="euclidean_clustering">
       <remap from="~input" to="filtered_points/output" />
       <rosparam>
@@ -70,7 +73,7 @@
     <node pkg="nodelet"
           type="nodelet"
           name="cluster_decomposer"
-          args="standalone jsk_pcl/ClusterPointIndicesDecomposer">
+          args="load jsk_pcl/ClusterPointIndicesDecomposer valve_manager">
       <remap from="~input" to="filtered_points/output" />
       <remap from="~target" to="euclidean_clustering/output" />
     </node>
@@ -82,12 +85,13 @@
       <remap from="~input/indices" to="euclidean_clustering/output" />
     </node>
     <node pkg="nodelet" type="nodelet" name="nearest_cluster_cloud"
-          args="standalone pcl/ExtractIndices">
+          args="load pcl/ExtractIndices valve_manager">
       <remap from="~input" to="filtered_points/output"/>
       <remap from="~indices" to="nearest_cluster/output/indices"/>
     </node>
     
-    <node pkg="jsk_pcl_ros" type="torus_finder" name="valve_finder">
+    <node pkg="nodelet" type="nodelet" name="valve_finder"
+          args="load jsk_pcl/TorusFinder valve_manager">
       <remap from="~input" to="nearest_cluster_cloud/output" />
       <rosparam>
         algorithm: RANSAC
@@ -96,7 +100,9 @@
         max_radius: 0.25
       </rosparam>
     </node>
-    <node pkg="jsk_topic_tools" type="snapshot" name="snapshot">
+    <node pkg="nodelet" type="nodelet"
+          args="load jsk_topic_tools/Snapshot valve_manager"
+          name="snapshot">
       <remap from="~input" to="valve_finder/output"/>
       <rosparam>
         latch: true
