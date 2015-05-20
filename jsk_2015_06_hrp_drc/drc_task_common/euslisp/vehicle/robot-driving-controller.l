@@ -170,7 +170,7 @@
   (:initialize-callback
    (req)
    (let ((res (send req :response)))
-     (send self :initialize :sync t)
+     (send self :initialize :sync nil)
      res
      )
    )
@@ -302,6 +302,9 @@
   (:initialize
    (&rest args &key (sync nil) (time 10000) (real (send motion :real)) (fist-offset #f(0 0 25)) (floor-offset #f(0 0 0)))
    (let () ;; sync is executed according to controller-mode, not real flag
+     (when sync
+       (send motion :sync-all-controller) ;; execute sync-controller forcely in all limbs
+       )
      (send motion :real nil :use-real-robot-angle nil) ;; temporary disable (send *ri* :angle-vector)
      (warn "init-pose~%")
      (send motion :ride :init-pose t)
@@ -309,11 +312,11 @@
      (warn "approach-fist~%")
      (send self :approach-fist :offset fist-offset :reach-until-touch nil)
      (warn "approach-accel~%")
-     (send self :approach-accel) ;; sync is executed when (equal (send self :controller-state :accel) :running)
+     (send self :approach-accel) ;; sync is executed when (equal (send self :controller-state :accel) :running) automatically
      (warn "approach-floor~%")
      (send self :approach-floor :offset floor-offset :reach-until-touch nil)
      (warn "approach-handle~%")
-     (send self :approach-handle) ;; sync is executed when (equal (send self :controller-state :handle) :running)
+     (send self :approach-handle) ;; sync is executed when (equal (send self :controller-state :handle) :running) automatically
      (send self :publish-body-relative-steering-coords)
      ;; move head front
      (warn "init-head~%")
