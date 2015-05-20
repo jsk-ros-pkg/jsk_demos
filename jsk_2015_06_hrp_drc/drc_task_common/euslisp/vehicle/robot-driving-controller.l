@@ -1100,7 +1100,7 @@
       )
     (warn "make controller: ~A~%" controller-name)
     (setq *controller* (eval (list 'instance (read-from-string controller-name) :init :real real)))
-    (send *controller* :initialize)
+    ;; (send *controller* :initialize) ;; initialize can be called from ui
     (send *controller* :execute)
     )
   )
