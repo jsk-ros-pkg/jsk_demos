@@ -79,7 +79,7 @@
        (ros::service-call "/drive/operation/initialize" req t)
        )
      )
-   
+
    ;; subscriber for operator command
    (ros::subscribe "/drive/operation/accel_cmd"
                    std_msgs::Float64
@@ -111,7 +111,7 @@
    ;; neck command topics
    (ros::advertise "/drive/controller/neck_y_angle" std_msgs::Float32 1 t)
    (ros::advertise "/drive/controller/neck_p_angle" std_msgs::Float32 1 t)
-   
+
    ;; for steering visualization
    (ros::advertise "/drive/controller/currest_steering" jsk_recognition_msgs::TorusArray 1)
    (ros::advertise "/drive/controller/handling_trajectory" geometry_msgs::PolygonStamped 1)
@@ -121,7 +121,7 @@
    (ros::subscribe "/drive/torus_finder/output/pose"
                    geometry_msgs::PoseStamped
                    #'send self :torus-finder-callback)
-   
+
    ;; for crank recognition
    (setq tf-listener (instance ros::transform-listener :init))
    (ros::subscribe "/handle_pose"
@@ -133,7 +133,7 @@
    (ros::advertise "/drive/controller/accel_mode" std_msgs::String 1)
    (ros::advertise "/drive/controller/brake_mode" std_msgs::String 1)
    (ros::advertise "/drive/controller/neck_mode" std_msgs::String 1)
-   
+
    ;; for vehicle ui
    (ros::advertise-service "/drive/controller/initialize" std_srvs::Empty #'send self :initialize-callback)
    (ros::advertise-service "/drive/controller/approach_handle" std_srvs::Empty #'send self :approach-handle-callback)
@@ -197,7 +197,7 @@
   (:correct-callback
    (req)
    (let ((res (send req :response)))
-     (send self :correct-handle-pose :yes t)
+     (send self :correct-handle-pose :yes t :look-at-handle nil)
      res
      )
    )
@@ -298,7 +298,7 @@
   
   ;; interface command
   (:initialize
-   (&key (sync nil) (time 10000) (real (send motion :real)))
+   (&rest args &key (sync nil) (time 10000) (real (send motion :real)) (fist-offset #f(0 0 25)) (floor-offset #f(0 0 0)))
    (when (and sync (not (send *ri* :simulation-modep)))
      (send motion :sync-all-controller)
      )
@@ -308,11 +308,11 @@
      (send motion :ride :init-pose t)
      (send motion :drive-init-pose-crank :limb :larm :move-arm nil) ;; todo: fix and remove
      (warn "approach-fist~%")
-     (send self :approach-fist :reach-until-touch nil)
+     (send self :approach-fist :offset fist-offset :reach-until-touch nil)
      (warn "approach-accel~%")
      (send self :approach-accel)
      (warn "approach-floor~%")
-     (send self :approach-floor :offset #f(0 0 0))
+     (send self :approach-floor :offset floor-offset :reach-until-touch nil)
      (warn "approach-handle~%")
      (send self :approach-handle)
      (send self :publish-body-relative-steering-coords)
@@ -329,10 +329,10 @@
        (ros::service-call "/drive/operation/initialize" req t)
        )
      )
-   ;; enable operation
-   (send self :controller-mode :handle :operation)
-   (send self :controller-mode :accel :operation)
-   (send self :controller-mode :neck :operation)
+   ;; init operation mode
+   (send self :controller-mode :handle :stop)
+   (send self :controller-mode :accel :stop)
+   (send self :controller-mode :neck :stop)
    nil
    )
   (:grasp
@@ -364,7 +364,7 @@
    )
   (:correct-handle-pose
    (&key (yes nil) (grasp t) (time 2500) (look-at-handle t))
-   (let (ret-result approach-result grasp-result)     
+   (let (ret-result approach-result grasp-result)
      (setq handle-pose-estimate-flag t)
      (setq ret-result (send self :execute-handle-pose-compensation :yes yes :look-at-handle look-at-handle))
      ;; grasp in new handle coords
@@ -425,7 +425,6 @@
              (t (send motion :turn-handle handle-deg :relative nil :use-controller t))
              )
            )
-       
      ;; publish target angle
      (send pub-msg :data handle-deg)
      (ros::publish "/drive/controller/goal_handle_angle" pub-msg)
@@ -761,7 +760,9 @@
           )
      (send motion :robot :newcoords estimated-robot-coords)
      (send *viewer* :draw-objects)
+     (warn "apply new robot coords~%")
      (unless (or yes (y-or-n-p)) ;; y-or-n-p is not evaluated when yes is t
+       (warn "revert old robot coords~%")
        (send motion :robot :newcoords old-robot-coords) ;; revert
        )
      (send motion :robot :copy-worldcoords)
@@ -796,7 +797,7 @@
                         (send msg :header :frame_id)
                         (send msg :header :stamp))) ;; cascaded-coords: body->camera
            body-relative-handle-pose
-           )       
+           )
        (unless trans
          (warn "Failed to solve tf~%")
          (return-from :handle-pose-callback nil)
@@ -843,10 +844,11 @@
        (return-from :execute-handle-pose-compensation nil)
        )
      (warn "release handle~%")
-     (if (equal (send self :controller-state :handle) :running)
-         (setq release-result (send self :release :offset release-offset))
-       (setq release-result t)
-       )
+     ;; (if (equal (send self :controller-state :handle) :running)
+     ;;     (setq release-result (send self :release :offset release-offset))
+     ;;   (setq release-result t)
+     ;;   )
+     (setq release-result (send self :release :offset release-offset))
      (when release-result
        ;; temporary ;;
        (send (send motion :robot) (send motion :grasp-arm) :shoulder-y :joint-angle shoulder-y-deg)

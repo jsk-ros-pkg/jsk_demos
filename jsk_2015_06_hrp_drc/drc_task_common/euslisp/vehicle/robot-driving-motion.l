@@ -79,9 +79,10 @@
   ;; handling
   (:approach-handle
    (&rest args &key (limb (send self :get :grasp-arm)) (target-handle (send self :get :grasp-point)) (sync-controller nil)
-          (tm 7500) (offset #f(-150 0 0)) (rot-offset 0)
+          (tm 7500) (offset #f(-100 0 0)) (rot-offset 0)
           (debug-view nil) (rotation-axis t) (start-impedance nil) (stop-impedance nil)
           (null-space #f(-0.06 -0.3 0.0 -0.18 0.16 0.0 0.0 0.0))
+          (allowable-theta 180) (iteration-theta 5)
           &allow-other-keys
           )
    (when start-impedance
@@ -94,46 +95,61 @@
    (let ((check-links (subseq (send robot limb :links) 3 6)) (distance-threshold 100)
          (body-link (elt (send robot :links) 0))
          (handle-link (find-if #'(lambda (h) (eq (send h :name) :handle-link)) (send (send *car* :vehicle-handle) :links)))
-         (offset-target-handle-coords
-          (send (send (send (send self :rotate-grasp-point-by-grasp-arm (send car target-handle))
-                            :copy-worldcoords)
-                      :translate offset)
-                :rotate rot-offset :z (send self :rotate-grasp-point-by-grasp-arm (send car target-handle)) ;; grasp-point is assumed to be a pole and axis :z is to be grasped (:x, :y cannot be rotated to grasp) 
-                )
-          )
+         (target-handle-coords-org (send (send self :rotate-grasp-point-by-grasp-arm (send car target-handle)) :copy-worldcoords))
          (old-angle-vector (send robot limb :angle-vector))
-         ik-result
+         (rot-angle 0) (ik-result nil) target-handle-coords
          )
-     ;; first, move roughly without collision detection
-     (setq ik-result
-           (send robot :inverse-kinematics offset-target-handle-coords
-                 :move-target (send robot limb :end-coords)
-                 :link-list (send robot :link-list (send robot limb :end-coords :parent) (send robot limb :root-link))
-                 :rotation-axis nil :debug-view debug-view
-                 ;; :null-space null-space ;; avoid rarm to outside
-                 ;; :null-space #f(30.0 -150.0 0.0 90.0 80.0 0.0 20.0 0.0) ;; avoid rarm to outside
+     (labels ((approach-ik
+              (target)
+              (let (result)
+                ;; first, move roughly without collision detection
+                (setq result
+                      (send robot :inverse-kinematics target
+                            :move-target (send robot limb :end-coords)
+                            :link-list (send robot :link-list (send robot limb :end-coords :parent) (send robot limb :root-link))
+                            :rotation-axis nil :debug-view debug-view
+                            )
+                      )
+                (when result ;; execute only if approach ik is succeed
+                  ;; second, re-solve inverse kinematics considering collision
+                  (setq result
+                        (send robot :inverse-kinematics target
+                              :move-target (send robot limb :end-coords)
+                              :link-list (send robot :link-list (send robot limb :end-coords :parent) (send robot limb :root-link))
+                              :rotation-axis rotation-axis :debug-view debug-view
+                              :avoid-collision-null-gain 100
+                              :avoid-collision-joint-gain 0.1
+                              :collision-avoidance-link-pair (concatenate cons
+                                                                          (mapcar #'(lambda (x) (list x body-link)) check-links)
+                                                                          (mapcar #'(lambda (x) (list x handle-link)) check-links))
+                              :additional-check
+                              #'(lambda ()
+                                  (not (some #'null (mapcar #'(lambda (x) (> (car (pqp-collision-distance x body-link)) distance-threshold))
+                                                            check-links))))
+                              )
+                        )
+                  )
+                (unless result  ;; revert first ik when second ik failed
+                  (send robot limb :angle-vector old-angle-vector)
+                  )
+                result
+                )
+              ))
+       ;; define target-handle-coords
+       (while (and (< rot-angle allowable-theta) (not ik-result))
+         (setq target-handle-coords
+               (send (send (send target-handle-coords-org :copy-worldcoords) :rotate (deg2rad rot-angle) :z :local)
+                     :translate offset :local)
+               )
+         (setq ik-result (approach-ik target-handle-coords))
+         (when (not ik-result)
+           (setq target-handle-coords
+                 (send (send (send target-handle-coords-org :copy-worldcoords) :rotate (deg2rad (- rot-angle)) :z :local)
+                       :translate offset :local)
                  )
+           (setq ik-result (approach-ik target-handle-coords))
            )
-     (when ik-result ;; execute only if approach ik is succeed
-       ;; second, re-solve inverse kinematics considering collision
-       (setq ik-result
-             (send robot :inverse-kinematics offset-target-handle-coords
-                   :move-target (send robot limb :end-coords)
-                   :link-list (send robot :link-list (send robot limb :end-coords :parent) (send robot limb :root-link))
-                   :rotation-axis rotation-axis :debug-view debug-view :stop 1000
-                   :avoid-collision-null-gain 100
-                   :avoid-collision-joint-gain 0.1
-                   :collision-avoidance-link-pair (concatenate cons
-                                                               (mapcar #'(lambda (x) (list x body-link)) check-links)
-                                                               (mapcar #'(lambda (x) (list x handle-link)) check-links))
-                   :additional-check
-                   #'(lambda ()
-                       (not (some #'null (mapcar #'(lambda (x) (> (car (pqp-collision-distance x body-link)) distance-threshold))
-                                                 check-links))))
-                   )
-             )
-       (unless ik-result
-         (send robot limb :angle-vector old-angle-vector) ;; revert when second ik failed
+         (setq rot-angle (+ rot-angle iteration-theta))
          )
        )
      (when (and real ik-result)
@@ -144,8 +160,79 @@
          )
        )
      ik-result ;; return result of ik (nil is failed)
-     )      
-   )  
+     )
+   )
+  ;; old approach-handle
+  ;; (:approach-handle
+  ;;  (&rest args &key (limb (send self :get :grasp-arm)) (target-handle (send self :get :grasp-point)) (sync-controller nil)
+  ;;         (tm 7500) (offset #f(-150 0 0)) (rot-offset 0)
+  ;;         (debug-view nil) (rotation-axis t) (start-impedance nil) (stop-impedance nil)
+  ;;         (null-space #f(-0.06 -0.3 0.0 -0.18 0.16 0.0 0.0 0.0))
+  ;;         &allow-other-keys
+  ;;         )
+  ;;  (when start-impedance
+  ;;    (send self :set-impedance-for-handle limb)
+  ;;    )
+  ;;  (send self :open-hand limb)
+  ;;  (when (and sync-controller (not (send *ri* :simulation-modep)))
+  ;;    (send *ri* :sync-controller (read-from-string (format nil ":~A-controller" (string-downcase limb))))
+  ;;    )
+  ;;  (let ((check-links (subseq (send robot limb :links) 3 6)) (distance-threshold 100)
+  ;;        (body-link (elt (send robot :links) 0))
+  ;;        (handle-link (find-if #'(lambda (h) (eq (send h :name) :handle-link)) (send (send *car* :vehicle-handle) :links)))
+  ;;        (offset-target-handle-coords
+  ;;         (send (send (send (send self :rotate-grasp-point-by-grasp-arm (send car target-handle))
+  ;;                           :copy-worldcoords)
+  ;;                     :translate offset)
+  ;;               :rotate rot-offset :z (send self :rotate-grasp-point-by-grasp-arm (send car target-handle)) ;; grasp-point is assumed to be a pole and axis :z is to be grasped (:x, :y cannot be rotated to grasp) 
+  ;;               )
+  ;;         )
+  ;;        (old-angle-vector (send robot limb :angle-vector))
+  ;;        ik-result
+  ;;        )
+  ;;    ;; first, move roughly without collision detection
+  ;;    (setq ik-result
+  ;;          (send robot :inverse-kinematics offset-target-handle-coords
+  ;;                :move-target (send robot limb :end-coords)
+  ;;                :link-list (send robot :link-list (send robot limb :end-coords :parent) (send robot limb :root-link))
+  ;;                :rotation-axis nil :debug-view debug-view
+  ;;                ;; :null-space null-space ;; avoid rarm to outside
+  ;;                ;; :null-space #f(30.0 -150.0 0.0 90.0 80.0 0.0 20.0 0.0) ;; avoid rarm to outside
+  ;;                )
+  ;;          )
+  ;;    (when ik-result ;; execute only if approach ik is succeed
+  ;;      ;; second, re-solve inverse kinematics considering collision
+  ;;      (setq ik-result
+  ;;            (send robot :inverse-kinematics offset-target-handle-coords
+  ;;                  :move-target (send robot limb :end-coords)
+  ;;                  :link-list (send robot :link-list (send robot limb :end-coords :parent) (send robot limb :root-link))
+  ;;                  :rotation-axis rotation-axis :debug-view debug-view :stop 1000
+  ;;                  :avoid-collision-null-gain 100
+  ;;                  :avoid-collision-joint-gain 0.1
+  ;;                  :collision-avoidance-link-pair (concatenate cons
+  ;;                                                              (mapcar #'(lambda (x) (list x body-link)) check-links)
+  ;;                                                              (mapcar #'(lambda (x) (list x handle-link)) check-links))
+  ;;                  :additional-check
+  ;;                  #'(lambda ()
+  ;;                      (not (some #'null (mapcar #'(lambda (x) (> (car (pqp-collision-distance x body-link)) distance-threshold))
+  ;;                                                check-links))))
+  ;;                  )
+  ;;            )
+  ;;      (unless ik-result
+  ;;        (send robot limb :angle-vector old-angle-vector) ;; revert when second ik failed
+  ;;        )
+  ;;      )
+  ;;    (when (and real ik-result)
+  ;;      (send *ri* :angle-vector (send robot :angle-vector) tm)
+  ;;      (send *ri* :wait-interpolation)
+  ;;      (when stop-impedance
+  ;;        (send *ri* :stop-impedance limb)
+  ;;        )
+  ;;      )
+  ;;    ik-result ;; return result of ik (nil is failed)
+  ;;    )
+  ;;  )
+
   (:grasp-handle
    (&rest args &key (limb (send self :get :grasp-arm)) (target-handle (send self :get :grasp-point))
           (debug nil) (tm 7000) (debug-view nil) (start-impedance t) (rotation-axis :z) (adjust nil)

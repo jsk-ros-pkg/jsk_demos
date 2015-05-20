@@ -26,6 +26,12 @@
    ;; (send self :step-accel-command 10)
    ;; (send self :release-accel-command 4)
    )
+  (:initialize
+   (&rest args &key (fist-offset #f(0 0 25)) (floor-offset #f(0 0 0))  &allow-other-keys)
+   (send-super* :initialize
+                :fist-offset fist-offset :floor-offset floor-offset
+                args)
+   )
   (:execute-handle-pose-compensation
    (&rest args &key (release-offset #f(-200 0 0)) (shoulder-y-deg 0.0) &allow-other-keys)
    (send-super* :execute-handle-pose-compensation
