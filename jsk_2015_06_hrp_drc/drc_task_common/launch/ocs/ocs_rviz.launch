@@ -2,7 +2,9 @@
   <remap from="/tf" to="/ocs/tf" />
   <remap from="/joint_states" to="/ocs/joint_states" />
   <remap from="/robot_description" to="/ocs/robot_description" />
-
+  <arg name="default_frame_id" default="odom_on_ground" />
+  <arg name="ik_server_launch" default="hrp2jsknts-ik-server.launch" />
+  <arg name="robot_model_config" default="$(find drc_task_common)/config/robot_interactive_marker.yaml" />
   <node pkg="drc_task_common" type="rviz_status.py" name="rviz_status">
   </node>
   <!-- robot motion -->
