@@ -237,9 +237,9 @@
        (make-cascoords
         :coords
         (cond ((equal *robot-name* "HRP2JSKNT")
-               (send (send (send (send *robot* :rarm :end-coords) :copy-worldcoords) :translate (float-vector 50 2.0 0.0) :local) :rotate (deg2rad 45) :z :local))
+               (send (send (send (send *robot* :rarm :end-coords) :copy-worldcoords) :translate (float-vector 50 2.0 0.0) :local) :rotate (deg2rad 53) :z :local))
               ((equal *robot-name* "HRP2JSKNTS")
-               (send (send (send (send *robot* :rarm :end-coords) :copy-worldcoords) :translate (float-vector 50 25.0 0.0) :local) :rotate (deg2rad 45) :z :local))
+               (send (send (send (send *robot* :rarm :end-coords) :copy-worldcoords) :translate (float-vector 50 25.0 0.0) :local) :rotate (deg2rad 53) :z :local))
               (t ;; (or (equal *robot-name* "JAXON") (equal *robot-name* "STARO"))
                (send (send (send (send *robot* :rarm :end-coords) :copy-worldcoords) :translate (float-vector -5.0 -10.0 0.0) :local) :rotate (deg2rad 0) :z :local)
                )
@@ -249,9 +249,9 @@
        (make-cascoords
         :coords
         (cond ((equal *robot-name* "HRP2JSKNT")
-               (send (send (send (send *robot* :larm :end-coords) :copy-worldcoords) :translate (float-vector 50 -2.0 0.0) :local) :rotate (deg2rad -45) :z :local))
+               (send (send (send (send *robot* :larm :end-coords) :copy-worldcoords) :translate (float-vector 50 -2.0 0.0) :local) :rotate (deg2rad -53) :z :local))
               ((equal *robot-name* "HRP2JSKNTS")
-               (send (send (send (send *robot* :larm :end-coords) :copy-worldcoords) :translate (float-vector 50 -25.0 0.0) :local) :rotate (deg2rad -45) :z :local))
+               (send (send (send (send *robot* :larm :end-coords) :copy-worldcoords) :translate (float-vector 50 -25.0 0.0) :local) :rotate (deg2rad -53) :z :local))
               (t ;; (or (equal *robot-name* "JAXON") (equal *robot-name* "STARO"))
                (send (send (send (send *robot* :larm :end-coords) :copy-worldcoords) :translate (float-vector -5.0 10.0 0.0) :local) :rotate (deg2rad 0) :z :local)
                )
@@ -1648,9 +1648,9 @@
           (when real? (model2real :time 2000))
           (send *ri* :set-ref-force #f(0 0 0) 2000 *drill-main-arm*)
           (when real? (drill-hook))
-          (send-angle-vector-sequence-with-time (subseq *drill-motion-out* 0 rotate-length) :time 1500)
+          (send-angle-vector-sequence-with-time (subseq *drill-motion-out* 0 rotate-length) :time 2500)
           (send *robot* :angle-vector (elt *drill-motion-in* (- rotate-length 1)))
-          (when real? (model2real :time 1000))
+          (when real? (model2real :time 3000))
           (when real? (drill-air-grasp))
           (send *robot* :angle-vector (elt *drill-motion-up* (- rotate-length 1)))
           (when real? (model2real :time 2000))
@@ -2677,7 +2677,7 @@
 
 (defun drill-air-grasp (&key (arm *drill-main-arm*))
   (cond ((or (equal *robot-name* "HRP2JSKNT") (equal *robot-name* "HRP2JSKNTS"))
-         (send *robot* :hand arm :angle-vector (float-vector 90.0 45.0 -10.0 0.0 -40.0 40.0))
+         (send *robot* :hand arm :angle-vector #f(90.0 35.0 -10.0 0.0 -40.0 50.0))
          (hand-model2real)
          )
         (t
