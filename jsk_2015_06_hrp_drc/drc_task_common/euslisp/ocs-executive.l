@@ -41,6 +41,8 @@
                 drill-put-params
                 drill-wall-params
                 drill-wall-target-coords ;; list of coords
+                drill-stand-coords-list ;; list of (list symbol coords), base is odom_on_ground
+                drill-stand-coords-index ;; referenced stand coords
                 drill-button-params ;; (list coords)
 		drill-rotate-params
 		drill-grasp-relative-coords
@@ -124,13 +126,15 @@
     (send smachine :register-initial-hook self :initial-callback)
     (send smachine :go-to :initial) ;; force to move to initial state
     (setq arm-mode :rarm-preferred)
-    (setq overwrite-stand-coords? nil)
+    (setq overwrite-stand-coords? :auto)
+    (setq drill-wall-target-coords nil)
     (setq valve-grasp-mode :edge-grasp-preferred)
     (setq door-push/pull :push)
     (setq door-name :drc-lasvegas)
     (setq force-overwrite-door-arm :force)
     (send self :show-text "initialized" :success)
-    (setq drill-rotate-num 1)
+    (setq drill-rotate-num 2)
+    (setq drill-stand-coords-index 0)
     self)
   (:report-callback (msg)
     ;; do nothing
@@ -251,6 +255,7 @@
       (send self :set-image-view2-mode :none)
       (let ((fc-msg (instance drc_com_common::OCS2FCSmall :init)))
         (send fc-msg :type drc_com_common::OCS2FCSmall::*DRILL_GRASP_REGION*) ;Should have another constant
+        (send self :show-text "recognizing drill grasp coords" :select)
         (send self :send-to-fc fc-msg))
       (send smachine :go-to :recognizing-drill-grasp-pose))
     (send req :response))
@@ -335,6 +340,8 @@
       (send self :rectangle-callback-for-drill-button-region msg))
      ((eq (send smachine :state) :selecting-region-for-drill-rotate)
       (send self :rectangle-callback-for-drill-rotate-region msg))
+     (t
+       (send self :show-text "rectangle selected but no mean" :warn))
      ))
   (:rectangle-callback-for-valve-region (msg)
     (send self :show-text "Wait for valve recognition" :wait)
@@ -699,6 +706,7 @@
     (let ((msg (instance drc_com_common::OCS2FCSmall :init)))
       (send msg :type drc_com_common::OCS2FCSmall::*DRILL_GRASP_EXEC*)
       (send msg :float_params (coords-to-float-vector (elt drill-grasp-params 0) (length (send msg :float_params))))
+      (send msg :image_type drill-rotate-num)
       (send msg :stand_coords
             (coords-to-float-vector (get-robot-model-current-pos) (length (send msg :stand_coords))))
       (cond ((not (boundp '*drill-main-arm*))
@@ -721,7 +729,7 @@
     (let ((msg (instance drc_com_common::OCS2FCSmall :init)))
       (send msg :type drc_com_common::OCS2FCSmall::*DRILL_PUT_EXEC*)
       (send msg :float_params (coords-to-float-vector (elt drill-put-params 0) (length (send msg :float_params))))
-    s  (send msg :stand_coords
+      (send msg :stand_coords
             (coords-to-float-vector (get-robot-model-current-pos) (length (send msg :stand_coords))))
       (cond ((not (boundp '*drill-main-arm*))
              (send msg :arm_side drc_com_common::OCS2FCSmall::*UNDECIDED*))
@@ -766,7 +774,6 @@
     (let ((msg (instance drc_com_common::OCS2FCSmall :init)))
       (send msg :type drc_com_common::OCS2FCSmall::*DRILL_BUTTON_EXEC*)
       (send msg :float_params (coords-to-float-vector (elt drill-button-params 0) (length (send msg :float_params))))
-      (send msg :image_type drill-rotate-num)
       (cond ((not (boundp '*drill-main-arm*))
              (send msg :arm_side drc_com_common::OCS2FCSmall::*UNDECIDED*))
             ((equal *drill-main-arm* :larm)
@@ -803,6 +810,7 @@
 
   (:exec-go-pos-button-callback ()
     ;; update latest go-pos coords
+    (send self :show-text "Execute GO POS" :execute)
     (setq go-pos-coords (send *tf* :lookup-transform "robot_marker_root" "ground" (ros::time 0)))
     (setq go-pos-coords (send go-pos-coords :transformation (make-coords) :local))
     ;; send go-pos coords to fc
@@ -837,6 +845,7 @@
       (send self :exec-drill-rotate-button-callback))
      ((eq (send smachine :state) :selecting-exec-for-go-pos)
       (send self :exec-go-pos-button-callback))
+     (t (send self :show-text "exec selected but no mean" :warn))
      )
     (send req :response))
   )
@@ -987,13 +996,23 @@
         (set-focus-marker-name "drill")
         ;; publish motion to robot model on rviz
         (setq *drill-main-arm* (send self :get-arm-side))
-	(publish-drill-grasp-motion :coords (elt drill-grasp-params 0) :update? t :stand-coords (make-coords) :overwrite-stand-coords? t :drill-rotate-num drill-rotate-num)
+	(publish-drill-grasp-motion :coords (elt drill-grasp-params 0) :update? t :stand-coords (make-coords) :overwrite-stand-coords? :force :drill-rotate-num drill-rotate-num)
+        (let ((index (position-if #'(lambda (x) (equal (elt x 0) :grasp)) drill-stand-coords-list)))
+          (if index
+              (progn
+                (setf (elt drill-stand-coords-list index) (list :grasp (convert-coords-frame (if (boundp '*drill-stand-coords-forced*) *drill-stand-coords-forced* (make-coords)))))
+                (setq drill-stand-coords-index index))
+            (progn
+              (push-back (list :grasp (convert-coords-frame (if (boundp '*drill-stand-coords-forced*) *drill-stand-coords-forced* (make-coords)))) drill-stand-coords-list)
+              (setq drill-stand-coords-index (- (length drill-stand-coords-list) 1))
+              )))
 	(if (or (not (boundp '*drill-motion*)) (not *drill-motion*))
 	    (send self :show-text 
 		  "IK FAIL")
           (send self :show-text (format nil "IK SUCCESS diff-deg ~Adeg" *drill-diff-angle*))
           )
  ;todo drill-type
+        
         (send smachine :go-to :selecting-exec-for-drill-grasp))
       ))
   (:drill-put-recognition-finished-callback (msg)
@@ -1007,7 +1026,7 @@
         ;; publish object marker
         (erase-all-primitive-marker)
         (insert-primitive-marker :shape-type jsk_rviz_plugins::TransformableMarkerOperate::*CYLINDER* :name "cylinder1" :description "")
-        (set-primitive-marker-dimensions :radius 300 :z 30) ;; show plane as circle
+        (set-primitive-marker-dimensions :radius 400 :z 1 :name "cylinder1")
         (set-primitive-marker-pose coords "BODY")
         (set-primitive-marker-color :r 1.0 :g 1.0 :b 0.0 :a 0.6)
         (apply-primitive-dimensions-to-midi-device)
@@ -1041,7 +1060,16 @@
           ;; end marker
           (setq drill-wall-target-coords (get-relative-coords-list center-coords coords-set))
 	  (setq *drill-main-arm* (send self :get-arm-side))
-          (publish-drill-wall-motion :coords-list coords-set :update? t :stand-coords (make-coords) :overwrite-stand-coords? t)
+          (publish-drill-wall-motion :coords-list coords-set :update? t :stand-coords (make-coords) :overwrite-stand-coords? :force)
+          (let ((index (position-if #'(lambda (x) (equal (elt x 0) :wall) drill-stand-coords-list))))
+            (if index
+                (progn
+                  (setf (elt drill-stand-coords-list index) (list :wall (convert-coords-frame (if (boundp '*drill-stand-coords-forced*) *drill-stand-coords-forced* (make-coords)))))
+                  (setq drill-stand-coords-index index))
+              (progn
+                (push-back (list :wall (convert-coords-frame (if (boundp '*drill-stand-coords-forced*) *drill-stand-coords-forced* (make-coords)))) drill-stand-coords-list)
+                (setq drill-stand-coords-index (- (length drill-stand-coords-list) 1))
+                )))
 	  (if (or (not (boundp '*drill-motion*)) (not *drill-motion*))
 	      (send self :show-text 
 		  "IK FAIL")
@@ -1102,6 +1130,7 @@
         (publish-model-joint-states :av (get-potentio-vector-from-joint-states))
         (send smachine :go-to :selecting-exec-for-go-pos))))
   (:recognition-failed-callback (msg)
+    (when (eq (send smachine :state) :selecting-exec-for-drill-grasp) (return-from :recognition-failed-callback nil)) ;; skip selected!
     (when (send smachine :next? :initial)
       (send self :show-text "Recognition failed, go to :initial state" :fatal)
       (send smachine :go-to :initial)))
@@ -1139,11 +1168,17 @@
       (let* ((params (send msg :params))
              (coords-set (float-vector-to-coords-set params)))
         (send self :show-text 
-              (format nil "Recognize drill. pos:~A" (send (elt coords-set 0) :worldpos)) :recognize)
+              (format nil "drill grasp succeeded. Left Rotation :~A" (elt (send (elt coords-set 2) :worldpos) 0)))
         ;; store result
 	(set-primitive-marker-pose (elt coords-set 0) "BODY" :name "drill")
 	(setq drill-grasp-relative-coords (elt coords-set 1))
-	))
+        (when (< (abs (elt (send (elt coords-set 2) :worldpos) 0)) 20)
+          (push-back (list :button (convert-coords-frame (make-coords :pos (float-vector -500 0 0)))) drill-stand-coords-list)
+          (setq drill-stand-coords-index (- (length drill-stand-coords-list) 1))
+          (send self :show-text "GOPOS AUTO TO BUTTON FAISE")
+          )
+        )
+      )
     )
   (:drill-put-exec-finished-callback (msg)
     (when (eq (send smachine :state) :executing-drill-put)
@@ -1155,7 +1190,20 @@
       (send smachine :go-to :initial)))
   (:drill-button-exec-finished-callback (msg)
     (when (eq (send smachine :state) :executing-drill-button)
-      (send self :show-text "Finished drill-button motion" :success)
+      (if (send msg :success)
+          (progn (send self :show-text "Finished drill-button motion with success" :success)
+                 (send self :show-text "PUSH AUTO GO-POS BUTTON!")
+                 (let ((index (position-if #'(lambda (x) (equal (elt x 0) :wall)) drill-stand-coords-list)))
+                   (if index
+                       (progn
+                         (setf (elt drill-stand-coords-list index) (list :wall (convert-coords-frame (make-coords :rpy (list (deg2rad -90) 0 0)))))
+                         (setq drill-stand-coords-index index))
+                     (progn
+                       (push-back (list :wall (convert-coords-frame (make-coords :rpy (list (deg2rad -90) 0 0)))) drill-stand-coords-list)
+                       (setq drill-stand-coords-index (- (length drill-stand-coords-list) 1))
+                       )))
+                 )
+        (send self :show-text "Finished drill-button motion but failed!":fatal))
       (send smachine :go-to :initial)))
   (:drill-rotate-exec-finished-callback (msg)
     (when (eq (send smachine :state) :executing-drill-rotate)
@@ -1164,8 +1212,13 @@
       (let* ((params (send msg :params))
              (coords-set (float-vector-to-coords-set params)))
         (send self :show-text 
-              (format nil "Recognize drill. pos:~A" (send (elt coords-set 0) :worldpos)) :recognize)
+              (format nil "drill grasp succeeded. Left Rotation :~A" (elt (send (elt coords-set 2) :worldpos) 0)))
         ;; store result
+        (when (< (abs (elt (send (elt coords-set 2) :worldpos) 0)) 20)
+          (push-back (list :button (convert-coords-frame (make-coords :pos (float-vector -500 0 0)))) drill-stand-coords-list)
+          (setq drill-stand-coords-index (- (length drill-stand-coords-list) 1))
+          (send self :show-text "GOPOS AUTO TO BUTTON FAISE")
+          )
         (setq drill-grasp-relative-coords (elt coords-set 1))
 	(set-primitive-marker-pose (elt coords-set 0) "BODY" :name "drill"))
       )
@@ -1303,6 +1356,8 @@
             :push/pull door-push/pull
             :update? t)
            (send smachine :go-to :selecting-exec-for-door))
+          (t (send self :show-text "refresh selected but no mean" :warn)
+              (send req :response))
           )
     (send self :show-text "Finish to replay robot motion")
     (send req :response)
@@ -1387,6 +1442,7 @@
       (send smachine :go-to! :selecting-exec-for-drill-grasp)
       (erase-all-primitive-marker)
       (insert-primitive-marker :shape-type jsk_rviz_plugins::TransformableMarkerOperate::*CYLINDER* :name "cylinder1" :description "")
+      (set-primitive-marker-dimensions :radius 300 :z 30) ;; show plane as circle
       (insert-primitive-marker :shape-type jsk_rviz_plugins::TransformableMarkerOperate::*MESH_RESOURCE* :name "drill" :description "" :resource "package://drc_task_common/models/takenoko_drill.dae" :use-material t))
      ((eq (send smachine :state) :selecting-region-for-drill-put)
       (send smachine :go-to! :selecting-exec-for-drill-put))
@@ -1419,6 +1475,7 @@
       (send smachine :go-to! :selecting-exec-for-drill-button))
      ((eq (send smachine :state) :selecting-region-for-drill-rotate)
       (send smachine :go-to! :selecting-exec-for-drill-rotate))
+     (t (send self :show-text "skip recog selected but no mean" :warn))
      )
     (send self :show-text "skip recog. set and move marker manually.")
     (send req :response)
@@ -1645,6 +1702,20 @@
    (setq drill-rotate-num 3)
    (send req :response)
    )
+  (:drill-auto-go-pos-callback
+   (req)
+   (send smachine :go-to! :selecting-exec-for-go-pos)
+   (if drill-stand-coords-list
+       (progn
+         (move-robot-model (elt (elt drill-stand-coords-list drill-stand-coords-index) 1) "/odom_on_ground")
+         (send self :show-text (format nil "GOPOS for ~A Push EXEC" (elt (elt drill-stand-coords-list drill-stand-coords-index) 0)))
+         (setq drill-stand-coords-index (mod (+ drill-stand-coords-index) (length drill-stand-coords-list)))
+         )
+     (send self :show-text "Please firstly find drill and recog")
+     )
+   (ros::ros-info (format nil "drill auto ~A" drill-stand-coords-list))
+   (send req :response)
+   )
   ;; door arm overwrite
   (:force-overwrite-door-arm-callback
    (req)
@@ -1801,7 +1872,7 @@
 (ros::advertise-service "drill_rotate_one" std_srvs::Empty #'send *app* :drill-rotate-one-callback)
 (ros::advertise-service "drill_rotate_two" std_srvs::Empty #'send *app* :drill-rotate-two-callback)
 (ros::advertise-service "drill_rotate_three" std_srvs::Empty #'send *app* :drill-rotate-three-callback)
-
+(ros::advertise-service "drill_auto_go_pos" std_srvs::Empty #'send *app* :drill-auto-go-pos-callback)
 
 (ros::advertise-service "reach_until_touch_command_from_ocs" drc_task_common::ReachUntilTouchCommand #'send *app* :reach-until-touch-from-ocs)
 (ros::advertise-service "set_drill_coords" std_srvs::Empty #'send *app* :set-drill-coords)

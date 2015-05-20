@@ -2,6 +2,7 @@ uint8 type
 uint8 seq
 # Parameters
 float32[32] params
+bool success
 
 # type
 # go-pos

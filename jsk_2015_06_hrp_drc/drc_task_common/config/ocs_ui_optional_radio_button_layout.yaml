@@ -87,15 +87,15 @@
   column: 5
 
 - name: 'drill-rotate-zero'
-  service: 'drill-rotate-zero'
+  service: 'drill_rotate_zero'
   column: 6
 - name: 'drill-rotate-one'
-  service: 'drill-rotate-one'
+  service: 'drill_rotate_one'
   column: 6
 - name: 'drill-rotate-two'
-  service: 'drill-rotate-two'
+  service: 'drill_rotate_two'
   column: 6
   default_value: True
 - name: 'drill-rotate-three'
-  service: 'drill-rotate-three'
+  service: 'drill_rotate_three'
   column: 6
