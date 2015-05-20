@@ -1,8 +1,5 @@
 #!/usr/bin/env bash
 
-DRC_TASK_COMMON_LAUNCHES="fc_executive.launch stereo_preprocess.launch laser_preprocess.launch lookat.launch valve_recognition.launch drill_recognition.launch drill_recognition_for_button.launch drill_recognition_for_wall.launch drill_recognition_for_put.launch drill_button_checker.launch door_recognition.launch debri_recognition.launch panorama.launch locomotion.launch fc_misc.launch"
-DRC_COM_COMMON_LAUNCHES="field_computer_com.launch"
-
 CMDNAME=$(basename $0)
 FC_IP=localhost
 OCS_IP=localhost
@@ -44,7 +41,7 @@ tmux-newwindow drill_recognition_for_button "roslaunch drc_task_common drill_rec
 tmux-newwindow drill_recognition_for_wall "roslaunch drc_task_common drill_recognition_for_wall.launch"
 tmux-newwindow drill_recognition_for_put "roslaunch drc_task_common drill_recognition_for_put.launch"
 tmux-newwindow drill_button_checker "roslaunch drc_task_common drill_button_checker.launch"
-tmux-newwindow door_recognition "roslaunch drc_task_common door_recognition.launch"
+tmux-newwindow door_recognition "roslaunch drc_task_common door_unvisible_handle_recognition.launch"
 tmux-newwindow debri_recognition "roslaunch drc_task_common debri_recognition.launch"
 tmux-newwindow panorama "roslaunch drc_task_common panorama.launch"
 tmux-newwindow locomotion "roslaunch drc_task_common locomotion.launch"
