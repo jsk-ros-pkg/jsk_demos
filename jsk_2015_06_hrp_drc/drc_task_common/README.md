@@ -210,11 +210,19 @@ rtmlaunch hrpsys_ros_bridge_tutorials hrp2jsk.launch PROJECT_FILE:=/tmp/HRP2JSK_
 rtmtest -t hrpsys_tools _gen_project.launch INPUT:=`rospack find hrp2_models`/HRP2JSKNTS_for_OpenHRP3/HRP2JSKNTSmain.wrl OUTPUT:=/tmp/HRP2JSKNTS_for_DRCTestbedTerrainJPBlock.xml OBJECT_MODELS:="`rospack find hrpsys`/share/hrpsys/samples/environments/DRCTestbedTerrainJPBlock.wrl,0.4,-2.0,0,1,0,0,0" CORBA_PORT:=15005 INTEGRATE:=false
 rtmlaunch hrpsys_ros_bridge_tutorials hrp2jsknts.launch PROJECT_FILE:=/tmp/HRP2JSKNTS_for_DRCTestbedTerrainJPBlock.xml
 ```
+```
+rtmtest -t hrpsys_tools _gen_project.launch INPUT:=`rospack find hrp2_models`/HRP2JSKNTS_for_OpenHRP3/HRP2JSKNTSmain.wrl OUTPUT:=/tmp/HRP2JSKNTS_for_DRCTestfieldTerrain.xml OBJECT_MODELS:="`rospack find hrpsys`/share/hrpsys/samples/environments/DRCTestfieldTerrain.wrl,0.4,-2.0,0,1,0,0,0" CORBA_PORT:=15005 INTEGRATE:=false
+rtmlaunch hrpsys_ros_bridge_tutorials hrp2jsknts.launch PROJECT_FILE:=/tmp/HRP2JSKNTS_for_DRCTestfieldTerrain.xml
+```
 
 #### jaxon
 ```
 rtmtest -t hrpsys_tools _gen_project.launch INPUT:=`rospack find jsk_models`/JAXON/JAXONmain.wrl OUTPUT:=/tmp/JAXON_for_DRCTestbedTerrainJPBlock.xml OBJECT_MODELS:="`rospack find hrpsys`/share/hrpsys/samples/environments/DRCTestbedTerrainJPBlock.wrl,0.4,-2.0,0,1,0,0,0" CORBA_PORT:=15005 CONF_DT_OPTION:="--dt 0.002" SIMULATION_TIMESTEP_OPTION:="--timeStep 0.002" INTEGRATE:=false
 rtmlaunch hrpsys_ros_bridge_tutorials jaxon.launch PROJECT_FILE:=/tmp/JAXON_for_DRCTestbedTerrainJPBlock.xml
+```
+```
+rtmtest -t hrpsys_tools _gen_project.launch INPUT:=`rospack find jsk_models`/JAXON/JAXONmain.wrl OUTPUT:=/tmp/JAXON_for_DRCTestfieldTerrain.xml OBJECT_MODELS:="`rospack find hrpsys`/share/hrpsys/samples/environments/DRCTestfieldTerrain.wrl,0.4,-2.0,0,1,0,0,0" CORBA_PORT:=15005 CONF_DT_OPTION:="--dt 0.002" SIMULATION_TIMESTEP_OPTION:="--timeStep 0.002" INTEGRATE:=false
+rtmlaunch hrpsys_ros_bridge_tutorials jaxon.launch PROJECT_FILE:=/tmp/JAXON_for_DRCTestfieldTerrain.xml
 ```
 
 ![](images/jaxon_sim.png)
