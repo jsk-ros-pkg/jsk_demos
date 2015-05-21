@@ -8,6 +8,7 @@ do
             do
                 for r in 0 1 2 3 4 5 6 7
                 do 
+                    rossetlocal
                     rosparam set i ${i}
                     rosparam set ix ${x}
                     rosparam set iy ${y}
