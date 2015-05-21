@@ -286,6 +286,8 @@
    (req)
    (let ((res (send req :response)) (pub-msg (instance std_msgs::Float32 :init)))
      (send pub-msg :data (send res :set_value (send motion :overwrite-handle-angle (send req :value))))
+     (setq old-estimated-handle-angle (send req :value))
+     (send self :estimate-current-handle-angle) ;; update estimated handle angle
      (warn "overwrite handle angle to ~A~%" (send motion :car :handle-joint :joint-angle))
      (ros::publish "/drive/controller/goal_handle_angle" pub-msg)
      (when (ros::wait-for-service "/drive/operation/synchronize" 1)
@@ -952,7 +954,7 @@
      (setq relative-grasp-point-pos-from-steerint-center (send steering-center-relative-grasp-point :pos))
      (setq estimated-angle-offset (rad2deg (atan (elt relative-grasp-point-pos-from-steerint-center 1) (elt relative-grasp-point-pos-from-steerint-center 0))))
      (setq estimated-angle (+ estimated-angle estimated-angle-offset)) ;; current estimated angle is 0-360
-     (let ((counter 0))
+     (let ((counter 0)) ;; slide range of estimated angle according to old-estimated-handle-angle
        (while (not (and (<= (- old-estimated-handle-angle half-range) estimated-angle) (<= estimated-angle (+ old-estimated-handle-angle half-range))))
          (when (< estimated-angle (- old-estimated-handle-angle half-range))
            (setq estimated-angle (+ estimated-angle (* half-range 2)))
