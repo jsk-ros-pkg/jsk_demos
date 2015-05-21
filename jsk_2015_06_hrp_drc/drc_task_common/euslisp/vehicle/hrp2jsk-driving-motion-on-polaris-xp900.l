@@ -29,7 +29,8 @@
    ;; (send robot :move-to (make-coords :pos (float-vector -80 470.0 180) :rpy (float-vector 0.0 (deg2rad 5.0) 0.0)) :world) ;; adjusted in real polaris in lasvegas
    ;; (send robot :move-to (make-coords :pos (float-vector -80 420.0 180) :rpy (float-vector 0.0 (deg2rad 5.0) 0.0)) :world)
    ;; (send robot :move-to (make-coords :pos (float-vector -140 420.0 180) :rpy (float-vector 0.0 (deg2rad 5.0) 0.0)) :world)
-   (send robot :move-to (make-coords :pos (float-vector -80 470.0 130) :rpy (float-vector 0.0 0.0 0.0)) :world)
+   ;; (send robot :move-to (make-coords :pos (float-vector -80 470.0 130) :rpy (float-vector 0.0 0.0 0.0)) :world)
+   (send robot :move-to (make-coords :pos (float-vector -80 450.0 130) :rpy (float-vector 0.0 0.0 0.0)) :world)
    (when init-pose
      (send self :drive-init-pose)
      )
@@ -60,8 +61,9 @@
    ;; (send robot :rleg :angle-vector #f(-5.32243 7.27429 -102.357 61.9889 8.87751 -8.28873 -0.108))
    ;; (send robot :rarm :angle-vector #f(35.9754 -42.1297 8.69405 -74.6325 -43.4673 3.3033 35.8167 0.0))
 
-   ;; (send robot :angle-vector #f(0.000746 -0.012134 -94.3573 94.1927 0.163626 0.012907 0.0 -7.09667 0.305781 -94.3208 94.7708 -0.450903 -0.306558 0.0 0.0 0.0 0.0 0.0 -146.447 3.83694 11.5024 -41.098 -24.6756 -7.84617 -5.18264 27.1571 16.4364 8.84719 36.8944 -135.246 1.71672 -14.8073 -3.26523 -27.3191))
-   (send robot :angle-vector #f(-16.1353 -10.3899 -96.856 61.3548 3.71207 12.3977 -0.108 -7.08957 0.294294 -93.7843 94.2707 -0.486473 -0.294315 0.0 0.0 0.0 0.0 0.0 22.7148 -49.6094 35.9183 -66.4958 -58.3108 -2.56987 25.3079 60.0 -37.8397 15.3281 -24.3301 -102.858 41.5248 -59.8958 27.1202 -27.3191))
+   ;; (send robot :angle-vector #f(0.000746 -0.012134 -94.3573 94.1927 0.163626 0.012907 0.0 -7.09667 0.305781 -94.3208 94.7708 -0.450903 -0.306558 0.0 0.0 0.0 0.0 0.0 -146.447 3.83694 11.5024 -41.098 -24.6756 -7.84617 -5.18264 27.1571 16.4364 8.84719 36.8944 -135.246 1.71672 -14.8073 -3.26523 -27.3191)) ;; noda-pose
+   ;; (send robot :angle-vector #f(-16.1353 -10.3899 -96.856 61.3548 3.71207 12.3977 -0.108 -7.08957 0.294294 -93.7843 94.2707 -0.486473 -0.294315 0.0 0.0 0.0 0.0 0.0 22.7148 -49.6094 35.9183 -66.4958 -58.3108 -2.56987 25.3079 60.0 -37.8397 15.3281 -24.3301 -102.858 41.5248 -59.8958 27.1202 -27.3191)) ;; adjusted on polaris
+   (send robot :angle-vector #f(-9.0486 1.17029 -101.857 71.8007 -1.15964 -1.1434 -0.108 -7.09068 19.4052 -88.1697 91.111 -2.94105 -19.4056 0.0 0.0 0.0 0.0 0.0 50.0 -30.0 -10.0 -120.0 -25.0 -5.0 -20.0 60.0 -37.8397 15.3281 -24.3301 -102.858 41.5248 -59.8958 27.1202 -27.3191)) ;; move -100 above 
    (send robot :rarm :angle-vector #f(50.0 -30.0 -10.0 -120.0 -25.0 -5.0 -20.0 60.0)) ;; reset-mainip-pose
    (when real
      (send *ri* :angle-vector (send robot :angle-vector) tm)
@@ -145,8 +147,9 @@
         ;; (send robot :rleg :angle-vector #f(-10.0 0.269639 -91.1699 48.9728 5.54723 -0.244199 -0.384)) ;; adjusted in real vehicle
         ;; (send robot :rleg :angle-vector #f(-9.79801 0.253958 -109.928 60.3974 12.8831 -0.218503 0.18)) ;; adjusted in drive simulator by reach-until-touch
         ;; (send robot :rleg :angle-vector #f(-9.04768 1.17199 -100.84 58.9158 10.7088 -1.14559 -0.108)) ;; adjusted in real polaris in lasvegas
-        ;; (send robot :rleg :angle-vector #f(-5.32243 7.27429 -102.357 61.9889 8.87751 -8.28873 -0.108))
-        (send robot :rleg :angle-vector #f(-16.1353 -10.3899 -96.856 61.3548 3.71207 12.3977 -0.108))
+        ;; (send robot :rleg :angle-vector #f(-5.32243 7.27429 -102.357 61.9889 8.87751 -8.28873 -0.108)) ;; noda-pose
+        ;; (send robot :rleg :angle-vector #f(-16.1353 -10.3899 -96.856 61.3548 3.71207 12.3977 -0.108)) ;; adjusted on real polaris
+        (send robot :rleg :angle-vector #f(-9.0486 1.17029 -101.857 71.8007 -1.15964 -1.1434 -0.108)) ;; move -100 above
         (setq approach-result t)
         )
        (:brake-pedal
