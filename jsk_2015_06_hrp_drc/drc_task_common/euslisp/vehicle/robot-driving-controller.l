@@ -322,8 +322,12 @@
      (warn "init-head~%")
      (send self :neck-cmd 0.0 :neck-p :time 2000)
      (send self :neck-cmd 0.0 :neck-y :time 2000)
-     (send motion :model2real :time time :wait-interpolation t :real real) ;; send *ri* :angle-vector if real is t
+     (warn "send-initial-pose~%")
      (send motion :real real :use-real-robot-angle nil) ;; set real as argument
+     (send motion :model2real :time time :wait-interpolation t) ;; send *ri* :angle-vector if real is t (default :real is set above)
+     (warn "init-hand~%")
+     (send motion :open-hand (send motion :grasp-arm))
+     (send motion :close-hand (get-opposite-arm (send motion :grasp-arm)))
      )
    ;; initialize joy_vehicle if exists
    (when (ros::wait-for-service "/drive/operation/initialize" 1)
@@ -1073,7 +1077,9 @@
   (:execute
    (&key (publish-steering-trajectory nil))
    (do-until-key
-    (send self :estimate-current-handle-angle)
+    (when (equal (send self :controller-state :handle) :running) ;; estimate handle angle only when handling
+      (send self :estimate-current-handle-angle)
+      )
     (send self :calc-error-of-grasp-arm :display-result nil)
     (send self :record-handling-end-coords)
     (when publish-steering-trajectory
@@ -1094,7 +1100,7 @@
       )
     (warn "make controller: ~A~%" controller-name)
     (setq *controller* (eval (list 'instance (read-from-string controller-name) :init :real real)))
-    (send *controller* :initialize)
+    ;; (send *controller* :initialize) ;; initialize can be called from ui
     (send *controller* :execute)
     )
   )
