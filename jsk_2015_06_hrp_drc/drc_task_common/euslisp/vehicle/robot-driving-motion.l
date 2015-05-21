@@ -384,13 +384,7 @@
           )
      ;; define controller
      (if use-controller
-         (case limb
-           (:larm (setq controller :larm-controller))
-           (:rarm (setq controller :rarm-controller))
-           (:lleg (setq controller :lleg-controller))
-           (:rleg (setq controller :rleg-controller))
-           (t (setq controller :default-controller))
-           )
+         (setq controller (read-from-string (format nil ":~A-controller" (string-downcase limb))))
        (setq controller :default-controller)
        )
      ;; check interpolation
@@ -549,13 +543,7 @@
        )
      ;; define controller
      (if use-controller
-         (case limb
-           (:larm (setq controller :larm-controller))
-           (:rarm (setq controller :rarm-controller))
-           (:lleg (setq controller :lleg-controller))
-           (:rleg (setq controller :rleg-controller))
-           (t (setq controller :default-controller))
-           )
+         (setq controller (read-from-string (format nil ":~A-controller" (string-downcase limb))))
        (setq controller :default-controller)
        )
      ;; send angle-vector-sequence to real robot
@@ -934,11 +922,10 @@
 
   ;; utils
   (:sync-all-controller
-   ()
-   (send *ri* :sync-controller :larm-controller)
-   (send *ri* :sync-controller :rarm-controller)
-   (send *ri* :sync-controller :lleg-controller)
-   (send *ri* :sync-controller :rleg-controller)
+   (&optional (sync-targets (list :larm :rarm :lleg :rleg)))
+   (dolist (target sync-targets)
+     (send *ri* :sync-controller (read-from-string (format nil ":~A-controller" (string-downcase target))))
+     )
    )
   (:move-robot-position
    (position &key (relative t) (wrt :world))

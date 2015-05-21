@@ -80,23 +80,6 @@
        )
      )
 
-   ;; subscriber for operator command
-   (ros::subscribe "/drive/operation/accel_cmd"
-                   std_msgs::Float64
-                   #'send self :accel-callback)
-   (ros::subscribe "/drive/operation/brake_cmd"
-                   std_msgs::Float64
-                   #'send self :brake-callback)
-   (ros::subscribe "/drive/operation/handle_cmd"
-                   std_msgs::Float64
-                   #'send self :handle-callback)
-   (ros::subscribe "/drive/operation/neck_y_cmd"
-                   std_msgs::Float64
-                   #'send self :neck-y-callback)
-   (ros::subscribe "/drive/operation/neck_p_cmd"
-                   std_msgs::Float64
-                   #'send self :neck-p-callback)
-
    ;; handle-angle topics
    (ros::advertise "/drive/controller/goal_handle_angle" std_msgs::Float32 1 t)
    (ros::advertise "/drive/controller/estimated_handle_angle" std_msgs::Float32 1 t)
@@ -153,6 +136,7 @@
    (ros::advertise-service "/drive/controller/overwrite_handle_angle" drc_task_common::SetValue #'send self :overwrite-handle-angle-callback)
 
    ;; initialize plist
+   ;; after advertise publisher and before subscribe controller input
    (send self :controller-state :handle :initialize)
    (send self :controller-state :accel :initialize)
    (send self :controller-state :brake :initialize)
@@ -160,7 +144,24 @@
    (send self :controller-mode :accel :stop)
    (send self :controller-mode :brake :stop)
    (send self :controller-mode :neck :stop)
-
+   
+   ;; subscriber for operator command
+   (ros::subscribe "/drive/operation/accel_cmd"
+                   std_msgs::Float64
+                   #'send self :accel-callback)
+   (ros::subscribe "/drive/operation/brake_cmd"
+                   std_msgs::Float64
+                   #'send self :brake-callback)
+   (ros::subscribe "/drive/operation/handle_cmd"
+                   std_msgs::Float64
+                   #'send self :handle-callback)
+   (ros::subscribe "/drive/operation/neck_y_cmd"
+                   std_msgs::Float64
+                   #'send self :neck-y-callback)
+   (ros::subscribe "/drive/operation/neck_p_cmd"
+                   std_msgs::Float64
+                   #'send self :neck-p-callback)
+   
    ;; set real flag without moving model
    (send motion :real tmp-real :use-real-robot-angle nil)
    )
@@ -169,7 +170,7 @@
   (:initialize-callback
    (req)
    (let ((res (send req :response)))
-     (send self :initialize :sync t)
+     (send self :initialize :sync nil)
      res
      )
    )
@@ -288,7 +289,8 @@
      (warn "overwrite handle angle to ~A~%" (send motion :car :handle-joint :joint-angle))
      (ros::publish "/drive/controller/goal_handle_angle" pub-msg)
      (when (ros::wait-for-service "/drive/operation/synchronize" 1)
-       (let ((req (instance std_srvs::EmptyRequest :init)))
+       (let ((req (instance drc_task_common::StringRequestRequest :init)))
+         (send req :data "handle")
          (ros::service-call "/drive/operation/synchronize" req t)
          )
        )
@@ -299,10 +301,10 @@
   ;; interface command
   (:initialize
    (&rest args &key (sync nil) (time 10000) (real (send motion :real)) (fist-offset #f(0 0 25)) (floor-offset #f(0 0 0)))
-   (when (and sync (not (send *ri* :simulation-modep)))
-     (send motion :sync-all-controller)
-     )
-   (let ()
+   (let () ;; sync is executed according to controller-mode, not real flag
+     (when sync
+       (send motion :sync-all-controller) ;; execute sync-controller forcely in all limbs
+       )
      (send motion :real nil :use-real-robot-angle nil) ;; temporary disable (send *ri* :angle-vector)
      (warn "init-pose~%")
      (send motion :ride :init-pose t)
@@ -310,11 +312,11 @@
      (warn "approach-fist~%")
      (send self :approach-fist :offset fist-offset :reach-until-touch nil)
      (warn "approach-accel~%")
-     (send self :approach-accel)
+     (send self :approach-accel) ;; sync is executed when (equal (send self :controller-state :accel) :running) automatically
      (warn "approach-floor~%")
      (send self :approach-floor :offset floor-offset :reach-until-touch nil)
      (warn "approach-handle~%")
-     (send self :approach-handle)
+     (send self :approach-handle) ;; sync is executed when (equal (send self :controller-state :handle) :running) automatically
      (send self :publish-body-relative-steering-coords)
      ;; move head front
      (warn "init-head~%")
@@ -338,11 +340,6 @@
   (:grasp
    (&rest args)
    (let (grasp-result)
-     (when (ros::wait-for-service "/drive/operation/synchronize" 1)
-       (let ((req (instance std_srvs::EmptyRequest :init)))
-         (ros::service-call "/drive/operation/synchronize" req t)
-         )
-       )
      (setq grasp-result (send* motion :grasp-handle args))
      (when grasp-result
        (send self :controller-state :handle :running)
@@ -498,6 +495,21 @@
    (send self :controller-mode :accel :stop)
    ;; stop handling
    (send self :controller-mode :handle :stop)
+   ;; sync
+   (when (and sync (not (send *ri* :simulation-modep)))
+     (let ((sync-list nil))
+       (when (equal (send self :controller-state :handle) :running)
+         (push (send motion :grasp-arm) sync-list)
+         )
+       (when (equal (send self :controller-state :accel) :running)
+         (push :rleg sync-list)
+         )
+       (when (equal (send self :controller-state :brake) :running)
+         (push :lleg sync-list)
+         )
+       (send motion :sync-all-controller sync-list)
+       )
+     )
    ;; execute egress
    (send* motion :go-to-egress args)
    )
@@ -957,8 +969,17 @@
    (target &optional (new-state nil))
    ;; :initialize -> :release <-> :running
    (let ((target-state (read-from-string (format nil ":~A-state" (string-downcase target))))) ;; plist assumes :<target>-state
+     ;; update to new state
      (when (member new-state state-list)
        (send self :put target-state new-state)
+       ;; synchronize command when updated
+       (when (ros::wait-for-service "/drive/operation/synchronize" 1)
+         (warn "call sync ~A~%" (string-downcase target))
+         (let ((req (instance drc_task_common::StringRequestRequest :init)))
+           (send req :data (string-downcase target))
+           (ros::service-call "/drive/operation/synchronize" req t)
+           )
+         )
        )
      (send self :get target-state)
      )
@@ -975,6 +996,14 @@
        (send self :put target-mode new-mode)
        (send pub-mode :data (string-downcase (send self :get target-mode)))
        (eval (list 'ros::publish (format nil "/drive/controller/~A_mode" (string-downcase target)) pub-mode))
+       ;; synchronize command when updated
+       (when (ros::wait-for-service "/drive/operation/synchronize" 1)
+         (warn "call sync ~A~%" (string-downcase target))
+         (let ((req (instance drc_task_common::StringRequestRequest :init)))
+           (send req :data (string-downcase target))
+           (ros::service-call "/drive/operation/synchronize" req t)
+           )
+         )
        ;; (warn (format nil "/drive/controller/~A_mode~%" (string-downcase target)))
        )
      (send self :get target-mode)
