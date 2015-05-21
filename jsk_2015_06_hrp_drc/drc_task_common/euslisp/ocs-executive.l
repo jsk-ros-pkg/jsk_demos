@@ -1061,15 +1061,15 @@
           (setq drill-wall-target-coords (get-relative-coords-list center-coords coords-set))
 	  (setq *drill-main-arm* (send self :get-arm-side))
           (publish-drill-wall-motion :coords-list coords-set :update? t :stand-coords (make-coords) :overwrite-stand-coords? :force)
-          (let ((index (position-if #'(lambda (x) (equal (elt x 0) :wall) drill-stand-coords-list))))
-            (if index
-                (progn
-                  (setf (elt drill-stand-coords-list index) (list :wall (convert-coords-frame (if (boundp '*drill-stand-coords-forced*) *drill-stand-coords-forced* (make-coords)))))
-                  (setq drill-stand-coords-index index))
-              (progn
-                (push-back (list :wall (convert-coords-frame (if (boundp '*drill-stand-coords-forced*) *drill-stand-coords-forced* (make-coords)))) drill-stand-coords-list)
-                (setq drill-stand-coords-index (- (length drill-stand-coords-list) 1))
-                )))
+          ;; (let ((index (position-if #'(lambda (x) (equal (elt x 0) :wall) drill-stand-coords-list))))
+          ;;   (if index
+          ;;       (progn
+          ;;         (setf (elt drill-stand-coords-list index) (list :wall (convert-coords-frame (if (boundp '*drill-stand-coords-forced*) *drill-stand-coords-forced* (make-coords)))))
+          ;;         (setq drill-stand-coords-index index))
+          ;;     (progn
+          ;;       (push-back (list :wall (convert-coords-frame (if (boundp '*drill-stand-coords-forced*) *drill-stand-coords-forced* (make-coords)))) drill-stand-coords-list)
+          ;;       (setq drill-stand-coords-index (- (length drill-stand-coords-list) 1))
+          ;;       )))
 	  (if (or (not (boundp '*drill-motion*)) (not *drill-motion*))
 	      (send self :show-text 
 		  "IK FAIL")
@@ -1193,15 +1193,15 @@
       (if (send msg :success)
           (progn (send self :show-text "Finished drill-button motion with success" :success)
                  (send self :show-text "PUSH AUTO GO-POS BUTTON!")
-                 (let ((index (position-if #'(lambda (x) (equal (elt x 0) :wall)) drill-stand-coords-list)))
-                   (if index
-                       (progn
-                         (setf (elt drill-stand-coords-list index) (list :wall (convert-coords-frame (make-coords :rpy (list (deg2rad -90) 0 0)))))
-                         (setq drill-stand-coords-index index))
-                     (progn
-                       (push-back (list :wall (convert-coords-frame (make-coords :rpy (list (deg2rad -90) 0 0)))) drill-stand-coords-list)
-                       (setq drill-stand-coords-index (- (length drill-stand-coords-list) 1))
-                       )))
+                 ;; (let ((index (position-if #'(lambda (x) (equal (elt x 0) :wall)) drill-stand-coords-list)))
+                 ;;   (if index
+                 ;;       (progn
+                 ;;         (setf (elt drill-stand-coords-list index) (list :wall (convert-coords-frame (make-coords :rpy (list (deg2rad -90) 0 0)))))
+                 ;;         (setq drill-stand-coords-index index))
+                 ;;     (progn
+                 ;;       (push-back (list :wall (convert-coords-frame (make-coords :rpy (list (deg2rad -90) 0 0)))) drill-stand-coords-list)
+                 ;;       (setq drill-stand-coords-index (- (length drill-stand-coords-list) 1))
+                 ;;       )))
                  )
         (send self :show-text "Finished drill-button motion but failed!":fatal))
       (send smachine :go-to :initial)))
@@ -1409,10 +1409,15 @@
    )
   (:set-drill-coords
    (req)
+   (when (not drill-grasp-relative-coords)
+     (set-drill-environment)
+     (setq drill-grasp-relative-coords (send *drill* :copy-coords))
+     )
    (if (and drill-grasp-relative-coords (boundp '*drill-main-arm*))
        (if (equal *drill-main-arm* :rarm) (set-primitive-marker-pose drill-grasp-relative-coords "rarm_end_coords" :name "drill") (set-primitive-marker-pose drill-grasp-relative-coords "larm_end_coords" :name "drill")
        )
      )
+    (send req :response)
    )
   (:cancel-motion-now
     (req)

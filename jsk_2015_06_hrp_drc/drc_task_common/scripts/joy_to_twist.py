@@ -17,6 +17,8 @@ from std_srvs import srv
 joy = None
 joy_before = None
 factor = 0.1
+factor_l = 0.3
+factor_r = 1.0
 mode = 1
 r_flag = False
 l_flag = False
@@ -41,21 +43,22 @@ def check_twist(twist):
 def joy_cb(msg):
     global joy
     joy = msg
-    if msg.buttons[7]:
+    if msg.buttons[5]:
         global factor
         factor*=1.2
         print "factor: %f" % factor
-    if msg.buttons[6]:
+    if msg.buttons[4]:
         global factor
         factor/=1.2
         print "factor: %f" % factor
     if msg.buttons[8]:
-        #global mode
-        #mode += 1
-        #mode %= 2
         req_marker_default_srv()
+    if msg.buttons[7]:
+        global mode
+        mode += 1
+        mode %= 2
         print "mode: %d" % mode
-    
+        
 def joy_to_twist(msg):
     twist = Twist()
     axes_list = list (msg.axes)
@@ -90,8 +93,8 @@ def joy_to_twist(msg):
     twist.linear.z = axes_list[1]
     twist.linear.y = axes_list[6]
     twist.linear.x = axes_list[7] 
-    twist.angular.y = axes_list[3]
-    twist.angular.x = axes_list[4]
+    twist.angular.y = axes_list[4]
+    twist.angular.x = -axes_list[3]
     twist.angular.z = (axes_list[5] - axes_list[2]) /2.0
     cut_twist(twist)
     factor_twist(twist)
@@ -112,13 +115,13 @@ def cut_twist(twist):
     
     
 def factor_twist(twist):
-    global factor
-    twist.linear.x*=factor
-    twist.linear.y*=factor
-    twist.linear.z*=factor
-    twist.angular.x*=factor
-    twist.angular.y*=factor
-    twist.angular.z*=factor
+    global factor, factor_l, factor_r
+    twist.linear.x*=(factor * factor_l)
+    twist.linear.y*=(factor * factor_l)
+    twist.linear.z*=(factor * factor_l)
+    twist.angular.x*=(factor * factor_r)
+    twist.angular.y*=(factor * factor_r)
+    twist.angular.z*=(factor * factor_r)
 def twist_to_pose(twist):
     pose = Pose()
     pose.position.x = twist.linear.x
