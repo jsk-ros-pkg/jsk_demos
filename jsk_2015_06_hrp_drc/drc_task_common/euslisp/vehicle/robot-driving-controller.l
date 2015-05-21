@@ -50,7 +50,7 @@
    
    ;; initialize instance valiables
    (setq ros-rate tmp-ros-rate
-         state-list (list :initialize :release :running)
+         state-list (list :initialize :release :approach :running)
          mode-list (list :stop :operation :recognition)
          torus-finder-estimated-robot-coords nil
          handle-pose-estimated-robot-coords nil
@@ -373,7 +373,7 @@
      (setq handle-pose-estimate-flag t)
      (setq ret-result (send self :execute-handle-pose-compensation :yes yes :look-at-handle look-at-handle))
      ;; grasp in new handle coords
-     (when grasp
+     (when (and grasp ret-result) ;; regrasp only when recognition is succeeded
        (warn "regrasp~%")
        (setq approach-result (send self :approach-handle :tm time))
        (if approach-result
@@ -867,11 +867,11 @@
        (return-from :execute-handle-pose-compensation nil)
        )
      (warn "release handle~%")
-     ;; (if (equal (send self :controller-state :handle) :running)
-     ;;     (setq release-result (send self :release :offset release-offset))
-     ;;   (setq release-result t)
-     ;;   )
-     (setq release-result (send self :release :offset release-offset))
+     (if (not (equal (send self :controller-state :handle) :release)) ;; prevent double release
+         (setq release-result (send self :release :offset release-offset))
+       (setq release-result t)
+       )
+     ;; (setq release-result (send self :release :offset release-offset))
      (when release-result
        ;; temporary ;;
        (send (send motion :robot) (send motion :grasp-arm) :shoulder-y :joint-angle shoulder-y-deg)
