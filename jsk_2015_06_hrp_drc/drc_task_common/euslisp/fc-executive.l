@@ -661,11 +661,14 @@
            (integer-vector-to-rect-polygon-stamped msg)))
         )
        ((eq (send msg :image_type) drc_com_common::OCS2FCSmall::*PANORAMA_VIEW*)
-        (ros::publish "/panorama/panorama_processing/output/screenrectangle"
-          (integer-vector-to-rect-polygon-stamped msg))
-        ;; enable snapshot
-        (call-empty-service "/panorama/snapshot/request")
-        (send smachine :go-to :recognizing-look-at-point-panorama))
+        (ros::publish "/fisheye/input"
+          (compute-centroid-of-polygon-stamped
+           (integer-vector-to-rect-polygon-stamped msg)))
+        ;; enable snapshot: no need?
+        ;; (call-empty-service "/panorama/snapshot/request")
+        ;; /fisheye/fisheye_click_to_pose/output_point
+        (send smachine :go-to :recognizing-look-at-point))
+        ;;(send smachine :go-to :recognizing-look-at-point-panorama))
        (t
         (error "unknown image type: ~A" (send msg :image_type)))
        )))
@@ -861,10 +864,10 @@ It sends :angle-vector to robot and return 'finished' message to ocs"
           (send self :send-to-ocs msg)
           (send smachine :go-to :initial)
           ))))
-  (:look-at-panorama-recog-callback (msg)
-    (ros::ros-warn "panorama callback!")
-    (send smachine :go-to :recognizing-look-at-point)
-    (send self :look-at-recog-callback (pose-stamped-to-point-stamped msg)))
+  ;; (:look-at-panorama-recog-callback (msg)
+  ;;   (ros::ros-warn "panorama callback!")
+  ;;   (send smachine :go-to :recognizing-look-at-point)
+  ;;   (send self :look-at-recog-callback (pose-stamped-to-point-stamped msg)))
   (:look-at-recog-callback (msg)
     (when (send smachine :state? :recognizing-look-at-point)
       (let* ((trans (send self :lookup-from-body-transform (send msg :header)))
@@ -1093,6 +1096,7 @@ It sends :angle-vector to robot and return 'finished' message to ocs"
 (ros::advertise "/hose_grasp_recognition/input_rect" geometry_msgs::PolygonStamped)
 (ros::advertise "/hose_connect_recognition/input_rect" geometry_msgs::PolygonStamped)
 (ros::advertise "/lookat/input" geometry_msgs::PointStamped)
+(ros::advertise "/fisheye/input" geometry_msgs::PointStamped)
 (ros::advertise "/panorama/panorama_processing/output/screenrectangle" geometry_msgs::PolygonStamped)
 (ros::advertise "/valve_recognition/input_rect" geometry_msgs::PolygonStamped)
 (ros::advertise "/door_recognition/input_support_plane_rect" geometry_msgs::PolygonStamped)
@@ -1113,8 +1117,10 @@ It sends :angle-vector to robot and return 'finished' message to ocs"
   #'send *app* :go-pos-recog-callback)
 (ros::subscribe "/lookat/output_passthrough/output" geometry_msgs::PointStamped
   #'send *app* :look-at-recog-callback)
-(ros::subscribe "/panorama/snapshot/output" geometry_msgs::PoseStamped
-  #'send *app* :look-at-panorama-recog-callback)
+;; (ros::subscribe "/panorama/snapshot/output" geometry_msgs::PoseStamped
+;;   #'send *app* :look-at-panorama-recog-callback)
+(ros::subscribe "/fisheye/fisheye_click_to_pose/output_point" geometry_msgs::PointStamped
+  #'send *app* :look-at-recog-callback)
 (ros::subscribe "/valve_recognition/snapshot/output" jsk_recognition_msgs::Torus
   #'send *app* :valve-recog-callback)
 (ros::subscribe "/door_recognition/snapshot/output" jsk_recognition_msgs::BoundingBoxArray

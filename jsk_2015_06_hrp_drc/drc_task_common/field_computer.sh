@@ -43,8 +43,10 @@ tmux-newwindow drill_recognition_for_put "roslaunch drc_task_common drill_recogn
 tmux-newwindow drill_button_checker "roslaunch drc_task_common drill_button_checker.launch"
 tmux-newwindow door_recognition "roslaunch drc_task_common door_unvisible_handle_recognition.launch"
 tmux-newwindow debri_recognition "roslaunch drc_task_common debri_recognition.launch"
-tmux-newwindow panorama "roslaunch drc_task_common panorama.launch"
+# tmux-newwindow panorama "roslaunch drc_task_common panorama.launch"
+tmux-newwindow fisheye "roslaunch drc_task_common fisheye_lookat.launch"
 tmux-newwindow locomotion "roslaunch drc_task_common locomotion.launch"
 tmux-newwindow misc "roslaunch drc_task_common fc_misc.launch"
 tmux-newwindow com "roslaunch drc_com_common field_computer_com.launch FC_IP:=${FC_IP} OCS_IP:=${OCS_IP}"
 tmux send-keys -t fc:tmp "exit" C-m
+tmux a -t fc
