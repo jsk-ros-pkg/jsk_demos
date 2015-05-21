@@ -145,7 +145,8 @@
         ;; (send robot :rleg :angle-vector #f(-10.0 0.269639 -91.1699 48.9728 5.54723 -0.244199 -0.384)) ;; adjusted in real vehicle
         ;; (send robot :rleg :angle-vector #f(-9.79801 0.253958 -109.928 60.3974 12.8831 -0.218503 0.18)) ;; adjusted in drive simulator by reach-until-touch
         ;; (send robot :rleg :angle-vector #f(-9.04768 1.17199 -100.84 58.9158 10.7088 -1.14559 -0.108)) ;; adjusted in real polaris in lasvegas
-        (send robot :rleg :angle-vector #f(-5.32243 7.27429 -102.357 61.9889 8.87751 -8.28873 -0.108))
+        ;; (send robot :rleg :angle-vector #f(-5.32243 7.27429 -102.357 61.9889 8.87751 -8.28873 -0.108))
+        (send robot :rleg :angle-vector #f(-16.1353 -10.3899 -96.856 61.3548 3.71207 12.3977 -0.108))
         (setq approach-result t)
         )
        (:brake-pedal
