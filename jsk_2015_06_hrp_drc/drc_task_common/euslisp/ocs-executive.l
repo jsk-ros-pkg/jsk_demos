@@ -1476,6 +1476,8 @@
           )
         )
       (send smachine :go-to! :selecting-exec-for-drill-button))
+     ((eq (send smachine :state) :selecting-region-for-drill-wall)
+      (send smachine :go-to! :selecting-exec-for-drill-wall))
      ((eq (send smachine :state) :selecting-region-for-drill-rotate)
       (send smachine :go-to! :selecting-exec-for-drill-rotate))
      (t (send self :show-text "skip recog selected but no mean" :warn))
