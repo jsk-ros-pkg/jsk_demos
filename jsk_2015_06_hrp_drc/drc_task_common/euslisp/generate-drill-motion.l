@@ -28,7 +28,7 @@
                   :pos (float-vector 0 0
                                (if *drill-reverse-hand*
                                    145 ;; 20150516 on rviz
-                                 (if (equal *robot-name* "HRP2JSKNTS") 185 105)
+                                 (if (equal *robot-name* "HRP2JSKNTS") 185 125)
                                  )
                                )
                   :rpy ;;depends on button motion
@@ -44,7 +44,7 @@
                            (list (deg2rad (if (equal *drill-main-arm* :rarm) 80 160)) 0 0) ;; for finger only
                            ))
                         (t ;;jaxon
-                         (if *drill-reverse-hand* (list (deg2rad (if (equal *drill-main-arm* :rarm) 150 30)) 0 pi) (list (deg2rad (if (equal *drill-main-arm* :rarm) 30 210)) 0 0))
+                         (if *drill-reverse-hand* (list (deg2rad (if (equal *drill-main-arm* :rarm) 150 30)) 0 pi) (list (deg2rad (if (equal *drill-main-arm* :rarm) 60 180)) 0 0))
                          )
                         ))
          ;; :coords (make-coords :pos #f(0 0 170) :rpy (if *drill-reverse-hand* (list (deg2rad 180) 0 pi) (list (deg2rad 90) 0 0)))
@@ -453,7 +453,7 @@
          ;(x-factor 0.0)
          (grasp-up-dist 120)
          (air-grasp-up-dist (if (or (equal *robot-name* "HRP2JSKNTS") (equal *robot-name* "HRP2JSKNT")) 60 0))
-         (down-dist 25)
+         (down-dist (if (or (equal *robot-name* "HRP2JSKNTS") (equal *robot-name* "HRP2JSKNT")) 25 0))
          (push-dist (if (or (equal *robot-name* "HRP2JSKNTS") (equal *robot-name* "HRP2JSKNT")) 20 -10))
          (ik-results nil)
          (original-foot-midcoords (send (send *robot* :foot-midcoords) :copy-worldcoords))
@@ -1153,9 +1153,9 @@
     ))
 
 (defun publish-drill-button-motion
-  (&key coords (step-time 400) (update? t))
+  (&key coords (step-time 400) (update? t) (draw? t))
   (when update?
-    (get-drill-button-motion-full coords :use-ri? nil))
+    (get-drill-button-motion-full coords :use-ri? nil :draw? draw?))
   (ros::ros-info "drill-ik-results: ~a~%" *drill-ik-results*)
   (publish-motion-joint-states *drill-motion* :step-time step-time)
   )
