@@ -37,3 +37,4 @@ tmux-newwindow rviz "roslaunch drc_task_common ocs_rviz.launch"
 tmux-newwindow misc "roslaunch drc_task_common ocs_misc.launch"
 tmux-newwindow com "roslaunch drc_com_common operator_station_com.launch FC_IP:=${FC_IP} OCS_IP:=${OCS_IP}"
 tmux send-keys -t ocs:tmp "exit" C-m
+tmux a -t ocs

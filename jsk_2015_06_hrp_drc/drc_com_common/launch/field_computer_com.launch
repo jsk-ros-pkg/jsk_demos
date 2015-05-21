@@ -14,8 +14,9 @@
       message: drc_com_common/FC2OCSLarge
       to_port: 16485
       to_ip: "$(arg OCS_IP)"
-      send_rate: 10
+      send_rate: 5
       bandwidth: 280000000
+      packet_size: 1472
     </rosparam>
   </node>
   

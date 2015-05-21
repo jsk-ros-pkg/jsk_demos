@@ -1,7 +1,7 @@
 <!-- This launch file is automatically generated. -->
 <launch>
   <arg name="IMAGE_TOPIC" default="/multisense/left/image_rect_color" />
-  <arg name="PANORAMA_IMAGE_TOPIC" default="/panorama/panorama_processing/output" />
+  <arg name="PANORAMA_IMAGE_TOPIC" default="/chest_camera_remote/image_color" />
   <arg name="POINT_CLOUD_TOPIC" default="/stereo_preprocessing/stereo_downsampled_ground_cloud/output" />
   <arg name="LASER_POINT_CLOUD_TOPIC" default="/laser_preprocess/odom_cloud/output" />
   <group ns="communication">
@@ -22,8 +22,8 @@
       <remap from="~output/width_scale" to="panorama_width_scale" />
       <remap from="~output/height_scale" to="panorama_height_scale" />
       <rosparam>
-        resize_scale_x: 0.2
-        resize_scale_y: 0.2
+        resize_scale_x: 0.3
+        resize_scale_y: 0.3
         use_camera_info: false
       </rosparam>
     </node>
