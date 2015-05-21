@@ -3,6 +3,7 @@
 CMDNAME=$(basename $0)
 FC_IP=localhost
 OCS_IP=localhost
+
 while getopts hf:o:ka OPT
 do
     case $OPT in
@@ -33,7 +34,7 @@ fi
 
 tmux-newwindow executive "roslaunch drc_task_common ocs_executive.launch"
 tmux-newwindow ui "roslaunch drc_task_common ui.launch"
-tmux-newwindow rviz "roslaunch drc_task_common ocs_rviz.launch"
+tmux-newwindow rviz "roslaunch drc_task_common ocs_rviz.launch ik_server_launch:=${ROBOT,,}-ik-server.launch"
 tmux-newwindow misc "roslaunch drc_task_common ocs_misc.launch"
 tmux-newwindow com "roslaunch drc_com_common operator_station_com.launch FC_IP:=${FC_IP} OCS_IP:=${OCS_IP}"
 tmux send-keys -t ocs:tmp "exit" C-m
