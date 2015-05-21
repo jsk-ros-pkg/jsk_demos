@@ -30,3 +30,9 @@ bool overwrite_handle_angle_response
 bool set_handle_mode_response
 bool set_accel_mode_response
 bool set_neck_mode_response
+
+# to controller
+bool operation_initialize_request
+bool operation_synchronize_request
+uint8 operation_synchronize_request_value
+
