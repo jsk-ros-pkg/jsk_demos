@@ -344,6 +344,10 @@
   (:grasp
    (&rest args)
    (let (grasp-result)
+     (unless (or (equal (send self :controller-state :handle) :approach) (equal (send self :controller-state :handle) :release))
+       (warn "handle is not approached~%")
+       (return-from :grasp nil) ;; prevent to crash
+       )
      (setq grasp-result (send* motion :grasp-handle args))
      (when grasp-result
        (send self :controller-state :handle :running)
@@ -438,7 +442,7 @@
      (setq approach-result
            (send* motion :approach-handle :sync-controller sync-controller args)
            )
-     (send self :controller-state :handle :release)
+     (send self :controller-state :handle :approach)
      approach-result
      )
    )
@@ -446,12 +450,12 @@
    (&rest args &key (limb :rleg) (sync-controller (equal (send self :controller-state :accel) :running)) &allow-other-keys)
    (send* motion :approach-accel-pedal :limb limb :sync-controller sync-controller args)
    (send self :accel-origin (send motion :robot limb :ankle-p :joint-angle))
-   (send self :controller-state :accel :running) ;; enbale accel
+   (send self :controller-state :accel :approach) ;; enbale accel
    )
   (:approach-brake
    (&rest args)
    (send* motion :approach-brake-pedal args)
-   (send self :controller-state :brake :running) ;; enbale brake
+   (send self :controller-state :brake :approach) ;; enbale brake
    )
   (:approach-floor
    (&rest args &key (start-impedance t) (set-ref-force nil) &allow-other-keys)
@@ -468,23 +472,26 @@
    )
   (:step-accel ;; mainly for command-line
    (command &rest args)
-   (unless (equal (send self :controller-state :accel) :running)
+   (unless (or (equal (send self :controller-state :accel) :approach) (equal (send self :controller-state :accel) :running))
      (warn "accel is not approached~%")
      (return-from :step-accel nil)
      )
    (send* motion :step-accel-pedal command args) ;; step accel
+   (send self :controller-state :accel :running)
    )
   (:detatch-accel
    ()
    (send motion :detatch-accel-pedal :use-controller t) ;; detatch accel for emergency
+   (send self :controller-state :accel :release)
    )
   (:step-brake ;; mainly for command-line
    (command &rest args)
-   (unless (equal (send self :controller-state :brake) :running)
+   (unless (or (equal (send self :controller-state :brake) :approach) (equal (send self :controller-state :brake) :running))
      (warn "brake is not approached~%")
      (return-from :step-brake nil)
      )
    (send* motion :step-brake-pedal command args) ;; step brake
+   (send self :controller-state :brake :running)
    )
   (:support-by-leg
    (&rest args &key (offset #f(0 0 0)) (start-impedance t) (set-ref-force t) &allow-other-keys)
@@ -971,13 +978,14 @@
   ;; state management
   (:controller-state
    (target &optional (new-state nil))
-   ;; :initialize -> :release <-> :running
+   ;; :initialize -> :approach <-> :running (grasp/step) 
+   ;;                          <-> :release (release/detouch)
    (let ((target-state (read-from-string (format nil ":~A-state" (string-downcase target))))) ;; plist assumes :<target>-state
      ;; update to new state
-     (when (member new-state state-list)
+     (when (member new-state state-list) ;; update only when different value applied
        (send self :put target-state new-state)
-       ;; synchronize command when updated
-       (when (ros::wait-for-service "/drive/operation/synchronize" 1)
+       ;; synchronize command when state updated 
+       (when (and (ros::wait-for-service "/drive/operation/synchronize" 1) (not (equal new-state (send self :get target-state))))
          (warn "call sync ~A~%" (string-downcase target))
          (let ((req (instance drc_task_common::StringRequestRequest :init)))
            (send req :data (string-downcase target))
@@ -997,18 +1005,17 @@
          (pub-mode (instance std_msgs::String :init))
          ) ;; plist assumes :<target>-mode
      (when (member new-mode mode-list)
-       (send self :put target-mode new-mode)
-       (send pub-mode :data (string-downcase (send self :get target-mode)))
-       (eval (list 'ros::publish (format nil "/drive/controller/~A_mode" (string-downcase target)) pub-mode))
-       ;; synchronize command when updated
-       (when (ros::wait-for-service "/drive/operation/synchronize" 1)
+       ;; synchronize command when mode updated
+       (when (and (not (equal new-mode (send self :get target-mode))) (ros::wait-for-service "/drive/operation/synchronize" 1))
          (warn "call sync ~A~%" (string-downcase target))
          (let ((req (instance drc_task_common::StringRequestRequest :init)))
            (send req :data (string-downcase target))
            (ros::service-call "/drive/operation/synchronize" req t)
            )
          )
-       ;; (warn (format nil "/drive/controller/~A_mode~%" (string-downcase target)))
+       (send self :put target-mode new-mode)
+       (send pub-mode :data (string-downcase (send self :get target-mode)))
+       (eval (list 'ros::publish (format nil "/drive/controller/~A_mode" (string-downcase target)) pub-mode))
        )
      (send self :get target-mode)
      )
