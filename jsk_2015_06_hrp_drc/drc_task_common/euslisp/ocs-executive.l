@@ -1409,6 +1409,10 @@
    )
   (:set-drill-coords
    (req)
+   (when (not drill-grasp-relative-coords)
+     (set-drill-environment)
+     (setq drill-grasp-relative-coords (send *drill* :copy-coords))
+     )
    (if (and drill-grasp-relative-coords (boundp '*drill-main-arm*))
        (if (equal *drill-main-arm* :rarm) (set-primitive-marker-pose drill-grasp-relative-coords "rarm_end_coords" :name "drill") (set-primitive-marker-pose drill-grasp-relative-coords "larm_end_coords" :name "drill")
        )
