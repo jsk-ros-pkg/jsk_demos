@@ -5,15 +5,12 @@
   <arg name="JAXON" default="true"/>
   <arg name="HRP2" default="false"/>
 
-  <group if="$(arg SIMULATION_MODE)">
-    <!-- static tf "car_center" (parent link: utorso) publisher for gazebo_drive_simulator -->
-    <node pkg="tf" type="static_transform_publisher" name="TF_car_center" args="0.05 0.3 -1.2 0 0 0 utorso car_center 100" /> <!-- initial position is y : -0.6, z : -0.1 // start_gazebo_drive_shimulator.sh -->
-  </group>
+  <!-- static tf "car_center" (parent link: utorso) publisher for gazebo_drive_simulator -->
+  <node if="$(arg SIMULATION_MODE)" pkg="tf" type="static_transform_publisher" name="TF_car_center" args="0.05 0.3 -1.2 0 0 0 utorso car_center 100" /> <!-- initial position is y : -0.6, z : -0.1 // start_gazebo_drive_shimulator.sh -->
 
-  <group if="$(arg ROSBAG_MODE)">
-    <!-- static tf "car_center" (parent link: multisense/head_root) publisher for ROSbags -->
-    <include file="$(find drc_task_common)/launch/fc/vehicle/multisense_rosbag_static_tf_publisher.launch" />
-  </group>
+  <!-- static tf "car_center" (parent link: multisense/head_root) publisher for ROSbags -->
+  <include if="$(arg ROSBAG_MODE)" file="$(find drc_task_common)/launch/fc/vehicle/multisense_rosbag_static_tf_publisher.launch" />
+
   <group if="$(arg REAL_MODE)">
     <group ns="/drive/recognition">
       <!-- dynamic_tf_publisher -->
@@ -40,11 +37,7 @@
       <remap from="car_pose_marker" to="/drive/recognition/marker/car_pose" />
     </node>
     <!-- static tf "car_center" (parent link: car_marker) publisher -->
-    <group if="$(arg JAXON)">
-      <node pkg="tf" type="static_transform_publisher" name="TF_marker_car_center" args="0.0 1.322075 0.205468 -1.571 -1.074 -3.142 car_marker car_center 100" />
-    </group>
-    <group if="$(arg HRP2)">
-      <node pkg="tf" type="static_transform_publisher" name="TF_marker_car_center" args="0.0 1.322075 0.205468 -1.571 -1.074 -3.142 car_marker car_center 100" />
-    </group>
+    <node if="$(arg JAXON)" pkg="tf" type="static_transform_publisher" name="TF_marker_car_center" args="0.0 1.322075 0.205468 -1.571 -1.074 -3.142 car_marker car_center 100" />
+    <node if="$(arg HRP2)" pkg="tf" type="static_transform_publisher" name="TF_marker_car_center" args="0.0 1.322075 0.205468 -1.571 -1.074 -3.142 car_marker car_center 100" />
   </group>
 </launch>

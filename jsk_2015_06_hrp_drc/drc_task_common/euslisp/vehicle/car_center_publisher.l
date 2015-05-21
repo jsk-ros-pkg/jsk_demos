@@ -3,30 +3,45 @@
 (ros::load-ros-manifest "geometry_msgs")
 (ros::load-ros-manifest "dynamic_tf_publisher")
 
-
 (defun marker-pose-cb (msg)
-  (setq c (ros::tf-pose-stamped->coords msg))
-  (setq trans (ros::coords->tf-transform c))
-  (setq req (instance dynamic_tf_publisher::SetDynamicTFRequest :init
-                      :freq 10
-                      :cur_tf (instance geometry_msgs::TransformStamped :init
-                                        :header (instance std_msgs::Header :init
-                                                          :stamp (ros::time 0)
-                                                          :frame_id "BODY")
-                                        :child_frame_id "car_marker"
-                                        :transform trans)))
-  (setq res (ros::service-call "/set_dynamic_tf" req))
+  (let ((trans-body-to-camera (send *tfl* :lookup-transform "BODY"
+                                    (send msg :header :frame_id)
+                                    (send msg :header :stamp)
+                                    )
+                              )
+        body-to-car-marker
+        )
+    (unless trans-body-to-camera
+      ;; (warn "Failed to get car_marker~%")
+      (return-from marker-pose-cb nil)
+      )
+
+    (setq c (ros::tf-pose-stamped->coords msg))
+    (setq body-to-car-marker
+          (send trans-body-to-camera :transform c)
+          )
+    (setq trans (ros::coords->tf-transform body-to-car-marker))
+    (setq req (instance dynamic_tf_publisher::SetDynamicTFRequest :init
+                        :freq 10
+                        :cur_tf (instance geometry_msgs::TransformStamped :init
+                                          :header (instance std_msgs::Header :init
+                                                            :stamp (send msg :header :stamp)
+                                                            :frame_id "BODY")
+                                          :child_frame_id "car_marker"
+                                          :transform trans)))
+    (setq res (ros::service-call "/set_dynamic_tf" req))
+    ;; (warn "car_marker is subscribed~%")
+    )
   ;; (print-ros-msg res)
   )
 
 ;; main
 (ros::roseus "tf_car_center_publisher")
 (setq *tfl* (instance ros::transform-listener :init))
-(setq *tfb* (instance ros::transform-broadcaster :init))
 (ros::subscribe "car_pose_marker" geometry_msgs::PoseStamped #'marker-pose-cb)
-
-(setq c (make-coords :pos (float-vector 0 0 0) :rot (float-vector 0 0 0)))
+(setq c (make-coords :pos (float-vector 0.510221 -0.527558 0.301444) :rot (float-vector -3.106 1.036 3.107))) ;; jaxon
 (setq trans (ros::coords->tf-transform c))
+(print trans)
 (setq req (instance dynamic_tf_publisher::SetDynamicTFRequest :init
                     :freq 10
                     :cur_tf (instance geometry_msgs::TransformStamped :init
@@ -36,6 +51,6 @@
                                       :child_frame_id "car_marker"
                                       :transform trans)))
 (setq res (ros::service-call "/set_dynamic_tf" req))
-;; (print-ros-msg res)
+(print-ros-msg res)
 (ros::rate 10)
 (ros::spin)

@@ -6,7 +6,7 @@
   <node if="$(arg CREATE_MANAGER)"
         pkg="nodelet" type="nodelet" name="$(arg MANAGER)"
         args="manager" output="screen"/>
-  
+
   <!-- TF transformation -->
   <node pkg="nodelet" type="nodelet" name="transform_cloud"
         args="load jsk_pcl/TfTransformCloud $(arg MANAGER)">
@@ -36,7 +36,7 @@
     <arg name="INPUT_POINTS" value="/drive/recognition/passthrough/remove_z"/>
     <arg name="OUTPUT_POINTS" value="/drive/recognition/passthrough/obstacle_cloud"/>
   </include>
-    
+
   <!-- Obstacle Extraction using original passthrough filter -->
   <!-- PassThrough Flter for removng stereo points in x axis -->
   <!-- <node pkg="nodelet" type="nodelet" name="stereo_passthrough_x" -->
