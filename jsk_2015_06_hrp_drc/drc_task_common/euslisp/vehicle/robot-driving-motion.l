@@ -236,7 +236,7 @@
   (:grasp-handle
    (&rest args &key (limb (send self :get :grasp-arm)) (target-handle (send self :get :grasp-point))
           (debug nil) (tm 7000) (debug-view nil) (start-impedance t) (rotation-axis :z) (adjust nil)
-          (update-ik-seed t)
+          (update-ik-seed t) (offset #f(0 0 0)) (offset-wrt :local)
           &allow-other-keys)
    ;; (send self :open-hand limb)
    (when (and real start-impedance)
@@ -245,7 +245,9 @@
    (let ((check-links (subseq (send robot limb :links) 3 6)) (distance-threshold 100)
          (body-link (elt (send robot :links) 0)) ik-result)
      (setq ik-result
-           (send robot :inverse-kinematics (send (send self :rotate-grasp-point-by-grasp-arm (send car target-handle)) :copy-worldcoords)
+           (send robot :inverse-kinematics 
+                 (send (send (send self :rotate-grasp-point-by-grasp-arm (send car target-handle)) :copy-worldcoords)
+                       :translate offset offset-wrt)
                  :move-target (send robot limb :end-coords)
                  :link-list (send robot :link-list (send robot limb :end-coords :parent) (send robot limb :root-link))
                  :rotation-axis rotation-axis :debug-view debug-view
