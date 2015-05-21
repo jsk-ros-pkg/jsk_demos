@@ -12,7 +12,7 @@
         body-to-car-marker
         )
     (unless trans-body-to-camera
-      (warn "Failed to get car_marker~%")
+      ;; (warn "Failed to get car_marker~%")
       (return-from marker-pose-cb nil)
       )
 
@@ -30,7 +30,7 @@
                                           :child_frame_id "car_marker"
                                           :transform trans)))
     (setq res (ros::service-call "/set_dynamic_tf" req))
-    (warn "car_marker is subscribed~%")
+    ;; (warn "car_marker is subscribed~%")
     )
   ;; (print-ros-msg res)
   )
