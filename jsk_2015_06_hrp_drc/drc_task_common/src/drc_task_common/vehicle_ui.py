@@ -315,6 +315,20 @@ class VehicleUIWidget(QWidget):
         handle_diff_av_container.setLayout(handle_diff_av_hbox)
         angle_vbox.addWidget(handle_diff_av_container, 1)
         angle_container.setLayout(angle_vbox)
+
+        obstacle_length_hbox = QtGui.QHBoxLayout()
+        obstacle_length_container = QtGui.QWidget()
+        self.obstacle_length_value = 0.0
+        obstacle_length_label = QtGui.QLabel("Obstale Length:", self)
+        obstacle_length_label.setFont(font)
+        self.obstacle_length_value_label = QtGui.QLabel(str(self.obstacle_length_value))
+        self.obstacle_length_value_label.setFont(font)
+        obstacle_length_hbox.addWidget(obstacle_length_label)
+        obstacle_length_hbox.addWidget(self.obstacle_length_value_label)
+        obstacle_length_container.setLayout(obstacle_length_hbox)
+        angle_vbox.addWidget(obstacle_length_container, 1)
+        angle_container.setLayout(angle_vbox)
+
         right_splitter.addWidget(angle_container)
         left_splitter.addWidget(right_splitter)
         right_splitter.setSizes((500, 250))
@@ -359,6 +373,8 @@ class VehicleUIWidget(QWidget):
             "drive/controller/neck_mode", std_msgs.msg.String, self.neckModeCallback)
         self.handle_angle_vector_diff_sub = rospy.Subscriber(
             "drive/controller/steering_diff_angle_vector", std_msgs.msg.Float32, self.steeringDiffAngleVectorCallback)
+        self.obstacle_length_sub = rospy.Subscriber(
+            "drive/recognition/obstacle_length/indicator", std_msgs.msg.Float32, self.obstacleLengthCallback)
     def lhsensorCallback(self, msg):
         self.lhsensor_msg = msg
     def rhsensorCallback(self, msg):
@@ -456,7 +472,10 @@ class VehicleUIWidget(QWidget):
                      self.handle_diff_av_value_label.setPalette(palette)
                 else:
                     self.handle_diff_av_value_label.setAutoFillBackground(False);
-
+    def obstacleLengthCallback(self, msg):
+        with self.lock:
+            self.obstacle_length_value = msg.data
+            self.obstacle_length_value_label.setText(str(int(msg.data)))
     # Event callback
     def minUpButtonCallback(self, event):
         current_value = float(self.step_min_edit.text())
