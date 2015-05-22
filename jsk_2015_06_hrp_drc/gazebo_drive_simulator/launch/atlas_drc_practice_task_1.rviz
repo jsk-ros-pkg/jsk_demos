@@ -9,6 +9,7 @@ Panels:
         - /RobotModel1
         - /TF1/Frames1
         - /PointCloud21
+        - /MarkerArray2
       Splitter Ratio: 0.520446
     Tree Height: 882
   - Class: rviz/Selection
@@ -366,8 +367,7 @@ Visualization Manager:
                           rfsensor:
                             {}
               car_marker:
-                car_center:
-                  {}
+                {}
           ground:
             {}
           odom_on_ground:
@@ -507,7 +507,7 @@ Visualization Manager:
       Value: true
     - Class: rviz/MarkerArray
       Enabled: true
-      Marker Topic: /car_path_marker
+      Marker Topic: /drive/recognition/predicted_path/marker
       Name: MarkerArray
       Namespaces:
         left_wheel: true
@@ -573,5 +573,5 @@ Window Geometry:
   Views:
     collapsed: false
   Width: 1407
-  X: 1452
+  X: 1445
   Y: 24
