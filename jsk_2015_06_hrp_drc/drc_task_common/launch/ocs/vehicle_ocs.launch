@@ -6,7 +6,7 @@
 
   <arg name="CONTROLLER_DEV" default="/dev/input/js0" />
   <arg name="OCS_NS" default="ocs" />
-  
+
   <!-- remap topics -->
   <remap from="/tf" to="/ocs/tf" />
   <remap from="/joint_states" to="/ocs/joint_states" />
@@ -34,17 +34,5 @@
       <arg name="CONTROLLER_DEV" default="$(arg CONTROLLER_DEV)"/>
       <arg name="OCS_NS" default="$(arg OCS_NS)"/>
     </include>
-  </group>
-  
-  <!-- eus -->
-  <group if="$(arg LAUNCH_EUS)">
-    <node pkg="roseus" type="roseus" name="drive_controller"
-          args="$(find drc_task_common)/euslisp/vehicle/$(arg ROBOT)-driving-controller-on-polaris-xp900.l '($(arg ROBOT)-vehicle-main)'" />
-  </group>
-
-  <!-- rviz -->
-  <group if="$(arg LAUNCH_RVIZ)">
-    <node pkg="rviz" type="rviz" name="vehicle_rviz" args="-d $(find drc_task_common)/config/vehicle_operator.rviz"
-          respawn="true"/>
   </group>
 </launch>
