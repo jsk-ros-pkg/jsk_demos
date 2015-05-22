@@ -22,9 +22,7 @@
 
   <!-- launch nodes for vehicle task in fc -->
   <group if="$(arg USE_VEHICLE_LAUNCH)" >  
-    <include file="$(find drc_task_common)/launch/fc/vehicle.launch">
-      <arg name="OCS_MODE" value="false" />
-      <arg name="FC_MODE" value="true" />
+    <include file="$(find drc_task_common)/launch/fc/vehicle_fc.launch">
       <arg name="ROBOT" value="$(arg ROBOT)" />
     </include>
   </group>

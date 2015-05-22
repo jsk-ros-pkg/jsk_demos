@@ -8,6 +8,9 @@
   <arg name="USE_COM" default="true"/>
   <arg name="ROBOT" default="robot"/>
   <arg name="USE_VEHICLE_LAUNCH" default="true" />
+
+  <arg name="CONTROLLER_DEV" default="/dev/input/js0" />
+  <arg name="OCS_NS" default="ocs" />
   
   <!-- executive -->
   <node pkg="drc_task_common" type="vehicle-ocs-executive.l" name="vehicle_ocs_executive" output="screen">
@@ -22,10 +25,9 @@
 
   <!-- launch nodes for vehicle task in ocs -->
   <group if="$(arg USE_VEHICLE_LAUNCH)" >
-    <include file="$(find drc_task_common)/launch/fc/vehicle.launch">
-      <arg name="OCS_MODE" value="true" />
-      <arg name="FC_MODE" value="false" />
-      <arg name="ROBOT" value="$(arg ROBOT)" />
+    <include file="$(find drc_task_common)/launch/ocs/vehicle_ocs.launch">
+      <arg name="CONTROLLER_DEV" default="$(arg CONTROLLER_DEV)" />
+      <arg name="OCS_NS" default="$(arg OCS_NS)" />
     </include>
   </group>
   
