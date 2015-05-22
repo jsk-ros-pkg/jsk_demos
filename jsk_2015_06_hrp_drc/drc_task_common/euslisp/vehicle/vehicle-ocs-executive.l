@@ -8,6 +8,9 @@
 
 (setq *latest-handle-cmd* nil)
 (setq *latest-accel-cmd* nil)
+(setq *latest-brake-cmd* nil)
+(setq *latest-neck-y-cmd* nil)
+(setq *latest-neck-p-cmd* nil)
 (setq *initialize-service-server* (instance empty-service-server :init "/ocs/drive/controller/initialize"))
 (setq *grasp-service-server* (instance empty-service-server :init "/ocs/drive/controller/grasp"))
 (setq *release-service-server* (instance empty-service-server :init "/ocs/drive/controller/release"))
@@ -31,6 +34,15 @@
   )
 (defun accel-cmd-callback (msg)
   (setq *latest-accel-cmd* (send msg :data))
+  )
+(defun brake-cmd-callback (msg)
+  (setq *latest-brake-cmd* (send msg :data))
+  )
+(defun neck-y-cmd-callback (msg)
+  (setq *latest-neck-y-cmd* (send msg :data))
+  )
+(defun neck-p-cmd-callback (msg)
+  (setq *latest-neck-p-cmd* (send msg :data))
   )
 
 (defun fc-message-callback (msg)
@@ -95,6 +107,15 @@
     (when *latest-accel-cmd*
       (send msg :accel_cmd *latest-accel-cmd*)
       )
+    (when *latest-brake-cmd*
+      (send msg :brake_cmd *latest-brake-cmd*)
+      )
+    (when *latest-neck-y-cmd*
+      (send msg :neck_y_cmd *latest-neck-y-cmd*)
+      )
+    (when *latest-neck-p-cmd*
+      (send msg :neck_p_cmd *latest-neck-p-cmd*)
+      )
     (send msg :initialize_request (send *initialize-service-server* :request))
     (send msg :grasp_request (send *grasp-service-server* :request))
     (send msg :release_request (send *release-service-server* :request))
@@ -132,6 +153,9 @@
 ;; message from operation interface (drive/operation)
 (ros::subscribe "/ocs/drive/operation/handle_cmd" std_msgs::Float64 #'handle-cmd-callback)
 (ros::subscribe "/ocs/drive/operation/accel_cmd" std_msgs::Float64 #'accel-cmd-callback)
+(ros::subscribe "/ocs/drive/operation/brake_cmd" std_msgs::Float64 #'brake-cmd-callback)
+(ros::subscribe "/ocs/drive/operation/neck_y_cmd" std_msgs::Float64 #'neck-y-cmd-callback)
+(ros::subscribe "/ocs/drive/operation/neck_p_cmd" std_msgs::Float64 #'neck-p-cmd-callback)
 
 ;; message to vehicle_ui
 (ros::advertise "/ocs/drive/controller/goal_handle_angle" std_msgs::Float32 1)

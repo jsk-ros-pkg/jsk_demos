@@ -38,6 +38,12 @@
     (ros::publish "/drive/operation/handle_cmd" tmp-msg)
     (setq tmp-msg (make-msg-from-tunnel msg :accel_cmd std_msgs::Float64))
     (ros::publish "/drive/operation/accel_cmd" tmp-msg)
+    (setq tmp-msg (make-msg-from-tunnel msg :brake_cmd std_msgs::Float64))
+    (ros::publish "/drive/operation/brake_cmd" tmp-msg)
+    (setq tmp-msg (make-msg-from-tunnel msg :neck_y_cmd std_msgs::Float64))
+    (ros::publish "/drive/operation/neck_y_cmd" tmp-msg)
+    (setq tmp-msg (make-msg-from-tunnel msg :neck_p_cmd std_msgs::Float64))
+    (ros::publish "/drive/operation/neck_p_cmd" tmp-msg)
     (send *initialize-service-client* :call (send msg :initialize_request))
     (send *grasp-service-client* :call (send msg :grasp_request))
     (send *release-service-client* :call (send msg :release_request))
@@ -152,6 +158,9 @@
 ;; message to driving-controller
 (ros::advertise "/drive/operation/handle_cmd" std_msgs::Float64 1)
 (ros::advertise "/drive/operation/accel_cmd" std_msgs::Float64 1)
+(ros::advertise "/drive/operation/brake_cmd" std_msgs::Float64 1)
+(ros::advertise "/drive/operation/neck_y_cmd" std_msgs::Float64 1)
+(ros::advertise "/drive/operation/neck_p_cmd" std_msgs::Float64 1)
 
 ;; message from driving-controller
 (ros::subscribe "/drive/controller/goal_handle_angle" std_msgs::Float32 #'goal-handle-angle-callback)
