@@ -2,10 +2,10 @@
   <!--
       This is a launch file for Main PC of Operator Control Station (OCS)
   -->
-  <arg name="FC_IP" value="localhost"/>
-  <arg name="OCS_IP" value="localhost"/>
+  <arg name="FC_IP" default="localhost"/>
+  <arg name="OCS_IP" default="localhost"/>
 
-  <arg name="USE_COM" value="true"/>
+  <arg name="USE_COM" default="true"/>
 
   <!-- executive -->
   <node pkg="drc_task_common" type="vehicle-ocs-executive.l" name="vehicle_ocs_executive" output="screen">

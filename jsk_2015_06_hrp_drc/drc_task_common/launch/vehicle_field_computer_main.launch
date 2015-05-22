@@ -2,10 +2,10 @@
   <!--
       This is a launch file for Main PC of Operator Control Station (OCS)
   -->
-  <arg name="FC_IP" value="localhost"/>
-  <arg name="OCS_IP" value="localhost"/>
+  <arg name="FC_IP" default="localhost"/>
+  <arg name="OCS_IP" default="localhost"/>
 
-  <arg name="USE_COM" value="true"/>
+  <arg name="USE_COM" default="true"/>
 
   <!-- executive -->
   <node pkg="drc_task_common" type="vehicle-fc-executive.l" name="vehicle_fc_executive" output="screen">
@@ -21,7 +21,7 @@
   <!-- launch nodes for vehicle task in fc -->
   <include file="$(find drc_task_common)/launch/fc/vehicle/vehicle.launch">
     <arg name="OCS_MODE" value="false" />
-    <arg name="FC_MODE" value="true" />    
+    <arg name="FC_MODE" value="true" />
   </include>
   
 </launch>
