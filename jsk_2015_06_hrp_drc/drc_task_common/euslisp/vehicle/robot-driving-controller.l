@@ -567,6 +567,10 @@
   ;; handle controller callback
   (:handle-callback
    (msg)
+   (when (send self :is-waiting-sync :handle)
+     (warn "Sync ~A is executing. return.~%" :handle)
+     (return-from :handle-callback nil)
+     )
    (let* ((data (send msg :data)) ;; data is estimated as radius
           (threshold 1.0) ;; [deg]
           )
@@ -581,6 +585,10 @@
    )
   (:accel-callback
    (msg)
+   (when (send self :is-waiting-sync :accel)
+     (warn "Sync ~A is executing. return.~%" :accel)
+     (return-from :accel-callback nil)
+     )
    (let ((threshold 0.05) ;; 0-1 range command
          (accel-command (send msg :data))
          )
@@ -620,6 +628,10 @@
   
   (:neck-y-callback
    (msg)
+   (when (send self :is-waiting-sync :neck)
+     (warn "Sync ~A is executing. return.~%" :neck)
+     (return-from :neck-y-callback nil)
+     )
    (unless (equal (send self :controller-mode :neck) :operation)
      (warn "neck mode is ~A~%" (send self :controller-mode :neck))
      (return-from :neck-y-callback nil) ;; do not turn handle
@@ -630,6 +642,10 @@
    )
   (:neck-p-callback
    (msg)
+   (when (send self :is-waiting-sync :neck)
+     (warn "Sync ~A is executing. return.~%" :neck)
+     (return-from :neck-p-callback nil)
+     )
    (unless (equal (send self :controller-mode :neck) :operation)
      (warn "neck mode is ~A~%" (send self :controller-mode :neck))
      (return-from :neck-p-callback nil) ;; do not turn handle
@@ -1007,6 +1023,13 @@
      )
    )
 
+  (:is-waiting-sync
+   (target)
+   (or (send self :get (read-from-string (format nil ":~A-sync" (string-downcase target))))
+       (send self :get :all-sync)
+       )
+   )
+
   (:execute-operation-synchronize
    ()
    (let ((sync-target-list (list :all :handle :accel :neck)) ;; :brake is out of sync
@@ -1020,6 +1043,7 @@
          (let ((req (instance drc_task_common::StringRequestRequest :init)))
            (send req :data (string-downcase target))
            (ros::service-call "/drive/operation/synchronize" req t)
+           (unix::usleep 500000) ;; have to wait after service call because service call immediately back from executive but real server is running
            )
          (send self :put target-flag nil)
          )
