@@ -35,6 +35,8 @@ namespace drc_task_common
     ui_->hand_hook_pose_after_5sec_button->setIcon(QIcon(QPixmap(QString((ros::package::getPath("drc_task_common")+std::string("/icons/hand-hook-pose.jpg")).c_str()))));
     ui_->hand_grasp_pose_button->setToolButtonStyle(Qt::ToolButtonTextUnderIcon);
     ui_->hand_grasp_pose_button->setIcon(QIcon(QPixmap(QString((ros::package::getPath("drc_task_common")+std::string("/icons/hand-grasp-pose.jpg")).c_str()))));
+    ui_->hrpsys_hand_calib_button->setToolButtonStyle(Qt::ToolButtonTextUnderIcon);
+    ui_->hrpsys_hand_calib_button->setIcon(QIcon(QPixmap(QString((ros::package::getPath("drc_task_common")+std::string("/icons/hand-calib.png")).c_str()))));
     ui_->hrpsys_start_abc_button->setToolButtonStyle(Qt::ToolButtonTextUnderIcon);
     ui_->hrpsys_start_abc_button->setIcon(QIcon(QPixmap(QString((ros::package::getPath("drc_task_common")+std::string("/icons/start-abc.png")).c_str()))));
     ui_->hrpsys_start_st_button->setToolButtonStyle(Qt::ToolButtonTextUnderIcon);
@@ -76,6 +78,8 @@ namespace drc_task_common
     // connect( ui_->hrpsys_stop_st_button, SIGNAL( clicked() ), this, SLOT(  callRequestStopST()));
     connect( ui_->hrpsys_stop_imp_button, SIGNAL( clicked() ), this, SLOT(  callRequestStopIMP()));
 
+    connect( ui_->hrpsys_hand_calib_button, SIGNAL( clicked() ), this, SLOT(  callRequestHandCalib()));
+
     connect( ui_->display_manip_button, SIGNAL( clicked() ), this, SLOT(  callRequestDisplayManip ()));
     connect( ui_->hide_manip_button, SIGNAL( clicked() ), this, SLOT(  callRequestHideManip ()));
 
@@ -114,6 +118,10 @@ namespace drc_task_common
 
   void DRCTeleopInterfaceAction::callRequestGraspGrippePose(){
     callRequestUint8Request(drc_com_common::OCS2FCSmall::HAND_GRASP_POSE);
+  };
+
+  void DRCTeleopInterfaceAction::callRequestHandCalib(){
+    callRequestUint8Request(drc_com_common::OCS2FCSmall::CALIB_HAND);
   };
 
   void DRCTeleopInterfaceAction::callRequestStartABC(){

@@ -637,6 +637,16 @@
     (unix::usleep (* 200 1000)))
   )
 
+(defun send-joint-states-to-marker-from-angle-vector
+  (&optional (av (send *robot* :angle-vector)))
+  (let* ((msg (instance sensor_msgs::JointState :init)))
+    (send msg :header (instance std_msgs::Header :init :stamp (ros::time 0.0)))
+    (send msg :name (send-all (send *robot* :joint-list) :name))
+    (send msg :position (mapcar #'deg2rad (concatenate cons av)))
+    (ros::publish "/jsk_model_marker_interface/robot/reset_joint_states_and_root" msg)
+    (ros::spin-once))
+  )
+
 ;; angle-vector ;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun send-angle-to-real-robot-one
   ()
@@ -788,9 +798,10 @@
   ()
   (let* ((title
           (format nil "Robot Menu~%"))
-         (menu-list (list "cancel" "switch arm" "current pos" ":reset-pose" ":reset-manip-pose" ":init-pose"))
+         (menu-list (list "cancel" "switch arm" "current pos" "potentio-vector" ":reset-pose" ":reset-manip-pose" ":init-pose"))
          (switch-arm-index 1)
          (current-pos-index 2)
+         (potentio-vector-index 3)
          (req (instance drc_task_common::RvizMenuCallRequest :init :title title :menu_list menu-list))
          res res-index res-value)
     (setq res (ros::service-call "rviz_menu_call" req))
@@ -802,6 +813,13 @@
            (publish-obj-mode-text))
           ((equal res-index current-pos-index)
            (set-robot-current-pos))
+          ((equal res-index potentio-vector-index)
+           (cond (*use-robot-interface-flag*
+                  (send *robot* :angle-vector (send *ri* :state :potentio-vector)))
+                 (t
+                  (send *robot* :angle-vector (get-potentio-vector-from-joint-states))))
+           (send-joint-states-to-marker-from-angle-vector)
+           )
           ((find-method *robot* (read-from-string res-value))
            (eval (list 'send '*robot* '(read-from-string res-value)))
            (setq *ik-result* (list (send-all (send *robot* :joint-list) :joint-angle)))
@@ -809,7 +827,7 @@
     (setq *robot-menu-command-flag* nil)
     (publish-obj-mode-text)
     ))
-   
+
 ;; main ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (request-ik-from-marker-init)
 (ros::rate 10)

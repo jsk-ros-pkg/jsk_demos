@@ -119,6 +119,8 @@
                 self :hrpsys-stop-st-command-cb)
           (list drc_com_common::OCS2FCSmall::*HRPSYS_STOP_IMP*
                 self :hrpsys-stop-imp-command-cb)
+          (list drc_com_common::OCS2FCSmall::*CALIB_HAND*
+                self :calib-hand-command-cb)
           (list drc_com_common::OCS2FCSmall::*ANGLE_VECTOR_SEND*
                 self :angle-vector-send-command-callback)
           (list drc_com_common::OCS2FCSmall::*REACH_UNTIL_TOUCH_EXEC*
@@ -1041,6 +1043,12 @@ It sends :angle-vector to robot and return 'finished' message to ocs"
     (send self :send-rviz-button-finished-to-ocs))
   (:hrpsys-stop-imp-command-cb (msg)
     (send *ri* :stop-impedance :arms)
+    (send self :send-rviz-button-finished-to-ocs))
+  (:calib-hand-command-cb (msg)
+    (cond ((or (equal *robot-name* "JAXON") (equal *robot-name* "STARO"))
+           (send *ri* :hand-reset))
+          (t ;; (or (equal *robot-name* "HRP2JSKNT") (equal *robot-name* "HRP2JSKNTS"))
+           (send *ri* :hand-joint-calib)))
     (send self :send-rviz-button-finished-to-ocs))
   (:send-rviz-button-finished-to-ocs ()
     (let ((msg (instance drc_com_common::FC2OCSSmall :init)))

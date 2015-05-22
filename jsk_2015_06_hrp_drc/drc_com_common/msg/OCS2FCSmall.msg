@@ -83,6 +83,7 @@ uint8 HRPSYS_STOP_IMP=37
 uint8 DRILL_RESET_POSE=38
 uint8 WATCH_DRILL_POSE=39
 uint8 DOOR_THROUGH_POSE=40
+uint8 CALIB_HAND=51
 # angle-vector
 uint8 ANGLE_VECTOR_SEND=41
 # cancel
@@ -98,4 +99,5 @@ uint8 LOOK_AT_YAW_ANGLE=47
 # reach until touch
 uint8 REACH_UNTIL_TOUCH_EXEC=48
 
-# next number is 51
+# next number is 52
+
