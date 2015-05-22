@@ -19,7 +19,7 @@
   </include>
 
   <!-- launch nodes for vehicle task in ocs -->
-  <include file="$(find drc_task_common)/launch/fc/vehicle/vehicle.launch">
+  <include file="$(find drc_task_common)/launch/fc/vehicle.launch">
     <arg name="OCS_MODE" value="true" />
     <arg name="FC_MODE" value="false" />
   </include>
