@@ -88,6 +88,13 @@
     (ros::service-call "/transformable_interactive_server/get_dimensions" req)
     ))
 
+(defun get-marker-existence
+  (name)
+  (let* ((req (instance jsk_interactive_marker::GetTransformableMarkerExistenceRequest :init)) res)
+    (send req :target_name name)
+    (setq res (ros::service-call "/transformable_interactive_server/get_existence" req))
+    (if res (send res :existence) nil)
+    ))
 
 
 ;; device ;;;;;;;;;;;;;;;;;;;;
