@@ -7,6 +7,7 @@
 
   <arg name="USE_COM" default="true"/>
   <arg name="ROBOT" default="robot"/>
+  <arg name="USE_VEHICLE_LAUNCH" default="true" />
 
   <!-- executive -->
   <node pkg="drc_task_common" type="vehicle-fc-executive.l" name="vehicle_fc_executive" output="screen">
@@ -20,10 +21,12 @@
   </include>
 
   <!-- launch nodes for vehicle task in fc -->
-  <include file="$(find drc_task_common)/launch/fc/vehicle.launch">
-    <arg name="OCS_MODE" value="false" />
-    <arg name="FC_MODE" value="true" />
-    <arg name="ROBOT" value="$(arg ROBOT)" />
-  </include>
-
+  <group if="$(arg USE_VEHICLE_LAUNCH)" >  
+    <include file="$(find drc_task_common)/launch/fc/vehicle.launch">
+      <arg name="OCS_MODE" value="false" />
+      <arg name="FC_MODE" value="true" />
+      <arg name="ROBOT" value="$(arg ROBOT)" />
+    </include>
+  </group>
+  
 </launch>
