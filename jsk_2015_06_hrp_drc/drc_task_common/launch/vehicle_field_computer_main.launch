@@ -18,4 +18,10 @@
     <arg name="OCS_IP" value="$(arg OCS_IP)" />
   </include>
 
+  <!-- launch nodes for vehicle task in fc -->
+  <include file="$(find drc_task_common)/launch/fc/vehicle/vehicle.launch">
+    <arg name="OCS_MODE" value="false" />
+    <arg name="FC_MODE" value="true" />    
+  </include>
+  
 </launch>
