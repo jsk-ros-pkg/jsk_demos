@@ -22,7 +22,7 @@
       <remap from="~output" to="passthrough/remove_z" />
       <rosparam>
         filter_field_name: z
-        filter_limit_min: 0.3
+        filter_limit_min: 0.45
         filter_limit_max: 1.25
         keep_organized: true
         input_frame: /car_center
