@@ -1,7 +1,7 @@
 <launch>
   <!-- KdTree and Visualization Marker for obstacle detection -->
-  <node name="obstacle_detection" pkg="drc_task_common" type="kdtree_obstacle" output="screen" >
-    <remap from="points" to="/drive/recognition/local_planner/obstacle_cloud" />
-    <remap from="stop_real_robot_cmd" to="/drive/recognition/obstacle_detection/flag" />
+  <node ns="/drive/recognition" name="obstacle_detection" pkg="drc_task_common" type="kdtree_obstacle" output="screen" >
+    <remap from="points" to="passthrough/obstacle_cloud" />
+    <remap from="stop_real_robot_cmd" to="obstacle_detection/flag" />
   </node>
 </launch>

@@ -702,6 +702,12 @@
     ;; update latest drill-grasp params
     (setq drill-grasp-params
           (list (get-primitive-marker-pose :frame-id "BODY" :name "drill")))
+    (insert-primitive-marker :shape-type jsk_rviz_plugins::TransformableMarkerOperate::*CYLINDER* :name "cylinder1" :description "")
+    (set-primitive-marker-color :r 1.0 :g 1.0 :b 0.0 :a 0.6)
+    ;; (apply-primitive-dimensions-to-midi-device)
+    (set-primitive-marker-pose (elt drill-grasp-params 0) "BODY" :name "cylinder1")
+    (set-primitive-marker-dimensions :radius 400 :z 1 :name "cylinder1")
+    (set-focus-marker-name "drill")
     ;; send drill-grasp params to fc
     (let ((msg (instance drc_com_common::OCS2FCSmall :init)))
       (send msg :type drc_com_common::OCS2FCSmall::*DRILL_GRASP_EXEC*)
@@ -987,11 +993,6 @@
         ;(set-primitive-marker-dimensions :radius 30 :z 300)
         (set-primitive-marker-pose coords "BODY")
         ;; (set-primitive-marker-color :r 1.0 :g 1.0 :b 0.0 :a 0.6)
-        (insert-primitive-marker :shape-type jsk_rviz_plugins::TransformableMarkerOperate::*CYLINDER* :name "cylinder1" :description "")
-        (set-primitive-marker-color :r 1.0 :g 1.0 :b 0.0 :a 0.6)
-        ;; (apply-primitive-dimensions-to-midi-device)
-        (set-primitive-marker-pose coords "BODY" :name "cylinder1")
-        (set-primitive-marker-dimensions :radius 400 :z 1 :name "cylinder1")
         (move-robot-model-to-current-pos)
         (set-focus-marker-name "drill")
         ;; publish motion to robot model on rviz
@@ -1061,15 +1062,15 @@
           (setq drill-wall-target-coords (get-relative-coords-list center-coords coords-set))
 	  (setq *drill-main-arm* (send self :get-arm-side))
           (publish-drill-wall-motion :coords-list coords-set :update? t :stand-coords (make-coords) :overwrite-stand-coords? :force)
-          ;; (let ((index (position-if #'(lambda (x) (equal (elt x 0) :wall) drill-stand-coords-list))))
-          ;;   (if index
-          ;;       (progn
-          ;;         (setf (elt drill-stand-coords-list index) (list :wall (convert-coords-frame (if (boundp '*drill-stand-coords-forced*) *drill-stand-coords-forced* (make-coords)))))
-          ;;         (setq drill-stand-coords-index index))
-          ;;     (progn
-          ;;       (push-back (list :wall (convert-coords-frame (if (boundp '*drill-stand-coords-forced*) *drill-stand-coords-forced* (make-coords)))) drill-stand-coords-list)
-          ;;       (setq drill-stand-coords-index (- (length drill-stand-coords-list) 1))
-          ;;       )))
+          (let ((index (position-if #'(lambda (x) (equal (elt x 0) :wall)) drill-stand-coords-list)))
+            (if index
+                (progn
+                  (setf (elt drill-stand-coords-list index) (list :wall (convert-coords-frame (if (boundp '*drill-stand-coords-forced*) *drill-stand-coords-forced* (make-coords)))))
+                  (setq drill-stand-coords-index index))
+              (progn
+                (push-back (list :wall (convert-coords-frame (if (boundp '*drill-stand-coords-forced*) *drill-stand-coords-forced* (make-coords)))) drill-stand-coords-list)
+                (setq drill-stand-coords-index (- (length drill-stand-coords-list) 1))
+                )))
 	  (if (or (not (boundp '*drill-motion*)) (not *drill-motion*))
 	      (send self :show-text 
 		  "IK FAIL")
@@ -1193,15 +1194,15 @@
       (if (send msg :success)
           (progn (send self :show-text "Finished drill-button motion with success" :success)
                  (send self :show-text "PUSH AUTO GO-POS BUTTON!")
-                 ;; (let ((index (position-if #'(lambda (x) (equal (elt x 0) :wall)) drill-stand-coords-list)))
-                 ;;   (if index
-                 ;;       (progn
-                 ;;         (setf (elt drill-stand-coords-list index) (list :wall (convert-coords-frame (make-coords :rpy (list (deg2rad -90) 0 0)))))
-                 ;;         (setq drill-stand-coords-index index))
-                 ;;     (progn
-                 ;;       (push-back (list :wall (convert-coords-frame (make-coords :rpy (list (deg2rad -90) 0 0)))) drill-stand-coords-list)
-                 ;;       (setq drill-stand-coords-index (- (length drill-stand-coords-list) 1))
-                 ;;       )))
+                 (let ((index (position-if #'(lambda (x) (equal (elt x 0) :wall)) drill-stand-coords-list)))
+                   (if index
+                       (progn
+                         (setf (elt drill-stand-coords-list index) (list :wall (convert-coords-frame (make-coords :rpy (list (deg2rad -90) 0 0)))))
+                         (setq drill-stand-coords-index index))
+                     (progn
+                       (push-back (list :wall (convert-coords-frame (make-coords :rpy (list (deg2rad -90) 0 0)))) drill-stand-coords-list)
+                       (setq drill-stand-coords-index (- (length drill-stand-coords-list) 1))
+                       )))
                  )
         (send self :show-text "Finished drill-button motion but failed!":fatal))
       (send smachine :go-to :initial)))
@@ -1445,10 +1446,7 @@
      ((or (eq (send smachine :state) :selecting-region-for-drill-grasp)
           (eq (send smachine :state) :recognizing-drill-grasp-pose))
       (send smachine :go-to! :selecting-exec-for-drill-grasp)
-      (erase-all-primitive-marker)
-      (insert-primitive-marker :shape-type jsk_rviz_plugins::TransformableMarkerOperate::*CYLINDER* :name "cylinder1" :description "")
-      (set-primitive-marker-dimensions :radius 300 :z 30) ;; show plane as circle
-      (insert-primitive-marker :shape-type jsk_rviz_plugins::TransformableMarkerOperate::*MESH_RESOURCE* :name "drill" :description "" :resource "package://drc_task_common/models/takenoko_drill.dae" :use-material t))
+      )
      ((eq (send smachine :state) :selecting-region-for-drill-put)
       (send smachine :go-to! :selecting-exec-for-drill-put))
      ;; ((eq (send smachine :state) :selecting-region-for-drill-wall)
@@ -1478,6 +1476,8 @@
           )
         )
       (send smachine :go-to! :selecting-exec-for-drill-button))
+     ((eq (send smachine :state) :selecting-region-for-drill-wall)
+      (send smachine :go-to! :selecting-exec-for-drill-wall))
      ((eq (send smachine :state) :selecting-region-for-drill-rotate)
       (send smachine :go-to! :selecting-exec-for-drill-rotate))
      (t (send self :show-text "skip recog selected but no mean" :warn))

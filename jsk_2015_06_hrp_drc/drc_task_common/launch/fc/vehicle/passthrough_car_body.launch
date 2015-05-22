@@ -1,8 +1,8 @@
 <launch>
   <arg name="INPUT_POINTS" default="/transform_cloud/input"/>
   <arg name="OUTPUT_POINTS" default="/passthrough/car_body_filtered_points2"/>
-
-  <node pkg="drc_task_common" type="passthrough_car_body" name="passthrough_car_body" output="screen">
+  <!-- passthrough car body in xy plane -->
+  <node ns="/drive/recognition" pkg="drc_task_common" type="passthrough_car_body" name="passthrough_car_body" output="screen">
     <remap from="input_points2" to="$(arg INPUT_POINTS)" />
     <remap from="passthrough_output/points2" to="$(arg OUTPUT_POINTS)" />
   </node>

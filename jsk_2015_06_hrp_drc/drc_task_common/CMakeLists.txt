@@ -22,10 +22,9 @@ generate_dynamic_reconfigure_options(
   config/vehicle/LocalPlannerParams.cfg
   config/vehicle/ObstacleDetectionParams.cfg
   config/vehicle/PassthroughCarBody.cfg
-  config/vehicle/SwitchInputCloud.cfg
-  config/vehicle/VisualOdometryVerification.cfg
   config/vehicle/ObstacleIndicatorParams.cfg
   cfg/StandingDrillDetector.cfg
+  cfg/FilterBBoxPosition.cfg
 )
 
 add_message_files(DIRECTORY msg FILES DRCParametersMessage.msg)
@@ -100,14 +99,6 @@ target_link_libraries(kdtree_obstacle ${catkin_LIBRARIES})
 add_executable(simplified_local_planner src/drc_task_common/simplified_local_planner.cpp)
 add_dependencies(simplified_local_planner ${PROJECT_NAME}_gencfg ${PROJECT_NAME}_gencpp)
 target_link_libraries(simplified_local_planner ${catkin_LIBRARIES})
-
-add_executable(switch_input_cloud src/drc_task_common/input_cloud_switching.cpp)
-add_dependencies(switch_input_cloud ${PROJECT_NAME}_gencfg ${PROJECT_NAME}_gencpp)
-target_link_libraries(switch_input_cloud  ${catkin_LIBRARIES})
-
-add_executable(visual_odometry_verification src/drc_task_common/visual_odometry_verification.cpp)
-add_dependencies(visual_odometry_verification ${PROJECT_NAME}_gencfg ${PROJECT_NAME}_gencpp)
-target_link_libraries(visual_odometry_verification ${catkin_LIBRARIES})
 
 add_executable(passthrough_car_body src/drc_task_common/passthrough_car_body.cpp)
 add_dependencies(passthrough_car_body ${PROJECT_NAME}_gencfg ${PROJECT_NAME}_gencpp)

@@ -1,41 +1,26 @@
 <launch>
   <arg name="VIEW" default="false" />
-  
-  <!-- setting -->
-  <rosparam param="alpha_max"> 8.37758041 </rosparam> <!-- 6.283185307 </rosparam> --><!-- 1.93731546971 </rosparam> --> <!-- 111[deg] -->
-  <rosparam param="alpha_min"> -8.37758041 </rosparam> <!-- -6.283185307 </rosparam> --><!-- -1.93731546971 </rosparam> --> <!-- -111[deg] -->
-  <rosparam param="path_num"> 15 </rosparam> <!-- this should be odd and more than 3 -->
-  <rosparam param="field_of_vision"> 80 </rosparam>
-  <rosparam param="wheelbase"> 2.05 </rosparam>
-  <rosparam param="tread"> 1.32 </rosparam>
-  
   <group ns="drive/recognition">
+    <!-- setting -->
+    <rosparam param="alpha_max"> 8.37758041 </rosparam> <!-- 6.283185307 </rosparam> --><!-- 1.93731546971 </rosparam> --> <!-- 111[deg] -->
+    <rosparam param="alpha_min"> -8.37758041 </rosparam> <!-- -6.283185307 </rosparam> --><!-- -1.93731546971 </rosparam> --> <!-- -111[deg] -->
+    <rosparam param="path_num"> 15 </rosparam> <!-- this should be odd and more than 3 -->
+    <rosparam param="field_of_vision"> 80 </rosparam>
+    <rosparam param="wheelbase"> 2.05 </rosparam>
+    <rosparam param="tread"> 1.32 </rosparam>
     <!-- KdTree and Visualization Marker for obstacle detection -->
     <node name="simplified_local_planner" pkg="drc_task_common" type="simplified_local_planner" output="screen" >
-      <remap from="obstacle_points" to="local_planner/obstacle_cloud" />
+      <remap from="obstacle_points" to="passthrough/obstacle_cloud" />
       <remap from="goal_dir" to="local_planner/goal_direction" />
       <remap from="stepon_gaspedal/flag" to="/drive/controller/step_on_flag" />
       <remap from="visualize_path/points2" to="local_planner/visualize_path/points2" />
       <remap from="local_planner/cmd_with_path_num" to="local_planner/steering_cmd_with_path_num" />
       <remap from="local_planner/steering_cmd" to="local_planner/steering_cmd" />
     </node>
-    
     <!-- publish and Visualize steering angle -->
     <node pkg="drc_task_common" type="SteeringAngleMarker.py" name="steering_angle_marker" output="screen" >
       <remap from="cmd" to="local_planner/steering_cmd_with_path_num" />
       <remap from="marker_array" to="local_planner/steering_cmd_with_path_num/marker_array" />
     </node>
-    
-    <!-- switch input cloud of local planner -->
-    <node name="switch_input_cloud" pkg="drc_task_common" type="switch_input_cloud" output="screen" >
-      <remap from="passthrough/points" to="passthrough/obstacle_cloud" />
-      <remap from="raw/points" to="transform_cloud/car_center" />
-      <remap from="kdtree_curve/input" to="local_planner/obstacle_cloud" />
-    </node>
-
-    <group if="$(arg VIEW)">
-      <include file="$(find drc_task_common)/launch/fc/vehicle/visualize_local_planner_viso2.launch" />
-    </group>
-
   </group>
 </launch>

@@ -23,9 +23,15 @@
    (send-super :init :motion tmp-motion
                :real tmp-real :rate tmp-ros-rate :roseus-init nil
                )
-   (send self :step-accel-command -150.0)
+   (send self :step-accel-command -50.0)
    (send self :release-accel-command 0.0)
    ;; (send self :accel-origin 0.0)
+   )
+  (:initialize
+   (&rest args &key (fist-offset #f(0 0 140)) (floor-offset #f(0 0 0))  &allow-other-keys)
+   (send-super* :initialize
+                :fist-offset fist-offset :floor-offset floor-offset
+                args)
    )
   (:approach-accel
    (&rest args &key (limb :rleg) &allow-other-keys)

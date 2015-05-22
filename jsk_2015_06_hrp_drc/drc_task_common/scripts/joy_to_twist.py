@@ -17,11 +17,12 @@ from std_srvs import srv
 joy = None
 joy_before = None
 factor = 0.1
-factor_l = 0.3
+factor_l = 0.15
 factor_r = 1.0
 mode = 1
 r_flag = False
 l_flag = False
+reverse_flag = False
 def timer_cb(event):
     global joy, joy_before, mode
     if joy: # and joy_before and joy_before.header.seq != joy.header.seq:
@@ -41,14 +42,12 @@ def timer_cb(event):
 def check_twist(twist):
     return (not (twist.linear.x == 0.0) & (twist.linear.y == 0.0) & (twist.linear.z == 0.0) & (twist.angular.x == 0.0) & (twist.angular.y == 0.0) & (twist.angular.z == 0.0))
 def joy_cb(msg):
-    global joy
+    global joy, factor, reverse_flag
     joy = msg
     if msg.buttons[5]:
-        global factor
         factor*=1.2
         print "factor: %f" % factor
     if msg.buttons[4]:
-        global factor
         factor/=1.2
         print "factor: %f" % factor
     if msg.buttons[8]:
@@ -59,6 +58,13 @@ def joy_cb(msg):
         mode %= 2
         print "mode: %d" % mode
         
+    if msg.buttons[6]:
+        if reverse_flag == False:
+            pose_relative_pub.publish(Pose(orientation=Quaternion(0, 0, 1, 0)))
+            reverse_flag = True
+    else:
+        reverse_flag = False
+    
 def joy_to_twist(msg):
     twist = Twist()
     axes_list = list (msg.axes)
@@ -90,9 +96,9 @@ def joy_to_twist(msg):
     else:
         l_flag = True
     
-    twist.linear.z = axes_list[1]
-    twist.linear.y = axes_list[6]
-    twist.linear.x = axes_list[7] 
+    twist.linear.z = axes_list[7] - msg.buttons[0] +msg.buttons[3]
+    twist.linear.y = axes_list[0]
+    twist.linear.x = axes_list[1] 
     twist.angular.y = axes_list[4]
     twist.angular.x = -axes_list[3]
     twist.angular.z = (axes_list[5] - axes_list[2]) /2.0

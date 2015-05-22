@@ -72,7 +72,7 @@
           clear_params="true"
           output="screen">
       <rosparam subst_value="true">
-        interruptible_mode: ":full-interruptible"
+        interruptible_mode: ":semi-interruptible"
       </rosparam>
     </node>
     <node pkg="jsk_footstep_controller" type="footstep-refinement.l"

@@ -50,7 +50,7 @@
    
    ;; initialize instance valiables
    (setq ros-rate tmp-ros-rate
-         state-list (list :initialize :release :running)
+         state-list (list :initialize :release :approach :running)
          mode-list (list :stop :operation :recognition)
          torus-finder-estimated-robot-coords nil
          handle-pose-estimated-robot-coords nil
@@ -286,6 +286,8 @@
    (req)
    (let ((res (send req :response)) (pub-msg (instance std_msgs::Float32 :init)))
      (send pub-msg :data (send res :set_value (send motion :overwrite-handle-angle (send req :value))))
+     (setq old-estimated-handle-angle (send req :value))
+     (send self :estimate-current-handle-angle) ;; update estimated handle angle
      (warn "overwrite handle angle to ~A~%" (send motion :car :handle-joint :joint-angle))
      (ros::publish "/drive/controller/goal_handle_angle" pub-msg)
      (when (ros::wait-for-service "/drive/operation/synchronize" 1)
@@ -322,8 +324,12 @@
      (warn "init-head~%")
      (send self :neck-cmd 0.0 :neck-p :time 2000)
      (send self :neck-cmd 0.0 :neck-y :time 2000)
-     (send motion :model2real :time time :wait-interpolation t :real real) ;; send *ri* :angle-vector if real is t
+     (warn "send-initial-pose~%")
      (send motion :real real :use-real-robot-angle nil) ;; set real as argument
+     (send motion :model2real :time time :wait-interpolation t) ;; send *ri* :angle-vector if real is t (default :real is set above)
+     (warn "init-hand~%")
+     (send motion :open-hand (send motion :grasp-arm))
+     (send motion :close-hand (get-opposite-arm (send motion :grasp-arm)))
      )
    ;; initialize joy_vehicle if exists
    (when (ros::wait-for-service "/drive/operation/initialize" 1)
@@ -340,6 +346,10 @@
   (:grasp
    (&rest args)
    (let (grasp-result)
+     (unless (or (equal (send self :controller-state :handle) :approach) (equal (send self :controller-state :handle) :release))
+       (warn "handle is not approached~%")
+       (return-from :grasp nil) ;; prevent to crash
+       )
      (setq grasp-result (send* motion :grasp-handle args))
      (when grasp-result
        (send self :controller-state :handle :running)
@@ -365,7 +375,7 @@
      (setq handle-pose-estimate-flag t)
      (setq ret-result (send self :execute-handle-pose-compensation :yes yes :look-at-handle look-at-handle))
      ;; grasp in new handle coords
-     (when grasp
+     (when (and grasp ret-result) ;; regrasp only when recognition is succeeded
        (warn "regrasp~%")
        (setq approach-result (send self :approach-handle :tm time))
        (if approach-result
@@ -434,7 +444,7 @@
      (setq approach-result
            (send* motion :approach-handle :sync-controller sync-controller args)
            )
-     (send self :controller-state :handle :release)
+     (send self :controller-state :handle :approach)
      approach-result
      )
    )
@@ -442,12 +452,12 @@
    (&rest args &key (limb :rleg) (sync-controller (equal (send self :controller-state :accel) :running)) &allow-other-keys)
    (send* motion :approach-accel-pedal :limb limb :sync-controller sync-controller args)
    (send self :accel-origin (send motion :robot limb :ankle-p :joint-angle))
-   (send self :controller-state :accel :running) ;; enbale accel
+   (send self :controller-state :accel :approach) ;; enbale accel
    )
   (:approach-brake
    (&rest args)
    (send* motion :approach-brake-pedal args)
-   (send self :controller-state :brake :running) ;; enbale brake
+   (send self :controller-state :brake :approach) ;; enbale brake
    )
   (:approach-floor
    (&rest args &key (start-impedance t) (set-ref-force nil) &allow-other-keys)
@@ -464,23 +474,26 @@
    )
   (:step-accel ;; mainly for command-line
    (command &rest args)
-   (unless (equal (send self :controller-state :accel) :running)
+   (unless (or (equal (send self :controller-state :accel) :approach) (equal (send self :controller-state :accel) :running))
      (warn "accel is not approached~%")
      (return-from :step-accel nil)
      )
    (send* motion :step-accel-pedal command args) ;; step accel
+   (send self :controller-state :accel :running)
    )
   (:detatch-accel
    ()
    (send motion :detatch-accel-pedal :use-controller t) ;; detatch accel for emergency
+   (send self :controller-state :accel :release)
    )
   (:step-brake ;; mainly for command-line
    (command &rest args)
-   (unless (equal (send self :controller-state :brake) :running)
+   (unless (or (equal (send self :controller-state :brake) :approach) (equal (send self :controller-state :brake) :running))
      (warn "brake is not approached~%")
      (return-from :step-brake nil)
      )
    (send* motion :step-brake-pedal command args) ;; step brake
+   (send self :controller-state :brake :running)
    )
   (:support-by-leg
    (&rest args &key (offset #f(0 0 0)) (start-impedance t) (set-ref-force t) &allow-other-keys)
@@ -856,11 +869,11 @@
        (return-from :execute-handle-pose-compensation nil)
        )
      (warn "release handle~%")
-     ;; (if (equal (send self :controller-state :handle) :running)
-     ;;     (setq release-result (send self :release :offset release-offset))
-     ;;   (setq release-result t)
-     ;;   )
-     (setq release-result (send self :release :offset release-offset))
+     (if (not (equal (send self :controller-state :handle) :release)) ;; prevent double release
+         (setq release-result (send self :release :offset release-offset))
+       (setq release-result t)
+       )
+     ;; (setq release-result (send self :release :offset release-offset))
      (when release-result
        ;; temporary ;;
        (send (send motion :robot) (send motion :grasp-arm) :shoulder-y :joint-angle shoulder-y-deg)
@@ -941,7 +954,7 @@
      (setq relative-grasp-point-pos-from-steerint-center (send steering-center-relative-grasp-point :pos))
      (setq estimated-angle-offset (rad2deg (atan (elt relative-grasp-point-pos-from-steerint-center 1) (elt relative-grasp-point-pos-from-steerint-center 0))))
      (setq estimated-angle (+ estimated-angle estimated-angle-offset)) ;; current estimated angle is 0-360
-     (let ((counter 0))
+     (let ((counter 0)) ;; slide range of estimated angle according to old-estimated-handle-angle
        (while (not (and (<= (- old-estimated-handle-angle half-range) estimated-angle) (<= estimated-angle (+ old-estimated-handle-angle half-range))))
          (when (< estimated-angle (- old-estimated-handle-angle half-range))
            (setq estimated-angle (+ estimated-angle (* half-range 2)))
@@ -967,13 +980,14 @@
   ;; state management
   (:controller-state
    (target &optional (new-state nil))
-   ;; :initialize -> :release <-> :running
+   ;; :initialize -> :approach <-> :running (grasp/step) 
+   ;;                          <-> :release (release/detouch)
    (let ((target-state (read-from-string (format nil ":~A-state" (string-downcase target))))) ;; plist assumes :<target>-state
      ;; update to new state
-     (when (member new-state state-list)
+     (when (member new-state state-list) ;; update only when different value applied
        (send self :put target-state new-state)
-       ;; synchronize command when updated
-       (when (ros::wait-for-service "/drive/operation/synchronize" 1)
+       ;; synchronize command when state updated 
+       (when (and (ros::wait-for-service "/drive/operation/synchronize" 1) (not (equal new-state (send self :get target-state))))
          (warn "call sync ~A~%" (string-downcase target))
          (let ((req (instance drc_task_common::StringRequestRequest :init)))
            (send req :data (string-downcase target))
@@ -993,18 +1007,17 @@
          (pub-mode (instance std_msgs::String :init))
          ) ;; plist assumes :<target>-mode
      (when (member new-mode mode-list)
-       (send self :put target-mode new-mode)
-       (send pub-mode :data (string-downcase (send self :get target-mode)))
-       (eval (list 'ros::publish (format nil "/drive/controller/~A_mode" (string-downcase target)) pub-mode))
-       ;; synchronize command when updated
-       (when (ros::wait-for-service "/drive/operation/synchronize" 1)
+       ;; synchronize command when mode updated
+       (when (and (not (equal new-mode (send self :get target-mode))) (ros::wait-for-service "/drive/operation/synchronize" 1))
          (warn "call sync ~A~%" (string-downcase target))
          (let ((req (instance drc_task_common::StringRequestRequest :init)))
            (send req :data (string-downcase target))
            (ros::service-call "/drive/operation/synchronize" req t)
            )
          )
-       ;; (warn (format nil "/drive/controller/~A_mode~%" (string-downcase target)))
+       (send self :put target-mode new-mode)
+       (send pub-mode :data (string-downcase (send self :get target-mode)))
+       (eval (list 'ros::publish (format nil "/drive/controller/~A_mode" (string-downcase target)) pub-mode))
        )
      (send self :get target-mode)
      )
@@ -1073,7 +1086,9 @@
   (:execute
    (&key (publish-steering-trajectory nil))
    (do-until-key
-    (send self :estimate-current-handle-angle)
+    (when (equal (send self :controller-state :handle) :running) ;; estimate handle angle only when handling
+      (send self :estimate-current-handle-angle)
+      )
     (send self :calc-error-of-grasp-arm :display-result nil)
     (send self :record-handling-end-coords)
     (when publish-steering-trajectory
@@ -1094,7 +1109,7 @@
       )
     (warn "make controller: ~A~%" controller-name)
     (setq *controller* (eval (list 'instance (read-from-string controller-name) :init :real real)))
-    (send *controller* :initialize)
+    ;; (send *controller* :initialize) ;; initialize can be called from ui
     (send *controller* :execute)
     )
   )
