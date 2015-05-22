@@ -290,12 +290,7 @@
      (send self :estimate-current-handle-angle) ;; update estimated handle angle
      (warn "overwrite handle angle to ~A~%" (send motion :car :handle-joint :joint-angle))
      (ros::publish "/drive/controller/goal_handle_angle" pub-msg)
-     (when (ros::wait-for-service "/drive/operation/synchronize" 1)
-       (let ((req (instance drc_task_common::StringRequestRequest :init)))
-         (send req :data "handle")
-         (ros::service-call "/drive/operation/synchronize" req t)
-         )
-       )
+     (send self :set-synchronize-flag :handle)
      res
      )
    )
@@ -332,11 +327,7 @@
      (send motion :close-hand (get-opposite-arm (send motion :grasp-arm)))
      )
    ;; initialize joy_vehicle if exists
-   (when (ros::wait-for-service "/drive/operation/initialize" 1)
-     (let ((req (instance std_srvs::EmptyRequest :init)))
-       (ros::service-call "/drive/operation/initialize" req t)
-       )
-     )
+   (send self :set-synchronize-flag :all)
    ;; init operation mode
    (send self :controller-mode :handle :stop)
    (send self :controller-mode :accel :stop)
@@ -986,14 +977,7 @@
      ;; update to new state
      (when (member new-state state-list) ;; update only when different value applied
        (send self :put target-state new-state)
-       ;; synchronize command when state updated 
-       (when (and (ros::wait-for-service "/drive/operation/synchronize" 1) (not (equal new-state (send self :get target-state))))
-         (warn "call sync ~A~%" (string-downcase target))
-         (let ((req (instance drc_task_common::StringRequestRequest :init)))
-           (send req :data (string-downcase target))
-           (ros::service-call "/drive/operation/synchronize" req t)
-           )
-         )
+       (send self :set-synchronize-flag target) ;; synchronize command when mode updated
        )
      (send self :get target-state)
      )
@@ -1007,19 +991,39 @@
          (pub-mode (instance std_msgs::String :init))
          ) ;; plist assumes :<target>-mode
      (when (member new-mode mode-list)
-       ;; synchronize command when mode updated
-       (when (and (not (equal new-mode (send self :get target-mode))) (ros::wait-for-service "/drive/operation/synchronize" 1))
-         (warn "call sync ~A~%" (string-downcase target))
-         (let ((req (instance drc_task_common::StringRequestRequest :init)))
-           (send req :data (string-downcase target))
-           (ros::service-call "/drive/operation/synchronize" req t)
-           )
-         )
+       (send self :set-synchronize-flag target) ;; synchronize command when mode updated
        (send self :put target-mode new-mode)
        (send pub-mode :data (string-downcase (send self :get target-mode)))
        (eval (list 'ros::publish (format nil "/drive/controller/~A_mode" (string-downcase target)) pub-mode))
        )
      (send self :get target-mode)
+     )
+   )
+
+  (:set-synchronize-flag
+   (target)
+   (let ((target-flag (read-from-string (format nil ":~A-sync" (string-downcase target)))))
+     (send self :put target-flag t)
+     )
+   )
+
+  (:execute-operation-synchronize
+   ()
+   (let ((sync-target-list (list :all :handle :accel :neck)) ;; :brake is out of sync
+         target-flag
+         )
+     (dolist (target sync-target-list)
+       (setq target-flag (read-from-string (format nil ":~A-sync" (string-downcase target))))
+       (when (and (send self :get target-flag)
+                  (ros::wait-for-service "/drive/operation/synchronize" 1))
+         (warn "call sync ~A~%" (string-downcase target))
+         (let ((req (instance drc_task_common::StringRequestRequest :init)))
+           (send req :data (string-downcase target))
+           (ros::service-call "/drive/operation/synchronize" req t)
+           )
+         (send self :put target-flag nil)
+         )
+       )
      )
    )
 
@@ -1091,6 +1095,7 @@
       )
     (send self :calc-error-of-grasp-arm :display-result nil)
     (send self :record-handling-end-coords)
+    (send self :execute-operation-synchronize) ;; call service in ocs in service-callback causes hungup in executive
     (when publish-steering-trajectory
       (send self :publish-steering-trajectory)
       )
