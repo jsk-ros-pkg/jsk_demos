@@ -1,9 +1,10 @@
 <launch>
   <arg name="LAUNCH_HANDLE_DETECTOR" default="true" />
   <arg name="LAUNCH_EUS" default="true" />
+  <arg name="LAUNCH_RVIZ" default="true" />
   <arg name="LAUNCH_CAR_CENTER" default="true" />
   <arg name="LAUNCH_RECOGNITION" default="true" />
-  
+
   <arg name="ROBOT" default="robot" />
 
   <!-- detect handle_pose from marker on crank -->
