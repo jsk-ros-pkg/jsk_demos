@@ -182,9 +182,9 @@
             </widget>
           </item>
           <item>
-            <widget class="QToolButton" name="hrpsys_stop_abc_button">
+            <widget class="QToolButton" name="hrpsys_start_imp_soft_button">
               <property name="text">
-                <string>Stop ABC</string>
+                <string>Start IMP Soft</string>
               </property>
               <property name="iconSize">
                 <size>
@@ -195,9 +195,9 @@
             </widget>
           </item>
           <item>
-            <widget class="QToolButton" name="hrpsys_stop_st_button">
+            <widget class="QToolButton" name="hrpsys_start_imp_hard_button">
               <property name="text">
-                <string>Stop ST</string>
+                <string>Start IMP Hard</string>
               </property>
               <property name="iconSize">
                 <size>
@@ -207,6 +207,32 @@
               </property>
             </widget>
           </item>
+          <!-- <item> -->
+          <!--   <widget class="QToolButton" name="hrpsys_stop_abc_button"> -->
+          <!--     <property name="text"> -->
+          <!--       <string>Stop ABC</string> -->
+          <!--     </property> -->
+          <!--     <property name="iconSize"> -->
+          <!--       <size> -->
+          <!--         <width>80</width> -->
+          <!--         <height>80</height> -->
+          <!--       </size> -->
+          <!--     </property> -->
+          <!--   </widget> -->
+          <!-- </item> -->
+          <!-- <item> -->
+          <!--   <widget class="QToolButton" name="hrpsys_stop_st_button"> -->
+          <!--     <property name="text"> -->
+          <!--       <string>Stop ST</string> -->
+          <!--     </property> -->
+          <!--     <property name="iconSize"> -->
+          <!--       <size> -->
+          <!--         <width>80</width> -->
+          <!--         <height>80</height> -->
+          <!--       </size> -->
+          <!--     </property> -->
+          <!--   </widget> -->
+          <!-- </item> -->
           <item>
             <widget class="QToolButton" name="hrpsys_stop_imp_button">
               <property name="text">

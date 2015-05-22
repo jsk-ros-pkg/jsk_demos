@@ -109,6 +109,10 @@
                 self :hrpsys-start-st-command-cb)
           (list drc_com_common::OCS2FCSmall::*HRPSYS_START_IMP*
                 self :hrpsys-start-imp-command-cb)
+          (list drc_com_common::OCS2FCSmall::*HRPSYS_START_IMP_SOFT*
+                self :hrpsys-start-imp-command-soft-cb)
+          (list drc_com_common::OCS2FCSmall::*HRPSYS_START_IMP_HARD*
+                self :hrpsys-start-imp-command-hard-cb)
           (list drc_com_common::OCS2FCSmall::*HRPSYS_STOP_ABC*
                 self :hrpsys-stop-abc-command-cb)
           (list drc_com_common::OCS2FCSmall::*HRPSYS_STOP_ST*
@@ -995,7 +999,22 @@ It sends :angle-vector to robot and return 'finished' message to ocs"
     (send self :send-rviz-button-finished-to-ocs))
   (:hrpsys-start-imp-command-cb (msg)
     (set-default-impedance-param)
-    (send *ri* :start-impedance :arms :moment-gain #f(0 0 0) :k-p 1000 :d-p 400)
+    (send *ri* :start-impedance :arms)
+    (send self :send-rviz-button-finished-to-ocs))
+  (:hrpsys-start-imp-command-soft-cb (msg)
+    (set-default-impedance-param)
+    (cond
+     ((or (equal *robot-name* "JAXON") (equal *robot-name* "STARO"))
+      (send *ri* :start-impedance :arms :k-p 300 :d-p 800 :m-p 10 :m-r 2 :d-r 80 :k-r 40))
+     (t ;; (or (equal *robot-name* "HRP2JSKNT") (equal *robot-name* "HRP2JSKNTS"))
+      (send *ri* :start-impedance :arms :k-p 200 :d-p 250 :m-p 7.5 :m-r 1 :d-r 15 :k-r 20)))
+    (send self :send-rviz-button-finished-to-ocs))
+  (:hrpsys-start-imp-command-hard-cb (msg)
+    (set-default-impedance-param)
+    (cond ((or (equal *robot-name* "HRP2JSKNTS") (equal *robot-name* "HRP2JSKNT"))
+           (send *ri* :start-impedance :arms :moment-gain (float-vector 0 0 0) :k-p 3000 :d-p 400))
+          (t ;; (or (equal *robot-name* "HRP2JSKNT") (equal *robot-name* "HRP2JSKNTS"))
+           (send *ri* :start-impedance :arms :moment-gain (float-vector 0 0 0) :k-p 3000 :d-p 3000)))
     (send self :send-rviz-button-finished-to-ocs))
   (:hrpsys-stop-abc-command-cb (msg)
     (send *ri* :stop-auto-balancer)
