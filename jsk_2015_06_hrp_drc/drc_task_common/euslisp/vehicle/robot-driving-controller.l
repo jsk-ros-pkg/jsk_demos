@@ -298,7 +298,7 @@
   ;; interface command
   (:initialize
    (&rest args &key (sync nil) (time 10000) (real (send motion :real)) (fist-offset #f(0 0 25)) (floor-offset #f(0 0 0)))
-   (let () ;; sync is executed according to controller-mode, not real flag
+   (let ((pub-handle-goal (instance std_msgs::Float32 :init))) ;; sync is executed according to controller-mode, not real flag
      (when sync
        (send motion :sync-all-controller) ;; execute sync-controller forcely in all limbs
        )
@@ -325,6 +325,9 @@
      (warn "init-hand~%")
      (send motion :open-hand (send motion :grasp-arm))
      (send motion :close-hand (get-opposite-arm (send motion :grasp-arm)))
+     ;; reset goal handle angle
+     (send pub-handle-goal :data (send motion :car :handle-joint :joint-angle))
+     (ros::publish "/drive/controller/goal_handle_angle" pub-handle-goal)
      )
    ;; initialize joy_vehicle if exists
    (send self :set-synchronize-flag :all)
@@ -336,16 +339,22 @@
    )
   (:grasp
    (&rest args)
-   (let (grasp-result)
+   (let ((grasp-result nil)
+         (pub-handle-goal (instance std_msgs::Float32 :init))
+         )
      (unless (or (equal (send self :controller-state :handle) :approach) (equal (send self :controller-state :handle) :release))
        (warn "handle is not approached~%")
        (return-from :grasp nil) ;; prevent to crash
        )
      (setq grasp-result (send* motion :grasp-handle args))
      (when grasp-result
-       (send self :controller-state :handle :running)
+       ;; update goal_handle_angle to current handle
+       (send pub-handle-goal :data (send motion :car :handle-joint :joint-angle))
+       (ros::publish "/drive/controller/goal_handle_angle" pub-handle-goal)
        ;; handle-angle is estimated to be right when grasped
        (setq old-estimated-handle-angle (send motion :car :handle-joint :joint-angle))
+       ;; set handle status
+       (send self :controller-state :handle :running)
        )
      grasp-result
      )
