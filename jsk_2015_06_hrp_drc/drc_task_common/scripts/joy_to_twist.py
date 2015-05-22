@@ -96,7 +96,7 @@ def joy_to_twist(msg):
     else:
         l_flag = True
     
-    twist.linear.z = axes_list[7] + msg.buttons[0] - msg.buttons[3]
+    twist.linear.z = axes_list[7] - msg.buttons[0] +msg.buttons[3]
     twist.linear.y = axes_list[0]
     twist.linear.x = axes_list[1] 
     twist.angular.y = axes_list[4]
