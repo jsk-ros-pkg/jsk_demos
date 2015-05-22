@@ -36,7 +36,7 @@ class CarPathVisualizer:
             self.r.sleep()
 
     def steering_callback(self, msg):
-        self.steering = msg.data
+        self.steering = msg.data * pi / 180.0
 
     def marker_publisher(self):
         marker_array_msg = MarkerArray()
