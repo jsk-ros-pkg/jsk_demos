@@ -3,7 +3,9 @@
 # from operation interface 
 float32 handle_cmd # drive/operation/handle_cmd
 float32 accel_cmd # drive/operation/handle_cmd
-float32 neck_cmd # drive/operation/neck_cmd
+float32 brake_cmd # drive/operation/brake_cmd
+float32 neck_y_cmd # drive/operation/neck_cmd
+float32 neck_p_cmd # drive/operation/neck_cmd
 
 # from vehicle_ui
 bool initialize_request
@@ -30,5 +32,8 @@ bool set_neck_mode_request
 uint8 set_neck_mode_request_value
 
 bool operation_initialize_response
-bool operation_synchronize_response
+bool operation_synchronize_all_response
+bool operation_synchronize_handle_response
+bool operation_synchronize_accel_response
+bool operation_synchronize_neck_response
 

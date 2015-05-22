@@ -8,6 +8,9 @@
 
 (setq *latest-handle-cmd* nil)
 (setq *latest-accel-cmd* nil)
+(setq *latest-brake-cmd* nil)
+(setq *latest-neck-y-cmd* nil)
+(setq *latest-neck-p-cmd* nil)
 (setq *initialize-service-server* (instance empty-service-server :init "/ocs/drive/controller/initialize"))
 (setq *grasp-service-server* (instance empty-service-server :init "/ocs/drive/controller/grasp"))
 (setq *release-service-server* (instance empty-service-server :init "/ocs/drive/controller/release"))
@@ -31,6 +34,15 @@
   )
 (defun accel-cmd-callback (msg)
   (setq *latest-accel-cmd* (send msg :data))
+  )
+(defun brake-cmd-callback (msg)
+  (setq *latest-brake-cmd* (send msg :data))
+  )
+(defun neck-y-cmd-callback (msg)
+  (setq *latest-neck-y-cmd* (send msg :data))
+  )
+(defun neck-p-cmd-callback (msg)
+  (setq *latest-neck-p-cmd* (send msg :data))
   )
 
 (defun fc-message-callback (msg)
@@ -78,7 +90,12 @@
     (send *set-accel-mode-service-server* :receive (send msg :set_accel_mode_response))
     (send *set-neck-mode-service-server* :receive (send msg :set_neck_mode_response))
     (send *operation-initialize-service-client* :call (send msg :operation_initialize_request))
-    (send *operation-synchronize-service-client* :call (send msg :operation_synchronize_request) (send msg :operation_synchronize_request_value))
+    (send *operation-synchronize-service-client* :call (list (send msg :operation_synchronize_all_request)
+                                                             (send msg :operation_synchronize_handle_request)
+                                                             (send msg :operation_synchronize_accel_request)
+                                                             (send msg :operation_synchronize_neck_request)
+                                                             )
+          )
     )
   )
 
@@ -89,6 +106,15 @@
       )
     (when *latest-accel-cmd*
       (send msg :accel_cmd *latest-accel-cmd*)
+      )
+    (when *latest-brake-cmd*
+      (send msg :brake_cmd *latest-brake-cmd*)
+      )
+    (when *latest-neck-y-cmd*
+      (send msg :neck_y_cmd *latest-neck-y-cmd*)
+      )
+    (when *latest-neck-p-cmd*
+      (send msg :neck_p_cmd *latest-neck-p-cmd*)
       )
     (send msg :initialize_request (send *initialize-service-server* :request))
     (send msg :grasp_request (send *grasp-service-server* :request))
@@ -112,7 +138,10 @@
     (send msg :set_neck_mode_request (send *set-neck-mode-service-server* :request))
     (send msg :set_neck_mode_request_value (send *set-neck-mode-service-server* :request_value))
     (send msg :operation_initialize_response (send *operation-initialize-service-client* :response))
-    (send msg :operation_synchronize_response (send *operation-synchronize-service-client* :response))
+    (send msg :operation_synchronize_all_response (elt (send *operation-synchronize-service-client* :response) 0))
+    (send msg :operation_synchronize_handle_response (elt (send *operation-synchronize-service-client* :response) 1))
+    (send msg :operation_synchronize_accel_response (elt (send *operation-synchronize-service-client* :response) 2))
+    (send msg :operation_synchronize_neck_response (elt (send *operation-synchronize-service-client* :response) 3))
     (ros::publish "/ocs_to_fc_vehicle/input" msg)
     )
   )
@@ -124,6 +153,9 @@
 ;; message from operation interface (drive/operation)
 (ros::subscribe "/ocs/drive/operation/handle_cmd" std_msgs::Float64 #'handle-cmd-callback)
 (ros::subscribe "/ocs/drive/operation/accel_cmd" std_msgs::Float64 #'accel-cmd-callback)
+(ros::subscribe "/ocs/drive/operation/brake_cmd" std_msgs::Float64 #'brake-cmd-callback)
+(ros::subscribe "/ocs/drive/operation/neck_y_cmd" std_msgs::Float64 #'neck-y-cmd-callback)
+(ros::subscribe "/ocs/drive/operation/neck_p_cmd" std_msgs::Float64 #'neck-p-cmd-callback)
 
 ;; message to vehicle_ui
 (ros::advertise "/ocs/drive/controller/goal_handle_angle" std_msgs::Float32 1)

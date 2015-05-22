@@ -45,9 +45,8 @@
      ((equal (string-downcase string-mode) "all") (setq uint8-target 0))
      ((equal (string-downcase string-mode) "handle") (setq uint8-target 1))
      ((equal (string-downcase string-mode) "accel") (setq uint8-target 2))
-     ((equal (string-downcase string-mode) "brake") (setq uint8-target 3))
-     ((equal (string-downcase string-mode) "neck") (setq uint8-target 4))
-     (t (setq uint8-target 0))
+     ((equal (string-downcase string-mode) "neck") (setq uint8-target 3))
+     (t nil) ;; unsupported type
      )
     uint8-target
     )
@@ -60,9 +59,8 @@
       (0 (setq string-mode "all"))
       (1 (setq string-mode "handle"))
       (2 (setq string-mode "accel"))
-      (3 (setq string-mode "brake"))
-      (4 (setq string-mode "neck"))
-      (t (setq string-mode "all"))
+      (3 (setq string-mode "neck"))
+      (t nil) ;; unsupported type
      )
     string-mode
     )
@@ -244,62 +242,70 @@
 
 
 (defclass operation-synchronize-service-client
-  :slots (service-name waiting response response_value)
+  :slots (service-name waiting response)
   )
 (defmethod operation-synchronize-service-client
   (:init
    (name)
    (setq service-name name
-         waiting nil
-         reponse nil
+         waiting (list nil nil nil nil)
+         response (list nil nil nil nil)
          )
    )
   (:call
-   (req req_value)
-   (if req
-       (when (not waiting)
-         (let ((set-sync-target-req (instance drc_task_common::StringRequestRequest :init)))
-           (setq waiting t)
-           (send set-sync-target-req :data (convert-uint8-to-sync-target req_value))
-           (warn "call: ~A~%" set-sync-target-req)
-           (ros::service-call service-name set-sync-target-req)
-           (setq response t)
+   (req_list)
+   (dotimes (i (length req_list))
+     (if (elt req_list i)
+         (when (not (elt waiting i))
+           (let ((set-sync-target-req (instance drc_task_common::StringRequestRequest :init))
+                 (string-target (convert-uint8-to-sync-target i))
+                 )
+             (when string-target
+               (setf (elt waiting i) t)
+               (send set-sync-target-req :data string-target)
+               (warn "call: ~A~%" set-sync-target-req)
+               (ros::service-call service-name set-sync-target-req)
+               (setf (elt response i) t)
+               )
+             )
            )
-         )
-     (progn (when waiting (setq waiting nil))
-            (setq response nil)
-            )
+       (progn (when (elt waiting i) (setf (elt waiting i) nil))
+              (setf (elt response i) nil)
+              )
+       )
      )
    )
   (:response () response)
-  (:response_value () response_value) ;; currently not used (server response ideal value immediately)
   )
 (defclass operation-synchronize-service-server
-  :slots (service-name request request_value)
+  :slots (service-name request)
   )
 (defmethod operation-synchronize-service-server
   (:init
    (name)
    (setq service-name name
-         request nil
-         request_value 0
+         request (list nil nil nil nil)
          )
    )
   (:receive
-   (response)
-   (when (and request response)
-     (setq request nil)
+   (response_list)
+   (dotimes (i (length response_list))
+     (when (and (elt request i) (elt response_list i))
+       (setf (elt request i) nil)
+       )
      )
    )
   (:callback
    (req)
-   (let ((res (send req :response)))
-     (setq request t)
-     (setq request_value (convert-sync-target-to-uint8 (send req :data)))
-     (warn "req: ~A~%" request_value)
+   (let ((res (send req :response))
+         (uint8-target (convert-sync-target-to-uint8 (send req :data)))
+         )
+     (when uint8-target
+       (setf (elt request uint8-target) t)
+       (warn "req: ~A~%" request)
+       )
      res ;; return response immediately with ideal value
      )
    )
   (:request () request)
-  (:request_value () request_value)
   )

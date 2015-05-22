@@ -33,6 +33,7 @@ bool set_neck_mode_response
 
 # to controller
 bool operation_initialize_request
-bool operation_synchronize_request
-uint8 operation_synchronize_request_value
-
+bool operation_synchronize_all_request
+bool operation_synchronize_handle_request
+bool operation_synchronize_accel_request
+bool operation_synchronize_neck_request
