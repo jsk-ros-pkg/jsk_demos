@@ -6,11 +6,12 @@
   <arg name="OCS_IP" default="localhost"/>
 
   <arg name="USE_COM" default="true"/>
+  <arg name="ROBOT" default="robot"/>
 
   <!-- executive -->
   <node pkg="drc_task_common" type="vehicle-fc-executive.l" name="vehicle_fc_executive" output="screen">
   </node>
-  
+
   <!-- communication -->
   <include if="$(arg USE_COM)"
            file="$(find drc_com_common)/launch/vehicle_field_computer_com.launch">
@@ -22,6 +23,7 @@
   <include file="$(find drc_task_common)/launch/fc/vehicle.launch">
     <arg name="OCS_MODE" value="false" />
     <arg name="FC_MODE" value="true" />
+    <arg name="ROBOT" value="$(arg ROBOT)" />
   </include>
-  
+
 </launch>
