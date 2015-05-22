@@ -1,6 +1,6 @@
-(load "package://drc_task_common/euslisp/robot-util.l")
-(load "package://drc_task_common/euslisp/util.l")
-(load "package://drc_task_common/euslisp/test-drc-door-task.l")
+(require "package://drc_task_common/euslisp/robot-util.l")
+(require "package://drc_task_common/euslisp/util.l")
+(require "package://drc_task_common/euslisp/test-drc-door-task.l")
 
 (defun generate-door-from-name
   (door-name)

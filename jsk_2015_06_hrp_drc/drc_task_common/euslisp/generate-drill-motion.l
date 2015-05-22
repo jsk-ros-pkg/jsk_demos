@@ -1,8 +1,8 @@
-(load "package://drc_task_common/euslisp/robot-util.l")
-(load "package://drc_task_common/euslisp/util.l")
-;(load "package://drc_task_common/models/dewalt_dc550ka.l")
-(load "package://drc_task_common/models/takenoko-drill")
-(load "package://drc_task_common/models/gun-drill.l")
+(require "package://drc_task_common/euslisp/robot-util.l")
+(require "package://drc_task_common/euslisp/util.l")
+;(require "package://drc_task_common/models/dewalt_dc550ka.l")
+(require "package://drc_task_common/models/takenoko-drill")
+(require "package://drc_task_common/models/gun-drill.l")
 (ros::roseus-add-srvs "drc_task_common")
 (require "package://pr2eus/speak.l")
 
