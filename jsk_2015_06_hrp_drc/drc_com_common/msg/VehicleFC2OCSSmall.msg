@@ -13,6 +13,9 @@ uint8 handle_mode # drive/controller/handle_mode
 uint8 accel_mode # drive/controller/accel_mode
 uint8 neck_mode # drive/controller/neck_mode
 
+# from recognition
+float32 obstacle_length
+
 # to vehicle_ui
 bool initialize_response
 bool grasp_response
