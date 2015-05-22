@@ -945,11 +945,28 @@ It sends :angle-vector to robot and return 'finished' message to ocs"
     (send *ri* :wait-interpolation)
     (send self :send-rviz-button-finished-to-ocs))
   (:drill-reset-pose-command-callback (msg)
+    (let* ((arm-side (send msg :arm_side))
+           (arm (cond ((equal arm-side drc_com_common::OCS2FCSmall::*LARM*) :larm) ((equal arm-side drc_com_common::OCS2FCSmall::*RARM*) :rarm) (t nil))))
+      (if arm
+          (progn
+            (setq *drill-main-arm* arm)            )
+        (ros::ros-info "arm side empty")
+        )
+      )
     (send *robot* :angle-vector (get-drill-reset-pose))
     (send *ri* :angle-vector (send *robot* :angle-vector) 10000)
     (send *ri* :wait-interpolation)
     (send self :send-rviz-button-finished-to-ocs))
   (:watch-drill-pose-command-callback (msg)
+    (let* ((arm-side (send msg :arm_side))
+           (arm (cond ((equal arm-side drc_com_common::OCS2FCSmall::*LARM*) :larm) ((equal arm-side drc_com_common::OCS2FCSmall::*RARM*) :rarm) (t nil))))
+      (if arm
+          (progn
+            (setq *drill-main-arm* arm)
+            )
+        (ros::ros-info "arm side empty")
+        )
+      )
     (when (or (equal *robot-name* "HRP2JSKNTS") (equal *robot-name* "HRP2JSKNT"))
       (send *robot* :angle-vector (get-reach-drill-pre-pose))
       (model2real :time 5000)
