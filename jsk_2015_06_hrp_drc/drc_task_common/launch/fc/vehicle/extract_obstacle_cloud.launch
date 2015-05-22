@@ -1,55 +1,53 @@
-<?xml version="1.0" encoding="utf-8"?>
 <launch>
   <arg name="BASE_FRAME_ID" default="car_center" />
   <arg name="CREATE_MANAGER" default="true" />
   <arg name="MANAGER" default="drive_manager" />
-  <node if="$(arg CREATE_MANAGER)"
-        pkg="nodelet" type="nodelet" name="$(arg MANAGER)"
-        args="manager" output="screen"/>
 
-  <!-- TF transformation -->
-  <node pkg="nodelet" type="nodelet" name="transform_cloud"
-        args="load jsk_pcl/TfTransformCloud $(arg MANAGER)">
-    <remap from="~input" to="/multisense/organized_image_points2_color" />
-    <remap from="transform_cloud/output" to="/drive/recognition/transform_cloud/car_center" />
-    <param name="target_frame_id" value="$(arg BASE_FRAME_ID)" />
-  </node>
-
-  <!--  PassThrough Flter for removng ground points in z axis -->
-  <node pkg="nodelet" type="nodelet" name="stereo_passthrough_z"
-        args="load pcl/PassThrough $(arg MANAGER)"
-        clear_params="true">
-    <remap from="~input" to="/drive/recognition/transform_cloud/car_center" />
-    <remap from="~output" to="/drive/recognition/passthrough/remove_z" />
-    <rosparam>
-      filter_field_name: z
-      filter_limit_min: 0.5
-      filter_limit_max: 1.25
-      keep_organized: true
-      input_frame: /car_center
-    </rosparam>
-  </node>
-
-  <!-- Obstacle Extraction using my passthrough filter -->
-  <!--  My PassThrough Flter for removng stereo points in x axis -->
-  <include file="$(find drc_task_common)/launch/fc/vehicle/passthrough_car_body.launch">
-    <arg name="INPUT_POINTS" value="/drive/recognition/passthrough/remove_z"/>
-    <arg name="OUTPUT_POINTS" value="/drive/recognition/passthrough/obstacle_cloud"/>
-  </include>
-
-  <!-- Obstacle Extraction using original passthrough filter -->
-  <!-- PassThrough Flter for removng stereo points in x axis -->
-  <!-- <node pkg="nodelet" type="nodelet" name="stereo_passthrough_x" -->
-  <!--       args="load pcl/PassThrough $(arg MANAGER)" -->
-  <!--       clear_params="true"> -->
-  <!--   <remap from="~input" to="/drive/recognition/passthrough/remove_z" /> -->
-  <!--   <remap from="~output" to="/drive/recognition/local_planner/obstacle_cloud" /> -->
-  <!--   <rosparam> -->
-  <!--     filter_field_name: x -->
-  <!--     filter_limit_min: 2.0 -->
-  <!--     filter_limit_max: 20.0 -->
-  <!--     keep_organized: true -->
-  <!--     input_frame: /car_center -->
-  <!--   </rosparam> -->
-  <!-- </node> -->
+  <group ns="/drive/recognition">
+    <node if="$(arg CREATE_MANAGER)"
+          pkg="nodelet" type="nodelet" name="$(arg MANAGER)"
+          args="manager" output="screen"/>
+    <!-- TF transformation -->
+    <node pkg="nodelet" type="nodelet" name="transform_cloud"
+          args="load jsk_pcl/TfTransformCloud $(arg MANAGER)">
+      <remap from="~input" to="/multisense/organized_image_points2_color" />
+      <remap from="transform_cloud/output" to="transform_cloud/car_center" />
+      <param name="target_frame_id" value="$(arg BASE_FRAME_ID)" />
+    </node>
+    <!--  PassThrough Flter for removng ground points in z axis -->
+    <node pkg="nodelet" type="nodelet" name="stereo_passthrough_z"
+          args="load pcl/PassThrough $(arg MANAGER)"
+          clear_params="true">
+      <remap from="~input" to="transform_cloud/car_center" />
+      <remap from="~output" to="passthrough/remove_z" />
+      <rosparam>
+        filter_field_name: z
+        filter_limit_min: 0.45
+        filter_limit_max: 1.25
+        keep_organized: true
+        input_frame: /car_center
+      </rosparam>
+    </node>
+    <!-- Obstacle Extraction using my passthrough filter -->
+    <!--  My PassThrough Flter for removng stereo points in xy plane -->
+    <include file="$(find drc_task_common)/launch/fc/vehicle/passthrough_car_body.launch">
+      <arg name="INPUT_POINTS" value="passthrough/remove_z"/>
+      <arg name="OUTPUT_POINTS" value="passthrough/obstacle_cloud"/>
+    </include>
+    <!-- Obstacle Extraction using original passthrough filter -->
+    <!-- PassThrough Flter for removng stereo points in x axis -->
+    <!-- <node pkg="nodelet" type="nodelet" name="stereo_passthrough_x" -->
+    <!--       args="load pcl/PassThrough $(arg MANAGER)" -->
+    <!--       clear_params="true"> -->
+    <!--   <remap from="~input" to="passthrough/remove_z" /> -->
+    <!--   <remap from="~output" to="passthrough/obstacle_cloud" /> -->
+    <!--   <rosparam> -->
+    <!--     filter_field_name: x -->
+    <!--     filter_limit_min: 2.0 -->
+    <!--     filter_limit_max: 20.0 -->
+    <!--     keep_organized: true -->
+    <!--     input_frame: /car_center -->
+    <!--   </rosparam> -->
+    <!-- </node> -->
+  </group>
 </launch>

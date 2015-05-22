@@ -1,0 +1,41 @@
+<launch>
+  <machine name="localhost" address="localhost" />
+  <arg name="MACHINE" default="localhost" />
+  <arg name="PUBLISH_STATIC_TF" default="false" />
+  <arg name="BAGFILE_NAME" default="tmp.bag" />
+  <arg name="ROSBAG_OPTION" default="-l --clock" />
+  <arg name="use_resize" default="true" />
+
+  <!-- create TF between map and odom -->
+  <node if="$(arg PUBLISH_STATIC_TF)" pkg="tf" type="static_transform_publisher" name="TF_multisense_car_center" args="-0.1 0.2 -1.7 0.0 -0.08 0.0 multisense/head_root car_center 10"/>
+
+  <node pkg="rosbag" type="play" args="$(arg ROSBAG_OPTION) $(arg BAGFILE_NAME)" name="rosbag" />
+  <group ns="/multisense">
+    <node pkg="nodelet" type="nodelet" name="stereo_manager"
+          args="manager" />
+    <node pkg="nodelet" type="nodelet" name="point_cloud_xyz"
+          args="load depth_image_proc/point_cloud_xyz stereo_manager">
+      <remap from="camera_info" to="depth/camera_info" />
+      <remap from="image_rect" to="depth" />
+      <remap from="points" to="organized_image_points2" />
+      <rosparam>
+        queue_size: 100
+      </rosparam>
+    </node>
+    <node pkg="nodelet" type="nodelet" name="point_cloud_xyzrgb"
+          args="load depth_image_proc/point_cloud_xyzrgb stereo_manager">
+      <remap from="rgb/camera_info" to="/multisense/left/camera_info" />
+      <remap from="rgb/image_rect_color" to="left/image_rect_color" />
+      <remap from="depth_registered/image_rect" to="depth" />
+      <remap from="depth_registered/points" to="organized_image_points2_color" />
+      <rosparam>
+        queue_size: 100
+      </rosparam>
+    </node>
+    <include file="$(find jsk_pcl_ros)/launch/multi_resolution_organized_pointcloud.launch" if="$(arg use_resize)">
+      <arg name="INPUT" value="organized_image_points2_color" />
+      <arg name="RUN_MANAGER" value="false" />
+      <arg name="MANAGER" value="stereo_manager" />
+    </include>
+  </group>
+</launch>

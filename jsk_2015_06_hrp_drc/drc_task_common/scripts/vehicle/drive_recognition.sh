@@ -1,10 +1,22 @@
 #! /bin/bash
 
 MODE="real"
+FILENAME=""
+GOAL_DIR=0
 
 # parse argument
-if [ $# -ge 1 ]; then
+if [ $# -eq 1 ]; then
+    GOAL_DIR=$1
+elif [ $# -ge 2 ]; then
     MODE=$1
+    GOAL_DIR=$2
+fi
+if [ $MODE = "rosbag" ]; then
+    FILENAME=$2
+    GOAL_DIR=0
+    if [ $# -ge 3 ]; then
+        GOAL_DIR=$3
+    fi
 fi
 
 function kill_roslaunch() {
@@ -19,15 +31,15 @@ if [ $MODE = "simulation" ]; then
     roslaunch gazebo_drive_simulator cheat_goal_direction.launch &
     roslaunch gazebo_drive_simulator multisense_sl_relay.launch & # for PointCloud
 elif [ $MODE = "rosbag" ]; then
-    rosparam set use_sim_time true
+    rosparam set /use_sim_time true
     rosrun rviz rviz -sync -d $(rospack find gazebo_drive_simulator)/launch/atlas_drc_practice_task_1.rviz &
-    roslaunch jsk_data point_cloud_reconstruction_from_multisense.launch &
-    roslaunch drc_task_common car_center_tf_publisher.launch ROSBAG_MODE:="true" &
-    rosrun drc_task_common Magnetometer2Direction.py 15 & # deg
+    roslaunch drc_task_common drive_rosbag_player.launch BAGFILE_NAME:=$FILENAME &
+    # roslaunch drc_task_common car_center_tf_publisher.launch ROSBAG_MODE:="true" &
+    rosrun drc_task_common Magnetometer2Direction.py $GOAL_DIR & # deg
     rostopic pub /drive/controller/step_on_flag std_msgs/Bool "true" &
 else
     rosrun rviz rviz -sync -d $(rospack find gazebo_drive_simulator)/launch/atlas_drc_practice_task_1.rviz &
-    rosrun drc_task_common Magnetometer2Direction.py 0 & # deg
+    rosrun drc_task_common Magnetometer2Direction.py $GOAL_DIR & # deg
 fi
 
 sleep 5

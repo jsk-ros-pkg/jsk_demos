@@ -10,6 +10,9 @@
   <arg name="LAUNCH_PS3JOY" default="$(arg OCS_MODE)" />
   <arg name="LAUNCH_EUS" default="$(arg FC_MODE)" />
   <arg name="LAUNCH_RVIZ" default="$(arg OCS_MODE)" />
+  <arg name="LAUNCH_CAR_CENTER" default="$(arg FC_MODE)" />
+  <arg name="LAUNCH_RECOGNITION" default="$(arg FC_MODE)" />
+  
   <arg name="ROBOT" default="robot" />
   
   <!-- detect handle_pose from marker on crank -->
@@ -57,5 +60,16 @@
     <node pkg="rviz" type="rviz" name="vehicle_rviz" args="-d $(find drc_task_common)/config/vehicle_operator.rviz"
           respawn="true"/>
   </group>
-  
+
+  <!-- recognition -->
+  <group if="$(arg LAUNCH_CAR_CENTER)">
+    <include file="$(find drc_task_common)/launch/fc/vehicle/car_center_tf_publisher.launch">
+      <arg name="REAL_MODE" default="true"/>
+      <arg name="JAXON" default="true"/>
+      <arg name="HRP2" default="false"/>
+    </include>
+  </group>
+  <group if="$(arg LAUNCH_RECOGNITION)">
+    <node name="drive_recognition" pkg="drc_task_common" type="drive_recognition.sh" args="real 0" />
+  </group>
 </launch>

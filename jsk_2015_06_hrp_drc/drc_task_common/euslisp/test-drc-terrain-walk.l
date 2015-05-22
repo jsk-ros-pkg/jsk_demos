@@ -272,6 +272,9 @@
   (send *ri* :start-auto-balancer)
   (send *ri* :start-st)
   (default-stair-param-hrp2jsk)
+  (send *ri* :set-gait-generator-param
+        :swing-trajectory-delay-time-offset 0.20
+        :swing-trajectory-final-distance-weight 3.0)
   (send *ri* :set-auto-balancer-param :default-zmp-offsets (list (float-vector -20 0 0) (float-vector -20 0 0)))
   )
 (warn ";; (setup-stair-climb-real-jaxon)~%")
@@ -1086,7 +1089,7 @@
                   (make-coords :name :rleg :coords (send (send *robot* :rleg :end-coords :copy-worldcoords) :translate (float-vector (+ 290 offset) 0 230)))))
       ))
   (y-or-n-p ";; initial pose?~%")
-  (walking-pose *robot* :root-link-pitch-offset 0 :root-link-height-offset -100 :default-pose-method :reset-manip-pose)
+  (walking-pose *robot* :root-link-pitch-offset 0 :root-link-height-offset -200 :default-pose-method :narrow-width-pose)
   (send *ri* :angle-vector (send *robot* :angle-vector) 4000)
   (send *ri* :wait-interpolation)
   )

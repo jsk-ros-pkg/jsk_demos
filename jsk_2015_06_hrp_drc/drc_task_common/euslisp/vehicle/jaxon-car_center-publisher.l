@@ -12,7 +12,7 @@
         body-to-car-marker
         )
     (unless trans-body-to-camera
-      ;; (warn "Failed to get car_marker~%")
+      (warn "Failed to get car_marker~%")
       (return-from marker-pose-cb nil)
       )
 
@@ -39,7 +39,7 @@
 (ros::roseus "tf_car_center_publisher")
 (setq *tfl* (instance ros::transform-listener :init))
 (ros::subscribe "car_pose_marker" geometry_msgs::PoseStamped #'marker-pose-cb)
-(setq c (make-coords :pos (float-vector 0.510221 -0.527558 0.301444) :rot (float-vector -3.106 1.036 3.107))) ;; jaxon
+(setq c (make-coords :pos (float-vector 510.221 -527.558 301.444) :rpy (float-vector -3.106 1.036 3.107))) ;; jaxon
 (setq trans (ros::coords->tf-transform c))
 (print trans)
 (setq req (instance dynamic_tf_publisher::SetDynamicTFRequest :init

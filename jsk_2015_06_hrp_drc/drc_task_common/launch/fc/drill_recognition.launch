@@ -12,7 +12,6 @@
         radius_search: 0.05
       </rosparam>
     </node>
-    
     <node pkg="jsk_pcl_ros"
           type="normal_direction_filter"
           name="normal_direction_filter">
@@ -72,6 +71,8 @@
              to="polygon_flipper/output/coefficients"
              />
       <rosparam>
+        use_sensor_frame: true
+        sensor_frame: head_root
         use_indices: false
         min_height: 0.02
         max_height: 0.5
@@ -134,12 +135,22 @@
         z_dimension_max: 0.5
       </rosparam>
     </node>
-
+    
+    <node pkg="drc_task_common"
+          type="filter_bbox_position.py"
+          name="filter_by_position">
+      <remap from="~input" to="filter_small_boxes/output_box"/>
+      <rosparam>
+        frame_id: ground
+        min_z: 0.7
+        max_z: 1.5
+      </rosparam>
+    </node>
     <node pkg="jsk_pcl_ros"
           type="attention_clipper"
           name="boundingbox_clipper">
       <remap from="~input/points" to="remove_small_noises/output"/>
-      <remap from="~input/box_array" to="filter_small_boxes/output_box"/>
+      <remap from="~input/box_array" to="filter_by_position/output"/>
       <rosparam>
         use_multiple_attention: true
         radius_search: 0.05
@@ -165,6 +176,7 @@
         cylinder_max_radius: 0.04
       </rosparam>
     </node>
+    
     <node pkg="jsk_topic_tools"
           name="flip_cylinder_coords"
           type="static_transform_pose_stamped"

@@ -6,7 +6,7 @@
   <arg name="HRP2" default="false"/>
 
   <!-- static tf "car_center" (parent link: utorso) publisher for gazebo_drive_simulator -->
-  <node if="$(arg SIMULATION_MODE)" pkg="tf" type="static_transform_publisher" name="TF_car_center" args="0.05 0.3 -1.2 0 0 0 utorso car_center 100" /> <!-- initial position is y : -0.6, z : -0.1 // start_gazebo_drive_shimulator.sh -->
+  <node if="$(arg SIMULATION_MODE)" ns="/drive/recognition" pkg="tf" type="static_transform_publisher" name="TF_car_center" args="0.05 0.3 -1.2 0 0 0 utorso car_center 100" /> <!-- initial position is y : -0.6, z : -0.1 // start_gazebo_drive_shimulator.sh -->
 
   <!-- static tf "car_center" (parent link: multisense/head_root) publisher for ROSbags -->
   <include if="$(arg ROSBAG_MODE)" file="$(find drc_task_common)/launch/fc/vehicle/multisense_rosbag_static_tf_publisher.launch" />
@@ -30,14 +30,23 @@
         <remap from="image" to="/multisense/left/image_rect_color"/>
         <remap from="objectdetection_pose" to="marker/car_pose" />
       </node>
+      <group if="$(arg JAXON)">
+        <!-- tf "car_marker" publisher from PoseStamped -->
+        <node pkg="roseus" type="roseus" name="TF_BODY_marker"
+              args="$(find drc_task_common)/euslisp/vehicle/jaxon-car_center-publisher.l" >
+          <remap from="car_pose_marker" to="marker/car_pose" />
+        </node>
+        <!-- static tf "car_center" (parent link: car_marker) publisher -->
+        <node pkg="tf" type="static_transform_publisher" name="TF_marker_car_center" args="1.323766 0.0 0.1942 3.141593 -1.082 -3.141593 car_marker car_center 100" />
+      </group>
+      <group if="$(arg HRP2)">
+        <node  pkg="roseus" type="roseus" name="TF_BODY_marker"
+               args="$(find drc_task_common)/euslisp/vehicle/hrp2-car_center-publisher.l" >
+          <remap from="car_pose_marker" to="marker/car_pose" />
+        </node>
+        <!-- static tf "car_center" (parent link: car_marker) publisher -->
+        <node pkg="tf" type="static_transform_publisher" name="TF_marker_car_center" args="1.323766 0.0 0.1942 3.141593 -1.07 -3.141593 car_marker car_center 100" />
+      </group>
     </group>
-    <!-- tf "car_marker" publisher from PoseStamped -->
-    <node pkg="roseus" type="roseus" name="TF_BODY_marker"
-          args="$(find drc_task_common)/euslisp/vehicle/car_center_publisher.l" >
-      <remap from="car_pose_marker" to="/drive/recognition/marker/car_pose" />
-    </node>
-    <!-- static tf "car_center" (parent link: car_marker) publisher -->
-    <node if="$(arg JAXON)" pkg="tf" type="static_transform_publisher" name="TF_marker_car_center" args="0.0 1.322075 0.205468 -1.571 -1.074 -3.142 car_marker car_center 100" />
-    <node if="$(arg HRP2)" pkg="tf" type="static_transform_publisher" name="TF_marker_car_center" args="0.0 1.322075 0.205468 -1.571 -1.074 -3.142 car_marker car_center 100" />
   </group>
 </launch>

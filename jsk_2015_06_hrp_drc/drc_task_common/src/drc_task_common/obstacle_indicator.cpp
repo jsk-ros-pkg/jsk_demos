@@ -71,7 +71,7 @@ public:
 
   /* callback if steering angle is subscribed */
   void steering_angle_cb(const std_msgs::Float32ConstPtr& msg){
-    steering_angle = msg->data;
+    steering_angle = msg->data * M_PI / 180.0;
   }
 
   /* execute function */

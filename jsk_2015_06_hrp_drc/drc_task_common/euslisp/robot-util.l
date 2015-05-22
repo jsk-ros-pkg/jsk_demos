@@ -55,7 +55,7 @@
   (send *ri* :hand-angle-vector (apply #'concatenate float-vector (send *robot* :hand :arms :angle-vector)) time)
   (when wait? (send *ri* :hand-wait-interpolation)))
 
-(defun hand-start-grasp (&key (arm :arms) (real? nil) (time 500) (wait? t) (type :normal))
+(defun hand-start-grasp (&key (arm :arms) (real? nil) (time 500) (wait? t) (type :normal) (gain 30))
   (cond ((or (equal *robot-name* "HRP2JSKNT") (equal *robot-name* "HRP2JSKNTS"))
          (cond ((equal type :door-grasp-preshape)
                 (send *robot* :hand :arms :angle-vector *door-grasp-preshape-pose*)
@@ -79,7 +79,7 @@
                 )
                (t
                 (when (and real? (find-method *ri* :start-grasp))
-                  (send *ri* :start-grasp arm :wait wait?))
+                  (send *ri* :start-grasp arm :wait wait? :gain gain))
                 ))
          ))
   )
