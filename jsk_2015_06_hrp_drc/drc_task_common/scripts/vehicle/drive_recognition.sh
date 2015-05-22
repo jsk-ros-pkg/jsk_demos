@@ -15,7 +15,6 @@ if [ $MODE = "rosbag" ]; then
     FILENAME=$2
     GOAL_DIR=0
     if [ $# -ge 3 ]; then
-        echo $3
         GOAL_DIR=$3
     fi
 fi
