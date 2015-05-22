@@ -1,3 +1,5 @@
 <launch>
-  <param name="robot_description" textfile="$(find hrpsys_ros_bridge_tutorials)/models/JAXON_WH_SENSORS.urdf" />
+  <group ns="ocs">
+    <param name="robot_description" textfile="$(find hrpsys_ros_bridge_tutorials)/models/JAXON_WH_SENSORS.urdf" />
+  </group>
 </launch>
