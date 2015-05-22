@@ -41,10 +41,14 @@ namespace drc_task_common
     ui_->hrpsys_start_st_button->setIcon(QIcon(QPixmap(QString((ros::package::getPath("drc_task_common")+std::string("/icons/start-st.png")).c_str()))));
     ui_->hrpsys_start_imp_button->setToolButtonStyle(Qt::ToolButtonTextUnderIcon);
     ui_->hrpsys_start_imp_button->setIcon(QIcon(QPixmap(QString((ros::package::getPath("drc_task_common")+std::string("/icons/start-imp.png")).c_str()))));
-    ui_->hrpsys_stop_abc_button->setToolButtonStyle(Qt::ToolButtonTextUnderIcon);
-    ui_->hrpsys_stop_abc_button->setIcon(QIcon(QPixmap(QString((ros::package::getPath("drc_task_common")+std::string("/icons/stop-abc.png")).c_str()))));
-    ui_->hrpsys_stop_st_button->setToolButtonStyle(Qt::ToolButtonTextUnderIcon);
-    ui_->hrpsys_stop_st_button->setIcon(QIcon(QPixmap(QString((ros::package::getPath("drc_task_common")+std::string("/icons/stop-st.png")).c_str()))));
+    ui_->hrpsys_start_imp_soft_button->setToolButtonStyle(Qt::ToolButtonTextUnderIcon);
+    ui_->hrpsys_start_imp_soft_button->setIcon(QIcon(QPixmap(QString((ros::package::getPath("drc_task_common")+std::string("/icons/start-imp-soft.png")).c_str()))));
+    ui_->hrpsys_start_imp_hard_button->setToolButtonStyle(Qt::ToolButtonTextUnderIcon);
+    ui_->hrpsys_start_imp_hard_button->setIcon(QIcon(QPixmap(QString((ros::package::getPath("drc_task_common")+std::string("/icons/start-imp-hard.png")).c_str()))));
+    // ui_->hrpsys_stop_abc_button->setToolButtonStyle(Qt::ToolButtonTextUnderIcon);
+    // ui_->hrpsys_stop_abc_button->setIcon(QIcon(QPixmap(QString((ros::package::getPath("drc_task_common")+std::string("/icons/stop-abc.png")).c_str()))));
+    // ui_->hrpsys_stop_st_button->setToolButtonStyle(Qt::ToolButtonTextUnderIcon);
+    // ui_->hrpsys_stop_st_button->setIcon(QIcon(QPixmap(QString((ros::package::getPath("drc_task_common")+std::string("/icons/stop-st.png")).c_str()))));
     ui_->hrpsys_stop_imp_button->setToolButtonStyle(Qt::ToolButtonTextUnderIcon);
     ui_->hrpsys_stop_imp_button->setIcon(QIcon(QPixmap(QString((ros::package::getPath("drc_task_common")+std::string("/icons/stop-imp.png")).c_str()))));
     ui_->display_manip_button->setToolButtonStyle(Qt::ToolButtonTextUnderIcon);
@@ -65,9 +69,11 @@ namespace drc_task_common
     connect( ui_->hrpsys_start_abc_button, SIGNAL( clicked() ), this, SLOT(  callRequestStartABC()));
     connect( ui_->hrpsys_start_st_button, SIGNAL( clicked() ), this, SLOT(  callRequestStartST()));
     connect( ui_->hrpsys_start_imp_button, SIGNAL( clicked() ), this, SLOT(  callRequestStartIMP()));
+    connect( ui_->hrpsys_start_imp_soft_button, SIGNAL( clicked() ), this, SLOT(  callRequestStartIMPSoft()));
+    connect( ui_->hrpsys_start_imp_hard_button, SIGNAL( clicked() ), this, SLOT(  callRequestStartIMPHard()));
 
-    connect( ui_->hrpsys_stop_abc_button, SIGNAL( clicked() ), this, SLOT(  callRequestStopABC ()));
-    connect( ui_->hrpsys_stop_st_button, SIGNAL( clicked() ), this, SLOT(  callRequestStopST()));
+    // connect( ui_->hrpsys_stop_abc_button, SIGNAL( clicked() ), this, SLOT(  callRequestStopABC ()));
+    // connect( ui_->hrpsys_stop_st_button, SIGNAL( clicked() ), this, SLOT(  callRequestStopST()));
     connect( ui_->hrpsys_stop_imp_button, SIGNAL( clicked() ), this, SLOT(  callRequestStopIMP()));
 
     connect( ui_->display_manip_button, SIGNAL( clicked() ), this, SLOT(  callRequestDisplayManip ()));
@@ -122,13 +128,21 @@ namespace drc_task_common
     callRequestUint8Request(drc_com_common::OCS2FCSmall::HRPSYS_START_IMP);
   };
 
-  void DRCTeleopInterfaceAction::callRequestStopABC(){
-    callRequestUint8Request(drc_com_common::OCS2FCSmall::HRPSYS_STOP_ABC);
+  void DRCTeleopInterfaceAction::callRequestStartIMPSoft(){
+    callRequestUint8Request(drc_com_common::OCS2FCSmall::HRPSYS_START_IMP_SOFT);
   };
 
-  void DRCTeleopInterfaceAction::callRequestStopST(){
-    callRequestUint8Request(drc_com_common::OCS2FCSmall::HRPSYS_STOP_ST);
+  void DRCTeleopInterfaceAction::callRequestStartIMPHard(){
+    callRequestUint8Request(drc_com_common::OCS2FCSmall::HRPSYS_START_IMP_HARD);
   };
+
+  // void DRCTeleopInterfaceAction::callRequestStopABC(){
+  //   callRequestUint8Request(drc_com_common::OCS2FCSmall::HRPSYS_STOP_ABC);
+  // };
+
+  // void DRCTeleopInterfaceAction::callRequestStopST(){
+  //   callRequestUint8Request(drc_com_common::OCS2FCSmall::HRPSYS_STOP_ST);
+  // };
 
   void DRCTeleopInterfaceAction::callRequestStopIMP(){
     callRequestUint8Request(drc_com_common::OCS2FCSmall::HRPSYS_STOP_IMP);
