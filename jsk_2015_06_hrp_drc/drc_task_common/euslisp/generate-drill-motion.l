@@ -571,7 +571,7 @@
       ;;     )
       (cond ((or (equal *robot-name* "HRP2JSKNTS") (equal *robot-name* "HRP2JSKNTS"))
              (if *drill-reverse-hand*
-                 (if (equal *drill-main-arm* :rarm) (make-coords :pos (float-vector -610 0 0) :rpy (list (deg2rad 25) 0 0)) (make-coords :pos (float-vector -610 -0 0) :rpy (list (deg2rad -25) 0 0)))
+                 (if (equal *drill-main-arm* :rarm) (make-coords :pos (float-vector -650 0 0) :rpy (list (deg2rad 30) 0 0)) (make-coords :pos (float-vector -650 -0 0) :rpy (list (deg2rad -30) 0 0)))
                (if (equal *drill-main-arm* :rarm) (make-coords :pos (float-vector -610 -300 0) :rpy (list (deg2rad 55) 0 0)) (make-coords :pos (float-vector -710 200 0) :rpy (list (deg2rad -35) 0 0))))
              )
             (t ;; (or (equal *robot-name* "JAXON") (equal *robot-name* "STARO"))
