@@ -823,15 +823,15 @@
   )
 
 (defun make-drc-terrain-japanese-block-ver (&key (add-groud-p))
-  (setq *terrain* (instance drc-terrain :init :block-dimensions (list 390 190 150) :add-groud-p add-groud-p))
+  (setq *terrain* (instance drc-terrain :init :block-dimensions (list 390 190 150) :add-groud-p add-groud-p :name "drc-terrain-japanese-block-ver"))
   )
 
 (defun make-drc-terrain-japanese-block-ver-sagami (&key (add-groud-p))
-  (setq *terrain* (instance drc-terrain :init :block-dimensions (list 390 190 150) :add-groud-p add-groud-p :block-angle 12.5))
+  (setq *terrain* (instance drc-terrain :init :block-dimensions (list 390 190 150) :add-groud-p add-groud-p :block-angle 12.5 :name "drc-terrain-japanese-block-ver-sagami"))
   )
 
 (defun make-drc-terrain-test-field-ver (&key (add-groud-p :test-field))
-  (setq *terrain* (instance drc-terrain :init :block-dimensions (list 395 195 190) :add-groud-p add-groud-p :block-angle 15))
+  (setq *terrain* (instance drc-terrain :init :block-dimensions (list 395 195 190) :add-groud-p add-groud-p :block-angle 15 :name "drc-terrain-test-field-ver"))
   )
 
 (defun make-drc-valve ()

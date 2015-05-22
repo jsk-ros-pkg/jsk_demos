@@ -41,9 +41,11 @@ namespace drc_task_common
     void callRequestStartABC();
     void callRequestStartST();
     void callRequestStartIMP();
+    void callRequestStartIMPSoft();
+    void callRequestStartIMPHard();
 
-    void callRequestStopABC();
-    void callRequestStopST();
+    /* void callRequestStopABC(); */
+    /* void callRequestStopST(); */
     void callRequestStopIMP();
 
     void callRequestDisplayManip();

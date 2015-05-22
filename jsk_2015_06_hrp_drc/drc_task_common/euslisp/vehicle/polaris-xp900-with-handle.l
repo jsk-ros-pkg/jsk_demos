@@ -70,7 +70,7 @@
           )
      ;; make handle-flame-list ;;;;;;;;;;;;;;;;;
      ;; make bodyset-link ;;;;;;;;;;;;;;;;;
-     (setq car (with-open-file (f (format nil "~A/models/polaris-xp900.l" (ros::rospack-find "hrpsys_gazebo_atlas"))) (read f)))
+     (setq car (with-open-file (f (format nil "~A/euslisp/vehicle/polaris-xp900.l" (ros::rospack-find "drc_task_common"))) (read f)))
      (setq base-link (instance bodyset-link :init (make-cascoords)
                                :bodies (list car)
                                :name :base-link))

@@ -23,7 +23,13 @@ $ sudo visudo
 
   And restart your computer.
 
-2. Set enviroment variable "ROBOT"
+2. speed up roslaunch
+
+```
+sudo patch -u /usr/lib/python2.7/dist-packages/catkin_pkg/packages.py < $(rospack find drc_task_common)/patch/catkin_packages.patch
+```
+
+3. Set enviroment variable "ROBOT"
    For example,
    ```
    export ROBOT=HRP2JSKNT
@@ -32,7 +38,6 @@ $ sudo visudo
    ```
    export ROBOT=JAXON
    ```
-
 
 ## drc_task_common.launch
 
@@ -194,6 +199,10 @@ You should generate xml file from wrl files, and launch the following for each r
 rtmtest -t hrpsys_tools _gen_project.launch INPUT:=`rospack find hrp2_models`/HRP2JSKNT_for_OpenHRP3/HRP2JSKNTmain.wrl OUTPUT:=/tmp/HRP2JSKNT_for_DRCTestbedTerrainJPBlock.xml OBJECT_MODELS:="`rospack find hrpsys`/share/hrpsys/samples/environments/DRCTestbedTerrainJPBlock.wrl,0.4,-2.0,0,1,0,0,0" CORBA_PORT:=15005 INTEGRATE:=false
 rtmlaunch hrpsys_ros_bridge_tutorials hrp2jsknt.launch PROJECT_FILE:=/tmp/HRP2JSKNT_for_DRCTestbedTerrainJPBlock.xml
 ```
+```
+rtmtest -t hrpsys_tools _gen_project.launch INPUT:=`rospack find hrp2_models`/HRP2JSKNT_for_OpenHRP3/HRP2JSKNTmain.wrl OUTPUT:=/tmp/HRP2JSKNT_for_DRCTestfieldTerrain.xml OBJECT_MODELS:="`rospack find hrpsys`/share/hrpsys/samples/environments/DRCTestfieldTerrain.wrl,0.4,-2.1,0,1,0,0,0" CORBA_PORT:=15005 INTEGRATE:=false
+rtmlaunch hrpsys_ros_bridge_tutorials hrp2jsknt.launch PROJECT_FILE:=/tmp/HRP2JSKNT_for_DRCTestfieldTerrain.xml
+```
 
 ![](images/hrp2jsknt_sim.png)
 
@@ -211,7 +220,7 @@ rtmtest -t hrpsys_tools _gen_project.launch INPUT:=`rospack find hrp2_models`/HR
 rtmlaunch hrpsys_ros_bridge_tutorials hrp2jsknts.launch PROJECT_FILE:=/tmp/HRP2JSKNTS_for_DRCTestbedTerrainJPBlock.xml
 ```
 ```
-rtmtest -t hrpsys_tools _gen_project.launch INPUT:=`rospack find hrp2_models`/HRP2JSKNTS_for_OpenHRP3/HRP2JSKNTSmain.wrl OUTPUT:=/tmp/HRP2JSKNTS_for_DRCTestfieldTerrain.xml OBJECT_MODELS:="`rospack find hrpsys`/share/hrpsys/samples/environments/DRCTestfieldTerrain.wrl,0.4,-2.0,0,1,0,0,0" CORBA_PORT:=15005 INTEGRATE:=false
+rtmtest -t hrpsys_tools _gen_project.launch INPUT:=`rospack find hrp2_models`/HRP2JSKNTS_for_OpenHRP3/HRP2JSKNTSmain.wrl OUTPUT:=/tmp/HRP2JSKNTS_for_DRCTestfieldTerrain.xml OBJECT_MODELS:="`rospack find hrpsys`/share/hrpsys/samples/environments/DRCTestfieldTerrain.wrl,0.4,-2.1,0,1,0,0,0" CORBA_PORT:=15005 INTEGRATE:=false
 rtmlaunch hrpsys_ros_bridge_tutorials hrp2jsknts.launch PROJECT_FILE:=/tmp/HRP2JSKNTS_for_DRCTestfieldTerrain.xml
 ```
 
@@ -221,7 +230,7 @@ rtmtest -t hrpsys_tools _gen_project.launch INPUT:=`rospack find jsk_models`/JAX
 rtmlaunch hrpsys_ros_bridge_tutorials jaxon.launch PROJECT_FILE:=/tmp/JAXON_for_DRCTestbedTerrainJPBlock.xml
 ```
 ```
-rtmtest -t hrpsys_tools _gen_project.launch INPUT:=`rospack find jsk_models`/JAXON/JAXONmain.wrl OUTPUT:=/tmp/JAXON_for_DRCTestfieldTerrain.xml OBJECT_MODELS:="`rospack find hrpsys`/share/hrpsys/samples/environments/DRCTestfieldTerrain.wrl,0.4,-2.0,0,1,0,0,0" CORBA_PORT:=15005 CONF_DT_OPTION:="--dt 0.002" SIMULATION_TIMESTEP_OPTION:="--timeStep 0.002" INTEGRATE:=false
+rtmtest -t hrpsys_tools _gen_project.launch INPUT:=`rospack find jsk_models`/JAXON/JAXONmain.wrl OUTPUT:=/tmp/JAXON_for_DRCTestfieldTerrain.xml OBJECT_MODELS:="`rospack find hrpsys`/share/hrpsys/samples/environments/DRCTestfieldTerrain.wrl,0.4,-2.1,0,1,0,0,0" CORBA_PORT:=15005 CONF_DT_OPTION:="--dt 0.002" SIMULATION_TIMESTEP_OPTION:="--timeStep 0.002" INTEGRATE:=false
 rtmlaunch hrpsys_ros_bridge_tutorials jaxon.launch PROJECT_FILE:=/tmp/JAXON_for_DRCTestfieldTerrain.xml
 ```
 
