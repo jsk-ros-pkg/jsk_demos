@@ -16,7 +16,7 @@ from math import pi
 class CarPathVisualizer:
     def __init__(self):
         rospy.init_node("CarPathVisualizer", anonymous=True)
-        rospy.Subscriber("/car_steering_wheel", Float64, self.steering_callback)
+        rospy.Subscriber("/car_steering_wheel", Float32, self.steering_callback)
         self.marker_pub = rospy.Publisher("/car_path_marker", MarkerArray, queue_size=10)
         self.r = rospy.Rate(5)
         self.a = 0.0258676
