@@ -23,7 +23,13 @@ $ sudo visudo
 
   And restart your computer.
 
-2. Set enviroment variable "ROBOT"
+2. speed up roslaunch
+
+```
+sudo patch -u /usr/lib/python2.7/dist-packages/catkin_pkg/packages.py < $(rospack find drc_task_common)/patch/catkin_packages.patch
+```
+
+3. Set enviroment variable "ROBOT"
    For example,
    ```
    export ROBOT=HRP2JSKNT
@@ -32,7 +38,6 @@ $ sudo visudo
    ```
    export ROBOT=JAXON
    ```
-
 
 ## drc_task_common.launch
 
