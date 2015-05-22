@@ -1071,7 +1071,7 @@
       (when real?
         (set-default-impedance-param)
         (cond ((or (equal *robot-name* "HRP2JSKNTS") (equal *robot-name* "HRP2JSKNT"))
-               (send *ri* :start-impedance :rarm :moment-gain (float-vector 0 0 0) :k-p 3000 :d-p 400)) ;; start imp hard
+               (send *ri* :start-impedance :arms :moment-gain (float-vector 0 0 0) :k-p 3000 :d-p 400)) ;; start imp hard
               (t
                (send *ri* :start-impedance :arms :moment-gain (float-vector 0 0 0) :k-p 3000 :d-p 3000))))
 
