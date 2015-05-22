@@ -2037,7 +2037,7 @@
   )
 (defun drill-hook2 (&key (arm *drill-main-arm*)) ;; test code
   (cond ((or (equal *robot-name* "HRP2JSKNT") (equal *robot-name* "HRP2JSKNTS"))
-         (send *robot* :hand arm :angle-vector (float-vector 90.0 70.0 -10.0 0.0 -40.0 -40.0))
+         (send *robot* :hand arm :angle-vector (float-vector 90.0 65.0 -10.0 0.0 -20.0 -20.0))
          (hand-model2real)
          )
         (t (send *ri* :stop-grasp arm :wait t))
@@ -2063,7 +2063,7 @@
 
 (defun drill-air-grasp (&key (arm *drill-main-arm*))
   (cond ((or (equal *robot-name* "HRP2JSKNT") (equal *robot-name* "HRP2JSKNTS"))
-         (send *robot* :hand arm :angle-vector #f(90.0 35.0 -10.0 0.0 -40.0 50.0))
+         (send *robot* :hand arm :angle-vector (float-vector 90.0 40.0 -10.0 0.0 -40.0 45.0))
          (hand-model2real)
          )
         (t
