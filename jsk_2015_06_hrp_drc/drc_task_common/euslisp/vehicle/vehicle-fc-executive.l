@@ -10,6 +10,8 @@
 (setq *latest-step* nil)
 (setq *latest-min-step* nil)
 (setq *latest-max-step* nil)
+(setq *latest-neck-y-angle* nil)
+(setq *latest-neck-p-angle* nil)
 (setq *latest-steering-diff-angle-vector* nil)
 (setq *latest-handle-mode* nil)
 (setq *latest-accel-mode* nil)
@@ -84,6 +86,12 @@
 (defun max-step-callback (msg)
   (setq *latest-max-step* (send msg :data))
   )
+(defun neck-y-angle-callback (msg)
+  (setq *latest-neck-y-angle* (send msg :data))
+  )
+(defun neck-p-angle-callback (msg)
+  (setq *latest-neck-p-angle* (send msg :data))
+  )
 (defun steering-diff-angle-vector-callback (msg)
   (setq *latest-steering-diff-angle-vector* (send msg :data))
   )
@@ -117,6 +125,12 @@
       )
     (when *latest-max-step*
       (send msg :max_step *latest-max-step*)
+      )
+    (when *latest-neck-y-angle*
+      (send msg :neck_y_angle *latest-neck-y-angle*)
+      )
+    (when *latest-neck-p-angle*
+      (send msg :neck_p_angle *latest-neck-p-angle*)
       )
     (when *latest-steering-diff-angle-vector*
       (send msg :steering_diff_angle_vector *latest-steering-diff-angle-vector*)
@@ -175,6 +189,8 @@
 (ros::subscribe "/drive/controller/step" std_msgs::Float32 #'step-callback)
 (ros::subscribe "/drive/controller/min_step" std_msgs::Float32 #'min-step-callback)
 (ros::subscribe "/drive/controller/max_step" std_msgs::Float32 #'max-step-callback)
+(ros::subscribe "/drive/controller/neck_y_angle" std_msgs::Float32 #'neck-y-angle-callback)
+(ros::subscribe "/drive/controller/neck_p_angle" std_msgs::Float32 #'neck-p-angle-callback)
 (ros::subscribe "/drive/controller/steering_diff_angle_vector" std_msgs::Float32 #'steering-diff-angle-vector-callback)
 (ros::subscribe "/drive/controller/handle_mode" std_msgs::String #'handle-mode-callback)
 (ros::subscribe "/drive/controller/accel_mode" std_msgs::String #'accel-mode-callback)
