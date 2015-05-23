@@ -680,7 +680,8 @@
 
     (send *robot* :angle-vector (elt drill-motion-av-list 4))
     (when real? (model2real :time 3000))
-    (set-ref-force-with-condition)
+    (if (not (set-ref-force-with-condition)) (return-from send-drill-grasp-motion nil))
+          
     ;(if (equal drill-type :takenoko) (rotate-drill-horizontal))
     (when *use-dual-arm-ik*
       (send *robot* :angle-vector (elt drill-motion-av-list 5))
@@ -722,7 +723,8 @@
   )
 (defun set-ref-force-with-condition
   ()
-  ;(return-from set-ref-force-with-condition nil);; for test
+  (return-from set-ref-force-with-condition t);; for test
+
   (if (< (elt (send *ri* :state :absolute-force-vector *drill-main-arm*) 2) -7)
       (progn
         (speak-en "grasp succeeded, add ref force")
@@ -1505,6 +1507,8 @@
     ;;   (send *robot* :angle-vector (elt drill-motion-av-list i))
     ;;   (when real? (model2real :time (if (or (equal i 0) (equal i (- (length drill-motion-av-list) 1))) 5000 15000)))
     ;;   )
+    (send *ri* :set-ref-force (float-vector 0 0 -20) 2000 *drill-main-arm*)
+
     (send *ri* :set-impedance-controller-param *drill-main-arm* :force-gain (float-vector 1 1 1))
     (when (equal drill-type :takenoko)
       (send *robot* :angle-vector (get-pierce-drill-pre-pose))
@@ -1655,7 +1659,7 @@
     (setq rotate-length (min ik-length diff-length))
     (when (< ik-length 2) (return-from get-drill-rotate-motion-full (list :need-rotate-but-ik-fails 0)))
     (ros::ros-info (format nil "rotate-length: ~A" rotate-length))
-    (when (> diff-deg 0)
+    (when (< diff-deg 0)
       (setq *drill-motion-up* (reverse *drill-motion-up*))
       (setq *drill-motion-in* (reverse *drill-motion-in*))
       (setq *drill-motion-out* (reverse *drill-motion-out*))
@@ -1747,7 +1751,7 @@
 
 (defun check-diff-angle
   ()
-  (rad2deg (elt (car (send (send (send (send *drill* :get :grasp-coords-true) :copy-worldcoords) :transformation (send (gethash *drill-main-arm* *arm-drill-grasp-coords*) :copy-worldcoords)) :rpy-angle)) 0))
+  (* (rad2deg (elt (car (send (send  (send (gethash *drill-main-arm* *arm-drill-grasp-coords*) :copy-worldcoords) :transformation (send (send *drill* :get :grasp-coords-true) :copy-worldcoords)) :rpy-angle)) 0)) (if *drill-reverse-hand* -1 1))
   )
 
 (defun check-reachability
@@ -1870,7 +1874,9 @@
        ((not *drill-reverse-hand*)
         (send *robot* :reset-manip-pose))
        (t
-        #f(0.0 0.0 -26.0 50.0 -24.0 0.0 0.0 0.0 0.0 -26.0 50.0 -24.0 0.0 0.0 0.0 0.0 0.0 20.0 49.2654 -15.6889 -8.04143 -131.198 78.4518 -8.73041 1.4443 60.0 50.0 30.0 10.0 -120.0 25.0 5.0 -20.0 -60.0)))
+        #f(0.0 0.0 -26.0 50.0 -24.0 0.0 0.0 0.0 0.0 -26.0 50.0 -24.0 0.0 0.0 0.0 0.0 0.0 20.0 49.2654 -15.6889 -8.04143 -131.198 78.4518 -8.73041 1.4443 60.0 50.0 30.0 10.0 -120.0 25.0 5.0 -20.0 -60.0)
+        ;; #f(-1.77229 1.82573 -25.6231 51.2333 -25.6803 -0.988256 0.0 -1.77228 1.83528 -26.1327 51.4649 -25.4022 -0.9978 0.0 10.8349 4.38163 -40.7868 34.4397 -34.2213 -48.3344 76.6297 -106.708 104.568 54.9403 38.4528 60.0 44.7247 30.079 9.16563 -119.921 23.9102 2.91034 -18.3553 -60.0)
+r        ))
       )
         (t
          (send *robot* :reset-manip-pose))
@@ -1964,7 +1970,7 @@
   (send-drill-grasp-motion (get-body-relative-coords (make-coords :pos (float-vector 900 0 (if high? 1100 830)) :rpy (list (deg2rad 90) 0 0))) :drill-rotate-num 2 :draw? t)
   )
 (defun test-send-drill-grasp-motion-with-rot ()
-  (send-drill-grasp-motion (make-coords :pos (float-vector 700 0 200)) :drill-rotate-num 3 :draw? t)
+  (send-drill-grasp-motion (make-coords :pos (float-vector 700 0 200) :rpy (list 0 0 0)) :drill-rotate-num 3 :draw? t)
   )
 
 (defun test-send-drill-rotate-motion ()

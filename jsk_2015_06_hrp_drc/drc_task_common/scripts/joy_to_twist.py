@@ -106,17 +106,17 @@ def joy_to_twist(msg):
     factor_twist(twist)
     return twist
 def cut_twist(twist):
-    if (numpy.abs(twist.linear.x) < 0.1):
+    if (numpy.abs(twist.linear.x) < 0.25):
         twist.linear.x = 0
-    if (numpy.abs(twist.linear.y) < 0.1):
+    if (numpy.abs(twist.linear.y) < 0.25):
         twist.linear.y = 0
-    if (numpy.abs(twist.linear.z) < 0.1):
+    if (numpy.abs(twist.linear.z) < 0.25):
         twist.linear.z = 0
-    if (numpy.abs(twist.angular.x) < 0.1):
+    if (numpy.abs(twist.angular.x) < 0.25):
         twist.angular.x = 0
-    if (numpy.abs(twist.angular.y) < 0.1):
+    if (numpy.abs(twist.angular.y) < 0.25):
         twist.angular.y = 0
-    if (numpy.abs(twist.angular.z) < 0.1):
+    if (numpy.abs(twist.angular.z) < 0.25):
         twist.angular.z = 0
     
     
