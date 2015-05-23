@@ -1124,6 +1124,7 @@ It sends :angle-vector to robot and return 'finished' message to ocs"
 (setq *robot-name* (string-upcase (unix::getenv "ROBOT")))
 
 (generate-robot *robot-name* :generate-ri? t)
+(set-drill-environment :draw? nil :generate-ri? t) ;; for init param
 
 (setq *go-pos-offset* 700)
 (let ((drill-type-string (ros::get-param "~drill_type" "takenoko")))
