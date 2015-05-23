@@ -1308,6 +1308,16 @@
            ;; publish drill motion to robot model on rviz
 	   (setq *drill-main-arm* (send self :get-arm-side))
            (publish-drill-grasp-motion :coords (elt drill-grasp-params 0) :update? t :stand-coords (get-robot-model-current-pos) :overwrite-stand-coords? overwrite-stand-coords? :drill-rotate-num drill-rotate-num) ;;drill-type
+           (let ((index (position-if #'(lambda (x) (equal (elt x 0) :grasp)) drill-stand-coords-list)))
+             (if index
+                 (progn
+                   (setf (elt drill-stand-coords-list index) (list :grasp (convert-coords-frame (if (boundp '*drill-stand-coords-forced*) *drill-stand-coords-forced* (make-coords)))))
+                   (setq drill-stand-coords-index index))
+               (progn
+                 (push-back (list :grasp (convert-coords-frame (if (boundp '*drill-stand-coords-forced*) *drill-stand-coords-forced* (make-coords)))) drill-stand-coords-list)
+                 (setq drill-stand-coords-index (- (length drill-stand-coords-list) 1))
+                 )))
+           
 	   (if (or (not (boundp '*drill-motion*)) (not *drill-motion*))
 	       (send self :show-text 
 		  "IK FAIL")
@@ -1377,6 +1387,15 @@
                  )
            ;; publish drill motion to robot model on rviz
            (publish-drill-wall-motion :coords-list (get-coords-list-with-center (elt drill-wall-params 0) drill-wall-target-coords) :update? t :stand-coords (get-robot-model-current-pos) :overwrite-stand-coords? overwrite-stand-coords?)
+           (let ((index (position-if #'(lambda (x) (equal (elt x 0) :wall)) drill-stand-coords-list)))
+             (if index
+                 (progn
+                   (setf (elt drill-stand-coords-list index) (list :wall (convert-coords-frame (if (boundp '*drill-stand-coords-forced*) *drill-stand-coords-forced* (make-coords)))))
+                   (setq drill-stand-coords-index index))
+              (progn
+                (push-back (list :wall (convert-coords-frame (if (boundp '*drill-stand-coords-forced*) *drill-stand-coords-forced* (make-coords)))) drill-stand-coords-list)
+                (setq drill-stand-coords-index (- (length drill-stand-coords-list) 1))
+                )))
 	   (if (or (not (boundp '*drill-motion*)) (not *drill-motion*))
 	       (send self :show-text 
 		     "IK FAIL")
