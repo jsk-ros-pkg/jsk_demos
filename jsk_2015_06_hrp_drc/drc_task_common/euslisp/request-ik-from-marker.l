@@ -790,6 +790,7 @@
     (cond ((= res-index reverse-index)
            (setq *handle-reverse-flag* (not *handle-reverse-flag*))
            (generate-object-with-new-dimensions)))
+    (ros::spin-once)
     (setq *object-menu-command-flag* nil)
     ))
 
@@ -824,6 +825,7 @@
            (eval (list 'send '*robot* '(read-from-string res-value)))
            (setq *ik-result* (list (send-all (send *robot* :joint-list) :joint-angle)))
            (send-joint-states-to-marker)))
+    (ros::spin-once)
     (setq *robot-menu-command-flag* nil)
     (publish-obj-mode-text)
     ))
