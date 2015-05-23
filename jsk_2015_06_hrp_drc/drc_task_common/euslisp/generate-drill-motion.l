@@ -968,8 +968,11 @@
           )
         )
     (when ret
-        (send *robot* :look-at-target (send *drill* :worldcoords))
+      (let (look-at-ret)
+        (setq look-at-ret (send *robot* :look-at-target (send *drill* :worldcoords)))
+        (when look-at-ret (setq ret look-at-ret))
         )
+      )
      ret)
     )
   )
@@ -1275,7 +1278,8 @@
         (when (and c-check (c-check-for-drill)) (setq ik-ret nil))
         (push-back (list (+ i 1) (not (null ik-ret)) ik-ret) ik-results)
         (when (and fin? (not ik-ret)) (return-from drill-ik nil))
-        (when (or (equal i 0) (equal i (- dt-coords-length 1)))
+        (when (or (equal i 0) ;; (equal i (- dt-coords-length 1))
+                  )
           (send *drill* :translate (float-vector 0 0 -130) :local)
           (setq ik-ret (if *use-dual-arm-ik* (fullbody-inverse-kinematics-for-drill-grasp-dual :draw? draw?) (fullbody-inverse-kinematics-for-drill-grasp-single :draw? draw? :rotation-axis (if (equal drill-type :takenoko) '(:z t t) '(:z t t)) :arm-mt drill-edge-mt :arm-tc (send *drill* :get :edge-coords))))
           (when (and c-check (c-check-for-drill)) (setq ik-ret nil))
@@ -1283,15 +1287,36 @@
              (setq ik-ret
                    (send *robot* :look-at-target (send *drill* :worldcoords)))))
           (if (equal i 0) (push (list 0 (not (null ik-ret)) ik-ret) ik-results))
-          (if (or (equal i (- dt-coords-length 1)) (equal dt-coords-length 0)) (push-back (list (+ dt-coords-length 1) (not (null ik-ret)) ik-ret) ik-results))
+          (if (or ;; (equal i (- dt-coords-length 1)) 
+               (equal dt-coords-length 0)) (push-back (list (+ dt-coords-length 1) (not (null ik-ret)) ik-ret) ik-results))
           )
+      (send *drill* :newcoords (get-center-coords dt-coords-list))
+      (setq ik-ret (if *use-dual-arm-ik* (fullbody-inverse-kinematics-for-drill-grasp-dual :draw? draw?) (fullbody-inverse-kinematics-for-drill-grasp-single :draw? draw? :rotation-axis (if (equal drill-type :takenoko) '(:z t t) '(:z t t)) :arm-mt drill-edge-mt :arm-tc (send *drill* :get :edge-coords))))
+      (when (and c-check (c-check-for-drill)) (setq ik-ret nil))
+      (when ik-ret
+        (setq ik-ret
+              (send *robot* :look-at-target (send *drill* :worldcoords))))
+      (push-back (list (+ dt-coords-length 1) (not (null ik-ret)) ik-ret) ik-results)
+      (send *drill* :translate (float-vector 0 0 40) :local)
+      (setq ik-ret (if *use-dual-arm-ik* (fullbody-inverse-kinematics-for-drill-grasp-dual :draw? draw?) (fullbody-inverse-kinematics-for-drill-grasp-single :draw? draw? :rotation-axis (if (equal drill-type :takenoko) '(:z t t) '(:z t t)) :arm-mt drill-edge-mt :arm-tc (send *drill* :get :edge-coords))))
+      (when (and c-check (c-check-for-drill)) (setq ik-ret nil))
+      (when ik-ret
+        (setq ik-ret
+              (send *robot* :look-at-target (send *drill* :worldcoords))))
+      (send *drill* :translate (float-vector 0 0 -130) :local)
+      (setq ik-ret (if *use-dual-arm-ik* (fullbody-inverse-kinematics-for-drill-grasp-dual :draw? draw?) (fullbody-inverse-kinematics-for-drill-grasp-single :draw? draw? :rotation-axis (if (equal drill-type :takenoko) '(:z t t) '(:z t t)) :arm-mt drill-edge-mt :arm-tc (send *drill* :get :edge-coords))))
+      (when (and c-check (c-check-for-drill)) (setq ik-ret nil))
+      (when ik-ret
+        (setq ik-ret
+              (send *robot* :look-at-target (send *drill* :worldcoords))))
+      (push-back (list (+ dt-coords-length 3) (not (null ik-ret)) ik-ret) ik-results)      
       )
       ;; draw
       (when draw? (when (boundp '*irtviewer*) (send *irtviewer* :draw-objects :flush t)))
       ;; drill-reset-pose
                                         ;(send *robot* :angle-vector (get-pre-drill-button-pose))
       (send *robot* :fix-leg-to-coords original-foot-midcoords)
-      ;(push-back (list 3 t (send *robot* :angle-vector)) ik-results)
+                                        ;(push-back (list 3 t (send *robot* :angle-vector)) ik-results)
       (setq *drill-ik-results* ik-results)
       )))
 
@@ -1354,7 +1379,7 @@
          (if (equal drill-type :gun)
              (if (equal *drill-main-arm* :rarm) (make-coords :pos (float-vector -680 0 0) :rpy (list (deg2rad 0) 0 0)) (make-coords :pos (float-vector -680 0 0) :rpy (list (deg2rad 0) 0 0)))
            (if *drill-reverse-hand*
-               (if (equal *drill-main-arm* :rarm) (make-coords :pos (float-vector -730 -200 0) :rpy (list (deg2rad 40) 0 0)) (make-coords :pos (float-vector -730 200 0) :rpy (list (deg2rad -40) 0 0)))
+               (if (equal *drill-main-arm* :rarm) (make-coords :pos (float-vector -680 -200 0) :rpy (list (deg2rad 40) 0 0)) (make-coords :pos (float-vector -680 200 0) :rpy (list (deg2rad -40) 0 0)))
              (if (equal *drill-main-arm* :rarm) (make-coords :pos (float-vector -700 -265 0) :rpy (list (deg2rad 50) 0 0)) (make-coords :pos (float-vector -700 250 0) :rpy (list (deg2rad -65) 0 0)))
              )
            ))
@@ -1444,7 +1469,7 @@
           (send *ri* :start-impedance *drill-main-arm* :force-gain #f(0.1 0.1 1) :k-p 150 :d-p 160))
           
           (t
-           (send *ri* :start-impedance *drill-main-arm* :moment-gain (float-vector 0 0 0) :k-p 1000 :d-p 1500)))
+           (send *ri* :start-impedance *drill-main-arm* :force-gain #f(0.1 0.1 1) :moment-gain (float-vector 0 0 0) :k-p 700 :d-p 1500)))
     
     ;(send *ri* :start-impedance *drill-main-arm* :moment-gain (float-vector 0 0 0) :k-p 1000 :d-p 1500)
     ;; pre-reach
@@ -1458,7 +1483,13 @@
     ;;todo
     (let ((i 0))
       (while (< i (length drill-motion-av-list))
-        (cond ((or (equal i 0) (equal i (- (length drill-motion-av-list) 1)))
+        (cond ((or 
+                (equal i 0) 
+                (equal i 1)
+                (equal i (- (length drill-motion-av-list) 3))
+                (equal i (- (length drill-motion-av-list) 2))
+                (equal i (- (length drill-motion-av-list) 1))
+                )
                (send *robot* :angle-vector (elt drill-motion-av-list i))
                (when real? (model2real :time 5000))
                (setq i (+ i 1)))
