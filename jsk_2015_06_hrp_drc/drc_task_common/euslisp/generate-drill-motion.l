@@ -334,7 +334,7 @@
     )
   )
 (defun fullbody-inverse-kinematics-for-drill-grasp-for-hrp2
-  (tc mt ll &key (draw? nil) (translation-axis (list t t t)) (rotation-axis (list t t t)) (stop 100))
+  (tc mt ll &key (draw? nil) (translation-axis (list t t t)) (rotation-axis (list t t t)) (stop 60))
   (send *robot*
         :fullbody-inverse-kinematics tc
         :move-target mt :link-list ll
@@ -572,7 +572,8 @@
       (cond ((or (equal *robot-name* "HRP2JSKNTS") (equal *robot-name* "HRP2JSKNTS"))
              (if *drill-reverse-hand*
                  (if (equal *drill-main-arm* :rarm) (make-coords :pos (float-vector -650 0 0) :rpy (list (deg2rad 30) 0 0)) (make-coords :pos (float-vector -650 -0 0) :rpy (list (deg2rad -30) 0 0)))
-               (if (equal *drill-main-arm* :rarm) (make-coords :pos (float-vector -610 -300 0) :rpy (list (deg2rad 55) 0 0)) (make-coords :pos (float-vector -710 200 0) :rpy (list (deg2rad -35) 0 0))))
+               (if (equal *drill-main-arm* :rarm) (make-coords :pos (float-vector -610 -300 0) :rpy (list (deg2rad 55) 0 0))
+                 (make-coords :pos (float-vector -710 200 0) :rpy (list (deg2rad -35) 0 0)))) ;;
              )
             (t ;; (or (equal *robot-name* "JAXON") (equal *robot-name* "STARO"))
              (if (equal *drill-main-arm* :rarm) (make-coords :pos (float-vector -710 -0 0) :rpy (list (deg2rad 35) 0 0)) (make-coords :pos (float-vector -710 0 0) :rpy (list (deg2rad -35) 0 0))))
@@ -1382,7 +1383,9 @@
          (if (equal drill-type :gun)
              (if (equal *drill-main-arm* :rarm) (make-coords :pos (float-vector -680 0 0) :rpy (list (deg2rad 0) 0 0)) (make-coords :pos (float-vector -680 0 0) :rpy (list (deg2rad 0) 0 0)))
            (if *drill-reverse-hand*
-               (if (equal *drill-main-arm* :rarm) (make-coords :pos (float-vector -680 -200 0) :rpy (list (deg2rad 40) 0 0)) (make-coords :pos (float-vector -680 200 0) :rpy (list (deg2rad -40) 0 0)))
+               (if (equal *drill-main-arm* :rarm) (make-coords :pos (float-vector -680 -200 0) :rpy (list (deg2rad 40) 0 0))
+                 (make-coords :pos (float-vector -680 0 0) :rpy (list (deg2rad -25) 0 0)) ;; avoid wall
+                 )
              (if (equal *drill-main-arm* :rarm) (make-coords :pos (float-vector -700 -265 0) :rpy (list (deg2rad 50) 0 0)) (make-coords :pos (float-vector -700 250 0) :rpy (list (deg2rad -65) 0 0)))
              )
            ))
