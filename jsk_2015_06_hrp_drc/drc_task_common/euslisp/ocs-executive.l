@@ -1757,7 +1757,7 @@
        (progn
          (move-robot-model (elt (elt drill-stand-coords-list drill-stand-coords-index) 1) "/odom_on_ground")
          (send self :show-text (format nil "GOPOS for ~A Push EXEC" (elt (elt drill-stand-coords-list drill-stand-coords-index) 0)))
-         (setq drill-stand-coords-index (mod (+ drill-stand-coords-index) (length drill-stand-coords-list)))
+         (setq drill-stand-coords-index (mod (+ drill-stand-coords-index 1) (length drill-stand-coords-list)))
          )
      (send self :show-text "Please firstly find drill and recog")
      )
