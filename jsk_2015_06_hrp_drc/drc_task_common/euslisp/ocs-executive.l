@@ -759,8 +759,8 @@
            (setq drill-wall-params
                  (list (get-primitive-marker-pose :frame-id "BODY" :name "box1")))
            (let* ((dims (get-primitive-marker-dimensions :name "box1"))
-                  (x (elt dims 0))
-                  (y (elt dims 1))
+                  (x (/ (elt dims 0) 2))
+                  (y (/ (elt dims 1) 2))
                   )
              (setq drill-wall-target-coords (list
                                              (make-coords :pos (float-vector (+ x 30) y 0))
@@ -1361,8 +1361,8 @@
                   (setq drill-wall-params
                         (list (get-primitive-marker-pose :frame-id "BODY" :name "box1")))
                   (let* ((dims (get-primitive-marker-dimensions :name "box1"))
-                         (x (elt dims 0))
-                         (y (elt dims 1))
+                         (x (/ (elt dims 0) 2))
+                         (y (/ (elt dims 1) 2))
                          )
                     (setq drill-wall-target-coords (list
                                                     (make-coords :pos (float-vector (+ x 30) y 0))

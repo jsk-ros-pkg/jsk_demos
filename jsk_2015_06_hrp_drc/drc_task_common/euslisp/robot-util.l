@@ -340,9 +340,9 @@
     ))
 
 (defun convert-coords-frame
-  (coords &key (base-frame "/ground") (target-frame "/odom-on-ground"))
+  (coords &key (base-frame "/ground") (target-frame "/odom_on_ground"))
   (setq tf-trans (send *tf* :lookup-transform target-frame base-frame (ros::time 0)))
-  (setq coords (if tf-trans (send tf-trans :inverse-transformation) (make-coords)))
+  (setq coords (if tf-trans (send tf-trans :transform coords) (make-coords)))
   coords
   )
 
