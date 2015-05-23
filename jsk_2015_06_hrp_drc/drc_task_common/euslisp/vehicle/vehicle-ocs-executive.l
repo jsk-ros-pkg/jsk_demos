@@ -59,6 +59,10 @@
     (ros::publish "/ocs/drive/controller/max_step" tmp-msg)
     (setq tmp-msg (make-msg-from-tunnel msg :steering_diff_angle_vector std_msgs::Float32))
     (ros::publish "/ocs/drive/controller/steering_diff_angle_vector" tmp-msg)
+    (setq tmp-msg (make-msg-from-tunnel msg :neck_y_angle std_msgs::Float32))
+    (ros::publish "/ocs/drive/controller/neck_y_angle" tmp-msg)
+    (setq tmp-msg (make-msg-from-tunnel msg :neck_p_angle std_msgs::Float32))
+    (ros::publish "/ocs/drive/controller/neck_p_angle" tmp-msg)
     (setq tmp-msg (make-msg-from-tunnel msg :handle_mode std_msgs::String
                                         :convert #'convert-uint8-to-mode
                                         )
@@ -165,6 +169,8 @@
 (ros::advertise "/ocs/drive/controller/step" std_msgs::Float32 1)
 (ros::advertise "/ocs/drive/controller/min_step" std_msgs::Float32 1)
 (ros::advertise "/ocs/drive/controller/max_step" std_msgs::Float32 1)
+(ros::advertise "/ocs/drive/controller/neck_y_angle" std_msgs::Float32 1)
+(ros::advertise "/ocs/drive/controller/neck_p_angle" std_msgs::Float32 1)
 (ros::advertise "/ocs/drive/controller/steering_diff_angle_vector" std_msgs::Float32 1)
 (ros::advertise "/ocs/drive/controller/handle_mode" std_msgs::String 1)
 (ros::advertise "/ocs/drive/controller/accel_mode" std_msgs::String 1)
