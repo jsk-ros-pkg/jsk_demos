@@ -1,0 +1,37 @@
+<launch>
+  <arg name="LAUNCH_HANDLE_DETECTOR" default="true" />
+  <arg name="LAUNCH_EUS" default="true" />
+  <arg name="LAUNCH_RVIZ" default="false" />
+  <arg name="LAUNCH_CAR_CENTER" default="false" />
+  <arg name="LAUNCH_RECOGNITION" default="false" />
+
+  <arg name="ROBOT" default="robot" />
+
+  <!-- detect handle_pose from marker on crank -->
+  <group if="$(arg LAUNCH_HANDLE_DETECTOR)" >
+    <include file="$(find drc_task_common)/launch/fc/vehicle/handle_pose_detector.launch"/>
+  </group>
+
+  <!-- eus -->
+  <group if="$(arg LAUNCH_EUS)">
+    <node pkg="roseus" type="roseus" name="drive_controller"
+          args="$(find drc_task_common)/euslisp/vehicle/$(arg ROBOT)-driving-controller-on-polaris-xp900.l '($(arg ROBOT)-vehicle-main)'" />
+  </group>
+
+  <group if="$(arg LAUNCH_RVIZ)">
+    <node pkg="rviz" type="rviz" name="vehicle_rviz" args="-d $(find drc_task_common)/config/vehicle_operator.rviz"
+          respawn="true"/>
+  </group>
+
+  <!-- recognition -->
+  <group if="$(arg LAUNCH_CAR_CENTER)">
+    <include file="$(find drc_task_common)/launch/fc/vehicle/car_center_tf_publisher.launch">
+      <arg name="REAL_MODE" default="true"/>
+    </include>
+  </group>
+  <group if="$(arg LAUNCH_RECOGNITION)">
+    <!-- <node name="drive_recognition" pkg="drc_task_common" type="drive_recognition.sh" args="real 0" /> -->
+    <include file="$(find drc_task_common)/launch/fc/vehicle/extract_obstacle_cloud.launch"/>
+    <include file="$(find drc_task_common)/launch/fc/vehicle/driver_assist.launch"/>
+  </group>
+</launch>

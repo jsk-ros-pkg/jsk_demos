@@ -12,10 +12,33 @@
       <remap from="~input" to="input_support_plane_rect" />
       <remap from="~input/camera_info" to="$(arg INPUT_CAMERA_INFO)" />
     </node>
+    <node pkg="nodelet" type="nodelet" name="mask_image_generator"
+          args="standalone jsk_perception/MaskImageGenerator manager">
+      <remap from="~input" to="$(arg INPUT_IMAGE)" />
+      <rosparam>
+        offset_x: 0
+        offset_y: 0
+        width: 1024
+        height: 512
+      </rosparam>
+    </node>
+    <node pkg="nodelet" type="nodelet" name="camera_image_filter"
+          args="standalone jsk_pcl/MaskImageFilter manager">
+      <remap from="~input" to="$(arg INPUT_POINT_CLOUD)" />
+      <remap from="~input/mask" to="mask_image_generator/output" />
+      <remap from="~input/camera_info" to="$(arg INPUT_CAMERA_INFO)" />
+      <rosparam>
+        always_subscribe: true
+      </rosparam>
+    </node>
+
     <node pkg="jsk_pcl_ros" type="mask_image_filter" name="mask_image_filter">
       <remap from="~input" to="$(arg INPUT_HINT_POINT_CLOUD)"/>
       <remap from="~input/mask" to="rect_to_mask_image/output"/>
       <remap from="~input/camera_info" to="$(arg INPUT_CAMERA_INFO)" />
+      <rosparam>
+        always_subscribe: true
+      </rosparam>
     </node>
     <node pkg="nodelet" type="nodelet" name="filtered_cloud"
           args="standalone pcl/ExtractIndices">
@@ -25,7 +48,7 @@
     
     <node pkg="jsk_pcl_ros" type="hinted_plane_detector" name="door_plane_detector"
           output="screen">
-      <remap from="~input" to="$(arg INPUT_POINT_CLOUD)" />
+      <remap from="~input" to="camera_image_filter/output" />
       <remap from="~input/hint/cloud" to="filtered_cloud/output" />
       <rosparam>
         outlier_threashold: 0.01
@@ -39,6 +62,9 @@
       <remap from="~input/camera_info" to="$(arg INPUT_CAMERA_INFO)" />
     </node>
     <node pkg="jsk_pcl_ros" type="mask_image_filter" name="target_mask_image_filter">
+      <rosparam>
+        always_subscribe: true
+      </rosparam>
       <remap from="~input" to="$(arg INPUT_POINT_CLOUD)"/>
       <remap from="~input/mask" to="target_rect_to_mask_image/output"/>
       <remap from="~input/camera_info" to="$(arg INPUT_CAMERA_INFO)" />

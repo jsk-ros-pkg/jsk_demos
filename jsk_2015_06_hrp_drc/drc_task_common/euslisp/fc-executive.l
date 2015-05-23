@@ -1013,7 +1013,7 @@ It sends :angle-vector to robot and return 'finished' message to ocs"
     (set-default-impedance-param)
     (cond
      ((or (equal *robot-name* "JAXON") (equal *robot-name* "STARO"))
-      (send *ri* :start-impedance :arms :k-p 300 :d-p 800 :m-p 10 :m-r 2 :d-r 80 :k-r 40))
+      (send *ri* :start-impedance :arms :k-p 300 :d-p 1000 :m-p 10 :m-r 2 :d-r 120 :k-r 40))
      (t ;; (or (equal *robot-name* "HRP2JSKNT") (equal *robot-name* "HRP2JSKNTS"))
       (send *ri* :start-impedance :arms :k-p 200 :d-p 250 :m-p 7.5 :m-r 1 :d-r 15 :k-r 20)))
     (send self :send-rviz-button-finished-to-ocs))

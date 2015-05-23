@@ -2,15 +2,17 @@
   <!--
       This is a launch file for Main PC of Operator Control Station (OCS)
   -->
-  <arg name="FC_IP" value="localhost"/>
-  <arg name="OCS_IP" value="localhost"/>
+  <arg name="FC_IP" default="localhost"/>
+  <arg name="OCS_IP" default="localhost"/>
 
-  <arg name="USE_COM" value="true"/>
+  <arg name="USE_COM" default="true"/>
+  <arg name="ROBOT" default="robot"/>
+  <arg name="USE_VEHICLE_LAUNCH" default="true" />
 
   <!-- executive -->
   <node pkg="drc_task_common" type="vehicle-fc-executive.l" name="vehicle_fc_executive" output="screen">
   </node>
-  
+
   <!-- communication -->
   <include if="$(arg USE_COM)"
            file="$(find drc_com_common)/launch/vehicle_field_computer_com.launch">
@@ -18,4 +20,11 @@
     <arg name="OCS_IP" value="$(arg OCS_IP)" />
   </include>
 
+  <!-- launch nodes for vehicle task in fc -->
+  <group if="$(arg USE_VEHICLE_LAUNCH)" >  
+    <include file="$(find drc_task_common)/launch/fc/vehicle_fc.launch">
+      <arg name="ROBOT" value="$(arg ROBOT)" />
+    </include>
+  </group>
+  
 </launch>

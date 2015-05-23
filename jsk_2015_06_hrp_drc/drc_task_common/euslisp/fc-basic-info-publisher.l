@@ -179,13 +179,13 @@
   #'send *app* :robot-state-callback)
 (ros::subscribe "/motor_states" hrpsys_ros_bridge::MotorStates
                 #'send *app* :motor-states-callback)
-(ros::subscribe "/lfsensor" geometry_msgs::WrenchStamped
+(ros::subscribe "/off_lfsensor" geometry_msgs::WrenchStamped
                 #'send *app* :lfsensor-callback)
-(ros::subscribe "/rfsensor" geometry_msgs::WrenchStamped
+(ros::subscribe "/off_rfsensor" geometry_msgs::WrenchStamped
                 #'send *app* :rfsensor-callback)
-(ros::subscribe "/lhsensor" geometry_msgs::WrenchStamped
+(ros::subscribe "/off_lhsensor" geometry_msgs::WrenchStamped
                 #'send *app* :lhsensor-callback)
-(ros::subscribe "/rhsensor" geometry_msgs::WrenchStamped
+(ros::subscribe "/off_rhsensor" geometry_msgs::WrenchStamped
                 #'send *app* :rhsensor-callback)
 
 (ros::rate 10)

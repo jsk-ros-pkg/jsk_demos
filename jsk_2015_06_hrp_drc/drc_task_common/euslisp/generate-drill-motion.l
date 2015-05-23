@@ -72,7 +72,7 @@
          :parent (send *drill* :get :support-grasp-coords)))
   (send *drill* :put :button-coords
         (make-cascoords
-         :coords (make-coords :pos #f(-22 30 77) :rpy (list (deg2rad 15) 0 pi/2))
+         :coords (make-coords :pos #f(-22 30 77) :rpy (list (deg2rad 22) 0 pi/2))
          :parent *drill*))
   (send *drill* :put :put-coords
         (make-cascoords
@@ -1047,7 +1047,7 @@
          (drill-pos (send drill-coords :pos))
          (drill-rpy (car (send drill-coords :rpy-angle)))
          )
-    (send *drill* :newcoords (send (make-coords :pos (float-vector (elt drill-pos 0) (- (elt drill-pos 1)) (elt drill-pos 2)) :rpy (list (-(elt drill-rpy 0)) (+ (elt drill-rpy 1)) (- (elt drill-rpy 2)))) :rotate (deg2rad 150) :z))
+    (send *drill* :newcoords (send (make-coords :pos (float-vector (elt drill-pos 0) (- (elt drill-pos 1)) (elt drill-pos 2)) :rpy (list (-(elt drill-rpy 0)) (+ (elt drill-rpy 1)) (- (elt drill-rpy 2)))) :rotate (deg2rad 134) :z))
     )
   )
 
@@ -1136,17 +1136,17 @@
         )
       ;; second try
       (when try-many?
-        (dotimes (ix 3)
+        (dotimes (ix 5)
           (dotimes (iy 5)
-            (let ((button-ik nil) (width 6) (width-x 30))
+            (let ((button-ik nil) (width 6) (width-x 15))
               (send *robot* :angle-vector (elt drill-motion-av-list 5))
               (send *robot* :fix-leg-to-coords (make-coords))
-              (setq button-ik (fullbody-inverse-kinematics-for-drill-button :x-offset (+ 0 (* (- ix 1) width-x)) :y-offset (+ 0 (* (- iy 2) width)) :z-offset -35 :draw? nil))
+              (setq button-ik (fullbody-inverse-kinematics-for-drill-button :x-offset (+ 0 (* (- ix 2) width-x)) :y-offset (+ 0 (* (- iy 2) width)) :z-offset -35 :draw? nil))
               (send *ri* :wait-interpolation)
               (if button-ik (send *ri* :angle-vector button-ik 750)
                 (send *ri* :angle-vector (elt drill-motion-av-list 5))
                 )
-              (setq button-ik (fullbody-inverse-kinematics-for-drill-button :x-offset (+ 0 (* (- ix 1) width-x)) :y-offset (+ 0 (* (- iy 2) width)) :z-offset 40 :draw? nil))
+              (setq button-ik (fullbody-inverse-kinematics-for-drill-button :x-offset (+ 0 (* (- ix 2) width-x)) :y-offset (+ 0 (* (- iy 2) width)) :z-offset 40 :draw? nil))
               (send *ri* :wait-interpolation)
               (if button-ik (send *ri* :angle-vector button-ik 1000))
               )
@@ -1469,14 +1469,12 @@
         ))
     (set-default-impedance-param)
     ;; (when real?
-    ;;   
+    ;;
     (cond ((or (equal *robot-name* "HRP2JSKNTS") (equal *robot-name* "HRP2JSKNT"))
            ;(send *ri* :start-impedance *drill-main-arm* :moment-gain (float-vector 0 0 -200) :k-p 1000 :d-p 400)) ;; start imp hard
           (send *ri* :start-impedance *drill-main-arm* :force-gain #f(0.1 0.1 1) :k-p 150 :d-p 160))
-          
           (t
            (send *ri* :start-impedance *drill-main-arm* :force-gain #f(0.1 0.1 1) :moment-gain (float-vector 0 0 0) :k-p 700 :d-p 1500)))
-    
     ;(send *ri* :start-impedance *drill-main-arm* :moment-gain (float-vector 0 0 0) :k-p 1000 :d-p 1500)
     ;; pre-reach
 
@@ -2263,7 +2261,7 @@
   )
 
 ;; (defun tmp-drill
-;;   ()
+;   ()
 ;;   ;; generate
 ;;   (set-drill-environment)
 ;;   (get-drill-grasp-motion)
@@ -2422,3 +2420,11 @@
 ;;jaxon impedance
 ;;(send *ri* :start-impedance :arms :moment-gain (float-vector 0 0 0) :k-p 3000 :d-p 1500)
 ;; jaxon
+
+
+;; change log
+;; button
+;; deg  30 -> 15 -> 22
+;; ix   30 -> 15 
+;; wall
+;; impdedance 700 -> 500
