@@ -10,7 +10,7 @@
   <remap from="/tf" to="/ocs/tf" />
   <remap from="/joint_states" to="/ocs/joint_states" />
   <remap from="/robot_description" to="/ocs/robot_description" />
-
+  <include file="$(find drc_task_common)/launch/ocs/models/$(env ROBOT).launch" />
   
   <node pkg="rqt_gui" type="rqt_gui" name="rqt_image_view_button"
         args="--perspective-file $(find drc_task_common)/config/rqt_ui.perspective">

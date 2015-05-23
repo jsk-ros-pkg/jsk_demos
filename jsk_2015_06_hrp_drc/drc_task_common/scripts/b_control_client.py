@@ -112,10 +112,11 @@ def b_control_client_init():
     obj_mode_next_srv = rospy.ServiceProxy('/set_object_mode_next', srv.Empty)
     ik_mode_next_srv = rospy.ServiceProxy('/set_ik_mode_next', srv.Empty)
     # menu
-    global menu_up_srv, menu_down_srv, menu_select_srv, menu_variable_pub, menu_bool_pub
+    global menu_up_srv, menu_down_srv, menu_select_srv, menu_cancel_srv, menu_variable_pub, menu_bool_pub
     menu_up_srv = rospy.ServiceProxy('/rviz_menu_up', srv.Empty)
     menu_down_srv = rospy.ServiceProxy('/rviz_menu_up', srv.Empty)
     menu_select_srv = rospy.ServiceProxy('/rviz_menu_select', RvizMenuSelect)
+    menu_cancel_srv = rospy.ServiceProxy('/rviz_menu_cancel', srv.Empty)
     menu_variable_pub = rospy.Publisher('/rviz_menu_variable', Float32)
     # menu_bool_pub = rospy.Publisher('/rviz_menu_bool', Bool)
     
@@ -162,6 +163,8 @@ def b_control_joy_cb(msg):
         insert_marker(shape_type=TransformableMarkerOperate.TORUS, name='torus1', description='')
         color = ColorRGBA(r=1.0, g=1.0, b=0.0, a=0.6) # torus is triangle mesh
     if insert_hand_flag:
+        menu_cancel_srv()
+        rospy.sleep(0.1)
         erase_all_marker()
         try:
             ik_arm = get_ik_arm_srv().ik_arm

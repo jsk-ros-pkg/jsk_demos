@@ -40,7 +40,7 @@ public:
   ObstacleIndicator(){
     obstacle_points_sub = n.subscribe("obstacle", 1, &ObstacleIndicator::obstacle_points_cb, this);
     steering_angle_sub = n.subscribe("steering_angle", 1, &ObstacleIndicator::steering_angle_cb, this);
-    indicator_pub = n.advertise<std_msgs::Float32>("obstacle_indicator", 1);
+    indicator_pub = n.advertise<std_msgs::Float32>("obstacle_length/indicator", 1);
     n.param("field_of_vision", field_of_vision, 80);
     n.param("wheelbase", wheelbase, 2.05);
     n.param("tread", tread, 1.4);

@@ -13,7 +13,7 @@
     <node pkg="drc_task_common" type="obstacle_indicator" name="obstacle_indicator" output="screen" >
       <remap from="obstacle" to="passthrough/obstacle_cloud" />
       <remap from="steering_angle" to="/drive/controller/goal_handle_angle" />
-      <remap from="obstacle_indicator" to="obstacle_length/indicator" />
+      <!-- <remap from="obstacle_indicator" to="obstacle_length/indicator" /> -->
     </node>
   </group>
 </launch>

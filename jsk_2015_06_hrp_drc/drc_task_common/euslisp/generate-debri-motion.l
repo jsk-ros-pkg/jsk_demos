@@ -1,5 +1,5 @@
-(load "package://drc_task_common/euslisp/robot-util.l")
-(load "package://drc_task_common/euslisp/util.l")
+(require "package://drc_task_common/euslisp/robot-util.l")
+(require "package://drc_task_common/euslisp/util.l")
 
 (defun set-debri-environment
   (&key (debri-r 40) (debri-h 1000)

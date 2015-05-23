@@ -27,6 +27,7 @@
   (ros::advertise-service "/rviz_menu_up" std_srvs::Empty #'rviz-menu-up)
   (ros::advertise-service "/rviz_menu_down" std_srvs::Empty #'rviz-menu-down)
   (ros::advertise-service "/rviz_menu_select" drc_task_common::RvizMenuSelect #'rviz-menu-select)
+  (ros::advertise-service "/rviz_menu_cancel" std_srvs::Empty #'rviz-menu-cancel)
   (ros::subscribe "/rviz_menu_title" std_msgs::string #'set-rviz-menu-title)
   (ros::subscribe "/rviz_menu_list" drc_task_common::StringMultiArray #'set-rviz-menu-list)
   (ros::subscribe "/rviz_menu_variable" std_msgs::Float32 #'set-rviz-variable)
@@ -91,6 +92,13 @@
 (defun rviz-menu-select
   (req)
   (setq *menu-variable* (send req :variable))
+  (setq *menu-select-flag* t)
+  (send req :response))
+
+(defun rviz-menu-cancel
+  (req)
+  (setq *menu-index* 0)
+  (setq *menu-variable* 0.0)
   (setq *menu-select-flag* t)
   (send req :response))
 

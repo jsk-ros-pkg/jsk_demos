@@ -1,6 +1,6 @@
-(load "package://drc_task_common/euslisp/robot-util.l")
-(load "package://drc_task_common/euslisp/util.l")
-(load "package://drc_task_common/euslisp/test-drc-door-task.l")
+(require "package://drc_task_common/euslisp/robot-util.l")
+(require "package://drc_task_common/euslisp/util.l")
+(require "package://drc_task_common/euslisp/test-drc-door-task.l")
 
 (defun generate-door-from-name
   (door-name)
@@ -598,4 +598,9 @@
         (t ;; (or (equal *robot-name* "HRP2JSKNT") (equal *robot-name* "HRP2JSKNTS"))
          (send *robot* :reset-pose)
          ))
+  )
+
+(defun get-door-through-pose2
+  ()
+  (send *robot* :angle-vector #f(0.0 0.0 -20.0 40.0 -20.0 0.0 0.0 0.0 -20.0 40.0 -20.0 0.0 4.43237 2.30907 -45.0 30.0 10.0 20.0 60.0 -20.0 -5.0 -55.0 0.0 0.0 -10.0 0.0 102.324 62.6468 51.2922 -97.6026 37.1786 -31.8666 15.6543))
   )
