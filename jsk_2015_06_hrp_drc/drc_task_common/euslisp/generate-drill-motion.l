@@ -607,7 +607,7 @@
 
 ;; send drill motion for real robot(fc side)
 (defun send-drill-grasp-motion
-  (coords &key (real? t) (drill-type *default-drill-type*) (rotation-axis (list :z t t)) (arm *drill-main-arm*) (stand-coords nil) (overwrite-stand-coords? nil) (draw? t)
+  (coords &key (real? t) (drill-type *default-drill-type*) (rotation-axis (list :z t t)) (arm *drill-main-arm*) (stand-coords nil) (overwrite-stand-coords? nil) (draw? nil)
           (drill-rotate-num nil))
   (objects (list *robot*));;for test
   (when (and stand-coords (not (check-stand-coords stand-coords)))
@@ -781,11 +781,12 @@
 ;; almost same with grasp(at present)
 (defun send-drill-put-motion
   (coords &key (arm *drill-main-arm*) (real? t) (drill-type *default-drill-type*)
-          (stand-coords nil) (overwrite-stand-coords? nil))
+          (stand-coords nil) (overwrite-stand-coords? nil)
+          (draw? nil))
   (when (and stand-coords (not (check-stand-coords stand-coords)))
     (setq stand-coords nil)
     )
-  (let* ((drill-motion-av-list (get-drill-grasp-motion-full coords :drill-type drill-type :arm arm :recognized-coords-symbol :put-coords :draw? t :rotation-axis (list :z t t) :stand-coords stand-coords :overwrite-stand-coords? overwrite-stand-coords?))
+  (let* ((drill-motion-av-list (get-drill-grasp-motion-full coords :drill-type drill-type :arm arm :recognized-coords-symbol :put-coords :draw? draw? :rotation-axis (list :z t t) :stand-coords stand-coords :overwrite-stand-coords? overwrite-stand-coords?))
          (drill-motion-length (length drill-motion-av-list)))
     (when (= drill-motion-length 0) (return-from send-drill-put-motion))
     (let (c1 c2
@@ -858,12 +859,12 @@
   )
 
 (defun publish-drill-put-motion
-  (&key coords (step-time 400) (update? t) (arm *drill-main-arm*) (stand-coords nil) (overwrite-stand-coords? t))
+  (&key coords (step-time 400) (update? t) (arm *drill-main-arm*) (stand-coords nil) (overwrite-stand-coords? t) (draw? nil))
   (when (and stand-coords (not (check-stand-coords stand-coords)))
     (setq stand-coords nil)
     )
   (when update?
-    (get-drill-grasp-motion-full coords :use-ri? nil :recognized-coords-symbol :put-coords :draw? t :rotation-axis (list :z t t) :arm arm :stand-coords stand-coords :overwrite-stand-coords? overwrite-stand-coords?))
+    (get-drill-grasp-motion-full coords :use-ri? nil :recognized-coords-symbol :put-coords :draw? draw? :rotation-axis (list :z t t) :arm arm :stand-coords stand-coords :overwrite-stand-coords? overwrite-stand-coords?))
   (ros::ros-info "drill-grasp-stand-coords: ~a~%" *drill-stand-coords*)
   (ros::ros-info "drill-ik-results: ~a~%" *drill-ik-results*)
   (when (and *drill-stand-coords* (check-stand-coords *drill-stand-coords*))
@@ -1066,7 +1067,7 @@
 
 (defun send-drill-button-motion
   (coords &key (real? t) (try-many? t))
-  (let* ((drill-motion-av-list (get-drill-button-motion-full coords))
+  (let* ((drill-motion-av-list (get-drill-button-motion-full coords :draw? nil))
          (drill-motion-length (length drill-motion-av-list)))
     (when (not (= drill-motion-length 0))
       (when real?
@@ -1486,12 +1487,13 @@
 (defun publish-drill-wall-motion
   (&key coords-list (step-time 400) (update? t) (drill-type *default-drill-type*)
         (stand-coords nil) (overwrite-stand-coords? nil)
+        (draw? nil)
         )
   (when (and stand-coords (not (check-stand-coords stand-coords)))
     (setq stand-coords nil)
     )
   (when update?
-    (get-drill-wall-motion-full coords-list :use-ri? nil :drill-type drill-type :recognized-coords-symbol :edge-coords :draw? t :stand-coords stand-coords :overwrite-stand-coords? overwrite-stand-coords?))
+    (get-drill-wall-motion-full coords-list :use-ri? nil :drill-type drill-type :recognized-coords-symbol :edge-coords :draw? draw? :stand-coords stand-coords :overwrite-stand-coords? overwrite-stand-coords?))
   (ros::ros-info "drill-wall-stand-coords: ~a~%" *drill-stand-coords*)
   (ros::ros-info "drill-ik-results: ~a~%" *drill-ik-results*)
   (if (and *drill-stand-coords* (check-stand-coords *drill-stand-coords*))
@@ -1641,12 +1643,12 @@
   )
 
 (defun send-drill-rotate-motion
-  (drill-coords plane-coords &key (real? t) (drill-rotate-num 1))
+  (drill-coords plane-coords &key (real? t) (drill-rotate-num 1) (draw? nil))
   (setq *drill-motion-in* nil)
   (setq *drill-motion-up* nil)
   (setq *drill-motion-out* nil)
   (let* 
-      ((rotate-result (get-drill-rotate-motion-full drill-coords plane-coords :draw? t)))
+      ((rotate-result (get-drill-rotate-motion-full drill-coords plane-coords :draw? draw?)))
     (when (or (atom rotate-result) (not (equal (elt rotate-result 0) :rotate)))
       (ros::ros-info "diff deg 0 or ik failed")
       (return-from send-drill-rotate-motion (elt rotate-result 0))
