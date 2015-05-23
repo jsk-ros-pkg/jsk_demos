@@ -185,7 +185,7 @@
 (ros::advertise-service "/drive/operation/initialize" std_srvs::Empty #'send *operation-initialize-service-server* :callback)
 (ros::advertise-service "/drive/operation/synchronize" drc_task_common::StringRequest #'send *operation-synchronize-service-server* :callback)
 
-(ros::rate 10)
+(ros::rate 5)
 (while (ros::ok)
   (ros::spin-once)
   (main-spin-once)
