@@ -65,6 +65,10 @@
                 (send *robot* :hand :arms :angle-vector *door-grasp-pose*)
                 (when real? (hand-model2real :time time :wait? t))
                 )
+               ((equal type :default-grasp)
+                (send *robot* :hand :arms :angle-vector (float-vector 90.0 0.0 0.0 0.0 90.0 90.0))
+                (when real? (hand-model2real :time time :wait? t))
+                )
                (t ;; (equal type :normal)
                 (send *robot* :hand :arms :extension-pose) ;; hand extension-pose
                 (when real? (hand-model2real :time time :wait? t))
@@ -72,7 +76,7 @@
                 (when real? (hand-model2real :time time :wait? wait?))
                 ))
          )
-        ((or (equal *robot-name* "JAXON") (equal *robot-name* "STARO"))
+        (t ;; (or (equal *robot-name* "JAXON") (equal *robot-name* "STARO"))
          (cond ((or (equal type :door-grasp-preshape))
                 (when (and real? (find-method *ri* :stop-grasp))
                   (send *ri* :stop-grasp arm :wait wait?))
@@ -84,14 +88,22 @@
          ))
   )
 
-(defun hand-stop-grasp (&key (arm :arms) (real? nil) (time 500) (wait? t))
+(defun hand-stop-grasp (&key (arm :arms) (real? nil) (time 500) (wait? t) (type :hook-pose))
   (cond ((or (equal *robot-name* "HRP2JSKNT") (equal *robot-name* "HRP2JSKNTS"))
-         (send *robot* :hand arm :hook-pose) ;; hand hook-pose
-         (when real? (hand-model2real :time time :wait? wait?)))
-        ((or (equal *robot-name* "JAXON") (equal *robot-name* "STARO"))
+         (cond ((equal type :reset-pose)
+                (send *robot* :hand arm :reset-pose)
+                (when real? (hand-model2real :time time :wait? wait?))
+                )
+               (t ;; (equal type :hook-pose)
+                (send *robot* :hand arm :hook-pose)
+                (when real? (hand-model2real :time time :wait? wait?))
+                ))
+         )
+        (t ;; (or (equal *robot-name* "JAXON") (equal *robot-name* "STARO"))
          (when (and real? (find-method *ri* :stop-grasp))
-           (send *ri* :stop-grasp arm :wait wait?)))
-        ))
+           (send *ri* :stop-grasp arm :wait wait?))
+         ))
+  )
 
 (defun send-angle-vector-sequence-with-time
   (av-seq &key (time 5000) (wait? t) (enable-cancel? t))
@@ -328,9 +340,9 @@
     ))
 
 (defun convert-coords-frame
-  (coords &key (base-frame "/ground") (target-frame "/odom-on-ground"))
+  (coords &key (base-frame "/ground") (target-frame "/odom_on_ground"))
   (setq tf-trans (send *tf* :lookup-transform target-frame base-frame (ros::time 0)))
-  (setq coords (if tf-trans (send tf-trans :inverse-transformation) (make-coords)))
+  (setq coords (if tf-trans (send tf-trans :transform coords) (make-coords)))
   coords
   )
 
@@ -451,16 +463,16 @@
                
                (t
                 (let*
-                    ((target-force-vector (mapcar #'(lambda (d) (scale -1 d)) dir)) 
-                     (diff-force (mapcar #'v- relative-force target-force-vector))
+                    ((target-force (mapcar #'(lambda (d) (scale -1 d)) dir)) 
+                     (diff-force  (mapcar #'(lambda (l rf tf) (v- (if (equal coords-system :world) rf (send (send (send tmp-robot l :end-coords) :copy-worldcoords) :inverse-rotate-vector rf)) tf)) limb relative-force target-force))
                      (mag-of-diff-force (mapcar #'norm diff-force)))
                   (setq finish-condition (mapcar #'(lambda (l fc ip) (or fc (when (> (norm (v- (send (send tmp-robot l :end-coords) :worldpos) ip)) max-dist) (warn "over max-dist~%" l) t))) limb finish-condition initial-pos))
 
                   (setq finish-condition (mapcar #'(lambda (l fc mdf) (or fc (when (< mdf thre) (warn "limb ~a touched~%" l) t)))
                                                  limb finish-condition mag-of-diff-force))
-                                        ;(setq ndir (mapcar #'(lambda (target diff) (scale (/ 1.0 (norm target)) diff)) target-force-vector diff-force))
+                                        ;(setq ndir (mapcar #'(lambda (target diff) (scale (/ 1.0 (norm target)) diff)) target-force diff-force))
                   (setq ndir (mapcar #'normalize-vector diff-force))
-                  (when debug (warn ";; mag-of-diff-force: ~a thre: ~a finish-cond: ~a ndir: ~a target ~a relative ~a~%" mag-of-diff-force thre finish-condition ndir target-force-vector relative-force))
+                  (when debug (warn ";; mag-of-diff-force: ~a thre: ~a finish-cond: ~a ndir: ~a target ~a relative ~a~%" mag-of-diff-force thre finish-condition ndir target-force relative-force))
                   ))
                )
          (unless (some #'not finish-condition)

@@ -93,10 +93,10 @@
       (ros::publish "/ocs/motor_states" motor-states)
       )
     ;; forces
-    (ros::publish "/ocs/lhsensor" (send self :convert-to-arm-wrench-stamped (subseq (send msg :arm_forces) 0 6) "lhsensor"))
-    (ros::publish "/ocs/rhsensor" (send self :convert-to-arm-wrench-stamped (subseq (send msg :arm_forces) 6 12) "rhsensor"))
-    (ros::publish "/ocs/lfsensor" (send self :convert-to-leg-wrench-stamped (subseq (send msg :leg_forces) 0 6) "lfsensor"))
-    (ros::publish "/ocs/rfsensor" (send self :convert-to-leg-wrench-stamped (subseq (send msg :leg_forces) 6 12) "rfsensor"))
+    (ros::publish "/ocs/off_lhsensor" (send self :convert-to-arm-wrench-stamped (subseq (send msg :arm_forces) 0 6) "lhsensor"))
+    (ros::publish "/ocs/off_rhsensor" (send self :convert-to-arm-wrench-stamped (subseq (send msg :arm_forces) 6 12) "rhsensor"))
+    (ros::publish "/ocs/off_lfsensor" (send self :convert-to-leg-wrench-stamped (subseq (send msg :leg_forces) 0 6) "lfsensor"))
+    (ros::publish "/ocs/off_rfsensor" (send self :convert-to-leg-wrench-stamped (subseq (send msg :leg_forces) 6 12) "rfsensor"))
     )
   )
 
@@ -112,10 +112,10 @@
 (setq *app* (instance ocs-basic-info-publisher :init))
 (ros::advertise "/ocs/tf_odom_on_ground" tf2_msgs::TFMessage)
 (ros::advertise "/ocs/motor_states" hrpsys_ros_bridge::MotorStates)
-(ros::advertise "/ocs/lfsensor" geometry_msgs::WrenchStamped)
-(ros::advertise "/ocs/rfsensor" geometry_msgs::WrenchStamped)
-(ros::advertise "/ocs/lhsensor" geometry_msgs::WrenchStamped)
-(ros::advertise "/ocs/rhsensor" geometry_msgs::WrenchStamped)
+(ros::advertise "/ocs/off_lfsensor" geometry_msgs::WrenchStamped)
+(ros::advertise "/ocs/off_rfsensor" geometry_msgs::WrenchStamped)
+(ros::advertise "/ocs/off_lhsensor" geometry_msgs::WrenchStamped)
+(ros::advertise "/ocs/off_rhsensor" geometry_msgs::WrenchStamped)
 (if *use-angle-vector-decompressor*
     (ros::advertise "/ocs/joint_states_compressed" drc_com_common::HumanoidJointAngles)
   (progn
