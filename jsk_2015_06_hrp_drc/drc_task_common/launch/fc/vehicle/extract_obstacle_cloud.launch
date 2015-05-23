@@ -10,7 +10,7 @@
     <!-- TF transformation -->
     <node pkg="nodelet" type="nodelet" name="transform_cloud"
           args="load jsk_pcl/TfTransformCloud $(arg MANAGER)">
-      <remap from="~input" to="/multisense/organized_image_points2_color" />
+      <remap from="~input" to="/multisense/resize_1_4/organized_image_points2_color" />
       <remap from="transform_cloud/output" to="transform_cloud/car_center" />
       <param name="target_frame_id" value="$(arg BASE_FRAME_ID)" />
     </node>

@@ -1,3 +1,5 @@
 <launch>
-  <param name="robot_description" command="$(find euscollada)/scripts/urdf_patch.py patch $(find hrpsys_ros_bridge_tutorials)/models/HRP2JSKNTS_WH_SENSORS.urdf $(find jsk_hrp2_ros_bridge)/calib_data/hrp2017_multisense_calib_20150224.yaml"/>
+  <group ns="ocs">
+    <param name="robot_description" command="$(find euscollada)/scripts/urdf_patch.py patch $(find hrpsys_ros_bridge_tutorials)/models/HRP2JSKNTS_WH_SENSORS.urdf $(find jsk_hrp2_ros_bridge)/calib_data/hrp2017_multisense_calib_20150224.yaml"/>
+  </group>
 </launch>

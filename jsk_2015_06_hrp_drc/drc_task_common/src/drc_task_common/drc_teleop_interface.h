@@ -48,6 +48,8 @@ namespace drc_task_common
     /* void callRequestStopST(); */
     void callRequestStopIMP();
 
+    void callRequestHandCalib();
+
     void callRequestDisplayManip();
     void callRequestHideManip();
     
