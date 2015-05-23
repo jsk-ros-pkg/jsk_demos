@@ -1,4 +1,5 @@
 # message for vehicle task from OCS to FC
+bool execute_flag
 
 # from operation interface 
 float32 handle_cmd # drive/operation/handle_cmd
