@@ -140,6 +140,7 @@
    (send self :controller-state :handle :initialize)
    (send self :controller-state :accel :initialize)
    (send self :controller-state :brake :initialize)
+   (send self :controller-state :neck :initialize)
    (send self :controller-mode :handle :stop)
    (send self :controller-mode :accel :stop)
    (send self :controller-mode :brake :stop)
@@ -317,6 +318,7 @@
      (send self :publish-body-relative-steering-coords)
      ;; move head front
      (warn "init-head~%")
+     (send self :controller-state :neck :running) ;; activate neck
      (send self :neck-cmd 0.0 :neck-p :time 2000)
      (send self :neck-cmd 0.0 :neck-y :time 2000)
      (warn "send-initial-pose~%")
@@ -548,13 +550,15 @@
    )
   (:neck-cmd
    (angle axis &key (time (* (+ (/ 1.0 ros-rate) 0.1) 1000))) ;; default time is rate-sec + offset
-   (let ((pub-msg (instance std_msgs::Float32 :init))
-         (topic-name (format nil "/drive/controller/neck_~A_angle" (string-trim "neck-" (string-downcase axis))))
-         current-angle
-         )
-     (setq current-angle (send motion :look-around angle axis :relative nil :time time))
-     (send pub-msg :data current-angle)
-     (ros::publish topic-name pub-msg)
+   (when (equal (send self :controller-state :neck) :running) ;; neck-state will be set as :running in :initialize function (neck should not move before :initialize function)
+     (let ((pub-msg (instance std_msgs::Float32 :init))
+           (topic-name (format nil "/drive/controller/neck_~A_angle" (string-trim "neck-" (string-downcase axis))))
+           current-angle
+           )
+       (setq current-angle (send motion :look-around angle axis :relative nil :time time))
+       (send pub-msg :data current-angle)
+       (ros::publish topic-name pub-msg)
+       )
      )
    )
   
@@ -1147,6 +1151,7 @@
       )
     (warn "make controller: ~A~%" controller-name)
     (setq *controller* (eval (list 'instance (read-from-string controller-name) :init :real real)))
+    (warn "ready to execute~%")
     ;; (send *controller* :initialize) ;; initialize can be called from ui
     (send *controller* :execute)
     )
