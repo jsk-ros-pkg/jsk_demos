@@ -463,16 +463,16 @@
                
                (t
                 (let*
-                    ((target-force-vector (mapcar #'(lambda (d) (scale -1 d)) dir)) 
-                     (diff-force (mapcar #'v- relative-force target-force-vector))
+                    ((target-force (mapcar #'(lambda (d) (scale -1 d)) dir)) 
+                     (diff-force  (mapcar #'(lambda (l rf tf) (v- (if (equal coords-system :world) rf (send (send (send tmp-robot l :end-coords) :copy-worldcoords) :inverse-rotate-vector rf)) tf)) limb relative-force target-force))
                      (mag-of-diff-force (mapcar #'norm diff-force)))
                   (setq finish-condition (mapcar #'(lambda (l fc ip) (or fc (when (> (norm (v- (send (send tmp-robot l :end-coords) :worldpos) ip)) max-dist) (warn "over max-dist~%" l) t))) limb finish-condition initial-pos))
 
                   (setq finish-condition (mapcar #'(lambda (l fc mdf) (or fc (when (< mdf thre) (warn "limb ~a touched~%" l) t)))
                                                  limb finish-condition mag-of-diff-force))
-                                        ;(setq ndir (mapcar #'(lambda (target diff) (scale (/ 1.0 (norm target)) diff)) target-force-vector diff-force))
+                                        ;(setq ndir (mapcar #'(lambda (target diff) (scale (/ 1.0 (norm target)) diff)) target-force diff-force))
                   (setq ndir (mapcar #'normalize-vector diff-force))
-                  (when debug (warn ";; mag-of-diff-force: ~a thre: ~a finish-cond: ~a ndir: ~a target ~a relative ~a~%" mag-of-diff-force thre finish-condition ndir target-force-vector relative-force))
+                  (when debug (warn ";; mag-of-diff-force: ~a thre: ~a finish-cond: ~a ndir: ~a target ~a relative ~a~%" mag-of-diff-force thre finish-condition ndir target-force relative-force))
                   ))
                )
          (unless (some #'not finish-condition)
