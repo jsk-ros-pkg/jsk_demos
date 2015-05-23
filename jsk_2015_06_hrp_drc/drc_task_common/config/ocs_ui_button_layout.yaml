@@ -85,7 +85,7 @@
   column: 2
 - name: 'cancel-motion-now'
   service: 'cancel_motion_now'
-  #image: "package://drc_task_common/icons/cancel.png" # todo
+  image: "package://drc_task_common/icons/cancel-motion.png"
   image_size: [100, 100]
   column: 2
 - name: 'skip-recog'
