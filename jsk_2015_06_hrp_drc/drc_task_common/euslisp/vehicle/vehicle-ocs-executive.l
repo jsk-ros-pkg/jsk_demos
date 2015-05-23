@@ -59,6 +59,10 @@
     (ros::publish "/ocs/drive/controller/max_step" tmp-msg)
     (setq tmp-msg (make-msg-from-tunnel msg :steering_diff_angle_vector std_msgs::Float32))
     (ros::publish "/ocs/drive/controller/steering_diff_angle_vector" tmp-msg)
+    (setq tmp-msg (make-msg-from-tunnel msg :neck_y_angle std_msgs::Float32))
+    (ros::publish "/ocs/drive/controller/neck_y_angle" tmp-msg)
+    (setq tmp-msg (make-msg-from-tunnel msg :neck_p_angle std_msgs::Float32))
+    (ros::publish "/ocs/drive/controller/neck_p_angle" tmp-msg)
     (setq tmp-msg (make-msg-from-tunnel msg :handle_mode std_msgs::String
                                         :convert #'convert-uint8-to-mode
                                         )
@@ -74,6 +78,8 @@
                                         )
           )
     (ros::publish "/ocs/drive/controller/neck_mode" tmp-msg)
+    (setq tmp-msg (make-msg-from-tunnel msg :obstacle_length std_msgs::Float32))
+    (ros::publish "/ocs/drive/recognition/obstacle_length/indicator" tmp-msg)
     (send *initialize-service-server* :receive (send msg :initialize_response))
     (send *grasp-service-server* :receive (send msg :grasp_response))
     (send *release-service-server* :receive (send msg :release_response))
@@ -163,10 +169,13 @@
 (ros::advertise "/ocs/drive/controller/step" std_msgs::Float32 1)
 (ros::advertise "/ocs/drive/controller/min_step" std_msgs::Float32 1)
 (ros::advertise "/ocs/drive/controller/max_step" std_msgs::Float32 1)
+(ros::advertise "/ocs/drive/controller/neck_y_angle" std_msgs::Float32 1)
+(ros::advertise "/ocs/drive/controller/neck_p_angle" std_msgs::Float32 1)
 (ros::advertise "/ocs/drive/controller/steering_diff_angle_vector" std_msgs::Float32 1)
 (ros::advertise "/ocs/drive/controller/handle_mode" std_msgs::String 1)
 (ros::advertise "/ocs/drive/controller/accel_mode" std_msgs::String 1)
 (ros::advertise "/ocs/drive/controller/neck_mode" std_msgs::String 1)
+(ros::advertise "/ocs/drive/recognition/obstacle_length/indicator" std_msgs::Float32 1)
 
 (ros::advertise-service "/ocs/drive/controller/initialize" std_srvs::Empty #'send *initialize-service-server* :callback)
 (ros::advertise-service "/ocs/drive/controller/grasp" std_srvs::Empty #'send *grasp-service-server* :callback)

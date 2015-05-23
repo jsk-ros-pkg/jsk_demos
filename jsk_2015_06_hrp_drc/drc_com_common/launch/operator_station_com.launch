@@ -8,6 +8,8 @@
   <arg name="DYNAMIC_RECONFIGURE_PORT" default="703"/>
   <arg name="EUS_OUTPUT_PORT" default="704"/>
   <arg name="EUS_INPUT_PORT" default="705"/>
+  <arg name="OCS_TO_FC_VEHICLE_PORT" default="706"/>
+  <arg name="FC_TO_OCS_VEHICLE_PORT" default="707"/>
 
   <arg name="USE_FLOAT_JOINT_ANGLES" default="true" />
   <remap from="/tf" to="/ocs/tf" />
@@ -77,6 +79,29 @@
       event_driven: true
     </rosparam>
   </node>
+
+  <!-- for vehicle task -->
+  <node pkg="jsk_network_tools" type="silverhammer_lowspeed_receiver.py"
+        output="log" launch-prefix="sudo"
+        name="ocs_from_fc_vehicle">
+    <rosparam subst_value="true">
+      message: drc_com_common/VehicleFC2OCSSmall
+      receive_port: $(arg FC_TO_OCS_VEHICLE_PORT)
+      receive_ip: "0.0.0.0"
+    </rosparam>
+  </node>
+  <node pkg="jsk_network_tools" type="silverhammer_lowspeed_streamer.py"
+        output="log"
+        name="ocs_to_fc_vehicle">
+    <rosparam subst_value="true">
+      message: drc_com_common/VehicleOCS2FCSmall
+      to_port: $(arg OCS_TO_FC_VEHICLE_PORT)
+      to_ip: $(arg FC_IP)
+      event_driven: true
+    </rosparam>
+  </node>
+  
+  
   <include file="$(find roseus_remote)/launch/roseus_eusclient.launch">
     <arg name="FC_IP" value="$(arg FC_IP)" />
     <arg name="OCS_IP" value="$(arg OCS_IP)" />

@@ -22,15 +22,9 @@
 
   <!-- vehicle_ui -->
   <group ns="$(arg OCS_NS)" if="$(arg LAUNCH_UI)">
-    <node pkg="topic_tools" type="throttle" name="vehicle_ui_lhsensor_throttle" args="messages /lhsensor 1 drive/throttled_lhsensor" />
-    <node pkg="topic_tools" type="throttle" name="vehicle_ui_rhsensor_throttle" args="messages /rhsensor 1 drive/throttled_rhsensor" />
-    <node pkg="topic_tools" type="throttle" name="vehicle_ui_lfsensor_throttle" args="messages /lfsensor 1 drive/throttled_lfsensor" />
-    <node pkg="topic_tools" type="throttle" name="vehicle_ui_rfsensor_throttle" args="messages /rfsensor 1 drive/throttled_rfsensor" />
     <node pkg="drc_task_common" type="vehicle_ui" name="vehicle_ui" respawn="true" >
-      <remap from="/lhsensor" to="drive/throttled_lhsensor" />
-      <remap from="/rhsensor" to="drive/throttled_rhsensor" />
-      <remap from="/lfsensor" to="drive/throttled_lfsensor" />
-      <remap from="/rfsensor" to="drive/throttled_rfsensor" />
+      <remap from="/chest_camera/image_color" to="/ocs/communication/panorama_image"/>
+      <remap from="/multisense/left/image_rect_color" to="/ocs/communication/image_rect_color"/>
     </node>
   </group>
 
@@ -38,7 +32,7 @@
   <group if="$(arg LAUNCH_STEERING)">
     <include file="$(find drc_task_common)/launch/fc/vehicle/handle_operation_interface.launch">
       <arg name="CONTROLLER_DEV" default="$(arg CONTROLLER_DEV)"/>
-      <arg name="OCS_NS" default="$(arg OCS_NS)"/>  
+      <arg name="OCS_NS" default="$(arg OCS_NS)"/>
     </include>
   </group>
 
