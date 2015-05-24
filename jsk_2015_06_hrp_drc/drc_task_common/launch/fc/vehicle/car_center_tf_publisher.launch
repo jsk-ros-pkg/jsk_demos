@@ -16,7 +16,7 @@
       <!-- dynamic_tf_publisher -->
       <node pkg="dynamic_tf_publisher" type="tf_publish.py" name="marker_dynamic_tf_publisher" />
       <!-- checkerboard_detector -->
-      <param name="display" type="int" value="1"/>
+      <param name="display" type="int" value="0"/>
       <param name="rect0_size_x" type="double" value="0.0152"/>
       <param name="rect0_size_y" type="double" value="0.0152"/>
       <param name="grid0_size_x" type="int" value="3"/>
