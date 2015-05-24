@@ -959,7 +959,7 @@ It sends :angle-vector to robot and return 'finished' message to ocs"
         (ros::ros-info "arm side empty")
         )
       )
-    (send *robot* :angle-vector (get-drill-reset-pose))
+    (send *robot* :angle-vector (get-reach-drill-pre-pose))
     (send *ri* :angle-vector (send *robot* :angle-vector) 10000)
     (send *ri* :wait-interpolation)
     (send self :send-rviz-button-finished-to-ocs))
