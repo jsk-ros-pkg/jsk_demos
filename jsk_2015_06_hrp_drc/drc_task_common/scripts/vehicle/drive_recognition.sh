@@ -35,18 +35,18 @@ elif [ $MODE = "rosbag" ]; then
     rosrun rviz rviz -sync -d $(rospack find gazebo_drive_simulator)/launch/atlas_drc_practice_task_1.rviz &
     roslaunch drc_task_common drive_rosbag_player.launch BAGFILE_NAME:=$FILENAME &
     # roslaunch drc_task_common car_center_tf_publisher.launch ROSBAG_MODE:="true" &
-    rosrun drc_task_common Magnetometer2Direction.py $GOAL_DIR & # deg
-    rostopic pub /drive/controller/step_on_flag std_msgs/Bool "true" &
+    # rosrun drc_task_common Magnetometer2Direction.py $GOAL_DIR & # deg
+    # rostopic pub /drive/controller/step_on_flag std_msgs/Bool "true" &
 else
     rosrun rviz rviz -sync -d $(rospack find gazebo_drive_simulator)/launch/atlas_drc_practice_task_1.rviz &
-    rosrun drc_task_common Magnetometer2Direction.py $GOAL_DIR & # deg
+    # rosrun drc_task_common Magnetometer2Direction.py $GOAL_DIR & # deg
 fi
 
 sleep 5
 roslaunch drc_task_common extract_obstacle_cloud.launch &
 sleep 3
 # roslaunch drc_task_common obstacle_detection.launch &
-roslaunch drc_task_common local_planner.launch &
+# roslaunch drc_task_common local_planner.launch &
 roslaunch drc_task_common driver_assist.launch &
 sleep 5
 rosrun rqt_reconfigure rqt_reconfigure &
