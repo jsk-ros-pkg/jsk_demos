@@ -9,7 +9,7 @@ from python_qt_binding.QtGui import (QAction, QIcon, QMenu, QWidget,
 from python_qt_binding.QtCore import (Qt, QTimer, qWarning, Slot, QEvent, QSize,
                                       pyqtSignal,
                                       pyqtSlot)
-from drc_task_common.srv import SetValue, StringRequest
+from drc_task_common.srv import SetValue, StringRequest, Uint8Request
 from threading import Lock
 import rospy
 import python_qt_binding.QtCore as QtCore
@@ -108,7 +108,7 @@ class VehicleUIWidget(QWidget):
 
         execute_vbox = QtGui.QVBoxLayout(self)
         execute_group = QtGui.QGroupBox("", self)
-        self.execute_button = QtGui.QPushButton("EXECUTE")
+        self.execute_button = QtGui.QPushButton("EXECUTE COMMUNICATION")
         self.execute_flag_publisher = rospy.Publisher("drive/execute_flag", Bool)
         self.execute_button.setCheckable(True)
         self.execute_button.clicked[bool].connect(self.setExecuteFlagCallback)
@@ -116,6 +116,16 @@ class VehicleUIWidget(QWidget):
         execute_vbox.addWidget(self.execute_button)
         execute_group.setLayout(execute_vbox)
         left_vbox.addWidget(execute_group)
+
+        real_vbox = QtGui.QVBoxLayout(self)
+        real_group = QtGui.QGroupBox("", self)
+        self.real_button = QtGui.QPushButton("SEND TO REAL ROBOT")
+        self.real_button.setCheckable(True)
+        self.real_button.clicked[bool].connect(self.setRealCallback)
+        self.real_button.setStyleSheet("background-color: lightgreen")
+        real_vbox.addWidget(self.real_button)
+        real_group.setLayout(real_vbox)
+        left_vbox.addWidget(real_group)
         
         handle_mode_vbox = QtGui.QVBoxLayout(self)
         handle_mode_group = QtGui.QGroupBox("Handle Mode", self)
@@ -425,7 +435,9 @@ class VehicleUIWidget(QWidget):
         self.handle_angle_vector_diff_sub = rospy.Subscriber(
             "drive/controller/steering_diff_angle_vector", std_msgs.msg.Float32, self.steeringDiffAngleVectorCallback)
         self.obstacle_length_sub = rospy.Subscriber(
-            "drive/recognition/obstacle_length/indicator", std_msgs.msg.Float32, self.obstacleLengthCallback)
+            "drive/recognition/obstacle_length/indicator", std_msgs.msg.Float32, self.obstacleLengthCallback)       
+        self.real_sub = rospy.Subscriber(
+            "drive/controller/real", std_msgs.msg.Bool, self.realCallback)
     def lhsensorCallback(self, msg):
         self.lhsensor_msg = msg
     def rhsensorCallback(self, msg):
@@ -474,7 +486,15 @@ class VehicleUIWidget(QWidget):
         else:
             self.execute_button.setStyleSheet("background-color: lightgreen")
         self.execute_flag_publisher.publish(pub_msg)
-            
+
+    def setRealCallback(self, pressed):
+        if pressed:
+            self.callUint8RequestService("drive/controller/set_real", 1)
+            self.real_button.setStyleSheet("background-color: red")
+        else:
+            self.callUint8RequestService("drive/controller/set_real", 0)            
+            self.real_button.setStyleSheet("background-color: lightgreen")
+        
     def stepGageValueCallback(self, msg):
         with self.lock:
             self.step_gage_value_label.setText(str(msg.data))
@@ -541,6 +561,15 @@ class VehicleUIWidget(QWidget):
         with self.lock:
             self.obstacle_length_value = msg.data
             self.obstacle_length_value_label.setText(str(int(msg.data)))
+    def realCallback(self, msg):
+        with self.lock:
+            if msg.data:
+                self.real_button.setChecked(True)
+                self.real_button.setStyleSheet("background-color: red")
+            else:
+                self.real_button.setChecked(False)                
+                self.real_button.setStyleSheet("background-color: lightgreen")
+
     # Event callback
     def minUpButtonCallback(self, event):
         current_value = float(self.step_min_edit.text())
@@ -618,6 +647,16 @@ class VehicleUIWidget(QWidget):
         except rospy.ServiceException, e:
             self.showError("Failed to call " + service_name)
             return None
+
+    def callUint8RequestService(self, service_name, value):
+        try:
+            update_value = rospy.ServiceProxy(service_name, Uint8Request)
+            update_value(value)
+            return
+        except rospy.ServiceException, e:
+            self.showError("Failed to call " + service_name)
+            return
+
     def timerEvent(self, event):
         label_list = [self.lhsensor_labels, self.rhsensor_labels, self.lfsensor_labels, self.rfsensor_labels]
         msg_list = [self.lhsensor_msg, self.rhsensor_msg, self.lfsensor_msg, self.rfsensor_msg]
