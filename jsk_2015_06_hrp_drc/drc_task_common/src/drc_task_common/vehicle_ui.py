@@ -436,25 +436,28 @@ class VehicleUIWidget(QWidget):
         self.neck_p_angle_msg = msg
 
     def updateForceSensor(self, label, msg):
-        max_force = None
-        max_direction = None
-        index_to_direction = {0:":x", 1:":y", 2:":z"}
-        for idx, value in enumerate([str(msg.wrench.force.x), str(msg.wrench.force.y), str(msg.wrench.force.z)]):
-            if max_force == None or abs(float(value)) > abs(max_force):
-                max_force = round(float(value), 3)
-                max_direction = index_to_direction[idx]
-        label.setText(max_direction + " " + str(max_force))
-        if abs(max_force) > 150.0: # threshould
+        # max_force = None
+        # max_direction = None
+        # index_to_direction = {0:":x", 1:":y", 2:":z"}
+        # for idx, value in enumerate([str(msg.wrench.force.x), str(msg.wrench.force.y), str(msg.wrench.force.z)]):
+        #     if max_force == None or abs(float(value)) > abs(max_force):
+        #         max_force = round(float(value), 3)
+        #         max_direction = index_to_direction[idx]
+        # label.setText(max_direction + " " + str(max_force))
+        force = np.sqrt(msg.wrench.force.x ** 2 + msg.wrench.force.y ** 2 + msg.wrench.force.z ** 2)
+        label.setText("Force: " + str(round(force, 3)))
+        
+        if abs(force) > 150.0: # threshould
             label.setAutoFillBackground(True);
             palette = QtGui.QPalette()
             palette.setColor(QtGui.QPalette.Background,QtCore.Qt.red)
             label.setPalette(palette)
-        elif abs(max_force) > 100.0: # threshould
+        elif abs(force) > 100.0: # threshould
             label.setAutoFillBackground(True);
             palette = QtGui.QPalette()
             palette.setColor(QtGui.QPalette.Background,QtCore.Qt.yellow)
             label.setPalette(palette)
-        elif abs(max_force) > 50.0: # threshould
+        elif abs(force) > 50.0: # threshould
             label.setAutoFillBackground(True);
             palette = QtGui.QPalette()
             palette.setColor(QtGui.QPalette.Background,QtCore.Qt.green)
