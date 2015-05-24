@@ -291,34 +291,38 @@ class VehicleUIWidget(QWidget):
         
         lhsensor_group = QtGui.QGroupBox("LARM Force")
         lhsensor_vbox = QtGui.QVBoxLayout()
-        self.lhsensor_label = QtGui.QLabel("-1")
-        self.lhsensor_label.setFont(font)
+        self.lhsensor_labels = [QtGui.QLabel("-1"), QtGui.QLabel("-1")]
+        for label in self.lhsensor_labels:
+            label.setFont(font)
+            lhsensor_vbox.addWidget(label)
         self.lhsensor_msg = None
-        lhsensor_vbox.addWidget(self.lhsensor_label)
         lhsensor_group.setLayout(lhsensor_vbox)
         lower_left_vbox.addWidget(lhsensor_group)
         rhsensor_group = QtGui.QGroupBox("RARM Force")
         rhsensor_vbox = QtGui.QVBoxLayout()
-        self.rhsensor_label = QtGui.QLabel("-1")
-        self.rhsensor_label.setFont(font)
+        self.rhsensor_labels = [QtGui.QLabel("-1"), QtGui.QLabel("-1")]
+        for label in self.rhsensor_labels:
+            label.setFont(font)
+            rhsensor_vbox.addWidget(label)
         self.rhsensor_msg = None
-        rhsensor_vbox.addWidget(self.rhsensor_label)
         rhsensor_group.setLayout(rhsensor_vbox)
         lower_left_vbox.addWidget(rhsensor_group)
         lfsensor_group = QtGui.QGroupBox("LLEG Force")
         lfsensor_vbox = QtGui.QVBoxLayout()
-        self.lfsensor_label = QtGui.QLabel("-1")
-        self.lfsensor_label.setFont(font)
+        self.lfsensor_labels = [QtGui.QLabel("-1"), QtGui.QLabel("-1")]
+        for label in self.lfsensor_labels:
+            label.setFont(font)
+            lfsensor_vbox.addWidget(label)
         self.lfsensor_msg = None
-        lfsensor_vbox.addWidget(self.lfsensor_label)
         lfsensor_group.setLayout(lfsensor_vbox)
         lower_left_vbox.addWidget(lfsensor_group)
         rfsensor_group = QtGui.QGroupBox("RLEG Force")
         rfsensor_vbox = QtGui.QVBoxLayout()
-        self.rfsensor_label = QtGui.QLabel("-1")
-        self.rfsensor_label.setFont(font)
+        self.rfsensor_labels = [QtGui.QLabel("-1"), QtGui.QLabel("-1")]
+        for label in self.rfsensor_labels:
+            label.setFont(font)
+            rfsensor_vbox.addWidget(label)
         self.rfsensor_msg = None
-        rfsensor_vbox.addWidget(self.rfsensor_label)
         rfsensor_group.setLayout(rfsensor_vbox)
         lower_left_vbox.addWidget(rfsensor_group)
         lower_left_container = QtGui.QWidget()
@@ -436,34 +440,32 @@ class VehicleUIWidget(QWidget):
         self.neck_p_angle_msg = msg
 
     def updateForceSensor(self, label, msg):
-        # max_force = None
-        # max_direction = None
-        # index_to_direction = {0:":x", 1:":y", 2:":z"}
-        # for idx, value in enumerate([str(msg.wrench.force.x), str(msg.wrench.force.y), str(msg.wrench.force.z)]):
-        #     if max_force == None or abs(float(value)) > abs(max_force):
-        #         max_force = round(float(value), 3)
-        #         max_direction = index_to_direction[idx]
-        # label.setText(max_direction + " " + str(max_force))
         force = np.sqrt(msg.wrench.force.x ** 2 + msg.wrench.force.y ** 2 + msg.wrench.force.z ** 2)
-        label.setText("Force: " + str(round(force, 3)))
-        
-        if abs(force) > 150.0: # threshould
+        moment = np.sqrt(msg.wrench.torque.x ** 2 + msg.wrench.torque.y ** 2 + msg.wrench.torque.z ** 2)
+        label[0].setText("F: " + str(round(force, 2)))
+        self.setBackgroundColorByThreshould(label[0], force, 150.0, 100.0, 50.0)
+        label[1].setText("M: " + str(round(moment, 2)))
+        self.setBackgroundColorByThreshould(label[1], moment, 40.0, 20.0, 10.0)
+
+    def setBackgroundColorByThreshould(self, label, value, threshould_red, threshould_yellow, threshould_green):
+        if abs(value) > threshould_red: # threshould
             label.setAutoFillBackground(True);
             palette = QtGui.QPalette()
             palette.setColor(QtGui.QPalette.Background,QtCore.Qt.red)
             label.setPalette(palette)
-        elif abs(force) > 100.0: # threshould
+        elif abs(value) > threshould_yellow: # threshould
             label.setAutoFillBackground(True);
             palette = QtGui.QPalette()
             palette.setColor(QtGui.QPalette.Background,QtCore.Qt.yellow)
             label.setPalette(palette)
-        elif abs(force) > 50.0: # threshould
+        elif abs(value) > threshould_green: # threshould
             label.setAutoFillBackground(True);
             palette = QtGui.QPalette()
             palette.setColor(QtGui.QPalette.Background,QtCore.Qt.green)
             label.setPalette(palette)
         else:
-            label.setAutoFillBackground(False);
+           label.setAutoFillBackground(False);       
+
     def setExecuteFlagCallback(self, pressed):
         pub_msg = Bool()
         if pressed:
@@ -617,7 +619,7 @@ class VehicleUIWidget(QWidget):
             self.showError("Failed to call " + service_name)
             return None
     def timerEvent(self, event):
-        label_list = [self.lhsensor_label, self.rhsensor_label, self.lfsensor_label, self.rfsensor_label]
+        label_list = [self.lhsensor_labels, self.rhsensor_labels, self.lfsensor_labels, self.rfsensor_labels]
         msg_list = [self.lhsensor_msg, self.rhsensor_msg, self.lfsensor_msg, self.rfsensor_msg]
         with self.lock:
             if self.neck_p_angle_msg != None:
