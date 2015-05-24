@@ -150,7 +150,7 @@
 ;; initialize drill and robot
 (defun set-drill-environment
   (&key (arm :rarm) (drill-coords (make-coords :pos (float-vector 700 -150 800) :rpy (list 0 0 0)))
-        (generate-ri? t) (draw? t)
+        (generate-ri? t) (draw? nil)
         ;(robot-name "HRP2JSKNT")
         (drill-type *default-drill-type*) ;; not used now
         (recognized-coords-symbol :origin-coords))
@@ -193,8 +193,9 @@
   (when (or draw? (boundp '*irtviewer*))
     (objects (list *robot* *drill* *ground*)))
   (when draw?
-    (when (boundp '*irtviewer*) (send *irtviewer* :draw-objects))
-    (send *irtviewer* :change-background (float-vector 0.5 0.5 1))
+    (when (boundp '*irtviewer*) (send *irtviewer* :draw-objects)
+          (send *irtviewer* :change-background (float-vector 0.5 0.5 1))
+          )
     )
   )
 
@@ -1515,7 +1516,7 @@
   )
 
 (defun publish-drill-wall-motion
-  (&key coords-list (step-time 400) (update? t) (drill-type *default-drill-type*)
+  (&key coords-list (step-time 100) (update? t) (drill-type *default-drill-type*)
         (stand-coords nil) (overwrite-stand-coords? nil)
         (draw? nil)
         )
@@ -1723,7 +1724,7 @@
   (check-diff-angle)
   )
 (defun publish-drill-rotate-motion
-  (&key drill-coords plane-coords (step-time 400) (update? t) (publish? t) (use-ri? nil) angle-vector (move-robot-model? t) (draw? nil))
+  (&key drill-coords plane-coords (step-time 100) (update? t) (publish? t) (use-ri? nil) angle-vector (move-robot-model? t) (draw? nil))
   (let ((ret (get-drill-rotate-motion-full drill-coords plane-coords :use-ri? use-ri? :angle-vector angle-vector :draw? draw?)))
     (when (not (equal (elt ret 0) :rotate))
       (when (and (consp ret) (boundp '*app*))
