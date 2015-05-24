@@ -6,6 +6,9 @@
 (ros::roseus-add-srvs "drc_task_common")
 (ros::roseus "vehicle_ocs_executive")
 
+(setq *vehicle-ocs-executive-enable-flag* nil)
+
+(setq *latest-execute-flag* nil)
 (setq *latest-handle-cmd* nil)
 (setq *latest-accel-cmd* nil)
 (setq *latest-brake-cmd* nil)
@@ -29,6 +32,9 @@
 (setq *operation-initialize-service-client* (instance empty-service-client :init "/ocs/drive/operation/initialize"))
 (setq *operation-synchronize-service-client* (instance operation-synchronize-service-client :init "/ocs/drive/operation/synchronize"))
 
+(defun execute-flag-callback (msg)
+  (setq *latest-execute-flag* (send msg :data))
+  )
 (defun handle-cmd-callback (msg)
   (setq *latest-handle-cmd* (send msg :data))
   )
@@ -107,6 +113,7 @@
 
 (defun main-spin-once ()
   (let ((msg (instance drc_com_common::VehicleOCS2FCSmall :init)))
+    (send msg :execute_flag *latest-execute-flag*)
     (when *latest-handle-cmd*
       (send msg :handle_cmd *latest-handle-cmd*)
       )
@@ -148,7 +155,10 @@
     (send msg :operation_synchronize_handle_response (elt (send *operation-synchronize-service-client* :response) 1))
     (send msg :operation_synchronize_accel_response (elt (send *operation-synchronize-service-client* :response) 2))
     (send msg :operation_synchronize_neck_response (elt (send *operation-synchronize-service-client* :response) 3))
-    (ros::publish "/ocs_to_fc_vehicle/input" msg)
+    (when *vehicle-ocs-executive-enable-flag*
+      (ros::publish "/ocs_to_fc_vehicle/input" msg)
+      )
+    (setq *vehicle-ocs-executive-enable-flag* *latest-execute-flag*)
     )
   )
 
@@ -157,6 +167,7 @@
 (ros::subscribe "/ocs_from_fc_vehicle/output" drc_com_common::VehicleFC2OCSSmall #'fc-message-callback)
 
 ;; message from operation interface (drive/operation)
+(ros::subscribe "/ocs/drive/execute_flag" std_msgs::Bool #'execute-flag-callback)
 (ros::subscribe "/ocs/drive/operation/handle_cmd" std_msgs::Float64 #'handle-cmd-callback)
 (ros::subscribe "/ocs/drive/operation/accel_cmd" std_msgs::Float64 #'accel-cmd-callback)
 (ros::subscribe "/ocs/drive/operation/brake_cmd" std_msgs::Float64 #'brake-cmd-callback)

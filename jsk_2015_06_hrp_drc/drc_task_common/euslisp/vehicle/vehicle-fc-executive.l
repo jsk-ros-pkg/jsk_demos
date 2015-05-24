@@ -5,6 +5,8 @@
 (ros::roseus-add-msgs "drc_com_common")
 (ros::roseus "vehicle_fc_executive")
 
+(setq *vehicle-fc-executive-enable-flag* nil)
+
 (setq *latest-goal-handle-angle* nil)
 (setq *latest-estimated-handle-angle* nil)
 (setq *latest-step* nil)
@@ -37,6 +39,7 @@
 
 (defun ocs-message-callback (msg)
   (let (tmp-msg)
+    (setq *vehicle-fc-executive-enable-flag* (send msg :execute_flag))
     (setq tmp-msg (make-msg-from-tunnel msg :handle_cmd std_msgs::Float64))
     (ros::publish "/drive/operation/handle_cmd" tmp-msg)
     (setq tmp-msg (make-msg-from-tunnel msg :accel_cmd std_msgs::Float64))
@@ -168,7 +171,10 @@
     (send msg :operation_synchronize_handle_request (elt (send *operation-synchronize-service-server* :request) 1))
     (send msg :operation_synchronize_accel_request (elt (send *operation-synchronize-service-server* :request) 2))
     (send msg :operation_synchronize_neck_request (elt (send *operation-synchronize-service-server* :request) 3))
-    (ros::publish "/fc_to_ocs_vehicle/input" msg)
+
+    (when *vehicle-fc-executive-enable-flag*
+        (ros::publish "/fc_to_ocs_vehicle/input" msg)
+      )
     )
   )
 

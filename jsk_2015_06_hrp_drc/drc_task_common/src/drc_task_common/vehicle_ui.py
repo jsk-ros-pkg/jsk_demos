@@ -105,6 +105,18 @@ class VehicleUIWidget(QWidget):
             self.showError("Failed to call drive/controller/set_neck_mode")
     
     def setUpLeftBox(self, left_vbox):
+
+        execute_vbox = QtGui.QVBoxLayout(self)
+        execute_group = QtGui.QGroupBox("", self)
+        self.execute_button = QtGui.QPushButton("EXECUTE")
+        self.execute_flag_publisher = rospy.Publisher("drive/execute_flag", Bool)
+        self.execute_button.setCheckable(True)
+        self.execute_button.clicked[bool].connect(self.setExecuteFlagCallback)
+        self.execute_button.setStyleSheet("background-color: lightgreen")
+        execute_vbox.addWidget(self.execute_button)
+        execute_group.setLayout(execute_vbox)
+        left_vbox.addWidget(execute_group)
+        
         handle_mode_vbox = QtGui.QVBoxLayout(self)
         handle_mode_group = QtGui.QGroupBox("Handle Mode", self)
         self.handle_mode_list = QListWidget()
@@ -411,7 +423,15 @@ class VehicleUIWidget(QWidget):
             label.setPalette(palette)
         else:
             label.setAutoFillBackground(False);
-    
+    def setExecuteFlagCallback(self, pressed):
+        pub_msg = Bool()
+        if pressed:
+            pub_msg.data = True
+            self.execute_button.setStyleSheet("background-color: red")
+        else:
+            self.execute_button.setStyleSheet("background-color: lightgreen")
+        self.execute_flag_publisher.publish(pub_msg)
+            
     def stepGageValueCallback(self, msg):
         with self.lock:
             self.step_gage_label.setText(str(msg.data))
