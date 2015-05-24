@@ -112,8 +112,8 @@
    (limb)
    ;; (send *ri* :start-impedance limb :moment-gain #f(0 0 0) :D-p 400 :K-p 800)
    ;; (send *ri* :start-impedance limb :moment-gain #f(0 0 0) :M-p 0.0 :D-p 400 :K-p 800) ;; M = 0 temporarily for impedance follow-up
-   (send *ri* :start-impedance limb :M-p 0.0 :D-p 400 :K-p 800
-         :moment-gain #f(1 1 1) :M-r 0.0 :D-r 150 :K-r 200
+   (send *ri* :start-impedance limb :M-p 0.0 :D-p 800 :K-p 1200
+         :moment-gain #f(1 1 1) :M-r 0.0 :D-r 300 :K-r 400
          ) ;; M = 0 temporarily for impedance follow-up
    )
   (:set-impedance-for-support
