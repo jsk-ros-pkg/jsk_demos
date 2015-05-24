@@ -104,6 +104,10 @@
    (&rest args &key (target-handle :floor-footrest) &allow-other-keys)
    (send-super* :approach-floor :target-handle target-handle args)
    )
+  (:estimate-current-handle-angle
+   (&rest args &key (offset (scale -1 #f(-45 -10 0))) &allow-other-keys)
+   (send-super* :estimate-current-handle-angle :offset offset args)
+   )
   (:set-impedance-for-handle
    (limb)
    ;; (send *ri* :start-impedance limb :moment-gain #f(0 0 0) :D-p 400 :K-p 800)

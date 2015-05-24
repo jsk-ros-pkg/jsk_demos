@@ -944,7 +944,7 @@
 
   ;; handle angle estimation
   (:estimate-current-handle-angle
-   ()
+   (&rest args &key (offset #f(0 0 0)) (offset-wrt :local)) ;; offset is from end-coords to grasp-point  
    (let ((current-angle old-estimated-handle-angle)
          (half-range 180)
          (pub-msg (instance std_msgs::Float32 :init))
@@ -958,6 +958,7 @@
      ;; get current end-coords and resume angle-vector
      (send (send motion :robot) :angle-vector (send *ri* :state :potentio-vector))
      (setq current-end-coords (send (send motion :robot) (send motion :grasp-arm) :end-coords :copy-worldcoords))
+     (send current-end-coords :translate offset offset-wrt)
      (send (send motion :robot) :angle-vector tmp-angle-vector)
      ;; fix steering-center coords to 0[deg], handle-joint is counter-clockwise
      (setq steering-center-coords-at-zero-deg (send (send (send motion :car :vehicle-handle :steering-center) :copy-worldcoords)
