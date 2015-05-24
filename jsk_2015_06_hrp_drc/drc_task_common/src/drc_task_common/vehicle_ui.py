@@ -268,11 +268,29 @@ class VehicleUIWidget(QWidget):
         left_container = QtGui.QWidget()
         right_container = QtGui.QWidget()
         lower_left_vbox = QtGui.QVBoxLayout()
-
-        lhsensor_group = QtGui.QGroupBox("LARM Force")
-        lhsensor_vbox = QtGui.QVBoxLayout()
         font = QtGui.QFont()
         font.setPointSize(16)
+
+        neck_y_group = QtGui.QGroupBox("Neck Yaw Angle")
+        neck_y_angle_vbox = QtGui.QHBoxLayout()
+        self.neck_y_angle_value_label = QtGui.QLabel("-1.0") # Initial value
+        self.neck_y_angle_value_label.setFont(font)
+        self.neck_y_angle_msg = None
+        neck_y_angle_vbox.addWidget(self.neck_y_angle_value_label)
+        neck_y_group.setLayout(neck_y_angle_vbox)
+        lower_left_vbox.addWidget(neck_y_group)
+
+        neck_p_group = QtGui.QGroupBox("Neck Pitch Angle")
+        neck_p_angle_vbox = QtGui.QHBoxLayout()
+        self.neck_p_angle_value_label = QtGui.QLabel("-1.0") # Initial value
+        self.neck_p_angle_value_label.setFont(font)
+        self.neck_p_angle_msg = None
+        neck_p_angle_vbox.addWidget(self.neck_p_angle_value_label)
+        neck_p_group.setLayout(neck_p_angle_vbox)
+        lower_left_vbox.addWidget(neck_p_group)
+        
+        lhsensor_group = QtGui.QGroupBox("LARM Force")
+        lhsensor_vbox = QtGui.QVBoxLayout()
         self.lhsensor_label = QtGui.QLabel("-1")
         self.lhsensor_label.setFont(font)
         self.lhsensor_msg = None
@@ -371,6 +389,10 @@ class VehicleUIWidget(QWidget):
             "drive/controller/min_step", std_msgs.msg.Float32, self.minStepGageValueCallback)
         self.max_step_value_sub = rospy.Subscriber(
             "drive/controller/max_step", std_msgs.msg.Float32, self.maxStepGageValueCallback)
+        self.neck_y_angle_value_sub = rospy.Subscriber(
+            "drive/controller/neck_y_angle", std_msgs.msg.Float32, self.neckYawAngleCallback)
+        self.neck_p_angle_value_sub = rospy.Subscriber(
+            "drive/controller/neck_p_angle", std_msgs.msg.Float32, self.neckPitchAngleCallback)
         self.lleg_force_sub = rospy.Subscriber(
             "/lhsensor", geometry_msgs.msg.WrenchStamped, self.lhsensorCallback)
         self.rleg_force_sub = rospy.Subscriber(
@@ -397,6 +419,11 @@ class VehicleUIWidget(QWidget):
         self.lfsensor_msg = msg
     def rfsensorCallback(self, msg):
         self.rfsensor_msg = msg
+    def neckYawAngleCallback(self, msg):
+        self.neck_y_angle_msg = msg
+    def neckPitchAngleCallback(self, msg):
+        self.neck_p_angle_msg = msg
+
     def updateForceSensor(self, label, msg):
         max_force = None
         max_direction = None
@@ -579,10 +606,13 @@ class VehicleUIWidget(QWidget):
         label_list = [self.lhsensor_label, self.rhsensor_label, self.lfsensor_label, self.rfsensor_label]
         msg_list = [self.lhsensor_msg, self.rhsensor_msg, self.lfsensor_msg, self.rfsensor_msg]
         with self.lock:
+            if self.neck_p_angle_msg != None:
+                self.neck_p_angle_value_label.setText(str(self.neck_p_angle_msg.data))
+            if self.neck_y_angle_msg != None:
+                self.neck_y_angle_value_label.setText(str(self.neck_p_angle_msg.data))
             for (label, msg) in zip(label_list, msg_list):
                 if msg != None:
                     self.updateForceSensor(label, msg)
-        
             
     def showError(self, message):
         QMessageBox.about(self, "ERROR", message)
