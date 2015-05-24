@@ -1737,8 +1737,10 @@
       (return-from publish-drill-rotate-motion ret)
       )
     (ros::ros-info "drill-ik-results: ~a~%" *drill-ik-results*)
-    (when (and publish? move-robot-model?) (move-robot-model (make-coords) "ground")
-          (store-motion-joint-states (append *drill-motion-in* *drill-motion-up*) :step-time step-time))
+    (when move-robot-model? (move-robot-model (make-coords) "ground"))
+    (when publish?
+      (store-motion-joint-states (append *drill-motion-in* *drill-motion-up*) :step-time step-time))
+    
     
     (when (and (consp ret) (boundp '*app*))
       (send *app* :show-text (format nil "result, ~A" (elt ret 0)))
