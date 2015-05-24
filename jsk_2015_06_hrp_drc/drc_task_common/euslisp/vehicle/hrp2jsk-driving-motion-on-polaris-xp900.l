@@ -93,19 +93,27 @@
    (send-super* :approach-handle :offset offset args)
    )
   (:grasp-handle
-   (&rest args &key (offset #f(-70 -15 0)) &allow-other-keys)
+   (&rest args &key (offset #f(-45 -10 0)) &allow-other-keys)
    (send-super* :grasp-handle :offset offset args)
+   )
+  (:turn-handle-once
+   (deg &rest args &key (offset #f(-45 -10 0)) &allow-other-keys)
+   (send-super* :turn-handle-once deg :offset offset args)
    )
   (:approach-floor
    (&rest args &key (target-handle :floor-footrest) &allow-other-keys)
    (send-super* :approach-floor :target-handle target-handle args)
    )
+  (:estimate-current-handle-angle
+   (&rest args &key (offset (scale -1 #f(-45 -10 0))) &allow-other-keys)
+   (send-super* :estimate-current-handle-angle :offset offset args)
+   )
   (:set-impedance-for-handle
    (limb)
    ;; (send *ri* :start-impedance limb :moment-gain #f(0 0 0) :D-p 400 :K-p 800)
    ;; (send *ri* :start-impedance limb :moment-gain #f(0 0 0) :M-p 0.0 :D-p 400 :K-p 800) ;; M = 0 temporarily for impedance follow-up
-   (send *ri* :start-impedance limb :M-p 0.0 :D-p 400 :K-p 800
-         :moment-gain #f(1 1 1) :M-r 0.0 :D-r 150 :K-r 200
+   (send *ri* :start-impedance limb :M-p 0.0 :D-p 800 :K-p 1200
+         :moment-gain #f(1 1 1) :M-r 0.0 :D-r 300 :K-r 400
          ) ;; M = 0 temporarily for impedance follow-up
    )
   (:set-impedance-for-support

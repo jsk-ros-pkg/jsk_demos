@@ -944,7 +944,7 @@
 
   ;; handle angle estimation
   (:estimate-current-handle-angle
-   ()
+   (&rest args &key (offset #f(0 0 0)) (offset-wrt :local)) ;; offset is from end-coords to grasp-point  
    (let ((current-angle old-estimated-handle-angle)
          (half-range 180)
          (pub-msg (instance std_msgs::Float32 :init))
@@ -958,6 +958,7 @@
      ;; get current end-coords and resume angle-vector
      (send (send motion :robot) :angle-vector (send *ri* :state :potentio-vector))
      (setq current-end-coords (send (send motion :robot) (send motion :grasp-arm) :end-coords :copy-worldcoords))
+     (send current-end-coords :translate offset offset-wrt)
      (send (send motion :robot) :angle-vector tmp-angle-vector)
      ;; fix steering-center coords to 0[deg], handle-joint is counter-clockwise
      (setq steering-center-coords-at-zero-deg (send (send (send motion :car :vehicle-handle :steering-center) :copy-worldcoords)
@@ -975,7 +976,12 @@
      (setq estimated-angle-offset (rad2deg (atan (elt relative-grasp-point-pos-from-steerint-center 1) (elt relative-grasp-point-pos-from-steerint-center 0))))
      (setq estimated-angle (+ estimated-angle estimated-angle-offset)) ;; current estimated angle is 0-360
      (let ((counter 0)) ;; slide range of estimated angle according to old-estimated-handle-angle
-       (while (not (and (<= (- old-estimated-handle-angle half-range) estimated-angle) (<= estimated-angle (+ old-estimated-handle-angle half-range))))
+       (while (not (and (<= (- old-estimated-handle-angle half-range) estimated-angle)
+                        (<= estimated-angle (+ old-estimated-handle-angle half-range))
+                        (<= (send motion :car :handle-joint :min-angle) estimated-angle)
+                        (<= estimated-angle (send motion :car :handle-joint :max-angle))
+                        )
+                   )
          (when (< estimated-angle (- old-estimated-handle-angle half-range))
            (setq estimated-angle (+ estimated-angle (* half-range 2)))
            )
