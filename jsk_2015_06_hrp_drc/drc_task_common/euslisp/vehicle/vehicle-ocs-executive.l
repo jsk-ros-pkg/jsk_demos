@@ -85,6 +85,8 @@
                                         )
           )
     (ros::publish "/ocs/drive/controller/neck_mode" tmp-msg)
+    (setq tmp-msg (make-msg-from-tunnel msg :real std_msgs::Bool))
+    (ros::publish "/ocs/drive/controller/real" tmp-msg)
     (setq tmp-msg (make-msg-from-tunnel msg :obstacle_length std_msgs::Float32))
     (ros::publish "/ocs/drive/recognition/obstacle_length/indicator" tmp-msg)
     (send *initialize-service-server* :receive (send msg :initialize_response))
@@ -190,6 +192,7 @@
 (ros::advertise "/ocs/drive/controller/handle_mode" std_msgs::String 1)
 (ros::advertise "/ocs/drive/controller/accel_mode" std_msgs::String 1)
 (ros::advertise "/ocs/drive/controller/neck_mode" std_msgs::String 1)
+(ros::advertise "/ocs/drive/controller/real" std_msgs::Bool 1)
 (ros::advertise "/ocs/drive/recognition/obstacle_length/indicator" std_msgs::Float32 1)
 
 (ros::advertise-service "/ocs/drive/controller/initialize" std_srvs::Empty #'send *initialize-service-server* :callback)
