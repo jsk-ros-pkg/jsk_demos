@@ -18,11 +18,6 @@
           args="$(find drc_task_common)/euslisp/vehicle/$(arg ROBOT)-driving-controller-on-polaris-xp900.l '($(arg ROBOT)-vehicle-main)'" />
   </group>
 
-  <group if="$(arg LAUNCH_RVIZ)">
-    <node pkg="rviz" type="rviz" name="vehicle_rviz" args="-d $(find drc_task_common)/config/vehicle_operator.rviz"
-          respawn="true"/>
-  </group>
-
   <!-- recognition -->
   <group if="$(arg LAUNCH_CAR_CENTER)">
     <include file="$(find drc_task_common)/launch/fc/vehicle/car_center_tf_publisher.launch">
