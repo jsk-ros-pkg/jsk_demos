@@ -1,16 +1,11 @@
 #!/usr/bin/env python
 import rospy
 import numpy
-import imp
-## import message_filters
-# try:
-#     imp.find_module(PKG)
-# except:
-#     import roslib;roslib.load_manifest(PKG)
 
 from visualization_msgs.msg import Marker, MarkerArray
 from std_msgs.msg import *
 from geometry_msgs.msg import *
+import tf
 from math import pi
 
 class CarPathVisualizer:
@@ -19,8 +14,8 @@ class CarPathVisualizer:
         rospy.Subscriber("car_steering_wheel", Float32, self.steering_callback)
         self.marker_pub = rospy.Publisher("car_path_marker", MarkerArray, queue_size=10)
         self.r = rospy.Rate(5)
-        self.a = 0.0258676
-        self.play = 0.60952311
+        self.a = 0.031139
+        self.play = 0.261799
         self.b = -self.a * self.play
         self.tread = 1.32
         self.line_length = 0.2
@@ -28,11 +23,20 @@ class CarPathVisualizer:
         self.steering = 0.0
         self.curve_length = 30
         self.polygon = 50
+        self.tfl = tf.TransformListener()
 
 
     def execute(self):
         while not rospy.is_shutdown():
-            self.marker_publisher()
+            if self.tfl.frameExists("BODY") and self.tfl.frameExists("car_center"):
+                tm = self.tfl.getLatestCommonTime("BODY", "car_center")
+                try:
+                    (self.pos, self.q) = self.tfl.lookupTransform("BODY", "car_center", tm)
+                    print self.pos
+                    self.marker_publisher()
+                except (tf.LookupException, tf.ConnectivityException, tf.ExtrapolationException), e:
+                    print "tf error: %s" % e
+                    pass
             self.r.sleep()
 
     def steering_callback(self, msg):
@@ -65,13 +69,13 @@ class CarPathVisualizer:
             vel_norm/=numpy.linalg.norm(vel_norm)
             l_p = p + vel_norm * (self.tread/2.0)
             r_p = p - vel_norm * (self.tread/2.0)
-            l_point_array.append(Point(l_p[0], l_p[1], 0.0))
-            r_point_array.append(Point(r_p[0], r_p[1], 0.0))
+            l_point_array.append(Point( (self.pos[0]+l_p[0]), (self.pos[1]+l_p[1]), self.pos[2]))
+            r_point_array.append(Point( (self.pos[0]+r_p[0]), (self.pos[1]+r_p[1]), self.pos[2]))
 
-        marker_left = Marker(header=std_msgs.msg.Header(frame_id="car_center"), type = Marker.LINE_STRIP, action = Marker.ADD, colors = [std_msgs.msg.ColorRGBA(1, 0.3, 0, 0.5)]*self.curve_length, scale = Vector3(0.2, 1, 1), points = l_point_array, id = 2, ns = "left_wheel")
+        marker_left = Marker(header=std_msgs.msg.Header(frame_id="BODY"), type = Marker.LINE_STRIP, action = Marker.ADD, colors = [std_msgs.msg.ColorRGBA(1, 0.3, 0, 0.5)]*self.curve_length, scale = Vector3(0.2, 1, 1), points = l_point_array, id = 2, ns = "left_wheel")
         marker_array_msg.markers.append(marker_left)
 
-        marker_right = Marker(header=std_msgs.msg.Header(frame_id="car_center"), type = Marker.LINE_STRIP, action = Marker.ADD, colors = [std_msgs.msg.ColorRGBA(1, 0.3, 0, 0.5)]*self.curve_length, scale = Vector3(0.2, 1, 1), points = r_point_array, id = 1, ns = "right_wheel")
+        marker_right = Marker(header=std_msgs.msg.Header(frame_id="BODY"), type = Marker.LINE_STRIP, action = Marker.ADD, colors = [std_msgs.msg.ColorRGBA(1, 0.3, 0, 0.5)]*self.curve_length, scale = Vector3(0.2, 1, 1), points = r_point_array, id = 1, ns = "right_wheel")
         marker_array_msg.markers.append(marker_right)
 
         self.marker_pub.publish(marker_array_msg)

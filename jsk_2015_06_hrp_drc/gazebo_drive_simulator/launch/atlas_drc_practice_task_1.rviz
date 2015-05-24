@@ -367,7 +367,8 @@ Visualization Manager:
                           rfsensor:
                             {}
               car_marker:
-                {}
+                car_center:
+                  {}
           ground:
             {}
           odom_on_ground:
@@ -475,7 +476,7 @@ Visualization Manager:
       Marker Topic: /drive/recognition/local_planner/steering_cmd_with_path_num/marker_array
       Name: MarkerArray
       Namespaces:
-        "": true
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/Camera
@@ -517,7 +518,7 @@ Visualization Manager:
   Enabled: true
   Global Options:
     Background Color: 48; 48; 48
-    Fixed Frame: car_center
+    Fixed Frame: BODY
     Frame Rate: 30
   Name: root
   Tools:
@@ -573,5 +574,5 @@ Window Geometry:
   Views:
     collapsed: false
   Width: 1407
-  X: 1445
+  X: 1424
   Y: 24
