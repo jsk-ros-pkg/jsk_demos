@@ -1955,7 +1955,7 @@
   (generate-robot *robot-name* :generate-ri? t)
   (send *robot* :fix-leg-to-coords (make-coords))
   )
-(defun test-drill-grasp-motion (&key (high? nil) (rotation-axis (list :z t t)) (overwrite-stand-coords? :force))
+(defun test-drill-grasp-motion (&key (high? nil) (rotation-axis (list :z t t)) (overwrite-stand-coords? :force) (standcoords (make-coords)))
   ;(get-drill-grasp-motion-full (make-coords :pos (float-vector 700 -150 800) :rpy (list 0 0 0)) :draw? t)
   (test-init)
   (send *robot* :fix-leg-to-coords (make-coords))
@@ -1992,8 +1992,8 @@
   (send-drill-rotate-motion (get-body-relative-coords (send *drill* :copy-worldcoords)) (get-body-relative-coords (send *drill* :copy-worldcoords)))
   )
 (defun test-send-drill-rotate-motion3
-  ()
-  (test-drill-grasp-motion :rotation-axis (list :z t t))
+  (&key (standcoords (make-coords)))
+  (test-drill-grasp-motion :rotation-axis (list :z t t) :standcoords standcoords)
   (send *ri* :angle-vector (send *robot* :angle-vector) 10000)
   ;(send *drill* :rotate (deg2rad 130) :z)
   (send-drill-rotate-motion (get-body-relative-coords (send *drill* :copy-worldcoords)) (get-body-relative-coords (send (send *drill* :copy-worldcoords) :translate (float-vector 0 0 -100))) :drill-rotate-num 100)
@@ -2027,6 +2027,34 @@
     (send *drill* :rotate (deg2rad 30) :z)
     )
   )
+
+(defun test-drill-rotate-motion-reachability-single
+  (dist deg)
+  (set-drill-environment)
+  (send *drill* :newcoords (make-coords :pos (float-vector dist 0 830)))
+  (send *robot* :angle-vector (get-reach-drill-pre-pose))
+  (send *robot* :fix-leg-to-coords (make-coords :rpy (list (deg2rad deg) 0 0)))
+  (get-drill-grasp-motion)
+  (get-drill-rotate-motion)
+  (and *drill-motion* (length *drill-motion-in*))
+  )
+(defun test-drill-rotate-motion-reachability
+  ()
+  (let (answer-list)
+    (dotimes (i 5)
+      (dotimes (j 10)
+        (let (
+              (dist (+ 500 (* j 20)))
+              (deg (+ -60 (* i 6)))
+              )
+          (push (list dist deg (test-drill-rotate-motion-reachability-single dist deg)) answer-list)
+          )
+        )
+      )
+    answer-list
+    )
+  )
+
 (defun test-drill-put-motion ()
   ;(get-drill-grasp-motion-full (make-coords :pos (float-vector 700 -150 800) :rpy (list 0 0 0)) :draw? t)
   (setq *answer-for-grasp-test* (get-drill-grasp-motion-full (make-coords :pos (float-vector 1000 -150 200) :rpy (list 0 0 (deg2rad 180))) :draw? t :drill-type :takenoko :recognized-coords-symbol :put-coords :rotation-axis (list :z t t)))
@@ -2132,7 +2160,6 @@
         )
   )
 
-
 (defun drill-full-grasp (&key (arm *drill-main-arm*)) ;; test code
   (cond ((or (equal *robot-name* "HRP2JSKNT") (equal *robot-name* "HRP2JSKNTS"))
          (send *robot* :hand arm :angle-vector (float-vector 90.0 0.0 0.0 0.0 90.0 90.0))
@@ -2149,6 +2176,17 @@
         (t (send *ri* :start-grasp arm :wait t))
         )
   )
+
+;; (defun get-hrp3-hand-potentio-vector
+;;   ()
+;;   (let (res)
+;;     (setq res (ros::service-call "/HRP3HandControllerServiceROSBridge/getRobotState" (instance jsk_hrp2_ros_bridge::OpenHRP_HRP3HandControllerService_getRobotStateRequest :init)))
+;;     (if res
+;;         (send res :potentio)
+;;       nil
+;;       )
+;;     )
+;;   )
 
 (defun ik-drill (vec &key (time 1000) (real? nil))
   (send *drill* :newcoords (make-coords :pos vec))
