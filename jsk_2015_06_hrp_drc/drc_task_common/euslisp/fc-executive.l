@@ -19,6 +19,7 @@
 (load "package://drc_task_common/euslisp/generate-drill-motion.l")
 (load "package://drc_task_common/euslisp/generate-hose-motion.l")
 (load "package://drc_task_common/euslisp/generate-door-motion.l")
+(load "package://drc_task_common/euslisp/test-drc-terrain-walk.l")
 
 (defclass fc-executive-app
   :super propertied-object
@@ -133,6 +134,10 @@
                 self :enable-overwrite-head-joint-command-callback)
           (list drc_com_common::OCS2FCSmall::*DISABLE_OVERWRITE_HEAD_JOINT*
                 self :disable-overwrite-head-joint-command-callback)
+          (list drc_com_common::OCS2FCSmall::*MOVE_TO_STAIR_POSE*
+                self :move-to-stair-pose-callback)
+          (list drc_com_common::OCS2FCSmall::*EXECUTE_STAIR_FOOTSTEPS*
+                self :execute-stair-footsteps-callback)
           )
     self)
   (:register-timelimits (sm)
@@ -1106,6 +1111,56 @@ It sends :angle-vector to robot and return 'finished' message to ocs"
    (when head-overwrite-mode (send *ri* :remove-joint-group "head_for_teleop"))
    (setq head-overwrite-mode nil)
    )
+  ;; stair
+  (:move-to-stair-pose-callback
+    (msg)
+    (move-to-stair-pose)
+    ;; (let ((msg (instance drc_com_common::FC2OCSSmall :init)))
+    ;;    (send msg :type drc_com_common::FC2OCSSmall::*MOVE_TO_STAIR_POSE_FINISHED*)
+    ;;    (send self :send-to-ocs msg))
+    )
+  (:execute-stair-footsteps-callback
+    (msg)
+    (let ((footstep-coords (cons (make-coords)
+                                 (float-vector-to-coords-set (send msg :float_params))))
+          (footstep-names '(:lleg :rleg :lleg)))
+      (let ((footstep-coords* (mapcar #'(lambda (c n)
+                                          (make-coords :coords c :name n))
+                                      footstep-coords footstep-names)))
+        ;; change ri parameter
+        ;; too ugly, yeah too ugly...
+        (default-stair-param-hrp2jsk)
+        (send *ri* :set-gait-generator-param
+              :stair-trajectory-way-point-offset #f(0.03 -0.0 0)
+              :swing-trajectory-delay-time-offset 0.2
+              :default-step-time 1.7
+              :default-double-support-ratio 0.29
+              :default-double-support-static-ratio 0.117
+              )
+        (when (string= "JAXON" *robot-name*)
+          (send *ri* :set-auto-balancer-param :default-zmp-offsets
+                (list (float-vector -20 0 0) (float-vector -20 0 0)))
+          )
+        (print footstep-coords*)
+        (send *ri* :set-foot-steps footstep-coords*)
+        ;; fix ri parmaeter for planar transition
+        (if (string= "JAXON" *robot-name*)
+            (send *ri* :set-gait-generator-param
+                    ;;:default-orbit-type :cycloid
+                    :default-orbit-type :stair
+                    :toe-angle 0 :heel-angle 0
+                    :default-step-time 1.7
+                    :default-double-support-ratio 0.29
+                    :default-double-support-static-ratio 0.117
+                    ;;:default-double-support-ratio 0.16
+                    :default-step-height 0.05)
+          (send *ri* :set-gait-generator-param
+                :default-orbit-type :cycloiddelay
+                :default-step-time 1.1
+                :toe-angle 0 :heel-angle 0
+                :default-double-support-ratio 0.32
+                :default-step-height 0.05))
+        )))
   (:send-to-ocs (msg)
     (ros::publish "/fc_to_ocs_low_speed/input" msg))
   )

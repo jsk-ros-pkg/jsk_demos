@@ -44,8 +44,8 @@
                 drill-stand-coords-list ;; list of (list symbol coords), base is odom_on_ground
                 drill-stand-coords-index ;; referenced stand coords
                 drill-button-params ;; (list coords)
-		drill-rotate-params
-		drill-grasp-relative-coords
+                drill-rotate-params
+                drill-grasp-relative-coords
                 foreground-bacground-sync-obj
                 arm-mode ;; one of (:rarm-only :rarm-preferred :larm-preferred :larm-only)
                 valve-grasp-mode ;; one of (:edge-grasp-only :edge-grasp-preferred :center-grasp-preferrned :center-grasp-only)
@@ -575,6 +575,8 @@
      ((eq (send smachine :state) :executing-look-at)
       (send smachine :go-to :initial))
      ((eq (send smachine :state) :executing-look-around)
+      (send smachine :go-to :initial))
+     ((eq (send smachine :state) :stair)
       (send smachine :go-to :initial))
      )
     ;; clear text message
@@ -1798,6 +1800,60 @@
    )
   )
 
+;; Stair tab
+(defmethod ocs-executive-app
+  (:start-stair-callback (req)
+    (when (send smachine :next? :stair)
+      (send smachine :go-to :stair)
+      (send self :show-text "stair mode" :success)
+      (send req :response)))
+  (:stair-pose-callback (req)
+    (when (send smachine :state? :stair)
+      (let ((fc-msg (instance drc_com_common::OCS2FCSmall :init)))
+        (send fc-msg :type drc_com_common::OCS2FCSmall::*MOVE_TO_STAIR_POSE*)
+        (send self :send-to-fc fc-msg))
+      (send self :show-text "move to stair pose")
+      )
+    (send req :response))
+  (:end-stair-callback (req)
+    (when (send smachine :next? :initial)
+      (send smachine :go-to :initial))
+    (send req :response))
+  (:stair-footstep-show-callback
+   (msg)
+   (when (send smachine :state? :stair)
+     (let ((footstep-coords (mapcar #'ros::tf-pose->coords
+                                    (send msg :poses))))
+       (send self :show-text (format nil "footsteps:~%~A"
+                                     (readable-footstep-string footstep-coords))))))
+  (:stair-marker-output-callback (msg)
+    (when (send smachine :state? :stair)
+      (let ((fc-msg (instance drc_com_common::OCS2FCSmall :init)))
+        (send fc-msg :type drc_com_common::OCS2FCSmall::*EXECUTE_STAIR_FOOTSTEPS*)
+        (let ((footstep-coords (mapcar #'ros::tf-pose->coords
+                                       (send msg :poses))))
+          (send self :show-text (format nil "final footsteps:~%~A" (readable-footstep-string footstep-coords)))
+          (send fc-msg :float_params
+                (coords-set-to-float-vector footstep-coords
+                                            (length (send fc-msg :float_params))))
+          (send self :send-to-fc fc-msg))
+        ))
+    )
+  )
+
+(defun readable-footstep-string (footsteps)
+  (apply #'concatenate string
+         (mapcar #'(lambda (c)
+                     (format nil
+                             "(x, y, z) := (~0,0f ~0,0f ~0,0f)~%(r, p, y) := (~0,0f ~0,0f ~0,0f)~%"
+                             (elt (send c :worldpos) 0)
+                             (elt (send c :worldpos) 1)
+                             (elt (send c :worldpos) 2)
+                             (rad2deg (elt (car (send c :rpy-angle)) 2))
+                             (rad2deg (elt (car (send c :rpy-angle)) 1))
+                             (rad2deg (elt (car (send c :rpy-angle)) 0))))
+                 footsteps)))
+  
 (defmethod ocs-executive-app
   (:uint8-request-callback (req)
     (let ((msg (instance drc_com_common::OCS2FCSmall :init)))
@@ -1956,6 +2012,9 @@
 (ros::advertise-service "semi_auto_drill_detect" std_srvs::Empty #'send *app* :set-drill-detect-semi-auto-callback)
 (ros::advertise-service "force_overwrite_door_arm" std_srvs::Empty #'send *app* :force-overwrite-door-arm-callback)
 (ros::advertise-service "auto_overwrite_door_arm" std_srvs::Empty #'send *app* :auto-overwrite-door-arm-callback)
+(ros::advertise-service "start_stair" std_srvs::Empty #'send *app* :start-stair-callback)
+(ros::advertise-service "stair_pose" std_srvs::Empty #'send *app* :stair-pose-callback)
+(ros::advertise-service "end_stair" std_srvs::Empty #'send *app* :end-stair-callback)
 
 ;; Drive joystick controller topics
 (ros::subscribe "/ocs/drive/operation/handle_cmd" std_msgs::Float64 #'send *app* :drive-handle-angle-callback)
@@ -1970,6 +2029,10 @@
   #'send *app* :line-callback)
 (ros::subscribe "/ocs/communication/image_rect_color/poly/scaled" geometry_msgs::PolygonStamped
   #'send *app* :polygon-callback)
+(ros::subscribe "/stair_marker/output" geometry_msgs::PoseArray
+  #'send *app* :stair-marker-output-callback)
+(ros::subscribe "/stair_marker/debug/current_pose_array" geometry_msgs::PoseArray
+  #'send *app* :stair-footstep-show-callback)
 ;; (ros::subscribe "/ocs/communication/image_rect_color/foreground_rect/scaled" geometry_msgs::PolygonStamped
 ;;   #'send *app* :foreground-rect-callback)
 ;; (ros::subscribe "/ocs/communication/image_rect_color/background_rect/scaled" geometry_msgs::PolygonStamped
