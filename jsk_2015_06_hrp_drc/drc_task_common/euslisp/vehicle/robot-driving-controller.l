@@ -976,7 +976,12 @@
      (setq estimated-angle-offset (rad2deg (atan (elt relative-grasp-point-pos-from-steerint-center 1) (elt relative-grasp-point-pos-from-steerint-center 0))))
      (setq estimated-angle (+ estimated-angle estimated-angle-offset)) ;; current estimated angle is 0-360
      (let ((counter 0)) ;; slide range of estimated angle according to old-estimated-handle-angle
-       (while (not (and (<= (- old-estimated-handle-angle half-range) estimated-angle) (<= estimated-angle (+ old-estimated-handle-angle half-range))))
+       (while (not (and (<= (- old-estimated-handle-angle half-range) estimated-angle)
+                        (<= estimated-angle (+ old-estimated-handle-angle half-range))
+                        (<= (send motion :car :handle-joint :min-angle) estimated-angle)
+                        (<= estimated-angle (send motion :car :handle-joint :max-angle))
+                        )
+                   )
          (when (< estimated-angle (- old-estimated-handle-angle half-range))
            (setq estimated-angle (+ estimated-angle (* half-range 2)))
            )
