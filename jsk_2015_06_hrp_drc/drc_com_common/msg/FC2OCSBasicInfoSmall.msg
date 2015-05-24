@@ -8,4 +8,5 @@ int8[12] leg_forces
 float32[6] odom_on_ground
 float32[6] ground
 float32[6] odom
+float32[4] imu                  #[x, y, z, w]
 uint8 robot_state
