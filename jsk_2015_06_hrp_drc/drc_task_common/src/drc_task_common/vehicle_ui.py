@@ -480,20 +480,23 @@ class VehicleUIWidget(QWidget):
 
     def setExecuteFlagCallback(self, pressed):
         pub_msg = Bool()
-        if pressed:
-            pub_msg.data = True
-            self.execute_button.setStyleSheet("background-color: red")
-        else:
-            self.execute_button.setStyleSheet("background-color: lightgreen")
+        with self.lock:
+            if pressed:
+                pub_msg.data = True
+                self.execute_button.setStyleSheet("background-color: red")
+            else:
+                pub_msg.data = False
+                self.execute_button.setStyleSheet("background-color: lightgreen")
         self.execute_flag_publisher.publish(pub_msg)
 
     def setRealCallback(self, pressed):
-        if pressed:
-            self.callUint8RequestService("drive/controller/set_real", 1)
-            self.real_button.setStyleSheet("background-color: red")
-        else:
-            self.callUint8RequestService("drive/controller/set_real", 0)            
-            self.real_button.setStyleSheet("background-color: lightgreen")
+        with self.lock:
+            if pressed:
+                self.callUint8RequestService("drive/controller/set_real", 1)
+                self.real_button.setStyleSheet("background-color: red")
+            else:
+                self.callUint8RequestService("drive/controller/set_real", 0)
+                self.real_button.setStyleSheet("background-color: lightgreen")
         
     def stepGageValueCallback(self, msg):
         with self.lock:
