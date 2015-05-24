@@ -36,7 +36,7 @@
   (:joint-states-compressed-callback (msg)
     (setq latest-compressed-joint-states msg))
   (:joint-states-callback (msg)
-    (setq latest-joint-states msg))
+    (setq latest-joint-state msg))
   (:robot-state-callback (msg)
     (setq robot-state-value (send msg :data)))
   (:motor-states-callback (msg)
@@ -141,8 +141,8 @@
                  latest-rhsensor-value)
         (send msg :arm_forces (send self :arm-forces))
         (send msg :leg_forces (send self :leg-forces)))
-      (when latest-joint-states
-        (let ((av (send self :angle-vector-from-joint-states latest-joint-states)))
+      (when latest-joint-state
+        (let ((av (send self :angle-vector-from-joint-states latest-joint-state)))
           (when av
             (dotimes (i (length av))
               (setf (elt (send msg :angles) i) (elt av i))))))

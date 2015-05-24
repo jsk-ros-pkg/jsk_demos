@@ -16,7 +16,7 @@ import tf
 from jsk_interactive_marker.srv import *
 def point_cb(point_msg):
     try:
-        pose = get_pose("drill").pose_stamped
+        pose = get_pose("").pose_stamped
     except rospy.ServiceException, e:
         print "Service fail: %s" % e
         return
@@ -27,7 +27,7 @@ def point_cb(point_msg):
         print "tf error: %s" % e
         return
     try:
-        set_pose(target_name="drill", pose_stamped=pose)
+        set_pose(target_name="", pose_stamped=pose)
     except rospy.ServiceException, e:
         print "Service fail: %s" % e
         return
@@ -40,4 +40,3 @@ if __name__ == "__main__":
     listener = tf.TransformListener()
     rospy.Subscriber("/clicked_point", PointStamped, point_cb)
     rospy.spin()
-    
