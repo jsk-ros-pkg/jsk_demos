@@ -20,7 +20,6 @@
       <remap from="~input" to="$(arg INPUT_HINT_POINT_CLOUD)"/>
       <remap from="~indices" to="mask_image_filter/output"/>
     </node>
-    
     <node pkg="jsk_pcl_ros" type="hinted_plane_detector" name="plane_detector"
           output="screen">
       <remap from="~input" to="$(arg INPUT_POINT_CLOUD)" />
@@ -30,6 +29,12 @@
       <remap from="polygon" to="plane_detector/output/hint/polygon" />
     </node>
     <node pkg="jsk_topic_tools" type="snapshot" name="snapshot">
+      <remap from="~input" to="plane_centroid_pose"/>
+      <rosparam>
+        latch: true
+      </rosparam>
+    </node>
+    <node pkg="jsk_topic_tools" type="snapshot_for_push" name="snapshot_for_push">
       <remap from="~input" to="plane_centroid_pose"/>
       <rosparam>
         latch: true
