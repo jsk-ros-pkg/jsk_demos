@@ -96,11 +96,11 @@
    (ros::advertise "/drive/controller/neck_p_angle" std_msgs::Float32 1 t)
 
    ;; for steering visualization
-   (ros::advertise "/drive/controller/currest_steering" jsk_recognition_msgs::TorusArray 1)
-   (ros::advertise "/drive/controller/handling_trajectory" geometry_msgs::PolygonStamped 1)
+   (ros::advertise "/drive/controller/currest_steering" jsk_recognition_msgs::TorusArray 1 t)
+   (ros::advertise "/drive/controller/handling_trajectory" geometry_msgs::PolygonStamped 1 t)
 
    ;; for steering estimation
-   (ros::advertise "/drive/controller/torus_finder_input" geometry_msgs::PolygonStamped 1)
+   (ros::advertise "/drive/controller/torus_finder_input" geometry_msgs::PolygonStamped 1 t)
    (ros::subscribe "/drive/torus_finder/output/pose"
                    geometry_msgs::PoseStamped
                    #'send self :torus-finder-callback)
@@ -112,13 +112,13 @@
                    #'send self :handle-pose-callback)
 
    ;; for controller mode
-   (ros::advertise "/drive/controller/handle_mode" std_msgs::String 1)
-   (ros::advertise "/drive/controller/accel_mode" std_msgs::String 1)
-   (ros::advertise "/drive/controller/brake_mode" std_msgs::String 1)
-   (ros::advertise "/drive/controller/neck_mode" std_msgs::String 1)
+   (ros::advertise "/drive/controller/handle_mode" std_msgs::String 1 t)
+   (ros::advertise "/drive/controller/accel_mode" std_msgs::String 1 t)
+   (ros::advertise "/drive/controller/brake_mode" std_msgs::String 1 t)
+   (ros::advertise "/drive/controller/neck_mode" std_msgs::String 1 t)
 
    ;; for vehicle ui
-   (ros::advertise "/drive/controller/real" std_msgs::Bool 1)
+   (ros::advertise "/drive/controller/real" std_msgs::Bool 1 t)
    (ros::advertise-service "/drive/controller/set_real" drc_task_common::Uint8Request #'send self :set-real-callback)
    (ros::advertise-service "/drive/controller/initialize" std_srvs::Empty #'send self :initialize-callback)
    (ros::advertise-service "/drive/controller/approach_handle" std_srvs::Empty #'send self :approach-handle-callback)
@@ -1139,8 +1139,7 @@
   (:real
    (&optional (val 0) &key (use-real-robot-angle t))
    (let ((pub-msg (instance std_msgs::Bool :init)))
-     (send motion :real val :use-real-robot-angle use-real-robot-angle)
-     (send pub-msg :data (send motion :real))
+     (send pub-msg :data (send motion :real val :use-real-robot-angle use-real-robot-angle))
      (ros::publish "/drive/controller/real" pub-msg)
      )
    )
