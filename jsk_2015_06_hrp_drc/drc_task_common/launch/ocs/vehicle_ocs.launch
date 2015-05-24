@@ -1,0 +1,38 @@
+<launch>
+  <arg name="LAUNCH_UI" default="true" />
+  <arg name="LAUNCH_STEERING" default="false" />
+  <arg name="LAUNCH_PS3JOY" default="true" />
+  <arg name="LAUNCH_RVIZ" default="true" />
+
+  <arg name="CONTROLLER_DEV" default="/dev/input/js0" />
+  <arg name="OCS_NS" default="ocs" />
+
+  <!-- remap topics -->
+  <remap from="/tf" to="/ocs/tf" />
+  <remap from="/joint_states" to="/ocs/joint_states" />
+  <remap from="/robot_description" to="/ocs/robot_description" />
+
+  <!-- vehicle_ui -->
+  <group ns="$(arg OCS_NS)" if="$(arg LAUNCH_UI)">
+    <node pkg="drc_task_common" type="vehicle_ui" name="vehicle_ui" respawn="true" >
+      <remap from="/chest_camera/image_color" to="/ocs/communication/panorama_image"/>
+      <remap from="/multisense/left/image_rect_color" to="/ocs/communication/image_rect_color"/>
+    </node>
+  </group>
+
+  <!-- handle controller -->
+  <group if="$(arg LAUNCH_STEERING)">
+    <include file="$(find drc_task_common)/launch/fc/vehicle/handle_operation_interface.launch">
+      <arg name="CONTROLLER_DEV" default="$(arg CONTROLLER_DEV)"/>
+      <arg name="OCS_NS" default="$(arg OCS_NS)"/>
+    </include>
+  </group>
+
+  <!-- ps3joy controller -->
+  <group if="$(arg LAUNCH_PS3JOY)">
+    <include file="$(find jsk_teleop_joy)/launch/joy_vehicle.launch">
+      <arg name="CONTROLLER_DEV" default="$(arg CONTROLLER_DEV)"/>
+      <arg name="OCS_NS" default="$(arg OCS_NS)"/>
+    </include>
+  </group>
+</launch>

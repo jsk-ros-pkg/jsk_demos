@@ -19,8 +19,9 @@
 
 (defclass fc-basic-info-publisher
   :super propertied-object
-  :slots (latest-compressed-joint-states 
-          latest-joint-states 
+  :slots (latest-compressed-joint-states
+          latest-joint-state
+          latest-imu
           robot-state-value
           latest-lfsensor-value
           latest-rfsensor-value
@@ -119,6 +120,9 @@
                (ros::ros-warn "Failed to find ~A joint value" joint-name)
                (return-from :angle-vector-from-joint-states nil))))))
      av))
+  (:imu-callback
+   (msg)
+   (setq latest-imu msg))
   (:report ()
     (let ((msg (instance drc_com_common::FC2OCSBasicInfoSmall :init)))
       (when latest-compressed-joint-states
@@ -142,6 +146,11 @@
           (when av
             (dotimes (i (length av))
               (setf (elt (send msg :angles) i) (elt av i))))))
+      (when latest-imu
+        (setf (elt (send msg :imu) 0) (send latest-imu :orientation :x))
+        (setf (elt (send msg :imu) 1) (send latest-imu :orientation :y))
+        (setf (elt (send msg :imu) 2) (send latest-imu :orientation :z))
+        (setf (elt (send msg :imu) 3) (send latest-imu :orientation :w)))
       ;; lookup body -> odom_on_ground
       (let ((trans (send *tf* :lookup-transform "BODY" "odom_on_ground"
                          (ros::time 0))))
@@ -177,15 +186,17 @@
   #'send *app* :joint-states-callback)
 (ros::subscribe "/communication/robot_status" std_msgs::UInt8
   #'send *app* :robot-state-callback)
+(ros::subscribe "/imu" sensor_msgs::Imu
+                #'send *app* :imu-callback)
 (ros::subscribe "/motor_states" hrpsys_ros_bridge::MotorStates
                 #'send *app* :motor-states-callback)
-(ros::subscribe "/lfsensor" geometry_msgs::WrenchStamped
+(ros::subscribe "/off_lfsensor" geometry_msgs::WrenchStamped
                 #'send *app* :lfsensor-callback)
-(ros::subscribe "/rfsensor" geometry_msgs::WrenchStamped
+(ros::subscribe "/off_rfsensor" geometry_msgs::WrenchStamped
                 #'send *app* :rfsensor-callback)
-(ros::subscribe "/lhsensor" geometry_msgs::WrenchStamped
+(ros::subscribe "/off_lhsensor" geometry_msgs::WrenchStamped
                 #'send *app* :lhsensor-callback)
-(ros::subscribe "/rhsensor" geometry_msgs::WrenchStamped
+(ros::subscribe "/off_rhsensor" geometry_msgs::WrenchStamped
                 #'send *app* :rhsensor-callback)
 
 (ros::rate 10)

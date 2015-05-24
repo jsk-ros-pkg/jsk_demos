@@ -249,6 +249,7 @@ class VehicleUIWidget(QWidget):
 
     def setUpCenterBox(self, center_box):
         self.multisense_widget = ROSImageWidget("/multisense/left/image_rect_color")
+        # self.multisense_widget = ROSImageWidget("/ocs/communication/image_rect_color")
         center_box.addWidget(self.multisense_widget)
         left_splitter = QtGui.QSplitter()
         right_splitter = QtGui.QSplitter()
@@ -295,6 +296,7 @@ class VehicleUIWidget(QWidget):
         left_splitter.addWidget(lower_left_container)
         
         self.fisheye_widget = ROSImageWidget("/chest_camera/image_color")
+        # self.fisheye_widget = ROSImageWidget("/ocs/communication/panorama_image")
         right_splitter.addWidget(self.fisheye_widget)
        
         angle_vbox = QtGui.QVBoxLayout()

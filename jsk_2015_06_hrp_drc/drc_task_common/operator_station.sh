@@ -16,7 +16,7 @@ do
 done
 
 tmux-newwindow() {
-    if [ `tmux list-windows | grep $1 | sed -e 's/ //g'` ]; then
+    if [ `tmux list-windows | grep $1 | sed -e 's/ //g'  >/dev/null 2>&` ]; then
         echo $1 "already exists"
     else
         tmux new-window -k -n $1 -t ocs
@@ -36,6 +36,7 @@ tmux-newwindow executive "roslaunch drc_task_common ocs_executive.launch"
 tmux-newwindow ui "roslaunch drc_task_common ui.launch"
 tmux-newwindow rviz "roslaunch drc_task_common ocs_rviz.launch ik_server_launch:=${ROBOT,,}-ik-server.launch"
 tmux-newwindow misc "roslaunch drc_task_common ocs_misc.launch"
+tmux-newwindow vehicle "roslaunch drc_task_common vehicle_operator_station_main.launch USE_COM:=false ROBOT:=${ROBOT,,}"
 tmux-newwindow com "roslaunch drc_com_common operator_station_com.launch FC_IP:=${FC_IP} OCS_IP:=${OCS_IP}"
 tmux send-keys -t ocs:tmp "exit" C-m
 tmux a -t ocs
