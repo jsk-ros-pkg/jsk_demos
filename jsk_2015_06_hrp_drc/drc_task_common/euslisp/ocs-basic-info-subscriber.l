@@ -7,6 +7,7 @@
 (ros::roseus-add-srvs "dynamic_tf_publisher")
 (ros::roseus-add-msgs "hrpsys_ros_bridge")
 (ros::roseus-add-msgs "geometry_msgs")
+(ros::roseus-add-msgs "sensor_msgs")
 
 (defclass ocs-basic-info-publisher
   :super propertied-object
@@ -84,6 +85,14 @@
           (send req :cur_tf target-transform)
           (ros::service-call "/ocs/set_dynamic_tf" req)
           )))
+    (let ((imumsg (instance sensor_msgs::Imu :init)))
+      (send imumsg :header :stamp (ros::time-now))
+      (send imumsg :header :frame_id "gyrometer")
+      (send imumsg :orientation :x (elt (send msg :imu) 0))
+      (send imumsg :orientation :y (elt (send msg :imu) 1))
+      (send imumsg :orientation :z (elt (send msg :imu) 2))
+      (send imumsg :orientation :w (elt (send msg :imu) 3))
+      (ros::publish "/ocs/imu" imumsg))
     (let ((pubmsg (instance std_msgs::UInt8 :init)))
       (send pubmsg :data (send msg :robot_state))
       (ros::publish "/ocs/robot_status" pubmsg))
@@ -116,6 +125,7 @@
 (ros::advertise "/ocs/off_rfsensor" geometry_msgs::WrenchStamped)
 (ros::advertise "/ocs/off_lhsensor" geometry_msgs::WrenchStamped)
 (ros::advertise "/ocs/off_rhsensor" geometry_msgs::WrenchStamped)
+(ros::advertise "/ocs/imu" sensor_msgs::Imu)
 (if *use-angle-vector-decompressor*
     (ros::advertise "/ocs/joint_states_compressed" drc_com_common::HumanoidJointAngles)
   (progn
