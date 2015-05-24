@@ -18,6 +18,7 @@
 (setq *latest-handle-mode* nil)
 (setq *latest-accel-mode* nil)
 (setq *latest-neck-mode* nil)
+(setq *latest-real* nil)
 (setq *latest-obstacle-length* nil)
 (setq *initialize-service-client* (instance empty-service-client :init "/drive/controller/initialize"))
 (setq *grasp-service-client* (instance empty-service-client :init "/drive/controller/grasp"))
@@ -34,6 +35,7 @@
 (setq *set-handle-mode-service-client* (instance set-controller-mode-service-client :init "/drive/controller/set_handle_mode"))
 (setq *set-accel-mode-service-client* (instance set-controller-mode-service-client :init "/drive/controller/set_accel_mode"))
 (setq *set-neck-mode-service-client* (instance set-controller-mode-service-client :init "/drive/controller/set_neck_mode"))
+(setq *set-real-service-client* (instance set-uint8-service-client :init "/drive/controller/set_real"))
 (setq *operation-initialize-service-server* (instance empty-service-server :init "/drive/operation/initilaize"))
 (setq *operation-synchronize-service-server* (instance operation-synchronize-service-server :init "/drive/operation/synchronize"))
 
@@ -64,6 +66,7 @@
     (send *set-handle-mode-service-client* :call (send msg :set_handle_mode_request) (send msg :set_handle_mode_request_value))
     (send *set-accel-mode-service-client* :call (send msg :set_accel_mode_request) (send msg :set_accel_mode_request_value))
     (send *set-neck-mode-service-client* :call (send msg :set_neck_mode_request) (send msg :set_neck_mode_request_value))
+    (send *set-real-service-client* :call (send msg :set_real_request) (send msg :set_real_request_value))
     (send *operation-initialize-service-server* :receive (send msg :operation_initialize_response))
     (send *operation-synchronize-service-server* :receive (list (send msg :operation_synchronize_all_response)
                                                                 (send msg :operation_synchronize_handle_response)
@@ -108,6 +111,9 @@
 (defun neck-mode-callback (msg)
   (setq *latest-neck-mode* (convert-mode-to-uint8 (send msg :data)))
   )
+(defun real-callback (msg)
+  (setq *latest-real* (send msg :data))
+  )
 (defun obstacle-length-callback (msg)
   (setq *latest-obstacle-length* (send msg :data))
   )
@@ -147,6 +153,9 @@
     (when *latest-neck-mode*
       (send msg :neck_mode *latest-neck-mode*)
       )
+    (when *latest-real*
+      (send msg :real *latest-real*)
+      )
     (when *latest-obstacle-length*
       (send msg :obstacle_length *latest-obstacle-length*)
       )
@@ -165,7 +174,7 @@
     (send msg :set_handle_mode_response (send *set-handle-mode-service-client* :response))
     (send msg :set_accel_mode_response (send *set-accel-mode-service-client* :response))
     (send msg :set_neck_mode_response (send *set-neck-mode-service-client* :response))
-
+    (send msg :set_real_response (send *set-real-service-client* :response))
     (send msg :operation_initialize_request (send *operation-initialize-service-server* :request))
     (send msg :operation_synchronize_all_request (elt (send *operation-synchronize-service-server* :request) 0))
     (send msg :operation_synchronize_handle_request (elt (send *operation-synchronize-service-server* :request) 1))
@@ -201,6 +210,7 @@
 (ros::subscribe "/drive/controller/handle_mode" std_msgs::String #'handle-mode-callback)
 (ros::subscribe "/drive/controller/accel_mode" std_msgs::String #'accel-mode-callback)
 (ros::subscribe "/drive/controller/neck_mode" std_msgs::String #'neck-mode-callback)
+(ros::subscribe "/drive/controller/real" std_msgs::Bool #'real-callback)
 (ros::subscribe "/drive/recognition/obstacle_length/indicator" std_msgs::Float32 #'obstacle-length-callback)
 
 ;; service to operation
