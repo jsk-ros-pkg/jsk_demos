@@ -93,8 +93,12 @@
    (send-super* :approach-handle :offset offset args)
    )
   (:grasp-handle
-   (&rest args &key (offset #f(-70 -15 0)) &allow-other-keys)
+   (&rest args &key (offset #f(-45 -10 0)) &allow-other-keys)
    (send-super* :grasp-handle :offset offset args)
+   )
+  (:turn-handle-once
+   (deg &rest args &key (offset #f(-45 -10 0)) &allow-other-keys)
+   (send-super* :turn-handle-once deg :offset offset args)
    )
   (:approach-floor
    (&rest args &key (target-handle :floor-footrest) &allow-other-keys)
