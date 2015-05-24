@@ -10,5 +10,5 @@
    <param name="display_interactive_manipulator" value="true"/>
   </node>
   <node pkg="drc_task_common" type="drill_button_publisher.py" name="drill_button_publisher"/>
-  <node pkg="drc_task_common" type="revise_button_position.py" name="revise_button_position"/> 
+  <node pkg="drc_task_common" type="move_marker_with_point.py" name="move_marker_with_point"/> 
 </launch>
