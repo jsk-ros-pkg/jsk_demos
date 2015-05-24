@@ -367,20 +367,31 @@ class VehicleUIWidget(QWidget):
         left_splitter.setSizes((200, 1000))
         center_box.addWidget(left_splitter)
     def setUpRightBox(self, right_vbox):
-        self.step_gage_label = QtGui.QLabel("-1.0") # Initial value
-        self.step_gage_label.setFixedHeight(50)
-        
-        right_vbox.addWidget(self.step_gage_label)
+        font = QtGui.QFont()
+        font.setPointSize(16)
+
+        step_gage_hbox = QtGui.QHBoxLayout()
+        step_gage_container = QtGui.QWidget()
+        step_gage_label = QtGui.QLabel("Current Step:", self)
+        step_gage_label.setFont(font)
+        self.step_gage_value_label = QtGui.QLabel("-1.0") # Initial value
+        self.step_gage_value_label.setFixedHeight(50)
+        self.step_gage_value_label.setFont(font)
+        step_gage_hbox.addWidget(step_gage_label)
+        step_gage_hbox.addWidget(self.step_gage_value_label)
+        step_gage_container.setLayout(step_gage_hbox)
+        right_vbox.addWidget(step_gage_container, 1)
+
         self.step_gage = StepGageWidget("drive/controller/step",
                                         "drive/controller/max_step",
                                         "drive/controller/min_step")
-        right_vbox.addWidget(self.step_gage)
+        right_vbox.addWidget(self.step_gage, 15)
         self.set_current_step_as_max_button = QtGui.QPushButton("Set Current Step as Max")
         self.set_current_step_as_max_button.clicked.connect(self.setCurrentStepAsMaxButtonCallback)
         self.set_current_step_as_min_button = QtGui.QPushButton("Set Current Step as Min")
         self.set_current_step_as_min_button.clicked.connect(self.setCurrentStepAsMinButtonCallback)
-        right_vbox.addWidget(self.set_current_step_as_max_button)
-        right_vbox.addWidget(self.set_current_step_as_min_button)
+        right_vbox.addWidget(self.set_current_step_as_max_button, 15)
+        right_vbox.addWidget(self.set_current_step_as_min_button, 15)
     # Message callback
     def setupSubscribers(self):
         self.step_gage_value_sub = rospy.Subscriber(
@@ -461,7 +472,7 @@ class VehicleUIWidget(QWidget):
             
     def stepGageValueCallback(self, msg):
         with self.lock:
-            self.step_gage_label.setText(str(msg.data))
+            self.step_gage_value_label.setText(str(msg.data))
     def minStepGageValueCallback(self, msg):
         with self.lock:
             if self.step_min_value != msg.data:
@@ -582,13 +593,13 @@ class VehicleUIWidget(QWidget):
                 self.overwrite_edit.setText(str(next_value))
 
     def setCurrentStepAsMaxButtonCallback(self, event):
-        current_step = float(self.step_gage_label.text())
+        current_step = float(self.step_gage_value_label.text())
         next_value = self.callSetValueService('drive/controller/set_max_step', current_step)
         if next_value != None:
             with self.lock:
                 self.step_max_edit.setText(str(next_value))
     def setCurrentStepAsMinButtonCallback(self, event):
-        current_step = float(self.step_gage_label.text())
+        current_step = float(self.step_gage_value_label.text())
         next_value = self.callSetValueService('drive/controller/set_min_step', current_step)
         if next_value != None:
             with self.lock:
