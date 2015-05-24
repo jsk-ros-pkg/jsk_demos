@@ -762,7 +762,7 @@
     (if (and *drill-stand-coords* (check-stand-coords *drill-stand-coords*))
         (move-robot-model *drill-stand-coords* "ground")
       (move-robot-model (make-coords) "ground"))    
-    (publish-motion-joint-states *drill-motion* :step-time step-time)
+    (store-motion-joint-states *drill-motion* :step-time step-time)
     )
   (when (and *drill-motion* (> drill-rotate-num 0))
     (let ((angle-vector (send *robot* :angle-vector)))
@@ -873,7 +873,7 @@
   (when (and *drill-stand-coords* (check-stand-coords *drill-stand-coords*))
     (move-robot-model *drill-stand-coords* "ground"))
   (setq *drill-motion* (reverse *drill-motion*))
-  (publish-motion-joint-states *drill-motion* :step-time step-time))
+  (store-motion-joint-states *drill-motion* :step-time step-time))
 
 
 
@@ -1179,7 +1179,7 @@
   (when update?
     (get-drill-button-motion-full coords :use-ri? nil :draw? draw?))
   (ros::ros-info "drill-ik-results: ~a~%" *drill-ik-results*)
-  (publish-motion-joint-states *drill-motion* :step-time step-time)
+  (store-motion-joint-states *drill-motion* :step-time step-time)
   )
 
 ;; (defun send-drill-look-motion
@@ -1538,7 +1538,7 @@
     (move-robot-model *drill-stand-coords* "ground")
     (move-robot-model (make-coords) "ground"))
 
-  (publish-motion-joint-states *drill-motion* :step-time step-time))
+  (store-motion-joint-states *drill-motion* :step-time step-time))
 
 
 ;; todo grasp-coords rotate
@@ -1738,7 +1738,7 @@
       )
     (ros::ros-info "drill-ik-results: ~a~%" *drill-ik-results*)
     (when (and publish? move-robot-model?) (move-robot-model (make-coords) "ground")
-          (publish-motion-joint-states (append *drill-motion-in* *drill-motion-up*) :step-time step-time))
+          (store-motion-joint-states (append *drill-motion-in* *drill-motion-up*) :step-time step-time))
     
     (when (and (consp ret) (boundp '*app*))
       (send *app* :show-text (format nil "result, ~A" (elt ret 0)))
