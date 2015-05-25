@@ -35,4 +35,11 @@
       <arg name="OCS_NS" default="$(arg OCS_NS)"/>
     </include>
   </group>
+
+  <!-- rviz -->
+  <group if="$(arg LAUNCH_RVIZ)">
+    <node pkg="rviz" type="rviz" name="vehicle_rviz" args="-d $(find drc_task_common)/config/vehicle_operator.rviz"
+          respawn="true"/>
+  </group>
+  
 </launch>

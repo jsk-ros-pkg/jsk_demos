@@ -19,6 +19,7 @@
 (load "package://drc_task_common/euslisp/generate-drill-motion.l")
 (load "package://drc_task_common/euslisp/generate-hose-motion.l")
 (load "package://drc_task_common/euslisp/generate-door-motion.l")
+(load "package://drc_task_common/euslisp/test-drc-terrain-walk.l")
 
 (defclass fc-executive-app
   :super propertied-object
@@ -133,6 +134,22 @@
                 self :enable-overwrite-head-joint-command-callback)
           (list drc_com_common::OCS2FCSmall::*DISABLE_OVERWRITE_HEAD_JOINT*
                 self :disable-overwrite-head-joint-command-callback)
+          (list drc_com_common::OCS2FCSmall::*MOVE_TO_STAIR_POSE*
+                self :move-to-stair-pose-callback)
+          (list drc_com_common::OCS2FCSmall::*EXECUTE_STAIR_FOOTSTEPS*
+                self :execute-stair-footsteps-callback)
+          ;; grasp
+          (list drc_com_common::OCS2FCSmall::*START_GRASP*
+                self :start-grasp-callback)
+          (list drc_com_common::OCS2FCSmall::*STOP_GRASP*
+                self :stop-grasp-callback)
+          ;; impedance
+          (list drc_com_common::OCS2FCSmall::*START_IMP*
+                self :start-imp-callback)
+          (list drc_com_common::OCS2FCSmall::*STOP_IMP*
+                self :stop-imp-callback)
+          (list drc_com_common::OCS2FCSmall::*START_IMP_WITH_PARAM*
+                self :start-imp-with-param-callback)
           )
     self)
   (:register-timelimits (sm)
@@ -941,6 +958,103 @@ It sends :angle-vector to robot and return 'finished' message to ocs"
                           (send smachine :go-to :initial)))))))))))))
   )
 
+;; grasp and impedance
+(defmethod fc-executive-app
+  (:limb-grasp-callback
+   (limb pose &optional av)
+   (cond
+    ((find-method *ri* (if (eq pose :grasp) :start-grasp :stop-grasp))
+     (format t ":limb-grasp-callback: ~A (~A)~%"
+             (if (eq pose :grasp) :start-grasp :stop-grasp) limb)
+     (send *ri* (if (eq pose :grasp) :start-grasp :stop-grasp) limb))
+    ((and (find-method *ri* :hand-anngle-vector)
+          (find-method (send *ri* :get-val 'robot) :hand-anngle-vector))
+     (cond
+      ((eq (length (send (send *ri* :get-val 'robot) :hand-anngle-vector))
+           (length av))
+       (format t ":limb-grasp-callback: receive hav=~A~%" av)
+       (send (send *ri* :get-val 'robot) :hand-angle-vector av))
+      (t
+       (format t ":limb-grasp-callback: grasp-pose=~A~%"
+               (if (eq pose :grasp) :grasp-pose :open-pose))
+       (send (send *ri* :get-val 'robot) :hand limb
+             (if (eq pose :grasp) :grasp-pose :open-pose))))
+     (send *ri* :hand-angle-vector
+           (send (send *ri* :get-val 'robot) :hand-angle-vector))
+     ))
+   )
+  (:start-grasp-callback
+   (msg) (send self :limb-grasp-callback
+               (cond
+                ((eq (send msg :arm_side)
+                     drc_com_common::OCS2FCSmall::*RARM*) :rarm)
+                ((eq (send msg :arm_side)
+                     drc_com_common::OCS2FCSmall::*LARM*) :larm)
+                (t :arms))
+               :grasp
+               (send msg :float_params)))
+  (:stop-grasp-callback
+   (msg) (send self :limb-grasp-callback
+               (cond
+                ((eq (send msg :arm_side)
+                     drc_com_common::OCS2FCSmall::*RARM*) :rarm)
+                ((eq (send msg :arm_side)
+                     drc_com_common::OCS2FCSmall::*LARM*) :larm)
+                (t :arms))
+               :open
+               (send msg :float_params)))
+  ;;
+  (:start-imp-callback
+   (msg)
+   (let* ((limb (cond
+                 ((eq (send msg :arm_side)
+                      drc_com_common::OCS2FCSmall::*RARM*) :rarm)
+                 ((eq (send msg :arm_side)
+                      drc_com_common::OCS2FCSmall::*LARM*) :larm)
+                 ((eq (send msg :arm_side)
+                      drc_com_common::OCS2FCSmall::*RLEG*) :rleg)
+                 ((eq (send msg :arm_side)
+                      drc_com_common::OCS2FCSmall::*LLEG*) :lleg)
+                 (t :arms)))
+          (param nil))
+     (format t "start-imp-callback ~A ~A~%" limb param)
+     (send* *ri* :start-impedance limb param)))
+  (:stop-imp-callback
+   (msg)
+   (format t "stop-imp-callback")
+   (send *ri* :stop-impedance
+         (print (cond ((eq (send msg :arm_side)
+                           drc_com_common::OCS2FCSmall::*RARM*) :rarm)
+                      ((eq (send msg :arm_side)
+                           drc_com_common::OCS2FCSmall::*LARM*) :larm)
+                      ((eq (send msg :arm_side)
+                           drc_com_common::OCS2FCSmall::*RLEG*) :rleg)
+                      ((eq (send msg :arm_side)
+                           drc_com_common::OCS2FCSmall::*LLEG*) :lleg)
+                      (t :arms)))))
+  (:start-imp-with-param-callback
+   (msg)
+   (let* ((limb
+           (cond ((eq (send msg :arm_side)
+                           drc_com_common::OCS2FCSmall::*RARM*) :rarm)
+                      ((eq (send msg :arm_side)
+                           drc_com_common::OCS2FCSmall::*LARM*) :larm)
+                      ((eq (send msg :arm_side)
+                           drc_com_common::OCS2FCSmall::*RLEG*) :rleg)
+                      ((eq (send msg :arm_side)
+                           drc_com_common::OCS2FCSmall::*LLEG*) :lleg)
+                      (t :arms)))
+          (param
+           (if (and (send msg :float_params)
+                    (>= (length (send msg :float_params)) 6))
+               (flatten
+                (map cons 'list
+                     (list :m-p :d-p :k-p :m-r :d-r :k-r)
+                     (send msg :float_params))))))
+     (format t "start-imp-callback ~A ~A~%" limb param)
+     (send* *ri* :start-impedance limb param)))
+  )
+
 (defmethod fc-executive-app
   (:reset-pose-command-callback (msg)
     (send *ri* :angle-vector (send *robot* :reset-pose) 10000)
@@ -1010,19 +1124,10 @@ It sends :angle-vector to robot and return 'finished' message to ocs"
     (send *ri* :start-impedance :arms)
     (send self :send-rviz-button-finished-to-ocs))
   (:hrpsys-start-imp-command-soft-cb (msg)
-    (set-default-impedance-param)
-    (cond
-     ((or (equal *robot-name* "JAXON") (equal *robot-name* "STARO"))
-      (send *ri* :start-impedance :arms :k-p 300 :d-p 1000 :m-p 10 :m-r 2 :d-r 120 :k-r 40))
-     (t ;; (or (equal *robot-name* "HRP2JSKNT") (equal *robot-name* "HRP2JSKNTS"))
-      (send *ri* :start-impedance :arms :k-p 200 :d-p 250 :m-p 7.5 :m-r 1 :d-r 15 :k-r 20)))
+    (start-soft-impedance)
     (send self :send-rviz-button-finished-to-ocs))
   (:hrpsys-start-imp-command-hard-cb (msg)
-    (set-default-impedance-param)
-    (cond ((or (equal *robot-name* "HRP2JSKNTS") (equal *robot-name* "HRP2JSKNT"))
-           (send *ri* :start-impedance :arms :moment-gain (float-vector 0 0 0) :k-p 3000 :d-p 400))
-          (t ;; (or (equal *robot-name* "HRP2JSKNT") (equal *robot-name* "HRP2JSKNTS"))
-           (send *ri* :start-impedance :arms :moment-gain (float-vector 0 0 0) :k-p 3000 :d-p 3000)))
+    (start-hard-impedance)
     (send self :send-rviz-button-finished-to-ocs))
   (:hrpsys-stop-abc-command-cb (msg)
     ;(send *ri* :stop-auto-balancer)
@@ -1034,7 +1139,7 @@ It sends :angle-vector to robot and return 'finished' message to ocs"
     (send *ri* :stop-impedance :arms)
     (send self :send-rviz-button-finished-to-ocs))
   (:calib-hand-command-cb (msg)
-    (cond ((or (equal *robot-name* "JAXON") (equal *robot-name* "STARO"))
+    (cond ((or (equal *robot-name* "JAXON") (equal *robot-name* "JAXON_RED") (equal *robot-name* "STARO"))
            (send *ri* :hand-reset))
           (t ;; (or (equal *robot-name* "HRP2JSKNT") (equal *robot-name* "HRP2JSKNTS"))
            (send *ri* :hand-joint-calib)))
@@ -1106,6 +1211,56 @@ It sends :angle-vector to robot and return 'finished' message to ocs"
    (when head-overwrite-mode (send *ri* :remove-joint-group "head_for_teleop"))
    (setq head-overwrite-mode nil)
    )
+  ;; stair
+  (:move-to-stair-pose-callback
+    (msg)
+    (move-to-stair-pose)
+    ;; (let ((msg (instance drc_com_common::FC2OCSSmall :init)))
+    ;;    (send msg :type drc_com_common::FC2OCSSmall::*MOVE_TO_STAIR_POSE_FINISHED*)
+    ;;    (send self :send-to-ocs msg))
+    )
+  (:execute-stair-footsteps-callback
+    (msg)
+    (let ((footstep-coords (cons (make-coords)
+                                 (float-vector-to-coords-set (send msg :float_params))))
+          (footstep-names '(:lleg :rleg :lleg)))
+      (let ((footstep-coords* (mapcar #'(lambda (c n)
+                                          (make-coords :coords c :name n))
+                                      footstep-coords footstep-names)))
+        ;; change ri parameter
+        ;; too ugly, yeah too ugly...
+        (default-stair-param-hrp2jsk)
+        (send *ri* :set-gait-generator-param
+              :stair-trajectory-way-point-offset #f(0.03 -0.0 0)
+              :swing-trajectory-delay-time-offset 0.2
+              :default-step-time 1.7
+              :default-double-support-ratio 0.29
+              :default-double-support-static-ratio 0.117
+              )
+        (when (or (string= "JAXON" *robot-name*)  (equal *robot-name* "JAXON_RED"))
+          (send *ri* :set-auto-balancer-param :default-zmp-offsets
+                (list (float-vector -20 0 0) (float-vector -20 0 0)))
+          )
+        (print footstep-coords*)
+        (send *ri* :set-foot-steps footstep-coords*)
+        ;; fix ri parmaeter for planar transition
+        (if (or (string= "JAXON" *robot-name*)  (equal *robot-name* "JAXON_RED"))
+            (send *ri* :set-gait-generator-param
+                    ;;:default-orbit-type :cycloid
+                    :default-orbit-type :stair
+                    :toe-angle 0 :heel-angle 0
+                    :default-step-time 1.7
+                    :default-double-support-ratio 0.29
+                    :default-double-support-static-ratio 0.117
+                    ;;:default-double-support-ratio 0.16
+                    :default-step-height 0.05)
+          (send *ri* :set-gait-generator-param
+                :default-orbit-type :cycloiddelay
+                :default-step-time 1.1
+                :toe-angle 0 :heel-angle 0
+                :default-double-support-ratio 0.32
+                :default-step-height 0.05))
+        )))
   (:send-to-ocs (msg)
     (ros::publish "/fc_to_ocs_low_speed/input" msg))
   )

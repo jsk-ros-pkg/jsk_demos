@@ -32,7 +32,7 @@ class CarPathVisualizer:
                 tm = self.tfl.getLatestCommonTime("BODY", "car_center")
                 try:
                     (self.pos, self.q) = self.tfl.lookupTransform("BODY", "car_center", tm)
-                    print self.pos
+                    # print self.pos
                     self.marker_publisher()
                 except (tf.LookupException, tf.ConnectivityException, tf.ExtrapolationException), e:
                     print "tf error: %s" % e

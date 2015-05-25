@@ -10,6 +10,7 @@ float32 max_step # drive/controller/max_step
 float32 neck_y_angle # drive/controller/neck_y_angle
 float32 neck_p_angle # drive/controller/neck_p_angle
 float32 steering_diff_angle_vector # drive/controller/steering_diff_angle_vector
+bool real # drive/controller/real
 
 uint8 handle_mode # drive/controller/handle_mode
 uint8 accel_mode # drive/controller/accel_mode
@@ -35,6 +36,7 @@ bool overwrite_handle_angle_response
 bool set_handle_mode_response
 bool set_accel_mode_response
 bool set_neck_mode_response
+bool set_real_response
 
 # to controller
 bool operation_initialize_request

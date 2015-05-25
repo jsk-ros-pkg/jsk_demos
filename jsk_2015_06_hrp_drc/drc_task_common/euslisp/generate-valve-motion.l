@@ -59,7 +59,7 @@
          larm-z-rotate-offset
          rarm-z-rotate-offset)
     ;; handle for valve edge
-    (cond ((or (equal *robot-name* "JAXON") (equal *robot-name* "STARO"))
+    (cond ((or (equal *robot-name* "JAXON") (equal *robot-name* "STARO") (equal *robot-name* "JAXON_RED"))
            (setq larm-translate-offset (float-vector -10.0 0.0 0.0))
            (setq rarm-translate-offset (float-vector -10.0 0.0 0.0))
            (setq larm-z-rotate-offset (deg2rad 0))
@@ -79,7 +79,7 @@
            :coords (send (send (send (send *robot* :rarm :end-coords) :copy-worldcoords) :translate rarm-translate-offset :local) :rotate rarm-z-rotate-offset :z :local)
            :parent (send (send *robot* :rarm :end-coords) :parent)))
     ;; handle for valve center
-    (cond ((or (equal *robot-name* "JAXON") (equal *robot-name* "STARO"))
+    (cond ((or (equal *robot-name* "JAXON") (equal *robot-name* "STARO") (equal *robot-name* "JAXON_RED"))
            (setq larm-translate-offset (float-vector -10.0 0.0 0.0))
            (setq rarm-translate-offset (float-vector -10.0 0.0 0.0))
            (setq larm-z-rotate-offset (deg2rad 0))
@@ -106,7 +106,7 @@
   (send *valve* :put :grasp-coords
         (make-cascoords
          :coords
-         (cond ((or (equal *robot-name* "JAXON") (equal *robot-name* "STARO"))
+         (cond ((or (equal *robot-name* "JAXON") (equal *robot-name* "STARO") (equal *robot-name* "JAXON_RED"))
                 (send (make-coords :pos (float-vector valve-r 0 0) :rpy (list pi/2 -pi/2 0)) :rotate (deg2rad 10) :z :local))
                (t ;; (or (equal *robot-name* "HRP2JSKNT") (equal *robot-name* "HRP2JSKNTS"))
                 (make-coords :pos (float-vector valve-r 0 0) :rpy (list pi/2 -pi/2 0))))
@@ -135,7 +135,7 @@
 
 (defun fullbody-inverse-kinematics-for-valve
   (tc mt ll &key (draw? nil))
-  (cond ((equal *robot-name* "JAXON")
+  (cond ((or (equal *robot-name* "JAXON") (equal *robot-name* "JAXON_RED"))
          (fullbody-inverse-kinematics-for-valve-for-jaxon tc mt ll :draw? draw?))
         ((equal *robot-name* "STARO")
          (fullbody-inverse-kinematics-for-valve-for-staro tc mt ll :draw? draw?))
@@ -260,7 +260,7 @@
          (when ik-ret-in
            (setq ik-ret-in (send *robot* :look-at-target (send *valve* :worldcoords)))))
         ;; solve ik for valve reaching point
-        (cond ((or (equal *robot-name* "JAXON") (equal *robot-name* "STARO"))
+        (cond ((or (equal *robot-name* "JAXON") (equal *robot-name* "STARO") (equal *robot-name* "JAXON_RED"))
                (setq tc
                      (list
                       (send (send (send *valve* :get valve-handle-name) :copy-worldcoords) :translate (float-vector (* (- reach-dist) 2.0) 0 0) :local)
@@ -342,7 +342,7 @@
 
 (defun get-valve-stand-coords ;; relative to valve
   (&key (grasp-center? nil))
-  (cond ((or (equal *robot-name* "JAXON") (equal *robot-name* "STARO"))
+  (cond ((or (equal *robot-name* "JAXON") (equal *robot-name* "STARO") (equal *robot-name* "JAXON_RED"))
          (cond ((equal *valve-arm* :larm)
                 (make-coords :pos (float-vector -600 -500 0) :rpy (list (deg2rad -10) 0 0)))
                ((equal *valve-arm* :rarm)
@@ -447,7 +447,7 @@
         (when real? (model2real :time 3000)))
       (when real?
         (set-default-impedance-param)
-        (cond ((or (equal *robot-name* "JAXON") (equal *robot-name* "STARO"))
+        (cond ((or (equal *robot-name* "JAXON") (equal *robot-name* "STARO") (equal *robot-name* "JAXON_RED"))
                (send *ri* :start-impedance :arms :moment-gain (float-vector 0 0 0) :k-p 300 :d-p 500))
               (t ;; (or (equal *robot-name* "HRP2JSKNT") (equal *robot-name* "HRP2JSKNTS"))
                (send *ri* :start-impedance :arms :moment-gain (float-vector 0 0 0) :k-p 800 :d-p 400)

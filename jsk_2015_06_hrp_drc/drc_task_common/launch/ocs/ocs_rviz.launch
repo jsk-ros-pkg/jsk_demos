@@ -24,6 +24,8 @@
     <arg name="robot_model_config" default="$(arg robot_model_config)" />
   </include>
 
+  <node pkg="drc_task_common" type="joint-states-storage.l" name="joint_states_storage"
+        />
   <!-- teleop device -->
   <include file="$(find drc_task_common)/launch/teleop_device.launch" >
     <arg name="default_frame_id" default="$(arg default_frame_id)" />
@@ -33,7 +35,10 @@
   <!-- teleop interface -->
   <include file="$(find drc_task_common)/launch/teleop_interface.launch" />
 
+  <!-- stair marker -->
+  <node pkg="drc_task_common" type="stair_marker.py" name="stair_marker" />
   <!-- rviz -->
   <node pkg="rviz" type="rviz" name="operator_rviz" args="-d $(find drc_task_common)/config/drc_task_common.rviz"
         respawn="true"/>
+  
 </launch>

@@ -243,11 +243,12 @@
      (send self :set-impedance-for-handle limb)
      )
    (let ((check-links (subseq (send robot limb :links) 3 6)) (distance-threshold 100)
-         (body-link (elt (send robot :links) 0)) ik-result)
+         (body-link (elt (send robot :links) 0)) (old-angle-vector (send robot limb :angle-vector))
+         ik-result
+         )
      (setq ik-result
            (send robot :inverse-kinematics 
-                 (send (send (send self :rotate-grasp-point-by-grasp-arm (send car target-handle)) :copy-worldcoords)
-                       :translate offset offset-wrt)
+                 (send (send self :rotate-grasp-point-by-grasp-arm (send car target-handle)) :copy-worldcoords)
                  :move-target (send robot limb :end-coords)
                  :link-list (send robot :link-list (send robot limb :end-coords :parent) (send robot limb :root-link))
                  :rotation-axis rotation-axis :debug-view debug-view
@@ -262,19 +263,25 @@
                  )
            )
      (when ik-result ;; execute only when ik is succeed
-       (when real
-         (send *ri* :angle-vector (send robot :angle-vector) tm)
-         (send *ri* :wait-interpolation)
-         )
-       (send self :close-hand limb)
-       ;; for exchange
-       (send self :put :grasp-arm limb)
-       (send self :put :grasp-point target-handle)
-       (when adjust
-         (send self :adjust-real-handle-coords)
-         )
-       (when update-ik-seed ;; update steering-arm-ik-seed when grasp
-         (send self :update-steering-arm-ik-seed)
+       (setq ik-result (send robot limb :move-end-pos offset offset-wrt))
+       (if ik-result
+           (progn 
+             (when real
+               (send *ri* :angle-vector (send robot :angle-vector) tm)
+               (send *ri* :wait-interpolation)
+               )
+             (send self :close-hand limb)
+             ;; for exchange
+             (send self :put :grasp-arm limb)
+             (send self :put :grasp-point target-handle)
+             (when adjust
+               (send self :adjust-real-handle-coords)
+               )
+             (when update-ik-seed ;; update steering-arm-ik-seed when grasp
+               (send self :update-steering-arm-ik-seed)
+               )
+             )
+         (send robot limb :angle-vector old-angle-vector) ;; resume
          )
        )
      ik-result ;; return result of ik (nil is failed)
@@ -427,8 +434,8 @@
                    old-limb-angle-vector
                    )
                (when (and steering-arm-ik-seed use-ik-seed)
-                 (setq old-limb-angle-vector (send robot (send self :get :grasp-arm) :angle-vector))
-                 (send robot (send self :get :grasp-arm) :angle-vector steering-arm-ik-seed) ;; use same seed for steering ik
+                 (setq old-limb-angle-vector (send robot limb :angle-vector))
+                 (send robot limb :angle-vector steering-arm-ik-seed) ;; use same seed for steering ik
                  )
                (setq ik-ret
                      (send robot :inverse-kinematics coord
@@ -455,7 +462,7 @@
                             )
                           )
                  (progn (when (and steering-arm-ik-seed use-ik-seed)
-                          (send robot (send self :get :grasp-arm) :angle-vector old-limb-angle-vector) ;; resume angle-vector
+                          (send robot limb :angle-vector old-limb-angle-vector) ;; resume angle-vector
                           )
                         (return nil) ;; ik failed
                         )
@@ -486,7 +493,7 @@
   (:turn-handle-once
    (deg  &key (limb (send self :get :grasp-arm)) (target-handle (send self :get :grasp-point))
          (time 100) (relative t) (debug-view nil) (use-controller t) (stop 100)
-         (rotation-axis 0) (use-ik-seed t)
+         (rotation-axis 0) (use-ik-seed t) (offset #f(0 0 0)) (offset-wrt :local)
          )
    (let ((target-degree (if relative deg (- deg (send car :handle-joint :joint-angle))))
          (check-links (subseq (send robot limb :links) 3 6)) (distance-threshold 100)
@@ -535,14 +542,26 @@
                                                check-links))))
                  )
            )
+
      (unless ik-result ;; ik failed
-       (progn (when (and steering-arm-ik-seed use-ik-seed)
-                (send robot (send self :get :grasp-arm) :angle-vector old-limb-angle-vector) ;; resume angle-vector
-                )
-              (send car :handle-joint :joint-angle (- real-target-degree) :relative t) ;; resume joint angle
-              (return-from :turn-handle-once real-target-degree) ;; return remain-angle (= target-angle)
-              )
+       (when (and steering-arm-ik-seed use-ik-seed)
+         (send robot (send self :get :grasp-arm) :angle-vector old-limb-angle-vector) ;; resume angle-vector
+         )
+       (send car :handle-joint :joint-angle (- real-target-degree) :relative t) ;; resume joint angle
+       (return-from :turn-handle-once real-target-degree) ;; return remain-angle (= target-angle)
        )
+     
+     ;; reflect grasp offset
+     (setq ik-result (send robot limb :move-end-pos offset offset-wrt))
+
+     (unless ik-result ;; ik failed
+       (when (and steering-arm-ik-seed use-ik-seed)
+         (send robot (send self :get :grasp-arm) :angle-vector old-limb-angle-vector) ;; resume angle-vector
+         )
+       (send car :handle-joint :joint-angle (- real-target-degree) :relative t) ;; resume joint angle
+       (return-from :turn-handle-once real-target-degree) ;; return remain-angle (= target-angle)
+       )
+
      ;; define controller
      (if use-controller
          (setq controller (read-from-string (format nil ":~A-controller" (string-downcase limb))))
@@ -1060,7 +1079,7 @@
    (unless (equal val 0)
      (setq real val)
      (when use-real-robot-angle
-       (send robot :angle-vector (send *ri* :state :potentio-vector)) ;; sync model angle-vector to real
+       (send robot :angle-vector (send *ri* :state :potentio-vector)) ;; sync real angle-vector to model
        )
      )
    real
