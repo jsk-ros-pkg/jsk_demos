@@ -223,6 +223,17 @@
   )
 (warn ";; (setup-stair-climb-jaxon)~%")
 
+(defun setup-stair-climb-jaxon_red
+  (&key (use-walking-pose t))
+  (load "package://hrpsys_ros_bridge_tutorials/euslisp/jaxon_red-interface.l")
+  (jaxon_red-init)
+  (setq *robot* *jaxon_red*)
+  (objects (list *robot*))
+  (if use-walking-pose
+      (walking-pose *robot* :root-link-pitch-offset 15 :chest-link-pitch-offset 20 :root-link-height-offset -150 :default-pose-method :narrow-width-pose))
+  )
+(warn ";; (setup-stair-climb-jaxon_red)~%")
+
 (defun setup-terrain-walk-real-hrp2jsknts
   ()
 
@@ -279,6 +290,22 @@
   (send *ri* :set-auto-balancer-param :default-zmp-offsets (list (float-vector -20 0 0) (float-vector -20 0 0)))
   )
 (warn ";; (setup-stair-climb-real-jaxon)~%")
+
+(defun setup-stair-climb-real-jaxon_red
+  ()
+  (send *ri* :angle-vector (send *robot* :angle-vector) 4000)
+  (send *ri* :wait-interpolation)
+  (send *ri* :start-auto-balancer)
+  (send *ri* :start-st)
+  (default-stair-param-hrp2jsk)
+  (send *ri* :set-gait-generator-param
+        :swing-trajectory-delay-time-offset 0.20
+        :swing-trajectory-final-distance-weight 3.0
+        :toe-heel-phase-ratio #f(0.02 0.28 0.2 0.0 0.2 0.25 0.05)
+        )
+  (send *ri* :set-auto-balancer-param :default-zmp-offsets (list (float-vector -20 0 0) (float-vector -20 0 0)))
+  )
+(warn ";; (setup-stair-climb-real-jaxon_red)~%")
 
 (defun test-15cm-block-hrp2jsknts (&key (stair-once t))
   (print ";; up")
@@ -1054,6 +1081,12 @@
 (warn ";; (setup-stair-climb-jaxon :use-walking-pose nil) ;; generate robot model~%")
 (warn ";; (setup-stair-climb-real-jaxon) ;; send pose, start abc + st, set default zmp offset~%")
 (warn ";; (test-vegas-indoor-stair-real-robot-jaxon :continuous nil)~%")
+(warn "~%;; Nakashima stairs~%")
+(warn "~%;; JAXON_RED~%")
+(warn ";; (setup-stair-climb-jaxon_red :use-walking-pose nil) ;; generate robot model~%")
+(warn ";; (setup-stair-climb-real-jaxon_red) ;; send pose, start abc + st, set default zmp offset~%")
+(warn ";; (test-nakashima-stairs-real-robot-jaxon_red :fwd (float-vector 300 0 240)~%")
+
 (defun test-vegas-indoor-stair-real-robot-jaxon
   (&key (offset 10) (continuous nil))
   (y-or-n-p ";; initial pose?~%")
@@ -1099,6 +1132,31 @@
                   (make-coords :name :lleg :coords (send (send *robot* :lleg :end-coords :copy-worldcoords) :translate (float-vector (+ 290 offset) 0 230)))
                   (make-coords :name :rleg :coords (send (send *robot* :rleg :end-coords :copy-worldcoords) :translate (float-vector (+ 290 offset) 0 230)))))
       ))
+  (y-or-n-p ";; initial pose?~%")
+  (walking-pose *robot* :root-link-pitch-offset 0 :root-link-height-offset -200 :default-pose-method :narrow-width-pose)
+  (send *ri* :angle-vector (send *robot* :angle-vector) 4000)
+  (send *ri* :wait-interpolation)
+  )
+
+(defun test-nakashima-stairs-real-robot-jaxon_red
+  (&key (fwd (float-vector 300 0 240)))
+  (y-or-n-p ";; initial pose?~%")
+  (progn
+    (send *robot* :narrow-width-pose)
+    (send *ri* :angle-vector (send *robot* :angle-vector) 4000)
+    (send *ri* :wait-interpolation))
+  (y-or-n-p ";; sitting pose?~%")
+  (progn
+    (walking-pose *robot* :root-link-pitch-offset 5 :chest-link-pitch-offset 30 :root-link-height-offset -140 :default-pose-method :narrow-width-pose)
+    (send *ri* :angle-vector (send *robot* :angle-vector) 4000)
+    (send *ri* :wait-interpolation))
+  (progn
+    (y-or-n-p ";; climb up and down continuously?~%")
+    (send *ri* :set-foot-steps
+          (list (make-coords :name :rleg :coords (send *robot* :rleg :end-coords :copy-worldcoords))
+                (make-coords :name :lleg :coords (send (send *robot* :lleg :end-coords :copy-worldcoords) :translate fwd))
+                (make-coords :name :rleg :coords (send (send *robot* :rleg :end-coords :copy-worldcoords) :translate fwd))))
+    )
   (y-or-n-p ";; initial pose?~%")
   (walking-pose *robot* :root-link-pitch-offset 0 :root-link-height-offset -200 :default-pose-method :narrow-width-pose)
   (send *ri* :angle-vector (send *robot* :angle-vector) 4000)
