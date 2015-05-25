@@ -12,3 +12,9 @@ std_msgs/Float32 communication__panorama_height_scale
 std_msgs/UInt8 communication__robot_status
 uint8 ROBOT_IDLE=1
 uint8 ROBOT_MOVING=2
+
+# for vehicle
+geometry_msgs/PoseStamped communication__handle_pose
+geometry_msgs/PoseStamped communication__crank_pose
+jsk_recognition_msgs/TorusArray communication__drive__controller__current_steering
+visualization_msgs/MarkerArray communication__drive__recognition__predicted_path__marker

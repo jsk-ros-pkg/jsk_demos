@@ -6,12 +6,14 @@ Panels:
       Expanded:
         - /Global Options1
         - /Status1
-        - /RobotModel1/Status1
         - /Pose1
         - /Pose2
         - /TorusArray1
+        - /TorusArray1/Status1
         - /PointCloud21
+        - /PointCloud21/Status1
         - /TF1
+        - /MarkerArray1
       Splitter Ratio: 0.5
     Tree Height: 1135
   - Class: rviz/Selection
@@ -32,7 +34,7 @@ Panels:
     Experimental: false
     Name: Time
     SyncMode: 0
-    SyncSource: PointCloud2
+    SyncSource: ""
 Visualization Manager:
   Class: ""
   Displays:
@@ -60,185 +62,10 @@ Visualization Manager:
       Enabled: true
       Links:
         All Links Enabled: true
-        BODY:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        CHEST_LINK0:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        CHEST_LINK1:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
         Expand Joint Details: false
         Expand Link Details: false
         Expand Tree: false
-        HEAD_LINK0:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        HEAD_LINK1:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        LARM_LINK0:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        LARM_LINK1:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        LARM_LINK2:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        LARM_LINK3:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        LARM_LINK4:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        LARM_LINK5:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        LARM_LINK6:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        LARM_LINK7:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        LLEG_LINK0:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        LLEG_LINK1:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        LLEG_LINK2:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        LLEG_LINK3:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        LLEG_LINK4:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        LLEG_LINK5:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        LLEG_LINK6:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
         Link Tree Style: Links in Alphabetic Order
-        RARM_LINK0:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        RARM_LINK1:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        RARM_LINK2:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        RARM_LINK3:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        RARM_LINK4:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        RARM_LINK5:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        RARM_LINK6:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        RARM_LINK7:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        RLEG_LINK0:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        RLEG_LINK1:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        RLEG_LINK2:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        RLEG_LINK3:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        RLEG_LINK4:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        RLEG_LINK5:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        RLEG_LINK6:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
       Name: RobotModel
       Robot Description: robot_description
       TF Prefix: ""
@@ -257,7 +84,7 @@ Visualization Manager:
       Shaft Length: 1
       Shaft Radius: 0.05
       Shape: Axes
-      Topic: /handle_pose
+      Topic: /ocs/communication/handle_pose
       Value: true
     - Alpha: 1
       Axes Length: 0.1
@@ -271,12 +98,12 @@ Visualization Manager:
       Shaft Length: 1
       Shaft Radius: 0.05
       Shape: Axes
-      Topic: /crank_pose
+      Topic: /ocs/communication/crank_pose
       Value: true
     - Class: jsk_rviz_plugin/TorusArray
       Enabled: true
       Name: TorusArray
-      Topic: /drive/controller/currest_steering
+      Topic: /ocs/communication/drive/controller/current_steering
       Value: true
       alpha: 0.8
       auto color: false
@@ -309,7 +136,7 @@ Visualization Manager:
       Size (Pixels): 3
       Size (m): 0.01
       Style: Flat Squares
-      Topic: /multisense/resize_1_4/points
+      Topic: /ocs/communication/point_cloud
       Use Fixed Frame: true
       Use rainbow: true
       Value: true
@@ -318,300 +145,22 @@ Visualization Manager:
       Frame Timeout: 15
       Frames:
         All Enabled: true
-        BODY:
-          Value: true
-        CARMINE:
-          Value: true
-        CHEST_LINK0:
-          Value: true
-        CHEST_LINK1:
-          Value: true
-        HEAD_LINK0:
-          Value: true
-        HEAD_LINK1:
-          Value: true
-        LARM_LINK0:
-          Value: true
-        LARM_LINK1:
-          Value: true
-        LARM_LINK2:
-          Value: true
-        LARM_LINK3:
-          Value: true
-        LARM_LINK4:
-          Value: true
-        LARM_LINK5:
-          Value: true
-        LARM_LINK6:
-          Value: true
-        LARM_LINK7:
-          Value: true
-        LARM_cb_jig:
-          Value: true
-        LLEG_LINK0:
-          Value: true
-        LLEG_LINK1:
-          Value: true
-        LLEG_LINK2:
-          Value: true
-        LLEG_LINK3:
-          Value: true
-        LLEG_LINK4:
-          Value: true
-        LLEG_LINK5:
-          Value: true
-        LLEG_LINK6:
-          Value: true
-        L_INDEXMP_P_LINK:
-          Value: true
-        L_INDEXMP_R_LINK:
-          Value: true
-        L_INDEXPIP_R_LINK:
-          Value: true
-        L_MIDDLEPIP_R_LINK:
-          Value: true
-        L_THUMBCM_P_LINK:
-          Value: true
-        L_THUMBCM_Y_LINK:
-          Value: true
-        RARM_LINK0:
-          Value: true
-        RARM_LINK1:
-          Value: true
-        RARM_LINK2:
-          Value: true
-        RARM_LINK3:
-          Value: true
-        RARM_LINK4:
-          Value: true
-        RARM_LINK5:
-          Value: true
-        RARM_LINK6:
-          Value: true
-        RARM_LINK7:
-          Value: true
-        RARM_cb_jig:
-          Value: true
-        RLEG_LINK0:
-          Value: true
-        RLEG_LINK1:
-          Value: true
-        RLEG_LINK2:
-          Value: true
-        RLEG_LINK3:
-          Value: true
-        RLEG_LINK4:
-          Value: true
-        RLEG_LINK5:
-          Value: true
-        RLEG_LINK6:
-          Value: true
-        R_INDEXMP_P_LINK:
-          Value: true
-        R_INDEXMP_R_LINK:
-          Value: true
-        R_INDEXPIP_R_LINK:
-          Value: true
-        R_MIDDLEPIP_R_LINK:
-          Value: true
-        R_THUMBCM_P_LINK:
-          Value: true
-        R_THUMBCM_Y_LINK:
-          Value: true
-        accel:
-          Value: true
-        base_footprint:
-          Value: true
-        center_bottom_led_frame:
-          Value: true
-        center_top_led_frame:
-          Value: true
-        fisheye:
-          Value: true
-        ground:
-          Value: true
-        gsensor:
-          Value: true
-        gyro:
-          Value: true
-        gyrometer:
-          Value: true
-        head:
-          Value: true
-        head_end_coords:
-          Value: true
-        head_hokuyo_frame:
-          Value: true
-        head_root:
-          Value: true
-        hokuyo_link:
-          Value: true
-        larm_end_coords:
-          Value: true
-        left_camera_frame:
-          Value: true
-        left_camera_optical_frame:
-          Value: true
-        left_led_frame:
-          Value: true
-        lfsensor:
-          Value: true
-        lhsensor:
-          Value: true
-        lleg_end_coords:
-          Value: true
-        mag:
-          Value: true
-        motor:
-          Value: true
-        odom:
-          Value: true
-        odom_on_ground:
-          Value: true
-        rarm_end_coords:
-          Value: true
-        rfsensor:
-          Value: true
-        rhsensor:
-          Value: true
-        right_camera_frame:
-          Value: true
-        right_camera_optical_frame:
-          Value: true
-        right_led_frame:
-          Value: true
-        rleg_end_coords:
-          Value: true
-        spindle:
-          Value: true
-        torso_end_coords:
-          Value: true
       Marker Scale: 1
       Name: TF
       Show Arrows: false
       Show Axes: true
       Show Names: true
       Tree:
-        odom:
-          base_footprint:
-            BODY:
-              CHEST_LINK0:
-                CHEST_LINK1:
-                  HEAD_LINK0:
-                    HEAD_LINK1:
-                      CARMINE:
-                        {}
-                      head_end_coords:
-                        {}
-                      head_root:
-                        accel:
-                          {}
-                        gyro:
-                          {}
-                        head:
-                          center_bottom_led_frame:
-                            {}
-                          center_top_led_frame:
-                            {}
-                          left_camera_frame:
-                            left_camera_optical_frame:
-                              motor:
-                                spindle:
-                                  hokuyo_link:
-                                    head_hokuyo_frame:
-                                      {}
-                          left_led_frame:
-                            {}
-                          right_camera_frame:
-                            right_camera_optical_frame:
-                              {}
-                          right_led_frame:
-                            {}
-                        mag:
-                          {}
-                  LARM_LINK0:
-                    LARM_LINK1:
-                      LARM_LINK2:
-                        LARM_LINK3:
-                          LARM_LINK4:
-                            LARM_LINK5:
-                              LARM_LINK6:
-                                LARM_LINK7:
-                                  {}
-                                LARM_cb_jig:
-                                  {}
-                                L_INDEXMP_R_LINK:
-                                  L_INDEXMP_P_LINK:
-                                    L_INDEXPIP_R_LINK:
-                                      {}
-                                L_MIDDLEPIP_R_LINK:
-                                  {}
-                                L_THUMBCM_Y_LINK:
-                                  L_THUMBCM_P_LINK:
-                                    {}
-                                larm_end_coords:
-                                  {}
-                                lhsensor:
-                                  {}
-                  RARM_LINK0:
-                    RARM_LINK1:
-                      RARM_LINK2:
-                        RARM_LINK3:
-                          RARM_LINK4:
-                            RARM_LINK5:
-                              RARM_LINK6:
-                                RARM_LINK7:
-                                  {}
-                                RARM_cb_jig:
-                                  {}
-                                R_INDEXMP_R_LINK:
-                                  R_INDEXMP_P_LINK:
-                                    R_INDEXPIP_R_LINK:
-                                      {}
-                                R_MIDDLEPIP_R_LINK:
-                                  {}
-                                R_THUMBCM_Y_LINK:
-                                  R_THUMBCM_P_LINK:
-                                    {}
-                                rarm_end_coords:
-                                  {}
-                                rhsensor:
-                                  {}
-                  fisheye:
-                    {}
-                  gsensor:
-                    {}
-                  gyrometer:
-                    {}
-                  torso_end_coords:
-                    {}
-              LLEG_LINK0:
-                LLEG_LINK1:
-                  LLEG_LINK2:
-                    LLEG_LINK3:
-                      LLEG_LINK4:
-                        LLEG_LINK5:
-                          LLEG_LINK6:
-                            lleg_end_coords:
-                              {}
-                          lfsensor:
-                            {}
-              RLEG_LINK0:
-                RLEG_LINK1:
-                  RLEG_LINK2:
-                    RLEG_LINK3:
-                      RLEG_LINK4:
-                        RLEG_LINK5:
-                          RLEG_LINK6:
-                            rleg_end_coords:
-                              {}
-                          rfsensor:
-                            {}
-          ground:
-            {}
-          odom_on_ground:
-            {}
+        {}
       Update Interval: 0
+      Value: true
+    - Class: rviz/MarkerArray
+      Enabled: true
+      Marker Topic: /ocs/communication/drive/recognition/predicted_path/marker
+      Name: MarkerArray
+      Namespaces:
+        {}
+      Queue Size: 100
       Value: true
   Enabled: true
   Global Options:
@@ -649,10 +198,10 @@ Visualization Manager:
         Z: 0
       Name: Current View
       Near Clip Distance: 0.01
-      Pitch: 0.180398
+      Pitch: 0.225398
       Target Frame: <Fixed Frame>
       Value: Orbit (rviz)
-      Yaw: 1.88039
+      Yaw: 0.845391
     Saved: ~
 Window Geometry:
   Displays:
@@ -670,5 +219,5 @@ Window Geometry:
   Views:
     collapsed: false
   Width: 2560
-  X: -7
+  X: 42
   Y: 24
