@@ -1,7 +1,8 @@
 <launch>
   <arg name="dev" default="/dev/input/js0" />
-  <remap from="joy" to="teleop_joy"/>
-  <node pkg="joy" type="joy_node" name="joy_node" clear_params="true" output="screen">
+  <arg name="launch_joy" default="true" />
+  <!-- <remap from="joy" to="teleop_joy"/> -->
+  <node pkg="joy" type="joy_node" name="joy_node" clear_params="true" output="screen" if="$(arg launch_joy)">
     <param name="dev" value="$(arg dev)" />
   </node>
   <node pkg="drc_task_common" type="joy_to_twist.py" name="joy_to_twist" clear_params="true" output="screen">

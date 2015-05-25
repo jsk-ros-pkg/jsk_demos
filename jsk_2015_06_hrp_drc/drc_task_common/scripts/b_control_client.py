@@ -37,7 +37,7 @@ def b_control_client_init():
     # object marker
     ## insert / erase
     global req_marker_operate_srv, set_color_pub
-    global get_pose_srv, set_pose_pub, get_ik_arm_srv, get_ik_arm_pose_srv
+    global get_pose_srv, set_pose_pub, set_relative_pose_pub, get_ik_arm_srv, get_ik_arm_pose_srv
     rospy.wait_for_service(ns+'/request_marker_operate')
     rospy.wait_for_service(ns+'/get_pose')
     rospy.wait_for_service(ns+'/set_dimensions')
@@ -45,6 +45,7 @@ def b_control_client_init():
     set_color_pub = rospy.Publisher(ns+'/set_color', ColorRGBA)
     get_pose_srv = rospy.ServiceProxy(ns+'/get_pose', GetTransformableMarkerPose)
     set_pose_pub = rospy.Publisher(ns+'/set_pose', PoseStamped)
+    set_relative_pose_pub = rospy.Publisher(ns+'/set_control_relative_pose', Pose)
     get_ik_arm_srv = rospy.ServiceProxy('/get_ik_arm', GetIKArm)
     get_ik_arm_pose_srv = rospy.ServiceProxy('/get_ik_arm_pose', GetIKArmPose)
     global default_frame_id
@@ -170,6 +171,7 @@ def b_control_joy_cb(msg):
             ik_arm = get_ik_arm_srv().ik_arm
         except rospy.ServiceException, e:
             ik_arm = ":rarm"
+        end_effector_pose=Pose(orientation=Quaternion(x=0.0, y=0.0, z=0.0, w=1.0))
         if (ik_arm==":rarm"):
             if robot_name=="STARO":
                 mesh_resource_name="package://hrpsys_ros_bridge_tutorials/models/STARO_meshes/RARM_LINK7_mesh.dae"
@@ -177,12 +179,15 @@ def b_control_joy_cb(msg):
             elif robot_name=="JAXON":
                 mesh_resource_name="package://hrpsys_ros_bridge_tutorials/models/JAXON_meshes/RARM_LINK7_mesh.dae"
                 current_pose_stamped = PoseStamped(std_msgs.msg.Header(stamp=rospy.Time.now(), frame_id="jsk_model_marker_interface/robot/RARM_LINK7"), Pose(position=Point(0, 0, -0.04), orientation=Quaternion(0, 0, 0, 1)))
+                end_effector_pose = Pose(position=Point(0, 0, -0.1617), orientation=Quaternion(0, 0.707107, 0, 0.707107))
             elif robot_name=="JAXON_RED":
                 mesh_resource_name="package://hrpsys_ros_bridge_tutorials/models/JAXON_RED_meshes/RARM_LINK7_mesh.dae"
                 current_pose_stamped = PoseStamped(std_msgs.msg.Header(stamp=rospy.Time.now(), frame_id="jsk_model_marker_interface/robot/RARM_LINK7"), Pose(position=Point(0, 0, -0.04), orientation=Quaternion(0, 0, 0, 1)))
+                end_effector_pose = Pose(position=Point(0, 0, -0.1617), orientation=Quaternion(0, 0.707107, 0, 0.707107))
             else:
                 mesh_resource_name="package://hrpsys_ros_bridge_tutorials/models/HRP3HAND_R_meshes/RARM_LINK6_mesh.dae"
                 current_pose_stamped = PoseStamped(std_msgs.msg.Header(stamp=rospy.Time.now(), frame_id="jsk_model_marker_interface/robot/RARM_LINK6"), Pose(orientation=Quaternion(0, 0, 0, 1)))
+                end_effector_pose = Pose(position=Point(-0.0042, 0.0392, -0.1245), orientation=Quaternion(0, 0.707107, 0, 0.707107))
         else:
             if robot_name=="STARO":
                 mesh_resource_name="package://hrpsys_ros_bridge_tutorials/models/STARO_meshes/LARM_LINK7_mesh.dae"
@@ -190,13 +195,15 @@ def b_control_joy_cb(msg):
             elif robot_name=="JAXON":
                 mesh_resource_name="package://hrpsys_ros_bridge_tutorials/models/JAXON_meshes/LARM_LINK7_mesh.dae"
                 current_pose_stamped = PoseStamped(std_msgs.msg.Header(stamp=rospy.Time.now(), frame_id="jsk_model_marker_interface/robot/LARM_LINK7"), Pose(position=Point(0, 0, -0.04), orientation=Quaternion(0, 0, 0, 1)))
+                end_effector_pose = Pose(position=Point(0, 0, -0.1617), orientation=Quaternion(0, 0.707107, 0, 0.707107))
             elif robot_name=="JAXON_RED":
                 mesh_resource_name="package://hrpsys_ros_bridge_tutorials/models/JAXON_RED_meshes/LARM_LINK7_mesh.dae"
                 current_pose_stamped = PoseStamped(std_msgs.msg.Header(stamp=rospy.Time.now(), frame_id="jsk_model_marker_interface/robot/LARM_LINK7"), Pose(position=Point(0, 0, -0.04), orientation=Quaternion(0, 0, 0, 1)))
+                end_effector_pose = Pose(position=Point(0, 0, -0.1617), orientation=Quaternion(0, 0.707107, 0, 0.707107))
             else:
                 mesh_resource_name="package://hrpsys_ros_bridge_tutorials/models/HRP3HAND_L_meshes/LARM_LINK6_mesh.dae"
                 current_pose_stamped = PoseStamped(std_msgs.msg.Header(stamp=rospy.Time.now(), frame_id="jsk_model_marker_interface/robot/LARM_LINK6"), Pose(orientation=Quaternion(0, 0, 0, 1)))
-        
+                end_effector_pose = Pose(position=Point(-0.0042, -0.0392, -0.1245), orientation=Quaternion(0, 0.707107, 0, 0.707107))
         color = ColorRGBA(r=1.0, g=1.0, b=0.0, a=0.6)
         # try:
         #     #current_pose_stamped = get_ik_arm_pose_srv('').pose_stamped
@@ -206,6 +213,8 @@ def b_control_joy_cb(msg):
         if current_pose_stamped.pose.orientation.x == 0 and current_pose_stamped.pose.orientation.y == 0 and current_pose_stamped.pose.orientation.z == 0 and current_pose_stamped.pose.orientation.w == 0:
             current_pose_stamped.pose.orientation.w = 1
         insert_marker(shape_type=TransformableMarkerOperate.MESH_RESOURCE, name='hand1', description='', mesh_resource=mesh_resource_name, mesh_use_embedded_materials=True)
+        set_relative_pose_pub.publish(end_effector_pose)
+        
     if insert_box_flag or insert_cylinder_flag or insert_torus_flag or insert_hand_flag:
         set_color_pub.publish(color)
         set_pose_pub.publish(current_pose_stamped)

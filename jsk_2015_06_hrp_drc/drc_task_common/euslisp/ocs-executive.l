@@ -12,6 +12,7 @@
 (ros::roseus-add-srvs "jsk_interactive_marker")
 (ros::roseus-add-msgs "jsk_rviz_plugins")
 (ros::roseus-add-srvs "jsk_rviz_plugins")
+(ros::roseus-add-msgs "drc_task_common")
 (ros::roseus-add-srvs "drc_task_common")
 ;;(ros::load-ros-manifest "drc_task_common")
 (load "package://drc_task_common/euslisp/util.l")
@@ -1944,6 +1945,7 @@
 
 (ros::advertise "/ocs_to_fc_low_speed/input" drc_com_common::OCS2FCSmall)
 (ros::advertise "/jsk_model_marker_interface/robot/reset_joint_states_and_root" sensor_msgs::JointState 1)
+(ros::advertise "/model_joint_state_array" drc_task_common::JointStateArray 5)
 (ros::advertise "/transformable_interactive_server/set_color" std_msgs::ColorRGBA)
 (ros::advertise "/midi_config_player/set_feedback" sensor_msgs::JoyFeedbackArray)
 (ros::advertise "/urdf_control_marker/set_pose" geometry_msgs::PoseStamped 1)

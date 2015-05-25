@@ -135,6 +135,26 @@
     )
   )
 
+(defun store-motion-joint-states (motion &key (step-time 400))
+  (let* ((ja-msg (instance drc_task_common::JointStateArray :init))
+
+         (msg-array nil))
+    (dolist (av motion)
+      (let ((msg (instance sensor_msgs::JointState :init)))
+        (send msg :header (instance std_msgs::Header :init :stamp (ros::time 0.0)))
+        (send msg :name (send-all (send *robot* :joint-list) :name))
+        (send msg :position (mapcar #'deg2rad (coerce av cons)))
+        (push-back msg msg-array)
+        )
+      ;(push msg (send ja-msg :joint_state_array))
+      )
+    (send ja-msg :step_time 400)
+    (send ja-msg :joint_state_array msg-array)
+    (ros::publish "/model_joint_state_array" ja-msg)
+    (ros::spin-once)
+    )
+  )
+
 (defun play-motion-on-eus-viewer
   (motion
    &key
