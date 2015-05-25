@@ -226,6 +226,7 @@ class VehicleUIWidget(QWidget):
         egress_group = QtGui.QGroupBox("", self)
         self.egress_button = QtGui.QPushButton("Go to Egress")
         self.egress_button.clicked.connect(self.service("drive/controller/egress"))
+        self.is_egress_executing = False
         egress_vbox.addWidget(self.egress_button)
         egress_group.setLayout(egress_vbox)
         left_vbox.addWidget(egress_group)
@@ -604,6 +605,9 @@ class VehicleUIWidget(QWidget):
         if self.is_overwrite_executing != msg.overwrite_handle_angle_request:
             self.setServiceButtonColor(self.overwrite_button, msg.overwrite_handle_angle_request)
             self.is_overwrite_executing = msg.overwrite_handle_angle_request
+        if self.is_egress_executing != msg.egress_request:
+            self.setServiceButtonColor(self.egress_button, msg.egress_request)
+            self.is_egress_executing = msg.egress_request            
         if self.is_reach_executing != (msg.approach_handle_request or msg.approach_accel_request or msg.reach_arm_request or msg.reach_leg_request):
             self.setServiceButtonColor(self.reach_button,
                                   (msg.approach_handle_request or msg.approach_accel_request or msg.reach_arm_request or msg.reach_leg_request))
@@ -710,7 +714,7 @@ class VehicleUIWidget(QWidget):
             if self.neck_p_angle_msg != None:
                 self.neck_p_angle_value_label.setText(str(self.neck_p_angle_msg.data))
             if self.neck_y_angle_msg != None:
-                self.neck_y_angle_value_label.setText(str(self.neck_p_angle_msg.data))
+                self.neck_y_angle_value_label.setText(str(self.neck_y_angle_msg.data))
             for (label, msg) in zip(label_list, msg_list):
                 if msg != None:
                     self.updateForceSensor(label, msg)
