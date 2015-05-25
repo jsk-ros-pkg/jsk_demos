@@ -17,15 +17,15 @@
         w: 1.0
   offset: 
     position:
-        x: 0.035589
-        y: 0.01
-        z: -0.105
+        x: 0.0
+        y: 0.0
+        z: 0.0
     orientation: 
         x: 0.0
         y: 0.0
         z: 0.0
         w: 1.0
   fixed_link:
-    - "LLEG_LINK5"
-    - "RLEG_LINK5"
+    - "lleg_end_coords"
+    - "rleg_end_coords"
   display: true
