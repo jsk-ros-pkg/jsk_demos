@@ -522,25 +522,16 @@
    ;; stop accel
    (send self :accel-cmd 0.0)
    (send self :controller-mode :accel :stop)
+   ;; stop moving neck
+   (send self :controller-mode :neck :stop)  
    ;; stop handling
    (send self :controller-mode :handle :stop)
-   ;; sync
-   (when (and sync (not (send *ri* :simulation-modep)))
-     (let ((sync-list nil))
-       (when (equal (send self :controller-state :handle) :running)
-         (push (send motion :grasp-arm) sync-list)
-         )
-       (when (equal (send self :controller-state :accel) :running)
-         (push :rleg sync-list)
-         )
-       (when (equal (send self :controller-state :brake) :running)
-         (push :lleg sync-list)
-         )
-       (send motion :sync-all-controller sync-list)
-       )
+   ;; sync all limb-controllers
+   (when (not (send *ri* :simulation-modep))
+     (send motion :sync-all-controller)
      )
    ;; execute egress
-   (send* motion :go-to-egress args)
+   ;; (send* motion :go-to-egress args)
    )
 
   ;; internal functions

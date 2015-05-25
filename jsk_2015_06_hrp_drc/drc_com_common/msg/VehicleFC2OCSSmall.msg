@@ -29,6 +29,7 @@ bool approach_handle_response
 bool approach_accel_response
 bool reach_arm_response
 bool reach_leg_response
+bool egress_response
 bool set_max_step_response
 bool set_min_step_response
 bool overwrite_handle_angle_response
