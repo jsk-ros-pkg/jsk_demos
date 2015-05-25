@@ -1079,7 +1079,7 @@
    (unless (equal val 0)
      (setq real val)
      (when use-real-robot-angle
-       (send robot :angle-vector (send *ri* :state :potentio-vector)) ;; sync model angle-vector to real
+       (send robot :angle-vector (send *ri* :state :potentio-vector)) ;; sync real angle-vector to model
        )
      )
    real
