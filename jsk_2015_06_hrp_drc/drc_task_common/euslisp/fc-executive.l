@@ -1225,7 +1225,8 @@ It sends :angle-vector to robot and return 'finished' message to ocs"
                                  (float-vector-to-coords-set (send msg :float_params))))
           (footstep-names '(:lleg :rleg :lleg)))
       (let ((footstep-coords* (mapcar #'(lambda (c n)
-                                          (make-coords :coords c :name n))
+                                          (make-coords :pos (send c :worldpos)
+                                                       :name n))
                                       footstep-coords footstep-names)))
         ;; change ri parameter
         ;; too ugly, yeah too ugly...
