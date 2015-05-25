@@ -1922,15 +1922,15 @@
    )
   )
 
+;; advertise
+(ros::advertise "/ocs/rviz/visualization/ocs_executive_message"
+  jsk_rviz_plugins::OverlayText)
 
 ;; generate *robot*
 (setq *robot-name* (string-upcase (unix::getenv "ROBOT")))
 (generate-robot *robot-name* :generate-ri? nil)
 (set-drill-environment :draw? nil :generate-ri? nil) ;; for init param
 
-;; advertise
-(ros::advertise "/ocs/rviz/visualization/ocs_executive_message"
-  jsk_rviz_plugins::OverlayText)
 ;; TODO
 (let ((drill-type-string (ros::get-param "~drill_type" "takenoko")))
   (cond
@@ -1938,6 +1938,7 @@
    ((equal drill-type-string "takenoko") (setq *drill-type* :takenoko))
    )
   )
+
 (setq *app* (instance ocs-executive-app :init))
 (setq *tf* (instance ros::transform-listener :init))
 

@@ -1030,7 +1030,7 @@ It sends :angle-vector to robot and return 'finished' message to ocs"
     (send *ri* :stop-impedance :arms)
     (send self :send-rviz-button-finished-to-ocs))
   (:calib-hand-command-cb (msg)
-    (cond ((or (equal *robot-name* "JAXON") (equal *robot-name* "STARO"))
+    (cond ((or (equal *robot-name* "JAXON") (equal *robot-name* "JAXON_RED") (equal *robot-name* "STARO"))
            (send *ri* :hand-reset))
           (t ;; (or (equal *robot-name* "HRP2JSKNT") (equal *robot-name* "HRP2JSKNTS"))
            (send *ri* :hand-joint-calib)))
@@ -1128,14 +1128,14 @@ It sends :angle-vector to robot and return 'finished' message to ocs"
               :default-double-support-ratio 0.29
               :default-double-support-static-ratio 0.117
               )
-        (when (string= "JAXON" *robot-name*)
+        (when (or (string= "JAXON" *robot-name*)  (equal *robot-name* "JAXON_RED"))
           (send *ri* :set-auto-balancer-param :default-zmp-offsets
                 (list (float-vector -20 0 0) (float-vector -20 0 0)))
           )
         (print footstep-coords*)
         (send *ri* :set-foot-steps footstep-coords*)
         ;; fix ri parmaeter for planar transition
-        (if (string= "JAXON" *robot-name*)
+        (if (or (string= "JAXON" *robot-name*)  (equal *robot-name* "JAXON_RED"))
             (send *ri* :set-gait-generator-param
                     ;;:default-orbit-type :cycloid
                     :default-orbit-type :stair

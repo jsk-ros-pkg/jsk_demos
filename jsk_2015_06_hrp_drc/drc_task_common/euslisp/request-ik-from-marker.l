@@ -246,7 +246,7 @@
                 hand-origin-trans-pos)
            (cond ((or (string= *robot-name* "HRP2JSKNTS") (string= *robot-name* "HRP2JSKNT")  (string= *robot-name* "STARO"))
                   (setq hand-origin-trans-pos (float-vector 0 0 0)))
-                 ((string= *robot-name* "JAXON")
+                 ((or (string= *robot-name* "JAXON") (string= *robot-name* "JAXON_RED"))
                   (setq hand-origin-trans-pos (float-vector 0 0 -40))))
            (setq hand-trans
                  (send (send (send (send (send *robot* *ik-arm* :end-coords) :parent) :copy-worldcoords)
@@ -596,7 +596,7 @@
                           :stop 30
                           :look-at-target (copy-seq (send (elt tc 0) :worldpos))
                           )))
-              ((or (string= *robot-name* "JAXON") (string= *robot-name* "STARO"))
+              ((or (string= *robot-name* "JAXON") (string= *robot-name* "STARO") (string= *robot-name* "JAXON_RED"))
                (setq res (ik-server-call
                           :ik-server-service-name "/solve_ik"
                           :target-coords tc
