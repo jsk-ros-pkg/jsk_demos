@@ -33,7 +33,10 @@
   <!-- teleop interface -->
   <include file="$(find drc_task_common)/launch/teleop_interface.launch" />
 
+  <!-- stair marker -->
+  <node pkg="drc_task_common" type="stair_marker.py" name="stair_marker" />
   <!-- rviz -->
   <node pkg="rviz" type="rviz" name="operator_rviz" args="-d $(find drc_task_common)/config/drc_task_common.rviz"
         respawn="true"/>
+  
 </launch>
