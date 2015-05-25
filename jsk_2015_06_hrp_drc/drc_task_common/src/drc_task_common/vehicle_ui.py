@@ -710,7 +710,7 @@ class VehicleUIWidget(QWidget):
             if self.neck_p_angle_msg != None:
                 self.neck_p_angle_value_label.setText(str(self.neck_p_angle_msg.data))
             if self.neck_y_angle_msg != None:
-                self.neck_y_angle_value_label.setText(str(self.neck_p_angle_msg.data))
+                self.neck_y_angle_value_label.setText(str(self.neck_y_angle_msg.data))
             for (label, msg) in zip(label_list, msg_list):
                 if msg != None:
                     self.updateForceSensor(label, msg)
