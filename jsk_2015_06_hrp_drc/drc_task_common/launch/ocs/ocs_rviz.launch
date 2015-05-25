@@ -24,6 +24,8 @@
     <arg name="robot_model_config" default="$(arg robot_model_config)" />
   </include>
 
+  <node pkg="drc_task_common" type="joint-states-storage.l" name="joint_states_storage"
+        />
   <!-- teleop device -->
   <include file="$(find drc_task_common)/launch/teleop_device.launch" >
     <arg name="default_frame_id" default="$(arg default_frame_id)" />
