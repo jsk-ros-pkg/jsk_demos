@@ -1111,7 +1111,15 @@ It sends :angle-vector to robot and return 'finished' message to ocs"
     (hand-stop-grasp :real? t)
     (send self :send-rviz-button-finished-to-ocs))
   (:hand-grasp-pose-command-callback (msg)
-    (hand-start-grasp :real? t :type :default-grasp)
+    (cond
+     ((or (equal *robot-name* "HRP2JSKNTS") (equal *robot-name* "HRP2JSKNT"))
+      (drill-t-grasp :arm :arms)
+      (unix::usleep 500000)
+      (drill-full-grasp :arm :arms)
+      )
+     (t
+      (hand-start-grasp :real? t :type :default-grasp)
+      ))
     (send self :send-rviz-button-finished-to-ocs))
   (:hrpsys-start-abc-command-cb (msg)
     (send *ri* :start-auto-balancer)
