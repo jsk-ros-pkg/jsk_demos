@@ -2,7 +2,7 @@
   <arg name="LAUNCH_UI" default="true" />
   <arg name="LAUNCH_STEERING" default="false" />
   <arg name="LAUNCH_PS3JOY" default="true" />
-  <arg name="LAUNCH_RVIZ" default="true" />
+  <arg name="LAUNCH_RVIZ" default="false" />
 
   <arg name="CONTROLLER_DEV" default="/dev/input/js0" />
   <arg name="OCS_NS" default="ocs" />
