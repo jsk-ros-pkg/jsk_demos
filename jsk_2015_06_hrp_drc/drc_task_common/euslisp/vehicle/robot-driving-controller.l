@@ -540,7 +540,7 @@
        )
      )
    ;; execute egress
-   (send* motion :go-to-egress args)
+   ;; (send* motion :go-to-egress args)
    )
 
   ;; internal functions
