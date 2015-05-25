@@ -7,6 +7,12 @@
 
   <arg name="ROBOT" default="robot" />
 
+  <!-- remap for highspeed streamer -->
+  <remap from="/handle_pose" to="/communication/handle_pose" />
+  <remap from="/crank_pose" to="/communication/crank_pose" />
+  <remap from="/drive/controller/current_steering" to="/communication/drive/controller/current_steering" />
+  <remap from="/drive/recognition/predicted_path/marker" to="/communication/drive/recognition/predicted_path/marker" />
+  
   <!-- detect handle_pose from marker on crank -->
   <group if="$(arg LAUNCH_HANDLE_DETECTOR)" >
     <include file="$(find drc_task_common)/launch/fc/vehicle/handle_pose_detector.launch"/>
