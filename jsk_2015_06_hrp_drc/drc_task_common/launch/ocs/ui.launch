@@ -15,6 +15,9 @@
   <node pkg="rqt_gui" type="rqt_gui" name="rqt_image_view_button"
         args="--perspective-file $(find drc_task_common)/config/rqt_ui.perspective">
     <rosparam>
+      service_button_stair_layout_file: "package://drc_task_common/config/ocs_ui_stair_button_layout.yaml"
+    </rosparam>
+    <rosparam>
       service_button_layout_file: "package://drc_task_common/config/ocs_ui_button_layout.yaml"
     </rosparam>
     <rosparam>

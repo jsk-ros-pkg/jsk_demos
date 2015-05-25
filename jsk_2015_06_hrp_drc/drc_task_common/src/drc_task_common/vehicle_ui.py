@@ -9,7 +9,7 @@ from python_qt_binding.QtGui import (QAction, QIcon, QMenu, QWidget,
 from python_qt_binding.QtCore import (Qt, QTimer, qWarning, Slot, QEvent, QSize,
                                       pyqtSignal,
                                       pyqtSlot)
-from drc_task_common.srv import SetValue, StringRequest
+from drc_task_common.srv import SetValue, StringRequest, Uint8Request
 from threading import Lock
 import rospy
 import python_qt_binding.QtCore as QtCore
@@ -108,7 +108,7 @@ class VehicleUIWidget(QWidget):
 
         execute_vbox = QtGui.QVBoxLayout(self)
         execute_group = QtGui.QGroupBox("", self)
-        self.execute_button = QtGui.QPushButton("EXECUTE")
+        self.execute_button = QtGui.QPushButton("EXECUTE COMMUNICATION")
         self.execute_flag_publisher = rospy.Publisher("drive/execute_flag", Bool)
         self.execute_button.setCheckable(True)
         self.execute_button.clicked[bool].connect(self.setExecuteFlagCallback)
@@ -116,6 +116,16 @@ class VehicleUIWidget(QWidget):
         execute_vbox.addWidget(self.execute_button)
         execute_group.setLayout(execute_vbox)
         left_vbox.addWidget(execute_group)
+
+        real_vbox = QtGui.QVBoxLayout(self)
+        real_group = QtGui.QGroupBox("", self)
+        self.real_button = QtGui.QPushButton("SEND TO REAL ROBOT")
+        self.real_button.setCheckable(True)
+        self.real_button.clicked[bool].connect(self.setRealCallback)
+        self.real_button.setStyleSheet("background-color: lightgreen")
+        real_vbox.addWidget(self.real_button)
+        real_group.setLayout(real_vbox)
+        left_vbox.addWidget(real_group)
         
         handle_mode_vbox = QtGui.QVBoxLayout(self)
         handle_mode_group = QtGui.QGroupBox("Handle Mode", self)
@@ -268,39 +278,61 @@ class VehicleUIWidget(QWidget):
         left_container = QtGui.QWidget()
         right_container = QtGui.QWidget()
         lower_left_vbox = QtGui.QVBoxLayout()
-
-        lhsensor_group = QtGui.QGroupBox("LARM Force")
-        lhsensor_vbox = QtGui.QVBoxLayout()
         font = QtGui.QFont()
         font.setPointSize(16)
-        self.lhsensor_label = QtGui.QLabel("-1")
-        self.lhsensor_label.setFont(font)
+
+        neck_y_group = QtGui.QGroupBox("Neck Yaw Angle")
+        neck_y_angle_vbox = QtGui.QHBoxLayout()
+        self.neck_y_angle_value_label = QtGui.QLabel("-1.0") # Initial value
+        self.neck_y_angle_value_label.setFont(font)
+        self.neck_y_angle_msg = None
+        neck_y_angle_vbox.addWidget(self.neck_y_angle_value_label)
+        neck_y_group.setLayout(neck_y_angle_vbox)
+        lower_left_vbox.addWidget(neck_y_group)
+
+        neck_p_group = QtGui.QGroupBox("Neck Pitch Angle")
+        neck_p_angle_vbox = QtGui.QHBoxLayout()
+        self.neck_p_angle_value_label = QtGui.QLabel("-1.0") # Initial value
+        self.neck_p_angle_value_label.setFont(font)
+        self.neck_p_angle_msg = None
+        neck_p_angle_vbox.addWidget(self.neck_p_angle_value_label)
+        neck_p_group.setLayout(neck_p_angle_vbox)
+        lower_left_vbox.addWidget(neck_p_group)
+        
+        lhsensor_group = QtGui.QGroupBox("LARM Force")
+        lhsensor_vbox = QtGui.QVBoxLayout()
+        self.lhsensor_labels = [QtGui.QLabel("-1"), QtGui.QLabel("-1")]
+        for label in self.lhsensor_labels:
+            label.setFont(font)
+            lhsensor_vbox.addWidget(label)
         self.lhsensor_msg = None
-        lhsensor_vbox.addWidget(self.lhsensor_label)
         lhsensor_group.setLayout(lhsensor_vbox)
         lower_left_vbox.addWidget(lhsensor_group)
         rhsensor_group = QtGui.QGroupBox("RARM Force")
         rhsensor_vbox = QtGui.QVBoxLayout()
-        self.rhsensor_label = QtGui.QLabel("-1")
-        self.rhsensor_label.setFont(font)
+        self.rhsensor_labels = [QtGui.QLabel("-1"), QtGui.QLabel("-1")]
+        for label in self.rhsensor_labels:
+            label.setFont(font)
+            rhsensor_vbox.addWidget(label)
         self.rhsensor_msg = None
-        rhsensor_vbox.addWidget(self.rhsensor_label)
         rhsensor_group.setLayout(rhsensor_vbox)
         lower_left_vbox.addWidget(rhsensor_group)
         lfsensor_group = QtGui.QGroupBox("LLEG Force")
         lfsensor_vbox = QtGui.QVBoxLayout()
-        self.lfsensor_label = QtGui.QLabel("-1")
-        self.lfsensor_label.setFont(font)
+        self.lfsensor_labels = [QtGui.QLabel("-1"), QtGui.QLabel("-1")]
+        for label in self.lfsensor_labels:
+            label.setFont(font)
+            lfsensor_vbox.addWidget(label)
         self.lfsensor_msg = None
-        lfsensor_vbox.addWidget(self.lfsensor_label)
         lfsensor_group.setLayout(lfsensor_vbox)
         lower_left_vbox.addWidget(lfsensor_group)
         rfsensor_group = QtGui.QGroupBox("RLEG Force")
         rfsensor_vbox = QtGui.QVBoxLayout()
-        self.rfsensor_label = QtGui.QLabel("-1")
-        self.rfsensor_label.setFont(font)
+        self.rfsensor_labels = [QtGui.QLabel("-1"), QtGui.QLabel("-1")]
+        for label in self.rfsensor_labels:
+            label.setFont(font)
+            rfsensor_vbox.addWidget(label)
         self.rfsensor_msg = None
-        rfsensor_vbox.addWidget(self.rfsensor_label)
         rfsensor_group.setLayout(rfsensor_vbox)
         lower_left_vbox.addWidget(rfsensor_group)
         lower_left_container = QtGui.QWidget()
@@ -349,20 +381,31 @@ class VehicleUIWidget(QWidget):
         left_splitter.setSizes((200, 1000))
         center_box.addWidget(left_splitter)
     def setUpRightBox(self, right_vbox):
-        self.step_gage_label = QtGui.QLabel("-1.0") # Initial value
-        self.step_gage_label.setFixedHeight(50)
-        
-        right_vbox.addWidget(self.step_gage_label)
+        font = QtGui.QFont()
+        font.setPointSize(16)
+
+        step_gage_hbox = QtGui.QHBoxLayout()
+        step_gage_container = QtGui.QWidget()
+        step_gage_label = QtGui.QLabel("Current Step:", self)
+        step_gage_label.setFont(font)
+        self.step_gage_value_label = QtGui.QLabel("-1.0") # Initial value
+        self.step_gage_value_label.setFixedHeight(50)
+        self.step_gage_value_label.setFont(font)
+        step_gage_hbox.addWidget(step_gage_label)
+        step_gage_hbox.addWidget(self.step_gage_value_label)
+        step_gage_container.setLayout(step_gage_hbox)
+        right_vbox.addWidget(step_gage_container, 1)
+
         self.step_gage = StepGageWidget("drive/controller/step",
                                         "drive/controller/max_step",
                                         "drive/controller/min_step")
-        right_vbox.addWidget(self.step_gage)
+        right_vbox.addWidget(self.step_gage, 15)
         self.set_current_step_as_max_button = QtGui.QPushButton("Set Current Step as Max")
         self.set_current_step_as_max_button.clicked.connect(self.setCurrentStepAsMaxButtonCallback)
         self.set_current_step_as_min_button = QtGui.QPushButton("Set Current Step as Min")
         self.set_current_step_as_min_button.clicked.connect(self.setCurrentStepAsMinButtonCallback)
-        right_vbox.addWidget(self.set_current_step_as_max_button)
-        right_vbox.addWidget(self.set_current_step_as_min_button)
+        right_vbox.addWidget(self.set_current_step_as_max_button, 15)
+        right_vbox.addWidget(self.set_current_step_as_min_button, 15)
     # Message callback
     def setupSubscribers(self):
         self.step_gage_value_sub = rospy.Subscriber(
@@ -371,6 +414,10 @@ class VehicleUIWidget(QWidget):
             "drive/controller/min_step", std_msgs.msg.Float32, self.minStepGageValueCallback)
         self.max_step_value_sub = rospy.Subscriber(
             "drive/controller/max_step", std_msgs.msg.Float32, self.maxStepGageValueCallback)
+        self.neck_y_angle_value_sub = rospy.Subscriber(
+            "drive/controller/neck_y_angle", std_msgs.msg.Float32, self.neckYawAngleCallback)
+        self.neck_p_angle_value_sub = rospy.Subscriber(
+            "drive/controller/neck_p_angle", std_msgs.msg.Float32, self.neckPitchAngleCallback)
         self.lleg_force_sub = rospy.Subscriber(
             "/lhsensor", geometry_msgs.msg.WrenchStamped, self.lhsensorCallback)
         self.rleg_force_sub = rospy.Subscriber(
@@ -388,7 +435,9 @@ class VehicleUIWidget(QWidget):
         self.handle_angle_vector_diff_sub = rospy.Subscriber(
             "drive/controller/steering_diff_angle_vector", std_msgs.msg.Float32, self.steeringDiffAngleVectorCallback)
         self.obstacle_length_sub = rospy.Subscriber(
-            "drive/recognition/obstacle_length/indicator", std_msgs.msg.Float32, self.obstacleLengthCallback)
+            "drive/recognition/obstacle_length/indicator", std_msgs.msg.Float32, self.obstacleLengthCallback)       
+        self.real_sub = rospy.Subscriber(
+            "drive/controller/real", std_msgs.msg.Bool, self.realCallback)
     def lhsensorCallback(self, msg):
         self.lhsensor_msg = msg
     def rhsensorCallback(self, msg):
@@ -397,44 +446,61 @@ class VehicleUIWidget(QWidget):
         self.lfsensor_msg = msg
     def rfsensorCallback(self, msg):
         self.rfsensor_msg = msg
+    def neckYawAngleCallback(self, msg):
+        self.neck_y_angle_msg = msg
+    def neckPitchAngleCallback(self, msg):
+        self.neck_p_angle_msg = msg
+
     def updateForceSensor(self, label, msg):
-        max_force = None
-        max_direction = None
-        index_to_direction = {0:":x", 1:":y", 2:":z"}
-        for idx, value in enumerate([str(msg.wrench.force.x), str(msg.wrench.force.y), str(msg.wrench.force.z)]):
-            if max_force == None or abs(float(value)) > abs(max_force):
-                max_force = round(float(value), 3)
-                max_direction = index_to_direction[idx]
-        label.setText(max_direction + " " + str(max_force))
-        if abs(max_force) > 150.0: # threshould
+        force = np.sqrt(msg.wrench.force.x ** 2 + msg.wrench.force.y ** 2 + msg.wrench.force.z ** 2)
+        moment = np.sqrt(msg.wrench.torque.x ** 2 + msg.wrench.torque.y ** 2 + msg.wrench.torque.z ** 2)
+        label[0].setText("F: " + str(round(force, 2)))
+        self.setBackgroundColorByThreshould(label[0], force, 150.0, 100.0, 50.0)
+        label[1].setText("M: " + str(round(moment, 2)))
+        self.setBackgroundColorByThreshould(label[1], moment, 40.0, 20.0, 10.0)
+
+    def setBackgroundColorByThreshould(self, label, value, threshould_red, threshould_yellow, threshould_green):
+        if abs(value) > threshould_red: # threshould
             label.setAutoFillBackground(True);
             palette = QtGui.QPalette()
             palette.setColor(QtGui.QPalette.Background,QtCore.Qt.red)
             label.setPalette(palette)
-        elif abs(max_force) > 100.0: # threshould
+        elif abs(value) > threshould_yellow: # threshould
             label.setAutoFillBackground(True);
             palette = QtGui.QPalette()
             palette.setColor(QtGui.QPalette.Background,QtCore.Qt.yellow)
             label.setPalette(palette)
-        elif abs(max_force) > 50.0: # threshould
+        elif abs(value) > threshould_green: # threshould
             label.setAutoFillBackground(True);
             palette = QtGui.QPalette()
             palette.setColor(QtGui.QPalette.Background,QtCore.Qt.green)
             label.setPalette(palette)
         else:
-            label.setAutoFillBackground(False);
+           label.setAutoFillBackground(False);       
+
     def setExecuteFlagCallback(self, pressed):
         pub_msg = Bool()
-        if pressed:
-            pub_msg.data = True
-            self.execute_button.setStyleSheet("background-color: red")
-        else:
-            self.execute_button.setStyleSheet("background-color: lightgreen")
+        with self.lock:
+            if pressed:
+                pub_msg.data = True
+                self.execute_button.setStyleSheet("background-color: red")
+            else:
+                pub_msg.data = False
+                self.execute_button.setStyleSheet("background-color: lightgreen")
         self.execute_flag_publisher.publish(pub_msg)
-            
+
+    def setRealCallback(self, pressed):
+        with self.lock:
+            if pressed:
+                self.callUint8RequestService("drive/controller/set_real", 1)
+                self.real_button.setStyleSheet("background-color: red")
+            else:
+                self.callUint8RequestService("drive/controller/set_real", 0)
+                self.real_button.setStyleSheet("background-color: lightgreen")
+        
     def stepGageValueCallback(self, msg):
         with self.lock:
-            self.step_gage_label.setText(str(msg.data))
+            self.step_gage_value_label.setText(str(msg.data))
     def minStepGageValueCallback(self, msg):
         with self.lock:
             if self.step_min_value != msg.data:
@@ -498,6 +564,15 @@ class VehicleUIWidget(QWidget):
         with self.lock:
             self.obstacle_length_value = msg.data
             self.obstacle_length_value_label.setText(str(int(msg.data)))
+    def realCallback(self, msg):
+        with self.lock:
+            if msg.data:
+                self.real_button.setChecked(True)
+                self.real_button.setStyleSheet("background-color: red")
+            else:
+                self.real_button.setChecked(False)                
+                self.real_button.setStyleSheet("background-color: lightgreen")
+
     # Event callback
     def minUpButtonCallback(self, event):
         current_value = float(self.step_min_edit.text())
@@ -555,13 +630,13 @@ class VehicleUIWidget(QWidget):
                 self.overwrite_edit.setText(str(next_value))
 
     def setCurrentStepAsMaxButtonCallback(self, event):
-        current_step = float(self.step_gage_label.text())
+        current_step = float(self.step_gage_value_label.text())
         next_value = self.callSetValueService('drive/controller/set_max_step', current_step)
         if next_value != None:
             with self.lock:
                 self.step_max_edit.setText(str(next_value))
     def setCurrentStepAsMinButtonCallback(self, event):
-        current_step = float(self.step_gage_label.text())
+        current_step = float(self.step_gage_value_label.text())
         next_value = self.callSetValueService('drive/controller/set_min_step', current_step)
         if next_value != None:
             with self.lock:
@@ -575,14 +650,27 @@ class VehicleUIWidget(QWidget):
         except rospy.ServiceException, e:
             self.showError("Failed to call " + service_name)
             return None
+
+    def callUint8RequestService(self, service_name, value):
+        try:
+            update_value = rospy.ServiceProxy(service_name, Uint8Request)
+            update_value(value)
+            return
+        except rospy.ServiceException, e:
+            self.showError("Failed to call " + service_name)
+            return
+
     def timerEvent(self, event):
-        label_list = [self.lhsensor_label, self.rhsensor_label, self.lfsensor_label, self.rfsensor_label]
+        label_list = [self.lhsensor_labels, self.rhsensor_labels, self.lfsensor_labels, self.rfsensor_labels]
         msg_list = [self.lhsensor_msg, self.rhsensor_msg, self.lfsensor_msg, self.rfsensor_msg]
         with self.lock:
+            if self.neck_p_angle_msg != None:
+                self.neck_p_angle_value_label.setText(str(self.neck_p_angle_msg.data))
+            if self.neck_y_angle_msg != None:
+                self.neck_y_angle_value_label.setText(str(self.neck_p_angle_msg.data))
             for (label, msg) in zip(label_list, msg_list):
                 if msg != None:
                     self.updateForceSensor(label, msg)
-        
             
     def showError(self, message):
         QMessageBox.about(self, "ERROR", message)

@@ -96,11 +96,11 @@
    (ros::advertise "/drive/controller/neck_p_angle" std_msgs::Float32 1 t)
 
    ;; for steering visualization
-   (ros::advertise "/drive/controller/currest_steering" jsk_recognition_msgs::TorusArray 1)
-   (ros::advertise "/drive/controller/handling_trajectory" geometry_msgs::PolygonStamped 1)
+   (ros::advertise "/drive/controller/currest_steering" jsk_recognition_msgs::TorusArray 1 t)
+   (ros::advertise "/drive/controller/handling_trajectory" geometry_msgs::PolygonStamped 1 t)
 
    ;; for steering estimation
-   (ros::advertise "/drive/controller/torus_finder_input" geometry_msgs::PolygonStamped 1)
+   (ros::advertise "/drive/controller/torus_finder_input" geometry_msgs::PolygonStamped 1 t)
    (ros::subscribe "/drive/torus_finder/output/pose"
                    geometry_msgs::PoseStamped
                    #'send self :torus-finder-callback)
@@ -112,12 +112,14 @@
                    #'send self :handle-pose-callback)
 
    ;; for controller mode
-   (ros::advertise "/drive/controller/handle_mode" std_msgs::String 1)
-   (ros::advertise "/drive/controller/accel_mode" std_msgs::String 1)
-   (ros::advertise "/drive/controller/brake_mode" std_msgs::String 1)
-   (ros::advertise "/drive/controller/neck_mode" std_msgs::String 1)
+   (ros::advertise "/drive/controller/handle_mode" std_msgs::String 1 t)
+   (ros::advertise "/drive/controller/accel_mode" std_msgs::String 1 t)
+   (ros::advertise "/drive/controller/brake_mode" std_msgs::String 1 t)
+   (ros::advertise "/drive/controller/neck_mode" std_msgs::String 1 t)
 
    ;; for vehicle ui
+   (ros::advertise "/drive/controller/real" std_msgs::Bool 1 t)
+   (ros::advertise-service "/drive/controller/set_real" drc_task_common::Uint8Request #'send self :set-real-callback)
    (ros::advertise-service "/drive/controller/initialize" std_srvs::Empty #'send self :initialize-callback)
    (ros::advertise-service "/drive/controller/approach_handle" std_srvs::Empty #'send self :approach-handle-callback)
    (ros::advertise-service "/drive/controller/grasp" std_srvs::Empty #'send self :grasp-callback)
@@ -164,10 +166,22 @@
                    #'send self :neck-p-callback)
    
    ;; set real flag without moving model
-   (send motion :real tmp-real :use-real-robot-angle nil)
+   (send self :real tmp-real :use-real-robot-angle nil)
    )
 
   ;; vehicle ui callback
+  (:set-real-callback
+   (req)
+   (let ((res (send req :response)))
+     (case (send req :type)
+       (0 (send self :real nil :use-real-robot-angle nil))
+       (1 (send self :real t :use-real-robot-angle t))
+       (t nil)
+       )
+     (warn "real status is ~A~%" (send motion :real))
+     res
+     )
+   )
   (:initialize-callback
    (req)
    (let ((res (send req :response)))
@@ -303,7 +317,7 @@
      (when sync
        (send motion :sync-all-controller) ;; execute sync-controller forcely in all limbs
        )
-     (send motion :real nil :use-real-robot-angle nil) ;; temporary disable (send *ri* :angle-vector)
+     (send self :real nil :use-real-robot-angle nil) ;; temporary disable (send *ri* :angle-vector)
      (warn "init-pose~%")
      (send motion :ride :init-pose t)
      (send motion :drive-init-pose-crank :limb :larm :move-arm nil) ;; todo: fix and remove
@@ -322,7 +336,7 @@
      (send self :neck-cmd 0.0 :neck-p :time 2000)
      (send self :neck-cmd 0.0 :neck-y :time 2000)
      (warn "send-initial-pose~%")
-     (send motion :real real :use-real-robot-angle nil) ;; set real as argument
+     (send self :real real :use-real-robot-angle nil) ;; set real as argument
      (send motion :model2real :time time :wait-interpolation t) ;; send *ri* :angle-vector if real is t (default :real is set above)
      (warn "init-hand~%")
      (send motion :open-hand (send motion :grasp-arm))
@@ -944,7 +958,7 @@
 
   ;; handle angle estimation
   (:estimate-current-handle-angle
-   ()
+   (&rest args &key (offset #f(0 0 0)) (offset-wrt :local)) ;; offset is from end-coords to grasp-point  
    (let ((current-angle old-estimated-handle-angle)
          (half-range 180)
          (pub-msg (instance std_msgs::Float32 :init))
@@ -958,6 +972,7 @@
      ;; get current end-coords and resume angle-vector
      (send (send motion :robot) :angle-vector (send *ri* :state :potentio-vector))
      (setq current-end-coords (send (send motion :robot) (send motion :grasp-arm) :end-coords :copy-worldcoords))
+     (send current-end-coords :translate offset offset-wrt)
      (send (send motion :robot) :angle-vector tmp-angle-vector)
      ;; fix steering-center coords to 0[deg], handle-joint is counter-clockwise
      (setq steering-center-coords-at-zero-deg (send (send (send motion :car :vehicle-handle :steering-center) :copy-worldcoords)
@@ -975,7 +990,12 @@
      (setq estimated-angle-offset (rad2deg (atan (elt relative-grasp-point-pos-from-steerint-center 1) (elt relative-grasp-point-pos-from-steerint-center 0))))
      (setq estimated-angle (+ estimated-angle estimated-angle-offset)) ;; current estimated angle is 0-360
      (let ((counter 0)) ;; slide range of estimated angle according to old-estimated-handle-angle
-       (while (not (and (<= (- old-estimated-handle-angle half-range) estimated-angle) (<= estimated-angle (+ old-estimated-handle-angle half-range))))
+       (while (not (and (<= (- old-estimated-handle-angle half-range) estimated-angle)
+                        (<= estimated-angle (+ old-estimated-handle-angle half-range))
+                        (<= (send motion :car :handle-joint :min-angle) estimated-angle)
+                        (<= estimated-angle (send motion :car :handle-joint :max-angle))
+                        )
+                   )
          (when (< estimated-angle (- old-estimated-handle-angle half-range))
            (setq estimated-angle (+ estimated-angle (* half-range 2)))
            )
@@ -1121,6 +1141,13 @@
      (setq handling-end-coords-list nil)
      )
    record-handling-end-coords-flag
+   )
+  (:real
+   (&optional (val 0) &key (use-real-robot-angle t))
+   (let ((pub-msg (instance std_msgs::Bool :init)))
+     (send pub-msg :data (send motion :real val :use-real-robot-angle use-real-robot-angle))
+     (ros::publish "/drive/controller/real" pub-msg)
+     )
    )
 
   ;; main loop

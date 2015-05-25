@@ -557,6 +557,9 @@ Usage:
      ;; driving
      (:initial -> :vehicle)
      (:vehicle -> :initial)
+     ;; stair
+     (:initial -> :stair)
+     (:stair -> :initial)
      )
    '((:initial :initial)
      ;; go-pos
@@ -621,6 +624,8 @@ Usage:
      (:executing-drill-rotate :drill-rotate)
      ;; driving
      (:vehicle :vehicle)
+     ;; stair
+     (:stair :stair)
      )
    :initial "ocs_state.png" t))
 
@@ -711,6 +716,9 @@ Usage:
 
      (:initial -> :executing-vehicle)
      (:executing-vehicle -> :initial)
+
+     (:initial -> :executing-stair)
+     (:executing-stair -> :initial)
      )
    '((:initial :initial)
      
@@ -753,6 +761,8 @@ Usage:
      (:executing-reach-until-touch :reach-until-touch)
 
      (:executing-vehicle :vehicle)
+
+     (:executing-stair :stair)
      )
    :initial nil t
    ))
