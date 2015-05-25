@@ -9,6 +9,7 @@ from python_qt_binding.QtGui import (QAction, QIcon, QMenu, QWidget,
 from python_qt_binding.QtCore import (Qt, QTimer, qWarning, Slot, QEvent, QSize,
                                       pyqtSignal,
                                       pyqtSlot)
+from drc_com_common.msg import VehicleOCS2FCSmall
 from drc_task_common.srv import SetValue, StringRequest, Uint8Request
 from threading import Lock
 import rospy
@@ -163,10 +164,15 @@ class VehicleUIWidget(QWidget):
         action_vbox = QtGui.QVBoxLayout(self)
         action_group = QtGui.QGroupBox("action", self)
         self.initialize_button = QtGui.QPushButton("Initial Pose")
+        self.is_initialize_executing = False
         self.grasp_button = QtGui.QPushButton("Grasp Handle")
+        self.is_grasp_executing = False
         self.release_button = QtGui.QPushButton("Release Handle")
+        self.is_release_executing = False
         self.correct_button = QtGui.QPushButton("Correct Handle Pose")
+        self.is_correct_executing = False
         self.resume_button = QtGui.QPushButton("Resume Handle Pose")
+        self.is_resume_executing = False        
         self.initialize_button.clicked.connect(self.service("drive/controller/initialize"))
         self.grasp_button.clicked.connect(self.service("drive/controller/grasp"))
         self.release_button.clicked.connect(self.service("drive/controller/release"))
@@ -183,6 +189,7 @@ class VehicleUIWidget(QWidget):
         reach_vbox = QtGui.QVBoxLayout(self)
         reach_group = QtGui.QGroupBox("", self)
         self.reach_button = QtGui.QPushButton("Approach")
+        self.is_reach_executing = False
         menu = QtGui.QMenu()
         approachHandleArmAction = QAction("Approach Handle Arm", self)
         approachHandleArmAction.triggered.connect(self.service("drive/controller/approach_handle"))
@@ -205,6 +212,7 @@ class VehicleUIWidget(QWidget):
         overwrite_hbox = QtGui.QHBoxLayout(self)
         overwrite_group = QtGui.QGroupBox("", self)
         self.overwrite_button = QtGui.QPushButton("Overwrite")
+        self.is_overwrite_executing = False
         self.overwrite_button.clicked.connect(self.overwriteButtonCallback)
         self.overwrite_edit = QtGui.QLineEdit()
         self.overwrite_edit.setText("0.0")
@@ -438,6 +446,9 @@ class VehicleUIWidget(QWidget):
             "drive/recognition/obstacle_length/indicator", std_msgs.msg.Float32, self.obstacleLengthCallback)       
         self.real_sub = rospy.Subscriber(
             "drive/controller/real", std_msgs.msg.Bool, self.realCallback)
+        self.ocs_to_fc_vehicle_sub = rospy.Subscriber(
+            "/ocs_to_fc_vehicle/input", VehicleOCS2FCSmall, self.vehicleOcsToFcSmallCallback)
+
     def lhsensorCallback(self, msg):
         self.lhsensor_msg = msg
     def rhsensorCallback(self, msg):
@@ -564,6 +575,7 @@ class VehicleUIWidget(QWidget):
         with self.lock:
             self.obstacle_length_value = msg.data
             self.obstacle_length_value_label.setText(str(int(msg.data)))
+
     def realCallback(self, msg):
         with self.lock:
             if msg.data:
@@ -573,6 +585,37 @@ class VehicleUIWidget(QWidget):
                 self.real_button.setChecked(False)                
                 self.real_button.setStyleSheet("background-color: lightgreen")
 
+    def vehicleOcsToFcSmallCallback(self, msg):
+        if self.is_initialize_executing != msg.initialize_request:
+            self.setServiceButtonColor(self.initialize_button, msg.initialize_request)
+            self.is_initialize_executing = msg.initialize_request
+        if self.is_grasp_executing != msg.grasp_request:
+            self.setServiceButtonColor(self.grasp_button, msg.grasp_request)
+            self.is_grasp_executing = msg.grasp_request
+        if self.is_release_executing != msg.release_request:
+            self.setServiceButtonColor(self.release_button, msg.release_request)
+            self.is_release_executing = msg.release_request
+        if self.is_correct_executing != msg.correct_request:
+            self.setServiceButtonColor(self.correct_button, msg.correct_request)
+            self.is_correct_executing = msg.correct_request
+        if self.is_resume_executing != msg.resume_request:
+            self.setServiceButtonColor(self.resume_button, msg.resume_request)
+            self.is_resume_executing = msg.resume_request
+        if self.is_overwrite_executing != msg.overwrite_handle_angle_request:
+            self.setServiceButtonColor(self.overwrite_button, msg.overwrite_handle_angle_request)
+            self.is_overwrite_executing = msg.overwrite_handle_angle_request
+        if self.is_reach_executing != (msg.approach_handle_request or msg.approach_accel_request or msg.reach_arm_request or msg.reach_leg_request):
+            self.setServiceButtonColor(self.reach_button,
+                                  (msg.approach_handle_request or msg.approach_accel_request or msg.reach_arm_request or msg.reach_leg_request))
+            self.is_reach_executing = (msg.approach_handle_request or msg.approach_accel_request or msg.reach_arm_request or msg.reach_leg_request)
+
+    def setServiceButtonColor(self, button, data):
+        with self.lock:
+            if data:
+                button.setStyleSheet("background-color: red")
+            else:
+                button.setStyleSheet("background-color: None")
+            
     # Event callback
     def minUpButtonCallback(self, event):
         current_value = float(self.step_min_edit.text())
