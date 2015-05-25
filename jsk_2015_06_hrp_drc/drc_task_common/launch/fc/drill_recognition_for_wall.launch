@@ -35,14 +35,6 @@
         filter_limit_max: 100
       </rosparam>
     </node>
-    <node pkg="nodelet" type="nodelet" name="organized_points_converter" 
-          args="load jsk_pcl/DepthImageCreator manager">
-      <remap from="~info" to="$(arg INPUT_CAMERA_INFO)" />
-      <remap from="~input" to="mask_image_filter_points/output" />
-      <rosparam>
-        use_asynchronous: true
-      </rosparam>
-    </node>
     <node pkg="nodelet" type="nodelet" name="mask_image_generator"
           args="load jsk_perception/MaskImageGenerator manager">
       <remap from="~input" to="$(arg INPUT_IMAGE)" />
@@ -67,6 +59,15 @@
       <remap from="~input"  to="downsampler/output" />
       <remap from="~indices" to="mask_image_filter/output" />
     </node>
+
+    <node pkg="nodelet" type="nodelet" name="organized_points_converter" 
+          args="load jsk_pcl/DepthImageCreator manager">
+      <remap from="~info" to="$(arg INPUT_CAMERA_INFO)" />
+      <remap from="~input" to="mask_image_filter_points/output" />
+      <rosparam>
+        use_asynchronous: true
+      </rosparam>
+    </node>
     <node pkg="nodelet" type="nodelet" name="normal_estimation"
           args="load jsk_pcl/NormalEstimationOMP manager">
       <remap from="~input" to="mask_image_filter_points/output" />
@@ -82,6 +83,7 @@
       <remap from="~points" to="organized_points_converter/output_cloud" /> <!--need to use original size-->
       <rosparam>
         use_poly: true
+        crop_size: 100
       </rosparam>
     </node>
     
