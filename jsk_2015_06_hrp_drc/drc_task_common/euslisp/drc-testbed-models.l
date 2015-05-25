@@ -189,7 +189,7 @@
 
 (defmethod drc-stair
   (:init
-   (&key (add-groud-p nil) (test-field nil))
+   (&key (add-groud-p nil) (test-field nil) (name "drc-stair"))
    (setq stair-top-faces nil)
    (let* ((blist (append (send self :make-stair-bodies :test-field test-field)
                          (send self :make-top-stair-bodies :test-field test-field)
@@ -206,7 +206,7 @@
            (push b blist)))
      (dolist (b blist) (send b :set-color :gray))
      (dolist (b (cdr blist)) (send (car blist) :assoc b))
-     (send-super :init :name "drc-stair" :bodies blist)))
+     (send-super :init :name name :bodies blist)))
   (:make-stair-bodies
    (&key (test-field nil))
    (if test-field
@@ -819,6 +819,10 @@
 ;;;;;;;;;;;;;;;;
 (defun make-drc-stair (&key (add-groud-p))
   (setq *stair* (instance drc-stair :init :add-groud-p add-groud-p))
+  )
+
+(defun make-drc-stair-test-field (&key (add-groud-p))
+  (setq *stair* (instance drc-stair :init :add-groud-p add-groud-p :test-field t :name "drc-stair-test-field"))
   )
 
 (defun make-drc-door ()
