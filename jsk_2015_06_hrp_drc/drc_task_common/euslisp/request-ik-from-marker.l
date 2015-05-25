@@ -528,7 +528,11 @@
     (setq *ik-result* (send-ik-request :interpolate-mode interpolate-mode :rotation-axis (if (equal (send *obj* :get :type) :hand-mesh) (list t t t) (list :z t t))))
     ;(if *pub-grasp-pose-feedback-flag* (pub-grasp-pose-feedback))
     (cond (*ik-result*
-           (send-joint-states-to-marker))
+           (send-joint-states-to-marker)
+           (dotimes (i 2) (ros::sleep))
+           (ros::spin-once)
+           (send-joint-states-to-marker)
+           )
           (t
            (send *robot* :angle-vector original-av)
            (send *robot* :newcoords original-coords)
@@ -587,6 +591,7 @@
                           :translation-axis translation-axis
                           :rotation-axis rotation-axis
                           :max (float-vector  500  500  0  20  20  10)
+                          :centroid-thre 20
                           :warnp t
                           :stop 30
                           :look-at-target (copy-seq (send (elt tc 0) :worldpos))
@@ -606,6 +611,7 @@
                                 (list (send *robot* :torso :waist-y :child-link) 0.1)
                                 (list (send *robot* :torso :waist-p :child-link) 0.1))
                           :max (float-vector  500  500  0  20  20  10)
+                          :centroid-thre 20
                           :warnp t
                           :stop 50
                           :avoid-collision-distance 100
