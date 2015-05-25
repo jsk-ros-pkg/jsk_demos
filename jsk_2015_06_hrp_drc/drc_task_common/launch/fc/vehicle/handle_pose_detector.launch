@@ -1,6 +1,6 @@
 <launch>
    <group ns="vehicle_handle" clear_params="true">
-    <param name="display" type="int" value="1"/>
+    <param name="display" type="int" value="0"/>
     <param name="rect0_size_x" type="double" value="0.014"/>
     <param name="rect0_size_y" type="double" value="0.014"/>
     <param name="grid0_size_x" type="int" value="3"/>

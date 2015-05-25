@@ -242,9 +242,15 @@
          )
         ((equal *obj-type* jsk_rviz_plugins::TransformableMarkerOperate::*MESH_RESOURCE*) ;; hand mesh
          (setq *obj* (make-cube 100 100 100)) ;; dummy eus object instead of hand mesh
-         (let* ((hand-trans))
+         (let* (hand-trans
+                hand-origin-trans-pos)
+           (cond ((or (string= *robot-name* "HRP2JSKNTS") (string= *robot-name* "HRP2JSKNT")  (string= *robot-name* "STARO"))
+                  (setq hand-origin-trans-pos (float-vector 0 0 0)))
+                 ((string= *robot-name* "JAXON")
+                  (setq hand-origin-trans-pos (float-vector 0 0 -40))))
            (setq hand-trans
-                 (send (send (send (send *robot* *ik-arm* :end-coords) :parent) :copy-worldcoords)
+                 (send (send (send (send (send *robot* *ik-arm* :end-coords) :parent) :copy-worldcoords)
+                             :translate hand-origin-trans-pos :local)
                        :transformation (send (send *robot* *ik-arm* :end-coords) :copy-worldcoords)))
            (send *obj* :assoc (make-cascoords :coords (make-coords) :name :origin))
            ;; :handle and :approach is fixed to end-coords
@@ -522,7 +528,11 @@
     (setq *ik-result* (send-ik-request :interpolate-mode interpolate-mode :rotation-axis (if (equal (send *obj* :get :type) :hand-mesh) (list t t t) (list :z t t))))
     ;(if *pub-grasp-pose-feedback-flag* (pub-grasp-pose-feedback))
     (cond (*ik-result*
-           (send-joint-states-to-marker))
+           (send-joint-states-to-marker)
+           (dotimes (i 2) (ros::sleep))
+           (ros::spin-once)
+           (send-joint-states-to-marker)
+           )
           (t
            (send *robot* :angle-vector original-av)
            (send *robot* :newcoords original-coords)
@@ -581,6 +591,7 @@
                           :translation-axis translation-axis
                           :rotation-axis rotation-axis
                           :max (float-vector  500  500  0  20  20  10)
+                          :centroid-thre 20
                           :warnp t
                           :stop 30
                           :look-at-target (copy-seq (send (elt tc 0) :worldpos))
@@ -600,6 +611,7 @@
                                 (list (send *robot* :torso :waist-y :child-link) 0.1)
                                 (list (send *robot* :torso :waist-p :child-link) 0.1))
                           :max (float-vector  500  500  0  20  20  10)
+                          :centroid-thre 20
                           :warnp t
                           :stop 50
                           :avoid-collision-distance 100

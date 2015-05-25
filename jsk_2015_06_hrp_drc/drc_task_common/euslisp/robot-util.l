@@ -437,6 +437,25 @@
         )
   )
 
+(defun start-soft-impedance
+  ()
+  (set-default-impedance-param)
+  (cond
+   ((or (equal *robot-name* "JAXON") (equal *robot-name* "STARO"))
+    (send *ri* :start-impedance :arms :m-p 10 :d-p 200 :k-p 200 :m-r 5.0 :d-r 100 :k-r 100))
+   (t ;; (or (equal *robot-name* "HRP2JSKNT") (equal *robot-name* "HRP2JSKNTS"))
+    (send *ri* :start-impedance :arms :m-p 7.5 :d-p 250 :k-p 200 :m-r 1 :d-r 15 :k-r 20)))
+  )
+
+(defun start-hard-impedance
+  ()
+  (set-default-impedance-param)
+  (cond ((or (equal *robot-name* "JAXON") (equal *robot-name* "STARO"))
+         (send *ri* :start-impedance :arms :moment-gain (float-vector 0 0 0) :k-p 3000 :d-p 3000))
+        (t ;; (or (equal *robot-name* "HRP2JSKNT") (equal *robot-name* "HRP2JSKNTS"))
+         (send *ri* :start-impedance :arms :moment-gain (float-vector 0 0 0) :k-p 3000 :d-p 3000)))
+  )
+
 (defun check-stand-coords
   (stand-coords &key (pos-thre 0.01) (rpy-thre 1))
   (let* ((pos (scale 0.001 (send stand-coords :worldpos)))
@@ -516,3 +535,24 @@
      ;;(send self :set-interpolation-mode ":hoffarbib")
      dist-result)
    ))
+
+
+;; for stair
+(defun move-to-stair-pose (&key (time 3000))
+  ;; jaxon only
+  (when (find-method *robot* :narrow-width-pose)
+    (send *robot* :narrow-width-pose)
+    (send *ri* :angle-vector (send *robot* :angle-vector)
+          time)
+    (send *ri* :wait-interpolation)
+    (walking-pose *robot*
+                  :default-pose-method :narrow-width-pose
+                  :root-link-pitch-offset 20
+                  :root-link-height-offset -140 ; for stair
+                  :chest-link-pitch-offset 20 ; for stair
+                  )
+    (send *robot* :head :neck-p :joint-angle 35)
+    (send *ri* :angle-vector (send *robot* :angle-vector)
+          time)
+    (send *ri* :wait-interpolation)
+  )

@@ -31,6 +31,8 @@ bool set_accel_mode_request
 uint8 set_accel_mode_request_value
 bool set_neck_mode_request
 uint8 set_neck_mode_request_value
+bool set_real_request
+uint8 set_real_request_value
 
 bool operation_initialize_response
 bool operation_synchronize_all_response
