@@ -176,7 +176,7 @@ def b_control_joy_cb(msg):
                 current_pose_stamped = PoseStamped(std_msgs.msg.Header(stamp=rospy.Time.now(), frame_id="jsk_model_marker_interface/robot/RARM_LINK7"), Pose(orientation=Quaternion(0, 0, 0, 1)))
             elif robot_name=="JAXON":
                 mesh_resource_name="package://hrpsys_ros_bridge_tutorials/models/JAXON_meshes/RARM_LINK7_mesh.dae"
-                current_pose_stamped = PoseStamped(std_msgs.msg.Header(stamp=rospy.Time.now(), frame_id="jsk_model_marker_interface/robot/RARM_LINK7"), Pose(orientation=Quaternion(0, 0, 0, 1)))
+                current_pose_stamped = PoseStamped(std_msgs.msg.Header(stamp=rospy.Time.now(), frame_id="jsk_model_marker_interface/robot/RARM_LINK7"), Pose(position=Point(0, 0, -0.04), orientation=Quaternion(0, 0, 0, 1)))
             else:
                 mesh_resource_name="package://hrpsys_ros_bridge_tutorials/models/HRP3HAND_R_meshes/RARM_LINK6_mesh.dae"
                 current_pose_stamped = PoseStamped(std_msgs.msg.Header(stamp=rospy.Time.now(), frame_id="jsk_model_marker_interface/robot/RARM_LINK6"), Pose(orientation=Quaternion(0, 0, 0, 1)))
@@ -186,7 +186,7 @@ def b_control_joy_cb(msg):
                 current_pose_stamped = PoseStamped(std_msgs.msg.Header(stamp=rospy.Time.now(), frame_id="jsk_model_marker_interface/robot/LARM_LINK7"), Pose(orientation=Quaternion(0, 0, 0, 1)))
             elif robot_name=="JAXON":
                 mesh_resource_name="package://hrpsys_ros_bridge_tutorials/models/JAXON_meshes/LARM_LINK7_mesh.dae"
-                current_pose_stamped = PoseStamped(std_msgs.msg.Header(stamp=rospy.Time.now(), frame_id="jsk_model_marker_interface/robot/LARM_LINK7"), Pose(orientation=Quaternion(0, 0, 0, 1)))
+                current_pose_stamped = PoseStamped(std_msgs.msg.Header(stamp=rospy.Time.now(), frame_id="jsk_model_marker_interface/robot/LARM_LINK7"), Pose(position=Point(0, 0, -0.04), orientation=Quaternion(0, 0, 0, 1)))
             else:
                 mesh_resource_name="package://hrpsys_ros_bridge_tutorials/models/HRP3HAND_L_meshes/LARM_LINK6_mesh.dae"
                 current_pose_stamped = PoseStamped(std_msgs.msg.Header(stamp=rospy.Time.now(), frame_id="jsk_model_marker_interface/robot/LARM_LINK6"), Pose(orientation=Quaternion(0, 0, 0, 1)))
