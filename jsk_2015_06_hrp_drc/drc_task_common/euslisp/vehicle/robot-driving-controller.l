@@ -96,7 +96,7 @@
    (ros::advertise "/drive/controller/neck_p_angle" std_msgs::Float32 1 t)
 
    ;; for steering visualization
-   (ros::advertise "/drive/controller/currest_steering" jsk_recognition_msgs::TorusArray 1 t)
+   (ros::advertise "/drive/controller/current_steering" jsk_recognition_msgs::TorusArray 1 t)
    (ros::advertise "/drive/controller/handling_trajectory" geometry_msgs::PolygonStamped 1 t)
 
    ;; for steering estimation
@@ -724,7 +724,7 @@
      (send torus-array-msg :toruses (list torus))
      (send torus-array-msg :header
            (instance std_msgs::Header :init :stamp current-ros-time :frame_id "BODY"))
-     (ros::publish "/drive/controller/currest_steering" torus-array-msg)
+     (ros::publish "/drive/controller/current_steering" torus-array-msg)
      )
    )
   (:record-handling-end-coords
