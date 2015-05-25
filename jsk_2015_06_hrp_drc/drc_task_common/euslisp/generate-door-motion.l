@@ -137,7 +137,7 @@
          larm-z-rotate-offset
          rarm-z-rotate-offset)
     ;; handle for door edge
-    (cond ((or (equal *robot-name* "JAXON") (equal *robot-name* "STARO"))
+    (cond ((or (equal *robot-name* "JAXON") (equal *robot-name* "STARO") (equal *robot-name* "JAXON_RED"))
            (setq larm-translate-offset (float-vector 40 40 0))
            (setq rarm-translate-offset (float-vector 40 -40 0))
            (setq larm-z-rotate-offset (deg2rad 90))
@@ -183,7 +183,7 @@
 
 (defun fullbody-inverse-kinematics-for-door
   (tc mt ll &key (draw? nil))
-  (cond ((equal *robot-name* "JAXON")
+  (cond ((or (equal *robot-name* "JAXON")  (equal *robot-name* "JAXON_RED"))
          (fullbody-inverse-kinematics-for-door-for-jaxon tc mt ll :draw? draw?))
         ((equal *robot-name* "STARO")
          (fullbody-inverse-kinematics-for-door-for-staro tc mt ll :draw? draw?))
@@ -362,7 +362,7 @@
 
 (defun get-door-stand-coords ;; relative to door
   (&key (handle-l/r :left) (push/pull :push))
-  (cond ((or (equal *robot-name* "JAXON") (equal *robot-name* "STARO"))
+  (cond ((or (equal *robot-name* "JAXON") (equal *robot-name* "STARO") (equal *robot-name* "JAXON_RED"))
          (cond ((equal handle-l/r :left)
                 (cond ((equal push/pull :push)
                        (cond ((equal *door-arm* :larm)
@@ -515,11 +515,11 @@
     )
   ;; reset-manip-pose
   (send *robot* :reset-manip-pose)
-  (when (or (equal *robot-name* "JAXON") (equal *robot-name* "STARO"))
+  (when (or (equal *robot-name* "JAXON") (equal *robot-name* "STARO") (equal *robot-name* "JAXON_RED"))
     (send *robot* *door-arm* :move-end-pos #f(-100 0 0) :local))
   (unless (check-angle-vector-distance)
     (when real? (model2real :time 3000)))
-  (cond ((or (equal *robot-name* "JAXON") (equal *robot-name* "STARO"))
+  (cond ((or (equal *robot-name* "JAXON") (equal *robot-name* "STARO") (equal *robot-name* "JAXON_RED"))
          (hand-start-grasp :real? real?)
          )
         (t ;; (or (equal *robot-name* "HRP2JSKNT") (equal *robot-name* "HRP2JSKNTS"))
@@ -527,7 +527,7 @@
          ))
   (when real?
     (set-default-impedance-param)
-    (cond ((or (equal *robot-name* "JAXON") (equal *robot-name* "STARO"))
+    (cond ((or (equal *robot-name* "JAXON") (equal *robot-name* "STARO") (equal *robot-name* "JAXON_RED"))
            (send *ri* :start-impedance :arms :k-p 300 :d-p 800 :m-p 10 :m-r 2 :d-r 80 :k-r 40)
            ;;(send *ri* :start-impedance :arms :k-p 300 :d-p 300)
            )
@@ -546,7 +546,7 @@
       ))
   (send *robot* :angle-vector (elt *door-motion* 0))
   (when real? (model2real :time 4000))
-  (when (or (equal *robot-name* "JAXON") (equal *robot-name* "STARO"))
+  (when (or (equal *robot-name* "JAXON") (equal *robot-name* "STARO") (equal *robot-name* "JAXON_RED"))
     (hand-start-grasp :arm *door-arm* :real? real? :type :door-grasp-preshape))
   (when real? (send-angle-vector-sequence-with-time (subseq *door-motion* 1 3) :time 2000 :wait? t))
   (hand-start-grasp :real? real? :type :door-grasp)
@@ -565,7 +565,7 @@
   ;;   (send *robot* :angle-vector (elt *door-motion* i))
   ;;   (when real? (model2real :time 3000))
   ;;   )
- (cond ((or (equal *robot-name* "JAXON") (equal *robot-name* "STARO"))
+ (cond ((or (equal *robot-name* "JAXON") (equal *robot-name* "STARO") (equal *robot-name* "JAXON_RED"))
          (let* ((door-arm-angle (copy-seq (send *robot* *door-arm* :angle-vector))))
            (send *robot* :reset-manip-pose)
            (send *robot* *door-arm* :angle-vector door-arm-angle)))
@@ -602,7 +602,7 @@
 
 (defun get-door-through-pose
   ()
-  (cond ((or (equal *robot-name* "JAXON") (equal *robot-name* "STARO"))
+  (cond ((or (equal *robot-name* "JAXON") (equal *robot-name* "STARO") (equal *robot-name* "JAXON_RED"))
          (send *robot* :narrow-width-pose))
         (t ;; (or (equal *robot-name* "HRP2JSKNT") (equal *robot-name* "HRP2JSKNTS"))
          (send *robot* :reset-pose)

@@ -166,7 +166,7 @@
          (setq *drill-button-point* :finger)
          (setq *default-drill-type* :takenoko)
          )
-        (t ;; (or (equal *robot-name* "JAXON") (equal *robot-name* "STARO"))
+        (t ;; (or (equal *robot-name* "JAXON") (equal *robot-name* "STARO") (equal *robot-name* "JAXON_RED"))
          (setq *use-dual-arm-ik* nil)
          (setq *use-f-sensor-search* nil)
          (setq *drill-reverse-hand* nil)
@@ -241,7 +241,7 @@
                (send (send (send (send *robot* :rarm :end-coords) :copy-worldcoords) :translate (float-vector 50 2.0 0.0) :local) :rotate (deg2rad 53) :z :local))
               ((equal *robot-name* "HRP2JSKNTS")
                (send (send (send (send *robot* :rarm :end-coords) :copy-worldcoords) :translate (float-vector 50 25.0 0.0) :local) :rotate (deg2rad 53) :z :local))
-              (t ;; (or (equal *robot-name* "JAXON") (equal *robot-name* "STARO"))
+              (t ;; (or (equal *robot-name* "JAXON") (equal *robot-name* "STARO") (equal *robot-name* "JAXON_RED"))
                (send (send (send (send *robot* :rarm :end-coords) :copy-worldcoords) :translate (float-vector -5.0 -10.0 0.0) :local) :rotate (deg2rad 0) :z :local)
                )
               )
@@ -253,7 +253,7 @@
                (send (send (send (send *robot* :larm :end-coords) :copy-worldcoords) :translate (float-vector 50 -2.0 0.0) :local) :rotate (deg2rad -53) :z :local))
               ((equal *robot-name* "HRP2JSKNTS")
                (send (send (send (send *robot* :larm :end-coords) :copy-worldcoords) :translate (float-vector 50 -25.0 0.0) :local) :rotate (deg2rad -53) :z :local))
-              (t ;; (or (equal *robot-name* "JAXON") (equal *robot-name* "STARO"))
+              (t ;; (or (equal *robot-name* "JAXON") (equal *robot-name* "STARO") (equal *robot-name* "JAXON_RED"))
                (send (send (send (send *robot* :larm :end-coords) :copy-worldcoords) :translate (float-vector -5.0 10.0 0.0) :local) :rotate (deg2rad 0) :z :local)
                )
               )
@@ -294,7 +294,7 @@
                       :coords (send (send (send (send (send *robot* (get-opposite-arm *drill-main-arm*) :end-coords) :copy-worldcoords) :translate #f(120 62 -80) :local) :rotate (deg2rad 180) :y) :rotate (deg2rad -90) :z)
                       :parent (send (send *robot* (get-opposite-arm *drill-main-arm*) :end-coords) :parent))))
               ))
-       (t ;; (or (equal *robot-name* "JAXON") (equal *robot-name* "STARO"))
+       (t ;; (or (equal *robot-name* "JAXON") (equal *robot-name* "STARO") (equal *robot-name* "JAXON_RED"))
         (send *robot* :put :support-arm-drill-button-coords
               (make-cascoords
                                         ;             :coords (send (send (send *robot* (get-opposite-arm *drill-main-arm*) :end-coords) :copy-worldcoords) :translate #f(50 87.5 80) :local)
@@ -576,7 +576,7 @@
                (if (equal *drill-main-arm* :rarm) (make-coords :pos (float-vector -610 -300 0) :rpy (list (deg2rad 55) 0 0))
                  (make-coords :pos (float-vector -710 200 0) :rpy (list (deg2rad -35) 0 0)))) ;;
              )
-            (t ;; (or (equal *robot-name* "JAXON") (equal *robot-name* "STARO"))
+            (t ;; (or (equal *robot-name* "JAXON") (equal *robot-name* "STARO") (equal *robot-name* "JAXON_RED"))
              (if (equal *drill-main-arm* :rarm) (make-coords :pos (float-vector -710 -0 0) :rpy (list (deg2rad 35) 0 0)) (make-coords :pos (float-vector -710 0 0) :rpy (list (deg2rad -35) 0 0))))
             )
     (if (equal *drill-main-arm* :rarm) (make-coords :pos (float-vector -800 0 0) :rpy (list (deg2rad 10) 0 0)) (make-coords :pos (float-vector -800 0 0) :rpy (list (deg2rad -10) 0 0))
@@ -1099,7 +1099,7 @@
 
                     )
                    ))
-            (t ;; (or (equal *robot-name* "JAXON") (equal *robot-name* "STARO"))
+            (t ;; (or (equal *robot-name* "JAXON") (equal *robot-name* "STARO") (equal *robot-name* "JAXON_RED"))
              (send *ri* :start-grasp *drill-main-arm* :gain 40)
              (send *ri* :stop-grasp (get-opposite-arm *drill-main-arm*))
              ))
@@ -1474,7 +1474,7 @@
     ;; pre-reach
 
     (let* ((drill-dir (matrix-column (send (send (send (if stand-coords stand-coords (make-coords)) :copy-worldcoords) :transformation (send (elt coords-list 0) :copy-worldcoords)) :rot) 2))
-          (ref-dir (v- (float-vector 0 0 -20) (scale (if (equal *robot-name* "JAXON") 5.0 3.0) (normalize-vector drill-dir)))))
+          (ref-dir (v- (float-vector 0 0 -20) (scale (if (or (equal *robot-name* "JAXON") (equal *robot-name* "JAXON_RED")) 5.0 3.0) (normalize-vector drill-dir)))))
       (send *ri* :set-ref-force ref-dir 2000 *drill-main-arm*)
       (ros::ros-info (format nil "ref force ~A ~A ~A" (elt ref-dir 0) (elt ref-dir 1) (elt ref-dir 2)))
       (speak-en (format nil "ref force ~A ~A ~A" (elt ref-dir 0) (elt ref-dir 1) (elt ref-dir 2)))
@@ -1852,7 +1852,7 @@
          ;; #f(-1.73786 12.7998 -28.717 58.3273 -27.2775 -3.19394 0.0 -1.75078 13.1089 -32.0242 64.2536 -29.8937 -3.50327 0.0 -18.0177 40.9471 -15.5394 -20.0 -71.9257 -1.63271 9.57461 -68.7006 -18.7947 12.8132 13.4518 60.0 -67.3083 63.2485 -56.2882 -89.6456 -32.2721 16.8311 -17.2177 -60.0))
          ;; #f(-3.18801 14.0246 -30.3389 64.3646 -30.1868 -5.8666 0.0 -3.20998 14.342 -32.5966 67.7287 -31.2878 -6.18463 0.0 -6.39784 15.1167 -23.2174 -16.7713 -58.3745 -17.3128 21.0908 -111.942 -21.179 -21.2009 34.1876 60.0 -64.9891 55.4053 -56.0059 -114.503 -79.2957 19.8623 67.9176 -60.0)) ;; 04/05
          #f(0.0 0.0 -26.0 50.0 -24.0 0.0 0.0 0.0 0.0 -26.0 50.0 -24.0 0.0 0.0 0.0 0.0 -23.2174 -16.7713 -63.8998 -26.7475 19.7525 -93.797 -60.1496 14.1419 -8.73053 60.0 -64.9891 55.4053 -56.0059 -114.503 -79.2957 19.8623 67.9176 -60.0))
-        ((equal *robot-name* "JAXON")
+        ((or (equal *robot-name* "JAXON") (equal *robot-name* "JAXON_RED"))
          (if *drill-reverse-hand*
              #f(-0.177859 0.641193 -17.7005 39.4727 -20.9405 -0.24116 -0.177872 0.642071 -18.0592 40.1005 -21.2096 -0.242039 -1.32326 0.0 -0.214599 0.0 0.0 20.3307 32.0308 -36.6623 -1.24795 -118.487 -16.2352 -2.10621 -25.4482 -20.5155 51.3195 74.2961 41.72 -99.0289 15.0662 -31.9513 -59.7661)
              (send *robot* :reset-pose)
@@ -1896,7 +1896,7 @@
              #f(-0.173437 9.3105 -27.542 65.2878 -34.038 -0.18 -0.324 -0.182812 9.432 -30.568 71.6022 -37.316 -0.3528 -0.036 -34.1485 9.39775 -23.2875 20.0 -29.6116 -18.9393 21.046 -113.361 -66.5677 -36.78 20.4044 60.0 -61.8932 48.1149 -54.1074 -126.033 -9.9503 -35.1643 0.847727 -60.0)
              )
          )
-        ((equal *robot-name* "JAXON")
+        ((or (equal *robot-name* "JAXON") (equal *robot-name* "JAXON_RED"))
          (if *drill-reverse-hand*
              (send *robot* :reset-manip-pose)
            #f(2.03272 -1.10746 -18.4222 37.4121 -20.1829 0.277957 2.03297 -1.09553 -17.1498 35.9931 -20.0362 0.266026 -0.035991 0.125934 -0.881805 -29.3714 35.9221 17.203 10.8884 -75.6167 -16.7206 -90.815 -46.7448 77.8398 -46.7473 -14.7322 55.1311 42.536 20.5925 -113.521 111.075 -25.9983 27.7244)
