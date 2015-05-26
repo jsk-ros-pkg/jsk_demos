@@ -122,7 +122,9 @@
           (list drc_com_common::FC2OCSSmall::*ANGLE_VECTOR_FINISHED*
                 self :angle-vector-finished-callback)
           (list drc_com_common::FC2OCSSmall::*REACH_UNTIL_TOUCH_FINISHED*
-                self :reach-until-touch-finished-callback))
+                self :reach-until-touch-finished-callback)
+          (list drc_com_common::FC2OCSSmall::*PROJECTED_FOOTSTEP*
+                self :projected-footstep-callback))
     (setq smachine (make-ocs-state-machine))
     (send smachine :register-initial-hook self :initial-callback)
     (send smachine :go-to :initial) ;; force to move to initial state
@@ -1923,6 +1925,30 @@
    )
   )
 
+(defmethod ocs-executive-app
+  (:snap-foot-print-callback
+   (msg)
+   (ros::ros-info ":snap-foot-print-callback")
+   (let ((fc-msg (instance drc_com_common::OCS2FCSmall :init)))
+     ;; Relative to ground
+     (send fc-msg :type drc_com_common::OCS2FCSmall::*PROJECT_FOOTPRINT*)
+     (send fc-msg :float_params
+           (coords-set-to-float-vector
+            (list (ros::tf-pose->coords (send msg :input_pose :pose))
+                  (ros::tf-pose->coords (send msg :lleg_pose))
+                  (ros::tf-pose->coords (send msg :rleg_pose)))))
+     (send self :send-to-fc fc-msg)
+     ))
+  (:projected-footstep-callback
+   (msg)
+   (ros::ros-info ":projected-footstep-callback")
+   (let ((coords (float-vector-to-coords (send msg :params))))
+     (let ((pose-stamped (ros::coords->tf-pose-stamped coords "ground")))
+       (ros::publish "projected_footstep_ocs" pose-stamped)
+       ))
+   )
+  )
+
 ;; advertise
 (ros::advertise "/ocs/rviz/visualization/ocs_executive_message"
   jsk_rviz_plugins::OverlayText)
@@ -1952,6 +1978,7 @@
 (ros::advertise "/transformable_interactive_server/set_control_relative_pose" geometry_msgs::Pose 1)
 (ros::advertise "/drill_pose_list" geometry_msgs::PoseArray 1)
 (ros::advertise "/robotsound" sound_play::SoundRequest 5)
+(ros::advertise "projected_footstep_ocs" geometry_msgs::PoseStamped)
 ;; registering services for button UIs
 (ros::advertise-service "drive" std_srvs::Empty #'send *app* :drive-button-callback)
 (ros::advertise-service "valve" std_srvs::Empty #'send *app* :valve-button-callback)
@@ -2036,13 +2063,17 @@
   #'send *app* :stair-marker-output-callback)
 (ros::subscribe "/stair_marker/debug/current_pose_array" geometry_msgs::PoseArray
   #'send *app* :stair-footstep-show-callback)
+
 ;; (ros::subscribe "/ocs/communication/image_rect_color/foreground_rect/scaled" geometry_msgs::PolygonStamped
 ;;   #'send *app* :foreground-rect-callback)
 ;; (ros::subscribe "/ocs/communication/image_rect_color/background_rect/scaled" geometry_msgs::PolygonStamped
 ;;   #'send *app* :background-rect-callback)
 (ros::subscribe "/ocs_from_fc_low_speed/output" drc_com_common::FC2OCSSmall
   #'send (send *app* :fc2ocs-message-handler) :root-callback)
-(send *app* :subscribe-foreground-backggrond-topics 
+(ros::subscribe "/footstep_marker/project_footprint" jsk_interactive_marker::SnapFootPrintInput
+                #'send *app* :snap-foot-print-callback)
+
+(send *app* :subscribe-foreground-backggrond-topics
       (list (list "/ocs/communication/image_rect_color/foreground_rect/scaled" geometry_msgs::PolygonStamped)
             (list "/ocs/communication/image_rect_color/background_rect/scaled" geometry_msgs::PolygonStamped)))
 (ros::subscribe "/joint_states" sensor_msgs::JointState #'joint-states-callback)

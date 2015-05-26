@@ -560,6 +560,11 @@ Usage:
      ;; stair
      (:initial -> :stair)
      (:stair -> :initial)
+     ;; terrain
+     (:initial -> :executing-lookground)
+     (:executing-lookground -> :initial)
+     (:initial -> :executing-terrain-footsteps)
+     (:executing-terrain-footsteps -> :initial)
      )
    '((:initial :initial)
      ;; go-pos
@@ -626,6 +631,9 @@ Usage:
      (:vehicle :vehicle)
      ;; stair
      (:stair :stair)
+     ;; terrain
+     (:executing-lookground :terrain)
+     (:executing-terrain-footsteps :terrain)
      )
    :initial "ocs_state.png" t))
 
@@ -719,6 +727,11 @@ Usage:
 
      (:initial -> :executing-stair)
      (:executing-stair -> :initial)
+
+     (:initial -> :executing-terrain-lookground)
+     (:executing-terrain-lookground -> :initial)
+     (:initial -> :executing-terrain-footsteps)
+     (:executing-terrain-footsteps -> :initial)
      )
    '((:initial :initial)
      
@@ -763,6 +776,9 @@ Usage:
      (:executing-vehicle :vehicle)
 
      (:executing-stair :stair)
+
+     (:executing-terrain-lookground :terrain)
+     (:executing-terrain-footsteps :terrain)
      )
    :initial nil t
    ))

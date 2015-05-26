@@ -150,6 +150,9 @@
                 self :stop-imp-callback)
           (list drc_com_common::OCS2FCSmall::*START_IMP_WITH_PARAM*
                 self :start-imp-with-param-callback)
+          ;; terrain
+          (list drc_com_common::OCS2FCSmall::*PROJECT_FOOTPRINT*
+                self :project-footprint-callback)
           )
     self)
   (:register-timelimits (sm)
@@ -1270,6 +1273,22 @@ It sends :angle-vector to robot and return 'finished' message to ocs"
                 :default-double-support-ratio 0.32
                 :default-step-height 0.05))
         )))
+  ;; terrain
+  (:project-footprint-callback
+   (msg)
+   (ros::ros-info ":project-footprint-callback")
+   (let ((coords (float-vector-to-coords (send msg :float_params))))
+     (let ((pose (ros::coords->tf-pose-stamped coords "ground")))
+       (ros::publish "project_footprint_from_ocs" pose))))
+  (:projected-footprint-callback
+   (msg)
+   (ros::ros-info ":projected-footprint-callback")
+   (let ((ocs-msg (instance drc_com_common::FC2OCSSmall :init)))
+     (send ocs-msg :type drc_com_common::FC2OCSSmall::*PROJECTED_FOOTSTEP*)
+     (send ocs-msg :params (coords-to-float-vector
+                            (ros::tf-pose->coords (send msg :pose))
+                            (length (send ocs-msg :params))))
+     (send self :send-to-ocs ocs-msg)))
   (:send-to-ocs (msg)
     (ros::publish "/fc_to_ocs_low_speed/input" msg))
   )
@@ -1308,6 +1327,8 @@ It sends :angle-vector to robot and return 'finished' message to ocs"
 (ros::advertise "/drive/operation/handle_cmd" std_msgs::Float64)
 (ros::advertise "/drive/operation/accel_cmd" std_msgs::Float64)
 (ros::advertise "/drive/operation/brake_cmd" std_msgs::Float64)
+(ros::advertise "project_footprint_from_ocs" jsk_interactive_marker::SnapFootPrintInput)
+(ros::advertise "/go_pos_goal" geometry_msgs::PoseStamped)
 
 (ros::subscribe "/fc_from_ocs_low_speed/output" drc_com_common::OCS2FCSmall
   #'send (send *app* :ocs2fc-message-handler) :root-callback)
@@ -1339,8 +1360,8 @@ It sends :angle-vector to robot and return 'finished' message to ocs"
   #'send *app* :drill-put-recog-callback)
 (ros::subscribe "/drill_recognition_for_wall/snapshot/output" geometry_msgs::PoseArray
   #'send *app* :drill-wall-recog-callback)
-(ros::advertise "/go_pos_goal" geometry_msgs::PoseStamped)
-
+(ros::subscribe "projected_footprint_fc" geometry_msgs::PoseStamped
+                #'send *app* :projected-footprint-callback)
 (ros::rate 10)
 
 ;;(ros::spin)
