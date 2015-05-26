@@ -17,6 +17,10 @@
     <node pkg="drc_task_common" type="vehicle_ui" name="vehicle_ui" respawn="true" >
       <remap from="/chest_camera/image_color" to="/ocs/communication/panorama_image"/>
       <remap from="/multisense/left/image_rect_color" to="/ocs/communication/image_rect_color"/>
+      <remap from="lfsensor" to="off_lfsensor"/>
+      <remap from="rfsensor" to="off_rfsensor"/>
+      <remap from="lhsensor" to="off_lhsensor"/>
+      <remap from="rhsensor" to="off_rhsensor"/>
     </node>
   </group>
 

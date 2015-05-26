@@ -428,13 +428,13 @@ class VehicleUIWidget(QWidget):
         self.neck_p_angle_value_sub = rospy.Subscriber(
             "drive/controller/neck_p_angle", std_msgs.msg.Float32, self.neckPitchAngleCallback)
         self.lleg_force_sub = rospy.Subscriber(
-            "/lhsensor", geometry_msgs.msg.WrenchStamped, self.lhsensorCallback)
+            "lhsensor", geometry_msgs.msg.WrenchStamped, self.lhsensorCallback)
         self.rleg_force_sub = rospy.Subscriber(
-            "/rhsensor", geometry_msgs.msg.WrenchStamped, self.rhsensorCallback)
+            "rhsensor", geometry_msgs.msg.WrenchStamped, self.rhsensorCallback)
         self.lleg_force_sub = rospy.Subscriber(
-            "/lfsensor", geometry_msgs.msg.WrenchStamped, self.lfsensorCallback)
+            "lfsensor", geometry_msgs.msg.WrenchStamped, self.lfsensorCallback)
         self.rleg_force_sub = rospy.Subscriber(
-            "/rfsensor", geometry_msgs.msg.WrenchStamped, self.rfsensorCallback)
+            "rfsensor", geometry_msgs.msg.WrenchStamped, self.rfsensorCallback)
         self.handle_mode_sub = rospy.Subscriber(
             "drive/controller/handle_mode", std_msgs.msg.String, self.handleModeCallback)
         self.accel_mode_sub = rospy.Subscriber(
@@ -444,7 +444,7 @@ class VehicleUIWidget(QWidget):
         self.handle_angle_vector_diff_sub = rospy.Subscriber(
             "drive/controller/steering_diff_angle_vector", std_msgs.msg.Float32, self.steeringDiffAngleVectorCallback)
         self.obstacle_length_sub = rospy.Subscriber(
-            "drive/recognition/obstacle_length/indicator", std_msgs.msg.Float32, self.obstacleLengthCallback)       
+            "drive/recognition/obstacle_length/indicator", std_msgs.msg.Float32, self.obstacleLengthCallback) 
         self.real_sub = rospy.Subscriber(
             "drive/controller/real", std_msgs.msg.Bool, self.realCallback)
         self.ocs_to_fc_vehicle_sub = rospy.Subscriber(
