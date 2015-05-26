@@ -1087,7 +1087,7 @@
       (when real? (send *ri* :set-ref-force #f(0 0 -20) 2000 *drill-main-arm*))
       ;; first try
       ;; pre-push1
-      (multisense-right-down)
+      (multisense-light-down)
       (cond ((or (equal *robot-name* "HRP2JSKNT") (equal *robot-name* "HRP2JSKNTS"))
              (cond ((equal *drill-button-point* :attachment)
                     (drill-full-grasp :arm :arms))
@@ -1761,13 +1761,13 @@
     )
   )
 
-(defun multisense-right-up
+(defun multisense-light-up
   ()
-  (ros::set-dynamic-reconfigure-param "/multisense" "light" :bool nil)
+  (ros::set-dynamic-reconfigure-param "/multisense" "lighting" :bool t)
   )
-(defun multisense-right-down
+(defun multisense-light-down
   ()
-  (ros::set-dynamic-reconfigure-param "/multisense" "light" :bool nil)
+  (ros::set-dynamic-reconfigure-param "/multisense" "lighting" :bool nil)
   )
 (defun check-diff-angle
   ()
