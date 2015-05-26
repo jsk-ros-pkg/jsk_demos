@@ -497,20 +497,20 @@ class VehicleUIWidget(QWidget):
            label.setAutoFillBackground(False);
 
     def initializeButtonCallback(self, event):
-        self.serviceEmptyImpl('drive/operation/initialize')
         self.serviceEmptyImpl("drive/controller/initialize")
+        self.serviceEmptyImpl('drive/operation/initialize')
 
     def graspButtonCallback(self, event):
-        self.synchronizeJoyController("handle")
         self.serviceEmptyImpl("drive/controller/grasp")
+        self.synchronizeJoyController("handle")
         
     def correctButtonCallback(self, event):
-        self.synchronizeJoyController("handle")
         self.serviceEmptyImpl("drive/controller/correct")
+        self.synchronizeJoyController("handle")
 
     def approachAccelLegCallback(self, event):
-        self.synchronizeJoyController("accel")
         self.serviceEmptyImpl("drive/controller/approach_accel")
+        self.synchronizeJoyController("accel")
         
     def setExecuteFlagCallback(self, pressed):
         pub_msg = Bool()
@@ -545,6 +545,7 @@ class VehicleUIWidget(QWidget):
             if self.step_max_value != msg.data:
                 self.step_max_value = msg.data
                 self.step_max_edit.setText(str(self.step_max_value))
+
     def handleModeCallback(self, msg):
         with self.lock:
             for i in range(self.handle_mode_list.count()):
@@ -692,7 +693,12 @@ class VehicleUIWidget(QWidget):
                 self.step_max_edit.setText(str(self.step_max_value))
 
     def overwriteButtonCallback(self, event):
-        self.synchronizeJoyController("handle")
+        try: # forcely stop handle because it would take some time that goal_handle_angle is updated
+            update_mode = rospy.ServiceProxy("drive/controller/set_handle_mode", StringRequest)
+            update_mode("stop")
+        except rospy.ServiceException, e:
+            self.showError("drive/controller/set_handle_mode")
+        
         current_handle = float(self.overwrite_edit.text())
         next_value = self.callSetValueService('drive/controller/overwrite_handle_angle', current_handle)
         if next_value != None:
