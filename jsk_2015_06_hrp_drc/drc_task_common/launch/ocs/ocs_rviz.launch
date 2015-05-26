@@ -37,6 +37,39 @@
 
   <!-- stair marker -->
   <node pkg="drc_task_common" type="stair_marker.py" name="stair_marker" />
+  <!-- marker -->
+  <node pkg="jsk_interactive_marker"
+        type="footstep_marker"
+        name="footstep_marker"
+        output="screen"
+        >
+    <remap from="/lookaround_ground" to="terrain_lookground" />
+    <remap from="~projected_pose" to="projected_footstep_ocs" />
+    <!-- <remap from="~grid_arrays" to="/locomotion/env_server/output" /> -->
+    <!-- <remap from="~planes_coefficients" to="/locomotion/plane_concatenator/output/coefficients" /> -->
+    <!-- <remap from="move_marker" to="$(arg POSE_REMAP)" /> -->
+    <!-- <param name="wait_snapit_server" value="false" /> -->
+    <rosparam command="load" file="$(find jsk_footstep_controller)/config/jaxon.yaml" />
+    <remap from="project_footprint" to="~project_footprint" />
+    <remap from="footstep_planner" to="ocs_footstep_planner" />
+    <remap from="footstep_controller" to="ocs_footstep_controller" />
+    <rosparam>
+      use_plane_snap: true
+      use_projection_service: false
+      use_projection_topic: true
+      use_footstep_planner: true
+      use_footstep_controller: true
+      use_initial_footstep_tf: true
+      initial_reference_frame: '/ground'
+      # HRP2JSK
+      foot_size_x: 0.235
+      lfoot_offset: [0.02, 0.01, -0.105, 0, 0, 0, 1]
+      rfoot_offset: [0.02, -0.01, -0.105, 0, 0, 0, 1]
+      
+      foot_size_z: 0.01
+    </rosparam>
+    <param name="frame_id" value="/ground" />
+  </node>
   <!-- rviz -->
   <node pkg="rviz" type="rviz" name="operator_rviz" args="-d $(find drc_task_common)/config/drc_task_common.rviz"
         respawn="true"/>

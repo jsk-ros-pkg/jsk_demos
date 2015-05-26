@@ -21,6 +21,22 @@
 (load "package://drc_task_common/euslisp/generate-door-motion.l")
 (load "package://drc_task_common/euslisp/test-drc-terrain-walk.l")
 
+(defun footstep-array-from-two-coordinates (goal-coords int-vector)
+  (let ((goal-footstep (instance jsk_footstep_msgs::FootstepArray :init)))
+    (send goal-footstep :header :frame_id "ground")
+    (send initial-footstep :header :frame_id "ground")
+    (send goal-footstep :header :stamp (ros::time-now))
+    (send initial-footstep :header :stamp (ros::time-now))
+    (send goal-footstep :footsteps
+          (mapcar #'(lambda (c)
+                      (let ((f (instance jsk_recognition_msgs::Footstep :init)))
+                        (send f :pose (ros::coords->tf-pose c))
+                        f))
+                  goal-coords))
+    (send (car (send goal-footstep :footsteps)) :leg (elt int-vector 0))
+    (send (cadr (send goal-footstep :footsteps)) :leg (elt int-vector 1))
+    goal-footstep))
+
 (defclass fc-executive-app
   :super propertied-object
   :slots (state go-pos-goal ocs2fc-message-handler smachine head-overwrite-mode))
@@ -153,6 +169,12 @@
           ;; terrain
           (list drc_com_common::OCS2FCSmall::*PROJECT_FOOTPRINT*
                 self :project-footprint-callback)
+          (list drc_com_common::OCS2FCSmall::*LOOK_GROUND*
+                self :lookground-callback)
+          (list drc_com_common::OCS2FCSmall::*EXECUTE_FOOTSTEPS*
+                self :execute-footstep-callback)
+          (list drc_com_common::OCS2FCSmall::*REQUEST_FOOTSTEP_PLANNING*
+                self :request-footstep-planning-callback)
           )
     self)
   (:register-timelimits (sm)
@@ -1289,6 +1311,79 @@ It sends :angle-vector to robot and return 'finished' message to ocs"
                             (ros::tf-pose->coords (send msg :pose))
                             (length (send ocs-msg :params))))
      (send self :send-to-ocs ocs-msg)))
+  (:lookground-callback
+    (msg)
+    (ros::ros-info ":lookground")
+    (when (send smachine :state? :initial)
+      (send smachine :go-to :executing-lookground)
+      (let ((req (instance std_srvs::EmptyRequest :init)))
+        (ros::service-call "/lookaround_ground" req))
+      (let ((ocs-msg (instance drc_com_common::FC2OCSSmall :init)))
+        (send ocs-msg :type drc_com_common::FC2OCSSmall::*LOOK_GROUND_FINISHED*)
+        (send self :send-to-ocs ocs-msg))
+      (send smachine :go-to :initial)))
+  (:request-footstep-planning-callback
+    (msg)
+    (ros::ros-info ":request-footstep-planning-callback")
+    (when (send smachine :state? :initial)
+      (send smachine :go-to :planning-terrain-footsteps)
+      (let ((coords-list (float-vector-to-coords-set (send msg :float_params))))
+        (let ((goal-goords (subseq coords-list 0 2))
+              (initial-coords (subseq coords-list 2 4)))
+          (let ((goal (instance jsk_footstep_msgs::PlanFootstepsActionGoal :init))
+                (client (instance ros::simple-action-client :init
+                                  "footstep_planner"
+                                  jsk_footstep_msgs::PlanFootstepsAction)))
+            (let ((goal-footstep (footstep-array-from-two-coordinates
+                                  goal-coords (send msg :image_roi_info)))
+                  (initial-footstep (footstep-array-from-two-coordinates
+                                     initial-coords (subseq (send msg :image_roi_info) 2 4))))
+              (send goal :goal :goal_footstep goal-footstep)
+              (send goal :goal :initial_footstep initial-footstep))
+            (ros::ros-info "Waiting for planning server")
+            (send client :wait-for-server)
+            (send client :send-goal goal)
+            (send smachine :go-to :planning-terrain-footsteps)
+            (let ((successp (send client :wait-for-result)))
+              (let ((ocs-msg (instance drc_com_common::FC2OCSSmall :init)))
+                (if (not successp)
+                    (send ocs-msg :type drc_com_common::FC2OCSSmall::*FOOTSTEP_PLANNING_FAILED*)
+                  (let ((result (send client :get-result)))
+                    (multiple-value-bind
+                     (float-vector-footstep integer-vector-footstep)
+                     (footstep-array->vector result (length (send ocs-msg :params))
+                                             (length (send ocs-msg :int_params)))
+                     (send ocs-msg :params float-vector-footstep)
+                     (send ocs-msg :int_params integer-vector-footstep)
+                     (send ocs-msg :type drc_com_common::FC2OCSSmall::*FOOTSTEP_PLANNING_RESULT*))))
+                (send self :send-to-ocs ocs-msg))))))
+      (send smachine :go-to :initial)))
+  (:execute-footstep-callback
+    (msg)
+    (ros::ros-info ":execute-footstep-callback")
+    (when (send smachine :state? :executing-terrain-footsteps)
+      (send smachine :go-to :executing-terrain-footsteps)
+      (let ((coords-list (float-vector-to-coords-set (send msg :float_params)))
+            (client (instance ros::simple-action-client :init
+                              "footstep_controller"
+                              jsk_footstep_msgs::ExecFootstepsAction)))
+        (ros::ros-info "Waiting for controller server")
+        (send client :wait-for-server)
+        (if (<= (length coords-list) 1)
+            (error "Only 1 or 0 coords"))
+        (let ((goal (instance jsk_footstep_msgs::ExecFootstepsActionGoal :init))
+              (footstep-array (vector->footstep-array (send msg :float_params)
+                                                      (send msg :image_roi_info))))
+          (send footstep-array :header :frame_id "ground")
+          (send footstep-array :header :stamp (ros::time-now))
+          (send goal :footstep footstep-array)
+          (send client :send-goal goal)
+          (send client :wait-for-result)
+          (let ((ocs-msg (instance drc_com_common::FC2OCSSmall :init)))
+            (send ocs-msg :type drc_com_common::FC2OCSSmall::*EXECUTE_FOOTSTEPS_FINISHED*)
+            (send self :send-to-ocs ocs-msg))
+          (send smachine :go-to :initial)
+          ))))
   (:send-to-ocs (msg)
     (ros::publish "/fc_to_ocs_low_speed/input" msg))
   )
@@ -1361,7 +1456,8 @@ It sends :angle-vector to robot and return 'finished' message to ocs"
 (ros::subscribe "/drill_recognition_for_wall/snapshot/output" geometry_msgs::PoseArray
   #'send *app* :drill-wall-recog-callback)
 (ros::subscribe "projected_footprint_fc" geometry_msgs::PoseStamped
-                #'send *app* :projected-footprint-callback)
+  #'send *app* :projected-footprint-callback)
+
 (ros::rate 10)
 
 ;;(ros::spin)

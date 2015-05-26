@@ -5,7 +5,7 @@ uint8 image_type
 uint8 IMAGE_RECT=0
 uint8 PANORAMA_VIEW=1
 uint8 arm_side
-uint32[16] image_roi_info
+uint32[21] image_roi_info
 float32[128] float_params
 float32[6] stand_coords
 # arm

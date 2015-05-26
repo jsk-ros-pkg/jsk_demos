@@ -49,6 +49,7 @@ tmux-newwindow door_recognition "sleep 5; roslaunch drc_task_common door_unvisib
 # tmux-newwindow panorama "roslaunch drc_task_common panorama.launch"
 tmux-newwindow fisheye "sleep 5; roslaunch drc_task_common fisheye_lookat.launch"
 tmux-newwindow locomotion "sleep 5; roslaunch drc_task_common locomotion.launch"
+tmux-newwindow locomotion_planner "sleep 5; roslaunch drc_task_common locomotion_planner.launch"
 tmux-newwindow vehicle "roslaunch drc_task_common vehicle_field_computer_main.launch USE_COM:=false ROBOT:=${ROBOT,,}"
 tmux-newwindow misc "sleep 5; roslaunch drc_task_common fc_misc.launch"
 tmux-newwindow com "sleep 5; roslaunch drc_com_common field_computer_com.launch FC_IP:=${FC_IP} OCS_IP:=${OCS_IP}"

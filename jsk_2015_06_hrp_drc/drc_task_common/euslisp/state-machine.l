@@ -565,6 +565,8 @@ Usage:
      (:executing-lookground -> :initial)
      (:initial -> :executing-terrain-footsteps)
      (:executing-terrain-footsteps -> :initial)
+     (:initial -> :planning-footsteps)
+     (:planning-footsteps -> :initial)
      )
    '((:initial :initial)
      ;; go-pos
@@ -634,6 +636,7 @@ Usage:
      ;; terrain
      (:executing-lookground :terrain)
      (:executing-terrain-footsteps :terrain)
+     (:planning-footsteps :terrain)
      )
    :initial "ocs_state.png" t))
 
@@ -732,6 +735,8 @@ Usage:
      (:executing-terrain-lookground -> :initial)
      (:initial -> :executing-terrain-footsteps)
      (:executing-terrain-footsteps -> :initial)
+     (:initial -> :planning-terrain-footsteps)
+     (:planning-terrain-footsteps -> :initial)
      )
    '((:initial :initial)
      
@@ -779,6 +784,7 @@ Usage:
 
      (:executing-terrain-lookground :terrain)
      (:executing-terrain-footsteps :terrain)
+     (:planning-terrain-footsteps :terrain)
      )
    :initial nil t
    ))
