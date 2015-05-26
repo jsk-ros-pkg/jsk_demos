@@ -94,22 +94,24 @@ class VehicleUIWidget(QWidget):
             sync_joy(target)
         except rospy.ServiceException, e:
             self.showError("Failed to call drive/operation/synchronize " + target)
-    def setControllerMode(self, target, item):
-        self.synchronizeJoyController(target)
+    def setControllerMode(self, target, mode):
         try:
             update_mode = rospy.ServiceProxy("drive/controller/set_" + target + "_mode", StringRequest)
-            update_mode(item.text())
+            update_mode(mode)
         except rospy.ServiceException, e:
             self.showError("drive/controller/set_" + target + "_mode")
             
     def handleModeClickedCallback(self, item):
-        self.setControllerMode("handle", item)
+        self.synchronizeJoyController("handle")
+        self.setControllerMode("handle", item.text())
         
     def accelModeClickedCallback(self, item):
-        self.setControllerMode("accel", item)
+        self.synchronizeJoyController("accel")
+        self.setControllerMode("accel", item.text())
 
     def neckModeClickedCallback(self, item):
-        self.setControllerMode("neck", item)
+        self.synchronizeJoyController("neck")
+        self.setControllerMode("neck", item.text())
         
     def setUpLeftBox(self, left_vbox):
 
@@ -693,12 +695,7 @@ class VehicleUIWidget(QWidget):
                 self.step_max_edit.setText(str(self.step_max_value))
 
     def overwriteButtonCallback(self, event):
-        try: # forcely stop handle because it would take some time that goal_handle_angle is updated
-            update_mode = rospy.ServiceProxy("drive/controller/set_handle_mode", StringRequest)
-            update_mode("stop")
-        except rospy.ServiceException, e:
-            self.showError("drive/controller/set_handle_mode")
-        
+        self.setControllerMode("handle", "Stop")
         current_handle = float(self.overwrite_edit.text())
         next_value = self.callSetValueService('drive/controller/overwrite_handle_angle', current_handle)
         if next_value != None:
