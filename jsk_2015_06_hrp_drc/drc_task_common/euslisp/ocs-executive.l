@@ -63,9 +63,11 @@
                 ))
 
 (defun footstep-plan-execute-cb (server goal)
+  ;;(ros::ros-info "footstep-plan-execute-cb")
   (send *app* :footstep-plan-execute-cb goal))
 
 (defun footstep-exec-execute-cb (server goal)
+  ;;(ros::ros-info "footstep-exec-execute-cb")
   (send *app* :footstep-exec-execute-cb goal))
 
 (defmethod ocs-executive-app
@@ -139,6 +141,8 @@
                 self :footstep-planning-failed-callback)
           (list drc_com_common::FC2OCSSmall::*FOOTSTEP_PLANNING_RESULT*
                 self :footstep-planning-result-callback)
+          (list drc_com_common::FC2OCSSmall::*LOOK_GROUND_FINISHED*
+                self :lookground-finished-callback)
           )
     (setq smachine (make-ocs-state-machine))
     (send smachine :register-initial-hook self :initial-callback)
@@ -161,9 +165,13 @@
     (setq ocs-footstep-controller
           (instance ros::simple-action-server :init
                     "ocs_footstep_controller"
-                    jsk_footstep_msgs::ExecFootstepsActio
+                    jsk_footstep_msgs::ExecFootstepsAction
                     :execute-cb 'footstep-exec-execute-cb))
     self)
+  (:spin-once 
+   ()
+   (send ocs-footstep-planner :worker)
+   (send ocs-footstep-controller :worker))
   (:report-callback (msg)
     ;; do nothing
     )
@@ -1965,7 +1973,8 @@
             (coords-set-to-float-vector
              (list (ros::tf-pose->coords (send msg :input_pose :pose))
                    (ros::tf-pose->coords (send msg :lleg_pose))
-                   (ros::tf-pose->coords (send msg :rleg_pose)))))
+                   (ros::tf-pose->coords (send msg :rleg_pose)))
+             (length (send fc-msg :float_params))))
       (send self :send-to-fc fc-msg)))
   (:projected-footstep-callback
     (msg)
@@ -2018,8 +2027,10 @@
   ;;   (when (send smachine :next? :initial)
   ;;     (send self :show-text "Done footstep")
   ;;     (send self :go-to :initial)))
-  (:footstep-plan-execute-cb (goal)
-    (when (send smachine :next? :planning-footsteps)
+  (:footstep-plan-execute-cb 
+   (goal)
+   (when (and (send smachine :next? :planning-footsteps)
+              (not (send smachine :state? :planning-footsteps)))
       (send self :show-text "Planning footstep")
       (let ((goal_footstep (send (send goal :goal) :goal_footstep))
             (initial_footstep (send (send goal :goal) :initial_footstep)))
@@ -2028,37 +2039,37 @@
           (send fc-msg :float_params
                 (coords-set-to-float-vector
                  (append (mapcar #'(lambda (f)
-                                     (tf::pose->coords (send f :pose)))
+                                     (ros::tf-pose->coords (send f :pose)))
                                  (send goal_footstep :footsteps))
                          (mapcar #'(lambda (f)
-                                     (tf::pose->coords (send f :pose)))
+                                     (ros::tf-pose->coords (send f :pose)))
                                  (send initial_footstep :footsteps)))
                  (length (send fc-msg :float_params))))
-          (setf (elt (send fc-msg :image_roi_info) 0) jsk_footstep_msgs::Footstep::*LLEG*)
-          (setf (elt (send fc-msg :image_roi_info) 1) jsk_footstep_msgs::Footstep::*RLEG*)
-          (setf (elt (send fc-msg :image_roi_info) 2) jsk_footstep_msgs::Footstep::*LLEG*)
-          (setf (elt (send fc-msg :image_roi_info) 3) jsk_footstep_msgs::Footstep::*RLEG*)
+          (setf (elt (send fc-msg :image_roi_info) 0) jsk_footstep_msgs::Footstep::*LEFT*)
+          (setf (elt (send fc-msg :image_roi_info) 1) jsk_footstep_msgs::Footstep::*RIGHT*)
+          (setf (elt (send fc-msg :image_roi_info) 2) jsk_footstep_msgs::Footstep::*LEFT*)
+          (setf (elt (send fc-msg :image_roi_info) 3) jsk_footstep_msgs::Footstep::*RIGHT*)
           (send self :send-to-fc fc-msg)
           (send smachine :go-to :planning-footsteps)))))
   (:footstep-planning-failed-callback
     (msg)
-    (when (send smachine :state? :planning-terrain-footsteps)
+    (when (send smachine :state? :planning-footsteps)
       (send self :show-text "Failed to planning footsteps" :warn)
       (send ocs-footstep-planner :set-aborted (send ocs-footstep-planner :result))
       (send smachine :go-to :initial))
     )
   (:footstep-planning-result-callback
     (msg)
-    (when (send smachine :state? :planning-terrain-footsteps)
+    (when (send smachine :state? :planning-footsteps)
       (send self :show-text "Success to planning footsteps" :success)
       (let ((result (send ocs-footstep-planner :result)))
         (let ((footstep-array (vector->footstep-array (send msg :params)
                                                       (send msg :int_params))))
-          (send result :footstep-array)
+          (send result :result footstep-array)
+          (send footstep-array :header :frame_id "ground")
           (send ocs-footstep-planner :set-succeeded result))
         )
       (send smachine :go-to :initial)))
-  
   )
 
 ;; advertise
@@ -2193,4 +2204,9 @@
 (ros::subscribe "/joint_states" sensor_msgs::JointState #'joint-states-callback)
 
 (ros::rate 10)
-(ros::spin)
+;;(ros::spin)
+(while (ros::ok)
+  (send *app* :spin-once)
+  (ros::spin-once)
+  (ros::sleep)
+  )

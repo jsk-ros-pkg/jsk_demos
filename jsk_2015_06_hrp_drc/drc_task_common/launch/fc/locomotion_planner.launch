@@ -29,6 +29,7 @@
              if="$(arg USE_HRP2JSK)" />
       <remap from="grid_maps" to="/locomotion/env_server/output" />
       <remap from="footstep_planner/result" to="footstep_planner/result_non_refined" if="$(arg REFINE_FOOTSTEP)"/>
+      
     </node>
     <!-- controller -->
     <node pkg="jsk_footstep_controller"

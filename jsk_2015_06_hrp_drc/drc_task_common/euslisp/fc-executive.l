@@ -3,6 +3,7 @@
 (ros::roseus "ocs_executive")
 (ros::roseus-add-srvs "std_srvs")
 (ros::roseus-add-srvs "jsk_topic_tools")
+(ros::roseus-add-msgs "jsk_footstep_msgs")
 (ros::roseus-add-msgs "image_view2")
 (ros::roseus-add-msgs "geometry_msgs")
 (ros::roseus-add-msgs "drc_com_common")
@@ -24,12 +25,10 @@
 (defun footstep-array-from-two-coordinates (goal-coords int-vector)
   (let ((goal-footstep (instance jsk_footstep_msgs::FootstepArray :init)))
     (send goal-footstep :header :frame_id "ground")
-    (send initial-footstep :header :frame_id "ground")
     (send goal-footstep :header :stamp (ros::time-now))
-    (send initial-footstep :header :stamp (ros::time-now))
     (send goal-footstep :footsteps
           (mapcar #'(lambda (c)
-                      (let ((f (instance jsk_recognition_msgs::Footstep :init)))
+                      (let ((f (instance jsk_footstep_msgs::Footstep :init)))
                         (send f :pose (ros::coords->tf-pose c))
                         f))
                   goal-coords))
@@ -688,7 +687,7 @@
                 (* 0.001 (elt (send goal-coords :worldpos) 0))
                 (* 0.001 (elt (send goal-coords :worldpos) 1))
                 (rad2deg (elt (car (send goal-coords :rpy-angle)) 0)))
-        (send *ri* :go-pos 
+        (send *ri* :go-pos
               (* 0.001 (elt (send goal-coords :worldpos) 0))
               (* 0.001 (elt (send goal-coords :worldpos) 1))
               (rad2deg (elt (car (send goal-coords :rpy-angle)) 0)))
@@ -1297,11 +1296,20 @@ It sends :angle-vector to robot and return 'finished' message to ocs"
         )))
   ;; terrain
   (:project-footprint-callback
-   (msg)
+   (input-msg)
    (ros::ros-info ":project-footprint-callback")
-   (let ((coords (float-vector-to-coords (send msg :float_params))))
-     (let ((pose (ros::coords->tf-pose-stamped coords "ground")))
-       (ros::publish "project_footprint_from_ocs" pose))))
+   (let ((msg (instance jsk_interactive_marker::SnapFootPrintInput :init)))
+     (send msg :input_pose
+           (ros::coords->tf-pose-stamped
+            (float-vector-to-coords (subseq (send input-msg :float_params) 0 6))
+            "ground"))
+     (send msg :lleg_pose
+           (ros::coords->tf-pose
+            (float-vector-to-coords (subseq (send input-msg :float_params) 6 12))))
+     (send msg :rleg_pose
+           (ros::coords->tf-pose
+            (float-vector-to-coords (subseq (send input-msg :float_params) 12 18))))
+     (ros::publish "/footstep_planner/project_footprint" msg)))
   (:projected-footprint-callback
    (msg)
    (ros::ros-info ":projected-footprint-callback")
@@ -1315,7 +1323,7 @@ It sends :angle-vector to robot and return 'finished' message to ocs"
     (msg)
     (ros::ros-info ":lookground")
     (when (send smachine :state? :initial)
-      (send smachine :go-to :executing-lookground)
+      (send smachine :go-to :executing-terrain-lookground)
       (let ((req (instance std_srvs::EmptyRequest :init)))
         (ros::service-call "/lookaround_ground" req))
       (let ((ocs-msg (instance drc_com_common::FC2OCSSmall :init)))
@@ -1328,7 +1336,7 @@ It sends :angle-vector to robot and return 'finished' message to ocs"
     (when (send smachine :state? :initial)
       (send smachine :go-to :planning-terrain-footsteps)
       (let ((coords-list (float-vector-to-coords-set (send msg :float_params))))
-        (let ((goal-goords (subseq coords-list 0 2))
+        (let ((goal-coords (subseq coords-list 0 2))
               (initial-coords (subseq coords-list 2 4)))
           (let ((goal (instance jsk_footstep_msgs::PlanFootstepsActionGoal :init))
                 (client (instance ros::simple-action-client :init
@@ -1351,7 +1359,8 @@ It sends :angle-vector to robot and return 'finished' message to ocs"
                   (let ((result (send client :get-result)))
                     (multiple-value-bind
                      (float-vector-footstep integer-vector-footstep)
-                     (footstep-array->vector result (length (send ocs-msg :params))
+                     (footstep-array->vector (send result :result)
+                                             (length (send ocs-msg :params))
                                              (length (send ocs-msg :int_params)))
                      (send ocs-msg :params float-vector-footstep)
                      (send ocs-msg :int_params integer-vector-footstep)
@@ -1377,8 +1386,9 @@ It sends :angle-vector to robot and return 'finished' message to ocs"
           (send footstep-array :header :frame_id "ground")
           (send footstep-array :header :stamp (ros::time-now))
           (send goal :footstep footstep-array)
-          (send client :send-goal goal)
-          (send client :wait-for-result)
+          ;;(send client :send-goal goal)
+          ;;(send client :wait-for-result)
+          (ros::ros-warn "send-goal: ~A" goal)
           (let ((ocs-msg (instance drc_com_common::FC2OCSSmall :init)))
             (send ocs-msg :type drc_com_common::FC2OCSSmall::*EXECUTE_FOOTSTEPS_FINISHED*)
             (send self :send-to-ocs ocs-msg))
@@ -1422,7 +1432,7 @@ It sends :angle-vector to robot and return 'finished' message to ocs"
 (ros::advertise "/drive/operation/handle_cmd" std_msgs::Float64)
 (ros::advertise "/drive/operation/accel_cmd" std_msgs::Float64)
 (ros::advertise "/drive/operation/brake_cmd" std_msgs::Float64)
-(ros::advertise "project_footprint_from_ocs" jsk_interactive_marker::SnapFootPrintInput)
+(ros::advertise "/footstep_planner/project_footprint" jsk_interactive_marker::SnapFootPrintInput)
 (ros::advertise "/go_pos_goal" geometry_msgs::PoseStamped)
 
 (ros::subscribe "/fc_from_ocs_low_speed/output" drc_com_common::OCS2FCSmall
@@ -1455,7 +1465,7 @@ It sends :angle-vector to robot and return 'finished' message to ocs"
   #'send *app* :drill-put-recog-callback)
 (ros::subscribe "/drill_recognition_for_wall/snapshot/output" geometry_msgs::PoseArray
   #'send *app* :drill-wall-recog-callback)
-(ros::subscribe "projected_footprint_fc" geometry_msgs::PoseStamped
+(ros::subscribe "/footstep_planner/projected_footprint" geometry_msgs::PoseStamped
   #'send *app* :projected-footprint-callback)
 
 (ros::rate 10)

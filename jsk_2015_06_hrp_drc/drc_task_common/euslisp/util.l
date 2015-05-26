@@ -401,8 +401,8 @@
         (let ((footstep (instance jsk_footstep_msgs::Footstep :init)))
           (send footstep :pose (ros::coords->tf-pose (elt coords-set i)))
           (send footstep :leg (elt int-footsteps i))
-          (send jsk_footstep_msgs::FootstepArray
-                :footsteps (append (send jsk_footstep_msgs::FootstepArray :footsteps)
+          (send ret
+                :footsteps (append (send ret :footsteps)
                                    (list footstep))))))
     ret))
 
