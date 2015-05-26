@@ -7,7 +7,6 @@
 
   <group ns="laser_preprocess">
     <node pkg="nodelet" type="nodelet" name="laser_preprocess_manager"
-          machine="$(arg machine)"
           args="manager" output="screen"/>
     <node pkg="nodelet" type="nodelet"
           name="tilt_laser_listener"
@@ -36,7 +35,6 @@
 
     <node pkg="nodelet" type="nodelet"
           name="downsampler"
-          machine="$(arg machine)"
           args="load pcl/VoxelGrid laser_preprocess_manager">
       <remap from="~input" to="tilt_laser_listener/output_cloud" />
       <rosparam>
@@ -47,7 +45,6 @@
     </node>
     <node pkg="nodelet" type="nodelet"
           name="gsensor_cloud"
-          machine="$(arg machine)"
           args="load jsk_pcl/TfTransformCloud laser_preprocess_manager">
       <remap from="~input" to="downsampler/output" />
       <rosparam>
@@ -56,7 +53,6 @@
     </node>
     <node pkg="nodelet" type="nodelet"
           name="camera_laser_cloud"
-          machine="$(arg machine)"
           args="load jsk_pcl/TfTransformCloud laser_preprocess_manager">
       <remap from="~input" to="downsampler/output" />
       <rosparam>
@@ -66,7 +62,6 @@
 
     <node pkg="nodelet" type="nodelet"
           name="x_filter"
-          machine="$(arg machine)"
           args="load pcl/PassThrough laser_preprocess_manager">
       <remap from="~input" to="gsensor_cloud/output" />
       <rosparam>
@@ -78,7 +73,6 @@
     </node>
     <node pkg="nodelet" type="nodelet"
           name="y_filter"
-          machine="$(arg machine)"
           args="load pcl/PassThrough laser_preprocess_manager">
       <remap from="~input" to="x_filter/output" />
       <rosparam>
@@ -92,7 +86,6 @@
     <!-- first, remove upper pointcloud -->
     <node pkg="nodelet" type="nodelet"
           name="z_filter"
-          machine="$(arg machine)"
           args="load pcl/PassThrough laser_preprocess_manager">
       <remap from="~input" to="y_filter/output" />
       <rosparam>
@@ -105,7 +98,6 @@
 
     <node pkg="nodelet" type="nodelet"
           name="odom_cloud"
-          machine="$(arg machine)"
           args="load jsk_pcl/TfTransformCloud laser_preprocess_manager">
       <remap from="~input" to="z_filter/output" />
       <rosparam>

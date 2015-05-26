@@ -494,12 +494,12 @@
         (when (and fin? (not ik-ret)) (return-from drill-ik nil))
         (send *robot* :angle-vector robot-angle-vector)
         (send *robot* :fix-leg-to-coords original-foot-midcoords)
-        (setq ik-ret (fullbody-inverse-kinematics-for-drill-grasp-single :arm-tc (send (send (gethash *drill-main-arm* *arm-drill-grasp-coords*) :copy-worldcoords) :translate (float-vector -30 0 down-dist) :local) :draw? draw? :rotation-axis (list t t t)))
+        (setq ik-ret (fullbody-inverse-kinematics-for-drill-grasp-single :arm-tc (send (send (gethash *drill-main-arm* *arm-drill-grasp-coords*) :copy-worldcoords) :translate (float-vector -50 0 down-dist) :local) :draw? draw? :rotation-axis (list t t t)))
         (push (list 1 (not (null ik-ret)) ik-ret) ik-results)
         (when (and fin? (not ik-ret)) (return-from drill-ik nil))
         (send *robot* :angle-vector robot-angle-vector)
         (send *robot* :fix-leg-to-coords original-foot-midcoords)
-        (setq ik-ret (fullbody-inverse-kinematics-for-drill-grasp-single :arm-tc (send (send (gethash *drill-main-arm* *arm-drill-grasp-coords*) :copy-worldcoords) :translate (float-vector (- reach-dist) 0 (if (not *drill-reverse-hand*) 100 0)) :local) :draw? draw? :rotation-axis (list t t t)))
+        (setq ik-ret (fullbody-inverse-kinematics-for-drill-grasp-single :arm-tc (send (send (gethash *drill-main-arm* *arm-drill-grasp-coords*) :copy-worldcoords) :translate (float-vector (- reach-dist) 0 (if (not *drill-reverse-hand*) 100 0)) :local) :draw? draw? :rotation-axis (list (if (or (equal *robot-name* "HRP2JSKNTS") (equal *robot-name* "HRP2JSKNT")):z t) t t)))
         (push (list 0 (not (null ik-ret)) ik-ret) ik-results)
         (when (and fin? (not ik-ret)) (return-from drill-ik nil))
         (send *robot* :angle-vector robot-angle-vector)
@@ -1173,6 +1173,8 @@
                      (speak-en "button failes"))
           )
           )
+        (send *robot* :angle-vector (get-watch-drill-pose2))
+        (model2real :time 3000)
         )
       )
     ))
@@ -1386,7 +1388,7 @@
              (if (equal *drill-main-arm* :rarm) (make-coords :pos (float-vector -680 0 0) :rpy (list (deg2rad 0) 0 0)) (make-coords :pos (float-vector -680 0 0) :rpy (list (deg2rad 0) 0 0)))
            (if *drill-reverse-hand*
                (if (equal *drill-main-arm* :rarm) (make-coords :pos (float-vector -680 -200 0) :rpy (list (deg2rad 40) 0 0))
-                 (make-coords :pos (float-vector -680 -0 0) :rpy (list (deg2rad -25) 0 0)) ;; avoid wall
+                 (make-coords :pos (float-vector -680 -50 0) :rpy (list (deg2rad -25) 0 0)) ;; avoid wall
                  )
              (if (equal *drill-main-arm* :rarm) (make-coords :pos (float-vector -700 -265 0) :rpy (list (deg2rad 50) 0 0)) (make-coords :pos (float-vector -700 250 0) :rpy (list (deg2rad -65) 0 0)))
              )
@@ -1475,7 +1477,7 @@
     ;;
     (cond ((or (equal *robot-name* "HRP2JSKNTS") (equal *robot-name* "HRP2JSKNT"))
            ;(send *ri* :start-impedance *drill-main-arm* :moment-gain (float-vector 0 0 -200) :k-p 1000 :d-p 400)) ;; start imp hard
-          (send *ri* :start-impedance *drill-main-arm* :force-gain #f(0.1 0.1 1) :k-p 150 :d-p 700))
+          (send *ri* :start-impedance *drill-main-arm* :force-gain #f(0.3 0.3 1) :k-p 400 :d-p 700))
           (t
            (send *ri* :start-impedance *drill-main-arm* :force-gain #f(0.1 0.1 1) :moment-gain (float-vector 0 0 0) :k-p 700 :d-p 1500)))
     ;(send *ri* :start-impedance *drill-main-arm* :moment-gain (float-vector 0 0 0) :k-p 1000 :d-p 1500)
@@ -1818,7 +1820,8 @@
   (cond ((or (equal *robot-name* "HRP2JSKNT") (equal *robot-name* "HRP2JSKNTS"))
          (if *drill-reverse-hand*
              ;; #f(0.0 0.0 -26.0 50.0 -24.0 0.0 0.0 0.0 0.0 -26.0 50.0 -24.0 0.0 0.0 0.0 0.0 0.0 40.0 -54.9114 -41.9176 63.6546 -114.997 82.9781 15.3017 22.7922 60.0 50.0 30.0 10.0 -120.0 25.0 5.0 -20.0 -60.0)
-             #f(0.0 0.0 -26.0 50.0 -24.0 0.0 0.0 0.0 0.0 -26.0 50.0 -24.0 0.0 0.0 0.0 0.0 0.0 40.0 -42.1995 -61.8312 51.7429 -131.654 60.365 2.76035 25.032 60.0 50.0 30.0 10.0 -120.0 25.0 5.0 -20.0 -60.0) ;; avoid shelf
+             ;#f(0.0 0.0 -26.0 50.0 -24.0 0.0 0.0 0.0 0.0 -26.0 50.0 -24.0 0.0 0.0 0.0 0.0 0.0 40.0 -42.1995 -61.8312 51.7429 -131.654 60.365 2.76035 25.032 60.0 50.0 30.0 10.0 -120.0 25.0 5.0 -20.0 -60.0) ;; avoid shelf
+             #f(0.0 0.0 -26.0 50.0 -24.0 0.0 0.0 0.0 0.0 -26.0 50.0 -24.0 0.0 0.0 0.0 0.0 -30.0 20.0 -56.7581 -42.7349 86.6346 -114.858 71.3878 -1.35351 -14.9653 60.0 50.0 30.0 10.0 -120.0 25.0 5.0 -20.0 -60.0)
              #f(0.0 0.0 -26.0 50.0 -24.0 0.0 0.0 0.0 0.0 -26.0 50.0 -24.0 0.0 0.0 0.0 0.0 0.0 40.0 -43.1188 -36.5194 14.7778 -106.994 -32.1181 -12.396 18.5842 60.0 50.0 30.0 10.0 -120.0 25.0 5.0 -20.0 -60.0)
              )
          )
@@ -1884,7 +1887,9 @@
        ((not *drill-reverse-hand*)
         (send *robot* :reset-manip-pose))
        (t
-        #f(0.0 0.0 -26.0 50.0 -24.0 0.0 0.0 0.0 0.0 -26.0 50.0 -24.0 0.0 0.0 0.0 0.0 0.0 20.0 49.2654 -15.6889 -8.04143 -131.198 78.4518 -8.73041 1.4443 60.0 50.0 30.0 10.0 -120.0 25.0 5.0 -20.0 -60.0)
+        ;; #f(0.0 0.0 -26.0 50.0 -24.0 0.0 0.0 0.0 0.0 -26.0 50.0 -24.0 0.0 0.0 0.0 0.0 0.0 20.0 49.2654 -15.6889 -8.04143 -131.198 78.4518 -8.73041 1.4443 60.0 50.0 30.0 10.0 -120.0 25.0 5.0 -20.0 -60.0)
+        ;; #f(0.0 0.0 -26.0 50.0 -24.0 0.0 0.0 0.0 0.0 -26.0 50.0 -24.0 0.0 0.0 0.0 0.0 0.0 20.0 57.5384 -29.0239 -20.6659 -121.077 29.5381 4.36327 -48.7193 60.0 50.0 30.0 10.0 -120.0 25.0 5.0 -20.0 -60.0) ;; avoid shelf
+        #f(0.0 0.0 -26.0 50.0 -24.0 0.0 0.0 0.0 0.0 -26.0 50.0 -24.0 0.0 0.0 0.0 0.0 0.0 20.0 59.9981 -15.5179 -24.811 -133.582 32.4242 14.6931 -29.3939 60.0 60.0 -0.6426 24.2623 -97.9113 -8.0011 -25.8591 -24.6431 -60.0);; avoid shelf
         ;; #f(-1.77229 1.82573 -25.6231 51.2333 -25.6803 -0.988256 0.0 -1.77228 1.83528 -26.1327 51.4649 -25.4022 -0.9978 0.0 10.8349 4.38163 -40.7868 34.4397 -34.2213 -48.3344 76.6297 -106.708 104.568 54.9403 38.4528 60.0 44.7247 30.079 9.16563 -119.921 23.9102 2.91034 -18.3553 -60.0)
         ))
       )
@@ -1922,6 +1927,19 @@
     angle-ret
     )
   )
+
+(defun get-watch-drill-pose2 ()
+  (if (or (equal *robot-name* "HRP2JSKNTS") (equal *robot-name* "HRP2JSKNT"))
+      (progn
+        (send *robot* :angle-vector #f(0.0 0.0 -26.0 50.0 -24.0 0.0 0.0 0.0 0.0 -26.0 50.0 -24.0 0.0 0.0 0.0 0.0 -13.4395 15.0784 -84.1367 -0.425352 13.4642 -45.0732 -105.118 -20.542 77.6712 60.0 40.0869 75.2885 11.7308 -117.757 -18.2568 65.0121 0.945275 -60.0))
+        (when (equal *drill-main-arm* :larm) (setq angle-ret (get-mirror-angle-vector)))
+        )
+    (get-watch-drill-pose)
+    )
+  (send *robot* :angle-vector)
+  )
+
+
 
 (defun test-drill-button-motion-reachability
   ()

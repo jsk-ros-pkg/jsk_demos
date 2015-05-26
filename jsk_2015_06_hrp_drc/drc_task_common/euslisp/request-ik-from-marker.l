@@ -865,17 +865,24 @@
       (publish-object-approach :frame-id frame-id)
       ))
   (when *solve-ik-command-flag*
+    (ros::ros-warn "[request-ik] request-ik-from-marker-one")
     (request-ik-from-marker-one))
   (when *save-obj-command-flag*
+    (ros::ros-warn "[request-ik] save-obj-model-one")
     (save-obj-model-one))
   (when *send-angle-command-flag*
+    (ros::ros-warn "[request-ik] send-angle-to-real-robot-one")
     (send-angle-to-real-robot-one))
   (when *reach-until-touch-command-flag*
+    (ros::ros-warn "[request-ik] reach-until-touch-one")
     (reach-until-touch-one))
   (when *object-menu-command-flag*
+    (ros::ros-warn "[request-ik] object-menu-one")
     (object-menu-one))
   (when *robot-menu-command-flag*
+    (ros::ros-warn "[request-ik] robot-menu-one")
     (robot-menu-one))
   (when *assoc-obj-flag*
+    (ros::ros-warn "[request-ik] set-obj-pose-for-assoc")
     (set-obj-pose-for-assoc))
   )

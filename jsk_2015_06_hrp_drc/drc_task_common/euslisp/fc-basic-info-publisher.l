@@ -169,8 +169,10 @@
       (send msg :robot_state robot-state-value)
       (ros::publish "/fc_to_ocs_basic_low_speed/input" msg)))
   )
-
 (ros::roseus "fc_basic_info_publisher")
+(ros::advertise "/fc_to_ocs_basic_low_speed/input" 
+  drc_com_common::FC2OCSBasicInfoSmall)
+
 (setq *tf* (instance ros::transform-listener :init))
 (setq *app* (instance fc-basic-info-publisher :init))
 (setq *arm-force-max* (ros::get-param "~arm_force_max" 256.0))
@@ -178,8 +180,6 @@
 (setq *leg-force-max* (ros::get-param "~leg_force_max" 728.0))
 (setq *leg-torque-max* (ros::get-param "~leg_torque_max" 728.0))
 
-(ros::advertise "/fc_to_ocs_basic_low_speed/input" 
-  drc_com_common::FC2OCSBasicInfoSmall)
 (ros::subscribe "/joint_states_compressed" drc_com_common::HumanoidJointAngles
   #'send *app* :joint-states-compressed-callback)
 (ros::subscribe "/joint_states_appended" sensor_msgs::JointState
