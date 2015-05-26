@@ -85,7 +85,7 @@
   (send *drill* :put :edge-coords
         (make-cascoords
          ;;:coords (make-coords :pos #f(0 0 0) :rpy (list 0 0 0))
-         :coords (make-coords :pos #f(0 0 240) :rpy (list 0 0 0))
+         :coords (make-coords :pos #f(0 0 230) :rpy (list 0 0 0))
          :parent *drill*))
   )
 
@@ -1502,10 +1502,10 @@
                 (equal i (- (length drill-motion-av-list) 1))
                 )
                (send *robot* :angle-vector (elt drill-motion-av-list i))
-               (when real? (model2real :time 5000))
+               (when real? (model2real :time 3000))
                (setq i (+ i 1)))
               (t
-               (send-angle-vector-sequence-with-time (subseq drill-motion-av-list i (+ i 3)) :time (/ 15000 devide-num))
+               (send-angle-vector-sequence-with-time (subseq drill-motion-av-list i (+ i 3)) :time (/ 12000 devide-num))
                (setq i (+ i 3))
                )
               )
@@ -1940,7 +1940,7 @@
 (defun get-watch-drill-pose2 ()
   (if (or (equal *robot-name* "HRP2JSKNTS") (equal *robot-name* "HRP2JSKNT"))
       (progn
-        (send *robot* :angle-vector #f(0.0 0.0 -26.0 50.0 -24.0 0.0 0.0 0.0 0.0 -26.0 50.0 -24.0 0.0 0.0 0.0 0.0 -13.4395 15.0784 -84.1367 -0.425352 13.4642 -45.0732 -105.118 -20.542 77.6712 60.0 40.0869 75.2885 11.7308 -117.757 -18.2568 65.0121 0.945275 -60.0))
+        (send *robot* :angle-vector #f(0.0 0.0 -26.0 50.0 -24.0 0.0 0.0 0.0 0.0 -26.0 50.0 -24.0 0.0 0.0 0.0 0.0 -13.4395 10.0 -84.1367 -0.425352 13.4642 -45.0732 -105.118 -20.542 77.6712 60.0 40.0869 75.2885 11.7308 -117.757 -18.2568 65.0121 0.945275 -60.0))
         (when (equal *drill-main-arm* :larm) (setq angle-ret (get-mirror-angle-vector)))
         )
     (get-watch-drill-pose)
