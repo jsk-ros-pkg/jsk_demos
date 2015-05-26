@@ -969,18 +969,18 @@ It sends :angle-vector to robot and return 'finished' message to ocs"
      (format t ":limb-grasp-callback: ~A (~A)~%"
              (if (eq pose :grasp) :start-grasp :stop-grasp) limb)
      (send *ri* (if (eq pose :grasp) :start-grasp :stop-grasp) limb))
-    ((and (find-method *ri* :hand-anngle-vector)
-          (find-method (send *ri* :get-val 'robot) :hand-anngle-vector))
+    ((and (find-method *ri* :hand-angle-vector)
+          (find-method (send *ri* :get-val 'robot) :hand-angle-vector))
      (cond
-      ((eq (length (send (send *ri* :get-val 'robot) :hand-anngle-vector))
+      ((eq (length (send (send *ri* :get-val 'robot) :hand-angle-vector))
            (length av))
        (format t ":limb-grasp-callback: receive hav=~A~%" av)
        (send (send *ri* :get-val 'robot) :hand-angle-vector av))
       (t
        (format t ":limb-grasp-callback: grasp-pose=~A~%"
-               (if (eq pose :grasp) :grasp-pose :open-pose))
+               (if (eq pose :grasp) :grasp-pose :hook-pose))
        (send (send *ri* :get-val 'robot) :hand limb
-             (if (eq pose :grasp) :grasp-pose :open-pose))))
+             (if (eq pose :grasp) :grasp-pose :hook-pose))))
      (send *ri* :hand-angle-vector
            (send (send *ri* :get-val 'robot) :hand-angle-vector))
      ))
