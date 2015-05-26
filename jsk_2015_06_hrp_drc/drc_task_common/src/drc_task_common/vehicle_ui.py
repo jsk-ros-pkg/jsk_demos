@@ -182,9 +182,9 @@ class VehicleUIWidget(QWidget):
         self.resume_button = QtGui.QPushButton("Resume Handle Pose")
         self.is_resume_executing = False        
         self.initialize_button.clicked.connect(self.initializeButtonCallback) # needs to be initialize joy
-        self.grasp_button.clicked.connect(self.graspButtonCallback) # needs to be synchronize joy
+        self.grasp_button.clicked.connect(self.service("drive/controller/grasp")) # needs to be synchronize joy
         self.release_button.clicked.connect(self.service("drive/controller/release"))
-        self.correct_button.clicked.connect(self.correctButtonCallback) # needs to be synchronize joy
+        self.correct_button.clicked.connect(self.service("drive/controller/correct")) # needs to be synchronize joy
         self.resume_button.clicked.connect(self.service("drive/controller/resume"))
         action_vbox.addWidget(self.initialize_button)
         action_vbox.addWidget(self.grasp_button)
@@ -203,7 +203,7 @@ class VehicleUIWidget(QWidget):
         approachHandleArmAction.triggered.connect(self.service("drive/controller/approach_handle"))
         menu.addAction(approachHandleArmAction)
         approachAccelLegAction = QAction("Approach Accel Leg", self)
-        approachAccelLegAction.triggered.connect(self.approachAccelLegCallback) # needs to be synchronize joy
+        approachAccelLegAction.triggered.connect(self.service("drive/controller/approach_accel")) # needs to be synchronize joy
         menu.addAction(approachAccelLegAction)
         approachSupportArmAction = QAction("Approach Support Arm", self)
         approachSupportArmAction.triggered.connect(self.service("drive/controller/reach_arm"))
@@ -501,18 +501,6 @@ class VehicleUIWidget(QWidget):
     def initializeButtonCallback(self, event):
         self.serviceEmptyImpl("drive/controller/initialize")
         self.serviceEmptyImpl('drive/operation/initialize')
-
-    def graspButtonCallback(self, event):
-        self.serviceEmptyImpl("drive/controller/grasp")
-        self.synchronizeJoyController("handle")
-        
-    def correctButtonCallback(self, event):
-        self.serviceEmptyImpl("drive/controller/correct")
-        self.synchronizeJoyController("handle")
-
-    def approachAccelLegCallback(self, event):
-        self.serviceEmptyImpl("drive/controller/approach_accel")
-        self.synchronizeJoyController("accel")
         
     def setExecuteFlagCallback(self, pressed):
         pub_msg = Bool()
@@ -695,7 +683,6 @@ class VehicleUIWidget(QWidget):
                 self.step_max_edit.setText(str(self.step_max_value))
 
     def overwriteButtonCallback(self, event):
-        self.setControllerMode("handle", "Stop")
         current_handle = float(self.overwrite_edit.text())
         next_value = self.callSetValueService('drive/controller/overwrite_handle_angle', current_handle)
         if next_value != None:
