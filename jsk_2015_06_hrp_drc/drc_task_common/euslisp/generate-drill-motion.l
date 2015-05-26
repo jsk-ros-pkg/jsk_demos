@@ -1087,6 +1087,7 @@
       (when real? (send *ri* :set-ref-force #f(0 0 -20) 2000 *drill-main-arm*))
       ;; first try
       ;; pre-push1
+      (multisense-right-down)
       (cond ((or (equal *robot-name* "HRP2JSKNT") (equal *robot-name* "HRP2JSKNTS"))
              (cond ((equal *drill-button-point* :attachment)
                     (drill-full-grasp :arm :arms))
@@ -1132,9 +1133,10 @@
         (let ((request-service-name (if (equal *drill-main-arm* :rarm) "/rarm_get_button_state" "/larm_get_button_state")))
           (if (send (ros::service-call request-service-name req) :success)
               (progn (speak-en "button succeeded")
-                   (return-from send-drill-button-motion :success) 
+                     (send *robot* :angle-vector (get-watch-drill-pose2))
+                     (model2real :time 3000)
+                     (return-from send-drill-button-motion :success))
                    (speak-en "button failes"))
-            )
           )
         )
       ;; second try
@@ -1165,16 +1167,16 @@
       (when (boundp '*irtviewer*) (send *irtviewer* :draw-objects))
       (when real? (model2real :time 2000))
       (when (or (equal *robot-name* "HRP2JSKNTS") (equal *robot-name* "HRP2JSKNT"))
+        (send *robot* :angle-vector (get-watch-drill-pose2))
+        (model2real :time 3000)
         (unix::sleep 4)
         (let ((request-service-name (if (equal *drill-main-arm* :rarm) "/rarm_get_button_state" "/larm_get_button_state")))
           (if (send (ros::service-call request-service-name req) :success)
               (progn (speak-en "button succeeded")
                      (return-from send-drill-button-motion :success) 
                      (speak-en "button failes"))
+            )
           )
-          )
-        (send *robot* :angle-vector (get-watch-drill-pose2))
-        (model2real :time 3000)
         )
       )
     ))
@@ -1759,7 +1761,14 @@
     )
   )
 
-
+(defun multisense-right-up
+  ()
+  (ros::set-dynamic-reconfigure-param "/multisense" "light" :bool nil)
+  )
+(defun multisense-right-down
+  ()
+  (ros::set-dynamic-reconfigure-param "/multisense" "light" :bool nil)
+  )
 (defun check-diff-angle
   ()
   (* (rad2deg (elt (car (send (send  (send (gethash *drill-main-arm* *arm-drill-grasp-coords*) :copy-worldcoords) :transformation (send (send *drill* :get :grasp-coords-true) :copy-worldcoords)) :rpy-angle)) 0)) (if *drill-reverse-hand* -1 1))
