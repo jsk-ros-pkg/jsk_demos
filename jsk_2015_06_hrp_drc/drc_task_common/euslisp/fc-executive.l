@@ -114,6 +114,8 @@
                 self :hrpsys-start-imp-command-soft-cb)
           (list drc_com_common::OCS2FCSmall::*HRPSYS_START_IMP_HARD*
                 self :hrpsys-start-imp-command-hard-cb)
+          (list drc_com_common::OCS2FCSmall::*HRPSYS_RESET_FORCE_OFFSET*
+                self :hrpsys-reset-force-offset-cb)
           (list drc_com_common::OCS2FCSmall::*HRPSYS_STOP_ABC*
                 self :hrpsys-stop-abc-command-cb)
           (list drc_com_common::OCS2FCSmall::*HRPSYS_STOP_ST*
@@ -1136,6 +1138,9 @@ It sends :angle-vector to robot and return 'finished' message to ocs"
     (send self :send-rviz-button-finished-to-ocs))
   (:hrpsys-start-imp-command-hard-cb (msg)
     (start-hard-impedance)
+    (send self :send-rviz-button-finished-to-ocs))
+  (:hrpsys-reset-force-offset-cb (msg)
+    (send *ri* :reset-force-moment-offset-arms)
     (send self :send-rviz-button-finished-to-ocs))
   (:hrpsys-stop-abc-command-cb (msg)
     ;(send *ri* :stop-auto-balancer)
