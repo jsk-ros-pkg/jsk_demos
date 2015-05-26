@@ -1173,6 +1173,8 @@
                      (speak-en "button failes"))
           )
           )
+        (send *robot* :angle-vector (get-watch-drill-pose2))
+        (model2real :time 3000)
         )
       )
     ))
@@ -1925,6 +1927,19 @@
     angle-ret
     )
   )
+
+(defun get-watch-drill-pose2 ()
+  (if (or (equal *robot-name* "HRP2JSKNTS") (equal *robot-name* "HRP2JSKNT"))
+      (progn
+        (send *robot* :angle-vector #f(0.0 0.0 -26.0 50.0 -24.0 0.0 0.0 0.0 0.0 -26.0 50.0 -24.0 0.0 0.0 0.0 0.0 -13.4395 15.0784 -84.1367 -0.425352 13.4642 -45.0732 -105.118 -20.542 77.6712 60.0 40.0869 75.2885 11.7308 -117.757 -18.2568 65.0121 0.945275 -60.0))
+        (when (equal *drill-main-arm* :larm) (setq angle-ret (get-mirror-angle-vector)))
+        )
+    (get-watch-drill-pose)
+    )
+  (send *robot* :angle-vector)
+  )
+
+
 
 (defun test-drill-button-motion-reachability
   ()
