@@ -293,6 +293,7 @@
   (:overwrite-handle-angle-callback
    (req)
    (let ((res (send req :response)) (pub-msg (instance std_msgs::Float32 :init)))
+     (send self :controller-mode :handle :stop)
      (send pub-msg :data (send res :set_value (send motion :overwrite-handle-angle (send req :value))))
      (setq old-estimated-handle-angle (send req :value))
      (send self :estimate-current-handle-angle) ;; update estimated handle angle
@@ -352,6 +353,7 @@
        (warn "handle is not approached~%")
        (return-from :grasp nil) ;; prevent to crash
        )
+     (send self :controller-mode :handle :stop)
      (setq grasp-result (send* motion :grasp-handle args))
      (when grasp-result
        ;; update goal_handle_angle to current handle
@@ -456,6 +458,7 @@
    )
   (:approach-accel
    (&rest args &key (limb :rleg) (sync-controller (equal (send self :controller-state :accel) :running)) &allow-other-keys)
+   (send self :controller-mode :accel :stop)
    (send* motion :approach-accel-pedal :limb limb :sync-controller sync-controller args)
    (send self :accel-origin (send motion :robot limb :ankle-p :joint-angle))
    (send self :controller-state :accel :approach) ;; enbale accel
