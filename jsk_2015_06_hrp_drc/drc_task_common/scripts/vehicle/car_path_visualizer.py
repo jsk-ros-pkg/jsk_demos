@@ -69,8 +69,8 @@ class CarPathVisualizer:
             vel_norm/=numpy.linalg.norm(vel_norm)
             l_p = p + vel_norm * (self.tread/2.0)
             r_p = p - vel_norm * (self.tread/2.0)
-            l_point_array.append(Point( (self.pos[0]+l_p[0]-1.03), (self.pos[1]+l_p[1]), self.pos[2]))
-            r_point_array.append(Point( (self.pos[0]+r_p[0]-1.03), (self.pos[1]+r_p[1]), self.pos[2]))
+            l_point_array.append(Point( (self.pos[0]+l_p[0]-0.75), (self.pos[1]+l_p[1]), self.pos[2]))
+            r_point_array.append(Point( (self.pos[0]+r_p[0]-0.75), (self.pos[1]+r_p[1]), self.pos[2]))
 
         marker_left = Marker(header=std_msgs.msg.Header(frame_id="BODY"), type = Marker.LINE_STRIP, action = Marker.ADD, colors = [std_msgs.msg.ColorRGBA(1, 0.3, 0, 0.5)]*self.curve_length, scale = Vector3(0.2, 1, 1), points = l_point_array, id = 2, ns = "left_wheel")
         marker_array_msg.markers.append(marker_left)
