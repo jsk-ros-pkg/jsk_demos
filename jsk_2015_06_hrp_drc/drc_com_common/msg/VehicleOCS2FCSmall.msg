@@ -25,6 +25,8 @@ bool set_min_step_request
 float32 set_min_step_request_value
 bool overwrite_handle_angle_request
 float32 overwrite_handle_angle_request_value
+bool set_real_request
+uint8 set_real_request_value
 
 bool set_handle_mode_request
 uint8 set_handle_mode_request_value
@@ -32,12 +34,3 @@ bool set_accel_mode_request
 uint8 set_accel_mode_request_value
 bool set_neck_mode_request
 uint8 set_neck_mode_request_value
-bool set_real_request
-uint8 set_real_request_value
-
-bool operation_initialize_response
-bool operation_synchronize_all_response
-bool operation_synchronize_handle_response
-bool operation_synchronize_accel_response
-bool operation_synchronize_neck_response
-
