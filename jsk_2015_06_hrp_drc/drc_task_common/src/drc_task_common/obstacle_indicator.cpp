@@ -48,8 +48,8 @@ public:
     server.setCallback(f);
     steering_angle = 0;
     empty_flag = false;
-    a = 0.031139;
-    play = 0.261799;
+    a = 0.0258676;
+    play = 0.60952311;
     b = - a * play;
   }
   ~ObstacleIndicator(){
