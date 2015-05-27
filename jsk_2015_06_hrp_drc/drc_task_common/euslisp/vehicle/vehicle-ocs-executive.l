@@ -202,7 +202,7 @@
 (ros::advertise-service "/ocs/drive/controller/set_neck_mode" drc_task_common::StringRequest #'send *set-neck-mode-service-server* :callback)
 (ros::advertise-service "/ocs/drive/controller/set_real" drc_task_common::Uint8Request #'send *set-real-service-server* :callback)
 
-(ros::rate 10)
+(ros::rate 5)
 (while (ros::ok)
   (ros::spin-once)
   (main-spin-once)
