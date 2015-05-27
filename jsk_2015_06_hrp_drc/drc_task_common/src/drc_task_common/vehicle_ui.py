@@ -77,8 +77,10 @@ class VehicleUIWidget(QWidget):
         self.setLayout(root_hbox)
         self.setupSubscribers()
         self.show()
+
     def service(self, name):
         return lambda x: self.serviceEmptyImpl(name)
+        
     def serviceEmptyImpl(self, name):
         srv = rospy.ServiceProxy(name, Empty)
         try:
@@ -86,25 +88,31 @@ class VehicleUIWidget(QWidget):
         except rospy.ServiceException, e:
             self.showError("Failed to call %s" % name)
 
+    def synchronizeJoyController(self, target):
+        try:
+            sync_joy = rospy.ServiceProxy('drive/operation/synchronize', StringRequest)
+            sync_joy(target)
+        except rospy.ServiceException, e:
+            self.showError("Failed to call drive/operation/synchronize " + target)
+    def setControllerMode(self, target, mode):
+        try:
+            update_mode = rospy.ServiceProxy("drive/controller/set_" + target + "_mode", StringRequest)
+            update_mode(mode)
+        except rospy.ServiceException, e:
+            self.showError("drive/controller/set_" + target + "_mode")
+            
     def handleModeClickedCallback(self, item):
-        try:
-            update_mode = rospy.ServiceProxy('drive/controller/set_handle_mode', StringRequest)
-            update_mode(item.text())
-        except rospy.ServiceException, e:
-            self.showError("Failed to call drive/controller/set_handle_mode")
+        self.synchronizeJoyController("handle")
+        self.setControllerMode("handle", item.text())
+        
     def accelModeClickedCallback(self, item):
-        try:
-            update_mode = rospy.ServiceProxy('drive/controller/set_accel_mode', StringRequest)
-            update_mode(item.text())
-        except rospy.ServiceException, e:
-            self.showError("Failed to call drive/controller/set_accel_mode")
+        self.synchronizeJoyController("accel")
+        self.setControllerMode("accel", item.text())
+
     def neckModeClickedCallback(self, item):
-        try:
-            update_mode = rospy.ServiceProxy('drive/controller/set_neck_mode', StringRequest)
-            update_mode(item.text())
-        except rospy.ServiceException, e:
-            self.showError("Failed to call drive/controller/set_neck_mode")
-    
+        self.synchronizeJoyController("neck")
+        self.setControllerMode("neck", item.text())
+        
     def setUpLeftBox(self, left_vbox):
 
         execute_vbox = QtGui.QVBoxLayout(self)
@@ -173,10 +181,10 @@ class VehicleUIWidget(QWidget):
         self.is_correct_executing = False
         self.resume_button = QtGui.QPushButton("Resume Handle Pose")
         self.is_resume_executing = False        
-        self.initialize_button.clicked.connect(self.service("drive/controller/initialize"))
-        self.grasp_button.clicked.connect(self.service("drive/controller/grasp"))
+        self.initialize_button.clicked.connect(self.initializeButtonCallback) # needs to be initialize joy
+        self.grasp_button.clicked.connect(self.service("drive/controller/grasp")) # needs to be synchronize joy
         self.release_button.clicked.connect(self.service("drive/controller/release"))
-        self.correct_button.clicked.connect(self.service("drive/controller/correct"))
+        self.correct_button.clicked.connect(self.service("drive/controller/correct")) # needs to be synchronize joy
         self.resume_button.clicked.connect(self.service("drive/controller/resume"))
         action_vbox.addWidget(self.initialize_button)
         action_vbox.addWidget(self.grasp_button)
@@ -195,7 +203,7 @@ class VehicleUIWidget(QWidget):
         approachHandleArmAction.triggered.connect(self.service("drive/controller/approach_handle"))
         menu.addAction(approachHandleArmAction)
         approachAccelLegAction = QAction("Approach Accel Leg", self)
-        approachAccelLegAction.triggered.connect(self.service("drive/controller/approach_accel"))
+        approachAccelLegAction.triggered.connect(self.service("drive/controller/approach_accel")) # needs to be synchronize joy
         menu.addAction(approachAccelLegAction)
         approachSupportArmAction = QAction("Approach Support Arm", self)
         approachSupportArmAction.triggered.connect(self.service("drive/controller/reach_arm"))
@@ -213,7 +221,7 @@ class VehicleUIWidget(QWidget):
         overwrite_group = QtGui.QGroupBox("", self)
         self.overwrite_button = QtGui.QPushButton("Overwrite")
         self.is_overwrite_executing = False
-        self.overwrite_button.clicked.connect(self.overwriteButtonCallback)
+        self.overwrite_button.clicked.connect(self.overwriteButtonCallback) # needs to be synchronize joy
         self.overwrite_edit = QtGui.QLineEdit()
         self.overwrite_edit.setText("0.0")
         self.overwrite_edit.setValidator(QtGui.QDoubleValidator(-540, 540, 10))
@@ -488,8 +496,12 @@ class VehicleUIWidget(QWidget):
             palette.setColor(QtGui.QPalette.Background,QtCore.Qt.green)
             label.setPalette(palette)
         else:
-           label.setAutoFillBackground(False);       
+           label.setAutoFillBackground(False);
 
+    def initializeButtonCallback(self, event):
+        self.serviceEmptyImpl("drive/controller/initialize")
+        self.serviceEmptyImpl('drive/operation/initialize')
+        
     def setExecuteFlagCallback(self, pressed):
         pub_msg = Bool()
         with self.lock:
@@ -523,6 +535,7 @@ class VehicleUIWidget(QWidget):
             if self.step_max_value != msg.data:
                 self.step_max_value = msg.data
                 self.step_max_edit.setText(str(self.step_max_value))
+
     def handleModeCallback(self, msg):
         with self.lock:
             for i in range(self.handle_mode_list.count()):

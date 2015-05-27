@@ -16,9 +16,6 @@ uint8 handle_mode # drive/controller/handle_mode
 uint8 accel_mode # drive/controller/accel_mode
 uint8 neck_mode # drive/controller/neck_mode
 
-# from recognition
-float32 obstacle_length
-
 # to vehicle_ui
 bool initialize_response
 bool grasp_response
@@ -33,15 +30,11 @@ bool egress_response
 bool set_max_step_response
 bool set_min_step_response
 bool overwrite_handle_angle_response
+bool set_real_response
 
 bool set_handle_mode_response
 bool set_accel_mode_response
 bool set_neck_mode_response
-bool set_real_response
 
-# to controller
-bool operation_initialize_request
-bool operation_synchronize_all_request
-bool operation_synchronize_handle_request
-bool operation_synchronize_accel_request
-bool operation_synchronize_neck_request
+# from recognition
+float32 obstacle_length

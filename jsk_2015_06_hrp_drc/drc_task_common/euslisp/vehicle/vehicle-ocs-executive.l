@@ -31,8 +31,6 @@
 (setq *set-accel-mode-service-server* (instance set-controller-mode-service-server :init "/ocs/drive/controller/set_accel_mode"))
 (setq *set-neck-mode-service-server* (instance set-controller-mode-service-server :init "/ocs/drive/controller/set_neck_mode"))
 (setq *set-real-service-server* (instance set-uint8-service-server :init "/ocs/drive/controller/set_real"))
-(setq *operation-initialize-service-client* (instance empty-service-client :init "/ocs/drive/operation/initialize"))
-(setq *operation-synchronize-service-client* (instance operation-synchronize-service-client :init "/ocs/drive/operation/synchronize"))
 
 (defun execute-flag-callback (msg)
   (setq *latest-execute-flag* (send msg :data))
@@ -107,13 +105,6 @@
     (send *set-accel-mode-service-server* :receive (send msg :set_accel_mode_response))
     (send *set-neck-mode-service-server* :receive (send msg :set_neck_mode_response))
     (send *set-real-service-server* :receive (send msg :set_real_response))
-    (send *operation-initialize-service-client* :call (send msg :operation_initialize_request))
-    (send *operation-synchronize-service-client* :call (list (send msg :operation_synchronize_all_request)
-                                                             (send msg :operation_synchronize_handle_request)
-                                                             (send msg :operation_synchronize_accel_request)
-                                                             (send msg :operation_synchronize_neck_request)
-                                                             )
-          )
     )
   )
 
@@ -159,11 +150,6 @@
     (send msg :set_neck_mode_request_value (send *set-neck-mode-service-server* :request_value))
     (send msg :set_real_request (send *set-real-service-server* :request))
     (send msg :set_real_request_value (send *set-real-service-server* :request_value))
-    (send msg :operation_initialize_response (send *operation-initialize-service-client* :response))
-    (send msg :operation_synchronize_all_response (elt (send *operation-synchronize-service-client* :response) 0))
-    (send msg :operation_synchronize_handle_response (elt (send *operation-synchronize-service-client* :response) 1))
-    (send msg :operation_synchronize_accel_response (elt (send *operation-synchronize-service-client* :response) 2))
-    (send msg :operation_synchronize_neck_response (elt (send *operation-synchronize-service-client* :response) 3))
     (when *vehicle-ocs-executive-enable-flag*
       (ros::publish "/ocs_to_fc_vehicle/input" msg)
       )
@@ -216,7 +202,7 @@
 (ros::advertise-service "/ocs/drive/controller/set_neck_mode" drc_task_common::StringRequest #'send *set-neck-mode-service-server* :callback)
 (ros::advertise-service "/ocs/drive/controller/set_real" drc_task_common::Uint8Request #'send *set-real-service-server* :callback)
 
-(ros::rate 10)
+(ros::rate 5)
 (while (ros::ok)
   (ros::spin-once)
   (main-spin-once)
