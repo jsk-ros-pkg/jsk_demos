@@ -1,6 +1,8 @@
 #!/usr/bin/env roseus
 
+
 (ros::roseus "joint_states_storage")
+(ros::roseus-add-msgs "jsk_footstep_msgs")
 (ros::roseus-add-msgs "drc_task_common")
 (ros::roseus-add-msgs "sensor_msgs")
 (load "package://drc_task_common/euslisp/robot-util.l")
