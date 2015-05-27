@@ -570,7 +570,7 @@ class VehicleUIWidget(QWidget):
     def obstacleLengthCallback(self, msg):
         with self.lock:
             self.obstacle_length_value = msg.data
-            self.obstacle_length_value_label.setText(str(int(msg.data)))
+            self.obstacle_length_value_label.setText(str(round(msg.data, 2)))
 
     def realCallback(self, msg):
         self.real_msg = msg
