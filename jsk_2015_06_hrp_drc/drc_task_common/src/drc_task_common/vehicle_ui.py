@@ -366,19 +366,8 @@ class VehicleUIWidget(QWidget):
         angle_container = QtGui.QWidget()
         self.goal_angle = AngleWidget("drive/controller/goal_handle_angle")
         self.estimated_angle = AngleWidget("drive/controller/estimated_handle_angle")
-        angle_vbox.addWidget(self.goal_angle, 5)
-        angle_vbox.addWidget(self.estimated_angle, 5)
-        handle_diff_av_hbox = QtGui.QHBoxLayout()
-        handle_diff_av_container = QtGui.QWidget()
-        self.handle_diff_av_value = 0.0
-        handle_diff_av_label = QtGui.QLabel("Steering Diff Angle Vector:", self)
-        handle_diff_av_label.setFont(font)
-        self.handle_diff_av_value_label = QtGui.QLabel(str(self.handle_diff_av_value))
-        self.handle_diff_av_value_label.setFont(font)
-        handle_diff_av_hbox.addWidget(handle_diff_av_label)
-        handle_diff_av_hbox.addWidget(self.handle_diff_av_value_label)
-        handle_diff_av_container.setLayout(handle_diff_av_hbox)
-        angle_vbox.addWidget(handle_diff_av_container, 1)
+        angle_vbox.addWidget(self.goal_angle, 10)
+        angle_vbox.addWidget(self.estimated_angle, 10)
         angle_container.setLayout(angle_vbox)
 
         obstacle_length_hbox = QtGui.QHBoxLayout()
@@ -451,8 +440,6 @@ class VehicleUIWidget(QWidget):
             "drive/controller/accel_mode", std_msgs.msg.String, self.accelModeCallback)
         self.neck_mode_sub = rospy.Subscriber(
             "drive/controller/neck_mode", std_msgs.msg.String, self.neckModeCallback)
-        self.handle_angle_vector_diff_sub = rospy.Subscriber(
-            "drive/controller/steering_diff_angle_vector", std_msgs.msg.Float32, self.steeringDiffAngleVectorCallback)
         self.obstacle_length_sub = rospy.Subscriber(
             "drive/recognition/obstacle_length/indicator", std_msgs.msg.Float32, self.obstacleLengthCallback) 
         self.real_sub = rospy.Subscriber(
@@ -565,28 +552,6 @@ class VehicleUIWidget(QWidget):
                     item.setBackground(QtGui.QColor("#18FFFF"))
                 else:
                     item.setBackground(QtCore.Qt.white)
-    def steeringDiffAngleVectorCallback(self, msg):
-        with self.lock:
-            if self.handle_diff_av_value != msg.data:
-                self.handle_diff_av_value = msg.data
-                self.handle_diff_av_value_label.setText(str(int(msg.data)))
-                if abs(float(self.handle_diff_av_value)) > 40.0: # threshould
-                     self.handle_diff_av_value_label.setAutoFillBackground(True);
-                     palette = QtGui.QPalette()
-                     palette.setColor(QtGui.QPalette.Background,QtCore.Qt.red)
-                     self.handle_diff_av_value_label.setPalette(palette)
-                elif abs(float(self.handle_diff_av_value)) > 15.0: # threshould
-                     self.handle_diff_av_value_label.setAutoFillBackground(True);
-                     palette = QtGui.QPalette()
-                     palette.setColor(QtGui.QPalette.Background,QtCore.Qt.yellow)
-                     self.handle_diff_av_value_label.setPalette(palette)
-                elif abs(float(self.handle_diff_av_value)) > 5.0: # threshould
-                     self.handle_diff_av_value_label.setAutoFillBackground(True);
-                     palette = QtGui.QPalette()
-                     palette.setColor(QtGui.QPalette.Background,QtCore.Qt.green)
-                     self.handle_diff_av_value_label.setPalette(palette)
-                else:
-                    self.handle_diff_av_value_label.setAutoFillBackground(False);
     def obstacleLengthCallback(self, msg):
         with self.lock:
             self.obstacle_length_value = msg.data

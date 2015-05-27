@@ -14,7 +14,6 @@
 (setq *latest-max-step* nil)
 (setq *latest-neck-y-angle* nil)
 (setq *latest-neck-p-angle* nil)
-(setq *latest-steering-diff-angle-vector* nil)
 (setq *latest-handle-mode* nil)
 (setq *latest-accel-mode* nil)
 (setq *latest-neck-mode* nil)
@@ -91,9 +90,6 @@
 (defun neck-p-angle-callback (msg)
   (setq *latest-neck-p-angle* (send msg :data))
   )
-(defun steering-diff-angle-vector-callback (msg)
-  (setq *latest-steering-diff-angle-vector* (send msg :data))
-  )
 (defun handle-mode-callback (msg)
   (print (send msg :data))
   (setq *latest-handle-mode* (convert-mode-to-uint8 (send msg :data)))
@@ -133,9 +129,6 @@
       )
     (when *latest-neck-p-angle*
       (send msg :neck_p_angle *latest-neck-p-angle*)
-      )
-    (when *latest-steering-diff-angle-vector*
-      (send msg :steering_diff_angle_vector *latest-steering-diff-angle-vector*)
       )
     (when *latest-handle-mode*
       (send msg :handle_mode *latest-handle-mode*)
@@ -195,11 +188,12 @@
 (ros::subscribe "/drive/controller/max_step" std_msgs::Float32 #'max-step-callback)
 (ros::subscribe "/drive/controller/neck_y_angle" std_msgs::Float32 #'neck-y-angle-callback)
 (ros::subscribe "/drive/controller/neck_p_angle" std_msgs::Float32 #'neck-p-angle-callback)
-(ros::subscribe "/drive/controller/steering_diff_angle_vector" std_msgs::Float32 #'steering-diff-angle-vector-callback)
+(ros::subscribe "/drive/controller/real" std_msgs::Bool #'real-callback)
+
 (ros::subscribe "/drive/controller/handle_mode" std_msgs::String #'handle-mode-callback)
 (ros::subscribe "/drive/controller/accel_mode" std_msgs::String #'accel-mode-callback)
 (ros::subscribe "/drive/controller/neck_mode" std_msgs::String #'neck-mode-callback)
-(ros::subscribe "/drive/controller/real" std_msgs::Bool #'real-callback)
+
 (ros::subscribe "/drive/recognition/obstacle_length/indicator" std_msgs::Float32 #'obstacle-length-callback)
 
 (ros::rate 5)
