@@ -23,8 +23,8 @@
    (send-super :init :motion tmp-motion
                :real tmp-real :rate tmp-ros-rate :roseus-init nil
                )
-   (send self :step-accel-command -50.0)
-   (send self :release-accel-command 0.0)
+   (send self :step-accel-command -10.0)
+   (send self :release-accel-command 10.0)
    ;; (send self :accel-origin 0.0)
    )
   (:initialize

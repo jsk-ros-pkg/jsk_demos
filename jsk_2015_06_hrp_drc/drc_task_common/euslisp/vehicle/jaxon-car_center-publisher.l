@@ -46,7 +46,7 @@
                     :freq 10
                     :cur_tf (instance geometry_msgs::TransformStamped :init
                                       :header (instance std_msgs::Header :init
-                                                        :stamp (ros::time 0)
+                                                        :stamp (ros::time-now)
                                                         :frame_id "BODY")
                                       :child_frame_id "car_marker"
                                       :transform trans)))

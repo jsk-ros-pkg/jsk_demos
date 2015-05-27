@@ -384,6 +384,28 @@
       (send* self :register-callback spec)))
   )
 
+(defun footstep-array->vector (footstep-array float-length integer-length)
+  (let ((footstep-coords (mapcar #'(lambda (f)
+                                     (ros::tf-pose->coords (send f :pose)))
+                                 (send footstep-array :footsteps))))
+    (let ((integer-vector-ret (instantiate integer-vector integer-length)))
+      (dotimes (i (length (send footstep-array :footsteps)))
+        (setf (elt integer-vector-ret i) (send (elt (send footstep-array :footsteps) i) :leg)))
+      (list (coords-set-to-float-vector footstep-coords float-length)
+            integer-vector-ret))))
+
+(defun vector->footstep-array (float-footsteps int-footsteps)
+  (let ((ret (instance jsk_footstep_msgs::FootstepArray :init)))
+    (let ((coords-set (float-vector-to-coords-set float-footsteps)))
+      (dotimes (i (length coords-set))
+        (let ((footstep (instance jsk_footstep_msgs::Footstep :init)))
+          (send footstep :pose (ros::coords->tf-pose (elt coords-set i)))
+          (send footstep :leg (elt int-footsteps i))
+          (send ret
+                :footsteps (append (send ret :footsteps)
+                                   (list footstep))))))
+    ret))
+
 ;; class to synchronize foreground rect topic and
 ;; background rect topic
 (defclass foreground-background-synchronizer
