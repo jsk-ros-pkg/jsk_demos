@@ -8,13 +8,29 @@ import math
 
 from jsk_tools.sanity_lib import (okMessage, errorMessage, warnMessage,
                                   checkTopicIsPublished)
-
+from std_msgs.msg import Time
 from sensor_msgs.msg import PointCloud2, Image
 from pcl_msgs.msg import PointIndices
 
 if __name__ == "__main__":
     rospy.init_node("chesk_sanity_fc")
-    
+    checkTopicIsPublished(
+        "/highspeed_streamer/last_send_time",
+        Time,
+        "Silverhammer highspeed protocol is working",
+        "Silverhammer highspeed protocol is not working")
+    checkTopicIsPublished(
+        "/fc_from_ocs_low_speed/last_received_time",
+        Time,
+        "Silverhammer lowspeed protocol is working",
+        "Silverhammer lowspeed protocol is not working",
+        5,
+        [["/fc_from_ocs_reconfigure/last_received_time", Time],
+         ["/fc_from_ocs_vehicle/last_received_time", Time],
+         ["/fc_from_ocs_eus/last_received_time", Time],
+         ["/fc_to_ocs_eus/last_send_time", Time],
+         ["/fc_to_ocs_low_speed/last_send_time", Time],
+         ["/fc_to_ocs_basic_low_speed/last_send_time", Time]])
     checkTopicIsPublished(
         "/laser_preprocess/tilt_laser_listener/output_cloud",
         PointCloud2,
