@@ -8,7 +8,7 @@ find_package(catkin REQUIRED COMPONENTS
   roseus)
 
 add_message_files(FILES
-  FC2OCSLarge.msg FC2OCSSmall.msg OCS2FCSmall.msg
+  FC2OCSLarge.msg FC2OCSLargeReliable.msg FC2OCSSmall.msg OCS2FCSmall.msg
   FC2OCSBasicInfoSmall.msg
   VehicleOCS2FCSmall.msg
   VehicleFC2OCSSmall.msg

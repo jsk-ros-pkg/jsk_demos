@@ -22,6 +22,18 @@
       packet_size: 1472
     </rosparam>
   </node>
+  <node pkg="jsk_network_tools" type="silverhammer_highspeed_streamer.py"
+        output="log"
+        name="highspeed_streamer_reliable">
+    <rosparam subst_value="true">
+      message: drc_com_common/FC2OCSLargeReliable
+      to_port: 16486
+      to_ip: "$(arg OCS_IP)"
+      send_rate: 10
+      bandwidth: 280000000
+      packet_size: 1472
+    </rosparam>
+  </node>
   
   <node pkg="jsk_network_tools" type="silverhammer_lowspeed_receiver.py"
         output="log" launch-prefix="sudo"
