@@ -1,7 +1,8 @@
 uint8 type
 uint8 seq
 # Parameters
-float32[32] params
+int32[21] int_params
+float32[128] params
 bool success
 
 # type
@@ -57,3 +58,9 @@ uint8 RECOGNITION_FAILED=20
 # when type==GO_POS_POSE,
 # params = [x, y, z, yaw, pitch, roll]
 # unit is mm.
+
+uint8 PROJECTED_FOOTSTEP=30
+uint8 LOOK_GROUND_FINISHED=31
+uint8 EXECUTE_FOOTSTEPS_FINISHED=32
+uint8 FOOTSTEP_PLANNING_RESULT=33
+uint8 FOOTSTEP_PLANNING_FAILED=34

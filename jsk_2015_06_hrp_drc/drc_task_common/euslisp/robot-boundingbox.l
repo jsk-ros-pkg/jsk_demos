@@ -3,6 +3,7 @@
 (ros::roseus-add-msgs "jsk_recognition_msgs")
 (ros::roseus-add-srvs "sensor_msgs")
 (ros::roseus "robot_bbox")
+(ros::roseus-add-msgs "jsk_footstep_msgs")
 (load "package://drc_task_common/euslisp/util.l")
 (load "package://drc_task_common/euslisp/robot-util.l")
 ;; publish bounding box of robot

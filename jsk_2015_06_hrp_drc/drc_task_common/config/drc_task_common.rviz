@@ -4,7 +4,11 @@ Panels:
     Name: Displays
     Property Tree Widget:
       Expanded:
+        - /Global Options1
+        - /Camera1
         - /Camera1/Visibility1
+        - /SimpleOccupancyGridArray1
+        - /Footstep1
       Splitter Ratio: 0.626363
     Tree Height: 609
   - Class: rviz/Selection
@@ -25,7 +29,7 @@ Panels:
     Experimental: false
     Name: Time
     SyncMode: 0
-    SyncSource: ""
+    SyncSource: LaserCloud
   - Class: jsk_rviz_plugin/TransformableMarkerOperatorAction
     Name: TransformableMarkerOperatorAction
   - Class: drc_task_common/DRCTeleopInterfaceAction
@@ -95,7 +99,7 @@ Visualization Manager:
       Enabled: true
       Invert Rainbow: false
       Max Color: 255; 255; 255
-      Max Intensity: 9666
+      Max Intensity: 9846
       Min Color: 0; 0; 0
       Min Intensity: 201
       Name: LaserCloud
@@ -561,8 +565,7 @@ Visualization Manager:
           Marker Topic: /ocs/communication/drive/recognition/predicted_path/marker
           Name: MarkerArray
           Namespaces:
-            left_wheel: true
-            right_wheel: true
+            {}
           Queue Size: 100
           Value: true
         - Class: jsk_rviz_plugin/TorusArray
@@ -604,7 +607,7 @@ Visualization Manager:
           Shape: Axes
           Topic: /ocs/communication/handle_pose
           Value: true
-      Enabled: true
+      Enabled: false
       Name: Vehicle
     - Class: rviz/Marker
       Enabled: true
@@ -766,18 +769,21 @@ Visualization Manager:
       Transport Hint: raw
       Value: true
       Visibility:
+        Footstep: true
         Grid: false
         Ground: true
+        InteractiveMarkers: true
         LaserCloud: false
         OverlayMenu: false
         OverlayText: false
-        PoseArray: true
-        RobotModel: false
+        PoseArray: false
+        RobotModel: true
         Show State:
           OverlayText: true
-          Value: true
+          Value: false
+        SimpleOccupancyGridArray: false
         StairMarker: true
-        Stereo Cloud: true
+        Stereo Cloud: false
         TF: true
         Value: true
         Vehicle:
@@ -785,13 +791,13 @@ Visualization Manager:
           Pose: true
           TorusArray: true
           Value: true
-        drill button: true
+        drill button: false
         footmarker: false
         furutaractive_model: false
         object approach: true
         objecthandle: true
-        stateimage: true
-        transformable_marker: true
+        stateimage: false
+        transformable_marker: false
       Zoom Factor: 1
     - Class: jsk_rviz_plugin/OverlayImage
       Enabled: true
@@ -812,6 +818,33 @@ Visualization Manager:
       Show Visual Aids: false
       Update Topic: /stair_marker/update
       Value: false
+    - Class: rviz/InteractiveMarkers
+      Enable Transparency: true
+      Enabled: true
+      Name: InteractiveMarkers
+      Show Axes: false
+      Show Descriptions: true
+      Show Visual Aids: false
+      Update Topic: /footstep_marker/update
+      Value: true
+    - Alpha: 1
+      Auto Color: true
+      Class: jsk_rviz_plugin/SimpleOccupancyGridArray
+      Enabled: true
+      Name: SimpleOccupancyGridArray
+      Topic: /locomotion/env_server/output
+      Value: true
+    - Alpha: 0.5
+      Class: jsk_rviz_plugin/Footstep
+      Enabled: true
+      Name: Footstep
+      Show Name: true
+      Topic: /footstep_planner/footstep
+      Use Group Coloring: false
+      Value: true
+      Width: 0.15
+      depth: 0.3
+      height: 0.01
   Enabled: true
   Global Options:
     Background Color: 48; 48; 48
@@ -837,22 +870,22 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/XYOrbit
-      Distance: 10
+      Distance: 6.49802
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.06
         Stereo Focal Distance: 1
         Swap Stereo Eyes: false
         Value: false
       Focal Point:
-        X: 0
-        Y: 0
-        Z: 0
+        X: 3.19908
+        Y: 2.92549
+        Z: -3.32395e-07
       Name: Current View
       Near Clip Distance: 0.01
-      Pitch: 0.410398
+      Pitch: 0.149797
       Target Frame: <Fixed Frame>
       Value: XYOrbit (rviz)
-      Yaw: 1.6154
+      Yaw: 1.73042
     Saved: ~
 Window Geometry:
   Camera:
@@ -876,5 +909,5 @@ Window Geometry:
   Views:
     collapsed: false
   Width: 2511
-  X: 479
-  Y: 71
+  X: 12
+  Y: 24

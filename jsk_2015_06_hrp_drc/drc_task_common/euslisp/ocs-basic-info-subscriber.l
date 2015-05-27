@@ -1,5 +1,5 @@
 #!/usr/bin/env roseus
-
+(ros::roseus-add-msgs "jsk_footstep_msgs")
 (load "package://drc_task_common/euslisp/util.l")
 (load "package://drc_task_common/euslisp/robot-util.l")
 (ros::roseus-add-msgs "drc_com_common")

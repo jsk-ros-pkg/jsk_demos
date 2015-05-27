@@ -95,7 +95,7 @@
 - name: 'drill-rotate-two'
   service: 'drill_rotate_two'
   column: 6
-  default_value: True
 - name: 'drill-rotate-three'
   service: 'drill_rotate_three'
   column: 6
+  default_value: True
