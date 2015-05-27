@@ -85,7 +85,7 @@
   (send *drill* :put :edge-coords
         (make-cascoords
          ;;:coords (make-coords :pos #f(0 0 0) :rpy (list 0 0 0))
-         :coords (make-coords :pos #f(0 0 240) :rpy (list 0 0 0))
+         :coords (make-coords :pos #f(0 0 230) :rpy (list 0 0 0))
          :parent *drill*))
   )
 
@@ -1087,6 +1087,7 @@
       (when real? (send *ri* :set-ref-force #f(0 0 -20) 2000 *drill-main-arm*))
       ;; first try
       ;; pre-push1
+      (multisense-light-down)
       (cond ((or (equal *robot-name* "HRP2JSKNT") (equal *robot-name* "HRP2JSKNTS"))
              (cond ((equal *drill-button-point* :attachment)
                     (drill-full-grasp :arm :arms))
@@ -1132,9 +1133,10 @@
         (let ((request-service-name (if (equal *drill-main-arm* :rarm) "/rarm_get_button_state" "/larm_get_button_state")))
           (if (send (ros::service-call request-service-name req) :success)
               (progn (speak-en "button succeeded")
-                   (return-from send-drill-button-motion :success) 
+                     (send *robot* :angle-vector (get-watch-drill-pose2))
+                     (model2real :time 3000)
+                     (return-from send-drill-button-motion :success))
                    (speak-en "button failes"))
-            )
           )
         )
       ;; second try
@@ -1165,16 +1167,16 @@
       (when (boundp '*irtviewer*) (send *irtviewer* :draw-objects))
       (when real? (model2real :time 2000))
       (when (or (equal *robot-name* "HRP2JSKNTS") (equal *robot-name* "HRP2JSKNT"))
+        (send *robot* :angle-vector (get-watch-drill-pose2))
+        (model2real :time 3000)
         (unix::sleep 4)
         (let ((request-service-name (if (equal *drill-main-arm* :rarm) "/rarm_get_button_state" "/larm_get_button_state")))
           (if (send (ros::service-call request-service-name req) :success)
               (progn (speak-en "button succeeded")
                      (return-from send-drill-button-motion :success) 
                      (speak-en "button failes"))
+            )
           )
-          )
-        (send *robot* :angle-vector (get-watch-drill-pose2))
-        (model2real :time 3000)
         )
       )
     ))
@@ -1500,10 +1502,10 @@
                 (equal i (- (length drill-motion-av-list) 1))
                 )
                (send *robot* :angle-vector (elt drill-motion-av-list i))
-               (when real? (model2real :time 5000))
+               (when real? (model2real :time 3000))
                (setq i (+ i 1)))
               (t
-               (send-angle-vector-sequence-with-time (subseq drill-motion-av-list i (+ i 3)) :time (/ 15000 devide-num))
+               (send-angle-vector-sequence-with-time (subseq drill-motion-av-list i (+ i 3)) :time (/ 12000 devide-num))
                (setq i (+ i 3))
                )
               )
@@ -1759,7 +1761,14 @@
     )
   )
 
-
+(defun multisense-light-up
+  ()
+  (ros::set-dynamic-reconfigure-param "/multisense" "lighting" :bool t)
+  )
+(defun multisense-light-down
+  ()
+  (ros::set-dynamic-reconfigure-param "/multisense" "lighting" :bool nil)
+  )
 (defun check-diff-angle
   ()
   (* (rad2deg (elt (car (send (send  (send (gethash *drill-main-arm* *arm-drill-grasp-coords*) :copy-worldcoords) :transformation (send (send *drill* :get :grasp-coords-true) :copy-worldcoords)) :rpy-angle)) 0)) (if *drill-reverse-hand* -1 1))
@@ -1915,7 +1924,7 @@
         ((or (equal *robot-name* "JAXON") (equal *robot-name* "JAXON_RED"))
          (if *drill-reverse-hand*
              (send *robot* :reset-manip-pose)
-           #f(2.03272 -1.10746 -18.4222 37.4121 -20.1829 0.277957 2.03297 -1.09553 -17.1498 35.9931 -20.0362 0.266026 -0.035991 0.125934 -0.881805 -29.3714 35.9221 17.203 10.8884 -75.6167 -16.7206 -90.815 -46.7448 77.8398 -46.7473 -14.7322 55.1311 42.536 20.5925 -113.521 111.075 -25.9983 27.7244)
+           #f(2.03272 -1.10746 -18.4222 37.4121 -20.1829 0.277957 2.03297 -1.09553 -17.1498 35.9931 -20.0362 0.266026 -0.035991 0.125934 -0.881805 -29.3644 32.0 17.203 10.8884 -75.6167 -16.7206 -90.815 -46.7448 77.8398 -46.7473 -14.7322 55.1311 42.536 20.5925 -113.521 111.075 -25.9983 27.7244)
            )
          )
         (t
@@ -1931,7 +1940,7 @@
 (defun get-watch-drill-pose2 ()
   (if (or (equal *robot-name* "HRP2JSKNTS") (equal *robot-name* "HRP2JSKNT"))
       (progn
-        (send *robot* :angle-vector #f(0.0 0.0 -26.0 50.0 -24.0 0.0 0.0 0.0 0.0 -26.0 50.0 -24.0 0.0 0.0 0.0 0.0 -13.4395 15.0784 -84.1367 -0.425352 13.4642 -45.0732 -105.118 -20.542 77.6712 60.0 40.0869 75.2885 11.7308 -117.757 -18.2568 65.0121 0.945275 -60.0))
+        (send *robot* :angle-vector #f(0.0 0.0 -26.0 50.0 -24.0 0.0 0.0 0.0 0.0 -26.0 50.0 -24.0 0.0 0.0 0.0 0.0 -13.4395 10.0 -84.1367 -0.425352 13.4642 -45.0732 -105.118 -20.542 77.6712 60.0 40.0869 75.2885 11.7308 -117.757 -18.2568 65.0121 0.945275 -60.0))
         (when (equal *drill-main-arm* :larm) (setq angle-ret (get-mirror-angle-vector)))
         )
     (get-watch-drill-pose)

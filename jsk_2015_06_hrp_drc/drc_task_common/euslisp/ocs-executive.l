@@ -155,7 +155,7 @@
     (setq door-name :drc-lasvegas)
     (setq force-overwrite-door-arm :force)
     (send self :show-text "initialized" :success)
-    (setq drill-rotate-num 2)
+    (setq drill-rotate-num 3)
     (setq drill-stand-coords-index 0)
     (setq ocs-footstep-planner
           (instance ros::simple-action-server :init
