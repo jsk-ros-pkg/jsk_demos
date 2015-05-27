@@ -1,0 +1,5 @@
+<launch>
+  <group ns="ocs">
+    <param name="robot_description" textfile="$(find hrpsys_ros_bridge_tutorials)/models/JAXON_RED_WH_SENSORS.urdf" />
+  </group>
+</launch>

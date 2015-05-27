@@ -5,8 +5,8 @@ uint8 image_type
 uint8 IMAGE_RECT=0
 uint8 PANORAMA_VIEW=1
 uint8 arm_side
-uint32[16] image_roi_info
-float32[36] float_params
+uint32[21] image_roi_info
+float32[128] float_params
 float32[6] stand_coords
 # arm
 uint8 UNDECIDED=0
@@ -112,6 +112,13 @@ uint8 STOP_IMP=58
 uint8 START_IMP_WITH_PARAM=59
 uint8 START_GRASP=60
 uint8 STOP_GRASP=61
-uint8 HRPSYS_RESET_FORCE_OFFSET=62
 
-# next number is 63
+uint8 PROJECT_FOOTPRINT=62
+uint8 EXECUTE_FOOTSTEPS=63
+uint8 LOOK_GROUND=64
+uint8 REQUEST_FOOTSTEP_PLANNING=65
+
+uint8 HRPSYS_RESET_FORCE_OFFSET=66
+
+# next number is 67
+

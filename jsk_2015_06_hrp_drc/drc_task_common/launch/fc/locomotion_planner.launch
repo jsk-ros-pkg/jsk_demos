@@ -26,6 +26,7 @@
           type="footstep_marker"
           name="footstep_marker"
           output="screen"
+          if="false"
           >
       <remap from="~grid_arrays" to="/locomotion/env_server/output" />
       <remap from="~planes_coefficients" to="/locomotion/plane_concatenator/output/coefficients" />
@@ -49,6 +50,7 @@
         foot_size_z: 0.01
       </rosparam>
       <param name="frame_id" value="/ground" />
+
     </node>
     <!-- controller -->
     <node pkg="jsk_footstep_controller"

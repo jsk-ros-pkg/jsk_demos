@@ -1,0 +1,5 @@
+<launch>
+  <machine name="localhost" address="localhost" />
+  <machine name="cmachine" address="jaxonred" />
+  <machine name="vmachine" address="jaxonredvision" env-loader="/home/leus/ros/hydro/devel/env.sh"/>
+</launch>
