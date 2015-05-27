@@ -379,6 +379,10 @@
    )
   (:correct-handle-pose
    (&key (yes nil) (grasp t) (time 2500) (look-at-handle t))
+   (when (send self :controller-state :handle :initialize)
+     (warn ":handle is not initialized~%")
+     (return-from :correct-handle-pose nil) ;; prevent to crash
+     )
    (let (ret-result approach-result grasp-result)
      (setq handle-pose-estimate-flag t)
      (setq ret-result (send self :execute-handle-pose-compensation :yes yes :look-at-handle look-at-handle))

@@ -9,7 +9,6 @@ float32 min_step # drive/controller/min_step
 float32 max_step # drive/controller/max_step
 float32 neck_y_angle # drive/controller/neck_y_angle
 float32 neck_p_angle # drive/controller/neck_p_angle
-float32 steering_diff_angle_vector # drive/controller/steering_diff_angle_vector
 bool real # drive/controller/real
 
 uint8 handle_mode # drive/controller/handle_mode

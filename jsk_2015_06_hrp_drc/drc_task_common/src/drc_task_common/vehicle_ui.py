@@ -242,9 +242,10 @@ class VehicleUIWidget(QWidget):
         step_vbox = QtGui.QVBoxLayout(self)
         step_group = QtGui.QGroupBox("step", self)
         step_max_hbox = QtGui.QHBoxLayout(self)
-        step_max_label = QtGui.QLabel("Max", self)
+        self.step_max_label = QtGui.QLabel("Max", self)
         step_max_vbox = QtGui.QVBoxLayout(self)
         self.step_max_value = -1
+        self.is_set_max_step_executing = False
         self.step_max_up_button = QtGui.QPushButton()
         self.step_max_up_button.setIcon(QIcon.fromTheme("go-up"))
         self.step_max_up_button.clicked.connect(self.maxUpButtonCallback)
@@ -255,7 +256,7 @@ class VehicleUIWidget(QWidget):
         self.step_max_edit.setText(str(self.step_max_value))
         self.step_max_edit.returnPressed.connect(self.maxEditCallback)
         self.step_max_edit.setValidator(QtGui.QDoubleValidator(-200, 200, 10))
-        step_max_hbox.addWidget(step_max_label)
+        step_max_hbox.addWidget(self.step_max_label)
         step_max_vbox.addWidget(self.step_max_up_button)
         step_max_vbox.addWidget(self.step_max_edit)
         step_max_vbox.addWidget(self.step_max_down_button)
@@ -263,8 +264,9 @@ class VehicleUIWidget(QWidget):
         step_vbox.addLayout(step_max_hbox)
 
         step_min_hbox = QtGui.QHBoxLayout(self)
-        step_min_label = QtGui.QLabel("Min", self)
+        self.step_min_label = QtGui.QLabel("Min", self)
         step_min_vbox = QtGui.QVBoxLayout(self)
+        self.is_set_min_step_executing = False
         self.step_min_value = -1
         self.step_min_up_button = QtGui.QPushButton()
         self.step_min_up_button.setIcon(QIcon.fromTheme("go-up"))
@@ -276,7 +278,7 @@ class VehicleUIWidget(QWidget):
         self.step_min_edit.setText(str(self.step_min_value))
         self.step_min_edit.returnPressed.connect(self.minEditCallback)
         self.step_min_edit.setValidator(QtGui.QDoubleValidator(-200, 200, 10))
-        step_min_hbox.addWidget(step_min_label)
+        step_min_hbox.addWidget(self.step_min_label)
         step_min_vbox.addWidget(self.step_min_up_button)
         step_min_vbox.addWidget(self.step_min_edit)
         step_min_vbox.addWidget(self.step_min_down_button)
@@ -364,19 +366,8 @@ class VehicleUIWidget(QWidget):
         angle_container = QtGui.QWidget()
         self.goal_angle = AngleWidget("drive/controller/goal_handle_angle")
         self.estimated_angle = AngleWidget("drive/controller/estimated_handle_angle")
-        angle_vbox.addWidget(self.goal_angle, 5)
-        angle_vbox.addWidget(self.estimated_angle, 5)
-        handle_diff_av_hbox = QtGui.QHBoxLayout()
-        handle_diff_av_container = QtGui.QWidget()
-        self.handle_diff_av_value = 0.0
-        handle_diff_av_label = QtGui.QLabel("Steering Diff Angle Vector:", self)
-        handle_diff_av_label.setFont(font)
-        self.handle_diff_av_value_label = QtGui.QLabel(str(self.handle_diff_av_value))
-        self.handle_diff_av_value_label.setFont(font)
-        handle_diff_av_hbox.addWidget(handle_diff_av_label)
-        handle_diff_av_hbox.addWidget(self.handle_diff_av_value_label)
-        handle_diff_av_container.setLayout(handle_diff_av_hbox)
-        angle_vbox.addWidget(handle_diff_av_container, 1)
+        angle_vbox.addWidget(self.goal_angle, 10)
+        angle_vbox.addWidget(self.estimated_angle, 10)
         angle_container.setLayout(angle_vbox)
 
         obstacle_length_hbox = QtGui.QHBoxLayout()
@@ -449,8 +440,6 @@ class VehicleUIWidget(QWidget):
             "drive/controller/accel_mode", std_msgs.msg.String, self.accelModeCallback)
         self.neck_mode_sub = rospy.Subscriber(
             "drive/controller/neck_mode", std_msgs.msg.String, self.neckModeCallback)
-        self.handle_angle_vector_diff_sub = rospy.Subscriber(
-            "drive/controller/steering_diff_angle_vector", std_msgs.msg.Float32, self.steeringDiffAngleVectorCallback)
         self.obstacle_length_sub = rospy.Subscriber(
             "drive/recognition/obstacle_length/indicator", std_msgs.msg.Float32, self.obstacleLengthCallback) 
         self.real_sub = rospy.Subscriber(
@@ -563,28 +552,6 @@ class VehicleUIWidget(QWidget):
                     item.setBackground(QtGui.QColor("#18FFFF"))
                 else:
                     item.setBackground(QtCore.Qt.white)
-    def steeringDiffAngleVectorCallback(self, msg):
-        with self.lock:
-            if self.handle_diff_av_value != msg.data:
-                self.handle_diff_av_value = msg.data
-                self.handle_diff_av_value_label.setText(str(int(msg.data)))
-                if abs(float(self.handle_diff_av_value)) > 40.0: # threshould
-                     self.handle_diff_av_value_label.setAutoFillBackground(True);
-                     palette = QtGui.QPalette()
-                     palette.setColor(QtGui.QPalette.Background,QtCore.Qt.red)
-                     self.handle_diff_av_value_label.setPalette(palette)
-                elif abs(float(self.handle_diff_av_value)) > 15.0: # threshould
-                     self.handle_diff_av_value_label.setAutoFillBackground(True);
-                     palette = QtGui.QPalette()
-                     palette.setColor(QtGui.QPalette.Background,QtCore.Qt.yellow)
-                     self.handle_diff_av_value_label.setPalette(palette)
-                elif abs(float(self.handle_diff_av_value)) > 5.0: # threshould
-                     self.handle_diff_av_value_label.setAutoFillBackground(True);
-                     palette = QtGui.QPalette()
-                     palette.setColor(QtGui.QPalette.Background,QtCore.Qt.green)
-                     self.handle_diff_av_value_label.setPalette(palette)
-                else:
-                    self.handle_diff_av_value_label.setAutoFillBackground(False);
     def obstacleLengthCallback(self, msg):
         with self.lock:
             self.obstacle_length_value = msg.data
@@ -620,11 +587,27 @@ class VehicleUIWidget(QWidget):
             self.is_overwrite_executing = msg.overwrite_handle_angle_request
         if self.is_egress_executing != msg.egress_request:
             self.setServiceButtonColor(self.egress_button, msg.egress_request)
-            self.is_egress_executing = msg.egress_request            
+            self.is_egress_executing = msg.egress_request
         if self.is_reach_executing != (msg.approach_handle_request or msg.approach_accel_request or msg.reach_arm_request or msg.reach_leg_request):
             self.setServiceButtonColor(self.reach_button,
                                   (msg.approach_handle_request or msg.approach_accel_request or msg.reach_arm_request or msg.reach_leg_request))
             self.is_reach_executing = (msg.approach_handle_request or msg.approach_accel_request or msg.reach_arm_request or msg.reach_leg_request)
+        if self.is_set_max_step_executing != msg.set_max_step_request:
+            self.setBackgroundColorInStepService(self.step_max_label, msg.set_max_step_request)
+            self.is_set_max_step_executing = msg.set_max_step_request
+        if self.is_set_min_step_executing != msg.set_min_step_request:
+            self.setBackgroundColorInStepService(self.step_min_label, msg.set_min_step_request)
+            self.is_set_min_step_executing = msg.set_min_step_request
+
+    def setBackgroundColorInStepService(self, label, value):
+        with self.lock:
+            if value:
+                label.setAutoFillBackground(True);
+                palette = QtGui.QPalette()
+                palette.setColor(QtGui.QPalette.Background,QtCore.Qt.red)
+                label.setPalette(palette)
+            else:
+                label.setAutoFillBackground(False);
 
     def setServiceButtonColor(self, button, data):
         with self.lock:
@@ -632,8 +615,8 @@ class VehicleUIWidget(QWidget):
                 button.setStyleSheet("background-color: red")
             else:
                 button.setStyleSheet("background-color: None")
-            
-    # Event callback
+
+    # Event Callback
     def minUpButtonCallback(self, event):
         current_value = float(self.step_min_edit.text())
         current_value = current_value + 1.0
