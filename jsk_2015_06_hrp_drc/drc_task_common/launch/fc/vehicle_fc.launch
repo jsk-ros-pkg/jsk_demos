@@ -21,7 +21,7 @@
   <!-- eus -->
   <group if="$(arg LAUNCH_EUS)">
     <node pkg="roseus" type="roseus" name="drive_controller"
-          args="$(find drc_task_common)/euslisp/vehicle/$(arg ROBOT)-driving-controller-on-polaris-xp900.l '($(arg ROBOT)-vehicle-main)'" />
+          args="$(find drc_task_common)/euslisp/vehicle/$(arg ROBOT)-driving-controller-on-polaris-xp900.l '($(arg ROBOT)-vehicle-main :real nil)'" />
   </group>
 
   <!-- recognition -->
