@@ -70,6 +70,9 @@
     </rosparam>
     <param name="frame_id" value="/ground" />
   </node>
+  <node pkg="jsk_footstep_controller" type="footstep-overlay-text.l"
+        name="footstep_overlay_text">
+  </node>
   <!-- rviz -->
   <node pkg="rviz" type="rviz" name="operator_rviz" args="-d $(find drc_task_common)/config/drc_task_common.rviz"
         respawn="true"/>

@@ -2070,6 +2070,7 @@
                                                       (send msg :int_params))))
           (send result :result footstep-array)
           (send footstep-array :header :frame_id "ground")
+          (mapcar #'fill-footstep-dimensions (send footstep-array :footsteps))
           (send ocs-footstep-planner :set-succeeded result))
         )
       (send smachine :go-to :initial)))

@@ -558,3 +558,22 @@
           time)
     (send *ri* :wait-interpolation)
   )
+
+(defun fill-footstep-dimensions (footstep)
+  (send footstep :dimensions :z 0.001)
+  (cond
+   ((string= *jaxon* "JAXON")
+    (send footstep :dimensions :x 0.235)
+    (send footstep :dimensions :y 0.135))
+   ((string= *jaxon* "JAXON_RED")
+    (send footstep :dimensions :x 0.235)
+    (send footstep :dimensions :y 0.135))
+   ((string= *jaxon* "HRP2JSK")
+    (send footstep :dimensions :x 0.235)
+    (send footstep :dimensions :y 0.135))
+   ((or (string= *jaxon* "HRP2JSKNT")
+        (string= *jaxon* "HRP2JSKNTS"))
+    (send footstep :dimensions :x 0.245)
+    (send footstep :dimensions :y 0.135))
+   ))
+
