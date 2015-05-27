@@ -43,6 +43,7 @@ namespace drc_task_common
     void callRequestStartIMP();
     void callRequestStartIMPSoft();
     void callRequestStartIMPHard();
+    void callRequestResetForceOffset();
 
     /* void callRequestStopABC(); */
     /* void callRequestStopST(); */

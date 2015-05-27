@@ -47,6 +47,8 @@ namespace drc_task_common
     ui_->hrpsys_start_imp_soft_button->setIcon(QIcon(QPixmap(QString((ros::package::getPath("drc_task_common")+std::string("/icons/start-imp-soft.png")).c_str()))));
     ui_->hrpsys_start_imp_hard_button->setToolButtonStyle(Qt::ToolButtonTextUnderIcon);
     ui_->hrpsys_start_imp_hard_button->setIcon(QIcon(QPixmap(QString((ros::package::getPath("drc_task_common")+std::string("/icons/start-imp-hard.png")).c_str()))));
+    ui_->hrpsys_reset_force_offset_button->setToolButtonStyle(Qt::ToolButtonTextUnderIcon);
+    ui_->hrpsys_reset_force_offset_button->setIcon(QIcon(QPixmap(QString((ros::package::getPath("drc_task_common")+std::string("/icons/reset-force-offset.png")).c_str()))));
     // ui_->hrpsys_stop_abc_button->setToolButtonStyle(Qt::ToolButtonTextUnderIcon);
     // ui_->hrpsys_stop_abc_button->setIcon(QIcon(QPixmap(QString((ros::package::getPath("drc_task_common")+std::string("/icons/stop-abc.png")).c_str()))));
     // ui_->hrpsys_stop_st_button->setToolButtonStyle(Qt::ToolButtonTextUnderIcon);
@@ -73,6 +75,7 @@ namespace drc_task_common
     connect( ui_->hrpsys_start_imp_button, SIGNAL( clicked() ), this, SLOT(  callRequestStartIMP()));
     connect( ui_->hrpsys_start_imp_soft_button, SIGNAL( clicked() ), this, SLOT(  callRequestStartIMPSoft()));
     connect( ui_->hrpsys_start_imp_hard_button, SIGNAL( clicked() ), this, SLOT(  callRequestStartIMPHard()));
+    connect( ui_->hrpsys_reset_force_offset_button, SIGNAL( clicked() ), this, SLOT(  callRequestResetForceOffset()));
 
     // connect( ui_->hrpsys_stop_abc_button, SIGNAL( clicked() ), this, SLOT(  callRequestStopABC ()));
     // connect( ui_->hrpsys_stop_st_button, SIGNAL( clicked() ), this, SLOT(  callRequestStopST()));
@@ -142,6 +145,10 @@ namespace drc_task_common
 
   void DRCTeleopInterfaceAction::callRequestStartIMPHard(){
     callRequestUint8Request(drc_com_common::OCS2FCSmall::HRPSYS_START_IMP_HARD);
+  };
+
+  void DRCTeleopInterfaceAction::callRequestResetForceOffset(){
+    callRequestUint8Request(drc_com_common::OCS2FCSmall::HRPSYS_RESET_FORCE_OFFSET);
   };
 
   // void DRCTeleopInterfaceAction::callRequestStopABC(){

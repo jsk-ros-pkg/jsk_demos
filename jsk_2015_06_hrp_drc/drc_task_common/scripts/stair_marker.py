@@ -35,7 +35,7 @@
 
 import rospy
 import os
-from visualization_msgs.msg import Marker, InteractiveMarkerControl
+from visualization_msgs.msg import Marker, InteractiveMarkerControl, InteractiveMarkerFeedback
 from interactive_markers.interactive_marker_server import *
 from geometry_msgs.msg import PoseArray, Pose
 from interactive_markers.menu_handler import *
@@ -43,6 +43,10 @@ from interactive_markers.menu_handler import *
 import tf
 from tf.transformations import *
 
+max_x = 0.3
+max_y = 0.25
+max_z = 0.25
+min_z = 0
 def poseMsgToMatrix(pose):
     return concatenate_matrices(translation_matrix([pose.position.x,
                                                     pose.position.y,
@@ -65,12 +69,19 @@ def poseMatrixToMsg(mat):
     pose.orientation.w = quaternion[3]
     return pose
 
+def absmin(a, b):
+    if abs(a) > abs(b):
+        return a
+    else:
+        return b
+
 def processFeedback(feedback):
     (frame_transform_pos, frame_transform_rot) = tf_listener.lookupTransform(
         lleg_end_coords, feedback.header.frame_id, rospy.Time(0.0))
     frame_pose = concatenate_matrices(translation_matrix(frame_transform_pos),
                                       quaternion_matrix(frame_transform_rot))
     center_local_pose = poseMsgToMatrix(feedback.pose)
+    center_local_pos = translation_from_matrix(center_local_pose)
     left_local_offset = translation_matrix([0, foot_margin / 2.0, 0])
     left_local_pose = concatenate_matrices(center_local_pose, left_local_offset)
     right_local_offset = translation_matrix([0, - foot_margin / 2.0, 0])
@@ -78,13 +89,32 @@ def processFeedback(feedback):
                                             right_local_offset)
     left_global_pose = concatenate_matrices(frame_pose, left_local_pose)
     right_global_pose = concatenate_matrices(frame_pose, right_local_pose)
+
+    left_global_pos = translation_from_matrix(left_global_pose)
+    right_global_pos = translation_from_matrix(right_global_pose)
     footsteps = PoseArray()
     footsteps.header.frame_id = lleg_end_coords
     footsteps.header.stamp = feedback.header.stamp
     footsteps.poses = [poseMatrixToMsg(right_global_pose),
                        poseMatrixToMsg(left_global_pose)]
     pub_debug_current_pose_array.publish(footsteps)
-    if feedback.menu_entry_id == 0:
+    # check distance
+    need_to_fix = False
+    if (feedback.event_type == InteractiveMarkerFeedback.MOUSE_UP and 
+        (abs(center_local_pos[0]) + 0.01> max_x or
+         abs(center_local_pos[2]) + 0.01> max_z or
+         center_local_pos[2] - 0.01 < 0)):
+        if abs(center_local_pos[0]) > max_x:
+            center_local_pos[0] = max_x * center_local_pos[0] / abs(center_local_pos[0])
+        if center_local_pos[2] < 0:
+            center_local_pos[2] = 0
+        elif abs(center_local_pos[2]) > max_z:
+            center_local_pos[2] = max_z
+        rospy.logwarn("need to reset")
+        new_center_pose = translation_matrix(center_local_pos)
+        server.setPose(feedback.marker_name, poseMatrixToMsg(new_center_pose))
+        server.applyChanges()
+    elif feedback.menu_entry_id == 0:
         return                  # do nothing
     elif feedback.menu_entry_id == 1: # reset to origin
         server.setPose(feedback.marker_name, poseMatrixToMsg(identity_matrix()))
@@ -168,12 +198,20 @@ if __name__ == "__main__":
         foot_margin = 0.20
         left_offset = translation_matrix([0.015, 0.01 + foot_margin / 2.0, 0])
         right_offset = translation_matrix([0.015, -0.01 - foot_margin / 2.0, 0])
+        foot_depth = 0.240
+        foot_width = 0.140
+    elif os.environ["ROBOT"] == "JAXON_RED":
+        foot_margin = 0.20
+        left_offset = translation_matrix([0.0, 0.01 + foot_margin / 2.0, 0])
+        right_offset = translation_matrix([0.0, -0.01 - foot_margin / 2.0, 0])
+        foot_depth = 0.225
+        foot_width = 0.140
     else:
         foot_margin = 0.21
         left_offset = translation_matrix([0.01, 0.02 + foot_margin / 2.0, 0])
         right_offset = translation_matrix([0.01, -0.02 - foot_margin / 2.0, 0])
-    foot_depth = 0.240
-    foot_width = 0.140
+        foot_depth = 0.240
+        foot_width = 0.140
     lleg_end_coords = "lleg_end_coords"
     rleg_end_coords = "rleg_end_coords"
     # create a grey box marker

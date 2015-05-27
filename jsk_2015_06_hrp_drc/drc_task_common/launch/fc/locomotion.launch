@@ -1,9 +1,6 @@
 <launch>
   <arg name="INPUT_POINT_CLOUD" default="/laser_downsampler/output" />
   <arg name="MULTISENSE_STANDALONE" default="false" />
-  <arg name="USE_JAXON" default="false" />
-  <arg name="USE_HRP2JSK" default="true" />
-  <arg name="USE_HRP2JSKNT" default="false" />
   <group ns="locomotion">
     <node pkg="nodelet" type="nodelet" name="manager" args="manager" output="screen"/>
 
@@ -99,7 +96,7 @@
       </rosparam>
     </node>
 
-    <include file="$(find jsk_footstep_planner)/launch/hrp2jsk_footprint.launch">
+    <include file="$(find jsk_footstep_planner)/launch/$(env ROBOT)_footprint.launch">
       <arg name="INPUT_POINTCLOUD" value="odom_cloud/output" />
     </include>
 

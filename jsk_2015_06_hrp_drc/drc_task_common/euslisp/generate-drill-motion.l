@@ -85,7 +85,7 @@
   (send *drill* :put :edge-coords
         (make-cascoords
          ;;:coords (make-coords :pos #f(0 0 0) :rpy (list 0 0 0))
-         :coords (make-coords :pos #f(0 0 260) :rpy (list 0 0 0))
+         :coords (make-coords :pos #f(0 0 240) :rpy (list 0 0 0))
          :parent *drill*))
   )
 
@@ -1477,9 +1477,9 @@
     ;;
     (cond ((or (equal *robot-name* "HRP2JSKNTS") (equal *robot-name* "HRP2JSKNT"))
            ;(send *ri* :start-impedance *drill-main-arm* :moment-gain (float-vector 0 0 -200) :k-p 1000 :d-p 400)) ;; start imp hard
-          (send *ri* :start-impedance *drill-main-arm* :force-gain #f(0.3 0.3 1) :k-p 400 :d-p 700))
+          (send *ri* :start-impedance *drill-main-arm* :force-gain #f(0.3 0.3 1) :k-p 400 :d-p 1700))
           (t
-           (send *ri* :start-impedance *drill-main-arm* :force-gain #f(0.1 0.1 1) :moment-gain (float-vector 0 0 0) :k-p 700 :d-p 1500)))
+           (send *ri* :start-impedance *drill-main-arm* :force-gain #f(0.2 0.2 1) :moment-gain (float-vector 0 0 0) :k-p 700 :d-p 3000)))
     ;(send *ri* :start-impedance *drill-main-arm* :moment-gain (float-vector 0 0 0) :k-p 1000 :d-p 1500)
     ;; pre-reach
 

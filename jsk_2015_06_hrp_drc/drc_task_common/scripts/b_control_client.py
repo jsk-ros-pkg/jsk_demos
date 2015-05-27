@@ -3,6 +3,7 @@
 import rospy
 import math
 import message_filters
+import time
 
 import jsk_interactive_marker
 from jsk_interactive_marker.srv import *
@@ -16,7 +17,7 @@ from jsk_teleop_joy.b_control_status import BControl2Status
 from geometry_msgs.msg import *
 from jsk_recognition_msgs.msg import BoundingBox
 from sensor_msgs.msg import Joy, JoyFeedback, JoyFeedbackArray, PointCloud2
-from std_msgs.msg import Float32, ColorRGBA, Bool
+from std_msgs.msg import Float32, ColorRGBA, Bool, Header
 import tf
 imp.find_module('std_srvs')
 from std_srvs import srv
@@ -37,13 +38,14 @@ def b_control_client_init():
     # object marker
     ## insert / erase
     global req_marker_operate_srv, set_color_pub
-    global get_pose_srv, set_pose_pub, set_relative_pose_pub, get_ik_arm_srv, get_ik_arm_pose_srv
+    global get_pose_srv, set_pose_pub, set_relative_pose_pub, get_ik_arm_srv, get_ik_arm_pose_srv, set_robot_pose_pub
     rospy.wait_for_service(ns+'/request_marker_operate')
     rospy.wait_for_service(ns+'/get_pose')
     rospy.wait_for_service(ns+'/set_dimensions')
     req_marker_operate_srv = rospy.ServiceProxy(ns+'/request_marker_operate', RequestMarkerOperate)
     set_color_pub = rospy.Publisher(ns+'/set_color', ColorRGBA)
     get_pose_srv = rospy.ServiceProxy(ns+'/get_pose', GetTransformableMarkerPose)
+    set_robot_pose_pub = rospy.Publisher('/urdf_control_marker/set_pose', PoseStamped)
     set_pose_pub = rospy.Publisher(ns+'/set_pose', PoseStamped)
     set_relative_pose_pub = rospy.Publisher(ns+'/set_control_relative_pose', Pose)
     get_ik_arm_srv = rospy.ServiceProxy('/get_ik_arm', GetIKArm)
@@ -253,23 +255,27 @@ def b_control_joy_cb(msg):
     # robot marker
     ## transport to obj
     if status.buttonU4 != prev_status.buttonU4:
-        robot_pose = PoseStamped()
-        robot_pose.header.stamp = rospy.Time.now()
-        robot_pose.header.frame_id = default_frame_id
-        robot_pose.pose = get_pose_srv('').pose_stamped.pose
-        if shape_type.type == TransformableMarkerOperate.BOX:
-            pass
-        elif shape_type.type == TransformableMarkerOperate.CYLINDER:
-            pass
-        elif shape_type.type == TransformableMarkerOperate.TORUS:
-            pass
-        robot_pose.pose.position.x -= 0.5
-        robot_pose.pose.position.z = 0
-        robot_pose.pose.orientation.w = 1
-        robot_pose.pose.orientation.x = 0
-        robot_pose.pose.orientation.y = 0
-        robot_pose.pose.orientation.z = 0
-        set_robot_pose_pub.publish(robot_pose)
+        set_robot_pose_pub.publish(PoseStamped(header=Header(frame_id="/ground", stamp=rospy.Time.now()), pose=Pose(orientation=Quaternion(0, 0, 0, 1))))
+        time.sleep(1)
+        solve_ik_pub.publish()
+        # robot_pose = PoseStamped()
+        # robot_pose.header.stamp = rospy.Time.now()
+        # robot_pose.header.frame_id = default_frame_id
+        # robot_pose.pose = get_pose_srv('').pose_stamped.pose
+        # if shape_type.type == TransformableMarkerOperate.BOX:
+        #     pass
+        # elif shape_type.type == TransformableMarkerOperate.CYLINDER:
+        #     pass
+        # elif shape_type.type == TransformableMarkerOperate.TORUS:
+        #     pass
+        # robot_pose.pose.position.x -= 0.5
+        # robot_pose.pose.position.z = 0
+        # robot_pose.pose.orientation.w = 1
+        # robot_pose.pose.orientation.x = 0
+        # robot_pose.pose.orientation.y = 0
+        # robot_pose.pose.orientation.z = 0
+        # set_robot_pose_pub.publish(robot_pose)
+
     ## command
     if status.buttonL4 != prev_status.buttonL4:
         solve_ik_pub.publish()
