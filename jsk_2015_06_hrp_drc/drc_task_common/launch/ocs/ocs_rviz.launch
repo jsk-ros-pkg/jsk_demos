@@ -42,6 +42,7 @@
         type="footstep_marker"
         name="footstep_marker"
         output="screen"
+        if="false"
         >
     <remap from="/lookaround_ground" to="terrain_lookground" />
     <remap from="~projected_pose" to="projected_footstep_ocs" />
@@ -69,6 +70,9 @@
       foot_size_z: 0.01
     </rosparam>
     <param name="frame_id" value="/ground" />
+  </node>
+  <node pkg="jsk_footstep_controller" type="footstep-overlay-text.l"
+        name="footstep_overlay_text">
   </node>
   <!-- rviz -->
   <node pkg="rviz" type="rviz" name="operator_rviz" args="-d $(find drc_task_common)/config/drc_task_common.rviz"
