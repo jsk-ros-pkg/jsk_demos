@@ -256,8 +256,9 @@ def b_control_joy_cb(msg):
     ## transport to obj
     if status.buttonU4 != prev_status.buttonU4:
         set_robot_pose_pub.publish(PoseStamped(header=Header(frame_id="/ground", stamp=rospy.Time.now()), pose=Pose(orientation=Quaternion(0, 0, 0, 1))))
-        time.sleep(1)
-        solve_ik_pub.publish()
+        # time.sleep(1)
+        # solve_ik_pub.publish()
+
         # robot_pose = PoseStamped()
         # robot_pose.header.stamp = rospy.Time.now()
         # robot_pose.header.frame_id = default_frame_id
