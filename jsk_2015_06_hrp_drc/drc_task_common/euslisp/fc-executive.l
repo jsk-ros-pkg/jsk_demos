@@ -38,13 +38,19 @@
 
 (defclass fc-executive-app
   :super propertied-object
-  :slots (state go-pos-goal ocs2fc-message-handler smachine head-overwrite-mode))
+  :slots (state go-pos-goal ocs2fc-message-handler smachine head-overwrite-mode footstep-planner-client footstep-controller-client))
 
 (defmethod fc-executive-app
   (:init ()
     ;; prepare state machine
     (setq smachine (make-fc-state-machine))
     (send self :register-timelimits smachine)
+    (setq footstep-planner-client (instance ros::simple-action-client :init
+                                            "footstep_planner"
+                                            jsk_footstep_msgs::PlanFootstepsAction))
+    (setq footstep-controller-client (instance ros::simple-action-client :init
+                                               "footstep_controller"
+                                               jsk_footstep_msgs::ExecFootstepsAction))
     (setq ocs2fc-message-handler (instance narrowband-message-handler :init))
     ;; register callbacks
     (send ocs2fc-message-handler :register-callbacks
@@ -1339,9 +1345,7 @@ It sends :angle-vector to robot and return 'finished' message to ocs"
         (let ((goal-coords (subseq coords-list 0 2))
               (initial-coords (subseq coords-list 2 4)))
           (let ((goal (instance jsk_footstep_msgs::PlanFootstepsActionGoal :init))
-                (client (instance ros::simple-action-client :init
-                                  "footstep_planner"
-                                  jsk_footstep_msgs::PlanFootstepsAction)))
+                (client footstep-planner-client))
             (let ((goal-footstep (footstep-array-from-two-coordinates
                                   goal-coords (send msg :image_roi_info)))
                   (initial-footstep (footstep-array-from-two-coordinates
@@ -1370,12 +1374,10 @@ It sends :angle-vector to robot and return 'finished' message to ocs"
   (:execute-footstep-callback
     (msg)
     (ros::ros-info ":execute-footstep-callback")
-    (when (send smachine :state? :executing-terrain-footsteps)
+    (when (send smachine :next? :executing-terrain-footsteps)
       (send smachine :go-to :executing-terrain-footsteps)
       (let ((coords-list (float-vector-to-coords-set (send msg :float_params)))
-            (client (instance ros::simple-action-client :init
-                              "footstep_controller"
-                              jsk_footstep_msgs::ExecFootstepsAction)))
+            (client footstep-controller-client))
         (ros::ros-info "Waiting for controller server")
         (send client :wait-for-server)
         (if (<= (length coords-list) 1)
@@ -1385,9 +1387,10 @@ It sends :angle-vector to robot and return 'finished' message to ocs"
                                                       (send msg :image_roi_info))))
           (send footstep-array :header :frame_id "ground")
           (send footstep-array :header :stamp (ros::time-now))
-          (send goal :footstep footstep-array)
-          ;;(send client :send-goal goal)
-          ;;(send client :wait-for-result)
+          (send goal :goal :footstep footstep-array)
+          (send client :send-goal goal)
+          (send client :wait-for-result)
+          (ros::ros-warn "footstep-array: ~A" (send footstep-array :footsteps))
           (ros::ros-warn "send-goal: ~A" goal)
           (let ((ocs-msg (instance drc_com_common::FC2OCSSmall :init)))
             (send ocs-msg :type drc_com_common::FC2OCSSmall::*EXECUTE_FOOTSTEPS_FINISHED*)

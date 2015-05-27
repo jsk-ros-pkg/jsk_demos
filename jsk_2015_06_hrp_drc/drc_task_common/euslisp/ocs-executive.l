@@ -1997,14 +1997,16 @@
       (send smachine :go-to :initial)
       (send self :show-text "Done lookground")))
   (:footstep-exec-execute-cb (goal)
-    (when (send smachine :next? :executing-terrain-footsteps)
+    (when (and (send smachine :next? :executing-terrain-footsteps)
+               (not (send smachine :state? :executing-terrain-footsteps)))
       (let ((footstep-array (send (send goal :goal) :footstep))
             (fc-msg (instance drc_com_common::OCS2FCSmall :init)))
         (multiple-value-bind
          (float-footsteps int-footsteps)
          (footstep-array->vector footstep-array
-                                 (length (send fc_msg :float_params))
-                                 (length (send fc_msg :image_roi_info)))
+                                 (length (send fc-msg :float_params))
+                                 (length (send fc-msg :image_roi_info)))
+         (ros::ros-info "float-footsteps: ~A" float-footsteps)
          (send fc-msg :float_params float-footsteps)
          (send fc-msg :image_roi_info int-footsteps)
          (send fc-msg :type drc_com_common::OCS2FCSmall::*EXECUTE_FOOTSTEPS*)
@@ -2022,11 +2024,12 @@
   ;;              (mapcar #'(lambda (m) (tf::pose->coords (send m :pose))) (send msg :footsteps))
   ;;              (length (send smachine :float_params))))
   ;;       (send self :send-to-fc fc-msg))))
-  ;; (:execute-footstep-finished-callback
-  ;;   (msg)
-  ;;   (when (send smachine :next? :initial)
-  ;;     (send self :show-text "Done footstep")
-  ;;     (send self :go-to :initial)))
+  (:execute-footstep-finished-callback
+    (msg)
+    (when (send smachine :next? :initial)
+      (send self :show-text "Done footstep")
+      (send ocs-footstep-controller :set-succeeded (send ocs-footstep-controller :result))
+      (send smachine :go-to :initial)))
   (:footstep-plan-execute-cb 
    (goal)
    (when (and (send smachine :next? :planning-footsteps)
