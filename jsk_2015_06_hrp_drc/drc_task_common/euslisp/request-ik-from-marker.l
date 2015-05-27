@@ -605,7 +605,7 @@
                           :debug-view :no-message
                           :translation-axis translation-axis
                           :rotation-axis rotation-axis
-                          :root-link-virtual-joint-weight (float-vector 0.15 0.15 0.01 0.15 0.5 0.5)
+                          :root-link-virtual-joint-weight (float-vector 0.15 0.15 0.02 0.05 0.5 0.5)
                           :additional-weight-list
                           (list (list (send *robot* :torso :waist-r :child-link) 0.1)
                                 (list (send *robot* :torso :waist-y :child-link) 0.1)
