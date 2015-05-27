@@ -68,9 +68,7 @@
       <remap from="planner_result" to="footstep_planner/result_non_refined"/>
       <remap from="refined_footstep_result" to="footstep_planner/result" />
     </node>
-    <node pkg="jsk_footstep_controller" type="footstep-overlay-text.l"
-          name="footstep_overlay_text">
-    </node>
+    
     <node pkg="roseus" type="roseus" name="lookaround_ground"
           args="$(find jsk_footstep_controller)/euslisp/lookaround-ground.l">
     </node>
