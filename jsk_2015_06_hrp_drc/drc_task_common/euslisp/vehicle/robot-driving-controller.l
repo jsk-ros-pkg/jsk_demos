@@ -128,6 +128,7 @@
    (ros::advertise-service "/drive/controller/egress" std_srvs::Empty #'send self :egress-callback)
    (ros::advertise-service "/drive/controller/set_max_step" drc_task_common::SetValue #'send self :set-max-step-callback)
    (ros::advertise-service "/drive/controller/set_min_step" drc_task_common::SetValue #'send self :set-min-step-callback)
+   (ros::advertise-service "/drive/controller/set_detach_step" drc_task_common::SetValue #'send self :set-detach-step-callback)
    (ros::advertise-service "/drive/controller/set_handle_mode" drc_task_common::StringRequest #'send self :set-handle-mode-callback)
    (ros::advertise-service "/drive/controller/set_accel_mode" drc_task_common::StringRequest #'send self :set-accel-mode-callback)
    (ros::advertise-service "/drive/controller/set_neck_mode" drc_task_common::StringRequest #'send self :set-neck-mode-callback)
@@ -262,6 +263,14 @@
    (let ((res (send req :response)))
      (send res :set_value (send self :release-accel-command (send req :value)))
      (warn "set release-accel-command to ~A~%" (send self :release-accel-command))
+     res
+     )
+   )
+  (:set-detach-step-callback
+   (req)
+   (let ((res (send req :response)))
+     (send res :set_value (send self :detach-accel-command (send req :value)))
+     (warn "set detach-accel-command to ~A~%" (send self :detach-accel-command))
      res
      )
    )
