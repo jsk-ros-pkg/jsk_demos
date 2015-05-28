@@ -584,7 +584,7 @@
                  (make-coords :pos (float-vector -710 200 0) :rpy (list (deg2rad -35) 0 0)))) ;;
              )
             (t ;; (or (equal *robot-name* "JAXON") (equal *robot-name* "STARO") (equal *robot-name* "JAXON_RED"))
-             (if (equal *drill-main-arm* :rarm) (make-coords :pos (float-vector -710 -0 0) :rpy (list (deg2rad 35) 0 0)) (make-coords :pos (float-vector -710 0 0) :rpy (list (deg2rad -35) 0 0))))
+             (if (equal *drill-main-arm* :rarm) (make-coords :pos (float-vector -810 -0 0) :rpy (list (deg2rad 35) 0 0)) (make-coords :pos (float-vector -810 0 0) :rpy (list (deg2rad -35) 0 0))))
             )
     (if (equal *drill-main-arm* :rarm) (make-coords :pos (float-vector -800 0 0) :rpy (list (deg2rad 10) 0 0)) (make-coords :pos (float-vector -800 0 0) :rpy (list (deg2rad -10) 0 0))
           )
@@ -1660,7 +1660,6 @@
         ik-length
         rotate-length
         )
-    (setq draw? t)
     ;(set-drill-environment :draw? draw? :generate-ri? use-ri?)
     (send (send *drill* :get :grasp-coords) :rotate (deg2rad diff-deg) :z)
     (send *drill* :newcoords (send (send (send *robot* :body_lk) :copy-worldcoords) :transform (get-drill-coords-with-symbol plane-coords :put-coords) :local))
