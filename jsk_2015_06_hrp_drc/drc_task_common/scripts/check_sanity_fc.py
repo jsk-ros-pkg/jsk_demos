@@ -32,6 +32,15 @@ if __name__ == "__main__":
          ["/fc_to_ocs_low_speed/last_send_time", Time],
          ["/fc_to_ocs_basic_low_speed/last_send_time", Time]])
     checkTopicIsPublished(
+        "/communication/point_cloud",
+        PointCloud2,
+        "Silverhammer highspeed is working",
+        "Silverhammer highspeed is not working",
+        5,
+        [["/communication/laser_cloud", PointCloud2],
+         ["/communication/image_rect_color", Image],
+         ["/communication/panorama_image", Image]])
+    checkTopicIsPublished(
         "/laser_preprocess/tilt_laser_listener/output_cloud",
         PointCloud2,
         "laser preprocess is ok",
