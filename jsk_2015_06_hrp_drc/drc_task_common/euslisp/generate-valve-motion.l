@@ -448,7 +448,7 @@
       (when real?
         (set-default-impedance-param)
         (cond ((or (equal *robot-name* "JAXON") (equal *robot-name* "STARO") (equal *robot-name* "JAXON_RED"))
-               (send *ri* :start-impedance :arms :moment-gain (float-vector 0 0 0) :k-p 300 :d-p 500))
+               (send *ri* :start-impedance :arms :moment-gain (float-vector 0 0 0) :k-p 300 :d-p 500 :ik-optional-weight-vector #f(1 0.5 0.5 0.5 1 1 1 1)))
               (t ;; (or (equal *robot-name* "HRP2JSKNT") (equal *robot-name* "HRP2JSKNTS"))
                (send *ri* :start-impedance :arms :moment-gain (float-vector 0 0 0) :k-p 800 :d-p 400)
                )))
