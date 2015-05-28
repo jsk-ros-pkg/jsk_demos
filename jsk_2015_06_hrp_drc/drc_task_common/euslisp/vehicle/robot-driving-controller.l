@@ -379,7 +379,7 @@
    )
   (:correct-handle-pose
    (&key (yes nil) (grasp t) (time 2500) (look-at-handle t))
-   (when (send self :controller-state :handle :initialize)
+   (when (equal (send self :controller-state :handle) :initialize)
      (warn ":handle is not initialized~%")
      (return-from :correct-handle-pose nil) ;; prevent to crash
      )
