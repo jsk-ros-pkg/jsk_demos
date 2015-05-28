@@ -673,17 +673,18 @@
           (send smachine :go-to :executing-valve)
           (setq *cancel-motion-flag* nil)
           (catch 'exit
-            (ros::ros-info "rotating valve at ~A,~A,~A~%"
-                           (send coords :worldpos)
-                           (car (send coords :rpy-angle))
-                           radius)
-            ;; send motion to real robot
-            (send-valve-motion radius coords :arm arm :stand-coords stand-coords :grasp-center? grasp-center?)
-            ;; send finish signal to ocs
-            (let ((msg (instance drc_com_common::FC2OCSSmall :init)))
-              (send msg :type drc_com_common::FC2OCSSmall::*VALVE_FINISHED*)
-              (send self :send-to-ocs msg))
-            )
+            (progn
+              (ros::ros-info "rotating valve at ~A,~A,~A~%"
+                             (send coords :worldpos)
+                             (car (send coords :rpy-angle))
+                             radius)
+              ;; send motion to real robot
+              (send-valve-motion radius coords :arm arm :stand-coords stand-coords :grasp-center? grasp-center?)
+              ;; send finish signal to ocs
+              (let ((msg (instance drc_com_common::FC2OCSSmall :init)))
+                (send msg :type drc_com_common::FC2OCSSmall::*VALVE_FINISHED*)
+                (send self :send-to-ocs msg))
+              ))
           )
         (send smachine :go-to :initial)
        )))
