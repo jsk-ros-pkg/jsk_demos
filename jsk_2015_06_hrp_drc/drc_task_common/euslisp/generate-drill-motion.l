@@ -849,7 +849,7 @@
     ;; (when real? (model2real :time 5000))
     ;; put
     (send *robot* :angle-vector (elt drill-motion-av-list 4))
-    (when real? (model2real :time 1000))
+    (when real? (model2real :time 3000))
     ;; put
     (send *robot* :angle-vector (elt drill-motion-av-list 3))
     (when real? (model2real :time 2000))
@@ -1734,7 +1734,9 @@
           (send *robot* :angle-vector (elt *drill-motion-in* 0))
           (when real? (model2real :time 2000))
           (when real? (drill-hook))
-          (send-angle-vector-sequence-with-time (subseq *drill-motion-out* 0 rotate-length) :time 500)
+          (send *robot* :angle-vector (elt *drill-motion-out* 0))
+          (when real? (model2real :time 2000))
+          (send-angle-vector-sequence-with-time (subseq *drill-motion-out* 1 rotate-length) :time 500)
           (send *robot* :angle-vector (elt *drill-motion-in* (- rotate-length 1)))
           (when real? (model2real :time 4000))
           (when real? (drill-air-grasp))
@@ -2140,7 +2142,7 @@
   )
 (defun test-send-drill-wall-motion ()
   (test-init)
-  (setq *drill-coords-list* (list (get-body-relative-coords (make-coords :pos (float-vector 1000 -100 1000) :rpy (list 0 pi/2 0))) (get-body-relative-coords (make-coords :pos (float-vector 1000 100 1000) :rpy (list 0 pi/2 0))) (get-body-relative-coords (make-coords :pos (float-vector 1000 100 1200) :rpy (list 0 pi/2 0))) (get-body-relative-coords (make-coords :pos (float-vector 1000 -100 1200) :rpy (list 0 pi/2 0)))))
+  (setq *drill-coords-list* (list (get-body-relative-coords (make-coords :pos (float-vector 1000 -100 1000) :rpy (list 0 pi/2 0))) (get-body-relative-coords (make-coords :pos (float-vector 1000 0 900) :rpy (list 0 pi/2 0))) (get-body-relative-coords (make-coords :pos (float-vector 1000 100 1000) :rpy (list 0 pi/2 0))) (get-body-relative-coords (make-coords :pos (float-vector 1000 100 1200) :rpy (list 0 pi/2 0))) (get-body-relative-coords (make-coords :pos (float-vector 1000 0 1300) :rpy (list pi 0 0))) (get-body-relative-coords (make-coords :pos (float-vector 1000 -100 1200) :rpy (list 0 pi/2 0))) (get-body-relative-coords (make-coords :pos (float-vector 1000 -100 1000) :rpy (list 0 pi/2 0)))))
   (send-drill-wall-motion *drill-coords-list* :real? t :overwrite-stand-coords? t :draw? t)
   )
 (defun re-view ()
