@@ -114,24 +114,36 @@ class VehicleUIWidget(QWidget):
         self.setControllerMode("neck", item.text())
         
     def setUpLeftBox(self, left_vbox):
-
         execute_vbox = QtGui.QVBoxLayout(self)
         execute_group = QtGui.QGroupBox("", self)
-        self.execute_button = QtGui.QPushButton("EXECUTE COMMUNICATION")
         self.execute_flag_publisher = rospy.Publisher("drive/execute_flag", Bool)
-        self.execute_button.setCheckable(True)
-        self.execute_button.clicked[bool].connect(self.setExecuteFlagCallback)
-        self.execute_button.setStyleSheet("background-color: lightgreen")
+        self.execute_button = QtGui.QPushButton("EXECUTE COMMUNICATION")
+        self.execute_button.setStyleSheet("background-color: yellow")
+        menu = QtGui.QMenu()
+        execute_on_action = QAction("COMMUNICATION ON", self)
+        execute_on_action.triggered.connect(self.setExecuteFlagOnCallback)
+        menu.addAction(execute_on_action)
+        execute_off_action = QAction("COMMUNICATION OFF", self)
+        execute_off_action.triggered.connect(self.setExecuteFlagOffCallback)
+        menu.addAction(execute_off_action)
+        self.execute_button.setMenu(menu)
         execute_vbox.addWidget(self.execute_button)
         execute_group.setLayout(execute_vbox)
         left_vbox.addWidget(execute_group)
 
         real_vbox = QtGui.QVBoxLayout(self)
         real_group = QtGui.QGroupBox("", self)
+        self.real_msg = None
         self.real_button = QtGui.QPushButton("SEND TO REAL ROBOT")
-        self.real_button.setCheckable(True)
-        self.real_button.clicked[bool].connect(self.setRealCallback)
-        self.real_button.setStyleSheet("background-color: lightgreen")
+        self.real_button.setStyleSheet("background-color: yellow")
+        menu = QtGui.QMenu()
+        real_on_action = QAction("REAL ON", self)
+        real_on_action.triggered.connect(self.setRealOnCallback)
+        menu.addAction(real_on_action)
+        real_off_action = QAction("REAL OFF", self)
+        real_off_action.triggered.connect(self.setRealOffCallback)
+        menu.addAction(real_off_action)
+        self.real_button.setMenu(menu)
         real_vbox.addWidget(self.real_button)
         real_group.setLayout(real_vbox)
         left_vbox.addWidget(real_group)
@@ -490,26 +502,29 @@ class VehicleUIWidget(QWidget):
     def initializeButtonCallback(self, event):
         self.serviceEmptyImpl("drive/controller/initialize")
         self.serviceEmptyImpl('drive/operation/initialize')
-        
-    def setExecuteFlagCallback(self, pressed):
-        pub_msg = Bool()
-        with self.lock:
-            if pressed:
-                pub_msg.data = True
-                self.execute_button.setStyleSheet("background-color: red")
-            else:
-                pub_msg.data = False
-                self.execute_button.setStyleSheet("background-color: lightgreen")
-        self.execute_flag_publisher.publish(pub_msg)
 
-    def setRealCallback(self, pressed):
+    def setExecuteFlagOnCallback(self):
         with self.lock:
-            if pressed:
-                self.callUint8RequestService("drive/controller/set_real", 1)
-                self.real_button.setStyleSheet("background-color: red")
-            else:
-                self.callUint8RequestService("drive/controller/set_real", 0)
-                self.real_button.setStyleSheet("background-color: lightgreen")
+            pub_msg = Bool()
+            pub_msg.data = True
+            self.execute_button.setText("COMMUNICATION ON")
+            self.execute_button.setStyleSheet("background-color: lightgreen")
+            self.execute_flag_publisher.publish(pub_msg)
+
+    def setExecuteFlagOffCallback(self):
+        with self.lock:
+            pub_msg = Bool()
+            pub_msg.data = False
+            self.execute_button.setText("COMMUNICATION OFF")
+            self.execute_button.setStyleSheet("background-color: red")
+            self.execute_flag_publisher.publish(pub_msg)
+
+    def setRealOnCallback(self):
+        with self.lock:
+            self.callUint8RequestService("drive/controller/set_real", 1)
+
+    def setRealOffCallback(self):
+        self.callUint8RequestService("drive/controller/set_real", 0)
         
     def stepGageValueCallback(self, msg):
         with self.lock:
@@ -555,16 +570,22 @@ class VehicleUIWidget(QWidget):
     def obstacleLengthCallback(self, msg):
         with self.lock:
             self.obstacle_length_value = msg.data
-            self.obstacle_length_value_label.setText(str(int(msg.data)))
+            self.obstacle_length_value_label.setText(str(round(msg.data, 2)))
 
     def realCallback(self, msg):
-        with self.lock:
-            if msg.data:
-                self.real_button.setChecked(True)
-                self.real_button.setStyleSheet("background-color: red")
-            else:
-                self.real_button.setChecked(False)                
-                self.real_button.setStyleSheet("background-color: lightgreen")
+        self.real_msg = msg
+
+    def modifyRealButton(self, msg):
+        if msg != None:
+            with self.lock:
+                if msg.data:
+                    # self.real_button.setChecked(True)
+                    self.real_button.setText("REAL ON")
+                    self.real_button.setStyleSheet("background-color: lightgreen")
+                else:
+                    # self.real_button.setChecked(False)
+                    self.real_button.setText("REAL OFF")
+                    self.real_button.setStyleSheet("background-color: red")
 
     def vehicleOcsToFcSmallCallback(self, msg):
         if self.is_initialize_executing != msg.initialize_request:
@@ -714,6 +735,7 @@ class VehicleUIWidget(QWidget):
             for (label, msg) in zip(label_list, msg_list):
                 if msg != None:
                     self.updateForceSensor(label, msg)
+        self.modifyRealButton(self.real_msg) # modify in timer callback, ros topic callback is too fast for qt to display
             
     def showError(self, message):
         QMessageBox.about(self, "ERROR", message)

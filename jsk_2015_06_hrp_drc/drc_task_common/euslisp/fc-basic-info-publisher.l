@@ -131,10 +131,16 @@
         (send msg :effort (send latest-compressed-joint-states :effort)))
       ;; temperature from motor states
       (when latest-motor-states
-        (dotimes (i (min (length (send latest-motor-states :temperature)) 
-                         (length (send msg :temperature))))
-          (setf (elt (send msg :temperature) i) 
-                (round (elt (send latest-motor-states :temperature) i)))))
+        (let* (temperature-method)
+          (cond ((> (length (send latest-motor-states :temperature)) 0)
+                 (setq temperature-method :temperature))
+                ((> (length (send latest-motor-states :driver_temp)) 0) ;; urata robot
+                 (setq temperature-method :driver_temp)))
+          (dotimes (i (min (length (send latest-motor-states temperature-method))
+                           (length (send msg :temperature))))
+            (setf (elt (send msg :temperature) i)
+                  (round (elt (send latest-motor-states temperature-method) i))))
+          ))
       ;; force
       (when (and latest-lfsensor-value
                  latest-rfsensor-value
