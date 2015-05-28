@@ -676,17 +676,6 @@
      (unless no-wait (send *ri* :wait-interpolation))
      )
    )
-  (:detatch-accel-pedal
-   (&key (time 5000) (use-controller t) (no-wait t) (distance 50))
-   (send robot :rleg :move-end-pos (float-vector 0 0 distance) :local)
-   (when real
-     (if use-controller
-         (send *ri* :angle-vector (send robot :angle-vector) time :rleg-controller)
-       (send *ri* :angle-vector (send robot :angle-vector) time)
-       )
-     (unless no-wait (send *ri* :wait-interpolation))
-     )
-   )
   (:approach-brake-pedal
    (&rest args &key (limb :lleg) (tm 2500) (debug-view nil) 
           (reach-until-touch nil) (reach-until-touch-thre 10) (sync-controller nil))
