@@ -2,7 +2,7 @@ uint8 type
 uint8 seq
 # Parameters
 int32[21] int_params
-float32[32] params
+float32[50] params
 bool success
 
 # type
