@@ -1287,13 +1287,19 @@
     (let* (ik-ret
            tc
            (dt-coords-list (send *drill* :get :destination-coords-list))
-           (dt-coords-length (length dt-coords-list)))
+           (dt-coords-length (length dt-coords-list))
+           (original-rleg-joint-angle (send *robot* :rleg :angle-vector))
+           (original-lleg-joint-angle (send *robot* :lleg :angle-vector)))
       (when draw? (send (send *drill* :get :grasp-coords) :draw-on :flush t))
       ;; solve ik for walls
       (ros::ros-info (format nil "dt-coords-list ~A" dt-coords-list))
       (block drill-ik
       (dotimes (i dt-coords-length)
         (send *drill* :newcoords (send (elt dt-coords-list i) :copy-worldcoords))
+        (send *robot* :rleg :angle-vector original-rleg-joint-angle)
+        (send *robot* :lleg :angle-vector original-lleg-joint-angle)
+        (send *robot* :fix-leg-to-coords original-foot-midcoords)
+
         ;;(send *drill* :newcoords (send (send (send *robot* :body_lk) :copy-worldcoords) :transform (get-drill-coords-with-symbol (elt dt-coords-list i) :origin-coords) :local))
         (if (equal drill-type :gun) (set-drill-rotation :deg 0))
         (setq ik-ret (if *use-dual-arm-ik* (fullbody-inverse-kinematics-for-drill-grasp-dual :draw? draw?) (fullbody-inverse-kinematics-for-drill-grasp-single :draw? draw? :rotation-axis (if (equal drill-type :takenoko) '(:z t t) '(:z t t)) :arm-mt drill-edge-mt :arm-tc (send *drill* :get :edge-coords))))
