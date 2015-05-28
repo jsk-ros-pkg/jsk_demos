@@ -114,24 +114,36 @@ class VehicleUIWidget(QWidget):
         self.setControllerMode("neck", item.text())
         
     def setUpLeftBox(self, left_vbox):
-
         execute_vbox = QtGui.QVBoxLayout(self)
         execute_group = QtGui.QGroupBox("", self)
-        self.execute_button = QtGui.QPushButton("EXECUTE COMMUNICATION")
         self.execute_flag_publisher = rospy.Publisher("drive/execute_flag", Bool)
-        self.execute_button.setCheckable(True)
-        self.execute_button.clicked[bool].connect(self.setExecuteFlagCallback)
-        self.execute_button.setStyleSheet("background-color: lightgreen")
+        self.execute_button = QtGui.QPushButton("EXECUTE COMMUNICATION")
+        self.execute_button.setStyleSheet("background-color: yellow")
+        menu = QtGui.QMenu()
+        execute_on_action = QAction("COMMUNICATION ON", self)
+        execute_on_action.triggered.connect(self.setExecuteFlagOnCallback)
+        menu.addAction(execute_on_action)
+        execute_off_action = QAction("COMMUNICATION OFF", self)
+        execute_off_action.triggered.connect(self.setExecuteFlagOffCallback)
+        menu.addAction(execute_off_action)
+        self.execute_button.setMenu(menu)
         execute_vbox.addWidget(self.execute_button)
         execute_group.setLayout(execute_vbox)
         left_vbox.addWidget(execute_group)
 
         real_vbox = QtGui.QVBoxLayout(self)
         real_group = QtGui.QGroupBox("", self)
+        self.real_msg = None
         self.real_button = QtGui.QPushButton("SEND TO REAL ROBOT")
-        self.real_button.setCheckable(True)
-        self.real_button.clicked[bool].connect(self.setRealCallback)
-        self.real_button.setStyleSheet("background-color: lightgreen")
+        self.real_button.setStyleSheet("background-color: yellow")
+        menu = QtGui.QMenu()
+        real_on_action = QAction("REAL ON", self)
+        real_on_action.triggered.connect(self.setRealOnCallback)
+        menu.addAction(real_on_action)
+        real_off_action = QAction("REAL OFF", self)
+        real_off_action.triggered.connect(self.setRealOffCallback)
+        menu.addAction(real_off_action)
+        self.real_button.setMenu(menu)
         real_vbox.addWidget(self.real_button)
         real_group.setLayout(real_vbox)
         left_vbox.addWidget(real_group)
@@ -242,9 +254,10 @@ class VehicleUIWidget(QWidget):
         step_vbox = QtGui.QVBoxLayout(self)
         step_group = QtGui.QGroupBox("step", self)
         step_max_hbox = QtGui.QHBoxLayout(self)
-        step_max_label = QtGui.QLabel("Max", self)
+        self.step_max_label = QtGui.QLabel("Max", self)
         step_max_vbox = QtGui.QVBoxLayout(self)
         self.step_max_value = -1
+        self.is_set_max_step_executing = False
         self.step_max_up_button = QtGui.QPushButton()
         self.step_max_up_button.setIcon(QIcon.fromTheme("go-up"))
         self.step_max_up_button.clicked.connect(self.maxUpButtonCallback)
@@ -255,7 +268,7 @@ class VehicleUIWidget(QWidget):
         self.step_max_edit.setText(str(self.step_max_value))
         self.step_max_edit.returnPressed.connect(self.maxEditCallback)
         self.step_max_edit.setValidator(QtGui.QDoubleValidator(-200, 200, 10))
-        step_max_hbox.addWidget(step_max_label)
+        step_max_hbox.addWidget(self.step_max_label)
         step_max_vbox.addWidget(self.step_max_up_button)
         step_max_vbox.addWidget(self.step_max_edit)
         step_max_vbox.addWidget(self.step_max_down_button)
@@ -263,8 +276,9 @@ class VehicleUIWidget(QWidget):
         step_vbox.addLayout(step_max_hbox)
 
         step_min_hbox = QtGui.QHBoxLayout(self)
-        step_min_label = QtGui.QLabel("Min", self)
+        self.step_min_label = QtGui.QLabel("Min", self)
         step_min_vbox = QtGui.QVBoxLayout(self)
+        self.is_set_min_step_executing = False
         self.step_min_value = -1
         self.step_min_up_button = QtGui.QPushButton()
         self.step_min_up_button.setIcon(QIcon.fromTheme("go-up"))
@@ -276,7 +290,7 @@ class VehicleUIWidget(QWidget):
         self.step_min_edit.setText(str(self.step_min_value))
         self.step_min_edit.returnPressed.connect(self.minEditCallback)
         self.step_min_edit.setValidator(QtGui.QDoubleValidator(-200, 200, 10))
-        step_min_hbox.addWidget(step_min_label)
+        step_min_hbox.addWidget(self.step_min_label)
         step_min_vbox.addWidget(self.step_min_up_button)
         step_min_vbox.addWidget(self.step_min_edit)
         step_min_vbox.addWidget(self.step_min_down_button)
@@ -364,19 +378,8 @@ class VehicleUIWidget(QWidget):
         angle_container = QtGui.QWidget()
         self.goal_angle = AngleWidget("drive/controller/goal_handle_angle")
         self.estimated_angle = AngleWidget("drive/controller/estimated_handle_angle")
-        angle_vbox.addWidget(self.goal_angle, 5)
-        angle_vbox.addWidget(self.estimated_angle, 5)
-        handle_diff_av_hbox = QtGui.QHBoxLayout()
-        handle_diff_av_container = QtGui.QWidget()
-        self.handle_diff_av_value = 0.0
-        handle_diff_av_label = QtGui.QLabel("Steering Diff Angle Vector:", self)
-        handle_diff_av_label.setFont(font)
-        self.handle_diff_av_value_label = QtGui.QLabel(str(self.handle_diff_av_value))
-        self.handle_diff_av_value_label.setFont(font)
-        handle_diff_av_hbox.addWidget(handle_diff_av_label)
-        handle_diff_av_hbox.addWidget(self.handle_diff_av_value_label)
-        handle_diff_av_container.setLayout(handle_diff_av_hbox)
-        angle_vbox.addWidget(handle_diff_av_container, 1)
+        angle_vbox.addWidget(self.goal_angle, 10)
+        angle_vbox.addWidget(self.estimated_angle, 10)
         angle_container.setLayout(angle_vbox)
 
         obstacle_length_hbox = QtGui.QHBoxLayout()
@@ -449,8 +452,6 @@ class VehicleUIWidget(QWidget):
             "drive/controller/accel_mode", std_msgs.msg.String, self.accelModeCallback)
         self.neck_mode_sub = rospy.Subscriber(
             "drive/controller/neck_mode", std_msgs.msg.String, self.neckModeCallback)
-        self.handle_angle_vector_diff_sub = rospy.Subscriber(
-            "drive/controller/steering_diff_angle_vector", std_msgs.msg.Float32, self.steeringDiffAngleVectorCallback)
         self.obstacle_length_sub = rospy.Subscriber(
             "drive/recognition/obstacle_length/indicator", std_msgs.msg.Float32, self.obstacleLengthCallback) 
         self.real_sub = rospy.Subscriber(
@@ -501,26 +502,29 @@ class VehicleUIWidget(QWidget):
     def initializeButtonCallback(self, event):
         self.serviceEmptyImpl("drive/controller/initialize")
         self.serviceEmptyImpl('drive/operation/initialize')
-        
-    def setExecuteFlagCallback(self, pressed):
-        pub_msg = Bool()
-        with self.lock:
-            if pressed:
-                pub_msg.data = True
-                self.execute_button.setStyleSheet("background-color: red")
-            else:
-                pub_msg.data = False
-                self.execute_button.setStyleSheet("background-color: lightgreen")
-        self.execute_flag_publisher.publish(pub_msg)
 
-    def setRealCallback(self, pressed):
+    def setExecuteFlagOnCallback(self):
         with self.lock:
-            if pressed:
-                self.callUint8RequestService("drive/controller/set_real", 1)
-                self.real_button.setStyleSheet("background-color: red")
-            else:
-                self.callUint8RequestService("drive/controller/set_real", 0)
-                self.real_button.setStyleSheet("background-color: lightgreen")
+            pub_msg = Bool()
+            pub_msg.data = True
+            self.execute_button.setText("COMMUNICATION ON")
+            self.execute_button.setStyleSheet("background-color: lightgreen")
+            self.execute_flag_publisher.publish(pub_msg)
+
+    def setExecuteFlagOffCallback(self):
+        with self.lock:
+            pub_msg = Bool()
+            pub_msg.data = False
+            self.execute_button.setText("COMMUNICATION OFF")
+            self.execute_button.setStyleSheet("background-color: red")
+            self.execute_flag_publisher.publish(pub_msg)
+
+    def setRealOnCallback(self):
+        with self.lock:
+            self.callUint8RequestService("drive/controller/set_real", 1)
+
+    def setRealOffCallback(self):
+        self.callUint8RequestService("drive/controller/set_real", 0)
         
     def stepGageValueCallback(self, msg):
         with self.lock:
@@ -563,41 +567,25 @@ class VehicleUIWidget(QWidget):
                     item.setBackground(QtGui.QColor("#18FFFF"))
                 else:
                     item.setBackground(QtCore.Qt.white)
-    def steeringDiffAngleVectorCallback(self, msg):
-        with self.lock:
-            if self.handle_diff_av_value != msg.data:
-                self.handle_diff_av_value = msg.data
-                self.handle_diff_av_value_label.setText(str(int(msg.data)))
-                if abs(float(self.handle_diff_av_value)) > 40.0: # threshould
-                     self.handle_diff_av_value_label.setAutoFillBackground(True);
-                     palette = QtGui.QPalette()
-                     palette.setColor(QtGui.QPalette.Background,QtCore.Qt.red)
-                     self.handle_diff_av_value_label.setPalette(palette)
-                elif abs(float(self.handle_diff_av_value)) > 15.0: # threshould
-                     self.handle_diff_av_value_label.setAutoFillBackground(True);
-                     palette = QtGui.QPalette()
-                     palette.setColor(QtGui.QPalette.Background,QtCore.Qt.yellow)
-                     self.handle_diff_av_value_label.setPalette(palette)
-                elif abs(float(self.handle_diff_av_value)) > 5.0: # threshould
-                     self.handle_diff_av_value_label.setAutoFillBackground(True);
-                     palette = QtGui.QPalette()
-                     palette.setColor(QtGui.QPalette.Background,QtCore.Qt.green)
-                     self.handle_diff_av_value_label.setPalette(palette)
-                else:
-                    self.handle_diff_av_value_label.setAutoFillBackground(False);
     def obstacleLengthCallback(self, msg):
         with self.lock:
             self.obstacle_length_value = msg.data
-            self.obstacle_length_value_label.setText(str(int(msg.data)))
+            self.obstacle_length_value_label.setText(str(round(msg.data, 2)))
 
     def realCallback(self, msg):
-        with self.lock:
-            if msg.data:
-                self.real_button.setChecked(True)
-                self.real_button.setStyleSheet("background-color: red")
-            else:
-                self.real_button.setChecked(False)                
-                self.real_button.setStyleSheet("background-color: lightgreen")
+        self.real_msg = msg
+
+    def modifyRealButton(self, msg):
+        if msg != None:
+            with self.lock:
+                if msg.data:
+                    # self.real_button.setChecked(True)
+                    self.real_button.setText("REAL ON")
+                    self.real_button.setStyleSheet("background-color: lightgreen")
+                else:
+                    # self.real_button.setChecked(False)
+                    self.real_button.setText("REAL OFF")
+                    self.real_button.setStyleSheet("background-color: red")
 
     def vehicleOcsToFcSmallCallback(self, msg):
         if self.is_initialize_executing != msg.initialize_request:
@@ -620,11 +608,27 @@ class VehicleUIWidget(QWidget):
             self.is_overwrite_executing = msg.overwrite_handle_angle_request
         if self.is_egress_executing != msg.egress_request:
             self.setServiceButtonColor(self.egress_button, msg.egress_request)
-            self.is_egress_executing = msg.egress_request            
+            self.is_egress_executing = msg.egress_request
         if self.is_reach_executing != (msg.approach_handle_request or msg.approach_accel_request or msg.reach_arm_request or msg.reach_leg_request):
             self.setServiceButtonColor(self.reach_button,
                                   (msg.approach_handle_request or msg.approach_accel_request or msg.reach_arm_request or msg.reach_leg_request))
             self.is_reach_executing = (msg.approach_handle_request or msg.approach_accel_request or msg.reach_arm_request or msg.reach_leg_request)
+        if self.is_set_max_step_executing != msg.set_max_step_request:
+            self.setBackgroundColorInStepService(self.step_max_label, msg.set_max_step_request)
+            self.is_set_max_step_executing = msg.set_max_step_request
+        if self.is_set_min_step_executing != msg.set_min_step_request:
+            self.setBackgroundColorInStepService(self.step_min_label, msg.set_min_step_request)
+            self.is_set_min_step_executing = msg.set_min_step_request
+
+    def setBackgroundColorInStepService(self, label, value):
+        with self.lock:
+            if value:
+                label.setAutoFillBackground(True);
+                palette = QtGui.QPalette()
+                palette.setColor(QtGui.QPalette.Background,QtCore.Qt.red)
+                label.setPalette(palette)
+            else:
+                label.setAutoFillBackground(False);
 
     def setServiceButtonColor(self, button, data):
         with self.lock:
@@ -632,8 +636,8 @@ class VehicleUIWidget(QWidget):
                 button.setStyleSheet("background-color: red")
             else:
                 button.setStyleSheet("background-color: None")
-            
-    # Event callback
+
+    # Event Callback
     def minUpButtonCallback(self, event):
         current_value = float(self.step_min_edit.text())
         current_value = current_value + 1.0
@@ -731,6 +735,7 @@ class VehicleUIWidget(QWidget):
             for (label, msg) in zip(label_list, msg_list):
                 if msg != None:
                     self.updateForceSensor(label, msg)
+        self.modifyRealButton(self.real_msg) # modify in timer callback, ros topic callback is too fast for qt to display
             
     def showError(self, message):
         QMessageBox.about(self, "ERROR", message)

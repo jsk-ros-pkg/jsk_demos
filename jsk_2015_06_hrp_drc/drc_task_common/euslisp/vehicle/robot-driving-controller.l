@@ -379,6 +379,10 @@
    )
   (:correct-handle-pose
    (&key (yes nil) (grasp t) (time 2500) (look-at-handle t))
+   (when (equal (send self :controller-state :handle) :initialize)
+     (warn ":handle is not initialized~%")
+     (return-from :correct-handle-pose nil) ;; prevent to crash
+     )
    (let (ret-result approach-result grasp-result)
      (setq handle-pose-estimate-flag t)
      (setq ret-result (send self :execute-handle-pose-compensation :yes yes :look-at-handle look-at-handle))
@@ -582,7 +586,7 @@
           (threshold 1.0) ;; [deg]
           )
      (unless (equal (send self :controller-mode :handle) :operation)
-       (warn "handle mode is ~A~%" (send self :controller-mode :handle))
+       ;; (warn "handle mode is ~A~%" (send self :controller-mode :handle))
        (return-from :handle-callback nil) ;; do not turn handle
        )
      (when (> (abs (- (rad2deg data) (send motion :car :handle-joint :joint-angle))) threshold)
@@ -596,7 +600,7 @@
          (accel-command (send msg :data))
          )
      (unless (equal (send self :controller-mode :accel) :operation)
-       (warn "accel mode is ~A~%" (send self :controller-mode :accel))
+       ;; (warn "accel mode is ~A~%" (send self :controller-mode :accel))
        (setq accel-command 0.0) ;; forcely stop accel
        (return-from :accel-callback nil) ;; do not accel
        )
@@ -632,7 +636,7 @@
   (:neck-y-callback
    (msg)
    (unless (equal (send self :controller-mode :neck) :operation)
-     (warn "neck mode is ~A~%" (send self :controller-mode :neck))
+     ;; (warn "neck mode is ~A~%" (send self :controller-mode :neck))
      (return-from :neck-y-callback nil) ;; do not turn handle
      )
    (let ((neck-command (send msg :data)))
@@ -642,7 +646,7 @@
   (:neck-p-callback
    (msg)
    (unless (equal (send self :controller-mode :neck) :operation)
-     (warn "neck mode is ~A~%" (send self :controller-mode :neck))
+     ;; (warn "neck mode is ~A~%" (send self :controller-mode :neck))
      (return-from :neck-p-callback nil) ;; do not turn handle
      )
    (let ((neck-command (send msg :data)))
