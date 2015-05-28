@@ -25,6 +25,7 @@
                )
    (send self :step-accel-command -10.0)
    (send self :release-accel-command 10.0)
+   (send self :detach-accel-command 15.0)
    ;; (send self :accel-origin 0.0)
    )
   (:initialize
@@ -50,6 +51,20 @@
      accel-origin ;; return total state of accel-command
      )
    )
+  (:detach-accel
+   (&key (use-controller t) (time 3000))
+   (when (equal (send self :controller-state :accel) :initialize)
+     (warn "accel is not approached~%")
+     (return-from :detach-accel nil)
+     )
+   (let ((cmd-mm (- (send self :detach-accel-command) accel-origin)))
+     (warn "detach-accel ~A~%" cmd-mm)
+     (send self :controller-state :accel :release)
+     (send motion :step-accel-pedal cmd-mm :time time :use-controller use-controller) ;; detach accel for emergency
+     (setq accel-origin (+ accel-origin cmd-mm))
+     accel-origin
+     )
+   )
   (:get-pedal-motion-from-cmd
    (data min-pedal-command max-pedal-command) ;; data will be 0.0 from 1.0
    (let (target-move-mm command-move-mm)
@@ -58,11 +73,11 @@
      command-move-mm ;; return relative distance to move
      )
    )
-  (:brake-cmd
-   (cmd)
-   (warn "Real Vehicle Mode: Brake Disabled~%")
-   (send self :accel-cmd 0.0) ;; release accel forcely
-   )
+  ;; (:brake-cmd
+  ;;  (cmd)
+  ;;  (warn "Real Vehicle Mode: Brake Disabled~%")
+  ;;  (send self :accel-cmd 0.0) ;; release accel forcely
+  ;;  )
   )
 
 (defun hrp2jsk-vehicle-main
