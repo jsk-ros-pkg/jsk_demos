@@ -1497,7 +1497,7 @@
     ;;
     (cond ((or (equal *robot-name* "HRP2JSKNTS") (equal *robot-name* "HRP2JSKNT"))
            ;(send *ri* :start-impedance *drill-main-arm* :moment-gain (float-vector 0 0 -200) :k-p 1000 :d-p 400)) ;; start imp hard
-          (send *ri* :start-impedance *drill-main-arm* :force-gain #f(0.3 0.3 1) :k-p 400 :d-p 1700))
+           (send *ri* :start-impedance *drill-main-arm* :force-gain #f(0.3 0.3 1) :k-p 400 :d-p 1700))
           (t
            (send *ri* :start-impedance *drill-main-arm* :force-gain #f(0.2 0.2 1) :moment-gain (float-vector 0 0 0) :k-p 700 :d-p 3000)))
     ;(send *ri* :start-impedance *drill-main-arm* :moment-gain (float-vector 0 0 0) :k-p 1000 :d-p 1500)
@@ -1505,15 +1505,15 @@
 
     (let* ((drill-dir (matrix-column (send (send (send (if stand-coords stand-coords (make-coords)) :copy-worldcoords) :transformation (send (elt coords-list 0) :copy-worldcoords)) :rot) 2))
           (ref-dir (v- (float-vector 0 0 -20) (scale (if (or (equal *robot-name* "JAXON") (equal *robot-name* "JAXON_RED")) 5.0 3.0) (normalize-vector drill-dir)))))
-      (send *ri* :set-ref-force ref-dir 2000 *drill-main-arm*)
+      (send *ri* :set-ref-force (send (if *drill-stand-coords* *drill-stand-coords* (make-coords)) :inverse-rotate-vector ref-dir) 2000 *drill-main-arm*)
       (ros::ros-info (format nil "ref force ~A ~A ~A" (elt ref-dir 0) (elt ref-dir 1) (elt ref-dir 2)))
       (speak-en (format nil "ref force ~A ~A ~A" (elt ref-dir 0) (elt ref-dir 1) (elt ref-dir 2)))
-      
+
     ;;todo
       (let ((i 0))
         (while (< i (length drill-motion-av-list))
-          (cond ((or 
-                  (equal i 0) 
+          (cond ((or
+                  (equal i 0)
                   (equal i 1)
                   (equal i (- (length drill-motion-av-list) 3))
                   (equal i (- (length drill-motion-av-list) 2))
@@ -1529,11 +1529,13 @@
                    (send *robot* :angle-vector (elt drill-motion-av-list (+ i 2)))
                    (setq c2 (send (send *robot*  *drill-main-arm* :end-coords) :copy-worldcoords))
                    (let ((ref-dir-temp (v- ref-dir (scale 3 (normalize-vector (v- (send c2 :worldpos) (send c1 :worldpos)))))))
-                     (send *ri* :set-ref-force ref-dir-temp 2000 *drill-main-arm*)
+                     (send *ri* :set-ref-force (send (if *drill-stand-coords* *drill-stand-coords* (make-coords)) :inverse-rotate-vector ref-dir-temp) 1000 *drill-main-arm*)
+                     (ros::ros-info (format nil "robot stand coords ~A" (send *robot* :foot-midcoords)))
                      (ros::ros-info (format nil "temp ref dir ~A" ref-dir-temp))
                      )
                    (send-angle-vector-sequence-with-time (subseq drill-motion-av-list i (+ i 3)) :time (/ 12000 devide-num))
                    (setq i (+ i 3))
+                   (send *ri* :set-ref-force (send (if *drill-stand-coords* *drill-stand-coords* (make-coords)) :inverse-rotate-vector ref-dir) 1000 *drill-main-arm*)
                    )
                  )
                 )
