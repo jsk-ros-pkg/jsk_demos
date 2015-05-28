@@ -78,7 +78,6 @@
     <remap from="/joint_states" to="/joint_states_appended" />
     <rosparam>
       message_type: drc_com_common/HumanoidJointAngles
-      robot: hrp2jsknts
     </rosparam>
   </node>
 
