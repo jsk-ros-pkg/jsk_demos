@@ -439,12 +439,23 @@
         )
   )
 
+(defun start-default-impedance
+  ()
+  (set-default-impedance-param)
+  (cond
+   ((or (equal *robot-name* "JAXON") (equal *robot-name* "STARO") (equal *robot-name* "JAXON_RED"))
+    (send *ri* :start-impedance :arms :d-p 600 :d-r 200))
+   (t ;; (or (equal *robot-name* "HRP2JSKNT") (equal *robot-name* "HRP2JSKNTS"))
+    (send *ri* :start-impedance :arms)
+    ))
+  )
+
 (defun start-soft-impedance
   ()
   (set-default-impedance-param)
   (cond
    ((or (equal *robot-name* "JAXON") (equal *robot-name* "STARO") (equal *robot-name* "JAXON_RED"))
-    (send *ri* :start-impedance :arms :m-p 10 :d-p 200 :k-p 200 :m-r 5.0 :d-r 100 :k-r 100))
+    (send *ri* :start-impedance :arms :m-p 10 :d-p 800 :k-p 300 :m-r 2.0 :d-r 80 :k-r 40))
    (t ;; (or (equal *robot-name* "HRP2JSKNT") (equal *robot-name* "HRP2JSKNTS"))
     (send *ri* :start-impedance :arms :m-p 7.5 :d-p 250 :k-p 200 :m-r 1 :d-r 15 :k-r 20)))
   )
@@ -558,3 +569,22 @@
           time)
     (send *ri* :wait-interpolation)
   )
+
+(defun fill-footstep-dimensions (footstep)
+  (send footstep :dimensions :z 0.001)
+  (cond
+   ((string= *jaxon* "JAXON")
+    (send footstep :dimensions :x 0.235)
+    (send footstep :dimensions :y 0.135))
+   ((string= *jaxon* "JAXON_RED")
+    (send footstep :dimensions :x 0.235)
+    (send footstep :dimensions :y 0.135))
+   ((string= *jaxon* "HRP2JSK")
+    (send footstep :dimensions :x 0.235)
+    (send footstep :dimensions :y 0.135))
+   ((or (string= *jaxon* "HRP2JSKNT")
+        (string= *jaxon* "HRP2JSKNTS"))
+    (send footstep :dimensions :x 0.245)
+    (send footstep :dimensions :y 0.135))
+   ))
+

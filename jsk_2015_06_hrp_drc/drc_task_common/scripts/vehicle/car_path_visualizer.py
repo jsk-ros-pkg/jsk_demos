@@ -6,6 +6,7 @@ from visualization_msgs.msg import Marker, MarkerArray
 from std_msgs.msg import *
 from geometry_msgs.msg import *
 import tf
+from tf.transformations import quaternion_matrix
 from math import pi
 
 class CarPathVisualizer:
@@ -31,8 +32,9 @@ class CarPathVisualizer:
             if self.tfl.frameExists("BODY") and self.tfl.frameExists("car_center"):
                 tm = self.tfl.getLatestCommonTime("BODY", "car_center")
                 try:
-                    (self.pos, self.q) = self.tfl.lookupTransform("BODY", "car_center", tm)
-                    # print self.pos
+                    (self.pos, quat) = self.tfl.lookupTransform("BODY", "car_center", tm)
+                    self.R = quaternion_matrix(quat)[0:3,0:3]
+                    # print self.R
                     self.marker_publisher()
                 except (tf.LookupException, tf.ConnectivityException, tf.ExtrapolationException), e:
                     print "tf error: %s" % e
@@ -69,8 +71,12 @@ class CarPathVisualizer:
             vel_norm/=numpy.linalg.norm(vel_norm)
             l_p = p + vel_norm * (self.tread/2.0)
             r_p = p - vel_norm * (self.tread/2.0)
-            l_point_array.append(Point( (self.pos[0]+l_p[0]-0.75), (self.pos[1]+l_p[1]), self.pos[2]))
-            r_point_array.append(Point( (self.pos[0]+r_p[0]-0.75), (self.pos[1]+r_p[1]), self.pos[2]))
+            l_p_array = numpy.array([ (l_p[0]-0.75), l_p[1], 0 ])
+            r_p_array = numpy.array([ (r_p[0]-0.75), r_p[1], 0 ])
+            Rl_p = numpy.dot(self.R, l_p_array)
+            Rr_p = numpy.dot(self.R, r_p_array)
+            l_point_array.append(Point( (self.pos[0]+Rl_p[0]), (self.pos[1]+Rl_p[1]), (self.pos[2]+Rl_p[2])) )
+            r_point_array.append(Point( (self.pos[0]+Rr_p[0]), (self.pos[1]+Rr_p[1]), (self.pos[2]+Rr_p[2])) )
 
         marker_left = Marker(header=std_msgs.msg.Header(frame_id="BODY"), type = Marker.LINE_STRIP, action = Marker.ADD, colors = [std_msgs.msg.ColorRGBA(1, 0.3, 0, 0.5)]*self.curve_length, scale = Vector3(0.2, 1, 1), points = l_point_array, id = 2, ns = "left_wheel")
         marker_array_msg.markers.append(marker_left)
