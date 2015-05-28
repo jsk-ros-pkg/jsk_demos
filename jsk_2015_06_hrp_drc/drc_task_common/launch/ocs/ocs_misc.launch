@@ -3,13 +3,14 @@
   <remap from="/joint_states" to="/ocs/joint_states" />
   <remap from="/robot_description" to="/ocs/robot_description" />
 
+  <include file="$(find drc_task_common)/launch/ocs/models/$(env ROBOT).launch" />
+
   <node pkg="drc_task_common" type="ocs-basic-info-subscriber.l" name="ocs_basic_info_publisher" output="screen">
   </node>
   <!-- dynamic_reconfigure -->
   <node pkg="drc_task_common" name="ocs_dynamic_reconfigure" type="ocs_dynamic_reconfigure.py" />
 
   <group ns="ocs">
-    <include file="$(find drc_task_common)/launch/ocs/models/$(env ROBOT).launch" />
     <node pkg="robot_state_publisher" type="robot_state_publisher" name="ocs_robot_state_publisher">
       <remap from="/joint_states" to="/ocs/joint_states" />
       <remap from="/tf" to="/ocs/tf"/>
