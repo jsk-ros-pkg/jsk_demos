@@ -120,5 +120,7 @@ uint8 REQUEST_FOOTSTEP_PLANNING=65
 
 uint8 HRPSYS_RESET_FORCE_OFFSET=66
 
-# next number is 67
+uint8 REF_FORCE_ZERO=67
+uint8 GO_POS_ZERO=68
+# next number is 69
 

@@ -143,6 +143,10 @@
                 self :hrpsys-stop-st-command-cb)
           (list drc_com_common::OCS2FCSmall::*HRPSYS_STOP_IMP*
                 self :hrpsys-stop-imp-command-cb)
+          (list drc_com_common::OCS2FCSmall::*GO_POS_ZERO*
+                self :go-pos-zero-cb)
+          (list drc_com_common::OCS2FCSmall::*REF_FORCE_ZERO*
+                self :ref-force-zero-cb)
           (list drc_com_common::OCS2FCSmall::*CALIB_HAND*
                 self :calib-hand-command-cb)
           (list drc_com_common::OCS2FCSmall::*ANGLE_VECTOR_SEND*
@@ -1180,6 +1184,13 @@ It sends :angle-vector to robot and return 'finished' message to ocs"
     (send self :send-rviz-button-finished-to-ocs))
   (:hrpsys-stop-imp-command-cb (msg)
     (send *ri* :stop-impedance :arms)
+    (send self :send-rviz-button-finished-to-ocs))
+  (:go-pos-zero-cb (msg)
+    (send *ri* :go-pos 0 0 0)
+    (send self :send-rviz-button-finished-to-ocs))
+  (:ref-force-zero-cb (msg)
+    (send *ri* :set-ref-force (float-vector 0 0 0) 2000 :larm)
+    (send *ri* :set-ref-force (float-vector 0 0 0) 2000 :rarm)
     (send self :send-rviz-button-finished-to-ocs))
   (:calib-hand-command-cb (msg)
     (cond ((or (equal *robot-name* "JAXON") (equal *robot-name* "JAXON_RED") (equal *robot-name* "STARO"))
