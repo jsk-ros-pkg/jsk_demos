@@ -666,7 +666,7 @@
             (t
              (send *ri* :start-impedance *drill-main-arm* :moment-gain (float-vector 0 0 0) :k-p 1000 :d-p 1800))))
     (send *robot* :angle-vector (elt drill-motion-av-list 1))
-    (when real? (model2real :time 1000))
+    (when real? (model2real :time 2000))
     ;; reach
     (if (and *use-f-sensor-search* (equal drill-type :gun))
         (when (not (search-drill-grasp-place)) ;; cannot solve ik

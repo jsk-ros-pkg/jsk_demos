@@ -1,3 +1,4 @@
+(ros::roseus-add-msgs "jsk_footstep_msgs")
 (require "package://drc_task_common/euslisp/robot-util.l")
 (require "package://drc_task_common/euslisp/util.l")
 
@@ -241,6 +242,26 @@
     ;; rotate valve
     (dotimes (i devide-num)
       (send *robot* :reset-manip-pose)
+      (when (or (equal *robot-name* "JAXON") (equal *robot-name* "STARO") (equal *robot-name* "JAXON_RED"))
+        (let* ((default-valve-z-pos 1300)
+               (valve-z-pos-with-weight (min (* (- (elt (send (send *valve* :worldcoords) :worldpos) 2) default-valve-z-pos) 0.5) 0))
+               (waist-pitch-offset-from-valve-z-with-weight (- (* 0.1 valve-z-pos-with-weight)))
+               (pre-pose-overwrite-mode :both) ;; :legs or :waist or :both
+               )
+          (cond ((equal pre-pose-overwrite-mode :legs)
+                 (ros::ros-info "move leg depending on valve height : ~a" (float-vector 0 0 (- valve-z-pos-with-weight)))
+                 (send *robot* :legs :move-end-pos (float-vector 0 0 (- valve-z-pos-with-weight)))
+                 )
+                ((equal pre-pose-overwrite-mode :waist)
+                 (ros::ros-info "move waist-pitch depending on valve height : ~a" waist-pitch-offset-from-valve-z-with-weight)
+                 (send *robot* :torso :waist-p :joint-angle waist-pitch-offset-from-valve-z-with-weight)
+                 )
+                ((equal pre-pose-overwrite-mode :both)
+                 (ros::ros-info "move leg and waist-pitch depending on valve height : ~a ~a" (float-vector 0 0 (* 0.2 (- valve-z-pos-with-weight))) (* 0.8 waist-pitch-offset-from-valve-z-with-weight))
+                 (send *robot* :legs :move-end-pos (float-vector 0 0 (* 0.2 (- valve-z-pos-with-weight))))
+                 (send *robot* :torso :waist-p :joint-angle (* 0.8 waist-pitch-offset-from-valve-z-with-weight))
+                 ))
+          ))
       (send *robot* :fix-leg-to-coords *valve-stand-coords*)
       ;; solve ik to rotate valve
       (let* (ik-ret-in
@@ -263,7 +284,7 @@
         (cond ((or (equal *robot-name* "JAXON") (equal *robot-name* "STARO") (equal *robot-name* "JAXON_RED"))
                (setq tc
                      (list
-                      (send (send (send *valve* :get valve-handle-name) :copy-worldcoords) :translate (float-vector (* (- reach-dist) 2.0) 0 0) :local)
+                      (send (send (send *valve* :get valve-handle-name) :copy-worldcoords) :translate (float-vector (* (- reach-dist) 2.25) 0 0) :local)
                       (send *robot* :rleg :end-coords :copy-worldcoords)
                       (send *robot* :lleg :end-coords :copy-worldcoords))))
               (t ;; (or (equal *robot-name* "HRP2JSKNT") (equal *robot-name* "HRP2JSKNTS"))
@@ -344,9 +365,9 @@
   (&key (grasp-center? nil))
   (cond ((or (equal *robot-name* "JAXON") (equal *robot-name* "STARO") (equal *robot-name* "JAXON_RED"))
          (cond ((equal *valve-arm* :larm)
-                (make-coords :pos (float-vector -600 -500 0) :rpy (list (deg2rad -10) 0 0)))
+                (make-coords :pos (float-vector -600 -400 0) :rpy (list (deg2rad -10) 0 0)))
                ((equal *valve-arm* :rarm)
-                (make-coords :pos (float-vector -600 +500 0) :rpy (list (deg2rad +10) 0 0))))
+                (make-coords :pos (float-vector -600 +400 0) :rpy (list (deg2rad +10) 0 0))))
          )
         (t ;; (or (equal *robot-name* "HRP2JSKNT") (equal *robot-name* "HRP2JSKNTS"))
          (cond (grasp-center?
@@ -448,7 +469,8 @@
       (when real?
         (set-default-impedance-param)
         (cond ((or (equal *robot-name* "JAXON") (equal *robot-name* "STARO") (equal *robot-name* "JAXON_RED"))
-               (send *ri* :start-impedance :arms :moment-gain (float-vector 0 0 0) :k-p 300 :d-p 500 :ik-optional-weight-vector #f(1 0.5 0.5 0.5 1 1 1 1)))
+               (send *ri* :start-impedance :arms :moment-gain (float-vector 0 0 0) :k-p 300 :d-p 500))
+               ;;(send *ri* :start-impedance :arms :moment-gain (float-vector 0 0 0) :k-p 300 :d-p 500 :ik-optional-weight-vector #f(1 0.3 0.5 0.5 1 1 1 1)))
               (t ;; (or (equal *robot-name* "HRP2JSKNT") (equal *robot-name* "HRP2JSKNTS"))
                (send *ri* :start-impedance :arms :moment-gain (float-vector 0 0 0) :k-p 800 :d-p 400)
                )))
