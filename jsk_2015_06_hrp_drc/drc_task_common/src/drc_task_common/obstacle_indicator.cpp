@@ -30,6 +30,8 @@ private:
   double a;
   double b;
   double play;
+  double A;
+  double P_c;
   int field_of_vision;
   double wheelbase;
   double tread;
@@ -51,6 +53,8 @@ public:
     a = 0.0258676;
     play = 0.60952311;
     b = - a * play;
+    A = a / (4 * play);
+    P_c = 2 * play;
   }
   ~ObstacleIndicator(){
   }
@@ -123,14 +127,19 @@ public:
   }
 
   double alpha2kappa_table(double alpha){
-    // kappa = a * alpha + b (alpha > 0), kappa = a*alpha - b (alpha < 0)
     double kappa;
-    if ( std::fabs(alpha) <= play ){
-      kappa = 0;
-    } else if ( alpha > play) {
-      kappa = a * alpha + b;
+    if ( alpha >= 0 ) {
+      if ( alpha <= P_c){
+        kappa = A * alpha * alpha;
+      } else {
+        kappa = a * alpha + b;
+      }
     } else {
-      kappa = a * alpha - b;
+      if ( alpha >= -P_c){
+        kappa = -A * alpha * alpha;
+      } else {
+        kappa = a * alpha - b;
+      }
     }
     return kappa;
   }

@@ -18,6 +18,8 @@ class CarPathVisualizer:
         self.a = 0.0258676
         self.play = 0.60952311
         self.b = -self.a * self.play
+        self.A = self.a / (4 * self.play)
+        self.P_c = 2 * self.play
         self.tread = 1.32
         self.line_length = 0.2
         self.ang = 0.0
@@ -88,12 +90,16 @@ class CarPathVisualizer:
 
 
     def alpha_to_kappa_table(self, alpha):
-        if (numpy.fabs(alpha) <= self.play):
-            kappa = 0
-        elif (alpha > self.play):
-            kappa = self.a * alpha + self.b
+        if (alpha >= 0):
+            if (alpha <= self.P_c):
+                kappa = self.A * alpha * alpha
+            else:
+                kappa = self.a * alpha + self.b
         else:
-            kappa = self.a * alpha - self.b
+            if (alpha >= -self.P_c):
+                kappa = -self.A * alpha * alpha
+            else:
+                kappa = self.a * alpha - self.b
         return kappa
 
 
