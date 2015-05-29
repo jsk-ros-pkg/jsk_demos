@@ -462,7 +462,7 @@
          (grasp-up-dist 120)
          (air-grasp-up-dist (if (or (equal *robot-name* "HRP2JSKNTS") (equal *robot-name* "HRP2JSKNT")) 60 0))
          (down-dist (if (or (equal *robot-name* "HRP2JSKNTS") (equal *robot-name* "HRP2JSKNT")) 15 0))
-         (push-dist (if (or (equal *robot-name* "HRP2JSKNTS") (equal *robot-name* "HRP2JSKNT")) 0 -10))
+         (push-dist (if (or (equal *robot-name* "HRP2JSKNTS") (equal *robot-name* "HRP2JSKNT")) 0 -20))
          (ik-results nil)
          (original-foot-midcoords (send (send *robot* :foot-midcoords) :copy-worldcoords))
          (original-drill-coords (send *drill* :copy-worldcoords))
