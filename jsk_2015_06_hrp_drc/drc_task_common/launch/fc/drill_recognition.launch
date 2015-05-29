@@ -128,7 +128,7 @@
     <node pkg="nodelet"
           type="nodelet"
           name="filter_small_boxes"
-          load="load jsk_pcl/BoundingBoxFilter drill_manager">
+          args="load jsk_pcl/BoundingBoxFilter drill_manager">
       <remap from="~input_box"
              to="cluster_point_indices_decomposer/boxes"/>
       <remap from="~input_indices" to="euclidean_clustering/output"/>
