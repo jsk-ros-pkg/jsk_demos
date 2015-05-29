@@ -1756,7 +1756,7 @@
           (when real? (drill-hook))
           (send *robot* :angle-vector (elt *drill-motion-out* 0))
           (when real? (model2real :time 2000))
-          (send-angle-vector-sequence-with-time (subseq *drill-motion-out* 1 rotate-length) :time 1000)
+          (send-angle-vector-sequence-with-time (subseq *drill-motion-out* 1 rotate-length) :time 1500)
           (send *robot* :angle-vector (elt *drill-motion-in* (- rotate-length 1)))
           (when real? (model2real :time 3000))
           (when real? (drill-air-grasp))
