@@ -299,6 +299,28 @@ class VehicleUIWidget(QWidget):
         step_min_vbox.addWidget(self.step_min_down_button)
         step_min_hbox.addLayout(step_min_vbox)
         step_vbox.addLayout(step_min_hbox)
+
+        step_detach_hbox = QtGui.QHBoxLayout(self)
+        self.step_detach_label = QtGui.QLabel("Det", self)
+        step_detach_vbox = QtGui.QVBoxLayout(self)
+        self.is_set_detach_step_executing = False
+        self.step_detach_value = -1
+        self.step_detach_up_button = QtGui.QPushButton()
+        self.step_detach_up_button.setIcon(QIcon.fromTheme("go-up"))
+        self.step_detach_up_button.clicked.connect(self.detachUpButtonCallback)
+        self.step_detach_down_button = QtGui.QPushButton()
+        self.step_detach_down_button.setIcon(QIcon.fromTheme("go-down"))
+        self.step_detach_down_button.clicked.connect(self.detachDownButtonCallback)
+        self.step_detach_edit = QtGui.QLineEdit()
+        self.step_detach_edit.setText(str(self.step_detach_value))
+        self.step_detach_edit.returnPressed.connect(self.detachEditCallback)
+        self.step_detach_edit.setValidator(QtGui.QDoubleValidator(-200, 200, 10))
+        step_detach_hbox.addWidget(self.step_detach_label)
+        step_detach_vbox.addWidget(self.step_detach_up_button)
+        step_detach_vbox.addWidget(self.step_detach_edit)
+        step_detach_vbox.addWidget(self.step_detach_down_button)
+        step_detach_hbox.addLayout(step_detach_vbox)
+        step_vbox.addLayout(step_detach_hbox)
         
         step_group.setLayout(step_vbox)
         left_vbox.addWidget(step_group)
@@ -422,7 +444,8 @@ class VehicleUIWidget(QWidget):
 
         self.step_gage = StepGageWidget("drive/controller/step",
                                         "drive/controller/max_step",
-                                        "drive/controller/min_step")
+                                        "drive/controller/min_step"
+                                        )
         right_vbox.addWidget(self.step_gage, 15)
         self.set_current_step_as_max_button = QtGui.QPushButton("Set Current Step as Max")
         self.set_current_step_as_max_button.clicked.connect(self.setCurrentStepAsMaxButtonCallback)
@@ -705,6 +728,30 @@ class VehicleUIWidget(QWidget):
         else:
             with self.lock:
                 self.step_max_edit.setText(str(self.step_max_value))
+
+    def detachUpButtonCallback(self, event):
+        current_value = float(self.step_detach_edit.text())
+        current_value = current_value + 1.0
+        next_value = self.callSetValueService('drive/controller/set_detach_step', current_value)
+        if next_value != None:
+            with self.lock:
+                self.step_detach_edit.setText(str(next_value))
+    def detachDownButtonCallback(self, event):
+        current_value = float(self.step_detach_edit.text())
+        current_value = current_value - 1.0
+        next_value = self.callSetValueService('drive/controller/set_detach_step', current_value)
+        if next_value != None:
+            with self.lock:
+                self.step_detach_edit.setText(str(next_value))
+    def detachEditCallback(self):
+        current_value = float(self.step_detach_edit.text())
+        next_value = self.callSetValueService('drive/controller/set_detach_step', current_value)
+        if next_value != None:
+            with self.lock:
+                self.step_detach_edit.setText(str(next_value))
+        else:
+            with self.lock:
+                self.step_detach_edit.setText(str(self.step_detach_value))
 
     def overwriteButtonCallback(self, event):
         current_handle = float(self.overwrite_edit.text())
