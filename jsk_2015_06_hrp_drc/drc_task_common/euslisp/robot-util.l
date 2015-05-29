@@ -559,12 +559,11 @@
           time)
     (send *ri* :wait-interpolation)
     (walking-pose *robot*
-                  :default-pose-method :narrow-width-pose
-                  :root-link-pitch-offset 20
-                  :root-link-height-offset -140 ; for stair
-                  :chest-link-pitch-offset 20 ; for stair
-                  )
-    (send *robot* :head :neck-p :joint-angle 35)
+                  :root-link-pitch-offset 10
+                  :chest-link-pitch-offset 25
+                  :root-link-height-offset -60
+                  :head-link-pitch-offset 35
+                  :default-pose-method :narrow-width-pose)
     (send *ri* :angle-vector (send *robot* :angle-vector)
           time)
     (send *ri* :wait-interpolation)
