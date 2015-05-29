@@ -2,12 +2,44 @@
   <group ns="drill_recognition">
     <node pkg="nodelet" type="nodelet" name="drill_manager"
           args="manager" />
-
+    <node pkg="nodelet"
+          type="nodelet"
+          name="z_filter"
+          args="load pcl/PassThrough drill_manager">
+      <remap from="~input" to="/laser_downsampler/output" />
+      <rosparam>
+        filter_field_name: z
+        filter_limit_min: 0
+        filter_limit_max: 2.0
+      </rosparam>
+    </node>
+    <node pkg="nodelet"
+          type="nodelet"
+          name="x_filter"
+          args="load pcl/PassThrough drill_manager">
+      <remap from="~input" to="z_filter/output" />
+      <rosparam>
+        filter_field_name: x
+        filter_limit_min: 0
+        filter_limit_max: 2.5
+      </rosparam>
+    </node>
+<node pkg="nodelet"
+          type="nodelet"
+          name="y_filter"
+          args="load pcl/PassThrough drill_manager">
+      <remap from="~input" to="x_filter/output" />
+      <rosparam>
+        filter_field_name: y
+        filter_limit_min: -1.25
+        filter_limit_max: 1.25
+      </rosparam>
+    </node>
     <node pkg="nodelet"
           type="nodelet"
           name="normal_estimation"
           args="load jsk_pcl/NormalEstimationOMP drill_manager">
-      <remap from="~input" to="/laser_downsampler/output" />
+      <remap from="~input" to="y_filter/output" />
       <rosparam>
         k_search: 0
         radius_search: 0.05
@@ -69,7 +101,7 @@
           type="nodelet"
           name="multi_plane_extraction"
           args="load jsk_pcl/MultiPlaneExtraction drill_manager">
-      <remap from="~input" to="/laser_downsampler/output" />
+      <remap from="~input" to="y_filter/output" />
       <remap from="~input_polygons"
              to="polygon_flipper/output/polygons"
              />
@@ -128,7 +160,7 @@
     <node pkg="nodelet"
           type="nodelet"
           name="filter_small_boxes"
-          load="load jsk_pcl/BoundingBoxFilter drill_manager">
+          args="load jsk_pcl/BoundingBoxFilter drill_manager">
       <remap from="~input_box"
              to="cluster_point_indices_decomposer/boxes"/>
       <remap from="~input_indices" to="euclidean_clustering/output"/>

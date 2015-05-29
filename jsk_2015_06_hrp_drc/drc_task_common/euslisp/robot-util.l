@@ -431,12 +431,23 @@
 
 (defun set-default-impedance-param
   (&key (arm :arms))
-  (send *ri* :set-impedance-controller-param arm
-        :m-p 10.0 :d-p 200.0 :k-p 400.0
-        :m-r 5.0 :d-r 100.0 :k-r 200.0
-        :force-gain #f(1.0 1.0 1.0) :moment-gain #f(1.0 1.0 1.0)
-        :sr-gain 1.0 :avoid-gain 0.001 :reference-gain 0.01  :manipulability-limit 0.1  :controller-mode 0
-        )
+  (cond ((or (equal *robot-name* "JAXON") (equal *robot-name* "STARO") (equal *robot-name* "JAXON_RED"))
+         (send *ri* :set-impedance-controller-param arm
+               :m-p 10.0 :d-p 200.0 :k-p 400.0
+               :m-r 5.0 :d-r 100.0 :k-r 200.0
+               :force-gain #f(1.0 1.0 1.0) :moment-gain #f(1.0 1.0 1.0)
+               :sr-gain 1.0 :avoid-gain 0.001 :reference-gain 0.01  :manipulability-limit 0.1  :controller-mode 0
+               :ik-optional-weight-vector #f(1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0)
+               )
+         )
+        (t ;; (or (equal *robot-name* "HRP2JSKNT") (equal *robot-name* "HRP2JSKNTS"))
+         (send *ri* :set-impedance-controller-param arm
+               :m-p 10.0 :d-p 200.0 :k-p 400.0
+               :m-r 5.0 :d-r 100.0 :k-r 200.0
+               :force-gain #f(1.0 1.0 1.0) :moment-gain #f(1.0 1.0 1.0)
+               :sr-gain 1.0 :avoid-gain 0.001 :reference-gain 0.01  :manipulability-limit 0.1  :controller-mode 0
+               )
+         ))
   )
 
 (defun start-default-impedance
