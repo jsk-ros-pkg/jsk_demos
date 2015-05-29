@@ -54,6 +54,9 @@ namespace drc_task_common
     void callRequestDisplayManip();
     void callRequestHideManip();
     
+    void callRequestSetRefForceZero();
+    void callRequestGoPos000();
+
     void callRequestUint8Request(uint type);
     
   protected:
