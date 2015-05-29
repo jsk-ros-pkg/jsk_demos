@@ -1060,7 +1060,7 @@
         (set-focus-marker-name "drill")
         ;; publish motion to robot model on rviz
         (setq *drill-main-arm* (send self :get-arm-side))
-	(publish-drill-grasp-motion :coords (elt drill-grasp-params 0) :update? t :stand-coords (make-coords) :overwrite-stand-coords? :force :drill-rotate-num drill-rotate-num)
+	(publish-drill-grasp-motion :coords (elt drill-grasp-params 0) :update? t :stand-coords (make-coords) :overwrite-stand-coords? :auto :drill-rotate-num drill-rotate-num)
         (let ((index (position-if #'(lambda (x) (equal (elt x 0) :grasp)) drill-stand-coords-list)))
           (if index
               (progn

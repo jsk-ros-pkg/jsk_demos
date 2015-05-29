@@ -8,6 +8,7 @@
   (robot
    &key (root-link-height-offset 0)
         (root-link-pitch-offset 0)
+        (head-link-pitch-offset 0)
         (root-link-roll-offset 0)
         (chest-link-pitch-offset 0)
         (chest-link-roll-offset 0)
@@ -37,6 +38,7 @@
                 (send robot l :inverse-kinematics c))
             '(:rleg :lleg) lc)
     (send robot :move-centroid-on-foot :both '(:rleg :lleg))
+    (send robot :head :neck-p :joint-angle head-link-pitch-offset)
     (send robot :angle-vector)
     ))
 

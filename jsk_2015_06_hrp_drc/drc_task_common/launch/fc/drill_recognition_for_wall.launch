@@ -1,8 +1,8 @@
 <launch>
   <arg name="INPUT_IMAGE" value="/multisense/left/image_rect_color" />
   <arg name="INPUT_CAMERA_INFO" value="/multisense/left/camera_info" />
-  <arg name="INPUT_POINT_CLOUD" value="/laser_camera_cloud/output" />
-  <arg name="INPUT_DOWNSAMPLED_POINT_CLOUD" value="/laser_camera_cloud/output" />
+  <arg name="INPUT_POINT_CLOUD" value="/laser_preprocess/camera_laser_cloud/output" />
+  <arg name="INPUT_DOWNSAMPLED_POINT_CLOUD" value="/laser_preprocess/camera_laser_cloud/output" />
   <arg name="DEBUG" default="false" />
   <group ns="drill_recognition_for_wall">
     <group if="$(arg DEBUG)">

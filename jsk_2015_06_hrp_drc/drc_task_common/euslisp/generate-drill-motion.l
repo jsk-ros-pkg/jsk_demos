@@ -1,9 +1,11 @@
+(ros::roseus-add-msgs "jsk_footstep_msgs")
 (require "package://drc_task_common/euslisp/robot-util.l")
 (require "package://drc_task_common/euslisp/util.l")
 ;(require "package://drc_task_common/models/dewalt_dc550ka.l")
 (require "package://drc_task_common/models/takenoko-drill")
 (require "package://drc_task_common/models/gun-drill.l")
 (ros::roseus-add-srvs "drc_task_common")
+(ros::roseus-add-msgs "jsk_footstep_msgs")
 (require "package://pr2eus/speak.l")
 
 
@@ -849,7 +851,7 @@
     ;; (when real? (model2real :time 5000))
     ;; put
     (send *robot* :angle-vector (elt drill-motion-av-list 4))
-    (when real? (model2real :time 1000))
+    (when real? (model2real :time 3000))
     ;; put
     (send *robot* :angle-vector (elt drill-motion-av-list 3))
     (when real? (model2real :time 2000))
@@ -1280,7 +1282,7 @@
            :parent (send (send *robot* *drill-main-arm* :end-coords) :parent)))
 
     ;; wall drill
-    (send *robot* :angle-vector (get-pierce-drill-pre-pose))
+    (send *robot* :angle-vector (get-pierce-drill-pre-pose2))
     (send *robot* :fix-leg-to-coords original-foot-midcoords)    ;; solve ik to wall drill
     (let* (ik-ret
            tc
@@ -1734,7 +1736,9 @@
           (send *robot* :angle-vector (elt *drill-motion-in* 0))
           (when real? (model2real :time 2000))
           (when real? (drill-hook))
-          (send-angle-vector-sequence-with-time (subseq *drill-motion-out* 0 rotate-length) :time 500)
+          (send *robot* :angle-vector (elt *drill-motion-out* 0))
+          (when real? (model2real :time 2000))
+          (send-angle-vector-sequence-with-time (subseq *drill-motion-out* 1 rotate-length) :time 1000)
           (send *robot* :angle-vector (elt *drill-motion-in* (- rotate-length 1)))
           (when real? (model2real :time 4000))
           (when real? (drill-air-grasp))
@@ -1881,6 +1885,17 @@
     angle-ret
     )
   )
+(defun get-pierce-drill-pre-pose2 
+  ()
+  (if (or (equal *robot-name* "HRP2JSKNTS") (equal *robot-name* "HRP2JSKNT"))
+      (get-pierce-drill-pre-pose) 
+    (progn
+      (send *robot* :angle-vector #f(1.8474 -2.65775 -26.6226 45.4555 -22.888 1.96534 1.84848 -2.64244 -25.6546 44.674 -23.0745 1.95 4.97106 9.06265 14.0558 -32.0 30.0 -14.6782 56.0899 -103.525 -34.4307 -65.4033 -105.557 -0.936239 59.0 1.11288 44.8267 41.7962 -9.91826 -101.245 33.2679 14.7361 -39.3661))
+      (when (equal *drill-main-arm* :larm) (get-mirror-angle-vector))
+      )
+    )
+  (send *robot* :angle-vector)
+  )
 ;; (defun get-push-drill-pre-pose ()
 ;; (float-vector 0.0 0.0 -26.0 50.0 -24.0 0.0 0.0 0.0 0.0 -26.0 50.0 -24.0 0.0 0.0 0.0 0.0 0.0 40.0 -23.0209 -7.67889 10.4985 -75.8274 97.2715 -28.3553 -71.5569 60.0 50.0 30.0 10.0 -120.0 25.0 5.0 -20.0 -60.0)
 ;;   )
@@ -1962,7 +1977,7 @@
   (if (or (equal *robot-name* "HRP2JSKNTS") (equal *robot-name* "HRP2JSKNT"))
       (progn
         (send *robot* :angle-vector #f(0.0 0.0 -26.0 50.0 -24.0 0.0 0.0 0.0 0.0 -26.0 50.0 -24.0 0.0 0.0 0.0 0.0 -13.4395 10.0 -84.1367 -0.425352 13.4642 -45.0732 -105.118 -20.542 77.6712 60.0 40.0869 75.2885 11.7308 -117.757 -18.2568 65.0121 0.945275 -60.0))
-        (when (equal *drill-main-arm* :larm) (setq angle-ret (get-mirror-angle-vector)))
+        (when (equal *drill-main-arm* :larm) (get-mirror-angle-vector))
         )
     (get-watch-drill-pose)
     )
@@ -2140,7 +2155,7 @@
   )
 (defun test-send-drill-wall-motion ()
   (test-init)
-  (setq *drill-coords-list* (list (get-body-relative-coords (make-coords :pos (float-vector 1000 -100 1000) :rpy (list 0 pi/2 0))) (get-body-relative-coords (make-coords :pos (float-vector 1000 100 1000) :rpy (list 0 pi/2 0))) (get-body-relative-coords (make-coords :pos (float-vector 1000 100 1200) :rpy (list 0 pi/2 0))) (get-body-relative-coords (make-coords :pos (float-vector 1000 -100 1200) :rpy (list 0 pi/2 0)))))
+  (setq *drill-coords-list* (list (get-body-relative-coords (make-coords :pos (float-vector 1000 -100 1000) :rpy (list 0 pi/2 0))) (get-body-relative-coords (make-coords :pos (float-vector 1000 0 900) :rpy (list 0 pi/2 0))) (get-body-relative-coords (make-coords :pos (float-vector 1000 100 1000) :rpy (list 0 pi/2 0))) (get-body-relative-coords (make-coords :pos (float-vector 1000 100 1200) :rpy (list 0 pi/2 0))) (get-body-relative-coords (make-coords :pos (float-vector 1000 0 1300) :rpy (list pi 0 0))) (get-body-relative-coords (make-coords :pos (float-vector 1000 -100 1200) :rpy (list 0 pi/2 0))) (get-body-relative-coords (make-coords :pos (float-vector 1000 -100 1000) :rpy (list 0 pi/2 0)))))
   (send-drill-wall-motion *drill-coords-list* :real? t :overwrite-stand-coords? t :draw? t)
   )
 (defun re-view ()

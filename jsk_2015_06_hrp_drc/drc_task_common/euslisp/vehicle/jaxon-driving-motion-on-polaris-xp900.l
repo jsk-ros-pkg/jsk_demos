@@ -10,12 +10,15 @@
 
 (defmethod jaxon-driving-motion-on-polaris-xp900
   (:init
-   (&key ((:car tmp-car) nil) ((:real tmp-real) nil) (grasp-arm :rarm) (grasp-point :handle-top))
-   (jaxon-init)
-   (unless tmp-car
-     (setq tmp-car (instance polaris-xp900-with-handle :init :handle-mode :left))
+   (&key ((:robot tmp-robot) nil) ((:car tmp-car) nil) ((:real tmp-real) nil) (grasp-arm :larm) (grasp-point :handle-crank))
+   (unless tmp-robot
+     (jaxon-init)
+     (setq tmp-robot *jaxon*)
      )
-   (send-super :init :robot *jaxon* :car tmp-car :real tmp-real :grasp-arm grasp-arm :grasp-point grasp-point)
+   (unless tmp-car
+     (setq tmp-car (instance polaris-xp900-with-handle :init))
+     )
+   (send-super :init :robot tmp-robot :car tmp-car :real tmp-real :grasp-arm grasp-arm :grasp-point grasp-point)
    )    
   
   (:drive-init-pose
