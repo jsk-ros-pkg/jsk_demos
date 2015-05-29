@@ -405,6 +405,8 @@
         (integer-vector-to-rect-polygon-stamped msg))
       ;; enable snapshot
       (call-empty-service "/valve_recognition/snapshot/request")
+      (ros::publish "/valve_recognition/input_rect"
+        (integer-vector-to-rect-polygon-stamped msg))
       (send smachine :go-to :recognizing-valve-pose)
       ))
   (:go-pos-region-command-callback (msg)
@@ -414,6 +416,8 @@
         (integer-vector-to-rect-polygon-stamped msg))
       ;; enable snapshot
       (call-empty-service "/go_pos_recognition/snapshot/request")
+      (ros::publish "/go_pos_recognition/input_rect"
+                    (integer-vector-to-rect-polygon-stamped msg))
       (send smachine :go-to :recognizing-go-pos-location)
       ))
   (:debri-exec-command-callback (msg)
