@@ -35,7 +35,11 @@
           latest-motor-states))
 
 (defun range-in-uint8 (val minval maxval)
-  (max 255 (round (* (/ (max (min val minval) maxval) (float (- maxval minval))) 255.0))))
+  (min 255 (round (* (/ (-
+                         (min (max val minval) maxval)
+                         minval)
+                        (float (- maxval minval)))
+                     255.0))))
 
 (defmethod fc-basic-info-publisher
   (:init ()
@@ -167,7 +171,8 @@
                        0 (length (send msg :abs_diff)))))
           (let ((compressed-diffs
                  (mapcar #'(lambda (d)
-                             (min 255 (round (/ (* 255.0 (abs d)) 10.0)))))))
+                             (min 255 (round (/ (* 255.0 (abs d)) 10.0))))
+                         diffs)))
             (dotimes (i (length compressed-diffs))
               (setf (elt (send msg :abs_diff) i) (elt compressed-diffs i)))
             )))
@@ -190,19 +195,19 @@
         (setf (elt (send msg :imu) 3) (send latest-imu :orientation :w)))
       (when latest-vin                  ;70-90 in 0-255
         (let ((vin (range-in-uint8 (apply #'min (coerce (send latest-vin :data) cons))
-                                   70 90)))
+                                   70.0 90.0)))
           (send msg :vin vin)))
       (when latest-vdd                  ;10-13 in 0-255
         (let ((vdd (range-in-uint8 (apply #'min (coerce (send latest-vdd :data) cons))
-                                   10 13)))
+                                   10.0 13.0)))
           (send msg :vdd vdd)))
       (when latest-vpc
-        (send msg :vpc (range-in-uint8 (elt (send latest-vpc :data) 0) 10 13)))
+        (send msg :vpc (range-in-uint8 (elt (send latest-vpc :data) 0) 10.0 13.0)))
       ;; lookup body -> odom_on_ground
       (let ((trans (send *tf* :lookup-transform "BODY" "odom_on_ground"
-                         (ros::time 0))))
+                         (Ros::time 0))))
         (when trans
-          (send msg :odom_on_ground (coords-to-float-vector 
+          (send msg :odom_on_ground (coords-to-float-vector
                                      trans 6))))
       ;; lookup body -> ground
       (let ((trans (send *tf* :lookup-transform "BODY" "ground" (ros::time 0))))
