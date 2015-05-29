@@ -1546,7 +1546,7 @@
                      (ros::ros-info (format nil "robot stand coords ~A" (send *robot* :foot-midcoords)))
                      (ros::ros-info (format nil "temp ref dir ~A" ref-dir-temp))
                      )
-                   (send-angle-vector-sequence-with-time (subseq drill-motion-av-list i (+ i 3)) :time (/ 12000 devide-num))
+                   (send-angle-vector-sequence-with-time (subseq drill-motion-av-list i (+ i 3)) :time (/ 6000 devide-num))
                    (setq i (+ i 3))
                    (send *ri* :set-ref-force (send (if *drill-stand-coords* *drill-stand-coords* (make-coords)) :inverse-rotate-vector ref-dir) 1000 *drill-main-arm*)
                    )
