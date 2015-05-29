@@ -469,8 +469,7 @@
       (when real?
         (set-default-impedance-param)
         (cond ((or (equal *robot-name* "JAXON") (equal *robot-name* "STARO") (equal *robot-name* "JAXON_RED"))
-               (send *ri* :start-impedance :arms :moment-gain (float-vector 0 0 0) :k-p 300 :d-p 500))
-               ;;(send *ri* :start-impedance :arms :moment-gain (float-vector 0 0 0) :k-p 300 :d-p 500 :ik-optional-weight-vector #f(1 0.3 0.5 0.5 1 1 1 1)))
+               (send *ri* :start-impedance :arms :moment-gain (float-vector 0 0 0) :k-p 300 :d-p 500 :ik-optional-weight-vector #f(1 0.2 1 1 1 1 1 1)))
               (t ;; (or (equal *robot-name* "HRP2JSKNT") (equal *robot-name* "HRP2JSKNTS"))
                (send *ri* :start-impedance :arms :moment-gain (float-vector 0 0 0) :k-p 800 :d-p 400)
                )))
@@ -501,7 +500,9 @@
         (cond ((= i (1- rotate-num))
                ;; last releasing
                (send *robot* :reset-manip-pose)
-               (when real? (model2real :time 5000)))
+               (when real? (model2real :time 5000))
+               (when real? (set-default-impedance-param))
+               )
               (t
                ;; reverse
                (when real? (send-angle-vector-sequence-with-time (cdr (subseq valve-motion-av-list (/ valve-motion-length 2))) :time 1000 :wait? t))
