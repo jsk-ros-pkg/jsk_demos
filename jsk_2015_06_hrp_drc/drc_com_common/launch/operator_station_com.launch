@@ -32,7 +32,7 @@
   </node>
   <node pkg="jsk_network_tools" type="silverhammer_highspeed_receiver.py"
         output="log"
-        name="highspeed_receiver_reliable">
+        name="highspeed_receiver_reliable" if="false">
     <rosparam>
       message: drc_com_common/FC2OCSLargeReliable
       topic_prefix: "/ocs"
