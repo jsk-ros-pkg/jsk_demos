@@ -3,7 +3,7 @@
   robot: false
   mode: "visualization"
   # mode: "registration"
-  model_param: "/ocs/robot_description"
+  use_robot_description: true
   scale: 1.0
   pose: 
     position: 

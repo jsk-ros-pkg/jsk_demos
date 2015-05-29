@@ -102,7 +102,7 @@
           (if (or (string= "JAXON" (unix::getenv "ROBOT"))
                   (string= "JAXON_RED" (unix::getenv "ROBOT")))
               (send req :cur_tf (ros::coords->tf-transform-stamped imucoords "BODY" "imu_floor"))
-            (send req :cur_tf (ros::coords->tf-transform-stamped imucoords "CHEST1" "imu_floor")))
+            (send req :cur_tf (ros::coords->tf-transform-stamped imucoords "CHEST1_LINK1" "imu_floor")))
           (ros::service-call "/ocs/set_dynamic_tf" req)
           ))
       (ros::publish "/ocs/imu" imumsg))

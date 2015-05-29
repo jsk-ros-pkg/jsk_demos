@@ -405,6 +405,8 @@
         (integer-vector-to-rect-polygon-stamped msg))
       ;; enable snapshot
       (call-empty-service "/valve_recognition/snapshot/request")
+      (ros::publish "/valve_recognition/input_rect"
+        (integer-vector-to-rect-polygon-stamped msg))
       (send smachine :go-to :recognizing-valve-pose)
       ))
   (:go-pos-region-command-callback (msg)
@@ -414,6 +416,8 @@
         (integer-vector-to-rect-polygon-stamped msg))
       ;; enable snapshot
       (call-empty-service "/go_pos_recognition/snapshot/request")
+      (ros::publish "/go_pos_recognition/input_rect"
+                    (integer-vector-to-rect-polygon-stamped msg))
       (send smachine :go-to :recognizing-go-pos-location)
       ))
   (:debri-exec-command-callback (msg)
@@ -1286,7 +1290,16 @@ It sends :angle-vector to robot and return 'finished' message to ocs"
                 (list (float-vector -20 0 0) (float-vector -20 0 0)))
           )
         (print footstep-coords*)
-        (send *ri* :set-foot-steps footstep-coords*)
+        (if (< (abs (elt (send (cadr footstep-coords*) :worldpos) 2)) 50)
+            (send *ri* :set-foot-steps footstep-coords*)
+          (let ((default-step-time (send (send *ri* :get-gait-generator-param) :default_step_time))
+                (double-support-av (walking-pose *robot* :root-link-pitch-offset 10 :chest-link-pitch-offset 25 :root-link-height-offset -60 :head-link-pitch-offset 35 :default-pose-method :narrow-width-pose))
+                (first-step-av (walking-pose *robot* :root-link-pitch-offset 10 :chest-link-pitch-offset 25 :root-link-height-offset -120 :head-link-pitch-offset 35 :default-pose-method :narrow-width-pose))
+                (second-step-av (walking-pose *robot* :root-link-pitch-offset 10 :chest-link-pitch-offset 25 :root-link-height-offset -60 :head-link-pitch-offset 35 :default-pose-method :narrow-width-pose)))
+            (send *ri* :set-foot-steps-with-base-height
+                  footstep-coords*
+                  (list double-support-av first-step-av second-step-av)
+                  (list (* 1e3 default-step-time) (* 1e3 default-step-time 1) (* 1e3 default-step-time 1)))))
         ;; fix ri parmaeter for planar transition
         (if (or (string= "JAXON" *robot-name*)  (equal *robot-name* "JAXON_RED"))
             (send *ri* :set-gait-generator-param
