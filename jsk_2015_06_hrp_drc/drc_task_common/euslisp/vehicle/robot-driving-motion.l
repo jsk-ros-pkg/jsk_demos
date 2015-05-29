@@ -99,6 +99,10 @@
          (old-angle-vector (send robot limb :angle-vector))
          (rot-angle 0) (ik-result nil) target-handle-coords
          )
+     ;; consider handle rotation when using handle-crank
+     (when (equal target-handle :handle-crank)
+       (send target-handle-coords-org :rotate (deg2rad (- (send car :handle-joint :joint-angle))) :z)
+       )
      (labels ((approach-ik
               (target)
               (let (result)
