@@ -99,3 +99,10 @@
   service: 'drill_rotate_three'
   column: 6
   default_value: True
+- name: 'drill left arm environment'
+  service: 'drill_left_arm_environment'
+  column: 7
+  default_value: True
+- name: 'drill right arm environment'
+  service: 'drill_right_arm_environment'
+  column: 7

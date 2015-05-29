@@ -143,6 +143,10 @@
                 self :hrpsys-stop-st-command-cb)
           (list drc_com_common::OCS2FCSmall::*HRPSYS_STOP_IMP*
                 self :hrpsys-stop-imp-command-cb)
+          (list drc_com_common::OCS2FCSmall::*GO_POS_ZERO*
+                self :go-pos-zero-cb)
+          (list drc_com_common::OCS2FCSmall::*REF_FORCE_ZERO*
+                self :ref-force-zero-cb)
           (list drc_com_common::OCS2FCSmall::*CALIB_HAND*
                 self :calib-hand-command-cb)
           (list drc_com_common::OCS2FCSmall::*ANGLE_VECTOR_SEND*
@@ -405,6 +409,8 @@
         (integer-vector-to-rect-polygon-stamped msg))
       ;; enable snapshot
       (call-empty-service "/valve_recognition/snapshot/request")
+      (ros::publish "/valve_recognition/input_rect"
+        (integer-vector-to-rect-polygon-stamped msg))
       (send smachine :go-to :recognizing-valve-pose)
       ))
   (:go-pos-region-command-callback (msg)
@@ -414,6 +420,8 @@
         (integer-vector-to-rect-polygon-stamped msg))
       ;; enable snapshot
       (call-empty-service "/go_pos_recognition/snapshot/request")
+      (ros::publish "/go_pos_recognition/input_rect"
+                    (integer-vector-to-rect-polygon-stamped msg))
       (send smachine :go-to :recognizing-go-pos-location)
       ))
   (:debri-exec-command-callback (msg)
@@ -481,27 +489,30 @@
         (catch 'exit
         ;; send motion to real robot
         (let* ((arm-side (send msg :arm_side))
-               (arm (cond ((equal arm-side drc_com_common::OCS2FCSmall::*LARM*) :larm) ((equal arm-side drc_com_common::OCS2FCSmall::*RARM*) :rarm) (t nil))))
+               (arm (cond ((equal arm-side drc_com_common::OCS2FCSmall::*LARM*) :larm) ((equal arm-side drc_com_common::OCS2FCSmall::*RARM*) :rarm) (t nil)))
+               ret)
 	       (if arm
                    (progn
                      (setq *drill-main-arm* arm)
-                     (send-drill-grasp-motion coords :stand-coords stand-coords :drill-rotate-num (send msg :image_type))
+                     (setq ret (send-drill-grasp-motion coords :stand-coords stand-coords :drill-rotate-num (send msg :image_type)))
                      )
                  (ros::ros-info "arm side empty")
                  )
+               
+               ;; send finish signal to ocs
+               (let ((msg (instance drc_com_common::FC2OCSSmall :init)))
+                 (set-drill-default-coords)
+                 (send msg :success (not (equal ret :ref-force-error)))
+                 (send msg :params (coords-set-to-float-vector 
+                                    (list
+                                     (send (send (send *robot* :body_lk) :copy-worldcoords) :transformation (send *drill* :copy-worldcoords)) 
+                                     (send (send (send *robot* *drill-main-arm* :end-coords) :copy-worldcoords) :transformation (send *drill* :copy-worldcoords))
+                                     (make-coords :pos (float-vector (check-diff-angle) 1 0))
+                                     ) (length (send msg :params))
+                                       ))
+                 (send msg :type drc_com_common::FC2OCSSmall::*DRILL_GRASP_FINISHED*)
+                 (send self :send-to-ocs msg))
                )
-        ;; send finish signal to ocs
-        (let ((msg (instance drc_com_common::FC2OCSSmall :init)))
-	  (set-drill-default-coords)
-	  (send msg :params (coords-set-to-float-vector 
-			     (list
-			      (send (send (send *robot* :body_lk) :copy-worldcoords) :transformation (send *drill* :copy-worldcoords)) 
-                              (send (send (send *robot* *drill-main-arm* :end-coords) :copy-worldcoords) :transformation (send *drill* :copy-worldcoords))
-                              (make-coords :pos (float-vector (check-diff-angle) 1 0))
-                              ) (length (send msg :params))
-                              ))
-          (send msg :type drc_com_common::FC2OCSSmall::*DRILL_GRASP_FINISHED*)
-          (send self :send-to-ocs msg))
         )
         (send smachine :go-to :initial)
         ))
@@ -601,25 +612,29 @@
         (catch 'exit
         ;; send motion to real robot
         (let* ((arm-side (send msg :arm_side))
-               (arm (cond ((equal arm-side drc_com_common::OCS2FCSmall::*LARM*) :larm) ((equal arm-side drc_com_common::OCS2FCSmall::*RARM*) :rarm) (t nil))))
+               (arm (cond ((equal arm-side drc_com_common::OCS2FCSmall::*LARM*) :larm) ((equal arm-side drc_com_common::OCS2FCSmall::*RARM*) :rarm) (t nil)))
+               ret)
 	       (if arm
                    (progn
                      (setq *drill-main-arm* arm)
-		     (send-drill-rotate-motion (elt coords-set 0) (elt coords-set 1) :drill-rotate-num (send msg :image_type))
+		     (setq ret (send-drill-rotate-motion (elt coords-set 0) (elt coords-set 1) :drill-rotate-num (send msg :image_type)))
                      )
                  (ros::ros-info "arm side empty")
 		 )
-	       )
-        ;; send finish signal to ocs
-        (let ((msg (instance drc_com_common::FC2OCSSmall :init)))
-	  (send msg :params (coords-set-to-float-vector
-			     (list
-                              (send (send (send *robot* :body_lk) :copy-worldcoords) :transformation (send *drill* :copy-worldcoords))
-                              (send (send (send *robot* *drill-main-arm* :end-coords) :copy-worldcoords) :transformation (send *drill* :copy-worldcoords))
-                              (make-coords :pos (float-vector (check-diff-angle) 1 0))
-                              ) (length (send msg :params))))
-	  (send msg :type drc_com_common::FC2OCSSmall::*DRILL_ROTATE_FINISHED*)
-          (send self :send-to-ocs msg))
+	       
+               ;; send finish signal to ocs
+               (let ((msg (instance drc_com_common::FC2OCSSmall :init)))
+                 (set-drill-default-coords)
+                 (send msg :success (not (equal ret :ref-force-error)))
+                 (send msg :params (coords-set-to-float-vector
+                                    (list
+                                     (send (send (send *robot* :body_lk) :copy-worldcoords) :transformation (send *drill* :copy-worldcoords))
+                                     (send (send (send *robot* *drill-main-arm* :end-coords) :copy-worldcoords) :transformation (send *drill* :copy-worldcoords))
+                                     (make-coords :pos (float-vector (check-diff-angle) 1 0))
+                                     ) (length (send msg :params))))
+                 (send msg :type drc_com_common::FC2OCSSmall::*DRILL_ROTATE_FINISHED*)
+                 (send self :send-to-ocs msg))
+               )
         )
         (send smachine :go-to :initial)
         ))
@@ -1181,6 +1196,12 @@ It sends :angle-vector to robot and return 'finished' message to ocs"
   (:hrpsys-stop-imp-command-cb (msg)
     (send *ri* :stop-impedance :arms)
     (send self :send-rviz-button-finished-to-ocs))
+  (:go-pos-zero-cb (msg)
+    (send *ri* :go-pos 0 0 0)
+    (send self :send-rviz-button-finished-to-ocs))
+  (:ref-force-zero-cb (msg)
+    (send *ri* :set-ref-force (float-vector 0 0 0) 2000 :arms)
+    (send self :send-rviz-button-finished-to-ocs))
   (:calib-hand-command-cb (msg)
     (cond ((or (equal *robot-name* "JAXON") (equal *robot-name* "JAXON_RED") (equal *robot-name* "STARO"))
            (send *ri* :hand-reset))
@@ -1286,7 +1307,16 @@ It sends :angle-vector to robot and return 'finished' message to ocs"
                 (list (float-vector -20 0 0) (float-vector -20 0 0)))
           )
         (print footstep-coords*)
-        (send *ri* :set-foot-steps footstep-coords*)
+        (if (< (abs (elt (send (cadr footstep-coords*) :worldpos) 2)) 50)
+            (send *ri* :set-foot-steps footstep-coords*)
+          (let ((default-step-time (send (send *ri* :get-gait-generator-param) :default_step_time))
+                (double-support-av (walking-pose *robot* :root-link-pitch-offset 10 :chest-link-pitch-offset 25 :root-link-height-offset -60 :head-link-pitch-offset 35 :default-pose-method :narrow-width-pose))
+                (first-step-av (walking-pose *robot* :root-link-pitch-offset 10 :chest-link-pitch-offset 25 :root-link-height-offset -120 :head-link-pitch-offset 35 :default-pose-method :narrow-width-pose))
+                (second-step-av (walking-pose *robot* :root-link-pitch-offset 10 :chest-link-pitch-offset 25 :root-link-height-offset -60 :head-link-pitch-offset 35 :default-pose-method :narrow-width-pose)))
+            (send *ri* :set-foot-steps-with-base-height
+                  footstep-coords*
+                  (list double-support-av first-step-av second-step-av)
+                  (list (* 1e3 default-step-time) (* 1e3 default-step-time 1) (* 1e3 default-step-time 1)))))
         ;; fix ri parmaeter for planar transition
         (if (or (string= "JAXON" *robot-name*)  (equal *robot-name* "JAXON_RED"))
             (send *ri* :set-gait-generator-param

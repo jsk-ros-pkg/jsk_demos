@@ -24,7 +24,7 @@
   </node>
   <node pkg="jsk_network_tools" type="silverhammer_highspeed_streamer.py"
         output="log"
-        name="highspeed_streamer_reliable">
+        name="highspeed_streamer_reliable" if="false">
     <rosparam subst_value="true">
       message: drc_com_common/FC2OCSLargeReliable
       to_port: 16486
@@ -87,7 +87,7 @@
     <rosparam subst_value="true">
       message: drc_task_common/DRCParametersMessage
       receive_port: $(arg DYNAMIC_RECONFIGURE_PORT)
-      receive_ip: $(arg FC_IP)
+      receive_ip: "0.0.0.0"
     </rosparam>
   </node>
 

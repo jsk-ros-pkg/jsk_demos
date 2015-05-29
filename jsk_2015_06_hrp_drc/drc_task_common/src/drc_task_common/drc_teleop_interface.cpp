@@ -59,6 +59,12 @@ namespace drc_task_common
     ui_->display_manip_button->setIcon(QIcon(QPixmap(QString((ros::package::getPath("drc_task_common")+std::string("/icons/display_6dof.png")).c_str()))));
     ui_->hide_manip_button->setToolButtonStyle(Qt::ToolButtonTextUnderIcon);
     ui_->hide_manip_button->setIcon(QIcon(QPixmap(QString((ros::package::getPath("drc_task_common")+std::string("/icons/hide_6dof.png")).c_str()))));
+    ui_->set_ref_force_zero_button->setToolButtonStyle(Qt::ToolButtonTextUnderIcon);
+    ui_->set_ref_force_zero_button->setIcon(QIcon(QPixmap(QString((ros::package::getPath("drc_task_common")+std::string("/icons/set_ref_force_zero.png")).c_str()))));
+    ui_->go_pos_0_0_0_button->setToolButtonStyle(Qt::ToolButtonTextUnderIcon);
+    ui_->go_pos_0_0_0_button->setIcon(QIcon(QPixmap(QString((ros::package::getPath("drc_task_common")+std::string("/icons/go_pos_0_0_0.png")).c_str()))));
+
+
     connect( ui_->reset_pose_button, SIGNAL( clicked() ), this, SLOT( callRequestResetPose()));
     connect( ui_->reset_manip_pose_button, SIGNAL( clicked() ), this, SLOT( callRequestResetManipPose()));
     connect( ui_->drill_reset_pose_button, SIGNAL( clicked() ), this, SLOT( callRequestDrillResetPose()));
@@ -85,7 +91,8 @@ namespace drc_task_common
 
     connect( ui_->display_manip_button, SIGNAL( clicked() ), this, SLOT(  callRequestDisplayManip ()));
     connect( ui_->hide_manip_button, SIGNAL( clicked() ), this, SLOT(  callRequestHideManip ()));
-
+    connect( ui_->set_ref_force_zero_button, SIGNAL( clicked() ), this, SLOT(  callRequestSetRefForceZero ()));
+    connect( ui_->go_pos_0_0_0_button, SIGNAL( clicked() ), this, SLOT(  callRequestGoPos000 ()));
   }
 
   void DRCTeleopInterfaceAction::callRequestResetPose(){
@@ -195,6 +202,15 @@ namespace drc_task_common
     };
   };
 
+  void DRCTeleopInterfaceAction::callRequestSetRefForceZero(){
+    callRequestUint8Request(drc_com_common::OCS2FCSmall::REF_FORCE_ZERO);
+  }
+
+  void DRCTeleopInterfaceAction::callRequestGoPos000(){
+    callRequestUint8Request(drc_com_common::OCS2FCSmall::GO_POS_ZERO);
+  }
+
+
   void DRCTeleopInterfaceAction::callRequestUint8Request(uint type){
     ros::ServiceClient client = nh_.serviceClient<drc_task_common::Uint8Request>("/uint8_command", true);
     drc_task_common::Uint8Request srv;
@@ -207,7 +223,8 @@ namespace drc_task_common
       ROS_ERROR("Service call FAIL");
     };
   }
-
+  
+  
   void DRCTeleopInterfaceAction::save( rviz::Config config ) const
   {
     rviz::Panel::save( config );

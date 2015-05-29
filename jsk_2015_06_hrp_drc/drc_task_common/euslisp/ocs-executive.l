@@ -60,6 +60,7 @@
                 show-text-buffer
                 ;;ocs-footstep-planner
                 ocs-footstep-controller
+                drill-arm-environment
                 ))
 
 ;; (defun footstep-plan-execute-cb (server goal)
@@ -153,6 +154,7 @@
     (setq valve-grasp-mode :edge-grasp-preferred)
     (setq door-push/pull :push)
     (setq door-name :drc-lasvegas)
+    (setq drill-arm-environment :larm)
     (setq force-overwrite-door-arm :force)
     (send self :show-text "initialized" :success)
     (setq drill-rotate-num 3)
@@ -864,7 +866,7 @@
     (let ((msg (instance drc_com_common::OCS2FCSmall :init)))
       (send msg :type drc_com_common::OCS2FCSmall::*DRILL_ROTATE_EXEC*)
       (send msg :float_params (coords-set-to-float-vector drill-rotate-params (length (send msg :float_params))))
-      (send msg :image_type (min 1 drill-rotate-num))
+      (send msg :image_type (max 1 drill-rotate-num))
       (cond ((not (boundp '*drill-main-arm*))
              (send msg :arm_side drc_com_common::OCS2FCSmall::*UNDECIDED*))
             ((equal *drill-main-arm* :larm)
@@ -1059,7 +1061,7 @@
         (move-robot-model-to-current-pos)
         (set-focus-marker-name "drill")
         ;; publish motion to robot model on rviz
-        (setq *drill-main-arm* (send self :get-arm-side))
+        (setq *drill-main-arm* drill-arm-environment)
 	(publish-drill-grasp-motion :coords (elt drill-grasp-params 0) :update? t :stand-coords (make-coords) :overwrite-stand-coords? :auto :drill-rotate-num drill-rotate-num)
         (let ((index (position-if #'(lambda (x) (equal (elt x 0) :grasp)) drill-stand-coords-list)))
           (if index
@@ -1096,7 +1098,7 @@
         (apply-primitive-dimensions-to-midi-device)
         (move-robot-model-to-current-pos)
         ;; publish motion to robot model on rviz
-        (setq *drill-main-arm* (send self :get-arm-side))
+        (setq *drill-main-arm* drill-arm-environment)
         (publish-drill-put-motion :coords (elt drill-put-params 0) :update? t :stand-coords (make-coords) :overwrite-stand-coords? t)
 	(if (or (not (boundp '*drill-motion*)) (not *drill-motion*))
 	    (send self :show-text 
@@ -1123,7 +1125,7 @@
           (move-robot-model-to-current-pos)
           ;; end marker
           (setq drill-wall-target-coords (get-relative-coords-list center-coords coords-set))
-	  (setq *drill-main-arm* (send self :get-arm-side))
+	  (setq *drill-main-arm* drill-arm-environment)
           (publish-drill-wall-motion :coords-list coords-set :update? t :stand-coords (make-coords) :overwrite-stand-coords? :force :draw? nil)
           (let ((index (position-if #'(lambda (x) (equal (elt x 0) :wall)) drill-stand-coords-list)))
             (if index
@@ -1154,7 +1156,7 @@
         ;;(set-primitive-marker-pose coords "BODY") ;; comment out because pose is not correct
         (move-robot-model-to-current-pos)
         ;; publish motion to robot model on rviz
-	(setq *drill-main-arm* (send self :get-arm-side))
+	(setq *drill-main-arm* drill-arm-environment)
         (publish-drill-button-motion :coords (elt drill-button-params 0) :update? t)
 	(if (or (not (boundp '*drill-motion*)) (not *drill-motion*))
 	    (send self :show-text 
@@ -1174,7 +1176,7 @@
         (insert-primitive-marker :shape-type jsk_rviz_plugins::TransformableMarkerOperate::*MESH_RESOURCE* :name "drill" :description "" :resource "package://drc_task_common/models/takenoko_drill.dae" :use-material t)
         (move-robot-model-to-current-pos)
         ;; publish motion to robot model on rviz
-	(setq *drill-main-arm* (send self :get-arm-side))
+	(setq *drill-main-arm* drill-arm-environment)
 	(publish-drill-rotate-motion :drill-coords (elt drill-rotate-params 0) :plane-coords (elt drill-rotate-params 1) :update? t)
 	(if (or (not (boundp '*drill-motion-in*)) (not *drill-motion-in*))
 	    (send self :show-text 
@@ -1241,6 +1243,9 @@
           (setq drill-stand-coords-index (- (length drill-stand-coords-list) 1))
           (send self :show-text "GOPOS AUTO TO BUTTON FAISE")
           )
+        (when (not (send msg :success))
+          (send self :show-text "grasp failed with force condition" :warn)
+          )
         )
       )
     )
@@ -1282,6 +1287,9 @@
           (push-back (list :button (convert-coords-frame (make-coords :pos (float-vector -500 0 0)))) drill-stand-coords-list)
           (setq drill-stand-coords-index (- (length drill-stand-coords-list) 1))
           (send self :show-text "GOPOS AUTO TO BUTTON FAISE")
+          )
+        (when (not (send msg :success))
+          (send self :show-text "grasp failed with force condition" :warn)
           )
         (setq drill-grasp-relative-coords (elt coords-set 1))
 	(set-primitive-marker-pose (elt coords-set 0) "BODY" :name "drill"))
@@ -1350,7 +1358,7 @@
            (setq drill-grasp-params
                  (list (get-primitive-marker-pose :frame-id "BODY" :name "drill")))
            ;; publish drill motion to robot model on rviz
-	   (setq *drill-main-arm* (send self :get-arm-side))
+	   (setq *drill-main-arm* drill-arm-environment)
            (publish-drill-grasp-motion :coords (elt drill-grasp-params 0) :update? t :stand-coords (get-robot-model-current-pos) :overwrite-stand-coords? overwrite-stand-coords? :drill-rotate-num drill-rotate-num) ;;drill-type
            (let ((index (position-if #'(lambda (x) (equal (elt x 0) :grasp)) drill-stand-coords-list)))
              (if index
@@ -1373,7 +1381,7 @@
            (setq drill-put-params
                  (list (get-primitive-marker-pose :frame-id "BODY" :name "cylinder1")))
            ;; publish drill motion to robot model on rviz
-	   (setq *drill-main-arm* (send self :get-arm-side))
+	   (setq *drill-main-arm* drill-arm-environment)
            (publish-drill-put-motion :coords (elt drill-put-params 0) :update? t :stand-coords (get-robot-model-current-pos) :overwrite-stand-coords? overwrite-stand-coords?)
 	   (if (or (not (boundp '*drill-motion*)) (not *drill-motion*))
 	       (send self :show-text 
@@ -1385,7 +1393,7 @@
            (setq drill-button-params
                  (list (get-primitive-marker-pose :frame-id "BODY" :name "drill")))
            ;; publish drill motion to robot model on rviz
-	   (setq *drill-main-arm* (send self :get-arm-side))
+	   (setq *drill-main-arm* drill-arm-environment)
            (publish-drill-button-motion :coords (elt drill-button-params 0) :update? t)
 	   (if (or (not (boundp '*drill-motion*)) (not *drill-motion*))
 	       (send self :show-text 
@@ -1397,7 +1405,7 @@
            (setq drill-rotate-params
                  (list (get-primitive-marker-pose :frame-id "BODY" :name "drill") (get-primitive-marker-pose :frame-id "BODY" :name "cylinder1")))
            ;; publish drill motion to robot model on rviz
-	   (setq *drill-main-arm* (send self :get-arm-side))
+	   (setq *drill-main-arm* drill-arm-environment)
            (publish-drill-rotate-motion :drill-coords (elt drill-rotate-params 0) :plane-coords (elt drill-rotate-params 1) :update? t)
            
 	   (if (or (not (boundp '*drill-motion-in*)) (not *drill-motion-in*))
@@ -1407,7 +1415,7 @@
            )
           ((eq (send smachine :state) :selecting-exec-for-drill-wall)
            ;; update latest drill-button params
-	   (setq *drill-main-arm* (send self :get-arm-side))
+	   (setq *drill-main-arm* drill-arm-environment)
            (cond ((get-marker-existence "drill_wall")
                   (setq drill-wall-params
                         (list (get-primitive-marker-pose :frame-id "BODY" :name "drill_wall"))))
@@ -1514,7 +1522,7 @@
    (when (not drill-grasp-relative-coords)
      (set-drill-environment :draw? t)
      (set-drill-default-coords)
-     (setq *drill-main-arm* (send self :get-arm-side))
+     (setq *drill-main-arm* drill-arm-environment)
      (setq drill-grasp-relative-coords (send (send *robot* *drill-main-arm* :end-coords :copy-worldcoords) :transformation (send *drill* :copy-coords)))
      )
    (when (and drill-grasp-relative-coords (boundp '*drill-main-arm*))
@@ -1840,6 +1848,18 @@
    (send self :show-text "auto overwrite door arm" :success)
    (send req :response)
    )
+  (:drill-left-arm-environment
+   (req)
+   (setq drill-arm-environment :larm)
+   (send self :show-text "drill left arm environment" :success)
+   (send req :response)
+   )
+  (:drill-right-arm-environment
+   (req)
+   (setq drill-arm-environment :rarm)
+   (send self :show-text "drill right arm environment" :success)
+   (send req :response)
+   )
   )
 
 ;; Stair tab
@@ -1900,7 +1920,7 @@
   (:uint8-request-callback (req)
     (let ((msg (instance drc_com_common::OCS2FCSmall :init)))
       (send msg :type (send req :type))
-      (if (equal (send self :get-arm-side) :rarm)
+      (if (equal drill-arm-environment :rarm) ; only for drill
           (send msg :arm_side drc_com_common::OCS2FCSmall::*RARM*)
         (send msg :arm_side drc_com_common::OCS2FCSmall::*LARM*)
         )
@@ -2175,6 +2195,8 @@
 (ros::advertise-service "start_stair" std_srvs::Empty #'send *app* :start-stair-callback)
 (ros::advertise-service "stair_pose" std_srvs::Empty #'send *app* :stair-pose-callback)
 (ros::advertise-service "end_stair" std_srvs::Empty #'send *app* :end-stair-callback)
+(ros::advertise-service "drill_left_arm_environment" std_srvs::Empty #'send *app* :drill-left-arm-environment)
+(ros::advertise-service "drill_right_arm_environment" std_srvs::Empty #'send *app* :drill-right-arm-environment)
 
 ;; Drive joystick controller topics
 (ros::subscribe "/ocs/drive/operation/handle_cmd" std_msgs::Float64 #'send *app* :drive-handle-angle-callback)
