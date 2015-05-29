@@ -616,6 +616,7 @@
 	       )
         ;; send finish signal to ocs
         (let ((msg (instance drc_com_common::FC2OCSSmall :init)))
+          (set-drill-default-coords)
 	  (send msg :params (coords-set-to-float-vector
 			     (list
                               (send (send (send *robot* :body_lk) :copy-worldcoords) :transformation (send *drill* :copy-worldcoords))
