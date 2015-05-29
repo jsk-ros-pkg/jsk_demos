@@ -733,17 +733,21 @@
 (defun set-ref-force-with-condition
   ()
   ;(return-from set-ref-force-with-condition t);; for test
-
-  (if (< (elt (send *ri* :state :absolute-force-vector *drill-main-arm*) 2) -7)
+  (let ((average-fz) (sum 0) (num 10))
+    (dotimes (i num)
+      (setq sum (+ sum (elt (send *ri* :state :absolute-force-vector *drill-main-arm*) 2))))
+    (setq average-fz (/ sum num))
+    (if (< average-fz -7)
+        (progn
+          (speak-en "grasp succeeded, add ref force")
+          (send *ri* :set-ref-force #f(0 0 -20) 2000 *drill-main-arm*)
+          t
+          )
       (progn
-        (speak-en "grasp succeeded, add ref force")
-        (send *ri* :set-ref-force #f(0 0 -20) 2000 *drill-main-arm*)
-        t
+        (speak-en "grasp failed, not add ref force")
+        (send *ri* :set-ref-force #f(0 0 0) 2000 *drill-main-arm*)
+        nil
         )
-    (progn
-      (speak-en "grasp failed, not add ref force")
-      (send *ri* :set-ref-force #f(0 0 0) 2000 *drill-main-arm*)
-      nil
       )
     )
   )
