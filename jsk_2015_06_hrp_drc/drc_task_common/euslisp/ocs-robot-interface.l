@@ -107,25 +107,23 @@
   (:start-impedance
    (limb &rest args &key m-p d-p k-p m-r d-r k-r)
    ;; (if args (format t " :start-impedance neglect impedance params, use :start-impedance-with-param~%"))
-   (let* ((rest-args
-           (if (and (numberp m-p) (numberp d-p) (numberp k-p)
-                    (numberp m-r) (numberp d-r) (numberp k-r))
-               (let* ((float_params (instantiate float-vector 36)))
-                 (setf (aref float_params 0) m-p)
-                 (setf (aref float_params 1) d-p)
-                 (setf (aref float_params 2) k-p)
-                 (setf (aref float_params 3) m-r)
-                 (setf (aref float_params 4) d-r)
-                 (setf (aref float_params 5) k-r)
-                 (list :float_params float_params)) nil)))
-     (ros::publish "/ocs_to_fc_low_speed/input"
-      (instance*  drc_com_common::OCS2FCSmall :init
-                  :type (if rest-args
-                            drc_com_common::OCS2FCSmall::*START_IMP_WITH_PARAM*
-                          drc_com_common::OCS2FCSmall::*START_IMP*)
-                  :arm_side (send self :get-limb-ocs-param-from-keyword limb)
-                  rest-args
-                  ))))
+   (let* ((param? (and (numberp m-p) (numberp d-p) (numberp k-p)
+                       (numberp m-r) (numberp d-r) (numberp k-r)))
+          (msg
+           (instance*  drc_com_common::OCS2FCSmall :init
+                       :type (if param?
+                                 drc_com_common::OCS2FCSmall::*START_IMP_WITH_PARAM*
+                               drc_com_common::OCS2FCSmall::*START_IMP*)
+                       :arm_side (send self :get-limb-ocs-param-from-keyword limb))))
+     (if param?
+         (let* ((float_params (send msg :float_params)))
+           (setf (aref float_params 0) m-p)
+           (setf (aref float_params 1) d-p)
+           (setf (aref float_params 2) k-p)
+           (setf (aref float_params 3) m-r)
+           (setf (aref float_params 4) d-r)
+           (setf (aref float_params 5) k-r)))
+     (ros::publish "/ocs_to_fc_low_speed/input" msg)))
   (:stop-impedance
    (limb &rest args)
    (if args (format t " :start-impedance neglect impedance params, use :start-impedance-with-param~%"))
