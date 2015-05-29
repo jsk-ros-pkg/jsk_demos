@@ -2,19 +2,53 @@
   <group ns="drill_recognition">
     <node pkg="nodelet" type="nodelet" name="drill_manager"
           args="manager" />
-
-    <node pkg="jsk_pcl_ros"
-          type="normal_estimation_omp"
-          name="normal_estimation">
+    <node pkg="nodelet"
+          type="nodelet"
+          name="z_filter"
+          args="load pcl/PassThrough drill_manager">
       <remap from="~input" to="/laser_downsampler/output" />
+      <rosparam>
+        filter_field_name: z
+        filter_limit_min: 0
+        filter_limit_max: 2.0
+      </rosparam>
+    </node>
+    <node pkg="nodelet"
+          type="nodelet"
+          name="x_filter"
+          args="load pcl/PassThrough drill_manager">
+      <remap from="~input" to="z_filter/output" />
+      <rosparam>
+        filter_field_name: x
+        filter_limit_min: 0
+        filter_limit_max: 2.5
+      </rosparam>
+    </node>
+<node pkg="nodelet"
+          type="nodelet"
+          name="y_filter"
+          args="load pcl/PassThrough drill_manager">
+      <remap from="~input" to="x_filter/output" />
+      <rosparam>
+        filter_field_name: y
+        filter_limit_min: -1.25
+        filter_limit_max: 1.25
+      </rosparam>
+    </node>
+    <node pkg="nodelet"
+          type="nodelet"
+          name="normal_estimation"
+          args="load jsk_pcl/NormalEstimationOMP drill_manager">
+      <remap from="~input" to="y_filter/output" />
       <rosparam>
         k_search: 0
         radius_search: 0.05
       </rosparam>
     </node>
-    <node pkg="jsk_pcl_ros"
-          type="normal_direction_filter"
-          name="normal_direction_filter">
+    <node pkg="nodelet"
+          type="nodelet"
+          name="normal_direction_filter"
+          args="load jsk_pcl/NormalDirectionFilter drill_manager">
       <remap from="~input" to="normal_estimation/output_with_xyz" />
       <remap from="~input_imu" to="/multisense/imu/imu_data" />
       <rosparam>
@@ -27,15 +61,16 @@
 
     <node pkg="nodelet"
           type="nodelet"
-          args="standalone pcl/ExtractIndices"
+          args="load pcl/ExtractIndices drill_manager"
           name="filtered_points">
       <remap from="~input" to="normal_estimation/output_with_xyz" />
       <remap from="~indices" to="normal_direction_filter/output" />
     </node>
 
-    <node pkg="jsk_pcl_ros"
-          type="region_growing_multiple_plane_segmentation"
-          name="region_growing_multiple_plane_segmentation">
+    <node pkg="nodelet"
+          type="nodelet"
+          name="region_growing_multiple_plane_segmentation"
+          args="load jsk_pcl/RegionGrowingMultiplePlaneSegmentation drill_manager">
       <remap from="~input" to="filtered_points/output" />
       <remap from="~input_normal" to="filtered_points/output" />
       <rosparam>
@@ -48,8 +83,10 @@
         ransac_refine_outlier_distance_threshold: 0.01
       </rosparam>
     </node>
-    <node pkg="jsk_pcl_ros" type="polygon_flipper"
-          name="polygon_flipper">
+    <node pkg="nodelet"
+          type="nodelet"
+          name="polygon_flipper"
+          args="load jsk_pcl/PolygonFlipper drill_manager">
       <remap from="~input/polygons"
              to="region_growing_multiple_plane_segmentation/output/polygons"/>
       <remap from="~input/coefficients"
@@ -60,10 +97,11 @@
         sensor_frame: head_root
       </rosparam>
     </node>
-    <node pkg="jsk_pcl_ros"
-          type="multi_plane_extraction"
-          name="multi_plane_extraction">
-      <remap from="~input" to="/laser_downsampler/output" />
+    <node pkg="nodelet"
+          type="nodelet"
+          name="multi_plane_extraction"
+          args="load jsk_pcl/MultiPlaneExtraction drill_manager">
+      <remap from="~input" to="y_filter/output" />
       <remap from="~input_polygons"
              to="polygon_flipper/output/polygons"
              />
@@ -83,7 +121,7 @@
     <node pkg="nodelet"
           type="nodelet"
           name="remove_small_noises"
-          args="standalone pcl/RadiusOutlierRemoval">
+          args="load pcl/RadiusOutlierRemoval drill_manager">
       <remap from="~input" to="multi_plane_extraction/output" />
       <rosparam>
         radius_search: 0.05
@@ -91,9 +129,10 @@
       </rosparam>
     </node>
     
-    <node pkg="jsk_pcl_ros"
-          type="euclidean_clustering"
-          name="euclidean_clustering">
+    <node pkg="nodelet"
+          type="nodelet"
+          name="euclidean_clustering"
+          args="load jsk_pcl/EuclideanClustering drill_manager">
       <remap from="~input" to="remove_small_noises/output"/>
       <rosparam>
         tolerance: 0.04
@@ -101,9 +140,10 @@
         min_size: 5
       </rosparam>
     </node>
-    <node pkg="jsk_pcl_ros"
-          type="cluster_point_indices_decomposer"
-          name="cluster_point_indices_decomposer">
+    <node pkg="nodelet"
+          type="nodelet"
+          name="cluster_point_indices_decomposer"
+          args="load jsk_pcl/ClusterPointIndicesDecomposer drill_manager">
       <remap from="~input" to="remove_small_noises/output" />
       <remap from="~target" to="euclidean_clustering/output"/>
       <remap from="~align_planes"
@@ -117,9 +157,10 @@
         use_pca: true
       </rosparam>
     </node>
-    <node pkg="jsk_pcl_ros"
-          type="bounding_box_filter"
-          name="filter_small_boxes">
+    <node pkg="nodelet"
+          type="nodelet"
+          name="filter_small_boxes"
+          args="load jsk_pcl/BoundingBoxFilter drill_manager">
       <remap from="~input_box"
              to="cluster_point_indices_decomposer/boxes"/>
       <remap from="~input_indices" to="euclidean_clustering/output"/>
@@ -146,9 +187,10 @@
         max_z: 1.5
       </rosparam>
     </node>
-    <node pkg="jsk_pcl_ros"
-          type="attention_clipper"
-          name="boundingbox_clipper">
+    <node pkg="nodelet"
+          type="nodelet"
+          name="boundingbox_clipper"
+          args="load jsk_pcl/AttentionClipper drill_manager">
       <remap from="~input/points" to="remove_small_noises/output"/>
       <remap from="~input/box_array" to="filter_by_position/output"/>
       <rosparam>
@@ -176,7 +218,7 @@
         cylinder_max_radius: 0.04
       </rosparam>
     </node>
-    
+
     <node pkg="jsk_topic_tools"
           name="flip_cylinder_coords"
           type="static_transform_pose_stamped"

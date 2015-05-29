@@ -24,6 +24,7 @@
       <param name="board_type" value="acircle" />
       <param name="use_P" value="true" />
       <param name="invert_color" value="true" />
+      <param name="message_throttle" value="5" />
       <param name="type0" type="string" value="data/ricebox.kinbody.xml"/>
       <node pkg="checkerboard_detector" name="checkerboard_detector" type="checkerboard_detector" respawn="false">
         <remap from="camera_info" to="/multisense/left/camera_info"/>

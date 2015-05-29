@@ -23,16 +23,6 @@
       <remap from="~assemble_scans2" to="/laser_preprocess/assemble_scans2" />
     </node>
 
-    <node pkg="laser_assembler" type="laser_scan_assembler"
-          name="laser_scan_assembler_node"
-          machine="$(arg machine)"
-          output="screen" >
-      <remap from="scan" to="/multisense/lidar_scan_filtered"/>
-      <param name="tf_cache_time_secs" value="20" />
-      <param name="max_scans" type="int" value="1000" />
-      <param name="fixed_frame" value="$(arg ODOM_FRAME)" />
-    </node>
-
     <node pkg="nodelet" type="nodelet"
           name="downsampler"
           args="load pcl/VoxelGrid laser_preprocess_manager">
@@ -41,6 +31,7 @@
         leaf_size: 0.02
         filter_limit_min: -100
         filter_limit_max: 100
+        skip_number: 10
       </rosparam>
     </node>
     <node pkg="nodelet" type="nodelet"
