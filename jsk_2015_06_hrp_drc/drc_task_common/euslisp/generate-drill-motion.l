@@ -689,7 +689,7 @@
 
     (send *robot* :angle-vector (elt drill-motion-av-list 4))
     (when real? (model2real :time 3000))
-    (if (not (set-ref-force-with-condition)) (return-from send-drill-grasp-motion nil))
+    (if (not (set-ref-force-with-condition)) (return-from send-drill-grasp-motion :ref-force-error))
           
     ;(if (equal drill-type :takenoko) (rotate-drill-horizontal))
     (when *use-dual-arm-ik*
@@ -739,12 +739,12 @@
     (setq average-fz (/ sum num))
     (if (< average-fz -7)
         (progn
-          (speak-en "grasp succeeded, add ref force")
+          (ros::ros-info "grasp succeeded, add ref force")
           (send *ri* :set-ref-force #f(0 0 -20) 2000 *drill-main-arm*)
           t
           )
       (progn
-        (speak-en "grasp failed, not add ref force")
+        (ros::ros-info "grasp failed, not add ref force")
         (send *ri* :set-ref-force #f(0 0 0) 2000 *drill-main-arm*)
         nil
         )
@@ -1770,7 +1770,7 @@
                                         ;(send *ri* :set-ref-force #f(0 0 -20) 2000 *drill-main-arm*)
           (send (send *drill* :get :grasp-coords) :rotate (deg2rad (- (* (if (> diff-deg 0) 18.0 -18.0) (- rotate-length 1)))) :z)
           (set-drill-default-coords)
-          (if (not (set-ref-force-with-condition)) (return-from send-drill-rotate-motion nil))
+          (if (not (set-ref-force-with-condition)) (return-from send-drill-rotate-motion :ref-force-error))
                                         ;(rotate-drill-horizontal)
           (setq drill-rotate-num (- drill-rotate-num 1))
           (setq diff-length (- diff-length (- rotate-length 1)))
