@@ -10,3 +10,7 @@ float32[6] ground
 float32[6] odom
 float32[4] imu                  #[x, y, z, w]
 uint8 robot_state
+uint8[33] abs_diff
+uint8 vin
+uint8 vdd
+uint8 vpc
