@@ -1,5 +1,7 @@
 #!/usr/bin/env roseus
 (ros::roseus-add-msgs "jsk_footstep_msgs")
+(ros::roseus-add-msgs "trans_ros_bridge")
+
 (load "package://drc_task_common/euslisp/util.l")
 (load "package://drc_task_common/euslisp/robot-util.l")
 (ros::roseus-add-msgs "drc_com_common")
@@ -8,6 +10,9 @@
 (ros::roseus-add-msgs "hrpsys_ros_bridge")
 (ros::roseus-add-msgs "geometry_msgs")
 (ros::roseus-add-msgs "sensor_msgs")
+
+(defun derange-in-uint8 (val minval maxval)
+  (+ minval (* (- maxval minval) (/ val 255.0))))
 
 (defclass ocs-basic-info-publisher
   :super propertied-object
@@ -57,6 +62,12 @@
       (send msg :wrench :torque :y (* (/ (elt seq 4) 128.0) *leg-torque-max*))
       (send msg :wrench :torque :z (* (/ (elt seq 5) 128.0) *leg-torque-max*))
       msg))
+  (:publish-extra-motor-states
+   (topic val minval maxval)
+   (let ((msg (instance trans_ros_bridge::ExtraMotorState :init)))
+     (send msg :data (float-vector (derange-in-uint8 val minval maxval)))
+     (send msg :header :stamp (ros::time-now))
+     (ros::publish topic msg)))
   (:callback (msg)
     ;; angle
     (send self :handle-angles msg)
@@ -114,6 +125,23 @@
       (send motor-states :name (send-all (send *robot* :joint-list) :name))
       (ros::publish "/ocs/motor_states" motor-states)
       )
+    (let ((motor-states (instance trans_ros_bridge::ExtraMotorState :init)))
+      (send motor-states :header :stamp (ros::time-now))
+      (send motor-states :data (instantiate float-vector (length (send msg :abs_diff))))
+      (dotimes (i (length (send msg :abs_diff)))
+        ;; abs-diff between 0~255 and it represents 0~10
+        (let ((compressed-diff (elt (send msg :abs_diff) i)))
+          (let ((decompressed-diff (/ (* 10.0 compressed-diff) 255.0)))
+            (setf (elt (send motor-states :data) i)
+                  decompressed-diff))))
+      (ros::publish "/ocs/motor_states_low/abs_cur_angle_diff" motor-states)
+      )
+    (send self
+          :publish-extra-motor-states "/ocs/motor_states_low/board_vin" (send msg :vin) 70 90)
+    (send self
+          :publish-extra-motor-states "/ocs/motor_states_low/board_vdd" (send msg :vdd) 10 13)
+    (send self
+          :publish-extra-motor-states "/ocs/inside_pc_voltage_publisher" (send msg :vpc) 10 13)
     ;; forces
     (ros::publish "/ocs/off_lhsensor" (send self :convert-to-arm-wrench-stamped (subseq (send msg :arm_forces) 0 6) "lhsensor"))
     (ros::publish "/ocs/off_rhsensor" (send self :convert-to-arm-wrench-stamped (subseq (send msg :arm_forces) 6 12) "rhsensor"))
@@ -138,6 +166,11 @@
 (ros::advertise "/ocs/off_rfsensor" geometry_msgs::WrenchStamped)
 (ros::advertise "/ocs/off_lhsensor" geometry_msgs::WrenchStamped)
 (ros::advertise "/ocs/off_rhsensor" geometry_msgs::WrenchStamped)
+(ros::advertise "/ocs/motor_states_low/abs_cur_angle_diff"
+  trans_ros_bridge::ExtraMotorState)
+(ros::advertise "/ocs/motor_states_low/board_vin" trans_ros_bridge::ExtraMotorState)
+(ros::advertise "/ocs/motor_states_low/board_vdd" trans_ros_bridge::ExtraMotorState)
+(ros::advertise "/ocs/inside_pc_voltage_publisher" trans_ros_bridge::ExtraMotorState)
 (ros::advertise "/ocs/imu" sensor_msgs::Imu)
 (if *use-angle-vector-decompressor*
     (ros::advertise "/ocs/joint_states_compressed" drc_com_common::HumanoidJointAngles)

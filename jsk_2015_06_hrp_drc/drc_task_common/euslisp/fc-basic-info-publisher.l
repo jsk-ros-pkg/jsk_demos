@@ -1,5 +1,5 @@
 #!/usr/bin/env roseus
-
+(ros::roseus-add-msgs "trans_ros_bridge")
 (ros::roseus-add-msgs "jsk_footstep_msgs")
 (load "package://drc_task_common/euslisp/util.l")
 (load "package://drc_task_common/euslisp/robot-util.l")
@@ -28,12 +28,34 @@
           latest-rfsensor-value
           latest-lhsensor-value
           latest-rhsensor-value
+          latest-abs-cur-angle-diff
+          latest-vin
+          latest-vdd
+          latest-vpc
           latest-motor-states))
+
+(defun range-in-uint8 (val minval maxval)
+  (min 255 (round (* (/ (-
+                         (min (max val minval) maxval)
+                         minval)
+                        (float (- maxval minval)))
+                     255.0))))
 
 (defmethod fc-basic-info-publisher
   (:init ()
     (setq robot-state-value 0)
     self)
+  (:vin-callback
+   (msg)
+   (setq latest-vin msg))
+  (:vdd-callback
+   (msg)
+   (setq latest-vdd msg))
+  (:vpc-callback
+   (msg)
+   (setq latest-vpc msg))
+  (:abs-cur-angle-diff-callback (msg)
+    (setq latest-abs-cur-angle-diff msg))
   (:joint-states-compressed-callback (msg)
     (setq latest-compressed-joint-states msg))
   (:joint-states-callback (msg)
@@ -141,6 +163,19 @@
             (setf (elt (send msg :temperature) i)
                   (round (elt (send latest-motor-states temperature-method) i))))
           ))
+      ;; abs-cur-angle-diff
+      (when latest-abs-cur-angle-diff
+        ;; Represents 0-10 value in 0~255
+        (let ((diffs
+               (subseq (coerce (send latest-abs-cur-angle-diff :data) cons)
+                       0 (length (send msg :abs_diff)))))
+          (let ((compressed-diffs
+                 (mapcar #'(lambda (d)
+                             (min 255 (round (/ (* 255.0 (abs d)) 10.0))))
+                         diffs)))
+            (dotimes (i (length compressed-diffs))
+              (setf (elt (send msg :abs_diff) i) (elt compressed-diffs i)))
+            )))
       ;; force
       (when (and latest-lfsensor-value
                  latest-rfsensor-value
@@ -158,11 +193,21 @@
         (setf (elt (send msg :imu) 1) (send latest-imu :orientation :y))
         (setf (elt (send msg :imu) 2) (send latest-imu :orientation :z))
         (setf (elt (send msg :imu) 3) (send latest-imu :orientation :w)))
+      (when latest-vin                  ;70-90 in 0-255
+        (let ((vin (range-in-uint8 (apply #'min (coerce (send latest-vin :data) cons))
+                                   70.0 90.0)))
+          (send msg :vin vin)))
+      (when latest-vdd                  ;10-13 in 0-255
+        (let ((vdd (range-in-uint8 (apply #'min (coerce (send latest-vdd :data) cons))
+                                   10.0 13.0)))
+          (send msg :vdd vdd)))
+      (when latest-vpc
+        (send msg :vpc (range-in-uint8 (elt (send latest-vpc :data) 0) 10.0 13.0)))
       ;; lookup body -> odom_on_ground
       (let ((trans (send *tf* :lookup-transform "BODY" "odom_on_ground"
-                         (ros::time 0))))
+                         (Ros::time 0))))
         (when trans
-          (send msg :odom_on_ground (coords-to-float-vector 
+          (send msg :odom_on_ground (coords-to-float-vector
                                      trans 6))))
       ;; lookup body -> ground
       (let ((trans (send *tf* :lookup-transform "BODY" "ground" (ros::time 0))))
@@ -205,6 +250,19 @@
                 #'send *app* :lhsensor-callback)
 (ros::subscribe "/off_rhsensor" geometry_msgs::WrenchStamped
                 #'send *app* :rhsensor-callback)
+(ros::subscribe "/motor_states_low/abs_cur_angle_diff"
+                trans_ros_bridge::ExtraMotorState
+                #'send *app* :abs-cur-angle-diff-callback)
+(ros::subscribe "/motor_states_low/board_vin"
+                trans_ros_bridge::ExtraMotorState
+                #'send *app* :vin-callback)
+(ros::subscribe "/motor_states_low/board_vdd"
+                trans_ros_bridge::ExtraMotorState
+                #'send *app* :vdd-callback)
+(ros::subscribe "/inside_pc_voltage_publisher"
+                trans_ros_bridge::ExtraMotorState
+                #'send *app* :vpc-callback)
+;;(ros::subscribe "/moro_states_low/"
 
 (ros::rate 10)
 (while (ros::ok)
