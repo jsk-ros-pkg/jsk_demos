@@ -95,13 +95,14 @@
    (let ((check-links (subseq (send robot limb :links) 3 6)) (distance-threshold 100)
          (body-link (elt (send robot :links) 0))
          (handle-link (find-if #'(lambda (h) (eq (send h :name) :handle-link)) (send (send *car* :vehicle-handle) :links)))
-         (target-handle-coords-org
-          (send (send (send self :rotate-grasp-point-by-grasp-arm (send car target-handle)) :copy-worldcoords)
-                :rotate (deg2rad (- (send car :handle-joint :joint-angle))) :z)
-          )
+         (target-handle-coords-org (send (send self :rotate-grasp-point-by-grasp-arm (send car target-handle)) :copy-worldcoords))
          (old-angle-vector (send robot limb :angle-vector))
          (rot-angle 0) (ik-result nil) target-handle-coords
          )
+     ;; consider handle rotation when using handle-crank
+     (when (equal target-handle :handle-crank)
+       (send target-handle-coords-org :rotate (deg2rad (- (send car :handle-joint :joint-angle))) :z)
+       )
      (labels ((approach-ik
               (target)
               (let (result)
