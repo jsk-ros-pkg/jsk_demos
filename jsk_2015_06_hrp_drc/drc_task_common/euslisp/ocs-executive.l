@@ -866,7 +866,7 @@
     (let ((msg (instance drc_com_common::OCS2FCSmall :init)))
       (send msg :type drc_com_common::OCS2FCSmall::*DRILL_ROTATE_EXEC*)
       (send msg :float_params (coords-set-to-float-vector drill-rotate-params (length (send msg :float_params))))
-      (send msg :image_type (min 1 drill-rotate-num))
+      (send msg :image_type (max 1 drill-rotate-num))
       (cond ((not (boundp '*drill-main-arm*))
              (send msg :arm_side drc_com_common::OCS2FCSmall::*UNDECIDED*))
             ((equal *drill-main-arm* :larm)
