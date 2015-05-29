@@ -117,6 +117,10 @@
                 self :watch-drill-pose-command-callback)
           (list drc_com_common::OCS2FCSmall::*DOOR_THROUGH_POSE*
                 self :door-through-pose-command-callback)
+          (list drc_com_common::OCS2FCSmall::*FINISH_STAIR_POSE*
+                self :finish-stair-pose-command-callback)
+          (list drc_com_common::OCS2FCSmall::*RESET_ENC_OFFSET*
+                self :reset-enc-offset-command-callback)
           (list drc_com_common::OCS2FCSmall::*HAND_RESET_POSE*
                 self :hand-reset-pose-command-callback)
           (list drc_com_common::OCS2FCSmall::*HAND_HOOK_POSE*
@@ -1147,6 +1151,20 @@ It sends :angle-vector to robot and return 'finished' message to ocs"
     (send *ri* :angle-vector (send *robot* :angle-vector) 5000)
     (send *ri* :wait-interpolation)
     (hand-start-grasp :real? t)
+    (send self :send-rviz-button-finished-to-ocs))
+  (:finish-stair-pose-command-callback (msg)
+    (walking-pose *robot* :root-link-pitch-offset 0 :root-link-height-offset -300 :default-pose-method :narrow-width-pose)
+    (send *ri* :angle-vector (send *robot* :angle-vector) 3000)
+    (send *ri* :wait-interpolation)
+    (send self :send-rviz-button-finished-to-ocs))
+  (:reset-enc-offset-command-callback (msg)
+    ()
+    (cond ((equal *robot-name* "JAXON")
+           (unix::system "ssh leus@jaxon -t \"bash -ic 'rosrun trans_vm reset_enc_offset --ALL'\"")
+           )
+          ((equal *robot-name* "JAXON_RED")
+           (unix::system "ssh leus@jaxonred -t \"bash -ic 'rosrun trans_vm reset_enc_offset --ALL'\"")
+           ))
     (send self :send-rviz-button-finished-to-ocs))
   (:hand-reset-pose-command-callback (msg)
     (hand-stop-grasp :real? t :type :reset-pose)

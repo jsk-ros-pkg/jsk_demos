@@ -88,6 +88,19 @@
               </property>
             </widget>
           </item>
+          <item>
+            <widget class="QToolButton" name="finish_stair_pose_button">
+              <property name="text">
+                <string>Finish Stair Pose</string>
+              </property>
+              <property name="iconSize">
+                <size>
+                  <width>80</width>
+                  <height>80</height>
+                </size>
+              </property>
+            </widget>
+          </item>
           <!-- Hand Pose Command -->
           <item>
             <widget class="QToolButton" name="hand_reset_pose_button">
@@ -315,6 +328,19 @@
             <widget class="QToolButton" name="hide_manip_button">
               <property name="text">
                 <string>Hide Manip</string>
+              </property>
+              <property name="iconSize">
+                <size>
+                  <width>80</width>
+                  <height>80</height>
+                </size>
+              </property>
+            </widget>
+          </item>
+          <item>
+            <widget class="QToolButton" name="reset_enc_offset_button">
+              <property name="text">
+                <string>Reset Enc Offset</string>
               </property>
               <property name="iconSize">
                 <size>

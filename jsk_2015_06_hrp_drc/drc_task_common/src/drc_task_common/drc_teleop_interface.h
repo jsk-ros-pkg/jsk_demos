@@ -31,6 +31,7 @@ namespace drc_task_common
     void callRequestDrillResetPose();
     void callRequestWatchDrillPose();
     void callRequestDoorThroughPose();
+    void callRequestFinishStairPose();
 
     void callRequestResetGripperPose();
     void callRequestHookGrippePose();
@@ -56,6 +57,7 @@ namespace drc_task_common
     
     void callRequestSetRefForceZero();
     void callRequestGoPos000();
+    void callRequestResetEncOffset();
 
     void callRequestUint8Request(uint type);
     

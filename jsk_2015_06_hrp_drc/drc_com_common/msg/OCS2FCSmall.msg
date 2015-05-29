@@ -122,5 +122,7 @@ uint8 HRPSYS_RESET_FORCE_OFFSET=66
 
 uint8 REF_FORCE_ZERO=67
 uint8 GO_POS_ZERO=68
-# next number is 69
 
+uint8 FINISH_STAIR_POSE=69
+uint8 RESET_ENC_OFFSET=70
+# next number is 71
