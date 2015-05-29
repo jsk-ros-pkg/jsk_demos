@@ -1,3 +1,6 @@
+(ros::roseus-add-msgs "drc_com_common")
+(ros::roseus-add-msgs "jsk_interactive_marker")
+(ros::roseus-add-msgs "jsk_recognition_msgs")
 (ros::roseus-add-srvs "drc_task_common")
 
 (defun make-msg-from-tunnel

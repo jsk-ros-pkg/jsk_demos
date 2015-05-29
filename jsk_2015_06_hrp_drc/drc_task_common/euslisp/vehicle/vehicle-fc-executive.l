@@ -2,6 +2,7 @@
 
 (load "package://drc_task_common/euslisp/vehicle/vehicle-executive-utils.l")
 
+(ros::roseus-add-msgs "jsk_recognition_msgs"
 (ros::roseus-add-msgs "drc_com_common")
 (ros::roseus "vehicle_fc_executive")
 
