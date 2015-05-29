@@ -7,6 +7,7 @@ float32 estimated_handle_angle # drive/controller/estimated_handle_angle
 float32 step # drive/controller/step
 float32 min_step # drive/controller/min_step
 float32 max_step # drive/controller/max_step
+float32 detach_step # drive/controller/detach_step
 float32 neck_y_angle # drive/controller/neck_y_angle
 float32 neck_p_angle # drive/controller/neck_p_angle
 bool real # drive/controller/real
@@ -28,6 +29,7 @@ bool reach_leg_response
 bool egress_response
 bool set_max_step_response
 bool set_min_step_response
+bool set_detach_step_response
 bool overwrite_handle_angle_response
 bool set_real_response
 
