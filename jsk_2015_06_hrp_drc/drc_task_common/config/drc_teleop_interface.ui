@@ -273,6 +273,32 @@
             </widget>
           </item>
           <item>
+            <widget class="QToolButton" name="set_ref_force_zero_button">
+              <property name="text">
+                <string>Set Ref Force 0</string>
+              </property>
+              <property name="iconSize">
+                <size>
+                  <width>80</width>
+                  <height>80</height>
+                </size>
+              </property>
+            </widget>
+          </item>
+          <item>
+            <widget class="QToolButton" name="go_pos_0_0_0_button">
+              <property name="text">
+                <string>Go_Pos 0 0 0</string>
+              </property>
+              <property name="iconSize">
+                <size>
+                  <width>80</width>
+                  <height>80</height>
+                </size>
+              </property>
+            </widget>
+          </item>
+          <item>
             <widget class="QToolButton" name="display_manip_button">
               <property name="text">
                 <string>Display Manip</string>
