@@ -13,6 +13,7 @@ class CarPathVisualizer:
     def __init__(self):
         rospy.init_node("CarPathVisualizer", anonymous=True)
         rospy.Subscriber("car_steering_wheel", Float32, self.steering_callback)
+        rospy.Subscriber("execute_flag", Bool, self.execute_flag_callback)
         self.marker_pub = rospy.Publisher("car_path_marker", MarkerArray, queue_size=10)
         self.r = rospy.Rate(5)
         self.a = 0.0258676
@@ -24,6 +25,7 @@ class CarPathVisualizer:
         self.line_length = 0.2
         self.ang = 0.0
         self.steering = 0.0
+        self.execute_flag = False
         self.curve_length = 30
         self.polygon = 50
         self.tfl = tf.TransformListener()
@@ -31,22 +33,30 @@ class CarPathVisualizer:
 
     def execute(self):
         while not rospy.is_shutdown():
-            if self.tfl.frameExists("BODY") and self.tfl.frameExists("car_center"):
-                tm = self.tfl.getLatestCommonTime("BODY", "car_center")
-                try:
-                    (self.pos, quat) = self.tfl.lookupTransform("BODY", "car_center", tm)
-                    self.R = quaternion_matrix(quat)[0:3,0:3]
-                    # print self.R
-                    self.marker_publisher()
-                except (tf.LookupException, tf.ConnectivityException, tf.ExtrapolationException), e:
-                    print "tf error: %s" % e
-                    pass
+            if self.execute_flag == True:
+                if self.tfl.frameExists("BODY") and self.tfl.frameExists("car_center"):
+                    tm = self.tfl.getLatestCommonTime("BODY", "car_center")
+                    try:
+                        (self.pos, quat) = self.tfl.lookupTransform("BODY", "car_center", tm)
+                        self.R = quaternion_matrix(quat)[0:3,0:3]
+                        # print self.R
+                        self.marker_publisher()
+                    except (tf.LookupException, tf.ConnectivityException, tf.ExtrapolationException), e:
+                        print "tf error: %s" % e
+                        pass
             self.r.sleep()
 
+    def execute_flag_callback(self, msg):
+        self.execute_flag = msg.data
+
     def steering_callback(self, msg):
-        self.steering = msg.data * pi / 180.0
+        if self.execute_flag == True:
+            self.steering = msg.data * pi / 180.0
 
     def marker_publisher(self):
+        if self.execute_flag == False:
+            return
+
         marker_array_msg = MarkerArray()
 
         curvature = self.alpha_to_kappa_table(self.steering)

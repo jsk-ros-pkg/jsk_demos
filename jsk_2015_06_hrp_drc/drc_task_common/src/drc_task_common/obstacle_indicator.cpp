@@ -6,8 +6,9 @@
 #include <pcl/filters/passthrough.h>
 #include <pcl/kdtree/kdtree_flann.h>
 #include <std_msgs/Float32.h>
-#include <dynamic_reconfigure/server.h>
-#include <drc_task_common/ObstacleIndicatorParamsConfig.h>
+#include <std_msgs/Bool.h>
+// #include <dynamic_reconfigure/server.h>
+// #include <drc_task_common/ObstacleIndicatorParamsConfig.h>
 #include <cmath>
 #include <algorithm>
 #include <deque>
@@ -18,14 +19,16 @@ private:
   ros::NodeHandle n;
   ros::Subscriber obstacle_points_sub;
   ros::Subscriber steering_angle_sub;
+  ros::Subscriber execute_flag_sub;
   ros::Publisher indicator_pub;
 
   pcl::PointCloud<pcl::PointXYZ>::Ptr cloud;
   boost::mutex mutex;
-  dynamic_reconfigure::Server<drc_task_common::ObstacleIndicatorParamsConfig> server;
-  dynamic_reconfigure::Server<drc_task_common::ObstacleIndicatorParamsConfig>::CallbackType f;
+  // dynamic_reconfigure::Server<drc_task_common::ObstacleIndicatorParamsConfig> server;
+  // dynamic_reconfigure::Server<drc_task_common::ObstacleIndicatorParamsConfig>::CallbackType f;
   double steering_angle;
   bool empty_flag;
+  bool execute_flag;
 
   double a;
   double b;
@@ -42,13 +45,16 @@ public:
   ObstacleIndicator(){
     obstacle_points_sub = n.subscribe("obstacle", 1, &ObstacleIndicator::obstacle_points_cb, this);
     steering_angle_sub = n.subscribe("steering_angle", 1, &ObstacleIndicator::steering_angle_cb, this);
+    execute_flag_sub = n.subscribe("execute_flag", 1, &ObstacleIndicator::execute_flag_cb, this);
     indicator_pub = n.advertise<std_msgs::Float32>("obstacle_length/indicator", 1);
     n.param("field_of_vision", field_of_vision, 80);
     n.param("wheelbase", wheelbase, 2.05);
     n.param("tread", tread, 1.4);
-    f = boost::bind(&ObstacleIndicator::dynamic_reconfigure_cb, this, _1, _2);
-    server.setCallback(f);
+    // f = boost::bind(&ObstacleIndicator::dynamic_reconfigure_cb, this, _1, _2);
+    // server.setCallback(f);
+    path_margin = 0.35;
     steering_angle = 0;
+    execute_flag = false;
     empty_flag = false;
     a = 0.0258676;
     play = 0.60952311;
@@ -60,58 +66,75 @@ public:
   }
 
   /* dynamic_reconfigure for parameter tuning */
-  void dynamic_reconfigure_cb(drc_task_common::ObstacleIndicatorParamsConfig &config, uint32_t level) {
-    // set path_margin
-    path_margin = config.path_margin;
-  }
+  // void dynamic_reconfigure_cb(drc_task_common::ObstacleIndicatorParamsConfig &config, uint32_t level) {
+  //   // set path_margin
+  //   path_margin = config.path_margin;
+  // }
 
   /* callback if point cloud is subscribed */
   void obstacle_points_cb(const sensor_msgs::PointCloud2ConstPtr& msg){
-    mutex.lock();
-    cloud.reset(new pcl::PointCloud<pcl::PointXYZ>);
-    pcl::fromROSMsg(*msg, *cloud);
-    mutex.unlock();
+    if (execute_flag == true) {
+      mutex.lock();
+      cloud.reset(new pcl::PointCloud<pcl::PointXYZ>);
+      pcl::fromROSMsg(*msg, *cloud);
+      mutex.unlock();
+    } else {
+      return;
+    }
   }
 
   /* callback if steering angle is subscribed */
   void steering_angle_cb(const std_msgs::Float32ConstPtr& msg){
-    steering_angle = msg->data * M_PI / 180.0;
+    if (execute_flag == true) {
+      steering_angle = msg->data * M_PI / 180.0;
+    } else {
+      return;
+    }
+  }
+
+  /* callback if execute flag is subscribed */
+  void execute_flag_cb(const std_msgs::BoolConstPtr& msg){
+    execute_flag = msg->data;
   }
 
   /* execute function */
   void execute(){
-    ROS_INFO("obstacle_indicator driven");
-    mutex.lock();
-    if (check_condition() == -1) {
+    if (execute_flag == true) {
+      ROS_INFO("obstacle_indicator driven");
+      mutex.lock();
+      if (check_condition() == -1) {
+        mutex.unlock();
+        return;
+      }
+
+      double obstacle_length;
+      double kappa = alpha2kappa_table(steering_angle);
+      double radius;
+      int sign;
+      if (kappa != 0) {
+        sign = kappa / std::fabs(kappa);
+        radius = 1.0 / kappa;
+      } else {
+        sign = 1;
+        radius = 10000;
+      }
+
+      pcl::PointXYZ center_point;
+      center_point.x = - wheelbase / 2.0;
+      center_point.y = (double)sign * std::sqrt(radius*radius - wheelbase*wheelbase);
+      center_point.z = 0.4;
+
+      obstacle_length = kdtree_curve(cloud, center_point, std::fabs(radius));
       mutex.unlock();
+
+      ROS_INFO("OBSTACLE_INDICATOR %.3f", obstacle_length);
+
+      std_msgs::Float32 pub_msg;
+      pub_msg.data = obstacle_length;
+      indicator_pub.publish(pub_msg);
+    } else {
       return;
     }
-
-    double obstacle_length;
-    double kappa = alpha2kappa_table(steering_angle);
-    double radius;
-    int sign;
-    if (kappa != 0) {
-      sign = kappa / std::fabs(kappa);
-      radius = 1.0 / kappa;
-    } else {
-      sign = 1;
-      radius = 10000;
-    }
-
-    pcl::PointXYZ center_point;
-    center_point.x = - wheelbase / 2.0;
-    center_point.y = (double)sign * std::sqrt(radius*radius - wheelbase*wheelbase);
-    center_point.z = 0.4;
-
-    obstacle_length = kdtree_curve(cloud, center_point, std::fabs(radius));
-    mutex.unlock();
-
-    ROS_INFO("OBSTACLE_INDICATOR %.3f", obstacle_length);
-
-    std_msgs::Float32 pub_msg;
-    pub_msg.data = obstacle_length;
-    indicator_pub.publish(pub_msg);
   }
 
   int check_condition(){
