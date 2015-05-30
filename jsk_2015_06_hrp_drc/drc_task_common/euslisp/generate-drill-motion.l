@@ -1429,7 +1429,7 @@
         (t ;;JAXON
          (if *drill-reverse-hand*
              (if (equal *drill-main-arm* :rarm) (make-coords :pos (float-vector -850 200 0) :rpy (list (deg2rad 50) 0 0)) (make-coords :pos (float-vector -850 -250 0) :rpy (list (deg2rad -40) 0 0)))
-           (if (equal *drill-main-arm* :rarm) (make-coords :pos (float-vector -780 -290 0) :rpy (list (deg2rad 50) 0 0)) (make-coords :pos (float-vector -780 -490 0) :rpy (list (deg2rad 0) 0 0)))
+           (if (equal *drill-main-arm* :rarm) (make-coords :pos (float-vector -780 -290 0) :rpy (list (deg2rad 50) 0 0)) (make-coords :pos (float-vector -680 -490 0) :rpy (list (deg2rad -20) 0 0)))
            ;; (if (equal *drill-main-arm* :rarm) (make-coords :pos (float-vector -780 -290 0) :rpy (list (deg2rad 50) 0 0)) (make-coords :pos (float-vector -650 -90 0) :rpy (list (deg2rad -20) 0 0)))
            )
          )
