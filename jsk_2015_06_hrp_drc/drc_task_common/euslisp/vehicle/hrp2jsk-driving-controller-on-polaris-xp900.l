@@ -43,25 +43,27 @@
   (:accel-cmd
    (cmd)
    (let ((cmd-mm (send self :get-pedal-motion-from-cmd cmd release-accel-command step-accel-command)))
-     (warn "accel ~A[cmd] -> ~A [mm]~%" cmd cmd-mm)
-     (send self :step-accel cmd-mm :use-controller t) ;; step-accel assumed to get relative distance to move
-     (setq accel-origin (+ accel-origin cmd-mm))
+     (warn "accel ~A[cmd] -> ~A [mm], current ~A[mm]~%" cmd cmd-mm accel-origin)
+     (when (send self :step-accel cmd-mm :use-controller t) ;; step-accel assumed to get relative distance to move
+         (setq accel-origin (+ accel-origin cmd-mm))
+       )
      (send self :publish-current-step accel-origin)
      (send self :publish-step-on-flag cmd)
      accel-origin ;; return total state of accel-command
      )
    )
   (:detach-accel
-   (&key (use-controller t) (time 3000))
+   (&key (use-controller t) (time 1000))
    (when (equal (send self :controller-state :accel) :initialize)
      (warn "accel is not approached~%")
      (return-from :detach-accel nil)
      )
    (let ((cmd-mm (- (send self :detach-accel-command) accel-origin)))
-     (warn "detach-accel ~A~%" cmd-mm)
-     (send self :controller-state :accel :release)
-     (send motion :step-accel-pedal cmd-mm :time time :use-controller use-controller) ;; detach accel for emergency
-     (setq accel-origin (+ accel-origin cmd-mm))
+     (warn "detach-accel ~A [mm], current ~A[mm]~%" cmd-mm accel-origin)
+     (when (send self :step-accel cmd-mm :time time :use-controller use-controller) ;; detach accel for emergency
+       (send self :controller-state :accel :release)
+       (setq accel-origin (+ accel-origin cmd-mm))
+       )
      accel-origin
      )
    )
