@@ -149,37 +149,40 @@ class VehicleUIWidget(QWidget):
         left_vbox.addWidget(real_group)
         
         handle_mode_vbox = QtGui.QVBoxLayout(self)
-        handle_mode_group = QtGui.QGroupBox("Handle Mode", self)
+        self.handle_mode_group = QtGui.QGroupBox("Handle Mode", self)
+        self.is_set_handle_mode_executing = False
         self.handle_mode_list = QListWidget()
         self.handle_mode_list.addItem("Operation")
         self.handle_mode_list.addItem("Recognition")
         self.handle_mode_list.addItem("Stop")
         self.handle_mode_list.itemClicked.connect(self.handleModeClickedCallback)
         handle_mode_vbox.addWidget(self.handle_mode_list)
-        handle_mode_group.setLayout(handle_mode_vbox)
-        left_vbox.addWidget(handle_mode_group)
+        self.handle_mode_group.setLayout(handle_mode_vbox)
+        left_vbox.addWidget(self.handle_mode_group)
 
         accel_mode_vbox = QtGui.QVBoxLayout(self)
-        accel_mode_group = QtGui.QGroupBox("Accel Mode", self)
+        self.accel_mode_group = QtGui.QGroupBox("Accel Mode", self)
+        self.is_set_accel_mode_executing = False        
         self.accel_mode_list = QListWidget()
         self.accel_mode_list.addItem("Operation")
         self.accel_mode_list.addItem("Recognition")
         self.accel_mode_list.addItem("Stop")
         self.accel_mode_list.itemClicked.connect(self.accelModeClickedCallback)
         accel_mode_vbox.addWidget(self.accel_mode_list)
-        accel_mode_group.setLayout(accel_mode_vbox)
-        left_vbox.addWidget(accel_mode_group)
+        self.accel_mode_group.setLayout(accel_mode_vbox)
+        left_vbox.addWidget(self.accel_mode_group)
 
         neck_mode_vbox = QtGui.QVBoxLayout(self)
-        neck_mode_group = QtGui.QGroupBox("Neck Mode", self)
+        self.neck_mode_group = QtGui.QGroupBox("Neck Mode", self)
+        self.is_set_neck_mode_executing = False        
         self.neck_mode_list = QListWidget()
         self.neck_mode_list.addItem("Operation")
         self.neck_mode_list.addItem("Recognition")
         self.neck_mode_list.addItem("Stop")
         self.neck_mode_list.itemClicked.connect(self.neckModeClickedCallback)
         neck_mode_vbox.addWidget(self.neck_mode_list)
-        neck_mode_group.setLayout(neck_mode_vbox)
-        left_vbox.addWidget(neck_mode_group)
+        self.neck_mode_group.setLayout(neck_mode_vbox)
+        left_vbox.addWidget(self.neck_mode_group)
         
         action_vbox = QtGui.QVBoxLayout(self)
         action_group = QtGui.QGroupBox("action", self)
@@ -385,6 +388,7 @@ class VehicleUIWidget(QWidget):
         obstacle_length_hbox = QtGui.QHBoxLayout()
         obstacle_length_container = QtGui.QWidget()
         self.obstacle_length_value = 0.0
+        self.obstacle_length_msg = None
         obstacle_length_label = QtGui.QLabel("Obstale Length:", self)
         obstacle_length_label.setFont(font)
         self.obstacle_length_value_label = QtGui.QLabel(str(self.obstacle_length_value))
@@ -568,9 +572,7 @@ class VehicleUIWidget(QWidget):
                 else:
                     item.setBackground(QtCore.Qt.white)
     def obstacleLengthCallback(self, msg):
-        with self.lock:
-            self.obstacle_length_value = msg.data
-            self.obstacle_length_value_label.setText(str(round(msg.data, 2)))
+        self.obstacle_length_msg = msg
 
     def realCallback(self, msg):
         self.real_msg = msg
@@ -613,6 +615,17 @@ class VehicleUIWidget(QWidget):
             self.setServiceButtonColor(self.reach_button,
                                   (msg.approach_handle_request or msg.approach_accel_request or msg.reach_arm_request or msg.reach_leg_request))
             self.is_reach_executing = (msg.approach_handle_request or msg.approach_accel_request or msg.reach_arm_request or msg.reach_leg_request)
+
+        if self.is_set_handle_mode_executing != msg.set_handle_mode_request:
+            self.setBackgroundColorInModeService(self.handle_mode_group, msg.set_handle_mode_request)
+            self.is_set_handle_mode_executing = msg.set_handle_mode_request
+        if self.is_set_accel_mode_executing != msg.set_accel_mode_request:
+            self.setBackgroundColorInModeService(self.accel_mode_group, msg.set_accel_mode_request)
+            self.is_set_accel_mode_executing = msg.set_accel_mode_request
+        if self.is_set_neck_mode_executing != msg.set_neck_mode_request:
+            self.setBackgroundColorInModeService(self.neck_mode_group, msg.set_neck_mode_request)
+            self.is_set_neck_mode_executing = msg.set_neck_mode_request
+
         if self.is_set_max_step_executing != msg.set_max_step_request:
             self.setBackgroundColorInStepService(self.step_max_label, msg.set_max_step_request)
             self.is_set_max_step_executing = msg.set_max_step_request
@@ -620,7 +633,14 @@ class VehicleUIWidget(QWidget):
             self.setBackgroundColorInStepService(self.step_min_label, msg.set_min_step_request)
             self.is_set_min_step_executing = msg.set_min_step_request
 
-    def setBackgroundColorInStepService(self, label, value):
+    def setBackgroundColorInStepService(self, group, value):
+        with self.lock:
+            if value:
+                group.setStyleSheet("background-color: red")
+            else:
+                group.setStyleSheet("background-color: None")
+
+    def setBackgroundColorInModeService(self, label, value):
         with self.lock:
             if value:
                 label.setAutoFillBackground(True);
@@ -736,6 +756,25 @@ class VehicleUIWidget(QWidget):
                 if msg != None:
                     self.updateForceSensor(label, msg)
         self.modifyRealButton(self.real_msg) # modify in timer callback, ros topic callback is too fast for qt to display
+        if self.obstacle_length_msg != None:
+            self.updateObstacleLengthColor(self.obstacle_length_msg.data)
+
+    def updateObstacleLengthColor(self, value):
+        with self.lock:
+            self.obstacle_length_value = value
+            self.obstacle_length_value_label.setText(str(round(self.obstacle_length_value, 2)))
+            if abs(value) < 3.0: # threshould
+                self.obstacle_length_value_label.setAutoFillBackground(True);
+                palette = QtGui.QPalette()
+                palette.setColor(QtGui.QPalette.Background,QtCore.Qt.red)
+                self.obstacle_length_value_label.setPalette(palette)
+            elif abs(value) < 6.0: # threshould
+                self.obstacle_length_value_label.setAutoFillBackground(True);
+                palette = QtGui.QPalette()
+                palette.setColor(QtGui.QPalette.Background,QtCore.Qt.yellow)
+                self.obstacle_length_value_label.setPalette(palette)
+            else:
+                self.obstacle_length_value_label.setAutoFillBackground(False);
             
     def showError(self, message):
         QMessageBox.about(self, "ERROR", message)
