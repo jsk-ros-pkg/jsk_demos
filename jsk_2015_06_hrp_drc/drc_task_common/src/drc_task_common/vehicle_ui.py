@@ -444,7 +444,8 @@ class VehicleUIWidget(QWidget):
 
         self.step_gage = StepGageWidget("drive/controller/step",
                                         "drive/controller/max_step",
-                                        "drive/controller/min_step"
+                                        "drive/controller/min_step",
+                                        "drive/controller/detach_step"
                                         )
         right_vbox.addWidget(self.step_gage, 15)
         self.set_current_step_as_max_button = QtGui.QPushButton("Set Current Step as Max")
@@ -947,12 +948,13 @@ class StepGageWidget(QWidget):
     """
     QWidget to visualize step gage
     """
-    def __init__(self, value_topic, max_value_topic, min_value_topic):
+    def __init__(self, value_topic, max_value_topic, min_value_topic, detach_value_topic):
         super(StepGageWidget, self).__init__()
         self.lock = Lock()
         self.value = 0.5
         self.max_value = 1.0
         self.min_value = 0.0
+        self.detach_value = -0.5
         self.value_sub = rospy.Subscriber(
             value_topic,
             std_msgs.msg.Float32, self.valueCallback)
@@ -962,6 +964,9 @@ class StepGageWidget(QWidget):
         self.max_value_sub = rospy.Subscriber(
             max_value_topic,
             std_msgs.msg.Float32, self.maxValueCallback)
+        self.detach_value_sub = rospy.Subscriber(
+            detach_value_topic,
+            std_msgs.msg.Float32, self.detachValueCallback)
         self._update_plot_timer = QTimer(self)
         self._update_plot_timer.timeout.connect(self.redraw)
         self._update_plot_timer.start(1000 / 15) # 15 fpsw
@@ -975,6 +980,9 @@ class StepGageWidget(QWidget):
     def minValueCallback(self, msg):
         with self.lock:
             self.min_value = msg.data
+    def detachValueCallback(self, msg):
+        with self.lock:
+            self.detach_value = msg.data
     def paintEvent(self, event):
         with self.lock:
             w = self.width() - 1
@@ -988,12 +996,19 @@ class StepGageWidget(QWidget):
             painter.setOpacity(0.8)
             painter.setPen(QtCore.Qt.black)
             painter.drawRect(rect)
-            if (self.max_value - self.min_value) * h != 0:
-                step_h = float(self.value - self.min_value) / (self.max_value - self.min_value) * h
+            if (self.max_value - self.detach_value) * h != 0:
+                step_h = float(self.value - self.detach_value) / (self.max_value - self.detach_value) * h
             else:
                 step_h = 0.0
             fill_rect = QtCore.QRect(1, (h - step_h), w - 1, step_h)
             painter.fillRect(fill_rect, QtGui.QColor("#18FFFF"))
+
+            linepen = QPen(QtCore.Qt.red)
+            linepen.setWidth(10)
+            painter.setPen(linepen)
+            min_h = float(self.min_value - self.detach_value) / (self.max_value - self.detach_value) * h
+            painter.drawLine(1, h - min_h, w - 1, h - min_h)
+            
             painter.end()
     def redraw(self):
         self.update()
