@@ -10,7 +10,7 @@
     <!-- TF transformation -->
     <node pkg="nodelet" type="nodelet" name="transform_cloud"
           args="load jsk_pcl/TfTransformCloud $(arg MANAGER)">
-      <remap from="~input" to="/multisense/resize_1_4/organized_image_points2_color" />
+      <remap from="~input" to="/multisense/resize_1_8/organized_image_points2_color" />
       <remap from="transform_cloud/output" to="transform_cloud/car_center" />
       <param name="target_frame_id" value="$(arg BASE_FRAME_ID)" />
     </node>
@@ -33,6 +33,7 @@
     <include file="$(find drc_task_common)/launch/fc/vehicle/passthrough_car_body.launch">
       <arg name="INPUT_POINTS" value="passthrough/remove_z"/>
       <arg name="OUTPUT_POINTS" value="passthrough/obstacle_cloud"/>
+      <arg name="EXECUTE_FLAG" value="/drive/execute_flag"/>
     </include>
     <!-- Obstacle Extraction using original passthrough filter -->
     <!-- PassThrough Flter for removng stereo points in x axis -->
