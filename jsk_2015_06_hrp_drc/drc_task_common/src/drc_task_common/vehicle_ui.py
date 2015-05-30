@@ -388,6 +388,7 @@ class VehicleUIWidget(QWidget):
         obstacle_length_hbox = QtGui.QHBoxLayout()
         obstacle_length_container = QtGui.QWidget()
         self.obstacle_length_value = 0.0
+        self.obstacle_length_msg = None
         obstacle_length_label = QtGui.QLabel("Obstale Length:", self)
         obstacle_length_label.setFont(font)
         self.obstacle_length_value_label = QtGui.QLabel(str(self.obstacle_length_value))
@@ -571,9 +572,7 @@ class VehicleUIWidget(QWidget):
                 else:
                     item.setBackground(QtCore.Qt.white)
     def obstacleLengthCallback(self, msg):
-        with self.lock:
-            self.obstacle_length_value = msg.data
-            self.obstacle_length_value_label.setText(str(round(msg.data, 2)))
+        self.obstacle_length_msg = msg
 
     def realCallback(self, msg):
         self.real_msg = msg
@@ -757,6 +756,25 @@ class VehicleUIWidget(QWidget):
                 if msg != None:
                     self.updateForceSensor(label, msg)
         self.modifyRealButton(self.real_msg) # modify in timer callback, ros topic callback is too fast for qt to display
+        if self.obstacle_length_msg != None:
+            self.updateObstacleLengthColor(self.obstacle_length_msg.data)
+
+    def updateObstacleLengthColor(self, value):
+        with self.lock:
+            self.obstacle_length_value = value
+            self.obstacle_length_value_label.setText(str(round(self.obstacle_length_value, 2)))
+            if abs(value) < 3.0: # threshould
+                self.obstacle_length_value_label.setAutoFillBackground(True);
+                palette = QtGui.QPalette()
+                palette.setColor(QtGui.QPalette.Background,QtCore.Qt.red)
+                self.obstacle_length_value_label.setPalette(palette)
+            elif abs(value) < 6.0: # threshould
+                self.obstacle_length_value_label.setAutoFillBackground(True);
+                palette = QtGui.QPalette()
+                palette.setColor(QtGui.QPalette.Background,QtCore.Qt.yellow)
+                self.obstacle_length_value_label.setPalette(palette)
+            else:
+                self.obstacle_length_value_label.setAutoFillBackground(False);
             
     def showError(self, message):
         QMessageBox.about(self, "ERROR", message)
