@@ -229,7 +229,7 @@ rtmtest -t hrpsys_tools _gen_project.launch INPUT:=`rospack find hrp2_models`/HR
 rtmlaunch hrpsys_ros_bridge_tutorials hrp2jsknts.launch PROJECT_FILE:=/tmp/HRP2JSKNTS_for_DRCTestfieldTerrain.xml
 ```
 ```
-rtmtest -t hrpsys_tools _gen_project.launch INPUT:=`rospack find hrp2_models`/HRP2JSKNTS_for_OpenHRP3/HRP2JSKNTSmain.wrl OUTPUT:=/tmp/HRP2JSKNTS_for_DRCTestfieldStair.xml OBJECT_MODELS:="`rospack find hrpsys`/share/hrpsys/samples/environments/DRCTestfieldStair.wrl,0.25,0,0,1,0,0,0" CORBA_PORT:=15005 INTEGRATE:=false
+rtmtest -t hrpsys_tools _gen_project.launch INPUT:=`rospack find hrp2_models`/HRP2JSKNTS_for_OpenHRP3/HRP2JSKNTSmain.wrl OUTPUT:=/tmp/HRP2JSKNTS_for_DRCTestfieldStair.xml OBJECT_MODELS:="`rospack find hrpsys`/share/hrpsys/samples/environments/DRCTestfieldStair.wrl,0.18,0,0,1,0,0,0" CORBA_PORT:=15005 INTEGRATE:=false
 rtmlaunch hrpsys_ros_bridge_tutorials hrp2jsknts.launch PROJECT_FILE:=/tmp/HRP2JSKNTS_for_DRCTestfieldStair.xml
 ```
 
@@ -259,7 +259,7 @@ rtmtest -t hrpsys_tools _gen_project.launch INPUT:=`rospack find jsk_models`/JAX
 rtmlaunch hrpsys_ros_bridge_tutorials jaxon.launch PROJECT_FILE:=/tmp/JAXON_for_DRCTestbedStair.xml
 ```
 ```
-rtmtest -t hrpsys_tools _gen_project.launch INPUT:=`rospack find jsk_models`/JAXON/JAXONmain.wrl OUTPUT:=/tmp/JAXON_for_DRCTestfieldStair.xml OBJECT_MODELS:="`rospack find hrpsys`/share/hrpsys/samples/environments/DRCTestfieldStair.wrl,0.25,0,0,1,0,0,0" CORBA_PORT:=15005 CONF_DT_OPTION:="--dt 0.002" SIMULATION_TIMESTEP_OPTION:="--timeStep 0.002" INTEGRATE:=false
+rtmtest -t hrpsys_tools _gen_project.launch INPUT:=`rospack find jsk_models`/JAXON/JAXONmain.wrl OUTPUT:=/tmp/JAXON_for_DRCTestfieldStair.xml OBJECT_MODELS:="`rospack find hrpsys`/share/hrpsys/samples/environments/DRCTestfieldStair.wrl,0.15,0,0,1,0,0,0" CORBA_PORT:=15005 CONF_DT_OPTION:="--dt 0.002" SIMULATION_TIMESTEP_OPTION:="--timeStep 0.002" INTEGRATE:=false
 rtmlaunch hrpsys_ros_bridge_tutorials jaxon.launch PROJECT_FILE:=/tmp/JAXON_for_DRCTestfieldStair.xml
 ```
 
