@@ -28,6 +28,11 @@
 - name: 'throw-drill-here(NONE)'
   service: '/throw_drill_here'
   column: 0
+- name: 'Look at'
+  service: 'look_at'
+  image: "package://drc_task_common/icons/lookat.png"
+  image_size: [80, 80]
+  column: 0
 
 - name: 'insert drill marker'
   service: '/insert_drill_marker'
