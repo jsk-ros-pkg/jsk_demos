@@ -826,7 +826,7 @@
    (let ((old-robot-coords (send motion :robot :copy-worldcoords))
           )
      (send motion :robot :newcoords estimated-robot-coords)
-     (send *viewer* :draw-objects)
+     ;; (send *viewer* :draw-objects)
      (warn "apply new robot coords~%")
      (unless (or yes (y-or-n-p)) ;; y-or-n-p is not evaluated when yes is t
        (warn "revert old robot coords~%")
