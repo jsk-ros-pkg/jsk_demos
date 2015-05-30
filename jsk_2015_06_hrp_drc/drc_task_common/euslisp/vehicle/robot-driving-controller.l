@@ -596,7 +596,7 @@
    )
   (:accel-callback
    (msg)
-   (let ((threshold 0.05) ;; 0-1 range command
+   (let ((threshold 0.01) ;; 0-1 range command
          (accel-command (send msg :data))
          )
      (unless (equal (send self :controller-mode :accel) :operation)
@@ -615,7 +615,7 @@
    )
   (:brake-callback
    (msg)
-   (let ((threshold 0.05) ;; 0-1 range command
+   (let ((threshold 0.01) ;; 0-1 range command
          (brake-command (send msg :data))
          )
      (when (or (not old-brake-command)
