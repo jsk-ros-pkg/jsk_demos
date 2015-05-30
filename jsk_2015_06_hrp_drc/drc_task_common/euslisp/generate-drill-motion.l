@@ -9,6 +9,7 @@
 (require "package://pr2eus/speak.l")
 
 
+(ros::ros-info "loading generate drill motion")
 (setq *drill-main-arm* :larm)
 (setq *use-dual-arm-ik* nil)
 (setq *use-f-sensor-search* nil)
@@ -1105,7 +1106,7 @@
               (t
                (send *ri* :start-impedance :arms :moment-gain (float-vector 0 0 0) :k-p 3000 :d-p 3000))))
 
-      (when real? (send *ri* :set-ref-force #f(0 0 -20) 2000 *drill-main-arm*))
+      (when real? (send *ri* :set-ref-force #f(0 0 -20) 1000 *drill-main-arm*))
       ;; first try
       ;; pre-push1
       (multisense-light-down)
@@ -1127,27 +1128,27 @@
              ))
       (send *robot* :angle-vector (elt drill-motion-av-list 0))
       (when (boundp '*irtviewer*) (send *irtviewer* :draw-objects))
-      (when real? (model2real :time 5000))
+      (when real? (model2real :time 3000))
       ;; pre-push2
       (send *robot* :angle-vector (elt drill-motion-av-list 1))
       (when (boundp '*irtviewer*) (send *irtviewer* :draw-objects))
-      (when real? (model2real :time 750))
+      (when real? (model2real :time 350))
       ;; pre-push3
       (send *robot* :angle-vector (elt drill-motion-av-list 2))
       (when (boundp '*irtviewer*) (send *irtviewer* :draw-objects))
-      (when real? (model2real :time 500))
+      (when real? (model2real :time 300))
       ;; push
       (send *robot* :angle-vector (elt drill-motion-av-list 3))
       (when (boundp '*irtviewer*) (send *irtviewer* :draw-objects))
-      (when real? (model2real :time 1000))
+      (when real? (model2real :time 500))
       ;; pre-push3
       (send *robot* :angle-vector (elt drill-motion-av-list 4))
       (when (boundp '*irtviewer*) (send *irtviewer* :draw-objects))
-      (when real? (model2real :time 500))
+      (when real? (model2real :time 300))
       ;; pre-push2
       (send *robot* :angle-vector (elt drill-motion-av-list 5))
       (when (boundp '*irtviewer*) (send *irtviewer* :draw-objects))
-      (when real? (model2real :time 1000))
+      (when real? (model2real :time 500))
       (setq req (instance drc_task_common::GetBoolStateRequest :init))
       ;; (when (or (equal *robot-name* "HRP2JSKNTS") (equal *robot-name* "HRP2JSKNT"))
       ;;   (unix::sleep 4)
@@ -1175,12 +1176,12 @@
                 (if button-ik (send *robot* :angle-vector button-ik)
                   (send *robot* :angle-vector (elt drill-motion-av-list 5))
                   )
-                (model2real :time 500 :wait? nil)
+                (model2real :time 300 :wait? nil)
                 (setq button-ik (fullbody-inverse-kinematics-for-drill-button :x-offset (+ 0 (* (- ix (/ (- ix-width 1.0) 2)) width-x)) :y-offset (+ 0 (* (- iy (/ (- iy-width 1.0) 2)) width)) :z-offset 40 :draw? nil))
                 (send *ri* :wait-interpolation)
                 (when button-ik 
                   (send *robot* :angle-vector button-ik)
-                  (model2real :time 750 :wait? nil)
+                  (model2real :time 350 :wait? nil)
                   )
                 )
               )
