@@ -555,9 +555,10 @@
    (cmd)
    (let ((cmd-motion (send self :get-pedal-motion-from-cmd cmd release-accel-command step-accel-command)))
      (warn "accel ~A[cmd] -> ~A[deg]~%" cmd cmd-motion)
-     (send self :step-accel (+ accel-origin cmd-motion) :relative nil :use-controller t)
-     (send self :publish-current-step cmd-motion)
-     (send self :publish-step-on-flag cmd)
+     (when (send self :step-accel (+ accel-origin cmd-motion) :relative nil :use-controller t)
+       (send self :publish-current-step cmd-motion)
+       (send self :publish-step-on-flag cmd)
+       )
      cmd-motion ;; return real command to robot
      )
    )
@@ -570,7 +571,12 @@
    ;;   )
    (let (cmd-motion)
      (if (> cmd 0.5)
-         (progn (setq cmd-motion (send self :detach-accel))) ;; detach accel instead of step brake
+         (progn
+           (when (setq cmd-motion (send self :detach-accel))
+             (send self :publish-current-step (send self :detach-accel-command))
+             (send self :publish-step-on-flag 0.0) ;; false
+             )
+           ) ;; detach accel instead of step brake
        (when (equal (send self :controller-state :accel) :release)
          (send self :controller-state :accel :running) ;; resume
          (warn "revert accel state: ~A~%" (send self :controller-state :accel))
