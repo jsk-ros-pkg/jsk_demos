@@ -11,9 +11,15 @@ from jsk_tools.sanity_lib import (okMessage, errorMessage, warnMessage,
 from std_msgs.msg import Time
 from sensor_msgs.msg import PointCloud2, Image
 from pcl_msgs.msg import PointIndices
+from jsk_hrp2_ros_bridge.sanity_util import checkMultisenseRemote
 
 if __name__ == "__main__":
     rospy.init_node("chesk_sanity_fc")
+    checkMultisenseRemote(
+        "multisense remote is not working."
+        "Run following command:\n"
+        "roslaunch jaxon_ros_bridge jaxon_multisense_remote.launch\n"
+        "on your machine")
     checkTopicIsPublished(
         "/highspeed_streamer/last_send_time",
         Time,
