@@ -125,4 +125,6 @@ uint8 GO_POS_ZERO=68
 
 uint8 FINISH_STAIR_POSE=69
 uint8 RESET_ENC_OFFSET=70
-# next number is 71
+
+uint8 SIMPLE_FOOTSTEP_EXEC=71
+# next number is 72
