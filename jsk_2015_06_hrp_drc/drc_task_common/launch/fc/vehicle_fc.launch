@@ -1,7 +1,6 @@
 <launch>
   <arg name="LAUNCH_HANDLE_DETECTOR" default="true" />
   <arg name="LAUNCH_EUS" default="true" />
-  <arg name="LAUNCH_RVIZ" default="false" />
   <arg name="LAUNCH_CAR_CENTER" default="true" />
   <arg name="LAUNCH_RECOGNITION" default="true" />
 
