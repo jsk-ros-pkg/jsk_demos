@@ -1341,16 +1341,12 @@
       (send *drill* :translate (float-vector 0 0 40) :local)
       (setq ik-ret (if *use-dual-arm-ik* (fullbody-inverse-kinematics-for-drill-grasp-dual :draw? draw?) (fullbody-inverse-kinematics-for-drill-grasp-single :draw? draw? :rotation-axis (if (equal drill-type :takenoko) '(:z t t) '(:z t t)) :arm-mt drill-edge-mt :arm-tc (send *drill* :get :edge-coords))))
       (when (and c-check (c-check-for-drill)) (setq ik-ret nil))
-      (when ik-ret
-        (setq ik-ret
-              (send *robot* :look-at-target (send *drill* :worldcoords))))
+      (push-back (list (+ dt-coords-length 2) (not (null ik-ret)) ik-ret) ik-results)
+
       (send *drill* :translate (float-vector 0 0 -130) :local)
       (setq ik-ret (if *use-dual-arm-ik* (fullbody-inverse-kinematics-for-drill-grasp-dual :draw? draw?) (fullbody-inverse-kinematics-for-drill-grasp-single :draw? draw? :rotation-axis (if (equal drill-type :takenoko) '(:z t t) '(:z t t)) :arm-mt drill-edge-mt :arm-tc (send *drill* :get :edge-coords))))
       (when (and c-check (c-check-for-drill)) (setq ik-ret nil))
-      (when ik-ret
-        (setq ik-ret
-              (send *robot* :look-at-target (send *drill* :worldcoords))))
-      (push-back (list (+ dt-coords-length 3) (not (null ik-ret)) ik-ret) ik-results)      
+      (push-back (list (+ dt-coords-length 3) (not (null ik-ret)) ik-ret) ik-results)
       )
       ;; draw
       (when draw? (when (boundp '*irtviewer*) (send *irtviewer* :draw-objects :flush t)))
