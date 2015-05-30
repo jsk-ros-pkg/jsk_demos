@@ -461,6 +461,8 @@ class VehicleUIWidget(QWidget):
             "drive/controller/min_step", std_msgs.msg.Float32, self.minStepGageValueCallback)
         self.max_step_value_sub = rospy.Subscriber(
             "drive/controller/max_step", std_msgs.msg.Float32, self.maxStepGageValueCallback)
+        self.detach_step_value_sub = rospy.Subscriber(
+            "drive/controller/detach_step", std_msgs.msg.Float32, self.detachStepGageValueCallback)
         self.neck_y_angle_value_sub = rospy.Subscriber(
             "drive/controller/neck_y_angle", std_msgs.msg.Float32, self.neckYawAngleCallback)
         self.neck_p_angle_value_sub = rospy.Subscriber(
@@ -566,6 +568,11 @@ class VehicleUIWidget(QWidget):
             if self.step_max_value != msg.data:
                 self.step_max_value = msg.data
                 self.step_max_edit.setText(str(self.step_max_value))
+    def detachStepGageValueCallback(self, msg):
+        with self.lock:
+            if self.step_detach_value != msg.data:
+                self.step_detach_value = msg.data
+                self.step_detach_edit.setText(str(self.step_detach_value))
 
     def handleModeCallback(self, msg):
         with self.lock:
@@ -655,6 +662,9 @@ class VehicleUIWidget(QWidget):
         if self.is_set_min_step_executing != msg.set_min_step_request:
             self.setBackgroundColorInStepService(self.step_min_label, msg.set_min_step_request)
             self.is_set_min_step_executing = msg.set_min_step_request
+        if self.is_set_detach_step_executing != msg.set_detach_step_request:
+            self.setBackgroundColorInStepService(self.step_detach_label, msg.set_detach_step_request)
+            self.is_set_detach_step_executing = msg.set_detach_step_request
 
     def setBackgroundColorInStepService(self, group, value):
         with self.lock:
