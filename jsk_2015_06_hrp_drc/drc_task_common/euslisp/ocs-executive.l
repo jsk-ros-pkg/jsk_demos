@@ -47,6 +47,7 @@
                 drill-button-params ;; (list coords)
                 drill-rotate-params
                 drill-grasp-relative-coords
+                drill-throw-flag
                 foreground-bacground-sync-obj
                 arm-mode ;; one of (:rarm-only :rarm-preferred :larm-preferred :larm-only)
                 valve-grasp-mode ;; one of (:edge-grasp-only :edge-grasp-preferred :center-grasp-preferrned :center-grasp-only)
@@ -1837,10 +1838,21 @@
    )
   (:drill-throw-callback
    (req)
-   (send self :show-text "drill throw command send")
-   (let ((msg (instance drc_com_common::OCS2FCSmall :init)))
-     (send msg :type drc_com_common::OCS2FCSmall::*DRILL_THROW*)
-     (send self :send-to-fc msg))
+   (send self :show-text "drill throw exec flag set to true")
+   (setq drill-throw-flag t)
+   (send req :response)
+   )
+  (:drill-throw-exec-callback
+   (req)
+   (if drill-throw-flag
+       (progn
+         (send self :show-text "drill throw command send")
+         (let ((msg (instance drc_com_common::OCS2FCSmall :init)))
+           (send msg :type drc_com_common::OCS2FCSmall::*DRILL_THROW*)
+           (send self :send-to-fc msg))
+         )
+     (send self :show-text "drill throw locked by flag" :warn)
+     )
    (send req :response)
    )
   ;; door arm overwrite
@@ -2190,7 +2202,7 @@
 (ros::advertise-service "drill_rotate_three" std_srvs::Empty #'send *app* :drill-rotate-three-callback)
 (ros::advertise-service "drill_auto_go_pos" std_srvs::Empty #'send *app* :drill-auto-go-pos-callback)
 (ros::advertise-service "drill_throw" std_srvs::Empty #'send *app* :drill-throw-callback)
-
+(ros::advertise-service "drill_throw_exec" std_srvs::Empty #'send *app* :drill-throw-exec-callback)
 (ros::advertise-service "reach_until_touch_command_from_ocs" drc_task_common::ReachUntilTouchCommand #'send *app* :reach-until-touch-from-ocs)
 (ros::advertise-service "set_drill_coords" std_srvs::Empty #'send *app* :set-drill-coords)
 (ros::advertise-service "auto_door_detect" std_srvs::Empty #'send *app* :set-door-detect-auto-callback)
