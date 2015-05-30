@@ -500,14 +500,14 @@
   (:step-accel ;; mainly for command-line
    (command &rest args)
    (unless (or (equal (send self :controller-state :accel) :approach) (equal (send self :controller-state :accel) :running))
-     (warn "accel is not approached~%")
+     (warn "accel is not approached~&")
      (return-from :step-accel nil)
      )
-   (send* motion :step-accel-pedal command args) ;; step accel
    (send self :controller-state :accel :running)
+   (send* motion :step-accel-pedal command args) ;; step accel and return result
    )
   (:detach-accel ;; call step-accel-pedal for emergency command and change state as :release
-   (&key (use-controller t) (time 3000))
+   (&key (use-controller t) (time 1000))
    (when (equal (send self :controller-state :accel) :initialize)
      (warn "accel is not approached~%")
      (return-from :detach-accel nil)
@@ -524,8 +524,8 @@
      (warn "brake is not approached~%")
      (return-from :step-brake nil)
      )
-   (send* motion :step-brake-pedal command args) ;; step brake
    (send self :controller-state :brake :running)
+   (send* motion :step-brake-pedal command args) ;; step brake and retrun result
    )
   (:support-by-leg
    (&rest args &key (offset #f(0 0 0)) (start-impedance t) (set-ref-force t) &allow-other-keys)
@@ -573,6 +573,7 @@
          (progn (setq cmd-motion (send self :detach-accel))) ;; detach accel instead of step brake
        (when (equal (send self :controller-state :accel) :release)
          (send self :controller-state :accel :running) ;; resume
+         (warn "revert accel state: ~A~%" (send self :controller-state :accel))
          (setq cmd-motion (send self :accel-cmd 0.0)) ;; return to origin
          )
        )
