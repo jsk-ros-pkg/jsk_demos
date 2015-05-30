@@ -675,6 +675,7 @@
        )
      (unless no-wait (send *ri* :wait-interpolation))
      )
+   command ;; return command
    )
   (:approach-brake-pedal
    (&rest args &key (limb :lleg) (tm 2500) (debug-view nil) 
@@ -711,6 +712,7 @@
        )
      (send *ri* :wait-interpolation)
      )
+   command ;; return command
    )
 
   ;; exchange grasp point
