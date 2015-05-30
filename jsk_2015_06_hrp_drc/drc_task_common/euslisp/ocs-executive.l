@@ -1835,6 +1835,14 @@
    (ros::ros-info (format nil "drill auto ~A" drill-stand-coords-list))
    (send req :response)
    )
+  (:drill-throw-callback
+   (req)
+   (send self :show-text "drill throw command send")
+   (let ((msg (instance drc_com_common::OCS2FCSmall :init)))
+     (send msg :type drc_com_common::OCS2FCSmall::*DRILL_THROW*)
+     (send self :send-to-fc msg))
+   (send req :response)
+   )
   ;; door arm overwrite
   (:force-overwrite-door-arm-callback
    (req)
@@ -2181,6 +2189,7 @@
 (ros::advertise-service "drill_rotate_two" std_srvs::Empty #'send *app* :drill-rotate-two-callback)
 (ros::advertise-service "drill_rotate_three" std_srvs::Empty #'send *app* :drill-rotate-three-callback)
 (ros::advertise-service "drill_auto_go_pos" std_srvs::Empty #'send *app* :drill-auto-go-pos-callback)
+(ros::advertise-service "drill_throw" std_srvs::Empty #'send *app* :drill-throw-callback)
 
 (ros::advertise-service "reach_until_touch_command_from_ocs" drc_task_common::ReachUntilTouchCommand #'send *app* :reach-until-touch-from-ocs)
 (ros::advertise-service "set_drill_coords" std_srvs::Empty #'send *app* :set-drill-coords)
