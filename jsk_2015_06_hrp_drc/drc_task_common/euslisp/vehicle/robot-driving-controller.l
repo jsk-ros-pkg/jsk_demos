@@ -15,6 +15,7 @@
           accel-origin brake-origin
           step-accel-command step-brake-command
           release-accel-command release-brake-command
+          detach-accel-command
           state-list mode-list
           polygon-stamped-msg
           torus-finder-estimated-robot-coords
@@ -67,6 +68,7 @@
    (setq accel-origin 14
          step-accel-command 14 ;; 28
          release-accel-command 0 ;; 14
+         detach-accel-command 0 ;; same as release
          brake-origin 5
          step-brake-command 15 ;; 20
          release-brake-command 0 ;; 5
@@ -80,8 +82,9 @@
 
    ;; pedal angle topics
    (ros::advertise "/drive/controller/step" std_msgs::Float32 1 t)
-   (ros::advertise "/drive/controller/min_step" std_msgs::Float32 1 t)
    (ros::advertise "/drive/controller/max_step" std_msgs::Float32 1 t)
+   (ros::advertise "/drive/controller/min_step" std_msgs::Float32 1 t)
+   (ros::advertise "/drive/controller/detach_step" std_msgs::Float32 1 t)
    (ros::advertise "/drive/controller/step_on_flag" std_msgs::Bool 1 t)
 
    ;; neck command topics
@@ -125,6 +128,7 @@
    (ros::advertise-service "/drive/controller/egress" std_srvs::Empty #'send self :egress-callback)
    (ros::advertise-service "/drive/controller/set_max_step" drc_task_common::SetValue #'send self :set-max-step-callback)
    (ros::advertise-service "/drive/controller/set_min_step" drc_task_common::SetValue #'send self :set-min-step-callback)
+   (ros::advertise-service "/drive/controller/set_detach_step" drc_task_common::SetValue #'send self :set-detach-step-callback)
    (ros::advertise-service "/drive/controller/set_handle_mode" drc_task_common::StringRequest #'send self :set-handle-mode-callback)
    (ros::advertise-service "/drive/controller/set_accel_mode" drc_task_common::StringRequest #'send self :set-accel-mode-callback)
    (ros::advertise-service "/drive/controller/set_neck_mode" drc_task_common::StringRequest #'send self :set-neck-mode-callback)
@@ -259,6 +263,14 @@
    (let ((res (send req :response)))
      (send res :set_value (send self :release-accel-command (send req :value)))
      (warn "set release-accel-command to ~A~%" (send self :release-accel-command))
+     res
+     )
+   )
+  (:set-detach-step-callback
+   (req)
+   (let ((res (send req :response)))
+     (send res :set_value (send self :detach-accel-command (send req :value)))
+     (warn "set detach-accel-command to ~A~%" (send self :detach-accel-command))
      res
      )
    )
@@ -488,16 +500,23 @@
   (:step-accel ;; mainly for command-line
    (command &rest args)
    (unless (or (equal (send self :controller-state :accel) :approach) (equal (send self :controller-state :accel) :running))
-     (warn "accel is not approached~%")
+     (warn "accel is not approached~&")
      (return-from :step-accel nil)
      )
-   (send* motion :step-accel-pedal command args) ;; step accel
    (send self :controller-state :accel :running)
+   (send* motion :step-accel-pedal command args) ;; step accel and return result
    )
-  (:detatch-accel
-   ()
-   (send motion :detatch-accel-pedal :use-controller t) ;; detatch accel for emergency
-   (send self :controller-state :accel :release)
+  (:detach-accel ;; call step-accel-pedal for emergency command and change state as :release
+   (&key (use-controller t) (time 1000))
+   (when (equal (send self :controller-state :accel) :initialize)
+     (warn "accel is not approached~%")
+     (return-from :detach-accel nil)
+     )
+   (let ((cmd-motion (+ accel-origin (send self :detach-accel-command))))
+     (warn "detach-accel ~A~%" cmd-motion)
+     (send self :controller-state :accel :release)
+     (send motion :step-accel-pedal cmd-motion :time time :use-controller use-controller) ;; detach accel for emergency
+     )
    )
   (:step-brake ;; mainly for command-line
    (command &rest args)
@@ -505,8 +524,8 @@
      (warn "brake is not approached~%")
      (return-from :step-brake nil)
      )
-   (send* motion :step-brake-pedal command args) ;; step brake
    (send self :controller-state :brake :running)
+   (send* motion :step-brake-pedal command args) ;; step brake and retrun result
    )
   (:support-by-leg
    (&rest args &key (offset #f(0 0 0)) (start-impedance t) (set-ref-force t) &allow-other-keys)
@@ -536,18 +555,35 @@
    (cmd)
    (let ((cmd-motion (send self :get-pedal-motion-from-cmd cmd release-accel-command step-accel-command)))
      (warn "accel ~A[cmd] -> ~A[deg]~%" cmd cmd-motion)
-     (send self :step-accel (+ accel-origin cmd-motion) :relative nil :use-controller t)
-     (send self :publish-current-step cmd-motion)
-     (send self :publish-step-on-flag cmd)
+     (when (send self :step-accel (+ accel-origin cmd-motion) :relative nil :use-controller t)
+       (send self :publish-current-step cmd-motion)
+       (send self :publish-step-on-flag cmd)
+       )
      cmd-motion ;; return real command to robot
      )
    )
   (:brake-cmd ;; convert command to motion and send to step-brake
    (cmd)
-   (let ((cmd-motion (send self :get-pedal-motion-from-cmd cmd release-brake-command step-brake-command)))
-     (warn "brake ~A[cmd] -> ~A[deg]~%" cmd cmd-motion)
-     (send self :step-brake (+ brake-origin cmd-motion) :relative nil :use-controller t)
-     cmd-motion ;; return real command to robot
+   ;; (let ((cmd-motion (send self :get-pedal-motion-from-cmd cmd release-brake-command step-brake-command)))
+   ;;   (warn "brake ~A[cmd] -> ~A[deg]~%" cmd cmd-motion)
+   ;;   (send self :step-brake (+ brake-origin cmd-motion) :relative nil :use-controller t)
+   ;;   cmd-motion ;; return real command to robot
+   ;;   )
+   (let (cmd-motion)
+     (if (> cmd 0.5)
+         (progn
+           (when (setq cmd-motion (send self :detach-accel))
+             (send self :publish-current-step (send self :detach-accel-command))
+             (send self :publish-step-on-flag 0.0) ;; false
+             )
+           ) ;; detach accel instead of step brake
+       (when (equal (send self :controller-state :accel) :release)
+         (send self :controller-state :accel :running) ;; resume
+         (warn "revert accel state: ~A~%" (send self :controller-state :accel))
+         (setq cmd-motion (send self :accel-cmd 0.0)) ;; return to origin
+         )
+       )
+     cmd-motion ;; return cmd-motion
      )
    )
   (:neck-cmd
@@ -790,7 +826,7 @@
    (let ((old-robot-coords (send motion :robot :copy-worldcoords))
           )
      (send motion :robot :newcoords estimated-robot-coords)
-     (send *viewer* :draw-objects)
+     ;; (send *viewer* :draw-objects)
      (warn "apply new robot coords~%")
      (unless (or yes (y-or-n-p)) ;; y-or-n-p is not evaluated when yes is t
        (warn "revert old robot coords~%")
@@ -1044,10 +1080,10 @@
    accel-origin
    )
   (:step-accel-command
-   (&optional (angle nil))
+   (&optional (command nil))
    (let ((pub-msg (instance std_msgs::Float32 :init)))
-     (when angle
-       (setq step-accel-command angle)
+     (when command
+       (setq step-accel-command command)
        )
      (send pub-msg :data step-accel-command)
      (ros::publish "/drive/controller/max_step" pub-msg)
@@ -1055,19 +1091,30 @@
      )
    )
   (:release-accel-command
-   (&optional (angle nil))
+   (&optional (command nil))
    (let ((pub-msg (instance std_msgs::Float32 :init)))
-     (when angle
-       (setq release-accel-command angle)
+     (when command
+       (setq release-accel-command command)
        )
      (send pub-msg :data release-accel-command)
      (ros::publish "/drive/controller/min_step" pub-msg)
      release-accel-command
      )
    )
-  (:brake-origin (&optional (angle nil)) (when angle (setq brake-origin angle)) brake-origin)
-  (:step-brake-command (&optional (angle nil)) (when angle (setq step-brake-command angle)) step-brake-command)
-  (:release-brake-command (&optional (angle nil)) (when angle (setq release-brake-command angle)) release-brake-command)
+  (:detach-accel-command
+   (&optional (command nil))
+   (let ((pub-msg (instance std_msgs::Float32 :init)))
+     (when command
+       (setq detach-accel-command command)
+       )
+     (send pub-msg :data detach-accel-command)
+     (ros::publish "/drive/controller/detach_step" pub-msg)
+     detach-accel-command
+     )
+   )
+  (:brake-origin (&optional (command nil)) (when command (setq brake-origin command)) brake-origin)
+  (:step-brake-command (&optional (command nil)) (when command (setq step-brake-command command)) step-brake-command)
+  (:release-brake-command (&optional (command nil)) (when command (setq release-brake-command command)) release-brake-command)
   (:max-turn-handle-omega (&optional (val nil)) (unless val (setq max-turn-handle-omega val)) max-turn-handle-omega)
   (:record-handling-end-coords-flag
    (&optional (val 0))

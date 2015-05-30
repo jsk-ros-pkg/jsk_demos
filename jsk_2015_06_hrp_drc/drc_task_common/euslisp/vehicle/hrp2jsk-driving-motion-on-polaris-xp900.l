@@ -191,13 +191,16 @@
   
   (:step-accel-pedal
    (move-mm &key (time 1000) (relative t) (use-controller t))
-   (send robot :rleg :move-end-pos (float-vector 0 0 move-mm) :local) ;; only relative is supported
-   (when real
-     (if use-controller
-         (send *ri* :angle-vector (send robot :angle-vector) time :rleg-controller)
-       (send *ri* :angle-vector (send robot :angle-vector) time)
+   (let (ik-result)
+     (setq ik-result (send robot :rleg :move-end-pos (float-vector 0 0 move-mm) :local)) ;; only relative is supported
+     (when (and real ik-result)
+       (if use-controller
+           (send *ri* :angle-vector (send robot :angle-vector) time :rleg-controller)
+         (send *ri* :angle-vector (send robot :angle-vector) time)
+         )
+       (send *ri* :wait-interpolation)
        )
-     (send *ri* :wait-interpolation)
+     (if ik-result move-mm ik-result)
      )
    )
 

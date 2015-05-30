@@ -299,6 +299,28 @@ class VehicleUIWidget(QWidget):
         step_min_vbox.addWidget(self.step_min_down_button)
         step_min_hbox.addLayout(step_min_vbox)
         step_vbox.addLayout(step_min_hbox)
+
+        step_detach_hbox = QtGui.QHBoxLayout(self)
+        self.step_detach_label = QtGui.QLabel("Det", self)
+        step_detach_vbox = QtGui.QVBoxLayout(self)
+        self.is_set_detach_step_executing = False
+        self.step_detach_value = -1
+        self.step_detach_up_button = QtGui.QPushButton()
+        self.step_detach_up_button.setIcon(QIcon.fromTheme("go-up"))
+        self.step_detach_up_button.clicked.connect(self.detachUpButtonCallback)
+        self.step_detach_down_button = QtGui.QPushButton()
+        self.step_detach_down_button.setIcon(QIcon.fromTheme("go-down"))
+        self.step_detach_down_button.clicked.connect(self.detachDownButtonCallback)
+        self.step_detach_edit = QtGui.QLineEdit()
+        self.step_detach_edit.setText(str(self.step_detach_value))
+        self.step_detach_edit.returnPressed.connect(self.detachEditCallback)
+        self.step_detach_edit.setValidator(QtGui.QDoubleValidator(-200, 200, 10))
+        step_detach_hbox.addWidget(self.step_detach_label)
+        step_detach_vbox.addWidget(self.step_detach_up_button)
+        step_detach_vbox.addWidget(self.step_detach_edit)
+        step_detach_vbox.addWidget(self.step_detach_down_button)
+        step_detach_hbox.addLayout(step_detach_vbox)
+        step_vbox.addLayout(step_detach_hbox)
         
         step_group.setLayout(step_vbox)
         left_vbox.addWidget(step_group)
@@ -422,7 +444,9 @@ class VehicleUIWidget(QWidget):
 
         self.step_gage = StepGageWidget("drive/controller/step",
                                         "drive/controller/max_step",
-                                        "drive/controller/min_step")
+                                        "drive/controller/min_step",
+                                        "drive/controller/detach_step"
+                                        )
         right_vbox.addWidget(self.step_gage, 15)
         self.set_current_step_as_max_button = QtGui.QPushButton("Set Current Step as Max")
         self.set_current_step_as_max_button.clicked.connect(self.setCurrentStepAsMaxButtonCallback)
@@ -438,6 +462,8 @@ class VehicleUIWidget(QWidget):
             "drive/controller/min_step", std_msgs.msg.Float32, self.minStepGageValueCallback)
         self.max_step_value_sub = rospy.Subscriber(
             "drive/controller/max_step", std_msgs.msg.Float32, self.maxStepGageValueCallback)
+        self.detach_step_value_sub = rospy.Subscriber(
+            "drive/controller/detach_step", std_msgs.msg.Float32, self.detachStepGageValueCallback)
         self.neck_y_angle_value_sub = rospy.Subscriber(
             "drive/controller/neck_y_angle", std_msgs.msg.Float32, self.neckYawAngleCallback)
         self.neck_p_angle_value_sub = rospy.Subscriber(
@@ -543,6 +569,11 @@ class VehicleUIWidget(QWidget):
             if self.step_max_value != msg.data:
                 self.step_max_value = msg.data
                 self.step_max_edit.setText(str(self.step_max_value))
+    def detachStepGageValueCallback(self, msg):
+        with self.lock:
+            if self.step_detach_value != msg.data:
+                self.step_detach_value = msg.data
+                self.step_detach_edit.setText(str(self.step_detach_value))
 
     def handleModeCallback(self, msg):
         with self.lock:
@@ -632,6 +663,9 @@ class VehicleUIWidget(QWidget):
         if self.is_set_min_step_executing != msg.set_min_step_request:
             self.setBackgroundColorInStepService(self.step_min_label, msg.set_min_step_request)
             self.is_set_min_step_executing = msg.set_min_step_request
+        if self.is_set_detach_step_executing != msg.set_detach_step_request:
+            self.setBackgroundColorInStepService(self.step_detach_label, msg.set_detach_step_request)
+            self.is_set_detach_step_executing = msg.set_detach_step_request
 
     def setBackgroundColorInStepService(self, group, value):
         with self.lock:
@@ -705,6 +739,30 @@ class VehicleUIWidget(QWidget):
         else:
             with self.lock:
                 self.step_max_edit.setText(str(self.step_max_value))
+
+    def detachUpButtonCallback(self, event):
+        current_value = float(self.step_detach_edit.text())
+        current_value = current_value + 1.0
+        next_value = self.callSetValueService('drive/controller/set_detach_step', current_value)
+        if next_value != None:
+            with self.lock:
+                self.step_detach_edit.setText(str(next_value))
+    def detachDownButtonCallback(self, event):
+        current_value = float(self.step_detach_edit.text())
+        current_value = current_value - 1.0
+        next_value = self.callSetValueService('drive/controller/set_detach_step', current_value)
+        if next_value != None:
+            with self.lock:
+                self.step_detach_edit.setText(str(next_value))
+    def detachEditCallback(self):
+        current_value = float(self.step_detach_edit.text())
+        next_value = self.callSetValueService('drive/controller/set_detach_step', current_value)
+        if next_value != None:
+            with self.lock:
+                self.step_detach_edit.setText(str(next_value))
+        else:
+            with self.lock:
+                self.step_detach_edit.setText(str(self.step_detach_value))
 
     def overwriteButtonCallback(self, event):
         current_handle = float(self.overwrite_edit.text())
@@ -890,12 +948,13 @@ class StepGageWidget(QWidget):
     """
     QWidget to visualize step gage
     """
-    def __init__(self, value_topic, max_value_topic, min_value_topic):
+    def __init__(self, value_topic, max_value_topic, min_value_topic, detach_value_topic):
         super(StepGageWidget, self).__init__()
         self.lock = Lock()
         self.value = 0.5
         self.max_value = 1.0
         self.min_value = 0.0
+        self.detach_value = -0.5
         self.value_sub = rospy.Subscriber(
             value_topic,
             std_msgs.msg.Float32, self.valueCallback)
@@ -905,6 +964,9 @@ class StepGageWidget(QWidget):
         self.max_value_sub = rospy.Subscriber(
             max_value_topic,
             std_msgs.msg.Float32, self.maxValueCallback)
+        self.detach_value_sub = rospy.Subscriber(
+            detach_value_topic,
+            std_msgs.msg.Float32, self.detachValueCallback)
         self._update_plot_timer = QTimer(self)
         self._update_plot_timer.timeout.connect(self.redraw)
         self._update_plot_timer.start(1000 / 15) # 15 fpsw
@@ -918,6 +980,9 @@ class StepGageWidget(QWidget):
     def minValueCallback(self, msg):
         with self.lock:
             self.min_value = msg.data
+    def detachValueCallback(self, msg):
+        with self.lock:
+            self.detach_value = msg.data
     def paintEvent(self, event):
         with self.lock:
             w = self.width() - 1
@@ -931,12 +996,19 @@ class StepGageWidget(QWidget):
             painter.setOpacity(0.8)
             painter.setPen(QtCore.Qt.black)
             painter.drawRect(rect)
-            if (self.max_value - self.min_value) * h != 0:
-                step_h = float(self.value - self.min_value) / (self.max_value - self.min_value) * h
+            if (self.max_value - self.detach_value) * h != 0:
+                step_h = float(self.value - self.detach_value) / (self.max_value - self.detach_value) * h
             else:
                 step_h = 0.0
             fill_rect = QtCore.QRect(1, (h - step_h), w - 1, step_h)
             painter.fillRect(fill_rect, QtGui.QColor("#18FFFF"))
+
+            linepen = QPen(QtCore.Qt.red)
+            linepen.setWidth(10)
+            painter.setPen(linepen)
+            min_h = float(self.min_value - self.detach_value) / (self.max_value - self.detach_value) * h
+            painter.drawLine(1, h - min_h, w - 1, h - min_h)
+            
             painter.end()
     def redraw(self):
         self.update()

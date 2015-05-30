@@ -33,7 +33,7 @@
    (send self :put :grasp-arm grasp-arm)
    (send self :put :grasp-point grasp-point)
    (send self :ride :init-pose t)
-   (objects (list robot car))   
+   ;; (objects (list robot car))
    )  
 
   ;; initial methods
@@ -479,7 +479,7 @@
      (when real
        (send *ri* :angle-vector-sequence (reverse avs) (reverse tms) controller)
        ;; (send *ri* :wait-interpolation controller)
-       (send *viewer* :draw-objects)
+       ;; (send *viewer* :draw-objects)
        )
      ;; calc remaining handle degree
      (setq remain-angle (abs real-target-degree))
@@ -575,7 +575,7 @@
      (when real
        (send *ri* :angle-vector (send self :robot :angle-vector) time controller)
        ;; (send *ri* :wait-interpolation controller)
-       (send *viewer* :draw-objects)
+       ;; (send *viewer* :draw-objects)
        )
      0.0 ;; return remain-angle (= zero)
      )
@@ -675,17 +675,7 @@
        )
      (unless no-wait (send *ri* :wait-interpolation))
      )
-   )
-  (:detatch-accel-pedal
-   (&key (time 5000) (use-controller t) (no-wait t) (distance 50))
-   (send robot :rleg :move-end-pos (float-vector 0 0 distance) :local)
-   (when real
-     (if use-controller
-         (send *ri* :angle-vector (send robot :angle-vector) time :rleg-controller)
-       (send *ri* :angle-vector (send robot :angle-vector) time)
-       )
-     (unless no-wait (send *ri* :wait-interpolation))
-     )
+   command ;; return command
    )
   (:approach-brake-pedal
    (&rest args &key (limb :lleg) (tm 2500) (debug-view nil) 
@@ -722,6 +712,7 @@
        )
      (send *ri* :wait-interpolation)
      )
+   command ;; return command
    )
 
   ;; exchange grasp point
@@ -734,17 +725,17 @@
      (warn "exchange: ~A ~A~%" next-limb next-handle)
      ;; execute
      (when interactive
-       (warn "release") (read-line) (send *viewer* :draw-objects)
+       (warn "release") (read-line) ;; (send *viewer* :draw-objects)
        )
      (send self :approach-handle :limb old-limb :target-handle old-handle
            :tm tm :debug-view debug-view :sync-controller t :stop-impedance nil)
      (when interactive
-       (warn "approach") (read-line) (send *viewer* :draw-objects)
+       (warn "approach") (read-line) ;; (send *viewer* :draw-objects)
        )
      (send self :approach-handle :limb next-limb :target-handle next-handle
            :tm tm :debug-view debug-view :stop-impedance nil)
      (when interactive
-       (warn "grasp") (read-line) (send *viewer* :draw-objects)
+       (warn "grasp") (read-line) ;; (send *viewer* :draw-objects)
        )
      (send self :grasp-handle :tm tm :limb next-limb :target-handle next-handle :debug-view debug-view)
      )
@@ -801,7 +792,7 @@
      (when (and real ik-ret)
        (send *ri* :angle-vector (send robot :angle-vector) time)
        (send *ri* :wait-interpolation)
-       (send *viewer* :draw-objects)
+       ;; (send *viewer* :draw-objects)
        (when (and reach-until-touch (not (send *ri* :simulation-modep)))
          (send *ri* :reach-until-touch limb
                (send (send robot limb :end-coords :copy-worldcoords) :rotate-vector #f(1 0 0))
@@ -832,7 +823,7 @@
          )
        (send *ri* :angle-vector (send robot :angle-vector) time)
        (send *ri* :wait-interpolation)
-       (send *viewer* :draw-objects)
+       ;; (send *viewer* :draw-objects)
        (when (and reach-until-touch (not (send *ri* :simulation-modep)))
          (send *ri* :reach-until-touch limb
                (send (send robot limb :end-coords :copy-worldcoords) :rotate-vector #f(1 0 0))
@@ -933,7 +924,7 @@
          (setq controller :head-controller)
          )
        (send *ri* :angle-vector (send robot :angle-vector) time controller)
-       (send *viewer* :draw-objects)
+       ;; (send *viewer* :draw-objects)
        )
      )
    (send robot :head axis :joint-angle) ;; return current angle
@@ -1096,7 +1087,7 @@
        (when wait-interpolation
          (send *ri* :wait-interpolation controller)
          )
-       (send *viewer* :draw-objects)
+       ;; (send *viewer* :draw-objects)
        )
      retval
      )
