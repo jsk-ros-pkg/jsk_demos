@@ -25,8 +25,15 @@
   image: "package://drc_task_common/icons/wall-icon.png"
   image_size: [80, 80]
   column: 0
-- name: 'throw-drill-here(NONE)'
-  service: '/throw_drill_here'
+- name: 'Look at'
+  service: 'look_at'
+  image: "package://drc_task_common/icons/lookat.png"
+  image_size: [180, 180]
+  column: 0
+- name: 'Look at'
+  service: 'look_at'
+  image: "package://drc_task_common/icons/lookat.png"
+  image_size: [80, 80]
   column: 0
 
 - name: 'insert drill marker'
@@ -48,12 +55,13 @@
 - name: 'drill auto go pos(NONE)'
   service: '/drill_auto_go_pos'
   column: 2
-- name: 'drill ref force(NONE)'
-  service: '/drill_ref_force'
+- name: 'drill_throw'
+  service: '/drill_throw'
   column: 2
-- name: 'remove ref force(NONE)'
-  service: '/remove_ref_force'
+- name: 'drill_throw_exec'
+  service: '/drill_throw_exec'
   column: 2
+
 - name: 'exec'
   service: 'exec'
   image: "package://drc_task_common/icons/exec.png"

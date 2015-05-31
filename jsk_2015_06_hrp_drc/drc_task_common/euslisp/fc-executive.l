@@ -106,6 +106,8 @@
                 self :drill-rotate-region-command-callback)
           (list drc_com_common::OCS2FCSmall::*DRILL_ROTATE_EXEC*
                 self :drill-rotate-exec-command-callback)
+          (list drc_com_common::OCS2FCSmall::*DRILL_THROW*
+                self :drill-throw-exec-command-callback)
           ;; rviz plugins
           (list drc_com_common::OCS2FCSmall::*RESET_POSE*
                 self :reset-pose-command-callback)
@@ -643,6 +645,22 @@
         (send smachine :go-to :initial)
         ))
     )
+  (:drill-throw-exec-command-callback (msg)
+    (when (send smachine :state? :initial)
+        (let* ((arm-side (send msg :arm_side))
+               (arm (cond ((equal arm-side drc_com_common::OCS2FCSmall::*LARM*) :larm) ((equal arm-side drc_com_common::OCS2FCSmall::*RARM*) :rarm) (t nil))))
+	       (if arm
+                   (progn
+                     (setq *drill-main-arm* arm)
+                     )
+                 (ros::ros-info "arm side empty")
+                 )
+               )
+        (send-drill-throw-motion)
+        (send self :send-rviz-button-finished-to-ocs)
+      )
+    )
+  
   (:door-exec-command-callback (msg)
     (when (send smachine :state? :initial)
       (multiple-value-bind
