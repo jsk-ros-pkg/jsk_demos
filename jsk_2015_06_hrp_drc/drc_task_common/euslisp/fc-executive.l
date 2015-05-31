@@ -192,6 +192,8 @@
                 self :execute-footstep-callback)
           (list drc_com_common::OCS2FCSmall::*REQUEST_FOOTSTEP_PLANNING*
                 self :request-footstep-planning-callback)
+          (list drc_com_common::OCS2FCSmall::*SIMPLE_FOOTSTEP_EXEC*
+                self :simple-footstep-exec-callback)
           )
     self)
   (:register-timelimits (sm)
@@ -1444,6 +1446,23 @@ It sends :angle-vector to robot and return 'finished' message to ocs"
                      (send ocs-msg :type drc_com_common::FC2OCSSmall::*FOOTSTEP_PLANNING_RESULT*))))
                 (send self :send-to-ocs ocs-msg))))))
       (send smachine :go-to :initial)))
+  (:simple-footstep-exec-callback
+    (msg)
+    (ros::ros-info ":simple-footstep-exec-callback")
+    (when (send smachine :state? :initial)
+      (let ((footstep-array (vector->footstep-array
+                             (send msg :float_params)
+                             (send msg :image_roi_info))))
+        (let ((footstep-coords (mapcar
+                                #'(lambda (f)
+                                    (make-coords :coords (ros::tf-pose->coords (send f :pose))
+                                                 :name (if (eq (send f :leg)
+                                                               jsk_footstep_msgs::Footstep::*LEFT*)
+                                                           :lleg
+                                                         :rleg)))
+                                       (send footstep-array :footsteps))))
+          (send *ri* :set-foot-steps footstep-coords)
+          ))))
   (:execute-footstep-callback
     (msg)
     (ros::ros-info ":execute-footstep-callback")

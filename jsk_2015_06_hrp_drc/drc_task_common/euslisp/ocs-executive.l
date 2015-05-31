@@ -2081,6 +2081,20 @@
       (send self :show-text "Done footstep")
       (send ocs-footstep-controller :set-succeeded (send ocs-footstep-controller :result))
       (send smachine :go-to :initial)))
+  (:set-foot-steps-callback (msg)       ;msg = FootstepArray
+    (when (send smachine :state? :initial)
+      (let ((fc-msg (instance drc_com_common::OCS2FCSmall :init)))
+        (multiple-value-bind
+         (flot-footsteps int-footsteps)
+         (footstep-array->vector msg
+                                 (length (send fc-msg :float_params))
+                                 (length (send fc-msg :image_roi_info)))
+         (send fc-msg :type drc_com_common::OCS2FCSmall::*SIMPLE_FOOTSTEP_EXEC*)
+         (send fc-msg :float_params float-footsteps)
+         (send fc-msg :image_roi_info int-footsteps)
+         (send self :send-to-fc fc-msg))
+        )
+      ))
   ;; (:footstep-plan-execute-cb 
   ;;  (goal)
   ;;  (when (and (send smachine :next? :planning-footsteps)
@@ -2245,6 +2259,8 @@
   #'send *app* :stair-marker-output-callback)
 (ros::subscribe "/stair_marker/debug/current_pose_array" geometry_msgs::PoseArray
   #'send *app* :stair-footstep-show-callback)
+(ros::subscribe "/set_foot_steps" jsk_footstep_msgs::FootstepArray
+  #'send *app* :set-foot-steps-callback)
 
 ;; (ros::subscribe "/ocs/communication/image_rect_color/foreground_rect/scaled" geometry_msgs::PolygonStamped
 ;;   #'send *app* :foreground-rect-callback)
