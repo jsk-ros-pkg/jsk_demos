@@ -17,12 +17,19 @@ from std_srvs import srv
 joy = None
 joy_before = None
 factor = 0.1
-factor_l = 0.15
+factor_l = 0.10
 factor_r = 1.0
 mode = 1
 r_flag = False
 l_flag = False
 reverse_flag = False
+factor_flag_b = False
+factor_flag_s = False
+def reset_param():
+    global mode, factor
+    mode = 1
+    factor = 0.1
+
 def timer_cb(event):
     global joy, joy_before, mode
     if joy: # and joy_before and joy_before.header.seq != joy.header.seq:
@@ -42,21 +49,33 @@ def timer_cb(event):
 def check_twist(twist):
     return (not (twist.linear.x == 0.0) & (twist.linear.y == 0.0) & (twist.linear.z == 0.0) & (twist.angular.x == 0.0) & (twist.angular.y == 0.0) & (twist.angular.z == 0.0))
 def joy_cb(msg):
-    global joy, factor, reverse_flag
+    global joy, factor, reverse_flag, factor_flag_s, factor_flag_b
     joy = msg
     if msg.buttons[5]:
-        factor*=1.2
+        if not factor_flag_b:
+            factor_flag_b = True
+            if factor < 0.6:
+                factor*=1.2
         print "factor: %f" % factor
+    else:
+        factor_flag_b = False
+
     if msg.buttons[4]:
-        factor/=1.2
+        if not factor_flag_s:
+            factor_flag_s = True
+            if factor > 0.01:
+                factor/=1.2
         print "factor: %f" % factor
+    else:
+        factor_flag_s = False
     if msg.buttons[8]:
         req_marker_default_srv()
     if msg.buttons[7]:
-        global mode
-        mode += 1
-        mode %= 2
-        print "mode: %d" % mode
+        reset_param()
+        # global mode
+        # mode += 1
+        # mode %= 2
+        # print "mode: %d" % mode
         
     if msg.buttons[6]:
         if reverse_flag == False:
