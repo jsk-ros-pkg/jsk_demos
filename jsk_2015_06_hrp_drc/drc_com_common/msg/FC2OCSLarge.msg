@@ -5,6 +5,7 @@ sensor_msgs/CameraInfo communication__camera_info
 std_msgs/Float32 communication__image_width_scale
 std_msgs/Float32 communication__image_height_scale
 sensor_msgs/Image communication__panorama_image
+sensor_msgs/Image communication__keyshot_image
 std_msgs/Float32 communication__panorama_width_scale
 std_msgs/Float32 communication__panorama_height_scale
 
