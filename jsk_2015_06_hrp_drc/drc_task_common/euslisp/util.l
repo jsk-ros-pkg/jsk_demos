@@ -426,3 +426,8 @@
   `(if (null ,lst)
        (setf ,lst (list ,el))
      (nconc ,lst (list ,el))))
+
+(defun keyshot-request
+  ()
+  (call-empty-service "keyshot/snapshot/request")
+  )

@@ -1,0 +1,12 @@
+<launch>
+  <arg name="INPUT_IMAGE" value="/multisense/left/image_rect_color" />    
+  <group ns="keyshot">
+    <node pkg="jsk_topic_tools" type="snapshot" name="snapshot">
+      <remap from="~input" to="$(arg INPUT_IMAGE)"/>
+      <remap from="~output" to="/communication/keyshot_image" />
+      <rosparam>
+        latch: true
+      </rosparam>
+    </node>
+  </group>
+</launch>
