@@ -29,6 +29,8 @@ namespace drc_task_common
     ui_->door_through_pose_button->setIcon(QIcon(QPixmap(QString((ros::package::getPath("drc_task_common")+std::string("/icons/door-through-pose.png")).c_str()))));
     ui_->finish_stair_pose_button->setToolButtonStyle(Qt::ToolButtonTextUnderIcon);
     ui_->finish_stair_pose_button->setIcon(QIcon(QPixmap(QString((ros::package::getPath("drc_task_common")+std::string("/icons/finish-stair-pose.png")).c_str()))));
+    ui_->emergency_pose_button->setToolButtonStyle(Qt::ToolButtonTextUnderIcon);
+    ui_->emergency_pose_button->setIcon(QIcon(QPixmap(QString((ros::package::getPath("drc_task_common")+std::string("/icons/emergency-pose.png")).c_str()))));
     ui_->hand_reset_pose_button->setToolButtonStyle(Qt::ToolButtonTextUnderIcon);
     ui_->hand_reset_pose_button->setIcon(QIcon(QPixmap(QString((ros::package::getPath("drc_task_common")+std::string("/icons/hand-reset-pose.jpg")).c_str()))));
     ui_->hand_hook_pose_button->setToolButtonStyle(Qt::ToolButtonTextUnderIcon);
@@ -74,6 +76,7 @@ namespace drc_task_common
     connect( ui_->watch_drill_pose_button, SIGNAL( clicked() ), this, SLOT( callRequestWatchDrillPose()));
     connect( ui_->door_through_pose_button, SIGNAL( clicked() ), this, SLOT( callRequestDoorThroughPose()));
     connect( ui_->finish_stair_pose_button, SIGNAL( clicked() ), this, SLOT( callRequestFinishStairPose()));
+    connect( ui_->emergency_pose_button, SIGNAL( clicked() ), this, SLOT( callRequestEmergencyPose()));
 
     connect( ui_->hand_reset_pose_button, SIGNAL( clicked() ), this, SLOT(  callRequestResetGripperPose()));
     connect( ui_->hand_hook_pose_button, SIGNAL( clicked() ), this, SLOT(  callRequestHookGrippePose()));
@@ -122,6 +125,10 @@ namespace drc_task_common
 
   void DRCTeleopInterfaceAction::callRequestFinishStairPose(){
     callRequestUint8Request(drc_com_common::OCS2FCSmall::FINISH_STAIR_POSE);
+  };
+
+  void DRCTeleopInterfaceAction::callRequestEmergencyPose(){
+    callRequestUint8Request(drc_com_common::OCS2FCSmall::EMERGENCY_POSE);
   };
 
   void DRCTeleopInterfaceAction::callRequestResetGripperPose(){

@@ -128,4 +128,5 @@ uint8 RESET_ENC_OFFSET=70
 uint8 DRILL_THROW=71
 
 uint8 SIMPLE_FOOTSTEP_EXEC=72
-# next number is 73
+uint8 EMERGENCY_POSE=73
+# next number is 74
