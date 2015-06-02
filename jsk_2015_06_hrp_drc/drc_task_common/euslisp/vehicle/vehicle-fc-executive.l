@@ -56,6 +56,7 @@
     (send *grasp-service-client* :call (send msg :grasp_request))
     (send *release-service-client* :call (send msg :release_request))
     (send *correct-service-client* :call (send msg :correct_request))
+    (send *resume-service-client* :call (send msg :resume_request))
     (send *approach-handle-service-client* :call (send msg :approach_handle_request))
     (send *approach-accel-service-client* :call (send msg :approach_accel_request))
     (send *reach-arm-service-client* :call (send msg :reach_arm_request))
