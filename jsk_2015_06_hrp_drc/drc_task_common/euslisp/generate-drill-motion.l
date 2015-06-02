@@ -871,7 +871,7 @@
       (when real? (model2real :time 3000)))
     (send *robot* :angle-vector (get-drill-reset-pose))
     (unless (check-angle-vector-distance)
-      (when real? (model2real :time 2000)))
+      (when real? (model2real :time 3000)))
     )
   )
 
@@ -2167,7 +2167,7 @@
   ;(play-motion-on-eus-viewer *drill-motion*)
   )
 (defun test-send-drill-put-motion ()
-  (send-drill-put-motion (make-coords :pos (float-vector 800 -150 200) :rpy (list 0 0 0)) :drill-type :takenoko :real? t)
+  (send-drill-put-motion (make-coords :pos (float-vector 800 -150 200) :rpy (list 0 0 0)) :drill-type :takenoko :real? t :overwrite-stand-coords? t)
   )
 
 (defun test-drill-button-motion ()
