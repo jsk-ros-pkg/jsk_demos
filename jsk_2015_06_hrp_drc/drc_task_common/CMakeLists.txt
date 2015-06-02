@@ -141,7 +141,7 @@ if(NOT $ENV{TRAVIS_JOB_ID})
     drill_pcd # todo old now
     # drill_full_pcd
     gun_drill_dae gun_drill_jpg gun_drill_model takenoko_drill_dae takenoko_drill_jpg takenoko_drill_model)
-endif($ENV{TRAVIS_JOB_ID})
+endif(NOT $ENV{TRAVIS_JOB_ID})
 
 install(TARGETS
   ${PROJECT_NAME}
