@@ -121,6 +121,8 @@
                 self :door-through-pose-command-callback)
           (list drc_com_common::OCS2FCSmall::*FINISH_STAIR_POSE*
                 self :finish-stair-pose-command-callback)
+          (list drc_com_common::OCS2FCSmall::*EMERGENCY_POSE*
+                self :emergency-pose-command-callback)
           (list drc_com_common::OCS2FCSmall::*RESET_ENC_OFFSET*
                 self :reset-enc-offset-command-callback)
           (list drc_com_common::OCS2FCSmall::*HAND_RESET_POSE*
@@ -1175,10 +1177,17 @@ It sends :angle-vector to robot and return 'finished' message to ocs"
     (send *ri* :wait-interpolation)
     (send self :send-rviz-button-finished-to-ocs))
   (:finish-stair-pose-command-callback (msg)
-    (walking-pose *robot* :root-link-pitch-offset 0 :root-link-height-offset -300 :default-pose-method :narrow-width-pose)
-    (send *ri* :angle-vector (send *robot* :angle-vector) 3000)
-    (send *ri* :wait-interpolation)
-    (send self :send-rviz-button-finished-to-ocs))
+    (when (or (equal *robot-name* "JAXON") (equal *robot-name* "JAXON_RED") (equal *robot-name* "STARO"))
+      (walking-pose *robot* :root-link-pitch-offset 0 :root-link-height-offset -300 :default-pose-method :narrow-width-pose)
+      (send *ri* :angle-vector (send *robot* :angle-vector) 3000)
+      (send *ri* :wait-interpolation)
+      (send self :send-rviz-button-finished-to-ocs)
+      ))
+  (:emergency-pose-command-callback (msg)
+    (when (or (equal *robot-name* "JAXON") (equal *robot-name* "JAXON_RED") (equal *robot-name* "STARO"))
+      ;; todo : send emergency pose
+      (send self :send-rviz-button-finished-to-ocs)
+      ))
   (:reset-enc-offset-command-callback (msg)
     ()
     (cond ((equal *robot-name* "JAXON")
