@@ -11,10 +11,14 @@
          (make-drc-test-door-right))
         ((equal door-name :drc-test-mirror)
          (make-drc-test-door-left))
-        ((equal door-name :drc-sagami)
-         (make-drc-sagami-door))
-        ((equal door-name :drc-sagami-mirror)
-         (make-drc-sagami-door-mirror))
+        ((or (equal door-name :drc-sagami) (equal door-name :drc-final))
+         (make-drc-sagami-door) ;; :drc-sagami door is edited as :drc-final door
+         ;;(make-drc-final-door)
+         )
+        ((or (equal door-name :drc-sagami-mirror) (equal door-name :drc-final-mirror))
+         (make-drc-sagami-door-mirror) ;; :drc-sagami-mirror door is edited as :drc-final-mirror door
+         ;;(make-drc-final-door-mirror)
+         )
         ((or (equal door-name :drc-lasvegas) (equal door-name :drc-lasvegas-outdoor))
          (make-drc-lasvegas-outdoor-door))
         ((or (equal door-name :drc-lasvegas-mirror) (equal door-name :drc-lasvegas-outdoor-mirror))
@@ -27,7 +31,7 @@
 
 (defun get-arm-from-name
   (door-name)
-  (cond ((equal door-name :drc-sagami)
+  (cond ((or (equal door-name :drc-sagami) (equal door-name :drc-final))
          :larm)
         ((or (equal door-name :drc-lasvegas) (equal door-name :drc-lasvegas-outdoor))
          :larm)
