@@ -25,7 +25,7 @@ class CarPathVisualizer:
         self.line_length = 0.2
         self.ang = 0.0
         self.steering = 0.0
-        self.execute_flag = False
+        self.execute_flag = True
         self.curve_length = 30
         self.polygon = 50
         self.tfl = tf.TransformListener()
