@@ -4,10 +4,11 @@ import rospy
 import sys
 import os
 import math
-
+import re
 
 from jsk_tools.sanity_lib import (okMessage, errorMessage, warnMessage,
-                                  checkTopicIsPublished)
+                                  checkTopicIsPublished,
+                                  checkROSMasterCLOSE_WAIT)
 from std_msgs.msg import Time
 from sensor_msgs.msg import PointCloud2, Image
 from jsk_recognition_msgs.msg import (ModelCoefficientsArray,
@@ -21,6 +22,10 @@ from jsk_hrp2_ros_bridge.sanity_util import checkMultisenseRemote
 
 if __name__ == "__main__":
     rospy.init_node("chesk_sanity_fc")
+    
+    host = re.match("http://([0-9a-zA-Z]*):.*", os.environ["ROS_MASTER_URI"]).groups(0)[0]
+    checkROSMasterCLOSE_WAIT(host)
+
     checkMultisenseRemote(
         "multisense remote is not working."
         "Run following command:\n"
