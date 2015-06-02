@@ -147,6 +147,8 @@
            (setq rarm-translate-offset (float-vector 40 -40 0))
            (setq larm-z-rotate-offset (deg2rad 90))
            (setq rarm-z-rotate-offset (deg2rad -90))
+           ;; (setq larm-z-rotate-offset (deg2rad 60))
+           ;; (setq rarm-z-rotate-offset (deg2rad -60))
            )
           (t ;; (or (equal *robot-name* "HRP2JSKNT") (equal *robot-name* "HRP2JSKNTS"))
            (setq larm-translate-offset (float-vector 50 25 0))
