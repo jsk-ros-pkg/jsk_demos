@@ -223,6 +223,14 @@
                          :handle-l/r :right))
   )
 
+(defun make-drc-final-door ()
+  "drc final door in fair plex environment"
+  (setq *door* (instance param-door :init 890 5 105 23
+                         (float-vector 0 835 890)
+                         (float-vector -40 785 890)
+                         :handle-l/r :left))
+  )
+
 (defun exec-robot-state-list
   (rs-list &key (real nil))
   "Execute robot state list.
