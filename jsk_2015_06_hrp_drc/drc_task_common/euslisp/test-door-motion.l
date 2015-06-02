@@ -83,6 +83,18 @@
         )
   )
 
+(defun test-door-final
+  ()
+  (setq *robot* nil)
+  (test-door-motion :ri-test? nil :robot-name "HRP2JSKNTS" :door-name :drc-sagami :push/pull :push :overwrite-stand-coords? :force :overwrite-arm-side? :force)
+  (test-door-motion :ri-test? nil :robot-name "HRP2JSKNTS" :door-name :drc-lasvegas-outdoor :push/pull :push :overwrite-stand-coords? :force :overwrite-arm-side? :force)
+  (test-door-motion :ri-test? nil :robot-name "HRP2JSKNTS" :door-name :drc-lasvegas-indoor :push/pull :push :overwrite-stand-coords? :force :overwrite-arm-side? :force)
+  (setq *robot* nil)
+  (test-door-motion :ri-test? nil :robot-name "JAXON" :door-name :drc-sagami :push/pull :push :overwrite-stand-coords? :force :overwrite-arm-side? :force)
+  (test-door-motion :ri-test? nil :robot-name "JAXON" :door-name :drc-lasvegas-outdoor :push/pull :push :overwrite-stand-coords? :force :overwrite-arm-side? :force)
+  (test-door-motion :ri-test? nil :robot-name "JAXON" :door-name :drc-lasvegas-indoor :push/pull :push :overwrite-stand-coords? :force :overwrite-arm-side? :force)
+  )
+
 (defun test-door-motion-without-ri
   ()
   (setq *robot* nil)
@@ -391,6 +403,7 @@
   )
 
 
+(warning-message 2 "(test-door-final)~%")
 (warning-message 2 ";; test without ri~%")
 (warning-message 2 "(test-door-motion-without-ri)~%")
 (warning-message 2 ";; test with ri~%")
