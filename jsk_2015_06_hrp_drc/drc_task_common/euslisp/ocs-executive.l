@@ -154,7 +154,7 @@
     (setq drill-wall-target-coords nil)
     (setq valve-grasp-mode :edge-grasp-preferred)
     (setq door-push/pull :push)
-    (setq door-name :drc-lasvegas)
+    (setq door-name :drc-sagami)
     (setq drill-arm-environment :larm)
     (setq force-overwrite-door-arm :force)
     (send self :show-text "initialized" :success)

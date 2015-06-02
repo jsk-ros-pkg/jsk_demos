@@ -174,22 +174,30 @@
                          :handle-l/r :left)))
 
 (defun make-drc-sagami-door ()
-  "drc door in sagami full-task-course environment"
-  (setq *door* (instance param-door :init 895 60 110 20
-                         (float-vector 0 800 845)
-                         (float-vector -50 760 845)
-                         ;; (float-vector 0 800 1120)
-                         ;; (float-vector -50 760 1120)
-                         :handle-l/r :left))
+  (make-drc-final-door)
   )
 
 (defun make-drc-sagami-door-mirror ()
-  "mirror of drc door in sagami full-task-course environment"
-  (setq *door* (instance param-door :init 895 60 110 20
-                         (float-vector 0 -800 845)
-                         (float-vector -50 -760 845)
-                         :handle-l/r :right))
+  (make-drc-final-door-mirror)
   )
+
+;; (defun make-drc-sagami-door ()
+;;   "drc door in sagami full-task-course environment"
+;;   (setq *door* (instance param-door :init 895 60 110 20
+;;                          (float-vector 0 800 845)
+;;                          (float-vector -50 760 845)
+;;                          ;; (float-vector 0 800 1120)
+;;                          ;; (float-vector -50 760 1120)
+;;                          :handle-l/r :left))
+;;   )
+
+;; (defun make-drc-sagami-door-mirror ()
+;;   "mirror of drc door in sagami full-task-course environment"
+;;   (setq *door* (instance param-door :init 895 60 110 20
+;;                          (float-vector 0 -800 845)
+;;                          (float-vector -50 -760 845)
+;;                          :handle-l/r :right))
+;;   )
 
 (defun make-drc-lasvegas-indoor-door ()
   "drc door in lasvegas indoor environment"
@@ -229,6 +237,14 @@
                          (float-vector 0 835 890)
                          (float-vector -40 785 890)
                          :handle-l/r :left))
+  )
+
+(defun make-drc-final-door-mirror ()
+  "drc final door in fair plex environment"
+  (setq *door* (instance param-door :init 890 5 105 23
+                         (float-vector 0 -835 890)
+                         (float-vector -40 -785 890)
+                         :handle-l/r :right))
   )
 
 (defun exec-robot-state-list
