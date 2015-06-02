@@ -355,7 +355,7 @@
   )
 
 (defun get-door-motion
-  (&key (draw? nil) (push/pull :push) (check-continuous? t))
+  (&key (draw? nil) (push/pull :push) (check-continuous? nil))
   (generate-door-motion :draw? draw? :push/pull push/pull)
   (when (every #'eval (mapcar #'(lambda (x) (elt x 1)) *door-ik-results*))
     (setq *door-motion* (mapcar #'(lambda (x) (elt x 2)) *door-ik-results*)))
