@@ -1185,7 +1185,8 @@ It sends :angle-vector to robot and return 'finished' message to ocs"
       ))
   (:emergency-pose-command-callback (msg)
     (when (or (equal *robot-name* "JAXON") (equal *robot-name* "JAXON_RED") (equal *robot-name* "STARO"))
-      ;; todo : send emergency pose
+      (ros::ros-warn "emergency pose command called !!!")
+      (move-to-emergency-pose :initial-pose t :ratio 1.0)
       (send self :send-rviz-button-finished-to-ocs)
       ))
   (:reset-enc-offset-command-callback (msg)
