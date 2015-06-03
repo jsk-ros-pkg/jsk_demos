@@ -1,8 +1,44 @@
 <launch>
-  <arg name="INPUT_IMAGE" value="/multisense/left/image_rect_color" />    
+  <arg name="INPUT_IMAGE" value="/multisense/left/image_rect_color" />
+  <arg name="INPUT_CAMERA_INFO" value="/multisense/left/camera_info" />
   <group ns="keyshot">
+    <!-- <node pkg="drc_task_common" type="rect_publisher.py" name="rect_publisher"/> -->
+    <!-- <node pkg="nodelet" type="nodelet" -->
+    <!--       name="rect_to_mask_image" -->
+    <!--       args="standalone jsk_perception/RectToMaskImage" -->
+    <!--       output="screen"> -->
+    <!--   <remap from="~input" to="rect_stamped" /> -->
+    <!--   <remap from="~input/camera_info" to="$(arg INPUT_CAMERA_INFO)" /> -->
+    <!-- </node> -->
+    
+    <arg name="RESIZE_RATE" default="0.3" />
+    <node pkg="resized_image_transport" type="image_resizer" name="image_resizer"
+          output="screen" >
+      <remap from="~input/image" to="$(arg INPUT_IMAGE)" />
+      <!-- <remap from="~input/mask" to="rect_to_mask_image/output" /> -->
+      <remap from="~output/image" to="image_rect_color" />
+      <param name="resize_scale_x" value="$(arg RESIZE_RATE)" />
+      <param name="resize_scale_y" value="$(arg RESIZE_RATE)" />
+    </node>
+    <!-- <node pkg="resized_image_transport" type="image_resizer" name="color_image_resizer"> -->
+    <!--   <remap from="~input/image" to="$(arg IMAGE_TOPIC)" /> -->
+    <!--   <remap from="~output/image" to="image_rect_color" /> -->
+    <!--   <remap from="~output/width_scale" to="image_width_scale" /> -->
+    <!--   <remap from="~output/height_scale" to="image_height_scale" /> -->
+    <!--   <rosparam> -->
+    <!--     resize_scale_x: 0.4 -->
+    <!--     resize_scale_y: 0.4 -->
+    <!--   </rosparam> -->
+    <!-- </node> -->
+
+    <!-- <node pkg="nodelet" type="nodelet" name="roi_crop_decimate" -->
+    <!--       args="standalone image_proc/crop_decimate" > -->
+    <!--   <remap from="camera/image_raw" to="/multisense/left/image_rect_color" /> -->
+    <!--   <remap from="camera_out/image_raw" to="test" /> -->
+    <!-- </node> -->
+    
     <node pkg="jsk_topic_tools" type="snapshot" name="snapshot">
-      <remap from="~input" to="$(arg INPUT_IMAGE)"/>
+      <remap from="~input" to="image_rect_color"/>
       <remap from="~output" to="/communication/keyshot_image" />
       <rosparam>
         latch: true
