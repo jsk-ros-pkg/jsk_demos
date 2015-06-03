@@ -5,9 +5,9 @@ Panels:
     Property Tree Widget:
       Expanded:
         - /Global Options1
-        - /Camera1/Status1
+        - /Camera1/Visibility1
       Splitter Ratio: 0.626363
-    Tree Height: 567
+    Tree Height: 611
   - Class: rviz/Selection
     Name: Selection
   - Class: rviz/Tool Properties
@@ -26,7 +26,7 @@ Panels:
     Experimental: false
     Name: Time
     SyncMode: 0
-    SyncSource: ""
+    SyncSource: Camera
   - Class: jsk_rviz_plugin/TransformableMarkerOperatorAction
     Name: TransformableMarkerOperatorAction
   - Class: drc_task_common/DRCTeleopInterfaceAction
@@ -116,10 +116,367 @@ Visualization Manager:
       Enabled: true
       Links:
         All Links Enabled: true
+        BODY:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        CHEST_LINK0:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        CHEST_LINK1:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
         Expand Joint Details: false
         Expand Link Details: false
         Expand Tree: false
+        HEAD_LINK0:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        HEAD_LINK1:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        LARM_LINK0:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        LARM_LINK1:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        LARM_LINK2:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        LARM_LINK3:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        LARM_LINK4:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        LARM_LINK5:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        LARM_LINK6:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        LARM_LINK7:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        LARM_cb_jig:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        LLEG_LINK0:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        LLEG_LINK1:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        LLEG_LINK2:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        LLEG_LINK3:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        LLEG_LINK4:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        LLEG_LINK5:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        LLEG_LINK6:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        L_INDEXMP_P_LINK:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        L_INDEXMP_R_LINK:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        L_INDEXPIP_R_LINK:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        L_MIDDLEPIP_R_LINK:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        L_THUMBCM_P_LINK:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        L_THUMBCM_Y_LINK:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
         Link Tree Style: Links in Alphabetic Order
+        RARM_LINK0:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        RARM_LINK1:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        RARM_LINK2:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        RARM_LINK3:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        RARM_LINK4:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        RARM_LINK5:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        RARM_LINK6:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        RARM_LINK7:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        RARM_cb_jig:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        RLEG_LINK0:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        RLEG_LINK1:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        RLEG_LINK2:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        RLEG_LINK3:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        RLEG_LINK4:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        RLEG_LINK5:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        RLEG_LINK6:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        R_INDEXMP_P_LINK:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        R_INDEXMP_R_LINK:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        R_INDEXPIP_R_LINK:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        R_MIDDLEPIP_R_LINK:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        R_THUMBCM_P_LINK:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        R_THUMBCM_Y_LINK:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        accel:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        center_bottom_led_frame:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        center_top_led_frame:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        fisheye:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        gyro:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        head:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        head_end_coords:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        head_hokuyo_frame:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        head_root:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        hokuyo_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        larm_end_coords:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        left_camera_frame:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        left_camera_optical_frame:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        left_led_frame:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        lfsensor:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        lhsensor:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        lleg_end_coords:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        mag:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        motor:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        rarm_end_coords:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        rfsensor:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        rhsensor:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        right_camera_frame:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        right_camera_optical_frame:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        right_led_frame:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        rleg_end_coords:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        spindle:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        torso_end_coords:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
       Name: RobotModel
       Robot Description: robot_description
       TF Prefix: ""
@@ -462,7 +819,7 @@ Visualization Manager:
         OverlayMenu: false
         OverlayText: false
         PoseArray: false
-        RobotModel: true
+        RobotModel: false
         Show State:
           OverlayText: true
           Value: false
@@ -476,15 +833,15 @@ Visualization Manager:
           PointCloud2: true
           PolygonArray: true
           SimpleOccupancyGridArray: true
-          Value: true
+          Value: false
         Value: true
         Vehicle:
           MarkerArray: true
           Pose: true
           TorusArray: true
           Value: true
-        WrenchStamped: true
-        drill button: false
+        WrenchStamped: false
+        drill button: true
         footmarker: false
         furutaractive_model: false
         object approach: true
@@ -647,22 +1004,22 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/XYOrbit
-      Distance: 2.59523
+      Distance: 10
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.06
         Stereo Focal Distance: 1
         Swap Stereo Eyes: false
         Value: false
       Focal Point:
-        X: 1.23386
-        Y: 0.153347
-        Z: 1.09812e-06
+        X: 0
+        Y: 0
+        Z: 0
       Name: Current View
       Near Clip Distance: 0.01
-      Pitch: -0.134797
+      Pitch: 0.785398
       Target Frame: <Fixed Frame>
       Value: XYOrbit (rviz)
-      Yaw: 1.73542
+      Yaw: 0.785398
     Saved: ~
 Window Geometry:
   Camera:
@@ -674,7 +1031,7 @@ Window Geometry:
   Height: 1416
   Hide Left Dock: false
   Hide Right Dock: false
-  QMainWindow State: 000000ff00000000fd00000004000000000000029200000458fc020000000bfb0000001e0054006f006f006c002000500072006f007000650072007400690065007302000001ed000001df00000185000000a3fb000000120056006900650077007300200054006f006f02000001df000002110000018500000122fb000000200054006f006f006c002000500072006f0070006500720074006900650073003203000002880000011d000002210000017afb0000001200530065006c0065006300740069006f006e00000000410000009b0000007400fffffffb000000100044006900730070006c0061007900730100000028000002e7000000fe00fffffffb0000000c00430061006d00650072006101000003150000016b0000002600fffffffb0000002000730065006c0065006300740069006f006e00200062007500660066006500720200000138000000aa0000023a00000294fb00000014005700690064006500530074006500720065006f02000000e6000000d2000003ee0000030bfb0000000c004b0069006e0065006300740200000186000001060000030c00000261fb0000000c00430061006d0065007200610000000397000001840000000000000000fb00000042005400720061006e00730066006f0072006d00610062006c0065004d00610072006b00650072004f00700065007200610074006f00720041006300740069006f006e00000002f600000292000001a300ffffff000000010000016300000458fc0200000003fb0000001e0054006f006f006c002000500072006f00700065007200740069006500730100000041000000780000000000000000fb0000000a00560069006500770073010000002800000458000000e200fffffffb0000001200530065006c0065006300740069006f006e010000025a000000b200000000000000000000000200000490000000a9fc0100000001fb0000000a00560069006500770073030000004e00000080000002e1000001970000000300000fb7000000d3fc0100000002fc0000000000000fb700000fb700fffffffa000000000200000003fb0000003000440052004300540065006c0065006f00700049006e00740065007200660061006300650041006300740069006f006e0100000000ffffffff000000a400fffffffb000000360052006f0062006f00740043006f006d006d0061006e00640049006e00740065007200660061006300650041006300740069006f006e0000000000ffffffff0000000000000000fb0000000800540069006d00650100000521000000b50000005c00fffffffb0000000800540069006d0065010000000000000450000000000000000000000bb60000045800000004000000040000000800000008fc0000000100000002000000010000000a0054006f006f006c00730100000000ffffffff0000000000000000
+  QMainWindow State: 000000ff00000000fd00000004000000000000029200000469fc020000000bfb0000001e0054006f006f006c002000500072006f007000650072007400690065007302000001ed000001df00000185000000a3fb000000120056006900650077007300200054006f006f02000001df000002110000018500000122fb000000200054006f006f006c002000500072006f0070006500720074006900650073003203000002880000011d000002210000017afb0000001200530065006c0065006300740069006f006e00000000410000009b0000006400fffffffb000000100044006900730070006c0061007900730100000028000002f2000000dd00fffffffb0000000c00430061006d0065007200610100000320000001710000001600fffffffb0000002000730065006c0065006300740069006f006e00200062007500660066006500720200000138000000aa0000023a00000294fb00000014005700690064006500530074006500720065006f02000000e6000000d2000003ee0000030bfb0000000c004b0069006e0065006300740200000186000001060000030c00000261fb0000000c00430061006d0065007200610000000397000001840000000000000000fb00000042005400720061006e00730066006f0072006d00610062006c0065004d00610072006b00650072004f00700065007200610074006f00720041006300740069006f006e00000002f6000002920000011c00ffffff000000010000016300000469fc0200000003fb0000001e0054006f006f006c002000500072006f00700065007200740069006500730100000041000000780000000000000000fb0000000a00560069006500770073000000002800000469000000b000fffffffb0000001200530065006c0065006300740069006f006e010000025a000000b200000000000000000000000200000490000000a9fc0100000001fb0000000a00560069006500770073030000004e00000080000002e10000019700000003000009c3000000d3fc0100000002fc00000000000009c3000009c300fffffffa000000000200000003fb0000003000440052004300540065006c0065006f00700049006e00740065007200660061006300650041006300740069006f006e0100000000ffffffff0000008300fffffffb000000360052006f0062006f00740043006f006d006d0061006e00640049006e00740065007200660061006300650041006300740069006f006e0000000000ffffffff0000000000000000fb0000000800540069006d00650100000521000000b50000003b00fffffffb0000000800540069006d006501000000000000045000000000000000000000072b0000046900000004000000040000000800000008fc0000000100000002000000010000000a0054006f006f006c00730100000000ffffffff0000000000000000
   Selection:
     collapsed: false
   Time:
@@ -685,6 +1042,6 @@ Window Geometry:
     collapsed: false
   Views:
     collapsed: false
-  Width: 4023
+  Width: 2499
   X: 58
   Y: 24
