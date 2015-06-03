@@ -85,24 +85,36 @@
 - name: 'drc-box2'
   service: 'door_name_drc_box2'
   column: 5
-
+- name: 'door reach 90 deg'
+  service: 'door_reach_90_deg'
+  column: 6
+  default_value: True
+- name: 'door reach 60 deg'
+  service: 'door_reach_60_deg'
+  column: 6
+- name: 'door reach 30 deg'
+  service: 'door_reach_30_deg'
+  column: 6
+- name: 'door reach 0 deg'
+  service: 'door_reach_0_deg'
+  column: 6
 - name: 'drill-rotate-zero'
   service: 'drill_rotate_zero'
-  column: 6
+  column: 7
 - name: 'drill-rotate-one'
   service: 'drill_rotate_one'
-  column: 6
+  column: 7
 - name: 'drill-rotate-two'
   service: 'drill_rotate_two'
-  column: 6
+  column: 7
 - name: 'drill-rotate-three'
   service: 'drill_rotate_three'
-  column: 6
+  column: 7
   default_value: True
 - name: 'drill left arm environment'
   service: 'drill_left_arm_environment'
-  column: 7
+  column: 8
   default_value: True
 - name: 'drill right arm environment'
   service: 'drill_right_arm_environment'
-  column: 7
+  column: 8

@@ -14,6 +14,7 @@
         (stand-coords nil)
         (arm :rarm) (push/pull :push)
         (overwrite-stand-coords? nil) (overwrite-arm-side? nil)
+        (door-reach-deg 90)
         (ri-test? nil)
         )
   (cond ((not ri-test?)
@@ -25,7 +26,9 @@
           :stand-coords stand-coords
           :arm arm :push/pull push/pull :use-ri? nil
           :robot-name robot-name :draw-environment? t
-          :overwrite-stand-coords? overwrite-stand-coords? :overwrite-arm-side? overwrite-arm-side?)
+          :overwrite-stand-coords? overwrite-stand-coords? :overwrite-arm-side? overwrite-arm-side?
+          :door-reach-deg door-reach-deg
+          )
          (play-motion-on-eus-viewer
           *door-motion*
           :interpolation? t :collision-check? t
