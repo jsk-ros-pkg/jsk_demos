@@ -5,10 +5,11 @@ import sys
 import os
 import math
 import re
-
-from jsk_tools.sanity_lib import (okMessage, errorMessage, warnMessage,
+from colorama import Fore, Style
+from jsk_tools.sanity_lib import (okMessage, errorMessage, warnMessage, indexMessage,
                                   checkTopicIsPublished,
-                                  checkROSMasterCLOSE_WAIT)
+                                  checkROSMasterCLOSE_WAIT, checkNodeState,
+                                  checkSilverHammerSubscribe)
 from std_msgs.msg import Time
 from sensor_msgs.msg import PointCloud2, Image
 from jsk_recognition_msgs.msg import (ModelCoefficientsArray,
@@ -26,6 +27,18 @@ if __name__ == "__main__":
     host = re.match("http://([0-9a-zA-Z]*):.*", os.environ["ROS_MASTER_URI"]).groups(0)[0]
     checkROSMasterCLOSE_WAIT(host)
 
+    indexMessage("Check Nodes in FC")
+    checkNodeState("/fc_to_ocs_basic_low_speed", True)
+    checkNodeState("/fc_to_ocs_eus", True)
+    checkNodeState("/fc_to_ocs_low_speed", True)
+    checkNodeState("/fc_to_ocs_vehicle", True)
+    checkNodeState("/fc_from_ocs_eus", True)
+    checkNodeState("/fc_from_ocs_low_speed", True)
+    checkNodeState("/fc_from_ocs_vehicle", True)
+    checkNodeState("/fc_from_ocs_reconfigure", True)
+    checkNodeState("/highspeed_streamer", True)
+
+    indexMessage("Check Topics in FC")
     checkMultisenseRemote(
         "multisense remote is not working."
         "Run following command:\n"
@@ -135,6 +148,21 @@ if __name__ == "__main__":
          ["/drill_recognition_for_wall/plane_segmentation/output/polygons",
           PolygonArray]
      ])
+    checkTopicIsPublished("/footcoords/state", None, echo=True)
+
+    indexMessage("Check SilverHammer Subscribe Hz in FC")
+    checkSilverHammerSubscribe("/fc_to_ocs_basic_low_speed/last_send_time", 1.0, 0.4, timeout=7)
+    checkSilverHammerSubscribe("/fc_to_ocs_eus/last_send_time", 1.0, 0.4, timeout=7)
+    checkSilverHammerSubscribe("/fc_to_ocs_low_speed/last_send_time", 1.0, 0.4, timeout=7)
+    checkSilverHammerSubscribe("/fc_to_ocs_vehicle/last_send_time", 1.0, 0.4, timeout=7)
+    checkSilverHammerSubscribe("/highspeed_streamer/last_send_time", 1.0, 0.4, timeout=7)
+
+    checkSilverHammerSubscribe("/fc_from_ocs_eus/last_received_time", 10.0, 1.0, timeout=7)
+    checkSilverHammerSubscribe("/fc_from_ocs_low_speed/last_received_time", 10.0, 1.0, timeout=7)
+    checkSilverHammerSubscribe("/fc_from_ocs_reconfigure/last_received_time", 10.0, 1.0, timeout=7)
+    checkSilverHammerSubscribe("/fc_from_ocs_vehicle/last_received_time", 10.0, 1.0, timeout=7)
+
+    indexMessage("Check  Valve Recognition in FC")
     # Publish dummy input for valve recognition
     pub = rospy.Publisher("/valve_recognition/input_rect", PolygonStamped, latch = True)
     dummy_polygon = PolygonStamped()
