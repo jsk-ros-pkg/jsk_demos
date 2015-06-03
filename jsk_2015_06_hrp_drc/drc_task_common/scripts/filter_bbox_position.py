@@ -22,6 +22,8 @@ def callback(msg):
         translation_matrix(pos), quaternion_matrix(rot))
     result = BoundingBoxArray()
     result.header = msg.header
+    min_z_pos = 1000000.0
+    min_box = None
     for box in msg.boxes:
         box_pos = [box.pose.position.x, box.pose.position.y, box.pose.position.z]
         # [x, y, z, w]
@@ -33,8 +35,11 @@ def callback(msg):
         box_global_pos = translation_from_matrix(box_global_pose)
         if box_global_pos[2] > min_z and box_global_pos[2] < max_z:
             result.boxes.append(box)
+            if box_global_pos[2] < min_z_pos:
+                min_z_pos = box_global_pos[2]
+                min_box = box
     if len(result.boxes) > 1:
-        result.boxes = [sorted(result.boxes, key = lambda b: return b.pose.position.z)[0]]
+        result.boxes = [min_box]
     pub.publish(result)
 
 if __name__ == "__main__":

@@ -598,3 +598,82 @@
     (send footstep :dimensions :y 0.135))
    ))
 
+;; for emergency, currently support only jaxon and jaxon_red
+(defun move-to-emergency-pose (&key (initial-pose t) (ratio 1.0))
+  (progn
+    (send *ri* :stop-impedance :arms)
+    (send *ri* :start-grasp))
+  ;; initial pose
+  (when initial-pose
+    (progn
+      (send *robot* :reset-pose)
+      (send *robot* :fix-leg-to-coords (make-coords))
+      (send *ri* :angle-vector (send *robot* :angle-vector) (* 7500 ratio))
+      (send *ri* :wait-interpolation)))
+  ;; squat pose : robot specific code
+  (progn
+    (send *robot* :legs :move-end-pos #f(0 0 500))
+    (send *robot* :torso-waist-p :joint-angle 30)
+    (dolist (l (list :rarm :larm))
+      (send *robot* l :inverse-kinematics (send (make-coords :pos (send (send (send *robot* l :end-coords) :copy-worldcoords) :worldpos)) :rotate pi/2 :y)))
+    (send *robot* :inverse-kinematics
+          (list (send (send (send (send *robot* :rarm :end-coords) :copy-worldcoords) :translate (float-vector 150 0 500) :local) :rotate (/ 0 6) :y :world)
+                (send (send (send (send *robot* :larm :end-coords) :copy-worldcoords) :translate (float-vector 150 0 500) :local) :rotate (/ 0 6) :y :world))
+          :move-target (list (send *robot* :rarm :end-coords)
+                             (send *robot* :larm :end-coords))
+          :link-list (list (send *robot* :link-list (send *robot* :rarm :end-coords :parent))
+                           (send *robot* :link-list (send *robot* :larm :end-coords :parent))))
+    (send *robot* :fix-leg-to-coords (make-coords))
+    (send *robot* :move-centroid-on-foot :both '(:rleg :lleg :larm :rarm)
+          :root-link-virtual-joint-weight #f(0.1 0.1 0.8 0.1 0.5 0.5)
+          :target-centroid-pos (v+ (apply #'midpoint 0.5 (send *robot* :legs :end-coords :worldpos)) (float-vector 20 0 0)))
+    (send *ri* :angle-vector (send *robot* :angle-vector) (* 7500 ratio))
+    (send *ri* :wait-interpolation))
+  ;; move centroid forward
+  (progn
+    (send *robot* :fix-leg-to-coords (make-coords))
+    (send *robot* :move-centroid-on-foot :both '(:rleg :lleg :larm :rarm) :target-centroid-pos (float-vector 30 0 0))
+    (send *ri* :angle-vector (send *robot* :angle-vector) (* 750 ratio))
+    (send *ri* :wait-interpolation))
+  ;; four leg mode : hand specific code
+  (let* ((z-pos (send-all (send *robot* :arms :end-coords) :worldpos))
+         (thk-contact-point-offset 15)
+         (tc
+          (list
+           (send (send *robot* :rarm :end-coords :copy-worldcoords) :translate (float-vector 0 0 (+ (* -1 (elt (car z-pos) 2)) thk-contact-point-offset)) :world)
+           (send (send *robot* :larm :end-coords :copy-worldcoords) :translate (float-vector 0 0 (+ (* -1 (elt (cadr z-pos) 2)) thk-contact-point-offset)) :world)
+           (send *robot* :rleg :end-coords :copy-worldcoords)
+           (send *robot* :lleg :end-coords :copy-worldcoords))))
+    (dolist (l (list :rleg :lleg))
+      (send *robot* l :crotch-p :joint-angle -90))
+    (send *robot* :fix-leg-to-coords (make-coords))
+    (with-move-target-link-list
+     (mt ll *robot* '(:rarm :larm :rleg :lleg))
+     (send *robot*
+           :fullbody-inverse-kinematics tc
+           :move-target mt
+           :link-list ll
+           :max (float-vector +500 +200 +200 +10 +20 +10)
+           :min (float-vector -500 -200 -200 -10 -20 -10)
+           :root-link-virtual-joint-weight #f(0.8 0.1 0.8 0.1 0.8 0.5)
+           :target-centroid-pos (v+ (apply #'midpoint 0.5 (send *robot* :legs :end-coords :worldpos)) (float-vector 100 0 0))
+           :debug-view :no-message))
+    (send *ri* :angle-vector (send *robot* :angle-vector) (* 3000 ratio))
+    (send *ri* :wait-interpolation))
+  ;; stop st / abc
+  (progn
+    (send *ri* :stop-st)
+    (send *ri* :stop-auto-balancer))
+  ;; move centroid
+  (progn
+    (send *robot* :move-centroid-on-foot :both '(:rarm :larm :rleg :lleg)
+          :root-link-virtual-joint-weight #f(0.8 0.1 0.8 0.1 0.8 0.5)
+          :max (float-vector +800 +600 +800 +20 +20 +10)
+          :min (float-vector -500 -600 -200 -20 -20 -10)
+          :target-centroid-pos (v+ (apply #'midpoint 0.5 (send *robot* :legs :end-coords :worldpos))
+                                   (float-vector 150 0 0))
+          :centroid-thre 10
+          :debug-view :no-message)
+    (send *ri* :angle-vector (send *robot* :angle-vector) (* 4500 ratio))
+    (send *ri* :wait-interpolation))
+  )

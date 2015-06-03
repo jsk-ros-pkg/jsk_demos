@@ -57,5 +57,7 @@ tmux-newwindow locomotion "sleep 5; roslaunch drc_task_common locomotion.launch"
 tmux-newwindow vehicle "roslaunch drc_task_common vehicle_field_computer_main.launch USE_COM:=false ROBOT:=${ROBOT,,}"
 tmux-newwindow misc "sleep 5; roslaunch drc_task_common fc_misc.launch"
 tmux-newwindow com "sleep 5; roslaunch drc_com_common field_computer_com.launch FC_IP:=${FC_IP} OCS_IP:=${OCS_IP}"
+tmux-newwindow lowspeed0 "sleep 5; rostopic echo /fc_to_ocs_low_speed/input"
+tmux-newwindow lowspeed1 "sleep 5; rostopic echo /fc_from_ocs_low_speed/output"
 tmux send-keys -t fc:tmp "exit" C-m
 tmux a -t fc
