@@ -42,6 +42,9 @@
 (defun ocs-message-callback (msg)
   (let (tmp-msg)
     (setq *vehicle-fc-executive-enable-flag* (send msg :execute_flag))
+    (setq tmp-msg (make-msg-from-tunnel msg :execute_flag std_msgs::Bool))
+    (ros::publish "/drive/execute_flag" tmp-msg)
+    
     (setq tmp-msg (make-msg-from-tunnel msg :handle_cmd std_msgs::Float64))
     (ros::publish "/drive/operation/handle_cmd" tmp-msg)
     (setq tmp-msg (make-msg-from-tunnel msg :accel_cmd std_msgs::Float64))
@@ -56,6 +59,7 @@
     (send *grasp-service-client* :call (send msg :grasp_request))
     (send *release-service-client* :call (send msg :release_request))
     (send *correct-service-client* :call (send msg :correct_request))
+    (send *resume-service-client* :call (send msg :resume_request))
     (send *approach-handle-service-client* :call (send msg :approach_handle_request))
     (send *approach-accel-service-client* :call (send msg :approach_accel_request))
     (send *reach-arm-service-client* :call (send msg :reach_arm_request))
@@ -182,6 +186,9 @@
 ;; for ueda tunnel
 (ros::advertise "/fc_to_ocs_vehicle/input" drc_com_common::VehicleFC2OCSSmall)
 (ros::subscribe "/fc_from_ocs_vehicle/output" drc_com_common::VehicleOCS2FCSmall #'ocs-message-callback)
+
+;; message to recognition
+(ros::advertise "/drive/execute_flag" std_msgs::Bool 1)
 
 ;; message to driving-controller
 (ros::advertise "/drive/operation/handle_cmd" std_msgs::Float64 1)
