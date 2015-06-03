@@ -152,6 +152,16 @@
   ;;  (ros::publish "/ocs_to_fc_low_speed/input"
   ;;   (instance  drc_com_common::OCS2FCSmall :init
   ;;              :type drc_com_common::OCS2FCSmall::*HRPSYS_STOP_ABC*)))
+  ;;
+  (:go-pos
+   (x y yaw)
+   (let* ((msg (instance drc_com_common::OCS2FCSmall :init
+                         :type drc_com_common::OCS2FCSmall::*GO_POS_EXEC*)))
+     (setf (aref (send msg :float_params) 0) (* 1e+3 x))
+     (setf (aref (send msg :float_params) 1) (* 1e+3 y))
+     (setf (aref (send msg :float_params) 3) (deg2rad yaw))
+     (ros::publish "/ocs_to_fc_low_speed/input" msg)))
+  ;;
   ;; callbacks
   (:ocs-joint-state-callback
    (msg)
