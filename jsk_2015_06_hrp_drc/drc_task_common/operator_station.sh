@@ -40,5 +40,7 @@ tmux-newwindow vehicle "roslaunch drc_task_common vehicle_operator_station_main.
 tmux-newwindow locomotion "sleep 5; roslaunch drc_task_common ocs_locomotion.launch"
 tmux-newwindow locomotion_planner "sleep 5; roslaunch drc_task_common ocs_locomotion_planner.launch"
 tmux-newwindow com "roslaunch drc_com_common operator_station_com.launch FC_IP:=${FC_IP} OCS_IP:=${OCS_IP}"
+tmux-newwindow lowspeed0 "sleep 5; rostopic echo /ocs_to_fc_low_speed/input"
+tmux-newwindow lowspeed1 "sleep 5; rostopic echo /ocs_from_fc_low_speed/output"
 tmux send-keys -t ocs:tmp "exit" C-m
 tmux a -t ocs
