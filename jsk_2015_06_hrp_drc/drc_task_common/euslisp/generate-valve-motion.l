@@ -503,8 +503,14 @@
                ;; last releasing
                (send *robot* :reset-manip-pose)
                (when real? (model2real :time 5000))
-               (when (or (equal *robot-name* "JAXON") (equal *robot-name* "STARO") (equal *robot-name* "JAXON_RED"))
-                 (when real? (start-hard-impedance)))
+               (when real?
+                 (cond ((or (equal *robot-name* "JAXON") (equal *robot-name* "STARO") (equal *robot-name* "JAXON_RED"))
+                        (start-hard-impedance)
+                        )
+                       (t ;; (or (equal *robot-name* "HRP2JSKNT") (equal *robot-name* "HRP2JSKNTS"))
+                        (start-soft-impedance)
+                        ))
+                 )
                )
               (t
                ;; reverse
