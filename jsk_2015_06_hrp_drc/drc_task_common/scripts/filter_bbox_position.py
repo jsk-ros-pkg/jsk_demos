@@ -33,6 +33,8 @@ def callback(msg):
         box_global_pos = translation_from_matrix(box_global_pose)
         if box_global_pos[2] > min_z and box_global_pos[2] < max_z:
             result.boxes.append(box)
+    if len(result.boxes) > 1:
+        result.boxes = [sorted(result.boxes, key = lambda b: return b.pose.position.z)[0]]
     pub.publish(result)
 
 if __name__ == "__main__":
