@@ -54,6 +54,7 @@
                 overwrite-stand-coords? ;; one of (:force :auto nil)
                 drill-rotate-num
                 door-name
+                door-reach-deg
                 force-overwrite-door-arm ;; one of (:force :auto)
                 ;; For driving taskot
                 latest-handle-angle
@@ -155,6 +156,7 @@
     (setq valve-grasp-mode :edge-grasp-preferred)
     (setq door-push/pull :push)
     (setq door-name :drc-sagami)
+    (setq door-reach-deg 90)
     (setq drill-arm-environment :larm)
     (setq force-overwrite-door-arm :force)
     (send self :show-text "initialized" :success)
@@ -688,7 +690,7 @@
                    (t drc_com_common::OCS2FCSmall::*UNDECIDED*)))
             )
         (send msg :float_params
-              (door-params-to-float-vector door-params door-push/pull-idx door-name-idx (length (send msg :float_params)))))
+              (door-params-to-float-vector door-params door-push/pull-idx door-name-idx door-reach-deg (length (send msg :float_params)))))
       (cond ((not (boundp '*door-arm*))
              (send msg :arm_side drc_com_common::OCS2FCSmall::*UNDECIDED*))
             ((equal *door-arm* :larm)
@@ -972,6 +974,7 @@
           :arm (send self :get-arm-side) :overwrite-arm-side? (send self :is-door-arm-overwrite)
           :stand-coords (make-coords) :overwrite-stand-coords? :force ;; overwrite stand-coords forcibly in door motion
           :push/pull door-push/pull
+          :door-reach-deg door-reach-deg
           :update? t)
          (send smachine :go-to :selecting-exec-for-door)))
       ))
@@ -1465,6 +1468,7 @@
             :arm (send self :get-arm-side) :overwrite-arm-side? (send self :is-door-arm-overwrite)
             :stand-coords (get-robot-model-current-pos) :overwrite-stand-coords? overwrite-stand-coords?
             :push/pull door-push/pull
+            :door-reach-deg door-reach-deg
             :update? t)
            (send smachine :go-to :selecting-exec-for-door))
           (t (send self :show-text "refresh selected but no mean" :warn)
@@ -1987,6 +1991,33 @@
   )
 
 (defmethod ocs-executive-app
+  (:door-reach-90-deg
+   (req)
+   (setq door-reach-deg 90)
+   (send self :show-text "door reach 90[deg]" :success)
+   (send req :response)
+   )
+  (:door-reach-60-deg
+   (req)
+   (setq door-reach-deg 60)
+   (send self :show-text "door reach 60[deg]" :success)
+   (send req :response)
+   )
+  (:door-reach-30-deg
+   (req)
+   (setq door-reach-deg 30)
+   (send self :show-text "door reach 30[deg]" :success)
+   (send req :response)
+   )
+  (:door-reach-0-deg
+   (req)
+   (setq door-reach-deg 0)
+   (send self :show-text "door reach 0[deg]" :success)
+   (send req :response)
+   )
+  )
+
+(defmethod ocs-executive-app
   (:set-door-detect-auto-callback
    (req)
    (send req :response)
@@ -2241,7 +2272,10 @@
 (ros::advertise-service "end_stair" std_srvs::Empty #'send *app* :end-stair-callback)
 (ros::advertise-service "drill_left_arm_environment" std_srvs::Empty #'send *app* :drill-left-arm-environment)
 (ros::advertise-service "drill_right_arm_environment" std_srvs::Empty #'send *app* :drill-right-arm-environment)
-
+(ros::advertise-service "door_reach_90_deg" std_srvs::Empty #'send *app* :door-reach-90-deg)
+(ros::advertise-service "door_reach_60_deg" std_srvs::Empty #'send *app* :door-reach-60-deg)
+(ros::advertise-service "door_reach_30_deg" std_srvs::Empty #'send *app* :door-reach-30-deg)
+(ros::advertise-service "door_reach_0_deg" std_srvs::Empty #'send *app* :door-reach-0-deg)
 ;; Drive joystick controller topics
 (ros::subscribe "/ocs/drive/operation/handle_cmd" std_msgs::Float64 #'send *app* :drive-handle-angle-callback)
 (ros::subscribe "/ocs/drive/operation/accel_cmd" std_msgs::Float64 #'send *app* :drive-accell-angle-callback)
