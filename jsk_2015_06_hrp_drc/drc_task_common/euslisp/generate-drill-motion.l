@@ -1164,7 +1164,7 @@
       ;;   )
       ;; second try
       (when try-many?
-        (let ((ix-width (if (or (equal *robot-name* "HRP2JSKNTS") (equal *robot-name* "HRP2JSKNT")) 3 5))
+        (let ((ix-width (if (or (equal *robot-name* "HRP2JSKNTS") (equal *robot-name* "HRP2JSKNT")) 3 3))
               (iy-width 5)
               )
           (dotimes (ix ix-width)

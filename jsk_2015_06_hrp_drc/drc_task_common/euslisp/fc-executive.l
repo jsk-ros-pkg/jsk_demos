@@ -1161,7 +1161,7 @@ It sends :angle-vector to robot and return 'finished' message to ocs"
         (ros::ros-info "arm side empty")
         )
       )
-    (when (or (equal *robot-name* "HRP2JSKNTS") (equal *robot-name* "HRP2JSKNT"))
+    (when (or t (equal *robot-name* "HRP2JSKNTS") (equal *robot-name* "HRP2JSKNT"))
       (send *robot* :angle-vector (get-reach-drill-pre-pose))
       (model2real :time 5000)
       )
