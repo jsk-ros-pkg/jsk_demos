@@ -9,7 +9,9 @@ from colorama import Fore, Style
 from jsk_tools.sanity_lib import (okMessage, errorMessage, warnMessage, indexMessage,
                                   checkTopicIsPublished,
                                   checkROSMasterCLOSE_WAIT, checkNodeState,
-                                  checkSilverHammerSubscribe)
+                                  checkSilverHammerSubscribe,
+                                  checkGitRepoWithRosPack)
+from jsk_tools.ws_doctor import (checkGitRepo)
 from std_msgs.msg import Time
 from sensor_msgs.msg import PointCloud2, Image
 from jsk_recognition_msgs.msg import (ModelCoefficientsArray,
@@ -26,6 +28,9 @@ if __name__ == "__main__":
     
     host = re.match("http://([0-9a-zA-Z]*):.*", os.environ["ROS_MASTER_URI"]).groups(0)[0]
     checkROSMasterCLOSE_WAIT(host)
+
+    indexMessage("Check Git Repos in FC")
+    checkGitRepoWithRosPack("drc_task_common")
 
     indexMessage("Check Nodes in FC")
     checkNodeState("/fc_to_ocs_basic_low_speed", True)
