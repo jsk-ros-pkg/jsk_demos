@@ -578,7 +578,7 @@
     (send *ri* :angle-vector (send *robot* :angle-vector)
           time)
     (send *ri* :wait-interpolation)
-  )
+  ))
 
 (defun fill-footstep-dimensions (footstep)
   (send footstep :dimensions :z 0.001)
