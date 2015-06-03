@@ -882,7 +882,7 @@
    )
   (:execute-handle-pose-compensation
    (&rest args &key (tm 2500) (limb (send motion :grasp-arm))
-          (position-threshold 1000) (yes nil) (min-wait-sec 5.0) (max-wait-sec 30.0)
+          (position-threshold 1000) (yes nil) (min-wait-sec 5.0) (max-wait-sec 10.0)
           (release-offset #f(-100 0 0)) (shoulder-y-deg 0.0) (look-at-handle t)
          )
    ;; wait handling   
