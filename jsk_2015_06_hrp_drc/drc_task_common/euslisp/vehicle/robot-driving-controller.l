@@ -912,7 +912,16 @@
        )
      (warn "release handle~%")
      (if (not (equal (send self :controller-state :handle) :release)) ;; prevent double release
-         (setq release-result (send self :release :offset release-offset))
+         (progn
+           (if (not (equal (send self :controller-state :handle) :approach))
+               (setq approach-result (send self :approach-handle)) ;; compensate coords of grasp-arm
+             (setq approach-result t)
+             )
+           (if approach-result
+               (setq release-result (send self :release :offset release-offset))
+             (setq release-result nil)
+             )
+           )
        (setq release-result t)
        )
      ;; (setq release-result (send self :release :offset release-offset))
