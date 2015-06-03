@@ -9,7 +9,8 @@ from colorama import Fore, Style
 from jsk_tools.sanity_lib import (okMessage, errorMessage, warnMessage, indexMessage,
                                   checkTopicIsPublished,
                                   checkROSMasterCLOSE_WAIT, checkNodeState,
-                                  checkSilverHammerSubscribe)
+                                  checkSilverHammerSubscribe,
+                                  checkBlackListDaemon)
 from std_msgs.msg import Time
 from sensor_msgs.msg import PointCloud2, Image
 from jsk_recognition_msgs.msg import (ModelCoefficientsArray,
@@ -22,10 +23,13 @@ from geometry_msgs.msg import PolygonStamped, Point32
 from jsk_hrp2_ros_bridge.sanity_util import checkMultisenseRemote
 
 if __name__ == "__main__":
-    rospy.init_node("chesk_sanity_fc")
+    indexMessage("Check Daemons in FC")
+    checkBlackListDaemon(["chrome", "dropbox", "skype"], kill=False)
     
     host = re.match("http://([0-9a-zA-Z]*):.*", os.environ["ROS_MASTER_URI"]).groups(0)[0]
     checkROSMasterCLOSE_WAIT(host)
+
+    rospy.init_node("chesk_sanity_fc")
 
     indexMessage("Check Nodes in FC")
     checkNodeState("/fc_to_ocs_basic_low_speed", True)
