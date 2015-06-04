@@ -343,7 +343,7 @@
     )
   )
 (defun fullbody-inverse-kinematics-for-drill-grasp-for-hrp2
-  (tc mt ll &key (draw? nil) (translation-axis (list t t t)) (rotation-axis (list t t t)) (stop 60))
+  (tc mt ll &key (draw? nil) (translation-axis (list t t t)) (rotation-axis (list t t t)) (stop 75))
   (send *robot*
         :fullbody-inverse-kinematics tc
         :move-target mt :link-list ll
@@ -1314,8 +1314,9 @@
         (send *drill* :newcoords (send (elt dt-coords-list i) :copy-worldcoords))
         (send *robot* :rleg :angle-vector original-rleg-joint-angle)
         (send *robot* :lleg :angle-vector original-lleg-joint-angle)
+        (if (or (equal *robot-name* "HRP2JSKNTS") (equal *robot-name* "HRP2JSKNT")) (send *robot* :angle-vector (get-pierce-drill-pre-pose2)))
         (send *robot* :fix-leg-to-coords original-foot-midcoords)
-
+        
         ;;(send *drill* :newcoords (send (send (send *robot* :body_lk) :copy-worldcoords) :transform (get-drill-coords-with-symbol (elt dt-coords-list i) :origin-coords) :local))
         (if (equal drill-type :gun) (set-drill-rotation :deg 0))
         (setq ik-ret (if *use-dual-arm-ik* (fullbody-inverse-kinematics-for-drill-grasp-dual :draw? draw?) (fullbody-inverse-kinematics-for-drill-grasp-single :draw? draw? :rotation-axis (if (equal drill-type :takenoko) '(:z t t) '(:z t t)) :arm-mt drill-edge-mt :arm-tc (send *drill* :get :edge-coords))))
@@ -1420,7 +1421,7 @@
              (if (equal *drill-main-arm* :rarm) (make-coords :pos (float-vector -680 0 0) :rpy (list (deg2rad 0) 0 0)) (make-coords :pos (float-vector -680 0 0) :rpy (list (deg2rad 0) 0 0)))
            (if *drill-reverse-hand*
                (if (equal *drill-main-arm* :rarm) (make-coords :pos (float-vector -680 -200 0) :rpy (list (deg2rad 40) 0 0))
-                 (make-coords :pos (float-vector -680 -50 0) :rpy (list (deg2rad -25) 0 0)) ;; avoid wall
+                 (make-coords :pos (float-vector -730 -100 0) :rpy (list (deg2rad -25) 0 0)) ;; avoid wall
                  )
              (if (equal *drill-main-arm* :rarm) (make-coords :pos (float-vector -700 -265 0) :rpy (list (deg2rad 50) 0 0)) (make-coords :pos (float-vector -700 250 0) :rpy (list (deg2rad -65) 0 0)))
              )
@@ -1924,7 +1925,10 @@
 (defun get-pierce-drill-pre-pose2 
   ()
   (if (or (equal *robot-name* "HRP2JSKNTS") (equal *robot-name* "HRP2JSKNT"))
-      (get-pierce-drill-pre-pose) 
+      (progn
+      (send *robot* :angle-vector #f(0.330273 -0.167931 -29.361 53.1744 -25.0308 0.626991 0.0 0.330253 -0.168852 -29.6643 53.921 -25.4741 0.627912 0.0 2.11304 8.52798 -41.3788 32.1631 -34.1929 -56.4706 11.2834 -85.1992 15.4097 2.75032 -58.7117 60.0 34.6272 31.1014 4.15711 -119.606 22.7332 5.14524 -13.9683 -60.0))
+      (when (equal *drill-main-arm* :larm) (get-mirror-angle-vector))
+      )
     (progn
       (send *robot* :angle-vector #f(1.8474 -2.65775 -26.6226 45.4555 -22.888 1.96534 1.84848 -2.64244 -25.6546 44.674 -23.0745 1.95 4.97106 9.06265 14.0558 -32.0 30.0 -14.6782 56.0899 -103.525 -34.4307 -65.4033 -105.557 -0.936239 59.0 1.11288 44.8267 41.7962 -9.91826 -101.245 33.2679 14.7361 -39.3661))
       (when (equal *drill-main-arm* :larm) (get-mirror-angle-vector))
@@ -2181,8 +2185,8 @@
 (defun test-drill-wall-motion ()
   (test-init)
   ;; (setq *drill-coords-list* (list (make-coords :pos (float-vector 1000 -150 400) :rpy (list 0 pi/2 0)) (make-coords :pos (float-vector 1000 -250 500) :rpy (list 0 pi/2 0)) (make-coords :pos (float-vector 1000 -250 400) :rpy (list 0 pi/2 0)) (make-coords :pos (float-vector 1000 -50 500) :rpy (list 0 pi/2 0))))
-  (setq *drill-coords-list* (list (get-body-relative-coords (make-coords :pos (float-vector 1000 -200 1000) :rpy (list 0 pi/2 0))) (get-body-relative-coords (make-coords :pos (float-vector 1000 200 1000) :rpy (list 0 pi/2 0))) (get-body-relative-coords (make-coords :pos (float-vector 1000 200 1400) :rpy (list 0 pi/2 0))) (get-body-relative-coords (make-coords :pos (float-vector 1000 -200 1400) :rpy (list 0 pi/2 0)))))
-  ;(setq *drill-coords-list* (reverse *drill-coords-list*))
+  (setq *drill-coords-list* (list (get-body-relative-coords (make-coords :pos (float-vector 1000 -200 1000) :rpy (list 0 pi/2 0))) (get-body-relative-coords (make-coords :pos (float-vector 1000 200 1000) :rpy (list 0 pi/2 0))) (get-body-relative-coords (make-coords :pos (float-vector 1000 200 1200) :rpy (list 0 pi/2 0))) (get-body-relative-coords (make-coords :pos (float-vector 1000 -200 1200) :rpy (list 0 pi/2 0)))))
+  (setq *drill-coords-list* (reverse *drill-coords-list*))
   (push-back (elt *drill-coords-list* 0) *drill-coords-list*)
 
   (setq *answer-for-grasp-test* (get-drill-wall-motion-full *drill-coords-list* :draw? t :drill-type :takenoko :recognized-coords-symbol :edge-coords))
