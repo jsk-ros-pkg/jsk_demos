@@ -144,11 +144,10 @@ def main():
     checkSilverHammerSubscribe("/ocs_to_fc_low_speed/last_send_time", 1.0, 0.4, timeout=7)
     checkSilverHammerSubscribe("/ocs_to_fc_vehicle/last_send_time", 1.0, 0.4, timeout=7)
     checkSilverHammerSubscribe("/ocs_to_fc_reconfigure/last_send_time", 1.0, 0.4, timeout=7)
-    checkSilverHammerSubscribe("/ocs_from_fc_basic_low_speed/last_received_time", 10.0, 1.0, timeout=7)
-    checkSilverHammerSubscribe("/ocs_from_fc_eus/last_received_time", 10.0, 1.0, timeout=7)
-    checkSilverHammerSubscribe("/ocs_from_fc_low_speed/last_received_time", 10.0, 1.0, timeout=7)
-    checkSilverHammerSubscribe("/ocs_from_fc_vehicle/last_received_time", 10.0, 1.0, timeout=7)
-
+    checkSilverHammerSubscribe("/ocs_from_fc_basic_low_speed/last_received_time", 10.0, 8.0, timeout=7)
+    checkSilverHammerSubscribe("/ocs_from_fc_eus/last_received_time", 10.0, 8.0, timeout=7)
+    checkSilverHammerSubscribe("/ocs_from_fc_low_speed/last_received_time", 10.0, 8.0, timeout=7)
+    checkSilverHammerSubscribe("/ocs_from_fc_vehicle/last_received_time", 10.0, 8.0, timeout=7)
 
 if __name__ == "__main__":
     main()
