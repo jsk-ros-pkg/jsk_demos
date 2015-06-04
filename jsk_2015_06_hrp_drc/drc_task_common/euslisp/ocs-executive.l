@@ -1200,7 +1200,7 @@
         (publish-model-joint-states :av (get-potentio-vector-from-joint-states))
         (send smachine :go-to :selecting-exec-for-go-pos))))
   (:recognition-failed-callback (msg)
-    (when (eq (send smachine :state) :selecting-exec-for-drill-grasp) (return-from :recognition-failed-callback nil)) ;; skip selected!
+    (when (or (eq (send smachine :state) :selecting-exec-for-drill-grasp) (eq (send smachine :state) :executing-drill-grasp)) (return-from :recognition-failed-callback nil)) ;; skip selected!
     (when (send smachine :next? :initial)
       (send self :show-text "Recognition failed, go to :initial state" :fatal)
       (send smachine :go-to :initial)))
