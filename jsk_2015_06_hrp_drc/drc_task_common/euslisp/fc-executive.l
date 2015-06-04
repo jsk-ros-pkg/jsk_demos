@@ -1361,7 +1361,7 @@ It sends :angle-vector to robot and return 'finished' message to ocs"
             (send *ri* :set-foot-steps footstep-coords*)
           (let ((default-step-time (send (send *ri* :get-gait-generator-param) :default_step_time))
                 (double-support-av (walking-pose *robot* :root-link-pitch-offset 10 :chest-link-pitch-offset 25 :root-link-height-offset -60 :head-link-pitch-offset 35 :default-pose-method :narrow-width-pose))
-                (first-step-av (walking-pose *robot* :root-link-pitch-offset 10 :chest-link-pitch-offset 25 :root-link-height-offset -120 :head-link-pitch-offset 35 :default-pose-method :narrow-width-pose))
+                (first-step-av (walking-pose *robot* :root-link-pitch-offset 10 :chest-link-pitch-offset 25 :root-link-height-offset -140 :head-link-pitch-offset 35 :default-pose-method :narrow-width-pose))
                 (second-step-av (walking-pose *robot* :root-link-pitch-offset 10 :chest-link-pitch-offset 25 :root-link-height-offset -60 :head-link-pitch-offset 35 :default-pose-method :narrow-width-pose)))
             (send *ri* :set-foot-steps-with-base-height
                   footstep-coords*
