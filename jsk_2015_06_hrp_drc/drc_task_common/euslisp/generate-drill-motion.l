@@ -461,7 +461,7 @@
   (let* ((reach-dist 150)
          ;(x-factor 0.0)
          (grasp-up-dist 50)
-         (air-grasp-up-dist (if (or (equal *robot-name* "HRP2JSKNTS") (equal *robot-name* "HRP2JSKNT")) 50 0))
+         (air-grasp-up-dist (if (or (equal *robot-name* "HRP2JSKNTS") (equal *robot-name* "HRP2JSKNT")) 30 0))
          (down-dist (if (or (equal *robot-name* "HRP2JSKNTS") (equal *robot-name* "HRP2JSKNT")) 15 0))
          (push-dist (if (or (equal *robot-name* "HRP2JSKNTS") (equal *robot-name* "HRP2JSKNT")) 0 -20))
          (ik-results nil)
@@ -581,7 +581,7 @@
       (cond ((or (equal *robot-name* "HRP2JSKNTS") (equal *robot-name* "HRP2JSKNTS"))
              (if *drill-reverse-hand*
                  (if (equal *drill-main-arm* :rarm) (make-coords :pos (float-vector -680 0 0) :rpy (list (deg2rad 44) 0 0)) (make-coords :pos (float-vector -680 -0 0) :rpy (list (deg2rad -44) 0 0)))
-               (if (equal *drill-main-arm* :rarm) (make-coords :pos (float-vector -610 -300 0) :rpy (list (deg2rad 55) 0 0))
+               (if (equal *drill-main-arm* :rarm) (make-coords :pos (float-vector -710 -200 0) :rpy (list (deg2rad 35) 0 0))
                  (make-coords :pos (float-vector -710 200 0) :rpy (list (deg2rad -35) 0 0)))) ;;
              )
             (t ;; (or (equal *robot-name* "JAXON") (equal *robot-name* "STARO") (equal *robot-name* "JAXON_RED"))
@@ -734,7 +734,7 @@
   )
 (defun set-ref-force-with-condition
   ()
-  (return-from set-ref-force-with-condition t);; for test
+  ;(return-from set-ref-force-with-condition t);; for test
   (let ((average-fz) (sum 0) (num 10))
     (dotimes (i num)
       (setq sum (+ sum (elt (send *ri* :state :absolute-force-vector *drill-main-arm*) 2))))
@@ -1314,7 +1314,7 @@
         (send *drill* :newcoords (send (elt dt-coords-list i) :copy-worldcoords))
         (send *robot* :rleg :angle-vector original-rleg-joint-angle)
         (send *robot* :lleg :angle-vector original-lleg-joint-angle)
-        (if (or (equal *robot-name* "HRP2JSKNTS") (equal *robot-name* "HRP2JSKNT")) (send *robot* :angle-vector (get-pierce-drill-pre-pose2)))
+        ;; (if (or (equal *robot-name* "HRP2JSKNTS") (equal *robot-name* "HRP2JSKNT")) (send *robot* :angle-vector (get-pierce-drill-pre-pose2)))
         (send *robot* :fix-leg-to-coords original-foot-midcoords)
         
         ;;(send *drill* :newcoords (send (send (send *robot* :body_lk) :copy-worldcoords) :transform (get-drill-coords-with-symbol (elt dt-coords-list i) :origin-coords) :local))
@@ -1510,7 +1510,7 @@
     ;;
     (cond ((or (equal *robot-name* "HRP2JSKNTS") (equal *robot-name* "HRP2JSKNT"))
            ;(send *ri* :start-impedance *drill-main-arm* :moment-gain (float-vector 0 0 -200) :k-p 1000 :d-p 400)) ;; start imp hard
-           (send *ri* :start-impedance :larm :force-gain #f(0.3 0.3 1) :k-p 200 :d-p 700))
+           (send *ri* :start-impedance *drill-main-arm* :force-gain #f(0.3 0.3 1) :k-p 200 :d-p 700))
           (t
            (send *ri* :start-impedance *drill-main-arm* :force-gain #f(0.2 0.2 1) :moment-gain (float-vector 0 0 0) :k-p 700 :d-p 3000)))
     ;(send *ri* :start-impedance *drill-main-arm* :moment-gain (float-vector 0 0 0) :k-p 1000 :d-p 1500)
