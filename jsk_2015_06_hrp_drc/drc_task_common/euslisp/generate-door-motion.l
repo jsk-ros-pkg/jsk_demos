@@ -592,11 +592,11 @@
   (when real? (model2real :time 4000))
   (when (or (equal *robot-name* "JAXON") (equal *robot-name* "STARO") (equal *robot-name* "JAXON_RED"))
     (hand-start-grasp :arm *door-arm* :real? real? :type :door-grasp-preshape))
-  (when real? (send-angle-vector-sequence-with-time (subseq *door-motion* 1 3) :time 2000 :wait? t))
+  (when real? (send-angle-vector-sequence-with-time (subseq *door-motion* 1 3) :time 1500 :wait? t))
   (hand-start-grasp :real? real? :type :door-grasp)
-  (when real? (send-angle-vector-sequence-with-time (subseq *door-motion* 3 9) :time 2000 :wait? t))
+  (when real? (send-angle-vector-sequence-with-time (subseq *door-motion* 3 9) :time 1500 :wait? t))
   (hand-start-grasp :real? real? :type :door-grasp-preshape)
-  (when real? (send-angle-vector-sequence-with-time (subseq *door-motion* 9) :time 2000 :wait? t))
+  (when real? (send-angle-vector-sequence-with-time (subseq *door-motion* 9) :time 1500 :wait? t))
   ;; (dotimes (i (length *door-motion*))
   ;;   (cond ((= i 3)
   ;;          (hand-start-grasp :real? real? :type :door-grasp))
@@ -616,7 +616,7 @@
         (t ;; (or (equal *robot-name* "HRP2JSKNT") (equal *robot-name* "HRP2JSKNTS"))
          (send *robot* :reset-manip-pose)
          ))
-  (when real? (model2real :time 5000))
+  (when real? (model2real :time 4000))
   )
 
 (defun publish-door-motion
