@@ -11,7 +11,8 @@ from jsk_tools.sanity_lib import (okMessage, errorMessage, warnMessage, indexMes
                                   checkBlackListDaemon,
                                   checkROSCoreROSMaster,
                                   checkNodeState,
-                                  checkSilverHammerSubscribe)
+                                  checkSilverHammerSubscribe,
+                                  checkGitRepoWithRosPack)
 from std_msgs.msg import Time
 
 check_ocs_nodes = ["/b_control_client",
@@ -97,6 +98,10 @@ check_ocs_nodes = ["/b_control_client",
 
 def main():
     host = re.match("http://([0-9a-zA-Z]*):.*", os.environ["ROS_MASTER_URI"]).groups(0)[0]
+    indexMessage("Check Git Repos in FC")
+    checkGitRepoWithRosPack("drc_task_common")
+    checkGitRepoWithRosPack("jsk_tools")
+
     indexMessage("Check BlacklistDaemons in OCS")
     checkBlackListDaemon(["chrome", "dropbox", "skype"], kill=True)
 
