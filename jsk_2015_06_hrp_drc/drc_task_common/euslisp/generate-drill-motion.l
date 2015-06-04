@@ -1134,10 +1134,10 @@
       (when (boundp '*irtviewer*) (send *irtviewer* :draw-objects))
       (when real? (model2real :time 350))
       ;; pre-push3
-      (keyshot-request)
       (send *robot* :angle-vector (elt drill-motion-av-list 2))
       (when (boundp '*irtviewer*) (send *irtviewer* :draw-objects))
       (when real? (model2real :time 300))
+      (keyshot-request)
       ;; push
       (send *robot* :angle-vector (elt drill-motion-av-list 3))
       (when (boundp '*irtviewer*) (send *irtviewer* :draw-objects))
