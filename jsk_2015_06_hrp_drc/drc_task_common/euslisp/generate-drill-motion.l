@@ -1508,14 +1508,14 @@
     ;;
     (cond ((or (equal *robot-name* "HRP2JSKNTS") (equal *robot-name* "HRP2JSKNT"))
            ;(send *ri* :start-impedance *drill-main-arm* :moment-gain (float-vector 0 0 -200) :k-p 1000 :d-p 400)) ;; start imp hard
-           (send *ri* :start-impedance *drill-main-arm* :force-gain #f(0.3 0.3 1) :k-p 400 :d-p 1700))
+           (send *ri* :start-impedance :larm :force-gain #f(0.3 0.3 1) :k-p 200 :d-p 700))
           (t
            (send *ri* :start-impedance *drill-main-arm* :force-gain #f(0.2 0.2 1) :moment-gain (float-vector 0 0 0) :k-p 700 :d-p 3000)))
     ;(send *ri* :start-impedance *drill-main-arm* :moment-gain (float-vector 0 0 0) :k-p 1000 :d-p 1500)
     ;; pre-reach
 
     (let* ((drill-dir (matrix-column (send (send (send (if stand-coords stand-coords (make-coords)) :copy-worldcoords) :transformation (send (elt coords-list 0) :copy-worldcoords)) :rot) 2))
-          (ref-dir (v- (float-vector 0 0 -14) (scale (if (or (equal *robot-name* "JAXON") (equal *robot-name* "JAXON_RED")) 5.0 3.0) (normalize-vector drill-dir)))))
+          (ref-dir (v- (float-vector 0 0 -14) (scale (if (or (equal *robot-name* "JAXON") (equal *robot-name* "JAXON_RED")) 5.0 1.0) (normalize-vector drill-dir)))))
       (send *ri* :set-ref-force (send (if *drill-stand-coords* *drill-stand-coords* (make-coords)) :inverse-rotate-vector ref-dir) 2000 *drill-main-arm*)
       (ros::ros-info (format nil "ref force ~A ~A ~A" (elt ref-dir 0) (elt ref-dir 1) (elt ref-dir 2)))
       (speak-en (format nil "ref force ~A ~A ~A" (elt ref-dir 0) (elt ref-dir 1) (elt ref-dir 2)))
