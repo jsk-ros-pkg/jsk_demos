@@ -164,10 +164,10 @@ if __name__ == "__main__":
     checkSilverHammerSubscribe("/fc_to_ocs_vehicle/last_send_time", 1.0, 0.4, timeout=7)
     checkSilverHammerSubscribe("/highspeed_streamer/last_send_time", 1.0, 0.4, timeout=7)
 
-    checkSilverHammerSubscribe("/fc_from_ocs_eus/last_received_time", 10.0, 1.0, timeout=7)
-    checkSilverHammerSubscribe("/fc_from_ocs_low_speed/last_received_time", 10.0, 1.0, timeout=7)
-    checkSilverHammerSubscribe("/fc_from_ocs_reconfigure/last_received_time", 10.0, 1.0, timeout=7)
-    checkSilverHammerSubscribe("/fc_from_ocs_vehicle/last_received_time", 10.0, 1.0, timeout=7)
+    checkSilverHammerSubscribe("/fc_from_ocs_eus/last_received_time", 10.0, 8.0, timeout=7)
+    checkSilverHammerSubscribe("/fc_from_ocs_low_speed/last_received_time", 10.0, 8.0, timeout=7)
+    checkSilverHammerSubscribe("/fc_from_ocs_reconfigure/last_received_time", 10.0, 8.0, timeout=7)
+    checkSilverHammerSubscribe("/fc_from_ocs_vehicle/last_received_time", 10.0, 8.0, timeout=7)
 
     indexMessage("Check  Valve Recognition in FC")
     # Publish dummy input for valve recognition
