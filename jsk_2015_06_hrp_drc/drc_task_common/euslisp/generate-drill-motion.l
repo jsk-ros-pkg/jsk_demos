@@ -627,7 +627,7 @@
     (setq stand-coords (make-coords :pos (float-vector (elt (send stand-coords :worldpos) 0) (elt (send stand-coords :worldpos) 1) 0) :rpy (float-vector (elt (car (send stand-coords :rpy-angle)) 0) 0 0)))
     )
   (let* ((drill-motion-av-list (or 
-                                nil ;(get-drill-grasp-motion-full coords :drill-type drill-type :rotation-axis (list t t t) :arm arm :stand-coords stand-coords :overwrite-stand-coords? overwrite-stand-coords?) 
+                                (get-drill-grasp-motion-full coords :drill-type drill-type :rotation-axis (list t t t) :arm arm :stand-coords stand-coords :overwrite-stand-coords? overwrite-stand-coords?) 
                                 (get-drill-grasp-motion-full coords :drill-type drill-type :rotation-axis rotation-axis :arm arm :stand-coords stand-coords :overwrite-stand-coords? overwrite-stand-coords? :draw? draw?)))
          (drill-motion-length (length drill-motion-av-list)))
     (when (= drill-motion-length 0) (return-from send-drill-grasp-motion))
@@ -741,7 +741,7 @@
     (if (< average-fz -7)
         (progn
           (ros::ros-info "grasp succeeded, add ref force")
-          (send *ri* :set-ref-force #f(0 0 -20) 2000 *drill-main-arm*)
+          (send *ri* :set-ref-force (float-vector 0 0 -14) 2000 *drill-main-arm*)
           t
           )
       (progn
@@ -765,7 +765,7 @@
     )
   (when update?
     (or
-     nil ;;(get-drill-grasp-motion-full coords :arm arm :use-ri? nil :drill-type drill-type :draw? t :stand-coords stand-coords :overwrite-stand-coords? overwrite-stand-coords?  :rotation-axis (list t t t)) 
+     (get-drill-grasp-motion-full coords :arm arm :use-ri? nil :drill-type drill-type :draw? t :stand-coords stand-coords :overwrite-stand-coords? overwrite-stand-coords?  :rotation-axis (list t t t))
      (get-drill-grasp-motion-full coords :arm arm :use-ri? use-ri? :drill-type drill-type :draw? draw? :stand-coords stand-coords :overwrite-stand-coords? overwrite-stand-coords?)))
   (ros::ros-info "drill-grasp-stand-coords: ~a~%" *drill-stand-coords*)
   (ros::ros-info "drill-ik-results: ~a~%" *drill-ik-results*)
@@ -1106,7 +1106,7 @@
               (t
                (send *ri* :start-impedance :arms :moment-gain (float-vector 0 0 0) :k-p 3000 :d-p 3000))))
 
-      (when real? (send *ri* :set-ref-force #f(0 0 -20) 1000 *drill-main-arm*))
+      (when real? (send *ri* :set-ref-force (float-vector 0 0 -14) 1000 *drill-main-arm*))
       ;; first try
       ;; pre-push1
       (multisense-light-down)
@@ -1495,7 +1495,7 @@
       (when real? (model2real :time 5000))
       )
 
-    ;(send *ri* :set-ref-force #f(0 0 -20) 2000 *drill-main-arm*)
+    ;(send *ri* :set-ref-force (float-vector 0 0 -14) 2000 *drill-main-arm*)
     ;; walk
     (when (and *drill-stand-coords* (check-stand-coords *drill-stand-coords*))
       (let* ((pos (scale 0.001 (send *drill-stand-coords* :worldpos)))
@@ -1515,7 +1515,7 @@
     ;; pre-reach
 
     (let* ((drill-dir (matrix-column (send (send (send (if stand-coords stand-coords (make-coords)) :copy-worldcoords) :transformation (send (elt coords-list 0) :copy-worldcoords)) :rot) 2))
-          (ref-dir (v- (float-vector 0 0 -20) (scale (if (or (equal *robot-name* "JAXON") (equal *robot-name* "JAXON_RED")) 5.0 3.0) (normalize-vector drill-dir)))))
+          (ref-dir (v- (float-vector 0 0 -14) (scale (if (or (equal *robot-name* "JAXON") (equal *robot-name* "JAXON_RED")) 5.0 3.0) (normalize-vector drill-dir)))))
       (send *ri* :set-ref-force (send (if *drill-stand-coords* *drill-stand-coords* (make-coords)) :inverse-rotate-vector ref-dir) 2000 *drill-main-arm*)
       (ros::ros-info (format nil "ref force ~A ~A ~A" (elt ref-dir 0) (elt ref-dir 1) (elt ref-dir 2)))
       (speak-en (format nil "ref force ~A ~A ~A" (elt ref-dir 0) (elt ref-dir 1) (elt ref-dir 2)))
@@ -1557,7 +1557,7 @@
     ;;   (send *robot* :angle-vector (elt drill-motion-av-list i))
     ;;   (when real? (model2real :time (if (or (equal i 0) (equal i (- (length drill-motion-av-list) 1))) 5000 15000)))
     ;;   )
-    (send *ri* :set-ref-force (float-vector 0 0 -20) 2000 *drill-main-arm*)
+    (send *ri* :set-ref-force (float-vector 0 0 -14) 2000 *drill-main-arm*)
 
     (send *ri* :set-impedance-controller-param *drill-main-arm* :force-gain (float-vector 1 1 1))
     (when (equal drill-type :takenoko)
@@ -1774,7 +1774,7 @@
           (send *robot* :angle-vector (elt *drill-motion-up* (- rotate-length 1)))
           (when real? (model2real :time 2000))
           (when real? (drill-full-grasp))
-                                        ;(send *ri* :set-ref-force #f(0 0 -20) 2000 *drill-main-arm*)
+                                        ;(send *ri* :set-ref-force (float-vector 0 0 -14) 2000 *drill-main-arm*)
           (send (send *drill* :get :grasp-coords) :rotate (deg2rad (- (* (if (> diff-deg 0) 18.0 -18.0) (- rotate-length 1)))) :z)
           (set-drill-default-coords)
           (if (not (set-ref-force-with-condition)) (return-from send-drill-rotate-motion :ref-force-error))
