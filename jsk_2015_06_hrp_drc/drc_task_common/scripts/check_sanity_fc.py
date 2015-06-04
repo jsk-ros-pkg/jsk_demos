@@ -10,6 +10,7 @@ from jsk_tools.sanity_lib import (okMessage, errorMessage, warnMessage, indexMes
                                   checkTopicIsPublished,
                                   checkROSMasterCLOSE_WAIT, checkNodeState,
                                   checkSilverHammerSubscribe,
+                                  checkGitRepoWithRosPack,
                                   checkBlackListDaemon)
 from std_msgs.msg import Time
 from sensor_msgs.msg import PointCloud2, Image
@@ -29,6 +30,8 @@ if __name__ == "__main__":
     host = re.match("http://([0-9a-zA-Z]*):.*", os.environ["ROS_MASTER_URI"]).groups(0)[0]
     checkROSMasterCLOSE_WAIT(host)
 
+    indexMessage("Check Git Repos in FC")
+    checkGitRepoWithRosPack("drc_task_common")
     rospy.init_node("chesk_sanity_fc")
 
     indexMessage("Check Nodes in FC")
