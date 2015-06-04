@@ -581,7 +581,7 @@
       (cond ((or (equal *robot-name* "HRP2JSKNTS") (equal *robot-name* "HRP2JSKNTS"))
              (if *drill-reverse-hand*
                  (if (equal *drill-main-arm* :rarm) (make-coords :pos (float-vector -680 0 0) :rpy (list (deg2rad 44) 0 0)) (make-coords :pos (float-vector -680 -0 0) :rpy (list (deg2rad -44) 0 0)))
-               (if (equal *drill-main-arm* :rarm) (make-coords :pos (float-vector -610 -300 0) :rpy (list (deg2rad 55) 0 0))
+               (if (equal *drill-main-arm* :rarm) (make-coords :pos (float-vector -710 -200 0) :rpy (list (deg2rad 35) 0 0))
                  (make-coords :pos (float-vector -710 200 0) :rpy (list (deg2rad -35) 0 0)))) ;;
              )
             (t ;; (or (equal *robot-name* "JAXON") (equal *robot-name* "STARO") (equal *robot-name* "JAXON_RED"))
@@ -1510,7 +1510,7 @@
     ;;
     (cond ((or (equal *robot-name* "HRP2JSKNTS") (equal *robot-name* "HRP2JSKNT"))
            ;(send *ri* :start-impedance *drill-main-arm* :moment-gain (float-vector 0 0 -200) :k-p 1000 :d-p 400)) ;; start imp hard
-           (send *ri* :start-impedance :larm :force-gain #f(0.3 0.3 1) :k-p 200 :d-p 700))
+           (send *ri* :start-impedance *drill-main-arm* :force-gain #f(0.3 0.3 1) :k-p 200 :d-p 700))
           (t
            (send *ri* :start-impedance *drill-main-arm* :force-gain #f(0.2 0.2 1) :moment-gain (float-vector 0 0 0) :k-p 700 :d-p 3000)))
     ;(send *ri* :start-impedance *drill-main-arm* :moment-gain (float-vector 0 0 0) :k-p 1000 :d-p 1500)
