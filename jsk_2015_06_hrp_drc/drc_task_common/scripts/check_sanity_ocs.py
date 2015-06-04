@@ -8,8 +8,10 @@ import re
 from jsk_tools.sanity_lib import (okMessage, errorMessage, warnMessage, indexMessage,
                                   checkTopicIsPublished,
                                   checkROSMasterCLOSE_WAIT,
-                                  checkNodeState)
-
+                                  checkBlackListDaemon,
+                                  checkROSCoreROSMaster,
+                                  checkNodeState,
+                                  checkSilverHammerSubscribe)
 from std_msgs.msg import Time
 
 check_ocs_nodes = ["/b_control_client",
@@ -94,10 +96,14 @@ check_ocs_nodes = ["/b_control_client",
                    ]
 
 def main():
-    rospy.init_node("check_sanity_ocs")
-
     host = re.match("http://([0-9a-zA-Z]*):.*", os.environ["ROS_MASTER_URI"]).groups(0)[0]
+    indexMessage("Check BlacklistDaemons in OCS")
+    checkBlackListDaemon(["chrome", "dropbox", "skype"], kill=True)
+
+    indexMessage("Check Master in OCS Network")
+    checkROSCoreROSMaster()
     checkROSMasterCLOSE_WAIT(host)
+    rospy.init_node("check_sanity_ocs")
 
     indexMessage("Check Nodes in OCS")
     # check Node State
@@ -106,7 +112,7 @@ def main():
 
     indexMessage("Check Input Device")
     # check Input Device
-    checkNodeState('/midi_config_player', needed=True)
+    checkNodeState('/midi_config_player', needed=True, sub_fail="Is MIDI connected ? or Is that powered on?")
     checkTopicIsPublished("/ocs/joy", None,
                           "XBox Controller seems to work",
                           "XBox Controller doesn't publish. Did you connect?")
@@ -118,23 +124,26 @@ def main():
         "[ocs] Silverhammer lowspeed protocol is not working",
         5,
         [
-        ["/ocs_from_fc_basic_low_speed/last_publish_output_time", Time],
-        ["/ocs_from_fc_basic_low_speed/last_received_time", Time],
-        ["/ocs_from_fc_eus/last_publish_output_time", Time],
-        ["/ocs_from_fc_eus/last_received_time", Time],
-        ["/ocs_from_fc_low_speed/last_publish_output_time", Time],
-        ["/ocs_from_fc_low_speed/last_received_time", Time],
-        ["/ocs_from_fc_vehicle/last_publish_output_time", Time],
-        ["/ocs_from_fc_vehicle/last_received_time", Time],
-        ["/ocs_to_fc_eus/last_input_received_time", Time],
-        ["/ocs_to_fc_eus/last_send_time", Time],
-        ["/ocs_to_fc_low_speed/last_input_received_time", Time],
-        ["/ocs_to_fc_low_speed/last_send_time", Time],
-        ["/ocs_to_fc_reconfigure/last_input_received_time", Time],
-        ["/ocs_to_fc_reconfigure/last_send_time", Time],
-        ["/ocs_to_fc_vehicle/last_input_received_time", Time],
-        ["/ocs_to_fc_vehicle/last_send_time", Time],
+            ["/ocs_from_fc_basic_low_speed/last_received_time", Time],
+            ["/ocs_from_fc_eus/last_received_time", Time],
+            ["/ocs_from_fc_low_speed/last_received_time", Time],
+            ["/ocs_from_fc_vehicle/last_received_time", Time],
+            ["/ocs_to_fc_eus/last_send_time", Time],
+            ["/ocs_to_fc_low_speed/last_send_time", Time],
+            ["/ocs_to_fc_reconfigure/last_send_time", Time],
+            ["/ocs_to_fc_vehicle/last_send_time", Time],
         ])
+
+    indexMessage("Check SilverHammer Subscribe Hz in OCS")
+    checkSilverHammerSubscribe("/ocs_to_fc_eus/last_send_time", 1.0, 0.4, timeout=7)
+    checkSilverHammerSubscribe("/ocs_to_fc_low_speed/last_send_time", 1.0, 0.4, timeout=7)
+    checkSilverHammerSubscribe("/ocs_to_fc_vehicle/last_send_time", 1.0, 0.4, timeout=7)
+    checkSilverHammerSubscribe("/ocs_to_fc_reconfigure/last_send_time", 1.0, 0.4, timeout=7)
+    checkSilverHammerSubscribe("/ocs_from_fc_basic_low_speed/last_received_time", 10.0, 1.0, timeout=7)
+    checkSilverHammerSubscribe("/ocs_from_fc_eus/last_received_time", 10.0, 1.0, timeout=7)
+    checkSilverHammerSubscribe("/ocs_from_fc_low_speed/last_received_time", 10.0, 1.0, timeout=7)
+    checkSilverHammerSubscribe("/ocs_from_fc_vehicle/last_received_time", 10.0, 1.0, timeout=7)
+
 
 if __name__ == "__main__":
     main()
