@@ -53,6 +53,7 @@
         (generate-ri? t) (draw? t) (use-ri? t)
         (arm :rarm) (force-overwrite-arm-side? nil)
         (use-model-z-pos? nil)
+        (door-reach-deg 90)
         (robot-name "HRP2JSKNTS"))
   ;; generate robot
   (generate-robot robot-name :generate-ri? generate-ri?)
@@ -67,7 +68,7 @@
   ;; attach handle to robot, define special pose
   (setup-door-open :draw? nil :generate-robot? nil)
   ;; attach handle to robot
-  (attach-handle-to-robot-for-door)
+  (attach-handle-to-robot-for-door door-reach-deg)
   ;; generate door, attach handle to door
   (cond (door-name
          (generate-door-from-name door-name)
@@ -136,7 +137,7 @@
   )
 
 (defun attach-handle-to-robot-for-door
-  ()
+  (&optional (door-reach-deg 90))
   (let* (larm-translate-offset
          rarm-translate-offset
          larm-z-rotate-offset
@@ -145,10 +146,8 @@
     (cond ((or (equal *robot-name* "JAXON") (equal *robot-name* "STARO") (equal *robot-name* "JAXON_RED"))
            (setq larm-translate-offset (float-vector 40 40 0))
            (setq rarm-translate-offset (float-vector 40 -40 0))
-           (setq larm-z-rotate-offset (deg2rad 90))
-           (setq rarm-z-rotate-offset (deg2rad -90))
-           ;; (setq larm-z-rotate-offset (deg2rad 60))
-           ;; (setq rarm-z-rotate-offset (deg2rad -60))
+           (setq larm-z-rotate-offset (deg2rad door-reach-deg))
+           (setq rarm-z-rotate-offset (deg2rad (- door-reach-deg)))
            )
           (t ;; (or (equal *robot-name* "HRP2JSKNT") (equal *robot-name* "HRP2JSKNTS"))
            (setq larm-translate-offset (float-vector 50 25 0))
@@ -369,7 +368,7 @@
 
 (defun get-door-stand-coords ;; relative to door
   (&key (handle-l/r :left) (push/pull :push))
-  (cond ((or (equal *robot-name* "JAXON") (equal *robot-name* "STARO") (equal *robot-name* "JAXON_RED"))
+  (cond ((or (equal *robot-name* "JAXON") (equal *robot-name* "JAXON_RED") (equal *robot-name* "STARO"))
          (cond ((equal handle-l/r :left)
                 (cond ((equal push/pull :push)
                        (cond ((equal *door-arm* :larm)
@@ -401,7 +400,7 @@
                               (make-coords :pos (float-vector -800 -400 0) :rpy (list (deg2rad -80) 0 0))
                               )))))
                ))
-        (t ;; (or (equal *robot-name* "HRP2JSKNT") (equal *robot-name* "HRP2JSKNTS"))
+        ((equal *robot-name* "HRP2JSKNTS")
          (cond ((equal handle-l/r :left)
                 (cond ((equal push/pull :push)
                        (cond ((equal *door-arm* :larm)
@@ -431,8 +430,42 @@
                               )
                              ((equal *door-arm* :rarm)
                               (make-coords :pos (float-vector -650 -300 0) :rpy (list (deg2rad -30) 0 0))
+                              ))))
+                ))
+         )
+        (t ;; (equal *robot-name* "HRP2JSKNT")
+         (cond ((equal handle-l/r :left)
+                (cond ((equal push/pull :push)
+                       (cond ((equal *door-arm* :larm)
+                              (make-coords :pos (float-vector -550 450 0) :rpy (list (deg2rad -25) 0 0))
+                              )
+                             ((equal *door-arm* :rarm)
+                              (make-coords :pos (float-vector -550 450 0) :rpy (list (deg2rad -25) 0 0))
+                              )))
+                      ((equal push/pull :pull)
+                       (cond ((equal *door-arm* :larm)
+                              (make-coords :pos (float-vector -650 300 0) :rpy (list (deg2rad 30) 0 0))
+                              )
+                             ((equal *door-arm* :rarm)
+                              (make-coords :pos (float-vector -650 300 0) :rpy (list (deg2rad 30) 0 0))
                               )))))
-               )))
+               ((equal handle-l/r :right)
+                (cond ((equal push/pull :push)
+                       (cond ((equal *door-arm* :larm)
+                              (make-coords :pos (float-vector -550 -450 0) :rpy (list (deg2rad 25) 0 0))
+                              )
+                             ((equal *door-arm* :rarm)
+                              (make-coords :pos (float-vector -550 -450 0) :rpy (list (deg2rad 25) 0 0))
+                              )))
+                      ((equal push/pull :pull)
+                       (cond ((equal *door-arm* :larm)
+                              (make-coords :pos (float-vector -650 -300 0) :rpy (list (deg2rad -30) 0 0))
+                              )
+                             ((equal *door-arm* :rarm)
+                              (make-coords :pos (float-vector -650 -300 0) :rpy (list (deg2rad -30) 0 0))
+                              ))))
+                ))
+         ))
   )
 
 (defun move-robot-with-stand-coords-for-door
@@ -460,6 +493,7 @@
         (arm :rarm) (push/pull :push)
         (stand-coords nil)
         (overwrite-stand-coords? nil) (overwrite-arm-side? nil)
+        (door-reach-deg 90)
         (draw? nil) (draw-environment? nil) (use-ri? t)
         (robot-name "HRP2JSKNTS")
         )
@@ -468,6 +502,7 @@
    :door-knob-size door-knob-size :door-knob-pos door-knob-pos
    :door-coords door-coords :door-coords-system door-coords-system
    :stand-coords stand-coords :arm arm :force-overwrite-arm-side? (equal overwrite-arm-side? :force)
+   :door-reach-deg door-reach-deg
    :draw? (or draw? draw-environment?) :use-ri? use-ri? :generate-ri? use-ri? :robot-name robot-name)
   ;; when overwrite-arm-side? is :force, set overwrite-arm-side? nil because arm is already overwritten
   (when (equal overwrite-arm-side? :force)
@@ -508,6 +543,7 @@
         (push/pull :push)
         (arm :rarm) (overwrite-arm-side? nil)
         (stand-coords nil) (overwrite-stand-coords? nil)
+        (door-reach-deg 90)
         (real? t) (test-mode? nil) (av-list nil)
         )
   (let* ((door-motion-av-list
@@ -518,6 +554,7 @@
              :door-knob-size door-knob-size :door-knob-pos door-knob-pos
              :door-coords door-coords :door-coords-system :knob-from-body :arm arm :overwrite-arm-side? overwrite-arm-side?
              :stand-coords stand-coords :overwrite-stand-coords? overwrite-stand-coords?
+             :door-reach-deg door-reach-deg
              :draw-environment? test-mode?))))
     )
   ;; reset-manip-pose
@@ -592,6 +629,7 @@
         (push/pull :push)
         (arm :rarm) (overwrite-arm-side? nil)
         (stand-coords nil) (overwrite-stand-coords? nil)
+        (door-reach-deg 90)
         (step-time 200) (update? t) (test-mode? nil))
   (when update?
     (get-door-motion-full
@@ -599,6 +637,7 @@
      :door-knob-size door-knob-size :door-knob-pos door-knob-pos
      :door-coords door-coords :door-coords-system :knob-from-body :arm arm :overwrite-arm-side? overwrite-arm-side?
      :stand-coords stand-coords :overwrite-stand-coords? overwrite-stand-coords?
+     :door-reach-deg door-reach-deg
      :use-ri? (if test-mode? t nil)))
   (ros::ros-info "door-stand-coords: ~a~%" *door-stand-coords*)
   (ros::ros-info "door-ik-results: ~a~%" *door-ik-results*)

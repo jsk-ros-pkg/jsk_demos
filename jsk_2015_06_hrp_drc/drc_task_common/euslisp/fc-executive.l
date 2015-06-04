@@ -668,7 +668,7 @@
   (:door-exec-command-callback (msg)
     (when (send smachine :state? :initial)
       (multiple-value-bind
-          (coords size door-push/pull-idx door-name-idx) (float-vector-to-door-params (send msg :float_params))
+          (coords size door-push/pull-idx door-name-idx door-reach-deg) (float-vector-to-door-params (send msg :float_params))
         (let* ((stand-coords (float-vector-to-coords (send msg :stand_coords)))
                (arm-side (send msg :arm_side))
                (arm
@@ -694,7 +694,7 @@
           (catch 'exit
             (ros::ros-info "opening door at ~A ~A~%" coords size)
             ;; send motion to real robot
-            (send-door-motion :door-name door-name :door-coords coords :arm arm :stand-coords stand-coords :push/pull door-push/pull)
+            (send-door-motion :door-name door-name :door-coords coords :arm arm :stand-coords stand-coords :push/pull door-push/pull :door-reach-deg door-reach-deg)
             ;; send finish signal to ocs
             (let ((msg (instance drc_com_common::FC2OCSSmall :init)))
               (send msg :type drc_com_common::FC2OCSSmall::*DOOR_FINISHED*)
@@ -1361,7 +1361,7 @@ It sends :angle-vector to robot and return 'finished' message to ocs"
             (send *ri* :set-foot-steps footstep-coords*)
           (let ((default-step-time (send (send *ri* :get-gait-generator-param) :default_step_time))
                 (double-support-av (walking-pose *robot* :root-link-pitch-offset 10 :chest-link-pitch-offset 25 :root-link-height-offset -60 :head-link-pitch-offset 35 :default-pose-method :narrow-width-pose))
-                (first-step-av (walking-pose *robot* :root-link-pitch-offset 10 :chest-link-pitch-offset 25 :root-link-height-offset -120 :head-link-pitch-offset 35 :default-pose-method :narrow-width-pose))
+                (first-step-av (walking-pose *robot* :root-link-pitch-offset 10 :chest-link-pitch-offset 25 :root-link-height-offset -140 :head-link-pitch-offset 35 :default-pose-method :narrow-width-pose))
                 (second-step-av (walking-pose *robot* :root-link-pitch-offset 10 :chest-link-pitch-offset 25 :root-link-height-offset -60 :head-link-pitch-offset 35 :default-pose-method :narrow-width-pose)))
             (send *ri* :set-foot-steps-with-base-height
                   footstep-coords*

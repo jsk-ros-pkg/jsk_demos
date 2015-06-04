@@ -315,17 +315,18 @@
     ))
 
 (defun door-params-to-float-vector
-  (door-params door-push/pull door-name length)
+  (door-params door-push/pull door-name door-reach-deg length)
   (let (ret)
     (setq ret (box-to-float-vector (car door-params) (cadr door-params) length))
     (setf (elt ret 9) door-push/pull)
     (setf (elt ret 10) door-name)
+    (setf (elt ret 11) door-reach-deg)
     ret))
 
 (defun float-vector-to-door-params
   (params)
   (let ((ret (float-vector-to-box params)))
-    (append ret (list (elt params 9) (elt params 10)))
+    (append ret (list (elt params 9) (elt params 10) (elt params 11)))
     ))
 
 (defun reach-until-touch-params-to-float-vector
