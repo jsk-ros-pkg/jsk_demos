@@ -45,7 +45,7 @@ from tf.transformations import *
 
 max_x = 0.3
 max_y = 0.25
-max_z = 0.25
+max_z = 0.28
 min_z = 0
 def poseMsgToMatrix(pose):
     return concatenate_matrices(translation_matrix([pose.position.x,
