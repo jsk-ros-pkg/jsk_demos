@@ -460,8 +460,8 @@
   (&key (draw? t) (rotation-axis (if (eq *default-drill-type* :takenoko) (list t t t) (list t t t))) (fin? t))
   (let* ((reach-dist 150)
          ;(x-factor 0.0)
-         (grasp-up-dist 120)
-         (air-grasp-up-dist (if (or (equal *robot-name* "HRP2JSKNTS") (equal *robot-name* "HRP2JSKNT")) 60 0))
+         (grasp-up-dist 50)
+         (air-grasp-up-dist (if (or (equal *robot-name* "HRP2JSKNTS") (equal *robot-name* "HRP2JSKNT")) 50 0))
          (down-dist (if (or (equal *robot-name* "HRP2JSKNTS") (equal *robot-name* "HRP2JSKNT")) 15 0))
          (push-dist (if (or (equal *robot-name* "HRP2JSKNTS") (equal *robot-name* "HRP2JSKNT")) 0 -20))
          (ik-results nil)
@@ -513,7 +513,7 @@
         (send *robot* :angle-vector robot-angle-vector)
         (send *robot* :fix-leg-to-coords original-foot-midcoords)
         ;; solve ik for grasp up
-        (send *drill* :translate (float-vector 0 0 grasp-up-dist) :world)
+        (send *drill* :translate (float-vector 0 80 grasp-up-dist) :world)
         (setq ik-ret (fullbody-inverse-kinematics-for-drill-grasp-single :draw? draw? :rotation-axis rotation-axis))
         (push-back (list 4 (not (null ik-ret)) ik-ret) ik-results)
         (when (and fin? (not ik-ret)) (return-from drill-ik nil))
@@ -721,7 +721,8 @@
         (send *robot* :angle-vector (send *ri* :state :potentio-vector))
         (send *robot* :fix-leg-to-coords (or *drill-stand-coords* (make-coords)))
         (set-drill-default-coords)
-        (send-drill-rotate-motion (get-body-relative-coords (send *drill* :copy-worldcoords)) (get-body-relative-coords default-drill-coords) :drill-rotate-num drill-rotate-num :mid-pose? nil)
+        (ros::ros-info (format nil "hoge default-coords ~A" default-drill-coords))
+        (send-drill-rotate-motion (get-body-relative-coords (send *drill* :copy-worldcoords)) (get-body-relative-coords (send default-drill-coords :translate (float-vector 0 80 0) :world)) :drill-rotate-num drill-rotate-num :mid-pose? nil)
         ;(setq drill-rotate-num (- drill-rotate-num 1))
                                         ;          )
         )
@@ -733,7 +734,7 @@
   )
 (defun set-ref-force-with-condition
   ()
-  ;(return-from set-ref-force-with-condition t);; for test
+  (return-from set-ref-force-with-condition t);; for test
   (let ((average-fz) (sum 0) (num 10))
     (dotimes (i num)
       (setq sum (+ sum (elt (send *ri* :state :absolute-force-vector *drill-main-arm*) 2))))
@@ -785,7 +786,7 @@
            (send *robot* :angle-vector (get-potentio-vector-from-joint-states))))
 
       (send *robot* :fix-leg-to-coords (or *drill-stand-coords* (make-coords)))
-      (let ((default-drill-coords (send *drill* :copy-worldcoords)))
+      (let ((default-drill-coords (send (send *drill* :copy-worldcoords) :translate (float-vector 0 80 0) :world)))
         (set-drill-default-coords)
         (publish-drill-rotate-motion :drill-coords (get-body-relative-coords (send *drill* :copy-worldcoords)) :plane-coords (get-body-relative-coords default-drill-coords) :use-ri? use-ri? :angle-vector angle-vector :publish? publish? :move-robot-model? nil :draw? draw?)
         )
