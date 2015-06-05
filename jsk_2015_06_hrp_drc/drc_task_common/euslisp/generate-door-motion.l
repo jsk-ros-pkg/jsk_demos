@@ -280,45 +280,64 @@
   )
 
 (defun generate-door-motion
-  (&key (draw? nil) (push/pull :push) (try-all-ik? nil))
+  (&key (draw? nil) (push/pull :push) (keep-grasp? nil) (try-all-ik? nil))
   ;; reset door joint
   (reset-door-joint)
   (set-robot-initial-pose-for-door) ;; fix-leg-to-coords is called
   (let* ((ik-results nil)
          (ik-ret nil)
          (trans-list ;; list of eef-xyz-pos, eef-z-angle, hinge-angle, knob-angle
-          (cond 
-           ((equal push/pull :push)
+          (cond
+           (keep-grasp? ;; keep-grasp? only supports push door
             (list (list (float-vector -100 200 150) 0 0 0)
                   (list (float-vector 0 50 50) 0 0 0)
-                  (list (float-vector 0 -25 -50) 0 0 0)
-                  (list (float-vector 0 -25 -50) 0 0 -35) ;; start grasp before this
-                  (list (float-vector 0 -25 -50) 0 0 -70)
-                  (list (float-vector 0 -25 -50) 0 10 -70)
-                  (list (float-vector 0 -25 -50) 0 15 -70)
-                  (list (float-vector 0 -25 -50) 0 15 -35)
-                  (list (float-vector 0 -25 -50) 0 15 0)
-                  (list (float-vector 0 75 50) 0 15 0) ;; stop grasp before this
-                  (list (float-vector 0 150 50) 0 15 0)
+                  (list (float-vector 0 0 0) 0 0 0)
+                  (list (float-vector 0 -30 0) 0 1 0)
+                  (list (float-vector 0 -30 0) 0 5 0)
+                  (list (float-vector 0 -50 0) 0 10 0)
+                  (list (float-vector 0 -50 0) 0 15 0)
+                  (list (float-vector 0 0 0) 0 15 0)
                   (list (float-vector 0 150 150) 0 15 0)
-                  (list (float-vector 0 150 150) 0 30 0)
+                  (list (float-vector 0 150 150) 0 20 0)
                   (list (float-vector -100 150 150) 0 15 0)
-                  ))
-           ((equal push/pull :pull)
-            (list (list (float-vector -100 200 150) 0 0 0)
-                  (list (float-vector 0 50 50) 0 0 0)
-                  (list (float-vector 0 -25 -50) 0 0 0)
-                  (list (float-vector 0 -25 -50) 0 0 -35) ;; start grasp before this
-                  (list (float-vector 0 -25 -50) 0 0 -70)
-                  (list (float-vector 0 -25 -50) 0 -10 -70)
-                  (list (float-vector 0 -25 -50) 0 -20 -70)
-                  (list (float-vector 0 -25 -50) 0 -20 -35)
-                  (list (float-vector 0 -25 -50) 0 -20 0)
-                  (list (float-vector 0 75 50) 0 -20 0) ;; stop grasp before this
-                  (list (float-vector 0 150 50) 0 -20 0)
-                  (list (float-vector -100 150 50) 0 -20 0)
-                  ))
-           ))
+                  )
+            )
+           (t ;; (not keep-grasp?)
+            (cond
+             ((equal push/pull :push)
+              (list (list (float-vector -100 200 150) 0 0 0)
+                    (list (float-vector 0 50 50) 0 0 0)
+                    (list (float-vector 0 -25 -50) 0 0 0)
+                    (list (float-vector 0 -25 -50) 0 0 -35) ;; start grasp before this
+                    (list (float-vector 0 -25 -50) 0 0 -70)
+                    (list (float-vector 0 -25 -50) 0 10 -70)
+                    (list (float-vector 0 -25 -50) 0 15 -70)
+                    (list (float-vector 0 -25 -50) 0 15 -35)
+                    (list (float-vector 0 -25 -50) 0 15 0)
+                    (list (float-vector 0 75 50) 0 15 0) ;; stop grasp before this
+                    (list (float-vector 0 150 50) 0 15 0)
+                    (list (float-vector 0 150 150) 0 15 0)
+                    (list (float-vector 0 150 150) 0 30 0)
+                    (list (float-vector -100 150 150) 0 15 0)
+                    )
+              )
+             ((equal push/pull :pull)
+              (list (list (float-vector -100 200 150) 0 0 0)
+                    (list (float-vector 0 50 50) 0 0 0)
+                    (list (float-vector 0 -25 -50) 0 0 0)
+                    (list (float-vector 0 -25 -50) 0 0 -35) ;; start grasp before this
+                    (list (float-vector 0 -25 -50) 0 0 -70)
+                    (list (float-vector 0 -25 -50) 0 -10 -70)
+                    (list (float-vector 0 -25 -50) 0 -20 -70)
+                    (list (float-vector 0 -25 -50) 0 -20 -35)
+                    (list (float-vector 0 -25 -50) 0 -20 0)
+                    (list (float-vector 0 75 50) 0 -20 0) ;; stop grasp before this
+                    (list (float-vector 0 150 50) 0 -20 0)
+                    (list (float-vector -100 150 50) 0 -20 0)
+                    )
+              ))
+            ))
+          )
          )
     (dotimes (i (length trans-list))
       (send *robot* :reset-manip-pose)
@@ -354,8 +373,8 @@
   )
 
 (defun get-door-motion
-  (&key (draw? nil) (push/pull :push) (check-continuous? nil))
-  (generate-door-motion :draw? draw? :push/pull push/pull)
+  (&key (draw? nil) (push/pull :push) (keep-grasp? nil) (check-continuous? nil))
+  (generate-door-motion :draw? draw? :push/pull push/pull :keep-grasp? keep-grasp?)
   (when (every #'eval (mapcar #'(lambda (x) (elt x 1)) *door-ik-results*))
     (setq *door-motion* (mapcar #'(lambda (x) (elt x 2)) *door-ik-results*)))
   (when (and check-continuous? *door-motion*)
@@ -493,7 +512,7 @@
         (arm :rarm) (push/pull :push)
         (stand-coords nil)
         (overwrite-stand-coords? nil) (overwrite-arm-side? nil)
-        (door-reach-deg 90)
+        (door-reach-deg 90) (keep-grasp? nil)
         (draw? nil) (draw-environment? nil) (use-ri? t)
         (robot-name "HRP2JSKNTS")
         )
@@ -509,12 +528,12 @@
     (setq overwrite-arm-side? nil))
   ;; default
   (when (not (equal overwrite-stand-coords? :force))
-    (get-door-motion :push/pull push/pull :draw? draw?))
+    (get-door-motion :push/pull push/pull :keep-grasp? keep-grasp? :draw? draw?))
   ;; change arm
   (when (and overwrite-arm-side? (not (equal overwrite-stand-coords? :force)) (not *door-motion*))
     (setq *door-arm* (get-opposite-arm *door-arm*))
     (ros::ros-warn "change arm side to ~a for door motion. (stand position is ~a.) ~%" *door-arm* *door-stand-coords*)
-    (get-door-motion :push/pull push/pull :draw? draw?)
+    (get-door-motion :push/pull push/pull :keep-grasp? keep-grasp? :draw? draw?)
     )
   ;; revert arm, change stand position
   (when (and overwrite-stand-coords? (not *door-motion*))
@@ -522,14 +541,14 @@
       (setq *door-arm* (get-opposite-arm *door-arm*)))
     (move-robot-with-stand-coords-for-door (get-door-stand-coords :handle-l/r (send *door* :get :handle-l/r) :push/pull push/pull))
     (ros::ros-warn "change stand position to ~a for door motion. (arm side is ~a.)~%" *door-stand-coords* *door-arm*)
-    (get-door-motion :push/pull push/pull :draw? draw?)
+    (get-door-motion :push/pull push/pull :keep-grasp? keep-grasp? :draw? draw?)
     )
   ;; change arm, change stand position
   (when (and overwrite-arm-side? overwrite-stand-coords? (not *door-motion*))
     (when overwrite-arm-side? (setq *door-arm* (get-opposite-arm *door-arm*)))
     (move-robot-with-stand-coords-for-door (get-door-stand-coords :handle-l/r (send *door* :get :handle-l/r) :push/pull push/pull))
     (ros::ros-warn "change arm side to ~a and stand position to ~a for door motion.~%" *door-arm* *door-stand-coords*)
-    (get-door-motion :push/pull push/pull :draw? draw?)
+    (get-door-motion :push/pull push/pull :keep-grasp? keep-grasp? :draw? draw?)
     )
   *door-motion*)
 
@@ -543,7 +562,7 @@
         (push/pull :push)
         (arm :rarm) (overwrite-arm-side? nil)
         (stand-coords nil) (overwrite-stand-coords? nil)
-        (door-reach-deg 90)
+        (door-reach-deg 90) (keep-grasp? nil)
         (real? t) (test-mode? nil) (av-list nil)
         )
   (let* ((door-motion-av-list
@@ -554,7 +573,7 @@
              :door-knob-size door-knob-size :door-knob-pos door-knob-pos
              :door-coords door-coords :door-coords-system :knob-from-body :arm arm :overwrite-arm-side? overwrite-arm-side?
              :stand-coords stand-coords :overwrite-stand-coords? overwrite-stand-coords?
-             :door-reach-deg door-reach-deg
+             :door-reach-deg door-reach-deg :keep-grasp? keep-grasp?
              :draw-environment? test-mode?))))
     )
   ;; reset-manip-pose
@@ -588,15 +607,24 @@
         (when real? (send *ri* :go-pos (elt pos 0) (elt pos 1) (elt rpy 0)))
         )
       ))
-  (send *robot* :angle-vector (elt *door-motion* 0))
-  (when real? (model2real :time 4000))
-  (when (or (equal *robot-name* "JAXON") (equal *robot-name* "STARO") (equal *robot-name* "JAXON_RED"))
-    (hand-start-grasp :arm *door-arm* :real? real? :type :door-grasp-preshape))
-  (when real? (send-angle-vector-sequence-with-time (subseq *door-motion* 1 3) :time 1500 :wait? t))
-  (hand-start-grasp :real? real? :type :door-grasp)
-  (when real? (send-angle-vector-sequence-with-time (subseq *door-motion* 3 9) :time 1500 :wait? t))
-  (hand-start-grasp :real? real? :type :door-grasp-preshape)
-  (when real? (send-angle-vector-sequence-with-time (subseq *door-motion* 9) :time 1500 :wait? t))
+  ;; open
+  (cond
+   (keep-grasp?
+    (send *robot* :angle-vector (elt *door-motion* 0))
+    (when real? (model2real :time 4000))
+    (when real? (send-angle-vector-sequence-with-time *door-motion* :time 1500 :wait? t))
+    )
+   (t ;; (not keep-grasp?)
+    (send *robot* :angle-vector (elt *door-motion* 0))
+    (when real? (model2real :time 4000))
+    (when (or (equal *robot-name* "JAXON") (equal *robot-name* "STARO") (equal *robot-name* "JAXON_RED"))
+      (hand-start-grasp :arm *door-arm* :real? real? :type :door-grasp-preshape))
+    (when real? (send-angle-vector-sequence-with-time (subseq *door-motion* 1 3) :time 1500 :wait? t))
+    (hand-start-grasp :real? real? :type :door-grasp)
+    (when real? (send-angle-vector-sequence-with-time (subseq *door-motion* 3 9) :time 1500 :wait? t))
+    (hand-start-grasp :real? real? :type :door-grasp-preshape)
+    (when real? (send-angle-vector-sequence-with-time (subseq *door-motion* 9) :time 1500 :wait? t))
+    ))
   ;; (dotimes (i (length *door-motion*))
   ;;   (cond ((= i 3)
   ;;          (hand-start-grasp :real? real? :type :door-grasp))
@@ -629,7 +657,7 @@
         (push/pull :push)
         (arm :rarm) (overwrite-arm-side? nil)
         (stand-coords nil) (overwrite-stand-coords? nil)
-        (door-reach-deg 90)
+        (door-reach-deg 90) (keep-grasp? nil)
         (step-time 200) (update? t) (test-mode? nil))
   (when update?
     (get-door-motion-full
@@ -637,7 +665,7 @@
      :door-knob-size door-knob-size :door-knob-pos door-knob-pos
      :door-coords door-coords :door-coords-system :knob-from-body :arm arm :overwrite-arm-side? overwrite-arm-side?
      :stand-coords stand-coords :overwrite-stand-coords? overwrite-stand-coords?
-     :door-reach-deg door-reach-deg
+     :door-reach-deg door-reach-deg :keep-grasp? keep-grasp?
      :use-ri? (if test-mode? t nil)))
   (ros::ros-info "door-stand-coords: ~a~%" *door-stand-coords*)
   (ros::ros-info "door-ik-results: ~a~%" *door-ik-results*)

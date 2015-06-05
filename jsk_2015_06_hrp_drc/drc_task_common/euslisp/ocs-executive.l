@@ -55,6 +55,7 @@
                 drill-rotate-num
                 door-name
                 door-reach-deg
+                door-keep-grasp?
                 force-overwrite-door-arm ;; one of (:force :auto)
                 ;; For driving taskot
                 latest-handle-angle
@@ -157,6 +158,7 @@
     (setq door-push/pull :push)
     (setq door-name :drc-sagami)
     (setq door-reach-deg 90)
+    (setq door-keep-grasp? nil)
     (if (or (equal *robot-name* "HRP2JSKNTS") (equal *robot-name* "HRP2JSKNT"))
         (setq drill-arm-environment :rarm)
       (setq drill-arm-environment :larm)
@@ -691,9 +693,11 @@
                    ((equal door-name :drc-lasvegas) drc_com_common::OCS2FCSmall::*DOOR_DRC_LASVEGAS*)
                    ((equal door-name :drc-lasvegas-mirror) drc_com_common::OCS2FCSmall::*DOOR_DRC_LASVEGAS_MIRROR*)
                    (t drc_com_common::OCS2FCSmall::*UNDECIDED*)))
+            (door-keep-grasp-idx
+             (if door-keep-grasp? 1 0))
             )
         (send msg :float_params
-              (door-params-to-float-vector door-params door-push/pull-idx door-name-idx door-reach-deg (length (send msg :float_params)))))
+              (door-params-to-float-vector door-params door-push/pull-idx door-name-idx door-reach-deg door-keep-grasp-idx (length (send msg :float_params)))))
       (cond ((not (boundp '*door-arm*))
              (send msg :arm_side drc_com_common::OCS2FCSmall::*UNDECIDED*))
             ((equal *door-arm* :larm)
@@ -978,6 +982,7 @@
           :stand-coords (make-coords) :overwrite-stand-coords? :force ;; overwrite stand-coords forcibly in door motion
           :push/pull door-push/pull
           :door-reach-deg door-reach-deg
+          :keep-grasp? door-keep-grasp?
           :update? t)
          (send smachine :go-to :selecting-exec-for-door)))
       ))
@@ -1472,6 +1477,7 @@
             :stand-coords (get-robot-model-current-pos) :overwrite-stand-coords? overwrite-stand-coords?
             :push/pull door-push/pull
             :door-reach-deg door-reach-deg
+            :keep-grasp? door-keep-grasp?
             :update? t)
            (send smachine :go-to :selecting-exec-for-door))
           (t (send self :show-text "refresh selected but no mean" :warn)
@@ -2018,6 +2024,18 @@
    (send self :show-text "door reach 0[deg]" :success)
    (send req :response)
    )
+  (:enable-door-keep-grasp
+   (req)
+   (setq door-keep-grasp? t)
+   (send self :show-text "enable door-keep-grasp" :success)
+   (send req :response)
+   )
+  (:disable-door-keep-grasp
+   (req)
+   (setq door-keep-grasp? nil)
+   (send self :show-text "disable door-keep-grasp" :success)
+   (send req :response)
+   )
   )
 
 (defmethod ocs-executive-app
@@ -2279,6 +2297,8 @@
 (ros::advertise-service "door_reach_60_deg" std_srvs::Empty #'send *app* :door-reach-60-deg)
 (ros::advertise-service "door_reach_30_deg" std_srvs::Empty #'send *app* :door-reach-30-deg)
 (ros::advertise-service "door_reach_0_deg" std_srvs::Empty #'send *app* :door-reach-0-deg)
+(ros::advertise-service "enable_door_keep_grasp" std_srvs::Empty #'send *app* :enable-door-keep-grasp)
+(ros::advertise-service "disable_door_keep_grasp" std_srvs::Empty #'send *app* :disable-door-keep-grasp)
 ;; Drive joystick controller topics
 (ros::subscribe "/ocs/drive/operation/handle_cmd" std_msgs::Float64 #'send *app* :drive-handle-angle-callback)
 (ros::subscribe "/ocs/drive/operation/accel_cmd" std_msgs::Float64 #'send *app* :drive-accell-angle-callback)

@@ -98,23 +98,30 @@
 - name: 'door reach 0 deg'
   service: 'door_reach_0_deg'
   column: 6
+- name: 'disable door-keep-grasp'
+  service: 'disable_door_keep_grasp'
+  column: 7
+  default_value: True
+- name: 'enable door-keep-grasp'
+  service: 'enable_door_keep_grasp'
+  column: 7
 - name: 'drill-rotate-zero'
   service: 'drill_rotate_zero'
-  column: 7
+  column: 8
 - name: 'drill-rotate-one'
   service: 'drill_rotate_one'
-  column: 7
+  column: 8
 - name: 'drill-rotate-two'
   service: 'drill_rotate_two'
-  column: 7
+  column: 8
 - name: 'drill-rotate-three'
   service: 'drill_rotate_three'
-  column: 7
+  column: 8
   default_value: True
 - name: 'drill left arm environment'
   service: 'drill_left_arm_environment'
-  column: 8
+  column: 9
   default_value: True
 - name: 'drill right arm environment'
   service: 'drill_right_arm_environment'
-  column: 8
+  column: 9

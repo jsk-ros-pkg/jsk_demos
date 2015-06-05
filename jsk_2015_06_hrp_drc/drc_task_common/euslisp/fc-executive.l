@@ -668,7 +668,7 @@
   (:door-exec-command-callback (msg)
     (when (send smachine :state? :initial)
       (multiple-value-bind
-          (coords size door-push/pull-idx door-name-idx door-reach-deg) (float-vector-to-door-params (send msg :float_params))
+          (coords size door-push/pull-idx door-name-idx door-reach-deg keep-grasp-idx) (float-vector-to-door-params (send msg :float_params))
         (let* ((stand-coords (float-vector-to-coords (send msg :stand_coords)))
                (arm-side (send msg :arm_side))
                (arm
@@ -688,13 +688,14 @@
                       ((eps= (float door-name-idx) (float drc_com_common::OCS2FCSmall::*DOOR_DRC_LASVEGAS*)) :drc-lasvegas)
                       ((eps= (float door-name-idx) (float drc_com_common::OCS2FCSmall::*DOOR_DRC_LASVEGAS_MIRROR*)) :drc-lasvegas-mirror)
                       (t :drc-box2)))
+               (keep-grasp? (eps= keep-grasp-idx (float 1)))
                )
           (send smachine :go-to :executing-door)
           (setq *cancel-motion-flag* nil)
           (catch 'exit
             (ros::ros-info "opening door at ~A ~A~%" coords size)
             ;; send motion to real robot
-            (send-door-motion :door-name door-name :door-coords coords :arm arm :stand-coords stand-coords :push/pull door-push/pull :door-reach-deg door-reach-deg)
+            (send-door-motion :door-name door-name :door-coords coords :arm arm :stand-coords stand-coords :push/pull door-push/pull :door-reach-deg door-reach-deg :keep-grasp? keep-grasp?)
             ;; send finish signal to ocs
             (let ((msg (instance drc_com_common::FC2OCSSmall :init)))
               (send msg :type drc_com_common::FC2OCSSmall::*DOOR_FINISHED*)

@@ -14,7 +14,7 @@
         (stand-coords nil)
         (arm :rarm) (push/pull :push)
         (overwrite-stand-coords? nil) (overwrite-arm-side? nil)
-        (door-reach-deg 90)
+        (door-reach-deg 90) (keep-grasp? nil)
         (ri-test? nil)
         )
   (cond ((not ri-test?)
@@ -27,7 +27,7 @@
           :arm arm :push/pull push/pull :use-ri? nil
           :robot-name robot-name :draw-environment? t
           :overwrite-stand-coords? overwrite-stand-coords? :overwrite-arm-side? overwrite-arm-side?
-          :door-reach-deg door-reach-deg
+          :door-reach-deg door-reach-deg :keep-grasp? keep-grasp?
           )
          (play-motion-on-eus-viewer
           *door-motion*
@@ -51,6 +51,7 @@
           :door-width door-width :handle-l/r handle-l/r
           :door-knob-size door-knob-size :door-knob-pos door-knob-pos
           :door-coords door-coords :door-coords-system :origin-from-world
+          :door-reach-deg door-reach-deg
           :arm arm :draw? t
           :use-ri? t :generate-ri? t :robot-name robot-name)
          (let* (door-knob-coords-relative-to-body)
@@ -68,7 +69,8 @@
             :stand-coords stand-coords
             :step-time 0 :test-mode? t
             :arm arm :push/pull push/pull
-            :overwrite-stand-coords? overwrite-stand-coords? :overwrite-arm-side? overwrite-arm-side?)
+            :overwrite-stand-coords? overwrite-stand-coords? :overwrite-arm-side? overwrite-arm-side?
+            :door-reach-deg door-reach-deg :keep-grasp? keep-grasp?)
            (send-door-motion
             :door-name door-name
             :door-width door-width :handle-l/r handle-l/r
@@ -77,6 +79,7 @@
             :stand-coords stand-coords
             :arm arm :push/pull push/pull
             :overwrite-stand-coords? overwrite-stand-coords? :overwrite-arm-side? overwrite-arm-side?
+            :door-reach-deg door-reach-deg :keep-grasp? keep-grasp?
             :test-mode? t))
          (cond ((check-coords-distance door-coords (send *door* :worldcoords))
                 (warning-message 2 "transformed coords is correct. target: ~a  actual:~a~%" door-coords (send *door* :worldcoords)))
