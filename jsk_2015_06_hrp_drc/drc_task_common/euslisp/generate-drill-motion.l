@@ -306,7 +306,7 @@
         (send *robot* :put :support-arm-drill-button-coords
               (make-cascoords
                                         ;             :coords (send (send (send *robot* (get-opposite-arm *drill-main-arm*) :end-coords) :copy-worldcoords) :translate #f(50 87.5 80) :local)
-               :coords (send (send (send (send (send (send *robot* (get-opposite-arm *drill-main-arm*) :end-coords) :copy-worldcoords) :translate (float-vector 80 (if (equal *drill-main-arm* :rarm) -65 65) 0) :local) :rotate (deg2rad (if (equal *drill-main-arm* :rarm) 90 90)) :y :local) :rotate (deg2rad (if (equal *drill-main-arm* :rarm) 180 180)) :z :local) :rotate (deg2rad (if (equal *drill-main-arm* :rarm) 0 180)) :z :local)
+               :coords (send (send (send (send (send (send *robot* (get-opposite-arm *drill-main-arm*) :end-coords) :copy-worldcoords) :translate (float-vector 80 (if (equal *drill-main-arm* :rarm) -65 85) 20) :local) :rotate (deg2rad (if (equal *drill-main-arm* :rarm) 90 90)) :y :local) :rotate (deg2rad (if (equal *drill-main-arm* :rarm) 180 180)) :z :local) :rotate (deg2rad (if (equal *drill-main-arm* :rarm) 0 180)) :z :local)
                :parent (send (send *robot* (get-opposite-arm *drill-main-arm*) :end-coords) :parent)))
         )
        )
@@ -513,7 +513,7 @@
         (send *robot* :angle-vector robot-angle-vector)
         (send *robot* :fix-leg-to-coords original-foot-midcoords)
         ;; solve ik for grasp up
-        (send *drill* :translate (float-vector 0 80 grasp-up-dist) :world)
+        (send *drill* :translate (float-vector -40 50 grasp-up-dist) :world)
         (setq ik-ret (fullbody-inverse-kinematics-for-drill-grasp-single :draw? draw? :rotation-axis rotation-axis))
         (push-back (list 4 (not (null ik-ret)) ik-ret) ik-results)
         (when (and fin? (not ik-ret)) (return-from drill-ik nil))
@@ -722,7 +722,7 @@
         (send *robot* :fix-leg-to-coords (or *drill-stand-coords* (make-coords)))
         (set-drill-default-coords)
         (ros::ros-info (format nil "hoge default-coords ~A" default-drill-coords))
-        (send-drill-rotate-motion (get-body-relative-coords (send *drill* :copy-worldcoords)) (get-body-relative-coords (send default-drill-coords :translate (float-vector 0 80 0) :world)) :drill-rotate-num drill-rotate-num :mid-pose? nil)
+        (send-drill-rotate-motion (get-body-relative-coords (send *drill* :copy-worldcoords)) (get-body-relative-coords (send default-drill-coords :translate (float-vector -40 50 0) :world)) :drill-rotate-num drill-rotate-num :mid-pose? nil)
         ;(setq drill-rotate-num (- drill-rotate-num 1))
                                         ;          )
         )
@@ -786,7 +786,7 @@
            (send *robot* :angle-vector (get-potentio-vector-from-joint-states))))
 
       (send *robot* :fix-leg-to-coords (or *drill-stand-coords* (make-coords)))
-      (let ((default-drill-coords (send (send *drill* :copy-worldcoords) :translate (float-vector 0 80 0) :world)))
+      (let ((default-drill-coords (send (send *drill* :copy-worldcoords) :translate (float-vector -40 50 0) :world)))
         (set-drill-default-coords)
         (publish-drill-rotate-motion :drill-coords (get-body-relative-coords (send *drill* :copy-worldcoords)) :plane-coords (get-body-relative-coords default-drill-coords) :use-ri? use-ri? :angle-vector angle-vector :publish? publish? :move-robot-model? nil :draw? draw?)
         )

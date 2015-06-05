@@ -57,8 +57,8 @@
       <remap from="~input" to="gsensor_cloud/output" />
       <rosparam>
         filter_field_name: x
-        filter_limit_min: -10
-        filter_limit_max: 10
+        filter_limit_min: -3
+        filter_limit_max: 3
         filter_limit_negative: false
       </rosparam>
     </node>
@@ -68,8 +68,8 @@
       <remap from="~input" to="x_filter/output" />
       <rosparam>
         filter_field_name: y
-        filter_limit_min: -10
-        filter_limit_max: 10
+        filter_limit_min: -3
+        filter_limit_max: 3
         filter_limit_negative: false
       </rosparam>
     </node>
@@ -95,5 +95,6 @@
         target_frame_id: odom
       </rosparam>
     </node>
+
   </group>
 </launch>
