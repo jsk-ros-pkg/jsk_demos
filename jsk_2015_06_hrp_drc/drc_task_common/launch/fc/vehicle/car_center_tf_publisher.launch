@@ -14,7 +14,7 @@
   <group if="$(arg REAL_MODE)">
     <group ns="/drive/recognition">
       <!-- dynamic_tf_publisher -->
-      <node pkg="dynamic_tf_publisher" type="tf_publish.py" name="marker_dynamic_tf_publisher" />
+      <node pkg="dynamic_tf_publisher" type="tf_publish.py" name="marker_dynamic_tf_publisher" respawn="true"/>
       <!-- checkerboard_detector -->
       <param name="display" type="int" value="0"/>
       <param name="rect0_size_x" type="double" value="0.0152"/>
@@ -26,27 +26,27 @@
       <param name="invert_color" value="true" />
       <param name="message_throttle" value="5" />
       <param name="type0" type="string" value="data/ricebox.kinbody.xml"/>
-      <node pkg="checkerboard_detector" name="checkerboard_detector" type="checkerboard_detector" respawn="false">
+      <node pkg="checkerboard_detector" name="checkerboard_detector" type="checkerboard_detector" respawn="true">
         <remap from="camera_info" to="/multisense/left/camera_info"/>
         <remap from="image" to="/multisense/left/image_rect_color"/>
         <remap from="objectdetection_pose" to="marker/car_pose" />
       </node>
       <group if="$(arg JAXON)">
         <!-- tf "car_marker" publisher from PoseStamped -->
-        <node pkg="roseus" type="roseus" name="TF_BODY_marker"
+        <node pkg="roseus" type="roseus" name="jaxon_TF_BODY_marker" respawn="true"
               args="$(find drc_task_common)/euslisp/vehicle/jaxon-car_center-publisher.l" >
           <remap from="car_pose_marker" to="marker/car_pose" />
         </node>
         <!-- static tf "car_center" (parent link: car_marker) publisher -->
-        <node pkg="tf" type="static_transform_publisher" name="TF_marker_car_center" args="1.323766 0.0 0.1942 3.141593 -1.082 -3.141593 car_marker car_center 100" />
+        <node pkg="tf" type="static_transform_publisher" name="jaxon_TF_marker_car_center" respawn="true" args="1.323766 0.0 0.1942 3.141593 -1.082 -3.141593 car_marker car_center 100" />
       </group>
       <group if="$(arg HRP2)">
-        <node  pkg="roseus" type="roseus" name="TF_BODY_marker"
+        <node  pkg="roseus" type="roseus" name="hrp2_TF_BODY_marker" respawn="true"
                args="$(find drc_task_common)/euslisp/vehicle/hrp2-car_center-publisher.l" >
           <remap from="car_pose_marker" to="marker/car_pose" />
         </node>
         <!-- static tf "car_center" (parent link: car_marker) publisher -->
-        <node pkg="tf" type="static_transform_publisher" name="TF_marker_car_center" args="1.323766 0.0 0.1942 3.141593 -1.07 -3.141593 car_marker car_center 100" />
+        <node pkg="tf" type="static_transform_publisher" name="hrp2_TF_marker_car_center" respawn="true" args="1.323766 0.0 0.1942 3.141593 -1.07 -3.141593 car_marker car_center 100" />
       </group>
     </group>
   </group>
