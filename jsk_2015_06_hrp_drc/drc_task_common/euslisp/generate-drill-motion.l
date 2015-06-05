@@ -306,7 +306,7 @@
         (send *robot* :put :support-arm-drill-button-coords
               (make-cascoords
                                         ;             :coords (send (send (send *robot* (get-opposite-arm *drill-main-arm*) :end-coords) :copy-worldcoords) :translate #f(50 87.5 80) :local)
-               :coords (send (send (send (send (send (send *robot* (get-opposite-arm *drill-main-arm*) :end-coords) :copy-worldcoords) :translate (float-vector 80 (if (equal *drill-main-arm* :rarm) -65 45) -20) :local) :rotate (deg2rad (if (equal *drill-main-arm* :rarm) 90 90)) :y :local) :rotate (deg2rad (if (equal *drill-main-arm* :rarm) 180 180)) :z :local) :rotate (deg2rad (if (equal *drill-main-arm* :rarm) 0 180)) :z :local)
+               :coords (send (send (send (send (send (send *robot* (get-opposite-arm *drill-main-arm*) :end-coords) :copy-worldcoords) :translate (float-vector 80 (if (equal *drill-main-arm* :rarm) -65 85) 20) :local) :rotate (deg2rad (if (equal *drill-main-arm* :rarm) 90 90)) :y :local) :rotate (deg2rad (if (equal *drill-main-arm* :rarm) 180 180)) :z :local) :rotate (deg2rad (if (equal *drill-main-arm* :rarm) 0 180)) :z :local)
                :parent (send (send *robot* (get-opposite-arm *drill-main-arm*) :end-coords) :parent)))
         )
        )
