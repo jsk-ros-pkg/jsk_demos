@@ -1,4 +1,3 @@
-<?xml version="1.0" encoding="utf-8"?>
 <launch>
   <arg name="ODOM_FRAME" default="odom" />
   <arg name="USE_LOCALHOST" default="false" />
@@ -94,18 +93,6 @@
       <remap from="~input" to="z_filter/output" />
       <rosparam>
         target_frame_id: odom
-      </rosparam>
-    </node>
-    
-        <node pkg="nodelet" type="nodelet"
-          name="odom_cloud2"
-          args="load pcl/VoxelGrid laser_preprocess_manager">
-      <remap from="~input" to="odom_cloud/output" />
-      <rosparam>
-        leaf_size: 0.05
-        filter_limit_min: -100
-        filter_limit_max: 100
-        skip_number: 10
       </rosparam>
     </node>
 
