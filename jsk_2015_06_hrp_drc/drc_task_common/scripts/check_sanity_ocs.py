@@ -106,7 +106,7 @@ def main():
     checkBlackListDaemon(["chrome", "dropbox", "skype"], kill=True)
 
     indexMessage("Check Master in OCS Network")
-    checkROSCoreROSMaster()
+    # checkROSCoreROSMaster()
     checkROSMasterCLOSE_WAIT(host)
     rospy.init_node("check_sanity_ocs")
 
