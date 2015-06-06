@@ -243,7 +243,7 @@
         (cond ((equal *robot-name* "HRP2JSKNT")
                (send (send (send (send *robot* :rarm :end-coords) :copy-worldcoords) :translate (float-vector 50 2.0 0.0) :local) :rotate (deg2rad 53) :z :local))
               ((equal *robot-name* "HRP2JSKNTS")
-               (send (send (send (send *robot* :rarm :end-coords) :copy-worldcoords) :translate (float-vector 50 25.0 0.0) :local) :rotate (deg2rad 53) :z :local))
+               (send (send (send (send *robot* :rarm :end-coords) :copy-worldcoords) :translate (float-vector 30 25.0 0.0) :local) :rotate (deg2rad 53) :z :local))
               (t ;; (or (equal *robot-name* "JAXON") (equal *robot-name* "STARO") (equal *robot-name* "JAXON_RED"))
                (send (send (send (send *robot* :rarm :end-coords) :copy-worldcoords) :translate (float-vector -5.0 -10.0 0.0) :local) :rotate (deg2rad 0) :z :local)
                )
