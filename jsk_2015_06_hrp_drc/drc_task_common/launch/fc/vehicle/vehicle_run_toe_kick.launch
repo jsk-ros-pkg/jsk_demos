@@ -1,0 +1,5 @@
+<launch>
+  <arg name="ROBOT" default="jaxon_red" />
+  <node pkg="roseus" type="roseus" name="drive_controller_toe_kick_accel"
+        args="$(find drc_task_common)/euslisp/vehicle/$(arg ROBOT)-driving-controller-on-polaris-xp900-toe-kick-accel.l '($(arg ROBOT)-vehicle-main :real nil)'" />
+</launch>
