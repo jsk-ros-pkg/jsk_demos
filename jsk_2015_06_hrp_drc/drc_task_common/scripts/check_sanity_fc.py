@@ -198,9 +198,10 @@ if __name__ == "__main__":
 
     indexMessage("Check Car Recognition in FC")
     checkNodeState("/drive/recognition/car_path_visualizer", True)
-    checkNodeState("/drive/recognition/jaxon_TF_marker_car_center", True)
     checkNodeState("/drive/recognition/marker_dynamic_tf_publisher", True)
     checkNodeState("/drive/recognition/jaxon_TF_BODY_marker", True, sub_fail="*** IF YOU USE HRP2, DON'T WORRY ABOUNT THIS ***")
+    checkNodeState("/drive/recognition/jaxon_TF_marker_car_center", True, sub_fail="*** IF YOU USE HRP2, DON'T WORRY ABOUNT THIS ***")
     checkNodeState("/drive/recognition/hrp2_TF_BODY_marker", True, sub_fail="*** IF YOU USE JAXON, DON'T WORRY ABOUNT THIS ***")
+    checkNodeState("/drive/recognition/hrp2_TF_marker_car_center", True, sub_fail="*** IF YOU USE JAXON, DON'T WORRY ABOUNT THIS ***")
 
-    checkTopicIsPublished("/drvie/recognition/predicted_path/marker", None)
+    checkTopicIsPublished("/communication/drive/recognition/predicted_path/marker", None, "drive recognition is working", "drive recognition is not working")
