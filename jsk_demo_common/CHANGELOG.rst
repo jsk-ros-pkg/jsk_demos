@@ -2,8 +2,8 @@
 Changelog for package jsk_demo_common
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.0.1 (2015-06-11)
+------------------
 * [jsk_demo_common] add pr2 actions' action servers
 * use pr2_gripper_sensor_msgs instead of dummy for hydro in pr2-action.l
 * [jsk_demos] remove rosmake files

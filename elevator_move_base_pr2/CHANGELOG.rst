@@ -2,8 +2,8 @@
 Changelog for package elevator_move_base_pr2
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.0.1 (2015-06-11)
+------------------
 * [elevator_move_base_pr2] use octree_change_detector to check elevator door is open
 * [elevator-move-base-pr2] add move-inside state machine
 * [elevator-move-base-pr2] remove / from tf frame

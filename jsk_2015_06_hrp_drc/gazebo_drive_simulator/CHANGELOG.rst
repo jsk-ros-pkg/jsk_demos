@@ -2,8 +2,8 @@
 Changelog for package gazebo_drive_simulator
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.0.1 (2015-06-11)
+------------------
 * change base_tf from car_center to BODY
 * change default rviz
 * fix namespace in python script

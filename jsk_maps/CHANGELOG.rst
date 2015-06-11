@@ -2,8 +2,8 @@
 Changelog for package jsk_maps
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.0.1 (2015-06-11)
+------------------
 * [jsk_maps] add multi_map_server deps for jsk_maps
 * [jsk_demos] remove rosmake files
 * Merge pull request #154 from garaemon/fc-ocs-ui-integration-go-pos

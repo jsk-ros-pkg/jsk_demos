@@ -1,6 +1,6 @@
 <package>
   <name>jsk_semantic_maps</name>
-  <version>0.0.0</version>
+  <version>0.0.1</version>
   <description>Semantic maps of different rooms at the JSK lab at the University of Tokyo.</description>
   <maintainer email="k-okada@jsk.t.u-tokyo.ac.jp">Kei Okada</maintainer>
 

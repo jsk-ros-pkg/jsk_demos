@@ -2,8 +2,8 @@
 Changelog for package jsk_semantic_maps
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.0.1 (2015-06-11)
+------------------
 * [jsk_demos] remove rosmake files
 * catkinize jsk_demos
 * moved the spots for picking cups

@@ -2,8 +2,8 @@
 Changelog for package drc_com_common
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.0.1 (2015-06-11)
+------------------
 * add emergency-pose button to rviz
 * add line for send keypoint screen shot
 * fix SIMPLE_FOOTSTEP_EXEC's number 71->72

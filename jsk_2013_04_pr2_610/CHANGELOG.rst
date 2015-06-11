@@ -2,8 +2,8 @@
 Changelog for package jsk_2013_04_pr2_610
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.0.1 (2015-06-11)
+------------------
 * [jsk_demos] remove rosmake files
 * add catkin build dependencies for 610 demo
 * jsk_2013_04_pr2_610 only depends on roseus for build process

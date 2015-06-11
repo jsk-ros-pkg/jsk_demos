@@ -2,8 +2,8 @@
 Changelog for package jsk_2011_07_pr2_semantic
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.0.1 (2015-06-11)
+------------------
 * [jsk_demos] remove rosmake files
 * catkinize jsk_demos
 * Not include nonused pr2eus_openrave

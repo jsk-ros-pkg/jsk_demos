@@ -2,8 +2,8 @@
 Changelog for package drc_task_common
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.0.1 (2015-06-11)
+------------------
 * fix drive recognition checks
 * [drc_task_common] Add toe-kick method script in vehicle task for emergency. This PR do not affect to original script
 * rename service

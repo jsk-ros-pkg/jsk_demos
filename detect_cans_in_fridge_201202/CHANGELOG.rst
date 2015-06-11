@@ -2,8 +2,8 @@
 Changelog for package detect_cans_in_fridge_201202
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.0.1 (2015-06-11)
+------------------
 * [detect_cans.l] load-ros-manifest self package
 * [jsk_demos] remove rosmake files
 * [detect_cans_in_fridge_201202] ind_package component is not necessary

@@ -2,8 +2,8 @@
 Changelog for package interactive_behavior_201409
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.0.1 (2015-06-11)
+------------------
 * [interactive_behavior_201409] add /people to look-at source
 * [interactive_behavior_201409] utilize look-at related funcs to pr2-behavior-utils.l
 * [jsk_demos] remove rosmake files
