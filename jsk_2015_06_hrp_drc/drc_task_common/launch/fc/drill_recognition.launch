@@ -112,8 +112,8 @@
         use_sensor_frame: true
         sensor_frame: head_root
         use_indices: false
-        min_height: 0.02
-        max_height: 0.5
+        min_height: -0.5
+        max_height: -0.02
         magnify: -0.01
       </rosparam>
     </node>
@@ -187,19 +187,27 @@
         max_z: 1.5
       </rosparam>
     </node>
+    <node pkg="drc_task_common"
+          type="static_transform_bounding_box_array.py"
+          name="static_transform_bounding_box_array"
+          >
+      <rosparam>
+        transform: [0, 0, 0, 3.14, 0, 0]
+      </rosparam>
+      <remap from="~input" to="filter_by_position/output" />
+    </node>
     <node pkg="nodelet"
           type="nodelet"
           name="boundingbox_clipper"
           args="load jsk_pcl/AttentionClipper drill_manager">
       <remap from="~input/points" to="remove_small_noises/output"/>
-      <remap from="~input/box_array" to="filter_by_position/output"/>
+      <remap from="~input/box_array" to="static_transform_bounding_box_array/output"/>
       <rosparam>
         use_multiple_attention: true
         radius_search: 0.05
         min_neighbors: 20
       </rosparam>
     </node>
-
     <node pkg="drc_task_common"
           name="standing_drill_detector"
           type="standing_drill_detector"
