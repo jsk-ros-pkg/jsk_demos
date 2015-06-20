@@ -116,7 +116,7 @@ catkin_download_test_data(drill_pcd
 # catkin_download_test_data(drill_full_pcd
 #   http://www.jsk.t.u-tokyo.ac.jp/~ueda/dataset/2015/02/drill_full.pcd
 #   DESTINATION ${PROJECT_SOURCE_DIR}/pcds)
-if(NOT $ENV{TRAVIS_JOB_ID})
+if(NOT ($ENV{TRAVIS_JOB_ID}))
   execute_process(
     COMMAND mkdir -p ${PROJECT_SOURCE_DIR}/models)
   catkin_download_test_data(gun_drill_dae
@@ -141,7 +141,7 @@ if(NOT $ENV{TRAVIS_JOB_ID})
     drill_pcd # todo old now
     # drill_full_pcd
     gun_drill_dae gun_drill_jpg gun_drill_model takenoko_drill_dae takenoko_drill_jpg takenoko_drill_model)
-endif(NOT $ENV{TRAVIS_JOB_ID})
+endif(NOT ($ENV{TRAVIS_JOB_ID}))
 
 install(TARGETS
   ${PROJECT_NAME}
