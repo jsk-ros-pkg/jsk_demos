@@ -11,7 +11,7 @@
           respawn="true"
           cwd="node"
           output="screen">
-      <rosparam command="load" file="$(find jsk_footstep_controller)/config/jaxon.yaml" />
+      <rosparam command="load" file="$(find jsk_footstep_controller)/config/$(env ROBOT).yaml" />
       <remap from="planes" to="/ocs/env_server/occlusion_result_polygons" />
       <rosparam subst_value="true">
         use_planes: false
@@ -35,7 +35,7 @@
       <remap from="~planes_coefficients" to="/locomotion/plane_concatenator/output/coefficients" />
       <!-- <remap from="move_marker" to="$(arg POSE_REMAP)" /> -->
       <!-- <param name="wait_snapit_server" value="false" /> -->
-      <rosparam command="load" file="$(find jsk_footstep_controller)/config/jaxon.yaml" />
+      <rosparam command="load" file="$(find jsk_footstep_controller)/config/$(env ROBOT).yaml" />
       <remap from="project_footprint" to="/footstep_planner/project_footprint" />
       <rosparam>
         use_plane_snap: true
