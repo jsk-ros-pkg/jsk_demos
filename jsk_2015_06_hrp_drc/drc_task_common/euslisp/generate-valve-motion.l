@@ -447,7 +447,7 @@
    &key (arm :rarm) (overwrite-arm-side? nil)
    (stand-coords nil) (overwrite-stand-coords? nil)
    (grasp-center? nil) (overwrite-grasp-mode? nil)
-   (real? t) (test-mode? nil) (av-list nil) (use_reach-until-touch? t))
+   (real? t) (test-mode? nil) (av-list nil) (use_reach-until-touch? nil))
   (let* ((rotate-num 3)
          (valve-motion-av-list
           (if av-list
