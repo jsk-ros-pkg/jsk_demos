@@ -547,6 +547,7 @@
                 (if grasped
                     (progn
                       (let (stand-coords real-end-pos target-end-pos offset)
+                        ;;calc offset
                         (setq stand-coords (or *valve-stand-coords* (make-coords)))
                         (send *robot* :angle-vector (send *ri* :state :potentio-vector))
                         (send *robot* :fix-leg-to-coords stand-coords)
@@ -554,9 +555,9 @@
                         (send *robot* :angle-vector (car valve-motion-av-list))
                         (send *robot* :fix-leg-to-coords stand-coords)
                         (setq target-end-pos (send *robot* arm :end-coords :worldpos))
-                        ;; calc offset
                         (setq offset (v- real-end-pos target-end-pos)) 
                         (dotimes (i valve-motion-length)
+                          ;;transfer end-pos
                           (send *robot* :angle-vector (car (nthcdr i valve-motion-av-list)))
                           (send *robot* arm :move-end-pos offset :world)
                           (setf (car (nthcdr i valve-motion-av-list)) (send *robot* :angle-vector)))
