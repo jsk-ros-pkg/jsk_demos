@@ -36,8 +36,8 @@
       <remap from="~input" to="x_filter/output" />
       <rosparam>
         filter_field_name: y
-        filter_limit_min: -0.5
-        filter_limit_max: 0.5
+        filter_limit_min: -3
+        filter_limit_max: 3
         filter_limit_negative: false
       </rosparam>
     </node>
