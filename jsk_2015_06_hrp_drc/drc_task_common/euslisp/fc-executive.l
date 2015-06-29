@@ -1168,6 +1168,7 @@ It sends :angle-vector to robot and return 'finished' message to ocs"
       )
     (send *robot* :angle-vector (get-watch-drill-pose))
     (model2real :time 5000)
+    (keyshot-request)
     (send self :send-rviz-button-finished-to-ocs))
   (:door-through-pose-command-callback (msg)
     (when (or (equal *robot-name* "JAXON") (equal *robot-name* "JAXON_RED") (equal *robot-name* "STARO"))
