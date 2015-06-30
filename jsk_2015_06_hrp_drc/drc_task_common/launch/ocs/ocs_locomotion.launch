@@ -41,7 +41,7 @@
         distance_threshold: 0.02 # for jaxon
         magnify_distance: 0.05
         normal_threshold: 0.1
-        erode_filter_size: 2
+        erode_filter_size: 1
         footprint_frames: ["lleg_end_coords", "rleg_end_coords"]
       </rosparam>
     </node>
