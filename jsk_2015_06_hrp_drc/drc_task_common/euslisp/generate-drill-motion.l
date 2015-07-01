@@ -1197,6 +1197,7 @@
       (when (or (equal *robot-name* "HRP2JSKNTS") (equal *robot-name* "HRP2JSKNT"))
         (send *robot* :angle-vector (get-watch-drill-pose2))
         (model2real :time 3000)
+        (keyshot-request)
         (unix::sleep 4)
         (let ((request-service-name (if (equal *drill-main-arm* :rarm) "/rarm_get_button_state" "/larm_get_button_state")))
           (if (send (ros::service-call request-service-name req) :success)
