@@ -1,0 +1,31 @@
+<?xml version="1.0"?>
+<robot name="room610-bears-panel-5-robot"
+       xmlns:xi="http://www.w3.org/2001/XInclude"
+       >
+  <gazebo>
+    <static>false</static>
+  </gazebo>
+  <link name="nil_link">
+    <visual>
+      <origin xyz="0 0 0" rpy="0 -0 0"/>
+      <geometry>
+        <mesh filename="model://room610-bears-panel-5/meshes/nil_link_mesh.dae" scale="1 1 1" />
+      </geometry>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 -0 0"/>
+      <geometry>
+        <mesh filename="model://room610-bears-panel-5/meshes/nil_link_mesh.dae" scale="1 1 1" />
+      </geometry>
+    </collision>
+    <inertial>
+      <mass value="0.001" />
+      <origin xyz="0 0 0" rpy="0 -0 0"/>
+      <inertia ixx="1e-03" ixy="0" ixz="0" iyy="1e-03" iyz="0" izz="1e-03"/>
+    </inertial>
+  </link>
+  <gazebo reference="nil_link">
+    <mu1>0.9</mu1>
+    <mu2>0.9</mu2>
+  </gazebo>
+</robot>

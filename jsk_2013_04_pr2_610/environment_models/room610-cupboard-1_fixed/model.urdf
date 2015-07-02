@@ -1,0 +1,310 @@
+<?xml version="1.0"?>
+<robot name="room610-cupboard-1-robot_fixed"
+       xmlns:xi="http://www.w3.org/2001/XInclude"
+       >
+  <gazebo>
+    <static>false</static>
+  </gazebo>
+  <link name="ROOT_link">
+    <visual>
+      <origin xyz="0 0 0" rpy="0 -0 0"/>
+      <geometry>
+        <mesh filename="model://room610-cupboard-1/meshes/ROOT_link_mesh.dae" scale="1 1 1" />
+      </geometry>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 -0 0"/>
+      <geometry>
+        <mesh filename="model://room610-cupboard-1/meshes/ROOT_link_mesh.dae" scale="1 1 1" />
+      </geometry>
+    </collision>
+    <inertial>
+      <mass value="0.001" />
+      <origin xyz="0 0 0" rpy="0 -0 0"/>
+      <inertia ixx="1e-03" ixy="0" ixz="0" iyy="1e-03" iyz="0" izz="1e-03"/>
+    </inertial>
+  </link>
+  <gazebo reference="ROOT_link">
+    <mu1>0.9</mu1>
+    <mu2>0.9</mu2>
+  </gazebo>
+  <link name="CUPBOARD-BODYSET2_link">
+    <visual>
+      <origin xyz="0.267 0.763 1.355" rpy="0 -0 0"/>
+      <geometry>
+        <mesh filename="model://room610-cupboard-1/meshes/CUPBOARD-BODYSET2_link_mesh.dae" scale="1 1 1" />
+      </geometry>
+    </visual>
+    <collision>
+      <origin xyz="0.267 0.763 1.355" rpy="0 -0 0"/>
+      <geometry>
+        <mesh filename="model://room610-cupboard-1/meshes/CUPBOARD-BODYSET2_link_mesh.dae" scale="1 1 1" />
+      </geometry>
+    </collision>
+    <inertial>
+      <mass value="0.001" />
+      <origin xyz="0 0 0" rpy="0 -0 0"/>
+      <inertia ixx="1e-03" ixy="0" ixz="0" iyy="1e-03" iyz="0" izz="1e-03"/>
+    </inertial>
+  </link>
+  <gazebo reference="CUPBOARD-BODYSET2_link">
+    <mu1>0.9</mu1>
+    <mu2>0.9</mu2>
+  </gazebo>
+  <link name="CUPBOARD-BODYSET3_link">
+    <visual>
+      <origin xyz="0.267 -0.763 1.355" rpy="0 -0 0"/>
+      <geometry>
+        <mesh filename="model://room610-cupboard-1/meshes/CUPBOARD-BODYSET3_link_mesh.dae" scale="1 1 1" />
+      </geometry>
+    </visual>
+    <collision>
+      <origin xyz="0.267 -0.763 1.355" rpy="0 -0 0"/>
+      <geometry>
+        <mesh filename="model://room610-cupboard-1/meshes/CUPBOARD-BODYSET3_link_mesh.dae" scale="1 1 1" />
+      </geometry>
+    </collision>
+    <inertial>
+      <mass value="0.001" />
+      <origin xyz="0 0 0" rpy="0 -0 0"/>
+      <inertia ixx="1e-03" ixy="0" ixz="0" iyy="1e-03" iyz="0" izz="1e-03"/>
+    </inertial>
+  </link>
+  <gazebo reference="CUPBOARD-BODYSET3_link">
+    <mu1>0.9</mu1>
+    <mu2>0.9</mu2>
+  </gazebo>
+  <link name="CUPBOARD-BODYSET8_link">
+    <visual>
+      <origin xyz="0 0 0.145" rpy="0 -0 0"/>
+      <geometry>
+        <mesh filename="model://room610-cupboard-1/meshes/CUPBOARD-BODYSET8_link_mesh.dae" scale="1 1 1" />
+      </geometry>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0.145" rpy="0 -0 0"/>
+      <geometry>
+        <mesh filename="model://room610-cupboard-1/meshes/CUPBOARD-BODYSET8_link_mesh.dae" scale="1 1 1" />
+      </geometry>
+    </collision>
+    <inertial>
+      <mass value="0.001" />
+      <origin xyz="0 0 0" rpy="0 -0 0"/>
+      <inertia ixx="1e-03" ixy="0" ixz="0" iyy="1e-03" iyz="0" izz="1e-03"/>
+    </inertial>
+  </link>
+  <gazebo reference="CUPBOARD-BODYSET8_link">
+    <mu1>0.9</mu1>
+    <mu2>0.9</mu2>
+  </gazebo>
+  <link name="CUPBOARD-BODYSET7_link">
+    <visual>
+      <origin xyz="0 0 0.445" rpy="0 -0 0"/>
+      <geometry>
+        <mesh filename="model://room610-cupboard-1/meshes/CUPBOARD-BODYSET7_link_mesh.dae" scale="1 1 1" />
+      </geometry>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0.445" rpy="0 -0 0"/>
+      <geometry>
+        <mesh filename="model://room610-cupboard-1/meshes/CUPBOARD-BODYSET7_link_mesh.dae" scale="1 1 1" />
+      </geometry>
+    </collision>
+    <inertial>
+      <mass value="0.001" />
+      <origin xyz="0 0 0" rpy="0 -0 0"/>
+      <inertia ixx="1e-03" ixy="0" ixz="0" iyy="1e-03" iyz="0" izz="1e-03"/>
+    </inertial>
+  </link>
+  <gazebo reference="CUPBOARD-BODYSET7_link">
+    <mu1>0.9</mu1>
+    <mu2>0.9</mu2>
+  </gazebo>
+  <link name="CUPBOARD-BODYSET6_link">
+    <visual>
+      <origin xyz="0 0 0.679" rpy="0 -0 0"/>
+      <geometry>
+        <mesh filename="model://room610-cupboard-1/meshes/CUPBOARD-BODYSET6_link_mesh.dae" scale="1 1 1" />
+      </geometry>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0.679" rpy="0 -0 0"/>
+      <geometry>
+        <mesh filename="model://room610-cupboard-1/meshes/CUPBOARD-BODYSET6_link_mesh.dae" scale="1 1 1" />
+      </geometry>
+    </collision>
+    <inertial>
+      <mass value="0.001" />
+      <origin xyz="0 0 0" rpy="0 -0 0"/>
+      <inertia ixx="1e-03" ixy="0" ixz="0" iyy="1e-03" iyz="0" izz="1e-03"/>
+    </inertial>
+  </link>
+  <gazebo reference="CUPBOARD-BODYSET6_link">
+    <mu1>0.9</mu1>
+    <mu2>0.9</mu2>
+  </gazebo>
+  <link name="CUPBOARD-BODYSET5_link">
+    <visual>
+      <origin xyz="0 -0.576 0.429" rpy="0 -0 0"/>
+      <geometry>
+        <mesh filename="model://room610-cupboard-1/meshes/CUPBOARD-BODYSET5_link_mesh.dae" scale="1 1 1" />
+      </geometry>
+    </visual>
+    <collision>
+      <origin xyz="0 -0.576 0.429" rpy="0 -0 0"/>
+      <geometry>
+        <mesh filename="model://room610-cupboard-1/meshes/CUPBOARD-BODYSET5_link_mesh.dae" scale="1 1 1" />
+      </geometry>
+    </collision>
+    <inertial>
+      <mass value="0.001" />
+      <origin xyz="0 0 0" rpy="0 -0 0"/>
+      <inertia ixx="1e-03" ixy="0" ixz="0" iyy="1e-03" iyz="0" izz="1e-03"/>
+    </inertial>
+  </link>
+  <gazebo reference="CUPBOARD-BODYSET5_link">
+    <mu1>0.9</mu1>
+    <mu2>0.9</mu2>
+  </gazebo>
+  <link name="CUPBOARD-BODYSET4_link">
+    <visual>
+      <origin xyz="0 0.576 0.145" rpy="0 -0 0"/>
+      <geometry>
+        <mesh filename="model://room610-cupboard-1/meshes/CUPBOARD-BODYSET4_link_mesh.dae" scale="1 1 1" />
+      </geometry>
+    </visual>
+    <collision>
+      <origin xyz="0 0.576 0.145" rpy="0 -0 0"/>
+      <geometry>
+        <mesh filename="model://room610-cupboard-1/meshes/CUPBOARD-BODYSET4_link_mesh.dae" scale="1 1 1" />
+      </geometry>
+    </collision>
+    <inertial>
+      <mass value="0.001" />
+      <origin xyz="0 0 0" rpy="0 -0 0"/>
+      <inertia ixx="1e-03" ixy="0" ixz="0" iyy="1e-03" iyz="0" izz="1e-03"/>
+    </inertial>
+  </link>
+  <gazebo reference="CUPBOARD-BODYSET4_link">
+    <mu1>0.9</mu1>
+    <mu2>0.9</mu2>
+  </gazebo>
+  <joint name="DOOR-UPPER-LEFT" type="revolute">
+    <parent link="ROOT_link"/>
+    <child  link="CUPBOARD-BODYSET2_link"/>
+    <origin xyz="0.267 0.763 1.355" rpy="0 -0 0 "/>
+    <axis   xyz="0 0 1"/>
+    <limit lower="0" upper="1.5708" effort="100" velocity="0.5" />
+    <dynamics damping="0.2" friction="0" />
+  </joint>
+  <transmission type="pr2_mechanism_model/SimpleTransmission" name="DOOR-UPPER-LEFT_trans" >
+    <actuator name="DOOR-UPPER-LEFT_motor" />
+    <joint name="DOOR-UPPER-LEFT" />
+    <mechanicalReduction>1</mechanicalReduction>
+  </transmission>
+  <gazebo reference="DOOR-UPPER-LEFT">
+    <cfmDamping>0.4</cfmDamping>
+  </gazebo>
+  <joint name="DOOR-UPPER-RIGHT" type="revolute">
+    <parent link="ROOT_link"/>
+    <child  link="CUPBOARD-BODYSET3_link"/>
+    <origin xyz="0.267 -0.763 1.355" rpy="0 -0 0 "/>
+    <axis   xyz="0 0 -1"/>
+    <limit lower="0" upper="1.5708" effort="100" velocity="0.5" />
+    <dynamics damping="0.2" friction="0" />
+  </joint>
+  <transmission type="pr2_mechanism_model/SimpleTransmission" name="DOOR-UPPER-RIGHT_trans" >
+    <actuator name="DOOR-UPPER-RIGHT_motor" />
+    <joint name="DOOR-UPPER-RIGHT" />
+    <mechanicalReduction>1</mechanicalReduction>
+  </transmission>
+  <gazebo reference="DOOR-UPPER-RIGHT">
+    <cfmDamping>0.4</cfmDamping>
+  </gazebo>
+  <joint name="DRAWER0" type="prismatic">
+    <parent link="ROOT_link"/>
+    <child  link="CUPBOARD-BODYSET8_link"/>
+    <origin xyz="0 0 0.145" rpy="0 -0 0 "/>
+    <axis   xyz="1 0 0"/>
+    <limit lower="0" upper="0.544" effort="100" velocity="0.01" />
+    <dynamics damping="0.2" friction="0" />
+  </joint>
+  <transmission type="pr2_mechanism_model/SimpleTransmission" name="DRAWER0_trans" >
+    <actuator name="DRAWER0_motor" />
+    <joint name="DRAWER0" />
+    <mechanicalReduction>1</mechanicalReduction>
+  </transmission>
+  <gazebo reference="DRAWER0">
+    <cfmDamping>0.4</cfmDamping>
+  </gazebo>
+  <joint name="DRAWER1" type="prismatic">
+    <parent link="ROOT_link"/>
+    <child  link="CUPBOARD-BODYSET7_link"/>
+    <origin xyz="0 0 0.445" rpy="0 -0 0 "/>
+    <axis   xyz="1 0 0"/>
+    <limit lower="0" upper="0.544" effort="100" velocity="0.01" />
+    <dynamics damping="0.2" friction="0" />
+  </joint>
+  <transmission type="pr2_mechanism_model/SimpleTransmission" name="DRAWER1_trans" >
+    <actuator name="DRAWER1_motor" />
+    <joint name="DRAWER1" />
+    <mechanicalReduction>1</mechanicalReduction>
+  </transmission>
+  <gazebo reference="DRAWER1">
+    <cfmDamping>0.4</cfmDamping>
+  </gazebo>
+  <joint name="DRAWER2" type="prismatic">
+    <parent link="ROOT_link"/>
+    <child  link="CUPBOARD-BODYSET6_link"/>
+    <origin xyz="0 0 0.679" rpy="0 -0 0 "/>
+    <axis   xyz="1 0 0"/>
+    <limit lower="0" upper="0.544" effort="100" velocity="0.01" />
+    <dynamics damping="0.2" friction="0" />
+  </joint>
+  <transmission type="pr2_mechanism_model/SimpleTransmission" name="DRAWER2_trans" >
+    <actuator name="DRAWER2_motor" />
+    <joint name="DRAWER2" />
+    <mechanicalReduction>1</mechanicalReduction>
+  </transmission>
+  <gazebo reference="DRAWER2">
+    <cfmDamping>0.4</cfmDamping>
+  </gazebo>
+  <joint name="DRAWER3" type="prismatic">
+    <parent link="ROOT_link"/>
+    <child  link="CUPBOARD-BODYSET5_link"/>
+    <origin xyz="0 -0.576 0.429" rpy="0 -0 0 "/>
+    <axis   xyz="1 0 0"/>
+    <limit lower="0" upper="0.544" effort="100" velocity="0.01" />
+    <dynamics damping="0.2" friction="0" />
+  </joint>
+  <transmission type="pr2_mechanism_model/SimpleTransmission" name="DRAWER3_trans" >
+    <actuator name="DRAWER3_motor" />
+    <joint name="DRAWER3" />
+    <mechanicalReduction>1</mechanicalReduction>
+  </transmission>
+  <gazebo reference="DRAWER3">
+    <cfmDamping>0.4</cfmDamping>
+  </gazebo>
+  <joint name="DRAWER4" type="prismatic">
+    <parent link="ROOT_link"/>
+    <child  link="CUPBOARD-BODYSET4_link"/>
+    <origin xyz="0 0.576 0.145" rpy="0 -0 0 "/>
+    <axis   xyz="1 0 0"/>
+    <limit lower="0" upper="0.544" effort="100" velocity="0.01" />
+    <dynamics damping="0.2" friction="0" />
+  </joint>
+  <transmission type="pr2_mechanism_model/SimpleTransmission" name="DRAWER4_trans" >
+    <actuator name="DRAWER4_motor" />
+    <joint name="DRAWER4" />
+    <mechanicalReduction>1</mechanicalReduction>
+  </transmission>
+  <gazebo reference="DRAWER4">
+    <cfmDamping>0.4</cfmDamping>
+  </gazebo>
+  <!-- Used for fixing robot to Gazebo 'base_link' -->
+  <link name="world"/>
+  <joint name="fixed" type="fixed">
+    <parent link="world"/>
+    <child link="ROOT_link"/>
+  </joint>
+</robot>

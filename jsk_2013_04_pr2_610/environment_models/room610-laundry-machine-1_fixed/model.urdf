@@ -1,0 +1,115 @@
+<?xml version="1.0"?>
+<robot name="room610-laundry-machine-1-robot_fixed"
+       xmlns:xi="http://www.w3.org/2001/XInclude"
+       >
+  <gazebo>
+    <static>false</static>
+  </gazebo>
+  <link name="B0_link">
+    <visual>
+      <origin xyz="0 0 0" rpy="0 -0 0"/>
+      <geometry>
+        <mesh filename="model://room610-laundry-machine-1/meshes/B0_link_mesh.dae" scale="1 1 1" />
+      </geometry>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 -0 0"/>
+      <geometry>
+        <mesh filename="model://room610-laundry-machine-1/meshes/B0_link_mesh.dae" scale="1 1 1" />
+      </geometry>
+    </collision>
+    <inertial>
+      <mass value="0.001" />
+      <origin xyz="0 0 0" rpy="0 -0 0"/>
+      <inertia ixx="1e-03" ixy="0" ixz="0" iyy="1e-03" iyz="0" izz="1e-03"/>
+    </inertial>
+  </link>
+  <gazebo reference="B0_link">
+    <mu1>0.9</mu1>
+    <mu2>0.9</mu2>
+  </gazebo>
+  <link name="CAP_link">
+    <visual>
+      <origin xyz="0.64 -0.21 0.77" rpy="1.86187e-16 1.22173 2.65903e-16"/>
+      <geometry>
+        <mesh filename="model://room610-laundry-machine-1/meshes/CAP_link_mesh.dae" scale="1 1 1" />
+      </geometry>
+    </visual>
+    <collision>
+      <origin xyz="0.64 -0.21 0.77" rpy="1.86187e-16 1.22173 2.65903e-16"/>
+      <geometry>
+        <mesh filename="model://room610-laundry-machine-1/meshes/CAP_link_mesh.dae" scale="1 1 1" />
+      </geometry>
+    </collision>
+    <inertial>
+      <mass value="0.001" />
+      <origin xyz="0 0 0" rpy="0 -0 0"/>
+      <inertia ixx="1e-09" ixy="-1.00914e-41" ixz="0" iyy="1e-09" iyz="2.29589e-41" izz="1e-09"/>
+    </inertial>
+  </link>
+  <gazebo reference="CAP_link">
+    <mu1>0.9</mu1>
+    <mu2>0.9</mu2>
+  </gazebo>
+  <link name="BUTTON_link">
+    <visual>
+      <origin xyz="0.6 0.24 0.93" rpy="-9.61482e-17 1.0472 -5.55112e-17"/>
+      <geometry>
+        <mesh filename="model://room610-laundry-machine-1/meshes/BUTTON_link_mesh.dae" scale="1 1 1" />
+      </geometry>
+    </visual>
+    <collision>
+      <origin xyz="0.6 0.24 0.93" rpy="-9.61482e-17 1.0472 -5.55112e-17"/>
+      <geometry>
+        <mesh filename="model://room610-laundry-machine-1/meshes/BUTTON_link_mesh.dae" scale="1 1 1" />
+      </geometry>
+    </collision>
+    <inertial>
+      <mass value="0.001" />
+      <origin xyz="0 0 0" rpy="0 -0 0"/>
+      <inertia ixx="1e-09" ixy="-3.13302e-42" ixz="-9.86076e-32" iyy="1e-09" iyz="0" izz="1e-09"/>
+    </inertial>
+  </link>
+  <gazebo reference="BUTTON_link">
+    <mu1>0.9</mu1>
+    <mu2>0.9</mu2>
+  </gazebo>
+  <joint name="JOINT0" type="revolute">
+    <parent link="B0_link"/>
+    <child  link="CAP_link"/>
+    <origin xyz="0.64 -0.21 0.77" rpy="1.86187e-16 1.22173 2.65903e-16 "/>
+    <axis   xyz="1 0 0"/>
+    <limit lower="0" upper="3.14159" effort="100" velocity="0.5" />
+    <dynamics damping="0.2" friction="0" />
+  </joint>
+  <transmission type="pr2_mechanism_model/SimpleTransmission" name="JOINT0_trans" >
+    <actuator name="JOINT0_motor" />
+    <joint name="JOINT0" />
+    <mechanicalReduction>1</mechanicalReduction>
+  </transmission>
+  <gazebo reference="JOINT0">
+    <cfmDamping>0.4</cfmDamping>
+  </gazebo>
+  <joint name="JOINT1" type="prismatic">
+    <parent link="B0_link"/>
+    <child  link="BUTTON_link"/>
+    <origin xyz="0.6 0.24 0.93" rpy="-9.61482e-17 1.0472 -5.55112e-17 "/>
+    <axis   xyz="0 0 1"/>
+    <limit lower="-0.09" upper="0.09" effort="100" velocity="0.01" />
+    <dynamics damping="0.2" friction="0" />
+  </joint>
+  <transmission type="pr2_mechanism_model/SimpleTransmission" name="JOINT1_trans" >
+    <actuator name="JOINT1_motor" />
+    <joint name="JOINT1" />
+    <mechanicalReduction>1</mechanicalReduction>
+  </transmission>
+  <gazebo reference="JOINT1">
+    <cfmDamping>0.4</cfmDamping>
+  </gazebo>
+  <!-- Used for fixing robot to Gazebo 'base_link' -->
+  <link name="world"/>
+  <joint name="fixed" type="fixed">
+    <parent link="world"/>
+    <child link="B0_link"/>
+  </joint>
+</robot>
