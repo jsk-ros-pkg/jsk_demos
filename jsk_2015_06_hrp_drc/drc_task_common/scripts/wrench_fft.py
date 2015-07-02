@@ -19,7 +19,7 @@ from drc_task_common.msg import Float32ArrayStamped
 stored_force_x = []
 stored_force_y = []
 stored_force_z = []
-N = 128
+N = 64
 
 def wrench_cb(wrench_msg):
     global stored_data_x

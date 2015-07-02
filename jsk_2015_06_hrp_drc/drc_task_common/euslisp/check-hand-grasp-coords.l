@@ -32,7 +32,7 @@
     )) ;; over write!!
 (defun insert-model ()
   (insert-primitive-marker :shape-type jsk_rviz_plugins::TransformableMarkerOperate::*MESH_RESOURCE* :name "drill" :description "" :resource "package://drc_task_common/models/takenoko_drill.dae" :use-material t)
-  (set-primitive-marker-pose (make-coords :pos (float-vector 50 25 140) :rpy (list (deg2rad 180) 0 pi)) "rarm_end_coords")
+  (set-primitive-marker-pose (make-coords :pos (float-vector 50 2 140) :rpy (list (deg2rad 180) 0 pi)) "rarm_end_coords")
   )
 (warn ";;
 ;; (insert-model)

@@ -23,34 +23,30 @@ class LocalPlanner{
 private:
   ros::NodeHandle n;
   ros::Subscriber point_sub;
-  ros::Subscriber steering_sub;
   ros::Subscriber goal_sub;
-  ros::Subscriber stepon_gaspedal_sub;
+  ros::Subscriber stepon_flag_sub;
   ros::Publisher point_pub;
   ros::Publisher steering_with_index_pub;
   ros::Publisher steering_pub;
 
-  // ros::Publisher torso_yaw_pub;
   pcl::PointCloud<pcl::PointXYZ>::Ptr cloud;
-  double steering_state;
   double goal_ang;
-  bool stepon_gaspedal;
+  bool stepon_flag;
   double steering_output_ave;
   std::deque<double> steering_output;
-  sensor_msgs::PointCloud2 pub_msg; // for debug
+  sensor_msgs::PointCloud2 pub_msg;
   boost::mutex mutex;
   dynamic_reconfigure::Server<drc_task_common::LocalPlannerParamsConfig> server;
   dynamic_reconfigure::Server<drc_task_common::LocalPlannerParamsConfig>::CallbackType f;
   double delta_max;
   double delta_min;
   std::vector<double> option_delta;
-  double s_inc;
+  double delta_inc;
   int grasp_zero_index;
   double grasp_zero_angle;
   double a;
   double b;
   double play;
-  
   double alpha_max;
   double alpha_min;
   bool empty_flag;
@@ -73,16 +69,14 @@ private:
 public:
   LocalPlanner(){
     ROS_INFO("START SUBSCRIBING");
-    point_sub = n.subscribe("points", 1, &LocalPlanner::local_planner_cb, this);
-    steering_sub = n.subscribe("steering", 1, &LocalPlanner::steering_cb, this);
+    point_sub = n.subscribe("obstacle_points", 1, &LocalPlanner::local_planner_cb, this);
     goal_sub = n.subscribe("goal_dir", 1, &LocalPlanner::goal_dir_cb, this);
-    stepon_gaspedal_sub = n.subscribe("real_robot/stepon_gaspedal", 1, &LocalPlanner::stepon_gaspedal_cb, this);
+    stepon_flag_sub = n.subscribe("stepon_gaspedal/flag", 1, &LocalPlanner::stepon_flag_cb, this);
 
-    point_pub = n.advertise<sensor_msgs::PointCloud2>("curve_path/points2", 1);
-    steering_with_index_pub = n.advertise<drc_task_common::Int8Float64>("local_planner/steering/index_cmd", 1);
-    steering_pub = n.advertise<std_msgs::Float64>("local_planner/steering/cmd", 1);
-    // torso_yaw_pub = n.advertise<std_msgs::Float64>("/look_around_angle", 1);
-    steering_state = 0.0;
+    point_pub = n.advertise<sensor_msgs::PointCloud2>("visualize_path/points2", 1);
+    steering_with_index_pub = n.advertise<drc_task_common::Int8Float64>("local_planner/cmd_with_path_num", 1);
+    steering_pub = n.advertise<std_msgs::Float64>("local_planner/steering_cmd", 1);
+
     empty_flag = true;
     steering_output_ave = 0.0;
     n.param("alpha_max", alpha_max, 1.85*M_PI/3.0); // 111[deg]
@@ -91,8 +85,8 @@ public:
     n.param("field_of_vision", field_of_vision, 80);
     n.param("wheelbase", wheelbase, 2.05);
     n.param("tread", tread, 1.4);
-    
-    stepon_gaspedal = false;
+
+    stepon_flag = false;
     f = boost::bind(&LocalPlanner::dynamic_reconfigure_cb, this, _1, _2);
     server.setCallback(f);
 
@@ -104,63 +98,57 @@ public:
 
     grasp_zero_index = (path_num + 1) / 2;
     steering_output_gain = 1.0;
-    
+
     a = 0.0258676;
     play = 0.60952311;
     b = - a * play;
 
     delta_max = std::asin(wheelbase * (a*alpha_max+b));
     delta_min = std::asin(wheelbase * (a*alpha_min-b));
-    s_inc = (delta_max - delta_min) / (double)(path_num - 1);
-    
+    delta_inc = (delta_max - delta_min) / (double)(path_num - 1);
+
     for (int i=0; i <= path_num; i++) {
       if (i == 0) {
-	option_delta.push_back(delta_max);
+        option_delta.push_back(delta_max);
       }
-      option_delta.push_back(delta_max - s_inc * (i-1));
+      option_delta.push_back(delta_max - delta_inc * (i-1));
     }
   }
   ~LocalPlanner(){
   }
   
   
-  /* dynamic_reconfigure for parameter tuning */
+ /* dynamic_reconfigure for parameter tuning */
   void dynamic_reconfigure_cb(drc_task_common::LocalPlannerParamsConfig &config, uint32_t level) {
     // set visualize_path
     if (config.visualize_path <= path_num) {
       visualize_path = config.visualize_path;
-      ROS_INFO("visualize_path = %d", config.visualize_path);
+      // ROS_INFO("visualize_path = %d", config.visualize_path);
     } else {
       visualize_path = 1;
-      ROS_INFO("The number of path is not more than %d, so default(1) is set as visualize_path", config.visualize_path);
+      // ROS_INFO("The number of path is not more than %d, so default(1) is set as visualize_path", config.visualize_path);
     }
     // set path_margin
     path_margin = config.path_margin;
-    ROS_INFO("path_margin = %f", config.path_margin);
+    // ROS_INFO("path_margin = %f", config.path_margin);
     // set steering_curvature_slope_gain
     steering_output_gain = config.steering_output_gain;
-    ROS_INFO("steering_output_gain = %f", config.steering_output_gain);
+    // ROS_INFO("steering_output_gain = %f", config.steering_output_gain);
     // set empty_factor
     empty_factor = config.empty_factor;
-    ROS_INFO("empty_factor = %f", config.empty_factor);
+    // ROS_INFO("empty_factor = %f", config.empty_factor);
     // set difference factor
     xi = config.difference_factor;
-    ROS_INFO("difference_factor = %f", config.difference_factor);
+    // ROS_INFO("difference_factor = %f", config.difference_factor);
     // set heading_factor
     eta = config.heading_factor;
-    ROS_INFO("heading_factor = %f", config.heading_factor);
+    // ROS_INFO("heading_factor = %f", config.heading_factor);
     // set distance_factor
     zeta = config.distance_factor;
-    ROS_INFO("distance_factor = %f", config.distance_factor);
+    // ROS_INFO("distance_factor = %f", config.distance_factor);
     // set queue_size
     queue_size = config.queue_size;
-    ROS_INFO("queue_size = %d\n\n", config.queue_size);
-  }
-  
-  
-  /* callback if /hand_wheel/state is subscribed */
-  void steering_cb(const std_msgs::Float64ConstPtr& msg){
-    steering_state = msg->data;
+    // ROS_INFO("queue_size = %d\n\n", config.queue_size);
   }
   
   
@@ -170,9 +158,9 @@ public:
   }
   
   
-  /* callback if /stepon_gaspedal is subscribed */
-  void stepon_gaspedal_cb(const std_msgs::BoolConstPtr& msg){
-    stepon_gaspedal = msg->data;
+  /* callback if /stepon_flag is subscribed */
+  void stepon_flag_cb(const std_msgs::BoolConstPtr& msg){
+    stepon_flag = msg->data;
   }
   
   
@@ -196,10 +184,8 @@ public:
       return;
     }
     
-    double steering = steering_state;
     std::vector<double> obstacle_length(path_num+1);
     std::vector<double> cost(path_num+1);
-    
     
     for (int i=1; i <= path_num; i++) {
       double radius;
@@ -222,14 +208,14 @@ public:
       center_point.y = (double)sign * std::sqrt(radius*radius - wheelbase*wheelbase);
       center_point.z = 0.0;
       
-      ROS_INFO("i=%d, s=%f, radius=%f, center_point=(%.3f, %.3f, 0)", i, option_delta[i], radius, center_point.x, center_point.y);
+      // ROS_INFO("i=%d, s=%f, radius=%f, center_point=(%.3f, %.3f, 0)", i, option_delta[i], radius, center_point.x, center_point.y);
       obstacle_length[i] = kdtree_curve(cloud, center_point, std::fabs(radius));
 
       if (i == visualize_path) {
         if (empty_flag == false) {
           point_pub.publish(pub_msg);
         } else {
-          ROS_INFO("\nPath %d has no points, this cannot be published.\n", visualize_path);
+          // ROS_INFO("\nPath %d has no points, this cannot be published.\n", visualize_path);
         }
       }
     }
@@ -252,16 +238,12 @@ public:
 
     ROS_INFO("\n\n          Path %d, cost = %lf\n\n", ret_idx, cost_max);
 
-    if (stepon_gaspedal != true) {
+    if (stepon_flag == true) {
       // change queue steering output data
       if (steering_output.size() >= queue_size) {
         steering_output.pop_front();
       }
-      //steering_output.push_back( (double)(s_inc*(grasp_zero_index-ret_idx)));
       steering_output.push_back(delta2alpha_transformation(option_delta[ret_idx]));
-    } else {
-      // send joint trajectory to STARO
-      // yaw_flag
     }
 
     // calculate averaged steering angle for 10-frame
@@ -273,7 +255,7 @@ public:
     if (steering_output.size()==0) {
       return;
     }
-    ROS_INFO("deque.size() = %ld", steering_output.size());
+    // ROS_INFO("deque.size() = %ld", steering_output.size());
     steering_output_ave = (double)steering_output_ave / steering_output.size() * steering_output_gain;
     
     
@@ -309,9 +291,9 @@ public:
 
     delta_max = alpha2delta_transformation(alpha_max);
     delta_min = alpha2delta_transformation(alpha_min);
-    s_inc = (delta_max - delta_min) / (double)(path_num - 1);
+    delta_inc = (delta_max - delta_min) / (double)(path_num - 1);
     
-    ROS_INFO("delta_max = %f, delta_min = %f, s_inc = %f", delta_max, delta_min, s_inc);
+    // ROS_INFO("delta_max = %f, delta_min = %f, delta_inc = %f", delta_max, delta_min, delta_inc);
     
     option_delta[0] = delta_max;
     option_delta[1] = delta_max;
@@ -319,7 +301,7 @@ public:
       if (i == grasp_zero_index) {
         option_delta[i] = 0;
       }else {
-        option_delta[i] = option_delta[i-1] - s_inc;
+        option_delta[i] = option_delta[i-1] - delta_inc;
       }
     }
 
@@ -433,8 +415,8 @@ public:
     }
 
     if (curve_temp->points.size() == 0) {
-      ROS_INFO("curve_temp->points.size() = 0");
-      ROS_INFO("nearest_dist is empty path length, which means %lf", empty_path_length);
+      // ROS_INFO("curve_temp->points.size() = 0");
+      // ROS_INFO("nearest_dist is empty path length, which means %lf", empty_path_length);
       empty_flag = true;
       return (empty_factor * empty_path_length);
     }
@@ -459,15 +441,15 @@ public:
       curve->height = 1;
       curve->width = curve->points.size();
     } else {
-      ROS_INFO("Cannot make kdtree (within range) because there are no points.");
-      ROS_INFO("nearest_dist is empty path length, which means %lf", empty_path_length);
+      // ROS_INFO("Cannot make kdtree (within range) because there are no points.");
+      // ROS_INFO("nearest_dist is empty path length, which means %lf", empty_path_length);
       empty_flag = true;
       return (empty_factor * empty_path_length);
     }
 
     if (curve->points.size() == 0) {
-      ROS_INFO("curve->points.size() = 0");
-      ROS_INFO("nearest_dist is empty path length, which means %lf", empty_path_length);
+      // ROS_INFO("curve->points.size() = 0");
+      // ROS_INFO("nearest_dist is empty path length, which means %lf", empty_path_length);
       empty_flag = true;
       return (empty_factor * empty_path_length);
     }
@@ -486,7 +468,7 @@ public:
 
     if (kdtree_nearest_dist.nearestKSearch(car_front, 1, KNN_Index, KNN_SqDist) > 0) {
       nearest_dist = std::sqrt(KNN_SqDist[0]);
-      ROS_INFO("nearest_dist=%lf", nearest_dist);
+      // ROS_INFO("nearest_dist=%lf", nearest_dist);
     }
     double nearest_arc = calc_chord2arc(nearest_dist, r);
 
@@ -543,9 +525,9 @@ public:
     double difference = ((alpha_max - alpha_min) - std::fabs(current_steering - option_steering))/(double)(alpha_max - alpha_min);
     double heading = (2 * M_PI - std::fabs(option_delta - goal)) / (2 * M_PI);
     
-    ROS_INFO("difference  = %f, difference * factor = %f", difference, xi*difference);
-    ROS_INFO("abs(option_delta - goal) = %f, heading  = %f, eta * heading = %f", std::fabs(option_delta-goal), heading, eta*heading);
-    ROS_INFO("obstacle  = %f, zeta * obstacle = %f", obstacle, zeta*obstacle);
+    // ROS_INFO("difference  = %f, difference * factor = %f", difference, xi*difference);
+    // ROS_INFO("abs(option_delta - goal) = %f, heading  = %f, eta * heading = %f", std::fabs(option_delta-goal), heading, eta*heading);
+    // ROS_INFO("obstacle  = %f, zeta * obstacle = %f", obstacle, zeta*obstacle);
     double cost = xi * difference + eta * heading + zeta * obstacle;
     ROS_INFO("cost=%lf", cost);
     return cost;

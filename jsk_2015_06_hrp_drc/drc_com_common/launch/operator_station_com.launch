@@ -8,8 +8,13 @@
   <arg name="DYNAMIC_RECONFIGURE_PORT" default="703"/>
   <arg name="EUS_OUTPUT_PORT" default="704"/>
   <arg name="EUS_INPUT_PORT" default="705"/>
+  <arg name="OCS_TO_FC_VEHICLE_PORT" default="706"/>
+  <arg name="FC_TO_OCS_VEHICLE_PORT" default="707"/>
 
   <arg name="USE_FLOAT_JOINT_ANGLES" default="true" />
+  <remap from="/tf" to="/ocs/tf" />
+  <remap from="/joint_states" to="/ocs/joint_states" />
+  <remap from="/robot_description" to="/ocs/robot_description" />
   <node pkg="jsk_network_tools" type="silverhammer_highspeed_receiver.py"
         output="log"
         name="highspeed_receiver">
@@ -18,16 +23,38 @@
       topic_prefix: "/ocs"
       receive_ip: "0.0.0.0"
       receive_port: 16485
-      bandwidth: 80000000
+      send_rate: 10
+      packet_size: 1472
+      fragment_packets_torelance: 0
+      timestamp_overwrite_topics: ["/ocs/communication/locomotion_cloud", "/ocs/communication/normal_flip_cloud"]
+      publish_only_if_updated_topics: ["/ocs/communication/locomotion_cloud", "/ocs/communication/normal_flip_cloud"]
+    </rosparam>
+  </node>
+  <node pkg="jsk_network_tools" type="silverhammer_highspeed_receiver.py"
+        output="log"
+        name="highspeed_receiver_reliable" if="false">
+    <rosparam>
+      message: drc_com_common/FC2OCSLargeReliable
+      topic_prefix: "/ocs"
+      receive_ip: "0.0.0.0"
+      receive_port: 16486
+      send_rate: 10
+      packet_size: 1472
+      pesimistic: true
+      fragment_packets_torelance: 0
+      timestamp_overwrite_topics: ["/ocs/communication/locomotion_cloud", "/ocs/communication/normal_flip_cloud"]
+      publish_only_if_updated_topics: ["/ocs/communication/locomotion_cloud", "/ocs/communication/normal_flip_cloud"]
     </rosparam>
   </node>
   <node pkg="jsk_network_tools" type="silverhammer_lowspeed_receiver.py"
         output="log" launch-prefix="sudo"
         name="ocs_from_fc_low_speed">
     <rosparam subst_value="true">
+      
       message: drc_com_common/FC2OCSSmall
       receive_port: $(arg FC_TO_OCS_PORT)
       receive_ip: "0.0.0.0"
+      receive_buffer_size: 600
     </rosparam>
   </node>
 
@@ -38,6 +65,7 @@
       message: drc_com_common/FC2OCSBasicInfoSmall
       receive_port: $(arg FC_TO_OCS_BASIC_PORT)
       receive_ip: "0.0.0.0"
+      receive_buffer_size: 600
     </rosparam>
   </node>
 
@@ -61,7 +89,6 @@
       robot: hrp2jsknts
     </rosparam>
   </node>
-
   <node pkg="jsk_network_tools" type="silverhammer_lowspeed_streamer.py"
         output="log"
         name="ocs_to_fc_reconfigure" launch-prefix="sudo">
@@ -69,14 +96,37 @@
       message: drc_task_common/DRCParametersMessage
       to_port: $(arg DYNAMIC_RECONFIGURE_PORT)
       to_ip: $(arg FC_IP)
-      event_driven: true      
+      event_driven: true
     </rosparam>
   </node>
+
+  <!-- for vehicle task -->
+  <node pkg="jsk_network_tools" type="silverhammer_lowspeed_receiver.py"
+        output="log" launch-prefix="sudo"
+        name="ocs_from_fc_vehicle">
+    <rosparam subst_value="true">
+      message: drc_com_common/VehicleFC2OCSSmall
+      receive_port: $(arg FC_TO_OCS_VEHICLE_PORT)
+      receive_ip: "0.0.0.0"
+    </rosparam>
+  </node>
+  <node pkg="jsk_network_tools" type="silverhammer_lowspeed_streamer.py"
+        output="log"
+        name="ocs_to_fc_vehicle">
+    <rosparam subst_value="true">
+      message: drc_com_common/VehicleOCS2FCSmall
+      to_port: $(arg OCS_TO_FC_VEHICLE_PORT)
+      to_ip: $(arg FC_IP)
+      event_driven: true
+    </rosparam>
+  </node>
+  
+  
   <include file="$(find roseus_remote)/launch/roseus_eusclient.launch">
     <arg name="FC_IP" value="$(arg FC_IP)" />
     <arg name="OCS_IP" value="$(arg OCS_IP)" />
     <arg name="EUS_INPUT_PORT" value="$(arg EUS_INPUT_PORT)" />
     <arg name="EUS_OUTPUT_PORT" value="$(arg EUS_OUTPUT_PORT)" />
     <arg name="LAUNCH_PREFIX" value="sudo" />
-  </include>  
+  </include>
 </launch>

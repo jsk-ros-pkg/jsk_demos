@@ -1,0 +1,10 @@
+- direction: 'vertical'
+- name: 'Start stair'
+  service: 'start_stair'
+  column: 0
+- name: 'Go Stair Pose'
+  service: 'stair_pose'
+  column: 0
+- name: 'End stair'
+  service: 'end_stair'
+  column: 0

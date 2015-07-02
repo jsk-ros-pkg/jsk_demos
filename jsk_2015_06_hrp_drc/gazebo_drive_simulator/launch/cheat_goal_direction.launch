@@ -1,8 +1,7 @@
 <launch>
   <!-- publish goal direction using /ground_truth_odom -->
   <node pkg="gazebo_drive_simulator" type="CheatGoalDirection.py" name="cheat_goal_direction" output="screen" >
-    <remap from="cheat_goal_dir/ang" to="/cheat_goal_dir/ang" />
-    <remap from="cheat_goal/point" to="/move_base_simple/goal" />
-    <remap from="cheat_goal_dir/marker" to="/cheat_goal_dir/marker" />
+    <remap from="cheat_goal_dir/ang" to="/drive/recognition/local_planner/goal_direction" />
+    <remap from="cheat_goal_dir/marker" to="/drive/recognition/cheat_goal_dir/marker" />
   </node>
 </launch>

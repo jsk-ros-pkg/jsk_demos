@@ -14,18 +14,16 @@
   (:init
    (&key ((:real tmp-real) nil) ((:motion tmp-motion) nil)
          ((:rate tmp-ros-rate) 10.0) (roseus-init t)
-         (approach-handle nil) (approach-pedal nil)
          )
    (when roseus-init
      (ros::roseus "staro_driving_controller")
      (ros::rate tmp-ros-rate)
      )
    (unless tmp-motion
-     (setq tmp-motion (instance staro-driving-motion :init :real tmp-real))
+     (setq tmp-motion (instance staro-driving-motion :init :real nil))
      )
    (send-super :init :real tmp-real :motion tmp-motion
                :rate tmp-ros-rate :roseus-init nil
-               :approach-handle approach-handle :approach-pedal approach-pedal
                )
    )
   )

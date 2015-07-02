@@ -1,0 +1,6 @@
+<launch>
+  <machine name="localhost" address="localhost" />
+  <arg name="MACHINE" default="localhost" />
+  <!-- create TF between map and odom -->
+  <node ns="/drive/recognition" pkg="tf" type="static_transform_publisher" name="TF_multisense_car_center" args="-0.070134 -0.429448 -0.806884 -0.096 0.033 -0.022 BODY car_center 10"/>
+</launch>

@@ -1,0 +1,106 @@
+<launch>
+  <arg name="INPUT_POINT_CLOUD" default="/multisense/organized_image_points2_color" />
+  <arg name="PASS_THROUGH" default="true" />
+  <group ns="drill_recognition_for_drill">
+    <node pkg="nodelet" type="nodelet" name="manager" args="manager" output="screen"/>
+    <node if="$(arg PASS_THROUGH)" pkg="nodelet" type="nodelet"
+          name="passthrough"
+          args="load jsk_topic_tools/Passthrough manager">
+      <remap from="~input" to="$(arg INPUT_POINT_CLOUD)" />
+    </node>
+    <node unless="$(arg PASS_THROUGH)" pkg="nodelet" type="nodelet" 
+	  name="passthrough"
+	  args="load jsk_topic_tools/Relay manager">
+      <remap from="~input" to="$(arg INPUT_POINT_CLOUD)" />
+    </node>
+
+    <node pkg="nodelet" type="nodelet"
+          name="gsensor_cloud"
+          args="load jsk_pcl/TfTransformCloud manager">
+      <remap from="~input" to="passthrough/output" />
+      <rosparam>
+        target_frame_id: ground
+      </rosparam>
+    </node>
+    <node pkg="nodelet" type="nodelet"
+          name="z_filter"
+          args="load pcl/PassThrough manager">
+      <remap from="~input" to="gsensor_cloud/output" />
+      <rosparam>
+        filter_field_name: z
+        filter_limit_negative: false
+        filter_limit_min: 0.6
+        filter_limit_max: 1.0
+        keep_organized: true
+      </rosparam>
+    </node>
+    <node pkg="nodelet" type="nodelet"
+	  name="multi_plane_estimate"
+	  arg="load jsk_pcl/OrganizedMultiPlaneSegmentation manager" >
+      <remap from="~input" to="z_filter/output"/>
+      <rosparam>
+        min_size: 500
+      </rosparam>
+    </node>
+    <node pkg="nodelet" type="nodelet"
+	  name="plane_extraction"
+	  args="load jsk_pcl/MultiPlaneExtraction manager"
+	  output="screen">
+      <remap from="~input" to="z_filter/output" />
+      <remap from="~input_polygons" to="plane_rejector/output_polygons" />
+      <remap from="~input_coefficients" to="plane_rejector/output_coefficients" />
+      <rosparam>
+        use_indices: false
+      </rosparam>
+    </node>
+    <node pkg="nodelet" type="nodelet" name="plane_rejector"
+	  args="load jsk_pcl/PlaneRejector manager">
+      <remap from="~input_polygons" to="multi_plane_estimate/output_refined_polygon" />
+      <remap from="~input_coefficients" to="multi_plane_estimate/output_refined_coefficients" />
+      <rosparam>
+        processing_frame_id: ground
+        reference_axis: [0, 0, 1]
+      </rosparam>
+    </node>
+    <node pkg="nodelet" type="nodelet" name="euclidean_clustering"
+	  args="load jsk_pcl/EuclideanClustering manager" output="screen">
+      <remap from="~input" to="plane_extraction/output" />
+      <rosparam>
+        tolerance: 0.02
+        min_size: 100
+        angle_thr: 0.5
+      </rosparam>
+    </node>
+    
+    <node pkg="nodelet" type="nodelet"
+	  name="cluster_decomposer"
+	  args="load jsk_pcl/ClusterPointIndicesDecomposer manager"
+	  output="screen">
+      <remap from="~input" to="plane_extraction/output" />
+      <remap from="~target" to="euclidean_clustering/output" />
+      <remap from="~align_planes"
+	     to="plane_rejector/output_polygons" />
+      <remap from="~align_planes_coefficients"
+	     to="plane_rejector/output_coefficients" />
+      <rosparam>
+        align_boxes: true
+        use_pca: true
+        publish_clouds: false
+        publish_tf: false
+        publish_tf: false
+      </rosparam>
+    </node>
+    <node pkg="drc_task_common" type="standing_drill_detector"
+          name="standing_drill_detector" output="screen">
+      <remap from="~input" to="plane_extraction/output" />
+      <remap from="~input/box_array" to="cluster_decomposer/boxes" />
+      <remap from="~input/indices" to="euclidean_clustering/output" />
+    </node>
+    <node pkg="jsk_topic_tools" type="snapshot" name="snapshot_cloud_for_save">
+      <remap from="~input" to="standing_drill_detector/output/pose"/>
+      <rosparam>
+        latch: true
+      </rosparam>
+    </node>
+  </group>
+</launch>

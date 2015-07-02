@@ -1,0 +1,64 @@
+<launch>
+  <arg name="REFINE_FOOTSTEP" default="true" />
+  <remap from="/tf" to="/ocs/tf" />
+  <remap from="/joint_states" to="/ocs/joint_states" />
+  <remap from="/robot_description" to="/ocs/robot_description" />
+  <group>
+    <!-- Footstep planner -->
+    <node pkg="jsk_footstep_planner"
+          type="footstep-planner-node.l"
+          name="footstep_planner"
+          respawn="true"
+          cwd="node"
+          output="screen">
+      <rosparam command="load" file="$(find jsk_footstep_controller)/config/$(env ROBOT).yaml" />
+      <remap from="planes" to="/ocs/env_server/occlusion_result_polygons" />
+      <rosparam subst_value="true">
+        use_planes: false
+        use_env_server: true
+        use_gui: true
+        timeout: 20.0
+        global_frame_id: ground
+      </rosparam>
+      <remap from="grid_maps" to="/ocs/env_server/output" />
+      <remap from="footstep_planner/result" to="footstep_planner/result_non_refined" if="$(arg REFINE_FOOTSTEP)"/>
+    </node>
+    <!-- marker -->
+    <node pkg="jsk_interactive_marker"
+          type="footstep_marker"
+          name="footstep_marker"
+          output="screen"
+          >
+      <remap from="/lookaround_ground" to="terrain_lookground" />
+      <remap from="footstep_controller" to="ocs_footstep_controller" />
+      <remap from="~grid_arrays" to="/ocs/env_server/output" />
+      <remap from="~planes_coefficients" to="/locomotion/plane_concatenator/output/coefficients" />
+      <!-- <remap from="move_marker" to="$(arg POSE_REMAP)" /> -->
+      <!-- <param name="wait_snapit_server" value="false" /> -->
+      <rosparam command="load" file="$(find jsk_footstep_controller)/config/$(env ROBOT).yaml" />
+      <remap from="project_footprint" to="/footstep_planner/project_footprint" />
+      <rosparam>
+        use_plane_snap: true
+        use_projection_service: true
+        use_projection_topic: false
+        use_footstep_planner: true
+        use_footstep_controller: true
+        use_initial_footstep_tf: true
+        initial_reference_frame: '/ground'
+        # HRP2JSK
+        foot_size_x: 0.235
+        lfoot_offset: [0.02, 0.01, -0.105, 0, 0, 0, 1]
+        rfoot_offset: [0.02, -0.01, -0.105, 0, 0, 0, 1]
+        
+        foot_size_z: 0.01
+      </rosparam>
+      <param name="frame_id" value="/ground" />
+
+    </node>
+    <node pkg="jsk_footstep_controller" type="footstep-refinement.l"
+          name="footstep_refinement" if="$(arg REFINE_FOOTSTEP)">
+      <remap from="planner_result" to="footstep_planner/result_non_refined"/>
+      <remap from="refined_footstep_result" to="footstep_planner/result" />
+    </node>
+  </group>
+</launch>

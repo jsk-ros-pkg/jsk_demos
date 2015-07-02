@@ -1,4 +1,5 @@
 <launch>
+  <group ns="stereo_preprocessing">
   <!-- stereo preprocessing -->
   <arg name="INPUT_POINT_CLOUD" default="/multisense/resize_1_4/points" />
   <!-- compute normal -->
@@ -33,4 +34,5 @@
       filter_limit_max: 100
     </rosparam>
   </node>
+  </group>
 </launch>

@@ -12,6 +12,7 @@
 (ros::roseus-add-srvs "jsk_interactive_marker")
 (ros::roseus-add-msgs "jsk_rviz_plugins")
 (ros::roseus-add-srvs "jsk_rviz_plugins")
+(ros::roseus-add-msgs "drc_task_common")
 (ros::roseus-add-srvs "drc_task_common")
 ;;(ros::load-ros-manifest "drc_task_common")
 (load "package://drc_task_common/euslisp/util.l")
@@ -41,15 +42,37 @@
                 drill-put-params
                 drill-wall-params
                 drill-wall-target-coords ;; list of coords
+                drill-stand-coords-list ;; list of (list symbol coords), base is odom_on_ground
+                drill-stand-coords-index ;; referenced stand coords
                 drill-button-params ;; (list coords)
+                drill-rotate-params
+                drill-grasp-relative-coords
+                drill-throw-flag
                 foreground-bacground-sync-obj
                 arm-mode ;; one of (:rarm-only :rarm-preferred :larm-preferred :larm-only)
-                valve-grasp-mode ;; one of (:edge-grasp-only :edge-grasp-preferred :center-grasp-preferred :center-grasp-only)
-                ;; For driving task
+                valve-grasp-mode ;; one of (:edge-grasp-only :edge-grasp-preferred :center-grasp-preferrned :center-grasp-only)
+                overwrite-stand-coords? ;; one of (:force :auto nil)
+                drill-rotate-num
+                door-name
+                door-reach-deg
+                door-keep-grasp?
+                force-overwrite-door-arm ;; one of (:force :auto)
+                ;; For driving taskot
                 latest-handle-angle
                 latest-accell-angle
                 show-text-buffer
+                ;;ocs-footstep-planner
+                ocs-footstep-controller
+                drill-arm-environment
                 ))
+
+;; (defun footstep-plan-execute-cb (server goal)
+;;   ;;(ros::ros-info "footstep-plan-execute-cb")
+;;   (send *app* :footstep-plan-execute-cb goal))
+
+(defun footstep-exec-execute-cb (server goal)
+  ;;(ros::ros-info "footstep-exec-execute-cb")
+  (send *app* :footstep-exec-execute-cb goal))
 
 (defmethod ocs-executive-app
   (:init ()
@@ -100,6 +123,10 @@
                 self :drill-button-recognition-finished-callback)
           (list drc_com_common::FC2OCSSmall::*DRILL_BUTTON_FINISHED*
                 self :drill-button-exec-finished-callback)
+          (list drc_com_common::FC2OCSSmall::*DRILL_ROTATE_POSE*
+                self :drill-rotate-recognition-finished-callback)
+          (list drc_com_common::FC2OCSSmall::*DRILL_ROTATE_FINISHED*
+                self :drill-rotate-exec-finished-callback)
           (list drc_com_common::FC2OCSSmall::*LOOK_AROUND_FINISHED*
                 self :look-around-finished-callback)
           (list drc_com_common::FC2OCSSmall::*RECOGNITION_FAILED*
@@ -109,17 +136,52 @@
           (list drc_com_common::FC2OCSSmall::*ANGLE_VECTOR_FINISHED*
                 self :angle-vector-finished-callback)
           (list drc_com_common::FC2OCSSmall::*REACH_UNTIL_TOUCH_FINISHED*
-                self :reach-until-touch-finished-callback))
+                self :reach-until-touch-finished-callback)
+          (list drc_com_common::FC2OCSSmall::*PROJECTED_FOOTSTEP*
+                self :projected-footstep-callback)
+          (list drc_com_common::FC2OCSSmall::*EXECUTE_FOOTSTEPS_FINISHED*
+                self :execute-footstep-finished-callback)
+          (list drc_com_common::FC2OCSSmall::*FOOTSTEP_PLANNING_FAILED*
+                self :footstep-planning-failed-callback)
+          (list drc_com_common::FC2OCSSmall::*FOOTSTEP_PLANNING_RESULT*
+                self :footstep-planning-result-callback)
+          (list drc_com_common::FC2OCSSmall::*LOOK_GROUND_FINISHED*
+                self :lookground-finished-callback)
+          )
     (setq smachine (make-ocs-state-machine))
     (send smachine :register-initial-hook self :initial-callback)
     (send smachine :go-to :initial) ;; force to move to initial state
     (setq arm-mode :rarm-preferred)
-    (setq overwrite-stand-coords? nil)
+    (setq overwrite-stand-coords? :auto)
+    (setq drill-wall-target-coords nil)
     (setq valve-grasp-mode :edge-grasp-preferred)
     (setq door-push/pull :push)
-    (setq door-name :drc-box2)
+    (setq door-name :drc-sagami)
+    (setq door-reach-deg 90)
+    (setq door-keep-grasp? nil)
+    (if (or (equal *robot-name* "HRP2JSKNTS") (equal *robot-name* "HRP2JSKNT"))
+        (setq drill-arm-environment :rarm)
+      (setq drill-arm-environment :larm)
+      )
+    (setq force-overwrite-door-arm :force)
     (send self :show-text "initialized" :success)
+    (setq drill-rotate-num 3)
+    (setq drill-stand-coords-index 0)
+    ;; (setq ocs-footstep-planner
+    ;;       (instance ros::simple-action-server :init
+    ;;                 "ocs_footstep_planner"
+    ;;                 jsk_footstep_msgs::PlanFootstepsAction
+    ;;                 :execute-cb 'footstep-plan-execute-cb))
+    (setq ocs-footstep-controller
+          (instance ros::simple-action-server :init
+                    "ocs_footstep_controller"
+                    jsk_footstep_msgs::ExecFootstepsAction
+                    :execute-cb 'footstep-exec-execute-cb))
     self)
+  (:spin-once 
+   ()
+   ;;(send ocs-footstep-planner :worker)
+   (send ocs-footstep-controller :worker))
   (:report-callback (msg)
     ;; do nothing
     )
@@ -235,10 +297,13 @@
       (send smachine :go-to :selecting-region-for-hose-connect))
     (send req :response))
   (:drill-grasp-button-callback (req)
-    (when (send smachine :next? :selecting-region-for-drill-grasp)
-      (send self :set-image-view2-mode :rectangle)
-      (send self :show-text "Select rectangle region for drill-grasp" :select)
-      (send smachine :go-to :selecting-region-for-drill-grasp))
+    (when (send smachine :next? :recognizing-drill-grasp-pose)
+      (send self :set-image-view2-mode :none)
+      (let ((fc-msg (instance drc_com_common::OCS2FCSmall :init)))
+        (send fc-msg :type drc_com_common::OCS2FCSmall::*DRILL_GRASP_REGION*) ;Should have another constant
+        (send self :show-text "recognizing drill grasp coords" :select)
+        (send self :send-to-fc fc-msg))
+      (send smachine :go-to :recognizing-drill-grasp-pose))
     (send req :response))
   (:drill-put-button-callback (req)
     (when (send smachine :next? :selecting-region-for-drill-put)
@@ -257,6 +322,12 @@
       (send self :set-image-view2-mode :rectangle)
       (send self :show-text "Select rectangle for drill-button ;; not implemented yet" :select)
       (send smachine :go-to :selecting-region-for-drill-button))
+    (send req :response))
+  (:drill-rotate-button-callback (req)
+    (when (send smachine :next? :selecting-region-for-drill-rotate)
+      (send self :set-image-view2-mode :rectangle)
+      (send self :show-text "Select rectangle region for drill-rotate" :select)
+      (send smachine :go-to :selecting-region-for-drill-rotate))
     (send req :response))
   (:go-pos-button-callback (req)
     (when (send smachine :next? :selecting-region-for-go-pos)
@@ -313,6 +384,10 @@
       (send self :rectangle-callback-for-drill-put-region msg))
      ((eq (send smachine :state) :selecting-region-for-drill-button)
       (send self :rectangle-callback-for-drill-button-region msg))
+     ((eq (send smachine :state) :selecting-region-for-drill-rotate)
+      (send self :rectangle-callback-for-drill-rotate-region msg))
+     (t
+       (send self :show-text "rectangle selected but no mean" :warn))
      ))
   (:rectangle-callback-for-valve-region (msg)
     (send self :show-text "Wait for valve recognition" :wait)
@@ -374,6 +449,7 @@
                                     msg (length (send fc-msg :image_roi_info))))
       (send self :send-to-fc fc-msg)
       (send smachine :go-to :recognizing-hose-connect-pose)))
+  ;; Deprecated
   (:rectangle-callback-for-drill-grasp-region (msg)
     (send self :show-text "Wait for drill-grasp recognition" :wait)
     ;; send to FC to recognize pos
@@ -401,6 +477,15 @@
                                     msg (length (send fc-msg :image_roi_info))))
       (send self :send-to-fc fc-msg)
       (send smachine :go-to :recognizing-drill-button-pose)))
+  (:rectangle-callback-for-drill-rotate-region (msg)
+    (send self :show-text "Wait for drill-rotate recognition" :wait)
+    ;; send to FC to recognize pos
+    (let ((fc-msg (instance drc_com_common::OCS2FCSmall :init)))
+      (send fc-msg :type drc_com_common::OCS2FCSmall::*DRILL_ROTATE_REGION*)
+      (send fc-msg :image_roi_info (rect-polygon-stamped-to-integer-vector
+                                    msg (length (send fc-msg :image_roi_info))))
+      (send self :send-to-fc fc-msg)
+      (send smachine :go-to :recognizing-drill-rotate-pose)))
   (:rectangle-callback-for-go-pos-region (msg)
     (send self :show-text "Wait for go-pos recognition" :wait)
     ;; send to FC to recognize pos
@@ -454,6 +539,8 @@
       (send smachine :go-to :initial))
      ((eq (send smachine :state) :selecting-region-for-drill-button)
       (send smachine :go-to :initial))
+     ((eq (send smachine :state) :selecting-region-for-drill-rotate)
+      (send smachine :go-to :initial))
      ((eq (send smachine :state) :selecting-region-for-go-pos)
       (send smachine :go-to :initial))
      ((eq (send smachine :state) :selecting-region-for-look-at)
@@ -479,6 +566,8 @@
       (send smachine :go-to :initial))
      ((eq (send smachine :state) :recognizing-drill-button-pose)
       (send smachine :go-to :initial))
+     ((eq (send smachine :state) :recognizing-drill-rotate-pose)
+      (send smachine :go-to :initial))
      ((eq (send smachine :state) :recognizing-go-pos-goal)
       (send smachine :go-to :initial))
      ;; there is no recognition state for look-at and look-around
@@ -500,6 +589,8 @@
      ((eq (send smachine :state) :selecting-exec-for-drill-wall)
       (send smachine :go-to :initial))
      ((eq (send smachine :state) :selecting-exec-for-drill-button)
+      (send smachine :go-to :initial))
+     ((eq (send smachine :state) :selecting-exec-for-drill-rotate)
       (send smachine :go-to :initial))
      ((eq (send smachine :state) :selecting-exec-for-go-pos)
       (send smachine :go-to :initial))
@@ -523,11 +614,21 @@
       (send smachine :go-to :initial))
      ((eq (send smachine :state) :executing-drill-button)
       (send smachine :go-to :initial))
+     ((eq (send smachine :state) :executing-drill-rotate)
+      (send smachine :go-to :initial))
      ((eq (send smachine :state) :executing-go-pos)
       (send smachine :go-to :initial))
      ((eq (send smachine :state) :executing-look-at)
       (send smachine :go-to :initial))
      ((eq (send smachine :state) :executing-look-around)
+      (send smachine :go-to :initial))
+     ((eq (send smachine :state) :stair)
+      (send smachine :go-to :initial))
+     ((eq (send smachine :state) :executing-lookground)
+      (send smachine :go-to :initial))
+     ((eq (send smachine :state) :executing-terrain-footsteps)
+      (send smachine :go-to :initial))
+     ((eq (send smachine :state) :planning-footsteps)
       (send smachine :go-to :initial))
      )
     ;; clear text message
@@ -589,10 +690,14 @@
                    ((equal door-name :drc-test-mirror) drc_com_common::OCS2FCSmall::*DOOR_DRC_TEST_MIRROR*)
                    ((equal door-name :drc-sagami) drc_com_common::OCS2FCSmall::*DOOR_DRC_SAGAMI*)
                    ((equal door-name :drc-sagami-mirror) drc_com_common::OCS2FCSmall::*DOOR_DRC_SAGAMI_MIRROR*)
+                   ((equal door-name :drc-lasvegas) drc_com_common::OCS2FCSmall::*DOOR_DRC_LASVEGAS*)
+                   ((equal door-name :drc-lasvegas-mirror) drc_com_common::OCS2FCSmall::*DOOR_DRC_LASVEGAS_MIRROR*)
                    (t drc_com_common::OCS2FCSmall::*UNDECIDED*)))
+            (door-keep-grasp-idx
+             (if door-keep-grasp? 1 0))
             )
         (send msg :float_params
-              (door-params-to-float-vector door-params door-push/pull-idx door-name-idx (length (send msg :float_params)))))
+              (door-params-to-float-vector door-params door-push/pull-idx door-name-idx door-reach-deg door-keep-grasp-idx (length (send msg :float_params)))))
       (cond ((not (boundp '*door-arm*))
              (send msg :arm_side drc_com_common::OCS2FCSmall::*UNDECIDED*))
             ((equal *door-arm* :larm)
@@ -652,11 +757,18 @@
     (send self :show-text "Execute drill-grasp motion" :execute)
     ;; update latest drill-grasp params
     (setq drill-grasp-params
-          (list (get-primitive-marker-pose :frame-id "BODY")))
+          (list (get-primitive-marker-pose :frame-id "BODY" :name "drill")))
+    (insert-primitive-marker :shape-type jsk_rviz_plugins::TransformableMarkerOperate::*CYLINDER* :name "cylinder1" :description "")
+    (set-primitive-marker-color :r 1.0 :g 1.0 :b 0.0 :a 0.6)
+    ;; (apply-primitive-dimensions-to-midi-device)
+    (set-primitive-marker-pose (elt drill-grasp-params 0) "BODY" :name "cylinder1")
+    (set-primitive-marker-dimensions :radius 400 :z 1 :name "cylinder1")
+    (set-focus-marker-name "drill")
     ;; send drill-grasp params to fc
     (let ((msg (instance drc_com_common::OCS2FCSmall :init)))
       (send msg :type drc_com_common::OCS2FCSmall::*DRILL_GRASP_EXEC*)
       (send msg :float_params (coords-to-float-vector (elt drill-grasp-params 0) (length (send msg :float_params))))
+      (send msg :image_type drill-rotate-num)
       (send msg :stand_coords
             (coords-to-float-vector (get-robot-model-current-pos) (length (send msg :stand_coords))))
       (cond ((not (boundp '*drill-main-arm*))
@@ -674,42 +786,112 @@
     (send self :show-text "Execute drill-put motion" :execute)
     ;; update latest drill-put params
     (setq drill-put-params
-          (list (get-primitive-marker-pose :frame-id "BODY")))
+          (list (get-primitive-marker-pose :frame-id "BODY" :name "cylinder1")))
     ;; send drill-put params to fc
     (let ((msg (instance drc_com_common::OCS2FCSmall :init)))
       (send msg :type drc_com_common::OCS2FCSmall::*DRILL_PUT_EXEC*)
       (send msg :float_params (coords-to-float-vector (elt drill-put-params 0) (length (send msg :float_params))))
       (send msg :stand_coords
             (coords-to-float-vector (get-robot-model-current-pos) (length (send msg :stand_coords))))
+      (cond ((not (boundp '*drill-main-arm*))
+             (send msg :arm_side drc_com_common::OCS2FCSmall::*UNDECIDED*))
+            ((equal *drill-main-arm* :larm)
+             (send msg :arm_side drc_com_common::OCS2FCSmall::*LARM*))
+            ((equal *drill-main-arm* :rarm)
+             (send msg :arm_side drc_com_common::OCS2FCSmall::*RARM*))
+            (t
+             (send msg :arm_side drc_com_common::OCS2FCSmall::*UNDECIDED*))
+            )
       (send self :send-to-fc msg)
       (send smachine :go-to :executing-drill-put)))
   (:exec-drill-wall-button-callback ()
     (send self :show-text "Execute drill-wall motion" :execute)
     ;; do something magical!!
     ;; send drill-wall params to fc
-    (setq drill-wall-params
-          (list (get-primitive-marker-pose :frame-id "BODY")))
+    (cond ((get-marker-existence "drill_wall")
+           (setq drill-wall-params
+                 (list (get-primitive-marker-pose :frame-id "BODY" :name "drill_wall"))))
+          ((get-marker-existence "box1")
+           (setq drill-wall-params
+                 (list (get-primitive-marker-pose :frame-id "BODY" :name "box1")))
+           (let* ((dims (get-primitive-marker-dimensions :name "box1"))
+                  (x (/ (elt dims 0) 2))
+                  (y (/ (elt dims 1) 2))
+                  )
+             (setq drill-wall-target-coords (list
+                                             (make-coords :pos (float-vector (+ x 30) y 0))
+                                             (make-coords :pos (float-vector (- x) y 0))
+                                             (make-coords :pos (float-vector (- x) (- y) 0))
+                                             (make-coords :pos (float-vector x (- y) 0))
+                                             (make-coords :pos (float-vector x (+ y 30) 0))
+                                             ))
+             )
+           )
+          (t (send self :show-text "no marker set! insert box or recog wakk" :warn))
+          )
     (let ((msg (instance drc_com_common::OCS2FCSmall :init)))
       (send msg :type drc_com_common::OCS2FCSmall::*DRILL_WALL_EXEC*)
       (send msg :float_params (coords-set-to-float-vector (get-coords-list-with-center (elt drill-wall-params 0) drill-wall-target-coords) (length (send msg :float_params))))
       (send msg :stand_coords
             (coords-to-float-vector (get-robot-model-current-pos) (length (send msg :stand_coords))))
+      (cond ((not (boundp '*drill-main-arm*))
+             (send msg :arm_side drc_com_common::OCS2FCSmall::*UNDECIDED*))
+            ((equal *drill-main-arm* :larm)
+             (send msg :arm_side drc_com_common::OCS2FCSmall::*LARM*))
+            ((equal *drill-main-arm* :rarm)
+             (send msg :arm_side drc_com_common::OCS2FCSmall::*RARM*))
+            (t
+             (send msg :arm_side drc_com_common::OCS2FCSmall::*UNDECIDED*))
+            )
       (send self :send-to-fc msg)
       (send smachine :go-to :executing-drill-wall)))
   (:exec-drill-button-button-callback ()
     (send self :show-text "Execute drill-button motion" :execute)
     ;; update latest drill-button params
     (setq drill-button-params
-          (list (get-primitive-marker-pose :frame-id "BODY")))
+          (list (get-primitive-marker-pose :frame-id "BODY" :name "drill")))
     ;; do something magical!!
     ;; send drill-button params to fc
     (let ((msg (instance drc_com_common::OCS2FCSmall :init)))
       (send msg :type drc_com_common::OCS2FCSmall::*DRILL_BUTTON_EXEC*)
       (send msg :float_params (coords-to-float-vector (elt drill-button-params 0) (length (send msg :float_params))))
+      (cond ((not (boundp '*drill-main-arm*))
+             (send msg :arm_side drc_com_common::OCS2FCSmall::*UNDECIDED*))
+            ((equal *drill-main-arm* :larm)
+             (send msg :arm_side drc_com_common::OCS2FCSmall::*LARM*))
+            ((equal *drill-main-arm* :rarm)
+             (send msg :arm_side drc_com_common::OCS2FCSmall::*RARM*))
+            (t
+             (send msg :arm_side drc_com_common::OCS2FCSmall::*UNDECIDED*))
+            )
       (send self :send-to-fc msg)
       (send smachine :go-to :executing-drill-button)))
+  (:exec-drill-rotate-button-callback ()
+    (send self :show-text "Execute drill-rotate motion" :execute)
+    ;; update latest drill-rotate params
+    (setq drill-rotate-params
+          (list (get-primitive-marker-pose :frame-id "BODY" :name "drill") (get-primitive-marker-pose :frame-id "BODY" :name "cylinder1")))
+    ;; do something magical!!
+    ;; send drill-rotate params to fc
+    (let ((msg (instance drc_com_common::OCS2FCSmall :init)))
+      (send msg :type drc_com_common::OCS2FCSmall::*DRILL_ROTATE_EXEC*)
+      (send msg :float_params (coords-set-to-float-vector drill-rotate-params (length (send msg :float_params))))
+      (send msg :image_type (max 1 drill-rotate-num))
+      (cond ((not (boundp '*drill-main-arm*))
+             (send msg :arm_side drc_com_common::OCS2FCSmall::*UNDECIDED*))
+            ((equal *drill-main-arm* :larm)
+             (send msg :arm_side drc_com_common::OCS2FCSmall::*LARM*))
+            ((equal *drill-main-arm* :rarm)
+             (send msg :arm_side drc_com_common::OCS2FCSmall::*RARM*))
+            (t
+             (send msg :arm_side drc_com_common::OCS2FCSmall::*UNDECIDED*))
+            )
+      (send self :send-to-fc msg)
+      (send smachine :go-to :executing-drill-rotate)))
+
   (:exec-go-pos-button-callback ()
     ;; update latest go-pos coords
+    (send self :show-text "Execute GO POS" :execute)
     (setq go-pos-coords (send *tf* :lookup-transform "robot_marker_root" "ground" (ros::time 0)))
     (setq go-pos-coords (send go-pos-coords :transformation (make-coords) :local))
     ;; send go-pos coords to fc
@@ -740,8 +922,11 @@
       (send self :exec-drill-wall-button-callback))
      ((eq (send smachine :state) :selecting-exec-for-drill-button)
       (send self :exec-drill-button-button-callback))
+     ((eq (send smachine :state) :selecting-exec-for-drill-rotate)
+      (send self :exec-drill-rotate-button-callback))
      ((eq (send smachine :state) :selecting-exec-for-go-pos)
       (send self :exec-go-pos-button-callback))
+     (t (send self :show-text "exec selected but no mean" :warn))
      )
     (send req :response))
   )
@@ -769,7 +954,7 @@
          ;; publish motion to robot model on rviz
          (publish-valve-motion (cadr valve-params) (car valve-params)
                                :arm (send self :get-arm-side) :overwrite-arm-side? (send self :is-arm-overwrite)
-                               :stand-coords (make-coords) :overwrite-stand-coords? t
+                               :stand-coords (make-coords) :overwrite-stand-coords? :force ;; overwrite stand-coords forcibly in valve motion
                                :grasp-center? (send self :is-valve-grasp-center) :overwrite-grasp-mode? (send self :is-valve-grasp-overwrite)
                                :update? t)
          ))
@@ -793,9 +978,11 @@
          ;; publish motion to robot model on rviz
          (publish-door-motion
           :door-name door-name :door-coords (elt door-params 0)
-          :arm (send self :get-arm-side) :overwrite-arm-side? (send self :is-arm-overwrite)
-          :stand-coords (make-coords) :overwrite-stand-coords? t
+          :arm (send self :get-arm-side) :overwrite-arm-side? (send self :is-door-arm-overwrite)
+          :stand-coords (make-coords) :overwrite-stand-coords? :force ;; overwrite stand-coords forcibly in door motion
           :push/pull door-push/pull
+          :door-reach-deg door-reach-deg
+          :keep-grasp? door-keep-grasp?
           :update? t)
          (send smachine :go-to :selecting-exec-for-door)))
       ))
@@ -878,15 +1065,32 @@
           )
          (t ;(equal *drill-type* :takenoko) ;;todo
           (insert-primitive-marker :shape-type jsk_rviz_plugins::TransformableMarkerOperate::*MESH_RESOURCE* :name "drill" :description "" :resource "package://drc_task_common/models/takenoko_drill.dae" :use-material t)
-          (set-primitive-marker-control-relative-pose (make-coords :pos (float-vector 0 0 97) :rpy (float-vector 0 0 pi/2))) ;;Todo more precise pose for button
+          (set-primitive-marker-control-relative-pose (make-coords :pos (float-vector 0 0 97) :rpy (float-vector 0 0 0))) ;;Todo more precise pose
           ))
         ;(set-primitive-marker-dimensions :radius 30 :z 300)
         (set-primitive-marker-pose coords "BODY")
         ;; (set-primitive-marker-color :r 1.0 :g 1.0 :b 0.0 :a 0.6)
-        ;; (apply-primitive-dimensions-to-midi-device)
         (move-robot-model-to-current-pos)
+        (set-focus-marker-name "drill")
         ;; publish motion to robot model on rviz
-	(publish-drill-grasp-motion :coords (elt drill-grasp-params 0) :update? t :arm (send self :get-arm-side) :stand-coords (make-coords) :overwrite-stand-coords? t) ;todo drill-type
+        (setq *drill-main-arm* drill-arm-environment)
+	(publish-drill-grasp-motion :coords (elt drill-grasp-params 0) :update? t :stand-coords (make-coords) :overwrite-stand-coords? :auto :drill-rotate-num drill-rotate-num)
+        (let ((index (position-if #'(lambda (x) (equal (elt x 0) :grasp)) drill-stand-coords-list)))
+          (if index
+              (progn
+                (setf (elt drill-stand-coords-list index) (list :grasp (convert-coords-frame (if (boundp '*drill-stand-coords-forced*) *drill-stand-coords-forced* (make-coords)))))
+                (setq drill-stand-coords-index index))
+            (progn
+              (push-back (list :grasp (convert-coords-frame (if (boundp '*drill-stand-coords-forced*) *drill-stand-coords-forced* (make-coords)))) drill-stand-coords-list)
+              (setq drill-stand-coords-index (- (length drill-stand-coords-list) 1))
+              )))
+	(if (or (not (boundp '*drill-motion*)) (not *drill-motion*))
+	    (send self :show-text 
+		  "IK FAIL")
+          (send self :show-text (format nil "IK SUCCESS diff-deg ~Adeg" *drill-diff-angle*))
+          )
+ ;todo drill-type
+        
         (send smachine :go-to :selecting-exec-for-drill-grasp))
       ))
   (:drill-put-recognition-finished-callback (msg)
@@ -900,34 +1104,54 @@
         ;; publish object marker
         (erase-all-primitive-marker)
         (insert-primitive-marker :shape-type jsk_rviz_plugins::TransformableMarkerOperate::*CYLINDER* :name "cylinder1" :description "")
-        (set-primitive-marker-dimensions :radius 300 :z 30) ;; show plane as circle
+        (set-primitive-marker-dimensions :radius 400 :z 1 :name "cylinder1")
         (set-primitive-marker-pose coords "BODY")
         (set-primitive-marker-color :r 1.0 :g 1.0 :b 0.0 :a 0.6)
         (apply-primitive-dimensions-to-midi-device)
         (move-robot-model-to-current-pos)
         ;; publish motion to robot model on rviz
-	(publish-drill-put-motion :coords (elt drill-put-params 0) :update? t :stand-coords (make-coords) :overwrite-stand-coords? t)
+        (setq *drill-main-arm* drill-arm-environment)
+        (publish-drill-put-motion :coords (elt drill-put-params 0) :update? t :stand-coords (make-coords) :overwrite-stand-coords? t)
+	(if (or (not (boundp '*drill-motion*)) (not *drill-motion*))
+	    (send self :show-text 
+		  "IK FAIL")
+          (send self :show-text "IK SUCCESS")
+	  )
         (send smachine :go-to :selecting-exec-for-drill-put))
       ))
   (:drill-wall-recognition-finished-callback (msg)
     (when (eq (send smachine :state) :recognizing-drill-wall)
       (let ((params (send msg :params)))
         (let ((coords-set (float-vector-to-coords-set params)) center-coords)
-	  (send self :show-text 
-		(format nil "Recognize wall coords") :recognize)
+          (send self :show-text 
+                (format nil "Recognize wall coords") :recognize)
           (publish-coords-list coords-set "BODY")
           ;; marker 
-          (erase-all-primitive-marker)
-          (insert-primitive-marker :shape-type jsk_rviz_plugins::TransformableMarkerOperate::*CYLINDER* :name "cylinder1" :description "")
+          ;; (erase-all-primitive-marker)
+          (insert-primitive-marker :shape-type jsk_rviz_plugins::TransformableMarkerOperate::*CYLINDER* :name "drill_wall" :description "")
           (set-primitive-marker-dimensions :radius 300 :z 30) ;; show plane as circle
           (setq center-coords (get-center-coords coords-set))
-          (set-primitive-marker-pose center-coords "BODY")
+          (set-primitive-marker-pose center-coords "BODY" :name "drill_wall")
           (set-primitive-marker-color :r 1.0 :g 1.0 :b 0.0 :a 0.6)
           (apply-primitive-dimensions-to-midi-device)
           (move-robot-model-to-current-pos)
           ;; end marker
           (setq drill-wall-target-coords (get-relative-coords-list center-coords coords-set))
-          (publish-drill-wall-motion :coords-list coords-set :update? t :stand-coords (make-coords) :overwrite-stand-coords? t)
+	  (setq *drill-main-arm* drill-arm-environment)
+          (publish-drill-wall-motion :coords-list coords-set :update? t :stand-coords (make-coords) :overwrite-stand-coords? :force :draw? nil)
+          (let ((index (position-if #'(lambda (x) (equal (elt x 0) :wall)) drill-stand-coords-list)))
+            (if index
+                (progn
+                  (setf (elt drill-stand-coords-list index) (list :wall (convert-coords-frame (if (boundp '*drill-stand-coords-forced*) *drill-stand-coords-forced* (make-coords)))))
+                  (setq drill-stand-coords-index index))
+              (progn
+                (push-back (list :wall (convert-coords-frame (if (boundp '*drill-stand-coords-forced*) *drill-stand-coords-forced* (make-coords)))) drill-stand-coords-list)
+                (setq drill-stand-coords-index (- (length drill-stand-coords-list) 1))
+                )))
+	  (if (or (not (boundp '*drill-motion*)) (not *drill-motion*))
+	      (send self :show-text 
+		  "IK FAIL")
+	    )
           (send smachine :go-to :selecting-exec-for-drill-wall)))))
   (:drill-button-recognition-finished-callback (msg)
     (when (eq (send smachine :state) :recognizing-drill-button-pose)
@@ -938,15 +1162,41 @@
         ;; store result
         (setq drill-button-params (list coords))
         ;; publish object marker
-        (erase-all-primitive-marker)
         (insert-primitive-marker :shape-type jsk_rviz_plugins::TransformableMarkerOperate::*MESH_RESOURCE* :name "drill" :description "" :resource "package://drc_task_common/models/takenoko_drill.dae" :use-material t)
-	(set-primitive-marker-control-relative-pose (make-coords :pos (float-vector 0 0 95) :rpy (float-vector 0 0 pi/2))) ;;Todo more precise pose for button
+	(set-primitive-marker-pose coords "BODY")
+        (set-primitive-marker-control-relative-pose (make-coords :pos (float-vector 0 0 95) :rpy (float-vector 0 0 0))) ;;Todo more precise pose for button
         ;;(set-primitive-marker-pose coords "BODY") ;; comment out because pose is not correct
         (move-robot-model-to-current-pos)
         ;; publish motion to robot model on rviz
-	;;(publish-drill-button-motion :coords (elt drill-button-params 0) :update? t) ;; comment out because pose is not correct
+	(setq *drill-main-arm* drill-arm-environment)
+        (publish-drill-button-motion :coords (elt drill-button-params 0) :update? t)
+	(if (or (not (boundp '*drill-motion*)) (not *drill-motion*))
+	    (send self :show-text 
+		  "IK FAIL")
+          (send self :show-text "IK SUCCESS")
+	  )
         (send smachine :go-to :selecting-exec-for-drill-button))))
-  (:go-pos-recognition-finished-callback (msg)
+ (:drill-rotate-recognition-finished-callback (msg)
+    (when (eq (send smachine :state) :recognizing-drill-rotate-pose)
+      (let* ((params (send msg :params))
+             (coords (float-vector-to-coords params)))
+        (send self :show-text 
+              (format nil "Recognize drill-rotate. pos:~A rpy:~A" (send coords :worldpos) (reverse (car (send coords :rpy-angle)))) :recognize)
+        ;; store result
+        (setq drill-rotate-params (list coords (get-primitive-marker-pose :frame-id "BODY" :name "drill")))
+        ;; publish object marker
+        (insert-primitive-marker :shape-type jsk_rviz_plugins::TransformableMarkerOperate::*MESH_RESOURCE* :name "drill" :description "" :resource "package://drc_task_common/models/takenoko_drill.dae" :use-material t)
+        (move-robot-model-to-current-pos)
+        ;; publish motion to robot model on rviz
+	(setq *drill-main-arm* drill-arm-environment)
+	(publish-drill-rotate-motion :drill-coords (elt drill-rotate-params 0) :plane-coords (elt drill-rotate-params 1) :update? t)
+	(if (or (not (boundp '*drill-motion-in*)) (not *drill-motion-in*))
+	    (send self :show-text 
+		  "IK FAIL")
+          (send self :show-text "IK SUCCESS")
+          )
+        (send smachine :go-to :selecting-exec-for-drill-rotate))))
+ (:go-pos-recognition-finished-callback (msg)
     (when (eq (send smachine :state) :recognizing-go-pos-goal)
       (let ((params (send msg :params)))
         (setq go-pos-coords (make-coords :pos (float-vector (elt params 0) (elt params 1) (elt params 2))
@@ -958,6 +1208,7 @@
         (publish-model-joint-states :av (get-potentio-vector-from-joint-states))
         (send smachine :go-to :selecting-exec-for-go-pos))))
   (:recognition-failed-callback (msg)
+    (when (or (eq (send smachine :state) :selecting-exec-for-drill-grasp) (eq (send smachine :state) :executing-drill-grasp)) (return-from :recognition-failed-callback nil)) ;; skip selected!
     (when (send smachine :next? :initial)
       (send self :show-text "Recognition failed, go to :initial state" :fatal)
       (send smachine :go-to :initial)))
@@ -991,7 +1242,25 @@
   (:drill-grasp-exec-finished-callback (msg)
     (when (eq (send smachine :state) :executing-drill-grasp)
       (send self :show-text "Finished drill-grasp motion" :success)
-      (send smachine :go-to :initial)))
+      (send smachine :go-to :initial)
+      (let* ((params (send msg :params))
+             (coords-set (float-vector-to-coords-set params)))
+        (send self :show-text 
+              (format nil "drill grasp succeeded. Left Rotation :~A" (elt (send (elt coords-set 2) :worldpos) 0)))
+        ;; store result
+	(set-primitive-marker-pose (elt coords-set 0) "BODY" :name "drill")
+	(setq drill-grasp-relative-coords (elt coords-set 1))
+        (when (< (abs (elt (send (elt coords-set 2) :worldpos) 0)) 20)
+          (push-back (list :button (convert-coords-frame (make-coords :pos (float-vector -500 0 0)))) drill-stand-coords-list)
+          (setq drill-stand-coords-index (- (length drill-stand-coords-list) 1))
+          (send self :show-text "GOPOS AUTO TO BUTTON FAISE")
+          )
+        (when (not (send msg :success))
+          (send self :show-text "grasp failed with force condition" :warn)
+          )
+        )
+      )
+    )
   (:drill-put-exec-finished-callback (msg)
     (when (eq (send smachine :state) :executing-drill-put)
       (send self :show-text "Finished drill-put motion" :success)
@@ -1002,8 +1271,42 @@
       (send smachine :go-to :initial)))
   (:drill-button-exec-finished-callback (msg)
     (when (eq (send smachine :state) :executing-drill-button)
-      (send self :show-text "Finished drill-button motion" :success)
+      (if (send msg :success)
+          (progn (send self :show-text "Finished drill-button motion with success" :success)
+                 (send self :show-text "PUSH AUTO GO-POS BUTTON!")
+                 (let ((index (position-if #'(lambda (x) (equal (elt x 0) :wall)) drill-stand-coords-list)))
+                   (if index
+                       (progn
+                         (setf (elt drill-stand-coords-list index) (list :wall (convert-coords-frame (make-coords :rpy (list (deg2rad -90) 0 0)))))
+                         (setq drill-stand-coords-index index))
+                     (progn
+                       (push-back (list :wall (convert-coords-frame (make-coords :rpy (list (deg2rad -90) 0 0)))) drill-stand-coords-list)
+                       (setq drill-stand-coords-index (- (length drill-stand-coords-list) 1))
+                       )))
+                 )
+        (send self :show-text "Finished drill-button motion but failed!":fatal))
       (send smachine :go-to :initial)))
+  (:drill-rotate-exec-finished-callback (msg)
+    (when (eq (send smachine :state) :executing-drill-rotate)
+      (send self :show-text "Finished drill-rotate motion" :success)
+      (send smachine :go-to :initial)
+      (let* ((params (send msg :params))
+             (coords-set (float-vector-to-coords-set params)))
+        (send self :show-text 
+              (format nil "drill grasp succeeded. Left Rotation :~A" (elt (send (elt coords-set 2) :worldpos) 0)))
+        ;; store result
+        (when (< (abs (elt (send (elt coords-set 2) :worldpos) 0)) 20)
+          (push-back (list :button (convert-coords-frame (make-coords :pos (float-vector -500 0 0)))) drill-stand-coords-list)
+          (setq drill-stand-coords-index (- (length drill-stand-coords-list) 1))
+          (send self :show-text "GOPOS AUTO TO BUTTON FAISE")
+          )
+        (when (not (send msg :success))
+          (send self :show-text "grasp failed with force condition" :warn)
+          )
+        (setq drill-grasp-relative-coords (elt coords-set 1))
+	(set-primitive-marker-pose (elt coords-set 0) "BODY" :name "drill"))
+      )
+    )
   (:go-pos-finished-callback (msg)
     (when (eq (send smachine :state) :executing-go-pos)
       (send self :show-text "Finished go-pos motion" :success)
@@ -1065,30 +1368,102 @@
           ((eq (send smachine :state) :selecting-exec-for-drill-grasp)
            ;; update latest drill-grasp params
            (setq drill-grasp-params
-                 (list (get-primitive-marker-pose :frame-id "BODY")))
+                 (list (get-primitive-marker-pose :frame-id "BODY" :name "drill")))
            ;; publish drill motion to robot model on rviz
-           (publish-drill-grasp-motion :coords (elt drill-grasp-params 0) :update? t :arm (send self :get-arm-side) :stand-coords (get-robot-model-current-pos) :overwrite-stand-coords? overwrite-stand-coords?) ;;drill-type
+	   (setq *drill-main-arm* drill-arm-environment)
+           (publish-drill-grasp-motion :coords (elt drill-grasp-params 0) :update? t :stand-coords (get-robot-model-current-pos) :overwrite-stand-coords? overwrite-stand-coords? :drill-rotate-num drill-rotate-num) ;;drill-type
+           (let ((index (position-if #'(lambda (x) (equal (elt x 0) :grasp)) drill-stand-coords-list)))
+             (if index
+                 (progn
+                   (setf (elt drill-stand-coords-list index) (list :grasp (convert-coords-frame (if (boundp '*drill-stand-coords-forced*) *drill-stand-coords-forced* (make-coords)))))
+                   (setq drill-stand-coords-index index))
+               (progn
+                 (push-back (list :grasp (convert-coords-frame (if (boundp '*drill-stand-coords-forced*) *drill-stand-coords-forced* (make-coords)))) drill-stand-coords-list)
+                 (setq drill-stand-coords-index (- (length drill-stand-coords-list) 1))
+                 )))
+           
+	   (if (or (not (boundp '*drill-motion*)) (not *drill-motion*))
+	       (send self :show-text 
+		  "IK FAIL")
+             (send self :show-text (format nil "IK SUCCESS diff-deg ~Adeg" *drill-diff-angle*))
+             )
            )
           ((eq (send smachine :state) :selecting-exec-for-drill-put)
            ;; update latest drill-put params
            (setq drill-put-params
-                 (list (get-primitive-marker-pose :frame-id "BODY")))
+                 (list (get-primitive-marker-pose :frame-id "BODY" :name "cylinder1")))
            ;; publish drill motion to robot model on rviz
+	   (setq *drill-main-arm* drill-arm-environment)
            (publish-drill-put-motion :coords (elt drill-put-params 0) :update? t :stand-coords (get-robot-model-current-pos) :overwrite-stand-coords? overwrite-stand-coords?)
+	   (if (or (not (boundp '*drill-motion*)) (not *drill-motion*))
+	       (send self :show-text 
+		     "IK FAIL")
+	     )
            )
           ((eq (send smachine :state) :selecting-exec-for-drill-button)
            ;; update latest drill-button params
            (setq drill-button-params
-                 (list (get-primitive-marker-pose :frame-id "BODY")))
+                 (list (get-primitive-marker-pose :frame-id "BODY" :name "drill")))
            ;; publish drill motion to robot model on rviz
+	   (setq *drill-main-arm* drill-arm-environment)
            (publish-drill-button-motion :coords (elt drill-button-params 0) :update? t)
+	   (if (or (not (boundp '*drill-motion*)) (not *drill-motion*))
+	       (send self :show-text 
+		     "IK FAIL")
+	     )
+           )
+          ((eq (send smachine :state) :selecting-exec-for-drill-rotate)
+           ;; update latest drill-rotate params
+           (setq drill-rotate-params
+                 (list (get-primitive-marker-pose :frame-id "BODY" :name "drill") (get-primitive-marker-pose :frame-id "BODY" :name "cylinder1")))
+           ;; publish drill motion to robot model on rviz
+	   (setq *drill-main-arm* drill-arm-environment)
+           (publish-drill-rotate-motion :drill-coords (elt drill-rotate-params 0) :plane-coords (elt drill-rotate-params 1) :update? t)
+           
+	   (if (or (not (boundp '*drill-motion-in*)) (not *drill-motion-in*))
+	       (send self :show-text 
+		     "IK FAIL")
+	     )
            )
           ((eq (send smachine :state) :selecting-exec-for-drill-wall)
            ;; update latest drill-button params
-           (setq drill-wall-params
-                  (list (get-primitive-marker-pose :frame-id "BODY")))
+	   (setq *drill-main-arm* drill-arm-environment)
+           (cond ((get-marker-existence "drill_wall")
+                  (setq drill-wall-params
+                        (list (get-primitive-marker-pose :frame-id "BODY" :name "drill_wall"))))
+                 ((get-marker-existence "box1")
+                  (setq drill-wall-params
+                        (list (get-primitive-marker-pose :frame-id "BODY" :name "box1")))
+                  (let* ((dims (get-primitive-marker-dimensions :name "box1"))
+                         (x (/ (elt dims 0) 2))
+                         (y (/ (elt dims 1) 2))
+                         )
+                    (setq drill-wall-target-coords (list
+                                                    (make-coords :pos (float-vector (+ x 30) y 0))
+                                                    (make-coords :pos (float-vector (- x) y 0))
+                                                    (make-coords :pos (float-vector (- x) (- y) 0))
+                                                    (make-coords :pos (float-vector x (- y) 0))
+                                                    (make-coords :pos (float-vector x (+ y 30) 0))
+                                                    ))
+                    )
+                  )
+                 (t (send self :show-text "no marker set! insert box or recog wakk" :warn))
+                 )
            ;; publish drill motion to robot model on rviz
            (publish-drill-wall-motion :coords-list (get-coords-list-with-center (elt drill-wall-params 0) drill-wall-target-coords) :update? t :stand-coords (get-robot-model-current-pos) :overwrite-stand-coords? overwrite-stand-coords?)
+           (let ((index (position-if #'(lambda (x) (equal (elt x 0) :wall)) drill-stand-coords-list)))
+             (if index
+                 (progn
+                   (setf (elt drill-stand-coords-list index) (list :wall (convert-coords-frame (if (boundp '*drill-stand-coords-forced*) *drill-stand-coords-forced* (make-coords)))))
+                   (setq drill-stand-coords-index index))
+              (progn
+                (push-back (list :wall (convert-coords-frame (if (boundp '*drill-stand-coords-forced*) *drill-stand-coords-forced* (make-coords)))) drill-stand-coords-list)
+                (setq drill-stand-coords-index (- (length drill-stand-coords-list) 1))
+                )))
+	   (if (or (not (boundp '*drill-motion*)) (not *drill-motion*))
+	       (send self :show-text 
+		     "IK FAIL")
+	    )
            )
           ((eq (send smachine :state) :selecting-exec-for-door)
            ;; update latest door params
@@ -1098,11 +1473,15 @@
            ;; publish door motion to robot model on rviz
            (publish-door-motion
             :door-name door-name :door-coords (elt door-params 0)
-            :arm (send self :get-arm-side) :overwrite-arm-side? (send self :is-arm-overwrite)
+            :arm (send self :get-arm-side) :overwrite-arm-side? (send self :is-door-arm-overwrite)
             :stand-coords (get-robot-model-current-pos) :overwrite-stand-coords? overwrite-stand-coords?
             :push/pull door-push/pull
+            :door-reach-deg door-reach-deg
+            :keep-grasp? door-keep-grasp?
             :update? t)
            (send smachine :go-to :selecting-exec-for-door))
+          (t (send self :show-text "refresh selected but no mean" :warn)
+              (send req :response))
           )
     (send self :show-text "Finish to replay robot motion")
     (send req :response)
@@ -1117,7 +1496,7 @@
    (when (eq (send smachine :state) :initial)
      (let ((msg (instance drc_com_common::OCS2FCSmall :init)))
        (send msg :type drc_com_common::OCS2FCSmall::*GO_POS_EXEC*)
-       (send msg :float_params 
+       (send msg :float_params
              (coords-to-float-vector (ros::tf-pose->coords (send req :goal)) (length (send msg :float_params))))
        (send self :send-to-fc msg))
      (send smachine :go-to :executing-go-pos))
@@ -1127,7 +1506,7 @@
    (req)
    (let ((msg (instance drc_com_common::OCS2FCSmall :init)))
      (send msg :type drc_com_common::OCS2FCSmall::*ANGLE_VECTOR_SEND*)
-     (send msg :float_params 
+     (send msg :float_params
            (angle-vector-to-float-vector (send (send req :angle_vector) :data) (send (send req :interpolation_time) :data) (length (send msg :float_params))))
      (send self :send-to-fc msg))
    (send req :response)
@@ -1143,7 +1522,7 @@
            (t
             (send msg :arm_side drc_com_common::OCS2FCSmall::*UNDECIDED*))
            )
-     (send msg :float_params 
+     (send msg :float_params
            (reach-until-touch-params-to-float-vector
             (ros::tf-point->pos (send req :direction))
             (send req :thre) (send req :max_dist)
@@ -1151,6 +1530,23 @@
             (length (send msg :float_params))))
      (send self :send-to-fc msg))
    (send req :response)
+   )
+  (:set-drill-coords
+   (req)
+   (when (not drill-grasp-relative-coords)
+     (set-drill-environment :draw? t)
+     (set-drill-default-coords)
+     (setq *drill-main-arm* drill-arm-environment)
+     (setq drill-grasp-relative-coords (send (send *robot* *drill-main-arm* :end-coords :copy-worldcoords) :transformation (send *drill* :copy-coords)))
+     )
+   (when (and drill-grasp-relative-coords (boundp '*drill-main-arm*))
+     (when (not (get-marker-existence "drill"))
+       (insert-primitive-marker :shape-type jsk_rviz_plugins::TransformableMarkerOperate::*MESH_RESOURCE* :name "drill" :description "" :resource "package://drc_task_common/models/takenoko_drill.dae" :use-material t)
+       )
+     (if (equal *drill-main-arm* :rarm) (set-primitive-marker-pose drill-grasp-relative-coords "rarm_end_coords" :name "drill") (set-primitive-marker-pose drill-grasp-relative-coords "larm_end_coords" :name "drill")
+         )
+     )
+    (send req :response)
    )
   (:cancel-motion-now
     (req)
@@ -1175,43 +1571,48 @@
       (send smachine :go-to! :selecting-exec-for-hose-grasp))
      ((eq (send smachine :state) :selecting-region-for-hose-connect)
       (send smachine :go-to! :selecting-exec-for-hose-connect))
-     ((eq (send smachine :state) :selecting-region-for-drill-grasp)
+     ((or (eq (send smachine :state) :selecting-region-for-drill-grasp)
+          (eq (send smachine :state) :recognizing-drill-grasp-pose))
       (send smachine :go-to! :selecting-exec-for-drill-grasp)
-      (erase-all-primitive-marker)
-      (insert-primitive-marker :shape-type jsk_rviz_plugins::TransformableMarkerOperate::*MESH_RESOURCE* :name "drill" :description "" :resource "package://drc_task_common/models/takenoko_drill.dae" :use-material t))
+      )
      ((eq (send smachine :state) :selecting-region-for-drill-put)
       (send smachine :go-to! :selecting-exec-for-drill-put))
      ;; ((eq (send smachine :state) :selecting-region-for-drill-wall)
      ;;  (send smachine :go-to! :selecting-exec-for-drill-wall)) ;; because of not using interactive-marker
      ((eq (send smachine :state) :selecting-region-for-drill-button)
       ;; todo drill-type
-      (if (not (boundp '*drill*))
-	  (if t
-	      (set-drill-environment :drill-type :takenoko)
-	    (set-drill-environment :drill-type :gun)
-	    )
-	)
-      (send *robot* :angle-vector (get-potentio-vector-from-joint-states))
-      (send *robot* :fix-leg-to-coords (make-coords))
-      (set-drill-default-coords)
-      (let ((coords (send (send (send (send *robot* :body_lk) :copy-worldcoords) :inverse-transformation) :transform (send *drill* :copy-worldcoords))))
-              (send self :show-text 
-              (format nil "Recognize drill-button. pos:~A rpy:~A" (send coords :worldpos) (reverse (car (send coords :rpy-angle)))) :recognize)
-        ;; store result
-        (setq drill-button-params (list coords))
-        ;; publish object marker
-        (erase-all-primitive-marker)
-        (insert-primitive-marker :shape-type jsk_rviz_plugins::TransformableMarkerOperate::*MESH_RESOURCE* :name "drill" :description "" :resource "package://drc_task_common/models/takenoko_drill.dae" :use-material t)
-        (set-primitive-marker-control-relative-pose (make-coords :pos (float-vector -22 30 77) :rpy (float-vector 0 0 pi/2))) ;;Todo more precise pose for button
-        (move-robot-model-to-current-pos)
-        (set-primitive-marker-pose coords "BODY")
-        ;(send smachine :go-to :selecting-exec-for-drill-button)
-	)
+      (when (not (boundp '*drill*))
+        (if t
+            (set-drill-environment :drill-type :takenoko)
+          (set-drill-environment :drill-type :gun)
+          )
+        (send *robot* :angle-vector (get-potentio-vector-from-joint-states))
+        (send *robot* :fix-leg-to-coords (make-coords))
+        (set-drill-default-coords)
+        (let ((coords (send (send (send (send *robot* :body_lk) :copy-worldcoords) :inverse-transformation) :transform (send *drill* :copy-worldcoords))))
+          (send self :show-text
+                (format nil "Recognize drill-button. pos:~A rpy:~A" (send coords :worldpos) (reverse (car (send coords :rpy-angle)))) :recognize)
+          ;; store result
+          (setq drill-button-params (list coords))
+          ;; publish object marker
+          (erase-all-primitive-marker)
+          (insert-primitive-marker :shape-type jsk_rviz_plugins::TransformableMarkerOperate::*MESH_RESOURCE* :name "drill" :description "" :resource "package://drc_task_common/models/takenoko_drill.dae" :use-material t)
+          (set-primitive-marker-control-relative-pose (make-coords :pos (float-vector 0 0 97) :rpy (float-vector 0 0 0))) ;;Todo more precise pose for button
+          (move-robot-model-to-current-pos)
+          (set-primitive-marker-pose coords "BODY")
+                                        ;(send smachine :go-to :selecting-exec-for-drill-button)
+          )
+        )
       (send smachine :go-to! :selecting-exec-for-drill-button))
+     ((eq (send smachine :state) :selecting-region-for-drill-wall)
+      (send smachine :go-to! :selecting-exec-for-drill-wall))
+     ((eq (send smachine :state) :selecting-region-for-drill-rotate)
+      (send smachine :go-to! :selecting-exec-for-drill-rotate))
+     (t (send self :show-text "skip recog selected but no mean" :warn))
      )
     (send self :show-text "skip recog. set and move marker manually.")
     (send req :response)
-   )
+    )
   (:set-pitch-head-angle-callback (req)
     (let ((msg (instance drc_com_common::OCS2FCSmall :init)))
       (send msg :type drc_com_common::OCS2FCSmall::*LOOK_AT_PITCH_ANGLE*)
@@ -1240,6 +1641,7 @@
      ((eq (send smachine :state) :executing-drill-put) (send smachine :go-to :selecting-exec-for-drill-put))
      ((eq (send smachine :state) :executing-drill-wall) (send smachine :go-to :selecting-exec-for-drill-wall))
      ((eq (send smachine :state) :executing-drill-button) (send smachine :go-to :selecting-exec-for-drill-button))
+     ((eq (send smachine :state) :executing-drill-rotate) (send smachine :go-to :selecting-exec-for-drill-rotate))
      )
     )
   )
@@ -1273,6 +1675,15 @@
   (:is-arm-overwrite
    ()
    (or (equal arm-mode :larm-preferred) (equal arm-mode :rarm-preferred)))
+  (:is-door-arm-overwrite
+   ()
+   (cond ((equal force-overwrite-door-arm :force)
+          :force)
+         ((or (equal arm-mode :larm-preferred) (equal arm-mode :rarm-preferred))
+          t)
+         (t
+          nil))
+   )
   (:get-arm-side
    ()
    (cond ((or (equal arm-mode :larm-preferred) (equal arm-mode :larm-only)) :larm)
@@ -1282,16 +1693,22 @@
 ;; optional button
 (defmethod ocs-executive-app
   ;; stand-coords overwrite
-  (:overwrite-stand-coords-callback
+  (:force-overwrite-stand-coords-callback
    (req)
-   (setq overwrite-stand-coords? t)
-   (send self :show-text "enable stand-coords overwrite" :success)
+   (setq overwrite-stand-coords? :force)
+   (send self :show-text "force overwrite stand-coords overwrite" :success)
    (send req :response)
    )
-  (:not-overwrite-stand-coords-callback
+  (:auto-overwrite-stand-coords-callback
+   (req)
+   (setq overwrite-stand-coords? :auto)
+   (send self :show-text "auto overwrite stand-coords overwrite" :success)
+   (send req :response)
+   )
+  (:no-overwrite-stand-coords-callback
    (req)
    (setq overwrite-stand-coords? nil)
-   (send self :show-text "disable stand-coords overwrite" :success)
+   (send self :show-text "no overwrite  stand-coords overwrite" :success)
    (send req :response)
    )
   ;; head overwrite
@@ -1356,42 +1773,199 @@
    (send req :response)
    )
   ;; door name
-  (:door-name-drc-box2
+  (:door-name-drc-box2-callback
    (req)
    (setq door-name :drc-box2)
    (send self :show-text "door name drc-box2" :success)
    (send req :response)
    )
-  (:door-name-drc-test
+  (:door-name-drc-test-callback
    (req)
    (setq door-name :drc-test)
    (send self :show-text "door name drc-test" :success)
    (send req :response)
    )
-  (:door-name-drc-test-mirror
+  (:door-name-drc-test-mirror-callback
    (req)
    (setq door-name :drc-test-mirror)
    (send self :show-text "door name drc-test-mirror" :success)
    (send req :response)
    )
-  (:door-name-drc-sagami
+  (:door-name-drc-sagami-callback
    (req)
    (setq door-name :drc-sagami)
    (send self :show-text "door name drc-sagami" :success)
    (send req :response)
    )
-  (:door-name-drc-sagami-mirror
+  (:door-name-drc-sagami-mirror-callback
    (req)
    (setq door-name :drc-sagami-mirror)
    (send self :show-text "door name drc-sagami-mirror" :success)
    (send req :response)
    )
+  (:door-name-drc-lasvegas-callback
+   (req)
+   (setq door-name :drc-lasvegas)
+   (send self :show-text "door name drc-lasvegas" :success)
+   (send req :response)
+   )
+  (:door-name-drc-lasvegas-mirror-callback
+   (req)
+   (setq door-name :drc-lasvegas-mirror)
+   (send self :show-text "door name drc-lasvegas-mirror" :success)
+   (send req :response)
+   )
+  (:drill-rotate-zero-callback
+   (req)
+   (setq drill-rotate-num 0)
+   (send req :response)
+   )
+  (:drill-rotate-one-callback
+   (req)
+   (setq drill-rotate-num 1)
+   (send req :response)
+   )
+  (:drill-rotate-two-callback
+   (req)
+   (setq drill-rotate-num 2)
+   (send req :response)
+   )
+  (:drill-rotate-three-callback
+   (req)
+   (setq drill-rotate-num 3)
+   (send req :response)
+   )
+  (:drill-auto-go-pos-callback
+   (req)
+   (send smachine :go-to! :selecting-exec-for-go-pos)
+   (if drill-stand-coords-list
+       (progn
+         (move-robot-model (elt (elt drill-stand-coords-list drill-stand-coords-index) 1) "/odom_on_ground")
+         (send self :show-text (format nil "GOPOS for ~A Push EXEC" (elt (elt drill-stand-coords-list drill-stand-coords-index) 0)))
+         (setq drill-stand-coords-index (mod (+ drill-stand-coords-index 1) (length drill-stand-coords-list)))
+         )
+     (send self :show-text "Please firstly find drill and recog")
+     )
+   (ros::ros-info (format nil "drill auto ~A" drill-stand-coords-list))
+   (send req :response)
+   )
+  (:drill-throw-callback
+   (req)
+   (send self :show-text "drill throw exec flag set to true")
+   (setq drill-throw-flag t)
+   (send req :response)
+   )
+  (:drill-throw-exec-callback
+   (req)
+   (if drill-throw-flag
+       (progn
+         (send self :show-text "drill throw command send")
+         (let ((msg (instance drc_com_common::OCS2FCSmall :init)))
+           (send msg :type drc_com_common::OCS2FCSmall::*DRILL_THROW*)
+           (cond ((not (boundp '*drill-main-arm*))
+                  (send msg :arm_side drc_com_common::OCS2FCSmall::*UNDECIDED*))
+                 ((equal *drill-main-arm* :larm)
+                  (send msg :arm_side drc_com_common::OCS2FCSmall::*LARM*))
+                 ((equal *drill-main-arm* :rarm)
+                  (send msg :arm_side drc_com_common::OCS2FCSmall::*RARM*))
+                 (t
+                  (send msg :arm_side drc_com_common::OCS2FCSmall::*UNDECIDED*))
+                 )          
+           (send self :send-to-fc msg))
+         )
+     (send self :show-text "drill throw locked by flag" :warn)
+     )
+   (send req :response)
+   )
+  ;; door arm overwrite
+  (:force-overwrite-door-arm-callback
+   (req)
+   (setq force-overwrite-door-arm :force)
+   (send self :show-text "force overwrite door arm" :success)
+   (send req :response)
+   )
+  (:auto-overwrite-door-arm-callback
+   (req)
+   (setq force-overwrite-door-arm :auto)
+   (send self :show-text "auto overwrite door arm" :success)
+   (send req :response)
+   )
+  (:drill-left-arm-environment
+   (req)
+   (setq drill-arm-environment :larm)
+   (send self :show-text "drill left arm environment" :success)
+   (send req :response)
+   )
+  (:drill-right-arm-environment
+   (req)
+   (setq drill-arm-environment :rarm)
+   (send self :show-text "drill right arm environment" :success)
+   (send req :response)
+   )
   )
 
+;; Stair tab
+(defmethod ocs-executive-app
+  (:start-stair-callback (req)
+    (when (send smachine :next? :stair)
+      (send smachine :go-to :stair)
+      (send self :show-text "stair mode" :success)
+      (send req :response)))
+  (:stair-pose-callback (req)
+    (when (send smachine :state? :stair)
+      (let ((fc-msg (instance drc_com_common::OCS2FCSmall :init)))
+        (send fc-msg :type drc_com_common::OCS2FCSmall::*MOVE_TO_STAIR_POSE*)
+        (send self :send-to-fc fc-msg))
+      (send self :show-text "move to stair pose")
+      )
+    (send req :response))
+  (:end-stair-callback (req)
+    (when (send smachine :next? :initial)
+      (send smachine :go-to :initial))
+    (send req :response))
+  (:stair-footstep-show-callback
+   (msg)
+   (when (send smachine :state? :stair)
+     (let ((footstep-coords (mapcar #'ros::tf-pose->coords
+                                    (send msg :poses))))
+       (send self :show-text (format nil "footsteps:~%~A"
+                                     (readable-footstep-string footstep-coords))))))
+  (:stair-marker-output-callback (msg)
+    (when (send smachine :state? :stair)
+      (let ((fc-msg (instance drc_com_common::OCS2FCSmall :init)))
+        (send fc-msg :type drc_com_common::OCS2FCSmall::*EXECUTE_STAIR_FOOTSTEPS*)
+        (let ((footstep-coords (mapcar #'ros::tf-pose->coords
+                                       (send msg :poses))))
+          (send self :show-text (format nil "final footsteps:~%~A" (readable-footstep-string footstep-coords)))
+          (send fc-msg :float_params
+                (coords-set-to-float-vector footstep-coords
+                                            (length (send fc-msg :float_params))))
+          (send self :send-to-fc fc-msg))
+        ))
+    )
+  )
+
+(defun readable-footstep-string (footsteps)
+  (apply #'concatenate string
+         (mapcar #'(lambda (c)
+                     (format nil
+                             "(x, y, z) := (~0,0f ~0,0f ~0,0f)~%(r, p, y) := (~0,0f ~0,0f ~0,0f)~%"
+                             (elt (send c :worldpos) 0)
+                             (elt (send c :worldpos) 1)
+                             (elt (send c :worldpos) 2)
+                             (rad2deg (elt (car (send c :rpy-angle)) 2))
+                             (rad2deg (elt (car (send c :rpy-angle)) 1))
+                             (rad2deg (elt (car (send c :rpy-angle)) 0))))
+                 footsteps)))
+  
 (defmethod ocs-executive-app
   (:uint8-request-callback (req)
     (let ((msg (instance drc_com_common::OCS2FCSmall :init)))
       (send msg :type (send req :type))
+      (if (equal drill-arm-environment :rarm) ; only for drill
+          (send msg :arm_side drc_com_common::OCS2FCSmall::*RARM*)
+        (send msg :arm_side drc_com_common::OCS2FCSmall::*LARM*)
+        )
       (send self :send-to-fc msg))
     (send self :show-text "uint8 command send" :success)
     (send req :response)
@@ -1425,14 +1999,209 @@
       (send self :send-to-fc msg)))
   )
 
+(defmethod ocs-executive-app
+  (:door-reach-90-deg
+   (req)
+   (setq door-reach-deg 90)
+   (send self :show-text "door reach 90[deg]" :success)
+   (send req :response)
+   )
+  (:door-reach-60-deg
+   (req)
+   (setq door-reach-deg 60)
+   (send self :show-text "door reach 60[deg]" :success)
+   (send req :response)
+   )
+  (:door-reach-30-deg
+   (req)
+   (setq door-reach-deg 30)
+   (send self :show-text "door reach 30[deg]" :success)
+   (send req :response)
+   )
+  (:door-reach-0-deg
+   (req)
+   (setq door-reach-deg 0)
+   (send self :show-text "door reach 0[deg]" :success)
+   (send req :response)
+   )
+  (:enable-door-keep-grasp
+   (req)
+   (setq door-keep-grasp? t)
+   (send self :show-text "enable door-keep-grasp" :success)
+   (send req :response)
+   )
+  (:disable-door-keep-grasp
+   (req)
+   (setq door-keep-grasp? nil)
+   (send self :show-text "disable door-keep-grasp" :success)
+   (send req :response)
+   )
+  )
 
-;; generate *robot*
-(setq *robot-name* (string-upcase (unix::getenv "ROBOT")))
-(generate-robot *robot-name* :generate-ri? nil)
+(defmethod ocs-executive-app
+  (:set-door-detect-auto-callback
+   (req)
+   (send req :response)
+   )
+  (:set-door-detect-semi-auto-callback
+   (req)
+   (send req :response)
+   )
+  (:set-valve-detect-auto-callback
+   (req)
+   (send req :response)
+   )
+  (:set-valve-detect-semi-auto-callback
+   (req)
+   (send req :response)
+   )
+  (:set-drill-detect-auto-callback
+   (req)
+   (send req :response)
+   )
+  (:set-drill-detect-semi-auto-callback
+   (req)
+   (send req :response)
+   )
+  )
+
+(defmethod ocs-executive-app
+  (:snap-foot-print-callback
+    (msg)
+    (ros::ros-info ":snap-foot-print-callback")
+    (let ((fc-msg (instance drc_com_common::OCS2FCSmall :init)))
+      ;; Relative to ground
+      (send fc-msg :type drc_com_common::OCS2FCSmall::*PROJECT_FOOTPRINT*)
+      (send fc-msg :float_params
+            (coords-set-to-float-vector
+             (list (ros::tf-pose->coords (send msg :input_pose :pose))
+                   (ros::tf-pose->coords (send msg :lleg_pose))
+                   (ros::tf-pose->coords (send msg :rleg_pose)))
+             (length (send fc-msg :float_params))))
+      (send self :send-to-fc fc-msg)))
+  (:projected-footstep-callback
+    (msg)
+    (ros::ros-info ":projected-footstep-callback")
+    (let ((coords (float-vector-to-coords (send msg :params))))
+      (let ((pose-stamped (ros::coords->tf-pose-stamped coords "ground")))
+        (ros::publish "projected_footstep_ocs" pose-stamped))))
+  (:terrain-lookground-callback
+    (req)
+    (when (send smachine :next? :executing-lookground)
+      (send smachine :go-to :executing-lookground)
+      (let ((fc-msg (instance drc_com_common::OCS2FCSmall :init)))
+        (send fc-msg :type drc_com_common::OCS2FCSmall::*LOOK_GROUND*)
+        (send self :send-to-fc fc-msg))
+      (send self :show-text "Lookground"))
+    (send req :response))
+  (:lookground-finished-callback
+    (msg)
+    (when (send smachine :next? :initial)
+      (send smachine :go-to :initial)
+      (send self :show-text "Done lookground")))
+  (:footstep-exec-execute-cb (goal)
+    (when (and (send smachine :next? :executing-terrain-footsteps)
+               (not (send smachine :state? :executing-terrain-footsteps)))
+      (let ((footstep-array (send (send goal :goal) :footstep))
+            (fc-msg (instance drc_com_common::OCS2FCSmall :init)))
+        (multiple-value-bind
+         (float-footsteps int-footsteps)
+         (footstep-array->vector footstep-array
+                                 (length (send fc-msg :float_params))
+                                 (length (send fc-msg :image_roi_info)))
+         (ros::ros-info "float-footsteps: ~A" float-footsteps)
+         (send fc-msg :float_params float-footsteps)
+         (send fc-msg :image_roi_info int-footsteps)
+         (send fc-msg :type drc_com_common::OCS2FCSmall::*EXECUTE_FOOTSTEPS*)
+         (send self :send-to-fc fc-msg)))
+      (send smachine :go-to :executing-terrain-footsteps)))
+  ;; (:execute-footstep-callback
+  ;;   (msg)
+  ;;   (when (send smachine :next? :executing-terrain-footsteps)
+  ;;     (send smachine :go-to :executing-terrain-footsteps)
+  ;;     (send self :show-text "Executing footsteps")
+  ;;     (let ((fc-msg (instance drc_com_common::OCS2FCSmall :init)))
+  ;;       (send fc-msg :type drc_com_common::OCS2FCSmall::*EXECUTE_FOOTSTEPS*)
+  ;;       (send fc-msg :float_params
+  ;;             (coords-set-to-float-vector
+  ;;              (mapcar #'(lambda (m) (tf::pose->coords (send m :pose))) (send msg :footsteps))
+  ;;              (length (send smachine :float_params))))
+  ;;       (send self :send-to-fc fc-msg))))
+  (:execute-footstep-finished-callback
+    (msg)
+    (when (send smachine :next? :initial)
+      (send self :show-text "Done footstep")
+      (send ocs-footstep-controller :set-succeeded (send ocs-footstep-controller :result))
+      (send smachine :go-to :initial)))
+  (:set-foot-steps-callback (msg)       ;msg = FootstepArray
+    (when (send smachine :state? :initial)
+      (let ((fc-msg (instance drc_com_common::OCS2FCSmall :init)))
+        (multiple-value-bind
+         (flot-footsteps int-footsteps)
+         (footstep-array->vector msg
+                                 (length (send fc-msg :float_params))
+                                 (length (send fc-msg :image_roi_info)))
+         (send fc-msg :type drc_com_common::OCS2FCSmall::*SIMPLE_FOOTSTEP_EXEC*)
+         (send fc-msg :float_params float-footsteps)
+         (send fc-msg :image_roi_info int-footsteps)
+         (send self :send-to-fc fc-msg))
+        )
+      ))
+  ;; (:footstep-plan-execute-cb 
+  ;;  (goal)
+  ;;  (when (and (send smachine :next? :planning-footsteps)
+  ;;             (not (send smachine :state? :planning-footsteps)))
+  ;;     (send self :show-text "Planning footstep")
+  ;;     (let ((goal_footstep (send (send goal :goal) :goal_footstep))
+  ;;           (initial_footstep (send (send goal :goal) :initial_footstep)))
+  ;;       (let ((fc-msg (instance drc_com_common::OCS2FCSmall :init)))
+  ;;         (send fc-msg :type drc_com_common::OCS2FCSmall::*REQUEST_FOOTSTEP_PLANNING*)
+  ;;         (send fc-msg :float_params
+  ;;               (coords-set-to-float-vector
+  ;;                (append (mapcar #'(lambda (f)
+  ;;                                    (ros::tf-pose->coords (send f :pose)))
+  ;;                                (send goal_footstep :footsteps))
+  ;;                        (mapcar #'(lambda (f)
+  ;;                                    (ros::tf-pose->coords (send f :pose)))
+  ;;                                (send initial_footstep :footsteps)))
+  ;;                (length (send fc-msg :float_params))))
+  ;;         (setf (elt (send fc-msg :image_roi_info) 0) jsk_footstep_msgs::Footstep::*LEFT*)
+  ;;         (setf (elt (send fc-msg :image_roi_info) 1) jsk_footstep_msgs::Footstep::*RIGHT*)
+  ;;         (setf (elt (send fc-msg :image_roi_info) 2) jsk_footstep_msgs::Footstep::*LEFT*)
+  ;;         (setf (elt (send fc-msg :image_roi_info) 3) jsk_footstep_msgs::Footstep::*RIGHT*)
+  ;;         (send self :send-to-fc fc-msg)
+  ;;         (send smachine :go-to :planning-footsteps)))))
+  ;; (:footstep-planning-failed-callback
+  ;;   (msg)
+  ;;   (when (send smachine :state? :planning-footsteps)
+  ;;     (send self :show-text "Failed to planning footsteps" :warn)
+  ;;     (send ocs-footstep-planner :set-aborted (send ocs-footstep-planner :result))
+  ;;     (send smachine :go-to :initial))
+  ;;   )
+  ;; (:footstep-planning-result-callback
+  ;;   (msg)
+  ;;   (when (send smachine :state? :planning-footsteps)
+  ;;     (send self :show-text "Success to planning footsteps" :success)
+  ;;     (let ((result (send ocs-footstep-planner :result)))
+  ;;       (let ((footstep-array (vector->footstep-array (send msg :params)
+  ;;                                                     (send msg :int_params))))
+  ;;         (send result :result footstep-array)
+  ;;         (send footstep-array :header :frame_id "ground")
+  ;;         (mapcar #'fill-footstep-dimensions (send footstep-array :footsteps))
+  ;;         (send ocs-footstep-planner :set-succeeded result))
+  ;;       )
+  ;;     (send smachine :go-to :initial)))
+  )
 
 ;; advertise
 (ros::advertise "/ocs/rviz/visualization/ocs_executive_message"
   jsk_rviz_plugins::OverlayText)
+
+;; generate *robot*
+(setq *robot-name* (string-upcase (unix::getenv "ROBOT")))
+(generate-robot *robot-name* :generate-ri? nil)
+(set-drill-environment :draw? nil :generate-ri? nil) ;; for init param
+
 ;; TODO
 (let ((drill-type-string (ros::get-param "~drill_type" "takenoko")))
   (cond
@@ -1440,18 +2209,22 @@
    ((equal drill-type-string "takenoko") (setq *drill-type* :takenoko))
    )
   )
+
 (setq *app* (instance ocs-executive-app :init))
 (setq *tf* (instance ros::transform-listener :init))
 
 (ros::advertise "/ocs_to_fc_low_speed/input" drc_com_common::OCS2FCSmall)
 (ros::advertise "/jsk_model_marker_interface/robot/reset_joint_states_and_root" sensor_msgs::JointState 1)
+(ros::advertise "/model_joint_state_array" drc_task_common::JointStateArray 5)
 (ros::advertise "/transformable_interactive_server/set_color" std_msgs::ColorRGBA)
 (ros::advertise "/midi_config_player/set_feedback" sensor_msgs::JoyFeedbackArray)
 (ros::advertise "/urdf_control_marker/set_pose" geometry_msgs::PoseStamped 1)
 (ros::advertise "/transformable_interactive_server/set_control_relative_pose" geometry_msgs::Pose 1)
 (ros::advertise "/drill_pose_list" geometry_msgs::PoseArray 1)
-
+(ros::advertise "/robotsound" sound_play::SoundRequest 5)
+(ros::advertise "projected_footstep_ocs" geometry_msgs::PoseStamped)
 ;; registering services for button UIs
+(ros::advertise-service "terrain_lookground" std_srvs::Empty #'send *app* :terrain-lookground-callback)
 (ros::advertise-service "drive" std_srvs::Empty #'send *app* :drive-button-callback)
 (ros::advertise-service "valve" std_srvs::Empty #'send *app* :valve-button-callback)
 (ros::advertise-service "door" std_srvs::Empty #'send *app* :door-button-callback)
@@ -1462,6 +2235,7 @@
 (ros::advertise-service "drill_put" std_srvs::Empty #'send *app* :drill-put-button-callback)
 (ros::advertise-service "drill_wall" std_srvs::Empty #'send *app* :drill-wall-button-callback)
 (ros::advertise-service "drill_button" std_srvs::Empty #'send *app* :drill-button-button-callback)
+(ros::advertise-service "drill_rotate" std_srvs::Empty #'send *app* :drill-rotate-button-callback)
 (ros::advertise-service "go_pos" std_srvs::Empty #'send *app* :go-pos-button-callback)
 (ros::advertise-service "look_at" std_srvs::Empty #'send *app* :look-at-button-callback)
 (ros::advertise-service "look_around" std_srvs::Empty #'send *app* :look-around-button-callback)
@@ -1485,17 +2259,46 @@
 (ros::advertise-service "valve_edge_grasp_preferred" std_srvs::Empty #'send *app* :valve-edge-grasp-preferred-callback)
 (ros::advertise-service "valve_center_grasp_preferred" std_srvs::Empty #'send *app* :valve-center-grasp-preferred-callback)
 (ros::advertise-service "valve_center_grasp_only" std_srvs::Empty #'send *app* :valve-center-grasp-only-callback)
-(ros::advertise-service "overwrite_stand_coords" std_srvs::Empty #'send *app* :overwrite-stand-coords-callback)
-(ros::advertise-service "not_overwrite_stand_coords" std_srvs::Empty #'send *app* :not-overwrite-stand-coords-callback)
+(ros::advertise-service "force_overwrite_stand_coords" std_srvs::Empty #'send *app* :force-overwrite-stand-coords-callback)
+(ros::advertise-service "auto_overwrite_stand_coords" std_srvs::Empty #'send *app* :auto-overwrite-stand-coords-callback)
+(ros::advertise-service "no_overwrite_stand_coords" std_srvs::Empty #'send *app* :no-overwrite-stand-coords-callback)
 (ros::advertise-service "door_direction_push" std_srvs::Empty #'send *app* :door-direction-push-callback)
 (ros::advertise-service "door_direction_pull" std_srvs::Empty #'send *app* :door-direction-pull-callback)
-(ros::advertise-service "door_name_drc_box2" std_srvs::Empty #'send *app* :door-name-drc-box2)
-(ros::advertise-service "door_name_drc_test" std_srvs::Empty #'send *app* :door-name-drc-test)
-(ros::advertise-service "door_name_drc_test_mirror" std_srvs::Empty #'send *app* :door-name-drc-test-mirror)
-(ros::advertise-service "door_name_drc_sagami" std_srvs::Empty #'send *app* :door-name-drc-sagami)
-(ros::advertise-service "door_name_drc_sagami_mirror" std_srvs::Empty #'send *app* :door-name-drc-sagami-mirror)
+(ros::advertise-service "door_name_drc_box2" std_srvs::Empty #'send *app* :door-name-drc-box2-callback)
+(ros::advertise-service "door_name_drc_test" std_srvs::Empty #'send *app* :door-name-drc-test-callback)
+(ros::advertise-service "door_name_drc_test_mirror" std_srvs::Empty #'send *app* :door-name-drc-test-mirror-callback)
+(ros::advertise-service "door_name_drc_sagami" std_srvs::Empty #'send *app* :door-name-drc-sagami-callback)
+(ros::advertise-service "door_name_drc_sagami_mirror" std_srvs::Empty #'send *app* :door-name-drc-sagami-mirror-callback)
+(ros::advertise-service "door_name_drc_lasvegas" std_srvs::Empty #'send *app* :door-name-drc-lasvegas-callback)
+(ros::advertise-service "door_name_drc_lasvegas_mirror" std_srvs::Empty #'send *app* :door-name-drc-lasvegas-mirror-callback)
+(ros::advertise-service "drill_rotate_zero" std_srvs::Empty #'send *app* :drill-rotate-zero-callback)
+(ros::advertise-service "drill_rotate_one" std_srvs::Empty #'send *app* :drill-rotate-one-callback)
+(ros::advertise-service "drill_rotate_two" std_srvs::Empty #'send *app* :drill-rotate-two-callback)
+(ros::advertise-service "drill_rotate_three" std_srvs::Empty #'send *app* :drill-rotate-three-callback)
+(ros::advertise-service "drill_auto_go_pos" std_srvs::Empty #'send *app* :drill-auto-go-pos-callback)
+(ros::advertise-service "drill_throw" std_srvs::Empty #'send *app* :drill-throw-callback)
+(ros::advertise-service "drill_throw_exec" std_srvs::Empty #'send *app* :drill-throw-exec-callback)
 (ros::advertise-service "reach_until_touch_command_from_ocs" drc_task_common::ReachUntilTouchCommand #'send *app* :reach-until-touch-from-ocs)
-
+(ros::advertise-service "set_drill_coords" std_srvs::Empty #'send *app* :set-drill-coords)
+(ros::advertise-service "auto_door_detect" std_srvs::Empty #'send *app* :set-door-detect-auto-callback)
+(ros::advertise-service "semi_auto_door_detect" std_srvs::Empty #'send *app* :set-door-detect-semi-auto-callback)
+(ros::advertise-service "auto_valve_detect" std_srvs::Empty #'send *app* :set-valve-detect-auto-callback)
+(ros::advertise-service "semi_auto_valve_detect" std_srvs::Empty #'send *app* :set-valve-detect-semi-auto-callback)
+(ros::advertise-service "auto_drill_detect" std_srvs::Empty #'send *app* :set-drill-detect-auto-callback)
+(ros::advertise-service "semi_auto_drill_detect" std_srvs::Empty #'send *app* :set-drill-detect-semi-auto-callback)
+(ros::advertise-service "force_overwrite_door_arm" std_srvs::Empty #'send *app* :force-overwrite-door-arm-callback)
+(ros::advertise-service "auto_overwrite_door_arm" std_srvs::Empty #'send *app* :auto-overwrite-door-arm-callback)
+(ros::advertise-service "start_stair" std_srvs::Empty #'send *app* :start-stair-callback)
+(ros::advertise-service "stair_pose" std_srvs::Empty #'send *app* :stair-pose-callback)
+(ros::advertise-service "end_stair" std_srvs::Empty #'send *app* :end-stair-callback)
+(ros::advertise-service "drill_left_arm_environment" std_srvs::Empty #'send *app* :drill-left-arm-environment)
+(ros::advertise-service "drill_right_arm_environment" std_srvs::Empty #'send *app* :drill-right-arm-environment)
+(ros::advertise-service "door_reach_90_deg" std_srvs::Empty #'send *app* :door-reach-90-deg)
+(ros::advertise-service "door_reach_60_deg" std_srvs::Empty #'send *app* :door-reach-60-deg)
+(ros::advertise-service "door_reach_30_deg" std_srvs::Empty #'send *app* :door-reach-30-deg)
+(ros::advertise-service "door_reach_0_deg" std_srvs::Empty #'send *app* :door-reach-0-deg)
+(ros::advertise-service "enable_door_keep_grasp" std_srvs::Empty #'send *app* :enable-door-keep-grasp)
+(ros::advertise-service "disable_door_keep_grasp" std_srvs::Empty #'send *app* :disable-door-keep-grasp)
 ;; Drive joystick controller topics
 (ros::subscribe "/ocs/drive/operation/handle_cmd" std_msgs::Float64 #'send *app* :drive-handle-angle-callback)
 (ros::subscribe "/ocs/drive/operation/accel_cmd" std_msgs::Float64 #'send *app* :drive-accell-angle-callback)
@@ -1509,16 +2312,32 @@
   #'send *app* :line-callback)
 (ros::subscribe "/ocs/communication/image_rect_color/poly/scaled" geometry_msgs::PolygonStamped
   #'send *app* :polygon-callback)
+(ros::subscribe "/stair_marker/output" geometry_msgs::PoseArray
+  #'send *app* :stair-marker-output-callback)
+(ros::subscribe "/stair_marker/debug/current_pose_array" geometry_msgs::PoseArray
+  #'send *app* :stair-footstep-show-callback)
+(ros::subscribe "/set_foot_steps" jsk_footstep_msgs::FootstepArray
+  #'send *app* :set-foot-steps-callback)
+
 ;; (ros::subscribe "/ocs/communication/image_rect_color/foreground_rect/scaled" geometry_msgs::PolygonStamped
 ;;   #'send *app* :foreground-rect-callback)
 ;; (ros::subscribe "/ocs/communication/image_rect_color/background_rect/scaled" geometry_msgs::PolygonStamped
 ;;   #'send *app* :background-rect-callback)
 (ros::subscribe "/ocs_from_fc_low_speed/output" drc_com_common::FC2OCSSmall
   #'send (send *app* :fc2ocs-message-handler) :root-callback)
-(send *app* :subscribe-foreground-backggrond-topics 
+(ros::subscribe "/footstep_marker/project_footprint" jsk_interactive_marker::SnapFootPrintInput
+  #'send *app* :snap-foot-print-callback)
+(ros::subscribe "/footstep_marker/execute_footstep" jsk_footstep_msgs::FootstepArray
+  #'send *app* :execute-footstep-callback)
+(send *app* :subscribe-foreground-backggrond-topics
       (list (list "/ocs/communication/image_rect_color/foreground_rect/scaled" geometry_msgs::PolygonStamped)
             (list "/ocs/communication/image_rect_color/background_rect/scaled" geometry_msgs::PolygonStamped)))
 (ros::subscribe "/joint_states" sensor_msgs::JointState #'joint-states-callback)
 
 (ros::rate 10)
-(ros::spin)
+;;(ros::spin)
+(while (ros::ok)
+  (send *app* :spin-once)
+  (ros::spin-once)
+  (ros::sleep)
+  )

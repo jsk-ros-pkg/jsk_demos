@@ -34,13 +34,27 @@ def setDynamicReconfigure(srv, name, type, value):
 
 def callback(msg):
     slots = list(msg.__slots__)           #copy
+    multisense_srv = dynamicReconfigureService("/multisense")
+    chest_srv = dynamicReconfigureService("/chest_camera")
     for slot in slots:
+        
         if slot == "lighting":
-            multisense_srv = dynamicReconfigureService("/multisense")
             setDynamicReconfigure(multisense_srv, "led_duty_cycle", "double",
                                   getattr(msg, slot))
         elif slot == "exposure":
             setDynamicReconfigure(multisense_srv, "exposure_time", "double", 
+                                  getattr(msg, slot))
+        elif slot == "enable_auto_exposure":
+            setDynamicReconfigure(multisense_srv, "auto_exposure", "bool", 
+                                  getattr(msg, slot))
+        elif slot == "enable_lighting":
+            setDynamicReconfigure(multisense_srv, "lighting", "bool", 
+                                  getattr(msg, slot))
+        elif slot == "chest_camera_enable_auto_exposure":
+            setDynamicReconfigure(chest_srv, "auto_exposure", "bool", 
+                                  getattr(msg, slot))
+        elif slot == "chest_camera_exposure":
+            setDynamicReconfigure(chest_srv, "exposure", "double", 
                                   getattr(msg, slot))
         else:
             raise Exception("Unsupported slot: %s" % (slot))

@@ -505,6 +505,7 @@ Usage:
      (:executing-hose-connect -> :initial)                            ;done
      ;; drill_grasp
      (:initial -> :selecting-region-for-drill-grasp)
+     (:initial -> :recognizing-drill-grasp-pose)
      (:selecting-region-for-drill-grasp -> :initial) ;cancel
      (:selecting-region-for-drill-grasp -> :recognizing-drill-grasp-pose) 
      (:recognizing-drill-grasp-pose -> :selecting-exec-for-drill-grasp) ;recognition done
@@ -543,9 +544,29 @@ Usage:
      (:executing-drill-button -> :selecting-exec-for-drill-button)          ;cancel
      (:selecting-exec-for-drill-button -> :initial)                   ;cancel
      (:executing-drill-button -> :initial)                            ;done
+     ;; drill_rotate
+     (:initial -> :selecting-region-for-drill-rotate)
+     (:selecting-region-for-drill-rotate -> :initial) ;cancel
+     (:selecting-region-for-drill-rotate -> :recognizing-drill-rotate-pose)
+     (:recognizing-drill-rotate-pose -> :selecting-exec-for-drill-rotate) ;recognition done
+     (:recognizing-drill-rotate-pose -> :initial) ;cancel
+     (:selecting-exec-for-drill-rotate -> :executing-drill-rotate)          ;exec
+     (:executing-drill-rotate -> :selecting-exec-for-drill-rotate)          ;cancel
+     (:selecting-exec-for-drill-rotate -> :initial)                   ;cancel
+     (:executing-drill-rotate -> :initial)                            ;done
      ;; driving
      (:initial -> :vehicle)
      (:vehicle -> :initial)
+     ;; stair
+     (:initial -> :stair)
+     (:stair -> :initial)
+     ;; terrain
+     (:initial -> :executing-lookground)
+     (:executing-lookground -> :initial)
+     (:initial -> :executing-terrain-footsteps)
+     (:executing-terrain-footsteps -> :initial)
+     (:initial -> :planning-footsteps)
+     (:planning-footsteps -> :initial)
      )
    '((:initial :initial)
      ;; go-pos
@@ -603,8 +624,19 @@ Usage:
      (:recognizing-drill-button-pose :drill-button)
      (:selecting-exec-for-drill-button :drill-button)
      (:executing-drill-button :drill-button)
+     ;; drill-rotate
+     (:selecting-region-for-drill-rotate :drill-rotate)
+     (:recognizing-drill-rotate-pose :drill-rotate)
+     (:selecting-exec-for-drill-rotate :drill-rotate)
+     (:executing-drill-rotate :drill-rotate)
      ;; driving
      (:vehicle :vehicle)
+     ;; stair
+     (:stair :stair)
+     ;; terrain
+     (:executing-lookground :terrain)
+     (:executing-terrain-footsteps :terrain)
+     (:planning-footsteps :terrain)
      )
    :initial "ocs_state.png" t))
 
@@ -631,6 +663,9 @@ Usage:
 
      (:initial -> :recognizing-drill-button-pose)
      (:recognizing-drill-button-pose -> :initial)
+
+     (:initial -> :recognizing-drill-rotate-pose)
+     (:recognizing-drill-rotate-pose -> :initial)
 
      (:initial -> :recognizing-door-pose)
      (:recognizing-door-pose -> :initial)
@@ -661,6 +696,9 @@ Usage:
 
      (:initial -> :executing-drill-button)
      (:executing-drill-button -> :initial)
+
+     (:initial -> :executing-drill-rotate)
+     (:executing-drill-rotate -> :initial)
      
      (:initial -> :executing-door)
      (:executing-door -> :initial)
@@ -689,6 +727,16 @@ Usage:
 
      (:initial -> :executing-vehicle)
      (:executing-vehicle -> :initial)
+
+     (:initial -> :executing-stair)
+     (:executing-stair -> :initial)
+
+     (:initial -> :executing-terrain-lookground)
+     (:executing-terrain-lookground -> :initial)
+     (:initial -> :executing-terrain-footsteps)
+     (:executing-terrain-footsteps -> :initial)
+     (:initial -> :planning-terrain-footsteps)
+     (:planning-terrain-footsteps -> :initial)
      )
    '((:initial :initial)
      
@@ -708,6 +756,8 @@ Usage:
      (:executing-drill-wall :drill)
      (:recognizing-drill-button-pose :drill)
      (:executing-drill-button :drill)
+     (:recognizing-drill-rotate-pose :drill)
+     (:executing-drill-rotate :drill)
 
 
      (:recognizing-door-pose :door)
@@ -729,6 +779,12 @@ Usage:
      (:executing-reach-until-touch :reach-until-touch)
 
      (:executing-vehicle :vehicle)
+
+     (:executing-stair :stair)
+
+     (:executing-terrain-lookground :terrain)
+     (:executing-terrain-footsteps :terrain)
+     (:planning-terrain-footsteps :terrain)
      )
    :initial nil t
    ))

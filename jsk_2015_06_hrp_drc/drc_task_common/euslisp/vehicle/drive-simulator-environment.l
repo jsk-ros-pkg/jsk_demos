@@ -349,7 +349,7 @@
              (make-cascoords :coords (send (send (send (send handle-ring :copy-worldcoords)                                                       
                                                        :rotate (deg2rad 90) :z)
                                                  :rotate (deg2rad -90) :x)
-                                           :translate (float-vector 0 -115 105) :local)
+                                           :translate (float-vector 0 -130 105) :local)
                              :name :handle-crank))
        
        ;; old definitions

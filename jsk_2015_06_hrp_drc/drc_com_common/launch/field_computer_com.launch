@@ -7,6 +7,9 @@
   <arg name="DYNAMIC_RECONFIGURE_PORT" default="703"/>
   <arg name="EUS_OUTPUT_PORT" default="704"/>
   <arg name="EUS_INPUT_PORT" default="705"/>
+  <arg name="OCS_TO_FC_VEHICLE_PORT" default="706"/>
+  <arg name="FC_TO_OCS_VEHICLE_PORT" default="707"/>
+
   <node pkg="jsk_network_tools" type="silverhammer_highspeed_streamer.py"
         output="log"
         name="highspeed_streamer">
@@ -16,6 +19,19 @@
       to_ip: "$(arg OCS_IP)"
       send_rate: 10
       bandwidth: 280000000
+      packet_size: 1472
+    </rosparam>
+  </node>
+  <node pkg="jsk_network_tools" type="silverhammer_highspeed_streamer.py"
+        output="log"
+        name="highspeed_streamer_reliable" if="false">
+    <rosparam subst_value="true">
+      message: drc_com_common/FC2OCSLargeReliable
+      to_port: 16486
+      to_ip: "$(arg OCS_IP)"
+      send_rate: 10
+      bandwidth: 280000000
+      packet_size: 1472
     </rosparam>
   </node>
   
@@ -27,6 +43,7 @@
       receive_port: $(arg OCS_TO_FC_PORT)
       receive_ip: "0.0.0.0"
       event_driven: true
+      receive_buffer_size: 700
     </rosparam>
   </node>
 
@@ -61,7 +78,6 @@
     <remap from="/joint_states" to="/joint_states_appended" />
     <rosparam>
       message_type: drc_com_common/HumanoidJointAngles
-      robot: hrp2jsknts
     </rosparam>
   </node>
 
@@ -71,9 +87,31 @@
     <rosparam subst_value="true">
       message: drc_task_common/DRCParametersMessage
       receive_port: $(arg DYNAMIC_RECONFIGURE_PORT)
-      receive_ip: $(arg FC_IP)
+      receive_ip: "0.0.0.0"
     </rosparam>
   </node>
+
+  <!-- for vehicle task -->
+  <node pkg="jsk_network_tools" type="silverhammer_lowspeed_receiver.py"
+        output="log" launch-prefix="sudo"
+        name="fc_from_ocs_vehicle">
+    <rosparam subst_value="true">
+      message: drc_com_common/VehicleOCS2FCSmall
+      receive_port: $(arg OCS_TO_FC_VEHICLE_PORT)
+      receive_ip: "0.0.0.0"
+    </rosparam>
+  </node>
+  <node pkg="jsk_network_tools" type="silverhammer_lowspeed_streamer.py"
+        output="log"
+        name="fc_to_ocs_vehicle">
+    <rosparam subst_value="true">
+      message: drc_com_common/VehicleFC2OCSSmall
+      to_port: $(arg FC_TO_OCS_VEHICLE_PORT)
+      to_ip: $(arg OCS_IP)
+      event_driven: true
+    </rosparam>
+  </node>
+  
   <include file="$(find roseus_remote)/launch/roseus_eusserver.launch">
     <arg name="FC_IP" value="$(arg FC_IP)" />
     <arg name="OCS_IP" value="$(arg OCS_IP)" />

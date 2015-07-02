@@ -19,6 +19,8 @@
       "package://hrpsys_ros_bridge_tutorials/euslisp/staro-interface.l")
      ((string= lower-name "jaxon")
       "package://hrpsys_ros_bridge_tutorials/euslisp/jaxon-interface.l")
+     ((string= lower-name "jaxon_red")
+      "package://hrpsys_ros_bridge_tutorials/euslisp/jaxon_red-interface.l")
      ((string= lower-name "urataleg")
       "package://hrpsys_ros_bridge_tutorials/euslisp/urataleg-interface.l")
      ((string= lower-name "samplerobot")
@@ -55,7 +57,7 @@
   (send *ri* :hand-angle-vector (apply #'concatenate float-vector (send *robot* :hand :arms :angle-vector)) time)
   (when wait? (send *ri* :hand-wait-interpolation)))
 
-(defun hand-start-grasp (&key (arm :arms) (real? nil) (time 500) (wait? t) (type :normal))
+(defun hand-start-grasp (&key (arm :arms) (real? nil) (time 500) (wait? t) (type :normal) (gain 30))
   (cond ((or (equal *robot-name* "HRP2JSKNT") (equal *robot-name* "HRP2JSKNTS"))
          (cond ((equal type :door-grasp-preshape)
                 (send *robot* :hand :arms :angle-vector *door-grasp-preshape-pose*)
@@ -65,6 +67,10 @@
                 (send *robot* :hand :arms :angle-vector *door-grasp-pose*)
                 (when real? (hand-model2real :time time :wait? t))
                 )
+               ((equal type :default-grasp)
+                (send *robot* :hand :arms :angle-vector (float-vector 90.0 0.0 0.0 0.0 90.0 90.0))
+                (when real? (hand-model2real :time time :wait? t))
+                )
                (t ;; (equal type :normal)
                 (send *robot* :hand :arms :extension-pose) ;; hand extension-pose
                 (when real? (hand-model2real :time time :wait? t))
@@ -72,23 +78,44 @@
                 (when real? (hand-model2real :time time :wait? wait?))
                 ))
          )
-        ((or (equal *robot-name* "JAXON") (equal *robot-name* "STARO"))
-         (when (and real? (find-method *ri* :start-grasp))
-           (send *ri* :start-grasp arm :wait wait?))
+        (t ;; (or (equal *robot-name* "JAXON") (equal *robot-name* "STARO") (equal *robot-name* "JAXON_RED"))
+         (cond ((or (equal type :door-grasp-preshape))
+                (when (and real? (find-method *ri* :stop-grasp))
+                  (send *ri* :stop-grasp arm :wait wait?))
+                )
+               (t
+                (when (and real? (find-method *ri* :start-grasp))
+                  (send *ri* :start-grasp arm :wait wait? :gain gain))
+                ))
          ))
   )
 
-(defun hand-stop-grasp (&key (arm :arms) (real? nil) (time 500) (wait? t))
+(defun hand-stop-grasp (&key (arm :arms) (real? nil) (time 500) (wait? t) (type :hook-pose))
   (cond ((or (equal *robot-name* "HRP2JSKNT") (equal *robot-name* "HRP2JSKNTS"))
-         (send *robot* :hand arm :hook-pose) ;; hand hook-pose
-         (when real? (hand-model2real :time time :wait? wait?)))
-        ((or (equal *robot-name* "JAXON") (equal *robot-name* "STARO"))
+         (cond ((equal type :reset-pose)
+                (send *robot* :hand arm :reset-pose)
+                (when real? (hand-model2real :time time :wait? wait?))
+                )
+               (t ;; (equal type :hook-pose)
+                (send *robot* :hand arm :hook-pose)
+                (when real? (hand-model2real :time time :wait? wait?))
+                ))
+         )
+        (t ;; (or (equal *robot-name* "JAXON") (equal *robot-name* "STARO") (equal *robot-name* "JAXON_RED"))
          (when (and real? (find-method *ri* :stop-grasp))
-           (send *ri* :stop-grasp arm :wait wait?)))
-        ))
+           (send *ri* :stop-grasp arm :wait wait?))
+         ))
+  )
 
 (defun send-angle-vector-sequence-with-time
-  (av-seq &key (time 5000) (wait? t))
+  (av-seq &key (time 5000) (wait? t) (enable-cancel? t))
+  (when enable-cancel?
+    (ros::spin-once)
+    (when (and (boundp '*cancel-motion-flag*) *cancel-motion-flag*) 
+      (setq *cancel-motion-flag* nil)
+      (ros::ros-info "cancel driven")
+      (throw 'exit :exit-with-flug)
+      ))
   (send *ri* :angle-vector-sequence av-seq (make-list (length av-seq) :initial-element time))
   (when wait? (send *ri* :wait-interpolation)))
 
@@ -108,7 +135,31 @@
     )
   )
 
-(defun play-motion-on-eus-viewer (motion &key (step-time 400) (wait? nil) (interpolation? nil)) ;; motion is list of angle-vector
+(defun store-motion-joint-states (motion &key (step-time 400))
+  (let* ((ja-msg (instance drc_task_common::JointStateArray :init))
+
+         (msg-array nil))
+    (dolist (av motion)
+      (let ((msg (instance sensor_msgs::JointState :init)))
+        (send msg :header (instance std_msgs::Header :init :stamp (ros::time 0.0)))
+        (send msg :name (send-all (send *robot* :joint-list) :name))
+        (send msg :position (mapcar #'deg2rad (coerce av cons)))
+        (push-back msg msg-array)
+        )
+      ;(push msg (send ja-msg :joint_state_array))
+      )
+    (send ja-msg :step_time 400)
+    (send ja-msg :joint_state_array msg-array)
+    (ros::publish "/model_joint_state_array" ja-msg)
+    (ros::spin-once)
+    )
+  )
+
+(defun play-motion-on-eus-viewer
+  (motion
+   &key
+   (step-time 400) (wait? nil) (interpolation? nil)
+   (collision-check? nil) (collision-check-robot-link-list nil) (collision-check-obj-link nil)) ;; motion is list of angle-vector
   (unless (boundp '*irtviewer*)
     (warning-message 1 "irtviewer is not generated.~%")
     (return-from play-motion-on-eus-viewer nil))
@@ -120,6 +171,8 @@
               :foot-midcoords (send (send *robot* :foot-midcoords) :copy-worldcoords)))
             (t
              (send *robot* :angle-vector av)))
+      (when collision-check?
+        (collision-check-with-obj :robot-link-list collision-check-robot-link-list :obj-link collision-check-obj-link))
       (send *robot* :fix-leg-to-coords original-foot-midcoords)
       (send *irtviewer* :draw-objects)
       (cond (wait? (read-line))
@@ -138,6 +191,13 @@
     (x::window-main-one)
     )
   )
+
+(defun collision-check-with-obj
+  (&key (robot-link-list (send *robot* :links)) (obj-link nil))
+  (dotimes (i (length robot-link-list))
+    (when (equal (pqp-collision-check (elt robot-link-list i) obj-link) 1)
+      (ros::ros-warn "collision detected between obj and ~a" (send (elt robot-link-list i) :name)))
+    ))
 
 ;; send angle-vector from ocs
 (defun send-angle-vector-from-ocs
@@ -199,15 +259,13 @@
   )
 
 (defun check-coords-distance ;; return t when distance is smaller than thre
-  (c1 c2)
+  (c1 c2 &key (pos-thre 0.005) (rpy-thre (deg2rad 2)))
   (let* ((c-diff (send c1 :transformation c2))
          (pos-diff (mapcar #'abs (coerce (send c-diff :pos) cons)))
          (rpy-diff (mapcar #'abs (car (send c-diff :rpy-angle))))
-         (pos-thre 0.005)
-         (rpy-thre (deg2rad 2)))
+         )
     (and (< (norm (coerce pos-diff float-vector)) pos-thre) (< (norm (coerce rpy-diff float-vector)) rpy-thre))
     ))
-
 (defun check-angle-vector-distance ;; return t when distance is smaller than thre
   (&key
    (dest-av (send *robot* :angle-vector))
@@ -303,6 +361,14 @@
     (ros::publish "/urdf_control_marker/set_pose" msg)
     ))
 
+(defun convert-coords-frame
+  (coords &key (base-frame "/ground") (target-frame "/odom_on_ground"))
+  (setq tf-trans (send *tf* :lookup-transform target-frame base-frame (ros::time 0)))
+  (setq coords (if tf-trans (send tf-trans :transform coords) (make-coords)))
+  coords
+  )
+
+
 (defun get-robot-model-current-pos
   ()
   (let* ((base-frame "/ground") (target-frame "/robot_marker_root")
@@ -363,6 +429,64 @@
     )
   )
 
+(defun set-default-impedance-param
+  (&key (arm :arms))
+  (cond ((or (equal *robot-name* "JAXON") (equal *robot-name* "STARO") (equal *robot-name* "JAXON_RED"))
+         (send *ri* :set-impedance-controller-param arm
+               :m-p 10.0 :d-p 200.0 :k-p 400.0
+               :m-r 5.0 :d-r 100.0 :k-r 200.0
+               :force-gain #f(1.0 1.0 1.0) :moment-gain #f(1.0 1.0 1.0)
+               :sr-gain 1.0 :avoid-gain 0.001 :reference-gain 0.01  :manipulability-limit 0.1  :controller-mode 0
+               :ik-optional-weight-vector #f(1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0)
+               )
+         )
+        (t ;; (or (equal *robot-name* "HRP2JSKNT") (equal *robot-name* "HRP2JSKNTS"))
+         (send *ri* :set-impedance-controller-param arm
+               :m-p 10.0 :d-p 200.0 :k-p 400.0
+               :m-r 5.0 :d-r 100.0 :k-r 200.0
+               :force-gain #f(1.0 1.0 1.0) :moment-gain #f(1.0 1.0 1.0)
+               :sr-gain 1.0 :avoid-gain 0.001 :reference-gain 0.01  :manipulability-limit 0.1  :controller-mode 0
+               )
+         ))
+  )
+
+(defun start-default-impedance
+  ()
+  (set-default-impedance-param)
+  (cond
+   ((or (equal *robot-name* "JAXON") (equal *robot-name* "STARO") (equal *robot-name* "JAXON_RED"))
+    (send *ri* :start-impedance :arms :d-p 600 :d-r 200))
+   (t ;; (or (equal *robot-name* "HRP2JSKNT") (equal *robot-name* "HRP2JSKNTS"))
+    (send *ri* :start-impedance :arms)
+    ))
+  )
+
+(defun start-soft-impedance
+  ()
+  (set-default-impedance-param)
+  (cond
+   ((or (equal *robot-name* "JAXON") (equal *robot-name* "STARO") (equal *robot-name* "JAXON_RED"))
+    (send *ri* :start-impedance :arms :m-p 10 :d-p 800 :k-p 300 :m-r 2.0 :d-r 80 :k-r 40))
+   (t ;; (or (equal *robot-name* "HRP2JSKNT") (equal *robot-name* "HRP2JSKNTS"))
+    (send *ri* :start-impedance :arms :m-p 7.5 :d-p 250 :k-p 200 :m-r 1 :d-r 15 :k-r 20)))
+  )
+
+(defun start-hard-impedance
+  ()
+  (set-default-impedance-param)
+  (cond ((or (equal *robot-name* "JAXON") (equal *robot-name* "STARO") (equal *robot-name* "JAXON_RED"))
+         (send *ri* :start-impedance :arms :moment-gain (float-vector 0 0 0) :k-p 3000 :d-p 3000))
+        (t ;; (or (equal *robot-name* "HRP2JSKNT") (equal *robot-name* "HRP2JSKNTS"))
+         (send *ri* :start-impedance :arms :moment-gain (float-vector 0 0 0) :k-p 3000 :d-p 3000)))
+  )
+
+(defun check-stand-coords
+  (stand-coords &key (pos-thre 0.01) (rpy-thre 1))
+  (let* ((pos (scale 0.001 (send stand-coords :worldpos)))
+         (rpy (mapcar #'rad2deg (car (send stand-coords :rpy-angle))))
+         )
+    (or (> (abs (elt pos 0)) pos-thre) (> (abs (elt pos 1)) pos-thre) (> (abs (elt rpy 0)) rpy-thre))))
+
 (load "package://hrpsys_ros_bridge/euslisp/rtm-ros-robot-interface.l")
 
 (defmethod rtm-ros-robot-interface
@@ -402,16 +526,16 @@
                
                (t
                 (let*
-                    ((target-force-vector (mapcar #'(lambda (d) (scale -1 d)) dir)) 
-                     (diff-force (mapcar #'v- relative-force target-force-vector))
+                    ((target-force (mapcar #'(lambda (d) (scale -1 d)) dir)) 
+                     (diff-force  (mapcar #'(lambda (l rf tf) (v- (if (equal coords-system :world) rf (send (send (send tmp-robot l :end-coords) :copy-worldcoords) :inverse-rotate-vector rf)) tf)) limb relative-force target-force))
                      (mag-of-diff-force (mapcar #'norm diff-force)))
                   (setq finish-condition (mapcar #'(lambda (l fc ip) (or fc (when (> (norm (v- (send (send tmp-robot l :end-coords) :worldpos) ip)) max-dist) (warn "over max-dist~%" l) t))) limb finish-condition initial-pos))
 
                   (setq finish-condition (mapcar #'(lambda (l fc mdf) (or fc (when (< mdf thre) (warn "limb ~a touched~%" l) t)))
                                                  limb finish-condition mag-of-diff-force))
-                                        ;(setq ndir (mapcar #'(lambda (target diff) (scale (/ 1.0 (norm target)) diff)) target-force-vector diff-force))
+                                        ;(setq ndir (mapcar #'(lambda (target diff) (scale (/ 1.0 (norm target)) diff)) target-force diff-force))
                   (setq ndir (mapcar #'normalize-vector diff-force))
-                  (when debug (warn ";; mag-of-diff-force: ~a thre: ~a finish-cond: ~a ndir: ~a target ~a relative ~a~%" mag-of-diff-force thre finish-condition ndir target-force-vector relative-force))
+                  (when debug (warn ";; mag-of-diff-force: ~a thre: ~a finish-cond: ~a ndir: ~a target ~a relative ~a~%" mag-of-diff-force thre finish-condition ndir target-force relative-force))
                   ))
                )
          (unless (some #'not finish-condition)
@@ -435,3 +559,121 @@
      ;;(send self :set-interpolation-mode ":hoffarbib")
      dist-result)
    ))
+
+
+;; for stair
+(defun move-to-stair-pose (&key (time 3000))
+  ;; jaxon only
+  (when (find-method *robot* :narrow-width-pose)
+    (send *robot* :narrow-width-pose)
+    (send *ri* :angle-vector (send *robot* :angle-vector)
+          time)
+    (send *ri* :wait-interpolation)
+    (walking-pose *robot*
+                  :root-link-pitch-offset 10
+                  :chest-link-pitch-offset 25
+                  :root-link-height-offset -60
+                  :head-link-pitch-offset 35
+                  :default-pose-method :narrow-width-pose)
+    (send *ri* :angle-vector (send *robot* :angle-vector)
+          time)
+    (send *ri* :wait-interpolation)
+  ))
+
+(defun fill-footstep-dimensions (footstep)
+  (send footstep :dimensions :z 0.001)
+  (cond
+   ((string= *jaxon* "JAXON")
+    (send footstep :dimensions :x 0.235)
+    (send footstep :dimensions :y 0.135))
+   ((string= *jaxon* "JAXON_RED")
+    (send footstep :dimensions :x 0.235)
+    (send footstep :dimensions :y 0.135))
+   ((string= *jaxon* "HRP2JSK")
+    (send footstep :dimensions :x 0.235)
+    (send footstep :dimensions :y 0.135))
+   ((or (string= *jaxon* "HRP2JSKNT")
+        (string= *jaxon* "HRP2JSKNTS"))
+    (send footstep :dimensions :x 0.245)
+    (send footstep :dimensions :y 0.135))
+   ))
+
+;; for emergency, currently support only jaxon and jaxon_red
+(defun move-to-emergency-pose (&key (initial-pose t) (ratio 1.0))
+  (progn
+    (send *ri* :stop-impedance :arms)
+    (send *ri* :start-grasp))
+  ;; initial pose
+  (when initial-pose
+    (progn
+      (send *robot* :reset-pose)
+      (send *robot* :fix-leg-to-coords (make-coords))
+      (send *ri* :angle-vector (send *robot* :angle-vector) (* 7500 ratio))
+      (send *ri* :wait-interpolation)))
+  ;; squat pose : robot specific code
+  (progn
+    (send *robot* :legs :move-end-pos #f(0 0 500))
+    (send *robot* :torso-waist-p :joint-angle 30)
+    (dolist (l (list :rarm :larm))
+      (send *robot* l :inverse-kinematics (send (make-coords :pos (send (send (send *robot* l :end-coords) :copy-worldcoords) :worldpos)) :rotate pi/2 :y)))
+    (send *robot* :inverse-kinematics
+          (list (send (send (send (send *robot* :rarm :end-coords) :copy-worldcoords) :translate (float-vector 150 0 500) :local) :rotate (/ 0 6) :y :world)
+                (send (send (send (send *robot* :larm :end-coords) :copy-worldcoords) :translate (float-vector 150 0 500) :local) :rotate (/ 0 6) :y :world))
+          :move-target (list (send *robot* :rarm :end-coords)
+                             (send *robot* :larm :end-coords))
+          :link-list (list (send *robot* :link-list (send *robot* :rarm :end-coords :parent))
+                           (send *robot* :link-list (send *robot* :larm :end-coords :parent))))
+    (send *robot* :fix-leg-to-coords (make-coords))
+    (send *robot* :move-centroid-on-foot :both '(:rleg :lleg :larm :rarm)
+          :root-link-virtual-joint-weight #f(0.1 0.1 0.8 0.1 0.5 0.5)
+          :target-centroid-pos (v+ (apply #'midpoint 0.5 (send *robot* :legs :end-coords :worldpos)) (float-vector 20 0 0)))
+    (send *ri* :angle-vector (send *robot* :angle-vector) (* 7500 ratio))
+    (send *ri* :wait-interpolation))
+  ;; move centroid forward
+  (progn
+    (send *robot* :fix-leg-to-coords (make-coords))
+    (send *robot* :move-centroid-on-foot :both '(:rleg :lleg :larm :rarm) :target-centroid-pos (float-vector 30 0 0))
+    (send *ri* :angle-vector (send *robot* :angle-vector) (* 750 ratio))
+    (send *ri* :wait-interpolation))
+  ;; four leg mode : hand specific code
+  (let* ((z-pos (send-all (send *robot* :arms :end-coords) :worldpos))
+         (thk-contact-point-offset 15)
+         (tc
+          (list
+           (send (send *robot* :rarm :end-coords :copy-worldcoords) :translate (float-vector 0 0 (+ (* -1 (elt (car z-pos) 2)) thk-contact-point-offset)) :world)
+           (send (send *robot* :larm :end-coords :copy-worldcoords) :translate (float-vector 0 0 (+ (* -1 (elt (cadr z-pos) 2)) thk-contact-point-offset)) :world)
+           (send *robot* :rleg :end-coords :copy-worldcoords)
+           (send *robot* :lleg :end-coords :copy-worldcoords))))
+    (dolist (l (list :rleg :lleg))
+      (send *robot* l :crotch-p :joint-angle -90))
+    (send *robot* :fix-leg-to-coords (make-coords))
+    (with-move-target-link-list
+     (mt ll *robot* '(:rarm :larm :rleg :lleg))
+     (send *robot*
+           :fullbody-inverse-kinematics tc
+           :move-target mt
+           :link-list ll
+           :max (float-vector +500 +200 +200 +10 +20 +10)
+           :min (float-vector -500 -200 -200 -10 -20 -10)
+           :root-link-virtual-joint-weight #f(0.8 0.1 0.8 0.1 0.8 0.5)
+           :target-centroid-pos (v+ (apply #'midpoint 0.5 (send *robot* :legs :end-coords :worldpos)) (float-vector 100 0 0))
+           :debug-view :no-message))
+    (send *ri* :angle-vector (send *robot* :angle-vector) (* 3000 ratio))
+    (send *ri* :wait-interpolation))
+  ;; stop st / abc
+  (progn
+    (send *ri* :stop-st)
+    (send *ri* :stop-auto-balancer))
+  ;; move centroid
+  (progn
+    (send *robot* :move-centroid-on-foot :both '(:rarm :larm :rleg :lleg)
+          :root-link-virtual-joint-weight #f(0.8 0.1 0.8 0.1 0.8 0.5)
+          :max (float-vector +800 +600 +800 +20 +20 +10)
+          :min (float-vector -500 -600 -200 -20 -20 -10)
+          :target-centroid-pos (v+ (apply #'midpoint 0.5 (send *robot* :legs :end-coords :worldpos))
+                                   (float-vector 150 0 0))
+          :centroid-thre 10
+          :debug-view :no-message)
+    (send *ri* :angle-vector (send *robot* :angle-vector) (* 4500 ratio))
+    (send *ri* :wait-interpolation))
+  )

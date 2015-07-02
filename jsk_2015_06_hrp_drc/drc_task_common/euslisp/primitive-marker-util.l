@@ -19,7 +19,7 @@
     ))
 
 (defun set-primitive-marker-dimensions
-  (&key x y z radius small-radius)
+  (&key x y z radius small-radius name)
   (let* ((req (instance jsk_interactive_marker::SetMarkerDimensionsRequest :init))
          (req-dim (instance jsk_interactive_marker::MarkerDimensions :init)))
     (when x (send req-dim :x (* 0.001 x)))
@@ -27,16 +27,18 @@
     (when z (send req-dim :z (* 0.001 z)))
     (when radius (send req-dim :radius (* 0.001 radius)))
     (when small-radius (send req-dim :small_radius (* 0.001 small-radius)))
+    (when name (send req :target_name name))
     (send req :dimensions req-dim)
     (ros::service-call "/transformable_interactive_server/set_dimensions" req)
     ))
 
 (defun set-primitive-marker-pose
-  (coords frame-id)
+  (coords frame-id &key name)
   (let* ((req (instance jsk_interactive_marker::SetTransformableMarkerPoseRequest :init))
          (req-pose-st (instance geometry_msgs::PoseStamped :init)))
     (send req-pose-st :header (instance std_msgs::header :init :stamp (ros::time-now) :frame_id frame-id))
     (send req-pose-st :pose (ros::coords->tf-pose coords))
+    (when name (send req :target_name name))
     (send req :pose_stamped req-pose-st)
     (ros::service-call "/transformable_interactive_server/set_pose" req)
     ))
@@ -48,7 +50,7 @@
 
 (defun set-primitive-marker-control-relative-pose
   (coords)
-   (ros::publish "/transformable_interactive_server/set_control_relative_pose" (ros::coords->tf-pose coords)))
+  (ros::publish "/transformable_interactive_server/set_control_relative_pose" (ros::coords->tf-pose coords)))
    
 ;; receive ;;;;;;;;;;;;;;;;;;;;
 
@@ -77,6 +79,21 @@
     (setq dim (send (ros::service-call "/transformable_interactive_server/get_dimensions" req) :dimensions))
     (list (* 1000 (send dim :x)) (* 1000 (send dim :y)) (* 1000 (send dim :z))
           (* 1000 (send dim :radius)) (* 1000 (send dim :small_radius)) (send dim :type))
+    ))
+
+(defun set-focus-marker-name
+  (name)
+  (let* ((req (instance jsk_interactive_marker::SetTransformableMarkerFocusRequest :init)))
+    (send req :target_name name) 
+    (ros::service-call "/transformable_interactive_server/get_dimensions" req)
+    ))
+
+(defun get-marker-existence
+  (name)
+  (let* ((req (instance jsk_interactive_marker::GetTransformableMarkerExistenceRequest :init)) res)
+    (send req :target_name name)
+    (setq res (ros::service-call "/transformable_interactive_server/get_existence" req))
+    (if res (send res :existence) nil)
     ))
 
 

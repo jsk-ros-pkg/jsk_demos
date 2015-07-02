@@ -40,7 +40,7 @@
     <param name="r_min" value="0.01"/>
     <param name="sr_min" value="0.001"/>
   </node>
-
+  
   <!-- spacenav client node -->
   <node pkg="drc_task_common" type="spacenav_client.py" name="spacenav_client">
     <remap from="input_joy" to="$(arg spacenav_joy_topic)"/>
@@ -58,5 +58,8 @@
 
   <!-- trackball client node -->
   <include if="$(arg enable_trackball_head)" file="$(find jsk_teleop_joy)/launch/$(arg trackball_head_launch)">
+  </include>
+  <include file="$(find drc_task_common)/launch/joy_teleop.launch">
+    <arg name="launch_joy" default="false" />
   </include>
 </launch>

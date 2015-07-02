@@ -1,15 +1,20 @@
 - direction: 'horizontal'
-- name: 'overwrite stand-coords'
-  service: 'overwrite_stand_coords'
-  image: "package://drc_task_common/icons/overwrite-stand-coords.png"
+- name: 'force overwrite stand-coords'
+  service: 'force_overwrite_stand_coords'
+  image: "package://drc_task_common/icons/force-overwrite-stand-coords.png"
   image_size: [100, 100]
   column: 0
-- name: 'not overwrite stand-coords'
-  service: 'not_overwrite_stand_coords'
-  image: "package://drc_task_common/icons/not-overwrite-stand-coords.png"
+- name: 'auto overwrite stand-coords'
+  service: 'auto_overwrite_stand_coords'
+  image: "package://drc_task_common/icons/auto-overwrite-stand-coords.png"
   image_size: [100, 100]
   column: 0
   default_value: True
+- name: 'no overwrite stand-coords'
+  service: 'no_overwrite_stand_coords'
+  image: "package://drc_task_common/icons/no-overwrite-stand-coords.png"
+  image_size: [100, 100]
+  column: 0
 - name: 'enable head overwrite'
   service: 'enable_head_overwrite'
   image: "package://drc_task_common/icons/enable-head-overwrite.png"
@@ -53,19 +58,70 @@
   image: "package://drc_task_common/icons/door-pull.png"
   image_size: [100, 100]
   column: 3
-- name: 'drc-box2'
-  service: 'door_name_drc_box2'
+- name: 'force overwrite door arm'
+  service: 'force_overwrite_door_arm'
+  image: "package://drc_task_common/icons/force-overwrite-door-arm.png"
+  image_size: [100, 100]
   column: 4
   default_value: True
-- name: 'drc-test'
-  service: 'door_name_drc_test'
+- name: 'auto overwrite door arm'
+  service: 'auto_overwrite_door_arm'
+  image: "package://drc_task_common/icons/auto-overwrite-door-arm.png"
+  image_size: [100, 100]
   column: 4
-- name: 'drc-test-mirror'
-  service: 'door_name_drc_test_mirror'
-  column: 4
+- name: 'drc-lasvegas'
+  service: 'door_name_drc_lasvegas'
+  column: 5
+- name: 'drc-lasvegas-mirror'
+  service: 'door_name_drc_lasvegas_mirror'
+  column: 5
 - name: 'drc-sagami'
   service: 'door_name_drc_sagami'
-  column: 4
+  column: 5
+  default_value: True
 - name: 'drc-sagami-mirror'
   service: 'door_name_drc_sagami_mirror'
-  column: 4
+  column: 5
+- name: 'drc-box2'
+  service: 'door_name_drc_box2'
+  column: 5
+- name: 'door reach 90 deg'
+  service: 'door_reach_90_deg'
+  column: 6
+  default_value: True
+- name: 'door reach 60 deg'
+  service: 'door_reach_60_deg'
+  column: 6
+- name: 'door reach 30 deg'
+  service: 'door_reach_30_deg'
+  column: 6
+- name: 'door reach 0 deg'
+  service: 'door_reach_0_deg'
+  column: 6
+- name: 'disable door-keep-grasp'
+  service: 'disable_door_keep_grasp'
+  column: 7
+  default_value: True
+- name: 'enable door-keep-grasp'
+  service: 'enable_door_keep_grasp'
+  column: 7
+- name: 'drill-rotate-zero'
+  service: 'drill_rotate_zero'
+  column: 8
+- name: 'drill-rotate-one'
+  service: 'drill_rotate_one'
+  column: 8
+- name: 'drill-rotate-two'
+  service: 'drill_rotate_two'
+  column: 8
+- name: 'drill-rotate-three'
+  service: 'drill_rotate_three'
+  column: 8
+  default_value: True
+- name: 'drill left arm environment'
+  service: 'drill_left_arm_environment'
+  column: 9
+  default_value: True
+- name: 'drill right arm environment'
+  service: 'drill_right_arm_environment'
+  column: 9

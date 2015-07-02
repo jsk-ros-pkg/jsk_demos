@@ -1,6 +1,6 @@
 <launch>
   <include file="$(find drc_task_common)/launch/field_computer_main.launch">
     <arg name="FC_IP" value="fc22" />
-    <arg name="OCS_IP" value="ocs11" />
+    <arg name="OCS_IP" value="ocs31" />
   </include>
 </launch>

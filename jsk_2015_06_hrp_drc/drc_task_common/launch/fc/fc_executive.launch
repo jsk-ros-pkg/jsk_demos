@@ -1,0 +1,4 @@
+<launch>
+  <node pkg="drc_task_common" type="fc-executive.l" name="fc_executive" output="screen">
+  </node>
+</launch>

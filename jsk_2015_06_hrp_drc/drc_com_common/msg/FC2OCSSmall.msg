@@ -1,7 +1,9 @@
 uint8 type
 uint8 seq
 # Parameters
-float32[32] params
+int32[21] int_params
+float32[50] params
+bool success
 
 # type
 # go-pos
@@ -40,12 +42,15 @@ uint8 DRILL_WALL_FINISHED=22
 # drill button
 uint8 DRILL_BUTTON_POSE=23
 uint8 DRILL_BUTTON_FINISHED=24
+# drill rotate
+uint8 DRILL_ROTATE_POSE=25
+uint8 DRILL_ROTATE_FINISHED=26
 # angle-vector
-uint8 ANGLE_VECTOR_FINISHED=25
+uint8 ANGLE_VECTOR_FINISHED=27
 # for rviz plugins msgs(see src/drc_teleop_interface.cpp)
-uint8 RVIZ_MENU_FINISHED=26
+uint8 RVIZ_MENU_FINISHED=28
 # reach until touch
-uint8 REACH_UNTIL_TOUCH_FINISHED=27
+uint8 REACH_UNTIL_TOUCH_FINISHED=29
 
 # failed
 uint8 RECOGNITION_FAILED=20
@@ -53,3 +58,9 @@ uint8 RECOGNITION_FAILED=20
 # when type==GO_POS_POSE,
 # params = [x, y, z, yaw, pitch, roll]
 # unit is mm.
+
+uint8 PROJECTED_FOOTSTEP=30
+uint8 LOOK_GROUND_FINISHED=31
+uint8 EXECUTE_FOOTSTEPS_FINISHED=32
+uint8 FOOTSTEP_PLANNING_RESULT=33
+uint8 FOOTSTEP_PLANNING_FAILED=34

@@ -1,0 +1,34 @@
+- direction: 'horizontal'
+- name: 'auto door'
+  service: 'auto_door_detect'
+  image: "package://drc_task_common/icons/auto-door-detect.png"
+  image_size: [120, 120]
+  column: 0
+- name: 'semi-auto door'
+  service: 'semi_auto_door_detect'
+  image: "package://drc_task_common/icons/semi-auto-door-detect.png"
+  image_size: [120, 120]
+  column: 0
+  default_value: True
+- name: 'auto valve'
+  service: 'auto_valve_detect'
+  image: "package://drc_task_common/icons/auto-valve-detect.png"
+  image_size: [120, 120]
+  column: 1
+- name: 'semi-auto valve'
+  service: 'semi_auto_valve_detect'
+  image: "package://drc_task_common/icons/semi-auto-valve-detect.png"
+  image_size: [120, 120]
+  column: 1
+  default_value: True
+- name: 'auto drill'
+  service: 'auto_drill_detect'
+  image: "package://drc_task_common/icons/auto-drill-detect.png"
+  image_size: [120, 120]
+  column: 2
+- name: 'semi-auto drill'
+  service: 'semi_auto_drill_detect'
+  image: "package://drc_task_common/icons/semi-auto-drill-detect.png"
+  image_size: [120, 120]
+  column: 2
+  default_value: True

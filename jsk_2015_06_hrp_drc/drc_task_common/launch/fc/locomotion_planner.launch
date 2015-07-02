@@ -1,8 +1,5 @@
 <launch>
   <arg name="REFINE_FOOTSTEP" default="true" />
-  <arg name="USE_JAXON" default="false" />
-  <arg name="USE_HRP2JSK" default="true" />
-  <arg name="USE_HRP2JSKNT" default="false" />
 
   <group>
     <!-- Footstep planner -->
@@ -21,12 +18,6 @@
         timeout: 20.0
         global_frame_id: ground
       </rosparam>
-      <param name="parameter_file"
-             value="package://jsk_footstep_planner/config/jaxon_param.l"
-             if="$(arg USE_JAXON)" />
-      <param name="parameter_file"
-             value="package://jsk_footstep_planner/config/hrp2jsk_param.l"
-             if="$(arg USE_HRP2JSK)" />
       <remap from="grid_maps" to="/locomotion/env_server/output" />
       <remap from="footstep_planner/result" to="footstep_planner/result_non_refined" if="$(arg REFINE_FOOTSTEP)"/>
     </node>
@@ -35,6 +26,7 @@
           type="footstep_marker"
           name="footstep_marker"
           output="screen"
+          if="false"
           >
       <remap from="~grid_arrays" to="/locomotion/env_server/output" />
       <remap from="~planes_coefficients" to="/locomotion/plane_concatenator/output/coefficients" />
@@ -44,7 +36,8 @@
       <remap from="project_footprint" to="/footstep_planner/project_footprint" />
       <rosparam>
         use_plane_snap: true
-        use_projection_service: true
+        use_projection_service: false
+        use_projection_topic: true
         use_footstep_planner: true
         use_footstep_controller: true
         use_initial_footstep_tf: true
@@ -56,13 +49,8 @@
         
         foot_size_z: 0.01
       </rosparam>
-      <rosparam if="$(arg USE_HRP2JSK)">
-        footstep_margin: 0.21
-      </rosparam>
-      <rosparam if="$(arg USE_JAXON)">
-        footstep_margin: 0.20
-      </rosparam>
       <param name="frame_id" value="/ground" />
+
     </node>
     <!-- controller -->
     <node pkg="jsk_footstep_controller"
@@ -72,15 +60,7 @@
           clear_params="true"
           output="screen">
       <rosparam subst_value="true">
-        interruptible_mode: true
-      </rosparam>
-      <rosparam if="$(arg USE_HRP2JSK)">
-        interface_file: "package://hrpsys_ros_bridge_tutorials/euslisp/hrp2jsk-interface.l"
-        interface_class: "hrp2jsk-interface"
-      </rosparam>
-      <rosparam if="$(arg USE_JAXON)">
-        interface_file: "package://hrpsys_ros_bridge_tutorials/euslisp/jaxon-interface.l"
-        interface_class: "jaxon-interface"
+        interruptible_mode: ":semi-interruptible"
       </rosparam>
     </node>
     <node pkg="jsk_footstep_controller" type="footstep-refinement.l"
@@ -88,11 +68,6 @@
       <remap from="planner_result" to="footstep_planner/result_non_refined"/>
       <remap from="refined_footstep_result" to="footstep_planner/result" />
     </node>
-    <node pkg="jsk_footstep_controller" type="footstep-overlay-text.l"
-          name="footstep_overlay_text">
-    </node>
-    <node pkg="roseus" type="roseus" name="lookaround_ground"
-          args="$(find jsk_footstep_controller)/euslisp/lookaround-ground.l">
-    </node>
+    
   </group>
 </launch>

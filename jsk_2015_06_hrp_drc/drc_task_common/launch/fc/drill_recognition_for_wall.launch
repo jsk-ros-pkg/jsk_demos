@@ -1,21 +1,96 @@
 <launch>
   <arg name="INPUT_IMAGE" value="/multisense/left/image_rect_color" />
-  <arg name="INPUT_POINT_CLOUD" value="/multisense/organized_image_points2_color" />
-  <arg name="INPUT_DOWNSAMPLED_POINT_CLOUD" value="/multisense/resize_1_8/points" />
+  <arg name="INPUT_CAMERA_INFO" value="/multisense/left/camera_info" />
+  <arg name="INPUT_POINT_CLOUD" value="/laser_preprocess/camera_laser_cloud/output" />
+  <arg name="INPUT_DOWNSAMPLED_POINT_CLOUD" value="/laser_preprocess/camera_laser_cloud/output" />
+  <arg name="DEBUG" default="false" />
   <group ns="drill_recognition_for_wall">
-    <node pkg="nodelet" type="nodelet" name="manager" args="manager" output="screen">
-    </node>
-    <node pkg="nodelet" type="nodelet" name="screenpoint"
-          args="load jsk_pcl/PointcloudScreenpoint manager">
-      <remap from="~poly" to="input_poly"/>
-      <remap from="~points" to="$(arg INPUT_POINT_CLOUD)" /> <!--need to use original size-->
+    <group if="$(arg DEBUG)">
+      <node pkg="image_view2" type="image_view2" name="image_view2">
+        <remap from="image" to="$(arg INPUT_IMAGE)" />
+        <remap from="$(arg INPUT_IMAGE)/poly" to="input_poly" />
+        <rosparam>
+          interaction_mode: poly
+        </rosparam>
+      </node>
+    </group>
+    <node pkg="jsk_topic_tools" type="topic_buffer_client" name="input_buffer">
       <rosparam>
-        use_poly: true
+        fixed_rate: 0.1
+        periodic_rate: 0.1
+        latched: true
+        topics: ["input_poly"]
+        use_service: false
+      </rosparam>
+      <remap from="input_poly_update" to="input_poly" />
+    </node>
+    <node pkg="nodelet" type="nodelet" name="manager" args="manager" output="log">
+    </node>
+    <node pkg="nodelet" type="nodelet" name="downsampler"
+          args="load pcl/VoxelGrid manager">
+      <remap from="~input" to="$(arg INPUT_POINT_CLOUD)"/>
+      <rosparam>
+        leaf_size: 0.02
+        filter_limit_min: -100
+        filter_limit_max: 100
       </rosparam>
     </node>
+    <node pkg="nodelet" type="nodelet" name="mask_image_generator"
+          args="load jsk_perception/MaskImageGenerator manager">
+      <remap from="~input" to="$(arg INPUT_IMAGE)" />
+      <rosparam>
+        offset_x: 0
+        offset_y: 0
+        width: 1024
+        height: 512
+      </rosparam>
+    </node>
+    <node pkg="nodelet" type="nodelet" name="mask_image_filter"
+          args="load jsk_pcl/MaskImageFilter manager">
+      <remap from="~input" to="downsampler/output" />
+      <remap from="~input/mask" to="mask_image_generator/output" />
+      <remap from="~input/camera_info" to="$(arg INPUT_CAMERA_INFO)" />
+      <rosparam>
+        always_subscribe: true
+      </rosparam>
+    </node>
+    <node pkg="nodelet" type="nodelet" name="mask_image_filter_points"
+          args="load pcl/ExtractIndices manager">
+      <remap from="~input"  to="downsampler/output" />
+      <remap from="~indices" to="mask_image_filter/output" />
+    </node>
+
+    <node pkg="nodelet" type="nodelet" name="organized_points_converter" 
+          args="load jsk_pcl/DepthImageCreator manager">
+      <remap from="~info" to="$(arg INPUT_CAMERA_INFO)" />
+      <remap from="~input" to="mask_image_filter_points/output" />
+      <rosparam>
+        use_asynchronous: true
+      </rosparam>
+    </node>
+    <node pkg="nodelet" type="nodelet" name="normal_estimation"
+          args="load jsk_pcl/NormalEstimationOMP manager">
+      <remap from="~input" to="mask_image_filter_points/output" />
+      <rosparam>
+        k_search: 10
+        radius_search: 0.0
+      </rosparam>
+    </node>
+
+    <node pkg="nodelet" type="nodelet" name="screenpoint"
+          args="load jsk_pcl/PointcloudScreenpoint manager">
+      <remap from="~poly" to="input_poly_buffered"/>
+      <remap from="~points" to="organized_points_converter/output_cloud" /> <!--need to use original size-->
+      <rosparam>
+        use_poly: true
+        crop_size: 100
+      </rosparam>
+    </node>
+    
     <node pkg="nodelet" type="nodelet" name="plane_segmentation"
-          args="load jsk_pcl/OrganizedMultiPlaneSegmentation manager">
-      <remap from="~input" to="$(arg INPUT_DOWNSAMPLED_POINT_CLOUD)" />
+          args="load jsk_pcl/RegionGrowingMultiplePlaneSegmentation manager">
+      <remap from="~input" to="normal_estimation/output_with_xyz" />
+      <remap from="~input_normal" to="normal_estimation/output_with_xyz" />
       <rosparam>
         min_size: 300
         max_curvature: 0.01
@@ -24,8 +99,8 @@
     </node>
     <node pkg="nodelet" type="nodelet" name="snapit"
           args="load jsk_pcl/Snapit manager">
-      <remap from="~input/polygons" to="plane_segmentation/output_refined_polygon" />
-      <remap from="~input/polygon_coefficients" to="plane_segmentation/output_refined_coefficients" />
+      <remap from="~input/polygons" to="plane_segmentation/output/polygons" />
+      <remap from="~input/polygon_coefficients" to="plane_segmentation/output/coefficients" />
       <remap from="~input/convex_align_polygon" to="screenpoint/output_polygon" />
     </node>
     <node pkg="jsk_topic_tools" type="snapshot" name="snapshot">

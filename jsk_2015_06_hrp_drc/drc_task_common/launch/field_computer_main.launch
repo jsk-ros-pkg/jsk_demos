@@ -5,68 +5,49 @@
   
   <arg name="FC_IP" default="localhost" />
   <arg name="OCS_IP" default="localhost" />
-
+  <arg name="USE_LOCALHOST" default="false" />
   <arg name="USE_COM" default="true" />
 
   <!-- Include machine tags -->
   <include file="$(find drc_task_common)/launch/machines/$(env ROBOT).machine" />
-  <node pkg="drc_task_common" type="fc-executive.l" name="fc_executive" output="screen">
-  </node>
-  <node pkg="drc_task_common" type="fc-basic-info-publisher.l" name="fc_basic_info_publisher" respawn="true">
-  </node>
+  <include file="$(find drc_task_common)/launch/fc/fc_executive.launch" />
   <node pkg="drc_task_common" type="robot-main.l" name="robot_main" output="screen" if="false">
   </node>
 
   <!-- recognition -->
-  <group ns="stereo_preprocessing">
-    <include file="$(find drc_task_common)/launch/fc/stereo_preprocess.launch">
-      <arg name="INPUT_POINT_CLOUD" value="/multisense/resize_1_4/points" />
-    </include>
-  </group>
+  <include file="$(find drc_task_common)/launch/fc/stereo_preprocess.launch">
+  </include>
   <include file="$(find drc_task_common)/launch/fc/laser_preprocess.launch">
   </include>
-  <group ns="go_pos_recognition">
-    <include file="$(find drc_task_common)/launch/fc/centroid_of_pointcloud_in_rect.launch">
-    </include>
-  </group>
-  <include file="$(find drc_task_common)/launch/fc/lookat.launch">
-    <arg name="INPUT_CAMERA_INFO" value="/multisense/left/camera_info" />
-    <arg name="INPUT_POINT" value="/lookat/input" />
+  <include file="$(find drc_task_common)/launch/fc/go_pos.launch">
   </include>
-  <group ns="hose_grasp_recognition">
-    <include file="$(find drc_task_common)/launch/fc/centroid_of_pointcloud_in_rect.launch">
-    </include>
-  </group>
-  <group ns="hose_connect_recognition">
-    <include file="$(find drc_task_common)/launch/fc/centroid_of_pointcloud_in_rect.launch">
-    </include>
-  </group>
+  <include file="$(find drc_task_common)/launch/fc/lookat.launch">
+  </include>
+  <include file="$(find drc_task_common)/launch/fc/hose_grasp.launch">
+  </include>
+  <include file="$(find drc_task_common)/launch/fc/hose_connect.launch">
+  </include>
   <include file="$(find drc_task_common)/launch/fc/valve_recognition.launch">
   </include>
   <include file="$(find drc_task_common)/launch/fc/drill_recognition.launch">
-    <arg name="DRILL_RECOGNITION_NAMESPACE" value="drill_recognition" />
   </include>
-  <include file="$(find drc_task_common)/launch/fc/drill_recognition.launch" if="false">
-    <arg name="DRILL_RECOGNITION_NAMESPACE" value="drill_recognition_for_button" />
-    <arg name="LAUNCH_MANAGER" value="false" />
+  <include file="$(find drc_task_common)/launch/fc/drill_recognition_for_grasp.launch">
+  </include>
+  <include file="$(find drc_task_common)/launch/fc/drill_recognition_for_button.launch">
   </include>
   <include file="$(find drc_task_common)/launch/fc/drill_recognition_for_wall.launch">
   </include>
   <include file="$(find drc_task_common)/launch/fc/drill_recognition_for_put.launch">
   </include>
-  <include file="$(find drc_task_common)/launch/fc/door_recognition.launch">
-    <arg name="INPUT_HINT_POINT_CLOUD" value="/laser_preprocess/camera_laser_cloud/output" />
-    <arg name="INPUT_POINT_CLOUD" value="/laser_preprocess/camera_laser_cloud/output" />
+  <include file="$(find drc_task_common)/launch/fc/drill_button_checker.launch">
   </include>
-  <group ns="debri_recognition">
-    <include file="$(find drc_task_common)/launch/fc/debri_recognition.launch">
-    </include>
-  </group>
-  <group ns="panorama">
-    <include file="$(find drc_task_common)/launch/fc/panorama.launch" />
-  </group>
+  <include file="$(find drc_task_common)/launch/fc/door_recognition.launch">
+  </include>
+  <include file="$(find drc_task_common)/launch/fc/debri_recognition.launch">
+  </include>
+  <include file="$(find drc_task_common)/launch/fc/panorama.launch" />
   <include file="$(find drc_task_common)/launch/fc/locomotion.launch" />
-  <include file="$(find drc_task_common)/launch/fc/misc.launch" />
+  <include file="$(find drc_task_common)/launch/fc/fc_misc.launch" />
   <!-- communication -->
   <include file="$(find drc_com_common)/launch/field_computer_com.launch" 
            if="$(arg USE_COM)">
@@ -80,7 +61,4 @@
     <!-- remote server -->
     <include file="$(find drc_task_common)/launch/remote_server.launch" />
   </group>
-
-  <!-- reconfigure -->
-  <node pkg="drc_task_common" name="fc_dynamic_reconfigure" type="fc_dynamic_reconfigure.py" />
 </launch>

@@ -5,7 +5,7 @@ import rospy
 from std_msgs.msg import Float64
 from visualization_msgs.msg import *
 from tf.transformations import quaternion_from_euler
-from drive_recognition.msg import Int8Float64
+from drc_task_common.msg import Int8Float64
 
 class SteeringAngleMarker:
     def __init__(self):

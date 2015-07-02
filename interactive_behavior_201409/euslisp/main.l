@@ -1,6 +1,7 @@
 #!/usr/bin/env roseus
 
 (require :pr2-interface "package://pr2eus/pr2-interface.l")
+(require :pr2-behavior-utils "pr2-behavior-utils.l")
 
 (ros::roseus-add-msgs "people_msgs")
 (ros::roseus-add-msgs "jsk_hark_msgs")
@@ -15,6 +16,7 @@
 (setq *current-behavior* :idle)
 (setq *behavior-timeout* 0)
 (setq *behavior-start-at* (ros::time-now))
+(setq *face-detected* 0)
 ;; behaviors
 ;;   :idle
 ;;   :look-at-face
@@ -47,55 +49,29 @@
       (:idle-random-look
        (look-at-pos-random)))))
   
-(defun look-at-pos-random ()
-  (let ((theta (deg2rad (- (random 30.0) 15))))
-    (ros::ros-info "theta is ~A" theta)
-    (let ((local-pos (float-vector (* 3000.0 (cos theta))
-                                   (* 3000.0 (sin theta))
-                                   0)))
-      (let ((cds (send *tfl* :lookup-transform "/base_footprint" 
-                       "/head_pan_link"
-                       (ros::time 0))))
-        (if cds (look-at-pos (send cds :transform-vector local-pos)))))))
-
-(defun look-at-pos (world-pos)
-  (ros::ros-info "looking at ~A" world-pos)
-  (send *pr2* :angle-vector (send *ri* :state :potentio-vector))
-  (let ((current-pitch (send *pr2* :head :neck-p :joint-angle))
-        (current-yaw (send *pr2* :head :neck-y :joint-angle)))
-    (send *pr2* :head :neck-y :joint-angle 0)
-    (send *pr2* :head :neck-p :joint-angle 0)
-    (send *pr2* :head :look-at world-pos) ;LOOK AT!!
-    (let ((next-pitch (send *pr2* :head :neck-p :joint-angle))
-          (next-yaw (send *pr2* :head :neck-y :joint-angle)))
-      (let ((diff (max (abs (- next-pitch current-pitch))
-                       (abs (- next-yaw current-yaw)))))
-        (let ((tm (/ diff 40.0)))
-          (send *ri* :angle-vector (send *pr2* :angle-vector) (* 1000.0 tm) :head-controller)
-          (setq *behavior-timeout* (* 2 tm))
-          )))))
-
 (defun position-measurement-cb (msg)
   (when (or (eq *current-behavior* :idle)
-          (eq *current-behavior* :idle-random-look)
-          (eq *current-behavior* :look-at-sound)
-          (eq *current-behavior* :look-at-face))
+            (eq *current-behavior* :idle-random-look)
+            (eq *current-behavior* :look-at-sound)
+            (eq *current-behavior* :look-at-face))
       (setq msg (elt (send msg :people) 0))
-      (let ((cds (send *tfl* :lookup-transform "/base_footprint" 
-                       (send msg :header :frame_id)
-                       (send msg :header :stamp))))
-        (if cds
+      (let ((world-pos (position-measurement->look-at-pos msg)))
+        (if world-pos
             (progn
-              (let ((world-pos (send cds :transform-vector (ros::tf-point->pos (send msg :pos)))))
-                (let ((distance-from-robot (distance
-                                            (float-vector (elt world-pos 0)
-                                                          (elt world-pos 1)
-                                                          0)
-                                            (float-vector 0 0 0))))
-                  (if (< distance-from-robot 2000.0)
-                      (run-behavior :look-at-face world-pos)))))
-          (progn
-            (ros::ros-warn "Failed to transform /base_footprint to ~A" (send msg :header :frame_id)))))))
+              (incf *face-detected*)
+              (when (< *face-detected* 0) (setq *face-detected* 0))
+              (run-behavior :look-at-face world-pos))
+          (decf *face-detected*)))))
+
+(defun people-cb (msg)
+  (when (and (< *face-detected* 0)
+             (or (eq *current-behavior* :idle)
+                 (eq *current-behavior* :idle-random-look)
+                 (eq *current-behavior* :look-at-sound)
+                 (eq *current-behavior* :look-at-face)))
+    (let ((world-pos (people->look-at-pos msg)))
+      (when world-pos
+        (run-behavior :look-at-face world-pos)))))
 
 (defun find-max-powers-index (powers)
   (let ((max-value (elt powers 0))
@@ -118,18 +94,8 @@
       ;;       "/base_footprint"
       ;;       (send msg :header :frame_id)
       ;;       (send msg :header :stamp) 1)
-      (let ((cds (send *tfl* :lookup-transform "/base_footprint" 
-                       ;;(send msg :header :frame_id)
-                       "/head_pan_link"
-                       (send msg :header :stamp))))
-                       ;;(ros::time- (send msg :header :stamp) (ros::time 0.5)))))
-                       ;;(ros::time 0))))
-        (if cds
-            (let ((local-pos (scale 3000 (float-vector (send msg :vector :x)
-                                                       (send msg :vector :y)
-                                                       (send msg :vector :z)))))
-              (let ((world-pos (send cds :transform-vector local-pos)))
-                (run-behavior :look-at-sound world-pos)))))))
+      (let ((world-pos (sound-direction->look-at-pos msg)))
+        (when world-pos (run-behavior :look-at-sound world-pos)))))
 
 (defun enable-cb (req)
   (setq *behavior-server-enabled* t)
@@ -144,6 +110,10 @@
  "/face_detector/people_tracker_measurements_array"
  people_msgs::PositionMeasurementArray
  #'position-measurement-cb)
+(ros::subscribe
+ "/people"
+ people_msgs::People
+ #'people-cb)
 (ros::subscribe
  "/sound_direction"
  geometry_msgs::Vector3Stamped

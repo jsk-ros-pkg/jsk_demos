@@ -182,7 +182,7 @@
    (when real
      (send *ri* :angle-vector (send robot :angle-vector) time)
      (send *ri* :wait-interpolation)
-     (send *viewer* :draw-objects)
+     ;; (send *viewer* :draw-objects)
      )
    )
   (:grasp-frame
@@ -191,7 +191,7 @@
    (when real
      (send *ri* :angle-vector (send robot :angle-vector) time)
      (send *ri* :wait-interpolation)
-     (send *viewer* :draw-objects)
+     ;; (send *viewer* :draw-objects)
      )
    (send self :close-hand :rarm)
    )
@@ -242,7 +242,7 @@
          (send *ri* :wait-interpolation-of-group "rleg")
 
          )
-       (send *viewer* :draw-objects)
+       ;; (send *viewer* :draw-objects)
        )
      ;; finally sync controller
      (when real
@@ -268,7 +268,7 @@
          (send *ri* :wait-interpolation-of-group "lleg")
          (send *ri* :wait-interpolation-of-group "rleg")
          )
-       (send *viewer* :draw-objects)
+       ;; (send *viewer* :draw-objects)
        )
      ;; finally sync controller
      (when real

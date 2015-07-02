@@ -6,13 +6,14 @@
   <arg name="CMD_NAMESPACE" default="/drc_vehicle_xp900"/>
   <arg name="ROSBAG_RECORD" default="false"/>
   <arg name="ROOT_LINK" default="pelvis" />
-  <arg name="PINNED_LINK" default="utorso" />
-  <!-- <arg name="PINNED_LINK" default="utorso" /> -->
+  <arg name="gzworld" default="drc_final_task_1" />"
 
   <rosparam param="use_sim_time" subst_value="True" />
 
   <!-- simulation environment -->
-  <include file="$(arg SIMULATION_LAUNCH)"/>
+  <include file="$(arg SIMULATION_LAUNCH)" >
+    <arg name="gzworld" value="$(arg gzworld)" />
+  </include>
 
   <!-- <node pkg="rostopic" type="rostopic" name="disable_handle_brake"
        args="pub /drc_vehicle/hand_brake/cmd std_msgs/Float64 '{data: 0}'" output="screen" /> -->
@@ -51,7 +52,7 @@
       <remap from="~handle_cmd" to="$(arg CMD_NAMESPACE)/hand_wheel/cmd"/>
       <remap from="~accel_cmd" to="$(arg CMD_NAMESPACE)/gas_pedal/cmd"/>
     </node>
-  </group>    
+  </group>
 
   <!-- robot view point -->
   <node pkg="image_view" type="image_view" name="robot_perspective">
@@ -74,9 +75,9 @@
 
   <!-- Add static TF for base_footprint and car_center -->
   <node pkg="tf" type="static_transform_publisher" name="base_footprint_pinned_link" args="0 0 0 0 0 0 base_footprint $(arg ROOT_LINK) 100" />
-  <!-- <node pkg="tf" type="static_transform_publisher" name="TF_car_center" args="0.05 0.3 -1.05 0 0 0 $(arg PINNED_LINK) carx_center 100" /> --> <!-- because initial position is y : -0.6, z : -0.2 // start_gazebo_drive_shimulator.sh -->
-  <node pkg="tf" type="static_transform_publisher" name="TF_car_center" args="0.05 -0.3 -1.25 0 0 0 $(arg PINNED_LINK) car_center 10" /> <!-- because initial position is y : -0.6 // start_gazebo_drive_shimulator.sh  0.3 (atlas is right side of the car, and -0.3 left -->
-
+  <include file="$(find drc_task_common)/launch/fc/vehicle/car_center_tf_publisher.launch" >
+    <arg name="SIMULATION_MODE" value="true" />
+  </include>
 
   <!-- run rosbag -->
   <node if="$(arg ROSBAG_RECORD)"

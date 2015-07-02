@@ -1,6 +1,0 @@
-<launch>
-  <group ns="communication">
-    <node pkg="drc_task_common" type="robot_idle_watch.py" name="robot_idle_watch">
-    </node>
-  </group>
-</launch>

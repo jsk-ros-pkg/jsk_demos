@@ -1,0 +1,23 @@
+<launch>
+  <node name="wrench_fft_r" pkg="drc_task_common" type="wrench_fft.py" output="screen">
+    <!-- <rosparam> -->
+    <!--   wrench: rhsensor -->
+    <!-- </rosparam> -->
+    <remap from="wrench" to="rhsensor" />
+  </node>
+  <node name="button_checker_r" pkg="drc_task_common" type="button_checker.py" output="screen" >
+    <remap from="input" to="rhsensor/fft/amplitude/force/x" />
+    <remap from="get_button_state" to="rarm_get_button_state"/>
+  </node>
+  <node name="wrench_fft_l" pkg="drc_task_common" type="wrench_fft.py" output="screen" >
+    <!-- <rosparam> -->
+    <!--   wrench: lhsensor -->
+    <!-- </rosparam> -->
+    <remap from="wrench" to="lhsensor" />
+  </node>
+  <node name="button_checker_l" pkg="drc_task_common" type="button_checker.py" output="screen" >
+    <remap from="input" to="lhsensor/fft/amplitude/force/x" />
+    <remap from="get_button_state" to="larm_get_button_state"/>
+  </node>
+
+</launch>

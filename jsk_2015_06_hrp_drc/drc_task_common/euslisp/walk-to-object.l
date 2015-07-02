@@ -31,6 +31,7 @@
         (send *tfl* :wait-for-transform "robot_marker_root" "ground" ts 1)
         (setq dest-coords
               (send *tfl* :lookup-transform "robot_marker_root" "ground" ts)))
+      (ros::sleep)
       (ros::spin-once))
     (setq dest-coords
           (send dest-coords :transformation (make-coords) :local))

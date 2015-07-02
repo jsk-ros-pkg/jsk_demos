@@ -1,9 +1,6 @@
 <launch>
   <arg name="INPUT_POINT_CLOUD" default="/laser_downsampler/output" />
   <arg name="MULTISENSE_STANDALONE" default="false" />
-  <arg name="USE_JAXON" default="false" />
-  <arg name="USE_HRP2JSK" default="true" />
-  <arg name="USE_HRP2JSKNT" default="false" />
   <group ns="locomotion">
     <node pkg="nodelet" type="nodelet" name="manager" args="manager" output="screen"/>
 
@@ -28,8 +25,8 @@
       <remap from="~input" to="gsensor_cloud/output" />
       <rosparam>
         filter_field_name: x
-        filter_limit_min: -3
-        filter_limit_max: 3
+        filter_limit_min: -10
+        filter_limit_max: 10
         filter_limit_negative: false
       </rosparam>
     </node>
@@ -99,7 +96,7 @@
       </rosparam>
     </node>
 
-    <include file="$(find jsk_footstep_planner)/launch/hrp2jsk_footprint.launch">
+    <include file="$(find jsk_footstep_planner)/launch/$(env ROBOT)_footprint.launch">
       <arg name="INPUT_POINTCLOUD" value="odom_cloud/output" />
     </include>
 
@@ -228,55 +225,32 @@
         negative: false
       </rosparam>
     </node>
-    <node pkg="nodelet" type="nodelet" name="plane_estimation"
-          args="load jsk_pcl/RegionGrowingMultiplePlaneSegmentation manager" >
-      <remap from="~input" to="normal_filtered_points/output" />
-      <remap from="~input_normal" to="normal_filtered_points/output" />
-      <rosparam>
-        max_size: 50000
-        min_size: 200
-        angular_threshold: 0.01
-        distance_threshold: 0.01
-      </rosparam>
-    </node>
-    <node pkg="nodelet" type="nodelet" name="plane_concatenator"
-          args="load jsk_pcl/PlaneConcatenator manager" >
-      <remap from="~input" to="normal_filtered_points/output" />
-      <remap from="~input/indices" to="plane_estimation/output/inliers" />
-      <remap from="~input/polygons" to="plane_estimation/output/polygons" />
-      <remap from="~input/coefficients" to="plane_estimation/output/coefficients" />
-      <rosparam>
-      </rosparam>
-    </node>
-    
-    <node pkg="jsk_pcl_ros" type="environment_plane_modeling" name="env_server" output="screen">
-      <remap from="~input" to="normal_filtered_points/output"/>
-      <remap from="~input/full_cloud" to="normal_flip/output" />
-      <!-- <remap from="~input/full_cloud" to="normal_filtered_points/output" /> -->
-      <remap from="~input/polygons" to="plane_concatenator/output/polygons" />
-      <remap from="~input/indices" to="plane_concatenator/output/indices" />
-      <remap from="~input/coefficients" to="plane_concatenator/output/coefficients" />
-      <remap from="~input/leg_bounding_box" to="/robot_legs_bbox" />
-      <rosparam>
-        resolution: 0.01
-        complete_footprint_region: false
-        morphological_filter_size: 2
-        distance_threshold: 0.005
-        magnify_distance: 0.05
-        normal_threshold: 0.1
-        erode_filter_size: 0
-        # distance_threshold: 0.02 # too large? for jaxon
-        footprint_frames: ["lleg_end_coords", "rleg_end_coords"]
-      </rosparam>
-    </node>
-    
-    <node pkg="nodelet" type="nodelet" name="obstacle_cloud"
-          args="load pcl/ExtractIndices manager" >
+
+    <!-- normal_filterd_points and normal_flip to ocs -->
+    <node pkg="nodelet" type="nodelet" name="relay_normal_flip"
+          args="load jsk_topic_tools/Relay manager">
       <remap from="~input" to="normal_flip/output" />
-      <remap from="~indices" to="env_server/output/non_plane_indices" />
-      <rosparam>
-        negative: true
+      <remap from="~output" to="/communication/normal_flip_cloud" />
+    </node>
+    <node pkg="nodelet" type="nodelet" name="relay_normal_filterd_points"
+          args="load jsk_topic_tools/Relay manager">
+      <remap from="~input" to="normal_filtered_points/output" />
+      <remap from="~output" to="/communication/locomotion_cloud" />
+    </node>
+    <!-- relaying -->
+  </group>
+  <node pkg="roseus" type="roseus" name="lookaround_ground"
+        args="$(find jsk_footstep_controller)/euslisp/lookaround-ground.l">
+  </node>
+      <node pkg="jsk_footstep_controller"
+          type="footstep-controller.l"
+          name="footstep_controller"
+          respawn="true"
+          clear_params="true"
+          output="screen">
+      <rosparam subst_value="true">
+        interruptible_mode: ":semi-interruptible"
       </rosparam>
     </node>
-  </group>
+
 </launch>

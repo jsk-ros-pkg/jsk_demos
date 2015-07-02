@@ -30,6 +30,9 @@ namespace drc_task_common
     void callRequestResetManipPose();
     void callRequestDrillResetPose();
     void callRequestWatchDrillPose();
+    void callRequestDoorThroughPose();
+    void callRequestFinishStairPose();
+    void callRequestEmergencyPose();
 
     void callRequestResetGripperPose();
     void callRequestHookGrippePose();
@@ -40,14 +43,23 @@ namespace drc_task_common
     void callRequestStartABC();
     void callRequestStartST();
     void callRequestStartIMP();
+    void callRequestStartIMPSoft();
+    void callRequestStartIMPHard();
+    void callRequestResetForceOffset();
 
-    void callRequestStopABC();
-    void callRequestStopST();
+    /* void callRequestStopABC(); */
+    /* void callRequestStopST(); */
     void callRequestStopIMP();
+
+    void callRequestHandCalib();
 
     void callRequestDisplayManip();
     void callRequestHideManip();
     
+    void callRequestSetRefForceZero();
+    void callRequestGoPos000();
+    void callRequestResetEncOffset();
+
     void callRequestUint8Request(uint type);
     
   protected:

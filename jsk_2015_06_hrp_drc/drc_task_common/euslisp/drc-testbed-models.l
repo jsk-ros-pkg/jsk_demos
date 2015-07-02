@@ -189,50 +189,112 @@
 
 (defmethod drc-stair
   (:init
-   (&key (add-groud-p nil))
+   (&key (add-groud-p nil) (version :testfield) (name "drc-stair"))
    (setq stair-top-faces nil)
-   (let* ((blist (append (send self :make-stair-bodies)
-                         (send self :make-top-stair-bodies)
+   (let* ((blist (append (send self :make-stair-bodies :version version)
+                         (send self :make-top-stair-bodies :version version)
                          (send self :make-handrail-bodies)
                          (send self :make-small-handrail-bodies :l/r :right)
                          (send self :make-small-handrail-bodies)
                          (send self :make-top-handrail-bodies))))
      (if add-groud-p
-         (let ((b (make-cube 1000 1200 10)))
-           (send b :translate (float-vector 0 0 -5))
-           (setq ground-body b)
-           (setq stair-top-faces (append stair-top-faces
-                                         (list (find-if #'(lambda (x) (memq :top (send x :id))) (send ground-body :faces)))))
-           (push b blist)))
+         (if (eq version :final)
+             (let ((b (make-cube 1000 1200 10))
+                   (slope-ang (deg2rad 2.1)))
+               (send b :translate (float-vector 0 0 -5))
+               (send b :rotate slope-ang :x)
+               (send b :translate (float-vector 0 0 (* 1080 -0.5 (sin slope-ang))) :world)
+               (setq ground-body b)
+               (setq stair-top-faces (append stair-top-faces
+                                             (list (find-if #'(lambda (x) (memq :top (send x :id))) (send ground-body :faces)))))
+               (push b blist))
+           (let ((b (make-cube 1000 1200 10)))
+             (send b :translate (float-vector 0 0 -5))
+             (setq ground-body b)
+             (setq stair-top-faces (append stair-top-faces
+                                           (list (find-if #'(lambda (x) (memq :top (send x :id))) (send ground-body :faces)))))
+             (push b blist))))
      (dolist (b blist) (send b :set-color :gray))
      (dolist (b (cdr blist)) (send (car blist) :assoc b))
-     (send-super :init :name "drc-stair" :bodies blist)))
+     (send-super :init :name name :bodies blist)))
   (:make-stair-bodies
-   ()
-   (let ((s1 (make-cube 290 1080 225))
-         (s2 (make-cube 290 1080 230))
-         (s3 (make-cube 270 1080 230)))
-     (send s1 :translate (float-vector (/ 290 2.0) 0 (/ 225 2.0)) :world)
-     (send s2 :translate (float-vector (+ 290 (/ 290 2.0)) 0 (+ 225 (/ 230 2.0))) :world)
-     (send s3 :translate (float-vector (+ 290 290 (/ 270 2.0)) 0 (+ 225 230 (/ 230 2.0))) :world)
-     (setq stair-top-faces
-           (append stair-top-faces
-                   (mapcar #'(lambda (b)
-                               (find-if #'(lambda (x) (memq :top (send x :id))) (send b :faces)))
-                   (list s1 s2 s3))))
-     (list s1 s2 s3)
-     ))
+   (&key (version))
+   (case version
+     (:test-field
+      (let ((s1 (make-cube 300 1080 240))
+            (s2 (make-cube 300 1080 230))
+            (s3 (make-cube 290 1080 230)))
+        (send s1 :translate (float-vector (/ 300 2.0) 0 (/ 240 2.0)) :world)
+        (send s2 :translate (float-vector (+ 300 (/ 300 2.0)) 0 (+ 240 (/ 230 2.0))) :world)
+        (send s3 :translate (float-vector (+ 300 300 (/ 290 2.0)) 0 (+ 240 230 (/ 230 2.0))) :world)
+        (setq stair-top-faces
+              (append stair-top-faces
+                      (mapcar #'(lambda (b)
+                                  (find-if #'(lambda (x) (memq :top (send x :id))) (send b :faces)))
+                              (list s1 s2 s3))))
+        (list s1 s2 s3)
+        ))
+     (:final
+      (let ((s1 (make-cube 300 1080 245))
+            (s2 (make-cube 300 1080 240))
+            (s3 (make-cube 290 1080 230)))
+        (send s1 :translate (float-vector (/ 300 2.0) 0 (/ 245 2.0)) :world)
+        (send s2 :translate (float-vector (+ 300 (/ 300 2.0)) 0 (+ 245 (/ 240 2.0))) :world)
+        (send s3 :translate (float-vector (+ 300 300 (/ 290 2.0)) 0 (+ 245 240 (/ 230 2.0))) :world)
+        (setq stair-top-faces
+              (append stair-top-faces
+                      (mapcar #'(lambda (b)
+                                  (find-if #'(lambda (x) (memq :top (send x :id))) (send b :faces)))
+                              (list s1 s2 s3))))
+        (list s1 s2 s3)
+        ))
+     (t
+      (let ((s1 (make-cube 290 1080 225))
+            (s2 (make-cube 290 1080 230))
+            (s3 (make-cube 270 1080 230)))
+        (send s1 :translate (float-vector (/ 290 2.0) 0 (/ 225 2.0)) :world)
+        (send s2 :translate (float-vector (+ 290 (/ 290 2.0)) 0 (+ 225 (/ 230 2.0))) :world)
+        (send s3 :translate (float-vector (+ 290 290 (/ 270 2.0)) 0 (+ 225 230 (/ 230 2.0))) :world)
+        (setq stair-top-faces
+              (append stair-top-faces
+                      (mapcar #'(lambda (b)
+                                  (find-if #'(lambda (x) (memq :top (send x :id))) (send b :faces)))
+                              (list s1 s2 s3))))
+        (list s1 s2 s3)
+        )))
+   )
   (:make-top-stair-bodies
-   ()
-   (let ((s1 (make-cube 1205 2430 85)))
-     (send s1 :translate (float-vector (+ 290 290 270 (/ 1205 2.0)) (+ 85 (+ (/ 1080 2.0) (- (/ 2430 2.0)))) (+ 225 230 230 (/ 85 2.0) -85 220)))
-     (setq stair-top-faces
-           (append stair-top-faces
-                   (mapcar #'(lambda (b)
-                               (find-if #'(lambda (x) (memq :top (send x :id))) (send b :faces)))
-                   (list s1))))
-     (list s1)
-     ))
+   (&key (version))
+   (case version
+     (:test-field
+      (let ((s1 (make-cube 1200 2430 85)))
+        (send s1 :translate (float-vector (+ 300 300 290 (/ 1200 2.0)) (+ 85 (+ (/ 1080 2.0) (- (/ 2430 2.0)))) (+ 240 230 230 (/ 85 2.0) -85 220)))
+        (setq stair-top-faces
+              (append stair-top-faces
+                      (mapcar #'(lambda (b)
+                                  (find-if #'(lambda (x) (memq :top (send x :id))) (send b :faces)))
+                              (list s1))))
+        (list s1)))
+     (:final
+      (let ((s1 (make-cube 1200 2430 85)))
+        (send s1 :translate (float-vector (+ 300 300 290 (/ 1200 2.0)) (+ 85 (+ (/ 1080 2.0) (- (/ 2430 2.0)))) (+ 245 240 230 (/ 85 2.0) -85 225)))
+        (setq stair-top-faces
+              (append stair-top-faces
+                      (mapcar #'(lambda (b)
+                                  (find-if #'(lambda (x) (memq :top (send x :id))) (send b :faces)))
+                              (list s1))))
+        (list s1)))
+     (t
+      (let ((s1 (make-cube 1205 2430 85)))
+        (send s1 :translate (float-vector (+ 290 290 270 (/ 1205 2.0)) (+ 85 (+ (/ 1080 2.0) (- (/ 2430 2.0)))) (+ 225 230 230 (/ 85 2.0) -85 220)))
+        (setq stair-top-faces
+              (append stair-top-faces
+                      (mapcar #'(lambda (b)
+                                  (find-if #'(lambda (x) (memq :top (send x :id))) (send b :faces)))
+                              (list s1))))
+        (list s1)))
+     )
+   )
   (:make-small-handrail-bodies
    (&key (l/r :left))
    (let ((b0 (make-cylinder 20 100))
@@ -415,7 +477,7 @@
 
 (defclass drc-terrain
   :super cascaded-link
-  :slots (block-dimensions block-bodies ground-body block-angle)
+  :slots (block-dimensions block-bodies ground-bodies block-angle)
   )
 
 (defmethod drc-terrain
@@ -429,13 +491,32 @@
      (setq block-angle ba)
      (let* ((blist (send self :make-drc-terrain-block-bodies))
             (l))
-       (if add-groud-p
-           (let ((b (make-cube 3700 3300 10)))
-             (send b :translate (float-vector 1200 1050 -5))
-             (send b :set-color :gray)
-             (setq ground-body b)
-             (send (car blist) :assoc b)
-             (setq blist (append blist (list b)))))
+       (case
+        add-groud-p
+        (:test-field
+         (let ((b0 (make-cube 2780 3300 10))
+               (b1 (make-cube 400 3300 30))
+               (b2 (make-cube 400 3300 30)))
+           (send b0 :translate (float-vector 1200 1050 -5))
+           (send b0 :set-color :gray)
+           (send b1 :translate (float-vector -380 1050 15))
+           (send b1 :set-color :darkgoldenrod)
+           (send b2 :translate (float-vector 2800 1050 15))
+           (send b2 :set-color :darkgoldenrod)
+           (send (car blist) :assoc b0)
+           (send (car blist) :assoc b1)
+           (send (car blist) :assoc b2)
+           (setq ground-bodies (list b0 b1 b2))
+           (setq blist (append blist (list b0 b1 b2)))
+           (send (car blist) :translate (float-vector 0 0 -30))
+           ))
+        (t
+         (let ((b (make-cube 3700 3300 10)))
+           (send b :translate (float-vector 1200 1050 -5))
+           (send b :set-color :gray)
+           (setq ground-bodies (list b))
+           (send (car blist) :assoc b)
+           (setq blist (append blist (list b))))))
        (setq l (instance bodyset-link :init (make-cascoords)
                          :name :root-link
                          :bodies blist))
@@ -487,6 +568,17 @@
      (instance bodyset :init (make-cascoords) :bodies (list block1 block2 base))
      )
    )
+  (:calc-block-set-region
+   ()
+   (let* ((b0 (send self :make-drc-block-set-one)) ;; dummy
+          (b1 (send (make-bounding-box (flatten (send-all (send b0 :bodies) :vertices))) :body)))
+     ;; average of x and y
+     (/ (+ (- (elt (find-extream (send b1 :vertices) #'(lambda (x) (elt x 0)) #'>) 0)
+              (elt (find-extream (send b1 :vertices) #'(lambda (x) (elt x 0)) #'<) 0))
+           (- (elt (find-extream (send b1 :vertices) #'(lambda (x) (elt x 1)) #'>) 1)
+              (elt (find-extream (send b1 :vertices) #'(lambda (x) (elt x 1)) #'<) 1)))
+        2.0)
+     ))
   (:make-drc-terrain-block-bodies
    ()
    (let* ((orientation-map (list (list 1 2 3 0 1 2)
@@ -503,8 +595,9 @@
                             (list 1 2 1 1 2 1)
                             (list 1 1 1 1 1 1)
                             (list 0 0 0 0 0 0))))
-     (let* ((block-set-region-x 400)
-            (block-set-region-y 400))
+     (let* ((region (send self :calc-block-set-region))
+            (block-set-region-x region)
+            (block-set-region-y region))
        (dotimes (i (length orientation-map))
          (dotimes (j (length (elt orientation-map i)))
            (let* ((block-set (send self :make-drc-block-set-one)))
@@ -525,7 +618,7 @@
    ()
    (let ((ret -1))
      (flatten (append (mapcar #'(lambda (x) (send self :get-terrain-top-face-from-block-idx (incf ret))) (make-list (/ (length block-bodies) 3)))
-                      (list (find-if #'(lambda (x) (memq :top (send x :id))) (send ground-body :faces)))))))
+                      (mapcar #'(lambda (gb) (find-if #'(lambda (x) (memq :top (send x :id))) gb)) (send-all ground-bodies :faces))))))
   )
 
 
@@ -765,6 +858,14 @@
   (setq *stair* (instance drc-stair :init :add-groud-p add-groud-p))
   )
 
+(defun make-drc-stair-test-field (&key (add-groud-p))
+  (setq *stair* (instance drc-stair :init :add-groud-p add-groud-p :version :test-field :name "drc-stair-test-field"))
+  )
+
+(defun make-drc-stair-final (&key (add-groud-p))
+  (setq *stair* (instance drc-stair :init :add-groud-p add-groud-p :version :final :name "drc-stair-final"))
+  )
+
 (defun make-drc-door ()
   "Door on drc"
   (null-output (load "package://drc_task_common/euslisp/test-drc-door-task.l"))
@@ -792,11 +893,15 @@
   )
 
 (defun make-drc-terrain-japanese-block-ver (&key (add-groud-p))
-  (setq *terrain* (instance drc-terrain :init :block-dimensions (list 390 190 150) :add-groud-p add-groud-p))
+  (setq *terrain* (instance drc-terrain :init :block-dimensions (list 390 190 150) :add-groud-p add-groud-p :name "drc-terrain-japanese-block-ver"))
   )
 
 (defun make-drc-terrain-japanese-block-ver-sagami (&key (add-groud-p))
-  (setq *terrain* (instance drc-terrain :init :block-dimensions (list 390 190 150) :add-groud-p add-groud-p :block-angle 12.5))
+  (setq *terrain* (instance drc-terrain :init :block-dimensions (list 390 190 150) :add-groud-p add-groud-p :block-angle 12.5 :name "drc-terrain-japanese-block-ver-sagami"))
+  )
+
+(defun make-drc-terrain-test-field-ver (&key (add-groud-p :test-field))
+  (setq *terrain* (instance drc-terrain :init :block-dimensions (list 395 195 190) :add-groud-p add-groud-p :block-angle 15 :name "drc-terrain-test-field-ver"))
   )
 
 (defun make-drc-valve ()

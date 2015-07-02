@@ -1,0 +1,21 @@
+<launch>
+  <group ns="/drive/recognition" >
+    <!-- setting -->
+    <rosparam param="field_of_vision"> 80 </rosparam>
+    <rosparam param="wheelbase"> 2.05 </rosparam>
+    <rosparam param="tread"> 1.32 </rosparam>
+    <!-- visualize car path from steering wheel angle -->
+    <node pkg="drc_task_common" type="car_path_visualizer.py" name="car_path_visualizer" output="screen" respawn="true" >
+      <remap from="car_steering_wheel" to="/drive/controller/goal_handle_angle" />
+      <remap from="car_path_marker" to="predicted_path/marker" />
+      <remap from="execute_flag" to="/drive/execute_flag" />
+    </node>
+    <!-- obstacle length indicator -->
+    <node pkg="drc_task_common" type="obstacle_indicator" name="obstacle_indicator" output="screen" >
+      <remap from="obstacle" to="passthrough/obstacle_cloud" />
+      <remap from="steering_angle" to="/drive/controller/goal_handle_angle" />
+      <remap from="execute_flag" to="/drive/execute_flag" />
+      <!-- <remap from="obstacle_indicator" to="obstacle_length/indicator" /> -->
+    </node>
+  </group>
+</launch>

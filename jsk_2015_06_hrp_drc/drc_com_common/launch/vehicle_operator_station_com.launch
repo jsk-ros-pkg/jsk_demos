@@ -1,0 +1,28 @@
+<launch>
+  <arg name="OCS_IP" default="localhost"/>
+  <arg name="FC_IP" default="localhost"/>
+  <arg name="OCS_TO_FC_VEHICLE_PORT" default="1706"/>
+  <arg name="FC_TO_OCS_VEHICLE_PORT" default="1707"/>
+  <arg name="LAUNCH_PREFIX" default="" />
+  
+  <node pkg="jsk_network_tools" type="silverhammer_lowspeed_receiver.py"
+        output="log" launch-prefix="$(arg LAUNCH_PREFIX)"
+        name="ocs_from_fc_vehicle">
+    <rosparam subst_value="true">
+      message: drc_com_common/VehicleFC2OCSSmall
+      receive_port: $(arg FC_TO_OCS_VEHICLE_PORT)
+      receive_ip: "0.0.0.0"
+    </rosparam>
+  </node>
+  <node pkg="jsk_network_tools" type="silverhammer_lowspeed_streamer.py"
+        output="log"
+        name="ocs_to_fc_vehicle">
+    <rosparam subst_value="true">
+      message: drc_com_common/VehicleOCS2FCSmall
+      to_port: $(arg OCS_TO_FC_VEHICLE_PORT)
+      to_ip: $(arg FC_IP)
+      event_driven: true
+    </rosparam>
+  </node>
+
+</launch>

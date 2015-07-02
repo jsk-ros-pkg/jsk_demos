@@ -1,0 +1,89 @@
+- direction: 'vertical'
+
+- name: 'drill-grasp'
+  service: 'drill_grasp'
+  image: "package://drc_task_common/icons/wall-icon.png"
+  image_size: [80, 80]
+  column: 0
+- name: 'drill-rotate'
+  service: 'drill_rotate'
+  image: "package://drc_task_common/icons/wall-icon.png"
+  image_size: [80, 80]
+  column: 0
+- name: 'drill-button'
+  service: 'drill_button'
+  image: "package://drc_task_common/icons/wall-icon.png"
+  image_size: [80, 80]
+  column: 0
+- name: 'drill-wall'
+  service: 'drill_wall'
+  image: "package://drc_task_common/icons/wall-icon.png"
+  image_size: [80, 80]
+  column: 0
+- name: 'drill-put'
+  service: 'drill_put'
+  image: "package://drc_task_common/icons/wall-icon.png"
+  image_size: [80, 80]
+  column: 0
+- name: 'Look at'
+  service: 'look_at'
+  image: "package://drc_task_common/icons/lookat.png"
+  image_size: [180, 180]
+  column: 0
+- name: 'Look at'
+  service: 'look_at'
+  image: "package://drc_task_common/icons/lookat.png"
+  image_size: [80, 80]
+  column: 0
+
+- name: 'insert drill marker'
+  service: '/insert_drill_marker'
+  column: 1
+- name: 'insert plane marker'
+  service: '/insert_plane_marker'
+  column: 1
+- name: 'insert wall marker'
+  service: '/insert_wall_marker'
+  column: 1
+- name: 'erase all marker'
+  service: '/erase_all_marker'
+  column: 1
+- name: 'set drill marker coords'
+  service: '/set_drill_coords'
+  column: 1
+
+- name: 'drill auto go pos(NONE)'
+  service: '/drill_auto_go_pos'
+  column: 2
+- name: 'drill_throw'
+  service: '/drill_throw'
+  column: 2
+- name: 'drill_throw_exec'
+  service: '/drill_throw_exec'
+  column: 2
+
+- name: 'exec'
+  service: 'exec'
+  image: "package://drc_task_common/icons/exec.png"
+  image_size: [100, 100]
+  column: 3
+- name: 'cancel'
+  service: 'cancel'
+  image: "package://drc_task_common/icons/cancel.png"
+  image_size: [100, 100]
+  column: 3
+- name: 'show_motion'
+  service: 'reflesh'
+  image: "package://drc_task_common/icons/refresh.png"
+  image_size: [100, 100]
+  column: 3
+- name: 'cancel-motion-now'
+  service: 'cancel_motion_now'
+  #image: "package://drc_task_common/icons/cancel.png" # todo
+  image_size: [100, 100]
+  column: 3
+- name: 'skip-recog'
+  service: 'skip_recog'
+  image: "package://drc_task_common/icons/skip-recog.png"
+  image_size: [100, 100]
+  column: 3

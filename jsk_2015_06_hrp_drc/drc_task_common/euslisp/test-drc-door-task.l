@@ -20,25 +20,25 @@
                 (send (send (send *robot* arm :end-coords) :parent) :assoc mc)
                 ))
           '(:rarm :larm)
-          (cond ((or (equal *robot-name* "JAXON") (equal *robot-name* "STARO"))          
+          (cond ((or (equal *robot-name* "JAXON") (equal *robot-name* "STARO") (equal *robot-name* "JAXON_RED"))          
                  (list (float-vector 40 -40 0) (float-vector 40 40 0)))
                 (t ;; (or (equal *robot-name* "HRP2JSKNT") (equal *robot-name* "HRP2JSKNTS"))
                  (list (float-vector 50 -25 0) (float-vector 50 25 0))))
           )
-  (cond ((or (equal *robot-name* "JAXON") (equal *robot-name* "STARO"))
-         (defvar *rarm-avoid-pose* #f(0.0 40.0 -20.0 -5.0 -80.0 0.0 0.0 -20.0))
-         (defvar *larm-avoid-pose* #f(0.0 40.0 20.0 5.0 -80.0 0.0 0.0 -20.0))
-         (defvar *rarm-reset-manip-pose* #f(0.0 55.0 -20.0 -15.0 -100.0 -25.0 0.0 -45.0))
-         (defvar *larm-reset-manip-pose* #f(0.0 55.0 20.0 15.0 -100.0 25.0 0.0 -45.0))
+  (cond ((or (equal *robot-name* "JAXON") (equal *robot-name* "STARO") (equal *robot-name* "JAXON_RED"))
+         (setq *rarm-avoid-pose* #f(0.0 40.0 -20.0 -5.0 -80.0 0.0 0.0 -20.0))
+         (setq *larm-avoid-pose* #f(0.0 40.0 20.0 5.0 -80.0 0.0 0.0 -20.0))
+         (setq *rarm-reset-manip-pose* #f(0.0 55.0 -20.0 -15.0 -100.0 -25.0 0.0 -45.0))
+         (setq *larm-reset-manip-pose* #f(0.0 55.0 20.0 15.0 -100.0 25.0 0.0 -45.0))
          )
         (t ;; (or (equal *robot-name* "HRP2JSKNT") (equal *robot-name* "HRP2JSKNTS"))
-         (defvar *rarm-avoid-pose* #f(40.1007 -29.388 4.91744 -71.6494 -22.7883 -2.70865 7.77037 15.0))
-         (defvar *larm-avoid-pose* #f(40.1007 29.388 -4.91744 -71.6494 22.7883 2.70865 7.77037 15.0))
-         (defvar *rarm-reset-manip-pose* #f(50.0 -30.0 -10.0 -120.0 -25.0 -5.0 -20.0 60.0))
-         (defvar *larm-reset-manip-pose* #f(50.0 30.0 10.0 -120.0 25.0 5.0 -20.0 -60.0))
+         (setq *rarm-avoid-pose* #f(40.1007 -29.388 4.91744 -71.6494 -22.7883 -2.70865 7.77037 15.0))
+         (setq *larm-avoid-pose* #f(40.1007 29.388 -4.91744 -71.6494 22.7883 2.70865 7.77037 15.0))
+         (setq *rarm-reset-manip-pose* #f(50.0 -30.0 -10.0 -120.0 -25.0 -5.0 -20.0 60.0))
+         (setq *larm-reset-manip-pose* #f(50.0 30.0 10.0 -120.0 25.0 5.0 -20.0 -60.0))
          ))
-  (defvar *door-grasp-preshape-pose* #f(0.0 70.0 0.0 -10.0 30.0 30.0))
-  (defvar *door-grasp-pose* #f(0.0 -20.0 10.0 -10.0 120.0 120.0))
+  (setq *door-grasp-preshape-pose* #f(0.0 70.0 0.0 -10.0 30.0 30.0))
+  (setq *door-grasp-pose* #f(0.0 -20.0 10.0 -10.0 120.0 120.0))
   )
 ;;(warn ";; (setup-door-open)~%")
 
@@ -97,20 +97,25 @@
            (b1 (make-cube door-depth door-width door-height))
            (b2 (make-cube door-knob-depth door-knob-width door-knob-height))
            (b-leg1 (make-cube 700 100 100))
-           (b-leg2 (make-cube 700 100 100)))
+           (b-leg2 (make-cube 700 100 100))
+           (b-wall1 (make-cube 5 250 door-height))
+           (b-wall2 (make-cube 5 250 door-height))
+           )
       (send b-leg1 :set-color :gray)
       (send b-leg2 :set-color :gray)
-      (send b0 :set-color :gray90)
-      (send b1 :set-color :gray90)
-      (send b2 :set-color :gray60)
+      (send b0 :set-color :gray70)
+      (send b1 :set-color :gray70)
+      (send b2 :set-color :gray50)
       (send b1 :translate (float-vector 0 (/ door-width (case handle-l/r (:left 2.0) (t -2.0))) (/ door-height 2.0)))
       (send b2 :locate (float-vector (/ door-knob-depth -2.0) (/ door-knob-width (case handle-l/r (:left -2.0) (t 2.0))) 0))
       (send b-leg1 :translate (float-vector -350 (* (case handle-l/r (:right 1.0) (t -1.0)) 50) 50))
       (send b-leg2 :translate (float-vector -350 (* (case handle-l/r (:right 1.0) (t -1.0)) (- -50 door-width)) 50))
+      (send b-wall1 :translate (float-vector -2.5 (* (case handle-l/r (:right 1.0) (t -1.0)) 125) (* 0.5 door-height)))
+      (send b-wall2 :translate (float-vector -2.5 (* (case handle-l/r (:right 1.0) (t -1.0)) (- -125 door-width)) (* 0.5 door-height)))
       (mapcar #'(lambda (pb cb)
                   (send pb :assoc cb))
-              (list b0 b0 b0 b1) (list b-leg1 b-leg2 b1 b2))
-      (let* ((l0 (instance bodyset-link :init (make-cascoords) :bodies (list b0 b-leg1 b-leg2) :name :root-link))
+              (list b0 b0 b0 b0 b0 b1) (list b-leg1 b-leg2 b-wall1 b-wall2 b1 b2))
+      (let* ((l0 (instance bodyset-link :init (make-cascoords) :bodies (list b0 b-leg1 b-leg2 b-wall1 b-wall2) :name :root-link))
              (l1 (instance bodyset-link :init (make-cascoords) :bodies (list b1) :name :door-panel))
              (l2 (instance bodyset-link :init (make-cascoords) :bodies (list b2) :name :door-knob)))
         (send l2 :locate door-knob-pos :world)
@@ -169,20 +174,76 @@
                          :handle-l/r :left)))
 
 (defun make-drc-sagami-door ()
-  "drc door in sagami full-task-course environment"
-  (setq *door* (instance param-door :init 895 60 110 20
-                         (float-vector 0 800 845)
-                         (float-vector -50 760 845)
-                         ;; (float-vector 0 800 1120)
-                         ;; (float-vector -50 760 1120)
-                         :handle-l/r :left))
+  (make-drc-final-door)
   )
 
 (defun make-drc-sagami-door-mirror ()
-  "mirror of drc door in sagami full-task-course environment"
-  (setq *door* (instance param-door :init 895 60 110 20
-                         (float-vector 0 -800 845)
-                         (float-vector -50 -760 845)
+  (make-drc-final-door-mirror)
+  )
+
+;; (defun make-drc-sagami-door ()
+;;   "drc door in sagami full-task-course environment"
+;;   (setq *door* (instance param-door :init 895 60 110 20
+;;                          (float-vector 0 800 845)
+;;                          (float-vector -50 760 845)
+;;                          ;; (float-vector 0 800 1120)
+;;                          ;; (float-vector -50 760 1120)
+;;                          :handle-l/r :left))
+;;   )
+
+;; (defun make-drc-sagami-door-mirror ()
+;;   "mirror of drc door in sagami full-task-course environment"
+;;   (setq *door* (instance param-door :init 895 60 110 20
+;;                          (float-vector 0 -800 845)
+;;                          (float-vector -50 -760 845)
+;;                          :handle-l/r :right))
+;;   )
+
+(defun make-drc-lasvegas-indoor-door ()
+  "drc door in lasvegas indoor environment"
+  (setq *door* (instance param-door :init 800 60 110 20
+                         (float-vector 0 750 860)
+                         (float-vector -50 700 860)
+                         :handle-l/r :left))
+  )
+
+(defun make-drc-lasvegas-outdoor-door ()
+  "drc door in lasvegas outdoor environment"
+  (setq *door* (instance param-door :init 795 45 120 30
+                         (float-vector 0 735 850)
+                         (float-vector -45 675 850)
+                         :handle-l/r :left))
+  )
+
+(defun make-drc-lasvegas-indoor-door-mirror ()
+  "drc door in lasvegas indoor environment"
+  (setq *door* (instance param-door :init 800 60 110 20
+                         (float-vector 0 -750 860)
+                         (float-vector -50 -700 860)
+                         :handle-l/r :right))
+  )
+
+(defun make-drc-lasvegas-outdoor-door-mirror ()
+  "drc door in lasvegas outdoor environment"
+  (setq *door* (instance param-door :init 795 45 120 30
+                         (float-vector 0 -735 850)
+                         (float-vector -45 -675 850)
+                         :handle-l/r :right))
+  )
+
+(defun make-drc-final-door ()
+  "drc final door in fair plex environment"
+  (setq *door* (instance param-door :init 890 5 105 23
+                         (float-vector 0 835 890)
+                         (float-vector -40 785 890)
+                         :handle-l/r :left))
+  )
+
+(defun make-drc-final-door-mirror ()
+  "drc final door in fair plex environment"
+  (setq *door* (instance param-door :init 890 5 105 23
+                         (float-vector 0 -835 890)
+                         (float-vector -40 -785 890)
                          :handle-l/r :right))
   )
 
@@ -454,7 +515,7 @@
   ;;       (send (send (send (send (car (send *robot* :links)) :copy-worldcoords) :transform (make-coords :pos (float-vector 642.373 43.578 296.552) :rpy (list -1.343 -0.009 -1.602))) :rotate (deg2rad 90) :y) :rotate (deg2rad 180) :z)
   ;;       (send *door* :handle :larm-knob-handle))
   ;; (send *door* :translate #f(20 -50 0) :world)
-  (cond ((or (equal *robot-name* "JAXON") (equal *robot-name* "STARO"))
+  (cond ((or (equal *robot-name* "JAXON") (equal *robot-name* "STARO") (equal *robot-name* "JAXON_RED"))
          (setq *init-standing-coords* (make-coords :pos (float-vector -1000 -450 0) :rpy (list (deg2rad -80) 0 0)))
          )
         (t ;; (or (equal *robot-name* "HRP2JSKNT") (equal *robot-name* "HRP2JSKNTS"))

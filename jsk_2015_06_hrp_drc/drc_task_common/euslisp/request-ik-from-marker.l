@@ -242,9 +242,15 @@
          )
         ((equal *obj-type* jsk_rviz_plugins::TransformableMarkerOperate::*MESH_RESOURCE*) ;; hand mesh
          (setq *obj* (make-cube 100 100 100)) ;; dummy eus object instead of hand mesh
-         (let* ((hand-trans))
+         (let* (hand-trans
+                hand-origin-trans-pos)
+           (cond ((or (string= *robot-name* "HRP2JSKNTS") (string= *robot-name* "HRP2JSKNT")  (string= *robot-name* "STARO"))
+                  (setq hand-origin-trans-pos (float-vector 0 0 0)))
+                 ((or (string= *robot-name* "JAXON") (string= *robot-name* "JAXON_RED"))
+                  (setq hand-origin-trans-pos (float-vector 0 0 -40))))
            (setq hand-trans
-                 (send (send (send (send *robot* *ik-arm* :end-coords) :parent) :copy-worldcoords)
+                 (send (send (send (send (send *robot* *ik-arm* :end-coords) :parent) :copy-worldcoords)
+                             :translate hand-origin-trans-pos :local)
                        :transformation (send (send *robot* *ik-arm* :end-coords) :copy-worldcoords)))
            (send *obj* :assoc (make-cascoords :coords (make-coords) :name :origin))
            ;; :handle and :approach is fixed to end-coords
@@ -522,7 +528,11 @@
     (setq *ik-result* (send-ik-request :interpolate-mode interpolate-mode :rotation-axis (if (equal (send *obj* :get :type) :hand-mesh) (list t t t) (list :z t t))))
     ;(if *pub-grasp-pose-feedback-flag* (pub-grasp-pose-feedback))
     (cond (*ik-result*
-           (send-joint-states-to-marker))
+           (send-joint-states-to-marker)
+           (dotimes (i 2) (ros::sleep))
+           (ros::spin-once)
+           (send-joint-states-to-marker)
+           )
           (t
            (send *robot* :angle-vector original-av)
            (send *robot* :newcoords original-coords)
@@ -581,11 +591,12 @@
                           :translation-axis translation-axis
                           :rotation-axis rotation-axis
                           :max (float-vector  500  500  0  20  20  10)
+                          :centroid-thre 20
                           :warnp t
                           :stop 30
                           :look-at-target (copy-seq (send (elt tc 0) :worldpos))
                           )))
-              ((or (string= *robot-name* "JAXON") (string= *robot-name* "STARO"))
+              ((or (string= *robot-name* "JAXON") (string= *robot-name* "STARO") (string= *robot-name* "JAXON_RED"))
                (setq res (ik-server-call
                           :ik-server-service-name "/solve_ik"
                           :target-coords tc
@@ -594,12 +605,13 @@
                           :debug-view :no-message
                           :translation-axis translation-axis
                           :rotation-axis rotation-axis
-                          :root-link-virtual-joint-weight (float-vector 0.15 0.15 0.01 0.15 0.5 0.5)
+                          :root-link-virtual-joint-weight (float-vector 0.15 0.15 0.02 0.05 0.5 0.5)
                           :additional-weight-list
                           (list (list (send *robot* :torso :waist-r :child-link) 0.1)
                                 (list (send *robot* :torso :waist-y :child-link) 0.1)
                                 (list (send *robot* :torso :waist-p :child-link) 0.1))
                           :max (float-vector  500  500  0  20  20  10)
+                          :centroid-thre 20
                           :warnp t
                           :stop 50
                           :avoid-collision-distance 100
@@ -635,6 +647,16 @@
     (when (= i (- (length *ik-result*) 1))
       (return))
     (unix::usleep (* 200 1000)))
+  )
+
+(defun send-joint-states-to-marker-from-angle-vector
+  (&optional (av (send *robot* :angle-vector)))
+  (let* ((msg (instance sensor_msgs::JointState :init)))
+    (send msg :header (instance std_msgs::Header :init :stamp (ros::time 0.0)))
+    (send msg :name (send-all (send *robot* :joint-list) :name))
+    (send msg :position (mapcar #'deg2rad (concatenate cons av)))
+    (ros::publish "/jsk_model_marker_interface/robot/reset_joint_states_and_root" msg)
+    (ros::spin-once))
   )
 
 ;; angle-vector ;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -780,6 +802,7 @@
     (cond ((= res-index reverse-index)
            (setq *handle-reverse-flag* (not *handle-reverse-flag*))
            (generate-object-with-new-dimensions)))
+    (ros::spin-once)
     (setq *object-menu-command-flag* nil)
     ))
 
@@ -788,9 +811,10 @@
   ()
   (let* ((title
           (format nil "Robot Menu~%"))
-         (menu-list (list "cancel" "switch arm" "current pos" ":reset-pose" ":reset-manip-pose" ":init-pose"))
+         (menu-list (list "cancel" "switch arm" "current pos" "potentio-vector" ":reset-pose" ":reset-manip-pose" ":init-pose"))
          (switch-arm-index 1)
          (current-pos-index 2)
+         (potentio-vector-index 3)
          (req (instance drc_task_common::RvizMenuCallRequest :init :title title :menu_list menu-list))
          res res-index res-value)
     (setq res (ros::service-call "rviz_menu_call" req))
@@ -802,14 +826,22 @@
            (publish-obj-mode-text))
           ((equal res-index current-pos-index)
            (set-robot-current-pos))
+          ((equal res-index potentio-vector-index)
+           (cond (*use-robot-interface-flag*
+                  (send *robot* :angle-vector (send *ri* :state :potentio-vector)))
+                 (t
+                  (send *robot* :angle-vector (get-potentio-vector-from-joint-states))))
+           (send-joint-states-to-marker-from-angle-vector)
+           )
           ((find-method *robot* (read-from-string res-value))
            (eval (list 'send '*robot* '(read-from-string res-value)))
            (setq *ik-result* (list (send-all (send *robot* :joint-list) :joint-angle)))
            (send-joint-states-to-marker)))
+    (ros::spin-once)
     (setq *robot-menu-command-flag* nil)
     (publish-obj-mode-text)
     ))
-   
+
 ;; main ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (request-ik-from-marker-init)
 (ros::rate 10)
@@ -833,17 +865,24 @@
       (publish-object-approach :frame-id frame-id)
       ))
   (when *solve-ik-command-flag*
+    (ros::ros-warn "[request-ik] request-ik-from-marker-one")
     (request-ik-from-marker-one))
   (when *save-obj-command-flag*
+    (ros::ros-warn "[request-ik] save-obj-model-one")
     (save-obj-model-one))
   (when *send-angle-command-flag*
+    (ros::ros-warn "[request-ik] send-angle-to-real-robot-one")
     (send-angle-to-real-robot-one))
   (when *reach-until-touch-command-flag*
+    (ros::ros-warn "[request-ik] reach-until-touch-one")
     (reach-until-touch-one))
   (when *object-menu-command-flag*
+    (ros::ros-warn "[request-ik] object-menu-one")
     (object-menu-one))
   (when *robot-menu-command-flag*
+    (ros::ros-warn "[request-ik] robot-menu-one")
     (robot-menu-one))
   (when *assoc-obj-flag*
+    (ros::ros-warn "[request-ik] set-obj-pose-for-assoc")
     (set-obj-pose-for-assoc))
   )

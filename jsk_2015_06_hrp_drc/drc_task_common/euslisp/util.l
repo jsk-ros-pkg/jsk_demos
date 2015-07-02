@@ -315,17 +315,19 @@
     ))
 
 (defun door-params-to-float-vector
-  (door-params door-push/pull door-name length)
+  (door-params door-push/pull door-name door-reach-deg keep-grasp? length)
   (let (ret)
     (setq ret (box-to-float-vector (car door-params) (cadr door-params) length))
     (setf (elt ret 9) door-push/pull)
     (setf (elt ret 10) door-name)
+    (setf (elt ret 11) door-reach-deg)
+    (setf (elt ret 12) keep-grasp?)
     ret))
 
 (defun float-vector-to-door-params
   (params)
   (let ((ret (float-vector-to-box params)))
-    (append ret (list (elt params 9) (elt params 10)))
+    (append ret (list (elt params 9) (elt params 10) (elt params 11) (elt params 12)))
     ))
 
 (defun reach-until-touch-params-to-float-vector
@@ -384,6 +386,28 @@
       (send* self :register-callback spec)))
   )
 
+(defun footstep-array->vector (footstep-array float-length integer-length)
+  (let ((footstep-coords (mapcar #'(lambda (f)
+                                     (ros::tf-pose->coords (send f :pose)))
+                                 (send footstep-array :footsteps))))
+    (let ((integer-vector-ret (instantiate integer-vector integer-length)))
+      (dotimes (i (length (send footstep-array :footsteps)))
+        (setf (elt integer-vector-ret i) (send (elt (send footstep-array :footsteps) i) :leg)))
+      (list (coords-set-to-float-vector footstep-coords float-length)
+            integer-vector-ret))))
+
+(defun vector->footstep-array (float-footsteps int-footsteps)
+  (let ((ret (instance jsk_footstep_msgs::FootstepArray :init)))
+    (let ((coords-set (float-vector-to-coords-set float-footsteps)))
+      (dotimes (i (length coords-set))
+        (let ((footstep (instance jsk_footstep_msgs::Footstep :init)))
+          (send footstep :pose (ros::coords->tf-pose (elt coords-set i)))
+          (send footstep :leg (elt int-footsteps i))
+          (send ret
+                :footsteps (append (send ret :footsteps)
+                                   (list footstep))))))
+    ret))
+
 ;; class to synchronize foreground rect topic and
 ;; background rect topic
 (defclass foreground-background-synchronizer
@@ -404,3 +428,8 @@
   `(if (null ,lst)
        (setf ,lst (list ,el))
      (nconc ,lst (list ,el))))
+
+(defun keyshot-request
+  ()
+  (call-empty-service "keyshot/snapshot/request")
+  )

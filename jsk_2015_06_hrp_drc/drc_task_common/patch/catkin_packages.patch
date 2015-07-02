@@ -1,0 +1,27 @@
+--- packages.py	2015-03-24 17:49:41.000000000 -0700
++++ /tmp/packages.py	2015-05-22 00:39:19.688064478 -0700
+@@ -93,7 +93,7 @@
+         raise RuntimeError('\n'.join(duplicates))
+     return packages
+ 
+-
++find_packages_allowing_duplicates_cache = dict()
+ def find_packages_allowing_duplicates(basepath, exclude_paths=None, exclude_subspaces=False, warnings=None):
+     """
+     Crawls the filesystem to find package manifest files and parses them.
+@@ -105,10 +105,15 @@
+     :returns: A dict mapping relative paths to ``Package`` objects
+     ``dict``
+     """
++    global find_packages_allowing_duplicates_cache
++    cache_key = (basepath, exclude_paths, exclude_subspaces)
++    if cache_key in find_packages_allowing_duplicates_cache:
++        return find_packages_allowing_duplicates_cache[cache_key]
+     packages = {}
+     package_paths = find_package_paths(basepath, exclude_paths=exclude_paths, exclude_subspaces=exclude_subspaces)
+     for path in package_paths:
+         packages[path] = parse_package(os.path.join(basepath, path), warnings=warnings)
++    find_packages_allowing_duplicates_cache[cache_key] = packages
+     return packages
+ 
+ 

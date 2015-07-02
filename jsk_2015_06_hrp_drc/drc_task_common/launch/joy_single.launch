@@ -1,0 +1,7 @@
+<launch>
+  <arg name="dev" default="/dev/input/js0" />
+  <remap from="joy" to="/ocs/joy"/>
+  <node pkg="joy" type="joy_node" name="joy_node" clear_params="true" output="screen" if="true">
+    <param name="dev" value="$(arg dev)" />
+  </node>
+</launch>

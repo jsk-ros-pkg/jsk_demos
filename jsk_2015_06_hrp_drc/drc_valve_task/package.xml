@@ -1,6 +1,6 @@
 <package>
   <name>drc_valve_task</name>
-  <version>0.1.0</version>
+  <version>0.0.1</version>
   <description>drc_valve_task</description>
   <maintainer email="murooka@jsk.t.u-tokyo.ac.jp">Masaki Murooka</maintainer>
   <license>BSD</license>

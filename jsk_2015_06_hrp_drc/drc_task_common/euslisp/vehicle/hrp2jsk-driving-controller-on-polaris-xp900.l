@@ -11,32 +11,60 @@
   (:init
    (&key ((:motion tmp-motion) nil)
          ((:real tmp-real) nil) ((:rate tmp-ros-rate) 10.0) (roseus-init t)
-         (approach-handle nil) (approach-pedal nil)
          )
    (when roseus-init
      (ros::roseus "hrp2jsknt_driving_interface_on_polaris_xp900")
      (ros::rate tmp-ros-rate)
      )
    (unless tmp-motion
-     (setq tmp-motion (instance hrp2jsk-driving-motion-on-polaris-xp900 :init :real tmp-real
+     (setq tmp-motion (instance hrp2jsk-driving-motion-on-polaris-xp900 :init :real nil
                                 :grasp-arm :rarm :grasp-point :handle-crank))
      )
    (send-super :init :motion tmp-motion
                :real tmp-real :rate tmp-ros-rate :roseus-init nil
-               :approach-handle approach-handle :approach-pedal approach-pedal
                )
-   (send self :step-accel-command -1.0)
-   (send self :release-accel-command 25.0)
+   (send self :step-accel-command -10.0)
+   (send self :release-accel-command 10.0)
+   (send self :detach-accel-command 15.0)
+   ;; (send self :accel-origin 0.0)
+   )
+  (:initialize
+   (&rest args &key (fist-offset #f(0 0 140)) (floor-offset #f(0 0 0))  &allow-other-keys)
+   (send-super* :initialize
+                :fist-offset fist-offset :floor-offset floor-offset
+                args)
+   )
+  (:approach-accel
+   (&rest args &key (limb :rleg) &allow-other-keys)
+   (send* motion :approach-accel-pedal :limb limb args)
    (send self :accel-origin 0.0) ;; accel-origin means current total move distance and origin to next relative move distance
+   (send self :controller-state :accel :running) ;; enbale accel
    )
   (:accel-cmd
    (cmd)
    (let ((cmd-mm (send self :get-pedal-motion-from-cmd cmd release-accel-command step-accel-command)))
-     (warn "accel ~A[cmd] -> ~A [mm]~%" cmd cmd-mm)
-     (send self :step-accel cmd-mm :use-controller t) ;; step-accel assumed to get relative distance to move
-     (setq accel-origin (+ accel-origin cmd-mm))
-     (send self :publish-current-step accel-origin)
+     (warn "accel ~A[cmd] -> ~A [mm], current ~A[mm]~%" cmd cmd-mm accel-origin)
+     (when (send self :step-accel cmd-mm :use-controller t) ;; step-accel assumed to get relative distance to move
+         (setq accel-origin (+ accel-origin cmd-mm))
+         (send self :publish-current-step accel-origin)
+         (send self :publish-step-on-flag cmd)
+       )
      accel-origin ;; return total state of accel-command
+     )
+   )
+  (:detach-accel
+   (&key (use-controller t) (time 1000))
+   (when (equal (send self :controller-state :accel) :initialize)
+     (warn "accel is not approached~%")
+     (return-from :detach-accel nil)
+     )
+   (let ((cmd-mm (- (send self :detach-accel-command) accel-origin)))
+     (warn "detach-accel ~A [mm], current ~A[mm]~%" cmd-mm accel-origin)
+     (when (send self :step-accel cmd-mm :time time :use-controller use-controller) ;; detach accel for emergency
+       (send self :controller-state :accel :release)
+       (setq accel-origin (+ accel-origin cmd-mm))
+       )
+     accel-origin
      )
    )
   (:get-pedal-motion-from-cmd
@@ -47,11 +75,11 @@
      command-move-mm ;; return relative distance to move
      )
    )
-  (:brake-cmd
-   (cmd)
-   (warn "Real Vehicle Mode: Brake Disabled~%")
-   (send self :accel-cmd 0.0) ;; release accel forcely
-   )
+  ;; (:brake-cmd
+  ;;  (cmd)
+  ;;  (warn "Real Vehicle Mode: Brake Disabled~%")
+  ;;  (send self :accel-cmd 0.0) ;; release accel forcely
+  ;;  )
   )
 
 (defun hrp2jsk-vehicle-main

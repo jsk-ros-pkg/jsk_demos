@@ -1,82 +1,47 @@
-<?xml version="1.0" encoding="utf-8"?>
 <launch>
-  <arg name="USE_DRC" default="true" />
   <arg name="BASE_FRAME_ID" default="car_center" />
   <arg name="CREATE_MANAGER" default="true" />
   <arg name="MANAGER" default="drive_manager" />
-  <node if="$(arg CREATE_MANAGER)"
-        pkg="nodelet" type="nodelet" name="$(arg MANAGER)"
-        args="manager" output="screen"/>
 
-  <!-- Filter for tilt laser shadowing/veiling -->
-  <node pkg="laser_filters" type="scan_to_cloud_filter_chain" respawn="false" name="laser_filters">
-    <remap from="scan" to="/multisense/lidar_scan"/>
-    <remap from="cloud_filtered" to="/scan_to_cloud" />
-    <param name="target_frame" value="head" />
-    <param name="laser_max_range" value="30.0" />
-<rosparam>
-scan_filter_chain:
- - name: shadows
-   type: laser_filters/ScanShadowsFilter
-   params:
-     min_angle: 10
-     max_angle: 170
-     neighbors: 1
-     window: 1
- - name: through
-   type: laser_filters/LaserScanRangeFilter
-   params:
-     ## for localization
-     lower_threshold: 2.2
-     upper_threshold: 29.5
-     ## for manipulation
-     #     lower_threshold: 0.3
-     #     upper_threshold: 2.8
-</rosparam>
-  </node>
-  
-  <!-- Set spindle speed of laser -->
-  <node pkg="rostopic" type="rostopic" args="pub /multisense/set_spindle_speed std_msgs/Float64 '{data: 1.5}' -r 1"
-        name="set_spindle_speed" />
-  
-  <!-- TF transformation -->
-  <node pkg="nodelet" type="nodelet" name="transform_cloud"
-        args="load jsk_pcl/TfTransformCloud $(arg MANAGER)">
-    <remap from="~input" to="/multisense/organized_image_points2_color" />
-    <remap from="transform_cloud/output" to="/transform_cloud/points2" />
-    <param name="target_frame_id" value="$(arg BASE_FRAME_ID)" />
-  </node>
-
-  <group if="$(arg USE_DRC)">
+  <group ns="/drive/recognition">
+    <node if="$(arg CREATE_MANAGER)"
+          pkg="nodelet" type="nodelet" name="$(arg MANAGER)"
+          args="manager" output="screen"/>
+    <!-- TF transformation -->
+    <node pkg="nodelet" type="nodelet" name="transform_cloud"
+          args="load jsk_pcl/TfTransformCloud $(arg MANAGER)">
+      <remap from="~input" to="/multisense/resize_1_8/organized_image_points2_color" />
+      <remap from="transform_cloud/output" to="transform_cloud/car_center" />
+      <param name="target_frame_id" value="$(arg BASE_FRAME_ID)" />
+    </node>
     <!--  PassThrough Flter for removng ground points in z axis -->
     <node pkg="nodelet" type="nodelet" name="stereo_passthrough_z"
           args="load pcl/PassThrough $(arg MANAGER)"
           clear_params="true">
-      <remap from="~input" to="/transform_cloud/points2" />
-      <remap from="~output" to="/passthrough/stereo/remove_z" />
+      <remap from="~input" to="transform_cloud/car_center" />
+      <remap from="~output" to="passthrough/remove_z" />
       <rosparam>
         filter_field_name: z
-        filter_limit_min: 0.5
+        filter_limit_min: 0.45
         filter_limit_max: 1.25
         keep_organized: true
         input_frame: /car_center
       </rosparam>
     </node>
-
     <!-- Obstacle Extraction using my passthrough filter -->
-    <!--  My PassThrough Flter for removng stereo points in x axis -->
+    <!--  My PassThrough Flter for removng stereo points in xy plane -->
     <include file="$(find drc_task_common)/launch/fc/vehicle/passthrough_car_body.launch">
-      <arg name="INPUT_POINTS" value="/passthrough/stereo/remove_z"/>
-      <arg name="OUTPUT_POINTS" value="/passthrough/stereo/remove_xz"/>
+      <arg name="INPUT_POINTS" value="passthrough/remove_z"/>
+      <arg name="OUTPUT_POINTS" value="passthrough/obstacle_cloud"/>
+      <arg name="EXECUTE_FLAG" value="/drive/execute_flag"/>
     </include>
-    
     <!-- Obstacle Extraction using original passthrough filter -->
     <!-- PassThrough Flter for removng stereo points in x axis -->
     <!-- <node pkg="nodelet" type="nodelet" name="stereo_passthrough_x" -->
     <!--       args="load pcl/PassThrough $(arg MANAGER)" -->
     <!--       clear_params="true"> -->
-    <!--   <remap from="~input" to="/passthrough/stereo/remove_ground_z" /> -->
-    <!--   <remap from="~output" to="/passthrough/stereo/remove_body_ground_zx" /> -->
+    <!--   <remap from="~input" to="passthrough/remove_z" /> -->
+    <!--   <remap from="~output" to="passthrough/obstacle_cloud" /> -->
     <!--   <rosparam> -->
     <!--     filter_field_name: x -->
     <!--     filter_limit_min: 2.0 -->

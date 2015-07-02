@@ -1,5 +1,6 @@
-(load "package://drc_task_common/euslisp/robot-util.l")
-(load "package://drc_task_common/euslisp/util.l")
+(ros::roseus-add-msgs "jsk_footstep_msgs")
+(require "package://drc_task_common/euslisp/robot-util.l")
+(require "package://drc_task_common/euslisp/util.l")
 
 (defun set-valve-environment
   (&key (valve-r 200)
@@ -40,6 +41,8 @@
   ;; set robot stand-coords
   (setq *valve-stand-coords* (if stand-coords stand-coords (make-coords)))
   (send *robot* :fix-leg-to-coords *valve-stand-coords*)
+  (setq *valve-motion* nil)
+  (setq *valve-ik-results* nil)
   ;; draw
   (setq *ground* (make-cube 1000 1000 1))
   (when (or draw? (boundp '*irtviewer*))
@@ -57,7 +60,7 @@
          larm-z-rotate-offset
          rarm-z-rotate-offset)
     ;; handle for valve edge
-    (cond ((or (equal *robot-name* "JAXON") (equal *robot-name* "STARO"))
+    (cond ((or (equal *robot-name* "JAXON") (equal *robot-name* "STARO") (equal *robot-name* "JAXON_RED"))
            (setq larm-translate-offset (float-vector -10.0 0.0 0.0))
            (setq rarm-translate-offset (float-vector -10.0 0.0 0.0))
            (setq larm-z-rotate-offset (deg2rad 0))
@@ -77,7 +80,7 @@
            :coords (send (send (send (send *robot* :rarm :end-coords) :copy-worldcoords) :translate rarm-translate-offset :local) :rotate rarm-z-rotate-offset :z :local)
            :parent (send (send *robot* :rarm :end-coords) :parent)))
     ;; handle for valve center
-    (cond ((or (equal *robot-name* "JAXON") (equal *robot-name* "STARO"))
+    (cond ((or (equal *robot-name* "JAXON") (equal *robot-name* "STARO") (equal *robot-name* "JAXON_RED"))
            (setq larm-translate-offset (float-vector -10.0 0.0 0.0))
            (setq rarm-translate-offset (float-vector -10.0 0.0 0.0))
            (setq larm-z-rotate-offset (deg2rad 0))
@@ -103,7 +106,11 @@
   (valve-r)
   (send *valve* :put :grasp-coords
         (make-cascoords
-         :coords (make-coords :pos (float-vector valve-r 0 0) :rpy (list pi/2 -pi/2 0))
+         :coords
+         (cond ((or (equal *robot-name* "JAXON") (equal *robot-name* "STARO") (equal *robot-name* "JAXON_RED"))
+                (send (make-coords :pos (float-vector valve-r 0 0) :rpy (list pi/2 -pi/2 0)) :rotate (deg2rad 10) :z :local))
+               (t ;; (or (equal *robot-name* "HRP2JSKNT") (equal *robot-name* "HRP2JSKNTS"))
+                (make-coords :pos (float-vector valve-r 0 0) :rpy (list pi/2 -pi/2 0))))
          :parent *valve*))
   (send *valve* :put :center-grasp-coords
         (make-cascoords
@@ -129,7 +136,7 @@
 
 (defun fullbody-inverse-kinematics-for-valve
   (tc mt ll &key (draw? nil))
-  (cond ((equal *robot-name* "JAXON")
+  (cond ((or (equal *robot-name* "JAXON") (equal *robot-name* "JAXON_RED"))
          (fullbody-inverse-kinematics-for-valve-for-jaxon tc mt ll :draw? draw?))
         ((equal *robot-name* "STARO")
          (fullbody-inverse-kinematics-for-valve-for-staro tc mt ll :draw? draw?))
@@ -167,12 +174,15 @@
                 :translation-axis (list t t t)
                 :rotation-axis (list t t t)
                 :warnp (if draw? t nil)
-                :root-link-virtual-joint-weight (float-vector 0.15 0.15 0.01 0.15 0.5 0.5)
+                :root-link-virtual-joint-weight (float-vector 0.15 0.15 0.02 0.15 0.5 0.5)
                 :additional-weight-list
-                (list (list (send *robot* :torso :waist-r :child-link) 0.1)
+                (list (list (send *robot* :torso :waist-r :child-link) 0.01)
                       (list (send *robot* :torso :waist-y :child-link) 0.1)
-                      (list (send *robot* :torso :waist-p :child-link) 0.1))
-                :max (float-vector  500  200  25  10  20  10)
+                      (list (send *robot* :torso :waist-p :child-link) 0.1)
+                      (list (send *robot* :rarm :shoulder-p :child-link) 0)
+                      (list (send *robot* :larm :shoulder-p :child-link) 0)
+                      )
+                :max (float-vector  500  200  15  10  20  10)
                 :min (float-vector  -500  -200  -200  -10  -20  -10)
                 :stop 50
                 :debug-view (if draw? :no-message nil)
@@ -182,7 +192,8 @@
                 :collision-avoidance-link-pair
                 (list (list (elt (send *robot* *valve-arm* :links) 2) (send *robot* :link "CHEST_LINK2")))
                 ))
-    (when (and ret (send *robot* :self-collision-check)) (setq ret nil))
+    (when (and ret (remove-if  #'(lambda (l) (or (and (eq (car l) (send *robot* :link "CHEST_LINK2")) (eq (cdr l) (send *robot* :link "HEAD_LINK1"))) (and (eq (cdr l) (send *robot* :link "CHEST_LINK2")) (eq (car l) (send *robot* :link "HEAD_LINK1"))))) (send *robot* :self-collision-check)))
+      (setq ret nil))
     ret)
   )
 
@@ -231,6 +242,26 @@
     ;; rotate valve
     (dotimes (i devide-num)
       (send *robot* :reset-manip-pose)
+      (when (or (equal *robot-name* "JAXON") (equal *robot-name* "STARO") (equal *robot-name* "JAXON_RED"))
+        (let* ((default-valve-z-pos 1300)
+               (valve-z-pos-with-weight (min (* (- (elt (send (send *valve* :worldcoords) :worldpos) 2) default-valve-z-pos) 0.5) 0))
+               (waist-pitch-offset-from-valve-z-with-weight (- (* 0.1 valve-z-pos-with-weight)))
+               (pre-pose-overwrite-mode :both) ;; :legs or :waist or :both
+               )
+          (cond ((equal pre-pose-overwrite-mode :legs)
+                 (ros::ros-info "move leg depending on valve height : ~a" (float-vector 0 0 (- valve-z-pos-with-weight)))
+                 (send *robot* :legs :move-end-pos (float-vector 0 0 (- valve-z-pos-with-weight)))
+                 )
+                ((equal pre-pose-overwrite-mode :waist)
+                 (ros::ros-info "move waist-pitch depending on valve height : ~a" waist-pitch-offset-from-valve-z-with-weight)
+                 (send *robot* :torso :waist-p :joint-angle waist-pitch-offset-from-valve-z-with-weight)
+                 )
+                ((equal pre-pose-overwrite-mode :both)
+                 (ros::ros-info "move leg and waist-pitch depending on valve height : ~a ~a" (float-vector 0 0 (* 0.2 (- valve-z-pos-with-weight))) (* 0.8 waist-pitch-offset-from-valve-z-with-weight))
+                 (send *robot* :legs :move-end-pos (float-vector 0 0 (* 0.2 (- valve-z-pos-with-weight))))
+                 (send *robot* :torso :waist-p :joint-angle (* 0.8 waist-pitch-offset-from-valve-z-with-weight))
+                 ))
+          ))
       (send *robot* :fix-leg-to-coords *valve-stand-coords*)
       ;; solve ik to rotate valve
       (let* (ik-ret-in
@@ -250,10 +281,10 @@
          (when ik-ret-in
            (setq ik-ret-in (send *robot* :look-at-target (send *valve* :worldcoords)))))
         ;; solve ik for valve reaching point
-        (cond ((or (equal *robot-name* "JAXON") (equal *robot-name* "STARO"))
+        (cond ((or (equal *robot-name* "JAXON") (equal *robot-name* "STARO") (equal *robot-name* "JAXON_RED"))
                (setq tc
                      (list
-                      (send (send (send *valve* :get valve-handle-name) :copy-worldcoords) :translate (float-vector (* (- reach-dist) 1.5) 0 0) :local)
+                      (send (send (send *valve* :get valve-handle-name) :copy-worldcoords) :translate (float-vector (* (- reach-dist) 2.25) 0 0) :local)
                       (send *robot* :rleg :end-coords :copy-worldcoords)
                       (send *robot* :lleg :end-coords :copy-worldcoords))))
               (t ;; (or (equal *robot-name* "HRP2JSKNT") (equal *robot-name* "HRP2JSKNTS"))
@@ -305,6 +336,8 @@
             (incf j)))
         (push-back test-point rotatable-point)
         ))
+    (unless rotatable-point
+      (setq rotatable-point (list 0)))
     rotatable-point
     ))
 
@@ -330,11 +363,11 @@
 
 (defun get-valve-stand-coords ;; relative to valve
   (&key (grasp-center? nil))
-  (cond ((or (equal *robot-name* "JAXON") (equal *robot-name* "STARO"))
+  (cond ((or (equal *robot-name* "JAXON") (equal *robot-name* "STARO") (equal *robot-name* "JAXON_RED"))
          (cond ((equal *valve-arm* :larm)
-                (make-coords :pos (float-vector -600 -500 0) :rpy (list (deg2rad 0) 0 0)))
+                (make-coords :pos (float-vector -600 -400 0) :rpy (list (deg2rad -10) 0 0)))
                ((equal *valve-arm* :rarm)
-                (make-coords :pos (float-vector -600 500 0) :rpy (list (deg2rad 0) 0 0))))
+                (make-coords :pos (float-vector -600 +400 0) :rpy (list (deg2rad +10) 0 0))))
          )
         (t ;; (or (equal *robot-name* "HRP2JSKNT") (equal *robot-name* "HRP2JSKNTS"))
          (cond (grasp-center?
@@ -383,16 +416,18 @@
           (t
            (setq *valve-grasp-mode* :edge-grasp)))
     ;; first trial
-    (get-valve-motion :grasp-center? grasp-center? :draw? draw?)
+    (when (not (equal overwrite-stand-coords? :force))
+      (get-valve-motion :grasp-center? grasp-center? :draw? draw?))
     ;; change arm
-    (when (and overwrite-arm-side? (<= (get-rotatable-angle) rotatable-angle-thre))
+    (when (and overwrite-arm-side? (not (equal overwrite-stand-coords? :force)) (<= (get-rotatable-angle) rotatable-angle-thre))
       (setq *valve-arm* (get-opposite-arm *valve-arm*))
       (ros::ros-warn "change arm side to ~a for valve motion. (stand position is ~a.) ~%" *valve-arm* *valve-stand-coords*)
       (get-valve-motion :grasp-center? grasp-center? :draw? draw?)
       )
     ;; revert arm, change stand position
     (when (and overwrite-stand-coords? (<= (get-rotatable-angle) rotatable-angle-thre))
-      (when overwrite-arm-side? (setq *valve-arm* (get-opposite-arm *valve-arm*)))
+      (when (and overwrite-arm-side? (not (equal overwrite-stand-coords? :force)))
+        (setq *valve-arm* (get-opposite-arm *valve-arm*)))
       (move-robot-with-stand-coords-for-valve (get-valve-stand-coords :grasp-center? grasp-center?))
       (ros::ros-warn "change stand position to ~a for valve motion. (arm side is ~a.)~%" *valve-stand-coords* *valve-arm*)
       (get-valve-motion :grasp-center? grasp-center? :draw? draw?)
@@ -412,7 +447,7 @@
    &key (arm :rarm) (overwrite-arm-side? nil)
    (stand-coords nil) (overwrite-stand-coords? nil)
    (grasp-center? nil) (overwrite-grasp-mode? nil)
-   (real? t) (test-mode? nil) (av-list nil))
+   (real? t) (test-mode? nil) (av-list nil) (use_reach-until-touch? nil))
   (let* ((rotate-num 3)
          (valve-motion-av-list
           (if av-list
@@ -432,8 +467,11 @@
       (unless (check-angle-vector-distance)
         (when real? (model2real :time 3000)))
       (when real?
-        (cond ((or (equal *robot-name* "JAXON") (equal *robot-name* "STARO"))
-               (send *ri* :start-impedance :arms :moment-gain (float-vector 0 0 0) :k-p 300 :d-p 300))
+        (set-default-impedance-param)
+        (cond ((or (equal *robot-name* "JAXON_RED"))
+               (send *ri* :start-impedance :arms :moment-gain (float-vector 0 0 0) :k-p 300 :d-p 500 :ik-optional-weight-vector #f(1 0.2 1 1 1 1 1 1)))
+              ((or (equal *robot-name* "JAXON") (equal *robot-name* "STARO"))
+               (send *ri* :start-impedance :arms :moment-gain (float-vector 0 0 0) :k-p 300 :d-p 500))
               (t ;; (or (equal *robot-name* "HRP2JSKNT") (equal *robot-name* "HRP2JSKNTS"))
                (send *ri* :start-impedance :arms :moment-gain (float-vector 0 0 0) :k-p 800 :d-p 400)
                )))
@@ -441,35 +479,127 @@
       (when *valve-stand-coords*
         (let* ((pos (scale 0.001 (send *valve-stand-coords* :worldpos)))
                (rpy (mapcar #'rad2deg (car (send *valve-stand-coords* :rpy-angle))))
-               (pos-thre 0.01)
-               (rpy-thre 1)
                )
-          (when (or (> (abs (elt pos 0)) pos-thre) (> (abs (elt pos 1)) pos-thre) (> (abs (elt rpy 0)) rpy-thre))
+          (when (check-stand-coords *valve-stand-coords*)
             (ros::ros-warn "go-pos to ~a ~a ~a for valve~%" (elt pos 0) (elt pos 1) (elt rpy 0))
             (when real? (send *ri* :go-pos (elt pos 0) (elt pos 1) (elt rpy 0)))
             )
           ))
       ;; pre grasp
       (send *robot* :angle-vector (car (last valve-motion-av-list)))
-      (when real? (model2real :time 5000))
+      (when real? (model2real :time 4000))
       (dotimes (i rotate-num)
         ;; grasp
-        (send *robot* :angle-vector (car valve-motion-av-list))
-        (when real? (model2real :time 3000))
-        (hand-start-grasp :real? real?)
+        (if use_reach-until-touch?
+            (progn
+              (send *robot* :angle-vector (car (last valve-motion-av-list)))
+              (unix::sleep 1)
+              (send *ri* :reach-until-touch arm (v- (send (send *valve* :copy-worldcoords) :worldpos) (send *robot* arm :end-coords :worldpos)) :thre 3 :dist-step 4)
+              (keyshot-request)
+              (hand-start-grasp :real? real?)
+              ;;judge grasped or not
+              (let (grasp-pos dist-pos grasp-angle-vector (force-thre 15) (dist-thre 40))
+                (send *robot* :angle-vector (send *ri* :state :potentio-vector))
+                (send *robot* :fix-leg-to-coords stand-coords)
+                (setq grasp-pos (send (send (send *robot* arm :end-coords ) :copy-worldcoords) :pos))
+                (setq grasp-angle-vector (send *robot* :angle-vector))
+                (if (eq arm :rarm)
+                    (send *ri* :reach-until-touch arm (float-vector 0 100 0) :thre force-thre :dist-step 4 :coords-system :local)
+                  (send *ri* :reach-until-touch arm (float-vector 0 -100 0) :thre force-thre :dist-step 4 :coords-system :local)
+                  )
+                (send *robot* :angle-vector (send *ri* :state :potentio-vector))
+                (send *robot* :fix-leg-to-coords stand-coords)
+                (setq dist-pos (distance (send *robot* arm :end-coords :worldpos) grasp-pos))
+                (if (< dist-pos dist-thre)
+                    (setq grasped t)
+                  (setq grasped nil)
+                  )
+                (ros::ros-info (format nil "grasp-pos: ~A" grasp-pos))
+                (ros::ros-info (format nil "dist-pos: ~A  dist-thre: ~A" dist-pos dist-thre))
+                (ros::ros-info (format nil "grasped ~A" grasped))
+                (unless grasped
+                  (hand-stop-grasp :real? real?)
+                  (send *robot* :reset-pose)
+                  (send *ri* :angle-vector (send *robot* :angle-vector) 5000)
+                  (send *ri* :wait-interpolation)
+                  (return-from send-valve-motion nil))
+                (send *robot* :angle-vector grasp-angle-vector)
+                (send *ri* :angle-vector (send *robot* :angle-vector) 3000)
+                (send *ri* :wait-interpolation)
+                (send *robot* :angle-vector (send *ri* :state :potentio-vector))
+                (send *robot* :fix-leg-to-coords stand-coords)
+                (setq grasp-pos (send (send (send *robot* arm :end-coords) :copy-worldcoords) :pos))
+                (ros::ros-info (format nil "current-pos: ~A" grasp-pos)) 
+                (if (eq arm :rarm)
+                    (send *ri* :reach-until-touch arm (float-vector 0 -100 0) :thre force-thre :dist-step 4 :coords-system :local)
+                  (send *ri* :reach-until-touch arm (float-vector 0 100 0) :thre force-thre :dist-step 4 :coords-system :local)
+                  )
+                (send *robot* :angle-vector (send *ri* :state :potentio-vector))
+                (send *robot* :fix-leg-to-coords stand-coords)
+                (setq dist-pos (distance (send *robot* arm :end-coords :worldpos) grasp-pos))
+                (if (< dist-pos dist-thre)
+                    (setq grasped t)
+                  (setq grasped nil)
+                  )
+                (ros::ros-info (format nil "grasp-pos: ~A" grasp-pos))
+                (ros::ros-info (format nil "dist-pos: ~A  dist-thre: ~A" dist-pos dist-thre))
+                (ros::ros-info (format nil "grasped ~A" grasped))
+               (unless grasped
+                  (hand-stop-grasp :real? real?)
+                  (send *robot* :angle-vector (car (last valve-motion-av-list)))
+                  (send *ri* :angle-vector (send *robot* :angle-vector) 5000)
+                  (send *robot* :reset-pose)
+                  (send *ri* :angle-vector (send *robot* :angle-vector) 5000)
+                  (send *ri* :wait-interpolation)
+                  (return-from send-valve-motion nil))
+                ;;if grasped
+                (let (stand-coords real-end-pos target-end-pos offset)
+                  (send *robot* :angle-vector grasp-angle-vector)
+                  (send *ri* :angle-vector (send *robot* :angle-vector) 3000)
+                  (send *ri* :wait-interpolation)
+                  ;;calc offset
+                  (setq stand-coords (or *valve-stand-coords* (make-coords)))
+                  (send *robot* :angle-vector (send *ri* :state :potentio-vector))
+                  (send *robot* :fix-leg-to-coords stand-coords)
+                  (setq real-end-pos (send *robot* arm :end-coords :worldpos))
+                  (send *robot* :angle-vector (car valve-motion-av-list))
+                  (send *robot* :fix-leg-to-coords stand-coords)
+                  (setq target-end-pos (send *robot* arm :end-coords :worldpos))
+                  (setq offset (v- real-end-pos target-end-pos)) 
+                  (dotimes (i valve-motion-length)
+                    ;;transfer end-pos
+                    (send *robot* :angle-vector (car (nthcdr i valve-motion-av-list)))
+                    (send *robot* arm :move-end-pos offset :world)
+                    (setf (car (nthcdr i valve-motion-av-list)) (send *robot* :angle-vector)))
+                  )
+                ))
+          (progn
+            (send *robot* :angle-vector (car valve-motion-av-list))
+            (when real? (model2real :time 3000))
+            (keyshot-request)
+            (hand-start-grasp :real? real?)))
         ;; rotate
-        (when real? (send-angle-vector-sequence-with-time (cdr (subseq valve-motion-av-list 0 (/ valve-motion-length 2))) :time 1500 :wait? t))
-        ;; relese
+        (when real? (send-angle-vector-sequence-with-time (cdr (subseq valve-motion-av-list 0 (/ valve-motion-length 2))) :time 1400 :wait? t))
+        ;; release
         (hand-stop-grasp :real? real?)
         (send *robot* :angle-vector (car (subseq valve-motion-av-list (/ valve-motion-length 2))))
-        (when real? (model2real :time 3000))
+        (when real? (model2real :time 2000))
         (cond ((= i (1- rotate-num))
                ;; last releasing
                (send *robot* :reset-manip-pose)
-               (when real? (model2real :time 5000)))
+               (when real? (model2real :time 5000))
+               (when real?
+                 (cond ((or (equal *robot-name* "JAXON") (equal *robot-name* "STARO") (equal *robot-name* "JAXON_RED"))
+                        (start-hard-impedance)
+                        )
+                       (t ;; (or (equal *robot-name* "HRP2JSKNT") (equal *robot-name* "HRP2JSKNTS"))
+                        (start-soft-impedance)
+                        ))
+                 )
+               )
               (t
                ;; reverse
-               (when real? (send-angle-vector-sequence-with-time (cdr (subseq valve-motion-av-list (/ valve-motion-length 2))) :time 1500 :wait? t))
+               (when real? (send-angle-vector-sequence-with-time (cdr (subseq valve-motion-av-list (/ valve-motion-length 2))) :time 1400 :wait? t))
                ))
         )))
   )

@@ -1,9 +1,11 @@
 sensor_msgs/PointCloud2 communication__point_cloud
 sensor_msgs/PointCloud2 communication__laser_cloud
 sensor_msgs/Image communication__image_rect_color
+sensor_msgs/CameraInfo communication__camera_info
 std_msgs/Float32 communication__image_width_scale
 std_msgs/Float32 communication__image_height_scale
 sensor_msgs/Image communication__panorama_image
+sensor_msgs/Image communication__keyshot_image
 std_msgs/Float32 communication__panorama_width_scale
 std_msgs/Float32 communication__panorama_height_scale
 
@@ -11,3 +13,12 @@ std_msgs/Float32 communication__panorama_height_scale
 std_msgs/UInt8 communication__robot_status
 uint8 ROBOT_IDLE=1
 uint8 ROBOT_MOVING=2
+
+# for vehicle
+geometry_msgs/PoseStamped communication__handle_pose
+geometry_msgs/PoseStamped communication__crank_pose
+jsk_recognition_msgs/TorusArray communication__drive__controller__current_steering
+visualization_msgs/MarkerArray communication__drive__recognition__predicted_path__marker
+# for locomotion
+sensor_msgs/PointCloud2 communication__locomotion_cloud
+sensor_msgs/PointCloud2 communication__normal_flip_cloud

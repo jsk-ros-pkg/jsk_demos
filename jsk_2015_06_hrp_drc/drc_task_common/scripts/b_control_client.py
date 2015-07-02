@@ -3,6 +3,7 @@
 import rospy
 import math
 import message_filters
+import time
 
 import jsk_interactive_marker
 from jsk_interactive_marker.srv import *
@@ -16,7 +17,7 @@ from jsk_teleop_joy.b_control_status import BControl2Status
 from geometry_msgs.msg import *
 from jsk_recognition_msgs.msg import BoundingBox
 from sensor_msgs.msg import Joy, JoyFeedback, JoyFeedbackArray, PointCloud2
-from std_msgs.msg import Float32, ColorRGBA, Bool
+from std_msgs.msg import Float32, ColorRGBA, Bool, Header
 import tf
 imp.find_module('std_srvs')
 from std_srvs import srv
@@ -37,14 +38,16 @@ def b_control_client_init():
     # object marker
     ## insert / erase
     global req_marker_operate_srv, set_color_pub
-    global get_pose_srv, set_pose_pub, get_ik_arm_srv, get_ik_arm_pose_srv
+    global get_pose_srv, set_pose_pub, set_relative_pose_pub, get_ik_arm_srv, get_ik_arm_pose_srv, set_robot_pose_pub
     rospy.wait_for_service(ns+'/request_marker_operate')
     rospy.wait_for_service(ns+'/get_pose')
     rospy.wait_for_service(ns+'/set_dimensions')
     req_marker_operate_srv = rospy.ServiceProxy(ns+'/request_marker_operate', RequestMarkerOperate)
     set_color_pub = rospy.Publisher(ns+'/set_color', ColorRGBA)
     get_pose_srv = rospy.ServiceProxy(ns+'/get_pose', GetTransformableMarkerPose)
+    set_robot_pose_pub = rospy.Publisher('/urdf_control_marker/set_pose', PoseStamped)
     set_pose_pub = rospy.Publisher(ns+'/set_pose', PoseStamped)
+    set_relative_pose_pub = rospy.Publisher(ns+'/set_control_relative_pose', Pose)
     get_ik_arm_srv = rospy.ServiceProxy('/get_ik_arm', GetIKArm)
     get_ik_arm_pose_srv = rospy.ServiceProxy('/get_ik_arm_pose', GetIKArmPose)
     global default_frame_id
@@ -73,6 +76,10 @@ def b_control_client_init():
     global tf_listener, get_type_srv, set_pose_srv, set_dim_srv, midi_feedback_pub, auto_set_mode, send_icp_srv
     rospy.Service('enable_auto_set_mode', srv.Empty, enable_auto_set_mode)
     rospy.Service('disable_auto_set_mode', srv.Empty, disable_auto_set_mode)
+    rospy.Service('/insert_drill_marker', srv.Empty, insert_drill_marker_cb)
+    rospy.Service('/insert_plane_marker', srv.Empty, insert_plane_marker_cb)
+    rospy.Service('/insert_wall_marker', srv.Empty, insert_wall_marker_cb)
+    rospy.Service('/erase_all_marker', srv.Empty, erase_all_marker_cb)
     auto_set_mode = True
     ## box_sub = message_filters.Subscriber('bounding_box_marker/selected_box', BoundingBox)
     ## points_sub = message_filters.Subscriber('/selected_pointcloud', PointCloud2)
@@ -108,10 +115,11 @@ def b_control_client_init():
     obj_mode_next_srv = rospy.ServiceProxy('/set_object_mode_next', srv.Empty)
     ik_mode_next_srv = rospy.ServiceProxy('/set_ik_mode_next', srv.Empty)
     # menu
-    global menu_up_srv, menu_down_srv, menu_select_srv, menu_variable_pub, menu_bool_pub
+    global menu_up_srv, menu_down_srv, menu_select_srv, menu_cancel_srv, menu_variable_pub, menu_bool_pub
     menu_up_srv = rospy.ServiceProxy('/rviz_menu_up', srv.Empty)
     menu_down_srv = rospy.ServiceProxy('/rviz_menu_up', srv.Empty)
     menu_select_srv = rospy.ServiceProxy('/rviz_menu_select', RvizMenuSelect)
+    menu_cancel_srv = rospy.ServiceProxy('/rviz_menu_cancel', srv.Empty)
     menu_variable_pub = rospy.Publisher('/rviz_menu_variable', Float32)
     # menu_bool_pub = rospy.Publisher('/rviz_menu_bool', Bool)
     
@@ -158,28 +166,46 @@ def b_control_joy_cb(msg):
         insert_marker(shape_type=TransformableMarkerOperate.TORUS, name='torus1', description='')
         color = ColorRGBA(r=1.0, g=1.0, b=0.0, a=0.6) # torus is triangle mesh
     if insert_hand_flag:
+        menu_cancel_srv()
+        rospy.sleep(0.1)
         erase_all_marker()
         try:
             ik_arm = get_ik_arm_srv().ik_arm
         except rospy.ServiceException, e:
             ik_arm = ":rarm"
+        end_effector_pose=Pose(orientation=Quaternion(x=0.0, y=0.0, z=0.0, w=1.0))
         if (ik_arm==":rarm"):
-            if robot_name=="JAXON":
+            if robot_name=="STARO":
                 mesh_resource_name="package://hrpsys_ros_bridge_tutorials/models/STARO_meshes/RARM_LINK7_mesh.dae"
-            elif robot_name=="STARO":
+                current_pose_stamped = PoseStamped(std_msgs.msg.Header(stamp=rospy.Time.now(), frame_id="jsk_model_marker_interface/robot/RARM_LINK7"), Pose(orientation=Quaternion(0, 0, 0, 1)))
+            elif robot_name=="JAXON":
                 mesh_resource_name="package://hrpsys_ros_bridge_tutorials/models/JAXON_meshes/RARM_LINK7_mesh.dae"
+                current_pose_stamped = PoseStamped(std_msgs.msg.Header(stamp=rospy.Time.now(), frame_id="jsk_model_marker_interface/robot/RARM_LINK7"), Pose(position=Point(0, 0, -0.04), orientation=Quaternion(0, 0, 0, 1)))
+                end_effector_pose = Pose(position=Point(0, 0, -0.1617), orientation=Quaternion(0, 0.707107, 0, 0.707107))
+            elif robot_name=="JAXON_RED":
+                mesh_resource_name="package://hrpsys_ros_bridge_tutorials/models/JAXON_RED_meshes/RARM_LINK7_mesh.dae"
+                current_pose_stamped = PoseStamped(std_msgs.msg.Header(stamp=rospy.Time.now(), frame_id="jsk_model_marker_interface/robot/RARM_LINK7"), Pose(position=Point(0, 0, -0.04), orientation=Quaternion(0, 0, 0, 1)))
+                end_effector_pose = Pose(position=Point(0, 0, -0.1617), orientation=Quaternion(0, 0.707107, 0, 0.707107))
             else:
                 mesh_resource_name="package://hrpsys_ros_bridge_tutorials/models/HRP3HAND_R_meshes/RARM_LINK6_mesh.dae"
-            current_pose_stamped = PoseStamped(std_msgs.msg.Header(stamp=rospy.Time.now(), frame_id="jsk_model_marker_interface/robot/RARM_LINK6"), Pose(orientation=Quaternion(0, 0, 0, 1)))
+                current_pose_stamped = PoseStamped(std_msgs.msg.Header(stamp=rospy.Time.now(), frame_id="jsk_model_marker_interface/robot/RARM_LINK6"), Pose(orientation=Quaternion(0, 0, 0, 1)))
+                end_effector_pose = Pose(position=Point(-0.0042, 0.0392, -0.1245), orientation=Quaternion(0, 0.707107, 0, 0.707107))
         else:
-            if robot_name=="JAXON":
+            if robot_name=="STARO":
                 mesh_resource_name="package://hrpsys_ros_bridge_tutorials/models/STARO_meshes/LARM_LINK7_mesh.dae"
-            elif robot_name=="STARO":
+                current_pose_stamped = PoseStamped(std_msgs.msg.Header(stamp=rospy.Time.now(), frame_id="jsk_model_marker_interface/robot/LARM_LINK7"), Pose(orientation=Quaternion(0, 0, 0, 1)))
+            elif robot_name=="JAXON":
                 mesh_resource_name="package://hrpsys_ros_bridge_tutorials/models/JAXON_meshes/LARM_LINK7_mesh.dae"
+                current_pose_stamped = PoseStamped(std_msgs.msg.Header(stamp=rospy.Time.now(), frame_id="jsk_model_marker_interface/robot/LARM_LINK7"), Pose(position=Point(0, 0, -0.04), orientation=Quaternion(0, 0, 0, 1)))
+                end_effector_pose = Pose(position=Point(0, 0, -0.1617), orientation=Quaternion(0, 0.707107, 0, 0.707107))
+            elif robot_name=="JAXON_RED":
+                mesh_resource_name="package://hrpsys_ros_bridge_tutorials/models/JAXON_RED_meshes/LARM_LINK7_mesh.dae"
+                current_pose_stamped = PoseStamped(std_msgs.msg.Header(stamp=rospy.Time.now(), frame_id="jsk_model_marker_interface/robot/LARM_LINK7"), Pose(position=Point(0, 0, -0.04), orientation=Quaternion(0, 0, 0, 1)))
+                end_effector_pose = Pose(position=Point(0, 0, -0.1617), orientation=Quaternion(0, 0.707107, 0, 0.707107))
             else:
                 mesh_resource_name="package://hrpsys_ros_bridge_tutorials/models/HRP3HAND_L_meshes/LARM_LINK6_mesh.dae"
-            current_pose_stamped = PoseStamped(std_msgs.msg.Header(stamp=rospy.Time.now(), frame_id="jsk_model_marker_interface/robot/LARM_LINK6"), Pose(orientation=Quaternion(0, 0, 0, 1)))
-        
+                current_pose_stamped = PoseStamped(std_msgs.msg.Header(stamp=rospy.Time.now(), frame_id="jsk_model_marker_interface/robot/LARM_LINK6"), Pose(orientation=Quaternion(0, 0, 0, 1)))
+                end_effector_pose = Pose(position=Point(-0.0042, -0.0392, -0.1245), orientation=Quaternion(0, 0.707107, 0, 0.707107))
         color = ColorRGBA(r=1.0, g=1.0, b=0.0, a=0.6)
         # try:
         #     #current_pose_stamped = get_ik_arm_pose_srv('').pose_stamped
@@ -189,6 +215,8 @@ def b_control_joy_cb(msg):
         if current_pose_stamped.pose.orientation.x == 0 and current_pose_stamped.pose.orientation.y == 0 and current_pose_stamped.pose.orientation.z == 0 and current_pose_stamped.pose.orientation.w == 0:
             current_pose_stamped.pose.orientation.w = 1
         insert_marker(shape_type=TransformableMarkerOperate.MESH_RESOURCE, name='hand1', description='', mesh_resource=mesh_resource_name, mesh_use_embedded_materials=True)
+        set_relative_pose_pub.publish(end_effector_pose)
+        
     if insert_box_flag or insert_cylinder_flag or insert_torus_flag or insert_hand_flag:
         set_color_pub.publish(color)
         set_pose_pub.publish(current_pose_stamped)
@@ -227,23 +255,28 @@ def b_control_joy_cb(msg):
     # robot marker
     ## transport to obj
     if status.buttonU4 != prev_status.buttonU4:
-        robot_pose = PoseStamped()
-        robot_pose.header.stamp = rospy.Time.now()
-        robot_pose.header.frame_id = default_frame_id
-        robot_pose.pose = get_pose_srv('').pose_stamped.pose
-        if shape_type.type == TransformableMarkerOperate.BOX:
-            pass
-        elif shape_type.type == TransformableMarkerOperate.CYLINDER:
-            pass
-        elif shape_type.type == TransformableMarkerOperate.TORUS:
-            pass
-        robot_pose.pose.position.x -= 0.5
-        robot_pose.pose.position.z = 0
-        robot_pose.pose.orientation.w = 1
-        robot_pose.pose.orientation.x = 0
-        robot_pose.pose.orientation.y = 0
-        robot_pose.pose.orientation.z = 0
-        set_robot_pose_pub.publish(robot_pose)
+        set_robot_pose_pub.publish(PoseStamped(header=Header(frame_id="/ground", stamp=rospy.Time.now()), pose=Pose(orientation=Quaternion(0, 0, 0, 1))))
+        # time.sleep(1)
+        # solve_ik_pub.publish()
+
+        # robot_pose = PoseStamped()
+        # robot_pose.header.stamp = rospy.Time.now()
+        # robot_pose.header.frame_id = default_frame_id
+        # robot_pose.pose = get_pose_srv('').pose_stamped.pose
+        # if shape_type.type == TransformableMarkerOperate.BOX:
+        #     pass
+        # elif shape_type.type == TransformableMarkerOperate.CYLINDER:
+        #     pass
+        # elif shape_type.type == TransformableMarkerOperate.TORUS:
+        #     pass
+        # robot_pose.pose.position.x -= 0.5
+        # robot_pose.pose.position.z = 0
+        # robot_pose.pose.orientation.w = 1
+        # robot_pose.pose.orientation.x = 0
+        # robot_pose.pose.orientation.y = 0
+        # robot_pose.pose.orientation.z = 0
+        # set_robot_pose_pub.publish(robot_pose)
+
     ## command
     if status.buttonL4 != prev_status.buttonL4:
         solve_ik_pub.publish()
@@ -381,6 +414,20 @@ def disable_auto_set_mode(req):
     auto_set_mode = False
     return srv.EmptyResponse()
 
+def insert_drill_marker_cb(req):
+    insert_marker(shape_type=TransformableMarkerOperate.MESH_RESOURCE, name='drill', description='', mesh_resource="package://drc_task_common/models/takenoko_drill.dae", mesh_use_embedded_materials=True)
+    return srv.EmptyResponse()
+
+def insert_plane_marker_cb(req):
+    insert_marker(shape_type=TransformableMarkerOperate.CYLINDER, name='cylinder1', description='', mesh_resource="", mesh_use_embedded_materials=True)
+    return srv.EmptyResponse()
+
+def insert_wall_marker_cb(req):
+    insert_marker(shape_type=TransformableMarkerOperate.CYLINDER, name='drill_wall', description='', mesh_resource="", mesh_use_embedded_materials=True)
+    return srv.EmptyResponse()
+def erase_all_marker_cb(req):
+    erase_all_marker()
+    return srv.EmptyResponse()
 def insert_marker(shape_type=TransformableMarkerOperate.BOX, name='default_name', description='default_description', mesh_resource='', mesh_use_embedded_materials=False):
     try:
         req_marker_operate_srv(TransformableMarkerOperate(type=shape_type, action=TransformableMarkerOperate.INSERT, frame_id=default_frame_id, name=name, description=description, mesh_resource=mesh_resource, mesh_use_embedded_materials=mesh_use_embedded_materials))
