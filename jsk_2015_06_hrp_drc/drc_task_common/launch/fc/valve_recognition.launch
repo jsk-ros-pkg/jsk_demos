@@ -88,6 +88,9 @@
           args="load pcl/ExtractIndices valve_manager">
       <remap from="~input" to="filtered_points/output"/>
       <remap from="~indices" to="nearest_cluster/output/indices"/>
+      <rosparam>
+        max_queue_size: 100
+      </rosparam>
     </node>
     
     <node pkg="nodelet" type="nodelet" name="valve_finder"

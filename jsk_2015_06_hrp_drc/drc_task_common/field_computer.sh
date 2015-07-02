@@ -31,7 +31,9 @@ else
     echo -e "\e[1;34mcreate new session named fc.\e[m"
     tmux new-session -d -s fc -n tmp
 fi
-tmux-newwindow multisense "sleep 1; roslaunch jaxon_ros_bridge jaxon_multisense_remote.launch"
+if [ "$ROBOT" = "JAXON" -o "$ROBOT" = "JAXON_RED" ]; then
+    tmux-newwindow multisense "sleep 1; roslaunch jaxon_ros_bridge jaxon_multisense_remote.launch"
+fi
 tmux-newwindow executive "sleep 1; roslaunch drc_task_common fc_executive.launch"
 tmux-newwindow stereo_preprocess "sleep 1; roslaunch drc_task_common stereo_preprocess.launch"
 tmux-newwindow laser_preprocess "sleep 1; roslaunch drc_task_common laser_preprocess.launch"
