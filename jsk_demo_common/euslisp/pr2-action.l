@@ -1136,14 +1136,12 @@
         (grasp-threshold (list 3 3))
         (grasp-args)) ;; use let to define local variables
     (warn "pick-tray-table-side ~%")
-	(load "package://jsk_2013_10_pr2_73b2/euslisp/objectdetection.l")
-	(defparameter *room73b2-origin* "/eng2/7f/73B2")
+    (defparameter *room73b2-origin* "/eng2/7f/73B2")
     (when manip-pose
       (pr2-pick-tray-pose :reset-pose t)
       (send *pr2* :head :neck-p :joint-angle 50)
       (send *ri* :angle-vector (send *pr2* :angle-vector) 2000)
-      (send *ri* :wait-interpolation)
-      )
+      (send *ri* :wait-interpolation))
 
     ;;detect tray when real robot
     (when (send *ri* :joint-action-enable)
@@ -1248,7 +1246,7 @@
                (or (< (elt grasp-args 0) (elt grasp-threshold 0))
                    (< (elt grasp-args 1) (elt grasp-threshold 1))))
       (warning-message 3 "tray is not grasped~%")
-      (speak-jp "can not grasp tray")
+      (speak-jp "トレイを掴めませんでした。")
 
       ;; Open gripper
       (send *ri* :stop-grasp :arms) ;; stop-grasp wait until gripper motion stops
@@ -1278,10 +1276,8 @@
           ;; Go back 50cm
           ;;(send *ri* :go-pos-unsafe -0.4 0 90)
             t))
-      (progn
-;;        (send *pr2* :larm :end-coords :assoc target) ;; ???
-        (return-from pick-tray nil))
-      )))
+      (return-from pick-tray nil))
+    ))
 
 (ros::roseus-add-msgs "pr2_gripper_sensor_msgs")
 (defun wait-for-hand-impact (arm &key (timeout 30))
@@ -1352,5 +1348,30 @@
     (send *pr2* :angle-vector (send *ri* :state :potentio-vector))
     (pr2-tuckarm-pose tuckarm)
     ))
+
+(defun tray-detection (obj)
+  (let (ret)
+    ;; start program
+    (ros::roseus "objectdetection_tray_publisher")
+    (if (boundp '*irtviewer*) (send *irtviewer* :draw-objects :flush t))
+    (while (not ret)
+    (setq ret
+          (check-detection :type "tray_center" ;; work for any object
+                           :speak-name "tray"
+                           :target-object obj
+                           :timeout 30
+                           :diff-position 10
+                           :diff-rotation (deg2rad 10)
+                           :speak t)))
+
+    (if (boundp '*irtviewer*) (send *irtviewer* :draw-objects :flush t))
+
+    (if (boundp '*irtviewer*) (send ret :draw-on :flush t :size 100))
+    (if (boundp '*irtviewer*) (send (send *pr2* :copy-worldcoords) :draw-on :flush t :size 2000))
+    (send obj :move-to ret :world)
+    (send obj :transform *pr2* :world)
+    (if (boundp '*irtviewer*) (send (send obj :copy-worldcoords) :draw-on :flush t :size 1500 :color #f(1 0 0)))
+    (if (boundp '*irtviewer*) (send *irtviewer* :draw-objects :flush t))
+    ret))
 
 (provide :pr2-action)

@@ -80,7 +80,7 @@
     </rosparam>
   </node>
   
-  <node pkg="jsk_network_tools" type="joint-state-decompressor.l" 
+  <node pkg="jsk_robot_utils" type="joint-state-decompressor.l" 
         name="joint_state_decompressor" unless="$(arg USE_FLOAT_JOINT_ANGLES)">
     <remap from="/joint_states_compressed" to="/ocs/joint_states_compressed" />
     <remap from="/joint_states_decompressed" to="/ocs/joint_states_decompressed" /> <!-- it will be input to buffer client-->

@@ -8,25 +8,11 @@
   <group ns="laser_preprocess">
     <node pkg="nodelet" type="nodelet" name="laser_preprocess_manager"
           args="manager" output="screen"/>
-    <node pkg="nodelet" type="nodelet"
-          name="tilt_laser_listener"
-          args="load jsk_pcl/TiltLaserListener laser_preprocess_manager"
-          machine="$(arg machine)"
-          output="screen">
-      <remap from="~input" to="/joint_states" />
-      <rosparam>
-        laser_type: infinite_spindle_half
-        joint_name: motor_joint
-        use_laser_assembler: true
-        overwrap_angle: 0.1
-      </rosparam>
-      <remap from="~assemble_scans2" to="/laser_preprocess/assemble_scans2" />
-    </node>
 
     <node pkg="nodelet" type="nodelet"
           name="downsampler"
           args="load pcl/VoxelGrid laser_preprocess_manager">
-      <remap from="~input" to="tilt_laser_listener/output_cloud" />
+      <remap from="~input" to="/tilt_laser_listener/output_cloud" />
       <rosparam>
         leaf_size: 0.02
         filter_limit_min: -100
