@@ -54,7 +54,7 @@
       <param name="use_mask" value="$(arg roi)" />
       <remap from="mask" to="/attention_clipper/output/mask"/>
     </node>
-    <node pkg="jsk_perception" type="point_pose_extractor" machien="c2"
+    <node pkg="jsk_perception" type="point_pose_extractor" machine="c2"
           name="fridge_detector">
       <param name="template_filename" value="$(find detect_cans_in_fridge_201202)/data/openni_rgb_fridge.png"/>
       <param name="window_name" value="fridge_handle_upper"/>
