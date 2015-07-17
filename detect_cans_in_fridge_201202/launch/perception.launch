@@ -23,14 +23,14 @@
 
   <!-- reference white -->
   <anode pkg="image_view2" type="image_view2" name="select_ref_white" machine="c2">
-    <remap from="image" to="/openni_c2/rgb/image_rect_color"/>
-    <remap from="camera_info" to="/openni_c2/rgb/camera_info"/>
+    <remap from="image" to="/kinect_head_c2/rgb/image_rect_color"/>
+    <remap from="camera_info" to="/kinect_head_c2/rgb/camera_info"/>
     <remap from="/openni_c2/rgb/image_rect_color/screenpoint"
-           to="/openni_c2/rgb/screenpoint"/>
+           to="/kinect_head_c2/rgb/screenpoint"/>
   </anode>
 
   <node pkg="jsk_pcl_ros" type="attention_clipper" name="attention_clipper" output="screen" if="$(arg roi)">
-    <remap from="~input" to="/openni_c2/rgb/camera_info" />
+    <remap from="~input" to="/kinect_head_c2/rgb/camera_info" />
     <rosparam>
       dimension_x: 0.3
       dimension_y: 0.3
@@ -40,7 +40,7 @@
   </node>
 
   <node pkg="jsk_pcl_ros" type="roi_clipper" name="roi_attention_clipper" output="screen" if="$(arg roi)">
-    <remap from="~input/image" to="/openni_c2/rgb/image_rect_color" />
+    <remap from="~input/image" to="/kinect_head_c2/rgb/image_rect_color" />
     <remap from="~input/camera_info" to="/attention_clipper/output" />
   </node>
 
@@ -49,8 +49,8 @@
     <node name="fridge_demo_sift" pkg="imagesift"
           type="imagesift" launch-prefix="nice -n +10" output="screen"
           machine="c2" >
-      <remap from="/openni/rgb/image" to="/openni_c2/rgb/image_rect_color" />
-      <remap from="/openni/rgb/camera_info" to="/openni_c2/rgb/camera_info"/>
+      <remap from="/openni/rgb/image" to="/kinect_head_c2/rgb/image_rect_color" />
+      <remap from="/openni/rgb/camera_info" to="/kinect_head_c2/rgb/camera_info"/>
       <param name="use_mask" value="$(arg roi)" />
       <remap from="mask" to="/attention_clipper/output/mask"/>
     </node>
