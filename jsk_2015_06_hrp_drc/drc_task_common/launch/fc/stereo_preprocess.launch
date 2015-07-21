@@ -3,36 +3,36 @@
   <!-- stereo preprocessing -->
   <arg name="INPUT_POINT_CLOUD" default="/multisense/resize_1_4/points" />
   <!-- compute normal -->
-  <node pkg="nodelet" type="nodelet" name="preprocessing_manager"
-        args="manager" output="screen"/>
-  <node pkg="nodelet" type="nodelet" args="load jsk_topic_tools/Relay preprocessing_manager"
-        name="relay">
-    <remap from="~input" to="$(arg INPUT_POINT_CLOUD)" />
+  <node pkg="jsk_topic_tools" type="standalone_complexed_nodelet"
+        name="preprocessing_manager" output="screen" respawn="true">
+    <rosparam subst_value="true">
+      nodelets:
+        - name: relay
+          type: jsk_topic_tools/Relay
+          remappings:
+            - from: ~input
+              to: $(arg INPUT_POINT_CLOUD)
+        - name: normal_estimation
+          type: jsk_pcl/NormalEstimationIntegralImage
+          remappings:
+            - from: ~input
+              to: relay/output
+        - name: stereo_ground_cloud
+          type: jsk_pcl/TfTransformCloud
+          remappings:
+            - from: ~input
+              to: relay/output
+        - name: stereo_downsampled_ground_cloud
+          type: jsk_topic_tools/Relay
+          remappings:
+            - from: ~input
+              to: stereo_ground_cloud/output
+    </rosparam>
   </node>
-  <node pkg="nodelet" type="nodelet" args="load jsk_pcl/NormalEstimationIntegralImage  preprocessing_manager"
-        name="normal_estimation">
-    <remap from="~input" to="relay/output" />
-  </node>
-  <node pkg="nodelet" type="nodelet" args="load jsk_pcl/TfTransformCloud preprocessing_manager"
-        name="stereo_ground_cloud">
-    <remap from="~input" to="relay/output" />
+  <group ns="stereo_ground_cloud">
     <rosparam>
       target_frame_id: ground
     </rosparam>
-  </node>
-  <node pkg="nodelet" type="nodelet" args="load jsk_topic_tools/Relay preprocessing_manager"
-        name="stereo_downsampled_ground_cloud">
-    <remap from="~input" to="stereo_ground_cloud/output" />
-  </node>
-  <node pkg="nodelet" type="nodelet" args="load pcl/VoxelGrid preprocessing_manager"
-        if="false"
-        name="stereo_downsampled_ground_cloud">
-    <remap from="~input" to="stereo_ground_cloud/output" />
-    <rosparam>
-      leaf_size: 0.02
-      filter_limit_min: -100
-      filter_limit_max: 100
-    </rosparam>
-  </node>
+  </group>
   </group>
 </launch>
