@@ -643,11 +643,11 @@
     (drill-hook :arm :arms)
     (send *robot* :angle-vector (get-drill-reset-pose))
     (unless (check-angle-vector-distance)
-      (when real? (model2real :time 3000)))
+      (when real? (model2real :time 5000)))
     (when (equal drill-type :takenoko)
       (send *robot* :angle-vector (get-reach-drill-pre-pose))
       (unless (check-angle-vector-distance)
-        (when real? (model2real :time 3000)))
+        (when real? (model2real :time 6000)))
       )
     ;; walk
     (when (and *drill-stand-coords* (check-stand-coords *drill-stand-coords*))
@@ -1422,7 +1422,7 @@
              (if (equal *drill-main-arm* :rarm) (make-coords :pos (float-vector -680 0 0) :rpy (list (deg2rad 0) 0 0)) (make-coords :pos (float-vector -680 0 0) :rpy (list (deg2rad 0) 0 0)))
            (if *drill-reverse-hand*
                (if (equal *drill-main-arm* :rarm) (make-coords :pos (float-vector -680 -200 0) :rpy (list (deg2rad 40) 0 0))
-                 (make-coords :pos (float-vector -720 -100 0) :rpy (list (deg2rad -35) 0 0)) ;; avoid wall
+                 (make-coords :pos (float-vector -680 200 0) :rpy (list (deg2rad -40) 0 0)) ;; avoid wall
                  )
              (if (equal *drill-main-arm* :rarm) (make-coords :pos (float-vector -700 -265 0) :rpy (list (deg2rad 50) 0 0)) (make-coords :pos (float-vector -700 250 0) :rpy (list (deg2rad -65) 0 0)))
              )
