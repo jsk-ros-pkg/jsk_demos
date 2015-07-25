@@ -40,7 +40,7 @@ tmux-newwindow laser_preprocess "sleep 1; roslaunch drc_task_common laser_prepro
 tmux-newwindow lookat "sleep 1; roslaunch drc_task_common lookat.launch"
 tmux-newwindow valve_recognition "sleep 1; roslaunch drc_task_common valve_recognition.launch"
 tmux-newwindow drill_recognition "sleep 3; roslaunch drc_task_common drill_recognition.launch"
-tmux-newwindow drill_recognition_for_button "sleep 3; roslaunch drc_task_common drill_recognition_for_button.launch"
+tmux-newwindow drill_recognition_for_button "sleep 3; roslaunch drc_task_common drill_recognition_in_hand.launch"
 tmux-newwindow drill_recognition_for_wall "sleep 3; roslaunch drc_task_common drill_recognition_for_wall.launch"
 tmux-newwindow drill_recognition_for_put "sleep 3; roslaunch drc_task_common drill_recognition_for_put.launch"
 tmux-newwindow drill_button_checker "sleep 3; roslaunch drc_task_common drill_button_checker.launch"

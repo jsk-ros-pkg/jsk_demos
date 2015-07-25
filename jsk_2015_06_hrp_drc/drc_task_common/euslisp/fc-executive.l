@@ -326,6 +326,15 @@
       ;; (ros::publish "/drill_recognition_for_button/input_rect"
       ;;   (integer-vector-to-rect-polygon-stamped msg))
       ;; enable snapshot
+      (progn ;; for drill button with odom pose
+        (set-drill-default-coords)
+        (let ((coords (send (send *robot* *drill-main-arm* :end-coords :copy-worldcoords) :transformation (send *drill* :copy-world-coords)))
+              (frame_id (if (equal *drill-main-arm* :rarm) "rarm_end_coords" "larm_end_coords")))
+          
+          (ros::publish "/drill_recognition_for_button/input"
+                        (instance geometry_msgs::PoseStamped :init :pose (ros::tf-coords->pose coords) :header (instance std_msgs::Header :init :frame_id frame_id :stamp (ros::time-now)))
+                        )
+          ))
       (call-empty-service "/drill_recognition_for_button/snapshot/request")
       (send smachine :go-to :recognizing-drill-button-pose)
       ))
@@ -1534,6 +1543,7 @@ It sends :angle-vector to robot and return 'finished' message to ocs"
 (ros::advertise "/debri_recognition/input_line" geometry_msgs::PolygonStamped)
 (ros::advertise "/drill_recognition/input_rect" geometry_msgs::PolygonStamped)
 (ros::advertise "/drill_recognition_for_button/input_rect" geometry_msgs::PolygonStamped)
+(ros::advertise "/drill_recognition_for_button/input" geometry_msgs::PoseStamped)
 (ros::advertise "/drill_recognition_for_put/input_rect" geometry_msgs::PolygonStamped)
 (ros::advertise "/drill_recognition_for_wall/input_poly" geometry_msgs::PolygonStamped)
 (ros::advertise "/fc_to_ocs_low_speed/input" drc_com_common::FC2OCSSmall)
