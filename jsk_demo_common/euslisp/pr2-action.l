@@ -1323,9 +1323,10 @@
     ;;
     (unless isfreearm
       (pr2-reset-pose)
-      (setq avs (subseq avs (- (length avs) 2))
-            tms (subseq tms (- (length avs) 2))
-            av (send *ri* :state :potentio-vector))
+      (let ((avs-length (length avs)))
+	(setq avs (subseq avs (- avs-length 2))
+	      tms (subseq tms (- avs-length 2))
+	      av (send *ri* :state :potentio-vector)))
       (setq tuckarm arm))
     ;;
     (send *ri* :angle-vector-sequence avs tms)
