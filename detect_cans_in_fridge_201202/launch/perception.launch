@@ -49,8 +49,8 @@
     <node name="fridge_demo_sift" pkg="imagesift"
           type="imagesift" launch-prefix="nice -n +10" output="screen"
           machine="c2" >
-      <remap from="/openni/rgb/image" to="/kinect_head_c2/rgb/image_rect_color" />
-      <remap from="/openni/rgb/camera_info" to="/kinect_head_c2/rgb/camera_info"/>
+      <remap from="image" to="/kinect_head_c2/rgb/image_rect_color" />
+      <remap from="camera_info" to="/kinect_head_c2/rgb/camera_info"/>
       <param name="use_mask" value="$(arg roi)" />
       <remap from="mask" to="/attention_clipper/output/mask"/>
     </node>
