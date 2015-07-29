@@ -376,8 +376,9 @@
               :rotation-axis t :sec start-sec :move-robot move-robot)
 
     (let ((grasp-ret (if move-robot (send *ri* :start-grasp hand :gain 0.1) 10)))
-      (when (and grasp-check
-                 (< grasp-ret 8)) ;; grasp
+      (when (and (send *ri* :joint-action-enable) ;;return only in real mode
+                 (and grasp-check
+                      (< grasp-ret 8))) ;; grasp
         (ros::ros-warn "Grasp handle failed, return from execute-open")
         (return-from move-fridge-traj nil)))
 
@@ -600,6 +601,7 @@
      ))
   )
 
+(defparameter *fridge-handle-cds* nil)
 (defun move-to-and-open-fridge-door (&key (door-type :circle) (ratio 1) (look-around nil) (head-pitch 14) (torso-lift 130) (move t) (open-fridge-func #'open-fridge-traj))
   (let (ret
         (idealcds
@@ -618,9 +620,15 @@
         cds
         )
     ;; finding handle position
-    (setq cds (check-detection :type "fridge" :speak-name *frige-speak-str*
-                               :detection-topic "/openni/rgb/ObjectDetection"
-                               ))
+    (cond
+     ((send *ri* :joint-action-enable) ;; real mode
+      (setq cds (check-detection :type "fridge" :speak-name *frige-speak-str*
+                                 :detection-topic "/openni/rgb/ObjectDetection"
+                                 )))
+     (t ;; simulation mode
+      (setq cds (send (make-cube 60 60 60) :translate (float-vector 777 98 1112)))
+      ))
+    (setq *fridge-handle-cds* cds)
     ;; need detection fail check
     (send *ri* :ros-wait 0.0 :spin-self t) ;; attention-check ...
     (when cds
@@ -642,13 +650,19 @@
       (warn "~%~A -> ~A / ~A~%" diffcds cds idealcds)
       (ros::ros-info "DIFF: ~A" diffcds)
       (cond
-       ((and (< (norm (float-vector (elt (send diffcds :worldpos) 0)
-                                    (elt (send diffcds :worldpos) 1)))
-                *fridge-distance-threshold*)
-             (< (abs (elt (car (rpy-angle (send diffcds :worldrot))) 0))
-                *fridge-rotation-threshold*))
-        (setq cds (check-detection :type "fridge" :speak-name *frige-speak-str*
-                                   :detection-topic "/openni/rgb/ObjectDetection"))
+       ((or (not (send *ri* :joint-action-enable)) ;;if in simulation mode, execute
+            (and (< (norm (float-vector (elt (send diffcds :worldpos) 0)
+                                        (elt (send diffcds :worldpos) 1)))
+                    *fridge-distance-threshold*)
+                 (< (abs (elt (car (rpy-angle (send diffcds :worldrot))) 0))
+                    *fridge-rotation-threshold*)))
+        (cond
+         ((send *ri* :joint-action-enable) ;; real mode
+          (setq cds (check-detection :type "fridge" :speak-name *frige-speak-str*
+                                     :detection-topic "/openni/rgb/ObjectDetection"))
+          )
+         (t ;; simulation mode
+          (setq cds (send (make-cube 60 60 60) :translate (float-vector 777 98 1112)))))
         (send *ri* :ros-wait 0.0 :spin-self t :spin t) ;; attention-check ...
         ;; (y-or-n-p "Can I start open fridge? ")
         (when cds
@@ -867,17 +881,23 @@
   (send *ri* :angle-vector (send *pr2* :angle-vector) 2000)
   )
 
+(defparameter *can-cds* nil)
 (defun grasp-can-motion (&key (use-arm :rarm) (rotation 20))
   ;; detect cans which was indicated by ( type )
   ;;(when (not (setq cds (check-detection :type *type* :single t)))
   ;;(setq cds (check-detection :type *type* :tf-force t :timeout 30 :single t)))
   (let (cds isgrasp)
-    (unless (setq cds (check-detection :speak-name *type*
-                                       :type *type* :tf-force t :timeout 35 :single t
-                                       :detection-topic "/openni_c2/depth_registered/ObjectDetection"))
-      (setq cds (check-detection :speak-name *type*
-                                 :type *type* :tf-force t :timeout 70 :single t
-                                 :detection-topic "/openni_c2/depth_registered/ObjectDetection")))
+    (cond
+     ((send *ri* :joint-action-enable) ;; real mode
+      (unless (setq cds (check-detection :speak-name *type*
+                                         :type *type* :tf-force t :timeout 35 :single t
+                                         :detection-topic "/openni_c2/depth_registered/ObjectDetection"))
+        (setq cds (check-detection :speak-name *type*
+                                   :type *type* :tf-force t :timeout 70 :single t
+                                   :detection-topic "/openni_c2/depth_registered/ObjectDetection"))))
+     (t ;; simulation mode
+      (setq cds (send (make-cube 60 60 60) :translate (float-vector 756 302 1164)))))
+    (setq *can-cds* cds)
     (send *ri* :ros-wait 0.0 :spin-self t :spin t) ;; attention-check ...
     (when cds
       ;; (speak-jp (format nil "~A を とりだします" *type*))
@@ -897,6 +917,9 @@
       (setq *last-can-coords* cds)
       (grasp-can-single cds :rotation rotation :use-arm use-arm)
       (setq isgrasp (< 10 (send *ri* :start-grasp use-arm)))
+      (if (not (send *ri* :joint-action-enable)) ;; in simulation mode, set isgrasp true
+          (setq isgrasp t))
+      (ros::ros-info "isgrasp : ~A" isgrasp)
       (when isgrasp
         (return-from grasp-can-motion t))
       ;; (unix::sleep 2)
