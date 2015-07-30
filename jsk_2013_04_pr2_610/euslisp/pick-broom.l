@@ -94,7 +94,7 @@
     (send *ri* :wait-interpolation)
 
     (send *ri* :start-grasp :larm)
-    (when (and (send *ri* :joint-action-enable) (< (send *ri* :start-grasp :larm) 3.0))
+    (when (and (send *ri* :simulation-modep) (< (send *ri* :start-grasp :larm) 3.0))
       (send *ri* :stop-grasp :larm :wait t)
       (speak-jp "ほうきとれなかった")
       (send *ri* :angle-vector av0 3000)

@@ -16,7 +16,7 @@
     (send *ri* :wait-interpolation)
     
     ;;detect tray when real robot
-    (if (send *ri* :joint-action-enable)
+    (if (send *ri* :simulation-modep)
 	(tray-detection *tray*)
       )
     (setq tray-larm-handle (send (send (send *tray* :handle-larm-handle) :copy-worldcoords) :rotate (deg2rad -20) :z) ;; do not move in world coords, use object(tray) relative coords
@@ -52,7 +52,7 @@
     (setq grasp-args (send *ri* :start-grasp :arms :objects (list (find *tray* (send *ri* :objects) :test #'(lambda (a b) (string= (send a :name) (send b :name)))))))  ;; stop-grasp wait until gripper motion stops
 	;; check if tray is grasped
     (warning-message 3 "check tray ~A > ~A~%" grasp-args grasp-threshold)
-    (when (and (send *ri* :joint-action-enable)
+    (when (and (send *ri* :simulation-modep)
 	       (or (< (elt grasp-args 0) (elt grasp-threshold 0))
 		   (< (elt grasp-args 1) (elt grasp-threshold 1))))
       (warning-message 3 "tray is not grasped~%")
