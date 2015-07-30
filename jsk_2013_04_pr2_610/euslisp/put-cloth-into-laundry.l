@@ -118,7 +118,7 @@
     (send *ri* :wait-interpolation)
 
     ;; change laundry button pos according to image processing
-    (if (send *ri* :joint-action-enable)
+    (if (send *ri* :simulation-modep)
 	(send *laundry* :move-to (laundry-detection *laundry*) :world);; FIX ME returns t if found, nil not found
     )
     (if (boundp '*irtviewer*) (send (send *laundry* :copy-worldcoords)

@@ -157,7 +157,7 @@
       (send *ri* :start-grasp :larm :objects nil) ;; wait motion and grasp
       (setq grasp-width (send *ri* :start-grasp :larm :objects nil)) ;; wait motion and grasp ;; make sure that we really grasp cloth
       ;; if pr2 fail to grasp the cloth, return nil.
-      (when (and (send *ri* :joint-action-enable) (< grasp-width 1.1))
+      (when (and (send *ri* :simulation-modep) (< grasp-width 1.1))
 	(send *ri* :go-pos-unsafe -0.2 0 0)
 	(send *pr2* :translate #f(-200 0 0))
 	(return-from pick-cloth-chair nil)
