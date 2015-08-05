@@ -24,90 +24,129 @@
       </rosparam>
       <remap from="input_poly_update" to="input_poly" />
     </node>
-    <node pkg="nodelet" type="nodelet" name="manager" args="manager" output="log">
+
+    <node pkg="jsk_topic_tools" type="standalone_complexed_nodelet"
+          name="manager" respawn="true" output="log">
+      <rosparam subst_value="true">
+nodelets:
+  - name: downsampler
+    type: pcl/VoxelGrid
+    remappings:
+      - from: ~input
+        to: $(arg INPUT_POINT_CLOUD)
+  - name: mask_image_generator
+    type: jsk_perception/MaskImageGenerator
+    remappings:
+      - from: ~input
+        to: $(arg INPUT_IMAGE)
+  - name: mask_image_filter
+    type: jsk_pcl/MaskImageFilter
+    remappings:
+      - from: ~input
+        to: downsampler/output
+      - from: ~input/mask
+        to: mask_image_generator/output
+      - from: ~input/camera_info
+        to: $(arg INPUT_CAMERA_INFO)
+  - name: mask_image_filter_points
+    type: pcl/ExtractIndices
+    remappings:
+      - from: ~input
+        to: downsampler/output
+      - from: ~indices
+        to: mask_image_filter/output
+  - name: organized_points_converter
+    type: jsk_pcl/DepthImageCreator
+    remappings:
+      - from: ~info
+        to: $(arg INPUT_CAMERA_INFO)
+      - from: ~input
+        to: mask_image_filter_points/output
+  - name: normal_estimation
+    type: jsk_pcl/NormalEstimationOMP
+    remappings:
+      - from: ~input
+        to: mask_image_filter_points/output
+  - name: screenpoint
+    type: jsk_pcl/PointcloudScreenpoint
+    remappings:
+      - from: ~poly
+        to: input_poly_buffered
+      - from: ~points
+        to: organized_points_converter/output_cloud
+  - name: plane_segmentation
+    type: jsk_pcl/RegionGrowingMultiplePlaneSegmentation
+    remappings:
+      - from: ~input
+        to: normal_estimation/output_with_xyz
+      - from: ~input_normal
+        to: normal_estimation/output_with_xyz
+  - name: snapit
+    type: jsk_pcl/Snapit
+    remappings:
+      - from: ~input/polygons
+        to: plane_segmentation/output/polygons
+      - from: ~input/polygon_coefficients
+        to: plane_segmentation/output/coefficients
+      - from: ~input/convex_align_polygon
+        to: screenpoint/output_polygon
+  - name: snapshot
+    type: jsk_topic_tools/Snapshot
+    remappings:
+      - from: ~input
+        to: snapit/output/convex_aligned_pose_array
+      </rosparam>
     </node>
-    <node pkg="nodelet" type="nodelet" name="downsampler"
-          args="load pcl/VoxelGrid manager">
-      <remap from="~input" to="$(arg INPUT_POINT_CLOUD)"/>
+    <group ns="downsampler">
       <rosparam>
         leaf_size: 0.02
         filter_limit_min: -100
         filter_limit_max: 100
       </rosparam>
-    </node>
-    <node pkg="nodelet" type="nodelet" name="mask_image_generator"
-          args="load jsk_perception/MaskImageGenerator manager">
-      <remap from="~input" to="$(arg INPUT_IMAGE)" />
+    </group>
+    <group ns="mask_image_generator">
       <rosparam>
         offset_x: 0
         offset_y: 0
         width: 1024
         height: 512
       </rosparam>
-    </node>
-    <node pkg="nodelet" type="nodelet" name="mask_image_filter"
-          args="load jsk_pcl/MaskImageFilter manager">
-      <remap from="~input" to="downsampler/output" />
-      <remap from="~input/mask" to="mask_image_generator/output" />
-      <remap from="~input/camera_info" to="$(arg INPUT_CAMERA_INFO)" />
+    </group>
+    <group ns="mask_image_filter">
       <rosparam>
-        always_subscribe: true
+        always_subscribe: false
       </rosparam>
-    </node>
-    <node pkg="nodelet" type="nodelet" name="mask_image_filter_points"
-          args="load pcl/ExtractIndices manager">
-      <remap from="~input"  to="downsampler/output" />
-      <remap from="~indices" to="mask_image_filter/output" />
-    </node>
-
-    <node pkg="nodelet" type="nodelet" name="organized_points_converter" 
-          args="load jsk_pcl/DepthImageCreator manager">
-      <remap from="~info" to="$(arg INPUT_CAMERA_INFO)" />
-      <remap from="~input" to="mask_image_filter_points/output" />
+    </group>
+    <group ns="mask_image_filter_points">
+    </group>
+    <group ns="organized_points_converter">
       <rosparam>
         use_asynchronous: true
       </rosparam>
-    </node>
-    <node pkg="nodelet" type="nodelet" name="normal_estimation"
-          args="load jsk_pcl/NormalEstimationOMP manager">
-      <remap from="~input" to="mask_image_filter_points/output" />
+    </group>
+    <group ns="normal_estimation">
       <rosparam>
         k_search: 10
         radius_search: 0.0
       </rosparam>
-    </node>
-
-    <node pkg="nodelet" type="nodelet" name="screenpoint"
-          args="load jsk_pcl/PointcloudScreenpoint manager">
-      <remap from="~poly" to="input_poly_buffered"/>
-      <remap from="~points" to="organized_points_converter/output_cloud" /> <!--need to use original size-->
+    </group>
+    <group ns="screenpoint">
       <rosparam>
         use_poly: true
         crop_size: 100
       </rosparam>
-    </node>
-    
-    <node pkg="nodelet" type="nodelet" name="plane_segmentation"
-          args="load jsk_pcl/RegionGrowingMultiplePlaneSegmentation manager">
-      <remap from="~input" to="normal_estimation/output_with_xyz" />
-      <remap from="~input_normal" to="normal_estimation/output_with_xyz" />
+    </group>
+    <group ns="plane_segmentation">
       <rosparam>
         min_size: 300
         max_curvature: 0.01
         estimate_normal: true
       </rosparam>
-    </node>
-    <node pkg="nodelet" type="nodelet" name="snapit"
-          args="load jsk_pcl/Snapit manager">
-      <remap from="~input/polygons" to="plane_segmentation/output/polygons" />
-      <remap from="~input/polygon_coefficients" to="plane_segmentation/output/coefficients" />
-      <remap from="~input/convex_align_polygon" to="screenpoint/output_polygon" />
-    </node>
-    <node pkg="jsk_topic_tools" type="snapshot" name="snapshot">
-      <remap from="~input" to="snapit/output/convex_aligned_pose_array"/>
+    </group>
+    <group ns="snapshot">
       <rosparam>
         latch: true
       </rosparam>
-    </node>
+    </group>
   </group>
 </launch>
