@@ -85,6 +85,7 @@
   </node>
   <!-- rviz -->
   <node pkg="rviz" type="rviz" name="operator_rviz" args="-d $(find drc_task_common)/config/drc_task_common.rviz"
-        respawn="true"/>
-  
+        respawn="true">
+    <rosparam command="load" file="$(find drc_task_common)/config/ocs_rviz_buttons.yaml" />
+  </node>
 </launch>

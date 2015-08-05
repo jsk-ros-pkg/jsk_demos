@@ -2319,6 +2319,44 @@
 (ros::subscribe "/set_foot_steps" jsk_footstep_msgs::FootstepArray
   #'send *app* :set-foot-steps-callback)
 
+;; Advertise and define method for uint8 command
+(dolist (conf '(("/uint8_command/reset_pose" drc_com_common::OCS2FCSmall::*RESET_POSE*)
+                ("/uint8_command/reset_manip_pose" drc_com_common::OCS2FCSmall::*RESET_MANIP_POSE*)
+                ("/uint8_command/drill_reset_pose" drc_com_common::OCS2FCSmall::*DRILL_RESET_POSE*)
+                ("/uint8_command/drill_watch_pose" drc_com_common::OCS2FCSmall::*WATCH_DRILL_POSE*)
+                ("/uint8_command/door_through_pose" drc_com_common::OCS2FCSmall::*DOOR_THROUGH_POSE*)
+                ("/uint8_command/finish_stair_pose" drc_com_common::OCS2FCSmall::*FINISH_STAIR_POSE*)
+                ("/uint8_command/emergency_pose" drc_com_common::OCS2FCSmall::*EMERGENCY_POSE*)
+                ("/uint8_command/hand_reset_pose"  drc_com_common::OCS2FCSmall::*HAND_RESET_POSE*)
+                ("/uint8_command/hand_hook_pose"  drc_com_common::OCS2FCSmall::*HAND_HOOK_POSE*)
+                ("/uint8_command/hand_hook_after_pose"  drc_com_common::OCS2FCSmall::*HAND_HOOK_AFTER_POSE*)
+                ("/uint8_command/hand_grasp_pose"  drc_com_common::OCS2FCSmall::*HAND_GRASP_POSE*)
+                ("/uint8_command/calib_hand"  drc_com_common::OCS2FCSmall::*CALIB_HAND*)
+                ("/uint8_command/hrpsys_start_abc"  drc_com_common::OCS2FCSmall::*HRPSYS_START_ABC*)
+                ("/uint8_command/hrpsys_start_st"  drc_com_common::OCS2FCSmall::*HRPSYS_START_ST*)
+                ("/uint8_command/hrpsys_start_imp"  drc_com_common::OCS2FCSmall::*HRPSYS_START_IMP*)
+                ("/uint8_command/hrpsys_start_imp_soft"  drc_com_common::OCS2FCSmall::*HRPSYS_START_IMP_SOFT*)
+                ("/uint8_command/hrpsys_start_imp_hard"  drc_com_common::OCS2FCSmall::*HRPSYS_START_IMP_HARD*)
+                ("/uint8_command/hrpsys_stop_imp"  drc_com_common::OCS2FCSmall::*HRPSYS_STOP_IMP*)
+                ("/uint8_command/ref_force_0"  drc_com_common::OCS2FCSmall::*REF_FORCE_ZERO*)
+                ("/uint8_command/go_pos_zero"  drc_com_common::OCS2FCSmall::*GO_POS_ZERO*)
+                ("/uint8_command/reset_enc_offset"  drc_com_common::OCS2FCSmall::*RESET_ENC_OFFSET*)
+                ))
+  (let* ((met (gensym))
+         (method-key (intern (string met) "KEYWORD")))
+    (eval `(defmethod ocs-executive-app
+             (,method-key
+              (req)
+              (let ((msg (instance drc_com_common::OCS2FCSmall :init)))
+                (send msg :type ,(cadr conf))
+                (ros::ros-info "~A is called" ,(car conf))
+                (send self :send-to-fc msg)
+                )
+              (send req :response))))
+    (eval `(ros::advertise-service ,(car conf) std_srvs::Empty #'send *app* ,method-key))
+    ))
+
+
 ;; (ros::subscribe "/ocs/communication/image_rect_color/foreground_rect/scaled" geometry_msgs::PolygonStamped
 ;;   #'send *app* :foreground-rect-callback)
 ;; (ros::subscribe "/ocs/communication/image_rect_color/background_rect/scaled" geometry_msgs::PolygonStamped
