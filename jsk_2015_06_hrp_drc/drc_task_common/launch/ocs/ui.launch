@@ -66,9 +66,6 @@
   </group>
   
   <!-- visualize state -->
-  <node pkg="image_view" type="image_view" name="state_viewer">
-    <remap from="image" to="state_image"/>
-  </node>
   <node pkg="jsk_perception" type="image_publisher.py" name="state_image_publisher" respawn="true">
     <remap from="~output" to="state_image"/>
     <rosparam>
