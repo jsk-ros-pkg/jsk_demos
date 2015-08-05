@@ -17,6 +17,7 @@
   <remap from="/robot_description" to="/ocs/robot_description" />
   <node pkg="jsk_network_tools" type="silverhammer_highspeed_receiver_with_internal_buffer.py"
         output="log"
+        respawn="true"
         name="highspeed_receiver">
     <rosparam>
       message: drc_com_common/FC2OCSLarge
@@ -33,6 +34,7 @@
   </node>
   <group ns="highspeed_receiver">
     <node pkg="jsk_network_tools" type="silverhammer_highspeed_internal_receiver"
+          respawn="true"
           name="internal_receiver">
     </node>
   </group>
