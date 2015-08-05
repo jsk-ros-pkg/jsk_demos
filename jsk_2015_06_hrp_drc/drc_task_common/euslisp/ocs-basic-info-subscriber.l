@@ -25,7 +25,8 @@
     (if *use-angle-vector-decompressor*
         (let ((pubmsg (instance drc_com_common::HumanoidJointAngles :init)))
           (send pubmsg :angles (send msg :angles))
-          (send pubmsg :effort (send msg :effort))
+          (unless *use-current*
+            (send pubmsg :effort (send msg :effort)))
           (ros::publish "/ocs/joint_states_compressed" pubmsg))
       (let ((decompressed-effort (mapcar #'(lambda (compressed-value j)
                                              (/ (* compressed-value (send j :max-joint-torque)) 255.0))
@@ -34,7 +35,8 @@
                                          (send *robot* :joint-list))))
         (let ((joint-states (instance sensor_msgs::JointState :init)))
           (send joint-states :header :stamp (ros::time-now))
-          (send joint-states :effort decompressed-effort)
+          (unless *use-current*
+            (send joint-states :effort decompressed-effort))
           (send joint-states :position (subseq (coerce (send msg :angles) cons)
                 0 (length (send *robot* :joint-list))))
           (send joint-states :velocity (instantiate float-vector (length (send *robot* :joint-list))))
@@ -96,6 +98,12 @@
           (send req :cur_tf target-transform)
           (ros::service-call "/ocs/set_dynamic_tf" req)
           )))
+    ;; current
+    (when *use-current*
+      (let ((state (instance trans_ros_bridge::ExtraMotorState :init)))
+        (send state :header :stamp (ros::time-now))
+        (send state :data (coerce (send msg :effort) float-vector))
+        (ros::publish "/ocs/motor_states_low/motor_current" state)))
     (let ((imumsg (instance sensor_msgs::Imu :init)))
       (send imumsg :header :stamp (ros::time-now))
       (send imumsg :header :frame_id "gyrometer")
@@ -155,11 +163,15 @@
 (setq *arm-torque-max* (ros::get-param "~arm_torque_max" 256))
 (setq *leg-force-max* (ros::get-param "~leg_force_max" 728))
 (setq *leg-torque-max* (ros::get-param "~leg_torque_max" 728))
-
+(if (or (string= (unix::getenv "ROBOT") "JAXON")
+        (string= (unix::getenv "ROBOT") "JAXON_RED"))
+    (setq *use-current* t)
+  (setq *use-current* nil))
 (setq *use-angle-vector-decompressor* (ros::get-param "~use_angle_vector_decompressor" nil))
 (ros::wait-for-service "/ocs/set_dynamic_tf")
 (setq *tf* (instance ros::transform-listener :init))
 (setq *app* (instance ocs-basic-info-publisher :init))
+
 (ros::advertise "/ocs/tf_odom_on_ground" tf2_msgs::TFMessage)
 (ros::advertise "/ocs/motor_states" hrpsys_ros_bridge::MotorStates)
 (ros::advertise "/ocs/off_lfsensor" geometry_msgs::WrenchStamped)
@@ -168,6 +180,7 @@
 (ros::advertise "/ocs/off_rhsensor" geometry_msgs::WrenchStamped)
 (ros::advertise "/ocs/motor_states_low/abs_cur_angle_diff"
   trans_ros_bridge::ExtraMotorState)
+(ros::advertise "/ocs/motor_states_low/motor_current" trans_ros_bridge::ExtraMotorState)
 (ros::advertise "/ocs/motor_states_low/board_vin" trans_ros_bridge::ExtraMotorState)
 (ros::advertise "/ocs/motor_states_low/board_vdd" trans_ros_bridge::ExtraMotorState)
 (ros::advertise "/ocs/inside_pc_voltage_publisher" trans_ros_bridge::ExtraMotorState)
