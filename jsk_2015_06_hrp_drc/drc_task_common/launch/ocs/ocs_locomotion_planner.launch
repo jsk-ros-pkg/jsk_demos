@@ -3,7 +3,7 @@
   <remap from="/tf" to="/ocs/tf" />
   <remap from="/joint_states" to="/ocs/joint_states" />
   <remap from="/robot_description" to="/ocs/robot_description" />
-  <group>
+  <group ns="ocs">
     <!-- Footstep planner -->
     <node pkg="jsk_footstep_planner"
           type="footstep-planner-node.l"
