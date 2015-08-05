@@ -98,6 +98,5 @@
   <run_depend>checkerboard_detector</run_depend>
   <export>
     <rqt_gui plugin="${prefix}/plugin.xml"/>
-    <rviz plugin="${prefix}/plugin_description.xml"/>  
   </export>
 </package>
