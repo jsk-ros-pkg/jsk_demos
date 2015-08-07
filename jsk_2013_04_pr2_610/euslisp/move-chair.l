@@ -28,7 +28,7 @@
 ;;if you call this function, (as like (start-detect-chair))
 ;;*chair* will be update and move to where it would be
 (defun start-detect-chair (&key (debug nil))
-  (unless (send *ri* :simulation-modep)
+  (unless (not (send *ri* :simulation-modep))
     (return-from start-detect-chair nil)
     )
   (let ((loop t) (loop-counter 0) (chair-coords nil) (ret))
@@ -150,7 +150,7 @@
       (send *ri* :wait-interpolation)
 
 
-      (if (not (send *ri* :simulation-modep))
+      (if (send *ri* :simulation-modep)
 	  ;; if simulation
 	  (progn
 	    (setq grasp-success t)
