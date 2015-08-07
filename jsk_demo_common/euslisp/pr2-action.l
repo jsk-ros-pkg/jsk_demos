@@ -185,7 +185,7 @@
 (warn ";; define detect-with-base-laser")
 (defun detect-with-base-laser (obj obj-type &key (arg nil) (debug nil) (speak nil) (publish-marker nil))
   (ros::ros-info "detect-with-base-laser~%")
-  (unless (send *ri* :simulation-modep)
+  (unless (not (send *ri* :simulation-modep))
 	(if obj (ros::ros-warn "~A detection failed" obj))
     (return-from detect-with-base-laser nil)
     )
@@ -376,7 +376,7 @@
               :rotation-axis t :sec start-sec :move-robot move-robot)
 
     (let ((grasp-ret (if move-robot (send *ri* :start-grasp hand :gain 0.1) 10)))
-      (when (and (send *ri* :simulation-modep) ;;return only in real mode
+      (when (and (not (send *ri* :simulation-modep)) ;;return only in real mode
                  (and grasp-check
                       (< grasp-ret 8))) ;; grasp
         (ros::ros-warn "Grasp handle failed, return from execute-open")
@@ -621,7 +621,7 @@
         )
     ;; finding handle position
     (cond
-     ((send *ri* :simulation-modep) ;; real mode
+     ((not (send *ri* :simulation-modep)) ;; real mode
       (setq cds (check-detection :type "fridge" :speak-name *frige-speak-str*
                                  :detection-topic "/openni/rgb/ObjectDetection"
                                  )))
@@ -650,14 +650,14 @@
       (warn "~%~A -> ~A / ~A~%" diffcds cds idealcds)
       (ros::ros-info "DIFF: ~A" diffcds)
       (cond
-       ((or (not (send *ri* :simulation-modep)) ;;if in simulation mode, execute
+       ((or (send *ri* :simulation-modep) ;;if in simulation mode, execute
             (and (< (norm (float-vector (elt (send diffcds :worldpos) 0)
                                         (elt (send diffcds :worldpos) 1)))
                     *fridge-distance-threshold*)
                  (< (abs (elt (car (rpy-angle (send diffcds :worldrot))) 0))
                     *fridge-rotation-threshold*)))
         (cond
-         ((send *ri* :simulation-modep) ;; real mode
+         ((not (send *ri* :simulation-modep)) ;; real mode
           (setq cds (check-detection :type "fridge" :speak-name *frige-speak-str*
                                      :detection-topic "/openni/rgb/ObjectDetection"))
           )
@@ -888,7 +888,7 @@
   ;;(setq cds (check-detection :type *type* :tf-force t :timeout 30 :single t)))
   (let (cds isgrasp)
     (cond
-     ((send *ri* :simulation-modep) ;; real mode
+     ((not (send *ri* :simulation-modep)) ;; real mode
       (unless (setq cds (check-detection :speak-name *type*
                                          :type *type* :tf-force t :timeout 35 :single t
                                          :detection-topic "/openni_c2/depth_registered/ObjectDetection"))
@@ -917,7 +917,7 @@
       (setq *last-can-coords* cds)
       (grasp-can-single cds :rotation rotation :use-arm use-arm)
       (setq isgrasp (< 10 (send *ri* :start-grasp use-arm)))
-      (if (not (send *ri* :simulation-modep)) ;; in simulation mode, set isgrasp true
+      (if (send *ri* :simulation-modep) ;; in simulation mode, set isgrasp true
           (setq isgrasp t))
       (ros::ros-info "isgrasp : ~A" isgrasp)
       (when isgrasp
@@ -1234,7 +1234,7 @@
       (send *ri* :wait-interpolation))
 
     ;;detect tray when real robot
-    (when (send *ri* :simulation-modep)
+    (when (not (send *ri* :simulation-modep))
 
       (let ((cnt 0))
         (while (and (<= cnt 3) (not (tray-detection target)))
@@ -1332,7 +1332,7 @@
 
     ;; check if tray is grasped
     (warning-message 3 "check tray ~A > ~A~%" grasp-args grasp-threshold)
-    (when (and (send *ri* :simulation-modep)
+    (when (and (not (send *ri* :simulation-modep))
                (or (< (elt grasp-args 0) (elt grasp-threshold 0))
                    (< (elt grasp-args 1) (elt grasp-threshold 1))))
       (warning-message 3 "tray is not grasped~%")
