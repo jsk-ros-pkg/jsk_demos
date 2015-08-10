@@ -17,12 +17,12 @@
 ;;(defvar *screen-topic* "/camera/rgb/screenpoint")
 ;; fuerte
 ;;(defvar *topic-name* "/openni/depth_registered/points")
-(defvar *topic-name* "/openni_c2/depth_registered/points_throttle")
-(defvar *image-topic* "/openni_c2/rgb/image_rect_color")
-(defvar *screen-topic* "/openni_c2/rgb/screenpoint")
+(defvar *topic-name* "/kinect_head_c2/depth_registered/points_throttle")
+(defvar *image-topic* "/kinect_head_c2/rgb/image_rect_color")
+(defvar *screen-topic* "/kinect_head_c2/rgb/image_rect_color/screenpoint")
 ;;(defvar *result-topic* "/narrow_stereo/left/ObjectDetection")
 ;;(defvar *result-topic* "/openni/rgb/ObjectDetection")
-(defvar *result-topic* "/openni_c2/depth_registered/ObjectDetection")
+(defvar *result-topic* "/kinect_head_c2/depth_registered/ObjectDetection")
 
 (ros::roseus-add-msgs "posedetection_msgs")
 (load "match-hist.l")

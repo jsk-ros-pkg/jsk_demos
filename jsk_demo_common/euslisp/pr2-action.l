@@ -1,6 +1,6 @@
 (setq *obj* (make-sphere 100)) ;; dummy object
 (setq *target-name* nil)
-(defparameter *detection-topic* "/openni/rgb/ObjectDetection")
+(defparameter *detection-topic* "/kinect_head/rgb/ObjectDetection")
 (require :detection-interface "package://jsk_perception/euslisp/detection_interface.l")
 (require :pr2-pose "package://jsk_demo_common/euslisp/pr2-pose.l")
 
@@ -623,7 +623,7 @@
     (cond
      ((not (send *ri* :simulation-modep)) ;; real mode
       (setq cds (check-detection :type "fridge" :speak-name *frige-speak-str*
-                                 :detection-topic "/openni/rgb/ObjectDetection"
+                                 :detection-topic "/kinect_head/rgb/ObjectDetection"
                                  )))
      (t ;; simulation mode
       (setq cds (send (make-cube 60 60 60) :translate (float-vector 777 98 1112)))
@@ -659,7 +659,7 @@
         (cond
          ((not (send *ri* :simulation-modep)) ;; real mode
           (setq cds (check-detection :type "fridge" :speak-name *frige-speak-str*
-                                     :detection-topic "/openni/rgb/ObjectDetection"))
+                                     :detection-topic "/kinect_head/rgb/ObjectDetection"))
           )
          (t ;; simulation mode
           (setq cds (send (make-cube 60 60 60) :translate (float-vector 777 98 1112)))))
@@ -891,10 +891,10 @@
      ((not (send *ri* :simulation-modep)) ;; real mode
       (unless (setq cds (check-detection :speak-name *type*
                                          :type *type* :tf-force t :timeout 35 :single t
-                                         :detection-topic "/openni_c2/depth_registered/ObjectDetection"))
+                                         :detection-topic "/kinect_head_c2/depth_registered/ObjectDetection"))
         (setq cds (check-detection :speak-name *type*
                                    :type *type* :tf-force t :timeout 70 :single t
-                                   :detection-topic "/openni_c2/depth_registered/ObjectDetection"))))
+                                   :detection-topic "/kinect_head_c2/depth_registered/ObjectDetection"))))
      (t ;; simulation mode
       (setq cds (send (make-cube 60 60 60) :translate (float-vector 756 302 1164)))))
     (setq *can-cds* cds)

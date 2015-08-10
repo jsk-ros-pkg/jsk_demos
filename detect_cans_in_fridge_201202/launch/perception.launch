@@ -25,8 +25,6 @@
   <anode pkg="image_view2" type="image_view2" name="select_ref_white" machine="c2">
     <remap from="image" to="/kinect_head_c2/rgb/image_rect_color"/>
     <remap from="camera_info" to="/kinect_head_c2/rgb/camera_info"/>
-    <remap from="/openni_c2/rgb/image_rect_color/screenpoint"
-           to="/kinect_head_c2/rgb/screenpoint"/>
   </anode>
 
   <node pkg="jsk_pcl_ros" type="attention_clipper" name="attention_clipper" output="screen" if="$(arg roi)">
@@ -45,7 +43,7 @@
   </node>
 
   <!-- setup fridge handle marker template -->
-  <group ns="/openni/rgb">
+  <group ns="/kinect_head/rgb">
     <node name="fridge_demo_sift" pkg="imagesift"
           type="imagesift" launch-prefix="nice -n +10" output="screen"
           machine="c2" >
