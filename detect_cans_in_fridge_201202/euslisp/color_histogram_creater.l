@@ -97,6 +97,10 @@
     ))
 
 (defun create-hist (divnum h-step s-step)
+  "create histogram model from surroundings
+divnum division number of around model
+h-step bin size of hue
+s-step bin size of saturation"
   (let (hist-lst init-wrist-r)
     (setq *lst* nil) ;; each parts will be stored
     (send *ri* :stop-grasp :rarm)
@@ -124,6 +128,11 @@
     hist-lst))
 
 (defun init-setting()
+  ";; Initialization setting for create color histogram
+(init-setting) ;; initialization
+(setq hist (create-hist 8 10 10)) ;; crate histogram list, you should put a object on PR2's hand.
+(divided-pcl-vis *lst*) ;; view results
+"
   (unless (not (boundp '*pr2*)) (return-from init-setting nil))
   (ros::roseus "create_hist")
   (setq *time-count* (ros::time-now))
@@ -133,6 +142,7 @@
   (ros::spin-once)
   (send *pr2* :angle-vector (send *ri* :state :potentio-vector)))
 
+(warn "~A~%" (documentation 'init-setting))
 ;;(init-setting)
 ;;(setq hist (create-hist 8 10 10))
 ;;(divided-pcl-vis *lst)
