@@ -1,5 +1,3 @@
-#-:jsk (jsk)
-(load "package://jskpointcloud/euslisp/jskpointcloud.l")
 (load "package://pr2eus/pr2-interface.l")
 
 (defvar *points* nil)
@@ -36,7 +34,7 @@
  (if (= d max-num) (- step 1)
    (floor (/ d (/ (- max-num min-num) step)))))
 
-(defmethod 3dpointcloud
+(defmethod pointcloud
   (:hs-hist (&key (h-step 3) (s-step 3))
     (let ((col (send self :carray))
 	  (hist (make-array
@@ -50,7 +48,7 @@
       (scale-matrix (/ 1.0 (send self :size)) hist))))
 
 (defun rotational-divide-hist (msg divnum filternum h-step s-step)
-  (let ((3dp (make-3dpointcloud-from-msg2 msg)) kinect-cds rgripper-cds)
+  (let ((3dp (make-eus-pointcloud-from-msg msg)) kinect-cds rgripper-cds)
     (ros::spin-once)
     (send *pr2* :angle-vector (send *ri* :state :potentio-vector))
     (setq rgripper-cds (send *pr2* :r_gripper_tool_frame_lk :copy-worldcoords))
