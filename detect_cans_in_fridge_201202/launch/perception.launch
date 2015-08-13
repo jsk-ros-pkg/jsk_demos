@@ -5,7 +5,7 @@
   <arg name="DEMOTYPE" default="map" />
   <arg name="app_manager" default="false" />
   <arg name="run_behavior" default="true" />
-  <arg name="fridge_show" default="true" />
+  <arg name="visualize_fridge" default="true" />
   <arg name="roi" default="true" />
   <include file="$(find pr2_machine)/$(env ROBOT).machine" />
   <!-- <arg name="app_manager" default="true" /> -->
@@ -14,11 +14,23 @@
   <!-- <anode pkg="rosbag" type="play" name="play" -->
   <!--        args="-l -r 0.1 /home/leus/work/rits/refrig-kinect-c.bag" /> -->
 
-  <node pkg="roseus" type="roseus" name="marker_publish" output="screen" if="$(arg fridge_show)"
+  <node pkg="roseus" type="roseus" name="marker_publish" output="screen" if="$(arg visualize_fridge)"
         args="$(find jsk_perception)/euslisp/kalman-filtered-objectdetection-marker.l">
     <param name="object_width" value="0.231"/>
     <param name="object_height" value="0.196"/>
     <param name="relative_pose" value="0.22 0.05 0.075  0.707107 0 -0.707107 0"/>
+  </node>
+  <node name="gaussianmanager" pkg="nodelet" type="nodelet" args="manager"
+        output="screen" if="$(arg visualize_fridge)"/>
+  <node pkg="nodelet" type="nodelet" name="posewithcovstampedtogaussian"
+        args="load jsk_pcl/PoseWithCovarianceStampedToGaussianPointCloud gaussianmanager"
+        output="screen" >
+    <remap from="~input" to="/simplecov" />
+    <rosparam>
+      cut_plane: flipped_yz
+      normalize_method: normalize_height
+      sampling_num: 40
+    </rosparam>
   </node>
 
   <!-- reference white -->
