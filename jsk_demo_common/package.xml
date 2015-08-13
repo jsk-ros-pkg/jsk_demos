@@ -31,6 +31,7 @@
   <run_depend>roseus</run_depend>
   <run_depend>roseus_smach</run_depend>
   <run_depend>message_runtime</run_depend>
+  <run_depend>roseus_mongo</run_depend>
 
   <export>
   </export>
