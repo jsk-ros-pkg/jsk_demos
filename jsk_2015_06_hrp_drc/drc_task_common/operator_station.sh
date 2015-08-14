@@ -16,7 +16,7 @@ do
 done
 
 tmux-newwindow() {
-    if [ `tmux list-windows | grep $1 | sed -e 's/ //g'  >/dev/null 2>&` ]; then
+    if [ `tmux list-windows 2>/dev/null | grep $1 | sed -e 's/ //g'  >/dev/null 2>&1` ]; then
         echo $1 "already exists"
     else
         tmux new-window -k -n $1 -t ocs

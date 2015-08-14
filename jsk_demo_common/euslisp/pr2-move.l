@@ -124,26 +124,29 @@
 
 
 (warn "goto-front-of-fridge~%")
-(defun goto-front-of-fridge (&key (torso-lift 130) (head-pitch 0))
-  (if (and (boundp '*use-voicetext*) *use-voicetext*)
-      (cond
-       ((and (boundp '*use-english*) *use-english*)
-        (speak-jp "I will move to the refrigerator."))
-       (t (speak-jp "移動します。")))
-    (speak-jp "いどう します"));;
+(defun base-go-to-fridge (&key (wait t))
   (let ((co (send *scene* :spot "/eng2/7f/room73B2-fridge-front")))
-    (send co :translate (float-vector 0 0 0) :world) ;; for opening door
+    (send co :translate (float-vector 0 0 0) :world)
     (send *ri* :move-to co)
-    ;;(send *ri* :go-pos 0 -0.04 0) ;; ???
-    ;;
-    (send *pr2* :head :angle-vector (float-vector 0 head-pitch))
-    (send *pr2* :torso :angle-vector (float-vector torso-lift))
-    (send *ri* :ros-wait 0.0 :spin t :spin-self t) ;; attention-check ...
-    (send *ri* :angle-vector (send *pr2* :angle-vector))
-    (send *ri* :wait-interpolation)
-    (send *pr2* :angle-vector (send *ri* :state :potentio-vector))
-    ;;(send *pr2* :move-to (send *ri* :state :worldcoords) :world)
+    (if wait
+        (send *ri* :wait-interpolation))
     t
     ))
+
+(defun base-go-to-fridge-init-pose (&key (wait t) (torso-lift 130) (head-pitch 0))
+  (send *pr2* :angle-vector (send *ri* :state :potentio-vector))
+  (send *pr2* :head :angle-vector (float-vector 0 head-pitch))
+  (send *pr2* :torso :angle-vector (float-vector torso-lift))
+  (send *ri* :angle-vector (send *pr2* :angle-vector))
+  (if wait
+      (send *ri* :wait-interpolation))
+  t
+  )
+
+
+(defun goto-front-of-fridge (&key (torso-lift 130) (head-pitch 0) (wait t))
+  (base-go-to-fridge :wait wait)
+  (base-go-to-fridge-init-pose :torso-lift torso-lift :head-pitch head-pitch :wait wait)
+  )
 
 (provide :pr2-move)

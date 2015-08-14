@@ -15,8 +15,9 @@
   <remap from="/tf" to="/ocs/tf" />
   <remap from="/joint_states" to="/ocs/joint_states" />
   <remap from="/robot_description" to="/ocs/robot_description" />
-  <node pkg="jsk_network_tools" type="silverhammer_highspeed_receiver.py"
+  <node pkg="jsk_network_tools" type="silverhammer_highspeed_receiver_with_internal_buffer.py"
         output="log"
+        respawn="true"
         name="highspeed_receiver">
     <rosparam>
       message: drc_com_common/FC2OCSLarge
@@ -25,27 +26,18 @@
       receive_port: 16485
       send_rate: 10
       packet_size: 1472
+      expected_rate: 10
       fragment_packets_torelance: 0
       timestamp_overwrite_topics: ["/ocs/communication/locomotion_cloud", "/ocs/communication/normal_flip_cloud"]
       publish_only_if_updated_topics: ["/ocs/communication/locomotion_cloud", "/ocs/communication/normal_flip_cloud"]
     </rosparam>
   </node>
-  <node pkg="jsk_network_tools" type="silverhammer_highspeed_receiver.py"
-        output="log"
-        name="highspeed_receiver_reliable" if="false">
-    <rosparam>
-      message: drc_com_common/FC2OCSLargeReliable
-      topic_prefix: "/ocs"
-      receive_ip: "0.0.0.0"
-      receive_port: 16486
-      send_rate: 10
-      packet_size: 1472
-      pesimistic: true
-      fragment_packets_torelance: 0
-      timestamp_overwrite_topics: ["/ocs/communication/locomotion_cloud", "/ocs/communication/normal_flip_cloud"]
-      publish_only_if_updated_topics: ["/ocs/communication/locomotion_cloud", "/ocs/communication/normal_flip_cloud"]
-    </rosparam>
-  </node>
+  <group ns="highspeed_receiver">
+    <node pkg="jsk_network_tools" type="silverhammer_highspeed_internal_receiver"
+          respawn="true"
+          name="internal_receiver">
+    </node>
+  </group>
   <node pkg="jsk_network_tools" type="silverhammer_lowspeed_receiver.py"
         output="log" launch-prefix="sudo"
         name="ocs_from_fc_low_speed">

@@ -1,5 +1,3 @@
-#-:jsk (jsk)
-(load "package://jskpointcloud/euslisp/jskpointcloud.l")
 (load "package://pr2eus/pr2-interface.l")
 
 (defvar *points* nil)
@@ -36,7 +34,7 @@
  (if (= d max-num) (- step 1)
    (floor (/ d (/ (- max-num min-num) step)))))
 
-(defmethod 3dpointcloud
+(defmethod pointcloud
   (:hs-hist (&key (h-step 3) (s-step 3))
     (let ((col (send self :carray))
 	  (hist (make-array
@@ -50,11 +48,11 @@
       (scale-matrix (/ 1.0 (send self :size)) hist))))
 
 (defun rotational-divide-hist (msg divnum filternum h-step s-step)
-  (let ((3dp (make-3dpointcloud-from-msg2 msg)) kinect-cds rgripper-cds)
+  (let ((3dp (make-eus-pointcloud-from-msg msg)) kinect-cds rgripper-cds)
     (ros::spin-once)
     (send *pr2* :angle-vector (send *ri* :state :potentio-vector))
-    (setq rgripper-cds (send *pr2* :r_gripper_tool_frame :copy-worldcoords))
-    (setq kinect-cds (send (send *pr2* :openni_rgb_optical_frame) :copy-worldcoords))
+    (setq rgripper-cds (send *pr2* :r_gripper_tool_frame_lk :copy-worldcoords))
+    (setq kinect-cds (send (send *pr2* :head_mount_kinect_rgb_optical_frame_lk) :copy-worldcoords))
     (send 3dp :transform-points (send rgripper-cds :transformation kinect-cds))
     (send 3dp :nfilter :key #'rotational-divide-filter)
     (push 3dp *lst*)
@@ -99,6 +97,10 @@
     ))
 
 (defun create-hist (divnum h-step s-step)
+  "create histogram model from surroundings
+divnum division number of around model
+h-step bin size of hue
+s-step bin size of saturation"
   (let (hist-lst init-wrist-r)
     (setq *lst* nil) ;; each parts will be stored
     (send *ri* :stop-grasp :rarm)
@@ -126,6 +128,11 @@
     hist-lst))
 
 (defun init-setting()
+  ";; Initialization setting for create color histogram
+(init-setting) ;; initialization
+(setq hist (create-hist 8 10 10)) ;; crate histogram list, you should put a object on PR2's hand.
+(divided-pcl-vis *lst*) ;; view results
+"
   (unless (not (boundp '*pr2*)) (return-from init-setting nil))
   (ros::roseus "create_hist")
   (setq *time-count* (ros::time-now))
@@ -135,6 +142,7 @@
   (ros::spin-once)
   (send *pr2* :angle-vector (send *ri* :state :potentio-vector)))
 
+(warn "~A~%" (documentation 'init-setting))
 ;;(init-setting)
 ;;(setq hist (create-hist 8 10 10))
 ;;(divided-pcl-vis *lst)

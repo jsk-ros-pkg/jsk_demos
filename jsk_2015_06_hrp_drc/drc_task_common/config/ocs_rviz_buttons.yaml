@@ -1,0 +1,88 @@
+robot_command_buttons:
+  - name: "Reset Pose"
+    icon: "package://jsk_rviz_plugins/icons/reset-pose.jpg"
+    type: emptysrv
+    srv: /uint8_command/reset_pose
+  - name: "Reset Manip Pose"
+    icon: "package://jsk_rviz_plugins/icons/reset-manip-pose.jpg"
+    type: emptysrv
+    srv: /uint8_command/reset_manip_pose
+  - name: "Drill Reset Pose"
+    icon: "package://drc_task_common/icons/drill-reset-pose.jpg"
+    type: emptysrv
+    srv: /uint8_command/drill_reset_pose
+  - name: "Watch Drill"
+    icon: "package://drc_task_common/icons/watch-drill-pose.jpg"
+    type: emptysrv
+    srv: /uint8_command/drill_watch_pose
+  - name: "Door Through Pose"
+    icon: "package://drc_task_common/icons/door-through-pose.png"
+    type: emptysrv
+    srv: /uint8_command/door_through_pose
+  - name: "Finish Stair\nPose"
+    type: emptysrv
+    srv: /uint8_command/finish_stair_pose
+  - name: "Emergency\nPose"
+    type: emptysrv
+    srv: /uint8_command/emergency_pose
+  - name: "Hand reset pose"
+    icon: "package://jsk_rviz_plugins/icons/hand-reset-pose.jpg"
+    type: emptysrv
+    srv: /uint8_command/hand_reset_pose
+  - name: "Hand hook pose"
+    icon: "package://jsk_rviz_plugins/icons/hand-hook-pose.jpg"
+    type: emptysrv
+    srv: /uint8_command/hand_hook_pose
+  - name: "Hand Pose After 5sec"
+    icon: "package://drc_task_common/icons/hand-hook-pose.jpg"
+    type: emptysrv
+    srv: /uint8_command/hand_hook_after_pose
+  - name: "Hand grasp pose"
+    icon: "package://jsk_rviz_plugins/icons/hand-grasp-pose.jpg"
+    type: emptysrv
+    srv: /uint8_command/hand_grasp_pose
+  - name: "Hand Calib"
+    icon: "package://drc_task_common/icons/hand-calib.png"
+    type: emptysrv
+    srv: /uint8_command/calib_hand
+  - name: "Start ABC"
+    icon: "package://jsk_rviz_plugins/icons/start-abc.png"
+    type: emptysrv
+    srv: /uint8_command/hrpsys_start_abc
+  - name: "Start ST"
+    icon: "package://jsk_rviz_plugins/icons/start-st.png"
+    type: emptysrv
+    srv: /uint8_command/hrpsys_start_st
+  - name: "Start IMP"
+    icon: "package://jsk_rviz_plugins/icons/start-imp.png"
+    type: emptysrv
+    srv: /uint8_command/hrpsys_start_imp
+  - name: "Start IMP Soft"
+    icon: "package://drc_task_common/icons/start-imp-soft.png"
+    type: emptysrv
+    srv: /uint8_command/hrpsys_start_imp_soft
+  - name: "Start IMP Hard"
+    icon: "package://drc_task_common/icons/start-imp-hard.png"
+    type: emptysrv
+    srv: /uint8_command/hrpsys_start_imp_hard
+  - name: "Stop IMP"
+    icon: "package://drc_task_common/icons/stop-imp.png"
+    type: emptysrv
+    srv: /uint8_command/hrpsys_stop_imp
+  - name: "Set Ref Force\n0"
+    type: emptysrv
+    srv: /uint8_command/ref_force_0
+  - name: "Go_Pos\n0 0 0"
+    type: emptysrv
+    srv: /uint8_command/go_pos_zero
+  - name: "Display Manip"
+    icon: "package://drc_task_common/icons/display_6dof.png"
+    type: emptysrv
+    srv: /transformable_interactive_server/show
+  - name: "Hide Manip"
+    icon: "package://drc_task_common/icons/hide_6dof.png"
+    type: emptysrv
+    srv: /transformable_interactive_server/hide
+  - name: "Reset Enc\nOffset"
+    type: emptysrv
+    srv: /uint8_command/reset_enc_offset

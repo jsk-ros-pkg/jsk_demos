@@ -2,6 +2,12 @@
   <remap from="/tf" to="/ocs/tf" />
   <remap from="/joint_states" to="/ocs/joint_states" />
   <remap from="/robot_description" to="/ocs/robot_description" />
+  <remap from="/tf" to="/ocs/tf" />
+  <remap from="/set_dynamic_tf" to="/ocs/set_dynamic_tf" />
+  <remap from="/assoc_tf" to="/ocs/assoc_tf" />
+  <remap from="/publish_tf" to="/ocs/publish_tf" />
+  <remap from="/dissoc_tf" to="/ocs/dissoc_tf" />
+  <remap from="/delete_tf" to="/ocs/delete_tf" />
   <arg name="default_frame_id" default="odom_on_ground" />
   <arg name="ik_server_launch" default="hrp2jsknts-ik-server.launch" />
   <arg name="robot_model_config" default="$(find drc_task_common)/config/robot_interactive_marker.yaml" />
@@ -79,6 +85,7 @@
   </node>
   <!-- rviz -->
   <node pkg="rviz" type="rviz" name="operator_rviz" args="-d $(find drc_task_common)/config/drc_task_common.rviz"
-        respawn="true"/>
-  
+        respawn="true">
+    <rosparam command="load" file="$(find drc_task_common)/config/ocs_rviz_buttons.yaml" />
+  </node>
 </launch>

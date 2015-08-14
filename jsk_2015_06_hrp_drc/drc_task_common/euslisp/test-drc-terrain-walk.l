@@ -38,7 +38,7 @@
                 (send robot l :inverse-kinematics c))
             '(:rleg :lleg) lc)
     (send robot :move-centroid-on-foot :both '(:rleg :lleg))
-    (send robot :head :neck-p :joint-angle head-link-pitch-offset)
+    (if (find-method robot :head-neck-p) (send robot :head-neck-p :joint-angle head-link-pitch-offset))
     (send robot :angle-vector)
     ))
 

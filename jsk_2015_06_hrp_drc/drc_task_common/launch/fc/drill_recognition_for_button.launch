@@ -4,59 +4,101 @@
   <arg name="INPUT_POINT_CLOUD" default="/multisense/resize_1_8/points" />
   <arg name="PASS_THROUGH" default="true" />
   <group ns="drill_recognition_for_button">
-    <node pkg="nodelet" type="nodelet" name="manager" args="manager" output="screen"/>
-    <node pkg="drc_task_common" type="hand_box_publisher.py" name="hand_box_publisher" respawn="true">
-    </node>  
-    <node if="$(arg PASS_THROUGH)" pkg="jsk_topic_tools" type="passthrough" name="passthrough">
-      <remap from="~input" to="$(arg INPUT_POINT_CLOUD)" />
+    <node pkg="jsk_topic_tools" type="standalone_complexed_nodelet"
+          name="manager" respawn="true" output="screen">
+      <rosparam subst_value="true">
+nodelets:
+  - name: passthrough
+    type: jsk_topic_tools/Passthrough
+    if: $(arg PASS_THROUGH)
+    remappings:
+      - from: ~input
+        to: $(arg INPUT_POINT_CLOUD)
+  - name: passthrough
+    type: jsk_topic_tools/Relay
+    unless: $(arg PASS_THROUGH)
+    remappings:
+      - from: ~input
+        to: $(arg INPUT_POINT_CLOUD)
+  - name: hand_clipper
+    type: jsk_pcl/AttentionClipper
+    remappings:
+      - from: ~input
+        to: $(arg INPUT_CAMERA_INFO)
+      - from: ~input/points
+        to: passthrough/output
+      - from: ~input/box
+        to: hand_box
+  - name: filtered_cloud
+    type: pcl/ExtractIndices
+    remappings:
+      - from: ~input
+        to: passthrough/output
+      - from: ~indices
+        to: hand_clipper/output/point_indices
+  - name: normal_estimation
+    type: jsk_pcl/NormalEstimationOMP
+    remappings:
+      - from: ~input
+        to: filtered_cloud/output
+  - name: euclidean_filter
+    type: jsk_pcl/EuclideanClustering
+    remappings:
+      - from: ~input
+        to: filtered_cloud/output
+  - name: euclidean_filter_decomposer
+    type: jsk_pcl/ClusterPointIndicesDecomposer
+    remappings:
+      - from: ~input
+        to: filtered_cloud/output
+      - from: ~target
+        to: euclidean_filter/output
+  - name: nearest_cluster_cloud
+    type: pcl/ExtractIndices
+    remappings:
+      - from: ~input
+        to: filtered_cloud/output
+      - from: ~indices
+        to: nearest_cluster/output/indices
+  - name: snapshot
+    type: jsk_topic_tools/Snapshot
+    remappings:
+      - from: ~input
+        to: standing_drill_detector/output/pose
+  - name: rotate_snapshot
+    type: jsk_topic_tools/Snapshot
+    remappings:
+      - from: ~input
+        to: standing_drill_detector/output/pose
+      </rosparam>
     </node>
-    <node unless="$(arg PASS_THROUGH)" pkg="nodelet" type="nodelet" args="load jsk_topic_tools/Relay manager" name="passthrough">
-      <remap from="~input" to="$(arg INPUT_POINT_CLOUD)" />
-    </node>
-    
-    <node pkg="jsk_pcl_ros" type="attention_clipper" name="hand_clipper">
-      <remap from="~input" to="$(arg INPUT_CAMERA_INFO)" />
-      <remap from="~input/points" to="passthrough/output" />
-      <remap from="~input/box" to="hand_box" />
+    <group ns="hand_clipper">
       <param name="frame_id" value="left_camera_optical_frame" />
-    </node>
-    <node pkg="nodelet" type="nodelet" name="filtered_cloud"
-	        args="load pcl/ExtractIndices manager">
-      <!-- args="load pcl/ExtractIndices $(arg MANAGER)"> -->
-      <remap from="~input" to="passthrough/output"/>
-      <remap from="~indices" to="hand_clipper/output/point_indices"/>
-    </node>
-    <node pkg="jsk_pcl_ros"
-          type="normal_estimation_omp"
-          name="normal_estimation">
-      <remap from="~input" to="filtered_cloud/output" />
+    </group>
+    <group ns="normal_estimation">
       <rosparam>
         k_search: 0
         radius_search: 0.05
       </rosparam>
-    </node>
-
-    <node pkg="jsk_pcl_ros" type="euclidean_clustering"
-          name="euclidean_filter">
-      <remap from="~input" to="filtered_cloud/output" />
-    </node>
-    <node pkg="jsk_pcl_ros" type="cluster_point_indices_decomposer"
-          name="euclidean_filter_decomposer">
-      <remap from="~input" to="filtered_cloud/output" />
-      <remap from="~target" to="euclidean_filter/output" />
-    </node>
+    </group>
+    <group ns="snapshot">
+      <rosparam>
+        latch: true
+      </rosparam>
+    </group>
+    <group ns="rotate_snapshot">
+      <rosparam>
+        latch: true
+      </rosparam>
+    </group>
+    <node pkg="drc_task_common" type="hand_box_publisher.py" name="hand_box_publisher" respawn="true">
+    </node>  
     <node pkg="drc_task_common"
           type="nearest_box_indices.py"
           name="nearest_cluster">
       <remap from="~input/box_array" to="euclidean_filter_decomposer/boxes" />
       <remap from="~input/indices" to="euclidean_filter/output" />
     </node>
-    <node pkg="nodelet" type="nodelet" name="nearest_cluster_cloud"
-          args="standalone pcl/ExtractIndices">
-      <remap from="~input" to="filtered_cloud/output"/>
-      <remap from="~indices" to="nearest_cluster/output/indices"/>
-    </node>
-
     <node pkg="drc_task_common" type="static_transform_bounding_box_array.py"
           name="box_rotate">
       <remap from="~input" to="nearest_cluster/output/box_array" />
@@ -65,7 +107,7 @@
       </rosparam>
     </node>
     <node pkg="drc_task_common" type="standing_drill_detector"
-	        name="standing_drill_detector" output="screen">
+	  name="standing_drill_detector" output="screen">
       <remap from="~input" to="nearest_cluster_cloud/output" />
       <remap from="~input/box_array" to="box_rotate/output" />
       <remap from="~input/indices" to="nearest_cluster/output/cluster_indices" />
@@ -83,18 +125,6 @@
         cylinder_length: 0.2
         calc_cylinder_center: true
         button_estimation_method: 2
-      </rosparam>
-    </node>
-    <node pkg="jsk_topic_tools" type="snapshot" name="snapshot">
-      <remap from="~input" to="standing_drill_detector/output/pose"/>
-      <rosparam>
-        latch: true
-      </rosparam>
-    </node>
-    <node pkg="jsk_topic_tools" type="snapshot" name="rotate_snapshot">
-      <remap from="~input" to="standing_drill_detector/output/pose"/>
-      <rosparam>
-        latch: true
       </rosparam>
     </node>
   </group>

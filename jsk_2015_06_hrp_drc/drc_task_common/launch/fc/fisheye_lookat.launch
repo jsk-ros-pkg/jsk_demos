@@ -13,14 +13,8 @@
       <remap from="camera_info" to="/chest_camera/camera_info"/>
       <remap from="image" to="/chest_camera_remote/image_color"/>
     </node>
-    <node type="nodelet" pkg="nodelet" name="fisheye_manager" args="manager" />
-    <!-- <node type="nodelet" pkg="nodelet" name="fisheye_to_panorama" -->
-    <!--       args="load jsk_perception/FisheyeToPanorama fisheye_manager" output="screen"> -->
-    <!--   <remap from="~input" to="/chest_camera/image_color"/> -->
-    <!--   <param name="use_panorama" value="true"/> -->
-    <!-- </node> -->
     <node type="nodelet" pkg="nodelet" name="fisheye_sphere"
-          args="load jsk_pcl/FisheyeSpherePublisher fisheye_manager" output="screen">
+          args="standalone jsk_pcl/FisheyeSpherePublisher fisheye_manager" output="screen">
       <remap from="~input" to="/chest_camera_remote/image_color"/>
     </node>
     <node type="image_view2" pkg="image_view2" name="fisheye_image_view" if="$(arg DEBUG)">
