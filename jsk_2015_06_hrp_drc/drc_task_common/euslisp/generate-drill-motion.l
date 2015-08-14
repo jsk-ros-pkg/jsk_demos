@@ -643,11 +643,11 @@
     (drill-hook :arm :arms)
     (send *robot* :angle-vector (get-drill-reset-pose))
     (unless (check-angle-vector-distance)
-      (when real? (model2real :time 5000)))
+      (when real? (model2real :time 7000)))
     (when (equal drill-type :takenoko)
       (send *robot* :angle-vector (get-reach-drill-pre-pose))
       (unless (check-angle-vector-distance)
-        (when real? (model2real :time 6000)))
+        (when real? (model2real :time 9000)))
       )
     ;; walk
     (when (and *drill-stand-coords* (check-stand-coords *drill-stand-coords*))
