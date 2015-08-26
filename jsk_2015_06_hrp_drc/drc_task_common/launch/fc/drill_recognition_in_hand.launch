@@ -1,0 +1,13 @@
+<launch>
+  <group ns="drill_recognition_for_button">
+    <include file="$(find jsk_pcl_ros)/launch/in_hand_recognition.launch">
+      <arg name="use_self_filter_for_sensor" value="true" />
+    </include>
+    <node pkg="jsk_topic_tools" type="snapshot" name="snapshot">
+      <remap from="~input" to="in_hand_recognition_manager/output"/>
+      <rosparam>
+        latch: true
+      </rosparam>
+    </node>
+  </group>
+</launch>

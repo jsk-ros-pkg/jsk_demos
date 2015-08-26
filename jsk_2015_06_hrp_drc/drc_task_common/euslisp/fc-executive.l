@@ -316,7 +316,7 @@
       ))
   (:drill-button-region-command-callback (msg)
     (when (send smachine :state? :initial)
-      (call-request-duration "/drill_recognition_for_button/passthrough/request_duration" 10)
+      ;; (call-request-duration "/drill_recognition_for_button/passthrough/request_duration" 10)
       ;; convert OCS2FCSmall into geometry_msgs/Polygon
       ;; (ros::publish "/drill_recognition_for_button/input_rect"
       ;;   (integer-vector-to-rect-polygon-stamped msg))
@@ -503,6 +503,15 @@
                      )
                  (ros::ros-info "arm side empty")
                  )
+               (progn ;; for drill button with odom pose
+                 (set-drill-default-coords)
+                 (let ((coords (send (send *robot* *drill-main-arm* :end-coords :copy-worldcoords) :transformation (send *drill* :copy-worldcoords)))
+                       (frame_id (if (equal *drill-main-arm* :rarm) "rarm_end_coords" "larm_end_coords")))
+                   
+                   (ros::publish "/drill_recognition_for_button/in_hand_recognition_manager/input"
+                     (instance geometry_msgs::PoseStamped :init :pose (ros::coords->tf-pose coords) :header (instance std_msgs::Header :init :frame_id frame_id :stamp (ros::time-now)))
+                        )
+                   ))
                
                ;; send finish signal to ocs
                (let ((msg (instance drc_com_common::FC2OCSSmall :init)))
@@ -1494,6 +1503,7 @@ It sends :angle-vector to robot and return 'finished' message to ocs"
 (ros::advertise "/debri_recognition/input_line" geometry_msgs::PolygonStamped)
 (ros::advertise "/drill_recognition/input_rect" geometry_msgs::PolygonStamped)
 (ros::advertise "/drill_recognition_for_button/input_rect" geometry_msgs::PolygonStamped)
+(ros::advertise "/drill_recognition_for_button/in_hand_recognition_manager/input" geometry_msgs::PoseStamped)
 (ros::advertise "/drill_recognition_for_put/input_rect" geometry_msgs::PolygonStamped)
 (ros::advertise "/drill_recognition_for_wall/input_poly" geometry_msgs::PolygonStamped)
 (ros::advertise "/fc_to_ocs_low_speed/input" drc_com_common::FC2OCSSmall)
