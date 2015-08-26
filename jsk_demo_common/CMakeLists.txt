@@ -21,9 +21,17 @@ add_action_files(
   FILES DemoCommon.action
 )
 
+
+
 ## Generate added messages and services with any dependencies listed here       
+add_message_files(
+  FILES
+  EventHeader.msg
+  FunctionEvent.msg
+)
+
 generate_messages(
-  DEPENDENCIES geometry_msgs actionlib_msgs
+  DEPENDENCIES geometry_msgs actionlib_msgs std_msgs
 )
 
 
