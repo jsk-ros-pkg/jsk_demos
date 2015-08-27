@@ -2,8 +2,6 @@
 
 source `dirname ${0}`/ocs_tmux_init.sh
 
-tmux-newwindow roscore "roscore"
-sleep 3
 tmux-newwindow executive "roslaunch drc_task_common ocs_executive.launch"
 tmux-newwindow ui "roslaunch drc_task_common ui.launch"
 tmux-newwindow rviz "roslaunch drc_task_common ocs_rviz.launch ik_server_launch:=${ROBOT,,}-ik-server.launch"
