@@ -31,8 +31,6 @@ else
     echo -e "\e[1;34mcreate new session named ocs.\e[m"
     tmux new-session -d -s ocs -n tmp
 fi
-tmux-newwindow roscore "roscore"
-sleep 3
 tmux-newwindow executive "roslaunch drc_task_common ocs_executive.launch"
 tmux-newwindow ui "roslaunch drc_task_common ui.launch"
 tmux-newwindow rviz "roslaunch drc_task_common ocs_rviz.launch ik_server_launch:=${ROBOT,,}-ik-server.launch"
