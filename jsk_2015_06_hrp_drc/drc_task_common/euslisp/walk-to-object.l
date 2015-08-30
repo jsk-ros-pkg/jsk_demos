@@ -1,6 +1,7 @@
 #!/usr/bin/env roseus
 
 (ros::roseus "walk_to_object")
+(load "package://drc_task_common/euslisp/robot-util.l")
 
 (ros::roseus-add-msgs "sensor_msgs")
 (ros::roseus-add-msgs "jsk_rviz_plugins")
@@ -15,6 +16,10 @@
   ()
   ;; select ocs/fc
   (setq *use-robot-interface-flag* (ros::get-param "~use_robot_interface" nil))
+  (setq *robot-name* (string-upcase (unix::getenv "ROBOT")))
+  (if *use-robot-interface-flag*
+      (generate-robot *robot-name* :generate-ri? *use-robot-interface-flag*)
+      )
   (setq *tfl* (instance ros::transform-listener :init))
   (setq *go-pos-command-flag* nil)
   (ros::subscribe "/go_pos_command" std_msgs::empty #'go-pos-command)

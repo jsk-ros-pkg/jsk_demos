@@ -3,7 +3,7 @@
 
   <!-- robot specific setting -->
   <arg name="ik_server_launch" default="hrp2jsknts-ik-server.launch" />
-
+  <arg name="ocs" default="true" /> 
   <!-- inverse kinematics server -->
   <include file="$(find jsk_ik_server)/launch/$(arg ik_server_launch)" />
 
@@ -12,11 +12,14 @@
     <param name="default_frame_id" value="$(arg default_frame_id)"/>
     <param name="transformable_interactive_server_nodename" value="transformable_interactive_server"/>
     <param name="draw_viewer" value="false"/>
+    <param name="use_robot_interface" value="true" unless="$(arg ocs)" />
   </node>
 
   <!-- dynamic reachability map server -->
   <node pkg="drc_task_common" type="dynamic_reachability_publisher.l" name="dynamic_reachability_publisher" output="screen" if="false" />
   
   <!-- go-pos -->
-  <node pkg="drc_task_common" type="walk-to-object.l" name="walk_to_object" output="screen" />
+  <node pkg="drc_task_common" type="walk-to-object.l" name="walk_to_object" output="screen" >
+    <param name="use_robot_interface" value="true" unless="$(arg ocs)" />
+  </node>
 </launch>
