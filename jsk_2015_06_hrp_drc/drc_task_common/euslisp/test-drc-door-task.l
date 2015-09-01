@@ -90,32 +90,37 @@
   (:init
     (door-width door-knob-depth door-knob-width door-knob-height
      door-knob-pos door-handle-pos
-     &key (handle-l/r :left) (hinge-l/r (if (eq handle-l/r :left) :right :left)))
+     &key (handle-l/r :left) (hinge-l/r (if (eq handle-l/r :left) :right :left))
+          (use-leg t))
     (send-super :init)
     (let* ((door-depth 30) (door-height 1800)
            (b0 (make-cube 1 1 1))
            (b1 (make-cube door-depth door-width door-height))
            (b2 (make-cube door-knob-depth door-knob-width door-knob-height))
-           (b-leg1 (make-cube 700 100 100))
-           (b-leg2 (make-cube 700 100 100))
            (b-wall1 (make-cube 5 250 door-height))
            (b-wall2 (make-cube 5 250 door-height))
+           (b-leg1 (if use-leg (make-cube 700 100 100)))
+           (b-leg2 (if use-leg (make-cube 700 100 100)))
            )
-      (send b-leg1 :set-color :gray)
-      (send b-leg2 :set-color :gray)
       (send b0 :set-color :gray70)
       (send b1 :set-color :gray70)
       (send b2 :set-color :gray50)
       (send b1 :translate (float-vector 0 (/ door-width (case handle-l/r (:left 2.0) (t -2.0))) (/ door-height 2.0)))
       (send b2 :locate (float-vector (/ door-knob-depth -2.0) (/ door-knob-width (case handle-l/r (:left -2.0) (t 2.0))) 0))
-      (send b-leg1 :translate (float-vector -350 (* (case handle-l/r (:right 1.0) (t -1.0)) 50) 50))
-      (send b-leg2 :translate (float-vector -350 (* (case handle-l/r (:right 1.0) (t -1.0)) (- -50 door-width)) 50))
       (send b-wall1 :translate (float-vector -2.5 (* (case handle-l/r (:right 1.0) (t -1.0)) 125) (* 0.5 door-height)))
       (send b-wall2 :translate (float-vector -2.5 (* (case handle-l/r (:right 1.0) (t -1.0)) (- -125 door-width)) (* 0.5 door-height)))
+      (when use-leg
+        (send b-leg1 :set-color :gray)
+        (send b-leg2 :set-color :gray)
+        (send b-leg1 :translate (float-vector -350 (* (case handle-l/r (:right 1.0) (t -1.0)) 50) 50))
+        (send b-leg2 :translate (float-vector -350 (* (case handle-l/r (:right 1.0) (t -1.0)) (- -50 door-width)) 50)))
       (mapcar #'(lambda (pb cb)
                   (send pb :assoc cb))
-              (list b0 b0 b0 b0 b0 b1) (list b-leg1 b-leg2 b-wall1 b-wall2 b1 b2))
-      (let* ((l0 (instance bodyset-link :init (make-cascoords) :bodies (list b0 b-leg1 b-leg2 b-wall1 b-wall2) :name :root-link))
+              (append (list b0 b0 b0 b1) (if use-leg (list b0 b0)))
+              (append (list b-wall1 b-wall2 b1 b2) (if use-leg (list b-leg1 b-leg2))))
+      (let* ((l0 (instance bodyset-link :init (make-cascoords)
+                           :bodies (append (list b0 b-wall1 b-wall2) (if use-leg (list b-leg1 b-leg2)))
+                           :name :root-link))
              (l1 (instance bodyset-link :init (make-cascoords) :bodies (list b1) :name :door-panel))
              (l2 (instance bodyset-link :init (make-cascoords) :bodies (list b2) :name :door-knob)))
         (send l2 :locate door-knob-pos :world)
@@ -145,11 +150,12 @@
 ;;   knob width : 100mm
 ;;   knob height : 20mm
 ;;   knob pos z : 950mm
-(defun make-drc-box2-door ()
+(defun make-drc-box2-door (&key (use-leg t))
   "Door on drc box2."
   (setq *door* (instance param-door :init 700 60 100 20
                          (float-vector 0 -640 950)
                          (float-vector -60 -600 950)
+                         :use-leg use-leg
                          :handle-l/r :right)))
 
 ;; drc test door param
