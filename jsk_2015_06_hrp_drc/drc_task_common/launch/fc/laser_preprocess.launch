@@ -1,100 +1,98 @@
 <launch>
   <arg name="ODOM_FRAME" default="odom" />
-  <arg name="USE_LOCALHOST" default="false" />
-  <include file="$(find drc_task_common)/launch/machines/$(env ROBOT).machine" />
-  <arg name="machine" value="vmachine" unless="$(arg USE_LOCALHOST)" />
-  <arg name="machine" value="localhost" if="$(arg USE_LOCALHOST)" />
 
   <group ns="laser_preprocess">
-    <node pkg="nodelet" type="nodelet" name="laser_preprocess_manager"
-          args="manager" output="screen"/>
-    <node pkg="nodelet" type="nodelet"
-          name="tilt_laser_listener"
-          args="load jsk_pcl/TiltLaserListener laser_preprocess_manager"
-          machine="$(arg machine)"
-          output="screen">
-      <remap from="~input" to="/joint_states" />
+    <node pkg="jsk_topic_tools" type="standalone_complexed_nodelet"
+          name="laser_preprocess_manager" output="screen" respawn="true">
       <rosparam>
-        laser_type: infinite_spindle_half
-        joint_name: motor_joint
-        use_laser_assembler: true
-        overwrap_angle: 0.1
+        nodelets:
+         - name: downsampler
+           type: pcl/VoxelGrid
+           remappings:
+             - from: ~input
+               to: /tilt_laser_listener/output_cloud
+         - name: gsensor_cloud
+           type: jsk_pcl/TfTransformCloud
+           remappings:
+             - from: ~input
+               to: downsampler/output
+         - name: camera_laser_cloud
+           type: jsk_pcl/TfTransformCloud
+           remappings:
+             - from: ~input
+               to: downsampler/output
+         - name: x_filter
+           type: pcl/PassThrough
+           remappings:
+             - from: ~input
+               to: gsensor_cloud/output
+         - name: y_filter
+           type: pcl/PassThrough
+           remappings:
+             - from: ~input
+               to: x_filter/output
+         - name: z_filter
+           type: pcl/PassThrough
+           remappings:
+             - from: ~input
+               to: y_filter/output
+         - name: odom_cloud
+           type: jsk_pcl/TfTransformCloud
+           remappings:
+             - from: ~input
+               to: z_filter/output
       </rosparam>
-      <remap from="~assemble_scans2" to="/laser_preprocess/assemble_scans2" />
     </node>
-
-    <node pkg="nodelet" type="nodelet"
-          name="downsampler"
-          args="load pcl/VoxelGrid laser_preprocess_manager">
-      <remap from="~input" to="tilt_laser_listener/output_cloud" />
+    <group ns="downsampler">
       <rosparam>
         leaf_size: 0.02
         filter_limit_min: -100
         filter_limit_max: 100
         skip_number: 10
       </rosparam>
-    </node>
-    <node pkg="nodelet" type="nodelet"
-          name="gsensor_cloud"
-          args="load jsk_pcl/TfTransformCloud laser_preprocess_manager">
-      <remap from="~input" to="downsampler/output" />
+    </group>
+    <group ns="gsensor_cloud">
       <rosparam>
         target_frame_id: ground
       </rosparam>
-    </node>
-    <node pkg="nodelet" type="nodelet"
-          name="camera_laser_cloud"
-          args="load jsk_pcl/TfTransformCloud laser_preprocess_manager">
-      <remap from="~input" to="downsampler/output" />
+    </group>
+    <group ns="camera_laser_cloud">
       <rosparam>
         target_frame_id: left_camera_optical_frame
       </rosparam>
-    </node>
+    </group>
 
-    <node pkg="nodelet" type="nodelet"
-          name="x_filter"
-          args="load pcl/PassThrough laser_preprocess_manager">
-      <remap from="~input" to="gsensor_cloud/output" />
+    <group ns="x_filter">
       <rosparam>
         filter_field_name: x
         filter_limit_min: -3
         filter_limit_max: 3
         filter_limit_negative: false
       </rosparam>
-    </node>
-    <node pkg="nodelet" type="nodelet"
-          name="y_filter"
-          args="load pcl/PassThrough laser_preprocess_manager">
-      <remap from="~input" to="x_filter/output" />
+    </group>
+    <group ns="y_filter">
       <rosparam>
         filter_field_name: y
         filter_limit_min: -3
         filter_limit_max: 3
         filter_limit_negative: false
       </rosparam>
-    </node>
+    </group>
 
     <!-- first, remove upper pointcloud -->
-    <node pkg="nodelet" type="nodelet"
-          name="z_filter"
-          args="load pcl/PassThrough laser_preprocess_manager">
-      <remap from="~input" to="y_filter/output" />
+    <group ns="z_filter">
       <rosparam>
         filter_field_name: z
         filter_limit_negative: true
         filter_limit_min: 3.0
         filter_limit_max: 100.0
       </rosparam>
-    </node>
-
-    <node pkg="nodelet" type="nodelet"
-          name="odom_cloud"
-          args="load jsk_pcl/TfTransformCloud laser_preprocess_manager">
-      <remap from="~input" to="z_filter/output" />
+    </group>
+    <group ns="odom_cloud">
       <rosparam>
         target_frame_id: odom
       </rosparam>
-    </node>
+    </group>
 
   </group>
 </launch>

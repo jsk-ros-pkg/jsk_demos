@@ -5,109 +5,153 @@
   <arg name="INPUT_HINT_POINT_CLOUD" default="/laser_preprocess/camera_laser_cloud/output" />
   <arg name="DEBUG_VIEW" default="false" />
   <group ns="door_recognition">
-    <node pkg="nodelet" type="nodelet" name="manager"
-          args="manager" />
-    <node pkg="nodelet" type="nodelet" name="mask_image_generator"
-          args="load jsk_perception/MaskImageGenerator manager">
-      <remap from="~input" to="$(arg INPUT_IMAGE)" />
+    <node pkg="jsk_topic_tools" type="standalone_complexed_nodelet"
+          name="manager" respawn="true" output="screen">
+      <rosparam subst_value="true">
+nodelets:
+  - name: mask_image_generator
+    type: jsk_perception/MaskImageGenerator
+    remappings:
+      - from: ~input
+        to: $(arg INPUT_IMAGE)
+  - name: camera_mask_image_filter
+    type: jsk_pcl/MaskImageFilter
+    remappings:
+      - from: ~input
+        to: $(arg INPUT_POINT_CLOUD)
+      - from: ~input/mask
+        to: mask_image_generator/output
+      - from: ~input/camera_info
+        to: $(arg INPUT_CAMERA_INFO)
+  - name: camera_filtered_cloud
+    type: pcl/ExtractIndices
+    remappings:
+      - from: ~input
+        to: $(arg INPUT_POINT_CLOUD)
+      - from: ~indices
+        to: camera_mask_image_filter/output
+  - name: rect_to_mask_image
+    type: jsk_perception/RectToMaskImage
+    remappings:
+      - from: ~input
+        to: input_support_plane_rect
+      - from: ~input/camera_info
+        to: $(arg INPUT_CAMERA_INFO)
+  - name: mask_image_filter
+    type: jsk_pcl/MaskImageFilter
+    remappings:
+      - from: ~input
+        to: camera_filtered_cloud/output
+      - from: ~input/mask
+        to: rect_to_mask_image/output
+      - from: ~input/camera_info
+        to: $(arg INPUT_CAMERA_INFO)
+  - name: filtered_cloud
+    type: pcl/ExtractIndices
+    remappings:
+      - from: ~input
+        to: camera_filtered_cloud/output
+      - from: ~indices
+        to: mask_image_filter/output
+  - name: door_plane_detector
+    type: jsk_pcl/HintedPlaneDetector
+    remappings:
+      - from: ~input
+        to: camera_filtered_cloud/output
+      - from: ~input/hint/cloud
+        to: filtered_cloud/output
+  - name: target_rect_to_mask_image
+    type: jsk_perception/RectToMaskImage
+    remappings:
+      - from: ~input
+        to: input_target_rect
+      - from: ~input/camera_info
+        to: $(arg INPUT_CAMERA_INFO)
+  - name: target_mask_image_filter
+    type: jsk_pcl/MaskImageFilter
+    remappings:
+      - from: ~input
+        to: camera_filtered_cloud/output
+      - from: ~input/mask
+        to: target_rect_to_mask_image/output
+      - from: ~input/camera_info
+        to: $(arg INPUT_CAMERA_INFO)
+  - name: target_filtered_cloud
+    type: pcl/ExtractIndices
+    remappings:
+      - from: ~input
+        to: camera_filtered_cloud/output
+      - from: ~indices
+        to: target_mask_image_filter/output
+  - name: door_polygon_array_wrapper
+    type: jsk_pcl/PolygonArrayWrapper
+    remappings:
+      - from: ~input_polygon
+        to: door_plane_detector/output/polygon
+      - from: ~input_coefficients
+        to: door_plane_detector/output/coefficients
+  - name: target_cloud_to_indices
+    type: jsk_pcl/PointCloudToClusterPointIndices
+    remappings:
+      - from: ~input
+        to: target_filtered_cloud/output
+  - name: boundingbox_estimator
+    type: jsk_pcl/ClusterPointIndicesDecomposer
+    remappings:
+      - from: ~input
+        to: target_filtered_cloud/output
+      - from: ~target
+        to: target_cloud_to_indices/output
+      - from: ~align_planes
+        to: door_polygon_array_wrapper/output_polygons
+      - from: ~align_planes_coefficients
+        to: door_polygon_array_wrapper/output_coefficients
+  - name: snapshot
+    type: jsk_topic_tools/Snapshot
+    remappings:
+      - from: ~input
+        to: offset_bbox_from_plane/output/box_array
+      </rosparam>
+    </node>
+    <group ns="mask_image_generator">
       <rosparam>
         offset_x: 0
         offset_y: 0
         width: 1024
         height: 512
       </rosparam>
-    </node>
-    <node pkg="nodelet" type="nodelet" name="camera_mask_image_filter"
-          args="load jsk_pcl/MaskImageFilter manager">
-      <remap from="~input" to="$(arg INPUT_POINT_CLOUD)" />
-      <remap from="~input/mask" to="mask_image_generator/output" />
-      <remap from="~input/camera_info" to="$(arg INPUT_CAMERA_INFO)" />
+    </group>
+    <group ns="camera_mask_image_filter">
       <rosparam>
-        always_subscribe: true
+        always_subscribe: false
       </rosparam>
-    </node>
-    <node pkg="nodelet" type="nodelet" name="camera_filtered_cloud"
-          args="standalone pcl/ExtractIndices">
-      <remap from="~input" to="$(arg INPUT_POINT_CLOUD)"/>
-      <remap from="~indices" to="camera_mask_image_filter/output"/>
-    </node>
-
-    <node pkg="jsk_perception" type="rect_to_mask_image"
-          name="rect_to_mask_image" output="screen">
-      <remap from="~input" to="input_support_plane_rect" />
-      <remap from="~input/camera_info" to="$(arg INPUT_CAMERA_INFO)" />
-    </node>
-    <node pkg="jsk_pcl_ros" type="mask_image_filter" name="mask_image_filter">
-      <remap from="~input" to="camera_filtered_cloud/output"/>
-      <remap from="~input/mask" to="rect_to_mask_image/output"/>
-      <remap from="~input/camera_info" to="$(arg INPUT_CAMERA_INFO)" />
-    </node>
-    <node pkg="nodelet" type="nodelet" name="filtered_cloud"
-          args="standalone pcl/ExtractIndices">
-      <remap from="~input" to="camera_filtered_cloud/output"/>
-      <remap from="~indices" to="mask_image_filter/output"/>
-    </node>
-    <node pkg="jsk_pcl_ros" type="hinted_plane_detector" name="door_plane_detector"
-          output="screen">
-      <remap from="~input" to="camera_filtered_cloud/output" />
-      <remap from="~input/hint/cloud" to="filtered_cloud/output" />
+    </group>
+    <group ns="door_plane_detector">
       <rosparam>
         outlier_threashold: 0.01
         enable_normal_filtering: false
         enable_density_filtering: false
         enable_euclidean_filtering: false
       </rosparam>
-    </node>
-
-    <node pkg="jsk_perception" type="rect_to_mask_image"
-          name="target_rect_to_mask_image" output="screen">
-      <remap from="~input" to="input_target_rect" />
-      <remap from="~input/camera_info" to="$(arg INPUT_CAMERA_INFO)" />
-    </node>
-    <node pkg="jsk_pcl_ros" type="mask_image_filter" name="target_mask_image_filter">
-      <remap from="~input" to="camera_filtered_cloud/output"/>
-      <remap from="~input/mask" to="target_rect_to_mask_image/output"/>
-      <remap from="~input/camera_info" to="$(arg INPUT_CAMERA_INFO)" />
-    </node>
-    <node pkg="nodelet" type="nodelet" name="target_filtered_cloud"
-          args="standalone pcl/ExtractIndices">
-      <remap from="~input" to="camera_filtered_cloud/output"/>
-      <remap from="~indices" to="target_mask_image_filter/output"/>
-    </node>
-    
-    <node pkg="jsk_pcl_ros" type="polygon_array_wrapper" name="door_polygon_array_wrapper">
-      <remap from="~input_polygon" to="door_plane_detector/output/polygon" />
-      <remap from="~input_coefficients" to="door_plane_detector/output/coefficients" />
-    </node>
-
-    <node pkg="jsk_pcl_ros" type="pointcloud_to_cluster_point_indices" name="target_cloud_to_indices">
-      <remap from="~input" to="target_filtered_cloud/output" />
-    </node>
-    
-    <node pkg="jsk_pcl_ros" type="cluster_point_indices_decomposer" name="boundingbox_estimator">
-      <remap from="~input" to="target_filtered_cloud/output" />
-      <remap from="~target" to="target_cloud_to_indices/output" />
-      <remap from="~align_planes" to="door_polygon_array_wrapper/output_polygons" />
-      <remap from="~align_planes_coefficients"
-             to="door_polygon_array_wrapper/output_coefficients" />
+    </group>
+    <group ns="boundingbox_estimator">
       <rosparam>
         align_boxes: true
         use_pca: true
         publish_clouds: false
         publish_tf: false
       </rosparam>
-    </node>
+    </group>
+    <group ns="snapshot">
+      <rosparam>
+        latch: true
+      </rosparam>
+    </group>
     <node pkg="drc_task_common" type="offset_bbox_from_plane.py" name="offset_bbox_from_plane">
       <remap from="~input/box_array" to="boundingbox_estimator/boxes" />
       <remap from="~input/coefficients" to="door_polygon_array_wrapper/output_coefficients" />
       <rosparam>
         distance: 0.03
-      </rosparam>
-    </node>
-    <node pkg="jsk_topic_tools" type="snapshot" name="snapshot">
-      <remap from="~input" to="offset_bbox_from_plane/output/box_array"/>
-      <rosparam>
-        latch: true
       </rosparam>
     </node>
     <group if="$(arg DEBUG_VIEW)">

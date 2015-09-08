@@ -8,75 +8,109 @@
       <remap from="image" to="$(arg INPUT_IMAGE)" />
       <remap from="$(arg INPUT_IMAGE)/screenrectangle" to="input_rect" />
     </node>
-    <node pkg="nodelet" type="nodelet" name="valve_manager"
-          args="manager" />
-    <node pkg="nodelet" type="nodelet"
-          name="rect_to_mask_image"
-          args="load jsk_perception/RectToMaskImage valve_manager">
-      <remap from="~input" to="input_rect" />
-      <remap from="~input/camera_info" to="$(arg INPUT_CAMERA_INFO)" />
-    </node>
-    <node pkg="nodelet" type="nodelet"
-          args="load jsk_pcl/MaskImageFilter valve_manager"
-          name="mask_image_filter">
-      <remap from="~input" to="$(arg INPUT_POINT_CLOUD)"/>
-      <remap from="~input/mask" to="rect_to_mask_image/output"/>
-      <remap from="~input/camera_info" to="$(arg INPUT_CAMERA_INFO)" />
-    </node>
-    <node pkg="nodelet" type="nodelet" name="filtered_cloud"
-          args="load pcl/ExtractIndices valve_manager">
-      <remap from="~input" to="$(arg INPUT_POINT_CLOUD)"/>
-      <remap from="~indices" to="mask_image_filter/output"/>
+    <node pkg="jsk_topic_tools"
+          type="standalone_complexed_nodelet"
+          name="valve_manager" 
+          output="screen">
+          <rosparam subst_value ="true">
+          nodelets:
+            - name: rect_to_mask_image
+              type: jsk_perception/RectToMaskImage
+              remappings:
+                - from: ~input
+                  to: input_rect
+                - from: ~input/camera_info
+                  to: $(arg INPUT_CAMERA_INFO)
+            - name: mask_image_filter
+              type: jsk_pcl/MaskImageFilter
+              remappings:
+                - from: ~input
+                  to: $(arg INPUT_POINT_CLOUD)
+                - from: ~input/mask
+                  to: rect_to_mask_image/output
+                - from: ~input/camera_info
+                  to: $(arg INPUT_CAMERA_INFO)
+            - name: filtered_cloud
+              type: pcl/ExtractIndices
+              remappings:
+                - from: ~input
+                  to: $(arg INPUT_POINT_CLOUD)
+                - from: ~indices
+                  to: mask_image_filter/output
+            - name: normal_estimation
+              type: jsk_pcl/NormalEstimationOMP
+              remappings:
+                - from: ~input
+                  to: filtered_cloud/output
+                - from: ~indices
+                  to: mask_image_filter/output
+            - name: normal_direction_filter
+              type: jsk_pcl/NormalDirectionFilter
+              remappings:
+                - from: ~input
+                  to: normal_estimation/output_with_xyz
+                - from: ~input_imu
+                  to: /multisense/imu/imu_data
+            - name: filtered_points
+              type: pcl/ExtractIndices
+              remappings:
+                - from: ~input
+                  to: normal_estimation/output_with_xyz
+                - from: ~indices
+                  to: normal_direction_filter/output
+            - name: euclidean_clustering
+              type: jsk_pcl/EuclideanClustering
+              remappings:
+                - from: ~input
+                  to: filtered_points/output
+            - name: cluster_decomposer
+              type: jsk_pcl/ClusterPointIndicesDecomposer
+              remappings:
+                - from: ~input
+                  to: filtered_points/output
+                - from: ~target
+                  to: euclidean_clustering/output
+            - name: nearest_cluster_cloud
+              type: pcl/ExtractIndices
+              remappings:
+                - from: ~input
+                  to: filtered_points/output
+                - from: ~indices
+                  to: nearest_cluster/output/indices
+            - name: valve_finder
+              type: jsk_pcl/TorusFinder
+              remappings:
+                - from: ~input
+                  to: nearest_cluster_cloud/output
+            - name: snapshot
+              type: jsk_topic_tools/Snapshot
+              remappings:
+                - from: ~input
+                  to: valve_finder/output
+          </rosparam>
     </node>
 
-    <node pkg="nodelet" type="nodelet"
-          name="normal_estimation"
-          args="load jsk_pcl/NormalEstimationOMP valve_manager">
-      <remap from="~input" to="filtered_cloud/output" />
+    <group ns="normal_estimation" >
       <rosparam>
         k_search: 0
         radius_search: 0.05
       </rosparam>
-    </node>
+    </group>
 
-    <node pkg="nodelet" type="nodelet"
-          name="normal_direction_filter"
-          args="load jsk_pcl/NormalDirectionFilter valve_manager">
-      <remap from="~input" to="normal_estimation/output_with_xyz" />
-      <remap from="~input_imu" to="/multisense/imu/imu_data" />
+    <group ns="normal_direction_filter">
       <rosparam>
         use_imu: true
         queue_size: 1000
         eps_angle: 0.5
         angle_offset: 1.57
       </rosparam>
-    </node>
+    </group>
 
-    <node pkg="nodelet"
-          type="nodelet"
-          args="load pcl/ExtractIndices valve_manager"
-          name="filtered_points">
-      <remap from="~input" to="normal_estimation/output_with_xyz" />
-      <remap from="~indices" to="normal_direction_filter/output" />
-    </node>
-
-    <node pkg="nodelet"
-          type="nodelet"
-          args="load jsk_pcl/EuclideanClustering valve_manager"
-          name="euclidean_clustering">
-      <remap from="~input" to="filtered_points/output" />
+    <group ns="euclidean_clustering">
       <rosparam>
         tolerance: 0.05
       </rosparam>
-    </node>
-
-    <node pkg="nodelet"
-          type="nodelet"
-          name="cluster_decomposer"
-          args="load jsk_pcl/ClusterPointIndicesDecomposer valve_manager">
-      <remap from="~input" to="filtered_points/output" />
-      <remap from="~target" to="euclidean_clustering/output" />
-    </node>
+    </group>
 
     <node pkg="drc_task_common"
           type="nearest_box_indices.py"
@@ -84,29 +118,24 @@
       <remap from="~input/box_array" to="cluster_decomposer/boxes" />
       <remap from="~input/indices" to="euclidean_clustering/output" />
     </node>
-    <node pkg="nodelet" type="nodelet" name="nearest_cluster_cloud"
-          args="load pcl/ExtractIndices valve_manager">
-      <remap from="~input" to="filtered_points/output"/>
-      <remap from="~indices" to="nearest_cluster/output/indices"/>
-    </node>
+    <group ns="nearest_cluster_cloud">
+      <rosparam>
+        max_queue_size: 100
+      </rosparam>
+    </group>
     
-    <node pkg="nodelet" type="nodelet" name="valve_finder"
-          args="load jsk_pcl/TorusFinder valve_manager">
-      <remap from="~input" to="nearest_cluster_cloud/output" />
+    <group ns="valve_finder">
       <rosparam>
         algorithm: RANSAC
         max_iterations: 1000
         min_radius: 0.03
         max_radius: 0.25
       </rosparam>
-    </node>
-    <node pkg="nodelet" type="nodelet"
-          args="load jsk_topic_tools/Snapshot valve_manager"
-          name="snapshot">
-      <remap from="~input" to="valve_finder/output"/>
+    </group>
+    <group ns="snapshot">
       <rosparam>
         latch: true
       </rosparam>
-    </node>
+    </group>
   </group>
 </launch>

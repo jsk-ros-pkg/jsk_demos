@@ -3,6 +3,7 @@
 (defparameter *detection-topic* "/kinect_head/rgb/ObjectDetection")
 (require :detection-interface "package://jsk_perception/euslisp/detection_interface.l")
 (require :pr2-pose "package://jsk_demo_common/euslisp/pr2-pose.l")
+(require :attention-observation "attention-observation.l")
 
 
 ;; check if jsk_smart_gui exists
@@ -26,7 +27,7 @@
 ;; action-utility
 ;;
 
-(defun pick (pos &key (arm :larm)
+(make-attention-action pick (pos &key (arm :larm)
 			 (debug-view nil))
   (let ((tmp-pos (send pos :copy-worldcoords)))
     (format t  "Start Pick: ~a~%" pos)
@@ -39,7 +40,7 @@
 		  :move-target (send *pr2* arm :end-coords)
 		  :link-list (send *pr2* :link-list
 						   (send *pr2* arm :end-coords :parent)
-						   (send *pr2* :link "torso_lift_link"))
+						   (send *pr2* :torso_lift_link_lk))
 		  :debug-view nil)
     (send *ri* :angle-vector (send *pr2* :angle-vector) 2000)
     (send *ri* :wait-interpolation)
@@ -56,7 +57,7 @@
     (print "End Pick!"))
   )
 
-(defun pick2 (pos &key (arm :rarm)
+(make-attention-action pick2 (pos &key (arm :rarm)
 			  (rotation-axis :z)
 			  (debug-view nil))
   (let ((tmp-pos (send pos :copy-worldcoords)))
@@ -86,7 +87,7 @@
     (print "End Pick!"))
   )
 
-(defun place2 (pos &key (arm :rarm)
+(make-attention-action place2 (pos &key (arm :rarm)
 			  (rotation-axis :z)
 			  (debug-view nil))
   (let ((tmp-pos (send pos :copy-worldcoords)))
@@ -107,7 +108,7 @@
 	(print "End Place!"))
   )
 
-(defun place (pos &key (arm :larm)
+(make-attention-action place (pos &key (arm :larm)
 			  (height -50)
 			  (debug-view nil))
   (let ((tmp-pos (send pos :copy-worldcoords)))
@@ -120,7 +121,7 @@
 	  :move-target (send *pr2* arm :end-coords)
 	  :link-list (send *pr2* :link-list
 			   (send *pr2* arm :end-coords :parent)
-			   (send *pr2* :link "torso_lift_link"))
+			   (send *pr2* :torso_lift_link_lk))
 	  :debug-view debug)
     (send *ri* :angle-vector (send *pr2* :angle-vector) 2000)
     (send *ri* :wait-interpolation)
@@ -145,7 +146,7 @@
 (defmacro start-detect-tabletop-object ()
   `(progn
 	 (if (not (boundp '*tfb*)) (setq *tfb* (instance ros::transform-broadcaster :init)))
-	 (defun tabletop-objectdetection-cb (msg)
+	 (make-attention-action tabletop-objectdetection-cb (msg)
 	   (let ((frame-id (send msg :header :frame_id)) atype ret)
 		 (print msg)
 		 (unless (eq (char frame-id 0) #\/) (setq frame-id (concatenate string "/" frame-id)))
@@ -160,10 +161,10 @@
   )
 
 
-(defun stop-detect-tabletop-object ()
+(make-attention-action stop-detect-tabletop-object ()
   (ros::unsubscribe "ObjectDetection"))
 
-(defun detect-tabletop-object (&optional (root-frame-id "/base_footprint"))
+(make-attention-action detect-tabletop-object (&optional (root-frame-id "/base_footprint"))
   (ros::spin-once)
   (if (not (boundp '*tfl*)) (setq *tfl* (instance ros::transform-listener :init)))
   (let (c obj-frame-id ret)
@@ -183,7 +184,7 @@
 
 (defparameter *detection-loop-threshold* 0)
 (warn ";; define detect-with-base-laser")
-(defun detect-with-base-laser (obj obj-type &key (arg nil) (debug nil) (speak nil) (publish-marker nil))
+(make-attention-action detect-with-base-laser (obj obj-type &key (arg nil) (debug nil) (speak nil) (publish-marker nil))
   (ros::ros-info "detect-with-base-laser~%")
   (unless (not (send *ri* :simulation-modep))
 	(if obj (ros::ros-warn "~A detection failed" obj))
@@ -226,7 +227,7 @@
   )
 
 (warn ";; define hold-chair")
-(defun hold-chair (chair)
+(make-attention-action hold-chair (chair)
   (hold-chair-prepair chair)
   (send *pr2* :inverse-kinematics (send (send *pr2* :larm :end-coords :copy-worldcoords) :translate #f(-300 0 0) *pr2*) :move-arm :larm :use-torso nil :rotation-axis :y)
   (send *pr2* :inverse-kinematics (send (send *pr2* :rarm :end-coords :copy-worldcoords) :translate #f(-300 0 0) *pr2*) :move-arm :rarm :use-torso nil :rotation-axis :y)
@@ -237,7 +238,7 @@
   (send *ri* :angle-vector (send *pr2* :angle-vector))
   (send *ri* :wait-interpolation))
 
-(defun hold-chair-prepair (chair)
+(make-attention-action hold-chair-prepair (chair)
   (send *pr2* :larm :angle-vector #f(25 0 0 -130 0 0 0))
   (send *pr2* :rarm :angle-vector #f(-25 0 0 -130 0 0 0))
   (send *ri* :angle-vector (send *pr2* :angle-vector))
@@ -434,7 +435,7 @@
 ;; actions
 ;;
 (warn ";; define grasp-can-single")
-(defun grasp-can-single (obj &key (rotation 0) (use-arm :rarm) (grasp-depth 35)(func-time 7))
+(make-attention-action grasp-can-single (obj &key (rotation 0) (use-arm :rarm) (grasp-depth 35)(func-time 7))
   (let (via1 via2 tar orig-av (mvt (* (/ (- func-time 4) 4.0) 1000)));; mvt is about 3000. we assume it takes 4 sec other than sending :angle-vector, and there are 4 :angle-vector in this funciton
     (send *ri* :stop-grasp use-arm)
     (send *tfb* :send-transform
@@ -551,7 +552,7 @@
     )
   )
 
-(defun pr2-look-around (&key (time-tick 600) (show-wait 1200)
+(make-attention-action pr2-look-around (&key (time-tick 600) (show-wait 1200)
                              (yaw-angle-list (list 16 -16))
                              (pitch-angle-list (list 14 48))
                              (waist-z 140) (move-to-initial t))
@@ -580,7 +581,7 @@
     (send *ri* :wait-interpolation)
     ))
 
-(defun open-fridge-door-initial-pose (&key (wait t) (door-type :circle) (head-pitch 14) (torso-lift 130) (ratio 1))
+(make-attention-action open-fridge-door-initial-pose (&key (wait t) (door-type :circle) (head-pitch 14) (torso-lift 130) (ratio 1))
 
   (case door-type
     (:circle
@@ -602,7 +603,7 @@
   )
 
 (defparameter *fridge-handle-cds* nil)
-(defun move-to-and-open-fridge-door (&key (door-type :circle) (ratio 1) (look-around nil) (head-pitch 14) (torso-lift 130) (move t) (open-fridge-func #'open-fridge-traj))
+(make-attention-action move-to-and-open-fridge-door (&key (door-type :circle) (ratio 1) (look-around nil) (head-pitch 14) (torso-lift 130) (move t) (open-fridge-func #'open-fridge-traj))
   (let (ret
         (idealcds
          (case door-type
@@ -735,20 +736,20 @@
     ret
     ))
 
-(defun move-forward-larm (&key (ratio 1))
+(make-attention-action move-forward-larm (&key (ratio 1))
   (send *pr2* :angle-vector (send *ri* :state :potentio-vector))
   (send *pr2* :larm :angle-vector (float-vector 20.0 45.0 53.0 -100.0 -43.0 -60.0 0.0))
   (send *ri* :angle-vector (send *pr2* :angle-vector) (* ratio 700))
   )
 
-(defun detach-fridge-handle ()
+(make-attention-action detach-fridge-handle ()
   (send *ri* :stop-grasp :rarm)
   (send *ri* :wait-interpolation)
   (send *ri* :ros-wait 0.0 :spin-self t :spin t) ;; attention-check ...
   (send *pr2* :angle-vector (send *ri* :state :potentio-vector))
   )
 
-(defun swipe-fridge-door (&key (door-type :circle) (ratio 1) (use-arm :rarm))
+(make-attention-action swipe-fridge-door (&key (door-type :circle) (ratio 1) (use-arm :rarm))
   (case door-type
     (:circle
      ;; free door handle
@@ -811,7 +812,7 @@
 (warn ";; define open-fridge-door")
 (defvar *fridge-distance-threshold* 25.0)
 (defvar *fridge-rotation-threshold* 0.09)
-(defun open-fridge-door (&key (open-fridge-func #'open-fridge-traj)
+(make-attention-action open-fridge-door (&key (open-fridge-func #'open-fridge-traj)
                               (torso-lift 130) (head-pitch 14)
                               (use-arm :rarm) (move t)
                               (door-type :circle) (look-around nil) ;; :circle, :slide1, :slide2
@@ -827,7 +828,7 @@
     (dotimes (i 10 nil)
       ;; detect fridge and move to the fridge door
       (setq ret (move-to-and-open-fridge-door :door-type door-type :ratio ratio :look-around look-around :head-pitch head-pitch :torso-lift torso-lift :move move :open-fridge-func open-fridge-func))
-      (if ret (return))
+      (if (eq ret t) (return))
       )
 
     (when (not ret)
@@ -855,7 +856,7 @@
     t
     ))
 
-(defun move-to-can-spot (&key (use-arm :rarm) (rotation 20) (move t) (pre-move t))
+(make-attention-action move-to-can-spot (&key (use-arm :rarm) (rotation 20) (move t) (pre-move t))
   (when (and move pre-move)
     (send *ri* :ros-wait 0.0 :spin-self t :spin t) ;; attention-check ...
     (ros::ros-info "GO POS UNSAFE for grasping can")
@@ -875,14 +876,14 @@
   )
 
 
-(defun grasp-can-init ()
+(make-attention-action grasp-can-init ()
   (send *pr2* :head :neck-p :joint-angle 20)
   (send *pr2* :head :neck-y :joint-angle 23)
   (send *ri* :angle-vector (send *pr2* :angle-vector) 2000)
   )
 
 (defparameter *can-cds* nil)
-(defun grasp-can-motion (&key (use-arm :rarm) (rotation 20))
+(make-attention-action grasp-can-motion (&key (use-arm :rarm) (rotation 20))
   ;; detect cans which was indicated by ( type )
   ;;(when (not (setq cds (check-detection :type *type* :single t)))
   ;;(setq cds (check-detection :type *type* :tf-force t :timeout 30 :single t)))
@@ -936,7 +937,7 @@
 
 (warn ";; define grasp-can")
 (defvar *use-arm-navigation* nil)
-(defun grasp-can (&key (move t) (pre-move t) (post-move t) (move-only nil)
+(make-attention-action grasp-can (&key (move t) (pre-move t) (post-move t) (move-only nil)
                        (rotation 20) (use-arm :rarm))
   (if (eq use-arm :larm) (setq rotation (- rotation)))
   ;; move-to can spot for grasping
@@ -980,7 +981,7 @@
   nil)
 
 (warn ";; define close-fridge")
-(defun close-fridge (&key (use-arm :rarm))
+(make-attention-action close-fridge (&key (use-arm :rarm))
   ;; close the door of fridge
   (send *ri* :ros-wait 0.0 :spin-self t) ;; attention-check ...
 
@@ -1021,7 +1022,7 @@
   t
   )
 
-(defun put-can-on-turtlebot ()
+(make-attention-action put-can-on-turtlebot ()
   (send *ri* :update-robot-state)
   (send *pr2* :angle-vector (send *ri* :state :potentio-vector))
   (pr2-tuckarm-pose :rarm)
@@ -1039,7 +1040,7 @@
   (pr2-tuckarm-pose :rarm)
   )
 
-(defun put-can-on-turtlebot2 ()
+(make-attention-action put-can-on-turtlebot2 ()
   (send *ri* :update-robot-state)
   (send *pr2* :angle-vector (send *ri* :state :potentio-vector))
   (pr2-tuckarm-pose :rarm)
@@ -1058,7 +1059,7 @@
   )
 
 
-(defun distance-of-front-cb (msg)
+(make-attention-action distance-of-front-cb (msg)
   (let* ((pc (send msg :ranges))
 		 (about-front (remove-if #'zerop 
 								 (subseq pc (- (/ (length pc) 2) 10) (+ (/ (length pc) 2) 10)))))
@@ -1066,7 +1067,7 @@
 		  *averages*)
 	))
 
-(defun distance-of-front ()
+(make-attention-action distance-of-front ()
   (ros::roseus "place_tray_base_scan_calc")
   (ros::roseus-add-msgs "sensor_msgs")
   (ros::roseus-add-msgs "posedetection_msgs")
@@ -1089,7 +1090,7 @@
   )
 
 (warn ";; define place-tray")
-(defun place-tray (&key (table-height 740.0)
+(make-attention-action place-tray (&key (table-height 740.0)
                         (up-height-tolerance 100.0)
                         (down-height-tolerance -20.0)
                         (use-base-scan nil)
@@ -1216,7 +1217,7 @@
 
 (warn ";; define pick-tray")
 (load "models/room610-tray-object.l");; for room610-tray
-(defun pick-tray (&key (target (room610-tray))
+(make-attention-action pick-tray (&key (target (room610-tray))
                        (manip-pose t)
                        (desired-tray-pose
                         (make-coords :pos (float-vector 600 0 800)
@@ -1370,7 +1371,7 @@
     ))
 
 (ros::roseus-add-msgs "pr2_gripper_sensor_msgs")
-(defun wait-for-hand-impact (arm &key (timeout 30))
+(make-attention-action wait-for-hand-impact (arm &key (timeout 30))
   (let* ((action-name (format nil "/~c_gripper_sensor_controller/event_detector" (if (eq arm :larm) #\l #\r)))
          (client (instance ros::simple-action-client :init action-name pr2_gripper_sensor_msgs::PR2GripperEventDetectorAction))
          (goal (instance pr2_gripper_sensor_msgs::PR2GripperEventDetectorActionGoal :init)))
@@ -1388,7 +1389,7 @@
     (send client :wait-for-result :timeout timeout))
   )
 
-(defun hand-over (arm &key (wait-shock nil))
+(make-attention-action hand-over (arm &key (wait-shock nil))
   (ros::spin-once)
   (let* ((av (send *ri* :state :potentio-vector))
          (tuckarm (check-tuckarm-pose))
@@ -1440,7 +1441,7 @@
     (pr2-tuckarm-pose tuckarm)
     ))
 
-(defun tray-detection (obj)
+(make-attention-action tray-detection (obj)
   (let (ret)
     ;; start program
     (ros::roseus "objectdetection_tray_publisher")

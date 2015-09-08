@@ -21,6 +21,7 @@
 (defclass fc-basic-info-publisher
   :super propertied-object
   :slots (latest-compressed-joint-states
+          latest-current
           latest-joint-state
           latest-imu
           robot-state-value
@@ -45,6 +46,9 @@
   (:init ()
     (setq robot-state-value 0)
     self)
+  (:current-callback
+   (msg)
+   (setq latest-current msg))
   (:vin-callback
    (msg)
    (setq latest-vin msg))
@@ -148,9 +152,11 @@
    (setq latest-imu msg))
   (:report ()
     (let ((msg (instance drc_com_common::FC2OCSBasicInfoSmall :init)))
-      (when latest-compressed-joint-states
-        ;; (send msg :angles (send latest-compressed-joint-states :angles)))
-        (send msg :effort (send latest-compressed-joint-states :effort)))
+      (cond (latest-current
+             (dotimes (i (length (send latest-current :data)))
+               (setf (elt (send msg :effort) i) (abs (round (elt (send latest-current :data) i))))))
+            (latest-compressed-joint-states
+             (send msg :effort (send latest-compressed-joint-states :effort))))
       ;; temperature from motor states
       (when latest-motor-states
         (let* (temperature-method)
@@ -262,6 +268,11 @@
 (ros::subscribe "/inside_pc_voltage_publisher"
                 trans_ros_bridge::ExtraMotorState
                 #'send *app* :vpc-callback)
+(if (or (string= (unix::getenv "ROBOT") "JAXON")
+        (string= (unix::getenv "ROBOT") "JAXON_RED"))
+    (ros::subscribe "/motor_states_low/motor_current"
+                    trans_ros_bridge::ExtraMotorState
+                    #'send *app* :current-callback))
 ;;(ros::subscribe "/moro_states_low/"
 
 (ros::rate 10)

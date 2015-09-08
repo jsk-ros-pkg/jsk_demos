@@ -5,6 +5,11 @@ python:
   - "2.7"
 compiler:
   - gcc
+notifications:
+  email:
+    on_success: always
+    on_failure: always
+  slack: jsk-robotics:Av7tc8wj3IWkLYvlTzHE7x2g
 env:
   global:
     - ROSWS=wstool
@@ -18,13 +23,13 @@ env:
     - ROS_DISTRO=hydro  USE_DEB=false  NOT_TEST_INSTALL=true USE_JENKINS="true" EXTRA_DEB="ros-hydro-convex-decomposition ros-hydro-ivcon"
     - ROS_DISTRO=indigo USE_DEB=true   NOT_TEST_INSTALL=true EXTRA_DEB="ros-indigo-convex-decomposition ros-indigo-ivcon"
     - ROS_DISTRO=indigo USE_DEB=false  NOT_TEST_INSTALL=true EXTRA_DEB="ros-indigo-convex-decomposition ros-indigo-ivcon"
+    - ROS_DISTRO=jade USE_DEB=true   NOT_TEST_INSTALL=true EXTRA_DEB="ros-jade-convex-decomposition ros-jade-ivcon"
+    - ROS_DISTRO=jade USE_DEB=false  NOT_TEST_INSTALL=true EXTRA_DEB="ros-jade-convex-decomposition ros-jade-ivcon"
 matrix:
   allow_failures:
   - env: ROS_DISTRO=hydro  USE_DEB=true   NOT_TEST_INSTALL=true USE_JENKINS="true" EXTRA_DEB="ros-hydro-convex-decomposition ros-hydro-ivcon"
   - env: ROS_DISTRO=indigo USE_DEB=true   NOT_TEST_INSTALL=true EXTRA_DEB="ros-indigo-convex-decomposition ros-indigo-ivcon"
   - env: ROS_DISTRO=indigo USE_DEB=false  NOT_TEST_INSTALL=true EXTRA_DEB="ros-indigo-convex-decomposition ros-indigo-ivcon"
+  - env: ROS_DISTRO=jade USE_DEB=true   NOT_TEST_INSTALL=true EXTRA_DEB="ros-jade-convex-decomposition ros-jade-ivcon"
+  - env: ROS_DISTRO=jade USE_DEB=false  NOT_TEST_INSTALL=true EXTRA_DEB="ros-jade-convex-decomposition ros-jade-ivcon"
 script: source .travis/travis.sh
-notifications:
-  email:
-    on_success: always
-    on_failure: always

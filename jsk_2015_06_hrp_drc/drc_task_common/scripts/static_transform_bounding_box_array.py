@@ -30,7 +30,7 @@ def callback(msg):
         box.pose.orientation.y = rotation[1]
         box.pose.orientation.z = rotation[2]
         box.pose.orientation.w = rotation[3]
-        box.dimensions.z, box.dimensions.y = box.dimensions.y, box.dimensions.z
+        # box.dimensions.z, box.dimensions.y = box.dimensions.y, box.dimensions.z
         new_msg.boxes.append(box)
     p.publish(new_msg)
 if __name__ == "__main__":

@@ -3,7 +3,7 @@
 (unless (boundp '*scene*) (setq *scene* (make-eng2-scene)))
 
 (warn "move-to-spot~%")
-(defun move-to-spot (spot &key (scene  *scene*)
+(make-attention-action move-to-spot (spot &key (scene  *scene*)
                           (angle-vector) (time 2000) (trajectory)
                           ((:clear-costmap clear-cmap) t)
                           ((:tilt-enable with-tilt-laser-obstacle-cloud) t))
@@ -144,7 +144,7 @@
   )
 
 
-(defun goto-front-of-fridge (&key (torso-lift 130) (head-pitch 0) (wait t))
+(make-attention-action goto-front-of-fridge (&key (torso-lift 130) (head-pitch 0) (wait t))
   (base-go-to-fridge :wait wait)
   (base-go-to-fridge-init-pose :torso-lift torso-lift :head-pitch head-pitch :wait wait)
   )

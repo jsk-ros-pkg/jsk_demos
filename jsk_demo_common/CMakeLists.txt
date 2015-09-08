@@ -1,35 +1,59 @@
-if(NOT USE_ROSBUILD)
-  include(catkin.cmake)
-  return()
-endif()
+cmake_minimum_required(VERSION 2.8.3)
+project(jsk_demo_common)
 
-cmake_minimum_required(VERSION 2.4.6)
-include($ENV{ROS_ROOT}/core/rosbuild/rosbuild.cmake)
+## Find catkin macros and libraries
+## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
+## is used, also find other catkin packages
+find_package(catkin REQUIRED COMPONENTS
+  control_msgs
+  jsk_hark_msgs
+  jsk_maps
+  jsk_perception
+  pddl_planner
+  pr2eus
+  roseus
+  roseus_smach
+  message_generation
+)
 
-# Set the build type.  Options are:
-#  Coverage       : w/ debug symbols, w/o optimization, w/ code-coverage
-#  Debug          : w/ debug symbols, w/o optimization
-#  Release        : w/o debug symbols, w/ optimization
-#  RelWithDebInfo : w/ debug symbols, w/ optimization
-#  MinSizeRel     : w/o debug symbols, w/ optimization, stripped binaries
-#set(ROS_BUILD_TYPE RelWithDebInfo)
+add_action_files(
+  DIRECTORY action
+  FILES DemoCommon.action
+)
 
-rosbuild_init()
 
-#set the default path for built executables to the "bin" directory
-set(EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/bin)
-#set the default path for built libraries to the "lib" directory
-set(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/lib)
 
-#uncomment if you have defined messages
-#rosbuild_genmsg()
-#uncomment if you have defined services
-#rosbuild_gensrv()
+## Generate added messages and services with any dependencies listed here       
+add_message_files(
+  FILES
+  EventHeader.msg
+  FunctionEvent.msg
+)
 
-#common commands for building c++ executables and libraries
-#rosbuild_add_library(${PROJECT_NAME} src/example.cpp)
-#target_link_libraries(${PROJECT_NAME} another_library)
-#rosbuild_add_boost_directories()
-#rosbuild_link_boost(${PROJECT_NAME} thread)
-#rosbuild_add_executable(example examples/example.cpp)
-#target_link_libraries(example ${PROJECT_NAME})
+generate_messages(
+  DEPENDENCIES geometry_msgs actionlib_msgs std_msgs
+)
+
+
+catkin_package(
+#  INCLUDE_DIRS include
+#  LIBRARIES jsk_demo_common
+  CATKIN_DEPENDS control_msgs jsk_hark_msgs jsk_maps jsk_perception pddl_planner pr2eus roseus roseus_smach message_runtime
+#  DEPENDS system_lib
+)
+
+###########
+## Build ##
+###########
+
+include_directories(
+  ${catkin_INCLUDE_DIRS}
+)
+
+#############
+## Install ##
+#############
+
+install(DIRECTORY euslisp
+  DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+  USE_SOURCE_PERMISSIONS)

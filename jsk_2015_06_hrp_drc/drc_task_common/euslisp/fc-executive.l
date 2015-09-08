@@ -38,16 +38,13 @@
 
 (defclass fc-executive-app
   :super propertied-object
-  :slots (state go-pos-goal ocs2fc-message-handler smachine head-overwrite-mode footstep-planner-client footstep-controller-client))
+  :slots (state go-pos-goal ocs2fc-message-handler smachine head-overwrite-mode footstep-controller-client))
 
 (defmethod fc-executive-app
   (:init ()
     ;; prepare state machine
     (setq smachine (make-fc-state-machine))
     (send self :register-timelimits smachine)
-    (setq footstep-planner-client (instance ros::simple-action-client :init
-                                            "footstep_planner"
-                                            jsk_footstep_msgs::PlanFootstepsAction))
     (setq footstep-controller-client (instance ros::simple-action-client :init
                                                "footstep_controller"
                                                jsk_footstep_msgs::ExecFootstepsAction))
@@ -192,8 +189,6 @@
                 self :lookground-callback)
           (list drc_com_common::OCS2FCSmall::*EXECUTE_FOOTSTEPS*
                 self :execute-footstep-callback)
-          (list drc_com_common::OCS2FCSmall::*REQUEST_FOOTSTEP_PLANNING*
-                self :request-footstep-planning-callback)
           (list drc_com_common::OCS2FCSmall::*SIMPLE_FOOTSTEP_EXEC*
                 self :simple-footstep-exec-callback)
           )
@@ -321,7 +316,7 @@
       ))
   (:drill-button-region-command-callback (msg)
     (when (send smachine :state? :initial)
-      (call-request-duration "/drill_recognition_for_button/passthrough/request_duration" 10)
+      ;; (call-request-duration "/drill_recognition_for_button/passthrough/request_duration" 10)
       ;; convert OCS2FCSmall into geometry_msgs/Polygon
       ;; (ros::publish "/drill_recognition_for_button/input_rect"
       ;;   (integer-vector-to-rect-polygon-stamped msg))
@@ -508,6 +503,15 @@
                      )
                  (ros::ros-info "arm side empty")
                  )
+               (progn ;; for drill button with odom pose
+                 (set-drill-default-coords)
+                 (let ((coords (send (send *robot* *drill-main-arm* :end-coords :copy-worldcoords) :transformation (send *drill* :copy-worldcoords)))
+                       (frame_id (if (equal *drill-main-arm* :rarm) "rarm_end_coords" "larm_end_coords")))
+                   
+                   (ros::publish "/drill_recognition_for_button/in_hand_recognition_manager/input"
+                     (instance geometry_msgs::PoseStamped :init :pose (ros::coords->tf-pose coords) :header (instance std_msgs::Header :init :frame_id frame_id :stamp (ros::time-now)))
+                        )
+                   ))
                
                ;; send finish signal to ocs
                (let ((msg (instance drc_com_common::FC2OCSSmall :init)))
@@ -1168,6 +1172,7 @@ It sends :angle-vector to robot and return 'finished' message to ocs"
       )
     (send *robot* :angle-vector (get-watch-drill-pose))
     (model2real :time 5000)
+    (keyshot-request)
     (send self :send-rviz-button-finished-to-ocs))
   (:door-through-pose-command-callback (msg)
     (when (or (equal *robot-name* "JAXON") (equal *robot-name* "JAXON_RED") (equal *robot-name* "STARO"))
@@ -1422,41 +1427,6 @@ It sends :angle-vector to robot and return 'finished' message to ocs"
         (send ocs-msg :type drc_com_common::FC2OCSSmall::*LOOK_GROUND_FINISHED*)
         (send self :send-to-ocs ocs-msg))
       (send smachine :go-to :initial)))
-  (:request-footstep-planning-callback
-    (msg)
-    (ros::ros-info ":request-footstep-planning-callback")
-    (when (send smachine :state? :initial)
-      (send smachine :go-to :planning-terrain-footsteps)
-      (let ((coords-list (float-vector-to-coords-set (send msg :float_params))))
-        (let ((goal-coords (subseq coords-list 0 2))
-              (initial-coords (subseq coords-list 2 4)))
-          (let ((goal (instance jsk_footstep_msgs::PlanFootstepsActionGoal :init))
-                (client footstep-planner-client))
-            (let ((goal-footstep (footstep-array-from-two-coordinates
-                                  goal-coords (send msg :image_roi_info)))
-                  (initial-footstep (footstep-array-from-two-coordinates
-                                     initial-coords (subseq (send msg :image_roi_info) 2 4))))
-              (send goal :goal :goal_footstep goal-footstep)
-              (send goal :goal :initial_footstep initial-footstep))
-            (ros::ros-info "Waiting for planning server")
-            (send client :wait-for-server)
-            (send client :send-goal goal)
-            (send smachine :go-to :planning-terrain-footsteps)
-            (let ((successp (send client :wait-for-result)))
-              (let ((ocs-msg (instance drc_com_common::FC2OCSSmall :init)))
-                (if (not successp)
-                    (send ocs-msg :type drc_com_common::FC2OCSSmall::*FOOTSTEP_PLANNING_FAILED*)
-                  (let ((result (send client :get-result)))
-                    (multiple-value-bind
-                     (float-vector-footstep integer-vector-footstep)
-                     (footstep-array->vector (send result :result)
-                                             (length (send ocs-msg :params))
-                                             (length (send ocs-msg :int_params)))
-                     (send ocs-msg :params float-vector-footstep)
-                     (send ocs-msg :int_params integer-vector-footstep)
-                     (send ocs-msg :type drc_com_common::FC2OCSSmall::*FOOTSTEP_PLANNING_RESULT*))))
-                (send self :send-to-ocs ocs-msg))))))
-      (send smachine :go-to :initial)))
   (:simple-footstep-exec-callback
     (msg)
     (ros::ros-info ":simple-footstep-exec-callback")
@@ -1533,6 +1503,7 @@ It sends :angle-vector to robot and return 'finished' message to ocs"
 (ros::advertise "/debri_recognition/input_line" geometry_msgs::PolygonStamped)
 (ros::advertise "/drill_recognition/input_rect" geometry_msgs::PolygonStamped)
 (ros::advertise "/drill_recognition_for_button/input_rect" geometry_msgs::PolygonStamped)
+(ros::advertise "/drill_recognition_for_button/in_hand_recognition_manager/input" geometry_msgs::PoseStamped)
 (ros::advertise "/drill_recognition_for_put/input_rect" geometry_msgs::PolygonStamped)
 (ros::advertise "/drill_recognition_for_wall/input_poly" geometry_msgs::PolygonStamped)
 (ros::advertise "/fc_to_ocs_low_speed/input" drc_com_common::FC2OCSSmall)

@@ -1,5 +1,6 @@
 (defvar *use-voicetext* t)
 (defvar *use-english* nil)
+(defvar *logging* t)
 
 ;; open fridge and pick a can (and close the door)
 (require :pr2-interface "package://pr2eus/pr2-interface.l")
@@ -7,8 +8,13 @@
 ;;(load "package://pr2eus_armnavigation/pr2eus-arm-navigation.l")
 ;;(load "package://pr2eus_moveit/euslisp/pr2eus-moveit.l")
 
-(require :pr2-move "package://jsk_demo_common/euslisp/pr2-move.l")
-(require :pr2-action "package://jsk_demo_common/euslisp/pr2-action.l")
+(if *logging*
+    (progn
+      (require :pr2-attention-move "package://jsk_demo_common/euslisp/pr2-attention-move.l")
+      (require :pr2-attention-action "package://jsk_demo_common/euslisp/pr2-attention-action.l"))
+    (progn
+      (require :pr2-move "package://jsk_demo_common/euslisp/pr2-move.l")
+      (require :pr2-action "package://jsk_demo_common/euslisp/pr2-action.l")))
 (ros::roseus-add-msgs "pr2_gripper_sensor_msgs")
 (load "package://jsk_demo_common/euslisp/attention-observation.l")
 
@@ -40,7 +46,7 @@
 (defun init ()
   (init-for-perception)
   (init-for-robot)
-  (defparameter *detection-topic* "/openni/rgb/ObjectDetection")
+  (defparameter *detection-topic* "/kinect_head/rgb/ObjectDetection")
   ;;(defparameter *base-frame-id* "/base_footprint")
   (require :detection-interface "package://jsk_perception/euslisp/detection_interface.l");;
   ;;(send *pr2* :move-to (send *ri* :state :worldcoords) :world)

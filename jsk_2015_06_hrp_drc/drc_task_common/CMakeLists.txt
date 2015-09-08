@@ -49,27 +49,6 @@ include_directories(
 
 link_directories(${catkin_LIBRARY_DIRS})
 
-find_package(Qt4 COMPONENTS QtCore QtGui REQUIRED)
-include(${QT_USE_FILE})
-add_definitions(-DQT_NO_KEYWORDS -g)
-
-qt4_wrap_ui(UIC_FILES
-  config/drc_teleop_interface.ui
-  )
-include_directories(${CMAKE_CURRENT_BINARY_DIR})
-
-qt4_wrap_cpp(MOC_FILES
-  src/drc_task_common/drc_teleop_interface.h
-)
-set(SOURCE_FILES
-  src/drc_task_common/drc_teleop_interface.cpp
-  ${MOC_FILES}
-)
-
-add_library(${PROJECT_NAME} ${SOURCE_FILES} ${UIC_FILES})
-add_dependencies(${PROJECT_NAME} ${PROJECT_NAME}_gencpp)
-target_link_libraries(${PROJECT_NAME} ${QT_LIBRARIES} ${catkin_LIBRARIES})
-
 add_executable(manipulation_data_server src/drc_task_common/manipulation_data_server.cpp src/drc_task_common/manipulation_data_helpers.cpp)
 target_link_libraries(manipulation_data_server
   ${catkin_LIBRARIES}
@@ -116,7 +95,7 @@ catkin_download_test_data(drill_pcd
 # catkin_download_test_data(drill_full_pcd
 #   http://www.jsk.t.u-tokyo.ac.jp/~ueda/dataset/2015/02/drill_full.pcd
 #   DESTINATION ${PROJECT_SOURCE_DIR}/pcds)
-if(NOT $ENV{TRAVIS_JOB_ID})
+if(NOT ($ENV{TRAVIS_JOB_ID}))
   execute_process(
     COMMAND mkdir -p ${PROJECT_SOURCE_DIR}/models)
   catkin_download_test_data(gun_drill_dae
@@ -141,10 +120,10 @@ if(NOT $ENV{TRAVIS_JOB_ID})
     drill_pcd # todo old now
     # drill_full_pcd
     gun_drill_dae gun_drill_jpg gun_drill_model takenoko_drill_dae takenoko_drill_jpg takenoko_drill_model)
-endif(NOT $ENV{TRAVIS_JOB_ID})
+endif(NOT ($ENV{TRAVIS_JOB_ID}))
 
 install(TARGETS
-  ${PROJECT_NAME}
+  standing_drill_detector
   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}

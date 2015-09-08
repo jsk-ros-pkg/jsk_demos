@@ -1,6 +1,6 @@
+(ros::load-ros-manifest "jsk_demo_common")
 (require :pr2-interface "package://pr2eus/pr2-interface.l")
-(require :pr2-move "package://jsk_demo_common/euslisp/pr2-move.l")
-(require :pr2-action "package://jsk_demo_common/euslisp/pr2-action.l")
+(require :mongo-client "package://roseus_mongo/euslisp/mongo-client.l")
 
 (defvar *attention-flag* "/attention_observation/flag")
 (defvar *attention-id* "/attention_observation/id")
@@ -201,6 +201,15 @@
   `(defun ,name ,arg-lst
      (let (attention-barrier-return)
        (warn ";; exec ~A~%" (quote ,name))
+       (mongo::insert (instance jsk_demo_common::FunctionEvent :init
+                                :header (instance jsk_demo_common::EventHeader :init
+                                                  :header
+                                                  (instance std_msgs::Header :init
+                                                            :stamp (ros::time-now))
+                                                  :context *current-context*)
+                                :name (string (quote ,name))
+                                :args (list (prin1-to-string (quote ,arg-lst))))
+                      :meta '((:status . :start)))
        (setq attention-barrier-return
              (catch :attention-barrier
                (let ((attention-action-return (progn ,@forms)))
@@ -221,6 +230,15 @@
         ((eq t attention-barrier-return) ;; normal cancel
          (setq attention-barrier-return :fail))
         )
+       (mongo::insert (instance jsk_demo_common::FunctionEvent :init
+                                :header (instance jsk_demo_common::EventHeader :init
+                                                  :header
+                                                  (instance std_msgs::Header :init
+                                                            :stamp (ros::time-now))
+                                                  :context *current-context*)
+                                :name (string (quote ,name))
+                                :args (list (prin1-to-string (quote ,arg-lst))))
+                      :meta (list (cons :status attention-barrier-return)))
        (send *ri* :clear-cancel-flag)
        (unless (or (eq attention-barrier-return :fail)
                    (eq attention-barrier-return :success))

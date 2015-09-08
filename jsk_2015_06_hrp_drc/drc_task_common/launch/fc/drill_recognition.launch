@@ -1,78 +1,112 @@
 <launch>
   <group ns="drill_recognition">
-    <node pkg="nodelet" type="nodelet" name="drill_manager"
-          args="manager" />
-    <node pkg="nodelet"
-          type="nodelet"
-          name="z_filter"
-          args="load pcl/PassThrough drill_manager">
-      <remap from="~input" to="/laser_downsampler/output" />
-      <rosparam>
-        filter_field_name: z
-        filter_limit_min: 0
-        filter_limit_max: 2.0
+    <node pkg="jsk_topic_tools" type="standalone_complexed_nodelet"
+          name="manager" respawn="true" output="screen">
+      <rosparam subst_value="true">
+nodelets:
+  - name: normal_estimation
+    type: jsk_pcl/NormalEstimationOMP
+    remappings:
+      - from: ~input
+        to: /laser_downsampler/output
+  - name: normal_direction_filter
+    type: jsk_pcl/NormalDirectionFilter
+    remappings:
+      - from: ~input
+        to: normal_estimation/output_with_xyz
+      - from: ~input_imu
+        to: /multisense/imu/imu_data
+  - name: filtered_points
+    type: pcl/ExtractIndices
+    remappings:
+      - from: ~input
+        to: normal_estimation/output_with_xyz
+      - from: ~indices
+        to: normal_direction_filter/output
+  - name: region_growing_multiple_plane_segmentation
+    type: jsk_pcl/RegionGrowingMultiplePlaneSegmentation
+    remappings:
+      - from: ~input
+        to: filtered_points/output
+      - from: ~input_normal
+        to: filtered_points/output
+  - name: polygon_flipper
+    type: jsk_pcl/PolygonFlipper
+    remappings:
+      - from: ~input/polygons
+        to: region_growing_multiple_plane_segmentation/output/polygons
+      - from: ~input/coefficients
+        to: region_growing_multiple_plane_segmentation/output/coefficients
+      - from: ~input/indices
+        to: region_growing_multiple_plane_segmentation/output/inliers
+  - name: multi_plane_extraction
+    type: jsk_pcl/MultiPlaneExtraction
+    remappings:
+      - from: ~input
+        to: /laser_downsampler/output
+      - from: ~input_polygons
+        to: polygon_flipper/output/polygons
+      - from: ~input_coefficients
+        to: polygon_flipper/output/coefficients
+  - name: remove_small_noises
+    type: pcl/RadiusOutlierRemoval
+    remappings:
+      - from: ~input
+        to: multi_plane_extraction/output
+  - name: euclidean_clustering
+    type: jsk_pcl/EuclideanClustering
+    remappings:
+      - from: ~input
+        to: remove_small_noises/output
+  - name: cluster_point_indices_decomposer
+    type: jsk_pcl/ClusterPointIndicesDecomposer
+    remappings:
+      - from: ~input
+        to: remove_small_noises/output
+      - from: ~target
+        to: euclidean_clustering/output
+      - from: ~align_planes
+        to: polygon_flipper/output/polygons
+      - from: ~align_planes_coefficients
+        to: polygon_flipper/output/coefficients
+  - name: filter_small_boxes
+    type: jsk_pcl/BoundingBoxFilter
+    remappings:
+      - from: ~input_box
+        to: cluster_point_indices_decomposer/boxes
+      - from: ~input_indices
+        to: euclidean_clustering/output
+  - name: boundingbox_clipper
+    type: jsk_pcl/AttentionClipper
+    remappings:
+      - from: ~input/points
+        to: remove_small_noises/output
+      - from: ~input/box_array
+        to: static_transform_bounding_box_array/output
+  - name: snapshot
+    type: jsk_topic_tools/Snapshot
+    remappings:
+      - from: ~input
+        to: drill_pose
       </rosparam>
     </node>
-    <node pkg="nodelet"
-          type="nodelet"
-          name="x_filter"
-          args="load pcl/PassThrough drill_manager">
-      <remap from="~input" to="z_filter/output" />
-      <rosparam>
-        filter_field_name: x
-        filter_limit_min: 0
-        filter_limit_max: 2.5
-      </rosparam>
-    </node>
-<node pkg="nodelet"
-          type="nodelet"
-          name="y_filter"
-          args="load pcl/PassThrough drill_manager">
-      <remap from="~input" to="x_filter/output" />
-      <rosparam>
-        filter_field_name: y
-        filter_limit_min: -1.25
-        filter_limit_max: 1.25
-      </rosparam>
-    </node>
-    <node pkg="nodelet"
-          type="nodelet"
-          name="normal_estimation"
-          args="load jsk_pcl/NormalEstimationOMP drill_manager">
-      <remap from="~input" to="y_filter/output" />
+    <group ns="normal_estimation">
       <rosparam>
         k_search: 0
         radius_search: 0.05
       </rosparam>
-    </node>
-    <node pkg="nodelet"
-          type="nodelet"
-          name="normal_direction_filter"
-          args="load jsk_pcl/NormalDirectionFilter drill_manager">
-      <remap from="~input" to="normal_estimation/output_with_xyz" />
-      <remap from="~input_imu" to="/multisense/imu/imu_data" />
+    </group>
+    <group ns="normal_direction_filter">
       <rosparam>
         use_imu: true
         queue_size: 1000
         eps_angle: 0.1
         angle_offset: 0.0
       </rosparam>
-    </node>
-
-    <node pkg="nodelet"
-          type="nodelet"
-          args="load pcl/ExtractIndices drill_manager"
-          name="filtered_points">
-      <remap from="~input" to="normal_estimation/output_with_xyz" />
-      <remap from="~indices" to="normal_direction_filter/output" />
-    </node>
-
-    <node pkg="nodelet"
-          type="nodelet"
-          name="region_growing_multiple_plane_segmentation"
-          args="load jsk_pcl/RegionGrowingMultiplePlaneSegmentation drill_manager">
-      <remap from="~input" to="filtered_points/output" />
-      <remap from="~input_normal" to="filtered_points/output" />
+    </group>
+    <group ns="filtered_points">
+    </group>
+    <group ns="region_growing_multiple_plane_segmentation">
       <rosparam>
         max_size: 50000
         minsize: 1000
@@ -82,88 +116,42 @@
         cluster_tolerance: 0.15
         ransac_refine_outlier_distance_threshold: 0.01
       </rosparam>
-    </node>
-    <node pkg="nodelet"
-          type="nodelet"
-          name="polygon_flipper"
-          args="load jsk_pcl/PolygonFlipper drill_manager">
-      <remap from="~input/polygons"
-             to="region_growing_multiple_plane_segmentation/output/polygons"/>
-      <remap from="~input/coefficients"
-             to="region_growing_multiple_plane_segmentation/output/coefficients"/>
-      <remap from="~input/indices"
-             to="region_growing_multiple_plane_segmentation/output/inliers"/>
+    </group>
+    <group ns="polygon_flipper">
       <rosparam>
         sensor_frame: head_root
       </rosparam>
-    </node>
-    <node pkg="nodelet"
-          type="nodelet"
-          name="multi_plane_extraction"
-          args="load jsk_pcl/MultiPlaneExtraction drill_manager">
-      <remap from="~input" to="y_filter/output" />
-      <remap from="~input_polygons"
-             to="polygon_flipper/output/polygons"
-             />
-      <remap from="~input_coefficients"
-             to="polygon_flipper/output/coefficients"
-             />
+    </group>
+    <group ns="multi_plane_extraction">
       <rosparam>
         use_sensor_frame: true
         sensor_frame: head_root
         use_indices: false
-        min_height: 0.02
-        max_height: 0.5
+        min_height: -0.5
+        max_height: -0.02
         magnify: -0.01
       </rosparam>
-    </node>
-
-    <node pkg="nodelet"
-          type="nodelet"
-          name="remove_small_noises"
-          args="load pcl/RadiusOutlierRemoval drill_manager">
-      <remap from="~input" to="multi_plane_extraction/output" />
+    </group>
+    <group ns="remove_small_noises">
       <rosparam>
         radius_search: 0.05
         min_neighbors: 20
       </rosparam>
-    </node>
-    
-    <node pkg="nodelet"
-          type="nodelet"
-          name="euclidean_clustering"
-          args="load jsk_pcl/EuclideanClustering drill_manager">
-      <remap from="~input" to="remove_small_noises/output"/>
+    </group>
+    <group ns="euclidean_clustering">
       <rosparam>
         tolerance: 0.04
         max_size: 25000
         min_size: 5
       </rosparam>
-    </node>
-    <node pkg="nodelet"
-          type="nodelet"
-          name="cluster_point_indices_decomposer"
-          args="load jsk_pcl/ClusterPointIndicesDecomposer drill_manager">
-      <remap from="~input" to="remove_small_noises/output" />
-      <remap from="~target" to="euclidean_clustering/output"/>
-      <remap from="~align_planes"
-             to="polygon_flipper/output/polygons"
-             />
-      <remap from="~align_planes_coefficients"
-             to="polygon_flipper/output/coefficients"
-             />
+    </group>
+    <group ns="cluster_point_indices_decomposer">
       <rosparam>
         align_boxes: true
         use_pca: true
       </rosparam>
-    </node>
-    <node pkg="nodelet"
-          type="nodelet"
-          name="filter_small_boxes"
-          args="load jsk_pcl/BoundingBoxFilter drill_manager">
-      <remap from="~input_box"
-             to="cluster_point_indices_decomposer/boxes"/>
-      <remap from="~input_indices" to="euclidean_clustering/output"/>
+    </group>
+    <group ns="filter_small_boxes">
       <rosparam>
         use_x_dimension: true
         x_dimension_min: 0.05
@@ -175,8 +163,21 @@
         z_dimension_min: 0.05
         z_dimension_max: 0.5
       </rosparam>
-    </node>
-    
+    </group>
+    <group ns="boundingbox_clipper">
+      <rosparam>
+        use_multiple_attention: true
+        radius_search: 0.05
+        min_neighbors: 20
+      </rosparam>
+    </group>
+    <group ns="flip_cylinder_coords">
+    </group>
+    <group ns="snapshot">
+      <rosparam>
+        latch: true
+      </rosparam>
+    </group>
     <node pkg="drc_task_common"
           type="filter_bbox_position.py"
           name="filter_by_position">
@@ -187,26 +188,22 @@
         max_z: 1.5
       </rosparam>
     </node>
-    <node pkg="nodelet"
-          type="nodelet"
-          name="boundingbox_clipper"
-          args="load jsk_pcl/AttentionClipper drill_manager">
-      <remap from="~input/points" to="remove_small_noises/output"/>
-      <remap from="~input/box_array" to="filter_by_position/output"/>
+    <node pkg="drc_task_common"
+          type="static_transform_bounding_box_array.py"
+          name="static_transform_bounding_box_array"
+          >
       <rosparam>
-        use_multiple_attention: true
-        radius_search: 0.05
-        min_neighbors: 20
+        transform: [0, 0, 0, 3.14, 0, 0]
       </rosparam>
+      <remap from="~input" to="filter_by_position/output" />
     </node>
-
     <node pkg="drc_task_common"
           name="standing_drill_detector"
           type="standing_drill_detector"
           output="screen">
       <remap from="~input" to="remove_small_noises/output" />
       <!-- <remap from="~input" to="precise_remove_small_noises/output"
-                  /> -->
+           /> -->
       <remap from="~input/box_array"
              to="boundingbox_clipper/output/box_array"/>
       <remap from="~input/indices"
@@ -224,11 +221,5 @@
           type="static_transform_pose_stamped"
           args="0 0 0 0 3.14 0 standing_drill_detector/output/pose drill_pose"
           />
-    <node pkg="jsk_topic_tools" type="snapshot" name="snapshot">
-      <remap from="~input" to="drill_pose"/>
-      <rosparam>
-        latch: true
-      </rosparam>
-    </node>
   </group>
 </launch>

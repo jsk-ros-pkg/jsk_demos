@@ -73,7 +73,7 @@
   
   <!-- joint angles -->
   <node pkg="jsk_calibration" type="joint_states_appender.py" name="joint_states_appender" />
-  <node pkg="jsk_network_tools" type="joint-state-compressor.l" 
+  <node pkg="jsk_robot_utils" type="joint-state-compressor.l" 
         name="joint_state_compressor">
     <remap from="/joint_states" to="/joint_states_appended" />
     <rosparam>

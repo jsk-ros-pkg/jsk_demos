@@ -593,6 +593,7 @@
   ;; open
   (send *robot* :angle-vector (elt *door-motion* 0))
   (when real? (model2real :time 4000))
+  (keyshot-request)
   (when (or (equal *robot-name* "JAXON") (equal *robot-name* "STARO") (equal *robot-name* "JAXON_RED"))
     (hand-start-grasp :arm *door-arm* :real? real? :type :door-grasp-preshape))
   (when real? (send-angle-vector-sequence-with-time (subseq *door-motion* 1 3) :time 1500 :wait? t))

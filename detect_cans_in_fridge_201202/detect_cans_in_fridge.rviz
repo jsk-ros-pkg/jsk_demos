@@ -416,7 +416,7 @@ Visualization Manager:
       Size (Pixels): 3
       Size (m): 0.01
       Style: Points
-      Topic: /openni/depth_registered/points_throttle
+      Topic: /kinect_head_c2/depth_registered/points_throttle
       Use Fixed Frame: true
       Use rainbow: true
       Value: true
@@ -445,7 +445,7 @@ Visualization Manager:
     - Class: rviz/Camera
       Enabled: true
       Image Rendering: overlay
-      Image Topic: /openni/rgb/image_rect_color
+      Image Topic: /kinect_head/rgb/image_rect_color
       Name: Camera
       Overlay Alpha: 0.9
       Queue Size: 2

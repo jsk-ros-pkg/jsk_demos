@@ -3,28 +3,50 @@
   <remap from="/joint_states" to="/ocs/joint_states" />
   <remap from="/robot_description" to="/ocs/robot_description" />
   <group ns="ocs">
-    <node pkg="nodelet" type="nodelet" name="locomotion_manager" args="manager" output="screen"/>
-    <node pkg="nodelet" type="nodelet" name="plane_estimation"
-          args="load jsk_pcl/RegionGrowingMultiplePlaneSegmentation locomotion_manager" >
-      <remap from="~input" to="/ocs/communication/locomotion_cloud" />
-      <remap from="~input_normal" to="/ocs/communication/locomotion_cloud" />
+    <node pkg="jsk_topic_tools" type="standalone_complexed_nodelet"
+          name="manager" respawn="true" output="screen">
+      <rosparam subst_value="true">
+nodelets:
+  - name: plane_estimation
+    type: jsk_pcl/RegionGrowingMultiplePlaneSegmentation
+    remappings:
+      - from: ~input
+        to: /ocs/communication/locomotion_cloud
+      - from: ~input_normal
+        to: /ocs/communication/locomotion_cloud
+  - name: plane_concatenator
+    type: jsk_pcl/PlaneConcatenator
+    remappings:
+      - from: ~input
+        to: /ocs/communication/locomotion_cloud
+      - from: ~input/indices
+        to: plane_estimation/output/inliers
+      - from: ~input/polygons
+        to: plane_estimation/output/polygons
+      - from: ~input/coefficients
+        to: plane_estimation/output/coefficients
+  - name: obstacle_cloud
+    type: pcl/ExtractIndices
+    remappings:
+      - from: ~input
+        to: normal_flip/output
+      - from: ~indices
+        to: env_server/output/non_plane_indices
+      </rosparam>
+    </node>
+    <group ns="plane_estimation">
       <rosparam>
         max_size: 50000
         min_size: 200
         angular_threshold: 0.01
         distance_threshold: 0.01
       </rosparam>
-    </node>
-    <node pkg="nodelet" type="nodelet" name="plane_concatenator"
-          args="load jsk_pcl/PlaneConcatenator locomotion_manager" >
-      <remap from="~input" to="/ocs/communication/locomotion_cloud" />
-      <remap from="~input/indices" to="plane_estimation/output/inliers" />
-      <remap from="~input/polygons" to="plane_estimation/output/polygons" />
-      <remap from="~input/coefficients" to="plane_estimation/output/coefficients" />
+    </group>
+    <group ns="obstacle_cloud">
       <rosparam>
+        negative: true
       </rosparam>
-    </node>
-    
+    </group>
     <node pkg="jsk_pcl_ros" type="environment_plane_modeling" name="env_server" output="screen">
       <remap from="~input" to="/ocs/communication/locomotion_cloud"/>
       <remap from="~input/full_cloud" to="/ocs/communication/normal_flip_cloud" />
@@ -38,20 +60,11 @@
         complete_footprint_region: false
         morphological_filter_size: 2
         # distance_threshold: 0.005
-        distance_threshold: 0.02 # for jaxon
+        distance_threshold: 0.025 # for jaxon
         magnify_distance: 0.05
         normal_threshold: 0.1
-        erode_filter_size: 2
+        erode_filter_size: 1
         footprint_frames: ["lleg_end_coords", "rleg_end_coords"]
-      </rosparam>
-    </node>
-    
-    <node pkg="nodelet" type="nodelet" name="obstacle_cloud"
-          args="load pcl/ExtractIndices locomotion_manager" >
-      <remap from="~input" to="normal_flip/output" />
-      <remap from="~indices" to="env_server/output/non_plane_indices" />
-      <rosparam>
-        negative: true
       </rosparam>
     </node>
   </group>
