@@ -54,7 +54,7 @@
     </node>
     <!-- controller -->
     <node pkg="jsk_footstep_controller"
-          type="footstep-controller.l"
+          type="footstep-controller-old.l"
           name="footstep_controller"
           respawn="true"
           clear_params="true"
