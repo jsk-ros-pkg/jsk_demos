@@ -3,6 +3,7 @@
         args="--perspective-file $(find drc_task_common)/config/rqt_b_button.perspective">
     <rosparam>
       b_control_layout_file: "package://drc_task_common/config/ocs_ui_b_control_layout.yaml"
+      b_control_layout_file_remapped: "package://drc_task_common/config/ocs_ui_b_control_layout_remapped.yaml"
     </rosparam>
   </node>
 

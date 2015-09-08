@@ -231,7 +231,7 @@
               "keys": {
                 "layout_param": {
                   "type": "repr", 
-                  "repr": "u'/rqt_image_view_button/b_control_layout_file'"
+                  "repr": "u'/rqt_image_view_button/b_control_layout_file_remapped'"
                 }
               }, 
               "groups": {}
