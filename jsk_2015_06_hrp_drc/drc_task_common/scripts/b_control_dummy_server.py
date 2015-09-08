@@ -84,35 +84,35 @@ class BControlDummyServerNode():
         self.pub_joy()
         return EmptyResponse()
     def b1_cb(self, req):
-        self.joy.axes[16] = reverse_f(self.joy.axes[8])
+        self.joy.axes[16] = reverse_f(self.joy.axes[16])
         self.pub_joy()
         return EmptyResponse()
     def b2_cb(self, req):
-        self.joy.axes[17] = reverse_f(self.joy.axes[9])
+        self.joy.axes[17] = reverse_f(self.joy.axes[17])
         self.pub_joy()
         return EmptyResponse()
     def b3_cb(self, req):
-        self.joy.axes[18] = reverse_f(self.joy.axes[10])
+        self.joy.axes[18] = reverse_f(self.joy.axes[18])
         self.pub_joy()
         return EmptyResponse()
     def b4_cb(self, req):
-        self.joy.axes[19] = reverse_f(self.joy.axes[11])
+        self.joy.axes[19] = reverse_f(self.joy.axes[19])
         self.pub_joy()
         return EmptyResponse()
     def b5_cb(self, req):
-        self.joy.axes[20] = reverse_f(self.joy.axes[12])
+        self.joy.axes[20] = reverse_f(self.joy.axes[20])
         self.pub_joy()
         return EmptyResponse()
     def b6_cb(self, req):
-        self.joy.axes[21] = reverse_f(self.joy.axes[13])
+        self.joy.axes[21] = reverse_f(self.joy.axes[21])
         self.pub_joy()
         return EmptyResponse()
     def b7_cb(self, req):
-        self.joy.axes[22] = reverse_f(self.joy.axes[14])
+        self.joy.axes[22] = reverse_f(self.joy.axes[22])
         self.pub_joy()
         return EmptyResponse()
     def b8_cb(self, req):
-        self.joy.axes[23] = reverse_f(self.joy.axes[15])
+        self.joy.axes[23] = reverse_f(self.joy.axes[23])
         self.pub_joy()
         return EmptyResponse()
     
