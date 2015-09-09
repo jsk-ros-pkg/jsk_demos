@@ -127,9 +127,15 @@
 (defun base-go-to-fridge (&key (wait t))
   (let ((co (send *scene* :spot "/eng2/7f/room73B2-fridge-front")))
     (send co :translate (float-vector 0 0 0) :world)
-    (send *ri* :move-to co)
-    (if wait
-        (send *ri* :wait-interpolation))
+    (if (send *ri* :simulation-modep)
+        (setq co (send *room73b2* :spot "fridge-front-spot")))
+    (cond
+     ((equal wait t)
+      (send *ri* :move-to co)
+      )
+     (t
+      (send *ri* :move-to-send co)
+      ))
     t
     ))
 
