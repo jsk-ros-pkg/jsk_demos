@@ -1,4 +1,4 @@
-(load "~/prog/euslib/irteus_proposals/motion-lib-proposal.l")
+;; (load "~/prog/euslib/irteus_proposals/motion-lib-proposal.l")
 (load "package://drc_task_common/euslisp/robot-util.l")
 
 (defun setup-door-open (&key (draw? t) (generate-robot? t) (generate-ri? t) (robot-name "HRP2JSKNT"))
