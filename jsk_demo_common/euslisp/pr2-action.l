@@ -375,7 +375,7 @@
               :use-torso (if use-torso (/ use-torso 5))
               :rotation-axis t :sec start-sec :move-robot move-robot)
 
-    (let ((grasp-ret (if move-robot (send *ri* :start-grasp hand :gain 0.1) 10)))
+    (let ((grasp-ret (if move-robot (send *ri* :start-grasp hand :gain 0.1 :objects nil) 10)))
       (when (and (not (send *ri* :simulation-modep)) ;;return only in real mode
                  (and grasp-check
                       (< grasp-ret 8))) ;; grasp
@@ -426,6 +426,7 @@
           idx)
       (setq idx (position (find-extream lst #'(lambda(x) (distance (send x :worldpos) end-pt)) #'<) lst))
       (ros::ros-info "idx = [~a/~a]" idx (length lst))
+      (if (send *ri* :simulation-modep) (return-from move-fridge-traj t))
       (when (< idx (/ (length lst) 2))
         (return-from move-fridge-traj nil)))
     t))
@@ -518,7 +519,7 @@
     (send *ri* :wait-interpolation)
 
     ;; grasp
-    (send *ri* :start-grasp use-arm)
+    (send *ri* :start-grasp use-arm :objects nil)
 
     ;; move to via1
     (send *pr2* use-arm :inverse-kinematics
@@ -916,7 +917,7 @@
       (send cds :transform (send *pr2* :worldcoords) :world)
       (setq *last-can-coords* cds)
       (grasp-can-single cds :rotation rotation :use-arm use-arm)
-      (setq isgrasp (< 10 (send *ri* :start-grasp use-arm)))
+      (setq isgrasp (< 10 (send *ri* :start-grasp use-arm :objects nil)))
       (if (send *ri* :simulation-modep) ;; in simulation mode, set isgrasp true
           (setq isgrasp t))
       (ros::ros-info "isgrasp : ~A" isgrasp)
