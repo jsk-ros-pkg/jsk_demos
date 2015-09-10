@@ -12,6 +12,7 @@
 
 (if *logging*
     (progn
+      (load "package://jsk_demo_common/euslisp/attention-observation.l")
       (require :pr2-attention-move "package://jsk_demo_common/euslisp/pr2-attention-move.l")
       (require :pr2-attention-action "package://jsk_demo_common/euslisp/pr2-attention-action.l")
       (setq *current-context* :fridge))
@@ -53,6 +54,12 @@
   (require :detection-interface "package://jsk_perception/euslisp/detection_interface.l");;
   ;;(send *pr2* :move-to (send *ri* :state :worldcoords) :world)
   ;;(objects (list *pr2*))
+  (if (send *ri* :simulation-modep)
+      (progn
+        (load "models/room73b2-scene.l")
+        (room73b2)
+        (send *ri* :objects (send *room73b2* :objects))
+        ))
   )
 
 (defun goto-initial-position (&key (return-to-initial-position t)
