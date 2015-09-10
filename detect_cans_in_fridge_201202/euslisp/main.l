@@ -13,7 +13,8 @@
 (if *logging*
     (progn
       (require :pr2-attention-move "package://jsk_demo_common/euslisp/pr2-attention-move.l")
-      (require :pr2-attention-action "package://jsk_demo_common/euslisp/pr2-attention-action.l"))
+      (require :pr2-attention-action "package://jsk_demo_common/euslisp/pr2-attention-action.l")
+      (setq *current-context* :fridge))
     (progn
       (require :pr2-move "package://jsk_demo_common/euslisp/pr2-move.l")
       (require :pr2-action "package://jsk_demo_common/euslisp/pr2-action.l")))
