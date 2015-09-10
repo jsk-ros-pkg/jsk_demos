@@ -298,7 +298,7 @@ nodelets:
         args="$(find jsk_footstep_controller)/euslisp/lookaround-ground.l">
   </node>
   <node pkg="jsk_footstep_controller"
-        type="footstep-controller.l"
+        type="footstep-controller-old.l"
         name="footstep_controller"
         respawn="true"
         clear_params="true"
