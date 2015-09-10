@@ -1,4 +1,6 @@
 <launch>
+  <arg name="fc" default="true" />
   <node pkg="drc_task_common" type="fc-executive.l" name="fc_executive" output="screen">
+    <remap unless="$(arg fc)" from="/fc_from_ocs_low_speed/output" to="/ocs_to_fc_low_speed/input" />
   </node>
 </launch>
