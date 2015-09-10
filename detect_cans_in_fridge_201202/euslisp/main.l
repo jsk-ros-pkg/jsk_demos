@@ -8,6 +8,8 @@
 ;;(load "package://pr2eus_armnavigation/pr2eus-arm-navigation.l")
 ;;(load "package://pr2eus_moveit/euslisp/pr2eus-moveit.l")
 
+(load "package://jsk_demo_common/euslisp/attention-observation.l")
+
 (if *logging*
     (progn
       (require :pr2-attention-move "package://jsk_demo_common/euslisp/pr2-attention-move.l")
@@ -16,7 +18,6 @@
       (require :pr2-move "package://jsk_demo_common/euslisp/pr2-move.l")
       (require :pr2-action "package://jsk_demo_common/euslisp/pr2-action.l")))
 (ros::roseus-add-msgs "pr2_gripper_sensor_msgs")
-(load "package://jsk_demo_common/euslisp/attention-observation.l")
 
 (ros::roseus "demo_main")
 (setq *use-arm-navigation* nil)
