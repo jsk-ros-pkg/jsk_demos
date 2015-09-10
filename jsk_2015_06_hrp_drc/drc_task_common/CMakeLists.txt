@@ -25,6 +25,7 @@ generate_dynamic_reconfigure_options(
   # config/vehicle/ObstacleIndicatorParams.cfg
   cfg/StandingDrillDetector.cfg
   cfg/FilterBBoxPosition.cfg
+  cfg/BControlDummyServer.cfg
 )
 
 add_message_files(DIRECTORY msg FILES DRCParametersMessage.msg)

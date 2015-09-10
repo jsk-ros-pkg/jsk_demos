@@ -1,0 +1,14 @@
+<launch>
+  <node pkg="rqt_gui" type="rqt_gui" name="rqt_image_view_button"
+        args="--perspective-file $(find drc_task_common)/config/rqt_b_button.perspective">
+    <rosparam>
+      b_control_layout_file: "package://drc_task_common/config/ocs_ui_b_control_layout.yaml"
+      b_control_layout_file_remapped: "package://drc_task_common/config/ocs_ui_b_control_layout_remapped.yaml"
+    </rosparam>
+  </node>
+
+  <node pkg="drc_task_common" type="b_control_dummy_server.py" name="b_control_dummy_server">
+    <remap from="~output" to="/b_control/joy" />
+  </node>
+</launch>
+
