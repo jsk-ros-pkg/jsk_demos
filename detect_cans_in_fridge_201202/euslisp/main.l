@@ -8,7 +8,6 @@
 ;;(load "package://pr2eus_armnavigation/pr2eus-arm-navigation.l")
 ;;(load "package://pr2eus_moveit/euslisp/pr2eus-moveit.l")
 
-(load "package://jsk_demo_common/euslisp/attention-observation.l")
 
 (if *logging*
     (progn
