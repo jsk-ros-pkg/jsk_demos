@@ -1,7 +1,13 @@
 <launch>
-  <remap from="/tf" to="/ocs/tf" />
-  <remap from="/joint_states" to="/ocs/joint_states" />
-  <remap from="/robot_description" to="/ocs/robot_description" />
+  <arg name="ocs" default="true" />
+  <remap from="/tf" to="/ocs/tf" if="$(arg ocs)"/>
+  <remap from="/joint_states" to="/ocs/joint_states" if="$(arg ocs)"/>
+  <remap from="/robot_description" to="/ocs/robot_description" if="$(arg ocs)"/>
+  <arg name="locomotion_cloud" default="/ocs/communication/locomotion_cloud" if="$(arg ocs)" />
+  <arg name="locomotion_cloud" default="/locomotion/normal_filtered_points/output" unless="$(arg ocs)" />
+  <arg name="flip_cloud" default="/ocs/communication/normal_flip_cloud" if="$(arg ocs)" />
+  <arg name="flip_cloud" default="/locomotion/normal_flip/output" unless="$(arg ocs)" />
+
   <group ns="ocs">
     <node pkg="jsk_topic_tools" type="standalone_complexed_nodelet"
           name="manager" respawn="true" output="screen">
@@ -11,14 +17,14 @@ nodelets:
     type: jsk_pcl/RegionGrowingMultiplePlaneSegmentation
     remappings:
       - from: ~input
-        to: /ocs/communication/locomotion_cloud
+        to: $(arg locomotion_cloud)
       - from: ~input_normal
-        to: /ocs/communication/locomotion_cloud
+        to: $(arg locomotion_cloud)
   - name: plane_concatenator
     type: jsk_pcl/PlaneConcatenator
     remappings:
       - from: ~input
-        to: /ocs/communication/locomotion_cloud
+        to: $(arg locomotion_cloud)
       - from: ~input/indices
         to: plane_estimation/output/inliers
       - from: ~input/polygons
@@ -48,9 +54,9 @@ nodelets:
       </rosparam>
     </group>
     <node pkg="jsk_pcl_ros" type="environment_plane_modeling" name="env_server" output="screen">
-      <remap from="~input" to="/ocs/communication/locomotion_cloud"/>
-      <remap from="~input/full_cloud" to="/ocs/communication/normal_flip_cloud" />
-      <!-- <remap from="~input/full_cloud" to="/ocs/communication/locomotion_cloud" /> -->
+      <remap from="~input" to="$(arg locomotion_cloud)"/>
+      <remap from="~input/full_cloud" to="$(arg flip_cloud)" />
+      <!-- <remap from="~input/full_cloud" to="$(arg locomotion_cloud)" /> -->
       <remap from="~input/polygons" to="plane_concatenator/output/polygons" />
       <remap from="~input/indices" to="plane_concatenator/output/indices" />
       <remap from="~input/coefficients" to="plane_concatenator/output/coefficients" />
