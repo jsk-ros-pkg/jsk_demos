@@ -1,9 +1,7 @@
 <launch>
   <arg name="ocs" default="true" />
-  <group if="$(arg ocs)" >
-    <remap from="/tf" to="/ocs/tf" />
-    <remap from="/joint_states" to="/ocs/joint_states" />
-  </group>
+  <remap from="/tf" to="/ocs/tf" if="$(arg ocs)"/>
+  <remap from="/joint_states" to="/ocs/joint_states" if="$(arg ocs)"/>
   <remap from="/robot_description" to="/ocs/robot_description" />
   <node pkg="drc_task_common" type="ocs-executive.l" name="ocs_executive" output="screen">
     <remap unless="$(arg ocs)" from="/ocs_from_fc_low_speed/output" to="/fc_to_ocs_low_speed/input" />
