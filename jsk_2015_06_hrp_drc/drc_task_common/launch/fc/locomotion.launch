@@ -1,16 +1,19 @@
 <launch>
   <arg name="INPUT_POINT_CLOUD" default="/laser_downsampler/output" />
   <arg name="MULTISENSE_STANDALONE" default="false" />
+  <arg if="$(arg MULTISENSE_STANDALONE)"
+      name="input_imu" value="/multisense/imu/imu_data" />
+  <arg unless="$(arg MULTISENSE_STANDALONE)"
+      name="input_imu" value="/imu" />
   <group ns="locomotion">
+    <node pkg="jsk_topic_tools" type="snapshot" name="input">
+      <remap from="~input"
+        to="$(arg INPUT_POINT_CLOUD)"/>
+    </node>
     <node pkg="jsk_topic_tools" type="standalone_complexed_nodelet"
           name="manager" respawn="true" output="log">
       <rosparam subst_value="true">
 nodelets:
-  - name: input
-    type: jsk_topic_tools/Snapshot
-    remappings:
-      - from: ~input
-        to: $(arg INPUT_POINT_CLOUD)
   - name: gsensor_cloud
     type: jsk_pcl/TfTransformCloud
     remappings:
@@ -120,7 +123,7 @@ nodelets:
       - from: ~input
         to: normal_flip/output
       - from: ~input_imu
-        to: /multisense/imu/imu_data
+        to: $(arg input_imu)
   - name: normal_filtered_points
     type: pcl/ExtractIndices
     remappings:
