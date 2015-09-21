@@ -52,6 +52,13 @@
   (ros::advertise-service "/set_ik_mode_next" std_srvs::Empty #'set-ik-mode-next)
   (ros::advertise-service "/get_ik_arm" drc_task_common::GetIKArm #'get-ik-arm)
   (ros::advertise-service "/get_ik_arm_pose" drc_task_common::GetIKArmPose #'get-ik-arm-pose)
+  (ros::advertise-service "/switch_arm" std_srvs::Empty #'(lambda (req) (setq *ik-arm* (if (equal *ik-arm* :rarm) :larm :rarm)) (publish-obj-mode-text) (send req :response)))
+  (ros::advertise-service "/current_pos" std_srvs::Empty #'(lambda (req) (set-robot-current-pos) (publish-obj-mode-text) (send req :response)))
+  (ros::advertise-service "/ik_peep" std_srvs::Empty #'(lambda (req) (setq *ik-peep* (not *ik-peep*)) (publish-obj-mode-text) (send req :response)))
+  (ros::advertise-service "/lower_waist_0cm" std_srvs::Empty #'(lambda (req) (setq *lower-waist-valiable* 0) (publish-obj-mode-text) (send req :response)))
+  (ros::advertise-service "/lower_waist_15cm" std_srvs::Empty #'(lambda (req) (setq *lower-waist-valiable* 150) (publish-obj-mode-text) (send req :response)))
+  (ros::advertise-service "/lower_waist_30cm" std_srvs::Empty #'(lambda (req) (setq *lower-waist-valiable* 300) (publish-obj-mode-text) (send req :response)))
+  (ros::advertise-service "/lower_waist_45cm" std_srvs::Empty #'(lambda (req) (setq *lower-waist-valiable* 450) (publish-obj-mode-text) (send req :response)))
   (ros::advertise (format nil "~a~a" *ns* "/set_pose") geometry_msgs::PoseStamped 1)
   (ros::advertise "obj_state_text" jsk_rviz_plugins::OverlayText 1)
   (ros::subscribe "/joint_states" sensor_msgs::JointState #'joint-states-callback)
@@ -88,6 +95,8 @@
   ;; ik
   (setq *ik-arm* :rarm)
   (setq *ik-result* nil)
+  (setq *ik-peep* (ros::get-param "~ik_peep" t))
+  (setq *lower-waist-valiable* 0)
   (init-robot-model)
   (ros::wait-for-service (format nil "~a~a" *ns* "/get_pose"))
   (ros::wait-for-service (format nil "~a~a" *ns* "/get_type"))
@@ -218,12 +227,24 @@
          (let* ((handle-coords (make-coords))
                 (handle-variable-coords (make-coords :pos (float-vector 0 0 (* *obj-z* *handle-pos-variable*))))
                 approach-coords)
-           (send handle-coords :transform handle-variable-coords :world)
-           (send handle-coords :rotate (* 2 pi *handle-rot-variable*) :z :local)
-           (send *obj* :assoc (make-cascoords :coords handle-coords :name :handle))
-           (setq approach-coords (send handle-coords :copy-worldcoords))
-           (send approach-coords :translate (float-vector (* 1000 *approach-variable*) 0 0) :local)
-           (send *obj* :assoc (make-cascoords :coords approach-coords :name :approach)))
+           (if *ik-peep*
+               (progn
+                 (send handle-coords :transform handle-variable-coords :world)
+                 ;; if pos dot z-axis > 0
+                 (send handle-coords :rotate (* 0.5 pi) :y :local)
+                 (send handle-coords :translate (float-vector -400 0 0) :local)
+                 (send *obj* :assoc (make-cascoords :coords handle-coords :name :handle))
+                 (setq approach-coords (send handle-coords :copy-worldcoords))
+                 (send approach-coords :translate (float-vector (* 1000 *approach-variable*) 0 0) :local)
+                 (send *obj* :assoc (make-cascoords :coords approach-coords :name :approach)))
+               (progn
+                 (send handle-coords :transform handle-variable-coords :world)
+                 (send handle-coords :rotate (* 2 pi *handle-rot-variable*) :z :local)
+                 (send *obj* :assoc (make-cascoords :coords handle-coords :name :handle))
+                 (setq approach-coords (send handle-coords :copy-worldcoords))
+                 (send approach-coords :translate (float-vector (* 1000 *approach-variable*) 0 0) :local)
+                 (send *obj* :assoc (make-cascoords :coords approach-coords :name :approach))))
+           )
          (send *obj* :put :type :cylinder)
          )
         ((equal *obj-type* jsk_rviz_plugins::TransformableMarkerOperate::*TORUS*)
@@ -261,9 +282,9 @@
          )
         )
   (when *handle-reverse-flag*
-    (send (find-if #'(lambda (x) (equal (send x :name) :handle)) (send *obj* :descendants)) :rotate pi :x))
+    (send (find-if #'(lambda (x) (equal (send x :name) :handle)) (send *obj* :descendants)) :rotate pi (if *ik-peep* :z :x)))
   (when *handle-reverse-flag*
-    (send (find-if #'(lambda (x) (equal (send x :name) :approach)) (send *obj* :descendants)) :rotate pi :x))
+    (send (find-if #'(lambda (x) (equal (send x :name) :approach)) (send *obj* :descendants)) :rotate pi (if *ik-peep* :z :x)))
   (send *obj* :set-color #f(1 1 0))
   )
 (defun generate-object-with-new-dimensions-from-topic
@@ -430,6 +451,8 @@
   (let* (obj-mode-text
          ik-mode-text
          exec-mode-text
+         peep-mode-text
+         reverse-mode-text
          (text-msg (instance jsk_rviz_plugins::OverlayText :init)))
     (cond ((equal (elt *obj-mode-list* *obj-mode-index*) :autoset)
            (setq obj-mode-text "AutoSet"))
@@ -443,10 +466,19 @@
            (setq ik-mode-text "Reach"))
           ((equal (elt *ik-mode-list* *ik-mode-index*) :release)
            (setq ik-mode-text "Release")))
-    (send text-msg :text (format nil "Mode: ~a / ~a / ~a" obj-mode-text (string *ik-arm*) ik-mode-text))
+    (cond (*ik-peep*
+           (setq peep-mode-text "Peep"))
+          ((not *ik-peep*)
+           (setq peep-mode-text "Grasp")))
+    (cond (*handle-reverse-flag*
+           (setq reverse-mode-text "r"))
+          (t
+           (setq reverse-mode-text "n"))
+           )
+    (send text-msg :text (format nil "Mode: ~a / ~a / ~a / ~a / ~a" obj-mode-text (string *ik-arm*) peep-mode-text reverse-mode-text ik-mode-text))
     (send text-msg :top 70)
     (send text-msg :left 10)
-    (send text-msg :width 750)
+    (send text-msg :width 900)
     (send text-msg :height 50)
     (send text-msg :bg_color :r 0.9)
     (send text-msg :bg_color :b 0.9)
@@ -457,7 +489,7 @@
     (send text-msg :fg_color :b 0.7)
     (send text-msg :fg_color :a 1)
     (send text-msg :line_width 1)
-    (send text-msg :text_size 30)
+    (send text-msg :text_size 28)
     (ros::publish "obj_state_text" text-msg))
   )
 
@@ -514,6 +546,7 @@
     (setq original-coords (send (send *robot* :worldcoords) :copy-worldcoords))
     ;; regenerate object and move coords
     (when initial-pose (send *robot* initial-pose))
+    (send *robot* :legs :move-end-pos (float-vector 0 0 *lower-waist-valiable*) :local)
     (send *robot* :fix-leg-to-coords (make-coords))
     (generate-object-with-new-dimensions-from-service)
     (update-object-pose :robot-coords robot-coords)
@@ -525,7 +558,7 @@
     (unless (equal (elt *ik-mode-list* *ik-mode-index*) :none)
       (setq interpolate-mode :approach))
     ;; solve ik
-    (setq *ik-result* (send-ik-request :interpolate-mode interpolate-mode :rotation-axis (if (equal (send *obj* :get :type) :hand-mesh) (list t t t) (list :z t t))))
+    (setq *ik-result* (send-ik-request :interpolate-mode interpolate-mode :rotation-axis (if (equal (send *obj* :get :type) :hand-mesh) (list t t t) (list (if *ik-peep* :x :z) t t))))
     ;(if *pub-grasp-pose-feedback-flag* (pub-grasp-pose-feedback))
     (cond (*ik-result*
            (send-joint-states-to-marker)

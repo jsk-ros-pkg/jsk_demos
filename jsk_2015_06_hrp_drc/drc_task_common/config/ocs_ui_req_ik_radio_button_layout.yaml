@@ -1,0 +1,15 @@
+- direction: 'horizontal'
+- name: 'lower_waist_0cm'
+  service: 'lower_waist_0cm'
+  image_size: [150, 100]
+  column: 0
+  default_value: True
+- name: 'lower_waist_15cm'
+  service: 'lower_waist_15cm'
+  column: 0
+- name: 'lower_waist_30cm'
+  service: 'lower_waist_30cm'
+  column: 0
+# - name: 'lower_waist_45cm'
+#   service: 'lower_waist_45cm'
+#   column: 0
