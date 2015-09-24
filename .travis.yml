@@ -14,22 +14,16 @@ env:
   global:
     - ROSWS=wstool
     - BUILDER=catkin
-    - CATKIN_PARALLEL_JOBS='-p1'
-    - ROS_PARALLEL_JOBS='-j1'
-    - CATKIN_PARALLEL_TEST_JOBS='-p1'
-    - ROS_PARALLEL_TEST_JOBS='-j1'
   matrix:
-    - ROS_DISTRO=hydro  USE_DEB=true   NOT_TEST_INSTALL=true USE_JENKINS="true" EXTRA_DEB="ros-hydro-convex-decomposition ros-hydro-ivcon"
-    - ROS_DISTRO=hydro  USE_DEB=false  NOT_TEST_INSTALL=true USE_JENKINS="true" EXTRA_DEB="ros-hydro-convex-decomposition ros-hydro-ivcon"
-    - ROS_DISTRO=indigo USE_DEB=true   NOT_TEST_INSTALL=true EXTRA_DEB="ros-indigo-convex-decomposition ros-indigo-ivcon"
-    - ROS_DISTRO=indigo USE_DEB=false  NOT_TEST_INSTALL=true EXTRA_DEB="ros-indigo-convex-decomposition ros-indigo-ivcon"
-    - ROS_DISTRO=jade USE_DEB=true   NOT_TEST_INSTALL=true EXTRA_DEB="ros-jade-convex-decomposition ros-jade-ivcon"
-    - ROS_DISTRO=jade USE_DEB=false  NOT_TEST_INSTALL=true EXTRA_DEB="ros-jade-convex-decomposition ros-jade-ivcon"
+    - ROS_DISTRO=hydro  USE_DEB=true   NOT_TEST_INSTALL=true USE_JENKINS="true" EXTRA_DEB="ros-hydro-convex-decomposition ros-hydro-ivcon" CATKIN_PARALLEL_JOBS='-p1' ROS_PARALLEL_JOBS='-j1' CATKIN_PARALLEL_TEST_JOBS='-p1' ROS_PARALLEL_TEST_JOBS='-j1'
+    # - ROS_DISTRO=hydro  USE_DEB=false  NOT_TEST_INSTALL=true USE_JENKINS="true" EXTRA_DEB="ros-hydro-convex-decomposition ros-hydro-ivcon"
+    - ROS_DISTRO=indigo USE_DEB=true   NOT_TEST_INSTALL=true EXTRA_DEB="ros-indigo-convex-decomposition ros-indigo-ivcon" CATKIN_PARALLEL_JOBS='-p8' ROS_PARALLEL_JOBS='-j8' CATKIN_PARALLEL_TEST_JOBS='-p8' ROS_PARALLEL_TEST_JOBS='-j8'
+    # - ROS_DISTRO=indigo USE_DEB=false  NOT_TEST_INSTALL=true EXTRA_DEB="ros-indigo-convex-decomposition ros-indigo-ivcon"
+    - ROS_DISTRO=jade USE_DEB=true   NOT_TEST_INSTALL=true EXTRA_DEB="ros-jade-convex-decomposition ros-jade-ivcon" CATKIN_PARALLEL_JOBS='-p8' ROS_PARALLEL_JOBS='-j8' CATKIN_PARALLEL_TEST_JOBS='-p8' ROS_PARALLEL_TEST_JOBS='-j8'
+    # - ROS_DISTRO=jade USE_DEB=false  NOT_TEST_INSTALL=true EXTRA_DEB="ros-jade-convex-decomposition ros-jade-ivcon"
 matrix:
   allow_failures:
-  - env: ROS_DISTRO=hydro  USE_DEB=true   NOT_TEST_INSTALL=true USE_JENKINS="true" EXTRA_DEB="ros-hydro-convex-decomposition ros-hydro-ivcon"
-  - env: ROS_DISTRO=indigo USE_DEB=true   NOT_TEST_INSTALL=true EXTRA_DEB="ros-indigo-convex-decomposition ros-indigo-ivcon"
-  - env: ROS_DISTRO=indigo USE_DEB=false  NOT_TEST_INSTALL=true EXTRA_DEB="ros-indigo-convex-decomposition ros-indigo-ivcon"
-  - env: ROS_DISTRO=jade USE_DEB=true   NOT_TEST_INSTALL=true EXTRA_DEB="ros-jade-convex-decomposition ros-jade-ivcon"
-  - env: ROS_DISTRO=jade USE_DEB=false  NOT_TEST_INSTALL=true EXTRA_DEB="ros-jade-convex-decomposition ros-jade-ivcon"
+  # - env: ROS_DISTRO=indigo USE_DEB=false  NOT_TEST_INSTALL=true EXTRA_DEB="ros-indigo-convex-decomposition ros-indigo-ivcon"
+  - env: ROS_DISTRO=jade USE_DEB=true   NOT_TEST_INSTALL=true EXTRA_DEB="ros-jade-convex-decomposition ros-jade-ivcon" CATKIN_PARALLEL_JOBS='-p8' ROS_PARALLEL_JOBS='-j8' CATKIN_PARALLEL_TEST_JOBS='-p8' ROS_PARALLEL_TEST_JOBS='-j8'
+  # - env: ROS_DISTRO=jade USE_DEB=false  NOT_TEST_INSTALL=true EXTRA_DEB="ros-jade-convex-decomposition ros-jade-ivcon"
 script: source .travis/travis.sh

@@ -375,7 +375,7 @@
               :use-torso (if use-torso (/ use-torso 5))
               :rotation-axis t :sec start-sec :move-robot move-robot)
 
-    (let ((grasp-ret (if move-robot (send *ri* :start-grasp hand :gain 0.1) 10)))
+    (let ((grasp-ret (if move-robot (send *ri* :start-grasp hand :gain 0.1 :objects nil) 10)))
       (when (and (not (send *ri* :simulation-modep)) ;;return only in real mode
                  (and grasp-check
                       (< grasp-ret 8))) ;; grasp
@@ -426,6 +426,7 @@
           idx)
       (setq idx (position (find-extream lst #'(lambda(x) (distance (send x :worldpos) end-pt)) #'<) lst))
       (ros::ros-info "idx = [~a/~a]" idx (length lst))
+      (if (send *ri* :simulation-modep) (return-from move-fridge-traj t))
       (when (< idx (/ (length lst) 2))
         (return-from move-fridge-traj nil)))
     t))
@@ -518,7 +519,7 @@
     (send *ri* :wait-interpolation)
 
     ;; grasp
-    (send *ri* :start-grasp use-arm)
+    (send *ri* :start-grasp use-arm :objects nil)
 
     ;; move to via1
     (send *pr2* use-arm :inverse-kinematics
@@ -602,7 +603,7 @@
   )
 
 (defparameter *fridge-handle-cds* nil)
-(defun move-to-and-open-fridge-door (&key (door-type :circle) (ratio 1) (look-around nil) (head-pitch 14) (torso-lift 130) (move t) (open-fridge-func #'open-fridge-traj))
+(defun move-to-and-open-fridge-door (&key (door-type :circle) (ratio 1) (look-around nil) (head-pitch 14) (torso-lift 130) (move t) (open-fridge-func #'open-fridge-traj) (wait t))
   (let (ret
         (idealcds
          (case door-type
@@ -722,33 +723,46 @@
         )
        (t ;;  there is much difference
         (if move
-            (send *ri* :go-pos-unsafe
-                  (/ (elt (send diffcds :worldpos) 0) 1100.0)
-                  (/ (elt (send diffcds :worldpos) 1) 1100.0)
-                  (* 0.9 (rad2deg (elt (car (rpy-angle (send diffcds :worldrot))) 0))))
-          ;; wait ???
-          (send *ri* :ros-wait 0.5 :spin-self t :spin t) ;; attention-check ...
-          ;; (send *ri* :wait-interpolation)
-          )
+            (cond
+             (wait
+              (send *ri* :go-pos-unsafe
+                    (/ (elt (send diffcds :worldpos) 0) 1100.0)
+                    (/ (elt (send diffcds :worldpos) 1) 1100.0)
+                    (* 0.9 (rad2deg (elt (car (rpy-angle (send diffcds :worldrot))) 0))))
+              ;; wait ???
+              (send *ri* :ros-wait 0.5 :spin-self t :spin t) ;; attention-check ...
+              ;; (send *ri* :wait-interpolation)
+              )
+             (t
+              (send *ri* :go-pos-unsafe-no-wait
+                    (/ (elt (send diffcds :worldpos) 0) 1100.0)
+                    (/ (elt (send diffcds :worldpos) 1) 1100.0)
+                    (* 0.9 (rad2deg (elt (car (rpy-angle (send diffcds :worldrot))) 0))))
+             )))
         ))
       ) ;; /when cds
     ret
     ))
 
-(defun move-forward-larm (&key (ratio 1))
+(defun move-forward-larm (&key (ratio 1) (wait t))
   (send *pr2* :angle-vector (send *ri* :state :potentio-vector))
   (send *pr2* :larm :angle-vector (float-vector 20.0 45.0 53.0 -100.0 -43.0 -60.0 0.0))
   (send *ri* :angle-vector (send *pr2* :angle-vector) (* ratio 700))
+  (if wait
+      (send *ri* :wait-interpolation))
   )
 
-(defun detach-fridge-handle ()
+(defun detach-fridge-handle (&key (wait t))
   (send *ri* :stop-grasp :rarm)
-  (send *ri* :wait-interpolation)
-  (send *ri* :ros-wait 0.0 :spin-self t :spin t) ;; attention-check ...
-  (send *pr2* :angle-vector (send *ri* :state :potentio-vector))
+  (if wait
+      (progn
+        (send *ri* :wait-interpolation)
+        (send *ri* :ros-wait 0.0 :spin-self t :spin t) ;; attention-check ...
+        (send *pr2* :angle-vector (send *ri* :state :potentio-vector))
+        ))
   )
 
-(defun swipe-fridge-door (&key (door-type :circle) (ratio 1) (use-arm :rarm))
+(defun swipe-fridge-door (&key (door-type :circle) (ratio 1) (use-arm :rarm) (wait t))
   (case door-type
     (:circle
      ;; free door handle
@@ -785,6 +799,7 @@
         ;;       (list 1400 1200 800))
         ;;         (send *ri* :start-grasp :rarm)
         ))
+     (if wait (send *ri* :wait-interpolation))
      )
     ((:slide1 :slide2)
      (let ((rend (send *pr2* :rarm :end-coords :copy-worldcoords))
@@ -815,18 +830,20 @@
                               (torso-lift 130) (head-pitch 14)
                               (use-arm :rarm) (move t)
                               (door-type :circle) (look-around nil) ;; :circle, :slide1, :slide2
-                              (func-time 80) )
+                              (func-time 80)
+                              (wait t)
+                              )
   (let ((diffcds (make-coords :pos (float-vector 10000 10000 10000)))
         cds
         ret
         (ratio (/ (- func-time 56) 24.0))) ;;about 1  if ratio is smaller than 1, move speed goes up.
     ;; initial pose
-    (open-fridge-door-initial-pose :door-type door-type :head-pitch head-pitch :torso-lift torso-lift :ratio ratio)
+    (open-fridge-door-initial-pose :door-type door-type :head-pitch head-pitch :torso-lift torso-lift :ratio ratio :wait wait)
 
     ;; detect fridge and open door
     (dotimes (i 10 nil)
       ;; detect fridge and move to the fridge door
-      (setq ret (move-to-and-open-fridge-door :door-type door-type :ratio ratio :look-around look-around :head-pitch head-pitch :torso-lift torso-lift :move move :open-fridge-func open-fridge-func))
+      (setq ret (move-to-and-open-fridge-door :door-type door-type :ratio ratio :look-around look-around :head-pitch head-pitch :torso-lift torso-lift :move move :open-fridge-func open-fridge-func :wait wait))
       (if ret (return))
       )
 
@@ -842,13 +859,13 @@
       (return-from open-fridge-door nil))
 
     ;;move larm forward to keep the fridge door open
-    (move-forward-larm :ratio ratio)
+    (move-forward-larm :ratio ratio :wait wait)
 
     ;;detach fridge handle
-    (detach-fridge-handle)
+    (detach-fridge-handle :wait wait)
 
     ;;swipe fridge door by larm
-    (swipe-fridge-door :door-type door-type :ratio ratio :use-arm use-arm)
+    (swipe-fridge-door :door-type door-type :ratio ratio :use-arm use-arm :wait wait)
 
     (send *ri* :ros-wait 0.0 :spin-self t) ;; attention-check ...
     (send *ri* :wait-interpolation)
@@ -916,7 +933,7 @@
       (send cds :transform (send *pr2* :worldcoords) :world)
       (setq *last-can-coords* cds)
       (grasp-can-single cds :rotation rotation :use-arm use-arm)
-      (setq isgrasp (< 10 (send *ri* :start-grasp use-arm)))
+      (setq isgrasp (< 10 (send *ri* :start-grasp use-arm :objects nil)))
       (if (send *ri* :simulation-modep) ;; in simulation mode, set isgrasp true
           (setq isgrasp t))
       (ros::ros-info "isgrasp : ~A" isgrasp)
@@ -937,7 +954,7 @@
 (warn ";; define grasp-can")
 (defvar *use-arm-navigation* nil)
 (defun grasp-can (&key (move t) (pre-move t) (post-move t) (move-only nil)
-                       (rotation 20) (use-arm :rarm))
+                       (rotation 20) (use-arm :rarm) (wait t))
   (if (eq use-arm :larm) (setq rotation (- rotation)))
   ;; move-to can spot for grasping
   (move-to-can-spot :use-arm use-arm :rotation rotation :move move :pre-move pre-move)
@@ -980,7 +997,7 @@
   nil)
 
 (warn ";; define close-fridge")
-(defun close-fridge (&key (use-arm :rarm))
+(defun close-fridge (&key (use-arm :rarm) (wait t))
   ;; close the door of fridge
   (send *ri* :ros-wait 0.0 :spin-self t) ;; attention-check ...
 
@@ -1014,9 +1031,12 @@
 	   (list 500 500 500 800 1000 1000 600)
 	   )
      ))
-  (send *ri* :wait-interpolation)
-  (send *pr2* :angle-vector (send *ri* :state :potentio-vector))
-  (send *ri* :ros-wait 0.0 :spin-self t) ;; attention-check ...
+  (if wait
+      (progn
+        (send *ri* :wait-interpolation)
+        (send *pr2* :angle-vector (send *ri* :state :potentio-vector))
+        (send *ri* :ros-wait 0.0 :spin-self t) ;; attention-check ...
+        ))
   (pr2-tuckarm-pose use-arm :outside)
   t
   )
