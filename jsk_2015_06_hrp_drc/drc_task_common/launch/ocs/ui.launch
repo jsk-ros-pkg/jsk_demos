@@ -6,7 +6,7 @@
   <arg name="INPUT_IMAGE_HEIGHT_SCALE" default="/ocs/communication/image_height_scale"/>
   <arg name="INPUT_PANORAMA_IMAGE_WIDTH_SCALE" default="/ocs/communication/panorama_width_scale"/>
   <arg name="INPUT_PANORAMA_IMAGE_HEIGHT_SCALE" default="/ocs/communication/panorama_height_scale"/>
-
+  <arg name="UI_FILE" default="rqt_ui.perspective" />
   <remap from="/tf" to="/ocs/tf" />
   <remap from="/joint_states" to="/ocs/joint_states" />
   <remap from="/robot_description" to="/ocs/robot_description" />
@@ -14,7 +14,7 @@
   <include file="$(find drc_task_common)/launch/ocs/models/$(env ROBOT).launch" />
 
   <node pkg="rqt_gui" type="rqt_gui" name="rqt_image_view_button"
-        args="--perspective-file $(find drc_task_common)/config/rqt_ui.perspective">
+        args="--perspective-file $(find drc_task_common)/config/$(arg UI_FILE)">
     <rosparam>
       service_button_stair_layout_file: "package://drc_task_common/config/ocs_ui_stair_button_layout.yaml"
     </rosparam>
@@ -35,6 +35,12 @@
     </rosparam>
     <rosparam>
       service_recognition_radio_button_layout_file: "package://drc_task_common/config/ocs_ui_recognition_radio_button_layout.yaml"
+    </rosparam>
+    <rosparam>
+      service_req_ik_button_layout_file: "package://drc_task_common/config/ocs_ui_req_ik_button_layout.yaml"
+    </rosparam>
+    <rosparam>
+      service_req_ik_radio_button_layout_file: "package://drc_task_common/config/ocs_ui_req_ik_radio_button_layout.yaml"
     </rosparam>
   </node>
   <group ns="image_rect">
