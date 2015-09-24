@@ -62,7 +62,7 @@
   (get-spreader-pose)
   (let* ((reach-z (send *spreader-grip* :rotate-vector (float-vector 0 0 1)))
          (reach-y (v* reach-z (float-vector 0 0 -1)))
-         (reach-x (v* reach-y reach-x))
+         (reach-x (v* reach-y reach-z))
          (reach-r (transpose (matrix reach-x reach-y reach-z)))
          (spreader-reach (make-cascoords :pos (send *spreader-grip* :worldpos) :rot reach-r))
          )
@@ -105,8 +105,8 @@
     (while (y-or-n-p "adjust the degree of hand-opening? press y to adjust or n to finish")
       (format t "How much to open? [0, 1]~%")
       (setq hand-opening (read-from-string (read-line)))
-      (when (numberp length)
-        (send *ri* :move-gripper hand-opening)
+      (when (numberp hand-opening)
+        (send *ri* :move-gripper :rarm hand-opening)
         )
       )
     (while (y-or-n-p "adjust spreader position? press y to adjust or n to finish")
@@ -115,6 +115,7 @@
       (format t "How much to move? [mm]~%")
       (setq length (read-from-string (read-line)))
       (when (numberp length)
+        (setq move-fv #f(0 0 0))
         (cond
          ((equal direction "x") (setf (elt move-fv 0) length))
          ((equal direction "y") (setf (elt move-fv 1) length))
@@ -122,7 +123,7 @@
          (t )
          )
         (setq target-coords (send *robot* :rarm :end-coords :copy-worldcoords))
-        (send target-coords :locate move-fv)
+        (send target-coords :translate move-fv :world)
         (send *robot* :rarm :inverse-kinematics target-coords :debug-view :no-message)
         (if real
             (progn
