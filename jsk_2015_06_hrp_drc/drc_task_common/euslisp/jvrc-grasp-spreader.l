@@ -10,10 +10,12 @@
 (require "package://jvrc_models/models/spreader.l")
 (require "package://drc_task_common/euslisp/primitive-marker-util.l")
 
-(when (not (boundp '*jaxon*))
+
+(when (not (boundp '*jaxon_red*))
   (jaxon_red-init)
   (setq *robot* *jaxon_red*)
   )
+
 (when (not (boundp '*spreader*))
   (setq *spreader* (spreader))
   (setq *spreader-grip* (make-cascoords :pos #f(0 170 140) :rpy (list 0 (deg2rad 90) (deg2rad 90))))
