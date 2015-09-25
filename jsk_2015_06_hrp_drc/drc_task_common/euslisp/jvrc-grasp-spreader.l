@@ -30,6 +30,7 @@
   )
 
 (objects (list *robot* *spreader* *spreader-grip*))
+(format t ";; (select-func)")
 
 ;; insert spreader marker
 (defun insert-spreader ()
