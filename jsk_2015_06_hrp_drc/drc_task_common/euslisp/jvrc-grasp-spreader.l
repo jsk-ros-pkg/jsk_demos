@@ -18,7 +18,10 @@
 
 (when (not (boundp '*spreader*))
   (setq *spreader* (spreader))
-  (setq *spreader-grip* (make-cascoords :pos #f(0 170 140) :rpy (list 0 (deg2rad 90) (deg2rad 90))))
+  ;; totte
+  ;; (setq *spreader-grip* (make-cascoords :pos #f(0 170 140) :rpy (list 0 (deg2rad 90) (deg2rad 90))))
+  ;; hontai
+  (setq *spreader-grip* (make-cascoords :pos #f(0 40 60) :rpy (list 0 (deg2rad 90) (deg2rad 90))))
   (send *spreader* :assoc *spreader-grip*)
   )
 (when (not (boundp '*tf*))
@@ -59,6 +62,7 @@
 
 ;; reach spreader
 (defun reach-spreader (&key (ang 0) (real nil) (base-time 5000))
+  (send *ri* :stop-impedance :rarm)
   (get-spreader-pose)
   (let* ((reach-z (send *spreader-grip* :rotate-vector (float-vector 0 0 1)))
          (reach-y (v* reach-z (float-vector 0 0 -1)))
@@ -94,6 +98,7 @@
         (send *ri* :stop-grasp)
         (send *ri* :angle-vector (send *robot* :angle-vector) base-time)
         (send *ri* :wait-interpolation)
+        (send *ri* :start-impedance :rarm)
         )
       )
   )
@@ -140,7 +145,9 @@
 ;; hold spreader and step back
 (defun hold-spreader (&key (real nil) (up 200) (step-back 1.0) (base-time 5000))
   (let* ((hand-opening) (direction) (length) (move-fv #f(0 0 0)) (target-coords))
-    (send *robot* :rarm :move-end-pos (float-vector 0 0 up))
+    (send *robot* :angle-vector (send *ri* :state :potentio-vector))
+    (send *robot* :rarm :move-end-pos (float-vector 0 0 up) :world)
+    (send *irtviewer* :draw-objects)
     (if real
         (progn
           (send *ri* :angle-vector (send *robot* :angle-vector) base-time)
@@ -149,7 +156,12 @@
           )
       )
     (when (y-or-n-p "finish and move spreader close to reset pose ?")
-      (send *robot* :rarm :move-end-pos (float-vector 0 (- 400 (elt (send *robot* :rarm :end-coords :worldpos) 1)) 0) :world)
+      ;; (send *robot* :rarm :move-end-pos (float-vector 0 (- 400 (elt (send *robot* :rarm :end-coords :worldpos) 1)) 0) :world)
+      (let* ((target-coords (send *robot* :rarm :end-coords :copy-worldcoords)))
+        (send target-coords :translate (float-vector 0 (- -400 (elt (send *robot* :rarm :end-coords :worldpos) 1)) 0) :world)
+        (send *robot* :rarm :inverse-kinematics target-coords :rotation-axis :x :debug-view :no-message)
+        (send *irtviewer* :draw-objects)
+        )
       (if real
           (progn
             (send *ri* :angle-vector (send *robot* :angle-vector) base-time)
@@ -163,6 +175,7 @@
 
 ;; use spreader by setting it toward triangle mark, using spreader marker
 (defun use-spreader (&key (real nil) (base-time 5000))
+  (send *ri* :stop-impedance :rarm)
   (get-spreader-pose)
   (with-move-target-link-list
    (mt ll *robot* '(:rarm :lleg :rleg))
