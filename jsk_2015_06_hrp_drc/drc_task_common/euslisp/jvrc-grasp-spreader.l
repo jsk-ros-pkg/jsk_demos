@@ -147,6 +147,12 @@
 (defun hold-spreader (&key (real nil) (up 200) (step-back 1.0) (base-time 5000))
   (let* ((hand-opening) (direction) (length) (move-fv #f(0 0 0)) (target-coords))
     (send *robot* :angle-vector (send *ri* :state :potentio-vector))
+    (if real
+        (progn
+          (send *ri* :set-ref-force #f(0 0 -140.14) 2000 :rarm)
+          (send *ri* :wait-interpolation)
+          )
+      )
     (send *robot* :rarm :move-end-pos (float-vector 0 0 up) :world)
     (send *irtviewer* :draw-objects)
     (if real
