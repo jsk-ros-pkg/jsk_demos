@@ -20,9 +20,9 @@
 (when (not (boundp '*spreader*))
   (setq *spreader* (spreader))
   ;; totte
-  ;; (setq *spreader-grip* (make-cascoords :pos #f(0 170 140) :rpy (list 0 (deg2rad 90) (deg2rad 90))))
+  (setq *spreader-grip* (make-cascoords :pos #f(0 170 140) :rpy (list 0 (deg2rad 90) (deg2rad 90))))
   ;; hontai
-  (setq *spreader-grip* (make-cascoords :pos #f(0 40 60) :rpy (list 0 (deg2rad 90) (deg2rad 90))))
+  ;; (setq *spreader-grip* (make-cascoords :pos #f(0 40 60) :rpy (list 0 (deg2rad 90) (deg2rad 90))))
   (send *spreader* :assoc *spreader-grip*)
   )
 (when (not (boundp '*tf*))
@@ -30,7 +30,7 @@
   )
 
 (objects (list *robot* *spreader* *spreader-grip*))
-(format t ";; (select-func)")
+(format t ";; (select-func)~%")
 
 ;; insert spreader marker
 (defun insert-spreader ()
@@ -224,7 +224,7 @@
             )
           (reach-spreader :real real)))
        ((equal selection "a")
-        (when (y-or-n-p "adjust-spreader?") (reach-spreader :real t)))
+        (when (y-or-n-p "adjust-spreader?") (adjust-spreader :real t)))
        ((equal selection "h")
         (when (y-or-n-p "hold-spreader?")
           (when (y-or-n-p ":real t?")
