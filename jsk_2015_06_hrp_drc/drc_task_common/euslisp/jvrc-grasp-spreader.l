@@ -137,6 +137,30 @@
   )
 
 
+;; hold spreader and step back
+(defun hold-spreader (&key (real nil) (up 200) (step-back 1.0) (base-time 5000))
+  (let* ((hand-opening) (direction) (length) (move-fv #f(0 0 0)) (target-coords))
+    (send *robot* :rarm :move-end-pos (float-vector 0 0 up))
+    (if real
+        (progn
+          (send *ri* :angle-vector (send *robot* :angle-vector) base-time)
+          (send *ri* :wait-interpolation)
+          (send *ri* :go-pos (- (abs step-back)) 0 0)
+          )
+      )
+    (when (y-or-n-p "finish and move spreader close to reset pose ?")
+      (send *robot* :rarm :move-end-pos (float-vector 0 (- 400 (elt (send *robot* :rarm :end-coords :worldpos) 1)) 0) :world)
+      (if real
+          (progn
+            (send *ri* :angle-vector (send *robot* :angle-vector) base-time)
+            (send *ri* :wait-interpolation)
+            )
+        )
+      )
+    )
+  )
+
+
 ;; use spreader by setting it toward triangle mark, using spreader marker
 (defun use-spreader (&key (real nil) (base-time 5000))
   (get-spreader-pose)
