@@ -14,6 +14,7 @@
 (when (not (boundp '*jaxon_red*))
   (jaxon_red-init)
   (setq *robot* *jaxon_red*)
+  (send *ri* :set-gait-generator-param :default-step-time 0.6) ;; walking speed
   )
 
 (when (not (boundp '*spreader*))
@@ -74,7 +75,7 @@
     ;; (setq *rfoot* (send *robot* :rleg :end-coords :copy-worldcoords))
     ;; (send *robot* :angle-vector (send *ri* :state :potentio-vector))
 
-    (send spreader-reach :translate #f(0 0 150) :world)
+    (send spreader-reach :translate #f(0 0 180) :world)
     (send spreader-reach :rotate (deg2rad ang) :z)
 
     ;; fullbody-ik (rarm will be above spreader, and feet on ground)
@@ -200,4 +201,39 @@
     )
   )
 
+
+(defun select-func ()
+  (let* ((selection) (real nil))
+    (while t
+      (format t "(i):insert-spreader (r):reach-spreader (a):adjust-spreader (h):hold-spreader (u): use-spreader~%")
+      (setq selection (read-line))
+      (cond
+       ((equal selection "i")
+        (when (y-or-n-p "insert-spreader?") (insert-spreader)))
+       ((equal selection "r")
+        (when (y-or-n-p "reach-spreader?")
+          (when (y-or-n-p ":real t?")
+            (setq real t)
+            )
+          (reach-spreader :real real)))
+       ((equal selection "a")
+        (when (y-or-n-p "adjust-spreader?") (reach-spreader :real t)))
+       ((equal selection "h")
+        (when (y-or-n-p "hold-spreader?")
+          (when (y-or-n-p ":real t?")
+            (setq real t)
+            )
+          (hold-spreader :real real)))
+       ((equal selection "u")
+        (when (y-or-n-p "use-spreader?")
+          (when (y-or-n-p ":real t?")
+            (setq real t)
+            )
+          (use-spreader :real real)))
+       (t )
+       )
+      (setq real nil)
+      )
+    )
+  )
 
