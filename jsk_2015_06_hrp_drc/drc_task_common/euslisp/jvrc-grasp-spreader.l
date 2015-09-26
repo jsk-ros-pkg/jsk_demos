@@ -32,8 +32,12 @@
 (format t ";; (select-func)~%")
 
 ;; insert spreader marker
-(defun insert-spreader ()
+(defun insert-spreader (&key (place "grasp"))
   (insert-primitive-marker :shape-type 3 :name "spreader" :description "" :resource "package://jvrc_models/models/spreader-visual.dae")
+  (if (equal place "grasp")
+      (set-primitive-marker-pose (make-cascoords :pos #f(600 -100 -200) :rpy (list (deg2rad 180) (deg2rad 0) 0)) "BODY" :name "spreader")
+    (set-primitive-marker-pose (make-cascoords :pos #f(200 -400 600) :rpy (list (deg2rad 90) (deg2rad 0) 0)) "RLEG_LINK5" :name "spreader")
+    )
   )
 
 ;; get robot position in eus
@@ -63,9 +67,31 @@
   )
 
 ;; reach spreader
-(defun reach-spreader (&key (ang 0) (real nil) (base-time 5000) (grasp-point *spreader-body*) (limb :rarm))
-  (send *ri* :stop-impedance limb)
+(defun reach-spreader (&key (ang 0) (real nil) (base-time 4000) (grasp-point *spreader-body*) (limb :rarm))
+  (if real
+      (progn
+        (send *ri* :stop-impedance limb)
+        (send *ri* :start-grasp)
+        (send *ri* :wait-interpolation)
+        )
+    )
   (get-spreader-pose)
+  (if (equal limb :rarm)
+      (progn
+        (send *robot* :rarm_joint0 :joint-angle -8)
+        (send *robot* :rarm_joint2 :joint-angle -100)
+        )
+    (progn
+      (send *robot* :larm_joint0 :joint-angle 8)
+      (send *robot* :larm_joint2 :joint-angle 100)
+      )
+    )
+  (if real
+      (progn
+        (send *ri* :angle-vector (send *robot* :angle-vector) base-time)
+        (send *ri* :wait-interpolation)
+        )
+    )
   (let* ((reach-z (send grasp-point :rotate-vector (float-vector 0 0 1)))
          (reach-y (v* reach-z (float-vector 0 0 -1)))
          (reach-x (v* reach-y reach-z))
@@ -77,10 +103,35 @@
     ;; (setq *rfoot* (send *robot* :rleg :end-coords :copy-worldcoords))
     ;; (send *robot* :angle-vector (send *ri* :state :potentio-vector))
 
-    (send spreader-reach :translate #f(0 0 180) :world)
+    (send spreader-reach :translate #f(0 0 300) :world)
     (send spreader-reach :rotate (deg2rad ang) :z)
 
     ;; fullbody-ik (arm will be above spreader, and feet on ground)
+    (with-move-target-link-list
+     (mt ll *robot* link-list)
+     (send *robot*
+           :fullbody-inverse-kinematics (list spreader-reach *lfoot* *rfoot*)
+           :root-link-virtual-joint-weight #f(0.4 0.4 0.4 0.2 0.2 0.4) ;; root-link has 6DOF
+           :target-centroid-pos (midpoint 0.5 (send *lfoot* :worldpos) (send *rfoot* :worldpos))
+           :centroid-thre 30
+           :move-target mt
+           :link-list ll
+           :additional-weight-list (list (list (send *robot* :head-neck-p :child-link) 0)
+                                         (list (send *robot* :head-neck-y :child-link) 0))
+           :rotation-axis (list t t t)
+           :min-loop nil
+           :revert-if-fail nil
+           :debug-view :no-message) ;;t)
+     )
+    (if real
+        (progn
+          (send *ri* :stop-grasp)
+          (send *ri* :angle-vector (send *robot* :angle-vector) base-time)
+          (send *ri* :wait-interpolation)
+          )
+      )
+    (send spreader-reach :translate #f(0 0 -120) :world)
+    ;; fullbody-ik (arm will be just above spreader, and feet on ground)
     (with-move-target-link-list
      (mt ll *robot* link-list)
      (send *robot*
@@ -111,11 +162,11 @@
 
 
 ;; adjust position and the degree of hand opening
-(defun adjust-spreader (&key (real nil) (base-time 1000) (limb :rarm))
+(defun adjust-spreader (&key (real nil) (base-time 500) (limb :rarm))
   (when (not (boundp '*grasp-hand*))
     (setq *grasp-hand* limb)
     )
-  (let* ((hand-opening) (direction) (length) (move-fv #f(0 0 0)) (target-coords))
+  (let* ((hand-opening) (direction) (length) (move-fv #f(0 0 0)))
     (while (y-or-n-p "adjust the degree of hand-opening? press y to adjust or n to finish")
       (format t "How much to open? [0, 1]~%")
       (setq hand-opening (read-from-string (read-line)))
@@ -129,16 +180,16 @@
       (format t "How much to move? [mm]~%")
       (setq length (read-from-string (read-line)))
       (when (numberp length)
-        (setq move-fv #f(0 0 0))
+        (setq move-fv (float-vector 0 0 0))
+        (print move-fv)
         (cond
          ((equal direction "x") (setf (elt move-fv 0) length))
          ((equal direction "y") (setf (elt move-fv 1) length))
          ((equal direction "z") (setf (elt move-fv 2) length))
          (t )
          )
-        (setq target-coords (send *robot* *grasp-hand* :end-coords :copy-worldcoords))
-        (send target-coords :translate move-fv :world)
-        (send *robot* *grasp-hand* :inverse-kinematics target-coords :debug-view :no-message)
+        (print move-fv)
+        (send *robot* *grasp-hand* :move-end-pos move-fv :world)
         (send *irtviewer* :draw-objects)
         (if real
             (progn
@@ -158,6 +209,13 @@
     (setq *grasp-hand* limb)
     )
   (let* ((hand-opening) (direction) (length) (move-fv #f(0 0 0)) (target-coords))
+    (while (y-or-n-p "adjust the degree of hand-opening? press y to adjust or n to finish")
+      (format t "How much to open? [0, 1]~%")
+      (setq hand-opening (read-from-string (read-line)))
+      (when (numberp hand-opening)
+        (send *ri* :move-gripper *grasp-hand* hand-opening)
+        )
+      )
     (send *robot* :angle-vector (send *ri* :state :potentio-vector))
     (if real
         (progn
@@ -193,7 +251,7 @@
 
 
 ;; use spreader by setting it toward triangle mark, using spreader marker
-(defun use-spreader (&key (real nil) (base-time 5000) (grasp-point *grasp-body*) (limb :rarm))
+(defun use-spreader (&key (real nil) (base-time 5000) (grasp-point *spreader-body*) (limb :rarm))
   (when (not (boundp '*grasp-point*))
     (setq *grasp-point* grasp-point)
     )
@@ -235,7 +293,12 @@
       (setq selection (read-line))
       (cond
        ((equal selection "i")
-        (when (y-or-n-p "insert-spreader?") (insert-spreader)))
+        (when (y-or-n-p "insert-spreader?")
+          (if (y-or-n-p "for using?")
+              (insert-spreader :place "use")
+            (insert-spreader :place "grasp")
+            )
+          ))
        ((equal selection "r")
         (when (y-or-n-p "reach-spreader?")
           (when (y-or-n-p ":real t?")
