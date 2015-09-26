@@ -1,0 +1,13 @@
+- direction: 'horizontal'
+- name: 'reverse_grasp'
+  service: 'set_handle_reverse'
+  column: 0
+- name: 'switch_arm'          
+  service: 'switch_arm'
+  column: 0
+- name: 'current_pos'
+  service: 'current_pos'
+  column: 0
+- name: 'ik_peep'
+  service: 'ik_peep'
+  column: 0
