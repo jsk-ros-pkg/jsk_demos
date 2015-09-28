@@ -4,6 +4,7 @@
 (require :pr2-behavior-utils "pr2-behavior-utils.l")
 
 (ros::roseus-add-msgs "people_msgs")
+(ros::roseus-add-msgs "face_recognition")
 (ros::roseus-add-msgs "jsk_hark_msgs")
 (ros::roseus-add-msgs "geometry_msgs")
 (ros::roseus "interactive_behavior_server")
@@ -17,6 +18,8 @@
 (setq *behavior-timeout* 0)
 (setq *behavior-start-at* (ros::time-now))
 (setq *face-detected* 0)
+(setq *face-recognized* "")
+(setq *face-recognized-count* 0)
 ;; behaviors
 ;;   :idle
 ;;   :look-at-face
@@ -39,6 +42,7 @@
   (when *behavior-server-enabled*
     (setq *current-behavior* behavior)
     (setq *behavior-start-at* (ros::time-now))
+    (ros::spin-once)
     (case behavior
       (:look-at-face
        (apply #'look-at-pos args)
@@ -47,11 +51,14 @@
        (apply #'look-at-pos args)
        )
       (:idle-random-look
-       (look-at-pos-random)))))
+       (look-at-pos-random))
+      (:reply-to-person
+       (apply #'reply-to-person args)))))
   
 (defun position-measurement-cb (msg)
   (when (or (eq *current-behavior* :idle)
             (eq *current-behavior* :idle-random-look)
+            (eq *current-behavior* :reply-to-person)
             (eq *current-behavior* :look-at-sound)
             (eq *current-behavior* :look-at-face))
       (setq msg (elt (send msg :people) 0))
@@ -68,10 +75,30 @@
              (or (eq *current-behavior* :idle)
                  (eq *current-behavior* :idle-random-look)
                  (eq *current-behavior* :look-at-sound)
-                 (eq *current-behavior* :look-at-face)))
+                 (eq *current-behavior* :reply-to-person)))
+;;                 (eq *current-behavior* :look-at-face)))
     (let ((world-pos (people->look-at-pos msg)))
       (when world-pos
         (run-behavior :look-at-face world-pos)))))
+
+(defun face-recognition-feedback-cb (msg)
+  (let* ((f (send msg :feedback))
+         (order-id (send f :order_id)))
+    (when (and
+           (eq order-id 1)
+           (send f :names))
+      (let ((name (elt (send f :names) 0))
+            (confidence (elt (send f :confidence) 0)))
+        (if (string= *face-recognized* name)
+            (inc *face-recognized-count*)
+          (progn
+            (setq *face-recognized* name)
+            (setq *face-recognized-count* 0)))
+        (when (and *face-detected*
+                   (eq *current-behavior* :look-at-face)
+                   (> *face-recognized-count* 20))
+          (run-behavior :reply-to-person name)
+          (setq *face-recognized-count* -50))))))
 
 (defun find-max-powers-index (powers)
   (let ((max-value (elt powers 0))
@@ -99,10 +126,12 @@
 
 (defun enable-cb (req)
   (setq *behavior-server-enabled* t)
+  (ros::ros-info "behavior server enabled")
   (send req :response))
 
 (defun disable-cb (req)
   (setq *behavior-server-enabled* nil)
+  (ros::ros-info "behavior server disabled")
   (send req :response))
 
 ;; subscribe topics
@@ -110,6 +139,10 @@
  "/face_detector/people_tracker_measurements_array"
  people_msgs::PositionMeasurementArray
  #'position-measurement-cb)
+(ros::subscribe
+ "/face_recognition/feedback"
+ face_recognition::FaceRecognitionActionFeedback
+ #'face-recognition-feedback-cb)
 (ros::subscribe
  "/people"
  people_msgs::People

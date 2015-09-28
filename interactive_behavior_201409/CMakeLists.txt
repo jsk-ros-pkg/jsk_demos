@@ -6,6 +6,7 @@ project(interactive_behavior_201409)
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED COMPONENTS
   face_detector
+  face_recognition
   people_msgs
   pr2eus
   roseus
