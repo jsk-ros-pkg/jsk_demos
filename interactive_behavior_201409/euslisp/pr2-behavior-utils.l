@@ -1,8 +1,11 @@
 #!/usr/bin/env roseus
 
 (require :pr2-interface "package://pr2eus/pr2-interface.l")
+(require :mongo-client "package://roseus_mongo/euslisp/mongo-client.l")
+(defparameter json::*tzoffset* -8) ;; use PST for PR2 Robot
 
 (ros::roseus-add-msgs "people_msgs")
+(ros::roseus-add-msgs "face_recognition")
 (ros::roseus-add-msgs "jsk_hark_msgs")
 (ros::roseus-add-msgs "geometry_msgs")
 
@@ -105,4 +108,34 @@
           (progn
             (ros::ros-warn "Failed to transform /base_footprint to ~A" (send msg :header :frame_id))
             nil))))
-      
+
+(defun relative-time-string-to-now (tm &key (suffix "会いましたね"))
+  (let* ((ntm (ros::time-now))
+         (ttn-sec (send (ros::time- ntm tm) :sec))
+         ret-str)
+    (setq ret-str
+          (cond
+           ((< ttn-sec (* 60 5)) ;; < 5 mins
+            "さっき")
+           ((< ttn-sec (* 60 60)) ;; < 1 hour
+            (format nil "~A分前に" (/ ttn-sec 60)))
+           ((< ttn-sec (* 60 60 24)) ;; < 1 day
+            (format nil "~A時間前に" (/ ttn-sec 60 60)))
+           ((< ttn-sec (* 60 60 24 2)) ;; < 2 days
+            "昨日")
+           ((< ttn-sec (* 60 60 24 7)) ;; < 7 days
+            (format nil "~A日前に" (/ ttn-sec 60 60 24)))
+           (t
+            (return-from relative-time-string-to-now "久しぶりですね"))))
+          (format nil "~A~A" ret-str suffix)))
+
+
+(defun reply-to-person (name)
+  (let ((res (mongo::query face_recognition::FaceRecognitionActionFeedback
+                            :query `((:feedback.names . (,name)))
+                            :sort '((:$natural . -1))
+                            :single t))
+        last-seen-date-ros)
+    (when res
+      (setq last-seen-date-ros (send (send (caar res) :header) :stamp))
+      (speak-jp (format nil "~A さんこんにちは。~A" name (relative-time-string-to-now last-seen-date-ros))))))
