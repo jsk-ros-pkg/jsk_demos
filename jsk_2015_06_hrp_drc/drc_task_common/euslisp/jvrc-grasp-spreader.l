@@ -6,6 +6,7 @@
 (ros::roseus-add-msgs "jsk_rviz_plugins")
 (ros::roseus-add-srvs "jsk_rviz_plugins")
 
+
 (require "package://hrpsys_ros_bridge_tutorials/euslisp/jaxon_red-interface.l")
 (require "package://jvrc_models/models/spreader.l")
 (require "package://drc_task_common/euslisp/primitive-marker-util.l")
@@ -20,9 +21,11 @@
 (when (not (boundp '*spreader*))
   (setq *spreader* (spreader))
   (setq *spreader-grip* (make-cascoords :pos #f(0 170 140) :rpy (list 0 (deg2rad 90) (deg2rad 90))))
-  (setq *spreader-body* (make-cascoords :pos #f(0 40 60) :rpy (list 0 (deg2rad 90) (deg2rad 90))))
+  (setq *spreader-body* (make-cascoords :pos #f(0 15 60) :rpy (list 0 (deg2rad 90) (deg2rad 90))))
+  (setq *spreader-head* (make-cascoords :pos #f(0 -335 35) :rpy (list 0 0 0))))
   (send *spreader* :assoc *spreader-grip*)
   (send *spreader* :assoc *spreader-body*)
+  (send *spreader* :assoc *spreader-head*)
   )
 (when (not (boundp '*tf*))
   (setq *tf* (instance ros::transform-listener :init))
@@ -34,6 +37,8 @@
 ;; insert spreader marker
 (defun insert-spreader (&key (place "grasp"))
   (insert-primitive-marker :shape-type 3 :name "spreader" :description "" :resource "package://jvrc_models/models/spreader-visual.dae")
+  (ros::advertise "/transformable_interactive_server/set_color" std_msgs::ColorRGBA)
+  (set-primitive-marker-color :r 0 :b 1 :g 1 :a 1)
   (if (equal place "grasp")
       (set-primitive-marker-pose (make-cascoords :pos #f(600 -100 -200) :rpy (list (deg2rad 180) (deg2rad 0) 0)) "BODY" :name "spreader")
     (set-primitive-marker-pose (make-cascoords :pos #f(200 -400 600) :rpy (list (deg2rad 90) (deg2rad 0) 0)) "RLEG_LINK5" :name "spreader")
@@ -41,13 +46,15 @@
   )
 
 ;; get robot position in eus
-(defun set-robot-eus ()
+(defun set-robot-eus (&key (set-current-pose t))
   (send *robot* :locate #f(0 0 0) :world)
   (send *robot* :reset-pose)
   (send *robot* :fix-leg-to-coords (make-coords))
   (setq *lfoot* (send *robot* :lleg :end-coords :copy-worldcoords))
   (setq *rfoot* (send *robot* :rleg :end-coords :copy-worldcoords))
-  (send *robot* :angle-vector (send *ri* :state :potentio-vector))
+  (when set-current-pose
+    (send *robot* :angle-vector (send *ri* :state :potentio-vector))
+    )
   (send *robot* :fix-leg-to-coords (make-coords))
   )
 
@@ -57,7 +64,7 @@
          (spreader-pose (get-primitive-marker-pose :name "spreader" :frame-id frame-id))
          ;; (spreader-pose (make-cascoords :pos #f(600 -200 -300) :rpy (list (deg2rad 90) (deg2rad 0) 0)));; (list (deg2rad 180) (deg2rad 90) 0)))
          )
-    (set-robot-eus)
+    (set-robot-eus :set-current-pose t)
     (setq spreader-pose (send spreader-pose :copy-worldcoords))
 
     (send spreader-pose :transform (send *robot* :body_lk :worldcoords) :world)
@@ -88,7 +95,7 @@
     )
   (if real
       (progn
-        (send *ri* :angle-vector (send *robot* :angle-vector) base-time)
+        (send *ri* :angle-vector (send *robot* :angle-vector) (* base-time 0.5))
         (send *ri* :wait-interpolation)
         )
     )
@@ -119,7 +126,9 @@
            :additional-weight-list (list (list (send *robot* :head-neck-p :child-link) 0)
                                          (list (send *robot* :head-neck-y :child-link) 0))
            :rotation-axis (list t t t)
-           :min-loop nil
+           ;;:min-loop nil
+           :cog-null-space nil
+           :use-6dof-joint-leg-gain nil
            :revert-if-fail nil
            :debug-view :no-message) ;;t)
      )
@@ -144,7 +153,9 @@
            :additional-weight-list (list (list (send *robot* :head-neck-p :child-link) 0)
                                          (list (send *robot* :head-neck-y :child-link) 0))
            :rotation-axis (list t t t)
-           :min-loop nil
+           ;;:min-loop nil
+           :cog-null-space nil
+           :use-6dof-joint-leg-gain nil
            :debug-view :no-message) ;;t)
      )
     (setq *grasp-point* grasp-point)
@@ -153,7 +164,7 @@
   (if real
       (progn
         (send *ri* :stop-grasp)
-        (send *ri* :angle-vector (send *robot* :angle-vector) base-time)
+        (send *ri* :angle-vector (send *robot* :angle-vector) (* base-time 0.5))
         (send *ri* :wait-interpolation)
         (send *ri* :start-impedance *grasp-hand*)
         )
@@ -181,7 +192,6 @@
       (setq length (read-from-string (read-line)))
       (when (numberp length)
         (setq move-fv (float-vector 0 0 0))
-        (print move-fv)
         (cond
          ((equal direction "x") (setf (elt move-fv 0) length))
          ((equal direction "y") (setf (elt move-fv 1) length))
@@ -227,7 +237,7 @@
     (send *irtviewer* :draw-objects)
     (if real
         (progn
-          (send *ri* :angle-vector (send *robot* :angle-vector) base-time)
+          (send *ri* :angle-vector (send *robot* :angle-vector) (* base-time 0.4))
           (send *ri* :wait-interpolation)
           (send *ri* :go-pos (- (abs step-back)) 0 0)
           )
@@ -261,6 +271,10 @@
   (let* ((link-list (list limb :lleg :rleg)))
     (send *ri* :stop-impedance *grasp-hand*)
     (get-spreader-pose)
+    (when (boundp '*marker-offset*)
+      (send *spreader* :transform *marker-offset*)
+      )
+    (set-robot-eus :set-current-pose nil)
     (with-move-target-link-list
      (mt ll *robot* link-list)
      (send *robot*
@@ -273,10 +287,14 @@
            :additional-weight-list (list (list (send *robot* :head-neck-p :child-link) 0)
                                          (list (send *robot* :head-neck-y :child-link) 0))
            :rotation-axis (list t t t)
-           :min-loop nil
+           ;; nozawa
+           ;;:min-loop 2
+           :cog-null-space nil
+           :use-6dof-joint-leg-gain nil
            :debug-view :no-message) ;;t)
      )
     )
+  (send *robot* :look-at-target *spreader-head*)
   (if real
       (progn
         (send *ri* :angle-vector (send *robot* :angle-vector) base-time)
@@ -285,11 +303,57 @@
     )
   )
 
+;; remove offset by interacative markar
+(defun remove-offset ()
+  (let* ((before-spreader-pose (send *spreader* :copy-worldcoords))
+         (after-spreader-pose)
+         )
+    (get-spreader-pose)
+    (setq after-spreader-pose (send *spreader* :copy-worldcoords))
+    (send *spreader* :move-to before-spreader-pose :world)
+    (setq *marker-offset* (send after-spreader-pose :transformation before-spreader-pose))
+    )
+  )
+
+
+;; rotate spreader in the spreader-head coords
+(defun move-head-rot (&key (real nil) (base-time 1000) (grasp-point *spreader-body*) (limb :rarm))
+  (send *spreader* :dissoc *spreader-head*)
+  (send *speader-head* :assoc *spreader*)
+
+  (let* ((axis) (ang))
+    (while (y-or-n-p "move spreader head rotation? press y to adjust or n to finish")
+      (format t "(x):x, (y):y, (z):z~%")
+      (setq axis (read-line))
+      (format t "How much to rotate? [deg]~%")
+      (setq ang (read-from-string (read-line)))
+      (when (numberp ang)
+        (cond
+         ((equal axis "x") (send *spreader-head* :rotate (deg2rad ang) :x))
+         ((equal axis "y") (setf *spreader-head* :rotate (deg2rad ang) :y))
+         ((equal axis "z") (setf *spreader-head* :rotate (deg2rad ang) :z))
+         (t )
+         )
+        (print ang)
+        (send *irtviewer* :draw-objects)
+        (if real
+            (progn
+              (send *ri* :angle-vector (send *robot* :angle-vector) base-time)
+              (send *ri* :wait-interpolation)
+              )
+          )
+        )
+      )
+    )
+
+  (send *spreader-head* :dissoc *spreader*)
+  (send *spreader* :assoc *spreader-head*)
+  )
 
 (defun select-func ()
   (let* ((selection) (real nil) (limb :larm) (grasp-point *spreader-grip*))
     (while t
-      (format t "(i):insert-spreader (r):reach-spreader (a):adjust-spreader (h):hold-spreader (u): use-spreader~%")
+      (format t "(i):insert-spreader (r):reach-spreader (a):adjust-spreader (h):hold-spreader (u): use-spreader (r): remove-offset~%")
       (setq selection (read-line))
       (cond
        ((equal selection "i")
@@ -325,6 +389,9 @@
             (setq real t)
             )
           (use-spreader :real real)))
+       ((equal selection "r")
+        (when (y-or-n-p "remove-offset?")
+          (remove-offset)))
        (t )
        )
       (setq real nil)
