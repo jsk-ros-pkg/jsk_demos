@@ -269,7 +269,7 @@
     (setq *grasp-hand* limb)
     )
   (let* ((link-list (list limb :lleg :rleg)))
-    (send *ri* :stop-impedance *grasp-hand*)
+    ;; (send *ri* :stop-impedance *grasp-hand*)
     (get-spreader-pose)
     (when (boundp '*marker-offset*)
       (send *spreader* :transform *marker-offset*)
@@ -304,7 +304,7 @@
   )
 
 ;; remove offset by interacative markar
-(defun remove-offset ()
+(defun offset-remove ()
   (let* ((before-spreader-pose (send *spreader* :copy-worldcoords))
          (after-spreader-pose)
          )
@@ -318,8 +318,14 @@
 
 ;; rotate spreader in the spreader-head coords
 (defun move-head-rot (&key (real nil) (base-time 1000) (grasp-point *spreader-body*) (limb :rarm))
+  (when (not (boundp '*grasp-point*))
+    (setq *grasp-point* grasp-point)
+    )
+  (when (not (boundp '*grasp-hand*))
+    (setq *grasp-hand* limb)
+    )
   (send *spreader* :dissoc *spreader-head*)
-  (send *speader-head* :assoc *spreader*)
+  (send *spreader-head* :assoc *spreader*)
 
   (let* ((axis) (ang))
     (while (y-or-n-p "move spreader head rotation? press y to adjust or n to finish")
@@ -330,8 +336,8 @@
       (when (numberp ang)
         (cond
          ((equal axis "x") (send *spreader-head* :rotate (deg2rad ang) :x))
-         ((equal axis "y") (setf *spreader-head* :rotate (deg2rad ang) :y))
-         ((equal axis "z") (setf *spreader-head* :rotate (deg2rad ang) :z))
+         ((equal axis "y") (send *spreader-head* :rotate (deg2rad ang) :y))
+         ((equal axis "z") (send *spreader-head* :rotate (deg2rad ang) :z))
          (t )
          )
         (print ang)
@@ -345,15 +351,15 @@
         )
       )
     )
-
   (send *spreader-head* :dissoc *spreader*)
   (send *spreader* :assoc *spreader-head*)
+  (use-spreader :real real :base-time base-time :grasp-point *grasp-point* :limb :rarm)
   )
 
 (defun select-func ()
   (let* ((selection) (real nil) (limb :larm) (grasp-point *spreader-grip*))
     (while t
-      (format t "(i):insert-spreader (r):reach-spreader (a):adjust-spreader (h):hold-spreader (u): use-spreader (r): remove-offset~%")
+      (format t "(i):insert-spreader (r):reach-spreader (a):adjust-spreader (h):hold-spreader (u): use-spreader (o): offset-remove (m): move-head-rot~%")
       (setq selection (read-line))
       (cond
        ((equal selection "i")
@@ -389,9 +395,15 @@
             (setq real t)
             )
           (use-spreader :real real)))
-       ((equal selection "r")
-        (when (y-or-n-p "remove-offset?")
-          (remove-offset)))
+       ((equal selection "o")
+        (when (y-or-n-p "offset-remove?")
+          (offset-remove)))
+       ((equal selection "m")
+        (when (y-or-n-p "move-head-rot?")
+          (when (y-or-n-p ":real t?")
+            (setq real t)
+            )
+          (move-head-rot :real real)))
        (t )
        )
       (setq real nil)
