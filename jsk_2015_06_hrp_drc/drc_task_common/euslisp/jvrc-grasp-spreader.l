@@ -379,10 +379,61 @@
     )
   )
 
+
+;; throw away spreader and reset ref-force
+(defun throw-away-spreader (&key (real nil) (base-time 3000) (grasp-point *spreader-body*) (limb :rarm))
+  (when (not (boundp '*grasp-point*))
+    (setq *grasp-point* grasp-point)
+    )
+  (when (not (boundp '*grasp-hand*))
+    (setq *grasp-hand* limb)
+    )
+  (if real
+      (progn
+        (send *ri* :stop-grasp)
+        (send *ri* :set-ref-force #f(0 0 0) 2000 *grasp-hand*)
+        )
+    )
+  (let* (
+         (spreader-pose (make-cascoords :pos #f(400 -400 400) :rpy (list (deg2rad 90) (deg2rad 0) (deg2rad -90))))
+         (link-list (list limb :lleg :rleg))
+         )
+    (setq spreader-pose (send spreader-pose :copy-worldcoords))
+    (send *irtviewer* :draw-objects)
+
+    (set-robot-eus :set-current-pose nil)
+    (with-move-target-link-list
+     (mt ll *robot* link-list)
+     (send *robot*
+           :fullbody-inverse-kinematics (list grasp-point *lfoot* *rfoot*)
+           :root-link-virtual-joint-weight #f(0.4 0.4 0.4 0.2 0.2 0.4) ;; root-link has 6DOF
+           :target-centroid-pos (midpoint 0.5 (send *lfoot* :worldpos) (send *rfoot* :worldpos))
+           :centroid-thre 30
+           :move-target mt
+           :link-list ll
+           :additional-weight-list (list (list (send *robot* :head-neck-p :child-link) 0)
+                                         (list (send *robot* :head-neck-y :child-link) 0))
+           :rotation-axis (list t t t)
+           ;; nozawa
+           ;;:min-loop 2
+           :cog-null-space nil
+           :use-6dof-joint-leg-gain nil
+           :debug-view :no-message) ;;t)
+     )
+    )
+  (if real
+      (progn
+        (send *ri* :angle-vector (send *robot* :angle-vector) base-time)
+        (send *ri* :wait-interpolation)
+        )
+    )
+  )
+
+
 (defun select-func ()
   (let* ((selection) (real nil) (limb :larm) (grasp-point *spreader-grip*))
     (while t
-      (format t "(i):insert-spreader (r):reach-spreader (a):adjust-spreader (h):hold-spreader (u): use-spreader (o): offset-remove (m): move-head-rot~%")
+      (format t "(i):insert-spreader (r):reach-spreader (a):adjust-spreader (h):hold-spreader (u): use-spreader (o): offset-remove (m): move-head-rot (t): throw-away-spreader~%")
       (setq selection (read-line))
       (cond
        ((equal selection "i")
@@ -427,6 +478,12 @@
             (setq real t)
             )
           (move-head-rot :real real)))
+       ((equal selection "t")
+        (when (y-or-n-p "throw-away-spreader?")
+          (when (not (y-or-n-p ":real nil?"))
+            (setq real t)
+            )
+          (throw-away-spreader :real real)))
        (t )
        )
       (setq real nil)
