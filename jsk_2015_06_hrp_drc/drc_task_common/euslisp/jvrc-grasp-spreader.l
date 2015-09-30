@@ -324,36 +324,59 @@
   (when (not (boundp '*grasp-hand*))
     (setq *grasp-hand* limb)
     )
-  (send *spreader* :dissoc *spreader-head*)
-  (send *spreader-head* :assoc *spreader*)
-
-  (let* ((axis) (ang))
-    (while (y-or-n-p "move spreader head rotation? press y to adjust or n to finish")
-      (format t "(x):x, (y):y, (z):z~%")
-      (setq axis (read-line))
-      (format t "How much to rotate? [deg]~%")
-      (setq ang (read-from-string (read-line)))
-      (when (numberp ang)
-        (cond
-         ((equal axis "x") (send *spreader-head* :rotate (deg2rad ang) :x))
-         ((equal axis "y") (send *spreader-head* :rotate (deg2rad ang) :y))
-         ((equal axis "z") (send *spreader-head* :rotate (deg2rad ang) :z))
-         (t )
+  (let* ((spreader-coords (make-cascoords))
+         (spreader-head (make-cascoords))
          )
-        (print ang)
-        (send *irtviewer* :draw-objects)
-        (if real
-            (progn
-              (send *ri* :angle-vector (send *robot* :angle-vector) base-time)
-              (send *ri* :wait-interpolation)
-              )
+    (send spreader-coords :move-to (send *spreader* :copy-worldcoords) :world)
+    (send spreader-head :move-to (send *spreader-head* :copy-worldcoords) :world)
+    (send spreader-head :assoc spreader-coords)
+
+    (let* ((axis) (ang))
+      (while (y-or-n-p "move spreader head rotation? press y to adjust or n to finish")
+        (format t "(x):x, (y):y, (z):z~%")
+        (setq axis (read-line))
+        (format t "How much to rotate? [deg]~%")
+        (setq ang (read-from-string (read-line)))
+        (when (numberp ang)
+          (cond
+           ((equal axis "x") (send spreader-head :rotate (deg2rad ang) :x))
+           ((equal axis "y") (send spreader-head :rotate (deg2rad ang) :y))
+           ((equal axis "z") (send spreader-head :rotate (deg2rad ang) :z))
+           (t )
+           )
+          ;; (print ang)
+          (send *spreader* :move-to (send spreader-coords :copy-worldcoords) :world)
+          (send *irtviewer* :draw-objects)
           )
         )
       )
+    (send spreader-head :dissoc spreader-coords)
     )
-  (send *spreader-head* :dissoc *spreader*)
-  (send *spreader* :assoc *spreader-head*)
-  (use-spreader :real real :base-time base-time :grasp-point *grasp-point* :limb :rarm)
+  ;;(use-spreader :real real :base-time base-time :grasp-point *grasp-point* :limb :rarm)
+  (let* ((link-list (list limb :lleg :rleg)))
+    (when (boundp '*marker-offset*)
+      (send *spreader* :transform *marker-offset*)
+      )
+    (set-robot-eus :set-current-pose nil)
+    (with-move-target-link-list
+     (mt ll *robot* link-list)
+     (send *robot*
+           :fullbody-inverse-kinematics (list grasp-point *lfoot* *rfoot*)
+           :root-link-virtual-joint-weight #f(0.4 0.4 0.4 0.2 0.2 0.4) ;; root-link has 6DOF
+           :target-centroid-pos (midpoint 0.5 (send *lfoot* :worldpos) (send *rfoot* :worldpos))
+           :centroid-thre 30
+           :move-target mt
+           :link-list ll
+           :additional-weight-list (list (list (send *robot* :head-neck-p :child-link) 0)
+                                         (list (send *robot* :head-neck-y :child-link) 0))
+           :rotation-axis (list t t t)
+           ;; nozawa
+           ;;:min-loop 2
+           :cog-null-space nil
+           :use-6dof-joint-leg-gain nil
+           :debug-view :no-message) ;;t)
+     )
+    )
   )
 
 (defun select-func ()
