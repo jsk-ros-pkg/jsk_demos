@@ -227,7 +227,7 @@
     ;;     (send *ri* :move-gripper *grasp-hand* hand-opening)
     ;;     )
     ;;   )
-    (send *ri* :start-grasp *grasp-hand*)
+    (send *ri* :start-grasp)
     (send *robot* :angle-vector (send *ri* :state :potentio-vector))
     (if real
         (progn
