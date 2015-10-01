@@ -1,0 +1,8 @@
+- text: "assoc"
+  topic: "/assoc_to_object"
+- text: "dissoc"
+  topic: "/dissoc"
+- text: "rviz_menu_down"
+  topic: "/rviz_menu_down_topic"
+- text: "rviz_menu_select"
+  topic: "/rviz_menu_select_topic"
