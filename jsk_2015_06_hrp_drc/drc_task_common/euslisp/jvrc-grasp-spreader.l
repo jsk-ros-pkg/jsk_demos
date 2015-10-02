@@ -216,6 +216,7 @@
 
 ;; hold spreader and step back
 (defun hold-spreader (&key (real nil) (up 200) (step-back 1.0) (base-time 5000) (limb :rarm))
+  (send *ri* :set-gait-generator-param :default-step-time 1.2) ;; default
   (when (not (boundp '*grasp-hand*))
     (setq *grasp-hand* limb)
     )
@@ -314,6 +315,7 @@
     (setq after-spreader-pose (send *spreader* :copy-worldcoords))
     (send *spreader* :move-to before-spreader-pose :world)
     (setq *marker-offset* (send after-spreader-pose :transformation before-spreader-pose))
+    (print *marker-offset*)
     )
   )
 
@@ -332,7 +334,6 @@
     (send spreader-coords :move-to (send *spreader* :copy-worldcoords) :world)
     (send spreader-head :move-to (send *spreader-head* :copy-worldcoords) :world)
     (send spreader-head :assoc spreader-coords)
-
     (let* ((axis) (ang))
       (while (y-or-n-p "move spreader head rotation? press y to adjust or n to finish")
         (format t "(x):x, (y):y, (z):z~%")
@@ -397,10 +398,14 @@
         )
     )
   (let* (
-         (spreader-pose (make-cascoords :pos #f(400 -400 400) :rpy (list (deg2rad 90) (deg2rad 0) (deg2rad -90))))
+         (spreader-pose)
          (link-list (list limb :lleg :rleg))
          )
-    (setq spreader-pose (send spreader-pose :copy-worldcoords))
+    (if (equal limb :rarm)
+        (setq spreader-pose (make-cascoords :pos #f(400 -400 550) :rpy (list (deg2rad 90) (deg2rad 0) (deg2rad -90))))
+      (setq spreader-pose (make-cascoords :pos #f(700 100 550) :rpy (list (deg2rad 90) (deg2rad 0) (deg2rad -90))))
+      )
+    (send *spreader* :move-to (send spreader-pose :copy-worldcoords) :world)
     (send *irtviewer* :draw-objects)
 
     (set-robot-eus :set-current-pose nil)
@@ -484,8 +489,11 @@
         (when (y-or-n-p "throw-away-spreader?")
           (when (not (y-or-n-p ":real nil?"))
             (setq real t)
+            ;; (when (y-or-n-p ":rarm?")
+            ;;   (setq limb :rarm)
+            ;;   )
             )
-          (throw-away-spreader :real real)))
+          (throw-away-spreader :real real :limb :rarm)))
        (t )
        )
       (setq real nil)
