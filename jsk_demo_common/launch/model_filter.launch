@@ -1,0 +1,33 @@
+<launch>
+  <arg name="model_name" />
+
+  <!-- set robot_description param -->
+  <arg name="model" />
+  <param name="$(arg model_name)_description" command="$(find xacro)/xacro.py $(arg model)" />
+
+  <node name="joint_state_publisher"
+        pkg="joint_state_publisher" type="joint_state_publisher">
+    <remap from="robot_description" to="$(arg model_name)_description" />
+  </node>
+  <node name="robot_state_publisher"
+        pkg="robot_state_publisher" type="state_publisher">
+    <remap from="robot_description" to="$(arg model_name)_description" />
+  </node>
+
+  <!-- use self-filter to filter urdf model-->
+  <arg name="input_cloud" />
+  <arg name="output_cloud" default="$(arg input_cloud)_$(arg model_name)_filtered" />
+  <arg name="model_filter_config" />
+  <node name="urdf_model_filter"
+        pkg="pr2_navigation_self_filter" type="self_filter"
+        clear_params="true" respawn="true" output="screen">
+    <!-- The names of the links the sensor can see -->
+    <rosparam command="load" file="$(arg model_filter_config)" />
+    <!-- parameter remapping -->
+    <remap from="robot_description" to="$(arg model_name)_description" />
+    <!-- topic remapping -->
+    <remap from="cloud_in" to="$(arg input_cloud)" />
+    <remap from="cloud_out" to="$(arg output_cloud)" />
+  </node>
+
+</launch>
