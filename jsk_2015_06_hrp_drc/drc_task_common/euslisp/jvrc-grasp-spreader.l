@@ -16,6 +16,7 @@
   (jaxon_red-init)
   (setq *robot* *jaxon_red*)
   (send *ri* :set-gait-generator-param :default-step-time 0.8) ;; walking speed
+  (send *ri* :set-gait-generator-param :stride-parameter (float-vector 0.2 0.1 15.0 0.1))
   )
 
 (when (not (boundp '*spreader*))
