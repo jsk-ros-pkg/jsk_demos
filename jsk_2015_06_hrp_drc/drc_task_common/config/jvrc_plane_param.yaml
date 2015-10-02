@@ -1,0 +1,7 @@
+{/multi_plane_estimate/angular_threshold: 0.01, /multi_plane_estimate/border_policy_ignore: true, /multi_plane_estimate/connect_distance_threshold: 0.01,
+  /multi_plane_estimate/connect_plane_angle_threshold: 0.2, /multi_plane_estimate/depth_dependent_smoothing: false, /multi_plane_estimate/distance_threshold: 0.01,
+  /multi_plane_estimate/estimate_normal: true, /multi_plane_estimate/estimation_method: 1, /multi_plane_estimate/max_curvature: 0.01, /multi_plane_estimate/max_depth_change_factor: 0.01,
+  /multi_plane_estimate/max_refined_area_threshold: 10000.0, /multi_plane_estimate/min_refined_area_threshold: 0.04, /multi_plane_estimate/min_size: 1000,
+  /multi_plane_estimate/normal_smoothing_size: 10.0, /multi_plane_estimate/publish_normal: false, ransac_refine_coefficients: true,
+  /multi_plane_estimate/ransac_refine_outlier_distance_threshold: 0.1, /euclidean_clustering/label_tracking_tolerance: 0.2, /euclidean_clustering/max_size: 25000, /euclidean_clustering/min_size: 20, /euclidean_clustering/tolerance: 0.2}
+
