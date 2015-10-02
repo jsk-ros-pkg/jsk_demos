@@ -27,6 +27,7 @@
   (setq *frame-id* (ros::get-param "~default_frame_id" "/odom_on_ground"))
   (setq *assoc-frame-id* (format nil "jsk_model_marker_interface/robot/~a" (send (send *robot* :larm :end-coords :parent) :name)))
   (setq *tfl* (instance ros::transform-listener :init))
+  (setq *assoc-object-name* nil)
   (ros::subscribe (format nil "~a~a" *ns* "/marker_dimensions") jsk_interactive_marker::MarkerDimensions #'generate-object-with-new-dimensions-from-topic)
   (ros::advertise (format nil "~a~a" *ns* "/set_color") std_msgs::ColorRGBA 1)
   (ros::subscribe "/urdf_control_marker/pose" geometry_msgs::PoseStamped #'robot-pose-cb)
@@ -45,6 +46,9 @@
   (ros::subscribe "/object_handle_variable_pos" std_msgs::Float32 #'set-object-handle-pos-from-variable)
   (ros::subscribe "/object_handle_variable_rot" std_msgs::Float32 #'set-object-handle-rot-from-variable)
   (ros::subscribe "/object_approach_variable" std_msgs::Float32 #'set-object-approach-from-variable)
+  (ros::subscribe "/simple_marker/feedback" visualization_msgs::InteractiveMarkerFeedback #'(lambda (msg) (if (and *assoc-object-name* (equal (send msg :event_type) visualization_msgs::InteractiveMarkerFeedback::*MOUSE_UP*) (equal (send msg :marker_name) *assoc-object-name*)) (setq *solve-ik-command-flag* t))))
+  (ros::subscribe "/assoc_to_object" std_msgs::String #'(lambda (msg) (setq *assoc-object-name* (send msg :data))))
+  (ros::subscribe "/dissoc" std_msgs::String #'(lambda (msg) (setq *assoc-object-name* nil)))
   (ros::advertise-service "/set_handle_reverse" std_srvs::Empty #'set-handle-reverse)
   (ros::advertise-service "/assoc_object_to_robot" std_srvs::Empty #'assoc-object-to-robot)
   (ros::advertise-service "/dissoc_object_to_robot" std_srvs::Empty #'dissoc-object-to-robot)
@@ -95,7 +99,7 @@
   ;; ik
   (setq *ik-arm* :rarm)
   (setq *ik-result* nil)
-  (setq *ik-peep* (ros::get-param "~ik_peep" t))
+  (setq *ik-peep* (ros::get-param "~ik_peep" nil))
   (setq *lower-waist-valiable* 0)
   (init-robot-model)
   (ros::wait-for-service (format nil "~a~a" *ns* "/get_pose"))
@@ -127,6 +131,11 @@
     (mapcar
      #'(lambda (k)
          (send *robot* k :end-coords))
+     '(:rarm :larm)))
+  (defvar *camera-end-coords-from-hand*
+    (mapcar
+     #'(lambda (k)
+         (make-cascoords :coords (send (send (send *robot* k :end-coords) :copy-worldcoords) :translate (float-vector -50 0 50)) :parent (send (send *robot* k :end-coords) :parent))) ;; Really, need to read tf or something
      '(:rarm :larm)))
   )
 
@@ -603,7 +612,7 @@
     ;; loop for interpolation
     (dotimes (i divide-num)
       (let* ((arm-index (if (equal arm :rarm) 0 1))
-             (mt (append (list (elt *end-coords-from-hand* arm-index)) *end-coords-without-toe*))
+             (mt (append (list (elt (if *ik-peep* *camera-end-coords-from-hand* *end-coords-from-hand*) arm-index)) *end-coords-without-toe*))
              (tc (send-all mt :copy-worldcoords))
              (ll (mapcar #'(lambda (m) (send *robot* :link-list (send m :parent))) mt))
              (translation-axis (list t t t))
@@ -639,6 +648,8 @@
                           :translation-axis translation-axis
                           :rotation-axis rotation-axis
                           :root-link-virtual-joint-weight (float-vector 0.15 0.15 0.02 0.05 0.5 0.5)
+                          :cog-null-space nil
+                          :use-6dof-joint-leg-gain nil
                           :additional-weight-list
                           (list (list (send *robot* :torso :waist-r :child-link) 0.1)
                                 (list (send *robot* :torso :waist-y :child-link) 0.1)
