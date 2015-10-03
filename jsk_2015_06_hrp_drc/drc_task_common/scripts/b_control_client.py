@@ -108,7 +108,7 @@ def b_control_client_init():
     
     rospy.Subscriber('/hinted_handle_estimator/handle', SimpleHandle, hand_recog_cb)
     rospy.Subscriber('selected_box', BoundingBox, selected_only_box_cb)
-    rospy.Subscriber('/passed_selected_box', BoundingBox, selected_only_box_cb)
+    rospy.Subscriber('/bounding_box_marker/selected_box', BoundingBox, selected_only_box_to_cylinder_cb)
     rospy.Subscriber('t_marker_info', TMarkerInfo, marker_info_cb)
 
     tf_listener = tf.TransformListener()
@@ -143,7 +143,8 @@ def b_control_client_init():
     menu_cancel_srv = rospy.ServiceProxy('/rviz_menu_cancel', srv.Empty)
     menu_variable_pub = rospy.Publisher('/rviz_menu_variable', Float32)
     # menu_bool_pub = rospy.Publisher('/rviz_menu_bool', Bool)
-    
+    global box_num
+    box_num=0
     # midi device
     rospy.Subscriber('input_joy', Joy, b_control_joy_cb)
     rospy.sleep(1)
@@ -189,7 +190,7 @@ def b_control_joy_cb(msg):
     if insert_hand_flag:
         menu_cancel_srv()
         rospy.sleep(0.1)
-        erase_all_marker()
+        # erase_all_marker()
         try:
             ik_arm = get_ik_arm_srv().ik_arm
         except rospy.ServiceException, e:
@@ -398,6 +399,12 @@ def marker_info_cb(msg):
     set_color_pub.publish(color)
     set_pose_srv(pose_stamped=msg.marker_pose_stamped)
     set_dim_srv(dimensions=msg.marker_dim)
+
+def selected_only_box_to_cylinder_cb(msg):
+    global box_num
+    insert_marker(shape_type=TransformableMarkerOperate.CYLINDER, name='box%i' % box_num, description='')
+    box_num = box_num+1
+    selected_only_box_cb(msg)
 
 def selected_only_box_cb(msg):
     pose_stamped_msg = PoseStamped()

@@ -47,7 +47,7 @@
   (ros::subscribe "/object_handle_variable_rot" std_msgs::Float32 #'set-object-handle-rot-from-variable)
   (ros::subscribe "/object_approach_variable" std_msgs::Float32 #'set-object-approach-from-variable)
   (ros::subscribe "/simple_marker/feedback" visualization_msgs::InteractiveMarkerFeedback #'(lambda (msg) (if (and *assoc-object-name* (equal (send msg :event_type) visualization_msgs::InteractiveMarkerFeedback::*MOUSE_UP*) (equal (send msg :marker_name) *assoc-object-name*)) (setq *solve-ik-command-flag* t))))
-  (ros::subscribe "/assoc_to_object" std_msgs::String #'(lambda (msg) (setq *assoc-object-name* (send msg :data))))
+  (ros::subscribe "/assoc_to_object" std_msgs::String #'(lambda (msg) (setq *assoc-object-name* (send msg :data)) (setq *solve-ik-command-flag* t)))
   (ros::subscribe "/dissoc" std_msgs::String #'(lambda (msg) (setq *assoc-object-name* nil)))
   (ros::advertise-service "/set_handle_reverse" std_srvs::Empty #'set-handle-reverse)
   (ros::advertise-service "/assoc_object_to_robot" std_srvs::Empty #'assoc-object-to-robot)
@@ -240,7 +240,7 @@
                (progn
                  (send handle-coords :transform handle-variable-coords :world)
                  ;; if pos dot z-axis > 0
-                 (send handle-coords :rotate (* 0.5 pi) :y :local)
+                 (send handle-coords :rotate (* -0.5 pi) :y :local)
                  (send handle-coords :translate (float-vector -400 0 0) :local)
                  (send *obj* :assoc (make-cascoords :coords handle-coords :name :handle))
                  (setq approach-coords (send handle-coords :copy-worldcoords))
