@@ -216,8 +216,10 @@
 
 
 ;; hold spreader and step back
-(defun hold-spreader (&key (real nil) (up 200) (step-back 1.0) (base-time 5000) (limb :rarm))
-  (send *ri* :set-gait-generator-param :default-step-time 1.2) ;; default
+(defun hold-spreader (&key (real nil) (up 200) (step-back 1.0) (base-time 5000) (limb :rarm) (grasp-point *spreader-body*))
+  (when (not (boundp '*grasp-point*))
+    (setq *grasp-point* grasp-point)
+    )
   (when (not (boundp '*grasp-hand*))
     (setq *grasp-hand* limb)
     )
@@ -246,7 +248,7 @@
           (send *ri* :go-pos (- (abs step-back)) 0 0)
           )
       )
-    (when (y-or-n-p "finish and move spreader close to reset pose ?")
+    ;; (when (y-or-n-p "finish and move spreader close to reset pose ?")
       ;; (send *robot* *grasp-hand* :move-end-pos (float-vector 0 (- 400 (elt (send *robot* *grasp-hand* :end-coords :worldpos) 1)) 0) :world)
       (let* ((target-coords (send *robot* *grasp-hand* :end-coords :copy-worldcoords)))
         (send target-coords :translate (float-vector 0 (- -400 (elt (send *robot* *grasp-hand* :end-coords :worldpos) 1)) 0) :world)
@@ -259,13 +261,44 @@
             (send *ri* :wait-interpolation)
             )
         )
-      )
+      (let* ((link-list (list limb :lleg :rleg)))
+        (insert-spreader :place "use")
+        (get-spreader-pose)
+        (set-robot-eus :set-current-pose nil)
+        (with-move-target-link-list
+         (mt ll *robot* link-list)
+         (send *robot*
+               :fullbody-inverse-kinematics (list grasp-point *lfoot* *rfoot*)
+               :root-link-virtual-joint-weight #f(0.4 0.4 0.4 0.2 0.2 0.4) ;; root-link has 6DOF
+               :target-centroid-pos (midpoint 0.5 (send *lfoot* :worldpos) (send *rfoot* :worldpos))
+               :centroid-thre 30
+               :move-target mt
+               :link-list ll
+               :additional-weight-list (list (list (send *robot* :head-neck-p :child-link) 0)
+                                             (list (send *robot* :head-neck-y :child-link) 0))
+               :rotation-axis (list t t t)
+               ;; nozawa
+               ;;:min-loop 2
+               :cog-null-space nil
+               :use-6dof-joint-leg-gain nil
+               :debug-view :no-message) ;;t)
+         )
+        )
+      (send *irtviewer* :draw-objects)
+      (if real
+          (progn
+            (send *ri* :angle-vector (send *robot* :angle-vector) base-time)
+            (send *ri* :wait-interpolation)
+            )
+        )
+      ;; )
     )
   )
 
 
 ;; use spreader by setting it toward triangle mark, using spreader marker
 (defun use-spreader (&key (real nil) (base-time 5000) (grasp-point *spreader-body*) (limb :rarm))
+  ;;(send *ri* :set-gait-generator-param :default-step-time 1.2) ;; default
   (when (not (boundp '*grasp-point*))
     (setq *grasp-point* grasp-point)
     )
@@ -273,16 +306,17 @@
     (setq *grasp-hand* limb)
     )
   (let* ((link-list (list limb :lleg :rleg)))
-    ;; (send *ri* :stop-impedance *grasp-hand*)
+    ;;(send *ri* :stop-impedance *grasp-hand*)
     (get-spreader-pose)
     (when (boundp '*marker-offset*)
       (send *spreader* :transform *marker-offset*)
       )
     (set-robot-eus :set-current-pose nil)
+    (send *robot* :translate #f(0 0 -100) :world)
     (with-move-target-link-list
      (mt ll *robot* link-list)
      (send *robot*
-           :fullbody-inverse-kinematics (list grasp-point *lfoot* *rfoot*)
+           :fullbody-inverse-kinematics (list *grasp-point* *lfoot* *rfoot*)
            :root-link-virtual-joint-weight #f(0.4 0.4 0.4 0.2 0.2 0.4) ;; root-link has 6DOF
            :target-centroid-pos (midpoint 0.5 (send *lfoot* :worldpos) (send *rfoot* :worldpos))
            :centroid-thre 30
@@ -365,7 +399,7 @@
     (with-move-target-link-list
      (mt ll *robot* link-list)
      (send *robot*
-           :fullbody-inverse-kinematics (list grasp-point *lfoot* *rfoot*)
+           :fullbody-inverse-kinematics (list *grasp-point* *lfoot* *rfoot*)
            :root-link-virtual-joint-weight #f(0.4 0.4 0.4 0.2 0.2 0.4) ;; root-link has 6DOF
            :target-centroid-pos (midpoint 0.5 (send *lfoot* :worldpos) (send *rfoot* :worldpos))
            :centroid-thre 30
@@ -413,7 +447,7 @@
     (with-move-target-link-list
      (mt ll *robot* link-list)
      (send *robot*
-           :fullbody-inverse-kinematics (list grasp-point *lfoot* *rfoot*)
+           :fullbody-inverse-kinematics (list *grasp-point* *lfoot* *rfoot*)
            :root-link-virtual-joint-weight #f(0.4 0.4 0.4 0.2 0.2 0.4) ;; root-link has 6DOF
            :target-centroid-pos (midpoint 0.5 (send *lfoot* :worldpos) (send *rfoot* :worldpos))
            :centroid-thre 30
