@@ -9,5 +9,6 @@ tmux-newwindow locomotion "sleep 5; roslaunch drc_task_common ocs_locomotion.lau
 tmux-newwindow locomotion_planner "sleep 5; roslaunch drc_task_common ocs_locomotion_planner.launch ocs:=false"
 tmux-newwindow plane_segmentation "rosparam load `rospack find drc_task_common`/config/jvrc_plane_param.yaml; roslaunch jsk_pcl_ros organized_multi_plane_segmentation.launch INPUT:=/multisense/organized_image_points2_color"
 tmux-newwindow dyn_param "rosrun dynamic_reconfigure dynparam set /euclidean_clustering min_size 20; rosrun dynamic_reconfigure dynparam set /euclidean_clustering tolerance 0.2 ; exit"
+tmux-newwindow speedup_ri "rosrun roseus roseus $(rospack find hrpsys_ros_bridge_jvrc)/euslisp/walking_config.l \(main-loop\)"
 tmux send-keys -t ocs:tmp "exit" C-m
 tmux a -t ocs
