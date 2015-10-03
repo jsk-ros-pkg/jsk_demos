@@ -1,0 +1,7 @@
+- direction: 'horizontal'
+- name: 'speed-up'
+  service: 'speedup_mode'
+  column: 0
+- name: 'default-speed'          
+  service: 'default_mode'
+  column: 0

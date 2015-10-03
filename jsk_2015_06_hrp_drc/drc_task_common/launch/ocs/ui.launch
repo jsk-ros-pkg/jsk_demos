@@ -42,6 +42,9 @@
     <rosparam>
       service_req_ik_radio_button_layout_file: "package://drc_task_common/config/ocs_ui_req_ik_radio_button_layout.yaml"
     </rosparam>
+    <rosparam>
+      service_button_jvrc_cheat_file: "package://drc_task_common/config/ocs_ui_jvrc_cheat.yaml"
+    </rosparam>
   </node>
   <group ns="image_rect">
     <node pkg="image_view2" type="image_view2" name="rqt_image_view2_engine"
