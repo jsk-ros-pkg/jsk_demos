@@ -8,6 +8,7 @@
   <node pkg="jsk_interactive_marker" type="transformable_server_sample" name="transformable_interactive_server"
         output="screen">
    <param name="display_interactive_manipulator" value="true"/>
+   <param name="interactive_manipulator_orientation" value="1" />
    <param name="yaml_filename" value="$(find drc_task_common)/config/object_marker_command.yaml" />
   </node>
   <node pkg="drc_task_common" type="drill_button_publisher.py" name="drill_button_publisher"/>
