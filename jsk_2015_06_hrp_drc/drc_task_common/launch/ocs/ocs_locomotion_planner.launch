@@ -1,5 +1,6 @@
 <launch>
   <arg name="REFINE_FOOTSTEP" default="true" />
+  <arg name="USE_SIMULATION" default="false" />
   <arg name="ocs" default="true" />
   <remap from="/tf" to="/ocs/tf" if="$(arg ocs)"/>
   <remap from="/joint_states" to="/ocs/joint_states" if="$(arg ocs)"/>
@@ -20,6 +21,9 @@
         use_gui: true
         timeout: 20.0
         global_frame_id: ground
+      </rosparam>
+      <rosparam if="$(arg USE_SIMULATION)" subst_value="true">
+        snap_with_local_search: false
       </rosparam>
       <remap from="grid_maps" to="/ocs/env_server/output" />
       <remap from="footstep_planner/result" to="footstep_planner/result_non_refined" if="$(arg REFINE_FOOTSTEP)"/>

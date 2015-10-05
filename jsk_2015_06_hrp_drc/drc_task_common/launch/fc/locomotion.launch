@@ -252,8 +252,5 @@ nodelets:
     <rosparam subst_value="true">
       interruptible_mode: ":semi-interruptible"
     </rosparam>
-    <rosparam if="$(arg RUN_SELF_FILTER)" subst_value="true">
-      auto_lookground: false
-    </rosparam>
   </node>
 </launch>
