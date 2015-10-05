@@ -144,8 +144,34 @@
     )
   )
 
+(defun write-to-csv ()
+  (with-open-file
+   (f "/home/leus/.ros/qr_position.csv" :direction :output :permission #o744)
+   (dolist (qrlst *answer-list* nil)
+     (format f "~A , ~A, ~A, ~A~%"
+             (car qrlst)
+             (aref (cadr qrlst) 0)
+             (aref (cadr qrlst) 1)
+             (aref (cadr qrlst) 2))
+   ))
+  (unix::system (format nil "mkdir -p /home/leus/tmp"))
+  (unix::system (format nil "cp /home/leus/.ros/qr_position.csv ~/tmp/qr_position_~A_~A_~A_~A.csv"
+                        (aref (unix:localtime) 4)
+                        (aref (unix:localtime) 3)
+                        (aref (unix:localtime) 2)
+                        (aref (unix:localtime) 1)))
+  )
+
+
 (defun save-cb ()
   (dump-loadable-structure "/home/leus/.ros/saved_data.l" *current-pose-stamped* *pose-list-raw* *answer-list*)
+  (write-to-csv)
+  (unix::system (format nil "mkdir -p /home/leus/tmp"))
+  (unix::system (format nil "cp /home/leus/.ros/saved_data.l ~/tmp/saved_data_~A_~A_~A_~A.l"
+                        (aref (unix:localtime) 4)
+                        (aref (unix:localtime) 3)
+                        (aref (unix:localtime) 2)
+                        (aref (unix:localtime) 1)))
   )
 
 (defun reload-cb (req)
