@@ -2,12 +2,15 @@ cmake_minimum_required(VERSION 2.8.3)
 project(jsk_2013_04_pr2_610)
 
 find_package(catkin REQUIRED COMPONENTS
-  rostest
   geometry_msgs
   message_generation
   jsk_demo_common
   jsk_perception
+  task_compiler
   pddl_planner
+  pddl_planner_viewer
+  laser_filters_jsk_patch
+  imagesift
   pr2eus
   roseus_smach
   roseus)
@@ -50,4 +53,7 @@ install(
   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
   )
 
-add_rostest(test/test-demo.test)
+if(CATKIN_ENABLE_TESTING)
+  find_package(rostest REQUIRED)
+  add_rostest(test/test-demo.test)
+endif()
