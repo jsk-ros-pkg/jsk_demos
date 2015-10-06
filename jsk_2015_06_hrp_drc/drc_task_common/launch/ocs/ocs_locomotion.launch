@@ -1,5 +1,6 @@
 <launch>
   <arg name="ocs" default="true" />
+  <arg name="USE_SIMULATION" default="false" />
   <remap from="/tf" to="/ocs/tf" if="$(arg ocs)"/>
   <remap from="/joint_states" to="/ocs/joint_states" if="$(arg ocs)"/>
   <remap from="/robot_description" to="/ocs/robot_description" if="$(arg ocs)"/>
@@ -47,6 +48,9 @@ nodelets:
         angular_threshold: 0.01
         distance_threshold: 0.01
       </rosparam>
+      <rosparam if="$(arg USE_SIMULATION)">
+        cluster_tolerance: 0.05
+      </rosparam>
     </group>
     <group ns="obstacle_cloud">
       <rosparam>
@@ -61,7 +65,7 @@ nodelets:
       <remap from="~input/indices" to="plane_concatenator/output/indices" />
       <remap from="~input/coefficients" to="plane_concatenator/output/coefficients" />
       <remap from="~input/leg_bounding_box" to="/robot_legs_bbox" />
-      <rosparam>
+      <rosparam unless="$(arg USE_SIMULATION)">
         resolution: 0.01
         complete_footprint_region: false
         morphological_filter_size: 2
@@ -70,6 +74,17 @@ nodelets:
         magnify_distance: 0.05
         normal_threshold: 0.1
         erode_filter_size: 1
+        footprint_frames: ["lleg_end_coords", "rleg_end_coords"]
+      </rosparam>
+      <rosparam if="$(arg USE_SIMULATION)">
+        resolution: 0.015
+        complete_footprint_region: false
+        morphological_filter_size: 2
+        # distance_threshold: 0.005
+        distance_threshold: 0.025 # for jaxon
+        magnify_distance: 0.05
+        normal_threshold: 0.1
+        erode_filter_size: 0
         footprint_frames: ["lleg_end_coords", "rleg_end_coords"]
       </rosparam>
     </node>

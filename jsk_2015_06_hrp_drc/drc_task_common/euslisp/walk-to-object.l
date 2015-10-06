@@ -44,7 +44,7 @@
     (setq dest-y (* 0.001 (elt (send dest-coords :pos) 1)))
     (setq dest-yaw (rad2deg (elt (car (rpy-angle (send dest-coords :rot))) 0)))
     (let* ((title
-            (format nil "Go pos to (~4,1f ~4,1f ~4,1f). OK?~%" dest-x dest-y dest-yaw))
+            (format nil "Go pos to (~4,3f ~4,3f ~4,3f). OK?~%" dest-x dest-y dest-yaw))
            (menu-list (list "cancel" "yes"))
            (yes-index 1)
            (req (instance drc_task_common::RvizMenuCallRequest :init :title title :menu_list menu-list))
