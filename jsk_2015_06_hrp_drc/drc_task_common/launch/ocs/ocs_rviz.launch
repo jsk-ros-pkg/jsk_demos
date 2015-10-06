@@ -19,7 +19,7 @@
 
   <node pkg="drc_task_common" type="rviz_status.py" name="rviz_status">
   </node>
-  <node pkg="jsk_pcl_ros" type="hinted_handle_estimator" name="hinted_handle_estimator">
+  <node pkg="jsk_pcl_ros" type="hinted_handle_estimator" name="hinted_handle_estimator" if="false">
     <remap from="~cloud" to="$(arg INPUT_CLOUD)" />
     <remap from="~point" to="/clicked_point" />
   </node>

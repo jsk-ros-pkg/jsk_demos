@@ -1,0 +1,12 @@
+<launch>
+  <node pkg="zbar_ros" name="barcode_rarm_camera_qr" type="barcode_reader_node" respawn="true">
+    <remap from="image" to="/rarm_camera/image_raw" />
+  </node>
+  <node pkg="zbar_ros" name="barcode_rarm_camera_n_qr" type="barcode_reader_node" respawn="true">
+    <remap from="image" to="/rarm_camera_n/image_raw" />
+  </node>
+  <node pkg="zbar_ros" name="barcode_head_camera" type="barcode_reader_node" respawn="true">
+    <remap from="image" to="/multisense/left/image_rect_color" />
+  </node>
+
+</launch>

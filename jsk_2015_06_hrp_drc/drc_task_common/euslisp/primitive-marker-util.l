@@ -67,7 +67,7 @@
         (unless trans
           (setq trans (send *tf* :lookup-transform frame-id
                             (send pose-st :header :frame_id) (ros::time 0))))
-        (setq coords (send trans :transform coords))
+        (if trans (setq coords (send trans :transform coords)))
         ))
     coords))
 

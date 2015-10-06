@@ -58,7 +58,9 @@
   (ros::advertise-service "/get_ik_arm_pose" drc_task_common::GetIKArmPose #'get-ik-arm-pose)
   (ros::advertise-service "/switch_arm" std_srvs::Empty #'(lambda (req) (setq *ik-arm* (if (equal *ik-arm* :rarm) :larm :rarm)) (publish-obj-mode-text) (send req :response)))
   (ros::advertise-service "/current_pos" std_srvs::Empty #'(lambda (req) (set-robot-current-pos) (publish-obj-mode-text) (send req :response)))
-  (ros::advertise-service "/ik_peep" std_srvs::Empty #'(lambda (req) (setq *ik-peep* (not *ik-peep*)) (publish-obj-mode-text) (send req :response)))
+  (ros::advertise-service "/ik_peep1" std_srvs::Empty #'(lambda (req) (setq *ik-mode* :ik-peep1) (publish-obj-mode-text) (send req :response)))
+  (ros::advertise-service "/ik_peep2" std_srvs::Empty #'(lambda (req) (setq *ik-mode* :ik-peep2) (publish-obj-mode-text) (send req :response)))
+  (ros::advertise-service "/ik_grasp" std_srvs::Empty #'(lambda (req) (setq *ik-mode* :grasp) (publish-obj-mode-text) (send req :response)))
   (ros::advertise-service "/lower_waist_0cm" std_srvs::Empty #'(lambda (req) (setq *lower-waist-valiable* 0) (publish-obj-mode-text) (send req :response)))
   (ros::advertise-service "/lower_waist_15cm" std_srvs::Empty #'(lambda (req) (setq *lower-waist-valiable* 150) (publish-obj-mode-text) (send req :response)))
   (ros::advertise-service "/lower_waist_30cm" std_srvs::Empty #'(lambda (req) (setq *lower-waist-valiable* 300) (publish-obj-mode-text) (send req :response)))
@@ -99,7 +101,7 @@
   ;; ik
   (setq *ik-arm* :rarm)
   (setq *ik-result* nil)
-  (setq *ik-peep* (ros::get-param "~ik_peep" nil))
+  (setq *ik-mode* (if (ros::get-param "~ik_peep" nil) :peep1 :grasp))
   (setq *lower-waist-valiable* 0)
   (init-robot-model)
   (ros::wait-for-service (format nil "~a~a" *ns* "/get_pose"))
@@ -137,6 +139,13 @@
      #'(lambda (k)
          (make-cascoords :coords (send (send (send *robot* k :end-coords) :copy-worldcoords) :translate (float-vector -50 0 50)) :parent (send (send *robot* k :end-coords) :parent))) ;; Really, need to read tf or something
      '(:rarm :larm)))
+  )
+
+(defun ik-peep1 ()
+  (and (equal *ik-mode* :ik-peep1) (equal *obj-type* jsk_rviz_plugins::TransformableMarkerOperate::*CYLINDER*))
+  )
+(defun ik-peep2 ()
+  (and (equal *ik-mode* :ik-peep2) (equal *obj-type* jsk_rviz_plugins::TransformableMarkerOperate::*CYLINDER*))
   )
 
 ;; robot model pose calback
@@ -236,23 +245,34 @@
          (let* ((handle-coords (make-coords))
                 (handle-variable-coords (make-coords :pos (float-vector 0 0 (* *obj-z* *handle-pos-variable*))))
                 approach-coords)
-           (if *ik-peep*
-               (progn
-                 (send handle-coords :transform handle-variable-coords :world)
-                 ;; if pos dot z-axis > 0
-                 (send handle-coords :rotate (* -0.5 pi) :y :local)
-                 (send handle-coords :translate (float-vector -400 0 0) :local)
-                 (send *obj* :assoc (make-cascoords :coords handle-coords :name :handle))
-                 (setq approach-coords (send handle-coords :copy-worldcoords))
-                 (send approach-coords :translate (float-vector (* 1000 *approach-variable*) 0 0) :local)
-                 (send *obj* :assoc (make-cascoords :coords approach-coords :name :approach)))
-               (progn
-                 (send handle-coords :transform handle-variable-coords :world)
-                 (send handle-coords :rotate (* 2 pi *handle-rot-variable*) :z :local)
-                 (send *obj* :assoc (make-cascoords :coords handle-coords :name :handle))
-                 (setq approach-coords (send handle-coords :copy-worldcoords))
-                 (send approach-coords :translate (float-vector (* 1000 *approach-variable*) 0 0) :local)
-                 (send *obj* :assoc (make-cascoords :coords approach-coords :name :approach))))
+           (cond ((ik-peep1)
+                  (progn
+                    (send handle-coords :transform handle-variable-coords :world)
+                    ;; if pos dot z-axis > 0
+                    (send handle-coords :rotate (* -0.5 pi) :y :local)
+                    (send handle-coords :translate (float-vector -400 0 0) :local)
+                    (send *obj* :assoc (make-cascoords :coords handle-coords :name :handle))
+                    (setq approach-coords (send handle-coords :copy-worldcoords))
+                    (send approach-coords :translate (float-vector (* 1000 *approach-variable*) 0 0) :local)
+                    (send *obj* :assoc (make-cascoords :coords approach-coords :name :approach))))
+                 ((ik-peep2)
+                  (progn
+                    (send handle-coords :rotate (* 1 pi) :x :local)
+                    (send handle-coords :translate (float-vector 0 0 400) :local)
+                    (send *obj* :assoc (make-cascoords :coords handle-coords :name :handle))
+                    (setq approach-coords (send handle-coords :copy-worldcoords))
+                    (send approach-coords :translate (float-vector (* 1000 *approach-variable*) 0 0) :local)
+                    (send *obj* :assoc (make-cascoords :coords approach-coords :name :approach))
+                    )
+                  )
+                 (t
+                  (progn
+                    (send handle-coords :transform handle-variable-coords :world)
+                    (send handle-coords :rotate (* 2 pi *handle-rot-variable*) :z :local)
+                    (send *obj* :assoc (make-cascoords :coords handle-coords :name :handle))
+                    (setq approach-coords (send handle-coords :copy-worldcoords))
+                    (send approach-coords :translate (float-vector (* 1000 *approach-variable*) 0 0) :local)
+                    (send *obj* :assoc (make-cascoords :coords approach-coords :name :approach)))))
            )
          (send *obj* :put :type :cylinder)
          )
@@ -291,9 +311,9 @@
          )
         )
   (when *handle-reverse-flag*
-    (send (find-if #'(lambda (x) (equal (send x :name) :handle)) (send *obj* :descendants)) :rotate pi (if *ik-peep* :z :x)))
+    (send (find-if #'(lambda (x) (equal (send x :name) :handle)) (send *obj* :descendants)) :rotate pi (if (ik-peep1) :z :x)))
   (when *handle-reverse-flag*
-    (send (find-if #'(lambda (x) (equal (send x :name) :approach)) (send *obj* :descendants)) :rotate pi (if *ik-peep* :z :x)))
+    (send (find-if #'(lambda (x) (equal (send x :name) :approach)) (send *obj* :descendants)) :rotate pi (if (ik-peep1) :z :x)))
   (send *obj* :set-color #f(1 1 0))
   )
 (defun generate-object-with-new-dimensions-from-topic
@@ -475,9 +495,11 @@
            (setq ik-mode-text "Reach"))
           ((equal (elt *ik-mode-list* *ik-mode-index*) :release)
            (setq ik-mode-text "Release")))
-    (cond (*ik-peep*
-           (setq peep-mode-text "Peep"))
-          ((not *ik-peep*)
+    (cond ((ik-peep1)
+           (setq peep-mode-text "Peep1"))
+          ((ik-peep2)
+           (setq peep-mode-text "Peep2"))
+          (t
            (setq peep-mode-text "Grasp")))
     (cond (*handle-reverse-flag*
            (setq reverse-mode-text "r"))
@@ -567,7 +589,7 @@
     (unless (equal (elt *ik-mode-list* *ik-mode-index*) :none)
       (setq interpolate-mode :approach))
     ;; solve ik
-    (setq *ik-result* (send-ik-request :interpolate-mode interpolate-mode :rotation-axis (if (equal (send *obj* :get :type) :hand-mesh) (list t t t) (list (if *ik-peep* :x :z) t t))))
+    (setq *ik-result* (send-ik-request :interpolate-mode interpolate-mode :rotation-axis (if (equal (send *obj* :get :type) :hand-mesh) (list t t t) (list (if (ik-peep1) :x :z) t t))))
     ;(if *pub-grasp-pose-feedback-flag* (pub-grasp-pose-feedback))
     (cond (*ik-result*
            (send-joint-states-to-marker)
@@ -585,7 +607,7 @@
 
 ;; send ik service request
 (defun send-ik-request
-  (&key 
+  (&key
    (interpolate-mode)
    (target-coords (find-if #'(lambda (x) (equal (send x :name) :handle)) (send *obj* :descendants)))
    (initial-coords target-coords)
@@ -612,7 +634,7 @@
     ;; loop for interpolation
     (dotimes (i divide-num)
       (let* ((arm-index (if (equal arm :rarm) 0 1))
-             (mt (append (list (elt (if *ik-peep* *camera-end-coords-from-hand* *end-coords-from-hand*) arm-index)) *end-coords-without-toe*))
+             (mt (append(list (elt (cond ((ik-peep1) *camera-end-coords-from-hand*) ((ik-peep2) *camera-end-coords-from-hand*) (t *end-coords-from-hand*)) arm-index)) *end-coords-without-toe*))
              (tc (send-all mt :copy-worldcoords))
              (ll (mapcar #'(lambda (m) (send *robot* :link-list (send m :parent))) mt))
              (translation-axis (list t t t))

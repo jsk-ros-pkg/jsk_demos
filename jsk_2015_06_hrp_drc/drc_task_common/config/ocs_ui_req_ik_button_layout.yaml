@@ -8,6 +8,12 @@
 - name: 'current_pos'
   service: 'current_pos'
   column: 0
-- name: 'ik_peep'
-  service: 'ik_peep'
+- name: 'ik_peep1'
+  service: 'ik_peep1'
+  column: 0
+- name: 'ik_peep2'
+  service: 'ik_peep2'
+  column: 0
+- name: 'ik_grasp'
+  service: 'ik_grasp'
   column: 0
