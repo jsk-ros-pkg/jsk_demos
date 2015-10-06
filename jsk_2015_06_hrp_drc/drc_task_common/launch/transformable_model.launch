@@ -12,5 +12,5 @@
    <param name="yaml_filename" value="$(find drc_task_common)/config/object_marker_command.yaml" />
   </node>
   <node pkg="drc_task_common" type="drill_button_publisher.py" name="drill_button_publisher"/>
-  <!-- <node pkg="drc_task_common" type="move_marker_with_point.py" name="move_marker_with_point"/>  -->
+  <node pkg="drc_task_common" type="move_marker_with_point.py" name="move_marker_with_point"/>
 </launch>
