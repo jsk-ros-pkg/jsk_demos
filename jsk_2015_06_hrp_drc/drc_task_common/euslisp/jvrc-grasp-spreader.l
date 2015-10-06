@@ -15,6 +15,11 @@
 (when (not (boundp '*jaxon_red*))
   (jaxon_red-init)
   (setq *robot* *jaxon_red*)
+  (send *ri* :stop-st)
+  (send *ri* :stop-auto-balancer)
+  (send *ri* :start-auto-balancer :limbs (list :rleg :lleg :rarm))
+  (send *ri* :start-st)
+  (send *ri* :set-impedance-controller-param :rarm :m-p 2000)
   (send *ri* :set-gait-generator-param :default-step-time 0.8) ;; walking speed
   (send *ri* :set-gait-generator-param :stride-parameter (float-vector 0.2 0.1 15.0 0.1))
   )
@@ -298,6 +303,8 @@
 
 ;; use spreader by setting it toward triangle mark, using spreader marker
 (defun use-spreader (&key (real nil) (base-time 5000) (grasp-point *spreader-body*) (limb :rarm))
+  (send *ri* :set-st-param :emergency-check-mode 2)
+  (send *ri* :set-st-param :cp-check-margin (* 60 1e-3))
   ;;(send *ri* :set-gait-generator-param :default-step-time 1.2) ;; default
   (when (not (boundp '*grasp-point*))
     (setq *grasp-point* grasp-point)
@@ -306,7 +313,7 @@
     (setq *grasp-hand* limb)
     )
   (let* ((link-list (list limb :lleg :rleg)))
-    ;;(send *ri* :stop-impedance *grasp-hand*)
+    ;; (send *ri* :stop-impedance *grasp-hand*)
     (get-spreader-pose)
     (when (boundp '*marker-offset*)
       (send *spreader* :transform *marker-offset*)
@@ -475,7 +482,7 @@
 (defun select-func ()
   (let* ((selection) (real nil) (limb :larm) (grasp-point *spreader-grip*))
     (while t
-      (format t "(i):insert-spreader (r):reach-spreader (a):adjust-spreader (h):hold-spreader (u): use-spreader (o): offset-remove (m): move-head-rot (t): throw-away-spreader~%")
+      (format t "(i):insert-spreader (r):reach-spreader (a):adjust-spreader (h):hold-spreader (u): use-spreader (o): offset-remove (m): move-head-rot (t): throw-away-spreader (e): emergency-release~%")
       (setq selection (read-line))
       (cond
        ((equal selection "i")
@@ -529,11 +536,17 @@
             ;;   )
             )
           (throw-away-spreader :real real :limb :rarm)))
+       ((equal selection "e")
+        (when (y-or-n-p "emergency-release?")
+          (send *ri* :emergency-release-motion)))
        (t )
        )
       (setq real nil)
       (setq limb :larm)
       (setq grasp-point *spreader-grip*)
+      (when (= (send *ri* :state :emergency-mode) 1)
+        (print "emergency-mode working!!")
+        )
       )
     )
   )
