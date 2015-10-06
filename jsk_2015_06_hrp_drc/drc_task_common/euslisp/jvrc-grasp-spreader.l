@@ -313,7 +313,7 @@
     (setq *grasp-hand* limb)
     )
   (let* ((link-list (list limb :lleg :rleg)))
-    (send *ri* :stop-impedance *grasp-hand*)
+    ;; (send *ri* :stop-impedance *grasp-hand*)
     (get-spreader-pose)
     (when (boundp '*marker-offset*)
       (send *spreader* :transform *marker-offset*)
