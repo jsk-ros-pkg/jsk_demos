@@ -77,9 +77,9 @@ nodelets:
         footprint_frames: ["lleg_end_coords", "rleg_end_coords"]
       </rosparam>
       <rosparam if="$(arg USE_SIMULATION)">
-        resolution: 0.015
+        resolution: 0.01
         complete_footprint_region: false
-        morphological_filter_size: 2
+        morphological_filter_size: 6
         # distance_threshold: 0.005
         distance_threshold: 0.025 # for jaxon
         magnify_distance: 0.05

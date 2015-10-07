@@ -24,6 +24,7 @@
       </rosparam>
       <rosparam if="$(arg USE_SIMULATION)" subst_value="true">
         snap_with_local_search: false
+        roll_paranoid: false
       </rosparam>
       <remap from="grid_maps" to="/ocs/env_server/output" />
       <remap from="footstep_planner/result" to="footstep_planner/result_non_refined" if="$(arg REFINE_FOOTSTEP)"/>
