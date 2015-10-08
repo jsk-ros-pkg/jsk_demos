@@ -13,5 +13,6 @@ tmux-newwindow speedup_ri "rosrun roseus roseus $(rospack find hrpsys_ros_bridge
 tmux-newwindow qr_data_manager "rosrun drc_task_common qr-data-manager.l"
 tmux-newwindow qr_data_reader "roslaunch drc_task_common zbar_ros_for_cameras.launch"
 tmux-newwindow save_it ";rosrun pcl_ros pointcloud_to_pcd input:=/accumulated_heightmap_pointcloud/output"
+tmux-newwindow okiagari "rosrun hrpsys_ros_bridge_jvrc jvrc-get-up.l"
 tmux send-keys -t ocs:tmp "exit" C-m
 tmux a -t ocs
