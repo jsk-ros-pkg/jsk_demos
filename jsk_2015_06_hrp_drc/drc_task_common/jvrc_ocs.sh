@@ -12,6 +12,6 @@ tmux-newwindow dyn_param "rosrun dynamic_reconfigure dynparam set /euclidean_clu
 tmux-newwindow speedup_ri "rosrun roseus roseus $(rospack find hrpsys_ros_bridge_jvrc)/euslisp/walking_config.l \(main-loop\)"
 tmux-newwindow qr_data_manager "rosrun drc_task_common qr-data-manager.l"
 tmux-newwindow qr_data_reader "roslaunch drc_task_common zbar_ros_for_cameras.launch"
-tmux-newwindow save_it ";rosrun pcl_ros pointcloud_to_pcd input:=/acculated_heightmap/output"
+tmux-newwindow save_it ";rosrun pcl_ros pointcloud_to_pcd input:=/accumulated_heightmap_pointcloud/output"
 tmux send-keys -t ocs:tmp "exit" C-m
 tmux a -t ocs
