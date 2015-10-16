@@ -1,9 +1,9 @@
-(load "create-robot-instance.l")
+(require "create-robot-instance.l")
 (load "math.l")
-(load "package://drc_task_common/euslisp/test-drc-door-task.l")
-(load "~/prog/euslib/jsk/gnuplotlib.l")
-(load "~/prog/euslib/rbrain/virtual_interpolator.l")
-
+(require "package://drc_task_common/euslisp/test-drc-door-task.l")
+(require "~/prog/euslib/jsk/gnuplotlib.l")
+(require "~/prog/euslib/rbrain/virtual_interpolator.l")
+(require "models/arrow-object.l")
 ;; (mapcar #'(lambda (x) (elt x 0))
 ;;         (cadr (memq :data (pos-list-interpolation
 ;;                            (list (float-vector 0) (float-vector 70))
@@ -23,10 +23,6 @@
 ;;                         (float-vector 0 -640 950)
 ;;                         (float-vector -60 -600 950)
 ;;                         :handle-l/r :right)))
-
-
-
-
 
 (defun make-my-door ()
   (setq *door* (instance param-door :init 875 50 110 20
@@ -50,86 +46,23 @@
   (setq *robot-pos* robot-pos)
   (create-robot-instance :real? real? :robot-pos robot-pos :robot-dir robot-dir 
                          :robot robot)
-  (when real? 
-    (send *ri* :start-auto-balancer)
-    (send *ri* :start-st))
-  
-  (when (eq real? 'gazebo)
-    (print "set-st-param")
-    (send *ri* :set-st-param :eefm-rot-time-const 0.5)
-    (send *ri* :set-st-param :eefm-rot-damping-gain 100)
-    
-    ;;(send *ri* :set-st-param :eefm-pos-time-const-support 1.0)
-    ;;(send *ri* :set-st-param :eefm-pos-damping-gain 7000)
-    
-    
-    (send *ri* :set-st-param :eefm-k1 
-          #f(-0.0 -0.0)) 
-    ;; 重心位置誤差フィードバック
-    (send *ri* :set-st-param :eefm-k2 
-          #f(-0.0 -0.0)) 
-    ;; 重心速度誤差フィードバック
-    (send *ri* :set-st-param :eefm-k3 
-          #f(-0.0 -0.0)) 
-    ;; ZMP誤差フィードバック
-    )
-  
-  (make-my-door) ;; *door*を作る
-
+  (make-my-door)
   (when draw? (objects (list *robot* *door*)))
   (setq *init-robot-coords* (send (send *robot* :worldcoords) :copy-worldcoords))
-  
   (send *robot* :chest_joint1 :max-angle 30)
   (send *robot* :chest_joint1 :min-angle -2)
-;;  (prepare-log)
-;;  (send *ri* :set-st-param :emergency-check-mode 0)
   )
 
-(defun move (world-vector)
-  (setq *robot-pos* 
-        (v- *robot-pos* world-vector))
-  (init :robot-pos *robot-pos*)
-  (door-reach :lhand-pos-to-knob #f(0 0 40))
-  )
-(defun prepare-log ()
-  (setq max-log-time 1);;min                                                    
-  (setq time
-        (/ (* max-log-time 60) 0.002)
-        )
-  (send *ri* :set-log-maxlength time)
-  (send *ri* :start-log)
-  )
-
-;;(init :real? nil)
-;;(init :real? t)
-
-
-;; (defun ri-reset ()
-;;   (print "start-auto-balancer")
-;;   (send *ri* :start-auto-balancer)
-;;   (send *ri* :wait-interpolation)
-;;   ;;  (send *ri* :calibrate-inertia-sensor)
-;;   ;;  (print "calibrate-inertia-sensor")
-;;   ;;  (send *ri* :wait-interpolation)
-;;   ;;  (print "wait-interpolation")
-;;   (print "start-st")
-;;   (send *ri* :start-st)  
-;;   (send *ri* :wait-interpolation)
-;;   (print "impedance")
-;;   (impedance)
-;;   )
-
-
-(defun rot-target (my-coords theta axis 
-                              &key 
+(defun rot-target (my-coords theta axis
+                              &key
                               (translate #f(120 10 -10)) (show nil))
   (setq end-coords (send my-coords :copy-worldcoords))
   (setq center-coords (send (send end-coords :copy-worldcoords):translate translate))
-  (when show 
+  (when show
     (send center-coords :draw-on :flush t)
     (send end-coords :draw-on :flush t)
     )
-  (send end-coords :transform (send center-coords :inverse-transformation) :world)  
+  (send end-coords :transform (send center-coords :inverse-transformation) :world)
   (send center-coords :rotate (deg2rad theta) axis :world)
   (send end-coords :transform center-coords :world)
   (when show
@@ -138,6 +71,30 @@
     )
   end-coords
   )
+
+(defun draw-knob-target-coords (&key(door-angle 0) (knob-angle 0) (rot-knob-z 0) (knob-offset #f(0 0 0)) (lhand-pos-to-knob #f(0 0 0)))
+  (let (knob-target-coords temp-door-angle temp-knob-angle)
+    (setq temp-door-angle (send (send *door* :joint :door-hinge-joint) :joint-angle))
+    (setq temp-knob-angle (send (send *door* :joint :door-knob-joint) :joint-angle))
+    (send (send *door* :joint :door-hinge-joint) :joint-angle door-angle)
+    (send (send *door* :joint :door-knob-joint) :joint-angle knob-angle)
+    (setq knob-target-coords
+          (rot-target
+           (send (send (send (send *door* :handle :knob-handle) :copy-worldcoords)
+                       :translate knob-offset)
+                 :translate lhand-pos-to-knob :world)
+           rot-knob-z :z)
+          )
+    (setq *arrow* (arrow))
+    (send *arrow* :newcoords knob-target-coords)
+    (objects (cons *arrow* (objects)))
+    (send (send *door* :joint :door-hinge-joint) :joint-angle temp-door-angle)
+    (send (send *door* :joint :door-knob-joint) :joint-angle temp-knob-angle)
+    (send *irtviewer* :draw-objects)
+    ))
+
+
+
 
 (defun door-reach
   (&key (real? nil) (time 3000) (door-angle 0) (knob-angle 0)
@@ -148,19 +105,26 @@
         (target-centroid-pos
          (send (send (send *robot* :foot-midcoords) :copy-worldcoords) :pos)
          )
+        (knob-target-coords nil)
         )
-
+  (let (init-robot-coords lleg-end-coords rleg-end-coords target-coords ik-ret)
   (block door-reach
-    ;;get position of feet
     (setq init-robot-coords (send (send *robot* :worldcoords) :copy-worldcoords))
     (setq lleg-end-coords (send (send *robot* :lleg :end-coords) :copy-worldcoords))
     (setq rleg-end-coords (send (send *robot* :rleg :end-coords) :copy-worldcoords))
-    (when reset? 
-
+    (when reset?
       (reset-manip-pose-only-rarm)
       (send (send *door* :joint :door-hinge-joint) :joint-angle door-angle);door-angle
       (send (send *door* :joint :door-knob-joint) :joint-angle knob-angle)
       )
+    (when (eq knob-target-coords nil)
+      (setq knob-target-coords
+            (rot-target
+             (send (send (send (send *door* :handle :knob-handle) :copy-worldcoords)
+                         :translate knob-offset)
+                   :translate lhand-pos-to-knob :world)
+             rot-knob-z :z)
+            ))
     (let* ((move-target
             (list (send *robot* :lleg :end-coords)
                   (send *robot* :rleg :end-coords)
@@ -169,19 +133,10 @@
            (target-coords)
            (offset-from-knob-coords)
            )
-      (setq knob-target-coords 
-            (rot-target
-             (send (send (send (send *door* :handle :knob-handle) :copy-worldcoords)
-                         :translate knob-offset) 
-                   :translate lhand-pos-to-knob :world)
-             rot-knob-z :z)
-            )
       (setq target-coords
             (list
              lleg-end-coords
              rleg-end-coords
-             ;; (send lleg-end-coords :translate lleg-translate)
-             ;; (send rleg-end-coords :translate rleg-translate)
              knob-target-coords
              ))
       (setq ik-ret
@@ -195,23 +150,20 @@
                   :rthre rthre
                   :target-centroid-pos target-centroid-pos
                   :warnp nil
+                  :stop 20
                   ))
       (when (not ik-ret) (return-from door-reach nil))
-      ;; (setq ik-ret (send *robot* :move-centroid-on-foot :both '(:lleg :rleg :larm)))
-      ;; (when (not ik-ret) (return-from door-reach nil))
       (cond ;; ((collision-check-for-door) 
             ;;  (warn "collision!!!")
             ;;  nil)
             (t
-             (when draw? (send *irtviewer* :draw-objects)) ;; *irtviewer*の描画を更新
+             (when draw? (send *irtviewer* :draw-objects))
              (when real?
                (send *ri* :angle-vector (send *robot* :angle-vector) time))
              (send *robot* :angle-vector)
              )
             )
-      )))
-
-
+      ))))
 (defun reset-manip-pose-only-rarm ()
   (setq current-robot-pos (send (send *robot* :foot-midcoords) :copy-worldcoords))
   (setq lleg-end-coords (send (send *robot* :lleg :end-coords) :copy-worldcoords))
@@ -233,7 +185,6 @@
   (send *robot* :rarm-wrist-y :joint-angle -25)
   (send *robot* :rarm-elbow-p :joint-angle -120)
   )
-
 (defun door-reach2
   (&key (real? nil) (time 3000) (door-angle 0) (knob-angle 0)
         (knob-offset #f(0 0 0))
@@ -243,13 +194,12 @@
         (target-centroid-pos
          (send (send (send *robot* :foot-midcoords) :copy-worldcoords) :pos))
         )
-  ;;(let (k ret rot-knob-z flag)
     (setq k 0)
     (setq flag t)
     (while flag
       (setq rot-knob-z (* k (if (< door-angle 0) 5 -5)))
       (setq ret
-            (door-reach :real? nil :door-angle door-angle 
+            (door-reach :real? nil :door-angle door-angle
                         :rot-knob-z rot-knob-z :draw? nil
                         :lleg-translate lleg-translate
                         :rleg-translate rleg-translate
@@ -265,19 +215,11 @@
     (if draw? (send *irtviewer* :draw-objects))
     (format t "rot-knob-z is ~A~%" rot-knob-z)
     ret
-    );;)
-
-;;send *robot* :chest_joint1 :max-angle 30
-
+    )
 (defun door-reach0 (&key (real? nil))
   (door-reach :real? nil :knob-offset #f(0 0 0) :lhand-pos-to-knob #f(-100 0 100))
   (send *irtviewer* :draw-objects)
   (when real? (send *ri* :angle-vector (send *robot* :angle-vector)))
-  )
-
-(defun move-lhand (world-pos)
-  (send *robot* :larm :move-end-pos world-pos :world)
-  (send *irtviewer* :draw-objects) ;; *irtviewer*の描画を更新
   )
 
 (defun hand0 ()
@@ -293,12 +235,6 @@
   (send *irtviewer* :draw-objects)
   (send *ri* :hand-angle-vector (apply #'concatenate float-vector (send *robot* :hand :arms :angle-vector)) 1000)
  )
-
-
-(defun handle-reach ()
-  (door-reach :real? nil :knob-offset #f(0 0 0))
-  (send *irtviewer* :draw-objects)
-  )
 
 (defun unlock-door (&key (real? nil) (time 10000))
   ;start
@@ -353,8 +289,7 @@
                     ;;                            0.5))))
                     (list -5.0 -7.1856 -12 -35 -60 -70)
                     ))
-  ;;(setq avs (append avs (list (unreach-door))))
-  (setq *open-door-tvs* (cons 0 (count-up-step (/ time (length *open-door-tvs*)) (/ time (length *open-door-tvs*)) (1- (length *open-door-tvs*)))))
+  (setq *open-door-tvs* (cons 0 (count-up-step (/ time (length *open-door-avs*)) (/ time (length *open-door-avs*)) (1- (length *open-door-avs*)))))
   (when real? t
         (cond (slow
                (dolist (avs_i avs)
