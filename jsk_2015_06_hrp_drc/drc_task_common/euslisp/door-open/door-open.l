@@ -34,17 +34,27 @@
                                 (float-vector -140 -790 980)
                                 :use-leg nil
                                 :handle-l/r :right))))))
+
+(defun make-drc-box2-door (&key (use-leg nil))
+  "Door on drc box2."
+  (setq *door* (instance param-door :init 700 60 100 20
+                         (float-vector 0 -640 950)
+                         (float-vector -160 -600 960) 
+                         :use-leg use-leg 
+                         :handle-l/r :right)))
+
 (defun init
   (&key (real? nil) 
         (robot-pos #f(-800 -800 0))
         (robot-dir 0)
-        (robot "jaxon_red")
+        (robot "hrp2jsknt")
         (draw? t)
         )
   (setq *robot-pos* robot-pos)
   (create-robot-instance :real? real? :robot-pos robot-pos :robot-dir robot-dir 
                          :robot robot)
-  (make-my-door)
+  (send *robot* :head :neck-p :joint-angle 0)
+  (make-drc-box2-door)
   (when draw? (objects (list *robot* *door*)))
   (setq *init-robot-coords* (send (send *robot* :worldcoords) :copy-worldcoords))
   (send *robot* :chest_joint1 :max-angle 30)
@@ -143,7 +153,7 @@
                   :rthre rthre
                   :target-centroid-pos target-centroid-pos
                   :warnp nil
-                  :stop 20
+                  :stop 50
                   ))
       (when (not ik-ret) (return-from door-reach nil))
       (cond ;; ((collision-check-for-door) 
@@ -177,6 +187,7 @@
   (send *robot* :rarm-wrist-p :joint-angle -20)
   (send *robot* :rarm-wrist-y :joint-angle -25)
   (send *robot* :rarm-elbow-p :joint-angle -120)
+  (send *robot* :head :neck-p :joint-angle 0)
   )
 (defun door-reach2
   (&key (real? nil) (time 3000) (door-angle 0) (knob-angle 0)
@@ -210,7 +221,7 @@
     ret
     )
 (defun door-reach0 (&key (real? nil))
-  (door-reach :real? nil :knob-offset #f(0 0 0) :lhand-pos-to-knob #f(-100 0 100))
+  (door-reach :real? nil :knob-offset #f(0 0 0) :lhand-pos-to-knob #f(-30 0 200))
   (send *irtviewer* :draw-objects)
   (when real? (send *ri* :angle-vector (send *robot* :angle-vector)))
   )
@@ -233,17 +244,21 @@
   ;start
   (door-reach :real? real? :knob-offset #f(0 0 0) :lhand-pos-to-knob #f(0 0 0) :knob-angle 0)
   (send *irtviewer* :draw-objects)
-  (when real? (model2real :time time))
+  (when real? (send *ri* :angle-vector (send *robot* :angle-vector) time)
+        (send *ri* :wait-interpolation))
   ;turn down knob
   (door-reach :real? real? :knob-offset #f(0 0 0) :lhand-pos-to-knob #f(0 0 -30) :knob-angle -30)
   (send *irtviewer* :draw-objects)
-  (when real? (model2real :time time))
+  (when real? (send *ri* :angle-vector (send *robot* :angle-vector) time)
+        (send *ri* :wait-interpolation))
   ;open the door a little
   (door-reach :real? real? :knob-offset #f(0 0 0) :lhand-pos-to-knob #f(0 0 0) :knob-angle -30 :door-angle -5
               :rot-knob-z (* 0.68 5)
               )
   (send *irtviewer* :draw-objects)
-  (when real? (model2real :time time))
+  (when real? (send *ri* :angle-vector (send *robot* :angle-vector) time)
+        (send *ri* :wait-interpolation)
+        )
   ;stop turn down the knob, keeping the door open
   (door-reach :real? real? :knob-offset #f(0 0 0) :lhand-pos-to-knob #f(0 0 0) :knob-angle 0 :door-angle -5
               :rot-knob-z (* 0.68 5))
@@ -287,11 +302,17 @@
 
 (defun open1 (&key (time 10000) (real? nil))
   (send *robot* :reset-manip-pose)
-  (when real? (model2real :time time))
+  (when real? 
+    (send *ri* :angle-vector (send *robot* :angle-vector) time)
+    (send *ri* :wait-interpolation))
   (door-reach0)
-  (when real? (model2real :time time))
+  (when real? 
+    (send *ri* :angle-vector (send *robot* :angle-vector) time)
+    (send *ri* :wait-interpolation))
   (door-reach)
-  (when real? (model2real :time time))
+  (when real? 
+    (send *ri* :angle-vector (send *robot* :angle-vector) time)
+    (send *ri* :wait-interpolation))
   )
 
 (defun open2 (&key(time 30000) (real? nil))
@@ -313,7 +334,7 @@
           :force-gain (float-vector 0.01 1 1) :moment-gain (float-vector 1.0 1.0 1.0)))
    (t
     (print "set impedance params defaul mode")
-    (send *ri* :start-impedance :larm :k-p 1000 :d-p 500 :m-p 7.5 :m-r 5 :d-r 50 :k-r 50 
+    (send *ri* :start-impedance :larm :k-p 2000 :d-p 1000 :m-p 20 :m-r 5 :d-r 50 :k-r 100 
           :force-gain (float-vector 1 1 1) :moment-gain (float-vector 1.0 1.0 1.0)))))
 
 (defun collision-check-for-door ()
@@ -334,17 +355,15 @@
                    )
            0) t nil)))
 
-  ;; (load "subscribe_checkerboard.l")
-;; (defun set-door-knob-coords ()
-;;   (set-relative-coords-to-checkerboard (send *robot* :larm :end-coords))
-;;   )
-;; (defun adjust-door ()
-;;   (let (door-knob-coords)
-;;     (setq door-knob-pos-real (send (get-target-coords) :worldpos))
-;;     (setq door-knob-pos-model (send (send (send *door* :joint :door-knob-joint) :worldcoords) :worldpos))
-;;     (setq door-knob-pos-diff (v- door-knob-pos-real door-knob-pos-model))
-;;     (send *door* :worldcoords (send (send *door* :wroldcoords) :translate door-knob-pos-diff))
-;;   ))
+(load "subscribe_checkerboard.l")
+(defun adjust-door ()
+  (let (door-knob-coords)
+    (setq door-knob-pos-real (send (get-target-coords) :worldpos))
+    (setq door-knob-pos-model (send (send (send *door* :handle :knob-handle) :worldcoords) :worldpos))
+    (setq door-knob-pos-diff (v- door-knob-pos-real door-knob-pos-model))
+    (send *door* :newcoords (send (send *door* :worldcoords) :translate door-knob-pos-diff))
+    (send *irtviewer* :draw-objects)
+    ))
 
 
 
