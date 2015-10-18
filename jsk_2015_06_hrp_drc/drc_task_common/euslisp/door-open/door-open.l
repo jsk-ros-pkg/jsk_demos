@@ -25,21 +25,34 @@
 ;;                         :handle-l/r :right)))
 
 (defun make-my-door ()
-  (setq *door* (instance param-door :init 875 50 110 20
-                         (float-vector 0 -820 980)
-                         (float-vector -140 -790 980)
-                         :use-leg nil
-                         :handle-l/r :right)))
+  (let (robot-name)
+  (setq robot-name (send *robot* :name))
+  (cond ((equal robot-name "JAXON_RED")
+         (setq *door* (instance param-door :init 875 50 110 20
+                                (float-vector 0 -820 980)
+                                (float-vector -50 -760 980)
+                                :use-leg nil
+                                :handle-l/r :right))
+         )
+        ((equal robot-name "hrp2jsknt")
+         (setq *door* (instance param-door :init 875 50 110 20
+                                (float-vector 0 -820 980)
+                                (float-vector -140 -790 980)
+                                :use-leg nil
+                                :handle-l/r :right))))))
 ;;init :robot-dir 30 :robot-pos #f(-700 -900 0)
 ;;init :robot-dir 30 :robot-pos #f(-750 -850 0);;open-legs-moti 100
 ;;init :robot-dir 30 :robot-pos #f(-850 -850 0);
+
+;;init :robot "jaxon_red" :robot-pos #f(-1000 -600 0)
+
 (defun init
   (&key (real? nil) 
         ;;(robot-pos #f(-700 -900 0))
-        (robot-pos #f(-900 -800 0));;open-legs 100
+        (robot-pos #f(-1000 -800 0));;open-legs 100
         ;;(robot-pos #f(-800 -900 0));;standard
         (robot-dir 0);;30 is good
-        (robot "hrp2jsknt")
+        (robot "jaxon_red")
         (draw? t)
         )
                                         ;if use real machine
@@ -52,7 +65,6 @@
   (send *robot* :chest_joint1 :max-angle 30)
   (send *robot* :chest_joint1 :min-angle -2)
   )
-
 (defun rot-target (my-coords theta axis
                               &key
                               (translate #f(120 10 -10)) (show nil))
@@ -92,9 +104,6 @@
     (send (send *door* :joint :door-knob-joint) :joint-angle temp-knob-angle)
     (send *irtviewer* :draw-objects)
     ))
-
-
-
 
 (defun door-reach
   (&key (real? nil) (time 3000) (door-angle 0) (knob-angle 0)
@@ -302,8 +311,6 @@
   ))
 
 
-
-
 (defun open1 (&key (time 1000))
   ;;(send *robot* :reset-manip-pose)
   (model2real :time (* 3 time) :sleep t)
@@ -317,7 +324,6 @@
   (open-door :real? nil :time time)
   (dump-loadable-structure "./open2-avs.l" *open-door-avs* *open-door-tvs*)
   )
-
 (defun open2 (&key(time 10000) (slow nil) (wait t) (log? nil))
   (unlock-door :real? t :time 2000)
   (print "model2real?")
@@ -335,172 +341,20 @@
   (when log? (send *ri* :save-log "/tmp/open-door"))
   )
 
-(defun lhand-down ()
-  (send *robot* :larm :move-end-pos #f(0 0 -100) :world)  
-  )
-
-(defun lhand-up ()
-  (send *robot* :larm :move-end-pos #f(0 0 100) :world)  
-   (send *irtviewer* :draw-objects)
-   )
-
-(defun impedance (&key (gazebo? nil) (soft nil))
-  (cond 
-   (soft (send *ri* :start-impedance :larm :k-p 1000 :d-p 500 :m-p 7.5 :m-r 5 :d-r 50 :k-r 50 
-               :force-gain (float-vector 0.01 1 1) :moment-gain (float-vector 1.0 1.0 1.0)))
-  (t
-   (send *ri* :start-impedance :larm :k-p 1000 :d-p 500 :m-p 7.5 :m-r 5 :d-r 50 :k-r 50 
-         :force-gain (float-vector 1 1 1) :moment-gain (float-vector 1.0 1.0 1.0)))))
-
-
-
-;; open the legs agains auto-balancer
-;(defun open-legs (&key (robot *robot*) (real? t))
- ; (let* (footstep-list open-legs-motion)
-;;    (objects (append (list robot) footstep-list))
-;    (setq footstep-list 
-;;  (list (make-coords :coords (send robot :rleg :end-coords :copy-worldcoords) :name :rleg)
-;;(make-coords :coords (send (send robot :lleg :end-coords :copy-worldcoords) 
-;;                           :translate #f(-100 0 0) :world) :name :lleg)
-;;))
-;    (send *irtviewer* :draw-objects)
-;    
-;    (defun calc-open-legs (robot footstep-list)
-;      (send robot :calc-walk-pattern-from-footstep-list footstep-list 
-;	    :debug-view :no-message
-;	    :default-step-height 50)
-;      )
-    
-;    (defun get-angle-vector (motion-pattern) 
-;      (cond ((eq (cdr motion-pattern) nil) 
-;	     (print (cadar motion-pattern))
-;	     (send *ri* :angle-vector (cadar motion-pattern) 100)
-;	     (send *ri* :wait-interpolation)
-;	     )
-;	    (t (print (cadar motion-pattern))
-;	       (send *ri* :angle-vector (cadar motion-pattern) 100)
-;	       (send *ri* :wait-interpolation)
-;	       (get-angle-vector (cdr motion-pattern))
-;	       )
-;	));
-    
-   ; (cond (real? (setq open-legs-motion (calc-open-legs robot footstep-list))
-;		 (get-angle-vector open-legs-motion))
-;	  (t (calc-open-legs robot footstep-list)))      
-;    (print 'done)
-;    ))
-
-
-(defun open-legs (&key (robot *robot*) (real? nil) (position #f(100 0 0)))
-  (let* (footstep-list)
-    ;; (objects (append (list robot) footstep-list))
-    (setq footstep-list 
-          (list (make-coords :coords (send robot :lleg :end-coords :copy-worldcoords) :name :lleg)
-                (make-coords :coords (send (send robot :rleg :end-coords :copy-worldcoords)
-                                           :translate position) :name :rleg)
-                ))
-;;    (send *robot* :set-foot-steps
-    (send robot :calc-walk-pattern-from-footstep-list footstep-list
-          :debug-view :no-message
-          :default-step-height 50)
-    (when real?
-      (send *ri* :set-gait-generator-param :default-step-height 0.05)
-      (send *ri* :wait-foot-steps)
-      (send *ri* :set-foot-steps footstep-list)
-      (send *ri* :wait-foot-steps))
-    (print "  setFootSteps()=>OK")
-    t))
-
-(defun move-cog-foward (&key (robot *robot*) (real? t))
-  (let* (footstep-list)
-    ;; (objects (append (list robot) footstep-list))
-    (setq footstep-list 
-          (list (make-coords :coords (send robot :lleg :end-coords :copy-worldcoords) :name :lleg)
-                (make-coords :coords (send robot :rleg :end-coords :copy-worldcoords) :name :rleg)
-                ))
-;;    (send *robot* :set-foot-steps
-    (send robot :calc-walk-pattern-from-footstep-list footstep-list
-          :debug-view :no-message
-          :default-step-height 0)
-    (send *ri* :wait-foot-steps)
-    (send *ri* :set-gait-generator-param :default-step-height 0)
-    (send *ri* :set-foot-steps footstep-list)
-    (send *ri* :wait-foot-steps)
-    (print "  setFootSteps()=>OK")
-    t))
-
-(defun close-legs (&key (robot *robot*) (real? t))
-  (let* ()
-    (setq footstep-list
-          (list (make-coords :coords (send robot :lleg :end-coords :copy-worldcoords) :name :lleg)
-                (make-coords :coords (send (send robot :lleg :end-coords :copy-worldcoords) 
-                                           :translate #f(0 -210 0)) :name :rleg)
-                )
-          )
-    (send *robot* :calc-walk-pattern-from-footstep-list footstep-list
-          :debug-view :nomessage
-          :default-step-height 50)
-    (send *ri* :set-gait-generator-param :default-step-height 0.05)
-    (send *ri* :wait-foot-steps)
-    (send *ri* :set-foot-steps footstep-list)
-    (send *ri* :wait-foot-steps)
-    (print "  setFootSteps()=>OK")
-    t))
-
-
-
-
-  (defun walk-motion
-  (robot)
-  "walking motion using preview-control, gait-generator, and fullbody ik"
-  (let* ((is-small-robot
-          (< (abs (elt (send (send (car (send robot :links));;get root link 
-                                   :transformation ;;get root link position in foot-link coords
-                                   (apply #'midcoords 0.5 (send robot :legs :end-coords))) 
-                             :worldpos) 2)) 400)) ;;compare the height of root-link with 400mm
-         (default-step-height (if is-small-robot 10 50)))
-                                        ;determin the step hight according to the robot size
-  (send robot :reset-pose)
-  (send robot :fix-leg-to-coords (make-coords))
-  (objects (list robot))
-  (warn ";; test1 ;; specify footstep-list~%")
-  (let* ((test1-scale (if is-small-robot 0.25 1.0))
-        (footstep-list
-         (list (make-coords :coords (send robot :rleg :end-coords :copy-worldcoords) :name :rleg)
-                                        ;make copy of right foot coords named :rleg 
-               (make-coords :coords (send (send robot :lleg :end-coords :copy-worldcoords) 
-                                          :translate (scale test1-scale #f(100 0 0))) :name :lleg)
-                                        ;make target coords named lleg
-               (make-coords :coords (send (send robot :rleg :end-coords :copy-worldcoords) 
-                                          :translate (scale test1-scale #f(200 0 0))) :name :rleg)
-               (make-coords :coords (send (send robot :lleg :end-coords :copy-worldcoords) :translate (scale test1-scale #f(300 0 0))) :name :lleg)
-               (make-coords :coords (send (send robot :rleg :end-coords :copy-worldcoords) :translate (scale test1-scale #f(400 0 0))) :name :rleg)
-               (make-coords :coords (send (send robot :lleg :end-coords :copy-worldcoords) :translate (scale test1-scale #f(500 0 0))) :name :lleg))))
-    (objects (append (list robot) footstep-list));show robot and coords
-    ;; footstep-list is coordinates list.
-    ;; This should have :l/r method or :l/r name.
-    (send robot :calc-walk-pattern-from-footstep-list
-          footstep-list :debug-view :no-message
-          :default-step-height default-step-height)
-    )
-  (warn ";; test2 ;; calc footstep-list from go pos param~%")
-  (objects (list robot
-                 (apply #'midcoords 0.5 (send robot :legs :end-coords))
-                 (send (send (apply #'midcoords 0.5 (send robot :legs :end-coords)) :translate (float-vector 500 150 0)) :rotate (deg2rad 45) :z)))
-  (if is-small-robot (send robot :gen-footstep-parameter :ratio 0.3))
-  (send robot :calc-walk-pattern-from-footstep-list
-        (send robot :go-pos-params->footstep-list
-              500 150 45) ;; x[mm] y[mm] th[deg]
-        :debug-view :no-message
-        :default-step-height default-step-height)
-  ))
-
-
-
-
-
-
-
+(defun impedance (&optional (option nil))
+  (cond
+   ((equal option "soft")
+    (print "set impedance params soft mode")
+    (send *ri* :start-impedance :larm :k-p 1000 :d-p 500 :m-p 7.5 :m-r 5 :d-r 50 :k-r 50 
+          :force-gain (float-vector 0.01 1 1) :moment-gain (float-vector 1.0 1.0 1.0)))
+   ((equal  option "free")
+    (print "set impedance params to free mode")
+    (send *ri* :start-impedance :larm :k-p 1000 :d-p 500 :m-p 7.5 :m-r 5 :d-r 50 :k-r 50 
+          :force-gain (float-vector 0.01 1 1) :moment-gain (float-vector 1.0 1.0 1.0)))
+   (t
+    (print "set impedance params defaul mode")
+    (send *ri* :start-impedance :larm :k-p 1000 :d-p 500 :m-p 7.5 :m-r 5 :d-r 50 :k-r 50 
+          :force-gain (float-vector 1 1 1) :moment-gain (float-vector 1.0 1.0 1.0)))))
 (defun collision-check-for-door ()
   (if (> (reduce #'+
                  (cons
@@ -508,4 +362,19 @@
                   (mapcar #'(lambda (link) (pqp-collision-check link (send *door* :link :door-panel))) (send *robot* :links))
                   )
                  )
-         0) t nil)
+         0) t nil))
+
+(load "subscribe_checkerboard.l")
+(defun set-door-knob-coords ()
+  (set-relative-coords-to-checkerboard (send *robot* :larm :end-coords))
+  )
+(defun adjust-door ()
+  (let (door-knob-coords)
+    (setq door-knob-pos-real (send (get-target-coords) :worldpos))
+    (setq door-knob-pos-model (send (send (send *door* :joint :door-knob-joint) :worldcoords) :worldpos))
+    (setq door-knob-pos-diff (v- door-knob-pos-real door-knob-pos-model))
+    (send *door* :worldcoords (send (send *door* :wroldcoords) :translate door-knob-pos-diff))
+  ))
+
+
+
