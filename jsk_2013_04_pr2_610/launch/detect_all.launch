@@ -1,6 +1,4 @@
 <launch>
-  <arg name="use_sim" default="false" />
-
   <include file="$(find jsk_2013_04_pr2_610)/launch/detect_footobject.launch" />
 
   <include file="$(find jsk_2013_04_pr2_610)/launch/detect_with_image.launch">
@@ -14,7 +12,6 @@
 	<arg name="reprojection_threshold" value="3.0" />
 	<arg name="error_threshold" value="80.0" />
 	<arg name="distanceratio_threshold" value="0.49" />
-	<arg name="use_sim" value="$(arg use_sim)"/>
   </include>
 
   <include file="$(find jsk_2013_04_pr2_610)/launch/detect_with_image.launch">
@@ -29,6 +26,5 @@
 	<arg name="reprojection_threshold" value="3.0" />
 	<arg name="error_threshold" value="80.0" />
 	<arg name="distanceratio_threshold" value="0.49" />
-	<arg name="use_sim" value="$(arg use_sim)"/>
   </include>
 </launch>
