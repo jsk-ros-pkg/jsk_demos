@@ -357,13 +357,21 @@
 
 (load "subscribe_checkerboard.l")
 (defun adjust-door ()
-  (let (door-knob-coords)
-    (setq door-knob-pos-real (send (get-target-coords) :worldpos))
-    (setq door-knob-pos-model (send (send (send *door* :handle :knob-handle) :worldcoords) :worldpos))
-    (setq door-knob-pos-diff (v- door-knob-pos-real door-knob-pos-model))
-    (send *door* :newcoords (send (send *door* :worldcoords) :translate door-knob-pos-diff))
+  (let (door-real-knob-coords)
+    (setq door-real-knob-coords (get-target-coords))
+    (setq door-knob-pos-real (send (door-real-knob-coords) :worldpos))
+    (setq door-real-knob-x (send (door-real-knob-coords) :rotate-vector #f(1 0 0)))
+
+    (setq door-model-knob-coords (send (send *door* :handle :knob-handle) :worldcoords))
+    (setq door-knob-pos-model (send door-model-knob-coords :worldpos))
+    (setq door-model-knob-x (send (door-model-knob-coords) :rotate-vector #f(1 0 0)))
+
+    (setq door-knob-pos-diff (v- door-knob-pos-model door-knob-pos-real))
+    (setq door-knob-rot-diff (elt (v* door-knob-model-knob-x door-knob-real-x) 2))
+    (format "door-knob-rot-diff is ~A~%" door-knob-rot-diff)
+
+    (send *robot* :newcoords (send (send *robot* :worldcoords) :translate door-knob-pos-diff))
     (send *irtviewer* :draw-objects)
     ))
 
-
-
+(defun)

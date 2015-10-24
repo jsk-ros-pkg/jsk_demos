@@ -1,4 +1,4 @@
-;;#!/usr/bin/env roseus
+#!/usr/bin/env roseus
 
 (ros::roseus "checkerboard_subscriber")
 (ros::roseus-add-msgs "std_msgs")
