@@ -153,7 +153,7 @@
                   :rthre rthre
                   :target-centroid-pos target-centroid-pos
                   :warnp nil
-                  :stop 50
+                  :stop 20
                   ))
       (when (not ik-ret) (return-from door-reach nil))
       (cond ;; ((collision-check-for-door) 
@@ -356,22 +356,56 @@
            0) t nil)))
 
 (load "subscribe_checkerboard.l")
+(defun get-relative-pos-and-rot (coords1 coords2)
+  "return (list pos-diff rot-diff). pos1+posdiff=pos2, rotate coords1 around rotdiff=coords2"
+  (setq pos1 (send coords1 :worldpos))
+  (setq unit1 (send coords1 :rotate-vector #f(1 0 0)))
+
+  (setq pos2 (send coords2 :worldpos))
+  (setq unit2 (send coords2 :rotate-vector #f(1 0 0)))
+
+  (setq pos-diff (v- pos2 pos1))
+  (setq rot-diff (v* unit1 unit2))
+  (list pos-diff rot-diff)
+  )
+
 (defun adjust-door ()
   (let (door-real-knob-coords)
     (setq door-real-knob-coords (get-target-coords))
-    (setq door-knob-pos-real (send (door-real-knob-coords) :worldpos))
-    (setq door-real-knob-x (send (door-real-knob-coords) :rotate-vector #f(1 0 0)))
-
     (setq door-model-knob-coords (send (send *door* :handle :knob-handle) :worldcoords))
-    (setq door-knob-pos-model (send door-model-knob-coords :worldpos))
-    (setq door-model-knob-x (send (door-model-knob-coords) :rotate-vector #f(1 0 0)))
+    (setq diff
+          (get-relative-pos-and-rot door-real-knob-coords
+                                    door-model-knob-coords))
+    (setq diff-pos (elt diff 0))
+    (setq diff-rot (elt diff 1))
+    
+    (setq rot-z (asin (elt diff-rot 2)))
 
-    (setq door-knob-pos-diff (v- door-knob-pos-model door-knob-pos-real))
-    (setq door-knob-rot-diff (elt (v* door-knob-model-knob-x door-knob-real-x) 2))
-    (format "door-knob-rot-diff is ~A~%" door-knob-rot-diff)
-
-    (send *robot* :newcoords (send (send *robot* :worldcoords) :translate door-knob-pos-diff))
+    (send *robot* :newcoords (send (send *robot* :worldcoords) :rotate rot-z :z :world))
+    (send *robot* :newcoords (send (send *robot* :worldcoords) :translate diff-pos :world))
     (send *irtviewer* :draw-objects)
     ))
 
-(defun)
+(defun walk-to-target-coords (&optional(target-coords *init-robot-coords*) &key (real? nil))
+  (let ()
+    (adjust-door)
+    (setq current-coords (send *robot* :foot-midcoords))
+    
+    (setq diff
+          (get-relative-pos-and-rot current-coords
+                                    target-coords))
+    (setq diff-pos (elt diff 0))
+    (setq diff-rot (elt diff 1))
+    
+    (setq diff-pos-local (send (send (send *robot* :worldcoords) :inverse-transformation) :rotate-vector diff-pos))
+    (setq rot-z (asin (elt diff-rot 2)))
+    
+    (when real?
+      (send *ri* :go-pos (elt diff-pos-local 0) (elt diff-pos-local 1) rot-z))
+
+    (send (send (send (send (send *robot* :foot-midcoords) :copy-worldcoords)
+                            :translate diff-pos-local)
+                            :rotate rot-z :z :world)
+                            :draw-on :flush t)
+    (list (elt diff-pos-local 0) (elt diff-pos-local 1) rot-z)
+    ))
