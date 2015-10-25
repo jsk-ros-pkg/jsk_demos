@@ -39,7 +39,7 @@
   "Door on drc box2."
   (setq *door* (instance param-door :init 700 60 100 20
                          (float-vector 0 -640 950)
-                         (float-vector -160 -600 960) 
+                         (float-vector -160 -580 970) 
                          :use-leg use-leg 
                          :handle-l/r :right)))
 
@@ -53,9 +53,15 @@
   (setq *robot-pos* robot-pos)
   (create-robot-instance :real? real? :robot-pos robot-pos :robot-dir robot-dir 
                          :robot robot)
+  (send *robot* :reset-pose)
   (send *robot* :head :neck-p :joint-angle 0)
   (make-drc-box2-door)
   (when draw? (objects (list *robot* *door*)))
+  (when real? 
+    (send *ri* :start-auto-balancer)
+    (send *ri* :start-st)
+    (impedance)
+    )
   (setq *init-robot-coords* (send (send *robot* :worldcoords) :copy-worldcoords))
   (send *robot* :chest_joint1 :max-angle 30)
   (send *robot* :chest_joint1 :min-angle -2)
@@ -301,10 +307,14 @@
         (send *ri* :angle-vector-sequence *open-door-avs* *open-door-tvs*)))
 
 
-(defun open1 (&key (time 10000) (real? nil))
-  (send *robot* :reset-manip-pose)
-  (when real? 
-    (send *ri* :angle-vector (send *robot* :angle-vector) time)
+(defun open1 (&key (time 10000) (real? nil) (adjust? t))
+  ;;(send *robot* :reset-manip-pose)
+  (send *robot* :larm :angle-vector #f(50.0 30.0 10.0 -120.0 25.0 5.0 -20.0 -60.0))
+  (when real?
+    (when adjust? (adjust-door))
+    (print "OK?")
+    (if (equal (read-line) "y")
+        (send *ri* :angle-vector (send *robot* :angle-vector) time))
     (send *ri* :wait-interpolation))
   (door-reach0)
   (when real? 
@@ -316,7 +326,7 @@
     (send *ri* :wait-interpolation))
   )
 
-(defun open2 (&key(time 30000) (real? nil))
+(defun open2 (&key(time 10000) (real? nil))
   (unlock-door :real? real? :time 10000)
   (print "Do you want to opne the door?")
   (read-line)
@@ -357,21 +367,69 @@
            0) t nil)))
 
 (load "subscribe_checkerboard.l")
+(defun diff-pos-rot (coords1 coords2)
+  (setq pos2 (send coords2 :worldpos))
+  (setq unit2 (send coords2 :rotate-vector #f(1 0 0)))
+  
+  (setq pos1 (send coords1 :worldpos))
+  (setq unit1 (send coords1 :rotate-vector #f(1 0 0)))
+  
+  (setq pos-diff (v- pos2 pos1))
+  (setq rot-diff (v* unit1 unit2))
+  (setf (elt rot-diff 0) (asin (elt rot-diff 0)))
+  (setf (elt rot-diff 1) (asin (elt rot-diff 1)))
+  (setf (elt rot-diff 2) (asin (elt rot-diff 2)))  
+  
+  (list pos-diff rot-diff)
+  )
+
 (defun adjust-door ()
-  (let (door-real-knob-coords)
-    (setq door-real-knob-coords (get-target-coords))
-    (setq door-knob-pos-real (send (door-real-knob-coords) :worldpos))
-    (setq door-real-knob-x (send (door-real-knob-coords) :rotate-vector #f(1 0 0)))
-
-    (setq door-model-knob-coords (send (send *door* :handle :knob-handle) :worldcoords))
-    (setq door-knob-pos-model (send door-model-knob-coords :worldpos))
-    (setq door-model-knob-x (send (door-model-knob-coords) :rotate-vector #f(1 0 0)))
-
-    (setq door-knob-pos-diff (v- door-knob-pos-model door-knob-pos-real))
-    (setq door-knob-rot-diff (elt (v* door-knob-model-knob-x door-knob-real-x) 2))
-    (format "door-knob-rot-diff is ~A~%" door-knob-rot-diff)
-
-    (send *robot* :newcoords (send (send *robot* :worldcoords) :translate door-knob-pos-diff))
+  (let (door-real-knob-coords door-model-knob-coords diff door-knob-pos-dif rot-z)
+    (dolist (adjust-door-counter (list 1 2 3))
+      (setq door-real-knob-coords (get-target-coords))
+      (print "real")
+      (print door-real-knob-coords)
+      
+      (setq door-model-knob-coords (send (send *door* :handle :knob-handle) :worldcoords))
+      (print "model")
+      (print door-model-knob-coords)
+      
+      
+      (setq diff (diff-pos-rot door-real-knob-coords door-model-knob-coords))
+      
+      (setq door-knob-pos-diff (elt diff 0))
+      (setq rot-z (elt (elt diff 1) 2))
+      
+      (send *robot* :newcoords (send (send *robot* :worldcoords) :translate door-knob-pos-diff :world))
+      (send *robot* :newcoords (send (send *robot* :worldcoords) :rotate rot-z :z :world))
+      (print "robot")
+      (print (send *robot* :worldcoords))
+      )
     (send *irtviewer* :draw-objects)
     ))
 
+(defun walk-to-target (&key (target-coords *init-robot-coords*) (real? nil))
+  (let (current-coords diff pos-diff rot-z loacl-pos-diff dx dy rot-z-deg)
+    (adjust-door)
+    (unix::sleep 1)
+    (adjust-door)
+    (setq current-coords (send (send *robot* :worldcoords) :copy-worldcoords))
+    (setq diff (diff-pos-rot current-coords target-coords))
+    
+    (setq pos-diff (elt diff 0))
+    (setq rot-z (elt (elt diff 1) 2))
+  
+    (setq local-pos-diff (send (send (send *robot* :worldcoords) :inverse-transformation) :rotate-vector pos-diff))
+    
+    (send (send (send (send (send *robot* :foot-midcoords) :copy-worldcoords) 
+                      :translate local-pos-diff) :rotate rot-z :z) :draw-on :flush t)
+    
+    (setq dx (* 0.001 (elt local-pos-diff 0)))
+    (setq dy (* 0.001 (elt local-pos-diff 1)))
+    (setq rot-z-deg (rad2deg rot-z))
+  
+    (when real? 
+      (print "walk OK?")
+      (if (equal (read-line) "y")
+          (send *ri* :go-pos dx dy rot-z-deg)))
+    ))
