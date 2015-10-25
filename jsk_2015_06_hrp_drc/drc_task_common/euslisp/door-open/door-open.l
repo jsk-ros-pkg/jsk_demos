@@ -179,14 +179,15 @@
   (send *robot* :rleg :move-end-pos rleg-pos)
   (send *robot* :lleg :move-end-pos lleg-pos)
 
-  (send *robot* :rarm-shoulder-p :joint-angle 50)
-  (send *robot* :rarm-shoulder-r :joint-angle -30)
-  (send *robot* :rarm-shoulder-y :joint-angle -10)
+  (send *robot* :rarm-shoulder-p :joint-angle -10)
+  ;; (send *robot* :rarm-shoulder-p :joint-angle 50)
+  ;; (send *robot* :rarm-shoulder-r :joint-angle -30)
+  ;; (send *robot* :rarm-shoulder-y :joint-angle -10)
+  ;; (send *robot* :rarm-wrist-r :joint-angle -5)
+  ;; (send *robot* :rarm-wrist-p :joint-angle -20)
+  ;; (send *robot* :rarm-wrist-y :joint-angle -25)
+  ;; (send *robot* :rarm-elbow-p :joint-angle -120)
   (send *robot* :HEAD_JOINT1 :joint-angle 0)
-  (send *robot* :rarm-wrist-r :joint-angle -5)
-  (send *robot* :rarm-wrist-p :joint-angle -20)
-  (send *robot* :rarm-wrist-y :joint-angle -25)
-  (send *robot* :rarm-elbow-p :joint-angle -120)
   (send *robot* :head :neck-p :joint-angle 0)
   )
 (defun door-reach2
@@ -374,4 +375,3 @@
     (send *irtviewer* :draw-objects)
     ))
 
-(defun)
