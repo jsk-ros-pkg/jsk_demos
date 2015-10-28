@@ -1,0 +1,66 @@
+(defclass concrete-block :super cascaded-link :slots (parts))
+(defmethod concrete-block
+  (:init (&key (x-size 190) (y-size 390) (z-size 150) (z-plate 20) (y-middle (* 0.8 y-size)))
+         (send-super :init)
+         (let (plate middle z-middle)
+           ;;make three box
+           (setq top (make-cube x-size y-size z-plate :color #f(1 0 0) :name :top))
+           (setq bottom (make-cube x-size y-size z-plate :color #f(1 0 0) :name :bottom))
+           (setq z-middle (- z-size (* 2 z-plate)))
+           (setq middle (make-cube x-size y-middle z-middle :color #f(1 0 0) :name :middle))
+           ;;place each box to form block.
+           (send bottom :translate (float-vector 0 0 (/ z-plate 2)) :world)
+           (send middle :translate (float-vector 0 0 (+ (/ z-plate 2) (/ z-middle 2))) :world)
+           (send top :translate (float-vector 0 0 (+ z-plate z-middle)))
+           ;;set bottom as root coords, and assoc other box.
+           (send bottom :assoc middle)
+           (send middle :assoc top)
+           (setq parts (list bottom middle top))
+           ;;make one link named link0.
+           (setq link0 (instance bodyset-link :init (make-cascoords) :bodies (list bottom top middle)))
+           ;;assoc root link to self
+           (send self :assoc link0)
+           ;;sustitute links to the "links" slots in cascaded-link
+           (setq links (list link0))
+           ;;end of init
+           (send self :init-ending)
+           self))
+  (:parts (name) (find name parts :test #'equal :key #'(lambda (x) (send x :name))));;optional. return the cube of given name.
+  (:top-left-edge ()
+                  "return the coords to grasp with left hand."
+                  (let (y-top target-coords)
+                    (setq y-top (y-of-cube (send self :parts :top)))
+                    (print y-top)
+                    (setq target-coords (send (send (send (send self :parts :top) 
+                                                          :worldcoords) :copy-worldcoords)
+                                              :translate (float-vector 0 (/ y-top 2) 0)))
+                    (send target-coords :rotate -1.57 :x :world)
+                    (send target-coords :rotate -1.57 :z :world)
+                    (send target-coords :rotate 0.5 :x :world)
+                    ))
+  (:top-right-edge ()
+                   "return the coords to grasp with right hand."
+                  (let (y-top target-coords)
+                    (setq y-top (y-of-cube (send self :parts :top)))
+                    (print y-top)
+                    (setq target-coords (send (send (send (send self :parts :top) 
+                                                          :worldcoords) :copy-worldcoords)
+                                              :translate (float-vector 0 (/ y-top -2) 0)))
+                    (send target-coords :rotate 1.57 :x :world)
+                    (send target-coords :rotate 1.57 :z :world)
+                    (send target-coords :rotate -0.5 :x :world)
+                    ))
+  (:move-pos (vec &optional (selector :world))
+         (send self :newcoords (send (send (send self :worldcoords) :copy-worldcoords) :translate vec selector)))
+  (:on-ground ()
+              "move the block righ down, set z component ZERO."
+              (let ();;(coords pos)
+                (setq coords (send (send self :worldcoords) :copy-worldcoords))
+                (setq pos (send coords :worldpos))
+                (setf (elt pos 2) 0)
+                (send self :locate pos :world)
+                ))
+  )
+(defun make-box ()
+  (setq *box* (instance concrete-block :init))
+  )
