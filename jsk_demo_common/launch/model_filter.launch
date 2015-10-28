@@ -10,7 +10,7 @@
     <remap from="robot_description" to="$(arg model_name)_description" />
   </node>
   <node name="robot_state_publisher"
-        pkg="robot_state_publisher" type="state_publisher">
+        pkg="robot_state_publisher" type="robot_state_publisher">
     <remap from="robot_description" to="$(arg model_name)_description" />
   </node>
 
@@ -20,7 +20,7 @@
   <arg name="model_filter_config" />
   <node name="urdf_model_filter"
         pkg="pr2_navigation_self_filter" type="self_filter"
-        clear_params="true" respawn="true" output="screen">
+        clear_params="true" respawn="true">
     <!-- The names of the links the sensor can see -->
     <rosparam command="load" file="$(arg model_filter_config)" />
     <!-- parameter remapping -->
