@@ -24,15 +24,15 @@
   (setq start-time (ros::time-now))
   (while (ros::ok)
     (let ((current-time (ros::time-now)))
-      (if (> (send (ros::time- current-time start-time) :to-sec) timeout)
-          (return-from get-target-coords))
       (if *target-coords*
           (return-from get-target-coords *target-coords*))
+      (if (> (send (ros::time- current-time start-time) :to-sec) timeout)
+          (return-from get-target-coords))
       (ros::sleep)
       (ros::spin-once))
     )))
 (ros::subscribe "door_handle" geometry_msgs::PoseStamped #'get-target-coords-callback)
-(ros::rate 5)
+(ros::rate 10)
 
 
 
