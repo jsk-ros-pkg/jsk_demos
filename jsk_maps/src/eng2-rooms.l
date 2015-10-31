@@ -3,6 +3,8 @@
 ;; (+ 4050 3450 3450 3600) -> 14550
 ;; 2202
 ;(load "models/room73b1-scene.l")
+(load "models/eng2-7f-scene.l")
+(load "models/eng2-8f-scene.l")
 (load "models/room73b2-scene.l")
 (load "models/room73a3-scene.l")
 (load "models/room83b1-scene.l")
@@ -451,10 +453,11 @@
 	))
 
 (defun eng2-7f-rooms ()
-  (let (71rooms 72rooms 73rooms corridors 73b1 rooms)
+  (let (71rooms 72rooms 73rooms corridors 73b1 rooms wall)
 	(setq 71rooms (make-71-rooms)
 		  72rooms (make-72-rooms)
-		  73rooms (make-73-rooms))
+		  73rooms (make-73-rooms)
+      wall (instance eng2-7f-scene :init :name "wall"))
 	(send (car 72rooms) :locate (float-vector 0 (- (+ 1500 445 2710 445 1500   3600 3450 3450 3600)) 0))
 	(send (car 71rooms) :locate (float-vector 0 (- (+ 1500 445 2710 445 1500   3600 3450 3450 3600   1500 445 2710 445 1500)) 0))
 
@@ -478,6 +481,12 @@
 	(dolist (rm rooms)
 	  (when (send rm :parent) (send (send rm :parent) :dissoc rm))
 	  (gl::transparent rm 0.3))
+
+    (send wall :move-to
+          (make-coords :pos (float-vector 17740 -13680 0)
+                       :rpy (list pi 0 0))
+          :world)
+    (nconc rooms (list wall))
 
 	rooms ))
 
