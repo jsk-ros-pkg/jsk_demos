@@ -408,9 +408,10 @@
          (setq ik-ret (fullbody-inverse-kinematics-for-drill-grasp tc mt ll :draw? draw? :rotation-axis rotation-axis :stop stop))
        (setq ik-ret (fullbody-inverse-kinematics-for-drill-grasp tc mt ll :draw? draw? :rotation-axis rotation-axis))
        )
-     (when ik-ret
-       (setq ik-ret
-             (send *robot* :look-at-target (send *drill* :worldcoords)))))
+     ;; (when ik-ret
+     ;;   (setq ik-ret
+     ;;         (send *robot* :look-at-target (send *drill* :worldcoords))))
+     )
     ik-ret))
 (defun fullbody-inverse-kinematics-for-drill-grasp-dual
   (&key (arm-symbol :grasp-coords) (support-arm-symbol :support-grasp-coords) (arm-tc (send (send *drill* :get arm-symbol) :copy-worldcoords)) (support-arm-tc (send (send *drill* :get support-arm-symbol) :copy-worldcoords)) (draw? t) (main-arm-coords (gethash *drill-main-arm* *arm-drill-grasp-coords*)) (support-arm-coords (gethash (get-opposite-arm *drill-main-arm*) *arm-drill-grasp-coords*)) (rotation-axis (list t t t t)))
@@ -426,9 +427,10 @@
      (setf (elt mt 0) main-arm-coords)
      (setf (elt mt 1) support-arm-coords)
      (setq ik-ret (fullbody-inverse-kinematics-for-drill-grasp tc mt ll :draw? draw? :translation-axis (list t t t t) :rotation-axis rotation-axis))
-     (when ik-ret
-       (setq ik-ret
-             (send *robot* :look-at-target (send *drill* :worldcoords)))))
+     ;; (when ik-ret
+     ;;   (setq ik-ret
+     ;;         (send *robot* :look-at-target (send *drill* :worldcoords))))
+     )
     ik-ret))
 
 ;; use f sensor and grasp (for gun drill)
@@ -986,12 +988,12 @@
           (ros::ros-info (format nil "self collision found ~A" (send *robot* :self-collision-check)))
           )
         )
-    (when ret
-      (let (look-at-ret)
-        (setq look-at-ret (send *robot* :look-at-target (send *drill* :worldcoords)))
-        (when look-at-ret (setq ret look-at-ret))
-        )
-      )
+    ;; (when ret
+    ;;   (let (look-at-ret)
+    ;;     (setq look-at-ret (send *robot* :look-at-target (send *drill* :worldcoords)))
+    ;;     (when look-at-ret (setq ret look-at-ret))
+    ;;     )
+    ;;   )
      ret)
     )
   )
