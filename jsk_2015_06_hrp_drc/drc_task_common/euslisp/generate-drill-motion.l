@@ -1427,7 +1427,11 @@
         (t ;;JAXON
          (if *drill-reverse-hand*
              (if (equal *drill-main-arm* :rarm) (make-coords :pos (float-vector -850 200 0) :rpy (list (deg2rad 50) 0 0)) (make-coords :pos (float-vector -850 -250 0) :rpy (list (deg2rad -40) 0 0)))
-           (if (equal *drill-main-arm* :rarm) (make-coords :pos (float-vector -780 -290 0) :rpy (list (deg2rad 50) 0 0)) (make-coords :pos (float-vector -680 -490 0) :rpy (list (deg2rad -20) 0 0)))
+           (if (equal *drill-main-arm* :rarm)
+               (make-coords :pos (float-vector -780 -290 0) :rpy (list (deg2rad 50) 0 0))
+             ;;(make-coords :pos (float-vector -680 -490 0) :rpy (list (deg2rad -20) 0 0)) ;; avoid wall
+             (make-coords :pos (float-vector -780 290 0) :rpy (list (deg2rad -50) 0 0)) ;; do not think of wall
+               )
            ;; (if (equal *drill-main-arm* :rarm) (make-coords :pos (float-vector -780 -290 0) :rpy (list (deg2rad 50) 0 0)) (make-coords :pos (float-vector -650 -90 0) :rpy (list (deg2rad -20) 0 0)))
            )
          )
@@ -1905,7 +1909,7 @@
         (t
          (if *drill-reverse-hand*
              (send *robot* :reset-pose)
-             #f(1.8474 -2.65775 -26.6226 45.4555 -22.888 1.96534 1.84848 -2.64244 -25.6546 44.674 -23.0745 1.95 4.97106 9.06265 14.0558 -32.0 30.0 5.44788 41.1171 -56.4215 -5.75946 -108.854 -115.061 15.0282 27.2784 1.11288 44.8267 41.7962 -9.91826 -101.245 33.2679 14.7361 -39.3661)
+             #f(1.8474 -2.65775 -26.6226 45.4555 -22.888 1.96534 1.84848 -2.64244 -25.6546 44.674 -23.0745 1.95 4.97106 9.06265 14.0558 -32.0 0.0 5.44788 41.1171 -56.4215 -5.75946 -108.854 -115.061 15.0282 27.2784 1.11288 44.8267 41.7962 -9.91826 -101.245 33.2679 14.7361 -39.3661)
          ))
         )))
     (send *robot* :angle-vector angle-ret)
@@ -1913,7 +1917,7 @@
     angle-ret
     )
   )
-(defun get-pierce-drill-pre-pose2 
+(defun get-pierce-drill-pre-pose2
   ()
   (if (or (equal *robot-name* "HRP2JSKNTS") (equal *robot-name* "HRP2JSKNT"))
       (progn
@@ -1921,7 +1925,7 @@
       (when (equal *drill-main-arm* :larm) (get-mirror-angle-vector))
       )
     (progn
-      (send *robot* :angle-vector #f(1.8474 -2.65775 -26.6226 45.4555 -22.888 1.96534 1.84848 -2.64244 -25.6546 44.674 -23.0745 1.95 4.97106 9.06265 14.0558 -32.0 30.0 -14.6782 56.0899 -103.525 -34.4307 -65.4033 -105.557 -0.936239 59.0 1.11288 44.8267 41.7962 -9.91826 -101.245 33.2679 14.7361 -39.3661))
+      (send *robot* :angle-vector #f(1.8474 -2.65775 -26.6226 45.4555 -22.888 1.96534 1.84848 -2.64244 -25.6546 44.674 -23.0745 1.95 4.97106 9.06265 14.0558 -32.0 0.0 -8.29362 56.0899 -103.525 -34.4307 -65.4033 -105.557 -0.936239 59.0 1.11288 44.8267 41.7962 -9.91826 -101.245 33.2679 14.7361 -39.3661))
       (when (equal *drill-main-arm* :larm) (get-mirror-angle-vector))
       )
     )
