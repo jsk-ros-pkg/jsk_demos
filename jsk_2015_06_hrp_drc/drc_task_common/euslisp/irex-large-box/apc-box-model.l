@@ -1,8 +1,10 @@
 (defclass apc-box :super cascaded-link :slots (parts))
 
 (defmethod apc-box
-  (:init (&key (x-size 335.0) (y-size 605.0) (z-size 600.0)
-               (x-label 70.0) (y-label 95.0) (z-label 5.0) (front-to-label 80.0))
+  (:init (&key ;; (x-size 335.0) (y-size 605.0) (z-size 600.0)
+               ;; (x-label 70.0) (y-label 95.0) (z-label 5.0) (front-to-label 80.0)
+          (x-size 450.0) (y-size 545.0) (z-size 975.0)
+          (x-label 150.0) (y-label 100.0) (z-label 5.0) (front-to-label 100.0))
          (send-super :init)
          (let* (box0 link0)
            ;; make one box named box0 and marker named sift-label
@@ -33,7 +35,7 @@
           (find name parts :test #'equal :key #'(lambda (x) (send x :name)))
           )
   ;; return the coords to grasp top-front-edge with right hand
-  (:top-front-right-grasp-edge (&optional (edge-to-right 80.0))
+  (:top-front-right-grasp-edge (&optional (edge-to-right 100.0))
                                "return the coords to grasp top-front-edge with right hand"
                                (let* ((x-length (x-of-cube (send self :parts :box0)))
                                       (y-length (y-of-cube (send self :parts :box0)))
@@ -44,7 +46,7 @@
                                  (send target-coords :rotate (deg2rad -90) :x :world)
                                  ))
   ;; return the coords to grasp top-front-edge with left hand
-  (:top-front-left-grasp-edge (&optional (edge-to-left 80.0))
+  (:top-front-left-grasp-edge (&optional (edge-to-left 100.0))
                               "return the coords to grasp top-front-edge with left hand"
                               (let* ((x-length (x-of-cube (send self :parts :box0)))
                                      (y-length (y-of-cube (send self :parts :box0)))

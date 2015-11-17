@@ -49,7 +49,7 @@
            :name "apc_box"
            )
           (set-primitive-marker-dimensions
-           :x 335.0 :y 605.0 :z 600.0 :name "apc_box"
+           :x 450.0 :y 545.0 :z 975.0 :name "apc_box"
            )
           (set-primitive-marker-pose
            crds "ground" :name "apc_box"

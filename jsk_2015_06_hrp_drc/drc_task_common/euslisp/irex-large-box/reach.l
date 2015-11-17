@@ -247,12 +247,12 @@
 
 (defun jaxon-apc-box-reach (&key (mid-reach-pos (float-vector -100 0 100))
                                    (grasp-reach-pos (float-vector 40 0 30))
-                                   (dt 8000) (rlpo 10) (back-mode t))
+                                   (dt 8000) (rlpo 0) (hlpo 30) (back-mode t))
   (let* (avs)
     (send *robot* :reset-manip-pose)
     (push (send *robot* :angle-vector) avs)
   ;; move to pose-1
-  (walking-pose *robot* :root-link-pitch-offset rlpo)
+  (walking-pose *robot* :root-link-pitch-offset rlpo :head-link-pitch-offset hlpo)
   ;; (send *robot* :rarm-thumb-r :joint-angle 90.0)
   ;; (send *robot* :larm-thumb-r :joint-angle -90.0)
   (send *robot*
@@ -293,7 +293,7 @@
     (return-from jaxon-apc-box-reach)
     )
   ;; move to pose-reach-end
-  (walking-pose *robot* :root-link-pitch-offset rlpo)
+  (walking-pose *robot* :root-link-pitch-offset rlpo :head-link-pitch-offset hlpo)
   ;; (send *robot* :rarm-thumb-r :joint-angle 90.0)
   ;; (send *robot* :larm-thumb-r :joint-angle -90.0)
   (send *robot*
@@ -351,12 +351,12 @@
 
 (defun hrp2jsk-apc-box-reach (&key (mid-reach-pos (float-vector -100 0 100))
                                    (grasp-reach-pos (float-vector 40 0 30))
-                                   (dt 8000) (rlpo 10) (back-mode t))
+                                   (dt 8000) (rlpo 10) (hlpo 30) (back-mode t))
   (let* (avs)
     (send *robot* :reset-manip-pose)
     (push (send *robot* :angle-vector) avs)
   ;; move to pose-1
-  (walking-pose *robot* :root-link-pitch-offset rlpo)
+  (walking-pose *robot* :root-link-pitch-offset rlpo :head-link-pitch-offset hlpo)
   (send *robot* :rarm-thumb-r :joint-angle 90.0)
   (send *robot* :larm-thumb-r :joint-angle -90.0)
   (send *robot*
@@ -397,7 +397,7 @@
     (return-from hrp2jsk-apc-box-reach)
     )
   ;; move to pose-reach-end
-  (walking-pose *robot* :root-link-pitch-offset rlpo)
+  (walking-pose *robot* :root-link-pitch-offset rlpo :head-link-pitch-offset hlpo)
   (send *robot* :rarm-thumb-r :joint-angle 90.0)
   (send *robot* :larm-thumb-r :joint-angle -90.0)
   (send *robot*
@@ -455,12 +455,12 @@
 
 (defun hrp2jsknt-apc-box-reach (&key (mid-reach-pos (float-vector -100 0 100))
                                    (grasp-reach-pos (float-vector -15 0 0))
-                                   (dt 8000) (rlpo 15) (back-mode t))
+                                   (dt 8000) (rlpo 15) (hlpo 30) (back-mode t))
   (let* (avs)
     (send *robot* :reset-manip-pose)
     (push (send *robot* :angle-vector) avs)
   ;; move to pose-1
-  (walking-pose *robot* :root-link-pitch-offset rlpo)
+  (walking-pose *robot* :root-link-pitch-offset rlpo :head-link-pitch-offset hlpo)
   ;; (send *robot* :rarm-thumb-r :joint-angle 90.0)
   ;; (send *robot* :larm-thumb-r :joint-angle -90.0)
   ;; (send *robot* :hand :arms :hook-pose)
@@ -503,7 +503,7 @@
     (return-from hrp2jsknt-apc-box-reach)
     )
   ;; move to pose-reach-end
-  (walking-pose *robot* :root-link-pitch-offset rlpo)
+  (walking-pose *robot* :root-link-pitch-offset rlpo :head-link-pitch-offset hlpo)
   ;; (send *robot* :rarm-thumb-r :joint-angle 90.0)
   ;; (send *robot* :larm-thumb-r :joint-angle -90.0)
   ;; (send *robot* :hand :arms :hook-pose)
@@ -608,3 +608,24 @@
 (warn "(jaxon-apc-box-reach) ;; Generate reach motion by jaxon~%")
 (warn "(hrp2jsk-apc-box-reach) ;; Generate reach motion by hrp2jsk~%")
 (warn "(hrp2jsknt-apc-box-reach) ;; Generate reach motion by hrp2jsknt~%")
+
+
+;; THK hand grasp
+;; (send *ri* :start-grasp :arms)
+;; (send *ri* :stop-grasp :arms)
+;; (send *ri* :move-gripper :arms 0.5 :effort 30 :wait t)
+
+
+;; test-push !!!
+
+;; Set parameters
+;; (send *ri* :set-object-turnaround-detector-param :wrench-cutoff-freq 5.0 :dwrench-cutoff-freq 5.0)
+
+;; Return ref-force to move
+;; (send *ri* :set-object-turnaround-ref-force :max-ref-force 100 :max-time 2000 :axis (float-vector -1 0 0)) ;; Push forward
+
+;; Set ref-force for arms
+;; (send *ri* :set-ref-force (float-vector hoge hoge hoge) 5000 :arms)
+
+;; go-pos
+;; (send *ri* :go-pos 0.1 0 0)
