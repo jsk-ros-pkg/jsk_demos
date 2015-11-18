@@ -1,0 +1,25 @@
+#!/usr/bin/env roseus
+
+(defun pubstr (name)
+  (unless (ros::get-topic-publisher name)
+    (ros::advertise name std_msgs::String 5)
+    (unix:sleep 1))
+  (ros::publish name (instance std_msgs::String :init :data name)))
+
+(defmacro deftestaction (name)
+  `(defun ,name (&rest args)
+     (ros::ros-info (format nil "(~A ~A)" (string ',name) args))
+     (pubstr (string-downcase (substitute #\_ #\- (string ',name))))
+     :success))
+
+(deftestaction move-to)
+(deftestaction pick)
+(deftestaction place)
+(deftestaction put)
+(deftestaction open-door)
+(deftestaction close-door)
+(deftestaction push-button)
+(deftestaction sweep)
+(deftestaction sweep-under)
+(deftestaction pull-chair)
+(deftestaction push-chair)
