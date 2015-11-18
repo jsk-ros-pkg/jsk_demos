@@ -77,7 +77,7 @@
                                                 :translate (float-vector (- (/ x-length 2)) (/ y-length 2) (- (/ z-length 2) top-to-under))))
                       ))
   ;; return the coords of box-attached label for sift recog
-  (:sift-label-coords (&optional (front-to-label 80.0))
+  (:sift-label-coords (&optional (front-to-label 100.0))
                       "return the coords of box-attached label for sift recog"
                       (let* ((x-length (x-of-cube (send self :parts :box0)))
                              (z-length (z-of-cube (send self :parts :box0)))

@@ -11,8 +11,8 @@
 
   <node name="point_pose_extractor" pkg="jsk_perception" type="point_pose_extractor"
         respawn="false" output="screen">
-    <param name="template_filename" value="/home/jskuser/ros/hydro/src/jsk-ros-pkg/jsk_demos/jsk_2015_06_hrp_drc/drc_task_common/euslisp/irex-large-box/sample-label.jpg" />
-    <param name="object_width" value="0.095" />
-    <param name="object_height" value="0.069" />
+    <param name="template_filename" value="$(find drc_task_common)euslisp/irex-large-box/sample-label.jpg" />
+    <param name="object_width" value="0.100" />
+    <param name="object_height" value="0.150" />
   </node>
 </launch>
