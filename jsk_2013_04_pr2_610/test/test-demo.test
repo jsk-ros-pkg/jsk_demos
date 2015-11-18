@@ -1,0 +1,5 @@
+<launch>
+  <!-- start test -->
+  <test test-name="jsk_2013_04_pr2_610_test" pkg="jsk_2013_04_pr2_610" type="test-demo.l"
+	time-limit="600" />
+</launch>
