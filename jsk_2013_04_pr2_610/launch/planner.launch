@@ -31,7 +31,7 @@
   </include>
   </group>
 
-  <group if="$(arg launch_sount_play)">
+  <group if="$(arg launch_sound_play)">
     <node pkg="sound_play" type="soundplay_node.py" name="sound_play">
       <remap from="sound_play" to="robotsound" />
     </node>
