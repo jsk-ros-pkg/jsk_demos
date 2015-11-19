@@ -16,4 +16,11 @@
     <arg name="debug" value="true" />
     <arg name="gui" value="false" />
   </include>
+   <node pkg="sound_play" type="soundplay_node.py" name="sound_play">
+    <remap from="sound_play" to="robotsound" />
+   </node>
+  <node pkg="sound_play" type="soundplay_node.py" name="sound_node_jp">
+    <remap from="robotsound" to="robotsound_jp" />
+    <remap from="sound_play" to="robotsound_jp" />
+  </node>
 </launch>
