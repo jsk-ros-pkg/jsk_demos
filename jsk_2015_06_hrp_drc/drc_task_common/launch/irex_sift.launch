@@ -11,7 +11,7 @@
 
   <node name="point_pose_extractor" pkg="jsk_perception" type="point_pose_extractor"
         respawn="false" output="screen">
-    <param name="template_filename" value="$(find drc_task_common)/images/sift_sample/waremono_label.jpg" />
+    <param name="template_filename" value="$(find drc_task_common)/templates/box_sift_sample/waremono_label.jpg" />
     <param name="object_width" value="0.098" />
     <param name="object_height" value="0.070" />
   </node>
