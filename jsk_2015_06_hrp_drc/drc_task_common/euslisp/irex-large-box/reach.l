@@ -299,8 +299,8 @@
   (send *robot*
         :fullbody-inverse-kinematics
         (list
-         (send (send (send *apc-box* :top-front-right-grasp-edge) :copy-worldcoords) :translate grasp-reach-pos :world)
-         (send (send (send *apc-box* :top-front-left-grasp-edge) :copy-worldcoords) :translate grasp-reach-pos :world)
+         (send (send (send (send *apc-box* :top-front-right-grasp-edge) :copy-worldcoords) :translate grasp-reach-pos :world) :rotate (deg2rad 90) :z)
+         (send (send (send (send *apc-box* :top-front-left-grasp-edge) :copy-worldcoords) :translate grasp-reach-pos :world) :rotate (deg2rad -90) :z)
          (send *robot* :rleg :end-coords :copy-worldcoords)
          (send *robot* :lleg :end-coords :copy-worldcoords))
         :move-target
@@ -319,7 +319,7 @@
                  (send *robot* :lleg :end-coords))
                 )
         :translation-axis (list t t t t)
-        :rotation-axis (list :z :z t t)
+        :rotation-axis (list t t t t)
         :target-centroid-pos (send (send *robot* :foot-midcoords) :worldpos)
         :debug-view :no-message)
   (send *irtviewer* :draw-objects)
@@ -629,3 +629,180 @@
 
 ;; go-pos
 ;; (send *ri* :go-pos 0.1 0 0)
+
+
+
+
+
+
+
+
+
+(defun push-fn-1 ()
+(send *robot*
+        :fullbody-inverse-kinematics
+        (list
+         (send (send (send (send *apc-box* :top-front-right-grasp-edge) :copy-worldcoords) :translate (float-vector 40 60 130) :world) :rotate (deg2rad 90) :z)
+         (send (send (send (send *apc-box* :top-front-left-grasp-edge) :copy-worldcoords) :translate (float-vector 40 -60 130) :world) :rotate (deg2rad -90) :z)
+         (send *robot* :rleg :end-coords :copy-worldcoords)
+         (send *robot* :lleg :end-coords :copy-worldcoords))
+        :move-target
+        (list
+         (send *robot* :rarm :end-coords)
+         (send *robot* :larm :end-coords)
+         (send *robot* :rleg :end-coords)
+         (send *robot* :lleg :end-coords))
+        :link-list
+        (mapcar #'(lambda (limb)
+                    (send *robot* :link-list (send limb :parent)))
+                (list
+                 (send *robot* :rarm :end-coords)
+                 (send *robot* :larm :end-coords)
+                 (send *robot* :rleg :end-coords)
+                 (send *robot* :lleg :end-coords))
+                )
+        :translation-axis (list t t t t)
+        :rotation-axis (list t t t t)
+        :target-centroid-pos (send (send *robot* :foot-midcoords) :worldpos)
+        :debug-view :no-message)
+)
+
+;; hako wo oku
+
+
+;; (send *robot*
+;;         :fullbody-inverse-kinematics
+;;         (list
+;;          (send (send (send (send *apc-box* :top-front-right-grasp-edge) :copy-worldcoords) :translate (float-vector 40 60 (- 130 50 20)) :world) :rotate (deg2rad 90) :z)
+;;          (send (send (send (send *apc-box* :top-front-left-grasp-edge) :copy-worldcoords) :translate (float-vector 40 -60 (- 130 50 20)) :world) :rotate (deg2rad -90) :z)
+;;          (send *robot* :rleg :end-coords :copy-worldcoords)
+;;          (send *robot* :lleg :end-coords :copy-worldcoords))
+;;         :move-target
+;;         (list
+;;          (send *robot* :rarm :end-coords)
+;;          (send *robot* :larm :end-coords)
+;;          (send *robot* :rleg :end-coords)
+;;          (send *robot* :lleg :end-coords))
+;;         :link-list
+;;         (mapcar #'(lambda (limb)
+;;                     (send *robot* :link-list (send limb :parent)))
+;;                 (list
+;;                  (send *robot* :rarm :end-coords)
+;;                  (send *robot* :larm :end-coords)
+;;                  (send *robot* :rleg :end-coords)
+;;                  (send *robot* :lleg :end-coords))
+;;                 )
+;;         :translation-axis (list t t t t)
+;;         :rotation-axis (list t t t t)
+;;         :target-centroid-pos (send (send *robot* :foot-midcoords) :worldpos)
+;;         :debug-view :no-message)
+
+
+
+
+;; (send *robot*
+;;         :fullbody-inverse-kinematics
+;;         (list
+;;          (send (send (send (send *apc-box* :top-front-right-grasp-edge) :copy-worldcoords) :translate (float-vector 40 60 (- 130 50 20)) :world) :rotate (deg2rad 80) :z)
+;;          (send (send (send (send *apc-box* :top-front-left-grasp-edge) :copy-worldcoords) :translate (float-vector 40 -60 (- 130 50 20)) :world) :rotate (deg2rad -80) :z)
+;;          (send *robot* :rleg :end-coords :copy-worldcoords)
+;;          (send *robot* :lleg :end-coords :copy-worldcoords))
+;;         :move-target
+;;         (list
+;;          (send *robot* :rarm :end-coords)
+;;          (send *robot* :larm :end-coords)
+;;          (send *robot* :rleg :end-coords)
+;;          (send *robot* :lleg :end-coords))
+;;         :link-list
+;;         (mapcar #'(lambda (limb)
+;;                     (send *robot* :link-list (send limb :parent)))
+;;                 (list
+;;                  (send *robot* :rarm :end-coords)
+;;                  (send *robot* :larm :end-coords)
+;;                  (send *robot* :rleg :end-coords)
+;;                  (send *robot* :lleg :end-coords))
+;;                 )
+;;         :translation-axis (list t t t t)
+;;         :rotation-axis (list t t t t)
+;;         :target-centroid-pos (send (send *robot* :foot-midcoords) :worldpos)
+;;         :debug-view :no-message)
+
+
+
+
+(defun push-fn-2 ()
+(send *robot*
+        :fullbody-inverse-kinematics
+        (list
+         (send (send (send (send *apc-box* :top-front-right-grasp-edge) :copy-worldcoords) :translate (float-vector 40 60 (- 130 50 20 10 5)) :world) :rotate (deg2rad 75) :z)
+         (send (send (send (send *apc-box* :top-front-left-grasp-edge) :copy-worldcoords) :translate (float-vector 40 -60 (- 130 50 20 10 5)) :world) :rotate (deg2rad -75) :z)
+         (send *robot* :rleg :end-coords :copy-worldcoords)
+         (send *robot* :lleg :end-coords :copy-worldcoords))
+        :move-target
+        (list
+         (send *robot* :rarm :end-coords)
+         (send *robot* :larm :end-coords)
+         (send *robot* :rleg :end-coords)
+         (send *robot* :lleg :end-coords))
+        :link-list
+        (mapcar #'(lambda (limb)
+                    (send *robot* :link-list (send limb :parent)))
+                (list
+                 (send *robot* :rarm :end-coords)
+                 (send *robot* :larm :end-coords)
+                 (send *robot* :rleg :end-coords)
+                 (send *robot* :lleg :end-coords))
+                )
+        :translation-axis (list t t t t)
+        :rotation-axis (list t t t t)
+        :target-centroid-pos (send (send *robot* :foot-midcoords) :worldpos)
+        :debug-view :no-message)
+)
+
+
+
+(defun push-fn-3 ()
+(send *robot*
+        :fullbody-inverse-kinematics
+        (list
+         (send (send (send (send *apc-box* :top-front-right-grasp-edge) :copy-worldcoords) :translate (float-vector (+ 40 30 20) 60 (- 130 50 20 10 5)) :world) :rotate (deg2rad 75) :z)
+         (send (send (send (send *apc-box* :top-front-left-grasp-edge) :copy-worldcoords) :translate (float-vector (+ 40 30 20) -60 (- 130 50 20 10 5)) :world) :rotate (deg2rad -75) :z)
+         (send *robot* :rleg :end-coords :copy-worldcoords)
+         (send *robot* :lleg :end-coords :copy-worldcoords))
+        :move-target
+        (list
+         (send *robot* :rarm :end-coords)
+         (send *robot* :larm :end-coords)
+         (send *robot* :rleg :end-coords)
+         (send *robot* :lleg :end-coords))
+        :link-list
+        (mapcar #'(lambda (limb)
+                    (send *robot* :link-list (send limb :parent)))
+                (list
+                 (send *robot* :rarm :end-coords)
+                 (send *robot* :larm :end-coords)
+                 (send *robot* :rleg :end-coords)
+                 (send *robot* :lleg :end-coords))
+                )
+        :translation-axis (list t t t t)
+        :rotation-axis (list t t t t)
+        :target-centroid-pos (send (send *robot* :foot-midcoords) :worldpos)
+        :debug-view :no-message)
+)
+
+
+;; Set parameters
+;; (send *ri* :set-object-turnaround-detector-param :wrench-cutoff-freq 5.0 :dwrench-cutoff-freq 5.0)
+
+;; Return ref-force to move
+;; (send *ri* :set-object-turnaround-ref-force :max-ref-force 100 :max-time 2000 :axis (float-vector -1 0 0)) ;; Push forward
+
+;; Set ref-force for arms
+;; (send *ri* :set-ref-force (float-vector hoge hoge hoge) 5000 :arms)
+
+;; go-pos
+;; (send *ri* :go-pos 0.1 0 0)
+
+
+;; fix mode
+;; (send *ri* :start-auto-balancer :limbs '(:lleg :rleg :larm :rarm))
