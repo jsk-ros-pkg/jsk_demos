@@ -49,7 +49,7 @@ install(
   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
   )
 
-if(CATKIN_ENABLE_TESTING)
+if(CATKIN_ENABLE_TESTING AND NOT $ENV{ROS_DISTRO} STREQUAL "hydro")
   find_package(catkin REQUIRED COMPONENTS rostest)
   add_rostest(test/test-launch.test)
   add_rostest(test/test-demo.test)
