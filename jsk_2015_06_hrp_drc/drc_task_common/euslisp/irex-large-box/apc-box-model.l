@@ -3,7 +3,7 @@
 (defmethod apc-box
   (:init (&key ;; (x-size 335.0) (y-size 605.0) (z-size 600.0)
                ;; (x-label 70.0) (y-label 95.0) (z-label 5.0) (front-to-label 80.0)
-          (x-size 598.0) (y-size 480.0) (z-size 724.0)
+          (x-size 598.0) (y-size 480.0) (z-size 710.0)
           (x-label 150.0) (y-label 100.0) (z-label 5.0) (front-to-label 100.0))
          (send-super :init)
          (let* (box0 link0)

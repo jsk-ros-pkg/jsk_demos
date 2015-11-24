@@ -934,6 +934,175 @@
    )
  ))
 
+(defun jaxon-apc-box-reach-side-back-only (&key (mid1-reach-pos-r (float-vector -120 -50 -60)) (mid1-reach-pos-l (float-vector -120 50 -60))
+                                      (mid2-reach-pos-r (float-vector 10 -50 -60)) (mid2-reach-pos-l (float-vector 10 50 -60))
+                                      (grasp-reach-pos-r (float-vector 0 10 -60)) (grasp-reach-pos-l (float-vector 0 -10 -60))
+                                      (hand-rotation 45) (box-pos (float-vector 850 0 0))
+                                      (dt 8000) (rlpo 25) (hlpo 30))
+  ;; (send *apc-box* :locate (float-vector 600 0 0) :world)
+  (send *apc-box* :newcoords (make-coords :pos box-pos))
+  (let* (avs)
+    (send *robot* :reset-manip-pose)
+    (push (send *robot* :angle-vector) avs)
+  ;; move to pose-1
+  (walking-pose *robot* :root-link-pitch-offset rlpo :head-link-pitch-offset hlpo)
+  ;; (send *robot* :rarm-thumb-r :joint-angle 90.0)
+  ;; (send *robot* :larm-thumb-r :joint-angle -90.0)
+  (send *robot*
+        :fullbody-inverse-kinematics
+        (list
+         ;;(send (send (send (send *apc-box* :side-front-right-grasp-edge) :copy-worldcoords) :translate mid-reach-pos :world) :rotate (deg2rad 90) :z)
+         ;;(send (send (send (send *apc-box* :side-front-left-grasp-edge) :copy-worldcoords) :translate mid-reach-pos :world) :rotate (deg2rad -90) :z)
+         (send (send (send (send *apc-box* :side-front-right-grasp-edge) :copy-worldcoords) :translate mid1-reach-pos-r :world) :rotate (deg2rad hand-rotation) :z)
+         (send (send (send (send *apc-box* :side-front-left-grasp-edge) :copy-worldcoords) :translate mid1-reach-pos-l :world) :rotate (deg2rad (- hand-rotation)) :z)
+         (send *robot* :rleg :end-coords :copy-worldcoords)
+         (send *robot* :lleg :end-coords :copy-worldcoords))
+        :move-target
+        (list
+         (send *robot* :rarm :end-coords)
+         (send *robot* :larm :end-coords)
+         (send *robot* :rleg :end-coords)
+         (send *robot* :lleg :end-coords))
+        :link-list
+        (mapcar #'(lambda (limb)
+                    (send *robot* :link-list (send limb :parent)))
+                (list
+                 (send *robot* :rarm :end-coords)
+                 (send *robot* :larm :end-coords)
+                 (send *robot* :rleg :end-coords)
+                 (send *robot* :lleg :end-coords))
+                )
+        :additional-weight-list
+        (list (list (send *robot* :rleg :crotch-p :child-link) 0.5)
+              (list (send *robot* :rleg :crotch-p :child-link) 0.5)
+              (list (send *robot* :rleg :knee-p :child-link) 0.5)
+              (list (send *robot* :lleg :knee-p :child-link) 0.5))
+        :translation-axis (list t t t t)
+        :rotation-axis (list t t t t)
+        :target-centroid-pos (send (send *robot* :foot-midcoords) :worldpos)
+        :debug-view :no-message)
+  ;; (send *irtviewer* :draw-objects)
+  (push (send *robot* :angle-vector) avs)
+  ;; (warn ";; (send *ri* :angle-vector (send *robot* :angle-vector) ~a) ?~%" (+ dt 4000))
+  ;; (when (y-or-n-p)
+  ;;   (send *ri* :angle-vector (send *robot* :angle-vector) (+ dt 4000))
+  ;;   (send *ri* :wait-interpolation)
+  ;;   )
+
+  ;; (warn ";; move to pose-2 ?~%")
+  ;; (unless (y-or-n-p)
+  ;;   (return-from jaxon-apc-box-reach-side-back-only)
+  ;;   )
+
+  ;; move to pose-2
+  (walking-pose *robot* :root-link-pitch-offset rlpo :head-link-pitch-offset hlpo)
+  ;; (send *robot* :rarm-thumb-r :joint-angle 90.0)
+  ;; (send *robot* :larm-thumb-r :joint-angle -90.0)
+  (send *robot*
+        :fullbody-inverse-kinematics
+        (list
+         (send (send (send (send *apc-box* :side-front-right-grasp-edge) :copy-worldcoords) :translate mid2-reach-pos-r :world) :rotate (deg2rad hand-rotation) :z)
+         (send (send (send (send *apc-box* :side-front-left-grasp-edge) :copy-worldcoords) :translate mid2-reach-pos-l :world) :rotate (deg2rad (- hand-rotation)) :z)
+         (send *robot* :rleg :end-coords :copy-worldcoords)
+         (send *robot* :lleg :end-coords :copy-worldcoords))
+        :move-target
+        (list
+         (send *robot* :rarm :end-coords)
+         (send *robot* :larm :end-coords)
+         (send *robot* :rleg :end-coords)
+         (send *robot* :lleg :end-coords))
+        :link-list
+        (mapcar #'(lambda (limb)
+                    (send *robot* :link-list (send limb :parent)))
+                (list
+                 (send *robot* :rarm :end-coords)
+                 (send *robot* :larm :end-coords)
+                 (send *robot* :rleg :end-coords)
+                 (send *robot* :lleg :end-coords))
+                )
+        :additional-weight-list
+        (list (list (send *robot* :rleg :crotch-p :child-link) 0.5)
+              (list (send *robot* :rleg :crotch-p :child-link) 0.5)
+              (list (send *robot* :rleg :knee-p :child-link) 0.5)
+              (list (send *robot* :lleg :knee-p :child-link) 0.5))
+        :translation-axis (list t t t t)
+        :rotation-axis (list t t t t)
+        :target-centroid-pos (send (send *robot* :foot-midcoords) :worldpos)
+        :debug-view :no-message)
+  ;; (send *irtviewer* :draw-objects)
+  (push (send *robot* :angle-vector) avs)
+  ;; (warn ";; (send *ri* :angle-vector (send *robot* :angle-vector) ~a) ?~%" dt)
+  ;; (when (y-or-n-p)
+  ;;   (send *ri* :angle-vector (send *robot* :angle-vector) dt)
+  ;;   (send *ri* :wait-interpolation)
+  ;;   )
+
+  ;; (warn ";; move to pose-reach-end ?~%")
+  ;; (unless (y-or-n-p)
+  ;;   (return-from jaxon-apc-box-reach-side-back-only)
+  ;;   )
+
+  ;; move to pose-reach-end
+  (walking-pose *robot* :root-link-pitch-offset rlpo :head-link-pitch-offset hlpo)
+  ;; (send *robot* :rarm-thumb-r :joint-angle 90.0)
+  ;; (send *robot* :larm-thumb-r :joint-angle -90.0)
+  (send *robot*
+        :fullbody-inverse-kinematics
+        (list
+         ;;(send (send (send (send *apc-box* :side-front-right-grasp-edge) :copy-worldcoords) :translate mid-reach-pos :world) :rotate (deg2rad 90) :z)
+         ;;(send (send (send (send *apc-box* :side-front-left-grasp-edge) :copy-worldcoords) :translate mid-reach-pos :world) :rotate (deg2rad -90) :z)
+         (send (send (send (send *apc-box* :side-front-right-grasp-edge) :copy-worldcoords) :translate grasp-reach-pos-r :world) :rotate (deg2rad hand-rotation) :z)
+         (send (send (send (send *apc-box* :side-front-left-grasp-edge) :copy-worldcoords) :translate grasp-reach-pos-l :world) :rotate (deg2rad (- hand-rotation)) :z)
+         (send *robot* :rleg :end-coords :copy-worldcoords)
+         (send *robot* :lleg :end-coords :copy-worldcoords))
+        :move-target
+        (list
+         (send *robot* :rarm :end-coords)
+         (send *robot* :larm :end-coords)
+         (send *robot* :rleg :end-coords)
+         (send *robot* :lleg :end-coords))
+        :link-list
+        (mapcar #'(lambda (limb)
+                    (send *robot* :link-list (send limb :parent)))
+                (list
+                 (send *robot* :rarm :end-coords)
+                 (send *robot* :larm :end-coords)
+                 (send *robot* :rleg :end-coords)
+                 (send *robot* :lleg :end-coords))
+                )
+        :additional-weight-list
+        (list (list (send *robot* :rleg :crotch-p :child-link) 0.5)
+              (list (send *robot* :rleg :crotch-p :child-link) 0.5)
+              (list (send *robot* :rleg :knee-p :child-link) 0.5)
+              (list (send *robot* :lleg :knee-p :child-link) 0.5))
+        :translation-axis (list t t t t)
+        :rotation-axis (list t t t t)
+        :target-centroid-pos (send (send *robot* :foot-midcoords) :worldpos)
+        :debug-view :no-message)
+  ;; (send *irtviewer* :draw-objects)
+  (push (send *robot* :angle-vector) avs)
+  ;; (warn ";; (send *ri* :angle-vector (send *robot* :angle-vector) ~a) ?~%" dt)
+  ;; (when (y-or-n-p)
+  ;;   (send *ri* :angle-vector (send *robot* :angle-vector) dt)
+  ;;   (send *ri* :wait-interpolation)
+  ;;   )
+
+   (pop avs)
+   (dolist (av avs)
+     (warn ";; move to next ?~%")
+     (unless (y-or-n-p)
+       (return-from jaxon-apc-box-reach-side-back-only)
+       )
+     (send *robot* :angle-vector av)
+     (send *robot* :fix-leg-to-coords (make-coords))
+     (send *irtviewer* :draw-objects)
+     (warn ";; (send *ri* :angle-vector (send *robot* :angle-vector) ~a) ?~%" dt)
+     (when (y-or-n-p)
+       (send *ri* :angle-vector (send *robot* :angle-vector) dt)
+       (send *ri* :wait-interpolation)
+       )
+     )
+ ))
 
 (warn "~%")
 (warn ";; Servo On with Reset Landing Pose (from dashboard)~%")
@@ -964,6 +1133,9 @@
 ;; (warn "(hrp2jsknt-apc-box-reach) ;; Generate reach motion by hrp2jsknt~%")
 (warn "~%")
 (warn "(jaxon-apc-box-reach-side)~%")
+(warn "~%")
+(warn "(push-main-all :push-distance 0.5)~%")
+(warn "(push-main-all :push-distance 3.0) ;; for demo~%")
 
 
 ;; Change hand-fix-mode to true
@@ -980,3 +1152,48 @@
 
 ;; Change hand-fix-mode to nil
 ;; (send *ri* :set-auto-balancer-param :is-hand-fix-mode nil)
+
+
+(defun push-main-all (&key (push-distance 0.5))
+  ;; Reaching motion
+  (warn ";; (jaxon-apc-box-reach-side :back-mode nil) ?~%")
+  (if (y-or-n-p)
+      (jaxon-apc-box-reach-side :back-mode nil)
+    (return-from push-main-all))
+
+  ;; Change hand-fix-mode to true
+  (warn ";; (send *ri* :set-auto-balancer-param :is-hand-fix-mode t) ?~%")
+  (if (y-or-n-p)
+      (send *ri* :set-auto-balancer-param :is-hand-fix-mode t)
+    (return-from push-main-all))
+
+  ;; Set parameters
+  (warn ";; (send *ri* :set-object-turnaround-detector-param :wrench-cutoff-freq 5.0 :dwrench-cutoff-freq 5.0) ?~%")
+  (if (y-or-n-p)
+      (send *ri* :set-object-turnaround-detector-param :wrench-cutoff-freq 5.0 :dwrench-cutoff-freq 5.0)
+    (return-from push-main-all))
+
+  ;; Setq ref-force to move
+  (warn ";; (setq *box-push-ref-force* (send *ri* :set-object-turnaround-ref-force :max-ref-force 50 :max-time 4000 :axis (float-vector -1 0 0) :set-ref-force-p nil)) ?~%")
+  (if (y-or-n-p)
+      (setq *box-push-ref-force* (send *ri* :set-object-turnaround-ref-force :max-ref-force 50 :max-time 4000 :axis (float-vector -1 0 0) :set-ref-force-p nil))
+    (return-from push-main-all))
+
+  ;; Pushing go-pos
+  (warn ";; (progn (send *ri* :set-ref-force (car *box-push-ref-force*) 2000 :arms) (send *ri* :wait-interpolation-seq) (send *ri* :go-pos ~a 0 0) (send *ri* :set-ref-force (float-vector 0 0 0) 2000 :arms) (send *ri* :wait-interpolation-seq)) ?~%" push-distance)
+  (if (y-or-n-p)
+      (progn (send *ri* :set-ref-force (car *box-push-ref-force*) 2000 :arms) (send *ri* :wait-interpolation-seq) (send *ri* :go-pos push-distance 0 0) (send *ri* :set-ref-force (float-vector 0 0 0) 2000 :arms) (send *ri* :wait-interpolation-seq))
+    (return-from push-main-all))
+  
+  ;; Change hand-fix-mode to nil
+  (warn ";; (send *ri* :set-auto-balancer-param :is-hand-fix-mode nil) ?~%")
+  (if (y-or-n-p)
+      (send *ri* :set-auto-balancer-param :is-hand-fix-mode nil)
+    (return-from push-main-all))
+
+  ;; Release motion
+  (warn ";; (jaxon-apc-box-reach-side-back-only) ?~%")
+  (if (y-or-n-p)
+      (jaxon-apc-box-reach-side-back-only)
+    (return-from push-main-all))
+  )
