@@ -17,18 +17,23 @@
   (send *ri* :set-auto-balancer-param :is-hand-fix-mode nil)
   )
 
-(defun set-default-impedance-param (&key (arm :arms))
-  (send *ri* :set-impedance-controller-param arm
-        :m-p 10.0 :d-p 200.0 :k-p 400.0
-        :m-r 5.0 :d-r 100.0 :k-r 200.0
-        :force-gain #f(1.0 1.0 1.0) :moment-gain #f(1.0 1.0 1.0)
-        :sr-gain 1.0 :avoid-gain 0.001 :reference-gain 0.01  :manipulability-limit 0.1  :controller-mode 0
-        :ik-optional-weight-vector #f(1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0)
-        ))
+;; (defun set-default-impedance-param (&key (arm :arms))
+;;   (send *ri* :set-impedance-controller-param arm
+;;         :m-p 10.0 :d-p 200.0 :k-p 400.0
+;;         :m-r 5.0 :d-r 100.0 :k-r 200.0
+;;         :force-gain #f(1.0 1.0 1.0) :moment-gain #f(1.0 1.0 1.0)
+;;         :sr-gain 1.0 :avoid-gain 0.001 :reference-gain 0.01  :manipulability-limit 0.1  :controller-mode 0
+;;         :ik-optional-weight-vector #f(1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0)
+;;         ))
 
-(defun start-soft-impedance ()
-  (set-default-impedance-param)
-  (send *ri* :start-impedance :arms :m-p 10 :d-p 800 :k-p 300 :m-r 2.0 :d-r 80 :k-r 40))
+;; (defun start-soft-impedance ()
+;;   (set-default-impedance-param)
+;;   (send *ri* :start-impedance :arms :m-p 10 :d-p 800 :k-p 300 :m-r 2.0 :d-r 80 :k-r 40))
+
+;; (defun start-default-impedance ()
+;;   (set-default-impedance-param)
+;;   (send *ri* :start-impedance :arms :d-p 600 :d-r 200)
+;;   )
 
 (defun jaxon-wooden-box-init (&key (box-pos (float-vector 850 0 0)))
   ;; (make-wooden-box)
@@ -51,11 +56,11 @@
   ;; (when (y-or-n-p)
   ;;   (send *ri* :start-st)
   ;;   )
-  (warn ";; (start-soft-impedance) ?~%")
-  ;; (warn ";; (send *ri* :start-impedance :arms) ?~%")
+  ;; (warn ";; (start-default-impedance) ?~%")
+  (warn ";; (send *ri* :start-impedance :arms) ?~%")
   (when (y-or-n-p)
-    (start-soft-impedance)
-    ;; (send *ri* :start-impedance :arms)
+    ;; (start-default-impedance)
+    (send *ri* :start-impedance :arms)
     ;; (send *ri* :start-impedance :arms :k-p 3000 :d-p 600)
     )
   )
@@ -125,9 +130,9 @@
       )
     ))
 
-(defun jaxon-wooden-box-reach-side (&key (mid1-reach-pos-r (float-vector -120 -50 -40)) (mid1-reach-pos-l (float-vector -120 50 -40))
-                                         (mid2-reach-pos-r (float-vector 10 -50 -40)) (mid2-reach-pos-l (float-vector 10 50 -40))
-                                         (grasp-reach-pos-r (float-vector 0 10 -40)) (grasp-reach-pos-l (float-vector 0 -10 -40))
+(defun jaxon-wooden-box-reach-side (&key (mid1-reach-pos-r (float-vector -120 -50 -55)) (mid1-reach-pos-l (float-vector -120 50 -55))
+                                         (mid2-reach-pos-r (float-vector 10 -50 -55)) (mid2-reach-pos-l (float-vector 10 50 -55))
+                                         (grasp-reach-pos-r (float-vector 0 15 -55)) (grasp-reach-pos-l (float-vector 0 -15 -55))
                                          (hand-rotation 45) (box-pos (float-vector 850 0 0))
                                          (dt-list '(8000 5000 5000)) (rlpo 25) (hlpo 30) (clpo 10) (arms-force-offset-mode t) (back-mode t)
                                          (joint-angle-margin 20))
@@ -324,9 +329,9 @@
       )
     ))
 
-(defun jaxon-wooden-box-reach-side-back-only (&key (mid1-reach-pos-r (float-vector -120 -50 -40)) (mid1-reach-pos-l (float-vector -120 50 -40))
-                                                   (mid2-reach-pos-r (float-vector 10 -50 -40)) (mid2-reach-pos-l (float-vector 10 50 -40))
-                                                   (grasp-reach-pos-r (float-vector 0 10 -40)) (grasp-reach-pos-l (float-vector 0 -10 -40))
+(defun jaxon-wooden-box-reach-side-back-only (&key (mid1-reach-pos-r (float-vector -120 -50 -55)) (mid1-reach-pos-l (float-vector -120 50 -55))
+                                                   (mid2-reach-pos-r (float-vector 10 -50 -55)) (mid2-reach-pos-l (float-vector 10 50 -55))
+                                                   (grasp-reach-pos-r (float-vector 0 15 -55)) (grasp-reach-pos-l (float-vector 0 -15 -55))
                                                    (hand-rotation 45) (box-pos (float-vector 850 0 0))
                                                    (dt-list '(8000 5000 5000)) (rlpo 25) (hlpo 30))
   (send *wooden-box* :newcoords (make-coords :pos box-pos))
@@ -512,7 +517,7 @@
   ;; Setq ref-force to move
   (warn ";; (setq *box-push-ref-force* (send *ri* :set-object-turnaround-ref-force :max-ref-force 50 :max-time 4000 :axis (float-vector -1 0 0) :set-ref-force-p nil)) ?~%")
   (if (y-or-n-p)
-      (setq *box-push-ref-force* (send *ri* :set-object-turnaround-ref-force :max-ref-force 50 :max-time 4000 :axis (float-vector -1 0 0) :set-ref-force-p nil)))
+      (progn (setq *box-push-ref-force* (send *ri* :set-object-turnaround-ref-force :max-ref-force 50 :max-time 4000 :axis (float-vector -1 0 0) :set-ref-force-p nil)) (warn "~%")))
   ;; Pushing go-pos
   (warn ";; (progn (send *ri* :start-log) (send *ri* :set-ref-force (car *box-push-ref-force*) 2000 :arms) (send *ri* :wait-interpolation-seq) (send *ri* :go-pos ~a 0 0) (send *ri* :set-ref-force (float-vector 0 0 0) 2000 :arms) (send *ri* :wait-interpolation-seq) (send *ri* :save-log /tmp/jaxon-push-main-all)) ?~%" push-distance)
   (if (y-or-n-p)
