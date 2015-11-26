@@ -38,6 +38,7 @@
   <run_depend>roseus_smach</run_depend>
   <run_depend>message_runtime</run_depend>
   <run_depend>jsk_smart_gui</run_depend>
+  <run_depend>task_compiler</run_depend>
 
   <export>
   </export>
