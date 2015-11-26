@@ -777,29 +777,6 @@
            (list 1200 600 1000 700))
      (send *ri* :stop-grasp :rarm)
      (send *ri* :wait-interpolation)
-
-     (case use-arm
-       (:rarm
-        ;; grasp rarm
-        (send *ri* :angle-vector (float-vector 130 5.30455 69.0 105.231 -88.5188 -69.9972 -5.72958 19.9717 31.3839 25.5029 23.0531 -118.916 160.305 -84.1469 160.058 -20 24) (* ratio 2000))
-        ;; (let ((cds (send *pr2* :rarm :end-coords :copy-worldcoords)))
-        ;;   ;; pre grasp pose
-        ;;   (send cds :rotate (- (deg2rad 20)) :z)
-        ;;   (send *pr2* :rarm :inverse-kinematics cds))
-        ;; (send *ri* :angle-vector (send *pr2* :angle-vector) 1400)
-        )
-       (:larm
-        ;; grasp larm
-        (send *ri* :angle-vector (float-vector 130 -32.3186 26.4366 -19.6876 -118.217 -138.147 -78.3509 -166.767 -5.30455 69.0 -105.231 -88.5188 69.9972 -5.72958 -19.9717 20.0 24.0) (* ratio 2000))
-        ;; (send *ri* :angle-vector-sequence
-        ;;       (list (float-vector 150.0 5.0 74.0 70.0 -75.0 -70.0 -6.0 20.0 -20.0 20.0 -34.0 -110.0 12.0 -38.0 74.0 -2.0 31.0)
-        ;;             ;;(float-vector 150.0 25.0 54.0 20.0 -120.0 -70.0 -6.0 20.0 -12.0 46.0 -79.0 -45.0 40.0 -22.0 27.0 -2.0 31.0)
-        ;;             (float-vector 150.0 25.0 54.0 20.0 -120.0 -70.0 -6.0 20.0 -22.0 66.0 -79.0 -65.0 -40.0 -72.0 27.0 -2.0 31.0)
-        ;;             (send *pr2* :angle-vector))
-        ;;       (list 1400 1200 800))
-        ;;         (send *ri* :start-grasp :rarm)
-        ))
-     (if wait (send *ri* :wait-interpolation))
      )
     ((:slide1 :slide2)
      (let ((rend (send *pr2* :rarm :end-coords :copy-worldcoords))
@@ -821,7 +798,36 @@
     ) ;; / (case door-type
   )
 
-
+(defun grasp-can-posing (&key (door-type :circle) (ratio 1) (use-arm :rarm) (wait t))
+  (case door-type
+        (:circle
+         (case use-arm
+               (:rarm
+                ;; grasp rarm
+                (send *ri* :angle-vector (float-vector 130 5.30455 69.0 105.231 -88.5188 -69.9972 -5.72958 19.9717 31.3839 25.5029 23.0531 -118.916 160.305 -84.1469 160.058 -20 24) (* ratio 2000))
+                ;; (let ((cds (send *pr2* :rarm :end-coords :copy-worldcoords)))
+                ;;   ;; pre grasp pose
+                ;;   (send cds :rotate (- (deg2rad 20)) :z)
+                ;;   (send *pr2* :rarm :inverse-kinematics cds))
+                ;; (send *ri* :angle-vector (send *pr2* :angle-vector) 1400)
+                )
+               (:larm
+                ;; grasp larm
+                (send *ri* :angle-vector (float-vector 130 -32.3186 26.4366 -19.6876 -118.217 -138.147 -78.3509 -166.767 -5.30455 69.0 -105.231 -88.5188 69.9972 -5.72958 -19.9717 20.0 24.0) (* ratio 2000))
+                ;; (send *ri* :angle-vector-sequence
+                ;;       (list (float-vector 150.0 5.0 74.0 70.0 -75.0 -70.0 -6.0 20.0 -20.0 20.0 -34.0 -110.0 12.0 -38.0 74.0 -2.0 31.0)
+                ;;             ;;(float-vector 150.0 25.0 54.0 20.0 -120.0 -70.0 -6.0 20.0 -12.0 46.0 -79.0 -45.0 40.0 -22.0 27.0 -2.0 31.0)
+                ;;             (float-vector 150.0 25.0 54.0 20.0 -120.0 -70.0 -6.0 20.0 -22.0 66.0 -79.0 -65.0 -40.0 -72.0 27.0 -2.0 31.0)
+                ;;             (send *pr2* :angle-vector))
+                ;;       (list 1400 1200 800))
+                ;;         (send *ri* :start-grasp :rarm)
+                ))
+         (if wait (send *ri* :wait-interpolation))
+         )
+        ((:slide1 :slide2)
+         ;; do nothing
+         )
+        ))
 
 (warn ";; define open-fridge-door")
 (defvar *fridge-distance-threshold* 25.0)
@@ -867,6 +873,9 @@
     ;;swipe fridge door by larm
     (swipe-fridge-door :door-type door-type :ratio ratio :use-arm use-arm :wait wait)
 
+    ;;grasp can posing
+    (grasp-can-posing :door-type door-type :ratio ratio :use-arm use-arm :wait wait)
+
     (send *ri* :ros-wait 0.0 :spin-self t) ;; attention-check ...
     (send *ri* :wait-interpolation)
     t
@@ -895,7 +904,7 @@
 (defun grasp-can-init ()
   (send *pr2* :head :neck-p :joint-angle 20)
   (send *pr2* :head :neck-y :joint-angle 23)
-  (send *ri* :angle-vector (send *pr2* :angle-vector) 2000)
+  (send *ri* :angle-vector (send *pr2* :angle-vector) 2000 :head-controller)
   )
 
 (defparameter *can-cds* nil)
@@ -950,6 +959,25 @@
     (return-from grasp-can-motion isgrasp)
     ))
 
+(defun go-back-from-fridge (&key (isgrasp t) (move t) (use-arm :rarm) (rotation 20))
+  (when isgrasp
+    (when move
+      (case use-arm
+        (:rarm
+         (send *ri* :go-pos-unsafe -0.3 0.05 (- rotation)))
+        (:larm
+         (send *ri* :go-pos-unsafe -0.3 -0.2 (- rotation)))))
+    (send *ri* :ros-wait 0.0 :spin-self t :spin t) ;; attention-check ...
+    (return-from go-back-from-fridge t))
+  ;; (unix::sleep 2)
+  (if (and (boundp '*use-voicetext*) *use-voicetext*)
+      (cond
+       ((and (boundp '*use-english*) *use-english*)
+        (speak-jp (format nil "I could no pick up ~A" *type*)))
+       (t (speak-jp (format nil "~Aを取り出しませんでした。" *type*))))
+    (speak-jp (format nil "~A を とりだし ません でした" *type*)))
+  nil
+  )
 
 (warn ";; define grasp-can")
 (defvar *use-arm-navigation* nil)
@@ -960,30 +988,15 @@
   (move-to-can-spot :use-arm use-arm :rotation rotation :move move :pre-move pre-move)
   (grasp-can-init)
   (when (not move-only)
-    (let (isgrasp)
+    (let (isgrasp res)
       ;; grasp can
       (unix:sleep 2)
       (dotimes (trial 10)
         (setq isgrasp (grasp-can-motion :use-arm use-arm :rotation rotation))
         (if isgrasp (return))
         )
-
-      (when isgrasp
-        (when move
-          (case use-arm
-            (:rarm
-             (send *ri* :go-pos-unsafe -0.3 0.05 (- rotation)))
-            (:larm
-             (send *ri* :go-pos-unsafe -0.3 -0.2 (- rotation)))))
-        (send *ri* :ros-wait 0.0 :spin-self t :spin t) ;; attention-check ...
-        (return-from grasp-can t))
-      ;; (unix::sleep 2)
-      (if (and (boundp '*use-voicetext*) *use-voicetext*)
-          (cond
-           ((and (boundp '*use-english*) *use-english*)
-            (speak-jp (format nil "I could no pick up ~A" *type*)))
-           (t (speak-jp (format nil "~Aを取り出しませんでした。" *type*))))
-        (speak-jp (format nil "~A を とりだし ません でした" *type*)))
+      (setq res (go-back-from-fridge :isgrasp isgrasp :move move :use-arm use-arm :rotation rotation))
+      (when res (return-from grasp-can t))
       )
     )
   (when (and move post-move)
