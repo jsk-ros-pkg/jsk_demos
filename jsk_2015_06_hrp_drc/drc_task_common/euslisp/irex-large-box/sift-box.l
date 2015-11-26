@@ -6,9 +6,9 @@
 
 (load "package://drc_task_common/euslisp/primitive-marker-util.l")
 
-(load "package://drc_task_common/euslisp/irex-large-box/apc-box-model.l")
-(make-apc-box)
-(setq *box-label-offset* (send (send *apc-box* :sift-label-coords) :transformation (make-coords)))
+(load "package://drc_task_common/euslisp/irex-large-box/wooden-box-model.l")
+(make-wooden-box)
+(setq *box-label-offset* (send (send *wooden-box* :sift-label-coords) :transformation (make-coords)))
 
 (ros::roseus "set_pose_recognition")
 (setq *tf* (instance ros::transform-listener :init))

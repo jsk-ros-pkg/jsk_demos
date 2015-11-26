@@ -1,5 +1,5 @@
-(load "package://drc_task_common/euslisp/irex-large-box/apc-box-model.l")
-(load "package://drc_task_common/euslisp/irex-large-box/sift-box.l") ;; also generate *apc-box*
+(load "package://drc_task_common/euslisp/irex-large-box/wooden-box-model.l")
+(load "package://drc_task_common/euslisp/irex-large-box/sift-box.l") ;; also generate *wooden-box*
 
 (defun make-jaxon-ri ()
   (load "package://hrpsys_ros_bridge_tutorials/euslisp/jaxon_red-interface.l")
@@ -12,12 +12,12 @@
   (send *ri* :set-auto-balancer-param :is-hand-fix-mode nil)
   )
 
-(defun jaxon-apc-box-init (&key (box-pos (float-vector 850 0 0)))
-  ;; (make-apc-box)
+(defun jaxon-wooden-box-init (&key (box-pos (float-vector 850 0 0)))
+  ;; (make-wooden-box)
   (send *robot* :reset-manip-pose)
   (send *robot* :fix-leg-to-coords (make-coords))
-  (send *apc-box* :newcoords (make-coords :pos box-pos))
-  (objects (list *robot* *apc-box*))
+  (send *wooden-box* :newcoords (make-coords :pos box-pos))
+  (objects (list *robot* *wooden-box*))
   (warn ";; (send *ri* :angle-vector (send *robot* :angle-vector) 5000) ?~%")
   (when (y-or-n-p)
     (send *ri* :angle-vector (send *robot* :angle-vector) 5000)
@@ -78,12 +78,12 @@
     (send robot :angle-vector)
     ))
 
-(defun jaxon-apc-box-reach-side (&key (mid1-reach-pos-r (float-vector -120 -50 -40)) (mid1-reach-pos-l (float-vector -120 50 -40))
+(defun jaxon-wooden-box-reach-side (&key (mid1-reach-pos-r (float-vector -120 -50 -40)) (mid1-reach-pos-l (float-vector -120 50 -40))
                                       (mid2-reach-pos-r (float-vector 10 -50 -40)) (mid2-reach-pos-l (float-vector 10 50 -40))
                                       (grasp-reach-pos-r (float-vector 0 10 -40)) (grasp-reach-pos-l (float-vector 0 -10 -40))
                                       (hand-rotation 45) (box-pos (float-vector 850 0 0))
                                       (dt-list '(8000 5000 5000)) (rlpo 25) (hlpo 30) (arms-force-offset-mode t) (back-mode t))
-  (send *apc-box* :newcoords (make-coords :pos box-pos))
+  (send *wooden-box* :newcoords (make-coords :pos box-pos))
   (let* (avs)
     (send *robot* :reset-manip-pose)
     (push (send *robot* :angle-vector) avs)
@@ -94,10 +94,10 @@
     (send *robot*
           :fullbody-inverse-kinematics
           (list
-           ;;(send (send (send (send *apc-box* :side-front-right-grasp-edge) :copy-worldcoords) :translate mid-reach-pos :world) :rotate (deg2rad 90) :z)
-           ;;(send (send (send (send *apc-box* :side-front-left-grasp-edge) :copy-worldcoords) :translate mid-reach-pos :world) :rotate (deg2rad -90) :z)
-           (send (send (send (send *apc-box* :side-front-right-grasp-edge) :copy-worldcoords) :translate mid1-reach-pos-r :world) :rotate (deg2rad hand-rotation) :z)
-           (send (send (send (send *apc-box* :side-front-left-grasp-edge) :copy-worldcoords) :translate mid1-reach-pos-l :world) :rotate (deg2rad (- hand-rotation)) :z)
+           ;;(send (send (send (send *wooden-box* :side-front-right-grasp-edge) :copy-worldcoords) :translate mid-reach-pos :world) :rotate (deg2rad 90) :z)
+           ;;(send (send (send (send *wooden-box* :side-front-left-grasp-edge) :copy-worldcoords) :translate mid-reach-pos :world) :rotate (deg2rad -90) :z)
+           (send (send (send (send *wooden-box* :side-front-right-grasp-edge) :copy-worldcoords) :translate mid1-reach-pos-r :world) :rotate (deg2rad hand-rotation) :z)
+           (send (send (send (send *wooden-box* :side-front-left-grasp-edge) :copy-worldcoords) :translate mid1-reach-pos-l :world) :rotate (deg2rad (- hand-rotation)) :z)
            (send *robot* :rleg :end-coords :copy-worldcoords)
            (send *robot* :lleg :end-coords :copy-worldcoords))
           :move-target
@@ -136,7 +136,7 @@
 
     (warn ";; move to pose-2 ?~%")
     (unless (y-or-n-p)
-      (return-from jaxon-apc-box-reach-side)
+      (return-from jaxon-wooden-box-reach-side)
       )
 
     ;; move to pose-2
@@ -146,8 +146,8 @@
     (send *robot*
           :fullbody-inverse-kinematics
           (list
-           (send (send (send (send *apc-box* :side-front-right-grasp-edge) :copy-worldcoords) :translate mid2-reach-pos-r :world) :rotate (deg2rad hand-rotation) :z)
-           (send (send (send (send *apc-box* :side-front-left-grasp-edge) :copy-worldcoords) :translate mid2-reach-pos-l :world) :rotate (deg2rad (- hand-rotation)) :z)
+           (send (send (send (send *wooden-box* :side-front-right-grasp-edge) :copy-worldcoords) :translate mid2-reach-pos-r :world) :rotate (deg2rad hand-rotation) :z)
+           (send (send (send (send *wooden-box* :side-front-left-grasp-edge) :copy-worldcoords) :translate mid2-reach-pos-l :world) :rotate (deg2rad (- hand-rotation)) :z)
            (send *robot* :rleg :end-coords :copy-worldcoords)
            (send *robot* :lleg :end-coords :copy-worldcoords))
           :move-target
@@ -184,7 +184,7 @@
 
     (warn ";; move to pose-reach-end ?~%")
     (unless (y-or-n-p)
-      (return-from jaxon-apc-box-reach-side)
+      (return-from jaxon-wooden-box-reach-side)
       )
 
     ;; move to pose-reach-end
@@ -194,10 +194,10 @@
     (send *robot*
           :fullbody-inverse-kinematics
           (list
-           ;;(send (send (send (send *apc-box* :side-front-right-grasp-edge) :copy-worldcoords) :translate mid-reach-pos :world) :rotate (deg2rad 90) :z)
-           ;;(send (send (send (send *apc-box* :side-front-left-grasp-edge) :copy-worldcoords) :translate mid-reach-pos :world) :rotate (deg2rad -90) :z)
-           (send (send (send (send *apc-box* :side-front-right-grasp-edge) :copy-worldcoords) :translate grasp-reach-pos-r :world) :rotate (deg2rad hand-rotation) :z)
-           (send (send (send (send *apc-box* :side-front-left-grasp-edge) :copy-worldcoords) :translate grasp-reach-pos-l :world) :rotate (deg2rad (- hand-rotation)) :z)
+           ;;(send (send (send (send *wooden-box* :side-front-right-grasp-edge) :copy-worldcoords) :translate mid-reach-pos :world) :rotate (deg2rad 90) :z)
+           ;;(send (send (send (send *wooden-box* :side-front-left-grasp-edge) :copy-worldcoords) :translate mid-reach-pos :world) :rotate (deg2rad -90) :z)
+           (send (send (send (send *wooden-box* :side-front-right-grasp-edge) :copy-worldcoords) :translate grasp-reach-pos-r :world) :rotate (deg2rad hand-rotation) :z)
+           (send (send (send (send *wooden-box* :side-front-left-grasp-edge) :copy-worldcoords) :translate grasp-reach-pos-l :world) :rotate (deg2rad (- hand-rotation)) :z)
            (send *robot* :rleg :end-coords :copy-worldcoords)
            (send *robot* :lleg :end-coords :copy-worldcoords))
           :move-target
@@ -245,7 +245,7 @@
         (dolist (av avs)
           (warn ";; move to next ?~%")
           (unless (y-or-n-p)
-            (return-from jaxon-apc-box-reach-side)
+            (return-from jaxon-wooden-box-reach-side)
             )
           (send *robot* :angle-vector av)
           (send *robot* :fix-leg-to-coords (make-coords))
@@ -261,12 +261,12 @@
       )
     ))
 
-(defun jaxon-apc-box-reach-side-back-only (&key (mid1-reach-pos-r (float-vector -120 -50 -40)) (mid1-reach-pos-l (float-vector -120 50 -40))
+(defun jaxon-wooden-box-reach-side-back-only (&key (mid1-reach-pos-r (float-vector -120 -50 -40)) (mid1-reach-pos-l (float-vector -120 50 -40))
                                                 (mid2-reach-pos-r (float-vector 10 -50 -40)) (mid2-reach-pos-l (float-vector 10 50 -40))
                                                 (grasp-reach-pos-r (float-vector 0 10 -40)) (grasp-reach-pos-l (float-vector 0 -10 -40))
                                                 (hand-rotation 45) (box-pos (float-vector 850 0 0))
                                                 (dt-list '(8000 5000 5000)) (rlpo 25) (hlpo 30))
-  (send *apc-box* :newcoords (make-coords :pos box-pos))
+  (send *wooden-box* :newcoords (make-coords :pos box-pos))
   (let* (avs)
     (send *robot* :reset-manip-pose)
     (push (send *robot* :angle-vector) avs)
@@ -277,10 +277,10 @@
     (send *robot*
           :fullbody-inverse-kinematics
           (list
-           ;;(send (send (send (send *apc-box* :side-front-right-grasp-edge) :copy-worldcoords) :translate mid-reach-pos :world) :rotate (deg2rad 90) :z)
-           ;;(send (send (send (send *apc-box* :side-front-left-grasp-edge) :copy-worldcoords) :translate mid-reach-pos :world) :rotate (deg2rad -90) :z)
-           (send (send (send (send *apc-box* :side-front-right-grasp-edge) :copy-worldcoords) :translate mid1-reach-pos-r :world) :rotate (deg2rad hand-rotation) :z)
-           (send (send (send (send *apc-box* :side-front-left-grasp-edge) :copy-worldcoords) :translate mid1-reach-pos-l :world) :rotate (deg2rad (- hand-rotation)) :z)
+           ;;(send (send (send (send *wooden-box* :side-front-right-grasp-edge) :copy-worldcoords) :translate mid-reach-pos :world) :rotate (deg2rad 90) :z)
+           ;;(send (send (send (send *wooden-box* :side-front-left-grasp-edge) :copy-worldcoords) :translate mid-reach-pos :world) :rotate (deg2rad -90) :z)
+           (send (send (send (send *wooden-box* :side-front-right-grasp-edge) :copy-worldcoords) :translate mid1-reach-pos-r :world) :rotate (deg2rad hand-rotation) :z)
+           (send (send (send (send *wooden-box* :side-front-left-grasp-edge) :copy-worldcoords) :translate mid1-reach-pos-l :world) :rotate (deg2rad (- hand-rotation)) :z)
            (send *robot* :rleg :end-coords :copy-worldcoords)
            (send *robot* :lleg :end-coords :copy-worldcoords))
           :move-target
@@ -317,7 +317,7 @@
 
     ;; (warn ";; move to pose-2 ?~%")
     ;; (unless (y-or-n-p)
-    ;;   (return-from jaxon-apc-box-reach-side-back-only)
+    ;;   (return-from jaxon-wooden-box-reach-side-back-only)
     ;;   )
 
     ;; move to pose-2
@@ -327,8 +327,8 @@
     (send *robot*
           :fullbody-inverse-kinematics
           (list
-           (send (send (send (send *apc-box* :side-front-right-grasp-edge) :copy-worldcoords) :translate mid2-reach-pos-r :world) :rotate (deg2rad hand-rotation) :z)
-           (send (send (send (send *apc-box* :side-front-left-grasp-edge) :copy-worldcoords) :translate mid2-reach-pos-l :world) :rotate (deg2rad (- hand-rotation)) :z)
+           (send (send (send (send *wooden-box* :side-front-right-grasp-edge) :copy-worldcoords) :translate mid2-reach-pos-r :world) :rotate (deg2rad hand-rotation) :z)
+           (send (send (send (send *wooden-box* :side-front-left-grasp-edge) :copy-worldcoords) :translate mid2-reach-pos-l :world) :rotate (deg2rad (- hand-rotation)) :z)
            (send *robot* :rleg :end-coords :copy-worldcoords)
            (send *robot* :lleg :end-coords :copy-worldcoords))
           :move-target
@@ -365,7 +365,7 @@
 
     ;; (warn ";; move to pose-reach-end ?~%")
     ;; (unless (y-or-n-p)
-    ;;   (return-from jaxon-apc-box-reach-side-back-only)
+    ;;   (return-from jaxon-wooden-box-reach-side-back-only)
     ;;   )
 
     ;; move to pose-reach-end
@@ -375,10 +375,10 @@
     (send *robot*
           :fullbody-inverse-kinematics
           (list
-           ;;(send (send (send (send *apc-box* :side-front-right-grasp-edge) :copy-worldcoords) :translate mid-reach-pos :world) :rotate (deg2rad 90) :z)
-           ;;(send (send (send (send *apc-box* :side-front-left-grasp-edge) :copy-worldcoords) :translate mid-reach-pos :world) :rotate (deg2rad -90) :z)
-           (send (send (send (send *apc-box* :side-front-right-grasp-edge) :copy-worldcoords) :translate grasp-reach-pos-r :world) :rotate (deg2rad hand-rotation) :z)
-           (send (send (send (send *apc-box* :side-front-left-grasp-edge) :copy-worldcoords) :translate grasp-reach-pos-l :world) :rotate (deg2rad (- hand-rotation)) :z)
+           ;;(send (send (send (send *wooden-box* :side-front-right-grasp-edge) :copy-worldcoords) :translate mid-reach-pos :world) :rotate (deg2rad 90) :z)
+           ;;(send (send (send (send *wooden-box* :side-front-left-grasp-edge) :copy-worldcoords) :translate mid-reach-pos :world) :rotate (deg2rad -90) :z)
+           (send (send (send (send *wooden-box* :side-front-right-grasp-edge) :copy-worldcoords) :translate grasp-reach-pos-r :world) :rotate (deg2rad hand-rotation) :z)
+           (send (send (send (send *wooden-box* :side-front-left-grasp-edge) :copy-worldcoords) :translate grasp-reach-pos-l :world) :rotate (deg2rad (- hand-rotation)) :z)
            (send *robot* :rleg :end-coords :copy-worldcoords)
            (send *robot* :lleg :end-coords :copy-worldcoords))
           :move-target
@@ -418,7 +418,7 @@
       (dolist (av avs)
         (warn ";; move to next ?~%")
         (unless (y-or-n-p)
-          (return-from jaxon-apc-box-reach-side-back-only)
+          (return-from jaxon-wooden-box-reach-side-back-only)
           )
         (send *robot* :angle-vector av)
         (send *robot* :fix-leg-to-coords (make-coords))
@@ -435,9 +435,9 @@
 
 (defun jaxon-push-main-all (&key (push-distance 0.5))
   ;; Reaching motion
-  (warn ";; (jaxon-apc-box-reach-side :arms-force-offset-mode nil :back-mode nil) ?~%")
+  (warn ";; (jaxon-wooden-box-reach-side :arms-force-offset-mode nil :back-mode nil) ?~%")
   (if (y-or-n-p)
-      (jaxon-apc-box-reach-side :arms-force-offset-mode nil :back-mode nil))
+      (jaxon-wooden-box-reach-side :arms-force-offset-mode nil :back-mode nil))
   ;; Change hand-fix-mode to true
   (warn ";; (send *ri* :set-auto-balancer-param :is-hand-fix-mode t) ?~%")
   (if (y-or-n-p)
@@ -459,9 +459,9 @@
   (if (y-or-n-p)
       (send *ri* :set-auto-balancer-param :is-hand-fix-mode nil))
   ;; Release motion
-  (warn ";; (jaxon-apc-box-reach-side-back-only) ?~%")
+  (warn ";; (jaxon-wooden-box-reach-side-back-only) ?~%")
   (if (y-or-n-p)
-      (jaxon-apc-box-reach-side-back-only))
+      (jaxon-wooden-box-reach-side-back-only))
   )
 
 ;;;; Recognition
@@ -474,7 +474,7 @@
     (make-coords :pos (float-vector px py 0) :angle yaw :axis :z)
     ))
 
-(defun start-calib-box-pos (&key (box *apc-box*) (set-box-x-pos 850))
+(defun start-calib-box-pos (&key (box *wooden-box*) (set-box-x-pos 850))
   (let* ((orig-box-coords (project-coords-to-ground (send box :copy-worldcoords)))
          (orig-box-x (elt (send orig-box-coords :worldpos) 0))
          (orig-box-y (elt (send orig-box-coords :worldpos) 1))
@@ -489,7 +489,7 @@
     (warn ";; y-calib-offset = ~a[mm]~%" y-calib-offset)
     (warn ";; yaw-calib-offset = ~a[rad]~%" yaw-calib-offset)
     (warn ";; *calib-offset-coords* = ~a~%" *calib-offset-coords*)
-    (send *apc-box* :newcoords (send (send orig-box-coords :copy-worldcoords) :transform *calib-offset-coords*))
+    (send *wooden-box* :newcoords (send (send orig-box-coords :copy-worldcoords) :transform *calib-offset-coords*))
     (send *irtviewer* :draw-objects)
     ))
 
@@ -502,9 +502,9 @@
           (unless (boundp '*calib-offset-coords*)
             (start-calib-box-pos)
             )
-          (send *apc-box* :newcoords (send box-coords :transform *calib-offset-coords*))
+          (send *wooden-box* :newcoords (send box-coords :transform *calib-offset-coords*))
           )
-      (send *apc-box* :newcoords box-coords)
+      (send *wooden-box* :newcoords box-coords)
       )
     (send *irtviewer* :draw-objects)
     ))
@@ -545,20 +545,20 @@
       )
     ))
 
-(defun jaxon-apc-box-okkake ()
+(defun jaxon-wooden-box-okkake ()
   (update-box-pose-by-sift :calib-offset t)
-  (jaxon-maai-hosei-by-go-pos *apc-box*)
+  (jaxon-maai-hosei-by-go-pos *wooden-box*)
   )
 
 (defun jaxon-box-okkake-push-demo (&key (push-distance 0.5))
   (warn ";; 1 kai~%")
-  (jaxon-apc-box-okkake)
+  (jaxon-wooden-box-okkake)
   (unix::sleep 2)
   (warn ";; 2 kai~%")
-  (jaxon-apc-box-okkake)
+  (jaxon-wooden-box-okkake)
   (unix::sleep 2)
   (warn ";; 3 kai~%")
-  (jaxon-apc-box-okkake)
+  (jaxon-wooden-box-okkake)
   (unix::sleep 2)
   (warn ";; (jaxon-push-main-all :push-distance ~a)~%" push-distance)
   (jaxon-push-main-all :push-distance push-distance)
@@ -573,13 +573,13 @@
 (warn ";; reset-pose (from dashboard)~%")
 (warn ";; start Stabilizer (from dashboard)~%")
 (warn "~%")
-(warn "(jaxon-apc-box-init) ;; For jaxon initialize~%")
-(warn "(jaxon-apc-box-reach-side) ;; Adjust and determine real box position for jaxon reaching~%")
+(warn "(jaxon-wooden-box-init) ;; For jaxon initialize~%")
+(warn "(jaxon-wooden-box-reach-side) ;; Adjust and determine real box position for jaxon reaching~%")
 (warn "~%")
 (warn "(loop-update-box-pose :calib-offset t) ;; Loop update box pos before calib~%")
 (warn "(start-calib-box-pos) ;; Calibrate box pose: Get value *calib-offset-coords*~%")
 (warn "(loop-update-box-pose :calib-offset t) ;; Loop update box pos after calib~%")
 (warn "~%")
-(warn "(jaxon-apc-box-okkake) ;; sift recognition and go-pos~%")
+(warn "(jaxon-wooden-box-okkake) ;; sift recognition and go-pos~%")
 (warn "(jaxon-push-main-all :push-distance 0.5) ;; reach and push 0.5[m] and release for box~%")
 (warn "(jaxon-box-okkake-push-demo :push-distance 0.5) ;; sift recognition and go-pos for 3 times, then reach and push 0.5[m] and release for box~%")
