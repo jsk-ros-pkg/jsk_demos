@@ -2,6 +2,13 @@
 Changelog for package interactive_behavior_201409
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* [interactive_behavior_2014_09/CMakeLists.txt] not require face_recognition on find_package
+* [interactive_behavior_201409] Add face_recognition to build_depend
+* [interactive_behavior_201409] add short interaction for face recognition
+* Contributors: Ryohei Ueda, Yuki Furuta
+
 0.0.1 (2015-06-11)
 ------------------
 * [interactive_behavior_201409] add /people to look-at source

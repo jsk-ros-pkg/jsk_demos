@@ -2,6 +2,26 @@
 Changelog for package jsk_demo_common
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* jsk_demo_common: add pr2_gripper_sensor_msgs
+* [jsk_demo_common] state_publisher -> robot_state_publisher
+* [jsk_demo_common] run depends for model_filter.launch
+* [jsk_demo_common] Filtering model launch file
+* [jsk_demos] exec fridge demo in smach
+* [jsk_demos] exec fridge demo in simulation mode
+* [jsk_demo_common] add action logging feature to attention-action; add pr2-attention-action.l, pr2-attention-move.l
+* [jsk_demo_common/euslisp/pr2-action.l] fix: use :link to link name
+* [detect_cans_in_fridge_201202 & jsk_demo_common] change name space openni -> kinect_head
+* [jsk_demo_common] remove rosbuild related files
+* [jsk_demo_common] fix error in simulation-modep part
+* [jsk_demo_common] change from :joint-action-enable to :simulation-modep
+* exec in simulation mode
+* [jsk_demo_common] divide-fridge-func
+* [jsk_demo_common/euslisp/pr2-action.l] fix hand-over for issue `#381 <https://github.com/jsk-ros-pkg/jsk_demos/issues/381>`_
+* remove dependency to jsk_2013_10_pr2_73b2 package
+* Contributors: Kamada Hitoshi, Kei Okada, Kentaro Wada, Yuki Furuta
+
 0.0.1 (2015-06-11)
 ------------------
 * [jsk_demo_common] add pr2 actions' action servers

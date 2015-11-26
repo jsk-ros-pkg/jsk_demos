@@ -2,6 +2,24 @@
 Changelog for package detect_cans_in_fridge_201202
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* [jsk_demos] exec fridge demo in smach
+* [jsk_demos] exec fridge demo in simulation mode
+* [detect_cans] set *current-context
+* [detect_cans] change the load place
+* [detect_cans] fix arg in startup.launch
+* [detect_cans_in_fridge201202/euslisp/main.l] add logging option
+* [detect_cans] visualize GaussianPointCloud of fridge
+* add documentation string
+* euslisp/color_histogram_creater.l: use eus-pointcloud instead of 3dpointcloud
+* [detect_cans_in_fridge_201202 & jsk_demo_common] change name space openni -> kinect_head
+* [jsk_demo_common] divide-fridge-func
+* [detect_cans_in_fridge] modify launch remap
+* [detect_cans_in_fridge] change from openni_c2 to kinect_head_c2
+* [jsk_demos] fix typo
+* Contributors: Kamada Hitoshi, Kei Okada, Yohei Kakiuchi, Yuki Furuta
+
 0.0.1 (2015-06-11)
 ------------------
 * [detect_cans.l] load-ros-manifest self package

@@ -2,6 +2,12 @@
 Changelog for package elevator_move_base_pr2
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* [elevator_move_base_pr2/launch/elevator_move_base_modules.xml] use rectified image on light detect
+* [elevator_move_base_pr2/launch/check_elevator_open.xml] rename /openni_c2 -> /kinect_head_c2
+* Contributors: Furushchev
+
 0.0.1 (2015-06-11)
 ------------------
 * [elevator_move_base_pr2] use octree_change_detector to check elevator door is open

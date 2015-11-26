@@ -2,6 +2,18 @@
 Changelog for package jsk_2013_04_pr2_610
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* README.md: now jsk_2013_04_pr2_610 depends on task_compiler
+* Update README.md: source donwload xdot
+* Update README.md  solves https://github.com/jsk-ros-pkg/jsk_demos/issues/1117
+* add rostest for demo program for pr2_610
+* [README] update jsk_2013_04_pr2_610 demo readme
+* [jsk_demo_common] fix error in simulation-modep part
+* [jsk_demo_common] change from :joint-action-enable to :simulation-modep
+* [jsk_demos/jsk_2013_04_pr2_610] add use_sim option to launch files for launching on non PR2 environment
+* Contributors: Yuki Furuta, Kamada Hitoshi, Kei Okada
+
 0.0.1 (2015-06-11)
 ------------------
 * [jsk_demos] remove rosmake files

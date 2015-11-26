@@ -2,6 +2,15 @@
 Changelog for package drc_com_common
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* [drc_com_common] Add respawn flag to highspeed receivers
+* [drc_com_common] Use silverhammer highspeed receiver with internalbuffer in
+  order to cleanup silverhammer processes
+* [drc_task_common] Omit footstep planner client in fc-executive.l
+* [drc_com_common] Use jsk_robot_utils to compress/decompress joint angles
+* Contributors: Ryohei Ueda
+
 0.0.1 (2015-06-11)
 ------------------
 * add emergency-pose button to rviz
