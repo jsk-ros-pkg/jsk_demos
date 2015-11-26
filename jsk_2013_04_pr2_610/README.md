@@ -54,9 +54,10 @@ mkdir src
 wstool init src
 wstool set jsk_demos -t src --git https://github.com/jsk-ros-pkg/jsk_demos
 wstool set jsk_planning -t src --git https://github.com/jsk-ros-pkg/jsk_planning
+wstool set xdot -t src --git https://github.com/k-okada/xdot ;; https://github.com/jbohren/xdot/pull/12
 wstool update -t src
 rosdep install --from-paths src --ignore-src -r -n -y
-catkin build jsk_2013_04_pr2_610 task_compiler
+catkin build jsk_2013_04_pr2_610
 source /path/to/your_catkin_ws/devel/setup.bash
 ```
 
