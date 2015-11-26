@@ -5,6 +5,10 @@
   (load "package://hrpsys_ros_bridge_tutorials/euslisp/jaxon_red-interface.l")
   (jaxon_red-init)
   (setq *robot* *jaxon_red*)
+  (mapcar #'(lambda (j)
+              (send j :put :hard-min-angle (send j :min-angle))
+              (send j :put :hard-max-angle (send j :max-angle)))
+          (send *robot* :joint-list))
   )
 
 (defun start-auto-balancer-no-fix ()
@@ -36,7 +40,7 @@
   (warn ";; (send *ri* :start-impedance :arms) ?~%")
   (when (y-or-n-p)
     (send *ri* :start-impedance :arms)
-    ;;(send *ri* :start-impedance :arms :k-p 3000 :d-p 600)
+    ;; (send *ri* :start-impedance :arms :k-p 3000 :d-p 600)
     )
   )
 
@@ -78,19 +82,50 @@
     (send robot :angle-vector)
     ))
 
+(defun with-reduce-joint-range
+  (joint-list func
+              &key (new-min-angle-list) (new-max-angle-list))
+  (unwind-protect
+      (progn
+        (mapcar #'(lambda (new-min j)
+                    (send j :put :tmp-min-angle-for-reducing (send j :min-angle))
+                    (send j :min-angle new-min))
+                new-min-angle-list joint-list)
+        (mapcar #'(lambda (new-max j)
+                    (send j :put :tmp-max-angle-for-reducing (send j :max-angle))
+                    (send j :max-angle new-max))
+                new-max-angle-list joint-list)
+        (funcall func)
+        )
+    (progn
+      (mapcar #'(lambda (new-min j)
+                  (send j :min-angle (send j :get :tmp-min-angle-for-reducing))
+                  (send j :remprop :tmp-min-angle-for-reducing))
+              new-min-angle-list joint-list)
+      (mapcar #'(lambda (new-max j)
+                  (send j :max-angle (send j :get :tmp-max-angle-for-reducing))
+                  (send j :remprop :tmp-max-angle-for-reducing))
+              new-max-angle-list joint-list)
+      )
+    ))
+
 (defun jaxon-wooden-box-reach-side (&key (mid1-reach-pos-r (float-vector -120 -50 -40)) (mid1-reach-pos-l (float-vector -120 50 -40))
-                                      (mid2-reach-pos-r (float-vector 10 -50 -40)) (mid2-reach-pos-l (float-vector 10 50 -40))
-                                      (grasp-reach-pos-r (float-vector 0 10 -40)) (grasp-reach-pos-l (float-vector 0 -10 -40))
-                                      (hand-rotation 45) (box-pos (float-vector 850 0 0))
-                                      (dt-list '(8000 5000 5000)) (rlpo 25) (hlpo 30) (arms-force-offset-mode t) (back-mode t))
+                                         (mid2-reach-pos-r (float-vector 10 -50 -40)) (mid2-reach-pos-l (float-vector 10 50 -40))
+                                         (grasp-reach-pos-r (float-vector 0 10 -40)) (grasp-reach-pos-l (float-vector 0 -10 -40))
+                                         (hand-rotation 45) (box-pos (float-vector 850 0 0))
+                                         (dt-list '(8000 5000 5000)) (rlpo 25) (hlpo 30) (clpo 10) (arms-force-offset-mode t) (back-mode t)
+                                         (joint-angle-margin 20))
   (send *wooden-box* :newcoords (make-coords :pos box-pos))
   (let* (avs)
     (send *robot* :reset-manip-pose)
     (push (send *robot* :angle-vector) avs)
     ;; move to pose-1
-    (walking-pose *robot* :root-link-pitch-offset rlpo :head-link-pitch-offset hlpo)
+    (walking-pose *robot* :root-link-pitch-offset rlpo :head-link-pitch-offset hlpo :chest-link-pitch-offset clpo)
     ;; (send *robot* :rarm-thumb-r :joint-angle 90.0)
     ;; (send *robot* :larm-thumb-r :joint-angle -90.0)
+    (with-reduce-joint-range
+     (send *robot* :arms :wrist-p)
+     #'(lambda ()
     (send *robot*
           :fullbody-inverse-kinematics
           (list
@@ -123,7 +158,9 @@
           :translation-axis (list t t t t)
           :rotation-axis (list t t t t)
           :target-centroid-pos (send (send *robot* :foot-midcoords) :worldpos)
-          :debug-view :no-message)
+          :debug-view :no-message))
+   :new-max-angle-list (mapcar #'(lambda (x) (- (send x :get :hard-max-angle) joint-angle-margin)) (send *robot* :arms :wrist-p))
+   :new-min-angle-list (mapcar #'(lambda (x) (+ (send x :get :hard-min-angle) joint-angle-margin)) (send *robot* :arms :wrist-p)))
     (send *irtviewer* :draw-objects)
     (push (send *robot* :angle-vector) avs)
     ;; (warn ";; (send *ri* :angle-vector (send *robot* :angle-vector) ~a) ?~%" (+ dt 4000))
@@ -140,9 +177,12 @@
       )
 
     ;; move to pose-2
-    (walking-pose *robot* :root-link-pitch-offset rlpo :head-link-pitch-offset hlpo)
+    (walking-pose *robot* :root-link-pitch-offset rlpo :head-link-pitch-offset hlpo  :chest-link-pitch-offset clpo)
     ;; (send *robot* :rarm-thumb-r :joint-angle 90.0)
     ;; (send *robot* :larm-thumb-r :joint-angle -90.0)
+    (with-reduce-joint-range
+     (send *robot* :arms :wrist-p)
+     #'(lambda ()
     (send *robot*
           :fullbody-inverse-kinematics
           (list
@@ -173,7 +213,9 @@
           :translation-axis (list t t t t)
           :rotation-axis (list t t t t)
           :target-centroid-pos (send (send *robot* :foot-midcoords) :worldpos)
-          :debug-view :no-message)
+          :debug-view :no-message))
+   :new-max-angle-list (mapcar #'(lambda (x) (- (send x :get :hard-max-angle) joint-angle-margin)) (send *robot* :arms :wrist-p))
+   :new-min-angle-list (mapcar #'(lambda (x) (+ (send x :get :hard-min-angle) joint-angle-margin)) (send *robot* :arms :wrist-p)))
     (send *irtviewer* :draw-objects)
     (push (send *robot* :angle-vector) avs)
     (warn ";; (send *ri* :angle-vector (send *robot* :angle-vector) ~a) ?~%" (elt dt-list 1))
@@ -188,9 +230,12 @@
       )
 
     ;; move to pose-reach-end
-    (walking-pose *robot* :root-link-pitch-offset rlpo :head-link-pitch-offset hlpo)
+    (walking-pose *robot* :root-link-pitch-offset rlpo :head-link-pitch-offset hlpo  :chest-link-pitch-offset clpo)
     ;; (send *robot* :rarm-thumb-r :joint-angle 90.0)
     ;; (send *robot* :larm-thumb-r :joint-angle -90.0)
+    (with-reduce-joint-range
+     (send *robot* :arms :wrist-p)
+     #'(lambda ()
     (send *robot*
           :fullbody-inverse-kinematics
           (list
@@ -223,7 +268,9 @@
           :translation-axis (list t t t t)
           :rotation-axis (list t t t t)
           :target-centroid-pos (send (send *robot* :foot-midcoords) :worldpos)
-          :debug-view :no-message)
+          :debug-view :no-message))
+   :new-max-angle-list (mapcar #'(lambda (x) (- (send x :get :hard-max-angle) joint-angle-margin)) (send *robot* :arms :wrist-p))
+   :new-min-angle-list (mapcar #'(lambda (x) (+ (send x :get :hard-min-angle) joint-angle-margin)) (send *robot* :arms :wrist-p)))
     (send *irtviewer* :draw-objects)
     (push (send *robot* :angle-vector) avs)
     (warn ";; (send *ri* :angle-vector (send *robot* :angle-vector) ~a) ?~%" (elt dt-list 2))
@@ -262,10 +309,10 @@
     ))
 
 (defun jaxon-wooden-box-reach-side-back-only (&key (mid1-reach-pos-r (float-vector -120 -50 -40)) (mid1-reach-pos-l (float-vector -120 50 -40))
-                                                (mid2-reach-pos-r (float-vector 10 -50 -40)) (mid2-reach-pos-l (float-vector 10 50 -40))
-                                                (grasp-reach-pos-r (float-vector 0 10 -40)) (grasp-reach-pos-l (float-vector 0 -10 -40))
-                                                (hand-rotation 45) (box-pos (float-vector 850 0 0))
-                                                (dt-list '(8000 5000 5000)) (rlpo 25) (hlpo 30))
+                                                   (mid2-reach-pos-r (float-vector 10 -50 -40)) (mid2-reach-pos-l (float-vector 10 50 -40))
+                                                   (grasp-reach-pos-r (float-vector 0 10 -40)) (grasp-reach-pos-l (float-vector 0 -10 -40))
+                                                   (hand-rotation 45) (box-pos (float-vector 850 0 0))
+                                                   (dt-list '(8000 5000 5000)) (rlpo 25) (hlpo 30))
   (send *wooden-box* :newcoords (make-coords :pos box-pos))
   (let* (avs)
     (send *robot* :reset-manip-pose)
