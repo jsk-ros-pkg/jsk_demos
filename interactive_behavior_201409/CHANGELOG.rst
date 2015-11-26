@@ -2,8 +2,8 @@
 Changelog for package interactive_behavior_201409
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.0.2 (2015-11-26)
+------------------
 * [interactive_behavior_2014_09/CMakeLists.txt] not require face_recognition on find_package
 * [interactive_behavior_201409] Add face_recognition to build_depend
 * [interactive_behavior_201409] add short interaction for face recognition

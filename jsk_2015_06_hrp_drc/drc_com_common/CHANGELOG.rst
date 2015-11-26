@@ -2,8 +2,8 @@
 Changelog for package drc_com_common
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.0.2 (2015-11-26)
+------------------
 * [drc_com_common] Add respawn flag to highspeed receivers
 * [drc_com_common] Use silverhammer highspeed receiver with internalbuffer in
   order to cleanup silverhammer processes

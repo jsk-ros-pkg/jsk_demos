@@ -2,8 +2,8 @@
 Changelog for package detect_cans_in_fridge_201202
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.0.2 (2015-11-26)
+------------------
 * [jsk_demos] exec fridge demo in smach
 * [jsk_demos] exec fridge demo in simulation mode
 * [detect_cans] set *current-context

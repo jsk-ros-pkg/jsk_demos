@@ -2,8 +2,8 @@
 Changelog for package drc_task_common
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.0.2 (2015-11-26)
+------------------
 * reserve params for 2nd time
 * fix jaxon ik param for valve motion. set waist joint weight zero.
 * change wall motion for renewed limitation

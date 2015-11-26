@@ -2,8 +2,8 @@
 Changelog for package jsk_semantic_maps
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.0.2 (2015-11-26)
+------------------
 * Ignore auto generated files
 * Contributors: Kentaro Wada
 

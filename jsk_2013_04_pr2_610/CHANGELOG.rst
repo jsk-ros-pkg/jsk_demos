@@ -2,8 +2,8 @@
 Changelog for package jsk_2013_04_pr2_610
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.0.2 (2015-11-26)
+------------------
 * README.md: now jsk_2013_04_pr2_610 depends on task_compiler
 * Update README.md: source donwload xdot
 * Update README.md  solves https://github.com/jsk-ros-pkg/jsk_demos/issues/1117

@@ -2,8 +2,8 @@
 Changelog for package gazebo_drive_simulator
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.0.2 (2015-11-26)
+------------------
 * gazebo_drive_simulator does not have python modules
 * Contributors: Kei Okada
 

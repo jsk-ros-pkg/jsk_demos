@@ -2,8 +2,8 @@
 Changelog for package jsk_demo_common
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.0.2 (2015-11-26)
+------------------
 * jsk_demo_common: add pr2_gripper_sensor_msgs
 * [jsk_demo_common] state_publisher -> robot_state_publisher
 * [jsk_demo_common] run depends for model_filter.launch
