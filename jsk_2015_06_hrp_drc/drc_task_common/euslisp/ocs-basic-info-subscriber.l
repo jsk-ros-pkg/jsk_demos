@@ -82,6 +82,14 @@
           (send req :cur_tf target-transform)
           (ros::service-call "/ocs/set_dynamic_tf" req)
           )))
+    (let ((coords (float-vector-to-coords (send msg :map))))
+      ;; coords is a transformation from map to BODY
+      (let ((target-transform (ros::coords->tf-transform-stamped coords "BODY" "map")))
+        (let ((req (instance dynamic_tf_publisher::SetDynamicTfRequest :init)))
+          (send req :freq 20)
+          (send req :cur_tf target-transform)
+          (ros::service-call "/ocs/set_dynamic_tf" req)
+          )))
     (let ((coords (float-vector-to-coords (send msg :ground))))
       ;; coords is a transformation from odom_on_ground to BODY
       (let ((target-transform (ros::coords->tf-transform-stamped coords "BODY" "ground")))
