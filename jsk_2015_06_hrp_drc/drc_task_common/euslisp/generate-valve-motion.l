@@ -579,8 +579,8 @@
             (keyshot-request)
             (hand-start-grasp :real? real?)))
         ;; rotate
-        (when real? (send-angle-vector-sequence-with-time (cdr (subseq valve-motion-av-list 0 (/ valve-motion-length 2))) :time 1000 :wait? t))
-        ;;(when real? (send-angle-vector-sequence-with-time (cdr (subseq valve-motion-av-list 0 (/ valve-motion-length 2))) :time 1400 :wait? t))
+        ;;(when real? (send-angle-vector-sequence-with-time (cdr (subseq valve-motion-av-list 0 (/ valve-motion-length 2))) :time 1000 :wait? t))
+        (when real? (send-angle-vector-sequence-with-time (cdr (subseq valve-motion-av-list 0 (/ valve-motion-length 2))) :time 1400 :wait? t))
         ;; release
         (hand-stop-grasp :real? real?)
         (send *robot* :angle-vector (car (subseq valve-motion-av-list (/ valve-motion-length 2))))
@@ -601,8 +601,8 @@
                )
               (t
                ;; reverse
-               (when real? (send-angle-vector-sequence-with-time (cdr (subseq valve-motion-av-list (/ valve-motion-length 2))) :time 700 :wait? t))
-               ;;(when real? (send-angle-vector-sequence-with-time (cdr (subseq valve-motion-av-list (/ valve-motion-length 2))) :time 1400 :wait? t))
+               ;;(when real? (send-angle-vector-sequence-with-time (cdr (subseq valve-motion-av-list (/ valve-motion-length 2))) :time 700 :wait? t))
+               (when real? (send-angle-vector-sequence-with-time (cdr (subseq valve-motion-av-list (/ valve-motion-length 2))) :time 1400 :wait? t))
                ))
         )))
   )
