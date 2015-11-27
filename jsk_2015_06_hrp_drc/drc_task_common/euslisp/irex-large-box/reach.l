@@ -639,7 +639,7 @@
   )
 
 (defun jaxon-box-okkake-push-demo (&key (push-distance 0.5))
-  (send *ri* :go-pos 0.6 0 0) ;; for Kakiuchi san demo
+  (send *ri* :go-pos 0.6 0 0) ;; ToDo: play on rviz
   (unix::sleep 1)
   (warn ";; 1 kai~%")
   (jaxon-wooden-box-okkake)
