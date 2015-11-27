@@ -1,0 +1,176 @@
+(defclass trass :super cascaded-link :slots (point-lists parts default-radius trass-size))
+(defmethod trass
+  (:init (&key (pos-pair-list (list (list #f(0 0 0) #f(100 0 0))))
+               (dradius 10) (size #f(100 0 0))
+               )
+         "pos-pair-list is (list (list #f #f) (list #f #f) ...), nodes connected by each member.you can set name as follows(optional). (list (list #f #f :main-rod) (list #f #f :rod-for-lhand) ...)"
+         (send-super :init);;init super-class
+         ;; (send self :generate-links)
+         ;; (send self :assoc (send self :generate-on))
+         (setq default-radius dradius)
+         (setq trass-size size)
+         (send self :generate-links pos-pair-list :radius dradius)
+         (setq l0 (instance bodyset-link :init (make-cascoords) :bodies parts))
+         (setq links (list l0))
+         (send self :assoc (elt links 0))
+         (send self :init-ending)
+         (send self :set-default-coords)
+         self
+         )
+  (:centroid-worldcoords ()
+    (let (x z)
+      (setq x (elt trass-size 0))
+      (setq z (elt trass-size 2))
+      (send (send (send self :worldcoords) :copy-worldcoords) :translate (float-vector (/ x 2) 0 (/ z 2)))
+      ))
+  (:centroid-newcoords (coords)
+    (let (x z)
+      (setq x (elt trass-size 0))
+      (setq z (elt trass-size 2))
+      (send self :newcoords coords)
+      (send self :translate (float-vector (/ x -2) 0 (/ z -2)))
+      ))
+  (:set-default-coords (&optional (coords nil))
+                       (cond (coords
+                              (send self :put :init-coords (send coords :copy-worldcoords)))
+                             (t (send self :put :init-coords (send (send self :worldcoords) :copy-worldcoords)))))
+  (:get-default-coords ()
+                       (send self :get :init-coords))
+  (:get-default-pos ()
+                    (send (send self :get :init-coords) :worldpos))
+  (:init-coords ()
+                (send self :newcoords (send (send self :get-default-coords) :copy-worldcoords)))
+  (:generate-links (pos-pair-list &key(radius 10))
+                   "make all links from point-lists"
+                   (setq parts nil)
+                   (setq point-lists nil)
+                   (mapcar #'(lambda (x) (send self :generate-one-link x :radius radius))
+                           pos-pair-list)
+                   (send self :assoc-parts)
+                   )
+  (:add-part (pos-pair &key(radius default-radius))
+             (send self :generate-one-link pos-pair :radius radius)
+             (send self :assoc-parts)
+             (send self :init-ending)
+             )
+  (:generate-one-link (pos-pair &key(radius 10) (name nil))
+                      (let* (pos1 pos2 v1 unit1 unit2 axs omega coords)
+                        (setq pos1 (elt pos-pair 0))
+                        (setq pos2 (elt pos-pair 1))
+                        (if (> (length pos-pair) 2)
+                          (setq name (elt pos-pair 2))
+                          (setq name (format nil "PART_~A" (length parts)))
+                          )
+                        (setq v1 (v- pos2 pos1))
+                        (setq unit1 (scale (/ 1 (norm v1)) v1))
+                        (setq unit2 #f(0 0 1))
+                        (setq axs (v* unit2 unit1))
+                        (setq omega (asin (norm axs)))
+                        (if (not (equal (norm axs) 0.0))
+                            (setq coords (make-coords :angle omega :axis axs))
+                          (setq coords (make-coords)))
+                        (send coords :translate pos1 :world)
+                        ;; (format t "omega is ~A~%" omega)
+                        ;; (print axs)
+                        (setq tr (make-cylinder radius (norm v1) :name name))
+                        (send tr :set-color #f(1 0 0))
+                        (send tr :newcoords coords)
+                        (if (eq parts nil)
+                            (send self :assoc tr)
+                          (send (elt parts 0) :assoc tr))
+                        (setq parts (reverse (cons tr (reverse parts))))
+                        ))
+  (:assoc-parts ()
+                (mapcar #'(lambda (x y) (send x :assoc y)
+                            (format t "send ~A :assoc ~A~%" (send x :name) (send y :name)))
+                            (butlast (cons self parts)) parts))
+  (:part (name)
+         (find name parts :test #'equal :key #'(lambda (x) (send x :name))))
+  (:parts ()
+          parts)
+  (:grasp-coords (limb)
+         (let (grasp-part len center-distance target-coords)
+           (setq grasp-part (send self :part limb));; ロッドの取得
+           (setq len (elt (car (send grasp-part :csg)) 2)) ;;ロッドの長さを得る
+           (setq center-distance (* 0.5 len));;ロッドの重心の橋からの距離を得る
+           (setq target-coords (send (send (send grasp-part :worldcoords) :copy-worldcoords) 
+                                          :translate (float-vector 0 0 center-distance)));;ロッドの始点にある座標を平行移動している
+           
+           ;;以下では、作成した座標のx軸が鉛直下向きになるようにしている
+           (setq target-dir #f(0 0 -1))
+           (setq current-dir (send target-coords :rotate-vector #f(1 0 0)))
+           (setq angle-sign (progn (setq target-dir-local 
+                                         (send target-coords :inverse-transform-vector target-dir))
+                                   (if (< (elt target-dir-local 1) 0)
+                                       -1 +1)))
+           (setq angle (acos (v. target-dir current-dir)))
+           (setq angle (* angle angle-sign))
+           (send target-coords :rotate angle :z)
+           (send target-coords :draw-on :flush t)
+           target-coords
+           ))
+  (:larm ()
+         (send self :grasp-coords :larm))
+  (:rarm ()
+         (send self :grasp-coords :rarm))
+  (:translate (vector &optional (wlt :local))
+              (send self :newcoords (send (send (send self :worldcoords) :copy-worldcoords)
+                                          :translate vector wlt)))
+  (:on-ground ()
+              "move the block righ down, set z component ZERO."
+              (let (coords pos)
+                (setq coords (send (send self :worldcoords) :copy-worldcoords))
+                (setq pos (send coords :worldpos))
+                (setf (elt pos 2) 0)
+                (send self :locate pos :world)
+                ))
+  (:size ()
+    trass-size)
+  )
+
+(defun make-trass ()
+  (setq dx 265
+        dy 1750
+        dz 265
+        dy2 (/ dy 2))
+  (setq *trass* (instance trass 
+                          :init 
+                          :size (float-vector dx dy dz)
+                          :pos-pair-list
+                          (list (list (float-vector 0 0 0) (float-vector 0 dy2 0));;floor
+                                (list (float-vector 0 0 0) (float-vector 0 (- dy2) 0))
+                                (list (float-vector dx 0 0) (float-vector dx dy2 0))
+                                (list (float-vector dx 0 0) (float-vector dx (- dy2) 0))
+                                (list (float-vector 0 dy2 0) (float-vector dx dy2 0))
+                                (list (float-vector 0 (- dy2) 0) (float-vector dx (- dy2) 0))
+                                
+                                (list (float-vector 0 0 dz) (float-vector 0 dy2 dz));;ceil
+                                (list (float-vector 0 0 dz) (float-vector 0 (- dy2) dz))
+                                (list (float-vector dx 0 dz) (float-vector dx dy2 dz))
+                                (list (float-vector dx 0 dz) (float-vector dx (- dy2) dz))
+                                (list (float-vector 0 dy2 dz) (float-vector dx dy2 dz))
+                                (list (float-vector 0 (- dy2) dz) (float-vector dx (- dy2) dz))
+                                
+                                (list (float-vector 0 (+ dy2 -475) dz) (float-vector dx (+ dy2 -720) dz) :larm)
+                                (list (float-vector 0 (+ dy2 -475 -600) dz) (float-vector dx (+ dy2 -720 -600) dz) :rarm)
+                                
+                                (list (float-vector 0 (+ dy2 -420) dz) (float-vector dx (+ dy2 -70) dz))
+                                (list (float-vector 0 (+ dy2 -1030) dz) (float-vector dx (+ dy2 -780) dz))
+                                )))
+  (objects (list *trass*))
+  *trass*
+  ))
+
+
+(defun make-rod ()
+  (setq *trass* (instance trass 
+                          :init 
+                          :size (float-vector 10 1000 10)
+                          :pos-pair-list
+                          (list (list (float-vector 0 0 0) (float-vector 0 500 0))
+                                (list (float-vector 0 0 0) (float-vector 0 -500 0))
+                                (list (float-vector dx 0 0) (float-vector dx dy2 0))
+                                )))
+  (objects (list *trass*))
+  *trass*
+  )
