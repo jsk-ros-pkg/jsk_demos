@@ -1,3 +1,12 @@
+;; set-box-x-pos = 850[mm]
+;; x-calib-offset = -162.981[mm]
+;; y-calib-offset = -94.6289[mm]
+;; yaw-calib-offset = -0.037462[rad]
+;; *calib-offset-coords* = #<coordinates #X3749ec80  -162.981 -94.629 0.0 / -0.037 0.0 0.0>
+
+;; (dump-structure *standard-output* (make-coords :pos #f(-162.981 -94.629 0.0) :rpy '(-0.037 0.0 0.0)))
+(setq *calib-offset-coords* #s(coordinates plist nil rot #2f((0.999316 0.036992 0.0) (-0.036992 0.999316 0.0) (0.0 0.0 1.0)) pos #f(-162.981 -94.629 0.0)))
+
 (load "package://drc_task_common/euslisp/robot-util.l")
 (load "package://drc_task_common/euslisp/irex-large-box/wooden-box-model.l")
 (load "package://drc_task_common/euslisp/irex-large-box/sift-box.l") ;; also generate *wooden-box*
@@ -135,7 +144,8 @@
                                          (mid2-reach-pos-r (float-vector 10 -50 -55)) (mid2-reach-pos-l (float-vector 10 50 -55))
                                          (grasp-reach-pos-r (float-vector 0 15 -55)) (grasp-reach-pos-l (float-vector 0 -15 -55))
                                          (hand-rotation 45) (box-pos (float-vector 850 0 0))
-                                         (dt-list '(8000 5000 5000)) (rlpo 25) (hlpo 15) (clpo 10) (arms-force-offset-mode t) (back-mode t)
+                                         (dt-list '(4000 4000 4000)) (rlpo 25) (hlpo 15) (clpo 10) (arms-force-offset-mode t) (back-mode t)
+;;                                         (dt-list '(8000 5000 5000)) (rlpo 25) (hlpo 15) (clpo 10) (arms-force-offset-mode t) (back-mode t)
                                          (joint-angle-margin 20) (demo-mode t))
   (send *wooden-box* :newcoords (make-coords :pos box-pos))
   (let* (avs)
@@ -338,7 +348,8 @@
                                                    (mid2-reach-pos-r (float-vector 10 -50 -55)) (mid2-reach-pos-l (float-vector 10 50 -55))
                                                    (grasp-reach-pos-r (float-vector 0 15 -55)) (grasp-reach-pos-l (float-vector 0 -15 -55))
                                                    (hand-rotation 45) (box-pos (float-vector 850 0 0))
-                                                   (dt-list '(8000 5000 5000)) (rlpo 25) (hlpo 15)
+                                                   (dt-list '(4000 4000 4000)) (rlpo 25) (hlpo 15)
+;;                                                   (dt-list '(8000 5000 5000)) (rlpo 25) (hlpo 15)
                                                    (demo-mode t))
   (send *wooden-box* :newcoords (make-coords :pos box-pos))
   (let* (avs)
@@ -519,8 +530,9 @@
       (send *ri* :set-auto-balancer-param :is-hand-fix-mode t))
   ;; Set parameters
   (warn ";; (send *ri* :set-object-turnaround-detector-param :wrench-cutoff-freq 5.0 :dwrench-cutoff-freq 5.0) ?~%")
-  (if (y-or-n-p)
-      (send *ri* :set-object-turnaround-detector-param :wrench-cutoff-freq 5.0 :dwrench-cutoff-freq 5.0))
+  ;; (if (y-or-n-p)
+      (send *ri* :set-object-turnaround-detector-param :wrench-cutoff-freq 5.0 :dwrench-cutoff-freq 5.0)
+    ;; )
   ;; Setq ref-force to move
   (warn ";; (setq *box-push-ref-force* (send *ri* :set-object-turnaround-ref-force :max-ref-force 50 :max-time 4000 :axis (float-vector -1 0 0) :set-ref-force-p nil)) ?~%")
   (if (y-or-n-p)
@@ -569,7 +581,7 @@
     ))
 
 (defun apply-box-pose (&key (calib-offset nil))
-  (let* ((coords (get-primitive-marker-pose :name "apc_box" :frame-id "ground"))
+  (let* ((coords (get-primitive-marker-pose :name "wooden_box" :frame-id "ground"))
          (box-coords (project-coords-to-ground coords))
          )
     (if calib-offset
@@ -594,6 +606,7 @@
     (do-until-key
      (warn "Loop: ~a~%" i)
      (update-box-pose-by-sift :calib-offset calib-offset)
+     (print (send *wooden-box* :worldcoords))
      (unix::usleep 10000) ;; 0.01sec
      (incf i)
      )
@@ -626,15 +639,17 @@
   )
 
 (defun jaxon-box-okkake-push-demo (&key (push-distance 0.5))
+  (send *ri* :go-pos 0.6 0 0) ;; for Kakiuchi san demo
+  (unix::sleep 1)
   (warn ";; 1 kai~%")
   (jaxon-wooden-box-okkake)
-  (unix::sleep 2)
+  (unix::sleep 1)
   (warn ";; 2 kai~%")
   (jaxon-wooden-box-okkake)
-  (unix::sleep 2)
+  (unix::sleep 1)
   (warn ";; 3 kai~%")
   (jaxon-wooden-box-okkake)
-  (unix::sleep 2)
+  (unix::sleep 1)
   (warn ";; (jaxon-push-main-all :push-distance ~a)~%" push-distance)
   (jaxon-push-main-all :push-distance push-distance)
   )

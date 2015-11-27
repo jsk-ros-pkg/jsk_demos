@@ -127,7 +127,7 @@
     ))
 
 (defun apply-box-pose (&key (calib-offset nil))
-  (let* ((coords (get-primitive-marker-pose :name "apc_box" :frame-id "ground"))
+  (let* ((coords (get-primitive-marker-pose :name "wooden_box" :frame-id "ground"))
          (box-coords (project-coords-to-ground coords))
          )
     (if calib-offset

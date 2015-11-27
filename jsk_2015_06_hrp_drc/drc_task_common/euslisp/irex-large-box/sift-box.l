@@ -46,13 +46,13 @@
           ;; modify label position offset for box model
           (send crds :transform *box-label-offset*)
           (insert-primitive-marker
-           :name "apc_box"
+           :name "wooden_box"
            )
           (set-primitive-marker-dimensions
-           :x 450.0 :y 545.0 :z 975.0 :name "apc_box"
+           :x 598.0 :y 480.0 :z 710.0 :name "wooden_box"
            )
           (set-primitive-marker-pose
-           crds "ground" :name "apc_box"
+           crds "ground" :name "wooden_box"
            )
           )
 (progn
