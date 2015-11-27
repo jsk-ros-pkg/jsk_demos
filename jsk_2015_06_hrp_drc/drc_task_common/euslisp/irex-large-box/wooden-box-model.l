@@ -2,7 +2,7 @@
 
 (defmethod wooden-box
   (:init (&key (x-size 598.0) (y-size 480.0) (z-size 710.0)
-               (x-label 70.0) (y-label 98.0) (z-label 5.0) (front-to-label 125.0))
+               (x-label 70.0) (y-label 98.0) (z-label 5.0) (front-to-label 188.0))
     (send-super :init)
     (let* (box0 link0)
       ;; make one box named box0 and marker named sift-label
