@@ -47,12 +47,10 @@
                           (send *msg* :header :frame_id) (ros::time 0))))
       (if trans (setq coords (send trans :transform (ros::tf-pose->coords (send *msg* :pose)))))
       (send coords :transform offset))
-    (insert-primitive-marker
-     :name name
-     )
-    (set-primitive-marker-dimensions
-     :x x :y y :z z :name name
-     )
+    (insert-primitive-marker :shape-type jsk_rviz_plugins::TransformableMarkerOperate::*MESH_RESOURCE* :name name :description "" :resource "package://drc_task_common/euslisp/irex_carry_trass/trass.dae" :use-material t)
+    ;; (set-primitive-marker-dimensions
+    ;;  :x x :y y :z z :name name
+    ;;  )
     (set-primitive-marker-pose
      coords "ground" :name name
      )

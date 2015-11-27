@@ -55,6 +55,7 @@
                          (relative? nil)
                          (hip-contact-coords nil)
                          (init-av nil)
+                         (translate #f())
                          )
   (let ();;(move-target move-target-arms target-coords link-list fmc init-trass-coords ret additional-weight-list translation-axis rotation-axis)
     (setq fmc (send (send *robot* :foot-midcoords) :copy-worldcoords))
@@ -416,7 +417,8 @@
   ;;(setq coords-to-fmc (get-primitive-marker-pose :name name :frame-id "ground" :wait-duration 1.0))
   ;;(send (send (send *robot* :foot-midcoords) :copy-worldcoords) :transform coords-to-fmc)
   ;;)
-  (get-primitive-marker-pose :name name :frame-id "ground" :wait-duration 1.0))
+  ;;(get-primitive-marker-pose :name name :frame-id "ground" :wait-duration 1.0))
+  (get-primitive-marker-pose :name name :frame-id "ground"))
 
 (defun adjust-robot-by-primitive-marker (&key (name "trass"))
   (adjust-robot-by-trass-coords (primitive-marker-coords))
