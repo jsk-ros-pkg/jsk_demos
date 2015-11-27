@@ -58,9 +58,16 @@
                         (setq pos1 (elt pos-pair 0))
                         (setq pos2 (elt pos-pair 1))
                         (if (> (length pos-pair) 2)
-                          (setq name (elt pos-pair 2))
-                          (setq name (format nil "PART_~A" (length parts)))
-                          )
+                          (cond
+                           ((numberp (elt pos-pair 2))
+                            (setq radius (elt pos-pair 2))
+                            (if (> (length pos-pair) 3)
+                                (setq name (elt pos-pair 3)))
+                            )
+                           (t
+                            (setq name (elt pos-pair 2)))))
+                        (unless name
+                          (setq name (format nil "PART_~A" (length parts))))
                         (setq v1 (v- pos2 pos1))
                         (setq unit1 (scale (/ 1 (norm v1)) v1))
                         (setq unit2 #f(0 0 1))
@@ -72,7 +79,7 @@
                         (send coords :translate pos1 :world)
                         ;; (format t "omega is ~A~%" omega)
                         ;; (print axs)
-                        (setq tr (make-cylinder radius (norm v1) :name name))
+                        (setq tr (make-cylinder radius (norm v1) :segments 6 :name name))
                         (send tr :set-color #f(1 0 0))
                         (send tr :newcoords coords)
                         (if (eq parts nil)
@@ -133,30 +140,71 @@
         dy 1750
         dz 265
         dy2 (/ dy 2))
-  (setq *trass* (instance trass 
-                          :init 
+  (setq *trass* (instance trass
+                          :init
                           :size (float-vector dx dy dz)
                           :pos-pair-list
-                          (list (list (float-vector 0 0 0) (float-vector 0 dy2 0));;floor
-                                (list (float-vector 0 0 0) (float-vector 0 (- dy2) 0))
-                                (list (float-vector dx 0 0) (float-vector dx dy2 0))
-                                (list (float-vector dx 0 0) (float-vector dx (- dy2) 0))
-                                (list (float-vector 0 dy2 0) (float-vector dx dy2 0))
-                                (list (float-vector 0 (- dy2) 0) (float-vector dx (- dy2) 0))
-                                
-                                (list (float-vector 0 0 dz) (float-vector 0 dy2 dz));;ceil
-                                (list (float-vector 0 0 dz) (float-vector 0 (- dy2) dz))
-                                (list (float-vector dx 0 dz) (float-vector dx dy2 dz))
-                                (list (float-vector dx 0 dz) (float-vector dx (- dy2) dz))
-                                (list (float-vector 0 dy2 dz) (float-vector dx dy2 dz))
-                                (list (float-vector 0 (- dy2) dz) (float-vector dx (- dy2) dz))
-                                
-                                (list (float-vector 0 (+ dy2 -475) dz) (float-vector dx (+ dy2 -720) dz) :larm)
-                                (list (float-vector 0 (+ dy2 -475 -600) dz) (float-vector dx (+ dy2 -720 -600) dz) :rarm)
-                                
-                                (list (float-vector 0 (+ dy2 -420) dz) (float-vector dx (+ dy2 -70) dz))
-                                (list (float-vector 0 (+ dy2 -1030) dz) (float-vector dx (+ dy2 -780) dz))
-                                )))
+                          (list 
+                           ;;floor
+                           (list (float-vector 0 dy2 0) (float-vector 0 (- dy2) 0) 16)
+                           (list (float-vector dx dy2 0) (float-vector dx (- dy2) 0) 16)
+                           (list (float-vector 0 dy2 0) (float-vector dx dy2 0) 16)
+                           (list (float-vector 0 (- dy2) 0) (float-vector dx (- dy2) 0) 16)
+                           ;;ceil
+                           (list (float-vector 0 dy2 dz) (float-vector 0 (- dy2) dz) 16)
+                           (list (float-vector dx dy2 dz) (float-vector dx (- dy2) dz) 16)
+                           (list (float-vector 0 dy2 dz) (float-vector dx dy2 dz) 16)
+                           (list (float-vector 0 (- dy2) dz) (float-vector dx (- dy2) dz) 16)
+                           ;; corner post
+                           (list (float-vector 0 dy2 0) (float-vector 0 dy2 dz) 16)
+                           (list (float-vector dx dy2 0) (float-vector dx dy2 dz) 16)
+                           (list (float-vector 0 (- dy2) 0) (float-vector 0 (- dy2) dz) 16)
+                           (list (float-vector dx (- dy2) 0) (float-vector dx (- dy2) dz) 16)
+                           ;; top
+                           (list (float-vector  0 -722.5 dz)
+                                 (float-vector dx -477.5 dz) 11)
+                           (list (float-vector  0 -177.5 dz)
+                                 (float-vector dx -422.5 dz) 11 :rarm)
+                           (list (float-vector  0 -122.5 dz)
+                                 (float-vector dx  122.5 dz) 11)
+                           (list (float-vector  0  422.5 dz)
+                                 (float-vector dx  177.5 dz) 11 :larm)
+                           (list (float-vector  0  477.5 dz)
+                                 (float-vector dx  722.5 dz) 11)
+                           ;; far
+                           (list (float-vector dx -477.5 0)
+                                 (float-vector dx -722.5 dz) 11)
+                           (list (float-vector dx -422.5 0)
+                                 (float-vector dx -177.5 dz) 11)
+                           (list (float-vector dx  122.5 0)
+                                 (float-vector dx -122.5 dz) 11)
+                           (list (float-vector dx  177.5 0)
+                                 (float-vector dx  422.5 dz) 11)
+                           (list (float-vector dx  722.5 0)
+                                 (float-vector dx  477.5 dz) 11)
+                           ;; bottom
+                           (list (float-vector dx -722.5 0)
+                                 (float-vector  0 -477.5 0) 11)
+                           (list (float-vector dx -177.5 0)
+                                 (float-vector  0 -422.5 0) 11)
+                           (list (float-vector dx -122.5 0)
+                                 (float-vector  0  122.5 0) 11)
+                           (list (float-vector dx  422.5 0)
+                                 (float-vector  0  177.5 0) 11)
+                           (list (float-vector dx  477.5 0)
+                                 (float-vector  0  722.5 0) 11)
+                           ;; near
+                           (list (float-vector  0 -722.5 0)
+                                 (float-vector  0 -477.5 dz) 11)
+                           (list (float-vector  0 -177.5 0)
+                                 (float-vector  0 -422.5 dz) 11)
+                           (list (float-vector  0 -122.5 0)
+                                 (float-vector  0  122.5 dz) 11)
+                           (list (float-vector  0  422.5 0)
+                                 (float-vector  0  177.5 dz) 11)
+                           (list (float-vector  0  477.5 0)
+                                 (float-vector  0  722.5 dz) 11)
+                           )))
   (objects (list *trass*))
   *trass*
   ))
