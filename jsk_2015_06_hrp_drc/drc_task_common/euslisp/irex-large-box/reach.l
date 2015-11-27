@@ -140,6 +140,7 @@
   (send *wooden-box* :newcoords (make-coords :pos box-pos))
   (let* (avs)
     (send *robot* :reset-manip-pose)
+    (send *robot* :head :neck-p :joint-angle (send *robot* :head :neck-p :max-angle))
     (push (send *robot* :angle-vector) avs)
     ;; move to pose-1
     (walking-pose *robot* :root-link-pitch-offset rlpo :head-link-pitch-offset hlpo :chest-link-pitch-offset clpo)
@@ -338,6 +339,7 @@
   (send *wooden-box* :newcoords (make-coords :pos box-pos))
   (let* (avs)
     (send *robot* :reset-manip-pose)
+    (send *robot* :head :neck-p :joint-angle (send *robot* :head :neck-p :max-angle))
     (push (send *robot* :angle-vector) avs)
     ;; move to pose-1
     (walking-pose *robot* :root-link-pitch-offset rlpo :head-link-pitch-offset hlpo)
