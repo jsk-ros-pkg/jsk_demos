@@ -11,6 +11,7 @@ find_package(catkin REQUIRED COMPONENTS
   jsk_perception
   pddl_planner
   pr2eus
+  pr2_gripper_sensor_msgs
   roseus
   roseus_smach
   message_generation

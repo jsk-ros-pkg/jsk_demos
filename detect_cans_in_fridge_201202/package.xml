@@ -1,6 +1,6 @@
 <package>
   <name>detect_cans_in_fridge_201202</name>
-  <version>0.0.1</version>
+  <version>0.0.2</version>
   <description>detect_cans_in_fridge_201202</description>
   <maintainer email="yohei@jsk.t.imi.i.u-tokyo.ac.jp">Youhei Kakiuchi</maintainer>
 

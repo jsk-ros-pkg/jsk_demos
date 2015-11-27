@@ -2,6 +2,9 @@
 Changelog for package drc_valve_task
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.0.2 (2015-11-26)
+------------------
+
 0.0.1 (2015-06-11)
 ------------------
 * [drc_task_common, drc_com_common, drc_valve_task] Remove catkin.cmake

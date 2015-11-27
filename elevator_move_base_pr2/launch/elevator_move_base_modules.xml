@@ -12,7 +12,7 @@
   <!-- check if button is lit or not -->
   <node name="light_detector" pkg="elevator_move_base_pr2"
 	type="color_point_detector" machine="c2">
-    <remap from="image" to="/wide_stereo/left/image_color"/>
+    <remap from="image" to="/wide_stereo/left/image_rect_color"/>
     <param name="red" value="253"/>
     <param name="green" value="251"/>
     <param name="blue" value="183"/>

@@ -1,0 +1,51 @@
+<launch>
+  <arg name="main" default="false" />
+  <arg name="dry" default="false" />
+  <param name="dryrun" value="true" if="$(arg dry)"/>
+  <param name="dryrun" value="false" unless="$(arg dry)"/>
+
+  <node pkg="roseus" type="roseus" name="fridge_demo_main" output="screen" if="$(arg main)"
+        args="$(find detect_cans_in_fridge_201202)/euslisp/async-join-based-parallel-smach-main.l" />
+
+  <node pkg="roseus" type="roseus" name="goto_front_of_fridge" output="screen"
+        args="$(find detect_cans_in_fridge_201202)/euslisp/base-go-to-fridge-init-pose.l"  />
+
+  <node pkg="roseus" type="roseus" name="base_go_to_fridge" output="screen"
+        args="$(find detect_cans_in_fridge_201202)/euslisp/base-go-to-fridge.l"  />
+
+  <node pkg="roseus" type="roseus" name="open_fridge_door_initial_pose" output="screen"
+        args="$(find detect_cans_in_fridge_201202)/euslisp/open-fridge-door-initial-pose.l"  />
+
+  <node pkg="roseus" type="roseus" name="look_at_fridge" output="screen"
+        args="$(find detect_cans_in_fridge_201202)/euslisp/look-at-fridge.l"  />
+
+  <node pkg="roseus" type="roseus" name="move_to_and_open_fridge_door" output="screen"
+        args="$(find detect_cans_in_fridge_201202)/euslisp/move-to-and-open-fridge-door.l"  />
+
+  <node pkg="roseus" type="roseus" name="move_forward_larm" output="screen"
+        args="$(find detect_cans_in_fridge_201202)/euslisp/move-forward-larm.l"  />
+
+  <node pkg="roseus" type="roseus" name="detach_fridge_handle" output="screen"
+        args="$(find detect_cans_in_fridge_201202)/euslisp/detach-fridge-handle.l"  />
+
+  <node pkg="roseus" type="roseus" name="swipe_fridge_door" output="screen"
+        args="$(find detect_cans_in_fridge_201202)/euslisp/swipe-fridge-door.l"  />
+
+  <node pkg="roseus" type="roseus" name="grasp_can_posing" output="screen"
+        args="$(find detect_cans_in_fridge_201202)/euslisp/grasp-can-posing.l"  />
+
+  <node pkg="roseus" type="roseus" name="move_to_can_spot" output="screen"
+        args="$(find detect_cans_in_fridge_201202)/euslisp/move-to-can-spot.l"  />
+
+  <node pkg="roseus" type="roseus" name="grasp_can_init" output="screen"
+        args="$(find detect_cans_in_fridge_201202)/euslisp/grasp-can-init.l"  />
+
+  <node pkg="roseus" type="roseus" name="grasp_can_motion" output="screen"
+        args="$(find detect_cans_in_fridge_201202)/euslisp/grasp-can-motion.l"  />
+
+  <node pkg="roseus" type="roseus" name="go_back_from_fridge" output="screen"
+        args="$(find detect_cans_in_fridge_201202)/euslisp/go-back-from-fridge.l"  />
+
+  <node pkg="roseus" type="roseus" name="close_fridge" output="screen"
+        args="$(find detect_cans_in_fridge_201202)/euslisp/close-fridge.l"  />
+</launch>

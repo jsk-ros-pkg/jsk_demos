@@ -2,6 +2,11 @@
 Changelog for package jsk_semantic_maps
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.0.2 (2015-11-26)
+------------------
+* Ignore auto generated files
+* Contributors: Kentaro Wada
+
 0.0.1 (2015-06-11)
 ------------------
 * [jsk_demos] remove rosmake files
