@@ -694,6 +694,14 @@
           (setq *last-fridge-handle* cds)
           ;; pr2 local coords transform to worldcoords
           (send cds :transform (send *pr2* :worldcoords) :world)
+          ;; keep head, torso and gripper, but start from reset-pose
+          (let ((prev-av (send *pr2* :angle-vector))
+                (hand-av))
+            (send *pr2* :reset-pose)
+            (setq hand-av (send *pr2* :rarm :angle-vector))
+            (send *pr2* :angle-vector prev-av)
+            (send *pr2* :rarm :angle-vector hand-av))
+          ;;
           (case door-type
             (:circle
              (setq ret (funcall open-fridge-func
