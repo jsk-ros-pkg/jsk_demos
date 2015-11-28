@@ -1,7 +1,6 @@
 (load "package://drc_task_common/euslisp/robot-util.l")
 (load "primitive-marker-for-trass.l")
-;;(load "package://drc_task_common/euslisp/test-drc-door-task.l")
-;;(load "package://drc_task_common/models/concrete-block.l")
+
 (load "trass.l")
 (load "motion-sequence-server.l"))
 
@@ -35,7 +34,9 @@
         (progn 
           (load "package://hrpsys_ros_bridge_jvrc/euslisp/jaxon_jvrc-interface.l")
           (jaxon_jvrc-init)
-          (setq *robot* *jaxon_jvrc*))
+          (setq *robot* *jaxon_jvrc*)
+          (setq *robot-name* "JAXON_RSD")
+          )
       (generate-robot robot-name :generate-ri? real?))
     (send *robot* :reset-manip-pose)
     (send *robot* :fix-leg-to-coords (make-coords))
@@ -59,13 +60,12 @@
                          (trass-pos #f(0 0 0))
                          (relative? nil)
                          (hip-contact-coords nil)
-                         
                          (init-av nil)
                          (r-translate #f(0 0 0))
                          (l-translate #f(0 0 0))
-                         (crotch-p -80)
+                         (crotch-p -60)
                          )
-  (let ();;(move-target move-target-arms target-coords link-list fmc init-trass-coords ret additional-weight-list translation-axis rotation-axis)
+  (let (move-target move-target-arms target-coords link-list fmc init-trass-coords ret additional-weight-list translation-axis rotation-axis)
     (setq fmc (send (send *robot* :foot-midcoords) :copy-worldcoords))
     (unless init-av
       (progn 
@@ -148,7 +148,7 @@
                   :rotation-axis rotation-axis
                   :target-centroid-pos (send (send *robot* :foot-midcoords) :worldpos)
                   :additional-weight-list additional-weight-list
-                  :debug-view :no-message
+                  :debug-view nil;;:no-message
                   :stop 100
                   ;; :thre thre
                   ;; :rthre rthre
@@ -158,11 +158,19 @@
     (mapcar #'(lambda (x) (send x :draw-on :flush t)) move-target-arms)
     ))
 (defun set-ref-force ()
-  (send *ri* :set-object-turnaround-ref-force :max-ref-force (* 9.8 7.0)))
+  (send *ri* :set-ref-force (float-vector 0 0 -10) 2000 :arms)
+  (send *ri* :wait-interpolation-seq)
+  ;; (let ((flag t))
+  ;;   (while flag
+      (send *ri* :set-object-turnaround-ref-force :max-ref-force (* 9.8 7.0))
+      ;; (if (y-or-n-p ";; set ref force OK? (Y=>set ref force. N=>try estimate force again.)~%")
+      ;;     (setq flag nil))))
+      )
 
 (defun walking-pose ()
   (send *robot* :reset-manip-pose-fix)
-  (reach-trass :trass-pos #f(300 0 550) :relative? t :crotch-p -20)
+  ;; (reach-trass :trass-pos #f(300 0 550) :relative? t :crotch-p -20)
+  (reach-trass :trass-pos #f(300 0 550) :relative? t :crotch-p -40)
   )
 (defun look-trass ()
   (send *robot* :reset-manip-pose-fix)
@@ -184,36 +192,43 @@
     ;; (send *ri* :start-default-unstable-controllers :abc-limbs '(:rleg :lleg :rarm :larm))
     ))
 (defun demo ()
-      (print "please adjust. Do you have done?")
-      (unless (equal (read-line) "y") (return-from demo nil))
+  (send *ri* :set-ref-force #f(0 0 0) 3000 :arms)
+  (erase-all-primitive-marker)
+  (set-pose-trass)
+  ;;primitive marker
+  ;;(set-primitive-marker-color :r 1 :a 0.8)
+  
+  (print "look trass.ok?")
+  (when (equal (read-line) "y")
+    (look-trass)
+    (model2real)
+    (print "please adjust. Do you have done?")
+    (when (equal (read-line) "y")
       (adjust-robot-by-primitive-marker)
-
-      (print "let's walk! OK? (y/n)")
-      (unless (equal (read-line) "y") (return-from demo nil))
+      ;;walk
       (walk-to-target :real? t :k 0.9)
-
-      (print "look trass.ok?")
-      (unless (equal (read-line) "y") (return-from demo nil))
-      (look-trass)
-      (model2real)
-      
-      (print "please adjust. Do you have done?")
-      (unless (equal (read-line) "y") (return-from demo nil))
-      (adjust-robot-by-primitive-marker)
-      
-      (print "let's walk again! OK? (y/n)")
-      (unless (equal (read-line) "y") (return-from demo nil))
-      (walk-to-target :real? t)
-      
-      (print "please adjust. Do you have done?")
-      (unless (equal (read-line) "y") (return-from demo nil))
-      (adjust-robot-by-primitive-marker)
-      
-      (plan-motion)
-      
-      (execute-motion)
-      
-      )
+      ))
+  
+  ;; (print "look trass.ok?")
+  ;; (unless (equal (read-line) "y") (return-from demo nil))
+  ;; (look-trass)
+  ;; (model2real)
+  
+  (print "please adjust. Do you have done?")
+  (when (equal (read-line) "y")
+    (adjust-robot-by-primitive-marker)
+    
+    (print "let's walk again! OK? (y/n)")
+    (when (equal (read-line) "y")
+      (walk-to-target :real? t)))
+  
+  (print "please adjust. Do you have done?")
+  (when (equal (read-line) "y")
+    (adjust-robot-by-primitive-marker)
+    
+    (execute-motion)
+    
+    ))
 
 
 (defun plan-motion (&optional (check? t))
@@ -223,53 +238,34 @@
   ;; (send *rsl* :save-rs :name :init :command 
   ;;       #'(lambda()
   ;;           (send *ri* :start-default-unstable-controllers :abc-limbs '(:rleg :lleg :rarm :larm))))
+
   ;;reset-manip-pose
-  (send *rsl* :save-rs :name :force-offset :command #'(lambda() (send *ri* :reset-force-moment-offset-arms)))
-  (send *robot* :reset-manip-pose-fix)
-  (send *rsl* :save-rs :name :reset-manip-pose)
-  ;;open-hand
-  (send *rsl* :save-rs :name :open-hand :command #'(lambda() (set-hand :state :open :real? t)))
+  (send *rsl* :save-rs :name :force-offset :command #'(lambda() (progn (send *ri* :reset-force-moment-offset-arms))))
+  ;; (send *robot* :reset-manip-pose-fix)
+  ;; (send *rsl* :save-rs :name :reset-manip-pose)
+
+  ;; ;;open-hand
+  ;; (send *rsl* :save-rs :name :open-hand :command #'(lambda() (set-hand :state :open :real? t)))
  
   ;;pre-reach
-  (reach-trass :trass-pos #f(300 0 150) :relative? t
-               ;; :hip-contact-coords (send (send (send (send *robot* :foot-midcoords) :copy-worldcoords):translate #f(-500 0 800)) :rotate 1 :y) 
-               )
-  ;; (send *robot* :larm :move-end-pos #f(-20 30 0) :world)
-  ;; (send *robot* :larm :move-end-pos #f(0 -10 0))  
-  ;; (send *robot* :rarm :move-end-pos #f(-20 30 0) :world)
+  (reach-trass :trass-pos #f(0 0 150))
   (send *rsl* :save-rs :name :pre-reach :time 10000)
   (send *rsl* :save-rs :name :preshape :command #'(lambda()
                                                     (send *ri* :move-gripper :rarm 0.1)
                                                     (send *ri* :move-gripper :larm 0.1)))
   ;;reach-trass
-  (reach-trass :trass-pos #f(300 0 0) :relative? t
-               ;; :hip-contact-coords (send (send (send (send *robot* :foot-midcoords) :copy-worldcoords):translate #f(-550 0 750)) :rotate 1.2 :y) 
-               ;; :init-av (send *robot* :reaching-trass-pose)
-               )
-
-  ;; (send *robot* :larm :move-end-pos #f(-20 30 0) :world)
-  ;; (send *robot* :larm :move-end-pos #f(0 -10 0))  
-  ;; (send *robot* :rarm :move-end-pos #f(-20 30 0) :world)
- 
-  
+  (reach-trass :trass-pos #f(0 0 0))
   (send *rsl* :save-rs :name :reach)
-  
 
   ;;close-hand
   (send *rsl* :save-rs :name :close-hand :command #'(lambda() (set-hand :state :close :real? t)))
   
   ;;set-ref-force
-  (send *rsl* :save-rs :name :set-ref-force :command #'(lambda () (send *ri* :set-object-turnaround-ref-force :max-ref-force (* 9.8 7.0))))
+  (send *rsl* :save-rs :name :set-ref-force :command #'set-ref-force)
   
   ;;lift
-  (reach-trass :trass-pos #f(300 0 150) :relative? t
-               ;; :hip-contact-coords (send (send (send (send *robot* :foot-midcoords) :copy-worldcoords):translate #f(-500 0 800)) :rotate 1 :y) 
-               )
-  ;;(reach-trass :hand-pos-to-trass #f(0 0 200))
-  ;; (send *robot* :larm :move-end-pos #f(-20 30 0) :world)
-  ;; (send *robot* :larm :move-end-pos #f(0 -10 0))  
-  ;; (send *robot* :rarm :move-end-pos #f(-20 30 0) :world)
-  (send *rsl* :save-rs :name :lift)
+  (reach-trass :trass-pos #f(300 0 150) :relative? t)
+  (send *rsl* :save-rs :name :lift :yes nil)
   
   ;;walking-pose
   (walking-pose)
@@ -278,30 +274,22 @@
   ;;go-pos-0-0-0
   (send *rsl* :save-rs :name :go-pos-0-0-90 :command #'(lambda() (send *ri* :go-pos 0 0 90)))
 
-  
-  ;;pre-unlift
-  (reach-trass :trass-pos #f(300 0 150) :relative? t
-               ;; :hip-contact-coords (send (send (send (send *robot* :foot-midcoords) :copy-worldcoords):translate #f(-500 0 800)) :rotate 1 :y) 
-               )
-  (send *rsl* :save-rs :name :pre-unlift)
+  ;;pre-put
+  (reach-trass :trass-pos #f(300 0 150) :relative? t)
+  (send *rsl* :save-rs :name :pre-put)
   ;;put
-  ;;(reach-trass :trass-pos #f(300 0 0) :relative? t)
-  (reach-trass :trass-pos #f(300 0 0) :relative? t
-               ;; :hip-contact-coords (send (send (send (send *robot* :foot-midcoords) :copy-worldcoords):translate #f(-550 0 750)) :rotate 1.2 :y) 
-               ;; :init-av (send *robot* :reaching-trass-pose)
-               )
-
-
+  (reach-trass :trass-pos #f(300 0 0) :relative? t)
   (send *rsl* :save-rs :name :put)
-  
+
   ;;set-ref-force-zero
-  (send *rsl* :save-rs :name :set-ref-force-ZERO :command #'(lambda () (send *ri* :set-ref-force (float-vector 0 0 0) 2000 :arms)))
+  (send *rsl* :save-rs :name :set-ref-force-ZERO :command #'(lambda () (send *ri* :set-ref-force (float-vector 0 0 0) 2000 :arms)) :yes nil)
   
   ;;open-hand
-  (send *rsl* :save-rs :name :open-hand :command #'(lambda() (set-hand :state :open :real? t)))
+  (send *rsl* :save-rs :name :open-hand :command #'(lambda() (set-hand :state :open :real? t)) :yes nil)
   
   ;;unreach-hand
-  (reach-trass :trass-pos #f(300 0 300) :relative? t)
+  (send *rsl* :set-rs :name :pre-put)
+  ;;(reach-trass :trass-pos #f(300 0 300) :relative? t)
   (send *rsl* :save-rs :name :unreach-hand :time 10000)
   
   ;;reset-manip-pose
@@ -338,6 +326,7 @@
   (send *ri* :stop-impedance :arms)
   ;; ;; (set-ref-force)
   ;; ;; (send *rsl* :play-in-real :play-from-first nil)
+  (send *ri* :set-ref-force #f(0 0 0) 3000 :arms)
   )
 
 
