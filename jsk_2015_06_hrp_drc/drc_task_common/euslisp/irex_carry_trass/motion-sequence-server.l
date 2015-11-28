@@ -11,10 +11,14 @@
 (defun execute-command (&key (command-list (list "y" "n"))
                              (function-list (list #'(lambda () (print "you typed y"))
                                                   #'(lambda () (print "you typed n"))))
-                             (message ""))
+                             (message "")
+                             (yes nil)
+                             )
   (format t "~A~%" message)
   (let ((i 0))
-    (setq cmd (read-line))
+    (if yes 
+        (setq cmd "y")
+      (setq cmd (read-line)))
     (until (equal cmd (elt command-list i))
            (setq i (1+ i))
            (when (>= i (length command-list)) (setq i nil) (return nil)))
@@ -28,14 +32,17 @@
 (defclass motion-sequence-server :super propertied-object :slots (rs-list current-index play-flag))
 (defmethod motion-sequence-server
   (:init ()
+         "initialize the class"
          (setq rs-list nil)
          (setq current-index nil)
          )
 
   (:stop-play () (setq play-flag nil))
   (:get-rs-index (name)
-          (position name rs-list :test #'equal :key #'(lambda (x) (send x :name))))
+                 "get the index of motion of command allocated assined to the given name"
+                 (position name rs-list :test #'equal :key #'(lambda (x) (send x :name))))
   (:set-current-index (name)
+                      "set the current-index to the index of given name"
                       (setq current-index (send self :get-rs-index name)))
   (:set-rs-by-current-index (&key (robot *robot*))
                             (let (rs)
@@ -45,7 +52,7 @@
                               ))
   (:get-rs-by-current-index (&key (robot *robot*))
                             (elt rs-list current-index))
-  (:save-rs (&key (robot *robot*) (command :angle-vector) (time 5000) (name nil))
+  (:save-rs (&key (robot *robot*) (command :angle-vector) (time 5000) (name nil) (message nil) (yes nil))
             "save robot state data"
             (let (rsd)
               (setq rsd (instance robot-state-data :init (send robot :angle-vector)
@@ -54,16 +61,26 @@
               ;;for other than angle-vector
               (send rsd :put :command command)
 
+              ;;save message for play-in-real
+              (if message
+                  (send rsd :put :message message)
+                (format t "do you want to play ~A?~%" (send rsd :name)))
+              
+              ;;save yes for play-in-real
+              (send rsd :put :yes yes)
+
               ;;save rs to rs-list
               (setq current-index (length rs-list))
               (setq rs-list (reverse rs-list))
               (setq rs-list (reverse (push rsd rs-list)))
               ))
   (:set-rs (&key (robot *robot*) (name nil))
-           (let (rs)
+           (let (rs tmp-index)
+             (setq tmp-index current-index)
              (if name
                  (send self :set-current-index name))
              (send self :set-rs-by-current-index :robot robot)
+             (setq current-index tmp-index)
              ))
   (:get-rs (name)
            (elt rs-list (send self :get-rs-index name)))
@@ -109,7 +126,10 @@
             (send *ri* :start-log))
       (while play-flag 
         (setq rs (send self :set-rs-by-current-index :robot robot))
-        (format t "do you want to play ~A?~%" (send rs :name))
+        (unless (send rs :get :yes)
+          (if (send rs :get :message)
+              (print (send rs :get :message))
+            (format t "do you want to play ~A?~%" (send rs :name))))
         (send *irtviewer* :draw-objects)
         (setq ret (execute-command :command-list (list "y" "r" "s")
                                    :function-list (list #'(lambda () (send self :model2real :robot robot :wait? nil))
@@ -120,7 +140,9 @@
                                                             )
                                                         #'(lambda () (format t "skip ~A~%" (send (send self :set-rs-by-current-index :robot robot) :name)))
                                                         )
-                                   :message "select y/r/s"))
+                                   :message "select y/r/s"
+                                   :yes (send rs :get :yes)
+                                   ))
         (when (equal ret "n") (return nil))
                      ;;send command to *ri*
         (setq current-index (1+ current-index))
