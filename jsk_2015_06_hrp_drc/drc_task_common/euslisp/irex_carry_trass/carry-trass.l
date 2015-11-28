@@ -197,7 +197,8 @@
   (set-pose-trass)
   ;;primitive marker
   ;;(set-primitive-marker-color :r 1 :a 0.8)
-  
+  ;; rosservice call /transformable_interactive_server/set_color '{target_name: "trass",  color: {r: 1.0, g: 0.0,  b: 0.0, a: 1.0}}'
+
   (print "look trass.ok?")
   (when (equal (read-line) "y")
     (look-trass)
