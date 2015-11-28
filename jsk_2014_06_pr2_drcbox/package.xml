@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package>
   <name>jsk_2014_06_pr2_drcbox</name>
-  <version>0.0.1</version>
+  <version>0.0.2</version>
   <description>pr2 demo for drcbox</description>
 
   <maintainer email="k-okada@jsk.t.u-tokyo.ac.jp">k-okada</maintainer>

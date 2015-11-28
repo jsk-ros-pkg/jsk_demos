@@ -2,6 +2,12 @@
 Changelog for package jsk_maps
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.0.2 (2015-11-26)
+------------------
+* Ignore auto generated files
+* [jsk_maps] update jsk eng2 7f 73b2 map data
+* Contributors: Yuki Furuta, Kentaro Wada
+
 0.0.1 (2015-06-11)
 ------------------
 * [jsk_maps] add multi_map_server deps for jsk_maps

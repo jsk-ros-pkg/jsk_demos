@@ -1,6 +1,6 @@
 <package>
   <name>drc_com_common</name>
-  <version>0.0.1</version>
+  <version>0.0.2</version>
   <description>drc_com_common</description>
   <maintainer email="murooka@jsk.t.u-tokyo.ac.jp">Masaki Murooka</maintainer>
   <license>BSD</license>

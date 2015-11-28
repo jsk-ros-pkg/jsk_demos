@@ -2,6 +2,9 @@
 Changelog for package jsk_2014_06_pr2_drcbox
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.0.2 (2015-11-26)
+------------------
+
 0.0.1 (2015-06-11)
 ------------------
 * use send-way-point after send-reach-target for grasp

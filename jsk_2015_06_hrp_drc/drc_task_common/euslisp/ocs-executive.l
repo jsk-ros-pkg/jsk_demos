@@ -861,6 +861,7 @@
             (t
              (send msg :arm_side drc_com_common::OCS2FCSmall::*UNDECIDED*))
             )
+      (setq drill-grasp-relative-coords (get-primitive-marker-pose :frame-id (if (equal *drill-main-arm* :rarm) "rarm_end_coords" "larm_end_coords") :name "drill"))
       (send self :send-to-fc msg)
       (send smachine :go-to :executing-drill-button)))
   (:exec-drill-rotate-button-callback ()
