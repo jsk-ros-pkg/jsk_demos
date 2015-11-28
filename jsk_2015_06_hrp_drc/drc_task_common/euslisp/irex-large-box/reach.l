@@ -676,7 +676,7 @@
 (defun update-box-pose-by-sift (&key (calib-offset nil))
   (setq *box-coords* nil)
   (set-pose-10) ;; set box pose by sift recog
-  (if *box-coords* (apply-box-pose :calib-offset calib-offset) (ros::ros-info "not detected, fix box manually on rviz!"))  
+  (if *box-coords* (apply-box-pose :calib-offset calib-offset) (ros::ros-info "not detected, fix box manually on rviz!"))
   (set-primitive-marker-pose
    (send (send *wooden-box* :copy-worldcoords) :translate (float-vector 0 0 355)) "ground" :name "wooden_box"
    )
@@ -697,7 +697,7 @@
     (do-until-key
      (warn "Loop: ~a~%" i)
      (update-box-pose-by-sift :calib-offset calib-offset)
-     (print (send *wooden-box* :worldcoords))
+     (print (send *wooden-box* :copy-worldcoords))
      (unix::usleep 10000) ;; 0.01sec
      (incf i)
 
@@ -706,12 +706,15 @@
   )
 
 (defun jaxon-maai-hosei-by-go-pos (box-instance &key (ref-box-pos (float-vector 850 0 0)) (gp-stop-thre 1.5) (calib-offset t))
-  (let* (proj-coords maai-coords gp-x gp-y gp-yaw)
+  (let* (proj-coords maai-coords gp-x-m gp-y-m gp-yaw-deg)
     (setq proj-coords (project-coords-to-ground (send box-instance :copy-worldcoords)))
+    (warn "ref-box-coords: ~a~%" (make-coords :pos ref-box-pos))
+    (warn "sift-box-coords: ~a~%" proj-coords)
     (setq maai-coords (send proj-coords :translate (v- ref-box-pos) :local))
     (setq gp-x-m (* 0.001 (elt (send maai-coords :worldpos) 0)))
     (setq gp-y-m (* 0.001 (elt (send maai-coords :worldpos) 1)))
     (setq gp-yaw-deg (rad2deg (elt (elt (send maai-coords :rpy-angle) 0) 0)))
+    (warn "maai-diff-value: ~a~%" (norm2 (float-vector gp-x-m gp-y-m gp-yaw-deg)))
     (if (> (norm (float-vector gp-x-m gp-y-m)) gp-stop-thre)
         (progn
           (warn "Emergency: too far to go-pos !!!~%")
@@ -722,7 +725,9 @@
       (send *ri* :go-pos gp-x-m gp-y-m gp-yaw-deg)
       (send *ri* :wait-interpolation-seq)
       (update-box-pose-by-sift :calib-offset calib-offset)
-      (print (send *wooden-box* :copy-worldcoords))
+      (warn "ref-box-coords: ~a~%" (make-coords :pos ref-box-pos))
+      (warn "sift-box-coords: ~a~%" (project-coords-to-ground (send box-instance :copy-worldcoords)))
+      (warn "maai-diff-value: ~a~%" (norm2 (float-vector gp-x-m gp-y-m gp-yaw-deg)))
       )
     ))
 
@@ -730,7 +735,7 @@
   (update-box-pose-by-sift :calib-offset t)
   (warn ";; box pose OK?~%")
   (if (not (y-or-n-p))
-    (progn 
+    (progn
       (warn ";; revise box pose!~%")
       (warn ";; OK?~%")
       (if (not (y-or-n-p))
