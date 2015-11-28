@@ -46,6 +46,9 @@
     (make-trass)
     (when trass-pos
       (send *trass* :translate trass-pos))
+    (send *trass* :translate-larm #f(-40 -40 0))
+    (send *trass* :translate-rarm #f(-40 -40 0))
+    
     (send *robot* :translate robot-pos)
     (send *trass* :set-default-coords)
     (objects (list *robot* *trass*))
@@ -56,14 +59,19 @@
                          (trass-pos #f(0 0 0))
                          (relative? nil)
                          (hip-contact-coords nil)
+                         
                          (init-av nil)
-                         (rtranslate #f(0 0 0))
-                         (ltranslate #f(0 0 0))
+                         (r-translate #f(0 0 0))
+                         (l-translate #f(0 0 0))
+                         (crotch-p -80)
                          )
   (let ();;(move-target move-target-arms target-coords link-list fmc init-trass-coords ret additional-weight-list translation-axis rotation-axis)
     (setq fmc (send (send *robot* :foot-midcoords) :copy-worldcoords))
     (unless init-av
-      (send *robot* :reset-manip-pose)
+      (progn 
+        (send *robot* :reset-manip-pose)
+        (send *robot* :legs :crotch-p :joint-angle crotch-p)
+        (send *robot* :fix-leg-to-coords *initial-foot-midcoords*)) 
       (send *robot* :angle-vector init-av))
     (send *robot* :fix-leg-to-coords fmc)
     (setq init-trass-coords (send (send *trass* :worldcoords) :copy-worldcoords))
@@ -105,8 +113,8 @@
                     (list (send *robot* :lleg :toe-p :child-link) 0)))
       (setq additional-weight-list 
             (list
-             ;; (list (list (send *robot* :rleg  :ankle-p :child-link) 0))
-             ;; (list (list (send *robot* :lleg  :ankle-p :child-link) 0))
+             (list (list (send *robot* :rleg  :ankle-p :child-link) 0.0))
+             (list (list (send *robot* :lleg  :ankle-p :child-link) 0.0))
              (list (list (send *robot* :torso :waist-r :child-link) 0))
              (list (list (send *robot* :torso :waist-y :child-link) 0))
              )))
@@ -119,11 +127,12 @@
     (setq rthre (list 0.017453 0.017453 0.017453 0.017453))
     ;;hip coords
     (when hip-contact-coords
+      (send hip-contact-coords :draw-on :flush t)
       (setq move-target (append move-target (list (send *robot* :get :hip-contact-coords))))
       (setq target-coords (append target-coords (list hip-contact-coords)))
-      (setq translation-axis (append translation-axis (list :xy)))
-      (setq rotation-axis (append rotation-axis (list :y)))
-      (setq thre (append thre (list 100)))
+      (setq translation-axis (append translation-axis (list :xz)))
+      (setq rotation-axis (append rotation-axis (list t)))
+      (setq thre (append thre (list 60)))
       (setq rthre (append rthre (list (deg2rad 30))))
       )
     ;;link-list
@@ -139,8 +148,10 @@
                   :rotation-axis rotation-axis
                   :target-centroid-pos (send (send *robot* :foot-midcoords) :worldpos)
                   :additional-weight-list additional-weight-list
-                  :debug-view nil;;:no-message
-                  :stop 1000
+                  :debug-view :no-message
+                  :stop 100
+                  ;; :thre thre
+                  ;; :rthre rthre
                   ))
     (when (not ret) (send *trass* :newcoords init-trass-coords))
     (send *irtviewer* :draw-objects)
@@ -151,7 +162,7 @@
 
 (defun walking-pose ()
   (send *robot* :reset-manip-pose-fix)
-  (reach-trass :trass-pos #f(300 0 550) :relative? t)
+  (reach-trass :trass-pos #f(300 0 550) :relative? t :crotch-p -20)
   )
 (defun look-trass ()
   (send *robot* :reset-manip-pose-fix)
@@ -221,7 +232,7 @@
  
   ;;pre-reach
   (reach-trass :trass-pos #f(300 0 150) :relative? t
-               :hip-contact-coords (send (send (send (send *robot* :foot-midcoords) :copy-worldcoords):translate #f(-500 0 800)) :rotate 1 :y) 
+               ;; :hip-contact-coords (send (send (send (send *robot* :foot-midcoords) :copy-worldcoords):translate #f(-500 0 800)) :rotate 1 :y) 
                )
   ;; (send *robot* :larm :move-end-pos #f(-20 30 0) :world)
   ;; (send *robot* :larm :move-end-pos #f(0 -10 0))  
@@ -232,8 +243,9 @@
                                                     (send *ri* :move-gripper :larm 0.1)))
   ;;reach-trass
   (reach-trass :trass-pos #f(300 0 0) :relative? t
-               :hip-contact-coords (send (send (send (send *robot* :foot-midcoords) :copy-worldcoords):translate #f(-550 0 750)) :rotate 1.2 :y) 
-               :init-av (send *robot* :reaching-trass-pose))
+               ;; :hip-contact-coords (send (send (send (send *robot* :foot-midcoords) :copy-worldcoords):translate #f(-550 0 750)) :rotate 1.2 :y) 
+               ;; :init-av (send *robot* :reaching-trass-pose)
+               )
 
   ;; (send *robot* :larm :move-end-pos #f(-20 30 0) :world)
   ;; (send *robot* :larm :move-end-pos #f(0 -10 0))  
@@ -251,7 +263,7 @@
   
   ;;lift
   (reach-trass :trass-pos #f(300 0 150) :relative? t
-               :hip-contact-coords (send (send (send (send *robot* :foot-midcoords) :copy-worldcoords):translate #f(-500 0 800)) :rotate 1 :y) 
+               ;; :hip-contact-coords (send (send (send (send *robot* :foot-midcoords) :copy-worldcoords):translate #f(-500 0 800)) :rotate 1 :y) 
                )
   ;;(reach-trass :hand-pos-to-trass #f(0 0 200))
   ;; (send *robot* :larm :move-end-pos #f(-20 30 0) :world)
@@ -269,14 +281,15 @@
   
   ;;pre-unlift
   (reach-trass :trass-pos #f(300 0 150) :relative? t
-               :hip-contact-coords (send (send (send (send *robot* :foot-midcoords) :copy-worldcoords):translate #f(-500 0 800)) :rotate 1 :y) 
+               ;; :hip-contact-coords (send (send (send (send *robot* :foot-midcoords) :copy-worldcoords):translate #f(-500 0 800)) :rotate 1 :y) 
                )
   (send *rsl* :save-rs :name :pre-unlift)
   ;;put
   ;;(reach-trass :trass-pos #f(300 0 0) :relative? t)
   (reach-trass :trass-pos #f(300 0 0) :relative? t
-               :hip-contact-coords (send (send (send (send *robot* :foot-midcoords) :copy-worldcoords):translate #f(-550 0 750)) :rotate 1.2 :y) 
-               :init-av (send *robot* :reaching-trass-pose))
+               ;; :hip-contact-coords (send (send (send (send *robot* :foot-midcoords) :copy-worldcoords):translate #f(-550 0 750)) :rotate 1.2 :y) 
+               ;; :init-av (send *robot* :reaching-trass-pose)
+               )
 
 
   (send *rsl* :save-rs :name :put)
@@ -458,3 +471,6 @@
           (progn 
             (send *ri* :go-pos dx dy rot-z-deg))))
     ))
+
+
+

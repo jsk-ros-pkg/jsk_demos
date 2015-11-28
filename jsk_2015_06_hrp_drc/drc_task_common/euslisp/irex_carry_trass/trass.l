@@ -1,4 +1,4 @@
-(defclass trass :super cascaded-link :slots (point-lists parts default-radius trass-size))
+(defclass trass :super cascaded-link :slots (point-lists parts default-radius trass-size rt lt))
 (defmethod trass
   (:init (&key (pos-pair-list (list (list #f(0 0 0) #f(100 0 0))))
                (dradius 10) (size #f(100 0 0))
@@ -15,6 +15,8 @@
          (send self :assoc (elt links 0))
          (send self :init-ending)
          (send self :set-default-coords)
+         (setq rt #f(0 0 0))
+         (setq lt #f(0 0 0))
          self
          )
   (:centroid-worldcoords ()
@@ -95,7 +97,7 @@
          (find name parts :test #'equal :key #'(lambda (x) (send x :name))))
   (:parts ()
           parts)
-  (:grasp-coords (limb)
+  (:grasp-coords (limb tv)
          (let (grasp-part len center-distance target-coords)
            (setq grasp-part (send self :part limb));; ロッドの取得
            (setq len (elt (car (send grasp-part :csg)) 2)) ;;ロッドの長さを得る
@@ -113,13 +115,20 @@
            (setq angle (acos (v. target-dir current-dir)))
            (setq angle (* angle angle-sign))
            (send target-coords :rotate angle :z)
+           ;;modify the position
+           (send target-coords :translate tv :world)
            (send target-coords :draw-on :flush t)
            target-coords
            ))
   (:larm ()
-         (send self :grasp-coords :larm))
+         (send self :grasp-coords :larm lt))
   (:rarm ()
-         (send self :grasp-coords :rarm))
+         (send self :grasp-coords :rarm rt))
+  (:translate-larm (&optional(v nil))
+                   (if v (setq lt v) lt))
+  (:translate-rarm (&optional (v nil))
+                   (if v (setq rt v) rt))
+
   (:translate (vector &optional (wlt :local))
               (send self :newcoords (send (send (send self :worldcoords) :copy-worldcoords)
                                           :translate vector wlt)))
@@ -206,6 +215,8 @@
                                  (float-vector  0  722.5 dz) 11)
                            )))
   (objects (list *trass*))
+  (send *trass* :translate-larm #f(-40 -40 0))
+  (send *trass* :translate-rarm #f(-40 -40 0))
   *trass*
   ))
 
