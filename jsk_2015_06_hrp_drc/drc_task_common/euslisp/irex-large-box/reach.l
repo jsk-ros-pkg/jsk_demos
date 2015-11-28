@@ -71,6 +71,7 @@
   (when (y-or-n-p)
     ;; (start-default-impedance)
     (send *ri* :start-impedance :arms)
+    ;;(start-soft-impedance)
     ;; (send *ri* :start-impedance :arms :k-p 3000 :d-p 600)
     )
   )
@@ -149,6 +150,9 @@
                                          (joint-angle-margin 20) (demo-mode t))
   (send *wooden-box* :newcoords (make-coords :pos box-pos))
   (let* (avs)
+    (when arms-force-offset-mode
+      (warn ";; (send *ri* :reset-force-moment-offset-arms) ? # arms should not be touched with box~%")
+      (send *ri* :reset-force-moment-offset-arms))
     (send *robot* :reset-manip-pose)
     (send *robot* :head :neck-p :joint-angle (send *robot* :head :neck-p :max-angle))
     (push (send *robot* :angle-vector) avs)
@@ -312,11 +316,11 @@
       (send *ri* :wait-interpolation-seq)
       )
 
-    (when arms-force-offset-mode
-      (warn ";; (send *ri* :reset-force-moment-offset-arms) ? # arms should not be touched with box~%")
-      (if (y-or-n-p)
-          (send *ri* :reset-force-moment-offset-arms))
-      )
+    ;; (when arms-force-offset-mode
+    ;;   (warn ";; (send *ri* :reset-force-moment-offset-arms) ? # arms should not be touched with box~%")
+    ;;   (if (y-or-n-p)
+    ;;       (send *ri* :reset-force-moment-offset-arms))
+    ;;   )
 
     (when back-mode
       (let* ((r-dt-list (reverse dt-list)))
