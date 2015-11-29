@@ -81,6 +81,7 @@
                  (send self :set-current-index name))
              (send self :set-rs-by-current-index :robot robot)
              (setq current-index tmp-index)
+             (send *irtviewer* :draw-objects)
              ))
   (:get-rs (name)
            (elt rs-list (send self :get-rs-index name)))
