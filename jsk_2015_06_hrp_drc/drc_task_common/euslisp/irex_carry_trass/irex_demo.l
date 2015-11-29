@@ -9,21 +9,31 @@
 ;;to-do: 最初にトラスをどう見るか？　認識が合うまで待つか？
 (defun walk-to-trass ()
   (print "look trass.ok?")
+  (send *robot* :translate #f(-300 0 0))
   (look-trass)
   (when (y-or-n-p "look trass. OK?")
     (model2real))
+  (unix::sleep 5)
   (set-trass-coords-by-pf-10)
   (when (y-or-n-p "please adjust. Do you have done?")
     (adjust-robot-by-primitive-marker)
     ;;walk
-    (walk-to-target :real? t :k 0.9)
+    (send *robot* :fix-leg-to-coords (walk-to-target :real? t :k 0.9))
+    (look-trass)
+    (model2real)
     )
   (look-trass)
+  (unix::sleep 5)
   (set-trass-coords-by-pf-10)
   (when (y-or-n-p "please adjust. Do you have done?")
     (adjust-robot-by-primitive-marker)
     ;;walk
-    (walk-to-target :real? t))
+    (send *robot* :fix-leg-to-coords (walk-to-target :real? t))
+    (look-trass)
+    (model2real)
+    )
+  (unix::sleep 5)
+  (set-trass-coords-by-pf-10)
   (when (y-or-n-p "please adjust. Do you have done?")
     (adjust-robot-by-primitive-marker))
   )
@@ -44,6 +54,7 @@
   ;;set-ref-force
   (set-ref-force-for-trass)
   ;;lift
+  (start-hard-impedance)
   (send *rsl* :set-rs :name :lift)
   (model2real)
   ;;walking-pose
@@ -59,6 +70,7 @@
   ;;pre-put
   (send *rsl* :set-rs :name :pre-put)
   (model2real)
+  (set-impedance-param-for-trass)
   ;;put
   (send *rsl* :set-rs :name :put)
   (model2real)
@@ -84,7 +96,7 @@
   )
 
 (defun demo-carry-trass ()
-  (prepare-demo)
+  (prepare-carry-trass-demo)
   (walk-to-trass)
   (plan-motion)
   (when (y-or-n-p "reach trass. ok?")

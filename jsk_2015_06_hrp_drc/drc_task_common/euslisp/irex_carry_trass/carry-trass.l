@@ -173,7 +173,14 @@
 (defun walking-pose ()
   (send *robot* :reset-manip-pose-fix)
   ;; (reach-trass :trass-pos #f(300 0 550) :relative? t :crotch-p -20)
-  (reach-trass :trass-pos #f(300 0 550) :relative? t :crotch-p -40)
+  (prog1
+   (reach-trass :trass-pos #f(300 0 550) :relative? t :crotch-p -40)
+   (let ((fmc (send *robot* :foot-midcoords)))
+     ;;(send *robot* :legs :move-end-pos #f(0 0 50) :world)
+     (send *robot* :legs :move-end-pos #f(0 0 20) :world)
+     (send *robot* :move-centroid-on-foot :both '(:rleg :lleg))
+     (send *robot* :fix-leg-to-coords fmc)
+     ))
   )
 (defun look-trass ()
   (send *robot* :reset-manip-pose-fix)
@@ -321,7 +328,10 @@
 (defun set-impedance-param-for-trass ()
   ;;(start-soft-impedance)
   ;;(send *ri* :start-impedance :arms :m-p 10 :d-p 2000 :k-p 1000 :m-r 2.0 :d-r 200 :k-r 80)
-  (send *ri* :start-impedance :arms :m-p 10 :d-p 1500 :k-p 300 :m-r 2.0 :d-r 100 :k-r 40)
+  ;; before 1129 reha 2
+  ;;(send *ri* :start-impedance :arms :m-p 10 :d-p 1500 :k-p 300 :m-r 2.0 :d-r 100 :k-r 40)
+  (send *ri* :start-impedance :arms :m-p 10 :d-p 1500 :k-p 300 :m-r 2.0 :d-r 100 :k-r 40 :moment-gain #f(0 0 0))
+  ;;(send *ri* :start-impedance :arms :m-p 10 :d-p 1500 :k-p 600 :m-r 2.0 :d-r 200 :k-r 100)
   )
 
 (defun execute-motion (&key(real? nil))
@@ -451,7 +461,7 @@
 
 
 (defun walk-to-target (&key (target-coords *initial-foot-midcoords*) (real? nil) (k 1.0))
-  (let ();;(current-coords diff pos-diff rot-z loacl-pos-diff dx dy rot-z-deg)
+  (let (tcds);;(current-coords diff pos-diff rot-z loacl-pos-diff dx dy rot-z-deg)
     ;; (adjust-robot-by-bounding-box)
     
     (setq current-coords (send (send *robot* :foot-midcoords) :copy-worldcoords))
@@ -461,8 +471,9 @@
     (setq rot-z (elt rot-diff 2))
     
     ;;check target position
-    (send (send (send (send (send *robot* :foot-midcoords) :copy-worldcoords) 
-                      :translate pos-diff) :rotate rot-z :z) :draw-on :flush t)
+    (setq tcds (send (send (send (send *robot* :foot-midcoords) :copy-worldcoords) 
+                           :translate pos-diff) :rotate rot-z :z))
+    (send tcds :draw-on :flush t)
     
     (setq dx (* k (* 0.001 (elt pos-diff 0))))
     (setq dy (* k (* 0.001 (elt pos-diff 1))))
@@ -473,7 +484,8 @@
       (print "walk OK?")
       (if (equal (read-line) "y")
           (progn 
-            (send *ri* :go-pos dx dy rot-z-deg))))
+            (send *ri* :go-pos dx dy rot-z-deg))))    
+    tcds
     ))
 
 
