@@ -47,8 +47,8 @@
     (make-trass)
     (when trass-pos
       (send *trass* :translate trass-pos))
-    (send *trass* :translate-larm #f(-20 -20 0))
-    (send *trass* :translate-rarm #f(-20 -20 0))
+    (send *trass* :translate-larm #f(-20 -20 15))
+    (send *trass* :translate-rarm #f(-20 -20 15))
     
     (send *robot* :translate robot-pos)
     (send *trass* :set-default-coords)
@@ -157,15 +157,18 @@
     (send *irtviewer* :draw-objects)
     (mapcar #'(lambda (x) (send x :draw-on :flush t)) move-target-arms)
     ))
-(defun set-ref-force ()
-  (send *ri* :set-ref-force (float-vector 0 0 -10) 2000 :arms)
+(defun set-ref-force-for-trass ()
+  (send *ri* :set-ref-force (float-vector 0 0 -15) 2000 :arms)
   (send *ri* :wait-interpolation-seq)
-  ;; (let ((flag t))
-  ;;   (while flag
+  (let ((flag t))
+    (while flag
+      (send *ri* :set-object-turnaround-detector-param
+            ;;:detect-time-thre 0.2 :start-time-thre 0.2)
+            :detect-time-thre 0.3 :start-time-thre 0.3)
       (send *ri* :set-object-turnaround-ref-force :max-ref-force (* 9.8 7.0))
-      ;; (if (y-or-n-p ";; set ref force OK? (Y=>set ref force. N=>try estimate force again.)~%")
-      ;;     (setq flag nil))))
-      )
+      (if (y-or-n-p ";; set ref force OK? (near from ~A?) (Y=>set ref force. N=>try estimate force again.)~%"
+                    (list (float-vector 0 0 (* -1 6.0 9.8 0.5)) (float-vector 0 0 (* -1 6.0 9.8 0.5))))
+          (setq flag nil)))))
 
 (defun walking-pose ()
   (send *robot* :reset-manip-pose-fix)
@@ -267,7 +270,7 @@
   (send *rsl* :save-rs :name :close-hand :command #'(lambda() (set-hand :state :close :real? t)))
   
   ;;set-ref-force
-  (send *rsl* :save-rs :name :set-ref-force :command #'set-ref-force)
+  (send *rsl* :save-rs :name :set-ref-force :command #'set-ref-force-for-trass)
   
   ;;lift
   (reach-trass :trass-pos #f(300 0 150) :relative? t)
@@ -315,6 +318,12 @@
   ;;(send *rsl* :play-for-check)
   )
 
+(defun set-impedance-param-for-trass ()
+  ;;(start-soft-impedance)
+  ;;(send *ri* :start-impedance :arms :m-p 10 :d-p 2000 :k-p 1000 :m-r 2.0 :d-r 200 :k-r 80)
+  (send *ri* :start-impedance :arms :m-p 10 :d-p 1500 :k-p 300 :m-r 2.0 :d-r 100 :k-r 40)
+  )
+
 (defun execute-motion (&key(real? nil))
   ;; ;; (set-pose-trass)
   ;; ;;  (adjust-robot-by-bounding-box)
@@ -325,8 +334,7 @@
   ;; ;; (adjust-robot-by-primitive-marker)
   
   ;; ;;(adjust-robot-by-bounding-box)
-  ;;(start-soft-impedance)
-  (send *ri* :start-impedance :arms :m-p 10 :d-p 2000 :k-p 1000 :m-r 2.0 :d-r 200 :k-r 80)
+  (set-impedance-param-for-trass)
   (plan-motion)
   (send *rsl* :play-in-real)
   (send *ri* :wait-interpolation)

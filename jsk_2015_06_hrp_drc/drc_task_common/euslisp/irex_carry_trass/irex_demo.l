@@ -1,6 +1,7 @@
 (load "carry-trass.l")
-(defun prepare-demo()
+(defun prepare-carry-trass-demo()
   (send *ri* :set-ref-force #f(0 0 0) 3000 :arms)
+  (set-impedance-param-for-trass)
   (erase-all-primitive-marker)
   (set-pose-trass)
   (set-trass-coords-by-pf)
@@ -26,7 +27,7 @@
   (when (y-or-n-p "please adjust. Do you have done?")
     (adjust-robot-by-primitive-marker))
   )
-(defun reach (&key (real? t))
+(defun reach-trass-exec (&key (real? t))
   ;;reset-force-moment-offset-arms
   (send *ri* :reset-force-moment-offset-arms)
   ;;pre-reach
@@ -39,9 +40,9 @@
   ;;close-hand
   (set-hand :state :close :real? real?)
   )
-(defun lift (&key (real? t))
+(defun lift-trass (&key (real? t))
   ;;set-ref-force
-  (set-ref-force)
+  (set-ref-force-for-trass)
   ;;lift
   (send *rsl* :set-rs :name :lift)
   (model2real)
@@ -54,7 +55,7 @@
     (send *ri* :go-pos 0 0 90)
     (send *ri* :go-pos 0.15 0 0)
     ))
-(defun put (&key (real? t))
+(defun put-trass (&key (real? t))
   ;;pre-put
   (send *rsl* :set-rs :name :pre-put)
   (model2real)
@@ -64,7 +65,7 @@
   ;;set-ref-force-zero
   (send *ri* :set-ref-force (float-vector 0 0 0) 2000 :arms)
   )
-(defun release (&key (real? t))
+(defun release-trass-exec (&key (real? t))
   ;;open-hand
   (set-hand :state :open :real? real?)
   ;;unreach-hand
@@ -79,23 +80,26 @@
   (print "go-pos-0.5 0 0")
   (send *ri* :go-pos -0.5 0 0)
   (print "go-pos 0 0 -90")
-  (send *ri* :go-pos #f(0 0 -90))
+  (send *ri* :go-pos 0 0 -90)
   )
 
-(defun demo2 ()
+(defun demo-carry-trass ()
   (prepare-demo)
   (walk-to-trass)
   (plan-motion)
   (when (y-or-n-p "reach trass. ok?")
-    (reach))
+    (reach-trass-exec))
   (when (y-or-n-p "lift trass. ok?")
-    (lift))
+    (lift-trass))
   (when (y-or-n-p "walk & carry trass. ok?")
     (carry-trass))
   (when (y-or-n-p "put trass. ok?")
-    (put))
+    (put-trass))
+  (unless (equal (send *ri* :state :emergency-mode) 0)
+    (when (y-or-n-p "release-emergency-mode. ok?")
+      (send *ri* :emergency-release-motion)))
   (when (y-or-n-p "release trass. ok?")
-    (release))
+    (release-trass-exec))
   (when (y-or-n-p "walk for nex task. ok?")
     (next))
   )
