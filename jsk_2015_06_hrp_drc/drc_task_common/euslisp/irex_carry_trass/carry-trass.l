@@ -47,8 +47,8 @@
     (make-trass)
     (when trass-pos
       (send *trass* :translate trass-pos))
-    (send *trass* :translate-larm #f(-40 -40 0))
-    (send *trass* :translate-rarm #f(-40 -40 0))
+    (send *trass* :translate-larm #f(-20 -20 0))
+    (send *trass* :translate-rarm #f(-20 -20 0))
     
     (send *robot* :translate robot-pos)
     (send *trass* :set-default-coords)
@@ -195,6 +195,7 @@
   (send *ri* :set-ref-force #f(0 0 0) 3000 :arms)
   (erase-all-primitive-marker)
   (set-pose-trass)
+  (set-trass-coords-by-pf)
   ;;primitive marker
   ;;(set-primitive-marker-color :r 1 :a 0.8)
   ;; rosservice call /transformable_interactive_server/set_color '{target_name: "trass",  color: {r: 1.0, g: 0.0,  b: 0.0, a: 1.0}}'
@@ -203,6 +204,7 @@
   (when (equal (read-line) "y")
     (look-trass)
     (model2real)
+    (set-trass-coords-by-pf)
     (print "please adjust. Do you have done?")
     (when (equal (read-line) "y")
       (adjust-robot-by-primitive-marker)
@@ -215,6 +217,7 @@
   ;; (look-trass)
   ;; (model2real)
   
+  (set-trass-coords-by-pf)
   (print "please adjust. Do you have done?")
   (when (equal (read-line) "y")
     (adjust-robot-by-primitive-marker)
@@ -233,6 +236,7 @@
 
 
 (defun plan-motion (&optional (check? t))
+  (send *trass* :reset-coords)
   (setq *rsl* (instance motion-sequence-server :init))
   
   ;;init
@@ -251,9 +255,10 @@
   ;;pre-reach
   (reach-trass :trass-pos #f(0 0 150))
   (send *rsl* :save-rs :name :pre-reach :time 10000)
-  (send *rsl* :save-rs :name :preshape :command #'(lambda()
-                                                    (send *ri* :move-gripper :rarm 0.1)
-                                                    (send *ri* :move-gripper :larm 0.1)))
+  ;; comment out by nozawa 20151129
+  ;; (send *rsl* :save-rs :name :preshape :command #'(lambda()
+  ;;                                                   (send *ri* :move-gripper :rarm 0.1)
+  ;;                                                   (send *ri* :move-gripper :larm 0.1)))
   ;;reach-trass
   (reach-trass :trass-pos #f(0 0 0))
   (send *rsl* :save-rs :name :reach)
@@ -320,7 +325,8 @@
   ;; ;; (adjust-robot-by-primitive-marker)
   
   ;; ;;(adjust-robot-by-bounding-box)
-  (start-soft-impedance)
+  ;;(start-soft-impedance)
+  (send *ri* :start-impedance :arms :m-p 10 :d-p 2000 :k-p 1000 :m-r 2.0 :d-r 200 :k-r 80)
   (plan-motion)
   (send *rsl* :play-in-real)
   (send *ri* :wait-interpolation)
