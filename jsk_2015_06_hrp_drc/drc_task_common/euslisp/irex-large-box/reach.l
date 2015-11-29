@@ -91,6 +91,7 @@
   (set-primitive-marker-dimensions
    :x 598.0 :y 480.0 :z 710.0 :name "wooden_box"
    )
+  (apply-primitive-dimensions-to-midi-device)
   (send *robot* :reset-manip-pose)
   (send *robot* :head :neck-p :joint-angle (send *robot* :head :neck-p :max-angle))
   (send *robot* :fix-leg-to-coords (make-coords))
@@ -732,6 +733,7 @@
   (set-primitive-marker-dimensions
    :x 598.0 :y 480.0 :z 710.0 :name "wooden_box"
    )
+  (apply-primitive-dimensions-to-midi-device)
   (let* ((i 0))
     (do-until-key
      (warn "Loop: ~a~%" i)
