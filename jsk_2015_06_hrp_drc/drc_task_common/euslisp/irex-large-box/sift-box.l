@@ -45,15 +45,13 @@
           (send crds :rotate (deg2rad 180) :z)
           ;; modify label position offset for box model
           (send crds :transform *box-label-offset*)
-          (insert-primitive-marker
-           :name "wooden_box"
-           )
           (set-primitive-marker-dimensions
            :x 598.0 :y 480.0 :z 710.0 :name "wooden_box"
            )
-          (set-primitive-marker-pose
-           crds "ground" :name "wooden_box"
-           )
+          ;; (set-primitive-marker-pose
+          ;;  (send (send crds :copy-worldcoords) :translate (float-vector 0 0 355)) "ground" :name "wooden_box"
+          ;;  )
+          (setq *box-coords* (send crds :copy-worldcoords))
           )
 (progn
       (warn "trans and crds are NONE !!!~%")
@@ -67,7 +65,7 @@
 (defun set-pose-10 ()
   (block
    :set-pose-loop
-   (dotimes (i 300)
+   (dotimes (i 10)
      (if (set-pose) (return-from :set-pose-loop nil)) ;; escape from :set-pose-loop block
 ;;     (unix::usleep 200000) ;; 0.2sec
      (unix::sleep 1) ;; 1sec

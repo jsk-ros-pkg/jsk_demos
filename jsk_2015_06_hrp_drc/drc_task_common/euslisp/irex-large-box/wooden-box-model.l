@@ -2,7 +2,7 @@
 
 (defmethod wooden-box
   (:init (&key (x-size 598.0) (y-size 480.0) (z-size 710.0)
-               (x-label 70.0) (y-label 98.0) (z-label 5.0) (front-to-label 188.0))
+               (x-label 198.0) (y-label 250.0) (z-label 5.0) (front-to-label 302.0))
     (send-super :init)
     (let* (box0 link0)
       ;; make one box named box0 and marker named sift-label
@@ -75,7 +75,7 @@
                                 :translate (float-vector (- (/ x-length 2)) (/ y-length 2) (- (/ z-length 2) top-to-under))))
       ))
   ;; return the coords of box-attached label for sift recog
-  (:sift-label-coords (&optional (front-to-label 125.0))
+  (:sift-label-coords (&optional (front-to-label 302.0))
     "return the coords of box-attached label for sift recog"
     (let* ((x-length (x-of-cube (send self :parts :box0)))
            (z-length (z-of-cube (send self :parts :box0)))
