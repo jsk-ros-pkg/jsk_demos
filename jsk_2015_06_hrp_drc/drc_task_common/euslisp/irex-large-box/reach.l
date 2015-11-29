@@ -6,7 +6,7 @@
 
 ;; (dump-structure *standard-output* (make-coords :pos #f(-162.981 -94.629 0.0) :rpy '(-0.037 0.0 0.0)))
 (setq *calib-offset-coords* #s(coordinates plist nil rot #2f((0.999316 0.036992 0.0) (-0.036992 0.999316 0.0) (0.0 0.0 1.0)) pos #f(-162.981 -94.629 0.0)))
-
+(setq *box-coords* nil)
 (load "package://drc_task_common/euslisp/robot-util.l")
 (load "package://drc_task_common/euslisp/irex-large-box/wooden-box-model.l")
 (load "package://drc_task_common/euslisp/irex-large-box/sift-box.l") ;; also generate *wooden-box*
@@ -46,6 +46,12 @@
 
 (defun jaxon-wooden-box-init (&key (box-pos (float-vector 850 0 0)))
   ;; (make-wooden-box)
+  (insert-primitive-marker
+   :name "wooden_box"
+   )
+  (set-primitive-marker-dimensions
+   :x 598.0 :y 480.0 :z 710.0 :name "wooden_box"
+   )
   (send *robot* :reset-manip-pose)
   (send *robot* :head :neck-p :joint-angle (send *robot* :head :neck-p :max-angle))
   (send *robot* :fix-leg-to-coords (make-coords))
@@ -526,8 +532,9 @@
       )
     ))
 
-(defun jaxon-push-motion (&key (emer-mode nil) (emer-push-force-thre 90.0) (push-distance 0.5))
-  (send *ri* :start-log)
+(defun jaxon-push-motion (&key (emer-mode nil) (emer-push-force-thre 90.0) (push-distance 0.5) (save-log-mode nil))
+  (when save-log-mode
+    (send *ri* :start-log))
   (send *ri* :set-ref-force (car *box-push-ref-force*) 2000 :arms)
   (send *ri* :wait-interpolation-seq)
   (send *ri* :go-pos-no-wait push-distance 0 0)
@@ -552,7 +559,8 @@
       ))
   (send *ri* :set-ref-force (float-vector 0 0 0) 2000 :arms)
   (send *ri* :wait-interpolation-seq)
-  (send *ri* :save-log "/tmp/jaxon-push-main-all")
+  (when save-log-mode
+    (send *ri* :save-log "/tmp/jaxon-push-main-all"))
   )
 
 (defun jaxon-push-main-all (&key (push-distance 0.5))
@@ -647,7 +655,10 @@
     ))
 
 (defun apply-box-pose (&key (calib-offset nil))
-  (let* ((coords (get-primitive-marker-pose :name "wooden_box" :frame-id "ground"))
+  (let* ((coords 
+          ;(get-primitive-marker-pose :name "wooden_box" :frame-id "ground")
+          *box-coords*
+          )
          (box-coords (project-coords-to-ground coords))
          )
     (if calib-offset
@@ -663,29 +674,48 @@
     ))
 
 (defun update-box-pose-by-sift (&key (calib-offset nil))
+  (setq *box-coords* nil)
   (set-pose-10) ;; set box pose by sift recog
-  (apply-box-pose :calib-offset calib-offset)
+  (if *box-coords* (apply-box-pose :calib-offset calib-offset) (ros::ros-info "not detected, fix box manually on rviz!"))
+  (set-primitive-marker-pose
+   (send (send *wooden-box* :copy-worldcoords) :translate (float-vector 0 0 355)) "ground" :name "wooden_box"
+   )
   )
 
+(defun revise-box-pose ()
+  (send *wooden-box* :newcoords (send (get-primitive-marker-pose :name "wooden_box" :frame-id "ground") :translate (float-vector 0 0 -355)))
+  (send *irtviewer* :draw-objects)
+  )
 (defun loop-update-box-pose (&key (calib-offset nil))
+  (insert-primitive-marker
+   :name "wooden_box"
+   )
+  (set-primitive-marker-dimensions
+   :x 598.0 :y 480.0 :z 710.0 :name "wooden_box"
+   )
   (let* ((i 0))
     (do-until-key
      (warn "Loop: ~a~%" i)
      (update-box-pose-by-sift :calib-offset calib-offset)
-     (print (send *wooden-box* :worldcoords))
+     (print (send *wooden-box* :copy-worldcoords))
      (unix::usleep 10000) ;; 0.01sec
      (incf i)
+
      )
     )
   )
 
 (defun jaxon-maai-hosei-by-go-pos (box-instance &key (ref-box-pos (float-vector 850 0 0)) (gp-stop-thre 1.5) (calib-offset t))
-  (let* (proj-coords maai-coords gp-x gp-y gp-yaw)
+  (let* (proj-coords maai-coords gp-x-m gp-y-m gp-yaw-deg)
     (setq proj-coords (project-coords-to-ground (send box-instance :copy-worldcoords)))
+    (warn "ref-box-coords: ~a~%" (make-coords :pos ref-box-pos))
+    (warn "sift-box-coords: ~a~%" proj-coords)
     (setq maai-coords (send proj-coords :translate (v- ref-box-pos) :local))
+    (warn "maai-diff-coords: ~a~%" maai-coords)
     (setq gp-x-m (* 0.001 (elt (send maai-coords :worldpos) 0)))
     (setq gp-y-m (* 0.001 (elt (send maai-coords :worldpos) 1)))
     (setq gp-yaw-deg (rad2deg (elt (elt (send maai-coords :rpy-angle) 0) 0)))
+    ;; (warn "maai-diff-value: ~a~%" (norm2 (float-vector gp-x-m gp-y-m gp-yaw-deg)))
     (if (> (norm (float-vector gp-x-m gp-y-m)) gp-stop-thre)
         (progn
           (warn "Emergency: too far to go-pos !!!~%")
@@ -696,26 +726,49 @@
       (send *ri* :go-pos gp-x-m gp-y-m gp-yaw-deg)
       (send *ri* :wait-interpolation-seq)
       (update-box-pose-by-sift :calib-offset calib-offset)
+      (warn "ref-box-coords: ~a~%" (make-coords :pos ref-box-pos))
+      (warn "sift-box-coords: ~a~%" (project-coords-to-ground (send box-instance :copy-worldcoords)))
+      (warn "maai-diff-coords: ~a~%" (send (project-coords-to-ground (send box-instance :copy-worldcoords)) :translate (v- ref-box-pos) :local))
       )
     ))
 
 (defun jaxon-wooden-box-okkake ()
   (update-box-pose-by-sift :calib-offset t)
+  (warn ";; box pose OK?~%")
+  (if (not (y-or-n-p))
+    (progn
+      (warn ";; revise box pose!~%")
+      (warn ";; OK?~%")
+      (if (not (y-or-n-p))
+          (return-from jaxon-wooden-box-okkake)
+          )
+      (revise-box-pose)
+      )
+    )
   (jaxon-maai-hosei-by-go-pos *wooden-box*)
   )
 
 (defun jaxon-box-okkake-push-demo (&key (push-distance 0.5))
   ;; (send *ri* :go-pos 0.6 0 0) ;; ToDo: play on rviz
   ;; (unix::sleep 1)
-  (warn ";; 1 kai~%")
-  (jaxon-wooden-box-okkake)
-  (unix::sleep 1)
-  (warn ";; 2 kai~%")
-  (jaxon-wooden-box-okkake)
-  (unix::sleep 1)
-  (warn ";; 3 kai~%")
-  (jaxon-wooden-box-okkake)
-  (unix::sleep 1)
+  (dotimes (i 10)
+    (warn ";; ~a kai~%" (+ i 1))
+    (jaxon-wooden-box-okkake)
+    (unix::sleep 1)
+    (warn ";; (jaxon-wooden-box-okkake) one more ?~%")
+    (when (not (y-or-n-p))
+      (return)
+      )
+    )
+  ;; (warn ";; 1 kai~%")
+  ;; (jaxon-wooden-box-okkake)
+  ;; (unix::sleep 1)
+  ;; (warn ";; 2 kai~%")
+  ;; (jaxon-wooden-box-okkake)
+  ;; (unix::sleep 1)
+  ;; (warn ";; 3 kai~%")
+  ;; (jaxon-wooden-box-okkake)
+  ;; (unix::sleep 1)
   (warn ";; (jaxon-push-main-all :push-distance ~a)~%" push-distance)
   (jaxon-push-main-all :push-distance push-distance)
   )
@@ -738,4 +791,4 @@
 ;; (warn "~%")
 ;; (warn "(jaxon-wooden-box-okkake) ;; sift recognition and go-pos~%")
 ;; (warn "(jaxon-push-main-all :push-distance 0.5) ;; reach and push 0.5[m] and release for box~%")
-(warn "(jaxon-box-okkake-push-demo :push-distance 0.5) ;; sift recognition and go-pos for 3 times, then reach and push 0.5[m] and release for box~%")
+(warn "(jaxon-box-okkake-push-demo :push-distance 0.5) ;; sift recognition and go-pos, then reach and push 0.5[m] and release for box~%")
