@@ -9,6 +9,38 @@
 (ros::roseus "koyama_primitive_marker")
 (ros::roseus-add-msgs "posedetection_msgs")
 
+(defun sub-object-pf (msg)
+  (setq *pf-msg* msg)
+  )
+(ros::subscribe "/ObjectDetectionTrass"  posedetection_msgs::ObjectDetection #'sub-object-pf)
+
+(defun wait-pfilter-obj (&key (wait 4.0)) ;; sec
+  (setq *pf-msg* nil)
+  (ros::spin-once)
+  (dotimes (i (round (/ 4.0 0.2)))
+    (if *pf-msg* (return))
+    (ros::spin-once)
+    (unix::usleep (* 1000 200)))
+  (when *pf-msg*
+    (let ((obj (car (send *pf-msg* :objects)))
+          cds)
+      (setq cds (ros::tf-pose->coords (send obj :pose)))
+      (setf (get cds :reliability) (send obj :reliability))
+      cds)))
+
+(defun set-trass-coords-by-pf (&key (wait) (reset))
+  (when reset
+    (ros::service-call "/pfilter/reset_with_guess" (instance std_srvs::EmptyRequest :init))
+    (wait-pfilter-obj :wait wait)
+    (wait-pfilter-obj :wait wait))
+  (let ((cds (wait-pfilter-obj :wait wait)))
+    (when cds
+      ;;(send *trass* :reset-coords)
+      ;;(send *trass* :transform cds)
+      (send cds :translate (float-vector (/ (elt (send *trass* :size) 0) 2) 0
+                                         (/ (elt (send *trass* :size) 2) 2)))
+      (set-primitive-marker-pose cds "ground" :name "trass")
+      )))
 
 (defun sub-object (msg)
   (setq *msg* msg)
