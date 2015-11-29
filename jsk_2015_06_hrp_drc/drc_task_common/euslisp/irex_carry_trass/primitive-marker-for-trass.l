@@ -40,6 +40,21 @@
       (send cds :translate (float-vector (/ (elt (send *trass* :size) 0) 2) 0
                                          (/ (elt (send *trass* :size) 2) 2)))
       (set-primitive-marker-pose cds "ground" :name "trass")
+      cds
+      )))
+(defun set-trass-coords-by-pf-10  (&key (wait) (reset))
+  (let ((eps 1000) cds1 cds2 (ii 0))
+    (print eps)
+    (setq cds1 (set-trass-coords-by-pf))
+    (while (> eps 5)
+      (format t "detecting:~A~%" ii)
+      (setq cds2 (set-trass-coords-by-pf))
+      (setq eps (norm (v- (send cds2 :worldpos)
+                          (send cds1 :worldpos))))
+      (setq cds1 (send cds2 :copy-worldcoords))
+      (setq ii (1+ ii))
+      (when (> ii 20) (return nil))
+      (unix::sleep 1)
       )))
 
 (defun sub-object (msg)
