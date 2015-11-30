@@ -15,6 +15,7 @@
   <!--        args="-l -r 0.1 /home/leus/work/rits/refrig-kinect-c.bag" /> -->
 
   <node pkg="roseus" type="roseus" name="marker_publish" output="screen" if="$(arg visualize_fridge)"
+        machine="c2"
         args="$(find jsk_perception)/euslisp/kalman-filtered-objectdetection-marker.l">
     <param name="object_width" value="0.231"/>
     <param name="object_height" value="0.196"/>

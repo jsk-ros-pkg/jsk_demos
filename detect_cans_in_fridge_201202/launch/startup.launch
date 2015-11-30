@@ -25,7 +25,7 @@
   </node>
 
   <include file="$(find detect_cans_in_fridge_201202)/launch/perception.launch">
-    <arg name="visualize_fridge" value="false" />
+    <arg name="visualize_fridge" value="true" />
     <arg name="roi" value="false" />
   </include>
 

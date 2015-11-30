@@ -2,12 +2,12 @@
   <rosparam file="$(find detect_cans_in_fridge_201202)/object_models_new.yaml" command="load" />
 
   <!-- clusters + model -> can_position -->
-  <node pkg="roseus" type="roseus" name="detect_cans" output="screen"
+  <node pkg="roseus" type="roseus" name="detect_cans" output="screen" machine="c2"
   	args="$(find detect_cans_in_fridge_201202)/euslisp/detect_cans.l" />
 
   <!-- euclidean clustering service -->
   <node pkg="jsk_pcl_ros" type="euclidean_clustering"
-	name="euclidean_clustering"
+	name="euclidean_clustering" machine="c2"
         output="screen" clear_params="true">
     <!--
     <remap from="input" to="/camera/depth_registered/points" />
