@@ -481,8 +481,7 @@
     
     (when real? 
       (format t "go-po ~A ~A ~A ~%" dx dy rot-z-deg)
-      (print "walk OK?")
-      (if (equal (read-line) "y")
+      (if (y-or-n-p "walk OK?")
           (progn 
             (send *ri* :go-pos dx dy rot-z-deg))))    
     tcds
