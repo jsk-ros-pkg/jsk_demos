@@ -55,7 +55,10 @@
       (setq ii (1+ ii))
       (when (> ii 20) (return nil))
       (unix::sleep 1)
-      )))
+      )
+    (unless (y-or-n-p "recognized?")
+      (set-trass-coords-by-pf-10))
+    ))
 
 (defun sub-object (msg)
   (setq *msg* msg)
