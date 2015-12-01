@@ -150,7 +150,10 @@
       )
     ))
 
-(defun jaxon-wooden-box-reach-side (&key (mid1-reach-pos-r (float-vector -120 -50 -55)) (mid1-reach-pos-l (float-vector -120 50 -55))
+;;(defun jaxon-wooden-box-reach-side (&key (mid1-reach-pos-r (float-vector -120 -50 -55)) (mid1-reach-pos-l (float-vector -120 50 -55))
+;;(defun jaxon-wooden-box-reach-side (&key (mid1-reach-pos-r (float-vector -150 -50 -55)) (mid1-reach-pos-l (float-vector -150 50 -55))
+(defun jaxon-wooden-box-reach-side (&key (mid1-reach-pos-r (float-vector -170 -50 -55)) (mid1-reach-pos-l (float-vector -170 50 -55))
+;;(defun jaxon-wooden-box-reach-side (&key (mid1-reach-pos-r (float-vector -220 -50 -55)) (mid1-reach-pos-l (float-vector -220 50 -55))
                                          (mid2-reach-pos-r (float-vector 10 -50 -55)) (mid2-reach-pos-l (float-vector 10 50 -55))
                                          (grasp-reach-pos-r (float-vector 0 15 -55)) (grasp-reach-pos-l (float-vector 0 -15 -55))
                                          (hand-rotation 45) (box-pos (float-vector 850 0 0))
@@ -575,7 +578,9 @@
   ;; Set parameters
   (warn ";; (send *ri* :set-object-turnaround-detector-param :wrench-cutoff-freq 5.0 :dwrench-cutoff-freq 5.0) ?~%")
   ;; (if (y-or-n-p)
-  (send *ri* :set-object-turnaround-detector-param :wrench-cutoff-freq 5.0 :dwrench-cutoff-freq 5.0)
+  (send *ri* :set-object-turnaround-detector-param
+        :detect-time-thre 0.3 :start-time-thre 0.3
+        :wrench-cutoff-freq 5.0 :dwrench-cutoff-freq 5.0)
   ;; )
   ;; Setq ref-force to move
   (warn ";; (setq *box-push-ref-force* (send *ri* :set-object-turnaround-ref-force :max-ref-force 50 :max-time 4000 :axis (float-vector -1 0 0) :set-ref-force-p nil)) ?~%")
@@ -792,4 +797,4 @@
 ;; (warn "~%")
 ;; (warn "(jaxon-wooden-box-okkake) ;; sift recognition and go-pos~%")
 ;; (warn "(jaxon-push-main-all :push-distance 0.5) ;; reach and push 0.5[m] and release for box~%")
-(warn "(jaxon-box-okkake-push-demo :push-distance 0.5) ;; sift recognition and go-pos, then reach and push 0.5[m] and release for box~%")
+(warn "(jaxon-box-okkake-push-demo :push-distance 0.7) ;; sift recognition and go-pos, then reach and push 0.7[m] and release for box~%")

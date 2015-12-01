@@ -25,10 +25,8 @@
   (ros::spin-once)
   (if (or (not *msg*) (not (send *msg* :objects)))
       (progn
-        (if (not *msg*)
-            (ros::ros-info "msg not published")
-          (ros::ros-info "recognized result is empty")
-          )
+        (unless (not *msg*)
+          (ros::ros-info "recognized result is empty"))
         (return-from set-pose nil)
         )
     )
@@ -62,6 +60,7 @@
 ;;  t
   )
 
+#|
 (defun set-pose-10 ()
   (block
    :set-pose-loop
@@ -73,3 +72,36 @@
    (ros::ros-info "recog failed 300 times")
    )
   )
+|#
+
+(defun set-pose-10 (&optional (average 5))
+  (let (cds-lst)
+    (block
+     :set-pose-loop
+     (dotimes (i (* average 10))
+       ;;(if (set-pose) 
+       ;;     (unix::usleep 200000) ;; 0.2sec
+       (if (set-pose)
+           (push (send *box-coords* :copy-worldcoords) cds-lst))
+       (setq *msg* nil)
+       (if (>= (length cds-lst) average)
+           (return-from :set-pose-loop nil)) ;; escape from :set-pose-loop block
+       (unix::usleep (* 1000 500))
+       )
+     (ros::ros-info "recog failed 300 times")
+     )
+    (when (>= (length cds-lst) average)
+      (let ((ave-pos (float-vector 0 0 0))
+            (ave-yaw 0))
+        (dolist (cds cds-lst)
+          (v+ (send cds :worldpos) ave-pos ave-pos)
+          (incf ave-yaw (caar (send cds :rpy-angle))))
+        (scale (/ 1.0 (length cds-lst)) ave-pos ave-pos)
+        (setq ave-yaw (/ ave-yaw (length cds-lst)))
+        ;; (pprint (list ave-pos ave-yaw cds-lst))
+        (send *box-coords* :reset-coords)
+        (send *box-coords* :transform
+              (make-coords :pos ave-pos :angle ave-yaw :axis :z))
+        )
+      )
+    ))
