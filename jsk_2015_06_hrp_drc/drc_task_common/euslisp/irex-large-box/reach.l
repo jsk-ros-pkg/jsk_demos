@@ -43,7 +43,7 @@
 ;;   (send *ri* :start-impedance :arms :d-p 600 :d-r 200)
 ;;   )
 
-(defun jaxon-wooden-box-init (&key (box-pos (float-vector 850 0 0)))
+(defun jaxon-wooden-box-init (&key (box-pos (float-vector 850 0 0)) (resize-viewer-for-irex t))
   ;; (make-wooden-box)
   (insert-primitive-marker
    :name "wooden_box"
@@ -57,6 +57,11 @@
   (send *robot* :fix-leg-to-coords (make-coords))
   (send *wooden-box* :newcoords (make-coords :pos box-pos))
   (objects (list *robot* *wooden-box*))
+  (when resize-viewer-for-irex
+    (send *irtviewer* :resize 1000 1000)
+    (send *irtviewer* :resize 1000 1000))
+  (send *irtviewer* :look1 (midpoint 0.5 (send *wooden-box* :worldpos) (send *robot* :worldpos)) 180 90)
+  (send *irtviewer* :draw-objects)
   (warn ";; (send *ri* :angle-vector (send *robot* :angle-vector) 5000) ?~%")
   (when (y-or-n-p)
     (send *ri* :angle-vector (send *robot* :angle-vector) 5000)
