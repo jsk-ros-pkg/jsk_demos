@@ -12,6 +12,7 @@
     <arg name="description" value="$(find jsk_2013_04_pr2_610)/pddl/description.l"/>
     <arg name="planner" value="ffha" />
     <arg name="debug" value="$(arg debug)" />
+    <arg name="planner_option" value="" />
   </include>
 
   <include unless="$(arg use_ffha)"
