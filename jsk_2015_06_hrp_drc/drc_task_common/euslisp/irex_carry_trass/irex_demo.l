@@ -95,9 +95,16 @@
   (send *ri* :go-pos 0 0 -90)
   )
 
-(defun demo-carry-trass ()
-  (prepare-carry-trass-demo)
-  (walk-to-trass)
+(defun demo-carry-trass (&key (move-to-trass t))
+  (if move-to-trass
+      (progn
+        (prepare-carry-trass-demo)
+        (walk-to-trass))
+    (progn
+      (set-trass-coords-by-pf-10)
+      (when (y-or-n-p "please adjust. Do you have done?")
+        (adjust-robot-by-primitive-marker))
+      ))
   (plan-motion)
   (when (y-or-n-p "reach trass. ok?")
     (reach-trass-exec))
@@ -117,3 +124,11 @@
   )
 (warn ";; (init :real? t)~%")
 (warn ";; (demo-carry-trass)~%")
+(warn ";; (demo-carry-trass :move-to-trass nil)~%")
+
+;; for emergency
+;; 0. hand hiraku
+;; 1. (send *rsl* :set-rs :name :pre-put)
+;; 2. (progn (send *ri* :angle-vector (send *robot* :angle-vector) 5000) (send *ri* :wait-interpolation))
+;; 3. emergency wo release
+;; 4. (progn (send *robot* :reset-manip-pose) (send *ri* :angle-vector (send *robot* :angle-vector) 5000) (send *ri* :wait-interpolation))
