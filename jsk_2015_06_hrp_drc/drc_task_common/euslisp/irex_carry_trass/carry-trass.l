@@ -53,6 +53,7 @@
     (send *robot* :translate robot-pos)
     (send *trass* :set-default-coords)
     (objects (list *robot* *trass*))
+    (send *irtviewer* :title "irex trass demo")
     (setq *initial-foot-midcoords* (send (send *robot* :foot-midcoords) :copy-worldcoords))
     ))
 
