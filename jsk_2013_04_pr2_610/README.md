@@ -5,7 +5,7 @@ jsk_2013_04_pr2_610
 
 ```
 Yuki FURUTA, Yuto INAGAKI, Youhei KAKIUCHI, Kei OKADA, Masayuki INABA:
-IRTホームアシスタントロボットによる掃除片付け作業シケンスのPR2による実現,
+IRTホームアシスタントロボット による掃除片付け作業シケンスのPR2による実現,
 in The 31th Annual Conference on Robotics Society of Japan, 1I2-02, 2013.
 ```
 
