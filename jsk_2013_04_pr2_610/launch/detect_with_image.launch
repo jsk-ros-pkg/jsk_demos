@@ -11,12 +11,8 @@
   <arg name="error_threshold" default="80.0" />
   <arg name="distanceratio_threshold" default="0.49" />
   <arg name="viewer_window" default="false" />
-  <arg name="use_sim" default="false" />
 
-  <include file="$(find pr2_machine)/pr2.machine"
-           unless="$(arg use_sim)"/>
-  <include file="$(find pr2_machine)/sim.machine"
-           if="$(arg use_sim)"/>
+  <include file="$(find pr2_machine)/$(env ROBOT).machine"/>
   <group ns="$(arg camera)" if="$(arg launch_sift)">
 	<node name="$(arg object)_throttle" pkg="topic_tools"
 		  type="throttle" args="messages image_rect 4.0"
