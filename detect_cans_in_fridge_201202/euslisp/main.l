@@ -175,6 +175,7 @@
               :finish-type finish-type)
        (return-from demo)))
     )
+  (enable-behavior-server)
   (if (eq app-manager :true) (ros::exit))
   )
 
@@ -215,8 +216,6 @@
        (ros::spin-once)
        (setq atype nil from nil)
        )
-     (unless atype
-       (enable-behavior-server))
      (ros::sleep))
     (ros::unsubscribe "/Tablet/StartDemo")
     (ros::unsubscribe "/Murase/Demo")
