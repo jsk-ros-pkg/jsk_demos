@@ -1,4 +1,0 @@
-<launch>
-  <node pkg="rviz" name="rviz" type="rviz"
-        args="-d $(find detect_cans_in_fridge_201202)/launch/detect_cans.vcg" />
-</launch>

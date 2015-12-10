@@ -5,8 +5,8 @@
   <arg name="DEMOTYPE" default="map" />
   <arg name="app_manager" default="false" />
   <arg name="run_behavior" default="true" />
-  <include file="$(find pr2_machine)/$(env ROBOT).machine" />  
-  <!-- <arg name="app_manager" default="true" /> -->
+
+  <include file="$(find pr2_machine)/$(env ROBOT).machine" />
 
   <!-- sample data for test -->
   <anode pkg="rosbag" type="play" name="play"
@@ -14,7 +14,7 @@
 
   <!-- for desktop -->
   <node pkg="rviz" type="rviz" name="detect_cans_rviz"
-         args="-d $(find detect_cans_in_fridge_201202)/detect_cans.vcg"
+         args="-d $(find detect_cans_in_fridge_201202)/config/desktop.rviz"
          if="$(arg start_rviz)" />
 
   <!-- ICP matching between map and base scan -->
