@@ -1,9 +1,13 @@
 <launch>
+  <arg name="debug_view" default="true" />
+
   <rosparam file="$(find detect_cans_in_fridge_201202)/config/object_models_new.yaml" command="load" />
 
   <!-- clusters + model -> can_position -->
-  <node pkg="roseus" type="roseus" name="detect_cans" output="screen"
-  	args="$(find detect_cans_in_fridge_201202)/euslisp/detect_cans.l" />
+  <node pkg="roseus" type="roseus" name="detect_cans" output="screen" respawn="true"
+        args="$(find detect_cans_in_fridge_201202)/euslisp/detect_cans.l">
+    <param name="debug_view" value="$(arg debug_view)" />
+  </node>
 
   <!-- euclidean clustering service -->
   <node pkg="jsk_pcl_ros" type="euclidean_clustering"

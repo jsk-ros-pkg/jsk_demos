@@ -7,6 +7,7 @@
   <arg name="run_behavior" default="true" />
   <arg name="visualize_fridge" default="true" />
   <arg name="roi" default="true" />
+  <arg name="debug_view" default="true" />
   <include file="$(find pr2_machine)/$(env ROBOT).machine" />
   <!-- <arg name="app_manager" default="true" /> -->
 
@@ -78,7 +79,10 @@
   <include file="$(find detect_cans_in_fridge_201202)/launch/white_balance.launch" />
 
   <!-- detect cans -->
-  <include file="$(find detect_cans_in_fridge_201202)/launch/detect_cans.launch" />
+  <include file="$(find detect_cans_in_fridge_201202)/launch/detect_cans.launch">
+    <arg name="debug_view" value="$(arg debug_view)" />
+  </include>
+
   <sphinxdoc><![CDATA[
 
 This package containts detect and fetch can in the fridge demo program
