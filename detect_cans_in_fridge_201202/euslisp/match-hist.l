@@ -102,7 +102,7 @@
       ()))
   )
 
-(defun match-model (objs model-name &key (thr 0.7) (rotate 20))
+(defun match-model (objs model-name &key (thr 0.67) (rotate 20))
   (let ((histnum (ros::get-param "/object_hs_histgram/histnum"))
         (hs_bin (ros::get-param "/object_hs_histgram/hs_bin"))
         (model-hist (ros::get-param model-name))
