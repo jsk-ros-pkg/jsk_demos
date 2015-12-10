@@ -20,6 +20,7 @@
 (load "match-hist.l")
 
 (defvar *model-names* (ros::get-param "/object_hs_histgram/names"))
+(defvar *debug-view* (ros::get-param "~debug_view" t))
 
 (setq *3dpos* (instance pointcloud :init))
 (setq *p* nil
@@ -57,9 +58,11 @@
     (send p :copy-from *3dpos*)
     (setq *p* p)
     (send p :filter :key #'(lambda (p) (> 1500 (norm p) 100)))
-    (objects (list p))
     (setq q (white-balance-points p *ref-color*))
     (setq qlst (euclidean-cluster-points q 0.01))
+    (when *debug-view*
+      (objects (list q))
+      (x::window-main-one))
     (setq *obj-lst* (remove-if #'(lambda (x) (bbox-area (send x :box))) qlst))
     ;; *obj-lst* -> point cloud list
     ;; need match-hist.l

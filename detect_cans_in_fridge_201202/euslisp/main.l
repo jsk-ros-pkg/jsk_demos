@@ -5,6 +5,7 @@
 (defvar *use-voicetext* t)
 (defvar *use-english* nil)
 (defvar *logging* t)
+(defvar *debug-view* (ros::get-param "~debug_view" t))
 
 (setq *use-arm-navigation* nil)
 
@@ -29,7 +30,7 @@
   (unless (boundp '*scene*) (setq *scene* (make-eng2-scene)))
   (unless (boundp '*tfb*)
     (setq *tfb* (instance ros::transform-broadcaster :init)))
-  (if (and x::*display* (/= x::*display* 0)) (make-irtviewer))
+  (if (and x::*display* (/= x::*display* 0) *debug-view*) (make-irtviewer))
   (setq *obj* (make-sphere 100)) ;; dummy object
   (setq *target-name* nil)
   (ros::spin-once)
@@ -42,7 +43,7 @@
   (send *ri* :spin-once)
   (send *pr2* :angle-vector (send *ri* :state :potentio-vector))
   |#
-  (pr2-init)
+  (pr2-init *debug-view*)
   (when *use-arm-navigation*
     (setq *plan-env* (instance arm_planning_environment :init :robot *pr2*)))
   )
