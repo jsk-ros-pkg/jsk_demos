@@ -1,8 +1,13 @@
+;; open fridge and pick a can (and close the door)
+(ros::roseus "demo_main")
+(ros::roseus-add-msgs "pr2_gripper_sensor_msgs")
+
 (defvar *use-voicetext* t)
 (defvar *use-english* nil)
 (defvar *logging* t)
 
-;; open fridge and pick a can (and close the door)
+(setq *use-arm-navigation* nil)
+
 (require :pr2-interface "package://pr2eus/pr2-interface.l")
 ;;(load "package://pr2eus_openrave/pr2eus-openrave.l")
 ;;(load "package://pr2eus_armnavigation/pr2eus-arm-navigation.l")
@@ -18,10 +23,7 @@
     (progn
       (require :pr2-move "package://jsk_demo_common/euslisp/pr2-move.l")
       (require :pr2-action "package://jsk_demo_common/euslisp/pr2-action.l")))
-(ros::roseus-add-msgs "pr2_gripper_sensor_msgs")
 
-(ros::roseus "demo_main")
-(setq *use-arm-navigation* nil)
 
 (defun init-for-perception ()
   (unless (boundp '*scene*) (setq *scene* (make-eng2-scene)))

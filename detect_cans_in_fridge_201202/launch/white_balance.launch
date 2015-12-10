@@ -1,7 +1,7 @@
 <launch>
   <!-- white balance -->
   <node  pkg="jsk_perception" type="white_balance_converter"
-	 name="white_balance"
+	       name="white_balance"
          output="screen" clear_params="true">
     <rosparam command="load" file="$(find jsk_perception)/launch/white_balance_param.yaml" />
   </node>

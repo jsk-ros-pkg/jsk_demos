@@ -35,6 +35,6 @@
     <!-- The scaling to be added for the body parts the robot can see -->
     <param name="self_see_scale" type="double" value="1.0" />
     <param name="subsample_value" type="double" value="0.0"/>
-    <rosparam file="$(find detect_cans_in_fridge_201202)/self_filter.yaml" command="load" />
+    <rosparam file="$(find detect_cans_in_fridge_201202)/config/self_filter.yaml" command="load" />
   </node>
 </launch>
