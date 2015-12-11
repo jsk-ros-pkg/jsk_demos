@@ -63,9 +63,15 @@
 (defun carry-trass (&key (real? t))
   ;;go-pos-0-0-0
   (when real?
-    (send *ri* :go-pos 0 0 90)
-    (send *ri* :go-pos 0.15 0 0)
-    ))
+    (let* ((org-str-prm (send (send *ri* :get-gait-generator-param) :stride_parameter))
+           (str-prm (copy-object org-str-prm)))
+      (setf (elt str-prm 2) 20.0) ;; Rotation
+      (setf (elt str-prm 3) 0.15) ;; Backward
+      (send *ri* :set-gait-generator-param :stride-parameter str-prm)
+      (send *ri* :go-pos 0 0 90)
+      (send *ri* :go-pos 0.15 0 0)
+      (send *ri* :set-gait-generator-param :stride-parameter org-str-prm)
+      )))
 (defun put-trass (&key (real? t))
   ;;pre-put
   (send *rsl* :set-rs :name :pre-put)
@@ -89,11 +95,17 @@
   (model2real)
   )
 (defun next-to-valve (&key (real? t))
-  (print "go-pos-0.3 0 0")
-  (send *ri* :go-pos -0.3 0 0)
-  (print "go-pos 0 0 -90")
-  (send *ri* :go-pos 0 0 -90)
-  )
+  (let* ((org-str-prm (send (send *ri* :get-gait-generator-param) :stride_parameter))
+         (str-prm (copy-object org-str-prm)))
+    (setf (elt str-prm 2) 20.0) ;; Rotation
+    (setf (elt str-prm 3) 0.15) ;; Backward
+    (send *ri* :set-gait-generator-param :stride-parameter str-prm)
+    (print "go-pos-0.3 0 0")
+    (send *ri* :go-pos -0.3 0 0)
+    (print "go-pos 0 0 -90")
+    (send *ri* :go-pos 0 0 -90)
+    (send *ri* :set-gait-generator-param :stride-parameter org-str-prm)
+    ))
 
 (defun demo-carry-trass (&key (move-to-trass t))
   (if move-to-trass
