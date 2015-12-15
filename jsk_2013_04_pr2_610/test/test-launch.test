@@ -1,4 +1,0 @@
-<launch>
-  <test test-name="check_planner_launch" pkg="roslaunch" type="roslaunch-check"
-        args="$(find jsk_2013_04_pr2_610)/launch/planner.launch -- " />
-</launch>

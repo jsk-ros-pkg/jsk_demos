@@ -50,8 +50,8 @@ install(
   )
 
 if(CATKIN_ENABLE_TESTING AND NOT $ENV{ROS_DISTRO} STREQUAL "hydro")
-  find_package(catkin REQUIRED COMPONENTS rostest)
-  add_rostest(test/test-launch.test)
+  find_package(catkin REQUIRED COMPONENTS rostest roslaunch)
+  roslaunch_add_file_check(launch/planner.launch)
   add_rostest(test/test-demo.test)
   add_rostest(test/test-demo-plan.test)
 endif()
