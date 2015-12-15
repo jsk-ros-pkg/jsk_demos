@@ -19,6 +19,10 @@
               (eq l to))
           (return-from :include t)))
     nil)
+  (:to-list (link-list)
+    (if (member from link-list)
+        (list from to)
+      (list to from)))
   (:is-same-pair (p)
     (or (and (eq (send p :from) from) (eq (send p :to) to))
         (and (eq (send p :to) from) (eq (send p :from) to))))
@@ -141,6 +145,8 @@
       ;; sort
       (sort valid-distance-table #'(lambda (x y) (< (cdr x) (cdr y))))
       (mapcar #'car (subseq valid-distance-table 0 n))))
+  (:collision-avoidance-link-pair (link-list num)
+    (send-all (send self :collision-link-pairs link-list num) :to-list link-list))
   )
 
 (defun test-link-pair-visualization ()
