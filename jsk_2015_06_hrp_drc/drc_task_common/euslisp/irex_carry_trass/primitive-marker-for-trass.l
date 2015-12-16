@@ -33,6 +33,8 @@
     (ros::service-call "/pfilter/reset_with_guess" (instance std_srvs::EmptyRequest :init))
     (wait-pfilter-obj :wait wait)
     (wait-pfilter-obj :wait wait))
+  (ros::service-call "/transformable_interactive_server/set_color"
+                     (instance jsk_interactive_marker::SetTransformableMarkerColorRequest :init :target_name "trass" :color (instance std_msgs::colorRGBA :init :r 1 :g 0 :b 0 :a 1)))
   (let ((cds (wait-pfilter-obj :wait wait)))
     (when cds
       ;;(send *trass* :reset-coords)
@@ -53,9 +55,13 @@
                           (send cds1 :worldpos))))
       (setq cds1 (send cds2 :copy-worldcoords))
       (setq ii (1+ ii))
-      (when (> ii 20) (return nil))
-      (unix::sleep 1)
-      )))
+      ;;(when (> ii 20) (return nil))
+      (when (> ii 10) (return nil))
+      ;;(unix::sleep 1)
+      )
+    (unless (y-or-n-p "recognized?")
+      (set-trass-coords-by-pf-10))
+    ))
 
 (defun sub-object (msg)
   (setq *msg* msg)

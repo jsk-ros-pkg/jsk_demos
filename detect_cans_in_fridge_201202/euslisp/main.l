@@ -1,8 +1,14 @@
+;; open fridge and pick a can (and close the door)
+(ros::roseus "demo_main")
+(ros::roseus-add-msgs "pr2_gripper_sensor_msgs")
+
 (defvar *use-voicetext* t)
 (defvar *use-english* nil)
 (defvar *logging* t)
+(defvar *debug-view* (ros::get-param "~debug_view" t))
 
-;; open fridge and pick a can (and close the door)
+(setq *use-arm-navigation* nil)
+
 (require :pr2-interface "package://pr2eus/pr2-interface.l")
 ;;(load "package://pr2eus_openrave/pr2eus-openrave.l")
 ;;(load "package://pr2eus_armnavigation/pr2eus-arm-navigation.l")
@@ -18,16 +24,13 @@
     (progn
       (require :pr2-move "package://jsk_demo_common/euslisp/pr2-move.l")
       (require :pr2-action "package://jsk_demo_common/euslisp/pr2-action.l")))
-(ros::roseus-add-msgs "pr2_gripper_sensor_msgs")
 
-(ros::roseus "demo_main")
-(setq *use-arm-navigation* nil)
 
 (defun init-for-perception ()
   (unless (boundp '*scene*) (setq *scene* (make-eng2-scene)))
   (unless (boundp '*tfb*)
     (setq *tfb* (instance ros::transform-broadcaster :init)))
-  (if (and x::*display* (/= x::*display* 0)) (make-irtviewer))
+  (if (and x::*display* (/= x::*display* 0) *debug-view*) (make-irtviewer))
   (setq *obj* (make-sphere 100)) ;; dummy object
   (setq *target-name* nil)
   (ros::spin-once)
@@ -40,7 +43,7 @@
   (send *ri* :spin-once)
   (send *pr2* :angle-vector (send *ri* :state :potentio-vector))
   |#
-  (pr2-init)
+  (pr2-init *debug-view*)
   (when *use-arm-navigation*
     (setq *plan-env* (instance arm_planning_environment :init :robot *pr2*)))
   )
@@ -173,6 +176,7 @@
               :finish-type finish-type)
        (return-from demo)))
     )
+  (enable-behavior-server)
   (if (eq app-manager :true) (ros::exit))
   )
 
@@ -213,8 +217,6 @@
        (ros::spin-once)
        (setq atype nil from nil)
        )
-     (unless atype
-       (enable-behavior-server))
      (ros::sleep))
     (ros::unsubscribe "/Tablet/StartDemo")
     (ros::unsubscribe "/Murase/Demo")

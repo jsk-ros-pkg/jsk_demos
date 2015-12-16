@@ -1,49 +1,9 @@
 ;; 5.irteusgl$ *calib-offset-coords*
 ;; #<coordinates #X1b4ce630  -115.868 -102.183 0.0 / -0.017 0.0 0.0>
 ;; #s(coordinates plist nil rot #2f((0.999856 0.016999 0.0) (-0.016999 0.999856 0.0) (0.0 0.0 1.0)) pos #f(-115.868 -102.183 0.0))
+
+;; (dump-structure *standard-output* (make-coords :pos #f(-115.868 -102.183 0.0) :rpy '(-0.017 0.0 0.0)))
 (setq *calib-offset-coords* #s(coordinates plist nil rot #2f((0.999856 0.016999 0.0) (-0.016999 0.999856 0.0) (0.0 0.0 1.0)) pos #f(-115.868 -102.183 0.0)))
-
-;; 4.irteusgl$ (dump-structure *standard-output* (make-coords :pos #f(950.26 127.809 0.0) :rpy '(0.032 0.0 0.0)))
-;; #s(coordinates plist nil rot #2f((0.999488 -0.031995 0.0) (0.031995 0.999488 0.0) (0.0 0.0 1.0)) pos #f(950.26 127.809 0.0))
-;; nil
-;; 5.irteusgl$ (setq *calib-offset-coords* #s(coordinates plist nil rot #2f((0.999488 -0.031995 0.0) (0.031995 0.999488 0.0) (0.0 0.0 1.0)) pos #f(950.26 127.809 0.0)))
-;; #<coordinates #X3ee7ef70  950.26 127.809 0.0 / 0.032 0.0 0.0>
-;; (setq *calib-offset-coords* #s(coordinates plist nil rot #2f((0.999488 -0.031995 0.0) (0.031995 0.999488 0.0) (0.0 0.0 1.0)) pos #f(950.26 127.809 0.0)))
-
-
-
-;; 23.irteusgl$ (dump-structure *standard-output* (make-coords :pos #f(92.439 -36.516 0.0) :rpy '(-0.007 0.0 0.0)))
-;; #s(coordinates plist nil rot #2f((0.999976 0.007 0.0) (-0.007 0.999976 0.0) (0.0 0.0 1.0)) pos #f(92.439 -36.516 0.0))
-;; nil
-;; 24.irteusgl$ (setq *calib-offset-coords* #s(coordinates plist nil rot #2f((0.999976 0.007 0.0) (-0.007 0.999976 0.0) (0.0 0.0 1.0)) pos #f(92.439 -36.516 0.0)))
-;; #<coordinates #X1cb18bf8  92.439 -36.516 0.0 / -0.007 0.0 0.0>
-
-
-;; set-box-x-pos = 850[mm]
-;; x-calib-offset = -184.34[mm]
-;; y-calib-offset = -82.8429[mm]
-;; yaw-calib-offset = -0.024117[rad]
-;; *calib-offset-coords* = #<coordinates #X1cfc36f0  -184.34 -82.843 0.0 / -0.024 0.0 0.0>
-
-
-;; set-box-x-pos = 850[mm]
-;; x-calib-offset = 69.4433[mm]
-;; y-calib-offset = -18.3792[mm]
-;; yaw-calib-offset = 0.008245[rad]
-;; *calib-offset-coords* = #<coordinates #Xdb2a580  69.443 -18.379 0.0 / 0.008 0.0 0.0>
-
-;;;; set-box-x-pos = 850[mm]
-;;;; x-calib-offset = -162.981[mm]
-;;;; y-calib-offset = -94.6289[mm]
-;;;; yaw-calib-offset = -0.037462[rad]
-;;;; *calib-offset-coords* = #<coordinates #X3749ec80  -162.981 -94.629 0.0 / -0.037 0.0 0.0>
-
-;; (dump-structure *standard-output* (make-coords :pos #f(69.443 -18.379 0.0) :rpy '(0.008 0.0 0.0)))
-;;(setq *calib-offset-coords* #s(coordinates plist nil rot #2f((0.999968 -0.008 0.0) (0.008 0.999968 0.0) (0.0 0.0 1.0)) pos #f(69.443 -18.379 0.0)))
-;; (setq *calib-offset-coords* #s(coordinates plist nil rot #2f((0.999712 0.023998 0.0) (-0.023998 0.999712 0.0) (0.0 0.0 1.0)) pos #f(-184.34 -82.843 0.0)))
-
-;;;; (dump-structure *standard-output* (make-coords :pos #f(-162.981 -94.629 0.0) :rpy '(-0.037 0.0 0.0)))
-;; (setq *calib-offset-coords* #s(coordinates plist nil rot #2f((0.999316 0.036992 0.0) (-0.036992 0.999316 0.0) (0.0 0.0 1.0)) pos #f(-162.981 -94.629 0.0)))
 
 (setq *box-coords* nil)
 (load "package://drc_task_common/euslisp/robot-util.l")
@@ -83,7 +43,7 @@
 ;;   (send *ri* :start-impedance :arms :d-p 600 :d-r 200)
 ;;   )
 
-(defun jaxon-wooden-box-init (&key (box-pos (float-vector 850 0 0)))
+(defun jaxon-wooden-box-init (&key (box-pos (float-vector 850 0 0)) (resize-viewer-for-irex t))
   ;; (make-wooden-box)
   (insert-primitive-marker
    :name "wooden_box"
@@ -97,9 +57,14 @@
   (send *robot* :fix-leg-to-coords (make-coords))
   (send *wooden-box* :newcoords (make-coords :pos box-pos))
   (objects (list *robot* *wooden-box*))
-  (warn ";; (send *ri* :angle-vector (send *robot* :angle-vector) 5000) ?~%")
+  (when resize-viewer-for-irex
+    (send *irtviewer* :resize 1000 1000)
+    (send *irtviewer* :resize 1000 1000))
+  (send *irtviewer* :look1 (midpoint 0.5 (send *wooden-box* :worldpos) (send *robot* :worldpos)) 180 90)
+  (send *irtviewer* :draw-objects)
+  (warn ";; (send *ri* :angle-vector (send *robot* :angle-vector) 2000) ?~%")
   (when (y-or-n-p)
-    (send *ri* :angle-vector (send *robot* :angle-vector) 5000)
+    (send *ri* :angle-vector (send *robot* :angle-vector) 2000)
     (send *ri* :wait-interpolation-seq)
     )
   ;; (warn ";; (send *ri* :start-auto-balancer) ?~%")
@@ -190,7 +155,10 @@
       )
     ))
 
-(defun jaxon-wooden-box-reach-side (&key (mid1-reach-pos-r (float-vector -120 -50 -55)) (mid1-reach-pos-l (float-vector -120 50 -55))
+;;(defun jaxon-wooden-box-reach-side (&key (mid1-reach-pos-r (float-vector -120 -50 -55)) (mid1-reach-pos-l (float-vector -120 50 -55))
+;;(defun jaxon-wooden-box-reach-side (&key (mid1-reach-pos-r (float-vector -150 -50 -55)) (mid1-reach-pos-l (float-vector -150 50 -55))
+(defun jaxon-wooden-box-reach-side (&key (mid1-reach-pos-r (float-vector -170 -50 -55)) (mid1-reach-pos-l (float-vector -170 50 -55))
+;;(defun jaxon-wooden-box-reach-side (&key (mid1-reach-pos-r (float-vector -220 -50 -55)) (mid1-reach-pos-l (float-vector -220 50 -55))
                                          (mid2-reach-pos-r (float-vector 10 -50 -55)) (mid2-reach-pos-l (float-vector 10 50 -55))
                                          (grasp-reach-pos-r (float-vector 0 15 -55)) (grasp-reach-pos-l (float-vector 0 -15 -55))
                                          (hand-rotation 45) (box-pos (float-vector 850 0 0))
@@ -572,7 +540,7 @@
       )
     ))
 
-(defun jaxon-push-motion (&key (emer-mode nil) (emer-push-force-thre 90.0) (push-distance 0.5) (save-log-mode nil))
+(defun jaxon-push-motion (&key (emer-mode nil) (emer-push-force-thre 100.0) (push-distance 0.5) (save-log-mode nil))
   (when save-log-mode
     (send *ri* :start-log))
   (send *ri* :set-ref-force (car *box-push-ref-force*) 2000 :arms)
@@ -615,7 +583,9 @@
   ;; Set parameters
   (warn ";; (send *ri* :set-object-turnaround-detector-param :wrench-cutoff-freq 5.0 :dwrench-cutoff-freq 5.0) ?~%")
   ;; (if (y-or-n-p)
-  (send *ri* :set-object-turnaround-detector-param :wrench-cutoff-freq 5.0 :dwrench-cutoff-freq 5.0)
+  (send *ri* :set-object-turnaround-detector-param
+        :detect-time-thre 0.3 :start-time-thre 0.3
+        :wrench-cutoff-freq 5.0 :dwrench-cutoff-freq 5.0)
   ;; )
   ;; Setq ref-force to move
   (warn ";; (setq *box-push-ref-force* (send *ri* :set-object-turnaround-ref-force :max-ref-force 50 :max-time 4000 :axis (float-vector -1 0 0) :set-ref-force-p nil)) ?~%")
@@ -832,4 +802,4 @@
 ;; (warn "~%")
 ;; (warn "(jaxon-wooden-box-okkake) ;; sift recognition and go-pos~%")
 ;; (warn "(jaxon-push-main-all :push-distance 0.5) ;; reach and push 0.5[m] and release for box~%")
-(warn "(jaxon-box-okkake-push-demo :push-distance 0.5) ;; sift recognition and go-pos, then reach and push 0.5[m] and release for box~%")
+(warn "(jaxon-box-okkake-push-demo :push-distance 0.7) ;; sift recognition and go-pos, then reach and push 0.7[m] and release for box~%")

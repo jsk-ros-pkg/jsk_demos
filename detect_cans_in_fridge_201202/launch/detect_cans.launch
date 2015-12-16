@@ -1,9 +1,48 @@
 <launch>
-  <rosparam file="$(find detect_cans_in_fridge_201202)/object_models_new.yaml" command="load" />
+  <arg name="manager" default="plane_extraction_manager" />
+  <arg name="launch_manager" default="true" />
+  <arg name="machine" default="c2" />
+  <arg name="debug_view" default="true" />
+
+  <rosparam file="$(find detect_cans_in_fridge_201202)/config/object_models_new.yaml" command="load" />
 
   <!-- clusters + model -> can_position -->
-  <node pkg="roseus" type="roseus" name="detect_cans" output="screen"
-  	args="$(find detect_cans_in_fridge_201202)/euslisp/detect_cans.l" />
+  <node pkg="roseus" type="roseus" name="detect_cans" output="screen" respawn="true"
+        args="$(find detect_cans_in_fridge_201202)/euslisp/detect_cans.l">
+    <param name="debug_view" value="$(arg debug_view)" />
+  </node>
+
+  <!-- exclude fridge inner shelf -->
+  <node pkg="nodelet" type="nodelet" name="$(arg manager)"
+        args="manager"
+        machine="$(arg machine)"
+        if="$(arg launch_manager)"
+        output="screen"/>
+  <node pkg="nodelet" type="nodelet" name="input_relay"
+        machine="$(arg machine)"
+        args="load jsk_topic_tools/Relay $(arg manager)">
+    <remap from="~input" to="/kinect_head_c2/depth_registered/points" />
+  </node>
+  <node pkg="nodelet" type="nodelet" name="multi_plane_estimate"
+        machine="$(arg machine)"
+        args="load jsk_pcl/OrganizedMultiPlaneSegmentation $(arg manager)"
+        clear_params="false">
+    <remap from="~input" to="input_relay/output"/>
+    <rosparam>
+      max_curvature: 0.01
+      estimate_normal: true
+    </rosparam>
+  </node>
+  <node pkg="nodelet" type="nodelet"
+        name="plane_extraction"
+        machine="$(arg machine)"
+        args="load jsk_pcl/MultiPlaneExtraction $(arg manager)"
+        output="screen">
+    <remap from="~input" to="input_relay/output" />
+    <remap from="~indices" to="/multi_plane_estimate/output_refined" />
+    <remap from="~input_polygons" to="/multi_plane_estimate/output_refined_polygon" />
+    <remap from="~input_coefficients" to="/multi_plane_estimate/output_refined_coefficients" />
+  </node>
 
   <!-- euclidean clustering service -->
   <node pkg="jsk_pcl_ros" type="euclidean_clustering"

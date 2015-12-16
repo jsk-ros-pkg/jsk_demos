@@ -5,34 +5,24 @@
 
 (setq ros::*compile-message* t) ;; switch for compile
 
-(if (string= (unix::getenv "ROS_DISTRO") "groovy")
-    (ros::roseus-add-msgs "pcl")
-  (ros::roseus-add-msgs "pcl_msgs"))  
+(ros::roseus "white_balance_main")
+
+(ros::roseus-add-msgs "pcl_msgs")
 (ros::roseus-add-srvs "jsk_perception")
 (ros::roseus-add-srvs "jsk_pcl_ros")
+(ros::roseus-add-msgs "posedetection_msgs")
 
-;; electric
-;;(defvar *topic-name* "/camera/rgb/points_throttle")
-;;(defvar *image-topic* "/camera/rgb/image_rect_color")
-;;(defvar *screen-topic* "/camera/rgb/screenpoint")
-;; fuerte
-;;(defvar *topic-name* "/openni/depth_registered/points")
-(defvar *topic-name* "/kinect_head_c2/depth_registered/points_throttle")
+(defvar *topic-name* "/plane_extraction/output_nonplane_cloud") ;; point cloud from camera
 (defvar *image-topic* "/kinect_head_c2/rgb/image_rect_color")
 (defvar *screen-topic* "/kinect_head_c2/rgb/image_rect_color/screenpoint")
-;;(defvar *result-topic* "/narrow_stereo/left/ObjectDetection")
-;;(defvar *result-topic* "/openni/rgb/ObjectDetection")
 (defvar *result-topic* "/kinect_head_c2/depth_registered/ObjectDetection")
 
-(ros::roseus-add-msgs "posedetection_msgs")
 (load "match-hist.l")
-;;
+
 (defvar *model-names* (ros::get-param "/object_hs_histgram/names"))
+(defvar *debug-view* (ros::get-param "~debug_view" t))
 
-;(unless (boundp '*irtviewer*) (make-irtviewer))
 (setq *3dpos* (instance pointcloud :init))
-
-(ros::roseus "white_balance_main")
 (setq *p* nil
       *obj-lst* nil
       *obj-det* nil
@@ -68,9 +58,11 @@
     (send p :copy-from *3dpos*)
     (setq *p* p)
     (send p :filter :key #'(lambda (p) (> 1500 (norm p) 100)))
-    (objects (list p))
     (setq q (white-balance-points p *ref-color*))
     (setq qlst (euclidean-cluster-points q 0.01))
+    (when *debug-view*
+      (objects (list q))
+      (x::window-main-one))
     (setq *obj-lst* (remove-if #'(lambda (x) (bbox-area (send x :box))) qlst))
     ;; *obj-lst* -> point cloud list
     ;; need match-hist.l

@@ -1,9 +1,7 @@
 <launch>
   <arg name="plan" default="true"/>
-  <arg name="use_sim" default="false" />
   <include file="$(find jsk_2013_04_pr2_610)/launch/demo_common.launch">
     <arg name="task" value="wash" />
     <arg name="plan" value="$(arg plan)"/>
-    <arg name="use_sim" value="$(arg use_sim)" />
   </include>
 </launch>

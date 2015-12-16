@@ -5,8 +5,9 @@
   <arg name="DEMOTYPE" default="map" />
   <arg name="app_manager" default="false" />
   <arg name="run_behavior" default="true" />
-  <include file="$(find pr2_machine)/$(env ROBOT).machine" />  
-  <!-- <arg name="app_manager" default="true" /> -->
+  <arg name="debug_view" default="true" />
+
+  <include file="$(find pr2_machine)/$(env ROBOT).machine" />
 
   <!-- sample data for test -->
   <anode pkg="rosbag" type="play" name="play"
@@ -14,7 +15,7 @@
 
   <!-- for desktop -->
   <node pkg="rviz" type="rviz" name="detect_cans_rviz"
-         args="-d $(find detect_cans_in_fridge_201202)/detect_cans.vcg"
+         args="-d $(find detect_cans_in_fridge_201202)/config/desktop.rviz"
          if="$(arg start_rviz)" />
 
   <!-- ICP matching between map and base scan -->
@@ -26,6 +27,7 @@
 
   <include file="$(find detect_cans_in_fridge_201202)/launch/perception.launch">
     <arg name="visualize_fridge" value="false" />
+    <arg name="debug_view" value="$(arg debug_view)" />
     <arg name="roi" value="false" />
   </include>
 
@@ -34,16 +36,20 @@
           pkg="roseus" name="fridge_can_main" type="roseus"
           machine="c2"
           args="$(find detect_cans_in_fridge_201202)/euslisp/main.l &quot;(wait-android-query :$(arg DEMOTYPE))&quot;"
-          output="screen" />
+          output="screen">
+      <param name="debug_view" value="$(arg debug_view)" />
+    </node>
   </group>
 
   <group unless="$(arg wait_query)" >
-  <node if="$(arg execute)"
-        pkg="roseus" name="fridge_can_main" type="roseus"
-        args="$(find detect_cans_in_fridge_201202)/euslisp/main.l &quot;(demo :app-manager :$(arg app_manager) :demo-type :$(arg DEMOTYPE))&quot;"
-        machine="c2"
-        required="true"
-        output="screen" />
+    <node if="$(arg execute)"
+          pkg="roseus" name="fridge_can_main" type="roseus"
+          args="$(find detect_cans_in_fridge_201202)/euslisp/main.l &quot;(demo :app-manager :$(arg app_manager) :demo-type :$(arg DEMOTYPE))&quot;"
+          machine="c2"
+          required="true"
+          output="screen">
+      <param name="debug_view" value="$(arg debug_view)" />
+    </node>
   </group>
   <group if="$(arg run_behavior)">
     <include file="$(find interactive_behavior_201409)/launch/pr2_interactive.launch" />
