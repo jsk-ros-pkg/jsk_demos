@@ -184,18 +184,8 @@ v should be 0 - 1"
   (make-cascoords
    :coords (send (send parent :copy-worldcoords) :transform (apply #'make-coords args))))
 
-(defun demo-manip-trajectory ()
-  (require "package://hrpsys_ros_bridge_tutorials/euslisp/hrp2jsknt-interface.l")
-  (load "package://drc_task_common/euslisp/test-drc-door-task.l")
-  (setq *door* (instance param-door :init 700 60 100 20
-                         (float-vector 0 -640 950)
-                         (float-vector -60 -600 950)
-                         :use-leg t
-                         :handle-l/r :right))
-  (unless (boundp '*robot*)
-    (setq *robot* (instance hrp2jsknt-robot :init)))
-  (setup-move-targets *robot*)
-  ;; setup trajectory
+(defun door-trajectory ()
+  ;; require *door*
   (let* ((door-tmp (instance param-door :init 700 60 100 20
                              (float-vector 0 -640 950)
                              (float-vector -60 -600 950)
@@ -229,7 +219,21 @@ v should be 0 - 1"
                                  (make-coords-relative knob-coords :pos (float-vector 0 75 50) :rpy (float-vector 0 0 0))
                                  (make-coords-relative knob-coords :pos (float-vector 0 150 50):rpy (float-vector 0 0 0))
                                  (make-coords-relative knob-coords :pos (float-vector -100 150 50) :rpy (float-vector 0 0 0)))
-                           :parent-object (send *door* :handle :knob-handle))))
+                           :parent-object (send *door* :handle :knob-handle)))))
+
+(defun demo-manip-trajectory ()
+  (require "package://hrpsys_ros_bridge_tutorials/euslisp/hrp2jsknt-interface.l")
+  (load "package://drc_task_common/euslisp/test-drc-door-task.l")
+  (setq *door* (instance param-door :init 700 60 100 20
+                         (float-vector 0 -640 950)
+                         (float-vector -60 -600 950)
+                         :use-leg t
+                         :handle-l/r :right))
+  (unless (boundp '*robot*)
+    (setq *robot* (instance hrp2jsknt-robot :init)))
+  (setup-move-targets *robot*)
+  ;; setup trajectory
+  (setq *traj* (door-trajectory))
   (setf (get *traj* :face-color) :red)
   (send *door* :locate (float-vector 600 100 0) :world)
   (if (boundp '*irtviewer*)
