@@ -149,17 +149,6 @@ v should be 0 - 1"
     )
   )
 
-(defclass collision-link-parameter
-  :super propertied-object
-  :slots ())
-
-(defmethod collision-link-parameter
-  (:init ()
-    )
-  (:collision-link-paris ()
-    )
-  )
-
 (defun setup-move-targets (r)
   (let ((targets (list (cons :door-manipulation-move-target
                              (make-coords :pos (float-vector 100 0 0)
