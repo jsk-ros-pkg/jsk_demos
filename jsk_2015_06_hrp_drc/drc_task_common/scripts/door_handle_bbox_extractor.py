@@ -25,9 +25,7 @@ def callback(boxes_msg):
             or box.dimensions.y < min_y or box.dimensions.y > max_y
             or box.dimensions.z < min_z or box.dimensions.z > max_z):
             continue
-        print box_pos[2]
         if 0.8 < box_pos[2] and box_pos[2] < 1.0:
-            print box_pos
             if min_y_dist > abs(box_pos[1]):
                 min_y_dist = abs(box_pos[1])
                 min_y_pose = pose
@@ -41,8 +39,9 @@ def callback(boxes_msg):
         box_arr.header = boxes_msg.header
         box_arr.boxes = [min_y_box]
         pub_box.publish(box_arr)
+        rospy.loginfo("Success to detect handle bbx")
         return
-    raise Exception("something wrong")
+    rospy.logerr("Failed to detect handle bbox")
 
 if __name__ == "__main__":
     rospy.init_node("door_handle_box_extractor")

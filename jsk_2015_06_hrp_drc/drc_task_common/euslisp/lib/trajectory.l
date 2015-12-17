@@ -1,4 +1,5 @@
 ;; trajectory.l
+(ros::roseus-add-msgs "visualization_msgs")
 
 (defun range (max)
   (let ((ret nil))
@@ -138,6 +139,17 @@ v should be 0 - 1"
     (send self :interpolate 0.5))
   (:vertices ()
     (send-all via-coords :worldpos))
+  (:to-marker (frame-id)
+    (let ((marker (instance visualization_msgs::Marker :init)))
+      (send marker :header :frame_id frame-id)
+      (send marker :type visualization_msgs::Marker::*LINE_STRIP*)
+      (send marker :scale :x 0.01)
+      (send marker :points (mapcar #'(lambda (c)
+                                       (ros::pos->tf-point (send c :worldpos)))
+                                   via-coords))
+      (send marker :color :r 1.0)
+      (send marker :color :a 1.0)
+      marker))
   )
 
 (defclass ik-parameter
