@@ -14,4 +14,6 @@
       (setf (elt angle-vectors i) (send robot :angle-vector))
       )
     )
+  (:at (i)
+    (elt angle-vectors i))
   )

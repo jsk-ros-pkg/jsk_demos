@@ -33,9 +33,12 @@
          (send *tf-listener* :lookup-transform "odom" (send msg :header :frame_id) 
                (send msg :header :stamp))))
     (send *robot* :fix-leg-to-coords origin->ground)
+    ;; (send *robot* :fix-leg-to-coords (make-coords :pos (z0 (send origin->ground :worldpos))
+    ;;                                               :rot (send origin->ground :worldrot)))
     (when origin->msg
       (send *door* :newcoords (make-coords))
       (let ((traj (door-manipulation-trajectory *door*)))
+        (setq *traj* traj)
         (let ((origin->recog (send origin->msg :transform (ros::tf-pose-stamped->coords msg))))
           (send *recog-result* :newcoords (send origin->recog :copy-worldcoords))
           (move-door-model-from-knob-coords *door* origin->recog origin->ground)
@@ -152,6 +155,48 @@
                     (make-coords-relative knob-coords :pos (float-vector 0 150 50):rpy (float-vector 0 0 0))
                     (make-coords-relative knob-coords :pos (float-vector -100 150 50) :rpy (float-vector 0 0 0)))
               :parent-object (send door-model :handle :knob-handle))))
+
+(defun door-test-motion ()
+  ;; init hrp2
+  (ros::roseus "test_door_motion")
+  (setq *tf-listener* (instance ros::transform-listener :init))
+  (require "package://hrpsys_ros_bridge_tutorials/euslisp/hrp2jsknt-interface.l")
+  (require "models/arrow-object")
+  (load "package://drc_task_common/euslisp/lib/collision-link-parameter.l")
+  (load "package://drc_task_common/euslisp/lib/ik-solver.l")
+  (setq *door* (instance param-door :init 700 60 100 20
+                         (float-vector 0 -640 950)
+                         (float-vector -60 -600 950)
+                         :use-leg t
+                         :handle-l/r :right))
+  (setq *recog-result* (instance arrow-object :init))
+  (unless (boundp '*robot*)
+    (setq *robot* (instance hrp2jsknt-robot :init)))
+  (setup-move-targets *robot*)
+  (hrp2jsknt-init)
+  (objects (list *door* *robot* *recog-result*))
+  (ros::advertise "trajectory_marker" visualization_msgs::Marker)
+  (ros::subscribe "/door_detection/door_handle" 
+    geometry_msgs::PoseStamped #'test-door-recognition-callback)
+  (setq *col* (instance collision-link-parameter :init *robot*))
+  
+  (send *robot* :reset-manip-pose)
+  (send *col* :init-distance-table)
+  ;;(ros::spin)
+  (setq *ik-solver* (instance ik-solver
+                              :init *robot*
+                              :rarm
+                              :ik-type :use-torso
+                              :move-target (get (send *robot* :rarm :end-coords) :door-manipulation-move-target)
+                              :trajectory *traj*
+                              :collision-parameter *col*))
+  (send *robot* :reset-manip-pose)
+  (send *col* :init-distance-table)
+  (send *ik-solver* :solve
+        :stop 30
+        :trajectory-resolution 10
+        :collision-num 50 :debug-view t)
+  )
 
 ;; (load "package://drc_task_common/euslisp/lib/door.l")
 ;; (test-move-door-model-from-knob-coords)

@@ -64,6 +64,8 @@
                         (send col-parameter :collision-avoidance-link-pair
                               (send self :link-list)
                               collision-num)
+                        :additional-weight-list
+                        (list (list (send robot :torso :waist-p :child-link) 0.1))
                         :debug-view (if debug-view :no-message nil))))
           (if av (send avs :add av)
             (return-from :solve-normal-ik nil))))
