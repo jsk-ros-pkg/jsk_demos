@@ -95,8 +95,11 @@
                       :translation-axis (list t t t)
                       :rotation-axis (list t t t)
                       :additional-weight-list
-                      (list (list (send robot :rleg :toe-p :child-link) 0)
-                            (list (send robot :lleg :toe-p :child-link) 0))
+                      (list (list (send robot :torso :waist-p :child-link) 0.1)
+                            (list (send robot :torso :waist-y :child-link) 0.3)
+                            (list (send robot :torso :waist-r :child-link) 0.0))
+                      ;; (list (list (send robot :rleg :toe-p :child-link) 0)
+                      ;;       (list (send robot :lleg :toe-p :child-link) 0))
                       :max (float-vector  500  500  0  20  20  10)
                       :min (float-vector  -500  -500  -200  -20  -20  -10)
                       :stop stop
@@ -164,6 +167,69 @@
                :trajectory-resolution 10
                :collision-num 50 :debug-view t))
   )
+
+(defun test-ik-solver-jaxon ()
+  (load "package://drc_task_common/euslisp/test-drc-door-task.l")
+  (require "package://hrpsys_ros_bridge_tutorials/euslisp/jaxon_red-interface.l")
+  (unless (boundp '*robot*)
+    (setq *robot* (instance jaxon_red-robot :init)))
+  (setup-move-targets *robot*)
+  (setq *door* (instance param-door :init 700 60 100 20
+                         (float-vector 0 -640 950)
+                         (float-vector -60 -600 950)
+                         :use-leg t
+                         :handle-l/r :right))
+  (setq *col* (instance collision-link-parameter :init *robot*))
+  (setq *traj* (door-trajectory-jaxon))
+  (setf (get *traj* :face-color) :red)
+  (send *door* :locate (float-vector 800 200 0) :world)
+  (setq *ik-solver* (instance ik-solver
+                              :init *robot*
+                              :rarm
+                              :ik-type :use-torso
+                              :move-target (get (send *robot* :rarm :end-coords) :door-manipulation-move-target)
+                              :trajectory *traj*
+                              :collision-parameter *col*))
+  (objects (list *door* *robot* *traj*))
+  (send *robot* :reset-manip-pose)
+  (send *col* :init-distance-table)
+  (bench (send *ik-solver* :solve
+               :trajectory-resolution 10
+               :collision-num 10 :debug-view t))
+  )
+
+(defun test-fullbody-ik-solver-jaxon ()
+  (load "package://drc_task_common/euslisp/test-drc-door-task.l")
+  (require "package://hrpsys_ros_bridge_tutorials/euslisp/jaxon_red-interface.l")
+  (unless (boundp '*robot*)
+    (setq *robot* (instance jaxon_red-robot :init)))
+  (setup-move-targets *robot*)
+  (setq *door* (instance param-door :init 700 60 100 20
+                         (float-vector 0 -640 950)
+                         (float-vector -60 -600 950)
+                         :use-leg t
+                         :handle-l/r :right))
+  (setq *col* (instance collision-link-parameter :init *robot*))
+  (setq *traj* (door-trajectory-jaxon))
+  (setf (get *traj* :face-color) :red)
+  (send *door* :locate (float-vector 600 200 0) :world)
+  (send *door* :rotate (deg2rad 20) :z)
+  (setq *ik-solver* (instance ik-solver
+                              :init *robot*
+                              :rarm
+                              :ik-type :fullbody
+                              :move-target (get (send *robot* :rarm :end-coords) :door-manipulation-move-target)
+                              :trajectory *traj*
+                              :collision-parameter *col*))
+  (objects (list *door* *robot* *traj*))
+  (send *robot* :reset-manip-pose)
+  (send *robot* :fix-leg-to-coords (make-coords))
+  (send *col* :init-distance-table)
+  (bench (send *ik-solver* :solve
+               :trajectory-resolution 10
+               :collision-num 10 :debug-view t))
+  )
+
 
 (defun test-fullbody-ik-solver ()
   (load "package://drc_task_common/euslisp/test-drc-door-task.l")

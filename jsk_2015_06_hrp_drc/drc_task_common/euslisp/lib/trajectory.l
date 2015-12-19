@@ -233,6 +233,45 @@ v should be 0 - 1"
                                  (make-coords-relative knob-coords :pos (float-vector -100 150 50) :rpy (float-vector 0 0 0)))
                            :parent-object (send *door* :handle :knob-handle)))))
 
+(defun door-trajectory-jaxon ()
+  ;; require *door*
+  (let* ((door-tmp (instance param-door :init 700 60 100 20
+                             (float-vector 0 -640 950)
+                             (float-vector -60 -600 950)
+                             :use-leg t
+                             :handle-l/r :right))
+         (knob-coords (send door-tmp :handle :knob-handle)))
+    (setq *traj* (instance manipulation-trajectory :init
+                           :via-coords
+                           (list (make-coords-relative knob-coords :pos (float-vector -200 -25 -50) :rpy (float-vector 0 0 0))
+                                 ;;(make-coords-relative knob-coords :pos (float-vector 0 50 -50) :rpy (float-vector 0 0 0))
+                                 (make-coords-relative knob-coords :pos (float-vector 0 -25 -50) :rpy (float-vector 0 0 0))
+                                 (progn
+                                   (send (send door-tmp :joint :door-knob-joint) :joint-angle -35)
+                                   (make-coords-relative knob-coords :pos (float-vector 0 -25 -50) :rpy (float-vector 0 0 0)))
+                                 ;; (progn
+                                 ;;   (send (send door-tmp :joint :door-knob-joint) :joint-angle -70)
+                                 ;;   (make-coords-relative knob-coords :pos (float-vector 0 -25 -50) :rpy (float-vector 0 0 0))
+                                 ;;   )
+                                 (progn
+                                   (send (send door-tmp :joint :door-hinge-joint) :joint-angle -10)
+                                   (make-coords-relative knob-coords :pos (float-vector 0 -25 -50) :rpy (float-vector 0 0 0)))
+                                 (progn
+                                   (send (send door-tmp :joint :door-hinge-joint) :joint-angle -20)
+                                   (make-coords-relative knob-coords :pos (float-vector 0 -25 -50) :rpy (float-vector 0 0 0)))
+                                 (progn
+                                   (send (send door-tmp :joint :door-knob-joint) :joint-angle -35)
+                                   (make-coords-relative knob-coords :pos (float-vector 0 -25 -50) :rpy (float-vector 0 0 0)))
+                                 (progn
+                                   (send (send door-tmp :joint :door-knob-joint) :joint-angle 0)
+                                   (make-coords-relative knob-coords :pos (float-vector 0 -25 -50) :rpy (float-vector 0 0 0)))
+                                 ;; (make-coords-relative knob-coords :pos (float-vector 0 75 50) :rpy (float-vector 0 0 0))
+                                 ;; (make-coords-relative knob-coords :pos (float-vector 0 150 50):rpy (float-vector 0 0 0))
+                                 ;; (make-coords-relative knob-coords :pos (float-vector -100 150 50) :rpy (float-vector 0 0 0))
+                                 )
+                           :parent-object (send *door* :handle :knob-handle)))))
+
+
 (defun demo-manip-trajectory ()
   (require "package://hrpsys_ros_bridge_tutorials/euslisp/hrp2jsknt-interface.l")
   (load "package://drc_task_common/euslisp/test-drc-door-task.l")
