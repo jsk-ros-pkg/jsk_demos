@@ -2,12 +2,24 @@
 
 (ros::load-ros-manifest "elevator_move_base_pr2")
 
+(defvar *logging* (ros::get-param "logging" nil))
+
+(if *logging*
+    (progn
+      (require :attention-observation "package://jsk_demo_common/euslisp/attention-observation.l")
+      (defparameter *mongo-database* "jsk_robot_lifelog")
+      (defparameter *current-context* :elevator))
+  (progn
+    (require :pr2-interface "package://pr2eus/pr2-interface.l")
+    (unless (boundp 'make-attention-action)
+      (setf (symbol-function 'make-attention-action) (symbol-action 'defun)))))
+
 ;(load "package://elevator_move_base_pr2/src/add-msg-pgsql.l")
+(require :database-interface "database-interface.l")
 (load "package://elevator_move_base_pr2/src/navigation-client.l")
 (load "package://elevator_move_base_pr2/src/push-elevator-button.l")
 (load "package://elevator_move_base_pr2/src/ros-callback-manager.l")
 
-(load "package://pr2eus/pr2-interface.l")
 
 (load "package://roseus_smach/src/state-machine-actionlib.l")
 
@@ -33,8 +45,9 @@
   (ros::advertise "robotsound" sound_play::SoundRequest 5)
   (ros::advertise "view_target" geometry_msgs::PointStamped 1)
 
-  (setq *ri* (instance pr2-interface :init))
-  (setq *pr2* (pr2))
+  ;; (setq *ri* (instance pr2-interface :init))
+  ;; (setq *pr2* (pr2))
+  (pr2-init)
 
   ;; load building scene by existing TF frame
   (unix::sleep 1) ;; wait for recieving TF messages
@@ -99,8 +112,10 @@
   (let ((msg (instance geometry_msgs::PointStamped :init))
 	(uv (send camera :screen-point (send coords :worldpos))))
     ;; out of view
-    (if (not (and (<= 0 (elt uv 0) (send camera :width))
+    (when (not (and (<= 0 (elt uv 0) (send camera :width))
 		  (<= 0 (elt uv 1) (send camera :height))))
+        (ros::ros-error "screen-point: ~A is out of view (~A, ~A)"
+                        uv (send camera :width) (send camera :height))
 	(return-from set-view-target nil))
     (send msg :header :frame_id frame-id)
     (send msg :point :x (elt uv 0))
@@ -132,9 +147,11 @@
 ;; State Machine
 ;;
 
-(defun look-button (userdata)
+(make-attention-action look-button (userdata)
   (let ((panel-name (cdr (assoc 'panel-name userdata))) look-target)
+    (send *logger* :save-robot-pose "look-button")
     ;; nearest call panel
+    (ros::ros-info "panel-name: ~A" panel-name)
     (setq *panel* (car (send *scene* :find-object panel-name)))
     (setq look-target (car (send *scene* :find-object (format nil "~A~A" (check-current-floor) panel-name))))
     ;;
@@ -156,19 +173,21 @@
     (when *node-debug*
       (send *irtviewer* :draw-objects))
 
+    (send *logger* :save-obj-pose *panel* "look-button")
     ;;(insert-tf-table-by-coords *db* (ros::time-now) *scene* (send *pr2* :base_footprint) :target_id "/base_footprint")
     t ))
 
-(defun push-button-func (userdata)
+(make-attention-action push-button-func (userdata)
   (let* ((button (cdr (assoc 'button userdata)))
 	 (button-obj
 	   (find-if #'(lambda(o)(string= button (send o :name))) (flatten (send *panel* :inheritance)))))
-    (ros::ros-info (format nil "push button> ~a" button-obj))
+    (ros::ros-info (format nil "push button (~a) -> ~a" button button-obj))
     (speak-jp "ぼたんをおします")
+    (send *logger* :save-obj-pose button-obj "push-button")
     (push-button button-obj)
     ))
 
-(defun check-button-light (userdata)
+(make-attention-action check-button-light (userdata)
   (let* ((button (cdr (assoc 'button userdata)))
 	 (button-coords (find-if #'(lambda(o)(string= button (send o :name)))
 				(flatten (send *panel* :inheritance))))
@@ -178,6 +197,7 @@
     ;; check phase
     (dotimes (i 30 (< i 30)) ;; 3 sec
       (ros::spin-once)
+      (send *logger* :save-brightness (send button-state :value) "check-button")
       (when (< 0.5 (send button-state :value))
 	(pprint 'button-light) (speak-jp "ぼたんがひかりました")
 ;;	(pr2-tuckarm-pose)
@@ -193,12 +213,12 @@
     (send sm :arg-keys 'button 'panel-name)
     (send sm :goal-state (list :success :fail))
     (send sm :start-state :look)
-    (send sm :add-transition :look :push t)
+    (send sm :add-transition :look :push :success)
     (send sm :add-transition :look :fail nil)
-    (send sm :add-transition :push :check t)
-    (send sm :add-transition :push :fail nil)
-    (send sm :add-transition :check :success t)
-    (send sm :add-transition :check :look nil)
+    (send sm :add-transition :push :check :success)
+    (send sm :add-transition :push :fail :fail)
+    (send sm :add-transition :check :success :success)
+    (send sm :add-transition :check :look :fail)
     sm ))
 
 (defun coords->movebaseactiongoal (co)
@@ -268,11 +288,12 @@
       (if (and (send topic :msg)
 	       (substringp (concatenate string "/" target-floor)
 			   (send topic :msg :data)))
-	  (return-from check-target-floor t))
+	  (return-from check-target-floor t)
+        (ros::ros-info "waiting /elevator_number/result"))
       (unix::usleep (* 500 1000))
       )))
 
-(defun ready-to-outside (userdata)
+(make-attention-action ready-to-outside (userdata)
   (clear-costmap)
   (pr2-tuckarm-pose)
   (send *ri* :go-pos 0 0 90)
@@ -347,7 +368,7 @@
     (send sm :add-transition :speak-fail :move-front t)
     (send sm :add-transition :push-inside :ready-to-outside :success)
     (send sm :add-transition :push-inside :push-inside :fail)
-    (send sm :add-transition :ready-to-outside :move-outside t)
+    (send sm :add-transition :ready-to-outside :move-outside :success)
     (send sm :add-transition :move-outside :costmap-normal :succeeded)
     (send sm :add-transition :move-outside :fail-inside :failed)
     (send sm :add-transition :costmap-normal :success t)
@@ -356,6 +377,7 @@
 ;; elevator_move_base action server
 ;; target_pose :frame_id = "/map" -> convert pose to each floor local
 (defun elevator-smach-initial (userdata) ;; goal -> args
+  (setq *logger* (instance mongo-logger :init "elevator"))
   (update-robot-position)
   (let* ((goal (cdr (assoc :goal userdata)))
 	 (goal-pose (ros::tf-pose-stamped->coords
