@@ -32,4 +32,7 @@
                                         (send j :max-joint-velocity)))
                                  diff joint-list)))
           (apply #'max time-list)))))
+  (:send-angle-vector-test 
+   (ri time index)
+   (send ri :angle-vector (send self :at index) time))
   )

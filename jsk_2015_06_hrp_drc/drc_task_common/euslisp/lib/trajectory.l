@@ -163,7 +163,8 @@ v should be 0 - 1"
 
 (defun setup-move-targets (r)
   (let ((targets (list (cons :door-manipulation-move-target
-                             (make-coords :pos (float-vector 100 0 0)
+                             ;;(make-coords :pos (float-vector 100 0 0)
+                             (make-coords :pos (float-vector 50 0 0)
                                           :rpy (float-vector 0 0 pi))))))
     (dolist (target targets)
       (let ((mt (send (send r :rarm :end-coords :parent) :assoc

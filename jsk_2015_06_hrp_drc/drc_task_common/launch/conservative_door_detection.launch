@@ -164,6 +164,6 @@
     </node>
     <node pkg="jsk_topic_tools" type="static_transform_pose_stamped"
           name="drc_box_maker_to_handle"
-          args="0 0 0 -1.57 -1.57 0 door_handle_bbox_extractor/output door_handle" />
+          args="0.05 0.0 0 -1.57 -1.57 0 door_handle_bbox_extractor/output door_handle" />
   </group>
 </launch>

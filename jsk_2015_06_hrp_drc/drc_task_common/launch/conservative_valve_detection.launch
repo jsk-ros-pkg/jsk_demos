@@ -46,6 +46,7 @@
       <remap from="~input_normal" to="normal_direction_filter_points/output" />
       <rosparam>
         max_area: 5.0
+        min_area: 0.05
       </rosparam>
     </node>
     <node pkg="jsk_pcl_ros" type="cluster_point_indices_decomposer"
@@ -139,7 +140,12 @@
         voxel_grid_sampling: true
         voxel_size: 0.005
         min_size: 100
+        max_radius: 0.4
       </rosparam>
+    </node>
+    <node pkg="jsk_pcl_ros" type="extract_indices" name="torus_points">
+      <remap from="~input" to="euclidean_clustering_decomposer/debug_output" />
+      <remap from="~indices" to="torus_finder/output/inliers" />
     </node>
     <group if="$(arg INTERACTIVE)">
       <node pkg="jsk_interactive_marker" type="polygon_marker" name="polygon_marker">

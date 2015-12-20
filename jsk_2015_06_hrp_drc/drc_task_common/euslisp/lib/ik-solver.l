@@ -2,12 +2,21 @@
 (load "package://drc_task_common/euslisp/lib/collision-link-parameter.l")
 (load "package://drc_task_common/euslisp/lib/angle-vector-sequence.l")
 
-(defmethod euscollada-robot
-  (:footpoint ()
-    (apply #'midpoint 0.5
-           (send self :legs :end-coords :worldpos))
-    )
+(defun robot-footpoint (r)
+  (apply #'midpoint 0.5
+         (send r :legs :end-coords :worldpos)))
+
+(defun robot-move-height (r height)
+  ;; relative
+  (send r :legs :move-end-pos (float-vector 0 0 height))
   )
+
+;; (defmethod euscollada-robot
+;;   (:footpoint ()
+;;     (apply #'midpoint 0.5
+;;            (send self :legs :end-coords :worldpos))
+;;     )
+;;   )
 
 (defclass ik-solver
   :super propertied-object
@@ -65,7 +74,9 @@
                               (send self :link-list)
                               collision-num)
                         :additional-weight-list
-                        (list (list (send robot :torso :waist-p :child-link) 0.1))
+                        (list (list (send robot :torso :waist-p :child-link) 0.1)
+                            (list (send robot :torso :waist-y :child-link) 0.3)
+                            (list (send robot :torso :waist-r :child-link) 0.0))
                         :debug-view (if debug-view :no-message nil))))
           (if av (send avs :add av)
             (return-from :solve-normal-ik nil))))
@@ -91,7 +102,7 @@
                       :move-target mt :link-list ll
                       :root-link-virtual-joint-weight
                       (float-vector 0.1 0.1 0.1 0.1 0.5 0.5)
-                      :target-centroid-pos (send robot :footpoint)
+                      :target-centroid-pos (robot-footpoint robot)
                       :translation-axis (list t t t)
                       :rotation-axis (list t t t)
                       :additional-weight-list
@@ -198,7 +209,7 @@
                :collision-num 10 :debug-view t))
   )
 
-(defun test-fullbody-ik-solver-jaxon ()
+(defun test-fullbody-ik-solver-jaxon (&optional (pos (float-vector 600 200 0)))
   (load "package://drc_task_common/euslisp/test-drc-door-task.l")
   (require "package://hrpsys_ros_bridge_tutorials/euslisp/jaxon_red-interface.l")
   (unless (boundp '*robot*)
@@ -212,17 +223,18 @@
   (setq *col* (instance collision-link-parameter :init *robot*))
   (setq *traj* (door-trajectory-jaxon))
   (setf (get *traj* :face-color) :red)
-  (send *door* :locate (float-vector 600 200 0) :world)
+  (send *door* :locate pos :world)
   (send *door* :rotate (deg2rad 20) :z)
   (setq *ik-solver* (instance ik-solver
                               :init *robot*
                               :rarm
-                              :ik-type :fullbody
+                              :ik-type :use-torso
                               :move-target (get (send *robot* :rarm :end-coords) :door-manipulation-move-target)
                               :trajectory *traj*
                               :collision-parameter *col*))
   (objects (list *door* *robot* *traj*))
   (send *robot* :reset-manip-pose)
+  (robot-move-height *robot* 90)
   (send *robot* :fix-leg-to-coords (make-coords))
   (send *col* :init-distance-table)
   (bench (send *ik-solver* :solve
