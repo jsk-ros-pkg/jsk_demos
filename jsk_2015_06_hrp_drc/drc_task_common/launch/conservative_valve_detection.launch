@@ -136,11 +136,20 @@
     <node pkg="jsk_pcl_ros" type="torus_finder" name="torus_finder">
       <remap from="~input" to="euclidean_clustering_decomposer/debug_output" />
       <rosparam>
+        algorithm: LMEDS
         max_iterations: 10000
         voxel_grid_sampling: true
         voxel_size: 0.005
         min_size: 100
-        max_radius: 0.4
+        max_radius: 0.25
+        min_radius: 0.15
+        outlier_threshold: 0.05
+      </rosparam>
+    </node>
+    <node pkg="drc_task_common" type="valve_rejector.py" name="valve_rejector" output="screen"
+          respawn="true">
+      <rosparam>
+        eps_angle: 0.3
       </rosparam>
     </node>
     <node pkg="jsk_pcl_ros" type="extract_indices" name="torus_points">
@@ -170,4 +179,15 @@
             />
     </group>
   </group>
+  <node pkg="jsk_rviz_plugins" type="rosconsole_overlay_text.py" name="rosconsole_overlay_text">
+    <rosparam>
+      nodes: [/valve_detection/odom_laser, /valve_detection/camera_laser, /valve_detection/normal_estimation, /valve_detection/normal_direction_filter, 
+      /valve_detection/normal_direction_filter_points, /valve_detection/normal_direction_filter_points_camera, /valve_detection/region_growing_multiple_plane_segmentation,
+      /valve_detection/region_growing_result_decomposer, /valve_detection/plane_concatenator, /valve_detection/plane_concatenator_transformed,
+      /valve_detection/cluster_point_indices_decomposer, /valve_detection/hsv_decomposer, /valve_detection/polygon_array_color_histogram,
+      /valve_detection/polygon_array_color_likelihood, /valve_detection/extract_top_polygon_likelihood, /valve_detection/polygon_array_color_histogram_debug_view,
+      /valve_detection/multi_plane_extraction, /valve_detection/euclidean_clustering, /valve_detection/euclidean_clustering_decomposer,
+      /valve_detection/torus_finder, /valve_detection/valve_rejector, /valve_detection/torus_points, /valve_detection/selected_polygon_color_histogram]
+    </rosparam>
+  </node>
 </launch>
