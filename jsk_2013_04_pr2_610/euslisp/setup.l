@@ -150,7 +150,8 @@
   (clear-costmap)
   (send *pr2* :move-to (send *room610* :spot-tray-spot) :world)
   (if (not (send *ri* :move-to (send *room610* :spot-tray-spot) :frame-id *room610-origin*))
-	  (return-from move-to-table-side nil))
+	  (return-from move-to-table-side nil)
+      )
 
   (send *pr2* :head :neck-p :joint-angle 49.386)
   (send *ri* :angle-vector (send *pr2* :angle-vector) 1000)
@@ -228,7 +229,8 @@
 
 (defun move-to-chair ()
   (warn "move-to-chair~%")
-  (move-to-chair2)  )
+  (move-to-chair2)
+  )
 
 (defun move-to-chair-rarm ()
   (warn "move-to-chair~%")
