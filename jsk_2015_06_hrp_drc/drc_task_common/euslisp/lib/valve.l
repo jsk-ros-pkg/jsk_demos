@@ -21,6 +21,7 @@
                               (send msg :header :stamp)))
         (origin->ground (send *tf-listener* :lookup-transform "odom" "ground" (ros::time 0))))
     (when (and origin->header origin->ground)
+      (setq *perception-succeeded* t)
       (let ((origin->valve (send (send origin->header :copy-worldcoords)
                                  :transform header->valve)))
         (send *robot* :fix-leg-to-coords origin->ground)
@@ -37,7 +38,7 @@
   (let* ((valve-tmp (valve-model)))
     (let ((initial-theta 45)
           ;;(angle -270))
-          (angle (- 45 720)))
+          (angle -90))
       ;; radius ... 200 mm
       (let ((theta initial-theta)
             (coords-list nil))
@@ -51,23 +52,27 @@
                            (make-cascoords 
                             :coords
                             (send (send (car coords-list) :copy-worldcoords)
-                                  :translate (float-vector -100 0 0))))
+                                  :translate (float-vector -250 0 0))))
                           (mapcar #'(lambda (c)
-                                      (make-cascoords :coords (send c :translate (float-vector -100 0 0))))
+                                      (make-cascoords :coords (send (send c :copy-worldcoords)
+                                                                    :translate (float-vector 0 0 0))))
                                   coords-list)
                           (list
                            (make-cascoords 
                             :coords
-                            (send (send (car coords-list) :copy-worldcoords)
-                                  :translate (float-vector -100 0 0))))
+                            (send (send (car (last coords-list)) :copy-worldcoords)
+                                  :translate (float-vector -250 0 0))))
                           )
                   :parent-object valve-model)))))
-(defun coords-on-valve (theta &optional (r 200))
+
+(defun coords-on-valve (theta &optional (r 150))
   (let ((c (make-cascoords :pos (point-on-valve theta r))))
     (send c :rotate pi/2 :z)
     (send c :rotate -pi/2 :y)
+    (send c :rotate (deg2rad (+ theta)) :x)
     c))
-(defun point-on-valve (theta &optional (r 200))
+
+(defun point-on-valve (theta &optional (r 150))
   (float-vector (* r (cos (deg2rad theta)))
                 (* r (sin (deg2rad theta)))
                 0))
@@ -79,7 +84,8 @@
   (ros::roseus "test_valve_recognition")
   (setq *tf-listener* (instance ros::transform-listener :init))
   (load-robot-model :jaxon)
-  (jaxon_red-init)
+  (unless (boundp '*ri*)
+    (jaxon_red-init))
   (setq *robot* (instance jaxon_red-robot :init))
   (setq *valve* (valve-model))
   (setq *traj* (valve-manipulation-trajectory *valve*))
@@ -87,7 +93,16 @@
   (objects (list *robot* *valve* *recog-result* *traj*))
   (ros::advertise "trajectory_marker" visualization_msgs::Marker)
   (ros::subscribe "/valve_detection/torus_finder/output" jsk_recognition_msgs::Torus #'test-valve-recognition-callback)
-  
+  ;; run recognition until perception succeeded
+  (setq *perception-succeeded* nil)
+  (ros::spin-once)
+  (setq *perception-succeeded* nil)
+  (while (ros::ok)
+    (ros::spin-once)
+    (ros::sleep)
+    (if *perception-succeeded*
+        (return-from test-valve-recognition nil))
+    )
   )
 
 (defun test-valve-motion ()
@@ -107,3 +122,5 @@
   )
 
 ;; (load "package://drc_task_common/euslisp/lib/valve.l")
+;; (test-valve-recognition :jaxon)
+;; (test-valve-motion)
