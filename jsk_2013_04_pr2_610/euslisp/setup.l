@@ -486,7 +486,7 @@
   (sweep-under-table-front)
 
   (sweep-under-table-dual-arm)
-  (speak-jp "部屋の掃除が終わりました")v
+  (speak-jp "部屋の掃除が終わりました")
   (use-tilt-laser-obstacle-cloud t)
 )
 
@@ -495,5 +495,3 @@
 (warn "type (setup) to revert all object location~%")
 
 (setup)
-
-(while (not (move-to-remote-larm)))
