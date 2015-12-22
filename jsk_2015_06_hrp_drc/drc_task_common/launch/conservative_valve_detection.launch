@@ -92,8 +92,9 @@
       <remap from="~input/polygons" to="plane_concatenator_transformed/output_polygons" />
       <remap from="~input/histograms" to="polygon_array_color_histogram/output" />
       <remap from="~input/reference" to="selected_polygon_color_histogram/output/unwrap" />
-      <rosparam>
+      <rosparam subst_value="true">
         coefficient_method: 3 # bhattacharyya
+        reference_file: $(find jsk_pcl_ros)/config/drc_box_color2.yaml
       </rosparam>
     </node>
     <node pkg="jsk_pcl_ros" type="extract_top_polygon_likelihood.py" name="extract_top_polygon_likelihood">
@@ -178,6 +179,49 @@
             args="pub selected_polygon_color_histogram/output/unwrap jsk_recognition_msgs/HistogramWithRange -f $(find jsk_pcl_ros)/config/drc_box_color.yaml -r 1" 
             />
     </group>
+    <node pkg="pcl_ros" type="pcd_to_pointcloud" name="reference_model" 
+          args="$(find drc_task_common)/light_models/valve.pcd 1">
+      <rosparam>
+        frame_id: left_camera_optical_frame
+      </rosparam>
+      <remap from="cloud_pcd" to="valve_reference_cloud" />
+    </node>
+    <group>
+      <!-- downsample for ICP registration -->
+      <remap from="/tf" to="tf_null" />
+      <node pkg="nodelet" type="nodelet" name="downsample_reference_cloud"
+            args="standalone pcl/VoxelGrid">
+        <remap from="~input" to="valve_reference_cloud" />
+        <rosparam>
+          filter_limit_min: -10
+          filter_limit_max: 10
+          leaf_size: 0.01
+        </rosparam>
+      </node>
+      <node pkg="nodelet" type="nodelet" name="downsample_target_cloud"
+            args="standalone pcl/VoxelGrid">
+        <remap from="~input" to="euclidean_clustering_decomposer/debug_output" />
+        <rosparam>
+          filter_limit_min: -10
+          filter_limit_max: 10
+          leaf_size: 0.01
+        </rosparam>
+      </node>
+    </group>
+    <node pkg="jsk_pcl_ros" type="icp_registration" name="icp_registration" output="screen">
+      <remap from="~input" to="downsample_target_cloud/output" />
+      <remap from="~input_reference" to="downsample_reference_cloud/output" />
+      <remap from="~input_offset" to="torus_finder/output/pose" />
+      <rosparam>
+        use_offset_pose: true
+        use_flipped_initial_pose: false
+      </rosparam>
+    </node>
+    <!-- for saving model -->
+    <node pkg="jsk_pcl_ros_utils" type="pointcloud_relative_from_pose_stamped" name="model_relative_from_valve_origin">
+      <remap from="~input" to="euclidean_clustering_decomposer/debug_output" />
+      <remap from="~input/pose" to="torus_finder/output/pose" />
+    </node>
   </group>
   <node pkg="jsk_rviz_plugins" type="rosconsole_overlay_text.py" name="rosconsole_overlay_text">
     <rosparam>
@@ -190,4 +234,6 @@
       /valve_detection/torus_finder, /valve_detection/valve_rejector, /valve_detection/torus_points, /valve_detection/selected_polygon_color_histogram]
     </rosparam>
   </node>
+  <include file="$(find drc_task_common)/launch/conservative_valve_viewer.launch" />
+  
 </launch>
