@@ -20,6 +20,8 @@
 (load "package://jsk_2013_04_pr2_610/euslisp/handover-mug.l")
 (load "package://jsk_2013_04_pr2_610/euslisp/pick-up-remote.l")
 (load "package://jsk_2013_04_pr2_610/euslisp/handover-remote.l")
+(load "package://jsk_2013_04_pr2_610/euslisp/pick-up-kitchen-knife.l")
+(load "package://jsk_2013_04_pr2_610/euslisp/handover-kitchen-knife.l")
 
 (defun setup ()
   (room610)
@@ -57,7 +59,9 @@
   (send *room610* :assoc *remote-spot*)
   (setq *remote-handover-spot* (make-cascoords :pos #f(6100 600 0) :rpy (list -pi/2 0 0))) ;; where person is sitting
   (send *room610* :assoc *remote-handover-spot*)
-
+  (setq *kitchen-knife-spot* (make-cascoords :pos #f(6900 400 0) :rpy (list 0 0 0))) ;; where person is sitting
+  (send *room610* :assoc *kitchen-knife-spot*)
+  
   (setq *tray-spot* (make-cascoords :pos #f(4900 600 0) :rpy (list -pi/2 0 0)))
   (send *room610* :assoc *tray-spot*)
   (setq *chair-spot* (make-cascoords :pos #f(3650 50 0) :rpy (list 0 0 0)))
@@ -92,6 +96,13 @@
   (send *remote* :rotate (/ pi 2) #f(0 1 0) :world)
   (send *remote* :rotate (/ pi 2) #f(0 0 1) :world)
 
+  (setq *kitchen-knife* (instance room610-tray-object :init))
+  (send *kitchen-knife* :locate #f(7500.0 300.0 700.0) :world)
+  (send *kitchen-knife* :rotate (/ pi 2) #f(0 1 0) :world)
+
+  (setq *person-at-kitchen* (instance room610-tray-object :init))
+  (send *person-at-kitchen* :locate #f(7200.0 -100.0 1500.0) :world)
+
   
   ;;after move-to, save the pos
   (setq *moved-chair-spot* nil)
@@ -111,6 +122,7 @@
   (:spot-mug-handover-spot () *mug-handover-spot*)
   (:spot-remote-spot () *remote-spot*)
   (:spot-remote-handover-spot () *remote-handover-spot*)
+  (:spot-kitchen-knife-spot () *kitchen-knife-spot*)
   (:spot-tray-spot () *tray-spot*)
   (:spot-chair-spot () *chair-spot*)
   (:spot-chair-spot2 () *chair-spot2*)
@@ -120,7 +132,7 @@
   (:spot-sweep-spot () *sweep-spot*)
   (:spot-moved-back-chair () *moved-back-chair-spot*)
   (:spots ()
-          (list *mug-spot* *mug-handover-spot* *remote-spot* *remote-handover-spot* *tray-spot* *chair-spot* *laundry-spot* *pick-broom-spot* *sink-spot* *sweep-spot* *moved-back-chair-spot*)))
+          (list *mug-spot* *mug-handover-spot* *remote-spot* *remote-handover-spot* *kitchen-knife-spot* *tray-spot* *chair-spot* *laundry-spot* *pick-broom-spot* *sink-spot* *sweep-spot* *moved-back-chair-spot*)))
 
 (defun pr2-pick-tray-pose ()
   ;; Open collar-y a little bit
@@ -151,7 +163,9 @@
   (send *pr2* :move-to (send *room610* :spot-tray-spot) :world)
   (if (not (send *ri* :move-to (send *room610* :spot-tray-spot) :frame-id *room610-origin*))
 	  (return-from move-to-table-side nil)
-      )
+
+
+    )
 
   (send *pr2* :head :neck-p :joint-angle 49.386)
   (send *ri* :angle-vector (send *pr2* :angle-vector) 1000)
@@ -222,6 +236,27 @@
   (send *pr2* :move-to (send *room610* :spot-sink-spot) :world)
   (if (not (send *ri* :move-to (send *room610* :spot-sink-spot) :frame-id *room610-origin*))
 	  (return-from move-to-sink nil)
+	  )
+  (use-tilt-laser-obstacle-cloud t)
+  (send *ri* :wait-interpolation)
+  t)
+
+(defun move-to-kitchen-knife ()
+  (warn "move-to-kitchen-knife~%")
+
+  (send *pr2* :angle-vector #f(50.1262 5.0 70.0 105.0 -90.0 -70.0 -6.0 -20.0 0.0 -10.0 -40.0 -70.0 -70.0 -90.0 -90.0 0.007004 -1.914))
+  (send *pr2* :torso :waist-z :joint-angle 50)
+  (if (boundp '*irtviewer*) (send *irtviewer* :draw-objects))
+  (send *ri* :angle-vector (send *pr2* :angle-vector) 10000)
+  (send *ri* :stop-grasp :rarm)
+
+  (use-tilt-laser-obstacle-cloud nil)
+  (clear-costmap)
+  (send *pr2* :torso  :waist-z :joint-angle 250)
+  (send *ri* :angle-vector (send *pr2* :angle-vector) 5000)
+  (send *pr2* :move-to (send *room610* :spot-kitchen-knife-spot) :world)
+  (if (not (send *ri* :move-to (send *room610* :spot-kitchen-knife-spot) :frame-id *room610-origin*))
+	  (return-from move-to-kitchen-knife nil)
 	  )
   (use-tilt-laser-obstacle-cloud t)
   (send *ri* :wait-interpolation)
@@ -490,6 +525,11 @@
   (sweep-under-table-dual-arm)
   (speak-jp "部屋の掃除が終わりました")
   (use-tilt-laser-obstacle-cloud t)
+
+  (speak-jp "料理手伝います")
+  (while (not (move-to-kitchen-knife)))
+  (pick-up-kitchen-knife)
+  (handover-kitchen-knife)
 )
 
 

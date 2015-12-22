@@ -24,7 +24,7 @@
           (send *ri* :wait-interpolation)
           )
 
-  (send *ri* :start-grasp :larm) ;; grasp mug
+  (send *ri* :start-grasp :larm) ;; grasp
 
   ;; pick it up
   (send *pr2* :larm :move-end-pos #f(0 0 100) :world)
