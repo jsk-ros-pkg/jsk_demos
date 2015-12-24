@@ -5,6 +5,7 @@
 (load "package://pr2eus/pr2-interface.l")
 (load "models/room73b2-broom-object.l")
 (load "models/room610-scene.l")
+(load "models/cup-object.l")
 (load "package://jsk_2013_04_pr2_610/euslisp/utils.l")
 (load "package://jsk_2013_04_pr2_610/euslisp/pick-cloth.l")
 (load "package://jsk_2013_04_pr2_610/euslisp/pick-tray.l")
@@ -83,10 +84,12 @@
   (send *room610* :assoc *moved-back-chair-spot*)
 
   ;; need to create objects for handover 
-  (setq *mug* (instance room610-tray-object :init))
+  (setq *mug* (cup))
   (send *mug* :locate #f(5050.0 0.0 800.0) :world)
   (send *mug* :rotate (/ -pi 2) #f(0 0 1) :world)
-
+  (let ((objs (send *room610* :objects)))
+    (setf (room610-scene-objs *room610*) (append objs (list *mug*))))
+  
   (setq *person-seated* (instance room610-tray-object :init))
   (send *person-seated* :locate #f(6100.0 -600.0 1100.0) :world)
   (send *person-seated* :rotate (/ pi 2) #f(0 0 1) :world)

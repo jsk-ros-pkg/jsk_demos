@@ -55,6 +55,10 @@
   )
 
 (defun mug-detection (*mug*)
+  (setq use_ar_marker nil)
+  (if (not use_ar_marker)
+      (return-from mug-detection))
   (print "mug-detection")
   (print "STUB!! NEED TO BE IMPLEMENTED")
+  
   )
