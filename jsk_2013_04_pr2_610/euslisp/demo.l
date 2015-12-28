@@ -69,15 +69,26 @@
   (pr2-reset-pose)
 
   ;;pick broom
-  (bringup-broom-init)(bringup-broom)
-  
+  (speak-jp "モップをとります")
+  (while (not (move-to-broom)))
+  (pick-broom-laundry)
+  (send *ri* :go-pos-unsafe 0 0 -90)
+
+  (speak-jp "部屋の掃除をします")
+  (while (not (sweep-room)))
+
+  (speak-jp "いすをひきます")
   (while (not (move-to-chair2)))
   (pull-chair-table)
   ;;
+
+  (speak-jp "モップをかけます")
   (while (not (move-to-table-front)))
   (sweep-under-table-front)
 
-  (sweep-under-table-dual-arm)
+  (while (not (move-to-laundry)))
+  (place-broom-laundry)
+
   (speak-jp "おわりました")
   (use-tilt-laser-obstacle-cloud t)
 )

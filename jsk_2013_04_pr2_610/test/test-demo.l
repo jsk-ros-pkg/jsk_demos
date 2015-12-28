@@ -11,7 +11,7 @@
   (demo)
   (format *error-output* "demo done~%")
   (format *error-output* "robot positoin ~A~%" (send *ri* :worldcoords))
-  (assert (eps-v= (send (send *ri* :worldcoords) :worldpos) #f(6600 1000 0)) "robot position")
+  (assert (eps-v= (send (send *ri* :worldcoords) :worldpos) #f(3270 1350 0) 110.0) "robot position")
 #|
   (format *error-output* "tray positoin ~A~%" (send *ri* :find-object "room610-tray"))
   (assert (eps-v= (send (send *ri* :find-object "room610-tray") :worldpos) #f(8090 350 850) 10) "tray position")

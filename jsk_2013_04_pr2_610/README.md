@@ -16,7 +16,7 @@ This is the package of the demo programs including various home-assistant tasks:
  - Picking/Placing tray with dual arm
  - Picking soft clothes with arm
  - Manipulating laundry machine
- - Picking a broom and cleaning room
+ - Picking/placing a broom and cleaning room
  - Moving a chair
 
 a.k.a PR2/ROS re-written version of [2009 irt demo](https://www.youtube.com/watch?v=ToL3egTOahg)
