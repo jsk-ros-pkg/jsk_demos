@@ -4,8 +4,8 @@
   ;; detect remote
   (if (not (send *ri* :simulation-modep))
       (remote-detection *remote*)
-    )
-  (setq remote-pre-grasp-pose (send (send *remote* :copy-worldcoords) :translate #f(0 0 300) :world)) 
+    ) 
+  (setq remote-pre-grasp-pose (send (send *remote* :copy-worldcoords) :translate #f(0 0 100) :world)) 
   (setq remote-pose (send *remote* :copy-worldcoords))
 
   ;; pick up remote

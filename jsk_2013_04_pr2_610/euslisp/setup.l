@@ -52,7 +52,7 @@
   (setq *cabinet* (send *room610* :object "room610-cabinet-mamoru"))
   (send *cabinet* :locate #f(7000 -2200 0) :world)
   ;; spots
-  (setq *mug-spot* (make-cascoords :pos #f(5500 800 0) :rpy (list -pi/2 0 0)))
+  (setq *mug-spot* (make-cascoords :pos #f(5500 900 0) :rpy (list -pi/2 0 0)))
   (send *room610* :assoc *mug-spot*)
   (setq *mug-handover-spot* (make-cascoords :pos #f(6100 600 0) :rpy (list -pi/2 0 0))) ;; where person is sitting
   (send *room610* :assoc *mug-handover-spot*)
@@ -85,7 +85,7 @@
 
   ;; need to create objects for handover 
   (setq *mug* (cup))
-  (send *mug* :locate #f(5050.0 0.0 800.0) :world)
+  (send *mug* :locate #f(5050.0 100.0 800.0) :world)
   (send *mug* :rotate (/ -pi 2) #f(0 0 1) :world)
   (let ((objs (send *room610* :objects)))
     (setf (room610-scene-objs *room610*) (append objs (list *mug*))))
@@ -95,7 +95,7 @@
   (send *person-seated* :rotate (/ pi 2) #f(0 0 1) :world)
 
   (setq *remote* (instance room610-tray-object :init))
-  (send *remote* :locate #f(6800.0 1600.0 730.0) :world)
+  (send *remote* :locate #f(6800.0 1600.0 720.0) :world)
   (send *remote* :rotate (/ pi 2) #f(0 1 0) :world)
   (send *remote* :rotate (/ pi 2) #f(0 0 1) :world)
 
