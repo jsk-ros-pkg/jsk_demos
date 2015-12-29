@@ -56,7 +56,7 @@
   (send *room610* :assoc *mug-spot*)
   (setq *mug-handover-spot* (make-cascoords :pos #f(6100 600 0) :rpy (list -pi/2 0 0))) ;; where person is sitting
   (send *room610* :assoc *mug-handover-spot*)
-  (setq *remote-spot* (make-cascoords :pos #f(7000 700 0) :rpy (list pi/2 0 0))) ;; where person is sitting
+  (setq *remote-spot* (make-cascoords :pos #f(7000 900 0) :rpy (list pi/2 0 0))) ;; where person is sitting
   (send *room610* :assoc *remote-spot*)
   (setq *remote-handover-spot* (make-cascoords :pos #f(6100 600 0) :rpy (list -pi/2 0 0))) ;; where person is sitting
   (send *room610* :assoc *remote-handover-spot*)
@@ -95,7 +95,7 @@
   (send *person-seated* :rotate (/ pi 2) #f(0 0 1) :world)
 
   (setq *remote* (instance room610-tray-object :init))
-  (send *remote* :locate #f(6800.0 1300.0 600.0) :world)
+  (send *remote* :locate #f(6800.0 1600.0 730.0) :world)
   (send *remote* :rotate (/ pi 2) #f(0 1 0) :world)
   (send *remote* :rotate (/ pi 2) #f(0 0 1) :world)
 
