@@ -54,13 +54,13 @@
   ;; spots
   (setq *mug-spot* (make-cascoords :pos #f(5500 900 0) :rpy (list -pi/2 0 0)))
   (send *room610* :assoc *mug-spot*)
-  (setq *mug-handover-spot* (make-cascoords :pos #f(6100 600 0) :rpy (list -pi/2 0 0))) ;; where person is sitting
+  (setq *mug-handover-spot* (make-cascoords :pos #f(6100 700 0) :rpy (list -pi/2 0 0))) ;; where person is sitting
   (send *room610* :assoc *mug-handover-spot*)
-  (setq *remote-spot* (make-cascoords :pos #f(7000 900 0) :rpy (list pi/2 0 0))) ;; where person is sitting
+  (setq *remote-spot* (make-cascoords :pos #f(7100 800 0) :rpy (list pi/2 0 0))) ;; where person is sitting
   (send *room610* :assoc *remote-spot*)
-  (setq *remote-handover-spot* (make-cascoords :pos #f(6100 600 0) :rpy (list -pi/2 0 0))) ;; where person is sitting
+  (setq *remote-handover-spot* (make-cascoords :pos #f(6100 600 0) :rpy (list (* -pi 2/3) 0 0))) ;; where person is sitting
   (send *room610* :assoc *remote-handover-spot*)
-  (setq *kitchen-knife-spot* (make-cascoords :pos #f(6900 400 0) :rpy (list 0 0 0))) ;; where person is sitting
+  (setq *kitchen-knife-spot* (make-cascoords :pos #f(7000 400 0) :rpy (list 0 0 0))) ;; where person is sitting
   (send *room610* :assoc *kitchen-knife-spot*)
   
   (setq *tray-spot* (make-cascoords :pos #f(4900 600 0) :rpy (list -pi/2 0 0)))
@@ -91,16 +91,16 @@
     (setf (room610-scene-objs *room610*) (append objs (list *mug*))))
   
   (setq *person-seated* (instance room610-tray-object :init))
-  (send *person-seated* :locate #f(6100.0 -600.0 1100.0) :world)
+  (send *person-seated* :locate #f(6000.0 0.0 1200.0) :world)
   (send *person-seated* :rotate (/ pi 2) #f(0 0 1) :world)
 
   (setq *remote* (instance room610-tray-object :init))
-  (send *remote* :locate #f(6800.0 1600.0 720.0) :world)
+  (send *remote* :locate #f(6820.0 1535.0 720.0) :world)
   (send *remote* :rotate (/ pi 2) #f(0 1 0) :world)
   (send *remote* :rotate (/ pi 2) #f(0 0 1) :world)
 
   (setq *kitchen-knife* (instance room610-tray-object :init))
-  (send *kitchen-knife* :locate #f(7500.0 300.0 700.0) :world)
+  (send *kitchen-knife* :locate #f(7730.0 300.0 740.0) :world)
   (send *kitchen-knife* :rotate (/ pi 2) #f(0 1 0) :world)
 
   (setq *person-at-kitchen* (instance room610-tray-object :init))
@@ -228,6 +228,7 @@
   (send *ri* :angle-vector (send *pr2* :angle-vector) 1000)
   (send *ri* :wait-interpolation)
   t)
+
 
 
 (defun move-to-sink ()
@@ -496,7 +497,6 @@
   ;;
   (while (not (move-to-sink)))
   (place-tray-sink)
-  (send *ri* :go-pos-unsafe 0 0 -90)
 
   (speak-jp "リモコンをとります")
   (while (not (move-to-remote-larm)))
@@ -524,8 +524,13 @@
   (speak-jp "モップをかけます")
   (while (not (move-to-table-front)))
   (sweep-under-table-front)
+  
+  ;; move remote table out of the way at this point
+  (sweep-room)
+  (while (not (move-to-laundry)))
+  (place-broom-laundry)
 
-  (sweep-under-table-dual-arm)
+;;  (sweep-under-table-dual-arm)
   (speak-jp "部屋の掃除が終わりました")
   (use-tilt-laser-obstacle-cloud t)
 

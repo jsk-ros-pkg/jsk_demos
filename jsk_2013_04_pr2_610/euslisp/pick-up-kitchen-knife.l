@@ -34,7 +34,6 @@
   (send *ri* :angle-vector (send *pr2* :angle-vector) 2000)
   (send *ri* :wait-interpolation)
   
-  ;; (send *ri* :go-pos-unsafe -0.4 0 90)
   )
 
 (defun kitchen-knife-detection (*kitchen-knife*)

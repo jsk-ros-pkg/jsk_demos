@@ -1,11 +1,12 @@
 (defun handover-mug ()
 
   ;; move arm towards person
-  (send *pr2* :rarm :move-end-pos #f(300 200 0))
+  (send *pr2* :rarm :move-end-pos #f(300 200 -100))
   (if (boundp '*irtviewer*) (send *irtviewer* :draw-objects))
   (send *ri* :angle-vector (send *pr2* :angle-vector) 2000)
   (send *ri* :wait-interpolation)
           
+  (unix::sleep 3)
   ;; release object
   (send *ri* :stop-grasp :rarm :wait t) 
 

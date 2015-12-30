@@ -4,7 +4,8 @@
   ;; detect remote
   (if (not (send *ri* :simulation-modep))
       (remote-detection *remote*)
-    ) 
+    )  
+
   (setq remote-pre-grasp-pose (send (send *remote* :copy-worldcoords) :translate #f(0 0 100) :world)) 
   (setq remote-pose (send *remote* :copy-worldcoords))
 
@@ -33,8 +34,17 @@
   (send *ri* :angle-vector (send *pr2* :angle-vector) 2000)
   (send *ri* :wait-interpolation)
   
-  ;; move back from table
+  ;; move back from table   (send *pr2* :move-to coords :world)
   (send *ri* :go-pos-unsafe -0.4 0 90)
+
+  (setq remote-handover-pose (send (send *pr2* :copy-worldcoords) :translate #f(700 200 800))) ;; handover pose intermediate point (otherwise pr2's hand move in weird trajectory)
+  (send *pr2* :larm :inverse-kinematics
+        remote-handover-pose
+        )  
+  (if (boundp '*irtviewer*) (send *irtviewer* :draw-objects))
+  (send *ri* :angle-vector (send *pr2* :angle-vector) 1000) 
+  (send *ri* :wait-interpolation)
+
   )
 
 (defun remote-detection (*remote*)

@@ -15,10 +15,11 @@
   (send *ri* :angle-vector (send *pr2* :angle-vector) 1000) 
   (send *ri* :wait-interpolation)
 
+  (unix::sleep 3)
   ;; release object
   (send *ri* :stop-grasp :rarm :wait t) 
 
-  (send *pr2* :rarm :move-end-pos #f(-100 100 -100) :world)
+  (send *pr2* :rarm :move-end-pos #f(-100 100 0) :world)
   (if (boundp '*irtviewer*) (send *irtviewer* :draw-objects))
   (send *ri* :angle-vector (send *pr2* :angle-vector) 2000)
   (send *ri* :wait-interpolation)
