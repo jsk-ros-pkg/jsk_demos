@@ -100,7 +100,7 @@
   (send *remote* :rotate (/ pi 2) #f(0 0 1) :world)
 
   (setq *kitchen-knife* (instance room610-tray-object :init))
-  (send *kitchen-knife* :locate #f(7730.0 300.0 740.0) :world)
+  (send *kitchen-knife* :locate #f(7700.0 355.0 735.0) :world)
   (send *kitchen-knife* :rotate (/ pi 2) #f(0 1 0) :world)
 
   (setq *person-at-kitchen* (instance room610-tray-object :init))

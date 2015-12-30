@@ -25,7 +25,7 @@
           (send *ri* :wait-interpolation)
           )
 
-  (send *ri* :start-grasp :larm) ;; grasp
+  (send *ri* :start-grasp :larm :gain 0.08) ;; grasp
 
   ;; pick it up
   (send *pr2* :larm :move-end-pos #f(0 0 100) :world)

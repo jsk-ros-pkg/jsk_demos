@@ -25,7 +25,7 @@
   (send *ri* :wait-interpolation)
   
   ;; move back from person
-  (send *ri* :go-pos-unsafe -0.3 0.3 0)
+  (send *ri* :go-pos-unsafe -0.3 -0.3 0)
   (pr2-reset-pose)
   (pr2-tuckarm-pose :arms)
   )
