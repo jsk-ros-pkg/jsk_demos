@@ -21,6 +21,8 @@
       "package://hrpsys_ros_bridge_tutorials/euslisp/jaxon-interface.l")
      ((string= lower-name "jaxon_red")
       "package://hrpsys_ros_bridge_tutorials/euslisp/jaxon_red-interface.l")
+     ((string= lower-name "jaxon_jvrc")
+      "package://hrpsys_ros_bridge_jvrc/euslisp/jaxon_jvrc-interface.l")
      ((string= lower-name "urataleg")
       "package://hrpsys_ros_bridge_tutorials/euslisp/urataleg-interface.l")
      ((string= lower-name "samplerobot")
