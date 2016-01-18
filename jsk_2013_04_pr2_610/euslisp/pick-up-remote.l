@@ -1,11 +1,5 @@
 (defun pick-up-remote ()
 
-
-  ;; detect remote
-  (if (not (send *ri* :simulation-modep))
-      (remote-detection *remote*)
-    )  
-
   (setq remote-pre-grasp-pose (send (send *remote* :copy-worldcoords) :translate #f(0 0 100) :world)) 
   (setq remote-pose (send *remote* :copy-worldcoords))
 
@@ -45,9 +39,4 @@
   (send *ri* :angle-vector (send *pr2* :angle-vector) 1000) 
   (send *ri* :wait-interpolation)
 
-  )
-
-(defun remote-detection (*remote*)
-  (print "remote-detection")
-  (print "STUB!! NEED TO BE IMPLEMENTED")
   )

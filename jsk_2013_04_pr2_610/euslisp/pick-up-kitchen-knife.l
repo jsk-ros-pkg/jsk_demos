@@ -1,10 +1,5 @@
 (defun pick-up-kitchen-knife ()
 
-
-  ;; detect remote
-  (if (not (send *ri* :simulation-modep))
-      (kitchen-knife-detection *kitchen-knife*)
-    )
   (setq kitchen-knife-pre-grasp-pose (send (send *kitchen-knife* :copy-worldcoords) :translate #f(0 0 300) :world)) 
   (setq kitchen-knife-pose (send *kitchen-knife* :copy-worldcoords))
 
@@ -34,9 +29,4 @@
   (send *ri* :angle-vector (send *pr2* :angle-vector) 2000)
   (send *ri* :wait-interpolation)
   
-  )
-
-(defun kitchen-knife-detection (*kitchen-knife*)
-  (print "kitchen-knife-detection")
-  (print "STUB!! NEED TO BE IMPLEMENTED")
   )

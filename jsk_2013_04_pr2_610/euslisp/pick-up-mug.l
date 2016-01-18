@@ -61,12 +61,3 @@
   (send *ri* :go-pos-unsafe -0.3 0 90)
   (send *ri* :go-pos-unsafe 0.3 0 0)
   )
-
-(defun mug-detection (*mug*)
-  (setq use_ar_marker nil)
-  (if (not use_ar_marker)
-      (return-from mug-detection))
-  (print "mug-detection")
-  (print "STUB!! NEED TO BE IMPLEMENTED")
-  
-  )
