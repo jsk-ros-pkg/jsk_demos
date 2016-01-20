@@ -971,14 +971,13 @@
       )
     )
   (when (and move post-move)
-    (if (eq use-arm :larm) (setq rotation (- rotation)))
     (case use-arm
       (:rarm
        (send *ri* :go-pos-unsafe -0.3 0.05 (- rotation)))
       (:larm
        (send *ri* :go-pos-unsafe -0.3 -0.2 (- rotation)))))
   (send *ri* :ros-wait 1.0 :spin-self t :spin t) ;; attention-check ...
-  nil)
+  t)
 
 (warn ";; define close-fridge")
 (make-attention-action close-fridge (&key (use-arm :rarm))
