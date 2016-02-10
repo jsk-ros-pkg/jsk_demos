@@ -13,11 +13,13 @@
   <build_depend>imagemagick</build_depend>
   <build_depend>geometry_msgs</build_depend>
   <build_depend>multi_map_server</build_depend>
+  <build_depend>jsk_rviz_plugins</build_depend>
   <run_depend>euslisp</run_depend>
   <run_depend>jskeus</run_depend>
   <run_depend>imagemagick</run_depend>
   <run_depend>geometry_msgs</run_depend>
   <run_depend>multi_map_server</run_depend>
+  <run_depend>jsk_rviz_plugins</run_depend>
 </package>
 
 
