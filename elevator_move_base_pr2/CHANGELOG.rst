@@ -2,8 +2,8 @@
 Changelog for package elevator_move_base_pr2
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.0.3 (2016-02-11)
+------------------
 * [elevator_move_base_pr2/src/database-interface.l] add logging feature for elevator demo
 * Contributors: Yuki Furuta
 

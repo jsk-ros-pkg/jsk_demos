@@ -2,8 +2,8 @@
 Changelog for package detect_cans_in_fridge_201202
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.0.3 (2016-02-11)
+------------------
 * [detect_cans_in_fridge_201202/euslisp/pddl-action.l] fix missing options
 * [detect_cans_in_fridge_201202/CMakeLists.txt] add roseus to find_package
 * Merge pull request `#1152 <https://github.com/jsk-ros-pkg/jsk_demos/issues/1152>`_ from furushchev/fridge-fix-interactive

@@ -2,8 +2,8 @@
 Changelog for package jsk_demo_common
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.0.3 (2016-02-11)
+------------------
 * [jsk_demo_common] fix wrong code
 * Merge pull request `#1124 <https://github.com/jsk-ros-pkg/jsk_demos/issues/1124>`_ from h-kamada/add_reset_pose
   pr2-action.l: apply reset-pose before open-fridge-func

@@ -2,8 +2,8 @@
 Changelog for package drc_task_common
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.0.3 (2016-02-11)
+------------------
 * [robot_model.launch] use upstream launch file
 * [robot-util.l] add jaxon_jvrc in robot-file
 * [drc_task_common/euslisp/irex_carry_trass] Set red color for trass interactive marker

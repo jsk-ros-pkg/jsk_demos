@@ -2,8 +2,8 @@
 Changelog for package jsk_maps
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.0.3 (2016-02-11)
+------------------
 * add keepout maps
 * use queue_size=1
 * add depends to jsk_rviz_plugins

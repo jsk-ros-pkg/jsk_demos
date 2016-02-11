@@ -2,8 +2,8 @@
 Changelog for package jsk_2013_04_pr2_610
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.0.3 (2016-02-11)
+------------------
 * jsk_2013_04_pr2_610/README.md: without space, it breaks kanji-code in emacs?
 * jsk_2013_04_pr2_610/README.md: fix section/subsection
 * update to use ROBOT env value to select machine file
