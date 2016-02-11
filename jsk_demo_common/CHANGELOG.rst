@@ -2,6 +2,15 @@
 Changelog for package jsk_demo_common
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* [jsk_demo_common] fix wrong code
+* Merge pull request `#1124 <https://github.com/jsk-ros-pkg/jsk_demos/issues/1124>`_ from h-kamada/add_reset_pose
+  pr2-action.l: apply reset-pose before open-fridge-func
+* pr2-action.l: apply reset-pose before open-fridge-func
+* [detect_cans] async join based parallel state-machine
+* Contributors: Kamada Hitoshi, Kei Okada, Yuki Furuta
+
 0.0.2 (2015-11-26)
 ------------------
 * jsk_demo_common: add pr2_gripper_sensor_msgs

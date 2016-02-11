@@ -2,6 +2,9 @@
 Changelog for package gazebo_drive_simulator
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 0.0.2 (2015-11-26)
 ------------------
 * gazebo_drive_simulator does not have python modules
@@ -40,4 +43,4 @@ Changelog for package gazebo_drive_simulator
 * Fix handle_contorller path for drc_task_common version
 * [gazebo_drive_simulator] Fix license
 * Add gazebo_drive_simulator, gazebo simulation environment for drc vehicle task
-* Contributors: Hiroto Mizohana, Ryo Terasawa, Ryohei Ueda, Ryo Terasawa, Eisoku Kuroiwa, Iori KUmagaki
+* Contributors: Hiroto Mizohana, Ryo Terasawa, Ryohei Ueda, Eisoku Kuroiwa, Iori KUmagaki
