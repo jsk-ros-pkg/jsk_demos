@@ -5,6 +5,10 @@
   <maintainer email="murooka@jsk.t.u-tokyo.ac.jp">Masaki Murooka</maintainer>
   <license>BSD</license>
   <author email="murooka@jsk.t.u-tokyo.ac.jp">Masaki Murooka</author>
+
   <buildtool_depend>catkin</buildtool_depend>
+
   <build_depend>cmake_modules</build_depend>
+  <build_depend>drc_task_common</build_depend>
+
 </package>

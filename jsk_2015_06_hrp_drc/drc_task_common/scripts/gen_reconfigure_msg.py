@@ -5,6 +5,7 @@
 
 import rospy
 import sys
+print("- print sys.path", sys.path)
 from drc_com_common.cfg import DRCParametersConfig
 
 output_file = sys.argv[1]
