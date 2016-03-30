@@ -215,11 +215,6 @@
         (when trans
           (send msg :odom_on_ground (coords-to-float-vector
                                      trans 6))))
-      (let ((trans (send *tf* :lookup-transform "BODY" "map"
-                         (Ros::time 0))))
-        (when trans
-          (send msg :map (coords-to-float-vector
-                                     trans 6))))
       ;; lookup body -> ground
       (let ((trans (send *tf* :lookup-transform "BODY" "ground" (ros::time 0))))
         (when trans

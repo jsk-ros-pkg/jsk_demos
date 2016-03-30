@@ -1,0 +1,5 @@
+;; (load "package://drc_task_common/euslisp/lib/valve.l")
+;; (valve-zmp)
+(load "package://drc_task_common/euslisp/lib/door.l")
+;;(valve-zmp)
+(door-zmp)
