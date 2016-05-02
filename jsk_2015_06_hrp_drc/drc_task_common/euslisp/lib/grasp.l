@@ -1,0 +1,56 @@
+(defclass grasp-executor
+  :super propertied-object
+  :slots (robot))
+
+(defmethod grasp-executor
+  (:init (r)
+    (setq robot r))
+  (:grasp (ri arm name)
+    (let ((current-angle (send (send ri :hand-state) :potentio)))
+      (send robot :hand :arms :angle-vector (send self name))
+      (send ri :hand-angle-vector 
+            (apply #'concatenate float-vector (send robot :hand :arms :angle-vector)) 3000)
+      ))
+  (:door-grasp-pose ()
+    (float-vector 0.0 -20.0 10.0 -10.0 120.0 120.0))
+  (:door-grasp-preshape-pose ()
+    (float-vector 0.0 70.0 0.0 -10.0 30.0 30.0))
+  )
+
+(defun hand-start-grasp (&key (arm :arms) (real? nil) (time 500) (wait? t) (type :normal) (gain 30))
+  (cond ((or (equal *robot-name* "HRP2JSKNT") (equal *robot-name* "HRP2JSKNTS"))
+         (cond ((equal type :door-grasp-preshape)
+                (send *robot* :hand :arms :angle-vector *door-grasp-preshape-pose*)
+                (when real? (hand-model2real :time time :wait? t))
+                )
+               ((equal type :door-grasp)
+                (send *robot* :hand :arms :angle-vector *door-grasp-pose*)
+                (when real? (hand-model2real :time time :wait? t))
+                )
+               ((equal type :default-grasp)
+                (send *robot* :hand :arms :angle-vector (float-vector 90.0 0.0 0.0 0.0 90.0 90.0))
+                (when real? (hand-model2real :time time :wait? t))
+                )
+               (t ;; (equal type :normal)
+                (send *robot* :hand :arms :extension-pose) ;; hand extension-pose
+                (when real? (hand-model2real :time time :wait? t))
+                (send *robot* :hand :arms :grasp-pose) ;; hand grasp-pose
+                (when real? (hand-model2real :time time :wait? wait?))
+                ))
+         )
+        (t ;; (or (equal *robot-name* "JAXON") (equal *robot-name* "STARO") (equal *robot-name* "JAXON_RED"))
+         (cond ((or (equal type :door-grasp-preshape))
+                (when (and real? (find-method *ri* :stop-grasp))
+                  (send *ri* :stop-grasp arm :wait wait?))
+                )
+               (t
+                (when (and real? (find-method *ri* :start-grasp))
+                  (send *ri* :start-grasp arm :wait wait? :gain gain))
+                ))
+         ))
+  )
+
+;; (load "package://drc_task_common/euslisp/lib/grasp.l")
+;; (setq *grasp* (instance grasp-executor :init (instance hrp2jsknt-robot :init)))
+;; (send *grasp* :grasp *ri* :arms :door-grasp-pose)
+;; (send *grasp* :grasp *ri* :arms :door-grasp-preshape)

@@ -33,6 +33,7 @@ set(ENV{PYTHONPATH} ${tmp_pythonpath})
 generate_dynamic_reconfigure_options(
   config/vehicle/LocalPlannerParams.cfg
   config/vehicle/ObstacleDetectionParams.cfg
+  cfg/ValveRejector.cfg
   # config/vehicle/PassthroughCarBody.cfg
   # config/vehicle/ObstacleIndicatorParams.cfg
   cfg/StandingDrillDetector.cfg

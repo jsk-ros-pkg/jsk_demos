@@ -1,0 +1,57 @@
+(defclass angle-vector-sequence
+  :super propertied-object
+  :slots (angle-vectors))
+
+(defmethod angle-vector-sequence
+  (:init ()
+    )
+  (:add (av)
+    (setq angle-vectors (append angle-vectors (list av))))
+  (:angle-vectors () angle-vectors)
+  (:filter-look-at-hand (robot-model arm)
+    (dotimes (i (length angle-vectors))
+      (send robot :angle-vector (elt angle-vectors i))
+      (send robot :head :look-at (send robot arm :end-coords :worldpos))
+      (setf (elt angle-vectors i) (send robot :angle-vector))
+      )
+    )
+  (:at (i)
+    (elt angle-vectors i))
+  (:duration-list (robot-model start-angle-vector &optional (time-scale 1.0))
+    (mapcar #'(lambda (start end)
+                (* time-scale (send self :angle-vector-duration start end robot-model)))
+            (cons start-angle-vector (butlast angle-vectors)) angle-vectors))
+  (:angle-vector-duration (start end robot-model)
+    (let* ((joint-list (send robot-model :joint-list)))
+      (let ((diff (coerce (v- end start) cons)))
+        (let ((time-list (mapcar #'(lambda (d j)
+                                     ;; check if j is included in unordered-joint-names
+                                     (/ (if (derivedp j linear-joint)
+                                            (* 0.001 (abs d))
+                                          (deg2rad (abs d)))
+                                        (send self :max-joint-velocity robot-model j)))
+                                 diff joint-list)))
+          (apply #'max time-list)))))
+  (:send-angle-vector-sequence-test 
+   (ri robot time-scale)
+   (let ((ts (send self :duration-list robot (send ri :state :potentio-vector) time-scale)))
+     (send ri :angle-vector-sequence angle-vectors (mapcar #'(lambda (x) (* 1000 x)) ts))
+     ))
+  (:send-angle-vector-test 
+   (ri time index)
+   (send ri :angle-vector (send self :at index) time))
+  (:max-joint-velocity
+   (robot j)
+   (or (send self :customized-joint-velocity (send robot :name) j)
+       (send j :max-joint-velocity)))
+  (:customized-joint-velocity 
+   (robot-name j)
+   (cond ((string= robot-name "JAXON_RED")
+          (cond ((string= (send j :name) "CHEST_JOINT2")
+                 1.0)
+                ((or (string= (send j :name) "RARM_JOINT6")
+                     (string= (send j :name) "LARM_JOINT6"))
+                 1.0)
+                ))))
+  )
+
