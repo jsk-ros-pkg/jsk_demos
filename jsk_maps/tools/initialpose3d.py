@@ -52,9 +52,9 @@ def listener():
 
     rospy.init_node('initialpose', anonymous=True)
 
-    pub = rospy.Publisher('initialpose_out', PoseWithCovarianceStamped)
+    pub = rospy.Publisher('initialpose_out', PoseWithCovarianceStamped, queue_size=1)
     tf_select = rospy.ServiceProxy('map_tf_mux/select', MuxSelect)
-    map_select = rospy.Publisher('map_reload', String)
+    map_select = rospy.Publisher('map_reload', String, queue_size=1)
     rospy.Subscriber("initialpose_in", PoseWithCovarianceStamped, callback)
 
     initial_map = rospy.get_param('/amcl/initial_map', None)

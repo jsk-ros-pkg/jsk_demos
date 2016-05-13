@@ -2,11 +2,16 @@
 Changelog for package elevator_move_base_pr2
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.0.3 (2016-02-11)
+------------------
+* [elevator_move_base_pr2/src/database-interface.l] add logging feature for elevator demo
+* Contributors: Yuki Furuta
+
 0.0.2 (2015-11-26)
 ------------------
 * [elevator_move_base_pr2/launch/elevator_move_base_modules.xml] use rectified image on light detect
 * [elevator_move_base_pr2/launch/check_elevator_open.xml] rename /openni_c2 -> /kinect_head_c2
-* Contributors: Furushchev
+* Contributors: Yuki Furuta
 
 0.0.1 (2015-06-11)
 ------------------

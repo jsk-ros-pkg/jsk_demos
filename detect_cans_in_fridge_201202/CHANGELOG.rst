@@ -2,6 +2,23 @@
 Changelog for package detect_cans_in_fridge_201202
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.0.3 (2016-02-11)
+------------------
+* [detect_cans_in_fridge_201202/euslisp/pddl-action.l] fix missing options
+* [detect_cans_in_fridge_201202/CMakeLists.txt] add roseus to find_package
+* Merge pull request `#1152 <https://github.com/jsk-ros-pkg/jsk_demos/issues/1152>`_ from furushchev/fridge-fix-interactive
+  [detect_cans_in_fridge_201202/euslisp/main.l] bugfix: prevent calling (enable-behavior-server) many times
+* [detect_cans_in_fridge_201202/launch/gazebo_startup.launch] add launch file for gazebo
+* [detect_cans_in_fridge_201202/detect_cans] add plane extraction for fridge inner shelf substraction
+* [detect_cans_in_fridge_201202] add debug-view argument for preventing irtviewer launch
+* [detect_cans_in_fridge_201202/euslisp/match-hist.l] update parameter for match hist lower cutting threshold
+* [detect_cans_in_fridge_201202/euslisp/main.l] bugfix: prevent calling (enable-behavior-server) many times
+* [detect_cans_in_fridge_201202] add debug-view argument for preventing irtviewer launch
+* [detect_cans_in_fridge_201202] remove old/unused codes; cleanup directory
+* [detect_cans] add README
+* [detect_cans] async join based parallel state-machine
+* Contributors: Yuki Furuta, Kamada Hitoshi, Ryohei Ueda
+
 0.0.2 (2015-11-26)
 ------------------
 * [jsk_demos] exec fridge demo in smach

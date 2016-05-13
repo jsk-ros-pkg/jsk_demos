@@ -9,6 +9,8 @@ add_message_files(
 generate_messages(
   DEPENDENCIES std_msgs)
 
+include_directories(${catkin_INCLUDE_DIRS})
+
 catkin_package(
     DEPENDS
     CATKIN_DEPENDS

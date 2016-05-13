@@ -1,10 +1,14 @@
 <package>
   <name>drc_valve_task</name>
-  <version>0.0.2</version>
+  <version>0.0.3</version>
   <description>drc_valve_task</description>
   <maintainer email="murooka@jsk.t.u-tokyo.ac.jp">Masaki Murooka</maintainer>
   <license>BSD</license>
   <author email="murooka@jsk.t.u-tokyo.ac.jp">Masaki Murooka</author>
+
   <buildtool_depend>catkin</buildtool_depend>
+
   <build_depend>cmake_modules</build_depend>
+  <build_depend>drc_task_common</build_depend>
+
 </package>

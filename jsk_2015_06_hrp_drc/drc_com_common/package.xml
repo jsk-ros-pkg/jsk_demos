@@ -1,6 +1,6 @@
 <package>
   <name>drc_com_common</name>
-  <version>0.0.2</version>
+  <version>0.0.3</version>
   <description>drc_com_common</description>
   <maintainer email="murooka@jsk.t.u-tokyo.ac.jp">Masaki Murooka</maintainer>
   <license>BSD</license>
@@ -8,8 +8,6 @@
 
   <buildtool_depend>catkin</buildtool_depend>
 
-  <build_depend>mk</build_depend>
-  <build_depend>rosbuild</build_depend>
   <build_depend>roseus</build_depend>
   <build_depend>message_generation</build_depend>
   <build_depend>roslib</build_depend>
@@ -21,8 +19,6 @@
   <build_depend>jsk_recognition_msgs</build_depend>
   <build_depend>visualization_msgs</build_depend>  
   <build_depend>jsk_robot_utils</build_depend>
-  <run_depend>mk</run_depend>
-  <run_depend>rosbuild</run_depend>
   <run_depend>roseus</run_depend>
   <run_depend>message_runtime</run_depend>
   <run_depend>roslib</run_depend>

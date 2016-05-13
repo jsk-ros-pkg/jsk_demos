@@ -2,6 +2,9 @@
 Changelog for package interactive_behavior_201409
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.0.3 (2016-02-11)
+------------------
+
 0.0.2 (2015-11-26)
 ------------------
 * [interactive_behavior_2014_09/CMakeLists.txt] not require face_recognition on find_package

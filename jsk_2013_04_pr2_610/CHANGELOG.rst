@@ -2,6 +2,13 @@
 Changelog for package jsk_2013_04_pr2_610
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.0.3 (2016-02-11)
+------------------
+* jsk_2013_04_pr2_610/README.md: without space, it breaks kanji-code in emacs?
+* jsk_2013_04_pr2_610/README.md: fix section/subsection
+* update to use ROBOT env value to select machine file
+* Contributors: Kei Okada, Yuto Inagaki
+
 0.0.2 (2015-11-26)
 ------------------
 * README.md: now jsk_2013_04_pr2_610 depends on task_compiler

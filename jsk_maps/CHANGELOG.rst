@@ -2,6 +2,14 @@
 Changelog for package jsk_maps
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.0.3 (2016-02-11)
+------------------
+* add keepout maps
+* use queue_size=1
+* add depends to jsk_rviz_plugins
+* [jsk_maps/src/eng2-scene.l] add /eng2/8f/room83b1-front spot
+* Contributors: Yuki Furuta, Kei Okada
+
 0.0.2 (2015-11-26)
 ------------------
 * Ignore auto generated files
@@ -287,4 +295,4 @@ Changelog for package jsk_maps
 * change make command to irteusgl -> rosrun euslisp irteusgl
 * generate euslisp map object from yaml
 * add jsk_maps for eng8 building at hongo campus
-* Contributors: Furushchev, JSK applications, Kamada Hitoshi, Kei Okada, Ryohei Ueda, Satoshi Iwaishi, Yuki Furuta, Yuto Inagaki, Haseru Chen, Yusuke Furuta, Kazuto Murase, Eisoku Kuroiwa, Kuze Lars, Manabu Saito, Hiroyuki Mikita, Shunichi Nozawa, Youhei Kakiuchi
+* Contributors: Yuki Furuta, JSK applications, Kamada Hitoshi, Kei Okada, Ryohei Ueda, Satoshi Iwaishi, Yuto Inagaki, Haseru Chen, Yusuke Furuta, Kazuto Murase, Eisoku Kuroiwa, Kuze Lars, Manabu Saito, Hiroyuki Mikita, Shunichi Nozawa, Youhei Kakiuchi
