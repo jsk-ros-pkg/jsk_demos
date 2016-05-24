@@ -1,8 +1,7 @@
 #!/usr/bin/env runeus
 
 (load "elevator-buttons.l")
-(load "package://pr2eus/pr2-utils.l")
-(load "package://pr2eus/pr2-interface.l")
+(require :pr2-interface "package://pr2eus/pr2-interface.l")
 ;(load "package://manipserver_lib/euslisp/manip_client_lib.l")
 
 (defun push-button (target-coords)
