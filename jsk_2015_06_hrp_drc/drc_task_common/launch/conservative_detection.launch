@@ -1,0 +1,4 @@
+<launch>
+  <include file="$(find drc_task_common)/launch/conservative_valve_detection.launch" />
+  <include file="$(find drc_task_common)/launch/conservative_door_detection.launch" />
+</launch>
