@@ -1,7 +1,10 @@
 <launch>
   <arg name="INTERACTIVE" default="false" />
   <arg name="RESOLUTION" default="0.01" />
-  <include file="$(find drc_task_common)/launch/conservative_valve_viewer.launch" />
+  <arg name="GLC_RECORD" default="false" />
+  <include file="$(find drc_task_common)/launch/conservative_valve_viewer.launch" >
+    <arg name="GLC_RECORD" value="$(arg GLC_RECORD)" />
+  </include>
   <!-- Prepare pointcloud  -->
   <group ns="valve_detection">
     <node pkg="jsk_pcl_ros" type="octree_voxel_grid" name="octree_voxel_grid">

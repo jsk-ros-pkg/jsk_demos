@@ -2,19 +2,25 @@
   <arg name="INTERACTIVE" default="false" />
   <arg name="INPUT_CLOUD" default="/full_cloud2" />
   <arg name="RESOLUTION" default="0.01" />
+  <arg name="GLC_RECORD" default="false" />
+  <arg if="$(arg GLC_RECORD)"
+       name="glc_prefix" value="glc-capture -i --disable-audio" />
+  <arg unless="$(arg GLC_RECORD)"
+       name="glc_prefix" value="" />
+
   <!-- Prepare pointcloud  -->
   <group ns="door_detection">
   <node pkg="rviz" type="rviz" name="rviz_input"
-        launch-prefix="glc-capture -i --disable-audio"
+        launch-prefix="$(arg glc_prefix)"
         args="-d $(find drc_task_common)/config/door/input.rviz"/>
   <node pkg="rviz" type="rviz" name="rviz_recog" if="false"
-        launch-prefix="glc-capture -i --disable-audio"
+        launch-prefix="$(arg glc_prefix)"
         args="-d $(find drc_task_common)/config/door/recog.rviz"/>
   <node pkg="rviz" type="rviz" name="rviz_result"
-        launch-prefix="glc-capture -i --disable-audio"
+        launch-prefix="$(arg glc_prefix)"
         args="-d $(find drc_task_common)/config/door/result.rviz"/>
   <node pkg="rviz" type="rviz" name="rviz_downsample"  if="false"
-        launch-prefix="glc-capture -i --disable-audio"
+        launch-prefix="$(arg glc_prefix)"
           args="-d $(find drc_task_common)/config/door/downsample.rviz"/>
     <node pkg="jsk_pcl_ros" type="octree_voxel_grid" name="octree_voxel_grid">
       <remap from="~input" to="$(arg INPUT_CLOUD)" />
