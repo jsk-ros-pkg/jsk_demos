@@ -1,0 +1,26 @@
+<launch>
+  <test test-name="test_demo_plan" pkg="roseus" type="roseus"
+        args="$(find jsk_2013_04_pr2_610)/test/test-demo-plan.l" time-limit="1000" />
+  <include file="$(find task_compiler)/launch/execute-pddl.launch">
+    <arg name="action" value="$(find jsk_2013_04_pr2_610)/test/dummy-action.l"/>
+    <arg name="description" value="$(find jsk_2013_04_pr2_610)/pddl/description.l"/>
+    <arg name="planner" value="downward" />
+    <arg name="use_planner_option" value="true" />
+    <arg name="planner_option" value="--heuristic &quot;hlm=lmcount(lm_rhw(reasonable_orders=true,lm_cost_type=2,cost_type=2),pref=true)&quot;
+                                      --heuristic &quot;hff=ff()&quot;
+                                      --search &quot;iterated([lazy_greedy([hff,hlm],preferred=[hff,hlm]),
+                                      lazy_wastar([hff,hlm],preferred=[hff,hlm],w=5),
+                                      lazy_wastar([hff,hlm],preferred=[hff,hlm],w=3),
+                                      lazy_wastar([hff,hlm],preferred=[hff,hlm],w=2)],
+                                      repeat_last=false)&quot;" />
+    <arg name="debug" value="true" />
+    <arg name="gui" value="false" />
+  </include>
+   <node pkg="sound_play" type="soundplay_node.py" name="sound_play">
+    <remap from="sound_play" to="robotsound" />
+   </node>
+  <node pkg="sound_play" type="soundplay_node.py" name="sound_node_jp">
+    <remap from="robotsound" to="robotsound_jp" />
+    <remap from="sound_play" to="robotsound_jp" />
+  </node>
+</launch>

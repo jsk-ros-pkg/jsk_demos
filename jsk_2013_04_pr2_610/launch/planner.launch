@@ -1,6 +1,7 @@
 <launch>
   <arg name="debug" default="false" />
   <arg name="use_ffha" default="false" />
+  <arg name="launch_sound_play" default="true" />
   <node pkg="pddl_planner_viewer"
         type="pddl_planner_viewer.py"
         name="$(anon pddl_planner_viewer)" />
@@ -11,6 +12,7 @@
     <arg name="description" value="$(find jsk_2013_04_pr2_610)/pddl/description.l"/>
     <arg name="planner" value="ffha" />
     <arg name="debug" value="$(arg debug)" />
+    <arg name="planner_option" value="" />
   </include>
 
   <include unless="$(arg use_ffha)"
@@ -28,5 +30,15 @@
                                       repeat_last=false)&quot;" />
     <arg name="debug" value="$(arg debug)" />
   </include>
+  </group>
+
+  <group if="$(arg launch_sound_play)">
+    <node pkg="sound_play" type="soundplay_node.py" name="sound_play">
+      <remap from="sound_play" to="robotsound" />
+    </node>
+    <node pkg="sound_play" type="soundplay_node.py" name="sound_node_jp">
+      <remap from="robotsound" to="robotsound_jp" />
+      <remap from="sound_play" to="robotsound_jp" />
+    </node>
   </group>
 </launch>

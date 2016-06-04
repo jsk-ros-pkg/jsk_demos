@@ -2,7 +2,6 @@ cmake_minimum_required(VERSION 2.8.3)
 project(jsk_2013_04_pr2_610)
 
 find_package(catkin REQUIRED COMPONENTS
-  rostest
   geometry_msgs
   message_generation
   jsk_demo_common
@@ -50,4 +49,9 @@ install(
   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
   )
 
-add_rostest(test/test-demo.test)
+if(CATKIN_ENABLE_TESTING AND NOT $ENV{ROS_DISTRO} STREQUAL "hydro")
+  find_package(catkin REQUIRED COMPONENTS rostest roslaunch)
+  roslaunch_add_file_check(launch/planner.launch)
+  add_rostest(test/test-demo.test)
+  add_rostest(test/test-demo-plan.test)
+endif()
