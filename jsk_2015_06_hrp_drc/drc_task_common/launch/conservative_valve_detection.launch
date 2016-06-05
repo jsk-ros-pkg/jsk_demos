@@ -1,36 +1,63 @@
 <launch>
   <arg name="INTERACTIVE" default="false" />
   <arg name="RESOLUTION" default="0.01" />
+  <arg name="SIMULATION" default="false" />
   <arg name="GLC_RECORD" default="false" />
   <include file="$(find drc_task_common)/launch/conservative_valve_viewer.launch" >
     <arg name="GLC_RECORD" value="$(arg GLC_RECORD)" />
   </include>
+
+  <arg unless="$(arg SIMULATION)" name="USE_MULTITHREAD_CALLBACK" value="true" />
+  <arg unless="$(arg SIMULATION)" name="NUM_OF_THREAD_OMP"    value="0" />
+  <arg unless="$(arg SIMULATION)" name="COLOR_REFERENCE_FILE" value="$(find jsk_pcl_ros)/config/drc_box_color.yaml" />
+  <arg unless="$(arg SIMULATION)" name="MIN_LIKELIHOOD_PLANE" value="0.5" />
+  <arg unless="$(arg SIMULATION)" name="MIN_CLOUD_SIZE_TORUS" value="100"  />
+  <arg unless="$(arg SIMULATION)" name="MAX_RADIUS_TORUS"     value="0.25" />
+  <arg unless="$(arg SIMULATION)" name="MIN_RADIUS_TORUS"     value="0.15"/>
+  <arg unless="$(arg SIMULATION)" name="PLANE_MIN_AREA"       value="0.05"/>
+  <arg unless="$(arg SIMULATION)" name="PLANE_TOLERANCE"      value="0.2"/>
+
+  <arg if="$(arg SIMULATION)" name="USE_MULTITHREAD_CALLBACK" value="false" />
+  <arg if="$(arg SIMULATION)" name="NUM_OF_THREAD_OMP" value="1" />
+  <arg if="$(arg SIMULATION)" name="COLOR_REFERENCE_FILE" value="$(find jsk_pcl_ros)/config/drc_box_color.yaml" />
+  <arg if="$(arg SIMULATION)" name="MIN_LIKELIHOOD_PLANE" value="0.35" />
+  <arg if="$(arg SIMULATION)" name="MIN_CLOUD_SIZE_TORUS" value="80"  />
+  <arg if="$(arg SIMULATION)" name="MAX_RADIUS_TORUS"     value="0.3" />
+  <arg if="$(arg SIMULATION)" name="MIN_RADIUS_TORUS"     value="0.13"/>
+  <arg if="$(arg SIMULATION)" name="PLANE_MIN_AREA"       value="0.2"/>
+  <arg if="$(arg SIMULATION)" name="PLANE_TOLERANCE"      value="0.15"/>
+
   <!-- Prepare pointcloud  -->
   <group ns="valve_detection">
     <node pkg="jsk_pcl_ros" type="octree_voxel_grid" name="octree_voxel_grid">
       <remap from="~input" to="/full_cloud2" />
       <rosparam subst_value="true">
         resolution: $(arg RESOLUTION)
+        use_multithread_callback: $(arg USE_MULTITHREAD_CALLBACK)
       </rosparam>
     </node>
     <node pkg="jsk_pcl_ros" type="tf_transform_cloud" name="odom_laser">
       <remap from="~input" to="octree_voxel_grid/output" />
-      <rosparam>
+      <rosparam subst_value="true">
         target_frame_id: ground
+        use_multithread_callback: $(arg USE_MULTITHREAD_CALLBACK)
       </rosparam>
     </node>
     
     <node pkg="jsk_pcl_ros" type="tf_transform_cloud" name="camera_laser">
       <remap from="~input" to="odom_laser/output" />
-      <rosparam>
+      <rosparam subst_value="true">
         target_frame_id: left_camera_optical_frame
+        use_multithread_callback: $(arg USE_MULTITHREAD_CALLBACK)
       </rosparam>
     </node>
 
     <node pkg="jsk_pcl_ros" type="normal_estimation_omp" name="normal_estimation">
       <remap from="~input" to="odom_laser/output" />
-      <rosparam>
+      <rosparam subst_value="true">
         k_search: 50
+        use_multithread_callback: $(arg USE_MULTITHREAD_CALLBACK)
+        number_of_threads: $(arg NUM_OF_THREAD_OMP)
       </rosparam>
     </node>
     <node pkg="jsk_pcl_ros" type="normal_direction_filter" name="normal_direction_filter">
@@ -56,10 +83,11 @@
     <node pkg="jsk_pcl_ros" type="region_growing_multiple_plane_segmentation" name="region_growing_multiple_plane_segmentation">
       <remap from="~input" to="normal_estimation/output_with_xyz" />
       <remap from="~input_normal" to="normal_estimation/output_with_xyz" />
-      <rosparam>
+      <rosparam subst_value="true">
         max_area: 5.0
-        min_area: 0.05
-        cluster_tolerance: 0.5
+        min_area: $(arg PLANE_MIN_AREA)
+        cluster_tolerance: $(arg PLANE_TOLERANCE)
+        use_multithread_callback: $(arg USE_MULTITHREAD_CALLBACK)
       </rosparam>
     </node>
     <node pkg="jsk_pcl_ros_utils" type="plane_rejector" name="plane_rejector">
@@ -110,6 +138,7 @@
       <remap from="~input/image" to="hsv_decomposer/output/hue" />
       <rosparam>
         bin_size: 50
+        synchronizer_queue_size: 2000
       </rosparam>
     </node>
     <node pkg="jsk_perception" type="polygon_array_color_likelihood" name="polygon_array_color_likelihood">
@@ -118,14 +147,15 @@
       <remap from="~input/reference" to="selected_polygon_color_histogram/output/unwrap" />
       <rosparam subst_value="true">
         coefficient_method: 3 # bhattacharyya
-        reference_file: $(find jsk_pcl_ros)/config/drc_box_color2.yaml
+        reference_file: $(arg COLOR_REFERENCE_FILE)
+        synchronizer_queue_size: 2000
       </rosparam>
     </node>
     <node pkg="jsk_pcl_ros" type="extract_top_polygon_likelihood.py" name="extract_top_polygon_likelihood">
       <remap from="~input" to="polygon_array_color_likelihood/output" />
       <remap from="~input/coefficients" to="plane_concatenator_transformed/output_coefficients" />
-      <rosparam>
-        min_likelihood: 0.5
+      <rosparam subst_value="true">
+        min_likelihood: $(arg MIN_LIKELIHOOD_PLANE)
       </rosparam>
     </node>
     <node pkg="image_view" type="image_view" name="polygon_array_color_histogram_debug_view">
@@ -141,6 +171,7 @@
         sensor_frame: head_root
         min_height: 0.35
         max_height: 0.5
+        max_queue_size: 2000
       </rosparam>
     </node>
     <node pkg="jsk_pcl_ros" type="euclidean_clustering" name="euclidean_clustering">
@@ -163,14 +194,14 @@
     </node>
     <node pkg="jsk_pcl_ros" type="torus_finder" name="torus_finder">
       <remap from="~input" to="euclidean_clustering_decomposer/debug_output" />
-      <rosparam>
+      <rosparam subst_value="true">
         algorithm: LMEDS
         max_iterations: 10000
         voxel_grid_sampling: true
         voxel_size: 0.005
-        min_size: 100
-        max_radius: 0.25
-        min_radius: 0.15
+        min_size: $(arg MIN_CLOUD_SIZE_TORUS)
+        max_radius: $(arg MAX_RADIUS_TORUS)
+        min_radius: $(arg MIN_RADIUS_TORUS)
         outlier_threshold: 0.05
       </rosparam>
     </node>
