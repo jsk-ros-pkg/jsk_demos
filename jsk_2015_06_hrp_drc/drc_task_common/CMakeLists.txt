@@ -38,6 +38,7 @@ generate_dynamic_reconfigure_options(
   cfg/StandingDrillDetector.cfg
   cfg/FilterBBoxPosition.cfg
   cfg/BControlDummyServer.cfg
+  cfg/ValveRejector.cfg
 )
 
 add_message_files(DIRECTORY msg FILES DRCParametersMessage.msg)

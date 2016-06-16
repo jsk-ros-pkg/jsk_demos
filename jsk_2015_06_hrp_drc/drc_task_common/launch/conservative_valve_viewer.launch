@@ -1,0 +1,21 @@
+<launch>
+  <arg name="GLC_RECORD" default="false" />
+  <arg if="$(arg GLC_RECORD)"
+       name="glc_prefix" value="glc-capture -i --disable-audio" />
+  <arg unless="$(arg GLC_RECORD)"
+       name="glc_prefix" value="" />
+  <group ns="valve_detection">
+    <node pkg="rviz" type="rviz" name="rviz_input"
+          launch-prefix="$(arg glc_prefix)"
+          args="-d $(find drc_task_common)/config/valve/input.rviz"/>
+    <node pkg="rviz" type="rviz" name="rviz_recog"  if="false"
+          launch-prefix="$(arg glc_prefix)"
+          args="-d $(find drc_task_common)/config/valve/recog.rviz"/>
+    <node pkg="rviz" type="rviz" name="rviz_result"
+          launch-prefix="$(arg glc_prefix)"
+          args="-d $(find drc_task_common)/config/valve/result.rviz"/>
+    <node pkg="rviz" type="rviz" name="rviz_downsample"  if="false"
+          launch-prefix="$(arg glc_prefix)"
+          args="-d $(find drc_task_common)/config/valve/downsample.rviz"/>
+  </group>
+</launch>
