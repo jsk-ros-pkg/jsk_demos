@@ -1,5 +1,6 @@
 <launch>
   <arg name="debug" default="false" />
+  <arg name="gui" default="false" />
 
   <!-- launch nodes to detect cans -->
   <include file="$(find detect_cans_in_fridge_201202)/launch/startup.launch">
@@ -14,9 +15,11 @@
     <arg name="return_fail" value="nil" />
     <arg name="planner" value="downward" />
     <arg name="debug" value="$(arg debug)" />
+    <arg name="gui" value="$(arg gui)" />
   </include>
 
   <!-- planner viewer -->
   <node name="$(anon pddl_planner_viewer)"
-        pkg="pddl_planner_viewer" type="pddl_planner_viewer.py" />
+        pkg="pddl_planner_viewer" type="pddl_planner_viewer.py"
+        if="$(arg gui)" />
 </launch>

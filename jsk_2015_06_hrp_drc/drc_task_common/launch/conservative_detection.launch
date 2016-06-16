@@ -1,0 +1,7 @@
+<launch>
+  <arg name="GLC_RECORD" default="false" />
+  <include file="$(find drc_task_common)/launch/conservative_valve_detection.launch" />
+  <include file="$(find drc_task_common)/launch/conservative_door_detection.launch" >
+    <arg name="GLC_RECORD" value="$(arg GLC_RECORD)" />
+  </include>
+</launch>

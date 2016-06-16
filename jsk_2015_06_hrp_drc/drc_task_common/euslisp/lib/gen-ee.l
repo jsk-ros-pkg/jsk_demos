@@ -1,0 +1,5 @@
+(load "package://drc_task_common/euslisp/lib/valve.l")
+(load "package://drc_task_common/euslisp/lib/door.l")
+(valve-ee)
+(door-ee)
+(exit)

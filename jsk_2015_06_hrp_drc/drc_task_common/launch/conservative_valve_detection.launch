@@ -1,29 +1,14 @@
 <launch>
   <arg name="INTERACTIVE" default="false" />
-  <arg name="INPUT_CLOUD" default="/full_cloud2" />
   <arg name="RESOLUTION" default="0.01" />
   <arg name="GLC_RECORD" default="false" />
-  <arg if="$(arg GLC_RECORD)"
-       name="glc_prefix" value="glc-capture -i --disable-audio" />
-  <arg unless="$(arg GLC_RECORD)"
-       name="glc_prefix" value="" />
-
+  <include file="$(find drc_task_common)/launch/conservative_valve_viewer.launch" >
+    <arg name="GLC_RECORD" value="$(arg GLC_RECORD)" />
+  </include>
   <!-- Prepare pointcloud  -->
-  <group ns="door_detection">
-  <node pkg="rviz" type="rviz" name="rviz_input"
-        launch-prefix="$(arg glc_prefix)"
-        args="-d $(find drc_task_common)/config/door/input.rviz"/>
-  <node pkg="rviz" type="rviz" name="rviz_recog" if="false"
-        launch-prefix="$(arg glc_prefix)"
-        args="-d $(find drc_task_common)/config/door/recog.rviz"/>
-  <node pkg="rviz" type="rviz" name="rviz_result"
-        launch-prefix="$(arg glc_prefix)"
-        args="-d $(find drc_task_common)/config/door/result.rviz"/>
-  <node pkg="rviz" type="rviz" name="rviz_downsample"  if="false"
-        launch-prefix="$(arg glc_prefix)"
-          args="-d $(find drc_task_common)/config/door/downsample.rviz"/>
+  <group ns="valve_detection">
     <node pkg="jsk_pcl_ros" type="octree_voxel_grid" name="octree_voxel_grid">
-      <remap from="~input" to="$(arg INPUT_CLOUD)" />
+      <remap from="~input" to="/full_cloud2" />
       <rosparam subst_value="true">
         resolution: $(arg RESOLUTION)
       </rosparam>
@@ -34,6 +19,7 @@
         target_frame_id: ground
       </rosparam>
     </node>
+    
     <node pkg="jsk_pcl_ros" type="tf_transform_cloud" name="camera_laser">
       <remap from="~input" to="odom_laser/output" />
       <rosparam>
@@ -47,7 +33,7 @@
         k_search: 50
       </rosparam>
     </node>
-    <node pkg="jsk_pcl_ros" type="normal_direction_filter" name="normal_direction_filter" if="false">
+    <node pkg="jsk_pcl_ros" type="normal_direction_filter" name="normal_direction_filter">
       <remap from="~input" to="normal_estimation/output_with_xyz" />
       <remap from="~input_imu" to="/imu" />
       <rosparam>
@@ -57,7 +43,7 @@
         eps_angle: 0.5
       </rosparam>
     </node>
-    <node pkg="nodelet" type="nodelet" name="normal_direction_filter_points" args="standalone pcl/ExtractIndices" if="false">
+    <node pkg="nodelet" type="nodelet" name="normal_direction_filter_points" args="standalone pcl/ExtractIndices">
       <remap from="~input" to="normal_estimation/output_with_xyz" />
       <remap from="~indices" to="normal_direction_filter/output" />
     </node>
@@ -72,6 +58,8 @@
       <remap from="~input_normal" to="normal_estimation/output_with_xyz" />
       <rosparam>
         max_area: 5.0
+        min_area: 0.05
+        cluster_tolerance: 0.5
       </rosparam>
     </node>
     <node pkg="jsk_pcl_ros_utils" type="plane_rejector" name="plane_rejector">
@@ -85,7 +73,6 @@
         use_inliers: true
       </rosparam>
     </node>
-
     <node pkg="jsk_pcl_ros" type="cluster_point_indices_decomposer"
           name="region_growing_result_decomposer">
       <remap from="~input" to="normal_estimation/output_with_xyz" />
@@ -129,8 +116,9 @@
       <remap from="~input/polygons" to="plane_concatenator_transformed/output_polygons" />
       <remap from="~input/histograms" to="polygon_array_color_histogram/output" />
       <remap from="~input/reference" to="selected_polygon_color_histogram/output/unwrap" />
-      <rosparam>
+      <rosparam subst_value="true">
         coefficient_method: 3 # bhattacharyya
+        reference_file: $(find jsk_pcl_ros)/config/drc_box_color2.yaml
       </rosparam>
     </node>
     <node pkg="jsk_pcl_ros" type="extract_top_polygon_likelihood.py" name="extract_top_polygon_likelihood">
@@ -151,15 +139,14 @@
         use_indices: false
         use_sensor_frame: true
         sensor_frame: head_root
-        min_height: 0.05
-        max_height: 0.1
+        min_height: 0.35
+        max_height: 0.5
       </rosparam>
     </node>
     <node pkg="jsk_pcl_ros" type="euclidean_clustering" name="euclidean_clustering">
       <remap from="~input" to="multi_plane_extraction/output" />
       <rosparam>
         tolerance: 0.05
-        min_size: 5
       </rosparam>
     </node>
     <node pkg="jsk_pcl_ros" type="cluster_point_indices_decomposer" name="euclidean_clustering_decomposer">
@@ -173,6 +160,29 @@
         publish_clouds: false
         publish_tf: false
       </rosparam>
+    </node>
+    <node pkg="jsk_pcl_ros" type="torus_finder" name="torus_finder">
+      <remap from="~input" to="euclidean_clustering_decomposer/debug_output" />
+      <rosparam>
+        algorithm: LMEDS
+        max_iterations: 10000
+        voxel_grid_sampling: true
+        voxel_size: 0.005
+        min_size: 100
+        max_radius: 0.25
+        min_radius: 0.15
+        outlier_threshold: 0.05
+      </rosparam>
+    </node>
+    <node pkg="drc_task_common" type="valve_rejector.py" name="valve_rejector" output="screen"
+          respawn="true">
+      <rosparam>
+        eps_angle: 0.3
+      </rosparam>
+    </node>
+    <node pkg="jsk_pcl_ros" type="extract_indices" name="torus_points">
+      <remap from="~input" to="euclidean_clustering_decomposer/debug_output" />
+      <remap from="~indices" to="torus_finder/output/inliers" />
     </node>
     <group if="$(arg INTERACTIVE)">
       <node pkg="jsk_interactive_marker" type="polygon_marker" name="polygon_marker">
@@ -196,11 +206,55 @@
             args="pub selected_polygon_color_histogram/output/unwrap jsk_recognition_msgs/HistogramWithRange -f $(find jsk_pcl_ros)/config/drc_box_color.yaml -r 1" 
             />
     </group>
-    <node pkg="drc_task_common" type="door_handle_bbox_extractor.py" name="door_handle_bbox_extractor" output="screen">
-      <remap from="~input" to="euclidean_clustering_decomposer/boxes" />
+    <node pkg="pcl_ros" type="pcd_to_pointcloud" name="reference_model" 
+          args="$(find drc_task_common)/light_models/valve.pcd 1">
       <rosparam>
-        frame_id: ground
+        frame_id: left_camera_optical_frame
       </rosparam>
+      <remap from="cloud_pcd" to="valve_reference_cloud" />
+    </node>
+    <group>
+      <!-- downsample for ICP registration -->
+      <remap from="/tf" to="tf_null" />
+      <node pkg="nodelet" type="nodelet" name="downsample_reference_cloud"
+            args="standalone pcl/VoxelGrid">
+        <remap from="~input" to="valve_reference_cloud" />
+        <rosparam>
+          filter_limit_min: -10
+          filter_limit_max: 10
+          leaf_size: 0.01
+        </rosparam>
+      </node>
+      <node pkg="nodelet" type="nodelet" name="downsample_target_cloud"
+            args="standalone pcl/VoxelGrid">
+        <remap from="~input" to="euclidean_clustering_decomposer/debug_output" />
+        <rosparam>
+          filter_limit_min: -10
+          filter_limit_max: 10
+          leaf_size: 0.01
+        </rosparam>
+      </node>
+    </group>
+    <node pkg="jsk_pcl_ros" type="icp_registration" name="icp_registration" output="screen">
+      <remap from="~input" to="downsample_target_cloud/output" />
+      <remap from="~input_reference" to="downsample_reference_cloud/output" />
+      <remap from="~input_offset" to="valve_rejector/output/pose" />
+      <rosparam>
+        use_offset_pose: true
+        use_flipped_initial_pose: false
+        max_iteration: 10000
+        correspondence_distance: 0.1
+        transform_epsilon: 0.0000001
+        euclidean_fittness_epsilon: 0.0001
+        rotation_epsilon: 0.0002
+        ransac_iterations: 10000
+        ransac_outlier_threshold: 0.4
+      </rosparam>
+    </node>
+    <!-- for saving model -->
+    <node pkg="jsk_pcl_ros_utils" type="pointcloud_relative_from_pose_stamped" name="model_relative_from_valve_origin">
+      <remap from="~input" to="euclidean_clustering_decomposer/debug_output" />
+      <remap from="~input/pose" to="torus_finder/output/pose" />
     </node>
     <node pkg="drc_task_common" type="octree_info.py" name="octree_info">
       <remap from="~cloud" to="octree_voxel_grid/output" />
@@ -215,6 +269,22 @@
         text_size: 24
       </rosparam>
     </node>
+    <node pkg="jsk_rviz_plugins" type="float32_to_overlay_text.py" name="torus_finder_info">
+      <remap from="~input" to="torus_finder/output/latest_time" />
+      <rosparam>
+        format: "Torus fitting took {0} sec"
+        text_size: 24
+        top: 80
+      </rosparam>
+    </node>
+    <node pkg="jsk_rviz_plugins" type="float32_to_overlay_text.py" name="icp_info">
+      <remap from="~input" to="icp_registration/output/latest_time" />
+      <rosparam>
+        format: "ICP registration took {0} sec"
+        text_size: 24
+        top: 120
+      </rosparam>
+    </node>
     <node pkg="jsk_rviz_plugins" type="float32_to_overlay_text.py" name="plane_segmentation_info">
       <remap from="~input" to="region_growing_multiple_plane_segmentation/output/latest_time" />
       <rosparam>
@@ -225,22 +295,16 @@
     </node>
     <node pkg="jsk_rviz_plugins" type="float32_to_overlay_text.py" name="perception_info">
       <rosparam>
-        multi_topics: [region_growing_multiple_plane_segmentation/output/latest_time, scan_time_info/time]
+        multi_topics: [torus_finder/output/latest_time, icp_registration/output/latest_time, region_growing_multiple_plane_segmentation/output/latest_time, scan_time_info/time]
         format: "Perception took {0} sec"
         text_size: 24
-        top: 80
+        top: 160
       </rosparam>
     </node>
-
-
-    <node pkg="jsk_topic_tools" type="static_transform_pose_stamped"
-          name="drc_box_maker_to_handle"
-          args="0.05 0.0 0 -1.57 -1.57 0 door_handle_bbox_extractor/output door_handle" />
   </group>
-  <node pkg="jsk_rviz_plugins" type="rosconsole_overlay_text.py" name="rosconsole_overlay_text">
+  <node pkg="jsk_rviz_plugins" type="rosconsole_overlay_text.py" name="rosconsole_overlay_text" if="false">
     <rosparam>
-      nodes_regexp: ^/(door|valve)_detection
+      nodes_regexp: ^/valve_detection
     </rosparam>
   </node>
-
 </launch>

@@ -256,3 +256,4 @@
 ;; (setq bcds (send (send *last-fridge-handle* :copy-worldcoords) :translate #f(0 -230 -355)))
 ;; (setq ccds (send (send *last-fridge-handle* :copy-worldcoords) :translate #f(0 -230 -675)))
 ;;
+(provide :fridge-main)

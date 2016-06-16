@@ -1,6 +1,6 @@
 (ros::roseus "detect_cans_in_fridge_201202_demo_pddl")
 
-(load "main.l")
+(require :fridge-main "package://detect_cans_in_fridge_201202/euslisp/main.l")
 
 (setq *use-arm* :larm)
 (setq *finish-type* :pass-to-human)
@@ -32,3 +32,13 @@
 
 (defun try-close ()
   (close-fridge :use-arm *use-arm*))
+
+(defun task-compiler/after-init-hook ()
+  (init))
+
+(defun task-compiler/before-run-hook (sm)
+  (disable-behavior-server)
+  (initialize-demo "georgia"))
+
+(defun task-compiler/after-run-hook (sm)
+  (enable-behavior-server))
