@@ -1504,20 +1504,20 @@
           (list (make-coords :coords (send (send *robot* :rleg :end-coords :copy-worldcoords) :translate (float-vector 0 0 0)) :name :rleg)
                 (make-coords :coords (send (send *robot* :lleg :end-coords :copy-worldcoords) :translate (float-vector 270 0 150)) :name :lleg)
                 (make-coords :coords (send (send *robot* :rleg :end-coords :copy-worldcoords) :translate (float-vector 270 0 150)) :name :rleg)
-                ;; (make-coords :coords (send (send *robot* :lleg :end-coords :copy-worldcoords) :translate (float-vector (+ 270 125) 0 150)) :name :lleg)
-                ;; (make-coords :coords (send (send *robot* :rleg :end-coords :copy-worldcoords) :translate (float-vector (+ 270 125) 0 150)) :name :rleg)
-                ;; (make-coords :coords (send (send *robot* :lleg :end-coords :copy-worldcoords) :translate (float-vector (+ 270 125 270) 0 300)) :name :lleg)
-                ;; (make-coords :coords (send (send *robot* :rleg :end-coords :copy-worldcoords) :translate (float-vector (+ 270 125 270) 0 300)) :name :rleg)
-                ;; (make-coords :coords (send (send *robot* :lleg :end-coords :copy-worldcoords) :translate (float-vector (+ 270 125 270 125) 0 300)) :name :lleg)
-                ;; (make-coords :coords (send (send *robot* :rleg :end-coords :copy-worldcoords) :translate (float-vector (+ 270 125 270 125) 0 300)) :name :rleg)
+                (make-coords :coords (send (send *robot* :lleg :end-coords :copy-worldcoords) :translate (float-vector (+ 270 125) 0 150)) :name :lleg)
+                (make-coords :coords (send (send *robot* :rleg :end-coords :copy-worldcoords) :translate (float-vector (+ 270 125) 0 150)) :name :rleg)
+                (make-coords :coords (send (send *robot* :lleg :end-coords :copy-worldcoords) :translate (float-vector (+ 270 125 270) 0 300)) :name :lleg)
+                (make-coords :coords (send (send *robot* :rleg :end-coords :copy-worldcoords) :translate (float-vector (+ 270 125 270) 0 300)) :name :rleg)
+                (make-coords :coords (send (send *robot* :lleg :end-coords :copy-worldcoords) :translate (float-vector (+ 270 125 270 125) 0 300)) :name :lleg)
+                (make-coords :coords (send (send *robot* :rleg :end-coords :copy-worldcoords) :translate (float-vector (+ 270 125 270 125) 0 300)) :name :rleg)
                 )
           (list *double-support-av* *first-step-av* *second-step-av* *second-step-av*
-                ;;*second-step-av* *double-support-av*
-                ;;*first-step-av* *second-step-av* *second-step-av*
+                *second-step-av* *double-support-av*
+                *first-step-av* *second-step-av* *second-step-av*
                 )
           (list (* 1e3 default-step-time) (* 1e3 default-step-time 1) (* 1e3 default-step-time 0.4) (* 1e3 default-step-time 0.6)
-                ;;(* 1e3 default-step-time) (* 1e3 default-step-time 1)
-                ;;(* 1e3 default-step-time 1) (* 1e3 default-step-time 0.4) (* 1e3 default-step-time 0.6)
+                (* 1e3 default-step-time) (* 1e3 default-step-time 1)
+                (* 1e3 default-step-time 1) (* 1e3 default-step-time 0.4) (* 1e3 default-step-time 0.6)
                 )))
   )
 
