@@ -1508,16 +1508,62 @@
                 (make-coords :coords (send (send *robot* :rleg :end-coords :copy-worldcoords) :translate (float-vector (+ 270 125) 0 150)) :name :rleg)
                 (make-coords :coords (send (send *robot* :lleg :end-coords :copy-worldcoords) :translate (float-vector (+ 270 125 270) 0 300)) :name :lleg)
                 (make-coords :coords (send (send *robot* :rleg :end-coords :copy-worldcoords) :translate (float-vector (+ 270 125 270) 0 300)) :name :rleg)
-                (make-coords :coords (send (send *robot* :lleg :end-coords :copy-worldcoords) :translate (float-vector (+ 270 125 270 125) 0 300)) :name :lleg)
-                (make-coords :coords (send (send *robot* :rleg :end-coords :copy-worldcoords) :translate (float-vector (+ 270 125 270 125) 0 300)) :name :rleg)
+                ;;(make-coords :coords (send (send *robot* :lleg :end-coords :copy-worldcoords) :translate (float-vector (+ 270 125 270 125) 0 300)) :name :lleg)
+                ;;(make-coords :coords (send (send *robot* :rleg :end-coords :copy-worldcoords) :translate (float-vector (+ 270 125 270 125) 0 300)) :name :rleg)
+                (make-coords :coords (send (send *robot* :lleg :end-coords :copy-worldcoords) :translate (float-vector (+ 270 125 270 195) 0 300)) :name :lleg)
+                (make-coords :coords (send (send *robot* :rleg :end-coords :copy-worldcoords) :translate (float-vector (+ 270 125 270 195) 0 300)) :name :rleg)
                 )
-          (list *double-support-av* *first-step-av* *second-step-av* *second-step-av*
+          (list *double-support-av* *first-step-av* *second-step-av*
                 *second-step-av* *double-support-av*
-                *first-step-av* *second-step-av* *second-step-av*
+                *first-step-av* *second-step-av*
                 )
-          (list (* 1e3 default-step-time) (* 1e3 default-step-time 1) (* 1e3 default-step-time 0.4) (* 1e3 default-step-time 0.6)
+          (list (* 1e3 default-step-time) (* 1e3 default-step-time 1) (* 1e3 default-step-time 1)
                 (* 1e3 default-step-time) (* 1e3 default-step-time 1)
-                (* 1e3 default-step-time 1) (* 1e3 default-step-time 0.4) (* 1e3 default-step-time 0.6)
+                (* 1e3 default-step-time 1) (* 1e3 default-step-time 1)
+                )))
+  )
+
+(defun test-terrain-hrp2jsknt3 ()
+  (send *ri* :set-servo-gain-percentage "LLEG_JOINT6" 100)
+  (send *ri* :set-servo-gain-percentage "RLEG_JOINT6" 100)
+  (default-stair-param-hrp2jsknt)
+  (setq *double-support-av*
+        (walking-pose *robot* :root-link-pitch-offset 5 :root-link-height-offset -40 :head-link-pitch-offset 40)
+        *first-step-av* ;; first climb up
+        (walking-pose *robot* :root-link-pitch-offset 5 :root-link-height-offset -120 :head-link-pitch-offset 40)
+        *second-step-av* ;; second climb up
+        (walking-pose *robot* :root-link-pitch-offset 5 :root-link-height-offset -40 :head-link-pitch-offset 40)
+        *down-av-1*
+        (walking-pose *robot* :root-link-pitch-offset 5 :root-link-height-offset -110 :head-link-pitch-offset 40)
+        *down-av-2*
+        (walking-pose *robot* :root-link-pitch-offset 5 :root-link-height-offset -80 :head-link-pitch-offset 40))
+  (setq *double-support-av-ltoe* (walking-pose-with-toe-joint *robot* :root-link-pitch-offset 5 :root-link-height-offset -40 :toe-joint-angles (list 0 -10) :head-link-pitch-offset 40))
+  (setq *double-support-av-rtoe* (walking-pose-with-toe-joint *robot* :root-link-pitch-offset 5 :root-link-height-offset -40 :toe-joint-angles (list -10 0) :head-link-pitch-offset 40))
+  (send *robot* :angle-vector *double-support-av*)
+  (send *ri* :angle-vector (send *robot* :angle-vector) 3000)
+  (send *ri* :wait-interpolation)
+  (y-or-n-p ";; next")
+  (default-stair-param-hrp2jsknt)
+  (send *ri* :set-gait-generator-param :toe-angle 0 :heel-angle 0)
+  (let ((default-step-time (send (send *ri* :get-gait-generator-param) :default_step_time)))
+    (send *ri* :set-foot-steps-with-base-height
+          (list (make-coords :coords (send (send *robot* :lleg :end-coords :copy-worldcoords) :translate (float-vector (+ 270 125 270 125) 0 300)) :name :lleg)
+                (make-coords :coords (send (send *robot* :rleg :end-coords :copy-worldcoords) :translate (float-vector (+ 270 125 270 125 240) 0 150)) :name :rleg)
+                (make-coords :coords (send (send *robot* :lleg :end-coords :copy-worldcoords) :translate (float-vector (+ 270 125 270 125 240) 0 150)) :name :lleg)
+                (make-coords :coords (send (send *robot* :rleg :end-coords :copy-worldcoords) :translate (float-vector (+ 270 125 270 125 240 155) 0 150)) :name :rleg)
+                (make-coords :coords (send (send *robot* :lleg :end-coords :copy-worldcoords) :translate (float-vector (+ 270 125 270 125 240 155) 0 150)) :name :lleg)
+                (make-coords :coords (send (send *robot* :rleg :end-coords :copy-worldcoords) :translate (float-vector (+ 270 125 270 125 240 155 240) 0 0)) :name :rleg)
+                (make-coords :coords (send (send *robot* :lleg :end-coords :copy-worldcoords) :translate (float-vector (+ 270 125 270 125 240 155 240) 0 0)) :name :lleg)
+                )
+          ;;(list *double-support-av* *first-step-av* *second-step-av*)
+          (list *double-support-av*
+                *down-av-2* *second-step-av*
+                *second-step-av* *second-step-av*
+                *down-av-2* *second-step-av*)
+          (list (* 1e3 default-step-time)
+                (* 1e3 default-step-time) (* 1e3 default-step-time)
+                (* 1e3 default-step-time) (* 1e3 default-step-time)
+                (* 1e3 default-step-time) (* 1e3 default-step-time)
                 )))
   )
 
