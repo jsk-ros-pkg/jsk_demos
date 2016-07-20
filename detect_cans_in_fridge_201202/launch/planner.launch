@@ -1,15 +1,16 @@
 <launch>
   <arg name="debug" default="false" />
   <arg name="gui" default="false" />
+  <arg name="ROBOT" default="pr2" /> <!-- hrp2 for hrp2 -->
 
   <!-- launch nodes to detect cans -->
-  <include file="$(find detect_cans_in_fridge_201202)/launch/startup.launch">
+  <include file="$(find detect_cans_in_fridge_201202)/launch/startup_$(arg ROBOT).launch">
     <arg name="execute" value="false" />
   </include>
 
   <!-- planner -->
   <include file="$(find task_compiler)/launch/execute-pddl.launch">
-    <arg name="action" value="$(find detect_cans_in_fridge_201202)/euslisp/pddl-action.l" />
+    <arg name="action" value="$(find detect_cans_in_fridge_201202)/euslisp/pddl-action-$(arg ROBOT).l" />
     <arg name="description" value="$(find pddl_planner)/demos/2013_fridge_demo/solve-bring-can.l" />
     <arg name="return_success" value="t" />
     <arg name="return_fail" value="nil" />
