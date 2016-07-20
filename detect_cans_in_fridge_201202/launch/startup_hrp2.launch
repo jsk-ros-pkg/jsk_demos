@@ -1,5 +1,7 @@
 <launch>
+  <arg name="execute" default="false" />
   <include file="$(find detect_cans_in_fridge_201202)/launch/startup.xml" >
+    <arg name="execute" value="$(arg execute)" />
     <arg name="run_behavior" default="false" />
     <arg name="camera_ns" value="camera_remote" />
     <arg name="base_frame_id" value="BODY" />
