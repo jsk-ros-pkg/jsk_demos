@@ -1,7 +1,7 @@
 <launch>
   <arg name="debug" default="false" />
   <arg name="gui" default="false" />
-  <arg name="ROBOT" default="$(optenv ROBOT pr2)" />
+  <arg name="ROBOT" default="pr2" /> <!-- hrp2 for hrp2 -->
 
   <!-- launch nodes to detect cans -->
   <include file="$(find detect_cans_in_fridge_201202)/launch/startup_$(arg ROBOT).launch">
