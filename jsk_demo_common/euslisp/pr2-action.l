@@ -86,24 +86,34 @@
     (print "End Pick!"))
   )
 
-(defun place2 (pos &key (arm :rarm)
-			  (rotation-axis :z)
-			  (debug-view nil))
+(defun place2 (pos &key (arm :larm)
+                   (use-torso nil)
+                   (rotation-axis :z)
+                   (move-forward nil)
+                   (debug-view nil))
   (let ((tmp-pos (send pos :copy-worldcoords)))
 	(send *pr2* arm :inverse-kinematics
 		  tmp-pos
 		  :rotation-axis rotation-axis
 		  :debug-view debug-view)
-	(send *pr2* :torso :waist-z :joint-angle
-		  (+ (send *pr2* :torso :waist-z :joint-angle) 100))
+        (if use-torso
+          (send *pr2* :torso :waist-z :joint-angle
+                (+ (send *pr2* :torso :waist-z :joint-angle) 100))
+          (send *pr2* arm :move-end-pos (float-vector 0 0 100))
+          )
 	(send *ri* :angle-vector (send *pr2* :angle-vector))
 	(send *ri* :wait-interpolation)
-	
-	(send *pr2* :torso :waist-z :joint-angle
-		  (- (send *pr2* :torso :waist-z :joint-angle) 100))
+        (if (and move-forward (numberp move-forward))
+            (send *ri* :go-pos-unsafe (* 0.001 move-forward) 0 0))
+	(if use-torso
+          (send *pr2* :torso :waist-z :joint-angle
+                (- (send *pr2* :torso :waist-z :joint-angle) 100))
+          (send *pr2* arm :move-end-pos (float-vector 0 0 -100)))
 	(send *ri* :angle-vector (send *pr2* :angle-vector))
 	(send *ri* :wait-interpolation)
 	(send *ri* :stop-grasp arm)
+        (when (and move-forward (numberp move-forward))
+          (send *ri* :go-pos-unsafe (* -0.001 move-forward) 0 0))
 	(print "End Place!"))
   )
 
@@ -121,7 +131,7 @@
 	  :link-list (send *pr2* :link-list
 			   (send *pr2* arm :end-coords :parent)
 			   (send *pr2* :link "torso_lift_link"))
-	  :debug-view debug)
+	  :debug-view debug-view)
     (send *ri* :angle-vector (send *pr2* :angle-vector) 2000)
     (send *ri* :wait-interpolation)
     (unix::usleep 100000)

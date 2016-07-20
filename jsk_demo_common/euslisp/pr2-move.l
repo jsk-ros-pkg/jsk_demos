@@ -3,8 +3,6 @@
 
 (unless (boundp '*scene*) (setq *scene* (make-eng2-scene)))
 
-(defvar *approach-target-bounding-box-topic* "/fcn/cluster_indices_decomposer/boxes")
-(defvar *approach-target-bounding-box-param* "/fcn/target_names")
 (defvar *base-frame-id* "/base_footprint")
 
 (warn "move-to-spot~%")
@@ -160,96 +158,28 @@
   (base-go-to-fridge-init-pose :torso-lift torso-lift :head-pitch head-pitch :wait wait)
   )
 
-(defparameter *bounding-box-msg* nil)
-(defun bounding-box-topic-callback (msg)
-  (setq *bounding-box-msg* msg))
-
-(defun subscribe-bounding-box-topic ()
-  (ros::ros-info "subscribe ~A" *approach-target-bounding-box-topic*)
-  (ros::subscribe *approach-target-bounding-box-topic* jsk_recognition_msgs::BoundingBoxArray
-                  #'bounding-box-topic-callback))
-
-(defun unsubscribe-bounding-box-topic ()
-  (ros::ros-info "unsubscribe ~A" *approach-target-bounding-box-topic*)
-  (ros::unsubscribe *approach-target-bounding-box-topic*))
-
-(defun ros-vector->list (vmsg)
-  (list 
-   (* 1000.0 (send vmsg :x))
-   (* 1000.0 (send vmsg :y))
-   (* 1000.0 (send vmsg :z))))
-
-(defun bounding-box-msg->cube (msg)
-  (unless (boundp '*tfl*)
-    (setq *tfl* (instance ros::transform-listener :init)))
-(labels ((ros-vector->list (vmsg)
-          (list 
-           (* 1000.0 (send vmsg :x))
-           (* 1000.0 (send vmsg :y))
-           (* 1000.0 (send vmsg :z)))))
-  (let ((cube (apply #'make-cube (ros-vector->list (send msg :dimensions))))
-        (robot->cube (send *tfl* :lookup-transform
-                           *base-frame-id* (send msg :header :frame_id) (ros::time))))
-    (send cube :transform robot->cube)
-    (send cube :transform (ros::tf-pose->coords (send msg :pose)))
-    cube)))
-
-(defun approach-to (name &key (robot *pr2*)
+(defun approach-to-target (target &key (robot *pr2*)
                               (move-back 600.0) ;; from object [mm]
                               (relative-rotation 0.0)) ;; from object->robot [rad]
-  (let ((target-names (ros::get-param *approach-target-bounding-box-param*))
-        (cnt 0)
-        label-id target-box target-angle target-dist)
-    (dotimes (i (length target-names))
-      (when (substringp name (elt target-names i))
-        (setq label-id (1- i))
-        (ros::ros-info "target object: ~A (label: ~A)" (elt target-names i) i)
-        (return)))
-    (unless label-id
-      (ros::ros-error "target name ~A is not registered (~A)" name target-names)
-      (return-from approach-to nil))
-    (unwind-protect
-        (progn
-          (subscribe-bounding-box-topic)
-          (ros::rate 3)
-          (while (and (ros::ok) (null *bounding-box-msg*) (< (inc cnt) 5))
-            (ros::ros-info "waiting bounding box... ~A" cnt)
-            (ros::spin-once)
-            (ros::sleep))
-          (setq target-box
-                (find-if #'(lambda (b)
-                             (eq label-id (send b :label))) (send *bounding-box-msg* :boxes)))
-          (unless target-box
-            (ros::ros-error "target is not found in bounding boxes")
-            (return-from approach-to nil))
-          (setq target-obj (bounding-box-msg->cube target-box))
-          (let ((diff-pos (send robot :difference-position target-obj))
-                (target-cds (make-cascoords)))
-            (setf (aref diff-pos 2) 0.0)
-            (setq target-angle (atan2 (aref diff-pos 1) (aref diff-pos 0)))
-            (ros::ros-info "diff-pos: ~A" diff-pos)
-            (setq target-dist (max 0.0 (min
-                                        (* 0.8 (norm diff-pos))
-                                        (- (norm diff-pos) move-back))))
-            (ros::ros-info "target-angle: ~A target-dist: ~A" (rad2deg target-angle) target-dist)
-            (send target-cds :rotate target-angle :z :world)
-            (send target-cds :translate (float-vector (* target-dist (cos target-angle))
-                                                      (* target-dist (sin target-angle))
-                                                      0) :world)
-            (send target-obj :assoc target-cds)
-            (send target-obj :rotate relative-rotation :z)
-            (send target-obj :dissoc target-cds)
-            (ros::ros-info "target-cds: ~A worldcds: ~A" target-cds (send target-cds :worldcoords))
-            (send *ri* :move-to target-cds :frame-id *base-frame-id*)
-            ;; (send *ri* :go-pos (* 0.001 target-dist (cos target-angle))
-            ;;       (* 0.001 target-dist (sin target-angle))
-            ;;       (rad2deg target-angle))
-            ))
-      ;; finally
-      (progn
-        (send *ri* :go-stop)
-        (unsubscribe-bounding-box-topic)
-        (setq *bounding-box-msg* nil)))
-))
+  (let ((diff-pos (send robot :difference-position target))
+        (target-cds (make-cascoords))
+        target-dist target-angle)
+    (setf (aref diff-pos 2) 0.0)
+    (setq target-angle (atan2 (aref diff-pos 1) (aref diff-pos 0)))
+    (ros::ros-info "diff-pos: ~A" diff-pos)
+    (setq target-dist (max 0.0 (min
+                                (* 0.8 (norm diff-pos))
+                                (- (norm diff-pos) move-back))))
+    (ros::ros-info "target-angle: ~A target-dist: ~A" (rad2deg target-angle) target-dist)
+    (send target-cds :rotate target-angle :z :world)
+    (send target-cds :translate (float-vector (* target-dist (cos target-angle))
+                                              (* target-dist (sin target-angle))
+                                              0) :world)
+    (send target-obj :assoc target-cds)
+    (send target-obj :rotate relative-rotation :z)
+    (send target-obj :dissoc target-cds)
+    (ros::ros-info "target-cds: ~A worldcds: ~A" target-cds (send target-cds :worldcoords))
+    (send *ri* :move-to target-cds :frame-id *base-frame-id*)
+    ))
 
 (provide :pr2-move)

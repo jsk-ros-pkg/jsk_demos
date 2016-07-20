@@ -1,3 +1,6 @@
 <launch>
-  <include file="$(find detect_cans_in_fridge_201202)/launch/startup.xml" />
+  <arg name="execute" default="false" />
+  <include file="$(find detect_cans_in_fridge_201202)/launch/startup.xml">
+    <arg name="execute" value="$(arg execute)" />
+  </include>
 </launch>

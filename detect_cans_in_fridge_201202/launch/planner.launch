@@ -11,7 +11,7 @@
        unless="$(arg use_spot)" />
   <arg name="description" default="$(find pddl_planner)/demos/2013_fridge_demo/solve-bring-can.l"
        if="$(arg use_spot)" />
-  <arg name="description" default="$(find detect_cans_in_fridge_201202/euslisp/solve-fridge-demo.l"
+  <arg name="description" default="$(find detect_cans_in_fridge_201202)/euslisp/solve-fridge-demo.l"
        unless="$(arg use_spot)" />
 
   <!-- launch nodes to detect cans -->
