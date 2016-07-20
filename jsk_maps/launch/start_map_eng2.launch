@@ -1,5 +1,6 @@
 <launch>
   <arg name="MACHINE" default="localhost" />
+  <machine name="localhost" address="localhost" />
   <node pkg="tf" type="static_transform_publisher" name="$(anon map_tfA)"
         args="0 0 0 0 0 0 /world /eng2 100"/>
 
