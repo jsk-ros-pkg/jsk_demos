@@ -13,24 +13,37 @@
 
 (objects (list *robot*))
 
-(defun open-door ()
+(defun find-object (target)
+  (cond
+    ((eql target 'can)
+     t)
+    (t
+     ;; TODO: find target by deep learning
+     (warn "not yet implemented~%")
+     )))
+
+(defun approach-to (target)
+  (cond
+    ((eql target 'can)
+     (move-from-frontfridge-to-pregrasp))
+    (t
+     (warn "not yet implemented~%"))))
+
+(defun open-door (&optional args)
   (open-fridge-door))
 
-(defun move-to (from to)
-  (cond
-   ((and (eql from 'start) (eql to 'frontfridge))
-    ) ;; not yet
-   ((and (eql from 'frontfridge) (eql to 'pregrasp))
-    (move-from-frontfridge-to-pregrasp))
-   ((and (eql from 'pregrasp) (eql to 'preclose))
-    (move-from-pregrasp-to-preclose))
-   ((and (eql from 'preclose) (eql to 'start))
-    ) ;; not yet
-   (t (error "invalid spot from: ~A to: ~A" from to))))
+(defun look-around (&optional args)
+  (warn "not yet implemented~%"))
+
+(defun close-door (&optional args)
+  (move-from-pregrasp-to-preclose)
+  (close-fridge))
 
 (defun grasp-object (obj)
   (when (eql obj 'can)
     (grasp-can)))
 
-(defun close-door ()
-  (close-fridge))
+(defun place-object (obj)
+  (warn "to be implemented~%"))
+
+(provide :pddl-action-hrp2) ;; end of pddl-action-hrp2.l

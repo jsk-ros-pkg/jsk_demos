@@ -1,44 +1,43 @@
-(ros::roseus "detect_cans_in_fridge_201202_demo_pddl")
+;; pddl-action-pr2.l
+;; Author: Yuki Furuta <furushchev@jsk.imi.i.u-tokyo.ac.jp>
+
+(ros::roseus "detect_cans_in_fridge_201607_demo_pddl")
 
 (require :fridge-main "package://detect_cans_in_fridge_201202/euslisp/main.l")
 
 (setq *use-arm* :larm)
-(setq *finish-type* :pass-to-human)
 
-(defun move-to (from to)
+(defun find-object (target)
   (cond
-   ((and (eql from 'start) (eql to 'frontfridge))
-    (goto-front-of-fridge))
-   ((and (eql from 'frontfridge) (eql to 'pregrasp))
-    (grasp-can :move-only t :pre-move t :post-move nil :use-arm *use-arm*))
-   ((and (eql from 'pregrasp) (eql to 'preclose))
-    (grasp-can :move-only t :pre-move nil :post-move t :use-arm *use-arm*))
-   ((and (eql from 'preclose) (eql to 'start))
-    (goto-initial-position :finish-type *finish-type* :use-arm *use-arm*))
-   (t (error "invalid spot from: ~A to: ~A" from to))))
+    ((eql target 'can)
+     t)
+    (t
+     ;; TODO: find target by deep learning
+     )))
 
-(defun open-door ()
+(defun approach-to (target)
+  (cond
+    ((eql target 'can)
+     (grasp-can :move-only t :pre-move t :post-move nil :use-arm *use-arm*))
+    (t
+     ;; TODO: move to target detected by deep learning
+     t)))
+
+(defun open-door (&optional args)
   (open-fridge-door :use-arm *use-arm*))
+
+(defun look-around (&optional args)
+  (warn "not implemented~%"))
+
+(defun close-door (&optional args)
+  (close-fridge :use-arm *use-arm*))
 
 (defun grasp-object (obj)
   (when (eql obj 'can)
     (grasp-can :use-arm *use-arm* :move nil)))
 
-(defun close-door ()
-  (close-fridge :use-arm *use-arm*))
+(defun place-object (&optional args)
+  (warn "to be implemented~%"))
 
-(defun move-recoverly ()
-  (goto-front-of-fridge))
 
-(defun try-close ()
-  (close-fridge :use-arm *use-arm*))
-
-(defun task-compiler/after-init-hook ()
-  (init))
-
-(defun task-compiler/before-run-hook (sm)
-  (disable-behavior-server)
-  (initialize-demo "georgia"))
-
-(defun task-compiler/after-run-hook (sm)
-  (enable-behavior-server))
+(provide :pddl-action-pr2) ;; end of pddl-action-pr2.l
