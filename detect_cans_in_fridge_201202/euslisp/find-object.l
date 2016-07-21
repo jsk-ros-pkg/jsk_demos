@@ -1,5 +1,5 @@
 (ros::load-ros-manifest "jsk_recognition_msgs")
-(defvar *approach-target-bounding-box-topic* "/fcn/cluster_indices_decomposer/boxes")
+(defvar *approach-target-bounding-box-topic* "/fcn/cluster_indices_decomposer_target/boxes")
 (defvar *approach-target-bounding-box-param* "/fcn/target_names")
 (defvar *base-frame-id* "/base_footprint")
 
@@ -43,6 +43,7 @@
     (unless label-id
       (ros::ros-error "target name ~A is not registered (~A)" name target-names)
       (return-from find-fcn-object nil))
+    (ros::set-dynamic-reconfigure-param "/fcn/label_to_mask" "label_value" :int label-id)
     (unwind-protect
         (progn
           (subscribe-bounding-box-topic)
