@@ -79,7 +79,7 @@
                           :timeout timeout
                           :clear-costmap clear-costmap
                           :max-retry-count max-retry-count)))
-                          
+#|                          
 (defun look-around-and-wait (&key (random-neck-p t))
   (send *pr2* :head :neck-p :joint-angle
         (if random-neck-p (+ 15 (random-gauss 15)) 0))
@@ -96,6 +96,7 @@
       (send *ri* :angle-vector (send *pr2* :angle-vector) 1000)
       (send *ri* :wait-interpolation :timeout 1)
       (unix:sleep 3))))
+|#
 
 (defun wander ()
   (let ((rand-x (random 1.0))
@@ -111,9 +112,8 @@
       (setq after-cds (send *ri* :state :worldcoords))
       (send *ri* :spin-once))
     (when (< (norm (send after-cds :difference-position before-cds)) 10)
-      (send *ri* :go-pos-unsafe 0 0 90)))
-  (look-around-and-wait))
-    
+      (send *ri* :go-pos-unsafe 0 0 90))))
+
 (defun wander-init ()
   (pr2-init)
 )

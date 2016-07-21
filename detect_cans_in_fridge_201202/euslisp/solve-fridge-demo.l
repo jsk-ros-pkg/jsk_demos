@@ -117,7 +117,7 @@
 (send *problem* :goal-condition '((on CAN DUSTBOX)))
 |#
 ;;(setq *failed-nodes* '(approach-to find-object grasp-object))
-(setq *failed-nodes* '(approach-to))
+(setq *failed-nodes* '(approach-to find-object))
 (setq *graph*
       (pddl-plan-to-graph nil :domain *domain* :problem *problem* :failed-nodes *failed-nodes* :debug t))
 
