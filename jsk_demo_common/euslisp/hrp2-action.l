@@ -235,7 +235,44 @@
   ;; go-pos pose
   (send *robot* :angle-vector #f(0.0 0.0 -26.0 50.0 -24.0 0.0 0.0 0.0 0.0 -26.0 50.0 -24.0 0.0 0.0 0.0 0.0 0.0 10.0 30.748 -28.2643 5.65972 -130.45 -14.3662 -17.8409 4.76971 60.0 10.0 10.0 0.0 -25.0 0.0 0.0 -10.0 -15.0))
   (model2real)
-  )
+
+  t)
+
+(defun approach-to-target
+  (obj &key (debug? t))
+  (let* (go-pos-x go-pos-y go-pos-theta)
+    (setq go-pos-x (- (* 0.001 (elt (send obj :worldpos) 0)) 1.0))
+    (setq go-pos-y (* 0.001 (elt (send obj :worldpos) 1)))
+    (setq go-pos-theta (rad2deg (atan2 go-pos-y go-pos-x)))
+    (when debug?
+      (warning-message 2 "go-pos to fridge  x: ~a  y:~a  theta: ~a~%"
+                       go-pos-x go-pos-y go-pos-theta))
+    (when (y-or-n-p "send go-pos to real robot?")
+      (send *ri* :go-pos go-pos-x go-pos-y go-pos-theta))
+    t))
+
+(defun place-can
+  (&key (debug? t))
+  ;; pre-reach to table
+  (send *robot* :angle-vector #f(0.0 0.0 -26.0 50.0 -24.0 0.0 0.0 0.0 0.0 -26.0 50.0 -24.0 0.0 0.0 0.0 0.0 -20.0 10.0 13.6057 -31.2966 19.122 -99.5359 -22.2677 -12.1836 -14.0861 60.0 10.0 10.0 0.0 -25.0 0.0 0.0 -10.0 -15.0))
+  (model2real)
+
+  ;; reach to table
+  (send *robot* :angle-vector #f(0.0 0.0 -26.0 50.0 -24.0 0.0 0.0 0.0 0.0 -26.0 50.0 -24.0 0.0 0.0 20.0 0.0 -20.0 10.0 -26.8427 -4.93447 19.3492 -27.7585 -20.0073 -12.7064 -38.9075 60.0 10.0 10.0 0.0 -25.0 0.0 0.0 -10.0 -15.0))
+  (model2real)
+
+  ;; release
+  (send *robot* :hand :rarm :hook-pose)
+  (hand-model2real)
+
+  ;; pre-reach to table
+  (send *robot* :angle-vector #f(0.0 0.0 -26.0 50.0 -24.0 0.0 0.0 0.0 0.0 -26.0 50.0 -24.0 0.0 0.0 0.0 0.0 -20.0 10.0 13.6057 -31.2966 19.122 -99.5359 -22.2677 -12.1836 -14.0861 60.0 10.0 10.0 0.0 -25.0 0.0 0.0 -10.0 -15.0))
+  (model2real)
+
+  (send *robot* :reset-manip-pose)
+  (send *robot* :head :neck-p :joint-angle 0)
+  (model2real)
+  t)
 
 
 ;; utils ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
