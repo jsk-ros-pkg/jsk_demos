@@ -6,6 +6,7 @@
 (require :fridge-main "package://detect_cans_in_fridge_201202/euslisp/main.l")
 (require :find-object "package://detect_cans_in_fridge_201202/euslisp/find-object.l")
 (require :wander-pr2 "package://detect_cans_in_fridge_201202/euslisp/wander-pr2.l")
+(require :pr2-pose "package://jsk_demo_common/euslisp/pr2-pose.l")
 
 (setq *use-arm* :larm)
 (setq *detected-object* nil)
@@ -26,7 +27,11 @@
     ((eql target 'can)
      (grasp-can :move-only t :pre-move t :post-move nil :use-arm *use-arm*))
     ((eql target 'table)
-     (approach-to-target *detected-object* :move-back 800.0))
+     (approach-to-target *detected-object* :move-back 800.0)
+     (pr2-reset-pose)
+     (send *ri* :angle-vector (pr2-pick-can-pose))
+     (send *ri* :wait-interpolation)
+     t)
     (t
      (pr2-tuckarm-pose)
      (approach-to-target *detected-object*))))
