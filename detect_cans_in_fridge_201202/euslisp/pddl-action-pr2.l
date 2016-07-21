@@ -11,18 +11,22 @@
 (setq *detected-object* nil)
 
 (defun find-object (target)
-  (cond
-    ((eql target 'can)
-     t)
-    ((eql target 'fridge)
-     (setq *detected-object* (find-fcn-object "refrigerator")))
-    (t
-     (setq *detected-object* (find-fcn-object (string-down-case target))))))
+  (let (ret)
+    (cond
+     ((eql target 'can)
+      (setq ret t))
+     ((eql target 'fridge)
+      (setq *detected-object* (find-fcn-object "refrigerator")))
+     (t
+      (setq *detected-object* (find-fcn-object (string-downcase target)))))
+    (or ret (not (null *detected-object*)))))
 
 (defun approach-to (target)
   (cond
     ((eql target 'can)
      (grasp-can :move-only t :pre-move t :post-move nil :use-arm *use-arm*))
+    ((eql target 'table)
+     (approach-to-target *detected-object* :move-back 800.0))
     (t
      (pr2-tuckarm-pose)
      (approach-to-target *detected-object*))))
@@ -30,11 +34,37 @@
 (defun open-door (&optional args)
   (open-fridge-door :use-arm *use-arm*))
 
+(setq *look-around-factor* 0.15)
 (defun look-around (&optional args)
-  (pr2-tuckarm-pose)
-  (wander))
+  (let* ((angle-range (- (send *pr2* :head :neck-y :max-angle)
+                         (send *pr2* :head :neck-y :min-angle)))
+         (angle (send *pr2* :head :neck-y :joint-angle))
+         (angle-diff (* *look-around-factor* angle-range)))
+    (ros::ros-info "angle: ~A range: ~A diff: ~A" angle angle-range angle-diff)
+    (cond
+     ((< (send *pr2* :head :neck-y :max-angle) (+ angle angle-diff))
+      (send *ri* :go-pos-unsafe 0 0 180)
+      (send *pr2* :head :neck-y :joint-angle (+ (send *pr2* :head :neck-y :min-angle)
+                                                (random angle-diff))))
+     (t
+      (send *pr2* :head :neck-y :joint-angle (+ angle angle-diff))))
+    (send *ri* :angle-vector (send *pr2* :angle-vector) 1000)
+    (send *ri* :wait-interpolation)
+    t))
 
+#|
+(defun look-around (&optional args)
+  (let ((angle-range (- (send *pr2* :head :neck-y :max-angle)
+                        (send *pr2* :head :neck-y :min-angle))))
+    (send *pr2* :head :neck-y :joint-angle
+          (+ (send *pr2* :head :neck-y :min-angle)
+             (abs (random angle-range))))
+    (send *ri* :angle-vector (send *pr2* :angle-vector) 1000)
+    (send *ri* :wait-interpolation :timeout 1.0))
+  t)
+|#
 (defun close-door (&optional args)
+  (grasp-can :move-only t :pre-move nil :post-move t :use-arm *use-arm*)
   (close-fridge :use-arm *use-arm*))
 
 (defun grasp-object (obj)
@@ -42,16 +72,22 @@
     (grasp-can :use-arm *use-arm* :move nil)))
 
 (defun place-object (&optional args)
-  (place2 (float-vector 600 0 700) :use-torso nil :move-forward nil :arm *use-arm*))
+  (place2 (make-coords :pos (float-vector 600 0 770))
+          :use-torso nil :move-forward 200 :arm *use-arm*))
 
 (defun task-compiler/after-init-hook ()
   (init))
 
 (defun task-compiler/before-run-hook (sm)
+  (setq *detected-object* nil)
   (disable-behavior-server)
   (initialize-demo "georgia"))
 
 (defun task-compiler/after-run-hook (sm)
   (enable-behavior-server))
+
+(defun debug-init ()
+  (task-compiler/after-init-hook)
+  (task-compiler/before-run-hook nil))
 
 (provide :pddl-action-pr2) ;; end of pddl-action-pr2.l
