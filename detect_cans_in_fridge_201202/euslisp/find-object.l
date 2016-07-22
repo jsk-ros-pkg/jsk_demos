@@ -31,7 +31,7 @@
     (send cube :transform (ros::tf-pose->coords (send msg :pose)))
     cube)))
 
-(defun find-fcn-object (name &key (max-count 30) (box-volume-min 1000000.0))
+(defun find-fcn-object (name &key (max-count 30) (box-volume-min (* 500 500 300)))
   (let ((target-names (ros::get-param *approach-target-bounding-box-param*))
         (cnt 0)
         label-id target-box target-angle target-dist ret)
