@@ -39,6 +39,14 @@
 (defun open-door (&optional args)
   (open-fridge-door :use-arm *use-arm*))
 
+(defun look-around (&optional args)
+  (send *pr2* :head :neck-p :joint-angle 15)
+  (send *pr2* :head :neck-y :joint-angle 0)
+  (send *ri* :angle-vector (send *pr2* :angle-vector))
+  (send *ri* :wait-interpolation)
+  (send *ri* :go-pos-unsafe 0 0 30))
+
+#|
 (setq *look-around-factor* 0.15)
 (defun look-around (&optional args)
   (let* ((angle-range (- (send *pr2* :head :neck-y :max-angle)
@@ -56,7 +64,7 @@
     (send *ri* :angle-vector (send *pr2* :angle-vector) 1000)
     (send *ri* :wait-interpolation)
     t))
-
+|#
 #|
 (defun look-around (&optional args)
   (let ((angle-range (- (send *pr2* :head :neck-y :max-angle)
