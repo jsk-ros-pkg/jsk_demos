@@ -55,8 +55,8 @@
           (unless *bounding-box-msg*
             (ros::ros-error "timed out")
             (return-from find-fcn-object nil))
-          (when (> (length (send *bounding-box-msg* :boxes)) (1- label-id))
-            (setq target-box (elt (send *bounding-box-msg* :boxes) (1- label-id))))
+          (when (> (length (send *bounding-box-msg* :boxes)) 0)
+            (setq target-box (car (send *bounding-box-msg* :boxes))))
           (unless target-box
             (ros::ros-error "target is not found in bounding boxes (length of boxes: ~A)"
                             (length (send *bounding-box-msg* :boxes)))
