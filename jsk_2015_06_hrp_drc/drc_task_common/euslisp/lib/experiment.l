@@ -2,7 +2,7 @@
 (load "package://drc_task_common/euslisp/lib/valve.l")
 (load "package://drc_task_common/euslisp/lib/door.l")
 
-(defun init ()
+(defun init (&key (simulation nil))
   ;; only support jaxon
   (load-robot-model :jaxon)
   (unless (boundp '*ri*)
@@ -11,8 +11,43 @@
   (setq *tf-listener* (instance ros::transform-listener :init 30))
   (unless (boundp '*robot*)
     (setq *robot* (instance jaxon_red-robot :init)))
+
+  (when (and
+         simulation
+         (= (send (send *ri* :get-auto-balancer-param) :controller_mode) 1))
+    ;; if auto-balancer is running, stop auto-balancer
+    (if (y-or-n-p ";; Ready for stopping auto-balancer?")
+        (progn
+          (send *robot* :reset-pose)
+          (send *robot* :head :neck-p :joint-angle 20)
+          (send *robot* :fix-leg-to-coords (make-coords))
+          (send *robot* :move-centroid-on-foot :both (list :rleg :lleg))
+          (if (< (norm (v- (send *ri* :state :potentio-vector)
+                           (send *robot* :angle-vector)))
+                 40.0)
+              (send *ri* :angle-vector (send *robot* :angle-vector) 1500)
+            (progn
+              (if (y-or-n-p ";; Move to reset-pose in 8 seconds ?")
+                  (send *ri* :angle-vector (send *robot* :angle-vector) 8000)
+                (return))))
+          (send *ri* :wait-interpolation)
+          (send *ri* :stop-auto-balancer)
+          )
+      (progn
+        (warn ";; Retry after stopping auto-balancer~%")
+        (return))))
+
+  ;; check hand controller
   (send *ri* :start-grasp)
   (send *ri* :stop-grasp)
+
+  (when (send (send *ri* :get-emergency-stopper-param) :is_stop_mode)
+    (if (y-or-n-p ";; Ready for emergency release motion ?")
+        (send *ri* :emergency-release-motion)
+      (return)))
+
+  ;; start auto-balancer
+  (send *ri* :start-auto-balancer :limbs (list :rleg :lleg))
   )
 
 (defun wait-for-recognition ()
@@ -864,9 +899,13 @@
 ;; (send *ri* :emergency-walking-stop)
 ;; (run-door-walk-with-two-perception* 10 10 2 10 2 10 2)
 ;; (run-valve-walk-with-two-perception* 20 15 2 10 2 10 2)
+(defun demo-valve-only ()
+  (run-valve-walk-with-two-perception* 20 15 2 10 2 10 1.5))
+(defun demo-door-only ()
+  (run-door-walk-with-two-perception* 10 10 2 10 2 10 2))
 (defun do-demo ()
-  (run-door-walk-with-two-perception* 10 10 2 10 2 10 2)
+  (demo-door-only)
   (move-door-to-valve)
-  (run-valve-walk-with-two-perception* 20 15 2 10 2 10 1.5)
+  (demo-valve-only)
   (move-valve-to-door)
   )
