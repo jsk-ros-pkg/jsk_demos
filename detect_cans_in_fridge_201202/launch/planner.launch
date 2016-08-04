@@ -3,6 +3,7 @@
   <arg name="gui" default="false" />
   <arg name="ROBOT" default="pr2" /> <!-- hrp2 for hrp2 -->
   <arg name="use_spot" default="false" />
+  <arg name="use_cached_plan" default="false" />
 
   <!-- prefix for euslisp -->
   <arg name="action" default="$(find detect_cans_in_fridge_201202)/euslisp/spot-based-pddl-action-$(arg ROBOT).l"
@@ -20,7 +21,8 @@
   </include>
 
   <!-- planner -->
-  <include file="$(find task_compiler)/launch/execute-pddl.launch">
+  <include file="$(find task_compiler)/launch/execute-pddl.launch"
+           unless="$(arg use_cached_plan)">
     <arg name="action" value="$(arg action)" />
     <arg name="description" value="$(arg description)" />
     <arg name="return_success" value="t" />
@@ -29,6 +31,17 @@
     <arg name="debug" value="$(arg debug)" />
     <arg name="gui" value="$(arg gui)" />
   </include>
+
+  <!-- use cached plan -->
+  <group if="$(arg use_cached_plan)">
+    <node name="planner_demo_main" pkg="roseus" type="roseus"
+          output="screen"
+          args="$(find detect_cans_in_fridge_201202)/euslisp/planner-demo-main.l">
+      <param name="~action" value="$(arg action)" />
+    </node>
+    <node pkg="smach_viewer" name="smach_viewer" type="smach_viewer.py"
+          if="$(arg gui)" />
+  </group>
 
   <!-- planner viewer -->
   <node name="$(anon pddl_planner_viewer)"

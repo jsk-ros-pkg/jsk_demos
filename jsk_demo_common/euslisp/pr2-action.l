@@ -861,7 +861,7 @@
                               (use-arm :rarm) (move t)
                               (door-type :circle) (look-around nil) ;; :circle, :slide1, :slide2
                               (func-time 80)
-                              (wait t)
+                              (wait t) (max-retry 10)
                               )
   (let ((diffcds (make-coords :pos (float-vector 10000 10000 10000)))
         cds
@@ -871,7 +871,7 @@
     (open-fridge-door-initial-pose :door-type door-type :head-pitch head-pitch :torso-lift torso-lift :ratio ratio :wait wait)
 
     ;; detect fridge and open door
-    (dotimes (i 10 nil)
+    (dotimes (i max-retry nil)
       ;; detect fridge and move to the fridge door
       (setq ret (move-to-and-open-fridge-door :door-type door-type :ratio ratio :look-around look-around :head-pitch head-pitch :torso-lift torso-lift :move move :open-fridge-func open-fridge-func :wait wait))
       (if ret (return))
@@ -1413,6 +1413,7 @@
          (client (instance ros::simple-action-client :init action-name pr2_gripper_sensor_msgs::PR2GripperEventDetectorAction))
          (goal (instance pr2_gripper_sensor_msgs::PR2GripperEventDetectorActionGoal :init)))
     (unless (send client :wait-for-server 5)
+      (ros::ros-error "~A is not available. you need to run gripper sensor nodes?" action-name)
       (return-from wait-for-hand-impact nil))
     (send goal :header :stamp (ros::time-now))
     (send goal :goal_id :stamp (ros::time-now))
