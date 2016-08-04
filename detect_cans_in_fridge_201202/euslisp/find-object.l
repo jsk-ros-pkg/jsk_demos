@@ -31,10 +31,10 @@
     (send cube :transform (ros::tf-pose->coords (send msg :pose)))
     cube)))
 
-(defun find-fcn-object (name &key (max-count 30) (box-volume-min (* 500 500 300)))
+(defun find-fcn-object (name &key (max-count 100) (box-area-min (* 600 200)))
   (let ((target-names (ros::get-param *approach-target-bounding-box-param*))
         (cnt 0)
-        label-id target-box target-angle target-dist ret)
+        label-id target-box target-angle target-dist ret diagonal)
     (dotimes (i (length target-names))
       (when (substringp name (elt target-names i))
         (setq label-id i)
@@ -47,29 +47,47 @@
     (unwind-protect
         (progn
           (subscribe-bounding-box-topic)
-          (ros::rate 3)
-          (while (and (ros::ok) (null *bounding-box-msg*) (< (inc cnt) max-count))
-            (ros::ros-info "waiting bounding box... ~A" cnt)
-            (ros::spin-once)
-            (ros::sleep))
-          (unless *bounding-box-msg*
-            (ros::ros-error "timed out")
-            (return-from find-fcn-object nil))
-          (when (> (length (send *bounding-box-msg* :boxes)) 0)
-            (setq target-box (car (send *bounding-box-msg* :boxes))))
-          (unless target-box
-            (ros::ros-error "target is not found in bounding boxes (length of boxes: ~A)"
-                            (length (send *bounding-box-msg* :boxes)))
-            (return-from find-fcn-object nil))
-          (setq ret (bounding-box-msg->cube target-box))
-          (when (< (send ret :volume) box-volume-min)
-            (ros::ros-error "target bounding box volume is too small: ~A < ~A"
-                            (send ret :volume) box-volume-min)
-            (return-from find-fcn-object nil))
-          (ros::ros-info "found ~A (volume: ~A)"
-                         (elt target-names label-id) (send ret :volume))
-          ret)
+          (let ((now (ros::time-now)))
+            (ros::rate 3)
+            (inc cnt)
+            (while (and (ros::ok) (< (inc cnt) max-count))
+              (ros::spin-once)
+              (ros::sleep)
+              (cond
+               ((null *bounding-box-msg*)
+                (ros::ros-info "waiting bounding box... ~A" cnt))
+               ((= (length (send *bounding-box-msg* :boxes)) 0)
+                (ros::ros-info "no boxes")
+                (setq *bounding-box-msg* nil)
+                (return))
+               (t
+                (setq target-box (car (send *bounding-box-msg* :boxes)))
+                (setq ret (bounding-box-msg->cube target-box))
+                (setq diagonal (sort (send (send ret :box) :diagonal) #'>=))
+                (cond
+                 ((c-isnan (send (send ret :box) :volume))
+                  (ros::ros-info "box too big")
+                  (setq *bounding-box-msg* nil)
+                  (return))
+                 ((> (send now :to-sec) (send (send *bounding-box-msg* :header :stamp) :to-sec))
+                  (ros::ros-error "target timestamp ~A is before now: ~A"
+                                  (send (send *bounding-box-msg* :header :stamp) :to-sec)
+                                  (send now :to-sec))
+                  (setq *bounding-box-msg* nil))
+                 ((< (* (aref diagonal 0) (aref diagonal 1)) box-area-min)
+                  (ros::ros-error "target bounding box area is too small: ~A min: ~A"
+                                  diagonal box-area-min)
+                  (setq *bounding-box-msg* nil))
+                 (t
+                  (ros::ros-info "found ~A (volume: ~A, diagonal: ~A pose: ~A)"
+                                 (elt target-names label-id) (send ret :volume)
+                                 (send (send ret :box) :diagonal) (send ret :worldcoords))
+                  (speak-jp (format nil "~A が見つかりました。" (string-downcase name)))
+                  (return-from find-fcn-object ret))))))))
       (progn
+        (unless *bounding-box-msg*
+          (speak-jp (format nil "~A が見つかりませんでした。" (string-downcase name)))
+          (ros::ros-error "timed out."))
         (unsubscribe-bounding-box-topic)
         (setq *bounding-box-msg* nil)))))
 
