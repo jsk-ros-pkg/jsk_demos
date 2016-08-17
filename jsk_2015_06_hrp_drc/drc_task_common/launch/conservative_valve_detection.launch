@@ -3,6 +3,9 @@
   <arg name="RESOLUTION" default="0.01" />
   <arg name="SIMULATION" default="false" />
   <arg name="GLC_RECORD" default="false" />
+  <arg name="PROCESSING_FRAME" default="odom" />
+  <arg name="VALVE_CORRESPONDENCE_DISTANCE" default="0.1" />
+  <arg name="TORUS_FINDER_OUTLIER_THRESHOLD" default="0.05" />
   <include file="$(find drc_task_common)/launch/conservative_valve_viewer.launch" >
     <arg name="GLC_RECORD" value="$(arg GLC_RECORD)" />
   </include>
@@ -30,7 +33,9 @@
   <!-- Prepare pointcloud  -->
   <group ns="valve_detection">
     <node pkg="jsk_pcl_ros" type="octree_voxel_grid" name="octree_voxel_grid">
-      <remap from="~input" to="/full_cloud2" />
+      <!-- <remap from="~input" to="/full_cloud2" /> -->
+      <remap from="~input" to="/slam_distance_filtered_laser/output_cloud" />
+      <!-- <remap from="~input" to="/accumulated_heightmap_pointcloud_static/output" /> -->
       <rosparam subst_value="true">
         resolution: $(arg RESOLUTION)
         use_multithread_callback: $(arg USE_MULTITHREAD_CALLBACK)
@@ -94,8 +99,8 @@
       <remap from="~input_polygons" to="region_growing_multiple_plane_segmentation/output/polygons" />
       <remap from="~input_coefficients" to="region_growing_multiple_plane_segmentation/output/coefficients" />
       <remap from="~input_inliers" to="region_growing_multiple_plane_segmentation/output/inliers" />
-      <rosparam>
-        processing_frame_id: odom
+      <rosparam subst_value="true">
+        processing_frame_id: $(arg PROCESSING_FRAME)
         reference_axis: [0, 0, 1]
         angle: 1.57
         use_inliers: true
@@ -202,7 +207,7 @@
         min_size: $(arg MIN_CLOUD_SIZE_TORUS)
         max_radius: $(arg MAX_RADIUS_TORUS)
         min_radius: $(arg MIN_RADIUS_TORUS)
-        outlier_threshold: 0.05
+        outlier_threshold: $(arg TORUS_FINDER_OUTLIER_THRESHOLD)
       </rosparam>
     </node>
     <node pkg="drc_task_common" type="valve_rejector.py" name="valve_rejector" output="screen"
@@ -270,11 +275,11 @@
       <remap from="~input" to="downsample_target_cloud/output" />
       <remap from="~input_reference" to="downsample_reference_cloud/output" />
       <remap from="~input_offset" to="valve_rejector/output/pose" />
-      <rosparam>
+      <rosparam subst_value="true">
         use_offset_pose: true
         use_flipped_initial_pose: false
         max_iteration: 10000
-        correspondence_distance: 0.1
+        correspondence_distance: $(arg VALVE_CORRESPONDENCE_DISTANCE)
         transform_epsilon: 0.0000001
         euclidean_fittness_epsilon: 0.0001
         rotation_epsilon: 0.0002
