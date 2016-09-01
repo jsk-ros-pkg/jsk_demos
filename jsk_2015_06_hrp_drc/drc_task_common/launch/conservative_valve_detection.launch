@@ -6,6 +6,7 @@
   <arg name="PROCESSING_FRAME" default="odom" />
   <arg name="VALVE_CORRESPONDENCE_DISTANCE" default="0.1" />
   <arg name="TORUS_FINDER_OUTLIER_THRESHOLD" default="0.05" />
+  <arg name="INPUT_CLOUD" default="/full_cloud2" />
   <include file="$(find drc_task_common)/launch/conservative_valve_viewer.launch" >
     <arg name="GLC_RECORD" value="$(arg GLC_RECORD)" />
   </include>
@@ -33,9 +34,7 @@
   <!-- Prepare pointcloud  -->
   <group ns="valve_detection">
     <node pkg="jsk_pcl_ros" type="octree_voxel_grid" name="octree_voxel_grid">
-      <!-- <remap from="~input" to="/full_cloud2" /> -->
-      <remap from="~input" to="/slam_distance_filtered_laser/output_cloud" />
-      <!-- <remap from="~input" to="/accumulated_heightmap_pointcloud_static/output" /> -->
+      <remap from="~input" to="$(arg INPUT_CLOUD)" />
       <rosparam subst_value="true">
         resolution: $(arg RESOLUTION)
         use_multithread_callback: $(arg USE_MULTITHREAD_CALLBACK)
