@@ -4,10 +4,11 @@
   <arg name="RESOLUTION" default="0.01" />
   <arg name="SIMULATION" default="false" />
   <arg name="GLC_RECORD" default="false" />
-  <arg if="$(arg GLC_RECORD)"
-       name="glc_prefix" value="glc-capture -i --disable-audio" />
-  <arg unless="$(arg GLC_RECORD)"
-       name="glc_prefix" value="" />
+  <arg name="VIEWER" default="true" />
+
+  <include file="$(find drc_task_common)/launch/conservative_door_viewer.launch" if="$(arg VIEWER)" >
+    <arg name="GLC_RECORD" value="$(arg GLC_RECORD)" />
+  </include>
 
   <arg unless="$(arg SIMULATION)" name="USE_MULTITHREAD_CALLBACK" value="true" />
   <arg unless="$(arg SIMULATION)" name="NUM_OF_THREAD_OMP"    value="0" />
@@ -21,18 +22,6 @@
 
   <!-- Prepare pointcloud  -->
   <group ns="door_detection">
-  <node pkg="rviz" type="rviz" name="rviz_input"
-        launch-prefix="$(arg glc_prefix)"
-        args="-d $(find drc_task_common)/config/door/input.rviz"/>
-  <node pkg="rviz" type="rviz" name="rviz_recog" if="false"
-        launch-prefix="$(arg glc_prefix)"
-        args="-d $(find drc_task_common)/config/door/recog.rviz"/>
-  <node pkg="rviz" type="rviz" name="rviz_result"
-        launch-prefix="$(arg glc_prefix)"
-        args="-d $(find drc_task_common)/config/door/result.rviz"/>
-  <node pkg="rviz" type="rviz" name="rviz_downsample"  if="false"
-        launch-prefix="$(arg glc_prefix)"
-          args="-d $(find drc_task_common)/config/door/downsample.rviz"/>
     <node pkg="jsk_pcl_ros" type="octree_voxel_grid" name="octree_voxel_grid">
       <remap from="~input" to="$(arg INPUT_CLOUD)" />
       <rosparam subst_value="true">

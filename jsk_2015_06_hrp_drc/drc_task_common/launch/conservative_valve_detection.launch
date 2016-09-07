@@ -7,7 +7,9 @@
   <arg name="VALVE_CORRESPONDENCE_DISTANCE" default="0.1" />
   <arg name="TORUS_FINDER_OUTLIER_THRESHOLD" default="0.05" />
   <arg name="INPUT_CLOUD" default="/full_cloud2" />
-  <include file="$(find drc_task_common)/launch/conservative_valve_viewer.launch" >
+  <arg name="VIEWER" default="true" />
+
+  <include file="$(find drc_task_common)/launch/conservative_valve_viewer.launch" if="$(arg VIEWER)" >
     <arg name="GLC_RECORD" value="$(arg GLC_RECORD)" />
   </include>
 
