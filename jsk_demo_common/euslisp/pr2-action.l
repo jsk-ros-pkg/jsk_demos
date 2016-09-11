@@ -623,9 +623,12 @@
     ;; finding handle position
     (cond
      ((not (send *ri* :simulation-modep)) ;; real mode
-      (setq cds (check-detection :type "fridge" :speak-name *frige-speak-str*
-                                 :detection-topic "/kinect_head/rgb/ObjectDetection"
-                                 )))
+      (setq cds (check-detection-srv
+                 :type "fridge" :speak-name *frige-speak-str* :speak t
+                 :server-running-param "/fridge_cds_stocker/fridge_cds_stocker/running"
+                 :servicecall-name "/fridge_cds_stocker/targetobj"
+                 :detection-topic "/kinect_head/rgb/ObjectDetection"
+                 )))
      (t ;; simulation mode
       (setq cds (send (make-cube 60 60 60) :translate (float-vector 777 98 1112)))
       ))
@@ -659,8 +662,11 @@
                     *fridge-rotation-threshold*)))
         (cond
          ((not (send *ri* :simulation-modep)) ;; real mode
-          (setq cds (check-detection :type "fridge" :speak-name *frige-speak-str*
-                                     :detection-topic "/kinect_head/rgb/ObjectDetection"))
+          (setq cds (check-detection-srv
+                     :type "fridge" :speak-name *frige-speak-str* :speak t
+                     :server-running-param "/fridge_cds_stocker/fridge_cds_stocker/running"
+                     :servicecall-name "/fridge_cds_stocker/targetobj"
+                     :detection-topic "/kinect_head/rgb/ObjectDetection"))
           )
          (t ;; simulation mode
           (setq cds (send (make-cube 60 60 60) :translate (float-vector 777 98 1112)))))
@@ -923,12 +929,16 @@
   (let (cds isgrasp)
     (cond
      ((not (send *ri* :simulation-modep)) ;; real mode
-      (unless (setq cds (check-detection :speak-name *type*
-                                         :type *type* :tf-force t :timeout 35 :single t
-                                         :detection-topic "/kinect_head_c2/depth_registered/ObjectDetection"))
-        (setq cds (check-detection :speak-name *type*
-                                   :type *type* :tf-force t :timeout 70 :single t
-                                   :detection-topic "/kinect_head_c2/depth_registered/ObjectDetection"))))
+      (unless (setq cds (check-detection-srv :speak-name *type* :speak t
+                                             :type *type* :timeout 35
+                                             :server-running-param "/can_cds_stocker/can_cds_stocker/running"
+                                             :servicecall-name "/can_cds_stocker/targetobj"
+                                             :detection-topic "/kinect_head_c2/depth_registered/ObjectDetection"))
+        (setq cds (check-detection-srv :speak-name *type* :speak t
+                                       :type *type* :timeout 70
+                                       :server-running-param "/can_cds_stocker/can_cds_stocker/running"
+                                       :servicecall-name "/can_cds_stocker/targetobj"
+                                       :detection-topic "/kinect_head_c2/depth_registered/ObjectDetection"))))
      (t ;; simulation mode
       (setq cds (send (make-cube 60 60 60) :translate (float-vector 756 302 1164)))))
     (setq *can-cds* cds)
