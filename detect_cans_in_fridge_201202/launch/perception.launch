@@ -38,20 +38,19 @@
         <param name="target_type" value="georgia" />
       </node>
     </group>
+    <node name="gaussianmanager" pkg="nodelet" type="nodelet" args="manager"
+          output="screen" />
+    <node pkg="nodelet" type="nodelet" name="posewithcovstampedtogaussian"
+          args="load jsk_pcl/PoseWithCovarianceStampedToGaussianPointCloud gaussianmanager"
+          output="screen" >
+      <remap from="~input" to="/simplecov" />
+      <rosparam>
+        cut_plane: flipped_yz
+        normalize_method: normalize_height
+        sampling_num: 40
+      </rosparam>
+    </node>
   </group>
-
-  <node name="gaussianmanager" pkg="nodelet" type="nodelet" args="manager"
-        output="screen" if="$(arg visualize)"/>
-  <node pkg="nodelet" type="nodelet" name="posewithcovstampedtogaussian"
-        args="load jsk_pcl/PoseWithCovarianceStampedToGaussianPointCloud gaussianmanager"
-        output="screen" >
-    <remap from="~input" to="/simplecov" />
-    <rosparam>
-      cut_plane: flipped_yz
-      normalize_method: normalize_height
-      sampling_num: 40
-    </rosparam>
-  </node>
 
   <!-- reference white -->
   <anode pkg="image_view2" type="image_view2" name="select_ref_white" machine="c2">
