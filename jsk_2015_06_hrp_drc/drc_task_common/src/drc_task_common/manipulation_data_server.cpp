@@ -37,7 +37,7 @@
 #include <pcl/common/transforms.h>
 #include <pcl/filters/passthrough.h>
 #include <jsk_recognition_msgs/PointsArray.h>
-#include <jsk_pcl_ros/ICPAlignWithBox.h>
+#include <jsk_recognition_msgs/ICPAlignWithBox.h>
 #include <jsk_pcl_ros/pcl_conversion_util.h>
 #include <eigen_conversions/eigen_msg.h>
 #include <map>
@@ -248,7 +248,7 @@ public:
     _t_marker_box_pub = _node.advertise<jsk_recognition_msgs::BoundingBox>("/passed_selected_box", 1);
     _t_marker_information_pub = _node.advertise<drc_task_common::TMarkerInfo>("/t_marker_information", 1);
 		subscribe_cloud_and_box();
-    _icp_client = _node.serviceClient<jsk_pcl_ros::ICPAlignWithBox>("/icp_registration/icp_service");
+    _icp_client = _node.serviceClient<jsk_recognition_msgs::ICPAlignWithBox>("/icp_registration/icp_service");
     _get_type_client = _node.serviceClient<jsk_interactive_marker::GetType>("/transformable_interactive_server/get_type");
     _get_pose_client = _node.serviceClient<jsk_interactive_marker::GetTransformableMarkerPose>("/transformable_interactive_server/get_pose");
     _get_dim_client = _node.serviceClient<jsk_interactive_marker::GetMarkerDimensions>("/transformable_interactive_server/get_dimensions");
@@ -1234,7 +1234,7 @@ public:
     return true;
   }
   jsk_recognition_msgs::ICPResult request_icp(sensor_msgs::PointCloud2 *cloud_msg_ptr, jsk_recognition_msgs::BoundingBox *box_msg_ptr){
-    jsk_pcl_ros::ICPAlignWithBox srv; 
+    jsk_recognition_msgs::ICPAlignWithBox srv; 
     srv.request.target_cloud = *cloud_msg_ptr;
     srv.request.target_box = *box_msg_ptr;
     if (_icp_client.call(srv)){

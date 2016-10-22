@@ -4,7 +4,7 @@
 
 (ros::roseus-add-msgs "posedetection_msgs")
 (ros::roseus-add-msgs "pr2_gripper_sensor_msgs")
-(ros::roseus-add-srvs "jsk_pcl_ros")
+(ros::roseus-add-srvs "jsk_recognition_msgs")
 
 ;(ros::roseus "grasp_cup")
 
@@ -338,7 +338,7 @@
 	 (dotimes (i 5)
 	   (dotimes (j 5)
 	     (setq 2dpo (v+ 2dpos (float-vector (- (* i 10) 20) (- (* j 10) 20))))
-	     (setq req (instance jsk_pcl_ros::TransformScreenpointRequest :init
+	     (setq req (instance jsk_recognition_msgs::TransformScreenpointRequest :init
 				 :x (elt 2dpo 0) :y (elt 2dpo 1)))
 	     (setq res (ros::service-call ray_srv req))
 	     (setq 3dpos (ros::tf-point->pos (send res :point)))
