@@ -1,22 +1,47 @@
 <launch>
   <arg name="debug" default="false" />
   <arg name="gui" default="false" />
+  <arg name="ROBOT" default="pr2" /> <!-- hrp2 for hrp2 -->
+  <arg name="use_spot" default="false" />
+  <arg name="use_cached_plan" default="false" />
+
+  <!-- prefix for euslisp -->
+  <arg name="action" default="$(find detect_cans_in_fridge_201202)/euslisp/spot-based-pddl-action-$(arg ROBOT).l"
+       if="$(arg use_spot)"/>
+  <arg name="action" default="$(find detect_cans_in_fridge_201202)/euslisp/pddl-action-$(arg ROBOT).l"
+       unless="$(arg use_spot)" />
+  <arg name="description" default="$(find pddl_planner)/demos/2013_fridge_demo/solve-bring-can.l"
+       if="$(arg use_spot)" />
+  <arg name="description" default="$(find detect_cans_in_fridge_201202)/euslisp/solve-fridge-demo.l"
+       unless="$(arg use_spot)" />
 
   <!-- launch nodes to detect cans -->
-  <include file="$(find detect_cans_in_fridge_201202)/launch/startup.launch">
+  <include file="$(find detect_cans_in_fridge_201202)/launch/startup_$(arg ROBOT).launch">
     <arg name="execute" value="false" />
   </include>
 
   <!-- planner -->
-  <include file="$(find task_compiler)/launch/execute-pddl.launch">
-    <arg name="action" value="$(find detect_cans_in_fridge_201202)/euslisp/pddl-action.l" />
-    <arg name="description" value="$(find pddl_planner)/demos/2013_fridge_demo/solve-bring-can.l" />
+  <include file="$(find task_compiler)/launch/execute-pddl.launch"
+           unless="$(arg use_cached_plan)">
+    <arg name="action" value="$(arg action)" />
+    <arg name="description" value="$(arg description)" />
     <arg name="return_success" value="t" />
     <arg name="return_fail" value="nil" />
     <arg name="planner" value="downward" />
     <arg name="debug" value="$(arg debug)" />
     <arg name="gui" value="$(arg gui)" />
   </include>
+
+  <!-- use cached plan -->
+  <group if="$(arg use_cached_plan)">
+    <node name="planner_demo_main" pkg="roseus" type="roseus"
+          output="screen"
+          args="$(find detect_cans_in_fridge_201202)/euslisp/planner-demo-main.l">
+      <param name="~action" value="$(arg action)" />
+    </node>
+    <node pkg="smach_viewer" name="smach_viewer" type="smach_viewer.py"
+          if="$(arg gui)" />
+  </group>
 
   <!-- planner viewer -->
   <node name="$(anon pddl_planner_viewer)"

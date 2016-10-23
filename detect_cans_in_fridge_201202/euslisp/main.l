@@ -4,7 +4,7 @@
 
 (defvar *use-voicetext* t)
 (defvar *use-english* nil)
-(defvar *logging* t)
+(defvar *logging* (ros::get-param "~logging" nil))
 (defvar *debug-view* (ros::get-param "~debug_view" t))
 
 (setq *use-arm-navigation* nil)
@@ -51,8 +51,10 @@
 (defun init ()
   (init-for-perception)
   (init-for-robot)
-  (defparameter *detection-topic* "/kinect_head/rgb/ObjectDetection")
-  ;;(defparameter *base-frame-id* "/base_footprint")
+  (defparameter *detection-topic* (ros::get-param "/fridge_demo/object_detection_topic" "/kinect_head/rgb/ObjectDetection"))
+  (ros::ros-info "detection topic: ~A" *detection-topic*)
+  (defparameter *base-frame-id* (ros::get-param "/fridge_demo/base_frame_id" "/base_footprint"))
+  (ros::ros-info "base_frame_id: ~A" *base-frame-id*)
   (require :detection-interface "package://jsk_perception/euslisp/detection_interface.l");;
   ;;(send *pr2* :move-to (send *ri* :state :worldcoords) :world)
   ;;(objects (list *pr2*))

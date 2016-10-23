@@ -5,9 +5,16 @@
   <arg name="DEMOTYPE" default="map" />
   <arg name="app_manager" default="false" />
   <arg name="run_behavior" default="true" />
-  <arg name="debug_view" default="true" />
+  <arg name="debug_view" default="false" />
+  <arg name="camera_ns" default="kinect_head_c2" />
+  <arg name="base_frame_id" default="base_footprint" />
 
   <include file="$(find pr2_machine)/$(env ROBOT).machine" />
+
+  <rosparam subst_value="true" ns="fridge_demo">
+    object_detection_topic: $(arg camera_ns)/rgb/ObjectDetection
+    base_frame_id: /$(arg base_frame_id)
+  </rosparam>
 
   <!-- sample data for test -->
   <anode pkg="rosbag" type="play" name="play"
@@ -26,9 +33,10 @@
   </node>
 
   <include file="$(find detect_cans_in_fridge_201202)/launch/perception.launch">
-    <arg name="visualize_fridge" value="false" />
+    <arg name="visualize" value="false" />
     <arg name="debug_view" value="$(arg debug_view)" />
     <arg name="roi" value="false" />
+    <arg name="camera_ns" value="$(arg camera_ns)" />
   </include>
 
   <group unless="$(arg execute)" >

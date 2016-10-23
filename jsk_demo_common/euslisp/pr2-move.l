@@ -1,6 +1,27 @@
+(ros::load-ros-manifest "move_base_msgs")
 (load "package://jsk_maps/src/eng2-scene.l")
 
 (unless (boundp '*scene*) (setq *scene* (make-eng2-scene)))
+(unless (boundp '*tfl*) (setq *tfl* (instance ros::transform-listener :init)))
+
+(defvar *base-frame-id* "/base_footprint")
+
+(defvar *move-base-counter* 0)
+(defun coords->movebaseactiongoal (co &optional (map "/map") (frame "/world") (stamp (ros::time-now)))
+  (let ((goal (instance move_base_msgs::movebaseactiongoal :init))
+        map->frame)
+    (if (send *tfl* :wait-for-transform map frame (ros::time 0) 3)
+        (setq map->frame (send *tfl* :lookup-transform map frame (ros::time 0)))
+      (setq map->frame (make-coords)))
+    (send goal :header :seq (inc *move-base-counter*))
+    (send goal :header :stamp stamp)
+    (send goal :header :frame_id map)
+    (send goal :goal :target_pose :header :seq *move-base-counter*)
+    (send goal :goal :target_pose :header :stamp stamp)
+    (send goal :goal :target_pose :header :frame_id map)
+    (send goal :goal :target_pose :pose
+          (ros::coords->tf-pose (send (send co :copy-worldcoords) :transform map->frame :world)))
+    goal))
 
 (warn "move-to-spot~%")
 (defun move-to-spot (spot &key (scene  *scene*)
@@ -154,5 +175,97 @@
   (base-go-to-fridge :wait wait)
   (base-go-to-fridge-init-pose :torso-lift torso-lift :head-pitch head-pitch :wait wait)
   )
+
+(defun move-to-with-timeout (cds
+                             &key
+                             (move-base-action (pr2-interface-move-base-action *ri*))
+                             (map "/map")
+                             (frame-id "/world")
+                             (timeout 300) ;; [sec]
+                             (clear-costmap) ;; clear before move
+                             (max-retry-count 3))
+  (let ((retry-count 0)
+        (start-time (ros::time-now)))
+    (send move-base-action :wait-for-server)
+    (when clear-costmap
+      (clear-costmap))
+    (send move-base-action :send-goal (coords->movebaseactiongoal cds map frame-id))
+    (ros::ros-info "send-goal ~A -> ~A" (send *ri* :state :worldcoords) cds)
+    (send move-base-action :spin-once)
+    (while (ros::ok)
+      (cond
+       ((eq (send move-base-action :get-state) actionlib_msgs::GoalStatus::*SUCCEEDED*)
+        (return-from move-to-with-timeout t))
+       ((eq (send move-base-action :get-state) actionlib_msgs::GoalStatus::*ABORTED*)
+        (cond
+         ((<= (inc retry-count) max-retry-count)
+          (ros::ros-warn "retrying ~A/~A (move-to ~A)" retry-count max-retry-count cds)
+          (setq start-time (ros::time-now))
+          (clear-costmap)
+          (send move-base-action :send-goal (coords->movebaseactiongoal cds map frame-id)))
+         (t (ros::ros-error "failed after retrying")
+            (return))))
+       ((member (send move-base-action :get-state)
+                (list actionlib_msgs::GoalStatus::*PREEMPTED*
+                      actionlib_msgs::GoalStatus::*RECALLED*
+                      actionlib_msgs::GoalStatus::*REJECTED*))
+        (ros::ros-warn "aborted")
+        (return-from move-to-with-timeout nil))
+       ((< timeout (send (ros::time- (ros::time-now) start-time) :to-sec))
+        (ros::ros-warn "timeout cancel goal...")
+        (send move-base-action :cancel-goal)
+        (return-from move-to-with-timeout nil))
+       (t
+        (send move-base-action :spin-once)
+        (ros::sleep))))
+    (ros::ros-error "failure (move-to ~A)" cds)
+    (return-from move-to-with-timeout nil)))
+
+(warn ";; approach-to-target~%")
+(defun approach-to-target (target &key (robot *pr2*)
+                              (move-back 800.0) ;; from object [mm]
+                              (relative-rotation 0.0)) ;; from object->robot [rad]
+  (let ((diff-pos (send robot :difference-position target))
+        (target-cds (make-cascoords))
+        target-dist target-angle)
+    (setf (aref diff-pos 2) 0.0)
+    (setq target-angle (atan2 (aref diff-pos 1) (aref diff-pos 0)))
+    (ros::ros-info "diff-pos: ~A" diff-pos)
+    (setq target-dist (max 0.0 (min
+                                (* 0.8 (norm diff-pos))
+                                (- (norm diff-pos) move-back))))
+    (ros::ros-info "target-angle: ~A target-dist: ~A" (rad2deg target-angle) target-dist)
+;;    (send target-cds :rotate target-angle :z :world)
+    (send target-cds :translate (float-vector (* target-dist (cos target-angle))
+                                              (* target-dist (sin target-angle))
+                                              0) :world)
+    (setq diff-pos (send target-cds :difference-position target))
+    (setq target-angle (atan2 (aref diff-pos 1) (aref diff-pos 0)))
+    (send target-cds :rotate target-angle :z)
+    (send target :assoc target-cds)
+    (send target :rotate relative-rotation :z)
+    (send target :dissoc target-cds)
+    (ros::ros-info "target-cds: ~A worldcds: ~A" target-cds (send target-cds :worldcoords))
+    (let ((cnt 2) ret
+          (init-coords (send (send *ri* :state :worldcoords) :copy-worldcoords))
+          (prev-coords (send (send *ri* :state :worldcoords) :copy-worldcoords)))
+      (setq ret (move-to-with-timeout target-cds :frame-id *base-frame-id* :timeout 7 :max-retry-count 0))
+      (while (and (not ret) (>= cnt 0))
+        (send target :assoc target-cds)
+        (send target-cds :replace-pos (scale 1.3 (send target-cds :pos)))
+        (send target :dissoc target-cds)
+        (ros::ros-info "diff prev-pos: ~A init-pos: ~A"
+                       (norm (send prev-coords :difference-position (send *ri* :state :worldcoords)))
+                       (norm (send init-coords :difference-position (send *ri* :state :worldcoords))))
+        (when (and
+               (> (norm (send init-coords :difference-position (send *ri* :state :worldcoords))) 40)
+               (< (norm (send prev-coords :difference-position (send *ri* :state :worldcoords))) 40))
+          (ros::ros-warn "fix direction...")
+          (return-from approach-to-target t))
+        (setq ret (move-to-with-timeout target-cds :frame-id *base-frame-id* :timeout 7 :max-retry-count 0))
+        (setq prev-coords (send (send *ri* :state :worldcoords) :copy-worldcoords))
+        (dec cnt))
+      ret)
+    ))
 
 (provide :pr2-move)

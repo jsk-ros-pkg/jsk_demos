@@ -1,6 +1,6 @@
 (setq *obj* (make-sphere 100)) ;; dummy object
 (setq *target-name* nil)
-(defparameter *detection-topic* "/kinect_head/rgb/ObjectDetection")
+(defvar *detection-topic* "/kinect_head/rgb/ObjectDetection")
 (require :detection-interface "package://jsk_perception/euslisp/detection_interface.l")
 (require :pr2-pose "package://jsk_demo_common/euslisp/pr2-pose.l")
 
@@ -86,26 +86,44 @@
     (print "End Pick!"))
   )
 
-(defun place2 (pos &key (arm :rarm)
-			  (rotation-axis :z)
-			  (debug-view nil))
+(defun place2 (pos &key (arm :larm)
+                   (use-torso nil)
+                   (rotation-axis :z)
+                   (move-forward nil)
+                   (debug-view nil))
   (let ((tmp-pos (send pos :copy-worldcoords)))
 	(send *pr2* arm :inverse-kinematics
 		  tmp-pos
 		  :rotation-axis rotation-axis
 		  :debug-view debug-view)
-	(send *pr2* :torso :waist-z :joint-angle
-		  (+ (send *pr2* :torso :waist-z :joint-angle) 100))
+        (if use-torso
+          (send *pr2* :torso :waist-z :joint-angle
+                (+ (send *pr2* :torso :waist-z :joint-angle) 100))
+          (send *pr2* arm :move-end-pos (float-vector 0 0 100))
+          )
 	(send *ri* :angle-vector (send *pr2* :angle-vector))
 	(send *ri* :wait-interpolation)
-	
-	(send *pr2* :torso :waist-z :joint-angle
-		  (- (send *pr2* :torso :waist-z :joint-angle) 100))
+        (if (and move-forward (numberp move-forward))
+            (send *ri* :go-pos-unsafe (* 0.001 move-forward) 0 0))
+	(if use-torso
+          (send *pr2* :torso :waist-z :joint-angle
+                (- (send *pr2* :torso :waist-z :joint-angle) 100))
+          (send *pr2* arm :move-end-pos (float-vector 0 0 -100)))
 	(send *ri* :angle-vector (send *pr2* :angle-vector))
 	(send *ri* :wait-interpolation)
 	(send *ri* :stop-grasp arm)
-	(print "End Place!"))
-  )
+        (send *pr2* arm :move-end-pos (float-vector -100 0 0))
+	(send *ri* :angle-vector (send *pr2* :angle-vector))
+	(send *ri* :wait-interpolation)
+        (when (send *pr2* arm :move-end-pos (float-vector -100 0 0))
+          (send *ri* :angle-vector (send *pr2* :angle-vector))
+          (send *ri* :wait-interpolation))
+        (when (send *pr2* arm :move-end-pos (float-vector 0 0 150) *pr2*)
+          (send *ri* :angle-vector (send *pr2* :angle-vector))
+          (send *ri* :wait-interpolation))
+        (when (and move-forward (numberp move-forward))
+          (send *ri* :go-pos-unsafe (* -0.001 move-forward) 0 0))
+        t))
 
 (defun place (pos &key (arm :larm)
 			  (height -50)
@@ -121,7 +139,7 @@
 	  :link-list (send *pr2* :link-list
 			   (send *pr2* arm :end-coords :parent)
 			   (send *pr2* :link "torso_lift_link"))
-	  :debug-view debug)
+	  :debug-view debug-view)
     (send *ri* :angle-vector (send *pr2* :angle-vector) 2000)
     (send *ri* :wait-interpolation)
     (unix::usleep 100000)
@@ -624,7 +642,6 @@
     (cond
      ((not (send *ri* :simulation-modep)) ;; real mode
       (setq cds (check-detection :type "fridge" :speak-name *frige-speak-str*
-                                 :detection-topic "/kinect_head/rgb/ObjectDetection"
                                  )))
      (t ;; simulation mode
       (setq cds (send (make-cube 60 60 60) :translate (float-vector 777 98 1112)))
@@ -659,8 +676,7 @@
                     *fridge-rotation-threshold*)))
         (cond
          ((not (send *ri* :simulation-modep)) ;; real mode
-          (setq cds (check-detection :type "fridge" :speak-name *frige-speak-str*
-                                     :detection-topic "/kinect_head/rgb/ObjectDetection"))
+          (setq cds (check-detection :type "fridge" :speak-name *frige-speak-str*))
           )
          (t ;; simulation mode
           (setq cds (send (make-cube 60 60 60) :translate (float-vector 777 98 1112)))))
@@ -845,7 +861,7 @@
                               (use-arm :rarm) (move t)
                               (door-type :circle) (look-around nil) ;; :circle, :slide1, :slide2
                               (func-time 80)
-                              (wait t)
+                              (wait t) (max-retry 10)
                               )
   (let ((diffcds (make-coords :pos (float-vector 10000 10000 10000)))
         cds
@@ -855,7 +871,7 @@
     (open-fridge-door-initial-pose :door-type door-type :head-pitch head-pitch :torso-lift torso-lift :ratio ratio :wait wait)
 
     ;; detect fridge and open door
-    (dotimes (i 10 nil)
+    (dotimes (i max-retry nil)
       ;; detect fridge and move to the fridge door
       (setq ret (move-to-and-open-fridge-door :door-type door-type :ratio ratio :look-around look-around :head-pitch head-pitch :torso-lift torso-lift :move move :open-fridge-func open-fridge-func :wait wait))
       (if ret (return))
@@ -924,11 +940,9 @@
     (cond
      ((not (send *ri* :simulation-modep)) ;; real mode
       (unless (setq cds (check-detection :speak-name *type*
-                                         :type *type* :tf-force t :timeout 35 :single t
-                                         :detection-topic "/kinect_head_c2/depth_registered/ObjectDetection"))
+                                         :type *type* :tf-force t :timeout 35 :single t))
         (setq cds (check-detection :speak-name *type*
-                                   :type *type* :tf-force t :timeout 70 :single t
-                                   :detection-topic "/kinect_head_c2/depth_registered/ObjectDetection"))))
+                                   :type *type* :tf-force t :timeout 70 :single t))))
      (t ;; simulation mode
       (setq cds (send (make-cube 60 60 60) :translate (float-vector 756 302 1164)))))
     (setq *can-cds* cds)
@@ -1399,6 +1413,7 @@
          (client (instance ros::simple-action-client :init action-name pr2_gripper_sensor_msgs::PR2GripperEventDetectorAction))
          (goal (instance pr2_gripper_sensor_msgs::PR2GripperEventDetectorActionGoal :init)))
     (unless (send client :wait-for-server 5)
+      (ros::ros-error "~A is not available. you need to run gripper sensor nodes?" action-name)
       (return-from wait-for-hand-impact nil))
     (send goal :header :stamp (ros::time-now))
     (send goal :goal_id :stamp (ros::time-now))

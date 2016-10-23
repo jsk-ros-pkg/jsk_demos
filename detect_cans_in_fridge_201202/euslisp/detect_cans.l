@@ -12,15 +12,15 @@
 (ros::roseus-add-srvs "jsk_pcl_ros")
 (ros::roseus-add-msgs "posedetection_msgs")
 
-(defvar *topic-name* "/plane_extraction/output_nonplane_cloud") ;; point cloud from camera
-(defvar *image-topic* "/kinect_head_c2/rgb/image_rect_color")
-(defvar *screen-topic* "/kinect_head_c2/rgb/image_rect_color/screenpoint")
-(defvar *result-topic* "/kinect_head_c2/depth_registered/ObjectDetection")
-
+(defparameter *input-cloud-topic* (format nil "~A/~A" (ros::get-name) "input_nonplane_cloud"))
+(defparameter *input-image-topic* (format nil "~A/~A" (ros::get-name) "input_image"))
+(defparameter *input-screenpoint-topic* (format nil "~A/~A" (ros::get-name) "input_screenpoint"))
+(defparameter *output-result-topic* (ros::get-param "/fridge_demo/object_detection_topic" "/kinect_head/rgb/ObjectDetection"))
+(ros::ros-info "[~A] output result: ~A" (ros::get-name) *output-result-topic*)
 (load "match-hist.l")
 
 (defvar *model-names* (ros::get-param "/object_hs_histgram/names"))
-(defvar *debug-view* (ros::get-param "~debug_view" t))
+(defvar *debug-view* (ros::get-param "~debug_view" nil))
 
 (setq *3dpos* (instance pointcloud :init))
 (setq *p* nil
@@ -32,12 +32,12 @@
 (defun screenpoint-cb (msg)
   (let ((px (send msg :point :x)) (py (send msg :point :y)) img)
     (let ((var (gensym)) (i 0))
-      (ros::subscribe *image-topic* sensor_msgs::Image
+      (ros::subscribe *input-image-topic* sensor_msgs::Image
 	#'(lambda (msg) (set var msg)))
       (while (and (ros::ok) (not (boundp var)) (< (incf i) 100))
 	(ros::spin-once)
 	(unix::usleep 1000000))
-      (ros::unsubscribe *image-topic*)
+      (ros::unsubscribe *input-image-topic*)
       (when (boundp var) (setq img (eval var))))
     (when img
       (let ((idx (+ (* (send img :step) (round py)) (* (round px) 3)))
@@ -48,7 +48,7 @@
 					       (elt data (+ idx 0)))))
 	(ros::ros-info "reference white is ~a" *ref-color*))
       )))
-(ros::subscribe *screen-topic* geometry_msgs::PointStamped #'screenpoint-cb)
+(ros::subscribe *input-screenpoint-topic* geometry_msgs::PointStamped #'screenpoint-cb)
 
 (defun pcloud-cb (msg)
   (pprint 'capture)
@@ -97,23 +97,23 @@
           (send res :header (send msg :header))
           (send res :objects detected-objects)
           (format t "result publish~%")
-          (ros::publish *result-topic* res)
+          (ros::publish *output-result-topic* res)
           )))
     )
   )
-(ros::advertise *result-topic* posedetection_msgs::ObjectDetection)
+(ros::advertise *output-result-topic* posedetection_msgs::ObjectDetection)
 
 (setq *cloud-subscribed* nil)
 (defun subscribe-cloud-topic ()
   (unless *cloud-subscribed*
     (ros::ros-info "subscribe cloud topics")
     (setq *cloud-subscribed* t)
-    (ros::subscribe *topic-name* sensor_msgs::PointCloud2 #'pcloud-cb)))
+    (ros::subscribe *input-cloud-topic* sensor_msgs::PointCloud2 #'pcloud-cb)))
 (defun unsubscribe-cloud-topic ()
   (when *cloud-subscribed*
     (ros::ros-info "unsubscribe cloud topics")
     (setq *cloud-subscribed* nil)
-    (ros::unsubscribe *topic-name*)))
+    (ros::unsubscribe *input-cloud-topic*)))
 
 (defun white-balance-points (3dp &optional (reference-color #f(1 1 1)))
   (let ((req (instance jsk_perception::WhiteBalancePointsRequest :init))
@@ -159,7 +159,7 @@
   (ros::rate 15)
   (do-until-key
    (cond
-    ((= (ros::get-num-subscribers *result-topic*) 0)
+    ((= (ros::get-num-subscribers *output-result-topic*) 0)
      (unsubscribe-cloud-topic))
     (t (subscribe-cloud-topic)))
    (ros::spin-once)
