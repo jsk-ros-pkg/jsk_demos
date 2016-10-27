@@ -1,0 +1,10 @@
+<launch>
+  <arg name="planner" default="downward" /> <!-- ff, ffha or downward -->
+  <include file="$(find pddl_planner)/launch/pddl_$(arg planner).launch" />
+  <node name="plan_client" pkg="roseus" type="roseus"
+        args="$(find simple_fetch_and_place_pr2)/euslisp/fetch-and-place-planning.l"
+        output="screen">
+    <param name="display_graph" value="true" />
+  </node>
+  <node pkg="smach_viewer" name="smach_viewer" type="smach_viewer.py" />
+</launch>

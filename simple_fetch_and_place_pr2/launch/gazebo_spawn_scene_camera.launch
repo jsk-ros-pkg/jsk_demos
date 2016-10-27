@@ -1,0 +1,54 @@
+<launch>
+  <node name="spawn_scene_camera_kitchen_sink"
+        pkg="simple_fetch_and_place_pr2" type="gazebo_spawn_scene_camera.py"
+        output="screen" args="add">
+    <rosparam>
+      name: scene_camera_kitchen_sink
+      ros_namespace: scene_camera_kitchen_sink
+      pose: [-0.017284, 1.062493, 1.615165, 0.0, 0.513707, 0.871216]
+      far_clip: 10.0
+      horizontal_fov: 1.047
+      frame_rate: 10.0
+    </rosparam>
+  </node>
+
+  <node name="spawn_scene_camera_kitchen_table"
+        pkg="simple_fetch_and_place_pr2" type="gazebo_spawn_scene_camera.py"
+        output="screen" args="add">
+    <rosparam>
+      name: scene_camera_kitchen_table
+      ros_namespace: scene_camera_kitchen_table
+      pose: [2.80, 2.866, 1.957, 0.00, 0.493326, -2.381082]
+      far_clip: 10.0
+      horizontal_fov: 1.047
+      frame_rate: 10.0
+    </rosparam>
+  </node>
+
+  <node name="spawn_scene_camera_table"
+        pkg="simple_fetch_and_place_pr2" type="gazebo_spawn_scene_camera.py"
+        output="screen" args="add">
+    <rosparam>
+      name: scene_camera_table
+      ros_namespace: scene_camera_table
+      pose: [3.058, 3.321, 2.047, 0.00, 0.405, -1.5055]
+      far_clip: 10.0
+      horizontal_fov: 1.047
+      frame_rate: 10.0
+    </rosparam>
+  </node>
+
+  <node name="spawn_scene_camera_axis"
+        pkg="simple_fetch_and_place_pr2" type="gazebo_spawn_scene_camera.py"
+        output="screen" args="add">
+    <rosparam>
+      name: scene_camera_axis
+      ros_namespace: scene_camera_axis
+      pose: [4.889, -2.8707, 2.4959, 0.0, 0.2904, 1.955]
+      far_clip: 10.0
+      horizontal_fov: 1.047
+      frame_rate: 10.0
+    </rosparam>
+  </node>
+
+</launch>
