@@ -23,10 +23,12 @@
 ;;   free_thresh: 0.192
 ;;   frame_id: scene-name
 (defun dump-map-yaml (nav-scene &optional filename)
-  (let ((info (dump-map-image-info nav-scene)))
+  (let ((info (dump-map-image-info nav-scene)) imgfile)
     (setq filename (or filename (get-yaml-filename nav-scene)))
     (with-open-file
      (fd filename :direction :output)
+     ;; image filename need to be relative to the yaml filename
+     (setq imgfile (format nil "~a.~a" (send (pathname (elt info 0)) :name) (send (pathname (elt info 0)) :type)))
      (format fd "image: ~a
 resolution: 0.050
 origin: [~a, ~a, 0]
@@ -34,7 +36,7 @@ negate: 0
 occupied_thresh: 0.65
 free_thresh: 0.192
 map_id: ~a"
-	     (elt info 0)
+	     imgfile
 	     (/ (elt info 1) 1000.0)
 	     (/ (elt info 2) 1000.0)
 	     (send nav-scene :name))
