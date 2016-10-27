@@ -71,9 +71,9 @@ namespace drc_task_common
     const jsk_recognition_msgs::BoundingBoxArray::ConstPtr& box_array_msg,
     const jsk_recognition_msgs::ClusterPointIndices::ConstPtr& indices_msg)
   {
-    JSK_ROS_INFO("detect");
+    ROS_INFO("detect");
     if (box_array_msg->boxes.size() == 0) {
-      JSK_ROS_WARN("0 boxes");
+      ROS_WARN("0 boxes");
       return;
     }
     boost::mutex::scoped_lock lock(mutex_);
@@ -89,7 +89,7 @@ namespace drc_task_common
         jsk_recognition_msgs::BoundingBox box_msg = box_array_msg->boxes[i];
         if (box_msg.dimensions.z < drill_min_height_ ||
             box_msg.dimensions.z > drill_max_height_) {
-          JSK_ROS_INFO("box size is not good");
+          ROS_INFO("box size is not good");
           continue;
         }
         pcl::ExtractIndices<pcl::PointXYZRGB> ex;
