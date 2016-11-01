@@ -1,6 +1,6 @@
 <launch>
   <arg name="gui" default="true" />
-  <arg name="paused" default="true" />
+  <arg name="paused" default="false" />
 
   <include file="$(find gazebo_ros)/launch/empty_world.launch">
     <arg name="gui" value="$(arg gui)" />

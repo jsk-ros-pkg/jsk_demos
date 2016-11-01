@@ -1,6 +1,9 @@
 <launch>
+  <!-- create isolated mongodb data -->
+  <include file="$(find roseus_mongo)/test/temp_mongodb_store.xml" />
+
   <!-- launch gazebo and load scenario -->
-  <include file="$(find simple_fetch_and_place_pr2)/launch/kitchen_scenario_pr2.launch" />
+  <include file="$(find simple_fetch_and_place_pr2)/launch/jsk_kitchen_scenario_pr2.launch" />
 
   <!-- setup scene camera -->
   <include file="$(find simple_fetch_and_place_pr2)/launch/gazebo_spawn_scene_camera.launch" />

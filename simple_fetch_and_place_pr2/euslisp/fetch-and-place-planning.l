@@ -113,17 +113,17 @@
 ;; decleration of variables
 (send *problem* :objects
       '((TABLE . spot)
-        (KITCHEN-SINK . spot)
-        (KITCHEN-TABLE . spot)
-        (PETBOTTLE . object)
-        (MUG . object)
+        (COOK . spot)
+        (COE . spot)
+        (BOTTLE . object)
+        (MUG-CUP . object)
         ))
 
 ;; initial condition
 (send *problem* :initial-condition
-      '((OBJECT-AT PETBOTTLE KITCHEN-SINK)
-        (OBJECT-AT MUG KITCHEN-TABLE)
-        (OBJECT-AT TRAY KITCHEN-TABLE)
+      '((OBJECT-AT BOTTLE COE)
+        (OBJECT-AT MUG-CUP COOK)
+        (OBJECT-AT TRAY COOK)
         (= (COST PICK) 5)
         (= (COST PLACE) 5)
         (= (COST PLACE-ON) 10)
@@ -131,8 +131,8 @@
         (= (COST FIND) 5)
         ))
 (send *problem* :goal-condition
-      '((OBJECT-AT PETBOTTLE TABLE)
-        (OBJECT-AT MUG TABLE)))
+      '((OBJECT-AT BOTTLE TABLE)
+        (OBJECT-AT MUG-CUP TABLE)))
 (send *problem* :metric '(minimize (total-cost)))
 
 ;; declare defined-failure nodes
