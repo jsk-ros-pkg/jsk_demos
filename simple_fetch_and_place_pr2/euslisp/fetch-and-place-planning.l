@@ -11,6 +11,7 @@
 (send *domain* :requirements '(:typing :action-costs))
 (send *domain* :types '(object spot arm action))
 (send *domain* :predicates '((ONHAND ?OBJ - object ?ARM - arm)
+                             (PICKABLE ?OBJ - object ?ARM - arm)
                              (ON ?OBJ - object ?OBJ2 - object)
                              (OBJECT-AT ?OBJ - object ?SPOT - spot)
                              (AT ?SPOT - spot)
@@ -38,9 +39,16 @@
                  :effect '((FOUND ?OBJ)
                            (increase (total-cost) (cost FIND))))
        (instance pddl-action :init
+                 :name "approach"
+                 :parameters '((?OBJ object) (?ARM arm))
+                 :precondition '((FOUND ?OBJ)
+                                 (NOT (PICKABLE ?OBJ ?ARM)))
+                 :effect '((PICKABLE ?OBJ ?ARM)))
+       (instance pddl-action :init
                  :name "pick"
                  :parameters '((?OBJ object) (?ARM arm))
                  :precondition '((FOUND ?OBJ)
+                                 (PICKABLE ?OBJ ?ARM)
                                  (forall (?OBJ2 - object)
                                   (NOT (ON ?OBJ2 ?OBJ)))
                                  (forall (?OBJ2 - object)
@@ -62,8 +70,30 @@
                             (NOT (ON ?OBJ ?OBJ2)))
                            (forall (?SPOT - spot)
                             (NOT (OBJECT-AT ?OBJ ?SPOT)))
-                           (increase (total-cost) (cost PICK))
-                           ))
+                           (increase (total-cost) (cost PICK))))
+       (instance pddl-action :init
+                 :name "pick_f"
+                 :parameters '((?OBJ object) (?ARM arm))
+                 :precondition '((FOUND ?OBJ)
+                                 (PICKABLE ?OBJ ?ARM)
+                                 (forall (?OBJ2 - object)
+                                  (NOT (ON ?OBJ2 ?OBJ)))
+                                 (forall (?OBJ2 - object)
+                                  (AND
+                                   (NOT (ONHAND ?OBJ2 ARMS))
+                                   (NOT (ONHAND ?OBJ2 ?ARM))))
+                                 (OR
+                                  (= ?ARM LARM)
+                                  (= ?ARM RARM)
+                                  (forall (?ARM2 - arm)
+                                    (forall (?OBJ2 - object)
+                                     (NOT (ONHAND ?OBJ2 ?ARM2)))))
+                                 (exists (?SPOT - spot)
+                                  (and
+                                   (AT ?SPOT)
+                                   (OBJECT-AT ?OBJ ?SPOT))))
+                 :effect '((NOT (PICKABLE ?OBJ ?ARM))
+                           (increase (total-cost) (cost PICK))))
        (instance pddl-action :init
                  :name "place-on"
                  :parameters '((?OBJ ?TO object) (?ARM arm))
@@ -129,6 +159,7 @@
         (= (COST PLACE-ON) 10)
         (= (COST MOVE-TO) 5)
         (= (COST FIND) 5)
+        (= (TOTAL-COST) 0)
         ))
 (send *problem* :goal-condition
       '((OBJECT-AT BOTTLE TABLE)
@@ -136,7 +167,7 @@
 (send *problem* :metric '(minimize (total-cost)))
 
 ;; declare defined-failure nodes
-(setq *failed-nodes* nil);;(list 'push-button 'look))
+(setq *failed-nodes* '(pick)) ;;(list 'push-button 'look))
 
 ;; solve plan and make transition graph
 (require :pddl-result-graph "package://pddl_planner/src/pddl-result-graph.l")

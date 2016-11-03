@@ -54,12 +54,12 @@
       <pose>0.450510 1.187462 0.825 0.0 0.0 -2.449213e-16</pose>
     </include>
     <include>
-      <uri>model://room73b2-tray-0_static</uri>
-      <pose>0.5 1.9 0.825 0.0 0.0 3.14159</pose>
+      <uri>model://room73b2-tray-0</uri>
+      <pose>0.45 1.9 0.825 0.0 0.0 3.14159</pose>
     </include>
     <include>
-      <uri>model://room73b2-mug-cup-0_static</uri>
-      <pose>0.566806 2.216732 0.83 0.0 0.0 -2.449213e-16</pose>
+      <uri>model://room73b2-mug-cup-0</uri>
+      <pose>0.506806 1.516732 0.87 0.0 0.0 -2.449213e-16</pose>
     </include>
     <include>
       <uri>model://room73b2-sushi-cup-0_static</uri>
@@ -198,8 +198,8 @@
       <pose>0.285 -1.55 0.0 0.0 0.0 0.0</pose>
     </include>
     <include>
-      <uri>model://room73b2-bottle-0_static</uri>
-      <pose>1.937029 1.793314 0.862208 0.0 0.0 0.0</pose>
+      <uri>model://room73b2-bottle-0</uri>
+      <pose>1.937029 2.093314 0.872208 0.0 0.0 0.0</pose>
     </include>
     <include>
       <uri>model://room73b2-chair0-0_static</uri>

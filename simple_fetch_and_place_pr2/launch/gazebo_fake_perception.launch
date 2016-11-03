@@ -1,0 +1,10 @@
+<launch>
+  <arg name="gazebo_origin_frame_id" default="odom_combined" />
+  <node name="gazebo_groundtruth_perception"
+        pkg="simple_fetch_and_place_pr2" type="gazebo_groundtruth_perception.py"
+        output="screen"
+        ns="/kinect_head_c2/rgb">
+    <param name="gazebo_origin_frame_id" value="$(arg gazebo_origin_frame_id)" />
+    <param name="near_threshold" value="3.0" />
+  </node>
+</launch>

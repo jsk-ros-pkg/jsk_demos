@@ -1,12 +1,14 @@
 ;; fetch-and-place-action.l
 ;; Author: Yuki Furuta <furushchev@jsk.imi.i.u-tokyo.ac.jp>
 
-(defparameter *detection-topic* "/kinect_head/rgb/ObjectDetection")
 (require :detection-interface "package://jsk_perception/euslisp/detection_interface.l")
 (require :pr2-interface "package://pr2eus/pr2-interface.l")
 ;;(require :pr2-action "package://jsk_demo_common/euslisp/pr2-attention-action.l")
 (require :pr2-action "package://jsk_demo_common/euslisp/pr2-action.l")
+(require :pr2-pose "package://jsk_demo_common/euslisp/pr2-pose.l")
 (require :eng2-scene "package://jsk_maps/src/eng2-scene.l")
+
+(defparameter *detection-topic* "/kinect_head_c2/rgb/ObjectDetection")
 
 (defun setup-env ()
   (let ((eng2 (make-eng2-scene))
@@ -40,13 +42,40 @@
 (defun find-object (&optional target-sym)
   (let ((target-name (string target-sym))
         (target (send *scene* :object (format nil "room73b2-~A" target-sym))))
-    (ros::ros-info "target: ~A ~A ~A" target-sym target-name target)
     (when (send *ri* :simulation-modep)
       (send target :reset-coords)
       (send target :transform *pr2*)
       (send target :translate (float-vector 800 0 700) *pr2*)
+      (let ((target-ri (car (send *ri* :find-object target))))
+        (send target-ri :reset-coords)
+        (send target-ri :transform *pr2*)
+        (send target-ri :translate (float-vector 800 0 800) *pr2*))
       (return-from find-object t))
-    (not (null (check-detection :target-object target :speak-name target-name)))))
+    ;; real robot
+    (send *pr2* :head :neck-y :joint-angle 0)
+    (send *pr2* :head :neck-p :joint-angle 40)
+    (send *ri* :angle-vector (send *pr2* :angle-vector))
+    (send *ri* :wait-interpolation)
+    (dotimes (i 3)
+      (when
+          (check-detection :type target-name
+                           :speak nil
+                           :target-object target)
+        ;; adjust detected object
+        (send target :transform (send *pr2* :worldcoords))
+        (return-from find-object t)))))
+
+(defun approach (&optional target-sym arm-sym)
+  (let ((target (send *scene* :object (format nil "room73b2-~A" target-sym))))
+    (when (send *ri* :simulation-modep)
+      ;; in eus simulation just rotate target around z axis
+      (send target :rotate (deg2rad 30) :z :local)
+      (let ((target-ri (car (send *ri* :find-object target))))
+        (send target-ri :rotate (deg2rad 30) :z :local))
+      t)
+    ;; find ar place and move base (not implemented)
+    t))
+
 
 (defun pick (&optional target-sym arm-sym)
   (let ((target (send *scene* :object (format nil "room73b2-~A" target-sym)))
@@ -55,6 +84,13 @@
       (return-from pick nil))
     (dolist (handle (send target :handle))
       (block continue
+        (let ((neck-p (send *pr2* :head :neck-p :joint-angle))
+              (neck-y (send *pr2* :head :neck-y :joint-angle)))
+          (pr2-pick-tray-pose)
+          (send *pr2* :head :neck-p :joint-angle neck-p)
+          (send *pr2* :head :neck-y :joint-angle neck-y)
+          (send *ri* :angle-vector (send *pr2* :angle-vector))
+          (send *ri* :wait-interpolation))
         (ros::ros-info "trying pick at ~A" handle)
         (unless (send *pr2* arm :inverse-kinematics handle)
           (ros::ros-error "no ik found")
@@ -77,7 +113,13 @@
           (unwind-protect
                (progn
                  ;; close gripper
-                 (send *ri* :start-grasp arm :objects (list target))
+                 (let ((gripper-pos
+                         (send *ri* :start-grasp arm
+                                    :objects (send *ri* :find-object target))))
+                   (when (< gripper-pos 1.0)
+                     (ros::ros-warn "failed to grasp ~A < 1.0" gripper-pos)
+                     (return-from continue)))
+                 (send *pr2* arm :end-coords :assoc target)
                  (setq end-coords-before-pick
                        (send *pr2* arm :end-coords :copy-worldcoords))
                  ;; pick it up
@@ -88,36 +130,66 @@
                  (send *pr2* :put arm t)
                  (return-from pick t))
             (progn
-              (when end-coords-before-pick
-                (setq diff-pose
-                    (send (send *pr2* arm :end-coords :copy-worldcoords)
-                          :difference-position end-coords-before-pick))
-                (when (> (norm diff-pose) 10)
-                  ;; revert arm pose
-                  (send *pr2* arm :move-end-pos diff-pose *pr2*)
-                  (send *ri* :angle-vector (send *pr2* :angle-vector))
-                  (Send *ri* :wait-interpolation)))
-              ;; open gripper
-              (send *ri* :stop-grasp arm :wait t)
-              (send *pr2* arm :move-end-pos (float-vector -100 0 0))
-              (send *ri* :angle-vector (send *pr2* :angle-vector))
-              (send *ri* :wait-interpolation))))))
+              (unless (send *pr2* :get arm)
+                (ros::ros-info "recover grasp failure")
+                (when end-coords-before-pick
+                  (setq diff-pose
+                        (send (send *pr2* arm :end-coords :copy-worldcoords)
+                              :difference-position end-coords-before-pick))
+                  (when (> (norm diff-pose) 10)
+                    ;; revert arm pose
+                    (send *pr2* arm :move-end-pos diff-pose *pr2*)
+                    (send *ri* :angle-vector (send *pr2* :angle-vector))
+                    (send *ri* :wait-interpolation)))
+                ;; open gripper
+                (send *ri* :stop-grasp arm :wait t)
+                (send *pr2* arm :end-coords :dissoc target)
+                (send *pr2* arm :move-end-pos (float-vector -100 0 0))
+                (send *ri* :angle-vector (send *pr2* :angle-vector))
+                (send *ri* :wait-interpolation)))))))
 
     (ros::ros-error "no valid handle")
     (return-from pick nil)))
 
 (defun place (&optional target-sym arm-sym)
   (let ((target (send *scene* :object (format nil "room73b2-~A" target-sym)))
+        (place-pos (make-coords :pos (float-vector 700 0 700)))
         (arm (intern (string arm-sym) *keyword-package*)))
     ;; FIXME (perceive table and place on
-    (send *pr2* arm :move-end-pos (float-vector 0 0 -300) *pr2*)
-    (send *ri* :angle-vector (send *pr2* :angle-vector))
-    (send *ri* :wait-interpolation)
-    (send *ri* :stop-grasp arm :wait t)
-    (send *pr2* arm :move-end-pos (float-vector -100 0 0))
-    (send *ri* :angle-vector (send *pr2* :angle-vector))
-    (send *ri* :wait-interpolation)
-    (send *pr2* :put arm nil))
+    (when (send *ri* :simulation-modep)
+      (let ((inverse-factor (if (eq arm :larm) 1 -1)) avs tms)
+        (send *pr2* :torso_lift_joint :joint-angle 150)
+        (send *pr2* arm :collar-y :joint-angle (* inverse-factor 70))
+        (send *pr2* arm :elbow-p :joint-angle (* inverse-factor -120))
+        (send *pr2* :head :look-at (send *pr2* arm :end-coords :worldpos))
+        (push (send *pr2* :angle-vector) avs)
+        (push 1500 tms)
+        (send *pr2* arm :shoulder-p :joint-angle 0)
+        (send *pr2* :head :look-at (send *pr2* arm :end-coords :worldpos))
+        (push (send *pr2* :angle-vector) avs)
+        (push 3000 tms)
+        (send *pr2* arm :inverse-kinematics
+              (send (send *pr2* :copy-worldcoords)
+                    :translate (float-vector 800 0 1000) *pr2*)
+                        :rotation-axis :z
+                        :look-at-target t)
+        (push (send *pr2* :angle-vector) avs)
+        (push 3000 tms)
+        (send *pr2* arm :inverse-kinematics
+              (send (send *pr2* :copy-worldcoords)
+                    :translate (float-vector 900 0 800) *pr2*)
+                        :rotation-axis :z
+                        :look-at-target t)
+        (push (send *pr2* :angle-vector) avs)
+        (push 1500 tms)
+        (send *ri* :angle-vector-sequence (reverse avs) (reverse tms))
+        (send *ri* :wait-interpolation))
+      (send *ri* :stop-grasp arm :wait t)
+      (send *pr2* arm :end-coords :dissoc target)
+      (send *pr2* arm :move-end-pos (float-vector -100 0 0))
+      (send *ri* :angle-vector (send *pr2* :angle-vector))
+      (send *ri* :wait-interpolation)
+      (send *pr2* :put arm nil)))
   t)
 
 (defun place-on (&optional target-sym onto-sym arm-sym)
@@ -140,7 +212,29 @@
       (t
        (pr2-tuckarm-pose)))
     (prog1
-        (not (null (send *ri* :move-to dest)))
+        (not (null (send *ri* :move-to dest :frame-id "/eng2/7f/73B2")))
       (send *pr2* :move-to dest :world))))
+
+(defun test-pick-bottle ()
+  (task-compiler/after-init-hook)
+;;  (move-to 'coe)
+;;  (find-object 'bottle)
+;;  (pick 'bottle 'rarm)
+)
+
+(defun test ()
+  (task-compiler/after-init-hook)
+  (move-to 'coe)
+  (find-object 'bottle)
+  (pick 'bottle 'rarm)
+  (move-to 'cook)
+  (find-object 'mug-cup)
+  (approach 'mug-cup 'larm)
+  (approach 'mug-cup 'larm)
+  (pick 'mug-cup 'larm)
+  (move-to 'table))
+
+(when (ros::get-param "~execute" nil)
+  (test-pick-bottle))
 
 (provide :fetch-and-place-action) ;; end of fetch-and-place-action.l
