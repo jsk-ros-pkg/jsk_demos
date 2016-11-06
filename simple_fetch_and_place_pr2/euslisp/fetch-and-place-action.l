@@ -2,11 +2,9 @@
 ;; Author: Yuki Furuta <furushchev@jsk.imi.i.u-tokyo.ac.jp>
 
 (require :detection-interface "package://jsk_perception/euslisp/detection_interface.l")
-(require :pr2-interface "package://pr2eus/pr2-interface.l")
-;;(require :pr2-action "package://jsk_demo_common/euslisp/pr2-attention-action.l")
-(require :pr2-action "package://jsk_demo_common/euslisp/pr2-action.l")
 (require :pr2-pose "package://jsk_demo_common/euslisp/pr2-pose.l")
 (require :eng2-scene "package://jsk_maps/src/eng2-scene.l")
+(require :pr2-logging-interface "package://jsk_robot_startup/lifelog/pr2-logging-interface.l")
 
 (defparameter *detection-topic* "/kinect_head_c2/rgb/ObjectDetection")
 
@@ -21,7 +19,7 @@
           :translate (float-vector -1000 -1000 0) :world)
     scene))
 
-(defun task-compiler/after-init-hook ()
+(defun task-compiler/before-run-hook (&optional sm)
   ;; init context
   (setq *current-context* "fetch_and_place")
   (setq *scene* (setup-env))
@@ -37,11 +35,15 @@
   ;; visualization
   (objects (list *pr2* *scene*))
   (send *ri* :objects (list *scene*))
+  (start-task :pr2-fetch-and-place)
   )
 
-(defun find-object (&optional target-sym)
-  (let ((target-name (string target-sym))
-        (target (send *scene* :object (format nil "room73b2-~A" target-sym))))
+(defun task-compiler/after-run-hook (&optional sm)
+  (end-task))
+
+(defaction find-object (&optional target-sym)
+  (let* ((target-name (format nil "room73b2-~A" target-sym))
+         (target (send *scene* :object target-name)))
     (when (send *ri* :simulation-modep)
       (send target :reset-coords)
       (send target :transform *pr2*)
@@ -62,10 +64,12 @@
                            :speak nil
                            :target-object target)
         ;; adjust detected object
-        (send target :transform (send *pr2* :worldcoords))
+        (let ((cds (send target :copy-worldcoords)))
+          (send target :newcoords (send *pr2* :copy-worldcoords))
+          (send target :transform cds))
         (return-from find-object t)))))
 
-(defun approach (&optional target-sym arm-sym)
+(defaction approach (&optional target-sym arm-sym)
   (let ((target (send *scene* :object (format nil "room73b2-~A" target-sym))))
     (when (send *ri* :simulation-modep)
       ;; in eus simulation just rotate target around z axis
@@ -77,7 +81,7 @@
     t))
 
 
-(defun pick (&optional target-sym arm-sym)
+(defaction pick (&optional target-sym arm-sym)
   (let ((target (send *scene* :object (format nil "room73b2-~A" target-sym)))
         (arm (intern (string arm-sym) *keyword-package*)))
     (unless (send target :handle)
@@ -92,11 +96,18 @@
           (send *ri* :angle-vector (send *pr2* :angle-vector))
           (send *ri* :wait-interpolation))
         (ros::ros-info "trying pick at ~A" handle)
-        (unless (send *pr2* arm :inverse-kinematics handle)
+        (unless
+            (with-assoc-move-target
+                (mt :move-target
+                    (send (send *pr2* arm :end-coords :copy-worldcoords)
+                          :translate (float-vector 100 0 0)) ;; offset
+                    :parent-link (send *pr2* arm :end-coords :parent))
+              (send *pr2* :inverse-kinematics
+                    (make-coords :pos (send target :centroid))
+                          :move-target (car mt)
+                          :rotation-axis :z
+                          :link-list (send *pr2* :link-list (send (car mt) :parent))))
           (ros::ros-error "no ik found")
-          (return-from continue))
-        (unless (send *pr2* arm :move-end-pos (float-vector -100 0 0))
-          (ros::ros-error "no pre ik found")
           (return-from continue))
         ;; pre pick pose
         (send *pr2* :look-at-target (send *pr2* arm :end-coords))
@@ -151,7 +162,7 @@
     (ros::ros-error "no valid handle")
     (return-from pick nil)))
 
-(defun place (&optional target-sym arm-sym)
+(defaction place (&optional target-sym arm-sym)
   (let ((target (send *scene* :object (format nil "room73b2-~A" target-sym)))
         (place-pos (make-coords :pos (float-vector 700 0 700)))
         (arm (intern (string arm-sym) *keyword-package*)))
@@ -192,11 +203,11 @@
       (send *pr2* :put arm nil)))
   t)
 
-(defun place-on (&optional target-sym onto-sym arm-sym)
+(defaction place-on (&optional target-sym onto-sym arm-sym)
   ;; FIXME (perceive table and place on
   (place target arm))
 
-(defun move-to (&optional destination-sym)
+(defaction move-to (&optional destination-sym)
   (let ((dest (send *scene* :spot (format nil "~A-spot" destination-sym))))
     ;; tuckarm pose before navigation
     (cond
@@ -216,14 +227,15 @@
       (send *pr2* :move-to dest :world))))
 
 (defun test-pick-bottle ()
-  (task-compiler/after-init-hook)
-;;  (move-to 'coe)
+  (task-compiler/before-run-hook)
+  (move-to 'coe)
 ;;  (find-object 'bottle)
 ;;  (pick 'bottle 'rarm)
+  (task-compiler/after-run-hook)
 )
 
 (defun test ()
-  (task-compiler/after-init-hook)
+  (task-compiler/before-run-hook)
   (move-to 'coe)
   (find-object 'bottle)
   (pick 'bottle 'rarm)
@@ -232,9 +244,8 @@
   (approach 'mug-cup 'larm)
   (approach 'mug-cup 'larm)
   (pick 'mug-cup 'larm)
-  (move-to 'table))
+  (move-to 'table)
+  (task-compiler/after-run-hook))
 
-(when (ros::get-param "~execute" nil)
-  (test-pick-bottle))
 
 (provide :fetch-and-place-action) ;; end of fetch-and-place-action.l

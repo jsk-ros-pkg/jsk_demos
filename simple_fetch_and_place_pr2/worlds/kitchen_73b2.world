@@ -42,8 +42,8 @@
       <pose>0.4 3.3 0.82 0.0 0.0 3.14159</pose>
     </include>
     <include>
-      <uri>model://room73b2-cup-0_static</uri>
-      <pose>0.6 3.3 0.82 0.0 0.0 3.14159</pose>
+      <uri>model://room73b2-cup-0</uri>
+      <pose>3.088 1.03 0.703 0.0 0.0 0.0</pose>
     </include>
     <include>
       <uri>model://room73b2-sponge-0_static</uri>

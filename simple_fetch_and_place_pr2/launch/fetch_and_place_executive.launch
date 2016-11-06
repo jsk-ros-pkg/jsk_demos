@@ -1,7 +1,13 @@
 <launch>
-  <arg name="planning" default="false" />
+  <arg name="execute" default="false" />
 
   <machine name="localhost" address="localhost" />
+
+  <rosparam>
+    robot:
+      database: jsk_robot_lifelog
+      name: pr1012
+  </rosparam>
 
   <!-- create isolated mongodb data -->
   <include file="$(find roseus_mongo)/test/temp_mongodb_store.xml" />
@@ -19,7 +25,7 @@
 
   <!-- start task -->
   <include file="$(find task_compiler)/launch/execute-pddl.launch"
-           if="$(arg planning)">
+           if="$(arg execute)">
     <arg name="action" value="$(find simple_fetch_and_place_pr2)/euslisp/fetch-and-place-action.l" />
     <arg name="description" value="$(find simple_fetch_and_place_pr2)/euslisp/fetch-and-place-planning.l" />
     <arg name="return_success" value="true" />
@@ -27,11 +33,6 @@
     <arg name="planner" value="downward" />
     <arg name="gui" value="false" />
   </include>
-  <node name="pick_bottle" pkg="roseus" type="roseus"
-        args="$(find simple_fetch_and_place_pr2)/euslisp/fetch-and-place-action.l"
-        unless="$(arg planning)">
-    <param name="execute" value="true" />
-  </node>
 
   <!-- smach viewer -->
   <node name="smach_viewer" pkg="smach_viewer" type="smach_viewer"
