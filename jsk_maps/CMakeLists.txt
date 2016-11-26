@@ -15,6 +15,8 @@ if(${CMAKE_SYSTEM_NAME} MATCHES Linux)
   elseif(${CMAKE_SYSTEM_PROCESSOR} MATCHES amd64* OR
       ${CMAKE_SYSTEM_PROCESSOR} MATCHES x86_64* )
     set(ARCHDIR Linux64)
+  elseif(${GCC_MACHINE} MATCHES arm-linux-*)
+    set(ARCHDIR LinuxARM)
   else()
     set(ARCHDIR Linux)
   endif()
