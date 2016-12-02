@@ -15,6 +15,7 @@ Panels:
         - /Path2
         - /Map2
         - /LaserScan1
+        - /Map3
       Splitter Ratio: 0.5
     Tree Height: 1751
   - Class: rviz/Selection
@@ -544,9 +545,7 @@ Visualization Manager:
       Marker Topic: /kinect_head_c2/rgb/debug_marker_array
       Name: MarkerArray
       Namespaces:
-        gazebo_groundtruth: true
-        gazebo_groundtruth_area: true
-        gazebo_groundtruth_text: true
+        {}
       Queue Size: 5
       Value: true
     - Class: rviz/TF
@@ -622,7 +621,7 @@ Visualization Manager:
       Draw Behind: false
       Enabled: true
       Name: Map
-      Topic: /move_base_node/local_costmap/costmap
+      Topic: /move_base_node/global_costmap/costmap
       Unreliable: false
       Value: true
     - Alpha: 1
@@ -654,6 +653,15 @@ Visualization Manager:
       Unreliable: false
       Use Fixed Frame: true
       Use rainbow: true
+      Value: true
+    - Alpha: 0.7
+      Class: rviz/Map
+      Color Scheme: costmap
+      Draw Behind: false
+      Enabled: true
+      Name: Map
+      Topic: /move_base_node/local_costmap/costmap
+      Unreliable: false
       Value: true
   Enabled: true
   Global Options:
@@ -691,10 +699,10 @@ Visualization Manager:
         Z: -0.824822
       Name: Current View
       Near Clip Distance: 0.01
-      Pitch: 1.4448
+      Pitch: 1.2248
       Target Frame: <Fixed Frame>
       Value: Orbit (rviz)
-      Yaw: 4.73678
+      Yaw: 4.49677
     Saved: ~
 Window Geometry:
   Displays:
