@@ -214,6 +214,8 @@
   ;; FIXME (perceive table and place on
   (place target arm))
 
+(setq *prev-at* nil)
+
 (defaction move-to (&optional destination-sym)
   (let ((dest (send *scene* :spot (format nil "~A-spot" destination-sym))))
     ;; tuckarm pose before navigation
@@ -229,8 +231,16 @@
        (pr2-tuckarm-pose :larm :outside))
       (t
        (pr2-tuckarm-pose)))
+
+    ;; omajinai
+    (when (eq *prev-at* 'table)
+      (ros::ros-warn "turn 90 degree before move-to!!!!!!!!")
+      (send *ri* :go-pos 0 0 90)
+      (send *ri* :go-pos 0.5 0 0))
+
     (prog1
         (not (null (send *ri* :move-to dest :frame-id "/eng2/7f/73B2")))
+      (setq *prev-at* destination-sym)
       (send *pr2* :move-to dest :world))))
 
 (defun test-pick-bottle ()
