@@ -17,8 +17,8 @@
                              (AT ?SPOT - spot)
                              (FOUND ?OBJ)
                              ))
-(send *domain* :constants '(LARM RARM ARMS - arm
-                            TRAY - object
+(send *domain* :constants '(LARM RARM - arm
+                            ;; ARMS - arm
                             FIND PICK PLACE-ON PLACE MOVE-TO - action
                             ))
 
@@ -147,6 +147,7 @@
         (COE . spot)
         (BOTTLE . object)
         (MUG-CUP . object)
+        (CUP . object)
         ))
 
 ;; initial condition
@@ -154,6 +155,7 @@
       '((OBJECT-AT BOTTLE COE)
         (OBJECT-AT MUG-CUP COOK)
         (OBJECT-AT TRAY COOK)
+        (OBJECT-AT CUP TABLE)
         (= (COST PICK) 5)
         (= (COST PLACE) 5)
         (= (COST PLACE-ON) 10)
@@ -161,9 +163,16 @@
         (= (COST FIND) 5)
         (= (TOTAL-COST) 0)
         ))
+#|
 (send *problem* :goal-condition
       '((OBJECT-AT BOTTLE TABLE)
         (OBJECT-AT MUG-CUP TABLE)))
+|#
+
+
+(send *problem* :goal-condition
+      '((OBJECT-AT CUP COOK)))
+
 (send *problem* :metric '(minimize (total-cost)))
 
 ;; declare defined-failure nodes

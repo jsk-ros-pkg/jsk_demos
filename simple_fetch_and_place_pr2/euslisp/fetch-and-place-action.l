@@ -104,8 +104,7 @@
                     (send (send *pr2* arm :end-coords :copy-worldcoords)
                           :translate (float-vector 100 0 0)) ;; offset
                     :parent-link (send *pr2* arm :end-coords :parent))
-              (send *pr2* :inverse-kinematics
-                    (make-coords :pos (send target :centroid))
+              (send *pr2* :inverse-kinematics handle
                           :move-target (car mt)
                           :rotation-axis :z
                           :link-list (send *pr2* :link-list (send (car mt) :parent))))
@@ -117,6 +116,7 @@
         (send *ri* :wait-interpolation)
         ;; open gripper
         (send *ri* :stop-grasp arm :wait t)
+        (unix:sleep 8) ;; omajinai
         ;; reach to target object
         (send *pr2* arm :move-end-pos (float-vector 100 0 0))
         (send *pr2* :look-at-target (send *pr2* arm :end-coords))
@@ -156,6 +156,7 @@
                     (send *ri* :wait-interpolation)))
                 ;; open gripper
                 (send *ri* :stop-grasp arm :wait t)
+                (unix:sleep 8)
                 (send *pr2* arm :end-coords :dissoc target)
                 (send *pr2* arm :move-end-pos (float-vector -100 0 0))
                 (send *ri* :angle-vector (send *pr2* :angle-vector))
@@ -199,6 +200,7 @@
         (send *ri* :wait-interpolation))
       (send *ri* :stop-grasp arm :wait t)
       (send *pr2* arm :end-coords :dissoc target)
+      (unix:sleep 8)
       (send *pr2* arm :move-end-pos (float-vector -100 0 0))
       (send *ri* :angle-vector (send *pr2* :angle-vector))
       (send *ri* :wait-interpolation)
