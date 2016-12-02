@@ -17,7 +17,8 @@
                              (AT ?SPOT - spot)
                              (FOUND ?OBJ)
                              ))
-(send *domain* :constants '(LARM RARM - arm
+(send *domain* :constants '(RARM - arm
+                            ;; LARM - arm
                             ;; ARMS - arm
                             FIND PICK PLACE-ON PLACE MOVE-TO - action
                             ))

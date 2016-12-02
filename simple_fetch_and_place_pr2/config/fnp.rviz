@@ -11,6 +11,8 @@ Panels:
         - /MarkerArray1
         - /MarkerArray1/Namespaces1
         - /Map1
+        - /Path1
+        - /Path2
       Splitter Ratio: 0.5
     Tree Height: 1751
   - Class: rviz/Selection
@@ -31,7 +33,7 @@ Panels:
     Experimental: false
     Name: Time
     SyncMode: 0
-    SyncSource: ""
+    SyncSource: PointCloud2
 Visualization Manager:
   Class: ""
   Displays:
@@ -540,7 +542,9 @@ Visualization Manager:
       Marker Topic: /kinect_head_c2/rgb/debug_marker_array
       Name: MarkerArray
       Namespaces:
-        {}
+        gazebo_groundtruth: true
+        gazebo_groundtruth_area: true
+        gazebo_groundtruth_text: true
       Queue Size: 100
       Value: true
     - Class: rviz/TF
@@ -564,6 +568,50 @@ Visualization Manager:
       Enabled: true
       Name: Map
       Topic: /map
+      Unreliable: false
+      Value: true
+    - Alpha: 1
+      Buffer Length: 1
+      Class: rviz/Path
+      Color: 255; 85; 255
+      Enabled: true
+      Head Diameter: 0.3
+      Head Length: 0.2
+      Length: 0.3
+      Line Style: Lines
+      Line Width: 0.03
+      Name: Path
+      Offset:
+        X: 0
+        Y: 0
+        Z: 0
+      Pose Style: None
+      Radius: 0.03
+      Shaft Diameter: 0.1
+      Shaft Length: 0.1
+      Topic: /move_base_node/DWAPlannerROS/global_plan
+      Unreliable: false
+      Value: true
+    - Alpha: 1
+      Buffer Length: 1
+      Class: rviz/Path
+      Color: 255; 85; 255
+      Enabled: true
+      Head Diameter: 0.3
+      Head Length: 0.2
+      Length: 0.3
+      Line Style: Lines
+      Line Width: 0.03
+      Name: Path
+      Offset:
+        X: 0
+        Y: 0
+        Z: 0
+      Pose Style: None
+      Radius: 0.03
+      Shaft Diameter: 0.1
+      Shaft Length: 0.1
+      Topic: /move_base_node/DWAPlannerROS/local_plan
       Unreliable: false
       Value: true
   Enabled: true
@@ -602,10 +650,10 @@ Visualization Manager:
         Z: -0.824822
       Name: Current View
       Near Clip Distance: 0.01
-      Pitch: 0.574801
+      Pitch: 1.5698
       Target Frame: <Fixed Frame>
       Value: Orbit (rviz)
-      Yaw: 6.01679
+      Yaw: 4.68678
     Saved: ~
 Window Geometry:
   Displays:
