@@ -44,6 +44,8 @@
 (defaction find-object (&optional target-sym)
   (let* ((target-name (format nil "room73b2-~A" target-sym))
          (target (send *scene* :object target-name)))
+    (when (send target :parent)
+      (send (send target :parent) :dissoc target))
     (when (send *ri* :simulation-modep)
       (send target :reset-coords)
       (send target :transform *pr2*)
