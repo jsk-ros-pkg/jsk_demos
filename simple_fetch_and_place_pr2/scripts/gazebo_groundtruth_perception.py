@@ -41,11 +41,12 @@ class GazeboGroundTruthPerception(object):
         self.sensor_frame_id = rospy.get_param("~sensor_frame_id", "head_mount_kinect_rgb_optical_frame")
         self.gazebo_robot_frame_id = rospy.get_param("~gazebo_robot_frame_id", "pr2")
         self.ros_robot_frame_id = rospy.get_param("~ros_robot_frame_id", "base_footprint")
+
+        self.always_publish = rospy.get_param("~always_publish", False)
+        self.visualize_detected_region = rospy.get_param("~visualize_detected_region", False)
+
         self.near_threshold = rospy.get_param("~near_threshold", 3.0) # [m]
-        self.always_publish = rospy.get_param("~always_publish", True)
-        self.offset_x = rospy.get_param("~offset_x", 0.0)
-        self.offset_y = rospy.get_param("~offset_y", 0.0)
-        self.offset_z = rospy.get_param("~offset_z", 0.0)
+
         self.update_rate = rospy.get_param("~update_rate", 1.0) # [1/Hz]
         self.publish_rate = rospy.get_param("~publish_rate", 0.3)
 
@@ -59,7 +60,74 @@ class GazeboGroundTruthPerception(object):
         self.pub_timer = None
         self.pub_msg = None
 
-    def publish_debug_marker(self, msg):
+    def model_state_cb(self, msg):
+        try:
+            now = rospy.Time.now()
+            robot_to_sensor = self.tf_buffer.lookup_transform(self.sensor_frame_id,
+                                                              self.ros_robot_frame_id,
+                                                              now,
+                                                              rospy.Duration(self.publish_rate))
+            robot_pose_mat_inv = None
+            try:
+                idx = msg.name.index(self.gazebo_robot_frame_id)
+                robot_pose_matrix = mat_from_pose(msg.pose[idx])
+                robot_pose_mat_inv = np.linalg.inv(robot_pose_matrix)
+            except ValueError as e:
+                rospy.logerr("invalid gazebo robot frame id: %s not in %s" % (self.gazebo_robot_frame_id, msg.name))
+                return
+            except np.linalg.LinAlgError:
+                rospy.logerr("inv mat not found")
+                return
+            except Exception as e:
+                rospy.logerr(str(e))
+                return
+
+            # map_to_robot: TransformStamped
+            pub_msg = ObjectDetection()
+            pub_msg.header.frame_id = self.sensor_frame_id
+            pub_msg.header.stamp = now
+
+            for i in range(len(msg.name)):
+                if "_static" in msg.name[i]:
+                    continue
+                # convert to pose from robot origin
+                pose_matrix = mat_from_pose(msg.pose[i])
+                robot_to_object_mat = np.dot(robot_pose_mat_inv, pose_matrix)
+                ps = PoseStamped()
+                ps.header.stamp = now
+                ps.header.frame_id = self.ros_robot_frame_id
+                ps.pose = pose_from_mat(robot_to_object_mat)
+                sensor_to_object = tft.do_transform_pose(ps, robot_to_sensor)
+                if pose_distance(sensor_to_object.pose) < self.near_threshold:
+                    obj = Object6DPose()
+                    obj.type = msg.name[i]
+                    obj.pose = sensor_to_object.pose
+                    pub_msg.objects.append(obj)
+            if len(pub_msg.objects) > 0:
+                if self.visualize_detected_region:
+                    self.publish_marker(pub_msg)
+                self.pub_msg = pub_msg
+        except Exception as e:
+            rospy.logwarn(str(e))
+
+    def publish(self, event=None):
+        if self.pub_msg is not None:
+            self.object_detection_pub.publish(self.pub_msg)
+            self.pub_msg = None
+
+    def subscribe(self):
+        self.model_state_sub = rospy.Subscriber("/gazebo/model_states",
+                                                ModelStates, self.model_state_cb,
+                                                queue_size=1)
+        self.pub_timer = rospy.Timer(rospy.Duration(self.publish_rate), self.publish)
+
+    def unsubscribe(self):
+        self.model_state_sub.unregister()
+        self.model_state_sub = None
+        self.pub_timer.shutdown()
+        self.pub_timer = None
+
+    def publish_marker(self, msg):
         # msg = ObjectDetection
         ma = MarkerArray()
         idx = 0
@@ -112,76 +180,6 @@ class GazeboGroundTruthPerception(object):
             ma.markers.append(m)
             idx += 1
         self.debug_marker_pub.publish(ma)
-
-
-    def model_state_cb(self, msg):
-        try:
-            now = rospy.Time.now()
-            robot_to_sensor = self.tf_buffer.lookup_transform(self.sensor_frame_id,
-                                                              self.ros_robot_frame_id,
-                                                              now,
-                                                              rospy.Duration(self.publish_rate))
-            robot_pose_mat_inv = None
-            try:
-                idx = msg.name.index(self.gazebo_robot_frame_id)
-                robot_pose_matrix = mat_from_pose(msg.pose[idx])
-                robot_pose_mat_inv = np.linalg.inv(robot_pose_matrix)
-            except ValueError as e:
-                rospy.logerr("invalid gazebo robot frame id: %s not in %s" % (self.gazebo_robot_frame_id, msg.name))
-                return
-            except np.linalg.LinAlgError:
-                rospy.logerr("inv mat not found")
-                return
-            except Exception as e:
-                rospy.logerr(str(e))
-                return
-
-            # map_to_robot: TransformStamped
-            pub_msg = ObjectDetection()
-            pub_msg.header.frame_id = self.sensor_frame_id
-            pub_msg.header.stamp = now
-
-            for i in range(len(msg.name)):
-                if "_static" in msg.name[i]:
-                    continue
-                # convert to pose from robot origin
-                pose_matrix = mat_from_pose(msg.pose[i])
-                robot_to_object_mat = np.dot(robot_pose_mat_inv, pose_matrix)
-                ps = PoseStamped()
-                ps.header.stamp = now
-                ps.header.frame_id = self.ros_robot_frame_id
-                ps.pose = pose_from_mat(robot_to_object_mat)
-                ps.pose.position.x += self.offset_x
-                ps.pose.position.y += self.offset_y
-                ps.pose.position.z += self.offset_z
-                sensor_to_object = tft.do_transform_pose(ps, robot_to_sensor)
-                if pose_distance(sensor_to_object.pose) < self.near_threshold:
-                    obj = Object6DPose()
-                    obj.type = msg.name[i]
-                    obj.pose = sensor_to_object.pose
-                    pub_msg.objects.append(obj)
-            if len(pub_msg.objects) > 0:
-                self.publish_debug_marker(pub_msg)
-                self.pub_msg = pub_msg
-        except Exception as e:
-            rospy.logwarn(str(e))
-
-    def publish(self, event=None):
-        if self.pub_msg is not None:
-            self.object_detection_pub.publish(self.pub_msg)
-            self.pub_msg = None
-
-    def subscribe(self):
-        self.model_state_sub = rospy.Subscriber("/gazebo/model_states",
-                                                ModelStates, self.model_state_cb,
-                                                queue_size=1)
-        self.pub_timer = rospy.Timer(rospy.Duration(self.publish_rate), self.publish)
-
-    def unsubscribe(self):
-        self.model_state_sub.unregister()
-        self.model_state_sub = None
-        self.pub_timer.shutdown()
-        self.pub_timer = None
 
     def run(self):
         if self.always_publish:
