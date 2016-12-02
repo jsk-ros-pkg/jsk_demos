@@ -19,11 +19,7 @@
   <include file="$(find simple_fetch_and_place_pr2)/launch/gazebo_spawn_scene_camera.launch" />
 
   <!-- launch perception -->
-  <include file="$(find simple_fetch_and_place_pr2)/launch/gazebo_fake_perception.launch">
-    <arg name="gazebo_origin_frame_id" value="eng2/7f/73B2" />
-    <arg name="offset_x" value="-0.14" />
-    <arg name="offset_y" value="0.14" />
-  </include>
+  <include file="$(find simple_fetch_and_place_pr2)/launch/gazebo_fake_perception.launch" />
 
   <!-- start task -->
   <include file="$(find task_compiler)/launch/execute-pddl.launch"

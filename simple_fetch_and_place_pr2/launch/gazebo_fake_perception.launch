@@ -1,5 +1,6 @@
 <launch>
-  <arg name="gazebo_origin_frame_id" default="eng2/7f/73B2" />
+  <arg name="gazebo_robot_frame_id" default="pr2" />
+  <arg name="ros_robot_frame_id" default="base_footprint" />
   <arg name="offset_x" default="0.0" />
   <arg name="offset_y" default="0.0" />
   <arg name="offset_z" default="0.0" />
@@ -9,7 +10,8 @@
         output="screen"
         ns="/kinect_head_c2/rgb">
     <rosparam subst_value="true">
-      gazebo_origin_frame_id: $(arg gazebo_origin_frame_id)
+      gazebo_robot_frame_id: $(arg gazebo_robot_frame_id)
+      ros_robot_frame_id: $(arg ros_robot_frame_id)
       offset_x: $(arg offset_x)
       offset_y: $(arg offset_y)
       offset_z: $(arg offset_z)
