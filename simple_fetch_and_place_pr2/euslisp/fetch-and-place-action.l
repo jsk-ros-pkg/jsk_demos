@@ -131,6 +131,7 @@
                  ;; close gripper
                  (let ((gripper-pos
                          (send *ri* :start-grasp arm
+                                    :gain 0.1
                                     :objects (send *ri* :find-object target))))
                    (when (< gripper-pos 1.0)
                      (ros::ros-warn "failed to grasp ~A < 1.0" gripper-pos)
