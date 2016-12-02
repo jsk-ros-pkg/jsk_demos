@@ -104,7 +104,10 @@
                     (send (send *pr2* arm :end-coords :copy-worldcoords)
                           :translate (float-vector 100 0 0)) ;; offset
                     :parent-link (send *pr2* arm :end-coords :parent))
-              (send *pr2* :inverse-kinematics handle
+              (send *pr2* :inverse-kinematics
+                    ;; handle
+                    (make-coords :pos (v+ (send target :centroid)
+                                          (float-vector 0 0 50)))
                           :move-target (car mt)
                           :rotation-axis :z
                           :link-list (send *pr2* :link-list (send (car mt) :parent))))
