@@ -1,5 +1,6 @@
 <launch>
   <arg name="execute" default="false" />
+  <arg name="record" default="false" />
 
   <machine name="localhost" address="localhost" />
 
@@ -16,7 +17,9 @@
   <include file="$(find simple_fetch_and_place_pr2)/launch/jsk_kitchen_scenario_pr2.launch" />
 
   <!-- setup scene camera -->
-  <include file="$(find simple_fetch_and_place_pr2)/launch/gazebo_spawn_scene_camera.launch" />
+  <include file="$(find simple_fetch_and_place_pr2)/launch/gazebo_spawn_scene_camera.launch">
+    <arg name="record_video" value="$(arg record)" />
+  </include>
 
   <!-- launch perception -->
   <include file="$(find simple_fetch_and_place_pr2)/launch/gazebo_fake_perception.launch" />

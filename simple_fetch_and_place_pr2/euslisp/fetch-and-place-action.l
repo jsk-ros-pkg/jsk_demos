@@ -174,7 +174,7 @@
         (place-pos (make-coords :pos (float-vector 700 0 700)))
         (arm (intern (string arm-sym) *keyword-package*)))
     ;; FIXME (perceive table and place on
-    (when (send *ri* :simulation-modep)
+;;    (when (send *ri* :simulation-modep)
       (let ((inverse-factor (if (eq arm :larm) 1 -1)) avs tms)
         (send *pr2* :torso_lift_joint :joint-angle 150)
         (send *pr2* arm :collar-y :joint-angle (* inverse-factor 70))
@@ -204,12 +204,13 @@
         (send *ri* :wait-interpolation))
       (send *ri* :stop-grasp arm :wait t)
       (send *pr2* arm :end-coords :dissoc target)
-      (unix:sleep 8)
+      (unix:sleep 8) ;; omajinai
       (send *pr2* arm :move-end-pos (float-vector -100 0 0))
       (send *ri* :angle-vector (send *pr2* :angle-vector))
       (send *ri* :wait-interpolation)
-      (send *pr2* :put arm nil)))
-  t)
+      (send *pr2* :put arm nil)
+;;    ) ;; when
+  t))
 
 (defaction place-on (&optional target-sym onto-sym arm-sym)
   ;; FIXME (perceive table and place on
@@ -234,10 +235,10 @@
        (pr2-tuckarm-pose)))
 
     ;; omajinai
-    (when (eq *prev-at* 'table)
-      (ros::ros-warn "turn 90 degree before move-to!!!!!!!!")
-      (send *ri* :go-pos 0 0 90)
-      (send *ri* :go-pos 0.5 0 0))
+    ;; (when (eq *prev-at* 'table)
+    ;;   (ros::ros-warn "turn 90 degree before move-to!!!!!!!!")
+    ;;   (send *ri* :go-pos 0 0 90)
+    ;;   (send *ri* :go-pos 0.5 0 0))
 
     (prog1
         (not (null (send *ri* :move-to dest :frame-id "/eng2/7f/73B2")))
