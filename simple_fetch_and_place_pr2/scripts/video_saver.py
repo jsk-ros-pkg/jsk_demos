@@ -61,8 +61,7 @@ class VideoSaver(object):
             self.video.release()
         fn, _ = os.path.splitext(self.video_path)
         cmd = "avconv -i %s.avi -c:v libx264 -c:a copy %s.mp4" % (fn, fn)
-        if subprocess.check_call(cmd, shell=True) == 0:
-            os.remove(self.video_path)
+        subprocess.Popen(cmd, shell=True)
 
 if __name__ == '__main__':
     rospy.init_node("video_saver")

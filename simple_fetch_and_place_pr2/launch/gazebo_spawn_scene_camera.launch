@@ -15,12 +15,6 @@
     </rosparam>
   </node>
 
-  <node name="record_camera_kitchen_sink"
-        pkg="simple_fetch_and_place_pr2" type="video_saver.py"
-        if="$(arg record_video)">
-    <remap from="image" to="/scene_camera_kitchen_sink/rgb/image_raw" />
-    <param name="video_path" to="$(arg video_dir)/kitchen_sink.avi" />
-  </node>
 
   <node name="spawn_scene_camera_kitchen_table"
         pkg="simple_fetch_and_place_pr2" type="gazebo_spawn_scene_camera.py"
@@ -33,13 +27,6 @@
       horizontal_fov: 1.047
       frame_rate: 10.0
     </rosparam>
-  </node>
-
-  <node name="record_camera_kitchen_table"
-        pkg="simple_fetch_and_place_pr2" type="video_saver.py"
-        if="$(arg record_video)">
-    <remap from="image" to="/scene_camera_kitchen_table/rgb/image_raw" />
-    <param name="video_path" to="$(arg video_dir)/kitchen_table.avi" />
   </node>
 
   <node name="spawn_scene_camera_table"
@@ -55,13 +42,6 @@
     </rosparam>
   </node>
 
-  <node name="record_camera_table"
-        pkg="simple_fetch_and_place_pr2" type="video_saver.py"
-        if="$(arg record_video)">
-    <remap from="image" to="/scene_camera_table/rgb/image_raw" />
-    <param name="video_path" to="$(arg video_dir)/table.avi" />
-  </node>
-
   <node name="spawn_scene_camera_axis"
         pkg="simple_fetch_and_place_pr2" type="gazebo_spawn_scene_camera.py"
         output="screen" args="add">
@@ -75,11 +55,31 @@
     </rosparam>
   </node>
 
-  <node name="record_camera_axis"
-        pkg="simple_fetch_and_place_pr2" type="video_saver.py"
-        if="$(arg record_video)">
-    <remap from="image" to="/scene_camera_axis/rgb/image_raw" />
-    <param name="video_path" to="$(arg video_dir)/axis.avi" />
-  </node>
+
+  <group if="$(arg record_video)">
+    <node name="record_camera_kitchen_sink"
+          pkg="simple_fetch_and_place_pr2" type="video_saver.py">
+      <remap from="image" to="/scene_camera_kitchen_sink/rgb/image_raw" />
+      <param name="video_path" value="$(arg video_dir)/kitchen_sink.avi" />
+    </node>
+
+    <node name="record_camera_kitchen_table"
+          pkg="simple_fetch_and_place_pr2" type="video_saver.py">
+      <remap from="image" to="/scene_camera_kitchen_table/rgb/image_raw" />
+      <param name="video_path" value="$(arg video_dir)/kitchen_table.avi" />
+    </node>
+
+    <node name="record_camera_table"
+          pkg="simple_fetch_and_place_pr2" type="video_saver.py">
+      <remap from="image" to="/scene_camera_table/rgb/image_raw" />
+      <param name="video_path" value="$(arg video_dir)/table.avi" />
+    </node>
+
+    <node name="record_camera_axis"
+          pkg="simple_fetch_and_place_pr2" type="video_saver.py">
+      <remap from="image" to="/scene_camera_axis/rgb/image_raw" />
+      <param name="video_path" value="$(arg video_dir)/axis.avi" />
+    </node>
+  </group>
 
 </launch>
