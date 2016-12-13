@@ -1,0 +1,24 @@
+<?xml version="1.0"?>
+<package>
+  <name>jsk_2016_10_fetch_deliver</name>
+  <version>0.0.3</version>
+  <description>The jsk_2016_10_fetch_deliver package</description>
+
+  <maintainer email="k-okada@jsk.t.u-tokyo.ac.jp">Kei Okada</maintainer>
+  <license>BSD</license>
+  <url type="website">http://wiki.ros.org/jsk_2016_10_fetch_deliver</url>
+  <author email="itohdak@yahoo.co.jp">Hideaki Itou</author>
+  <author email="guilherme.c.affonso@gmail.com">Guilherme Affonso</author>
+  <author email="momosama1072@gmail.com">Yuto Uchimi</author>
+  <author email="708yamaguchi@gmail.com">Naoya Yamaguchi</author>
+
+  <buildtool_depend>catkin</buildtool_depend>
+
+  <run_depend>fetcheus</run_depend>
+  <run_depend>opencv_apps</run_depend>
+
+  <test_depend>rostest</test_depend>
+
+  <export>
+  </export>
+</package>
