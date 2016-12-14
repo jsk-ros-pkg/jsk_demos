@@ -14,7 +14,12 @@
 
   <buildtool_depend>catkin</buildtool_depend>
 
+  <build_depend>fetcheus</build_depend>
+  <build_depend>jsk_pcl_ros</build_depend>
+  <build_depend>opencv_apps</build_depend>
+
   <run_depend>fetcheus</run_depend>
+  <run_depend>jsk_pcl_ros</run_depend>
   <run_depend>opencv_apps</run_depend>
 
   <test_depend>rostest</test_depend>
