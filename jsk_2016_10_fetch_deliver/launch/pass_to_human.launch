@@ -1,0 +1,13 @@
+<!-- 
+/opt/ros/indigo/lib/opencv_apps/face_detection image:=/head_camera/rgb/image_raw __name:=face_detection  _debug_view:=true _use_camera_info:=true _image_transport:=theora
+-->
+
+<launch>
+  <node pkg="jsk_pcl_ros" type="pointcloud_screenpoint"
+  	name="pointcloud_screenpoint" >
+	<remap from="~points" to="/head_camera/depth/points" />
+  </node>
+  <include file="$(find opencv_apps)/launch/face_detection.launch">
+    <arg name="image" value="/head_camera/rgb/image_raw" />
+  </include>
+</launch>
