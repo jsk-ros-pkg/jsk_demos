@@ -1,5 +1,9 @@
 #!/usr/bin/env roseus
 
+;;実機を動かす場合は、事前に以下の２つのファイルを実行しておく。
+;;roslaunch pointcloud_screenpoint.launch　(~/semi_ws内にあるlaunchファイル)
+;; /opt/ros/indigo/lib/opencv_apps/face_detection image:=/head_camera/rgb/image_raw __name:=face_detection  _debug_view:=true _use_camera_info:=true _image_transport:=theora (theoraという圧縮された画像を用いて顔認識をする。)
+
 (load "package://fetcheus/fetch-interface.l")
 (fetch-init)
 (print ";; done face-init")
@@ -8,6 +12,7 @@
 (ros::load-ros-manifest "jsk_pcl_ros")
 (ros::load-ros-manifest "std_msgs")
 
+(setq run-watasu t)
 ;;腕を上げ、ものを渡す関数。
 (defun watasu ()
   (send *ri* :start-grasp)
@@ -80,7 +85,7 @@
 	    (send *ri* :speak (format nil "~A" count)))
 	(setq count 0))
       ;;3回以上連続で目の前に人がいればwatasu呼んでものを渡す。またフラグ変数をnilにする。
-      (if (> count 2)
+      (if (and (> count 2) run-watasu)
 	  (progn (format t "watasu~%")
 		 (watasu) (setq count 0) (setq flag nil) (setq flag1 nil))
 	nil)
@@ -112,7 +117,7 @@
       (if (eq res nil)
 	  ()
 	(progn
-	  (send *fetch* :angle-vector (send *ri* :state :potentio-vector))
+	  ;(send *fetch* :angle-vector (send *ri* :state :potentio-vector))
 	  ;;thetaはせいぜい-0.5~0.5[rad]くらい
 					;(print (list (send res :point :x) (send res :point :y) (send res :point :z)))
 	  (setq theta-x (atan (/ (send res :point :x) (send res :point :z))))
@@ -129,7 +134,7 @@
 					;(format t "x:~A y:~A z:~A~%" (send res :point :x) (send res :point :y) (send res :point :z))
 					;(format t "neck-y:~A neck-p:~A~%" (send *fetch* :head :neck-y :joint-angle) (send *fetch* :head :neck-p :joint-angle))
 					;(format t "theta-x[deg]:~A theta-y[deg]:~A~%" (rad2deg theta-x) (rad2deg theta-y))
-	  (send *ri* :angle-vector (send *fetch* :angle-vector))
+	  (send *ri* :angle-vector-raw (send *fetch* :angle-vector) 1000 :head-controller)
 	  (unix:usleep 500000) ;;0.5秒
 	  ;;顔認識のプログラムを呼ぶ。
 	  (find-people msg)
