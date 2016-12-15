@@ -87,7 +87,7 @@
       ;;3回以上連続で目の前に人がいればwatasu呼んでものを渡す。またフラグ変数をnilにする。
       (if (and (> count 2) run-watasu)
 	  (progn (format t "watasu~%")
-		 (watasu) (setq count 0) (setq flag nil) (setq flag1 nil))
+		 (watasu) (setq count 0) (setq flag nil))
 	nil)
       (setq xtemp cx)
       (setq ytemp cy)
@@ -101,10 +101,9 @@
 ;(ros::subscribe "/face_detection/faces" opencv_apps::FaceArrayStamped #'find-people)
 
 
-(setq flag1 t)
-;;人の顔を見つけたらそっちを見る。
+;;人の顔の方を向くだけの関数。
 (defun look-at (msg)
-  (when (and flag1 (send msg :faces))
+  (when (send msg :faces)
     (let* ((f (car (send msg :faces)))
 	   (cx (send f :face :x)) (cy (send f :face :y))
 	   (w (send f :face :width)) (h (send f :face :height))
@@ -112,7 +111,7 @@
       (setq req (instance jsk_pcl_ros::TransformScreenpointRequest :init))
       (send req :x cx)
       (send req :y cy)
-      ;(print (list 'face cx cy))
+      (print (list 'face cx cy))
       (setq res (ros::service-call "pointcloud_screenpoint/screen_to_point" req))
       (if (eq res nil)
 	  ()
@@ -128,27 +127,26 @@
 	  ;;カメラのx軸正方向とneck-yの正方向が逆であることに注意。
 	  (send *fetch* :head :neck-p :joint-angle (+ neck-p (* 0.5 (rad2deg theta-y))) :debug-view t) ;;joint-angleの引数が正の時下を向く（引数はdeg）
 	  ;;カメラのy軸正方向とneck-pの正方向は同じ。
-	  ;;(unix:sleep 5)
-	  ;;
-					;(format t "x:~A y:~A~%" cx cy)
-					;(format t "x:~A y:~A z:~A~%" (send res :point :x) (send res :point :y) (send res :point :z))
-					;(format t "neck-y:~A neck-p:~A~%" (send *fetch* :head :neck-y :joint-angle) (send *fetch* :head :neck-p :joint-angle))
-					;(format t "theta-x[deg]:~A theta-y[deg]:~A~%" (rad2deg theta-x) (rad2deg theta-y))
 	  (send *ri* :angle-vector-raw (send *fetch* :angle-vector) 1000 :head-controller)
 	  (unix:usleep 500000) ;;0.5秒
-	  ;;顔認識のプログラムを呼ぶ。
-	  (find-people msg)
 	  ;;(send *ri* :wait-interpolation)
 	  )))
-      )
+    )
   )
+
+
+(defun look-at-cb (msg)
+  (look-at msg)
+  (find-people msg)
+  )
+
 
 (setq main-called-flag nil)
 (defun main-cb (msg)
   (unless main-called-flag
     (setq main-called-flag t)
     (format t ";; start subscribing faces~%")
-    (ros::subscribe "/face_detection/faces" opencv_apps::FaceArrayStamped #'look-at)
+    (ros::subscribe "/face_detection/faces" opencv_apps::FaceArrayStamped #'look-at-cb)
     ))
 
 (ros::roseus "pass_to_human")
@@ -158,5 +156,3 @@
 (format t ";; wait for /go_to_room_arrived")
 
 (ros::spin)
-
-
