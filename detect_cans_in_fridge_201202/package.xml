@@ -33,6 +33,7 @@
   <run_depend>roseus</run_depend>
   <run_depend>jsk_perception</run_depend>
   <run_depend>jsk_pcl_ros</run_depend>
+  <run_depend>jsk_recognition_msgs</run_depend>
   <run_depend>pr2_navigation_self_filter</run_depend>
   <run_depend>jsk_pr2_startup</run_depend>
   <run_depend>snap_map_icp</run_depend>
