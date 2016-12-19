@@ -1,2 +1,11 @@
 <launch>
+
+  <!-- for pass to human -->
+  <node pkg="jsk_pcl_ros" type="pointcloud_screenpoint"
+        name="pointcloud_screenpoint" >
+    <remap from="~points" to="/head_camera/depth/points" />
+  </node>
+  <include file="$(find opencv_apps)/launch/face_detection.launch">
+    <arg name="image" value="/head_camera/rgb/image_raw" />
+  </include>
 </launch>
