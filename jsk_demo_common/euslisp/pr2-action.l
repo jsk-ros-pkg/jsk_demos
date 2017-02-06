@@ -9,6 +9,7 @@
 (if (ros::rospack-find "jsk_smart_gui")
     (progn
       (ros::load-ros-manifest "jsk_smart_gui")
+      (ros::load-ros-manifest "jsk_pcl_ros")
       (require :jsk-smart-gui-utils "package://jsk_smart_gui/src/utils.l"))
     (warning-message 1 ";; Could not found jsk_smarg_gui....~%"))
 
