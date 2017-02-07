@@ -6,6 +6,7 @@
   <arg name="app_manager" default="false" />
   <arg name="run_behavior" default="true" />
   <arg name="debug_view" default="true" />
+  <arg name="visualize" default="false" />
 
   <include file="$(find pr2_machine)/$(env ROBOT).machine" />
 
@@ -26,7 +27,7 @@
   </node>
 
   <include file="$(find detect_cans_in_fridge_201202)/launch/perception.launch">
-    <arg name="visualize_fridge" value="false" />
+    <arg name="visualize" value="$(arg visualize)" />
     <arg name="debug_view" value="$(arg debug_view)" />
     <arg name="roi" value="false" />
   </include>
