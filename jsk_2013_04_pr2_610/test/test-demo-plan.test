@@ -1,22 +1,9 @@
 <launch>
-  <arg name="debug" default="false" />
-  <arg name="use_ffha" default="false" />
-  <node pkg="pddl_planner_viewer"
-        type="pddl_planner_viewer.py"
-        name="$(anon pddl_planner_viewer)" />
-  <group>
-    <include if="$(arg use_ffha)"
-             file="$(find task_compiler)/launch/execute-pddl.launch">
-    <arg name="action" value="$(find jsk_2013_04_pr2_610)/pddl/action.l"/>
-    <arg name="description" value="$(find jsk_2013_04_pr2_610)/pddl/description.l"/>
-    <arg name="planner" value="ffha" />
-    <arg name="debug" value="$(arg debug)" />
-    <arg name="planner_option" value=""/>
-  </include>
-
-  <include unless="$(arg use_ffha)"
-           file="$(find task_compiler)/launch/execute-pddl.launch">
-    <arg name="action" value="$(find jsk_2013_04_pr2_610)/pddl/action.l"/>
+  <test test-name="test_demo_plan" time-limit="1000"
+        pkg="roseus" type="roseus"
+        args="$(find jsk_2013_04_pr2_610)/test/test-demo-plan.l" />
+  <include file="$(find task_compiler)/launch/execute-pddl.launch">
+    <arg name="action" value="$(find jsk_2013_04_pr2_610)/test/dummy-action-for-pddl.l"/>
     <arg name="description" value="$(find jsk_2013_04_pr2_610)/pddl/description.l"/>
     <arg name="planner" value="downward" />
     <arg name="use_planner_option" value="true" />
@@ -27,7 +14,7 @@
                                       lazy_wastar([hff,hlm],preferred=[hff,hlm],w=3),
                                       lazy_wastar([hff,hlm],preferred=[hff,hlm],w=2)],
                                       repeat_last=false)&quot;" />
-    <arg name="debug" value="$(arg debug)" />
+    <arg name="debug" value="true" />
+    <arg name="gui" value="false" />
   </include>
-  </group>
 </launch>
