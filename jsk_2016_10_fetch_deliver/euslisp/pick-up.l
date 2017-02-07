@@ -23,7 +23,7 @@ rosrun rosserial_python serial_node.py _port:=/dev/ttyACM0 _baud:=9600
     (send *fetch* :rarm :inverse-kinematics (make-coords :pos #f(800 0 1000) :rpy (float-vector 0 (/ pi -3) 0)))
     (send *fetch* :rarm :wrist-r :joint-angle -45)
     (send *ri* :start-grasp)
-    (send *ri* :angle-vector (send *fetch* :angle-vector) 6000)
+    (send *ri* :angle-vector (send *fetch* :angle-vector) 5000)
     (send *ri* :wait-interpolation)
     (send *ri* :stop-grasp)
     (send *ri* :speak "Please place the package in my hand." :wait t)
@@ -42,14 +42,15 @@ rosrun rosserial_python serial_node.py _port:=/dev/ttyACM0 _baud:=9600
 
 (defun go-back
   ()
-  (send *ri* :angle-vector (send *fetch* :angle-vector #f(9.14772 75.5041 86.975 -11.4777 90.0 0.038312 90.0 -0.038098 0.407858 0.540208)) 6000)
+  (send *ri* :angle-vector (send *fetch* :angle-vector #f(9.14772 75.5041 86.975 -11.4777 90.0 0.038312 90.0 -0.038098 0.407858 0.540208)) 5000)
   (send *ri* :wait-interpolation))
 
 (defun print-ok
   ()  
   (setq trigger nil)
   (setq msg (instance std_msgs::string :init))
-  (send msg :data (format nil "home-point"))
+  ;;(send msg :data (format nil "home-point"))
+  (send msg :data (format nil "73A2"))
   (ros::ros-info "msg [~A]" (send msg :data))
   (ros::publish "go_to_room" msg))
 
@@ -74,9 +75,9 @@ rosrun rosserial_python serial_node.py _port:=/dev/ttyACM0 _baud:=9600
 
 ;;callback function
 (defun sensor-cb (msg)
-  (let ((prox) (max 10000))
+  (let ((prox) (max 12000))
     (setq prox (send msg :proximity))
-    (print (format t "in callback; trigger: ~a~%" trigger))
+    ;(print (format t "in callback; trigger: ~a~%" trigger))
     (if (and (> prox max) trigger)
 	(progn
 	  (print prox)
