@@ -34,7 +34,7 @@
      
      ((string= room "73A2")  ;;岡田...73A2
       (print '73A2)
-      (send *ri* :move-to (make-coords :pos #f(-1250 2500 0)
+      (send *ri* :move-to (make-coords :pos #f(-1050 3200 0)
 				       :rpy (float-vector pi 0 0))
 	    :frame-id "/map"
 	    :no-wait nil)
@@ -71,7 +71,7 @@
      ((string= room "home-point")  ;;73B2室内
       (print 'home-point)
       (send *ri* :move-to (make-coords :pos #f( 2300 7000 0)
-				       :rpy (float-vector 0 0 0))
+				       :rpy (float-vector (/ pi 3) 0 0))
 	    :frame-id "/map"
 	    :no-wait nil)
       (setq count 2)
@@ -80,7 +80,6 @@
                          There are delivery items.")))
     
     (format t "Arrived at ~A.~%" room)
-    (ros::advertise "go_to_room_arrived" std_msgs::string 1)
     (let ((msg_arrived (instance std_msgs::string :init)))
       (send msg_arrived :data (format nil "Arrived at ~A." room))
       (ros::ros-info "msg [~A]" (send msg_arrived :data))
@@ -89,6 +88,7 @@
 
 
 ;;トピックgo_to_roomを購読してコールバック関数go-to-room-cbを呼び出す
+(ros::advertise "go_to_room_arrived" std_msgs::string 1)
 (ros::subscribe "go_to_room" std_msgs::string #'go-to-room-cb)
 
 (ros::spin)
