@@ -13,5 +13,6 @@
   </node>
   <include file="$(find opencv_apps)/launch/face_detection.launch">
     <arg name="image" value="/head_camera/rgb/image_raw" />
+    <arg name="debug_view" value="false" />
   </include>
 </launch>
