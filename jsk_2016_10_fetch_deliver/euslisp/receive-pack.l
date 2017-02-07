@@ -1,7 +1,7 @@
 #!/usr/bin/env roseus
 
-;;(load "package://fetcheus/fetch-interface.l")
-;;(fetch-init t)
+(load "package://fetcheus/fetch-interface.l")
+(fetch-init t)
 
 (ros::load-ros-manifest "roseus")
 
@@ -9,7 +9,10 @@
 (ros::advertise "pick_up" std_msgs::string 1)
 
 (defun inkan nil
-  (send *ri* :angle-vector (send *fetch* :reset-pose))
+  (send *fetch* :reset-pose)
+  (send *ri* :angle-vector (send *fetch* :angle-vector) 4000)
+  (send *fetch* :torso :waist-z :joint-angle 40)
+  (send *ri* :angle-vector (send *fetch* :angle-vector) 2000)
   (send *ri* :wait-interpolation)
   (send *ri* :stop-grasp :effort 30)
 
@@ -61,9 +64,9 @@
   (send *ri* :wait-interpolation)
 
   ;;腕をしまう
-  (send *ri* :angle-vector
-	(send *fetch* :reset-pose) 3000)
-  (send *ri* :wait-interpolation)
+  ;(send *ri* :angle-vector
+;	(send *fetch* :reset-pose) 3000)
+ ; (send *ri* :wait-interpolation)
   
   (setq msg (instance std_msgs::string :init))
   (send msg :data (format nil "go"))
