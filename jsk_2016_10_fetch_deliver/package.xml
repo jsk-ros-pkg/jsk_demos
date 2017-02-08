@@ -21,6 +21,7 @@
   <run_depend>fetcheus</run_depend>
   <run_depend>jsk_pcl_ros</run_depend>
   <run_depend>opencv_apps</run_depend>
+  <run_depend>rosserial_python</run_depend>
 
   <test_depend>rostest</test_depend>
 
