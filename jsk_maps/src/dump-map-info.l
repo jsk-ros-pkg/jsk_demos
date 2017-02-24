@@ -1,3 +1,10 @@
+(defun unresolve-ros-path (p)
+  (let ((pkg-path (ros::resolve-ros-path "package://jsk_maps/")))
+    (when (and
+           (>= (length p) (length pkg-path))
+           (string= (subseq p 0 (length pkg-path)) pkg-path))
+      (concatenate string "$(find jsk_maps)/" (subseq p (length pkg-path) (length p))))))
+
 (defun dump-map-image-info (nav-scene)
   (let* ((cube (send nav-scene :map))
          (face (find '(:top) (send cube :faces)
@@ -10,9 +17,12 @@
     (setq cy (- (elt (send cube :centroid) 1) (/ (* (elt size 1) 50) 2)))
     (list filename cx cy) ))
 
-(defun get-yaml-filename (nav-scene)
-  (let ((path (pathname (elt (dump-map-image-info nav-scene) 0))))
-    (setq filename (format nil "~a~a.yaml" (send path :directory-string) (send path :name)))))
+(defun get-yaml-filename (nav-scene &key (unresolve))
+  (let ((path (pathname (elt (dump-map-image-info nav-scene) 0)))
+        yaml-path)
+    (setq yaml-path (format nil "~a~a.yaml" (send path :directory-string) (send path :name)))
+    (if unresolve
+        (unresolve-ros-path yaml-path) yaml-path)))
 
 ;; output:
 ;;   image: fullpath
@@ -43,6 +53,18 @@ map_id: ~a"
       )
     filename ))
 
+(defun makedirs (path)
+  (let ((dirs (send (pathname path) :directory))
+        (cur-dir "."))
+    (dolist (dir dirs)
+      (setq cur-dir (concatenate string cur-dir "/" dir))
+      (case (probe-file cur-dir)
+        (:directory t)
+        (nil
+         (unless (unix:mkdir cur-dir)
+           (error "failed to make directory ~A (error code: ~A)" cur-dir (unix:mkdir cur-dir))))
+        (t (error "failed to make directory ~A (probe-file: ~A)" cur-dir (probe-file cur-dir)))))
+    t))
 
 (defun dump-map-launch (building filename &key default-floor)
   (let ((floors (send building :floors))
@@ -55,26 +77,31 @@ map_id: ~a"
     ;;
     (dolist (map floors)
       (dump-map-yaml map))
+
+    (makedirs filename)
     ;;
     (with-open-file
         (fd filename :direction :output)
       (format fd "<launch>~%")
+      (format fd "  <arg name=\"launch_map_server\" default=\"true\"/>~%~%")
       ;;
-      (format fd "  <!-- map for visualization nodes -->~%")
+      (format fd "  <group if=\"$(arg launch_map_server)\">~%")
+      (format fd "    <!-- map for visualization nodes -->~%")
       (dolist (map floors)
-        (format fd "  <node name=\"$(anon map_server~2,2D)\" pkg=\"map_server\" type=\"map_server\"
-        args=\"~a\" >
-    <remap from=\"map\" to=\"~a\"/>
-    <param name=\"frame_id\" value=\"~a\"/>
-  </node>~%" cntr (get-yaml-filename map) (send map :name) (send map :name))
+        (format fd "    <node name=\"$(anon map_server~2,2D)\" pkg=\"map_server\" type=\"map_server\"
+          args=\"~a\" >
+      <remap from=\"map\" to=\"~a\"/>
+      <param name=\"frame_id\" value=\"~a\"/>
+    </node>~%" cntr (get-yaml-filename map :unresolve t) (send map :name) (send map :name))
         (incf cntr)
         )
       ;;
-      (format fd "~%  <!-- map for navigation nodes -->~%")
-      (format fd "  <node pkg=\"multi_map_server\" type=\"multi_map_server\" name=\"map_server\"~%        args=\"")
+      (format fd "~%    <!-- map for navigation nodes -->~%")
+      (format fd "    <node pkg=\"multi_map_server\" type=\"multi_map_server\" name=\"map_server\"~%        args=\"")
       (dolist (map floors)
-        (format fd " ~a~%" (get-yaml-filename map)))
-      (format fd "\"/>~%")
+        (format fd "   ~a~%" (get-yaml-filename map :unresolve t)))
+      (format fd "    \"/>~%")
+      (format fd "  </group>~%")
       ;;
       (setq cntr 0)
       (dolist (map floors)
@@ -108,13 +135,13 @@ map_id: ~a"
 
 (defun dump-all-maps ()
   (load "eng2-scene.l")
-  (dump-map-launch (make-eng2-scene) "launch/start_map_eng2_main.launch"
+  (dump-map-launch (make-eng2-scene) "launch/include/start_map_eng2_main.xml"
                    :default-floor "/eng2/7f")
   (load "eng8-scene.l")
-  (dump-map-launch (make-eng8-scene) "launch/start_map_eng8_main.launch"
+  (dump-map-launch (make-eng8-scene) "launch/include/start_map_eng8_main.xml"
                    :default-floor "/eng8/6f")
   (load "eng6-scene.l")
-  (dump-map-launch (make-eng6-scene) "launch/start_map_eng6_main.launch")
+  (dump-map-launch (make-eng6-scene) "launch/include/start_map_eng6_main.xml")
   )
 
 (progn
