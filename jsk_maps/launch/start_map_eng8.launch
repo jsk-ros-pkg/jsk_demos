@@ -1,9 +1,13 @@
 <launch>
   <arg name="MACHINE" default="localhost" />
+  <arg name="launch_map_server" default="true" />
+
   <node pkg="tf" type="static_transform_publisher" name="$(anon map_tfA)"
         args="0 0 0 0 0 0 /world /eng8 100"/>
 
-  <include file="$(find jsk_maps)/launch/start_map_eng8_main.launch" />
+  <include file="$(find jsk_maps)/launch/include/start_map_eng8_main.xml">
+    <arg name="launch_map_server" value="$(arg launch_map_server)" />
+  </include>
 
   <node pkg="tf" type="static_transform_publisher" name="$(anon map_tfB)"
         args="0 -13.678 0  0 0 0 /eng8/6f /eng8/6f/610 100" />
