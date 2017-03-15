@@ -2,8 +2,8 @@
 Changelog for package elevator_move_base_pr2
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.0.4 (2017-03-15)
+------------------
 * add catkin_INCLUDE_DIRS
 * [elevator_move_base_pr2/src/push-elevator-button.l] use require instead of load pr2-interface
 * Contributors: Furushchev, Kei Okada

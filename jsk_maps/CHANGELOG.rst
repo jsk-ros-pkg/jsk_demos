@@ -2,8 +2,8 @@
 Changelog for package jsk_maps
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.0.4 (2017-03-15)
+------------------
 * [jsk_maps] add README.md
 * [jsk_maps] cleanup; add option: launch_map_server
 * [jsk_maps][dump-map-info.l] fix: indent

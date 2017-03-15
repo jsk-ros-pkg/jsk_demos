@@ -2,8 +2,8 @@
 Changelog for package drc_task_common
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.0.4 (2017-03-15)
+------------------
 * remove jsk_pcl_ros from generate_messages
 * Migrate srv files from jsk_pcl_ros to jsk_recognition_msgs
   see
