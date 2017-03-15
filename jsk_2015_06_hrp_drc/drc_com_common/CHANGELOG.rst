@@ -2,6 +2,14 @@
 Changelog for package drc_com_common
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* [drc_task_common] no-UI valve rotation and opening door
+* [drc_task_common] Add /map frame_id
+* remove old dynamic_reconfigure.parameter_generator, now everything runnning with catkin
+* remove depends to rosbuild/mk
+* Contributors: Kei Okada, Ryohei Ueda
+
 0.0.3 (2016-02-11)
 ------------------
 

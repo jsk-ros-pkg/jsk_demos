@@ -2,6 +2,16 @@
 Changelog for package jsk_maps
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* [jsk_maps] add README.md
+* [jsk_maps] cleanup; add option: launch_map_server
+* [jsk_maps][dump-map-info.l] fix: indent
+* add ARCHDIR for LinuxARM
+* use image filename relative to current yaml file
+* [jsk_maps/raw_maps/eng2-7f-0.05.pgm] update 73b2 7f map
+* Contributors: Kei Okada, Yuki Furuta
+
 0.0.3 (2016-02-11)
 ------------------
 * add keepout maps

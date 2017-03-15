@@ -2,6 +2,20 @@
 Changelog for package detect_cans_in_fridge_201202
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Migrate srv files from jsk_pcl_ros to jsk_recognition_msgs
+  see
+  - https://github.com/jsk-ros-pkg/jsk_recognition/pull/1827
+  - https://github.com/jsk-ros-pkg/jsk_recognition/pull/1914
+* [detect_cans_in_fridge_201202] add interactive_behavior_201409 to run_depend
+* [detect_cans_in_fridge_201202] fix: wrong arg name at some launch files
+* [detect_cans_in_fridge_201202/euslisp/pddl-action.l] add init hook function for task_compiler
+* [detect_cans_in_fridge_201202/launch/planner.launch] add option 'gui'
+* [detect_cans_in_fridge_201202/euslisp/pddl-action.l] use require instead of load
+* [detect_cans] [perception.launch] add can stocker
+* Contributors: Kentaro Wada, Yuki Furuta, Hitoshi Kamada
+
 0.0.3 (2016-02-11)
 ------------------
 * [detect_cans_in_fridge_201202/euslisp/pddl-action.l] fix missing options
