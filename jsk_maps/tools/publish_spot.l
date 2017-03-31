@@ -100,7 +100,10 @@
     ))
 
 (setq *map-selected* "")
-(defun map-selected-cb (msg) (setq *map-selected* (send msg :data)))
+(defun map-selected-cb (msg)
+  (setq *map-selected* (send msg :data))
+  (ros::ros-info "~C[3~Cm[jsk_maps/publish_spot.l] map \"~A\" is selected.~C[0m" #x1b (+ 4 48) *map-selected* #x1b)
+  )
 (ros::subscribe "/map_tf_mux/selected" std_msgs::String #'map-selected-cb)
 
 (ros::advertise *pub-spots-topic* visualization_msgs::MarkerArray 5)
