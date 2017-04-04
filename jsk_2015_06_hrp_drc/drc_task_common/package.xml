@@ -92,6 +92,7 @@
   <run_depend>smach_msgs</run_depend>
   <run_depend>dynamic_reconfigure</run_depend>
   <run_depend>checkerboard_detector</run_depend>
+  <run_depend>rviz_animated_view_controller</run_depend>
   <export>
     <rqt_gui plugin="${prefix}/plugin.xml"/>
   </export>
