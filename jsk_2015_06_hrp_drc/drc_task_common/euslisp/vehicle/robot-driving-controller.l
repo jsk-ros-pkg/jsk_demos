@@ -882,7 +882,7 @@
    )
   (:execute-handle-pose-compensation
    (&rest args &key (tm 2500) (limb (send motion :grasp-arm))
-          (position-threshold 1000) (yes nil) (min-wait-sec 5.0) (max-wait-sec 30.0)
+          (position-threshold 1000) (yes nil) (min-wait-sec 5.0) (max-wait-sec 10.0)
           (release-offset #f(-100 0 0)) (shoulder-y-deg 0.0) (look-at-handle t)
          )
    ;; wait handling   
@@ -912,7 +912,16 @@
        )
      (warn "release handle~%")
      (if (not (equal (send self :controller-state :handle) :release)) ;; prevent double release
-         (setq release-result (send self :release :offset release-offset))
+         (progn
+           (if (not (equal (send self :controller-state :handle) :approach))
+               (setq approach-result (send self :approach-handle)) ;; compensate coords of grasp-arm
+             (setq approach-result t)
+             )
+           (if approach-result
+               (setq release-result (send self :release :offset release-offset))
+             (setq release-result nil)
+             )
+           )
        (setq release-result t)
        )
      ;; (setq release-result (send self :release :offset release-offset))
