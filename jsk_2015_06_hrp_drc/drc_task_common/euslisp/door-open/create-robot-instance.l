@@ -77,23 +77,15 @@
                           )
                     '(print "create *robot* (and *ri* if you set :real t)")
                     )
+              (list (list 'equal robot '"jaxon")
+                    '(require "package://hrpsys_ros_bridge_tutorials/euslisp/jaxon-interface.l")
+                    '(print "load package. OK.")
+                    (list 'if '(eq real? nil)
+                          (list 'setq *myrobot* '(instance jaxon-robot :init))
+                          (list 'progn '(jaxon-init) (list 'setq *myrobot* '*jaxon*))
+                          )
+                    '(print "create *robot* (and *ri* if you set :real t)")
+                    )
               )
         ))
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 

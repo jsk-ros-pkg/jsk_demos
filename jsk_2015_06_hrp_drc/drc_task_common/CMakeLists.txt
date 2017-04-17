@@ -11,6 +11,7 @@ add_message_files(DIRECTORY msg FILES TMarkerInfo.msg)
 add_message_files(DIRECTORY msg FILES Float32ArrayStamped.msg)
 add_message_files(DIRECTORY msg FILES Int8Float64.msg)
 add_message_files(DIRECTORY msg FILES JointStateArray.msg)
+add_message_files(DIRECTORY msg FILES ActionPlan.msg)
 add_service_files(DIRECTORY srv FILES RvizMenuCall.srv RvizMenuSelect.srv EusCommand.srv StringRequest.srv ICPService.srv GetIKArm.srv GetIKArmPose.srv GoPosCommand.srv Uint8Request.srv AngleVectorCommand.srv ReachUntilTouchCommand.srv SetValue.srv GetBoolState.srv)
 
 # Generate msg file from DRCParametersConfig file
