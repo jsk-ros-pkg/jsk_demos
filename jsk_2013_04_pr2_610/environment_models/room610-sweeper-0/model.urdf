@@ -1,0 +1,109 @@
+<?xml version="1.0"?>
+<robot name="room610-sweeper-0-robot"
+       xmlns:xi="http://www.w3.org/2001/XInclude"
+       >
+  <gazebo>
+    <static>false</static>
+  </gazebo>
+  <link name="BOX_link">
+    <visual>
+      <origin xyz="0 0 0" rpy="0 -0 0"/>
+      <geometry>
+        <mesh filename="model://room610-sweeper-0/meshes/BOX_link_mesh.dae" scale="1 1 1" />
+      </geometry>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 -0 0"/>
+      <geometry>
+        <mesh filename="model://room610-sweeper-0/meshes/BOX_link_mesh.dae" scale="1 1 1" />
+      </geometry>
+    </collision>
+    <inertial>
+      <mass value="0.001" />
+      <origin xyz="0 0 0" rpy="0 -0 0"/>
+      <inertia ixx="1e-03" ixy="0" ixz="0" iyy="1e-03" iyz="0" izz="1e-03"/>
+    </inertial>
+  </link>
+  <gazebo reference="BOX_link">
+    <mu1>0.9</mu1>
+    <mu2>0.9</mu2>
+  </gazebo>
+  <link name="JOINT_link">
+    <visual>
+      <origin xyz="0 0 0.05" rpy="0 -0 0"/>
+      <geometry>
+        <mesh filename="model://room610-sweeper-0/meshes/JOINT_link_mesh.dae" scale="1 1 1" />
+      </geometry>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0.05" rpy="0 -0 0"/>
+      <geometry>
+        <mesh filename="model://room610-sweeper-0/meshes/JOINT_link_mesh.dae" scale="1 1 1" />
+      </geometry>
+    </collision>
+    <inertial>
+      <mass value="0.001" />
+      <origin xyz="0 0 0" rpy="0 -0 0"/>
+      <inertia ixx="1e-03" ixy="0" ixz="0" iyy="1e-03" iyz="0" izz="1e-03"/>
+    </inertial>
+  </link>
+  <gazebo reference="JOINT_link">
+    <mu1>0.9</mu1>
+    <mu2>0.9</mu2>
+  </gazebo>
+  <link name="BAR_link">
+    <visual>
+      <origin xyz="0 0 0" rpy="0 -0 0"/>
+      <geometry>
+        <mesh filename="model://room610-sweeper-0/meshes/BAR_link_mesh.dae" scale="1 1 1" />
+      </geometry>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 -0 0"/>
+      <geometry>
+        <mesh filename="model://room610-sweeper-0/meshes/BAR_link_mesh.dae" scale="1 1 1" />
+      </geometry>
+    </collision>
+    <inertial>
+      <mass value="0.001" />
+      <origin xyz="0 0 0" rpy="0 -0 0"/>
+      <inertia ixx="1e-03" ixy="0" ixz="0" iyy="1e-03" iyz="0" izz="1e-03"/>
+    </inertial>
+  </link>
+  <gazebo reference="BAR_link">
+    <mu1>0.9</mu1>
+    <mu2>0.9</mu2>
+  </gazebo>
+  <joint name="SWEEPER-P" type="revolute">
+    <parent link="BOX_link"/>
+    <child  link="JOINT_link"/>
+    <origin xyz="0 0 0.05" rpy="0 -0 0 "/>
+    <axis   xyz="0 1 0"/>
+    <limit lower="-1.5708" upper="1.5708" effort="100" velocity="0.5" />
+    <dynamics damping="0.2" friction="0" />
+  </joint>
+  <transmission type="pr2_mechanism_model/SimpleTransmission" name="SWEEPER-P_trans" >
+    <actuator name="SWEEPER-P_motor" />
+    <joint name="SWEEPER-P" />
+    <mechanicalReduction>1</mechanicalReduction>
+  </transmission>
+  <gazebo reference="SWEEPER-P">
+    <cfmDamping>0.4</cfmDamping>
+  </gazebo>
+  <joint name="SWEEPER-R" type="revolute">
+    <parent link="JOINT_link"/>
+    <child  link="BAR_link"/>
+    <origin xyz="0 0 0" rpy="0 -0 0 "/>
+    <axis   xyz="1 0 0"/>
+    <limit lower="-1.5708" upper="1.5708" effort="100" velocity="0.5" />
+    <dynamics damping="0.2" friction="0" />
+  </joint>
+  <transmission type="pr2_mechanism_model/SimpleTransmission" name="SWEEPER-R_trans" >
+    <actuator name="SWEEPER-R_motor" />
+    <joint name="SWEEPER-R" />
+    <mechanicalReduction>1</mechanicalReduction>
+  </transmission>
+  <gazebo reference="SWEEPER-R">
+    <cfmDamping>0.4</cfmDamping>
+  </gazebo>
+</robot>

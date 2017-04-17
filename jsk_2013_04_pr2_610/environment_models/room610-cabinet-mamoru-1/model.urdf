@@ -1,0 +1,109 @@
+<?xml version="1.0"?>
+<robot name="room610-cabinet-mamoru-1-robot"
+       xmlns:xi="http://www.w3.org/2001/XInclude"
+       >
+  <gazebo>
+    <static>false</static>
+  </gazebo>
+  <link name="ROOT_link">
+    <visual>
+      <origin xyz="0 0 0" rpy="0 -0 0"/>
+      <geometry>
+        <mesh filename="model://room610-cabinet-mamoru-1/meshes/ROOT_link_mesh.dae" scale="1 1 1" />
+      </geometry>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 -0 0"/>
+      <geometry>
+        <mesh filename="model://room610-cabinet-mamoru-1/meshes/ROOT_link_mesh.dae" scale="1 1 1" />
+      </geometry>
+    </collision>
+    <inertial>
+      <mass value="0.001" />
+      <origin xyz="0 0 0" rpy="0 -0 0"/>
+      <inertia ixx="1e-03" ixy="0" ixz="0" iyy="1e-03" iyz="0" izz="1e-03"/>
+    </inertial>
+  </link>
+  <gazebo reference="ROOT_link">
+    <mu1>0.9</mu1>
+    <mu2>0.9</mu2>
+  </gazebo>
+  <link name="CABINET-MAMORU-BODYSET3_link">
+    <visual>
+      <origin xyz="0.157 0.39 0.01" rpy="0 -0 0"/>
+      <geometry>
+        <mesh filename="model://room610-cabinet-mamoru-1/meshes/CABINET-MAMORU-BODYSET3_link_mesh.dae" scale="1 1 1" />
+      </geometry>
+    </visual>
+    <collision>
+      <origin xyz="0.157 0.39 0.01" rpy="0 -0 0"/>
+      <geometry>
+        <mesh filename="model://room610-cabinet-mamoru-1/meshes/CABINET-MAMORU-BODYSET3_link_mesh.dae" scale="1 1 1" />
+      </geometry>
+    </collision>
+    <inertial>
+      <mass value="0.001" />
+      <origin xyz="0 0 0" rpy="0 -0 0"/>
+      <inertia ixx="1e-03" ixy="0" ixz="0" iyy="1e-03" iyz="0" izz="1e-03"/>
+    </inertial>
+  </link>
+  <gazebo reference="CABINET-MAMORU-BODYSET3_link">
+    <mu1>0.9</mu1>
+    <mu2>0.9</mu2>
+  </gazebo>
+  <link name="CABINET-MAMORU-BODYSET2_link">
+    <visual>
+      <origin xyz="0.157 -0.39 0.01" rpy="0 -0 0"/>
+      <geometry>
+        <mesh filename="model://room610-cabinet-mamoru-1/meshes/CABINET-MAMORU-BODYSET2_link_mesh.dae" scale="1 1 1" />
+      </geometry>
+    </visual>
+    <collision>
+      <origin xyz="0.157 -0.39 0.01" rpy="0 -0 0"/>
+      <geometry>
+        <mesh filename="model://room610-cabinet-mamoru-1/meshes/CABINET-MAMORU-BODYSET2_link_mesh.dae" scale="1 1 1" />
+      </geometry>
+    </collision>
+    <inertial>
+      <mass value="0.001" />
+      <origin xyz="0 0 0" rpy="0 -0 0"/>
+      <inertia ixx="1e-03" ixy="0" ixz="0" iyy="1e-03" iyz="0" izz="1e-03"/>
+    </inertial>
+  </link>
+  <gazebo reference="CABINET-MAMORU-BODYSET2_link">
+    <mu1>0.9</mu1>
+    <mu2>0.9</mu2>
+  </gazebo>
+  <joint name="DOOR-UPPER-LEFT" type="revolute">
+    <parent link="ROOT_link"/>
+    <child  link="CABINET-MAMORU-BODYSET3_link"/>
+    <origin xyz="0.157 0.39 0.01" rpy="0 -0 0 "/>
+    <axis   xyz="0 0 1"/>
+    <limit lower="0" upper="1.5708" effort="100" velocity="0.5" />
+    <dynamics damping="0.2" friction="0" />
+  </joint>
+  <transmission type="pr2_mechanism_model/SimpleTransmission" name="DOOR-UPPER-LEFT_trans" >
+    <actuator name="DOOR-UPPER-LEFT_motor" />
+    <joint name="DOOR-UPPER-LEFT" />
+    <mechanicalReduction>1</mechanicalReduction>
+  </transmission>
+  <gazebo reference="DOOR-UPPER-LEFT">
+    <cfmDamping>0.4</cfmDamping>
+  </gazebo>
+  <joint name="DOOR-UPPER-RIGHT" type="revolute">
+    <parent link="ROOT_link"/>
+    <child  link="CABINET-MAMORU-BODYSET2_link"/>
+    <origin xyz="0.157 -0.39 0.01" rpy="0 -0 0 "/>
+    <axis   xyz="0 0 -1"/>
+    <limit lower="0" upper="1.5708" effort="100" velocity="0.5" />
+    <dynamics damping="0.2" friction="0" />
+  </joint>
+  <transmission type="pr2_mechanism_model/SimpleTransmission" name="DOOR-UPPER-RIGHT_trans" >
+    <actuator name="DOOR-UPPER-RIGHT_motor" />
+    <joint name="DOOR-UPPER-RIGHT" />
+    <mechanicalReduction>1</mechanicalReduction>
+  </transmission>
+  <gazebo reference="DOOR-UPPER-RIGHT">
+    <cfmDamping>0.4</cfmDamping>
+  </gazebo>
+</robot>
