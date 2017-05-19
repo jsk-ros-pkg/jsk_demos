@@ -279,8 +279,8 @@
   (send *ri* :wait-interpolation))
 
 (defun generate-slide-path
-  "originally defined at jsk_smart_gui/src/utils.l"
   (start-point point1 point2 path-length &key (div 10))
+  "originally defined at jsk_smart_gui/src/utils.l"
   (let* ((di (normalize-vector (v- point2 point1)))
          (ln (make-line point1 point2))
          (fp (send ln :point (send ln :foot start-point))))
@@ -294,8 +294,8 @@
       (nreverse ret))))
 
 (defun generate-circle-path
-  "originally defined at jsk_smart_gui/src/utils.l"
   (start-point point1 point2 angle &key (div 20))
+  "originally defined at jsk_smart_gui/src/utils.l"
   (let* ((axis (normalize-vector (v- point1 point2)))
    (ln (make-line point1 point2))
    (fp (send ln :point (send ln :foot start-point))))
