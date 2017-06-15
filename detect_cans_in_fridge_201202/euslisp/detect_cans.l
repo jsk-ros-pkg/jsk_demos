@@ -13,9 +13,9 @@
 (ros::roseus-add-msgs "posedetection_msgs")
 
 (defvar *topic-name* "/plane_extraction/output_nonplane_cloud") ;; point cloud from camera
-(defvar *image-topic* "/kinect_head_c2/rgb/image_rect_color")
-(defvar *screen-topic* "/kinect_head_c2/rgb/image_rect_color/screenpoint")
-(defvar *result-topic* "/kinect_head_c2/depth_registered/ObjectDetection")
+(defvar *image-topic* "/kinect_head/rgb/image_rect_color")
+(defvar *screen-topic* "/kinect_head/rgb/image_rect_color/screenpoint")
+(defvar *result-topic* "/kinect_head/depth_registered/ObjectDetection")
 
 (load "match-hist.l")
 

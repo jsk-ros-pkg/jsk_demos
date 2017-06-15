@@ -1,0 +1,218 @@
+<launch>
+  <arg name="launch_manager" default="true" />
+  <arg name="machine" default="c2" />
+  <arg name="detection_topic" default="/kinect_head/depth_registered/ObjectDetection" />
+  <arg name="base_frame_id" default="base_footprint" />
+  <arg name="sensor_frame_id" default="head_mount_kinect_rgb_optical_frame" />
+  <arg name="map_frame_id" default="map" />
+  <arg name="bin_size" default="100" />
+  <arg name="vital_rate" default="0.2" />
+  <arg name="disable_classifier" default="false" />
+
+  <include file="$(find pr2_machine)/pr2.machine" />
+
+  <arg if="$(arg launch_manager)"
+       name="manager" default="color_histogram_manager" />
+  <arg unless="$(arg launch_manager)"
+       name="manager" default="kinect_head/kinect_head_c2_nodelet_manager"/>
+
+  <node name="$(arg manager)"
+        pkg="nodelet" type="nodelet" args="manager"
+        machine="$(arg machine)"
+        if="$(arg launch_manager)"
+        output="screen"/>
+
+  <group ns="in_fridge_object_detection">
+    <node name="input_relay"
+          pkg="nodelet" type="nodelet"
+          args="load jsk_topic_tools/Relay /$(arg manager)"
+          machine="$(arg machine)">
+      <remap from="~input" to="/kinect_head/depth_registered/points" />
+    </node>
+
+    <node name="bilateral_filter"
+          pkg="nodelet" type="nodelet" respawn="true"
+          machine="$(arg machine)"
+          args="load jsk_pcl/BilateralFilter /$(arg manager)">
+      <remap from="~input" to="input_relay/output" />
+      <rosparam subst_value="true">
+        sigma_s: 1.0
+        sigma_r: 0.1
+        vital_rate: $(arg vital_rate)
+      </rosparam>
+    </node>
+
+    <node name="multi_plane_segmentation"
+          pkg="nodelet" type="nodelet"
+          args="load jsk_pcl/OrganizedMultiPlaneSegmentation /$(arg manager)"
+          machine="$(arg machine)">
+      <remap from="~input" to="bilateral_filter/output"/>
+      <rosparam subst_value="true">
+        max_curvature: 0.01
+        estimate_normal: true
+        vital_rate: $(arg vital_rate)
+      </rosparam>
+    </node>
+
+    <node name="plane_reasoner"
+          pkg="nodelet" type="nodelet"
+          machine="$(arg machine)"
+          args="load jsk_pcl_utils/PlaneReasoner /$(arg manager)">
+      <remap from="~input" to="input_relay/output" />
+      <remap from="~input_inliers" to="multi_plane_segmentation/output_refined" />
+      <remap from="~input_polygons" to="multi_plane_segmentation/output_refined_polygon" />
+      <remap from="~input_coefficients" to="multi_plane_segmentation/output_refined_coefficients" />
+      <rosparam subst_value="true">
+        global_frame_id: $(arg base_frame_id)
+        horizontal_angular_threshold: 0.2
+        vertical_angular_threshold: 0.1
+        vital_rate: $(arg vital_rate)
+      </rosparam>
+    </node>
+
+    <node name="plane_reasoner_decomposer"
+          pkg="nodelet" type="nodelet"
+          machine="$(arg machine)"
+          args="load jsk_pcl/ClusterPointIndicesDecomposer /$(arg manager)">
+      <remap from="~input" to="input_relay/output" />
+      <remap from="~target" to="plane_reasoner/output/horizontal/inliers"/>
+      <remap from="~align_planes" to="plane_reasoner/output/horizontal/polygons"/>
+      <remap from="~align_planes_coefficients" to="plane_reasoner/output/horizontal/coefficients"/>
+      <rosparam subst_value="true">
+        queue_size: 100
+        publish_clouds: false
+        publish_tf: false
+        align_boxes: true
+        align_boxes_with_plane: true
+        use_pca: true
+        vital_rate: $(arg vital_rate)
+      </rosparam>
+    </node>
+
+    <node name="plane_magnifier"
+          pkg="nodelet" type="nodelet"
+          machine="$(arg machine)"
+          args="load jsk_pcl_utils/PolygonMagnifier /$(arg manager)">
+      <remap from="~input" to="plane_reasoner/output/vertical/polygons"/>
+      <rosparam subst_value="true">
+        magnify_distance: -0.03
+      </rosparam>
+    </node>
+
+    <node name="plane_extraction"
+          pkg="nodelet" type="nodelet"
+          args="load jsk_pcl/MultiPlaneExtraction /$(arg manager)"
+          machine="$(arg machine)">
+      <remap from="~input" to="bilateral_filter/output" />
+      <remap from="~input_polygons" to="plane_magnifier/output" />
+      <remap from="~input_coefficients" to="plane_reasoner/output/vertical/coefficients" />
+      <rosparam subst_value="true">
+        use_indices: false
+        use_sensor_frame: true
+        sensor_frame: $(arg sensor_frame_id)
+        min_height: 0.05
+        max_height: 0.4
+        vital_rate: $(arg vital_rate)
+      </rosparam>
+    </node>
+
+    <node name="transform_cloud"
+          pkg="nodelet" type="nodelet"
+          machine="$(arg machine)"
+          args="load jsk_pcl_utils/TfTransformCloud /$(arg manager)">
+      <remap from="~input" to="plane_extraction/output" />
+      <rosparam subst_value="true">
+        target_frame_id: $(arg base_frame_id)
+        vital_rate: $(arg vital_rate)
+      </rosparam>
+    </node>
+
+    <node name="euclidean_clustering"
+          pkg="nodelet" type="nodelet"
+          machine="$(arg machine)"
+          args="load jsk_pcl/EuclideanClustering /$(arg manager)">
+      <remap from="~input" to="transform_cloud/output" />
+      <rosparam subst_value="true">
+        vital_rate: $(arg vital_rate)
+        tolerance: 0.02
+        min_size: 15
+        max_size: 100000
+      </rosparam>
+    </node>
+
+    <node name="cluster_decomposer"
+          pkg="nodelet" type="nodelet"
+          machine="$(arg machine)"
+          args="load jsk_pcl/ClusterPointIndicesDecomposer /$(arg manager)">
+      <remap from="~input" to="transform_cloud/output" />
+      <remap from="~target" to="euclidean_clustering/output" />
+      <remap from="~align_planes" to="plane_magnifier/output" />
+      <remap from="~align_planes_coefficients" to="plane_reasoner/output/horizontal/coefficients" />
+      <rosparam subst_value="true">
+        queue_size: 100
+        publish_clouds: false
+        publish_tf: false
+        align_boxes: true
+        align_boxes_with_plane: false
+        target_frame_id: $(arg base_frame_id)
+        use_pca: true
+        vital_rate: $(arg vital_rate)
+      </rosparam>
+    </node>
+
+    <!-- octomap server -->
+    <node name="octomap_server"
+          pkg="nodelet" type="nodelet"
+          machine="$(arg machine)"
+          args="load octomap_server/OctomapServerNodelet /$(arg manager)">
+      <remap from="cloud_in" to="input_relay/output" />
+      <rosparam subst_value="true">
+        frame_id: $(arg map_frame_id)
+        height_map: false
+        colored_map: true
+        resolution: 0.03
+      </rosparam>
+    </node>
+
+    <!-- color histogram -->
+    <node name="color_histogram"
+          pkg="nodelet" type="nodelet"
+          machine="$(arg machine)"
+          args="load jsk_pcl_utils/ColorHistogram /$(arg manager)">
+      <remap from="~input" to="transform_cloud/output" />
+      <remap from="~input/indices" to="euclidean_clustering/output" />
+      <rosparam subst_value="true">
+        bin_size: $(arg bin_size)
+        histogram_policy: 0
+        vital_rate: $(arg vital_rate)
+      </rosparam>
+    </node>
+
+    <group unless="$(arg disable_classifier)">
+      <node name="color_histogram_classifier"
+            pkg="nodelet" type="nodelet"
+            machine="$(arg machine)"
+            args="load jsk_pcl_utils/ColorHistogramClassifier /$(arg manager)">
+        <remap from="~input/array" to="color_histogram/output" />
+        <rosparam command="load" file="$(find detect_cans_in_fridge_201202)/config/object_histograms.yaml" />
+        <rosparam subst_value="true">
+          detection_threshold: 0.2
+          compare_policy: 0
+          vital_rate: $(arg vital_rate)
+        </rosparam>
+      </node>
+
+      <node name="color_histogram_detector"
+            pkg="detect_cans_in_fridge_201202" type="color_histogram_detector.py"
+            machine="$(arg machine)">
+        <remap from="~input/boxes" to="cluster_decomposer/boxes" />
+        <remap from="~input/classes" to="color_histogram_classifier/output" />
+        <remap from="~output" to="$(arg detection_topic)" />
+        <rosparam>
+          queue_size: 100
+          publish_tf: true
+        </rosparam>
+      </node>
+    </group>
+  </group>
+</launch>
