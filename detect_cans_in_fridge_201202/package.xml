@@ -44,6 +44,7 @@
   <run_depend>pcl_msgs</run_depend>
   <run_depend>posedetection_msgs</run_depend>
   <run_depend>interactive_behavior_201409</run_depend>
+  <run_depend>json_prolog_msgs</run_depend>
 
   <!-- Dependencies needed only for running tests. -->
   <!-- <test_depend>roseus</test_depend> -->

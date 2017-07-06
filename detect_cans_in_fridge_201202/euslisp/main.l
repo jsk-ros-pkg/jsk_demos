@@ -1,10 +1,11 @@
 ;; open fridge and pick a can (and close the door)
 (ros::roseus "demo_main")
 (ros::roseus-add-msgs "pr2_gripper_sensor_msgs")
+(ros::load-ros-manifest "json_prolog_msgs")
 
 (defvar *use-voicetext* t)
 (defvar *use-english* nil)
-(defvar *logging* t)
+(defvar *logging* nil)
 (defvar *debug-view* (ros::get-param "~debug_view" t))
 
 (setq *use-arm-navigation* nil)
@@ -95,6 +96,46 @@
   t
   )
 
+(defun authenticate-openease (token ip keypath)
+  (let ((retinitial "empty")
+        (retsolution "empty")
+        (id "1")) 
+  (if (ros::wait-for-service "/json_prolog/simple_query" 1)
+      (let ((req (instance json_prolog_msgs::PrologQueryRequest :init)) querysent)
+        (send req :mode 1)
+        (send req :id id)
+        (setq querysent (concatenate string "cloud_interface(" ip "," keypath "," token "), start_user_container" ))
+        (send req :query querysent)
+        (setq retinitial (ros::service-call "/json_prolog/simple_query" req))
+        (ros::ros-warn "[authenticate] Authenticating query sent to openEASE. Now trying to get the authentication"))
+    (ros::ros-warn "json_prolog is not available"))
+  (if (ros::wait-for-service "/json_prolog/next_solution" 1)
+      (let ((req (instance json_prolog_msgs::PrologNextSolutionRequest :init)))
+        (send req :id id)
+        (ros::service-call "/json_prolog/next_solution" req))
+    (ros::ros-warn "[authenticate] json_prolog disappeared"))
+))
+
+
+(defun connect-user-container ()
+  (let ((retinitial "empty")
+        (retsolution "empty")
+        (id "2")) 
+  (if (ros::wait-for-service "/json_prolog/simple_query" 1)
+      (let ((req (instance json_prolog_msgs::PrologQueryRequest :init)) querysent)
+        (send req :id id)
+        (setq querysent "connect_to_user_container")
+        (send req :query querysent)
+        (setq retinitial (ros::service-call "/json_prolog/simple_query" req))
+        (ros::ros-warn "[connect] Connecting query sent to openEASE."))
+    (ros::ros-warn "json_prolog is not available"))
+  (if (ros::wait-for-service "/json_prolog/next_solution" 1)
+      (let ((req (instance json_prolog_msgs::PrologNextSolutionRequest :init)))
+        (send req :id id)
+        (ros::service-call "/json_prolog/next_solution" req))
+    (ros::ros-warn "[connect] json_prolog disappeared"))
+))
+
 (defun enable-behavior-server ()
   (if (ros::wait-for-service "/interactive_behavior_enable" 1)
       (let ((req (instance std_srvs::EmptyRequest :init)))
@@ -132,6 +173,8 @@
                   (use-arm :larm)
                   )
   (disable-behavior-server)
+  (authenticate-openease "\'4ZmELq5gtQxaIpWuwgZxgruvWbMTsaKnM48xb9lGxwgME8AW0fVr32q09W6sZ3sH\'" "\'https://localhost\'" "\'/home/asil/local_certificate/mycert.pem\'")
+  (connect-user-container)
   (case app-manager
     (:true
      ;; get type from parameter server
