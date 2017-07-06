@@ -5,7 +5,7 @@
 
 (defvar *use-voicetext* t)
 (defvar *use-english* nil)
-(defvar *logging* nil)
+(defvar *logging* t)
 (defvar *debug-view* (ros::get-param "~debug_view" t))
 
 (setq *use-arm-navigation* nil)
