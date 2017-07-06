@@ -173,8 +173,6 @@
                   (use-arm :larm)
                   )
   (disable-behavior-server)
-  (authenticate-openease "\'4ZmELq5gtQxaIpWuwgZxgruvWbMTsaKnM48xb9lGxwgME8AW0fVr32q09W6sZ3sH\'" "\'https://localhost\'" "\'/home/asil/local_certificate/mycert.pem\'")
-  (connect-user-container)
   (case app-manager
     (:true
      ;; get type from parameter server
@@ -221,6 +219,18 @@
     )
   (enable-behavior-server)
   (if (eq app-manager :true) (ros::exit))
+  )
+
+(defun demo-openease (&key ((:type atype) "georgia")
+                  (demo-type :map)  ;; :map, :short, ...
+                  (app-manager :false)
+                  (finish-type :pass-to-human) ;; :pass-to-human, :put-on-turtlebot, ...
+                  ;;(use-arm :rarm)
+                  (use-arm :larm)
+                  apikey address certificate)
+  (authenticate-openease apikey address certificate)
+  (connect-user-container)
+  (demo :type atype :demo-type demo-type :app-manager app-manager :finish-type finish-type :use-arm use-arm)
   )
 
 (defun wait-android-query (&optional (demo-type :map))
