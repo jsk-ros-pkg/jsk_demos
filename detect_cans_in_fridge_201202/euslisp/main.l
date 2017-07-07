@@ -131,15 +131,17 @@
 
 
 (defun authenticate-openease (token ip keypath)
-  (let ((query-sent (concatenate string "cloud_interface(" ip "," keypath "," token "), start_user_container" )) (id (send-json-prolog-query query-sent))) 
-  (read-json-next-solution id)
-  (finish-json-query id) 
+  (let ((query-sent (concatenate string "cloud_interface(" ip "," keypath "," token "), start_user_container" )) id)
+    (setq id (send-json-prolog-query query-sent))
+    (read-json-next-solution id)
+    (finish-json-query id) 
 ))
 
 (defun connect-user-container ()
-  (let ((query-sent "connect_to_user_container") (id (send-json-prolog-query query-sent))) 
-  (read-json-next-solution id)
-  (finish-json-query id) 
+  (let ((query-sent "connect_to_user_container") id) 
+    (setq id (send-json-prolog-query query-sent))
+    (read-json-next-solution id)
+    (finish-json-query id) 
 ))
 
 
@@ -162,7 +164,15 @@
   (setq *type* atype)
   (ros::ros-info "start fridge demo / ~A" *type*)
   (if *remotelogging*
-      ()
+      (let ((start-sec (format nil "~a" (send (ros::time-now) :sec))) (start-nsec (format nil "~a" (send (ros::time-now) :nsec)))
+            time-string query-sent id1 id2 res1 res2)
+            (setq time-string (concatenate string start-sec "." start-nsec))
+            (setq query-sent (concatenate string "send_prolog_assert_query('cram_start_action(knowrob:\\'RobotExperiment\\', \\'DummyContext\\'," time-string ", PA, ActionInst)', @(false), 'ActionInst', Result)."))
+            (setq id1 (send-json-prolog-query query-sent))
+            (setq res1 (read-json-next-solution id1))
+            (ros::ros-warn (send res1 :solution))
+            (finish-json-query id1)
+      )
   )
   (if (and (boundp '*use-voicetext*) *use-voicetext*)
       (cond
