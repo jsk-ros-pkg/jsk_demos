@@ -203,20 +203,6 @@
     (t
      (initialize-demo atype)
      ))
-
-  (if *remotelogging*
-      (let (time-string query-sent query-owl id1 res1 id-owl res-owl)
-            (setq time-string (get-current-time-str))
-            (setq query-sent (concatenate string "send_prolog_assert_query('cram_finish_action(\\'" experiment-name "\\'," time-string ")', @(false), Result)."))
-            (setq id1 (send-json-prolog-query query-sent))
-            (setq res1 (read-json-next-solution id1))
-            (finish-json-query id1)
-            (setq query-owl (concatenate string "send_prolog_assert_query(' rdf_save(\\'/home/ros/user_data/euslisp.owl\\', [graph(\\'LoggingGraph\\')])', @(false), Result)."))
-            (setq id-owl (send-json-prolog-query query-owl))
-            (setq res-owl (read-json-next-solution id-owl))
-            (finish-json-query id-owl)
-      )
-  )
   (case demo-type
     (:map
      (unless (goto-front-of-fridge)
@@ -250,6 +236,19 @@
        (return-from demo)))
     )
   (enable-behavior-server)
+  (if *remotelogging*
+      (let (time-string query-sent query-owl id1 res1 id-owl res-owl)
+            (setq time-string (get-current-time-str))
+            (setq query-sent (concatenate string "send_prolog_assert_query('cram_finish_action(\\'" experiment-name "\\'," time-string ")', @(false), Result)."))
+            (setq id1 (send-json-prolog-query query-sent))
+            (setq res1 (read-json-next-solution id1))
+            (finish-json-query id1)
+            (setq query-owl (concatenate string "send_prolog_assert_query(' rdf_save(\\'/home/ros/user_data/euslisp.owl\\', [graph(\\'LoggingGraph\\')])', @(false), Result)."))
+            (setq id-owl (send-json-prolog-query query-owl))
+            (setq res-owl (read-json-next-solution id-owl))
+            (finish-json-query id-owl)
+      )
+  )
   (if (eq app-manager :true) (ros::exit))
   )
 
