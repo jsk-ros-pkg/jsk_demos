@@ -164,13 +164,12 @@
   (setq *type* atype)
   (ros::ros-info "start fridge demo / ~A" *type*)
   (if *remotelogging*
-      (let ((start-sec (format nil "~a" (send (ros::time-now) :sec))) (start-nsec (format nil "~a" (send (ros::time-now) :nsec)))
-            time-string query-sent id1 id2 res1 res2)
-            (setq time-string (concatenate string start-sec "." start-nsec))
+      (let (time-string query-sent id1 res1)
+            (setq time-string (get-current-time-str))
             (setq query-sent (concatenate string "send_prolog_assert_query('cram_start_action(knowrob:\\'RobotExperiment\\', \\'DummyContext\\'," time-string ", PA, ActionInst)', @(false), 'ActionInst', Result)."))
             (setq id1 (send-json-prolog-query query-sent))
             (setq res1 (read-json-next-solution id1))
-            (ros::ros-warn (send res1 :solution))
+            (defvar experiment-name (cdr (first (with-input-from-string (is (send res1 :solution)) (json::parse-object is)))))
             (finish-json-query id1)
       )
   )
@@ -205,6 +204,19 @@
      (initialize-demo atype)
      ))
 
+  (if *remotelogging*
+      (let (time-string query-sent query-owl id1 res1 id-owl res-owl)
+            (setq time-string (get-current-time-str))
+            (setq query-sent (concatenate string "send_prolog_assert_query('cram_finish_action(\\'" experiment-name "\\'," time-string ")', @(false), Result)."))
+            (setq id1 (send-json-prolog-query query-sent))
+            (setq res1 (read-json-next-solution id1))
+            (finish-json-query id1)
+            (setq query-owl (concatenate string "send_prolog_assert_query(' rdf_save(\\'/home/ros/user_data/euslisp.owl\\', [graph(\\'LoggingGraph\\')])', @(false), Result)."))
+            (setq id-owl (send-json-prolog-query query-owl))
+            (setq res-owl (read-json-next-solution id-owl))
+            (finish-json-query id-owl)
+      )
+  )
   (case demo-type
     (:map
      (unless (goto-front-of-fridge)
@@ -240,6 +252,12 @@
   (enable-behavior-server)
   (if (eq app-manager :true) (ros::exit))
   )
+
+(defun get-current-time-str ()
+  (let ((current-sec (format nil "~a" (send (ros::time-now) :sec))) (current-nsec (format nil "~a" (send (ros::time-now) :nsec))) time-string)    
+     (setq time-string (concatenate string current-sec "." current-nsec))   
+     time-string 
+))
 
 (defun demo-openease (&key ((:type atype) "georgia")
                   (demo-type :map)  ;; :map, :short, ...
