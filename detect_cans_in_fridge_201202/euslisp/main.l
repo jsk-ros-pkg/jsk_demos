@@ -12,6 +12,7 @@
 (setq *use-arm-navigation* nil)
 
 (require :pr2-interface "package://pr2eus/pr2-interface.l")
+;;(require :mongo-client "package://roseus_mongo/euslisp/mongo-client.l")
 ;;(load "package://pr2eus_openrave/pr2eus-openrave.l")
 ;;(load "package://pr2eus_armnavigation/pr2eus-arm-navigation.l")
 ;;(load "package://pr2eus_moveit/euslisp/pr2eus-moveit.l")
@@ -97,6 +98,16 @@
   t
   )
 
+(defun finish-task (task-id)
+ (let (time-string query-sent id1 res1)
+            (setq time-string (get-current-time-str))
+            (setq query-sent (concatenate string "send_prolog_assert_query('cram_finish_action(\\'" task-id "\\'," time-string ")', @(false), Result)."))
+            (setq id1 (send-json-prolog-query query-sent))
+            (setq res1 (read-json-next-solution id1))
+            (finish-json-query id1)
+  )
+)
+
 (defun send-json-prolog-query (query)
   (let ((retinitial "empty")
         (retsolution "empty")
@@ -166,7 +177,7 @@
   (if *remotelogging*
       (let (time-string query-sent id1 res1)
             (setq time-string (get-current-time-str))
-            (setq query-sent (concatenate string "send_prolog_assert_query('cram_start_action(knowrob:\\'RobotExperiment\\', \\'DummyContext\\'," time-string ", PA, ActionInst)', @(false), 'ActionInst', Result)."))
+            (setq query-sent (concatenate string "send_prolog_assert_query('cram_start_action(knowrob:\\'RobotExperiment\\', \\'DetectCan\\'," time-string ", PA, ActionInst)', @(false), 'ActionInst', Result)."))
             (setq id1 (send-json-prolog-query query-sent))
             (setq res1 (read-json-next-solution id1))
             (defvar experiment-name (cdr (first (with-input-from-string (is (send res1 :solution)) (json::parse-object is)))))
@@ -203,6 +214,22 @@
     (t
      (initialize-demo atype)
      ))
+
+  (if *remotelogging*
+      (let (time-string query-sent query-object-acted id1 res1 id2 res2)
+            (setq time-string (get-current-time-str))
+            (setq query-sent (concatenate string "send_prolog_assert_query('cram_start_action(knowrob:\\'BaseMovement\\', \\'GoNearByFridge\\'," time-string ", PA, ActionInst)', @(false), 'ActionInst', Result)."))
+            (setq id1 (send-json-prolog-query query-sent))
+            (setq res1 (read-json-next-solution id1))
+            (defvar go-to-fridge-task-name (cdr (first (with-input-from-string (is (send res1 :solution)) (json::parse-object is)))))
+            (defvar fridge-name "http://knowrob.org/kb/jsk.owl#Fridge_0byqw")
+            (finish-json-query id1)
+            (setq query-object-acted (concatenate string "send_prolog_assert_query('cram_set_object_acted_on(\\'" go-to-fridge-task-name "\\',\\'" fridge-name "\\')', @(false), Result)."))
+            (setq id2 (send-json-prolog-query query-object-acted))
+            (setq res2 (read-json-next-solution id2))
+            (finish-json-query id2)
+      )
+  )
   (case demo-type
     (:map
      (unless (goto-front-of-fridge)
@@ -210,20 +237,97 @@
     (t
      ;; do nothing
      ))
+  (if *remotelogging*
+      (finish-task go-to-fridge-task-name)
+  )
 
+
+  (if *remotelogging*
+      (let (time-string query-sent query-object-acted query-arm id1 res1 id2 res2 id3 res3)
+            (setq time-string (get-current-time-str))
+            (setq query-sent (concatenate string "send_prolog_assert_query('cram_start_action(knowrob:\\'ArmMovement\\', \\'OpenFridge\\'," time-string ", PA, ActionInst)', @(false), 'ActionInst', Result)."))
+            (setq id1 (send-json-prolog-query query-sent))
+            (setq res1 (read-json-next-solution id1))
+            (defvar open-fridge-task-name (cdr (first (with-input-from-string (is (send res1 :solution)) (json::parse-object is)))))
+            (finish-json-query id1)
+            (setq query-object-acted (concatenate string "send_prolog_assert_query('cram_set_object_acted_on(\\'" open-fridge-task-name "\\',\\'" fridge-name "\\')', @(false), Result)."))
+            (setq id2 (send-json-prolog-query query-object-acted))
+            (setq res2 (read-json-next-solution id2))
+            (finish-json-query id2)
+            (setq query-arm (concatenate string "send_prolog_assert_query('rdf_assert(\\'" open-fridge-task-name "\\', knowrob:bodyPartUsed,'" use-arm "', \\'LoggingGraph\\')', @(false), Result)."))
+            (setq id3 (send-json-prolog-query query-arm))
+            (setq res3 (read-json-next-solution id3))
+            (finish-json-query id3)
+      )
+  )
   (unless (open-fridge-door :use-arm use-arm)
     (return-from demo))
+  (if *remotelogging*
+      (finish-task open-fridge-task-name)
+  )
 
   ;; move
-
+  (if *remotelogging*
+      (let (time-string query-sent query-object-acted query-arm id1 res1 id2 res2 id3 res3)
+            (setq time-string (get-current-time-str))
+            (setq query-sent (concatenate string "send_prolog_assert_query('cram_start_action(knowrob:\\'Grasp\\', \\'GraspCan\\'," time-string ", PA, ActionInst)', @(false), 'ActionInst', Result)."))
+            (setq id1 (send-json-prolog-query query-sent))
+            (setq res1 (read-json-next-solution id1))
+            (defvar grasp-task-name (cdr (first (with-input-from-string (is (send res1 :solution)) (json::parse-object is)))))
+            (finish-json-query id1)
+            (defvar can-name "http://knowrob.org/kb/jsk.owl#Can_kj778")
+            (setq query-object-acted (concatenate string "send_prolog_assert_query('cram_set_object_acted_on(\\'" grasp-task-name "\\',\\'" can-name "\\')', @(false), Result)."))
+            (setq id2 (send-json-prolog-query query-object-acted))
+            (setq res2 (read-json-next-solution id2))
+            (finish-json-query id2)
+            (setq query-arm (concatenate string "send_prolog_assert_query('rdf_assert(\\'" grasp-task-name "\\', knowrob:bodyPartUsed,'" use-arm "', \\'LoggingGraph\\')', @(false), Result)."))
+            (setq id3 (send-json-prolog-query query-arm))
+            (setq res3 (read-json-next-solution id3))
+            (finish-json-query id3)
+      )
+  )
   (unless (grasp-can :use-arm use-arm)
     (return-from demo))
+  (if *remotelogging*
+      (finish-task grasp-task-name)
+  )
 
   ;; move
 
+  (if *remotelogging*
+      (let (time-string query-sent query-object-acted query-arm id1 res1 id2 res2 id3 res3)
+            (setq time-string (get-current-time-str))
+            (setq query-sent (concatenate string "send_prolog_assert_query('cram_start_action(knowrob:\\'ArmMovement\\', \\'CloseFridge\\'," time-string ", PA, ActionInst)', @(false), 'ActionInst', Result)."))
+            (setq id1 (send-json-prolog-query query-sent))
+            (setq res1 (read-json-next-solution id1))
+            (defvar close-fridge-task-name (cdr (first (with-input-from-string (is (send res1 :solution)) (json::parse-object is)))))
+            (finish-json-query id1)
+            (setq query-object-acted (concatenate string "send_prolog_assert_query('cram_set_object_acted_on(\\'" close-fridge-task-name "\\',\\'" fridge-name "\\')', @(false), Result)."))
+            (setq id2 (send-json-prolog-query query-object-acted))
+            (setq res2 (read-json-next-solution id2))
+            (finish-json-query id2)
+            (setq query-arm (concatenate string "send_prolog_assert_query('rdf_assert(\\'" close-fridge-task-name "\\', knowrob:bodyPartUsed,'" use-arm "', \\'LoggingGraph\\')', @(false), Result)."))
+            (setq id3 (send-json-prolog-query query-arm))
+            (setq res3 (read-json-next-solution id3))
+            (finish-json-query id3)
+      )
+  )
   (unless (close-fridge :use-arm use-arm)
     (return-from demo))
+  (if *remotelogging*
+      (finish-task close-fridge-task-name)
+  )
 
+  (if *remotelogging*
+      (let (time-string query-sent query-object-acted id1 res1 id2 res2)
+            (setq time-string (get-current-time-str))
+            (setq query-sent (concatenate string "send_prolog_assert_query('cram_start_action(knowrob:\\'BaseMovement\\', \\'GoToStart\\'," time-string ", PA, ActionInst)', @(false), 'ActionInst', Result)."))
+            (setq id1 (send-json-prolog-query query-sent))
+            (setq res1 (read-json-next-solution id1))
+            (defvar go-to-start-task-name (cdr (first (with-input-from-string (is (send res1 :solution)) (json::parse-object is)))))
+            (finish-json-query id1)
+      )
+  )
   (case demo-type
     (:map
      (goto-initial-position :finish-type finish-type :use-arm use-arm)
@@ -235,14 +339,13 @@
               :finish-type finish-type)
        (return-from demo)))
     )
+  (if *remotelogging*
+      (finish-task go-to-start-task-name)
+  )
   (enable-behavior-server)
   (if *remotelogging*
-      (let (time-string query-sent query-owl id1 res1 id-owl res-owl)
-            (setq time-string (get-current-time-str))
-            (setq query-sent (concatenate string "send_prolog_assert_query('cram_finish_action(\\'" experiment-name "\\'," time-string ")', @(false), Result)."))
-            (setq id1 (send-json-prolog-query query-sent))
-            (setq res1 (read-json-next-solution id1))
-            (finish-json-query id1)
+      (let (query-owl id-owl res-owl)
+            (finish-task experiment-name)
             (setq query-owl (concatenate string "send_prolog_assert_query(' rdf_save(\\'/home/ros/user_data/euslisp.owl\\', [graph(\\'LoggingGraph\\')])', @(false), Result)."))
             (setq id-owl (send-json-prolog-query query-owl))
             (setq res-owl (read-json-next-solution id-owl))
