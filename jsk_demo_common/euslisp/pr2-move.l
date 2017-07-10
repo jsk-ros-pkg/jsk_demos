@@ -136,23 +136,90 @@
      (t
       (send *ri* :move-to-send co)
       ))
+    (if *remotelogging*
+      (let (query-co id1 res1)
+            (setq query-co (concatenate string "send_prolog_assert_query('rdf_assert(\\'" declaretive-go-to-fridge-task-name "\\', knowrob:goalLocation, literal(type(xsd:string,\\'" (string co) "\\')), \\'LoggingGraph\\')', @(false), Result)."))
+            (setq id1 (send-json-prolog-query query-co))
+            (setq res1 (read-json-next-solution id1))
+            (finish-json-query id1)
+      )
+    )
     t
     ))
 
 (defun base-go-to-fridge-init-pose (&key (wait t) (torso-lift 130) (head-pitch 0))
+
+
+  (if *remotelogging*
+     (defvar declaretive-body-poses-task-name (start-task "http://knowrob.org/kb/knowrob.owl#DeclaretiveGoal" "CalculateAngleVector"))
+     (generate-subtask-relation perform-go-to-fridge-task-name declaretive-body-poses-task-name)
+  )
   (send *pr2* :angle-vector (send *ri* :state :potentio-vector))
+  (if *remotelogging*
+      (let (query-pv id1 res1)
+            (setq query-pv (concatenate string "send_prolog_assert_query('rdf_assert(\\'" declaretive-body-poses-task-name "\\', knowrob:toLocation, literal(type(xsd:string,\\'" (string (send *ri* :state :potentio-vector)) "\\')), \\'LoggingGraph\\')', @(false), Result)."))
+            (setq id1 (send-json-prolog-query query-pv))
+            (setq res1 (read-json-next-solution id1))
+            (finish-json-query id1)
+            (finish-task declaretive-body-poses-task-name)
+      )
+    )
+
+
+  (if *remotelogging*
+     (defvar head-movement-task-name (start-task "http://knowrob.org/kb/knowrob.owl#HeadMovement" "LookingTowardsFridge"))
+     (generate-subtask-relation perform-go-to-fridge-task-name head-movement-task-name)
+  )
   (send *pr2* :head :angle-vector (float-vector 0 head-pitch))
+  
+
+  (if *remotelogging*
+     (defvar base-movement-task-name (start-task "http://knowrob.org/kb/knowrob.owl#BaseMovement" "GoingFridge"))
+     (generate-subtask-relation perform-go-to-fridge-task-name base-movement-task-name)
+  )
   (send *pr2* :torso :angle-vector (float-vector torso-lift))
+
   (send *ri* :angle-vector (send *pr2* :angle-vector))
+
+
   (if wait
       (send *ri* :wait-interpolation))
+  (if *remotelogging*
+      (let (query-av query-fv id1 res1 id2 res2)
+            (setq query-av (concatenate string "send_prolog_assert_query('rdf_assert(\\'" head-movement-task-name "\\', knowrob:toLocation, literal(type(xsd:string,\\'" (string head-pitch) "\\')), \\'LoggingGraph\\')', @(false), Result)."))
+            (setq id1 (send-json-prolog-query query-av))
+            (setq res1 (read-json-next-solution id1))
+            (finish-json-query id1)
+            (finish-task head-movement-task-name)
+            (setq query-fv (concatenate string "send_prolog_assert_query('rdf_assert(\\'" base-movement-task-name "\\', knowrob:toLocation, literal(type(xsd:string,\\'" (string float-vector) "\\')), \\'LoggingGraph\\')', @(false), Result)."))
+            (setq id2 (send-json-prolog-query query-fv))
+            (setq res2 (read-json-next-solution id2))
+            (finish-json-query id2)
+            (finish-task base-movement-task-name)
+      )
+    )
   t
   )
 
 
 (defun goto-front-of-fridge (&key (torso-lift 130) (head-pitch 0) (wait t))
+  (if *remotelogging*
+     (defvar declaretive-go-to-fridge-task-name (start-task "http://knowrob.org/kb/knowrob.owl#DeclaretiveGoal" "CalculateGoalPose"))
+     (generate-subtask-relation go-to-fridge-task-name declaretive-go-to-fridge-task-name)
+  )
   (base-go-to-fridge :wait wait)
+  (if *remotelogging*
+      (finish-task declaretive-go-to-fridge-task-name)
+  )
+
+  (if *remotelogging*
+     (defvar perform-go-to-fridge-task-name (start-task "http://knowrob.org/kb/knowrob.owl#CRAMPerform" "Perform-Navigate-To-Location"))
+     (generate-subtask-relation go-to-fridge-task-name perform-go-to-fridge-task-name)
+  )
   (base-go-to-fridge-init-pose :torso-lift torso-lift :head-pitch head-pitch :wait wait)
+  (if *remotelogging*
+      (finish-task perform-go-to-fridge-task-name)
+  )
   )
 
 (provide :pr2-move)

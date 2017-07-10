@@ -5,14 +5,14 @@
 
 (defvar *use-voicetext* t)
 (defvar *use-english* nil)
-(defvar *logging* nil)
+(defvar *logging* t)
 (defvar *remotelogging* nil)
 (defvar *debug-view* (ros::get-param "~debug_view" t))
 
 (setq *use-arm-navigation* nil)
 
 (require :pr2-interface "package://pr2eus/pr2-interface.l")
-(require :mongo-client "package://roseus_mongo/euslisp/mongo-client.l")
+;(require :mongo-client "package://roseus_mongo/euslisp/mongo-client.l")
 ;;(load "package://pr2eus_openrave/pr2eus-openrave.l")
 ;;(load "package://pr2eus_armnavigation/pr2eus-arm-navigation.l")
 ;;(load "package://pr2eus_moveit/euslisp/pr2eus-moveit.l")
@@ -113,6 +113,16 @@
  (let (time-string query-sent id1 res1)
             (setq time-string (get-current-time-str))
             (setq query-sent (concatenate string "send_prolog_assert_query('cram_finish_action(\\'" task-id "\\'," time-string ")', @(false), Result)."))
+            (setq id1 (send-json-prolog-query query-sent))
+            (setq res1 (read-json-next-solution id1))
+            (finish-json-query id1)
+  )
+)
+
+(defun generate-subtask-relation (task subtask)
+ (let (time-string query-sent id1 res1)
+            (setq time-string (get-current-time-str))
+            (setq query-sent (concatenate string "send_prolog_assert_query('cram_set_subaction(\\'" task "\\',\\'" subtask "\\')', @(false), Result)."))
             (setq id1 (send-json-prolog-query query-sent))
             (setq res1 (read-json-next-solution id1))
             (finish-json-query id1)
@@ -221,7 +231,7 @@
 
   (if *remotelogging*
       (let (query-object-acted id1 res1)
-            (defvar go-to-fridge-task-name (start-task "http://knowrob.org/kb/knowrob.owl#BaseMovement" "GoNearByFridge"))
+            (defvar go-to-fridge-task-name (start-task "http://knowrob.org/kb/knowrob.owl#Navigate" "GoNearByFridge"))
             (defvar fridge-name "http://knowrob.org/kb/jsk.owl#Fridge_0byqw")
             (setq query-object-acted (concatenate string "send_prolog_assert_query('cram_set_object_acted_on(\\'" go-to-fridge-task-name "\\',\\'" fridge-name "\\')', @(false), Result)."))
             (setq id1 (send-json-prolog-query query-object-acted))
