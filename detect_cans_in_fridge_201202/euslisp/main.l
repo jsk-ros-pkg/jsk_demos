@@ -232,6 +232,7 @@
   (if *remotelogging*
       (let (query-object-acted id1 res1)
             (defvar go-to-fridge-task-name (start-task "http://knowrob.org/kb/knowrob.owl#Navigate" "GoNearByFridge"))
+            (generate-subtask-relation experiment-name go-to-fridge-task-name)
             (defvar fridge-name "http://knowrob.org/kb/jsk.owl#Fridge_0byqw")
             (setq query-object-acted (concatenate string "send_prolog_assert_query('cram_set_object_acted_on(\\'" go-to-fridge-task-name "\\',\\'" fridge-name "\\')', @(false), Result)."))
             (setq id1 (send-json-prolog-query query-object-acted))
