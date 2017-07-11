@@ -98,6 +98,21 @@
   t
   )
 
+(defun fill-at-location-task (task vect)
+  (let (query-pv id1 res1 query-f id2 res2
+           (current-pos (apply #'format nil "~A ~A ~A ~A ~A ~A ~A ~A ~A ~A ~A ~A ~A ~A ~A ~A ~A" (coerce vect cons))))
+            (setq query-pv (concatenate string "send_prolog_assert_query('rdf_assert(\\'" task "\\', knowrob:designator, literal(type(xsd:string,\\'" current-pos "\\')), \\'LoggingGraph\\')', @(false), Result)."))
+            (setq id1 (send-json-prolog-query query-pv))
+            (setq res1 (read-json-next-solution id1))
+            (finish-json-query id1)
+            (setq query-f (concatenate string "send_prolog_assert_query('rdf_assert(\\'" task "\\', knowrob:designatorFormat, literal(type(xsd:string,\\'torso_lift_joint l_shoulder_pan_joint l_shoulder_lift_joint l_upper_arm_roll_joint l_elbow_flex_joint l_forearm_roll_joint l_wrist_flex_joint l_wrist_roll_joint r_shoulder_pan_joint r_shoulder_lift_joint r_upper_arm_roll_joint r_elbow_flex_joint r_forearm_roll_joint r_wrist_flex_joint r_wrist_roll_joint head_pan_joint head_tilt_joint\\')), \\'LoggingGraph\\')', @(false), Result)."))
+            (setq id2 (send-json-prolog-query query-f))
+            (setq res2 (read-json-next-solution id2))
+            (finish-json-query id2)
+     
+  )
+)
+
 (defun start-task (task-type task-context)
   (let (time-string query-sent id1 res1)
             (setq time-string (get-current-time-str))
@@ -254,7 +269,7 @@
 
   (if *remotelogging*
       (let (query-object-acted query-arm id1 res1 id2 res2)
-            (defvar open-fridge-task-name (start-task "http://knowrob.org/kb/knowrob.owl#ArmMovement" "OpenFridge"))
+            (defvar open-fridge-task-name (start-task "http://knowrob.org/kb/knowrob.owl#CRAMPerform" "OpenFridge"))
             (setq query-object-acted (concatenate string "send_prolog_assert_query('cram_set_object_acted_on(\\'" open-fridge-task-name "\\',\\'" fridge-name "\\')', @(false), Result)."))
             (setq id1 (send-json-prolog-query query-object-acted))
             (setq res1 (read-json-next-solution id1))

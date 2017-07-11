@@ -629,24 +629,52 @@
     ))
 
 (defun open-fridge-door-initial-pose (&key (wait t) (door-type :circle) (head-pitch 14) (torso-lift 130) (ratio 1))
+  (if *remotelogging*
+     (progn (defvar start-open-task-name (start-task "http://knowrob.org/kb/knowrob.owl#AtLocation" "CalculateRobotState"))
+     (generate-subtask-relation pre-open-fridge-task-name start-open-task-name))
+  )
+  (send *pr2* :angle-vector (send *ri* :state :potentio-vector))
+  (if *remotelogging*
+     (progn (fill-at-location-task start-open-task-name (send *pr2* :angle-vector))
+     (finish-task start-open-task-name)
+     (defvar perform-pre-open-task-name (start-task "http://knowrob.org/kb/knowrob.owl#CRAMPerform" "PerformAdjustBody"))
+     (generate-subtask-relation pre-open-fridge-task-name perform-pre-open-task-name)
+     (defvar head-pre-open-task-name (start-task "http://knowrob.org/kb/knowrob.owl#HeadMovement" "LookingTowardsFridge"))
+     (generate-subtask-relation perform-pre-open-task-name head-pre-open-task-name))
+  )
+  (send *pr2* :head :angle-vector (float-vector 0 head-pitch))
+
+  (if *remotelogging*
+     (progn (defvar base-pre-open-task-name (start-task "http://knowrob.org/kb/knowrob.owl#BaseMovement" "AdjustTorsoHeight"))
+     (generate-subtask-relation perform-pre-open-task-name base-pre-open-task-name))
+  )
+  (send *pr2* :torso :angle-vector (float-vector torso-lift))
+  (send *ri* :angle-vector (send *pr2* :angle-vector) (* ratio 3000))
 
   (case door-type
     (:circle
-     (send *pr2* :angle-vector (send *ri* :state :potentio-vector))
-     (send *pr2* :head :angle-vector (float-vector 0 head-pitch))
-     (send *pr2* :torso :angle-vector (float-vector torso-lift))
-     (send *ri* :angle-vector (send *pr2* :angle-vector) (* ratio 3000))
      (if wait
          (send *ri* :wait-interpolation))
      )
     ((:slide1 :slide2)
-     (send *pr2* :angle-vector (send *ri* :state :potentio-vector))
-     (send *pr2* :head :angle-vector (float-vector 0 head-pitch))
-     (send *pr2* :torso :angle-vector (float-vector torso-lift))
-     ;;(send *pr2* :larm :angle-vector (float-vector 25.0 74.0 35.0 -120.0 20.0 -30.0 0.0))
      (send *ri* :angle-vector (send *pr2* :angle-vector) (* ratio 3000))
      (send *ri* :wait-interpolation)
      ))
+  (if *remotelogging*
+      (let (query-av query-fv id1 res1 id2 res2)
+            (setq query-av (concatenate string "send_prolog_assert_query('rdf_assert(\\'" head-pre-open-task-name "\\', knowrob:toLocation, literal(type(xsd:string,\\'" (string head-pitch) "\\')), \\'LoggingGraph\\')', @(false), Result)."))
+            (setq id1 (send-json-prolog-query query-av))
+            (setq res1 (read-json-next-solution id1))
+            (finish-json-query id1)
+            (finish-task head-pre-open-task-name)
+            (setq query-fv (concatenate string "send_prolog_assert_query('rdf_assert(\\'" base-pre-open-task-name "\\', knowrob:toLocation, literal(type(xsd:string,\\'" (string torso-lift) "\\')), \\'LoggingGraph\\')', @(false), Result)."))
+            (setq id2 (send-json-prolog-query query-fv))
+            (setq res2 (read-json-next-solution id2))
+            (finish-json-query id2)
+            (finish-task base-pre-open-task-name)
+            (finish-task perform-pre-open-task-name)
+      )
+    )
   )
 
 (defparameter *fridge-handle-cds* nil)
@@ -899,7 +927,14 @@
         ret
         (ratio (/ (- func-time 56) 24.0))) ;;about 1  if ratio is smaller than 1, move speed goes up.
     ;; initial pose
+    (if *remotelogging*
+     (progn (defvar pre-open-fridge-task-name (start-task "http://knowrob.org/kb/knowrob.owl#Navigate" "GoOpenUpPoseFridge"))
+     (generate-subtask-relation open-fridge-task-name pre-open-fridge-task-name))
+    )
     (open-fridge-door-initial-pose :door-type door-type :head-pitch head-pitch :torso-lift torso-lift :ratio ratio :wait wait)
+    (if *remotelogging*
+      (finish-task pre-open-fridge-task-name)
+    )
 
     ;; detect fridge and open door
     (dotimes (i 10 nil)

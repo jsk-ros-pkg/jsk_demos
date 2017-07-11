@@ -177,23 +177,9 @@
   )
   (send *pr2* :angle-vector (send *ri* :state :potentio-vector))
   (if *remotelogging*
-      (let (query-pv id1 res1 query-f id2 res2
-           (current-pos (apply #'format nil "~A ~A ~A ~A ~A ~A ~A ~A ~A ~A ~A ~A ~A ~A ~A ~A ~A" (coerce (send *pr2* :angle-vector) cons))))
-            (setq query-pv (concatenate string "send_prolog_assert_query('rdf_assert(\\'" start-pose-task-name "\\', knowrob:designator, literal(type(xsd:string,\\'" current-pos "\\')), \\'LoggingGraph\\')', @(false), Result)."))
-            (setq id1 (send-json-prolog-query query-pv))
-            (setq res1 (read-json-next-solution id1))
-            (finish-json-query id1)
-            (setq query-f (concatenate string "send_prolog_assert_query('rdf_assert(\\'" start-pose-task-name "\\', knowrob:designatorFormat, literal(type(xsd:string,\\'torso_lift_joint l_shoulder_pan_joint l_shoulder_lift_joint l_upper_arm_roll_joint l_elbow_flex_joint l_forearm_roll_joint l_wrist_flex_joint l_wrist_roll_joint r_shoulder_pan_joint r_shoulder_lift_joint r_upper_arm_roll_joint r_elbow_flex_joint r_forearm_roll_joint r_wrist_flex_joint r_wrist_roll_joint head_pan_joint head_tilt_joint\\')), \\'LoggingGraph\\')', @(false), Result)."))
-            (setq id2 (send-json-prolog-query query-f))
-            (setq res2 (read-json-next-solution id2))
-            (finish-json-query id2)
-            (finish-task start-pose-task-name)
-      )
-    )
-
-
-  (if *remotelogging*
-     (progn (defvar perform-preman-fridge-task-name (start-task "http://knowrob.org/kb/knowrob.owl#CRAMPerform" "PerformGoNearbyFridge"))
+     (progn (fill-at-location-task start-pose-task-name (send *pr2* :angle-vector))
+     (finish-task start-pose-task-name)
+     (defvar perform-preman-fridge-task-name (start-task "http://knowrob.org/kb/knowrob.owl#CRAMPerform" "PerformAdjustBody"))
      (generate-subtask-relation preman-fridge-task-name perform-preman-fridge-task-name)
      (defvar head-movement-task-name (start-task "http://knowrob.org/kb/knowrob.owl#HeadMovement" "LookingTowardsFridge"))
      (generate-subtask-relation perform-preman-fridge-task-name head-movement-task-name))
