@@ -5,14 +5,14 @@
 
 (defvar *use-voicetext* t)
 (defvar *use-english* nil)
-(defvar *logging* t)
+(defvar *logging* nil)
 (defvar *remotelogging* nil)
 (defvar *debug-view* (ros::get-param "~debug_view" t))
 
 (setq *use-arm-navigation* nil)
 
 (require :pr2-interface "package://pr2eus/pr2-interface.l")
-;(require :mongo-client "package://roseus_mongo/euslisp/mongo-client.l")
+(require :mongo-client "package://roseus_mongo/euslisp/mongo-client.l")
 ;;(load "package://pr2eus_openrave/pr2eus-openrave.l")
 ;;(load "package://pr2eus_armnavigation/pr2eus-arm-navigation.l")
 ;;(load "package://pr2eus_moveit/euslisp/pr2eus-moveit.l")
@@ -83,6 +83,10 @@
       (speak-jp (format nil "~a を もって いきます" *type*)))
     (send *ri* :move-to *opose*))
 
+  (if *remotelogging*
+     (progn (defvar putdown-task-name (start-task "http://knowrob.org/kb/knowrob.owl#CRAMAction" "PUTDOWN"))
+     (generate-subtask-relation go-to-start-task-name putdown-task-name))
+    )
   (case finish-type
     (:put-on-turtlebot
      (put-can-on-turtlebot))
@@ -95,6 +99,14 @@
        (speak-jp (format nil "~a を どうぞ" *type*)))
      (hand-over use-arm :wait-shock t))
     )
+   (if *remotelogging*
+     (let (query-arm id1 res1)
+            (setq query-arm (concatenate string "send_prolog_assert_query('rdf_assert(\\'" putdown-task-name "\\', knowrob:bodyPartUsed, \\'" (string finish-type) "\\', \\'LoggingGraph\\')', @(false), Result)."))
+            (setq id1 (send-json-prolog-query query-arm))
+            (setq res1 (read-json-next-solution id1))
+            (finish-json-query id1)
+            (finish-task putdown-task-name)
+      ))
   t
   )
 
@@ -154,7 +166,7 @@
         (setq querysent "connect_to_user_container")
         (send req :query query)
         (setq retinitial (ros::service-call "/json_prolog/simple_query" req))
-        (ros::ros-warn "[prolog-sender] Connecting query sent to openEASE.")
+        (ros::ros-warn "[prolog-sender] Querying openEASE via local-knowrob:json-prolog service.")
         id)
     (ros::ros-warn "json_prolog is not available"))
 ))
@@ -270,6 +282,7 @@
   (if *remotelogging*
       (let (query-object-acted query-arm id1 res1 id2 res2)
             (defvar open-fridge-task-name (start-task "http://knowrob.org/kb/knowrob.owl#CRAMPerform" "OpenFridge"))
+            (generate-subtask-relation experiment-name open-fridge-task-name)
             (setq query-object-acted (concatenate string "send_prolog_assert_query('cram_set_object_acted_on(\\'" open-fridge-task-name "\\',\\'" fridge-name "\\')', @(false), Result)."))
             (setq id1 (send-json-prolog-query query-object-acted))
             (setq res1 (read-json-next-solution id1))
@@ -290,6 +303,7 @@
   (if *remotelogging*
       (let (query-object-acted query-arm id1 res1 id2 res2)
             (defvar grasp-task-name (start-task "http://knowrob.org/kb/knowrob.owl#Grasp" "GraspCan"))
+            (generate-subtask-relation experiment-name grasp-task-name)
             (defvar can-name "http://knowrob.org/kb/jsk.owl#Can_kj778")
             (setq query-object-acted (concatenate string "send_prolog_assert_query('cram_set_object_acted_on(\\'" grasp-task-name "\\',\\'" can-name "\\')', @(false), Result)."))
             (setq id1 (send-json-prolog-query query-object-acted))
@@ -312,6 +326,7 @@
   (if *remotelogging*
       (let (query-object-acted query-arm id1 res1 id2 res2)
             (defvar close-fridge-task-name (start-task "http://knowrob.org/kb/knowrob.owl#ArmMovement" "CloseFridge"))
+            (generate-subtask-relation experiment-name close-fridge-task-name)
             (setq query-object-acted (concatenate string "send_prolog_assert_query('cram_set_object_acted_on(\\'" close-fridge-task-name "\\',\\'" fridge-name "\\')', @(false), Result)."))
             (setq id1 (send-json-prolog-query query-object-acted))
             (setq res1 (read-json-next-solution id1))
