@@ -859,6 +859,7 @@
         )
        (t ;;  there is much difference
         (if move
+            (progn
              (if *remotelogging*
              (progn
                 (setq move-perceive-task-name (start-task "http://knowrob.org/kb/knowrob.owl#BaseMovement" "RelocateSelf"))
@@ -890,7 +891,7 @@
                )
              )
              
-             )))
+             ))))
         ))
       ) ;; /when cds
     ret
