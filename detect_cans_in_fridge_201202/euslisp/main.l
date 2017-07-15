@@ -143,6 +143,7 @@
             (setq id1 (send-json-prolog-query query-sent))
             (setq res1 (read-json-next-solution id1))
             (finish-json-query id1)
+            t
   )
 )
 
