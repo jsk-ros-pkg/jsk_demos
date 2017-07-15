@@ -710,11 +710,11 @@
     (setq *fridge-handle-cds* cds)
 
     ;; need detection fail check
+    (send *ri* :ros-wait 0.0 :spin-self t) ;; attention-check ...
     (if *remotelogging*
      (progn (setq check-perceive-open-fridge-task-name (start-task "http://knowrob.org/kb/knowrob.owl#WithFailureHandling" "PerceptionFailureDetection"))
      (generate-subtask-relation perceive-open-fridge-task-name check-perceive-open-fridge-task-name))
     )
-    (send *ri* :ros-wait 0.0 :spin-self t) ;; attention-check ...
     (when cds
       (send *obj* :reset-coords)
       (send *obj* :transform cds)
@@ -749,7 +749,16 @@
           (setq cds (send (make-cube 60 60 60) :translate (float-vector 777 98 1112)))))
         (send *ri* :ros-wait 0.0 :spin-self t :spin t) ;; attention-check ...
         ;; (y-or-n-p "Can I start open fridge? ")
-        (when cds
+        (if cds
+          (progn (if *remotelogging*
+             (let (query-s id1 res1)
+                (setq query-s (concatenate string "send_prolog_assert_query('rdf_assert(\\'" check-perceive-open-fridge-task-name "\\', knowrob:taskSuccess, literal(type(xsd:boolean,\\'true\\')), \\'LoggingGraph\\'), rdf_assert(\\'" perceive-open-fridge-task-name "\\', knowrob:taskSuccess, literal(type(xsd:boolean,\\'true\\')), \\'LoggingGraph\\')', @(false), Result)."))
+                (setq id1 (send-json-prolog-query query-s))
+                (setq res1 (read-json-next-solution id1))
+                (finish-json-query id1)
+                (finish-task check-perceive-open-fridge-task-name)
+                (finish-task perceive-open-fridge-task-name)))
+            
           (if look-around (pr2-look-around))
           ;; for open fridge
           (case door-type
@@ -799,26 +808,11 @@
                                 :wait-time t
                                 )))
             )
-          (if (and ret *remotelogging*)
-             (let (query-s id1 res1)
-                (setq query-s (concatenate string "send_prolog_assert_query('rdf_assert(\\'" check-perceive-open-fridge-task-name "\\', knowrob:taskSuccess, literal(type(xsd:boolean,\\'true\\')), \\'LoggingGraph\\'), rdf_assert(\\'" perceive-open-fridge-task-name "\\', knowrob:taskSuccess, literal(type(xsd:boolean,\\'true\\')), \\'LoggingGraph\\')', @(false), Result)."))
-                (setq id1 (send-json-prolog-query query-s))
-                (setq res1 (read-json-next-solution id1))
-                (finish-json-query id1)
-                (finish-task check-perceive-open-fridge-task-name)
-                (finish-task perceive-open-fridge-task-name) 
-             )
-          )
           (ros::ros-info "recognition result: ~A" ret)
-          (if ret (return-from move-to-and-open-fridge-door ret)))
-        (if (and (boundp '*use-voicetext*) *use-voicetext*)
-            (cond
-             ((and (boundp '*use-english*) *use-english*)
-              (speak-jp "I could not open the refrigerator."))
-             (t (speak-jp "冷蔵庫を開けられませんでした。")))
-          (speak-jp "れいぞうこを あけられません でした"))
-
-        (if *remotelogging*
+          (if ret 
+              (return-from move-to-and-open-fridge-door ret)))
+          ;if perception fails
+          (if *remotelogging*
              (let (query-s id1 res1)
                 (setq query-s (concatenate string "send_prolog_assert_query('rdf_assert(\\'" check-perceive-open-fridge-task-name "\\', knowrob:taskSuccess, literal(type(xsd:boolean,\\'false\\')), \\'LoggingGraph\\'), rdf_assert(\\'" perceive-open-fridge-task-name "\\', knowrob:taskSuccess, literal(type(xsd:boolean,\\'false\\')), \\'LoggingGraph\\')', @(false), Result)."))
                 (setq id1 (send-json-prolog-query query-s))
@@ -827,8 +821,19 @@
                 (finish-task check-perceive-open-fridge-task-name)
                 (finish-task perceive-open-fridge-task-name)
                 (setq head-perceive-task-name (start-task "http://knowrob.org/kb/knowrob.owl#HeadMovement" "RelocateLookingTowardsFridge"))
-                (generate-subtask-relation achieve-open-fridge-task-name head-perceive-task-name) 
-             )
+                (generate-subtask-relation achieve-open-fridge-task-name head-perceive-task-name))))
+
+        (if (and (boundp '*use-voicetext*) *use-voicetext*)
+            (cond
+             ((and (boundp '*use-english*) *use-english*)
+              (speak-jp "I could not open the refrigerator."))
+             (t (speak-jp "冷蔵庫を開けられませんでした。")))
+          (speak-jp "れいぞうこを あけられません でした"))
+
+        (if *remotelogging*
+             (progn
+                (setq head-perceive-task-name (start-task "http://knowrob.org/kb/knowrob.owl#HeadMovement" "RelocateLookingTowardsFridge"))
+                (generate-subtask-relation achieve-open-fridge-task-name head-perceive-task-name))
          )
         (send *pr2* :head :angle-vector (float-vector 0 head-pitch))
 
@@ -1008,7 +1013,7 @@
 
     ;; detect fridge and open door
     (if *remotelogging*
-     (progn (defvar achieve-open-fridge-task-name (start-task "http://knowrob.org/kb/knowrob.owl#CRAMAchieve" "RelocateAndPerceiveFridgeDoor"))
+     (progn (defvar achieve-open-fridge-task-name (start-task "http://knowrob.org/kb/knowrob.owl#CRAMAchieve" "MoveAndOpenFridgeDoor"))
      (generate-subtask-relation open-fridge-task-name achieve-open-fridge-task-name))
     )
     (dotimes (i 10 nil)
@@ -1055,7 +1060,7 @@
     (move-forward-larm :ratio ratio :wait wait)
     (if *remotelogging*
       (let (query-arm id1 res1)
-            (setq query-arm (concatenate string "send_prolog_assert_query('rdf_assert(\\'" keep-open-fridge-task-name "\\', knowrob:bodyPartUsed, \\'larm\\', \\'LoggingGraph\\')', @(false), Result)."))
+            (setq query-arm (concatenate string "send_prolog_assert_query('rdf_assert(\\'" keep-open-fridge-task-name "\\', knowrob:bodyPartUsed, literal(type(xsd:string,\\'larm\\'))', \\'LoggingGraph\\')', @(false), Result)."))
             (setq id1 (send-json-prolog-query query-arm))
             (setq res1 (read-json-next-solution id1))
             (finish-json-query id1)
@@ -1071,7 +1076,7 @@
     (detach-fridge-handle :wait wait)
     (if *remotelogging*
       (let (query-arm id1 res1)
-            (setq query-arm (concatenate string "send_prolog_assert_query('rdf_assert(\\'" detach-open-fridge-task-name "\\', knowrob:bodyPartUsed, \\'" (string use-arm) "\\', \\'LoggingGraph\\')', @(false), Result)."))
+            (setq query-arm (concatenate string "send_prolog_assert_query('rdf_assert(\\'" detach-open-fridge-task-name "\\', knowrob:bodyPartUsed, literal(type(xsd:string,\\'" (string use-arm) "\\')), \\'LoggingGraph\\')', @(false), Result)."))
             (setq id1 (send-json-prolog-query query-arm))
             (setq res1 (read-json-next-solution id1))
             (finish-json-query id1)
@@ -1087,7 +1092,7 @@
     (swipe-fridge-door :door-type door-type :ratio ratio :use-arm use-arm :wait wait)
     (if *remotelogging*
       (let (query-arm id1 res1)
-            (setq query-arm (concatenate string "send_prolog_assert_query('rdf_assert(\\'" swipe-fridge-task-name "\\', knowrob:bodyPartUsed, \\'" (string use-arm) "\\', \\'LoggingGraph\\')', @(false), Result)."))
+            (setq query-arm (concatenate string "send_prolog_assert_query('rdf_assert(\\'" swipe-fridge-task-name "\\', knowrob:bodyPartUsed, literal(type(xsd:string,\\'" (string use-arm) "\\')), \\'LoggingGraph\\')', @(false), Result)."))
             (setq id1 (send-json-prolog-query query-arm))
             (setq res1 (read-json-next-solution id1))
             (finish-json-query id1)
@@ -1106,7 +1111,7 @@
     (send *ri* :wait-interpolation)
     (if *remotelogging*
       (let (query-arm id1 res1)
-            (setq query-arm (concatenate string "send_prolog_assert_query('rdf_assert(\\'" pregrasp-task-name "\\', knowrob:bodyPartUsed, \\'" (string use-arm) "\\', \\'LoggingGraph\\')', @(false), Result)."))
+            (setq query-arm (concatenate string "send_prolog_assert_query('rdf_assert(\\'" pregrasp-task-name "\\', knowrob:bodyPartUsed, literal(type(xsd:string,\\'" (string use-arm) "\\')), \\'LoggingGraph\\')', @(false), Result)."))
             (setq id1 (send-json-prolog-query query-arm))
             (setq res1 (read-json-next-solution id1))
             (finish-json-query id1)
@@ -1213,7 +1218,7 @@
   (send *ri* :ros-wait 0.0 :spin-self t :spin t) ;; attention-check ...
   (if *remotelogging*
       (let (query-arm id1 res1)
-            (setq query-arm (concatenate string "send_prolog_assert_query('rdf_assert(\\'" postgrasp-task-name "\\', knowrob:bodyPartUsed, \\'" (string use-arm) "\\', \\'LoggingGraph\\')', @(false), Result)."))
+            (setq query-arm (concatenate string "send_prolog_assert_query('rdf_assert(\\'" postgrasp-task-name "\\', knowrob:bodyPartUsed, literal(type(xsd:string,\\'" (string use-arm) "\\')), \\'LoggingGraph\\')', @(false), Result)."))
             (setq id1 (send-json-prolog-query query-arm))
             (setq res1 (read-json-next-solution id1))
             (finish-json-query id1)

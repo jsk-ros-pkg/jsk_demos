@@ -84,7 +84,7 @@
     (send *ri* :move-to *opose*))
 
   (if *remotelogging*
-     (progn (defvar putdown-task-name (start-task "http://knowrob.org/kb/knowrob.owl#CRAMAction" "PUTDOWN"))
+     (progn (defvar putdown-task-name (start-task "http://knowrob.org/kb/knowrob.owl#CRAMAction" (string finish-type))
      (generate-subtask-relation go-to-start-task-name putdown-task-name))
     )
   (case finish-type
@@ -100,13 +100,7 @@
      (hand-over use-arm :wait-shock t))
     )
    (if *remotelogging*
-     (let (query-arm id1 res1)
-            (setq query-arm (concatenate string "send_prolog_assert_query('rdf_assert(\\'" putdown-task-name "\\', knowrob:bodyPartUsed, \\'" (string finish-type) "\\', \\'LoggingGraph\\')', @(false), Result)."))
-            (setq id1 (send-json-prolog-query query-arm))
-            (setq res1 (read-json-next-solution id1))
-            (finish-json-query id1)
-            (finish-task putdown-task-name)
-      ))
+     (finish-task putdown-task-name))
   t
   )
 
@@ -287,7 +281,7 @@
             (setq id1 (send-json-prolog-query query-object-acted))
             (setq res1 (read-json-next-solution id1))
             (finish-json-query id1)
-            (setq query-arm (concatenate string "send_prolog_assert_query('rdf_assert(\\'" open-fridge-task-name "\\', knowrob:bodyPartUsed, \\'" (string use-arm) "\\', \\'LoggingGraph\\')', @(false), Result)."))
+            (setq query-arm (concatenate string "send_prolog_assert_query('rdf_assert(\\'" open-fridge-task-name "\\', knowrob:bodyPartUsed, literal(type(xsd:string,\\'" (string use-arm) "\\')), \\'LoggingGraph\\')', @(false), Result)."))
             (setq id2 (send-json-prolog-query query-arm))
             (setq res2 (read-json-next-solution id2))
             (finish-json-query id2)
@@ -309,7 +303,7 @@
             (setq id1 (send-json-prolog-query query-object-acted))
             (setq res1 (read-json-next-solution id1))
             (finish-json-query id1)
-            (setq query-arm (concatenate string "send_prolog_assert_query('rdf_assert(\\'" grasp-task-name "\\', knowrob:bodyPartUsed,\\'" (string use-arm) "\\', \\'LoggingGraph\\')', @(false), Result)."))
+            (setq query-arm (concatenate string "send_prolog_assert_query('rdf_assert(\\'" grasp-task-name "\\', knowrob:bodyPartUsed, literal(type(xsd:string,\\'" (string use-arm) "\\')), \\'LoggingGraph\\')', @(false), Result)."))
             (setq id2 (send-json-prolog-query query-arm))
             (setq res2 (read-json-next-solution id2))
             (finish-json-query id2)
@@ -331,7 +325,7 @@
             (setq id1 (send-json-prolog-query query-object-acted))
             (setq res1 (read-json-next-solution id1))
             (finish-json-query id1)
-            (setq query-arm (concatenate string "send_prolog_assert_query('rdf_assert(\\'" close-fridge-task-name "\\', knowrob:bodyPartUsed,\\'" (string use-arm) "\\', \\'LoggingGraph\\')', @(false), Result)."))
+            (setq query-arm (concatenate string "send_prolog_assert_query('rdf_assert(\\'" close-fridge-task-name "\\', knowrob:bodyPartUsed, literal(type(xsd:string,\\'" (string use-arm) "\\')), \\'LoggingGraph\\')', @(false), Result)."))
             (setq id2 (send-json-prolog-query query-arm))
             (setq res2 (read-json-next-solution id2))
             (finish-json-query id2)
@@ -344,7 +338,8 @@
   )
 
   (if *remotelogging*
-      (defvar go-to-start-task-name (start-task "http://knowrob.org/kb/knowrob.owl#BaseMovement" "GoToStart"))
+      (defvar go-to-start-task-name (start-task "http://knowrob.org/kb/knowrob.owl#BaseMovement" "GoBackToStartPose"))
+      (generate-subtask-relation experiment-name go-to-start-task-name)
   )
   (case demo-type
     (:map
