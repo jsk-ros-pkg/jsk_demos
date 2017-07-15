@@ -819,9 +819,7 @@
                 (setq res1 (read-json-next-solution id1))
                 (finish-json-query id1)
                 (finish-task check-perceive-open-fridge-task-name)
-                (finish-task perceive-open-fridge-task-name)
-                (setq head-perceive-task-name (start-task "http://knowrob.org/kb/knowrob.owl#HeadMovement" "RelocateLookingTowardsFridge"))
-                (generate-subtask-relation achieve-open-fridge-task-name head-perceive-task-name))))
+                (finish-task perceive-open-fridge-task-name))))
 
         (if (and (boundp '*use-voicetext*) *use-voicetext*)
             (cond
@@ -899,6 +897,14 @@
              ))))
         ))
       ) ;; /when cds
+    (if *remotelogging*
+        (let (query-s id1 res1)
+           (setq query-s (concatenate string "send_prolog_assert_query('rdf_assert(\\'" check-perceive-open-fridge-task-name "\\', knowrob:taskSuccess, literal(type(xsd:boolean,\\'false\\')), \\'LoggingGraph\\'), rdf_assert(\\'" perceive-open-fridge-task-name "\\', knowrob:taskSuccess, literal(type(xsd:boolean,\\'false\\')), \\'LoggingGraph\\')', @(false), Result)."))
+           (setq id1 (send-json-prolog-query query-s))
+           (setq res1 (read-json-next-solution id1))
+           (finish-json-query id1)
+           (finish-task check-perceive-open-fridge-task-name)
+           (finish-task perceive-open-fridge-task-name)))
     ret
     ))
 
