@@ -810,6 +810,7 @@
                 (finish-task perceive-open-fridge-task-name) 
              )
           )
+          (ros::ros-info "recognition result: ~A" ret)
           (if ret (return-from move-to-and-open-fridge-door ret)))
         (if (and (boundp '*use-voicetext*) *use-voicetext*)
             (cond

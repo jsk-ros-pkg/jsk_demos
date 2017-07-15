@@ -389,8 +389,11 @@
                   apikey address certificate)
   (setq *logging* nil)
   (setq *remotelogging* t)
+  (ros::ros-info "authenticate start")
   (authenticate-openease apikey address certificate)
+  (ros::ros-info "connecting to user container")
   (connect-user-container)
+  (ros::ros-info "starting demo")
   (defvar *remotelogging* t)
   (demo :type atype :demo-type demo-type :app-manager app-manager :finish-type finish-type :use-arm use-arm)
   )
@@ -436,6 +439,9 @@
     (ros::unsubscribe "/Tablet/StartDemo")
     (ros::unsubscribe "/Murase/Demo")
     ))
+
+(defun demo-openease-short ()
+  (demo-openease :type "georgia" :apikey "'wStdxHsWLm2QMUV4OepDkwwqLqGdYH43SE71iCqNGxnPGsDbKCjfXrBu9q1CcsOv'" :address "'https://133.11.216.74'" :certificate "'/home/asil/cert/localhost.pem'"))
 
 (init)
 ;;(wait-android-query)
