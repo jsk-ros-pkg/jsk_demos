@@ -143,7 +143,6 @@
             (setq id1 (send-json-prolog-query query-sent))
             (setq res1 (read-json-next-solution id1))
             (finish-json-query id1)
-            t
   )
 )
 
@@ -394,7 +393,6 @@
   (ros::ros-info "connecting to user container")
   (connect-user-container)
   (ros::ros-info "starting demo")
-  (defvar *remotelogging* t)
   (demo :type atype :demo-type demo-type :app-manager app-manager :finish-type finish-type :use-arm use-arm)
   )
 
@@ -441,6 +439,7 @@
     ))
 
 (defun demo-openease-short ()
+  (defvar *use-english* t)
   (demo-openease :type "georgia" :apikey "'wStdxHsWLm2QMUV4OepDkwwqLqGdYH43SE71iCqNGxnPGsDbKCjfXrBu9q1CcsOv'" :address "'https://133.11.216.74'" :certificate "'/home/asil/cert/localhost.pem'"))
 
 (init)

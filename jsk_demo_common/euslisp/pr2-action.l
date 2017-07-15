@@ -657,7 +657,6 @@
          (send *ri* :wait-interpolation))
      )
     ((:slide1 :slide2)
-     (send *ri* :angle-vector (send *pr2* :angle-vector) (* ratio 3000))
      (send *ri* :wait-interpolation)
      ))
   (if *remotelogging*
