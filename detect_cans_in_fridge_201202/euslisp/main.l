@@ -318,19 +318,14 @@
   ;; move
 
   (if *remotelogging*
-      (let (query-object-acted query-arm id1 res1 id2 res2)
+      (let (query-object-acted query-arm id1 res1)
             (defvar close-fridge-task-name (start-task "http://knowrob.org/kb/knowrob.owl#ArmMovement" "CloseFridge"))
             (generate-subtask-relation experiment-name close-fridge-task-name)
             (setq query-object-acted (concatenate string "send_prolog_assert_query('cram_set_object_acted_on(\\'" close-fridge-task-name "\\',\\'" fridge-name "\\')', @(false), Result)."))
             (setq id1 (send-json-prolog-query query-object-acted))
             (setq res1 (read-json-next-solution id1))
-            (finish-json-query id1)
-            (setq query-arm (concatenate string "send_prolog_assert_query('rdf_assert(\\'" close-fridge-task-name "\\', knowrob:bodyPartUsed, literal(type(xsd:string,\\'" (string use-arm) "\\')), \\'LoggingGraph\\')', @(false), Result)."))
-            (setq id2 (send-json-prolog-query query-arm))
-            (setq res2 (read-json-next-solution id2))
-            (finish-json-query id2)
-      )
-  )
+            (finish-json-query id1)))
+
   (unless (close-fridge :use-arm use-arm)
     (return-from demo))
   (if *remotelogging*

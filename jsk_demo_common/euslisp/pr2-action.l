@@ -1297,10 +1297,12 @@
 (warn ";; define close-fridge")
 (defun close-fridge (&key (use-arm :rarm) (wait t))
   ;; close the door of fridge
+  (let (closing-arm)
   (send *ri* :ros-wait 0.0 :spin-self t) ;; attention-check ...
 
   (case use-arm
     (:rarm
+     (setq closing-arm :larm) ;use other one to close then
      (send *ri* :angle-vector-sequence
            (list (float-vector 130 5 74 100 -90 -70 -6 20 -13 50 -30 -25 118 -90 62 -2 31);; 2000
                  (float-vector 130 5 74 100 -90 -70 -6 20 -50 54 -15 -43 118 -90 62 -2 31);; 1000
@@ -1317,6 +1319,7 @@
            (list 2000 1000 1500 1500 2600 3000))
      )
     (:larm
+     (setq closing-arm :rarm) ;use other one to close then
      (send *ri* :angle-vector-sequence
 	   (list
 	    (float-vector 130 30.5203 45.755 4.94941 -109.614 -181.537 -6.86273 -181.599 -53.1607 47.972 -113.924 -85.8823 69.9861 -5.72958 -19.9642 20.098 23.796)
@@ -1336,19 +1339,19 @@
         (send *ri* :ros-wait 0.0 :spin-self t) ;; attention-check ...
         ))
   (if *remotelogging*
-     (progn (defvar tuck-close-fridge-task-name (start-task "http://knowrob.org/kb/knowrob.owl#ArmMovement" "TuckOtherArm"))
+     (progn (defvar tuck-close-fridge-task-name (start-task "http://knowrob.org/kb/knowrob.owl#ArmMovement" "TuckClosingArm"))
      (generate-subtask-relation close-fridge-task-name tuck-close-fridge-task-name))
     )
   (pr2-tuckarm-pose use-arm :outside)
   (if *remotelogging*
       (let (query-arm id1 res1)
-            (setq query-arm (concatenate string "send_prolog_assert_query('rdf_assert(\\'" tuck-close-fridge-task-name "\\', knowrob:bodyPartUsed, literal(type(xsd:string,\\'" (string :outside) "\\')), \\'LoggingGraph\\')', @(false), Result)."))
+            (setq query-arm (concatenate string "send_prolog_assert_query('rdf_assert(\\'" close-fridge-task-name "\\', knowrob:bodyPartUsed, literal(type(xsd:string,\\'" (string closing-arm) "\\')), \\'LoggingGraph\\')', @(false), Result)," "send_prolog_assert_query('rdf_assert(\\'" tuck-close-fridge-task-name "\\', knowrob:bodyPartUsed, literal(type(xsd:string,\\'" (string closing-arm) "\\')), \\'LoggingGraph\\')', @(false), Result)."))
             (setq id1 (send-json-prolog-query query-arm))
             (setq res1 (read-json-next-solution id1))
             (finish-json-query id1)
             (finish-task tuck-close-fridge-task-name)))
   t
-  )
+  ))
 
 (defun put-can-on-turtlebot ()
   (send *ri* :update-robot-state)
