@@ -1341,8 +1341,12 @@
     )
   (pr2-tuckarm-pose use-arm :outside)
   (if *remotelogging*
-     (finish-task tuck-close-fridge-task-name)
-  )
+      (let (query-arm id1 res1)
+            (setq query-arm (concatenate string "send_prolog_assert_query('rdf_assert(\\'" tuck-close-fridge-task-name "\\', knowrob:bodyPartUsed, literal(type(xsd:string,\\'" (string :outside) "\\')), \\'LoggingGraph\\')', @(false), Result)."))
+            (setq id1 (send-json-prolog-query query-arm))
+            (setq res1 (read-json-next-solution id1))
+            (finish-json-query id1)
+            (finish-task tuck-close-fridge-task-name)))
   t
   )
 
@@ -1724,7 +1728,7 @@
                     #f(12 13 21 62 -105 -117 -66 -71 -4 74 -104 -89 70 -5 20 4 40)
                     #f(12 9 24 50 -94 -158 -70 39 -4 74 -104 -89 70 -5 20 5 30)))
          (tms (make-list (length avs) :initial-element 1000))
-         (l-r-reverse #f(1  -1 1 -1 1 -1 1 -1  -1 1 -1 1 -1 1 -1  -1 1)))
+         (l-r-reverse #f(1  -1 1 -1 1 -1 1 -1  -1 1 -1 1 -1 1 -1  -1 1)) reset-pose-task tuck-reset-task achieve-hand-over-task)
     ;;
     (if (eq arm :rarm)
         (setq avs
@@ -1736,6 +1740,9 @@
                                l-r-reverse))
                       avs)))
     ;;
+    (if *remotelogging*
+      (setq reset-pose-task (start-task "http://knowrob.org/kb/knowrob.owl#BaseMovement" "ResetPosePreHandOver"))
+      (generate-subtask-relation achieve-putdown-task-name reset-pose-task))
     (unless isfreearm
       (pr2-reset-pose)
       (let ((avs-length (length avs)))
@@ -1746,23 +1753,53 @@
     ;;
     (send *ri* :angle-vector-sequence avs tms)
     (send *ri* :wait-interpolation)
+    (if *remotelogging*
+        (finish-task reset-pose-task))
     ;;
+    (if *remotelogging*
+        (setq achieve-hand-over-task (start-task "http://knowrob.org/kb/knowrob.owl#ArmMovement" "HandOverCan"))
+        (generate-subtask-relation achieve-putdown-task-name achieve-hand-over-task))
+
     (if (and wait-shock (not (numberp wait-shock))) ;; if wait-shock = t
         (setq wait-shock 10))
     (if wait-shock
         (progn (wait-for-hand-impact arm :timeout wait-shock)
                (ros::ros-info "return from gripper sensor event")
-               (send *ri* :move-gripper arm 0.08 :wait t))
+               (send *ri* :move-gripper arm 0.08 :wait t)
+               (if *remotelogging*
+                 (let (query-arm id1 res1)
+                   (setq query-arm (concatenate string "send_prolog_assert_query('rdf_assert(\\'" achieve-hand-over-task "\\', knowrob:taskSuccess, literal(type(xsd:boolean,\\'true\\')), \\'LoggingGraph\\')', @(false), Result)."))
+                   (setq id1 (send-json-prolog-query query-arm))
+                   (setq res1 (read-json-next-solution id1))
+                   (finish-json-query id1))))
       (progn
         (send *ri* :move-gripper arm 0.08 :wait t)
-        (unix::sleep 3)))
+        (unix::sleep 3)
+        (if *remotelogging*
+            (let (query-arm id1 res1)
+              (setq query-arm (concatenate string "send_prolog_assert_query('rdf_assert(\\'" achieve-hand-over-task "\\', knowrob:taskSuccess, literal(type(xsd:boolean,\\'false\\')), \\'LoggingGraph\\')', @(false), Result)."))
+              (setq id1 (send-json-prolog-query query-arm))
+              (setq res1 (read-json-next-solution id1))
+              (finish-json-query id1)))))
     ;;
     (send *ri* :angle-vector-sequence (append (cdr (reverse avs)) (list av)) tms)
     (send *ri* :move-gripper arm 0.00 :wait nil)
     (send *ri* :wait-interpolation)
+     (if *remotelogging*
+        (finish-task achieve-hand-over-task))
     ;;
     (send *pr2* :angle-vector (send *ri* :state :potentio-vector))
+    (if *remotelogging*
+        (setq tuck-reset-task (start-task "http://knowrob.org/kb/knowrob.owl#ArmMovement" "TuckArmAfterHandOver"))
+        (generate-subtask-relation achieve-putdown-task-name tuck-reset-task))
     (pr2-tuckarm-pose tuckarm)
+    (if *remotelogging*
+      (let (query-arm id1 res1)
+            (setq query-arm "send_prolog_assert_query('rdf_assert(\\'" tuck-reset-task "\\', knowrob:bodyPartUsed, literal(type(xsd:string,\\'botharm\\')), \\'LoggingGraph\\')', @(false), Result).")
+            (setq id1 (send-json-prolog-query query-arm))
+            (setq res1 (read-json-next-solution id1))
+            (finish-json-query id1)
+            (finish-task tuck-reset-task)))
     ))
 
 (defun tray-detection (obj)

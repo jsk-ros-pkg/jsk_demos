@@ -84,8 +84,8 @@
     (send *ri* :move-to *opose*))
 
   (if *remotelogging*
-     (progn (defvar putdown-task-name (start-task "http://knowrob.org/kb/knowrob.owl#CRAMAction" (string finish-type))
-     (generate-subtask-relation go-to-start-task-name putdown-task-name))
+     (progn (defvar achieve-putdown-task-name (start-task "http://knowrob.org/kb/knowrob.owl#CRAMAchieve" (string finish-type))
+     (generate-subtask-relation go-to-start-task-name achieve-putdown-task-name))
     )
   (case finish-type
     (:put-on-turtlebot
@@ -100,7 +100,7 @@
      (hand-over use-arm :wait-shock t))
     )
    (if *remotelogging*
-     (finish-task putdown-task-name))
+     (finish-task achieve-putdown-task-name))
   t
   )
 
