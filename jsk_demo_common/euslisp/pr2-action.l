@@ -316,15 +316,27 @@
 
 (defun open-fridge-traj (hand handle &optional (rad/length pi/2) &rest args
                          &key (radius 500) (path-div 20) (door-type :circle) &allow-other-keys)
-  (let ((cds-traj
+  (let (cds-traj reach-handle-task move-handle-task achieve-move-handle-task)
+    (if *remotelogging*
+     (progn (setq achieve-move-handle-task (start-task "http://knowrob.org/kb/knowrob.owl#CRAMAcheive" "ReachAndOpenFridgeDoor"))
+     (generate-subtask-relation achieve-open-fridge-task-name achieve-move-handle-task))
+     (progn (setq reach-handle-task (start-task "http://knowrob.org/kb/knowrob.owl#CRAMAcheive" "ReachFridgeDoor"))
+     (generate-subtask-relation achieve-move-handle-task reach-handle-task)))
+    (setq cds-traj
          (case door-type
            (:circle
             (open-fridge-circle-traj handle rad/length :radius radius :path-div path-div))
            (:slide
             (open-fridge-slide-traj handle rad/length :path-div path-div))
-           )))
+           ))
+    (if *remotelogging*
+      (finish-task reach-handle-task)
+      (progn (setq move-handle-task (start-task "http://knowrob.org/kb/knowrob.owl#CRAMAcheive" "ReachFridgeDoor"))
+      (generate-subtask-relation achieve-move-handle-task move-handle-task)))
     (apply #'move-fridge-traj hand cds-traj args)
-    ))
+    (if *remotelogging*
+      (finish-task move-handle-task)
+      (finish-task achieve-move-handle-task))))
 (defun open-fridge-slide-traj
   (handle &optional (path-length 200)
           &key  (path-div 20) (pre-start-x -100) (start-x 25)
@@ -1019,7 +1031,7 @@
 
     ;; detect fridge and open door
     (if *remotelogging*
-     (progn (defvar achieve-open-fridge-task-name (start-task "http://knowrob.org/kb/knowrob.owl#CRAMAchieve" "MoveAndOpenFridgeDoor"))
+     (progn (defvar achieve-open-fridge-task-name (start-task "http://knowrob.org/kb/knowrob.owl#CRAMAchieve" "PerceiveAndOpenFridgeDoor"))
      (generate-subtask-relation open-fridge-task-name achieve-open-fridge-task-name))
     )
     (dotimes (i 10 nil)
