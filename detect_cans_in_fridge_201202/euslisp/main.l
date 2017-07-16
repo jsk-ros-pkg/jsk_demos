@@ -84,7 +84,7 @@
     (send *ri* :move-to *opose*))
 
   (if *remotelogging*
-     (progn (defvar achieve-putdown-task-name (start-task "http://knowrob.org/kb/knowrob.owl#CRAMAchieve" (string finish-type))
+     (progn (defvar achieve-putdown-task-name (start-task "http://knowrob.org/kb/knowrob.owl#CRAMAchieve" (string finish-type)))
      (generate-subtask-relation go-to-start-task-name achieve-putdown-task-name))
     )
   (case finish-type
