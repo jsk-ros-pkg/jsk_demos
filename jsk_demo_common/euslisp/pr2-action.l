@@ -1224,7 +1224,7 @@
                             (send cds :copy-worldcoords)))
       (if *remotelogging*
         (progn 
-          (defvar grasp-execute-task (start-task "http://knowrob.org/kb/knowrob.owl#ArmMovement" "GraspExecutionCan"))
+          (setq grasp-execute-task (start-task "http://knowrob.org/kb/knowrob.owl#ArmMovement" "GraspExecutionCan"))
           (generate-subtask-relation grasp-task-name grasp-execute-task)))
       (unless (boundp '*tfb*)
         (setq *tfb* (instance ros::transform-broadcaster :init)))
