@@ -1139,6 +1139,12 @@
     ))
 
 (defun move-to-can-spot (&key (use-arm :rarm) (rotation 20) (move t) (pre-move t))
+  (let (base-grasp-init-task-name)
+  (if *remotelogging*
+     (progn 
+     (setq base-grasp-init-task-name (start-task "http://knowrob.org/kb/knowrob.owl#BaseMovement" "RelocateForPerceivingCan"))
+     (generate-subtask-relation grasp-task-name base-grasp-init-task-name))
+  )
   (when (and move pre-move)
     (send *ri* :ros-wait 0.0 :spin-self t :spin t) ;; attention-check ...
     (ros::ros-info "GO POS UNSAFE for grasping can")
@@ -1155,7 +1161,7 @@
 
   (send *ri* :ros-wait 0.0 :spin-self t :spin t) ;; attention-check ...
   (send *pr2* :angle-vector (send *ri* :state :potentio-vector))
-  )
+  (if *remotelogging* (finish-task base-grasp-init-task-name))))
 
 
 (defun grasp-can-init ()
@@ -1176,27 +1182,50 @@
   ;; detect cans which was indicated by ( type )
   ;;(when (not (setq cds (check-detection :type *type* :single t)))
   ;;(setq cds (check-detection :type *type* :tf-force t :timeout 30 :single t)))
-  (let (cds isgrasp)
+  (let (cds isgrasp can-perception-task check-can-perception-task grasp-execute-task)
+    (if *remotelogging*
+     (progn 
+     (defvar can-perception-task (start-task "http://knowrob.org/kb/knowrob.owl#CRAMPerceive" "PerceiveCan"))
+     (generate-subtask-relation grasp-task-name can-perception-task)))
     (cond
      ((not (send *ri* :simulation-modep)) ;; real mode
+      (if *remotelogging*
+        (progn (setq check-can-perception-task (start-task "http://knowrob.org/kb/knowrob.owl#WithFailureHandling" "PerceptionFailureDetection"))
+        (generate-subtask-relation can-perception-task check-can-perception-task))
+      )
       (unless (setq cds (check-detection :speak-name *type*
                                          :type *type* :tf-force t :timeout 35 :single t
                                          :detection-topic "/kinect_head_c2/depth_registered/ObjectDetection"))
         (setq cds (check-detection :speak-name *type*
                                    :type *type* :tf-force t :timeout 70 :single t
-                                   :detection-topic "/kinect_head_c2/depth_registered/ObjectDetection"))))
+                                   :detection-topic "/kinect_head_c2/depth_registered/ObjectDetection")))
+      (if *remotelogging*
+        (finish-task check-can-perception-task)
+      ))
      (t ;; simulation mode
       (setq cds (send (make-cube 60 60 60) :translate (float-vector 756 302 1164)))))
+    (if *remotelogging*
+        (finish-task can-perception-task))
     (setq *can-cds* cds)
     (send *ri* :ros-wait 0.0 :spin-self t :spin t) ;; attention-check ...
     (when cds
       ;; (speak-jp (format nil "~A を とりだします" *type*))
+      (if *remotelogging*
+        (let (query-s id1 res1)
+           (setq query-s (concatenate string "send_prolog_assert_query('rdf_assert(\\'" check-can-perception-task "\\', knowrob:taskSuccess, literal(type(xsd:boolean,\\'true\\')), \\'LoggingGraph\\'), rdf_assert(\\'" can-perception-task "\\', knowrob:taskSuccess, literal(type(xsd:boolean,\\'true\\')), \\'LoggingGraph\\')', @(false), Result)."))
+           (setq id1 (send-json-prolog-query query-s))
+           (setq res1 (read-json-next-solution id1))
+           (finish-json-query id1)))
       (send *obj* :reset-coords)
       (send *obj* :transform cds)
       (warn ";; print check cans~%")
       (dump-structure *standard-output*
                       (list (send *pr2* :copy-worldcoords)
                             (send cds :copy-worldcoords)))
+      (if *remotelogging*
+        (progn 
+          (defvar grasp-execute-task (start-task "http://knowrob.org/kb/knowrob.owl#ArmMovement" "GraspExecutionCan"))
+          (generate-subtask-relation grasp-task-name grasp-execute-task)))
       (unless (boundp '*tfb*)
         (setq *tfb* (instance ros::transform-broadcaster :init)))
       (send *tfb* :send-transform
@@ -1211,7 +1240,21 @@
           (setq isgrasp t))
       (ros::ros-info "isgrasp : ~A" isgrasp)
       (when isgrasp
+        (if *remotelogging*
+         (let (query-s id1 res1)
+           (setq query-s (concatenate string "send_prolog_assert_query('rdf_assert(\\'" grasp-execute-task "\\', knowrob:taskSuccess, literal(type(xsd:boolean,\\'true\\')), \\'LoggingGraph\\')', @(false), Result)."))
+           (setq id1 (send-json-prolog-query query-s))
+           (setq res1 (read-json-next-solution id1))
+           (finish-json-query id1)
+           (finish-task grasp-execute-task)))
         (return-from grasp-can-motion t))
+      (if *remotelogging*
+         (let (query-s id1 res1)
+           (setq query-s (concatenate string "send_prolog_assert_query('rdf_assert(\\'" grasp-execute-task "\\', knowrob:taskSuccess, literal(type(xsd:boolean,\\'false\\')), \\'LoggingGraph\\')', @(false), Result)."))
+           (setq id1 (send-json-prolog-query query-s))
+           (setq res1 (read-json-next-solution id1))
+           (finish-json-query id1)
+           (finish-task grasp-execute-task)))
       ;; (unix::sleep 2)
       (if (and (boundp '*use-voicetext*) *use-voicetext*)
           (cond
@@ -1220,6 +1263,12 @@
            (t (speak-jp "失敗しましたもう一度やってみます。")))
         (speak-jp "しっぱいしました  もういちど やって みます"));;
       ) ;; / (when cds
+    (if *remotelogging*
+     (let (query-s id1 res1)
+       (setq query-s (concatenate string "send_prolog_assert_query('rdf_assert(\\'" check-can-perception-task "\\', knowrob:taskSuccess, literal(type(xsd:boolean,\\'false\\')), \\'LoggingGraph\\'), rdf_assert(\\'" can-perception-task "\\', knowrob:taskSuccess, literal(type(xsd:boolean,\\'false\\')), \\'LoggingGraph\\')', @(false), Result)."))
+       (setq id1 (send-json-prolog-query query-s))
+       (setq res1 (read-json-next-solution id1))
+       (finish-json-query id1)))
     (return-from grasp-can-motion isgrasp)
     ))
 
@@ -1258,25 +1307,24 @@
       ;; grasp can
       (unix:sleep 2)
       (dotimes (trial 10)
-        (let (trial-task)
           (if *remotelogging*
-             (progn (setq trial-task (start-task "http://knowrob.org/kb/knowrob.owl#ArmMovement" "GraspTrial"))
-                    (generate-subtask-relation grasp-task-name trial-task)))
+             (progn (defvar grasp-trial-task (start-task "http://knowrob.org/kb/knowrob.owl#CRAMAchieve" "GraspTrial"))
+                    (generate-subtask-relation grasp-task-name grasp-trial-task)))
           (setq isgrasp (grasp-can-motion :use-arm use-arm :rotation rotation))
-          (finish-task trial-task)
+          (if *remotelogging* (finish-task grasp-trial-task))
           (if (and *remotelogging* isgrasp) 
              (let (query-s id1 res1)
-                (setq query-s (concatenate string "send_prolog_assert_query('rdf_assert(\\'" trial-task "\\', knowrob:taskSuccess, literal(type(xsd:boolean,\\'true\\')), \\'LoggingGraph\\'), rdf_assert(\\'" grasp-task-name "\\', knowrob:taskSuccess, literal(type(xsd:boolean,\\'true\\')), \\'LoggingGraph\\')', @(false), Result)."))
+                (setq query-s (concatenate string "send_prolog_assert_query('rdf_assert(\\'" grasp-trial-task "\\', knowrob:taskSuccess, literal(type(xsd:boolean,\\'true\\')), \\'LoggingGraph\\'), rdf_assert(\\'" grasp-task-name "\\', knowrob:taskSuccess, literal(type(xsd:boolean,\\'true\\')), \\'LoggingGraph\\')', @(false), Result)."))
                 (setq id1 (send-json-prolog-query query-s))
                 (setq res1 (read-json-next-solution id1))
                 (finish-json-query id1)   
                 (return))
               (let (query-s id1 res1)
-                (setq query-s (concatenate string "send_prolog_assert_query('rdf_assert(\\'" trial-task "\\', knowrob:taskSuccess, literal(type(xsd:boolean,\\'false\\')), \\'LoggingGraph\\')', @(false), Result)."))
+                (setq query-s (concatenate string "send_prolog_assert_query('rdf_assert(\\'" grasp-trial-task "\\', knowrob:taskSuccess, literal(type(xsd:boolean,\\'false\\')), \\'LoggingGraph\\')', @(false), Result)."))
                 (setq id1 (send-json-prolog-query query-s))
                 (setq res1 (read-json-next-solution id1))
                 (finish-json-query id1)   
-                (return)))))
+                (return))))
       (if isgrasp
           (if move
             (go-back-from-fridge :use-arm use-arm :rotation rotation) t)
