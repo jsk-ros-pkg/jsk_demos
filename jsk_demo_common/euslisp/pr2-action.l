@@ -331,7 +331,7 @@
            ))
     (if *remotelogging*
       (progn (finish-task reach-handle-task)
-      (setq move-handle-task (start-task "http://knowrob.org/kb/knowrob.owl#CRAMAcheive" "ReachFridgeDoor"))
+      (setq move-handle-task (start-task "http://knowrob.org/kb/knowrob.owl#CRAMAcheive" "MoveFridgeHandle"))
       (generate-subtask-relation achieve-move-handle-task move-handle-task)))
     (apply #'move-fridge-traj hand cds-traj args)
     (if *remotelogging*
