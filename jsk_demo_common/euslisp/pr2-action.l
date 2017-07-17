@@ -1185,7 +1185,7 @@
   (let (cds isgrasp can-perception-task check-can-perception-task grasp-execute-task)
     (if *remotelogging*
      (progn 
-     (defvar can-perception-task (start-task "http://knowrob.org/kb/knowrob.owl#CRAMPerceive" "PerceiveCan"))
+     (setq can-perception-task (start-task "http://knowrob.org/kb/knowrob.owl#CRAMPerceive" "PerceiveCan"))
      (generate-subtask-relation grasp-task-name can-perception-task)))
     (cond
      ((not (send *ri* :simulation-modep)) ;; real mode
