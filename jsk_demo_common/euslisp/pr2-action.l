@@ -896,6 +896,7 @@
                     (/ (elt (send diffcds :worldpos) 0) 1100.0)
                     (/ (elt (send diffcds :worldpos) 1) 1100.0)
                     (* 0.9 (rad2deg (elt (car (rpy-angle (send diffcds :worldrot))) 0))))
+             ))
              (if *remotelogging*
                (let (query-av query-fv id1 res1 id2 res2)
                  (setq query-av (concatenate string "send_prolog_assert_query('rdf_assert(\\'" move-perceive-task-name "\\', knowrob:toLocation, literal(type(xsd:string,\\'" (apply #'format nil "~A ~A ~A" (coerce (send *ri* :go-pos-unsafe) cons)) "\\')), \\'LoggingGraph\\')', @(false), Result)."))
@@ -904,9 +905,7 @@
                  (finish-json-query id1)
                  (finish-task move-perceive-task-name)
                )
-             )
-             
-             ))))
+             )))
         ))
       ) ;; /when cds
     (if *remotelogging*
