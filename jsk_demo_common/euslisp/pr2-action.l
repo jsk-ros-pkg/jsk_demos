@@ -1840,8 +1840,8 @@
     ;;
     (send *pr2* :angle-vector (send *ri* :state :potentio-vector))
     (if *remotelogging*
-        (setq tuck-reset-task (start-task "http://knowrob.org/kb/knowrob.owl#ArmMovement" "TuckArmAfterHandOver"))
-        (generate-subtask-relation achieve-putdown-task-name tuck-reset-task))
+        (progn (setq tuck-reset-task (start-task "http://knowrob.org/kb/knowrob.owl#ArmMovement" "TuckArmAfterHandOver"))
+        (generate-subtask-relation achieve-putdown-task-name tuck-reset-task)))
     (pr2-tuckarm-pose tuckarm)
     (if *remotelogging*
       (let (query-arm id1 res1)
