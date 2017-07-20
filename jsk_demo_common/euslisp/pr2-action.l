@@ -1186,7 +1186,7 @@
     (if *remotelogging*
      (progn 
      (setq can-perception-task (start-task "http://knowrob.org/kb/knowrob.owl#CRAMPerceive" "PerceiveCan"))
-     (generate-subtask-relation grasp-task-name can-perception-task)))
+     (generate-subtask-relation grasp-trial-task can-perception-task)))
     (cond
      ((not (send *ri* :simulation-modep)) ;; real mode
       (if *remotelogging*
@@ -1225,7 +1225,7 @@
       (if *remotelogging*
         (progn 
           (setq grasp-execute-task (start-task "http://knowrob.org/kb/knowrob.owl#ArmMovement" "GraspExecutionCan"))
-          (generate-subtask-relation grasp-task-name grasp-execute-task)))
+          (generate-subtask-relation grasp-trial-task grasp-execute-task)))
       (unless (boundp '*tfb*)
         (setq *tfb* (instance ros::transform-broadcaster :init)))
       (send *tfb* :send-transform
