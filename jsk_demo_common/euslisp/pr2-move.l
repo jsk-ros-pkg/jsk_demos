@@ -125,12 +125,12 @@
 
 (warn "goto-front-of-fridge~%")
 (defun base-go-to-fridge (&key (wait t))
-  (let ((co (send *scene* :spot "/eng2/7f/room73B2-fridge-front")))
-    (send co :translate (float-vector 0 0 0) :world)
-    (if *remotelogging*
+  (if *remotelogging*
      (progn (defvar declaretive-nearby-fridge-task-name (start-task "http://knowrob.org/kb/knowrob.owl#DeclaretiveGoal" "CalculateGoalPose"))
      (generate-subtask-relation nearby-fridge-task-name declaretive-nearby-fridge-task-name))
-    )
+  )
+  (let ((co (send *scene* :spot "/eng2/7f/room73B2-fridge-front")))
+    (send co :translate (float-vector 0 0 0) :world)
     (if (send *ri* :simulation-modep)
         (setq co (send *room73b2* :spot "fridge-front-spot")))
     (if *remotelogging*

@@ -689,7 +689,7 @@
   )
 
 (defparameter *fridge-handle-cds* nil)
-(defun move-to-and-open-fridge-door (&key (door-type :circle) (ratio 1) (look-around nil) (head-pitch 14) (torso-lift 130) (move t) (open-fridge-func #'open-fridge-traj) (wait t))
+(defun move-to-and-open-fridge-door (&key (door-type :circle) (ratio 1) (look-around nil) (head-pitch 14) (torso-lift 130) (move t) (open-fridge-func #'open-fridge-traj) (wait t) (randomize-locations nil))
   (let (ret perceive-open-fridge-task-name check-perceive-open-fridge-task-name head-perceive-task-name torso-perceive-task-name move-perceive-task-name
         (idealcds
          (case door-type
@@ -882,8 +882,17 @@
              ))
 
              (cond
+             ((and wait randomize-locations)
+              (send *ri* :go-pos-unsafe ;;randomize
+                    (+ (/ (elt (send diffcds :worldpos) 0) 1100.0) (- 1.0 (/ (random 20000) 10000.0)))
+                    (+ (/ (elt (send diffcds :worldpos) 1) 1100.0) (- 1.0 (/ (random 20000) 10000.0)))
+                    (* 0.9 (rad2deg (elt (car (rpy-angle (send diffcds :worldrot))) 0))))
+              ;; wait ???
+              (send *ri* :ros-wait 0.5 :spin-self t :spin t) ;; attention-check ...
+              ;; (send *ri* :wait-interpolation)
+              )
              (wait
-              (send *ri* :go-pos-unsafe
+              (send *ri* :go-pos-unsafe ;;randomize
                     (/ (elt (send diffcds :worldpos) 0) 1100.0)
                     (/ (elt (send diffcds :worldpos) 1) 1100.0)
                     (* 0.9 (rad2deg (elt (car (rpy-angle (send diffcds :worldrot))) 0))))
@@ -1035,7 +1044,7 @@
     )
     (dotimes (i 10 nil)
       ;; detect fridge and move to the fridge door
-      (setq ret (move-to-and-open-fridge-door :door-type door-type :ratio ratio :look-around look-around :head-pitch head-pitch :torso-lift torso-lift :move move :open-fridge-func open-fridge-func :wait wait))
+      (setq ret (move-to-and-open-fridge-door :door-type door-type :ratio ratio :look-around look-around :head-pitch head-pitch :torso-lift torso-lift :move move :open-fridge-func open-fridge-func :wait wait :randomize-locations t))
       (if ret (return))
       )
     (if *remotelogging*
