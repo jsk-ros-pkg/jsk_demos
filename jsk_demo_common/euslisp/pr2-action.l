@@ -1060,11 +1060,16 @@
         (speak-jp "れいぞうこ を みつけられません でした"))
       (send *ri* :ros-wait 2.0 :spin-self t :spin t) ;; attention-check ...
       (if *remotelogging*
-        (let (query-av id1 res1)
+        (let (query-av id1 res1 query-owl id-owl res-owl)
             (setq query-av (concatenate string "send_prolog_assert_query('rdf_assert(\\'" achieve-open-fridge-task-name "\\', knowrob:taskSuccess, literal(type(xsd:boolean,\\'false\\')), \\'LoggingGraph\\')', @(false), Result)."))
             (setq id1 (send-json-prolog-query query-av))
             (setq res1 (read-json-next-solution id1))
             (finish-json-query id1)
+            (finish-task experiment-name)
+            (setq query-owl (concatenate string "send_prolog_assert_query(' rdf_save(\\'/home/ros/user_data/euslisp.owl\\', [graph(\\'LoggingGraph\\')])', @(false), Result)."))
+            (setq id-owl (send-json-prolog-query query-owl))
+            (setq res-owl (read-json-next-solution id-owl))
+            (finish-json-query id-owl)
          )
       )
       (return-from open-fridge-door nil))
