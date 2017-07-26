@@ -884,8 +884,8 @@
              (cond
              ((and wait randomize-locations)
               (send *ri* :go-pos-unsafe ;;randomize
-                    (+ (/ (elt (send diffcds :worldpos) 0) 1100.0) (- 1.0 (/ (random 20000) 10000.0)))
-                    (+ (/ (elt (send diffcds :worldpos) 1) 1100.0) (- 1.0 (/ (random 20000) 10000.0)))
+                    (+ (/ (elt (send diffcds :worldpos) 0) 1100.0) (- 0.1 (/ (random 20000) 100000.0)))
+                    (+ (/ (elt (send diffcds :worldpos) 1) 1100.0) (- 0.1 (/ (random 20000) 100000.0)))
                     (* 0.9 (rad2deg (elt (car (rpy-angle (send diffcds :worldrot))) 0))))
               ;; wait ???
               (send *ri* :ros-wait 0.5 :spin-self t :spin t) ;; attention-check ...
