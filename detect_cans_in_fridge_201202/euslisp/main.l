@@ -430,7 +430,7 @@
 
 (defun demo-openease-short ()
   (defvar *use-english* t)
-  (demo-openease :type "georgia" :apikey "'wStdxHsWLm2QMUV4OepDkwwqLqGdYH43SE71iCqNGxnPGsDbKCjfXrBu9q1CcsOv'" :address "'https://133.11.216.74'" :certificate "'/home/asil/cert/localhost.pem'"))
+  (demo-openease :type "georgia" :apikey "'wStdxHsWLm2QMUV4OepDkwwqLqGdYH43SE71iCqNGxnPGsDbKCjfXrBu9q1CcsOv'" :address "'https://133.11.216.20'" :certificate "'/home/asil/cert/localhost.pem'"))
 
 (init)
 ;;(wait-android-query)
