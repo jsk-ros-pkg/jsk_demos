@@ -1014,7 +1014,7 @@
         ))
 
 (warn ";; define open-fridge-door")
-(defvar *fridge-distance-threshold* 50.0)
+(defvar *fridge-distance-threshold* 60.0)
 (defvar *fridge-rotation-threshold* 0.09)
 (defun open-fridge-door (&key (open-fridge-func #'open-fridge-traj)
                               (torso-lift 130) (head-pitch 14)
