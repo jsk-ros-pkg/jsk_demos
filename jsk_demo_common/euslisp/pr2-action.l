@@ -1014,7 +1014,7 @@
         ))
 
 (warn ";; define open-fridge-door")
-(defvar *fridge-distance-threshold* 25.0)
+(defvar *fridge-distance-threshold* 35.0)
 (defvar *fridge-rotation-threshold* 0.09)
 (defun open-fridge-door (&key (open-fridge-func #'open-fridge-traj)
                               (torso-lift 130) (head-pitch 14)
@@ -1044,7 +1044,7 @@
     )
     (dotimes (i 10 nil)
       ;; detect fridge and move to the fridge door
-      (setq ret (move-to-and-open-fridge-door :door-type door-type :ratio ratio :look-around look-around :head-pitch head-pitch :torso-lift torso-lift :move move :open-fridge-func open-fridge-func :wait wait :randomize-locations t))
+      (setq ret (move-to-and-open-fridge-door :door-type door-type :ratio ratio :look-around look-around :head-pitch head-pitch :torso-lift torso-lift :move move :open-fridge-func open-fridge-func :wait wait :randomize-locations nil))
       (if ret (return))
       )
     (if *remotelogging*
