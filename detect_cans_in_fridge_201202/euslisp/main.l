@@ -119,6 +119,20 @@
   )
 )
 
+(defun likely-location-to-open-fridge (positive-file negative-file)
+  (let (query-sent id1 res1 x-max y-max (lst ()))
+            (setq query-sent (concatenate string "send_prolog_assert_query('mixed_gaussian_with_failure(\\'" /home/ros/user_data/positive.csv "\\', 1, \\'"/home/ros/user_data/negative.csv "\\', 3, '/home/ros/user_data/data_mixture.csv', X, Y)', @(false), 'ActionInst', Result)."))
+            (setq id1 (send-json-prolog-query query-sent))
+            (setq res1 (read-json-next-solution id1))
+            (finish-json-query id1)
+            (setq x-max cdr (first (with-input-from-string (is (send res1 :solution)) (json::parse-object is))))
+            (setq y-max cdr (second (with-input-from-string (is (send res1 :solution)) (json::parse-object is))))
+            (setf lst (cons y-max lst))
+            (setf lst (cons x-max lst))
+            lst
+  )
+)
+
 (defun start-task (task-type task-context)
   (let (time-string query-sent id1 res1)
             (setq time-string (get-current-time-str))
