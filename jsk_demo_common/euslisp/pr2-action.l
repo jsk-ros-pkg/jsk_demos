@@ -894,12 +894,10 @@
              ((and wait learnt-locations)
 	      (let (lst x-likely y-likely)
                 (speak-en "I am asking to open ease how to open a fridge door")
-                (send *ri* :ros-wait 2 :spin-self t :spin t)
-		(setf lst (likely-location-to-open-fridge "/home/ros/user_data/positive.csv" "/home/ros/user_data/negative.csv"))
+                (setf lst (likely-location-to-open-fridge "/home/ros/user_data/positive.csv" "/home/ros/user_data/negative.csv"))
 		(setq x-likely (first lst))
 		(setq y-likely (second lst))
                 (speak-en "I learnt how to open a fridge door via open ease. Now I will execute!")
-                (send *ri* :ros-wait 2 :spin-self t :spin t)
                 (setq co (send *tfl* :lookup-transform "base_link" "map" (ros::time)))
                 (send *ri* :go-pos-unsafe
                     (* -1 (+ x-likely (/ (elt (send co :worldpos) 0) 1000.0)))

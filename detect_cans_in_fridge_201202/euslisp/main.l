@@ -395,7 +395,6 @@
   (setq *remotelogging* t)
   (ros::ros-info "authenticate start")
   (speak-en "I am connecting to open ease, my social network")
-  (send *ri* :ros-wait 2 :spin-self t :spin t)
   (authenticate-openease apikey address certificate)
   (ros::ros-info "connecting to user container")
   (connect-user-container)
