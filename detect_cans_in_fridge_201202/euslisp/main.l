@@ -4,7 +4,7 @@
 (ros::load-ros-manifest "json_prolog_msgs")
 
 (defvar *use-voicetext* t)
-(defvar *use-english* nil)
+(defvar *use-english* t)
 (defvar *logging* nil)
 (defvar *remotelogging* nil)
 (defvar *debug-view* (ros::get-param "~debug_view" t))
@@ -394,6 +394,7 @@
   (setq *logging* nil)
   (setq *remotelogging* t)
   (ros::ros-info "authenticate start")
+  (speak-jp "I am connecting to my social network: open ease")
   (authenticate-openease apikey address certificate)
   (ros::ros-info "connecting to user container")
   (connect-user-container)
