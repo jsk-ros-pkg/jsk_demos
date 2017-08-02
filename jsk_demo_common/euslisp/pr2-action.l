@@ -896,7 +896,7 @@
 		(setf lst (likely-location-to-open-fridge "/home/ros/user_data/positive.csv" "/home/ros/user_data/negative.csv"))
 		(setq x-likely (first lst))
 		(setq y-likely (second lst))
-                (setq co (send *tfl* :lookup-transform "base_link" "map" (ros::time))
+                (setq co (send *tfl* :lookup-transform "base_link" "map" (ros::time)))
                 (send *ri* :go-pos-unsafe
                     (+ x-likely (/ (elt (send co :worldpos) 0) 1100.0))
                     (+ y-likely (/ (elt (send co :worldpos) 1) 1100.0))
