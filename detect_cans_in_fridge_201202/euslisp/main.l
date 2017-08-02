@@ -78,7 +78,7 @@
     (if (and (boundp '*use-voicetext*) *use-voicetext*)
         (cond
          ((and (boundp '*use-english*) *use-english*)
-          (speak-jp (format nil "I will bring  ~a." *type*)))
+          (speak-en (format nil "I will bring  ~a." *type*)))
          (t (speak-jp (format nil "~aを持って行きます。" *type*))))
       (speak-jp (format nil "~a を もって いきます" *type*)))
     (send *ri* :move-to *opose*))
@@ -94,7 +94,7 @@
      (if (and (boundp '*use-voicetext*) *use-voicetext*)
          (cond
           ((and (boundp '*use-english*) *use-english*)
-           (speak-jp (format nil "Please take ~a." *type*)))
+           (speak-en (format nil "Please take ~a." *type*)))
           (t (speak-jp (format nil "~aをどうぞ。" *type*))))
        (speak-jp (format nil "~a を どうぞ" *type*)))
      (hand-over use-arm :wait-shock t))
@@ -237,7 +237,7 @@
   (if (and (boundp '*use-voicetext*) *use-voicetext*)
       (cond
        ((and (boundp '*use-english*) *use-english*)
-        (speak-jp (format nil "I will look for ~a and bring it. Please wait a minute." *type*)))
+        (speak-en (format nil "I will look for ~a and bring it. Please wait a minute." *type*)))
        (t (speak-jp (format nil "~aを持って行きます。少々、お待ちください。" *type*))))
     (speak-jp (format nil "~a を もってきます  しょうしょう おまち ください" *type*)))
   (pr2-tuckarm-pose :rarm)
@@ -394,7 +394,8 @@
   (setq *logging* nil)
   (setq *remotelogging* t)
   (ros::ros-info "authenticate start")
-  (speak-jp "I am connecting to my social network: open ease")
+  (speak-en "I am connecting to open ease, my social network")
+  (send *ri* :ros-wait 2 :spin-self t :spin t)
   (authenticate-openease apikey address certificate)
   (ros::ros-info "connecting to user container")
   (connect-user-container)

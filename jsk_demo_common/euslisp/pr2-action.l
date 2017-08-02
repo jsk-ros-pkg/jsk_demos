@@ -836,7 +836,7 @@
         (if (and (boundp '*use-voicetext*) *use-voicetext*)
             (cond
              ((and (boundp '*use-english*) *use-english*)
-              (speak-jp "I could not open the refrigerator."))
+              (speak-en "I could not open the refrigerator."))
              (t (speak-jp "冷蔵庫を開けられませんでした。")))
           (speak-jp "れいぞうこを あけられません でした"))
 
@@ -893,11 +893,13 @@
               )
              ((and wait learnt-locations)
 	      (let (lst x-likely y-likely)
-                (speak-jp "I am asking to open ease how to open a fridge door")
+                (speak-en "I am asking to open ease how to open a fridge door")
+                (send *ri* :ros-wait 2 :spin-self t :spin t)
 		(setf lst (likely-location-to-open-fridge "/home/ros/user_data/positive.csv" "/home/ros/user_data/negative.csv"))
 		(setq x-likely (first lst))
 		(setq y-likely (second lst))
-                (speak-jp "I learnt how to open a fridge door via open ease. Now I will execute!")
+                (speak-en "I learnt how to open a fridge door via open ease. Now I will execute!")
+                (send *ri* :ros-wait 2 :spin-self t :spin t)
                 (setq co (send *tfl* :lookup-transform "base_link" "map" (ros::time)))
                 (send *ri* :go-pos-unsafe
                     (* -1 (+ x-likely (/ (elt (send co :worldpos) 0) 1000.0)))
@@ -1071,7 +1073,7 @@
       (if (and (boundp '*use-voicetext*) *use-voicetext*)
           (cond
            ((and (boundp '*use-english*) *use-english*)
-            (speak-jp "I could not find the refrigerator."))
+            (speak-en "I could not find the refrigerator."))
            (t (speak-jp "冷蔵庫を見つけられませんでした。")))
         (speak-jp "れいぞうこ を みつけられません でした"))
       (send *ri* :ros-wait 2.0 :spin-self t :spin t) ;; attention-check ...
@@ -1289,7 +1291,7 @@
       (if (and (boundp '*use-voicetext*) *use-voicetext*)
           (cond
            ((and (boundp '*use-english*) *use-english*)
-            (speak-jp "I failed to pick up. I will retry."))
+            (speak-en "I failed to pick up. I will retry."))
            (t (speak-jp "失敗しましたもう一度やってみます。")))
         (speak-jp "しっぱいしました  もういちど やって みます"));;
       ) ;; / (when cds
