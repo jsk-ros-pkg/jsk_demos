@@ -897,8 +897,8 @@
 		(setq x-likely (first lst))
 		(setq y-likely (second lst))   
                 (send *ri* :go-pos-unsafe ;;randomize
-                    x-likely
-                    y-likely
+                    (- x-likely (/ (elt (send diffcds :worldpos) 0) 1100.0))
+                    (- y-likely (/ (elt (send diffcds :worldpos) 0) 1100.0))
                     (* 0.9 (rad2deg (elt (car (rpy-angle (send diffcds :worldrot))) 0))))
                 ;; wait ???
                 (send *ri* :ros-wait 0.5 :spin-self t :spin t) ;; attention-check ...
