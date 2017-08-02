@@ -898,8 +898,8 @@
 		(setq y-likely (second lst))
                 (setq co (send *tfl* :lookup-transform "base_link" "map" (ros::time)))
                 (send *ri* :go-pos-unsafe
-                    (* -1 (+ x-likely (/ (elt (send co :worldpos) 0) 1000.0)))
-                    (* -1 (+ y-likely (/ (elt (send co :worldpos) 1) 1000.0)))
+                    (* -1 (+ x-likely (/ (elt (send co :worldpos) 0) 1100.0)))
+                    (* -1 (+ y-likely (/ (elt (send co :worldpos) 1) 1100.0)))
                     (* 0.9 (rad2deg (elt (car (rpy-angle (send diffcds :worldrot))) 0))))
                 ;; wait ???
                 (send *ri* :ros-wait 0.5 :spin-self t :spin t) ;; attention-check ...
