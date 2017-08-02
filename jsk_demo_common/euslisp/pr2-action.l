@@ -906,7 +906,7 @@
                 ;; (send *ri* :wait-interpolation)
               ))
              (wait
-              (send *ri* :go-pos-unsafe ;;randomize
+              (send *ri* :go-pos-unsafe
                     (/ (elt (send diffcds :worldpos) 0) 1100.0)
                     (/ (elt (send diffcds :worldpos) 1) 1100.0)
                     (* 0.9 (rad2deg (elt (car (rpy-angle (send diffcds :worldrot))) 0))))
@@ -1028,7 +1028,7 @@
         ))
 
 (warn ";; define open-fridge-door")
-(defvar *fridge-distance-threshold* 60.0)
+(defvar *fridge-distance-threshold* 80.0)
 (defvar *fridge-rotation-threshold* 0.09)
 (defun open-fridge-door (&key (open-fridge-func #'open-fridge-traj)
                               (torso-lift 130) (head-pitch 14)
