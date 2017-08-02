@@ -896,10 +896,10 @@
 		(setf lst (likely-location-to-open-fridge "/home/ros/user_data/positive.csv" "/home/ros/user_data/negative.csv"))
 		(setq x-likely (first lst))
 		(setq y-likely (second lst))
-                (setq co (send *tfl* :lookup-transform "map" "base_link" (ros::time)))
+                (setq co (send *tfl* :lookup-transform "base_link" "map" (ros::time)))
                 (send *ri* :go-pos-unsafe
-                    (+ x-likely (/ (elt (send co :worldpos) 0) 1100.0))
-                    (+ y-likely (/ (elt (send co :worldpos) 1) 1100.0))
+                    (+ x-likely (/ (elt (send co :worldpos) 0) 1000.0))
+                    (+ y-likely (/ (elt (send co :worldpos) 1) 1000.0))
                     (* 0.9 (rad2deg (elt (car (rpy-angle (send diffcds :worldrot))) 0))))
                 ;; wait ???
                 (send *ri* :ros-wait 0.5 :spin-self t :spin t) ;; attention-check ...
