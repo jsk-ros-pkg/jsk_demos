@@ -121,7 +121,7 @@
 
 (defun likely-location-to-open-fridge (positive-file negative-file)
   (let (query-sent id1 res1 x-max y-max (lst ()))
-            (setq query-sent (concatenate string "send_prolog_assert_query('register_ros_package(\\'knowrob_learning\\'), owl_parse(\\'package://knowrob_cloud_logger/owl/room73b2.owl\\'), mixed_gaussian_with_failure(\\'" positive-file  "\\', 2, \\'" negative-file "\\', 2, \\'/home/ros/user_data/data_mixture.csv\\', _PosLst), owl_individual_of(_Door, knowrob:\\'IAIFridgeDoor\\'), object_pose_at_time(_Door, 1, mat(_DoorPose)), matrix_translation(_DoorPose, _Origin), matrix_translate(_PosLst, _Origin, _GlobalPose), matrix_translation(_GlobalPose, [X,Y,_])', @(false), ['X', 'Y'], [X,Y])."))
+            (setq query-sent (concatenate string "send_prolog_assert_query('register_ros_package(\\'knowrob_learning\\'), owl_parse(\\'package://knowrob_cloud_logger/owl/room73b2.owl\\'), mixed_gaussian_with_failure(\\'" positive-file  "\\', 1, \\'" negative-file "\\', 3, \\'/home/ros/user_data/data_mixture.csv\\', _PosLst), owl_individual_of(_Door, knowrob:\\'IAIFridgeDoor\\'), object_pose_at_time(_Door, 1, mat(_DoorPose)), matrix_translation(_DoorPose, _Origin), matrix_translate(_PosLst, _Origin, _GlobalPose), matrix_translation(_GlobalPose, [X,Y,_])', @(false), ['X', 'Y'], [X,Y])."))
             (setq id1 (send-json-prolog-query query-sent))
             (setq res1 (read-json-next-solution id1))
             (finish-json-query id1)
