@@ -690,7 +690,7 @@
 
 (defparameter *fridge-handle-cds* nil)
 (defun move-to-and-open-fridge-door (&key (door-type :circle) (ratio 1) (look-around nil) (head-pitch 14) (torso-lift 130) (move t) (open-fridge-func #'open-fridge-traj) (wait t) (randomize-locations nil) (learnt-locations nil))
-  (let (ret perceive-open-fridge-task-name check-perceive-open-fridge-task-name head-perceive-task-name torso-perceive-task-name move-perceive-task-name
+  (let (ret perceive-open-fridge-task-name check-perceive-open-fridge-task-name head-perceive-task-name torso-perceive-task-name move-perceive-task-name co
         (idealcds
          (case door-type
            (:circle
@@ -895,10 +895,13 @@
 	      (let (lst x-likely y-likely)
 		(setf lst (likely-location-to-open-fridge "/home/ros/user_data/positive.csv" "/home/ros/user_data/negative.csv"))
 		(setq x-likely (first lst))
-		(setq y-likely (second lst))   
-                (send *ri* :go-pos-unsafe ;;randomize
-                    (- x-likely (/ (elt (send cds :worldpos) 0) 1100.0))
-                    (- y-likely (/ (elt (send cds :worldpos) 1) 1100.0))
+		(setq y-likely (second lst))
+                (setq co (send *scene* :spot "/eng2/7f"))
+                (send co :translate (float-vector x-likely y-likely (/ (elt (send cds :worldpos) 2) 1100.0)) :world)
+                (send *ri* :move-to co)
+                (send *ri* :go-pos-unsafe
+                    0
+                    0
                     (* 0.9 (rad2deg (elt (car (rpy-angle (send diffcds :worldrot))) 0))))
                 ;; wait ???
                 (send *ri* :ros-wait 0.5 :spin-self t :spin t) ;; attention-check ...
