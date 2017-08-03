@@ -713,7 +713,7 @@
     )
     (cond
      ((not (send *ri* :simulation-modep)) ;; real mode
-      (setq cds (check-detection :type "fridge" :speak-name *frige-speak-str*
+      (setq cds (check-detection :type "fridge" :speak-name *frige-speak-str* :speak nil
                                  :detection-topic "/kinect_head/rgb/ObjectDetection"
                                  )))
      (t ;; simulation mode
@@ -908,7 +908,7 @@
                     (* 0.9 (rad2deg (elt (car (rpy-angle (send diffcds :worldrot))) 0))))
                 ;; wait ???
                 (send *ri* :ros-wait 0.5 :spin-self t :spin t) ;; attention-check ...
-                ;; (send *ri* :wait-interpolation)
+                (setq *fridge-distance-threshold* 10000.0) ;;remove threshold and apply openning with the learnt parameter
               ))
              (wait
               (send *ri* :go-pos-unsafe
@@ -1033,7 +1033,7 @@
         ))
 
 (warn ";; define open-fridge-door")
-(defvar *fridge-distance-threshold* 100.0)
+(defvar *fridge-distance-threshold* 60.0)
 (defvar *fridge-rotation-threshold* 0.09)
 (defun open-fridge-door (&key (open-fridge-func #'open-fridge-traj)
                               (torso-lift 130) (head-pitch 14)
