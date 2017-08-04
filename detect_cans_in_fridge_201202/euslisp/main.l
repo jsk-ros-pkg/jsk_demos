@@ -121,7 +121,7 @@
 
 (defun likely-location-to-open-fridge (positive-file negative-file pos-x pos-y)
   (let (query-sent id1 res1 x-max y-max (lst ()))
-            (setq query-sent (concatenate string "send_prolog_assert_query('register_ros_package(\\'knowrob_learning\\'), owl_parse(\\'package://knowrob_cloud_logger/owl/room73b2.owl\\'), get_likely_closest(\\'" positive-file  "\\', 1, \\'" negative-file "\\', 1,"  (format nil "~a" pos-x) ", " (format nil "~a" pos-y) ", _PosLst), owl_individual_of(_Door, knowrob:\\'IAIFridgeDoor\\'), object_pose_at_time(_Door, 1, mat(_DoorPose)), pose_into_global_coord(_PosLst, _DoorPose, _GlobalPose), matrix_translation(_GlobalPose, [X,Y,_])', @(false), ['X', 'Y'], [X,Y])."))
+            (setq query-sent (concatenate string "send_prolog_assert_query('register_ros_package(\\'knowrob_learning\\'), owl_parse(\\'package://knowrob_cloud_logger/owl/room73b2.owl\\'), owl_individual_of(_Door, knowrob:\\'IAIFridgeDoor\\'), object_pose_at_time(_Door, 1, mat(_DoorPose)), _CurrentPose = [1,0,0," (format nil "~a" pos-x) ",0,1,0," (format nil "~a" pos-y) ", 0,0,1,0,0,0,0,1], pose_into_relative_coord(_CurrentPose, _DoorPose, _RelativeCurrentPose), matrix_translation(_RelativeCurrentPose, [C_X,C_Y,_]), get_likely_closest(\\'" positive-file  "\\', 1, \\'" negative-file "\\', 1, C_X, C_Y, _PosLst), pose_into_global_coord(_PosLst, _DoorPose, _GlobalPose), matrix_translation(_GlobalPose, [X,Y,_])', @(false), ['X', 'Y'], [X,Y])."))
             (setq id1 (send-json-prolog-query query-sent))
             (setq res1 (read-json-next-solution id1))
             (finish-json-query id1)

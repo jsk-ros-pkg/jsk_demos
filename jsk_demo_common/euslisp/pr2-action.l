@@ -894,7 +894,7 @@
              ((and wait learnt-locations)
 	      (let (lst x-likely y-likely)
                 (speak-en "I am asking to open ease how to open a fridge door")
-                (setq co (send *tfl* :lookup-transform "base_link" "map" (ros::time)))
+                (setq co (send *tfl* :lookup-transform "map" "base_link" (ros::time)))
                 (setq x-current  (/ (elt (send co :worldpos) 0) 1000.0))
                 (setq y-current  (/ (elt (send co :worldpos) 1) 1000.0))
                 (setf lst (likely-location-to-open-fridge "/home/ros/user_data/positive.csv" "/home/ros/user_data/negative.csv" x-current y-current))
@@ -903,8 +903,8 @@
                 (speak-en "I learnt how to open a fridge door via open ease. Now I will execute!")
                 (setq co (send *tfl* :lookup-transform "base_link" "map" (ros::time)))
                 (send *ri* :go-pos-unsafe
-                    (* -1 (+ x-likely x-current))
-                    (* -1 (+ y-likely y-current))
+                    (* -1 (- x-likely x-current))
+                    (* -1 (- y-likely y-current))
                     (* 0.9 (rad2deg (elt (car (rpy-angle (send diffcds :worldrot))) 0))))
                 ;; wait ???
                 (send *ri* :ros-wait 0.5 :spin-self t :spin t) ;; attention-check ...
