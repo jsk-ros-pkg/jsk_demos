@@ -120,7 +120,7 @@
 )
 
 (defun likely-location-to-open-fridge (positive-file negative-file pos)
-  (let* (query-sent id1 res1 x-max y-max pos-string (pos-string "") (lst ()))
+  (let* (query-sent id1 res1 x-max y-max (pos-string "") (lst ()))
             (dotimes (i (length a))
              (cond ((= i 0)
                (setq pos-string (format nil "~a" (elt a i))))
