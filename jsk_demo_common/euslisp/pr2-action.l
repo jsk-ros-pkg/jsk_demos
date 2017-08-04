@@ -690,7 +690,7 @@
 
 (defparameter *fridge-handle-cds* nil)
 (defun move-to-and-open-fridge-door (&key (door-type :circle) (ratio 1) (look-around nil) (head-pitch 14) (torso-lift 130) (move t) (open-fridge-func #'open-fridge-traj) (wait t) (randomize-locations nil) (learnt-locations nil))
-  (let (ret perceive-open-fridge-task-name check-perceive-open-fridge-task-name head-perceive-task-name torso-perceive-task-name move-perceive-task-name co x-current y-current
+  (let (ret perceive-open-fridge-task-name check-perceive-open-fridge-task-name head-perceive-task-name torso-perceive-task-name move-perceive-task-name co pos-current
         (idealcds
          (case door-type
            (:circle
@@ -894,17 +894,15 @@
              ((and wait learnt-locations)
 	      (let (lst x-likely y-likely)
                 (speak-en "I am asking to open ease how to open a fridge door")
-                (setq co (send *tfl* :lookup-transform "map" "base_link" (ros::time)))
-                (setq x-current  (/ (elt (send co :worldpos) 0) 1000.0))
-                (setq y-current  (/ (elt (send co :worldpos) 1) 1000.0))
-                (setf lst (likely-location-to-open-fridge "/home/ros/user_data/positive.csv" "/home/ros/user_data/negative.csv" x-current y-current))
+                (defvar co (send *tfl* :lookup-transform "map" "base_link" (ros::time)))
+                (defvar pos-current  (send co :4x4))
+                (setf lst (likely-location-to-open-fridge "/home/ros/user_data/positive.csv" "/home/ros/user_data/negative.csv" (array-entity pos-current)))
 		(setq x-likely (first lst))
 		(setq y-likely (second lst))
                 (speak-en "I learnt how to open a fridge door via open ease. Now I will execute!")
-                (setq co (send *tfl* :lookup-transform "base_link" "map" (ros::time)))
                 (send *ri* :go-pos-unsafe
-                    (* -1 (- x-likely x-current))
-                    (* -1 (- y-likely y-current))
+                    (* -1 (- x-likely (/ (elt (send co :worldpos) 0) 1000.0)))
+                    (* -1 (- y-likely (/ (elt (send co :worldpos) 1) 1000.0)))
                     (* 0.9 (rad2deg (elt (car (rpy-angle (send diffcds :worldrot))) 0))))
                 ;; wait ???
                 (send *ri* :ros-wait 0.5 :spin-self t :spin t) ;; attention-check ...
