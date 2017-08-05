@@ -889,6 +889,7 @@
                     (* 0.9 (rad2deg (elt (car (rpy-angle (send diffcds :worldrot))) 0))))
               ;; wait ???
               (send *ri* :ros-wait 0.5 :spin-self t :spin t) ;; attention-check ...
+              (setq *fridge-distance-threshold* 10000.0) ;;remove threshold and apply openning with the random parameter
               ;; (send *ri* :wait-interpolation)
               )
              ((and wait learnt-locations)
@@ -901,8 +902,8 @@
 		(setq y-likely (second lst))
                 (speak-en "I learnt how to open a fridge door via open ease. Now I will execute!")
                 (send *ri* :go-pos-unsafe
-                    (* -1 (- x-likely (/ (elt (send co :worldpos) 0) 1000.0)))
-                    (* -1 (- y-likely (/ (elt (send co :worldpos) 1) 1000.0)))
+                    (- x-likely (/ (elt (send co :worldpos) 0) 1000.0))
+                    (- y-likely (/ (elt (send co :worldpos) 1) 1000.0))
                     (* 0.9 (rad2deg (elt (car (rpy-angle (send diffcds :worldrot))) 0))))
                 ;; wait ???
                 (send *ri* :ros-wait 0.5 :spin-self t :spin t) ;; attention-check ...
@@ -1061,7 +1062,7 @@
     )
     (dotimes (i 10 nil)
       ;; detect fridge and move to the fridge door
-      (setq ret (move-to-and-open-fridge-door :door-type door-type :ratio ratio :look-around look-around :head-pitch head-pitch :torso-lift torso-lift :move move :open-fridge-func open-fridge-func :wait wait :randomize-locations nil :learnt-locations t))
+      (setq ret (move-to-and-open-fridge-door :door-type door-type :ratio ratio :look-around look-around :head-pitch head-pitch :torso-lift torso-lift :move move :open-fridge-func open-fridge-func :wait wait :randomize-locations t :learnt-locations nil))
       (if ret (return))
       )
     (if *remotelogging*
