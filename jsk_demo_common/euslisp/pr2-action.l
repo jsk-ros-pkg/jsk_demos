@@ -318,9 +318,9 @@
                          &key (radius 500) (path-div 20) (door-type :circle) &allow-other-keys)
   (let (cds-traj reach-handle-task move-handle-task achieve-move-handle-task)
     (if *remotelogging*
-     (progn (setq achieve-move-handle-task (start-task "http://knowrob.org/kb/knowrob.owl#CRAMAcheive" "ReachAndOpenFridgeDoor"))
+     (progn (setq achieve-move-handle-task (start-task "http://knowrob.org/kb/knowrob.owl#CRAMAchieve" "ReachAndOpenFridgeDoor"))
      (generate-subtask-relation achieve-open-fridge-task-name achieve-move-handle-task)
-     (setq reach-handle-task (start-task "http://knowrob.org/kb/knowrob.owl#CRAMAcheive" "ReachFridgeDoor"))
+     (setq reach-handle-task (start-task "http://knowrob.org/kb/knowrob.owl#CRAMAchieve" "ReachFridgeDoor"))
      (generate-subtask-relation achieve-move-handle-task reach-handle-task)))
     (setq cds-traj
          (case door-type
@@ -331,7 +331,7 @@
            ))
     (if *remotelogging*
       (progn (finish-task reach-handle-task)
-      (setq move-handle-task (start-task "http://knowrob.org/kb/knowrob.owl#CRAMAcheive" "MoveFridgeHandle"))
+      (setq move-handle-task (start-task "http://knowrob.org/kb/knowrob.owl#CRAMAchieve" "MoveFridgeHandle"))
       (generate-subtask-relation achieve-move-handle-task move-handle-task)))
     (apply #'move-fridge-traj hand cds-traj args)
     (if *remotelogging*
