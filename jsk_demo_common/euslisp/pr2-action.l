@@ -484,7 +484,7 @@
 (warn ";; define grasp-can-single")
 (defun grasp-can-single (obj &key (rotation 0) (use-arm :rarm) (grasp-depth 35)(func-time 7))
   (let (via1 via2 tar orig-av (mvt (* (/ (- func-time 4) 4.0) 1000)));; mvt is about 3000. we assume it takes 4 sec other than sending :angle-vector, and there are 4 :angle-vector in this funciton
-    (send *ri* :stop-grasp use-arm)
+    (send *ri* :stop-grasp use-arm :wait t)
     (send *tfb* :send-transform
           (send (send *pr2* :worldcoords) :transformation (send obj :worldcoords))
           "/base_footprint" "/objecta_pose_frame")
