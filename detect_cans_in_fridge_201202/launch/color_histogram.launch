@@ -21,11 +21,16 @@
           remappings:
           - from: ~input
             to: $(arg cloud_topic)
+        - name: pass_through
+          type: pcl/PassThrough
+          remappings:
+          - from: ~input
+            to: throttle/output
         - name: bilateral_filter
           type: jsk_pcl/BilateralFilter
           remappings:
           - from: ~input
-            to: throttle/output
+            to: pass_through/output
         - name: multi_plane_segmentation
           type: jsk_pcl/OrganizedMultiPlaneSegmentation
           remappings:
@@ -105,6 +110,15 @@
 
     <rosparam ns="throttle" subst_value="true">
       update_rate: 4
+    </rosparam>
+
+    <rosparam ns="pass_through" subst_value="true">
+      filter_field_name: z
+      filter_limit_min: 0.90
+      filter_limit_max: 1.30
+      filter_limit_negative: false
+      keep_organized: true
+      input_frame: $(arg base_frame_id)
     </rosparam>
 
     <rosparam ns="bilateral_filter" subst_value="true">
@@ -197,7 +211,7 @@
 
     <rosparam ns="color_histogram_classifier"
               command="load"
-              file="$(find detect_cans_in_fridge_201202)/config/object_histograms.yaml" />
+              file="$(find detect_cans_in_fridge_201202)/config/reference_histograms.yaml" />
     <rosparam ns="color_histogram_classifier" subst_value="true">
       detection_threshold: 0.2
       compare_policy: 0
@@ -213,6 +227,30 @@
       <rosparam>
         queue_size: 100
         publish_tf: true
+      </rosparam>
+    </node>
+
+    <!-- visualizers -->
+    <node name="color_histogram_visualizer"
+          pkg="jsk_pcl_ros" type="color_histogram_visualizer.py"
+          machine="$(arg machine)">
+      <remap from="~input/array" to="color_histogram/output" />
+      <rosparam>
+        histogram_policy: 0
+      </rosparam>
+    </node>
+
+    <node name="color_class_visualizer"
+          pkg="jsk_rviz_plugins" type="classification_result_visualizer.py"
+          machine="$(arg machine)">
+      <remap from="~input/boxes" to="euclidean_clustering_decomposer/boxes"/>
+      <remap from="~input/classes" to="color_histogram_classifier/output" />
+      <rosparam>
+        text_color_red: 0.0
+        text_color_green: 1.0
+        text_color_blue: 0.0
+        text_offset_z: 0.08
+        text_size: 0.05
       </rosparam>
     </node>
   </group>
