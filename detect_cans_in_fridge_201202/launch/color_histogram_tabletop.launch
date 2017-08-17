@@ -10,7 +10,7 @@
 
   <include file="$(find pr2_machine)/pr2.machine" />
 
-  <group ns="detect_cans">
+  <group ns="tabletop">
     <node name="manager"
           pkg="jsk_topic_tools" type="standalone_complexed_nodelet"
           output="screen" machine="$(arg machine)">
@@ -21,11 +21,16 @@
           remappings:
           - from: ~input
             to: $(arg cloud_topic)
+        - name: pass_through
+          type: pcl/PassThrough
+          remappings:
+          - from: ~input
+            to: throttle/output
         - name: bilateral_filter
           type: jsk_pcl/BilateralFilter
           remappings:
           - from: ~input
-            to: throttle/output
+            to: pass_through/output
         - name: multi_plane_segmentation
           type: jsk_pcl/OrganizedMultiPlaneSegmentation
           remappings:
@@ -48,16 +53,16 @@
           - from: ~input
             to: bilateral_filter/output
           - from: ~target
-            to: plane_reasoner/output/vertical/inliers
+            to: plane_reasoner/output/horizontal/inliers
           - from: ~align_planes
-            to: plane_reasoner/output/vertical/polygons
+            to: plane_reasoner/output/horizontal/polygons
           - from: ~align_planes_coefficients
-            to: plane_reasoner/output/vertical/coefficients
+            to: plane_reasoner/output/horizontal/coefficients
         - name: polygon_magnifier
           type: jsk_pcl_utils/PolygonMagnifier
           remappings:
           - from: ~input
-            to: plane_reasoner/output/vertical/polygons
+            to: plane_reasoner/output/horizontal/polygons
         - name: multi_plane_extraction
           type: jsk_pcl/MultiPlaneExtraction
           remappings:
@@ -66,33 +71,28 @@
           - from: ~input_polygons
             to: polygon_magnifier/output
           - from: ~input_coefficients
-            to: plane_reasoner/output/vertical/coefficients
-        - name: transform_cloud
-          type: jsk_pcl_utils/TfTransformCloud
-          remappings:
-          - from: ~input
-            to: multi_plane_extraction/output
+            to: plane_reasoner/output/horizontal/coefficients
         - name: euclidean_clustering
           type: jsk_pcl/EuclideanClustering
           remappings:
           - from: ~input
-            to: transform_cloud/output
+            to: multi_plane_extraction/output
         - name: euclidean_clustering_decomposer
           type: jsk_pcl/ClusterPointIndicesDecomposer
           remappings:
           - from: ~input
-            to: transform_cloud/output
+            to: multi_plane_extraction/output
           - from: ~target
             to: euclidean_clustering/output
           - from: ~align_planes
             to: polygon_magnifier/output
           - from: ~align_planes_coefficients
-            to: plane_reasoner/output/vertical/coefficients
+            to: plane_reasoner/output/horizontal/coefficients
         - name: color_histogram
           type: jsk_pcl/ColorHistogram
           remappings:
           - from: ~input
-            to: transform_cloud/output
+            to: multi_plane_extraction/output
           - from: ~input/indices
             to: euclidean_clustering/output
         - name: color_histogram_classifier
@@ -103,8 +103,25 @@
       </rosparam>
     </node>
 
+    <rosparam if="false">
+        - name: transform_cloud
+          type: jsk_pcl_utils/TfTransformCloud
+          remappings:
+          - from: ~input
+            to: multi_plane_extraction/output
+    </rosparam>
+
     <rosparam ns="throttle" subst_value="true">
       update_rate: 4
+    </rosparam>
+
+    <rosparam ns="pass_through" subst_value="true">
+      filter_field_name: z
+      filter_limit_min: 0.60
+      filter_limit_max: 1.20
+      filter_limit_negative: false
+      keep_organized: true
+      input_frame: $(arg base_frame_id)
     </rosparam>
 
     <rosparam ns="bilateral_filter" subst_value="true">
@@ -146,7 +163,7 @@
       use_indices: false
       use_sensor_frame: true
       sensor_frame: $(arg sensor_frame_id)
-      min_height: 0.05
+      min_height: 0.01
       max_height: 0.4
       vital_rate: $(arg vital_rate)
     </rosparam>
@@ -168,7 +185,7 @@
       publish_clouds: false
       publish_tf: false
       align_boxes: true
-      align_boxes_with_plane: false
+      align_boxes_with_plane: true
       target_frame_id: $(arg base_frame_id)
       use_pca: true
       vital_rate: $(arg vital_rate)
@@ -192,27 +209,40 @@
     <rosparam ns="color_histogram" subst_value="true">
       bin_size: $(arg bin_size)
       histogram_policy: 0
+      white_threshold: 0.1
+      black_threshold: 0.1
       vital_rate: $(arg vital_rate)
     </rosparam>
 
     <rosparam ns="color_histogram_classifier"
               command="load"
-              file="$(find detect_cans_in_fridge_201202)/config/object_histograms.yaml" />
+              file="$(find detect_cans_in_fridge_201202)/config/reference_histograms.yaml" />
     <rosparam ns="color_histogram_classifier" subst_value="true">
       detection_threshold: 0.2
       compare_policy: 0
       vital_rate: $(arg vital_rate)
     </rosparam>
 
-    <node name="color_histogram_detector"
-          pkg="detect_cans_in_fridge_201202" type="color_histogram_detector.py"
+    <node name="color_histogram_visualizer"
+          pkg="jsk_pcl_ros" type="color_histogram_visualizer.py"
           machine="$(arg machine)">
-      <remap from="~input/boxes" to="euclidean_clustering_decomposer/boxes" />
-      <remap from="~input/classes" to="color_histogram_classifier/output" />
-      <remap from="~output" to="$(arg detection_topic)" />
+      <remap from="~input/array" to="color_histogram/output" />
       <rosparam>
-        queue_size: 100
-        publish_tf: true
+        histogram_policy: 0
+      </rosparam>
+    </node>
+
+    <node name="color_class_visualizer"
+          pkg="jsk_rviz_plugins" type="classification_result_visualizer.py"
+          machine="$(arg machine)">
+      <remap from="~input/boxes" to="euclidean_clustering_decomposer/boxes"/>
+      <remap from="~input/classes" to="color_histogram_classifier/output" />
+      <rosparam>
+        text_color_red: 0.0
+        text_color_green: 1.0
+        text_color_blue: 0.0
+        text_offset_z: -0.12
+        text_size: 0.05
       </rosparam>
     </node>
   </group>
