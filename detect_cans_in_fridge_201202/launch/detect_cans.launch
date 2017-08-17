@@ -21,7 +21,7 @@
   <node pkg="nodelet" type="nodelet" name="input_relay"
         machine="$(arg machine)"
         args="load jsk_topic_tools/Relay $(arg manager)">
-    <remap from="~input" to="/kinect_head_c2/depth_registered/points" />
+    <remap from="~input" to="/kinect_head/depth_registered/points" />
   </node>
   <node pkg="nodelet" type="nodelet" name="multi_plane_estimate"
         machine="$(arg machine)"
