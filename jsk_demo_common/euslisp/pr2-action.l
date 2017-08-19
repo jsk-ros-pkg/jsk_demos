@@ -768,7 +768,7 @@
                 (setq id1 (send-json-prolog-query query-s))
                 (setq res1 (read-json-next-solution id1))
                 (finish-json-query id1) 
-                (setq query-pose (concatenate string "send_prolog_assert_query('rdf_assert(\\'" perceive-open-fridge-task-name "\\', knowrob:perceptionResult, literal(type(xsd:string,\\'" (apply #'format nil "~A" (/ (elt (send cds :worldpos) 0) 1000.0)) " " (apply #'format nil "~A" (/ (elt (send cds :worldpos) 1) 1000.0)) " " (apply #'format nil "~A" (/ (elt (send cds :worldpos) 2) 1000.0)) " " (apply #'format nil "~A" (/ (elt (send cds :worldrot) 0) 1000.0)) " " (apply #'format nil "~A" (/ (elt (send cds :worldrot) 1) 1000.0)) " " (apply #'format nil "~A" (/ (elt (send cds :worldrot) 2) 1000.0)) "\\'))', \\'LoggingGraph\\')', @(false), Result)."))
+                (setq query-pose (concatenate string "send_prolog_assert_query('rdf_assert(\\'" perceive-open-fridge-task-name "\\', knowrob:perceptionResult, literal(type(xsd:string,\\'" (write-to-string (/ (elt (send cds :worldpos) 0) 1000.0)) " " (write-to-string (/ (elt (send cds :worldpos) 1) 1000.0)) " " (write-to-string (/ (elt (send cds :worldpos) 2) 1000.0)) " " (write-to-string (/ (elt (send cds :worldrot) 0) 1000.0)) " " (write-to-string (/ (elt (send cds :worldrot) 1) 1000.0)) " " (write-to-string (/ (elt (send cds :worldrot) 2) 1000.0)) "\\'))', \\'LoggingGraph\\')', @(false), Result)."))
                 (setq id2 (send-json-prolog-query query-pose))
                 (setq res2 (read-json-next-solution id2))
                 (finish-json-query id2)
