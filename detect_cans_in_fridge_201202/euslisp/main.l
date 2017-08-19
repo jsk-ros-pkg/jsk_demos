@@ -166,7 +166,7 @@
 (defun generate-subtask-relation (task subtask)
  (let (time-string query-sent id1 res1)
             (setq time-string (get-current-time-str))
-            (setq query-sent (concatenate string "send_prolog_assert_query('cram_set_subaction(" task "," subtask ")', @(false), Result)."))
+            (setq query-sent (concatenate string "send_prolog_assert_query('cram_set_subaction(\" task "\,\" subtask "\)', @(false), Result)."))
             (setq id1 (send-json-prolog-query query-sent))
             (setq res1 (read-json-next-solution id1))
             (finish-json-query id1)
