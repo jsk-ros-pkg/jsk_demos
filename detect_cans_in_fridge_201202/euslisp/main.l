@@ -143,13 +143,15 @@
 )
 
 (defun start-task (task-type task-context)
-  (let (time-string query-sent id1 res1)
+  (let (time-string query-sent id1 res1 task-name task-name-length)
             (setq time-string (get-current-time-str))
             (setq query-sent (concatenate string "send_prolog_assert_query('cram_start_action(\\'" task-type "\\', \\'" task-context "\\'," time-string ", PA, ActionInst)', @(false), 'ActionInst', Result)."))
             (setq id1 (send-json-prolog-query query-sent))
             (setq res1 (read-json-next-solution id1))
             (finish-json-query id1)
-            (cdr (first (with-input-from-string (is (send res1 :solution)) (json::parse-object is))))
+            (setq task-name (cdr (first (with-input-from-string (is (send res1 :solution)) (json::parse-object is)))))
+            (setq task-name-length (- (length task-name) 1))
+            (subseq task-name 1 task-name-length)
   )
 )
 
@@ -166,7 +168,7 @@
 (defun generate-subtask-relation (task subtask)
  (let (time-string query-sent id1 res1)
             (setq time-string (get-current-time-str))
-            (setq query-sent (concatenate string "send_prolog_assert_query('cram_set_subaction(\\" task "\\,\\" subtask "\\)', @(false), Result)."))
+            (setq query-sent (concatenate string "send_prolog_assert_query('cram_set_subaction(\\'" task "\\',\\'" subtask "\\')', @(false), Result)."))
             (setq id1 (send-json-prolog-query query-sent))
             (setq res1 (read-json-next-solution id1))
             (finish-json-query id1)
@@ -457,7 +459,7 @@
 
 (defun demo-openease-short ()
   (defvar *use-english* t)
-  (demo-openease :type "morinaga_milk" :apikey "'wStdxHsWLm2QMUV4OepDkwwqLqGdYH43SE71iCqNGxnPGsDbKCjfXrBu9q1CcsOv'" :address "'https://133.11.216.20'" :certificate "'/home/asil/cert/localhost.pem'"))
+  (demo-openease :type "morinaga" :apikey "'wStdxHsWLm2QMUV4OepDkwwqLqGdYH43SE71iCqNGxnPGsDbKCjfXrBu9q1CcsOv'" :address "'https://133.11.216.20'" :certificate "'/home/asil/cert/localhost.pem'"))
 
 (init)
 ;;(wait-android-query)
