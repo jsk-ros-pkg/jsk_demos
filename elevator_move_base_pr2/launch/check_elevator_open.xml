@@ -1,5 +1,5 @@
 <launch>
-  <arg name="input" default="/kinect_head_c2/depth_registered_half/points" />
+  <arg name="input" default="/kinect_head/depth_registered_half/points" />
   <arg name="output" default="/elevator_inside_change_cloud" />
 
   <include file="$(find pr2_machine)/pr2.machine" />
