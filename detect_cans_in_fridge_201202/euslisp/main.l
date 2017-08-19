@@ -277,7 +277,7 @@
       (let (query-object-acted id1 res1)
             (defvar go-to-fridge-task-name (start-task "http://knowrob.org/kb/knowrob.owl#Navigate" "GoNearByFridge"))
             (generate-subtask-relation experiment-name go-to-fridge-task-name)
-            (defvar fridge-name "http://knowrob.org/kb/jsk.owl#Fridge_0byqw")
+            (defvar fridge-name "http://knowrob.org/kb/room73b2.owl#room73b2_1_room73b2-hitachi-fiesta-refrigerator_0_ROOT_link")
             (setq query-object-acted (concatenate string "send_prolog_assert_query('cram_set_object_acted_on(\\'" go-to-fridge-task-name "\\',\\'" fridge-name "\\')', @(false), Result)."))
             (setq id1 (send-json-prolog-query query-object-acted))
             (setq res1 (read-json-next-solution id1))
@@ -297,14 +297,17 @@
 
 
   (if *remotelogging*
-      (let (query-object-acted query-arm id1 res1 id2 res2)
+      (let (query-object-acted query-arm id1 res1 id2 res2 reverse-arm)
             (defvar open-fridge-task-name (start-task "http://knowrob.org/kb/knowrob.owl#CRAMPerform" "OpenFridge"))
             (generate-subtask-relation experiment-name open-fridge-task-name)
             (setq query-object-acted (concatenate string "send_prolog_assert_query('cram_set_object_acted_on(\\'" open-fridge-task-name "\\',\\'" fridge-name "\\')', @(false), Result)."))
             (setq id1 (send-json-prolog-query query-object-acted))
             (setq res1 (read-json-next-solution id1))
             (finish-json-query id1)
-            (setq query-arm (concatenate string "send_prolog_assert_query('rdf_assert(\\'" open-fridge-task-name "\\', knowrob:bodyPartUsed, literal(type(xsd:string,\\'" (string use-arm) "\\')), \\'LoggingGraph\\')', @(false), Result)."))
+            (if (eq (string use-arm) "LARM")
+                (setq reverse-arm "RARM")
+                (setq reverse-arm "LARM")) 
+            (setq query-arm (concatenate string "send_prolog_assert_query('rdf_assert(\\'" open-fridge-task-name "\\', knowrob:bodyPartUsed, literal(type(xsd:string,\\'" reverse-arm "\\')), \\'LoggingGraph\\')', @(false), Result)."))
             (setq id2 (send-json-prolog-query query-arm))
             (setq res2 (read-json-next-solution id2))
             (finish-json-query id2)
