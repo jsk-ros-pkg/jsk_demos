@@ -763,12 +763,13 @@
         ;; (y-or-n-p "Can I start open fridge? ")
         (if cds
           (progn (if *remotelogging*
-             (let (query-s id1 res1 query-pose id2 res2 query-object-acted id3 res3)
+             (let (query-s id1 res1 query-pose id2 res2 query-object-acted id3 res3 quat)
                 (setq query-s (concatenate string "send_prolog_assert_query('rdf_assert(\\'" check-perceive-open-fridge-task-name "\\', knowrob:taskSuccess, literal(type(xsd:boolean,\\'true\\')), \\'LoggingGraph\\'), rdf_assert(\\'" perceive-open-fridge-task-name "\\', knowrob:taskSuccess, literal(type(xsd:boolean,\\'true\\')), \\'LoggingGraph\\')', @(false), Result)."))
                 (setq id1 (send-json-prolog-query query-s))
                 (setq res1 (read-json-next-solution id1))
                 (finish-json-query id1) 
-                (setq query-pose (concatenate string "send_prolog_assert_query('rdf_assert(\\'" perceive-open-fridge-task-name "\\', knowrob:perceptionResult, literal(type(xsd:string,\\'" (format nil "~a"  (/ (elt (send cds :worldpos) 0) 1000.0)) " " (format nil "~a"  (/ (elt (send cds :worldpos) 1) 1000.0)) " " (format nil "~a"  (/ (elt (send cds :worldpos) 2) 1000.0)) " " (format nil "~a"  (elt (car (rpy-angle (send diffcds :worldrot))) 0)) " " (format nil "~a"  (elt (car (rpy-angle (send diffcds :worldrot))) 1)) " " (format nil "~a"  (elt (car (rpy-angle (send diffcds :worldrot))) 2)) "\\'))', \\'LoggingGraph\\')', @(false), Result)."))
+                (setq quat (ros::rot->tf-quaternion (send cds :worldpos))) 
+                (setq query-pose (concatenate string "send_prolog_assert_query('rdf_assert(\\'" perceive-open-fridge-task-name "\\', knowrob:perceptionResult, literal(type(xsd:string,\\'" (format nil "~a"  (/ (elt (send cds :worldpos) 0) 1000.0)) " " (format nil "~a"  (/ (elt (send cds :worldpos) 1) 1000.0)) " " (format nil "~a"  (/ (elt (send cds :worldpos) 2) 1000.0)) " " (format nil "~a" (ros::quaternion-_w quat)) " " (format nil "~a" (ros::quaternion-_x quat)) " " (format nil "~a" (ros::quaternion-_y quat)) " " (format nil "~a" (ros::quaternion-_z quat)) "\\'))', \\'LoggingGraph\\')', @(false), Result)."))
                 (setq id2 (send-json-prolog-query query-pose))
                 (setq res2 (read-json-next-solution id2))
                 (finish-json-query id2)
@@ -1251,12 +1252,13 @@
     (when cds
       ;; (speak-jp (format nil "~A を とりだします" *type*))
       (if *remotelogging*
-        (let (query-s id1 res1 query-pose id2 res2 query-object-acted id3 res3)
+        (let (query-s id1 res1 query-pose id2 res2 query-object-acted id3 res3 quat)
            (setq query-s (concatenate string "send_prolog_assert_query('rdf_assert(\\'" check-can-perception-task "\\', knowrob:taskSuccess, literal(type(xsd:boolean,\\'true\\')), \\'LoggingGraph\\'), rdf_assert(\\'" can-perception-task "\\', knowrob:taskSuccess, literal(type(xsd:boolean,\\'true\\')), \\'LoggingGraph\\')', @(false), Result)."))
            (setq id1 (send-json-prolog-query query-s))
            (setq res1 (read-json-next-solution id1))
            (finish-json-query id1)
-           (setq query-pose (concatenate string "send_prolog_assert_query('rdf_assert(\\'" can-perception-task "\\', knowrob:perceptionResult, literal(type(xsd:string,\\'" (format nil "~a"  (/ (elt (send cds :worldpos) 0) 1000.0)) " " (format nil "~a"  (/ (elt (send cds :worldpos) 1) 1000.0)) " " (format nil "~a"  (/ (elt (send cds :worldpos) 2) 1000.0)) " " (format nil "~a"  (elt (car (rpy-angle (send diffcds :worldrot))) 0)) " " (format nil "~a"  (elt (car (rpy-angle (send diffcds :worldrot))) 1)) " " (format nil "~a"  (elt (car (rpy-angle (send diffcds :worldrot))) 2)) "\\'))', \\'LoggingGraph\\')', @(false), Result)."))
+           (setq quat (ros::rot->tf-quaternion (send cds :worldpos))) 
+           (setq query-pose (concatenate string "send_prolog_assert_query('rdf_assert(\\'" can-perception-task "\\', knowrob:perceptionResult, literal(type(xsd:string,\\'" (format nil "~a"  (/ (elt (send cds :worldpos) 0) 1000.0)) " " (format nil "~a"  (/ (elt (send cds :worldpos) 1) 1000.0)) " " (format nil "~a"  (/ (elt (send cds :worldpos) 2) 1000.0)) " " (format nil "~a" (ros::quaternion-_w quat)) " " (format nil "~a" (ros::quaternion-_x quat)) " " (format nil "~a" (ros::quaternion-_y quat)) " " (format nil "~a" (ros::quaternion-_z quat)) "\\'))', \\'LoggingGraph\\')', @(false), Result)."))
            (setq id2 (send-json-prolog-query query-pose))
            (setq res2 (read-json-next-solution id2))
            (finish-json-query id2)
