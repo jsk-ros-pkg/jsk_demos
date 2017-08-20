@@ -326,6 +326,7 @@
       (let (query-object-acted query-arm id1 res1 id2 res2)
             (defvar grasp-task-name (start-task "http://knowrob.org/kb/knowrob.owl#Grasp" "GraspCan"))
             (generate-subtask-relation experiment-name grasp-task-name)
+            (defvar milk-box-name "http://knowrob.org/kb/room73b2.owl#room73b2_1_milkbox_76Gf1Q")
             (setq query-object-acted (concatenate string "send_prolog_assert_query('cram_set_object_acted_on(\\'" grasp-task-name "\\',\\'" milk-box-name "\\')', @(false), Result)."))
             (setq id1 (send-json-prolog-query query-object-acted))
             (setq res1 (read-json-next-solution id1))

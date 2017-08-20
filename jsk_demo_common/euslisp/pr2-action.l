@@ -1271,7 +1271,6 @@
            (setq id4 (send-json-prolog-query query-rotation))
            (setq res4 (read-json-next-solution id4))
            (finish-json-query id4)
-           (defvar milk-box-name "http://knowrob.org/kb/room73b2.owl#room73b2_1_milkbox_76Gf1Q")
            (setq query-object-acted (concatenate string "send_prolog_assert_query('cram_set_object_acted_on(\\'" can-perception-task "\\',\\'" milk-box-name "\\')', @(false), Result)."))
            (setq id3 (send-json-prolog-query query-object-acted))
            (setq res3 (read-json-next-solution id3))))
