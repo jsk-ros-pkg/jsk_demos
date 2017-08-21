@@ -122,6 +122,54 @@
 	)
   t)
 
+(warn "goto-dining-table~%")
+(defun base-go-to-dining-table (&key (wait t))
+  (if *remotelogging*
+     (progn (defvar declaretive-nearby-dining-table-task-name (start-task "http://knowrob.org/kb/knowrob.owl#DeclaretiveGoal" "CalculateGoalPose"))
+     (generate-subtask-relation nearby-dining-table-task-name declaretive-nearby-dining-table-task-name))
+  )
+  (let ((co (send *scene* :spot "/eng2/7f/room73B2-table-side1")))
+    (send co :translate (float-vector 0 0 0) :world)
+    (if (send *ri* :simulation-modep)
+        (setq co (send *room73b2* :spot "table-side1-spot")))
+    (if *remotelogging*
+        (progn (finish-task declaretive-nearby-dining-table-task-name)
+        (defvar perform-nearby-dining-table-task-name (start-task "http://knowrob.org/kb/knowrob.owl#CRAMPerform" "PerformGoNearbyDiningTable"))
+        (generate-subtask-relation nearby-dining-table-task-name perform-nearby-dining-table-task-name)
+        (defvar go-nearby-dining-table-task-name (start-task "http://knowrob.org/kb/knowrob.owl#BaseMovement" "GoNearbyDiningTable"))
+        (generate-subtask-relation perform-nearby-dining-table-task-name go-nearby-dining-table-task-name))
+    )
+    (cond
+     ((equal wait t)
+      (send *ri* :move-to co)
+      )
+     (t
+      (send *ri* :move-to-send co)
+      ))
+    (if *remotelogging*
+      (let (query-co-decl query-co-go query-co-perform id1 res1 id2 res2 id3 res3 
+           (tpos (apply #'format nil "~A ~A ~A" (coerce (send co :pos) cons)))
+           (trot (apply #'format nil "~A ~A ~A ~A" (coerce (matrix2quaternion (send co :worldrot)) cons))))
+            (setq query-co-decl (concatenate string "send_prolog_assert_query('rdf_assert(\\'" declaretive-nearby-dining-table-task-name "\\', knowrob:goalLocation, literal(type(xsd:string,\\'" tpos " " trot "\\')), \\'LoggingGraph\\')', @(false), Result)."))
+            (setq id1 (send-json-prolog-query query-co-decl))
+            (setq res1 (read-json-next-solution id1))
+            (finish-json-query id1)
+            (setq query-co-go (concatenate string "send_prolog_assert_query('rdf_assert(\\'" go-nearby-dining-table-task-name "\\', knowrob:toLocation, literal(type(xsd:string,\\'" tpos " " trot "\\')), \\'LoggingGraph\\')', @(false), Result)."))
+            (setq id2 (send-json-prolog-query query-co-go))
+            (setq res2 (read-json-next-solution id2))
+            (finish-json-query id2)
+            (setq query-co-perform (concatenate string "send_prolog_assert_query('rdf_assert(\\'" perform-nearby-dining-table-task-name "\\', knowrob:toLocation, literal(type(xsd:string,\\'" tpos " " trot "\\')), \\'LoggingGraph\\')', @(false), Result)."))
+            (setq id3 (send-json-prolog-query query-co-perform))
+            (setq res3 (read-json-next-solution id3))
+            (finish-json-query id3)
+            (finish-task go-nearby-dining-table-task-name)
+            (finish-task perform-nearby-dining-table-task-name)
+      )
+    )
+    t
+    )
+)
+
 
 (warn "goto-front-of-fridge~%")
 (defun base-go-to-fridge (&key (wait t))
@@ -216,6 +264,52 @@
   t
   )
 
+(defun base-go-to-dining-table-init-pose (&key (wait t) (torso-lift 130) (head-pitch 0))
+  (if *remotelogging*
+     (progn (defvar table-pose-task-name (start-task "http://knowrob.org/kb/knowrob.owl#AtLocation" "CalculateRobotState"))
+     (generate-subtask-relation preman-dining-table-task-name table-pose-task-name))
+  )
+  (send *pr2* :angle-vector (send *ri* :state :potentio-vector))
+  (if *remotelogging*
+     (progn (fill-at-location-task start-pose-task-name (send *pr2* :angle-vector))
+     (finish-task start-pose-task-name)
+     (defvar perform-preman-dining-table-task-name (start-task "http://knowrob.org/kb/knowrob.owl#CRAMPerform" "PerformAdjustBody"))
+     (generate-subtask-relation preman-dining-table-task-name perform-preman-dining-table-task-name)
+     (defvar head-movement-table-task-name (start-task "http://knowrob.org/kb/knowrob.owl#HeadMovement" "LookingTowardsDiningTable"))
+     (generate-subtask-relation perform-preman-dining-table-task-name head-movement-table-task-name))
+  )
+  (send *pr2* :head :angle-vector (float-vector 0 head-pitch))
+  
+
+  (if *remotelogging*
+     (progn (defvar base-movement-table-task-name (start-task "http://knowrob.org/kb/knowrob.owl#BaseMovement" "AdjustTorsoHeight"))
+     (generate-subtask-relation perform-preman-dining-table-task-name base-movement-table-task-name))
+  )
+  (send *pr2* :torso :angle-vector (float-vector torso-lift))
+
+  (send *ri* :angle-vector (send *pr2* :angle-vector))
+
+
+  (if wait
+      (send *ri* :wait-interpolation))
+  (if *remotelogging*
+      (let (query-av query-fv id1 res1 id2 res2)
+            (setq query-av (concatenate string "send_prolog_assert_query('rdf_assert(\\'" head-movement-table-task-name "\\', knowrob:toLocation, literal(type(xsd:string,\\'" (string head-pitch) "\\')), \\'LoggingGraph\\')', @(false), Result)."))
+            (setq id1 (send-json-prolog-query query-av))
+            (setq res1 (read-json-next-solution id1))
+            (finish-json-query id1)
+            (finish-task head-movement-table-task-name)
+            (setq query-fv (concatenate string "send_prolog_assert_query('rdf_assert(\\'" base-movement-table-task-name "\\', knowrob:toLocation, literal(type(xsd:string,\\'" (string torso-lift) "\\')), \\'LoggingGraph\\')', @(false), Result)."))
+            (setq id2 (send-json-prolog-query query-fv))
+            (setq res2 (read-json-next-solution id2))
+            (finish-json-query id2)
+            (finish-task base-movement-table-task-name)
+            (finish-task perform-preman-dining-table-task-name)
+      )
+    )
+  t
+  )
+
 
 (defun goto-front-of-fridge (&key (torso-lift 130) (head-pitch 0) (wait t))
   (if *remotelogging*
@@ -234,6 +328,26 @@
   (base-go-to-fridge-init-pose :torso-lift torso-lift :head-pitch head-pitch :wait wait)
   (if *remotelogging*
       (finish-task preman-fridge-task-name)
+  )
+  )
+
+(defun goto-front-of-dining-table (&key (torso-lift 130) (head-pitch 0) (wait t))
+  (if *remotelogging*
+     (progn (defvar nearby-dining-table-task-name (start-task "http://knowrob.org/kb/knowrob.owl#Navigate" "GoNextToFridge"))
+     (generate-subtask-relation go-to-dining-table-task-name nearby-dining-table-task-name))
+  )
+  (base-go-to-dining-table :wait wait)
+  (if *remotelogging*
+      (finish-task nearby-dining-table-task-name)
+  )
+
+  (if *remotelogging*
+     (progn (defvar preman-dining-table-task-name (start-task "http://knowrob.org/kb/knowrob.owl#Navigate" "GoPreManipulationPoseDiningTable"))
+     (generate-subtask-relation go-to-dining-table-task-name preman-dining-table-task-name))
+  )
+  (base-go-to-fridge-init-pose :torso-lift torso-lift :head-pitch head-pitch :wait wait)
+  (if *remotelogging*
+      (finish-task preman-dining-table-task-name)
   )
   )
 

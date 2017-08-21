@@ -324,7 +324,7 @@
   ;; move
   (if *remotelogging*
       (let (query-object-acted query-arm id1 res1 id2 res2)
-            (defvar grasp-task-name (start-task "http://knowrob.org/kb/knowrob.owl#Grasp" "GraspCan"))
+            (defvar grasp-task-name (start-task "http://knowrob.org/kb/knowrob.owl#Grasp" "GraspObject"))
             (generate-subtask-relation experiment-name grasp-task-name)
             (defvar milk-box-name "http://knowrob.org/kb/room73b2.owl#room73b2_1_milkbox_76Gf1Q")
             (setq query-object-acted (concatenate string "send_prolog_assert_query('cram_set_object_acted_on(\\'" grasp-task-name "\\',\\'" milk-box-name "\\')', @(false), Result)."))
@@ -415,6 +415,147 @@
   (demo :type atype :demo-type demo-type :app-manager app-manager :finish-type finish-type :use-arm use-arm)
   )
 
+(defun demo-breakfast-openease (&key ((:type atype) "georgia")
+                  (demo-type :map)  ;; :map, :short, ...
+                  (app-manager :false)
+                  (finish-type :pass-to-human) ;; :pass-to-human, :put-on-turtlebot, ...
+                  ;;(use-arm :rarm)
+                  (use-arm :larm)
+                  apikey address certificate)
+  (setq *logging* nil)
+  (setq *remotelogging* t)
+  (ros::ros-info "authenticate start")
+  (speak-en "I am connecting to open ease, my social network")
+  (authenticate-openease apikey address certificate)
+  (ros::ros-info "connecting to user container")
+  (connect-user-container)
+  (ros::ros-info "starting demo")
+
+
+  ;;initialize demo
+  (setq *type* atype)
+  (ros::ros-info "start breakfast demo / ~A" atype)
+  (if *remotelogging*
+      (defvar experiment-name (start-task "http://knowrob.org/kb/knowrob.owl#RobotExperiment" "PrepareBreakfast"))
+  )
+  (if (and (boundp '*use-voicetext*) *use-voicetext*)
+      (cond
+       ((and (boundp '*use-english*) *use-english*)
+        (speak-en (format nil "Good morning. I presume you are hungry! I will prepare a breakfast for you! Please wait a minute." *type*)))
+       (t (speak-jp (format nil "~aを持って行きます。少々、お待ちください。" *type*))))
+    (speak-jp (format nil "~a を もってきます  しょうしょう おまち ください" *type*)))
+  (pr2-tuckarm-pose :rarm)
+
+  (setq *opose* (send *ri* :state :worldcoords))
+
+  (if *remotelogging*
+      (let (query-object-acted id1 res1)
+            (defvar go-to-fridge-task-name (start-task "http://knowrob.org/kb/knowrob.owl#Navigate" "GoNearByFridge"))
+            (generate-subtask-relation experiment-name go-to-fridge-task-name)
+            (defvar fridge-name "http://knowrob.org/kb/room73b2.owl#room73b2_1_room73b2-hitachi-fiesta-refrigerator_0_ROOT_link")
+            (setq query-object-acted (concatenate string "send_prolog_assert_query('cram_set_object_acted_on(\\'" go-to-fridge-task-name "\\',\\'" fridge-name "\\')', @(false), Result)."))
+            (setq id1 (send-json-prolog-query query-object-acted))
+            (setq res1 (read-json-next-solution id1))
+            (finish-json-query id1)
+      )
+  )
+  (case demo-type
+    (:map
+     (unless (goto-front-of-fridge)
+       (return-from demo)))
+    (t
+     ;; do nothing
+     ))
+  (if *remotelogging*
+      (finish-task go-to-fridge-task-name)
+  )
+
+  (if *remotelogging*
+      (let (query-object-acted query-arm id1 res1 id2 res2 reverse-arm)
+            (defvar open-fridge-task-name (start-task "http://knowrob.org/kb/knowrob.owl#CRAMPerform" "OpenFridge"))
+            (generate-subtask-relation experiment-name open-fridge-task-name)
+            (setq query-object-acted (concatenate string "send_prolog_assert_query('cram_set_object_acted_on(\\'" open-fridge-task-name "\\',\\'" fridge-name "\\')', @(false), Result)."))
+            (setq id1 (send-json-prolog-query query-object-acted))
+            (setq res1 (read-json-next-solution id1))
+            (finish-json-query id1)
+            (if (eq (string use-arm) "LARM")
+                (setq reverse-arm "RARM")
+                (setq reverse-arm "LARM")) 
+            (setq query-arm (concatenate string "send_prolog_assert_query('rdf_assert(\\'" open-fridge-task-name "\\', knowrob:bodyPartUsed, literal(type(xsd:string,\\'" reverse-arm "\\')), \\'LoggingGraph\\')', @(false), Result)."))
+            (setq id2 (send-json-prolog-query query-arm))
+            (setq res2 (read-json-next-solution id2))
+            (finish-json-query id2)
+      )
+  )
+  (unless (open-fridge-door :use-arm use-arm)
+    (return-from demo))
+  (if *remotelogging*
+      (finish-task open-fridge-task-name)
+  )
+
+  ;; move
+  (if *remotelogging*
+      (let (query-object-acted query-arm id1 res1 id2 res2)
+            (defvar grasp-task-name (start-task "http://knowrob.org/kb/knowrob.owl#Grasp" "GraspObject"))
+            (generate-subtask-relation experiment-name grasp-task-name)
+            (defvar milk-box-name "http://knowrob.org/kb/room73b2.owl#room73b2_1_milkbox_76Gf1Q")
+            (setq query-object-acted (concatenate string "send_prolog_assert_query('cram_set_object_acted_on(\\'" grasp-task-name "\\',\\'" milk-box-name "\\')', @(false), Result)."))
+            (setq id1 (send-json-prolog-query query-object-acted))
+            (setq res1 (read-json-next-solution id1))
+            (finish-json-query id1)
+            (setq query-arm (concatenate string "send_prolog_assert_query('rdf_assert(\\'" grasp-task-name "\\', knowrob:bodyPartUsed, literal(type(xsd:string,\\'" (string use-arm) "\\')), \\'LoggingGraph\\')', @(false), Result)."))
+            (setq id2 (send-json-prolog-query query-arm))
+            (setq res2 (read-json-next-solution id2))
+            (finish-json-query id2)
+      )
+  )
+  (unless (grasp-can :use-arm use-arm)
+    (return-from demo))
+  (if *remotelogging*
+      (finish-task grasp-task-name)
+  )
+
+  ;; move
+
+  (if *remotelogging*
+      (let (query-object-acted query-arm id1 res1)
+            (defvar close-fridge-task-name (start-task "http://knowrob.org/kb/knowrob.owl#ArmMovement" "CloseFridge"))
+            (generate-subtask-relation experiment-name close-fridge-task-name)
+            (setq query-object-acted (concatenate string "send_prolog_assert_query('cram_set_object_acted_on(\\'" close-fridge-task-name "\\',\\'" fridge-name "\\')', @(false), Result)."))
+            (setq id1 (send-json-prolog-query query-object-acted))
+            (setq res1 (read-json-next-solution id1))
+            (finish-json-query id1)))
+
+  (unless (close-fridge :use-arm use-arm)
+    (return-from demo))
+  (if *remotelogging*
+      (finish-task close-fridge-task-name)
+  )
+
+  (if *remotelogging*
+      (let (query-object-acted id1 res1)
+            (defvar go-to-dining-table-task-name (start-task "http://knowrob.org/kb/knowrob.owl#Navigate" "GoNearByFridge"))
+            (generate-subtask-relation experiment-name go-to-dining-table-task-name)
+            (defvar dining-table-name "http://knowrob.org/kb/room73b2.owl#room73b2_1_room73b2-karimoku-table_0_nil_link")
+            (setq query-object-acted (concatenate string "send_prolog_assert_query('cram_set_object_acted_on(\\'" go-to-dining-table-task-name "\\',\\'" dining-table-name "\\')', @(false), Result)."))
+            (setq id1 (send-json-prolog-query query-object-acted))
+            (setq res1 (read-json-next-solution id1))
+            (finish-json-query id1)
+      )
+  )
+  (case demo-type
+    (:map
+     (unless (goto-front-of-dining-table)
+       (return-from demo)))
+    (t
+     ;; do nothing
+     ))
+  (if *remotelogging*
+      (finish-task go-to-dining-table-task-name)
+  )
+  
+)
+
 (defun wait-android-query (&optional (demo-type :map))
   (ros::ros-info "Begin Waiting .... ~A" demo-type)
   (let (atype from)
@@ -459,7 +600,8 @@
 
 (defun demo-openease-short ()
   (defvar *use-english* t)
-  (demo-openease :type "morinaga" :apikey "'wStdxHsWLm2QMUV4OepDkwwqLqGdYH43SE71iCqNGxnPGsDbKCjfXrBu9q1CcsOv'" :address "'https://133.11.216.20'" :certificate "'/home/asil/cert/localhost.pem'"))
+  ;(demo-openease :type "morinaga" :apikey "'wStdxHsWLm2QMUV4OepDkwwqLqGdYH43SE71iCqNGxnPGsDbKCjfXrBu9q1CcsOv'" :address "'https://133.11.216.20'" :certificate "'/home/asil/cert/localhost.pem'"))
+  (demo-breakfast-openease :type "morinaga" :apikey "'wStdxHsWLm2QMUV4OepDkwwqLqGdYH43SE71iCqNGxnPGsDbKCjfXrBu9q1CcsOv'" :address "'https://133.11.216.20'" :certificate "'/home/asil/cert/localhost.pem'"))
 
 (init)
 ;;(wait-android-query)
