@@ -556,8 +556,9 @@
       (finish-task go-to-dining-table-task-name)
   )
   
-
- (pick2 :pos (float-vector 3228.967 7322.739 651.6065) :key "place-to-table")
+ (let ((co (send *scene* :spot "/eng2/7f/room73B2-table-side1")))
+      (send co :translate (float-vector 0 30 650) :world)
+      (place co))
 )
 
 (defun wait-android-query (&optional (demo-type :map))
