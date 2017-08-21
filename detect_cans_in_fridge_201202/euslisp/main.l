@@ -556,6 +556,8 @@
       (finish-task go-to-dining-table-task-name)
   )
   
+
+ (pick2 pos (float-vector 3228.967 7322.739 651.6065) "place-to-table")
 )
 
 (defun wait-android-query (&optional (demo-type :map))
