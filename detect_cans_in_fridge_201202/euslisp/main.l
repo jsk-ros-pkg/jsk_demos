@@ -556,8 +556,7 @@
       (finish-task go-to-dining-table-task-name)
   )
   
- (let ((co (send *scene* :spot "/eng2/7f/room73B2-table-side1")))
-      (send co :translate (float-vector 0 35 450) :world)
+ (let ((co (make-coords :pos (float-vector 3228.967 7322.739 551.6065))))
       (place co))
 )
 
