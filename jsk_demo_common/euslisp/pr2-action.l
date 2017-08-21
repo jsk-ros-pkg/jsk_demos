@@ -113,7 +113,7 @@
 	  :link-list (send *pr2* :link-list
 			   (send *pr2* arm :end-coords :parent)
 			   (send *pr2* :link "torso_lift_link"))
-	  :debug-view debug)
+	  :debug-view debug-view)
     (send *ri* :angle-vector (send *pr2* :angle-vector) 2000)
     (send *ri* :wait-interpolation)
     (unix::usleep 100000)
