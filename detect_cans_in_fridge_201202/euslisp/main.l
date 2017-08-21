@@ -556,7 +556,7 @@
       (finish-task go-to-dining-table-task-name)
   )
   
- (let ((co (make-coords :pos (float-vector 3228.967 7322.739 551.6065))))
+ (let ((co (make-coords :pos (float-vector 650 0 530))))
       (place co))
 )
 
