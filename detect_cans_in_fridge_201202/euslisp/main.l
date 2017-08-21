@@ -557,7 +557,7 @@
   )
   
  (let ((co (send *scene* :spot "/eng2/7f/room73B2-table-side1")))
-      (send co :translate (float-vector 0 10 350) :world)
+      (send co :translate (float-vector 0 15 350) :world)
       (place co))
 )
 
