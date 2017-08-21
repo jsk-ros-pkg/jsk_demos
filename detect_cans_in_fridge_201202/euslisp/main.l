@@ -250,6 +250,7 @@
         (speak-en (format nil "I will look for ~a and bring it. Please wait a minute." *type*)))
        (t (speak-jp (format nil "~aを持って行きます。少々、お待ちください。" *type*))))
     (speak-jp (format nil "~a を もってきます  しょうしょう おまち ください" *type*)))
+  (send *ri* :start-grasp :arms)
   (pr2-tuckarm-pose :rarm)
 
   (setq *opose* (send *ri* :state :worldcoords))
@@ -444,6 +445,7 @@
         (speak-en (format nil "Good morning. I presume you are hungry! I will prepare a breakfast for you! Please wait a minute." *type*)))
        (t (speak-jp (format nil "~aを持って行きます。少々、お待ちください。" *type*))))
     (speak-jp (format nil "~a を もってきます  しょうしょう おまち ください" *type*)))
+  (send *ri* :start-grasp :arms)
   (pr2-tuckarm-pose :rarm)
 
   (setq *opose* (send *ri* :state :worldcoords))
