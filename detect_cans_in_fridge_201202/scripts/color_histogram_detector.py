@@ -15,10 +15,21 @@ from posedetection_msgs.msg import ObjectDetection, Object6DPose
 class ColorHistogramDetector(ConnectionBasedTransport):
     def __init__(self):
         super(ColorHistogramDetector, self).__init__()
+
         self.queue_size = rospy.get_param("~queue_size", 100)
+
         self.publish_tf = rospy.get_param("~publish_tf", False)
         if self.publish_tf:
             self.tfb = tf2_ros.TransformBroadcaster()
+
+        self.align_pose = rospy.get_param("~align_pose", True)
+        if self.align_pose:
+            self.tfl = tf2_ros.BufferClient("/tf2_buffer_server")
+            ok = self.tfl.wait_for_server(timeout=rospy.Duration(10))
+            if not ok:
+                rospy.logerr("/tf2_buffer_server does not respond. disabled ~align_pose")
+                self.align_pose = False
+
         self.pub_detect = self.advertise("~output", ObjectDetection, queue_size=1)
 
     def subscribe(self):
@@ -32,6 +43,9 @@ class ColorHistogramDetector(ConnectionBasedTransport):
     def unsubscribe(self):
         for s in self.subscribers:
             s.unregister()
+
+    def align_box(self, header, box):
+        pass
 
     def on_result(self, boxes, classes):
         rospy.logwarn("on_result")

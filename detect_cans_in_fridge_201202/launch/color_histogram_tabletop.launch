@@ -26,21 +26,16 @@
           remappings:
           - from: ~input
             to: throttle/output
-        - name: bilateral_filter
-          type: jsk_pcl/BilateralFilter
-          remappings:
-          - from: ~input
-            to: pass_through/output
         - name: multi_plane_segmentation
           type: jsk_pcl/OrganizedMultiPlaneSegmentation
           remappings:
           - from: ~input
-            to: bilateral_filter/output
+            to: pass_through/output
         - name: plane_reasoner
           type: jsk_pcl_utils/PlaneReasoner
           remappings:
           - from: ~input
-            to: bilateral_filter/output
+            to: pass_through/output
           - from: ~input_inliers
             to: multi_plane_segmentation/output_refined
           - from: ~input_polygons
@@ -51,7 +46,7 @@
           type: jsk_pcl/ClusterPointIndicesDecomposer
           remappings:
           - from: ~input
-            to: bilateral_filter/output
+            to: pass_through/output
           - from: ~target
             to: plane_reasoner/output/horizontal/inliers
           - from: ~align_planes
@@ -67,7 +62,7 @@
           type: jsk_pcl/MultiPlaneExtraction
           remappings:
           - from: ~input
-            to: bilateral_filter/output
+            to: pass_through/output
           - from: ~input_polygons
             to: polygon_magnifier/output
           - from: ~input_coefficients
@@ -122,12 +117,6 @@
       filter_limit_negative: false
       keep_organized: true
       input_frame: $(arg base_frame_id)
-    </rosparam>
-
-    <rosparam ns="bilateral_filter" subst_value="true">
-      sigma_s: 1.0
-      sigma_r: 0.1
-      vital_rate: $(arg vital_rate)
     </rosparam>
 
     <rosparam ns="multi_plane_segmentation" subst_value="true">
@@ -216,7 +205,7 @@
 
     <rosparam ns="color_histogram_classifier"
               command="load"
-              file="$(find detect_cans_in_fridge_201202)/config/reference_histograms.yaml" />
+              file="$(find detect_cans_in_fridge_201202)/config/reference_histograms_tabletop.yaml" />
     <rosparam ns="color_histogram_classifier" subst_value="true">
       detection_threshold: 0.2
       compare_policy: 0
@@ -243,6 +232,18 @@
         text_color_blue: 0.0
         text_offset_z: -0.12
         text_size: 0.05
+      </rosparam>
+    </node>
+
+    <node name="color_histogram_detector"
+          pkg="detect_cans_in_fridge_201202" type="color_histogram_detector.py"
+          machine="$(arg machine)">
+      <remap from="~input/boxes" to="euclidean_clustering_decomposer/boxes" />
+      <remap from="~input/classes" to="color_histogram_classifier/output" />
+      <remap from="~output" to="$(arg detection_topic)" />
+      <rosparam>
+        queue_size: 100
+        publish_tf: true
       </rosparam>
     </node>
   </group>
