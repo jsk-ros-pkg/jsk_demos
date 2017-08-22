@@ -1168,7 +1168,7 @@
      (progn (defvar pregrasp-task-name (start-task "http://knowrob.org/kb/knowrob.owl#ArmMovement" "PreGraspPose"))
      (generate-subtask-relation open-fridge-task-name pregrasp-task-name))
     )
-    (grasp-can-posing)
+    (grasp-can-posing :door-type door-type :ratio ratio :use-arm use-arm :wait wait)
 
     (send *ri* :ros-wait 0.0 :spin-self t) ;; attention-check ...
     (send *ri* :wait-interpolation)
@@ -1448,7 +1448,7 @@
      (generate-subtask-relation close-fridge-task-name tuck-close-fridge-task-name))
     )
   ;(pr2-tuckarm-pose use-arm :outside)
-  (grasp-can-posing :door-type door-type :ratio ratio :use-arm use-arm :wait wait)
+  (grasp-can-posing :use-arm :outside :wait t)
   (if *remotelogging*
       (let (query-arm id1 res1)
             (setq query-arm (concatenate string "send_prolog_assert_query('rdf_assert(\\'" close-fridge-task-name "\\', knowrob:bodyPartUsed, literal(type(xsd:string,\\'" (string closing-arm) "\\')), \\'LoggingGraph\\')', @(false), Result)," "send_prolog_assert_query('rdf_assert(\\'" tuck-close-fridge-task-name "\\', knowrob:bodyPartUsed, literal(type(xsd:string,\\'" (string closing-arm) "\\')), \\'LoggingGraph\\')', @(false), Result)."))
