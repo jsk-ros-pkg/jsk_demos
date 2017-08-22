@@ -1448,7 +1448,7 @@
      (generate-subtask-relation close-fridge-task-name tuck-close-fridge-task-name))
     )
   ;(pr2-tuckarm-pose use-arm :outside)
-  (grasp-can-posing :use-arm :outside :wait t)
+  (grasp-can-posing :use-arm :larm :wait t)
   (if *remotelogging*
       (let (query-arm id1 res1)
             (setq query-arm (concatenate string "send_prolog_assert_query('rdf_assert(\\'" close-fridge-task-name "\\', knowrob:bodyPartUsed, literal(type(xsd:string,\\'" (string closing-arm) "\\')), \\'LoggingGraph\\')', @(false), Result)," "send_prolog_assert_query('rdf_assert(\\'" tuck-close-fridge-task-name "\\', knowrob:bodyPartUsed, literal(type(xsd:string,\\'" (string closing-arm) "\\')), \\'LoggingGraph\\')', @(false), Result)."))

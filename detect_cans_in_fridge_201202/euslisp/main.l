@@ -442,7 +442,7 @@
   (if (and (boundp '*use-voicetext*) *use-voicetext*)
       (cond
        ((and (boundp '*use-english*) *use-english*)
-        (speak-en (format nil "Good morning. I presume you are hungry! I will prepare a breakfast for you! Please wait a minute." *type*)))
+        (speak-en (format nil "Good morning. I presume you are hungry! I will get you ingredients for your cornflakes! Please wait a minute." *type*)))
        (t (speak-jp (format nil "~aを持って行きます。少々、お待ちください。" *type*))))
     (speak-jp (format nil "~a を もってきます  しょうしょう おまち ください" *type*)))
   (send *ri* :start-grasp :arms)
@@ -552,12 +552,65 @@
     (t
      ;; do nothing
      ))
-  (if *remotelogging*
-      (finish-task go-to-dining-table-task-name)
-  )
   
- (let ((co (make-coords :pos (float-vector 650 20 750))))
+  (if *remotelogging*
+      (let (query-object-acted query-arm query-location id1 res1 id2 res2 id3 res3)
+            (finish-task go-to-dining-table-task-name)
+            (defvar put-object-task-name (start-task "http://knowrob.org/kb/knowrob.owl#AtLocation" "PUTDOWN"))
+            (generate-subtask-relation experiment-name put-object-task-name)
+            (setq query-object-acted (concatenate string "send_prolog_assert_query('cram_set_object_acted_on(\\'" put-object-task-name "\\',\\'" milk-box-name "\\')', @(false), Result)."))
+            (setq id1 (send-json-prolog-query query-object-acted))
+            (setq res1 (read-json-next-solution id1))
+            (finish-json-query id1)
+            (setq query-arm (concatenate string "send_prolog_assert_query('rdf_assert(\\'" put-object-task-name  "\\', knowrob:bodyPartUsed, literal(type(xsd:string,\\'" (string use-arm) "\\')), \\'LoggingGraph\\')', @(false), Result)."))
+            (setq id2 (send-json-prolog-query query-arm))
+            (setq res2 (read-json-next-solution id2))
+            (finish-json-query id2)
+            (setq query-location (concatenate string "send_prolog_assert_query('rdf_assert(\\'" put-object-task-name  "\\', knowrob:toLocation, dining-table-name, \\'LoggingGraph\\')', @(false), Result)."))
+            (setq id3 (send-json-prolog-query query-arm))
+            (setq res3 (read-json-next-solution id3))
+            (finish-json-query id3)
+      )
+  )
+  (let ((co (make-coords :pos (float-vector 650 20 750))))
       (place co))
+
+  (if *remotelogging*
+        (progn (defvar tuck-putdown-reset-task (start-task "http://knowrob.org/kb/knowrob.owl#ArmMovement" "TuckArmAfterPutDown"))
+        (generate-subtask-relation put-object-task-name tuck-putdown-reset-task)))
+
+  (pr2-tuckarm-pose use-arm :outside)  
+
+  (if *remotelogging*
+      (let (query-arm id1 res1)
+            (setq query-arm (concatenate string "send_prolog_assert_query('rdf_assert(\\'" tuck-putdown-reset-task "\\', knowrob:bodyPartUsed, literal(type(xsd:string,\\'botharm\\')), \\'LoggingGraph\\')', @(false), Result)."))
+            (setq id1 (send-json-prolog-query query-arm))
+            (setq res1 (read-json-next-solution id1))
+            (finish-json-query id1)
+            (finish-task tuck-putdown-reset-task)
+            (finish-task put-object-task-name)))
+
+  (if *remotelogging*
+      (let (query-object-acted id1 res1)
+            (defvar go-to-kitchen-counter-task-name (start-task "http://knowrob.org/kb/knowrob.owl#Navigate" "GoNearByKitchenCounter"))
+            (generate-subtask-relation experiment-name go-to-kitchen-counter-task-name)
+            (defvar kitchen-counter-name "http://knowrob.org/kb/room73b2.owl#room73b2_1_room73b2-kitchen_0_ROOM73B2-KITCHEN-BODYSET7_link")
+            (setq query-object-acted (concatenate string "send_prolog_assert_query('cram_set_object_acted_on(\\'" go-to-kitchen-counter-task-name "\\',\\'" kitchen-counter-name "\\')', @(false), Result)."))
+            (setq id1 (send-json-prolog-query query-object-acted))
+            (setq res1 (read-json-next-solution id1))
+            (finish-json-query id1)
+      )
+  )
+  (case demo-type
+    (:map
+     (unless (goto-front-of-kitchen-counter)
+       (return-from demo)))
+    (t
+     ;; do nothing
+     ))
+  (if *remotelogging*
+      (finish-task go-to-kitchen-counter-task-name)
+  )
 )
 
 (defun wait-android-query (&optional (demo-type :map))
