@@ -1168,7 +1168,7 @@
      (progn (defvar pregrasp-task-name (start-task "http://knowrob.org/kb/knowrob.owl#ArmMovement" "PreGraspPose"))
      (generate-subtask-relation open-fridge-task-name pregrasp-task-name))
     )
-    (grasp-can-posing :door-type door-type :ratio ratio :use-arm use-arm :wait wait)
+    (grasp-can-posing)
 
     (send *ri* :ros-wait 0.0 :spin-self t) ;; attention-check ...
     (send *ri* :wait-interpolation)
