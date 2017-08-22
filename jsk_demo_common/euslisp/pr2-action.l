@@ -1332,7 +1332,7 @@
 
 (defun go-back-from-fridge (&key (use-arm :rarm) (rotation 20))
   (if *remotelogging*
-     (progn (defvar postgrasp-task-name (start-task "http://knowrob.org/kb/knowrob.owl#ArmMovement" "PostGraspPose"))
+     (progn (defvar postgrasp-task-name (start-task "http://knowrob.org/kb/knowrob.owl#BaseMovement" "PostGraspPose"))
      (generate-subtask-relation grasp-task-name postgrasp-task-name)))
   (case use-arm
         (:rarm
