@@ -1444,10 +1444,11 @@
         (send *ri* :ros-wait 0.0 :spin-self t) ;; attention-check ...
         ))
   (if *remotelogging*
-     (progn (defvar tuck-close-fridge-task-name (start-task "http://knowrob.org/kb/knowrob.owl#ArmMovement" "TuckClosingArm"))
+     (progn (defvar tuck-close-fridge-task-name (start-task "http://knowrob.org/kb/knowrob.owl#ArmMovement" "PostClosingArmPose"))
      (generate-subtask-relation close-fridge-task-name tuck-close-fridge-task-name))
     )
-  (pr2-tuckarm-pose use-arm :outside)
+  ;(pr2-tuckarm-pose use-arm :outside)
+  (grasp-can-posing :door-type door-type :ratio ratio :use-arm use-arm :wait wait)
   (if *remotelogging*
       (let (query-arm id1 res1)
             (setq query-arm (concatenate string "send_prolog_assert_query('rdf_assert(\\'" close-fridge-task-name "\\', knowrob:bodyPartUsed, literal(type(xsd:string,\\'" (string closing-arm) "\\')), \\'LoggingGraph\\')', @(false), Result)," "send_prolog_assert_query('rdf_assert(\\'" tuck-close-fridge-task-name "\\', knowrob:bodyPartUsed, literal(type(xsd:string,\\'" (string closing-arm) "\\')), \\'LoggingGraph\\')', @(false), Result)."))
