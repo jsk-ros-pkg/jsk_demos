@@ -4,6 +4,7 @@
 (require :pr2-interface "package://pr2eus/pr2-interface.l")
 (defparameter *detection-topic* "/kinect_head/depth_registered/ObjectDetection")
 (require :detection-interface "package://jsk_perception/euslisp/detection_interface.l")
+(require :pr2-action "package://jsk_demo_common/euslisp/pr2-action.l")
 (require :pr2-pose "package://jsk_demo_common/euslisp/pr2-pose.l")
 
 (defun pr2-pick-tray-pose (&key (arm :arms) (torso))
@@ -31,7 +32,7 @@
      (pr2-pick-tray-pose :arm :rarm :torso torso)))
   (send *pr2* :angle-vector))
 
-(defun pick (obj &key (offset 100) (arm :larm) (flip-z-if-fail t) (rotation-axis))
+(defun pick-tabletop-object (obj &key (offset 100) (arm :larm) (flip-z-if-fail t) (rotation-axis))
   (let ((cds (send obj :copy-worldcoords))
         pregrasp-av grasp-av)
     (send cds :translate (float-vector (- offset) 0 0))
@@ -44,7 +45,7 @@
                                        (send *pr2* :link "toarso_lift_link"))
                       :debug-view nil))
     (unless pregrasp-av
-      (unless flip-z-if-fail (return-from pick nil))
+      (unless flip-z-if-fail (return-from pick-tabletop-object nil))
       (send cds :translate (float-vector offset 0 0))
       (send cds :rotate pi :z)
       (send cds :translate (float-vector (- offset) 0 0))
@@ -56,7 +57,7 @@
                                          (send *pr2* arm :end-coords :parent)
                                          (send *pr2* :link "toarso_lift_link"))
                         :debug-view nil))
-      (unless pregrasp-av (return-from pick nil)))
+      (unless pregrasp-av (return-from pick-tabletop-object nil)))
     ;;
     (setq cds (send *pr2* arm :end-coords :copy-worldcoords))
     (send cds :translate (float-vector offset 0 0))
@@ -68,7 +69,7 @@
                                          (send *pr2* :link "toarso_lift_link"))
                         :debug-view nil))
     (unless grasp-av
-      (return-from pick nil))
+      (return-from pick-tabletop-object nil))
     ;;
     (send *ri* :stop-grasp arm :wait t)
     (send *ri* :angle-vector-sequence
@@ -81,7 +82,7 @@
   (send *ri* :angle-vector (send *pr2* :angle-vector))
   (send *ri* :wait-interpolation)
   (let ((serial (check-detection :type "serial" :speak nil)))
-    (pick serial :offset 150)))
+    (pick-tabletop-object serial :offset 150)))
 ;;
 (defun pick-bowl (&optional (arm :rarm))
   (pr2-pick-tray-pose :arm arm :torso 180)
@@ -90,6 +91,6 @@
   (let ((bowl (check-detection :type "red_bowl" :speak nil)))
     (send bowl :rotate -pi/2 :y)
     (send bowl :translate (float-vector -70 0 0) :world)
-    (pick bowl :arm arm :offset 100)))
+    (pick-tabletop-object bowl :arm arm :offset 100)))
 
 (provide :pick-tabletop-object) ;; end of pick-tabletop-object.l
