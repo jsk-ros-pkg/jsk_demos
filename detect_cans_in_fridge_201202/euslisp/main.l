@@ -26,7 +26,7 @@
       (setq *current-context* :fridge))
     (progn
       (require :pr2-move "package://jsk_demo_common/euslisp/pr2-move.l")
-      (require :pr2-action "package://jsk_demo_common/euslisp/pr2-action.l")))
+      (require :pr2-tabletop-object "package://detect_cans_in_fridge_201202/euslisp/pick-tabletop-object.l")))
 
 
 (defun init-for-perception ()
@@ -464,7 +464,7 @@
   (case demo-type
     (:map
      (unless (goto-front-of-fridge)
-       (return-from demo)))
+       (return-from demo-breakfast-openease)))
     (t
      ;; do nothing
      ))
@@ -490,7 +490,7 @@
       )
   )
   (unless (open-fridge-door :use-arm use-arm)
-    (return-from demo))
+    (return-from demo-breakfast-openease))
   (if *remotelogging*
       (finish-task open-fridge-task-name)
   )
@@ -512,7 +512,7 @@
       )
   )
   (unless (grasp-can :use-arm use-arm)
-    (return-from demo))
+    (return-from demo-breakfast-openease))
   (if *remotelogging*
       (finish-task grasp-task-name)
   )
@@ -529,7 +529,7 @@
             (finish-json-query id1)))
 
   (unless (close-fridge :use-arm use-arm)
-    (return-from demo))
+    (return-from demo-breakfast-openease))
   (if *remotelogging*
       (finish-task close-fridge-task-name)
   )
@@ -548,7 +548,7 @@
   (case demo-type
     (:map
      (unless (goto-front-of-dining-table)
-       (return-from demo)))
+       (return-from demo-breakfast-openease)))
     (t
      ;; do nothing
      ))
@@ -572,8 +572,8 @@
             (finish-json-query id3)
       )
   )
-  (let ((co (make-coords :pos (float-vector 650 20 750))))
-      (place co))
+  (let ((co (make-coords :pos (float-vector 650 20 740))))
+      (place2 co))
 
   (if *remotelogging*
         (progn (defvar tuck-putdown-reset-task (start-task "http://knowrob.org/kb/knowrob.owl#ArmMovement" "TuckArmAfterPutDown"))
@@ -604,12 +604,56 @@
   (case demo-type
     (:map
      (unless (goto-front-of-kitchen-counter)
-       (return-from demo)))
+       (return-from demo-breakfast-openease)))
     (t
      ;; do nothing
      ))
   (if *remotelogging*
       (finish-task go-to-kitchen-counter-task-name)
+  )
+
+  ;; move
+  (if *remotelogging*
+      (let (query-object-acted query-arm id1 res1 id2 res2)
+            (defvar grasp-cornflakes-task-name (start-task "http://knowrob.org/kb/knowrob.owl#Grasp" "GraspObject"))
+            (generate-subtask-relation experiment-name grasp-cornflakes-task-name)
+            (defvar cornflakes-name "http://knowrob.org/kb/room73b2.owl#room73b2_1_cornflakes_9A67BV")
+            (setq query-object-acted (concatenate string "send_prolog_assert_query('cram_set_object_acted_on(\\'" grasp-cornflakes-task-name "\\',\\'" cornflakes-name "\\')', @(false), Result)."))
+            (setq id1 (send-json-prolog-query query-object-acted))
+            (setq res1 (read-json-next-solution id1))
+            (finish-json-query id1)
+            (setq query-arm (concatenate string "send_prolog_assert_query('rdf_assert(\\'" grasp-cornflakes-task-name "\\', knowrob:bodyPartUsed, literal(type(xsd:string,\\'LARM\\')), \\'LoggingGraph\\')', @(false), Result)."))
+            (setq id2 (send-json-prolog-query query-arm))
+            (setq res2 (read-json-next-solution id2))
+            (finish-json-query id2)
+      )
+  )
+  (unless (pick-serial)
+    (return-from demo-breakfast-openease))
+  (if *remotelogging*
+      (finish-task grasp-cornflakes-task-name)
+  )
+
+  ;; move
+  (if *remotelogging*
+      (let (query-object-acted query-arm id1 res1 id2 res2)
+            (defvar grasp-bowl-task-name (start-task "http://knowrob.org/kb/knowrob.owl#Grasp" "GraspObject"))
+            (generate-subtask-relation experiment-name grasp-bowl-task-name)
+            (defvar bowl-name "http://knowrob.org/kb/room73b2.owl#room73b2_1_bowl_YV452A")
+            (setq query-object-acted (concatenate string "send_prolog_assert_query('cram_set_object_acted_on(\\'" grasp-bowl-task-name "\\',\\'" bowl-name "\\')', @(false), Result)."))
+            (setq id1 (send-json-prolog-query query-object-acted))
+            (setq res1 (read-json-next-solution id1))
+            (finish-json-query id1)
+            (setq query-arm (concatenate string "send_prolog_assert_query('rdf_assert(\\'" grasp-bowl-task-name "\\', knowrob:bodyPartUsed, literal(type(xsd:string,\\'RARM\\')), \\'LoggingGraph\\')', @(false), Result)."))
+            (setq id2 (send-json-prolog-query query-arm))
+            (setq res2 (read-json-next-solution id2))
+            (finish-json-query id2)
+      )
+  )
+  (unless (pick-bowl)
+    (return-from demo-breakfast-openease))
+  (if *remotelogging*
+      (finish-task grasp-bowl-task-name)
   )
 )
 

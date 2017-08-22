@@ -224,7 +224,7 @@
      (progn (defvar declaretive-nearby-kitchen-counter-task-name (start-task "http://knowrob.org/kb/knowrob.owl#DeclaretiveGoal" "CalculateGoalPose"))
      (generate-subtask-relation nearby-kitchen-counter-task-name declaretive-nearby-kitchen-counter-task-name))
   )
-  (let ((co (send *scene* :spot "/eng2/7f/room73B2-sink-front0")))
+  (let ((co (send *scene* :spot "/eng2/7f/room73B2-sink-front1")))
     (send co :translate (float-vector 0 0 0) :world)
     (if (send *ri* :simulation-modep)
         (setq co (send *room73b2* :spot "sink-front0-spot")))
