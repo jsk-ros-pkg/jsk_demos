@@ -123,10 +123,11 @@
   t)
 
 (warn "goto-dining-table~%")
-(defun base-go-to-dining-table (&key (wait t))
+(defun base-go-to-dining-table (&key (wait t) (nearby-table-task ""))
+  (let (declaretive-nearby-dining-table-task-name perform-nearby-dining-table-task-name go-nearby-dining-table-task-name)
   (if *remotelogging*
-     (progn (defvar declaretive-nearby-dining-table-task-name (start-task "http://knowrob.org/kb/knowrob.owl#DeclaretiveGoal" "CalculateGoalPose"))
-     (generate-subtask-relation nearby-dining-table-task-name declaretive-nearby-dining-table-task-name))
+     (progn (setq declaretive-nearby-dining-table-task-name (start-task "http://knowrob.org/kb/knowrob.owl#DeclaretiveGoal" "CalculateGoalPose"))
+     (generate-subtask-relation nearby-table-task declaretive-nearby-dining-table-task-name))
   )
   (let ((co (send *scene* :spot "/eng2/7f/room73B2-table-side1")))
     (send co :translate (float-vector 0 0 0) :world)
@@ -134,9 +135,9 @@
         (setq co (send *room73b2* :spot "table-side1-spot")))
     (if *remotelogging*
         (progn (finish-task declaretive-nearby-dining-table-task-name)
-        (defvar perform-nearby-dining-table-task-name (start-task "http://knowrob.org/kb/knowrob.owl#CRAMPerform" "PerformGoNearbyDiningTable"))
-        (generate-subtask-relation nearby-dining-table-task-name perform-nearby-dining-table-task-name)
-        (defvar go-nearby-dining-table-task-name (start-task "http://knowrob.org/kb/knowrob.owl#BaseMovement" "GoNearbyDiningTable"))
+        (setq perform-nearby-dining-table-task-name (start-task "http://knowrob.org/kb/knowrob.owl#CRAMPerform" "PerformGoNearbyDiningTable"))
+        (generate-subtask-relation nearby-table-task perform-nearby-dining-table-task-name)
+        (setq go-nearby-dining-table-task-name (start-task "http://knowrob.org/kb/knowrob.owl#BaseMovement" "GoNearbyDiningTable"))
         (generate-subtask-relation perform-nearby-dining-table-task-name go-nearby-dining-table-task-name))
     )
     (cond
@@ -168,7 +169,7 @@
     )
     t
     )
-)
+))
 
 
 (warn "goto-front-of-fridge~%")
@@ -311,25 +312,26 @@
   t
   )
 
-(defun base-go-to-dining-table-init-pose (&key (wait t) (torso-lift 130) (head-pitch 0))
+(defun base-go-to-dining-table-init-pose (&key (wait t) (torso-lift 130) (head-pitch 0) (preman-task-name ""))
+  (let (table-pose-task-name perform-preman-dining-table-task-name head-movement-table-task-name base-movement-table-task-name)
   (if *remotelogging*
-     (progn (defvar table-pose-task-name (start-task "http://knowrob.org/kb/knowrob.owl#AtLocation" "CalculateRobotState"))
-     (generate-subtask-relation preman-dining-table-task-name table-pose-task-name))
+     (progn (setq table-pose-task-name (start-task "http://knowrob.org/kb/knowrob.owl#AtLocation" "CalculateRobotState"))
+     (generate-subtask-relation preman-task-name table-pose-task-name))
   )
   (send *pr2* :angle-vector (send *ri* :state :potentio-vector))
   (if *remotelogging*
      (progn (fill-at-location-task table-pose-task-name (send *pr2* :angle-vector))
      (finish-task table-pose-task-name)
-     (defvar perform-preman-dining-table-task-name (start-task "http://knowrob.org/kb/knowrob.owl#CRAMPerform" "PerformAdjustBody"))
-     (generate-subtask-relation preman-dining-table-task-name perform-preman-dining-table-task-name)
-     (defvar head-movement-table-task-name (start-task "http://knowrob.org/kb/knowrob.owl#HeadMovement" "LookingTowardsDiningTable"))
+     (setq perform-preman-dining-table-task-name (start-task "http://knowrob.org/kb/knowrob.owl#CRAMPerform" "PerformAdjustBody"))
+     (generate-subtask-relation preman-task-name perform-preman-dining-table-task-name)
+     (setq head-movement-table-task-name (start-task "http://knowrob.org/kb/knowrob.owl#HeadMovement" "LookingTowardsDiningTable"))
      (generate-subtask-relation perform-preman-dining-table-task-name head-movement-table-task-name))
   )
   (send *pr2* :head :angle-vector (float-vector 0 head-pitch))
   
 
   (if *remotelogging*
-     (progn (defvar base-movement-table-task-name (start-task "http://knowrob.org/kb/knowrob.owl#BaseMovement" "AdjustTorsoHeight"))
+     (progn (setq base-movement-table-task-name (start-task "http://knowrob.org/kb/knowrob.owl#BaseMovement" "AdjustTorsoHeight"))
      (generate-subtask-relation perform-preman-dining-table-task-name base-movement-table-task-name))
   )
   (send *pr2* :torso :angle-vector (float-vector torso-lift))
@@ -355,7 +357,7 @@
       )
     )
   t
-  )
+  ))
 
 (defun base-go-to-kitchen-counter-init-pose (&key (wait t) (torso-lift 130) (head-pitch 0))
   (if *remotelogging*
@@ -443,24 +445,26 @@
   )
   )
 
-(defun goto-front-of-dining-table (&key (torso-lift 130) (head-pitch 0) (wait t))
-  (if *remotelogging*
-     (progn (defvar nearby-dining-table-task-name (start-task "http://knowrob.org/kb/knowrob.owl#Navigate" "GoNextToFridge"))
-     (generate-subtask-relation go-to-dining-table-task-name nearby-dining-table-task-name))
-  )
-  (base-go-to-dining-table :wait wait)
-  (if *remotelogging*
-      (finish-task nearby-dining-table-task-name)
-  )
+(defun goto-front-of-dining-table (&key (torso-lift 130) (head-pitch 0) (wait t) (dining-table-task ""))
+  
+  (let (nearby-dining-table-task-name preman-dining-table-task-name)
+     (if *remotelogging*
+        (progn (setq nearby-dining-table-task-name (start-task "http://knowrob.org/kb/knowrob.owl#Navigate" "GoNextToFridge"))
+        (generate-subtask-relation dining-table-task nearby-dining-table-task-name))
+     )
+     (base-go-to-dining-table :wait wait :nearby-table-task nearby-dining-table-task-name)
+     (if *remotelogging*
+        (finish-task nearby-dining-table-task-name)
+     )
 
-  (if *remotelogging*
-     (progn (defvar preman-dining-table-task-name (start-task "http://knowrob.org/kb/knowrob.owl#Navigate" "GoPreManipulationPoseDiningTable"))
-     (generate-subtask-relation go-to-dining-table-task-name preman-dining-table-task-name))
-  )
-  (base-go-to-fridge-init-pose :torso-lift torso-lift :head-pitch head-pitch :wait wait)
-  (if *remotelogging*
-      (finish-task preman-dining-table-task-name)
-  )
-  )
+     (if *remotelogging*
+        (progn (setq preman-dining-table-task-name (start-task "http://knowrob.org/kb/knowrob.owl#Navigate" "GoPreManipulationPoseDiningTable"))
+        (generate-subtask-relation dining-table-task preman-dining-table-task-name))
+     )
+     (base-go-to-dining-table-init-pose :torso-lift torso-lift :head-pitch head-pitch :wait wait :preman-task-name preman-dining-table-task-name)
+     (if *remotelogging*
+        (finish-task preman-dining-table-task-name)
+     )
+))
 
 (provide :pr2-move)
