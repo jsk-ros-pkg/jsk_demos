@@ -637,7 +637,7 @@
       )
   )
 
-  (send *ri* :go-pos-unsafe 0.15 0 0)
+  (send *ri* :go-pos-unsafe 0.20 0.15 0)
   (send *pr2* :head :neck-p :joint-angle 40)
   (send *pr2* :head :neck-y :joint-angle 23)
   (send *ri* :angle-vector (send *pr2* :angle-vector) 2000 :head-controller)
