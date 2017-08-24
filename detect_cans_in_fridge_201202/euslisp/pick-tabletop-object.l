@@ -127,7 +127,7 @@
             (generate-subtask-relation grasp-cornflakes-task-name cornflakes-perception-task)
       )
   )
-  (let ((serial (check-detection :type "serial" :speak nil)))
+  (let ((serial (check-detection :type "serial" :speak nil :detection-topic "/kinect_head/depth_registered/ObjectDetection")))
     (if *remotelogging*
        (let (query-s id1 res1 query-position id2 res2 query-rotation id4 res4 query-object-acted id3 res3 quat)
            (setq query-s (concatenate string "send_prolog_assert_query('rdf_assert(\\'" cornflakes-perception-task "\\', knowrob:taskSuccess, literal(type(xsd:boolean,\\'true\\')), \\'LoggingGraph\\')', @(false), Result)."))
@@ -168,7 +168,7 @@
             (generate-subtask-relation grasp-bowl-task-name bowl-perception-task)
       )
   )
-  (let ((bowl (check-detection :type "red_bowl" :speak nil)))
+  (let ((bowl (check-detection :type "red_bowl" :speak nil :detection-topic "/kinect_head/depth_registered/ObjectDetection")))
     (if *remotelogging*
        (let (query-s id1 res1 query-position id2 res2 query-rotation id4 res4 query-object-acted id3 res3 quat)
            (setq query-s (concatenate string "rdf_assert(\\'" bowl-perception-task "\\', knowrob:taskSuccess, literal(type(xsd:boolean,\\'true\\')), \\'LoggingGraph\\')', @(false), Result)."))
