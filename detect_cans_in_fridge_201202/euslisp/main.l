@@ -582,7 +582,7 @@
       )
   ) 
 
-  (send *ri* :go-pos-unsafe -0.1 0 0)
+  (send *ri* :go-pos-unsafe -0.2 0 0)
 
   (if *remotelogging*
         (progn  (finish-task torso-putdown-back-task-name)
@@ -637,7 +637,7 @@
       )
   )
 
-  (send *ri* :go-pos-unsafe 0.10 0.30 0)
+  (send *ri* :go-pos-unsafe 0.08 0.30 0)
   (send *pr2* :head :neck-p :joint-angle 40)
   (send *ri* :angle-vector (send *pr2* :angle-vector) 2000 :head-controller)
   (if *remotelogging*
