@@ -130,7 +130,7 @@
   (let ((serial (check-detection :type "serial" :speak nil)))
     (if *remotelogging*
        (let (query-s id1 res1 query-position id2 res2 query-rotation id4 res4 query-object-acted id3 res3 quat)
-           (setq query-s (concatenate string "rdf_assert(\\'" cornflakes-perception-task "\\', knowrob:taskSuccess, literal(type(xsd:boolean,\\'true\\')), \\'LoggingGraph\\')', @(false), Result)."))
+           (setq query-s (concatenate string "send_prolog_assert_query('rdf_assert(\\'" cornflakes-perception-task "\\', knowrob:taskSuccess, literal(type(xsd:boolean,\\'true\\')), \\'LoggingGraph\\')', @(false), Result)."))
            (setq id1 (send-json-prolog-query query-s))
            (setq res1 (read-json-next-solution id1))
            (finish-json-query id1)
