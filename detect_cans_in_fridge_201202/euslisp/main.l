@@ -619,12 +619,8 @@
      ;; do nothing
      ))
   (if *remotelogging*
-      (finish-task go-to-kitchen-counter-task-name)
-  )
-
-  ;; move
-  (if *remotelogging*
       (let (query-object-acted query-arm id1 res1 id2 res2)
+            (finish-task go-to-kitchen-counter-task-name)
             (defvar grasp-cornflakes-task-name (start-task "http://knowrob.org/kb/knowrob.owl#Grasp" "GraspObject"))
             (generate-subtask-relation experiment-name grasp-cornflakes-task-name)
             (defvar cornflakes-name "http://knowrob.org/kb/room73b2.owl#room73b2_1_cornflakes_9A67BV")
@@ -636,7 +632,15 @@
             (setq id2 (send-json-prolog-query query-arm))
             (setq res2 (read-json-next-solution id2))
             (finish-json-query id2)
+            (defvar head-grasp-counter-task-name (start-task "http://knowrob.org/kb/knowrob.owl#HeadMovement" "LookingTowardsCounter"))
+            (generate-subtask-relation grasp-cornflakes-task-name head-grasp-counter-task-name)
       )
+  )
+  (send *pr2* :head :neck-p :joint-angle 26)
+  (send *pr2* :head :neck-y :joint-angle 23)
+  (send *ri* :angle-vector (send *pr2* :angle-vector) 2000 :head-controller)
+  (if *remotelogging*
+     (finish-task head-grasp-counter-task-name)
   )
   (unless (pick-serial)
     (return-from demo-breakfast-openease))
