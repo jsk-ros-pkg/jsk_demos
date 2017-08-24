@@ -572,11 +572,21 @@
             (finish-json-query id3)
       )
   )
-  (let ((co (make-coords :pos (float-vector 650 20 740))))
+  (let ((co (make-coords :pos (float-vector 650 20 725))))
       (place2 co :arm :larm))
 
   (if *remotelogging*
-        (progn (defvar tuck-putdown-reset-task (start-task "http://knowrob.org/kb/knowrob.owl#ArmMovement" "TuckArmAfterPutDown"))
+      (progn
+             (defvar torso-putdown-back-task-name (start-task "http://knowrob.org/kb/knowrob.owl#BaseMovement" "BackFromTable"))
+             (generate-subtask-relation put-object-task-name torso-putdown-back-task-name)
+      )
+  ) 
+
+  (send *ri* :go-pos-unsafe -0.1 0 0)
+
+  (if *remotelogging*
+        (progn  (finish-task torso-putdown-back-task-name)
+        (defvar tuck-putdown-reset-task (start-task "http://knowrob.org/kb/knowrob.owl#ArmMovement" "TuckArmAfterPutDown"))
         (generate-subtask-relation put-object-task-name tuck-putdown-reset-task)))
 
   (pr2-tuckarm-pose use-arm :outside)  
@@ -708,7 +718,7 @@
             (finish-json-query id3)
       )
   )
-  (let ((co (make-coords :pos (float-vector 650 0 740))))
+  (let ((co (make-coords :pos (float-vector 650 0 725))))
       (place2 co))
   (if *remotelogging*
       (finish-task put-cornflakes-task-name)
@@ -733,7 +743,7 @@
             (finish-json-query id3)
       )
   )
-  (let ((co (make-coords :pos (float-vector 650 30 740))))
+  (let ((co (make-coords :pos (float-vector 650 30 725))))
       (place2 co :arm :larm))
   (if *remotelogging*
       (finish-task put-cornflakes-task-name)
