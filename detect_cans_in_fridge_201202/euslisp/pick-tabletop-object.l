@@ -2,7 +2,6 @@
 ;; Author: Yuki Furuta <furushchev@jsk.imi.i.u-tokyo.ac.jp>
 
 (require :pr2-interface "package://pr2eus/pr2-interface.l")
-(defparameter *detection-topic* "/kinect_head/depth_registered/ObjectDetection")
 (require :detection-interface "package://jsk_perception/euslisp/detection_interface.l")
 (require :pr2-action "package://jsk_demo_common/euslisp/pr2-action.l")
 (require :pr2-pose "package://jsk_demo_common/euslisp/pr2-pose.l")
@@ -32,7 +31,7 @@
      (pr2-pick-tray-pose :arm :rarm :torso torso)))
   (send *pr2* :angle-vector))
 
-(defun pick-tabletop-object (obj &key (offset 100) (arm :larm) (flip-z-if-fail t) (rotation-axis) (parent-grasp ""))
+(defun pick-tabletop-object (obj &key (offset 100) (arm :larm) (flip-z-if-fail t) (rotation-axis t) (parent-grasp ""))
   (let ((cds (send obj :copy-worldcoords))
         pregrasp-av grasp-av pregrasp-task-name-local grasp-trial-task-local)
     (if *remotelogging*
@@ -127,7 +126,8 @@
             (generate-subtask-relation grasp-cornflakes-task-name cornflakes-perception-task)
       )
   )
-  (let ((serial (check-detection :type "serial" :speak nil :detection-topic "/kinect_head/depth_registered/ObjectDetection")))
+  (let ((serial (check-detection :type "serial" :speak nil
+                                 :detection-topic "/kinect_head/depth_registered/tabletop/ObjectDetection")))
     (if *remotelogging*
        (let (query-s id1 res1 query-position id2 res2 query-rotation id4 res4 query-object-acted id3 res3 quat)
            (setq query-s (concatenate string "send_prolog_assert_query('rdf_assert(\\'" cornflakes-perception-task "\\', knowrob:taskSuccess, literal(type(xsd:boolean,\\'true\\')), \\'LoggingGraph\\')', @(false), Result)."))
@@ -168,7 +168,8 @@
             (generate-subtask-relation grasp-bowl-task-name bowl-perception-task)
       )
   )
-  (let ((bowl (check-detection :type "red_bowl" :speak nil :detection-topic "/kinect_head/depth_registered/ObjectDetection")))
+  (let ((bowl (check-detection :type "red_bowl" :speak nil
+                               :detection-topic "/kinect_head/depth_registered/tabletop/ObjectDetection")))
     (if *remotelogging*
        (let (query-s id1 res1 query-position id2 res2 query-rotation id4 res4 query-object-acted id3 res3 quat)
            (setq query-s (concatenate string "send_prolog_assert_query('rdf_assert(\\'" bowl-perception-task "\\', knowrob:taskSuccess, literal(type(xsd:boolean,\\'true\\')), \\'LoggingGraph\\')', @(false), Result)."))

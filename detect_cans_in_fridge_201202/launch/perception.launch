@@ -101,6 +101,7 @@
     <!-- <arg name="debug_view" value="$(arg debug_view)" /> -->
   <!-- </include> -->
   <include file="$(find detect_cans_in_fridge_201202)/launch/color_histogram.launch" />
+  <include file="$(find detect_cans_in_fridge_201202)/launch/color_histogram_tabletop.launch" />
 
   <sphinxdoc><![CDATA[
 

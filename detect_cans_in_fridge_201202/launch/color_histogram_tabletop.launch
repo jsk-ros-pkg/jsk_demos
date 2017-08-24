@@ -1,7 +1,7 @@
 <launch>
   <arg name="machine" default="c2" />
   <arg name="cloud_topic" default="/kinect_head/depth_registered/points" />
-  <arg name="detection_topic" default="/kinect_head/depth_registered/ObjectDetection" />
+  <arg name="detection_topic" default="/kinect_head/depth_registered/tabletop/ObjectDetection" />
   <arg name="base_frame_id" default="base_footprint" />
   <arg name="sensor_frame_id" default="head_mount_kinect_rgb_optical_frame" />
   <arg name="map_frame_id" default="map" />
