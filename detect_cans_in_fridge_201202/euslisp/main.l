@@ -723,7 +723,7 @@
             (finish-json-query id3)
       )
   )
-  (let ((co (make-coords :pos (float-vector 650 0 725))))
+  (let ((co (make-coords :pos (float-vector 650 20 725))))
       (place2 co :arm :larm))
   (if *remotelogging*
       (finish-task put-cornflakes-task-name)

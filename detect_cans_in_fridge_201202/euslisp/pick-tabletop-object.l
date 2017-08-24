@@ -126,18 +126,8 @@
             (generate-subtask-relation grasp-cornflakes-task-name cornflakes-perception-task)
       )
   )
-  (let (serial)
-    (if *remotelogging*
-        (progn (setq check-cornflakes-perception-task (start-task "http://knowrob.org/kb/knowrob.owl#WithFailureHandling" "PerceptionFailureDetection"))
-        (generate-subtask-relation cornflakes-perception-task check-cornflakes-perception-task))
-      )
-      (unless (setq serial (check-detection :type "serial" :speak nil :timeout 35
-                               :detection-topic "/kinect_head/depth_registered/tabletop/ObjectDetection"))
-        (setq serial (check-detection :type "serial" :speak nil :timeout 70
-                               :detection-topic "/kinect_head/depth_registered/tabletop/ObjectDetection")))
-      (if *remotelogging*
-        (finish-task check-cornflakes-perception-task)
-
+  (let ((serial (check-detection :type "serial" :speak nil :timeout 70
+                                 :detection-topic "/kinect_head/depth_registered/tabletop/ObjectDetection")))
     (if *remotelogging*
        (let (query-s id1 res1 query-position id2 res2 query-rotation id4 res4 query-object-acted id3 res3 quat)
            (setq query-s (concatenate string "send_prolog_assert_query('rdf_assert(\\'" cornflakes-perception-task "\\', knowrob:taskSuccess, literal(type(xsd:boolean,\\'true\\')), \\'LoggingGraph\\')', @(false), Result)."))
@@ -178,18 +168,8 @@
             (generate-subtask-relation grasp-bowl-task-name bowl-perception-task)
       )
   )
-  (let (bowl)
-    (if *remotelogging*
-        (progn (setq check-bowl-perception-task (start-task "http://knowrob.org/kb/knowrob.owl#WithFailureHandling" "PerceptionFailureDetection"))
-        (generate-subtask-relation bowl-perception-task check-bowl-perception-task))
-      )
-      (unless (setq bowl (check-detection :type "red_bowl" :speak nil :timeout 35
-                               :detection-topic "/kinect_head/depth_registered/tabletop/ObjectDetection"))
-        (setq bowl (check-detection :type "red_bowl" :speak nil :timeout 70
+  (let ((bowl (check-detection :type "red_bowl" :speak nil :timeout 70
                                :detection-topic "/kinect_head/depth_registered/tabletop/ObjectDetection")))
-      (if *remotelogging*
-        (finish-task check-bowl-perception-task)
-
     (if *remotelogging*
        (let (query-s id1 res1 query-position id2 res2 query-rotation id4 res4 query-object-acted id3 res3 quat)
            (setq query-s (concatenate string "send_prolog_assert_query('rdf_assert(\\'" bowl-perception-task "\\', knowrob:taskSuccess, literal(type(xsd:boolean,\\'true\\')), \\'LoggingGraph\\')', @(false), Result)."))
