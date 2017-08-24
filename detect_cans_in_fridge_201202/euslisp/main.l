@@ -636,7 +636,9 @@
             (generate-subtask-relation grasp-cornflakes-task-name head-grasp-counter-task-name)
       )
   )
-  (send *pr2* :head :neck-p :joint-angle 50)
+
+  (send *ri* :go-pos-unsafe 0.1 0 0)
+  (send *pr2* :head :neck-p :joint-angle 40)
   (send *pr2* :head :neck-y :joint-angle 23)
   (send *ri* :angle-vector (send *pr2* :angle-vector) 2000 :head-controller)
   (if *remotelogging*
