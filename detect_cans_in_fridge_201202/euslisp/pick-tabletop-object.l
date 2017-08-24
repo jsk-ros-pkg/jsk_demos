@@ -126,8 +126,7 @@
             (generate-subtask-relation grasp-cornflakes-task-name cornflakes-perception-task)
       )
   )
-  (let ((serial (check-detection :type "serial" :speak nil 
-                                 :detection-topic "/kinect_head/depth_registered/tabletop/ObjectDetection")))
+  (let (serial)
     (if *remotelogging*
         (progn (setq check-cornflakes-perception-task (start-task "http://knowrob.org/kb/knowrob.owl#WithFailureHandling" "PerceptionFailureDetection"))
         (generate-subtask-relation cornflakes-perception-task check-cornflakes-perception-task))
@@ -179,9 +178,7 @@
             (generate-subtask-relation grasp-bowl-task-name bowl-perception-task)
       )
   )
-  (let ((bowl (check-detection :type "red_bowl" :speak nil
-                               :detection-topic "/kinect_head/depth_registered/tabletop/ObjectDetection")))
-
+  (let (bowl)
     (if *remotelogging*
         (progn (setq check-bowl-perception-task (start-task "http://knowrob.org/kb/knowrob.owl#WithFailureHandling" "PerceptionFailureDetection"))
         (generate-subtask-relation bowl-perception-task check-bowl-perception-task))
