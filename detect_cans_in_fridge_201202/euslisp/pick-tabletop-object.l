@@ -112,7 +112,7 @@
      (progn (defvar pregrasp-cornflakes-task-name (start-task "http://knowrob.org/kb/knowrob.owl#ArmMovement" "PreGraspPose"))
      (generate-subtask-relation grasp-cornflakes-task-name pregrasp-cornflakes-task-name))
   )
-  (pr2-pick-tray-pose :arm arm :torso 180)
+  (pr2-pick-tray-pose :arm arm :torso 230)
   (send *ri* :angle-vector (send *pr2* :angle-vector))
   (send *ri* :wait-interpolation)
   (if *remotelogging*
@@ -157,7 +157,7 @@
      (progn (defvar pregrasp-bowl-task-name (start-task "http://knowrob.org/kb/knowrob.owl#ArmMovement" "PreGraspPose"))
      (generate-subtask-relation grasp-bowl-task-name pregrasp-bowl-task-name))
     )
-    (pr2-pick-tray-pose :arm arm :torso 180)
+    (pr2-pick-tray-pose :arm arm :torso 230)
     (send *ri* :angle-vector (send *pr2* :angle-vector))
     (send *ri* :wait-interpolation)
     (if *remotelogging*
