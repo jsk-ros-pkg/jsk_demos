@@ -194,6 +194,6 @@
            (finish-task bowl-perception-task)))
     (send bowl :rotate -pi/2 :y)
     (send bowl :translate (float-vector -70 0 0) :world)
-    (pick-tabletop-object bowl :arm arm :offset 100 parent-grasp grasp-bowl-task-name)))
+    (pick-tabletop-object bowl :arm arm :offset 100 :parent-grasp grasp-bowl-task-name)))
 
 (provide :pick-tabletop-object) ;; end of pick-tabletop-object.l
