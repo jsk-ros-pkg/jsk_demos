@@ -97,7 +97,7 @@
     (send *ri* :angle-vector-sequence
           (list pregrasp-av grasp-av) (list 5000 2000))
     (send *ri* :wait-interpolation)
-    (send *ri* :start-grasp arm)
+    (send *ri* :start-grasp arm :gain 0.05)
     (if *remotelogging* 
        (let (query-s id1 res1)
           (setq query-s (concatenate string "send_prolog_assert_query('rdf_assert(\\'" grasp-trial-task-local "\\', knowrob:taskSuccess, literal(type(xsd:boolean,\\'true\\')), \\'LoggingGraph\\'), rdf_assert(\\'" grasp-task-name "\\', knowrob:taskSuccess, literal(type(xsd:boolean,\\'true\\')), \\'LoggingGraph\\')', @(false), Result)."))

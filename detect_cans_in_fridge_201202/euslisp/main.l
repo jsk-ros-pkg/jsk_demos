@@ -749,13 +749,21 @@
       )
   )
   (let ((co (make-coords :pos (float-vector 665 0 725))))
-      (place2 co :arm :rarm))
-  (if *remotelogging*
-      (finish-task put-bowl-task-name)
-  )
+      (place co :arm :rarm))
 
   (if *remotelogging*
-        (progn (defvar tuck-putdown2-reset-task (start-task "http://knowrob.org/kb/knowrob.owl#ArmMovement" "TuckArmAfterPutDown"))
+      (progn
+             (defvar torso-putdown-back2-task-name (start-task "http://knowrob.org/kb/knowrob.owl#BaseMovement" "BackFromTable"))
+             (generate-subtask-relation put-bowl-task-name torso-putdown-back2-task-name)
+      )
+  ) 
+
+  (send *ri* :go-pos-unsafe -0.2 0 0)
+
+  (if *remotelogging*
+        (progn (finish-task put-bowl-task-name) 
+        (finish-task torso-putdown-back2-task-name)
+        (defvar tuck-putdown2-reset-task (start-task "http://knowrob.org/kb/knowrob.owl#ArmMovement" "TuckArmAfterPutDown"))
         (generate-subtask-relation experiment-name tuck-putdown2-reset-task)))
 
   (pr2-tuckarm-pose use-arm :outside)  
