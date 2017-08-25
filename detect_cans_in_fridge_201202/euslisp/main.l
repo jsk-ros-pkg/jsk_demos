@@ -778,7 +778,7 @@
             (setq id1 (send-json-prolog-query query-arm))
             (setq res1 (read-json-next-solution id1))
             (finish-json-query id1)
-            (finish-task post-bowl-cornflakes-task-name)
+            (finish-task post-put-bowl-task-name)
       )
   )
 
