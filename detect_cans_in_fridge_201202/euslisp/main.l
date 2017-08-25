@@ -639,6 +639,7 @@
 
   (send *ri* :go-pos-unsafe -0.01 0.30 0)
   (send *pr2* :head :neck-p :joint-angle 50)
+  (send *pr2* :head :neck-y :joint-angle -10)
   (send *ri* :angle-vector (send *pr2* :angle-vector) 2000 :head-controller)
   (if *remotelogging*
      (finish-task head-grasp-counter-task-name)
