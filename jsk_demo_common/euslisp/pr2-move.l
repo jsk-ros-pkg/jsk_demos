@@ -449,7 +449,7 @@
   
   (let (nearby-dining-table-task-name preman-dining-table-task-name)
      (if *remotelogging*
-        (progn (setq nearby-dining-table-task-name (start-task "http://knowrob.org/kb/knowrob.owl#Navigate" "GoNextToFridge"))
+        (progn (setq nearby-dining-table-task-name (start-task "http://knowrob.org/kb/knowrob.owl#Navigate" "GoNextToDiningTable"))
         (generate-subtask-relation dining-table-task nearby-dining-table-task-name))
      )
      (base-go-to-dining-table :wait wait :nearby-table-task nearby-dining-table-task-name)

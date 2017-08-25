@@ -572,7 +572,7 @@
             (finish-json-query id3)
       )
   )
-  (let ((co (make-coords :pos (float-vector 650 20 725))))
+  (let ((co (make-coords :pos (float-vector 665 20 725))))
       (place2 co :arm :larm))
 
   (if *remotelogging*
@@ -672,19 +672,19 @@
       (finish-task grasp-bowl-task-name)
   )
   
-  (if *remotelogging*
-     (progn (defvar postgrasp-counter-task-name (start-task "http://knowrob.org/kb/knowrob.owl#BaseMovement" "PostGraspPose"))
-     (generate-subtask-relation grasp-task-name postgrasp-counter-task-name)))
-  (send *ri* :angle-vector (float-vector 130 30.5013 45.7743 5.23423 -109.572 -181.537 -7.40368 -181.626 -20.6884 41.162 -12.6847 -106.395 -0.527595 -7.67921 -0.599568 20.038 23.814) 600)
-  (if *remotelogging*
-      (let (query-arm id1 res1)
-            (setq query-arm (concatenate string "send_prolog_assert_query('rdf_assert(\\'" postgrasp-counter-task-name "\\', knowrob:bodyPartUsed, literal(type(xsd:string,\\'botharm\\')), \\'LoggingGraph\\')', @(false), Result)."))
-            (setq id1 (send-json-prolog-query query-arm))
-            (setq res1 (read-json-next-solution id1))
-            (finish-json-query id1)
-            (finish-task postgrasp-counter-task-name)
-      )
-  )
+;  (if *remotelogging*
+;     (progn (defvar postgrasp-counter-task-name (start-task "http://knowrob.org/kb/knowrob.owl#BaseMovement" "PostGraspPose"))
+;     (generate-subtask-relation grasp-task-name postgrasp-counter-task-name)))
+;  (send *ri* :angle-vector (float-vector 130 30.5013 45.7743 5.23423 -109.572 -181.537 -7.40368 -181.626 -20.6884 41.162 -12.6847 -106.395 -0.527595 -7.67921 -0.599568 20.038 23.814) 600)
+;  (if *remotelogging*
+;      (let (query-arm id1 res1)
+;            (setq query-arm (concatenate string "send_prolog_assert_query('rdf_assert(\\'" postgrasp-counter-task-name "\\', knowrob:bodyPartUsed, literal(type(xsd:string,\\'botharm\\')), \\'LoggingGraph\\')', @(false), Result)."))
+;            (setq id1 (send-json-prolog-query query-arm))
+;            (setq res1 (read-json-next-solution id1))
+;            (finish-json-query id1)
+;            (finish-task postgrasp-counter-task-name)
+;      )
+;  )
 
   ;;
   (if *remotelogging*
@@ -709,7 +709,7 @@
       (let (query-object-acted query-arm query-location id1 res1 id2 res2 id3 res3)
             (finish-task go-to-dining-table2-task-name)
             (defvar put-cornflakes-task-name (start-task "http://knowrob.org/kb/knowrob.owl#AtLocation" "PUTDOWN"))
-            (generate-subtask-relation experiment-name put-object-task-name)
+            (generate-subtask-relation experiment-name put-cornflakes-task-name)
             (setq query-object-acted (concatenate string "send_prolog_assert_query('cram_set_object_acted_on(\\'" put-cornflakes-task-name "\\',\\'" cornflakes-name "\\')', @(false), Result)."))
             (setq id1 (send-json-prolog-query query-object-acted))
             (setq res1 (read-json-next-solution id1))
@@ -724,7 +724,7 @@
             (finish-json-query id3)
       )
   )
-  (let ((co (make-coords :pos (float-vector 650 20 725))))
+  (let ((co (make-coords :pos (float-vector 665 50 725))))
       (place2 co :arm :larm))
   (if *remotelogging*
       (finish-task put-cornflakes-task-name)
@@ -733,7 +733,7 @@
   (if *remotelogging*
       (let (query-object-acted query-arm query-location id1 res1 id2 res2 id3 res3)
             (defvar put-bowl-task-name (start-task "http://knowrob.org/kb/knowrob.owl#AtLocation" "PUTDOWN"))
-            (generate-subtask-relation experiment-name put-object-task-name)
+            (generate-subtask-relation experiment-name put-bowl-task-name)
             (setq query-object-acted (concatenate string "send_prolog_assert_query('cram_set_object_acted_on(\\'" put-bowl-task-name "\\',\\'" bowl-name "\\')', @(false), Result)."))
             (setq id1 (send-json-prolog-query query-object-acted))
             (setq res1 (read-json-next-solution id1))
@@ -748,7 +748,7 @@
             (finish-json-query id3)
       )
   )
-  (let ((co (make-coords :pos (float-vector 650 -20 725))))
+  (let ((co (make-coords :pos (float-vector 665 0 725))))
       (place2 co :arm :rarm))
   (if *remotelogging*
       (finish-task put-bowl-task-name)

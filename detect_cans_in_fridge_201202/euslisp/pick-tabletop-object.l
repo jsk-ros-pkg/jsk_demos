@@ -72,7 +72,7 @@
     )
     ;;
     (if *remotelogging*
-       (progn (defvar grasp-trial-task-local (start-task "http://knowrob.org/kb/knowrob.owl#CRAMAchieve" "GraspTrial"))
+       (progn (setq grasp-trial-task-local (start-task "http://knowrob.org/kb/knowrob.owl#CRAMAchieve" "GraspTrial"))
               (generate-subtask-relation parent-grasp grasp-trial-task-local)))
     (setq cds (send *pr2* arm :end-coords :copy-worldcoords))
     (send cds :translate (float-vector offset 0 0))
@@ -147,7 +147,23 @@
            (setq id3 (send-json-prolog-query query-object-acted))
            (setq res3 (read-json-next-solution id3))
            (finish-task cornflakes-perception-task)))
-    (pick-tabletop-object serial :offset 150 :parent-grasp grasp-cornflakes-task-name)))
+    (pick-tabletop-object serial :offset 150 :parent-grasp grasp-cornflakes-task-name))
+  (if *remotelogging*
+     (progn (defvar postgrasp-cornflakes-task-name (start-task "http://knowrob.org/kb/knowrob.owl#ArmMovement" "PostGraspPose"))
+     (generate-subtask-relation grasp-cornflakes-task-name postgrasp-cornflakes-task-name))
+  )
+  (pr2-pick-tray-pose :arm arm :torso 280)
+  (send *ri* :angle-vector (send *pr2* :angle-vector))
+  (send *ri* :wait-interpolation)
+  (if *remotelogging*
+      (let (query-arm id1 res1)
+            (setq query-arm (concatenate string "send_prolog_assert_query('rdf_assert(\\'" postgrasp-cornflakes-task-name "\\', knowrob:bodyPartUsed, literal(type(xsd:string,\\'" (string arm) "\\')), \\'LoggingGraph\\')', @(false), Result)."))
+            (setq id1 (send-json-prolog-query query-arm))
+            (setq res1 (read-json-next-solution id1))
+            (finish-json-query id1)
+            (finish-task postgrasp-cornflakes-task-name)
+      )
+  ))
 ;;
 (defun pick-bowl (&optional (arm :rarm))
   (let ((bowl (check-detection :type "red_bowl" :speak nil :timeout 70
@@ -194,6 +210,22 @@
            (finish-task bowl-perception-task)))
     (send bowl :rotate -pi/2 :y)
     (send bowl :translate (float-vector -70 0 0) :world)
-    (pick-tabletop-object bowl :arm arm :offset 100 :parent-grasp grasp-bowl-task-name)))
+    (pick-tabletop-object bowl :arm arm :offset 100 :parent-grasp grasp-bowl-task-name))
+  (if *remotelogging*
+     (progn (defvar postgrasp-bowl-task-name (start-task "http://knowrob.org/kb/knowrob.owl#ArmMovement" "PostGraspPose"))
+     (generate-subtask-relation grasp-bowl-task-name postgrasp-bowl-task-name))
+  )
+  (pr2-pick-tray-pose :arm arm :torso 280)
+  (send *ri* :angle-vector (send *pr2* :angle-vector))
+  (send *ri* :wait-interpolation)
+  (if *remotelogging*
+    (let (query-arm id1 res1)
+          (setq query-arm (concatenate string "send_prolog_assert_query('rdf_assert(\\'" postgrasp-bowl-task-name "\\', knowrob:bodyPartUsed, literal(type(xsd:string,\\'" (string arm) "\\')), \\'LoggingGraph\\')', @(false), Result)."))
+          (setq id1 (send-json-prolog-query query-arm))
+          (setq res1 (read-json-next-solution id1))
+          (finish-json-query id1)
+          (finish-task postgrasp-bowl-task-name)
+    )
+  ))
 
 (provide :pick-tabletop-object) ;; end of pick-tabletop-object.l
