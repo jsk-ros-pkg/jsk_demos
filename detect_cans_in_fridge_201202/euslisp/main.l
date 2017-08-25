@@ -727,7 +727,21 @@
   (let ((co (make-coords :pos (float-vector 650 80 725))))
       (place2 co :arm :larm))
   (if *remotelogging*
-      (finish-task put-cornflakes-task-name)
+     (progn (defvar post-put-cornflakes-task-name (start-task "http://knowrob.org/kb/knowrob.owl#ArmMovement" "PostPutDownPose"))
+     (generate-subtask-relation put-cornflakes-task-name post-put-cornflakes-task-name))
+  )
+  (pr2-pick-tray-pose :arm :larm :torso 280)
+  (send *ri* :angle-vector (send *pr2* :angle-vector))
+  (send *ri* :wait-interpolation)
+  (if *remotelogging*
+      (let (query-arm id1 res1)
+            (setq query-arm (concatenate string "send_prolog_assert_query('rdf_assert(\\'" post-put-cornflakes-task-name "\\', knowrob:bodyPartUsed, literal(type(xsd:string,\\'" (string arm) "\\')), \\'LoggingGraph\\')', @(false), Result)."))
+            (setq id1 (send-json-prolog-query query-arm))
+            (setq res1 (read-json-next-solution id1))
+            (finish-json-query id1)
+            (finish-task post-put-cornflakes-task-name)
+            (finish-task put-cornflakes-task-name)
+      )
   )
 
   (if *remotelogging*
@@ -750,6 +764,23 @@
   )
   (let ((co (make-coords :pos (float-vector 665 0 725))))
       (place co :arm :rarm))
+
+  (if *remotelogging*
+     (progn (defvar post-put-bowl-task-name (start-task "http://knowrob.org/kb/knowrob.owl#ArmMovement" "PostPutDownPose"))
+     (generate-subtask-relation put-bowl-task-name post-put-bowl-task-name))
+  )
+  (pr2-pick-tray-pose :arm :rarm :torso 280)
+  (send *ri* :angle-vector (send *pr2* :angle-vector))
+  (send *ri* :wait-interpolation)
+  (if *remotelogging*
+      (let (query-arm id1 res1)
+            (setq query-arm (concatenate string "send_prolog_assert_query('rdf_assert(\\'" post-put-bowl-task-name "\\', knowrob:bodyPartUsed, literal(type(xsd:string,\\'" (string arm) "\\')), \\'LoggingGraph\\')', @(false), Result)."))
+            (setq id1 (send-json-prolog-query query-arm))
+            (setq res1 (read-json-next-solution id1))
+            (finish-json-query id1)
+            (finish-task post-bowl-cornflakes-task-name)
+      )
+  )
 
   (if *remotelogging*
       (progn
