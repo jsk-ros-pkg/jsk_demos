@@ -735,7 +735,7 @@
   (send *ri* :wait-interpolation)
   (if *remotelogging*
       (let (query-arm id1 res1)
-            (setq query-arm (concatenate string "send_prolog_assert_query('rdf_assert(\\'" post-put-cornflakes-task-name "\\', knowrob:bodyPartUsed, literal(type(xsd:string,\\'" (string arm) "\\')), \\'LoggingGraph\\')', @(false), Result)."))
+            (setq query-arm (concatenate string "send_prolog_assert_query('rdf_assert(\\'" post-put-cornflakes-task-name "\\', knowrob:bodyPartUsed, literal(type(xsd:string,\\'LARM\\')), \\'LoggingGraph\\')', @(false), Result)."))
             (setq id1 (send-json-prolog-query query-arm))
             (setq res1 (read-json-next-solution id1))
             (finish-json-query id1)
@@ -774,7 +774,7 @@
   (send *ri* :wait-interpolation)
   (if *remotelogging*
       (let (query-arm id1 res1)
-            (setq query-arm (concatenate string "send_prolog_assert_query('rdf_assert(\\'" post-put-bowl-task-name "\\', knowrob:bodyPartUsed, literal(type(xsd:string,\\'" (string arm) "\\')), \\'LoggingGraph\\')', @(false), Result)."))
+            (setq query-arm (concatenate string "send_prolog_assert_query('rdf_assert(\\'" post-put-bowl-task-name "\\', knowrob:bodyPartUsed, literal(type(xsd:string,\\'RARM\\')), \\'LoggingGraph\\')', @(false), Result)."))
             (setq id1 (send-json-prolog-query query-arm))
             (setq res1 (read-json-next-solution id1))
             (finish-json-query id1)
