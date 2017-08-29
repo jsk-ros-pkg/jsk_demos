@@ -95,7 +95,7 @@
 		  (- (send *pr2* :torso :waist-z :joint-angle) 100))
 	(send *ri* :angle-vector (send *pr2* :angle-vector))
 	(send *ri* :wait-interpolation)
-	(send *ri* :stop-grasp arm)
+	(send *ri* :stop-grasp arm :wait t)
 	(print "End Place!"))
   )
 
@@ -124,7 +124,7 @@
     (send *ri* :wait-interpolation)
     (unix::usleep 100000)
 
-    (send *ri* :stop-grasp arm)
+    (send *ri* :stop-grasp arm :wait t)
     
     (send *pr2* :torso :waist-z
 	  :joint-angle (- (send *pr2* :torso :waist-z :joint-angle) -50))
