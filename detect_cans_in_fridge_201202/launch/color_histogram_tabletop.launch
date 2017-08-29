@@ -174,7 +174,7 @@
       publish_clouds: false
       publish_tf: false
       align_boxes: true
-      align_boxes_with_plane: true
+      align_boxes_with_plane: false
       target_frame_id: $(arg base_frame_id)
       use_pca: true
       vital_rate: $(arg vital_rate)
@@ -240,7 +240,7 @@
           machine="$(arg machine)">
       <remap from="~input/boxes" to="euclidean_clustering_decomposer/boxes" />
       <remap from="~input/classes" to="color_histogram_classifier/output" />
-      <remap from="~output" to="$(arg detection_topic)" />
+      <remap from="~output/nearest" to="$(arg detection_topic)" />
       <rosparam>
         queue_size: 100
         publish_tf: true

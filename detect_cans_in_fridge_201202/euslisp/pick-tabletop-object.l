@@ -209,8 +209,8 @@
            (setq query-object-acted (concatenate string "send_prolog_assert_query('cram_set_object_acted_on(\\'" bowl-perception-task "\\',\\'" bowl-name "\\')', @(false), Result)."))
            (setq id3 (send-json-prolog-query query-object-acted))
            (setq res3 (read-json-next-solution id3))))
-    (send bowl :rotate -pi/2 :y)
     (send bowl :translate (float-vector -70 0 0) :world)
+    (send bowl :rotate -pi/2 :y)
     (pick-tabletop-object bowl :arm arm :offset 100 :parent-grasp grasp-bowl-task-name))
   (if *remotelogging*
      (progn (defvar postgrasp-bowl-task-name (start-task "http://knowrob.org/kb/knowrob.owl#ArmMovement" "PostGraspPose"))
