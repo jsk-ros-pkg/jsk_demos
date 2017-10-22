@@ -72,3 +72,8 @@ install(DIRECTORY launch raw_maps src tools
   DESTINATION
   ${CATKIN_PACKAGE_SHARE_DESTINATION}
   USE_SOURCE_PERMISSIONS)
+
+if(CATKIN_ENABLE_TESTING)
+  find_package(rostest REQUIRED)
+  add_rostest(test/jsk-maps.test)
+endif()
