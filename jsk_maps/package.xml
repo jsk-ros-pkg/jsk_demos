@@ -21,4 +21,5 @@
   <run_depend>multi_map_server</run_depend>
   <run_depend>jsk_rviz_plugins</run_depend>
   <run_depend>roseus_mongo</run_depend>
+  <test_depend>rostest</test_depend>
 </package>

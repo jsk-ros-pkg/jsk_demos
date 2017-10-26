@@ -8,7 +8,7 @@
    (send-super* :init args)
    (unless (boundp '*tfl*)
      (setq *tfl* (instance ros::transform-listener :init)))
-   (setq db-enabled-p (mongo::wait-for-server)))
+   (setq db-enabled-p (mongo::wait-for-server 3)))
   (:split-floor-name (full-name)
    (when (or (not (stringp full-name))
              (null-string-p full-name))
