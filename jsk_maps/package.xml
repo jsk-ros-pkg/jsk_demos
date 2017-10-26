@@ -4,13 +4,15 @@
   <description>
      jsk_maps
   </description>
-  <maintainer email="ueda@jsk.t.u-tokyo.ac.jp">Manabu Saito, Haseru Chen and Ryohei Ueda</maintainer>
   <license>BSD</license>
   <url>http://ros.org/wiki/jsk_maps</url>
+  <maintainer email="furushchev@jsk.imi.i.u-tokyo.ac.jp">Yuki Furuta</maintainer>
+  <author email="saito@jsk.t.u-tokyo.ac.jp">Manabu Saito</author>
+  <author email="chen@jsk.t.u-tokyo.ac.jp">Haseru Chen</author>
+  <author email="ueda@jsk.t.u-tokyo.ac.jp">Ryohei Ueda</author>
   <buildtool_depend>catkin</buildtool_depend>
   <build_depend>euslisp</build_depend>
   <build_depend>jskeus</build_depend>
-  <build_depend>imagemagick</build_depend>
   <build_depend>geometry_msgs</build_depend>
   <build_depend>multi_map_server</build_depend>
   <build_depend>jsk_rviz_plugins</build_depend>
@@ -20,6 +22,9 @@
   <run_depend>geometry_msgs</run_depend>
   <run_depend>multi_map_server</run_depend>
   <run_depend>jsk_rviz_plugins</run_depend>
+  <run_depend>visualization_msgs</run_depend>
+  <test_depend>rostest</test_depend>
+  <test_depend>jsk_tools</test_depend>
 </package>
 
 
