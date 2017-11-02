@@ -7,5 +7,6 @@ rosinstall_generator --tar --rosdistro indigo \
 >> /tmp/$$.rosinstall
 
 cd ~/ros/ws_$REPOSITORY_NAME/src
+wstool rm $REPOSITORY_NAME || true
 wstool merge /tmp/$$.rosinstall
 wstool up -j1
