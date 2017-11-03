@@ -1,10 +1,15 @@
 <launch>
-
+  <arg name="ROBOT" default="$(optenv ROBOT sim)" />
   <param name="use_sim_time" value="true"/>
-  <include file="$(find pr2_machine)/sim.machine"/>
+  <include file="$(find pr2_machine)/$(arg ROBOT).machine"/>
   <include file="$(find pr2_description)/robots/upload_pr2.launch"/>
-  <include file="$(find jsk_maps)/launch/start_map_eng2.launch" />
-  <include file="$(find elevator_move_base_pr2)/launch/elevator_move_base_modules.xml" />
+  <include file="$(find jsk_maps)/launch/start_map_eng2.launch">
+    <arg name="MACHINE" value="c1" />
+  </include>
+  <include file="$(find elevator_move_base_pr2)/launch/elevator_move_base_modules.xml">
+    <arg name="ROBOT" value="$(arg ROBOT)" />
+  </include>
+  <param name="/narrow_stereo/left/point_pose_extractor_elevator_call_panel/error_threshold" value="500.0" />
 
   <!-- inputs are tf, image_raw, camera_info, joint_states -->
   <node pkg="rosbag" type="play" name="rosbag_play"
@@ -15,7 +20,7 @@
     <node pkg="image_proc" type="image_proc" name="image_proc">
       <param name="queue_size" value="100"/> <!-- image is throttled ?? -->
     </node>
-    <node pkg="imagesift" type="imagesift" name="sift" >
+    <node pkg="imagesift" type="imagesift" name="sift_rect" >
       <remap from="image" to="image_rect" />
     </node>
   </group>
@@ -40,11 +45,11 @@ This scripts is test for elevator call panel pose detection.
 
   ]]></sphinxdoc>
 
-  <node type="rviz" pkg="rviz" name="rviz" respawn="true"
+  <anode type="rviz" pkg="rviz" name="rviz" respawn="true"
         args="-d $(find elevator_move_base_pr2)/test/test-panel-pose-detection.vcg"
         launch-prefix="glc-capture --start --out=$(find elevator_move_base_pr2)/build/test-panel-pose-detection.glc" />
 
   <!-- we assume test code is invoked in alphabet order of test-name -->
-  <test type="glc_encode.sh" pkg="jsk_tools" test-name="z_encode_test1" args="$(find elevator_move_base_pr2)/build/test-panel-pose-detection.glc" time-limit="300"/>
+  <atest type="glc_encode.sh" pkg="jsk_tools" test-name="z_encode_test1" args="$(find elevator_move_base_pr2)/build/test-panel-pose-detection.glc" time-limit="300"/>
 
 </launch>

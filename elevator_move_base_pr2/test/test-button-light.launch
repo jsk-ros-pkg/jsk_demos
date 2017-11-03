@@ -1,8 +1,11 @@
 <launch>
+  <arg name="ROBOT" default="$(optenv ROBOT sim)" />
 
   <param name="use_sim_time" value="true"/>
-  <include file="$(find pr2_machine)/sim.machine"/>
-  <include file="$(find elevator_move_base_pr2)/launch/elevator_move_base_modules.xml" />
+  <include file="$(find pr2_machine)/$(arg ROBOT).machine"/>
+  <include file="$(find elevator_move_base_pr2)/launch/elevator_move_base_modules.xml">
+    <arg name="ROBOT" value="$(arg ROBOT)" />
+  </include>
 
   <!-- inputs are tf, image_raw, camera_info, joint_states -->
   <node pkg="rosbag" type="play" name="rosbag_play"
@@ -37,11 +40,11 @@ The button area in the camera image is calcurated from Euslisp camera model and 
   ]]></sphinxdoc>
 
   <!-- mjpeg_server and capture script -->
-  <node pkg="mjpeg_server" type="mjpeg_server"  name="mjpeg_server"
+  <anode pkg="mjpeg_server" type="mjpeg_server"  name="mjpeg_server"
 	output="screen" respawn="true">
     <param name="port" type="int" value="8910" />
-  </node>
-  <node type="mjpeg_capture.sh" pkg="jsk_tools" name="capture_result" args="http://localhost:8910/stream?topic=/light_detector/debug_image $(find elevator_move_base_pr2)/build/test-button-light.mp4 -t 20 -p 8910"/>
+  </anode>
+  <anode type="mjpeg_capture.sh" pkg="jsk_tools" name="capture_result" args="http://localhost:8910/stream?topic=/light_detector/debug_image $(find elevator_move_base_pr2)/build/test-button-light.mp4 -t 20 -p 8910"/>
 
 
   <anode type="rviz" pkg="rviz" name="rviz" respawn="true"
