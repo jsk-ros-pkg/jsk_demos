@@ -1,0 +1,20 @@
+<launch>
+  <include file="$(find jsk_maps)/launch/start_map_eng2.launch">
+    <arg name="use_machine" value="true" />
+    <arg name="use_pictogram" value="true" />
+  </include>
+
+  <test test-name="test_jsk_maps"
+        pkg="jsk_tools" type="test_topic_published.py">
+    <rosparam>
+      topic_0: /spots_marker_array
+      timeout_0: 60
+      topic_1: /spots_pictogram
+      timeout_1: 60
+      topic_2: /map_tf_mux/selected
+      timeout_2: 60
+      topic_3: /map
+      timeout_3: 60
+    </rosparam>
+  </test>
+</launch>
