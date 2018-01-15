@@ -1,0 +1,15 @@
+- git:
+    uri: https://github.com/jsk-ros-pkg/openrave_planning.git
+    local-name: jsk-ros-pkg/openrave_planning
+- git:
+    uri: https://github.com/jsk-ros-pkg/jsk_smart_apps.git
+    local-name: jsk-ros-pkg/jsk_smart_apps
+    version: 0.0.2
+- git:
+    uri: https://github.com/code-iai/snap_map_icp.git
+    local-name: code-iai/snap_map_icp
+    version: hydro-devel
+- git:
+    uri: https://github.com/knowrob/knowrob.git
+    local-name: knowrob/knowrob
+    version: master
