@@ -7,6 +7,11 @@
     <arg name="ROBOT" value="$(arg ROBOT)" />
   </include>
 
+  <include file="$(find jsk_maps)/launch/start_map_eng2.launch">
+    <arg name="MACHINE" value="c1"/>
+    <arg name="launch_map_server" value="false"/>
+  </include>
+
   <!-- inputs are tf, image_raw, camera_info, joint_states -->
   <node pkg="rosbag" type="play" name="rosbag_play"
         args="$(find elevator_move_base_pr2)/test/test-button-light.bag -l --clock" />
