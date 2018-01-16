@@ -1,3 +1,4 @@
+# this should be removed after updating .rosinstall for each robot
 - git:
     local-name: perception_pcl
     uri: https://github.com/ros-perception/perception_pcl.git
