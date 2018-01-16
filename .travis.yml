@@ -16,7 +16,7 @@ env:
     - CATKIN_PARALLEL_TEST_JOBS='-p8'
     - DOCKER_RUN_OPTION='--rm -e TEST_ROBOT=$TEST_ROBOT'
     - BEFORE_SCRIPT='. $CI_SOURCE_PATH/.travis.before_script.sh'
-    - ROS_REPOSITORY_PATH='http://packages.ros.org/ros/ubuntu'
+    # - ROS_REPOSITORY_PATH='http://packages.ros.org/ros/ubuntu'
     # - EXTRA_DEB="ros-indigo-convex-decomposition ros-indigo-ivcon"
   matrix:
     - ROS_DISTRO=indigo
