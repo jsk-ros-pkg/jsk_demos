@@ -1,7 +1,7 @@
 <launch>
   <arg name="start_rviz" default="false" />
-  <arg name="wait_query" default="true" />
-  <arg name="execute" default="false" />
+  <arg name="wait_query" default="false" />
+  <arg name="execute" default="true" />
   <arg name="DEMOTYPE" default="map" />
   <arg name="app_manager" default="false" />
   <arg name="run_behavior" default="true" />
@@ -45,8 +45,8 @@
   <group unless="$(arg wait_query)" >
     <node if="$(arg execute)"
           pkg="roseus" name="fridge_can_main" type="roseus"
-          args="$(find detect_cans_in_fridge_201202)/euslisp/main.l &quot;(demo :app-manager :$(arg app_manager) :demo-type :$(arg DEMOTYPE))&quot;"
-          machine="c2"
+          args="$(find detect_cans_in_fridge_201202)/euslisp/main.l &quot;(demo-openease-short)&quot;"
+          machine="c1"
           required="true"
           output="screen">
       <param name="debug_view" value="$(arg debug_view)" />
