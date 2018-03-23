@@ -1,8 +1,9 @@
 <launch>
+  <arg name="ROBOT" default="$(optenv ROBOT pr2)" />
   <arg name="input" default="/kinect_head_c2/depth_registered_half/points" />
   <arg name="output" default="/elevator_inside_change_cloud" />
 
-  <include file="$(find pr2_machine)/pr2.machine" />
+  <include file="$(find pr2_machine)/$(arg ROBOT).machine" />
 
   <include file="$(find jsk_pcl_ros)/launch/octree_change_detector.launch">
     <arg name="input_point" value="$(arg input)" />
@@ -10,7 +11,7 @@
     <arg name="voxel_grid_filter_limit_max" value="3.0" />
     <arg name="octree_resolution" value="0.3" />
     <arg name="octree_noise_filter" value="10" />
-    <arg name="MACHINE" value="c2" />
-    <arg name="MANAGER" value="elevator_change_detecter_manager" />
+    <!-- <arg name="MACHINE" value="c2" /> -->
+    <!-- <arg name="MANAGER" value="elevator_change_detecter_manager" /> -->
   </include>
 </launch>

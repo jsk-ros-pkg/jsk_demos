@@ -6,6 +6,13 @@
 
 (defparameter *speak-timeout* 0)
 
+(defmethod robot-move-base-interface
+  (:robot-interface-simulation-callback ()
+   (when current-goal-coords
+     (send robot :newcoords current-goal-coords)
+     (setq current-goal-coords nil))
+   (send-super :robot-interface-simulation-callback)))
+
 (defmethod pr2-interface
   (:find-object (nam) (find nam (send self :objects) :key #'(lambda (x) (send x :name)) :test #'equal)))
 
