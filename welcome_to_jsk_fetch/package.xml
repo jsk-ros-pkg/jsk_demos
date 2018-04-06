@@ -1,0 +1,16 @@
+<?xml version="1.0"?>
+<package>
+  <name>welcome_to_jsk_fetch</name>
+  <version>1.1.0</version>
+  <description>The welcome_to_jsk package</description>
+
+  <maintainer email="yamaguchi@jsk.imi.i.u-tokyo.ac.jp">Naoya Yamaguchi</maintainer>
+
+
+  <license>BSD</license>
+
+  <buildtool_depend>catkin</buildtool_depend>
+
+  <run_depend>opencv_apps</run_depend>
+
+</package>
