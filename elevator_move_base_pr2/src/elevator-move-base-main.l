@@ -12,7 +12,7 @@
   (progn
     (require :pr2-interface "package://pr2eus/pr2-interface.l")
     (unless (boundp 'make-attention-action)
-      (setf (symbol-function 'make-attention-action) (symbol-action 'defun)))))
+      (setf (symbol-function 'make-attention-action) (symbol-function 'defun)))))
 
 ;(load "package://elevator_move_base_pr2/src/add-msg-pgsql.l")
 (require :database-interface "database-interface.l")
@@ -213,12 +213,12 @@
     (send sm :arg-keys 'button 'panel-name)
     (send sm :goal-state (list :success :fail))
     (send sm :start-state :look)
-    (send sm :add-transition :look :push :success)
+    (send sm :add-transition :look :push t)
     (send sm :add-transition :look :fail nil)
-    (send sm :add-transition :push :check :success)
-    (send sm :add-transition :push :fail :fail)
-    (send sm :add-transition :check :success :success)
-    (send sm :add-transition :check :look :fail)
+    (send sm :add-transition :push :check t)
+    (send sm :add-transition :push :fail nil)
+    (send sm :add-transition :check :success t)
+    (send sm :add-transition :check :look nil)
     sm ))
 
 (defun coords->movebaseactiongoal (co)

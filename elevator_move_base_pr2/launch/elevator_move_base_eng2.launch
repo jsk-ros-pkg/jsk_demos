@@ -2,8 +2,8 @@
   <include file="$(find pr2_machine)/pr2.machine"/>
 
   <node name="elevator_move_base" pkg="roseus" type="roseus"
-	output="screen" respawn="true"
-	args="$(find elevator_move_base_pr2)/src/elevator-move-base.l"/>
+	      output="screen" respawn="true"
+	      args="$(find elevator_move_base_pr2)/src/elevator-move-base.l"/>
 
   <include file="$(find elevator_move_base_pr2)/launch/elevator_move_base_modules.xml">
     <arg name="scene" value="eng2" />

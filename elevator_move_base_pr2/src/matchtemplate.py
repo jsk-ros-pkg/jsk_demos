@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-import roslib; roslib.load_manifest('elevator_move_base_pr2')
+#import roslib; roslib.load_manifest('elevator_move_base_pr2')
 import rospy
 from sensor_msgs.msg import Image
 #from std_msgs.msg import String
