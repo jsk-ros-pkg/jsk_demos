@@ -1,0 +1,4 @@
+<launch>
+  <node pkg="welcome_to_jsk_fetch" type="fetch-navigation.l" name="fetch_navigation" />
+  <include file="$(find julius_ros)/launch/julius.launch"/>
+</launch>
