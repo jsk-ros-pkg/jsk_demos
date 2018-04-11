@@ -1,9 +1,8 @@
 #!/usr/bin/env python
 
-#import roslib; roslib.load_manifest('elevator_move_base_pr2')
+import roslib
 import rospy
 from sensor_msgs.msg import Image
-#from std_msgs.msg import String
 from roseus.msg import StringStamped
 import cv
 from cv_bridge import CvBridge, CvBridgeError
@@ -12,6 +11,44 @@ bridge = CvBridge()
 latest_msg = None
 image_sub = None
 debug_pub = None
+
+# for cv_bridge back compatibility
+def encoding_as_cvtype(encoding):
+    from cv_bridge.boost.cv_bridge_boost import getCvType
+    try:
+        return getCvType(encoding)
+    except RuntimeError as e:
+        raise CvBridgeError(e)
+
+
+def imgmsg_to_cv(img_msg, desired_encoding = "passthrough"):
+    try:
+        return bridge.imgmsg_to_cv(img_msg, desired_encoding)
+    except:
+        cv2_im = bridge.imgmsg_to_cv2(img_msg, desired_encoding)
+        img_msg = bridge.cv2_to_imgmsg(cv2_im)
+        source_type = encoding_as_cvtype(img_msg.encoding)
+        im = cv.CreateMatHeader(img_msg.height, img_msg.width, source_type)
+        cv.SetData(im, img_msg.data, img_msg.step)
+        return im
+
+
+def cv_to_imgmsg(cvim, encoding = "passthrough"):
+    try:
+        return bridge.cv_to_imgmsg(cvim, encoding)
+    except:
+        img_msg = Image()
+        (img_msg.width, img_msg.height) = cv.GetSize(cvim)
+        if encoding == "passthrough":
+            img_msg.encoding = bridge.cvtype_to_name[cv.GetElemType(cvim)]
+        else:
+            img_msg.encoding = encoding
+            if encoding_as_cvtype(encoding) != cv.GetElemType(cvim):
+                raise CvBridgeError, "invalid encoding"
+        img_msg.data = cvim.tostring()
+        img_msg.step = len(img_msg.data) / img_msg.height
+        return img_msg
+
 
 def image_callback (msg):
     global latest_msg
@@ -27,7 +64,7 @@ def process_msg ():
     result = StringStamped(data='',header=msg.header)
 
     try:
-        cv_image = bridge.imgmsg_to_cv(msg, "mono8")
+        cv_image = imgmsg_to_cv(msg, "mono8")
     except CvBridgeError, e:
         print e
 
@@ -96,7 +133,7 @@ def publish_debug(img, results):
                 cv.Rectangle(output, status[1], pt2, cv.RGB(255,255,255), 5)
 
     cv.ResetImageROI(output)
-    debug_pub.publish(bridge.cv_to_imgmsg(output, encoding="passthrough"))
+    debug_pub.publish(cv_to_imgmsg(output, encoding="passthrough"))
 
 class MySubscribeListener(rospy.SubscribeListener):
     def peer_subscribe(self, topic_name, topic_publish, peer_publish):

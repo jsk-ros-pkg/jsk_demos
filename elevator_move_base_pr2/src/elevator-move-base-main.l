@@ -321,7 +321,7 @@
 			      (string-downcase (elt floor 0))))
 	)))
   (clear-costmap)
-  t)
+  :success)
 
 ;; elevator-front-coords, front-coords, outside-panel-name, outside-button, inside-coords, inside-panel-name, target-floor, outside-coords
 (defun elevator-state-machine ()
