@@ -5,12 +5,15 @@
   <description>The welcome_to_jsk package</description>
 
   <maintainer email="yamaguchi@jsk.imi.i.u-tokyo.ac.jp">Naoya Yamaguchi</maintainer>
-
+  <author email="yamaguchi@jsk.imi.i.u-tokyo.ac.jp">Naoya Yamaguchi</author>
 
   <license>BSD</license>
 
   <buildtool_depend>catkin</buildtool_depend>
 
+  <build_depend>fetcheus</build_depend>
+
   <run_depend>opencv_apps</run_depend>
+  <run_depend>fetcheus</run_depend>
 
 </package>
