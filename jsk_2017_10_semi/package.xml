@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package>
   <name>jsk_2017_10_semi</name>
-  <version>0.0.0</version>
+  <version>0.0.4</version>
   <description>The jsk_2017_10_semi package</description>
 
   <!-- One maintainer tag required, multiple allowed, one person per tag -->
