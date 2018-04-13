@@ -161,8 +161,8 @@ if __name__=='__main__':
     template_list = rospy.get_param('~template_list').split()
     templates = [[typename,cv.LoadImage(resolve_ros_path(rospy.get_param('~template/'+typename+'/path')),cv.CV_LOAD_IMAGE_GRAYSCALE),rospy.get_param('~template/'+typename+'/thre'),rospy.get_param('~template/'+typename+'/name',''),rospy.get_param('~template/'+typename+'/method','')] for typename in template_list]
 
-    result_pub = rospy.Publisher("~result",StringStamped,MySubscribeListener())
-    debug_pub = rospy.Publisher("~debug_image",Image)
+    result_pub = rospy.Publisher("~result", StringStamped, MySubscribeListener(), queue_size=1)
+    debug_pub = rospy.Publisher("~debug_image", Image, queue_size=1)
 
     try:
         while not rospy.is_shutdown():

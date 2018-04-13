@@ -21,24 +21,22 @@ catkin_package(
 add_executable(color_point_detector src/color_point_detector.cpp)
 target_link_libraries(color_point_detector ${catkin_LIBRARIES})
 
-if (CATKIN_ENABLE_TESTING)
-  find_package(rostest REQUIRED)
-  if (DEFINED ENV{DISPLAY})
-    add_rostest(test/test-panel-pose-detection.launch ROBOT:=sim)
-    add_rostest(test/test-button-light.launch ROBOT:=sim)
-    #add_rostest(test/test-read-number.launch)
-    #add_rostest(test/test-modules-callpanel.launch)
-    #add_rostest(test/test-modules-insidepanel.launch)
-  endif()
-  add_rostest(test/test-color-point-detector.launch)
-endif()
-
 catkin_package(
     DEPENDS #
     CATKIN_DEPENDS # TODO
     INCLUDE_DIRS # TODO include
     LIBRARIES # TODO
 )
+
+if (CATKIN_ENABLE_TESTING)
+  find_package(rostest REQUIRED)
+  add_rostest(test/test-color-point-detector.launch)
+  add_rostest(test/test-panel-pose-detection.launch ROBOT:=sim)
+  add_rostest(test/test-button-light.launch ROBOT:=sim)
+  # 2 tests below are skipped now since they aren't actually used for testing purpose.
+  # add_rostest(test/test-modules-callpanel.launch ROBOT:=sim)
+  # add_rostest(test/test-modules-insidepanel.launch ROBOT:=sim)
+endif()
 
 install(DIRECTORY launch test scripts elevator_numbers
   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}

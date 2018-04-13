@@ -1,13 +1,15 @@
 <launch>
   <!-- this launch is not tested -->
-  <include file="$(find pr2_machine)/pr2.machine"/>
+  <arg name="ROBOT" default="$(optenv ROBOT pr2)" />
+  <include file="$(find pr2_machine)/$(arg ROBOT).machine"/>
 
   <node name="elevator_move_base" pkg="roseus" type="roseus"
-	output="screen" respawn="true"
-	args="$(find elevator_move_base_pr2)/src/elevator-move-base.l"/>
+        output="screen" respawn="true"
+        args="$(find elevator_move_base_pr2)/src/elevator-move-base.l"/>
 
   <include file="$(find elevator_move_base_pr2)/launch/elevator_move_base_modules.xml">
     <arg name="scene" value="eng8" />
+    <arg name="ROBOT" value="$(arg ROBOT)"/>
   </include>
 
 </launch>

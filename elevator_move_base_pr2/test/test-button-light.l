@@ -1,6 +1,6 @@
 #!/usr/bin/env roseus
 
-(load "unittest.l")
+(load "lib/llib/unittest.l")
 (ros::load-ros-manifest "elevator_move_base_pr2")
 
 (ros::roseus "test-button-light")

@@ -11,7 +11,5 @@
     <arg name="voxel_grid_filter_limit_max" value="3.0" />
     <arg name="octree_resolution" value="0.3" />
     <arg name="octree_noise_filter" value="10" />
-    <!-- <arg name="machine" value="c2" /> -->
-    <!-- <arg name="MANAGER" value="elevator_change_detecter_manager" /> -->
   </include>
 </launch>

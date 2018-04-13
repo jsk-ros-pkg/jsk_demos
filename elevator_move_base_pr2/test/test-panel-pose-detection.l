@@ -1,6 +1,6 @@
 #!/usr/bin/env roseus
 
-(load "unittest.l")
+(load "lib/llib/unittest.l")
 (ros::roseus-add-msgs "posedetection_msgs")
 
 (ros::roseus "test-panel-pose-detection")
