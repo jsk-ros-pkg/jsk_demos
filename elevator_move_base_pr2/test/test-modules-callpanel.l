@@ -1,6 +1,6 @@
 #!/usr/bin/env roseus
 
-(load "unittest.l")
+(load "lib/llib/unittest.l")
 (ros::load-ros-manifest "elevator_move_base_pr2")
 (load "package://pr2eus/pr2-interface.l")
 (load "package://elevator_move_base_pr2/src/posedetectiondb-client.l")
