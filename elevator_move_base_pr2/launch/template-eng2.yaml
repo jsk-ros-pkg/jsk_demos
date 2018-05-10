@@ -1,19 +1,55 @@
-#template_list: B1F 1F 2F 3F 4F 5F 6F 7F 8F 9F 10F 11F 12F
-template_list: 2F 7F 8F
+template_list: B1F 1F 2F 3F 4F 5F 6F 7F 8F 9F 10F 11F 12F
+#template_list: 2F 7F 8F
 template:
+    B1F:
+        name: /b1f
+        path: "package://elevator_move_base_pr2/elevator_numbers/eng2/b1f.png"
+        thre: 0.13
     1F:
         name: /1f
         path: "package://elevator_move_base_pr2/elevator_numbers/eng2/1f.png"
-        thre: 0.11
+        thre: 0.15
     2F:
         name: /2f
         path: "package://elevator_move_base_pr2/elevator_numbers/eng2/2f.png"
-        thre: 0.11
+        thre: 0.15
+    3F:
+        name: /3f
+        path: "package://elevator_move_base_pr2/elevator_numbers/eng2/3f.png"
+        thre: 0.15
+    4F:
+        name: /4f
+        path: "package://elevator_move_base_pr2/elevator_numbers/eng2/4f.png"
+        thre: 0.15
+    5F:
+        name: /5f
+        path: "package://elevator_move_base_pr2/elevator_numbers/eng2/5f.png"
+        thre: 0.16
+    6F:
+        name: /6f
+        path: "package://elevator_move_base_pr2/elevator_numbers/eng2/6f.png"
+        thre: 0.17
     7F:
         name: /7f
         path: "package://elevator_move_base_pr2/elevator_numbers/eng2/7f.png"
-        thre: 0.11
+        thre: 0.16
     8F:
         name: /8f
         path: "package://elevator_move_base_pr2/elevator_numbers/eng2/8f.png"
-        thre: 0.11
+        thre: 0.135
+    9F:
+        name: /9f
+        path: "package://elevator_move_base_pr2/elevator_numbers/eng2/9f.png"
+        thre: 0.15
+    10F:
+        name: /10f
+        path: "package://elevator_move_base_pr2/elevator_numbers/eng2/10f.png"
+        thre: 0.15
+    11F:
+        name: /11f
+        path: "package://elevator_move_base_pr2/elevator_numbers/eng2/11f.png"
+        thre: 0.14
+    12F:
+        name: /12f
+        path: "package://elevator_move_base_pr2/elevator_numbers/eng2/12f.png"
+        thre: 0.14
