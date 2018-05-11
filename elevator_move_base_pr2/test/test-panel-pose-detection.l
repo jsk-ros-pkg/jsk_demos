@@ -44,7 +44,7 @@
   (assert (< *distance* 50)
           (format nil
                   "ObjectDetection and TF(in bag) are close: ~A" *distance*))
-  (unix::sleep 15) ;; for making video
+  ;; (unix::sleep 15) ;; for making video
   )
 
 (run-all-tests)
