@@ -110,13 +110,13 @@
 
 (defun set-view-target (coords camera frame-id)
   (let ((msg (instance geometry_msgs::PointStamped :init))
-	(uv (send camera :screen-point (send coords :worldpos))))
+        (uv (send camera :screen-point (send coords :worldpos))))
     ;; out of view
     (when (not (and (<= 0 (elt uv 0) (send camera :width))
-		  (<= 0 (elt uv 1) (send camera :height))))
-        (ros::ros-error "screen-point: ~A is out of view (~A, ~A)"
-                        uv (send camera :width) (send camera :height))
-	(return-from set-view-target nil))
+                    (<= 0 (elt uv 1) (send camera :height))))
+      (ros::ros-error "screen-point: ~A is out of view (~A, ~A)"
+        uv (send camera :width) (send camera :height))
+      (return-from set-view-target nil))
     (send msg :header :frame_id frame-id)
     (send msg :point :x (elt uv 0))
     (send msg :point :y (elt uv 1))
