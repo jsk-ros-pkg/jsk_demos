@@ -21,7 +21,7 @@
 
   <!-- test for all modules for pushing buttons on call panel -->
   <test test-name="modules" pkg="roseus" type="roseus" time-limit="300"
-	args="$(find elevator_move_base_pr2)/test/test-modules-callpanel.l" />
+        args="$(find elevator_move_base_pr2)/test/test-modules-callpanel.l" />
 
   <sphinxdoc><![CDATA[
 This scripts is test for elevator call panel.
