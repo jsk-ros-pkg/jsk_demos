@@ -4,6 +4,8 @@
 
 (require :pr2-interface "package://pr2eus/pr2-interface.l")
 (require :eng2-scene "package://jsk_maps/src/eng2-scene.l")
+(require :navigation-client "package://elevator_move_base_pr2/src/navigation-client.l")
+
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; PR2 Utility Functions
@@ -26,8 +28,9 @@
         (make-coords :pos (float-vector 800 0 1100))
         :use-torso t
         :look-at-target t)
+  ;; TODO rotate wrist arm
   |#
-  (float-vector 150.0 60.0 74.0 70.0 -120.0 20.0 -30.0 180.0 -13.5232 -15.8808 -82.6112 -83.1698 -162.008 -72.0918 260.603 0.0 40.2852))
+  (float-vector 250.0 60.0 74.0 70.0 -120.0 20.0 -30.0 180.0 -13.5232 -15.8808 -82.6112 -83.1698 -162.008 -72.0918 260.603 0.0 40.2852))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -37,11 +40,15 @@
 
 (defun init ()
   (pr2-init)
-  (send *scene* (make-eng2-scene))
-  (setq *initial-pose* (send *ri* :state :worldcoords)))
+  (setq *scene* (make-eng2-scene))
+  (setq *initial-pose* (send *ri* :state :worldcoords))
+  (setq *initial-floor* (check-current-floor *initial-pose*)))
 
 (defun go-to-subway-front ()
-  (send *ri* :move-to (send *scene* :spot "/eng2/2f/subway-front")))
+  (clear-costmap)
+  (change-inflation-range 0.4)
+  (send *ri* :move-to
+        (send *scene* :spot "/eng2/2f/subway-front")))
 
 (defun order-sandwich (&optional (name "BLTサンド"))
   (speak-jp "すみません")
@@ -49,11 +56,12 @@
 
 (defun receive-sandwich ()
   ;; go to register front
-  (send *ri* :move-to (send *scene* :spot "/eng2/2f/subway-register"))
+  (send *ri* :move-to
+        (send *scene* :spot "/eng2/2f/subway-register"))
 
   ;; TODO: adjust receive pose
   (send *pr2* :angle-vector (pr2-pick-bag-pose))
-  (send *ri* :angle-vector (send *pr2* :angle-vector 5000))
+  (send *ri* :angle-vector (send *pr2* :angle-vector) 5000)
   (send *ri* :wait-interpolation)
 
   (send *ri* :stop-grasp :rarm :wait t)
@@ -71,7 +79,10 @@
   t)
 
 (defun go-to-initial-pose ()
-  (send *ri* :move-to *initial-pose*))
+  (send *ri* :move-to
+        *initial-pose*
+        :frame-id *initial-floor*))
+
 
 (defun pass-sandwich ()
   (send *pr2* :angle-vector (pr2-pick-bag-pose))
