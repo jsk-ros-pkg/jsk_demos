@@ -117,6 +117,7 @@
       (ros::ros-error "screen-point: ~A is out of view (~A, ~A)"
         uv (send camera :width) (send camera :height))
       (return-from set-view-target nil))
+    (send msg :header :stamp (ros::time-now))
     (send msg :header :frame_id frame-id)
     (send msg :point :x (elt uv 0))
     (send msg :point :y (elt uv 1))
@@ -320,7 +321,9 @@
 	(change-floor (format nil "~A/~a" (send *scene* :name)
 			      (string-downcase (elt floor 0))))
 	)))
-  (clear-costmap)
+  (check-elevator-open)
+  (speak-jp "ドアが飽きました" :wait t)
+  ;; (clear-costmap)
   :success)
 
 ;; elevator-front-coords, front-coords, outside-panel-name, outside-button, inside-coords, inside-panel-name, target-floor, outside-coords

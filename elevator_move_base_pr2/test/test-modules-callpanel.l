@@ -41,9 +41,10 @@
     (ros::spin-once)
     (send *ri* :spin-once)
     ;; set button area
-    (send *pr2* :move-to
-          (send *tfl* :lookup-transform "world" "base_footprint" (ros::time 0))
-          :world)
+    (when (send *tfl* :can-transform "world" "base_footprint" (ros::time 0))
+      (send *pr2* :move-to
+            (send *tfl* :lookup-transform "world" "base_footprint" (ros::time 0))
+            :world))
     (send *pr2* :angle-vector (send *ri* :state :potentio-vector))
     (send *pr2* :worldcoords)
     (send button :worldcoords)
