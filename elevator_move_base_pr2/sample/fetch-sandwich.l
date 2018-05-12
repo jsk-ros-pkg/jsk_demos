@@ -3,6 +3,7 @@
 ;; Author: furushchev <furushchev@jsk.imi.i.u-tokyo.ac.jp>
 
 (require :pr2-interface "package://pr2eus/pr2-interface.l")
+(require :pr2-action "package://jsk_demo_common/euslisp/pr2-action.l")
 (require :eng2-scene "package://jsk_maps/src/eng2-scene.l")
 (require :navigation-client "package://elevator_move_base_pr2/src/navigation-client.l")
 
@@ -23,15 +24,26 @@
 (defun pr2-pick-bag-pose ()
   #|
   (send *pr2* :reset-pose)
-  (send *pr2* :torso :waist-z :joint-angle 150.0)
-  (send *pr2* :rarm :inverse-kinematics
-        (make-coords :pos (float-vector 800 0 1100))
-        :use-torso t
-        :look-at-target t)
-  ;; TODO rotate wrist arm
+  (send *pr2* :torso :waist-z :joint-angle 250.0)
+  (let ((cds (make-cascoords :pos (float-vector 800 0 1300))))
+    (send cds :rotate pi/2 :x)
+    (send *pr2* :rarm :inverse-kinematics
+          cds
+          :use-torso t
+          :look-at-target t))
   |#
-  (float-vector 250.0 60.0 74.0 70.0 -120.0 20.0 -30.0 180.0 -13.5232 -15.8808 -82.6112 -83.1698 -162.008 -72.0918 260.603 0.0 40.2852))
+  (float-vector 250.0 60.0 74.0 70.0 -120.0 20.0 -30.0 180.0 -13.5232 -15.8808 -82.6112 -83.1698 -162.008 -72.0918 170.603 0.0 40.2852))
 
+(defun wait-for-hand-over (arm &optional (timeout 10))
+  (dotimes (i 3)
+    (when (wait-for-hand-impact arm :timeout timeout)
+      (speak-jp "ありがとうございます。")
+      (return-from wait-for-hand-over t))
+    (ros::ros-error "Hand impact timed out without response")
+    (speak-jp "サンドイッチを手にかけてください。"))
+  ;; fail
+  (speak-jp "あれ、サンドイッチ。。。")
+  (return-from wait-for-hand-over nil))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Actions
@@ -59,7 +71,6 @@
   (send *ri* :move-to
         (send *scene* :spot "/eng2/2f/subway-register"))
 
-  ;; TODO: adjust receive pose
   (send *pr2* :angle-vector (pr2-pick-bag-pose))
   (send *ri* :angle-vector (send *pr2* :angle-vector) 5000)
   (send *ri* :wait-interpolation)
@@ -68,12 +79,12 @@
 
   (speak-jp "サンドイッチをください")
 
-  ;; FIXME: wait for shock?
-  (unix:sleep 10)
+  (wait-for-hand-over :rarm)
 
   (send *ri* :start-grasp :rarm)
 
-  ;; TODO: need to move back slightly?
+  (speak-jp "後ろに下がります。気をつけてください" :wait t)
+  (send *ri* :go-pos-unsafe -0.5 0 0)
 
   (pr2-tuckarm-pose :rarm :outside)
   t)
@@ -91,8 +102,7 @@
   (send *ri* :stop-grasp :rarm :wait t)
   (speak-jp "サンドイッチをどうぞ")
 
-  ;; FIXME: wait for shock?
-  (unix:sleep 10)
+  (wait-for-hand-over :rarm)
 
   (send *ri* :start-grasp :rarm)
   (pr2-tuckarm-pose))
@@ -105,4 +115,5 @@
   (go-to-initial-pose)
   (pass-sandwich))
 
-(demo)
+(when (find #'(lambda (x) (substringp "__name:=" x)) lisp::*eustop-argument*)
+  (demo))
