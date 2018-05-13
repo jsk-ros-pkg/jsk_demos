@@ -14,13 +14,11 @@
   (and x::*display* (> x::*display* 0)))
 
 (deftest test-modules-callpanel ()
-;;(defun test-modules-callpanel ()
   (ros::advertise "visualization_marker" visualization_msgs::Marker)
   (ros::advertise "view_target" geometry_msgs::PointStamped 1)
   (pr2)
   (setq *ri* (instance pr2-interface :init))
-  (setq count 0
-        *m* nil
+  (setq *m* nil
         *panel* (instance elevator_call_panel_eng2-object :init
                           :name "elevator_call_panel")
         button (find "down" (send *panel* :button) :test #'equal
@@ -36,8 +34,8 @@
                          :topic "/narrow_stereo/left/ObjectDetection"))
   (ros::subscribe "light_button" std_msgs::float32 #'(lambda(m)(setq *m* m)))
   ;;
-  (while (and (< count 100) (not (and *m* (< 1.0 (send *m* :data)))))
-    ;;(incf count)
+  (ros::rate 10)
+  (while (not (and *m* (< 1.0 (send *m* :data))))
     (ros::spin-once)
     (send *ri* :spin-once)
     ;; set button area
@@ -51,6 +49,9 @@
     (when (display-available-p)
       (send arrow :reset-coords)
       (send arrow :transform (send button :copy-worldcoords))
+      (ros::ros-info "btn: ~A" (send button :worldcoords))
+      (ros::ros-info "arr: ~A" (send arrow :worldcoords))
+      (ros::ros-info "pr2: ~A" (send *pr2* :worldcoords))
       (send *irtviewer* :draw-objects)
       (send *irtviewer* :look-all (send *irtviewer* :objects))
       (x::window-main-one))
@@ -61,7 +62,8 @@
                      (send *pr2* :wide_stereo-left)
                      "wide_stereo_optical_frame")
     ;; get button state
-    (unix::usleep (* 100 1000)))
+    (ros::sleep))
+
   ;; finish and check
   (send marker :color (vector->rgba #(1 0 0) 1)) ;; red
   (ros::publish "visualization_marker" marker)

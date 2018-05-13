@@ -114,7 +114,7 @@
     ;; out of view
     (when (not (and (<= 0 (elt uv 0) (send camera :width))
                     (<= 0 (elt uv 1) (send camera :height))))
-      (ros::ros-error "screen-point: ~A is out of view (~A, ~A)"
+      (ros::ros-warn "screen-point: ~A is out of view (~A, ~A)"
         uv (send camera :width) (send camera :height))
       (return-from set-view-target nil))
     (send msg :header :stamp (ros::time-now))

@@ -30,8 +30,12 @@
   </node>
 
   <group ns="/narrow_stereo/left" >
-    <node machine="c1" name="throttle" pkg="topic_tools"
-          type="throttle" args="messages image_rect 2.0"/>
+    <node machine="c1" name="throttle" pkg="jsk_topic_tools"
+          type="lightweight_throttle">
+      <remap from="~input" to="image_rect"/>
+      <remap from="~output" to="image_rect_throttle"/>
+      <param name="~update_rate" value="2.0"/>
+    </node>
     <node machine="c2" name="sift" pkg="imagesift" type="imagesift"
           args="image:=image_rect_throttle"
           launch-prefix="nice -n +10"/>

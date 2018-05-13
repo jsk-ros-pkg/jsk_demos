@@ -34,7 +34,7 @@ if (CATKIN_ENABLE_TESTING)
   add_rostest(test/test-panel-pose-detection.launch ROBOT:=sim)
   add_rostest(test/test-button-light.launch ROBOT:=sim)
   # 2 tests below are skipped now since they aren't actually used for testing purpose.
-  # add_rostest(test/test-modules-callpanel.launch ROBOT:=sim)
+  add_rostest(test/test-modules-callpanel.launch ROBOT:=sim)
   add_rostest(test/test-modules-insidepanel.launch ROBOT:=sim)
 endif()
 
