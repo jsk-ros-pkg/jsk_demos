@@ -13,10 +13,34 @@
 
   <!-- inputs are tf, image_raw, camera_info, joint_states -->
   <node pkg="rosbag" type="play" name="rosbag_play"
-        args="$(find elevator_move_base_pr2)/test/test-modules-callpanel.bag -l -r 0.5 --clock" />
-
-  <group ns="/wide_stereo/left" >
-    <node pkg="image_proc" type="image_proc" name="image_proc"/>
+        args="$(find elevator_move_base_pr2)/test/test-modules-callpanel.bag -l -d 5 --clock" />
+  <group ns="wide_stereo/left">
+    <node name="decompress"
+          pkg="image_transport" type="republish"
+          args="compressed raw">
+      <remap from="in" to="image_color"/>
+      <remap from="out" to="image_color"/>
+    </node>
+    <node name="rectify" pkg="nodelet" type="nodelet"
+          args="standalone image_proc/rectify">
+      <remap from="image_mono" to="image_color"/>
+    </node>
+    <node name="relay" pkg="topic_tools" type="relay"
+          args="image_rect image_rect_color"/>
+  </group>
+  <group ns="narrow_stereo/left">
+    <node name="decompress"
+          pkg="image_transport" type="republish"
+          args="compressed raw">
+      <remap from="in" to="image_color"/>
+      <remap from="out" to="image_color"/>
+    </node>
+    <node name="rectify" pkg="nodelet" type="nodelet"
+          args="standalone image_proc/rectify">
+      <remap from="image_mono" to="image_color"/>
+    </node>
+    <node name="relay" pkg="topic_tools" type="relay"
+          args="image_rect image_rect_color"/>
   </group>
 
   <!-- test for all modules for pushing buttons on call panel -->
