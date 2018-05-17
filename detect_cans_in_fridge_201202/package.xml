@@ -1,6 +1,6 @@
 <package>
   <name>detect_cans_in_fridge_201202</name>
-  <version>0.0.3</version>
+  <version>0.0.4</version>
   <description>detect_cans_in_fridge_201202</description>
   <maintainer email="yohei@jsk.t.imi.i.u-tokyo.ac.jp">Youhei Kakiuchi</maintainer>
 
@@ -33,6 +33,7 @@
   <run_depend>roseus</run_depend>
   <run_depend>jsk_perception</run_depend>
   <run_depend>jsk_pcl_ros</run_depend>
+  <run_depend>jsk_recognition_msgs</run_depend>
   <run_depend>pr2_navigation_self_filter</run_depend>
   <run_depend>jsk_pr2_startup</run_depend>
   <run_depend>snap_map_icp</run_depend>
@@ -42,6 +43,7 @@
   <run_depend>pr2_gripper_sensor_msgs</run_depend>
   <run_depend>pcl_msgs</run_depend>
   <run_depend>posedetection_msgs</run_depend>
+  <run_depend>interactive_behavior_201409</run_depend>
 
   <!-- Dependencies needed only for running tests. -->
   <!-- <test_depend>roseus</test_depend> -->

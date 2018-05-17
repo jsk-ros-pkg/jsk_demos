@@ -1,48 +1,35 @@
 <launch>
+  <arg name="ROBOT" default="$(optenv ROBOT sim)" />
 
   <param name="use_sim_time" value="true"/>
-  <include file="$(find pr2_machine)/sim.machine"/>
-  <include file="$(find elevator_move_base_pr2)/launch/elevator_move_base_modules.xml" />
+  <include file="$(find pr2_machine)/$(arg ROBOT).machine"/>
+  <include file="$(find elevator_move_base_pr2)/launch/elevator_move_base_modules.xml">
+    <arg name="ROBOT" value="$(arg ROBOT)" />
+  </include>
 
   <!-- inputs are tf, image_raw, camera_info, joint_states -->
   <node pkg="rosbag" type="play" name="rosbag_play"
-        args="$(find elevator_move_base_pr2)/test/test-eng2-inside-panel.bag -l -r 0.2 --clock" />
-
-  <!-- image_raw, camera_info -> image_rect -->
-  <!-- image_rect -> ImageFeature0D -->
-  <group ns="/narrow_stereo/left" >
-    <node pkg="image_proc" type="image_proc" name="image_proc">
-    <param name="queue_size" value="100"/> <!-- image is throttled ?? -->
-    </node>
-    <node pkg="imagesift" type="imagesift" name="sift" >
-      <remap from="image" to="image_rect" />
-    </node>
-  </group>
+        args="$(find elevator_move_base_pr2)/test/test-eng2-inside-panel.bag -l -r 0.1 --clock" />
+  <node name="republish" pkg="image_transport" type="republish"
+        args="compressed raw">
+    <remap from="in" to="narrow_stereo/left/image_raw"/>
+    <remap from="out" to="narrow_stereo/left/image_raw"/>
+  </node>
+  <node name="rectify" pkg="nodelet" type="nodelet"
+        args="standalone image_proc/rectify"
+        ns="narrow_stereo/left">
+    <remap from="image_mono" to="image_raw"/>
+  </node>
 
   <!-- test for panel pose detection -->
-  <atest test-name="panel_pose_detection" pkg="roseus" type="roseus"
-     args="$(find elevator_move_base_pr2)/test/test-panel-pose-detection.l"/>
+  <test test-name="panel_pose_detection" pkg="roseus" type="roseus"
+        args="$(find elevator_move_base_pr2)/test/test-panel-pose-detection.l"/>
 
   <!-- test for number recognition -->
-  <atest test-name="number_recognition" pkg="roseus" type="roseus"
-     args="$(find elevator_move_base_pr2)/test/test-number-recognition.l"/>
+  <test test-name="number_recognition" pkg="roseus" type="roseus"
+        args="$(find elevator_move_base_pr2)/test/test-number-recognition.l"/>
 
-
-  <sphinxdoc><![CDATA[
-This scripts is test for elevator inside panel.
-
-.. video:: build/images/call-panel-pose
-  :width: 600
-
-Then apply affine transform to camera image for template match.
-Template is number region of the panel.
-
-.. video:: build/images/inside-panel-number
-  :width: 600
-
-  ]]></sphinxdoc>
-
-  <node type="rviz" pkg="rviz" name="rviz" respawn="true"
+  <anode type="rviz" pkg="rviz" name="rviz" respawn="true"
         args="-d $(find elevator_move_base_pr2)/test/test-modules-insidepanel.vcg"
         launch-prefix="glc-capture --start --out=$(find elevator_move_base_pr2)/build/test-modules-insidepanel.glc" />
 

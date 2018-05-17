@@ -1,6 +1,6 @@
 <package>
   <name>jsk_2011_07_pr2_semantic</name>
-  <version>0.0.3</version>
+  <version>0.0.4</version>
   <description>jsk_2011_07_pr2_semantic</description>
   <maintainer email="k-okada@jsk.t.u-tokyo.ac.jp">Kei Okada</maintainer>
 
@@ -29,6 +29,7 @@
   <run_depend>json_prolog</run_depend>
   <run_depend>jsk_semantic_maps</run_depend>
   <run_depend>jsk_pcl_ros</run_depend>
+  <run_depend>jsk_recognition_msgs</run_depend>
   <run_depend>pr2eus_openrave</run_depend>
   <run_depend>pr2_gripper_sensor_action</run_depend>
 

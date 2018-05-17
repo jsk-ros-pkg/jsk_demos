@@ -4,6 +4,7 @@
   <arg name="wait_query" default="false" />
   <arg name="execute" default="true" />
   <arg name="DEMOTYPE" default="map" />
+  <arg name="visualize" default="false" />
 
   <include file="$(find jsk_pr2_startup)/sample/pr2_gazebo_73b2.launch">
     <arg name="INITIAL_POSE_X" value="3.5" />
@@ -16,5 +17,6 @@
     <arg name="wait_query" value="$(arg wait_query)" />
     <arg name="execute" value="$(arg execute)" />
     <arg name="DEMOTYPE" value="$(arg DEMOTYPE)" />
+    <arg name="visualize" value="$(arg visualize)" />
   </include>
 </launch>

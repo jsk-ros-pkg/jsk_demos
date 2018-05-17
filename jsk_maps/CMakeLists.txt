@@ -15,6 +15,8 @@ if(${CMAKE_SYSTEM_NAME} MATCHES Linux)
   elseif(${CMAKE_SYSTEM_PROCESSOR} MATCHES amd64* OR
       ${CMAKE_SYSTEM_PROCESSOR} MATCHES x86_64* )
     set(ARCHDIR Linux64)
+  elseif(${GCC_MACHINE} MATCHES arm-linux-*)
+    set(ARCHDIR LinuxARM)
   else()
     set(ARCHDIR Linux)
   endif()
@@ -57,12 +59,10 @@ set(_generated_files
   ${PROJECT_SOURCE_DIR}/launch/start_map_eng8_main.launch
   )
 
-set(_eus_cmd "\"(progn;(make-package;\\\"ROS\\\");(setq;*src*;\\\"${PROJECT_SOURCE_DIR}\\\");(load;\\\"${PROJECT_SOURCE_DIR}/src/catkin-build-util.l\\\"))\"")
-message("_eus_exe => ${_eus_exe}")
 add_custom_command(
   OUTPUT ${_generated_files}
-  COMMAND DISPLAY= ${_eus_exe} ${_eus_cmd}
-  DEPENDS ${_eus_exe}
+  COMMAND DISPLAY= ${_eus_exe} src/catkin-build-util.l
+  DEPENDS ${PROJECT_SOURCE_DIR}/src/catkin-build-util.l ${PROJECT_SOURCE_DIR}/src/dump-map-info.l
   WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
 )
 
@@ -72,3 +72,13 @@ install(DIRECTORY launch raw_maps src tools
   DESTINATION
   ${CATKIN_PACKAGE_SHARE_DESTINATION}
   USE_SOURCE_PERMISSIONS)
+
+if(CATKIN_ENABLE_TESTING)
+  find_package(rostest REQUIRED)
+  find_package(jsk_tools REQUIRED)
+  if (${jsk_tools_VERSION} VERSION_LESS "2.0.9")
+    message(WARNING "To test this package, 'jsk_tools>=2.0.9' is required. Skipping...")
+  else()
+    add_rostest(test/jsk-maps.test)
+  endif()
+endif()

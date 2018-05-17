@@ -4,14 +4,6 @@
 (require :detection-interface "package://jsk_perception/euslisp/detection_interface.l")
 (require :pr2-pose "package://jsk_demo_common/euslisp/pr2-pose.l")
 
-
-;; check if jsk_smart_gui exists
-(if (ros::rospack-find "jsk_smart_gui")
-    (progn
-      (ros::load-ros-manifest "jsk_smart_gui")
-      (require :jsk-smart-gui-utils "package://jsk_smart_gui/src/utils.l"))
-    (warning-message 1 ";; Could not found jsk_smarg_gui....~%"))
-
 (defvar *use-voicetext* t)
 (defvar *use-english* nil)
 
@@ -285,6 +277,43 @@
   (send *ri* :angle-vector (send *pr2* :angle-vector))
   (send *ri* :wait-interpolation))
 
+(defun generate-slide-path
+  (start-point point1 point2 path-length &key (div 10))
+  "originally defined at jsk_smart_gui/src/utils.l"
+  (let* ((di (normalize-vector (v- point2 point1)))
+         (ln (make-line point1 point2))
+         (fp (send ln :point (send ln :foot start-point))))
+    (let* ((ret nil)
+           (fc (make-coords :pos (copy-object start-point))))
+      (push (send fc :copy-worldcoords) ret)
+      (scale (/ path-length (float div)) di di)
+      (dotimes (i div)
+        (send fc :translate di)
+        (push (send fc :copy-worldcoords) ret))
+      (nreverse ret))))
+
+(defun generate-circle-path
+  (start-point point1 point2 angle &key (div 20))
+  "originally defined at jsk_smart_gui/src/utils.l"
+  (let* ((axis (normalize-vector (v- point1 point2)))
+   (ln (make-line point1 point2))
+   (fp (send ln :point (send ln :foot start-point))))
+    (unless (and (float-vector-p start-point)
+     (= (length start-point) 3)
+     (float-vector-p axis)
+     (= (length axis) 3))
+      (return-from generate-circle-path nil))
+    (setq *tmp-fp* fp);;
+    (let* ((ret nil)
+     (fc (make-coords :pos fp))
+     (trans (send fc :transformation (make-coords :pos start-point))))
+      (dotimes (i div)
+  (send fc :rotate (/ angle div) axis)
+  (push
+   (send (send (send fc :copy-worldcoords) :transform trans) :rotate pi/2 :x)
+	 ret))
+      (nreverse ret))))
+
 (defun open-fridge-traj (hand handle &optional (rad/length pi/2) &rest args
                          &key (radius 500) (path-div 20) (door-type :circle) &allow-other-keys)
   (let ((cds-traj
@@ -346,6 +375,24 @@
     ;; move-trajectory (subseq ret 2)
     ;; finalize
     *ret*))
+
+(defun move-arm ;;TODO::choose openrave or eus
+  (arm coords &rest args &key (move-robot t) (wait-interpolation t) (rotation-axis :z) (debug nil)
+       (sec 2000) (use-torso 0.005) (record-ik nil) &allow-other-keys)
+  (unless
+      (send* *pr2* :inverse-kinematics coords :move-arm arm :rotation-axis rotation-axis
+             :use-torso use-torso
+             :revert-if-fail nil :debug-view debug args)
+    (when record-ik
+      (setq *ik-fail-av*  (send *pr2* :angle-vector))
+      (setq *ik-fail-coords*  (send coords :copy-worldcoords))
+      (dump-loadable-structure (format nil "ik-fail-~d.l" (send (ros::time-now) :to-sec))
+                               *ik-fail-coords* *ik-fail-av*))
+    (return-from move-arm nil))
+  (when move-robot
+    (send *ri* :angle-vector (send *pr2* :angle-vector) sec)
+    (when wait-interpolation (send *ri* :wait-interpolation)))
+  t)
 
 (defun move-fridge-traj (hand cds-traj
                               ;; &key ((:rotation-axis ra) :z) (use-torso 0.0025)

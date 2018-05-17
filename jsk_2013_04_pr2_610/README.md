@@ -42,17 +42,16 @@ If you want to execute on real robot, see [below](#On-Real-Robot)
 
 #### Installation
 
-**NOTE** `hydro` distribution is assumed. Please replace it if you want to use on other distribution.
+**NOTE** `indigo` distribution is assumed. Please replace it if you want to use on other distribution.
 
-**NOTE** Assumed that catkin workspace has been installed on your environment. If you don't yet have catkin workspace, please follow [the instruction](http://wiki.ros.org/catkin/Tutorials/create_a_workspace).
+**NOTE** Assumed that catkin workspace has been installed on your environment. If you don't yet have catkin workspace, please follow [this instruction](http://wiki.ros.org/catkin/Tutorials/create_a_workspace).
 
 ```bash
-source /opt/ros/hydro/setup.bash
+source /opt/ros/indigo/setup.bash
 cd /path/to/your_catkin_ws
 mkdir src
 wstool init src
 wstool set jsk_demos -t src --git https://github.com/jsk-ros-pkg/jsk_demos
-wstool set jsk_planning -t src --git https://github.com/jsk-ros-pkg/jsk_planning
 wstool set xdot -t src --git https://github.com/k-okada/xdot # https://github.com/jbohren/xdot/pull/12
 wstool update -t src
 rosdep install --from-paths src --ignore-src -r -n -y
@@ -78,10 +77,10 @@ rosrun jsk_2013_04_pr2_610 demo.l "(demo)" # please ignore all error message
 
 2. Now you will see `pr2 Kinematics Simulator` window, and PR2 robot on it.
 
-  ![tray](https://gist.githubusercontent.com/k-okada/b3308c08ce31230e8947/raw/5247c78b283030af0ddc66d7c42ae911e5d06bd7/jsk_2013_04_pr2_irt_1.png =200x200)
-  ![wash](https://gist.githubusercontent.com/k-okada/b3308c08ce31230e8947/raw/9584321f8b5069d056e145752c3ecc8a1026babf/jsk_2013_04_pr2_irt_2.png =200x200)
-  ![chair](https://gist.githubusercontent.com/k-okada/b3308c08ce31230e8947/raw/2eb3ca13d1b7ac2019da5ca3778fcc28afa3a92f/jsk_2013_04_pr2_irt_3.png =200x200)
-  ![bloom](https://gist.githubusercontent.com/k-okada/b3308c08ce31230e8947/raw/c14d6c52d8bf35fd5c244d989beccd35caa6fa8a/jsk_2013_04_pr2_irt_4.png =200x200)
+  <img src="https://gist.githubusercontent.com/k-okada/b3308c08ce31230e8947/raw/5247c78b283030af0ddc66d7c42ae911e5d06bd7/jsk_2013_04_pr2_irt_1.png" width="200" height="200" />
+  <img src="https://gist.githubusercontent.com/k-okada/b3308c08ce31230e8947/raw/9584321f8b5069d056e145752c3ecc8a1026babf/jsk_2013_04_pr2_irt_2.png" width="200" height="200" />
+  <img src="https://gist.githubusercontent.com/k-okada/b3308c08ce31230e8947/raw/2eb3ca13d1b7ac2019da5ca3778fcc28afa3a92f/jsk_2013_04_pr2_irt_3.png" width="200" height="200" />
+  <img src="https://gist.githubusercontent.com/k-okada/b3308c08ce31230e8947/raw/c14d6c52d8bf35fd5c244d989beccd35caa6fa8a/jsk_2013_04_pr2_irt_4.png" width="200" height="200" />
 
 - use planning
 

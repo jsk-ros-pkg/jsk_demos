@@ -12,7 +12,7 @@
   (progn
     (require :pr2-interface "package://pr2eus/pr2-interface.l")
     (unless (boundp 'make-attention-action)
-      (setf (symbol-function 'make-attention-action) (symbol-action 'defun)))))
+      (setf (symbol-function 'make-attention-action) (symbol-function 'defun)))))
 
 ;(load "package://elevator_move_base_pr2/src/add-msg-pgsql.l")
 (require :database-interface "database-interface.l")
@@ -110,13 +110,14 @@
 
 (defun set-view-target (coords camera frame-id)
   (let ((msg (instance geometry_msgs::PointStamped :init))
-	(uv (send camera :screen-point (send coords :worldpos))))
+        (uv (send camera :screen-point (send coords :worldpos))))
     ;; out of view
     (when (not (and (<= 0 (elt uv 0) (send camera :width))
-		  (<= 0 (elt uv 1) (send camera :height))))
-        (ros::ros-error "screen-point: ~A is out of view (~A, ~A)"
-                        uv (send camera :width) (send camera :height))
-	(return-from set-view-target nil))
+                    (<= 0 (elt uv 1) (send camera :height))))
+      (ros::ros-warn "screen-point: ~A is out of view (~A, ~A)"
+        uv (send camera :width) (send camera :height))
+      (return-from set-view-target nil))
+    (send msg :header :stamp (ros::time-now))
     (send msg :header :frame_id frame-id)
     (send msg :point :x (elt uv 0))
     (send msg :point :y (elt uv 1))
@@ -213,12 +214,12 @@
     (send sm :arg-keys 'button 'panel-name)
     (send sm :goal-state (list :success :fail))
     (send sm :start-state :look)
-    (send sm :add-transition :look :push :success)
+    (send sm :add-transition :look :push t)
     (send sm :add-transition :look :fail nil)
-    (send sm :add-transition :push :check :success)
-    (send sm :add-transition :push :fail :fail)
-    (send sm :add-transition :check :success :success)
-    (send sm :add-transition :check :look :fail)
+    (send sm :add-transition :push :check t)
+    (send sm :add-transition :push :fail nil)
+    (send sm :add-transition :check :success t)
+    (send sm :add-transition :check :look nil)
     sm ))
 
 (defun coords->movebaseactiongoal (co)
@@ -282,13 +283,13 @@
 
 (defun check-target-floor (userdata)
   (let ((topic (instance ros::ros-callback-message :init roseus::StringStamped "/elevator_number/result"))
-	(target-floor (cdr (assoc 'target-floor userdata))))
+        (target-floor (cdr (assoc 'target-floor userdata))))
     (dotimes (i 300 nil)
       (ros::spin-once)
       (if (and (send topic :msg)
-	       (substringp (concatenate string "/" target-floor)
-			   (send topic :msg :data)))
-	  (return-from check-target-floor t)
+               (substringp (concatenate string "/" target-floor)
+                           (string-upcase (send topic :msg :data))))
+          (return-from check-target-floor t)
         (ros::ros-info "waiting /elevator_number/result"))
       (unix::usleep (* 500 1000))
       )))
@@ -320,8 +321,10 @@
 	(change-floor (format nil "~A/~a" (send *scene* :name)
 			      (string-downcase (elt floor 0))))
 	)))
-  (clear-costmap)
-  t)
+  (check-elevator-open)
+  (speak-jp "ドアが飽きました" :wait t)
+  ;; (clear-costmap)
+  :success)
 
 ;; elevator-front-coords, front-coords, outside-panel-name, outside-button, inside-coords, inside-panel-name, target-floor, outside-coords
 (defun elevator-state-machine ()

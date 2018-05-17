@@ -2,6 +2,11 @@
 Changelog for package drc_valve_task
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.0.4 (2017-03-15)
+------------------
+* add depends from drc_valve_task to drc_task_common
+* Contributors: Kei Okada
+
 0.0.3 (2016-02-11)
 ------------------
 

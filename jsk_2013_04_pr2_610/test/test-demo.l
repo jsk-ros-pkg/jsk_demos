@@ -4,13 +4,22 @@
 (init-unit-test)
 (load "package://jsk_2013_04_pr2_610/euslisp/demo.l")
 
+(defparameter *speak-timeout* 0)
+
+(defmethod robot-move-base-interface
+  (:robot-interface-simulation-callback ()
+   (when current-goal-coords
+     (send robot :newcoords current-goal-coords)
+     (setq current-goal-coords nil))
+   (send-super :robot-interface-simulation-callback)))
+
 (defmethod pr2-interface
   (:find-object (nam) (find nam (send self :objects) :key #'(lambda (x) (send x :name)) :test #'equal)))
 
 (deftest test-demo
   (demo)
   (format *error-output* "demo done~%")
-  (format *error-output* "robot positoin ~A~%" (send *ri* :worldcoords))
+  (format *error-output* "robot position ~A~%" (send *ri* :worldcoords))
   (assert (eps-v= (send (send *ri* :worldcoords) :worldpos) #f(6600 1000 0)) "robot position")
 #|
   (format *error-output* "tray positoin ~A~%" (send *ri* :find-object "room610-tray"))

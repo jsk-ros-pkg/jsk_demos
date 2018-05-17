@@ -2,6 +2,13 @@
 Changelog for package jsk_demo_common
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.0.4 (2017-03-15)
+------------------
+* [jsk_demo_common][pr2-action.l] remove implicit dependency to jsk_smart_gui
+* [jsk_demo_common][pr2-action.l] temp fix until `jsk-ros-pkg/jsk_smart_apps#70 <https://github.com/jsk-ros-pkg/jsk_smart_apps/issues/70>`_ is merged
+* [jsk_demo_common/euslisp/pr2-action.l] refactor grasp-can move state
+* Contributors: Yuki Furuta
+
 0.0.3 (2016-02-11)
 ------------------
 * [jsk_demo_common] fix wrong code

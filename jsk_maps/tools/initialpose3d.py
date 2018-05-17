@@ -8,8 +8,6 @@
 # Set "initialpose3d" as Estimate Topic in "Tool Propertied" Tab
 # then set initialpose
 
-PKG = 'tf'
-import roslib; roslib.load_manifest(PKG)
 import rospy
 
 from std_msgs.msg import String

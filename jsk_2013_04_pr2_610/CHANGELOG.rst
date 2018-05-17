@@ -2,6 +2,13 @@
 Changelog for package jsk_2013_04_pr2_610
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.0.4 (2017-03-15)
+------------------
+* [jsk_2013_04_pr2_610][package.xml] remove unnecessary dependency: jsk_smart_gui
+* [jsk_2013_04_pr2_610] add test for planning
+* [jsk_2013_04_pr2_610] fix dependency for 610 demo
+* Contributors: Furushchev, Yuki Furuta
+
 0.0.3 (2016-02-11)
 ------------------
 * jsk_2013_04_pr2_610/README.md: without space, it breaks kanji-code in emacs?

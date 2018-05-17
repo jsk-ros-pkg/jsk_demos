@@ -5,7 +5,7 @@
         args="$(find elevator_move_base_pr2)/test/test-button-light.bag -l --clock" />
 
   <node name="light_detector" pkg="elevator_move_base_pr2"
-	type="color_point_detector" output="screen">
+        type="color_point_detector" output="screen">
     <remap from="image" to="/wide_stereo/left/image_color"/>
     <param name="red" value="253"/>
     <param name="green" value="251"/>

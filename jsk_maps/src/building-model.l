@@ -57,6 +57,28 @@
 	 ))))
   )
 
+;; rooms
+(defmethod building-model
+  (:rooms
+   (&optional flostr)
+   (unless flostr
+     (return-from :rooms
+       (flatten (mapcar #'(lambda (f) (send self :rooms (send f :name)))
+                        (remove-if-not #'(lambda (x) (derivedp x nav-scene-model)) objs)))))
+   (let ((scn (flatten (mapcar #'(lambda (x) (send x :objects)) (send self :find-object flostr)))))
+     (remove-if-not #'(lambda (x) (derivedp x scene-model)) scn)))
+  (:current-room
+   (pos &optional (dist 3000))
+   (when (derivedp pos coordinates) (setq pos (send pos :worldpos)))
+   (let ((colbox (make-cylinder 250 dist)) bbox) ;; foot print width is 500mm
+     (send colbox :translate pos)
+     (dolist (room (send self :rooms))
+       (setq bbox (bounding-box-union
+                   (send-all (remove-if-not #'(lambda (b) (derivedp b faceset)) (send room :bodies)) :box)))
+       (setq res (car (pqp-collision-distance colbox (convex-hull-3d (send (send bbox :body) :vertices)))))
+       (when (equal 0.0 res)
+         (return-from :current-room (send room :name)))))))
+
 ;; arglist := cascoords or (arglist of make-cascoords)
 ;; children := (arglist of make-cascoords)
 (defun make-cascoords-tree (arglist &rest children)

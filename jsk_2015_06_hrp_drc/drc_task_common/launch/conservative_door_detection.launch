@@ -2,49 +2,54 @@
   <arg name="INTERACTIVE" default="false" />
   <arg name="INPUT_CLOUD" default="/full_cloud2" />
   <arg name="RESOLUTION" default="0.01" />
+  <arg name="SIMULATION" default="false" />
   <arg name="GLC_RECORD" default="false" />
-  <arg if="$(arg GLC_RECORD)"
-       name="glc_prefix" value="glc-capture -i --disable-audio" />
-  <arg unless="$(arg GLC_RECORD)"
-       name="glc_prefix" value="" />
+  <arg name="VIEWER" default="true" />
+
+  <include file="$(find drc_task_common)/launch/conservative_door_viewer.launch" if="$(arg VIEWER)" >
+    <arg name="GLC_RECORD" value="$(arg GLC_RECORD)" />
+  </include>
+
+  <arg unless="$(arg SIMULATION)" name="USE_MULTITHREAD_CALLBACK" value="true" />
+  <arg unless="$(arg SIMULATION)" name="NUM_OF_THREAD_OMP"    value="0" />
+  <arg unless="$(arg SIMULATION)" name="COLOR_REFERENCE_FILE" value="$(find jsk_pcl_ros)/config/drc_box_color.yaml" />
+  <arg unless="$(arg SIMULATION)" name="MIN_LIKELIHOOD_PLANE" value="0.5" />
+
+  <arg if="$(arg SIMULATION)" name="USE_MULTITHREAD_CALLBACK" value="false" />
+  <arg if="$(arg SIMULATION)" name="NUM_OF_THREAD_OMP" value="1" />
+  <arg if="$(arg SIMULATION)" name="COLOR_REFERENCE_FILE" value="$(find jsk_pcl_ros)/config/drc_box_color.yaml" />
+  <arg if="$(arg SIMULATION)" name="MIN_LIKELIHOOD_PLANE" value="0.35" />
 
   <!-- Prepare pointcloud  -->
   <group ns="door_detection">
-  <node pkg="rviz" type="rviz" name="rviz_input"
-        launch-prefix="$(arg glc_prefix)"
-        args="-d $(find drc_task_common)/config/door/input.rviz"/>
-  <node pkg="rviz" type="rviz" name="rviz_recog" if="false"
-        launch-prefix="$(arg glc_prefix)"
-        args="-d $(find drc_task_common)/config/door/recog.rviz"/>
-  <node pkg="rviz" type="rviz" name="rviz_result"
-        launch-prefix="$(arg glc_prefix)"
-        args="-d $(find drc_task_common)/config/door/result.rviz"/>
-  <node pkg="rviz" type="rviz" name="rviz_downsample"  if="false"
-        launch-prefix="$(arg glc_prefix)"
-          args="-d $(find drc_task_common)/config/door/downsample.rviz"/>
     <node pkg="jsk_pcl_ros" type="octree_voxel_grid" name="octree_voxel_grid">
       <remap from="~input" to="$(arg INPUT_CLOUD)" />
       <rosparam subst_value="true">
         resolution: $(arg RESOLUTION)
+        use_multithread_callback: $(arg USE_MULTITHREAD_CALLBACK)
       </rosparam>
     </node>
     <node pkg="jsk_pcl_ros" type="tf_transform_cloud" name="odom_laser">
       <remap from="~input" to="octree_voxel_grid/output" />
-      <rosparam>
+      <rosparam subst_value="true">
         target_frame_id: ground
+        use_multithread_callback: $(arg USE_MULTITHREAD_CALLBACK)
       </rosparam>
     </node>
     <node pkg="jsk_pcl_ros" type="tf_transform_cloud" name="camera_laser">
       <remap from="~input" to="odom_laser/output" />
-      <rosparam>
+      <rosparam subst_value="true">
         target_frame_id: left_camera_optical_frame
+        use_multithread_callback: $(arg USE_MULTITHREAD_CALLBACK)
       </rosparam>
     </node>
 
     <node pkg="jsk_pcl_ros" type="normal_estimation_omp" name="normal_estimation">
       <remap from="~input" to="odom_laser/output" />
-      <rosparam>
+      <rosparam subst_value="true">
         k_search: 50
+        use_multithread_callback: $(arg USE_MULTITHREAD_CALLBACK)
+        number_of_threads: $(arg NUM_OF_THREAD_OMP)
       </rosparam>
     </node>
     <node pkg="jsk_pcl_ros" type="normal_direction_filter" name="normal_direction_filter" if="false">
@@ -70,8 +75,9 @@
     <node pkg="jsk_pcl_ros" type="region_growing_multiple_plane_segmentation" name="region_growing_multiple_plane_segmentation">
       <remap from="~input" to="normal_estimation/output_with_xyz" />
       <remap from="~input_normal" to="normal_estimation/output_with_xyz" />
-      <rosparam>
+      <rosparam subst_value="true">
         max_area: 5.0
+        use_multithread_callback: $(arg USE_MULTITHREAD_CALLBACK)
       </rosparam>
     </node>
     <node pkg="jsk_pcl_ros_utils" type="plane_rejector" name="plane_rejector">
@@ -123,21 +129,23 @@
       <remap from="~input/image" to="hsv_decomposer/output/hue" />
       <rosparam>
         bin_size: 50
+        synchronizer_queue_size: 2000
       </rosparam>
     </node>
     <node pkg="jsk_perception" type="polygon_array_color_likelihood" name="polygon_array_color_likelihood">
       <remap from="~input/polygons" to="plane_concatenator_transformed/output_polygons" />
       <remap from="~input/histograms" to="polygon_array_color_histogram/output" />
       <remap from="~input/reference" to="selected_polygon_color_histogram/output/unwrap" />
-      <rosparam>
+      <rosparam subst_value="true">
         coefficient_method: 3 # bhattacharyya
+        synchronizer_queue_size: 2000
       </rosparam>
     </node>
     <node pkg="jsk_pcl_ros" type="extract_top_polygon_likelihood.py" name="extract_top_polygon_likelihood">
       <remap from="~input" to="polygon_array_color_likelihood/output" />
       <remap from="~input/coefficients" to="plane_concatenator_transformed/output_coefficients" />
-      <rosparam>
-        min_likelihood: 0.5
+      <rosparam subst_value="true">
+        min_likelihood: $(arg MIN_LIKELIHOOD_PLANE)
       </rosparam>
     </node>
     <node pkg="image_view" type="image_view" name="polygon_array_color_histogram_debug_view">
@@ -153,6 +161,7 @@
         sensor_frame: head_root
         min_height: 0.05
         max_height: 0.1
+        max_queue_size: 2000
       </rosparam>
     </node>
     <node pkg="jsk_pcl_ros" type="euclidean_clustering" name="euclidean_clustering">
@@ -193,7 +202,7 @@
     </group>
     <group unless="$(arg INTERACTIVE)">
       <node pkg="rostopic" name="selected_polygon_color_histogram" type="rostopic"
-            args="pub selected_polygon_color_histogram/output/unwrap jsk_recognition_msgs/HistogramWithRange -f $(find jsk_pcl_ros)/config/drc_box_color.yaml -r 1" 
+            args="pub selected_polygon_color_histogram/output/unwrap jsk_recognition_msgs/HistogramWithRange -f $(arg COLOR_REFERENCE_FILE) -r 1"
             />
     </group>
     <node pkg="drc_task_common" type="door_handle_bbox_extractor.py" name="door_handle_bbox_extractor" output="screen">
