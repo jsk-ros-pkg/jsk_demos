@@ -41,5 +41,6 @@
       (ros::spin-once)
       (ros::sleep)))
   (ros::unsubscribe *change-publisher-topic*)
+  (unix:sleep 1) ;; wait until door open
   (clear-costmap)
   t)
