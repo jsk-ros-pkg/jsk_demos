@@ -1,0 +1,4 @@
+<launch>
+  <include file="$(find interactive_behavior_201409)/launch/relay_rgbd.launch"/>
+  <include file="$(find interactive_behavior_201409)/launch/interaction.launch" />
+</launch>

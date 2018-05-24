@@ -9,6 +9,7 @@ import rospy
 from app_manager.msg import AppList
 from app_manager.srv import StartApp, StopApp
 from std_msgs.msg import String
+from interactive_behavior_201409.msg import Attention
 from interactive_behavior_201409.srv import EnqueueTask, EnqueueTaskResponse
 
 
@@ -143,6 +144,15 @@ class PriorityQueue(object):
     def __len__(self):
         return len(self.heap)
 
+    def __iter__(self):
+        return self
+
+    def next(self):
+        try:
+            return self.pop()
+        except ValueError:
+            raise StopIteration()
+
 
 class TaskExecutive(object):
     def __init__(self):
@@ -154,6 +164,8 @@ class TaskExecutive(object):
             on_started=self.app_start_cb,
             on_stopped=self.app_stop_cb,
         )
+        self.sub_attention = rospy.Subscriber(
+            "~attention", Attention, self.attention_cb)
         self.srv_enqueue_task = rospy.Service(
             "~enqueue", EnqueueTask, self.enqueue_cb)
 
@@ -189,25 +201,37 @@ class TaskExecutive(object):
         self.spawn_next_task()
 
 
+def main():
+    rospy.init_node("task_executive")
+    e = TaskExecutive()
+    rospy.spin()
+
 
 if __name__ == '__main__':
-    data = [1,3,5,7,9,2,100,104,1000,2000,999,999,999,0,45]
-    queue = PriorityQueue()
-    for v in data:
-        queue.push(data)
-    print queue.peek()
-    # rospy.init_node("task_executive")
-    # app = AppManager(
-    #     on_started=lambda n: rospy.loginfo("started %s" % n),
-    #     on_stopped=lambda n: rospy.loginfo("stopped %s" % n),
-    #     on_installed=lambda n: rospy.loginfo("installed: %s" % n),
-    #     on_uninstalled=lambda n: rospy.loginfo("uninstalled: %s" % n),
-    # )
-    # print "available:", app.available_apps
-    # print "running:", app.running_apps
-    # name = "jsk_pr2_startup/hello_world"
-    # print "starting:", name
-    # app.start_app(name)
-    # print "available:", app.available_apps
-    # print "running:", app.running_apps
-    # rospy.spin()
+    def test_priority_queue():
+        priority = [1,3,5,7,9,2,100,104,1000,2000,999,999,999,0,45]
+        task = range(len(priority))
+        queue = PriorityQueue()
+        for v in zip(priority, task):
+            queue.push(v)
+        print "pushed %d" % len(queue)
+        for prio, task in queue:
+            print prio, task
+
+    def test_app_manager():
+        rospy.init_node("test_app_manager")
+        app = AppManager(
+            on_started=lambda n: rospy.loginfo("started %s" % n),
+            on_stopped=lambda n: rospy.loginfo("stopped %s" % n),
+            on_installed=lambda n: rospy.loginfo("installed: %s" % n),
+            on_uninstalled=lambda n: rospy.loginfo("uninstalled: %s" % n),
+        )
+        print "available:", app.available_apps
+        print "running:", app.running_apps
+        name = "jsk_pr2_startup/hello_world"
+        print "starting:", name
+        app.start_app(name)
+        print "available:", app.available_apps
+        print "running:", app.running_apps
+
+    main()
