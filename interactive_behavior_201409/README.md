@@ -3,6 +3,13 @@ interactive_behavior_201409
 
 Interactive behaviors for robots
 
+# Dialog
+
+- Dialogflow
+-- Download the service account key as JSON reading [here](https://cloud.google.com/docs/authentication/getting-started)
+-- `export GOOGLE_APPLICATION_CREDENTIALS='/path/to/key'`
+-- `cloud auth activate-service-account --key-file=$GOOGLE_APPLICATION_CREDENTIALS`
+
 # Tasks
 
 ## Type of Tasks
