@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 # Author: furushchev <furushchev@jsk.imi.i.u-tokyo.ac.jp>
 
+import actionlib
 import dialogflow as df
 from google.protobuf.json_format import MessageToJson
 from google.protobuf.text_format import MessageToString
@@ -16,6 +17,7 @@ from audio_common_msgs.msg import AudioData
 from speech_recognition_msgs.msg import SpeechRecognitionCandidates
 from std_msgs.msg import String
 from interactive_behavior_201409.msg import DialogResponse
+from sound_play.msg import SoundRequestAction, SoundRequestGoal
 
 
 class DialogflowClient(object):
@@ -29,11 +31,20 @@ class DialogflowClient(object):
 
         self.language = rospy.get_param("~language", "ja-JP")
         self.use_audio = rospy.get_param("~use_audio", False)
+        self.use_speech = rospy.get_param("~use_speech", False)
 
         self.state = self.IDLE
         self.session_id = None
         self.session_client = df.SessionsClient()
         self.queue = Queue.Queue()
+
+        if self.use_speech:
+            self.sound_action = actionlib.SimpleActionClient(
+                "robotsound_jp", SoundRequestAction)
+            if not self.sound_action.wait_for_server(rospy.Duration(5.0)):
+                self.sound_action = None
+        else:
+            self.sound_action = None
 
         self.pub_res = rospy.Publisher(
             "dialog_response", DialogResponse, queue_size=1)
@@ -82,11 +93,6 @@ class DialogflowClient(object):
 
     def print_result(self, result):
         rospy.loginfo(pprint.pformat(result))
-        # rospy.loginfo('Query: %s' % result.query_result.query_text)
-        # rospy.loginfo('Intent: %s (confidence: %f)' % (
-        #     result.query_result.intent.display_name,
-        #     result.query_result.intent_detection_confidence))
-        # rospy.loginfo('Fulfillment text: %s' % result.query_result.fulfillment_text)
 
     def publish_result(self, result):
         msg = DialogResponse()
@@ -101,6 +107,17 @@ class DialogflowClient(object):
         msg.speech_score = result.speech_recognition_confidence
         msg.intent_score = result.intent_detection_confidence
         self.pub_res.publish(msg)
+
+    def speak_result(self, result):
+        if self.sound_action is None:
+            return
+        goal = SoundRequestGoal(
+            command=SoundRequest.PLAY_ONCE,
+            sound=SoundRequest.SAY,
+            volume=1.0,
+            arg=result.response,
+            arg2=self.language)
+        self.sound_action.send_goal_and_wait(goal, rospy.Duration(10.0))
 
     def df_run(self):
         while True:
@@ -123,6 +140,8 @@ class DialogflowClient(object):
                     raise RuntimeError("Invalid data")
                 self.print_result(result)
                 self.publish_result(result)
+                self.speak_result(result)
+                # TODO: if end of speech, return state to idle
             except Queue.Empty:
                 pass
             except Exception as e:
