@@ -1,0 +1,51 @@
+<launch>
+  <arg name="use_speech_recognition" default="false" />
+  <arg name="use_speech_synthesis" default="true" />
+  <arg name="use_dialogflow" default="true"/>
+  <arg name="language" default="ja-JP"/>
+
+  <group if="$(arg use_speech_synthesis)">
+    <node name="gtts" pkg="ros_gtts" type="ros_gtts_node.py" machine="c1"/>
+
+    <node pkg="sound_play" type="soundplay_node.py" name="robotsound_gtts"
+          machine="c1" respawn="$(arg respawn)">
+      <remap from="sound_play" to="robotsound_gtts" />
+      <remap from="robotsound" to="robotsound_gtts" />
+      <env name="PATH" value="$(find ros_gtts)/bin:$(env PATH)" />
+    </node>
+  </group>
+
+  <group if="$(arg use_speech_recognition)">
+    <node name="audio_capture" pkg="audio_capture" type="audio_capture"
+          machine="c1" output="screen">
+      <rosparam>
+        format: wave
+        channels: 1
+        depth: 16
+        sample_rate: 16000
+        device: plughw:1
+      </rosparam>
+    </node>
+    <node name="speech_recognition"
+          pkg="ros_speech_recognition" type="speech_recognition_node.py"
+          machine="c1" output="screen">
+      <remap from="sound_play" to="robotsound" />
+      <rosparam subst_value="true">
+        engine: Google
+        language: $(arg language)
+        continuous: true
+      </rosparam>
+    </node>
+  </group>
+
+  <node name="voice_activity_detection"
+        pkg="interactive_behavior_201409" type="voice_activity_detection.py"/>
+  <node name="dialogflow_client"
+        pkg="interactive_behavior_201409" type="dialogflow_client.py">
+    <rosparam subst_value="true">
+      use_audio: true
+      language: $(arg language)
+      project_id: pr2-hrrjhv
+    </rosparam>
+  </node>
+</launch>

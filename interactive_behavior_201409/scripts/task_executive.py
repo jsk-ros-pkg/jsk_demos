@@ -5,13 +5,20 @@
 from collections import defaultdict
 import heapq
 import itertools
+import json
+import re
 import rospy
 
 from app_manager.msg import AppList
 from app_manager.srv import StartApp, StopApp
 from std_msgs.msg import String
-from interactive_behavior_201409.msg import Attention
+from interactive_behavior_201409.msg import Attention, DialogResponse
 from interactive_behavior_201409.srv import EnqueueTask, EnqueueTaskResponse
+
+
+def camel_to_snake(name):
+    s1 = re.sub('(.)([A-Z][a-z]+)', r'\1_\2', name)
+    return re.sub('([a-z0-9])([A-Z])', r'\1_\2', s1).lower()
 
 
 class AppManager(object):
@@ -155,7 +162,7 @@ class PriorityQueue(object):
             raise StopIteration()
 
 
-class TaskExecutive(object):
+class TaskExecutive_old(object):
     def __init__(self):
         self.queue = PriorityQueue()
         self.current_task = set()
@@ -210,6 +217,65 @@ class TaskExecutive(object):
     def app_stop_cb(self, name):
         rospy.loginfo("%s stopped" % name)
         self.spawn_next_task()
+
+
+class TaskExecutive(object):
+    def __init__(self):
+        self.app_manager = AppManager(
+            on_started=self.app_start_cb,
+            on_stopped=self.app_stop_cb,
+        )
+        # load remappings
+        self.action_remappings = rospy.get_param("~action_remappings", {})
+        for key, app in self.action_remappings.items():
+            if app not in self.app_manager.available_apps:
+                rospy.logwarn("Action '%s' is not available")
+                del self.action_remappings[key]
+
+        self.sub_dialog = rospy.Subscriber(
+            "dialog_response", DialogResponse,
+            self.dialog_cb)
+
+    @property
+    def is_idle(self):
+        return len(self.app_manager.running_apps) == 0
+
+    def dialog_cb(self, msg):
+        if not msg.action or msg.action.startswith('input.'):
+            rospy.loginfo("Action '%s' is ignored" % msg.action)
+            return
+        if not self.is_idle:
+            rospy.logerr("Action %s is already executing" % self.app_manager.running_apps)
+            return
+        # check extra action remappings
+        if msg.action in self.action_remappings.values():
+            action = msg.action
+        elif msg.action in self.action_remappings:
+            action = self.action_remappings[msg.action]
+        else:
+            action = "interactive_behavior_201409/" + camel_to_snake(msg.action)
+        if action not in self.app_manager.available_apps:
+            rospy.logerr("Action '%s' is unknown" % action)
+            return
+        try:
+            params = json.loads(msg.parameters)
+            rospy.set_param("/action/parameters", params)
+        except ValueError:
+            rospy.logerr("Failed to parse parameters of action '%s'" % msg.action)
+            return
+        rospy.loginfo("Starting '%s' with parameters '%s'" % (msg.action, msg.parameters))
+        self.app_manager.start_app(action)
+
+    def app_start_cb(self, name):
+        rospy.loginfo("%s started" % name)
+
+    def app_stop_cb(self, name):
+        rospy.loginfo("%s stopped" % name)
+        try:
+            rospy.delete_param("/action/parameters")
+            rospy.loginfo("Removed %s" % "/action/parameters")
+        except KeyError:
+            pass
 
 
 def main():
