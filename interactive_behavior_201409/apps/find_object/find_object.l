@@ -1,12 +1,11 @@
 #!/usr/bin/env roseus
 ;; find_object.l
 
-(ros::roseus "run_find_object")
+(require :app-utils "package://interactive_behavior_201409/euslisp/app-utils.l")
 
-(setq *param* (ros::get-param "/action/parameters"))
+(require :speak "package://pr2eus/speak.l")
 
-(ros::ros-info "*param*: ~A" *param*)
+(defun main ()
+  (speak-jp "すみません、わかりません。"))
 
-;; TODO: implement app
-
-(exit)
+(if (main) (exit 0) (exit 1))

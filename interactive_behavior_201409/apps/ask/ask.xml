@@ -1,0 +1,3 @@
+<launch>
+  <node name="run_ask" pkg="interactive_behavior_201409" type="ask.l" output="screen" />
+</launch>

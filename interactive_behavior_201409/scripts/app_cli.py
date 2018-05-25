@@ -106,13 +106,14 @@ subscribed_topics: {}
 
 (ros::roseus "run_{name}")
 
-(setq *param* (ros::get-param "/action/parameters"))
+(require :app-utils "package://interactive_behavior_201409/euslisp/app-utils.l")
 
-(ros::ros-info "*param*: ~A" *param*)
+(defun main ()
+  ;; TODO: implement app
+  t)
 
-;; TODO: implement app
 
-(exit)
+(if (main) (exit 0) (exit 1))
 """.format(name=name))
     node_file.chmod(0755)
     # app
@@ -148,7 +149,7 @@ subscribed_topics: {}
         yaml_dump(installed_dic, f)
 
     click.echo("Application '%s/%s' is created." % (package, name))
-    click.echo("Go to %s" % appdir)
+    click.echo("Go to %s" % appdir.relative_to(Path(".").abosolute()))
 
 
 @cli.command()
@@ -160,7 +161,6 @@ def remove(package, name):
     if not app_root_dir.is_dir():
         app_root_dir.mkdir(parents=True, exist_ok=True)
     apps = [a["name"] for a in list_apps(package)]
-    click.echo(apps)
     if "/".join([package, name]) not in apps:
         raise click.BadParameter("App not found")
     appdir = app_root_dir / name
