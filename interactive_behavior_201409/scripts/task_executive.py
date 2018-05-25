@@ -5,6 +5,7 @@
 import heapq
 import itertools
 import json
+import re
 import rospy
 
 from app_manager.msg import AppList
@@ -12,6 +13,11 @@ from app_manager.srv import StartApp, StopApp
 from std_msgs.msg import String
 from interactive_behavior_201409.msg import Attention, DialogResponse
 from interactive_behavior_201409.srv import EnqueueTask, EnqueueTaskResponse
+
+
+def camel_to_snake(name):
+    s1 = re.sub('(.)([A-Z][a-z]+)', r'\1_\2', name)
+    return re.sub('([a-z0-9])([A-Z])', r'\1_\2', s1).lower()
 
 
 class AppManager(object):
@@ -204,12 +210,17 @@ class TaskExecutive_old(object):
 
 class TaskExecutive(object):
     def __init__(self):
-        self.current_task = set()
         self.app_manager = AppManager(
             on_started=self.app_start_cb,
             on_stopped=self.app_stop_cb,
         )
-        self.action_mapper = rospy.get_param("~mappings", {})
+        # load remappings
+        self.action_remappings = rospy.get_param("~action_remappings", {})
+        for key, app in self.action_remappings.items():
+            if app not in self.app_manager.available_apps:
+                rospy.logwarn("Action '%s' is not available")
+                del self.action_remappings[key]
+
         self.sub_dialog = rospy.Subscriber(
             "dialog_response", DialogResponse,
             self.dialog_cb)
@@ -225,12 +236,15 @@ class TaskExecutive(object):
         if not self.is_idle:
             rospy.logerr("Action %s is already executing" % self.running_apps)
             return
+        # check extra action remappings
         if msg.action in self.action_mapper.values():
             action = msg.action
         elif msg.action in self.action_mapper:
             action = self.action_mapper[msg.action]
         else:
-            rospy.logerr("Action '%s' is unknown" % msg.action)
+            action = "interactive_behavior_201409/" + camel_to_snake(msg.action)
+        if action not in self.available_apps:
+            rospy.logerr("Action '%s' is unknown" % action)
             return
         try:
             params = json.loads(msg.parameters)
