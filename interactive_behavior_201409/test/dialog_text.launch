@@ -5,10 +5,11 @@
   <arg name="project_id" default="pr2-hrrjhv"/>
   <arg name="language" default="ja-JP"/>
   <arg name="applist" default="$(find interactive_behavior_201409)/apps"/>
+  <arg name="use_robot_param" default="false"/>
   
   <env name="GOOGLE_APPLICATION_CREDENTIALS" value="$(arg credential)"/>
 
-  <rosparam>
+  <rosparam if="$(arg use_robot_param)">
     robot/type: pr2
     robot/name: pr0000
   </rosparam>
@@ -18,6 +19,7 @@
         output="screen">
     <rosparam subst_value="true">
       use_audio: false
+      use_speech: true
       language: $(arg language)
       project_id: $(arg project_id)
     </rosparam>

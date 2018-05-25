@@ -13,37 +13,83 @@ import threading
 import uuid
 import webrtcvad
 
+from actionlib_msgs.msg import GoalStatus, GoalStatusArray
 from audio_common_msgs.msg import AudioData
 from speech_recognition_msgs.msg import SpeechRecognitionCandidates
 from std_msgs.msg import String
 from interactive_behavior_201409.msg import DialogResponse
-from sound_play.msg import SoundRequestAction, SoundRequestGoal
+from sound_play.msg import SoundRequest, SoundRequestAction, SoundRequestGoal
+
+
+class State(object):
+    IDLE = "IDLE"
+    SPEAKING = "SPEAKING"
+    LISTENING = "LISTENING"
+    THINKING = "THINKING"
+
+    def __init__(self, init_state=None):
+        self._state = init_state or self.IDLE
+        self._last_state = None
+        self._last_changed = rospy.Time.now()
+
+    def set(self, state):
+        if self._state != state:
+            self._last_state = self._state
+            self._state = state
+            rospy.loginfo("State: %s -> %s" % (self._last_state, self._state))
+            self._last_changed = rospy.Time.now()
+
+    @property
+    def current(self):
+        return self._state
+
+    @property
+    def last_state(self):
+        return self._last_state
+
+    @property
+    def last_changed(self):
+        return self._last_changed
+
+    def __eq__(self, state):
+        return self._state == state
+
+    def __ne__(self, state):
+        return not self.__eq__(state)
 
 
 class DialogflowClient(object):
-    [IDLE,
-     SPEAKING,
-     LISTENING,
-     THINKING,] = range(4)
+    IDLE = "IDLE"
+    SPEAKING = "SPEAKING"
+    LISTENING = "LISTENING"
+    THINKING = "THINKING"
 
     def __init__(self):
         self.project_id = rospy.get_param("~project_id")
-
         self.language = rospy.get_param("~language", "ja-JP")
+
         self.use_audio = rospy.get_param("~use_audio", False)
+        self.audio_sample_rate = rospy.get_param("~audio_sample_rate", 16000)
+
         self.use_speech = rospy.get_param("~use_speech", False)
+        self.speech_tolerance = rospy.get_param("~speech_tolerance", 1.0)
+
+        self.timeout = rospy.get_param("~timeout", 10.0)
         self.hotword = rospy.get_param("~hotword", "ねえねえ")
 
-        self.state = self.IDLE
+        self.state = State()
         self.session_id = None
         self.session_client = df.SessionsClient()
         self.queue = Queue.Queue()
+        self.last_spoken = rospy.Time(0)
 
         if self.use_speech:
             self.sound_action = actionlib.SimpleActionClient(
                 "robotsound_jp", SoundRequestAction)
             if not self.sound_action.wait_for_server(rospy.Duration(5.0)):
                 self.sound_action = None
+            else:
+                self.timer_speech = rospy.Timer(rospy.Duration(0.1), self.speech_timer_cb)
         else:
             self.sound_action = None
 
@@ -51,7 +97,6 @@ class DialogflowClient(object):
             "dialog_response", DialogResponse, queue_size=1)
 
         if self.use_audio:
-            self.audio_sample_rate = rospy.get_param("~audio_sample_rate", 16000)
             self.audio_config = df.types.InputAudioConfig(
                 audio_encoding=df.enums.AudioEncoding.AUDIO_ENCODING_LINEAR_16,
                 language_code=self.language,
@@ -70,16 +115,37 @@ class DialogflowClient(object):
         self.df_thread.daemon = True
         self.df_thread.start()
 
+    def speech_timer_cb(self, event=None):
+        active = False
+        for st in self.sound_action.action_client.last_status_msg.status_list:
+            if st.status == GoalStatus.ACTIVE:
+                active = True
+                break
+
+        if active:
+            if self.state != State.SPEAKING:
+                self.state.set(State.SPEAKING)
+                self.last_spoken = rospy.Time.now()
+        else:
+            if self.state == State.SPEAKING:
+                if rospy.Time.now() - self.last_spoken > rospy.Duration(self.speech_tolerance):
+                    self.state.set(self.state.last_state or State.IDLE)
+
+        if self.state != State.IDLE:
+            if rospy.Time.now() - self.state.last_changed > rospy.Duration(self.timeout):
+                self.state.set(State.IDLE)
+                self.session_id = None
+
     def hotword_cb(self, msg):
         if msg.data == self.hotword:
             rospy.loginfo("Hotword received")
-            self.state = self.LISTENING
+            self.state.set(State.LISTENING)
 
     def input_cb(self, msg):
         if not self.use_audio:
             # catch hotword from string
             self.hotword_cb(String(data=msg.transcript[0]))
-        if self.state == self.LISTENING:
+        if self.state == State.LISTENING:
             self.queue.put(msg)
             rospy.loginfo("Received input")
         else:
@@ -118,13 +184,15 @@ class DialogflowClient(object):
     def speak_result(self, result):
         if self.sound_action is None:
             return
-        goal = SoundRequestGoal(
+        msg = SoundRequest(
             command=SoundRequest.PLAY_ONCE,
             sound=SoundRequest.SAY,
             volume=1.0,
-            arg=result.response,
+            arg=result.fulfillment_text.encode('utf-8'),
             arg2=self.language)
-        self.sound_action.send_goal_and_wait(goal, rospy.Duration(10.0))
+        self.sound_action.send_goal_and_wait(
+            SoundRequestGoal(sound_request=msg),
+            rospy.Duration(10.0))
 
     def df_run(self):
         while True:
@@ -149,7 +217,7 @@ class DialogflowClient(object):
                 self.publish_result(result)
                 self.speak_result(result)
                 if result.action == "Bye":
-                    self.state = self.IDLE
+                    self.state.set(State.IDLE)
                     self.session_id = None
             except Queue.Empty:
                 pass
