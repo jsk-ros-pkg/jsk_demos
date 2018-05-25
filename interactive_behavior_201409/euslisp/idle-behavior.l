@@ -20,7 +20,7 @@
 (defparameter *look-at-interval* (ros::get-param "~look_at_interval" 10.0))
 
 ;; for base movement
-(defparameter *enable-base-movement* (ros::get-param "~enable_base_movement" t))
+(defparameter *enable-base-movement* (ros::get-param "~use_base" t))
 (defparameter *move-base-interval* (ros::get-param "~move_base_interval" 180.0))
 (defparameter *last-base-movement* (ros::time 0))
 

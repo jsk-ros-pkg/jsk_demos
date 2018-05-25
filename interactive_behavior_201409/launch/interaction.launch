@@ -2,6 +2,7 @@
   <arg name="use_throttle" default="false" />
   <arg name="use_speech_recognition" default="false" />
   <arg name="use_speech_synthesis" default="true" />
+  <arg name="use_base" default="false"/>
   <arg name="respawn" default="true" />
 
   <arg name="camera" default="kinect_head_external" />
@@ -173,5 +174,9 @@
   </group>
 
   <node name="idle_behavior"
-        pkg="interactive_behavior_201409" type="idle-behavior.l"/>
+        pkg="interactive_behavior_201409" type="idle-behavior.l">
+    <rosparam subst_value="true">
+      use_base: $(arg use_base)
+    </rosparam>
+  </node>
 </launch>
