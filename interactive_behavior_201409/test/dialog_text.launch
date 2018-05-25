@@ -1,7 +1,7 @@
 <launch>
 
   <arg name="credential"
-       default="$(optenv GOOGLE_APPLICATION_CREDENTIALS /home/furushchev/Development/PR2-hrrjhv-62b42000f858.json)"/>
+       default="$(optenv GOOGLE_APPLICATION_CREDENTIALS /etc/ros/jsk_data/PR2-hrrjhv-62b42000f858.json)"/>
   <arg name="project_id" default="pr2-hrrjhv"/>
   <arg name="language" default="ja-JP"/>
   <arg name="applist" default="$(find interactive_behavior_201409)/apps"/>
@@ -13,6 +13,9 @@
     robot/type: pr2
     robot/name: pr0000
   </rosparam>
+
+  <node name="tablet_speech_bridge"
+        pkg="interactive_behavior_201409" type="tablet_speech_bridge.py"/>
 
   <node name="dialogflow_client"
         pkg="interactive_behavior_201409" type="dialogflow_client.py"

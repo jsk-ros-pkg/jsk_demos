@@ -12,7 +12,10 @@
 (load "package://detect_cans_in_fridge_201202/euslisp/main.l")
 
 (defun main ()
-  (speak-jp *object*))
-;; TODO: implement app
+  (cond
+    ((find *object* (list "wanda" "georgia" "boss" "iemon") :test #'string=)
+     (demo :type *object*))
+    (t (speak-jp "ごめんなさい。いまちょっと手が離せないです。"))))
 
-(exit (main))
+
+(if (main) (exit 0) (exit 1))
