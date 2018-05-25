@@ -1,3 +1,4 @@
 <launch>
+  <include file="$(find elevator_move_base_pr2)/launch/elevator_move_base_eng2.launch" />
   <node name="run_go" pkg="interactive_behavior_201409" type="go.l" output="screen" />
 </launch>
