@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 # Author: furushchev <furushchev@jsk.imi.i.u-tokyo.ac.jp>
 
+from collections import defaultdict
 import heapq
 import itertools
 import rospy
@@ -159,6 +160,7 @@ class TaskExecutive(object):
         self.queue = PriorityQueue()
         self.current_task = set()
         self.idle_tasks = []
+        self.attentions = defaultdict(list)
         #
         self.app_manager = AppManager(
             on_started=self.app_start_cb,
@@ -174,15 +176,24 @@ class TaskExecutive(object):
         return not running
 
     def spawn_next_task(self):
+        next_task = None
         # 1. check attention
+        if self.attentions[Attention.LEVEL_IMPORTANT]:
+            last_attention = self.attentions[Attention.LEVEL_IMPORTANT][-1]
+            
         # 2. check queue
         # 3. check idle
         # 4. cancel current task if needed
         # 5. spawn next task
-        pass
+        if next_task is not None:
+            if self.current_task:
+                for t in self.current_task:
+                    self.app_manager.stop_app(t)
+            self.app_manager.start_app(next_task)
 
     def attention_cb(self, msg):
         rospy.loginfo("Attention")
+        self.attentions[msg.level].append(msg)
         # filter duplicated attentions?
         self.spawn_next_task()
 
