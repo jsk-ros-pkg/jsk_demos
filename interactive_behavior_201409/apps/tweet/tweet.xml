@@ -1,4 +1,3 @@
 <launch>
-  <node name="run_tweet" pkg="roseus" type="roseus"
-        args="$(find interactive_behavior_201409)/apps/tweet/tweet.l"/>
+  <node name="run_tweet" pkg="interactive_behavior_201409" type="tweet.l" output="screen" />
 </launch>
