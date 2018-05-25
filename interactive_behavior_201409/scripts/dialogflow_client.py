@@ -32,6 +32,7 @@ class DialogflowClient(object):
         self.language = rospy.get_param("~language", "ja-JP")
         self.use_audio = rospy.get_param("~use_audio", False)
         self.use_speech = rospy.get_param("~use_speech", False)
+        self.hotword = rospy.get_param("~hotword", "ねえねえ")
 
         self.state = self.IDLE
         self.session_id = None
@@ -70,10 +71,13 @@ class DialogflowClient(object):
         self.df_thread.start()
 
     def hotword_cb(self, msg):
-        rospy.loginfo("Hotword received")
-        self.state = self.LISTENING
+        if msg.data == self.hotword:
+            rospy.loginfo("Hotword received")
+            self.state = self.LISTENING
 
     def input_cb(self, msg):
+        if not self.use_audio:
+            self.hotword_cb(String(data=msg.transcript[0]))
         if self.state != self.IDLE:
             self.queue.put(msg)
             rospy.loginfo("Received input")
@@ -135,7 +139,7 @@ class DialogflowClient(object):
                 if isinstance(msg, AudioData):
                     result = self.detect_intent_audio(msg.data, session)
                 elif isinstance(msg, SpeechRecognitionCandidates):
-                    result = self.detect_intent_string(msg.transcript[0], session)
+                    result = self.detect_intent_text(msg.transcript[0], session)
                 else:
                     raise RuntimeError("Invalid data")
                 self.print_result(result)

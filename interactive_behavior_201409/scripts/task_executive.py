@@ -4,12 +4,13 @@
 
 import heapq
 import itertools
+import json
 import rospy
 
 from app_manager.msg import AppList
 from app_manager.srv import StartApp, StopApp
 from std_msgs.msg import String
-from interactive_behavior_201409.msg import Attention
+from interactive_behavior_201409.msg import Attention, DialogResponse
 from interactive_behavior_201409.srv import EnqueueTask, EnqueueTaskResponse
 
 
@@ -154,7 +155,7 @@ class PriorityQueue(object):
             raise StopIteration()
 
 
-class TaskExecutive(object):
+class TaskExecutive_old(object):
     def __init__(self):
         self.queue = PriorityQueue()
         self.current_task = set()
@@ -199,6 +200,57 @@ class TaskExecutive(object):
     def app_stop_cb(self, name):
         rospy.loginfo("%s stopped" % name)
         self.spawn_next_task()
+
+
+class TaskExecutive(object):
+    def __init__(self):
+        self.current_task = set()
+        self.app_manager = AppManager(
+            on_started=self.app_start_cb,
+            on_stopped=self.app_stop_cb,
+        )
+        self.action_mapper = rospy.get_param("~mappings", {})
+        self.sub_dialog = rospy.Subscriber(
+            "dialog_response", DialogResponse,
+            self.dialog_cb)
+
+    @property
+    def is_idle(self):
+        return len(self.running_apps) > 0
+
+    def dialog_cb(self, msg):
+        if not msg.action or msg.action.startswith('input.'):
+            rospy.loginfo("Action '%s' is ignored" % msg.action)
+            return
+        if not self.is_idle:
+            rospy.logerr("Action %s is already executing" % self.running_apps)
+            return
+        if msg.action in self.action_mapper.values():
+            action = msg.action
+        elif msg.action in self.action_mapper:
+            action = self.action_mapper[msg.action]
+        else:
+            rospy.logerr("Action '%s' is unknown" % msg.action)
+            return
+        try:
+            params = json.loads(msg.parameters)
+            rospy.set_param("/action/parameters", params)
+        except ValueError:
+            rospy.logerr("Failed to parse parameters of action '%s'" % msg.action)
+            return
+        rospy.loginfo("Starting '%s' with parameters '%s'" % (msg.action, msg.parameters))
+        self.app_manager.start_app(action)
+
+    def app_start_cb(self, name):
+        rospy.loginfo("%s started" % name)
+
+    def app_stop_cb(self, name):
+        rospy.loginfo("%s stopped" % name)
+        try:
+            rospy.delete_param("/action/parameters")
+            rospy.loginfo("Removed %s" % "/action/parameters")
+        except KeyError:
+            pass
 
 
 def main():
