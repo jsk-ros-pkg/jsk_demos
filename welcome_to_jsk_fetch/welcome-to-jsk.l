@@ -122,11 +122,7 @@
 )
 
 
-(defun main ()
-  (load "package://fetcheus/fetch-interface.l")
-
-  (fetch-init)
-
+(defun nav ()
   (ros::advertise "go_to_point_arrived" std_msgs::string 1)
   (ros::ros-info "[Get ready to subscribe: /go_to_point]")
 
@@ -134,5 +130,7 @@
   (ros::spin)
   )
 
-
-(main)
+(defun init()
+  (load "package://fetcheus/fetch-interface.l")
+  (fetch-init)
+)
