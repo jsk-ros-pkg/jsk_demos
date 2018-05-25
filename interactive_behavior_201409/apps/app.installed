@@ -9,3 +9,5 @@ apps:
   display: find object
 - app: interactive_behavior_201409/pick_object
   display: pick object
+- app: interactive_behavior_201409/deliver
+  display: deliver object to person
