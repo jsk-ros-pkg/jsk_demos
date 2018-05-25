@@ -77,10 +77,13 @@ class DialogflowClient(object):
 
     def input_cb(self, msg):
         if not self.use_audio:
+            # catch hotword from string
             self.hotword_cb(String(data=msg.transcript[0]))
-        if self.state != self.IDLE:
+        if self.state == self.LISTENING:
             self.queue.put(msg)
             rospy.loginfo("Received input")
+        else:
+            rospy.logdebug("Received input but ignored")
 
     def detect_intent_text(self, data, session):
         query = df.types.QueryInput(
@@ -145,7 +148,9 @@ class DialogflowClient(object):
                 self.print_result(result)
                 self.publish_result(result)
                 self.speak_result(result)
-                # TODO: if end of speech, return state to idle
+                if result.action == "Bye":
+                    self.state = self.IDLE
+                    self.session_id = None
             except Queue.Empty:
                 pass
             except Exception as e:

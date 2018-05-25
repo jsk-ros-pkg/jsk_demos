@@ -1,0 +1,3 @@
+<launch>
+  <node name="run_find_person" pkg="interactive_behavior_201409" type="find_person.l" output="screen" />
+</launch>

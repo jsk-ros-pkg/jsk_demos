@@ -227,23 +227,23 @@ class TaskExecutive(object):
 
     @property
     def is_idle(self):
-        return len(self.running_apps) > 0
+        return len(self.app_manager.running_apps) == 0
 
     def dialog_cb(self, msg):
         if not msg.action or msg.action.startswith('input.'):
             rospy.loginfo("Action '%s' is ignored" % msg.action)
             return
         if not self.is_idle:
-            rospy.logerr("Action %s is already executing" % self.running_apps)
+            rospy.logerr("Action %s is already executing" % self.app_manager.running_apps)
             return
         # check extra action remappings
-        if msg.action in self.action_mapper.values():
+        if msg.action in self.action_remappings.values():
             action = msg.action
-        elif msg.action in self.action_mapper:
-            action = self.action_mapper[msg.action]
+        elif msg.action in self.action_remappings:
+            action = self.action_remappings[msg.action]
         else:
             action = "interactive_behavior_201409/" + camel_to_snake(msg.action)
-        if action not in self.available_apps:
+        if action not in self.app_manager.available_apps:
             rospy.logerr("Action '%s' is unknown" % action)
             return
         try:
