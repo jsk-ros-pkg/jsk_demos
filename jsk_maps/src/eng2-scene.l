@@ -161,7 +161,7 @@
 	    :pos ,(float-vector -2900 -4900 0.0)
 	    :name "/eng2/7f/mini-kitchen-A-inside")
      `(:rot ,(rpy-matrix 0 0 0)
-       :pos ,(float-vector -500 0 0)
+       :pos ,(float-vector -500 -100 0)
        :name "/eng2/7f/room73B1-front")
      `(:rot #2f((0.52 0.92 0.0) (-0.92 0.52 0.0) (0.0 0.0 1.0))
 	    :pos ,(float-vector 3300.0 -1900.0 0.0)
