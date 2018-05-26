@@ -87,7 +87,7 @@ def add(package, name, display, description, platform, icon):
     with launch_file.open("w") as f:
         f.write(u"""\
 <launch>
-  <node name="run_{name}" pkg="{package}" type="{name}.l" output="screen" />
+  <node name="run_{name}" pkg="{package}" type="{name}.l" output="screen" required="true"/>
 </launch>
 """.format(package=package, name=name))
     # interface

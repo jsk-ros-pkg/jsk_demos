@@ -6,6 +6,8 @@
 (require :app-utils "package://interactive_behavior_201409/euslisp/app-utils.l")
 (require :pr2-interface "package://pr2eus/pr2-interface.l")
 (require :eng2-scene "package://jsk_maps/src/eng2-scene.l")
+(require :door-utils "package://interactive_behavior_201409/euslisp/door-utils.l")
+
 
 (ros::load-ros-manifest "speech_recognition_msgs")
 
@@ -23,10 +25,11 @@
 (setq *answer* nil)
 
 (defun main ()
-  (let* ((person (cdr (assoc "person" *params* :test #'string=)))
+  (let* ((person (cdr (assoc "person" *param* :test #'string=)))
          (place (person->place person))
-         (content (cdr (assoc "content" *params* :test #'string=)))
+         (content (cdr (assoc "content" *param* :test #'string=)))
          (scene (make-eng2-scene))
+         door-handle handle-found-p
          start-pos
          spot)
     (pr2-init)
@@ -39,11 +42,31 @@
     (ros::ros-info "Going to ~A" (send spot :name))
     (speak-jp (format nil "~Aに行きます" (send spot :name)))
     (setq start-pos (send *ri* :state :worldcoords))
+    (pr2-tuckarm-pose)
+    (send *ri* :clear-costmap)
     (unless (send *ri* :move-to spot)
       (speak-jp "失敗しました。")
       (return-from main nil))
     ;;
     (speak-jp (format nil "~Aにつきました" place))
+    ;;
+    (dotimes (i 5)
+      (setq door-handle (find-handle))
+      (if (null door-handle)
+          (ros::ros-error "failed to find door handle")
+          (when (go-to-handle door-handle)
+            (setq handle-found-p t)
+            (return))))
+    (when handle-found-p
+      (knock-door door-handle :rarm)
+      (speak-jp "すみませーん")
+      (grasp-handle :larm door-handle)
+      (unlatch-door :larm :push 50)
+      (send *ri* :go-pos-unsafe 0.1 0 0)
+      (send *ri* :stop-grasp :larm))
+    (unless handle-found-p
+      (speak-jp "あれ、ドアノックできないや。まあいいか。"))
+
     ;;
     (speak-jp (format nil "~Aさん。聞きたいことがあります。。~A" person content))
     (ros::subscribe "/speech_to_text" speech_recognition_msgs::SpeechRecognitionCandidates
@@ -56,11 +79,37 @@
     ;;
     (speak-jp "わかりました。")
     (speak-jp "元の場所に戻ります")
+    (speak-jp "少し後ろに下がります。" :wait t)
+    (send *ri* :go-pos-unsafe -0.1 0 0)
+    (when handle-found-p
+      (send *ri* :go-pos-unsafe -0.1 0 0)
+      (pr2-reset-pose)
+      (pr2-tuckarm-pose))
+    (send *ri* :clear-costmap)
     (unless (send *ri* :move-to start-pos)
       (speak-jp "失敗しました。")
       (return-from main nil))
     (speak-jp (format nil "~Aさんに聞いてきました。~A、だそうです。" person *answer*))
-  t)
+  t))
 
+(defun short-test ()
+  (if (not (boundp '*pr2*)) (pr2))
+  (if (not (boundp '*ri*)) (setq *ri* (instance pr2-interface :init)))
+  (if (not (boundp '*scene*)) (setq *scene* (make-eng2-scene)))
+  (send *ri* :clear-costmap)
+  (send *ri* :move-to (get-spot *scene* *ri* "73A3"))
+  (dotimes (i 5)
+    (setq door-handle (find-handle))
+    (if (null door-handle)
+        (ros::ros-error "failed to find door handle")
+        (when (go-to-handle door-handle)
+          (setq handle-found-p t)
+          (return))))
+  (unless handle-found-p
+    (return-from short-test nil))
+  (knock-door door-handle :rarm)
+  ;; (grasp-handle :larm handle)
+  ;; (unlatch-door :larm :push 50)
+  )
 
 (if (main) (exit 0) (exit 1))

@@ -1,5 +1,6 @@
 <launch>
-  <node name="run_pick_object" pkg="interactive_behavior_201409" type="pick_object.l" output="screen" />
+  <node name="run_pick_object" pkg="interactive_behavior_201409" type="pick_object.l"
+        output="screen" required="true"/>
   <include file="$(find detect_cans_in_fridge_201202)/launch/startup.launch">
     <arg name="run_behavior" value="false"/>
     <arg name="debug_view" value="false"/>

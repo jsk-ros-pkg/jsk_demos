@@ -6,6 +6,56 @@
 (setq *param* (ros::get-param "/action/parameters"))
 (ros::ros-info "*param*: ~A" *param*)
 
+(defun get-arg (key)
+  (cond
+    ((symbolp key)
+     (setq key (string-downcase key)))
+    ((keywordp key)
+     (setq key (string-downcase key))))
+  (cdr (assoc key *param* :test #'string=)))
+
+(defmacro with-timeout (timeout &rest body)
+  (let ((gstart (gensym)))
+  `(let ((,gstart (ros::time-now)))
+     (ros::rate 5)
+     (while (and (ros::ok)
+                 (< (send (ros::time- (ros::time-now) ,gstart) :to-sec) ,timeout))
+       (prog1
+           (progn ,@body)
+         (ros::spin-once)
+         (ros::sleep))))))
+
+(defmacro wait-until (timeout test-func)
+  (let ((gblock (gensym)))
+    `(block ,gblock
+       (with-timeout
+           ,timeout
+           (if (funcall ,test-func)
+               (return-from ,gblock t)))
+       (return-from ,gblock nil))))
+
+(defmacro wait-until-set (timeout var)
+  (let ((gblock (gensym)))
+    `(block ,gblock
+       (with-timeout
+           ,timeout
+           (if ,var (return-from ,gblock t)))
+       (return-from ,gblock nil))))
+
+(defmacro wait-until-bound (timeout sym)
+  (let ((gblock (gensym)))
+    `(block ,gblock
+       (with-timeout
+           ,timeout
+           (if (boundp ',var) (return-from ,gblock t)))
+       (return-from ,gblock nil))))
+
+(defmacro with-subscribe (sub &rest body)
+  `(progn
+     (ros::subscribe ,@sub)
+     (unwind-protect (progn ,@body)
+       (ros::unsubscribe ,(car sub)))))
+
 (defun person->place (person)
   (let (place)
     (when (stringp person)
