@@ -1,3 +1,3 @@
 <launch>
-  <node name="run_deliver" pkg="interactive_behavior_201409" type="deliver.l" output="screen" />
+  <node name="run_deliver" pkg="interactive_behavior_201409" type="deliver.l" output="screen" required="true"/>
 </launch>

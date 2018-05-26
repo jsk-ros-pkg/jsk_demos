@@ -17,7 +17,7 @@
   (let ((content (cdr (assoc "content" *param* :test #'string=))))
     (ros::ros-info "content: ~A" content)
     (when content
-      (speak-jp "写真をとります")
+      (speak-jp "写真もとりませんか？")
       (unix:sleep 2)
       (speak-jp "さん")
       (unix:sleep 1)

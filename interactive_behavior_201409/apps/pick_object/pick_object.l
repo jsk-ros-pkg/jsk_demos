@@ -8,8 +8,9 @@
 (defun main ()
   (let ((object (cdr (assoc "object" *param* :test #'string=))))
     (cond
-      ((find *object* (list "wanda" "georgia" "boss" "iemon") :test #'string=)
-       (demo :type *object*))
+      ((find object (list "wonda" "georgia" "boss" "iemon") :test #'string=)
+       (send *ri* :clear-costmap)
+       (demo :type object))
       (t (speak-jp "ごめんなさい。いまちょっと手が離せないです。")))))
 
 (if (main) (exit 0) (exit 1))

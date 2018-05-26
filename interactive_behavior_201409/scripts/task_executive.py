@@ -61,21 +61,21 @@ class AppManager(object):
         self._latest_msg = msg
         if self._last_running is not None and \
            self._last_available is not None:
-            if "started" in self._callbacks:
+            if self._callbacks["started"]:
                 started = set(self.running_apps) - set(self._last_running)
                 for name in started:
                     self._callbacks["started"](name)
-            if "stopped" in self._callbacks:
+            if self._callbacks["stopped"]:
                 stopped = set(self._last_running) - set(self.running_apps)
                 for name in stopped:
                     self._callbacks["stopped"](name)
             last_all = set(self._last_running) | set(self._last_available)
             all_apps = set(self.running_apps) | set(self.available_apps)
-            if "installed" in self._callbacks:
+            if self._callbacks["installed"]:
                 installed = all_apps - last_all
                 for name in installed:
                     self._callbacks["installed"](name)
-            if "uninstalled" in self._callbacks:
+            if self._callbacks["uninstalled"]:
                 uninstalled = last_all - all_apps
                 for name in uninstalled:
                     self._callbacks["uninstalled"](name)
@@ -187,7 +187,6 @@ class TaskExecutive_old(object):
         # 1. check attention
         if self.attentions[Attention.LEVEL_IMPORTANT]:
             last_attention = self.attentions[Attention.LEVEL_IMPORTANT][-1]
-            
         # 2. check queue
         # 3. check idle
         # 4. cancel current task if needed
