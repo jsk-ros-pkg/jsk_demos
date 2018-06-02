@@ -1,6 +1,5 @@
 #!/usr/bin/env roseus
 
-(load "package://fetcheus/fetch-interface.l")
 (ros::load-ros-manifest "speech_recognition_msgs")
 
 ;; When a message is subscribed from topic [/go_to_point],
@@ -21,7 +20,6 @@
   (ros::ros-info "[Get ready to subscribe: /go_to_point]")
 
   (send *ri* :speak-jp "どこにいきますか？" :wait t)
-  (format t "hogehoge~%")
   (let ((points nil) (point nil))
     (print (setq points (one-shot-subscribe "speech_to_text" speech_recognition_msgs::SpeechRecognitionCandidates)))
     (setq point (car (send points :transcript)))
@@ -49,5 +47,3 @@
       (ros::ros-info "[~A]" (send msg_arrived :data))
       (ros::publish "go_to_point_arrived" msg_arrived)))
   )
-
-(main)
