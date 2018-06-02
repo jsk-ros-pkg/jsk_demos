@@ -1,0 +1,17 @@
+apps:
+- app: interactive_behavior_201409/tweet
+  display: tweet
+- app: interactive_behavior_201409/go
+  display: go to spot
+- app: interactive_behavior_201409/find_person
+  display: find person
+- app: interactive_behavior_201409/find_object
+  display: find object
+- app: interactive_behavior_201409/pick_object
+  display: pick object
+- app: interactive_behavior_201409/deliver
+  display: deliver object to person
+- app: interactive_behavior_201409/ask
+  display: ask person
+- app: interactive_behavior_201409/tidyup
+  display: tidyup place

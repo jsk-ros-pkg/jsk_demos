@@ -1,0 +1,45 @@
+<launch>
+
+  <arg name="credential"
+       default="$(optenv GOOGLE_APPLICATION_CREDENTIALS /etc/ros/jsk_data/PR2-hrrjhv-62b42000f858.json)"/>
+  <arg name="project_id" default="pr2-hrrjhv"/>
+  <arg name="language" default="ja-JP"/>
+  <arg name="applist" default="$(find interactive_behavior_201409)/apps"/>
+  <arg name="use_robot_param" default="false"/>
+  
+  <env name="GOOGLE_APPLICATION_CREDENTIALS" value="$(arg credential)"/>
+
+  <rosparam if="$(arg use_robot_param)">
+    robot/type: pr2
+    robot/name: pr0000
+  </rosparam>
+
+  <node name="tablet_speech_bridge"
+        pkg="interactive_behavior_201409" type="tablet_speech_bridge.py"/>
+
+  <node name="dialogflow_client"
+        pkg="interactive_behavior_201409" type="dialogflow_client.py"
+        output="screen">
+    <rosparam subst_value="true">
+      use_audio: false
+      use_speech: true
+      language: $(arg language)
+      project_id: $(arg project_id)
+    </rosparam>
+  </node>
+
+  <node name="task_executive"
+        pkg="interactive_behavior_201409" type="task_executive.py"
+        output="screen">
+    <rosparam subst_value="true">
+    </rosparam>
+  </node>
+
+  <node pkg="app_manager" type="appmaster" name="appmaster"
+        args="-p 11312"/>
+  <node pkg="app_manager" type="app_manager" name="app_manager"
+        args="--applist $(arg applist)"
+        output="screen">
+    <param name="interface_master" value="http://localhost:11312"/>
+  </node>
+</launch>

@@ -16,6 +16,7 @@ find_package(catkin REQUIRED COMPONENTS
 add_message_files(
   FILES
   Attention.msg
+  DialogResponse.msg
 )
 
 ## Generate services in the 'srv' folder
