@@ -1,7 +1,8 @@
 #!/usr/bin/env roseus
 
-(load "package://fetcheus/fetch-interface.l")
 (ros::load-ros-manifest "opencv_apps")
+(ros::load-ros-manifest "fetch_auto_dock_msgs")
+(ros::load-ros-manifest "power_msgs")
 
 ;; When a message is subscribed from topic [/go_to_point],
 ;; then go to the point specified in the message and speak some Japanese.
@@ -77,6 +78,26 @@
   (send *ri* :speak-jp "稲葉・岡田研究室では、ロボットを作って、動かし、そこに知性を吹き込むソフトとハードのシステム技術を学び、３年または６年後にロボット技術者、研究者として世界に羽ばたくことを期待しています。"))
 
 (defun give-bag ()
+  ;; Undock fetch if fetch is docking
+  (let ((battery-state nil) (undock-action))
+    (setq battery-state (one-shot-subscribe "battery_state" power_msgs::BatteryState))
+    (if (send battery-state :is_charging)
+      (progn
+        (unless undock-action
+          (setq undock-action
+                (instance ros::simple-action-client :init
+                          "/undock" fetch_auto_dock_msgs::UndockAction)))
+        (unless (send undock-action :wait-for-server 5)
+          (ros::ros-error "/undock action server is not started")
+          (return-from undock nil))
+
+        (send undock-action :send-goal
+              (instance fetch_auto_dock_msgs::UndockActionGoal :init))
+        (unless (send undock-action :wait-for-result :timeout 60)
+          (ros::ros-error "No result returned from /undock action server")
+          (return-from undock nil))
+        (send (send undock-action :get-result) :undocked))))
+
   (send *ri* :stop-grasp :wait t)
   (send *fetch* :reset-pose)
   (send *fetch* :torso :waist-z :joint-angle 350)
