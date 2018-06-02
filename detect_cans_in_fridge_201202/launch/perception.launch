@@ -8,6 +8,7 @@
   <arg name="visualize" default="true" />
   <arg name="roi" default="true" />
   <arg name="debug_view" default="true" />
+  <arg name="camera" default="kinect_head" />
   <include file="$(find pr2_machine)/$(env ROBOT).machine" />
   <!-- <arg name="app_manager" default="true" /> -->
 
@@ -20,8 +21,8 @@
       <node pkg="roseus" type="roseus" name="fridge_cds_stocker"
             output="screen" machine="c2"
             args="$(find jsk_perception)/euslisp/kalman-filtered-objectdetection-marker.l">
-        <remap from="input/image" to="/kinect_head_c2/rgb/image_rect_color" />
-        <remap from="input/ObjectDetection" to="/kinect_head/rgb/ObjectDetection" />
+        <remap from="input/image" to="/$(arg camera)/rgb/image_rect_color" />
+        <remap from="input/ObjectDetection" to="/$(arg camera)/rgb/ObjectDetection" />
         <param name="object_width" value="0.231"/>
         <param name="object_height" value="0.196"/>
         <param name="relative_pose" value="0.22 0.05 0.075  0.707107 0
@@ -33,8 +34,8 @@
       <node pkg="roseus" type="roseus" name="can_cds_stocker"
             output="screen" machine="c2"
             args="$(find jsk_perception)/euslisp/kalman-filtered-objectdetection-marker.l">
-        <remap from="input/image" to="/kinect_head_c2/rgb/image_rect_color" />
-        <remap from="input/ObjectDetection" to="/kinect_head_c2/depth_registered/ObjectDetection" />
+        <remap from="input/image" to="/$(arg camera)/rgb/image_rect_color" />
+        <remap from="input/ObjectDetection" to="/$(arg camera)/depth_registered/ObjectDetection" />
         <param name="target_type" value="georgia" />
       </node>
     </group>
@@ -54,12 +55,12 @@
 
   <!-- reference white -->
   <anode pkg="image_view2" type="image_view2" name="select_ref_white" machine="c2">
-    <remap from="image" to="/kinect_head_c2/rgb/image_rect_color"/>
-    <remap from="camera_info" to="/kinect_head_c2/rgb/camera_info"/>
+    <remap from="image" to="/$(arg camera)/rgb/image_rect_color"/>
+    <remap from="camera_info" to="/$(arg camera)/rgb/camera_info"/>
   </anode>
 
   <node pkg="jsk_pcl_ros" type="attention_clipper" name="attention_clipper" output="screen" if="$(arg roi)">
-    <remap from="~input" to="/kinect_head_c2/rgb/camera_info" />
+    <remap from="~input" to="/$(arg camera)/rgb/camera_info" />
     <rosparam>
       dimension_x: 0.3
       dimension_y: 0.3
@@ -69,7 +70,7 @@
   </node>
 
   <node pkg="jsk_pcl_ros" type="roi_clipper" name="roi_attention_clipper" output="screen" if="$(arg roi)">
-    <remap from="~input/image" to="/kinect_head_c2/rgb/image_rect_color" />
+    <remap from="~input/image" to="/$(arg camera)/rgb/image_rect_color" />
     <remap from="~input/camera_info" to="/attention_clipper/output" />
   </node>
 
@@ -78,8 +79,8 @@
     <node name="fridge_demo_sift" pkg="imagesift"
           type="imagesift" launch-prefix="nice -n +10" output="screen"
           machine="c2" >
-      <remap from="image" to="/kinect_head_c2/rgb/image_rect_color" />
-      <remap from="camera_info" to="/kinect_head_c2/rgb/camera_info"/>
+      <remap from="image" to="/$(arg camera)/rgb/image_rect_color" />
+      <remap from="camera_info" to="/$(arg camera)/rgb/camera_info"/>
       <param name="use_mask" value="$(arg roi)" />
       <remap from="mask" to="/attention_clipper/output/mask"/>
     </node>
@@ -94,12 +95,13 @@
     </node>
   </group>
   <!-- load model (color histgrams) -->
-  <include file="$(find detect_cans_in_fridge_201202)/launch/white_balance.launch" />
+  <!-- <include file="$(find detect_cans_in_fridge_201202)/launch/white_balance.launch" /> -->
 
   <!-- detect cans -->
-  <include file="$(find detect_cans_in_fridge_201202)/launch/detect_cans.launch">
-    <arg name="debug_view" value="$(arg debug_view)" />
-  </include>
+  <!-- <include file="$(find detect_cans_in_fridge_201202)/launch/detect_cans.launch"> -->
+    <!-- <arg name="debug_view" value="$(arg debug_view)" /> -->
+  <!-- </include> -->
+  <include file="$(find detect_cans_in_fridge_201202)/launch/color_histogram.launch" />
 
   <sphinxdoc><![CDATA[
 
