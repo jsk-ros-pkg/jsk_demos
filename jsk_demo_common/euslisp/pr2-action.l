@@ -947,7 +947,8 @@
        )
       (:larm
        (send *ri* :go-pos-unsafe 0 0 rotation) ;; g-rarm
-       (send *ri* :go-pos-unsafe 0.33 -0.05 0) ;; g-rarm
+       ;; (send *ri* :go-pos-unsafe 0.33 -0.05 0) ;; g-rarm
+       (send *ri* :go-pos-unsafe 0.295 -0.05 0) ;; g-rarm
        ))
     (send *ri* :wait-interpolation))
 
@@ -1019,7 +1020,7 @@
         (:rarm
          (send *ri* :go-pos-unsafe -0.3 0.05 (- rotation)))
         (:larm
-         (send *ri* :go-pos-unsafe -0.3 -0.2 (- rotation))))
+         (send *ri* :go-pos-unsafe -0.29 -0.25 (- rotation))))
   (send *ri* :ros-wait 0.0 :spin-self t :spin t) ;; attention-check ...
   t)
 
