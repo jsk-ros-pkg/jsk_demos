@@ -36,10 +36,10 @@
   </node>
 
   <node pkg="app_manager" type="appmaster" name="appmaster"
-        args="-p 11312"/>
+        args="-p 11313"/>
   <node pkg="app_manager" type="app_manager" name="app_manager"
         args="--applist $(arg applist)"
         output="screen">
-    <param name="interface_master" value="http://localhost:11312"/>
+    <param name="interface_master" value="http://localhost:11313"/>
   </node>
 </launch>

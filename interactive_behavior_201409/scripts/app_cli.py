@@ -6,15 +6,39 @@ import click
 from pathlib2 import Path
 import rospkg
 import shutil
+import xml.etree.ElementTree as ET
 import yaml
 
 
-PKG = "interactive_behavior_201409"
+DEF_PKG = "interactive_behavior_201409"
 ROSPKG = rospkg.RosPack()
 
 
 def package_path(name):
     return Path(ROSPKG.get_path(name))
+
+
+def current_package(curdir=None):
+    if curdir is None:
+        curdir = Path(".").absolute()
+    else:
+        curdir = Path(curdir).absolute()
+    while curdir.parent != curdir:
+        click.echo(curdir)
+        for p in curdir.iterdir():
+            if p.name == "package.xml":
+                with p.open() as f:
+                    xml = ET.fromstring(f.read())
+                    try:
+                        return xml.find("name").text
+                    except Exception as e:
+                        click.echo(e)
+                        return DEF_PKG
+        curdir = curdir.parent
+    return DEF_PKG
+
+
+CUR_PKG = current_package()
 
 
 def list_apps(package):
@@ -43,7 +67,7 @@ def cli():
 
 
 @cli.command()
-@click.option("--package", type=str, required=True, prompt="Name of package", default=PKG)
+@click.option("--package", type=str, required=True, prompt="Name of package", default=CUR_PKG)
 def list(package):
     apps = list_apps(package)
     if not apps:
@@ -56,7 +80,7 @@ def list(package):
 
 
 @cli.command()
-@click.option("--package", type=str, required=True, prompt="Name of package", default=PKG)
+@click.option("--package", type=str, required=True, prompt="Name of package", default=CUR_PKG)
 @click.option("--name", type=str, required=True, prompt="Name of application")
 @click.option("--display", type=str, required=True, prompt="Display name")
 @click.option("--description", type=str, required=True, prompt="Description")
@@ -153,7 +177,7 @@ subscribed_topics: {}
 
 
 @cli.command()
-@click.option("--package", type=str, required=True, prompt="Name of package", default=PKG)
+@click.option("--package", type=str, required=True, prompt="Name of package", default=CUR_PKG)
 @click.option("--name", type=str, required=True, prompt="Name of application")
 def remove(package, name):
     pkgdir = package_path(package)
@@ -186,7 +210,7 @@ def remove(package, name):
     click.echo("Done!")
 
 @cli.command()
-@click.option("--package", type=str, required=True, prompt="Name of package", default=PKG)
+@click.option("--package", type=str, required=True, prompt="Name of package", default=CUR_PKG)
 @click.option("--name", type=str, required=True, prompt="Name of application")
 def rename(package, name):
     click.echo(package)
