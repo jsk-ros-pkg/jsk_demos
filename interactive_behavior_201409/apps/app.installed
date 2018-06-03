@@ -15,5 +15,5 @@ apps:
   display: ask person
 - app: interactive_behavior_201409/tidyup
   display: tidyup place
-- app: jsk_diabolo_pr2/diabolo
+- app: interactive_behavior_201409/diabolo
   display: diabolo
