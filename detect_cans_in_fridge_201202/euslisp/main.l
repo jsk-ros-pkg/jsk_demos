@@ -227,7 +227,7 @@
 
 (warn ";; (init) ;; initialize demo~%")
 (warn ";; (demo) ;; start demo~%")
-(warn ";; (demo :type \"georgia\")~%") ;; type georgia wanda iemon
+(warn ";; (demo :type \"georgia\")~%") ;; type georgia wonda iemon
 (warn ";; (demo :type \"georgia\" :demo-type :short)~%")
 (warn ";; ~%")
 (warn ";; (check-detection :type \"fridge\")~%")
