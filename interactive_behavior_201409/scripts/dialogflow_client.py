@@ -11,7 +11,6 @@ import Queue
 import rospy
 import threading
 import uuid
-import webrtcvad
 
 from actionlib_msgs.msg import GoalStatus, GoalStatusArray
 from audio_common_msgs.msg import AudioData

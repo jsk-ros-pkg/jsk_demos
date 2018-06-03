@@ -27,7 +27,7 @@ class AppManager(object):
                  on_stopped=None,
                  on_installed=None,
                  on_uninstalled=None,
-                 timeout=10):
+                 timeout=30):
         # init variables
         self._latest_msg = None
         self._last_running = None
