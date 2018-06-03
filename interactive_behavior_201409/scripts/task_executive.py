@@ -225,6 +225,7 @@ class TaskExecutive(object):
             on_stopped=self.app_stop_cb,
         )
         # load remappings
+        self.stop_action = rospy.get_param("~stop_action", "stop")
         self.action_remappings = rospy.get_param("~action_remappings", {})
         for key, app in self.action_remappings.items():
             if app not in self.app_manager.available_apps:
@@ -243,9 +244,22 @@ class TaskExecutive(object):
         if not msg.action or msg.action.startswith('input.'):
             rospy.loginfo("Action '%s' is ignored" % msg.action)
             return
+
         if not self.is_idle:
-            rospy.logerr("Action %s is already executing" % self.app_manager.running_apps)
+            # check stop words
+            action = camel_to_snake(msg.action)
+            if action == self.stop_action:
+                rospy.loginfo("Stop action detected")
+                for app in self.app_manager.running_apps:
+                    try:
+                        self.app_manager.stop_app(app)
+                    except:
+                        pass
+            else:
+                rospy.logerr("Action %s is already executing" % self.app_manager.running_apps)
+
             return
+
         # check extra action remappings
         if msg.action in self.action_remappings.values():
             action = msg.action
