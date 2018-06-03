@@ -58,23 +58,29 @@ class State(object):
 
 
 class DialogflowClient(object):
-    IDLE = "IDLE"
-    SPEAKING = "SPEAKING"
-    LISTENING = "LISTENING"
-    THINKING = "THINKING"
 
     def __init__(self):
+        # project id for google cloud service
         self.project_id = rospy.get_param("~project_id")
+        # language for dialogflow
         self.language = rospy.get_param("~language", "ja-JP")
 
+        # use raw audio data if enabled, otherwise use recognized STT data
         self.use_audio = rospy.get_param("~use_audio", False)
+        # sample rate of audio data
         self.audio_sample_rate = rospy.get_param("~audio_sample_rate", 16000)
 
-        self.use_speech = rospy.get_param("~use_speech", False)
-        self.speech_tolerance = rospy.get_param("~speech_tolerance", 1.0)
+        # use TTS feature
+        self.use_tts = rospy.get_param("~use_tts", True)
+        # ignore voice input while the robot is speaking
+        self.self_cancellation = rospy.get_param("~self_cancellation", True)
+        # time to assume as SPEAKING after tts service is finished
+        self.tts_tolerance = rospy.get_param("~tts_tolerance", 1.0)
 
+        # timeout for voice input activation by hotword
         self.timeout = rospy.get_param("~timeout", 10.0)
-        self.hotword = rospy.get_param("~hotword", ["ねえねえ", "こんにちは", "やあ", "PR2"])
+        # hotwords
+        self.hotword = rospy.get_param("~hotword", ["ねえねえ", "こんにちは", "やあ", "PR2", "PR 2"])
 
         self.state = State()
         self.session_id = None
@@ -82,7 +88,7 @@ class DialogflowClient(object):
         self.queue = Queue.Queue()
         self.last_spoken = rospy.Time(0)
 
-        if self.use_speech:
+        if self.use_tts:
             self.sound_action = actionlib.SimpleActionClient(
                 "robotsound_jp", SoundRequestAction)
             if not self.sound_action.wait_for_server(rospy.Duration(5.0)):
@@ -122,12 +128,12 @@ class DialogflowClient(object):
                 break
 
         if active:
-            if self.state != State.SPEAKING:
+            if self.state != State.SPEAKING and self.self_cancellation:
                 self.state.set(State.SPEAKING)
                 self.last_spoken = rospy.Time.now()
         else:
             if self.state == State.SPEAKING:
-                if rospy.Time.now() - self.last_spoken > rospy.Duration(self.speech_tolerance):
+                if rospy.Time.now() - self.last_spoken > rospy.Duration(self.tts_tolerance):
                     self.state.set(self.state.last_state or State.IDLE)
 
         if self.state != State.IDLE:

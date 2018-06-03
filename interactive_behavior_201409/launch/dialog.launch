@@ -45,6 +45,7 @@
     <rosparam subst_value="true">
       use_audio: true
       language: $(arg language)
+      use_tts: true
       project_id: pr2-hrrjhv
     </rosparam>
   </node>
