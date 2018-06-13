@@ -1,0 +1,9 @@
+<launch>
+  <arg name="ROBOT" default="$(optenv ROBOT sim)"/>
+  <arg name="machine" default="c2"/>
+
+  <include file="$(find pr2_machine)/$(arg ROBOT).machine" />
+
+  <node name="respeaker_node" pkg="respeaker_ros" type="respeaker_node.py"
+        machine="$(arg machine)" output="screen"/>
+</launch>
