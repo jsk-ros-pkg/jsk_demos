@@ -80,6 +80,7 @@ class DialogflowClient(object):
         # timeout for voice input activation by hotword
         self.timeout = rospy.get_param("~timeout", 10.0)
         # hotwords
+        self.enable_hotword = rospy.get_param("~enable_hotword", True)
         self.hotword = rospy.get_param("~hotword", ["ねえねえ", "こんにちは", "やあ", "PR2", "PR 2"])
 
         self.state = State()
@@ -147,9 +148,12 @@ class DialogflowClient(object):
             self.state.set(State.LISTENING)
 
     def input_cb(self, msg):
-        if not self.use_audio:
+        if not self.enable_hotword:
+            self.state.set(State.LISTENING)
+        elif not self.use_audio:
             # catch hotword from string
             self.hotword_cb(String(data=msg.transcript[0]))
+
         if self.state == State.LISTENING:
             self.queue.put(msg)
             rospy.loginfo("Received input")

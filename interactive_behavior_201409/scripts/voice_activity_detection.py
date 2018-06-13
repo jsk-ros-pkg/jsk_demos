@@ -21,6 +21,7 @@ class VoiceActivityDetector(object):
         self.min_duration = rospy.get_param("~min_duration", 0.1)
         self.max_duration = rospy.get_param("~max_duration", 7.0)
         self.tolerance = rospy.get_param("~tolerance", 0.3)
+        self.publish_bool = rospy.get_param("~publish_bool", True)
 
         self.audio_buffer = str()
         self.vad = webrtcvad.Vad(3)
@@ -28,10 +29,11 @@ class VoiceActivityDetector(object):
         self.speech_stopped = rospy.Time(0)
 
         self.pub_audio = rospy.Publisher("speech_audio", AudioData, queue_size=1)
-        self.pub_bool = rospy.Publisher("is_speeching", Bool, queue_size=1)
+        if self.publish_bool:
+            self.pub_bool = rospy.Publisher("is_speeching", Bool, queue_size=1)
+            self.timer = rospy.Timer(rospy.Duration(0.1), self.timer_cb)
 
         self.sub = rospy.Subscriber("audio", AudioData, self.callback)
-        self.timer = rospy.Timer(rospy.Duration(0.1), self.timer_cb)
 
     def callback(self, msg):
         now = rospy.Time.now()
