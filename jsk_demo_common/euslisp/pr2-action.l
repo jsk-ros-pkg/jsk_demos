@@ -953,6 +953,11 @@
     (send *ri* :wait-interpolation))
 
   (send *ri* :ros-wait 0.0 :spin-self t :spin t) ;; attention-check ...
+  ;; move torso up
+  (send *pr2* :angle-vector (send *ri* :state :potentio-vector))
+  (send *pr2* :torso :waist-z :joint-angle 200)
+  (send *ri* :angle-vector (send *pr2* :angle-vector))
+  (send *ri* :wait-interpolation)
   (send *pr2* :angle-vector (send *ri* :state :potentio-vector))
   )
 

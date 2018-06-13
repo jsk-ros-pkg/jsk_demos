@@ -10,7 +10,7 @@
     (cond
       ((find object (list "wonda" "georgia" "boss" "iemon") :test #'string=)
        (send *ri* :clear-costmap)
-       (demo :type object))
+       (demo :type object :use-arm :rarm))
       (t (speak-jp "ごめんなさい。いまちょっと手が離せないです。")))))
 
 (if (main) (exit 0) (exit 1))

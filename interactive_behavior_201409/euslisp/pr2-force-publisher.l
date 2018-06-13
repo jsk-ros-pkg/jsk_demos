@@ -30,16 +30,17 @@
   ) ;; defmethod rotational-joint
 
 (defclass wrench-filter
-  :slots (kf kt init-q-var offset arm frame wrench-topic wrench-raw-topic wrench-reset-service)
+  :slots (kf kt init-q-var offset dforce dtorque arm frame wrench-topic wrench-raw-topic wrench-reset-service)
   :super propertied-object)
 (defmethod wrench-filter
-    (:init (limb ns &optional (q-var 1e-4))
+    (:init (limb ns &optional (q-var 1e-4) (deadzone-force 1.1) (deadzone-torque 1.6))
      (setq arm limb
            offset (float-vector 0 0 0 0 0 0)
            ft (float-vector 0 0 0 0 0 0)
            init-q-var q-var
            kf (instance kalman-filter :init :state-dim 3 :measure-dim 3 :q-variance q-var)
            kt (instance kalman-filter :init :state-dim 3 :measure-dim 3 :q-variance q-var)
+           dforce deadzone-force dtorque deadzone-torque
            frame (send (send *robot* arm :end-coords :parent) :name)
            wrench-topic (format nil "~A/wrench" ns)
            wrench-raw-topic (format nil "~A/wrench/raw" ns)
@@ -68,6 +69,8 @@
            (send self :publish force torque wrench-raw-topic stamp)
            (setq ft (v- ft offset))
            (setq force (subseq ft 0 3) torque (subseq ft 3 6))
+           (if (< (norm force) dforce) (setq force (float-vector 0 0 0)))
+           (if (< (norm torque) dtorque) (setq torque (float-vector 0 0 0)))
            (setq force (send kf :proc force))
            (setq torque (send kt :proc torque))
            (send self :publish force torque wrench-topic stamp)))
