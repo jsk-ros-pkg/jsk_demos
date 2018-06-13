@@ -1,9 +1,19 @@
 <launch>
   <arg name="ROBOT" default="$(optenv ROBOT sim)"/>
-  <arg name="machine" default="c2"/>
+  <arg name="machine" default="c1"/>
+
+  <arg name="use_speech_recognition" default="true"/>
 
   <include file="$(find pr2_machine)/$(arg ROBOT).machine" />
 
   <node name="respeaker_node" pkg="respeaker_ros" type="respeaker_node.py"
         machine="$(arg machine)" output="screen"/>
+
+  <group if="$(arg use_speech_recognition)">
+    <node name="speech_to_text"
+          pkg="interactive_behavior_201409" type="speech_to_text.py"
+          machine="$(arg machine)" output="screen">
+      <remap from="audio" to="speech_audio"/>
+    </node>
+  </group>
 </launch>

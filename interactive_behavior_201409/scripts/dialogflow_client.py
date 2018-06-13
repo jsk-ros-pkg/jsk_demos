@@ -131,10 +131,12 @@ class DialogflowClient(object):
         if active:
             if self.state != State.SPEAKING and self.self_cancellation:
                 self.state.set(State.SPEAKING)
-                self.last_spoken = rospy.Time.now()
+                self.last_spoken = None
         else:
             if self.state == State.SPEAKING:
-                if rospy.Time.now() - self.last_spoken > rospy.Duration(self.tts_tolerance):
+                if self.last_spoken is None:
+                    self.last_spoken = rospy.Time.now()
+                if rospy.Time.now() - self.last_spoken > rospy.Duration.from_sec(self.tts_tolerance):
                     self.state.set(self.state.last_state or State.IDLE)
 
         if self.state != State.IDLE:
@@ -149,7 +151,8 @@ class DialogflowClient(object):
 
     def input_cb(self, msg):
         if not self.enable_hotword:
-            self.state.set(State.LISTENING)
+            if self.state != State.SPEAKING:
+                self.state.set(State.LISTENING)
         elif not self.use_audio:
             # catch hotword from string
             self.hotword_cb(String(data=msg.transcript[0]))
