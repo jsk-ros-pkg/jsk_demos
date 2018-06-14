@@ -72,10 +72,6 @@ class DialogflowClient(object):
 
         # use TTS feature
         self.use_tts = rospy.get_param("~use_tts", True)
-        # ignore voice input while the robot is speaking
-        self.self_cancellation = rospy.get_param("~self_cancellation", True)
-        # time to assume as SPEAKING after tts service is finished
-        self.tts_tolerance = rospy.get_param("~tts_tolerance", 1.0)
 
         # timeout for voice input activation by hotword
         self.timeout = rospy.get_param("~timeout", 10.0)
@@ -122,23 +118,6 @@ class DialogflowClient(object):
         self.df_thread.start()
 
     def speech_timer_cb(self, event=None):
-        active = False
-        for st in self.sound_action.action_client.last_status_msg.status_list:
-            if st.status == GoalStatus.ACTIVE:
-                active = True
-                break
-
-        if active:
-            if self.state != State.SPEAKING and self.self_cancellation:
-                self.state.set(State.SPEAKING)
-                self.last_spoken = None
-        else:
-            if self.state == State.SPEAKING:
-                if self.last_spoken is None:
-                    self.last_spoken = rospy.Time.now()
-                if rospy.Time.now() - self.last_spoken > rospy.Duration.from_sec(self.tts_tolerance):
-                    self.state.set(self.state.last_state or State.IDLE)
-
         if self.state != State.IDLE:
             if rospy.Time.now() - self.state.last_changed > rospy.Duration(self.timeout):
                 self.state.set(State.IDLE)
@@ -151,8 +130,7 @@ class DialogflowClient(object):
 
     def input_cb(self, msg):
         if not self.enable_hotword:
-            if self.state != State.SPEAKING:
-                self.state.set(State.LISTENING)
+            self.state.set(State.LISTENING)
         elif not self.use_audio:
             # catch hotword from string
             self.hotword_cb(String(data=msg.transcript[0]))

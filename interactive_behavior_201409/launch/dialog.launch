@@ -15,17 +15,17 @@
         pkg="interactive_behavior_201409" type="tablet_speech_bridge.py"/>
 
   <include file="$(find interactive_behavior_201409)/launch/microphone.launch"
-           if="$(arg use_microphone)"/>
+           if="$(arg use_microphone)">
+    <arg name="language" value="$(arg language)"/>
+  </include>
 
   <node name="dialogflow_client"
         pkg="interactive_behavior_201409" type="dialogflow_client.py"
         output="screen">
     <rosparam subst_value="true">
-      enable_hotword: false
-      use_audio: $(arg use_microphone)
+      use_audio: false
       language: $(arg language)
       use_tts: true
-      tts_tolerance: 1.0
       project_id: $(arg project_id)
     </rosparam>
   </node>
