@@ -2,10 +2,10 @@
 ;; look-on-attention.l
 ;; Author: Yuki Furuta <furushchev@jsk.imi.i.u-tokyo.ac.jp>
 
-(ros::load-ros-manifest "jsk_interactive_behavior")
+(ros::load-ros-manifest "interactive_behavior_201409")
 (ros::load-ros-manifest "move_base_msgs")
 
-(ros::roseus "look_on_attention")
+(ros::roseus "idle_behavior")
 
 (defparameter *tfl* (instance ros::transform-listener :init))
 (require :pr2-interface "package://pr2eus/pr2-interface.l")
@@ -23,6 +23,28 @@
 (defparameter *enable-base-movement* (ros::get-param "~use_base" t))
 (defparameter *move-base-interval* (ros::get-param "~move_base_interval" 180.0))
 (defparameter *last-base-movement* (ros::time 0))
+
+;; suppress print violate max/min-angle
+(unless (assoc :joint-angle-org (send rotational-joint :methods))
+  (rplaca (assoc :joint-angle (send rotational-joint :methods)) :joint-angle-org))
+(defmethod rotational-joint
+  (:joint-angle
+   (&optional v &key relative &allow-other-keys)
+   (let ()
+     (when v
+       (when (and joint-min-max-table joint-min-max-target)
+         (setq min-angle (send self :joint-min-max-table-min-angle)
+               max-angle (send self :joint-min-max-table-max-angle)))
+       (if relative (setq v (+ v joint-angle)))
+       (cond ((> v max-angle)
+              (setq v max-angle)))
+       (cond ((< v min-angle)
+              (setq v min-angle)))
+       (setq joint-angle v)
+       (send child-link :replace-coords default-coords)
+       (send child-link :rotate (deg2rad joint-angle) axis))
+     joint-angle))
+  ) ;; defmethod rotational-joint
 
 (defun coords->movebaseactiongoal (cds)
   (let ((goal (instance move_base_msgs::MoveBaseActionGoal :init))
@@ -154,12 +176,12 @@
     (ros::ros-error "No attention type detected")
     (return-from attention-cb nil))
   (cond
-    ((eq (send msg :level) jsk_interactive_behavior::Attention::*LEVEL_NORMAL*)
+    ((eq (send msg :level) interactive_behavior_201409::Attention::*LEVEL_NORMAL*)
      (ros::ros-info "normal attention received: ~A" (send msg :type))
      (if (assoc (send msg :type) *pending-attention* :test #'string=)
          (setf (cdr (assoc (send msg :type) *pending-attention* :test #'string=)) msg)
          (push (cons (send msg :type) msg) *pending-attention*)))
-    ((eq (send msg :level) jsk_interactive_behavior::Attention::*LEVEL_IMPORTANT*)
+    ((eq (send msg :level) interactive_behavior_201409::Attention::*LEVEL_IMPORTANT*)
      (ros::ros-warn "important attention received: ~A" (send msg :type))
      (look-on-attention msg)
      (return-from attention-cb t))
@@ -189,11 +211,11 @@
         (wander)
         (setq *last-base-movement* (ros::time-now))))
 
-    (let ((msg (instance jsk_interactive_behavior::Attention :init)))
+    (let ((msg (instance interactive_behavior_201409::Attention :init)))
       (send msg :type "random")
       (send msg :header :frame_id *sensor-frame-id*)
       (send msg :header :stamp (ros::time-now))
-      (send msg :level jsk_interactive_behavior::Attention::*LEVEL_NORMAL*)
+      (send msg :level interactive_behavior_201409::Attention::*LEVEL_NORMAL*)
       (send msg :target
             (ros::coords->tf-pose
              (make-coords :pos (float-vector 1000 (* 350 (random-gauss)) (- (* 0.1 (random-gauss)) 0.02)))))
@@ -201,7 +223,7 @@
 
 (defun enable-behavior ()
   (setq *look-at-enabled* t)
-  (ros::subscribe *attention-topic* jsk_interactive_behavior::Attention #'attention-cb 1)
+  (ros::subscribe *attention-topic* interactive_behavior_201409::Attention #'attention-cb 1)
   (ros::ros-info "idle behavior enabled"))
 
 (defun disable-behavior ()
@@ -210,6 +232,7 @@
   (ros::ros-info "idle behavior disabled"))
 
 ;; main
+(warn ";; (main)~%")
 (defun main ()
   (pr2-init)
 
@@ -231,4 +254,3 @@
 
 (main)
 (exit)
-

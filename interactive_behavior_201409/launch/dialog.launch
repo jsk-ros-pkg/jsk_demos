@@ -1,7 +1,7 @@
 <launch>
   <arg name="use_dialogflow" default="true"/>
   <arg name="use_microphone" default="true"/>
-  <arg name="run_app_manager" default="false"/>
+  <arg name="run_app_manager" default="true"/>
 
   <arg name="credential"
        default="$(optenv GOOGLE_APPLICATION_CREDENTIALS /etc/ros/jsk_data/PR2-hrrjhv-62b42000f858.json)"/>

@@ -11,12 +11,11 @@ import rospy
 import tf.transformations as T
 import tf2_ros
 import tf2_geometry_msgs
-from jsk_interactive_behavior import get_tfl
 
 from geometry_msgs.msg import PoseArray, PoseStamped
 from jsk_recognition_msgs.msg import ClassificationResult
 from opencv_apps.msg import FaceArrayStamped
-from jsk_interactive_behavior.msg import Attention
+from interactive_behavior_201409.msg import Attention
 
 
 def pose_distance(p1, p2):
@@ -43,7 +42,10 @@ class PeopleAttentionTracker(ConnectionBasedTransport):
         self.attention_timeout_threshold = rospy.get_param("~attention_timeout_threshold", 3.0)
         self.unknown_name_prefix = rospy.get_param("~unknown_name_prefix", "unknown")
 
-        self.tfl = get_tfl()
+        self.tfl = tf2_ros.BufferClient("/tf2_buffer_server")
+        if not self.tfl.wait_for_server(rospy.Duration(10)):
+            rospy.logerr("Failed to wait for /tf2_buffer_server")
+            self.tfl = tf2_ros.Buffer()
 
         self.attention_pub = self.advertise(
             "~output", Attention, queue_size=1)

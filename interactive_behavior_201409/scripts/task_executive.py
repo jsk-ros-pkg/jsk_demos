@@ -281,9 +281,21 @@ class TaskExecutive(object):
 
     def app_start_cb(self, name):
         rospy.loginfo("%s started" % name)
+        try:
+            stop_idle = rospy.ServiceProxy("/idle_behavior/disable", Empty)
+            stop_idle.wait_for_service(1)
+            stop_idle()
+        except rospy.ROSException:
+            pass
 
     def app_stop_cb(self, name):
         rospy.loginfo("%s stopped" % name)
+        try:
+            start_idle = rospy.ServiceProxy("/idle_behavior/enable", Empty)
+            start_idle.wait_for_service(1)
+            start_idle()
+        except rospy.ROSException:
+            pass
         try:
             rospy.delete_param("/action/parameters")
             rospy.loginfo("Removed %s" % "/action/parameters")

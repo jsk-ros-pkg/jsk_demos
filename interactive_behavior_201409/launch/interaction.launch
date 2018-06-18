@@ -1,8 +1,7 @@
 <launch>
   <arg name="use_throttle" default="false" />
-  <arg name="use_speech_recognition" default="false" />
-  <arg name="use_speech_synthesis" default="true" />
   <arg name="use_base" default="false"/>
+  <arg name="use_hark" default="false"/>
   <arg name="respawn" default="true" />
 
   <arg name="camera" default="kinect_head_external" />
@@ -132,9 +131,13 @@
     <node name="sound_attention_tracker"
           pkg="interactive_behavior_201409" type="sound_attention_tracker.py">
       <remap from="~output" to="attention" />
-      <rosparam>
+      <rosparam if="$(arg use_hark)">
+        use_hark: true
         mean_threshold: 0.05
         covariance_threshold: 0.25
+      </rosparam>
+      <rosparam unless="$(arg use_hark)">
+        use_hark: false
       </rosparam>
     </node>
 

@@ -2,9 +2,13 @@
 # -*- coding: utf-8 -*-
 # Author: Yuki Furuta <furushchev@jsk.imi.i.u-tokyo.ac.jp>
 
+import angles
 import copy
+import math
 import numpy as np
 import rospy
+import tf2_ros
+import tf2_geometry_msgs
 from jsk_topic_tools import ConnectionBasedTransport
 from sklearn.decomposition import PCA
 import tf.transformations as T
@@ -12,31 +16,103 @@ import tf.transformations as T
 from interactive_behavior_201409.msg import Attention
 from jsk_hark_msgs.msg import HarkPower
 from geometry_msgs.msg import PoseStamped
+from std_msgs.msg import Bool
 
 
 class SoundAttentionTracker(ConnectionBasedTransport):
     def __init__(self):
         super(SoundAttentionTracker, self).__init__()
-        self.bias = rospy.get_param("~bias", 25)
-        self.gradient = rospy.get_param("~gradient", 0.15)
-        self.scale = rospy.get_param("~scale", 1.0)
-        self.smooth = rospy.get_param("~smooth", 3)
-        self.mean_threshold = rospy.get_param("~mean_threshold", 0.05)
-        self.covariance_threshold = rospy.get_param("~covariance_threshold", 0.25)
-        self.pub_attention = self.advertise("~output", Attention, queue_size=1)
-        self.pub_raw = self.advertise("~output/raw_power", HarkPower, queue_size=1)
+        self.use_hark = rospy.get_param("~use_hark", False)
+        if self.use_hark:
+            self.bias = rospy.get_param("~bias", 25)
+            self.gradient = rospy.get_param("~gradient", 0.15)
+            self.scale = rospy.get_param("~scale", 1.0)
+            self.mean_threshold = rospy.get_param("~mean_threshold", 0.05)
+            self.covariance_threshold = rospy.get_param("~covariance_threshold", 0.25)
+        else:
+            self.odom_frame_id = rospy.get_param("~odom_frame_id", "odom_combined")
+            self.angle_threshold = rospy.get_param("~angle_threshold", 20)  # [deg]
+            self.average_threshold = rospy.get_param("~average_threshold", 3)  # [num]
+            self.speech_threshold = rospy.get_param("~speech_threshold", False)
+            self.sensor_frame_id = None
+            self.is_speeching = False
+            self.doa_history = []
+
+        self.tfl = tf2_ros.BufferClient("/tf2_buffer_server")
+        if not self.tfl.wait_for_server(rospy.Duration(10)):
+            rospy.logerr("Failed to wait for /tf2_buffer_server")
+            self.tfl = tf2_ros.Buffer()
+
         self.pub_axes = self.advertise("~output/axes", PoseStamped, queue_size=1)
-        self.powers_num = 100
-        self.finders = []
+        self.pub_attention = self.advertise("~output", Attention, queue_size=1)
 
     def subscribe(self):
-        self.sub_hark = rospy.Subscriber(
-            "/HarkPower", HarkPower, self.callback, queue_size=1)
+        if self.use_hark:
+            self.subscribers = [
+                rospy.Subscriber("/HarkPower", HarkPower,
+                                 self.hark_callback, queue_size=1)
+            ]
+        else:
+            self.subscribers = [
+                rospy.Subscriber("/sound_localization", PoseStamped,
+                                 self.doa_callback, queue_size=1),
+                rospy.Subscriber("/is_speeching", Bool,
+                                 self.is_speeching_cb, queue_size=1),
+            ]
 
     def unsubscribe(self):
-        self.sub_hark.unregister()
+        for sub in self.subscribers:
+            sub.unregister()
 
-    def callback(self, msg):
+    def doa_callback(self, msg):
+        if self.speech_threshold and not self.is_speeching:
+            rospy.logdebug("No speech detected. skipping DOA")
+            return
+
+        try:
+            self.sensor_frame_id = msg.header.frame_id
+            t = self.tfl.transform(msg, self.odom_frame_id, timeout=rospy.Duration(5.0))
+            self.doa_history.append(t)
+            self.doa_history = self.doa_history[-self.average_threshold:]
+        except Exception as e:
+            rospy.logerr(e)
+
+        if len(self.doa_history) < self.average_threshold:
+            return
+
+        avg = 0.0
+        for p in self.doa_history:
+            q = p.pose.orientation
+            e = T.euler_from_quaternion((q.x, q.y, q.z, q.w))
+            avg += e[2]
+        avg /= len(self.doa_history)
+
+        last = self.doa_history[-1]
+        q = last.pose.orientation
+        e = T.euler_from_quaternion((q.x, q.y, q.z, q.w))
+        last_angle = e[2]
+        diff = angles.shortest_angular_distance(avg, last_angle)
+        if abs(diff) < math.radians(self.angle_threshold):
+            axes_msg = self.tfl.transform(last, self.sensor_frame_id, timeout=rospy.Duration(5.0))
+            q = axes_msg.pose.orientation
+            e = T.euler_from_quaternion((q.x, q.y, q.z, q.w))
+            yaw = e[2]
+            axes_msg.pose.position.x = 1.0 * np.cos(yaw)
+            axes_msg.pose.position.y = 1.0 * np.sin(yaw)
+            self.pub_axes.publish(axes_msg)
+
+            msg = Attention(header=axes_msg.header, level=Attention.LEVEL_IMPORTANT)
+            msg.type = "sound"
+            msg.target = axes_msg.pose
+            rospy.loginfo("Attention!")
+            self.pub_attention.publish(msg)
+        else:
+            rospy.logwarn("Ambiguous DOA: %s" % diff)
+
+    def is_speeching_cb(self, msg):
+        self.is_speeching = msg.data
+
+    def hark_callback(self, msg):
         biased_2d_power = list()
         n = len(msg.powers)
         for i, p in enumerate(msg.powers):
@@ -74,37 +150,6 @@ class SoundAttentionTracker(ConnectionBasedTransport):
             rospy.loginfo("Attention!")
             self.pub_attention.publish(msg)
 
-    def callback_old(self, msg):
-        if len(msg.powers) == 0 or msg.powers[0] == 0.0:
-            return
-
-        while len(self.finders) < msg.directions:
-            self.finders.append(changefinder.ChangeFinder(r=0.1, order=1, smooth=3))
-
-        raw_msg = copy.copy(msg)
-        raw_msg.directions = int(msg.directions / float(self.smooth))
-        raw_msg.data_bytes = 4 * raw_msg.directions
-        biased_powers = []
-        for i in range(raw_msg.directions):
-            p = 0.0
-            for j in range(self.smooth):
-                p += msg.powers[i*self.smooth+j]
-            p /= self.smooth
-            biased_power = self.gradient * (p - self.bias)
-            if biased_power <= 0.0:
-                biased_power = 0.001
-            biased_power *= self.scale
-            biased_powers.append(biased_power)
-        raw_msg.powers = biased_powers
-        self.pub_raw.publish(raw_msg)
-
-        ch_msg = copy.copy(raw_msg)
-        changes = []
-        for c, p in zip(self.finders, biased_powers):
-            changes.append(c.update(p))
-        ch_msg.powers = changes
-        self.pub_change.publish(ch_msg)
-        rospy.loginfo(max(changes))
 
 if __name__ == '__main__':
     rospy.init_node("sound_attention_tracker")
