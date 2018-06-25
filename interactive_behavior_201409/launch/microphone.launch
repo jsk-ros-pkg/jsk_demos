@@ -8,7 +8,11 @@
   <include file="$(find pr2_machine)/$(arg ROBOT).machine" />
 
   <node name="respeaker_node" pkg="respeaker_ros" type="respeaker_node.py"
-        machine="$(arg machine)" output="screen"/>
+        machine="$(arg machine)" output="screen">
+    <rosparam>
+      sensor_frame_id: head_mount_link
+    </rosparam>
+  </node>
 
   <node name="speech_to_text"
         pkg="interactive_behavior_201409" type="speech_to_text.py"
