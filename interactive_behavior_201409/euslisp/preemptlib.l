@@ -111,16 +111,16 @@ Example: (defpreemptrobot pr2) creates `pr2-preempt-interface` and `pr2-init`"
        (defun ,name ,args
          (let (,ret)
            (unwind-protect
-                (prog1
-                  (setq ,ret
-                        (catch :preempt-barrier
-                          (setq ,ret (progn ,@form))
-                          (ros::ros-warn ";; return value: ~A" ,ret)
-                          (unless ,ret (throw :preempt-barrier *preempt-failure-value*))
-                          *preempt-success-value*))
-                  (when (and (memq :exec-barrier (sys::list-all-catchers))
-                             (not (memq ,ret (list *preempt-failure-value* *preempt-success-value*))))
-                    (throw :exec-barrier ,ret))) ;; caught by exec-preempt-task
+             (prog1
+              (setq ,ret
+                    (catch :preempt-barrier
+                      (setq ,ret (progn ,@form))
+                      (ros::ros-warn ";; return value: ~A" ,ret)
+                      (unless ,ret (throw :preempt-barrier *preempt-failure-value*))
+                      *preempt-success-value*))
+               (when (and (memq :exec-barrier (sys::list-all-catchers))
+                          (not (memq ,ret (list *preempt-failure-value* *preempt-success-value*))))
+                 (throw :exec-barrier ,ret))) ;; caught by exec-preempt-task
              (ros::delete-param *preempt-param-key*))
            ,ret)))))
 

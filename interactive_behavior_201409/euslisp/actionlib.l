@@ -13,7 +13,7 @@
   (send self :go-stop nil))
 
 
-(defaction pick (target arm)
+(defaction pick (target arm spot)
   (let ((target-cds target) ;; TODO: loopup coords from object symbol
         pregrasp grasp)
     (setq grasp
@@ -38,7 +38,7 @@
     (send *ri* :angle-vector pregrasp 3000)
     (send *ri* :wait-interpolation)))
 
-(defaction place (target arm)
+(defaction place (target arm spot)
   (let ((target-cds target)
         preungrasp ungrasp)
     (setq ungrasp
