@@ -2,24 +2,26 @@
 ;; preemptlib.l
 ;; Author: furushchev <furushchev@jsk.imi.i.u-tokyo.ac.jp>
 
+;; imports
 (require :eus-pddl-client "package://pddl_planner/src/eus-pddl-client.l")
 (require :pddl-result-graph "package://pddl_planner/src/pddl-result-graph.l")
 (require :pddl2smach "package://roseus_smach/src/pddl2smach.l")
 (require :state-machine-ros "package://roseus_smach/src/state-machine-ros.l")
 
-
+;; parameters
 (defparameter *preempt-param-key* "/preempt/preempted")
 (defparameter *preempted-state-param-key* "/preempt/preempted_state")
 (defparameter *preempt-failure-value* :fail)
 (defparameter *preempt-success-value* :success)
 
-;; for pddl / smach
+;; add interface for pddl / smach
 (defmethod transition
   (:from-state () (car (get self :pddl-state)))
   (:to-state () (cdr (get self :pddl-state))))
 
 
 (defmacro with-check-preemption (&rest form)
+  "check / raise preemption signal on form block"
   (let ((ret (gensym "PREEMPT")) (val (gensym "PREEMPT")))
     `(let ((,ret ,@form) ,val)
        (when (and (memq :preempt-barrier (sys::list-all-catchers))
@@ -113,13 +115,13 @@ Example: (defpreemptrobot pr2) creates `pr2-preempt-interface` and `pr2-init`"
   (setf (symbol-function ',initorigfunc) (symbol-function ',initfunc)))
 ;;
 (defun ,initfunc (&rest args)
+  ,(format nil "Initializes *robot* and *ri* for ~A" cls) ;; docstring
   (unless (boundp '*ri*)
     (setq *ri* (instance ,cls :init)))
   (prog1
       (apply #',initorigfunc args)
     (setq *robot* *pr2*)))
 )))
-
 
 (defmacro defaction (name args &rest form)
   "This is similar to defun, but preemption is supported"
@@ -142,6 +144,7 @@ Example: (defpreemptrobot pr2) creates `pr2-preempt-interface` and `pr2-init`"
            ,ret)))))
 
 (defun exec-preemptive-task (sm &key (mydata '(nil)))
+  "This function is like exec-state-machine in roseus_smach/src/state-machine-utils.l, but supports preemption"
   (let ((insp (instance state-machine-inspector :init sm))
         result pddl-state)
     (unix::sleep 2)
@@ -189,10 +192,12 @@ Example: (defpreemptrobot pr2) creates `pr2-preempt-interface` and `pr2-init`"
     (list result pddl-state)))
 
 (defun pformat (sexp)
+  "pprint but returns output as a string"
   (with-output-to-string (s)
     (pprint sexp s)))
 
 (defun merge-states (current updated &key (debug))
+  "Resolve conflicts in pddl states and merge them into one state"
   (let ((cur (copy-object current))
         (upd (copy-object updated)))
     ;; prefer current onhand to updated on
@@ -257,8 +262,12 @@ Example: (defpreemptrobot pr2) creates `pr2-preempt-interface` and `pr2-init`"
 
 
 (defun plan-task (domain problem &key (debug t) (failed-nodes))
+  "Plan action sequence with failure recovery, given domain and problem using PDDL solver.
+This function also supports resume from preempted tasks"
   (let ((prob (copy-object problem))
         graph insp)
+    ;;
+    ;; count failed nodes if not specified
     (unless failed-nodes
       (setq failed-nodes
             (remove-if-not #'(lambda (n)
@@ -272,16 +281,18 @@ Example: (defpreemptrobot pr2) creates `pr2-preempt-interface` and `pr2-init`"
                          (subseq (send n :name) 0 (- (length (send n :name)) 2))))
                     failed-nodes)))
     ;;
+    ;; merge preempted states
     (when (ros::has-param *preempted-state-param-key*)
       (let ((cnd (ros::get-param *preempted-state-param-key*)))
         (if (or (not (stringp cnd)) (null-string-p cnd))
             (ros::ros-error "preempted state is empty")
             (setq cnd (read-from-string cnd)))
         (send prob :initial-condition (merge-states cnd (send prob :initial-condition)))))
-
+    ;;
     (ros::ros-info "planning from ~A" (pformat (send prob :initial-condition)))
     (ros::ros-info "to goal ~A" (pformat (send prob :goal-condition)))
     ;;
+    ;; send domain / problem to pddl solver
     (setq graph (pddl-plan-to-graph nil
                                     :domain domain :problem prob
                                     :failed-nodes failed-nodes
