@@ -9,23 +9,27 @@
 
 
 (defparameter *preempt-param-key* "/preempt/preempted")
+(defparameter *preempted-state-param-key* "/preempt/preempted_state")
 (defparameter *preempt-failure-value* :fail)
 (defparameter *preempt-success-value* :success)
+
+;; for pddl / smach
+(defmethod transition
+  (:from-state () (car (get self :pddl-state)))
+  (:to-state () (cdr (get self :pddl-state))))
 
 
 (defmacro with-check-preemption (&rest form)
   (let ((ret (gensym "PREEMPT")) (val (gensym "PREEMPT")))
     `(let ((,ret ,@form) ,val)
        (when (and (memq :preempt-barrier (sys::list-all-catchers))
-                  (if (atom ,ret) (null ,ret) (every #'null ,ret))
-                  (ros::has-param *preempt-param-key*))
+                  (or (if (atom ,ret) (null ,ret) (every #'null ,ret))
+                      (ros::has-param *preempt-param-key*)))
          (setq ,val (ros::get-param *preempt-param-key*))
          (throw :preempt-barrier
            (if (stringp ,val)
-               (intern (string-upcase (ros::get-param *preempt-param-key*))
-                       *keyword-package*)
-               ,val))
-       ,ret))))
+               (intern (string-upcase ,val) *keyword-package*) ,val)))
+       ,ret)))
 
 
 (defmacro defpreemptrobot (name &rest form)
@@ -44,11 +48,15 @@ Example: (defpreemptrobot pr2) creates `pr2-preempt-interface` and `pr2-init`"
   (:wait-interpolation
    (&rest args)
    (with-check-preemption
-       (some #'identity (send-super* :wait-interpolation args))))
+       (some #'null (send-super* :wait-interpolation args))))
   (:move-to
    (&rest args)
    (with-check-preemption
        (send-super* :move-to args)))
+  (:move-to-wait
+   (&rest args)
+   (let ((ret (send-super* :move-to-wait args)))
+     (if (send self :is-preempted) nil ret)))
   (:go-pos
    (&rest args)
    (with-check-preemption
@@ -64,7 +72,14 @@ Example: (defpreemptrobot pr2) creates `pr2-preempt-interface` and `pr2-init`"
   (:ros-wait
    (&rest args)
    (with-check-preemption
-       (send-super* :ros-wait args)))
+     (send-super* :ros-wait args)))
+  (:robot-interface-simulation-callback
+   ()
+   (when (or (send self :interpolatingp) current-goal-coords)
+     (send self :ros-wait 0.03)
+     (if (send self :is-preempted) (setq current-goal-coords nil)))
+   (send-super :robot-interface-simulation-callback)
+   nil)
   (:wait-interpolation-raw
    (&rest args)
    (send-super* :wait-interpolation args))
@@ -85,22 +100,25 @@ Example: (defpreemptrobot pr2) creates `pr2-preempt-interface` and `pr2-init`"
         (not (null (ros::get-param *preempt-param-key*)))))
   (:reset-preempt ()
    (ros::delete-param *preempt-param-key*)
+   (ros::delete-param *preempted-state-param-key*)
    (unix:usleep (* 500 1000)))
   (:preempt
    (&optional (reason :preempted))
    (ros::set-param *preempt-param-key* reason)
-   ,@form)) ;; defmethod
-    ;;
-    (unless (fboundp ',initorigfunc)
-      (setf (symbol-function ',initorigfunc) (symbol-function ',initfunc)))
-    ;;
-    (defun ,initfunc (&rest args)
-      (unless (boundp '*ri*)
-        (setq *ri* (instance ,cls :init)))
-      (prog1
-          (apply #',initorigfunc args)
-        (setq *robot* *pr2*)))
-    )))
+   (progn ,@form)
+   reason)
+) ;; defmethod
+;;
+(unless (fboundp ',initorigfunc)
+  (setf (symbol-function ',initorigfunc) (symbol-function ',initfunc)))
+;;
+(defun ,initfunc (&rest args)
+  (unless (boundp '*ri*)
+    (setq *ri* (instance ,cls :init)))
+  (prog1
+      (apply #',initorigfunc args)
+    (setq *robot* *pr2*)))
+)))
 
 
 (defmacro defaction (name args &rest form)
@@ -110,45 +128,22 @@ Example: (defpreemptrobot pr2) creates `pr2-preempt-interface` and `pr2-init`"
        (defun ,(read-from-string (format nil "~A-raw" name)) ,args ,@form)
        (defun ,name ,args
          (let (,ret)
-           (unwind-protect
-             (prog1
-              (setq ,ret
-                    (catch :preempt-barrier
-                      (setq ,ret (progn ,@form))
-                      (ros::ros-warn ";; return value: ~A" ,ret)
-                      (unless ,ret (throw :preempt-barrier *preempt-failure-value*))
-                      *preempt-success-value*))
-               (when (and (memq :exec-barrier (sys::list-all-catchers))
-                          (not (memq ,ret (list *preempt-failure-value* *preempt-success-value*))))
-                 (throw :exec-barrier ,ret))) ;; caught by exec-preempt-task
-             (ros::delete-param *preempt-param-key*))
+           (prog1
+               (setq ,ret
+                     (catch :preempt-barrier
+                       (ros::ros-info ";; ~A" (list ',name ,@args))
+                       (setq ,ret (block ,name (progn ,@form)))
+                       (ros::ros-warn ";; return value: ~A" ,ret)
+                       (unless ,ret (throw :preempt-barrier *preempt-failure-value*))
+                       *preempt-success-value*))
+             (when (and (memq :exec-barrier (sys::list-all-catchers))
+                        (not (memq ,ret (list *preempt-failure-value* *preempt-success-value*))))
+               (throw :exec-barrier ,ret))) ;; caught by exec-preempt-task
            ,ret)))))
-
-;; planning
-#|
-(defun state-match-p (state query context)
-  (case (car query)
-    ('not
-     (null (state-match-p state (cadr query))))
-    ('and
-     (every #'(lambda (q) (state-match-p state q)) (cdr query)))
-    ('or
-     (some #'(lambda (q) (state-match-p state q)) (cdr query)))
-    ('=
-     (equal (cadr query) (caddr query)))
-    ('when
-     (if (state-match-p state (cadr query)) (state-match-p state (caddr query)) t))
-    ('exists
-     ())
-    ('forall
-     ())
-    (t
-     (member state query :test #'equal))))
-|#
 
 (defun exec-preemptive-task (sm &key (mydata '(nil)))
   (let ((insp (instance state-machine-inspector :init sm))
-        result current-state)
+        result pddl-state)
     (unix::sleep 2)
     ;; setup state machine
     (send sm :reset-state)
@@ -174,24 +169,131 @@ Example: (defpreemptrobot pr2) creates `pr2-preempt-interface` and `pr2-init`"
               ;;
               (when (send sm :goal-reached) (return))
               (setq result (send insp :state-machine :execute mydata :step -1))
-              (let ((trans (remove-if-not #'(lambda (tr)
-                                              (send tr :check result))
-                                          (send (send insp :state-machine :active-state) :arc-list))))
+              (let ((trans (car (remove-if-not
+                                 #'(lambda (tr) (send tr :check result))
+                                 (send (send insp :state-machine :active-state) :arc-list)))))
                 (when trans
-                  (setq trans (car trans))
-                  (setq current-state (send trans :state))
-                  (ros::ros-info ";; -> ~A" current-state)))) ;; while
+                  (setq pddl-state (send trans :to-state))
+                  (ros::ros-info ";; state -> ~A" pddl-state)))
+              ) ;; while
             :finish))
     ;; check current state
-    (unless (send sm :goal-reached)
-      (let ((trs (remove-if-not #'(lambda (tr)
-                                    (send tr :check result))
-                                (send (send sm :active-state) :arc-list))))
-        (assert (eq (length trs) 1)
-                (format nil "Found ~A multiple transisions." (lrngth trs)))
-        (setq current-state (send (car trs) :state))))
-    (ros::ros-info "task finished with ~A -> ~A" result current-state)
-    (list result current-state)))
+    (when (and (not (send sm :goal-reached)) (null pddl-state))
+      (ros::ros-warn "current pddl-state is empty. use active state transition")
+      (let ((trans (car (send (send sm :active-state) :arc-list))))
+        (setq pddl-state (send trans :from-state))))
+    (ros::ros-info "task finished with ~A -> ~A" result pddl-state)
+    (when (and (send *ri* :is-preempted)
+               (not (null pddl-state)))
+      (ros::set-param *preempted-state-param-key* (format nil "~A" pddl-state)))
+    (list result pddl-state)))
+
+(defun pformat (sexp)
+  (with-output-to-string (s)
+    (pprint sexp s)))
+
+(defun merge-states (current updated &key (debug))
+  (let ((cur (copy-object current))
+        (upd (copy-object updated)))
+    ;; prefer current onhand to updated on
+    ;; (onhand ?OBJ ?ARM)
+    (let ((c (remove-if-not #'(lambda (s) (eq 'onhand (car s))) cur)))
+      (dolist (obj (mapcar #'(lambda (s) (cadr s)) c))
+        (setq upd (remove-if #'(lambda (s)
+                                 (and (eq 'on (car s))
+                                      (eq obj (cadr s)))) upd))))
+    (when debug
+      (warn "remove on~%")
+      (warn "cur: ~A~% upd: ~A~%" (pformat cur) (pformat upd)))
+    ;;
+    ;; prefer current on to updated onhand
+    ;; (on ?OBJ ?SPOT)
+    ;; NOTE: 逆かも
+    (let ((c (remove-if-not #'(lambda (s) (eq 'onhand (car s))) upd)))
+      (dolist (obj (mapcar #'(lambda (s) (cadr s)) c))
+        (when (find-if #'(lambda (s)
+                           (and (eq 'on (car s))
+                                (eq obj (cadr s)))) cur)
+          (setq upd (remove-if #'(lambda (s)
+                                   (and (eq 'onhand (car s))
+                                        (eq obj (cadr s)))) upd)))))
+    (when debug
+      (warn "remove onhand~%")
+      (warn "cur: ~A~% upd: ~A~%" (pformat cur) (pformat upd)))
+    ;;
+    ;; prefer current at
+    ;; (at ?SPOT)
+    (let ((c (find-if #'(lambda (s) (eq 'at (car s))) cur)))
+      (when c
+        (setq upd (remove-if #'(lambda (s) (eq 'at (car s))) upd))))
+    (when debug
+      (warn "remove at~%")
+      (warn "cur: ~A~% upd: ~A~%" (pformat cur) (pformat upd)))
+    ;;
+    ;; prefer updated function to current
+    ;; (= (func) num) or (= num (func))
+    (let ((fs (remove-if-not #'(lambda (s) (eq '= (car s))) upd)))
+      (dolist (f fs)
+        (setq cur (remove-if #'(lambda (s)
+                                 (and (eq '= (car s))
+                                      (equal (find-if #'listp f)
+                                             (find-if #'listp s)))) cur))))
+    (when debug
+      (warn "remove func~%")
+      (warn "cur: ~A~% upd: ~A~%" (pformat cur) (pformat upd)))
+    ;;
+    ;; prefer updated on
+    (let ((c (remove-if-not #'(lambda (s) (eq 'on (car s))) upd)))
+      (dolist (obj (mapcar #'(lambda (s) (cadr s)) c))
+        (setq cur (remove-if #'(lambda (s)
+                                 (and (eq 'on (car s))
+                                      (eq obj (cadr s)))) cur))))
+    ;;
+    ;; merge states
+    (ros::ros-info "merging current: ~A" (pformat cur))
+    (ros::ros-info "updated: ~A" (pformat upd))
+    (unique (append cur upd))
+    ))
+
+
+(defun plan-task (domain problem &key (debug t) (failed-nodes))
+  (let ((prob (copy-object problem))
+        graph insp)
+    (unless failed-nodes
+      (setq failed-nodes
+            (remove-if-not #'(lambda (n)
+                               (string= "_f"
+                                        (subseq (send n :name)
+                                                (- (length (send n :name)) 2))))
+                           (send domain :action)))
+      (setq failed-nodes
+            (mapcar #'(lambda (n)
+                        (read-from-string
+                         (subseq (send n :name) 0 (- (length (send n :name)) 2))))
+                    failed-nodes)))
+    ;;
+    (when (ros::has-param *preempted-state-param-key*)
+      (let ((cnd (ros::get-param *preempted-state-param-key*)))
+        (if (or (not (stringp cnd)) (null-string-p cnd))
+            (ros::ros-error "preempted state is empty")
+            (setq cnd (read-from-string cnd)))
+        (send prob :initial-condition (merge-states cnd (send prob :initial-condition)))))
+
+    (ros::ros-info "planning from ~A" (pformat (send prob :initial-condition)))
+    (ros::ros-info "to goal ~A" (pformat (send prob :goal-condition)))
+    ;;
+    (setq graph (pddl-plan-to-graph nil
+                                    :domain domain :problem prob
+                                    :failed-nodes failed-nodes
+                                    :readable nil
+                                    :debug debug))
+    (when debug
+      (send graph :write-to-pdf "/tmp/graph.pdf" nil "hoge")
+      (unix:system "xdg-open /tmp/graph.pdf"))
+    ;;
+    (setq insp (pddl-graph-to-smach graph :add-self-return-failure-path nil))
+    (send insp :state-machine)))
+
 
 
 (provide :preemptlib)
