@@ -9,10 +9,18 @@
 (require :state-machine-ros "package://roseus_smach/src/state-machine-ros.l")
 
 ;; parameters
+(defparameter *preempt* t "set nil to disable preemption")
 (defparameter *preempt-param-key* "/preempt/preempted")
 (defparameter *preempted-state-param-key* "/preempt/preempted_state")
 (defparameter *preempt-failure-value* :fail)
 (defparameter *preempt-success-value* :success)
+
+;; utilities
+(defun pformat (sexp)
+  "pprint but returns output as a string"
+  (with-output-to-string (s)
+    (pprint sexp s)))
+
 
 ;; add interface for pddl / smach
 (defmethod transition
@@ -116,7 +124,7 @@ Example: (defpreemptrobot pr2) creates `pr2-preempt-interface` and `pr2-init`"
 ;;
 (defun ,initfunc (&rest args)
   ,(format nil "Initializes *robot* and *ri* for ~A" cls) ;; docstring
-  (unless (boundp '*ri*)
+  (when (and (not (boundp '*ri*)) *preempt*)
     (setq *ri* (instance ,cls :init)))
   (prog1
       (apply #',initorigfunc args)
@@ -125,10 +133,14 @@ Example: (defpreemptrobot pr2) creates `pr2-preempt-interface` and `pr2-init`"
 
 (defmacro defaction (name args &rest form)
   "This is similar to defun, but preemption is supported"
-  (let ((ret (gensym "DEFACTION")))
+  (let ((ret (gensym "DEFACTION"))
+        (name-raw (read-from-string (format nil "~A-raw" name))))
     `(progn
-       (defun ,(read-from-string (format nil "~A-raw" name)) ,args ,@form)
+       (defun ,name-raw ,args
+         (block ,name (progn ,@form)))
        (defun ,name ,args
+         (unless *preempt*
+           (return-from ,name (funcall #',name-raw ,@args)))
          (let (,ret)
            (prog1
                (setq ,ret
@@ -148,10 +160,12 @@ Example: (defpreemptrobot pr2) creates `pr2-preempt-interface` and `pr2-init`"
   (let ((insp (instance state-machine-inspector :init sm))
         result pddl-state)
     (unix::sleep 2)
+    ;;
     ;; setup state machine
     (send sm :reset-state)
     (send insp :publish-structure) ;; publish once and latch
     (apply #'send sm :arg-keys (union (send sm :arg-keys) (mapcar #'car mydata)))
+    ;;
     ;; check / reset preempt status
     (when (boundp '*ri*)
       (send *ri* :ros-wait 0.0 :spin nil :spin-self t)
@@ -160,6 +174,7 @@ Example: (defpreemptrobot pr2) creates `pr2-preempt-interface` and `pr2-init`"
         (unless (y-or-n-p ";; Reset preempt status?")
           (return-from exec-preemptive-task))
         (send *ri* :reset-preempt)))
+    ;;
     ;; exec loop
     (setq result
           (catch :exec-barrier
@@ -172,29 +187,26 @@ Example: (defpreemptrobot pr2) creates `pr2-preempt-interface` and `pr2-init`"
               ;;
               (when (send sm :goal-reached) (return))
               (setq result (send insp :state-machine :execute mydata :step -1))
+              ;;
               (let ((trans (car (remove-if-not
                                  #'(lambda (tr) (send tr :check result))
                                  (send (send insp :state-machine :active-state) :arc-list)))))
                 (when trans
                   (setq pddl-state (send trans :to-state))
-                  (ros::ros-info ";; state -> ~A" pddl-state)))
+                  (ros::ros-info ";; state -> ~A" (pformat pddl-state))))
               ) ;; while
             :finish))
-    ;; check current state
+    ;;
+    ;; check the last pddl state
     (when (and (not (send sm :goal-reached)) (null pddl-state))
       (ros::ros-warn "current pddl-state is empty. use active state transition")
       (let ((trans (car (send (send sm :active-state) :arc-list))))
         (setq pddl-state (send trans :from-state))))
-    (ros::ros-info "task finished with ~A -> ~A" result pddl-state)
+    (ros::ros-info "task finished with ~A -> ~A" result (pformat pddl-state))
     (when (and (send *ri* :is-preempted)
                (not (null pddl-state)))
       (ros::set-param *preempted-state-param-key* (format nil "~A" pddl-state)))
-    (list result pddl-state)))
-
-(defun pformat (sexp)
-  "pprint but returns output as a string"
-  (with-output-to-string (s)
-    (pprint sexp s)))
+    (list result pddl-state))) ;; defaction
 
 (defun merge-states (current updated &key (debug))
   "Resolve conflicts in pddl states and merge them into one state"
@@ -281,7 +293,7 @@ This function also supports resume from preempted tasks"
                          (subseq (send n :name) 0 (- (length (send n :name)) 2))))
                     failed-nodes)))
     ;;
-    ;; merge preempted states
+    ;; merge preempted initial states into original initial condition
     (when (ros::has-param *preempted-state-param-key*)
       (let ((cnd (ros::get-param *preempted-state-param-key*)))
         (if (or (not (stringp cnd)) (null-string-p cnd))
@@ -304,7 +316,6 @@ This function also supports resume from preempted tasks"
     ;;
     (setq insp (pddl-graph-to-smach graph :add-self-return-failure-path nil))
     (send insp :state-machine)))
-
 
 
 (provide :preemptlib)
