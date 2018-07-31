@@ -1,5 +1,5 @@
 #!/usr/bin/env roseus
-;; actionlib.l
+;; pr2-actionlib.l
 ;; Author: Yuki Furuta <furushchev@jsk.imi.i.u-tokyo.ac.jp>
 
 (require :preemptlib "package://interactive_behavior_201409/euslisp/preemptlib.l")
@@ -14,8 +14,11 @@
 
 
 (defaction pick (target arm spot)
-  (let ((target-cds target) ;; TODO: loopup coords from object symbol
-        pregrasp grasp)
+  (let (target-cds pregrasp grasp)
+    ;; FIXME
+    (setq target-cds (make-coords :pos (float-vector 800 0 600)))
+    ;;
+    (setq arm (intern (symbol-string arm) *keyword-package*))
     (setq grasp
      (send *robot* arm :inverse-kinematics target-cds
                        :rotation-axis :z
@@ -39,8 +42,11 @@
     (send *ri* :wait-interpolation)))
 
 (defaction place (target arm spot)
-  (let ((target-cds target)
-        preungrasp ungrasp)
+  (let (target-cds preungrasp ungrasp)
+    ;; FIXME
+    (setq target-cds (make-coords :pos (float-vector 800 0 600)))
+    ;;
+    (setq arm (intern (symbol-string arm) *keyword-package*))
     (setq ungrasp
           (send *robot* arm :inverse-kinematics target-cds
                             :rotation-axis :z
@@ -63,5 +69,16 @@
     (send *ri* :wait-interpolation)))
 
 (defaction move-to (from-spot to-spot)
-  (let ((to-cds to-spot)) ;; lookup cds
-    (send *ri* :move-to to-cds)))
+  (let (cds)
+    ;; FIXME
+    (return-from move-to t)
+    (setq cds
+          (case to-spot
+            ('START (make-coords :pos (float-vector 0 0 0)))
+            ('TABLE (make-coords :pos (float-vector 0 5000 0)))
+            ('KITCHEN (make-coords :pos (float-vector 10000 0 0)))
+            ('COUNTER (make-coords :pos (float-vector 5000 0 0)))
+            (t (error "unknown spot" to-spot))))
+    (send *ri* :move-to cds)))
+
+(provide :pr2-actionlib)
