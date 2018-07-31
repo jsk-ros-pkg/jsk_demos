@@ -1,5 +1,5 @@
 #!/usr/bin/env roseus
-;; tidyup-cup.l
+;; tidyup-bottle.l
 ;; Author: Yuki Furuta <furushchev@jsk.imi.i.u-tokyo.ac.jp>
 
 (require :preemptlib "package://interactive_behavior_201409/euslisp/preemptlib.l")
@@ -10,10 +10,10 @@
   (setq *domain* (make-tidyup-domain))
   (setq *problem*
         (make-problem :init '((AT START)
-                              (ON CUP TABLE)
+                              (ON BOTTLE COUNTER)
                               (= (total-cost) 0))
-                      :goal '((ON CUP KITCHEN))))
-  (setq *sm* (plan-task *domain* *problem* :debug nil))
+                      :goal '((ON BOTTLE KITCHEN))))
+  (setq *sm* (plan-task *domain* *problem* :debug t))
   (pprint (exec-preemptive-task *sm*)))
 
 (pr2-init)
