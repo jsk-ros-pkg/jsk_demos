@@ -71,6 +71,10 @@
 (defaction move-to (from-spot to-spot)
   (let (cds)
     ;; FIXME
+    (let ((start-time (ros::time-now)))
+      (while (and (ros::ok)
+                  (< (send (ros::time- (ros::time-now) start-time) :to-sec) 10.0))
+             (send *ri* :ros-wait 1.0 :spin t :spin-self t)))
     (return-from move-to t)
     (setq cds
           (case to-spot

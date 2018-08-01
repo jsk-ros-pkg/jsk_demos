@@ -9,11 +9,18 @@
 (require :state-machine-ros "package://roseus_smach/src/state-machine-ros.l")
 
 ;; parameters
-(defparameter *preempt* t "set nil to disable preemption")
-(defparameter *preempt-param-key* "/preempt/preempted")
-(defparameter *preempted-state-param-key* "/preempt/preempted_state")
-(defparameter *preempt-failure-value* :fail)
-(defparameter *preempt-success-value* :success)
+(defparameter *preempt* t
+  "set nil to disable preemption")
+(defparameter *preempt-param-key* "/preempt/preempted"
+  "param key for preemption flag")
+(defparameter *preempted-state-param-key* "/preempt/preempted_state"
+  "param key for environmental state on preemption")
+(defparameter *preempted-goal-param-key* "/preempt/preempted_goal"
+  "param key for goal state of preempted task")
+(defparameter *preempt-failure-value* :fail
+  "return value of failed action")
+(defparameter *preempt-success-value* :success
+  "return value of succeeded action")
 
 ;; utilities
 (defun pformat (sexp)
@@ -24,8 +31,11 @@
 
 ;; add interface for pddl / smach
 (defmethod transition
-  (:from-state () (car (get self :pddl-state)))
-  (:to-state () (cdr (get self :pddl-state))))
+  (:pddl-from-state () (car (get self :pddl-state)))
+  (:pddl-to-state () (cdr (get self :pddl-state))))
+(defmethod state-machine
+  (:pddl-initial-state () (car (get self :pddl-state)))
+  (:pddl-goal-state () (cdr (get self :pddl-state))))
 
 
 (defmacro with-check-preemption (&rest form)
@@ -40,6 +50,24 @@
            (if (stringp ,val)
                (intern (string-upcase ,val) *keyword-package*) ,val)))
        ,ret)))
+
+
+(defun preempt (&optional (reason :preempt))
+  (ros::set-param *preempt-param-key* reason)
+  reason)
+
+
+(defun reset-preempt ()
+  (ros::delete-param *preempt-param-key*)
+  (ros::delete-param *preempted-state-param-key*)
+  (ros::delete-param *preempted-goal-param-key*)
+  (unix:usleep (* 500 1000))
+  t)
+
+
+(defun preempted-p ()
+  (and (ros::has-param *preempt-param-key*)
+       (not (null (ros::get-param *preempt-param-key*)))))
 
 
 (defmacro defpreemptrobot (name &rest form)
@@ -66,7 +94,7 @@ Example: (defpreemptrobot pr2) creates `pr2-preempt-interface` and `pr2-init`"
   (:move-to-wait
    (&rest args)
    (let ((ret (send-super* :move-to-wait args)))
-     (if (send self :is-preempted) nil ret)))
+     (if (send self :preempted-p) nil ret)))
   (:go-pos
    (&rest args)
    (with-check-preemption
@@ -87,7 +115,7 @@ Example: (defpreemptrobot pr2) creates `pr2-preempt-interface` and `pr2-init`"
    ()
    (when (or (send self :interpolatingp) current-goal-coords)
      (send self :ros-wait 0.03)
-     (if (send self :is-preempted) (setq current-goal-coords nil)))
+     (if (send self :preempted-p) (setq current-goal-coords nil)))
    (send-super :robot-interface-simulation-callback)
    nil)
   (:wait-interpolation-raw
@@ -105,18 +133,12 @@ Example: (defpreemptrobot pr2) creates `pr2-preempt-interface` and `pr2-init`"
   (:move-gripper-raw
    (&rest args)
    (send-super* :move-gripper args))
-  (:is-preempted ()
-   (and (ros::has-param *preempt-param-key*)
-        (not (null (ros::get-param *preempt-param-key*)))))
-  (:reset-preempt ()
-   (ros::delete-param *preempt-param-key*)
-   (ros::delete-param *preempted-state-param-key*)
-   (unix:usleep (* 500 1000)))
+  (:preempted-p () (preempted-p))
+  (:reset-preempt () (reset-preempt))
   (:preempt
    (&optional (reason :preempted))
-   (ros::set-param *preempt-param-key* reason)
-   (progn ,@form)
-   reason)
+   (prog1 (preempt reason)
+     (progn ,@form)))
 ) ;; defmethod
 ;;
 (unless (fboundp ',initorigfunc)
@@ -169,7 +191,7 @@ Example: (defpreemptrobot pr2) creates `pr2-preempt-interface` and `pr2-init`"
     ;; check / reset preempt status
     (when (boundp '*ri*)
       (send *ri* :ros-wait 0.0 :spin nil :spin-self t)
-      (when (send *ri* :is-preempted)
+      (when (send *ri* :preempted-p)
         (ros::ros-warn "The current task is preempted.")
         (unless (y-or-n-p ";; Reset preempt status?")
           (return-from exec-preemptive-task))
@@ -192,7 +214,7 @@ Example: (defpreemptrobot pr2) creates `pr2-preempt-interface` and `pr2-init`"
                                  #'(lambda (tr) (send tr :check result))
                                  (send (send insp :state-machine :active-state) :arc-list)))))
                 (when trans
-                  (setq pddl-state (send trans :to-state))
+                  (setq pddl-state (send trans :pddl-to-state))
                   (ros::ros-info ";; state -> ~A" (pformat pddl-state))))
               ) ;; while
             :finish))
@@ -201,11 +223,18 @@ Example: (defpreemptrobot pr2) creates `pr2-preempt-interface` and `pr2-init`"
     (when (and (not (send sm :goal-reached)) (null pddl-state))
       (ros::ros-warn "current pddl-state is empty. use active state transition")
       (let ((trans (car (send (send sm :active-state) :arc-list))))
-        (setq pddl-state (send trans :from-state))))
+        (setq pddl-state (send trans :pddl-from-state))))
     (ros::ros-info "task finished with ~A -> ~A" result (pformat pddl-state))
-    (when (and (send *ri* :is-preempted)
+    (when (and (send *ri* :preempted-p)
                (not (null pddl-state)))
-      (ros::set-param *preempted-state-param-key* (format nil "~A" pddl-state)))
+      ;; dump current state
+      (ros::set-param *preempted-state-param-key* (format nil "~A" pddl-state))
+      ;; dump goal state
+      (if (send sm :pddl-goal-state)
+          (ros::set-param *preempted-goal-param-key*
+                          (format nil "~A" (send sm :pddl-goal-state)))
+          (ros::ros-warn "PDDL goal state not found. Resume may fail"))
+      ) ;; when preempted
     (list result pddl-state))) ;; defaction
 
 (defun merge-states (current updated &key (debug))
@@ -277,7 +306,7 @@ Example: (defpreemptrobot pr2) creates `pr2-preempt-interface` and `pr2-init`"
   "Plan action sequence with failure recovery, given domain and problem using PDDL solver.
 This function also supports resume from preempted tasks"
   (let ((prob (copy-object problem))
-        graph insp)
+        graph sm)
     ;;
     ;; count failed nodes if not specified
     (unless failed-nodes
@@ -299,7 +328,17 @@ This function also supports resume from preempted tasks"
         (if (or (not (stringp cnd)) (null-string-p cnd))
             (ros::ros-error "preempted state is empty")
             (setq cnd (read-from-string cnd)))
-        (send prob :initial-condition (merge-states cnd (send prob :initial-condition)))))
+        (send prob :initial-condition
+              (merge-states cnd (send prob :initial-condition)))))
+    ;;
+    ;; merge preempted goal states into new goal
+    (when (ros::has-param *preempted-goal-param-key*)
+      (let ((cnd (ros::get-param *preempted-goal-param-key*)))
+        (if (or (not (stringp cnd)) (null-string-p cnd))
+            (ros::ros-error "preempted goal state is empty. Resume failed")
+            (setq cnd (read-from-string cnd)))
+        (send prob :goal-condition
+              (merge-states cnd (send prob :goal-condition)))))
     ;;
     (ros::ros-info "planning from ~A" (pformat (send prob :initial-condition)))
     (ros::ros-info "to goal ~A" (pformat (send prob :goal-condition)))
@@ -314,8 +353,13 @@ This function also supports resume from preempted tasks"
       (send graph :write-to-pdf "/tmp/graph.pdf" nil "hoge")
       (unix:system "xdg-open /tmp/graph.pdf"))
     ;;
-    (setq insp (pddl-graph-to-smach graph :add-self-return-failure-path nil))
-    (send insp :state-machine)))
+    (setq sm (send (pddl-graph-to-smach graph
+                                        :add-self-return-failure-path nil)
+                   :state-machine))
+    (setf (get sm :pddl-state)
+          (cons (send prob :initial-condition)
+                (send prob :goal-condition)))
+    sm))
 
 
 (provide :preemptlib)

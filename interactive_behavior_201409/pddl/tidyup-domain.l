@@ -14,6 +14,7 @@
     (send domain :predicates
           '((ON ?OBJ - item ?SPOT - spot)
             (ONHAND ?OBJ - item ?ARM - arm)
+            (UNAVAILABLE ?OBJ - item ?AT - spot)
             (AT ?SPOT - spot)))
     (send domain :functions '((total-cost) (distance ?FROM ?TO) (manip-cost ?OBJ)))
     (setq actions
@@ -40,7 +41,8 @@
                      :name "place"
                      :parameters '((?OBJ item) (?ARM arm) (?AT spot))
                      :precondition '((ONHAND ?OBJ ?ARM)
-                                     (AT ?AT))
+                                     (AT ?AT)
+                                     (NOT (UNAVAILABLE ?OBJ ?AT)))
                      :effect '((NOT (ONHAND ?OBJ ?ARM))
                                (ON ?OBJ ?AT)
                                (increase (total-cost) (manip-cost ?OBJ))))
@@ -48,8 +50,10 @@
                      :name "place_f"
                      :parameters '((?OBJ item) (?ARM arm) (?AT spot))
                      :precondition '((ONHAND ?OBJ ?ARM)
-                                     (AT ?AT))
-                     :effect '((increase (total-cost) (manip-cost ?OBJ))))
+                                     (AT ?AT)
+                                     (NOT (UNAVAILABLE ?OBJ ?AT)))
+                     :effect '((increase (total-cost) (manip-cost ?OBJ))
+                               (UNAVAILABLE ?OBJ ?AT)))
            (instance pddl-action :init
                      :name "move-to"
                      :parameters '((?FROM ?TO spot))
@@ -77,6 +81,11 @@
                                                (cdr (assoc from syms))
                                                (cdr (assoc to syms)))))
                 dists))))
+    ;; NOTE: downward does not allow partial cost function definition
+    ;;       so we must add distance for the same start/goal
+    (dolist (obj objs)
+      (push `(= (distance ,obj ,obj) 100000000000) dists))
+    ;;
     (list (cons :objects (mapcar #'(lambda (s) (cons s 'spot)) objs))
           (cons :condition dists))))
 
