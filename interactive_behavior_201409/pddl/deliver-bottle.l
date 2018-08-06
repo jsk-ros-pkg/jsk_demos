@@ -4,10 +4,10 @@
 
 (require :preemptlib "package://interactive_behavior_201409/euslisp/preemptlib.l")
 (require :pr2-actionlib "package://interactive_behavior_201409/euslisp/pr2-actionlib.l")
-(require :tidyup-domain "package://interactive_behavior_201409/pddl/tidyup-domain.l")
+(require :room-domain "package://interactive_behavior_201409/pddl/room-domain.l")
 
 (defun plan (&optional debug)
-  (setq *domain* (make-tidyup-domain))
+  (setq *domain* (make-domain))
   (setq *problem*
         (make-problem :init '((AT START)
                               (ON BOTTLE FRIDGE)

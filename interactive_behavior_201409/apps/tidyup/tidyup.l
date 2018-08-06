@@ -10,12 +10,27 @@
 (defun kitchen-demo ()
   (exec-state-machine (make-state-machine)))
 
+(defun plan-tidyup (object place)
+  (setq *domain* (make-domain))
+  (setq *problem* (make-problem :init '((= (total-cost) 0)
+                                        (AT START)
+                                        ;; TODO: implement current state from logs
+                                        )
+                                :goal `((ON ,object ,place))))
+  (unless (setq *sm* (plan-task *domain* *problem* :debug t))
+    (ros::ros-error "failed to plan")
+    (return-from plan-tidyup nil))
+  *sm*)
+
 
 (defun main ()
-  (let ((place (get-arg :place)))
+  (let* ((place (get-arg :place))
+         (object (get-arg :object))
+         (sm (plan-tidyup object place)))
+
     (cond
-      ((find place (list "kitchen") :test #'string=)
-       (kitchen-demo))
-      (t (speak-jp "ごめんなさい。いまちょっと手が離せないです。")))))
+      (sm (exec-preemptive-task sm))
+      (t (speak-jp "ごめんなさい。いまちょっと手が離せないです。")))
+    ))
 
 (if (main) (exit 0) (exit 1))

@@ -6,7 +6,7 @@
 (require :actionlib "package://interactive_behavior_201409/euslisp/actionlib.l")
 
 
-(defun make-tidyup-domain ()
+(defun make-domain ()
   (let ((domain (instance pddl-domain :init :name 'tidyup-domain))
         actions)
     (send domain :requirements

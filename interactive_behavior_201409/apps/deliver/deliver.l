@@ -1,19 +1,31 @@
 #!/usr/bin/env roseus
 ;; deliver.l
 
-(require :app-utils "package://interactive_behavior_201409/euslisp/app-utils.l")
-(require :pr2-interface "package://pr2eus/pr2-interface.l")
-(require :eng2-scene "package://jsk_maps/src/eng2-scene.l")
+(ros::roseus "deliver")
 
-(defun pr2-init (&optional (create-viewer))
-  (setq *pr2* (pr2)
-        *ri* (instance pr2-interface :init
-                       :move-base-action-name "elevator_move_base"))
-  (ros::spin-once)
-  (send *ri* :spin-once)
-  (send *pr2* :angle-vector (send *ri* :state :potentio-vector)))
+(require :app-utils "package://interactive_behavior_201409/euslisp/app-utils.l")
+
+(defun plan-deliver (object person)
+  (let ((place (person->place person)))
+    (setq *domain* (make-domain))
+    (setq *problem* (make-problem :init '((= (total-cost) 0)
+                                          (AT START)
+                                          ;; TODO
+                                          )
+                                  :goal `((ON ,object ,place))))
+  (unless (setq *sm* (plan-task *domain* *problem* :debug t))
+    (ros::ros-error "failed to plan")
+    (return-from plan-deliver nil))
+  *sm*))
+
 
 (defun main ()
-  t)
+  (let* ((object (get-arg :object))
+         (person (get-arg :person))
+         (sm (plan-deliver object person)))
+    (cond
+      (sm (exec-preemptive-task sm))
+      (t (speak-jp "ごめんなさい。いまちょっと手が離せないです。")))
+    ))
 
 (if (main) (exit 0) (exit 1))
