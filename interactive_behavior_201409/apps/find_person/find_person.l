@@ -5,7 +5,7 @@
 (require :speak "package://pr2eus/speak.l")
 
 (defun main ()
-  (let* ((person (cdr (assoc "person" *param* :test #'string=)))
+  (let* ((person (get-arg :person))
          (place (person->place person)))
     (if place
         (speak-jp (format nil "~Aにいます。" place))

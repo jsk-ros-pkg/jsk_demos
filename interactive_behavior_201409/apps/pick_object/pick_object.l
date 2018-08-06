@@ -6,7 +6,7 @@
 (load "package://detect_cans_in_fridge_201202/euslisp/main.l")
 
 (defun main ()
-  (let ((object (cdr (assoc "object" *param* :test #'string=))))
+  (let ((object (get-arg :object)))
     (cond
       ((find object (list "wonda" "georgia" "boss" "iemon") :test #'string=)
        (send *ri* :clear-costmap)

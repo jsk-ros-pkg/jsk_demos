@@ -15,7 +15,7 @@
 
 
 (defun main ()
-  (let ((spot-name (cdr (assoc "place" *param* :test #'string=))))
+  (let ((spot-name (get-arg :place)))
     (pr2-init)
     (setq *scene* (make-eng2-scene))
 

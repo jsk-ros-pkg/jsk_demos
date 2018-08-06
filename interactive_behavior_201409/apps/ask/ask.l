@@ -25,9 +25,9 @@
 (setq *answer* nil)
 
 (defun main ()
-  (let* ((person (cdr (assoc "person" *param* :test #'string=)))
+  (let* ((person (get-arg :person))
          (place (person->place person))
-         (content (cdr (assoc "content" *param* :test #'string=)))
+         (content (get-arg :content))
          (scene (make-eng2-scene))
          door-handle handle-found-p
          start-pos

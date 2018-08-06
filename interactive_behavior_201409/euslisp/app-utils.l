@@ -3,16 +3,13 @@
 ;; Author: Yuki Furuta <furushchev@jsk.imi.i.u-tokyo.ac.jp>
 
 (ros::roseus "run_app")
-(setq *param* (ros::get-param "/action/parameters"))
-(ros::ros-info "*param*: ~A" *param*)
+(setq *action-param* (ros::get-param "/action/parameters"))
+(ros::ros-info "*action-param*: ~A" *action-param*)
 
 (defun get-arg (key)
-  (cond
-    ((symbolp key)
-     (setq key (string-downcase key)))
-    ((keywordp key)
-     (setq key (string-downcase key))))
-  (cdr (assoc key *param* :test #'string=)))
+  (unless (stringp key)
+    (setq key (string-downcase key)))
+  (cdr (assoc key *action-param* :test #'string=)))
 
 (defmacro with-timeout (timeout &rest body)
   (let ((gstart (gensym)))
