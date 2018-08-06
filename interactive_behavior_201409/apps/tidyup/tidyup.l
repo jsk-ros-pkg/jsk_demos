@@ -14,7 +14,7 @@
   (setq *domain* (make-domain))
   (setq *problem* (make-problem :init '((= (total-cost) 0)
                                         (AT START)
-                                        ;; TODO: implement current state from logs
+                                        (ON CUP TABLE)
                                         )
                                 :goal `((ON ,object ,place))))
   (unless (setq *sm* (plan-task *domain* *problem* :debug t))
