@@ -10,17 +10,6 @@
 (defun kitchen-demo ()
   (exec-state-machine (make-state-machine)))
 
-(defun plan-tidyup (object place)
-  (setq *domain* (make-domain))
-  (setq *problem* (make-problem :init '((= (total-cost) 0)
-                                        (AT START)
-                                        (ON CUP TABLE)
-                                        )
-                                :goal `((ON ,object ,place))))
-  (unless (setq *sm* (plan-task *domain* *problem* :debug t))
-    (ros::ros-error "failed to plan")
-    (return-from plan-tidyup nil))
-  *sm*)
 
 
 (defun main ()
