@@ -2,6 +2,8 @@
 ;; preemptlib.l
 ;; Author: furushchev <furushchev@jsk.imi.i.u-tokyo.ac.jp>
 
+(provide :preemptlib)
+
 ;; imports
 (require :eus-pddl-client "package://pddl_planner/src/eus-pddl-client.l")
 (require :pddl-result-graph "package://pddl_planner/src/pddl-result-graph.l")
@@ -361,5 +363,3 @@ This function also supports resume from preempted tasks"
                 (send prob :goal-condition)))
     sm))
 
-
-(provide :preemptlib)

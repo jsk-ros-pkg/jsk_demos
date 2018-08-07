@@ -2,6 +2,8 @@
 ;; pr2-actionlib.l
 ;; Author: Yuki Furuta <furushchev@jsk.imi.i.u-tokyo.ac.jp>
 
+(provide :pr2-actionlib)
+
 (require :app-utils "package://interactive_behavior_201409/euslisp/app-utils.l")
 (require :preemptlib "package://interactive_behavior_201409/euslisp/preemptlib.l")
 (require :pr2-interface "package://pr2eus/pr2-interface.l")
@@ -66,8 +68,6 @@
   ;; TODO
   t)
 
-
-(provide :pr2-actionlib)
 
 #|
 (defaction pick (target arm spot &optional userdata)

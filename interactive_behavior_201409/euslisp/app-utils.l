@@ -2,13 +2,16 @@
 ;; app-utils.l
 ;; Author: Yuki Furuta <furushchev@jsk.imi.i.u-tokyo.ac.jp>
 
+(provide :app-utils)
+
 (ros::roseus "run_app")
 (defparameter *action-param* (ros::get-param "/action/parameters"))
 (defparameter *start-spot-param-key* "/action/start_spot")
 (ros::ros-info "*action-param*: ~A" *action-param*)
-
+;;
 (require :preemptlib "package://interactive_behavior_201409/euslisp/preemptlib.l")
-(require :pr2-actionlib "package://interactive_behavior_201409/euslisp/pr2-actionlib.l")
+;;
+(require :pr2-actionlib "package://interactive_behavior_201409/pddl/pr2-actionlib.l")
 (require :room-domain "package://interactive_behavior_201409/pddl/room-domain.l")
 
 (defun get-arg (key)
@@ -116,6 +119,3 @@
         (apply #'send cds :rpy (subseq vec 3))
         cds)
     (send *ri* :state :worldcoords)))
-
-
-(provide :app-utils)
