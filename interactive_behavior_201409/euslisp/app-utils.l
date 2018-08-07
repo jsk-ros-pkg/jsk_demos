@@ -72,7 +72,7 @@
       (t t))
     place))
 
-(defun get-spot (scene name)
+(defun get-spot (name &optional (scene *scene*))
   (let* ((front-spots (remove-if-not #'(lambda (x)
                                          (string= "-front"
                                                   (subseq (send x :name) (- (length (send x :name))

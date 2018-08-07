@@ -19,7 +19,7 @@
     (pr2-init)
     (setq *scene* (make-eng2-scene))
 
-    (setq *spot* (get-spot *scene* *ri* spot-name))
+    (setq *spot* (get-spot spot-name))
     (unless *spot*
       (ros::ros-error "Destination '~A' not found" spot-name)
       (speak-jp "あー、ちょっとわからないですね。")
