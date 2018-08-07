@@ -169,7 +169,7 @@ Example: (defpreemptrobot pr2) creates `pr2-preempt-interface` and `pr2-init`"
            (prog1
                (setq ,ret
                      (catch :preempt-barrier
-                       (ros::ros-info ";; ~A" (list ',name ,@args))
+                       (ros::ros-info ";; start ~A" (list ',name))
                        (setq ,ret (block ,name (progn ,@form)))
                        (ros::ros-warn ";; return value: ~A" ,ret)
                        (unless ,ret (throw :preempt-barrier *preempt-failure-value*))
