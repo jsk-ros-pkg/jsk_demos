@@ -20,6 +20,11 @@
   (let ((val (cdr (assoc key *action-param* :test #'string=))))
     (if (or (null val) (null-string-p val)) nil (read-from-string val))))
 
+(defmacro run-exit (&rest form)
+  `(if (find-if #'(lambda (s) (substringp "__log:=" s)) lisp::*eustop-argument*)
+     (if (progn ,@form) (exit 0) (exit 1))
+     (warn ";; run ~A~%" '(progn ,@form))))
+
 (defmacro with-timeout (timeout &rest body)
   (let ((gstart (gensym)))
   `(let ((,gstart (ros::time-now)))

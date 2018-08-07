@@ -28,4 +28,4 @@
       (t (speak-jp "ごめんなさい。いまちょっと手が離せないです。")))
     ))
 
-(if (main) (exit 0) (exit 1))
+(run-exit (main))

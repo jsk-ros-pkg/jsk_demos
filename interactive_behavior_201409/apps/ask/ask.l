@@ -114,4 +114,4 @@
   ;; (unlatch-door :larm :push 50)
   )
 
-(if (main) (exit 0) (exit 1))
+(run-exit (main))

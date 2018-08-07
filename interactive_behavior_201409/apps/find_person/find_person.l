@@ -11,4 +11,4 @@
         (speak-jp (format nil "~Aにいます。" place))
         (speak-jp "すみません、わかりません。"))))
 
-(if (main) (exit 0) (exit 1))
+(run-exit (main))

@@ -31,4 +31,4 @@
     (return-from main t)))
 
 
-(if (main) (exit 0) (exit 1))
+(run-exit (main))
