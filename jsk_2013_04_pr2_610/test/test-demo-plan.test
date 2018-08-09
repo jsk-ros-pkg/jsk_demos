@@ -16,5 +16,6 @@
                                       repeat_last=false)&quot;" />
     <arg name="debug" value="true" />
     <arg name="gui" value="false" />
+    <arg name="exit_on_finish" value="false"/>
   </include>
 </launch>
