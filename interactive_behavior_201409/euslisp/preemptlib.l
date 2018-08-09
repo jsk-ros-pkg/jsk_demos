@@ -24,6 +24,10 @@
 (defparameter *preempt-success-value* :success
   "return value of succeeded action")
 
+;; variables
+(defvar *condition-updaters* nil
+  "Initial condition validators on planning")
+
 ;; utilities
 (defun pformat (sexp)
   "pprint but returns output as a string"
@@ -303,7 +307,6 @@ Example: (defpreemptrobot pr2) creates `pr2-preempt-interface` and `pr2-init`"
     (unique (append cur upd))
     ))
 
-
 (defun plan-task (domain problem &key (debug t) (failed-nodes))
   "Plan action sequence with failure recovery, given domain and problem using PDDL solver.
 This function also supports resume from preempted tasks"
@@ -342,6 +345,12 @@ This function also supports resume from preempted tasks"
         (send prob :goal-condition
               (merge-states cnd (send prob :goal-condition)))))
     ;;
+    ;; update conditions using updaters
+    (let ((ret (update-condition (send prob :initial-condition)
+                                 (send prob :goal-condition))))
+      (send prob :initial-condition (car ret))
+      (send prob :goal-condition (cadr ret)))
+    ;;
     (ros::ros-info "planning from ~A" (pformat (send prob :initial-condition)))
     (ros::ros-info "to goal ~A" (pformat (send prob :goal-condition)))
     ;;
@@ -363,3 +372,201 @@ This function also supports resume from preempted tasks"
                 (send prob :goal-condition)))
     sm))
 
+(defclass condition-updater
+  :super propertied-object
+  :slots ())
+
+(defmethod condition-updater
+  (:init ())
+  (:name () (send (class self) :name))
+  (:start ()
+    (error "Not implemented"))
+  (:stop ()
+    (error "Not implemented"))
+  (:wait-for-ready (&optional timeout)
+    (error "Not implemented"))
+  (:update-init (st)
+    (error "Not Implemented"))
+  (:update-goal (st)
+    (error "Not Implemented"))
+  (:onhand (st arm)
+    (mapcar #'cadr
+            (remove-if-not #'(lambda (x)
+                               (and (eq (car x) 'onhand)
+                                    (eq (caddr x) arm))) st)))
+  (:at (st)
+    (cadr (find-if #'(lambda (x) (eq (car x) 'at)) st)))
+  (:on (st at)
+    (mapcar #'cadr
+            (remove-if-not #'(lambda (x)
+                               (and (eq (car x) 'on)
+                                    (eq (caddr x) at))) st)))
+) ;; condition-updater
+
+(defun get-updater (cls)
+  (find-if #'(lambda (x) (eq (class x) cls)) *condition-updaters*))
+
+(defun add-updater (cls &rest args)
+  (unless (subclassp cls condition-updater)
+    (error "~A is not a class of condition-updater" cls))
+  (when (get-updater cls)
+    (error "~A is already added" cls))
+  (push (instance* cls :init args) *condition-updaters*)
+  t)
+
+(defun update-condition (init &optional goal)
+  (dolist (updater *condition-updaters*)
+    (ros::ros-info "[~A] starting" (send updater :name))
+    (send updater :start)
+    (send updater :wait-for-ready)
+    (ros::ros-info "[~A] started" (send updater :name)))
+  ;;
+  (let ((upd-init (copy-object init))
+        (upd-goal (copy-object goal))
+        prev-init prev-goal)
+    (ros::ros-info "update init")
+    (dolist (updater *condition-updaters*)
+      (setq prev-init (copy-object upd-init)
+            upd-init (send updater :update-init upd-init))
+      (ros::ros-info "[~A] ~A -> ~A"
+                     (send updater :name) prev-init upd-init))
+    ;;
+    (when goal
+      (ros::ros-info "update goal")
+      (dolist (updater *condition-updaters*)
+        (setq prev-goal (copy-object upd-goal)
+              upd-goal (send updater :update-goal upd-goal))
+        (ros::ros-info "[~A] ~A -> ~A"
+                       (send updater :name) prev-goal upd-goal)))
+    ;;
+    (dolist (updater *condition-updaters*)
+      (ros::ros-info "[~A] stopping" (send updater :name))
+      (send updater :stop))
+    ;;
+    (list upd-init upd-goal)))
+
+(ros::load-ros-manifest "pr2_controllers_msgs")
+(defclass onhand-updater
+  :super condition-updater
+  :slots (grasp-thre release-thre larm-state rarm-state))
+(defmethod onhand-updater
+  (:init (&key (grasp-max-dist 0.01)
+               (release-min-dist 0.01))
+    (setq grasp-thre grasp-max-dist
+          release-thre release-min-dist)
+    (send-super :init))
+  (:start ()
+    (ros::subscribe "l_gripper_controller/state"
+                    pr2_controllers_msgs::JointControllerState
+                    #'send self :state-callback :larm)
+    (ros::subscribe "r_gripper_controller/state"
+                    pr2_controllers_msgs::JointControllerState
+                    #'send self :state-callback :rarm)
+    t)
+  (:stop ()
+    (ros::unsubscribe "l_gripper_controller/state")
+    (ros::unsubscribe "r_gripper_controller/state")
+    (setq larm-state nil rarm-state nil)
+    t)
+  (:wait-for-ready (&optional timeout)
+    (ros::rate 1)
+    (let ((start-time (ros::time-now)))
+      (while (ros::ok)
+        (when (and larm-state rarm-state)
+          (ros::ros-info "[~A] :larm = ~A, :rarm = ~A" (send self :name) larm-state rarm-state)
+          (return-from :wait-for-ready t))
+        (when (and timeout
+                   (> (send (ros::time- (ros::time-now) start-time) :to-sec) timeout))
+          (return-from :wait-for-ready nil))
+        (ros::spin-once)
+        (ros::sleep))))
+  (:state-callback (arm msg)
+    (let ((actual (send msg :process_value))
+          (desired (send msg :set_point))
+          (err (send msg :error)))
+      (cond
+       ((and (< desired 0.0001)
+             (> actual grasp-thre))
+        (case arm
+          (:larm (setq larm-state :onhand))
+          (:rarm (setq rarm-state :onhand))))
+       (t
+        (case arm
+          (:larm (setq larm-state :not-onhand))
+          (:rarm (setq rarm-state :not-onhand)))))))
+  (:update-init (st)
+    (let ((ret (copy-object st))
+          obj)
+      ;; larm
+      (cond
+       ;; onhand -> on
+       ((and (eq larm-state :not-onhand)
+             (send self :onhand ret 'larm))
+        (setq ret (mapcar #'(lambda (x)
+                              (if (and (eq (car x) 'onhand)
+                                       (eq (caddr x) 'larm))
+                                  `(on ,(cadr x) ,(send self :at st))
+                                x)) ret)))
+       ;; on -> onhand
+       ((and (eq larm-state :onhand)
+             (null (send self :onhand ret 'larm)))
+        ;; unnecessary?
+        ))
+      ;; rarm
+      (cond
+       ;; onhand -> on
+       ((and (eq rarm-state :not-onhand)
+             (send self :onhand ret 'rarm))
+        (setq ret (mapcar #'(lambda (x)
+                              (if (and (eq (car x) 'onhand)
+                                       (eq (caddr x) 'rarm))
+                                  `(on ,(cadr x) ,(send self :at st))
+                                x)) ret)))
+       ;; on -> onhand
+       ((and (eq rarm-state :onhand)
+             (null (send self :onhand ret 'rarm)))
+        ;; unnecessary?
+        ))
+      ret))
+  (:update-goal (st) st)
+) ;; onhand-updater
+(add-updater onhand-updater)
+
+(defclass at-updater
+  :super condition-updater
+  :slots (scene))
+(defmethod at-updater
+  (:init (&optional (scn))
+    (if scn
+        (setq scene scn)
+      (if (and (boundp '*scene*) *scene*)
+          (setq scene *scene*)
+        (error "no scene")))
+    (unless (and (boundp '*ri*) *ri*)
+      (error "*ri* is not initialized"))
+    (send-super :init))
+  (:start () t)
+  (:stop () t)
+  (:wait-for-ready (&optional timeout) t)
+  (:update-init (st)
+    (let ((spots (remove-if-not #'(lambda (x)
+                                    (substringp "-front" x))
+                                (send scene :spots)))
+          (robot-pose (send *ri* :state :worldcoords))
+          nearest spot)
+      (sort spots #'<=
+            #'(lambda (s)
+                (norm (send robot-pose :difference-position s))))
+      (setq nearest (car spots))
+      (ros::ros-info "dist to ~A: ~A" (send nearest :name)
+                     (norm (send robot-pose :difference-position nearest)))
+      (if (< (norm (send robot-pose :difference-position nearest))
+             1000.0)
+          ;; TODO
+          )
+
+    (error "Not Implemented"))
+  (:update-goal (st)
+    (error "Not Implemented"))
+) ;; at-updater
+(add-updater at-updater)
