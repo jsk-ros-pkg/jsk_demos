@@ -6,11 +6,11 @@
 (load "package://detect_cans_in_fridge_201202/euslisp/main.l")
 
 (defun main ()
-  (let ((object (cdr (assoc "object" *param* :test #'string=))))
+  (let ((object (get-arg :object)))
     (cond
       ((find object (list "wonda" "georgia" "boss" "iemon") :test #'string=)
        (send *ri* :clear-costmap)
        (demo :type object :use-arm :rarm))
       (t (speak-jp "ごめんなさい。いまちょっと手が離せないです。")))))
 
-(if (main) (exit 0) (exit 1))
+(run-exit (main))

@@ -25,15 +25,15 @@
 (setq *answer* nil)
 
 (defun main ()
-  (let* ((person (cdr (assoc "person" *param* :test #'string=)))
+  (let* ((person (get-arg :person))
          (place (person->place person))
-         (content (cdr (assoc "content" *param* :test #'string=)))
+         (content (get-arg :content))
          (scene (make-eng2-scene))
          door-handle handle-found-p
          start-pos
          spot)
     (pr2-init)
-    (setq spot (get-spot scene *ri* place))
+    (setq spot (get-spot place))
 
     (unless spot
       (ros::ros-error "Destination '~A' not found" place)
@@ -99,7 +99,7 @@
   (if (not (boundp '*ri*)) (setq *ri* (instance pr2-interface :init)))
   (if (not (boundp '*scene*)) (setq *scene* (make-eng2-scene)))
   (send *ri* :clear-costmap)
-  (send *ri* :move-to (get-spot *scene* *ri* "73A3"))
+  (send *ri* :move-to (get-spot "73A3"))
   (dotimes (i 5)
     (setq door-handle (find-handle))
     (if (null door-handle)
@@ -114,4 +114,4 @@
   ;; (unlatch-door :larm :push 50)
   )
 
-(if (main) (exit 0) (exit 1))
+(run-exit (main))

@@ -14,7 +14,7 @@
 (defparameter *camera-topic* "/kinect_head/rgb/image_rect_color")
 
 (defun main ()
-  (let ((content (cdr (assoc "content" *param* :test #'string=))))
+  (let ((content (get-arg :content)))
     (ros::ros-info "content: ~A" content)
     (when content
       (speak-jp "写真もとりませんか？")
@@ -30,4 +30,4 @@
                     :warning-time nil
                     :with-image *camera-topic*))))
 
-(if (main) (exit 0) (exit 1))
+(run-exit (main))

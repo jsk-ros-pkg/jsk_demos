@@ -17,3 +17,5 @@ apps:
   display: tidyup place
 - app: interactive_behavior_201409/diabolo
   display: diabolo
+- app: interactive_behavior_201409/place
+  display: place object

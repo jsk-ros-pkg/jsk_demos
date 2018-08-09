@@ -11,11 +11,15 @@
   (exec-state-machine (make-state-machine)))
 
 
-(defun main ()
-  (let ((place (get-arg :place)))
-    (cond
-      ((find place (list "kitchen") :test #'string=)
-       (kitchen-demo))
-      (t (speak-jp "ごめんなさい。いまちょっと手が離せないです。")))))
 
-(if (main) (exit 0) (exit 1))
+(defun main ()
+  (let* ((place (get-arg :place))
+         (object (get-arg :object))
+         (sm (plan-tidyup object place)))
+
+    (cond
+      (sm (exec-preemptive-task sm))
+      (t (speak-jp "ごめんなさい。いまちょっと手が離せないです。")))
+    ))
+
+(run-exit (main))

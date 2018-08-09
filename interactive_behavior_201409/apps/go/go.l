@@ -15,11 +15,11 @@
 
 
 (defun main ()
-  (let ((spot-name (cdr (assoc "place" *param* :test #'string=))))
+  (let ((spot-name (get-arg :place)))
     (pr2-init)
     (setq *scene* (make-eng2-scene))
 
-    (setq *spot* (get-spot *scene* *ri* spot-name))
+    (setq *spot* (get-spot spot-name))
     (unless *spot*
       (ros::ros-error "Destination '~A' not found" spot-name)
       (speak-jp "あー、ちょっとわからないですね。")
@@ -31,4 +31,4 @@
     (return-from main t)))
 
 
-(if (main) (exit 0) (exit 1))
+(run-exit (main))
