@@ -9,8 +9,6 @@
 (defparameter *start-spot-param-key* "/action/start_spot")
 (ros::ros-info "*action-param*: ~A" *action-param*)
 ;;
-(require :preemptlib "package://interactive_behavior_201409/euslisp/preemptlib.l")
-;;
 (require :pr2-actionlib "package://interactive_behavior_201409/pddl/pr2-actionlib.l")
 (require :room-domain "package://interactive_behavior_201409/pddl/room-domain.l")
 

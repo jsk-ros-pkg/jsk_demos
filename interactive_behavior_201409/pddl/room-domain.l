@@ -1,10 +1,8 @@
 #!/usr/bin/env roseus
-;; tidyup-domain.l
+;; room-domain.l
 ;; Author: Yuki Furuta <furushchev@jsk.imi.i.u-tokyo.ac.jp>
 
 (require :preemptlib "package://interactive_behavior_201409/euslisp/preemptlib.l")
-(require :actionlib "package://interactive_behavior_201409/euslisp/actionlib.l")
-
 
 (defun make-domain ()
   (let ((domain (instance pddl-domain :init :name 'tidyup-domain))

@@ -2,8 +2,7 @@
 ;; tidyup-bottle.l
 ;; Author: Yuki Furuta <furushchev@jsk.imi.i.u-tokyo.ac.jp>
 
-(require :preemptlib "package://interactive_behavior_201409/euslisp/preemptlib.l")
-(require :pr2-actionlib "package://interactive_behavior_201409/euslisp/pr2-actionlib.l")
+(require :pr2-actionlib "package://interactive_behavior_201409/pddl/pr2-actionlib.l")
 (require :room-domain "package://interactive_behavior_201409/pddl/room-domain.l")
 
 (defun plan (&optional debug)

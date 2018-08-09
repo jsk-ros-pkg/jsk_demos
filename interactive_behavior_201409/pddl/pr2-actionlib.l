@@ -5,18 +5,11 @@
 (provide :pr2-actionlib)
 
 (require :app-utils "package://interactive_behavior_201409/euslisp/app-utils.l")
-(require :preemptlib "package://interactive_behavior_201409/euslisp/preemptlib.l")
-(require :pr2-interface "package://pr2eus/pr2-interface.l")
+(require :pr2-preemptive-interface "package://interactive_behavior_201409/euslisp/pr2-preemptive-interface.l")
 ;;
 (require :pr2-action "package://jsk_demo_common/euslisp/pr2-action.l")
 (require :coe-actionlib "package://jsk_2017_12_pr2_coe/euslisp/coe-actionlib.l")
 
-;; defclass pr2-preempt-interface
-(defpreemptrobot pr2
-  (send r-gripper-action :cancel-all-goals)
-  (send l-gripper-action :cancel-all-goals)
-  (send self :cancel-angle-vector)
-  (send self :go-stop nil))
 
 (defaction move-to (from-place to-place &optional userdata)
   (ros::ros-info "(move-to ~A ~A)" from-place to-place)
