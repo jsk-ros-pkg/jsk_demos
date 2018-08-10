@@ -29,4 +29,4 @@
        (speak-jp "ごめんなさい。いまちょっと手が離せないです。")
        nil))))
 
-(run-main (main))
+(run-exit (main))

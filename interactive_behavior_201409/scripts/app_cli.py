@@ -137,7 +137,7 @@ subscribed_topics: {}
   t)
 
 
-(if (main) (exit 0) (exit 1))
+(run-exit (main))
 """.format(name=name))
     node_file.chmod(0755)
     # app
