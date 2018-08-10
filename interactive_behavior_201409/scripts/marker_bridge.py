@@ -69,6 +69,7 @@ class MarkerBridge(object):
                 pub_indigo.unregister()
                 pub_kinetic.unregister()
                 self.publishers.pop(name)
+                continue
 
             # subscribe / unsubscribe
             num = pub_indigo.get_num_connections() + pub_kinetic.get_num_connections()
