@@ -2,7 +2,7 @@
   <arg name="use_external" default="true" />
   <include file="$(find pr2_machine)/$(optenv ROBOT pr2).machine" />
   <machine if="$(arg use_external)"
-           name="external" address="external" env-loader="/home/furushchev/env.sh" />
+           name="external" address="external" user="furushchev" env-loader="/home/furushchev/env.sh" />
   <machine unless="$(arg use_external)"
            name="external" address="c2" env-loader="$(env ROS_ENV_LOADER)" />
   <machine name="localhost" address="localhost" />
