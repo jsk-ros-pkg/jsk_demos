@@ -13,7 +13,6 @@
 
 (defaction move-to (from-place to-place &optional userdata)
   (ros::ros-info "(move-to ~A ~A)" from-place to-place)
-  ;; TODO: record START place
   (save-start-pose)
   (case to-place
     ('kitchen (go-to-sink userdata)) ;; coe
@@ -30,16 +29,16 @@
 
 (defaction pick (obj arm spot &optional userdata)
   (cond
-   ((eq spot 'kitchen) ;; coe
-    (find-object-at-kitchen userdata)
-    (pick-object-at-kitchen userdata))
-   (t t)))
+    (t
+     (find-tabletop-object userdata)
+     (pick-tabletop-object userdata))))
 
 (defaction place (obj arm spot &optional userdata)
   (cond
    ((eq spot 'dishwasher) ;; coe
     (put-into-dishwasher userdata))
-   (t t)))
+   (t ;; place to support plane
+    (place-object userdata))))
 
 (defaction open-door (arm spot &optional userdata)
   (cond
