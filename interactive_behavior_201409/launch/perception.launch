@@ -1,0 +1,58 @@
+<launch>
+  <arg name="machine" default="external"/>
+
+  <!-- pick / place object -->
+  <include file="$(find jsk_2017_12_pr2_coe)/launch/tabletop.launch"/>
+
+  <!-- find object -->
+  <include file="$(find mbtk)/launch/ssd.launch">
+    <arg name="machine" value="$(arg machine)"/>
+    <arg name="record_result" value="false"/>
+    <arg name="camera" value="kinect_head_external"/>
+  </include>
+
+  <!-- lifelog -->
+  <group ns="ssd">
+    <node name="position_estimator"
+          pkg="mbtk" type="position_estimator.py"
+          output="screen" machine="$(arg machine)">
+      <rosparam subst_value="true">
+        database: jsk_robot_lifelog
+        collection: localized_objects
+        max_cluster_num: 3
+      </rosparam>
+    </node>
+
+    <node name="pose_distribution_visualizer"
+          pkg="mbtk" type="pose_distribution_visualizer.py"
+          output="screen" machine="$(arg machine)">
+      <remap from="~input" to="position_estimator/output"/>
+      <rosparam subst_value="true">
+        min_z: 30.0
+        max_z: 32.0
+        publish_rate: 1.0
+        latch: true
+        remove_outliers: true
+        outliers_threshold: 0.01
+        precision: 0.1
+      </rosparam>
+    </node>
+
+    <node name="pose_score_vis"
+          pkg="mbtk" type="pose_score_visualizer.py"
+          output="screen" machine="$(arg machine)">
+      <remap from="~input/class" to="ssd_object_detector/output/class"/>
+      <remap from="~input/pose" to="rect_centroid/output"/>
+      <rosparam>
+        approximate_sync: false
+        queue_size: 100
+        slop: 0.1
+        target_blacklists: [donut, dog, keyboard, car]
+      </rosparam>
+    </node>
+  </group>
+
+  <node name="mbtk_move_base" pkg="mbtk" type="mbtk_move_base.py"
+        output="screen" machine="$(arg machine)">
+  </node>
+</launch>
