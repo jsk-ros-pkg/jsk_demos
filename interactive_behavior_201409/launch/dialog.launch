@@ -36,6 +36,10 @@
     <rosparam subst_value="true">
     </rosparam>
   </node>
+  
+  <node name="preempt_monitor"
+        pkg="interactive_behavior_201409" type="preempt-monitor.l"
+        output="screen"/>
 
   <group if="$(arg run_app_manager)">
     <node pkg="app_manager" type="appmaster" name="appmaster"

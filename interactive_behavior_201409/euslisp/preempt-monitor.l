@@ -9,10 +9,10 @@
 
 (require :pr2-preemptive-interface "package://interactive_behavior_201409/euslisp/pr2-preemptive-interface.l")
 
-(defparameter *preempt-phrases*
-  (list "ちょっと待って"
-        "待って"
-        "ストップ"))
+(defparameter *preempt-phrases* (ros::get-param "/preempt/preempt_phrases"
+                                                (list "ちょっと待って"
+                                                      "待って"
+                                                      "ストップ")))
 (defparameter *app-running-p* nil)
 (defparameter *robot-name* (ros::get-param "/robot/name" "robot"))
 
