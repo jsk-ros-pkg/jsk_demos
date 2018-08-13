@@ -92,10 +92,9 @@
   (let* ((front-name (format nil "~A-front" (string-downcase name)))
          (front-spots (remove-if-not #'(lambda (x) (substringp front-name (string-downcase (send x :name)))) (send scene :spots)))
          (near-pos 10000000000)
-         (robot-pose (if (and (boundp '*ri*) *ri*) (send *ri* :state :worldcoords)))
-         cand-spots near-spot diff-pos)
+         robot-pose cand-spots near-spot diff-pos)
 
-    (ros::ros-debug "~A spots found ~A" (length front-spots) (send-all front-spots :name))
+    (ros::ros-debug "~A spot candidates found ~A" (length front-spots) (send-all front-spots :name))
     ;; 1. find with number suffix
     (dolist (s front-spots)
       (let ((suffix (subseq (send s :name) (+ (search front-name (string-downcase (send s :name)) :from-end t)
@@ -114,7 +113,7 @@
                                                                         (length front-name)))))
                                       front-spots)))
 
-    (ros::ros-debug "filtered: ~A" cand-spots)
+    (ros::ros-info "~A -> ~A" name cand-spots)
 
     (cond
      ((string= (string-downcase name) "start")
@@ -124,10 +123,12 @@
      ((= (length cand-spots) 1)
       (return-from get-spot (car cand-spots)))
      (t
-      (if (null robot-pose)
-          (return-from get-spot (car cand-spots)))
+      (setq robot-pose (if (and (boundp '*ri*) *ri*) (send *ri* :state :worldcoords)))
+      (unless robot-pose
+        (return-from get-spot (car cand-spots)))
       (dolist (spot cand-spots)
         (setq diff-pos (norm (send robot-pose :difference-position spot)))
+        (ros::ros-debug "diff-pos: ~A" diff-pos)
         (when (< diff-pos near-pos)
           (setq near-pos diff-pos near-spot spot)))
       (return-from get-spot near-spot)))))
@@ -139,9 +140,11 @@
                                          (search "-front" (send x :name) :from-end t)))
                              (remove-if-not #'(lambda (x) (substringp "-front" (send x :name)))
                                             (send scene :spots))))
-        spots)
+        spots spot)
     (dolist (name front-names)
-      (push (cons name (get-spot name scene)) spots))
+      (setq spot (get-spot name scene))
+      (when spot
+        (push (cons name spot) spots)))
     spots))
 
 (defun save-start-pose ()
