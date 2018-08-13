@@ -143,6 +143,8 @@
 
   </group>
 
+  <node name="marker_bridge" pkg="interactive_behavior_201409" type="marker_bridge.py" />
+
   <node name="idle_behavior"
         pkg="interactive_behavior_201409" type="idle-behavior.l">
     <rosparam subst_value="true">

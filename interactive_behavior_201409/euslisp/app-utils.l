@@ -78,19 +78,44 @@
       (t t))
     place))
 
+(defun search (subs s &key (from-end))
+  (declare (string subs) (string s))
+  (if (string= subs s) 0
+      (let (j)
+        (dotimes (i (1+ (- (length s) (length subs))))
+          (setq j (if from-end (- (length s) (length subs) i) i))
+          (ros::ros-info "~A ~A ~A" j subs (subseq s j (+ j (length subs))))
+          (when (string= subs (subseq s j (+ j (length subs))))
+            (return-from search j))))))
+
 (defun get-spot (name &optional (scene *scene*))
-  (let* ((front-spots (remove-if-not #'(lambda (x)
-                                         (string= "-front"
-                                                  (subseq (send x :name) (- (length (send x :name))
-                                                                            (length "-front")))))
-                                     (send scene :spots)))
-         (cand-spots (remove-if-not #'(lambda (x)
-                                        (substringp (string-downcase name)
-                                                    (string-downcase (send x :name))))
-                                    front-spots))
-         (robot-pose (send *ri* :state :worldcoords))
+  (let* ((front-name (format nil "~A-front" (string-downcase name)))
+         (front-spots (remove-if-not #'(lambda (x) (substringp front-name (send x :name))) (send scene :spots)))
          (near-pos 10000000000)
-         near-spot diff-pos)
+         (robot-pose (if (and (boundp '*ri*) *ri*) (send *ri* :state :worldcoords)))
+         cand-spots near-spot diff-pos)
+
+    (ros::ros-info "~A spots found ~A" (length front-spots) (send-all front-spots :name))
+    ;; 1. find with number suffix
+    (dolist (s front-spots)
+      (let ((suffix (subseq (send s :name) (+ (search front-name (send s :name) :from-end t)
+                                              (length front-name)))))
+        (when (and (not (null-string-p suffix))
+                   (numberp (read-from-string suffix)))
+          (push (cons (read-from-string suffix) s) cand-spots))))
+    (when cand-spots
+      (sort cand-spots #'>= #'car)
+      (setq cand-spots (list (cdar cand-spots))))
+    ;; 2. find without suffix
+    (unless cand-spots
+      (setq cand-spots (remove-if-not #'(lambda (s) (string= front-name
+                                                             (subseq (send s :name)
+                                                                     (- (length (send s :name))
+                                                                        (length front-name)))))
+                                      front-spots)))
+
+    (ros::ros-info "filtered: ~A" cand-spots)
+
     (cond
      ((string= (string-downcase name) "start")
       (return-from get-spot (load-start-pose)))
@@ -99,6 +124,8 @@
      ((= (length cand-spots) 1)
       (return-from get-spot (car cand-spots)))
      (t
+      (if (null robot-pose)
+          (return-from get-spot (car cand-spots)))
       (dolist (spot cand-spots)
         (setq diff-pos (norm (send robot-pose :difference-position spot)))
         (when (< diff-pos near-pos)

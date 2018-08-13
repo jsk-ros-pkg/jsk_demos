@@ -18,9 +18,12 @@
   <run_depend>jsk_hark_msgs</run_depend>
   <run_depend>jsk_topic_tools</run_depend>
   <run_depend>message_runtime</run_depend>
+  <run_depend>pddl_planner</run_depend>
   <run_depend>people_msgs</run_depend>
   <run_depend>pr2eus</run_depend>
+  <run_depend>respeaker_ros</run_depend>
   <run_depend>roseus</run_depend>
+  <run_depend>roseus_smach</run_depend>
   <run_depend>std_msgs</run_depend>
 
   <export>
