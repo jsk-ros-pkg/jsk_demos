@@ -73,7 +73,7 @@
        ;; on -> onhand
        ((and (eq larm-state :onhand)
              (null (send self :onhand ret 'larm)))
-        ;; unnecessary?
+        (push '(onhand something larm) ret)
         ))
       ;; rarm
       (cond
@@ -88,7 +88,7 @@
        ;; on -> onhand
        ((and (eq rarm-state :onhand)
              (null (send self :onhand ret 'rarm)))
-        ;; unnecessary?
+        (push '(onhand something rarm) ret)
         ))
       ret))
   (:update-goal (init goal) goal)

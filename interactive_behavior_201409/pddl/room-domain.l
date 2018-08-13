@@ -37,13 +37,14 @@
                                (increase (total-cost) (distance ?FROM ?TO))))
            (instance pddl-action :init
                      :name "identify-object"
-                     :parameters '((?OBJ item) (?ARM arm))
+                     :parameters '((?OBJ item) (?ARM arm) (?AT spot))
                      :precondition '((ONHAND SOMETHING ?ARM))
                      :effect '((ONHAND ?OBJ ?ARM)
-                               (NOT (ONHAND SOMETHING ?ARM))))
+                               (NOT (ONHAND SOMETHING ?ARM))
+                               (NOT (ON ?OBJ ?AT))))
            (instance pddl-action :init
                      :name "identify-object_f"
-                     :parameters '((?OBJ item) (?ARM arm))
+                     :parameters '((?OBJ item) (?ARM arm) (?AT spot))
                      :precondition '((ONHAND SOMETHING ?ARM))
                      :effect '((ONHAND SOMETHING-ELSE ?ARM)
                                (NOT (ONHAND SOMETHING ?ARM))))

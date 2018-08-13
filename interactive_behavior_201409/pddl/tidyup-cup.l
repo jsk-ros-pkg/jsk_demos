@@ -13,7 +13,12 @@
                               (= (total-cost) 0))
                       :goal '((OR (ON CUP KITCHEN) (ON CUP DISHWASHER)))
                       ))
-  (setq *sm* (plan-task *domain* *problem* :debug debug)))
+  (setq *sm* (plan-task *domain* *problem* :debug debug))
+  (setq *insp* (instance state-machine-inspector :init *sm*))
+  (send *sm* :reset-state)
+  (send *insp* :publish-structure)
+  (send *insp* :publish-all-status)
+  *sm*)
 
 (defun run (&optional debug)
   (plan debug)
