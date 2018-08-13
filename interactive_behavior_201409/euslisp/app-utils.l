@@ -132,6 +132,18 @@
           (setq near-pos diff-pos near-spot spot)))
       (return-from get-spot near-spot)))))
 
+(defun get-all-spots (&optional (scene *scene*))
+  (let ((front-names (mapcar #'(lambda (x)
+                                 (subseq (send x :name)
+                                         (1+ (or (search "/" (send x :name) :from-end t) -1))
+                                         (search "-front" (send x :name) :from-end t)))
+                             (remove-if-not #'(lambda (x) (substringp "-front" (send x :name)))
+                                            (send scene :spots))))
+        spots)
+    (dolist (name front-names)
+      (push (cons name (get-spot name scene)) spots))
+    spots))
+
 (defun save-start-pose ()
   (let ((cur-cds (send *ri* :state :worldcoords))
         vec)
