@@ -148,7 +148,8 @@
   :slots (available-labels))
 (defmethod episodic-object-updater
   (:init ()
-   (setq available-labels (list "cup" "bottle" "person" "keyboard" "laptop")))
+   (setq available-labels (list "cup" "bottle" "person" "keyboard" "laptop"))
+   (send-super :init))
   (:start () t)
   (:stop () t)
   (:wait-for-ready (&optional timeout) t)
