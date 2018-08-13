@@ -1,18 +1,26 @@
 <launch>
+  <arg name="use_tabletop" default="true"/>
+  <arg name="use_ssd" default="true"/>
+  <arg name="use_visualizer" default="false"/>
+
   <arg name="machine" default="external"/>
 
   <!-- pick / place object -->
-  <include file="$(find jsk_2017_12_pr2_coe)/launch/tabletop.launch"/>
+  <include file="$(find jsk_2017_12_pr2_coe)/launch/tabletop.launch"
+           if="$(arg use_tabletop)">
+    <arg name="machine" value="$(arg machine)"/>
+  </include>
 
   <!-- find object -->
-  <include file="$(find mbtk)/launch/ssd.launch">
+  <include file="$(find mbtk)/launch/ssd.launch"
+           if="$(arg use_ssd)">
     <arg name="machine" value="$(arg machine)"/>
     <arg name="record_result" value="false"/>
     <arg name="camera" value="kinect_head_external"/>
   </include>
 
   <!-- lifelog -->
-  <group ns="ssd">
+  <group ns="ssd" if="$(arg use_ssd)">
     <node name="position_estimator"
           pkg="mbtk" type="position_estimator.py"
           output="screen" machine="$(arg machine)">
@@ -25,7 +33,8 @@
 
     <node name="pose_distribution_visualizer"
           pkg="mbtk" type="pose_distribution_visualizer.py"
-          output="screen" machine="$(arg machine)">
+          output="screen" machine="$(arg machine)"
+          if="$(arg use_visualizer)">
       <remap from="~input" to="position_estimator/output"/>
       <rosparam subst_value="true">
         min_z: 30.0
@@ -40,7 +49,8 @@
 
     <node name="pose_score_vis"
           pkg="mbtk" type="pose_score_visualizer.py"
-          output="screen" machine="$(arg machine)">
+          output="screen" machine="$(arg machine)"
+          if="$(arg use_visualizer)">
       <remap from="~input/class" to="ssd_object_detector/output/class"/>
       <remap from="~input/pose" to="rect_centroid/output"/>
       <rosparam>
