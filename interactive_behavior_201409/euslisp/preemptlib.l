@@ -377,6 +377,7 @@ This function also supports resume from preempted tasks"
   :slots ())
 
 (defmethod condition-updater
+  (:init ())
   (:name () (send (class self) :name))
   (:start ()
     (error "Not implemented"))
@@ -409,7 +410,10 @@ This function also supports resume from preempted tasks"
   (unless (subclassp cls condition-updater)
     (error "~A is not a class of condition-updater" cls))
   (when (get-updater cls)
-    (error "~A is already added" cls))
+    (ros::ros-info "~A is already added. Replacing to new instance" cls)
+    (send (get-updater cls) :stop)
+    (setq *condition-updaters*
+          (remove (get-updater cls) *condition-updaters*)))
   (push (instance* cls :init args) *condition-updaters*)
   t)
 
