@@ -101,15 +101,15 @@
   :slots (scene))
 (defmethod at-updater
   (:init (&optional (scn))
-    (if scn
-        (setq scene scn)
-      (if (and (boundp '*scene*) *scene*)
-          (setq scene *scene*)
-        (error "no scene")))
-    (unless (and (boundp '*ri*) *ri*)
-      (error "*ri* is not initialized"))
+    (setq scene scn)
     (send-super :init))
-  (:start () t)
+  (:start ()
+    (when (and (null scene) (boundp '*scene*) *scene*)
+      (setq scene *scene*))
+    (unless scene
+      (error "scene is not initialized"))
+    (unless (and (boundp '*ri*) *ri*)
+      (error "*ri* is not initialized")))
   (:stop () t)
   (:wait-for-ready (&optional timeout) t)
   (:update-init (init goal)
@@ -123,13 +123,19 @@
       (setq nearest (car spots)
             dist (norm (send robot-pose :difference-position (cdr nearest))))
       (ros::ros-info "dist to ~A: ~A" (car nearest) dist)
-      (unless (< dist 1000.0)
+      (unless (< dist 400.0)
         (ros::ros-info "no near spot")
         (return-from :update-init init))
+      (ros::ros-info "the robot is near ~A" (car nearest))
+      ;; 0. trim compound words
+      (setq nearest
+          (if (search "-" (car nearest))
+              (subseq (car nearest) (1+ (search "-" (car nearest) :from-end t)))
+              (car nearest)))
       ;; 1. remove at predicate
       (setq ret (remove-if #'(lambda (x) (eq (car x) 'at)) ret))
       ;; 2. insert at
-      (push `(at ,(car nearest)) ret)
+      (push `(at ,(read-from-string nearest)) ret)
       ret))
   (:update-goal (init goal) goal)
 ) ;; at-updater
