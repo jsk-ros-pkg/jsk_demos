@@ -2,23 +2,27 @@
 ;; room-domain.l
 ;; Author: Yuki Furuta <furushchev@jsk.imi.i.u-tokyo.ac.jp>
 
+(provide :room-domain)
+
 (require :preemptlib "package://interactive_behavior_201409/euslisp/preemptlib.l")
 
 (defun make-domain ()
-  (let ((domain (instance pddl-domain :init :name 'tidyup-domain))
+  (let ((domain (instance pddl-domain :init :name 'room-domain))
         actions)
     (send domain :requirements
           '(:typing :action-costs)
           )
-    (send domain :types '(item spot arm))
+    (send domain :types '(item spot arm person))
+    (send domain :constants '(something something-else - item someone - person))
     (send domain :predicates
           '((ON ?OBJ - item ?AT - spot)
+            (SEE ?WHO - person ?AT - spot)
             (ONHAND ?OBJ - item ?ARM - arm)
             (UNAVAILABLE ?AT - spot)
             (OCCUPIED ?OBJ - item ?AT - spot)
             (OPEN ?AT - spot)
             (ASKED ?AT - spot)
-            (DELIVERED ?OBJ - item ?AT - spot)
+            (DELIVERED ?OBJ - item ?WHO - person)
             (AT ?AT - spot)))
     (send domain :functions '((total-cost) (distance ?FROM ?TO) (manip-cost ?OBJ)))
     (setq actions
@@ -31,6 +35,18 @@
                      :effect '((NOT (AT ?FROM))
                                (AT ?TO)
                                (increase (total-cost) (distance ?FROM ?TO))))
+           (instance pddl-action :init
+                     :name "identify-object"
+                     :parameters '((?OBJ item) (?ARM arm))
+                     :precondition '((ONHAND SOMETHING ?ARM))
+                     :effect '((ONHAND ?OBJ ?ARM)
+                               (NOT (ONHAND SOMETHING ?ARM))))
+           (instance pddl-action :init
+                     :name "identify-object_f"
+                     :parameters '((?OBJ item) (?ARM arm))
+                     :precondition '((ONHAND SOMETHING ?ARM))
+                     :effect '((ONHAND SOMETHING-ELSE ?ARM)
+                               (NOT (ONHAND SOMETHING ?ARM))))
            (instance pddl-action :init
                      :name "pick"
                      :parameters '((?OBJ item) (?ARM arm) (?AT spot))
@@ -89,19 +105,38 @@
                      :effect '((UNAVAILABLE ?AT)))
            (instance pddl-action :init
                      :name "deliver"
-                     :parameters '((?OBJ item) (?ARM arm) (?AT spot))
-                     :precondition '((onhand ?OBJ ?ARM)
-                                     (at ?AT)
+                     :parameters '((?OBJ item) (?ARM arm) (?WHO person) (?AT spot))
+                     :precondition '((ONHAND ?OBJ ?ARM)
+                                     (AT ?AT)
+                                     (SEE ?WHO ?AT)
                                      (NOT (UNAVAILABLE ?AT)))
                      :effect '((NOT (ONHAND ?OBJ ?ARM))
-                               (DELIVERED ?OBJ ?AT)))
+                               (DELIVERED ?OBJ ?WHO)
+                               (increase (total-cost) (manip-cost ?OBJ))))
+           (instance pddl-action :init
+                     :name "deliver_f"
+                     :parameters '((?OBJ item) (?ARM arm) (?WHO person) (?AT spot))
+                     :precondition '((ONHAND ?OBJ ?ARM)
+                                     (AT ?AT)
+                                     (SEE ?WHO ?AT)
+                                     (NOT (UNAVAILABLE ?AT)))
+                     :effect '((NOT (SEE ?WHO ?AT))))
            (instance pddl-action :init
                      :name "ask"
-                     :parameters '((?AT spot))
+                     :parameters '((?WHO person) (?AT spot))
                      :precondition '((NOT (ASKED ?AT))
                                      (AT ?AT)
+                                     (SEE ?WHO ?AT)
                                      (NOT (UNAVAILABLE ?AT)))
                      :effect '((ASKED ?AT)))
+           (instance pddl-action :init
+                     :name "ask_f"
+                     :parameters '((?WHO person) (?AT spot))
+                     :precondition '((NOT (ASKED ?AT))
+                                     (AT ?AT)
+                                     (SEE ?WHO ?AT)
+                                     (NOT (UNAVAILABLE ?AT)))
+                     :effect '((NOT (SEE ?WHO ?AT))))
            ))
     (dolist (ac actions)
       (send domain :add :action ac))
@@ -144,15 +179,15 @@
 
 (defun make-problem (&key init goal)
   (let ((problem (instance pddl-problem :init
-                           :name 'tidyup-cup
-                           :domain 'tidyup-domain))
+                           :name 'house-keeping
+                           :domain 'room-domain))
         (spots (make-spot-symbols
                      `((START ,(float-vector 0 0 0))
                        (TABLE ,(float-vector 0 5 0))
                        (FRIDGE ,(float-vector 10 5 0) :unavailable)
                        (DISHWASHER ,(float-vector 0 10 0) :unavailable)
                        (KITCHEN ,(float-vector 10 0 0))
-                       (73A2 ,(float-vector -10 -10 0) :unavailable)
+                       (room73a2 ,(float-vector -10 -10 0) :unavailable)
                        (COUNTER ,(float-vector 5 0 0)))))
         (objs (make-object-symbols
                '(CUP BOTTLE))))
@@ -165,11 +200,13 @@
     (send problem :initial-condition
           (append (cdr (assoc :initial-condition objs))
                   (append (cdr (assoc :initial-condition spots)) init)))
+    (send problem :initial-condition
+          (append (send problem :initial-condition)
+                  '((= (manip-cost SOMETHING) 1)
+                    (= (manip-cost SOMETHING-ELSE) 1))))
     ;;
     (send problem :goal-condition
           (append (cdr (assoc :goal-condition objs))
                   (append (cdr (assoc :goal-condition spots)) goal)))
     ;;
     problem))
-
-(provide :tidyup-domain)

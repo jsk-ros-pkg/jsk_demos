@@ -52,12 +52,16 @@
     (close-dishwasher userdata))
    (t t)))
 
+(defaction identify-object (obj arm &optional userdata)
+  ;; TODO: ask the in-hand object to person
+  t)
+
 (defaction deliver (obj arm spot &optional userdata)
-  ;; TODO
+  ;; TODO: pass to human
   t)
 
 (defaction ask (spot &optional userdata)
-  ;; TODO
+  ;; TODO: Q&A
   t)
 
 
