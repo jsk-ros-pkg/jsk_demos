@@ -377,7 +377,6 @@ This function also supports resume from preempted tasks"
   :slots ())
 
 (defmethod condition-updater
-  (:init ())
   (:name () (send (class self) :name))
   (:start ()
     (error "Not implemented"))
@@ -385,9 +384,9 @@ This function also supports resume from preempted tasks"
     (error "Not implemented"))
   (:wait-for-ready (&optional timeout)
     (error "Not implemented"))
-  (:update-init (st)
+  (:update-init (init goal)
     (error "Not Implemented"))
-  (:update-goal (st)
+  (:update-goal (init goal)
     (error "Not Implemented"))
   (:onhand (st arm)
     (mapcar #'cadr
@@ -427,7 +426,7 @@ This function also supports resume from preempted tasks"
     (ros::ros-info "update init")
     (dolist (updater *condition-updaters*)
       (setq prev-init (copy-object upd-init)
-            upd-init (send updater :update-init upd-init))
+            upd-init (send updater :update-init upd-init upd-goal))
       (ros::ros-info "[~A] ~A -> ~A"
                      (send updater :name) prev-init upd-init))
     ;;
@@ -435,7 +434,7 @@ This function also supports resume from preempted tasks"
       (ros::ros-info "update goal")
       (dolist (updater *condition-updaters*)
         (setq prev-goal (copy-object upd-goal)
-              upd-goal (send updater :update-goal upd-goal))
+              upd-goal (send updater :update-goal upd-init upd-goal))
         (ros::ros-info "[~A] ~A -> ~A"
                        (send updater :name) prev-goal upd-goal)))
     ;;

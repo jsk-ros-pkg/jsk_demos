@@ -57,8 +57,8 @@
         (case arm
           (:larm (setq larm-state :not-onhand))
           (:rarm (setq rarm-state :not-onhand)))))))
-  (:update-init (st)
-    (let ((ret (copy-object st))
+  (:update-init (init goal)
+    (let ((ret (copy-object init))
           obj)
       ;; larm
       (cond
@@ -68,7 +68,7 @@
         (setq ret (mapcar #'(lambda (x)
                               (if (and (eq (car x) 'onhand)
                                        (eq (caddr x) 'larm))
-                                  `(on ,(cadr x) ,(send self :at st))
+                                  `(on ,(cadr x) ,(send self :at init))
                                 x)) ret)))
        ;; on -> onhand
        ((and (eq larm-state :onhand)
@@ -83,7 +83,7 @@
         (setq ret (mapcar #'(lambda (x)
                               (if (and (eq (car x) 'onhand)
                                        (eq (caddr x) 'rarm))
-                                  `(on ,(cadr x) ,(send self :at st))
+                                  `(on ,(cadr x) ,(send self :at init))
                                 x)) ret)))
        ;; on -> onhand
        ((and (eq rarm-state :onhand)
@@ -91,7 +91,7 @@
         ;; unnecessary?
         ))
       ret))
-  (:update-goal (st) st)
+  (:update-goal (init goal) goal)
 ) ;; onhand-updater
 (add-updater onhand-updater)
 
@@ -112,43 +112,42 @@
   (:start () t)
   (:stop () t)
   (:wait-for-ready (&optional timeout) t)
-  (:update-init (st)
-    (let ((spots (remove-if-not #'(lambda (x)
-                                    (substringp "-front" x))
-                                (send scene :spots)))
+  (:update-init (init goal)
+    (let ((spots (get-all-spots scene))
           (robot-pose (send *ri* :state :worldcoords))
-          nearest spot)
+          (ret (copy-object init))
+          nearest dist)
       (sort spots #'<=
             #'(lambda (s)
-                (norm (send robot-pose :difference-position s))))
-      (setq nearest (car spots))
-      (ros::ros-info "dist to ~A: ~A" (send nearest :name)
-                     (norm (send robot-pose :difference-position nearest)))
-      (if (< (norm (send robot-pose :difference-position nearest))
-             1000.0)
-          ;; TODO
-          )
-
-    (error "Not Implemented"))
-  (:update-goal (st)
-    (error "Not Implemented"))
+                (norm (send robot-pose :difference-position (cdr s)))))
+      (setq nearest (car spots)
+            dist (norm (send robot-pose :difference-position (cdr nearest))))
+      (ros::ros-info "dist to ~A: ~A" (car nearest) dist)
+      (unless (< dist 1000.0)
+        (ros::ros-info "no near spot")
+        (return-from :update-init init))
+      ;; 1. remove at predicate
+      (setq ret (remove-if #'(lambda (x) (eq (car x) 'at)) ret))
+      ;; 2. insert at
+      (push `(at ,(car nearest)) ret)
+      ret))
+  (:update-goal (init goal) goal)
 ) ;; at-updater
 (add-updater at-updater)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(ros::load-ros-manifest "mbtk")
 (defclass episodic-object-updater
   :super condition-updater
-  :slots ())
+  :slots (available-labels))
 (defmethod episodic-object-updater
-  (:init ())
-  (:start ()
-    (error "Not implemented"))
-  (:stop ()
-    (error "Not implemented"))
-  (:wait-for-ready (&optional timeout)
-    (error "Not implemented"))
-  (:update-init (st)
+  (:init ()
+   (setq available-labels (list "cup" "bottle" "person" "keyboard" "laptop")))
+  (:start () t)
+  (:stop () t)
+  (:wait-for-ready (&optional timeout) t)
+  (:update-init (init goal)
     (error "Not Implemented"))
-  (:update-goal (st)
+  (:update-goal (init goal)
     (error "Not Implemented")))
 (add-updater episodic-object-updater)
