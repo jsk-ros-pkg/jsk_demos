@@ -15,7 +15,7 @@ from speech_recognition_msgs.msg import SpeechRecognitionCandidates
 
 
 HISTORY = os.path.expanduser("~/.speech_history")
-PROMPT = "{talker}: "
+PROMPT = "{talker:<6}: "
 
 
 def speech_cb(msg):
@@ -25,7 +25,7 @@ def speech_cb(msg):
         return
     print("\r\033[K", end="")
     print(PROMPT.format(talker="robot"), msg.arg)
-    print(PROMPT.format(talker="you  "), readline.get_line_buffer(), sep="", end="")
+    print(PROMPT.format(talker="you"), readline.get_line_buffer(), sep="", end="")
     sys.stdout.flush()
 
 
@@ -51,7 +51,7 @@ def command():
     pub = rospy.Publisher("/speech_to_text", SpeechRecognitionCandidates, queue_size=1)
     msg = SpeechRecognitionCandidates()
     while not rospy.is_shutdown():
-        text = raw_input(PROMPT.format(talker="you  "))
+        text = raw_input(PROMPT.format(talker="you"))
         if not text:
             print("You've logged out")
             rospy.signal_shutdown("shutdown")
