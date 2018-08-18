@@ -28,12 +28,17 @@
 
 
 (defaction pick (obj arm spot &optional userdata)
+  (ros::ros-info "(pick ~A ~A ~A)" obj arm spot)
+  (set-alist :arm (intern (string-upcase arm) *keyword-package*) userdata)
   (cond
     (t
-     (find-tabletop-object userdata)
+     (unless (find-tabletop-object userdata)
+       (return-from pick nil))
      (pick-tabletop-object userdata))))
 
 (defaction place (obj arm spot &optional userdata)
+  (ros::ros-info "(place ~A ~A ~A)" obj arm spot)
+  (set-alist :arm (intern (string-upcase arm) *keyword-package*) userdata)
   (cond
    ((eq spot 'dishwasher) ;; coe
     (put-into-dishwasher userdata))
@@ -41,12 +46,16 @@
     (place-object userdata))))
 
 (defaction open-door (arm spot &optional userdata)
+  (ros::ros-info "(open-door ~A ~A)" arm spot)
+  (set-alist :arm (intern (string-upcase arm) *keyword-package*) userdata)
   (cond
    ((eq spot 'dishwasher) ;; coe
     (open-dishwasher userdata))
    (t t)))
 
 (defaction close-door (arm spot &optional userdata)
+  (ros::ros-info "(close-door ~A ~A)" arm spot)
+  (set-alist :arm (intern (string-upcase arm) *keyword-package*) userdata)
   (cond
    ((eq spot 'dishwasher)
     (close-dishwasher userdata))
