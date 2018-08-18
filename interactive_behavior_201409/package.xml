@@ -24,6 +24,7 @@
   <run_depend>respeaker_ros</run_depend>
   <run_depend>roseus</run_depend>
   <run_depend>roseus_smach</run_depend>
+  <run_depend>roseus_mongo</run_depend>
   <run_depend>std_msgs</run_depend>
 
   <run_depend>detect_cans_in_fridge_201202</run_depend>

@@ -9,6 +9,7 @@
 (require :pddl-result-graph "package://pddl_planner/src/pddl-result-graph.l")
 (require :pddl2smach "package://roseus_smach/src/pddl2smach.l")
 (require :state-machine-ros "package://roseus_smach/src/state-machine-ros.l")
+(require :mongo-client "package://roseus_mongo/euslisp/mongo-client.l")
 
 ;; parameters
 (defparameter *preempt* t
@@ -311,7 +312,7 @@ Example: (defpreemptrobot pr2) creates `pr2-preempt-interface` and `pr2-init`"
     (unique (append cur upd))
     ))
 
-(defun plan-task (domain problem &key (debug t) (failed-nodes))
+(defun plan-task (domain problem &key (debug) (failed-nodes))
   "Plan action sequence with failure recovery, given domain and problem using PDDL solver.
 This function also supports resume from preempted tasks"
   (let ((prob (copy-object problem))
@@ -359,13 +360,13 @@ This function also supports resume from preempted tasks"
     (ros::ros-info "to goal ~A" (pformat (send prob :goal-condition)))
     ;;
     ;; send domain / problem to pddl solver
-    (setq graph (pddl-plan-to-graph nil
+    (setq graph (cached-pddl-plan-to-graph nil
                                     :domain domain :problem prob
                                     :failed-nodes failed-nodes
                                     :readable nil
                                     :debug debug))
+    (send graph :write-to-pdf "/tmp/graph.pdf" nil "hoge")
     (when debug
-      (send graph :write-to-pdf "/tmp/graph.pdf" nil "hoge")
       (unix:system "xdg-open /tmp/graph.pdf"))
     ;;
     (setq sm (send (pddl-graph-to-smach graph
@@ -376,6 +377,61 @@ This function also supports resume from preempted tasks"
                 (send prob :goal-condition)))
     sm))
 
+;;
+;; cached planning
+;;
+(defun sort-sexp (sexp)
+  (cond
+    ((atom sexp) sexp)
+    ((every #'atom sexp)
+     (sort sexp #'<= #'sxhash))
+    (t
+     (sort (mapcar #'(lambda (s) (sort-sexp s)) sexp) #'<= #'sxhash))))
+
+(defun cached-pddl-plan-to-graph (goal-condition
+                                  &key (domain *domain*) (problem *problem*)
+                                    (failed-nodes *failed-nodes*) (readable t) (debug) (timeout 0)
+                                    (use-cache t))
+  (let ((mongo::*mongo-collection* "pddl_planner_cache")
+        (domain-sexp (send domain :domain-sexp))
+        (problem-sexp (send problem :problem-sexp))
+        result msg msg-id)
+    (when use-cache
+      (setq result (mongo::query roseus::StringStamped
+                                 :meta `((:domain . ,(sxhash (sort-sexp domain-sexp)))
+                                         (:problem . ,(sxhash (sort-sexp problem-sexp)))
+                                         (:failed-nodes . ,(sxhash (sort-sexp failed-nodes)))
+                                         (:readable . ,readable))
+                                 :sort '((:inserted_at . -1))
+                                 :single t
+                                 :msg-only t))
+      (when result
+        (setq result (read-from-string (send (car result) :data)))))
+    (when result
+      (ros::ros-info "loaded from cache")
+      (return-from cached-pddl-plan-to-graph result))
+    (setq result (pddl-plan-to-graph goal-condition
+                                     :domain domain
+                                     :problem problem
+                                     :failed-nodes failed-nodes
+                                     :readable readable
+                                     :debug debug
+                                     :timeout timeout))
+    (when result
+      (setq msg (instance roseus::StringStamped :init))
+      (send msg :header :stamp (ros::time-now))
+      (send msg :data (with-output-to-string (f) (dump-structure f result)))
+      (setq msg-id (mongo::insert msg
+                                  :meta `((:domain . ,(sxhash (sort-sexp domain-sexp)))
+                                          (:problem . ,(sxhash (sort-sexp problem-sexp)))
+                                          (:failed-nodes . ,(sxhash (sort-sexp failed-nodes)))
+                                          (:readable . ,readable))))
+      (ros::ros-info "cached plan: ~A" msg-id))
+    result))
+
+;;
+;; condition updater
+;;
 (defclass condition-updater
   :super propertied-object
   :slots ())
