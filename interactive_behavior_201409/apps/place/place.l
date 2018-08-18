@@ -18,10 +18,10 @@
   *sm*)
 
 (defun main ()
+  (pr2-init)
   (let* ((place (get-arg :place))
          (object (get-arg :object))
          (sm (plan-place object place)))
-    (pr2-init)
     (cond
       (sm
        (exec-preemptive-task sm))
