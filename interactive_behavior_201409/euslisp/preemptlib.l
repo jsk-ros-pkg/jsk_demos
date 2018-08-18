@@ -48,15 +48,19 @@
   "check / raise preemption signal on form block"
   (let ((ret (gensym "PREEMPT")) (val (gensym "PREEMPT")))
     `(let ((,ret ,@form) ,val)
-       (when (and (memq :preempt-barrier (sys::list-all-catchers))
-                  (or (if (atom ,ret) (null ,ret) (every #'null ,ret))
-                      (ros::has-param *preempt-param-key*)))
-         (setq ,val (ros::get-param *preempt-param-key*))
-         (throw :preempt-barrier
-           (if (stringp ,val)
-               (intern (string-upcase ,val) *keyword-package*) ,val)))
+       (when (memq :preempt-barrier (sys::list-all-catchers))
+         (cond ((ros::has-param *preempt-param-key*)
+                (setq ,val (ros::get-param *preempt-param-key*))
+                (throw :preempt-barrier
+                  (if (stringp ,val)
+                      (intern (string-upcase ,val) *keyword-package*) ,val)))
+               ((and (atom ,ret) (null ,ret))
+                (warn "atom: ~A~%" ,ret)
+                (throw :preempt-barrier *preempt-failure-value*))
+               ((and (listp ,ret) (every #'null ,ret))
+                (warn "listp: ~A~%" ,ret)
+                (throw :preempt-barrier *preempt-failure-value*))))
        ,ret)))
-
 
 (defun preempt (&optional (reason :preempt))
   (ros::set-param *preempt-param-key* reason)
