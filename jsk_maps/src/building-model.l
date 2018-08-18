@@ -36,8 +36,11 @@
   (:floors
    (&optional _flos)
    (if _flos
-       (setq objs (mapcan #'(lambda(x)(send self :find-object x)) _flos))
-     (remove-if-not #'(lambda(x)(derivedp x nav-scene-model)) objs)))
+       (setq objs (mapcan #'(lambda(x)(send self :find-object x)) _flos)))
+   (setq _flos (remove-if-not #'(lambda(x)(derivedp x nav-scene-model)) objs))
+   (sort _flos #'(lambda (x y) (<= (elt (send x :worldpos) 2)
+                                   (elt (send y :worldpos) 2))))
+   _flos)
   (:floor<
    (name1 name2)
    (let ((p1 (find name1 objs :test #'equal :key #'(lambda(x)(send x :name))))
@@ -45,16 +48,20 @@
      (< (elt (send p1 :worldpos) 2)
 	(elt (send p2 :worldpos) 2))))
   (:current-floor
-   (pos &optional (dist 1000))
-   (if (derivedp pos coordinates) (setq pos (send pos :worldpos))) ;; for coordinates
-   (let ((colbox (make-cube dist dist dist)))
-     (send colbox :translate pos)
-     (dolist (floor objs)
-       (when (derivedp floor nav-scene-model)
-	 (setq res (car (pqp-collision-distance colbox (send floor :map))))
-	 (if (equal 0.0 res)
-	     (return-from :current-floor (send floor :name)))
-	 ))))
+   (pos)
+   (cond
+    ((derivedp pos cascaded-link) (setq pos (send pos :centroid)))
+    ((derivedp pos coordinates) (setq pos (send pos :worldpos))))
+   (let ((cur-floor (car (send self :floors))))
+     (if (< (elt pos 2) (elt (send cur-floor :worldpos) 2))
+         (return-from :current-floor nil)
+       (dolist (nxt-floor (cdr (send self :floors)))
+         (when (< (elt (send cur-floor :worldpos) 2)
+                  (elt pos 2)
+                  (elt (send nxt-floor :worldpos) 2))
+           (return-from :current-floor (send cur-floor :name)))
+         (setq cur-floor nxt-floor)))
+     (send cur-floor :name)))
   )
 
 ;; rooms
