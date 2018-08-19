@@ -2,6 +2,11 @@
 ;; pr2-actionlib.l
 ;; Author: Yuki Furuta <furushchev@jsk.imi.i.u-tokyo.ac.jp>
 
+(warn "CAUTION!! This file is deprecated!"
+      " Use package://interactive_behavior_201409/pddl/pr2-actionlib.l~%")
+(exit)
+
+
 (require :preemptlib "package://interactive_behavior_201409/euslisp/preemptlib.l")
 (require :pr2-interface "package://pr2eus/pr2-interface.l")
 
