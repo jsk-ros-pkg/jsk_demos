@@ -316,7 +316,7 @@ Example: (defpreemptrobot pr2) creates `pr2-preempt-interface` and `pr2-init`"
   "Plan action sequence with failure recovery, given domain and problem using PDDL solver.
 This function also supports resume from preempted tasks"
   (let ((prob (copy-object problem))
-        graph sm)
+        gr sm)
     ;;
     ;; count failed nodes if not specified
     (unless failed-nodes
@@ -360,17 +360,17 @@ This function also supports resume from preempted tasks"
     (ros::ros-info "to goal ~A" (pformat (send prob :goal-condition)))
     ;;
     ;; send domain / problem to pddl solver
-    (setq graph (cached-pddl-plan-to-graph nil
+    (setq gr (cached-pddl-plan-to-graph nil
                                     :domain domain :problem prob
                                     :failed-nodes failed-nodes
                                     :readable nil
                                     :debug debug))
-    (send graph :write-to-pdf "/tmp/graph.pdf" nil "hoge")
+    (send gr :write-to-pdf "/tmp/graph.pdf" nil "hoge")
     (when debug
+      (setq *graph* gr)
       (unix:system "xdg-open /tmp/graph.pdf"))
     ;;
-    (setq sm (send (pddl-graph-to-smach graph
-                                        :add-self-return-failure-path nil)
+    (setq sm (send (pddl-graph-to-smach gr :add-self-return-failure-path nil)
                    :state-machine))
     (setf (get sm :pddl-state)
           (cons (send prob :initial-condition)
@@ -395,39 +395,39 @@ This function also supports resume from preempted tasks"
   (let ((mongo::*mongo-collection* "pddl_planner_cache")
         (domain-sexp (send domain :domain-sexp))
         (problem-sexp (send problem :problem-sexp))
-        result msg msg-id)
+        gr msg msg-id)
     (when use-cache
-      (setq result (mongo::query roseus::StringStamped
-                                 :meta `((:domain . ,(sxhash (sort-sexp domain-sexp)))
-                                         (:problem . ,(sxhash (sort-sexp problem-sexp)))
-                                         (:failed-nodes . ,(sxhash (sort-sexp failed-nodes)))
-                                         (:readable . ,readable))
-                                 :sort '((:inserted_at . -1))
-                                 :single t
-                                 :msg-only t))
-      (when result
-        (setq result (read-from-string (send (car result) :data)))))
-    (when result
+      (setq gr (mongo::query roseus::StringStamped
+                             :meta `((:domain . ,(sxhash (sort-sexp domain-sexp)))
+                                     (:problem . ,(sxhash (sort-sexp problem-sexp)))
+                                     (:failed-nodes . ,(sxhash (sort-sexp failed-nodes)))
+                                     (:readable . ,readable))
+                             :sort '((:inserted_at . -1))
+                             :single t
+                             :msg-only t))
+      (when gr
+        (setq gr (read-from-string (send (car gr) :data)))))
+    (when gr
       (ros::ros-info "loaded from cache")
-      (return-from cached-pddl-plan-to-graph result))
-    (setq result (pddl-plan-to-graph goal-condition
-                                     :domain domain
-                                     :problem problem
-                                     :failed-nodes failed-nodes
-                                     :readable readable
-                                     :debug debug
-                                     :timeout timeout))
-    (when result
+      (return-from cached-pddl-plan-to-graph gr))
+    (setq gr (pddl-plan-to-graph goal-condition
+                                 :domain domain
+                                 :problem problem
+                                 :failed-nodes failed-nodes
+                                 :readable readable
+                                 :debug debug
+                                 :timeout timeout))
+    (when (and gr (send gr :nodes))
       (setq msg (instance roseus::StringStamped :init))
       (send msg :header :stamp (ros::time-now))
-      (send msg :data (with-output-to-string (f) (dump-structure f result)))
+      (send msg :data (with-output-to-string (f) (dump-structure f gr)))
       (setq msg-id (mongo::insert msg
                                   :meta `((:domain . ,(sxhash (sort-sexp domain-sexp)))
                                           (:problem . ,(sxhash (sort-sexp problem-sexp)))
                                           (:failed-nodes . ,(sxhash (sort-sexp failed-nodes)))
                                           (:readable . ,readable))))
       (ros::ros-info "cached plan: ~A" msg-id))
-    result))
+    gr))
 
 ;;
 ;; condition updater
