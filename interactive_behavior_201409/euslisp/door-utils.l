@@ -293,7 +293,7 @@
     ;; adjust base position according with handle position
 
     )))
-
+#|
 (defun open-door ()
   (let (handle)
     (while (ros::ok)
@@ -303,6 +303,33 @@
     (grasp-handle :larm handle)
     (unlatch-door :larm :pull 50)
     (pull-door 600)))
+|#
+
+(defun open-push-door (&optional userdata)
+  (let* ((arm (cdr (assoc :arm userdata)))
+         (other-arm (if (eq arm :rarm) :larm :rarm))
+         door-handle handle-found-p)
+    (dotimes (i 5)
+      (setq door-handle (find-handle arm))
+      (if (null door-handle)
+          (ros::ros-error "failed to find door handle")
+          (when (go-to-handle door-handle)
+            (setq handle-found-p t)
+            (return))))
+    (when handle-found-p
+      (knock-door door-handle other-arm)
+      (speak-jp "失礼します")
+      (unless (grasp-handle arm door-handle)
+        (speak-jp "ハンドルを掴んでない気がします。")
+        (setq handle-found-p nil)))
+    (when handle-found-p
+      (unlatch-door arm :push 50)
+      (send *ri* :go-pos-unsafe 0.1 0 0)
+      (send *ri* :stop-grasp arm))
+    (unless handle-found-p
+      (speak-jp "あれ、ドアノックしてないけど。まあいいか。"))
+    t))
+
 
 (provide :door-utils)
 (warn "~%")

@@ -9,8 +9,21 @@
 ;;
 (require :pr2-action "package://jsk_demo_common/euslisp/pr2-action.l")
 (require :coe-actionlib "package://jsk_2017_12_pr2_coe/euslisp/coe-actionlib.l")
+(require :door-utils "package://interactive_behavior_201409/euslisp/door-utils.l")
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;; Action implementations
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defparameter *speech-msg* nil)
+
+(defun speech-callback (msg)
+  (setq *speech-msg* (car (send msg :transcript))))
 
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;; Action definitions
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defaction move-to (from-place to-place &optional userdata)
   (ros::ros-info "(move-to ~A ~A)" from-place to-place)
   (save-start-pose)
@@ -51,7 +64,8 @@
   (cond
    ((eq spot 'dishwasher) ;; coe
     (open-dishwasher userdata))
-   (t t)))
+   (t
+    (open-push-door userdata))))
 
 (defaction close-door (arm spot &optional userdata)
   (ros::ros-info "(close-door ~A ~A)" arm spot)
@@ -66,12 +80,28 @@
   t)
 
 (defaction deliver (obj arm person spot &optional userdata)
-  ;; TODO: pass to human
+  (setq arm (intern (string-upcase arm) *keyword-package*))
+  (speak-jp (format nil "~Aを どうぞ" (string-upcase obj)))
+  (hand-over arm :wait-shock t)
   t)
 
+
 (defaction ask (person spot &optional userdata)
-  ;; TODO: Q&A
-  t)
+  (let ((content (cdr (assoc :content userdata))))
+    (speak-jp
+     (format nil "~Aさん。聞きたいことがあります。次の質問に答えてください。。~A" person content))
+    (ros::subscribe "/speech_to_text"
+                    speech_recognition_msgs::SpeechRecognitionCandidates
+                    #'speech-callback)
+    (ros::rate 2)
+    (setq *speech-msg* nil)
+    (while (and (ros::ok) (null *speech-msg*))
+      (ros::ros-info "waiting for answer")
+      (ros::spin-once)
+      (ros::sleep))
+    (speak-jp "わかりました。" :wait t)
+    ;;
+  t))
 
 
 #|
