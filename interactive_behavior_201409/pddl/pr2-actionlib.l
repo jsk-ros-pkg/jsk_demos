@@ -4,6 +4,8 @@
 
 (provide :pr2-actionlib)
 
+(ros::load-ros-manifest "speech_recognition_msgs")
+
 (require :app-utils "package://interactive_behavior_201409/euslisp/app-utils.l")
 (require :pr2-preemptive-interface "package://interactive_behavior_201409/euslisp/pr2-preemptive-interface.l")
 ;;
