@@ -393,8 +393,8 @@ This function also supports resume from preempted tasks"
                                     (failed-nodes *failed-nodes*) (readable t) (debug) (timeout 0)
                                     (use-cache t))
   (let ((mongo::*mongo-collection* "pddl_planner_cache")
-        (domain-sexp (send domain :domain-sexp))
-        (problem-sexp (send problem :problem-sexp))
+        (domain-sexp (copy-object (send domain :domain-sexp)))
+        (problem-sexp (copy-object (send problem :problem-sexp)))
         gr msg msg-id)
     (when use-cache
       (setq gr (mongo::query roseus::StringStamped
