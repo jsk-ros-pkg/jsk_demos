@@ -480,35 +480,40 @@ This function also supports resume from preempted tasks"
   t)
 
 (defun update-condition (init &optional goal)
-  (dolist (updater *condition-updaters*)
-    (ros::ros-info "[~A] starting" (send updater :name))
-    (send updater :start)
-    (send updater :wait-for-ready)
-    (ros::ros-info "[~A] started" (send updater :name)))
-  ;;
-  (let ((upd-init (copy-object init))
-        (upd-goal (copy-object goal))
-        prev-init prev-goal)
-    (ros::ros-info "update init")
+  (let (updaters)
     (dolist (updater *condition-updaters*)
-      (setq prev-init (copy-object upd-init)
-            upd-init (send updater :update-init upd-init upd-goal))
-      (ros::ros-info "[~A] ~A -> ~A"
-                     (send updater :name) prev-init upd-init))
+      (ros::ros-info "[~A] starting" (send updater :name))
+      (send updater :start)
+      (if (send updater :wait-for-ready)
+          (progn
+            (ros::ros-info "[~A] started" (send updater :name))
+            (push updater updaters))
+        (ros::ros-warn "[~A] failed to start" (send updater :name))))
+    (setq updaters (nreverse updaters))
     ;;
-    (when goal
-      (ros::ros-info "update goal")
-      (dolist (updater *condition-updaters*)
-        (setq prev-goal (copy-object upd-goal)
-              upd-goal (send updater :update-goal upd-init upd-goal))
+    (let ((upd-init (copy-object init))
+          (upd-goal (copy-object goal))
+          prev-init prev-goal)
+      (ros::ros-info "update init")
+      (dolist (updater updaters)
+        (setq prev-init (copy-object upd-init)
+              upd-init (send updater :update-init upd-init upd-goal))
         (ros::ros-info "[~A] ~A -> ~A"
-                       (send updater :name) prev-goal upd-goal)))
-    ;;
-    (dolist (updater *condition-updaters*)
-      (ros::ros-info "[~A] stopping" (send updater :name))
-      (send updater :stop))
-    ;;
-    (list upd-init upd-goal)))
+                       (send updater :name) prev-init upd-init))
+      ;;
+      (when goal
+        (ros::ros-info "update goal")
+        (dolist (updater updaters)
+          (setq prev-goal (copy-object upd-goal)
+                upd-goal (send updater :update-goal upd-init upd-goal))
+          (ros::ros-info "[~A] ~A -> ~A"
+                         (send updater :name) prev-goal upd-goal)))
+      ;;
+      (dolist (updater *condition-updaters*)
+        (ros::ros-info "[~A] stopping" (send updater :name))
+        (send updater :stop))
+      ;;
+      (list upd-init upd-goal))))
 
 ;; load condition updater subclasses
 (require :condition-updater "package://interactive_behavior_201409/euslisp/condition-updater.l")
