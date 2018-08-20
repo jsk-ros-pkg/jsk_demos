@@ -16,6 +16,7 @@
     (send domain :constants '(something something-else - item someone - person))
     (send domain :predicates
           '((ON ?OBJ - item ?AT - spot)
+            (ON! ?OBJ - item ?AT - spot)
             (SEE ?WHO - person ?AT - spot)
             (ONHAND ?OBJ - item ?ARM - arm)
             (UNAVAILABLE ?AT - spot)
@@ -49,12 +50,28 @@
                      :effect '((ONHAND SOMETHING-ELSE ?ARM)
                                (NOT (ONHAND SOMETHING ?ARM))))
            (instance pddl-action :init
+                     :name "find-object"
+                     :parameters '((?OBJ item) (?AT spot))
+                     :precondition '((AT ?AT)
+                                     (ON ?OBJ ?AT)
+                                     (NOT (ON! ?OBJ ?AT))
+                                     (NOT (UNAVAILABLE ?AT)))
+                     :effect '((ON! ?OBJ ?AT)))
+           (instance pddl-action :init
+                     :name "find-object_f"
+                     :parameters '((?OBJ item) (?AT spot))
+                     :precondition '((AT ?AT)
+                                     (ON ?OBJ ?AT)
+                                     (NOT (ON! ?OBJ ?AT))
+                                     (NOT (UNAVAILABLE ?AT)))
+                     :effect '((NOT (ON ?OBJ ?AT))))
+           (instance pddl-action :init
                      :name "pick"
                      :parameters '((?OBJ item) (?ARM arm) (?AT spot))
                      :precondition '((forall (?OBJ2 - item)
                                       (not (onhand ?OBJ2 ?ARM)))
                                      (AT ?AT)
-                                     (ON ?OBJ ?AT)
+                                     (ON! ?OBJ ?AT)
                                      (NOT (UNAVAILABLE ?AT)))
                      :effect '((ONHAND ?OBJ ?ARM)
                                (NOT (ON ?OBJ ?AT))
@@ -66,7 +83,7 @@
                      :precondition '((forall (?OBJ2 - item)
                                       (not (onhand ?OBJ2 ?ARM)))
                                      (AT ?AT)
-                                     (ON ?OBJ ?AT)
+                                     (ON! ?OBJ ?AT)
                                      (NOT (UNAVAILABLE ?AT)))
                      :effect '((increase (total-cost) (manip-cost ?OBJ))))
            (instance pddl-action :init
