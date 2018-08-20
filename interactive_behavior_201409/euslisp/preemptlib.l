@@ -426,7 +426,9 @@ This function also supports resume from preempted tasks"
                                           (:problem . ,(sxhash (sort-sexp problem-sexp)))
                                           (:failed-nodes . ,(sxhash (sort-sexp failed-nodes)))
                                           (:readable . ,readable))))
-      (ros::ros-info "cached plan: ~A" msg-id))
+      (if msg-id
+          (ros::ros-info "cached plan: ~A" msg-id)
+        (ros::ros-info "caching plan is disabled")))
     gr))
 
 ;;
