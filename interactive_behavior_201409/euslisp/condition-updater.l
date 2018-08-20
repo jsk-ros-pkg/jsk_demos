@@ -32,6 +32,7 @@
     (setq larm-state nil rarm-state nil)
     t)
   (:wait-for-ready (&optional timeout)
+    (when (send *ri* :simulation-modep) (return-from :wait-for-ready nil))
     (ros::rate 1)
     (let ((start-time (ros::time-now)))
       (while (ros::ok)
