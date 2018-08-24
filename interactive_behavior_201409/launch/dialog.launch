@@ -41,6 +41,8 @@
         pkg="interactive_behavior_201409" type="preempt-monitor.l"
         output="screen"/>
 
+  <node name="mecab" pkg="mecab_ros" type="mecab.py"/>
+
   <group if="$(arg run_app_manager)">
     <node pkg="app_manager" type="appmaster" name="appmaster"
           args="-p 11313"/>
