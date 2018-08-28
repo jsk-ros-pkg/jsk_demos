@@ -390,7 +390,7 @@ This function also supports resume from preempted tasks"
 
 (defun cached-pddl-plan-to-graph (goal-condition
                                   &key (domain *domain*) (problem *problem*)
-                                    (failed-nodes *failed-nodes*) (readable t) (debug) (timeout 0)
+                                    (failed-nodes *failed-nodes*) (readable t) (debug) (timeout 10)
                                     (use-cache t))
   (let ((mongo::*mongo-collection* "pddl_planner_cache")
         (domain-sexp (copy-object (send domain :domain-sexp)))
@@ -463,6 +463,11 @@ This function also supports resume from preempted tasks"
             (remove-if-not #'(lambda (x)
                                (and (eq (car x) 'on)
                                     (eq (caddr x) at))) st)))
+  (:objects (st)
+    (mapcar #'cadr
+            (remove-if-not #'(lambda (x)
+                               (or (eq (car x) 'on)
+                                   (eq (car x) 'delivered))) st)))
 ) ;; condition-updater
 
 (defun get-updater (cls)
