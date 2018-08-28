@@ -16,7 +16,7 @@
     (send domain :constants '(something something-else - item someone - person))
     (send domain :predicates
           '((ON ?OBJ - item ?AT - spot)
-            (ON! ?OBJ - item ?AT - spot)
+            (SURELYON ?OBJ - item ?AT - spot)
             (SEE ?WHO - person ?AT - spot)
             (ONHAND ?OBJ - item ?ARM - arm)
             (UNAVAILABLE ?AT - spot)
@@ -54,15 +54,15 @@
                      :parameters '((?OBJ item) (?AT spot))
                      :precondition '((AT ?AT)
                                      (ON ?OBJ ?AT)
-                                     (NOT (ON! ?OBJ ?AT))
+                                     (NOT (SURELYON ?OBJ ?AT))
                                      (NOT (UNAVAILABLE ?AT)))
-                     :effect '((ON! ?OBJ ?AT)))
+                     :effect '((SURELYON ?OBJ ?AT)))
            (instance pddl-action :init
                      :name "find-object_f"
                      :parameters '((?OBJ item) (?AT spot))
                      :precondition '((AT ?AT)
                                      (ON ?OBJ ?AT)
-                                     (NOT (ON! ?OBJ ?AT))
+                                     (NOT (SURELYON ?OBJ ?AT))
                                      (NOT (UNAVAILABLE ?AT)))
                      :effect '((NOT (ON ?OBJ ?AT))))
            (instance pddl-action :init
@@ -71,7 +71,7 @@
                      :precondition '((forall (?OBJ2 - item)
                                       (not (onhand ?OBJ2 ?ARM)))
                                      (AT ?AT)
-                                     (ON! ?OBJ ?AT)
+                                     (SURELYON ?OBJ ?AT)
                                      (NOT (UNAVAILABLE ?AT)))
                      :effect '((ONHAND ?OBJ ?ARM)
                                (NOT (ON ?OBJ ?AT))
@@ -83,7 +83,7 @@
                      :precondition '((forall (?OBJ2 - item)
                                       (not (onhand ?OBJ2 ?ARM)))
                                      (AT ?AT)
-                                     (ON! ?OBJ ?AT)
+                                     (SURELYON ?OBJ ?AT)
                                      (NOT (UNAVAILABLE ?AT)))
                      :effect '((increase (total-cost) (manip-cost ?OBJ))))
            (instance pddl-action :init
@@ -195,7 +195,7 @@
                           `(= (manip-cost ,s) 1))
                       syms))))
 
-(defun make-problem (&key init goal)
+(defun make-problem (&key init goal items people)
   (let ((problem (instance pddl-problem :init
                            :name 'house-keeping
                            :domain 'room-domain))
@@ -207,13 +207,13 @@
                        (KITCHEN ,(float-vector 10 0 0))
                        (room73a2 ,(float-vector -10 -10 0) :unavailable)
                        (COUNTER ,(float-vector 5 0 0)))))
-        (objs (make-object-symbols
-               '(CUP BOTTLE))))
+        (objs (make-object-symbols items)))
     (send problem :objects
-          (append (cdr (assoc :objects objs))
-                  (append (cdr (assoc :objects spots))
-                          '((LARM . arm)
-                            (RARM . arm)))))
+          (append (mapcar #'(lambda (x) `(,x . person)) people)
+                  (append (cdr (assoc :objects objs))
+                          (append (cdr (assoc :objects spots))
+                                  '((LARM . arm)
+                                    (RARM . arm))))))
     ;;
     (send problem :initial-condition
           (append (cdr (assoc :initial-condition objs))

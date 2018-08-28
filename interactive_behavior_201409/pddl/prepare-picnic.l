@@ -1,5 +1,5 @@
 #!/usr/bin/env roseus
-;; tidyup-cup.l
+;; prepare-picnic.l
 ;; Author: Yuki Furuta <furushchev@jsk.imi.i.u-tokyo.ac.jp>
 
 (require :pr2-actionlib "package://interactive_behavior_201409/pddl/pr2-actionlib.l")
@@ -9,17 +9,16 @@
   (setq *domain* (make-domain))
   (setq *problem*
         (make-problem :init '((AT START)
-                              (ON CUP COUNTER)
+                              (ON APPLE FRIDGE)
+                              (ON BACKPACK KITCHEN)
+                              (ON PHONE COUNTER)
                               (= (total-cost) 0))
-                      :goal '((OR (ON CUP KITCHEN) (ON CUP DISHWASHER)))
-                      :items '(CUP)
+                      :goal '((ON APPLE TABLE)
+                              (ON BACKPACK TABLE)
+                              (ON PHONE TABLE))
+                      :items '(APPLE BACKPACK PHONE)
                       ))
-  (setq *sm* (plan-task *domain* *problem* :debug debug))
-  (setq *insp* (instance state-machine-inspector :init *sm*))
-  (send *sm* :reset-state)
-  (send *insp* :publish-structure)
-  (send *insp* :publish-all-status)
-  *sm*)
+  (setq *sm* (plan-task *domain* *problem* :debug debug)))
 
 (defun run (&optional debug)
   (plan debug)

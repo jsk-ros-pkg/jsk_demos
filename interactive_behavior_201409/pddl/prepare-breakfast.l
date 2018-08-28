@@ -9,12 +9,18 @@
   (setq *domain* (make-domain))
   (setq *problem*
         (make-problem :init '((AT START)
-                              (ON BOTTLE FRIDGE)
-                              (SEE YUKI COUNTER)
+                              ;; (ON BOTTLE FRIDGE)
+                              (ON BOWL DISHWASHER)
+                              ;; (ON CUP KITCHEN)
+                              (ON SPOON COUNTER)
+                              (ON SERIAL KITCHEN) ;; this is from ambiguous
                               (= (total-cost) 0))
-                      :goal '((DELIVERED BOTTLE YUKI))
-                      :items '(BOTTLE)
-                      :people '(YUKI)
+                      :goal '((ON BOTTLE TABLE)
+                              (ON BOWL TABLE)
+                              ;; (ON CUP TABLE)
+                              (ON SERIAL TABLE)
+                              (ON SPOON TABLE))
+                      :items '(BOTTLE BOWL SPOON SERIAL)
                       ))
   (setq *sm* (plan-task *domain* *problem* :debug debug)))
 
