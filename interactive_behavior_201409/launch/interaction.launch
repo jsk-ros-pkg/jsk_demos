@@ -28,9 +28,21 @@
       <rosparam subst_value="true">
         gpu: 0
         model_file: $(optenv JSK_DATA_CACHE_DIR /etc/ros/jsk_data)/jsk_perception/pose_estimation_2d_chainermodel.pkl
+        hand:
+          enable: true
+          model_file: $(optenv JSK_DATA_CACHE_DIR /etc/ros/jsk_data)/jsk_perception/pose_estimation_2d_hand.chainermodel
         with_depth: true
         scales: [0.38]
         stride: 8
+      </rosparam>
+    </node>
+
+    <node name="pointit" pkg="jsk_perception" type="pointit.py"
+          output="screen" machine="$(arg machine)">
+      <remap from="~input" to="people_pose_estimation/pose"/>
+      <remap from="~input/boxes" to="/tabletop/euclidean_clustering_decomposer/boxes"/>
+      <rosparam>
+        use_tf2_buffer_client: true
       </rosparam>
     </node>
 
@@ -109,7 +121,7 @@
     </rosparam>
 
     <node name="people_attention_tracker" pkg="interactive_behavior_201409" type="people_attention_tracker.py"
-          output="screen">
+          output="screen" machine="$(arg machine)">
       <remap from="~input/pose" to="face_pose_estimation/output/pose" />
       <remap from="~input/face" to="face_recognition/output" />
       <remap from="~output" to="attention" />
@@ -122,14 +134,16 @@
     </node>
 
     <node name="people_attention_visualizer"
-          pkg="jsk_rviz_plugins" type="classification_result_visualizer.py">
+          pkg="jsk_rviz_plugins" type="classification_result_visualizer.py"
+          machine="$(arg machine)">
       <remap from="~input/classes" to="people_attention_tracker/output/attention" />
       <remap from="~input/poses"   to="face_pose_estimation/output/pose" />
       <param name="text_size" value="0.1" />
     </node>
 
     <node name="sound_attention_tracker"
-          pkg="interactive_behavior_201409" type="sound_attention_tracker.py">
+          pkg="interactive_behavior_201409" type="sound_attention_tracker.py"
+          machine="$(arg machine)">
       <remap from="~output" to="attention" />
       <rosparam if="$(arg use_hark)">
         use_hark: true
