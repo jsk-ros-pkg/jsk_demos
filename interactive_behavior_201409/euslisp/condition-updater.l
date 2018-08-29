@@ -189,7 +189,7 @@
                                     (send *tfl* :transform-pose *world-frame-id* ps)))
                               (send res :object_positions :poses)))
         (setq sexp (mapcar #'(lambda (cds)
-                               (cdr (assoc :states (inspect-item :coords cds :simplify t))))
+                               (cdr (assoc :states (inspect-item :coords cds :simplify t :single-in t))))
                            cds-lst))
         (when (car sexp)
           (dolist (cnd (car sexp))
@@ -204,3 +204,4 @@
   (:update-goal (init goal) goal)
 )
 (add-updater episodic-object-updater)
+
