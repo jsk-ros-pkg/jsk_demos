@@ -41,14 +41,26 @@
        (prog1 (send *ri* :move-to target-spot)
          (use-tilt-laser-obstacle-cloud t))))))
 
+(defaction find-object (obj spot &optional userdata)
+  (ros::ros-info "(find-object ~A ~A)" obj spot)
+  ;; lookup label
+  (let ((*tabletop-bbox-topic* "/tabletop/euclidean_clustering_decomposer/boxes"))
+    (case obj
+      ('bowl
+       (setq *tabletop-bbox-topic* "/ssd/bounding_box_pose/output/boxes")
+       (set-alist :target-object-label 45 userdata))
+      ('cup
+       (set-alist :target-object-label 41 userdata))
+      )
+    (find-tabletop-object userdata)))
 
 (defaction pick (obj arm spot &optional userdata)
   (ros::ros-info "(pick ~A ~A ~A)" obj arm spot)
   (set-alist :arm (intern (string-upcase arm) *keyword-package*) userdata)
-  (cond
+  (case obj
+    ('bowl
+     (pick-bowl userdata))
     (t
-     (unless (find-tabletop-object userdata)
-       (return-from pick nil))
      (pick-tabletop-object userdata))))
 
 (defaction place (obj arm spot &optional userdata)
@@ -57,6 +69,8 @@
   (cond
    ((eq spot 'dishwasher) ;; coe
     (put-into-dishwasher userdata))
+   ((eq obj 'bowl)
+    (place-bowl userdata))
    (t ;; place to support plane
     (place-object userdata))))
 
