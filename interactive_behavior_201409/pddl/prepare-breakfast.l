@@ -10,9 +10,9 @@
   (setq *problem*
         (make-problem :init '((AT START)
                               ;; (ON BOTTLE FRIDGE)
-                              (ON BOWL DISHWASHER)
+                              ;; (ON BOWL DISHWASHER)
                               ;; (ON CUP KITCHEN)
-                              (ON SPOON COUNTER)
+                              ;; (ON SPOON COUNTER)
                               (ON SERIAL KITCHEN) ;; this is from ambiguous
                               (= (total-cost) 0))
                       :goal '((ON BOTTLE TABLE)
