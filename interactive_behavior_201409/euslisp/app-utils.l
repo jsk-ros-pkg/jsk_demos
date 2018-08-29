@@ -84,7 +84,6 @@
       (let (j)
         (dotimes (i (1+ (- (length s) (length subs))))
           (setq j (if from-end (- (length s) (length subs) i) i))
-          ;; (warn "~A ~A ~A~%" j subs (subseq s j (+ j (length subs))))
           (when (string= subs (subseq s j (+ j (length subs))))
             (return-from search j))))))
 
