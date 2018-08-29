@@ -4,20 +4,38 @@
   <arg name="use_visualizer" default="false"/>
 
   <arg name="machine" default="external"/>
+  <arg name="camera" default="kinect_head_external"/>
+  <arg name="dataset" default="ssd300_coco" />
+
+  <arg name="model_path"
+       default="$(optenv JSK_DATA_CACHE_DIR /etc/ros/jsk_data)/$(arg dataset)/model"/>
+  <arg name="label_names"
+       default="$(optenv JSK_DATA_CACHE_DIR /etc/ros/jsk_data)/$(arg dataset)/class.yaml"/>
 
   <!-- pick / place object -->
   <include file="$(find jsk_2017_12_pr2_coe)/launch/tabletop.launch"
            if="$(arg use_tabletop)">
     <arg name="machine" value="$(arg machine)"/>
+    <arg name="camera" value="$(arg camera)"/>
   </include>
 
   <!-- find object -->
+  <include file="$(find jsk_2017_12_pr2_coe)/launch/ssd.launch"
+           if="$(arg use_ssd)">
+    <arg name="machine" value="$(arg machine)"/>
+    <arg name="camera" value="$(arg camera)"/>
+    <arg name="use_voc" value="false"/>
+    <arg name="model_path" value="$(arg model_path)"/>
+    <arg name="label_names" value="$(arg label_names)"/>
+  </include>
+  <!--
   <include file="$(find mbtk)/launch/ssd.launch"
            if="$(arg use_ssd)">
     <arg name="machine" value="$(arg machine)"/>
     <arg name="record_result" value="false"/>
     <arg name="camera" value="kinect_head_external"/>
   </include>
+  -->
 
   <!-- lifelog -->
   <group ns="ssd" if="$(arg use_ssd)">
