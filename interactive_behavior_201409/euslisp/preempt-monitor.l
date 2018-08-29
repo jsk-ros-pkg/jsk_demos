@@ -36,7 +36,7 @@
         (send *ri* :speak-jp "どうしました？")
         (setq *current-state* :interrupted)))
      ((eq *current-state* :interrupted)
-      (let ((command (parse-speech text)))
+      (let ((command (parse-preempt-speech text)))
         (when (eq (cdr (assoc :command command))
                   :update)
           (
