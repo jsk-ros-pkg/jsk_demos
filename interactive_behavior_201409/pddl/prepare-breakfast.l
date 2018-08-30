@@ -3,18 +3,19 @@
 ;; Author: Yuki Furuta <furushchev@jsk.imi.i.u-tokyo.ac.jp>
 
 (require :pr2-actionlib "package://interactive_behavior_201409/pddl/pr2-actionlib.l")
-(require :room-domain "package://interactive_behavior_201409/pddl/room-domain.l")
+(require :new-room-domain "package://interactive_behavior_201409/pddl/new-room-domain.l")
 
 (defun plan (&optional debug)
   (setq *domain* (make-domain))
+  #|
   (setq *problem*
-        (make-problem :init '((AT START)
+        (make-problem :init '((ROBOT-AT START)
                               ;; (ON BOTTLE FRIDGE)
                               ;; (ON BOWL DISHWASHER)
                               ;; (ON CUP KITCHEN)
                               ;; (ON SPOON COUNTER)
                               (ON SERIAL KITCHEN) ;; this is from ambiguous
-                              (= (total-cost) 0))
+                              )
                       :goal '((ON BOTTLE TABLE)
                               (ON BOWL TABLE)
                               ;; (ON CUP TABLE)
@@ -22,6 +23,25 @@
                               (ON SPOON TABLE))
                       :items '(BOTTLE BOWL SPOON SERIAL)
                       ))
+  |#
+  (setq *problem* (make-problem :init
+                                '((ROBOT-AT START)
+                                  ;; (ON BOWL DISHWASHER)
+                                  ;; (ON BOTTLE FRIDGE)
+                                  ;; (ON SPOON KITCHEN)
+                                  ;; (ON CUP KITCHEN)
+                                  (ON CLEANER DRAWER)
+                                  (SEE INABA ROOM73A1))
+                                :goal
+                                '((ON BOWL TABLE)
+                                  (ON CUP TABLE)
+                                  (ON BOTTLE TABLE))
+                                :items
+                                '(CUP BOTTLE BOWL SPOON)
+                                :people
+                                '(INABA)
+                                ))
+
   (setq *sm* (plan-task *domain* *problem* :debug debug)))
 
 (defun run (&optional debug)
