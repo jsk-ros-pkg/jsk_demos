@@ -37,13 +37,11 @@
         (setq *current-state* :interrupted)))
      ((eq *current-state* :interrupted)
       (let ((command (parse-preempt-speech text)))
-        (when (eq (cdr (assoc :command command))
-                  :update)
-          (
-        ;; TODO: determine task / action goal interruption
+        (case (cdr (assoc :command command))
+          (t (send *ri* :speak-jp "すみません，わかりません．"))
+          ;;
+          )))
      )))
-
-
 
 
 (defun main ()

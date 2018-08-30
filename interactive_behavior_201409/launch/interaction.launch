@@ -21,7 +21,7 @@
     <node name="people_pose_estimation"
           pkg="jsk_perception" type="people_pose_estimation_2d.py"
           output="screen" respawn="$(arg respawn)"
-          machine="$(arg machine)">
+          machine="$(arg machine)" clear_params="true">
       <remap from="~input" to="$(arg input_image)" />
       <remap from="~input/info" to="$(arg input_camera_info)" />
       <remap from="~input/depth" to="$(arg input_depth)" />
@@ -34,6 +34,9 @@
         with_depth: true
         scales: [0.38]
         stride: 8
+        approximate_sync: true
+        queue_size: 100
+        slop: 0.1
       </rosparam>
     </node>
 

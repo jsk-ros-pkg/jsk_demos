@@ -10,7 +10,7 @@
 (ros::ros-info "*action-param*: ~A" *action-param*)
 ;;
 (require :pr2-actionlib "package://interactive_behavior_201409/pddl/pr2-actionlib.l")
-(require :room-domain "package://interactive_behavior_201409/pddl/room-domain.l")
+(require :new-room-domain "package://interactive_behavior_201409/pddl/new-room-domain.l")
 
 (defun get-arg (key)
   (unless (stringp key)

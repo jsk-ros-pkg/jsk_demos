@@ -1,10 +1,11 @@
 #!/usr/bin/env roseus
 ;; go.l
 
-(require :app-utils "package://interactive_behavior_201409/euslisp/app-utils.l")
-(require :pr2-interface "package://pr2eus/pr2-interface.l")
-(require :eng2-scene "package://jsk_maps/src/eng2-scene.l")
+(ros::roseus "run_go")
 
+(require :app-utils "package://interactive_behavior_201409/euslisp/app-utils.l")
+
+#|
 (defun pr2-init (&optional (create-viewer))
   (setq *pr2* (pr2)
         *ri* (instance pr2-interface :init
@@ -12,23 +13,26 @@
   (ros::spin-once)
   (send *ri* :spin-once)
   (send *pr2* :angle-vector (send *ri* :state :potentio-vector)))
+|#
 
+(defun plan-go (place)
+  (setq *domain* (make-domain))
+  (setq *problem* (make-problem :init '((ROBOT-AT START))
+                                :goal `((ROBOT-AT ,place))))
+  (unless (setq *sm* (plan-task *domain* *problem* :debug t))
+    (send *ri* :speak-jp "計画に失敗しました")
+    (return-from plan-go nil))
+  *sm*)
 
 (defun main ()
-  (let ((spot-name (get-arg :place)))
-    (pr2-init)
-    (setq *scene* (make-eng2-scene))
-
-    (setq *spot* (get-spot spot-name))
-    (unless *spot*
-      (ros::ros-error "Destination '~A' not found" spot-name)
-      (speak-jp "あー、ちょっとわからないですね。")
-      (return-from main nil))
-    (ros::ros-info "Going to ~A" (send *spot* :name))
-    (speak-jp (format nil "~Aに行きます" (send *spot* :name)))
-
-    (send *ri* :move-to *spot*)
-    (return-from main t)))
-
+  (pr2-init)
+  (let* ((place (get-arg :place))
+         (sm (plan-go place)))
+    (cond
+      (sm
+       (exec-preemptive-task sm))
+      (t
+       (speak-jp "ごめんなさい。いまちょっと手が離せないです。")
+       nil))))
 
 (run-exit (main))
