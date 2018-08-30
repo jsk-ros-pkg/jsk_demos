@@ -23,7 +23,7 @@
          (object (get-arg :object))
          (sm (plan-place object place)))
     (cond
-      (sm
+      ((and sm (send sm :nodes))
        (exec-preemptive-task sm))
       (t
        (speak-jp "ごめんなさい。いまちょっと手が離せないです。")

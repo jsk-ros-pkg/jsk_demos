@@ -29,7 +29,7 @@
   (let* ((place (get-arg :place))
          (sm (plan-go place)))
     (cond
-      (sm
+      ((and sm (send sm :nodes))
        (exec-preemptive-task sm))
       (t
        (speak-jp "ごめんなさい。いまちょっと手が離せないです。")

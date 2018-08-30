@@ -16,7 +16,7 @@
           '(:adl :typing :action-costs :negative-preconditions)
           )
     (send domain :types '(spot arm item person))
-    (send domain :constants '(arms - arm cleaner - item somewhere - spot))
+    (send domain :constants '(arms - arm cleaner - item somewhere - spot someone - person))
     (send domain :predicates
           '((ROBOT-AT ?AT - spot)
             (SURE-ON ?OBJ - item ?AT - spot)
