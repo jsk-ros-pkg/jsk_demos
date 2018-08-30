@@ -63,6 +63,7 @@
                 (throw :preempt-barrier *preempt-failure-value*))))
        ,ret)))
 
+
 (defun preempt (&optional (reason :preempt))
   (ros::set-param *preempt-param-key* reason)
   reason)
