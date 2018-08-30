@@ -35,6 +35,7 @@
     (send domain :functions '((total-cost)
                               (distance ?FROM ?TO - spot)
                               (manip-cost ?OBJ - item ?ARM - arm)
+                              (find-cost)
                               (door-cost)
                               ))
     (setq actions
@@ -54,7 +55,8 @@
                                      (ON ?OBJ ?AT)
                                      (AVAILABLE ?AT))
                      :effect '((SURE-ON ?OBJ ?AT)
-                               (NOT (ON ?OBJ ?AT))))
+                               (NOT (ON ?OBJ ?AT))
+                               (INCREASE (TOTAL-COST) (FIND-COST))))
            (instance pddl-action :init
                      :name "pick"
                      :parameters '((?OBJ item) (?ARM arm) (?AT spot))
@@ -73,7 +75,8 @@
                      :precondition '((ONHAND ?OBJ ?ARM)
                                      (ROBOT-AT ?AT)
                                      (AVAILABLE ?AT))
-                     :effect '((PLACABLE ?OBJ ?AT)))
+                     :effect '((PLACABLE ?OBJ ?AT)
+                               (increase (total-cost) (find-cost))))
            (instance pddl-action :init
                      :name "place"
                      :parameters '((?OBJ item) (?ARM arm) (?AT spot))
@@ -169,6 +172,7 @@
                              :effect '((ON ?OBJ ?AT)
                                        (NOT (SURE-ON ?OBJ ?AT))
                                        (increase (total-cost) (manip-cost ?OBJ ?ARM))))
+                   #|
                    (instance pddl-action :init
                              :name "find-placement_f"
                              :parameters '((?OBJ item) (?ARM arm) (?AT spot))
@@ -176,6 +180,7 @@
                                              (ROBOT-AT ?AT)
                                              (AVAILABLE ?AT))
                              :effect '((NOT (AVAILABLE ?AT))))
+                   |#
                    (instance pddl-action :init
                              :name "find-person_f"
                              :parameters '((?WHO person) (?AT spot))
@@ -210,9 +215,9 @@
     ;; manip cost
     (let ((unique-items (remove-duplicates items)))
       (dolist (item (append unique-items (list 'cleaner)))
-        (push `(= (manip-cost ,item larm) 1) init)
-        (push `(= (manip-cost ,item rarm) 1) init)
-        (push `(= (manip-cost ,item arms) 10) init)))
+        (push `(= (manip-cost ,item larm) 10) init)
+        (push `(= (manip-cost ,item rarm) 10) init)
+        (push `(= (manip-cost ,item arms) 20) init)))
 
     ;; distance cost
     (let ((unique-spots (remove-duplicates spots)))
@@ -222,12 +227,14 @@
     ;; other costs
     (push '(= (total-cost) 0) init)
     (push '(= (door-cost) 10) init)
+    (push '(= (find-cost) 50) init)
 
     ;; default conds
     (setq init (nconc init '((OPENABLE RARM DISHWASHER)
                              (OPENABLE RARM FRIDGE)
-                             (OPENABLE LARM FRIDGE)
+                             ;; (OPENABLE LARM FRIDGE)
                              (OPENABLE RARM ROOM73A1)
+                             (AVAILABLE COUNTER)
                              (AVAILABLE KITCHEN)
                              (AVAILABLE TABLE)
                              (AVAILABLE DRAWER))))

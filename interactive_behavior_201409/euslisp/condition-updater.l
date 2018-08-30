@@ -136,9 +136,9 @@
               (subseq (car nearest) (1+ (search "-" (car nearest) :from-end t)))
               (car nearest)))
       ;; 1. remove at predicate
-      (setq ret (remove-if #'(lambda (x) (eq (car x) 'at)) ret))
+      (setq ret (remove-if #'(lambda (x) (eq (car x) 'robot-at)) ret))
       ;; 2. insert at
-      (push `(at ,(read-from-string nearest)) ret)
+      (push `(robot-at ,(read-from-string nearest)) ret)
       ret))
   (:update-goal (init goal) goal)
 ) ;; at-updater
@@ -196,7 +196,7 @@
             ;; remap
             (cond
              ((eq (car cnd) 'in) (setf (car cnd) 'on))
-             ((eq (car cnd) 'located-at) (setf (car cnd) 'at)))
+             ((eq (car cnd) 'located-at) (setf (car cnd) 'robot-at)))
             (setq cnd (replace-symbol 'target obj cnd))
             (ros::ros-info "[~A] ~A" (send self :name) cnd)
             (push cnd new-init)))) ;; dolist obj end

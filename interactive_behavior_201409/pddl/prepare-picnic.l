@@ -8,11 +8,10 @@
 (defun plan (&optional debug)
   (setq *domain* (make-domain))
   (setq *problem*
-        (make-problem :init '((AT START)
+        (make-problem :init '((ROBOT-AT START)
                               (ON APPLE FRIDGE)
                               (ON BACKPACK KITCHEN)
-                              (ON PHONE COUNTER)
-                              (= (total-cost) 0))
+                              (ON PHONE COUNTER))
                       :goal '((ON APPLE TABLE)
                               (ON BACKPACK TABLE)
                               (ON PHONE TABLE))
