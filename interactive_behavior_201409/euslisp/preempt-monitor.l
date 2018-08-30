@@ -59,14 +59,21 @@
                  (return-from speech-to-text-cb nil))
                ;;
                ;; TODO: remove state including sym
-               )))
-          (:update )
+               (ros::ros-info "Removing ~A" (cdr (assoc :before command)))
+               (ros::ros-info "before: ~A" (pformat cnd))
+               (ros::ros-info "after: ~A" (pformat (remove-state-from-condition cnd)))
+               (ros::set-param *preempted-goal-param-key*
+                               (format nil "~A" (remove-state-from-condition cnd)))
+               (ros::ros-info "~Aはやめます" (cdr (assoc :before command)))
+               t)))
+          (:update t)
           ;;
           )))
      )))
 
 
 (defun remove-state-from-condition (sym cnd)
+  "Remove state related to `sym` from condition `cnd`"
   (cond
    ((and (listp (car cnd)) (not (null (car cnd))))
     (remove nil (mapcar #'(lambda (x) (remove-state-from-condition sym x)) cnd)))
