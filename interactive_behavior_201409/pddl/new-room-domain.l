@@ -260,17 +260,13 @@
                   (ON BOWL DISHWASHER)
                   (ON BOTTLE FRIDGE)
                   (ON SPOON KITCHEN)
-                  (ON CUP KITCHEN)
-                  (ON CLEANER DRAWER)
-                  (SEE INABA ROOM73A1))
+                  (ON CUP KITCHEN))
                 :goal
                 '((ON BOWL TABLE)
                   (ON CUP TABLE)
                   (ON BOTTLE TABLE))
                 :items
                 '(CUP BOTTLE BOWL SPOON)
-                :people
-                '(INABA)
                 ))
 
 (defun make-clean-room-problem ()
@@ -280,15 +276,12 @@
                   (ON BOTTLE FRIDGE)
                   (ON SPOON KITCHEN)
                   (ON CUP KITCHEN)
-                  (ON CLEANER DRAWER)
-                  (SEE INABA ROOM73A1))
+                  (ON CLEANER DRAWER))
                 :goal
                 '((ON CLEANER DRAWER)
                   (CLEAN))
                 :items
                 '(CUP BOTTLE BOWL SPOON)
-                :people
-                '(INABA)
                 ))
 
 (defun make-ask-inaba-problem ()
