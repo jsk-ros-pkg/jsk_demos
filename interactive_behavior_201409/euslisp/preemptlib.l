@@ -248,7 +248,7 @@ Example: (defpreemptrobot pr2) creates `pr2-preempt-interface` and `pr2-init`"
       ) ;; when preempted
     (list result pddl-state))) ;; defaction
 
-(defun merge-states (current updated &key (debug))
+(defun merge-init-states (current updated &key (debug))
   "Resolve conflicts in pddl states and merge them into one state"
   (let ((cur (copy-object current))
         (upd (copy-object updated)))
@@ -257,7 +257,7 @@ Example: (defpreemptrobot pr2) creates `pr2-preempt-interface` and `pr2-init`"
     (let ((c (remove-if-not #'(lambda (s) (eq 'onhand (car s))) cur)))
       (dolist (obj (mapcar #'(lambda (s) (cadr s)) c))
         (setq upd (remove-if #'(lambda (s)
-                                 (and (eq 'on (car s))
+                                 (and (or (eq 'on (car s)) (eq 'sure-on (car s)))
                                       (eq obj (cadr s)))) upd))))
     (when debug
       (warn "remove on~%")
@@ -279,10 +279,10 @@ Example: (defpreemptrobot pr2) creates `pr2-preempt-interface` and `pr2-init`"
       (warn "cur: ~A~% upd: ~A~%" (pformat cur) (pformat upd)))
     ;;
     ;; prefer current at
-    ;; (at ?SPOT)
-    (let ((c (find-if #'(lambda (s) (eq 'at (car s))) cur)))
+    ;; (robot-at ?SPOT)
+    (let ((c (find-if #'(lambda (s) (eq 'robot-at (car s))) cur)))
       (when c
-        (setq upd (remove-if #'(lambda (s) (eq 'at (car s))) upd))))
+        (setq upd (remove-if #'(lambda (s) (eq 'robot-at (car s))) upd))))
     (when debug
       (warn "remove at~%")
       (warn "cur: ~A~% upd: ~A~%" (pformat cur) (pformat upd)))
@@ -306,11 +306,59 @@ Example: (defpreemptrobot pr2) creates `pr2-preempt-interface` and `pr2-init`"
                                  (and (eq 'on (car s))
                                       (eq obj (cadr s)))) cur))))
     ;;
+    ;; on -> sure-on
+    (let ((sureons (remove-if-not #'(lambda (s) (eq 'sure-on (car s))) upd)))
+      (setq upd (remove-if
+                 #'(lambda (s)
+                     (and (eq 'on (car s))
+                          (find `(sure-on ,(cadr s) ,(caddr s)) upd :test #'equal))) upd)))
+    ;;
+    ;; see -> sure-see
+    (let ((suresees (remove-if-not #'(lambda (s) (eq 'sure-see (car s))) upd)))
+      (setq upd (remove-if
+                 #'(lambda (s)
+                     (and (eq 'see (car s))
+                          (find `(sure-see ,(cadr s) ,(caddr s)) upd :test #'equal))) upd)))
+    ;;
     ;; merge states
     (ros::ros-info "merging current: ~A" (pformat cur))
     (ros::ros-info "updated: ~A" (pformat upd))
     (unique (append cur upd))
     ))
+
+(defun merge-goal-states (current updated &key (debug))
+  (let ((cur (copy-object current))
+        (upd (copy-object updated)))
+    ;;
+    ;; prefer updated at
+    ;; (robot-at ?SPOT)
+    (let ((c (find-if #'(lambda (s) (eq 'robot-at (car s))) upd)))
+      (when c
+        (setq cur (remove-if #'(lambda (s) (eq 'robot-at (car s))) cur))))
+    (when debug
+      (warn "remove at~%")
+      (warn "cur: ~A~% upd: ~A~%" (pformat cur) (pformat upd)))
+    ;;
+    ;; on -> sure-on
+    (let ((sureons (remove-if-not #'(lambda (s) (eq 'sure-on (car s))) upd)))
+      (setq upd (remove-if
+                 #'(lambda (s)
+                     (and (eq 'on (car s))
+                          (find `(sure-on ,(cadr s) ,(caddr s)) upd :test #'equal))) upd)))
+    ;;
+    ;; see -> sure-see
+    (let ((suresees (remove-if-not #'(lambda (s) (eq 'sure-see (car s))) upd)))
+      (setq upd (remove-if
+                 #'(lambda (s)
+                     (and (eq 'see (car s))
+                          (find `(sure-see ,(cadr s) ,(caddr s)) upd :test #'equal))) upd)))
+    ;;
+    ;; merge states
+    (ros::ros-info "merging current: ~A" (pformat cur))
+    (ros::ros-info "updated: ~A" (pformat upd))
+    (unique (append cur upd))
+    ))
+
 
 (defun plan-task (domain problem &key (debug) (failed-nodes))
   "Plan action sequence with failure recovery, given domain and problem using PDDL solver.
@@ -339,7 +387,7 @@ This function also supports resume from preempted tasks"
             (ros::ros-error "preempted state is empty")
             (setq cnd (read-from-string cnd)))
         (send prob :initial-condition
-              (merge-states cnd (send prob :initial-condition)))))
+              (merge-init-states cnd (send prob :initial-condition)))))
     ;;
     ;; merge preempted goal states into new goal
     (when (ros::has-param *preempted-goal-param-key*)
@@ -348,7 +396,7 @@ This function also supports resume from preempted tasks"
             (ros::ros-error "preempted goal state is empty. Resume failed")
             (setq cnd (read-from-string cnd)))
         (send prob :goal-condition
-              (merge-states cnd (send prob :goal-condition)))))
+              (merge-goal-states cnd (send prob :goal-condition)))))
     ;;
     ;; update conditions using updaters
     (let ((ret (update-condition (send prob :initial-condition)
@@ -457,7 +505,7 @@ This function also supports resume from preempted tasks"
                                (and (eq (car x) 'onhand)
                                     (eq (caddr x) arm))) st)))
   (:at (st)
-    (cadr (find-if #'(lambda (x) (eq (car x) 'at)) st)))
+    (cadr (find-if #'(lambda (x) (eq (car x) 'robot-at)) st)))
   (:on (st at)
     (mapcar #'cadr
             (remove-if-not #'(lambda (x)
