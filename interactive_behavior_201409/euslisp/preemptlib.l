@@ -555,14 +555,15 @@ This function also supports resume from preempted tasks"
           prev-init prev-goal)
       (ros::ros-info "update init")
       (dolist (updater updaters)
+        (ros::ros-info "[~A] update init" (send updater :name))
         (setq prev-init (copy-object upd-init)
               upd-init (send updater :update-init upd-init upd-goal))
         (ros::ros-info "[~A] ~A -> ~A"
                        (send updater :name) prev-init upd-init))
       ;;
       (when goal
-        (ros::ros-info "update goal")
         (dolist (updater updaters)
+          (ros::ros-info "[~A] update goal" (send updater :name))
           (setq prev-goal (copy-object upd-goal)
                 upd-goal (send updater :update-goal upd-init upd-goal))
           (ros::ros-info "[~A] ~A -> ~A"
