@@ -63,6 +63,10 @@
     (t
      (pick-tabletop-object userdata))))
 
+(defaction find-placement (obj arm spot &optional userdata)
+  (ros::ros-info "(find-placement ~A ~A ~A)" obj arm spot)
+  t)
+
 (defaction place (obj arm spot &optional userdata)
   (ros::ros-info "(place ~A ~A ~A)" obj arm spot)
   (set-alist :arm (intern (string-upcase arm) *keyword-package*) userdata)

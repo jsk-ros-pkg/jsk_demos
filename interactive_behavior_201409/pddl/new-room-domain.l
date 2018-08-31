@@ -398,8 +398,13 @@
                                :failed-nodes *failed-nodes* :timeout 10
                                :debug t))
   (send *graph* :write-to-pdf "/tmp/graph.pdf" nil "hoge")
-  (setq insp (pddl-graph-to-smach *graph* :add-self-return-failure-path nil))
+  (setq insp (pddl-graph-to-smach *graph*
+               :add-self-return-failure-path nil
+               :use-userdata t))
   (send insp :publish-structure)
   (send insp :publish-all-status)
   insp)
 
+(defun sample-run (&optional (func #'make-prepare-problem))
+  (setq *insp* (sample-plan func))
+  (exec-preemptive-task (send *insp* :state-machine)))
