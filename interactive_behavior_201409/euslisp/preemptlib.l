@@ -368,7 +368,7 @@ Example: (defpreemptrobot pr2) creates `pr2-preempt-interface` and `pr2-init`"
   "Plan action sequence with failure recovery, given domain and problem using PDDL solver.
 This function also supports resume from preempted tasks"
   (let ((prob (copy-object problem))
-        gr sm)
+        gr insp sm)
     ;;
     ;; count failed nodes if not specified
     (unless failed-nodes
@@ -422,8 +422,10 @@ This function also supports resume from preempted tasks"
       (setq *graph* gr)
       (unix:system "xdg-open /tmp/graph.pdf"))
     ;;
-    (setq sm (send (pddl-graph-to-smach gr :add-self-return-failure-path nil)
-                   :state-machine))
+    (setq insp (pddl-graph-to-smach gr
+                                    :add-self-return-failure-path nil
+                                    :use-userdata t))
+    (setq sm (send insp :state-machine))
     (setf (get sm :pddl-state)
           (cons (send prob :initial-condition)
                 (send prob :goal-condition)))
