@@ -327,7 +327,7 @@ Example: (defpreemptrobot pr2) creates `pr2-preempt-interface` and `pr2-init`"
     ;; merge states
     (ros::ros-info "merging current: ~A" (pformat cur))
     (ros::ros-info "updated: ~A" (pformat upd))
-    (unique (append cur upd))
+    (remove-dupliactes (append cur upd) :test #'equal)
     ))
 
 (defun merge-goal-states (current updated &key (debug))
@@ -360,7 +360,7 @@ Example: (defpreemptrobot pr2) creates `pr2-preempt-interface` and `pr2-init`"
     ;; merge states
     (ros::ros-info "merging current: ~A" (pformat cur))
     (ros::ros-info "updated: ~A" (pformat upd))
-    (unique (append cur upd))
+    (remove-dupliactes (append cur upd) :test #'equal)
     ))
 
 
