@@ -209,7 +209,7 @@
   (let ((problem (instance pddl-problem :init
                            :name 'house-keeping
                            :domain 'room-domain))
-        (spots '(START TABLE FRIDGE DISHWASHER DRAWER KITCHEN COUNTER ROOM73A1))
+        (spots '(START TABLE FRIDGE DISHWASHER DRAWER SINK KITCHEN COUNTER ROOM73A1))
         objs)
 
     ;; manip cost
@@ -234,6 +234,7 @@
                              (OPENABLE RARM FRIDGE)
                              ;; (OPENABLE LARM FRIDGE)
                              (OPENABLE RARM ROOM73A1)
+                             (AVAILABLE SINK)
                              (AVAILABLE COUNTER)
                              (AVAILABLE KITCHEN)
                              (AVAILABLE TABLE)
