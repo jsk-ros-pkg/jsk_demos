@@ -14,7 +14,8 @@
 
   <arg name="machine" default="external" />
 
-  <include file="$(find interactive_behavior_201409)/pr2.machine" />
+  <arg name="ROBOT" default="$(optenv ROBOT pr2)"/>
+  <include file="$(find interactive_behavior_201409)/config/$(arg ROBOT).machine" />
 
 
   <group ns="interaction">
