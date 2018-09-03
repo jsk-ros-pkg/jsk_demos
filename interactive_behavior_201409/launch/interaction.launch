@@ -11,6 +11,7 @@
   <arg name="input_image" default="/$(arg camera)/rgb/$(arg throttle_prefix)image_rect_color" />
   <arg name="input_camera_info" default="/$(arg camera)/rgb/$(arg throttle_prefix)camera_info" />
   <arg name="input_depth" default="/$(arg camera)/depth_registered/$(arg throttle_prefix)image_rect" />
+  <arg name="input_cloud" default="/$(arg camera)/depth_registered/$(arg throttle_prefix)points"/>
 
   <arg name="machine" default="external" />
 
@@ -97,6 +98,33 @@
             to: $(arg input_image)
           - from: faces
             to: rect_array_to_face_array/output
+        - name: relay_cloud
+          type: jsk_topic_tools/LightweightThrottle
+          remappings:
+          - from: ~input
+            to: $(arg input_cloud)
+        - name: voxel_grid
+          type: pcl/VoxelGrid
+          remappings:
+          - from: ~input
+            to: relay_cloud/output
+        - name: change_detector
+          type: jsk_pcl/OctreeChangePublisher
+          remappings:
+          - from: ~input
+            to: voxel_grid/output
+        - name: euclidean_clustering
+          type: jsk_pcl/EuclideanClustering
+          remappings:
+          - from: ~input
+            to: change_detector/octree_change_result
+        - name: euclidean_clustering_decomposer
+          type: jsk_pcl/ClusterPointIndicesDecomposer
+          remappings:
+          - from: ~input
+            to: change_detector/octree_change_result
+          - from: ~target
+            to: euclidean_clustering/output
       </rosparam>
     </node>
 
@@ -121,6 +149,26 @@
               subst_value="true">
       model_threshold: 4300.0
       data_dir: $(optenv JSK_DATA_CACHE_DIR /etc/ros/jsk_data)/opencv_apps/face_data
+    </rosparam>
+
+    <!-- for pointcloud -->
+    <rosparam ns="relay_cloud" subst_value="true">
+      update_rate: 5.0
+    </rosparam>
+    <rosparam ns="voxel_grid" subst_value="true">
+      filter_limit_min: 0.0
+      filter_limit_max: 5.0
+      leaf_size: 0.02
+      keep_organized: true
+    </rosparam>
+    <rosparam ns="change_detector" subst_value="true">
+      resolution: 0.04
+      noise_filter: 4
+    </rosparam>
+    <rosparam ns="euclidean_clustering" subst_value="true">
+      tolerance: 0.1
+      min_size: 100
+      max_size: 25000
     </rosparam>
 
     <node name="people_attention_tracker" pkg="interactive_behavior_201409" type="people_attention_tracker.py"
