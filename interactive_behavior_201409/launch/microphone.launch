@@ -1,11 +1,11 @@
 <launch>
-  <arg name="ROBOT" default="$(optenv ROBOT sim)"/>
+  <arg name="ROBOT" default="$(optenv ROBOT pr2)"/>
   <arg name="machine" default="c1" if="$(optenv USE_MIC_C1 false)"/>
   <arg name="machine" default="c2" if="$(optenv USE_MIC_C2 false)"/>
 
   <arg name="language" default="ja-JP"/>
 
-  <include file="$(find pr2_machine)/$(arg ROBOT).machine" />
+  <include file="$(find interactive_behavior_201409)/config/$(arg ROBOT).machine" />
 
   <node name="respeaker_node" pkg="respeaker_ros" type="respeaker_node.py"
         machine="$(arg machine)" output="screen">

@@ -1,0 +1,11 @@
+<launch>
+  <arg name="use_external" default="$(optenv USE_EXTERNAL true)"/>
+
+  <include file="$(find pr2_machine)/sim.machine" />
+  <machine if="$(arg use_external)"
+           name="external" address="external" user="furushchev"
+           env-loader="/home/furushchev/env.sh" />
+  <machine unless="$(arg use_external)"
+           name="external" address="localhost"/>
+  <machine name="localhost" address="localhost" />
+</launch>
