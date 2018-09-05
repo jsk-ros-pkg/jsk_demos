@@ -364,7 +364,7 @@ Example: (defpreemptrobot pr2) creates `pr2-preempt-interface` and `pr2-init`"
     ))
 
 
-(defun plan-task (domain problem &key (debug) (failed-nodes))
+(defun plan-task (domain problem &key (debug) (failed-nodes) (use-cache t) (timeout 10))
   "Plan action sequence with failure recovery, given domain and problem using PDDL solver.
 This function also supports resume from preempted tasks"
   (let ((prob (copy-object problem))
@@ -416,6 +416,8 @@ This function also supports resume from preempted tasks"
                                     :domain domain :problem prob
                                     :failed-nodes failed-nodes
                                     :readable nil
+                                    :timeout timeout
+                                    :use-cache use-cache
                                     :debug debug))
     (send gr :write-to-pdf "/tmp/graph.pdf" nil "hoge")
     (when debug
