@@ -28,7 +28,8 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defaction move-to (from-place to-place &optional userdata)
   (ros::ros-info "(move-to ~A ~A)" from-place to-place)
-  (save-start-pose)
+  (unless (has-start-pose)
+    (save-start-pose))
   (send *ri* :change-inflation-range 0.25)
   (case to-place
     ('kitchen (go-to-sink userdata)) ;; coe

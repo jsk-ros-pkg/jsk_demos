@@ -153,9 +153,12 @@
     (setq vec (append vec (car (send cur-cds :rpy-angle))))
     (ros::set-param *start-spot-param-key* vec)))
 
+(defun has-start-pose ()
+  (and (ros::has-param *start-spot-param-key*)
+       (ros::get-param *start-spot-param-key*)))
+
 (defun load-start-pose ()
-  (if (and (ros::has-param *start-spot-param-key*)
-           (ros::get-param *start-spot-param-key*))
+  (if (has-start-pose)
       (let ((vec (ros::get-param *start-spot-param-key*))
             cds)
         (setq cds (make-cascoords))
