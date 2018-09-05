@@ -56,10 +56,10 @@
                   (if (stringp ,val)
                       (intern (string-upcase ,val) *keyword-package*) ,val)))
                ((and (atom ,ret) (null ,ret))
-                (warn "atom: ~A~%" ,ret)
+                (warn "~A returned with ~A~%" ',form ,ret)
                 (throw :preempt-barrier *preempt-failure-value*))
                ((and (listp ,ret) (every #'null ,ret))
-                (warn "listp: ~A~%" ,ret)
+                (warn "~A returned with ~A~%" ',form ,ret)
                 (throw :preempt-barrier *preempt-failure-value*))))
        ,ret)))
 
