@@ -38,7 +38,7 @@
     (ros::ros-info "onhand: larm=~A rarm=~A arms=~A" larm rarm arms)
     (cond
       (arms t)
-      ((and larm rarm) t)
+      ;; ((and larm rarm) t)
       ((and larm (eq 'bowl larm))
        (send *ri* :go-pos-unsafe -0.1 0 0)
        (pr2-tuckarm-pose-for-bowl :larm :outside))
@@ -55,6 +55,7 @@
        (send *ri* :go-pos-unsafe -0.1 0 0)
        (pr2-tuckarm-pose))))
 
+  (send *ri* :clear-costmap)
   (case to-place
     ('kitchen (go-to-sink userdata)) ;; coe
     ('dishwasher (go-to-dishwasher userdata)) ;; coe
@@ -87,7 +88,8 @@
 (defaction pick (obj arm spot &optional userdata)
   (ros::ros-info "(pick ~A ~A ~A)" obj arm spot)
   (set-alist :arm (intern (string-upcase arm) *keyword-package*) userdata)
-  (let ((arm-controller (read-from-string (format nil "~A-controller" (cdr (assoc :arm userdata))))))
+  (let ((arm-controller (read-from-string (format nil "~A-controller" (cdr (assoc :arm userdata)))))
+        res)
     (send *pr2* (cdr (assoc :arm userdata)) :angle-vector (get-side-pose (cdr (assoc :arm userdata))))
     (send *ri* :angle-vector (send *pr2* :angle-vector) 3000 arm-controller)
     (send *ri* :angle-vector (pr2-pick-tray-pose) 2000 :torso-controller)
@@ -95,17 +97,17 @@
     (send *ri* :angle-vector (pr2-pick-tray-pose) 2000 arm-controller)
     (send *ri* :wait-interpolation)
     (send *pr2* :angle-vector (send *ri* :state :potentio-vector))
-  (case obj
-    ('bowl
-     (pick-bowl userdata))
-    (t
-     (pick-tabletop-object userdata)))
-  (case (cdr (assoc :arm userdata))
-    (:larm (set-alist :larm obj userdata))
-    (:rarm (set-alist :rarm obj userdata))
-    (:arms (set-alist :arms obj userdata)))
+    (setq res (case obj
+                ('bowl
+                 (pick-bowl userdata))
+                (t
+                 (pick-tabletop-object userdata))))
+    (case (cdr (assoc :arm userdata))
+      (:larm (set-alist :larm obj userdata))
+      (:rarm (set-alist :rarm obj userdata))
+      (:arms (set-alist :arms obj userdata)))
   ;; tuckarm is moved to move-to action
-  ))
+    res))
 
 (defaction find-placement (obj arm spot &optional userdata)
   (ros::ros-info "(find-placement ~A ~A ~A)" obj arm spot)
@@ -154,7 +156,8 @@
    ((eq spot 'dishwasher)
     (close-dishwasher userdata))
    ((eq spot 'fridge)
-    (send *ri* :go-pos-unsafe -0.22 -0.2 17)
+    ;; (send *ri* :go-pos-unsafe -0.22 -0.2 17)
+    (send *ri* :go-pos-unsafe -0.18 -0.22 17)
     (close-fridge :use-arm (cdr (assoc :arm userdata)))
     t)
    (t t)))

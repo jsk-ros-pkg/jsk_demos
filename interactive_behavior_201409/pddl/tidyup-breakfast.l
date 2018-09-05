@@ -29,11 +29,11 @@
                       ))
   (resolve-usual *problem*)
   ;; (pprint (send *problem* :goal-condition))
-  (setq *sm* (plan-task *domain* *problem* :debug debug :use-cache nil :timeout 30))
+  (setq *sm* (plan-task *domain* *problem* :debug debug :use-cache t :timeout 30))
 )
 
 (defun run (&optional debug)
-  (plan debug)
+  (if (or (not (boundp '*sm*)) (null *sm*)) (plan debug))
   (when (ros::wait-for-service "/idle_behavior/disable" 3)
     (call-empty-service "/idle_behavior/disable"))
   (pprint (exec-preemptive-task *sm*)))
