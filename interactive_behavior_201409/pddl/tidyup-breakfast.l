@@ -2,6 +2,8 @@
 ;; tidyup-breakfast.l
 ;; Author: Yuki Furuta <furushchev@jsk.imi.i.u-tokyo.ac.jp>
 
+(ros::roseus "tidyup_breakfast")
+
 (require :pr2-actionlib "package://interactive_behavior_201409/pddl/pr2-actionlib.l")
 (require :new-room-domain "package://interactive_behavior_201409/pddl/new-room-domain.l")
 (require :problem-parser "package://mbtk/euslisp/problem-parser.l")
