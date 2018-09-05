@@ -240,6 +240,9 @@
                              (AVAILABLE TABLE)
                              (AVAILABLE DRAWER))))
 
+    (setq goal (nconc goal '((FORALL (?AT - spot)
+                              (NOT (OPEN ?AT))))))
+
     ;; objects
     (dolist (item items)
       (push `(,item . item) objs))
