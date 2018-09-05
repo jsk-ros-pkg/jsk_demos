@@ -84,6 +84,15 @@
   (cond
    ((eq spot 'dishwasher) ;; coe
     (open-dishwasher userdata))
+   ((eq spot 'fridge)
+    ;; look at door
+    (base-go-to-fridge-init-pose :torso-lift 130 :head-pitch 0 :wait t)
+    ;; open door
+    (open-fridge-door :use-arm (cdr (assoc :arm userdata)))
+    ;; reach to fridge
+    (send *ri* :go-pos-unsafe 0 0 -15)
+    (send *ri* :go-pos-unsafe 0.30 -0.05 0)
+    t)
    (t
     (open-push-door userdata))))
 
@@ -93,6 +102,10 @@
   (cond
    ((eq spot 'dishwasher)
     (close-dishwasher userdata))
+   ((eq spot 'fridge)
+    (send *ri* :go-pos-unsafe -0.3 -0.25 17)
+    (close-fridge :use-arm (cdr (assoc :arm userdata)))
+    t)
    (t t)))
 
 (defaction identify-object (obj arm spot &optional userdata)
