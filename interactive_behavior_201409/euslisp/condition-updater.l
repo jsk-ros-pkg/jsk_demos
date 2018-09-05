@@ -62,6 +62,7 @@
           (:rarm (setq rarm-state :not-onhand)))))))
   (:update-init (init goal)
     (let ((ret (copy-object init))
+          (last-state (send self :last-state (* 60 60)))
           obj)
       ;; larm
       (cond
@@ -76,7 +77,11 @@
        ;; on -> onhand
        ((and (eq larm-state :onhand)
              (null (send self :onhand ret 'larm)))
-        (push '(onhand something larm) ret)
+        ;; recall onhand object from last state
+        (setq obj (send self :onhand last-state 'larm))
+        (when obj
+          (push `(onhand ,obj larm) ret)
+          (setq ret (remove `(on ,obj larm) ret :test #'equal)))
         ))
       ;; rarm
       (cond
@@ -91,7 +96,11 @@
        ;; on -> onhand
        ((and (eq rarm-state :onhand)
              (null (send self :onhand ret 'rarm)))
-        (push '(onhand something rarm) ret)
+        ;; recall onhand object from last state
+        (setq obj (send self :onhand last-state 'rarm))
+        (when obj
+          (push `(onhand ,obj rarm) ret)
+          (setq ret (remove `(on ,obj rarm) ret :test #'equal)))
         ))
       ret))
   (:update-goal (init goal) goal)

@@ -28,6 +28,8 @@
 ;; variables
 (defvar *condition-updaters* nil
   "Initial condition validators on planning")
+(defvar *robot-name* (ros::get-param "/robot/name" "robot")
+  "Robot name")
 
 ;; utilities
 (defun pformat (sexp)
@@ -35,6 +37,45 @@
   (with-output-to-string (s)
     (pprint sexp s)))
 
+
+(defun save-state-to-db (sexp &key init goal preempted meta)
+  (let ((mongo::*mongo-collection* (format nil "pddl_state_~A" *robot-name*))
+        (msg (instance roseus::StringStamped :init))
+        init-str goal-str
+        msg-id)
+    (send msg :header :stamp (ros::time-now))
+    (send msg :data (with-output-to-string (f) (dump-structure f sexp)))
+    (setq meta (nconc meta `((:published_at . ,(send msg :header :stamp)))))
+    (when init
+      (setq init-str (with-output-to-string (f) (dump-structure f init)))
+      (setq meta (nconc meta `((:initial_condition . ,init-str)))))
+    (when goal
+      (setq goal-str (with-output-to-string (f) (dump-structure f goal)))
+      (setq meta (nconc meta `((:goal_condition . ,goal-str)))))
+    (when preempted
+      (setq meta (nconc meta `((:preempted . ,preempted)))))
+    (setq msg-id (mongo::insert msg :meta meta))
+    (cond
+      (msg-id
+       (ros::ros-info "saved: ~A" msg-id)
+       t)
+      (t
+       (ros::ros-error "failed to save")
+       nil))))
+
+(defun get-latest-state-from-db (&key meta after-time-from-now)
+  (let ((mongo::*mongo-collection* (format nil "pddl_state_~A" *robot-name*))
+        msg)
+    (when after-time-from-now
+      (let ((pub-meta (cdr (assoc :published_at meta)))
+            (new-meta `((:$gt . ,(ros::time- (ros::time-now) (ros::time after-time-from-now))))))
+        (if meta
+            (set-alist :published_at (nconc pub-meta new-meta) meta)
+            (setq meta `((:published_at . ,new-meta))))))
+    (setq msg (car (mongo::query roseus::StringStamped :meta meta
+                                 :sort '((:_meta.published_at . -1))
+                                 :single t :msg-only t)))
+    (if msg (read-from-string (send msg :data)))))
 
 ;; add interface for pddl / smach
 (defmethod transition
@@ -212,6 +253,12 @@ Example: (defpreemptrobot pr2) creates `pr2-preempt-interface` and `pr2-init`"
           (return-from exec-preemptive-task))
         (send *ri* :reset-preempt)))
     ;;
+    ;; record initial states
+    (let ((trans (car (send (send sm :active-state) :arc-list))))
+      (save-state-to-db (send trans :pddl-from-state)
+                        :init (send sm :pddl-initial-state)
+                        :goal (send sm :pddl-goal-state)))
+    ;;
     ;; exec loop
     (setq result
           (catch :exec-barrier
@@ -230,7 +277,11 @@ Example: (defpreemptrobot pr2) creates `pr2-preempt-interface` and `pr2-init`"
                                  (send (send insp :state-machine :active-state) :arc-list)))))
                 (when trans
                   (setq pddl-state (send trans :pddl-to-state))
-                  (ros::ros-info ";; state -> ~A" (pformat pddl-state))))
+                  (save-state-to-db pddl-state
+                                    :init (send sm :pddl-initial-state)
+                                    :goal (send sm :pddl-goal-state)
+                                    :preempted (send *ri* :preempted-p))
+                  (ros::ros-info ";; state -> ~A" (pformat (remove-functions pddl-state)))))
               ) ;; while
             :finish))
     ;;
@@ -507,6 +558,8 @@ This function also supports resume from preempted tasks"
     (error "Not Implemented"))
   (:update-goal (init goal)
     (error "Not Implemented"))
+  (:last-state (&optional limit)
+    (get-latest-state-from-db :after-time-from-now limit))
   (:onhand (st arm)
     (mapcar #'cadr
             (remove-if-not #'(lambda (x)
@@ -540,6 +593,9 @@ This function also supports resume from preempted tasks"
   (push (instance* cls :init args) *condition-updaters*)
   t)
 
+(defun remove-functions (st)
+  (remove-if #'(lambda (x) (eq (car x) '=)) st))
+
 (defun update-condition (init &optional goal)
   (let (updaters)
     (dolist (updater *condition-updaters*)
@@ -561,7 +617,9 @@ This function also supports resume from preempted tasks"
         (setq prev-init (copy-object upd-init)
               upd-init (send updater :update-init upd-init upd-goal))
         (ros::ros-info "[~A] ~A -> ~A"
-                       (send updater :name) prev-init upd-init))
+                       (send updater :name)
+                       (remove-functions prev-init)
+                       (remove-functions upd-init)))
       ;;
       (when goal
         (dolist (updater updaters)
@@ -569,7 +627,9 @@ This function also supports resume from preempted tasks"
           (setq prev-goal (copy-object upd-goal)
                 upd-goal (send updater :update-goal upd-init upd-goal))
           (ros::ros-info "[~A] ~A -> ~A"
-                         (send updater :name) prev-goal upd-goal)))
+                         (send updater :name)
+                         (remove-functions prev-goal)
+                         (remove-functions upd-goal))))
       ;;
       (dolist (updater *condition-updaters*)
         (ros::ros-info "[~A] stopping" (send updater :name))
