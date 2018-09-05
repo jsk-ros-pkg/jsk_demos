@@ -27,7 +27,7 @@
                       ))
   (resolve-usual *problem*)
   ;; (pprint (send *problem* :goal-condition))
-  (setq *sm* (plan-task *domain* *problem* :debug debug))
+  (setq *sm* (plan-task *domain* *problem* :debug debug :use-cache nil :timeout 30))
 )
 
 (defun run (&optional debug)

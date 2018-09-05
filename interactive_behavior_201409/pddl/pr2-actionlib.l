@@ -29,6 +29,7 @@
 (defaction move-to (from-place to-place &optional userdata)
   (ros::ros-info "(move-to ~A ~A)" from-place to-place)
   (save-start-pose)
+  (send *ri* :change-inflation-range 0.25)
   (case to-place
     ('kitchen (go-to-sink userdata)) ;; coe
     ('dishwasher (go-to-dishwasher userdata)) ;; coe
@@ -50,7 +51,11 @@
        (setq *tabletop-bbox-topic* "/ssd/bounding_box_pose/output/boxes")
        (set-alist :target-object-label 45 userdata))
       ('cup
+       (setq *tabletop-bbox-topic* "/ssd/bounding_box_pose/output/boxes")
        (set-alist :target-object-label 41 userdata))
+      ('bottle
+       (setq *tabletop-bbox-topic* "/ssd/bounding_box_pose/output/boxes")
+       (set-alist :target-object-label 39 userdata))
       )
     (find-tabletop-object userdata)))
 
@@ -75,6 +80,8 @@
     (put-into-dishwasher userdata))
    ((eq obj 'bowl)
     (place-bowl userdata))
+   ((eq spot 'fridge)
+    (place-in-fridge userdata))
    (t ;; place to support plane
     (place-object userdata))))
 
@@ -88,7 +95,7 @@
     ;; look at door
     (base-go-to-fridge-init-pose :torso-lift 130 :head-pitch 0 :wait t)
     ;; open door
-    (open-fridge-door :use-arm (cdr (assoc :arm userdata)))
+    (open-fridge-door :use-arm (if (eq :rarm (cdr (assoc :arm userdata))) :larm :rarm))
     ;; reach to fridge
     (send *ri* :go-pos-unsafe 0 0 -15)
     (send *ri* :go-pos-unsafe 0.30 -0.05 0)
@@ -103,7 +110,7 @@
    ((eq spot 'dishwasher)
     (close-dishwasher userdata))
    ((eq spot 'fridge)
-    (send *ri* :go-pos-unsafe -0.3 -0.25 17)
+    (send *ri* :go-pos-unsafe -0.22 -0.2 17)
     (close-fridge :use-arm (cdr (assoc :arm userdata)))
     t)
    (t t)))
