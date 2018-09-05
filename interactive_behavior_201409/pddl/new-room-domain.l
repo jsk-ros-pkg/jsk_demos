@@ -214,6 +214,11 @@
                            :domain 'room-domain))
         (spots '(START TABLE FRIDGE DISHWASHER DRAWER SINK KITCHEN COUNTER ROOM73A1))
         objs)
+    ;; copy symbols to avoid circular reference
+    (setq init (copy-object init)
+          goal (copy-object goal)
+          items (copy-object items)
+          people (copy-object people))
 
     ;; manip cost
     (let ((unique-items (remove-duplicates items)))
