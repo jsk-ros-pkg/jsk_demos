@@ -47,6 +47,8 @@
                                      (NOT (OPEN ?FROM)))
                      :effect '((NOT (ROBOT-AT ?FROM))
                                (ROBOT-AT ?TO)
+                               (FORALL (?OBJ - item)
+                                (NOT (SURE-ON ?OBJ ?FROM)))
                                (increase (total-cost) (distance ?FROM ?TO))))
            (instance pddl-action :init
                      :name "find-object"
@@ -55,7 +57,7 @@
                                      (ON ?OBJ ?AT)
                                      (AVAILABLE ?AT))
                      :effect '((SURE-ON ?OBJ ?AT)
-                               (NOT (ON ?OBJ ?AT))
+                               ;;(NOT (ON ?OBJ ?AT))
                                (INCREASE (TOTAL-COST) (FIND-COST))))
            (instance pddl-action :init
                      :name "pick"
@@ -68,6 +70,7 @@
                                      (AVAILABLE ?AT))
                      :effect '((ONHAND ?OBJ ?ARM)
                                (NOT (SURE-ON ?OBJ ?AT))
+                               (NOT (ON ?OBJ ?AT))
                                (increase (total-cost) (manip-cost ?OBJ ?ARM))))
            (instance pddl-action :init
                      :name "find-placement"
@@ -200,7 +203,7 @@
     (dolist (from spots)
       (dolist (to spots)
         (unless (eq from to)
-          (push `(= (distance ,from ,to) 10) init))))
+          (push `(= (distance ,from ,to) 30) init))))
     (dolist (spot spots)
       (push `(= (distance ,spot ,spot) 1000) init))
     init))
@@ -217,7 +220,7 @@
       (dolist (item (append unique-items (list 'cleaner)))
         (push `(= (manip-cost ,item larm) 10) init)
         (push `(= (manip-cost ,item rarm) 10) init)
-        (push `(= (manip-cost ,item arms) 20) init)))
+        (push `(= (manip-cost ,item arms) 30) init)))
 
     ;; distance cost
     (let ((unique-spots (remove-duplicates spots)))
