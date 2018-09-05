@@ -1,7 +1,8 @@
 <launch>
   <arg name="use_tabletop" default="true"/>
   <arg name="use_ssd" default="true"/>
-  <arg name="use_visualizer" default="false"/>
+  <arg name="use_visualizer" default="true"/>
+  <arg name="use_mock" default="true"/>
 
   <arg name="machine" default="external"/>
   <arg name="camera" default="kinect_head_external"/>
@@ -41,10 +42,19 @@
   <group ns="ssd" if="$(arg use_ssd)">
     <node name="position_estimator"
           pkg="mbtk" type="position_estimator.py"
-          output="screen" machine="$(arg machine)">
+          output="screen" machine="$(arg machine)"
+          unless="$(arg use_mock)">
       <rosparam subst_value="true">
         database: jsk_robot_lifelog
         collection: localized_objects
+        max_cluster_num: 3
+      </rosparam>
+    </node>
+    <node name="position_estimator"
+          pkg="mbtk" type="mock_position_estimator.py"
+          output="screen" machine="$(arg machine)"
+          if="$(arg use_mock)">
+      <rosparam subst_value="true">
         max_cluster_num: 3
       </rosparam>
     </node>
@@ -83,4 +93,7 @@
   <node name="mbtk_move_base" pkg="mbtk" type="mbtk_move_base.py"
         output="screen" machine="$(arg machine)">
   </node>
+
+  <node name="semantic_world" pkg="semantic_world" type="semantic_world.l"
+        respawn="true" output="screen"/>
 </launch>
