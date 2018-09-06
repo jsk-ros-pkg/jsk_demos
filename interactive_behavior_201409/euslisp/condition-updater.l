@@ -15,7 +15,7 @@
   :super condition-updater
   :slots (grasp-thre release-thre larm-state rarm-state))
 (defmethod onhand-updater
-  (:init (&key (grasp-max-dist 0.01)
+  (:init (&key (grasp-max-dist 0.005)
                (release-min-dist 0.01))
     (setq grasp-thre grasp-max-dist
           release-thre release-min-dist)
@@ -79,9 +79,10 @@
              (null (send self :onhand ret 'larm)))
         ;; recall onhand object from last state
         (setq obj (send self :onhand last-state 'larm))
+        (ros::ros-info "last-onhand=~A" obj)
         (when obj
-          (push `(onhand ,obj larm) ret)
-          (setq ret (remove `(on ,obj larm) ret :test #'equal)))
+          (push `(onhand ,(car obj) larm) ret)
+          (setq ret (remove `(on ,(car obj) ,(send self :at ret)) ret :test #'equal)))
         ))
       ;; rarm
       (cond
@@ -98,9 +99,10 @@
              (null (send self :onhand ret 'rarm)))
         ;; recall onhand object from last state
         (setq obj (send self :onhand last-state 'rarm))
+        (ros::ros-info "last-onhand=~A" obj)
         (when obj
-          (push `(onhand ,obj rarm) ret)
-          (setq ret (remove `(on ,obj rarm) ret :test #'equal)))
+          (push `(onhand ,(car obj) rarm) ret)
+          (setq ret (remove `(on ,(car obj) ,(send self :at ret)) ret :test #'equal)))
         ))
       ret))
   (:update-goal (init goal) goal)
@@ -134,7 +136,7 @@
                 (norm (send robot-pose :difference-position (cdr s)))))
       (setq nearest (car spots)
             dist (norm (send robot-pose :difference-position (cdr nearest))))
-      (ros::ros-info "dist to ~A: ~A" (car nearest) dist)
+      ;; (ros::ros-info "dist to ~A: ~A" (car nearest) dist)
       (unless (< dist 400.0)
         (ros::ros-info "no near spot")
         (return-from :update-init init))
