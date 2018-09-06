@@ -19,7 +19,9 @@
                               ;; (ON CLEANER DRAWER)
                               ;; (ON SPOON TABLE))
                               )
-                      :goal '((ON BOTTLE USUAL)
+                      :goal '(
+                              (ROBOT-AT START)
+                              (ON BOTTLE USUAL)
                               (ON BOWL USUAL)
                               (ON CUP USUAL)
                               ;; (ON SPOON COUNTER)
