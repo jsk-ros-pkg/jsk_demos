@@ -28,7 +28,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defaction move-to (from-place to-place &optional userdata)
   (ros::ros-info "(move-to ~A ~A)" from-place to-place)
-  (unless (has-start-pose)
+  (when (eq 'from-place 'start)
     (save-start-pose))
   (send *ri* :change-inflation-range 0.25)
   ;; check if need to tuck arm
@@ -158,6 +158,7 @@
    ((eq spot 'fridge)
     ;; (send *ri* :go-pos-unsafe -0.22 -0.2 17)
     (send *ri* :go-pos-unsafe -0.18 -0.22 17)
+    (send *ri* :go-pos-unsafe 0.05 -0.05 0)
     (close-fridge :use-arm (cdr (assoc :arm userdata)))
     t)
    (t t)))

@@ -33,7 +33,7 @@
 )
 
 (defun run (&optional debug)
-  (if (or (not (boundp '*sm*)) (null *sm*)) (plan debug))
+  (plan debug)
   (when (ros::wait-for-service "/idle_behavior/disable" 3)
     (call-empty-service "/idle_behavior/disable"))
   (pprint (exec-preemptive-task *sm*)))
