@@ -394,7 +394,7 @@ Example: (defpreemptrobot pr2) creates `pr2-preempt-interface` and `pr2-init`"
     ;; merge states
     (ros::ros-info "merging current: ~A" (pformat cur))
     (ros::ros-info "updated: ~A" (pformat upd))
-    (remove-dupliactes (append cur upd) :test #'equal)
+    (remove-duplicates (append cur upd) :test #'equal)
     ))
 
 (defun merge-goal-states (current updated &key (debug))
@@ -427,7 +427,7 @@ Example: (defpreemptrobot pr2) creates `pr2-preempt-interface` and `pr2-init`"
     ;; merge states
     (ros::ros-info "merging current: ~A" (pformat cur))
     (ros::ros-info "updated: ~A" (pformat upd))
-    (remove-dupliactes (append cur upd) :test #'equal)
+    (remove-duplicates (append cur upd) :test #'equal)
     ))
 
 
@@ -595,6 +595,7 @@ This function also supports resume from preempted tasks"
     (mapcar #'cadr
             (remove-if-not #'(lambda (x)
                                (or (eq (car x) 'on)
+                                   (eq (car x) 'onhand)
                                    (eq (car x) 'delivered))) st)))
 ) ;; condition-updater
 

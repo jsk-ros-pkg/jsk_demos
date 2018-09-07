@@ -56,7 +56,7 @@
       (t
        (send *ri* :go-pos-unsafe -0.1 0 0)
        (pr2-tuckarm-pose))))
-
+  ;;
   (send *ri* :clear-costmap)
   (case to-place
     ('kitchen (go-to-sink userdata)) ;; coe
