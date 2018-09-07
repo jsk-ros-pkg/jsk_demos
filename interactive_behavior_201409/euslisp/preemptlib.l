@@ -249,13 +249,12 @@ Example: (defpreemptrobot pr2) creates `pr2-preempt-interface` and `pr2-init`"
     (ros::ros-warn "empty state machine")
     (return-from exec-preemptive-task t))
   (let ((insp (instance state-machine-inspector :init sm))
-        result pddl-state)
+        result cand-states pddl-state)
     (unix::sleep 2)
     ;;
     ;; setup state machine
     (send sm :reset-state)
     (send insp :publish-structure) ;; publish once and latch
-    (apply #'send sm :arg-keys (union (send sm :arg-keys) (mapcar #'car mydata)))
     ;;
     ;; check / reset preempt status
     (when (boundp '*ri*)
@@ -270,7 +269,12 @@ Example: (defpreemptrobot pr2) creates `pr2-preempt-interface` and `pr2-init`"
     (let ((trans (car (send (send sm :active-state) :arc-list))))
       (save-state-to-db (send trans :pddl-from-state)
                         :init (send sm :pddl-initial-state)
-                        :goal (send sm :pddl-goal-state)))
+                        :goal (send sm :pddl-goal-state))
+      (set-alist :current-state (copy-object (send trans :pddl-from-state)) mydata))
+    ;;
+    (apply #'send sm :arg-keys
+           (remove-if #'null
+                      (remove-duplicates (append (send sm :arg-keys) (mapcar #'car mydata)))))
     ;;
     ;; reset start pose
     (if (fboundp 'clear-start-pose) (clear-start-pose))
@@ -286,18 +290,21 @@ Example: (defpreemptrobot pr2) creates `pr2-preempt-interface` and `pr2-init`"
               (send insp :publish-status mydata)
               ;;
               (when (send sm :goal-reached) (return))
+              (setq cand-states (send (send insp :state-machine :active-state) :arc-list))
               (setq result (send insp :state-machine :execute mydata :step -1))
+              (ros::ros-info ";; result= ~A" result)
               ;;
               (let ((trans (car (remove-if-not
-                                 #'(lambda (tr) (send tr :check result))
-                                 (send (send insp :state-machine :active-state) :arc-list)))))
+                                 #'(lambda (tr) (send tr :check result)) cand-states))))
                 (when trans
                   (setq pddl-state (send trans :pddl-to-state))
                   (save-state-to-db pddl-state
                                     :init (send sm :pddl-initial-state)
                                     :goal (send sm :pddl-goal-state)
                                     :preempted (send *ri* :preempted-p))
-                  (ros::ros-info ";; state -> ~A" (pformat (remove-functions pddl-state)))))
+                  (set-alist :current-state (copy-object pddl-state) mydata)
+                  (ros::ros-info ";; trans=~A" trans)
+                  (ros::ros-info ";; state =~%~A" (pformat (remove-functions pddl-state)))))
               ) ;; while
             :finish))
     ;;

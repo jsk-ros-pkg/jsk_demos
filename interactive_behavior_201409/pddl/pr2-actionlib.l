@@ -33,10 +33,16 @@
     (save-start-pose))
   ;;
   (send *ri* :change-inflation-range 0.25)
+  ;;
   ;; check if need to tuck arm
-  (let ((larm (cdr (assoc :larm userdata)))
-        (rarm (cdr (assoc :rarm userdata)))
-        (arms (cdr (assoc :arms userdata))))
+  (let (larm rarm arms)
+    (dolist (st (remove-if-not #'(lambda (x) (eq (car x) 'onhand))
+                               (cdr (assoc :current-state userdata))))
+      (case (caddr st)
+        ('larm (setq larm (cadr st)))
+        ('rarm (setq rarm (cadr st)))
+        ('arms (setq rarm (cadr st)))))
+    ;;
     (ros::ros-info "onhand: larm=~A rarm=~A arms=~A" larm rarm arms)
     (cond
       (arms t)
