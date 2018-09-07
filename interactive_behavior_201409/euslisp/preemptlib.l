@@ -37,15 +37,37 @@
   (with-output-to-string (s)
     (pprint sexp s)))
 
-
-(defun save-state-to-db (sexp &key init goal preempted meta)
-  (let ((mongo::*mongo-collection* (format nil "pddl_state_~A" *robot-name*))
+(defun save-to-mongo (sexp &key meta stamp collection)
+  (unless collection (setq collection mongo::*mongo-collection*))
+  (let ((mongo::*mongo-collection* collection)
         (msg (instance roseus::StringStamped :init))
-        init-str goal-str
         msg-id)
-    (send msg :header :stamp (ros::time-now))
+    (unless stamp (setq stamp (ros::time-now)))
+    (send msg :header :stamp stamp)
     (send msg :data (with-output-to-string (f) (dump-structure f sexp)))
     (setq meta (nconc meta `((:published_at . ,(send msg :header :stamp)))))
+    ;;
+    (setq msg-id (mongo::insert msg :meta meta))
+    (if msg-id (ros::ros-info "saved as ~A" msg-id) (ros::ros-error "failed to save object"))
+    msg-id))
+
+(defun load-from-mongo (&key meta after-time-from-now collection)
+  (unless collection (setq collection mongo::*mongo-collection*))
+  (let ((mongo::*mongo-collection* collection)
+        msg)
+    (when after-time-from-now
+      (let ((pub-meta (cdr (assoc :published_at meta)))
+            (new-meta `((:$gt . ,(ros::time- (ros::time-now) (ros::time after-time-from-now))))))
+        (if meta
+            (set-alist :published_at (nconc pub-meta new-meta) meta)
+          (setq meta `((:published_at . ,new-meta))))))
+    (setq msg (car (mongo::query roseus::StringStamped :meta meta
+                                 :sort '((:_meta.published_at . -1))
+                                 :single t :msg-only t)))
+    (if msg (read-from-string (send msg :data)))))
+
+(defun save-state-to-db (sexp &key init goal preempted meta)
+  (let (init-str goal-str)
     (when init
       (setq init-str (with-output-to-string (f) (dump-structure f init)))
       (setq meta (nconc meta `((:initial_condition . ,init-str)))))
@@ -54,28 +76,19 @@
       (setq meta (nconc meta `((:goal_condition . ,goal-str)))))
     (when preempted
       (setq meta (nconc meta `((:preempted . ,preempted)))))
-    (setq msg-id (mongo::insert msg :meta meta))
-    (cond
-      (msg-id
-       (ros::ros-info "saved: ~A" msg-id)
-       t)
-      (t
-       (ros::ros-error "failed to save")
-       nil))))
+    (save-to-mongo sexp :meta meta :collection (format nil "pddl_state_~A" *robot-name*))))
 
 (defun get-latest-state-from-db (&key meta after-time-from-now)
-  (let ((mongo::*mongo-collection* (format nil "pddl_state_~A" *robot-name*))
-        msg)
-    (when after-time-from-now
-      (let ((pub-meta (cdr (assoc :published_at meta)))
-            (new-meta `((:$gt . ,(ros::time- (ros::time-now) (ros::time after-time-from-now))))))
-        (if meta
-            (set-alist :published_at (nconc pub-meta new-meta) meta)
-            (setq meta `((:published_at . ,new-meta))))))
-    (setq msg (car (mongo::query roseus::StringStamped :meta meta
-                                 :sort '((:_meta.published_at . -1))
-                                 :single t :msg-only t)))
-    (if msg (read-from-string (send msg :data)))))
+  (load-from-mongo :meta meta :after-time-from-now after-time-from-now
+                   :collection (format nil "pddl_state_~A" *robot-name*)))
+
+(defun save-problem (problem &key meta)
+  (save-to-mongo problem :meta meta :collection (format nil "pddl_problem_~A" *robot-name*)))
+
+(defun load-last-problem (&key meta after-time-from-now)
+  (load-from-mongo :meta meta :after-time-from-now after-time-from-now
+                   :collection (format nil "pddl_problem_~A" *robot-name*)))
+
 
 ;; add interface for pddl / smach
 (defmethod transition
@@ -485,6 +498,9 @@ This function also supports resume from preempted tasks"
     (setf (get sm :pddl-state)
           (cons (send prob :initial-condition)
                 (send prob :goal-condition)))
+    ;;
+    (when (send sm :nodes) (save-problem prob))
+    ;;
     sm))
 
 ;;
