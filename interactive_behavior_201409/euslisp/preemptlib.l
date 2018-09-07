@@ -136,6 +136,34 @@
        (not (null (ros::get-param *preempt-param-key*)))))
 
 
+(defun resume-from-preemption ()
+  (unless (preempted-p)
+    (ros::ros-error "no preemption is occured.")
+    (return-from resume-from-preemption t))
+  (let (domain problem sm init-state goal-state)
+    (if (and (boundp '*domain*) *domain*)
+        (setq domain *domain*)
+      (setq domain (make-domain)))
+    (if (and (boundp '*problem*) *problem*)
+        (setq problem *problem*)
+      (setq problem (load-last-problem)))
+    (unless problem
+      (ros::ros-error "failed to recall problem...")
+      (return-from resume-from-preemption nil))
+    ;;
+    (setq init-state (read-from-string (ros::get-param *preempted-state-param-key*)))
+    (if init-state
+        (send problem :initial-condition init-state)
+      (ros::ros-warn "no preempted init state found"))
+    (setq goal-state (read-from-string (ros::get-param *preempted-goal-param-key*)))
+    (if goal-state
+        (send problem :goal-condition goal-state)
+      (ros::ros-warn "no preempted goal state found"))
+    ;;
+    (setq sm (plan-task domain problem :debug t :use-cache t :timeout 30))
+    (exec-preemptive-task sm)))
+
+
 (defmacro defpreemptrobot (name &rest form)
   "This macro defines a subclass of `robot`-interface, where preemption is supported.
 The original init function (e.g. pr2-init) is overwritten to initialize an instance of the class.
@@ -205,6 +233,31 @@ Example: (defpreemptrobot pr2) creates `pr2-preempt-interface` and `pr2-init`"
    (&optional (reason :preempted))
    (prog1 (preempt reason)
      (progn ,@form)))
+  (:preempted-state (&optional st)
+    (when (send self :preempted-p)
+      (if st
+          (ros::set-param *preempted-state-param-key* (format nil "~A" st)))
+      (unless (ros::has-param *preempted-state-param-key*)
+        (ros::ros-error "preempted state is not recoreded")
+        (return-from :preempted-state nil))
+      (let ((cnd (ros::get-param *preempted-state-param-key*)))
+        (when (or (not (stringp cnd)) (null-string-p cnd))
+          (ros::ros-error "preempted state is empty")
+          (return-from :preempted-state nil))
+        (read-from-string cnd))))
+  (:preempted-goal (&optional goal)
+    (when (send self :preempted-p)
+      (if goal
+          (ros::set-param *preempted-goal-param-key* (format nil "~A" goal)))
+      (unless (ros::has-param *preempted-goal-param-key*)
+        (ros::ros-error "preempted goal is not recoreded")
+        (return-from :preempted-goal nil))
+      (let ((cnd (ros::get-param *preempted-goal-param-key*)))
+        (when (or (not (stringp cnd)) (null-string-p cnd))
+          (ros::ros-error "preempted goal is empty")
+          (return-from :preempted-goal nil))
+        (read-from-string cnd))))
+  (:resume () (resume-from-preemption))
 ) ;; defmethod
 ;;
 (unless (fboundp ',initorigfunc)
@@ -317,11 +370,10 @@ Example: (defpreemptrobot pr2) creates `pr2-preempt-interface` and `pr2-init`"
     (when (and (send *ri* :preempted-p)
                (not (null pddl-state)))
       ;; dump current state
-      (ros::set-param *preempted-state-param-key* (format nil "~A" pddl-state))
+      (send *ri* :preempted-state pddl-state)
       ;; dump goal state
       (if (send sm :pddl-goal-state)
-          (ros::set-param *preempted-goal-param-key*
-                          (format nil "~A" (send sm :pddl-goal-state)))
+          (send *ri* :preempted-goal (send sm :pddl-goal-state))
           (ros::ros-warn "PDDL goal state not found. Resume may fail"))
       ) ;; when preempted
     (list result pddl-state))) ;; defaction
