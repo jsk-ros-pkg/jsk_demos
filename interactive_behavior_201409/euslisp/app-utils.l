@@ -166,3 +166,6 @@
         (apply #'send cds :rpy (subseq vec 3))
         cds)
     (send *ri* :state :worldcoords)))
+
+(defun clear-start-pose ()
+  (ros::delete-param *start-spot-param-key*))

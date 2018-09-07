@@ -259,6 +259,9 @@ Example: (defpreemptrobot pr2) creates `pr2-preempt-interface` and `pr2-init`"
                         :init (send sm :pddl-initial-state)
                         :goal (send sm :pddl-goal-state)))
     ;;
+    ;; reset start pose
+    (if (fboundp 'clear-start-pose) (clear-start-pose))
+    ;;
     ;; exec loop
     (setq result
           (catch :exec-barrier

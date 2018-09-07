@@ -28,8 +28,10 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defaction move-to (from-place to-place &optional userdata)
   (ros::ros-info "(move-to ~A ~A)" from-place to-place)
-  (when (eq 'from-place 'start)
+  ;;
+  (when (or (not (has-start-pose)) (eq 'from-place 'start))
     (save-start-pose))
+  ;;
   (send *ri* :change-inflation-range 0.25)
   ;; check if need to tuck arm
   (let ((larm (cdr (assoc :larm userdata)))
