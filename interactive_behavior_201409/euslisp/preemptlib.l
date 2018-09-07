@@ -10,6 +10,7 @@
 (require :pddl2smach "package://roseus_smach/src/pddl2smach.l")
 (require :state-machine-ros "package://roseus_smach/src/state-machine-ros.l")
 (require :mongo-client "package://roseus_mongo/euslisp/mongo-client.l")
+(require :new-room-domain "package://interactive_behavior_201409/pddl/new-room-domain.l")
 
 ;; parameters
 (defparameter *preempt* t
@@ -329,6 +330,10 @@ Example: (defpreemptrobot pr2) creates `pr2-preempt-interface` and `pr2-init`"
            (remove-if #'null
                       (remove-duplicates (append (send sm :arg-keys) (mapcar #'car mydata)))))
     ;;
+    ;; disable idle behavior
+    (when (ros::wait-for-service "/idle_behavior/disable" 3)
+      (call-empty-service "/idle_behavior/disable"))
+    ;;
     ;; reset start pose
     (if (fboundp 'clear-start-pose) (clear-start-pose))
     ;;
@@ -376,6 +381,11 @@ Example: (defpreemptrobot pr2) creates `pr2-preempt-interface` and `pr2-init`"
           (send *ri* :preempted-goal (send sm :pddl-goal-state))
           (ros::ros-warn "PDDL goal state not found. Resume may fail"))
       ) ;; when preempted
+    ;;
+    ;; re-enable idle behavior
+    (when (ros::wait-for-service "/idle_behavior/enable" 3)
+      (call-empty-service "/idle_behavior/enable"))
+    ;;
     (list result pddl-state))) ;; defaction
 
 (defun merge-init-states (current updated &key (debug))

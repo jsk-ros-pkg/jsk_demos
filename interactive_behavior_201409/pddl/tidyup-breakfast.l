@@ -36,8 +36,6 @@
 
 (defun run (&optional debug)
   (plan debug)
-  (when (ros::wait-for-service "/idle_behavior/disable" 3)
-    (call-empty-service "/idle_behavior/disable"))
   (pprint (exec-preemptive-task *sm*)))
 
 (pr2-init)
