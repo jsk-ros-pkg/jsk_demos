@@ -37,11 +37,18 @@
     </rosparam>
   </node>
   
-  <node name="preempt_monitor"
-        pkg="interactive_behavior_201409" type="preempt-monitor.l"
+  <node name="mecab" pkg="mecab_ros" type="mecab.py"/>
+
+  <node name="joint_torque_monitor"
+        pkg="interactive_behavior_201409" type="joint-torque-monitor.l"
+        output="screen"/>
+  <node name="sound_monitor"
+        pkg="interactive_behavior_201409" type="sound-monitor.l"
+        output="screen"/>
+  <node name="recovery_mode"
+        pkg="interactive_behavior_201409" type="recovery-mode.l"
         output="screen"/>
 
-  <node name="mecab" pkg="mecab_ros" type="mecab.py"/>
 
   <group if="$(arg run_app_manager)">
     <node pkg="app_manager" type="appmaster" name="appmaster"
