@@ -51,18 +51,6 @@
 
 (defun speech-cb (msg)
   (send *ri* :state)
-  #|
-  (ros::ros-info "when: ~A" (and (not (send *ri* :preempted-p))
-                                 (or (arm-moving-p *ri* :rarm-controller)
-                                     (arm-moving-p *ri* :larm-controller)
-                                     (base-moving-p *ri*))))
-  (ros::ros-info "speech: ~A" (send msg :transcript))
-  (ros::ros-info "result: ~A" (find (car (send msg :transcript)) *preempt-phrase* :test #'string=))
-  (ros::ros-info "arm: ~A ~A" (arm-moving-p *ri* :rarm-controller)
-                 (arm-moving-p *ri* :larm-controller))
-  (ros::ros-info "bsae: ~A" (base-moving-p *ri*))
-  (ros::ros-info "preempt: ~A" (send *ri* :preempted-p))
-  |#
   (when (and (not (send *ri* :preempted-p))
              (or (arm-moving-p *ri* :rarm-controller)
                  (arm-moving-p *ri* :larm-controller)

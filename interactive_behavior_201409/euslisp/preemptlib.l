@@ -132,9 +132,15 @@
   t)
 
 
+(defun get-preempted-reason ()
+  (when (ros::has-param *preempt-param-key*)
+    (let ((reason (ros::get-param *preempt-param-key*)))
+      (and (not (null reason))
+           (not (null-string-p reason))
+           (intern (string-upcase reason) *keyword-package*)))))
+
 (defun preempted-p ()
-  (and (ros::has-param *preempt-param-key*)
-       (not (null (ros::get-param *preempt-param-key*)))))
+  (not (null (get-preempted-reason))))
 
 
 (defun resume-from-preemption ()
@@ -234,6 +240,7 @@ Example: (defpreemptrobot pr2) creates `pr2-preempt-interface` and `pr2-init`"
    (&optional (reason :preempted))
    (prog1 (preempt reason)
      (progn ,@form)))
+  (:preempted-reason () (get-preempted-reason))
   (:preempted-state (&optional st)
     (when (send self :preempted-p)
       (if st
