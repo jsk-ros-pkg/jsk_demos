@@ -29,6 +29,53 @@
         (cons "平べったい" "flat")))
 
 
+(defun find-word (text &key class position yomi (key :original))
+  (unless (ros::wait-for-service *mecab-service* 1)
+    (ros::ros-error "~A not advertised" *mecab-service*)
+    (return-from find-word nil))
+  (let ((req (instance mecab_ros::ParseRequest :init :text text))
+        pos)
+    (setq pos (send (ros::service-call *mecab-service* req) :parts))
+    (cond
+      (position
+       (send (elt pos position) key))
+      (yomi
+       (setq pos (remove-if-not #'(lambda (p)
+                                    (string= yomi (send p :reading))) pos))
+       (send-all pos key))
+      (class
+       (case class
+         (:command
+          (setq pos (remove-if-not #'(lambda (p)
+                                       (and (string= "動詞" (send p :pos))
+                                            (substringp "命令" (send p :inflection)))) pos))
+          (send-all pos key))
+         (:verb
+          (setq pos (remove-if-not #'(lambda (p)
+                                       (and (string= "動詞" (send p :pos))
+                                            (string= "自立" (send p :pos1)))) pos))
+          (send-all pos key))
+         (:noun
+          (setq pos (remove-if-not #'(lambda (p)
+                                       (string= "名詞" (send p :pos))) pos))
+          (send-all pos key))
+         (:adj
+          (setq pos (mapcar #'(lambda (p)
+                                (when (and (string= "連体詞" (send p :pos))
+                                           (string= "な" (subseq (send p :query)
+                                                                 (- (length (send p :original)) 3))))
+                                  (send p :pos "形容詞")
+                                  (send p :original
+                                        (concatenate string
+                                                     (subseq s 0 (- (length s) 3)) "い")))
+                                p) pos))
+          (setq pos (remove-if-not #'(lambda (p)
+                                       (string= "形容詞" (send p :pos))) pos))
+          (send-all pos key))
+         (t (error (format nil "invalid class ~A" class))))) ;; class
+      (t (send-all pos key)))))
+
+
 (defun remap-word (word)
   "this should be overriden by disambiguotizer?"
   (if (derivedp word mecab_ros::POS) (setq word (send word :query)))
@@ -99,6 +146,7 @@
     (if trans trans word)))
 
 (defun parse-object-description-speech (text)
+  "黄色くて小さな箱 -> '((box) (:feature yellow small))"
   (unless (ros::wait-for-service *mecab-service* 1)
     (ros::ros-error "~A not advertised" *mecab-service*)
     (return-from parse-preempt-speech nil))
