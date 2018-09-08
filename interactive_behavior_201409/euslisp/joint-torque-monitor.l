@@ -69,7 +69,7 @@
 (defun main ()
   (pr2-init)
   (ros::rate 10)
-  (let ((preempt-thresh (ros::get-param "~max_torque_ratio" 0.4))
+  (let ((preempt-thresh (ros::get-param "~max_torque_ratio" 0.45))
         prev-preempted-p preempted-p
         torq-lst)
     (setq preempted-p (send *ri* :preempted-p)
@@ -81,6 +81,7 @@
       (cond
         ((and (null preempted-p) prev-preempted-p)
          ;; recover from preemption
+         (ros::ros-warn "stopped mannequin mode")
          (when (mannequin-mode-p :larm) (send *ri* :stop-mannequin-mode :larm))
          (when (mannequin-mode-p :rarm) (send *ri* :stop-mannequin-mode :rarm)))
         ((null preempted-p)
