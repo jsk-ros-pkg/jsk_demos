@@ -733,6 +733,69 @@ This function also supports resume from preempted tasks"
       ;;
       (list upd-init upd-goal))))
 
+;; symbol operations
+
+(defun remove-op-from-condition (op cnd)
+  "(remove-op-from-condition '(on cup table) '((or (on cup table) (hoge fuga) (on bottle kitchen))))
+    -> ((or (on bottle kitchen) (hoge fuga)))"
+  (let (ret subret)
+    (dolist (c cnd)
+      (cond
+        ((eq (car c) 'and)
+         (setq subret (remove-op-from-condition op (cdr c)))
+         (cond
+           ((null subret) t)
+           ((= (length subret) 1) (push (car subret) ret))
+           (t (push 'and subret) (push subret ret))))
+        ((eq (car c) 'or)
+         (setq subret (remove-op-from-condition op (cdr c)))
+         (cond
+           ((null subret) t)
+           ((= (length subret) 1) (push (car subret) ret))
+           (t (push 'or subret) (push subret ret))))
+        (t
+         (unless (equal op c) (push c ret)))))
+    (nreverse ret)))
+
+(defun replace-symbol (src dst cnd)
+  "(replace-symbol 'cup 'bottle '((on cup table)))
+    -> ((on bottle table))"
+  (let (ret subret idx)
+    (dolist (c cnd)
+      (cond
+        ((or (eq (car c) 'and) (eq (car c) 'or))
+         (setq subret (replace-symbol src dst (cdr c)))
+         (push 'and subret)
+         (push subret ret))
+        (t
+         (setq idx (position src c))
+         (setq subret (copy-object c))
+         (when idx (setf (elt subret idx) dst))
+         (push subret ret))))
+    (nreverse ret)))
+
+(defun remove-state-from-condition (sym cnd)
+  "Remove state related to `sym` from condition `cnd`"
+  (let (ret subret)
+    (dolist (c cnd)
+      (cond
+        ((eq (car c) 'and)
+         (setq subret (remove-state-from-condition sym (cdr c)))
+         (cond
+           ((null subret) t)
+           ((= (length subret) 1) (push (car subret) ret))
+           (t (push 'and subret) (push subret ret))))
+        ((eq (car c) 'or)
+         (setq subret (remove-state-from-condition sym (cdr c)))
+         (cond
+           ((null subret) t)
+           ((= (length subret) 1) (push (car subret) ret))
+           (t (push 'or subret) (push subret ret))))
+        (t
+         (unless (find sym c) (push c ret)))))
+    (nreverse ret)))
+
+
 ;; load condition updater subclasses
 (require :condition-updater "package://interactive_behavior_201409/euslisp/condition-updater.l")
 
