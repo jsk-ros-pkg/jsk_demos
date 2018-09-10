@@ -35,7 +35,23 @@
   (case reason
     (:speech
      ;; preempted by speech
-
+     (let ((result (parse-preempt-speech text))
+           cnd)
+       (case (cdr (assoc :command result))
+         (:add
+          (setq cnd (send *ri* :preempted-goal))
+          (push `(on ,(cdr (assoc :after result)) usual) cnd)
+          (send *ri* :preempted-goal cnd))
+         (:remove
+          (setq cnd (send *ri* :preempted-goal))
+          (setq cnd (remove-state-from-condition (cdr (assoc :before result)) cnd))
+          (send *ri* :preempted-goal cnd))
+         (:update
+          (setq cnd (send *ri* :preempted-goal))
+          (setq cnd (remove-state-from-condition (cdr (assoc :before result)) cnd))
+          (push `(on ,(cdr (assoc :after result)) usual) cnd)
+          (send *ri* :preempted-goal cnd))
+         (t t))
      )
     (:larm-torque
      ;; preempted by larm torque
