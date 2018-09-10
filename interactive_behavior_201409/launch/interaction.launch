@@ -13,6 +13,7 @@
   <arg name="input_depth" default="/$(arg camera)/depth_registered/$(arg throttle_prefix)image_rect" />
   <arg name="input_cloud" default="/$(arg camera)/depth_registered/$(arg throttle_prefix)points"/>
 
+  <arg name="gpu" default="0"/>
   <arg name="machine" default="external" />
 
   <arg name="ROBOT" default="$(optenv ROBOT pr2)"/>
@@ -28,7 +29,7 @@
       <remap from="~input/info" to="$(arg input_camera_info)" />
       <remap from="~input/depth" to="$(arg input_depth)" />
       <rosparam subst_value="true">
-        gpu: 0
+        gpu: $(arg gpu)
         model_file: $(optenv JSK_DATA_CACHE_DIR /etc/ros/jsk_data)/jsk_perception/pose_estimation_2d_chainermodel.pkl
         hand:
           enable: true
@@ -58,7 +59,7 @@
       <remap from="~input/pose_2d" to="people_pose_estimation/pose_2d" />
       <remap from="~input/pose" to="people_pose_estimation/pose" />
       <rosparam subst_value="true">
-        gpu: 0
+        gpu: $(arg gpu)
         model_path: auto
       </rosparam>
     </node>
