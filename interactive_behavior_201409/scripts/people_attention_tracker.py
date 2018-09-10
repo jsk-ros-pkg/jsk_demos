@@ -3,7 +3,7 @@
 # Author: furushchev <furushchev@jsk.imi.i.u-tokyo.ac.jp>
 
 import angles
-from collections import defaultdict
+from collections import defaultdict, Counter
 from jsk_topic_tools import ConnectionBasedTransport
 import message_filters as MF
 import numpy as np
@@ -14,6 +14,7 @@ import tf2_geometry_msgs
 
 from geometry_msgs.msg import PoseArray, PoseStamped
 from jsk_recognition_msgs.msg import ClassificationResult
+from jsk_recognition_msgs.msg import PeoplePoseArray
 from opencv_apps.msg import FaceArrayStamped
 from interactive_behavior_201409.msg import Attention
 
@@ -33,43 +34,59 @@ class PeopleAttentionTracker(ConnectionBasedTransport):
     def __init__(self):
         super(PeopleAttentionTracker, self).__init__()
 
+        # parameters
+        self.enable_face_identification = rospy.get_param(
+            "~enable_face_identification", False)
         self.fixed_frame_id = rospy.get_param("~fixed_frame_id", "odom_combined")
-        self.distance_threshold = rospy.get_param("~distance_threshold", 0.25)
+        self.distance_threshold = rospy.get_param("~distance_threshold", 0.5)
         self.timeout_threshold = rospy.get_param("~timeout_threshold", 5.0)
         self.face_recognition_threshold = rospy.get_param("~face_recognition_threshold", 4300.0)
         self.face_pose_threshold = rospy.get_param("~face_pose_threshold", 0.2)
         self.attention_score_threshold = rospy.get_param("~attention_score_threshold", 30.0)
         self.attention_timeout_threshold = rospy.get_param("~attention_timeout_threshold", 3.0)
-        self.unknown_name_prefix = rospy.get_param("~unknown_name_prefix", "unknown")
+        self.unknown_name_prefix = rospy.get_param("~unknown_name_prefix", "person")
 
+        # variables
         self.tfl = tf2_ros.BufferClient("/tf2_buffer_server")
         if not self.tfl.wait_for_server(rospy.Duration(10)):
             rospy.logerr("Failed to wait for /tf2_buffer_server")
             self.tfl = tf2_ros.Buffer()
+        self.limbs = ["Nose", "Neck", "RShoulder", "LShoulder", "RHip", "LHip",]
 
+        # advertise
         self.attention_pub = self.advertise(
             "~output", Attention, queue_size=1)
+        self.pose_pub = self.advertise(
+            "~output/pose", PoseArray, queue_size=1)
         self.people_pub = self.advertise(
             "~output/people", ClassificationResult, queue_size=1)
         self.attention_class_pub = self.advertise(
             "~output/attention", ClassificationResult, queue_size=1)
 
     def subscribe(self):
+        self.last_received = None
+        self.last_tracked_name = None
         self.name_counter = defaultdict(int)
         self.people = dict()
-        self.last_received = None
         self.attentions = defaultdict(list)
 
-        approximate_sync = rospy.get_param("~approximate_sync", False)
+        approximate_sync = rospy.get_param("~approximate_sync", True)
         queue_size = rospy.get_param("~queue_size", 100)
         slop = rospy.get_param("~slop", 0.1)
 
-        self.subscribers = [
-            MF.Subscriber("~input/pose",
-                          PoseArray, queue_size=1),
-            MF.Subscriber("~input/face",
-                          FaceArrayStamped, queue_size=1),
-        ]
+        if self.enable_face_identification:
+            self.subscribers = [
+                MF.Subscriber("~input/face_pose",
+                              PoseArray, queue_size=1),
+                MF.Subscriber("~input/face",
+                              FaceArrayStamped, queue_size=1),
+            ]
+        else:
+            self.subscribers = [
+                MF.Subscriber("~input/people_pose",
+                              PeoplePoseArray, queue_size=1),
+            ]
+
 
         if approximate_sync:
             sync = MF.ApproximateTimeSynchronizer(self.subscribers,
@@ -78,7 +95,7 @@ class PeopleAttentionTracker(ConnectionBasedTransport):
         else:
             sync = MF.TimeSynchronizer(self.subscribers,
                                        queue_size=queue_size)
-        sync.registerCallback(self.msg_callback)
+        sync.registerCallback(self.callback)
         rospy.loginfo("subscribed")
 
     def unsubscribe(self):
@@ -86,9 +103,8 @@ class PeopleAttentionTracker(ConnectionBasedTransport):
             s.unregister()
         rospy.loginfo("unsubscribed")
 
-    def msg_callback(self, poses, faces):
+    def pop_old_cache(self, stamp):
         # pop old poses
-        stamp = poses.header.stamp
         if self.last_received and self.last_received < stamp:
             new_poses = dict()
             for n, p in self.people.items():
@@ -97,6 +113,99 @@ class PeopleAttentionTracker(ConnectionBasedTransport):
                 else:
                     rospy.logdebug("popped: %s" % n)
             self.people = new_poses
+        self.last_received = stamp
+
+    def callback(self, poses, face_ids=None):
+        stamp = poses.header.stamp
+        self.pop_old_cache(stamp)
+        #
+        if poses.header.frame_id.startswith("/"):
+            poses.header.frame_id = poses.header.frame_id[1:]
+        #
+        if self.enable_face_identification:
+            self.callback_with_id(poses, face_ids)
+        else:
+            self.callback_without_id(poses)
+
+    def callback_without_id(self, poses):
+        stamp = poses.header.stamp
+
+        for ppose in poses.poses:
+            pose = self.get_people_pos(ppose)
+            if poses.header.frame_id != self.fixed_frame_id:
+                try:
+                    ps = PoseStamped(header=poses.header, pose=pose)
+                    pose = self.tfl.transform(ps, self.fixed_frame_id)
+                except Exception as e:
+                    rospy.logerr(e)
+                    continue
+            else:
+                pose = PoseStamped(header=poses.header, pose=pose)
+
+            # find near poses
+            dups = list()
+            for n, p in self.people.items():
+                d = pose_distance(pose, p)
+                if d < self.distance_threshold:
+                    dups.append((n, p))
+                    del self.people[n]
+                    continue
+
+            name = None
+            if dups:
+                name = Counter([n for n, p in dups]).most_common(1)
+                if name:
+                    name = name[0][0]
+                else:
+                    name = None
+            if name is None:
+                name = self.generate_name()
+
+            self.people[name] = pose
+
+        if not self.people:
+            return
+        header = self.people.values()[0].header
+        header.stamp = stamp
+        pub_msg = Attention(header=header, type="people", level=Attention.LEVEL_IMPORTANT)
+        if self.last_tracked_name and self.last_tracked_name in self.people:
+            pose = self.people[self.last_tracked_name]
+            pub_msg.target = pose.pose
+        elif self.people.values():
+            name, pose = self.people.items()[0]
+            pub_msg.target = pose.pose
+            rospy.loginfo("%s -> %s" % (self.last_tracked_name, name))
+            self.last_tracked_name = name
+        self.attention_pub.publish(pub_msg)
+
+        # pose
+        pub_msg = PoseArray(header=header)
+        for name, pose in self.people.items():
+            pub_msg.poses.append(pose.pose)
+        self.pose_pub.publish(pub_msg)
+
+        # attention
+        pub_msg = ClassificationResult(header=header)
+        pub_msg.classifier = "people_tracker"
+        people = self.people.items()
+        names = [p[0] for p in people]
+        target_names = list(set(names))
+        pub_msg.target_names = target_names
+        pub_msg.label_names = names
+        pub_msg.labels = [target_names.index(n) for n in names]
+        pub_msg.label_proba = [0.5 for n in names]
+        self.attention_class_pub.publish(pub_msg)
+
+    def get_people_pos(self, pose):
+        for limb in self.limbs:
+            try:
+                idx = pose.limb_names.index(limb)
+                return pose.poses[idx]
+            except ValueError:
+                continue
+
+    def callback_with_id(self, poses, faces):
+        stamp = poses.header.stamp
 
         people_msg = ClassificationResult(header=poses.header)
         people_msg.classifier = "people_tracker"
@@ -189,8 +298,6 @@ class PeopleAttentionTracker(ConnectionBasedTransport):
             self.attention_pub.publish(normal_attention)
         if important_attention is not None:
             self.attention_pub.publish(important_attention)
-
-        self.last_received = stamp
 
     def generate_name(self, base=None):
         if base is None:

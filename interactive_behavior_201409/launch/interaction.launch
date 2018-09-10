@@ -173,9 +173,11 @@
       max_size: 25000
     </rosparam>
 
-    <node name="people_attention_tracker" pkg="interactive_behavior_201409" type="people_attention_tracker.py"
+    <node name="people_attention_tracker"
+          pkg="interactive_behavior_201409" type="people_attention_tracker.py"
           output="screen" machine="$(arg machine)">
-      <remap from="~input/pose" to="face_pose_estimation/output/pose" />
+      <remap from="~input/people_pose" to="people_pose_estimation/pose"/>
+      <remap from="~input/face_pose" to="face_pose_estimation/output/pose" />
       <remap from="~input/face" to="face_recognition/output" />
       <remap from="~output" to="attention" />
       <rosparam>
@@ -191,7 +193,13 @@
           machine="$(arg machine)">
       <remap from="~input/classes" to="people_attention_tracker/output/attention" />
       <remap from="~input/poses"   to="face_pose_estimation/output/pose" />
-      <param name="text_size" value="0.1" />
+      <rosparam>
+        text_color_red: 1.0
+        text_color_green: 0.0
+        text_color_blue: 0.0
+        text_size: 0.15
+        text_offset_z: -0.2
+      </rosparam>
     </node>
 
     <node name="sound_attention_tracker"
