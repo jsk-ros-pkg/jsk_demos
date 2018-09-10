@@ -11,6 +11,7 @@ import rospy
 import tf.transformations as T
 import tf2_ros
 import tf2_geometry_msgs
+from sklearn.covariance import EllipticEnvelope
 
 from geometry_msgs.msg import PoseArray, PoseStamped
 from jsk_recognition_msgs.msg import ClassificationResult
@@ -28,6 +29,33 @@ def pose_distance(p1, p2):
     if dt == 0:
         dt = 1.0
     return np.sqrt(dp) / dt
+
+
+def remove_outlier_limbs(person, mean_thresh=0.5, score_thresh=0.4):
+    xs = np.asarray([[p.position.z] for p in person.poses])
+    ys = EllipticEnvelope().fit(xs).predict(xs)
+    mean = np.mean(xs[ys > 0])
+    neg = np.mean(xs[ys < 0])
+
+    rospy.loginfo((mean, neg))
+    if neg < mean and abs(mean - neg) > mean_thresh:
+        mean, neg = neg, mean
+
+    limbs, poses, scores = [], [], []
+    for i in range(len(person.poses)):
+        if abs(person.poses[i].position.z - mean) < mean_thresh and\
+           person.scores[i] > score_thresh:
+            limbs.append(person.limb_names[i])
+            poses.append(person.poses[i])
+            scores.append(person.scores[i])
+        else:
+            rospy.logdebug("Dropped %s" % person.limb_names[i])
+
+    person.poses = poses
+    person.limb_names = limbs
+    person.scores = scores
+
+    return person
 
 
 class PeopleAttentionTracker(ConnectionBasedTransport):
@@ -111,7 +139,7 @@ class PeopleAttentionTracker(ConnectionBasedTransport):
                 if (stamp - p.header.stamp).to_sec() < self.timeout_threshold:
                     new_poses[n] = p
                 else:
-                    rospy.logdebug("popped: %s" % n)
+                    rospy.loginfo("popped: %s" % n)
             self.people = new_poses
         self.last_received = stamp
 
@@ -196,11 +224,12 @@ class PeopleAttentionTracker(ConnectionBasedTransport):
         pub_msg.label_proba = [0.5 for n in names]
         self.attention_class_pub.publish(pub_msg)
 
-    def get_people_pos(self, pose):
+    def get_people_pos(self, person):
+        person = remove_outlier_limbs(person)
         for limb in self.limbs:
             try:
-                idx = pose.limb_names.index(limb)
-                return pose.poses[idx]
+                idx = person.limb_names.index(limb)
+                return person.poses[idx]
             except ValueError:
                 continue
 
