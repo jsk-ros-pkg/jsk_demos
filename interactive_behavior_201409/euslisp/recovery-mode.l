@@ -21,6 +21,7 @@
 
 (defun on-speech-while-preempted-cb (reason text)
   (cond
+    ;; task level
     ((or (find (car (find-word text :class :noun)) (list "続き" "再開") :test #'string=)
          (find (car (find-word text :class :verb)) (list "続ける") :test #'string=))
      (send *ri* :speak-jp "続きをします")
@@ -28,6 +29,7 @@
     ((find (car (find-word text :class :noun)) (list "中止") :test #'string=)
      (send *ri* :speak-jp "中止します")
      (send *ri* :reset-preempt))
+    ;; action level
     (t
      (preempted-handler reason text))))
 
@@ -63,6 +65,7 @@
      )
     (:preempted
      ;; preempted by eus repl
+     ;; manual mode
      )
     (t
      ;; unhandled situation
