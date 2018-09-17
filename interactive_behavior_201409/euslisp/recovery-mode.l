@@ -69,7 +69,7 @@
      )
     (t
      ;; unhandled situation
-     (ros::ros-error "unhandled preempted reason: ~A" reason))))
+     (ros::ros-error "unhandled preempted reason: ~A" reason)))))
 
 
 (defun main ()

@@ -11,28 +11,6 @@
                                                (list "ストップ" "待って" "やめて" "おーい")))
 (defparameter *joint-state-table* (make-hash-table))
 
-;; suppress warning messages
-(unless (assoc :joint-angle-org (send rotational-joint :methods))
-        (rplaca (assoc :joint-angle (send rotational-joint :methods)) :joint-angle-org))
-(defmethod rotational-joint
-  (:joint-angle
-   (&optional v &key relative &allow-other-keys)
-   (let ()
-     (when v
-       (when (and joint-min-max-table joint-min-max-target)
-         (setq min-angle (send self :joint-min-max-table-min-angle)
-               max-angle (send self :joint-min-max-table-max-angle)))
-       (if relative (setq v (+ v joint-angle)))
-       (cond ((> v max-angle)
-              (setq v max-angle)))
-       (cond ((< v min-angle)
-              (setq v min-angle)))
-       (setq joint-angle v)
-       (send child-link :replace-coords default-coords)
-       (send child-link :rotate (deg2rad joint-angle) axis))
-     joint-angle))
-  )
-
 (defun arm-moving-p (ri ctrl)
   (let* ((ct (robot-interface-controller-table ri))
          (ac (car (gethash ctrl ct)))
