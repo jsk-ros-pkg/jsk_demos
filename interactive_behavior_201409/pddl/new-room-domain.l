@@ -197,13 +197,18 @@
       (send domain :add :action ac))
     domain))
 
-(defun make-spot-distance (spots)
-  ;; TODO: compute from eus
-  (let (init)
+(defun make-spot-distance (spots &key (use-map t) (factor 0.001))
+  (let (init from-cds to-cds dist)
     (dolist (from spots)
       (dolist (to spots)
         (unless (eq from to)
-          (push `(= (distance ,from ,to) 30) init))))
+          (setq from-cds (get-spot (string-downcase from))
+                to-cds (get-spot (string-downcase to)))
+          (cond
+           ((and use-map from-cds to-cds)
+            (setq dist (norm (send from-cds :difference-position to-cds)))
+            (push `(= (distance ,from ,to) ,(* factor dist)) init))
+           (t (push `(= (distance ,from ,to) 30) init))))))
     (dolist (spot spots)
       (push `(= (distance ,spot ,spot) 1000) init))
     init))

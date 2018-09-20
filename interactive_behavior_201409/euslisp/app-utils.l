@@ -88,6 +88,13 @@
             (return-from search j))))))
 
 (defun get-spot (name &optional (scene *scene*))
+  ;; resolve alias
+  (setq name
+        (cond
+         ((eq name "kitchen") "sink")
+         ((eq name "counter") "sink")
+         (t name)))
+
   (let* ((front-name (format nil "~A-front" (string-downcase name)))
          (front-spots (remove-if-not #'(lambda (x) (substringp front-name (string-downcase (send x :name)))) (send scene :spots)))
          (near-pos 10000000000)
