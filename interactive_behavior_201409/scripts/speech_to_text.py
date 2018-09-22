@@ -73,10 +73,10 @@ class SpeechToText(object):
                 data, language=self.language)
             msg = SpeechRecognitionCandidates(transcript=[result])
             self.pub_speech.publish(msg)
-        except SR.UnknownValueError as e:
-            rospy.logerr("Failed to recognize: %s" % str(e))
-        except SR.RequestError as e:
-            rospy.logerr("Failed to recognize: %s" % str(e))
+        except SR.UnknownValueError:
+            rospy.logerr("Failed to recognize")
+        except SR.RequestError:
+            rospy.logerr("Failed to send query")
 
 
 if __name__ == '__main__':

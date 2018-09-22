@@ -2,7 +2,7 @@
   <arg name="use_tabletop" default="true"/>
   <arg name="use_ssd" default="true"/>
   <arg name="use_visualizer" default="true"/>
-  <arg name="use_mock" default="true"/>
+  <arg name="use_mock" default="false"/>
 
   <arg name="ROBOT" default="$(optenv ROBOT pr2)"/>
   <arg name="machine" default="external"/>
