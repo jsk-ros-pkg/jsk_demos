@@ -54,7 +54,7 @@
           (push `(on ,(cdr (assoc :after result)) usual) cnd)
           (send *ri* :preempted-goal cnd))
          (t t))
-     )
+     ))
     (:larm-torque
      ;; preempted by larm torque
      (handle-grasping :larm text)
@@ -69,7 +69,7 @@
      )
     (t
      ;; unhandled situation
-     (ros::ros-error "unhandled preempted reason: ~A" reason)))))
+     (ros::ros-error "unhandled preempted reason: ~A" reason))))
 
 
 (defun main ()
