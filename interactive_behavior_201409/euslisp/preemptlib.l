@@ -25,6 +25,8 @@
   "return value of failed action")
 (defparameter *preempt-success-value* :success
   "return value of succeeded action")
+(defparameter *use-mock-action* nil
+  "use mock action")
 
 ;; variables
 (defvar *condition-updaters* nil
@@ -280,6 +282,12 @@ Example: (defpreemptrobot pr2) creates `pr2-preempt-interface` and `pr2-init`"
     (setq *robot* *pr2*)))
 )))
 
+(defun mock-action ()
+  (with-check-preemption
+      (when (and (boundp '*ri*) *ri*)
+        (send *ri* :ros-wait 5.0))
+    t))
+
 (defmacro defaction (name args &rest form)
   "This is similar to defun, but preemption is supported"
   (let ((ret (gensym "DEFACTION"))
@@ -295,7 +303,9 @@ Example: (defpreemptrobot pr2) creates `pr2-preempt-interface` and `pr2-init`"
                (setq ,ret
                      (catch :preempt-barrier
                        (ros::ros-info ";; start ~A" (list ',name))
-                       (setq ,ret (block ,name (progn ,@form)))
+                       (if *use-mock-action*
+                           (setq ,ret (block ,name (progn (mock-action))))
+                           (setq ,ret (block ,name (progn ,@form))))
                        (ros::ros-warn ";; return value: ~A" ,ret)
                        (unless ,ret (throw :preempt-barrier *preempt-failure-value*))
                        *preempt-success-value*))
