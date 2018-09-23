@@ -207,7 +207,7 @@
           (cond
            ((and use-map from-cds to-cds)
             (setq dist (norm (send from-cds :difference-position to-cds)))
-            (push `(= (distance ,from ,to) ,(* factor dist)) init))
+            (push `(= (distance ,from ,to) ,(floor (* factor dist))) init))
            (t (push `(= (distance ,from ,to) 30) init))))))
     (dolist (spot spots)
       (push `(= (distance ,spot ,spot) 1000) init))
