@@ -1,0 +1,229 @@
+<launch>
+  <arg name="use_throttle" default="false" />
+
+  <arg name="camera" default="kinect_head" />
+  <arg name="base_frame_id" default="base_footprint"/>
+  <arg name="throttle_prefix"     if="$(arg use_throttle)" default="throttled/" />
+  <arg name="throttle_prefix" unless="$(arg use_throttle)" default="" />
+
+  <arg name="input_image" default="/$(arg camera)/rgb/$(arg throttle_prefix)image_rect_color" />
+  <arg name="input_camera_info" default="/$(arg camera)/rgb/$(arg throttle_prefix)camera_info" />
+  <arg name="input_depth" default="/$(arg camera)/depth_registered/$(arg throttle_prefix)image_rect" />
+  <arg name="input_cloud" default="/$(arg camera)/depth_registered/$(arg throttle_prefix)points" />
+  <arg name="detection_topic" default="/$(arg camera)/depth_registered/ObjectDetection" />
+
+  <arg name="model_path" default="/etc/ros/jsk_data/mask_rcnn_coco/snapshot_model.npz"/>
+  <arg name="label_names" default="/etc/ros/jsk_data/mask_rcnn_coco/class.yaml"/>
+
+  <arg name="label_value" default="72"/>
+  <arg name="bin_size" default="10" />
+
+  <arg name="gpu" default="0" />
+  <arg name="ROBOT" default="$(optenv ROBOT pr2)"/>
+  <arg name="machine" default="external" />
+  <arg name="respawn" default="false"/>
+
+  <include file="$(find detect_cans_in_fridge_201202)/config/$(arg ROBOT).machine" />
+
+  <group ns="detect_cans">
+      <node name="mask_rcnn"
+            pkg="jsk_perception" type="mask_rcnn_instance_segmentation.py"
+            machine="$(arg machine)" clear_params="true">
+        <remap from="~input" to="$(arg input_image)" />
+        <rosparam ns="fg_class_names" command="load" file="$(arg label_names)"/>
+        <rosparam subst_value="true">
+          gpu: $(arg gpu)
+          pretrained_model: $(arg model_path)
+          anchor_scales: [2, 4, 8, 16, 32]
+          min_size: 800
+          max_size: 1333
+          score_thresh: 0.9
+        </rosparam>
+      </node>
+
+      <node name="label_cls_to_mask"
+            pkg="jsk_perception" type="label_to_mask_image"
+            machine="$(arg machine)" clear_params="true">
+        <remap from="~input" to="mask_rcnn/output/label_cls" />
+        <remap from="~output" to="mask_image"/>
+        <rosparam subst_value="true">
+          <!-- fridge 72 -->
+          label_value: $(arg label_value)
+        </rosparam>
+      </node>
+
+      <node name="mask_rcnn_manager"
+          pkg="jsk_topic_tools" type="standalone_complexed_nodelet"
+          respawn="$(arg respawn)" machine="$(arg machine)">
+        <rosparam subst_value="true">
+        nodelets:
+        - name: input_image_relay
+          type: jsk_topic_tools/LightweightThrottle
+          remappings:
+          - from: ~input
+            to: $(arg input_image)
+        - name: input_cloud_relay
+          type: jsk_topic_tools/LightweightThrottle
+          remappings:
+          - from: ~input
+            to: $(arg input_cloud)
+        - name: bilateral_filter
+          type: jsk_pcl/BilateralFilter
+          remappings:
+          - from: ~input
+            to: input_cloud_relay/output
+        - name: depth_considered_mask
+          type: jsk_pcl_utils/MaskImageToDepthConsideredMaskImage
+          remappings:
+          - from: ~input
+            to: bilateral_filter/output
+          - from: ~input/image
+            to: mask_image
+        - name: mask_image_to_point_indices
+          type: jsk_pcl_utils/MaskImageToPointIndices
+          remappings:
+          - from: ~input
+            to: depth_considered_mask/output
+        - name: extract_indices
+          type: jsk_pcl/ExtractIndices
+          remappings:
+          - from: ~input
+            to: bilateral_filter/output
+          - from: ~indices
+            to: mask_image_to_point_indices/output
+        - name: voxel_grid
+          type: pcl/VoxelGrid
+          remappings:
+          - from: ~input
+            to: extract_indices/output
+        - name: euclidean_clustering
+          type: jsk_pcl/EuclideanClustering
+          remappings:
+          - from: ~input
+            to: voxel_grid/output
+        - name: euclidean_clustering_decomposer
+          type: jsk_pcl/ClusterPointIndicesDecomposer
+          remappings:
+          - from: ~input
+            to: voxel_grid/output
+          - from: ~target
+            to: euclidean_clustering/output
+        - name: color_histogram
+          type: jsk_pcl/ColorHistogram
+          remappings:
+          - from: ~input
+            to: voxel_grid/output
+          - from: ~input/indices
+            to: euclidean_clustering/output
+        - name: color_histogram_classifier
+          type: jsk_pcl/ColorHistogramClassifier
+          remappings:
+          - from: ~input/array
+            to: color_histogram/output
+        </rosparam>
+      </node>
+    <rosparam subst_value="true"
+              ns="input_image_relay">
+      update_rate: 5.0
+    </rosparam>
+
+    <rosparam subst_value="true"
+              ns="input_cloud_relay">
+      update_rate: 5.0
+    </rosparam>
+
+    <rosparam ns="bilateral_filter" subst_value="true">
+      sigma_s: 1.0
+      sigma_r: 0.1
+    </rosparam>
+
+    <rosparam subst_value="true"
+              ns="depth_considered_mask">
+      approximate_sync: true
+      queue_size: 100
+      use_mask_region: false
+      extract_num: 500000
+    </rosparam>
+
+    <rosparam subst_value="true"
+              ns="extract_indices">
+      keep_organized: true
+      max_queue_size: 100
+      approximate_sync: true
+    </rosparam>
+
+    <rosparam subst_value="true"
+              ns="voxel_grid">
+      filter_limit_min: 0.0
+      filter_limit_max: 5.0
+      leaf_size: 0.001
+      keep_organized: true
+    </rosparam>
+
+    <rosparam ns="euclidean_clustering" subst_value="true">
+      tolerance: 0.005
+      min_size: 1000
+      max_size: 8000
+    </rosparam>
+
+    <rosparam ns="euclidean_clustering_decomposer" subst_value="true">
+      queue_size: 100
+      publish_clouds: false
+      publish_tf: false
+      align_boxes: true
+      align_boxes_with_plane: false
+      target_frame_id: $(arg base_frame_id)
+      use_pca: true
+    </rosparam>
+
+    <!-- color histogram -->
+    <rosparam ns="color_histogram" subst_value="true">
+      bin_size: $(arg bin_size)
+      histogram_policy: 0
+    </rosparam>
+
+    <rosparam ns="color_histogram_classifier"
+              command="load"
+              file="$(find detect_cans_in_fridge_201202)/config/reference_histograms.yaml" />
+    <rosparam ns="color_histogram_classifier" subst_value="true">
+      detection_threshold: 0.2
+      compare_policy: 0
+    </rosparam>
+
+    <node name="color_histogram_detector"
+          pkg="detect_cans_in_fridge_201202" type="color_histogram_detector.py"
+          machine="$(arg machine)">
+      <remap from="~input/boxes" to="euclidean_clustering_decomposer/boxes" />
+      <remap from="~input/classes" to="color_histogram_classifier/output" />
+      <remap from="~output" to="$(arg detection_topic)" />
+      <rosparam>
+        queue_size: 100
+        publish_tf: true
+      </rosparam>
+    </node>
+
+    <!-- visualizers -->
+    <node name="color_histogram_visualizer"
+          pkg="jsk_pcl_ros" type="color_histogram_visualizer.py"
+          machine="$(arg machine)">
+      <remap from="~input/array" to="color_histogram/output" />
+      <rosparam>
+        histogram_policy: 0
+      </rosparam>
+    </node>
+
+    <node name="color_class_visualizer"
+          pkg="jsk_rviz_plugins" type="classification_result_visualizer.py"
+          machine="$(arg machine)">
+      <remap from="~input/boxes" to="euclidean_clustering_decomposer/boxes"/>
+      <remap from="~input/classes" to="color_histogram_classifier/output" />
+      <rosparam>
+        text_color_red: 0.0
+        text_color_green: 1.0
+        text_color_blue: 0.0
+        text_offset_z: 0.08
+        text_size: 0.05
+      </rosparam>
+    </node>
+  </group>
+</launch>
