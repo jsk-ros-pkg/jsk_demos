@@ -217,7 +217,7 @@
   (let ((problem (instance pddl-problem :init
                            :name 'house-keeping
                            :domain 'room-domain))
-        (spots '(START TABLE FRIDGE DISHWASHER DRAWER SINK KITCHEN COUNTER ROOM73A1))
+        (spots '(START TABLE FRIDGE DISHWASHER DRAWER SINK KITCHEN COUNTER BOOKSHELF ROOM73A1))
         objs)
     ;; copy symbols to avoid circular reference
     (setq init (copy-object init)
@@ -251,6 +251,7 @@
                              (AVAILABLE COUNTER)
                              (AVAILABLE KITCHEN)
                              (AVAILABLE TABLE)
+                             (AVAILABLE BOOKSHELF)
                              (AVAILABLE DRAWER))))
 
     (setq goal (nconc goal '((FORALL (?AT - spot)
