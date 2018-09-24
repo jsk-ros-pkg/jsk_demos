@@ -72,9 +72,12 @@
        (if (cdr (assoc :target-place userdata))
            (setq target-spot (get-spot (cdr (assoc :target-place userdata))))
          (setq target-spot (get-spot to-place)))
-       (use-tilt-laser-obstacle-cloud nil)
-       (prog1 (send *ri* :move-to target-spot)
-         (use-tilt-laser-obstacle-cloud t))))))
+       (with-monitoring (:sound)
+         (unwind-protect
+              (progn
+                (use-tilt-laser-obstacle-cloud nil)
+                (send *ri* :move-to target-spot))
+           (use-tilt-laser-obstacle-cloud t)))))))
 
 (defaction find-object (obj spot &optional userdata)
   (ros::ros-info "(find-object ~A ~A)" obj spot)
@@ -95,27 +98,28 @@
 
 (defaction pick (obj arm spot &optional userdata)
   (ros::ros-info "(pick ~A ~A ~A)" obj arm spot)
-  (set-alist :arm (intern (string-upcase arm) *keyword-package*) userdata)
-  (let ((arm-controller (read-from-string (format nil "~A-controller" (cdr (assoc :arm userdata)))))
-        res)
-    (send *pr2* (cdr (assoc :arm userdata)) :angle-vector (get-side-pose (cdr (assoc :arm userdata))))
-    (send *ri* :angle-vector (send *pr2* :angle-vector) 3000 arm-controller)
-    (send *ri* :angle-vector (pr2-pick-tray-pose) 2000 :torso-controller)
-    (send *ri* :wait-interpolation)
-    (send *ri* :angle-vector (pr2-pick-tray-pose) 2000 arm-controller)
-    (send *ri* :wait-interpolation)
-    (send *pr2* :angle-vector (send *ri* :state :potentio-vector))
-    (setq res (case obj
-                ('bowl
-                 (pick-bowl userdata))
-                (t
-                 (pick-tabletop-object userdata))))
-    (case (cdr (assoc :arm userdata))
-      (:larm (set-alist :larm obj userdata))
-      (:rarm (set-alist :rarm obj userdata))
-      (:arms (set-alist :arms obj userdata)))
-  ;; tuckarm is moved to move-to action
-    res))
+  (with-monitoring (:sound)
+    (set-alist :arm (intern (string-upcase arm) *keyword-package*) userdata)
+    (let ((arm-controller (read-from-string
+                           (format nil "~A-controller" (cdr (assoc :arm userdata)))))
+          res)
+      (send *pr2* (cdr (assoc :arm userdata)) :angle-vector
+            (get-side-pose (cdr (assoc :arm userdata))))
+      (send *ri* :angle-vector (send *pr2* :angle-vector) 3000 arm-controller)
+      (send *ri* :angle-vector (pr2-pick-tray-pose) 2000 :torso-controller)
+      (send *ri* :wait-interpolation)
+      (send *ri* :angle-vector (pr2-pick-tray-pose) 2000 arm-controller)
+      (send *ri* :wait-interpolation)
+      (send *pr2* :angle-vector (send *ri* :state :potentio-vector))
+      (with-monitoring (:joint)
+        (setq res (case obj
+                    ('bowl (pick-bowl userdata))
+                    (t (pick-tabletop-object userdata)))))
+      (case (cdr (assoc :arm userdata))
+        (:larm (set-alist :larm obj userdata))
+        (:rarm (set-alist :rarm obj userdata))
+        (:arms (set-alist :arms obj userdata)))
+      res)))
 
 (defaction find-placement (obj arm spot &optional userdata)
   (ros::ros-info "(find-placement ~A ~A ~A)" obj arm spot)
@@ -124,15 +128,16 @@
 (defaction place (obj arm spot &optional userdata)
   (ros::ros-info "(place ~A ~A ~A)" obj arm spot)
   (set-alist :arm (intern (string-upcase arm) *keyword-package*) userdata)
-  (cond
-   ((eq spot 'dishwasher) ;; coe
-    (put-into-dishwasher userdata))
-   ((eq obj 'bowl)
-    (place-bowl userdata))
-   ((eq spot 'fridge)
-    (place-in-fridge userdata))
-   (t ;; place to support plane
-    (place-object userdata)))
+  (with-monitoring (:joint :sound)
+    (cond
+      ((eq spot 'dishwasher) ;; coe
+       (put-into-dishwasher userdata))
+      ((eq obj 'bowl)
+       (place-bowl userdata))
+      ((eq spot 'fridge)
+       (place-in-fridge userdata))
+      (t ;; place to support plane
+       (place-object userdata))))
   (case (cdr (assoc :arm userdata))
     (:larm (set-alist :larm nil userdata))
     (:rarm (set-alist :rarm nil userdata))
@@ -142,45 +147,42 @@
 (defaction open-door (arm spot &optional userdata)
   (ros::ros-info "(open-door ~A ~A)" arm spot)
   (set-alist :arm (intern (string-upcase arm) *keyword-package*) userdata)
-  (cond
-   ((eq spot 'dishwasher) ;; coe
-    (open-dishwasher userdata))
-   ((eq spot 'fridge)
-    ;; look at door
-    (base-go-to-fridge-init-pose :torso-lift 130 :head-pitch 0 :wait t)
-    ;; open door
-    (open-fridge-door :use-arm (if (eq :rarm (cdr (assoc :arm userdata))) :larm :rarm))
-    ;; reach to fridge
-    (send *ri* :go-pos-unsafe 0 0 -15)
-    (send *ri* :go-pos-unsafe 0.30 -0.05 0)
-    t)
-   (t
-    (open-push-door userdata))))
+  (with-monitoring (:sound)
+    (cond
+      ((eq spot 'dishwasher) ;; coe
+       (open-dishwasher userdata))
+      ((eq spot 'fridge)
+       ;; look at door
+       (base-go-to-fridge-init-pose :torso-lift 130 :head-pitch 0 :wait t)
+       ;; open door
+       (open-fridge-door :use-arm (if (eq :rarm (cdr (assoc :arm userdata))) :larm :rarm))
+       ;; reach to fridge
+       (send *ri* :go-pos-unsafe 0 0 -15)
+       (send *ri* :go-pos-unsafe 0.30 -0.05 0)
+       t)
+      (t
+       (open-push-door userdata)))))
 
 (defaction close-door (arm spot &optional userdata)
   (ros::ros-info "(close-door ~A ~A)" arm spot)
   (set-alist :arm (intern (string-upcase arm) *keyword-package*) userdata)
-  (cond
-   ((eq spot 'dishwasher)
-    (close-dishwasher userdata))
-   ((eq spot 'fridge)
-    ;; (send *ri* :go-pos-unsafe -0.22 -0.2 17)
-    (send *ri* :go-pos-unsafe -0.18 -0.22 17)
-    (send *ri* :go-pos-unsafe 0.05 -0.05 0)
-    (close-fridge :use-arm (cdr (assoc :arm userdata)))
-    t)
-   (t t)))
-
-(defaction identify-object (obj arm spot &optional userdata)
-  ;; TODO: ask the in-hand object to person
-  t)
+  (with-monitoring (:sound)
+    (cond
+      ((eq spot 'dishwasher)
+       (close-dishwasher userdata))
+      ((eq spot 'fridge)
+       ;; (send *ri* :go-pos-unsafe -0.22 -0.2 17)
+       (send *ri* :go-pos-unsafe -0.18 -0.22 17)
+       (send *ri* :go-pos-unsafe 0.05 -0.05 0)
+       (close-fridge :use-arm (cdr (assoc :arm userdata)))
+       t)
+      (t t))))
 
 (defaction deliver (obj arm person spot &optional userdata)
   (setq arm (intern (string-upcase arm) *keyword-package*))
   (speak-jp (format nil "~Aを どうぞ" (string-upcase obj)))
   (hand-over arm :wait-shock t)
   t)
-
 
 (defaction ask (person spot &optional userdata)
   (let ((content (cdr (assoc :content userdata))))
@@ -198,78 +200,3 @@
     (speak-jp "わかりました。" :wait t)
     ;;
   t))
-
-
-#|
-(defaction pick (target arm spot &optional userdata)
-  (let (target-cds pregrasp grasp)
-    ;; FIXME
-    (setq target-cds (make-coords :pos (float-vector 800 0 600)))
-    ;;
-    (setq arm (intern (symbol-string arm) *keyword-package*))
-    (setq grasp
-     (send *robot* arm :inverse-kinematics target-cds
-                       :rotation-axis :z
-                       :look-at-target t))
-    (setq pregrasp
-     (send *robot* arm :move-end-pos
-           (float-vector -100 0 0)))
-    (unless (and grasp pregrasp)
-      (ros::ros-error "ik fail")
-      (return-from pick nil))
-    (send *ri* :stop-grasp arm :wait t)
-    ;;
-    (send *ri* :angle-vector-sequence
-          (list pregrasp grasp)
-          (list 10000 3000))
-    (send *ri* :wait-interpolation)
-    ;;
-    (send *ri* :start-grasp arm)
-    ;;
-    (send *ri* :angle-vector pregrasp 3000)
-    (send *ri* :wait-interpolation)))
-
-(defaction place (target arm spot &optional userdata)
-  (let (target-cds preungrasp ungrasp)
-    ;; FIXME
-    (setq target-cds (make-coords :pos (float-vector 800 0 600)))
-    ;;
-    (setq arm (intern (symbol-string arm) *keyword-package*))
-    (setq ungrasp
-          (send *robot* arm :inverse-kinematics target-cds
-                            :rotation-axis :z
-                            :look-at-target t))
-    (setq preungrasp
-          (send *robot* arm :move-end-pos
-                (float-vector 0 0 100)))
-    (unless (and preungrasp ungrasp)
-      (ros::ros-error "ik fail")
-      (return-from place nil))
-    ;;
-    (send *ri* :angle-vector-sequence
-          (list preungrasp ungrasp)
-          (list 10000 3000))
-    (send *ri* :wait-interpolation)
-    ;;
-    (send *ri* :stop-grasp arm :wait t)
-    ;;
-    (send *ri* :angle-vector preungrasp 3000)
-    (send *ri* :wait-interpolation)))
-
-(defaction move-to (from-spot to-spot &optional userdata)
-  (let (cds)
-    ;; FIXME
-    (let ((start-time (ros::time-now)))
-      (while (and (ros::ok)
-                  (< (send (ros::time- (ros::time-now) start-time) :to-sec) 10.0))
-             (send *ri* :ros-wait 1.0 :spin t :spin-self t)))
-    (return-from move-to t)
-    (setq cds
-          (case to-spot
-            ('START (make-coords :pos (float-vector 0 0 0)))
-            ('TABLE (make-coords :pos (float-vector 0 5000 0)))
-            ('KITCHEN (make-coords :pos (float-vector 10000 0 0)))
-            ('COUNTER (make-coords :pos (float-vector 5000 0 0)))
-            (t (error "unknown spot" to-spot))))
-    (send *ri* :move-to cds)))
-|#

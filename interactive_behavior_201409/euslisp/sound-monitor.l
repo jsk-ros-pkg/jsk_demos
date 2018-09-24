@@ -10,6 +10,7 @@
 (defparameter *preempt-phrase* (ros::get-param "~preempt_phrase"
                                                (list "ストップ" "待って" "やめて" "おーい")))
 (defparameter *joint-state-table* (make-hash-table))
+(defparameter *enable-monitor* nil)
 
 (defun arm-moving-p (ri ctrl)
   (let* ((ct (robot-interface-controller-table ri))
@@ -29,19 +30,32 @@
 
 (defun speech-cb (msg)
   (send *ri* :state)
-  (when (and (not (send *ri* :preempted-p))
+  (when (and *enable-monitor*
+             (not (send *ri* :preempted-p))
              (or (arm-moving-p *ri* :rarm-controller)
                  (arm-moving-p *ri* :larm-controller)
                  (base-moving-p *ri*)))
     (let* ((text (car (send msg :transcript)))
            (result (find text *preempt-phrase* :test #'string=)))
-      (warning-message 1 "result2: ~A~%" result)
       (when result
         (ros::ros-warn "~A: preempted ~A" result :speech)
         (send *ri* :preempt :speech)))))
 
 (defun main ()
   (pr2-init)
+  (setq *enable-monitor* nil)
+  (ros::advertise-service
+   "~enable" std_srvs::Empty
+   #'(lambda (req)
+       (setq *enable-monitor* t)
+       (ros::ros-info "sound_torque_monitor enabled")
+       (send req :response)))
+  (ros::advertise-service
+   "~disable" std_srvs::Empty
+   #'(lambda (req)
+       (setq *enable-monitor* nil)
+       (ros::ros-info "sound_torque_monitor disabled")
+       (send req :response)))
   (ros::subscribe "speech_to_text"
                   speech_recognition_msgs::SpeechRecognitionCandidates
                   #'speech-cb)
@@ -53,4 +67,4 @@
     (ros::sleep)))
 
 (main)
-
+(exit)

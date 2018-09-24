@@ -172,7 +172,41 @@
     (setq sm (plan-task domain problem :debug t :use-cache t :timeout 30))
     (exec-preemptive-task sm)))
 
+;;
+;; preempt-monitor management
+(defun switch-monitor (monitor enable)
+  (let ((service-name
+         (case monitor
+           (:joint "joint_torque_monitor")
+           (:sound "sound_monitor")
+           (t nil))))
+    (unless service-name
+      (ros::ros-error "unknown preemption monitor ~A" monitor)
+      (return-from switch-monitor nil))
+    (setq service-name (concatenate string service-name
+                                    (if enable "/enable" "/disable")))
+    (unless (ros::wait-for-service service-name 0)
+      (ros::ros-error "failed to switch preempt monitor: ~A" service-name)
+      (return-from switch-monitor nil))
+    (call-empty-service service-name)
+    t))
 
+(defun start-monitor (&rest monitors)
+  (every #'identity (mapcar #'(lambda (m) (switch-monitor m t)) monitors)))
+
+(defun stop-monitor (&rest monitors)
+  (every #'identity (mapcar #'(lambda (m) (switch-monitor m nil)) monitors)))
+
+(defmacro with-monitoring (monitor-types &rest form)
+  "enable preempt monitor during executing form"
+  `(unwind-protect
+        (progn
+          (start-monitor ,@monitor-types)
+          (progn ,@form))
+     (stop-monitor ,@monitor-types)))
+
+;;
+;; inject robot-interface to support preemption
 (defmacro defpreemptrobot (name &rest form)
   "This macro defines a subclass of `robot`-interface, where preemption is supported.
 The original init function (e.g. pr2-init) is overwritten to initialize an instance of the class.
