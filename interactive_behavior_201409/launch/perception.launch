@@ -8,8 +8,9 @@
   <arg name="ROBOT" default="$(optenv ROBOT pr2)"/>
   <arg name="machine" default="external"/>
   <arg name="camera" default="kinect_head_external"/>
-  <arg name="dataset" default="ssd300_coco" />
+  <arg name="dataset" default="ssd512_coco" />
 
+  <arg name="model" default="ssd512"/>
   <arg name="model_path"
        default="$(optenv JSK_DATA_CACHE_DIR /etc/ros/jsk_data)/$(arg dataset)/model"/>
   <arg name="label_names"
@@ -30,6 +31,7 @@
     <arg name="machine" value="$(arg machine)"/>
     <arg name="camera" value="$(arg camera)"/>
     <arg name="use_voc" value="false"/>
+    <arg name="model" value="$(arg model)"/>
     <arg name="model_path" value="$(arg model_path)"/>
     <arg name="label_names" value="$(arg label_names)"/>
   </include>

@@ -12,6 +12,7 @@
 (require :pr2-action "package://jsk_demo_common/euslisp/pr2-action.l")
 (require :coe-actionlib "package://jsk_2017_12_pr2_coe/euslisp/coe-actionlib.l")
 (require :door-utils "package://interactive_behavior_201409/euslisp/door-utils.l")
+(require :object-utils "package://interactive_behavior_201409/euslisp/object-utils.l")
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Action implementations
@@ -21,7 +22,6 @@
 
 (defun speech-callback (msg)
   (setq *speech-msg* (car (send msg :transcript))))
-
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Action definitions
@@ -83,18 +83,11 @@
   (ros::ros-info "(find-object ~A ~A)" obj spot)
   ;; lookup label
   (let ((*tabletop-bbox-topic* "/tabletop/euclidean_clustering_decomposer/boxes")
-        (*prefarable-object-pose* (make-coords :pos (float-vector 900 0 950))))
-    (case obj
-      ('bowl
-       (setq *tabletop-bbox-topic* "/ssd/bounding_box_pose/output/boxes")
-       (set-alist :target-object-label 45 userdata))
-      ('cup
-       (setq *tabletop-bbox-topic* "/ssd/bounding_box_pose/output/boxes")
-       (set-alist :target-object-label 41 userdata))
-      ('bottle
-       (setq *tabletop-bbox-topic* "/ssd/bounding_box_pose/output/boxes")
-       (set-alist :target-object-label 39 userdata))
-      )
+        (*prefarable-object-pose* (make-coords :pos (float-vector 900 0 950)))
+        (object-label (get-object-label obj)))
+    (when object-label
+      (setq *tabletop-bbox-topic* "/ssd/bounding_box_pose/output/boxes")
+      (set-alist :target-object-label object-label userdata))
     (case spot
       ('fridge
        (grasp-can-init)
