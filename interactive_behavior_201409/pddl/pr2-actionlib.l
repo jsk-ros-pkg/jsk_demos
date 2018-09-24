@@ -82,7 +82,8 @@
 (defaction find-object (obj spot &optional userdata)
   (ros::ros-info "(find-object ~A ~A)" obj spot)
   ;; lookup label
-  (let ((*tabletop-bbox-topic* "/tabletop/euclidean_clustering_decomposer/boxes"))
+  (let ((*tabletop-bbox-topic* "/tabletop/euclidean_clustering_decomposer/boxes")
+        (*prefarable-object-pose* (make-coords :pos (float-vector 900 0 950))))
     (case obj
       ('bowl
        (setq *tabletop-bbox-topic* "/ssd/bounding_box_pose/output/boxes")
@@ -94,6 +95,12 @@
        (setq *tabletop-bbox-topic* "/ssd/bounding_box_pose/output/boxes")
        (set-alist :target-object-label 39 userdata))
       )
+    (case spot
+      ('fridge
+       (grasp-can-init)
+       (setq *tabletop-bbox-topic* "/detect_cans/bounding_box_pose/output/boxes")
+       (setq *prefarable-object-pose* (make-coords :pos (float-vector 700 50 950))))
+      (t t))
     (find-tabletop-object userdata)))
 
 (defaction pick (obj arm spot &optional userdata)
@@ -103,18 +110,28 @@
     (let ((arm-controller (read-from-string
                            (format nil "~A-controller" (cdr (assoc :arm userdata)))))
           res)
-      (send *pr2* (cdr (assoc :arm userdata)) :angle-vector
-            (get-side-pose (cdr (assoc :arm userdata))))
-      (send *ri* :angle-vector (send *pr2* :angle-vector) 3000 arm-controller)
-      (send *ri* :angle-vector (pr2-pick-tray-pose) 2000 :torso-controller)
-      (send *ri* :wait-interpolation)
-      (send *ri* :angle-vector (pr2-pick-tray-pose) 2000 arm-controller)
-      (send *ri* :wait-interpolation)
+      ;; pre pick pose for avoiding collision
+      (unless (eq spot 'fridge)
+        (send *pr2* (cdr (assoc :arm userdata)) :angle-vector
+              (get-side-pose (cdr (assoc :arm userdata))))
+        (send *ri* :angle-vector (send *pr2* :angle-vector) 3000 arm-controller)
+        (send *ri* :angle-vector (pr2-pick-tray-pose) 2000 :torso-controller)
+        (send *ri* :wait-interpolation)
+        (send *ri* :angle-vector (pr2-pick-tray-pose) 2000 arm-controller)
+        (send *ri* :wait-interpolation))
       (send *pr2* :angle-vector (send *ri* :state :potentio-vector))
+      ;;
       (with-monitoring (:joint)
-        (setq res (case obj
-                    ('bowl (pick-bowl userdata))
-                    (t (pick-tabletop-object userdata)))))
+        (cond
+          ((eq spot 'dishwasher)
+           (setq res (pick-from-dishwasher userdata)))
+          ((eq spot 'fridge)
+           (setq res (pick-in-fridge userdata)))
+          ((eq obj 'bowl)
+           (setq res (pick-bowl userdata)))
+          (t
+           (setq res (pick-tabletop-object userdata)))))
+      ;;
       (case (cdr (assoc :arm userdata))
         (:larm (set-alist :larm obj userdata))
         (:rarm (set-alist :rarm obj userdata))
