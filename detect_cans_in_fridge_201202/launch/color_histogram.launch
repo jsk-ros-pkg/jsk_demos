@@ -1,14 +1,15 @@
 <launch>
   <arg name="machine" default="c2" />
-  <arg name="cloud_topic" default="/kinect_head/depth_registered/points" />
-  <arg name="detection_topic" default="/kinect_head/depth_registered/ObjectDetection" />
+  <arg name="camera" default="kinect_head"/>
+  <arg name="cloud_topic" default="/$(arg camera)/depth_registered/points" />
+  <arg name="detection_topic" default="/$(arg camera)/depth_registered/ObjectDetection" />
   <arg name="base_frame_id" default="base_footprint" />
   <arg name="sensor_frame_id" default="head_mount_kinect_rgb_optical_frame" />
   <arg name="map_frame_id" default="map" />
   <arg name="bin_size" default="10" />
   <arg name="vital_rate" default="0.2" />
 
-  <include file="$(find pr2_machine)/pr2.machine" />
+  <include file="$(find pr2_machine)/$(optenv ROBOT pr2).machine" />
 
   <group ns="detect_cans">
     <node name="manager"
