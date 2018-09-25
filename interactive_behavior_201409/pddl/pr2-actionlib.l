@@ -83,7 +83,7 @@
   (ros::ros-info "(find-object ~A ~A)" obj spot)
   ;; lookup label
   (let ((*tabletop-bbox-topic* "/tabletop/euclidean_clustering_decomposer/boxes")
-        (*prefarable-object-pose* (make-coords :pos (float-vector 900 0 950)))
+        (*preferable-object-pose* (make-coords :pos (float-vector 700 0 750)))
         (object-label (get-object-label obj)))
     (when object-label
       (setq *tabletop-bbox-topic* "/ssd/bounding_box_pose/output/boxes")
@@ -92,7 +92,7 @@
       ('fridge
        (grasp-can-init)
        (setq *tabletop-bbox-topic* "/detect_cans/bounding_box_pose/output/boxes")
-       (setq *prefarable-object-pose* (make-coords :pos (float-vector 700 50 950))))
+       (setq *preferable-object-pose* (make-coords :pos (float-vector 700 50 950))))
       (t t))
     (find-tabletop-object userdata)))
 
