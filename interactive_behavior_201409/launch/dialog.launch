@@ -1,30 +1,20 @@
 <launch>
   <arg name="use_dialogflow" default="true"/>
-  <arg name="use_microphone" default="true"/>
   <arg name="run_app_manager" default="false"/>
 
   <arg name="credential"
        default="$(optenv GOOGLE_APPLICATION_CREDENTIALS /etc/ros/jsk_data/PR2-hrrjhv-62b42000f858.json)"/>
   <arg name="project_id" default="pr2-hrrjhv"/>
-  <arg name="language" default="ja-JP"/>
   <arg name="applist" default="$(find interactive_behavior_201409)/apps"/>
 
   <env name="GOOGLE_APPLICATION_CREDENTIALS" value="$(arg credential)"/>
-
-  <node name="tablet_speech_bridge"
-        pkg="interactive_behavior_201409" type="tablet_speech_bridge.py"/>
-
-  <include file="$(find interactive_behavior_201409)/launch/microphone.launch"
-           if="$(arg use_microphone)">
-    <arg name="language" value="$(arg language)"/>
-  </include>
 
   <node name="dialogflow_client"
         pkg="interactive_behavior_201409" type="dialogflow_client.py"
         output="screen">
     <rosparam subst_value="true">
       use_audio: false
-      language: $(arg language)
+      language: ja-JP
       use_tts: true
       project_id: $(arg project_id)
     </rosparam>
@@ -39,6 +29,7 @@
   
   <node name="mecab" pkg="mecab_ros" type="mecab.py"/>
 
+  <!-- preemption monitor -->
   <node name="joint_torque_monitor"
         pkg="interactive_behavior_201409" type="joint-torque-monitor.l"
         output="screen"/>
@@ -48,7 +39,6 @@
   <node name="recovery_mode"
         pkg="interactive_behavior_201409" type="recovery-mode.l"
         output="screen"/>
-
 
   <group if="$(arg run_app_manager)">
     <node pkg="app_manager" type="appmaster" name="appmaster"

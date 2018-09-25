@@ -1,5 +1,6 @@
 <launch>
   <arg name="use_throttle" default="false" />
+  <arg name="use_idle_behavior" default="false"/>
   <arg name="use_base" default="false"/>
   <arg name="use_hark" default="false"/>
   <arg name="respawn" default="true" />
@@ -221,7 +222,8 @@
   <node name="marker_bridge" pkg="interactive_behavior_201409" type="marker_bridge.py" />
 
   <node name="idle_behavior"
-        pkg="interactive_behavior_201409" type="idle-behavior.l">
+        pkg="interactive_behavior_201409" type="idle-behavior.l"
+        if="$(arg use_idle_behavior)">
     <rosparam subst_value="true">
       use_base: $(arg use_base)
     </rosparam>

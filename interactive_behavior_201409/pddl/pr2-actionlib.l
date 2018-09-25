@@ -114,6 +114,7 @@
         (send *ri* :wait-interpolation))
       (send *pr2* :angle-vector (send *ri* :state :potentio-vector))
       ;;
+      ;; TODO: approach from z if object is flat
       (with-monitoring (:joint)
         (cond
           ((eq spot 'dishwasher)
