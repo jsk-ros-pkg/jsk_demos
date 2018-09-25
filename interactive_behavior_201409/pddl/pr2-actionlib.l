@@ -12,7 +12,6 @@
 (require :pr2-action "package://jsk_demo_common/euslisp/pr2-action.l")
 (require :coe-actionlib "package://jsk_2017_12_pr2_coe/euslisp/coe-actionlib.l")
 (require :door-utils "package://interactive_behavior_201409/euslisp/door-utils.l")
-(require :object-utils "package://interactive_behavior_201409/euslisp/object-utils.l")
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Action implementations
