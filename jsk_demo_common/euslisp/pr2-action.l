@@ -1054,7 +1054,7 @@
    (t t)))
 
 (warn ";; define close-fridge")
-(defun close-fridge (&key (use-arm :rarm) (wait t))
+(defun close-fridge (&key (use-arm :rarm) (wait t) (tuck-arm t))
   ;; close the door of fridge
   (send *ri* :ros-wait 0.0 :spin-self t) ;; attention-check ...
 
@@ -1094,7 +1094,7 @@
         (send *pr2* :angle-vector (send *ri* :state :potentio-vector))
         (send *ri* :ros-wait 0.0 :spin-self t) ;; attention-check ...
         ))
-  (pr2-tuckarm-pose use-arm :outside)
+  (when tuck-arm (pr2-tuckarm-pose use-arm :outside))
   t
   )
 

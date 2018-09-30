@@ -1,6 +1,6 @@
 <launch>
   <arg name="use_throttle" default="false" />
-  <arg name="use_idle_behavior" default="false"/>
+  <arg name="use_idle_behavior" default="true"/>
   <arg name="use_base" default="false"/>
   <arg name="use_hark" default="false"/>
   <arg name="respawn" default="true" />
