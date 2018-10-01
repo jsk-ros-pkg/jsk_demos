@@ -48,9 +48,17 @@
       ;; ((and larm rarm) t)
       ((and larm (eq 'bowl larm))
        (send *ri* :go-pos-unsafe -0.1 0 0)
+       (send *pr2* :angle-vector (send *ri* :state :potentio-vector))
+       (send *pr2* :larm :angle-vector (get-side-pose :larm))
+       (send *ri* :angle-vector (send *pr2* :angle-vector) 4000)
+       (send *ri* :wait-interpolation)
        (pr2-tuckarm-pose-for-bowl :larm :outside))
       ((and rarm (eq 'bowl rarm))
        (send *ri* :go-pos-unsafe -0.1 0 0)
+       (send *pr2* :angle-vector (send *ri* :state :potentio-vector))
+       (send *pr2* :rarm :angle-vector (get-side-pose :rarm))
+       (send *ri* :angle-vector (send *pr2* :angle-vector) 4000)
+       (send *ri* :wait-interpolation)
        (pr2-tuckarm-pose-for-bowl :rarm :outside))
       (rarm
        (send *ri* :go-pos-unsafe -0.1 0 0)
@@ -114,7 +122,7 @@
          ('fridge
           (grasp-can-init)
           (setq *tabletop-bbox-topic* "/detect_cans/bounding_box_pose/output/boxes")
-          (setq *preferable-object-pose* (make-coords :pos (float-vector 700 50 950))))
+          (setq *preferable-object-pose* (make-coords :pos (float-vector 700 150 950))))
          (t t))
        (find-tabletop-object userdata)))))
 
@@ -158,6 +166,20 @@
 
 (defaction find-placement (obj arm spot &optional userdata)
   (ros::ros-info "(find-placement ~A ~A ~A)" obj arm spot)
+  ;; compute offset
+  (let (offset)
+    (case spot
+      ('table
+       (case obj
+         ((bottle cup)
+          (case arm
+            ('larm (setq offset (float-vector 0 200 0)))
+            ('rarm (setq offset (float-vector 0 -200 0)))))
+         (t t)))
+      (t t))
+    (when offset
+      (ros::ros-info "set place offset: ~A" offset)
+      (set-alist :place-offset offset userdata)))
   t)
 
 (defaction place (obj arm spot &optional userdata)
@@ -210,7 +232,13 @@
        ;; (send *ri* :go-pos-unsafe -0.22 -0.2 17)
        (send *ri* :go-pos-unsafe -0.18 -0.22 17)
        (send *ri* :go-pos-unsafe 0.05 -0.05 0)
-       (close-fridge :use-arm (cdr (assoc :arm userdata)) :tuck-arm nil)
+       (send *pr2* :larm :angle-vector (get-side-pose :larm))
+       (send *ri* :angle-vector (send *pr2* :angle-vector) 3000 :larm-controller)
+       (send *ri* :wait-interpolation)
+       (send *pr2* :angle-vector (send *ri* :state :potentio-vector))
+       (close-fridge :use-arm (cdr (assoc :arm userdata))
+                     :tuck-arm nil
+                     :move-only-use-arm t)
        t)
       (t t))))
 
