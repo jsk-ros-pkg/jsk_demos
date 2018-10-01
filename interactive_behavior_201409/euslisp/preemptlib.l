@@ -370,16 +370,16 @@ Example: (defpreemptrobot pr2) creates `pr2-preempt-interface` and `pr2-init`"
           (return-from exec-preemptive-task))
         (send *ri* :reset-preempt)))
     ;;
+    ;; (apply #'send sm :arg-keys
+    ;;        (remove-if #'null
+    ;;                   (remove-duplicates (append (send sm :arg-keys) (mapcar #'car mydata)))))
+    ;;
     ;; record initial states
     (let ((trans (car (send (send sm :active-state) :arc-list))))
       (save-state-to-db (send trans :pddl-from-state)
                         :init (send sm :pddl-initial-state)
                         :goal (send sm :pddl-goal-state))
       (set-alist :current-state (copy-object (send trans :pddl-from-state)) mydata))
-    ;;
-    (apply #'send sm :arg-keys
-           (remove-if #'null
-                      (remove-duplicates (append (send sm :arg-keys) (mapcar #'car mydata)))))
     ;;
     ;; disable idle behavior
     (when (ros::wait-for-service "/idle_behavior/disable" 3)
@@ -400,7 +400,7 @@ Example: (defpreemptrobot pr2) creates `pr2-preempt-interface` and `pr2-init`"
               ;;
               (when (send sm :goal-reached) (return))
               (setq cand-states (send (send insp :state-machine :active-state) :arc-list))
-              (setq result (send insp :state-machine :execute mydata :step -1))
+              (setq result (send (send insp :state-machine) :execute mydata :step -1))
               (ros::ros-info ";; result= ~A" result)
               ;;
               (let ((trans (car (remove-if-not
