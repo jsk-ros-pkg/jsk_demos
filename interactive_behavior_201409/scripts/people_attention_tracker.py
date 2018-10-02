@@ -166,6 +166,8 @@ class PeopleAttentionTracker(ConnectionBasedTransport):
 
         for ppose in poses.poses:
             pose = self.get_people_pos(ppose)
+            if pose is None:
+                continue
             if poses.header.frame_id != self.fixed_frame_id:
                 try:
                     ps = PoseStamped(header=poses.header, pose=pose)
@@ -175,6 +177,12 @@ class PeopleAttentionTracker(ConnectionBasedTransport):
                     continue
             else:
                 pose = PoseStamped(header=poses.header, pose=pose)
+
+            # fix orientation
+            pose.pose.orientation.x = 0.0
+            pose.pose.orientation.y = 0.0
+            pose.pose.orientation.z = 0.0
+            pose.pose.orientation.w = 1.0
 
             # find near poses
             dups = list()
@@ -201,7 +209,8 @@ class PeopleAttentionTracker(ConnectionBasedTransport):
             return
         header = self.people.values()[0].header
         header.stamp = stamp
-        pub_msg = Attention(header=header, type="people", level=Attention.LEVEL_IMPORTANT)
+        pub_msg = Attention(
+            header=header, type="people", level=Attention.LEVEL_IMPORTANT)
         if self.last_tracked_name and self.last_tracked_name in self.people:
             pose = self.people[self.last_tracked_name]
             pub_msg.target = pose.pose
