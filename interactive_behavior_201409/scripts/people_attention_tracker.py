@@ -26,9 +26,10 @@ def pose_distance(p1, p2):
     dp += (p1.pose.position.z - p2.pose.position.z) ** 2
 
     dt = np.abs((p1.header.stamp - p2.header.stamp).to_sec())
-    if dt == 0:
-        dt = 1.0
-    return np.sqrt(dp) / dt
+    try:
+        return np.sqrt(dp) / dt
+    except:
+        return np.sqrt(dp)
 
 
 def remove_outlier_limbs(person, mean_thresh=0.5, score_thresh=0.4):
@@ -115,7 +116,6 @@ class PeopleAttentionTracker(ConnectionBasedTransport):
                               PeoplePoseArray, queue_size=1),
             ]
 
-
         if approximate_sync:
             sync = MF.ApproximateTimeSynchronizer(self.subscribers,
                                                   queue_size=queue_size,
@@ -150,10 +150,16 @@ class PeopleAttentionTracker(ConnectionBasedTransport):
         if poses.header.frame_id.startswith("/"):
             poses.header.frame_id = poses.header.frame_id[1:]
         #
-        if self.enable_face_identification:
-            self.callback_with_id(poses, face_ids)
-        else:
-            self.callback_without_id(poses)
+        try:
+            if self.enable_face_identification:
+                self.callback_with_id(poses, face_ids)
+            else:
+                self.callback_without_id(poses)
+        except Exception as e:
+            rospy.logerr(e)
+            import traceback
+            rospy.logerr(traceback.format_exc())
+
 
     def callback_without_id(self, poses):
         stamp = poses.header.stamp
@@ -225,7 +231,10 @@ class PeopleAttentionTracker(ConnectionBasedTransport):
         self.attention_class_pub.publish(pub_msg)
 
     def get_people_pos(self, person):
-        person = remove_outlier_limbs(person)
+        try:
+            person = remove_outlier_limbs(person)
+        except:
+            return None
         for limb in self.limbs:
             try:
                 idx = person.limb_names.index(limb)
