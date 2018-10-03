@@ -22,6 +22,21 @@
 (defun speech-callback (msg)
   (setq *speech-msg* (car (send msg :transcript))))
 
+(defun untuck-bowl-larm ()
+  (send *pr2* :angle-vector (send *ri* :state :potentio-vector))
+  (send *pr2* :larm :angle-vector
+        (float-vector 26.2517 61.506 101.673 -121.542 -91.2933 -93.1499 -72.758))
+  (send *ri* :angle-vector (send *pr2* :angle-vector))
+  (send *ri* :wait-interpolation)
+  ;;
+  (send *pr2* :angle-vector (send *ri* :state :potentio-vector))
+  (send *pr2* :larm :angle-vector
+        (float-vector 45.6178 20.9171 122.559 -118.358 -122.343 -105.088 -109.796))
+  (send *ri* :angle-vector (send *pr2* :angle-vector))
+  (send *ri* :wait-interpolation)
+  ;;
+  )
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Action definitions
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -41,6 +56,12 @@
         ('larm (setq larm (cadr st)))
         ('rarm (setq rarm (cadr st)))
         ('arms (setq rarm (cadr st)))))
+    (when (and (null larm) (cdr (assoc :larm userdata)))
+      (setq larm (cdr (assoc :larm userdata))))
+    (when (and (null rarm) (cdr (assoc :rarm userdata)))
+      (setq rarm (cdr (assoc :rarm userdata))))
+    (when (and (null arms) (cdr (assoc :arms userdata)))
+      (setq arms (cdr (assoc :arms userdata))))
     ;;
     (ros::ros-info "onhand: larm=~A rarm=~A arms=~A" larm rarm arms)
     (cond
@@ -48,6 +69,7 @@
       ;; ((and larm rarm) t)
       ((and larm (eq 'bowl larm))
        (send *ri* :go-pos-unsafe -0.1 0 0)
+       (untuck-bowl-larm)
        (send *pr2* :angle-vector (send *ri* :state :potentio-vector))
        (send *pr2* :larm :angle-vector (get-side-pose :larm))
        (send *ri* :angle-vector (send *pr2* :angle-vector) 4000)
@@ -76,7 +98,7 @@
       ('dishwasher
        (when (eq from-place 'fridge)
          ;; rotate to avoid collision to table
-         (send *ri* :go-pos-unsafe 0 0 -90))
+         (send *ri* :go-pos-unsafe 0.1 -0.1 -90))
        (go-to-dishwasher userdata)) ;; coe
       (t
        (let (target-spot)
@@ -173,8 +195,8 @@
        (case obj
          ((bottle cup)
           (case arm
-            ('larm (setq offset (float-vector 0 200 0)))
-            ('rarm (setq offset (float-vector 0 -200 0)))))
+            ('larm (setq offset (float-vector -100 200 0)))
+            ('rarm (setq offset (float-vector -100 -200 0)))))
          (t t)))
       (t t))
     (when offset
