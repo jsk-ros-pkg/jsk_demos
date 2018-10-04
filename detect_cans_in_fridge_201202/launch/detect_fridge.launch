@@ -1,4 +1,5 @@
 <launch>
+  <arg name="ROBOT" default="$(optenv ROBOT pr2)"/>
   <arg name="machine" default="c2"/>
   <arg name="camera" default="kinect_head"/>
 
@@ -11,7 +12,7 @@
   <arg name="input_image" default="/$(arg camera)/rgb/$(arg throttle_prefix)image_rect_color"/>
   <arg name="input_camera_info" default="/$(arg camera)/rgb/$(arg throttle_prefix)camera_info"/>
 
-  <include file="$(find pr2_machine)/$(optenv ROBOT pr2).machine" />
+  <include file="$(find pr2_machine)/$(arg ROBOT).machine" />
 
   <group if="$(arg use_mask)">
     <node pkg="jsk_pcl_ros" type="attention_clipper" name="attention_clipper"
