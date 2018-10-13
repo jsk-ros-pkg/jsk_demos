@@ -33,6 +33,8 @@ def pose_distance(p1, p2):
 
 
 def remove_outlier_limbs(person, mean_thresh=0.5, score_thresh=0.4):
+    if len(person.poses) < 2:
+        return person
     xs = np.asarray([[p.position.z] for p in person.poses])
     ys = EllipticEnvelope().fit(xs).predict(xs)
     mean = np.mean(xs[ys > 0])

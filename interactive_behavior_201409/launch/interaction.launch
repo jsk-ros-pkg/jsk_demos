@@ -182,6 +182,7 @@
       <remap from="~input/face" to="face_recognition/output" />
       <remap from="~output" to="attention" />
       <rosparam>
+        enable_face_identification: false
         fixed_frame_id: odom_combined
         distance_threshold: 0.25
         timeout_threshold: 3.0
