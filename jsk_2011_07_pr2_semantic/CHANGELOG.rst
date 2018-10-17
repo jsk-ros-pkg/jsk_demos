@@ -2,6 +2,14 @@
 Changelog for package jsk_2011_07_pr2_semantic
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.0.4 (2017-03-15)
+------------------
+* Migrate srv files from jsk_pcl_ros to jsk_recognition_msgs
+  see
+  - https://github.com/jsk-ros-pkg/jsk_recognition/pull/1827
+  - https://github.com/jsk-ros-pkg/jsk_recognition/pull/1914
+* Contributors: Kentaro Wada
+
 0.0.3 (2016-02-11)
 ------------------
 

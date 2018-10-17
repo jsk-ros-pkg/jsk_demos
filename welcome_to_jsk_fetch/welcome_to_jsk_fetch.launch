@@ -1,0 +1,4 @@
+<launch>
+  <node pkg="welcome_to_jsk_fetch" type="welcome-to-jsk.l" name="welcome_to_jsk" />
+  <include file="$(find opencv_apps)/launch/face_detection.launch"/>
+</launch>

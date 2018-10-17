@@ -1,4 +1,5 @@
 <launch>
+  <arg name="ROBOT" default="$(optenv ROBOT pr2)" />
   <arg name="scene" default="eng2"/>
 
   <!-- start objectdetection/tf -->
@@ -23,7 +24,7 @@
         pkg="jsk_perception" type="virtual_camera_mono">
     <remap from="image" to="/narrow_stereo/left/image_raw"/>
   </node>
-  <node name="elevator_number" pkg="elevator_move_base_pr2" type="matchtemplate.py" output="screen" machine="c2">
+  <node name="elevator_number" pkg="elevator_move_base_pr2" type="matchtemplate.py" output="screen">
     <rosparam file="$(find elevator_move_base_pr2)/launch/template-$(arg scene).yaml" command="load"/>
     <remap from="~image" to="/panel_camera/image"/>
   </node>
@@ -36,6 +37,8 @@
           launch-prefix="nice -n +10"/>
   </group>
 
-  <include file="$(find elevator_move_base_pr2)/launch/check_elevator_open.xml" />
+  <include file="$(find elevator_move_base_pr2)/launch/check_elevator_open.xml">
+    <arg name="ROBOT" default="$(arg ROBOT)" />
+  </include>
 
 </launch>

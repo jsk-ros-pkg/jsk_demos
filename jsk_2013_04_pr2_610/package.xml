@@ -1,10 +1,11 @@
 <?xml version="1.0"?>
 <package>
   <name>jsk_2013_04_pr2_610</name>
-  <version>0.0.3</version>
+  <version>0.0.4</version>
   <description>The jsk_2013_04_pr2_610 package</description>
 
   <maintainer email="k-okada@jsk.t.u-tokyo.ac.jp">Kei Okada</maintainer>
+  <maintainer email="furushchev@jsk.imi.i.u-tokyo.ac.jp">Yuki Furuta</maintainer>
   <license>BSD</license>
   <url type="website">http://wiki.ros.org/jsk_2013_04_pr2_610</url>
   <author email="k-okada@jsk.t.u-tokyo.ac.jp">Kei Okada</author>
@@ -41,10 +42,11 @@
   <run_depend>pr2eus</run_depend>
   <run_depend>roseus_smach</run_depend>
   <run_depend>message_runtime</run_depend>
-  <run_depend>jsk_smart_gui</run_depend>
   <run_depend>imagesift</run_depend>
+  <run_depend>sound_play</run_depend>
 
   <test_depend>rostest</test_depend>
+  <test_depend>roslaunch</test_depend>
 
   <export>
   </export>

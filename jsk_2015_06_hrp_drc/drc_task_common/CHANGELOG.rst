@@ -2,6 +2,35 @@
 Changelog for package drc_task_common
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.0.4 (2017-03-15)
+------------------
+* remove jsk_pcl_ros from generate_messages
+* Migrate srv files from jsk_pcl_ros to jsk_recognition_msgs
+  see
+  - https://github.com/jsk-ros-pkg/jsk_recognition/pull/1827
+  - https://github.com/jsk-ros-pkg/jsk_recognition/pull/1914
+* Stop using deprecated jsk_topic_tools/log_utils.h
+  see
+  - https://github.com/jsk-ros-pkg/jsk_common/pull/1462
+  - https://github.com/jsk-ros-pkg/jsk_common/issues/1461
+* [drc_task_common] Add VIEWER options to toggle using rviz or not. Default behaviors are not changed.
+* [drc_task_common] Add input_cloud arg to valve detection launch
+* [drc_task_common] Add valve detection parameter arguments, which do not change default behavior.
+* [conservative_detection.launch] add simulation setting
+* [jaxon_demo] fix euslisp for simulation
+* [drc_task_common] add stair model to drc-testbed-models.l
+* [drc_task_common] add hrp2 demo of walking down blocks
+* [jsk_2015_06_hrp_drc/drc_task_common/euslisp/test-drc-terrain-walk.l] Update hrp2jsk stair function.
+* [jsk_2015_06_hrp_drc/drc_task_common/euslisp/drc-testbed-models.l] Separate block model method as function to reuse it.
+* add launch and launch with glc is optional behavior
+* [drc_task_common] Add valve_model for conservative valve detection
+* [drc_task_common] no-UI valve rotation and opening door
+* [drc_task_common] Add /map frame_id
+* remove old dynamic_reconfigure.parameter_generator, now everything runnning with catkin
+* remove depends to rosbuild/mk
+* gen_reconfigure_msg did not work propery on travis
+* Contributors: Juntaro Tamura, Kei Okada, Kentaro Wada, Ryohei Ueda, Shunichi Nozawa, Yohei Kakiuchi, Eisoku Kuroiwa, Iori Kumagai
+
 0.0.3 (2016-02-11)
 ------------------
 * [robot_model.launch] use upstream launch file

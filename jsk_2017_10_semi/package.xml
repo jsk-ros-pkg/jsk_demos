@@ -1,0 +1,27 @@
+<?xml version="1.0"?>
+<package>
+  <name>jsk_2017_10_semi</name>
+  <version>0.0.4</version>
+  <description>The jsk_2017_10_semi package</description>
+
+  <author email="hiraoka@jsk.imi.i.u-tokyo.ac.jp">Naoki Hiraoka</author>
+  <author email="koga@jsk.imi.i.u-tokyo.ac.jp">Koga Yuya</author>
+  <author email="oomura@jsk.imi.i.u-tokyo.ac.jp">Yuusuke Oomura</author>
+  <author email="t-murooka@jsk.imi.i.u-tokyo.ac.jp">Takayuki Murooka</author>
+
+  <maintainer email="hiraoka@jsk.imi.i.u-tokyo.ac.jp">Naoki Hiraoka</maintainer>
+  <maintainer email="koga@jsk.imi.i.u-tokyo.ac.jp">Koga Yuya</maintainer>
+  <maintainer email="oomura@jsk.imi.i.u-tokyo.ac.jp">Yuusuke Oomura</maintainer>
+  <maintainer email="t-murooka@jsk.imi.i.u-tokyo.ac.jp">Takayuki Murooka</maintainer>
+
+  <license>BSD</license>
+
+  <buildtool_depend>catkin</buildtool_depend>
+
+  <run_depend>fetcheus</run_depend>
+  <run_depend>jsk_maps</run_depend>
+  <run_depend>pr2eus</run_depend>
+
+  <export>
+  </export>
+</package>

@@ -2,6 +2,11 @@
 Changelog for package gazebo_drive_simulator
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.0.4 (2017-03-15)
+------------------
+* remove old dynamic_reconfigure.parameter_generator, now everything runnning with catkin
+* Contributors: Kei Okada
+
 0.0.3 (2016-02-11)
 ------------------
 
