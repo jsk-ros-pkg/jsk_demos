@@ -34,7 +34,7 @@
   ;; (send *robot* :reset-pose)
   ;; (send *robot* :head :neck-p :joint-angle 50)
   (send *robot* :angle-vector
-        #f(49.9598 59.9994 73.9966 69.9995 -119.999 20.0009 -29.9994 179.999 -44.8661 -20.138 -64.3855 -66.6302 -64.6722 -114.587 213.391 -0.005299 52.362))
+        #f(49.9598 44.8661 -20.138 64.3855 -66.6302 64.6722 -114.587 213.391 -44.8661 -20.138 -64.3855 -66.6302 -64.6722 -114.587 213.391 -0.005299 52.362))
   (when (boundp '*ri*)
     (send *ri* :angle-vector (send *robot* :angle-vector) time))
   (when wait-interpolation
