@@ -1,0 +1,153 @@
+<launch>
+  <arg name="input_image" default="/kinect_head_remote/rgb/image_rect_color" />
+  <arg name="input_depth_image" default="/kinect_head_remote/depth_registered/image_raw" />
+  <arg name="input_camera_info" default="/kinect_head_remote/rgb/camera_info" />
+  <arg name="input_cloud" default="/kinect_head_remote/depth_registered/points" />
+  <arg name="vital_rate" default="0.1" />
+  <arg name="respawn" default="true" />
+
+  <arg name="base_frame_id" default="base_footprint" />
+  <arg name="sensor_frame_id" default="head_mount_kinect_rgb_optical_frame" />
+
+  <group ns="tabletop">
+    <node name="manager"
+          pkg="jsk_topic_tools" type="standalone_complexed_nodelet"
+          output="screen" respawn="$(arg respawn)">
+      <rosparam subst_value="true">
+        nodelets:
+        - name: input_relay
+          type: jsk_topic_tools/LightweightThrottle
+          remappings:
+          - from: ~input
+            to: $(arg input_cloud)
+        - name: attention_clipper
+          type: jsk_pcl/AttentionClipper
+          remappings:
+          - from: ~input/points
+            to: input_relay/output
+        - name: pass_through
+          type: jsk_pcl/ExtractIndices
+          remappings:
+          - from: ~input
+            to: input_relay/output
+          - from: ~indices
+            to: attention_clipper/output/point_indices
+        - name: plane_extraction
+          type: jsk_pcl/MultiPlaneExtraction
+          remappings:
+          - from: ~input
+            to: input_relay/output
+          - from: ~indices
+            to: plane_concatenator/output/indices
+          - from: ~input_polygons
+            to: plane_concatenator/output/polygons
+          - from: ~input_coefficients
+            to: plane_concatenator/output/coefficients
+        - name: multi_plane_segmentation
+          type: jsk_pcl/OrganizedMultiPlaneSegmentation
+          remappings:
+          - from: ~input
+            to: pass_through/output
+        - name: plane_reasoner
+          type: jsk_pcl_utils/PlaneReasoner
+          remappings:
+          - from: ~input
+            to: input_relay/output
+          - from: ~input_inliers
+            to: multi_plane_segmentation/output_refined
+          - from: ~input_polygons
+            to: multi_plane_segmentation/output_refined_polygon
+          - from: ~input_coefficients
+            to: multi_plane_segmentation/output_refined_coefficients
+        - name: plane_reasoner_decomposer
+          type: jsk_pcl/ClusterPointIndicesDecomposer
+          remappings:
+          - from: ~input
+            to: input_relay/output
+          - from: ~target
+            to: plane_reasoner/output/horizontal/inliers
+          - from: ~align_planes
+            to: plane_reasoner/output/horizontal/polygons
+          - from: ~align_planes_coefficients
+            to: plane_reasoner/output/horizontal/coefficients
+        - name: plane_concatenator
+          type: jsk_pcl_utils/PlaneConcatenator
+          remappings:
+          - from: ~input
+            to: input_relay/output
+          - from: ~input/indices
+            to: plane_reasoner/output/horizontal/inliers
+          - from: ~input/polygons
+            to: plane_reasoner/output/horizontal/polygons
+          - from: ~input/coefficients
+            to: plane_reasoner/output/horizontal/coefficients
+      </rosparam>
+    </node>
+
+        <rosparam subst_value="true"
+              ns="input_relay">
+      update_rate: 1.0
+    </rosparam>
+
+    <rosparam subst_value="true"
+              ns="attention_clipper">
+      frame_id: $(arg base_frame_id)
+      use_multiple_attention: false
+      dimension_x: 0.7
+      dimension_y: 2.0
+      dimension_z: 0.8
+      initial_pos: [0.5, 0.0, 1.0]
+    </rosparam>
+
+    <rosparam subst_value="true"
+              ns="pass_through">
+      keep_organized: true
+      max_queue_size: 10
+    </rosparam>
+
+    <rosparam subst_value="true"
+              ns="multi_plane_segmentation">
+      max_curvature: 0.01
+      estimate_normal: true
+      vital_rate: $(arg vital_rate)
+    </rosparam>
+
+    <rosparam subst_value="true"
+              ns="plane_reasoner">
+      global_frame_id: $(arg base_frame_id)
+      horizontal_angular_threshold: 0.2
+      vertical_angular_threshold: 0.1
+      vital_rate: $(arg vital_rate)
+    </rosparam>
+
+    <rosparam subst_value="true"
+              ns="plane_reasoner_decomposer">
+      queue_size: 100
+      publish_clouds: false
+      publish_tf: false
+      align_boxes: true
+      align_boxes_with_plane: true
+      use_pca: true
+      vital_rate: $(arg vital_rate)
+    </rosparam>
+
+    <rosparam subst_value="true"
+              ns="plane_extraction">
+      use_sensor_frame: true
+      sensor_frame: $(arg sensor_frame_id)
+      min_height: 0.005
+      max_height: 0.4
+      vital_rate: $(arg vital_rate)
+    </rosparam>
+
+    <rosparam subst_value="true"
+              ns="plane_concatenator">
+      connect_angular_threshold: 0.1
+      connect_distance_threshold: 0.1
+      min_size: 100
+      min_area: 0.2
+      max_area: 1.0
+    </rosparam>
+
+  </group>
+</launch>
