@@ -91,13 +91,9 @@
 
     (setq world-to-target-transform
           (send (send world-to-base-transform :copy-worldcoords) :transform (ros::tf-pose->coords pose)))
-    (da)
-    (draw2 world-to-target-transform)
 
     ;; pre-grasp pose
-    (send *robot* :rarm :move-end-pos #f(0 0 200) :world :revert-if-fail nil)
-    (ir2ri :wait-interpolation t :time 1000)
-    (send *ri* :stop-grasp)
+    (send *ri* :stop-grasp :larm)
 
     (setq target-coords
           (send
@@ -135,8 +131,6 @@
       (return-from pick-hanko nil))
 
     ;; pre-grasp pose
-    (send *robot* :larm :move-end-pos #f(0 0 200) :world :revert-if-fail nil)
-    (ir2ri :wait-interpolation t :time 2000)
     (send *ri* :stop-grasp :larm)
 
     (send *robot* :rarm :move-end-pos #f(0 0 200) :world :revert-if-fail nil)
@@ -288,10 +282,6 @@
     (da)
     (draw2 world-to-target-transform)
 
-    ;; pre-grasp pose
-    (send *robot* :rarm :move-end-pos #f(0 0 200) :world :revert-if-fail nil)
-    (ir2ri :wait-interpolation t :time 2000)
-
     ;; force grasp
     (send *ri* :move-gripper :rarm 0.0 :effort 10 :wait t)
 
@@ -329,9 +319,11 @@
         msg
         index
         pose
-        (world-to-base-transform (send *robot* :copy-worldcoords))
+        world-to-base-transform
         world-to-target-transform
         target-coords)
+    (setq msg nil)
+    (setq world-to-base-transform (send *robot* :copy-worldcoords))
     (default-pose :wait-interpolation t :time 3000)
     (speak-jp "朱肉ケースを探します。")
     (while (null msg)
@@ -351,14 +343,12 @@
           (send world-to-base-transform :transform (ros::tf-pose->coords pose)))
 
     ;; pre-grasp pose
-    (send *robot* :rarm :move-end-pos #f(0 0 200) :world :revert-if-fail nil)
-    (ir2ri :wait-interpolation t :time 2000)
-    (send *ri* :stop-grasp)
+    (send *ri* :stop-grasp :rarm)
 
     (setq target-coords
           (send (send (make-coords :pos (send world-to-target-transform :worldpos)) :rotate pi/2 :y) :translate #f(0 20 0) :world))
     (send target-coords :translate
-          (float-vector 0 0 (- 737 (elt (send target-coords :worldpos) 2))) :world)
+          (float-vector 0 0 (- 740 (elt (send target-coords :worldpos) 2))) :world)
     (send *robot* :rarm :inverse-kinematics
           (send (send target-coords :copy-worldcoords) :translate #f(0 0 200) :world))
     (ir2ri :wait-interpolation t :time 2000)
@@ -461,6 +451,121 @@
     (ir2ri :time 2000 :wait-interpolation t)
     t))
 
+(defun close-shuniku-case ()
+  (let (angle
+        msg
+        index
+        pose
+        world-to-base-transform
+        world-to-target-transform
+        target-coords
+        target-name)
+    (setq target-name "shuin_case")
+    (setq msg nil)
+    (setq world-to-base-transform (send *robot* :copy-worldcoords))
+    (default-pose :wait-interpolation t :time 3000)
+    (speak-jp "朱肉ケースを探します。")
+    (while (null msg)
+      (setq msg (one-shot-subscribe-with-condition
+                 "/label_with_geometry_filter/output"
+                 jsk_2018_10_22_stamp::LabelWithGeometry
+                 :timeout 5000
+                 :condition #'(lambda (m)
+                              (find target-name (send-all (send (send m :labelarray) :labels) :name) :test #'string=))))
+      (speak-jp "朱肉ケースが見つかりません。"))
+    (speak-jp "朱肉ケースが見つかりました。")
+
+    (setq index (position target-name (send-all (send (send msg :labelarray) :labels) :name) :test #'string=))
+    (setq pose (elt (send (send msg :posearray) :poses) index))
+
+    (setq world-to-target-transform
+          (send world-to-base-transform :transform (ros::tf-pose->coords pose)))
+
+    ;; pre-grasp pose
+    (send *ri* :stop-grasp :rarm)
+
+    (setq target-coords
+          (send (send (make-coords :pos (send world-to-target-transform :worldpos)) :rotate pi/2 :y) :translate #f(0 20 0) :world))
+    (send target-coords :translate
+          (float-vector 0 0 (- 725 (elt (send target-coords :worldpos) 2))) :world)
+    (send *robot* :rarm :inverse-kinematics
+          (send (send target-coords :copy-worldcoords) :translate #f(0 0 200) :world))
+    (ir2ri :wait-interpolation t :time 2000)
+
+    (send *robot* :rarm :inverse-kinematics target-coords
+          :rotation-axis :x)
+    (ir2ri :wait-interpolation t :time 2000)
+
+    (send *ri* :start-grasp :rarm)
+    (setq angle (gripper-angle :rarm))
+    (format t "gipper-angle ~A~%" angle)
+    (when (< angle 65)
+      (speak-jp "掴むのに失敗しました")
+      (send *ri* :stop-grasp :rarm)
+      (return-from close-shuniku-case nil))
+
+    (send *robot* :rarm :move-end-pos #f(0 0 100) :world)
+    (ir2ri :time 1000 :wait-interpolation t)
+
+    (setq angle (gripper-angle :rarm))
+    (format t "gipper-angle ~A~%" angle)
+    (when (< angle 65)
+      (speak-jp "落とした気がします")
+      (return-from close-shuniku-case nil))
+
+    (default-pose :wait-interpolation t :time 2000)
+
+    (setq target-name "shuin")
+    (speak-jp "朱肉を探します。")
+    (setq msg nil)
+    (setq world-to-base-transform (send *robot* :copy-worldcoords))
+    (while (null msg)
+      (setq msg (one-shot-subscribe-with-condition
+                 "/label_with_geometry_filter/output"
+                 jsk_2018_10_22_stamp::LabelWithGeometry
+                 :timeout 5000
+                 :condition #'(lambda (m)
+                                (find target-name (send-all (send (send m :labelarray) :labels) :name) :test #'string=))))
+      (speak-jp "朱肉が見つかりません。"))
+    (speak-jp "朱肉が見つかりました。")
+
+    (setq index (position target-name (send-all (send (send msg :labelarray) :labels) :name) :test #'string=))
+    (setq pose (elt (send (send msg :posearray) :poses) index))
+
+    (setq world-to-target-transform
+          (send world-to-base-transform :transform (ros::tf-pose->coords pose)))
+
+    (setq target-coords
+          (send (send (make-coords :pos (send world-to-target-transform :worldpos)) :rotate pi/2 :y) :translate #f(0 20 0) :world))
+    (send target-coords :translate
+          (float-vector 0 0 (- 725 (elt (send target-coords :worldpos) 2))) :world)
+    (send *robot* :rarm :inverse-kinematics
+          (send (send target-coords :copy-worldcoords) :translate #f(0 0 200) :world)
+          :rotation-axis :x
+          :revert-if-fail nil)
+    (ir2ri :wait-interpolation t :time 2000)
+
+    (send *robot* :rarm :inverse-kinematics
+          (send (send target-coords :copy-worldcoords) :translate #f(0 0 10) :world)
+          :rotation-axis :x)
+    (ir2ri :wait-interpolation t :time 2000)
+
+    (send *robot* :rarm :inverse-kinematics target-coords
+          :rotation-axis :x)
+    (ir2ri :wait-interpolation t :time 2000)
+
+    (send *robot* :rarm :move-end-pos #f(0 0 20) :local)
+    (ir2ri :wait-interpolation t :time 1000)
+
+    (send *robot* :rarm :move-end-pos #f(0 0 -40) :local)
+    (ir2ri :wait-interpolation t :time 1000)
+
+    (send *ri* :stop-grasp :rarm)
+
+    (default-pose :wait-interpolation t :time 3000)
+    t))
+
+
 
 (defun gripper-angle (&optional (arm :arms))
   (case arm
@@ -481,6 +586,7 @@
     ;;
 
     (setq result (return-hanko-to-case))
+    (setq result (close-shuniku-case))
     ))
 
 (setup)
