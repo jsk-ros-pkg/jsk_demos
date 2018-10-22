@@ -4,7 +4,7 @@ import rospy
 import message_filters
 
 from jsk_recognition_msgs.msg import LabelArray
-from jsk_recognition_msgs.msg import PoseArray
+from geometry_msgs.msg import PoseArray
 from jsk_topic_tools import ConnectionBasedTransport
 
 from jsk_2018_10_22_stamp.msg import LabelWithGeometry
@@ -13,9 +13,10 @@ from jsk_2018_10_22_stamp.msg import LabelWithGeometry
 class LabelWithGeometryFilter(ConnectionBasedTransport):
 
     def __init__(self):
+        super(LabelWithGeometryFilter, self).__init__()
         self.pub = self.advertise(
             '~output',
-            LabelWithGeometryFilter, queue_size=1)
+            LabelWithGeometry, queue_size=1)
 
     def subscribe(self):
         sub_label_array = message_filters.Subscriber(
@@ -37,7 +38,7 @@ class LabelWithGeometryFilter(ConnectionBasedTransport):
         for sub in self.subs:
             sub.unregister()
 
-    def callback(self, label_array_msg, pose_array_msg):
+    def _callback(self, label_array_msg, pose_array_msg):
         msg = LabelWithGeometry()
         msg.header = label_array_msg.header
         msg.labelarray = label_array_msg
