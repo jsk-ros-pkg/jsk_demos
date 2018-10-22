@@ -1,0 +1,3 @@
+Header header
+jsk_recognition_msgs/LabelArray labelarray
+geometry_msgs/PoseArray posearray

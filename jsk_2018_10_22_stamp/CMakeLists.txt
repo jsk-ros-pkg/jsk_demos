@@ -1,17 +1,30 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(jsk_2018_10_22_stamp)
 
-find_package(catkin REQUIRED COMPONENTS)
+find_package(catkin REQUIRED COMPONENTS
+  std_msgs geometry_msgs jsk_recognition_msgs)
 
 ################################################
 ## Declare ROS messages, services and actions ##
 ################################################
 
+add_message_files(
+  FILES
+  LabelWithGeometry.msg
+)
+
+generate_messages(
+  DEPENDENCIES
+  std_msgs geometry_msgs jsk_recognition_msgs
+)
+
 ###################################
 ## catkin specific configuration ##
 ###################################
 
-catkin_package()
+catkin_package(
+  CATKIN_DEPENDS std_msgs geometry_msgs jsk_recognition_msgs
+)
 
 ###########
 ## Build ##
