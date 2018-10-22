@@ -1,0 +1,19 @@
+<?xml version="1.0"?>
+<package>
+  <name>jsk_2018_10_22_stamp</name>
+  <version>0.0.1</version>
+  <description>The jsk_2018_10_22_stamp package</description>
+
+  <author email="yanokura@jsk.imi.i.u-tokyo.ac.jp">Iori Yanokura</author>
+  <maintainer email="yanokura@jsk.imi.i.u-tokyo.ac.jp">Iori Yanokura</maintainer>
+
+  <license>BSD</license>
+
+  <buildtool_depend>catkin</buildtool_depend>
+
+  <run_depend>jsk_maps</run_depend>
+  <run_depend>pr2eus</run_depend>
+
+  <export>
+  </export>
+</package>
