@@ -290,6 +290,7 @@
 
     (setq target-coords
           (send (make-coords :pos (send world-to-target-transform :worldpos)) :rotate pi/2 :y))
+    (send target-coords :translate #f(0 0 20) :world)
     (send *robot* :rarm :inverse-kinematics
           (send (send target-coords :copy-worldcoords) :translate #f(0 0 200) :world)
           :rotation-axis :x
@@ -619,6 +620,94 @@
     t))
 
 
+(defun people-pose-condition (msg)
+  (let ((candidate-poses)
+        limb-name
+        pose)
+    (dolist (person-pose (send msg :poses))
+      (dotimes (i (length (send person-pose :limb_names)))
+        (setq limb-name (elt (send person-pose :limb_names) i))
+        (setq pose (elt (send person-pose :poses) i))
+        (when (string= limb-name "RHand8")
+          (setq candidate-poses (append candidate-poses (list (cons limb-name pose)))))))
+    candidate-poses))
+
+
+(defun push-hanko ()
+  (let ((msg)
+        av
+        target-coords
+        base-to-camera-transform
+        world-to-base-transform
+        world-to-target-transform)
+    (default-pose :wait-interpolation nil :run nil)
+    (send *robot* :head :neck-p :joint-angle 30)
+    (ir2ri :wait-interpolation nil :time 1000)
+    (speak-jp "押すところを指差てもらえますか" :wait t)
+
+    (unix::usleep (* 1000 2000))
+
+    (setq msg (one-shot-subscribe-with-condition
+               "/people_pose_estimation_2d/pose"
+               jsk_recognition_msgs::PeoplePoseArray
+               :timeout 10000
+               :condition #'people-pose-condition))
+    (when (null msg)
+      (speak-jp "見つかりませんね" :wait t)
+      (return-from push-hanko nil))
+    (setq camera-to-target-transform
+          (ros::tf-pose->coords (cdr (car (people-pose-condition msg)))))
+    (setq world-to-base-transform (send *robot* :worldcoords))
+    (setq base-to-camera-transform (lookup-transform "base_footprint" (send msg :header :frame_id)))
+
+    (setq world-to-target-transform
+          (send (send world-to-base-transform :copy-worldcoords)
+                :transform
+                (send
+                 (send base-to-camera-transform :copy-worldcoords)
+                 :transform (send camera-to-target-transform :copy-worldcoords))))
+    (da)
+    (draw2 world-to-target-transform)
+
+    (speak-jp "了解しました。")
+
+    (setq target-coords
+          (send (make-coords :pos (send world-to-target-transform :worldpos)) :rotate pi/2 :y :local))
+    (send target-coords :translate #f(0 0 20) :world)
+    (send *robot* :rarm :inverse-kinematics
+          target-coords
+          :rotation-axis :x
+          :revert-if-fail nil)
+    (setq av (send *robot* :angle-vector))
+    (send *robot* :rarm :move-end-pos #f(-100 0 0) :local
+          :rotation-axis :x
+          :revert-if-fail nil)
+    (ir2ri :wait-interpolation t :time 2000)
+    (send *robot* :angle-vector av)
+    (ir2ri :wait-interpolation t :time 2000)
+    (send *robot* :angle-vector av)
+    (send *robot* :rarm :move-end-rot 2 :y :local)
+    (ir2ri :wait-interpolation t :time 1000)
+
+    (send *robot* :angle-vector av)
+    (send *robot* :rarm :move-end-rot -2 :y :local)
+    (ir2ri :wait-interpolation t :time 1000)
+
+    (send *robot* :angle-vector av)
+    (send *robot* :rarm :move-end-rot 2 :y :local)
+    (ir2ri :wait-interpolation t :time 1000)
+
+    (send *robot* :angle-vector av)
+    (send *robot* :rarm :move-end-rot -2 :y :local)
+    (ir2ri :wait-interpolation t :time 1000)
+
+    (send *robot* :rarm :move-end-pos #f(-200 0 0) :local
+          :revert-if-fail nil)
+    (ir2ri :wait-interpolation t :time 2000)
+
+    t))
+
+
 
 (defun gripper-angle (&optional (arm :arms))
   (case arm
@@ -644,7 +733,9 @@
     (when (null result)
       (return-from run nil))
 
-    ;;
+    (setq result (push-hanko))
+    (when (null result)
+      (return-from run nil))
 
     (setq result (return-hanko-to-case))
     (setq result (close-shuniku-case))
