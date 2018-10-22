@@ -135,6 +135,9 @@
         pkg="jsk_2018_10_22_stamp" type="label_with_geometry_filter.py" >
     <remap from="~input/labels" to="mask_rcnn_instance_segmentation/output/labels" />
     <remap from="~input/poses" to="mask_rcnn_cluster_point_indices_decomposer/centroid_pose_array" />
+    <rosparam>
+      queue_size: 100
+    </rosparam>
   </node>
 
 </launch>
