@@ -326,7 +326,10 @@
         pose
         world-to-base-transform
         world-to-target-transform
-        target-coords)
+        target-coords
+        arm
+        pre-av
+        av)
     (setq msg nil)
     (setq world-to-base-transform (send *robot* :copy-worldcoords))
     (default-pose :wait-interpolation t :time 3000)
@@ -347,54 +350,75 @@
     (setq world-to-target-transform
           (send world-to-base-transform :transform (ros::tf-pose->coords pose)))
 
-    ;; pre-grasp pose
-    (send *ri* :stop-grasp :rarm)
-
+    ;; for rarm
     (setq target-coords
           (send (send (make-coords :pos (send world-to-target-transform :worldpos)) :rotate pi/2 :y) :translate #f(0 20 0) :world))
     (send target-coords :translate
           (float-vector 0 0 (- 740 (elt (send target-coords :worldpos) 2))) :world)
-    (send *robot* :rarm :inverse-kinematics
-          (send (send target-coords :copy-worldcoords) :translate #f(0 0 200) :world))
+
+    (setq arm :rarm)
+    (setq pre-av (send *robot* arm :inverse-kinematics
+                       (send (send target-coords :copy-worldcoords) :translate #f(0 0 200) :world)))
+    (setq av (send *robot* arm :inverse-kinematics target-coords
+                   :rotation-axis :x))
+    (when (or (null pre-av) (null av))
+      (setq arm :larm)
+      (default-pose :run nil)
+      (setq target-coords
+            (send (send (make-coords :pos (send world-to-target-transform :worldpos)) :rotate pi/2 :y) :translate #f(0 -20 0) :world))
+      (send target-coords :translate
+            (float-vector 0 0 (- 740 (elt (send target-coords :worldpos) 2))) :world)
+      (setq pre-av (send *robot* arm :inverse-kinematics
+                         (send (send target-coords :copy-worldcoords) :translate #f(0 0 200) :world)))
+      (setq av (send *robot* arm :inverse-kinematics target-coords
+                     :rotation-axis :x))
+      (when (or (null pre-av) (null av))
+        (speak-jp "ikが解けていないです")
+        (return-from open-shuniku-case nil)))
+
+    ;; pre-grasp pose
+    (send *ri* :stop-grasp arm)
+
+    (send *robot* :angle-vector pre-av)
     (ir2ri :wait-interpolation t :time 2000)
 
-    (send *robot* :rarm :inverse-kinematics target-coords)
+    (send *robot* :angle-vector av)
     (ir2ri :wait-interpolation t :time 2000)
 
-    (send *ri* :start-grasp :rarm)
-    (setq angle (gripper-angle :rarm))
+    (send *ri* :start-grasp arm)
+    (setq angle (gripper-angle arm))
     (format t "gipper-angle ~A~%" angle)
     (when (< angle 65)
       (speak-jp "掴むのに失敗しました")
-      (send *ri* :stop-grasp :rarm)
+      (send *ri* :stop-grasp arm)
       (return-from open-shuniku-case nil))
 
-    (send *robot* :rarm :move-end-pos #f(0 0 100) :world
+    (send *robot* arm :move-end-pos #f(0 0 100) :world
           :revert-if-fail nil)
     (ir2ri :time 2000 :wait-interpolation t)
 
-    (setq angle (gripper-angle :rarm))
+    (setq angle (gripper-angle arm))
     (format t "gipper-angle ~A~%" angle)
     (when (< angle 65)
       (speak-jp "落とした気がします")
       (return-from open-shuniku-case nil))
 
-    (send *robot* :rarm :move-end-pos #f(0 200 0) :world
+    (send *robot* arm :move-end-pos #f(0 200 0) :world
           :revert-if-fail nil)
     (ir2ri :time 2000 :wait-interpolation t)
-    (setq angle (gripper-angle :rarm))
+    (setq angle (gripper-angle arm))
     (format t "gipper-angle ~A~%" angle)
     (when (< angle 65)
       (speak-jp "落とした気がします")
       (return-from open-shuniku-case nil))
-    (send *robot* :rarm :move-end-pos #f(0 0 -130) :world)
+    (send *robot* arm :move-end-pos #f(0 0 -130) :world)
     (ir2ri :time 3000 :wait-interpolation t)
-    (setq angle (gripper-angle :rarm))
+    (setq angle (gripper-angle arm))
     (format t "gipper-angle ~A~%" angle)
     (send *ri* :stop-grasp)
-    (send *robot* :rarm :move-end-pos #f(0 0 100) :world)
+    (send *robot* arm :move-end-pos #f(0 0 100) :world)
     (ir2ri :time 2000 :wait-interpolation t)
-    (setq angle (gripper-angle :rarm))
+    (setq angle (gripper-angle arm))
     (format t "gipper-angle ~A~%" angle)
     t))
 
@@ -610,6 +634,8 @@
     (setq result
           (open-shuniku-case))
     (when (null result)
+      (speak-jp "もう一度挑戦します。")
+      (open-shuniku-case)
       (return-from run nil))
     (setq result (pick-hanko))
     (when (null result)
