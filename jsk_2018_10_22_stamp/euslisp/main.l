@@ -171,7 +171,7 @@
     (send *robot* :larm :move-end-pos #f(0 30 40) :local)
     (ir2ri :wait-interpolation t :time 2000)
 
-    (send *robot* :larm :move-end-pos #f(0 0 20) :local)
+    (send *robot* :larm :move-end-pos #f(0 0 -30) :local)
     (ir2ri :wait-interpolation t :time 2000)
 
     (send *robot* :larm :move-end-pos #f(-200 0 0) :local
@@ -623,13 +623,29 @@
 (defun people-pose-condition (msg)
   (let ((candidate-poses)
         limb-name
-        pose)
+        pose
+        base-to-camera-transform
+        world-to-target-transform
+        world-to-target-translation)
+    (setq base-to-camera-transform
+          (lookup-transform "base_footprint" (send msg :header :frame_id)))
+    (when (null base-to-camera-transform)
+      (return-from people-pose-condition nil))
     (dolist (person-pose (send msg :poses))
       (dotimes (i (length (send person-pose :limb_names)))
         (setq limb-name (elt (send person-pose :limb_names) i))
         (setq pose (elt (send person-pose :poses) i))
         (when (string= limb-name "RHand8")
-          (setq candidate-poses (append candidate-poses (list (cons limb-name pose)))))))
+          (setq world-to-target-transform
+                (send (send base-to-camera-transform :copy-worldcoords)
+                      :transform (ros::tf-pose->coords pose)))
+          (setq world-to-target-translation (send world-to-target-transform :worldpos))
+          (format t "~A~%" world-to-target-translation)
+          (when (and (< 200 (elt world-to-target-translation 0))
+                     (< (elt world-to-target-translation 0) 1000)
+                     (< 500 (elt world-to-target-translation 2))
+                     (< (elt world-to-target-translation 2) 1000))
+            (setq candidate-poses (append candidate-poses (list (cons limb-name pose))))))))
     candidate-poses))
 
 
