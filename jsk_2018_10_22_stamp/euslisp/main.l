@@ -55,10 +55,9 @@
     (send *robot* :head :neck-p :joint-angle 20)
     (send *robot* :rarm
           :inverse-kinematics
-          (send (send (send (send *robot* :narrow_stereo_r_stereo_camera_optical_frame_lk) :copy-worldcoords) :translate #f(100 0 200) :local) :rotate pi/2 :y)
+          (send (send (send (send *robot* :narrow_stereo_r_stereo_camera_optical_frame_lk) :copy-worldcoords) :translate #f(65 0 150) :local) :rotate pi/2 :y)
           :revert-if-fail t)
     (ir2ri :wait-interpolation t)))
-
 
 
 (defun pick-hanko ()
@@ -75,7 +74,7 @@
     (setq av nil)
     (setq msg nil)
     (setq world-to-base-transform (send *robot* :copy-worldcoords))
-    (default-pose :wait-interpolation t :time 3000)
+    (default-pose :wait-interpolation t :time 2000)
     (speak-jp "ハンコを探します。")
     (while (null msg)
       (setq msg (one-shot-subscribe-with-condition
@@ -97,7 +96,7 @@
 
     ;; pre-grasp pose
     (send *robot* :rarm :move-end-pos #f(0 0 200) :world :revert-if-fail nil)
-    (ir2ri :wait-interpolation t :time 2000)
+    (ir2ri :wait-interpolation t :time 1000)
     (send *ri* :stop-grasp)
 
     (setq target-coords
@@ -178,6 +177,10 @@
     (send *robot* :larm :move-end-pos #f(0 30 30) :local)
     (ir2ri :wait-interpolation t :time 2000)
 
+    (send *robot* :larm :move-end-pos #f(-200 0 0) :local
+          :revert-if-fail nil)
+    (ir2ri :wait-interpolation t :time 2000)
+
     ;; trial 2
     ;; (send *robot* :larm :inverse-kinematics
     ;;       (send (send target-coords :copy-worldcoords) :translate #f(0 0 -50) :world)
@@ -251,7 +254,7 @@
     ;; (send *ri* :start-grasp :rarm)
     ;; (unix::usleep (* 1000 1000))
     ;; (send *ri* :stop-grasp :larm)
-    ))
+    t))
 
 
 (defun push-shuniku ()
@@ -301,7 +304,7 @@
     (send *robot* :rarm :inverse-kinematics target-coords)
     (ir2ri :wait-interpolation t)
 
-    (send *ri* :start-grasp)
+    (send *ri* :start-grasp :rarm)
     (setq angle (gripper-angle :rarm))
     (format t "gipper-angle ~A~%" angle)
     (when (< angle 5)
@@ -316,7 +319,7 @@
     (when (< angle 5)
       (speak-jp "落とした気がします")
       (return-from push-shuniku nil))
-    ))
+    t))
 
 
 
@@ -355,7 +358,7 @@
     (setq target-coords
           (send (send (make-coords :pos (send world-to-target-transform :worldpos)) :rotate pi/2 :y) :translate #f(0 20 0) :world))
     (send target-coords :translate
-          (float-vector 0 0 (- 735 (elt (send target-coords :worldpos) 2))) :world)
+          (float-vector 0 0 (- 737 (elt (send target-coords :worldpos) 2))) :world)
     (send *robot* :rarm :inverse-kinematics
           (send (send target-coords :copy-worldcoords) :translate #f(0 0 200) :world))
     (ir2ri :wait-interpolation t :time 2000)
@@ -363,7 +366,7 @@
     (send *robot* :rarm :inverse-kinematics target-coords)
     (ir2ri :wait-interpolation t :time 2000)
 
-    (send *ri* :start-grasp)
+    (send *ri* :start-grasp :rarm)
     (setq angle (gripper-angle :rarm))
     (format t "gipper-angle ~A~%" angle)
     (when (< angle 65)
@@ -395,7 +398,8 @@
     (send *robot* :rarm :move-end-pos #f(0 0 100) :world)
     (ir2ri :time 2000 :wait-interpolation t)
     (setq angle (gripper-angle :rarm))
-    (format t "gipper-angle ~A~%" angle)))
+    (format t "gipper-angle ~A~%" angle)
+    t))
 
 
 (defun return-hanko-to-case ()
@@ -407,7 +411,7 @@
         world-to-target-transform
         target-coords
         target-name)
-    (default-pose :wait-interpolation t)
+    (default-pose :wait-interpolation t :time 2000)
     (setq msg nil)
     (setq target-name "hanko_case")
     (setq world-to-base-transform (send *robot* :copy-worldcoords))
@@ -433,7 +437,7 @@
 
     ;; pre-grasp pose
     (send *robot* :rarm :move-end-pos #f(0 0 200) :world :revert-if-fail nil)
-    (ir2ri :wait-interpolation t :time 2000)
+    (ir2ri :wait-interpolation t :time 1000)
 
     (setq target-coords
           (send
@@ -445,17 +449,17 @@
           (send (send target-coords :copy-worldcoords) :translate #f(0 0 200) :world)
           :rotation-axis :x
           :revert-if-fail nil)
-    (ir2ri :wait-interpolation t)
+    (ir2ri :wait-interpolation t :time 2000)
 
     (send *robot* :rarm :inverse-kinematics target-coords
           :rotation-axis :x)
-    (ir2ri :wait-interpolation t)
+    (ir2ri :wait-interpolation t :time 2000)
 
     (send *ri* :stop-grasp :rarm)
 
     (send *robot* :rarm :move-end-pos #f(0 0 100) :world)
     (ir2ri :time 2000 :wait-interpolation t)
-    ))
+    t))
 
 
 (defun gripper-angle (&optional (arm :arms))
@@ -467,5 +471,16 @@
                 (* 1000.0 (send (send (*ri* . l-gripper-action) :get-result) :position))))))
 
 
+(defun run ()
+  (let (result)
+    (setq result
+          (open-shuniku-case))
+    (setq result (pick-hanko))
+    (setq result (push-shuniku))
+
+    ;;
+
+    (setq result (return-hanko-to-case))
+    ))
 
 (setup)
