@@ -136,7 +136,8 @@
     <remap from="~input/labels" to="mask_rcnn_instance_segmentation/output/labels" />
     <remap from="~input/poses" to="mask_rcnn_cluster_point_indices_decomposer/centroid_pose_array" />
     <rosparam>
-      queue_size: 100
+      approximate_sync: true
+      queue_size: 200
     </rosparam>
   </node>
 
