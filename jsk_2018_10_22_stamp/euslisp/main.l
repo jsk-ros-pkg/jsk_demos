@@ -177,80 +177,6 @@
     (send *robot* :larm :move-end-pos #f(-200 0 0) :local
           :revert-if-fail nil)
     (ir2ri :wait-interpolation t :time 2000)
-
-    ;; trial 2
-    ;; (send *robot* :larm :inverse-kinematics
-    ;;       (send (send target-coords :copy-worldcoords) :translate #f(0 0 -50) :world)
-    ;;       :rotation-axis :z
-    ;;       :revert-if-fail nil)
-    ;; (setq av (send *robot* :angle-vector))
-    ;; (send *robot* :larm :move-end-pos #f(-100 0 0) :local
-    ;;       :revert-if-fail nil)
-    ;; (ir2ri :wait-interpolation t :time 2000)
-    ;; (send *robot* :angle-vector av)
-    ;; (ir2ri :wait-interpolation t :time 2000)
-
-    ;; (send *ri* :start-grasp :larm)
-
-    ;; (send *robot* :rarm :move-end-pos #f(-30 0 0) :local)
-    ;; (ir2ri :wait-interpolation t :time 2000)
-
-    ;; (send *robot* :rarm :move-end-pos #f(-30 0 -20) :local)
-    ;; (ir2ri :wait-interpolation t :time 2000)
-
-    ;; (send *robot* :rarm :move-end-pos #f(0 0 200) :world
-    ;;       :revert-if-fail nil)
-    ;; (ir2ri :wait-interpolation t :time 2000)
-
-    ;; (send *ri* :stop-grasp :larm)
-    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-    ;; trial 1
-    ;; (send *robot* :rarm :move-end-pos #f(0 0 100) :world)
-    ;; (ir2ri :time 2000 :wait-interpolation t)
-
-    ;; (setq angle (gripper-angle :rarm))
-    ;; (format t "gipper-angle ~A~%" angle)
-    ;; (when (< angle 5)
-    ;;   (speak-jp "落とした気がします")
-    ;;   (return-from pick-hanko nil))
-
-    ;; (send *robot* :larm :inverse-kinematics
-    ;;       (send (send *robot* :rarm :end-coords :copy-worldcoords) :translate #f(0 50 -30) :world)
-    ;;       :rotation-axis :z)
-    ;; (ir2ri :wait-interpolation t :time 2000)
-
-    ;; (send *robot* :larm :inverse-kinematics
-    ;;       (send (send *robot* :rarm :end-coords :copy-worldcoords) :translate #f(0 0 -30) :world)
-    ;;       :rotation-axis :z)
-    ;; (ir2ri :wait-interpolation t :time 2000)
-
-    ;; (send *robot* :larm :move-end-pos #f(0 0 20) :world)
-    ;; (ir2ri :wait-interpolation t :time 2000)
-    ;; (send *ri* :start-grasp :larm)
-    ;; (unix::usleep (* 1000 1000))
-
-    ;; (send *ri* :stop-grasp :rarm)
-    ;; (send *robot* :rarm :move-end-pos #f(0 -50 50) :world)
-    ;; (ir2ri :wait-interpolation t :time 2000)
-
-    ;; (ri2ir)
-
-    ;; (send *robot* :rarm :inverse-kinematics
-    ;;       (send (send (send *robot* :larm :end-coords :copy-worldcoords) :rotate pi/2 :y :local) :translate #f(0 0 150) :world)
-    ;;       :rotation-axis :x
-    ;;       :revert-if-fail nil)
-    ;; (ir2ri :wait-interpolation t :time 2000)
-
-    ;; (send *robot* :rarm :inverse-kinematics
-    ;;       (send (send (send *robot* :larm :end-coords :copy-worldcoords) :rotate pi/2 :y :local) :translate #f(0 0 50) :world)
-    ;;       :rotation-axis :x
-    ;;       :revert-if-fail t)
-    ;; (ir2ri :wait-interpolation t :time 2000)
-
-    ;; (send *ri* :start-grasp :rarm)
-    ;; (unix::usleep (* 1000 1000))
-    ;; (send *ri* :stop-grasp :larm)
     t))
 
 
@@ -689,7 +615,7 @@
 
     (setq target-coords
           (send (make-coords :pos (send world-to-target-transform :worldpos)) :rotate pi/2 :y :local))
-    (send target-coords :translate #f(0 0 20) :world)
+    (send target-coords :translate #f(0 0 10) :world)
     (send *robot* :rarm :inverse-kinematics
           target-coords
           :rotation-axis :x
