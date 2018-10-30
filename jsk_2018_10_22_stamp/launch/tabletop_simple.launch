@@ -1,8 +1,13 @@
 <launch>
-  <arg name="input_image" default="/kinect_head_remote/rgb/image_rect_color" />
-  <arg name="input_depth_image" default="/kinect_head_remote/depth_registered/image_raw" />
-  <arg name="input_camera_info" default="/kinect_head_remote/rgb/camera_info" />
-  <arg name="input_cloud" default="/kinect_head_remote/depth_registered/points" />
+
+  <arg name="ROBOT" default="$(optenv ROBOT sim)"/>
+  <include file="$(find pr2_machine)/$(arg ROBOT).machine" />
+  <arg name="machine" default="c2" />
+
+  <arg name="input_image" default="/kinect_head/rgb/image_rect_color" />
+  <arg name="input_depth_image" default="/kinect_head/depth_registered/image_raw" />
+  <arg name="input_camera_info" default="/kinect_head/rgb/camera_info" />
+  <arg name="input_cloud" default="/kinect_head/depth_registered/points" />
   <arg name="vital_rate" default="0.1" />
   <arg name="respawn" default="true" />
 
@@ -12,7 +17,9 @@
   <group ns="tabletop">
     <node name="manager"
           pkg="jsk_topic_tools" type="standalone_complexed_nodelet"
-          output="screen" respawn="$(arg respawn)">
+          output="screen"
+          respawn="$(arg respawn)"
+          machine="$(arg machine)" >
       <rosparam subst_value="true">
         nodelets:
         - name: input_relay

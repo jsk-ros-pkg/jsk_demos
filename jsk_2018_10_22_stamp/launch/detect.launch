@@ -1,16 +1,22 @@
 <launch>
-  <arg name="input_image" default="/kinect_head_remote/rgb/image_rect_color" />
-  <arg name="input_depth_image" default="/kinect_head_remote/depth_registered/image_raw" />
-  <arg name="input_camera_info" default="/kinect_head_remote/rgb/camera_info" />
-  <arg name="input_cloud" default="/kinect_head_remote/depth_registered/points" />
+  <arg name="input_image" default="/kinect_head/rgb/image_rect_color" />
+  <arg name="input_depth_image" default="/kinect_head/depth_registered/image_raw" />
+  <arg name="input_camera_info" default="/kinect_head/rgb/camera_info" />
+  <arg name="input_cloud" default="/kinect_head/depth_registered/points" />
   <arg name="gpu" default="0" />
   <arg name="respawn" default="true" />
 
-  <include file="$(find jsk_2018_10_22_stamp)/launch/tabletop_simple.launch"/>
+  <include file="$(find jsk_2018_10_22_stamp)/launch/tabletop_simple.launch" />
+  <include file="$(find jsk_2018_10_22_stamp)/jsk_2018_10_22_stamp.machine"
+
+  <arg name="machine" default="c2" />
+  <arg name="gpu_machine" default="daihuku" />
 
   <node name="people_pose_estimation_2d"
         pkg="jsk_perception" type="people_pose_estimation_2d.py"
-        respawn="true" output="screen">
+        respawn="$(arg respawn)"
+        output="screen"
+        machine="$(arg gpu_machine)" >
     <remap from="~input" to="$(arg input_image)" />
     <remap from="~input/depth" to="$(arg input_depth_image)"/>
     <remap from="~input/info" to="$(arg input_camera_info)" />
@@ -32,7 +38,10 @@
 
   <node name="mask_rcnn_instance_segmentation"
         pkg="jsk_perception" type="mask_rcnn_instance_segmentation.py"
-        clear_params="true" >
+        clear_params="true"
+        respawn="$(arg respawn)"
+        output="screen"
+        machine="$(arg gpu_machine)" >
     <remap from="~input" to="$(arg input_image)" />
     <rosparam subst_value="true">
       gpu: $(arg gpu)
@@ -65,7 +74,8 @@
   <!-- use cluster_indices and labels -->
   <node name="image_cluster_indices_decomposer"
         pkg="jsk_perception" type="image_cluster_indices_decomposer.py"
-        clear_params="true" >
+        clear_params="true"
+        machine="$(arg machine)" >
     <remap from="~input" to="$(arg input_image)" />
     <remap from="~input/cluster_indices"
            to="mask_rcnn_instance_segmentation/output/cluster_indices" />
@@ -74,7 +84,8 @@
   <!-- use lbl_cls and lbl_ins -->
   <node name="label_cls_to_mask"
         pkg="jsk_perception" type="label_to_mask_image"
-        clear_params="true" >
+        clear_params="true"
+        machine="$(arg machine)" >
     <remap from="~input" to="mask_rcnn_instance_segmentation/output/label_cls" />
     <rosparam subst_value="true">
       label_value: 14
@@ -82,7 +93,8 @@
   </node>
   <node name="apply_mask_image"
         pkg="jsk_perception" type="apply_mask_image"
-        clear_params="true" >
+        clear_params="true"
+        machine="$(arg machine)" >
     <remap from="~input" to="mask_rcnn_instance_segmentation/output/label_ins" />
     <remap from="~input/mask" to="label_cls_to_mask/output" />
     <rosparam subst_value="true">
@@ -92,7 +104,8 @@
   </node>
   <node name="label_image_decomposer"
         pkg="jsk_perception" type="label_image_decomposer.py"
-        clear_params="true" >
+        clear_params="true"
+        machine="$(arg machine)" >
     <remap from="~input" to="$(arg input_image)" />
     <remap from="~input/label" to="apply_mask_image/output" />
     <rosparam subst_value="true">
@@ -102,7 +115,8 @@
 
   <node name="tile_image"
         pkg="jsk_perception" type="tile_image.py"
-        clear_params="true" >
+        clear_params="true"
+        machine="$(arg machine)" >
     <rosparam subst_value="true">
       input_topics:
         - $(arg input_image)
@@ -117,7 +131,8 @@
 
   <node name="mask_rcnn_cluster_point_indices_decomposer"
         pkg="nodelet" type="nodelet"
-        args="standalone jsk_pcl/ClusterPointIndicesDecomposer" >
+        args="standalone jsk_pcl/ClusterPointIndicesDecomposer"
+        machine="$(arg machine)" >
     <remap from="~input" to="$(arg input_cloud)" />
     <remap from="~target" to="mask_rcnn_instance_segmentation/output/cluster_indices" />
     <rosparam subst_value="true">
