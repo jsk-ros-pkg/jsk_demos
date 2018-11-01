@@ -97,7 +97,7 @@
 
 (defun pass-sandwich ()
   (send *pr2* :angle-vector (pr2-pick-bag-pose))
-  (send *ri* :angle-vector (send *pr2* :angle-vector 5000))
+  (send *ri* :angle-vector (send *pr2* :angle-vector) 5000)
   (send *ri* :wait-interpolation)
   (send *ri* :stop-grasp :rarm :wait t)
   (speak-jp "サンドイッチをどうぞ")
