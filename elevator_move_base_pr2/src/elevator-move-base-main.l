@@ -277,7 +277,7 @@
   (switch-global-planner-observation nil) ;;disable tilt scan
   t)
 (defun costmap-normal (&rest args)
-  (change-inflation-range 0.55)
+  (change-inflation-range 0.3)
   (switch-global-planner-observation t) ;;enable tilt scan
   t)
 
