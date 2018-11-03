@@ -94,7 +94,7 @@
 
 (defun go-to-initial-pose ()
   (send *ri* :move-to
-        *initial-pose*
+        (send (send *initial-pose* :copy-worldcoords) :translate #f(0 0 -30000))
         :frame-id *initial-floor*))
 
 
