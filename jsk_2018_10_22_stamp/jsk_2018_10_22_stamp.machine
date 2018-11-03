@@ -2,9 +2,15 @@
 
   <arg name="daihuku_user" default="nvidia" />
   <arg name="daihuku_env_loader" default="/home/$(arg daihuku_user)/env.sh" />
+  <arg name="montblanc_user" default="nvidia" />
+  <arg name="montblanc_env_loader" default="/home/$(arg montblanc_user)/env.sh" />
 
   <machine name="daihuku" address="daihuku"
            user="$(arg daihuku_user)" env-loader="$(arg daihuku_env_loader)"
-           timeout="30.0" />
+           timeout="60.0" />
+
+  <machine name="montblanc" address="montblanc"
+           user="$(arg montblanc_user)" env-loader="$(arg montblanc_env_loader)"
+           timeout="60.0" />
 
 </launch>
