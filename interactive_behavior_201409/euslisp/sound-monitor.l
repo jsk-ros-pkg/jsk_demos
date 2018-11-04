@@ -48,13 +48,13 @@
    "~enable" std_srvs::Empty
    #'(lambda (req)
        (setq *enable-monitor* t)
-       (ros::ros-info "sound_torque_monitor enabled")
+       (ros::ros-info "sound_monitor enabled")
        (send req :response)))
   (ros::advertise-service
    "~disable" std_srvs::Empty
    #'(lambda (req)
        (setq *enable-monitor* nil)
-       (ros::ros-info "sound_torque_monitor disabled")
+       (ros::ros-info "sound_monitor disabled")
        (send req :response)))
   (ros::subscribe "speech_to_text"
                   speech_recognition_msgs::SpeechRecognitionCandidates
