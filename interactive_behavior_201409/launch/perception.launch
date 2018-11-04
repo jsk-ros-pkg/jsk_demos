@@ -44,6 +44,12 @@
     <arg name="camera" value="$(arg camera)"/>
   </include>
 
+  <include file="$(find jsk_2017_12_pr2_coe)/launch/aggregator.launch"
+           if="false">
+    <arg name="ROBOT" value="$(arg ROBOT)"/>
+    <arg name="machine" value="$(arg machine)"/>
+  </include>
+
   <!-- lifelog -->
   <group ns="ssd" if="$(arg use_ssd)">
     <node name="position_estimator"

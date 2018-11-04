@@ -3,15 +3,14 @@
 ;; Author: Yuki Furuta <furushchev@jsk.imi.i.u-tokyo.ac.jp>
 
 (require :pr2-actionlib "package://interactive_behavior_201409/pddl/pr2-actionlib.l")
-(require :room-domain "package://interactive_behavior_201409/pddl/room-domain.l")
+(require :room-domain "package://interactive_behavior_201409/pddl/new-room-domain.l")
 
 (defun plan (&optional debug)
   (setq *domain* (make-domain))
   (setq *problem*
-        (make-problem :init '((AT START)
-                              (ON CUP COUNTER)
-                              (= (total-cost) 0))
-                      :goal '((OR (ON CUP KITCHEN) (ON CUP DISHWASHER)))
+        (make-problem :init '((ROBOT-AT TABLE)
+                              (ON CUP TABLE))
+                      :goal '((ON CUP KITCHEN))
                       :items '(CUP)
                       ))
   (setq *sm* (plan-task *domain* *problem* :debug debug))
