@@ -348,7 +348,7 @@ Example: (defpreemptrobot pr2) creates `pr2-preempt-interface` and `pr2-init`"
                (throw :exec-barrier ,ret))) ;; caught by exec-preempt-task
            ,ret)))))
 
-(defun exec-preemptive-task (sm &key (mydata '(nil)))
+(defun exec-preemptive-task (sm &key (mydata '(nil)) (from-state))
   "This function is like exec-state-machine in roseus_smach/src/state-machine-utils.l, but supports preemption"
   (unless (and sm (send sm :nodes))
     (ros::ros-warn "empty state machine")
@@ -358,7 +358,9 @@ Example: (defpreemptrobot pr2) creates `pr2-preempt-interface` and `pr2-init`"
     (unix::sleep 2)
     ;;
     ;; setup state machine
-    (send sm :reset-state)
+    (if from-state
+        (send sm :active-state from-state)
+        (send sm :reset-state))
     (send insp :publish-structure) ;; publish once and latch
     ;;
     ;; check / reset preempt status
