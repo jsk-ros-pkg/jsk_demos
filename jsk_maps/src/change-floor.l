@@ -12,9 +12,16 @@
    (change-floor \"/eng2/2f\")"
   (ros::advertise topicname geometry_msgs::PoseWithCovarianceStamped 1)
   (unix:usleep (* 1000 500))
-  (let ((current-floor-frame ;; for example /eng2/7f_tf
-         (one-shot-subscribe map-tf-mux std_msgs::String))
-        robot-pose)
+  (let ((current-floor-frame-msg ;; for example /eng2/7f_tf
+         (one-shot-subscribe map-tf-mux std_msgs::String
+                             :timeout 5000))
+        robot-pose
+        current-floor-frame)
+    (when (null current-floor-frame-msg)
+      (ros::ros-error (format nil "~A seems to not be published"
+                              map-tf-mux))
+      (return-from change-floor nil))
+    (setq current-floor-frame (send current-floor-frame-msg :data))
     (when (not (boundp '*tfl*))
       (ros::ros-error (format nil "transform listener(*tfl*) is not initialized."))
       (return-from change-floor nil))
