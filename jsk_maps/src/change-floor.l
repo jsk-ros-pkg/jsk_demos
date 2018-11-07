@@ -14,7 +14,11 @@
   (unix:usleep (* 1000 500))
   (let ((current-floor-frame ;; for example /eng2/7f_tf
          (one-shot-subscribe map-tf-mux std_msgs::String))
-        (robot-pose (send *tfl* :lookup-transform current-floor-frame base-frame-name (ros::time 0))))
+        robot-pose)
+    (when (not (boundp '*tfl*))
+      (ros::ros-error (format nil "transform listener(*tfl*) is not initialized."))
+      (return-from change-floor nil))
+    (send *tfl* :lookup-transform current-floor-frame base-frame-name (ros::time 0))
     (when (null robot-pose)
       (return-from change-floor nil))
     (let* ((msg (instance geometry_msgs::PoseWithCovarianceStamped :init))
