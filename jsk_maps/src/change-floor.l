@@ -1,6 +1,22 @@
 #!/usr/bin/env roseus
 
 
+(defun change-costmap-publish-frequency (&optional (frequency 0.0)
+                                                   &key
+                                                   (node-name "move_base_node")
+                                                   (costmap-name "global_costmap"))
+  "change costmap's publish frequency"
+  (when (< frequency 0.0)
+    (ros::ros-error (format nil "frequency should be greater than or equal to 0.0"))
+    (return-from change-costmap-publish-frequency nil))
+  (let ((req (instance dynamic_reconfigure::ReconfigureRequest :init)))
+    (send req :config :doubles
+          (list (instance dynamic_reconfigure::DoubleParameter :init
+                          :name "publish_frequency" :value frequency)))
+    (ros::service-call (format nil "~A/~A/set_parameters" node-name costmap-name) req))
+  t)
+
+
 (defun change-floor (target-floor
                      &key
                      (floor-frame "/map")
