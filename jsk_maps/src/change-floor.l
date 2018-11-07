@@ -3,7 +3,8 @@
 
 (defun change-floor (target-floor
                      &key
-                     (topicname "/initialpose3d")
+                     (floor-frame "/map")
+                     (topicname "/inamenitialpose3d")
                      (base-frame-name "base_footprint")
                      (map-tf-mux "/map_tf_mux/selected"))
   "change floor by publishing geometry_msgs::PoseWithCovarianceStamped to topicname.
@@ -12,20 +13,12 @@
    (change-floor \"/eng2/2f\")"
   (ros::advertise topicname geometry_msgs::PoseWithCovarianceStamped 1)
   (unix:usleep (* 1000 500))
-  (let ((current-floor-frame-msg ;; for example /eng2/7f_tf
-         (one-shot-subscribe map-tf-mux std_msgs::String
-                             :timeout 5000))
-        robot-pose
-        current-floor-frame)
-    (when (null current-floor-frame-msg)
-      (ros::ros-error (format nil "~A seems to not be published"
-                              map-tf-mux))
-      (return-from change-floor nil))
-    (setq current-floor-frame (send current-floor-frame-msg :data))
+  (let (robot-pose)
     (when (not (boundp '*tfl*))
       (ros::ros-error (format nil "transform listener(*tfl*) is not initialized."))
       (return-from change-floor nil))
-    (send *tfl* :lookup-transform current-floor-frame base-frame-name (ros::time 0))
+    (setq robot-pose
+          (send *tfl* :lookup-transform floor-frame base-frame-name (ros::time 0)))
     (when (null robot-pose)
       (return-from change-floor nil))
     (let* ((msg (instance geometry_msgs::PoseWithCovarianceStamped :init))

@@ -7,21 +7,26 @@
 (ros::load-ros-manifest "std_msgs")
 (ros::roseus "change-floor-server")
 
+
+;; initlalize tf listener
+(setq *tfl* (instance ros::transform-listener :init))
+
+;; get parameter
+(setq *base-frame-name* (ros::get-param "~base_frame_id" "base_footprint"))
+(setq *topicname* (ros::get-param "~initialpose" "/initialpose3d"))
+(setq *map-tf-mux* (ros::get-param "~map_tf_mux" "/map_tf_mux/selected"))
+
+
 (defun change-floor-callback (msg)
   "get std_msgs::String and call change-floor function to
   change map tf frame."
   (let ((target-floor-name (send msg :data)))
     (ros::ros-info
       (format nil "floor changed to ~A" target-floor-name))
-    (change-floor target-floor-name)))
-
-;; initlalize tf listener
-(setq *tfl* (instance ros::transform-listener :init))
-
-;; get parameter
-(setq base-frame-name (ros::get-param "~base_frame_id" "base_footprint"))
-(setq topicname (ros::get-param "~initialpose" "/initialpose3d"))
-(setq map-tf-mux (ros::get-param "~map_tf_mux" "/map_tf_mux/selected"))
+    (change-floor target-floor-name
+                  :topicname *topicname*
+                  :base-frame-name *base-frame-name*
+                  :map-tf-mux *map-tf-mux*)))
 
 ;; initlalize subscriber
 (ros::subscribe "~input" std_msgs::String
