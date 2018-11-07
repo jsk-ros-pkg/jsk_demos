@@ -14,6 +14,8 @@
       (format nil "floor changed to ~A" target-floor-name))
     (change-floor target-floor-name)))
 
+;; initlalize tf listener
+(setq *tfl* (instance ros::transform-listener :init))
 
 (setq base-frame-name (ros::get-param "~base_frame_id" "base_footprint"))
 (setq topicname (ros::get-param "~initialpose" "/initialpose3d"))
