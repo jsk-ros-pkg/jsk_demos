@@ -54,15 +54,12 @@ class ConcatPoseAndClass(ConnectionBasedTransport):
                 pose = self.tfl.transform(
                     box, self.frame_id, rospy.Duration(10))
             except Exception as e:
+                rospy.logwarn("{}".format(e))
                 pose = box
 
             object_pose = Object6DPose()
-            if pose is not None:
-                object_pose.pose = pose
-            else:
-                object_pose.pose = box.pose
-            if pose:
-                msg.header.frame_id = self.frame_id
+            object_pose.pose = pose
+            msg.header.frame_id = self.frame_id
             object_pose.reliability = prob
             object_pose.type = label
             msg.objects.append(object_pose)
