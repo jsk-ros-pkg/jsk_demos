@@ -8,7 +8,6 @@ from jsk_topic_tools import ConnectionBasedTransport
 from jsk_recognition_msgs.msg import ClassificationResult
 from posedetection_msgs.msg import ObjectDetection
 from posedetection_msgs.msg import Object6DPose
-import tf2_ros
 
 
 class ConcatPoseAndClass(ConnectionBasedTransport):
@@ -16,8 +15,6 @@ class ConcatPoseAndClass(ConnectionBasedTransport):
     def __init__(self):
         super(ConcatPoseAndClass, self).__init__()
         self.frame_id = rospy.get_param('~frame_id', "base_footprint")
-        self.tfl = tf2_ros.BufferClient("/tf2_buffer_server")
-        self.tfl.wait_for_server()
         self.pub_detect = self.advertise(
             "~output", ObjectDetection, queue_size=1)
 
@@ -44,18 +41,12 @@ class ConcatPoseAndClass(ConnectionBasedTransport):
     def cb(self, poses, classes):
         msg = ObjectDetection()
         msg.header = poses.header
-        for box, label, prob in zip(
+        for pose, label, prob in zip(
                 poses.poses,
                 classes.label_names,
                 classes.label_proba):
             if not label:
                 continue
-            try:
-                pose = self.tfl.transform(
-                    box, self.frame_id, rospy.Duration(10))
-            except Exception as e:
-                rospy.logwarn("{}".format(e))
-                pose = box
 
             object_pose = Object6DPose()
             object_pose.pose = pose
