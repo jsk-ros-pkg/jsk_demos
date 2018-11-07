@@ -29,4 +29,5 @@
       (setf (elt covariance 7) 0.05)
       (setf (elt covariance 21) 0.02)
       (send msg :pose :pose (ros::coords->tf-pose robot-pose))
-      (ros::publish topicname msg))))
+      (ros::publish topicname msg))
+    t))
