@@ -33,9 +33,9 @@
     (let ((current-costmap-publish-frequency
            (ros::get-param (format nil "~A/~A/publish_frequency"
                                    *move-base-node* *costmap-name*))))
-      (unix::usleep (* 1000 1000))
+      (unix:sleep 1)
       (change-costmap-publish-frequency 1.0)
-      (unix::usleep (* 1000 2000))
+      (unix:sleep 2)
       (change-costmap-publish-frequency current-costmap-publish-frequency))))
 
 
