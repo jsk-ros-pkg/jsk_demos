@@ -1,6 +1,3 @@
-#!/usr/bin/env roseus
-
-
 (defun change-costmap-publish-frequency (&optional (frequency 0.0)
                                                    &key
                                                    (node-name "move_base_node")
