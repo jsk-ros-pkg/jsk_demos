@@ -22,6 +22,21 @@
 
 (defun run (&optional debug)
   (plan debug)
-  (pprint (exec-preemptive-task *sm*)))
+  (setq *mydata* '(nil))
+  (pprint (exec-preemptive-task *sm* :mydata *mydata*)))
+
+
+(defun run-continue ()
+  (run)
+  (ros::rate 1)
+  (while (and (ros::ok) (preempted-p))
+    (ros::ros-info "waiting for recovery")
+    (ros::spin-once)
+    (ros::sleep))
+  (ros::ros-info "continue")
+  (setq *from-state* (send *sm* :node "(move-to table kitchen)"))
+  (exec-preemptive-task *sm*
+                        :mydata *mydata*
+                        :from-state *from-state*))
 
 (pr2-init)
