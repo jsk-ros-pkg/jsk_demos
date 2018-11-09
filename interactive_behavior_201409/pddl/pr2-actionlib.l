@@ -140,6 +140,9 @@
        (when object-label
          (setq *tabletop-bbox-topic* "/ssd/bounding_box_pose/output/boxes")
          (set-alist :target-object-label object-label userdata))
+       (unless object-label
+         ;; soft grasp for unlabeled objects
+         (set-alist :target-effort 0.007 userdata))
        (case spot
          ('fridge
           (grasp-can-init)
