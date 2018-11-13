@@ -1,0 +1,3 @@
+<launch>
+  <node pkg="jsk_2018_10_semi" type="demo.l" name="demo" output="screen" />
+</launch>

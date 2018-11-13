@@ -1,0 +1,28 @@
+<?xml version="1.0"?>
+<package format="2">
+  <name>jsk_2018_10_semi</name>
+  <version>0.0.0</version>
+  <description>The jsk_2018_10_semi package</description>
+
+  <maintainer email="k-okada@jsk.t.u-tokyo.ac.jp">Kei Okada</maintainer>
+
+  <license>BSD</license>
+
+  <!-- <author email="jane.doe@example.com">Jane Doe</author> -->
+
+  <buildtool_depend>catkin</buildtool_depend>
+  
+  <build_depend>fetcheus</build_depend>
+  <build_depend>jsk_maps</build_depend>
+  <build_depend>naoeus</build_depend>
+  
+  <exec_depend>fetcheus</exec_depend>
+  <exec_depend>jsk_maps</exec_depend>
+  <exec_depend>naoeus</exec_depend>
+
+
+  <!-- The export tag contains other, unspecified, tags -->
+  <export>
+    <!-- Other tools can request additional information be placed here -->
+  </export>
+</package>
