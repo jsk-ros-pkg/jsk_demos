@@ -1,0 +1,16 @@
+<?xml version="1.0"?>
+<package>
+  <name>jsk_patrol</name>
+  <version>0.0.1</version>
+  <description>The jsk's patrol package</description>
+
+  <maintainer email="ab.ioryz@gmail.com">iory</maintainer>
+  <author email="ab.ioryz@gmail.com">iory</author>
+
+  <license>BSD</license>
+
+  <buildtool_depend>catkin</buildtool_depend>
+
+  <run_depend>jsk_perception</run_depend>
+
+</package>
