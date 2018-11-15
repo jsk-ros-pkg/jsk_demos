@@ -34,9 +34,13 @@
            (ros::get-param (format nil "~A/~A/publish_frequency"
                                    *move-base-node* *costmap-name*))))
       (unix:sleep 1)
-      (change-costmap-publish-frequency 1.0)
+      (change-costmap-publish-frequency 1.0
+                                        :node-name *move-base-node*
+                                        :costmap-name *costmap-name*)
       (unix:sleep 2)
-      (change-costmap-publish-frequency current-costmap-publish-frequency))))
+      (change-costmap-publish-frequency current-costmap-publish-frequency
+                                        :node-name *move-base-node*
+                                        :costmap-name *costmap-name*))))
 
 
 ;; initlalize subscriber
