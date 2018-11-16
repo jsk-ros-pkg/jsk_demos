@@ -39,6 +39,9 @@ class MailNotify(object):
         super(MailNotify, self).__init__()
         self.labelindex2names = rospy.get_param('~labelindex2names', None)
         self.bridge = cv_bridge.CvBridge()
+        self.wait_n_topic = rospy.get_param('~wait_n_topic', 1)
+        if self.wait_n_topic < 0:
+            raise ValueError("wait n topic should be greater than 0")
         self.service = rospy.Service(
             '~notify',
             PatrolMailNotify, self.request_callback)
@@ -66,8 +69,8 @@ class MailNotify(object):
             sub.unregister()
 
     def callback(self, img_msg, class_result_msg):
-        self.img_msg = img_msg
-        self.class_result_msg = class_result_msg
+        self.img_msg.append(img_msg)
+        self.class_result_msg.append(class_result_msg)
 
     def request_callback(self, req):
         place_name = req.place_name.data
@@ -75,23 +78,26 @@ class MailNotify(object):
         from_address = req.from_address.data
         to_address = req.to_address.data
 
-        self.img_msg = None
-        self.class_result_msg = None
+        self.img_msg = []
+        self.class_result_msg = []
 
         self.subscribe()
 
         start_time = rospy.Time.now()
         r = rospy.Rate(1)
 
-        while not rospy.is_shutdown() and self.img_msg is None:
+        while not rospy.is_shutdown() and \
+              len(self.img_msg) <= self.wait_n_topic:
             if rospy.Time.now() - start_time > rospy.Duration(30):
                 break
             r.sleep()
 
         self.unsubscribe()
 
-        if self.img_msg is None:
+        if len(self.img_msg) == 0:
             return PatrolMailNotifyResponse()
+        self.img_msg = self.img_msg[-1]
+        self.class_result_msg = self.class_result_msg[-1]
 
         bridge = self.bridge
         img = bridge.imgmsg_to_cv2(self.img_msg, desired_encoding='bgr8')
