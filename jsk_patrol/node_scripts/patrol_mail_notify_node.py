@@ -77,6 +77,7 @@ class MailNotify(object):
         mail_title = req.mail_title.data
         from_address = req.from_address.data
         to_address = req.to_address.data
+        message = req.message.data
 
         self.img_msg = []
         self.class_result_msg = []
@@ -109,7 +110,7 @@ class MailNotify(object):
         cv2.imwrite(img_path, img)
         greeting_text = get_greeting()
         if len(self.class_result_msg.labels) == 0:
-            text_cmd = 'echo -e "{}。\n\n今日の{}は綺麗だね。"'.\
+            body_text = "{}。\n\n今日の{}は綺麗だね。".\
                 format(greeting_text, place_name)
         else:
             body_text = "{}。".format(greeting_text)
@@ -123,7 +124,9 @@ class MailNotify(object):
                 else:
                     body_text += ' {} {}個\n'.format(
                         self.labelindex2names[index], num)
-            text_cmd = 'echo -e "' + body_text + '"'
+        if len(message) > 0:
+            body_text += "\n\n{}".format(message)
+        text_cmd = 'echo -e "' + body_text + '"'
         process1 = subprocess.Popen(shlex.split(text_cmd),
                                     stdout=subprocess.PIPE)
         mail_cmd = 'mail -s "{}" -a {} -r {} {}'.format(
