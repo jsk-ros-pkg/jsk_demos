@@ -12,6 +12,7 @@ import tempfile
 import rospy
 import cv_bridge
 from sensor_msgs.msg import Image
+from std_msgs.msg import String
 from jsk_recognition_msgs.msg import ClassificationResult
 import message_filters
 import cv2
@@ -42,6 +43,7 @@ class MailNotify(object):
         self.wait_n_topic = rospy.get_param('~wait_n_topic', 1)
         if self.wait_n_topic < 0:
             raise ValueError("wait n topic should be greater than 0")
+        self.tweet_pub = rospy.Publisher('~tweet', String)
         self.service = rospy.Service(
             '~notify',
             PatrolMailNotify, self.request_callback)
@@ -136,6 +138,11 @@ class MailNotify(object):
             to_address)
         subprocess.Popen(shlex.split(mail_cmd),
                          stdin=process1.stdout)
+
+        # tweet message
+        tweet_message = body_text + img_path
+        self.tweet_pub.publish(String(data=tweet_message))
+
         rospy.sleep(4.0)
 
         # delete temp directory
