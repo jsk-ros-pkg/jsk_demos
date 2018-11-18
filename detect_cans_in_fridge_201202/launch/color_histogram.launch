@@ -123,12 +123,13 @@
     </rosparam>
 
     <rosparam ns="bilateral_filter" subst_value="true">
-      sigma_s: 1.0
+      sigma_s: 1.5
       sigma_r: 0.1
       vital_rate: $(arg vital_rate)
     </rosparam>
 
     <rosparam ns="multi_plane_segmentation" subst_value="true">
+      min_size: 500
       max_curvature: 0.01
       estimate_normal: true
       vital_rate: $(arg vital_rate)
