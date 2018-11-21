@@ -1,3 +1,6 @@
 <launch>
   <node pkg="jsk_2018_10_semi" type="demo.l" name="demo" output="screen" />
+  <node pkg="rviz" type="rviz" name="fetch_config_rviz" args="-d $(find jsk_2018_10_semi)/rviz/fetch_config.rviz"/>
+  <include file="$(find jsk_2018_10_semi)/launch/door_detection.launch" />
+  <include file="$(find jsk_2018_10_semi)/launch/hsi_color_filter.launch" />
 </launch>

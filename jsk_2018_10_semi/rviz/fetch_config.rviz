@@ -211,6 +211,18 @@ Visualization Manager:
       Update Interval: 0
       Value: true
       Visual Enabled: true
+    - Class: jsk_rviz_plugin/BoundingBoxArray
+      Enabled: true
+      Name: BoundingBoxArray
+      Topic: /HSI_color_filter/boxes
+      Unreliable: false
+      Value: true
+      alpha: 0.800000012
+      color: 25; 255; 0
+      coloring: Auto
+      line width: 0.00499999989
+      only edge: false
+      show coords: false
   Enabled: true
   Global Options:
     Background Color: 48; 48; 48
