@@ -6,5 +6,4 @@
       estimate_normal: true
     </rosparam>
   </node>
-  <node pkg="rviz" type="rviz" name="door_detector_rviz" args="-d $(find jsk_2018_10_semi)/rviz/door_detection.rviz"/>
 </launch>
