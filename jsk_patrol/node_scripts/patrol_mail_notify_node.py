@@ -25,13 +25,13 @@ def get_greeting():
     current_time = datetime.datetime.now()
 
     if current_time.hour < 4:
-        return "こんばんは"
+        return "こんばんは。\n\n"
     elif current_time.hour < 10:
-        return "おはよう"
+        return "おはよう。\n\n"
     elif current_time.hour < 17:
-        return "こんにちは"
+        return "こんにちは。\n\n"
     else:
-        return "こんばんは"
+        return "こんばんは。\n\n"
 
 
 class MailNotify(object):
@@ -114,12 +114,11 @@ class MailNotify(object):
         os.chmod(img_path, 0777)
         greeting_text = get_greeting()
         if len(self.class_result_msg.labels) == 0:
-            body_text = "{}。\n\n今日の{}は綺麗だね。".\
+            body_text = "{}今日の{}は綺麗だね。".\
                 format(greeting_text, place_name)
         else:
-            body_text = "{}。".format(greeting_text)
-            body_text += '\\n\\n{}にものがあるのを見つけたよ。\\n見つかったものは...\\n'.\
-                format(place_name)
+            body_text = '{}{}にものがあるのを見つけたよ。\n見つかったものは...\n'.\
+                format(greeting_text, place_name)
             c = Counter(self.class_result_msg.labels)
             for index, num in c.items():
                 if self.labelindex2names is None:
