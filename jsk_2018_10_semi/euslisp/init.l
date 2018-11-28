@@ -16,7 +16,6 @@
   (ros::set-param "/box_number/red" 0.0)  
   (ros::set-param "/box_number/green" 0.0)  
   (ros::set-param "/box_number/blue" 0.0)  
-
 )
 
 (defun reset-pose nil

@@ -25,6 +25,7 @@
 
 (ros::subscribe "/multi_plane_estimate/output_coefficients" jsk_recognition_msgs::ModelCoefficientsArray #'door-detec-callback)
 ;;(ros::subscribe "/multi_plane_estimate/output_polygon" jsk_recognition_msgs::PolygonArray #'cb)
+
 (do-until-key
  ;;(x::window-main-one)
  (ros::sleep)
