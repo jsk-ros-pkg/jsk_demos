@@ -11,13 +11,17 @@
 
   (send *ri* :angle-vector-sequence (list av0 av1 av2 av1 av2 av1) (list 5000 3000 3000 3000 3000 3000))
 
-  (send *fetch* :reset-pose)
+  (send *ri* :wait-interpolation)
+  ;(send *fetch* :reset-pose)
 
+  ;(send *ri* :angle-vector (send *fetch* :angle-vector)) 
+  )
+
+(defun neck-reset nil
+  (send *fetch* :head :neck-y :joint-angle 0)
+  (send *fetch* :head :neck-p :joint-angle 0)
   (send *ri* :angle-vector (send *fetch* :angle-vector))
-
-  ;;(send *ri* :wait-interpolation)
-
-  
+  (send *ri* :wait-interpolation)
   )
 
 ;;(send *fetch* :torso :waist-z :joint-angle 0)
