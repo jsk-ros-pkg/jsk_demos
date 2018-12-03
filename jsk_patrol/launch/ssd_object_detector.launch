@@ -17,6 +17,7 @@
 
   <node name="mail_notify"
         pkg="jsk_patrol" type="patrol_mail_notify_node.py" >
+    <remap from="~input/original_image" to="$(arg input_image)" />
     <remap from="~input/image" to="ssd_object_detector/output/image" />
     <remap from="~input/class" to="ssd_object_detector/output/class" />
     <remap from="~tweet" to="$(arg tweet_topic_name)" />

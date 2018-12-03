@@ -50,13 +50,16 @@ class MailNotify(object):
 
     def subscribe(self):
         queue_size = rospy.get_param('~queue_size', 100)
+        sub_org_img = message_filters.Subscriber(
+            "~input/original_image",
+            Image, queue_size=100, buff_size=2**24)
         sub_img = message_filters.Subscriber(
             "~input/image",
             Image, queue_size=100, buff_size=2**24)
         sub_class = message_filters.Subscriber(
             '~input/class',
             ClassificationResult, queue_size=100, buff_size=2**24)
-        self.subs = [sub_img, sub_class]
+        self.subs = [sub_org_img, sub_img, sub_class]
         if rospy.get_param('~approximate_sync', False):
             slop = rospy.get_param('~slop', 0.1)
             sync = message_filters.ApproximateTimeSynchronizer(
@@ -70,7 +73,8 @@ class MailNotify(object):
         for sub in self.subs:
             sub.unregister()
 
-    def callback(self, img_msg, class_result_msg):
+    def callback(self, org_img_msg, img_msg, class_result_msg):
+        self.org_img_msg.append(org_img_msg)
         self.img_msg.append(img_msg)
         self.class_result_msg.append(class_result_msg)
 
@@ -81,6 +85,7 @@ class MailNotify(object):
         to_address = req.to_address.data
         message = req.message.data
 
+        self.org_img_msg = []
         self.img_msg = []
         self.class_result_msg = []
 
@@ -99,16 +104,23 @@ class MailNotify(object):
 
         if len(self.img_msg) == 0:
             return PatrolMailNotifyResponse()
+        self.org_img_msg = self.org_img_msg[-1]
         self.img_msg = self.img_msg[-1]
         self.class_result_msg = self.class_result_msg[-1]
 
         bridge = self.bridge
         img = bridge.imgmsg_to_cv2(self.img_msg, desired_encoding='bgr8')
+        org_img = bridge.imgmsg_to_cv2(
+            self.org_img_msg, desired_encoding='bgr8')
 
         # create temp directory
         dirname = tempfile.mkdtemp()
         os.chmod(dirname, 0777)
 
+        org_img_path = os.path.join(dirname,
+                                    'original-img.jpg')
+        cv2.imwrite(org_img_path, org_img)
+        os.chmod(org_img_path, 0777)
         img_path = os.path.join(dirname, 'detected-img.jpg')
         cv2.imwrite(img_path, img)
         os.chmod(img_path, 0777)
@@ -132,9 +144,10 @@ class MailNotify(object):
         text_cmd = 'echo -e "' + body_text + '"'
         process1 = subprocess.Popen(shlex.split(text_cmd),
                                     stdout=subprocess.PIPE)
-        mail_cmd = 'mail -s "{}" -a {} -r {} {}'.format(
+        mail_cmd = 'mail -s "{}" -a {} -a {} -r {} {}'.format(
             mail_title,
             img_path,
+            org_img_path,
             from_address,
             to_address)
         subprocess.Popen(shlex.split(mail_cmd),
