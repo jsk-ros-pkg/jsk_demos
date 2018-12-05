@@ -1,6 +1,6 @@
 (setq look-down-pose #f(386.15 75.6359 80.1929 -11.4118 98.5702 0.060285 95.1322 -0.060071 -0.895055 42.9474));;見下ろすポーズ
 
-(defun goto-default-pos nil
+(defun goto-kitchenside nil
   (send *ri* :move-to (send (send (send *eng2-scene* :spot "coe-spot") :copy-worldcoords)
 			       :transform (make-coords :pos #f(0 0 0) :rpy (float-vector -0.5 0 0))))
   (send *fetch* :move-to (send (send (send *eng2-scene* :spot "coe-spot") :copy-worldcoords)

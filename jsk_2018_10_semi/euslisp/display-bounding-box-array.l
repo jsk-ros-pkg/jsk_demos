@@ -1,6 +1,6 @@
 ;; robotの初期化
-(load "init.l")
-(init)
+;;(load "init.l")
+;;(init)
 ;; jsk_pcl_rosのmsgを使うため、loadする
 ;;(ros::load-ros-manifest "jsk_pcl_ros")
 (ros::load-ros-manifest "jsk_recognition_msgs")
@@ -10,8 +10,8 @@
 (defvar *topic-name* "/HSI_color_filter/boxes")
 (defvar *bounding-box-list* nil)
 (defvar *bx-list* nil)
-(setq *co* (instance collision-object-publisher :init))
-(setq *table* (make-cube 800 800 800))
+;;(setq *co* (instance collision-object-publisher :init))
+;;(setq *table* (make-cube 800 800 800))
 ;; ros::initする
 (ros::roseus "boundingboxarray_subscriber")
 
@@ -32,6 +32,7 @@
                        ;; (2) *dxl-armed-turtlebot*モデルがカメラの座標系をもってるので、取得する
                        (cam-coords (send (send *fetch* :head_camera_rgb_optical_frame_lk) :copy-worldcoords)))
                   ;; (3) Euslisp内部でのworld座標系の値にして、そこにmake-cubeの箱を設置する
+;;                  (send bx :newcoords (send (send cam-coords :transform cam->obj-coords) :transform  (make-coords :rpy (float-vector 0.228 0.002 -2.055))))
                   (send bx :newcoords (send cam-coords :transform cam->obj-coords))
                   (send bx :worldcoords)
 		  (setq *bx-list* (append *bx-list* (list bx)))
@@ -47,13 +48,13 @@
 (defun reach-arm nil
   (if (= (length tmp) 1)
       (progn
+	#|
 	(send *co* :wipe-all)
 	(setq target-coords (make-coords :pos (send (car tmp) :worldpos)))
 	(setq table-coords (send (send target-coords :copy-worldcoords) :translate #f(0 0 -400)))
 	(print table-coords)
 	(send *table* :translate #f(1000 0 400))
 	(send *co* :add-object  *table* :frame-id "base_link" :relative-pose table-coords))
-      #|
       (progn
 	(send *ri* :angle-vector #f(23.102 57.2229 -47.2485 -75.0006 87.4081 -147.508 20.6889 -154.0 -4.25995 13.6359) 5000)
 	(send *ri* :wait-interpolation)
@@ -69,6 +70,7 @@
 	(send *ri* :angle-vector (send *fetch* :reset-pose) 5000)
 	(send *ri* :wait-interpolation)
 	)|#
+	)
     (print "more than 1 objects were detected")
   ))
 
@@ -76,7 +78,7 @@
  (x::window-main-one) ;; IRT viewerの視点を変えられる。見にくければ変えよう
  (when *bx-list*
    (setq tmp *bx-list*)
-   (reach-arm)
+;;   (reach-arm)
 ;;   (exit)
   )
  (ros::spin-once)
