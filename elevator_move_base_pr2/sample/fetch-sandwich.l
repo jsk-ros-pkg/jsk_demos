@@ -1,4 +1,5 @@
 #!/usr/bin/env roseus
+;; -*- coding: utf-8 -*-
 ;; fetch-sandwich.l
 ;; Author: furushchev <furushchev@jsk.imi.i.u-tokyo.ac.jp>
 
@@ -6,6 +7,9 @@
 (require :pr2-action "package://jsk_demo_common/euslisp/pr2-action.l")
 (require :eng2-scene "package://jsk_maps/src/eng2-scene.l")
 (require :navigation-client "package://elevator_move_base_pr2/src/navigation-client.l")
+
+(ros::load-ros-manifest "jsk_recognition_msgs")
+(ros::load-ros-manifest "sensor_msgs")
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -21,6 +25,7 @@
   (send *pr2* :angle-vector (send *ri* :state :potentio-vector))
   (when create-viewer (objects (list *pr2*))))
 
+
 (defun pr2-pick-bag-pose ()
   #|
   (send *pr2* :reset-pose)
@@ -34,6 +39,7 @@
   |#
   (float-vector 250.0 60.0 74.0 70.0 -120.0 20.0 -30.0 180.0 -13.5232 -15.8808 -82.6112 -83.1698 -162.008 -72.0918 170.603 0.0 40.2852))
 
+
 (defun wait-for-hand-over (arm &optional (timeout 10))
   (dotimes (i 3)
     (when (wait-for-hand-impact arm :timeout timeout)
@@ -44,6 +50,13 @@
   ;; fail
   (speak-jp "あれ、サンドイッチ。。。")
   (return-from wait-for-hand-over nil))
+
+
+(defun update-eus-robot-model ()
+  (ros::spin-once)
+  (send *pr2* :move-to (send *ri* :state :worldcoords) :world)
+  (send *pr2* :angle-vector (send *ri* :state :potentio-vector)))
+
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Actions
@@ -56,15 +69,90 @@
   (setq *initial-pose* (send *ri* :state :worldcoords))
   (setq *initial-floor* (check-current-floor *initial-pose*)))
 
-(defun go-to-subway-front ()
+
+(defun go-to-forum-front ()
   (clear-costmap)
   (change-inflation-range 0.4)
   (send *ri* :move-to
+        (send *scene* :spot "/eng2/2f/forum-front"))
+  (update-eus-robot-model))
+
+
+(defun check-door-open (&optional (max-cloud-size 500))
+  (let (is-door-open cloud-msg)
+    (dotimes (i 3)
+      (setq cloud-msg
+            (one-shot-subscribe "extract_indices_forum_door/output"
+                                sensor_msgs::PointCloud2))
+      (setq is-door-open (<= (length (send cloud-msg :data)) max-cloud-size))
+      (when (is-door-open)
+        (speak-jp "ドアが開いています。")
+        (return-from check-door-open t))
+      )
+    (speak-jp "ドアが閉まっています。")
+    (return-from check-door-open nil)
+    ))
+
+
+(defun open-forum-front-door ()
+  (let (bboxes-msg bbox cam->button-coords cam-coords forum-door-button-pos
+        target-coords ray-vec via-coords push-coords av0 av1 (arm :rarm))
+
+    ;; Find door button
+    (send *pr2* :head :neck-p :joint-angle 30)
+    (send *pr2* :head :neck-y :joint-angle 0)
+    (send *ri* :angle-vector (send *pr2* :angle-vector) 2000)
+    (update-eus-robot-model)
+    (setq bboxes-msg
+          (one-shot-subscribe "cluster_indices_decomposer_door_button/boxes"
+                              jsk_recognition_msgs::BoundingBoxArray))
+    (setq bbox (elt (send bboxes-msg :boxes) 0))  ;; first (expected biggest)
+    (setq cam->button-coords (ros::tf-pose->coords (send bbox :pose)))
+    (setq cam-coords (send (send *pr2* :head_mount_kinect_rgb_optical_frame_lk)
+                           :copy-worldcoords))
+    (setq forum-door-button-pos
+          (scale 0.001 (send (send cam-coords :transform cam->obj-coords)
+                             :worldpos)))
+    (setq target-coords (make-coords :pos forum-door-button-pos))
+
+    ;; Define via-coords and push-coords
+    (setq ray-vec
+          (normalize-vector
+           (v- (send *pr2* :head_mount_kinect_rgb_optical_frame_lk :worldpos)
+               (send target-coords :worldpos))))
+    (setq via-coords (send (send target-coords :copy-worldcoords)
+                           :translate (scale 50 ray-vec) :world))
+    (setq push-coords (send (send target-coords :copy-worldcoords)
+                            :translate (scale -30 ray-vec) :world))
+
+    ;; Push door button
+    (speak-jp "ドアのボタンを押します")
+    (setq av0 (send *pr2* arm :inverse-kinematics via-coords
+                    :rotation-axis :x
+                    :use-torso t
+                    :look-at-target t))
+    (setq av1 (send *pr2* arm :inverse-kinematics push-coords
+                    :rotation-axis :x
+                    :use-torso t
+                    :look-at-target t))
+    (send *ri* :stop-grasp arm)
+    (send *ri* :angle-vector-sequence (list av0 av1) (list 3000 1000))
+    (send *ri* :wait-interpolation)
+    (pr2-tuckarm-pose)
+    (update-eus-robot-model)
+  ))
+
+
+(defun go-to-subway-front ()
+  (clear-costmap)
+  (send *ri* :move-to
         (send *scene* :spot "/eng2/2f/subway-front")))
+
 
 (defun order-sandwich (&optional (name "BLTサンド"))
   (speak-jp "すみません")
   (speak-jp (format nil "~Aをください" name)))
+
 
 (defun receive-sandwich ()
   ;; go to register front
@@ -92,6 +180,7 @@
   (pr2-tuckarm-pose :rarm :outside)
   t)
 
+
 (defun go-to-initial-pose ()
   (send *ri* :move-to
         (send (send *initial-pose* :copy-worldcoords) :translate #f(0 0 -30000))
@@ -110,13 +199,18 @@
   (send *ri* :start-grasp :rarm)
   (pr2-tuckarm-pose))
 
+
 (defun demo ()
   (init)
+  (go-to-forum-front)
+  (unless (check-door-open)
+    (open-forum-front-door))
   (go-to-subway-front)
   (order-sandwich)
   (receive-sandwich)
   (go-to-initial-pose)
   (pass-sandwich))
+
 
 (when (find #'(lambda (x) (substringp "__name:=" x)) lisp::*eustop-argument*)
   (demo))
