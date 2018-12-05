@@ -16,5 +16,11 @@
   (send *irtviewer* :look-all (list *fetch*))
   )
 
+(defun reset-pose nil
+  (send *fetch* :reset-pose)
+  (send *ri* :angle-vector (send *fetch* :angle-vector) 5000)
+  (send *ri* :wait-interpolation)
+)
+
 
  
