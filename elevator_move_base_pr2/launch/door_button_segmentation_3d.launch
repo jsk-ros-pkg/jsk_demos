@@ -1,0 +1,94 @@
+<launch>
+
+  <arg name="MANAGER" default="/kinect_head/kinect_head_c2_nodelet_manager"/>
+  <arg name="INPUT_IMAGE" default="/kinect_head/rgb/image_rect_color"/>
+  <arg name="INPUT_CLOUD" default="/kinect_head/depth_registered/points"/>
+  <arg name="GPU" default="-1"/>
+  <arg name="MODEL_FILE" default="$(env HOME)/fcn8s_door_button_model.npz"/>
+  <arg name="FIXED_FRAME" default="/kinect_head_rgb_optical_frame"/>
+
+  <!-- Segment door button by FCN -->
+  <node name="fcn_object_segmentation_door_button"
+        pkg="jsk_perception" type="fcn_object_segmentation.py"
+        output="screen"
+        respawn="true">
+    <remap from="~input" to="$(arg INPUT_IMAGE)"/>  <!-- rgb timestamp -->
+    <rosparam subst_value="true">
+      use_mask: false
+      gpu: $(arg GPU)
+      model_name: fcn8s
+      model_file: $(arg MODEL_FILE)
+      target_names:
+      - _background_
+      - button
+      bg_label: 0
+      proba_threshold: 0.5
+    </rosparam>
+  </node>
+
+  <!-- label -> mask -> indices -> cloud -> cluster indices -> bboxes -->
+  <node name="label_to_mask_door_button"
+        pkg="nodelet" type="nodelet"
+        args="load jsk_perception/LabelToMaskImage $(arg MANAGER)"
+        output="screen"
+        respawn="true">
+    <remap from="~input" to="fcn_object_segmentation_door_button/output"/>  <!-- rgb timestamp -->
+    <rosparam>
+      label_value: 1
+    </rosparam>
+  </node>
+
+  <node name="mask_to_point_indices_door_button"
+        pkg="nodelet" type="nodelet"
+        args="load jsk_pcl_utils/MaskImageToPointIndices $(arg MANAGER)"
+        output="screen"
+        respawn="true">
+    <remap from="~input" to="label_to_mask_door_button/output"/>  <!-- rgb timestamp -->
+  </node>
+
+  <node name="extract_indices_door_button"
+        pkg="nodelet" type="nodelet"
+        args="load jsk_pcl/ExtractIndices $(arg MANAGER)"
+        output="screen"
+        respawn="true">
+    <remap from="~input" to="$(arg INPUT_CLOUD)"/>  <!-- depth timestamp -->
+    <remap from="~indices" to="mask_to_point_indices_door_button/output"/>  <!-- rgb timestamp -->
+    <rosparam>
+      approximate_sync: true
+      queue_size: 100
+      keep_organized: true
+    </rosparam>
+  </node>
+
+  <node name="euclidean_clustering_door_button"
+        pkg="nodelet" type="nodelet"
+        args="load jsk_pcl/EuclideanClustering $(arg MANAGER)"
+        output="screen"
+        respawn="true">
+    <remap from="~input" to="extract_indices_door_button/output"/>  <!-- depth timestamp -->
+    <rosparam>
+      min_size: 100
+      max_size: 10000
+      tolerance: 0.05
+    </rosparam>
+  </node>
+
+  <node name="cluster_indices_decomposer_door_button"
+        pkg="nodelet" type="nodelet"
+        args="load jsk_pcl/ClusterPointIndicesDecomposer $(arg MANAGER)"
+        output="screen"
+        respawn="true">
+    <remap from="~input" to="extract_indices_door_button/output"/>  <!-- depth timestamp -->
+    <remap from="~target" to="euclidean_clustering_door_button/output"/>  <!-- depth timestamp -->
+    <rosparam subst_value="true">
+      approximate_sync: false
+      queue_size: 100
+      sort_by: -cloud_size
+      align_boxes: true
+      align_boxes_with_plane: false
+      use_pca: true
+      target_frame_id: $(arg FIXED_FRAME)
+    </rosparam>
+  </node>
+
+</launch>
