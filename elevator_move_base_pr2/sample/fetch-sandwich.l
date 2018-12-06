@@ -81,6 +81,7 @@
 (defun check-door-open (&optional (max-cloud-size 500))
   (let (is-door-open cloud-msg)
     (dotimes (i 3)
+      (unix:sleep 2)
       (setq cloud-msg
             (one-shot-subscribe "forum_door/extract_indices/output"
                                 sensor_msgs::PointCloud2))
