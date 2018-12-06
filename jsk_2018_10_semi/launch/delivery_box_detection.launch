@@ -1,0 +1,84 @@
+<launch>
+  <include file="$(find jsk_2018_10_semi)/launch/table_plane_detection.launch"/>
+  <node pkg="jsk_2018_10_semi" type="add_box_icons.py" name="add_icons" output="screen" />
+  <arg name="FILTER_NAME_SUFFIX" default=""/>
+  <arg name="DEFAULT_NAMESPACE" default="delivery_box_pickup/"/>
+  <arg name="INPUT" default="multi_plane_extraction/output"/>
+  <arg name="OUTPUT" default="hsi_output$(arg FILTER_NAME_SUFFIX)"/>
+
+  <arg name="use_pca" default="true" />
+  
+  <arg name="h_max" default="127" doc="maximum hue 127 corresponds to pi. When we define M as (max r g b), m as (r g b) and c as M-m, hue is calculated as 1. undifined (if c=0) 2. (((g-b)/6)*mod6)*60-180 (if M=r) 3. (((b-r)/c)+2)*60-180 (if M=g) 4. (((r-g)/c)+4)*60-180 (if M=b)"/>
+  <arg name="h_min" default="-93" doc="minimum hue -128 corresponds to -pi. When we define M as (max r g b), m as (r g b) and c as M-m, hue is calculated as 1. undifined (if c=0) 2. (((g-b)/6)*mod6)*60-180 (if M=r) 3. (((b-r)/c)+2)*60-180 (if M=g) 4. (((r-g)/c)+4)*60-180 (if M=b)" />
+  <arg name="s_max" default="255" doc="maximum satuation 255 corresponds to 1. Satuation is calucrated as (1-(min r g b)/intensity) * 255"/>
+  <arg name="s_min" default="0" doc="minimum satuation 0 corresponds to 0. Satuation is calucrated as (1-(min r g b)/intensity) * 255"/>
+  <arg name="i_max" default="255" doc="maximum intensity 255 corresponds to 1. Intensity is calculated as (r + g + b)/3"/>
+  <arg name="i_min" default="0" doc="minimum intensity 0 corresponds to 0. Intensity is calculated as (r + g + b)/3"/>
+
+  <arg name="create_manager" default="true" />
+  <arg name="manager" default="hsi_filter_manager$(arg FILTER_NAME_SUFFIX)" />
+  <arg name="TABLE_PLANE_INDICES" default="table_plane_datection/multi_plane_estimate/output"/>
+  <arg name="TABLE_PLANE_POLYGONS" default="table_plane_datection/multi_plane_estimate/output_polygon"/>
+  <arg name="TABLE_PLANE_COEFFICIENTS" default="table_plane_datection/multi_plane_estimate/output_coefficients"/>
+
+
+  <group ns="$(arg DEFAULT_NAMESPACE)">
+
+    <node pkg="jsk_pcl_ros" type="multi_plane_extraction" name="multi_plane_extraction">
+      <remap from="~input" to="/head_camera/depth_registered/points"/>
+      <remap from="~indices" to="$(arg TABLE_PLANE_INDICES)"/>
+      <remap from="~input_polygons" to="$(arg TABLE_PLANE_POLYGONS)"/>
+      <remap from="~input_coefficients" to="$(arg TABLE_PLANE_COEFFICIENTS)"/> 
+      <rosparam>
+        use_coefficients: true
+        use_async: true
+        min_height: 0.01
+        max_height: 0.3
+      </rosparam>
+    </node>
+ 
+    <node if="$(arg create_manager)"
+          pkg="nodelet" type="nodelet" name="$(arg manager)"
+          args="manager" output="screen"/>
+
+    <node pkg="nodelet" type="nodelet" name="hsi_filter$(arg FILTER_NAME_SUFFIX)"
+          args="standalone jsk_pcl/HSIColorFilter $(arg manager)" output="screen">
+      <remap from="~input" to="$(arg INPUT)" />
+      <remap from="~output" to="$(arg OUTPUT)" />
+      <rosparam>
+        use_indices: false
+        keep_organized: true
+      </rosparam>
+      <param name="h_limit_max" value="$(arg h_max)" />
+      <param name="h_limit_min" value="$(arg h_min)" />
+      <param name="s_limit_max" value="$(arg s_max)" />
+      <param name="s_limit_min" value="$(arg s_min)" />
+      <param name="i_limit_max" value="$(arg i_max)" />
+      <param name="i_limit_min" value="$(arg i_min)" />
+    </node>
+    
+    <node pkg="nodelet" type="nodelet" name="euclidean_clustering$(arg FILTER_NAME_SUFFIX)"
+          args="standalone jsk_pcl/EuclideanClustering $(arg manager)" output="screen" respawn="true">
+      <remap from="~input" to="$(arg OUTPUT)" />
+      <rosparam>
+        tolerance: 0.01
+        min_size: 500
+      </rosparam>
+    </node>
+
+    <node name="cluster_point_indices_decomposer_align_boxes_with_plane"
+          pkg="nodelet" type="nodelet"
+          args="standalone jsk_pcl/ClusterPointIndicesDecomposer">
+      <remap from="~input" to="hsi_output" />
+      <remap from="~target" to="euclidean_clustering/output" />
+      <remap from="~align_planes" to="$(arg TABLE_PLANE_POLYGONS)" />
+      <remap from="~align_planes_coefficients" to="$(arg TABLE_PLANE_COEFFICIENTS)" />
+      <rosparam subst_value="true">
+        align_boxes: true
+        align_boxes_with_plane: true
+        use_pca: $(arg use_pca)
+      </rosparam>
+    </node>
+    
+  </group>
+</launch>

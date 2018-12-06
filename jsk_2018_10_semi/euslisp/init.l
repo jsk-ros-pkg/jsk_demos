@@ -3,9 +3,9 @@
 
 (defun init ()
   (fetch-init)
-  (send *ri* :angle-vector (send *fetch* :reset-pose))
-  (send *ri* :angle-vector #f(23.102 57.2229 -47.2485 -75.0006 87.4081 -147.508 20.6889 -154.0 -4.25995 13.6359))
-  (send *ri* :wait-interpolation)
+;;  (send *ri* :angle-vector (send *fetch* :reset-pose))
+ ;; (send *ri* :angle-vector #f(23.102 57.2229 -47.2485 -75.0006 87.4081 -147.508 20.6889 -154.0 -4.25995 13.6359))
+ ;; (send *ri* :wait-interpolation)
   (objects (list *fetch*))
 
   (if (not (boundp '*eng2-scene*))
