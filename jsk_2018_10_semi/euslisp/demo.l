@@ -4,6 +4,7 @@
 (load "kawamura-pose-functions.l")
 (load "kawamura-move-functions.l")
 (load "wasuremono.l")
+(load "kaida-move-to-room.l")
 ;; load demo codes, all init code is written in init.l and (init)
 ;; (load "say-hello.l")
 

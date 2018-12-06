@@ -3,18 +3,21 @@
 
 (defun init ()
   (fetch-init)
-  (send *ri* :angle-vector (send *fetch* :reset-pose))
-  (send *ri* :angle-vector #f(23.102 57.2229 -47.2485 -75.0006 87.4081 -147.508 20.6889 -154.0 -4.25995 13.6359))
-  (send *ri* :wait-interpolation)
+  ;;(send *ri* :angle-vector (send *fetch* :reset-pose))
+;;  (send *ri* :angle-vector #f(23.102 57.2229 -47.2485 -75.0006 87.4081 -147.508 20.6889 -154.0 -4.25995 13.6359))
+  ;;(send *ri* :wait-interpolation)
   (objects (list *fetch*))
-
   (if (not (boundp '*eng2-scene*))
       (setq *eng2-scene* (make-eng2-scene)))
   (setq *7f* (car (member-if #'(lambda (x) (string= (send x :name) "/eng2/7f")) (send *eng2-scene* :floors))))
   (objects (list *fetch* *7f*))
   (send *fetch* :move-to (send (send *7f* :spot "/eng2/7f/room73B2-table-side1") :copy-worldcoords))
   (send *irtviewer* :look-all (list *fetch*))
-  )
+  (ros::set-param "/box_number/red" 0.0)  
+  (ros::set-param "/box_number/green" 0.0)  
+  (ros::set-param "/box_number/blue" 0.0)  
+
+)
 
 (defun reset-pose nil
   (send *fetch* :reset-pose)
