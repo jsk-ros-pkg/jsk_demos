@@ -16,7 +16,7 @@
 
 
 (defun goto-73A3()
- ;; (send *ri* :move-to (send *eng2-scene* :spot "/eng2/7f/room73A3-front") )
+  (send *ri* :move-to (send *eng2-scene* :spot "/eng2/7f/room73A3-front") )
   (send *fetch* :move-to (send (send *eng2-scene* :spot "/eng2/7f/room73A3-front") :copy-worldcoords) :world)
   (send *irtviewer* :look-all *fetch*)
   )
@@ -26,6 +26,8 @@
   (send *fetch* :move-to (send (send *eng2-scene* :spot "/eng2/7f/room73A2-front") :copy-worldcoords) :world)
   (send *irtviewer* :look-all *fetch*)
   )
+
+
 
 ;;default view to watch robot
 (defun dv()

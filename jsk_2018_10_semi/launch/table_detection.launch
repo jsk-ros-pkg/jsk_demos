@@ -1,0 +1,9 @@
+<launch>
+  <node pkg="jsk_pcl_ros" type="organized_multi_plane_segmentation" name="multi_plane_estimate">
+    <remap from="~input" to="/HSI_color_filter"/>
+    <rosparam>
+      max_curvature: 0.01
+      estimate_normal: true
+    </rosparam>
+  </node>
+</launch>
