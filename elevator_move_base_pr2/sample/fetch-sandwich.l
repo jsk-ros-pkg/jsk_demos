@@ -82,7 +82,7 @@
   (let (is-door-open cloud-msg)
     (dotimes (i 3)
       (setq cloud-msg
-            (one-shot-subscribe "extract_indices_forum_door/output"
+            (one-shot-subscribe "forum_door/extract_indices/output"
                                 sensor_msgs::PointCloud2))
       (setq is-door-open (<= (length (send cloud-msg :data)) max-cloud-size))
       (when (is-door-open)
@@ -104,7 +104,7 @@
     (send *ri* :angle-vector (send *pr2* :angle-vector) 2000)
     (update-eus-robot-model)
     (setq bboxes-msg
-          (one-shot-subscribe "cluster_indices_decomposer_door_button/boxes"
+          (one-shot-subscribe "door_button/cluster_indices_decomposer/boxes"
                               jsk_recognition_msgs::BoundingBoxArray))
     (setq bbox (elt (send bboxes-msg :boxes) 0))  ;; first (expected biggest)
     (setq cam->button-coords (ros::tf-pose->coords (send bbox :pose)))
