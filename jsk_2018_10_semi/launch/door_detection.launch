@@ -1,5 +1,4 @@
 <launch>
-  <group >
     <node pkg="jsk_pcl_ros" type="organized_multi_plane_segmentation" name="multi_plane_estimate">
       <remap from="~input" to="head_camera/depth_registered/points"/>
       <rosparam>
@@ -7,14 +6,4 @@
         estimate_normal: true
       </rosparam>
     </node>
-  </group> 
-  <group ns="HSI_color_filter_2">
-    <node pkg="jsk_pcl_ros" type="organized_multi_plane_segmentation" name="table_plane_estimate">
-      <remap from="~input" to="hsi_output"/>
-      <rosparam>
-        max_curvature: 0.01
-        estimate_normal: true
-      </rosparam>
-    </node>
-  </group>
 </launch>
