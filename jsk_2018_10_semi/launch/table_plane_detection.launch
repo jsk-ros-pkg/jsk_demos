@@ -35,20 +35,24 @@
       <param name="i_limit_max" value="$(arg i_max)" />
       <param name="i_limit_min" value="$(arg i_min)" />
     </node>
-<!--    <node pkg="nodelet" type="nodelet" name="euclidean_clustering$(arg FILTER_NAME_SUFFIX)"
+    <anode pkg="nodelet" type="nodelet" name="euclidean_clustering$(arg FILTER_NAME_SUFFIX)"
           args="standalone jsk_pcl/EuclideanClustering $(arg manager)" output="screen" respawn="true">
       <remap from="~input" to="$(arg OUTPUT)" />
       <rosparam>
         tolerance: 0.1
         min_size: 500
       </rosparam>
-    </node>-->
+    </anode>
 
     <node pkg="jsk_pcl_ros" type="organized_multi_plane_segmentation" name="multi_plane_estimate">
-      <remap from="~input" to="hsi_output"/>
+      <!-- <remap from="~input" to="/delivery_box_pickup/table_plane_datection/hsi_output"/> -->
+      <remap from="~input" to="/head_camera/depth_downsample/points"/>
       <rosparam>
-        max_curvature: 0.01
         estimate_normal: true
+        max_curvature: 0.1
+        <!--estimation_method: 1
+        estimate_normal: true
+        normal_smoothing_size: 20.0-->
       </rosparam>
     </node>
 
