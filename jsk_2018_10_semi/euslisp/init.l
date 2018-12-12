@@ -20,7 +20,7 @@
 )
 
 (defun reset-pose nil
-  (send *fetch* :reset-pose)
+    (send *fetch* :angle-vector #f(220.0 75.6304 80.2141 -11.4592 98.5487 0.0 95.111 0.0 0.0 0.0))
   (send *ri* :angle-vector (send *fetch* :angle-vector) 5000)
   (send *ri* :wait-interpolation)
 )
