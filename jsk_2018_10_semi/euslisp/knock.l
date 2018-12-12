@@ -1,6 +1,6 @@
 (defun knock nil
 
-  (send *fetch* :torso :waist-z :joint-angle 200)
+  (send *fetch* :torso :waist-z :joint-angle 220)
   (setq av0 (send *fetch* :angle-vector))
 
   (send *fetch* :rarm :inverse-kinematics (send (send *fetch* :copy-worldcoords) :transform (make-coords :pos #f(600 0 700))) :debug-view t)
@@ -9,17 +9,18 @@
   (send *fetch* :rarm :inverse-kinematics (send (send *fetch* :copy-worldcoords) :transform (make-coords :pos #f(620 0 700))) :debug-view t)
   (setq av2 (send *fetch* :angle-vector))
 
-  (send *ri* :angle-vector-sequence (list av0 av1 av2 av1 av2 av1) (list 5000 3000 3000 3000 3000 3000))
+  (send *ri* :angle-vector-sequence (list av0 av1 av2 av1 av2 av1) (list 4000 2000 2000 2000 2000 2000))
 
   (send *ri* :wait-interpolation)
-  ;(send *fetch* :reset-pose)
+  (send *fetch* :reset-pose)
 
-  ;(send *ri* :angle-vector (send *fetch* :angle-vector)) 
+  (send *ri* :angle-vector (send *fetch* :angle-vector)) 
   )
 
 (defun neck-reset nil
   (send *fetch* :head :neck-y :joint-angle 0)
   (send *fetch* :head :neck-p :joint-angle 0)
+  (send *fetch* :torso :waist-z :joint-angle 220)
   (send *ri* :angle-vector (send *fetch* :angle-vector))
   (send *ri* :wait-interpolation)
   )

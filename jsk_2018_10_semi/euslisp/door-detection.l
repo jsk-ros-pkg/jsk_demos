@@ -9,10 +9,10 @@
   (setq *normal-vec* (send (car (send msg :coefficients)) :values))
   (setq normal-vec-y (elt *normal-vec* 1))
   (print normal-vec-y)
-  (when (and (<  normal-vec-y 0.05) (> normal-vec-y -0.05)) 
+  ;;(when (and (<  normal-vec-y 0.05) (> normal-vec-y -0.05)) 
     (print (send (car (send msg :coefficients)) :values))
     ;;(send *ri* )
-    )
+ ;; )
   )
 
 ;;(defun cb (msg)
