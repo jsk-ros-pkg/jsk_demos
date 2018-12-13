@@ -25,7 +25,7 @@
   <group ns="$(arg DEFAULT_NAMESPACE)">
 
     <node pkg="jsk_pcl_ros" type="multi_plane_extraction" name="multi_plane_extraction">
-      <remap from="~input" to="/head_camera/depth_registered/points"/>
+      <remap from="~input" to="/camera_remote/depth_registered/points"/>
       <remap from="~indices" to="$(arg TABLE_PLANE_INDICES)"/>
       <remap from="~input_polygons" to="$(arg TABLE_PLANE_POLYGONS)"/>
       <remap from="~input_coefficients" to="$(arg TABLE_PLANE_COEFFICIENTS)"/> 

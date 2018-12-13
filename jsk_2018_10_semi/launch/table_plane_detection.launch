@@ -1,6 +1,6 @@
 <!-- -*- mode: xml -*- -->
 <launch>
-  <arg name="INPUT" default="/head_camera/depth_registered/points"/>
+  <arg name="INPUT" default="/camera_remote/depth_registered_quater/points"/>
   <arg name="DEFAULT_NAMESPACE" default="delivery_box_pickup/table_plane_datection"/>
   <arg name="FILTER_NAME_SUFFIX" default=""/>
   <arg name="OUTPUT" default="hsi_output$(arg FILTER_NAME_SUFFIX)"/>
@@ -10,7 +10,7 @@
   <arg name="s_max" default="255" doc="maximum satuation 255 corresponds to 1. Satuation is calucrated as (1-(min r g b)/intensity) * 255"/>
   <arg name="s_min" default="37" doc="minimum satuation 0 corresponds to 0. Satuation is calucrated as (1-(min r g b)/intensity) * 255"/>
   <arg name="i_max" default="255" doc="maximum intensity 255 corresponds to 1. Intensity is calculated as (r + g + b)/3"/>
-  <arg name="i_min" default="71" doc="minimum intensity 0 corresponds to 0. Intensity is calculated as (r + g + b)/3"/>
+  <arg name="i_min" default="53" doc="minimum intensity 0 corresponds to 0. Intensity is calculated as (r + g + b)/3"/>
 
   <arg name="create_manager" default="true" />
   <arg name="manager" default="hsi_filter_manager$(arg FILTER_NAME_SUFFIX)" />
@@ -45,11 +45,12 @@
     </anode>
 
     <node pkg="jsk_pcl_ros" type="organized_multi_plane_segmentation" name="multi_plane_estimate">
-      <!-- <remap from="~input" to="/delivery_box_pickup/table_plane_datection/hsi_output"/> -->
-      <remap from="~input" to="/head_camera/depth_downsample/points"/>
+      <remap from="~input" to="/delivery_box_pickup/table_plane_datection/hsi_output"/>
+      <!-- <remap from="~input" to="/head_camera/depth_downsample/points"/> -->
       <rosparam>
         estimate_normal: true
         max_curvature: 0.1
+        min_size: 125
         <!--estimation_method: 1
         estimate_normal: true
         normal_smoothing_size: 20.0-->
