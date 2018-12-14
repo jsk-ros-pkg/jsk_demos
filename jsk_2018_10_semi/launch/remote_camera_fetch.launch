@@ -1,7 +1,8 @@
 <launch>
   <arg name="camera_remote" default="camera_remote"/>
-  <include file="$(find jsk_2018_10_semi)/launch/openni2_remote.launch">
-    <arg name="camera" value="$(arg camera_remote)"/>
+  <!-- <include file="$(find jsk_2018_10_semi)/launch/openni2_remote.launch"> -->
+  <include file="$(find jsk_pcl_ros)/launch/openni2_remote.launch">
+  <arg name="camera" value="$(arg camera_remote)"/>
     <arg name="local_camera" value="head_camera" />
     <arg name="rgb_camera_info_url" value="/head_camera" />
     <arg name="depth_camera_info_url" value="/head_camera/depth/camera_info" />

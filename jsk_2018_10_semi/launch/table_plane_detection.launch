@@ -1,5 +1,6 @@
 <!-- -*- mode: xml -*- -->
 <launch>
+  <include file="$(find jsk_2018_10_semi)/launch/remote_camera_fetch.launch"/>
   <arg name="INPUT" default="/camera_remote/depth_registered_quater/points"/>
   <arg name="DEFAULT_NAMESPACE" default="delivery_box_pickup/table_plane_datection"/>
   <arg name="FILTER_NAME_SUFFIX" default=""/>
