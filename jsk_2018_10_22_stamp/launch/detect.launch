@@ -10,7 +10,7 @@
   <include file="$(find jsk_2018_10_22_stamp)/jsk_2018_10_22_stamp.machine" />
 
   <arg name="machine" default="c2" />
-  <arg name="gpu_machine" default="daihuku" />
+  <arg name="gpu_machine" default="montblanc" />
 
 
   <node name="attention_clipper"
