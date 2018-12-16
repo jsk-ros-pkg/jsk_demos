@@ -12,6 +12,32 @@
   <arg name="machine" default="c2" />
   <arg name="gpu_machine" default="daihuku" />
 
+
+  <node name="attention_clipper"
+        pkg="nodelet" type="nodelet"
+        args="standalone jsk_pcl/AttentionClipper">
+    <remap from="~input/points" to="$(arg input_cloud)" />
+    <rosparam subst_value="true" >
+      frame_id: "base_footprint"
+      use_multiple_attention: false
+      dimension_x: 1.0
+      dimension_y: 2.0
+      dimension_z: 0.8
+      initial_pos: [0.7, 0.0, 1.0]
+    </rosparam>
+  </node>
+
+  <node name="pass_through"
+        pkg="nodelet" type="nodelet"
+        args="standalone jsk_pcl/ExtractIndices">
+    <remap from="~input" to="$(arg input_cloud)" />
+    <remap from="~indices" to="attention_clipper/output/point_indices" />
+    <rosparam subst_value="true" >
+      keep_organized: true
+      max_queue_size: 10
+    </rosparam>
+  </node>
+
   <node name="people_pose_estimation_2d"
         pkg="jsk_perception" type="people_pose_estimation_2d.py"
         respawn="$(arg respawn)"
@@ -133,7 +159,7 @@
         pkg="nodelet" type="nodelet"
         args="standalone jsk_pcl/ClusterPointIndicesDecomposer"
         machine="$(arg machine)" >
-    <remap from="~input" to="$(arg input_cloud)" />
+    <remap from="~input" to="pass_through/output" />
     <remap from="~target" to="mask_rcnn_instance_segmentation/output/cluster_indices" />
     <rosparam subst_value="true">
       use_warn: true
