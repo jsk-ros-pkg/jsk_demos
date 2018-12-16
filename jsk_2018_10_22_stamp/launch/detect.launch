@@ -156,7 +156,7 @@
 
   <node name="mask_rcnn_cluster_point_indices_decomposer"
         pkg="nodelet" type="nodelet"
-        args="standalone jsk_pcl/ClusterPointIndicesDecomposer"
+        args="load jsk_pcl/ClusterPointIndicesDecomposer /kinect_head/kinect_head_nodelet_manager"
         machine="$(arg machine)" >
     <remap from="~input" to="pass_through/output" />
     <remap from="~target" to="mask_rcnn_instance_segmentation/output/cluster_indices" />
