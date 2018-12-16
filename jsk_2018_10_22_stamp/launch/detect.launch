@@ -72,7 +72,7 @@
     <rosparam subst_value="true">
       gpu: $(arg gpu)
       score_thresh: 0.9
-      pretrained_model: $(find jsk_2018_10_22_stamp)/trained_data/stamp_mask_rcnn.npz
+      pretrained_model: /etc/ros/jsk_data/jsk_perception/hanko_maskrcnn.npz
       fg_class_names:
         - hanko
         - hanko_case
