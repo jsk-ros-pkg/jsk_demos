@@ -2,7 +2,7 @@
 
   <arg name="daihuku_user" default="nvidia" />
   <arg name="daihuku_env_loader" default="/home/$(arg daihuku_user)/env.sh" />
-  <arg name="montblanc_user" default="nvidia" />
+  <arg name="montblanc_user" default="applications" />
   <arg name="montblanc_env_loader" default="/home/$(arg montblanc_user)/env.sh" />
 
   <machine name="daihuku" address="daihuku"
