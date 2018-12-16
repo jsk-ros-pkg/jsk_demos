@@ -709,7 +709,7 @@
       (pick-hanko-pose))
     (setq result (push-shuniku))
     (when (null result)
-      (return-from run nil))
+      (pick-hanko-pose))
 
     (setq result (push-hanko))
     (when (null result)
