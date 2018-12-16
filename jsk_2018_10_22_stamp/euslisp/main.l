@@ -177,7 +177,7 @@
     (send *robot* :larm :move-end-pos #f(-200 0 0) :local
           :revert-if-fail nil)
     (ir2ri :wait-interpolation t :time 2000)
-    
+
     (unix::usleep (* 1000 2000))
     (setq angle (send *ri* :start-grasp :rarm))
     (format t "gipper-angle ~A~%" angle)
@@ -666,6 +666,34 @@
         (:arms (list
                 (* 1000.0 (send (send (*ri* . r-gripper-action) :get-result) :position))
                 (* 1000.0 (send (send (*ri* . l-gripper-action) :get-result) :position))))))
+
+
+(defun pick-hanko-pose ()
+  (let ((angle)
+        (flag t))
+    (while t
+      (send *ri* :move-gripper :rarm 0.02 :effort 100 :wait t)
+      (if flag
+          (speak-jp "ハンコを落としてしまったので、拾って渡してください。" :wait t)
+        (speak-jp "もう一度はんこを渡してください。" :wait t))
+      (send *robot* :rarm :angle-vector #f(-22.2219 -13.4444 -71.2395 -73.7222 -108.101 -23.7166 204.513))
+      (ir2ri :time 2000)
+      (send *ri* :wait-interpolation)
+
+      (unix::usleep (* 1000 1000))
+      (speak-jp "腕をふってください。" :wait t)
+      (wait-for-hand-impact :rarm)
+      (speak-jp "掴みますよ。" :wait t)
+      (unix::usleep (* 1000 1000))
+      (setq angle (send *ri* :start-grasp :rarm))
+
+      (unix::usleep (* 1000 1000))
+
+      (when (> angle 5)
+        (speak-jp "ありがとうございます。")
+        (return-from pick-hanko-pose t))
+      (setq flag nil))))
+
 
 
 (defun run ()
