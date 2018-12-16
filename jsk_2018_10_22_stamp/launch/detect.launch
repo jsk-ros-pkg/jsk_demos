@@ -12,10 +12,9 @@
   <arg name="machine" default="c2" />
   <arg name="gpu_machine" default="montblanc" />
 
-
   <node name="attention_clipper"
         pkg="nodelet" type="nodelet"
-        args="standalone jsk_pcl/AttentionClipper">
+        args="load jsk_pcl/AttentionClipper /kinect_head/kinect_head_nodelet_manager">
     <remap from="~input/points" to="$(arg input_cloud)" />
     <rosparam subst_value="true" >
       frame_id: "base_footprint"
@@ -29,7 +28,7 @@
 
   <node name="pass_through"
         pkg="nodelet" type="nodelet"
-        args="standalone jsk_pcl/ExtractIndices">
+        args="load jsk_pcl/ExtractIndices /kinect_head/kinect_head_nodelet_manager">
     <remap from="~input" to="$(arg input_cloud)" />
     <remap from="~indices" to="attention_clipper/output/point_indices" />
     <rosparam subst_value="true" >
