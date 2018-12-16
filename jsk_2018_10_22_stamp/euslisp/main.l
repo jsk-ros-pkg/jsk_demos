@@ -123,7 +123,7 @@
     (send *ri* :start-grasp :rarm)
     ;; force grasp
     ;; (send *ri* :move-gripper :rarm 0.0 :effort 100 :wait t)
-    (setq angle (gripper-angle :rarm))
+    (setq angle (send *ri* :start-grasp :rarm))
     (format t "gipper-angle ~A~%" angle)
     (when (< angle 5)
       (speak-jp "掴むのに失敗しました")
@@ -136,7 +136,7 @@
     (send *robot* :rarm :move-end-pos #f(0 0 200) :world :revert-if-fail nil)
     (ir2ri :wait-interpolation t :time 2000)
 
-    (setq angle (gripper-angle :rarm))
+    (setq angle (send *ri* :start-grasp :rarm))
     (format t "gipper-angle ~A~%" angle)
     (when (< angle 5)
       (speak-jp "落とした気がします")
@@ -177,6 +177,14 @@
     (send *robot* :larm :move-end-pos #f(-200 0 0) :local
           :revert-if-fail nil)
     (ir2ri :wait-interpolation t :time 2000)
+    
+    (unix::usleep (* 1000 2000))
+    (setq angle (send *ri* :start-grasp :rarm))
+    (format t "gipper-angle ~A~%" angle)
+    (when (< angle 5)
+      (speak-jp "落とした気がします")
+      (return-from pick-hanko nil))
+
     t))
 
 
@@ -236,7 +244,7 @@
     (send *robot* :rarm :move-end-pos #f(0 0 100) :world)
     (ir2ri :time 2000 :wait-interpolation t)
 
-    (setq angle (gripper-angle :rarm))
+    (setq angle (send *ri* :start-grasp :rarm))
     (format t "gipper-angle ~A~%" angle)
     (when (< angle 5)
       (speak-jp "落とした気がします")
@@ -688,3 +696,5 @@
     ))
 
 (setup)
+(run)
+(exit)
