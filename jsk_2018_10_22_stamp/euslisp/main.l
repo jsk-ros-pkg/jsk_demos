@@ -706,7 +706,7 @@
       (return-from run nil))
     (setq result (pick-hanko))
     (when (null result)
-      (return-from run nil))
+      (pick-hanko-pose))
     (setq result (push-shuniku))
     (when (null result)
       (return-from run nil))
