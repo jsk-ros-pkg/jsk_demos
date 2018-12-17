@@ -5,6 +5,7 @@
   <arg name="input_cloud" default="/kinect_head/depth_registered/points" />
   <arg name="gpu" default="0" />
   <arg name="respawn" default="true" />
+  <arg name="visualization_map" default="true" />
 
   <include file="$(find jsk_2018_10_22_stamp)/launch/tabletop_simple.launch" />
   <include file="$(find jsk_2018_10_22_stamp)/jsk_2018_10_22_stamp.machine" />
@@ -180,5 +181,9 @@
       queue_size: 200
     </rosparam>
   </node>
+
+  <include if="$(arg visualization_map)"
+           file="$(find jsk_2018_10_22_stamp)/launch/visualization_map.launch" >
+  </include>
 
 </launch>

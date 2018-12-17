@@ -1,0 +1,58 @@
+<launch>
+
+  <!-- <arg name="pcd_file" default="$(find jsk_2018_10_22_stamp)/data/eng2_73b2.pcd" /> -->
+  <arg name="pcd_file" default="/etc/ros/jsk_data/jsk_2018_10_22_stamp/eng2_73b2.pcd" />
+  <arg name="frame_id" default="/map" />
+
+  <include file="$(find jsk_2018_10_22_stamp)/jsk_2018_10_22_stamp.machine" />
+
+  <arg name="vis_machine" default="montblanc" />
+
+  <group ns="visualization_map" >
+    <node name="publish_map_pointcloud"
+          pkg="pcl_ros" type="pcd_to_pointcloud"
+          args="$(arg pcd_file) 0.1"
+          machine="$(arg vis_machine)" >
+      <param name="~frame_id" value="$(arg frame_id)" />
+      <remap from="cloud_pcd" to="~output" />
+    </node>
+
+    <node name="bounding_box_array_publisher"
+          pkg="jsk_recognition_utils" type="bounding_box_array_publisher.py"
+          machine="$(arg vis_machine)" >
+      <rosparam subst_value="true" >
+        frame_id: $(arg frame_id)
+        boxes:
+          - position: [0, 0, 0]
+            dimension: [1000.0, 100.0, 4.3]
+      </rosparam>
+    </node>
+
+    <arg name="input_cloud" value="publish_map_pointcloud/output" />
+
+    <node name="attention_clipper"
+          pkg="nodelet" type="nodelet"
+          args="standalone jsk_pcl/AttentionClipper"
+          machine="$(arg vis_machine)" >
+      <remap from="~input/points" to="$(arg input_cloud)" />
+      <remap from="~input/box_array" to="bounding_box_array_publisher/output" />
+      <rosparam subst_value="true" >
+        frame_id: $(arg frame_id)
+        use_multiple_attention: true
+      </rosparam>
+    </node>
+
+    <node name="attention_extract_indices"
+          pkg="nodelet" type="nodelet"
+          args="standalone jsk_pcl/ExtractIndices manager"
+          output="screen" clear_params="true"
+          machine="$(arg vis_machine)" >
+      <remap from="~input" to="$(arg input_cloud)" />
+      <remap from="~indices" to="attention_clipper/output/point_indices" />
+      <rosparam>
+        approximate_sync: true
+      </rosparam>
+    </node>
+  </group>
+
+</launch>
