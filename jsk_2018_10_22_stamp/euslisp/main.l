@@ -2,6 +2,7 @@
 
 (load "package://jsk_2018_10_22_stamp/euslisp/ros-utils.l")
 (ros::load-ros-manifest "jsk_2018_10_22_stamp")
+(ros::load-ros-manifest "speech_recognition_msgs")
 
 
 (defun setup ()
@@ -12,6 +13,18 @@
   (irobot-init :robot "pr2")
   (when (not (boundp '*tfl*))
     (setq *tfl* (instance ros::transform-listener :init))))
+
+
+(defun listen (&key (timeout 10000))
+  (let (msg)
+    (setq msg
+          (one-shot-subscribe
+           "/speech_to_text"
+           speech_recognition_msgs::SpeechRecognitionCandidates
+           :timeout 10000))
+    (if msg
+        (car (send msg :transcript))
+      nil)))
 
 
 (defun fullbody-inverse-kinematics
@@ -413,6 +426,7 @@
     (ir2ri :time 2000 :wait-interpolation t)
     t))
 
+
 (defun close-shuniku-case ()
   (let (angle
         msg
@@ -582,8 +596,73 @@
             (setq candidate-poses (append candidate-poses (list (cons limb-name pose))))))))
     candidate-poses))
 
+;; (do-until-key (push-hanko-with-interactive))
+(defun push-hanko-with-interactive ()
+  (let (text)
+    (speak-jp "ここでいいですか？" :wait t)
+    (setq text (listen))
+    (cond ((string= text "いいよ")
+           (speak-jp "では、押しますね。" :wait t)
+           t)
+          ((or (string= text "全然ダメ")
+               (string= text "全然")
+               (string= text "ダメ"))
+           (speak-jp "分かりました。もう一度、押すところを指差てもらえますか")
+           "retry")
+          ((string= text "前")
+           (speak-jp "前ですね。" :wait t)
+           (send *robot* :rarm :move-end-pos #f(30 0 0) :world
+                 :rotation-axis :x
+                 :revert-if-fail nil)
+           nil)
+          ((string= text "もう少し前")
+           (speak-jp "もう少し前ですね。" :wait t)
+           (send *robot* :rarm :move-end-pos #f(10 0 0) :world
+                 :rotation-axis :x
+                 :revert-if-fail nil)
+           nil)
+          ((string= text "後ろ")
+           (speak-jp "後ろですね。" :wait t)
+           (send *robot* :rarm :move-end-pos #f(-30 0 0) :world
+                 :rotation-axis :x
+                 :revert-if-fail nil)
+           nil)
+          ((string= text "もう少し後ろ")
+           (speak-jp "もう少し後ろですね。" :wait t)
+           (send *robot* :rarm :move-end-pos #f(-10 0 0) :world
+                 :rotation-axis :x
+                 :revert-if-fail nil)
+           nil)
+          ((string= text "右")
+           (speak-jp "右ですね。" :wait t)
+           (send *robot* :rarm :move-end-pos #f(0 30 0) :world
+                 :rotation-axis :x
+                 :revert-if-fail nil)
+           nil)
+          ((string= text "もう少し右")
+           (speak-jp "もう少し右ですね。" :wait t)
+           (send *robot* :rarm :move-end-pos #f(0 10 0) :world
+                 :rotation-axis :x
+                 :revert-if-fail nil)
+           nil)
+          ((string= text "左")
+           (speak-jp "左ですね。" :wait t)
+           (send *robot* :rarm :move-end-pos #f(0 -30 0) :world
+                 :rotation-axis :x
+                 :revert-if-fail nil)
+           nil)
+          ((string= text "もう少し左")
+           (send *robot* :rarm :move-end-pos #f(0 -10 0) :world
+                 :rotation-axis :x
+                 :revert-if-fail nil)
+           (speak-jp "もう少し左ですね。" :wait t)
+           nil)
+          (t
+           (speak-jp "聞き取れませんでした。" :wait t)
+           nil))))
 
-(defun push-hanko ()
+
+(defun push-hanko (&key (interactive nil))
   (let ((msg)
         av
         target-coords
@@ -623,6 +702,7 @@
 
     (setq target-coords
           (send (make-coords :pos (send world-to-target-transform :worldpos)) :rotate pi/2 :y :local))
+
     (send target-coords :translate #f(0 0 10) :world)
     (send *robot* :rarm :inverse-kinematics
           target-coords
@@ -633,21 +713,46 @@
           :rotation-axis :x
           :revert-if-fail nil)
     (ir2ri :wait-interpolation t :time 2000)
+
+    (when interactive
+      (send *robot* :head :neck-p :joint-angle 90)
+      (ir2ri :wait-interpolation t :time 1000)
+      (let (interactive-result
+            (flag nil))
+        (while (null flag)
+          (setq interactive-result
+                (push-hanko-with-interactive))
+          (cond ((string= interactive-result "retry")
+                 (return-from push-hanko (push-hanko :interactive t)))
+                (interactive-result
+                 (setq flag t)
+                 (send *robot* :rarm :move-end-pos #f(100 0 0) :local
+                       :rotation-axis :x
+                       :revert-if-fail nil)
+                 (setq av (send *robot* :angle-vector)))
+                ((null interactive-result)
+                 (ir2ri :wait-interpolation t :time 1000))))))
+
     (send *robot* :angle-vector av)
+    (send *robot* :look-at-hand :rarm)
     (ir2ri :wait-interpolation t :time 2000)
     (send *robot* :angle-vector av)
+    (send *robot* :look-at-hand :rarm)
     (send *robot* :rarm :move-end-rot 2 :y :local)
     (ir2ri :wait-interpolation t :time 1000)
 
     (send *robot* :angle-vector av)
+    (send *robot* :look-at-hand :rarm)
     (send *robot* :rarm :move-end-rot -2 :y :local)
     (ir2ri :wait-interpolation t :time 1000)
 
     (send *robot* :angle-vector av)
+    (send *robot* :look-at-hand :rarm)
     (send *robot* :rarm :move-end-rot 2 :y :local)
     (ir2ri :wait-interpolation t :time 1000)
 
     (send *robot* :angle-vector av)
+    (send *robot* :look-at-hand :rarm)
     (send *robot* :rarm :move-end-rot -2 :y :local)
     (ir2ri :wait-interpolation t :time 1000)
 
@@ -695,7 +800,6 @@
       (setq flag nil))))
 
 
-
 (defun run ()
   (let (result)
     (setq result
@@ -711,7 +815,7 @@
     (when (null result)
       (pick-hanko-pose))
 
-    (setq result (push-hanko))
+    (setq result (push-hanko :interactive t))
     (when (null result)
       (return-from run nil))
 
@@ -720,8 +824,7 @@
 
     (when (null result)
       (speak-jp "もう一度挑戦します。")
-      (close-shuniku-case))
-    ))
+      (close-shuniku-case))))
 
 (setup)
 (run)
