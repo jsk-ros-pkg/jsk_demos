@@ -615,7 +615,8 @@
                  :rotation-axis :x
                  :revert-if-fail nil)
            nil)
-          ((string= text "もう少し前")
+          ((or (string= text "もう少し前")
+               (string= text "少し前"))
            (speak-jp "もう少し前ですね。" :wait t)
            (send *robot* :rarm :move-end-pos #f(10 0 0) :world
                  :rotation-axis :x
@@ -627,7 +628,8 @@
                  :rotation-axis :x
                  :revert-if-fail nil)
            nil)
-          ((string= text "もう少し後ろ")
+          ((or (string= text "もう少し後ろ")
+               (string= text "少し後ろ"))
            (speak-jp "もう少し後ろですね。" :wait t)
            (send *robot* :rarm :move-end-pos #f(-10 0 0) :world
                  :rotation-axis :x
@@ -639,7 +641,8 @@
                  :rotation-axis :x
                  :revert-if-fail nil)
            nil)
-          ((string= text "もう少し右")
+          ((or (string= text "もう少し右")
+               (string= text "少し右"))
            (speak-jp "もう少し右ですね。" :wait t)
            (send *robot* :rarm :move-end-pos #f(0 10 0) :world
                  :rotation-axis :x
@@ -651,7 +654,8 @@
                  :rotation-axis :x
                  :revert-if-fail nil)
            nil)
-          ((string= text "もう少し左")
+          ((or (string= text "もう少し左")
+               (string= text "少し左"))
            (send *robot* :rarm :move-end-pos #f(0 -10 0) :world
                  :rotation-axis :x
                  :revert-if-fail nil)
