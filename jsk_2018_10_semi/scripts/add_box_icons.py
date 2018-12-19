@@ -29,7 +29,7 @@ def callback(data):
         msg.pose.orientation.z = 0 
         msg.header.stamp = rospy.Time.now()
         msg.mode = Pictogram.PICTOGRAM_MODE
-        msg.size = 0.05
+        msg.size = 0.1
         msg.color.r = 25 / 255.0
         msg.color.g = 255 / 255.0
         msg.color.b = 240 / 255.0
@@ -38,9 +38,9 @@ def callback(data):
         PictArr.pictograms.append(msg)
         msg_string = copy.deepcopy(msg)
         msg_string.pose.position.y -= 0.05
-        msg_string.mode = Pictogram.STRING_MODE
-        msg_string.size = 0.05
-        msg_string.character = "box found"
+        msg_string.mode = Pictogram.PICTOGRAM_MODE
+        msg_string.size = 0.1
+        msg_string.character = "archive"
         PictArr.pictograms.append(msg_string)
 
     p.publish(PictArr)
