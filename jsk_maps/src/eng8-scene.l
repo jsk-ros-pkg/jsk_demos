@@ -78,23 +78,12 @@
     (setf (get room610 :knowrob-type) "OfficeRoom")
       ;;
     (send room602 :locate (float-vector 0 0 0))
-    ;;(send room610 :locate (float-vector 100 (- 3050 300 16322) 0))
     (send room610 :locate (float-vector 100 -13678 0))
     ;;
     (dolist (obj (send room602 :objects)) (send room602 :assoc obj))
     (dolist (obj (send room610 :objects)) (send room610 :assoc obj))
     (send map :assoc room602)
     (send map :assoc room610)
-
-    ;; temporarily copy from jsk_2013_04_pr2_610/euslisp/setup.l
-    (setq table-front (make-coords :pos #f(4700 1000 0) :rpy (float-vector -pi/2 0 0)))
-    (setq chair-back (make-coords :pos #f(3800 0 0)))
-    (setq laundry-front (make-coords :pos #f(2309.927 1601.466 0)))
-
-    ;; convert to map coordinates
-    (setq table-front (send table-front :transform room610 :world))
-    (setq chair-back  (send chair-back :transform room610 :world))
-    (setq laundry-front (send laundry-front :transform room610 :world))
 
     (make-cascoords-tree
      map
@@ -135,17 +124,38 @@
 
      ;;start_map_eng8.launch 0  -13.678 0
      '(:rot #2f((-1.0 0.0 0.0) (0.0 -1.0 0.0) (0.0 0.0 1.0))
-	    :pos #f(1050.0 -13678.0 0.0)
-	    :name "/eng8/6f/room610-base")
-     `(:rot  ,(send table-front :worldrot)
-             :pos ,(send table-front :worldpos)
-            :name "/eng8/6f/room610-table-front")
-     `(:rot  ,(send chair-back :worldrot)
-             :pos ,(send chair-back :worldpos)
-             :name "/eng8/6f/room610-chair-back")
-     `(:rot  ,(send laundry-front :worldrot)
-             :pos ,(send laundry-front :worldpos)
-             :name "/eng8/6f/room610-laundry-flont")
+       :pos #f(1050.0 -13678.0 0.0)
+       :name "/eng8/6f/room610-base")
+     `(:rpy ,(float-vector pi/2 0 0)
+       :pos ,(float-vector 5850 -14500 0)
+       :name "/eng8/6f/room610-table-front")
+     `(:rpy ,(float-vector pi/2 0 0)
+       :pos ,(float-vector 4500 -12500 0)
+       :name "/eng8/6f/room610-fridge-front")
+     `(:rpy ,(float-vector pi/2 0 0)
+       :pos ,(float-vector 7000 -12500 0)
+       :name "/eng8/6f/room610-laundry-front")
+     `(:rpy ,(float-vector 0 0 0)
+       :pos ,(float-vector 7500 -15000 0)
+       :name "/eng8/6f/room610-drawer-front")
+     `(:rpy ,(float-vector 0 0 0)
+       :pos ,(float-vector 7300 -12700 0)
+       :name "/eng8/6f/room610-dishwasher-front")
+     `(:rpy ,(float-vector 0 0 0)
+       :pos ,(float-vector 7300 -14100 0)
+       :name "/eng8/6f/room610-kitchen-front")
+     `(:rpy ,(float-vector pi/2 0 0)
+       :pos ,(float-vector 5800 -12200 0)
+       :name "/eng8/6f/room610-shelf-front")
+     `(:rpy ,(float-vector pi/2 0 0)
+       :pos ,(float-vector 6200 -12200 0)
+       :name "/eng8/6f/room610-microwave-front")
+     `(:rpy ,(float-vector -pi/2 0 0)
+       :pos ,(float-vector 2750 -15000 0)
+       :name "/eng8/6f/room610-counter-front")
+     `(:rpy ,(float-vector -pi/2 0 0)
+       :pos ,(float-vector 3850 -15000 0)
+       :name "/eng8/6f/room610-cabinet-front")
      )
     
     (setq scene
