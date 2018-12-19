@@ -87,7 +87,7 @@
           (when (string= subs (subseq s j (+ j (length subs))))
             (return-from search j))))))
 
-(defun get-spot (name &optional (scene *scene*))
+(defun get-spot (name &optional (scene (get-current-scene)))
   ;; resolve alias
   (setq name
         (cond
@@ -139,7 +139,7 @@
           (setq near-pos diff-pos near-spot spot)))
       (return-from get-spot near-spot)))))
 
-(defun get-all-spots (&optional (scene *scene*))
+(defun get-all-spots (&optional (scene (get-current-scene)))
   (let ((front-names (mapcar #'(lambda (x)
                                  (subseq (send x :name)
                                          (1+ (or (search "/" (send x :name) :from-end t) -1))
