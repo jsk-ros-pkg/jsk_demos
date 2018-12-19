@@ -47,25 +47,7 @@
     (unless with-tilt-laser-obstacle-cloud
       (use-tilt-laser-obstacle-cloud t)))
   )
-#|
-(defun rtheta->xy (rtheta)
-  (let ((xy))
-	(dolist (e rtheta)
-	(push (list (* (elt e 0) (sin (elt e 1)))
-				(* (elt e 0) (cos (elt e 1))))
-		  xy))
-	xy))
 
-(defun xy->ab (xy)
-  (let* ((sx (reduce #'+ (mapcar #'(lambda (x) (elt x 0)) xy)))
-		(sy (reduce #'+ (mapcar #'(lambda (x) (elt x 1)) xy)))
-		(sxx (reduce #'+ (mapcar #'(lambda (x) (* (elt x 0) (elt x 0))) xy)))
-		(syy (reduce #'+ (mapcar #'(lambda (x) (* (elt x 1) (elt x 1))) xy)))
-		(sxy (reduce #'+ (mapcar #'(lambda (x) (* (elt x 0) (elt x 1))) xy)))
-		(a (/ (- (* (length xy) sxy) (* sx sy)) (- (* (length xy) sxx) (* sx sx))))
-		(b (/ (- (* sxx sy) (* sxy sx)) (- (* (length xy) sxx) (* sx sx)))))
-	(list a b)))
-|#
 (defun move-with-base-scan-cb (msg)
   (flet ((rtheta->xy (rtheta)
 		   (let ((xy))
@@ -103,7 +85,7 @@
 	  ))
   )
 
-(warn "move-with-base-scan~%")
+(warn ";; move-with-base-scan ")
 (defun move-with-base-scan (&key (point 10) (rate 50) (n 30))
   "冷蔵庫とか平らな前面のあるものの前でその面と平行になるよう動く"
   (ros::roseus "move_with_base_scan_calc")
@@ -142,9 +124,9 @@
   t)
 
 
-(warn "goto-front-of-fridge~%")
+(warn ";; goto-front-of-fridge ")
 (defun base-go-to-fridge (&key (wait t))
-  (let ((co (send *scene* :spot "/eng2/7f/room73B2-fridge-front")))
+  (let ((co (send (get-current-scene) :spot "/eng2/7f/room73B2-fridge-front")))
     (send co :translate (float-vector 0 0 0) :world)
     (if (send *ri* :simulation-modep)
         (setq co (send *room73b2* :spot "fridge-front-spot")))
@@ -173,5 +155,3 @@
   (base-go-to-fridge :wait wait)
   (base-go-to-fridge-init-pose :torso-lift torso-lift :head-pitch head-pitch :wait wait)
   )
-
-(provide :pr2-move)
