@@ -1,9 +1,28 @@
-(load "package://jsk_maps/src/eng2-scene.l")
+;; pr2-move.l
 
-(unless (boundp '*scene*) (setq *scene* (make-eng2-scene)))
+(provide :pr2-move)
 
-(warn "move-to-spot~%")
-(defun move-to-spot (spot &key (scene  *scene*)
+(defvar *tfl* (instance ros::transform-listener :init))
+(defvar *scene*)
+
+(warn ";; get-scene ")
+(defun get-current-scene (&key (map-frame))
+  (unless (and (boundp '*scene*)
+               (derivedp *scene* building-model))
+    (let ((frames (send *tfl* :get-frame-strings)))
+      (cond
+        ((find "eng2" frames :test #'string=)
+         (require :eng2-scene "package://jsk_maps/src/eng2-scene.l")
+         (setq *scene* (make-eng2-scene)))
+        ((find "eng8" frames :test #'string=)
+         (require :eng8-scene "package://jsk_maps/src/eng8-scene.l")
+         (setq *scene* (make-eng8-scene)))
+        (t
+         (error "unknown map frame")))))
+  *scene*)
+
+(warn ";; move-to-spot ")
+(defun move-to-spot (spot &key (scene (get-current-scene))
                           (angle-vector) (time 2000) (trajectory)
                           ((:clear-costmap clear-cmap) t)
                           ((:tilt-enable with-tilt-laser-obstacle-cloud) t))
