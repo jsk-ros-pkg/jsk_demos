@@ -228,14 +228,30 @@
         (wander)
         (setq *last-base-movement* (ros::time-now))))
 
-    (let ((msg (instance interactive_behavior_201409::Attention :init)))
+    (let ((msg (instance interactive_behavior_201409::Attention :init))
+          (target-z (* 50.0 (random-gauss)))
+          target)
       (send msg :type "random")
       (send msg :header :frame_id *sensor-frame-id*)
       (send msg :header :stamp (ros::time-now))
       (send msg :level interactive_behavior_201409::Attention::*LEVEL_NORMAL*)
-      (send msg :target
-            (ros::coords->tf-pose
-             (make-coords :pos (float-vector 1000 (* 350 (random-gauss)) (- (* 0.1 (random-gauss)) 0.02)))))
+      (send *pr2* :angle-vector (send *ri* :state :potentio-vector))
+      (cond
+        ((> -10.0 (send *pr2* :head :neck-p :joint-angle))
+         (setq target-z -300.0))
+        ((> 10.0 (send *pr2* :head :neck-p :joint-angle))
+         (setq target-z -150.0))
+        ((> (send *pr2* :head :neck-p :joint-angle) 50.0)
+         (setq target-z 500.0))
+        ((> (send *pr2* :head :neck-p :joint-angle) 30.0)
+         (setq target-z 300.0))
+        ((> (send *pr2* :head :neck-p :joint-angle) 15.0)
+         (setq target-z 100.0)))
+      (setq target
+            (make-coords :pos (float-vector 1000 (* 350 (random-gauss)) target-z)))
+      (ros::ros-info "head: ~A" (send *pr2* :head :neck-p :joint-angle))
+      (ros::ros-info "target: ~A" target)
+      (send msg :target (ros::coords->tf-pose target))
       (look-on-attention msg))
 ))
 
