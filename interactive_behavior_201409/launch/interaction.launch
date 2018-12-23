@@ -44,6 +44,7 @@
       </rosparam>
     </node>
 
+    <!--
     <node name="pointit" pkg="jsk_perception" type="pointit.py"
           output="screen" machine="$(arg machine)">
       <remap from="~input" to="people_pose_estimation/pose"/>
@@ -52,6 +53,7 @@
         use_tf2_buffer_client: true
       </rosparam>
     </node>
+    -->
 
     <node name="face_pose_estimation"
           pkg="jsk_perception" type="face_pose_estimation.py"
@@ -89,11 +91,11 @@
             to: $(arg input_image)
           - from: ~input/mask
             to: depth_to_mask/output
-        - name: face_detection
-          type: opencv_apps/face_detection
-          remappings:
-          - from: image
-            to: apply_mask/output
+        # - name: face_detection
+        #   type: opencv_apps/face_detection
+        #   remappings:
+        #   - from: image
+        #     to: apply_mask/output
         - name: face_recognition
           type: opencv_apps/face_recognition
           remappings:
@@ -175,14 +177,14 @@
     </rosparam>
 
     <node name="people_attention_tracker"
-          pkg="interactive_behavior_201409" type="people_attention_tracker.py"
+          pkg="interactive_behavior_201409" type="people_attention_tracker2.py"
           output="screen" machine="$(arg machine)">
       <remap from="~input/people_pose" to="people_pose_estimation/pose"/>
       <remap from="~input/face_pose" to="face_pose_estimation/output/pose" />
       <remap from="~input/face" to="face_recognition/output" />
       <remap from="~output" to="attention" />
       <rosparam>
-        enable_face_identification: false
+        enable_face: false
         fixed_frame_id: odom_combined
         distance_threshold: 0.25
         timeout_threshold: 3.0
