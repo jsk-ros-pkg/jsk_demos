@@ -32,6 +32,7 @@
   <run_depend>detect_cans_in_fridge_201202</run_depend>
   <run_depend>elevator_move_base_pr2</run_depend>
   <run_depend>jsk_2017_12_pr2_coe</run_depend>
+  <run_depend>semantic_world</run_depend>
 
   <export>
     <app_manager app_dir="${prefix}/apps"/>

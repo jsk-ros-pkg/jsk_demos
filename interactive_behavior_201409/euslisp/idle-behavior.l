@@ -236,7 +236,8 @@
       (send msg :target
             (ros::coords->tf-pose
              (make-coords :pos (float-vector 1000 (* 350 (random-gauss)) (- (* 0.1 (random-gauss)) 0.02)))))
-      (look-on-attention msg))))
+      (look-on-attention msg))
+))
 
 (defun enable-behavior ()
   (setq *look-at-enabled* t)

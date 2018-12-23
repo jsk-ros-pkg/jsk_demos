@@ -43,4 +43,37 @@
                         :from-state *from-state*)
 )
 
+(defun make-graph ()
+  (setq *domain* (make-domain))
+  (setq *problem* (make-problem :init
+                                '((ROBOT-AT START)
+                                  (ON BOTTLE FRIDGE)
+                                  )
+                                :goal
+                                '((ON BOTTLE TABLE))
+                                :items
+                                '(BOTTLE)
+                                ))
+   (setq failed-nodes nil)
+   (unless failed-nodes
+     (setq failed-nodes
+           (remove-if-not #'(lambda (n)
+                              (string= "_f"
+                                       (subseq (send n :name)
+                                               (- (length (send n :name)) 2))))
+                          (send *domain* :action)))
+     (setq failed-nodes
+           (mapcar #'(lambda (n)
+                       (read-from-string
+                        (subseq (send n :name) 0 (- (length (send n :name)) 2))))
+                   failed-nodes)))
+   (setq gr (pddl-plan-to-graph nil
+                                :domain *domain*
+                                :problem *problem*
+                                :failed-nodes failed-nodes
+                                :readable t
+                                :debug nil
+                                :timeout 30))
+   (send gr :write-to-pdf "/tmp/graph.pdf" nil "hoge"))
+
 (pr2-init)
