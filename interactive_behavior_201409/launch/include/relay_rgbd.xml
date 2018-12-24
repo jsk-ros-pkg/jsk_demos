@@ -1,5 +1,6 @@
 <launch>
   <arg name="machine" default="external" />
+  <arg name="use_transport_nodelet" default="true"/>
 
   <arg name="camera" default="kinect_head_$(arg machine)" />
   <arg name="manager" default="$(arg camera)/$(arg camera)_nodelet_manager" />
@@ -31,15 +32,39 @@
     <remap from="~output" to="$(arg camera)/depth_registered/image_rect" />
   </node>
 
-  <node name="rgb_decompress" pkg="image_transport" type="republish"
-        args="compressed raw">
-    <remap from="in" to="kinect_head/rgb/image_color" />
-    <remap from="out" to="$(arg camera)/rgb/image_color" />
-  </node>
+  <group if="$(arg use_transport_nodelet)">
+    <node name="rgb_decompress" pkg="nodelet" type="nodelet"
+          args="load image_transport/Republish $(arg manager)">
+      <remap from="in" to="kinect_head/rgb/image_color" />
+      <remap from="out" to="$(arg camera)/rgb/image_color" />
+      <rosparam>
+        in_transport: compressed
+        out_transport: raw
+      </rosparam>
+    </node>
 
-  <node name="depth_decompress" pkg="image_transport" type="republish"
-        args="compressedDepth raw">
-    <remap from="in" to="kinect_head/depth_registered/image_raw"/>
-    <remap from="out" to="$(arg camera)/depth_registered/image_raw" />
-  </node>
+    <node name="depth_decompress" pkg="nodelet" type="nodelet"
+          args="load image_transport/Republish $(arg manager)">
+      <remap from="in" to="kinect_head/depth_registered/image_raw"/>
+      <remap from="out" to="$(arg camera)/depth_registered/image_raw" />
+      <rosparam>
+        in_transport: compressedDepth
+        out_transport: raw
+      </rosparam>
+    </node>
+  </group>
+
+  <group unless="$(arg use_transport_nodelet)">
+    <node name="rgb_decompress" pkg="image_transport" type="republish"
+          args="compressed raw">
+      <remap from="in" to="kinect_head/rgb/image_color" />
+      <remap from="out" to="$(arg camera)/rgb/image_color" />
+    </node>
+
+    <node name="depth_decompress" pkg="image_transport" type="republish"
+          args="compressedDepth raw">
+      <remap from="in" to="kinect_head/depth_registered/image_raw"/>
+      <remap from="out" to="$(arg camera)/depth_registered/image_raw" />
+    </node>
+  </group>
 </launch>
