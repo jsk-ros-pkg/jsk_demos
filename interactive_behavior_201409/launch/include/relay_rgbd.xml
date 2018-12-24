@@ -34,9 +34,9 @@
 
   <group if="$(arg use_transport_nodelet)">
     <node name="rgb_decompress" pkg="nodelet" type="nodelet"
-          args="load image_transport/Republish $(arg manager)">
-      <remap from="in" to="kinect_head/rgb/image_color" />
-      <remap from="out" to="$(arg camera)/rgb/image_color" />
+          args="load image_transport/Republish $(arg manager)" clear_params="true">
+      <remap from="~in" to="kinect_head/rgb/image_color" />
+      <remap from="~out" to="$(arg camera)/rgb/image_color" />
       <rosparam>
         in_transport: compressed
         out_transport: raw
@@ -45,8 +45,8 @@
 
     <node name="depth_decompress" pkg="nodelet" type="nodelet"
           args="load image_transport/Republish $(arg manager)">
-      <remap from="in" to="kinect_head/depth_registered/image_raw"/>
-      <remap from="out" to="$(arg camera)/depth_registered/image_raw" />
+      <remap from="~in" to="kinect_head/depth_registered/image_raw"/>
+      <remap from="~out" to="$(arg camera)/depth_registered/image_raw" />
       <rosparam>
         in_transport: compressedDepth
         out_transport: raw
