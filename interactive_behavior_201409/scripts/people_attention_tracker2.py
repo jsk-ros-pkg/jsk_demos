@@ -32,6 +32,11 @@ def pose_distance(p1, p2):
         return np.sqrt(dp)
 
 
+def pose_position_norm(p):
+    pos = p.pose.position
+    return np.linalg.norm([pos.x, pos.y, pos.z])
+
+
 def remove_outlier_limbs(person, mean_thresh=0.5, score_thresh=0.4):
     if len(person.poses) < 2:
         return person
@@ -40,7 +45,6 @@ def remove_outlier_limbs(person, mean_thresh=0.5, score_thresh=0.4):
     mean = np.mean(xs[ys > 0])
     neg = np.mean(xs[ys < 0])
 
-    rospy.loginfo((mean, neg))
     if neg < mean and abs(mean - neg) > mean_thresh:
         mean, neg = neg, mean
 
@@ -141,8 +145,14 @@ class Person(object):
                 pose.pose.orientation.y = 0.0
                 pose.pose.orientation.z = 0.0
                 pose.pose.orientation.w = 1.0
-            except tf2_ros.TransformException:
-                pass
+            except tf2_ros.TransformException as e:
+                rospy.logerr(e)
+                confidence = 0.0
+        norm = pose_position_norm(pose)
+        if np.isnan(norm) or norm == 0:
+            rospy.logwarn("Pose norm is nan or zero")
+            confidence = 0.0
+
         self.pose = pose
         self.confidence = confidence
 
@@ -187,6 +197,15 @@ class Person(object):
         return self.attention < p.attention
 
     def is_near(self, p):
+        if self.pose.header.frame_id != p.pose.header.frame_id:
+            rospy.logerr("Compared poses with different frame_id")
+            return False
+        if pose_position_norm(self.pose) == 0:
+            rospy.logerr("norm(self.pose) == 0")
+            return False
+        if pose_position_norm(p.pose) == 0:
+            rospy.logerr("norm(p.pose) == 0")
+            return False
         dist = pose_distance(self.pose, p.pose)
         return dist < Person.near_threshold
 
@@ -253,7 +272,7 @@ class Comrades(object):
             self.purge()
             self.group.sort(reverse=True)
             for i, p in enumerate(self.group):
-                rospy.loginfo('#{} Name: {}, Attn: {}'.format(i, p.name, p.attention))
+                rospy.loginfo('#{} Name: {}, Norm: {}, Attn: {}'.format(i, p.name, pose_position_norm(p.pose), p.attention))
 
 
 class PeopleAttentionTracker(ConnectionBasedTransport):
@@ -325,9 +344,11 @@ class PeopleAttentionTracker(ConnectionBasedTransport):
     def people_callback(self, people):
         header = people.header
         poses = [people_msg_to_pose(p, 0.5) for p in people.poses]
-        scores = [max(p.scores) for p in people.poses]
+        scores = [max(p.scores) if p.scores else None for p in people.poses]
 
         for pose, score in zip(poses, scores):
+            if score is None:
+                continue
             pose = PoseStamped(header=header, pose=pose)
             person = Person(pose, score)
             self.comrades.add(person)
