@@ -1,63 +1,45 @@
 <launch>
   <arg name="ROBOT" default="$(optenv ROBOT pr2)"/>
   <arg name="machine" default="c2"/>
-  <arg name="camera" default="kinect_head"/>
-  <arg name="map_frame" default="eng8"/>
-
+  <arg name="camera" default="narrow_stereo/left"/>
   <arg name="use_mask" default="false"/>
-
   <arg name="use_throttle" default="true"/>
-  <arg name="throttle_prefix" default="throttled/" if="$(arg use_throttle)"/>
+
+  <arg name="throttle_prefix" default="/throttled" if="$(arg use_throttle)"/>
   <arg name="throttle_prefix" default=""       unless="$(arg use_throttle)"/>
 
-  <arg name="input_image" default="/$(arg camera)/rgb/$(arg throttle_prefix)image_rect_color"/>
-  <arg name="input_camera_info" default="/$(arg camera)/rgb/$(arg throttle_prefix)camera_info"/>
+  <arg name="input_image" default="/$(arg camera)/image_rect_color$(arg throttle_prefix)"/>
+  <arg name="input_camera_info" default="/$(arg camera)/camera_info$(arg throttle_prefix)"/>
 
-  <include file="$(find pr2_machine)/$(arg ROBOT).machine" />
+  <include file="$(find pr2_machine)/$(arg ROBOT).machine"/>
 
-  <group if="$(arg use_mask)">
-    <node pkg="jsk_pcl_ros" type="attention_clipper" name="attention_clipper"
-          output="screen" machine="$(arg machine)">
-      <remap from="~input" to="$(arg input_camera_info)" />
-      <rosparam>
-        dimension_x: 0.3
-        dimension_y: 0.3
-        dimension_z: 0.05
-        frame_id: "/map"
-      </rosparam>
-    </node>
-
-    <node pkg="jsk_pcl_ros" type="roi_clipper" name="roi_attention_clipper"
-          output="screen">
-      <remap from="~input/image" to="$(arg input_image)"/>
-      <remap from="~input/camera_info" to="attention_clipper/output" />
-    </node>
-  </group>
-
-  <group ns="/$(arg camera)/rgb">
-    <node name="fridge_demo_sift" pkg="imagesift" type="imagesift"
-          launch-prefix="nice -n +10" output="screen" machine="$(arg machine)">
-      <remap from="image" to="$(arg input_image)" />
-      <remap from="camera_info" to="$(arg input_camera_info)"/>
-      <remap from="mask" to="attention_clipper/output/mask"/>
-      <param name="use_mask" value="$(arg use_mask)"/>
-    </node>
-    <node name="fridge_detector" pkg="jsk_perception" type="point_pose_extractor"
-          machine="$(arg machine)">
+  <group ns="/$(arg camera)">
+   <node name="throttle" pkg="jsk_topic_tools" type="synchronized_throttle"
+          machine="$(arg machine)" if="$(arg use_throttle)">
       <rosparam subst_value="true">
-        template_filename: $(find detect_cans_in_fridge_201202)/data/openni_rgb_fridge_610.png
-        window_name: fridge_handle_upper
-        object_width: 0.18
-        object_height: 0.18
-        relative_pose: '0.35 0.09 0.075  0.707107 0 -0.707107 0'
-        viewer_window: false
-        reprojection_threshold: 2.0
-        distanceratio_threshold: 0.6
-        error_threshold: 10.0
+        topics:
+        - /$(arg camera)/image_rect_color
+        - /$(arg camera)/camera_info
+        suffix: throttled
+        update_rate: 5.0
       </rosparam>
     </node>
 
-    <node name="fridge_detector_aggregator" pkg="posedetection_msgs" type="object_detection_aggregator"
-          machine="$(arg machine)"/>
+    <rosparam ns="fridge_detector" subst_value="true">
+      template_filename: $(find detect_cans_in_fridge_201202)/data/narrow_stereo_fridge_610.png
+      window_name: fridge_handle_upper
+      object_width: 0.234
+      object_height: 0.234
+      relative_pose: '0.42 0.117 0.075  0.707107 0 -0.707107 0'
+      viewer_window: false
+      reprojection_threshold: 0.5
+      distanceratio_threshold: 0.9
+      error_threshold: 50.0
+    </rosparam>
+    <include file="$(find detect_cans_in_fridge_201202)/launch/detect_fridge.xml">
+      <arg name="machine" value="$(arg machine)"/>
+      <arg name="input_image" value="$(arg input_image)"/>
+      <arg name="input_camera_info" value="$(arg input_camera_info)"/>
+    </include>
   </group>
 </launch>
