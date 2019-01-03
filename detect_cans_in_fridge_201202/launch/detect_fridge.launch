@@ -1,4 +1,17 @@
 <launch>
+  <arg name="ROBOT" default="$(optenv ROBOT pr2)"/>
+  <arg name="machine" default="c2"/>
+  <arg name="camera" default="kinect_head"/>
   <arg name="map_frame" default="eng2"/>
+
+  <arg name="use_mask" default="false"/>
+
+  <arg name="use_throttle" default="true"/>
+  <arg name="throttle_prefix" default="throttled/" if="$(arg use_throttle)"/>
+  <arg name="throttle_prefix" default=""       unless="$(arg use_throttle)"/>
+
+  <arg name="input_image" default="/$(arg camera)/rgb/$(arg throttle_prefix)image_rect_color"/>
+  <arg name="input_camera_info" default="/$(arg camera)/rgb/$(arg throttle_prefix)camera_info"/>
+
   <include file="$(find detect_cans_in_fridge_201202)/launch/detect_fridge_$(arg map_frame).launch" pass_all_args="true"/>
 </launch>
