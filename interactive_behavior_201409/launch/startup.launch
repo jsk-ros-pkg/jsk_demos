@@ -1,7 +1,13 @@
 <launch>
+  <arg name="gpu" default="0"/>
   <include file="$(find interactive_behavior_201409)/launch/relay_rgbd.launch"/>
-  <include file="$(find interactive_behavior_201409)/launch/interaction.launch"/>
+  <include file="$(find interactive_behavior_201409)/launch/interaction.launch">
+    <arg name="gpu" value="$(arg gpu)"/>
+  </include>
   <include file="$(find interactive_behavior_201409)/launch/dialog.launch"/>
-  <include file="$(find interactive_behavior_201409)/launch/perception.launch"/>
+  <include file="$(find interactive_behavior_201409)/launch/perception.launch">
+    <arg name="gpu" value="$(arg gpu)"/>
+  </include>
+  <!-- <include file="$(find interactive_behavior_201409)/launch/mbtk.launch"/> -->
   <include file="$(find pddl_planner)/launch/pddl_downward.launch"/>
 </launch>

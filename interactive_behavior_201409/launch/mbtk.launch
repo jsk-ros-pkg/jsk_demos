@@ -17,8 +17,8 @@
           unless="$(arg use_mock)">
       <rosparam subst_value="true">
         database: jsk_robot_lifelog
-        collection: localized_objects
-        max_cluster_num: 5
+        collection: pr2_localized_objects_201901
+        max_cluster_num: 3
       </rosparam>
     </node>
     <node name="position_estimator"
@@ -37,8 +37,9 @@
           if="$(arg use_visualizer)">
       <remap from="~input" to="position_estimator/output"/>
       <rosparam subst_value="true">
-        min_z: 30.0
-        max_z: 32.0
+        # z_offset: 30.0
+        z_offset: 20.0
+        z_height: 1.0
         publish_rate: 1.0
         latch: true
         remove_outliers: true
@@ -62,4 +63,10 @@
     </node>
   </group>
 
+  <node name="mbtk_move_base" pkg="mbtk" type="mbtk_move_base.py"
+        output="screen" machine="$(arg machine)">
+  </node>
+
+  <node name="semantic_world" pkg="semantic_world" type="semantic_world.l"
+        respawn="true" output="screen"/>
 </launch>
