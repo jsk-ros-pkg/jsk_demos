@@ -9,9 +9,8 @@
 (require :app-utils "package://interactive_behavior_201409/euslisp/app-utils.l")
 (require :pr2-preemptive-interface "package://interactive_behavior_201409/euslisp/pr2-preemptive-interface.l")
 ;;
-(require :pr2-action "package://jsk_demo_common/euslisp/pr2-action.l")
 (require :coe-actionlib "package://jsk_2017_12_pr2_coe/euslisp/coe-actionlib.l")
-(require :door-utils "package://interactive_behavior_201409/euslisp/door-utils.l")
+;;(require :door-utils "package://interactive_behavior_201409/euslisp/door-utils.l")
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Action implementations
@@ -145,9 +144,14 @@
          (set-alist :target-effort 0.007 userdata))
        (case spot
          ('fridge
-          (grasp-can-init)
-          (setq *tabletop-bbox-topic* "/detect_cans/bounding_box_pose/output/boxes")
-          (setq *preferable-object-pose* (make-coords :pos (float-vector 700 150 950))))
+          (cond
+            ((string= "/eng8" (send (get-current-scene) :name))
+             (setq *tabletop-bbox-topic* "/detect_cans/bounding_box_pose/output/boxes")
+             (set-alist :target-object-label object-label userdata))
+            (t ;; eng2
+             (grasp-can-init)
+             (setq *tabletop-bbox-topic* "/detect_cans/bounding_box_pose/output/boxes")
+             (setq *preferable-object-pose* (make-coords :pos (float-vector 700 150 950))))))
          (t t))
        (find-tabletop-object userdata)))))
 
@@ -234,14 +238,8 @@
       ((eq spot 'dishwasher) ;; coe
        (open-dishwasher userdata))
       ((eq spot 'fridge)
-       (send *pr2* :reset-coords)
-       ;; look at door
-       (base-go-to-fridge-init-pose :torso-lift 130 :head-pitch 0 :wait t)
-       ;; open door
-       (open-fridge-door :use-arm (if (eq :rarm (cdr (assoc :arm userdata))) :larm :rarm))
-       ;; reach to fridge
-       (send *ri* :go-pos-unsafe 0 0 -15)
-       (send *ri* :go-pos-unsafe 0.30 -0.05 0)
+       (open-fridge-door userdata))
+      ((eq spot 'shelf)
        t)
       (t
        (open-push-door userdata)))))
@@ -254,17 +252,7 @@
       ((eq spot 'dishwasher)
        (close-dishwasher userdata))
       ((eq spot 'fridge)
-       ;; (send *ri* :go-pos-unsafe -0.22 -0.2 17)
-       (send *ri* :go-pos-unsafe -0.18 -0.22 17)
-       (send *ri* :go-pos-unsafe 0.05 -0.05 0)
-       (send *pr2* :larm :angle-vector (get-side-pose :larm))
-       (send *ri* :angle-vector (send *pr2* :angle-vector) 3000 :larm-controller)
-       (send *ri* :wait-interpolation)
-       (send *pr2* :angle-vector (send *ri* :state :potentio-vector))
-       (close-fridge :use-arm (cdr (assoc :arm userdata))
-                     :tuck-arm nil
-                     :move-only-use-arm t)
-       t)
+       (close-fridge-door userdata))
       (t t))))
 
 (defaction deliver (obj arm person spot &optional userdata)
