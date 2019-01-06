@@ -176,16 +176,16 @@
 
 (defaction pick (obj arm spot &optional userdata)
   (ros::ros-info "(pick ~A ~A ~A)" obj arm spot)
+  (set-alist :arm (intern (string-upcase arm) *keyword-package*) userdata)
+  (setq arm (cdr (assoc :arm userdata)))
   (with-monitoring (:sound)
     (set-alist :arm (intern (string-upcase arm) *keyword-package*) userdata)
-    (let ((arm-controller (read-from-string
-                           (format nil "~A-controller" (cdr (assoc :arm userdata)))))
+    (let ((arm-controller (read-from-string (format nil "~A-controller" arm)))
           res)
       ;; pre pick pose for avoiding collision
       (unless (or (eq spot 'fridge)
                   (eq spot 'dishwasher))
-        (send *pr2* (cdr (assoc :arm userdata)) :angle-vector
-              (get-side-pose (cdr (assoc :arm userdata))))
+        (send *pr2* arm :angle-vector (get-side-pose arm))
         (send *ri* :angle-vector (send *pr2* :angle-vector) 3000 arm-controller)
         (send *ri* :angle-vector (pr2-pick-tray-pose) 2000 :torso-controller)
         (send *ri* :wait-interpolation)
@@ -199,14 +199,21 @@
         (t
          (with-monitoring (:joint)
            (cond
-             ((eq spot 'fridge)
-              (setq res (pick-in-fridge userdata)))
-             ((eq obj 'bowl)
-              (setq res (pick-bowl userdata)))
-             (t
-              (setq res (pick-tabletop-object userdata)))))))
+            ((eq spot 'fridge)
+             (when (string= "/eng8" (send (get-current-scene) :name))
+               (set-alist :pick-pos (float-vector 200 -150 0) userdata)
+               (set-alist :grasp-offset -70 userdata)
+               (set-alist :grasp-rotation 0 userdata))
+             (setq res (pick-in-fridge userdata)))
+            ((eq obj 'bowl)
+             (setq res (pick-bowl userdata)))
+            (t
+             (setq res (pick-tabletop-object userdata)))))))
+      ;; pick if object is in drawer
+      (when (memq spot '(shelf drawer kitchen))
+        (pickup-object userdata))
       ;;
-      (case (cdr (assoc :arm userdata))
+      (case arm
         (:larm (set-alist :larm obj userdata))
         (:rarm (set-alist :rarm obj userdata))
         (:arms (set-alist :arms obj userdata)))
@@ -246,8 +253,7 @@
   (case (cdr (assoc :arm userdata))
     (:larm (set-alist :larm nil userdata))
     (:rarm (set-alist :rarm nil userdata))
-    (:arms (set-alist :arms nil userdata)))
-)
+    (:arms (set-alist :arms nil userdata))))
 
 (defaction open-door (arm spot &optional userdata)
   (ros::ros-info "(open-door ~A ~A)" arm spot)
@@ -257,15 +263,13 @@
       ((eq spot 'dishwasher) ;; coe
        (open-dishwasher userdata))
       ((eq spot 'fridge)
-       (send *pr2* :reset-coords)
-       ;; look at door
-       (base-go-to-fridge-init-pose :torso-lift 130 :head-pitch 0 :wait t)
-       ;; open door
-       (open-fridge-door :use-arm (if (eq :rarm (cdr (assoc :arm userdata))) :larm :rarm))
-       ;; reach to fridge
-       (send *ri* :go-pos-unsafe 0 0 -15)
-       (send *ri* :go-pos-unsafe 0.30 -0.05 0)
-       t)
+       (open-fridge-door userdata))
+      ((eq spot 'shelf)
+       (open-shelf-door-610-lower userdata))
+      ((eq spot 'kitchen)
+       (open-kitchen-door-610 userdata))
+      ((eq spot 'drawer)
+       (open-drawer-door-610-lower userdata))
       (t
        (open-push-door userdata)))))
 
@@ -277,18 +281,13 @@
       ((eq spot 'dishwasher)
        (close-dishwasher userdata))
       ((eq spot 'fridge)
-       ;; (send *ri* :go-pos-unsafe -0.22 -0.2 17)
-       (send *ri* :go-pos-unsafe -0.18 -0.22 17)
-       (send *ri* :go-pos-unsafe 0.05 -0.05 0)
-       (send *pr2* :larm :angle-vector (get-side-pose :larm))
-       (send *ri* :angle-vector (send *pr2* :angle-vector) 3000 :larm-controller)
-       (send *ri* :wait-interpolation)
-       (send *pr2* :angle-vector (send *ri* :state :potentio-vector))
-       (close-fridge :use-arm (cdr (assoc :arm userdata))
-                     :tuck-arm nil
-                     :move-only-use-arm t)
-       t)
-      (t t))))
+       (close-fridge-door userdata))
+      ((eq spot 'shelf)
+       (close-shelf-door-610-lower userdata))
+      ((eq spot 'kitchen)
+       (close-kitchen-door-610 userdata))
+      (t
+       (close-drawer-door userdata)))))
 
 (defaction deliver (obj arm person spot &optional userdata)
   (setq arm (intern (string-upcase arm) *keyword-package*))
