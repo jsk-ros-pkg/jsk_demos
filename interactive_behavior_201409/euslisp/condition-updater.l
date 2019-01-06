@@ -39,7 +39,7 @@
     (let ((start-time (ros::time-now)))
       (while (ros::ok)
         (when (and larm-state rarm-state)
-          (ros::ros-info "[~A] :larm = ~A, :rarm = ~A" (send self :name) larm-state rarm-state)
+          (send self :ros-info ":larm = ~A, :rarm = ~A" larm-state rarm-state)
           (return-from :wait-for-ready t))
         (when (and timeout
                    (> (send (ros::time- (ros::time-now) start-time) :to-sec) timeout))
@@ -79,7 +79,7 @@
              (null (send self :onhand ret 'larm)))
         ;; recall onhand object from last state
         (setq obj (send self :onhand last-state 'larm))
-        (ros::ros-info "last-onhand=~A" obj)
+        (send self :ros-info "last-onhand=~A" obj)
         (when obj
           (push `(onhand ,(car obj) larm) ret)
           (setq ret (remove `(on ,(car obj) ,(send self :at ret)) ret :test #'equal)))
@@ -99,7 +99,7 @@
              (null (send self :onhand ret 'rarm)))
         ;; recall onhand object from last state
         (setq obj (send self :onhand last-state 'rarm))
-        (ros::ros-info "last-onhand=~A" obj)
+        (send self :ros-info "last-onhand=~A" obj)
         (when obj
           (push `(onhand ,(car obj) rarm) ret)
           (setq ret (remove `(on ,(car obj) ,(send self :at ret)) ret :test #'equal)))
@@ -136,11 +136,11 @@
                 (norm (send robot-pose :difference-position (cdr s)))))
       (setq nearest (car spots)
             dist (norm (send robot-pose :difference-position (cdr nearest))))
-      ;; (ros::ros-info "dist to ~A: ~A" (car nearest) dist)
+      ;; (send self :ros-info "dist to ~A: ~A" (car nearest) dist)
       (unless (< dist 400.0)
-        (ros::ros-info "no near spot")
+        (send self :ros-info "no near spot")
         (return-from :update-init init))
-      (ros::ros-info "the robot is near ~A" (car nearest))
+      (send self :ros-info "the robot is near ~A" (car nearest))
       ;; 0. trim compound words
       (setq nearest
           (if (search "-" (car nearest))
@@ -172,7 +172,7 @@
   (:stop () t)
   (:wait-for-ready (&optional (timeout 10))
     (unless (ros::wait-for-service query-srv-name timeout)
-      (ros::ros-error "[~A] service not advertised: ~A" (send self :name) query-srv-name)
+      (send self :ros-error "service not advertised: ~A" query-srv-name)
       (return-from :wait-for-ready nil))
     t)
   (:update-init (init goal)
@@ -182,15 +182,14 @@
            (unknown-objs (set-difference goal-objs init-objs))
            res cds-lst sexp)
       (dolist (obj unknown-objs)
-        (ros::ros-info "[~A] querying position of ~A" (send self :name) (string-downcase obj))
+        (send self :ros-info "querying position of ~A" (string-downcase obj))
         (setq res (ros::service-call query-srv-name
                                      (instance mbtk::QueryObjectPositionRequest :init
                                                :class_label (string-downcase obj))))
         (unless (send *tfl* :wait-for-transform *world-frame-id*
                       (send res :object_positions :header :frame_id) (ros::time 0) 10)
-          (ros::ros-error "[~A] failed to lookup transform: ~A ~A"
-                          (send self :name) *world-frame-id*
-                          (send res :object_positions :header :frame_id))
+          (send self :ros-error "failed to lookup transform: ~A ~A"
+                *world-frame-id* (send res :object_positions :header :frame_id))
           (return-from :update-init init))
         (setq cds-lst (mapcar #'(lambda (pc)
                                   (let ((ps (instance geometry_msgs::PoseStamped :init)))
@@ -209,7 +208,7 @@
              ((eq (car cnd) 'in) (setf (car cnd) 'on))
              ((eq (car cnd) 'located-at) (setf (car cnd) 'robot-at)))
             (setq cnd (replace-symbol 'target obj cnd))
-            (ros::ros-info "[~A] ~A" (send self :name) cnd)
+            (send self :ros-info "cnd: ~A" cnd)
             (push cnd new-init)))) ;; dolist obj end
         new-init))
   (:update-goal (init goal) goal)

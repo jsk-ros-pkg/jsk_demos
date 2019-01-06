@@ -1,8 +1,7 @@
 <launch>
   <include file="$(find interactive_behavior_201409)/launch/relay_rgbd.launch"/>
   <include file="$(find interactive_behavior_201409)/launch/interaction.launch"/>
-  <include file="$(find interactive_behavior_201409)/launch/dialog.launch"
-           if="false"/> <!-- this is launched by upstart -->
+  <include file="$(find interactive_behavior_201409)/launch/dialog.launch"/>
   <include file="$(find interactive_behavior_201409)/launch/perception.launch"/>
   <include file="$(find pddl_planner)/launch/pddl_downward.launch"/>
 </launch>

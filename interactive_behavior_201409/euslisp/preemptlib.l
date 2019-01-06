@@ -690,6 +690,11 @@ This function also supports resume from preempted tasks"
 (defmethod condition-updater
   (:init ())
   (:name () (send (class self) :name))
+  (:ros-debug (&rest msg) (ros::ros-debug "[~A] ~A" (send self :name) (apply #'format nil msg)))
+  (:ros-info (&rest msg) (ros::ros-info "[~A] ~A" (send self :name) (apply #'format nil msg)))
+  (:ros-warn (&rest msg) (ros::ros-warn "[~A] ~A" (send self :name) (apply #'format nil msg)))
+  (:ros-error (&rest msg) (ros::ros-error "[~A] ~A" (send self :name) (apply #'format nil msg)))
+  (:ros-fatal (&rest msg) (ros::ros-fatal "[~A] ~A" (send self :name) (apply #'format nil msg)))
   (:start ()
     (error "Not implemented"))
   (:stop ()

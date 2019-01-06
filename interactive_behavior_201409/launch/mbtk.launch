@@ -1,0 +1,65 @@
+<launch>
+  <arg name="use_mock" default="true"/>
+  <arg name="use_visualizer" default="true"/>
+
+  <arg name="machine" default="external"/>
+  <arg name="mock_file" default=""/>
+
+  <arg name="ROBOT" default="$(optenv ROBOT pr2)"/>
+  <include file="$(find interactive_behavior_201409)/config/$(arg ROBOT).machine"/>
+
+
+  <!-- lifelog -->
+  <group ns="ssd">
+    <node name="position_estimator"
+          pkg="mbtk" type="position_estimator.py"
+          output="screen" machine="$(arg machine)"
+          unless="$(arg use_mock)">
+      <rosparam subst_value="true">
+        database: jsk_robot_lifelog
+        collection: localized_objects
+        max_cluster_num: 5
+      </rosparam>
+    </node>
+    <node name="position_estimator"
+          pkg="mbtk" type="mock_position_estimator.py"
+          output="screen" machine="$(arg machine)"
+          if="$(arg use_mock)">
+      <rosparam subst_value="true">
+        mock_file: '$(arg mock_file)'
+        max_cluster_num: 3
+      </rosparam>
+    </node>
+
+    <node name="pose_distribution_visualizer"
+          pkg="mbtk" type="pose_distribution_visualizer.py"
+          output="screen" machine="$(arg machine)"
+          if="$(arg use_visualizer)">
+      <remap from="~input" to="position_estimator/output"/>
+      <rosparam subst_value="true">
+        min_z: 30.0
+        max_z: 32.0
+        publish_rate: 1.0
+        latch: true
+        remove_outliers: true
+        outliers_threshold: 0.01
+        precision: 0.1
+      </rosparam>
+    </node>
+
+    <node name="pose_score_vis"
+          pkg="mbtk" type="pose_score_visualizer.py"
+          output="screen" machine="$(arg machine)"
+          if="$(arg use_visualizer)">
+      <remap from="~input/class" to="ssd_object_detector/output/class"/>
+      <remap from="~input/pose" to="rect_centroid/output"/>
+      <rosparam>
+        approximate_sync: false
+        queue_size: 100
+        slop: 0.1
+        target_blacklists: [donut, dog, keyboard, car]
+      </rosparam>
+    </node>
+  </group>
+
+</launch>

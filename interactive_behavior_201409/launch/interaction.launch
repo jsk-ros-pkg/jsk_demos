@@ -1,6 +1,7 @@
 <launch>
   <arg name="use_throttle" default="false" />
   <arg name="use_idle_behavior" default="true"/>
+  <arg name="use_face_pose" default="false"/>
   <arg name="use_base" default="false"/>
   <arg name="use_hark" default="false"/>
   <arg name="respawn" default="true" />
@@ -27,7 +28,7 @@
           output="screen" respawn="$(arg respawn)"
           machine="$(arg machine)" clear_params="true">
       <remap from="~input" to="$(arg input_image)" />
-      <remap from="~input/info" to="$(arg input_camera_info)" />
+      <remap from="~input/info" to="$(arg input_camera_info)"/>
       <remap from="~input/depth" to="$(arg input_depth)" />
       <rosparam subst_value="true">
         gpu: $(arg gpu)
@@ -57,7 +58,8 @@
 
     <node name="face_pose_estimation"
           pkg="jsk_perception" type="face_pose_estimation.py"
-          output="screen" machine="$(arg machine)" respawn="$(arg respawn)">
+          output="screen" machine="$(arg machine)" respawn="$(arg respawn)"
+          if="$(arg use_face_pose)">
       <remap from="~input" to="$(arg input_image)"/>
       <remap from="~input/pose_2d" to="people_pose_estimation/pose_2d" />
       <remap from="~input/pose" to="people_pose_estimation/pose" />
@@ -69,7 +71,8 @@
 
     <node name="rect_array_to_face_array"
           pkg="interactive_behavior_201409" type="rect_array_to_face_array.py"
-          output="screen" machine="$(arg machine)" respawn="$(arg respawn)">
+          output="screen" machine="$(arg machine)" respawn="$(arg respawn)"
+          if="$(arg use_face_pose)">
       <remap from="~input" to="face_pose_estimation/output/rects" />
     </node>
 
@@ -97,7 +100,7 @@
         #   - from: image
         #     to: apply_mask/output
         - name: face_recognition
-          type: opencv_apps/face_recognition
+          type: face_recognition/face_recognition
           remappings:
           - from: image
             to: $(arg input_image)
@@ -179,9 +182,9 @@
     <node name="people_attention_tracker"
           pkg="interactive_behavior_201409" type="people_attention_tracker2.py"
           output="screen" machine="$(arg machine)">
-      <remap from="~input/people_pose" to="people_pose_estimation/pose"/>
-      <remap from="~input/face_pose" to="face_pose_estimation/output/pose" />
-      <remap from="~input/face" to="face_recognition/output" />
+      <remap from="~input/people_pose" to="people_pose_estimation/pose" unless="$(arg use_face_pose)"/>
+      <remap from="~input/face_pose" to="face_pose_estimation/output/pose" if="$(arg use_face_pose)"/>
+      <remap from="~input/face" to="face_recognition/output" if="$(arg use_face_pose)" />
       <remap from="~output" to="attention" />
       <rosparam>
         enable_face: false
