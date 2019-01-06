@@ -119,38 +119,60 @@
   (ros::ros-info "(find-object ~A ~A)" obj spot)
   ;; just look at dishwasher
   (cond
-    ((eq spot 'dishwasher)
-     (let ((dishwasher-knob (cdr (assoc :dishwasher-knob userdata))))
-       (cond
-         (dishwasher-knob
-          (send *pr2* :head :look-at
-                (send (send (send *pr2* :copy-worldcoords)
-                            :transformation (send dishwasher-knob :copy-worldcoords))
-                      :worldpos)))
-         (t
-          (send *pr2* :head :neck-p :joint-angle 60)
-          (send *pr2* :head :neck-y :joint-angle -60)))
-       (send *ri* :angle-vector (send *pr2* :angle-vector) 1000 :head-controller)
-       (send *ri* :wait-interpolation)
-       (send *pr2* :angle-vector (send *ri* :state :potentio-vector))))
-    (t
-     ;; lookup label
-     (let ((*tabletop-bbox-topic* "/tabletop/euclidean_clustering_decomposer/boxes")
-           (*preferable-object-pose* (make-coords :pos (float-vector 700 0 750)))
-           (object-label (get-object-label obj)))
-       (when object-label
-         (setq *tabletop-bbox-topic* "/ssd/bounding_box_pose/output/boxes")
-         (set-alist :target-object-label object-label userdata))
-       (unless object-label
-         ;; soft grasp for unlabeled objects
-         (set-alist :target-effort 0.007 userdata))
-       (case spot
-         ('fridge
-          (grasp-can-init)
-          (setq *tabletop-bbox-topic* "/detect_cans/bounding_box_pose/output/boxes")
-          (setq *preferable-object-pose* (make-coords :pos (float-vector 700 150 950))))
-         (t t))
-       (find-tabletop-object userdata)))))
+   ((eq spot 'dishwasher)
+    (let ((dishwasher-knob (cdr (assoc :dishwasher-knob userdata))))
+      (cond
+       (dishwasher-knob
+        (send *pr2* :head :look-at
+              (send (send (send *pr2* :copy-worldcoords)
+                          :transformation (send dishwasher-knob :copy-worldcoords))
+                    :worldpos)))
+       (t
+        (send *pr2* :head :neck-p :joint-angle 60)
+        (send *pr2* :head :neck-y :joint-angle -60)))
+      (send *ri* :angle-vector (send *pr2* :angle-vector) 1000 :head-controller)
+      (send *ri* :wait-interpolation)
+      (send *pr2* :angle-vector (send *ri* :state :potentio-vector))))
+   (t
+    ;; lookup label
+    (let ((*tabletop-bbox-topic* "/tabletop/euclidean_clustering_decomposer/boxes")
+          (*preferable-object-pose* (make-coords :pos (float-vector 700 0 750)))
+          (*object-label-names* (if (eq spot 'shelf) *73b2-object-label-names* *object-label-names*))
+          (object-label (get-object-label obj)))
+      (when object-label
+        (setq *tabletop-bbox-topic* "/ssd/bounding_box_pose/output/boxes")
+        (set-alist :target-object-label object-label userdata))
+      (if object-label
+          (progn
+            (ros::ros-warn "use soft grasp for unlabeled objects")
+            (set-alist :target-effort 0.007 userdata))
+        (del-alist :target-effort userdata))
+      (case spot
+        ('fridge
+         (cond
+          ((string= "/eng8" (send (get-current-scene) :name))
+           (setq *tabletop-bbox-topic* "/detect_cans/label_bbox_array/output")
+           (setq *preferable-object-pose* (make-coords :pos (float-vector 1000 -100 1100)))
+           (set-alist :target-object-label 7 userdata) ;; milktea
+           ;;(set-alist :target-object-label 33 userdata)  ;; milktea
+           )
+          (t ;; eng2
+           (grasp-can-init)
+           (setq *tabletop-bbox-topic* "/detect_cans/bounding_box_pose/output/boxes")
+           (setq *preferable-object-pose* (make-coords :pos (float-vector 700 150 950))))))
+        ('shelf
+         (send *pr2* :torso :waist-z :joint-angle 50)
+         (send *ri* :angle-vector (send *pr2* :angle-vector))
+         (send *ri* :wait-interpolation)
+         (setq *tabletop-bbox-topic* "/detect_cans/label_bbox_array/output")
+         (setq *preferable-object-pose* (make-coords :pos (float-vector 400 100 600)))
+         (set-alist :target-object-label 16 userdata)) ;; serial
+        ('kitchen
+         (setq *tabletop-bbox-topic* "/detect_cans/label_bbox_array/output")
+         (setq *preferable-object-pose* (make-coords :pos (float-vector 500 0 720)))
+         (set-alist :target-object-label 0 userdata)) ;; dish
+        (t t))
+      (find-tabletop-object userdata)))))
 
 (defaction pick (obj arm spot &optional userdata)
   (ros::ros-info "(pick ~A ~A ~A)" obj arm spot)
