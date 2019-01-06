@@ -49,7 +49,8 @@
   (send *ri* :change-inflation-range 0.25)
   ;;
   ;; check if need to tuck arm
-  (let (larm rarm arms)
+  (let ((big-objs '(bowl serial))
+        larm rarm arms)
     (dolist (st (remove-if-not #'(lambda (x) (eq (car x) 'onhand))
                                (cdr (assoc :current-state userdata))))
       (case (caddr st)
@@ -67,7 +68,7 @@
     (cond
       (arms t)
       ;; ((and larm rarm) t)
-      ((and larm (eq 'bowl larm))
+      ((and larm (memq larm big-objs))
        (send *ri* :go-pos-unsafe -0.1 0 0)
        (untuck-bowl-larm)
        (send *pr2* :angle-vector (send *ri* :state :potentio-vector))
@@ -75,7 +76,7 @@
        (send *ri* :angle-vector (send *pr2* :angle-vector) 4000)
        (send *ri* :wait-interpolation)
        (pr2-tuckarm-pose-for-bowl :larm :outside))
-      ((and rarm (eq 'bowl rarm))
+      ((and rarm (memq rarm big-objs))
        (send *ri* :go-pos-unsafe -0.1 0 0)
        (send *pr2* :angle-vector (send *ri* :state :potentio-vector))
        (send *pr2* :rarm :angle-vector (get-side-pose :rarm))
