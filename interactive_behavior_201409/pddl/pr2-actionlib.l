@@ -143,10 +143,10 @@
         (setq *tabletop-bbox-topic* "/ssd/bounding_box_pose/output/boxes")
         (set-alist :target-object-label object-label userdata))
       (if object-label
-          (progn
-            (ros::ros-warn "use soft grasp for unlabeled objects")
-            (set-alist :target-effort 0.007 userdata))
-        (del-alist :target-effort userdata))
+          (del-alist :target-effort userdata)
+        (progn
+          (ros::ros-warn "use soft grasp for unlabeled objects")
+          (set-alist :target-effort 0.01 userdata)))
       (case spot
         ('fridge
          (cond
