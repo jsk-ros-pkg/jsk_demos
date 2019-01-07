@@ -151,7 +151,7 @@
        :pos ,(float-vector 6200 -12200 0)
        :name "/eng8/6f/room610-microwave-front")
      `(:rpy ,(float-vector -pi/2 0 0)
-       :pos ,(float-vector 2750 -15000 0)
+       :pos ,(float-vector 2750 -14900 0)
        :name "/eng8/6f/room610-counter-front")
      `(:rpy ,(float-vector -pi/2 0 0)
        :pos ,(float-vector 3850 -15000 0)
