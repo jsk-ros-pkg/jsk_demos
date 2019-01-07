@@ -70,7 +70,7 @@
       ;; ((and larm rarm) t)
       ((and larm (memq larm big-objs))
        (send *ri* :go-pos-unsafe -0.1 0 0)
-       (untuck-bowl-larm)
+       ;;(untuck-bowl-larm)
        (send *pr2* :angle-vector (send *ri* :state :potentio-vector))
        (send *pr2* :larm :angle-vector (get-side-pose :larm))
        (send *ri* :angle-vector (send *pr2* :angle-vector) 4000)
@@ -226,10 +226,14 @@
     (case spot
       ('table
        (case obj
-         ((bottle cup)
+         ((bottle cup milk coffee)
           (case arm
             ('larm (setq offset (float-vector -100 200 0)))
             ('rarm (setq offset (float-vector -100 -200 0)))))
+         ((serial yakisoba)
+          (case arm
+            ('larm (setq offset (float-vector -100 -100 0)))
+            ('rarm (setq offset (float-vector -100 100 0)))))
          (t t)))
       (t t))
     (when offset
