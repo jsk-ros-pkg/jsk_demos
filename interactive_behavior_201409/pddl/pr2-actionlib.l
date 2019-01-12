@@ -94,6 +94,9 @@
        (pr2-tuckarm-pose)))
     ;;
     ;; (send *ri* :clear-costmap)
+    (case from-place
+      ('shelf
+       (send *ri* :go-pos-unsafe 0 0 -90)))
     (case to-place
       ('kitchen (go-to-sink userdata)) ;; coe
       ('dishwasher
