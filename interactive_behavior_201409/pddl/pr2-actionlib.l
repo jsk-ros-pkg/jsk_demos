@@ -147,6 +147,9 @@
         (progn
           (ros::ros-warn "use soft grasp for unlabeled objects")
           (set-alist :target-effort 0.01 userdata)))
+      (case obj
+        ((cup bottle)
+         (set-alist :pick-axis :side userdata)))
       (case spot
         ('fridge
          (cond
