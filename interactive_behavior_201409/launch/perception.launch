@@ -1,6 +1,7 @@
 <launch>
   <arg name="use_tabletop" default="true"/>
   <arg name="use_ssd" default="true"/>
+  <arg name="use_ssd_jsk" default="true"/>
   <arg name="use_fridge" default="true"/>
   <arg name="use_visualizer" default="true"/>
   <arg name="use_mock" default="true"/>
@@ -34,6 +35,13 @@
     <arg name="model" value="$(arg model)"/>
     <arg name="model_path" value="$(arg model_path)"/>
     <arg name="label_names" value="$(arg label_names)"/>
+  </include>
+
+  <include file="$(find jsk_2017_12_pr2_coe)/launch/ssd_jsk.launch"
+           if="$(arg use_ssd_jsk)">
+    <arg name="ROBOT" value="$(arg ROBOT)"/>
+    <arg name="machine" value="$(arg machine)"/>
+    <arg name="camera" value="$(arg camera)"/>
   </include>
 
   <!-- fridge object detector -->
