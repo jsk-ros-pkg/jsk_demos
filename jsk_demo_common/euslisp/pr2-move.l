@@ -6,16 +6,17 @@
 (defvar *scene*)
 
 (warn ";; get-scene ")
-(defun get-current-scene (&key (map-frame))
+(defun get-current-scene (&key (map-frame) (renew))
+  (if renew (setq *scene* nil))
   (unless (and (boundp '*scene*)
                (derivedp *scene* building-model))
     (let ((frames (send *tfl* :get-frame-strings)))
       (cond
         ((find "eng2" frames :test #'string=)
-         (require :eng2-scene "package://jsk_maps/src/eng2-scene.l")
+         (load "package://jsk_maps/src/eng2-scene.l")
          (setq *scene* (make-eng2-scene)))
         ((find "eng8" frames :test #'string=)
-         (require :eng8-scene "package://jsk_maps/src/eng8-scene.l")
+         (load "package://jsk_maps/src/eng8-scene.l")
          (setq *scene* (make-eng8-scene)))
         (t
          (error "unknown map frame")))))

@@ -217,7 +217,7 @@
   (let ((problem (instance pddl-problem :init
                            :name 'house-keeping
                            :domain 'room-domain))
-        (spots '(START TABLE FRIDGE DISHWASHER DRAWER SINK KITCHEN COUNTER BOOKSHELF ROOM73A1))
+        (spots '(START TABLE FRIDGE DISHWASHER DRAWER SINK KITCHEN COUNTER SHELF))
         objs)
     ;; copy symbols to avoid circular reference
     (setq init (copy-object init)
@@ -245,14 +245,20 @@
     ;; default conds
     (setq init (nconc init '((OPENABLE RARM DISHWASHER)
                              (OPENABLE RARM FRIDGE)
+                             (OPENABLE RARM KITCHEN)
+                             (OPENABLE RARM SHELF)
+                             (OPENABLE RARM DRAWER)
+                             (OPENABLE LARM KITCHEN)
+                             (OPENABLE LARM SHELF)
+                             (OPENABLE LARM DRAWER)
                              ;; (OPENABLE LARM FRIDGE)
-                             (OPENABLE RARM ROOM73A1)
                              (AVAILABLE SINK)
                              (AVAILABLE COUNTER)
-                             (AVAILABLE KITCHEN)
+                             ;; (AVAILABLE KITCHEN)
                              (AVAILABLE TABLE)
-                             (AVAILABLE BOOKSHELF)
-                             (AVAILABLE DRAWER))))
+                             ;; (AVAILABLE SHELF)
+                             ;; (AVAILABLE DRAWER)
+                             )))
 
     (setq goal (nconc goal '((FORALL (?AT - spot)
                               (NOT (OPEN ?AT))))))

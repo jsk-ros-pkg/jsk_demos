@@ -1,0 +1,76 @@
+digraph {
+	compound=true;outputmode=nodesfirst;labeljust=l;nodesep=0.5;minlen=2;mclimit=5;clusterrank=local;ranksep=0.75;ordering="";
+subgraph "cluster_/SM_ROOT" {
+"color"="#00000000";
+"fillcolor"="#0000000F";
+"/SM_ROOT/__proxy__"  ["fontweight"="18", "URL"="/SM_ROOT", "rank"="min", "height"="0.01", "color"="gray", "shape"="plaintext", "fontsize"="18", "label"="SM_ROOT"];
+subgraph "cluster_/SM_ROOT/__outcomes__" {
+"color"="#FFFFFFFF";
+"style"="rounded,filled";
+"fillcolor"="#FFFFFF00";
+"rank"="sink";
+"/SM_ROOT:goal3"  ["URL"="/SM_ROOT:goal3", "shape"="box", "fontsize"="12", "fillcolor"="#FE464f", "color"="#780006", "fontcolor"="#780006", "label"="goal3", "style"="filled,rounded", "height"="0.3"];
+"/SM_ROOT:goal2"  ["URL"="/SM_ROOT:goal2", "shape"="box", "fontsize"="12", "fillcolor"="#FE464f", "color"="#780006", "fontcolor"="#780006", "label"="goal2", "style"="filled,rounded", "height"="0.3"];
+"/SM_ROOT:goal1"  ["URL"="/SM_ROOT:goal1", "shape"="box", "fontsize"="12", "fillcolor"="#FE464f", "color"="#780006", "fontcolor"="#780006", "label"="goal1", "style"="filled,rounded", "height"="0.3"];
+"/SM_ROOT:goal0"  ["URL"="/SM_ROOT:goal0", "shape"="box", "fontsize"="12", "fillcolor"="#FE464f", "color"="#780006", "fontcolor"="#780006", "label"="goal0", "style"="filled,rounded", "height"="0.3"];
+}
+"/SM_ROOT/(move-to start table)"  ["color"="#000000FF", "URL"="/SM_ROOT/(move-to start table)", "style"="filled,setlinewidth(2)", "fillcolor"="#FFFFFF00", "label"="(move-to start table)"];
+"/SM_ROOT/(move-to table shelf)"  ["color"="#000000FF", "URL"="/SM_ROOT/(move-to table shelf)", "style"="filled,setlinewidth(2)", "fillcolor"="#FFFFFF00", "label"="(move-to table shelf)"];
+"/SM_ROOT/(open-door larm shelf)"  ["color"="#000000FF", "URL"="/SM_ROOT/(open-door larm shelf)", "style"="filled,setlinewidth(2)", "fillcolor"="#FFFFFF00", "label"="(open-door larm shelf)"];
+"/SM_ROOT/(find-object serial shelf)"  ["color"="#000000FF", "URL"="/SM_ROOT/(find-object serial shelf)", "style"="filled,setlinewidth(2)", "fillcolor"="#FFFFFF00", "label"="(find-object serial shelf)"];
+"/SM_ROOT/(pick serial larm shelf)"  ["color"="#000000FF", "URL"="/SM_ROOT/(pick serial larm shelf)", "style"="filled,setlinewidth(2)", "fillcolor"="#FFFFFF00", "label"="(pick serial larm shelf)"];
+"/SM_ROOT/(close-door rarm shelf)"  ["color"="#000000FF", "URL"="/SM_ROOT/(close-door rarm shelf)", "style"="filled,setlinewidth(2)", "fillcolor"="#FFFFFF00", "label"="(close-door rarm shelf)"];
+"/SM_ROOT/(move-to shelf table)"  ["color"="#000000FF", "URL"="/SM_ROOT/(move-to shelf table)", "style"="filled,setlinewidth(2)", "fillcolor"="#FFFFFF00", "label"="(move-to shelf table)"];
+"/SM_ROOT/(find-placement serial larm table)"  ["color"="#000000FF", "URL"="/SM_ROOT/(find-placement serial larm table)", "style"="filled,setlinewidth(2)", "fillcolor"="#FFFFFF00", "label"="(find-placement serial larm table)"];
+"/SM_ROOT/(place serial larm table)"  ["color"="#000000FF", "URL"="/SM_ROOT/(place serial larm table)", "style"="filled,setlinewidth(2)", "fillcolor"="#FFFFFF00", "label"="(place serial larm table)"];
+"/SM_ROOT/(move-to table fridge)"  ["color"="#000000FF", "URL"="/SM_ROOT/(move-to table fridge)", "style"="filled,setlinewidth(2)", "fillcolor"="#FFFFFF00", "label"="(move-to table fridge)"];
+"/SM_ROOT/(open-door rarm fridge)"  ["color"="#000000FF", "URL"="/SM_ROOT/(open-door rarm fridge)", "style"="filled,setlinewidth(2)", "fillcolor"="#FFFFFF00", "label"="(open-door rarm fridge)"];
+"/SM_ROOT/(find-object milk fridge)"  ["color"="#000000FF", "URL"="/SM_ROOT/(find-object milk fridge)", "style"="filled,setlinewidth(2)", "fillcolor"="#FFFFFF00", "label"="(find-object milk fridge)"];
+"/SM_ROOT/(pick milk larm fridge)"  ["color"="#000000FF", "URL"="/SM_ROOT/(pick milk larm fridge)", "style"="filled,setlinewidth(2)", "fillcolor"="#FFFFFF00", "label"="(pick milk larm fridge)"];
+"/SM_ROOT/(close-door rarm fridge)"  ["color"="#000000FF", "URL"="/SM_ROOT/(close-door rarm fridge)", "style"="filled,setlinewidth(2)", "fillcolor"="#FFFFFF00", "label"="(close-door rarm fridge)"];
+"/SM_ROOT/(move-to fridge table)"  ["color"="#000000FF", "URL"="/SM_ROOT/(move-to fridge table)", "style"="filled,setlinewidth(2)", "fillcolor"="#FFFFFF00", "label"="(move-to fridge table)"];
+"/SM_ROOT/(find-placement milk larm table)"  ["color"="#000000FF", "URL"="/SM_ROOT/(find-placement milk larm table)", "style"="filled,setlinewidth(2)", "fillcolor"="#FFFFFF00", "label"="(find-placement milk larm table)"];
+"/SM_ROOT/(place milk larm table)"  ["color"="#000000FF", "URL"="/SM_ROOT/(place milk larm table)", "style"="filled,setlinewidth(2)", "fillcolor"="#FFFFFF00", "label"="(place milk larm table)"];
+"/SM_ROOT/(move-to table kitchen)"  ["color"="#000000FF", "URL"="/SM_ROOT/(move-to table kitchen)", "style"="filled,setlinewidth(2)", "fillcolor"="#FFFFFF00", "label"="(move-to table kitchen)"];
+"/SM_ROOT/(open-door larm kitchen)"  ["color"="#000000FF", "URL"="/SM_ROOT/(open-door larm kitchen)", "style"="filled,setlinewidth(2)", "fillcolor"="#FFFFFF00", "label"="(open-door larm kitchen)"];
+"/SM_ROOT/(find-object bowl kitchen)"  ["color"="#000000FF", "URL"="/SM_ROOT/(find-object bowl kitchen)", "style"="filled,setlinewidth(2)", "fillcolor"="#FFFFFF00", "label"="(find-object bowl kitchen)"];
+"/SM_ROOT/(pick bowl larm kitchen)"  ["color"="#000000FF", "URL"="/SM_ROOT/(pick bowl larm kitchen)", "style"="filled,setlinewidth(2)", "fillcolor"="#FFFFFF00", "label"="(pick bowl larm kitchen)"];
+"/SM_ROOT/(close-door rarm kitchen)"  ["color"="#000000FF", "URL"="/SM_ROOT/(close-door rarm kitchen)", "style"="filled,setlinewidth(2)", "fillcolor"="#FFFFFF00", "label"="(close-door rarm kitchen)"];
+"/SM_ROOT/(move-to kitchen table)"  ["color"="#000000FF", "URL"="/SM_ROOT/(move-to kitchen table)", "style"="filled,setlinewidth(2)", "fillcolor"="#FFFFFF00", "label"="(move-to kitchen table)"];
+"/SM_ROOT/(find-placement bowl larm table)"  ["color"="#000000FF", "URL"="/SM_ROOT/(find-placement bowl larm table)", "style"="filled,setlinewidth(2)", "fillcolor"="#FFFFFF00", "label"="(find-placement bowl larm table)"];
+"/SM_ROOT/(place bowl larm table)"  ["color"="#000000FF", "URL"="/SM_ROOT/(place bowl larm table)", "style"="filled,setlinewidth(2)", "fillcolor"="#FFFFFF00", "label"="(place bowl larm table)"];
+"/SM_ROOT/(place bowl larm table)" -> "/SM_ROOT:goal3"  ["URL"="/SM_ROOT/(place bowl larm table):SUCCESS:/SM_ROOT/goal3", "color"="#00000055", "style"="setlinewidth(2)", "fontsize"="12", "label"="SUCCESS"];
+"/SM_ROOT/(find-placement bowl larm table)" -> "/SM_ROOT/(place bowl larm table)"  ["URL"="/SM_ROOT/(find-placement bowl larm table):SUCCESS:/SM_ROOT/(place bowl larm table)", "style"="setlinewidth(2)", "fontsize"="12", "label"="SUCCESS"];
+"/SM_ROOT/(move-to kitchen table)" -> "/SM_ROOT/(find-placement bowl larm table)"  ["URL"="/SM_ROOT/(move-to kitchen table):SUCCESS:/SM_ROOT/(find-placement bowl larm table)", "style"="setlinewidth(2)", "fontsize"="12", "label"="SUCCESS"];
+"/SM_ROOT/(close-door rarm kitchen)" -> "/SM_ROOT/(move-to kitchen table)"  ["URL"="/SM_ROOT/(close-door rarm kitchen):SUCCESS:/SM_ROOT/(move-to kitchen table)", "style"="setlinewidth(2)", "fontsize"="12", "label"="SUCCESS"];
+"/SM_ROOT/(pick bowl larm kitchen)" -> "/SM_ROOT/(close-door rarm kitchen)"  ["URL"="/SM_ROOT/(pick bowl larm kitchen):SUCCESS:/SM_ROOT/(close-door rarm kitchen)", "style"="setlinewidth(2)", "fontsize"="12", "label"="SUCCESS"];
+"/SM_ROOT/(pick bowl larm kitchen)" -> "/SM_ROOT/(find-object bowl kitchen)"  ["URL"="/SM_ROOT/(pick bowl larm kitchen):FAIL:/SM_ROOT/(find-object bowl kitchen)", "style"="setlinewidth(2)", "fontsize"="12", "label"="FAIL"];
+"/SM_ROOT/(find-object bowl kitchen)" -> "/SM_ROOT/(pick bowl larm kitchen)"  ["URL"="/SM_ROOT/(find-object bowl kitchen):SUCCESS:/SM_ROOT/(pick bowl larm kitchen)", "style"="setlinewidth(2)", "fontsize"="12", "label"="SUCCESS"];
+"/SM_ROOT/(find-object bowl kitchen)" -> "/SM_ROOT:goal0"  ["URL"="/SM_ROOT/(find-object bowl kitchen):FAIL:/SM_ROOT/goal0", "color"="#00000055", "style"="setlinewidth(2)", "fontsize"="12", "label"="FAIL"];
+"/SM_ROOT/(open-door larm kitchen)" -> "/SM_ROOT/(find-object bowl kitchen)"  ["URL"="/SM_ROOT/(open-door larm kitchen):SUCCESS:/SM_ROOT/(find-object bowl kitchen)", "style"="setlinewidth(2)", "fontsize"="12", "label"="SUCCESS"];
+"/SM_ROOT/(move-to table kitchen)" -> "/SM_ROOT/(open-door larm kitchen)"  ["URL"="/SM_ROOT/(move-to table kitchen):SUCCESS:/SM_ROOT/(open-door larm kitchen)", "style"="setlinewidth(2)", "fontsize"="12", "label"="SUCCESS"];
+"/SM_ROOT/(place milk larm table)" -> "/SM_ROOT/(move-to table kitchen)"  ["URL"="/SM_ROOT/(place milk larm table):SUCCESS:/SM_ROOT/(move-to table kitchen)", "style"="setlinewidth(2)", "fontsize"="12", "label"="SUCCESS"];
+"/SM_ROOT/(find-placement milk larm table)" -> "/SM_ROOT/(place milk larm table)"  ["URL"="/SM_ROOT/(find-placement milk larm table):SUCCESS:/SM_ROOT/(place milk larm table)", "style"="setlinewidth(2)", "fontsize"="12", "label"="SUCCESS"];
+"/SM_ROOT/(move-to fridge table)" -> "/SM_ROOT/(find-placement milk larm table)"  ["URL"="/SM_ROOT/(move-to fridge table):SUCCESS:/SM_ROOT/(find-placement milk larm table)", "style"="setlinewidth(2)", "fontsize"="12", "label"="SUCCESS"];
+"/SM_ROOT/(close-door rarm fridge)" -> "/SM_ROOT/(move-to fridge table)"  ["URL"="/SM_ROOT/(close-door rarm fridge):SUCCESS:/SM_ROOT/(move-to fridge table)", "style"="setlinewidth(2)", "fontsize"="12", "label"="SUCCESS"];
+"/SM_ROOT/(pick milk larm fridge)" -> "/SM_ROOT/(close-door rarm fridge)"  ["URL"="/SM_ROOT/(pick milk larm fridge):SUCCESS:/SM_ROOT/(close-door rarm fridge)", "style"="setlinewidth(2)", "fontsize"="12", "label"="SUCCESS"];
+"/SM_ROOT/(pick milk larm fridge)" -> "/SM_ROOT/(find-object milk fridge)"  ["URL"="/SM_ROOT/(pick milk larm fridge):FAIL:/SM_ROOT/(find-object milk fridge)", "style"="setlinewidth(2)", "fontsize"="12", "label"="FAIL"];
+"/SM_ROOT/(find-object milk fridge)" -> "/SM_ROOT/(pick milk larm fridge)"  ["URL"="/SM_ROOT/(find-object milk fridge):SUCCESS:/SM_ROOT/(pick milk larm fridge)", "style"="setlinewidth(2)", "fontsize"="12", "label"="SUCCESS"];
+"/SM_ROOT/(find-object milk fridge)" -> "/SM_ROOT:goal1"  ["URL"="/SM_ROOT/(find-object milk fridge):FAIL:/SM_ROOT/goal1", "color"="#00000055", "style"="setlinewidth(2)", "fontsize"="12", "label"="FAIL"];
+"/SM_ROOT/(open-door rarm fridge)" -> "/SM_ROOT/(find-object milk fridge)"  ["URL"="/SM_ROOT/(open-door rarm fridge):SUCCESS:/SM_ROOT/(find-object milk fridge)", "style"="setlinewidth(2)", "fontsize"="12", "label"="SUCCESS"];
+"/SM_ROOT/(move-to table fridge)" -> "/SM_ROOT/(open-door rarm fridge)"  ["URL"="/SM_ROOT/(move-to table fridge):SUCCESS:/SM_ROOT/(open-door rarm fridge)", "style"="setlinewidth(2)", "fontsize"="12", "label"="SUCCESS"];
+"/SM_ROOT/(place serial larm table)" -> "/SM_ROOT/(move-to table fridge)"  ["URL"="/SM_ROOT/(place serial larm table):SUCCESS:/SM_ROOT/(move-to table fridge)", "style"="setlinewidth(2)", "fontsize"="12", "label"="SUCCESS"];
+"/SM_ROOT/(find-placement serial larm table)" -> "/SM_ROOT/(place serial larm table)"  ["URL"="/SM_ROOT/(find-placement serial larm table):SUCCESS:/SM_ROOT/(place serial larm table)", "style"="setlinewidth(2)", "fontsize"="12", "label"="SUCCESS"];
+"/SM_ROOT/(move-to shelf table)" -> "/SM_ROOT/(find-placement serial larm table)"  ["URL"="/SM_ROOT/(move-to shelf table):SUCCESS:/SM_ROOT/(find-placement serial larm table)", "style"="setlinewidth(2)", "fontsize"="12", "label"="SUCCESS"];
+"/SM_ROOT/(close-door rarm shelf)" -> "/SM_ROOT/(move-to shelf table)"  ["URL"="/SM_ROOT/(close-door rarm shelf):SUCCESS:/SM_ROOT/(move-to shelf table)", "style"="setlinewidth(2)", "fontsize"="12", "label"="SUCCESS"];
+"/SM_ROOT/(pick serial larm shelf)" -> "/SM_ROOT/(close-door rarm shelf)"  ["URL"="/SM_ROOT/(pick serial larm shelf):SUCCESS:/SM_ROOT/(close-door rarm shelf)", "style"="setlinewidth(2)", "fontsize"="12", "label"="SUCCESS"];
+"/SM_ROOT/(pick serial larm shelf)" -> "/SM_ROOT/(find-object serial shelf)"  ["URL"="/SM_ROOT/(pick serial larm shelf):FAIL:/SM_ROOT/(find-object serial shelf)", "style"="setlinewidth(2)", "fontsize"="12", "label"="FAIL"];
+"/SM_ROOT/(find-object serial shelf)" -> "/SM_ROOT/(pick serial larm shelf)"  ["URL"="/SM_ROOT/(find-object serial shelf):SUCCESS:/SM_ROOT/(pick serial larm shelf)", "style"="setlinewidth(2)", "fontsize"="12", "label"="SUCCESS"];
+"/SM_ROOT/(find-object serial shelf)" -> "/SM_ROOT:goal2"  ["URL"="/SM_ROOT/(find-object serial shelf):FAIL:/SM_ROOT/goal2", "color"="#00000055", "style"="setlinewidth(2)", "fontsize"="12", "label"="FAIL"];
+"/SM_ROOT/(open-door larm shelf)" -> "/SM_ROOT/(find-object serial shelf)"  ["URL"="/SM_ROOT/(open-door larm shelf):SUCCESS:/SM_ROOT/(find-object serial shelf)", "style"="setlinewidth(2)", "fontsize"="12", "label"="SUCCESS"];
+"/SM_ROOT/(move-to table shelf)" -> "/SM_ROOT/(open-door larm shelf)"  ["URL"="/SM_ROOT/(move-to table shelf):SUCCESS:/SM_ROOT/(open-door larm shelf)", "style"="setlinewidth(2)", "fontsize"="12", "label"="SUCCESS"];
+"/SM_ROOT/(move-to start table)" -> "/SM_ROOT/(move-to table shelf)"  ["URL"="/SM_ROOT/(move-to start table):SUCCESS:/SM_ROOT/(move-to table shelf)", "style"="setlinewidth(2)", "fontsize"="12", "label"="SUCCESS"];
+"/SM_ROOT/__proxy__" -> "/SM_ROOT/(move-to start fridge)"  ["URL"="/SM_ROOT/__proxy__::/SM_ROOT/(move-to start fridge)", "style"="setlinewidth(2)", "fontsize"="12", "label"=""];
+}
+"__empty__" [label="Path not available.", shape="plaintext"]
+}
