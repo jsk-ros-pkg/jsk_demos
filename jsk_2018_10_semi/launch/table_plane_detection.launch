@@ -1,7 +1,6 @@
 <!-- -*- mode: xml -*- -->
 <launch>
-  <include file="$(find jsk_2018_10_semi)/launch/remote_camera_fetch.launch"/>
-  <arg name="INPUT" default="/camera_remote/depth_registered_quater/points"/>
+  <arg name="INPUT" default="/camera_remote/depth_registered/points"/>
   <arg name="DEFAULT_NAMESPACE" default="delivery_box_pickup/table_plane_datection"/>
   <arg name="FILTER_NAME_SUFFIX" default=""/>
   <arg name="OUTPUT" default="hsi_output$(arg FILTER_NAME_SUFFIX)"/>
@@ -45,13 +44,14 @@
       </rosparam>
     </anode>
 
-    <node pkg="jsk_pcl_ros" type="organized_multi_plane_segmentation" name="multi_plane_estimate">
+  
+    <node pkg="jsk_pcl_ros" type="organized_multi_plane_segmentation" name="multi_plane_estimate" respawn="true"> 
       <remap from="~input" to="/delivery_box_pickup/table_plane_datection/hsi_output"/>
       <!-- <remap from="~input" to="/head_camera/depth_downsample/points"/> -->
       <rosparam>
         estimate_normal: true
-        max_curvature: 0.1
-        min_size: 125
+        max_curvature: 0.2
+        min_size: 2000
         <!--estimation_method: 1
         estimate_normal: true
         normal_smoothing_size: 20.0-->
