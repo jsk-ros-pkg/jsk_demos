@@ -7,6 +7,7 @@
   <arg name="run_behavior" default="false" />
   <arg name="debug_view" default="true" />
   <arg name="visualize" default="false" />
+  <arg name="map_frame" default="eng2"/>
 
   <include file="$(find pr2_machine)/$(env ROBOT).machine" />
 
@@ -28,6 +29,7 @@
     <arg name="roi" value="false" />
     <arg name="machine" value="c2"/>
     <arg name="camera" value="kinect_head"/>
+    <arg name="map_frame" value="$(arg map_frame)"/>
   </include>
 
   <group unless="$(arg execute)" >

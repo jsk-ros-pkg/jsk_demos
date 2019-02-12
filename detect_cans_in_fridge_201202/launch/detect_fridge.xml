@@ -6,7 +6,8 @@
   <arg name="input_camera_info" doc="input camera info topic"/>
 
   <node name="fridge_demo_sift" pkg="imagesift" type="imagesift"
-        launch-prefix="nice -n +10" machine="$(arg machine)">
+        machine="$(arg machine)">
+    <!--         launch-prefix="nice -n +10" -->
     <remap from="image" to="$(arg input_image)" />
     <remap from="camera_info" to="$(arg input_camera_info)"/>
     <remap from="mask" to="attention_clipper/output/mask"/>

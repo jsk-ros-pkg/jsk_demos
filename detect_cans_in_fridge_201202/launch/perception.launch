@@ -3,6 +3,7 @@
   <arg name="roi" default="true" />
   <arg name="camera" default="kinect_head" />
   <arg name="machine" default="c2"/>
+  <arg name="map_frame" default="eng2"/>
 
   <include file="$(find pr2_machine)/$(optenv ROBOT pr2).machine" />
 
@@ -44,15 +45,14 @@
   </group>
 
   <!-- setup fridge handle marker template -->
-  <include file="$(find detect_cans_in_fridge_201202)/launch/detect_fridge.launch">
+  <include file="$(find detect_cans_in_fridge_201202)/launch/detect_fridge_$(arg map_frame).launch">
     <arg name="machine" value="$(arg machine)"/>
-    <arg name="camera" value="$(arg camera)"/>
     <arg name="use_mask" value="$(arg roi)"/>
     <arg name="use_throttle" value="true"/>
   </include>
 
   <!-- detect cans in fridge -->
-  <include file="$(find detect_cans_in_fridge_201202)/launch/color_histogram.launch">
+  <include file="$(find detect_cans_in_fridge_201202)/launch/detect_cans_$(arg map_frame).launch">
     <arg name="machine" value="$(arg machine)"/>
     <arg name="camera" value="$(arg camera)"/>
   </include>
