@@ -94,6 +94,9 @@
        (pr2-tuckarm-pose)))
     ;;
     ;; (send *ri* :clear-costmap)
+    (case from-place
+      ('shelf
+       (send *ri* :go-pos-unsafe 0 0 -90)))
     (case to-place
       ('kitchen (go-to-sink userdata)) ;; coe
       ('dishwasher
@@ -137,7 +140,7 @@
     ;; lookup label
     (let ((*tabletop-bbox-topic* "/tabletop/euclidean_clustering_decomposer/boxes")
           (*preferable-object-pose* (make-coords :pos (float-vector 700 0 750)))
-          (*object-label-names* (if (eq spot 'shelf) *73b2-object-label-names* *object-label-names*))
+          (*object-label-names* *coco-object-label-names*)
           (object-label (get-object-label obj)))
       (when object-label
         (setq *tabletop-bbox-topic* "/ssd/bounding_box_pose/output/boxes")
@@ -167,14 +170,28 @@
          (send *pr2* :torso :waist-z :joint-angle 50)
          (send *ri* :angle-vector (send *pr2* :angle-vector))
          (send *ri* :wait-interpolation)
-         (setq *tabletop-bbox-topic* "/detect_cans/label_bbox_array/output")
-         (setq *preferable-object-pose* (make-coords :pos (float-vector 400 100 600)))
-         (set-alist :target-object-label 16 userdata)) ;; serial
+         (case obj
+           ('serial
+            (setq *object-label-names* *73b2-object-label-names*)
+            (setq *tabletop-bbox-topic* "/detect_cans/label_bbox_array/output")
+            (setq *preferable-object-pose* (make-coords :pos (float-vector 400 100 600)))
+            (set-alist :target-object-label 16 userdata))))
         ('kitchen
          (setq *tabletop-bbox-topic* "/detect_cans/label_bbox_array/output")
          (setq *preferable-object-pose* (make-coords :pos (float-vector 500 0 720)))
          (set-alist :target-object-label 0 userdata)) ;; dish
         (t t))
+      (case obj
+        ((spoon fork)
+         (setq *tabletop-bbox-topic* "/ssd_jsk/pose_to_bbox/output")
+         (send *pr2* :torso :waist-z :joint-angle 50)
+         (send *ri* :angle-vector (send *pr2* :angle-vector))
+         (send *ri* :wait-interpolation)
+         (setq *preferable-object-pose* (make-coords :pos (float-vector 450 0 720)))
+         (set-alist :target-object-label 3 userdata))
+        ((bowl dish)
+         (setq *preferable-object-pose* (make-coords :pos (float-vector 500 -100 720))))
+        )
       (find-tabletop-object userdata)))))
 
 (defaction pick (obj arm spot &optional userdata)
@@ -210,6 +227,8 @@
              (setq res (pick-in-fridge userdata)))
             ((eq obj 'bowl)
              (setq res (pick-bowl userdata)))
+            ((memq obj '(spoon fork))
+             (setq res (pick-spoon userdata)))
             (t
              (setq res (pick-tabletop-object userdata)))))))
       ;; pick if object is in drawer
@@ -231,12 +250,14 @@
        (case obj
          ((bottle cup milk coffee)
           (case arm
-            ('larm (setq offset (float-vector -100 200 0)))
-            ('rarm (setq offset (float-vector -100 -200 0)))))
+            ('larm (setq offset (float-vector -100 210 0)))
+            ('rarm (setq offset (float-vector -100 -210 0)))))
          ((serial yakisoba)
           (case arm
             ('larm (setq offset (float-vector -100 -100 0)))
             ('rarm (setq offset (float-vector -100 100 0)))))
+         ((spoon fork)
+          (set-alist :pick-axis :top userdata))
          (t t)))
       (t t))
     (when offset
