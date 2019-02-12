@@ -25,7 +25,8 @@
     ((or (find (car (find-word text :class :noun)) (list "続き" "再開") :test #'string=)
          (find (car (find-word text :class :verb)) (list "続ける") :test #'string=))
      (send *ri* :speak-jp "続きをします")
-     (send *ri* :resume))
+     (send *ri* :reset-preempt)) ;; temp
+    ;;(send *ri* :resume))
     ((find (car (find-word text :class :noun)) (list "中止") :test #'string=)
      (send *ri* :speak-jp "中止します")
      (send *ri* :reset-preempt))

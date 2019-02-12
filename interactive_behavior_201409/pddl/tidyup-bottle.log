@@ -1,0 +1,456 @@
+1.irteusgl$ plan t 
+[ INFO] [1541079238.864922888] [/run_app_1541079205996487192:ros.roseus]: start -> nil
+[ INFO] [1541079238.874179328] [/run_app_1541079205996487192:ros.roseus]: table -> (#<cascaded-coords #Xe23e2c8 /eng2/7f/room73B2-table-front1  3758.967 7292.739 30051.606 / 1.563 0.003 0.003>)
+[ INFO] [1541079238.874721425] [/run_app_1541079205996487192:ros.roseus]: start -> nil
+[ INFO] [1541079238.878227820] [/run_app_1541079205996487192:ros.roseus]: fridge -> (#<cascaded-coords #Xe2d6648 /eng2/7f/room73B2-fridge-front  4560.0 7629.0 30051.606 / 0.04 -0.005 0.003>)
+[ INFO] [1541079238.878761482] [/run_app_1541079205996487192:ros.roseus]: start -> nil
+[ INFO] [1541079238.881334733] [/run_app_1541079205996487192:ros.roseus]: dishwasher -> nil
+[ INFO] [1541079238.881701082] [/run_app_1541079205996487192:ros.roseus]: start -> nil
+[ INFO] [1541079238.883449072] [/run_app_1541079205996487192:ros.roseus]: drawer -> nil
+[ INFO] [1541079238.883811407] [/run_app_1541079205996487192:ros.roseus]: start -> nil
+[ INFO] [1541079238.886489143] [/run_app_1541079205996487192:ros.roseus]: sink -> (#<cascaded-coords #Xe3b13d8 /eng2/7f/room73B2-sink-front1  1192.584 9090.947 30051.606 / 3.142 0.0 0.0>)
+[ INFO] [1541079238.887144517] [/run_app_1541079205996487192:ros.roseus]: start -> nil
+[ INFO] [1541079238.892153173] [/run_app_1541079205996487192:ros.roseus]: kitchen -> nil
+[ INFO] [1541079238.892613659] [/run_app_1541079205996487192:ros.roseus]: start -> nil
+[ INFO] [1541079238.894853240] [/run_app_1541079205996487192:ros.roseus]: counter -> nil
+[ INFO] [1541079238.895340943] [/run_app_1541079205996487192:ros.roseus]: start -> nil
+[ INFO] [1541079238.897074531] [/run_app_1541079205996487192:ros.roseus]: bookshelf -> nil
+[ INFO] [1541079238.897489189] [/run_app_1541079205996487192:ros.roseus]: start -> nil
+[ INFO] [1541079238.899669976] [/run_app_1541079205996487192:ros.roseus]: room73a1 -> (#<cascaded-coords #Xe2abf80 /eng2/7f/room73A1-front  -1500.0 -500.0 30000.0 / 3.142 0.0 0.0>)
+[ INFO] [1541079238.900063259] [/run_app_1541079205996487192:ros.roseus]: start -> nil
+[ INFO] [1541079238.902138400] [/run_app_1541079205996487192:ros.roseus]: somewhere -> nil
+[ INFO] [1541079238.902659906] [/run_app_1541079205996487192:ros.roseus]: table -> (#<cascaded-coords #Xe23e2c8 /eng2/7f/room73B2-table-front1  3758.967 7292.739 30051.606 / 1.563 0.003 0.003>)
+[ INFO] [1541079238.903014160] [/run_app_1541079205996487192:ros.roseus]: start -> nil
+[ INFO] [1541079238.905022716] [/run_app_1541079205996487192:ros.roseus]: table -> (#<cascaded-coords #Xe23e2c8 /eng2/7f/room73B2-table-front1  3758.967 7292.739 30051.606 / 1.563 0.003 0.003>)
+[ INFO] [1541079238.905563904] [/run_app_1541079205996487192:ros.roseus]: fridge -> (#<cascaded-coords #Xe2d6648 /eng2/7f/room73B2-fridge-front  4560.0 7629.0 30051.606 / 0.04 -0.005 0.003>)
+[ INFO] [1541079238.905973823] [/run_app_1541079205996487192:ros.roseus]: table -> (#<cascaded-coords #Xe23e2c8 /eng2/7f/room73B2-table-front1  3758.967 7292.739 30051.606 / 1.563 0.003 0.003>)
+[ INFO] [1541079238.906317216] [/run_app_1541079205996487192:ros.roseus]: dishwasher -> nil
+[ INFO] [1541079238.906788357] [/run_app_1541079205996487192:ros.roseus]: table -> (#<cascaded-coords #Xe23e2c8 /eng2/7f/room73B2-table-front1  3758.967 7292.739 30051.606 / 1.563 0.003 0.003>)
+[ INFO] [1541079238.907128217] [/run_app_1541079205996487192:ros.roseus]: drawer -> nil
+[ INFO] [1541079238.907593382] [/run_app_1541079205996487192:ros.roseus]: table -> (#<cascaded-coords #Xe23e2c8 /eng2/7f/room73B2-table-front1  3758.967 7292.739 30051.606 / 1.563 0.003 0.003>)
+[ INFO] [1541079238.908019481] [/run_app_1541079205996487192:ros.roseus]: sink -> (#<cascaded-coords #Xe3b13d8 /eng2/7f/room73B2-sink-front1  1192.584 9090.947 30051.606 / 3.142 0.0 0.0>)
+[ INFO] [1541079238.908509082] [/run_app_1541079205996487192:ros.roseus]: table -> (#<cascaded-coords #Xe23e2c8 /eng2/7f/room73B2-table-front1  3758.967 7292.739 30051.606 / 1.563 0.003 0.003>)
+[ INFO] [1541079238.908831790] [/run_app_1541079205996487192:ros.roseus]: kitchen -> nil
+[ INFO] [1541079238.909237200] [/run_app_1541079205996487192:ros.roseus]: table -> (#<cascaded-coords #Xe23e2c8 /eng2/7f/room73B2-table-front1  3758.967 7292.739 30051.606 / 1.563 0.003 0.003>)
+[ INFO] [1541079238.909581318] [/run_app_1541079205996487192:ros.roseus]: counter -> nil
+[ INFO] [1541079238.909897678] [/run_app_1541079205996487192:ros.roseus]: table -> (#<cascaded-coords #Xe23e2c8 /eng2/7f/room73B2-table-front1  3758.967 7292.739 30051.606 / 1.563 0.003 0.003>)
+[ INFO] [1541079238.910173308] [/run_app_1541079205996487192:ros.roseus]: bookshelf -> nil
+[ INFO] [1541079238.910558370] [/run_app_1541079205996487192:ros.roseus]: table -> (#<cascaded-coords #Xe23e2c8 /eng2/7f/room73B2-table-front1  3758.967 7292.739 30051.606 / 1.563 0.003 0.003>)
+[ INFO] [1541079238.910836276] [/run_app_1541079205996487192:ros.roseus]: room73a1 -> (#<cascaded-coords #Xe2abf80 /eng2/7f/room73A1-front  -1500.0 -500.0 30000.0 / 3.142 0.0 0.0>)
+[ INFO] [1541079238.911175280] [/run_app_1541079205996487192:ros.roseus]: table -> (#<cascaded-coords #Xe23e2c8 /eng2/7f/room73B2-table-front1  3758.967 7292.739 30051.606 / 1.563 0.003 0.003>)
+[ INFO] [1541079238.911495513] [/run_app_1541079205996487192:ros.roseus]: somewhere -> nil
+[ INFO] [1541079238.911818968] [/run_app_1541079205996487192:ros.roseus]: fridge -> (#<cascaded-coords #Xe2d6648 /eng2/7f/room73B2-fridge-front  4560.0 7629.0 30051.606 / 0.04 -0.005 0.003>)
+[ INFO] [1541079238.912097925] [/run_app_1541079205996487192:ros.roseus]: start -> nil
+[ INFO] [1541079238.914665752] [/run_app_1541079205996487192:ros.roseus]: fridge -> (#<cascaded-coords #Xe2d6648 /eng2/7f/room73B2-fridge-front  4560.0 7629.0 30051.606 / 0.04 -0.005 0.003>)
+[ INFO] [1541079238.915022024] [/run_app_1541079205996487192:ros.roseus]: table -> (#<cascaded-coords #Xe23e2c8 /eng2/7f/room73B2-table-front1  3758.967 7292.739 30051.606 / 1.563 0.003 0.003>)
+[ INFO] [1541079238.915445465] [/run_app_1541079205996487192:ros.roseus]: fridge -> (#<cascaded-coords #Xe2d6648 /eng2/7f/room73B2-fridge-front  4560.0 7629.0 30051.606 / 0.04 -0.005 0.003>)
+[ INFO] [1541079238.915704039] [/run_app_1541079205996487192:ros.roseus]: dishwasher -> nil
+[ INFO] [1541079238.916024910] [/run_app_1541079205996487192:ros.roseus]: fridge -> (#<cascaded-coords #Xe2d6648 /eng2/7f/room73B2-fridge-front  4560.0 7629.0 30051.606 / 0.04 -0.005 0.003>)
+[ INFO] [1541079238.916306511] [/run_app_1541079205996487192:ros.roseus]: drawer -> nil
+[ INFO] [1541079238.916690753] [/run_app_1541079205996487192:ros.roseus]: fridge -> (#<cascaded-coords #Xe2d6648 /eng2/7f/room73B2-fridge-front  4560.0 7629.0 30051.606 / 0.04 -0.005 0.003>)
+[ INFO] [1541079238.917036049] [/run_app_1541079205996487192:ros.roseus]: sink -> (#<cascaded-coords #Xe3b13d8 /eng2/7f/room73B2-sink-front1  1192.584 9090.947 30051.606 / 3.142 0.0 0.0>)
+[ INFO] [1541079238.917368274] [/run_app_1541079205996487192:ros.roseus]: fridge -> (#<cascaded-coords #Xe2d6648 /eng2/7f/room73B2-fridge-front  4560.0 7629.0 30051.606 / 0.04 -0.005 0.003>)
+[ INFO] [1541079238.917700030] [/run_app_1541079205996487192:ros.roseus]: kitchen -> nil
+[ INFO] [1541079238.918028273] [/run_app_1541079205996487192:ros.roseus]: fridge -> (#<cascaded-coords #Xe2d6648 /eng2/7f/room73B2-fridge-front  4560.0 7629.0 30051.606 / 0.04 -0.005 0.003>)
+[ INFO] [1541079238.918316088] [/run_app_1541079205996487192:ros.roseus]: counter -> nil
+[ INFO] [1541079238.918703786] [/run_app_1541079205996487192:ros.roseus]: fridge -> (#<cascaded-coords #Xe2d6648 /eng2/7f/room73B2-fridge-front  4560.0 7629.0 30051.606 / 0.04 -0.005 0.003>)
+[ INFO] [1541079238.918955715] [/run_app_1541079205996487192:ros.roseus]: bookshelf -> nil
+[ INFO] [1541079238.919503760] [/run_app_1541079205996487192:ros.roseus]: fridge -> (#<cascaded-coords #Xe2d6648 /eng2/7f/room73B2-fridge-front  4560.0 7629.0 30051.606 / 0.04 -0.005 0.003>)
+[ INFO] [1541079238.919909476] [/run_app_1541079205996487192:ros.roseus]: room73a1 -> (#<cascaded-coords #Xe2abf80 /eng2/7f/room73A1-front  -1500.0 -500.0 30000.0 / 3.142 0.0 0.0>)
+[ INFO] [1541079238.920350865] [/run_app_1541079205996487192:ros.roseus]: fridge -> (#<cascaded-coords #Xe2d6648 /eng2/7f/room73B2-fridge-front  4560.0 7629.0 30051.606 / 0.04 -0.005 0.003>)
+[ INFO] [1541079238.920700508] [/run_app_1541079205996487192:ros.roseus]: somewhere -> nil
+[ INFO] [1541079238.920996119] [/run_app_1541079205996487192:ros.roseus]: dishwasher -> nil
+[ INFO] [1541079238.921299784] [/run_app_1541079205996487192:ros.roseus]: start -> nil
+[ INFO] [1541079238.924023017] [/run_app_1541079205996487192:ros.roseus]: dishwasher -> nil
+[ INFO] [1541079238.924557949] [/run_app_1541079205996487192:ros.roseus]: table -> (#<cascaded-coords #Xe23e2c8 /eng2/7f/room73B2-table-front1  3758.967 7292.739 30051.606 / 1.563 0.003 0.003>)
+[ INFO] [1541079238.924882783] [/run_app_1541079205996487192:ros.roseus]: dishwasher -> nil
+[ INFO] [1541079238.925188928] [/run_app_1541079205996487192:ros.roseus]: fridge -> (#<cascaded-coords #Xe2d6648 /eng2/7f/room73B2-fridge-front  4560.0 7629.0 30051.606 / 0.04 -0.005 0.003>)
+[ INFO] [1541079238.925583650] [/run_app_1541079205996487192:ros.roseus]: dishwasher -> nil
+[ INFO] [1541079238.925857328] [/run_app_1541079205996487192:ros.roseus]: drawer -> nil
+[ INFO] [1541079238.926160828] [/run_app_1541079205996487192:ros.roseus]: dishwasher -> nil
+[ INFO] [1541079238.926615981] [/run_app_1541079205996487192:ros.roseus]: sink -> (#<cascaded-coords #Xe3b13d8 /eng2/7f/room73B2-sink-front1  1192.584 9090.947 30051.606 / 3.142 0.0 0.0>)
+[ INFO] [1541079238.926945049] [/run_app_1541079205996487192:ros.roseus]: dishwasher -> nil
+[ INFO] [1541079238.927264694] [/run_app_1541079205996487192:ros.roseus]: kitchen -> nil
+[ INFO] [1541079238.927657776] [/run_app_1541079205996487192:ros.roseus]: dishwasher -> nil
+[ INFO] [1541079238.927929856] [/run_app_1541079205996487192:ros.roseus]: counter -> nil
+[ INFO] [1541079238.928193942] [/run_app_1541079205996487192:ros.roseus]: dishwasher -> nil
+[ INFO] [1541079238.928555712] [/run_app_1541079205996487192:ros.roseus]: bookshelf -> nil
+[ INFO] [1541079238.928856964] [/run_app_1541079205996487192:ros.roseus]: dishwasher -> nil
+[ INFO] [1541079238.929225249] [/run_app_1541079205996487192:ros.roseus]: room73a1 -> (#<cascaded-coords #Xe2abf80 /eng2/7f/room73A1-front  -1500.0 -500.0 30000.0 / 3.142 0.0 0.0>)
+[ INFO] [1541079238.929645936] [/run_app_1541079205996487192:ros.roseus]: dishwasher -> nil
+[ INFO] [1541079238.929939175] [/run_app_1541079205996487192:ros.roseus]: somewhere -> nil
+[ INFO] [1541079238.930315220] [/run_app_1541079205996487192:ros.roseus]: drawer -> nil
+[ INFO] [1541079238.930814564] [/run_app_1541079205996487192:ros.roseus]: start -> nil
+[ INFO] [1541079238.936574537] [/run_app_1541079205996487192:ros.roseus]: drawer -> nil
+[ INFO] [1541079238.936976742] [/run_app_1541079205996487192:ros.roseus]: table -> (#<cascaded-coords #Xe23e2c8 /eng2/7f/room73B2-table-front1  3758.967 7292.739 30051.606 / 1.563 0.003 0.003>)
+[ INFO] [1541079238.937355243] [/run_app_1541079205996487192:ros.roseus]: drawer -> nil
+[ INFO] [1541079238.937817965] [/run_app_1541079205996487192:ros.roseus]: fridge -> (#<cascaded-coords #Xe2d6648 /eng2/7f/room73B2-fridge-front  4560.0 7629.0 30051.606 / 0.04 -0.005 0.003>)
+[ INFO] [1541079238.938092196] [/run_app_1541079205996487192:ros.roseus]: drawer -> nil
+[ INFO] [1541079238.938444846] [/run_app_1541079205996487192:ros.roseus]: dishwasher -> nil
+[ INFO] [1541079238.938705625] [/run_app_1541079205996487192:ros.roseus]: drawer -> nil
+[ INFO] [1541079238.938998076] [/run_app_1541079205996487192:ros.roseus]: sink -> (#<cascaded-coords #Xe3b13d8 /eng2/7f/room73B2-sink-front1  1192.584 9090.947 30051.606 / 3.142 0.0 0.0>)
+[ INFO] [1541079238.939309219] [/run_app_1541079205996487192:ros.roseus]: drawer -> nil
+[ INFO] [1541079238.939659415] [/run_app_1541079205996487192:ros.roseus]: kitchen -> nil
+[ INFO] [1541079238.940150148] [/run_app_1541079205996487192:ros.roseus]: drawer -> nil
+[ INFO] [1541079238.940513396] [/run_app_1541079205996487192:ros.roseus]: counter -> nil
+[ INFO] [1541079238.940841838] [/run_app_1541079205996487192:ros.roseus]: drawer -> nil
+[ INFO] [1541079238.941138597] [/run_app_1541079205996487192:ros.roseus]: bookshelf -> nil
+[ INFO] [1541079238.941573763] [/run_app_1541079205996487192:ros.roseus]: drawer -> nil
+[ INFO] [1541079238.941990614] [/run_app_1541079205996487192:ros.roseus]: room73a1 -> (#<cascaded-coords #Xe2abf80 /eng2/7f/room73A1-front  -1500.0 -500.0 30000.0 / 3.142 0.0 0.0>)
+[ INFO] [1541079238.942466702] [/run_app_1541079205996487192:ros.roseus]: drawer -> nil
+[ INFO] [1541079238.942736370] [/run_app_1541079205996487192:ros.roseus]: somewhere -> nil
+[ INFO] [1541079238.943077862] [/run_app_1541079205996487192:ros.roseus]: sink -> (#<cascaded-coords #Xe3b13d8 /eng2/7f/room73B2-sink-front1  1192.584 9090.947 30051.606 / 3.142 0.0 0.0>)
+[ INFO] [1541079238.943456991] [/run_app_1541079205996487192:ros.roseus]: start -> nil
+[ INFO] [1541079238.947159686] [/run_app_1541079205996487192:ros.roseus]: sink -> (#<cascaded-coords #Xe3b13d8 /eng2/7f/room73B2-sink-front1  1192.584 9090.947 30051.606 / 3.142 0.0 0.0>)
+[ INFO] [1541079238.947954688] [/run_app_1541079205996487192:ros.roseus]: table -> (#<cascaded-coords #Xe23e2c8 /eng2/7f/room73B2-table-front1  3758.967 7292.739 30051.606 / 1.563 0.003 0.003>)
+[ INFO] [1541079238.948723525] [/run_app_1541079205996487192:ros.roseus]: sink -> (#<cascaded-coords #Xe3b13d8 /eng2/7f/room73B2-sink-front1  1192.584 9090.947 30051.606 / 3.142 0.0 0.0>)
+[ INFO] [1541079238.949471568] [/run_app_1541079205996487192:ros.roseus]: fridge -> (#<cascaded-coords #Xe2d6648 /eng2/7f/room73B2-fridge-front  4560.0 7629.0 30051.606 / 0.04 -0.005 0.003>)
+[ INFO] [1541079238.950040103] [/run_app_1541079205996487192:ros.roseus]: sink -> (#<cascaded-coords #Xe3b13d8 /eng2/7f/room73B2-sink-front1  1192.584 9090.947 30051.606 / 3.142 0.0 0.0>)
+[ INFO] [1541079238.950520857] [/run_app_1541079205996487192:ros.roseus]: dishwasher -> nil
+[ INFO] [1541079238.950884567] [/run_app_1541079205996487192:ros.roseus]: sink -> (#<cascaded-coords #Xe3b13d8 /eng2/7f/room73B2-sink-front1  1192.584 9090.947 30051.606 / 3.142 0.0 0.0>)
+[ INFO] [1541079238.951324556] [/run_app_1541079205996487192:ros.roseus]: drawer -> nil
+[ INFO] [1541079238.951990232] [/run_app_1541079205996487192:ros.roseus]: sink -> (#<cascaded-coords #Xe3b13d8 /eng2/7f/room73B2-sink-front1  1192.584 9090.947 30051.606 / 3.142 0.0 0.0>)
+[ INFO] [1541079238.952565070] [/run_app_1541079205996487192:ros.roseus]: kitchen -> nil
+[ INFO] [1541079238.953151946] [/run_app_1541079205996487192:ros.roseus]: sink -> (#<cascaded-coords #Xe3b13d8 /eng2/7f/room73B2-sink-front1  1192.584 9090.947 30051.606 / 3.142 0.0 0.0>)
+[ INFO] [1541079238.953694558] [/run_app_1541079205996487192:ros.roseus]: counter -> nil
+[ INFO] [1541079238.954318928] [/run_app_1541079205996487192:ros.roseus]: sink -> (#<cascaded-coords #Xe3b13d8 /eng2/7f/room73B2-sink-front1  1192.584 9090.947 30051.606 / 3.142 0.0 0.0>)
+[ INFO] [1541079238.954835572] [/run_app_1541079205996487192:ros.roseus]: bookshelf -> nil
+[ INFO] [1541079238.955530121] [/run_app_1541079205996487192:ros.roseus]: sink -> (#<cascaded-coords #Xe3b13d8 /eng2/7f/room73B2-sink-front1  1192.584 9090.947 30051.606 / 3.142 0.0 0.0>)
+[ INFO] [1541079238.956088515] [/run_app_1541079205996487192:ros.roseus]: room73a1 -> (#<cascaded-coords #Xe2abf80 /eng2/7f/room73A1-front  -1500.0 -500.0 30000.0 / 3.142 0.0 0.0>)
+[ INFO] [1541079238.956733354] [/run_app_1541079205996487192:ros.roseus]: sink -> (#<cascaded-coords #Xe3b13d8 /eng2/7f/room73B2-sink-front1  1192.584 9090.947 30051.606 / 3.142 0.0 0.0>)
+[ INFO] [1541079238.957233227] [/run_app_1541079205996487192:ros.roseus]: somewhere -> nil
+[ INFO] [1541079238.957805770] [/run_app_1541079205996487192:ros.roseus]: kitchen -> nil
+[ INFO] [1541079238.958316605] [/run_app_1541079205996487192:ros.roseus]: start -> nil
+[ INFO] [1541079238.961757045] [/run_app_1541079205996487192:ros.roseus]: kitchen -> nil
+[ INFO] [1541079238.962454642] [/run_app_1541079205996487192:ros.roseus]: table -> (#<cascaded-coords #Xe23e2c8 /eng2/7f/room73B2-table-front1  3758.967 7292.739 30051.606 / 1.563 0.003 0.003>)
+[ INFO] [1541079238.962928944] [/run_app_1541079205996487192:ros.roseus]: kitchen -> nil
+[ INFO] [1541079238.963548080] [/run_app_1541079205996487192:ros.roseus]: fridge -> (#<cascaded-coords #Xe2d6648 /eng2/7f/room73B2-fridge-front  4560.0 7629.0 30051.606 / 0.04 -0.005 0.003>)
+[ INFO] [1541079238.964038422] [/run_app_1541079205996487192:ros.roseus]: kitchen -> nil
+[ INFO] [1541079238.964548128] [/run_app_1541079205996487192:ros.roseus]: dishwasher -> nil
+[ INFO] [1541079238.965026746] [/run_app_1541079205996487192:ros.roseus]: kitchen -> nil
+[ INFO] [1541079238.965561337] [/run_app_1541079205996487192:ros.roseus]: drawer -> nil
+[ INFO] [1541079238.965954930] [/run_app_1541079205996487192:ros.roseus]: kitchen -> nil
+[ INFO] [1541079238.966823135] [/run_app_1541079205996487192:ros.roseus]: sink -> (#<cascaded-coords #Xe3b13d8 /eng2/7f/room73B2-sink-front1  1192.584 9090.947 30051.606 / 3.142 0.0 0.0>)
+[ INFO] [1541079238.967487248] [/run_app_1541079205996487192:ros.roseus]: kitchen -> nil
+[ INFO] [1541079238.967994743] [/run_app_1541079205996487192:ros.roseus]: counter -> nil
+[ INFO] [1541079238.968566341] [/run_app_1541079205996487192:ros.roseus]: kitchen -> nil
+[ INFO] [1541079238.968967579] [/run_app_1541079205996487192:ros.roseus]: bookshelf -> nil
+[ INFO] [1541079238.969547205] [/run_app_1541079205996487192:ros.roseus]: kitchen -> nil
+[ INFO] [1541079238.969997658] [/run_app_1541079205996487192:ros.roseus]: room73a1 -> (#<cascaded-coords #Xe2abf80 /eng2/7f/room73A1-front  -1500.0 -500.0 30000.0 / 3.142 0.0 0.0>)
+[ INFO] [1541079238.970531563] [/run_app_1541079205996487192:ros.roseus]: kitchen -> nil
+[ INFO] [1541079238.970933557] [/run_app_1541079205996487192:ros.roseus]: somewhere -> nil
+[ INFO] [1541079238.971483974] [/run_app_1541079205996487192:ros.roseus]: counter -> nil
+[ INFO] [1541079238.971895768] [/run_app_1541079205996487192:ros.roseus]: start -> nil
+[ INFO] [1541079238.979415467] [/run_app_1541079205996487192:ros.roseus]: counter -> nil
+[ INFO] [1541079238.979766303] [/run_app_1541079205996487192:ros.roseus]: table -> (#<cascaded-coords #Xe23e2c8 /eng2/7f/room73B2-table-front1  3758.967 7292.739 30051.606 / 1.563 0.003 0.003>)
+[ INFO] [1541079238.980054150] [/run_app_1541079205996487192:ros.roseus]: counter -> nil
+[ INFO] [1541079238.980430172] [/run_app_1541079205996487192:ros.roseus]: fridge -> (#<cascaded-coords #Xe2d6648 /eng2/7f/room73B2-fridge-front  4560.0 7629.0 30051.606 / 0.04 -0.005 0.003>)
+[ INFO] [1541079238.980706509] [/run_app_1541079205996487192:ros.roseus]: counter -> nil
+[ INFO] [1541079238.980950511] [/run_app_1541079205996487192:ros.roseus]: dishwasher -> nil
+[ INFO] [1541079238.981295686] [/run_app_1541079205996487192:ros.roseus]: counter -> nil
+[ INFO] [1541079238.981627548] [/run_app_1541079205996487192:ros.roseus]: drawer -> nil
+[ INFO] [1541079238.981903909] [/run_app_1541079205996487192:ros.roseus]: counter -> nil
+[ INFO] [1541079238.982257305] [/run_app_1541079205996487192:ros.roseus]: sink -> (#<cascaded-coords #Xe3b13d8 /eng2/7f/room73B2-sink-front1  1192.584 9090.947 30051.606 / 3.142 0.0 0.0>)
+[ INFO] [1541079238.982589457] [/run_app_1541079205996487192:ros.roseus]: counter -> nil
+[ INFO] [1541079238.982847459] [/run_app_1541079205996487192:ros.roseus]: kitchen -> nil
+[ INFO] [1541079238.983132718] [/run_app_1541079205996487192:ros.roseus]: counter -> nil
+[ INFO] [1541079238.983438388] [/run_app_1541079205996487192:ros.roseus]: bookshelf -> nil
+[ INFO] [1541079238.983701907] [/run_app_1541079205996487192:ros.roseus]: counter -> nil
+[ INFO] [1541079238.983977012] [/run_app_1541079205996487192:ros.roseus]: room73a1 -> (#<cascaded-coords #Xe2abf80 /eng2/7f/room73A1-front  -1500.0 -500.0 30000.0 / 3.142 0.0 0.0>)
+[ INFO] [1541079238.984278615] [/run_app_1541079205996487192:ros.roseus]: counter -> nil
+[ INFO] [1541079238.984595308] [/run_app_1541079205996487192:ros.roseus]: somewhere -> nil
+[ INFO] [1541079238.984863693] [/run_app_1541079205996487192:ros.roseus]: bookshelf -> nil
+[ INFO] [1541079238.985150449] [/run_app_1541079205996487192:ros.roseus]: start -> nil
+[ INFO] [1541079238.987946602] [/run_app_1541079205996487192:ros.roseus]: bookshelf -> nil
+[ INFO] [1541079238.988424857] [/run_app_1541079205996487192:ros.roseus]: table -> (#<cascaded-coords #Xe23e2c8 /eng2/7f/room73B2-table-front1  3758.967 7292.739 30051.606 / 1.563 0.003 0.003>)
+[ INFO] [1541079238.988780101] [/run_app_1541079205996487192:ros.roseus]: bookshelf -> nil
+[ INFO] [1541079238.989136561] [/run_app_1541079205996487192:ros.roseus]: fridge -> (#<cascaded-coords #Xe2d6648 /eng2/7f/room73B2-fridge-front  4560.0 7629.0 30051.606 / 0.04 -0.005 0.003>)
+[ INFO] [1541079238.989551590] [/run_app_1541079205996487192:ros.roseus]: bookshelf -> nil
+[ INFO] [1541079238.989927894] [/run_app_1541079205996487192:ros.roseus]: dishwasher -> nil
+[ INFO] [1541079238.990292070] [/run_app_1541079205996487192:ros.roseus]: bookshelf -> nil
+[ INFO] [1541079238.990685597] [/run_app_1541079205996487192:ros.roseus]: drawer -> nil
+[ INFO] [1541079238.991070188] [/run_app_1541079205996487192:ros.roseus]: bookshelf -> nil
+[ INFO] [1541079238.991628514] [/run_app_1541079205996487192:ros.roseus]: sink -> (#<cascaded-coords #Xe3b13d8 /eng2/7f/room73B2-sink-front1  1192.584 9090.947 30051.606 / 3.142 0.0 0.0>)
+[ INFO] [1541079238.992034908] [/run_app_1541079205996487192:ros.roseus]: bookshelf -> nil
+[ INFO] [1541079238.992438168] [/run_app_1541079205996487192:ros.roseus]: kitchen -> nil
+[ INFO] [1541079238.992835959] [/run_app_1541079205996487192:ros.roseus]: bookshelf -> nil
+[ INFO] [1541079238.993221862] [/run_app_1541079205996487192:ros.roseus]: counter -> nil
+[ INFO] [1541079238.993593752] [/run_app_1541079205996487192:ros.roseus]: bookshelf -> nil
+[ INFO] [1541079238.994018708] [/run_app_1541079205996487192:ros.roseus]: room73a1 -> (#<cascaded-coords #Xe2abf80 /eng2/7f/room73A1-front  -1500.0 -500.0 30000.0 / 3.142 0.0 0.0>)
+[ INFO] [1541079238.994393215] [/run_app_1541079205996487192:ros.roseus]: bookshelf -> nil
+[ INFO] [1541079238.994751269] [/run_app_1541079205996487192:ros.roseus]: somewhere -> nil
+[ INFO] [1541079238.995180824] [/run_app_1541079205996487192:ros.roseus]: room73a1 -> (#<cascaded-coords #Xe2abf80 /eng2/7f/room73A1-front  -1500.0 -500.0 30000.0 / 3.142 0.0 0.0>)
+[ INFO] [1541079238.995575002] [/run_app_1541079205996487192:ros.roseus]: start -> nil
+[ INFO] [1541079238.999009130] [/run_app_1541079205996487192:ros.roseus]: room73a1 -> (#<cascaded-coords #Xe2abf80 /eng2/7f/room73A1-front  -1500.0 -500.0 30000.0 / 3.142 0.0 0.0>)
+[ INFO] [1541079238.999477582] [/run_app_1541079205996487192:ros.roseus]: table -> (#<cascaded-coords #Xe23e2c8 /eng2/7f/room73B2-table-front1  3758.967 7292.739 30051.606 / 1.563 0.003 0.003>)
+[ INFO] [1541079238.999796568] [/run_app_1541079205996487192:ros.roseus]: room73a1 -> (#<cascaded-coords #Xe2abf80 /eng2/7f/room73A1-front  -1500.0 -500.0 30000.0 / 3.142 0.0 0.0>)
+[ INFO] [1541079239.000138596] [/run_app_1541079205996487192:ros.roseus]: fridge -> (#<cascaded-coords #Xe2d6648 /eng2/7f/room73B2-fridge-front  4560.0 7629.0 30051.606 / 0.04 -0.005 0.003>)
+[ INFO] [1541079239.000513019] [/run_app_1541079205996487192:ros.roseus]: room73a1 -> (#<cascaded-coords #Xe2abf80 /eng2/7f/room73A1-front  -1500.0 -500.0 30000.0 / 3.142 0.0 0.0>)
+[ INFO] [1541079239.000783024] [/run_app_1541079205996487192:ros.roseus]: dishwasher -> nil
+[ INFO] [1541079239.001111061] [/run_app_1541079205996487192:ros.roseus]: room73a1 -> (#<cascaded-coords #Xe2abf80 /eng2/7f/room73A1-front  -1500.0 -500.0 30000.0 / 3.142 0.0 0.0>)
+[ INFO] [1541079239.001404638] [/run_app_1541079205996487192:ros.roseus]: drawer -> nil
+[ INFO] [1541079239.001709173] [/run_app_1541079205996487192:ros.roseus]: room73a1 -> (#<cascaded-coords #Xe2abf80 /eng2/7f/room73A1-front  -1500.0 -500.0 30000.0 / 3.142 0.0 0.0>)
+[ INFO] [1541079239.002063484] [/run_app_1541079205996487192:ros.roseus]: sink -> (#<cascaded-coords #Xe3b13d8 /eng2/7f/room73B2-sink-front1  1192.584 9090.947 30051.606 / 3.142 0.0 0.0>)
+[ INFO] [1541079239.002388218] [/run_app_1541079205996487192:ros.roseus]: room73a1 -> (#<cascaded-coords #Xe2abf80 /eng2/7f/room73A1-front  -1500.0 -500.0 30000.0 / 3.142 0.0 0.0>)
+[ INFO] [1541079239.002680270] [/run_app_1541079205996487192:ros.roseus]: kitchen -> nil
+[ INFO] [1541079239.002978040] [/run_app_1541079205996487192:ros.roseus]: room73a1 -> (#<cascaded-coords #Xe2abf80 /eng2/7f/room73A1-front  -1500.0 -500.0 30000.0 / 3.142 0.0 0.0>)
+[ INFO] [1541079239.003262874] [/run_app_1541079205996487192:ros.roseus]: counter -> nil
+[ INFO] [1541079239.003571161] [/run_app_1541079205996487192:ros.roseus]: room73a1 -> (#<cascaded-coords #Xe2abf80 /eng2/7f/room73A1-front  -1500.0 -500.0 30000.0 / 3.142 0.0 0.0>)
+[ INFO] [1541079239.003850931] [/run_app_1541079205996487192:ros.roseus]: bookshelf -> nil
+[ INFO] [1541079239.004164884] [/run_app_1541079205996487192:ros.roseus]: room73a1 -> (#<cascaded-coords #Xe2abf80 /eng2/7f/room73A1-front  -1500.0 -500.0 30000.0 / 3.142 0.0 0.0>)
+[ INFO] [1541079239.004514250] [/run_app_1541079205996487192:ros.roseus]: somewhere -> nil
+[ INFO] [1541079239.004874940] [/run_app_1541079205996487192:ros.roseus]: somewhere -> nil
+[ INFO] [1541079239.005401252] [/run_app_1541079205996487192:ros.roseus]: start -> nil
+[ INFO] [1541079239.011599695] [/run_app_1541079205996487192:ros.roseus]: somewhere -> nil
+[ INFO] [1541079239.012123518] [/run_app_1541079205996487192:ros.roseus]: table -> (#<cascaded-coords #Xe23e2c8 /eng2/7f/room73B2-table-front1  3758.967 7292.739 30051.606 / 1.563 0.003 0.003>)
+[ INFO] [1541079239.012546622] [/run_app_1541079205996487192:ros.roseus]: somewhere -> nil
+[ INFO] [1541079239.012959428] [/run_app_1541079205996487192:ros.roseus]: fridge -> (#<cascaded-coords #Xe2d6648 /eng2/7f/room73B2-fridge-front  4560.0 7629.0 30051.606 / 0.04 -0.005 0.003>)
+[ INFO] [1541079239.013286591] [/run_app_1541079205996487192:ros.roseus]: somewhere -> nil
+[ INFO] [1541079239.013653558] [/run_app_1541079205996487192:ros.roseus]: dishwasher -> nil
+[ INFO] [1541079239.014041329] [/run_app_1541079205996487192:ros.roseus]: somewhere -> nil
+[ INFO] [1541079239.014375454] [/run_app_1541079205996487192:ros.roseus]: drawer -> nil
+[ INFO] [1541079239.014777052] [/run_app_1541079205996487192:ros.roseus]: somewhere -> nil
+[ INFO] [1541079239.015153556] [/run_app_1541079205996487192:ros.roseus]: sink -> (#<cascaded-coords #Xe3b13d8 /eng2/7f/room73B2-sink-front1  1192.584 9090.947 30051.606 / 3.142 0.0 0.0>)
+[ INFO] [1541079239.015565756] [/run_app_1541079205996487192:ros.roseus]: somewhere -> nil
+[ INFO] [1541079239.015920321] [/run_app_1541079205996487192:ros.roseus]: kitchen -> nil
+[ INFO] [1541079239.016303806] [/run_app_1541079205996487192:ros.roseus]: somewhere -> nil
+[ INFO] [1541079239.016661601] [/run_app_1541079205996487192:ros.roseus]: counter -> nil
+[ INFO] [1541079239.016990007] [/run_app_1541079205996487192:ros.roseus]: somewhere -> nil
+[ INFO] [1541079239.017338969] [/run_app_1541079205996487192:ros.roseus]: bookshelf -> nil
+[ INFO] [1541079239.017651518] [/run_app_1541079205996487192:ros.roseus]: somewhere -> nil
+[ INFO] [1541079239.018011646] [/run_app_1541079205996487192:ros.roseus]: room73a1 -> (#<cascaded-coords #Xe2abf80 /eng2/7f/room73A1-front  -1500.0 -500.0 30000.0 / 3.142 0.0 0.0>)
+[ INFO] [1541079239.018205648] [/run_app_1541079205996487192:ros.roseus]: resolving usual on init 141
+[ INFO] [1541079239.019187877] [/run_app_1541079205996487192:ros.roseus]: resolving usual on goal: 2
+[ INFO] [1541079239.020974537] [/run_app_1541079205996487192:ros.roseus]: [episodic-object-updater] starting
+[ INFO] [1541079239.032778594] [/run_app_1541079205996487192:ros.roseus]: [episodic-object-updater] started
+[ INFO] [1541079239.032815456] [/run_app_1541079205996487192:ros.roseus]: [at-updater] starting
+[ INFO] [1541079239.032834262] [/run_app_1541079205996487192:ros.roseus]: [at-updater] started
+[ INFO] [1541079239.032856052] [/run_app_1541079205996487192:ros.roseus]: [onhand-updater] starting
+[ INFO] [1541079241.037151737] [/run_app_1541079205996487192:ros.roseus]: [onhand-updater] :larm = :not-onhand, :rarm = :not-onhand
+[ INFO] [1541079241.037188544] [/run_app_1541079205996487192:ros.roseus]: [onhand-updater] started
+[ INFO] [1541079241.037394777] [/run_app_1541079205996487192:ros.roseus]: update init
+[ INFO] [1541079241.037439469] [/run_app_1541079205996487192:ros.roseus]: [episodic-object-updater] update init
+[ INFO] [1541079241.037865464] [/run_app_1541079205996487192:ros.roseus]: [episodic-object-updater] ((robot-at start) (on bottle table) (openable rarm dishwasher) (openable rarm fridge) (openable rarm room73a1) (available sink) (available counter) (available kitchen) (available table) (available bookshelf) (available drawer)) -> ((robot-at start) (on bottle table) (openable rarm dishwasher) (openable rarm fridge) (openable rarm room73a1) (available sink) (available counter) (available kitchen) (available table) (available bookshelf) (available drawer))
+[ INFO] [1541079241.037900765] [/run_app_1541079205996487192:ros.roseus]: [at-updater] update init
+[ INFO] [1541079241.040330125] [/run_app_1541079205996487192:ros.roseus]: subway -> (#<cascaded-coords #X62cd3b8 /eng2/2f/subway-front  23000.0 -7100.0 10000.0 / 1.571 0.0 0.0>)
+[ INFO] [1541079241.040674598] [/run_app_1541079205996487192:ros.roseus]: elevator_inside_panel -> (#<cascaded-coords #X62cd2f8 /eng2/2f/elevator_inside_panel-front  2000.0 -33800.0 10000.0 / 0.0 0.0 0.0> #<cascaded-coords #Xe2abe00 /eng2/7f/elevator_inside_panel-front  2000.0 -33800.0 30000.0 / 0.0 0.0 0.0> #<cascaded-coords #X10d79fe0 /eng2/8f/elevator_inside_panel-front  2000.0 -33800.0 40000.0 / 0.0 0.0 0.0>)
+[ INFO] [1541079241.049080177] [/run_app_1541079205996487192:ros.roseus]: elevator_call_panel -> (#<cascaded-coords #X62cd280 /eng2/2f/elevator_call_panel-front  3100.0 -31250.0 10000.0 / -1.571 0.0 0.0> #<cascaded-coords #Xe2abd88 /eng2/7f/elevator_call_panel-front  3100.0 -31250.0 30000.0 / -1.571 0.0 0.0> #<cascaded-coords #X10d79f98 /eng2/8f/elevator_call_panel-front  3100.0 -31250.0 40000.0 / -1.571 0.0 0.0>)
+[ INFO] [1541079241.053147651] [/run_app_1541079205996487192:ros.roseus]: room-31A-inoue -> (#<cascaded-coords #X59dde60 /eng2/3f/room-31A-inoue-front  -6128.0 -43994.0 20000.0 / -0.758 0.0 0.0>)
+[ INFO] [1541079241.053507920] [/run_app_1541079205996487192:ros.roseus]: room-31A-inaba -> (#<cascaded-coords #X59de9a0 /eng2/3f/room-31A-inaba-front  -8667.0 -35244.0 20000.0 / 1.571 0.0 0.0>)
+[ INFO] [1541079241.053791446] [/run_app_1541079205996487192:ros.roseus]: room-31A -> (#<cascaded-coords #X59dffc0 /eng2/3f/room-31A-front  -2950.0 -32650.0 20000.0 / 3.142 0.0 0.0>)
+[ INFO] [1541079241.054194273] [/run_app_1541079205996487192:ros.roseus]: room73B2 -> nil
+[ INFO] [1541079241.054563607] [/run_app_1541079205996487192:ros.roseus]: room73B2-sink -> (#<cascaded-coords #Xe3b13d8 /eng2/7f/room73B2-sink-front1  1192.584 9090.947 30051.606 / 3.142 0.0 0.0>)
+[ INFO] [1541079241.054976268] [/run_app_1541079205996487192:ros.roseus]: room73B2-table -> (#<cascaded-coords #Xe23e2c8 /eng2/7f/room73B2-table-front1  3758.967 7292.739 30051.606 / 1.563 0.003 0.003>)
+[ INFO] [1541079241.055846112] [/run_app_1541079205996487192:ros.roseus]: room73B2 -> nil
+[ INFO] [1541079241.056423222] [/run_app_1541079205996487192:ros.roseus]: room73B2 -> nil
+[ INFO] [1541079241.056851346] [/run_app_1541079205996487192:ros.roseus]: fridge -> (#<cascaded-coords #Xe2d6648 /eng2/7f/room73B2-fridge-front  4560.0 7629.0 30051.606 / 0.04 -0.005 0.003>)
+[ INFO] [1541079241.057105141] [/run_app_1541079205996487192:ros.roseus]: room73B2-fetch-dock -> (#<cascaded-coords #Xe381a08 /eng2/7f/room73B2-fetch-dock-front  6555.0 7289.0 30051.606 / 1.571 0.0 0.0>)
+[ INFO] [1541079241.057572054] [/run_app_1541079205996487192:ros.roseus]: room73A3 -> (#<cascaded-coords #Xe3819c0 /eng2/7f/room73A3-front1  -750.0 6829.0 30051.606 / 0.0 0.0 0.0>)
+[ INFO] [1541079241.057869265] [/run_app_1541079205996487192:ros.roseus]: room73B2-trashbox -> (#<cascaded-coords #Xe381948 /eng2/7f/room73B2-trashbox-front  995.672 5638.59 30051.606 / 3.142 0.0 0.0>)
+[ INFO] [1541079241.058229907] [/run_app_1541079205996487192:ros.roseus]: room73B2-door -> (#<cascaded-coords #Xe3b1510 /eng2/7f/room73B2-door-front  418.845 6829.953 30051.606 / 3.142 0.0 0.0>)
+[ INFO] [1541079241.058587529] [/run_app_1541079205996487192:ros.roseus]: room73B2-microwave -> (#<cascaded-coords #Xe3b1498 /eng2/7f/room73B2-microwave-front  2067.596 9747.629 30051.606 / 1.571 0.0 0.0>)
+[ INFO] [1541079241.058948883] [/run_app_1541079205996487192:ros.roseus]: room73B2-sink -> (#<cascaded-coords #Xe3b13d8 /eng2/7f/room73B2-sink-front1  1192.584 9090.947 30051.606 / 3.142 0.0 0.0>)
+[ INFO] [1541079241.059303974] [/run_app_1541079205996487192:ros.roseus]: room73B2-sink -> (#<cascaded-coords #Xe3b13d8 /eng2/7f/room73B2-sink-front1  1192.584 9090.947 30051.606 / 3.142 0.0 0.0>)
+[ INFO] [1541079241.059609614] [/run_app_1541079205996487192:ros.roseus]: room73B2-table -> (#<cascaded-coords #Xe23e2c8 /eng2/7f/room73B2-table-front1  3758.967 7292.739 30051.606 / 1.563 0.003 0.003>)
+[ INFO] [1541079241.059897275] [/run_app_1541079205996487192:ros.roseus]: room73B2-fridge -> (#<cascaded-coords #Xe2d6648 /eng2/7f/room73B2-fridge-front  4560.0 7629.0 30051.606 / 0.04 -0.005 0.003>)
+[ INFO] [1541079241.060165103] [/run_app_1541079205996487192:ros.roseus]: room73A3-printer -> (#<cascaded-coords #Xe2d6600 /eng2/7f/room73A3-printer-front  -5500.0 4800.0 30000.0 / -1.571 0.0 0.0>)
+[ INFO] [1541079241.060573363] [/run_app_1541079205996487192:ros.roseus]: room73B1 -> (#<cascaded-coords #Xe2d6510 /eng2/7f/room73B1-front  -500.0 -100.0 30000.0 / 0.0 0.0 0.0>)
+[ INFO] [1541079241.060868012] [/run_app_1541079205996487192:ros.roseus]: non-combustible-trashbox -> (#<cascaded-coords #Xe2d6408 /eng2/7f/non-combustible-trashbox-front  5000.0 -26600.0 30000.0 / 1.571 0.0 0.0>)
+[ INFO] [1541079241.061259392] [/run_app_1541079205996487192:ros.roseus]: combustible-trashbox -> (#<cascaded-coords #Xe2d6408 /eng2/7f/non-combustible-trashbox-front  5000.0 -26600.0 30000.0 / 1.571 0.0 0.0> #<cascaded-coords #Xe2abff8 /eng2/7f/combustible-trashbox-front  3400.0 -26600.0 30000.0 / 1.571 0.0 0.0>)
+[ INFO] [1541079241.062941998] [/run_app_1541079205996487192:ros.roseus]: room73A1 -> (#<cascaded-coords #Xe2abf80 /eng2/7f/room73A1-front  -1500.0 -500.0 30000.0 / 3.142 0.0 0.0>)
+[ INFO] [1541079241.063378958] [/run_app_1541079205996487192:ros.roseus]: room73A2 -> (#<cascaded-coords #Xe2abf08 /eng2/7f/room73A2-front  -1500.0 2900.0 30000.0 / 3.142 0.0 0.0>)
+[ INFO] [1541079241.063771476] [/run_app_1541079205996487192:ros.roseus]: room73A3 -> (#<cascaded-coords #Xe3819c0 /eng2/7f/room73A3-front1  -750.0 6829.0 30051.606 / 0.0 0.0 0.0>)
+[ INFO] [1541079241.064105055] [/run_app_1541079205996487192:ros.roseus]: room73A4 -> (#<cascaded-coords #Xe2dfac8 /eng2/7f/room73A4-front  -1500.0 9800.0 30000.0 / 3.142 0.0 0.0>)
+[ INFO] [1541079241.064378534] [/run_app_1541079205996487192:ros.roseus]: elevator_inside_panel -> (#<cascaded-coords #X62cd2f8 /eng2/2f/elevator_inside_panel-front  2000.0 -33800.0 10000.0 / 0.0 0.0 0.0> #<cascaded-coords #Xe2abe00 /eng2/7f/elevator_inside_panel-front  2000.0 -33800.0 30000.0 / 0.0 0.0 0.0> #<cascaded-coords #X10d79fe0 /eng2/8f/elevator_inside_panel-front  2000.0 -33800.0 40000.0 / 0.0 0.0 0.0>)
+[ INFO] [1541079241.065812335] [/run_app_1541079205996487192:ros.roseus]: elevator_call_panel -> (#<cascaded-coords #X62cd280 /eng2/2f/elevator_call_panel-front  3100.0 -31250.0 10000.0 / -1.571 0.0 0.0> #<cascaded-coords #Xe2abd88 /eng2/7f/elevator_call_panel-front  3100.0 -31250.0 30000.0 / -1.571 0.0 0.0> #<cascaded-coords #X10d79f98 /eng2/8f/elevator_call_panel-front  3100.0 -31250.0 40000.0 / -1.571 0.0 0.0>)
+[ INFO] [1541079241.067054552] [/run_app_1541079205996487192:ros.roseus]: elevator_inside_panel -> (#<cascaded-coords #X62cd2f8 /eng2/2f/elevator_inside_panel-front  2000.0 -33800.0 10000.0 / 0.0 0.0 0.0> #<cascaded-coords #Xe2abe00 /eng2/7f/elevator_inside_panel-front  2000.0 -33800.0 30000.0 / 0.0 0.0 0.0> #<cascaded-coords #X10d79fe0 /eng2/8f/elevator_inside_panel-front  2000.0 -33800.0 40000.0 / 0.0 0.0 0.0>)
+[ INFO] [1541079241.068685885] [/run_app_1541079205996487192:ros.roseus]: elevator_call_panel -> (#<cascaded-coords #X62cd280 /eng2/2f/elevator_call_panel-front  3100.0 -31250.0 10000.0 / -1.571 0.0 0.0> #<cascaded-coords #Xe2abd88 /eng2/7f/elevator_call_panel-front  3100.0 -31250.0 30000.0 / -1.571 0.0 0.0> #<cascaded-coords #X10d79f98 /eng2/8f/elevator_call_panel-front  3100.0 -31250.0 40000.0 / -1.571 0.0 0.0>)
+[ INFO] [1541079241.070547085] [/run_app_1541079205996487192:ros.roseus]: room83b1 -> (#<cascaded-coords #X10d79f20 /eng2/8f/room83b1-front  -1000.0 200.0 40000.0 / -1.608e-16 0.0 0.0>)
+[ INFO] [1541079241.071743816] [/run_app_1541079205996487192:ros.roseus]: no near spot
+[ INFO] [1541079241.071825661] [/run_app_1541079205996487192:ros.roseus]: [at-updater] ((robot-at start) (on bottle table) (openable rarm dishwasher) (openable rarm fridge) (openable rarm room73a1) (available sink) (available counter) (available kitchen) (available table) (available bookshelf) (available drawer)) -> ((robot-at start) (on bottle table) (openable rarm dishwasher) (openable rarm fridge) (openable rarm room73a1) (available sink) (available counter) (available kitchen) (available table) (available bookshelf) (available drawer))
+[ INFO] [1541079241.071848066] [/run_app_1541079205996487192:ros.roseus]: [onhand-updater] update init
+[ INFO] [1541079241.404892302] [/run_app_1541079205996487192:ros.roseus]: [onhand-updater] ((robot-at start) (on bottle table) (openable rarm dishwasher) (openable rarm fridge) (openable rarm room73a1) (available sink) (available counter) (available kitchen) (available table) (available bookshelf) (available drawer)) -> ((robot-at start) (on bottle table) (openable rarm dishwasher) (openable rarm fridge) (openable rarm room73a1) (available sink) (available counter) (available kitchen) (available table) (available bookshelf) (available drawer))
+[ INFO] [1541079241.405025913] [/run_app_1541079205996487192:ros.roseus]: [episodic-object-updater] update goal
+[ INFO] [1541079241.405139789] [/run_app_1541079205996487192:ros.roseus]: [episodic-object-updater] ((on bottle fridge) (forall (?at - spot) (not (open ?at)))) -> ((on bottle fridge) (forall (?at - spot) (not (open ?at))))
+[ INFO] [1541079241.405199569] [/run_app_1541079205996487192:ros.roseus]: [at-updater] update goal
+[ INFO] [1541079241.405300688] [/run_app_1541079205996487192:ros.roseus]: [at-updater] ((on bottle fridge) (forall (?at - spot) (not (open ?at)))) -> ((on bottle fridge) (forall (?at - spot) (not (open ?at))))
+[ INFO] [1541079241.405353780] [/run_app_1541079205996487192:ros.roseus]: [onhand-updater] update goal
+[ INFO] [1541079241.405394017] [/run_app_1541079205996487192:ros.roseus]: [onhand-updater] ((on bottle fridge) (forall (?at - spot) (not (open ?at)))) -> ((on bottle fridge) (forall (?at - spot) (not (open ?at))))
+[ INFO] [1541079241.405441251] [/run_app_1541079205996487192:ros.roseus]: [episodic-object-updater] stopping
+[ INFO] [1541079241.405494741] [/run_app_1541079205996487192:ros.roseus]: [at-updater] stopping
+[ INFO] [1541079241.405527713] [/run_app_1541079205996487192:ros.roseus]: [onhand-updater] stopping
+[ INFO] [1541079241.409648057] [/run_app_1541079205996487192:ros.roseus]: planning from ((= (find-cost) 50)
+ (= (door-cost) 10)
+ (= (total-cost) 0)
+ (= (manip-cost cleaner arms) 30)
+ (= (manip-cost cleaner rarm) 10)
+ (= (manip-cost cleaner larm) 10)
+ (= (manip-cost bottle arms) 30)
+ (= (manip-cost bottle rarm) 10)
+ (= (manip-cost bottle larm) 10)
+ (robot-at start)
+ (on bottle table)
+ (= (distance somewhere somewhere) 1000)
+ (= (distance room73a1 room73a1) 1000)
+ (= (distance bookshelf bookshelf) 1000)
+ (= (distance counter counter) 1000)
+ (= (distance kitchen kitchen) 1000)
+ (= (distance sink sink) 1000)
+ (= (distance drawer drawer) 1000)
+ (= (distance dishwasher dishwasher) 1000)
+ (= (distance fridge fridge) 1000)
+ (= (distance table table) 1000)
+ (= (distance start start) 1000)
+ (= (distance somewhere room73a1) 30)
+ (= (distance somewhere bookshelf) 30)
+ (= (distance somewhere counter) 30)
+ (= (distance somewhere kitchen) 30)
+ (= (distance somewhere sink) 30)
+ (= (distance somewhere drawer) 30)
+ (= (distance somewhere dishwasher) 30)
+ (= (distance somewhere fridge) 30)
+ (= (distance somewhere table) 30)
+ (= (distance somewhere start) 30)
+ (= (distance room73a1 somewhere) 30)
+ (= (distance room73a1 bookshelf) 30)
+ (= (distance room73a1 counter) 30)
+ (= (distance room73a1 kitchen) 30)
+ (= (distance room73a1 sink) 9)
+ (= (distance room73a1 drawer) 30)
+ (= (distance room73a1 dishwasher) 30)
+ (= (distance room73a1 fridge) 10)
+ (= (distance room73a1 table) 9)
+ (= (distance room73a1 start) 9)
+ (= (distance bookshelf somewhere) 30)
+ (= (distance bookshelf room73a1) 30)
+ (= (distance bookshelf counter) 30)
+ (= (distance bookshelf kitchen) 30)
+ (= (distance bookshelf sink) 30)
+ (= (distance bookshelf drawer) 30)
+ (= (distance bookshelf dishwasher) 30)
+ (= (distance bookshelf fridge) 30)
+ (= (distance bookshelf table) 30)
+ (= (distance bookshelf start) 30)
+ (= (distance counter somewhere) 30)
+ (= (distance counter room73a1) 30)
+ (= (distance counter bookshelf) 30)
+ (= (distance counter kitchen) 30)
+ (= (distance counter sink) 30)
+ (= (distance counter drawer) 30)
+ (= (distance counter dishwasher) 30)
+ (= (distance counter fridge) 30)
+ (= (distance counter table) 30)
+ (= (distance counter start) 30)
+ (= (distance kitchen somewhere) 30)
+ (= (distance kitchen room73a1) 30)
+ (= (distance kitchen bookshelf) 30)
+ (= (distance kitchen counter) 30)
+ (= (distance kitchen sink) 30)
+ (= (distance kitchen drawer) 30)
+ (= (distance kitchen dishwasher) 30)
+ (= (distance kitchen fridge) 30)
+ (= (distance kitchen table) 30)
+ (= (distance kitchen start) 30)
+ (= (distance sink somewhere) 30)
+ (= (distance sink room73a1) 9)
+ (= (distance sink bookshelf) 30)
+ (= (distance sink counter) 30)
+ (= (distance sink kitchen) 30)
+ (= (distance sink drawer) 30)
+ (= (distance sink dishwasher) 30)
+ (= (distance sink fridge) 3)
+ (= (distance sink table) 3)
+ (= (distance sink start) 4)
+ (= (distance drawer somewhere) 30)
+ (= (distance drawer room73a1) 30)
+ (= (distance drawer bookshelf) 30)
+ (= (distance drawer counter) 30)
+ (= (distance drawer kitchen) 30)
+ (= (distance drawer sink) 30)
+ (= (distance drawer dishwasher) 30)
+ (= (distance drawer fridge) 30)
+ (= (distance drawer table) 30)
+ (= (distance drawer start) 30)
+ (= (distance dishwasher somewhere) 30)
+ (= (distance dishwasher room73a1) 30)
+ (= (distance dishwasher bookshelf) 30)
+ (= (distance dishwasher counter) 30)
+ (= (distance dishwasher kitchen) 30)
+ (= (distance dishwasher sink) 30)
+ (= (distance dishwasher drawer) 30)
+ (= (distance dishwasher fridge) 30)
+ (= (distance dishwasher table) 30)
+ (= (distance dishwasher start) 30)
+ (= (distance fridge somewhere) 30)
+ (= (distance fridge room73a1) 10)
+ (= (distance fridge bookshelf) 30)
+ (= (distance fridge counter) 30)
+ (= (distance fridge kitchen) 30)
+ (= (distance fridge sink) 3)
+ (= (distance fridge drawer) 30)
+ (= (distance fridge dishwasher) 30)
+ (= (distance fridge table) 0)
+ (= (distance fridge start) 1)
+ (= (distance table somewhere) 30)
+ (= (distance table room73a1) 9)
+ (= (distance table bookshelf) 30)
+ (= (distance table counter) 30)
+ (= (distance table kitchen) 30)
+ (= (distance table sink) 3)
+ (= (distance table drawer) 30)
+ (= (distance table dishwasher) 30)
+ (= (distance table fridge) 0)
+ (= (distance table start) 1)
+ (= (distance start somewhere) 30)
+ (= (distance start room73a1) 9)
+ (= (distance start bookshelf) 30)
+ (= (distance start counter) 30)
+ (= (distance start kitchen) 30)
+ (= (distance start sink) 4)
+ (= (distance start drawer) 30)
+ (= (distance start dishwasher) 30)
+ (= (distance start fridge) 1)
+ (= (distance start table) 1)
+ (openable rarm dishwasher)
+ (openable rarm fridge)
+ (openable rarm room73a1)
+ (available sink)
+ (available counter)
+ (available kitchen)
+ (available table)
+ (available bookshelf)
+ (available drawer))
+
+[ INFO] [1541079241.409778602] [/run_app_1541079205996487192:ros.roseus]: to goal ((on bottle fridge) (forall (?at - spot) (not (open ?at))))
+
+waiting pddl_planner
+get actionlib server
+send goal and waiting...
+waiting pddl_planner
+get actionlib server
+send goal and waiting...
+waiting pddl_planner
+get actionlib server
+send goal and waiting...
+[ INFO] [1541079246.646810743] [/run_app_1541079205996487192:ros.roseus]: cached plan: 5bdb00ce224a2b08ca1bde12
+Cannot parse arguments: Cannot open display: 
+Error: no "view" rule for type "application/pdf" passed its test case
+       (for more information, add "--debug=1" on the command line)
+Opening "/tmp/graph.pdf" with Document Viewer  (application/pdf)
+Cannot parse arguments: Cannot open display: 
+/usr/bin/xdg-open: 468: /usr/bin/xdg-open: links2: not found
+/usr/bin/xdg-open: 468: /usr/bin/xdg-open: links: not found
+/usr/bin/xdg-open: 468: /usr/bin/xdg-open: lynx: not found
+/usr/bin/xdg-open: 468: /usr/bin/xdg-open: w3m: not found
+xdg-open: no method available for opening '/tmp/graph.pdf'
+[ INFO] [1541079246.962082012] [/run_app_1541079205996487192:ros.roseus]: saved as 5bdb00ce224a2b08ca1bde13
+#<state-machine #X81b07b8>
+2.irteusgl$ send *sm* :active-state
+#<state #X7f08b90 (move-to start fridge)>
+3.irteusgl$ exit
+
+
+
+
+
+

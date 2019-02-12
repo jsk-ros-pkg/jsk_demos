@@ -157,9 +157,9 @@
         ('fridge
          (cond
           ((string= "/eng8" (send (get-current-scene) :name))
-           (setq *tabletop-bbox-topic* "/detect_cans/label_bbox_array/output")
+           (setq *tabletop-bbox-topic* "/detect_cans/euclidean_clustering_decomposer/boxes")
            (setq *preferable-object-pose* (make-coords :pos (float-vector 1000 -100 1100)))
-           (set-alist :target-object-label 7 userdata) ;; milktea
+           (set-alist :target-object-label nil userdata) ;; milktea
            ;;(set-alist :target-object-label 33 userdata)  ;; milktea
            )
           (t ;; eng2
@@ -222,7 +222,7 @@
             ((eq spot 'fridge)
              (when (string= "/eng8" (send (get-current-scene) :name))
                (set-alist :pick-pos (float-vector 200 -150 0) userdata)
-               (set-alist :grasp-offset -70 userdata)
+               ;;(set-alist :grasp-offset -70 userdata)
                (set-alist :grasp-rotation 0 userdata))
              (setq res (pick-in-fridge userdata)))
             ((eq obj 'bowl)
