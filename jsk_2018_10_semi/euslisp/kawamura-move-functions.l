@@ -33,3 +33,4 @@
 (defun dv()
     (send *irtviewer* :look-all *fetch*)
 )
+

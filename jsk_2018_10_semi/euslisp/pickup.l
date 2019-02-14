@@ -1,29 +1,20 @@
+(load "arm-movement-functions.l")
 ;;(ros::load-ros-manifest "jsk_pcl_ros")
 (ros::load-ros-manifest "jsk_recognition_msgs")
 (ros::load-ros-manifest "fetch_driver_msgs")
 
 ;; クラスタリング結果であるBoundingBoxのtopic名
 (defvar *bounding-box-topic* "/delivery_box_pickup/cluster_point_indices_decomposer_align_boxes_with_plane/boxes")
+(defvar *box-address-topic* "/delivery_box_pickup/box_address")
 (defvar *bounding-box-list* nil)
 (defvar *bx-list* nil)
+
 ;;(setq *co* (instance collision-object-publisher :init))
 ;;(setq *table* (make-cube 800 800 800))
 ;; ros::initする
 (ros::roseus "pick-up-box")
 
-(setq look-down-pose #f(386.15 75.6359 80.1929 -11.4118 98.5702 0.060285 95.1322 -0.060071 -0.895055 42.9474));;見下ろすポーズ
-
-(defun goto-kitchenside nil
-  (send *ri* :move-to (send (send (send *eng2-scene* :spot "coe-spot") :copy-worldcoords)
-			       :transform (make-coords :pos #f(0 0 0) :rpy (float-vector -0.5 0 0))))
-  (send *fetch* :move-to (send (send (send *eng2-scene* :spot "coe-spot") :copy-worldcoords)
-			       :transform (make-coords :pos #f(0 0 0) :rpy (float-vector -0.5 0 0))) :world)
-  (send *ri* :angle-vector look-down-pose 5000)
-  (send *fetch* :angle-vector look-down-pose)
-  (send *irtviewer* :look-all *fetch*)
-  )
-
-
+;;*bounding-box-list*をsubscribeiして, 各boxの座標を計算する. 各座標は*bx-list*の中の, 各要素 :worldcoords になる?
 (defun detect-box-cb (msg)
   (setq *bounding-box-list* (send msg :boxes)) ;; boxesは、BoundingBoxのArray(Euslispではlist)
   (setq *bx-list* nil)
@@ -38,7 +29,7 @@
                        (cam->obj-coords (ros::tf-pose->coords (send b :pose)))
                        ;; (2) *dxl-armed-turtlebot*モデルがカメラの座標系をもってるので、取得する
                        (cam-coords (send (send *fetch* :head_camera_rgb_optical_frame_lk) :copy-worldcoords)))
-                  ;; (3) Euslisp内部でのworld座標系の値にして、そこにmake-cubeの箱を設置する
+                  ;; (3) Euslisp内部でのworld座標系の値にして、そこにmake-cubeの荷物を設置する
                   (send bx :newcoords (send cam-coords :transform cam->obj-coords))
                   (send bx :worldcoords)
 		  (setq *bx-list* (append *bx-list* (list bx)))
@@ -50,8 +41,9 @@
     )
   )
 
+
+;;荷物を取ることを試みる
 (defun try-to-pickup nil
-  ;;箱を取ることを試みる
   (progn
     (print "picking up...")
     (unix:sleep 1)
@@ -63,24 +55,38 @@
     (if (<= gripper-position 100)
 	(setq pickup-status 1)
       (setq pickup-status 0)
-      ) 
+      )
     )
   )
 
-(defun check-address nil
-  (print "cheking address...")
-  )
-
+;;宛先に応じたカゴに荷物を入れ、カゴに対応するrosparamをincrementする
 (defun store-box nil
-  (print "storing box...")
+  (let (address nil)
+    (progn
+      (print "cheking address and storing box ...")
+      ;;addressはstringで"red", "green", "blue"で受け取る
+      (ros::subscribe *box-address-topic* std_msgs::string		      
+                      #'(lambda (msg)
+			  (progn
+			    (ros::ros-info (format nil "box address ~A" (send msg :data)))
+			    (setq address (send msg :data)))))
+      (store-box-to-basket address)
+      (ros::set-param (format nil "/box_number/~A" address) (+ (ros::get-param (format nil "/box_number/~A" address)) 1))
+      )
+    )
   )
 
+
+;;荷物を全て拾い上げたことをpublishする
 (defun publish-pickup-done nil
   (print "done")
   )
 
+
+;;call back でsubscribeするbouding-box*に関する設定
 (ros::subscribe *bounding-box-topic* jsk_recognition_msgs::BoundingBoxArray #'detect-box-cb 1)
 
+;;initialize
 (setq pickup-status 1)
 
 (do-until-key
@@ -90,10 +96,8 @@
        (setq tmp *bx-list*)
        (try-to-pickup)
        (if (= pickup-status 1)
-	   (progn
-	     (check-address)
 	     (store-box)
-	     ))
+	     )
        )
    (publish-pickup-done))
    (ros::spin-once)
