@@ -1,0 +1,39 @@
+<launch>
+
+  <arg name="gui" default="true" />
+  
+  <!-- <include file="$(find jsk_pcl_ros_utils)/sample/include/play_rosbag_shelf_bin.xml" /> -->
+  <arg name="DEFAULT_NAMESPACE" default="address_detection/"/>
+
+  <arg name="INPUT_CLOUD" value="/camera_remote/depth_registered/points"/>
+  <group ns="$(arg DEFAULT_NAMESPACE)">
+
+    <node name="attention_clipper"
+          pkg="nodelet" type="nodelet"
+          args="standalone jsk_pcl/AttentionClipper">
+      <remap from="~input/points" to="$(arg INPUT_CLOUD)" />
+      <rosparam>
+        initial_pos: [0.1, 0.0, 0.0]
+        initial_rot: [0.0, 0.0, 0.0]
+        dimension_x: 0.2
+        dimension_y: 0.15
+        dimension_z: 0.15
+        frame_id: gripper_link
+      </rosparam>
+    </node>
+
+    <node name="extract_indices"
+          pkg="jsk_pcl_ros" type="extract_indices">
+      <remap from="~input" to="$(arg INPUT_CLOUD)" />
+      <remap from="~indices" to="attention_clipper/output/point_indices" />
+    </node>
+
+    <!-- <group if="$(arg gui)"> -->
+    <!--   <node name="rviz" -->
+    <!--         pkg="rviz" type="rviz" -->
+    <!--         args="-d $(find jsk_pcl_ros)/sample/rviz/sample_attention_clipper.rviz"> -->
+    <!--   </node> -->
+    <!-- </group> -->
+    
+  </group>
+</launch>
