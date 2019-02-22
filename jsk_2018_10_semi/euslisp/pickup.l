@@ -8,13 +8,17 @@
 (defvar *box-address-topic* "/delivery_box_pickup/box_address")
 (defvar *bounding-box-list* nil)
 (defvar *bx-list* nil)
+(defvar tmp nil)
+(defvar *table* (make-cube 800 800 800))
 
 ;;(setq *co* (instance collision-object-publisher :init))
-;;(setq *table* (make-cube 800 800 800))
+(setq *table* (make-cube 800 800 800))
 ;; ros::initする
 (ros::roseus "pick-up-box")
 
-;;*bounding-box-list*をsubscribeiして, 各boxの座標を計算する. 各座標は*bx-list*の中の, 各要素 :worldcoords になる?
+
+;;*bounding-box-list*をsubscribeiして, 各boxの座標を計算する. 各座標は*bx-list*の中の, 各要素 :worldcoords になる?(
+(send *fetch* :angle-vector (send *ri* :state :potentio-vector))
 (defun detect-box-cb (msg)
   (setq *bounding-box-list* (send msg :boxes)) ;; boxesは、BoundingBoxのArray(Euslispではlist)
   (setq *bx-list* nil)
@@ -41,37 +45,64 @@
     )
   )
 
+;;call back でsubscribeするbouding-box*に関する設定
+(ros::subscribe *bounding-box-topic* jsk_recognition_msgs::BoundingBoxArray #'detect-box-cb 1)
+
+
+(defun reach-arm nil
+  (if (= (length tmp) 1)
+      (progn
+	(print "picking up...")
+	(send *co* :wipe-all)
+	(setq table-coords (send (send (car tmp) :copy-worldcoords) :translate #f(0 0 -400)))
+	(send *co* :add-object  *table* :frame-id "base_link" :relative-pose table-coords)
+	(send *fetch* :reset-pose)
+	(setq temae-coords (send (car tmp) :copy-worldcoords))
+	(send temae-coords :rotate (/ pi -2) :y)
+	(send temae-coords :translate #f(-300.0 0.0 0.0))
+	(send *ri* :stop-grasp)
+	(send *ri* :angle-vector (send *fetch* :inverse-kinematics temae-coords)  10000)
+	(send *ri* :wait-interpolation)
+	(send temae-coords :translate #f(270.0 0.0 0.0))
+	(send *ri* :angle-vector (send *fetch* :inverse-kinematics temae-coords)  10000)
+	(send *ri* :wait-interpolation)
+	(send *ri* :start-grasp :wait t)
+	)
+    (print "more than 1 objects were detected")
+    )
+  )
+
 
 ;;荷物を取ることを試みる
 (defun try-to-pickup nil
   (progn
-    (print "picking up...")
-    (unix:sleep 1)
-    (setq gripper-state (one-shot-subscribe "gripper_state" fetch_driver_msgs::GripperState))
+    ;; (setq gripper-state (one-shot-subscribe "gripper_state" fetch_driver_msgs::GripperState))
     ;;gripper-state の状態をgripper-stateに入れる
-    (setq gripper-positon (elt (send gripper-state :joints) 0) :position)
+    ;; (setq gripper-positon (elt (send gripper-state :joints) 0) :position)
     ;;gripper-position の状態をgripper-stateに入れる
-    (format t "gripper position :~A ~%" (send (elt b 0) :position))
-    (if (<= gripper-position 100)
-	(setq pickup-status 1)
-      (setq pickup-status 0)
-      )
+    ;; (format t "gripper position :~A ~%" (send (elt b 0) :position))
+    (reach-arm)
     )
   )
 
+(setq address "red")
+;
 ;;宛先に応じたカゴに荷物を入れ、カゴに対応するrosparamをincrementする
 (defun store-box nil
-  (let (address nil)
+  (let (address)
     (progn
       (print "cheking address and storing box ...")
-      ;;addressはstringで"red", "green", "blue"で受け取る
-      (ros::subscribe *box-address-topic* std_msgs::string		      
-                      #'(lambda (msg)
-			  (progn
-			    (ros::ros-info (format nil "box address ~A" (send msg :data)))
-			    (setq address (send msg :data)))))
+      (check-address)
+      ;; ;;addressはstringで"red", "green", "blue"で受け取る
+      ;; (ros::subscribe *box-address-topic* std_msgs::string		      
+      ;;                 #'(lambda (msg)
+      ;; 			  (progn
+      ;; 			    (ros::ros-info (format nil "box address ~A" (send msg :data)))
+      ;; 			    (setq address (send msg :data)))))
+      (setq address "red")
       (store-box-to-basket address)
       (ros::set-param (format nil "/box_number/~A" address) (+ (ros::get-param (format nil "/box_number/~A" address)) 1))
+      (print "sotring box")
       )
     )
   )
@@ -79,12 +110,10 @@
 
 ;;荷物を全て拾い上げたことをpublishする
 (defun publish-pickup-done nil
-  (print "done")
+;;  (print "done")
   )
 
 
-;;call back でsubscribeするbouding-box*に関する設定
-(ros::subscribe *bounding-box-topic* jsk_recognition_msgs::BoundingBoxArray #'detect-box-cb 1)
 
 ;;initialize
 (setq pickup-status 1)
@@ -99,7 +128,8 @@
 	     (store-box)
 	     )
        )
-   (publish-pickup-done))
+   (publish-pickup-done)
+   )
    (ros::spin-once)
    (ros::sleep)
  )

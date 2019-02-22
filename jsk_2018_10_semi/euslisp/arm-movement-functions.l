@@ -16,7 +16,8 @@
 (setq look-angle-3 #f(361.895 -37.8968 41.0377 100.429 92.6376 -130.04 -78.7154 -49.0591 -2.52651 15.5695))
 (setq look-angle-4 #f(361.888 -37.8528 41.0377 100.385 92.6156 -129.996 -78.7594 52.0591 -2.49254 15.6574))
 (setq look-angle-5 #f(361.529 -24.4935 43.4547 142.419 57.2836 -164.471 -123.759 74.8008 -10.9444 34.3781))
-
+(setq *cube* (make-cube 100 100 100))
+(send *cube* :newcoords (make-coords :pos #f(3237.32 8094.795 30749.2 ) :rpy #f(1.563 0.003 0.003)))
 
 
 (defun goto-kitchenside (&optional (move-real t))
@@ -34,19 +35,20 @@
   )
 
 
+
 (defun store-box-to-basket (address  &optional (set-collision-object t))
   (if set-collision-object
     	(send *co* :add-object *baskets* :frame-id "base_link" :relative-pose (make-coords :pos #f(250 0 450)))
     )    
   (progn
-    (send *ri* :angle-vector mid-point-angle 5000)
+    (send *ri* :angle-vector mid-point-angle 10000)
     (send *ri* :start-grasp)
     (send *ri* :wait-interpolation)
     ;;address に応じて, カゴの上空まで腕を伸ばす
     (cond
-     ((string= address "red") (send *ri* :angle-vector basket-red-angle 5000)  (send *fetch* :angle-vector basket-red-angle ))
-     ((string= address "green") (send *ri* :angle-vector basket-green-angle 5000)  (send *fetch* :angle-vector basket-green-angle ))
-     ((string= address "blue") (send *ri* :angle-vector basket-blue-angle 5000)  (send *fetch* :angle-vector basket-blue-angle ))
+     ((string= address "red") (send *ri* :angle-vector basket-red-angle 10000)  (send *fetch* :angle-vector basket-red-angle ))
+     ((string= address "green") (send *ri* :angle-vector basket-green-angle 10000)  (send *fetch* :angle-vector basket-green-angle ))
+     ((string= address "blue") (send *ri* :angle-vector basket-blue-angle 10000)  (send *fetch* :angle-vector basket-blue-angle ))
      )
     (send *ri* :wait-interpolation)
     (send *ri* :stop-grasp)
@@ -58,3 +60,27 @@
     )
   )
 
+
+(defun check-address nil
+  (send *fetch* :angle-vector look-angle-1)
+  (send *ri* :angle-vector look-angle-1 10000)
+  (send *ri* :wait-interpolation)
+  
+  
+  (send *fetch* :angle-vector look-angle-2)
+  (send *ri* :angle-vector look-angle-2 10000)
+  (send *ri* :wait-interpolation)
+  
+  (send *fetch* :angle-vector look-angle-3)
+  (send *ri* :angle-vector look-angle-3 10000)
+  (send *ri* :wait-interpolation)
+
+  (send *fetch* :angle-vector look-angle-4)
+  (send *ri* :angle-vector look-angle-4 10000)
+  (send *ri* :wait-interpolation)
+  
+
+  (send *fetch* :angle-vector look-angle-5)
+  (send *ri* :angle-vector look-angle-5 10000)
+  (send *ri* :wait-interpolation)
+  )
