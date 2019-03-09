@@ -1,7 +1,7 @@
 <launch>
   <include file="$(find jsk_2018_10_semi)/launch/table_plane_detection.launch"/>
   <include file="$(find jsk_2018_10_semi)/launch/remote_camera_fetch.launch"/>
-  <!-- <include file="$(find jsk_2018_10_semi)/launch/attention_clipper.launch"/> -->
+  <include file="$(find jsk_2018_10_semi)/launch/attention_clipper.launch"/>
   <node pkg="jsk_2018_10_semi" type="add_box_icons.py" name="add_icons" output="screen" />
   <arg name="FILTER_NAME_SUFFIX" default=""/>
   <arg name="DEFAULT_NAMESPACE" default="delivery_box_pickup/"/>
