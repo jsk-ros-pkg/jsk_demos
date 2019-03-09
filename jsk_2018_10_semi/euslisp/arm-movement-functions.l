@@ -3,10 +3,10 @@
 (setq *co* (instance collision-object-publisher :init))
 (setq *baskets* (make-cube 400 500 200))
 
-;;台の前にたどり着いた時に, はおどぉ俯瞰できるようなポーズ
+;;台の前にたどり着いた時に, 俯瞰できるようなポーズ
 (setq look-down-pose #f(386.15 75.6359 80.1929 -11.4118 98.5702 0.060285 95.1322 -0.060071 -0.895055 42.9474))
 
-(setq mid-point-angle #f(361.933 -43.4998 14.3629 92.2113 128.973 -99.8494 101.329 81.9859 0.521157 2.82537))
+(setq mid-point-angle #f(381.933 -43.4998 14.3629 92.2113 128.973 -99.8494 101.329 81.9859 0.521157 2.82537))
 (setq basket-red-angle #f(361.506 2.33516 22.5147 61.6253 128.973 -100.992 84.8051 -32.3159 0.147273 75))
 (setq basket-green-angle #f(362.231 -37.699 41.0157 67.4041 122.015 -135.972 96.1869 87.6768 0.577807 75))
 (setq basket-blue-angle #f(362.238 -86.3245 41.0816 67.3822 128.973 -135.687 101.065 48.4995 0.566469 75))
@@ -41,9 +41,8 @@
     	(send *co* :add-object *baskets* :frame-id "base_link" :relative-pose (make-coords :pos #f(250 0 450)))
     )    
   (progn
-    (send *ri* :angle-vector mid-point-angle 10000)
-    (send *ri* :start-grasp)
-    (send *ri* :wait-interpolation)
+;;    (send *ri* :angle-vector mid-point-angle 10000)
+;;    (send *ri* :wait-interpolation)
     ;;address に応じて, カゴの上空まで腕を伸ばす
     (cond
      ((string= address "red") (send *ri* :angle-vector basket-red-angle 10000)  (send *fetch* :angle-vector basket-red-angle ))
@@ -56,31 +55,55 @@
     (dv)
     ;;(send *ri* :angle-vector (send *fetch* :reset-pose) 5000)
     ;;(send *ri* :wait-interpolation)
-    (if set-collision-object (send *co* :wipe-all))
+;;    (if set-collision-object (send *co* :wipe-all))
     )
   )
 
+(defun address-color-check nil
+  (print "checking color...")
+  (cond ((> (send (one-shot-subscribe "/address_detection/red/euclidean_clustering/cluster_num" jsk_recognition_msgs::Int32Stamped) :data) 0)
+	 (return-from address-color-check "red"))
+	((> (send (one-shot-subscribe "/address_detection/green/euclidean_clustering/cluster_num" jsk_recognition_msgs::Int32Stamped) :data) 0)
+	 (return-from address-color-check "green"))
+	;; ((> (one-shot-subscribe "/address_detection/red/euclidean_clustering/cluster_num" jsk_recognition_msgs::Int32Stamped) 0)
+	;;  (return "blue"))
+	 (t nil)
+	)
+ )
 
 (defun check-address nil
-  (send *fetch* :angle-vector look-angle-1)
-  (send *ri* :angle-vector look-angle-1 10000)
-  (send *ri* :wait-interpolation)
-  
-  
-  (send *fetch* :angle-vector look-angle-2)
-  (send *ri* :angle-vector look-angle-2 10000)
-  (send *ri* :wait-interpolation)
-  
-  (send *fetch* :angle-vector look-angle-3)
-  (send *ri* :angle-vector look-angle-3 10000)
-  (send *ri* :wait-interpolation)
+  (progn
+    (let (address)
+      (send *fetch* :angle-vector look-angle-1)
+      (send *ri* :angle-vector look-angle-1 10000)
+      (send *ri* :wait-interpolation)
+      (setq address (address-color-check))
+      (if address (return-from check-address address))
+      
+      (send *fetch* :angle-vector look-angle-2)
+      (send *ri* :angle-vector look-angle-2 3000)
+      (send *ri* :wait-interpolation)
+      (setq address (address-color-check))
+      (if address (return-from check-address address))
+      
+      (send *fetch* :angle-vector look-angle-3)
+      (send *ri* :angle-vector look-angle-3 3000)
+      (send *ri* :wait-interpolation)
+      (setq address (address-color-check))
+      (if address (return-from check-address address))
+      
+      (send *fetch* :angle-vector look-angle-4)
+      (send *ri* :angle-vector look-angle-4 3000)
+      (send *ri* :wait-interpolation)
+      (setq address (address-color-check))
+      (if address (return-from check-address address))
+      
 
-  (send *fetch* :angle-vector look-angle-4)
-  (send *ri* :angle-vector look-angle-4 10000)
-  (send *ri* :wait-interpolation)
-  
-
-  (send *fetch* :angle-vector look-angle-5)
-  (send *ri* :angle-vector look-angle-5 10000)
-  (send *ri* :wait-interpolation)
-  )
+      (send *fetch* :angle-vector look-angle-5)
+      (send *ri* :angle-vector look-angle-5 10000)
+      (send *ri* :wait-interpolation)
+      (setq address (address-color-check))
+      (if address (return address))      
+      )
+    )
+)

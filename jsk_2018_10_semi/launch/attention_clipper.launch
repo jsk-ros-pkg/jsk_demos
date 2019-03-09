@@ -1,19 +1,18 @@
 <launch>
-
-  <arg name="gui" default="true" />
-  
+  <arg name="gui" default="true" />  
   <!-- <include file="$(find jsk_pcl_ros_utils)/sample/include/play_rosbag_shelf_bin.xml" /> -->
   <arg name="DEFAULT_NAMESPACE" default="address_detection/"/>
+  <arg name="INPUT_CLOUD" default="/camera_remote/depth_registered/points"/>
+  <arg name="FILTER_NAME_SUFFIX" default=""/>
+  <arg name="manager" default="hsi_filter_manager$(arg FILTER_NAME_SUFFIX)" />
 
-  <arg name="INPUT_CLOUD" value="/camera_remote/depth_registered/points"/>
   <group ns="$(arg DEFAULT_NAMESPACE)">
-
     <node name="attention_clipper"
           pkg="nodelet" type="nodelet"
           args="standalone jsk_pcl/AttentionClipper">
       <remap from="~input/points" to="$(arg INPUT_CLOUD)" />
       <rosparam>
-        initial_pos: [0.1, 0.0, 0.0]
+        initial_pos: [0.08, 0.0, 0.0]
         initial_rot: [0.0, 0.0, 0.0]
         dimension_x: 0.2
         dimension_y: 0.15
@@ -21,19 +20,63 @@
         frame_id: gripper_link
       </rosparam>
     </node>
-
+    
     <node name="extract_indices"
           pkg="jsk_pcl_ros" type="extract_indices">
       <remap from="~input" to="$(arg INPUT_CLOUD)" />
       <remap from="~indices" to="attention_clipper/output/point_indices" />
     </node>
-
-    <!-- <group if="$(arg gui)"> -->
-    <!--   <node name="rviz" -->
-    <!--         pkg="rviz" type="rviz" -->
-    <!--         args="-d $(find jsk_pcl_ros)/sample/rviz/sample_attention_clipper.rviz"> -->
-    <!--   </node> -->
-    <!-- </group> -->
     
-  </group>
+    <group ns="red">
+      <node pkg="nodelet" type="nodelet" name="hsi_filter$(arg FILTER_NAME_SUFFIX)"
+            args="standalone jsk_pcl/HSIColorFilter $(arg manager)" output="screen">
+	<remap from="~input" to="/address_detection/extract_indices/output" />
+	<rosparam>
+          use_indices: false
+          keep_organized: true
+          h_limit_max: 8
+          h_limit_min: -38
+          s_limit_max: 255
+          s_limit_min: 0
+          i_limit_max: 255
+          i_limit_min: 0
+        </rosparam>
+      </node>
+      
+      <node pkg="nodelet" type="nodelet" name="euclidean_clustering$(arg FILTER_NAME_SUFFIX)"
+            args="standalone jsk_pcl/EuclideanClustering $(arg manager)" output="screen" respawn="true">
+      	<remap from="~input" to="/address_detection/red/hsi_filter/output" />
+      	<rosparam>
+          tolerance: 0.03
+          min_size: 500
+        </rosparam>
+      </node>
+    </group>
+    
+    <group ns="green">
+      <node pkg="nodelet" type="nodelet" name="hsi_filter$(arg FILTER_NAME_SUFFIX)"
+            args="standalone jsk_pcl/HSIColorFilter $(arg manager)" output="screen">
+	<remap from="~input" to="/address_detection/extract_indices/output" />
+	<rosparam>
+          use_indices: false
+          keep_organized: true
+          h_limit_max: 127
+          h_limit_min: 76
+          s_limit_max: 255
+          s_limit_min: 57
+          i_limit_max: 255
+          i_limit_min: 94
+        </rosparam>
+      </node>
+      
+      <node pkg="nodelet" type="nodelet" name="euclidean_clustering$(arg FILTER_NAME_SUFFIX)"
+            args="standalone jsk_pcl/EuclideanClustering $(arg manager)" output="screen" respawn="true">
+      	<remap from="~input" to="hsi_filter/output" />
+      	<rosparam>
+          tolerance: 0.03
+          min_size: 500
+        </rosparam>
+      </node>
+    </group>
+    </group>    
 </launch>

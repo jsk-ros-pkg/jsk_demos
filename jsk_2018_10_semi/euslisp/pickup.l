@@ -1,4 +1,5 @@
 (load "arm-movement-functions.l")
+(load "models/foldable-desk-object.l")
 ;;(ros::load-ros-manifest "jsk_pcl_ros")
 (ros::load-ros-manifest "jsk_recognition_msgs")
 (ros::load-ros-manifest "fetch_driver_msgs")
@@ -9,10 +10,9 @@
 (defvar *bounding-box-list* nil)
 (defvar *bx-list* nil)
 (defvar tmp nil)
-(defvar *table* (make-cube 800 800 800))
-
+(setq watching-pose #f(353.747 -84.1712 40.9718 100.495 92.6595 -130.04 -78.7594 -86.5444 -0.317235 50.5719))
 ;;(setq *co* (instance collision-object-publisher :init))
-(setq *table* (make-cube 800 800 800))
+(setq *table* (instance foldable-desk-object :init))
 ;; ros::initする
 (ros::roseus "pick-up-box")
 
@@ -20,6 +20,8 @@
 ;;*bounding-box-list*をsubscribeiして, 各boxの座標を計算する. 各座標は*bx-list*の中の, 各要素 :worldcoords になる?(
 (send *fetch* :angle-vector (send *ri* :state :potentio-vector))
 (defun detect-box-cb (msg)
+  (setq a (send *ri* :state :angle-vector))
+  (send *fetch* :angle-vector a)
   (setq *bounding-box-list* (send msg :boxes)) ;; boxesは、BoundingBoxのArray(Euslispではlist)
   (setq *bx-list* nil)
   ;; BoundingBoxがあれば表示する
@@ -49,39 +51,39 @@
 (ros::subscribe *bounding-box-topic* jsk_recognition_msgs::BoundingBoxArray #'detect-box-cb 1)
 
 
-(defun reach-arm nil
-  (if (= (length tmp) 1)
-      (progn
-	(print "picking up...")
-	(send *co* :wipe-all)
-	(setq table-coords (send (send (car tmp) :copy-worldcoords) :translate #f(0 0 -400)))
-	(send *co* :add-object  *table* :frame-id "base_link" :relative-pose table-coords)
-	(send *fetch* :reset-pose)
-	(setq temae-coords (send (car tmp) :copy-worldcoords))
-	(send temae-coords :rotate (/ pi -2) :y)
-	(send temae-coords :translate #f(-300.0 0.0 0.0))
-	(send *ri* :stop-grasp)
-	(send *ri* :angle-vector (send *fetch* :inverse-kinematics temae-coords)  10000)
-	(send *ri* :wait-interpolation)
-	(send temae-coords :translate #f(270.0 0.0 0.0))
-	(send *ri* :angle-vector (send *fetch* :inverse-kinematics temae-coords)  10000)
-	(send *ri* :wait-interpolation)
-	(send *ri* :start-grasp :wait t)
-	)
-    (print "more than 1 objects were detected")
+(defun reach-arm (bx-list) 
+  (progn
+    (let (box-coords)
+      (print "picking up...")
+      ;; collison object を作る
+      ;;*fetch*を毎回reset-poseにして同じようにikを解かせる
+      (send *fetch* :reset-pose)
+      (setq box-coords (send (car bx-list) :copy-worldcoords))
+      (send *ri* :stop-grasp)
+      (send *ri* :angle-vector (send *fetch* :inverse-kinematics (send (send (send box-coords :copy-worldcoords) :translate #f(0.0 0.0 -150.0)) :rotate (/ pi -2) :y)) 10000);;一旦上に
+      (print "upper pos...")
+      (send *ri* :wait-interpolation)
+      (send *ri* :angle-vector (send *fetch* :inverse-kinematics (send (send (send box-coords :copy-worldcoords) :translate #f(0.0 0.0 -35.0)) :rotate (/ pi -2) :y)) 10000);;つかむ場所まで下げる
+      (print "downing...")
+      (send *ri* :wait-interpolation)
+      (send *ri* :start-grasp :effort 60 :wait t);;つかむ
+      (print "graspping...")
+      (send *ri* :angle-vector (send *fetch* :inverse-kinematics (send (send (send box-coords :copy-worldcoords) :translate #f(0.0 0.0 -150.0)) :rotate (/ pi -2) :y)) 2000);;もう一度上に持ち上げる
+      (send *ri* :wait-interpolation)
+      ) 
     )
   )
 
 
 ;;荷物を取ることを試みる
-(defun try-to-pickup nil
+(defun try-to-pickup (bx-list)
   (progn
     ;; (setq gripper-state (one-shot-subscribe "gripper_state" fetch_driver_msgs::GripperState))
     ;;gripper-state の状態をgripper-stateに入れる
     ;; (setq gripper-positon (elt (send gripper-state :joints) 0) :position)
     ;;gripper-position の状態をgripper-stateに入れる
     ;; (format t "gripper position :~A ~%" (send (elt b 0) :position))
-    (reach-arm)
+    (reach-arm bx-list)
     )
   )
 
@@ -92,16 +94,10 @@
   (let (address)
     (progn
       (print "cheking address and storing box ...")
-      (check-address)
-      ;; ;;addressはstringで"red", "green", "blue"で受け取る
-      ;; (ros::subscribe *box-address-topic* std_msgs::string		      
-      ;;                 #'(lambda (msg)
-      ;; 			  (progn
-      ;; 			    (ros::ros-info (format nil "box address ~A" (send msg :data)))
-      ;; 			    (setq address (send msg :data)))))
-      (setq address "red")
+      (setq address (check-address))
       (store-box-to-basket address)
       (ros::set-param (format nil "/box_number/~A" address) (+ (ros::get-param (format nil "/box_number/~A" address)) 1))
+      (format t "address of bos is ~A" address )
       (print "sotring box")
       )
     )
@@ -110,26 +106,36 @@
 
 ;;荷物を全て拾い上げたことをpublishする
 (defun publish-pickup-done nil
-;;  (print "done")
+  (print "done")
   )
-
-
 
 ;;initialize
 (setq pickup-status 1)
 
 (do-until-key
  (x::window-main-one) ;; IRT viewerの視点を変えられる。見にくければ変えよう
+ (send *co* :wipe-all)
+ (send *co* :add-object  *table* :frame-id "base_link" :relative-pose (make-coords :pos (float-vector 800 0 0)))
+ (send *ri* :angle-vector watching-pose 10000)
+ (send *ri* :wait-interpolation)
+ (setq a (send *ri* :state :angle-vector))
+ (send *fetch* :angle-vector a)
  (if *bx-list*
-     (progn
-       (setq tmp *bx-list*)
-       (try-to-pickup)
-       (if (= pickup-status 1)
+     (let (bx-list-tmp)
+       (progn
+       	 (unix:sleep 2)
+       	 (setq bx-list-tmp *bx-list*)
+       	 (try-to-pickup bx-list-tmp)
+	 (if (= pickup-status 1)
 	     (store-box)
-	     )
+	   )
+	 (send *ri* :angle-vector watching-pose 10000)
+	 (send *ri* :wait-interpolation)	
+	 )
        )
    (publish-pickup-done)
    )
+ (send *co* :wipe-all)
    (ros::spin-once)
    (ros::sleep)
  )
