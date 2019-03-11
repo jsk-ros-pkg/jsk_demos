@@ -1,5 +1,7 @@
 <launch>
   <include file="$(find jsk_2018_10_semi)/launch/table_plane_detection.launch"/>
+  <include file="$(find jsk_2018_10_semi)/launch/remote_camera_fetch.launch"/>
+  <include file="$(find jsk_2018_10_semi)/launch/attention_clipper.launch"/>
   <node pkg="jsk_2018_10_semi" type="add_box_icons.py" name="add_icons" output="screen" />
   <arg name="FILTER_NAME_SUFFIX" default=""/>
   <arg name="DEFAULT_NAMESPACE" default="delivery_box_pickup/"/>
@@ -32,7 +34,7 @@
       <rosparam>
         use_coefficients: true
         use_async: true
-        min_height: 0.01
+        min_height: 0.020
         max_height: 0.3
       </rosparam>
     </node>
@@ -61,7 +63,7 @@
           args="standalone jsk_pcl/EuclideanClustering $(arg manager)" output="screen" respawn="true">
       <remap from="~input" to="$(arg OUTPUT)" />
       <rosparam>
-        tolerance: 0.01
+        tolerance: 0.03
         min_size: 500
       </rosparam>
     </node>

@@ -7,11 +7,12 @@
 
 ;; クラスタリング結果であるBoundingBoxのtopic名
 ;;(defvar *topic-name* "/camera/depth_registered/cluster_decomposer/boxes")
-(defvar *topic-name* "/HSI_color_filter/boxes")
+;;(defvar *topic-name* "/HSI_color_filter/boxes")
+(defvar *topic-name* "/delivery_box_pickup/cluster_point_indices_decomposer_align_boxes_with_plane/boxes")
 (defvar *bounding-box-list* nil)
 (defvar *bx-list* nil)
 ;;(setq *co* (instance collision-object-publisher :init))
-;;(setq *table* (make-cube 800 800 800))
+(setq *table* (make-cube 800 800 800))
 ;; ros::initする
 (ros::roseus "boundingboxarray_subscriber")
 
@@ -48,38 +49,44 @@
 (defun reach-arm nil
   (if (= (length tmp) 1)
       (progn
-	#|
-	(send *co* :wipe-all)
+;	(send *co* :wipe-all)
 	(setq target-coords (make-coords :pos (send (car tmp) :worldpos)))
 	(setq table-coords (send (send target-coords :copy-worldcoords) :translate #f(0 0 -400)))
-	(print table-coords)
+	(setq temae-coords (send target-coords :copy-worldcoords))
+	(send temae-coords :rotate (/ pi 2) :y)
+	(send temae-coords :rotate (/ pi 2) :x)
+	(send temae-coords :translate #f(-300.0 0.0 0.0))
+
+x	;;(send *fetch* :angle-vector (send *fetch* :inverse-kinematics temae-coords :debug-veiw t :revert-if-fail nil))
 	(send *table* :translate #f(1000 0 400))
-	(send *co* :add-object  *table* :frame-id "base_link" :relative-pose table-coords))
-      (progn
-	(send *ri* :angle-vector #f(23.102 57.2229 -47.2485 -75.0006 87.4081 -147.508 20.6889 -154.0 -4.25995 13.6359) 5000)
-	(send *ri* :wait-interpolation)
+	;;	(send *co* :add-object  *table* :frame-id "base_link" :relative-pose table-coords))
+	
+	;;	(send *ri* :angle-vector #f(23.102 57.2229 -47.2485 -75.0006 87.4081 -147.508 20.6889 -154.0 -4.25995 13.6359) 10000)	
+;;	(send *ri* :wait-interpolation)
 	(send *ri* :stop-grasp)
-	(send *ri* :angle-vector (send *fetch* :inverse-kinematics temae-coords)  5000)
+	(send *ri* :angle-vector (send *fetch* :inverse-kinematics temae-coords)  6000)
 	(send *ri* :wait-interpolation)
-	(send *ri* :angle-vector (send *fetch* :inverse-kinematics target-coords)  5000)
+	(send temae-coords :translate #f(300.0 0.0  0.0))
+	(send *ri* :angle-vector (send *fetch* :inverse-kinematics temae-coords)  6000)
 	(send *ri* :wait-interpolation)
 	(send *ri* :start-grasp)
-	(send *ri* :stop-grasp)
-	(send *ri* :angle-vector #f(23.102 57.2229 -47.2485 -75.0006 87.4081 -147.508 20.6889 -154.0 -4.25995 13.6359) 5000)
-	(send *ri* :wait-interpolation)
-	(send *ri* :angle-vector (send *fetch* :reset-pose) 5000)
-	(send *ri* :wait-interpolation)
-	)|#
+	;;	(send *ri* :stop-grasp)
+	;;(send *ri* :angle-vector #f(23.102 57.2229 -47.2485 -75.0006 87.4081 -147.508 20.6889 -154.0 -4.25995 13.6359) 100000)
+	;;(send *ri* :wait-interpolation)
+	;; (send *ri* :angle-vector (send *fetch* :reset-pose) 5000)
+	;; (send *ri* :wait-interpolation)
 	)
     (print "more than 1 objects were detected")
-  ))
+    )
+  )
 
-(do-until-key
+
+(do-until-key 
  (x::window-main-one) ;; IRT viewerの視点を変えられる。見にくければ変えよう
  (when *bx-list*
-   (setq tmp *bx-list*)
-;;   (reach-arm)
-;;   (exit)
+   (setq *bx-list*)
+   (reach-arm)
+   (break)
   )
  (ros::spin-once)
  (ros::sleep)

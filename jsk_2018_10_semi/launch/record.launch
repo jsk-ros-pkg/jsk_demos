@@ -3,6 +3,7 @@
   <node name="rosbag"
 	pkg="rosbag" type="record"
 	args="/tf
+              /tf_static
 	      /joint_states
 	      /head_camera/rgb/image_raw/compressed
 	      /head_camera/rgb/camera_info
