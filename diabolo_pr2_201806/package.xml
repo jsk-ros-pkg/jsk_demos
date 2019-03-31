@@ -1,0 +1,20 @@
+<?xml version="1.0"?>
+<package>
+  <name>diabolo_pr2_201806</name>
+  <version>0.0.4</version>
+  <description>diabolo_pr2_201806 package</description>
+
+  <maintainer email="t-murooka@jsk.imi.i.u-tokyo.ac.jp">Takayuki Murooka</maintainer>
+  <author email="t-murooka@jsk.imi.i.u-tokyo.ac.jp">Takayuki Murooka</author>
+
+  <license>BSD</license>
+
+  <buildtool_depend>catkin</buildtool_depend>
+  <build_depend>jsk_maps</build_depend>
+  <build_depend>pr2eus</build_depend>
+  <run_depend>jsk_maps</run_depend>
+  <run_depend>pr2eus</run_depend>
+
+  <export>
+  </export>
+</package>
