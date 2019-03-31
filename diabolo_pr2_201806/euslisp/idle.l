@@ -135,7 +135,7 @@
        (progn
 	 (if (eq diabolo-system t) ;; when diabolo system
 	     (progn
-	       (setq *idle-diabolo-yaw* (* (/ (* *diabolo-system-input-base* 180) 3.14) 1)) ;;TODOTODO   magic number 100
+	       (setq *idle-diabolo-yaw* (* (/ (* *diabolo-system-input-base* 180) 3.14) 1))
 	       )
 	   )
 	 )
@@ -152,8 +152,8 @@
      (if (< *idle-diabolo-yaw* -25) ;;-20)
 	 (setq *idle-diabolo-yaw* -25)) ;;-20))
      
-     (setq *radius* 0.7) ;;(/ (elt (send (send *pr2* :rarm :end-coords) :worldpos) 0) 1000)) ;; [m] ;; TODO
-     (setq *radius* (* *radius* 0.8)) ;; TODO
+     (setq *radius* 0.7)
+     (setq *radius* (* *radius* 0.8))
      (setq *idle-diabolo-yaw-rad* (/ (* *idle-diabolo-yaw* 3.14) 180))
      
      (setq *diff-x* (* *radius* (- 1 (cos *idle-diabolo-yaw-rad*))))
