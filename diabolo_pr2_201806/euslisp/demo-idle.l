@@ -34,7 +34,7 @@
       ;; set diabolo
       (speak-jp "ディアボロを紐に一周巻いてください")
       (unix::usleep 3000000)      
-      (speak-jp "ディアボロの中心の黒い部分が手前になるように注意してください")
+      ;;(speak-jp "ディアボロの中心の黒い部分が手前になるように注意してください")
       (wait-for-hand-impact :larm)
       (wait-for-hand-impact :rarm)      
 
