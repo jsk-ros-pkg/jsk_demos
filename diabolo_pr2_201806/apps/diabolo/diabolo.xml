@@ -1,0 +1,5 @@
+<launch>
+  <include file="$(find diabolo_pr2_201806)/launch/demo_idle_diabolo.launch">
+    <arg name="relay_kinect" default="false"/>
+  </include>
+</launch>

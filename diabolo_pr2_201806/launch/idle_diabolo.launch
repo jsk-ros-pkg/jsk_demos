@@ -1,10 +1,16 @@
 <launch>
-  <include file="$(find diabolo_pr2_201806)/launch/relay_kinect.launch"/>
+  <arg name="relay_kinect" default="true"/>
+  <arg name="machine" default="c2"/>
+  <arg name="camera" default="kinect_head" unless="$(arg relay_kinect)"/>
+  <arg name="camera" default="kinect_head_remote" if="$(arg relay_kinect)"/>
+
+  <include file="$(find diabolo_pr2_201806)/launch/relay_kinect.launch"
+	   if="$(arg relay_kinect)"/>
   
-  <node name="tf_transform_cloud" pkg="jsk_pcl_ros" type="tf_transform_cloud">
-    <remap from="~input" to="kinect_head_remote/depth_registered/points" />
+  <node name="tf_transform_cloud" pkg="jsk_pcl_ros" type="tf_transform_cloud" machine="$(arg machine)">
+    <remap from="~input" to="$(arg camera)/depth_registered/points" />
     <param name="~target_frame_id" value="base_footprint"/>
   </node>
 
-  <node name="calc_idle_diabolo_state" pkg="diabolo_pr2_201806" type="calc_idle_diabolo_state" />
+  <node name="calc_idle_diabolo_state" pkg="diabolo_pr2_201806" type="calc_idle_diabolo_state" machine="$(arg machine)"/>  
 </launch>
