@@ -4,6 +4,8 @@
   <arg name="camera" default="kinect_head" unless="$(arg relay_kinect)"/>
   <arg name="camera" default="kinect_head_remote" if="$(arg relay_kinect)"/>
 
+  <include file="$(find pr2_machine)/pr2.machine"/>
+
   <include file="$(find diabolo_pr2_201806)/launch/relay_kinect.launch"
 	   if="$(arg relay_kinect)"/>
   

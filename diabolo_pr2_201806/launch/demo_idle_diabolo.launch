@@ -1,8 +1,6 @@
 <launch>
   <arg name="relay_kinect" default="true"/>
 
-  <include file="$(find pr2_machine)/pr2.machine"/>  
-  
   <include file="$(find diabolo_pr2_201806)/launch/idle_diabolo.launch">
     <arg name="relay_kinect" default="$(arg relay_kinect)"/>
   </include>
