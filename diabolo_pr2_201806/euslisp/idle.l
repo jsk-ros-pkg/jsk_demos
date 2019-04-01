@@ -61,10 +61,10 @@
   (setq *now-loop-time* (/ (send (ros::time-now) :to-nsec) 1000000))
   
   (do-until-key
-   (print (list (- (/ (send (ros::time-now) :to-nsec) 1000000) *now-loop-time*) "[ms]"))
+   ;;(print (list (- (/ (send (ros::time-now) :to-nsec) 1000000) *now-loop-time*) "[ms]"))
    
-   (setq *now-loop-time* (/ (send (ros::time-now) :to-nsec) 1000000))
-   (setq *idle-cnt* (+ *idle-cnt* 1))
+   ;;(setq *now-loop-time* (/ (send (ros::time-now) :to-nsec) 1000000))
+   ;;(setq *idle-cnt* (+ *idle-cnt* 1))
    
    ;; subscribe
    (ros::spin-once "idle")
@@ -120,9 +120,10 @@
      (setq *idle-ec* (idle-control *idle-control-x-diff* simulate))     
      (if (eq (mod *idle-cnt* 2) 0)
 	 (progn
-	   (bench (progn (publish-left-angle-vector 1500)  (publish-right-angle-vector 1500)))
+	   ;;(bench (progn (publish-left-angle-vector 1500)  (publish-right-angle-vector 1500)))
+	   (bench (send *ri* :angle-vector *idle-ec* 1500)) ;;800)
 	   ;;(bench (send *ri* :angle-vector *idle-ec* 1500)) ;;800)
-	 )
+	   )
        )
      )
 
@@ -147,10 +148,10 @@
 	 (setq *idle-diabolo-yaw* 0))
      
      ;; 最大角度制限
-     (if (> *idle-diabolo-yaw* 25) ;;20)
-	 (setq *idle-diabolo-yaw* 25)) ;;20))
-     (if (< *idle-diabolo-yaw* -25) ;;-20)
-	 (setq *idle-diabolo-yaw* -25)) ;;-20))
+     (if (> *idle-diabolo-yaw* 20) ;;20)
+	 (setq *idle-diabolo-yaw* 20)) ;;20))
+     (if (< *idle-diabolo-yaw* -20) ;;-20)
+	 (setq *idle-diabolo-yaw* -20)) ;;-20))
      
      (setq *radius* 0.7)
      (setq *radius* (* *radius* 0.8))
@@ -169,7 +170,7 @@
 	     (bench
 	      (progn
 		;;(setq *goal* (send *ri* :move-trajectory *diff-x* *diff-y* *diff-theta* 10000))
-		(setq *goal* (send *ri* :move-trajectory *diff-x* *diff-y* *diff-theta* 10000))		
+		(setq *goal* (send *ri* :move-trajectory *diff-x* *diff-y* *diff-theta* 1000))		
 		(send *ac* :send-goal *goal*)
 		)
 	      )
