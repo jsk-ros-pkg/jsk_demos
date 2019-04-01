@@ -6,10 +6,13 @@
 $ roslaunch demo_idle_diabolo.launch
 ```
 
-## idle with MPC
+## idle with a NN controller
 ```sh
 $ roslaunch idle_diabolo.launch
 ```
 ```sh
-$ python diabolo_system.py -m ../log/diabolo_system/goodmodel_612_0.h5 -a 1 ;; simulate(calc and publish next state) and optimize_input(calc and publish next input) 
+$ python diabolo_system.py -m ../log/diabolo_system/goodmodel_612_0.h5 -a 1
+```sh
+$ roseus juggle.l
+    idle t t t :diabolo-system t
 ```

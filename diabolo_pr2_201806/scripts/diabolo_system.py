@@ -1,18 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-# TODO
-#   sometime, subscribe state is very slow
-#   also subscribe input(arm, base) when simulate (and optimize_input and)
-
-# DONE
-#   consider frequency of noise, covariance
-#     -> apply LPF
-
-# if not using zerograds, what happens
-# not use zerograds, but cleargrads
-
-
 import random, time, sys, signal, copy, math
 import numpy as np
 import argparse
@@ -29,14 +17,7 @@ import seaborn as sns
 import rospy
 from std_msgs.msg import Float64MultiArray, Float64
 
-LOG_FILES = [#'../log/log-by-logger/log-by-loggerpy0.log',
-             #'../log/log-by-logger/log-by-loggerpy1.log',
-             #'../log/log-by-logger/log-by-loggerpy2.log',
-             #'../log/log-by-logger/log-by-loggerpy3.log',
-             #'../log/log-by-logger/log-by-loggerpy4.log',
-             #'../log/log-by-logger/log-by-loggerpy5.log',
-             #'../log/log-by-logger/log-by-loggerpy6.log',
-             '../log/log-by-logger/log-by-loggerpy1_0.log',
+LOG_FILES = ['../log/log-by-logger/log-by-loggerpy1_0.log',
              '../log/log-by-logger/log-by-loggerpy1_1.log',
              '../log/log-by-logger/log-by-loggerpy1_2.log',
              '../log/log-by-logger/log-by-loggerpy1_4.log',
@@ -69,13 +50,6 @@ class MyChain(Chain):
     # loss for optimize input
     def loss_for_optimize_input(self, t):
         return F.mean_squared_error(self.res, t)
-        # return F.mean_squared_error(self.res * Variable(np.array([[1, 1]]).astype(np.float32)),  t)
-        # print F.mean_squared_error(self.res, t)
-        # print (((self.res - t)[0][0]**2).data * 1 + ((self.res - t)[0][1]**2) * 1) / 2
-       
-        # return (((self.res - t)[0][0]**2).data * 1 + ((self.res - t)[0][1]**2) * 1) / 2
-    
-        #return F.linear(self.res - t, np.array([[1, 1]]).astype(np.float32))
 
 class DiaboloSystem():
     def __init__(self):
@@ -110,11 +84,9 @@ class DiaboloSystem():
         self.now_input = [0.7, 0]
 
         # max min restriction for input
-        # self.MAX_INPUT_DIFF_RESTRICTION = [0.03, 0.01]
-        # self.MAX_INPUT_DIFF_RESTRICTION = [0.03, 0.05]
-        self.MAX_INPUT_DIFF_RESTRICTION = [0.03, 0.01] #TODOTODOTODO
-        self.MAX_INPUT_RESTRICTION = [0.85, 0.34]   # TODO
-        self.MIN_INPUT_RESTRICTION = [0.60, -0.34]   # TODO        
+        self.MAX_INPUT_DIFF_RESTRICTION = [0.03, 0.01]
+        self.MAX_INPUT_RESTRICTION = [0.85, 0.34]
+        self.MIN_INPUT_RESTRICTION = [0.60, -0.34]
 
         # init ros variable
         rospy.init_node("DiaboloSystem")
@@ -306,7 +278,6 @@ class DiaboloSystem():
                 self.publish_input()
                 self.publish_state()
                 time.sleep(1. / 20) # wait 20Hz                
-                # not subscribe(TODO subscribe input when PAST_INPUT_NUM >= 2)
         else:
             # for realtime plot
             if self.online_training == True:
@@ -418,7 +389,7 @@ class DiaboloSystem():
                 X.append(x)
                 Y.append(y)
             
-            # train   TODO if this trainig can calculated in 20-30Hz
+            # train
             loop_num = 1
             losses = 0
             for i in range(loop_num):
@@ -452,69 +423,8 @@ class DiaboloSystem():
         self.pub_diabolo_state.publish(msg)
 
     # CHECK
-    def optimize_input(self): # TODO add max input restriction
-        '''
-        # make NN model for n step prediction of MPC
-        self.models = []
-        self.optimizers = []
-        for i in range(self.MPC_PREDICT_STEP):
-            self.models.append(MyChain())
-            self.models[-1].l1.W = self.model.l1.W
-            self.models[-1].l1.b = self.model.l1.b            
-            self.models[-1].l2.W = self.model.l2.W
-            self.models[-1].l2.b = self.model.l2.b
-            self.optimizers.append(optimizers.RMSprop(lr=0.01))
-            self.optimizers[-1].setup(self.model)
-
-        # calc optimized input by ModelPredictiveControl
-        self.future_past_states = self.past_states
-        self.future_now_input = [self.now_input for i in range(self.MPC_PREDICT_STEP)]
-
-        for i in range(20 / self.MPC_PREDICT_STEP):    # optimize loop  loop_num is 10 == hz is 90
-            x = Variable(np.array([self.future_past_states[-1 * self.DELTA_STEP], self.future_past_states[-2 * self.DELTA_STEP], self.future_now_input[0]]).astype(np.float32).reshape(1,6))
-            # forward
-            for m in range(self.MPC_PREDICT_STEP):
-                self.models[m].zerograds()
-                self.models[m](x)
-                x = Variable(np.array([self.models[m].res, self.future_past_states[-1 * self.DELTA_STEP], self.future_now_input[m + 1]]).astype(np.float32).reshape(1,6))
-            # backward
-            loop_flag = True
-            t = Variable(np.array(self.state_ref).astype(np.float32).reshape(1,2))
-            for m in range(self.MPC_PREDICT_STEP):
-                rev_m = self.MPC_PREDICT_STEP - m - 1
-                loss = self.models[rev_m].loss(t)
-                loss.backward()
-                # t = Variable(x.grad_var.data[0], x.grad_var.data[1])   # TODOTODOTODO
-                
-                x = Variable((x - 0.01 * x.grad_var).data)
-                now_input = [x[0][4].data, x[0][5].data]
-                # apply input restriction
-                for j in range(self.PAST_INPUT_NUM * self.INPUT_DIM):
-                    # diff input restriction
-                    if now_input[j] - self.future_now_input[-1][j] > self.MAX_INPUT_DIFF_RESTRICTION[j]:
-                        now_input[j] = np.float32(self.future_now_input[-1][j] + self.MAX_INPUT_DIFF_RESTRICTION[j])
-                        #loop_flag = False
-                    elif self.future_now_input[-1][j] - now_input[j] > self.MAX_INPUT_DIFF_RESTRICTION[j]:
-                        now_input[j] = np.float32(self.future_now_input[-1][j] - self.MAX_INPUT_DIFF_RESTRICTION[j])
-                        #loop_flag = False                    
-                    # max min input restriction
-                    if now_input[j] > self.MAX_INPUT_RESTRICTION[j]:
-                        now_input[j] = self.MAX_INPUT_RESTRICTION[j]
-                        #loop_flag = False                    
-                    elif now_input[j] < self.MIN_INPUT_RESTRICTION[j]:
-                        now_input[j] = self.MIN_INPUT_RESTRICTION[j]
-                        #loop_flag = False                    
-
-                print len(self.future_past_states)
-                x = Variable(np.array([self.future_past_states[-1 * self.DELTA_STEP], self.future_past_states[-2 * self.DELTA_STEP], now_input]).astype(np.float32).reshape(1,6))
-                if loop_flag == False:
-                    break
-            self.future_past_states.append()
-            self.future_now_input.append(now_input)
-
-        return
-        '''
-        x = Variable(np.array([self.past_states[-1 * self.DELTA_STEP], self.past_states[-2 * self.DELTA_STEP], self.now_input]).astype(np.float32).reshape(1,6)) # TODO random value is past state
+    def optimize_input(self):
+        x = Variable(np.array([self.past_states[-1 * self.DELTA_STEP], self.past_states[-2 * self.DELTA_STEP], self.now_input]).astype(np.float32).reshape(1,6))
         t = Variable(np.array(self.state_ref).astype(np.float32).reshape(1,2))
         loop_flag = True
         for i in range(20):    # optimize loop  loop_num is 10 == hz is 90
@@ -543,7 +453,7 @@ class DiaboloSystem():
                     now_input[j] = self.MIN_INPUT_RESTRICTION[j]
                     #loop_flag = False                    
               
-            x = Variable(np.array([self.past_states[-1 * self.DELTA_STEP], self.past_states[-2 * self.DELTA_STEP], now_input]).astype(np.float32).reshape(1,6)) # TODO random value is past state
+            x = Variable(np.array([self.past_states[-1 * self.DELTA_STEP], self.past_states[-2 * self.DELTA_STEP], now_input]).astype(np.float32).reshape(1,6))
             if loop_flag == False:
                 break
 
