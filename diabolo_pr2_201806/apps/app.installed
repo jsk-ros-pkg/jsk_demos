@@ -1,0 +1,3 @@
+apps:
+- app: diabolo_pr2_201806/diabolo
+  display: diabolo
