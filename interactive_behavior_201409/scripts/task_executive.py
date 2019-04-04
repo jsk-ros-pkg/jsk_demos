@@ -267,7 +267,11 @@ class TaskExecutive(object):
         elif msg.action in self.action_remappings:
             action = self.action_remappings[msg.action]
         else:
-            action = "interactive_behavior_201409/" + camel_to_snake(msg.action)
+            action = camel_to_snake(msg.action)
+            for app_name in self.app_manager.available_apps:
+                if action in app_name:
+                    action = app_name
+                    break
         if action not in self.app_manager.available_apps:
             rospy.logerr("Action '%s' is unknown" % action)
             return
