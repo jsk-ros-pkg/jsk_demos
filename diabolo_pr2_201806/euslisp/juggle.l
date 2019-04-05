@@ -19,16 +19,16 @@
   ;; subscribe idle diabolo state
   (ros::create-nodehandle "idle")
   (ros::subscribe "calc_idle_diabolo_state/diabolo_state" std_msgs::Float64MultiArray
-  		  #'(lambda (msg) (progn
-  				    (setq *idle-diabolo-pitch* (elt (send msg :data) 0))
-  				    (setq *idle-diabolo-yaw* (elt (send msg :data) 1))
-  				    ))
-		  :groupname "idle")
+                  #'(lambda (msg) (progn
+                                    (setq *idle-diabolo-pitch* (elt (send msg :data) 0))
+                                    (setq *idle-diabolo-yaw* (elt (send msg :data) 1))
+                                    ))
+                  :groupname "idle")
   (ros::subscribe "joy" sensor_msgs::Joy
-  		  #'(lambda (msg) (progn
-                          (setq *stop-feedback* (elt (send msg :buttons) 14))
-                          ))
-        :groupname "idle")
+                  #'(lambda (msg) (progn
+                                    (setq *stop-feedback* (elt (send msg :buttons) 14))
+                                    ))
+                  :groupname "idle")
 
   
   ;; subscribe joy
@@ -40,18 +40,18 @@
   ;; subscribe DiaboloSystem
   (ros::create-nodehandle "diabolo-system")
   (ros::subscribe "diabolo_system/diabolo_input" std_msgs::Float64MultiArray
-  		  #'(lambda (msg) (progn
-				    (setq *diabolo-system-input-arm* (elt (send msg :data) 0))
-				    (setq *diabolo-system-input-base* (elt (send msg :data) 1))
-				    ))
-		  :groupname "diabolo-system")
+                  #'(lambda (msg) (progn
+                                    (setq *diabolo-system-input-arm* (elt (send msg :data) 0))
+                                    (setq *diabolo-system-input-base* (elt (send msg :data) 1))
+                                    ))
+                  :groupname "diabolo-system")
   (ros::create-nodehandle "diabolo-system-simulate")
   (ros::subscribe "diabolo_system/diabolo_state" std_msgs::Float64MultiArray
-  		  #'(lambda (msg) (progn
-				    (setq *idle-diabolo-pitch* (elt (send msg :data) 0))
-				    (setq *idle-diabolo-yaw* (elt (send msg :data) 1))
-				    ))
-		  :groupname "diabolo-system-simulate")
+                  #'(lambda (msg) (progn
+                                    (setq *idle-diabolo-pitch* (elt (send msg :data) 0))
+                                    (setq *idle-diabolo-yaw* (elt (send msg :data) 1))
+                                    ))
+                  :groupname "diabolo-system-simulate")
 
   ;;
   ;; Publisher
