@@ -54,6 +54,7 @@
   (send *pr2* :head-neck-p :joint-angle 50)
 
   (setq *idle-cnt* 0)  
+  (setq *stop-feedback* 0)
 
   (if (eq simulate t)
       (setq *tfb* (instance ros::transform-broadcaster :init))
@@ -117,13 +118,14 @@
      (if (eq pitch-valid nil)
 	 (setq *idle-control-x-diff* 0)
        )
+	 (when (eq *stop-feedback* 1)
+     (setq *idle-control-x-diff* 0)
+	   )
      (setq *idle-ec* (idle-control *idle-control-x-diff* simulate))     
      (if (eq (mod *idle-cnt* 2) 0)
-	 (progn
 	   ;;(bench (progn (publish-left-angle-vector 1500)  (publish-right-angle-vector 1500)))
 	   (bench (send *ri* :angle-vector *idle-ec* 1500)) ;;800)
 	   ;;(bench (send *ri* :angle-vector *idle-ec* 1500)) ;;800)
-	   )
        )
      )
 
@@ -170,8 +172,10 @@
 	     (bench
 	      (progn
 		;;(setq *goal* (send *ri* :move-trajectory *diff-x* *diff-y* *diff-theta* 10000))
+          (when (eq *stop-feedback* 0)
 		(setq *goal* (send *ri* :move-trajectory *diff-x* *diff-y* *diff-theta* 1000))		
 		(send *ac* :send-goal *goal*)
+    )
 		)
 	      )
 	     )

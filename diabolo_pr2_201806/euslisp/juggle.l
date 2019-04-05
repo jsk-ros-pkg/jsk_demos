@@ -24,12 +24,18 @@
   				    (setq *idle-diabolo-yaw* (elt (send msg :data) 1))
   				    ))
 		  :groupname "idle")
+  (ros::subscribe "joy" sensor_msgs::Joy
+  		  #'(lambda (msg) (progn
+                          (setq *stop-feedback* (elt (send msg :buttons) 14))
+                          ))
+        :groupname "idle")
+
   
   ;; subscribe joy
   (ros::create-nodehandle "joy")
-  (ros::subscribe "joy" sensor_msgs::Joy
-  		  #'(lambda (msg) (setq *joy* (send msg :axes)))
-		  :groupname "joy")
+  ;; (ros::subscribe "joy" sensor_msgs::Joy
+  ;; 		  #'(lambda (msg) (setq *joy* (send msg :axes)))
+	;; 	  :groupname "joy")
 
   ;; subscribe DiaboloSystem
   (ros::create-nodehandle "diabolo-system")
