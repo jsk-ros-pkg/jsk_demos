@@ -4,15 +4,12 @@
   <arg name="execute" default="false" />
   <arg name="DEMOTYPE" default="map" />
   <arg name="app_manager" default="false" />
-  <arg name="run_behavior" default="true" />
+  <arg name="run_behavior" default="false" />
   <arg name="debug_view" default="true" />
   <arg name="visualize" default="false" />
+  <arg name="map_frame" default="eng2"/>
 
   <include file="$(find pr2_machine)/$(env ROBOT).machine" />
-
-  <!-- sample data for test -->
-  <anode pkg="rosbag" type="play" name="play"
-         args="-l -r 0.1 /home/leus/work/rits/refrig-kinect-c.bag" />
 
   <!-- for desktop -->
   <node pkg="rviz" type="rviz" name="detect_cans_rviz"
@@ -26,10 +23,13 @@
     <param name="icp_inlier_threshold" value="0.78" />
   </node>
 
+  <!-- fridge door / cans detector -->
   <include file="$(find detect_cans_in_fridge_201202)/launch/perception.launch">
     <arg name="visualize" value="$(arg visualize)" />
-    <arg name="debug_view" value="$(arg debug_view)" />
     <arg name="roi" value="false" />
+    <arg name="machine" value="c2"/>
+    <arg name="camera" value="kinect_head"/>
+    <arg name="map_frame" value="$(arg map_frame)"/>
   </include>
 
   <group unless="$(arg execute)" >
@@ -52,37 +52,9 @@
       <param name="debug_view" value="$(arg debug_view)" />
     </node>
   </group>
+
   <group if="$(arg run_behavior)">
     <include file="$(find interactive_behavior_201409)/launch/pr2_interactive.launch" />
   </group>
-
-  <sphinxdoc><![CDATA[
-
-This package containts detect and fetch can in the fridge demo program
-
-
-.. figure:: http://r7videos-thumbnail.s3.amazonaws.com/ER7_RE_JR_DOMESTICAS_452kbps_2012-02-23_b9dace72-5e73-11e1-b9a6-4ba54d97a5f8.jpg
-   :width 400
-
-   http://noticias.r7.com/videos/japoneses-utilizam-robo-para-as-funcoes-de-empregada-domestica/idmedia/4f46c7a2fc9b864945d600a5.html
-
-.. code-block:: bash
-
-  @c1; roslaunch jsk_pr2_startup pr2.launch
-  @c1; roslaunch detect_cans_in_fridge_201202 startup.launch
-  @local; roslaunch  detect_cans_in_fridge_201202 rviz.launch
-
-set current pr2 position using "2D Pose Estimate" button on rviz
-
-make sure that Tool Properties -> Interact -> 2D Nav Goal -> Topic is move_bas_simple_goal and  
-2DPoseEstimate is initialpose.
-
-.. code-block:: bash
-
-  @local; rosrun roseus roseus `rospack find detect_cans_in_fridge_201202`/euslisp/main.l
-
-type (init)(demo) to start demo
-
-]]></sphinxdoc>
 
 </launch>

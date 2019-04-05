@@ -4,7 +4,7 @@
 
 (defvar *use-voicetext* t)
 (defvar *use-english* nil)
-(defvar *logging* t)
+(defvar *logging* nil)
 (defvar *debug-view* (ros::get-param "~debug_view" t))
 
 (setq *use-arm-navigation* nil)
@@ -227,7 +227,7 @@
 
 (warn ";; (init) ;; initialize demo~%")
 (warn ";; (demo) ;; start demo~%")
-(warn ";; (demo :type \"georgia\")~%") ;; type georgia wanda iemon
+(warn ";; (demo :type \"georgia\")~%") ;; type georgia wonda iemon
 (warn ";; (demo :type \"georgia\" :demo-type :short)~%")
 (warn ";; ~%")
 (warn ";; (check-detection :type \"fridge\")~%")

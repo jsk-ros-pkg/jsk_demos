@@ -1,0 +1,10 @@
+<launch>
+  <arg name="machine" default="external" />
+
+  <arg name="ROBOT" default="$(optenv ROBOT pr2)"/>
+  <include file="$(find interactive_behavior_201409)/config/$(arg ROBOT).machine" />
+
+  <node name="launch_relay" pkg="interactive_behavior_201409" type="relay_rgbd.sh"
+        machine="$(arg machine)" output="screen"
+        args="machine:=$(arg machine)"/>
+</launch>

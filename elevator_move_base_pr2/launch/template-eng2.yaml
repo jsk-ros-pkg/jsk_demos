@@ -8,11 +8,28 @@ template:
     2F:
         name: /2f
         path: "package://elevator_move_base_pr2/elevator_numbers/eng2/2f.png"
-        thre: 0.11
+        thre: 0.182
+    3F:
+        name: /3f
+        path: "package://elevator_move_base_pr2/elevator_numbers/eng2/3f.png"
+        thre: 0.15
+    4F:
+        name: /4f
+        path: "package://elevator_move_base_pr2/elevator_numbers/eng2/4f.png"
+        thre: 0.15
+    5F:
+        name: /5f
+        path: "package://elevator_move_base_pr2/elevator_numbers/eng2/5f.png"
+        thre: 0.16
+    6F:
+        name: /6f
+        path: "package://elevator_move_base_pr2/elevator_numbers/eng2/6f.png"
+        thre: 0.17
     7F:
         name: /7f
         path: "package://elevator_move_base_pr2/elevator_numbers/eng2/7f.png"
-        thre: 0.11
+        thre: 0.18
+        # thre: 0.16
     8F:
         name: /8f
         path: "package://elevator_move_base_pr2/elevator_numbers/eng2/8f.png"

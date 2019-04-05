@@ -1,0 +1,14 @@
+<launch>
+  <include file="$(find interactive_behavior_201409)/launch/interaction.launch">
+    <arg name="ROBOT" value="sim"/>
+    <arg name="machine" value="localhost"/>
+    <arg name="camera" value="kinect_head"/>
+  </include>
+  <include file="$(find interactive_behavior_201409)/launch/perception.launch">
+    <arg name="ROBOT" value="sim"/>
+    <arg name="machine" value="localhost"/>
+    <arg name="use_visualizer" value="true"/>
+    <arg name="camera" value="kinect_head"/>
+  </include>
+  <node name="tf2_buffer_server" pkg="tf2_ros" type="buffer_server"/>
+</launch>

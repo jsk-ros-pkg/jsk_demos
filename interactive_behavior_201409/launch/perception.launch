@@ -1,0 +1,62 @@
+<launch>
+  <arg name="use_tabletop" default="true"/>
+  <arg name="use_ssd" default="true"/>
+  <arg name="use_ssd_jsk" default="true"/>
+  <arg name="use_fridge" default="true"/>
+
+  <arg name="gpu" default="0"/>
+  <arg name="ROBOT" default="$(optenv ROBOT pr2)"/>
+  <arg name="machine" default="external"/>
+  <arg name="camera" default="kinect_head_external"/>
+  <arg name="dataset" default="ssd512_coco" />
+
+  <arg name="model" default="ssd512"/>
+  <arg name="model_path"
+       default="$(optenv JSK_DATA_CACHE_DIR /etc/ros/jsk_data)/$(arg dataset)/model"/>
+  <arg name="label_names"
+       default="$(optenv JSK_DATA_CACHE_DIR /etc/ros/jsk_data)/$(arg dataset)/class.yaml"/>
+
+  <!-- pick / place object -->
+  <include file="$(find jsk_2017_12_pr2_coe)/launch/tabletop.launch"
+           if="$(arg use_tabletop)">
+    <arg name="ROBOT" value="$(arg ROBOT)"/>
+    <arg name="machine" value="$(arg machine)"/>
+    <arg name="camera" value="$(arg camera)"/>
+  </include>
+
+  <!-- find object -->
+  <include file="$(find jsk_2017_12_pr2_coe)/launch/ssd.launch"
+           if="$(arg use_ssd)">
+    <arg name="gpu" value="$(arg gpu)"/>
+    <arg name="ROBOT" value="$(arg ROBOT)"/>
+    <arg name="machine" value="$(arg machine)"/>
+    <arg name="camera" value="$(arg camera)"/>
+    <arg name="use_voc" value="false"/>
+    <arg name="model" value="$(arg model)"/>
+    <arg name="model_path" value="$(arg model_path)"/>
+    <arg name="label_names" value="$(arg label_names)"/>
+  </include>
+
+  <include file="$(find jsk_2017_12_pr2_coe)/launch/ssd_jsk.launch"
+           if="$(arg use_ssd_jsk)">
+    <arg name="ROBOT" value="$(arg ROBOT)"/>
+    <arg name="machine" value="$(arg machine)"/>
+    <arg name="camera" value="$(arg camera)"/>
+  </include>
+
+  <!-- fridge object detector -->
+  <include file="$(find jsk_2017_12_pr2_coe)/launch/fridge.launch"
+           if="$(arg use_fridge)">
+    <arg name="gpu" value="$(arg gpu)"/>
+    <arg name="ROBOT" value="$(arg ROBOT)"/>
+    <arg name="machine" value="$(arg machine)"/>
+    <arg name="camera" value="$(arg camera)"/>
+  </include>
+
+  <include file="$(find jsk_2017_12_pr2_coe)/launch/aggregator.launch"
+           if="false">
+    <arg name="ROBOT" value="$(arg ROBOT)"/>
+    <arg name="machine" value="$(arg machine)"/>
+  </include>
+
+</launch>

@@ -147,6 +147,34 @@
 ;; State Machine
 ;;
 
+(defun look-at-target-with-torso (look-target)
+  (send *pr2* :head :angle-vector (float-vector 0 0))
+  ;; adjust torso in order not to tilt head so much
+  (let ((head-height
+         (elt (send (send *pr2* :transformation (send *pr2* :head :end-coords)) :pos) 2))
+        (target-height
+         (elt (send (send *pr2* :transformation (send look-target :worldcoords)) :pos) 2)))
+    (cond
+      ((and (> head-height target-height)
+            (> (- (send *pr2* :torso :waist-z :joint-angle)
+                  (send *pr2* :torso :waist-z :min-angle))
+               50))
+       (send *pr2* :torso :waist-z :joint-angle
+             (- (send *pr2* :torso :waist-z :joint-angle)
+                (- head-height target-height))))
+      ((and (> target-height head-height)
+            (> (- (send *pr2* :torso :waist-z :max-angle)
+                  (send *pr2* :torso :waist-z :joint-angle))
+               50))
+       (send *pr2* :torso :waist-z :joint-angle
+             (+ (send *pr2* :torso :waist-z :joint-angle)
+                (- target-height head-height)))))
+    (send *pr2* :head :look-at (send look-target :worldpos))
+    ;; send to robot
+    (send *ri* :angle-vector (send *pr2* :angle-vector) 1000)
+    (send *ri* :wait-interpolation)))
+
+
 (make-attention-action look-button (userdata)
   (let ((panel-name (cdr (assoc 'panel-name userdata))) look-target)
     (send *logger* :save-robot-pose "look-button")
@@ -159,12 +187,9 @@
     (update-scene-by-tf *scene*)
     (when look-target
       (ros::ros-info "look-at button position ~A" (send look-target :worldpos))
-      (send *pr2* :head :angle-vector #f(0 0))
-      (send *pr2* :head :look-at (send look-target :worldpos))
-      (send *ri* :angle-vector (send *pr2* :angle-vector) 1000)
-      (send *ri* :wait-interpolation))
+      (look-at-target-with-torso look-target))
 
-    (unix:sleep 2)
+    ;; (unix:sleep 2) ;; why need this? (furushchev 2018.5.18)
 
     ;; update
     (ros::ros-info "wait vision update")

@@ -1,6 +1,7 @@
 <launch>
   <arg name="debug" default="false" />
   <arg name="gui" default="false" />
+  <arg name="type" default="georgia" />
 
   <!-- launch nodes to detect cans -->
   <include file="$(find detect_cans_in_fridge_201202)/launch/startup.launch">
@@ -8,6 +9,7 @@
   </include>
 
   <!-- planner -->
+  <param name="demo_type" value="$(arg type)" />
   <include file="$(find task_compiler)/launch/execute-pddl.launch">
     <arg name="action" value="$(find detect_cans_in_fridge_201202)/euslisp/pddl-action.l" />
     <arg name="description" value="$(find pddl_planner)/demos/2013_fridge_demo/solve-bring-can.l" />

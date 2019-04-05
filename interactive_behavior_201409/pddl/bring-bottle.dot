@@ -1,0 +1,22 @@
+digraph hoge {
+   DOLIST54467 [label = "((available fridge)\n(open fridge)\n(robot-at fridge))"];
+   DOLIST54468 [label = "((on bottle table)\n(robot-at table))"];
+   DOLIST54469 [label = "((onhand bottle larm)\n(placable bottle table)\n(robot-at table))"];
+   DOLIST54470 [label = "((onhand bottle larm)\n(robot-at table))"];
+   DOLIST54471 [label = "((onhand bottle larm)\n(robot-at fridge))"];
+   DOLIST54472 [label = "((available fridge)\n(onhand bottle larm)\n(open fridge)\n(robot-at fridge))"];
+   DOLIST54473 [label = "((available fridge)\n(on bottle fridge)\n(open fridge)\n(robot-at fridge)\n(sure-on bottle fridge))"];
+   DOLIST54474 [label = "((available fridge)\n(on bottle fridge)\n(open fridge)\n(robot-at fridge))"];
+   DOLIST54475 [label = "((on bottle fridge)\n(robot-at fridge))"];
+   DOLIST54476 [label = "((on bottle fridge)\n(robot-at start))"];
+   DOLIST54469 -> DOLIST54468 [label = "(place bottle larm table)"];
+   DOLIST54470 -> DOLIST54469 [label = "(find-placement bottle larm table)"];
+   DOLIST54471 -> DOLIST54470 [label = "(move-to fridge table)"];
+   DOLIST54472 -> DOLIST54471 [label = "(close-door rarm fridge)"];
+   DOLIST54473 -> DOLIST54474 [label = "(pick_f bottle larm fridge)"];
+   DOLIST54473 -> DOLIST54472 [label = "(pick bottle larm fridge)"];
+   DOLIST54474 -> DOLIST54467 [label = "(find-object_f bottle fridge)"];
+   DOLIST54474 -> DOLIST54473 [label = "(find-object bottle fridge)"];
+   DOLIST54475 -> DOLIST54474 [label = "(open-door rarm fridge)"];
+   DOLIST54476 -> DOLIST54475 [label = "(move-to start fridge)"];
+}

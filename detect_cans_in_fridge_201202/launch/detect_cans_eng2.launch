@@ -1,0 +1,112 @@
+<launch>
+  <arg name="machine" default="c2" />
+  <arg name="camera" default="kinect_head"/>
+  <arg name="cloud_topic" default="/$(arg camera)/depth_registered/points" />
+  <arg name="detection_topic" default="/$(arg camera)/depth_registered/ObjectDetection" />
+  <arg name="base_frame_id" default="base_footprint" />
+  <arg name="sensor_frame_id" default="head_mount_kinect_rgb_optical_frame" />
+  <arg name="map_frame_id" default="map" />
+  <arg name="bin_size" default="10" />
+  <arg name="vital_rate" default="0.2" />
+
+  <group ns="detect_cans">
+    <rosparam ns="throttle" subst_value="true">
+      update_rate: 4
+    </rosparam>
+
+    <rosparam ns="pass_through" subst_value="true">
+      filter_field_name: z
+      filter_limit_min: 0.90
+      filter_limit_max: 1.30
+      filter_limit_negative: false
+      keep_organized: true
+      input_frame: $(arg base_frame_id)
+    </rosparam>
+
+    <rosparam ns="bilateral_filter" subst_value="true">
+      sigma_s: 1.5
+      sigma_r: 0.1
+      vital_rate: $(arg vital_rate)
+    </rosparam>
+
+    <rosparam ns="multi_plane_segmentation" subst_value="true">
+      min_size: 500
+      max_curvature: 0.01
+      estimate_normal: true
+      vital_rate: $(arg vital_rate)
+    </rosparam>
+
+    <rosparam ns="plane_reasoner" subst_value="true">
+      global_frame_id: $(arg base_frame_id)
+      horizontal_angular_threshold: 0.2
+      vertical_angular_threshold: 0.1
+      vital_rate: $(arg vital_rate)
+    </rosparam>
+
+    <rosparam ns="plane_reasoner_decomposer" subst_value="true">
+      queue_size: 100
+      publish_clouds: false
+      publish_tf: false
+      align_boxes: true
+      align_boxes_with_plane: true
+      use_pca: true
+      vital_rate: $(arg vital_rate)
+    </rosparam>
+
+    <rosparam ns="polygon_magnifier" subst_value="true">
+      use_scale_factor: true
+      magnify_scale_factor: 0.9
+      vital_rate: $(arg vital_rate)
+    </rosparam>
+
+    <rosparam ns="multi_plane_extraction" subst_value="true">
+      use_indices: false
+      use_sensor_frame: true
+      sensor_frame: $(arg sensor_frame_id)
+      min_height: 0.05
+      max_height: 0.4
+      vital_rate: $(arg vital_rate)
+    </rosparam>
+
+    <rosparam ns="transform_cloud" subst_value="true">
+      target_frame_id: $(arg base_frame_id)
+      vital_rate: $(arg vital_rate)
+    </rosparam>
+
+    <rosparam ns="euclidean_clustering" subst_value="true">
+      tolerance: 0.02
+      min_size: 1000
+      max_size: 100000
+      vital_rate: $(arg vital_rate)
+    </rosparam>
+
+    <rosparam ns="euclidean_clustering_decomposer" subst_value="true">
+      queue_size: 100
+      publish_clouds: false
+      publish_tf: false
+      align_boxes: true
+      align_boxes_with_plane: false
+      target_frame_id: $(arg base_frame_id)
+      use_pca: true
+      vital_rate: $(arg vital_rate)
+    </rosparam>
+
+    <!-- color histogram -->
+    <rosparam ns="color_histogram" subst_value="true">
+      bin_size: $(arg bin_size)
+      histogram_policy: 0
+      vital_rate: $(arg vital_rate)
+    </rosparam>
+
+    <rosparam ns="color_histogram_classifier"
+              command="load"
+              file="$(find detect_cans_in_fridge_201202)/config/reference_histograms.yaml" />
+    <rosparam ns="color_histogram_classifier" subst_value="true">
+      detection_threshold: 0.2
+      compare_policy: 0
+      vital_rate: $(arg vital_rate)
+    </rosparam>
+  </group>
+
+  <include file="$(find detect_cans_in_fridge_201202)/launch/detect_cans.xml" pass_all_args="true"/>
+</launch>
