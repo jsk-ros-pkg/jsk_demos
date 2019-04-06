@@ -1,6 +1,6 @@
 <launch>
   <arg name="start_rviz" default="false" />
-  <arg name="wait_query" default="true" />
+  <arg name="wait_query" default="false" />
   <arg name="execute" default="false" />
   <arg name="DEMOTYPE" default="map" />
   <arg name="app_manager" default="false" />
