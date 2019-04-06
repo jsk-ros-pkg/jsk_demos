@@ -8,7 +8,7 @@
 (defun main ()
   (let ((object (get-arg :object)))
     (send *ri* :clear-costmap)
-    (demo :type object :use-arm :rarm)
+    (demo :type object)
     ;; (cond
     ;;   ((find object (list "wonda" "georgia" "boss" "iemon") :test #'string=)
     ;;    (send *ri* :clear-costmap)
