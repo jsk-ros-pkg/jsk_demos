@@ -258,5 +258,5 @@
 ;;
 (provide :fridge-main)
 
-(demo)
-(exit)
+;; (demo)
+;; (exit)
