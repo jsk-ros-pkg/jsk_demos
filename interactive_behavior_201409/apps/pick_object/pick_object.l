@@ -7,10 +7,13 @@
 
 (defun main ()
   (let ((object (get-arg :object)))
-    (cond
-      ((find object (list "wonda" "georgia" "boss" "iemon") :test #'string=)
-       (send *ri* :clear-costmap)
-       (demo :type object :use-arm :rarm))
-      (t (speak-jp "ごめんなさい。いまちょっと手が離せないです。")))))
+    (send *ri* :clear-costmap)
+    (demo :type object :use-arm :rarm)
+    ;; (cond
+    ;;   ((find object (list "wonda" "georgia" "boss" "iemon") :test #'string=)
+    ;;    (send *ri* :clear-costmap)
+    ;;    (demo :type object :use-arm :rarm))
+    ;;   (t (speak-jp "ごめんなさい。いまちょっと手が離せないです。")))
+))
 
 (run-exit (main))
