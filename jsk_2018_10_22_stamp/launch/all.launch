@@ -1,5 +1,7 @@
 <launch>
-  <include file="$(find jsk_2018_10_22_stamp)/launch/detect.launch" />
+  <include file="$(find jsk_2018_10_22_stamp)/launch/detect.launch" >
+    <arg name="visualization_map" value="false" />
+  </include>
   <include file="$(find jsk_2018_10_22_stamp)/launch/virtual_force_publisher.launch" />
   <include file="$(find jsk_2018_10_22_stamp)/launch/kinect_relay.launch" />
 </launch>
