@@ -23,6 +23,7 @@
   <run_depend>pr2eus</run_depend>
   <run_depend>std_msgs</run_depend>
   <run_depend>jsk_pr2_startup</run_depend>
+  <run_depend>virtual_force_publisher</run_depend>
 
   <export>
   </export>
