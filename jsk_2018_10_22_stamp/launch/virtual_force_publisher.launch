@@ -1,0 +1,30 @@
+<launch>
+
+  <arg name="publish_frequency" default="50.0"/>
+  <arg name="time_constant" default="0.3"/>
+  <arg name="root" default="torso_lift_link"/>
+
+  <group ns="left_endeffector">
+    <node name="virtual_force_publisher"
+          pkg="virtual_force_publisher" type="virtual_force_publisher" >
+      <remap from="joint_states" to="/joint_states"/>
+      <param name="publish_frequency" value="$(arg publish_frequency)"/>
+      <param name="time_constant" value="$(arg time_constant)"/>
+      <param name="root" value="$(arg root)"/>
+      <param name="tip" value="l_gripper_tool_frame"/>
+    </node>
+  </group>
+
+  <group ns="right_endeffector">
+    <node name="virtual_force_publisher"
+          pkg="virtual_force_publisher" type="virtual_force_publisher" >
+      <remap from="joint_states" to="/joint_states"/>
+      <param name="publish_frequency" value="$(arg publish_frequency)"/>
+      <param name="time_constant" value="$(arg time_constant)"/>
+      <param name="root" value="$(arg root)"/>
+      <param name="tip" value="r_gripper_tool_frame"/>
+    </node>
+  </group>
+
+
+</launch>
