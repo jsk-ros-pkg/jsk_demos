@@ -3,7 +3,7 @@
 (load "package://jsk_2018_10_22_stamp/euslisp/ros-utils.l")
 (ros::load-ros-manifest "jsk_2018_10_22_stamp")
 (ros::load-ros-manifest "speech_recognition_msgs")
-
+(ros::load-ros-manifest "geometry_msgs")
 
 (defun setup ()
   ;; (load "package://pr2eus/pr2-interface.l")
@@ -233,19 +233,20 @@
     (draw2 world-to-target-transform)
 
     ;; force grasp
-    (send *ri* :move-gripper :rarm 0.0 :effort 10 :wait t)
+    (send *ri* :move-gripper :rarm 0.0 :effort 100 :wait t)
 
     (setq target-coords
           (send (make-coords :pos (send world-to-target-transform :worldpos)) :rotate pi/2 :y))
-    (send target-coords :translate #f(0 0 20) :world)
+    (send target-coords :translate #f(-15 0 20) :world)
     (send *robot* :rarm :inverse-kinematics
           (send (send target-coords :copy-worldcoords) :translate #f(0 0 200) :world)
           :rotation-axis :x
           :revert-if-fail nil)
     (ir2ri :wait-interpolation t :time 2000)
 
-    (send *robot* :rarm :inverse-kinematics target-coords)
-    (ir2ri :wait-interpolation t :time 2000)
+    ;; (send *robot* :rarm :inverse-kinematics target-coords)
+    (force-push-hanko)
+    ;; (ir2ri :wait-interpolation t :time 2000)
 
     (send *ri* :start-grasp :rarm)
     (setq angle (gripper-angle :rarm))
@@ -254,6 +255,7 @@
       (speak-jp "落とした気がします")
       (return-from push-shuniku nil))
 
+    ;; up
     (send *robot* :rarm :move-end-pos #f(0 0 100) :world)
     (ir2ri :time 2000 :wait-interpolation t)
 
@@ -263,8 +265,6 @@
       (speak-jp "落とした気がします")
       (return-from push-shuniku nil))
     t))
-
-
 
 
 (defun open-shuniku-case ()
@@ -300,7 +300,7 @@
 
     ;; for rarm
     (setq target-coords
-          (send (send (make-coords :pos (send world-to-target-transform :worldpos)) :rotate pi/2 :y) :translate #f(0 20 0) :world))
+          (send (send (make-coords :pos (send world-to-target-transform :worldpos)) :rotate pi/2 :y) :translate #f(-20 20 0) :world))
     (send target-coords :translate
           (float-vector 0 0 (- 740 (elt (send target-coords :worldpos) 2))) :world)
 
@@ -313,7 +313,7 @@
       (setq arm :larm)
       (default-pose :run nil)
       (setq target-coords
-            (send (send (make-coords :pos (send world-to-target-transform :worldpos)) :rotate pi/2 :y) :translate #f(0 -20 0) :world))
+            (send (send (make-coords :pos (send world-to-target-transform :worldpos)) :rotate pi/2 :y) :translate #f(-20 -20 0) :world))
       (send target-coords :translate
             (float-vector 0 0 (- 740 (elt (send target-coords :worldpos) 2))) :world)
       (setq pre-av (send *robot* arm :inverse-kinematics
@@ -461,7 +461,7 @@
           (send world-to-base-transform :transform (ros::tf-pose->coords pose)))
 
     (setq target-coords
-          (send (send (make-coords :pos (send world-to-target-transform :worldpos)) :rotate pi/2 :y) :translate #f(0 20 0) :world))
+          (send (send (make-coords :pos (send world-to-target-transform :worldpos)) :rotate pi/2 :y) :translate #f(-20 20 0) :world))
     (send target-coords :translate
           (float-vector 0 0 (- 725 (elt (send target-coords :worldpos) 2))) :world)
 
@@ -474,7 +474,7 @@
       (setq arm :larm)
       (default-pose :run nil)
       (setq target-coords
-            (send (send (make-coords :pos (send world-to-target-transform :worldpos)) :rotate pi/2 :y) :translate #f(0 -20 0) :world))
+            (send (send (make-coords :pos (send world-to-target-transform :worldpos)) :rotate pi/2 :y) :translate #f(-20 -20 0) :world))
       (send target-coords :translate
             (float-vector 0 0 (- 725 (elt (send target-coords :worldpos) 2))) :world)
       (setq pre-av (send *robot* arm :inverse-kinematics
@@ -729,43 +729,61 @@
           (cond ((string= interactive-result "retry")
                  (return-from push-hanko (push-hanko :interactive t)))
                 (interactive-result
+                 ;; push hanko
                  (setq flag t)
-                 (send *robot* :rarm :move-end-pos #f(100 0 0) :local
-                       :rotation-axis :x
-                       :revert-if-fail nil)
-                 (setq av (send *robot* :angle-vector)))
+                 ;; (send *robot* :rarm :move-end-pos #f(100 0 0) :local
+                 ;;       :rotation-axis :x
+                 ;;       :revert-if-fail nil)
+                 ;; (setq av (send *robot* :angle-vector))
+                 (force-push-hanko))
                 ((null interactive-result)
                  (ir2ri :wait-interpolation t :time 1000))))))
 
-    (send *robot* :angle-vector av)
-    (send *robot* :look-at-hand :rarm)
-    (ir2ri :wait-interpolation t :time 2000)
-    (send *robot* :angle-vector av)
-    (send *robot* :look-at-hand :rarm)
-    (send *robot* :rarm :move-end-rot 2 :y :local)
-    (ir2ri :wait-interpolation t :time 1000)
-
-    (send *robot* :angle-vector av)
-    (send *robot* :look-at-hand :rarm)
-    (send *robot* :rarm :move-end-rot -2 :y :local)
-    (ir2ri :wait-interpolation t :time 1000)
-
-    (send *robot* :angle-vector av)
-    (send *robot* :look-at-hand :rarm)
-    (send *robot* :rarm :move-end-rot 2 :y :local)
-    (ir2ri :wait-interpolation t :time 1000)
-
-    (send *robot* :angle-vector av)
-    (send *robot* :look-at-hand :rarm)
-    (send *robot* :rarm :move-end-rot -2 :y :local)
-    (ir2ri :wait-interpolation t :time 1000)
-
+    ;; up hand
     (send *robot* :rarm :move-end-pos #f(-200 0 0) :local
           :revert-if-fail nil)
     (ir2ri :wait-interpolation t :time 2000)
 
     t))
 
+
+(defun wiggle-push ()
+  (send *robot* :rarm :move-end-pos #f(0 0 -20) :world)
+  (ir2ri :time 1000)
+  (send *robot* :rarm :move-end-pos #f(0 0 -3) :world)
+  (send *robot* :rarm :move-end-rot 2 :y :local)
+  (ir2ri :time 1000)
+  (send *robot* :rarm :move-end-pos #f(0 0 -3) :world)
+  (send *robot* :rarm :move-end-rot -2 :y :local)
+  (ir2ri :time 1000)
+  (send *robot* :rarm :move-end-pos #f(0 0 -3) :world)
+  (send *robot* :rarm :move-end-rot 2 :y :local)
+  (ir2ri :time 1000)
+  (send *robot* :rarm :move-end-pos #f(0 0 -3) :world)
+  (send *robot* :rarm :move-end-rot -2 :y :local)
+  (ir2ri :time 1000))
+
+
+(defun wrench-callback (msg)
+  (setq *wrench* msg))
+
+
+(defun force-push-hanko ()
+  ;; roslaunch virtual_force_publisher virtual_force_publisher tip:=l_gripper_tool_frame namespace:=right_endeffector
+  (setq *wrench* nil)
+  (ros::subscribe "/right_endeffector/wrench"
+    geometry_msgs::WrenchStamped #'wrench-callback)
+
+  (while (or (null *wrench*)
+             (< -10 (send *wrench* :wrench :force :x)))
+    (ros::spin-once)
+    (send *robot* :rarm :move-end-pos #f(0 0 -1) :world)
+    (send *ri* :angle-vector (send *robot* :angle-vector)))
+  ;; stop
+  (send *robot* :angle-vector (send *ri* :state :potentio-vector))
+  ;; (wiggle-push)
+  (rotate-push-hanko)
+  (ros::unsubscribe "/right_endeffector/wrench"))
 
 
 (defun gripper-angle (&optional (arm :arms))
@@ -804,14 +822,37 @@
       (setq flag nil))))
 
 
+(defun rotate-push-hanko ()
+  (let ((current-av (send *robot* :angle-vector)))
+    (send *robot* :rarm :move-end-pos #f(0 0 0))
+    (send *robot* :rarm :move-end-rot 4 :y)
+    (ir2ri :time 1000)
+    (send *robot* :angle-vector current-av)
+    (send *robot* :rarm :move-end-pos #f(0 0 0))
+    (send *robot* :rarm :move-end-rot 4 :z)
+    (ir2ri :time 1000)
+    (send *robot* :angle-vector current-av)
+    (send *robot* :rarm :move-end-pos #f(0 0 0))
+    (send *robot* :rarm :move-end-rot -4 :y)
+    (ir2ri :time 1000)
+    (send *robot* :angle-vector current-av)
+    (send *robot* :rarm :move-end-pos #f(0 0 0))
+    (send *robot* :rarm :move-end-rot -4 :z)
+    (ir2ri :time 1000)
+    (send *robot* :angle-vector current-av)
+    (ir2ri :time 1000)
+    ))
+
+
 (defun run ()
   (let (result)
     (setq result
           (open-shuniku-case))
     (when (null result)
       (speak-jp "もう一度挑戦します。")
-      (open-shuniku-case)
-      (return-from run nil))
+      (setq result (open-shuniku-case)))
+    (when result
+      (speak-jp "朱肉ケースをあけてもらってもいいですか。" :wait t))
     (setq result (pick-hanko))
     (when (null result)
       (pick-hanko-pose))
@@ -830,6 +871,14 @@
       (speak-jp "もう一度挑戦します。")
       (close-shuniku-case))))
 
+
+(defun run-with-interaction ()
+  (let (result)
+    (setq result (push-hanko :interactive t))
+    (when (null result)
+      (return-from run nil))))
+
+
 (setup)
-(run)
-(exit)
+;; (run)
+;; (exit)
