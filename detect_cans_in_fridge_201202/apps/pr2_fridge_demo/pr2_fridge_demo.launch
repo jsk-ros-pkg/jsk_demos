@@ -1,0 +1,8 @@
+<launch>
+  <node name="run_pr2_fridge_demo" pkg="detect_cans_in_fridge_201202" type="pr2_fridge_demo.l"
+        output="screen" required="true"/>
+  <include file="$(find detect_cans_in_fridge_201202)/launch/startup.launch">
+    <arg name="execute" value="false" />
+    <arg name="wait_query" value="false"/>
+  </include>
+</launch>

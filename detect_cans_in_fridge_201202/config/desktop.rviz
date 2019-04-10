@@ -594,7 +594,7 @@ Visualization Manager:
     - Class: rviz/Camera
       Enabled: false
       Image Rendering: background and overlay
-      Image Topic: /kinect_head_c2/rgb/image_rect_color
+      Image Topic: /kinect_head/rgb/half/image_rect_color
       Name: Kinect RGB
       Overlay Alpha: 0.5
       Queue Size: 2
@@ -640,7 +640,7 @@ Visualization Manager:
       Size (Pixels): 3
       Size (m): 0.01
       Style: Flat Squares
-      Topic: /kinect_head_c2/depth_registered/points
+      Topic: /kinect_head/depth_registered/half/points
       Use Fixed Frame: true
       Use rainbow: true
       Value: true

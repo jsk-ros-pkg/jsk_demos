@@ -4,7 +4,7 @@
 	type="nodelet" args="manager" output="screen" respawn="true"/>
   <node pkg="nodelet" type="nodelet" name="cropbox_nodelet" args="load
     pcl/CropBox cropbox_manager" output="screen" clear_params="true">
-    <remap from="~input" to="/kinect_head_c2/depth_registered/points_throttle"/>
+    <remap from="~input" to="/kinect_head/depth_registered/points_throttle"/>
     <remap from="~output" to="grasp_object_points"/>
     <rosparam>
       target_frame_id: r_gripper_tool_frame
