@@ -1,0 +1,6 @@
+<launch>
+  <include file="$(find detect_cans_in_fridge_201202)/launch/startup.launch">
+    <arg name="execute" value="true" />
+    <arg name="wait_query" value="false"/>
+  </include>
+</launch>
