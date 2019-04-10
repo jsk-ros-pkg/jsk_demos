@@ -34,7 +34,7 @@ class ColorHistogramDetector(ConnectionBasedTransport):
             s.unregister()
 
     def on_result(self, boxes, classes):
-        rospy.logwarn("on_result")
+        rospy.logdebug("on_result")
         msg = ObjectDetection()
         msg.header = boxes.header
         for box, label, prob in zip(boxes.boxes, classes.label_names, classes.label_proba):
