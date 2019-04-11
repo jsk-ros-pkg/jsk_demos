@@ -302,7 +302,7 @@
 
     ;; for rarm
     (setq target-coords
-          (send (send (make-coords :pos (send world-to-target-transform :worldpos)) :rotate pi/2 :y) :translate #f(-20 0 0) :world))
+          (send (send (make-coords :pos (send world-to-target-transform :worldpos)) :rotate pi/2 :y) :translate #f(-0 0 0) :world))
     (send target-coords :translate
           (float-vector 0 0 (- 740 (elt (send target-coords :worldpos) 2))) :world)
 
@@ -315,7 +315,7 @@
       (setq arm :larm)
       (default-pose :run nil)
       (setq target-coords
-            (send (send (make-coords :pos (send world-to-target-transform :worldpos)) :rotate pi/2 :y) :translate #f(-20 -20 0) :world))
+            (send (send (make-coords :pos (send world-to-target-transform :worldpos)) :rotate pi/2 :y) :translate #f(-0 -0 0) :world))
       (send target-coords :translate
             (float-vector 0 0 (- 740 (elt (send target-coords :worldpos) 2))) :world)
       (setq pre-av (send *robot* arm :inverse-kinematics
@@ -854,7 +854,7 @@
     (when (null result)
       (speak-jp "もう一度挑戦します。")
       (setq result (open-shuniku-case)))
-    (when result
+    (when (null result)
       (speak-jp "朱肉ケースをあけてもらってもいいですか。" :wait t))
     (setq result (pick-hanko))
     (when (null result)
