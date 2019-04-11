@@ -245,6 +245,8 @@
     (ir2ri :wait-interpolation t :time 2000)
 
     ;; (send *robot* :rarm :inverse-kinematics target-coords)
+    (send *robot* :rarm :move-end-pos #f(100 0 0) :local)
+    (ir2ri :wait-interpolation t :time 2000)
     (force-push-hanko)
     ;; (ir2ri :wait-interpolation t :time 2000)
 
@@ -300,7 +302,7 @@
 
     ;; for rarm
     (setq target-coords
-          (send (send (make-coords :pos (send world-to-target-transform :worldpos)) :rotate pi/2 :y) :translate #f(-20 20 0) :world))
+          (send (send (make-coords :pos (send world-to-target-transform :worldpos)) :rotate pi/2 :y) :translate #f(-20 0 0) :world))
     (send target-coords :translate
           (float-vector 0 0 (- 740 (elt (send target-coords :worldpos) 2))) :world)
 
@@ -461,7 +463,7 @@
           (send world-to-base-transform :transform (ros::tf-pose->coords pose)))
 
     (setq target-coords
-          (send (send (make-coords :pos (send world-to-target-transform :worldpos)) :rotate pi/2 :y) :translate #f(-20 20 0) :world))
+          (send (send (make-coords :pos (send world-to-target-transform :worldpos)) :rotate pi/2 :y) :translate #f(-20 0 0) :world))
     (send target-coords :translate
           (float-vector 0 0 (- 725 (elt (send target-coords :worldpos) 2))) :world)
 
@@ -474,7 +476,7 @@
       (setq arm :larm)
       (default-pose :run nil)
       (setq target-coords
-            (send (send (make-coords :pos (send world-to-target-transform :worldpos)) :rotate pi/2 :y) :translate #f(-20 -20 0) :world))
+            (send (send (make-coords :pos (send world-to-target-transform :worldpos)) :rotate pi/2 :y) :translate #f(-20 -0 0) :world))
       (send target-coords :translate
             (float-vector 0 0 (- 725 (elt (send target-coords :worldpos) 2))) :world)
       (setq pre-av (send *robot* arm :inverse-kinematics
@@ -496,7 +498,7 @@
     (send *ri* :start-grasp arm)
     (setq angle (gripper-angle arm))
     (format t "gipper-angle ~A~%" angle)
-    (when (< angle 65)
+    (when (< angle 60)
       (speak-jp "掴むのに失敗しました")
       (send *ri* :stop-grasp arm)
       (return-from close-shuniku-case nil))
@@ -534,9 +536,9 @@
 
     (if (eq arm :rarm)
         (setq target-coords
-              (send (send (make-coords :pos (send world-to-target-transform :worldpos)) :rotate pi/2 :y) :translate #f(0 20 0) :world))
+              (send (send (make-coords :pos (send world-to-target-transform :worldpos)) :rotate pi/2 :y) :translate #f(0 0 0) :world))
       (setq target-coords
-            (send (send (make-coords :pos (send world-to-target-transform :worldpos)) :rotate pi/2 :y) :translate #f(0 -20 0) :world)))
+            (send (send (make-coords :pos (send world-to-target-transform :worldpos)) :rotate pi/2 :y) :translate #f(0 -0 0) :world)))
     (send target-coords :translate
           (float-vector 0 0 (- 725 (elt (send target-coords :worldpos) 2))) :world)
     (send *robot* arm :inverse-kinematics
@@ -735,6 +737,8 @@
                  ;;       :rotation-axis :x
                  ;;       :revert-if-fail nil)
                  ;; (setq av (send *robot* :angle-vector))
+                 (send *robot* :rarm :move-end-pos #f(50 0 0) :local)
+                 (ir2ri :wait-interpolation t :time 2000)
                  (force-push-hanko))
                 ((null interactive-result)
                  (ir2ri :wait-interpolation t :time 1000))))))
@@ -795,9 +799,8 @@
                 (* 1000.0 (send (send (*ri* . l-gripper-action) :get-result) :position))))))
 
 
-(defun pick-hanko-pose ()
-  (let ((angle)
-        (flag t))
+(defun pick-hanko-pose (&key (flag nil))
+  (let ((angle))
     (while t
       (send *ri* :move-gripper :rarm 0.02 :effort 100 :wait t)
       (if flag
@@ -869,7 +872,34 @@
 
     (when (null result)
       (speak-jp "もう一度挑戦します。")
-      (close-shuniku-case))))
+      (setq result (close-shuniku-case))
+      (speak-jp "すみませんがケースを戻してください"))
+    (default-pose)))
+
+
+;; (defun run ()
+;;   (let (result)
+;;     (pick-hanko-pose :flag nil)
+;;     (setq result (push-shuniku))
+;;     (when (null result)
+;;       (pick-hanko-pose))
+
+;;     (setq result (push-hanko :interactive t))
+;;     (when (null result)
+;;       (return-from run nil))
+;;     (default-pose)))
+
+
+(defun run2 ()
+  (let (result)
+    (setq result (push-shuniku))
+    (when (null result)
+      (pick-hanko-pose))
+
+    (setq result (push-hanko :interactive t))
+    (when (null result)
+      (return-from run nil))
+    (default-pose)))
 
 
 (defun run-with-interaction ()
@@ -880,5 +910,4 @@
 
 
 (setup)
-;; (run)
 ;; (exit)
