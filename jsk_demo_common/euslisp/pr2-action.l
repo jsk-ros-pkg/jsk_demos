@@ -946,8 +946,8 @@
        (send *ri* :go-pos-unsafe 0.185 -0.25 0) ;; g-rarm
        )
       (:larm
-       (send *ri* :go-pos-unsafe 0 0 rotation) ;; g-rarm
-       (send *ri* :go-pos-unsafe 0.33 -0.05 0) ;; g-rarm
+       (send *ri* :go-pos-unsafe 0 0 rotation) ;; g-larm
+       (send *ri* :go-pos-unsafe 0.27 -0.03 0) ;; g-larm
        ))
     (send *ri* :wait-interpolation))
 
