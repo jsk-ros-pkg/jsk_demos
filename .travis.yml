@@ -28,4 +28,8 @@ matrix:
   allow_failures:
     - env: ROS_DISTRO=indigo
     - env: ROS_DISTRO=kinetic
+before_script:
+  - if [[ "$ROS_DISTRO" == "indigo" && "$DOCKER_IMAGE_JENKINS" == "" ]]; then export export DOCKER_IMAGE_JENKINS='ros-ubuntu:14.04-pcl'; fi
+  - if [[ "$ROS_DISTRO" == "kinetic" && "$DOCKER_IMAGE_JENKINS" == "" ]]; then export export DOCKER_IMAGE_JENKINS='ros-ubuntu:16.04-pcl'; fi
+  - if [[ "$ROS_DISTRO" == "melodic" && "$DOCKER_IMAGE_JENKINS" == "" ]]; then export export DOCKER_IMAGE_JENKINS='ros-ubuntu:18.04-pcl'; fi
 script: source .travis/travis.sh
