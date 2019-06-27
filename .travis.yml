@@ -27,6 +27,7 @@ env:
 matrix:
   fast_finish: true
   allow_failures:
+    - env: ROS_DISTRO=kinetic # need to wait for https://github.com/jsk-ros-pkg/jsk_recognition/pull/2414 and https://github.com/jsk-ros-pkg/jsk_demos/pull/1266/commits/c90dd49aeff8a4b8849787cfd57ae3bf504d3a53
     - env: ROS_DISTRO=melodic
 before_script:
   - if [[ "$ROS_DISTRO" == "indigo" && "$DOCKER_IMAGE_JENKINS" == "" ]]; then export export DOCKER_IMAGE_JENKINS='ros-ubuntu:14.04-pcl'; fi
