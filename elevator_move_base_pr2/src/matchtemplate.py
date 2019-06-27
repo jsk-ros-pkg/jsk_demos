@@ -4,7 +4,7 @@ import roslib
 import rospy
 from sensor_msgs.msg import Image
 from roseus.msg import StringStamped
-import cv
+import cv2
 from cv_bridge import CvBridge, CvBridgeError
 
 bridge = CvBridge()

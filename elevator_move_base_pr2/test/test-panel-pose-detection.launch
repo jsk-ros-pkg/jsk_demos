@@ -7,6 +7,8 @@
   <include file="$(find jsk_maps)/launch/start_map_eng2.launch">
     <arg name="MACHINE" value="c1" />
   </include>
+
+  <env name="PYTHONPATH" value="/usr/lib/python2.7/dist-packages/:$(env PYTHONPATH)" /> <!-- do not use opencv3 in kinetic, use system python-opencv for matchtemplate.py -->
   <include file="$(find elevator_move_base_pr2)/launch/elevator_move_base_modules.xml">
     <arg name="ROBOT" value="$(arg ROBOT)" />
   </include>
