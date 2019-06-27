@@ -23,11 +23,11 @@ env:
     - ROS_DISTRO=indigo    DOCKER_RUN_OPTION='--rm -e TEST_ROBOT=pr2'   TEST_PKGS="detect_cans_in_fridge_201202 elevator_move_base_pr2 interactive_behavior_201409 jsk_2011_07_pr2_semantic jsk_2013_04_pr2_610 jsk_demo_common jsk_maps"
     - ROS_DISTRO=indigo    DOCKER_RUN_OPTION='--rm -e TEST_ROBOT=fetch' TEST_PKGS="jsk_2017_10_semi jsk_maps"
     - ROS_DISTRO=kinetic
+    - ROS_DISTRO=melodic
 matrix:
   fast_finish: true
   allow_failures:
-    - env: ROS_DISTRO=indigo
-    - env: ROS_DISTRO=kinetic
+    - env: ROS_DISTRO=melodic
 before_script:
   - if [[ "$ROS_DISTRO" == "indigo" && "$DOCKER_IMAGE_JENKINS" == "" ]]; then export export DOCKER_IMAGE_JENKINS='ros-ubuntu:14.04-pcl'; fi
   - if [[ "$ROS_DISTRO" == "kinetic" && "$DOCKER_IMAGE_JENKINS" == "" ]]; then export export DOCKER_IMAGE_JENKINS='ros-ubuntu:16.04-pcl'; fi
