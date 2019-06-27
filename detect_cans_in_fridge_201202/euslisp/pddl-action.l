@@ -38,7 +38,8 @@
 
 (defun task-compiler/before-run-hook (sm)
   (disable-behavior-server)
-  (initialize-demo "georgia"))
+  (setq *demo-type* (ros::get-param "demo_type" "georgia"))
+  (initialize-demo *demo-type*))
 
 (defun task-compiler/after-run-hook (sm)
   (enable-behavior-server))
