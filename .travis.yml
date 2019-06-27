@@ -23,9 +23,14 @@ env:
     - ROS_DISTRO=indigo    DOCKER_RUN_OPTION='--rm -e TEST_ROBOT=pr2'   TEST_PKGS="detect_cans_in_fridge_201202 elevator_move_base_pr2 interactive_behavior_201409 jsk_2011_07_pr2_semantic jsk_2013_04_pr2_610 jsk_demo_common jsk_maps"
     - ROS_DISTRO=indigo    DOCKER_RUN_OPTION='--rm -e TEST_ROBOT=fetch' TEST_PKGS="jsk_2017_10_semi jsk_maps"
     - ROS_DISTRO=kinetic
+    - ROS_DISTRO=melodic
 matrix:
   fast_finish: true
   allow_failures:
-    - env: ROS_DISTRO=indigo
-    - env: ROS_DISTRO=kinetic
+    - env: ROS_DISTRO=kinetic # need to wait for https://github.com/jsk-ros-pkg/jsk_recognition/pull/2414 and https://github.com/jsk-ros-pkg/jsk_demos/pull/1266/commits/c90dd49aeff8a4b8849787cfd57ae3bf504d3a53
+    - env: ROS_DISTRO=melodic
+before_script:
+  - if [[ "$ROS_DISTRO" == "indigo" && "$DOCKER_IMAGE_JENKINS" == "" ]]; then export export DOCKER_IMAGE_JENKINS='ros-ubuntu:14.04-pcl'; fi
+  - if [[ "$ROS_DISTRO" == "kinetic" && "$DOCKER_IMAGE_JENKINS" == "" ]]; then export export DOCKER_IMAGE_JENKINS='ros-ubuntu:16.04-pcl'; fi
+  - if [[ "$ROS_DISTRO" == "melodic" && "$DOCKER_IMAGE_JENKINS" == "" ]]; then export export DOCKER_IMAGE_JENKINS='ros-ubuntu:18.04-pcl'; fi
 script: source .travis/travis.sh

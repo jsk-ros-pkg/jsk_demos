@@ -1,0 +1,9 @@
+<launch>
+  <arg name="relay_kinect" default="true"/>
+
+  <include file="$(find diabolo_pr2_201806)/launch/idle_diabolo.launch">
+    <arg name="relay_kinect" default="$(arg relay_kinect)"/>
+  </include>
+  
+  <node name="diabolo_euslisp_idle" pkg="roseus" type="roseus" args="$(find diabolo_pr2_201806)/euslisp/demo-idle.l"/>
+</launch>
