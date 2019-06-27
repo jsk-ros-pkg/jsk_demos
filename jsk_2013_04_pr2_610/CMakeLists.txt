@@ -6,12 +6,7 @@ find_package(catkin REQUIRED COMPONENTS
   message_generation
   jsk_demo_common
   jsk_perception
-  task_compiler
   pddl_planner
-  pddl_planner_viewer
-  laser_filters_jsk_patch
-  imagesift
-  pr2eus
   roseus_smach
   roseus)
 

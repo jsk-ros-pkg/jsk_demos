@@ -41,6 +41,7 @@
   <run_depend>roseus</run_depend>
   <run_depend>pr2eus</run_depend>
   <run_depend>roseus_smach</run_depend>
+  <run_depend>smach_viewer</run_depend>
   <run_depend>message_runtime</run_depend>
   <run_depend>imagesift</run_depend>
   <run_depend>sound_play</run_depend>
