@@ -1,0 +1,55 @@
+<launch>
+  <arg name="use_dialogflow" default="true"/>
+  <arg name="run_app_manager" default="false"/>
+  <arg name="use_preempt_monitor" default="true"/>
+
+  <arg name="credential"
+       default="$(optenv GOOGLE_APPLICATION_CREDENTIALS /etc/ros/jsk_data/PR2-hrrjhv-62b42000f858.json)"/>
+  <arg name="project_id" default="pr2-hrrjhv"/>
+  <arg name="applist" default="$(find interactive_behavior_201409)/apps"/>
+
+  <env name="GOOGLE_APPLICATION_CREDENTIALS" value="$(arg credential)"/>
+
+  <node name="dialogflow_client"
+        pkg="interactive_behavior_201409" type="dialogflow_client.py"
+        output="screen">
+    <rosparam subst_value="true">
+      use_audio: false
+      language: ja-JP
+      use_tts: true
+      project_id: $(arg project_id)
+    </rosparam>
+  </node>
+
+  <node name="task_executive"
+        pkg="interactive_behavior_201409" type="task_executive.py"
+        output="screen">
+    <rosparam subst_value="true">
+    </rosparam>
+  </node>
+  
+  <node name="mecab" pkg="mecab_ros" type="mecab.py"/>
+
+  <!-- preemption monitor -->
+  <group if="$(arg use_preempt_monitor)">
+    <node name="joint_torque_monitor"
+          pkg="interactive_behavior_201409" type="joint-torque-monitor.l"
+          output="screen"/>
+    <node name="sound_monitor"
+          pkg="interactive_behavior_201409" type="sound-monitor.l"
+          output="screen"/>
+    <node name="recovery_mode"
+          pkg="interactive_behavior_201409" type="recovery-mode.l"
+          output="screen"/>
+  </group>
+
+  <group if="$(arg run_app_manager)">
+    <node pkg="app_manager" type="appmaster" name="appmaster"
+          args="-p 11313"/>
+    <node pkg="app_manager" type="app_manager" name="app_manager"
+          args="--applist $(arg applist)"
+          output="screen">
+      <param name="interface_master" value="http://localhost:11313"/>
+    </node>
+  </group>
+</launch>

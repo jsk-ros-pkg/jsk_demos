@@ -947,11 +947,17 @@
        )
       (:larm
        (send *ri* :go-pos-unsafe 0 0 rotation) ;; g-rarm
-       (send *ri* :go-pos-unsafe 0.33 -0.05 0) ;; g-rarm
+       ;; (send *ri* :go-pos-unsafe 0.33 -0.05 0) ;; g-rarm
+       (send *ri* :go-pos-unsafe 0.295 -0.05 0) ;; g-rarm
        ))
     (send *ri* :wait-interpolation))
 
   (send *ri* :ros-wait 0.0 :spin-self t :spin t) ;; attention-check ...
+  ;; move torso up
+  (send *pr2* :angle-vector (send *ri* :state :potentio-vector))
+  (send *pr2* :torso :waist-z :joint-angle 200)
+  (send *ri* :angle-vector (send *pr2* :angle-vector))
+  (send *ri* :wait-interpolation)
   (send *pr2* :angle-vector (send *ri* :state :potentio-vector))
   )
 
@@ -1019,7 +1025,7 @@
         (:rarm
          (send *ri* :go-pos-unsafe -0.3 0.05 (- rotation)))
         (:larm
-         (send *ri* :go-pos-unsafe -0.3 -0.2 (- rotation))))
+         (send *ri* :go-pos-unsafe -0.29 -0.25 (- rotation))))
   (send *ri* :ros-wait 0.0 :spin-self t :spin t) ;; attention-check ...
   t)
 
@@ -1048,47 +1054,50 @@
    (t t)))
 
 (warn ";; define close-fridge")
-(defun close-fridge (&key (use-arm :rarm) (wait t))
+(defun close-fridge (&key (use-arm :rarm) (wait t) (tuck-arm t) (move-only-use-arm))
   ;; close the door of fridge
   (send *ri* :ros-wait 0.0 :spin-self t) ;; attention-check ...
-
-  (case use-arm
-    (:rarm
-     (send *ri* :angle-vector-sequence
-           (list (float-vector 130 5 74 100 -90 -70 -6 20 -13 50 -30 -25 118 -90 62 -2 31);; 2000
-                 (float-vector 130 5 74 100 -90 -70 -6 20 -50 54 -15 -43 118 -90 62 -2 31);; 1000
-                 (float-vector 130 5 74 100 -90 -70 -6 20 -80 10 -39 -33 -49 -32 89 -2 32);; 1500
-                 (float-vector 130 5 74 100 -90 -70 -6 20 -61 6 -74 -44 55 -75 102 -2 33) ;; 1500 ;; pre-close
-                 ;;(float-vector 50 5 74 100 -90 -70 -6 20 9.05631 26.4211 -42.0907 -111.215 97.6198 -19.5577 -24.0422 -2.0 33.0)
-                 (float-vector 75 5 74 100 -90 -70 -6 20
-                               ;;-18.5 5 -70 -39 66 -48 66
-                               -35 13 -71 -89 50 -53 46
-                               -2.0 33.0) ;; 2400
-                 (float-vector 50 5 74 100 -90 -70 -6 20
-                               24 3 -2 -18 -40 -16 0
-                               -2.0 33.0))  ;; 2500
-           (list 2000 1000 1500 1500 2600 3000))
-     )
-    (:larm
-     (send *ri* :angle-vector-sequence
-	   (list
-	    (float-vector 130 30.5203 45.755 4.94941 -109.614 -181.537 -6.86273 -181.599 -53.1607 47.972 -113.924 -85.8823 69.9861 -5.72958 -19.9642 20.098 23.796)
-	    (float-vector 130 30.5203 45.755 4.94941 -109.614 -181.537 -6.86273 -181.599 -52.6619 48.6215 -58.4944 -63.1464 52.4 -18.6578 -36.158 20.068 23.844)
-	    (float-vector 130 30.5203 45.755 4.94941 -109.614 -181.537 -6.86273 -181.599 -47.223 7.4904 -68.5549 -27.9932 -5.62513 -42.8014 -3.89764 20.074 23.874)
-	    (float-vector 130 30.5203 45.784 5.36286 -109.622 -181.537 -8.06679 -181.631 -59.7112 14.9014 -67.1032 -63.3787 -27.4106 -22.5567 -5.52051 20.056 23.958)
-	    (float-vector 130 30.4823 45.7646 5.60174 -109.556 -181.537 -8.78224 -181.609 -39.5086 18.5463 -68.6927 -77.5544 -27.1157 -22.6614 -5.46068 20.074 23.844)
-	    (float-vector 130 30.4538 45.7162 5.80387 -109.514 -181.537 -9.29827 -181.561 -5.03645 8.29984 -64.2091 -40.9414 -24.0764 -6.03142 -7.88126 20.08 23.778)
-	    (float-vector 130 30.5013 45.7743 5.23423 -109.572 -181.537 -7.40368 -181.626 -20.6884 41.162 -12.6847 -106.395 -0.527595 -7.67921 -0.599568 20.038 23.814))
-	   (list 500 500 500 800 1000 1000 600)
-	   )
-     ))
+  (let ((arm-controller :default-controller))
+    (when move-only-use-arm
+      (setq arm-controller (read-from-string (format nil "~A-controller" use-arm))))
+    (case use-arm
+      (:rarm
+       (send *ri* :angle-vector-sequence
+             (list (float-vector 130 5 74 100 -90 -70 -6 20 -13 50 -30 -25 118 -90 62 -2 31);; 2000
+                   (float-vector 130 5 74 100 -90 -70 -6 20 -50 54 -15 -43 118 -90 62 -2 31);; 1000
+                   (float-vector 130 5 74 100 -90 -70 -6 20 -80 10 -39 -33 -49 -32 89 -2 32);; 1500
+                   (float-vector 130 5 74 100 -90 -70 -6 20 -61 6 -74 -44 55 -75 102 -2 33) ;; 1500 ;; pre-close
+                   ;;(float-vector 50 5 74 100 -90 -70 -6 20 9.05631 26.4211 -42.0907 -111.215 97.6198 -19.5577 -24.0422 -2.0 33.0)
+                   (float-vector 75 5 74 100 -90 -70 -6 20
+                                 ;;-18.5 5 -70 -39 66 -48 66
+                                 -35 13 -71 -89 50 -53 46
+                                 -2.0 33.0) ;; 2400
+                   (float-vector 50 5 74 100 -90 -70 -6 20
+                                 24 3 -2 -18 -40 -16 0
+                                 -2.0 33.0))  ;; 2500
+             (list 2000 1000 1500 1500 2600 3000)
+             arm-controller)
+       )
+      (:larm
+       (send *ri* :angle-vector-sequence
+             (list
+              (float-vector 130 30.5203 45.755 4.94941 -109.614 -181.537 -6.86273 -181.599 -53.1607 47.972 -113.924 -85.8823 69.9861 -5.72958 -19.9642 20.098 23.796)
+              (float-vector 130 30.5203 45.755 4.94941 -109.614 -181.537 -6.86273 -181.599 -52.6619 48.6215 -58.4944 -63.1464 52.4 -18.6578 -36.158 20.068 23.844)
+              (float-vector 130 30.5203 45.755 4.94941 -109.614 -181.537 -6.86273 -181.599 -47.223 7.4904 -68.5549 -27.9932 -5.62513 -42.8014 -3.89764 20.074 23.874)
+              (float-vector 130 30.5203 45.784 5.36286 -109.622 -181.537 -8.06679 -181.631 -59.7112 14.9014 -67.1032 -63.3787 -27.4106 -22.5567 -5.52051 20.056 23.958)
+              (float-vector 130 30.4823 45.7646 5.60174 -109.556 -181.537 -8.78224 -181.609 -39.5086 18.5463 -68.6927 -77.5544 -27.1157 -22.6614 -5.46068 20.074 23.844)
+              (float-vector 130 30.4538 45.7162 5.80387 -109.514 -181.537 -9.29827 -181.561 -5.03645 8.29984 -64.2091 -40.9414 -24.0764 -6.03142 -7.88126 20.08 23.778)
+              (float-vector 130 30.5013 45.7743 5.23423 -109.572 -181.537 -7.40368 -181.626 -20.6884 41.162 -12.6847 -106.395 -0.527595 -7.67921 -0.599568 20.038 23.814))
+             (list 500 500 500 800 1000 1000 600)
+             arm-controller)
+       )))
   (if wait
       (progn
         (send *ri* :wait-interpolation)
         (send *pr2* :angle-vector (send *ri* :state :potentio-vector))
         (send *ri* :ros-wait 0.0 :spin-self t) ;; attention-check ...
         ))
-  (pr2-tuckarm-pose use-arm :outside)
+  (when tuck-arm (pr2-tuckarm-pose use-arm :outside))
   t
   )
 

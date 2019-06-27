@@ -1,0 +1,6 @@
+webrtcvad==2.0.10
+SpeechRecognition==3.8.1
+dialogflow==0.3.0
+PyAudio==0.2.11
+pathlib2==2.3.2
+click==6.2

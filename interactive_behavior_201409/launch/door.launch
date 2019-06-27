@@ -1,0 +1,13 @@
+<launch>
+  <arg name="cloud_input" default="/kinect_head/depth_registered/points"/>
+  <arg name="base_frame_id" default="base_footprint"/>
+  
+  <include file="$(find jsk_pcl_ros)/sample/sample_door_handle_detector.launch">
+    <arg name="play_rosbag" value="false"/>
+    <arg name="gui" value="false"/>
+    <arg name="cloud_input" value="$(arg cloud_input)"/>
+    <arg name="base_frame_id" value="$(arg base_frame_id)"/>
+  </include>
+  <node name="pr2_force_publisher"
+        pkg="interactive_behavior_201409" type="pr2-force-publisher.l"/>
+</launch>

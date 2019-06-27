@@ -1,0 +1,4 @@
+<launch>
+  <include file="$(find jsk_2017_12_pr2_coe)/launch/demo.launch"/>
+  <node name="run_tidyup" pkg="interactive_behavior_201409" type="tidyup.l" output="screen" required="true"/>
+</launch>

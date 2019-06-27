@@ -1,0 +1,232 @@
+<launch>
+  <arg name="use_throttle" default="false" />
+  <arg name="use_idle_behavior" default="true"/>
+  <arg name="use_base" default="false"/>
+  <arg name="use_hark" default="false"/>
+  <arg name="respawn" default="true" />
+
+  <arg name="camera" default="kinect_head_external" />
+  <arg name="throttle_prefix"     if="$(arg use_throttle)" default="throttled/" />
+  <arg name="throttle_prefix" unless="$(arg use_throttle)" default="" />
+
+  <arg name="input_image" default="/$(arg camera)/rgb/$(arg throttle_prefix)image_rect_color" />
+  <arg name="input_camera_info" default="/$(arg camera)/rgb/$(arg throttle_prefix)camera_info" />
+  <arg name="input_depth" default="/$(arg camera)/depth_registered/$(arg throttle_prefix)image_rect" />
+  <arg name="input_cloud" default="/$(arg camera)/depth_registered/$(arg throttle_prefix)points"/>
+
+  <arg name="gpu" default="0"/>
+  <arg name="machine" default="external" />
+
+  <arg name="ROBOT" default="$(optenv ROBOT pr2)"/>
+  <include file="$(find interactive_behavior_201409)/config/$(arg ROBOT).machine" />
+
+
+  <group ns="interaction">
+    <node name="people_pose_estimation"
+          pkg="jsk_perception" type="people_pose_estimation_2d.py"
+          output="screen" respawn="$(arg respawn)"
+          machine="$(arg machine)" clear_params="true">
+      <remap from="~input" to="$(arg input_image)" />
+      <remap from="~input/info" to="$(arg input_camera_info)" />
+      <remap from="~input/depth" to="$(arg input_depth)" />
+      <rosparam subst_value="true">
+        gpu: $(arg gpu)
+        model_file: $(optenv JSK_DATA_CACHE_DIR /etc/ros/jsk_data)/jsk_perception/pose_estimation_2d_chainermodel.pkl
+        hand:
+          enable: true
+          model_file: $(optenv JSK_DATA_CACHE_DIR /etc/ros/jsk_data)/jsk_perception/pose_estimation_2d_hand.chainermodel
+        with_depth: true
+        scales: [0.38]
+        stride: 8
+        approximate_sync: true
+        queue_size: 100
+        slop: 0.1
+      </rosparam>
+    </node>
+
+    <node name="pointit" pkg="jsk_perception" type="pointit.py"
+          output="screen" machine="$(arg machine)">
+      <remap from="~input" to="people_pose_estimation/pose"/>
+      <remap from="~input/boxes" to="/tabletop/euclidean_clustering_decomposer/boxes"/>
+      <rosparam>
+        use_tf2_buffer_client: true
+      </rosparam>
+    </node>
+
+    <node name="face_pose_estimation"
+          pkg="jsk_perception" type="face_pose_estimation.py"
+          output="screen" machine="$(arg machine)" respawn="$(arg respawn)">
+      <remap from="~input" to="$(arg input_image)"/>
+      <remap from="~input/pose_2d" to="people_pose_estimation/pose_2d" />
+      <remap from="~input/pose" to="people_pose_estimation/pose" />
+      <rosparam subst_value="true">
+        gpu: $(arg gpu)
+        model_path: auto
+      </rosparam>
+    </node>
+
+    <node name="rect_array_to_face_array"
+          pkg="interactive_behavior_201409" type="rect_array_to_face_array.py"
+          output="screen" machine="$(arg machine)" respawn="$(arg respawn)">
+      <remap from="~input" to="face_pose_estimation/output/rects" />
+    </node>
+
+    <node name="manager"
+          pkg="jsk_topic_tools" type="standalone_complexed_nodelet"
+          output="screen" respawn="$(arg respawn)"
+          machine="$(arg machine)">
+      <rosparam subst_value="true">
+        nodelets:
+        - name: depth_to_mask
+          type: jsk_pcl_utils/PointCloudToMaskImage
+          remappings:
+          - from: ~input/depth
+            to: $(arg input_depth)
+        - name: apply_mask
+          type: jsk_perception/ApplyMaskImage
+          remappings:
+          - from: ~input
+            to: $(arg input_image)
+          - from: ~input/mask
+            to: depth_to_mask/output
+        - name: face_detection
+          type: opencv_apps/face_detection
+          remappings:
+          - from: image
+            to: apply_mask/output
+        - name: face_recognition
+          type: opencv_apps/face_recognition
+          remappings:
+          - from: image
+            to: $(arg input_image)
+          - from: faces
+            to: rect_array_to_face_array/output
+        - name: relay_cloud
+          type: jsk_topic_tools/LightweightThrottle
+          remappings:
+          - from: ~input
+            to: $(arg input_cloud)
+        - name: voxel_grid
+          type: pcl/VoxelGrid
+          remappings:
+          - from: ~input
+            to: relay_cloud/output
+        - name: change_detector
+          type: jsk_pcl/OctreeChangePublisher
+          remappings:
+          - from: ~input
+            to: voxel_grid/output
+        - name: euclidean_clustering
+          type: jsk_pcl/EuclideanClustering
+          remappings:
+          - from: ~input
+            to: change_detector/octree_change_result
+        - name: euclidean_clustering_decomposer
+          type: jsk_pcl/ClusterPointIndicesDecomposer
+          remappings:
+          - from: ~input
+            to: change_detector/octree_change_result
+          - from: ~target
+            to: euclidean_clustering/output
+      </rosparam>
+    </node>
+
+    <rosparam ns="depth_to_mask">
+      z_near: 1.5
+      z_far: 3.0
+    </rosparam>
+
+    <rosparam ns="apply_mask">
+      clip: false
+      approximate_sync: true
+    </rosparam>
+
+    <rosparam ns="face_detection">
+      use_camera_info: false
+      debug_view: false
+      face_cascade_name: /usr/share/opencv/haarcascades/haarcascade_frontalface_alt.xml
+      eyes_cascade_name: /usr/share/opencv/haarcascades/haarcascade_eye_tree_eyeglasses.xml
+    </rosparam>
+
+    <rosparam ns="face_recognition"
+              subst_value="true">
+      model_threshold: 4300.0
+      data_dir: $(optenv JSK_DATA_CACHE_DIR /etc/ros/jsk_data)/opencv_apps/face_data
+    </rosparam>
+
+    <!-- for pointcloud -->
+    <rosparam ns="relay_cloud" subst_value="true">
+      update_rate: 5.0
+    </rosparam>
+    <rosparam ns="voxel_grid" subst_value="true">
+      filter_limit_min: 0.0
+      filter_limit_max: 5.0
+      leaf_size: 0.02
+      keep_organized: true
+    </rosparam>
+    <rosparam ns="change_detector" subst_value="true">
+      resolution: 0.04
+      noise_filter: 4
+    </rosparam>
+    <rosparam ns="euclidean_clustering" subst_value="true">
+      tolerance: 0.1
+      min_size: 100
+      max_size: 25000
+    </rosparam>
+
+    <node name="people_attention_tracker"
+          pkg="interactive_behavior_201409" type="people_attention_tracker.py"
+          output="screen" machine="$(arg machine)">
+      <remap from="~input/people_pose" to="people_pose_estimation/pose"/>
+      <remap from="~input/face_pose" to="face_pose_estimation/output/pose" />
+      <remap from="~input/face" to="face_recognition/output" />
+      <remap from="~output" to="attention" />
+      <rosparam>
+        enable_face_identification: false
+        fixed_frame_id: odom_combined
+        distance_threshold: 0.25
+        timeout_threshold: 3.0
+        face_recognition_threshold: 4300.0
+      </rosparam>
+    </node>
+
+    <node name="people_attention_visualizer"
+          pkg="jsk_rviz_plugins" type="classification_result_visualizer.py"
+          machine="$(arg machine)">
+      <remap from="~input/classes" to="people_attention_tracker/output/attention" />
+      <remap from="~input/poses"   to="face_pose_estimation/output/pose" />
+      <rosparam>
+        text_color_red: 1.0
+        text_color_green: 0.0
+        text_color_blue: 0.0
+        text_size: 0.15
+        text_offset_z: -0.2
+      </rosparam>
+    </node>
+
+    <node name="sound_attention_tracker"
+          pkg="interactive_behavior_201409" type="sound_attention_tracker.py"
+          machine="$(arg machine)">
+      <remap from="~output" to="attention" />
+      <rosparam if="$(arg use_hark)">
+        use_hark: true
+        mean_threshold: 0.05
+        covariance_threshold: 0.25
+      </rosparam>
+      <rosparam unless="$(arg use_hark)">
+        use_hark: false
+      </rosparam>
+    </node>
+
+  </group>
+
+  <node name="marker_bridge" pkg="interactive_behavior_201409" type="marker_bridge.py" />
+
+  <node name="idle_behavior"
+        pkg="interactive_behavior_201409" type="idle-behavior.l"
+        if="$(arg use_idle_behavior)">
+    <rosparam subst_value="true">
+      use_base: $(arg use_base)
+    </rosparam>
+  </node>
+</launch>
