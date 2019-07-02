@@ -487,7 +487,7 @@
     (send *ri* :stop-grasp use-arm :wait t)
     (send *tfb* :send-transform
           (send (send *pr2* :worldcoords) :transformation (send obj :worldcoords))
-          "/base_footprint" "/objecta_pose_frame")
+          "/base_footprint" "/object_pose_frame")
     (setq orig-av (send *ri* :state :potentio-vector))
 
     (when *use-arm-navigation*
@@ -510,11 +510,11 @@
 
     ;; publish tf
     (send *tfb* :send-transform
-          via1 "/base_footprint" "/objecta_pose_frame_via1")
+          via1 "/base_footprint" "/object_pose_frame_via1")
     ;;(send *tfb* :send-transform
     ;;via2 "/base_footprint" "/objecta_pose_frame_via2")
     (send *tfb* :send-transform
-          via2 "/base_footprint" "/objecta_pose_frame_via2")
+          via2 "/base_footprint" "/object_pose_frame_via2")
 
     ;; move to via1
     (send *pr2* use-arm :inverse-kinematics
@@ -522,7 +522,7 @@
           :rotation-axis t)
     (send *tfb* :send-transform
           (send (send *pr2* :worldcoords) :transformation (send *pr2* use-arm :end-coords))
-          "/base_footprint" "/objecta_pose_end_coords")
+          "/base_footprint" "/object_pose_end_coords")
 
     ;;(send *ri* :angle-vector (send *pr2* :angle-vector))
     ;;(send *ri* :wait-interpolation))
@@ -946,8 +946,8 @@
        (send *ri* :go-pos-unsafe 0.185 -0.25 0) ;; g-rarm
        )
       (:larm
-       (send *ri* :go-pos-unsafe 0 0 rotation) ;; g-rarm
-       (send *ri* :go-pos-unsafe 0.33 -0.05 0) ;; g-rarm
+       (send *ri* :go-pos-unsafe 0 0 rotation) ;; g-larm
+       (send *ri* :go-pos-unsafe 0.27 -0.03 0) ;; g-larm
        ))
     (send *ri* :wait-interpolation))
 
