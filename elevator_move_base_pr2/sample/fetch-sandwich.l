@@ -112,7 +112,7 @@
     (setq cam-coords (send (send *pr2* :head_mount_kinect_rgb_optical_frame_lk)
                            :copy-worldcoords))
     (setq forum-door-button-pos
-          (scale 0.001 (send (send cam-coords :transform cam->obj-coords)
+          (scale 0.001 (send (send cam-coords :transform cam->button-coords)
                              :worldpos)))
     (setq target-coords (make-coords :pos forum-door-button-pos))
 
