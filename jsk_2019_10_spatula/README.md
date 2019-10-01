@@ -5,7 +5,6 @@ The goal is to find out how accurate the effort data from PR2 is.
 ### pr2-spatula-force-test.l
 - with this little demo Pr2 scrapes along a bowl 40 times, which it is holding in its left gripper using a spatula with its right gripper
 - the demo does not include picking up the bowl and spatula, PR2 waits 5 seconds before closing one griper at a time, the spatula and bowl have to be placed in the gripper manually
-- the file contains a flag *simulation*, which has to be set t/nil manually to decide whether it is run on simulation or real robot
 
 ### plot_bag.py, PR2_joints.pdf and bagfiles
 - the task was executed three times:
@@ -27,4 +26,5 @@ The goal is to find out how accurate the effort data from PR2 is.
       - the experiment with spatula and bowl is plot in red
       - the experiment without spatula is plot in blue
       - the experiment without bowl is plot in green
+- the data can also be lowpass filtered if wished, eg. add the argument *cutoff_f = 10* when calling plot_data inside the main() to apply a low pass filter with a cutoff frequency of 10Hz, you can also define the *order* (default is 6) and the frequency *fs* (default is 30)
       
