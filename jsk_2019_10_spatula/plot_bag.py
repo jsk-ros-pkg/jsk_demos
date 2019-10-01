@@ -140,28 +140,32 @@ def plot_data(data_list,split_plot = True,show_av2=False,lowpass_filter=False):
 
 
 
+def main():
+	#change the path here to the absolute path, where you downloaded the bagfiles to
+	bag_spatula_and_bowl = '/home/leus/experiment_with_spatula_and_bowl_2019-09-27-16-21-18.bag'
+	bag_no_spatula = '/home/leus/experiment_without_spatula_2019-09-27-17-09-42.bag'
+	bag_no_bowl = '/home/leus/experiment_without_bowl_2019-09-27-17-02-24.bag'
 
-bag_spatula_and_bowl = '/home/leus/experiment_with_spatula_and_bowl_2019-09-27-16-21-18.bag'
-bag_no_spatula = '/home/leus/experiment_without_spatula_2019-09-27-17-09-42.bag'
-bag_no_bowl = '/home/leus/experiment_without_bowl_2019-09-27-17-02-24.bag'
+	joint = "r_upper_arm_roll_joint"
+	#joint = "l_elbow_flex_joint"
 
-joint = "r_upper_arm_roll_joint"
-#joint = "l_elbow_flex_joint"
+	d_spatula_and_bowl = data_analysis(joint,bag_spatula_and_bowl)
+	d_spatula_and_bowl.extract_bag_data()
+	d_spatula_and_bowl.split_data()
+	d_spatula_and_bowl.color = 'r'
 
-d_spatula_and_bowl = data_analysis(joint,bag_spatula_and_bowl)
-d_spatula_and_bowl.extract_bag_data()
-d_spatula_and_bowl.split_data()
-d_spatula_and_bowl.color = 'r'
+	d_no_spatula = data_analysis(joint,bag_no_spatula)
+	d_no_spatula.extract_bag_data()
+	d_no_spatula.split_data()
+	d_no_spatula.color = 'b'
 
-d_no_spatula = data_analysis(joint,bag_no_spatula)
-d_no_spatula.extract_bag_data()
-d_no_spatula.split_data()
-d_no_spatula.color = 'b'
+	d_no_bowl = data_analysis(joint,bag_no_bowl)
+	d_no_bowl.extract_bag_data()
+	d_no_bowl.split_data()
+	d_no_bowl.color = 'g'
 
-d_no_bowl = data_analysis(joint,bag_no_bowl)
-d_no_bowl.extract_bag_data()
-d_no_bowl.split_data()
-d_no_bowl.color = 'g'
+	data_list = [d_spatula_and_bowl,d_no_spatula]
+	plot_data(data_list, show_av2=True)
 
-data_list = [d_spatula_and_bowl,d_no_spatula]
-plot_data(data_list, show_av2=True)
+if __name__ == "__main__":
+	main()

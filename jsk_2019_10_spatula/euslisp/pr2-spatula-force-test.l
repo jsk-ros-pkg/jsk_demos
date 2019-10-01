@@ -38,10 +38,11 @@
 (send *pr2* :r_upper_arm_roll_joint :joint-angle -130)
 (send *pr2* :l_upper_arm_roll_joint :joint-angle 120)
 (send *pr2* :l_elbow_flex_joint :joint-angle -100)
-(send *pr2* :r_elbow_flex_joint :joint-angle -80)
+(send *pr2* :r_elbow_flex_joint :joint-angle -70)
 (send *pr2* :r_forearm_roll_joint :joint-angle 0)
-(send *pr2* :r_wrist_flex_joint :joint-angle -70)
+(send *pr2* :r_wrist_flex_joint :joint-angle -40)
 (send *pr2* :l_wrist_roll_joint :joint-angle 30)
+
 
 (if simulation
     (if (boundp '*irtviewer*)
@@ -63,8 +64,11 @@
 (unix:sleep 5)
 ;;some time to place the spatula, then close the right gripper
 (send *pr2* :start-grasp :rarm)
-(send *ri* :start-grasp :larm :gain 0.05)
+(print "HERE1")
+(send *ri* :start-grasp :rarm :gain 0.05)
+(print "HERE2")
 (send *ri* :wait-interpolation)
+(print "HERE3")
 
 ;;got these angle vectors from the real robot by moving it manually to the desired positions, they turned out to work better than the previously constructed
 ;;with: send *ri* :state :potentio-vector
