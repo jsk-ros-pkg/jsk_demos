@@ -1,21 +1,13 @@
 #!/usr/bin/env roseus
 ;;;;
-;;;; make PR2 use a spatula to scrape through a bowl without feedback, this is only a simple experiment in order to gather data for analysis of PR2 effort accuracy
+;;;; make PR2 use a spatula to scrape through a bowl without feedback, this is only a simple experiment in order to gathe data for analysis of PR2 effort accuracy
 ;;;;
 
 (load "package://pr2eus/pr2-interface.l")
 (ros::roseus "pr2_send_joints")
 
-(pr2)
-(when (not (boundp '*irtviewer*))  
-  (make-irtviewer)  
-  (objects (list *pr2*))  
-  (send *irtviewer* :draw-objects))
 (setq *ri* (instance pr2-interface :init))
-(pr2-init)
-
-  
-
+(pr2-init t)
 
 ;;start robot from reset position
 (send *pr2* :reset-pose)
@@ -68,22 +60,15 @@
 
 (setq *av3* #f(49.9331 62.6975 32.5311 129.278 -117.386 -7.41574 -5.72958 51.833 -29.0716 -9.25665 -86.0776 -118.804 -76.2328 -66.8658 270.291 3.0727 -21.2682))
 
-
 (send *pr2* :angle-vector *av3*)
 (send *ri* :angle-vector (send *pr2* :angle-vector) 3000)
 (send *ri* :wait-interpolation)
 ;;scrape the bottom of the bowl 40 times
 (dotimes (i 40)
-	(send *pr2* :angle-vector *av1*)
-	(send *ri* :angle-vector (send *pr2* :angle-vector) 3000)
-	(send *ri* :wait-interpolation)
-	(send *pr2* :angle-vector *av2*)
-	(send *ri* :angle-vector (send *pr2* :angle-vector) 3000)
-	(send *ri* :wait-interpolation)
-	(send *pr2* :angle-vector *av3*)
-	(send *ri* :angle-vector (send *pr2* :angle-vector) 3000)
-	(send *ri* :wait-interpolation)
-	)
+  (send *ri* :angle-vector-sequence (list *av1* *av2* *av3*))
+  (send *ri* :wait-interpolation)  
+  )
+
 
 
 
