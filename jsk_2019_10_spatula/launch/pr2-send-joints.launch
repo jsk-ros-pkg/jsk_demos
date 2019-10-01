@@ -1,6 +1,0 @@
-<launch>
-  <node name="pr2_send_jointse"
-	pkg="pr2_experiments"
-	type="pr2-send-joints.l"
-	output="screen"/>
-</launch>
