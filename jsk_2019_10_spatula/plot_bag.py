@@ -1,6 +1,7 @@
 import rosbag
 import numpy as np
 import matplotlib.pyplot as plt
+from scipy.signal import butter, lfilter, freqz, filtfilt
 
 
 def main():
@@ -11,7 +12,6 @@ def main():
 
 	#change the joint here to the joint you want to plot
 	joint = "r_upper_arm_roll_joint"
-
 	d_spatula_and_bowl = data_analysis(joint,bag_spatula_and_bowl)
 	d_spatula_and_bowl.extract_bag_data()
 	d_spatula_and_bowl.split_data()
@@ -37,18 +37,14 @@ def main():
 		print "you picked a joint that is not from either arm plotting all three experiments"
 		data_list = [d_spatula_and_bowl,d_no_spatula,d_no_bowl]
 
-	plot_data(data_list, show_av2=True)
+	plot_data(data_list, show_av2=True) 
+	#eg. add argument cutoff_f = 10, to apply lowpass filter with cutoff frequency 10 to the effort
 
 
 
 class data_analysis:
 
 	def __init__(self,joint_name,path,debug_mode=False):
-		#enter the joint name of the effort you want to plot here
-		#joint_name = "r_upper_arm_roll_joint"
-		#debug_mode = True
-
-		#the path to the logfiles
 		self.bag = rosbag.Bag(path)
 		print self.bag
 		self.joint_name = joint_name
@@ -150,13 +146,32 @@ class data_analysis:
 			old_ind = split_ind
 			i = i+1
 
+	def lowapss_filter(self):
+		pass
 
-def plot_data(data_list,split_plot = True,show_av2=False,lowpass_filter=False):
+
+
+def butter_lowpass(cutoff, fs, order=5):
+    nyq = 0.5 * fs
+    normal_cutoff = cutoff / nyq
+    b, a = butter(order, normal_cutoff, btype='low', analog=False)
+    return b, a
+
+
+def butter_lowpass_filter(data, cutoff, fs, order=5):
+    b, a = butter_lowpass(cutoff, fs, order=order)
+    y = filtfilt(b,a,data)
+    return y
+
+def plot_data(data_list,split_plot = True,show_av2=False,cutoff_f=None,order=6,fs=30.0):
+
 	t1 = np.array(range(920))
 	fig, axs = plt.subplots(2, 1)
 	for data in data_list:
 		for i in range(3,data.n_exp):
 			s1 = data.split_effort[i,0:920,data.ind_joint]
+			if cutoff_f is not None:
+				s1 = butter_lowpass_filter(s1, cutoff_f, fs, order)
 			axs[0].plot(t1, s1, data.color)
 
 		for i in range(3,data.n_exp):
