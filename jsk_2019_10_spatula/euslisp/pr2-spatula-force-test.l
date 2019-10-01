@@ -33,15 +33,15 @@
 
 
 ;; move robot into initial position
-(send *pr2* :r_shoulder_lift_joint :joint-angle -20)
-(send *pr2* :l_shoulder_lift_joint :joint-angle 50)
-(send *pr2* :r_upper_arm_roll_joint :joint-angle -130)
-(send *pr2* :l_upper_arm_roll_joint :joint-angle 120)
-(send *pr2* :l_elbow_flex_joint :joint-angle -100)
-(send *pr2* :r_elbow_flex_joint :joint-angle -70)
-(send *pr2* :r_forearm_roll_joint :joint-angle 0)
-(send *pr2* :r_wrist_flex_joint :joint-angle -40)
-(send *pr2* :l_wrist_roll_joint :joint-angle 30)
+(send *pr2* :rarm :shoulder-p :joint-angle -20)
+(send *pr2* :larm :shoulder-p :joint-angle 50)
+(send *pr2* :rarm :shoulder-r :joint-angle -130)
+(send *pr2* :larm :shoulder-r :joint-angle 120)
+(send *pr2* :larm :elbow-p :joint-angle -100)
+(send *pr2* :rarm :elbow-p :joint-angle -70)
+(send *pr2* :rarm :elbow-r :joint-angle 0)
+(send *pr2* :rarm :wrist-p :joint-angle -40)
+(send *pr2* :larm :wrist-r :joint-angle 30)
 
 
 (if simulation
