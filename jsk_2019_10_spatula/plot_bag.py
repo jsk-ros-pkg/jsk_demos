@@ -3,6 +3,44 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 
+def main():
+	#change the path here to the absolute path, where you downloaded the bagfiles to
+	bag_spatula_and_bowl = '/home/leus/experiment_with_spatula_and_bowl_2019-09-27-16-21-18.bag'
+	bag_no_spatula = '/home/leus/experiment_without_spatula_2019-09-27-17-09-42.bag'
+	bag_no_bowl = '/home/leus/experiment_without_bowl_2019-09-27-17-02-24.bag'
+
+	#change the joint here to the joint you want to plot
+	joint = "r_upper_arm_roll_joint"
+
+	d_spatula_and_bowl = data_analysis(joint,bag_spatula_and_bowl)
+	d_spatula_and_bowl.extract_bag_data()
+	d_spatula_and_bowl.split_data()
+	d_spatula_and_bowl.color = 'r'
+
+	d_no_spatula = data_analysis(joint,bag_no_spatula)
+	d_no_spatula.extract_bag_data()
+	d_no_spatula.split_data()
+	d_no_spatula.color = 'b'
+
+	d_no_bowl = data_analysis(joint,bag_no_bowl)
+	d_no_bowl.extract_bag_data()
+	d_no_bowl.split_data()
+	d_no_bowl.color = 'g'
+
+	if joint[0] == "l":
+		print "you picked a joint from left arm, plotting spatula_and_bowl and no_spatula"
+		data_list = [d_spatula_and_bowl,d_no_spatula]
+	elif joint[0] == "r":
+		print "you picked a joint from right arm, plotting spatula_and_bowl and no_bowl"
+		data_list = [d_spatula_and_bowl,d_no_bowl]
+	else:
+		print "you picked a joint that is not from either arm plotting all three experiments"
+		data_list = [d_spatula_and_bowl,d_no_spatula,d_no_bowl]
+
+	plot_data(data_list, show_av2=True)
+
+
+
 class data_analysis:
 
 	def __init__(self,joint_name,path,debug_mode=False):
@@ -126,7 +164,7 @@ def plot_data(data_list,split_plot = True,show_av2=False,lowpass_filter=False):
 			axs[1].plot(t1, s2, data.color)
 		if show_av2:
 			for av2_idx in data.av2_indices:
-				axs[1].plot(av2_idx,data.av_2[data.cmd_joints.index(data.joint_name)],'x')
+				axs[1].plot(av2_idx,data.av_2[data.cmd_joints.index(data.joint_name)],'%s x' % data.color)
 	axs[0].set_xlabel('time')
 	axs[0].set_ylabel('effort_%s' % data.name[data.ind_joint])
 	axs[0].grid(True)  
@@ -137,35 +175,6 @@ def plot_data(data_list,split_plot = True,show_av2=False,lowpass_filter=False):
 	fig.tight_layout()
 	plt.show()
 
-
-
-
-def main():
-	#change the path here to the absolute path, where you downloaded the bagfiles to
-	bag_spatula_and_bowl = '/home/leus/experiment_with_spatula_and_bowl_2019-09-27-16-21-18.bag'
-	bag_no_spatula = '/home/leus/experiment_without_spatula_2019-09-27-17-09-42.bag'
-	bag_no_bowl = '/home/leus/experiment_without_bowl_2019-09-27-17-02-24.bag'
-
-	joint = "r_upper_arm_roll_joint"
-	#joint = "l_elbow_flex_joint"
-
-	d_spatula_and_bowl = data_analysis(joint,bag_spatula_and_bowl)
-	d_spatula_and_bowl.extract_bag_data()
-	d_spatula_and_bowl.split_data()
-	d_spatula_and_bowl.color = 'r'
-
-	d_no_spatula = data_analysis(joint,bag_no_spatula)
-	d_no_spatula.extract_bag_data()
-	d_no_spatula.split_data()
-	d_no_spatula.color = 'b'
-
-	d_no_bowl = data_analysis(joint,bag_no_bowl)
-	d_no_bowl.extract_bag_data()
-	d_no_bowl.split_data()
-	d_no_bowl.color = 'g'
-
-	data_list = [d_spatula_and_bowl,d_no_spatula]
-	plot_data(data_list, show_av2=True)
 
 if __name__ == "__main__":
 	main()

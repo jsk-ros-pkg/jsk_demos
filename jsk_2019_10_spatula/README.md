@@ -1,11 +1,30 @@
-PR2 Force Test
-- the goal is to find out how accurate the effort data from PR2 is
-- with the little demo in pr2-spatula-force-test.l Pr2 scrapes along a bowl, which it is holding in its left gripper using a spatula with its right gripper
-- the task was executed three times, once as intended with spatula and bowl in both hands. To be able to see if contact can be detected in effort data that comes from the current, the task is once executed without the bowl in the left Hand, the data of PR2's right Arm can now be compared bewteen the one with contact with the bowl and the one without any contact. The task is execited again, this time without the spatula. Here the data of the left arm can be compared to the data without any contact
+#PR2 Force Test
 
--to run the python file that visualizes the effort with and without contact, download the bagfiles from the link shown below and change the path in the python file 
+The goal is to find out how accurate the effort data from PR2 is.
 
-the log files and a video of the task can be found here
-https://drive.google.com/drive/folders/1gq6TnKa5HTYQjAxiZ2W5w2jUel8rgWeL
+### pr2-spatula-force-test.l
+- with this little demo Pr2 scrapes along a bowl 40 times, which it is holding in its left gripper using a spatula with its right gripper
+- the demo does not include picking up the bowl and spatula, PR2 waits 5 seconds before closing one griper at a time, the spatula and bowl have to be placed in the gripper manually
+- the file contains a flag *simulation*, which has to be set t/nil manually to decide whether it is run on simulation or real robot
 
-- PR2_joints.pdf can be used to find the names of all joints, the upper blue names can be used in plot_bag.py to specify the joint of which the effort should be plot
+### plot_bag.py, PR2_joints.pdf and bagfiles
+- the task was executed three times:
+  1.) Once as intended with spatula and bowl in both hands.
+  2.) Once without the bowl
+  3.) Once without the spatula
+  This is used to compare the effort signals with and without contact.
+  The effort of the right hand from version 1 is compared to the effort of the right arm version 2.
+  The effort of the left hand version one is compared to the effort of the left arm version 3.
+  This comparison is used to see if contact can be detected in the effort signals.
+  
+- the data can then be extracted split and plot with the python file. To do so:
+  1.) download the bagfiles from the following link: https://drive.google.com/drive/folders/1gq6TnKa5HTYQjAxiZ2W5w2jUel8rgWeL
+  2.) change the absolute path to the bagfiles in the python file manually
+  3.) decide in which joint you are interested and put that also manually in the main() of the python file
+      PR2_joints.pdf (adapted from the pr2 manual) can be used to find the name of the joint you are interested in: the upper blue names are the joint names used in the python file
+  4.) The python script will split the bag file at the position where the scraping movement starts, so that all 40 scraping movements of one bag file are plot on top of each other
+  5.) The plot shows the effort in the top and the position in the bottom, by default it also plots crosses in the bottom view, where the scraping movement stopped
+      - the experiment with spatula and bowl is plot in red
+      - the experiment without spatula is plot in blue
+      - the experiment without bowl is plot in green
+      
