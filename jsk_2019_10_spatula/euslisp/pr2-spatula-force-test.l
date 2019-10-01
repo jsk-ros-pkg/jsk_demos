@@ -5,29 +5,23 @@
 
 (load "package://pr2eus/pr2-interface.l")
 (ros::roseus "pr2_send_joints")
-;;set this flag to decicde whether to use simulation or real robot
-(setq simulation t)
 
- 
-(if simulation
-    (progn
-	   (pr2)
-	   (when (not (boundp '*irtviewer*))
-	     (make-irtviewer)
-	     (objects (list *pr2*))
-	     (send *irtviewer* :draw-objects))
-	   
-	   (setq *ri* (instance pr2-interface :init))	   
-     )  
-    (pr2-init)  
-)
+(pr2)
+(when (not (boundp '*irtviewer*))  
+  (make-irtviewer)  
+  (objects (list *pr2*))  
+  (send *irtviewer* :draw-objects))
+(setq *ri* (instance pr2-interface :init))
+(pr2-init)
+
+  
+
 
 ;;start robot from reset position
 (send *pr2* :reset-pose)
-(if simulation
-    (if (boundp '*irtviewer*)
+(if (boundp '*irtviewer*)    
     (send *irtviewer* :draw-objects))
-    )
+
 (send *ri* :angle-vector (send *pr2* :angle-vector) 3000)
 (send *ri* :wait-interpolation)
 
@@ -44,10 +38,9 @@
 (send *pr2* :larm :wrist-r :joint-angle 30)
 
 
-(if simulation
-    (if (boundp '*irtviewer*)
+(if (boundp '*irtviewer*)    
     (send *irtviewer* :draw-objects))
-    )
+
 
 (send *ri* :angle-vector (send *pr2* :angle-vector) 3000)
 (send *ri* :wait-interpolation)
@@ -64,11 +57,8 @@
 (unix:sleep 5)
 ;;some time to place the spatula, then close the right gripper
 (send *pr2* :start-grasp :rarm)
-(print "HERE1")
 (send *ri* :start-grasp :rarm :gain 0.05)
-(print "HERE2")
 (send *ri* :wait-interpolation)
-(print "HERE3")
 
 ;;got these angle vectors from the real robot by moving it manually to the desired positions, they turned out to work better than the previously constructed
 ;;with: send *ri* :state :potentio-vector
