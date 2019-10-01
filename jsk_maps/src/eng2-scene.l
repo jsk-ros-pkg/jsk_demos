@@ -64,7 +64,11 @@
      `(:pos ,(float-vector 3200.0 -31950 920) :rpy #f(1.5706 0 0)
 	    :name "/eng2/2f/elevator_call_panel")
      `(:pos ,(float-vector 2900 -33850 1000) :rpy #f(3.1416 0 0)
-	    :name "/eng2/2f/elevator_inside_panel"))
+	    :name "/eng2/2f/elevator_inside_panel")
+     `(:pos ,(float-vector 9800 -27000 0) :rpy #f(0 0 0)
+	    :name "/eng2/2f/forum-door-front")
+     `(:pos ,(float-vector 10500 -27000 1000) :rpy #f(0 0 0)
+	    :name "/eng2/2f/forum-door-button"))
 
     (setq scene (instance nav-scene-model :init :name "/eng2/2f" :objects (append (list map) (send map :descendants))))
     (send scene :map map)
