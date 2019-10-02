@@ -146,10 +146,6 @@ class data_analysis:
 			old_ind = split_ind
 			i = i+1
 
-	def lowapss_filter(self):
-		pass
-
-
 
 def butter_lowpass(cutoff, fs, order=5):
     nyq = 0.5 * fs
@@ -160,11 +156,10 @@ def butter_lowpass(cutoff, fs, order=5):
 
 def butter_lowpass_filter(data, cutoff, fs, order=5):
     b, a = butter_lowpass(cutoff, fs, order=order)
-    y = filtfilt(b,a,data)
+    y = lfilter(b,a,data)
     return y
 
-def plot_data(data_list,split_plot = True,show_av2=False,cutoff_f=None,order=6,fs=30.0):
-
+def plot_data(data_list,split_plot = True,show_av2=False,cutoff_f=None,order=6,fs=100.3):
 	t1 = np.array(range(920))
 	fig, axs = plt.subplots(2, 1)
 	for data in data_list:
