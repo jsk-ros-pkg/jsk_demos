@@ -26,5 +26,5 @@ The goal is to find out how accurate the effort data from PR2 is.
       - the experiment with spatula and bowl is plot in red
       - the experiment without spatula is plot in blue
       - the experiment without bowl is plot in green
-- the data can also be lowpass filtered if wished, eg. add the argument *cutoff_f = 10* when calling plot_data inside the main() to apply a low pass filter with a cutoff frequency of 10Hz, you can also define the *order* (default is 6) and the frequency *fs* (default is 30)
+- the data can also be lowpass filtered if wished, eg. add the argument *cutoff_f = 10* when calling plot_data inside the main() to apply a low pass filter with a cutoff frequency of 10Hz, you can also define the *order* (default is 6) and the sampling rate *fs* (default is 100.3)
       
