@@ -80,16 +80,18 @@
 
 (defun check-forum-door-open (&optional (max-cloud-size 500))
   (let (is-door-open cloud-msg)
-    (dotimes (i 3)
-      (unix:sleep 2)
-      (setq cloud-msg
-            (one-shot-subscribe "forum_door/extract_indices/output"
-                                sensor_msgs::PointCloud2))
-      (setq is-door-open (<= (length (send cloud-msg :data)) max-cloud-size))
-      (when (is-door-open)
-        (speak-jp "ドアが開いています。")
-        (return-from check-door-open t))
-      )
+    (setq cloud-msg
+          (one-shot-subscribe "forum_door/extract_indices/output"
+                              sensor_msgs::PointCloud2
+                              :timeout 10000))  ;; 10000[msec]
+    (unless cloud-msg
+      (return-from check-current-floor nil))
+    (setq is-door-open
+          (<= (/ (length (send cloud-msg :data)) (send cloud-msg :point_step))
+              max-cloud-size))
+    (when (is-door-open)
+      (speak-jp "ドアが開いています。")
+      (return-from check-forum-door-open t))
     (speak-jp "ドアが閉まっています。")
     (return-from check-forum-door-open nil)
     ))
