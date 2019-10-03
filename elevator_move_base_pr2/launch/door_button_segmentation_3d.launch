@@ -63,7 +63,7 @@
       <rosparam subst_value="true">
         use_mask: false
         gpu: $(arg GPU)
-        model_name: fcn8s_atonce
+        model_name: fcn8s_at_once
         model_file: $(arg MODEL_FILE)
         target_names:
         - _background_
