@@ -3,4 +3,4 @@ boxes:
   frame_id: /eng2/2f
   name: forum_door
   orientation: [0.0, 0.0, 0.0, 1.0]
-  position: [11.73689079284668, -26.929157257080078, 1.196009635925293]
+  position: [10.5, -27.0, 1.2]
