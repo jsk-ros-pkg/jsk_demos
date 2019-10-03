@@ -1,10 +1,17 @@
 <launch>
-  <arg name="MANAGER" default="/kinect_head/kinect_head_c2_nodelet_manager"/>
+  <arg name="MANAGER" default="extract_door_cloud_nodelet_manager"/>
   <arg name="DOOR_CONFIG_FILE" default="$(find elevator_move_base_pr2)/config/door_bboxes.yaml"/>
   <arg name="CAMERA_INFO" default="/kinect_head/rgb/camera_info"/>
-  <arg name="INPUT_CLOUD" default="/kinect_head/depth_registered/half/throttled/points"/>
+  <arg name="INPUT_CLOUD" default="/kinect_head/depth_registered/points"/>
 
   <group ns="forum_door">
+
+    <node name="$(arg MANAGER)"
+          pkg="nodelet" type="nodelet"
+          args="manager"
+          output="screen"
+          respawn="true">
+    </node>
 
     <!-- Launch pipeline to extract point cloud of door region. -->
     <!-- This pipeline is useful to check if the door is open. -->
