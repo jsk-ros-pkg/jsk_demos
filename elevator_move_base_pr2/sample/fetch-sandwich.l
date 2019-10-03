@@ -70,15 +70,15 @@
   (setq *initial-floor* (check-current-floor *initial-pose*)))
 
 
-(defun go-to-forum-front ()
+(defun go-to-forum-door-front ()
   (clear-costmap)
   (change-inflation-range 0.4)
   (send *ri* :move-to
-        (send *scene* :spot "/eng2/2f/forum-front"))
+        (send *scene* :spot "/eng2/2f/forum-door-front"))
   (update-eus-robot-model))
 
 
-(defun check-door-open (&optional (max-cloud-size 500))
+(defun check-forum-door-open (&optional (max-cloud-size 500))
   (let (is-door-open cloud-msg)
     (dotimes (i 3)
       (unix:sleep 2)
@@ -91,22 +91,27 @@
         (return-from check-door-open t))
       )
     (speak-jp "ドアが閉まっています。")
-    (return-from check-door-open nil)
+    (return-from check-forum-door-open nil)
     ))
 
 
-(defun open-forum-front-door ()
+(defun open-forum-door ()
   (let (bboxes-msg bbox cam->button-coords cam-coords forum-door-button-pos
         target-coords ray-vec via-coords push-coords av0 av1 (arm :rarm))
 
     ;; Find door button
-    (send *pr2* :head :neck-p :joint-angle 30)
-    (send *pr2* :head :neck-y :joint-angle 0)
-    (send *ri* :angle-vector (send *pr2* :angle-vector) 2000)
+    (speak-jp "ドアのボタンを探しています。")
+    (send *pr2* :head :look-at
+          (send (send *scene* :spot "/eng2/2f/forum-door-button") :worldpos))
+    (send *ri* :angle-vector (send *pr2* :angle-vector) 1000)
+    (send *ri* :wait-interpolation)
     (update-eus-robot-model)
     (setq bboxes-msg
           (one-shot-subscribe "door_button/cluster_indices_decomposer/boxes"
-                              jsk_recognition_msgs::BoundingBoxArray))
+                              jsk_recognition_msgs::BoundingBoxArray
+                              :timeout 10000))  ;; 10000[msec]
+    (unless bboxes-msg
+      (return-from open-forum-door nil))
     (setq bbox (elt (send bboxes-msg :boxes) 0))  ;; first (expected biggest)
     (setq cam->button-coords (ros::tf-pose->coords (send bbox :pose)))
     (setq cam-coords (send (send *pr2* :head_mount_kinect_rgb_optical_frame_lk)
@@ -202,10 +207,13 @@
 
 
 (defun demo ()
+  (speak-jp "サンドイッチを買いに行きます")
   (init)
-  (go-to-forum-front)
-  (unless (check-door-open)
-    (open-forum-front-door))
+  (go-to-forum-door-front)
+  (while (not (check-forum-door-open))
+    (open-forum-door)
+    (unix:sleep 2)  ;; Wait for door opening
+    )
   (go-to-subway-front)
   (order-sandwich)
   (receive-sandwich)
