@@ -119,11 +119,12 @@
     (setq cam-coords (send (send *pr2* :head_mount_kinect_rgb_optical_frame_lk)
                            :copy-worldcoords))
     (setq forum-door-button-pos
-          (scale 0.001 (send (send cam-coords :transform cam->button-coords)
-                             :worldpos)))
+          (send (send (send cam-coords :copy-worldcoords)
+                      :transform cam->button-coords)
+                :worldpos))
     (setq target-coords (make-coords :pos forum-door-button-pos))
 
-    ;; Define via-coords and push-coords
+    ;; Define via-coords (50mm in front of button) and push-coords (push 30mm)
     (setq ray-vec
           (normalize-vector
            (v- (send *pr2* :head_mount_kinect_rgb_optical_frame_lk :worldpos)
