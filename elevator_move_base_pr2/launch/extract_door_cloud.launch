@@ -57,7 +57,7 @@
       <remap from="~input" to="$(arg INPUT_CLOUD)"/>
       <remap from="~indices" to="attention_clipper/output/point_indices"/>
       <rosparam>
-        keep_organized: true
+        keep_organized: false
         approximate_sync: true
         max_queue_size: 100
       </rosparam>
