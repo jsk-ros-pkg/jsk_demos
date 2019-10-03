@@ -2,11 +2,48 @@
 
   <arg name="NS" default="door_button"/>
   <arg name="MANAGER" default="door_button_segmentation_manager"/>
-  <arg name="INPUT_IMAGE" default="/kinect_head_c2/rgb/image_rect_color"/>
-  <arg name="INPUT_CLOUD" default="/kinect_head_c2/depth_registered/points"/>
+  <arg name="INPUT_IMAGE" default="/kinect_head_remote/rgb/image_rect_color"/>
+  <arg name="INPUT_CLOUD" default="/kinect_head_remote/depth_registered/points"/>
   <arg name="FIXED_FRAME" default="/head_mount_kinect_rgb_optical_frame"/>
   <arg name="MODEL_FILE" default="$(find elevator_move_base_pr2)/trained_model/fcn8s_atonce_door_button_model.npz"/>
-  <arg name="GPU" default="-1"/>
+  <arg name="GPU" default="0"/>
+
+  <group ns="kinect_head_remote">
+
+    <!-- Relay -->
+    <node name="relay_camera_info"
+          pkg="topic_tools" type="relay"
+          args="/kinect_head/rgb/camera_info /kinect_head_remote/rgb/camera_info"
+          output="screen" respawn="true"/>
+
+    <!-- Republish images -->
+    <node name="republish_rgb"
+          pkg="image_transport" type="republish"
+          args="compressed raw"
+          output="screen" respawn="true">
+      <remap from="in" to="/kinect_head/rgb/image_rect_color"/>
+      <remap from="out" to="rgb/image_rect_color"/>
+    </node>
+
+    <node name="republish_depth"
+          pkg="image_transport" type="republish"
+          args="compressedDepth raw"
+          output="screen" respawn="true">
+      <remap from="in" to="/kinect_head/depth_registered/hw_registered/image_rect"/>
+      <remap from="out" to="depth_registered/hw_registered/image_rect"/>
+    </node>
+
+    <!-- 3D reconstruction -->
+    <node name="point_cloud_xyzrgb_remote"
+          pkg="nodelet" type="nodelet"
+          args="load depth_image_proc/point_cloud_xyzrgb /$(arg NS)/$(arg MANAGER)"
+          output="screen" respawn="true">
+      <remap from="rgb/camera_info" to="rgb/camera_info"/>
+      <remap from="rgb/image_rect_color" to="rgb/image_rect_color"/>
+      <remap from="depth_registered/image_rect" to="depth_registered/hw_registered/image_rect"/>
+    </node>
+
+  </group>
 
   <group ns="$(arg NS)">
 
