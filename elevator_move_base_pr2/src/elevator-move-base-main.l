@@ -280,11 +280,27 @@
     result
     ))
 
+(defun set-goal-tolerance (&optional (type "xy")
+                                     (value 0.2)
+                           &key (node-name "/move_base_node")
+                                (planner-name "DWAPlannerROS"))
+  "tolerance for move_base goal. xy [m] or yaw [rad] can be used."
+  (let ((srv-name (format nil "~A/~A/set_parameters" node-name planner-name))
+        (req (instance dynamic_reconfigure::ReconfigureRequest :init)))
+    (send req :config :doubles
+          (list (instance dynamic_reconfigure::DoubleParameter :init
+                          :name (format nil "~A_goal_tolerance" type)
+                          :value value)))
+    (when (ros::wait-for-service srv-name 0)
+      (ros::service-call srv-name req))))
+
 (defun costmap-for-elevator (userdata)
   (change-inflation-range 0.3 :inflation-name "inflation_layer")
   (switch-global-planner-observation nil) ;;disable tilt scan
   t)
+
 (defun costmap-normal (&rest args)
+  (set-goal-tolerance "xy" 0.1)
   (change-inflation-range 0.4 :inflation-name "inflation_layer")
   (switch-global-planner-observation t) ;;enable tilt scan
   t)
