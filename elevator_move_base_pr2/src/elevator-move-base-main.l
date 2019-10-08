@@ -281,11 +281,11 @@
     ))
 
 (defun costmap-for-elevator (userdata)
-  (change-inflation-range 0.2 :inflation-name "inflation_layer")
+  (change-inflation-range 0.3 :inflation-name "inflation_layer")
   (switch-global-planner-observation nil) ;;disable tilt scan
   t)
 (defun costmap-normal (&rest args)
-  (change-inflation-range 0.3 :inflation-name "inflation_layer")
+  (change-inflation-range 0.4 :inflation-name "inflation_layer")
   (switch-global-planner-observation t) ;;enable tilt scan
   t)
 
