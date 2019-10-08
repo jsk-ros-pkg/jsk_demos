@@ -194,6 +194,7 @@
 				(flatten (send *panel* :inheritance))))
 	 (button-state (instance light-button-cb-class :init)))
     (update-robot-position)
+    (update-scene-by-tf *scene*)
     (set-view-target button-coords (send *pr2* :wide_stereo-left) "wide_stereo_optical_frame")
     ;; check phase
     (dotimes (i 30 (< i 30)) ;; 3 sec
@@ -207,10 +208,15 @@
     ))
 
 (defun push-state-machine ()
-  (let ((sm (instance state-machine :init)))
+  (let ((sm (instance state-machine :init))
+        (move-client (pr2-interface-move-base-action *ri*)))
     (send sm :add-node (instance state :init :look 'look-button))
     (send sm :add-node (instance state :init :push 'push-button-func))
     (send sm :add-node (instance state :init :check 'check-button-light))
+    (send sm :add-node (actionlib-client-state
+                        :relocate move-client :timeout 10 :retry t
+                        :key 'coords->movebaseactiongoal))
+    (send (send sm :node :relocate) :remap-list '((:goal . front-coords)))
     (send sm :arg-keys 'button 'panel-name)
     (send sm :goal-state (list :success :fail))
     (send sm :start-state :look)
@@ -219,7 +225,9 @@
     (send sm :add-transition :push :check t)
     (send sm :add-transition :push :fail nil)
     (send sm :add-transition :check :success t)
-    (send sm :add-transition :check :look nil)
+    (send sm :add-transition :check :relocate nil)
+    (send sm :add-transition :relocate :look :succeeded)
+    (send sm :add-transition :relocate :look :failed)
     sm ))
 
 (defun coords->movebaseactiongoal (co)
