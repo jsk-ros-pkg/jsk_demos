@@ -24,10 +24,7 @@
       nil))
 
 (defun relay-make-plan (req)
-  (call-service "/move_base/make_plan" req))
-
-(defun relay-clear-unknown-space (req)
-  (call-service "/move_base/clear_unknown_space" req))
+  (call-service "/move_base_node/make_plan" req))
 
 (defun relay-clear-costmaps (req)
   (call-service "/move_base/clear_costmaps" req))
@@ -39,8 +36,6 @@
 (ros::advertise "/elevator_move_base/goal" move_base_msgs::MoveBaseActionGoal 1)
 (ros::advertise-service "/elevator_move_base/make_plan"
                         nav_msgs::GetPlan #'relay-make-plan)
-(ros::advertise-service "/elevator_move_base/clear_unknown_space"
-                        std_srvs::Empty #'relay-clear-unknown-space)
 (ros::advertise-service "/elevator_move_base/clear_costmaps"
                         std_srvs::Empty #'relay-clear-costmaps)
 
