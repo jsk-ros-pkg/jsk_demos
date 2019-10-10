@@ -72,7 +72,6 @@
 
 (defun go-to-forum-door-front ()
   (clear-costmap)
-  (change-inflation-range 0.4)
   (send *ri* :move-to
         (send *scene* :spot "/eng2/2f/forum-door-front"))
   (update-eus-robot-model))

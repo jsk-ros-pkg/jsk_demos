@@ -168,6 +168,7 @@
     (unix:sleep 2)
 
     ;; update
+    (speak-jp "ボタンを探しています")
     (ros::ros-info "wait vision update")
     (unless (update 100) (return-from look-button nil))
 
@@ -295,13 +296,11 @@
       (ros::service-call srv-name req))))
 
 (defun costmap-for-elevator (userdata)
-  (change-inflation-range 0.3 :inflation-name "inflation_layer")
   (switch-global-planner-observation nil) ;;disable tilt scan
   t)
 
 (defun costmap-normal (&rest args)
-  (set-goal-tolerance "xy" 0.1)
-  (change-inflation-range 0.4 :inflation-name "inflation_layer")
+  (set-goal-tolerance "yaw" 0.087)  ;; 0.087 [rad] = 5 [degree]
   (switch-global-planner-observation t) ;;enable tilt scan
   t)
 
