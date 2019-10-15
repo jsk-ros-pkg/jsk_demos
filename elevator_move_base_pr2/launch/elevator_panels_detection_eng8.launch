@@ -1,0 +1,31 @@
+<launch>
+  <arg name="INPUT_FEATURE" default="ImageFeature0D"/>
+
+  <node name="point_pose_extractor_elevator_call_panel"
+        pkg="jsk_perception" type="point_pose_extractor">
+    <remap from="ImageFeature0D" to="$(arg INPUT_FEATURE)"/>
+    <rosparam subst_value="true">
+      template_filename: $(find jsk_perception)/template/elevator_call_panel_eng8.png
+      child_frame_id: matching
+      object_width: 0.276
+      object_height: 0.285
+      error_threshold: 100.0
+      relative_pose: "0.1425 0.138 -0.0005 0.0 -0.707107 0.0 0.707107"
+      viewer_window: false
+    </rosparam>
+  </node>
+
+  <node name="point_pose_extractor_elevator_inside_panel"
+        pkg="jsk_perception" type="point_pose_extractor">
+    <remap from="ImageFeature0D" to="$(arg INPUT_FEATURE)"/>
+    <rosparam subst_value="true">
+      template_filename: $(find jsk_perception)/template/elevator_inside_panel_eng8.png
+      child_frame_id: matching
+      object_width: 0.47
+      object_height: 0.35
+      error_threshold: 100.0
+      relative_pose: "0.175 0.235 -0.0005 0.0 -0.707107 0.0 0.707107"
+      viewer_window: false
+    </rosparam>
+  </node>
+</launch>

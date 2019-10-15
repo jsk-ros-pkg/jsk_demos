@@ -4,7 +4,7 @@
 
   <!-- start objectdetection/tf -->
   <group ns="/narrow_stereo/left">
-    <include file="$(find jsk_perception)/launch/eusmodel_detection_elevator-panels-$(arg scene).launch"/>
+    <include file="$(find elevator_move_base_pr2)/launch/elevator_panels_detection_$(arg scene).launch"/>
     <!-- XXX: This node is often killed on c2, but not on c1 -->
     <node name="find_elevator_button" pkg="roseus" type="roseus"
           respawn="true" machine="c1" output="screen"
