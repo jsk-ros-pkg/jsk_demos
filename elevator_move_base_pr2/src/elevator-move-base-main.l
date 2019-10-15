@@ -170,7 +170,9 @@
     ;; update
     (speak-jp "ボタンを探しています")
     (ros::ros-info "wait vision update")
-    (unless (update 100) (return-from look-button nil))
+    (unless (update 100)
+      (speak-jp "見つかりませんでした")
+      (return-from look-button nil))
 
     (when *node-debug*
       (send *irtviewer* :draw-objects))
