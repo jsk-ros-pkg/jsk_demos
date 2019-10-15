@@ -220,7 +220,7 @@
                         :relocate move-client :timeout 10 :retry t
                         :key 'coords->movebaseactiongoal))
     (send (send sm :node :relocate) :remap-list '((:goal . front-coords)))
-    (send sm :arg-keys 'button 'panel-name)
+    (send sm :arg-keys 'button 'panel-name 'front-coords)
     (send sm :goal-state (list :success :fail))
     (send sm :start-state :look)
     (send sm :add-transition :look :push t)
