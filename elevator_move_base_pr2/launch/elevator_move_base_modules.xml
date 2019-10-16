@@ -23,7 +23,7 @@
   <!-- read the elevator floor number -->
   <node name="panel_camera"  machine="c2"
         pkg="jsk_perception" type="virtual_camera_mono">
-    <remap from="image" to="/narrow_stereo/left/image_raw"/>
+    <remap from="image" to="/narrow_stereo/left/image_rect"/>
   </node>
   <node name="elevator_number" pkg="elevator_move_base_pr2" type="match_template.py" output="screen">
     <rosparam file="$(find elevator_move_base_pr2)/launch/template-$(arg scene).yaml" command="load"/>
