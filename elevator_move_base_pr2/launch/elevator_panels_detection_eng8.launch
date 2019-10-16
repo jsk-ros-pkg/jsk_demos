@@ -12,6 +12,7 @@
       error_threshold: 100.0
       relative_pose: "0.1425 0.138 -0.0005 0.0 -0.707107 0.0 0.707107"
       viewer_window: false
+      window_name: elevator_call_panel
     </rosparam>
   </node>
 
@@ -26,6 +27,7 @@
       error_threshold: 100.0
       relative_pose: "0.175 0.235 -0.0005 0.0 -0.707107 0.0 0.707107"
       viewer_window: false
+      window_name: elevator_inside_panel
     </rosparam>
   </node>
 </launch>
