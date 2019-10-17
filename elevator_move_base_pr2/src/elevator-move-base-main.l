@@ -168,10 +168,10 @@
     (unix:sleep 2)
 
     ;; update
-    (speak-jp "ボタンを探しています")
+    (speak-jp "ボタンを探しています" :wait t)
     (ros::ros-info "wait vision update")
     (unless (update 100)
-      (speak-jp "見つかりませんでした")
+      (speak-jp "見つかりませんでした" :wait t)
       (return-from look-button nil))
 
     (when *node-debug*
@@ -186,7 +186,7 @@
 	 (button-obj
 	   (find-if #'(lambda(o)(string= button (send o :name))) (flatten (send *panel* :inheritance)))))
     (ros::ros-info (format nil "push button (~a) -> ~a" button button-obj))
-    (speak-jp "ぼたんをおします")
+    (speak-jp "ぼたんをおします" :wait t)
     (send *logger* :save-obj-pose button-obj "push-button")
     (push-button button-obj)
     ))
@@ -204,7 +204,7 @@
       (ros::spin-once)
       (send *logger* :save-brightness (send button-state :value) "check-button")
       (when (< 0.5 (send button-state :value))
-	(pprint 'button-light) (speak-jp "ぼたんがひかりました")
+	(pprint 'button-light) (speak-jp "ぼたんがひかりました" :wait t)
 ;;	(pr2-tuckarm-pose)
 	(return))
       (unix::usleep (* 100 1000)))
@@ -279,7 +279,7 @@
 	  (setq result t) (return))
 	))
     (ros::unsubscribe "/base_scan")
-    (speak-jp (if result "エレベータに入ります" "エレベータに入れません"))
+    (speak-jp (if result "エレベータに入ります" "エレベータに入れません") :wait t)
     result
     ))
 
@@ -343,10 +343,10 @@
   (let ((targetfloor (cdr (assoc 'target-floor userdata))))
     (dolist (floor *floors*)
       (when (equal targetfloor (elt floor 0))
-	(speak-jp (concatenate string (elt floor 1) "につきました"))
-	(change-floor (format nil "~A/~a" (send *scene* :name)
-			      (string-downcase (elt floor 0))))
-	)))
+        (speak-jp (concatenate string (elt floor 1) "につきました") :wait t)
+        (change-floor (format nil "~A/~a" (send *scene* :name)
+                              (string-downcase (elt floor 0))))
+        )))
   (check-elevator-open)
   (speak-jp "ドアが飽きました" :wait t)
   ;; (clear-costmap)
@@ -364,7 +364,7 @@
     (send sm :add-node (instance state :init :push-outside (push-state-machine)
 				 :remap-list '((panel-name . outside-panel-name) (button . outside-button))))
 ;;    (send sm :add-node (instance state :init :check-elevator-empty 'check-until-elevator-empty))
-    (send sm :add-node (instance state :init :speak-fail '(lambda(x)(speak-jp "にふんたちました") t)))
+    (send sm :add-node (instance state :init :speak-fail '(lambda(x)(speak-jp "にふんたちました" :wait t) t)))
     ;; (send sm :add-node (actionlib-client-state
     ;;     		:move-inside move-client :timeout 120 :retry t
     ;;     		:key 'coords->movebaseactiongoal))
@@ -443,7 +443,7 @@
 (defun elevator-smach ()
   (let ((sm (instance state-machine :init)))
     (send sm :add-node (instance state :init :initial 'elevator-smach-initial))
-    (send sm :add-node (instance state :init :speak-elevator '(lambda (x) (costmap-normal)  (speak-jp "えれべーたにのります") t)))
+    (send sm :add-node (instance state :init :speak-elevator '(lambda (x) (costmap-normal)  (speak-jp "えれべーたにのります" :wait t) t)))
     (send sm :add-node (instance state :init :take-elevator (elevator-state-machine)))
     (send sm :add-node (actionlib-client-state
 			:go-to (pr2-interface-move-base-action *ri*)
