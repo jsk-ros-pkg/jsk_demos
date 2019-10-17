@@ -52,6 +52,7 @@
                                         ;      (setq arm (if (plusp (elt (send target-coords :worldpos) 1)) :larm :rarm))
         (setq arm (if (plusp (elt (send (send *pr2* :transformation target-coords) :worldpos) 1)) :larm :rarm))
         (send *pr2* :reset-pose)
+        (send *pr2* :head :look-at (send target-coords :worldpos))
         (send *ri* :angle-vector (send *pr2* :angle-vector) 3000)
         (send *ri* :wait-interpolation))
 
