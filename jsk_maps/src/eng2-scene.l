@@ -220,7 +220,7 @@
                 :pos ,(float-vector -750.0 6829.0 51.6065)
                 :name "/eng2/7f/room73A3-front1")
 	 `(:rot ,(rpy-matrix pi/2 0 0)
-			:pos ,(float-vector 6555 7289 51.6065)
+			:pos ,(float-vector 5500 6196 51.6065)
 			:name "/eng2/7f/room73B2-fetch-dock-front")
 
 
