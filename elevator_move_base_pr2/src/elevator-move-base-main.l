@@ -160,7 +160,6 @@
     (update-scene-by-tf *scene*)
     (when look-target
       (ros::ros-info "look-at button position ~A" (send look-target :worldpos))
-      (send *pr2* :head :angle-vector #f(0 0))
       (send *pr2* :head :look-at (send look-target :worldpos))
       (send *ri* :angle-vector (send *pr2* :angle-vector) 1000)
       (send *ri* :wait-interpolation))
