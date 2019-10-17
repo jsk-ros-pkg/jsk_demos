@@ -372,7 +372,7 @@
 
     ;; check if elevator door open (added by furushchev 2014/04/29)
     (send sm :add-node (instance state :init :move-inside (move-inside-state-machine)
-                                 :remap-list '((front-coords . elevator-front-coords)
+                                 :remap-list '((elevator-front-coords . elevator-front-coords)
                                                (inside-coords . inside-coords))))
         (send sm :add-node (instance state :init :push-inside (push-state-machine)
 				 :remap-list '((panel-name . inside-panel-name) (button . target-floor))))
