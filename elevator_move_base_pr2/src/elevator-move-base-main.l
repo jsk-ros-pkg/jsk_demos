@@ -338,6 +338,7 @@
 
   (send *pr2* :head :angle-vector #f(0 0))
   (send *ri* :angle-vector (send *pr2* :angle-vector) 1000)
+  (send *ri* :wait-interpolation)
 
   (let ((targetfloor (cdr (assoc 'target-floor userdata))))
     (dolist (floor *floors*)

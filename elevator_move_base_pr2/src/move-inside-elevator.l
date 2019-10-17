@@ -37,7 +37,8 @@
     (while (or
             (not *change-pc*)
             (< *change-pc* *change-threshold*))
-      (ros::ros-warn "change: ~A" *change-pc*)
+      (ros::ros-warn "change: ~A, change-threshold: ~A"
+                     *change-pc* *change-threshold*)
       (ros::spin-once)
       (ros::sleep)))
   (ros::unsubscribe *change-publisher-topic*)
