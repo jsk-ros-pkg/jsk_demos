@@ -301,6 +301,7 @@
   t)
 
 (defun costmap-normal (&rest args)
+  (set-goal-tolerance "xy" 0.15)
   (set-goal-tolerance "yaw" 0.087)  ;; 0.087 [rad] = 5 [degree]
   (switch-global-planner-observation t) ;;enable tilt scan
   t)
