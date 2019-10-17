@@ -9,13 +9,13 @@
     (send sm :add-node (actionlib-client-state
                         :move-elevator-front move-client :timeout 300 :retry t
                         :key 'coords->movebaseactiongoal))
-    (send (send sm :node :move-elevator-front) :remap-list '((:goal . front-coords)))
+    (send (send sm :node :move-elevator-front) :remap-list '((:goal . elevator-front-coords)))
     (send sm :add-node (instance state :init :check-elevator-open 'check-elevator-open))
     (send sm :add-node (actionlib-client-state
                         :move-elevator-inside move-client :timeout 300 :retry t
                         :key 'coords->movebaseactiongoal))
     (send (send sm :node :move-elevator-inside) :remap-list '((:goal . inside-coords)))
-    (send sm :arg-keys 'front-coords 'inside-coords)
+    (send sm :arg-keys 'elevator-front-coords 'inside-coords)
     (send sm :goal-state (list :success :fail))
     (send sm :start-state :tuckarm-pose)
     (send sm :add-transition :tuckarm-pose :move-elevator-front t)
