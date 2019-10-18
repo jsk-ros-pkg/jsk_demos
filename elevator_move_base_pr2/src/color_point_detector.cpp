@@ -29,13 +29,13 @@ class FrameDrawer
   image_geometry::PinholeCameraModel cam_model_;
 
   std::string current_frame_;
-  double x,y,r;
+  double x_, y_, r_;
 #if ROS_VERSION_MINIMUM(1, 15, 0)
   cv::Scalar target_color_;
 #else
   CvScalar target_color_;
 #endif
-  double decay_rate_;
+  std::vector<double> decay_bgr_;
 
   std::vector<tf::StampedTransform> button_pose_;
 
@@ -58,15 +58,22 @@ public:
 #else
     target_color_ = CV_RGB(r,g,b);
 #endif
-    private_nh_.param("decay_rate", decay_rate_, 0.1);
+
+    double decay_r, decay_g, decay_b;
+    private_nh_.param("decay_r", decay_r, 0.1);
+    private_nh_.param("decay_g", decay_g, 0.1);
+    private_nh_.param("decay_b", decay_b, 0.1);
+    decay_bgr_.push_back(decay_b);
+    decay_bgr_.push_back(decay_g);
+    decay_bgr_.push_back(decay_r);
   }
 
   void pointCb(const geometry_msgs::PointStamped::ConstPtr& point_msg)
   {
     current_frame_ = point_msg->header.frame_id;
-    x = point_msg->point.x;
-    y = point_msg->point.y;
-    r = point_msg->point.z; // radius on image coordinate
+    x_ = point_msg->point.x;
+    y_ = point_msg->point.y;
+    r_ = point_msg->point.z; // radius on image coordinate
   }
 
   void imageCb(const sensor_msgs::ImageConstPtr& image_msg,
@@ -111,7 +118,7 @@ public:
       for(int i = 0; i < 121; i++)
       {
         double px = i/11, py = i%11;
-        cv::Point2d uv(x + (5-px)*r/5 + r*ix[ind], y + (5-py)*r/5 + r*iy[ind]);
+        cv::Point2d uv(x_ + (5-px)*r_/5 + r_*ix[ind], y_ + (5-py)*r_/5 + r_*iy[ind]);
         if(0<=uv.x && uv.x < image.size().width && 0<=uv.y && uv.y < image.size().height)
         {
           colbuf.push_back(image.at<cv::Vec3b>(static_cast<int>(uv.y), static_cast<int>(uv.x)));
@@ -125,7 +132,7 @@ public:
         double lscore = 0.0;
         for(int i=0;i<3;i++)
         {
-          lscore += exp(-abs(target_color_.val[i] - (*it)[i]) * decay_rate_);
+          lscore += exp(-abs(target_color_.val[i] - (*it)[i]) * decay_bgr_[i]);
         }
         vscore.push_back(lscore);
       }
@@ -136,15 +143,18 @@ public:
     }
 
     // for debug image
+    cv::circle(debug_img, cv::Point(static_cast<int>(x_), static_cast<int>(y_)),
 #if ROS_VERSION_MINIMUM(1, 15, 0)
-    cv::circle(debug_img, cv::Point(static_cast<int>(x), static_cast<int>(y)), static_cast<int>(r), cv::Scalar(0,0,255), 3);
+               static_cast<int>(r_), cv::Scalar(0,0,255),
 #else
-    cv::circle(debug_img, cv::Point(static_cast<int>(x), static_cast<int>(y)), static_cast<int>(r), CV_RGB(255,0,0), 3);
+               static_cast<int>(r_), CV_RGB(255,0,0),
 #endif
+               3);
     char text[32];
     snprintf(text, sizeof(text), "brightness = %.3f", max_score);
     cv::putText(debug_img, std::string(text),
-                cv::Point(static_cast<int>(x - 100), static_cast<int>(y + 70 + r)),
+                cv::Point(static_cast<int>(x_ - 100), static_cast<int>(y_ + 70 + r_)),
+
 #if ROS_VERSION_MINIMUM(1, 15, 0)
                 0, 0.7, cv::Scalar(0,0,255),
 #else
