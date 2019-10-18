@@ -141,7 +141,7 @@ public:
                 2, 8, false);
 
     std_msgs::Float32 score_msg;
-    score_msg.data = max_score;
+    score_msg.data = static_cast<float>(max_score);
     result_pub_.publish(score_msg);
 
     // publish debug image
