@@ -26,13 +26,6 @@ catkin_package(
 add_executable(color_point_detector src/color_point_detector.cpp)
 target_link_libraries(color_point_detector ${catkin_LIBRARIES})
 
-catkin_package(
-    DEPENDS #
-    CATKIN_DEPENDS # TODO
-    INCLUDE_DIRS # TODO include
-    LIBRARIES # TODO
-)
-
 if (CATKIN_ENABLE_TESTING)
   find_package(rostest REQUIRED)
   add_rostest(test/test-color-point-detector.launch)
