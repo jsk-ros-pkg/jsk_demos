@@ -23,6 +23,7 @@ class FrameDrawer
   std::string current_frame_;
   double x,y,r;
   CvScalar target_color_;
+  double decay_rate_;
 
   std::vector<tf::StampedTransform> button_pose_;
 
@@ -41,6 +42,8 @@ public:
     private_nh_.param("green", g, 196);
     private_nh_.param("blue", b, 64);
     target_color_ = CV_RGB(r,g,b);
+
+    private_nh_.param("decay_rate", decay_rate_, 0.1);
   }
 
   void pointCb(const geometry_msgs::PointStamped::ConstPtr& point_msg)
@@ -103,7 +106,7 @@ public:
 	{
 	  double lscore = 0.0;
 	  for(int i=0;i<3;i++)
-           lscore += exp(-abs(target_color_.val[i] - (*it)[i])/10.0);
+           lscore += exp(-abs(target_color_.val[i] - (*it)[i]) * decay_rate_);
 	  vscore.push_back(lscore);
 	}
 
