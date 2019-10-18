@@ -100,12 +100,14 @@ public:
     int ix[] = {0,1,0,-1,0}, iy[] = {0,0,1,0,-1};
     for(int ind=0; ind<5; ind++) {
       std::vector<cv::Vec3b> colbuf;
-      for(int i = 0; i < 121; i++){
-	double px = i/11, py = i%11;
-	cv::Point2d uv(x + (5-px)*r/5 + r*ix[ind], y + (5-py)*r/5 + r*iy[ind]);
-	if(0<=uv.x && uv.x < image.size().width-1 && 0<=uv.y && uv.y < image.size().height-1){
-         colbuf.push_back(image.at<cv::Vec3b>((int)uv.y, (int)uv.x));
-	}
+      for(int i = 0; i < 121; i++)
+      {
+        double px = i/11, py = i%11;
+        cv::Point2d uv(x + (5-px)*r/5 + r*ix[ind], y + (5-py)*r/5 + r*iy[ind]);
+        if(0<=uv.x && uv.x < image.size().width && 0<=uv.y && uv.y < image.size().height)
+        {
+          colbuf.push_back(image.at<cv::Vec3b>(static_cast<int>(uv.y), static_cast<int>(uv.x)));
+        }
       }
 
       // check yellow point
