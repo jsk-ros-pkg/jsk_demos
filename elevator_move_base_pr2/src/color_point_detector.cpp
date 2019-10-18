@@ -81,12 +81,8 @@ public:
     }
 
     // output debug image
-    //sensor_msgs::CvBridge debug_bridge;
-    //debug_bridge.fromImage (*image_msg, "bgr8");
-    //IplImage* src_imgipl = debug_bridge.toIpl();
-    //cv::Mat img(src_imgipl);
-    cv::Mat img = image;
-    
+    cv::Mat debug_img = image.clone();
+
     // calcurate the score
     double max_score = -1e9;
     int ix[] = {0,1,0,-1,0}, iy[] = {0,0,1,0,-1};
@@ -116,24 +112,24 @@ public:
     }
 
     // for debug image
-    cv::circle(img, cv::Point2f(x, y), r, CV_RGB(255,0,0), 3);
+    cv::circle(debug_img, cv::Point(static_cast<int>(x), static_cast<int>(y)), static_cast<int>(r), CV_RGB(255,0,0), 3);
     char text[32];
-    sprintf(text, "brightness = %.3f", max_score);
-    cv::putText (img, std::string(text), cv::Point(x-100, y+70+r),
-		 0, 0.7, CV_RGB(255,0,0),
-		 2, 8, false);
+    snprintf(text, sizeof(text), "brightness = %.3f", max_score);
+    cv::putText(debug_img, std::string(text),
+                cv::Point(static_cast<int>(x - 100), static_cast<int>(y + 70 + r)),
+                0, 0.7, CV_RGB(255,0,0),
+                2, 8, false);
 
     std_msgs::Float32 score_msg;
     score_msg.data = max_score;
     result_pub_.publish(score_msg);
 
     // publish debug image
-    //cv_bridge::CvImage out_msg;
-    //out_msg.header   = image_msg->header;
-    //out_msg.encoding = "bgr8";
-    //out_msg.image    = img;
-    //debug_pub_.publish(out_msg.toImageMsg());
-    debug_pub_.publish(cv_ptr->toImageMsg());
+    cv_bridge::CvImage out_msg;
+    out_msg.header = image_msg->header;
+    out_msg.encoding = "bgr8";
+    out_msg.image = debug_img;
+    debug_pub_.publish(out_msg.toImageMsg());
   }
 
 };
