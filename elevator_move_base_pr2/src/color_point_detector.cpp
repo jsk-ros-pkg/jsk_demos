@@ -1,3 +1,7 @@
+#include <algorithm>
+#include <string>
+#include <vector>
+
 #include <ros/ros.h>
 #include <image_transport/image_transport.h>
 #include <opencv/cv.h>
@@ -7,7 +11,6 @@
 #include <tf/transform_listener.h>
 #include <geometry_msgs/Point.h>
 #include <std_msgs/Float32.h>
-#include <algorithm>
 
 class FrameDrawer
 {
@@ -62,20 +65,24 @@ public:
 
     //std::cout << ".";
     // drop 9 of 10 frames
-    //if(info_msg->header.seq % 10 != 0) return;
-    if(image_msg->header.frame_id != current_frame_) return;
+    //if(info_msg->header.seq % 10 != 0) {return;}
+    if(image_msg->header.frame_id != current_frame_) {return;}
 
-    try {
+    try
+    {
       // May want to view raw bayer data
       // NB: This is hacky, but should be OK since we have only one image CB.
       if (image_msg->encoding.find("bayer") != std::string::npos)
-	boost::const_pointer_cast<sensor_msgs::Image>(image_msg)->encoding = "mono8";
+      {
+        boost::const_pointer_cast<sensor_msgs::Image>(image_msg)->encoding = "mono8";
+      }
 
       //image = bridge_.imgMsgToCv(image_msg, "bgr8");
       cv_ptr = cv_bridge::toCvCopy(image_msg, "bgr8");
       image = cv_ptr->image;
     }
-    catch (cv_bridge::Exception& ex) {
+    catch (cv_bridge::Exception& ex)
+    {
       ROS_ERROR("[draw_frames] Failed to convert image");
       return;
     }
@@ -86,7 +93,8 @@ public:
     // calcurate the score
     double max_score = -1e9;
     int ix[] = {0,1,0,-1,0}, iy[] = {0,0,1,0,-1};
-    for(int ind=0; ind<5; ind++) {
+    for(int ind=0; ind<5; ind++)
+    {
       std::vector<cv::Vec3b> colbuf;
       for(int i = 0; i < 121; i++)
       {
@@ -101,12 +109,14 @@ public:
       // check yellow point
       std::vector<double> vscore;
       for(std::vector<cv::Vec3b>::iterator it=colbuf.begin();it!=colbuf.end();it++)
-	{
-	  double lscore = 0.0;
-	  for(int i=0;i<3;i++)
-           lscore += exp(-abs(target_color_.val[i] - (*it)[i]) * decay_rate_);
-	  vscore.push_back(lscore);
-	}
+      {
+        double lscore = 0.0;
+        for(int i=0;i<3;i++)
+        {
+          lscore += exp(-abs(target_color_.val[i] - (*it)[i]) * decay_rate_);
+        }
+        vscore.push_back(lscore);
+      }
 
       std::sort(vscore.begin(), vscore.end());
       double score = vscore[vscore.size()*3/4];
