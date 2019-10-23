@@ -150,14 +150,14 @@
 
 (make-attention-action look-button (userdata)
   (let ((panel-name (cdr (assoc 'panel-name userdata))) look-target)
+    (update-robot-position)
+    (update-scene-by-tf *scene*)
     (send *logger* :save-robot-pose "look-button")
     ;; nearest call panel
     (ros::ros-info "panel-name: ~A" panel-name)
     (setq *panel* (car (send *scene* :find-object panel-name)))
     (setq look-target (car (send *scene* :find-object (format nil "~A~A" (check-current-floor) panel-name))))
     ;;
-    (update-robot-position)
-    (update-scene-by-tf *scene*)
     (when look-target
       (ros::ros-info "look-at button position ~A" (send look-target :worldpos))
       (send *pr2* :head :look-at (send look-target :worldpos))
