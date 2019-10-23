@@ -43,12 +43,12 @@
 (defun wait-for-hand-over (arm &optional (timeout 10))
   (dotimes (i 3)
     (when (wait-for-hand-impact arm :timeout timeout)
-      (speak-jp "ありがとうございます。")
+      (speak-jp "ありがとうございます。" :wait t)
       (return-from wait-for-hand-over t))
     (ros::ros-error "Hand impact timed out without response")
-    (speak-jp "サンドイッチを手にかけてください。"))
+    (speak-jp "サンドイッチを手にかけてください。" :wait t))
   ;; fail
-  (speak-jp "あれ、サンドイッチ。。。")
+  (speak-jp "あれ、サンドイッチ。。。" :wait t)
   (return-from wait-for-hand-over nil))
 
 
@@ -91,7 +91,7 @@
     (when is-door-open
       (speak-jp "ドアが開いています。" :wait t)
       (return-from check-forum-door-open t))
-    (speak-jp "ドアが閉まっています。")
+    (speak-jp "ドアが閉まっています。" :wait t)
     (return-from check-forum-door-open nil)
     ))
 
@@ -101,11 +101,11 @@
         target-coords ray-vec via-coords push-coords av0 av1 (arm :rarm))
 
     ;; Find door button
-    (speak-jp "ドアのボタンを探しています。")
     (send *pr2* :head :look-at
           (send (send *scene* :spot "/eng2/2f/forum-door-button") :worldpos))
     (send *ri* :angle-vector (send *pr2* :angle-vector) 1000)
     (send *ri* :wait-interpolation)
+    (speak-jp "ドアのボタンを探しています。" :wait t)
     (update-eus-robot-model)
     (setq bboxes-msg
           (one-shot-subscribe "door_button/cluster_indices_decomposer/boxes"
@@ -134,7 +134,7 @@
                             :translate (scale -30 ray-vec) :world))
 
     ;; Push door button
-    (speak-jp "ドアのボタンを押します")
+    (speak-jp "ドアのボタンを押します" :wait t)
     (setq av0 (send *pr2* arm :inverse-kinematics via-coords
                     :rotation-axis :x
                     :use-torso t
@@ -158,8 +158,8 @@
 
 
 (defun order-sandwich (&optional (name "BLTサンド"))
-  (speak-jp "すみません")
-  (speak-jp (format nil "~Aをください" name)))
+  (speak-jp "すみません" :wait t)
+  (speak-jp (format nil "~Aをください" name) :wait t))
 
 
 (defun receive-sandwich ()
@@ -173,7 +173,7 @@
 
   (send *ri* :stop-grasp :rarm :wait t)
 
-  (speak-jp "サンドイッチをください")
+  (speak-jp "サンドイッチをください" :wait t)
 
   (wait-for-hand-over :rarm)
 
@@ -200,7 +200,7 @@
   (send *ri* :angle-vector (send *pr2* :angle-vector) 5000)
   (send *ri* :wait-interpolation)
   (send *ri* :stop-grasp :rarm :wait t)
-  (speak-jp "サンドイッチをどうぞ")
+  (speak-jp "サンドイッチをどうぞ" :wait t)
 
   (wait-for-hand-over :rarm)
 
@@ -209,7 +209,7 @@
 
 
 (defun demo ()
-  (speak-jp "サンドイッチを買いに行きます")
+  (speak-jp "サンドイッチを買いに行きます" :wait t)
   (init)
   (go-to-forum-door-front)
   (while (not (check-forum-door-open))
