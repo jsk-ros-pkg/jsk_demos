@@ -102,7 +102,8 @@
     (unless cloud-msg
       (return-from check-current-floor nil))
     (setq is-door-open
-          (<= (/ (length (send cloud-msg :data)) (send cloud-msg :point_step))
+          (<= (/ (length (send cloud-msg :data))
+                 (+ 0.00001 (send cloud-msg :point_step)))  ;; For zero division
               max-cloud-size))
     (when is-door-open
       (speak-jp "ドアが開いています。" :wait t)
