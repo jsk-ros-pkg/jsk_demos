@@ -60,7 +60,7 @@ class MatchTemplate(ConnectionBasedTransport):
                 name=rospy.get_param(prefix + '/name'),
                 thre=rospy.get_param(prefix + '/thre'),
                 method=method,
-                image=cv2.imread(imgpath, cv2.CV_LOAD_IMAGE_GRAYSCALE),
+                image=cv2.imread(imgpath, cv2.IMREAD_GRAYSCALE),
             )
         return templates
 
