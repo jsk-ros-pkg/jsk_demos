@@ -2,7 +2,8 @@
 
   <arg name="NS" default="door_button"/>
   <arg name="MANAGER" default="door_button_segmentation_manager"/>
-  <arg name="INPUT_IMAGE" default="/kinect_head_remote/rgb/image_rect_color"/>
+  <!-- <arg name="INPUT_IMAGE" default="/kinect_head_remote/rgb/image_rect_color"/> -->
+  <arg name="INPUT_IMAGE" default="/wide_stereo_remote/left/image_rect_color"/>
   <arg name="INPUT_CLOUD" default="/kinect_head_remote/depth_registered/points"/>
   <arg name="FIXED_FRAME" default="/head_mount_kinect_rgb_optical_frame"/>
   <arg name="MODEL_FILE" default="$(find elevator_move_base_pr2)/trained_model/fcn8s_atonce_door_button_model.npz"/>
@@ -43,6 +44,19 @@
       <remap from="depth_registered/image_rect" to="depth_registered/hw_registered/image_rect"/>
     </node>
 
+  </group>
+
+  <group ns="wide_stereo_remote">
+    <group ns="left">
+      <node name="republish_rgb"
+            pkg="image_transport" type="republish"
+            args="compressed raw"
+            output="screen"
+            respawn="true">
+        <remap from="in" to="/wide_stereo/left/image_rect_color"/>
+        <remap from="out" to="image_rect_color"/>
+      </node>
+    </group>
   </group>
 
   <group ns="$(arg NS)">
