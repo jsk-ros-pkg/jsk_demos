@@ -43,18 +43,21 @@ class MatchTemplate(ConnectionBasedTransport):
         self.sub.unregister()
 
     def load_templates(self):
+        method = rospy.get_param('~method', '')
+        if method == 'CCORR':
+            method = cv2.TM_CCORR_NORMED
+        elif method == 'CCOEFF':
+            method = cv2.TM_CCOEFF_NORMED
+        elif method == 'SQDIFF':
+            method = cv2.TM_SQDIFF_NORMED
+        else:
+            method = cv2.TM_SQDIFF_NORMED
+
         template_list = rospy.get_param('~template_list').split()
         templates = {}
         for typename in template_list:
             prefix = '~template/' + typename
-            method = rospy.get_param(prefix + '/method', '')
             imgpath = self.resolve_ros_path(rospy.get_param(prefix + '/path'))
-            if method == 'CCORR':
-                method = cv2.TM_CCORR_NORMED
-            elif method == 'CCOEFF':
-                method = cv2.TM_CCOEFF_NORMED
-            else:
-                method = cv2.TM_SQDIFF_NORMED
 
             templates[typename] = Template(
                 name=rospy.get_param(prefix + '/name'),
@@ -81,7 +84,7 @@ class MatchTemplate(ConnectionBasedTransport):
             return
 
         results = dict()
-        for typename, template in self.templates.items():
+        for typename, template in sorted(self.templates.items()):
             res = cv2.matchTemplate(img, template.image, template.method)
             min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(res)
 
@@ -99,7 +102,7 @@ class MatchTemplate(ConnectionBasedTransport):
                     top_left=max_loc)
             results[template.name] = result
 
-            rospy.loginfo('%s: %f' % (template.name, score))
+            rospy.loginfo('score of %s: %f' % (template.name, score))
 
         # publish result
         msg = StringStamped(header=msg.header)
