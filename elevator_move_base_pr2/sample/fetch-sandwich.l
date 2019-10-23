@@ -88,8 +88,8 @@
     (setq is-door-open
           (<= (/ (length (send cloud-msg :data)) (send cloud-msg :point_step))
               max-cloud-size))
-    (when (is-door-open)
-      (speak-jp "ドアが開いています。")
+    (when is-door-open
+      (speak-jp "ドアが開いています。" :wait t)
       (return-from check-forum-door-open t))
     (speak-jp "ドアが閉まっています。")
     (return-from check-forum-door-open nil)
