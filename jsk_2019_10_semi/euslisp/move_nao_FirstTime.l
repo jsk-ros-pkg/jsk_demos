@@ -1,3 +1,4 @@
+#|
 mech-user@KI00112:~$ source ~/catkin_ws/devel/setup.bash 
 mech-user@KI00112:~$ source ~/semi_ws/devel/setup.bash 
 mech-user@KI00112:~$ rossetip
@@ -41,3 +42,25 @@ t
 7.irteusgl$ (send *ri* :go-pos 0.1 0 0)
 t
 8.irteusgl$ 
+|#
+(defun init ()
+  (load "package://naoeus/nao-interface.l")
+  (nao-init)
+  (objects (list *nao*))
+  )
+
+(defun test ()
+  (send *nao* :head :neck-y :joint-angle 30)
+  (send *ri* :angle-vector (send *nao* :angle-vector) 5000)
+  (send *ri* :speak "hello")
+  (send *ri* :go-pos 0.1 0 0))
+
+(print "
+ ## DO NOT FORGET
+ $ rossetip
+ $ rossetmaster 133.11.216.115")
+
+(print "(init)")
+(print "(test)")
+
+
