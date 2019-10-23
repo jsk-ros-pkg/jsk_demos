@@ -200,6 +200,7 @@
   (send *ri* :start-grasp :rarm)
 
   (speak-jp "後ろに下がります。気をつけてください" :wait t)
+  (clear-costmap)
   (send *ri* :go-pos-unsafe -0.5 0 0)
 
   (send *pr2* :torso_lift_joint :joint-angle 0)
@@ -210,6 +211,7 @@
 
 
 (defun go-to-initial-pose ()
+  (speak-jp "もとの場所に帰ります。" :wait t)
   (send *ri* :move-to
         (send (send *initial-pose* :copy-worldcoords) :translate #f(0 0 -30000))
         :frame-id *initial-floor*))
