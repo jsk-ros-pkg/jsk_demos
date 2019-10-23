@@ -161,10 +161,10 @@
     (when look-target
       (ros::ros-info "look-at button position ~A" (send look-target :worldpos))
       (send *pr2* :head :look-at (send look-target :worldpos))
-      (send *ri* :angle-vector (send *pr2* :angle-vector) 1000)
+      (send *ri* :angle-vector (send *pr2* :angle-vector) 500)
       (send *ri* :wait-interpolation))
 
-    (unix:sleep 2)
+    (unix:sleep 1)
 
     ;; update
     (speak-jp "ボタンを探しています" :wait t)
@@ -199,7 +199,7 @@
     (update-robot-position)
     (update-scene-by-tf *scene*)
     (send *pr2* :head :look-at (send button-coords :worldpos))
-    (send *ri* :angle-vector (send *pr2* :angle-vector) 1000)
+    (send *ri* :angle-vector (send *pr2* :angle-vector) 500)
     (send *ri* :wait-interpolation)
     (set-view-target button-coords (send *pr2* :wide_stereo-left) "wide_stereo_optical_frame")
     ;; check phase
@@ -338,14 +338,14 @@
 	 (or (find-if #'(lambda(x)(string= (send x :name) "/elevator_number"))  (send *panel* :descendants)) *panel*)))
     (send *pr2* :head :look-at (send look-target :worldpos))
     (send *pr2* :head :look-at (send look-target :worldpos)) ;; bug twice
-    (send *ri* :angle-vector (send *pr2* :angle-vector) 1000)
+    (send *ri* :angle-vector (send *pr2* :angle-vector) 500)
     (send *ri* :wait-interpolation))
 
   (unix::sleep 3) ;; this is pr2 reference coords problem -> robot 
   (check-target-floor userdata)
 
   (send *pr2* :head :angle-vector #f(0 0))
-  (send *ri* :angle-vector (send *pr2* :angle-vector) 1000)
+  (send *ri* :angle-vector (send *pr2* :angle-vector) 500)
   (send *ri* :wait-interpolation)
 
   (let ((targetfloor (cdr (assoc 'target-floor userdata))))
