@@ -77,12 +77,28 @@
   (update-eus-robot-model))
 
 
+(defun set-dynamic-double-param (&optional (node-name "/wide_stereo")
+                                           (param "max_exposure")
+                                           (value 0.0135))
+  "Set bool parameters using dynamic_reconfigure."
+  (let ((srv-name (format nil "~A/set_parameters" node-name))
+        (req (instance dynamic_reconfigure::ReconfigureRequest :init)))
+    (send req :config :doubles
+          (list (instance dynamic_reconfigure::DoubleParameter :init
+                          :name (format nil "~A" param)
+                          :value value)))
+    (when (ros::wait-for-service srv-name 0)
+      (ros::service-call srv-name req))))
+
+
 (defun check-forum-door-open (&optional (max-cloud-size 500))
   (let (is-door-open cloud-msg)
+    (set-dynamic-double-param "/wide_stereo" "max_exposure" 0.0)  ;; 0.0 is auto
     (setq cloud-msg
           (one-shot-subscribe "forum_door/extract_indices/output"
                               sensor_msgs::PointCloud2
                               :timeout 10000))  ;; 10000[msec]
+    (set-dynamic-double-param "/wide_stereo" "max_exposure" 0.0135)  ;; default
     (unless cloud-msg
       (return-from check-current-floor nil))
     (setq is-door-open
@@ -103,7 +119,7 @@
     ;; Find door button
     (send *pr2* :head :look-at
           (send (send *scene* :spot "/eng2/2f/forum-door-button") :worldpos))
-    (send *ri* :angle-vector (send *pr2* :angle-vector) 1000)
+    (send *ri* :angle-vector (send *pr2* :angle-vector) 500)
     (send *ri* :wait-interpolation)
     (speak-jp "ドアのボタンを探しています。" :wait t)
     (update-eus-robot-model)
@@ -166,6 +182,9 @@
   ;; go to register front
   (send *ri* :move-to
         (send *scene* :spot "/eng2/2f/subway-register"))
+
+  ;; TODO(Unknown): Pay money here.
+  ;;                Consider registering SUBWAY club and getting pre-paid card.
 
   (send *pr2* :angle-vector (pr2-pick-bag-pose))
   (send *ri* :angle-vector (send *pr2* :angle-vector) 5000)
