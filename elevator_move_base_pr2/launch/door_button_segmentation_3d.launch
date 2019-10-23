@@ -14,22 +14,19 @@
     <!-- Relay -->
     <node name="relay_camera_info"
           pkg="topic_tools" type="relay"
-          args="/kinect_head/rgb/camera_info /kinect_head_remote/rgb/camera_info"
-          output="screen" respawn="true"/>
+          args="/kinect_head/rgb/camera_info /kinect_head_remote/rgb/camera_info"/>
 
     <!-- Republish images -->
     <node name="republish_rgb"
           pkg="image_transport" type="republish"
-          args="compressed raw"
-          output="screen" respawn="true">
+          args="compressed raw">
       <remap from="in" to="/kinect_head/rgb/image_rect_color"/>
       <remap from="out" to="rgb/image_rect_color"/>
     </node>
 
     <node name="republish_depth"
           pkg="image_transport" type="republish"
-          args="compressedDepth raw"
-          output="screen" respawn="true">
+          args="compressedDepth raw">
       <remap from="in" to="/kinect_head/depth_registered/hw_registered/image_rect"/>
       <remap from="out" to="depth_registered/hw_registered/image_rect"/>
     </node>
@@ -37,8 +34,7 @@
     <!-- 3D reconstruction -->
     <node name="point_cloud_xyzrgb_remote"
           pkg="nodelet" type="nodelet"
-          args="load depth_image_proc/point_cloud_xyzrgb /$(arg NS)/$(arg MANAGER)"
-          output="screen" respawn="true">
+          args="load depth_image_proc/point_cloud_xyzrgb /$(arg NS)/$(arg MANAGER)">
       <remap from="rgb/camera_info" to="rgb/camera_info"/>
       <remap from="rgb/image_rect_color" to="rgb/image_rect_color"/>
       <remap from="depth_registered/image_rect" to="depth_registered/hw_registered/image_rect"/>
@@ -50,9 +46,7 @@
     <group ns="left">
       <node name="republish_rgb"
             pkg="image_transport" type="republish"
-            args="compressed raw"
-            output="screen"
-            respawn="true">
+            args="compressed raw">
         <remap from="in" to="/wide_stereo/left/image_rect_color"/>
         <remap from="out" to="image_rect_color"/>
       </node>
