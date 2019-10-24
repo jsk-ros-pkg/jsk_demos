@@ -204,6 +204,7 @@
 
   (send *pr2* :torso_lift_joint :joint-angle 0)
   (send *ri* :angle-vector (send *pr2* :angle-vector) 5000)
+  (send *ri* :wait-interpolation)
 
   (pr2-tuckarm-pose :rarm :outside)
   t)
@@ -211,7 +212,7 @@
 
 (defun go-to-initial-pose ()
   (speak-jp "もとの場所に帰ります。" :wait t)
-  (send *ri :move-to *initial-pose*))
+  (send *ri* :move-to *initial-pose*))
 
 
 (defun pass-sandwich ()
