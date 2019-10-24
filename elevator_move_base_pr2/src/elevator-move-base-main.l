@@ -195,7 +195,6 @@
 	 (button-coords (find-if #'(lambda(o)(string= button (send o :name)))
 				(flatten (send *panel* :inheritance))))
 	 (button-state (instance light-button-cb-class :init)))
-    (speak-jp "ボタンを押せたか確認します" :wait t)
     (update-robot-position)
     (update-scene-by-tf *scene*)
     (send *pr2* :head :look-at (send button-coords :worldpos))
@@ -209,7 +208,7 @@
       (ros::ros-info "button-state: ~A" (send button-state :value))
       (when (< 0.5 (send button-state :value))
         (pprint 'button-light)
-        (speak-jp "ぼたんがひかりました" :wait t)
+        (speak-jp "ぼたんがひかりました")
         ;; (pr2-tuckarm-pose)
         (return-from check-button-light t))
       (unix::usleep (* 100 1000)))
@@ -286,7 +285,7 @@
 	  (setq result t) (return))
 	))
     (ros::unsubscribe "/base_scan")
-    (speak-jp (if result "エレベータに入ります" "エレベータに入れません") :wait t)
+    (speak-jp (if result "エレベータに入ります" "エレベータに入れません"))
     result
     ))
 
@@ -340,23 +339,23 @@
     (send *ri* :angle-vector (send *pr2* :angle-vector) 500)
     (send *ri* :wait-interpolation))
 
-  (unix::sleep 3) ;; this is pr2 reference coords problem -> robot 
+  (unix::sleep 1) ;; this is pr2 reference coords problem -> robot
   (check-target-floor userdata)
+
+  (let ((targetfloor (cdr (assoc 'target-floor userdata))))
+    (dolist (floor *floors*)
+      (when (equal targetfloor (elt floor 0))
+        (speak-jp (concatenate string (elt floor 1) "につきました"))
+        (change-floor (format nil "~A/~a" (send *scene* :name)
+                              (string-downcase (elt floor 0))))
+        )))
 
   (send *pr2* :head :angle-vector #f(0 0))
   (send *ri* :angle-vector (send *pr2* :angle-vector) 500)
   (send *ri* :wait-interpolation)
 
-  (let ((targetfloor (cdr (assoc 'target-floor userdata))))
-    (dolist (floor *floors*)
-      (when (equal targetfloor (elt floor 0))
-        (speak-jp (concatenate string (elt floor 1) "につきました") :wait t)
-        (change-floor (format nil "~A/~a" (send *scene* :name)
-                              (string-downcase (elt floor 0))))
-        )))
   (check-elevator-open)
-  (speak-jp "ドアが飽きました" :wait t)
-  ;; (clear-costmap)
+  (speak-jp "ドアが飽きました")
   :success)
 
 ;; elevator-front-coords, front-coords, outside-panel-name, outside-button, inside-coords, inside-panel-name, target-floor, outside-coords
