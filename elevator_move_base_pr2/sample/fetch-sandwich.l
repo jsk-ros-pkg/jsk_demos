@@ -233,7 +233,7 @@
   (go-to-forum-door-front)
   (while (not (check-forum-door-open))
     (open-forum-door)
-    (unix:sleep 2)  ;; Wait for door opening
+    (unix:sleep 1)  ;; Wait for door opening
     )
   (go-to-subway-front)
   (order-sandwich)
