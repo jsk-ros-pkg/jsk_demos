@@ -1,9 +1,11 @@
 <launch>
 
+  <arg name="gui" default="false"/>
+
   <arg name="NS" default="door_button"/>
   <arg name="MANAGER" default="door_button_segmentation_manager"/>
   <!-- <arg name="INPUT_IMAGE" default="/kinect_head_remote/rgb/image_rect_color"/> -->
-  <arg name="INPUT_IMAGE" default="/wide_stereo_remote/left/image_rect_color"/>
+  <arg name="INPUT_IMAGE" default="/narrow_stereo_remote/left/image_rect_color"/>
   <arg name="INPUT_CLOUD" default="/kinect_head_remote/depth_registered/points"/>
   <arg name="FIXED_FRAME" default="/head_mount_kinect_rgb_optical_frame"/>
   <arg name="MODEL_FILE" default="$(find elevator_move_base_pr2)/trained_model/fcn8s_atonce_door_button_model.npz"/>
@@ -42,12 +44,12 @@
 
   </group>
 
-  <group ns="wide_stereo_remote">
+  <group ns="narrow_stereo_remote">
     <group ns="left">
       <node name="republish_rgb"
             pkg="image_transport" type="republish"
             args="compressed raw">
-        <remap from="in" to="/wide_stereo/left/image_rect_color"/>
+        <remap from="in" to="/narrow_stereo/left/image_rect_color"/>
         <remap from="out" to="image_rect_color"/>
       </node>
     </group>
@@ -163,6 +165,25 @@
         queue_size: 1000
       </rosparam>
     </node>
+
+    <group if="$(arg gui)">
+      <node name="tile_image"
+            pkg="jsk_perception" type="tile_image.py">
+        <rosparam subst_value="true">
+          input_topics:
+            - $(arg INPUT_IMAGE)
+            - label_image_decomposer/output/label_viz
+          no_sync: true
+          draw_topic_name: true
+          font_scale: 0.8
+        </rosparam>
+      </node>
+
+      <node name="image_view"
+            pkg="image_view" type="image_view">
+        <remap from="image" to="tile_image/output"/>
+      </node>
+    </group>
 
   </group>
 
