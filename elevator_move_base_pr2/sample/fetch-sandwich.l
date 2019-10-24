@@ -66,8 +66,7 @@
 (defun init ()
   (pr2-init)
   (setq *scene* (make-eng2-scene))
-  (setq *initial-pose* (send *ri* :state :worldcoords))
-  (setq *initial-floor* (check-current-floor *initial-pose*)))
+  (setq *initial-pose* (send *ri* :state :worldcoords)))
 
 
 (defun go-to-forum-door-front ()
@@ -212,9 +211,7 @@
 
 (defun go-to-initial-pose ()
   (speak-jp "もとの場所に帰ります。" :wait t)
-  (send *ri* :move-to
-        (send (send *initial-pose* :copy-worldcoords) :translate #f(0 0 -30000))
-        :frame-id *initial-floor*))
+  (send *ri :move-to *initial-pose*))
 
 
 (defun pass-sandwich ()
