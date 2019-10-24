@@ -5,7 +5,6 @@
 (defun move-inside-state-machine ()
   (let ((sm (instance state-machine :init))
         (move-client (pr2-interface-move-base-action *ri*)))
-    (send sm :add-node (instance state :init :tuckarm-pose '(lambda (&optional args) (pr2-tuckarm-pose))))
     (send sm :add-node (actionlib-client-state
                         :move-elevator-front move-client :timeout 300 :retry t
                         :key 'coords->movebaseactiongoal))
@@ -17,8 +16,7 @@
     (send (send sm :node :move-elevator-inside) :remap-list '((:goal . inside-coords)))
     (send sm :arg-keys 'elevator-front-coords 'inside-coords)
     (send sm :goal-state (list :success :fail))
-    (send sm :start-state :tuckarm-pose)
-    (send sm :add-transition :tuckarm-pose :move-elevator-front t)
+    (send sm :start-state :move-elevator-front)
     (send sm :add-transition :move-elevator-front :check-elevator-open :succeeded)
     (send sm :add-transition :move-elevator-front :fail :failed)
     (send sm :add-transition :check-elevator-open :move-elevator-inside t)

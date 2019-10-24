@@ -329,7 +329,6 @@
 
 (make-attention-action ready-to-outside (userdata)
   (clear-costmap)
-  (pr2-tuckarm-pose)
   (send *ri* :go-pos 0 0 90)
 
   (update-robot-position)
