@@ -76,28 +76,16 @@
   (update-eus-robot-model))
 
 
-(defun set-dynamic-double-param (&optional (node-name "/wide_stereo")
-                                           (param "max_exposure")
-                                           (value 0.0135))
-  "Set bool parameters using dynamic_reconfigure."
-  (let ((srv-name (format nil "~A/set_parameters" node-name))
-        (req (instance dynamic_reconfigure::ReconfigureRequest :init)))
-    (send req :config :doubles
-          (list (instance dynamic_reconfigure::DoubleParameter :init
-                          :name (format nil "~A" param)
-                          :value value)))
-    (when (ros::wait-for-service srv-name 0)
-      (ros::service-call srv-name req))))
-
-
 (defun check-forum-door-open (&optional (max-cloud-size 500))
   (let (is-door-open cloud-msg)
-    (set-dynamic-double-param "/wide_stereo" "max_exposure" 0.0)  ;; 0.0 is auto
+    (ros::set-dynamic-reconfigure-param "/wide_stereo_both" "max_exposure"
+                                        :double 0.0)  ;; 0.0 is auto
     (setq cloud-msg
           (one-shot-subscribe "forum_door/extract_indices/output"
                               sensor_msgs::PointCloud2
                               :timeout 10000))  ;; 10000[msec]
-    (set-dynamic-double-param "/wide_stereo" "max_exposure" 0.0135)  ;; default
+    (ros::set-dynamic-reconfigure-param "/wide_stereo_both" "max_exposure"
+                                        :double 0.0135)  ;; default
     (unless cloud-msg
       (return-from check-current-floor nil))
     (setq is-door-open
