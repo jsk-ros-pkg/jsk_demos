@@ -188,7 +188,7 @@
 
   (speak-jp "後ろに下がります。気をつけてください" :wait t)
   (clear-costmap)
-  (send *ri* :go-pos-unsafe -0.5 0 0)
+  (send *ri* :go-pos-unsafe -0.5 0 180)
 
   (send *pr2* :torso_lift_joint :joint-angle 0)
   (send *ri* :angle-vector (send *pr2* :angle-vector) 5000)
