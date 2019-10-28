@@ -9,7 +9,9 @@
       child_frame_id: matching
       object_width: 0.098
       object_height: 0.241
-      error_threshold: 100.0
+      reprojection_threshold: 1.0
+      distanceratio_threshold: 0.8
+      error_threshold: 70.0
       relative_pose: "0.1205 0.049 -0.0005 0.0 -0.707107 0.0 0.707107"
       viewer_window: false
       window_name: elevator_call_panel
@@ -24,7 +26,9 @@
       child_frame_id: matching
       object_width: 0.363
       object_height: 0.294
-      error_threshold: 100.0
+      reprojection_threshold: 1.0
+      distanceratio_threshold: 0.8
+      error_threshold: 70.0
       relative_pose: "0.147 0.1815 -0.0005 0.0 -0.707107 0.0 0.707107"
       viewer_window: false
       window_name: elevator_inside_panel
