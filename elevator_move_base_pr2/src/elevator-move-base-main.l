@@ -222,10 +222,6 @@
     (send sm :add-node (instance state :init :look 'look-button))
     (send sm :add-node (instance state :init :push 'push-button-func))
     (send sm :add-node (instance state :init :check 'check-button-light))
-    (send sm :add-node (actionlib-client-state
-                        :relocate move-client :timeout 10 :retry t
-                        :key 'coords->movebaseactiongoal))
-    (send (send sm :node :relocate) :remap-list '((:goal . front-coords)))
     (send sm :arg-keys 'button 'panel-name 'front-coords)
     (send sm :goal-state (list :success :fail))
     (send sm :start-state :look)
@@ -234,9 +230,7 @@
     (send sm :add-transition :push :check t)
     (send sm :add-transition :push :fail nil)
     (send sm :add-transition :check :success t)
-    (send sm :add-transition :check :relocate nil)
-    (send sm :add-transition :relocate :look :succeeded)
-    (send sm :add-transition :relocate :look :failed)
+    (send sm :add-transition :check :look nil)
     sm ))
 
 (defun coords->movebaseactiongoal (co)
