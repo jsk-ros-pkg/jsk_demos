@@ -298,6 +298,10 @@
    "/move_base_node/DWAPlannerROS" "xy_goal_tolerance" :double 0.15)
   (ros::set-dynamic-reconfigure-param
    "/move_base_node/DWAPlannerROS" "yaw_goal_tolerance" :double 0.087) ;; 5[deg]
+  (ros::set-dynamic-reconfigure-param
+   "/move_base_node/global_costmap" "footprint_padding" :double 0.05)
+  (ros::set-dynamic-reconfigure-param
+   "/move_base_node/local_costmap" "footprint_padding" :double 0.05)
   (switch-global-planner-observation t) ;;enable tilt scan
   t)
 
