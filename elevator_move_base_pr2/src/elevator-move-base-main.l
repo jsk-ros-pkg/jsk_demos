@@ -151,23 +151,22 @@
 (make-attention-action look-button (userdata)
   (let ((panel-name (cdr (assoc 'panel-name userdata))) look-target)
     (update-robot-position)
-    (update-scene-by-tf *scene*)
+
+    (setq look-target
+          (car (send *scene* :find-object
+                     (format nil "~A~A" (check-current-floor) panel-name))))
+    (ros::ros-info "look-at button position ~A" (send look-target :worldpos))
+    (send *pr2* :head :look-at (send look-target :worldpos))
+    (send *ri* :angle-vector (send *pr2* :angle-vector) 500)
+    (send *ri* :wait-interpolation)
+
     (send *logger* :save-robot-pose "look-button")
     ;; nearest call panel
     (ros::ros-info "panel-name: ~A" panel-name)
     (setq *panel* (car (send *scene* :find-object panel-name)))
-    (setq look-target (car (send *scene* :find-object (format nil "~A~A" (check-current-floor) panel-name))))
-    ;;
-    (when look-target
-      (ros::ros-info "look-at button position ~A" (send look-target :worldpos))
-      (send *pr2* :head :look-at (send look-target :worldpos))
-      (send *ri* :angle-vector (send *pr2* :angle-vector) 500)
-      (send *ri* :wait-interpolation))
-
-    (unix:sleep 1)
 
     ;; update
-    (speak-jp "ボタンを探しています" :wait t)
+    (speak-jp "ボタンを探しています")
     (ros::ros-info "wait vision update")
     (unless (update 100)
       (speak-jp "見つかりませんでした" :wait t)
@@ -185,7 +184,7 @@
 	 (button-obj
 	   (find-if #'(lambda(o)(string= button (send o :name))) (flatten (send *panel* :inheritance)))))
     (ros::ros-info (format nil "push button (~a) -> ~a" button button-obj))
-    (speak-jp "ぼたんをおします" :wait t)
+    (speak-jp "ぼたんをおします")
     (send *logger* :save-obj-pose button-obj "push-button")
     (push-button button-obj)
     ))
