@@ -12,12 +12,10 @@
   <arg name="GPU" default="0"/>
 
   <group ns="kinect_head_remote">
-
     <!-- Relay -->
     <node name="relay_camera_info"
           pkg="topic_tools" type="relay"
           args="/kinect_head/rgb/camera_info /kinect_head_remote/rgb/camera_info"/>
-
     <!-- Republish images -->
     <node name="republish_rgb"
           pkg="image_transport" type="republish"
@@ -25,14 +23,12 @@
       <remap from="in" to="/kinect_head/rgb/image_rect_color"/>
       <remap from="out" to="rgb/image_rect_color"/>
     </node>
-
     <node name="republish_depth"
           pkg="image_transport" type="republish"
           args="compressedDepth raw">
       <remap from="in" to="/kinect_head/depth_registered/hw_registered/image_rect"/>
       <remap from="out" to="depth_registered/hw_registered/image_rect"/>
     </node>
-
     <!-- 3D reconstruction -->
     <node name="point_cloud_xyzrgb_remote"
           pkg="nodelet" type="nodelet"
@@ -41,8 +37,7 @@
       <remap from="rgb/image_rect_color" to="rgb/image_rect_color"/>
       <remap from="depth_registered/image_rect" to="depth_registered/hw_registered/image_rect"/>
     </node>
-
-  </group>
+  </group>  <!-- ns: kinect_head_remote -->
 
   <group ns="narrow_stereo_remote">
     <group ns="left">
@@ -50,7 +45,6 @@
       <node name="relay_camera_info"
             pkg="topic_tools" type="relay"
             args="/narrow_stereo/left/camera_info /narrow_stereo_remote/left/camera_info"/>
-
       <!-- Republish -->
       <node name="republish_rgb"
             pkg="image_transport" type="republish"
@@ -58,23 +52,19 @@
         <remap from="in" to="/narrow_stereo/left/image_rect_color"/>
         <remap from="out" to="image_rect_color"/>
       </node>
-    </group>
-  </group>
+    </group>  <!-- ns: left -->
+  </group>  <!-- ns: narrow_stereo_remote -->
 
   <group ns="$(arg NS)">
-
     <node name="$(arg MANAGER)"
           pkg="nodelet" type="nodelet"
           args="manager"
-          output="screen"
-          respawn="true">
+          output="screen" respawn="true">
     </node>
-
     <!-- Segment door button 2-dimentionally by FCN -->
     <node name="fcn_object_segmentation"
           pkg="jsk_perception" type="fcn_object_segmentation.py"
-          output="screen"
-          respawn="true">
+          output="screen" respawn="true">
       <remap from="~input" to="$(arg INPUT_IMAGE)"/>
       <rosparam subst_value="true">
         use_mask: false
@@ -88,33 +78,27 @@
         proba_threshold: 0.0
       </rosparam>
     </node>
-
     <!-- Pipeline to get 3-dimentional bounding box of door button -->
     <!-- label -> mask -> indices -> cloud -> cluster indices -> bboxes -->
     <node name="label_to_mask"
           pkg="nodelet" type="nodelet"
           args="load jsk_perception/LabelToMaskImage $(arg MANAGER)"
-          output="screen"
-          respawn="true">
+          output="screen" respawn="true">
       <remap from="~input" to="fcn_object_segmentation/output"/>
       <rosparam>
         label_value: 1
       </rosparam>
     </node>
-
     <node name="mask_to_point_indices"
           pkg="nodelet" type="nodelet"
           args="load jsk_pcl_utils/MaskImageToPointIndices $(arg MANAGER)"
-          output="screen"
-          respawn="true">
+          output="screen" respawn="true">
       <remap from="~input" to="label_to_mask/output"/>
     </node>
-
     <node name="depth_image_creator"
           pkg="nodelet" type="nodelet"
           args="load jsk_pcl/DepthImageCreator $(arg MANAGER)"
-          output="screen"
-          respawn="true">
+          output="screen" respawn="true">
       <remap from="~input" to="$(arg INPUT_CLOUD)"/>
       <remap from="~info" to="$(arg INPUT_INFO)"/>
       <rosparam>
@@ -122,12 +106,10 @@
         organize_cloud: true
       </rosparam>
     </node>
-
     <node name="extract_indices"
           pkg="nodelet" type="nodelet"
           args="load jsk_pcl/ExtractIndices $(arg MANAGER)"
-          output="screen"
-          respawn="true">
+          output="screen" respawn="true">
       <remap from="~input" to="depth_image_creator/output_cloud"/>
       <remap from="~indices" to="mask_to_point_indices/output"/>
       <rosparam>
@@ -136,12 +118,10 @@
         keep_organized: true
       </rosparam>
     </node>
-
     <node name="euclidean_clustering"
           pkg="nodelet" type="nodelet"
           args="load jsk_pcl/EuclideanClustering $(arg MANAGER)"
-          output="screen"
-          respawn="true">
+          output="screen" respawn="true">
       <remap from="~input" to="extract_indices/output"/>
       <rosparam>
         min_size: 100
@@ -149,12 +129,10 @@
         tolerance: 0.02
       </rosparam>
     </node>
-
     <node name="cluster_indices_decomposer"
           pkg="nodelet" type="nodelet"
           args="load jsk_pcl/ClusterPointIndicesDecomposer $(arg MANAGER)"
-          output="screen"
-          respawn="true">
+          output="screen" respawn="true">
       <remap from="~input" to="extract_indices/output"/>
       <remap from="~target" to="euclidean_clustering/output"/>
       <rosparam subst_value="true">
@@ -167,12 +145,10 @@
         target_frame_id: $(arg FIXED_FRAME)
       </rosparam>
     </node>
-
     <!-- Visualization -->
     <node name="label_image_decomposer"
           pkg="jsk_perception" type="label_image_decomposer.py"
-          output="screen"
-          respawn="true">
+          output="screen" respawn="true">
       <remap from="~input" to="$(arg INPUT_IMAGE)"/>
       <remap from="~input/label" to="fcn_object_segmentation/output"/>
       <rosparam>
@@ -184,13 +160,11 @@
         queue_size: 1000
       </rosparam>
     </node>
+  </group>  <!-- ns: $(arg NS) -->
 
-    <group if="$(arg gui)">
-      <node name="rviz"
-            pkg="rviz" type="rviz"
-            args="-d $(find elevator_move_base_pr2)/config/door_button_segmentation_3d.rviz"/>
-    </group>
-
+  <group if="$(arg gui)">
+    <node name="rviz"
+          pkg="rviz" type="rviz"
+          args="-d $(find elevator_move_base_pr2)/config/door_button_segmentation_3d.rviz"/>
   </group>
-
 </launch>
