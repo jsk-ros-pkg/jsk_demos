@@ -26,22 +26,32 @@
   <run_depend>cv_bridge</run_depend>
   <run_depend>geometry_msgs</run_depend>
   <run_depend>image_transport</run_depend>
+  <run_depend>imagesift</run_depend>
   <run_depend>jsk_maps</run_depend>
   <run_depend>jsk_pcl_ros</run_depend>
   <run_depend>jsk_pcl_ros_utils</run_depend>
   <run_depend>jsk_perception</run_depend>
   <run_depend>jsk_recognition_utils</run_depend>
+  <run_depend>jsk_tools</run_depend>
+  <run_depend>jsk_topic_tools</run_depend>
   <run_depend>message_runtime</run_depend>
   <run_depend>move_base_msgs</run_depend>
   <run_depend>nav_msgs</run_depend>
+  <run_depend>nodelet</run_depend>
   <run_depend>pr2eus</run_depend>
   <run_depend>roseus</run_depend>
   <run_depend>roseus_smach</run_depend>
   <run_depend>rospy</run_depend>
+  <run_depend>rviz</run_depend>
   <run_depend>sound_play</run_depend>
   <run_depend>std_msgs</run_depend>
   <run_depend>std_srvs</run_depend>
+  <run_depend>topic_tools</run_depend>
 
+  <!-- Dependencies needed while testing this package. -->
+  <test_depend>image_proc</test_depend>
+  <test_depend>image_view</test_depend>
+  <test_depend>rosbag</test_depend>
   <test_depend>rostest</test_depend>
 
 <export>
