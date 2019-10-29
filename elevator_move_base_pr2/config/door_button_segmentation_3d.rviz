@@ -6,8 +6,8 @@ Panels:
       Expanded:
         - /Global Options1
         - /Status1
-      Splitter Ratio: 0.597087383
-    Tree Height: 853
+      Splitter Ratio: 0.597087
+    Tree Height: 856
   - Class: rviz/Selection
     Name: Selection
   - Class: rviz/Tool Properties
@@ -16,7 +16,7 @@ Panels:
       - /2D Nav Goal1
       - /Publish Point1
     Name: Tool Properties
-    Splitter Ratio: 0.588679016
+    Splitter Ratio: 0.588679
   - Class: rviz/Views
     Expanded:
       - /Current View1
@@ -26,9 +26,7 @@ Panels:
     Experimental: false
     Name: Time
     SyncMode: 0
-    SyncSource: DoorButtonImage
-Toolbars:
-  toolButtonStyle: 2
+    SyncSource: BaseScan
 Visualization Manager:
   Class: ""
   Displays:
@@ -38,7 +36,7 @@ Visualization Manager:
       Color: 160; 160; 164
       Enabled: true
       Line Style:
-        Line Width: 0.0299999993
+        Line Width: 0.03
         Value: Lines
       Name: Grid
       Normal Cell Count: 0
@@ -50,7 +48,7 @@ Visualization Manager:
       Plane Cell Count: 10
       Reference Frame: <Fixed Frame>
       Value: true
-    - Alpha: 0.699999988
+    - Alpha: 0.7
       Class: rviz/Map
       Color Scheme: map
       Draw Behind: false
@@ -58,7 +56,24 @@ Visualization Manager:
       Name: Map
       Topic: /map
       Unreliable: false
-      Use Timestamp: false
+      Value: true
+    - Alpha: 0.7
+      Class: rviz/Map
+      Color Scheme: map
+      Draw Behind: false
+      Enabled: true
+      Name: Eng2/2F
+      Topic: /eng2/2f
+      Unreliable: false
+      Value: true
+    - Alpha: 0.7
+      Class: rviz/Map
+      Color Scheme: map
+      Draw Behind: false
+      Enabled: true
+      Name: Eng2/7F
+      Topic: /eng2/7f
+      Unreliable: false
       Value: true
     - Alpha: 1
       Class: rviz/RobotModel
@@ -154,6 +169,42 @@ Visualization Manager:
           Show Axes: false
           Show Trail: false
           Value: true
+        head_chain_cb_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        head_mount_kinect_ir_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        head_mount_kinect_ir_optical_frame:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        head_mount_kinect_rgb_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        head_mount_kinect_rgb_optical_frame:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        head_mount_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        head_mount_prosilica_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        head_mount_prosilica_optical_frame:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
         head_pan_link:
           Alpha: 1
           Show Axes: false
@@ -297,6 +348,10 @@ Visualization Manager:
           Show Axes: false
           Show Trail: false
           Value: true
+        left_arm_chain_cb_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
         narrow_stereo_l_stereo_camera_frame:
           Alpha: 1
           Show Axes: false
@@ -436,6 +491,10 @@ Visualization Manager:
           Show Axes: false
           Show Trail: false
           Value: true
+        right_arm_chain_cb_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
         sensor_mount_link:
           Alpha: 1
           Show Axes: false
@@ -483,8 +542,8 @@ Visualization Manager:
     - Alpha: 1
       Autocompute Intensity Bounds: true
       Autocompute Value Bounds:
-        Max Value: 0.303000003
-        Min Value: 0.303000003
+        Max Value: 0.303
+        Min Value: 0.303
         Value: true
       Axis: Z
       Channel Name: intensity
@@ -503,61 +562,12 @@ Visualization Manager:
       Queue Size: 10
       Selectable: true
       Size (Pixels): 3
-      Size (m): 0.00999999978
+      Size (m): 0.01
       Style: Points
       Topic: /base_scan
       Unreliable: false
       Use Fixed Frame: true
       Use rainbow: true
-      Value: true
-    - Class: rviz/Image
-      Enabled: true
-      Image Topic: /wide_stereo/left/image_rect_color
-      Max Value: 1
-      Median window: 5
-      Min Value: 0
-      Name: WideLeftImage
-      Normalize Range: true
-      Queue Size: 2
-      Transport Hint: raw
-      Unreliable: false
-      Value: true
-    - Class: rviz/Image
-      Enabled: true
-      Image Topic: /narrow_stereo/left/image_rect_color
-      Max Value: 1
-      Median window: 5
-      Min Value: 0
-      Name: NarrowLeftImage
-      Normalize Range: true
-      Queue Size: 2
-      Transport Hint: raw
-      Unreliable: false
-      Value: true
-    - Alpha: 1
-      Class: jsk_rviz_plugin/PolygonArray
-      Color: 25; 255; 0
-      Enabled: true
-      Name: PlanePolygons
-      Topic: /door_button/organized_multi_plane_segmentation/output_refined_polygon
-      Unreliable: false
-      Value: true
-      coloring: Auto
-      enable lighting: true
-      normal length: 0.100000001
-      only border: true
-      show normal: true
-    - Class: rviz/Image
-      Enabled: true
-      Image Topic: /door_button/label_image_decomposer/output/label_viz
-      Max Value: 1
-      Median window: 5
-      Min Value: 0
-      Name: DoorButtonImage
-      Normalize Range: true
-      Queue Size: 2
-      Transport Hint: raw
-      Unreliable: false
       Value: true
     - Class: jsk_rviz_plugin/BoundingBoxArray
       Enabled: true
@@ -565,10 +575,10 @@ Visualization Manager:
       Topic: /door_button/cluster_indices_decomposer/boxes
       Unreliable: false
       Value: true
-      alpha: 0.800000012
+      alpha: 0.8
       color: 25; 255; 0
       coloring: Auto
-      line width: 0.00499999989
+      line width: 0.005
       only edge: false
       show coords: false
     - Alpha: 1
@@ -594,48 +604,129 @@ Visualization Manager:
       Queue Size: 10
       Selectable: true
       Size (Pixels): 3
-      Size (m): 0.00999999978
+      Size (m): 0.01
       Style: Points
       Topic: /door_button/depth_image_creator/output_cloud
       Unreliable: false
       Use Fixed Frame: true
       Use rainbow: true
       Value: true
-    - Alpha: 1
-      Autocompute Intensity Bounds: true
-      Autocompute Value Bounds:
-        Max Value: 10
-        Min Value: -10
-        Value: true
-      Axis: Z
-      Channel Name: intensity
-      Class: rviz/PointCloud2
-      Color: 255; 255; 255
-      Color Transformer: RGB8
-      Decay Time: 0
+    - Class: jsk_rviz_plugin/PieChart
       Enabled: true
-      Invert Rainbow: false
-      Max Color: 255; 255; 255
-      Max Intensity: 4096
-      Min Color: 0; 0; 0
-      Min Intensity: 0
-      Name: NormalCloud
-      Position Transformer: XYZ
-      Queue Size: 10
-      Selectable: true
-      Size (Pixels): 3
-      Size (m): 0.00999999978
-      Style: Points
-      Topic: /door_button/organized_multi_plane_segmentation/output_normal
-      Unreliable: false
-      Use Fixed Frame: true
-      Use rainbow: true
+      Name: Battery0
+      Topic: /visualization/battery/value0
       Value: true
+      auto color change: false
+      background color: 0; 0; 0
+      backround alpha: 0
+      foreground alpha: 0.7
+      foreground alpha 2: 0.4
+      foreground color: 25; 255; 240
+      left: 0
+      max color: 255; 0; 0
+      max value: 1
+      min value: 0
+      show caption: true
+      size: 128
+      text size: 14
+      top: 0
+    - Class: jsk_rviz_plugin/PieChart
+      Enabled: true
+      Name: Battery1
+      Topic: /visualization/battery/value1
+      Value: true
+      auto color change: false
+      background color: 0; 0; 0
+      backround alpha: 0
+      foreground alpha: 0.7
+      foreground alpha 2: 0.4
+      foreground color: 25; 255; 240
+      left: 128
+      max color: 255; 0; 0
+      max value: 1
+      min value: 0
+      show caption: true
+      size: 128
+      text size: 14
+      top: 0
+    - Class: jsk_rviz_plugin/PieChart
+      Enabled: true
+      Name: Battery2
+      Topic: /visualization/battery/value2
+      Value: true
+      auto color change: false
+      background color: 0; 0; 0
+      backround alpha: 0
+      foreground alpha: 0.7
+      foreground alpha 2: 0.4
+      foreground color: 25; 255; 240
+      left: 256
+      max color: 255; 0; 0
+      max value: 1
+      min value: 0
+      show caption: true
+      size: 128
+      text size: 14
+      top: 0
+    - Class: jsk_rviz_plugin/PieChart
+      Enabled: true
+      Name: Battery3
+      Topic: /visualization/battery/value3
+      Value: true
+      auto color change: false
+      background color: 0; 0; 0
+      backround alpha: 0
+      foreground alpha: 0.7
+      foreground alpha 2: 0.4
+      foreground color: 25; 255; 240
+      left: 384
+      max color: 255; 0; 0
+      max value: 1
+      min value: 0
+      show caption: true
+      size: 128
+      text size: 14
+      top: 0
+    - Class: jsk_rviz_plugin/OverlayImage
+      Enabled: true
+      Name: WideLeftImage
+      Topic: /wide_stereo/left/image_rect_color
+      Value: true
+      alpha: 0.8
+      height: 150
+      keep aspect ratio: false
+      left: 20
+      top: 160
+      transport hint: raw
+      width: 200
+    - Class: jsk_rviz_plugin/OverlayImage
+      Enabled: true
+      Name: NarrowLeftImage
+      Topic: /narrow_stereo/left/image_rect_color
+      Value: true
+      alpha: 0.8
+      height: 150
+      keep aspect ratio: false
+      left: 20
+      top: 330
+      transport hint: raw
+      width: 200
+    - Class: jsk_rviz_plugin/OverlayImage
+      Enabled: true
+      Name: DetectedDoorButton
+      Topic: /door_button/label_image_decomposer/output/label_viz
+      Value: true
+      alpha: 0.8
+      height: 150
+      keep aspect ratio: false
+      left: 20
+      top: 500
+      transport hint: raw
+      width: 200
   Enabled: true
   Global Options:
     Background Color: 48; 48; 48
-    Default Light: true
-    Fixed Frame: base_footprint
+    Fixed Frame: map
     Frame Rate: 30
   Name: root
   Tools:
@@ -656,37 +747,30 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/Orbit
-      Distance: 3.9003377
+      Distance: 19.4173
       Enable Stereo Rendering:
-        Stereo Eye Separation: 0.0599999987
+        Stereo Eye Separation: 0.06
         Stereo Focal Distance: 1
         Swap Stereo Eyes: false
         Value: false
       Focal Point:
-        X: 0.396082759
-        Y: 0.116961919
-        Z: 0.642216384
-      Focal Shape Fixed Size: true
-      Focal Shape Size: 0.0500000007
-      Invert Z Axis: false
+        X: 6.60813
+        Y: 5.75508
+        Z: 0.636626
       Name: Current View
-      Near Clip Distance: 0.00999999978
-      Pitch: 0.500203133
+      Near Clip Distance: 0.01
+      Pitch: 1.5698
       Target Frame: <Fixed Frame>
       Value: Orbit (rviz)
-      Yaw: 3.45855212
+      Yaw: 1.57855
     Saved: ~
 Window Geometry:
   Displays:
     collapsed: false
-  DoorButtonImage:
-    collapsed: false
   Height: 1056
   Hide Left Dock: false
   Hide Right Dock: false
-  NarrowLeftImage:
-    collapsed: false
-  QMainWindow State: 000000ff00000000fd00000004000000000000019e00000396fc0200000008fb0000001200530065006c0065006300740069006f006e00000001e10000009b0000006100fffffffb0000001e0054006f006f006c002000500072006f007000650072007400690065007302000001ed000001df00000185000000a3fb000000120056006900650077007300200054006f006f02000001df000002110000018500000122fb000000200054006f006f006c002000500072006f0070006500720074006900650073003203000002880000011d000002210000017afb000000100044006900730070006c006100790073010000002800000396000000d700fffffffb0000002000730065006c0065006300740069006f006e00200062007500660066006500720200000138000000aa0000023a00000294fb00000014005700690064006500530074006500720065006f02000000e6000000d2000003ee0000030bfb0000000c004b0069006e0065006300740200000186000001060000030c00000261000000010000017700000396fc0200000007fb0000001a0057006900640065004c0065006600740049006d0061006700650100000028000001300000001600fffffffb0000001e004e006100720072006f0077004c0065006600740049006d006100670065010000015e0000012f0000001600fffffffb0000001e004e006100720072006f0077004c0065006600740049006d0061006700650100000028000001c90000000000000000fb0000001e0044006f006f00720042007500740074006f006e0049006d00610067006501000002930000012b0000001600fffffffb0000001e0054006f006f006c002000500072006f00700065007200740069006500730100000041000000780000000000000000fb0000000a005600690065007700730000000028000002c4000000ad00fffffffb0000001200530065006c0065006300740069006f006e010000025a000000b20000000000000000000000020000073f00000159fc0100000001fb0000000a00560069006500770073030000004e00000080000002e100000197000000030000073f0000003efc0100000002fb0000000800540069006d006501000000000000073f0000030000fffffffb0000000800540069006d006501000000000000045000000000000000000000041e0000039600000004000000040000000800000008fc0000000100000002000000010000000a0054006f006f006c00730100000000ffffffff0000000000000000
+  QMainWindow State: 000000ff00000000fd00000004000000000000019e00000399fc0200000008fb0000001200530065006c0065006300740069006f006e00000001e10000009b0000006400fffffffb0000001e0054006f006f006c002000500072006f007000650072007400690065007302000001ed000001df00000185000000a3fb000000120056006900650077007300200054006f006f02000001df000002110000018500000122fb000000200054006f006f006c002000500072006f0070006500720074006900650073003203000002880000011d000002210000017afb000000100044006900730070006c006100790073010000002800000399000000dd00fffffffb0000002000730065006c0065006300740069006f006e00200062007500660066006500720200000138000000aa0000023a00000294fb00000014005700690064006500530074006500720065006f02000000e6000000d2000003ee0000030bfb0000000c004b0069006e0065006300740200000186000001060000030c0000026100000001000000ac00000399fc0200000007fb0000001a0057006900640065004c0065006600740049006d0061006700650000000028000003990000000000000000fb0000001e004e006100720072006f0077004c0065006600740049006d00610067006500000003c7fffffffa0000000000000000fb0000001e004e006100720072006f0077004c0065006600740049006d0061006700650100000028000001c90000000000000000fb0000001e0044006f006f00720042007500740074006f006e0049006d0061006700650000000028000003990000000000000000fb0000001e0054006f006f006c002000500072006f00700065007200740069006500730100000041000000780000000000000000fb0000000a005600690065007700730000000028000002c4000000b000fffffffb0000001200530065006c0065006300740069006f006e010000025a000000b20000000000000000000000020000073f00000159fc0100000001fb0000000a00560069006500770073030000004e00000080000002e100000197000000030000073f0000003bfc0100000002fb0000000800540069006d006501000000000000073f000002f600fffffffb0000000800540069006d006501000000000000045000000000000000000000059b0000039900000004000000040000000800000008fc0000000100000002000000010000000a0054006f006f006c00730100000000ffffffff0000000000000000
   Selection:
     collapsed: false
   Time:
@@ -694,8 +778,6 @@ Window Geometry:
   Tool Properties:
     collapsed: false
   Views:
-    collapsed: false
-  WideLeftImage:
     collapsed: false
   Width: 1855
   X: 65
