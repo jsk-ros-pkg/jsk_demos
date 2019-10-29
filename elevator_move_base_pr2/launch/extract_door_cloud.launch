@@ -1,22 +1,25 @@
 <launch>
-  <arg name="MANAGER" default="extract_door_cloud_nodelet_manager"/>
+  <arg name="MACHINE" default="c2"/>
+  <arg name="MANAGER" default="extract_eng2_forum_door_point_cloud_nodelet_manager"/>
   <arg name="INPUT_INFO" default="/kinect_head/rgb/camera_info"/>
   <arg name="INPUT_CLOUD" default="/kinect_head/depth_registered/points"/>
 
-  <group ns="forum_door">
+  <group ns="extract_eng2_forum_door_point_cloud">
 
     <node name="$(arg MANAGER)"
           pkg="nodelet" type="nodelet"
           args="manager"
+          machine="$(arg MACHINE)"
           output="screen"
           respawn="true">
     </node>
 
-    <!-- Launch pipeline to extract point cloud of door region. -->
+    <!-- Launch pipeline to extract point cloud of forum door region in eng2. -->
     <!-- This pipeline is useful to check if the door is open. -->
 
     <node name="bounding_box_array_publisher"
-          pkg="jsk_recognition_utils" type="bounding_box_array_publisher.py">
+          pkg="jsk_recognition_utils" type="bounding_box_array_publisher.py"
+          machine="$(arg MACHINE)">
       <rosparam>
         frame_id: /eng2/2f
         boxes:
@@ -31,17 +34,19 @@
     <node name="bbox_array_to_bbox"
           pkg="nodelet" type="nodelet"
           args="load jsk_pcl_utils/BoundingBoxArrayToBoundingBox $(arg MANAGER)"
+          machine="$(arg MACHINE)"
           output="screen"
           respawn="true">
       <remap from="~input" to="bounding_box_array_publisher/output"/>
       <rosparam>
-        index: 0  <!-- forum_door -->
+        index: 0
       </rosparam>
     </node>
 
     <node name="attention_clipper"
           pkg="nodelet" type="nodelet"
           args="load jsk_pcl/AttentionClipper $(arg MANAGER)"
+          machine="$(arg MACHINE)"
           output="screen"
           respawn="true">
       <remap from="~input" to="$(arg INPUT_INFO)"/>
@@ -52,6 +57,7 @@
     <node name="extract_indices"
           pkg="nodelet" type="nodelet"
           args="load jsk_pcl/ExtractIndices $(arg MANAGER)"
+          machine="$(arg MACHINE)"
           output="screen"
           respawn="true">
       <remap from="~input" to="$(arg INPUT_CLOUD)"/>
