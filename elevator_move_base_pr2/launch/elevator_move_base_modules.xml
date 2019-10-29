@@ -1,5 +1,4 @@
 <launch>
-  <arg name="ROBOT" default="$(optenv ROBOT pr2)" />
   <arg name="scene" default="eng2"/>
 
   <!-- start objectdetection/tf -->
@@ -48,7 +47,8 @@
   </group>
 
   <include file="$(find elevator_move_base_pr2)/launch/check_elevator_open.xml">
-    <arg name="ROBOT" default="$(arg ROBOT)" />
+    <arg name="INPUT_CLOUD" value="/kinect_head/depth_registered/half/throttled/points"/>
+    <arg name="MACHINE" value="c2"/>
   </include>
 
 </launch>
