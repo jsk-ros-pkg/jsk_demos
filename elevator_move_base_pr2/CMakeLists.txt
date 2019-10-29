@@ -36,7 +36,7 @@ if (CATKIN_ENABLE_TESTING)
   add_rostest(test/test-modules-insidepanel.launch ROBOT:=sim)
 endif()
 
-install(DIRECTORY launch test scripts elevator_numbers
+install(DIRECTORY config elevator_numbers launch node_scripts sample scripts test
   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
   USE_SOURCE_PERMISSIONS)
 
