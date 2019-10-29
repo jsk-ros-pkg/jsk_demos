@@ -8,7 +8,7 @@
   <arg name="INPUT_IMAGE" default="/narrow_stereo_remote/left/image_rect_color"/>
   <arg name="INPUT_CLOUD" default="/kinect_head_remote/depth_registered/points"/>
   <arg name="FIXED_FRAME" default="/head_mount_kinect_rgb_optical_frame"/>
-  <arg name="MODEL_FILE" default="$(find elevator_move_base_pr2)/trained_model/fcn8s_atonce_door_button_model.npz"/>
+  <arg name="MODEL_FILE" default="$(find elevator_move_base_pr2)/trained_model/fcn8s_at_once_door_button_model_20191025.npz"/>
   <arg name="GPU" default="0"/>
 
   <group ns="kinect_head_remote">

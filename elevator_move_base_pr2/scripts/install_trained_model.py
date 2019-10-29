@@ -24,9 +24,9 @@ def main():
 
     download_data(
         pkg_name=PKG,
-        path='trained_model/fcn8s_atonce_door_button_model.npz',
-        url='https://drive.google.com/uc?id=1kDKStQw886u-zYPbTBcPDH3W80de3Nt_',
-        md5='49c5ad7569990ce3a42a5fa499b98deb',
+        path='trained_model/fcn8s_at_once_door_button_model_20191025.npz',
+        url='https://drive.google.com/uc?id=1CmEWO0kyTPHrQ-D4kb8bIy3yGsWV3RBd',
+        md5='f255461e5b04a0b05e04b5aedefa5618',
         quiet=quiet,
     )
 
