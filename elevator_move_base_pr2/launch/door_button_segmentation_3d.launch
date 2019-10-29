@@ -82,8 +82,8 @@
         model_name: fcn8s_at_once
         model_file: $(arg MODEL_FILE)
         target_names:
-        - _background_
-        - button
+          - _background_
+          - button
         bg_label: 0
         proba_threshold: 0.0
       </rosparam>
@@ -177,8 +177,8 @@
       <remap from="~input/label" to="fcn_object_segmentation/output"/>
       <rosparam>
         label_names:
-        - _background_
-        - button
+          - _background_
+          - button
         bg_label: 0
         approximate_sync: false
         queue_size: 1000
