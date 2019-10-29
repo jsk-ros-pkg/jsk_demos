@@ -1,16 +1,36 @@
 <launch>
   <arg name="scene" default="eng2"/>
 
-  <!-- start objectdetection/tf -->
+  <!-- Throttle image -->
   <group ns="/narrow_stereo/left">
-    <include file="$(find elevator_move_base_pr2)/launch/elevator_panels_detection_$(arg scene).launch"/>
+    <node machine="c1" name="throttle" pkg="jsk_topic_tools"
+          type="lightweight_throttle">
+      <remap from="~input" to="image_rect"/>
+      <remap from="~output" to="image_rect_throttle"/>
+      <param name="~update_rate" value="2.0"/>
+    </node>
+  </group>
+
+  <!-- Detect elevator_call_panel / elevator_inside_panel. -->
+  <group ns="/narrow_stereo/left">
+    <node name="imagesift"
+          pkg="nodelet" type="nodelet"
+          args="standalone imagesift/ImageSift"
+          machine="c2"
+          launch-prefix="nice -n +10">
+      <remap from="image" to="image_rect_throttle"/>
+    </node>
+    <include file="$(find elevator_move_base_pr2)/launch/elevator_panels_detection_$(arg scene).launch">
+      <arg name="INPUT_FEATURE" value="ImageFeature0D"/>
+      <arg name="MACHINE" value="c2"/>
+    </include>
     <!-- XXX: This node is often killed on c2, but not on c1 -->
     <node name="find_elevator_button" pkg="roseus" type="roseus"
           respawn="true" machine="c1" output="screen"
           args="$(find elevator_move_base_pr2)/src/find-elevator-button.l" />
   </group>
 
-  <!-- check if button is lit or not -->
+  <!-- Check if button is lit or not. -->
   <node name="light_detector" pkg="elevator_move_base_pr2"
         type="color_point_detector" machine="c2">
     <remap from="image" to="/wide_stereo/left/image_rect_color"/>
@@ -24,28 +44,19 @@
     </rosparam>
   </node>
 
-  <!-- read the elevator floor number -->
+  <!-- Read current elevator floor. -->
   <node name="panel_camera"  machine="c2"
         pkg="jsk_perception" type="virtual_camera_mono">
     <remap from="image" to="/narrow_stereo/left/image_rect"/>
   </node>
-  <node name="elevator_number" pkg="elevator_move_base_pr2" type="match_template.py" output="screen">
+  <node name="elevator_number"
+        pkg="elevator_move_base_pr2" type="match_template.py"
+        machine="c2" output="screen">
     <rosparam file="$(find elevator_move_base_pr2)/launch/template-$(arg scene).yaml" command="load"/>
     <remap from="~image" to="/panel_camera/image"/>
   </node>
 
-  <group ns="/narrow_stereo/left" >
-    <node machine="c1" name="throttle" pkg="jsk_topic_tools"
-          type="lightweight_throttle">
-      <remap from="~input" to="image_rect"/>
-      <remap from="~output" to="image_rect_throttle"/>
-      <param name="~update_rate" value="2.0"/>
-    </node>
-    <node machine="c2" name="sift" pkg="imagesift" type="imagesift"
-          args="image:=image_rect_throttle"
-          launch-prefix="nice -n +10"/>
-  </group>
-
+  <!-- Check if elevator door is open. -->
   <include file="$(find elevator_move_base_pr2)/launch/check_elevator_open.xml">
     <arg name="INPUT_CLOUD" value="/kinect_head/depth_registered/half/throttled/points"/>
     <arg name="MACHINE" value="c2"/>
