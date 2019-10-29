@@ -1,4 +1,4 @@
-(setq *change-publisher-topic* "/pcl_nodelet/octree_change_detector/octree_change_result")
+(setq *change-publisher-topic* "/check_elevator_open/octree_change_publisher/octree_change_result")
 (setq *change-pc* nil)
 (setq *change-threshold* (ros::get-param "change_threshold" 200))
 
