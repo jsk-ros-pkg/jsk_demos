@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(elevator_move_base_pr2)
 
-find_package(catkin REQUIRED roscpp image_transport cv_bridge image_geometry tf geometry_msgs std_msgs message_generation roseus)
+find_package(catkin REQUIRED roscpp image_transport cv_bridge image_geometry tf geometry_msgs std_msgs message_generation)
 
 add_custom_target(
   ${PROJECT_NAME}_install_trained_model
