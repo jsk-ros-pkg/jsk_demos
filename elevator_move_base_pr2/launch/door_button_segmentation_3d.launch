@@ -4,8 +4,8 @@
 
   <arg name="NS" default="door_button"/>
   <arg name="MANAGER" default="door_button_segmentation_manager"/>
-  <!-- <arg name="INPUT_IMAGE" default="/kinect_head_remote/rgb/image_rect_color"/> -->
   <arg name="INPUT_IMAGE" default="/narrow_stereo_remote/left/image_rect_color"/>
+  <arg name="INPUT_INFO" default="/narrow_stereo_remote/left/camera_info"/>
   <arg name="INPUT_CLOUD" default="/kinect_head_remote/depth_registered/points"/>
   <arg name="FIXED_FRAME" default="/head_mount_kinect_rgb_optical_frame"/>
   <arg name="MODEL_FILE" default="$(find elevator_move_base_pr2)/trained_model/fcn8s_at_once_door_button_model_20191025.npz"/>
@@ -46,6 +46,12 @@
 
   <group ns="narrow_stereo_remote">
     <group ns="left">
+      <!-- Relay -->
+      <node name="relay_camera_info"
+            pkg="topic_tools" type="relay"
+            args="/narrow_stereo/left/camera_info /narrow_stereo_remote/left/camera_info"/>
+
+      <!-- Republish -->
       <node name="republish_rgb"
             pkg="image_transport" type="republish"
             args="compressed raw">
@@ -69,7 +75,7 @@
           pkg="jsk_perception" type="fcn_object_segmentation.py"
           output="screen"
           respawn="true">
-      <remap from="~input" to="$(arg INPUT_IMAGE)"/>  <!-- rgb timestamp -->
+      <remap from="~input" to="$(arg INPUT_IMAGE)"/>
       <rosparam subst_value="true">
         use_mask: false
         gpu: $(arg GPU)
@@ -90,7 +96,7 @@
           args="load jsk_perception/LabelToMaskImage $(arg MANAGER)"
           output="screen"
           respawn="true">
-      <remap from="~input" to="fcn_object_segmentation/output"/>  <!-- rgb timestamp -->
+      <remap from="~input" to="fcn_object_segmentation/output"/>
       <rosparam>
         label_value: 1
       </rosparam>
@@ -101,7 +107,20 @@
           args="load jsk_pcl_utils/MaskImageToPointIndices $(arg MANAGER)"
           output="screen"
           respawn="true">
-      <remap from="~input" to="label_to_mask/output"/>  <!-- rgb timestamp -->
+      <remap from="~input" to="label_to_mask/output"/>
+    </node>
+
+    <node name="depth_image_creator"
+          pkg="nodelet" type="nodelet"
+          args="load jsk_pcl/DepthImageCreator $(arg MANAGER)"
+          output="screen"
+          respawn="true">
+      <remap from="~input" to="$(arg INPUT_CLOUD)"/>
+      <remap from="~info" to="$(arg INPUT_INFO)"/>
+      <rosparam>
+        use_asynchronous: true
+        organize_cloud: true
+      </rosparam>
     </node>
 
     <node name="extract_indices"
@@ -109,8 +128,8 @@
           args="load jsk_pcl/ExtractIndices $(arg MANAGER)"
           output="screen"
           respawn="true">
-      <remap from="~input" to="$(arg INPUT_CLOUD)"/>  <!-- depth timestamp -->
-      <remap from="~indices" to="mask_to_point_indices/output"/>  <!-- rgb timestamp -->
+      <remap from="~input" to="depth_image_creator/output_cloud"/>
+      <remap from="~indices" to="mask_to_point_indices/output"/>
       <rosparam>
         approximate_sync: true
         queue_size: 1000
@@ -123,11 +142,11 @@
           args="load jsk_pcl/EuclideanClustering $(arg MANAGER)"
           output="screen"
           respawn="true">
-      <remap from="~input" to="extract_indices/output"/>  <!-- depth timestamp -->
+      <remap from="~input" to="extract_indices/output"/>
       <rosparam>
         min_size: 100
         max_size: 10000
-        tolerance: 0.05
+        tolerance: 0.02
       </rosparam>
     </node>
 
@@ -136,8 +155,8 @@
           args="load jsk_pcl/ClusterPointIndicesDecomposer $(arg MANAGER)"
           output="screen"
           respawn="true">
-      <remap from="~input" to="extract_indices/output"/>  <!-- depth timestamp -->
-      <remap from="~target" to="euclidean_clustering/output"/>  <!-- depth timestamp -->
+      <remap from="~input" to="extract_indices/output"/>
+      <remap from="~target" to="euclidean_clustering/output"/>
       <rosparam subst_value="true">
         approximate_sync: false
         queue_size: 1000
@@ -154,8 +173,8 @@
           pkg="jsk_perception" type="label_image_decomposer.py"
           output="screen"
           respawn="true">
-      <remap from="~input" to="$(arg INPUT_IMAGE)"/>  <!-- rgb timestamp -->
-      <remap from="~input/label" to="fcn_object_segmentation/output"/>  <!-- rgb timestamp -->
+      <remap from="~input" to="$(arg INPUT_IMAGE)"/>
+      <remap from="~input/label" to="fcn_object_segmentation/output"/>
       <rosparam>
         label_names:
         - _background_
@@ -167,22 +186,9 @@
     </node>
 
     <group if="$(arg gui)">
-      <node name="tile_image"
-            pkg="jsk_perception" type="tile_image.py">
-        <rosparam subst_value="true">
-          input_topics:
-            - $(arg INPUT_IMAGE)
-            - label_image_decomposer/output/label_viz
-          no_sync: true
-          draw_topic_name: true
-          font_scale: 0.8
-        </rosparam>
-      </node>
-
-      <node name="image_view"
-            pkg="image_view" type="image_view">
-        <remap from="image" to="tile_image/output"/>
-      </node>
+      <node name="rviz"
+            pkg="rviz" type="rviz"
+            args="-d $(find elevator_move_base_pr2)/config/door_button_segmentation_3d.rviz"/>
     </group>
 
   </group>
