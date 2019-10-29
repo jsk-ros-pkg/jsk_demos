@@ -10,4 +10,7 @@
     <arg name="scene" value="eng2" />
   </include>
 
+  <include file="$(find elevator_move_base_pr2)/launch/extract_eng2_forum_door_point_cloud.launch">
+    <arg name="MACHINE" value="c2"/>
+  </include>
 </launch>
