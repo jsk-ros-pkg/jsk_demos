@@ -1,0 +1,66 @@
+@startuml
+
+|子供|
+
+start
+
+partition YoshiaAbe {
+
+:お願い事をつぶやく;
+
+}
+
+|サンタロボ|
+
+partition YoshiaAbe {
+
+:変装する;
+
+}
+
+partition mqcmd196 {
+
+:プレゼントを知る;
+
+:プレゼント棚に移動;
+
+}
+if (プレゼントがある？) then (ない)
+
+  :私達が用意 ;
+  
+  stop
+
+else (ある)
+
+partition mqcmd196 {
+
+  :プレゼントを選ぶ;
+  
+  :プレゼントをサンタ袋に入れる;
+
+}
+  
+partition Kanazawanaoaki {
+
+  :プレゼントを運ぶ;
+  
+}
+
+partition MiyabiTane {
+
+  :靴下を見つける;
+
+  :プレゼントを靴下に入れる;
+
+}
+
+endif
+
+|子供|
+
+:プレゼントを受け取る;
+
+end
+
+@enduml
