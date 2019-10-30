@@ -69,10 +69,10 @@
   (setq *initial-pose* (send *ri* :state :worldcoords)))
 
 
-(defun go-to-forum-door-front ()
+(defun go-to-forum-door-inside ()
   (clear-costmap)
   (send *ri* :move-to
-        (send *scene* :spot "/eng2/2f/forum-door-front"))
+        (send *scene* :spot "/eng2/2f/forum-door-inside"))
   (update-eus-robot-model))
 
 
@@ -196,6 +196,9 @@
 
 (defun go-to-initial-pose ()
   (speak-jp "もとの場所に帰ります。" :wait t)
+  ;; NOTE: DWA local planner returns invalid plan when detecting door closed.
+  (send *ri* :move-to
+        (send *scene* :spot "/eng2/2f/forum-door-outside"))
   (send *ri* :move-to *initial-pose*))
 
 
@@ -216,7 +219,7 @@
 (defun demo (&optional (name "BLTサンド"))
   (speak-jp (format nil "~Aを買いに行きます。" name) :wait t)
   (init)
-  (go-to-forum-door-front)
+  (go-to-forum-door-inside)
   (while (not (check-forum-door-open))
     (open-forum-door)
     (unix:sleep 1)  ;; Wait for door opening
