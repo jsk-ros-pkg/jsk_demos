@@ -1,0 +1,46 @@
+<launch>
+
+  <arg name="NS" default="door_button"/>
+  <!-- Not implemented machine c3 -->
+  <!-- <arg name="MACHINE" default="c3"/> -->
+  <arg name="INPUT_IMAGE" default="/narrow_stereo/left/image_rect_color"/>
+  <arg name="MODEL_FILE" default="$(find elevator_move_base_pr2)/trained_model/fcn8s_at_once_door_button_model_20191025.npz"/>
+  <arg name="GPU" default="0"/>
+
+  <group ns="$(arg NS)">
+    <!-- Segment door button 2-dimentionally by FCN -->
+    <node name="fcn_object_segmentation"
+          pkg="jsk_perception" type="fcn_object_segmentation.py"
+          output="screen" respawn="true">
+      <remap from="~input" to="$(arg INPUT_IMAGE)"/>
+      <rosparam subst_value="true">
+        use_mask: false
+        gpu: $(arg GPU)
+        model_name: fcn8s_at_once
+        model_file: $(arg MODEL_FILE)
+        target_names:
+          - _background_
+          - button
+        bg_label: 0
+        proba_threshold: 0.0
+      </rosparam>
+    </node>
+
+    <!-- Visualization -->
+    <node name="label_image_decomposer"
+          pkg="jsk_perception" type="label_image_decomposer.py"
+          output="screen" respawn="true">
+      <remap from="~input" to="$(arg INPUT_IMAGE)"/>
+      <remap from="~input/label" to="fcn_object_segmentation/output"/>
+      <rosparam>
+        label_names:
+          - _background_
+          - button
+        bg_label: 0
+        approximate_sync: false
+        queue_size: 1000
+      </rosparam>
+    </node>
+  </group>  <!-- ns: $(arg NS) -->
+
+</launch>
