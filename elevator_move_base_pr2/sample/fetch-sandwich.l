@@ -78,14 +78,10 @@
 
 (defun check-forum-door-open (&optional (max-cloud-size 500))
   (let (is-door-open cloud-msg)
-    (ros::set-dynamic-reconfigure-param "/wide_stereo_both" "max_exposure"
-                                        :double 0.0)  ;; 0.0 is auto
     (setq cloud-msg
           (one-shot-subscribe "extract_eng2_forum_door_point_cloud/extract_indices/output"
                               sensor_msgs::PointCloud2
                               :timeout 10000))  ;; 10000[msec]
-    (ros::set-dynamic-reconfigure-param "/wide_stereo_both" "max_exposure"
-                                        :double 0.0135)  ;; default
     (unless cloud-msg
       (return-from check-current-floor nil))
     (setq is-door-open
