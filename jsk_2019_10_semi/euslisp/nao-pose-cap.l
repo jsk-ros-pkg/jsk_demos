@@ -1,0 +1,7 @@
+(send *nao* :reset-pose)
+(send *nao* :larm :shoulder-p :joint-angle -95)
+(send *nao* :larm :elbow-y :joint-angle -10)
+(send *nao* :larm :wrist-y :joint-angle -50)
+(send *nao* :rarm :shoulder-p :joint-angle -95)
+(send *nao* :rarm :elbow-y :joint-angle -10)
+(send *nao* :rarm :wrist-y :joint-angle 80)
