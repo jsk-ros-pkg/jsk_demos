@@ -134,7 +134,7 @@
                             :translate (scale -30 ray-vec) :world))
 
     ;; Push door button
-    (speak-jp "ドアのボタンを押します" :wait t)
+    (speak-jp "ドアのボタンを押します。" :wait t)
     (setq av0 (send *pr2* arm :inverse-kinematics via-coords
                     :rotation-axis :x
                     :use-torso t
@@ -157,9 +157,9 @@
         (send *scene* :spot "/eng2/2f/subway-front")))
 
 
-(defun order-sandwich (&optional (name "BLTサンド"))
-  (speak-jp "すみません" :wait t)
-  (speak-jp (format nil "~Aをください" name) :wait t))
+(defun order-sandwich (name)
+  (speak-jp "すみません。" :wait t)
+  (speak-jp (format nil "~Aをください。" name) :wait t))
 
 
 (defun receive-sandwich ()
@@ -176,13 +176,13 @@
 
   (send *ri* :stop-grasp :rarm :wait t)
 
-  (speak-jp "サンドイッチをください" :wait t)
+  (speak-jp "商品をください。" :wait t)
 
-  (wait-for-hand-over :rarm)
+  (wait-for-hand-over :rarm 60)
 
   (send *ri* :start-grasp :rarm)
 
-  (speak-jp "後ろに下がります。気をつけてください" :wait t)
+  (speak-jp "後ろに下がります。気をつけてください。" :wait t)
   (clear-costmap)
   (send *ri* :go-pos-unsafe -0.5 0 180)
 
@@ -199,21 +199,22 @@
   (send *ri* :move-to *initial-pose*))
 
 
-(defun pass-sandwich ()
+(defun pass-sandwich (name)
   (send *pr2* :angle-vector (pr2-pick-bag-pose))
   (send *ri* :angle-vector (send *pr2* :angle-vector) 5000)
   (send *ri* :wait-interpolation)
   (send *ri* :stop-grasp :rarm :wait t)
-  (speak-jp "サンドイッチをどうぞ" :wait t)
+  (speak-jp (format nil "~Aを買ってきました。" name) :wait t)
 
-  (wait-for-hand-over :rarm)
+  (while (not (wait-for-hand-impact :rarm :timeout 30))
+    (speak-jp (format nil "~Aをどうぞ。" name) :wait t))
 
   (send *ri* :start-grasp :rarm)
   (pr2-tuckarm-pose))
 
 
-(defun demo ()
-  (speak-jp "サンドイッチを買いに行きます" :wait t)
+(defun demo (&optional (name "BLTサンド"))
+  (speak-jp (format nil "~Aを買いに行きます。" name) :wait t)
   (init)
   (go-to-forum-door-front)
   (while (not (check-forum-door-open))
@@ -221,7 +222,7 @@
     (unix:sleep 1)  ;; Wait for door opening
     )
   (go-to-subway-front)
-  (order-sandwich)
+  (order-sandwich name)
   (receive-sandwich)
   (go-to-initial-pose)
   (pass-sandwich))
