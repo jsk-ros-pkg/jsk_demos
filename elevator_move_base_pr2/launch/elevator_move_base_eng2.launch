@@ -13,4 +13,13 @@
   <include file="$(find elevator_move_base_pr2)/launch/extract_eng2_forum_door_point_cloud.launch">
     <arg name="MACHINE" value="c2"/>
   </include>
+
+  <!-- Not implemented machine c3 -->
+  <!-- <include file="$(find elevator_move_base_pr2)/launch/fcn_door_button_segmentation.launch"> -->
+  <!--   <arg name="MACHINE" value="c3"/> -->
+  <!-- </include> -->
+
+  <include file="$(find elevator_move_base_pr2)/launch/door_button_segmentation_3d.launch">
+    <arg name="MACHINE" value="c2"/>
+  </include>
 </launch>
