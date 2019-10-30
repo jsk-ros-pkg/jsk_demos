@@ -45,3 +45,6 @@
     (move-to-child-room)
     (put-present-into-sock)
     ))
+
+
+(defun yoshi())
