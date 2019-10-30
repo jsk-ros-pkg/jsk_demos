@@ -2,7 +2,7 @@
 (print ";; (demo) start demo")
 
 (load "package://peppereus/pepper.l")
-(setq *pepepr* (pepper))
+(setq *pepper* (pepper))
 
 (defun demo-init ()
   (setq *white-bag* (body+ (make-sphere 300) (make-cylinder 40 300 :pos #f(0 10 250))))
@@ -45,5 +45,3 @@
     (move-to-child-room)
     (put-present-into-sock)
     ))
-
-
