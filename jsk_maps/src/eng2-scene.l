@@ -66,7 +66,9 @@
      `(:pos ,(float-vector 2900 -33900 1000) :rpy #f(3.1416 0 0)
 	    :name "/eng2/2f/elevator_inside_panel")
      `(:pos ,(float-vector 9800 -27000 0) :rpy #f(0 0 0)
-	    :name "/eng2/2f/forum-door-front")
+	    :name "/eng2/2f/forum-door-inside")
+     `(:pos ,(float-vector 11200 -27000 0) :rpy #f(3.1416 0 0)
+	    :name "/eng2/2f/forum-door-outside")
      `(:pos ,(float-vector 10500 -27000 1000) :rpy #f(0 0 0)
 	    :name "/eng2/2f/forum-door-button"))
 
