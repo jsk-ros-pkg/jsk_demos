@@ -93,6 +93,13 @@
           (<= (/ (length (send cloud-msg :data))
                  (+ 0.00001 (send cloud-msg :point_step)))  ;; For zero division
               max-cloud-size))
+    ;; TODO(YutoUchimi): remove this debug line
+    (ros::ros-warn
+     (format nil "number of points: ~A, max-cloud-size: ~A, is-door-open: ~A"
+             (/ (length (send cloud-msg :data))
+                (+ 0.00001 (send cloud-msg :point_step)))
+             max-cloud-size
+             is-door-open))
     (when is-door-open
       (speak-jp "ドアが開いています。" :wait t)
       (return-from check-forum-door-open t))
