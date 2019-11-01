@@ -111,7 +111,7 @@
           (one-shot-subscribe "door_button/cluster_indices_decomposer/boxes"
                               jsk_recognition_msgs::BoundingBoxArray
                               :timeout 10000))  ;; 10000[msec]
-    (unless bboxes-msg
+    (when (or (null bboxes-msg) (null (send bboxes-msg :boxes)))
       (return-from open-forum-door nil))
     (setq bbox (elt (send bboxes-msg :boxes) 0))  ;; first (expected biggest)
     (setq cam->button-coords (ros::tf-pose->coords (send bbox :pose)))
