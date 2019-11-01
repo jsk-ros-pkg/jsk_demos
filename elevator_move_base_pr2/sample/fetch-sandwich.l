@@ -228,7 +228,7 @@
   (order-sandwich name)
   (receive-sandwich)
   (go-to-initial-pose)
-  (pass-sandwich))
+  (pass-sandwich name))
 
 
 (when (find #'(lambda (x) (substringp "__name:=" x)) lisp::*eustop-argument*)
