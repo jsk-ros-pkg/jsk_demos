@@ -78,6 +78,11 @@
 
 (defun check-forum-door-open (&optional (max-cloud-size 500))
   (let (is-door-open cloud-msg)
+    (send *pr2* :head :look-at
+          (send (send *scene* :spot "/eng2/2f/forum-door-button") :worldpos))
+    (send *ri* :angle-vector (send *pr2* :angle-vector) 500)
+    (send *ri* :wait-interpolation)
+    (unix:sleep 1)
     (setq cloud-msg
           (one-shot-subscribe "extract_eng2_forum_door_point_cloud/extract_indices/output"
                               sensor_msgs::PointCloud2
@@ -105,6 +110,7 @@
           (send (send *scene* :spot "/eng2/2f/forum-door-button") :worldpos))
     (send *ri* :angle-vector (send *pr2* :angle-vector) 500)
     (send *ri* :wait-interpolation)
+    (unix:sleep 1)
     (speak-jp "ドアのボタンを探しています。" :wait t)
     (update-eus-robot-model)
     (setq bboxes-msg
