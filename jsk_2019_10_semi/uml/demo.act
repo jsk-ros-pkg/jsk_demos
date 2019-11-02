@@ -24,6 +24,8 @@ partition mqcmd196 {
 
 :プレゼント棚に移動;
 
+:プレゼント棚で，プレゼントを認識(バーコード等の認識でも可);
+
 }
 if (プレゼントがある？) then (ない)
 
@@ -42,9 +44,11 @@ partition mqcmd196 {
 }
 
 partition Kanazawanaoaki {
-
-  :プレゼントを運ぶ;
-
+  :袋を認識する;
+  :袋をもつ;
+  :移動開始;
+  :目標地点まで移動;
+  :止まる;
 }
 
 partition MiyabiTane {
