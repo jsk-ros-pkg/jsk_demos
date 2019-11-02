@@ -28,7 +28,7 @@ partition mqcmd196 {
 if (プレゼントがある？) then (ない)
 
   :私達が用意 ;
-  
+
   stop
 
 else (ある)
@@ -36,15 +36,17 @@ else (ある)
 partition mqcmd196 {
 
   :プレゼントを選ぶ;
-  
+
   :プレゼントをサンタ袋に入れる;
 
 }
-  
-partition Kanazawanaoaki {
 
-  :プレゼントを運ぶ;
-  
+partition Kanazawanaoaki {
+  :袋を認識する;
+  :袋をもつ;
+  :移動開始;
+  :目標地点まで移動;
+  :止まる;
 }
 
 partition MiyabiTane {
