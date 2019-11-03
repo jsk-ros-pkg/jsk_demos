@@ -159,6 +159,7 @@
     (send *pr2* :head :look-at (send look-target :worldpos))
     (send *ri* :angle-vector (send *pr2* :angle-vector) 500)
     (send *ri* :wait-interpolation)
+    (unix:usleep (* 500 1000))  ;; Wait until latest image is available.
 
     (send *logger* :save-robot-pose "look-button")
     ;; nearest call panel
