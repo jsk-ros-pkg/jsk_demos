@@ -90,10 +90,9 @@
      (when (memq *panel* updated-object)
        (setq panel-moved t)
        (incf found))
-     ;;
-     (print (list 'count count 'found found
-		  (send *panel* :worldpos)))
-     ;;
+     (ros::ros-info
+      (format nil "count: ~A, found: ~A, panel position: ~A"
+              count found (send *panel* :worldpos)))
      (when *node-debug*
        (ros::spin-once)
        (send *pr2* :angle-vector (send *ri* :state))
@@ -167,9 +166,11 @@
     (setq *panel* (car (send *scene* :find-object panel-name)))
 
     ;; update
+    (ros::ros-info "Looking for button...")
     (speak-jp "ボタンを探しています")
-    (ros::ros-info "wait vision update")
+    (ros::ros-info "Waiting for vision update...")
     (unless (update 100)
+      (ros::ros-info "Could not find button.")
       (speak-jp "見つかりませんでした" :wait t)
       (return-from look-button nil))
 
@@ -207,11 +208,12 @@
       (send *logger* :save-brightness (send button-state :value) "check-button")
       (ros::ros-info "button-state: ~A" (send button-state :value))
       (when (< 0.5 (send button-state :value))
-        (pprint 'button-light)
+        (ros::ros-info "Button is lighting up.")
         (speak-jp "ぼたんがひかりました")
         ;; (pr2-tuckarm-pose)
         (return-from check-button-light t))
       (unix::usleep (* 100 1000)))
+    (ros::ros-info "Button is not lighting up.")
     (speak-jp "押せていないようです" :wait t)
     nil
     ))
@@ -279,6 +281,7 @@
 	  (setq result t) (return))
 	))
     (ros::unsubscribe "/base_scan")
+    (ros::ros-info (if result "Go into elvator." "Cannot go into elevator."))
     (speak-jp (if result "エレベータに入ります" "エレベータに入れません"))
     result
     ))
@@ -339,6 +342,7 @@
   (let ((targetfloor (cdr (assoc 'target-floor userdata))))
     (dolist (floor *floors*)
       (when (equal targetfloor (elt floor 0))
+        (ros::ros-info (format nil "Arrived at ~A." (elt floor 0)))
         (speak-jp (concatenate string (elt floor 1) "につきました"))
         (change-floor (format nil "~A/~a" (send *scene* :name)
                               (string-downcase (elt floor 0))))
@@ -349,6 +353,7 @@
   (send *ri* :wait-interpolation)
 
   (check-elevator-open)
+  (ros::ros-info "Door opened.")
   (speak-jp "ドアが飽きました")
   :success)
 
@@ -364,7 +369,12 @@
     (send sm :add-node (instance state :init :push-outside (push-state-machine)
 				 :remap-list '((panel-name . outside-panel-name) (button . outside-button))))
 ;;    (send sm :add-node (instance state :init :check-elevator-empty 'check-until-elevator-empty))
-    (send sm :add-node (instance state :init :speak-fail '(lambda(x)(speak-jp "にふんたちました" :wait t) t)))
+    (send sm :add-node
+          (instance state :init :speak-fail
+                    '(lambda(x)
+                       (ros::ros-info "2 minutes have passed.")
+                       (speak-jp "にふんたちました" :wait t)
+                       t)))
     ;; (send sm :add-node (actionlib-client-state
     ;;     		:move-inside move-client :timeout 120 :retry t
     ;;     		:key 'coords->movebaseactiongoal))
@@ -417,7 +427,9 @@
 	 (up/down (cond ((send *scene* :floor< target-floor cur-floor) "down")
 			((send *scene* :floor< cur-floor target-floor) "up")
 			(t nil))))
-    (print (list cur-floor '-> target-floor up/down target-coords))
+    (ros::ros-info
+     (format nil "cur-floor: ~A, target-floor: ~A, up/down: ~A, target-coords: ~A"
+             cur-floor target-floor up/down target-coords))
     (setq target-floor-button
 	  (elt (assoc target-floor *floors* :test #'string=
 		      :key #'(lambda(x)(format nil "~A/~A" (send *scene* :name)
@@ -436,14 +448,22 @@
     (set-alist 'target-floor target-floor-button userdata) ;; only for elevator
     (set-alist 'outside-button up/down userdata)
     (set-alist 'target-coords target-coords userdata)
-    (print (list cur-floor '-> target-floor up/down target-coords))
+    (ros::ros-info
+     (format nil "cur-floor: ~A, target-floor: ~A, up/down: ~A, target-coords: ~A"
+             cur-floor target-floor up/down target-coords))
     (pr2-tuckarm-pose) ;; temporary, safety pose
     (not up/down)))
 
 (defun elevator-smach ()
   (let ((sm (instance state-machine :init)))
     (send sm :add-node (instance state :init :initial 'elevator-smach-initial))
-    (send sm :add-node (instance state :init :speak-elevator '(lambda (x) (costmap-normal)  (speak-jp "えれべーたにのります" :wait t) t)))
+    (send sm :add-node
+          (instance state :init :speak-elevator
+                    '(lambda (x)
+                       (costmap-normal)
+                       (ros::ros-info "Go to elevator.")
+                       (speak-jp "エレベータに向かいます" :wait t)
+                       t)))
     (send sm :add-node (instance state :init :take-elevator (elevator-state-machine)))
     (send sm :add-node (actionlib-client-state
 			:go-to (pr2-interface-move-base-action *ri*)
