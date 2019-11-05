@@ -299,6 +299,7 @@
   t)
 
 (defun costmap-normal (&rest args)
+  (pr2-tuckarm-pose)
   (ros::set-dynamic-reconfigure-param
    "/move_base_node/DWAPlannerROS" "xy_goal_tolerance" :double 0.15)
   (ros::set-dynamic-reconfigure-param
