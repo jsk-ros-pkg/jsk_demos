@@ -244,6 +244,7 @@
 
 
 (defun demo (&optional (name "BLTサンド"))
+  (ros::roseus "fetch_sandwich")
   (speak-jp (format nil "~Aを買いに行きます。" name) :wait t)
   (init)
   (go-to-forum-door-inside)
