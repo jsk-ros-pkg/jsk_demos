@@ -20,6 +20,7 @@
         - /fetch_sandwich
       exclude_regexes:
         - ".*follow_joint_trajectory.*"
+        - ".*goal id.*"
         - ".*violate.*"
       reverse_lines: false
     </rosparam>
