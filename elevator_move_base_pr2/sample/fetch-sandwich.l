@@ -240,6 +240,9 @@
     (speak-jp (format nil "~Aをどうぞ。" name) :wait t))
 
   (send *ri* :start-grasp :rarm)
+  (send *pr2* :torso_lift_joint :joint-angle 0)
+  (send *ri* :angle-vector (send *pr2* :angle-vector) 5000)
+  (send *ri* :wait-interpolation)
   (pr2-tuckarm-pose))
 
 
