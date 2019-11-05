@@ -288,13 +288,13 @@
 
 (defun costmap-for-elevator (userdata)
   (ros::set-dynamic-reconfigure-param
-   "/move_base_node/DWAPlannerROS" "xy_goal_tolerance" :double 0.15)
+   "/move_base_node/DWAPlannerROS" "xy_goal_tolerance" :double 0.10)
   (ros::set-dynamic-reconfigure-param
    "/move_base_node/DWAPlannerROS" "yaw_goal_tolerance" :double 0.087) ;; 5[deg]
   (ros::set-dynamic-reconfigure-param
-   "/move_base_node/global_costmap" "footprint_padding" :double 0.05)
+   "/move_base_node/global_costmap" "footprint_padding" :double 0.03)
   (ros::set-dynamic-reconfigure-param
-   "/move_base_node/local_costmap" "footprint_padding" :double 0.05)
+   "/move_base_node/local_costmap" "footprint_padding" :double 0.03)
   (switch-global-planner-observation nil) ;;disable tilt scan
   t)
 
