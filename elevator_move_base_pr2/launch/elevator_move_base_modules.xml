@@ -62,13 +62,4 @@
     <arg name="MACHINE" value="c2"/>
   </include>
 
-  <!-- For message visualization in Rviz. -->
-  <node name="rosconsole_overlay_text"
-        pkg="jsk_rviz_plugins" type="rosconsole_overlay_text.py"
-        machine="c1">
-    <rosparam>
-      reverse_lines: false
-    </rosparam>
-  </node>
-
 </launch>
