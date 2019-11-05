@@ -93,14 +93,11 @@
     (unless cloud-msg
       (return-from check-current-floor nil))
     (setq is-door-open
-          (<= (/ (length (send cloud-msg :data))
-                 (+ 0.00001 (send cloud-msg :point_step)))  ;; For zero division
+          (<= (* (send cloud-msg :width) (send cloud-msg :height))
               max-cloud-size))
-    ;; TODO(YutoUchimi): remove this debug line
-    (ros::ros-warn
+    (ros::ros-info
      (format nil "number of points: ~A, max-cloud-size: ~A, is-door-open: ~A"
-             (/ (length (send cloud-msg :data))
-                (+ 0.00001 (send cloud-msg :point_step)))
+             (* (send cloud-msg :width) (send cloud-msg :height))
              max-cloud-size
              is-door-open))
     (when is-door-open
