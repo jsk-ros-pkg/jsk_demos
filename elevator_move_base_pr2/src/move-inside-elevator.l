@@ -1,6 +1,6 @@
 (setq *change-publisher-topic* "/check_elevator_open/octree_change_publisher/octree_change_result")
 (setq *change-pc* nil)
-(setq *change-threshold* (ros::get-param "change_threshold" 200))
+(setq *change-threshold* (ros::get-param "change_threshold" 500))
 
 (defun move-inside-state-machine ()
   (let ((sm (instance state-machine :init))
