@@ -43,9 +43,11 @@
 (defun wait-for-hand-over (arm &optional (timeout 10))
   (dotimes (i 3)
     (when (wait-for-hand-impact arm :timeout timeout)
+      (ros::ros-info "Received sandwich.")
       (speak-jp "ありがとうございます。" :wait t)
       (return-from wait-for-hand-over t))
-    (ros::ros-error "Hand impact timed out without response")
+    (ros::ros-warn
+     (format nil "Hand impact timed out (~A sec) without response" timeout))
     (speak-jp "サンドイッチを手にかけてください。" :wait t))
   ;; fail
   (speak-jp "あれ、サンドイッチ。。。" :wait t)
@@ -83,6 +85,7 @@
     (send *ri* :angle-vector (send *pr2* :angle-vector) 500)
     (send *ri* :wait-interpolation)
     (unix:sleep 1)
+    ;; Assume the point cloud to be unorganized and is_dense: True.
     (setq cloud-msg
           (one-shot-subscribe "extract_eng2_forum_door_point_cloud/extract_indices/output"
                               sensor_msgs::PointCloud2
@@ -101,8 +104,10 @@
              max-cloud-size
              is-door-open))
     (when is-door-open
+      (ros::ros-info "Door in front of forum is open.")
       (speak-jp "ドアが開いています。" :wait t)
       (return-from check-forum-door-open t))
+    (ros::ros-info "Door in front of forum is closed.")
     (speak-jp "ドアが閉まっています。" :wait t)
     (return-from check-forum-door-open nil)
     ))
@@ -118,6 +123,7 @@
     (send *ri* :angle-vector (send *pr2* :angle-vector) 500)
     (send *ri* :wait-interpolation)
     (unix:sleep 1)
+    (ros::ros-info "Looking for door button...")
     (speak-jp "ドアのボタンを探しています。" :wait t)
     (update-eus-robot-model)
     (setq bboxes-msg
@@ -147,6 +153,7 @@
                             :translate (scale -30 ray-vec) :world))
 
     ;; Push door button
+    (ros::ros-info "Pushing button...")
     (speak-jp "ドアのボタンを押します。" :wait t)
     (setq av0 (send *pr2* arm :inverse-kinematics via-coords
                     :rotation-axis :x
@@ -171,6 +178,7 @@
 
 
 (defun order-sandwich (name)
+  (ros::ros-info "Ordering sandwich...")
   (speak-jp "すみません。" :wait t)
   (speak-jp (format nil "~Aをください。" name) :wait t))
 
@@ -189,6 +197,7 @@
 
   (send *ri* :stop-grasp :rarm :wait t)
 
+  (ros::ros-info "Waiting for receiving sandwich.")
   (speak-jp "商品をください。" :wait t)
 
   (wait-for-hand-over :rarm 60)
@@ -210,10 +219,12 @@
 
 
 (defun go-to-initial-pose ()
+  (ros::ros-info "Coming back to original position...")
   (speak-jp "もとの場所に帰ります。" :wait t)
   ;; NOTE: DWA local planner returns invalid plan when detecting door closed.
-  (send *ri* :move-to
-        (send *scene* :spot "/eng2/2f/forum-door-outside"))
+  (ros::ros-info "Move to /eng2/2f/forum-door-outside.")
+  (send *ri* :move-to (send *scene* :spot "/eng2/2f/forum-door-outside"))
+  (ros::ros-info (format nil "Move to ~A" *initial-pose*))
   (send *ri* :move-to *initial-pose*))
 
 
@@ -225,6 +236,7 @@
   (speak-jp (format nil "~Aを買ってきました。" name) :wait t)
 
   (while (not (wait-for-hand-impact :rarm :timeout 30))
+    (ros::row-info "Still waiting for a human to get sandwich from PR2.")
     (speak-jp (format nil "~Aをどうぞ。" name) :wait t))
 
   (send *ri* :start-grasp :rarm)
