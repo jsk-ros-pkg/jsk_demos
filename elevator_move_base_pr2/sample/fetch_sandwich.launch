@@ -18,6 +18,9 @@
       nodes:
         - /elevator_move_base
         - /fetch_sandwich
+      exclude_regexes:
+        - ".*follow_joint_trajectory.*"
+        - ".*violate.*"
       reverse_lines: false
     </rosparam>
   </node>
