@@ -76,7 +76,7 @@
   (send *pr2* :angle-vector (send *ri* :state))
   )
 
-(defun update (&optional (times 100))
+(defun update (&optional (times 20))
   (let (updated-object (count 0) (found 0) (panel-moved nil))
     ;; wait for result
     (ros::rate 10)
@@ -99,7 +99,7 @@
        (send *irtviewer* :look-all *pr2*)
        (send *irtviewer* :draw-objects)
        (x::window-main-one))
-     (if (>= found 5) (return))
+     (if (>= found 2) (return))
      (ros::sleep))
     panel-moved
     ))
@@ -169,7 +169,7 @@
     (ros::ros-info "Looking for button...")
     (speak-jp "ボタンを探しています")
     (ros::ros-info "Waiting for vision update...")
-    (unless (update 100)
+    (unless (update 20)
       (ros::ros-info "Could not find button.")
       (speak-jp "見つかりませんでした" :wait t)
       (return-from look-button nil))
