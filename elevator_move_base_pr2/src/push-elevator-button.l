@@ -9,7 +9,7 @@
                  (apply #'ros::ros-info
                         (format nil "[push-button] ~A" str) args)))
     (let (rayvec via-coords (arm :rarm)
-                 via-angle-vector org-arm-anglev
+                 via-angle-vector org-arm-anglev org-head-anglev
                  (rarm-reset #f(-60 70 110 -120 160 -30 180)) ;; second element 80 -> 70
                  (larm-reset #f(60 70 70 -120 -160 -30 180))) ;; second element 80 -> 70
       ;; check push target simply from current tuckarm-pose
@@ -45,14 +45,13 @@
           (logf "decides free arm")
           (setq arm nil)))
       (send *pr2* :angle-vector (send *ri* :state :potentio-vector))
-      ;;
+      (setq org-head-anglev (send *pr2* :head :angle-vector))
 
-      ;; reset-pose and select arm
+      ;; reset-pose (arms only) and select arm
       (unless arm
-                                        ;      (setq arm (if (plusp (elt (send target-coords :worldpos) 1)) :larm :rarm))
         (setq arm (if (plusp (elt (send (send *pr2* :transformation target-coords) :worldpos) 1)) :larm :rarm))
         (send *pr2* :reset-pose)
-        (send *pr2* :head :look-at (send target-coords :worldpos))
+        (send *pr2* :head :angle-vector org-head-anglev)
         (send *ri* :angle-vector (send *pr2* :angle-vector) 3000)
         (send *ri* :wait-interpolation))
 
@@ -62,8 +61,7 @@
 
       ;; start push
       (send *pr2* arm :angle-vector (case arm (:rarm rarm-reset)
-                                          (:larm larm-reset)))
-      (send *pr2* :head :look-at (send target-coords :worldpos))
+                                              (:larm larm-reset)))
       (unless
           (send *pr2* arm :inverse-kinematics via-coords :rotation-axis :x)
         (setq *ik-fail-av*  (send *pr2* :angle-vector))

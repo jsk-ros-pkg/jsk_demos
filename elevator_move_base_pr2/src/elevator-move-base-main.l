@@ -198,9 +198,6 @@
 	 (button-state (instance light-button-cb-class :init)))
     (update-robot-position)
     (update-scene-by-tf *scene*)
-    (send *pr2* :head :look-at (send button-coords :worldpos))
-    (send *ri* :angle-vector (send *pr2* :angle-vector) 500)
-    (send *ri* :wait-interpolation)
     (set-view-target button-coords (send *pr2* :wide_stereo-left) "wide_stereo_optical_frame")
     ;; check phase
     (dotimes (i 30 (< i 30)) ;; 3 sec
