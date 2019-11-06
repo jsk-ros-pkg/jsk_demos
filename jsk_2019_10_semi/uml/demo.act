@@ -6,7 +6,11 @@ start
 
 partition YoshiaAbe {
 
+:こどものところにいく;
+
 :お願い事をつぶやく;
+
+:お願い事を理解する;
 
 }
 
@@ -14,6 +18,8 @@ partition YoshiaAbe {
 
 partition YoshiaAbe {
 
+:変装する場所にいく;
+　
 :変装する;
 
 }
@@ -28,7 +34,7 @@ partition mqcmd196 {
 if (プレゼントがある？) then (ない)
 
   :私達が用意 ;
-  
+
   stop
 
 else (ある)
@@ -36,15 +42,15 @@ else (ある)
 partition mqcmd196 {
 
   :プレゼントを選ぶ;
-  
+
   :プレゼントをサンタ袋に入れる;
 
 }
-  
+
 partition Kanazawanaoaki {
 
   :プレゼントを運ぶ;
-  
+
 }
 
 partition MiyabiTane {
