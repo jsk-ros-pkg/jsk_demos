@@ -114,7 +114,8 @@
 
 (defun open-forum-door ()
   (let (bboxes-msg bbox cam->button-coords cam-coords forum-door-button-pos
-        target-coords ray-vec via-coords push-coords av0 av1 (arm :rarm))
+                   target-coords ray-vec via-coords push-coords
+                   org-av av0 av1 (arm :rarm))
 
     ;; Find door button
     (send *pr2* :head :look-at
@@ -126,10 +127,11 @@
     (speak-jp "ドアのボタンを探しています。" :wait t)
     (update-eus-robot-model)
     (ros::spin-once)
-    (setq bboxes-msg
-          (one-shot-subscribe "door_button/cluster_indices_decomposer/boxes"
-                              jsk_recognition_msgs::BoundingBoxArray
-                              :timeout 10000))  ;; 10000[msec]
+    (dotimes (i 3)
+      (setq bboxes-msg
+            (one-shot-subscribe "door_button/cluster_indices_decomposer/boxes"
+                                jsk_recognition_msgs::BoundingBoxArray
+                                :timeout 10000)))  ;; 10000[msec]
     (when (or (null bboxes-msg) (null (send bboxes-msg :boxes)))
       (return-from open-forum-door nil))
     (setq bbox (elt (send bboxes-msg :boxes) 0))  ;; first (expected biggest)
@@ -155,6 +157,7 @@
     ;; Push door button
     (ros::ros-info "Pushing button...")
     (speak-jp "ドアのボタンを押します。" :wait t)
+    (setq org-av (send *ri* :state :potentio-vector))
     (setq av0 (send *pr2* arm :inverse-kinematics via-coords
                     :rotation-axis :x
                     :use-torso t
@@ -166,7 +169,8 @@
     (send *ri* :stop-grasp arm)
     (send *ri* :angle-vector-sequence (list av0 av1) (list 3000 1000))
     (send *ri* :wait-interpolation)
-    (pr2-tuckarm-pose)
+    (send *ri* :angle-vector (send *pr2* :angle-vector org-av) 3000)
+    (send *ri* :wait-interpolation)
     (update-eus-robot-model)
   ))
 
