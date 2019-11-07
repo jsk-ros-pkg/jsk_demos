@@ -3,14 +3,14 @@
 (setq *change-threshold* (ros::get-param "change_threshold" 500))
 
 
-(defun tolerance-elevator-front ()
+(defun tolerance-elevator-front (userdata)
   (ros::set-dynamic-reconfigure-param
    "/move_base_node/DWAPlannerROS" "xy_goal_tolerance" :double 0.20)
   (ros::set-dynamic-reconfigure-param
    "/move_base_node/DWAPlannerROS" "yaw_goal_tolerance" :double 0.175)  ;; 10deg
   t)
 
-(defun tolerance-for-elevator ()
+(defun tolerance-for-elevator (userdata)
   (ros::set-dynamic-reconfigure-param
    "/move_base_node/DWAPlannerROS" "xy_goal_tolerance" :double 0.10)
   (ros::set-dynamic-reconfigure-param
