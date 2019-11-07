@@ -131,6 +131,7 @@ class MatchTemplate(ConnectionBasedTransport):
                                   fx=tmpl_scale, fy=tmpl_scale)
 
         debug = np.vstack((tmpl_img, img))
+        debug = cv2.cvtColor(debug, cv2.COLOR_GRAY2BGR)
 
         fig = plt.figure(dpi=200)
         ax = fig.add_subplot(1, 1, 1)
