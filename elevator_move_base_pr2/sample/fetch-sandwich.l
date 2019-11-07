@@ -166,7 +166,7 @@
                     :rotation-axis :x
                     :use-torso t
                     :look-at-target t))
-    (send *ri* :stop-grasp arm)
+    (send *ri* :start-grasp arm)
     (send *ri* :angle-vector-sequence (list av0 av1) (list 3000 1000))
     (send *ri* :wait-interpolation)
     (send *ri* :angle-vector (send *pr2* :angle-vector org-av) 3000)
