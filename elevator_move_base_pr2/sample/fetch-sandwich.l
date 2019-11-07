@@ -93,7 +93,7 @@
                                 sensor_msgs::PointCloud2
                                 :timeout 10000)))  ;; 10000[msec]
     (unless cloud-msg
-      (return-from check-current-floor nil))
+      (return-from check-forum-door-open nil))
     (setq is-door-open
           (<= (* (send cloud-msg :width) (send cloud-msg :height))
               max-cloud-size))
