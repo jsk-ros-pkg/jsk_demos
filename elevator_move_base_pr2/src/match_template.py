@@ -31,7 +31,7 @@ class MatchTemplate(ConnectionBasedTransport):
         self.cv_bridge = cv_bridge.CvBridge()
         self.pub_result = self.advertise(
             '~result', StringStamped, queue_size=1)
-        self.pub_debug = rospy.Publisher(
+        self.pub_debug = self.advertise(
             '~debug_image', Image, queue_size=1)
         self.templates = self.load_templates()
         rospy.loginfo('Initialized with %d templates' % len(self.templates))
@@ -110,8 +110,7 @@ class MatchTemplate(ConnectionBasedTransport):
         self.pub_result.publish(msg)
 
         # publish debug image
-        if self.pub_debug.get_num_connections() > 0:
-            self.publish_debug(img, results)
+        self.publish_debug(img, results)
 
     def publish_debug(self, img, results):
         templates = self.templates.values()
