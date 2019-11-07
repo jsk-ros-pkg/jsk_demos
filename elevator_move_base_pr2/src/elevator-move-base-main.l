@@ -1,4 +1,5 @@
 #!/usr/bin/env roseus
+;; -*- coding: utf-8 -*-
 
 (ros::load-ros-manifest "elevator_move_base_pr2")
 
@@ -30,14 +31,13 @@
 ;                   (instance roscpp::SetLoggerLevelRequest
 ;                             :init :logger "ros" :level "DEBUG"))
 
-;; これどうしよう
-(setq *floors* '(("B2F" "ちかにかい") ("B1F" "ちかいっかい")
-		 ("1F" "いっかい") ("2F" "にかい")
-		 ("3F" "さんかい") ("4F" "よんかい")
-		 ("5F" "ごかい") ("6F" "ろくかい")
-		 ("7F" "ななかい") ("8F" "はちかい")
-		 ("9F" "きゅうかい") ("10F" "じっかい")
-		 ("11F" "じゅういっかい") ("12F" "じゅうにかい")))
+(setq *floors*'(("B2F" "地下2階") ("B1F" "地下1階")
+                ("1F" "1階") ("2F" "2階")
+                ("3F" "3階") ("4F" "4階")
+                ("5F" "5階") ("6F" "6階")
+                ("7F" "7階") ("8F" "8階")
+                ("9F" "9階") ("10F" "10階")
+                ("11F" "11階") ("12F" "12階")))
 
 (defun initialize-env ()
   (defvar *tfl* (instance ros::transform-listener :init))
@@ -167,11 +167,11 @@
 
     ;; update
     (ros::ros-info "Looking for button...")
-    (speak-jp "ボタンを探しています")
+    (speak-jp "ボタンを探しています。")
     (ros::ros-info "Waiting for vision update...")
     (unless (update 20)
       (ros::ros-info "Could not find button.")
-      (speak-jp "見つかりませんでした" :wait t)
+      (speak-jp "見つかりませんでした。" :wait t)
       (return-from look-button nil))
 
     (when *node-debug*
@@ -186,7 +186,7 @@
 	 (button-obj
 	   (find-if #'(lambda(o)(string= button (send o :name))) (flatten (send *panel* :inheritance)))))
     (ros::ros-info (format nil "push button (~a) -> ~a" button button-obj))
-    (speak-jp "ぼたんをおします")
+    (speak-jp "ボタンを押します。")
     (send *logger* :save-obj-pose button-obj "push-button")
     (push-button button-obj)
     ))
@@ -206,12 +206,12 @@
       (ros::ros-info "button-state: ~A" (send button-state :value))
       (when (< 0.5 (send button-state :value))
         (ros::ros-info "Button is lighting up.")
-        (speak-jp "ぼたんがひかりました")
+        (speak-jp "ボタンが光りました。")
         ;; (pr2-tuckarm-pose)
         (return-from check-button-light t))
       (unix::usleep (* 100 1000)))
     (ros::ros-info "Button is not lighting up.")
-    (speak-jp "押せていないようです" :wait t)
+    (speak-jp "押せていないようです。" :wait t)
     nil
     ))
 
@@ -279,7 +279,7 @@
 	))
     (ros::unsubscribe "/base_scan")
     (ros::ros-info (if result "Go into elvator." "Cannot go into elevator."))
-    (speak-jp (if result "エレベータに入ります" "エレベータに入れません"))
+    (speak-jp (if result "エレベータに入ります。" "エレベータに入れません。"))
     result
     ))
 
@@ -341,7 +341,7 @@
     (dolist (floor *floors*)
       (when (equal targetfloor (elt floor 0))
         (ros::ros-info (format nil "Arrived at ~A." (elt floor 0)))
-        (speak-jp (concatenate string (elt floor 1) "につきました"))
+        (speak-jp (concatenate string (elt floor 1) "に着きました。"))
         (change-floor (format nil "~A/~a" (send *scene* :name)
                               (string-downcase (elt floor 0))))
         )))
@@ -352,7 +352,7 @@
 
   (check-elevator-open)
   (ros::ros-info "Door opened.")
-  (speak-jp "ドアが飽きました")
+  (speak-jp "ドアが開きました。")
   :success)
 
 ;; elevator-front-coords, front-coords, outside-panel-name, outside-button, inside-coords, inside-panel-name, target-floor, outside-coords
@@ -371,7 +371,7 @@
           (instance state :init :speak-fail
                     '(lambda(x)
                        (ros::ros-info "2 minutes have passed.")
-                       (speak-jp "にふんたちました" :wait t)
+                       (speak-jp "2分経ちました。" :wait t)
                        t)))
     ;; (send sm :add-node (actionlib-client-state
     ;;     		:move-inside move-client :timeout 120 :retry t
@@ -460,7 +460,7 @@
                     '(lambda (x)
                        (costmap-normal)
                        (ros::ros-info "Go to elevator.")
-                       (speak-jp "エレベータに向かいます" :wait t)
+                       (speak-jp "エレベータに向かいます。" :wait t)
                        t)))
     (send sm :add-node (instance state :init :take-elevator (elevator-state-machine)))
     (send sm :add-node (actionlib-client-state
