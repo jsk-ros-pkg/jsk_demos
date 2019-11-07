@@ -23,11 +23,13 @@
         (pr2-tuckarm-pose :larm))
 
       (setq arm (check-tuckarm-pose))
-      (setq rayvec (normalize-vector (v- (send *pr2* :narrow_stereo_optical_frame_lk :worldpos) (send target-coords :worldpos))))
+      (setq rayvec (normalize-vector
+                    (v- (send *pr2* :laser_tilt_mount_link_lk :worldpos)
+                        (send target-coords :worldpos))))
 
       ;; via-coords
       (setq via-coords (send (send target-coords :copy-worldcoords)
-                             :translate (scale 100 rayvec) :world))
+                             :translate (scale 70 rayvec) :world))
       ;; push 30mm
       (setq target-coords (send (send target-coords :copy-worldcoords)
                                 :translate (scale -30 rayvec) :world))
