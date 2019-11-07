@@ -26,13 +26,13 @@
   (let ((sm (instance state-machine :init))
         (move-client (pr2-interface-move-base-action *ri*)))
     (send sm :add-node (instance state :init :tolerance-elevator-front
-                                 (tolerance-elevator-front)))
+                                 'tolerance-elevator-front))
     (send sm :add-node (actionlib-client-state
                         :move-elevator-front move-client :timeout 300 :retry t
                         :key 'coords->movebaseactiongoal))
     (send (send sm :node :move-elevator-front) :remap-list '((:goal . elevator-front-coords)))
     (send sm :add-node (instance state :init :tolerance-for-elevator
-                                 (tolerance-for-elevator)))
+                                 'tolerance-for-elevator))
     (send sm :add-node (instance state :init :check-elevator-open 'check-elevator-open))
     (send sm :add-node (actionlib-client-state
                         :move-elevator-inside move-client :timeout 300 :retry t
