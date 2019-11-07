@@ -2,27 +2,25 @@
 # -*- coding: utf-8 -*-
 # Author:  <furushchev@jsk.imi.i.u-tokyo.ac.jp>
 
-import matplotlib
-matplotlib.use('Agg')
-
 from collections import namedtuple
+from urlparse import urlparse
+
 import cv2
 import cv_bridge
-import numpy as np
+from jsk_topic_tools import ConnectionBasedTransport
+import matplotlib
+matplotlib.use('Agg')  # NOQA
 import matplotlib.pyplot as plt
-import os
+import numpy as np
+from roseus.msg import StringStamped
 import rospkg
 import rospy
-from skimage.io import imread
-from cStringIO import StringIO
-from urlparse import urlparse
-from jsk_topic_tools import ConnectionBasedTransport
 from sensor_msgs.msg import Image
-from roseus.msg import StringStamped
 
 
 Template = namedtuple('Template', ['name', 'image', 'thre', 'method'])
 Result = namedtuple('Result', ['score', 'found', 'top_left'])
+
 
 class MatchTemplate(ConnectionBasedTransport):
     def __init__(self):
@@ -37,7 +35,8 @@ class MatchTemplate(ConnectionBasedTransport):
         rospy.loginfo('Initialized with %d templates' % len(self.templates))
 
     def subscribe(self):
-        self.sub = rospy.Subscriber('~image', Image, self.image_cb, queue_size=1)
+        self.sub = rospy.Subscriber(
+            '~image', Image, self.image_cb, queue_size=1)
 
     def unsubscribe(self):
         self.sub.unregister()
@@ -156,8 +155,10 @@ class MatchTemplate(ConnectionBasedTransport):
                     edgecolor=(1.0, 0.0, 0.0),
                     linewidth=2))
 
-                top_left = (res.top_left[0] * img_scale, res.top_left[1] * img_scale + tmpl_img.shape[0])
-                w, h = t.image.shape[1] * img_scale, t.image.shape[0] * img_scale
+                top_left = (res.top_left[0] * img_scale,
+                            res.top_left[1] * img_scale + tmpl_img.shape[0])
+                w = t.image.shape[1] * img_scale
+                h = t.image.shape[0] * img_scale
                 ax.add_patch(plt.Rectangle(
                     top_left, w, h,
                     fill=False,
@@ -165,7 +166,8 @@ class MatchTemplate(ConnectionBasedTransport):
                     linewidth=2))
 
         plt.margins(0, 0)
-        plt.subplots_adjust(left=0, right=1, top=1, bottom=0, hspace=0, wspace=0)
+        plt.subplots_adjust(
+            left=0, right=1, top=1, bottom=0, hspace=0, wspace=0)
         fig = plt.gcf()
         fig.canvas.draw()
         w, h = fig.canvas.get_width_height()
@@ -185,4 +187,3 @@ if __name__ == '__main__':
     rospy.init_node('match_template')
     n = MatchTemplate()
     rospy.spin()
-
