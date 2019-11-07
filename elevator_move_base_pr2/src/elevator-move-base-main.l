@@ -283,19 +283,7 @@
     result
     ))
 
-(defun costmap-for-elevator (userdata)
-  (ros::set-dynamic-reconfigure-param
-   "/move_base_node/DWAPlannerROS" "xy_goal_tolerance" :double 0.10)
-  (ros::set-dynamic-reconfigure-param
-   "/move_base_node/DWAPlannerROS" "yaw_goal_tolerance" :double 0.087) ;; 5[deg]
-  (ros::set-dynamic-reconfigure-param
-   "/move_base_node/global_costmap" "footprint_padding" :double 0.03)
-  (ros::set-dynamic-reconfigure-param
-   "/move_base_node/local_costmap" "footprint_padding" :double 0.03)
-  (switch-global-planner-observation nil) ;;disable tilt scan
-  t)
-
-(defun costmap-normal (&rest args)
+(defun tolerance-normal (&rest args)
   (pr2-tuckarm-pose)
   (ros::set-dynamic-reconfigure-param
    "/move_base_node/DWAPlannerROS" "xy_goal_tolerance" :double 0.15)
@@ -363,7 +351,6 @@
 			:move-front move-client :timeout 300 :retry t
 			:key 'coords->movebaseactiongoal))
     (send (send sm :node :move-front) :remap-list '((:goal . front-coords)))
-    (send sm :add-node (instance state :init :costmap-for-elevator 'costmap-for-elevator))
     (send sm :add-node (instance state :init :push-outside (push-state-machine)
 				 :remap-list '((panel-name . outside-panel-name) (button . outside-button))))
 ;;    (send sm :add-node (instance state :init :check-elevator-empty 'check-until-elevator-empty))
@@ -389,15 +376,14 @@
 			:move-outside move-client :timeout 60 :retry t
 			:key 'coords->movebaseactiongoal))
     (send (send sm :node :move-outside) :remap-list '((:goal . outside-coords)))
-    (send sm :add-node (instance state :init :costmap-normal 'costmap-normal))
+    (send sm :add-node (instance state :init :tolerance-normal 'tolerance-normal))
     (send sm :arg-keys 'elevator-front-coords 'front-coords 'outside-panel-name 'outside-button 'inside-coords
 	  'inside-panel-name 'target-floor 'outside-coords :cancel)
     (send sm :goal-state (list :success :fail-outside :fail-inside))
     (send sm :start-state :move-front)
     ;;
-    (send sm :add-transition :move-front :costmap-for-elevator :succeeded)
+    (send sm :add-transition :move-front :push-outside :succeeded)
     (send sm :add-transition :move-front :fail-outside :failed)
-    (send sm :add-transition :costmap-for-elevator :push-outside t)
     (send sm :add-transition :push-outside :move-inside :success)
     (send sm :add-transition :move-inside :push-inside :success)
     (send sm :add-transition :move-inside :speak-fail :fail)
@@ -406,9 +392,9 @@
     (send sm :add-transition :push-inside :ready-to-outside :success)
     (send sm :add-transition :push-inside :push-inside :fail)
     (send sm :add-transition :ready-to-outside :move-outside :success)
-    (send sm :add-transition :move-outside :costmap-normal :succeeded)
+    (send sm :add-transition :move-outside :tolerance-normal :succeeded)
     (send sm :add-transition :move-outside :fail-inside :failed)
-    (send sm :add-transition :costmap-normal :success t)
+    (send sm :add-transition :tolerance-normal :success t)
     sm ))
 
 ;; elevator_move_base action server
@@ -458,7 +444,7 @@
     (send sm :add-node
           (instance state :init :speak-elevator
                     '(lambda (x)
-                       (costmap-normal)
+                       (tolerance-normal)
                        (ros::ros-info "Go to elevator.")
                        (speak-jp "エレベータに向かいます。" :wait t)
                        t)))
