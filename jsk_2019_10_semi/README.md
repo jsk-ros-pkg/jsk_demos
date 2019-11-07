@@ -19,7 +19,7 @@ source devel/setup.bash
 
 ```
 (load "package://peppereus/pepper.l")
-(setq *pepepr* (pepper))
+(setq *pepper* (pepper))
 (objects (list *pepper*))
 
 (load "package://naoeus/nao.l")
@@ -27,15 +27,15 @@ source devel/setup.bash
 (objects (list *nao*))
 
 (load "package://baxtereus/baxter.l")
-(setq *pepepr* (baxter))
+(setq *baxter* (baxter))
 (objects (list *baxter*))
 
 (load "package://fetcheus/fetch.l")
-(setq *pepepr* (fetch))
+(setq *fetch* (fetch))
 (objects (list *fetch*))
 
 (load "package://pr2eus/pr2.l")
-(setq *pepepr* (pr2))
+(setq *pr2* (pr2))
 (objects (list *pr2*))
 ```
 
@@ -130,10 +130,10 @@ rosrun image_view image_view image:=/edgetpu_object_detector/output/image
 初めにやること
 ```
 source ~/semi_ws/devel/setup.bash
-roscd jsk_2019_10_sem
+roscd jsk_2019_10_semi
 ```
 
-ブランチをを移
+ブランチを移動
 ```
 git checkout add_jsk_2019_10_semi
 ```
@@ -157,6 +157,11 @@ git push アカウント名 new_branch
 
 最後に自分のGitのページを開いて自分のアカウントのnew_branchからk-okada/jsk-demosのadd_jsk_2019_10_semiブランチにPullreqを送る。
 
+コンフリクトするとファイルにその情報が加わり、そのファイルを編集することで手動でコンフリクトを解消出来る。
+
+マークダウン方式で.md方式でメモとかを作れる。詳しくは[ここ](https://gist.github.com/mignonstyle/083c9e1651d7734f84c99b8cf49d57fa
+)にまとまっている。
+atomだと[control] + [shift] + [M] キーでプレビュー出来る。
 
 ## ロボットシミュレーションの基本
 
@@ -206,15 +211,57 @@ viewerのpepperの今の状態のパラメータを知る
 
 ✱ revert-if-fail nil : 逆運動学に失敗しても解けたところまでで中断する。
 
+### fetchを動かす
 
 fetchについては以下を参照
 
 [fetchの詳細](https://github.com/jsk-ros-pkg/jsk_robot/tree/master/jsk_fetch_robot)
 
+fetchは腕とベースの干渉を計算してから動かす。 moveitに送って干渉計算をしてから動かしている。 （:angle-vector-raw　だとそれをしないで実行できる。） eusがインターフェースでそこからROSとかでロボットに送っている。
+
+喋らせる
+```
+(send *ri* :speak-jp "こんにちは")
+(send *ri* :speak-en "hello")
+```
+
+移動する
+```
+(send *ri* :go-pos 1 0 0)
+;;引数は x[m] y[m] z回転[degree]
+```
+
+fetch用のRvizを立ち上げる
+```
+roscd jsk_fetch_startup
+cd launch
+roslaunch jsk_fetch_startup rviz.launch
+```
+
+#### 実機を動かす
+
+まずは有線を繋いでwifiを切る
+```
+rossetip
+rossetmaster fetch15
+rostopic list
+```
+後はいつものように実行すれば良い
+
+実機でポーズを作ってから角度取得
+```
+(send *ri* :state :potentio-vector)
+```
+
+## JSK豆知識
+
+JSKのgithub上のパッケージは[jsk-ros-pkg](https://github.com/jsk-ros-pkg)にある。
+
+画像認識とかの認識系は[jsk_recognitionのdocs
+](https://jsk-recognition.readthedocs.io/en/latest/)を見ると良い。
 
 ## Emacs豆知識
 C-x C-f : ファイル作成</br>
 C-x 2 : 画面上下２分割</br>
 C-x b \*shell*: shellをLispにする。</br>
 C-x o : 画面移動</br>
-
