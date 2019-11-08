@@ -23,9 +23,13 @@
         (pr2-tuckarm-pose :larm))
 
       (setq arm (check-tuckarm-pose))
-      (setq rayvec (normalize-vector
-                    (v- (send *pr2* :laser_tilt_mount_link_lk :worldpos)
-                        (send target-coords :worldpos))))
+      (setq rayvec
+            (normalize-vector
+             (v- (float-vector
+                  (elt (send *pr2* :laser_tilt_mount_link_lk :worldpos) 0)
+                  (elt (send *pr2* :laser_tilt_mount_link_lk :worldpos) 1)
+                  (elt (send target-coords :worldpos) 2))
+                 (send target-coords :worldpos))))
 
       ;; via-coords
       (setq via-coords (send (send target-coords :copy-worldcoords)
