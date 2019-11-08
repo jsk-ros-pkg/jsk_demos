@@ -144,13 +144,13 @@
                 :worldpos))
     (setq target-coords (make-coords :pos forum-door-button-pos))
 
-    ;; Define via-coords (50mm in front of button) and push-coords (push 30mm)
+    ;; Define via-coords (70mm in front of button) and push-coords (push 30mm)
     (setq ray-vec
           (normalize-vector
            (v- (send *pr2* :head_mount_kinect_rgb_optical_frame_lk :worldpos)
                (send target-coords :worldpos))))
     (setq via-coords (send (send target-coords :copy-worldcoords)
-                           :translate (scale 50 ray-vec) :world))
+                           :translate (scale 70 ray-vec) :world))
     (setq push-coords (send (send target-coords :copy-worldcoords)
                             :translate (scale -30 ray-vec) :world))
 
@@ -158,15 +158,14 @@
     (ros::ros-info "Pushing button...")
     (speak-jp "ドアのボタンを押します。" :wait t)
     (setq org-av (send *ri* :state :potentio-vector))
+    (send *ri* :start-grasp arm)
+    (pr2-reset-pose)
     (setq av0 (send *pr2* arm :inverse-kinematics via-coords
                     :rotation-axis :x
-                    :use-torso t
                     :look-at-target t))
     (setq av1 (send *pr2* arm :inverse-kinematics push-coords
                     :rotation-axis :x
-                    :use-torso t
                     :look-at-target t))
-    (send *ri* :start-grasp arm)
     (send *ri* :angle-vector-sequence (list av0 av1) (list 3000 1000))
     (send *ri* :wait-interpolation)
     (send *ri* :angle-vector (send *pr2* :angle-vector org-av) 3000)
