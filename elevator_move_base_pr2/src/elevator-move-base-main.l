@@ -297,18 +297,19 @@
   (switch-global-planner-observation t) ;;enable tilt scan
   t)
 
-(defun check-target-floor (userdata)
+(defun check-target-floor-arrived (userdata)
   (let ((topic (instance ros::ros-callback-message :init roseus::StringStamped "/elevator_number/result"))
         (target-floor (cdr (assoc 'target-floor userdata))))
-    (dotimes (i 300 nil)
+    (dotimes (i 1500 nil)  ;; timeout: 5 min
       (ros::spin-once)
       (if (and (send topic :msg)
                (substringp (concatenate string "/" target-floor)
                            (string-upcase (send topic :msg :data))))
-          (return-from check-target-floor t)
+          (return-from check-target-floor-arrived t)
         (ros::ros-info "waiting /elevator_number/result"))
-      (unix::usleep (* 500 1000))
-      )))
+      (unix::usleep (* 200 1000)))
+    (ros::ros-info "Timeout (5min) reached.")
+    nil))
 
 (make-attention-action ready-to-outside (userdata)
   (clear-costmap)
@@ -317,14 +318,14 @@
   (update-robot-position)
   ;; look at panel
   (let ((look-target
-	 (or (find-if #'(lambda(x)(string= (send x :name) "/elevator_number"))  (send *panel* :descendants)) *panel*)))
+         (or (find-if #'(lambda(x)(string= (send x :name) "/elevator_number"))
+                      (send *panel* :descendants))
+             *panel*)))
     (send *pr2* :head :look-at (send look-target :worldpos))
-    (send *pr2* :head :look-at (send look-target :worldpos)) ;; bug twice
     (send *ri* :angle-vector (send *pr2* :angle-vector) 500)
     (send *ri* :wait-interpolation))
 
-  (unix::sleep 1) ;; this is pr2 reference coords problem -> robot
-  (check-target-floor userdata)
+  (check-target-floor-arrived userdata)
 
   (let ((targetfloor (cdr (assoc 'target-floor userdata))))
     (dolist (floor *floors*)
