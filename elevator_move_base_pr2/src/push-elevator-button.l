@@ -10,7 +10,7 @@
                         (format nil "[push-button] ~A" str) args)))
     (let (rayvec via-coords (arm :rarm)
                  via-angle-vector org-arm-anglev org-head-anglev
-                 (rarm-reset #f(-60 70 110 -120 160 -30 180)) ;; second element 80 -> 70
+                 (rarm-reset #f(-60 70 -70 -120 160 -30 180)) ;; second element 80 -> 70
                  (larm-reset #f(60 70 70 -120 -160 -30 180))) ;; second element 80 -> 70
       ;; check push target simply from current tuckarm-pose
       (ros::spin-once)
