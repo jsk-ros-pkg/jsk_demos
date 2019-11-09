@@ -87,11 +87,10 @@
     (unix:sleep 1)
     ;; Assume the point cloud to be unorganized and is_dense: True.
     (ros::spin-once)
-    (dotimes (i 3)
-      (setq cloud-msg
-            (one-shot-subscribe "extract_eng2_forum_door_point_cloud/extract_indices/output"
-                                sensor_msgs::PointCloud2
-                                :timeout 10000)))  ;; 10000[msec]
+    (setq cloud-msg
+          (one-shot-subscribe "extract_eng2_forum_door_point_cloud/extract_indices/output"
+                              sensor_msgs::PointCloud2
+                              :timeout 10000))  ;; 10000[msec]
     (unless cloud-msg
       (return-from check-forum-door-open nil))
     (setq is-door-open
@@ -127,11 +126,10 @@
     (speak-jp "ドアのボタンを探しています。" :wait t)
     (update-eus-robot-model)
     (ros::spin-once)
-    (dotimes (i 3)
-      (setq bboxes-msg
-            (one-shot-subscribe "door_button/cluster_indices_decomposer/boxes"
-                                jsk_recognition_msgs::BoundingBoxArray
-                                :timeout 10000)))  ;; 10000[msec]
+    (setq bboxes-msg
+          (one-shot-subscribe "door_button/cluster_indices_decomposer/boxes"
+                              jsk_recognition_msgs::BoundingBoxArray
+                              :timeout 10000))  ;; 10000[msec]
     (when (or (null bboxes-msg) (null (send bboxes-msg :boxes)))
       (return-from open-forum-door nil))
     (setq bbox (elt (send bboxes-msg :boxes) 0))  ;; first (expected biggest)
@@ -214,7 +212,6 @@
 
   (send *pr2* :torso_lift_joint :joint-angle 0)
   (send *ri* :angle-vector (send *pr2* :angle-vector) 5000)
-  (send *ri* :wait-interpolation)
 
   (pr2-tuckarm-pose :rarm :outside)
 
