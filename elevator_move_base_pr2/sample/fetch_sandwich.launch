@@ -7,13 +7,13 @@
   <node name="fetch_sandwich"
         pkg="elevator_move_base_pr2" type="fetch-sandwich.l"
         args="(demo)"
-        machine="c1"
+        machine="c2"
         output="screen"/>
 
   <!-- For message visualization in Rviz. -->
   <node name="rosconsole_overlay_text"
         pkg="jsk_rviz_plugins" type="rosconsole_overlay_text.py"
-        machine="c1">
+        machine="c2">
     <rosparam>
       nodes:
         - /elevator_move_base
