@@ -22,6 +22,10 @@
         - ".*follow_joint_trajectory.*"
         - ".*goal id.*"
         - ".*violate.*"
+        - ".*wait-interpolation debug.*"
+        - ".*action-result-cb.*"
+        - ".*;; .*"
+        - ".*#f(.*).*"
       reverse_lines: false
     </rosparam>
   </node>
