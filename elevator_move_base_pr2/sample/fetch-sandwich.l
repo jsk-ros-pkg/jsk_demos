@@ -115,7 +115,7 @@
 (defun open-forum-door ()
   (let (bboxes-msg bbox cam->button-coords cam-coords forum-door-button-pos
                    target-coords ray-vec via-coords push-coords
-                   org-av av0 av1 (arm :rarm))
+                   av0 av1 (arm :rarm))
 
     ;; Find door button
     (send *pr2* :head :look-at
@@ -147,7 +147,10 @@
     ;; Define via-coords (70mm in front of button) and push-coords (push 30mm)
     (setq ray-vec
           (normalize-vector
-           (v- (send *pr2* :head_mount_kinect_rgb_optical_frame_lk :worldpos)
+           (v- (float-vector
+                (elt (send *pr2* :laser_tilt_mount_link_lk :worldpos) 0)
+                (elt (send *pr2* :laser_tilt_mount_link_lk :worldpos) 1)
+                (elt (send target-coords :worldpos) 2))
                (send target-coords :worldpos))))
     (setq via-coords (send (send target-coords :copy-worldcoords)
                            :translate (scale 70 ray-vec) :world))
@@ -157,7 +160,6 @@
     ;; Push door button
     (ros::ros-info "Pushing button...")
     (speak-jp "ドアのボタンを押します。" :wait t)
-    (setq org-av (send *ri* :state :potentio-vector))
     (send *ri* :start-grasp arm)
     (pr2-reset-pose)
     (setq av0 (send *pr2* arm :inverse-kinematics via-coords
@@ -168,8 +170,7 @@
                     :look-at-target t))
     (send *ri* :angle-vector-sequence (list av0 av1) (list 3000 1000))
     (send *ri* :wait-interpolation)
-    (send *ri* :angle-vector (send *pr2* :angle-vector org-av) 3000)
-    (send *ri* :wait-interpolation)
+    (pr2-tuckarm-pose)
     (update-eus-robot-model)
   ))
 
