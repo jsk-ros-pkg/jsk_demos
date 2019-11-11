@@ -155,7 +155,7 @@
           (car (send *scene* :find-object
                      (format nil "~A~A" (check-current-floor) panel-name))))
     (ros::ros-info "look-at button position ~A" (send look-target :worldpos))
-    (unix::sleep 1)  ;; PR2 look forward during move_base.
+    (pr2-reset-pose)
     (send *pr2* :head :look-at (send look-target :worldpos))
     (send *ri* :angle-vector (send *pr2* :angle-vector) 500)
     (send *ri* :wait-interpolation)
