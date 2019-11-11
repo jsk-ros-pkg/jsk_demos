@@ -50,7 +50,7 @@
   (pr2-init)
 
   ;; load building scene by existing TF frame
-  (unix::sleep 1) ;; wait for recieving TF messages
+  (unix:sleep 1) ;; wait for recieving TF messages
   (let ((frames (send *tfl* :get-frame-strings)))
     (cond ((find "eng2" frames :test #'string=)
 	   (setq *scene* (make-eng2-scene)))
@@ -201,6 +201,7 @@
     (update-scene-by-tf *scene*)
     (set-view-target button-coords (send *pr2* :wide_stereo-left) "wide_stereo_optical_frame")
     ;; check phase
+    (ros::rate 10)
     (dotimes (i 30 (< i 30)) ;; 3 sec
       (ros::spin-once)
       (send *logger* :save-brightness (send button-state :value) "check-button")
@@ -210,7 +211,7 @@
         (speak-jp "ボタンが光りました。")
         ;; (pr2-tuckarm-pose)
         (return-from check-button-light t))
-      (unix::usleep (* 100 1000)))
+      (ros::sleep))
     (ros::ros-info "Button is not lighting up.")
     (speak-jp "押せていないようです。" :wait t)
     nil
@@ -245,7 +246,7 @@
     (setq *scan* nil)
     (ros::subscribe "/base_scan" sensor_msgs::LaserScan
 		    #'(lambda(m)(setq *scan* m)))
-    (unix::sleep 1) ;; to smart
+    (unix:sleep 1) ;; to smart
 
     (while (< (send (ros::time- (ros::time-now) start) :to-sec) 30)
       (while (not *scan*) (ros::spin-once))
@@ -300,6 +301,7 @@
 (defun check-target-floor-arrived (userdata)
   (let ((topic (instance ros::ros-callback-message :init roseus::StringStamped "/elevator_number/result"))
         (target-floor (cdr (assoc 'target-floor userdata))))
+    (ros::rate 5)
     (dotimes (i 1500 nil)  ;; timeout: 5 min
       (ros::spin-once)
       (if (and (send topic :msg)
@@ -307,7 +309,7 @@
                            (string-upcase (send topic :msg :data))))
           (return-from check-target-floor-arrived t)
         (ros::ros-info "waiting /elevator_number/result"))
-      (unix::usleep (* 200 1000)))
+      (ros::sleep))
     (ros::ros-info "Timeout (5min) reached.")
     nil))
 
