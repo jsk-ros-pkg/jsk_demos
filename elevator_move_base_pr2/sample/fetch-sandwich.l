@@ -87,10 +87,11 @@
     (unix:sleep 1)
     ;; Assume the point cloud to be unorganized and is_dense: True.
     (ros::spin-once)
-    (setq cloud-msg
-          (one-shot-subscribe "extract_eng2_forum_door_point_cloud/extract_indices/output"
-                              sensor_msgs::PointCloud2
-                              :timeout 10000))  ;; 10000[msec]
+    (dotimes (i 3)  ;; Ensure the door status
+      (setq cloud-msg
+            (one-shot-subscribe "extract_eng2_forum_door_point_cloud/extract_indices/output"
+                                sensor_msgs::PointCloud2
+                                :timeout 10000)))  ;; 10000[msec]
     (unless cloud-msg
       (return-from check-forum-door-open nil))
     (setq is-door-open
@@ -126,10 +127,11 @@
     (speak-jp "ドアのボタンを探しています。" :wait t)
     (update-eus-robot-model)
     (ros::spin-once)
-    (setq bboxes-msg
-          (one-shot-subscribe "door_button/cluster_indices_decomposer/boxes"
-                              jsk_recognition_msgs::BoundingBoxArray
-                              :timeout 10000))  ;; 10000[msec]
+    (dotimes (i 3)  ;; Ensure the position of bounding box
+      (setq bboxes-msg
+            (one-shot-subscribe "door_button/cluster_indices_decomposer/boxes"
+                                jsk_recognition_msgs::BoundingBoxArray
+                                :timeout 10000)))  ;; 10000[msec]
     (when (or (null bboxes-msg) (null (send bboxes-msg :boxes)))
       (return-from open-forum-door nil))
     (setq bbox (elt (send bboxes-msg :boxes) 0))  ;; first (expected biggest)
