@@ -315,6 +315,7 @@
 
 (make-attention-action ready-to-outside (userdata)
   (clear-costmap)
+  (tolerance-loose)
   (send *ri* :go-pos-unsafe 0 0 90)  ;; Unsafe for faster turning left
 
   (update-robot-position)
