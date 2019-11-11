@@ -58,6 +58,7 @@
 
 (defun check-elevator-open (&optional args)
   (ros::subscribe *change-publisher-topic* sensor_msgs::PointCloud2 #'pc-cb)
+  (unix:usleep (* 500 1000))  ;; Wait until point cloud becomes stable
   (let ((start-time (ros::time-now)))
     (while (or
             (not *change-pc*)
