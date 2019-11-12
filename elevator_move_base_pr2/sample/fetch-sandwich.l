@@ -16,14 +16,17 @@
 ;;; PR2 Utility Functions
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+(defun look-front ()
+  (send *pr2* :head :angle-vector #f(0 0))
+  (send *ri* :angle-vector (send *pr2* :angle-vector) 1000)
+  (send *ri* :wait-interpolation))
+
 (defun pr2-init (&optional (create-viewer))
   (setq *pr2* (pr2)
         *ri* (instance pr2-interface :init
                        :move-base-action-name "elevator_move_base"))
   (pr2-tuckarm-pose)
-  (send *pr2* :head :angle-vector #f(0 0))
-  (send *ri* :angle-vector (send *pr2* :angle-vector) 1000)
-  (send *ri* :wait-interpolation)
+  (look-front)
   (when create-viewer (objects (list *pr2*))))
 
 
@@ -145,7 +148,7 @@
                 :worldpos))
     (setq target-coords (make-coords :pos forum-door-button-pos))
 
-    ;; Define via-coords (70mm in front of button) and push-coords (push 30mm)
+    ;; Define via-coords (70mm in front of button) and push-coords (push 20mm)
     (setq ray-vec
           (normalize-vector
            (v- (float-vector
@@ -156,7 +159,7 @@
     (setq via-coords (send (send target-coords :copy-worldcoords)
                            :translate (scale 70 ray-vec) :world))
     (setq push-coords (send (send target-coords :copy-worldcoords)
-                            :translate (scale -30 ray-vec) :world))
+                            :translate (scale -20 ray-vec) :world))
 
     ;; Push door button
     (ros::ros-info "Pushing button...")
@@ -172,9 +175,6 @@
     (send *ri* :angle-vector-sequence (list av0 av1) (list 3000 1000))
     (send *ri* :wait-interpolation)
     (pr2-tuckarm-pose)
-    (send *pr2* :head :angle-vector #f(0 0))
-    (send *ri* :angle-vector (send *pr2* :angle-vector) 1000)
-    (send *ri* :wait-interpolation)
     (update-eus-robot-model)
   ))
 
@@ -221,9 +221,7 @@
   (send *ri* :wait-interpolation)
 
   (pr2-tuckarm-pose :rarm :outside)
-  (send *pr2* :head :angle-vector #f(0 0))
-  (send *ri* :angle-vector (send *pr2* :angle-vector) 1000)
-  (send *ri* :wait-interpolation)
+  (look-front)
 
   (send *ri* :go-pos-unsafe 0 0 180)
   t)
@@ -252,9 +250,7 @@
 
   (send *ri* :start-grasp :rarm)
   (send *pr2* :torso_lift_joint :joint-angle 0)
-  (send *pr2* :head :angle-vector #f(0 0))
-  (send *ri* :angle-vector (send *pr2* :angle-vector) 5000)
-  (send *ri* :wait-interpolation)
+  (look-front)
   (pr2-tuckarm-pose))
 
 
@@ -267,6 +263,7 @@
     (open-forum-door)
     (unix:sleep 1)  ;; Wait for door opening
     )
+  (look-front)
   (go-to-subway-front)
   (order-sandwich name)
   (receive-sandwich)
