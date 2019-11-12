@@ -344,8 +344,6 @@
   (send *ri* :wait-interpolation)
 
   (check-elevator-open)
-  (ros::ros-info "Door opened.")
-  (speak-jp "ドアが開きました。")
   :success)
 
 ;; elevator-front-coords, front-coords, outside-panel-name, outside-button, inside-coords, inside-panel-name, target-floor, outside-coords

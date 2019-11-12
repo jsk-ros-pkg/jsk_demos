@@ -74,6 +74,8 @@
       (ros::spin-once)
       (ros::sleep)))
   (ros::unsubscribe *change-publisher-topic*)
-  (unix:sleep 1) ;; wait until door open
+  (unix:sleep 2) ;; wait until door open
   (clear-costmap)
+  (ros::ros-info "Door opened.")
+  (speak-jp "ドアが開きました。")
   t)
