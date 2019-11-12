@@ -1,6 +1,6 @@
 (setq *change-publisher-topic*
       "/check_elevator_open/octree_change_publisher/octree_change_result")
-(setq *change-threshold* (ros::get-param "change_threshold" 500))
+(setq *change-threshold* (ros::get-param "change_threshold" 700))
 
 
 (defun tolerance-loose (&rest args)
@@ -62,9 +62,12 @@
   (ros::ros-info "change: ~A" *change-pc*))
 
 (defun check-elevator-open (&optional args)
+  (send *pr2* :head :angle-vector #f(0 0))
+  (send *ri* :angle-vector (send *pr2* :angle-vector) 1000)
+  (send *ri* :wait-interpolation)
   (setq *change-pc* nil)
   (ros::subscribe *change-publisher-topic* sensor_msgs::PointCloud2 #'pc-cb)
-  (unix:usleep (* 500 1000))  ;; Wait until point cloud becomes stable
+  (unix:sleep 1)  ;; Wait until point cloud becomes stable
   (ros::rate 5)
   (while (or
           (not *change-pc*)
@@ -74,8 +77,8 @@
     (ros::spin-once)
     (ros::sleep))
   (ros::unsubscribe *change-publisher-topic*)
-  (unix:sleep 1) ;; wait until door open
-  (clear-costmap)
   (ros::ros-info "Door opened.")
   (speak-jp "ドアが開きました。")
+  (clear-costmap)
+  (unix:sleep 2) ;; wait until door open
   t)
