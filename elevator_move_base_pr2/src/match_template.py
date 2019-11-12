@@ -31,6 +31,7 @@ class MatchTemplate(ConnectionBasedTransport):
             '~result', StringStamped, queue_size=1)
         self.pub_debug = self.advertise(
             '~debug_image', Image, queue_size=1)
+        self.show_proba = rospy.get_param('~show_probability', True)
         self.templates = self.load_templates()
         rospy.loginfo('Initialized with %d templates' % len(self.templates))
 
@@ -132,52 +133,55 @@ class MatchTemplate(ConnectionBasedTransport):
         debug = np.vstack((tmpl_img, img))
         debug = cv2.cvtColor(debug, cv2.COLOR_GRAY2BGR)
 
-        fig = plt.figure(dpi=200)
-        ax = fig.add_subplot(1, 1, 1)
-        ax.set_axis_off()
-        ax.imshow(debug)
-
-        # draw roi if found
         for i, t in enumerate(templates):
             res = results[t.name]
-            w, h = t.image.shape[1] * tmpl_scale, t.image.shape[0] * tmpl_scale
-            ax.text(i * w + 20, h + 50,
-                    '%s:\n%.2f' % (t.name, res.score),
-                    fontsize=8,
-                    bbox={'facecolor': 'white',
-                          'alpha': 0.5,
-                          'pad': 3})
-
             if res.found:
-                ax.add_patch(plt.Rectangle(
-                    (i * w, 0), w, h,
-                    fill=False,
-                    edgecolor=(1.0, 0.0, 0.0),
-                    linewidth=2))
+                w = int(t.image.shape[1] * tmpl_scale)
+                h = int(t.image.shape[0] * tmpl_scale)
+                top_left = (i * w, 0)
+                bottom_right = ((i + 1) * w, h)
+                cv2.rectangle(debug, top_left, bottom_right, (0, 0, 255), 3)
 
-                top_left = (res.top_left[0] * img_scale,
-                            res.top_left[1] * img_scale + tmpl_img.shape[0])
-                w = t.image.shape[1] * img_scale
-                h = t.image.shape[0] * img_scale
-                ax.add_patch(plt.Rectangle(
-                    top_left, w, h,
-                    fill=False,
-                    edgecolor=(1.0, 0.0, 0.0),
-                    linewidth=2))
+                w = int(t.image.shape[1] * img_scale)
+                h = int(t.image.shape[0] * img_scale)
+                top_left = (
+                    int(res.top_left[0] * img_scale),
+                    int(res.top_left[1] * img_scale + tmpl_img.shape[0])
+                )
+                bottom_right = (top_left[0] + w, top_left[1] + h)
+                cv2.rectangle(debug, top_left, bottom_right, (0, 0, 255), 3)
 
-        plt.margins(0, 0)
-        plt.subplots_adjust(
-            left=0, right=1, top=1, bottom=0, hspace=0, wspace=0)
-        fig = plt.gcf()
-        fig.canvas.draw()
-        w, h = fig.canvas.get_width_height()
-        debug = np.fromstring(fig.canvas.tostring_rgb(), dtype=np.uint8)
-        debug.shape = (h, w, 3)
-        fig.clf()
-        plt.close()
+        if self.show_proba:
+            fig = plt.figure(dpi=200)
+            ax = fig.add_subplot(1, 1, 1)
+            ax.set_axis_off()
+            ax.imshow(debug)
+
+            # draw roi if found
+            for i, t in enumerate(templates):
+                res = results[t.name]
+                w = t.image.shape[1] * tmpl_scale
+                h = t.image.shape[0] * tmpl_scale
+                ax.text(i * w + 20, h + 50,
+                        '%s:\n%.2f' % (t.name, res.score),
+                        fontsize=8,
+                        bbox={'facecolor': 'white',
+                              'alpha': 0.5,
+                              'pad': 3})
+
+            plt.margins(0, 0)
+            plt.subplots_adjust(
+                left=0, right=1, top=1, bottom=0, hspace=0, wspace=0)
+            fig = plt.gcf()
+            fig.canvas.draw()
+            w, h = fig.canvas.get_width_height()
+            debug = np.fromstring(fig.canvas.tostring_rgb(), dtype=np.uint8)
+            debug.shape = (h, w, 3)
+            fig.clf()
+            plt.close()
 
         try:
-            msg = self.cv_bridge.cv2_to_imgmsg(debug, 'rgb8')
+            msg = self.cv_bridge.cv2_to_imgmsg(debug, 'bgr8')
             self.pub_debug.publish(msg)
         except cv_bridge.CvBridgeError as e:
             rospy.logerr(e)
