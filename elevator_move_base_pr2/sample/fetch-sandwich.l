@@ -91,7 +91,7 @@
     (unix:sleep 1)
     ;; Assume the point cloud to be unorganized and is_dense: True.
     (ros::spin-once)
-    (dotimes (i 2)  ;; Ensure the door status
+    (dotimes (i 3)  ;; Ensure the door status
       (setq cloud-msg
             (one-shot-subscribe "extract_eng2_forum_door_point_cloud/extract_indices/output"
                                 sensor_msgs::PointCloud2
@@ -125,7 +125,7 @@
     (speak-jp "ボタンを探しています。")
     (update-eus-robot-model)
     (ros::spin-once)
-    (dotimes (i 2)  ;; Ensure the position of bounding box
+    (dotimes (i 3)  ;; Ensure the position of bounding box
       (setq bboxes-msg
             (one-shot-subscribe "door_button/cluster_indices_decomposer/boxes"
                                 jsk_recognition_msgs::BoundingBoxArray
