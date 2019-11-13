@@ -44,8 +44,8 @@
   (float-vector 250.0 60.0 74.0 70.0 -120.0 20.0 -30.0 180.0 -13.5232 -15.8808 -82.6112 -83.1698 -162.008 -72.0918 170.603 0.0 40.2852))
 
 
-(defun wait-for-hand-over (arm &optional (timeout 10))
-  (dotimes (i 3)
+(defun wait-for-hand-over (arm &optional (timeout 10) (retry 2))
+  (dotimes (i (+ retry 1))
     (when (wait-for-hand-impact arm :timeout timeout)
       (ros::ros-info "Received sandwich.")
       (speak-jp "ありがとうございます。" :wait t)
@@ -202,7 +202,7 @@
   (ros::ros-info "Waiting for receiving sandwich.")
   (speak-jp "商品をください。" :wait t)
 
-  (wait-for-hand-over :rarm 60)
+  (wait-for-hand-over :rarm 60 5)  ;; wait at most (5 + 1) min
 
   (send *ri* :start-grasp :rarm)
 
