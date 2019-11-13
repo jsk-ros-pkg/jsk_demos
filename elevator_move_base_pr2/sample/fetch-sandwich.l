@@ -91,7 +91,7 @@
     (unix:sleep 1)
     ;; Assume the point cloud to be unorganized and is_dense: True.
     (ros::spin-once)
-    (dotimes (i 3)  ;; Ensure the door status
+    (dotimes (i 2)  ;; Ensure the door status
       (setq cloud-msg
             (one-shot-subscribe "extract_eng2_forum_door_point_cloud/extract_indices/output"
                                 sensor_msgs::PointCloud2
@@ -120,18 +120,12 @@
   (let (bboxes-msg bbox cam->button-coords cam-coords forum-door-button-pos
                    target-coords ray-vec via-coords push-coords
                    av0 av1 (arm :rarm))
-
     ;; Find door button
-    (send *pr2* :head :look-at
-          (send (send *scene* :spot "/eng2/2f/forum-door-button") :worldpos))
-    (send *ri* :angle-vector (send *pr2* :angle-vector) 500)
-    (send *ri* :wait-interpolation)
-    (unix:sleep 1)
     (ros::ros-info "Looking for door button...")
-    (speak-jp "ドアのボタンを探しています。" :wait t)
+    (speak-jp "ボタンを探しています。")
     (update-eus-robot-model)
     (ros::spin-once)
-    (dotimes (i 3)  ;; Ensure the position of bounding box
+    (dotimes (i 2)  ;; Ensure the position of bounding box
       (setq bboxes-msg
             (one-shot-subscribe "door_button/cluster_indices_decomposer/boxes"
                                 jsk_recognition_msgs::BoundingBoxArray
@@ -163,7 +157,7 @@
 
     ;; Push door button
     (ros::ros-info "Pushing button...")
-    (speak-jp "ドアのボタンを押します。" :wait t)
+    (speak-jp "ボタンを押します。")
     (send *ri* :start-grasp arm)
     (pr2-reset-pose)
     (setq av0 (send *pr2* arm :inverse-kinematics via-coords
