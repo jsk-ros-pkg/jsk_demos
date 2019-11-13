@@ -1,7 +1,7 @@
 #!/usr/bin/env roseus
 ;; -*- coding: utf-8 -*-
 
-(ros::load-ros-manifest "elevator_move_base_pr2")
+(ros::roseus-add-msgs "move_base_msgs")
 
 (defvar *logging* (ros::get-param "logging" nil))
 
@@ -150,6 +150,13 @@
 (make-attention-action look-button (userdata)
   (let ((panel-name (cdr (assoc 'panel-name userdata))) look-target)
     (update-robot-position)
+
+    ;; jsk_pr2_startup/jsk_pr2_move_base/look-forward-in-nav.l sends
+    ;; angle-vector after PR2 reached goal, so we should wait for interpolation.
+    (when (one-shot-subscribe "/move_base/result"
+                              move_base_msgs::MoveBaseActionResult :timeout 500)
+      (unix:usleep (* 200 1000))
+      (send *ri* :wait-interpolation))
 
     (setq look-target
           (car (send *scene* :find-object
