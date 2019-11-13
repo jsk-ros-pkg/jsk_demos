@@ -211,7 +211,7 @@ viewerのpepperの今の状態のパラメータを知る
 
 ✱ revert-if-fail nil : 逆運動学に失敗しても解けたところまでで中断する。
 
-### fetchを動かす
+## fetchを動かす
 
 fetchについては以下を参照
 
@@ -219,26 +219,7 @@ fetchについては以下を参照
 
 fetchは腕とベースの干渉を計算してから動かす。 moveitに送って干渉計算をしてから動かしている。 （:angle-vector-raw　だとそれをしないで実行できる。） eusがインターフェースでそこからROSとかでロボットに送っている。
 
-喋らせる
-```
-(send *ri* :speak-jp "こんにちは")
-(send *ri* :speak-en "hello")
-```
-
-移動する
-```
-(send *ri* :go-pos 1 0 0)
-;;引数は x[m] y[m] z回転[degree]
-```
-
-fetch用のRvizを立ち上げる
-```
-roscd jsk_fetch_startup
-cd launch
-roslaunch jsk_fetch_startup rviz.launch
-```
-
-#### 実機を動かす
+### 実機の接続する
 
 まずは有線を繋いでwifiを切る
 ```
@@ -248,9 +229,64 @@ rostopic list
 ```
 後はいつものように実行すれば良い
 
-実機でポーズを作ってから角度取得
+実機でポーズを作ってから角度取得できれば，実機と`roseus`が繋がっていることを確認できる．
+
 ```
 (send *ri* :state :potentio-vector)
+```
+
+### 実機を操作する
+
+`roseus` 上でプログラムを実行
+
+```lisp
+(load "package://fetcheus/fetch-interface.l")
+(fetch-init)
+(objects (list *fetch*))
+(send *ri* :state :potentio-vector) ;;現在の実機の状態を取得
+(send *fetch* :angle-vector (send *ri* :state :potentio-vector)) ;;IRT viewerに適用
+(send *ri* :speak-jp "日本語") ;;「日本語」と喋る
+(send *ri* :go-pos 1 0 0) ;;xに1[m],yに0[m],z方向に0[degree]回る
+(send *ri* :go-grasp :pos 0) ;;手の握りを0にする(完全に閉じる)
+```
+
+* fetchのポーズ一覧
+fetch1
+```
+#f(5.52373 52.5326 3.4729 77.8638 -59.6255 10.2535 -78.2225 74.2234 0.022649 2.23)
+```
+<img src="./images/fetch_pose1.png">
+
+fetch2
+```
+#f(5.56187 88.5458 -44.9768 -1.1279 -58.6368 -7.30264 -35.244 74.1355 0.294559 2.44973)
+```
+<img src="./images/fetch_pose2.png">
+
+fetch3
+```
+#f(5.56952 88.5897 -42.0105 0.87161 -59.8672 3.90341 -76.157 7.51439 0.27191 2.42776)
+```
+<img src="./images/fetch_pose3.png">
+
+
+* 喋らせる
+```
+(send *ri* :speak-jp "こんにちは")
+(send *ri* :speak-en "hello")
+```
+
+* 移動する
+```
+(send *ri* :go-pos 1 0 0)
+;;引数は x[m] y[m] z回転[degree]
+```
+
+* fetch用のRvizを立ち上げる
+```
+roscd jsk_fetch_startup
+cd launch
+roslaunch jsk_fetch_startup rviz.launch
 ```
 
 ## JSK豆知識
@@ -265,3 +301,12 @@ C-x C-f : ファイル作成</br>
 C-x 2 : 画面上下２分割</br>
 C-x b \*shell*: shellをLispにする。</br>
 C-x o : 画面移動</br>
+# fetchを動かす for 2019_semi
+### fetchに接続
+
+```bash
+$ rossetip
+$ rossetmaster fetch15
+$ source ~/semi_ws/devel/setup.bash 
+$ roslaunch jsk_fetch_startup rviz.launch #rvizを起動したいとき 
+```
