@@ -143,7 +143,7 @@
                 :worldpos))
     (setq target-coords (make-coords :pos forum-door-button-pos))
 
-    ;; Define via-coords (70mm in front of button) and push-coords (push 20mm)
+    ;; Define via-coords (70mm in front of button) and push-coords (push 10mm)
     (setq ray-vec
           (normalize-vector
            (v- (float-vector
@@ -154,7 +154,7 @@
     (setq via-coords (send (send target-coords :copy-worldcoords)
                            :translate (scale 70 ray-vec) :world))
     (setq push-coords (send (send target-coords :copy-worldcoords)
-                            :translate (scale -20 ray-vec) :world))
+                            :translate (scale -10 ray-vec) :world))
 
     ;; Push door button
     (ros::ros-info "Pushing button...")
