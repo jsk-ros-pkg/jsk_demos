@@ -82,7 +82,7 @@
   (update-eus-robot-model))
 
 
-(defun check-forum-door-open (&optional (max-cloud-size 500))
+(defun check-forum-door-open (&optional (max-cloud-size 500) (timeout 10000))
   (let (is-door-open cloud-msg)
     (send *pr2* :head :look-at
           (send (send *scene* :spot "/eng2/2f/forum-door-button") :worldpos))
@@ -95,7 +95,7 @@
           (one-shot-subscribe
            "extract_eng2_forum_door_point_cloud/extract_indices/output"
            sensor_msgs::PointCloud2
-           :timeout 10000 :after-stamp (ros::time-now)))  ;; 10000[msec]
+           :timeout timeout :after-stamp (ros::time-now)))  ;; timeout[msec]
     (unless cloud-msg
       (ros::ros-warn
        (format nil "No point cloud was received in ~A[msec]." timeout))
@@ -118,7 +118,7 @@
     ))
 
 
-(defun open-forum-door ()
+(defun open-forum-door (&optional (timeout 15000))
   (let (bboxes-msg bbox cam->button-coords cam-coords forum-door-button-pos
                    target-coords ray-vec via-coords push-coords
                    av0 av1 (arm :rarm))
@@ -130,8 +130,10 @@
           (one-shot-subscribe
            "door_button/cluster_indices_decomposer/boxes"
            jsk_recognition_msgs::BoundingBoxArray
-           :timeout 10000 :after-stamp (ros::time-now)))  ;; 10000[msec]
+           :timeout timeout :after-stamp (ros::time-now)))  ;; timeout[msec]
     (when (or (null bboxes-msg) (null (send bboxes-msg :boxes)))
+      (ros::ros-warn
+       (format nil "Button bounding box was not found in ~A[msec]." timeout))
       (return-from open-forum-door nil))
     (setq bbox (elt (send bboxes-msg :boxes) 0))  ;; first (expected biggest)
     (setq cam->button-coords (ros::tf-pose->coords (send bbox :pose)))
