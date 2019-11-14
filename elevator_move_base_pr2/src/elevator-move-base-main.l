@@ -386,7 +386,7 @@
 			:move-outside move-client :timeout 60 :retry t
 			:key 'coords->movebaseactiongoal))
     (send (send sm :node :move-outside) :remap-list '((:goal . outside-coords)))
-    (send sm :add-node (instance state :init :tolerance-normal 'tolerance-normal))
+    (send sm :add-node (instance state :init :set-param-for-normal 'tolerance-normal))
     (send sm :arg-keys 'elevator-front-coords 'front-coords 'outside-panel-name 'outside-button 'inside-coords
 	  'inside-panel-name 'target-floor 'outside-coords :cancel)
     (send sm :goal-state (list :success :fail-outside :fail-inside))
@@ -402,9 +402,9 @@
     (send sm :add-transition :push-inside :ready-to-outside :success)
     (send sm :add-transition :push-inside :push-inside :fail)
     (send sm :add-transition :ready-to-outside :move-outside :success)
-    (send sm :add-transition :move-outside :tolerance-normal :succeeded)
+    (send sm :add-transition :move-outside :set-param-for-normal :succeeded)
     (send sm :add-transition :move-outside :fail-inside :failed)
-    (send sm :add-transition :tolerance-normal :success t)
+    (send sm :add-transition :set-param-for-normal :success t)
     sm ))
 
 ;; elevator_move_base action server
