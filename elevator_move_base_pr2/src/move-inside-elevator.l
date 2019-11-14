@@ -59,7 +59,7 @@
 
 (defun pc-cb (msg)
   (setq *change-pc* (* (send msg :height) (send msg :width)))
-  (ros::ros-info "change: ~A" *change-pc*))
+  (ros::ros-info "point cloud change: ~A" *change-pc*))
 
 (defun check-elevator-open (&optional args)
   (send *pr2* :head :angle-vector #f(0 0))
@@ -72,7 +72,7 @@
   (while (or
           (not *change-pc*)
           (< *change-pc* *change-threshold*))
-    (ros::ros-warn "change: ~A, change-threshold: ~A"
+    (ros::ros-warn "point cloud change: ~A, threshold of open/closed: ~A"
                    *change-pc* *change-threshold*)
     (ros::spin-once)
     (ros::sleep))
