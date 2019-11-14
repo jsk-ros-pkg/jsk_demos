@@ -26,6 +26,9 @@
         - ".*action-result-cb.*"
         - ".*;; .*"
         - ".*#f(.*).*"
+        - ".*commanded joint differs.*"
+        - ".*trajectory command :.*"
+        - ".*waitForTransform failed! :.*"
       reverse_lines: false
       line_buffer_length: 15
     </rosparam>
