@@ -239,7 +239,7 @@
   (speak-jp (format nil "~Aを買ってきました。" name) :wait t)
 
   (while (not (wait-for-hand-impact :rarm :timeout 30))
-    (ros::row-info "Still waiting for a human to get sandwich from PR2.")
+    (ros::ros-info "Still waiting for a human to get sandwich from PR2.")
     (speak-jp (format nil "~Aをどうぞ。" name) :wait t))
 
   (send *ri* :start-grasp :rarm)
