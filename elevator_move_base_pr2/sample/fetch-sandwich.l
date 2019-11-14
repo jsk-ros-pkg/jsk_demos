@@ -156,11 +156,18 @@
     (setq push-coords (send (send target-coords :copy-worldcoords)
                             :translate (scale -10 ray-vec) :world))
 
-    ;; Push door button
     (ros::ros-info "Pushing button...")
     (speak-jp "ボタンを押します。")
+
+    ;; We have to reset arm pose before pushing button.
     (send *ri* :start-grasp arm)
-    (pr2-reset-pose)
+    (send *pr2* :reset-pose)
+    (send *pr2* :head :look-at
+          (send (send *scene* :spot "/eng2/2f/forum-door-button") :worldpos))
+    (send *ri* :angle-vector (send *pr2* :angle-vector) 3000)
+    (send *ri* :wait-interpolation)
+
+    ;; Push door button
     (setq av0 (send *pr2* arm :inverse-kinematics via-coords
                     :rotation-axis :x
                     :look-at-target t))
