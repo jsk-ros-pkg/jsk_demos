@@ -352,7 +352,9 @@
   (send *ri* :angle-vector (send *pr2* :angle-vector) 500)
   (send *ri* :wait-interpolation)
 
-  (check-elevator-open)
+  (unless (check-elevator-open :timeout 5)
+    (send *ri* :go-pos-unsafe 0 0 -90)  ;; Unsafe for faster turning right
+    (return-from ready-to-outside :fail))
   :success)
 
 ;; elevator-front-coords, front-coords, outside-panel-name, outside-button, inside-coords, inside-panel-name, target-floor, outside-coords
@@ -369,8 +371,8 @@
     (send sm :add-node
           (instance state :init :speak-fail
                     '(lambda(x)
-                       (ros::ros-info "2 minutes have passed.")
-                       (speak-jp "2分経ちました。" :wait t)
+                       (ros::ros-warn "Could not take elevator.")
+                       (speak-jp "エレベータに乗れませんでした。" :wait t)
                        t)))
     ;; (send sm :add-node (actionlib-client-state
     ;;     		:move-inside move-client :timeout 120 :retry t
@@ -404,6 +406,7 @@
     (send sm :add-transition :push-inside :ready-to-outside :success)
     (send sm :add-transition :push-inside :push-inside :fail)
     (send sm :add-transition :ready-to-outside :move-outside :success)
+    (send sm :add-transition :ready-to-outside :push-inside :fail)
     (send sm :add-transition :move-outside :set-param-for-normal :succeeded)
     (send sm :add-transition :move-outside :fail-inside :failed)
     (send sm :add-transition :set-param-for-normal :success t)
