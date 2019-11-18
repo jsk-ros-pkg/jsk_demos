@@ -95,7 +95,8 @@
           (one-shot-subscribe
            "extract_eng2_forum_door_point_cloud/extract_indices/output"
            sensor_msgs::PointCloud2
-           :timeout timeout :after-stamp (ros::time-now)))  ;; timeout[msec]
+           :timeout timeout  ;; timeout[msec]
+           :after-stamp (ros::time+ (ros::time-now) (ros::time 0.5))))
     (unless cloud-msg
       (ros::ros-warn
        (format nil "No point cloud was received in ~A[msec]." timeout))
@@ -130,7 +131,8 @@
           (one-shot-subscribe
            "door_button/cluster_indices_decomposer/boxes"
            jsk_recognition_msgs::BoundingBoxArray
-           :timeout timeout :after-stamp (ros::time-now)))  ;; timeout[msec]
+           :timeout timeout  ;; timeout[msec]
+           :after-stamp (ros::time+ (ros::time-now) (ros::time 0.5))))
     (when (or (null bboxes-msg) (null (send bboxes-msg :boxes)))
       (ros::ros-warn
        (format nil "Button bounding box was not found in ~A[msec]." timeout))
