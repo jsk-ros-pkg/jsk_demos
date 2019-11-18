@@ -61,24 +61,33 @@
   (setq *change-pc* (* (send msg :height) (send msg :width)))
   (ros::ros-info "point cloud change: ~A" *change-pc*))
 
-(defun check-elevator-open (&optional args)
-  (send *pr2* :head :angle-vector #f(0 0))
-  (send *ri* :angle-vector (send *pr2* :angle-vector) 1000)
-  (send *ri* :wait-interpolation)
-  (setq *change-pc* nil)
-  (ros::subscribe *change-publisher-topic* sensor_msgs::PointCloud2 #'pc-cb)
-  (unix:sleep 1)  ;; Wait until point cloud becomes stable
-  (ros::rate 5)
-  (while (or
-          (not *change-pc*)
-          (< *change-pc* *change-threshold*))
-    (ros::ros-warn "point cloud change: ~A, threshold of open/closed: ~A"
-                   *change-pc* *change-threshold*)
-    (ros::spin-once)
-    (ros::sleep))
-  (ros::unsubscribe *change-publisher-topic*)
-  (ros::ros-info "Door opened.")
-  (speak-jp "ドアが開きました。")
-  (clear-costmap)
-  (unix:sleep 2) ;; wait until door open
-  t)
+(defun check-elevator-open (&key (timeout 300))
+  (let (time-start)
+    (send *pr2* :head :angle-vector #f(0 0))
+    (send *ri* :angle-vector (send *pr2* :angle-vector) 1000)
+    (send *ri* :wait-interpolation)
+    (setq *change-pc* nil)
+    (ros::subscribe *change-publisher-topic* sensor_msgs::PointCloud2 #'pc-cb)
+    (unix:sleep 1)  ;; Wait until point cloud becomes stable
+
+    (setq time-start (ros::time-now))
+    (ros::rate 5)
+    (while (or
+            (not *change-pc*)
+            (< *change-pc* *change-threshold*))
+      (when (ros::time> (ros::time-now)
+                        (ros::time+ time-start (ros::time timeout)))
+        (ros::warn
+         (format nil "Could not detect door opening in ~A [sec]." timeout))
+        (speak-jp "ドアが開いていません。")
+        (return-from check-elevator-open nil))
+      (ros::ros-warn "point cloud change: ~A, threshold of open/closed: ~A"
+                     *change-pc* *change-threshold*)
+      (ros::spin-once)
+      (ros::sleep))
+    (ros::unsubscribe *change-publisher-topic*)
+    (ros::ros-info "Door opened.")
+    (speak-jp "ドアが開きました。")
+    (clear-costmap)
+    (unix:sleep 2) ;; wait until door open
+    t))
