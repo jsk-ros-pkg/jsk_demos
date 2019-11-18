@@ -444,9 +444,6 @@
     (set-alist 'target-floor target-floor-button userdata) ;; only for elevator
     (set-alist 'outside-button up/down userdata)
     (set-alist 'target-coords target-coords userdata)
-    (ros::ros-info
-     (format nil "cur-floor: ~A, target-floor: ~A, up/down: ~A, target-coords: ~A"
-             cur-floor target-floor up/down target-coords))
     (pr2-tuckarm-pose) ;; temporary, safety pose
     (not up/down)))
 
