@@ -148,7 +148,7 @@
 ;;
 
 (make-attention-action look-button (userdata)
-  (let ((panel-name (cdr (assoc 'panel-name userdata))) look-target)
+  (let ((panel-name (cdr (assoc 'panel-name userdata))) look-target look-av)
     (update-robot-position)
 
     ;; jsk_pr2_startup/jsk_pr2_move_base/look-forward-in-nav.l sends
@@ -164,8 +164,10 @@
     (ros::ros-info "look-at button position ~A" (send look-target :worldpos))
     (send *pr2* :reset-pose)
     (send *pr2* :head :look-at (send look-target :worldpos))
-    (send *ri* :angle-vector (send *pr2* :angle-vector) 5000)
-    (send *ri* :wait-interpolation)
+    (setq look-av (send *pr2* :angle-vector))
+    (unless (eps-v= look-av (send *ri* :state :potentio-vector) 2.0)
+      (send *ri* :angle-vector look-av 5000)
+      (send *ri* :wait-interpolation))
     (unix:usleep (* 500 1000))  ;; Wait until latest image is available.
 
     (send *logger* :save-robot-pose "look-button")
