@@ -9,9 +9,9 @@
                  (apply #'ros::ros-info
                         (format nil "[push-button] ~A" str) args)))
     (let (rayvec via-coords (arm :rarm)
-                 via-angle-vector org-arm-anglev org-head-anglev
-                 (rarm-reset #f(-60 70 -70 -120 160 -30 180)) ;; second element 80 -> 70
-                 (larm-reset #f(60 70 70 -120 -160 -30 180))) ;; second element 80 -> 70
+          via-angle-vector org-arm-anglev org-head-anglev
+          (rarm-reset #f(-60 70 -70 -120 160 -30 180)) ;; 2nd element 80 -> 70
+          (larm-reset #f(60 70 70 -120 -160 -30 180))) ;; 2nd element 80 -> 70
       ;; check push target simply from current tuckarm-pose
       (ros::spin-once)
       (send *pr2* :angle-vector (send *ri* :state :potentio-vector))
@@ -42,11 +42,13 @@
         (send *pr2* arm :angle-vector (case arm (:rarm rarm-reset)
                                             (:larm larm-reset)))
         (logf "check IK for free-arm ~A is solvable" arm)
-        (unless (and arm (send *pr2* arm :inverse-kinematics target-coords :rotation-axis :x))
+        (unless (and arm (send *pr2* arm :inverse-kinematics target-coords
+                               :rotation-axis :x))
           (setq *ik-fail-av*  (send *pr2* :angle-vector))
           (setq *ik-fail-coords*  (send target-coords :copy-worldcoords))
-          (dump-loadable-structure (format nil "ik-fail-~d.l" (send (ros::time-now) :sec))
-                                   *ik-fail-coords* *ik-fail-av*)
+          (dump-loadable-structure
+           (format nil "ik-fail-~d.l" (send (ros::time-now) :sec))
+           *ik-fail-coords* *ik-fail-av*)
           (logf "could not solve ik: ~A" arm)
           (logf "decides free arm")
           (setq arm nil)))
@@ -55,13 +57,18 @@
 
       ;; reset-pose (arms only) and select arm
       (unless arm
-        (setq arm (if (plusp (elt (send (send *pr2* :transformation target-coords) :worldpos) 1)) :larm :rarm))
+        (setq arm
+              (if (plusp (elt (send (send *pr2* :transformation target-coords)
+                                    :worldpos) 1))
+                  :larm
+                :rarm))
         (send *pr2* :reset-pose)
         (send *pr2* :head :angle-vector org-head-anglev)
         (send *ri* :angle-vector (send *pr2* :angle-vector) 3000)
         (send *ri* :wait-interpolation))
 
-      (logf "select ~A arm to push button ~A" arm (send target-coords :worldpos))
+      (logf "select ~A arm to push button ~A"
+            arm (send target-coords :worldpos))
 
       (setq org-arm-anglev (send *pr2* arm :angle-vector))
 
@@ -72,8 +79,9 @@
           (send *pr2* arm :inverse-kinematics via-coords :rotation-axis :x)
         (setq *ik-fail-av*  (send *pr2* :angle-vector))
         (setq *ik-fail-coords*  (send target-coords :copy-worldcoords))
-        (dump-loadable-structure (format nil "ik-fail-~d.l" (send (ros::time-now) :sec))
-                                 *ik-fail-coords* *ik-fail-av*)
+        (dump-loadable-structure
+         (format nil "ik-fail-~d.l" (send (ros::time-now) :sec))
+         *ik-fail-coords* *ik-fail-av*)
         (logf "could not solve ik to via-coords: ~A" via-coords)
         ;; return to original pose
         (send *pr2* arm :angle-vector org-arm-anglev)
@@ -94,8 +102,9 @@
           (send *pr2* arm :inverse-kinematics target-coords :rotation-axis :x)
         (setq *ik-fail-av*  (send *pr2* :angle-vector))
         (setq *ik-fail-coords*  (send target-coords :copy-worldcoords))
-        (dump-loadable-structure (format nil "ik-fail-~d.l" (send (ros::time-now) :sec))
-                                 *ik-fail-coords* *ik-fail-av*)
+        (dump-loadable-structure
+         (format nil "ik-fail-~d.l" (send (ros::time-now) :sec))
+         *ik-fail-coords* *ik-fail-av*)
         ;; return to original pose
         (send *pr2* arm :angle-vector org-arm-anglev)
         (send *ri* :angle-vector (send *pr2* :angle-vector) 1000) ;; quick!
@@ -108,7 +117,6 @@
       (send *ri* :wait-interpolation)
 
       ;; return original pose
-      ;;(send *pr2* :head :angle-vector #f(0 0))
       (send *pr2* arm :angle-vector org-arm-anglev)
       (send *ri* :angle-vector (send *pr2* :angle-vector) 1000) ;; quick!
       (send *ri* :wait-interpolation)
