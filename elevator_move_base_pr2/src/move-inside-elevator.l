@@ -65,7 +65,7 @@
 (defun check-elevator-open (&key (timeout 300))
   (let (time-start)
     (send *pr2* :head :angle-vector #f(0 0))
-    (send *ri* :angle-vector (send *pr2* :angle-vector) 1000)
+    (send *ri* :angle-vector (send *pr2* :angle-vector) 500)
     (send *ri* :wait-interpolation)
     (setq *change-pc* nil)
     (ros::subscribe *change-publisher-topic* sensor_msgs::PointCloud2 #'pc-cb)
@@ -90,5 +90,5 @@
     (ros::ros-info "Door opened.")
     (speak-jp "ドアが開きました。")
     (clear-costmap)
-    (unix:sleep 2) ;; wait until door open
+    (unix:usleep (* 1500 1000)) ;; wait until door open
     t))

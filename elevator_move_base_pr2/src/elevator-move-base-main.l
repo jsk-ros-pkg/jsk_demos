@@ -210,8 +210,6 @@
          (button-coords (find-if #'(lambda(o)(string= button (send o :name)))
                                  (flatten (send *panel* :inheritance))))
          (button-state (instance light-button-cb-class :init)))
-    (update-robot-position)
-    (update-scene-by-tf *scene*)
     (set-view-target button-coords (send *pr2* :wide_stereo-left)
                      "wide_stereo_optical_frame")
     ;; check phase
@@ -223,11 +221,10 @@
       (when (< 0.5 (send button-state :value))
         (ros::ros-info "Button is lighting up.")
         (speak-jp "ボタンが光りました。")
-        ;; (pr2-tuckarm-pose)
         (return-from check-button-light t))
       (ros::sleep))
     (ros::ros-info "Button is not lighting up.")
-    (speak-jp "押せていないようです。" :wait t)
+    (speak-jp "押せていないようです。")
     nil
     ))
 
