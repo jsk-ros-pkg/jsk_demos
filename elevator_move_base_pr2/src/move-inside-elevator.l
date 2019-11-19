@@ -35,7 +35,8 @@
     (send sm :add-node (instance state :init :set-param-for-elevator-inside
                                  'tolerance-strict))
     (send sm :add-node
-          (instance state :init :check-elevator-open 'check-elevator-open))
+          (instance state :init :check-elevator-open
+                    '(lambda (x) (check-elevator-open :timeout 300))))
     (send sm :add-node (actionlib-client-state
                         :move-elevator-inside move-client :timeout 300 :retry t
                         :key 'coords->movebaseactiongoal))
