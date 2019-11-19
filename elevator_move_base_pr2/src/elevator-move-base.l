@@ -1,6 +1,6 @@
 #!/usr/bin/env roseus
 
-(ros::roseus-add-msgs "nav_msgs")
+(ros::roseus-add-srvs "nav_msgs")
 (ros::roseus-add-srvs "std_srvs")
 
 (load "package://elevator_move_base_pr2/src/elevator-move-base-main.l")
