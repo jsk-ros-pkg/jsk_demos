@@ -1,7 +1,7 @@
-(load "package://jsk_maps/src/eng2-scene.l")
-(load "package://jsk_maps/src/eng8-scene.l")
+(require :eng2-scene "package://jsk_maps/src/eng2-scene.l")
+(require :eng8-scene "package://jsk_maps/src/eng8-scene.l")
 
-;;
+
 (defun update-scene-by-tf (scene &optional (tm (ros::time 0)) (timeout 0.1))
   (let* ((objects (send scene :objects))
          (fixed-frame (send scene :name)) ;; ok?

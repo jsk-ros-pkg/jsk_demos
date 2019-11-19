@@ -3,13 +3,13 @@
 ;; fetch-sandwich.l
 ;; Author: furushchev <furushchev@jsk.imi.i.u-tokyo.ac.jp>
 
+(ros::roseus-add-msgs "jsk_recognition_msgs")
+(ros::roseus-add-msgs "sensor_msgs")
+
 (require :pr2-interface "package://pr2eus/pr2-interface.l")
 (require :pr2-action "package://jsk_demo_common/euslisp/pr2-action.l")
 (require :eng2-scene "package://jsk_maps/src/eng2-scene.l")
 (require :navigation-client "package://elevator_move_base_pr2/src/navigation-client.l")
-
-(ros::load-ros-manifest "jsk_recognition_msgs")
-(ros::load-ros-manifest "sensor_msgs")
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -41,7 +41,8 @@
           :use-torso t
           :look-at-target t))
   |#
-  (float-vector 250.0 60.0 74.0 70.0 -120.0 20.0 -30.0 180.0 -13.5232 -15.8808 -82.6112 -83.1698 -162.008 -72.0918 170.603 0.0 40.2852))
+  (float-vector 250.0 60.0 74.0 70.0 -120.0 20.0 -30.0 180.0 -13.5232 -15.8808
+                -82.6112 -83.1698 -162.008 -72.0918 170.603 0.0 40.2852))
 
 
 (defun wait-for-hand-over (arm &optional (timeout 10) (retry 2))
@@ -178,7 +179,7 @@
     (setq av1 (send *pr2* arm :inverse-kinematics push-coords
                     :rotation-axis :x
                     :look-at-target t))
-    (send *ri* :angle-vector-sequence (list av0 av1) (list 3000 1000))
+    (send *ri* :angle-vector-sequence (list av0 av1) (list 3000 2000))
     (send *ri* :wait-interpolation)
     (pr2-tuckarm-pose)
     (update-eus-robot-model)
@@ -262,8 +263,8 @@
 
 (defun demo (&optional (name "BLTサンド"))
   (ros::roseus "fetch_sandwich")
-  (speak-jp (format nil "~Aを買いに行きます。" name) :wait t)
   (init)
+  (speak-jp (format nil "~Aを買いに行きます。" name) :wait t)
   (go-to-forum-door-inside)
   (while (not (check-forum-door-open))
     (open-forum-door)

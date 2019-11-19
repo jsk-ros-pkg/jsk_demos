@@ -5,8 +5,9 @@
 (defclass ros::ros-callback-manager
   :super propertied-object
   :slots (subscribed-topics))
+
 (defmethod ros::ros-callback-manager
-  (:init () )
+  (:init ())
   (:add-subscribe
    (ros-object topic-name topic-type callback)
    (unless (member topic-name subscribed-topics :key #'car :test #'equal)
@@ -14,9 +15,10 @@
      (ros::subscribe topic-name topic-type #'send self :callback topic-name))
    (push (list topic-name ros-object callback) subscribed-topics))
   (:delete-subscribe (obj topic-name)
-   (setq subscribed-topics 
-	 (delete-if #'(lambda(x)(and (eq (cadr x) obj) (string= (car x) topic-name)))
-	      subscribed-topics))
+   (setq subscribed-topics
+         (delete-if #'(lambda (x) (and (eq (cadr x) obj)
+                                       (string= (car x) topic-name)))
+                    subscribed-topics))
    (unless (member topic-name subscribed-topics :key #'car :test #'equal)
      (ros::ros-info "unsubscribe ~A" topic-name)
      (ros::unsubscribe topic-name)))
@@ -25,9 +27,10 @@
    (dolist (subscribed-topic subscribed-topics)
      (when (string= topic-name (car subscribed-topic))
        (let ((rosobj (cadr subscribed-topic))
-	     (callback (caddr subscribed-topic)))
-	 (send rosobj callback msg)))))
+             (callback (caddr subscribed-topic)))
+         (send rosobj callback msg)))))
   )
+
 
 ;; manager instance
 (defvar ros::*ros-callback-manager*
@@ -39,6 +42,7 @@
 (defclass ros::ros-callback-object
   :super propertied-object
   :slots (topic-name))
+
 (defmethod ros::ros-callback-object
   (:init
    (name type &optional (cb :callback))
@@ -55,8 +59,8 @@
   :slots (msg))
 (defmethod ros::ros-callback-message
   (:init (type name)
-	 (send-super :init name type :callback))
+         (send-super :init name type :callback))
   (:callback (msg_) (setq msg msg_))
   (:msg (&rest args)
-	(if (and msg (keywordp (car args))) (send* msg args) msg))
+        (if (and msg (keywordp (car args))) (send* msg args) msg))
   )
