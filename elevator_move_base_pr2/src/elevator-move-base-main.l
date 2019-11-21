@@ -166,10 +166,22 @@
     (send *pr2* :reset-pose)
     (send *pr2* :head :look-at (send look-target :worldpos))
     (setq look-av (send *pr2* :angle-vector))
+
+    ;; Move only head quickly
+    (unless (eps-v= (float-vector (elt look-av 15) (elt look-av 16))
+                    (float-vector (elt (send *ri* :state :potentio-vector) 15)
+                                  (elt (send *ri* :state :potentio-vector) 16))
+                    0.2)
+      (send *ri* :angle-vector look-av 500 :head-controller)
+      (send *ri* :wait-interpolation))
+
+    ;; Move arms and torso
     (unless (eps-v= look-av (send *ri* :state :potentio-vector) 2.0)
       (send *ri* :angle-vector look-av 5000)
       (send *ri* :wait-interpolation))
-    (unix:usleep (* 500 1000))  ;; Wait until latest image is available.
+
+    ;; Wait until latest image is available.
+    (unix:usleep (* 500 1000))
 
     (send *logger* :save-robot-pose "look-button")
     ;; nearest call panel
