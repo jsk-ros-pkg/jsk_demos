@@ -28,7 +28,7 @@
     (send sm :add-node (instance state :init :set-param-for-elevator-outside
                                  'tolerance-loose))
     (send sm :add-node (actionlib-client-state
-                        :move-elevator-front move-client :timeout 300 :retry t
+                        :move-elevator-front move-client :timeout 30 :retry nil
                         :key 'coords->movebaseactiongoal))
     (send (send sm :node :move-elevator-front)
           :remap-list '((:goal . elevator-front-coords)))
@@ -38,7 +38,7 @@
           (instance state :init :check-elevator-open
                     '(lambda (x) (check-elevator-open :timeout 300))))
     (send sm :add-node (actionlib-client-state
-                        :move-elevator-inside move-client :timeout 300 :retry t
+                        :move-elevator-inside move-client :timeout 30 :retry nil
                         :key 'coords->movebaseactiongoal))
     (send (send sm :node :move-elevator-inside)
           :remap-list '((:goal . inside-coords)))
@@ -72,7 +72,7 @@
     (unix:sleep 1)  ;; Wait until point cloud becomes stable
 
     (setq time-start (ros::time-now))
-    (ros::rate 5)
+    (ros::rate 10)
     (while (or
             (not *change-pc*)
             (< *change-pc* *change-threshold*))
@@ -90,5 +90,5 @@
     (ros::ros-info "Door opened.")
     (speak-jp "ドアが開きました。")
     (clear-costmap)
-    (unix:usleep (* 1500 1000)) ;; wait until door open
+    (unix:usleep (* 500 1000)) ;; wait until door open
     t))

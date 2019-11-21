@@ -367,10 +367,6 @@
                               (string-downcase (elt floor 0))))
         )))
 
-  (send *pr2* :head :angle-vector #f(0 0))
-  (send *ri* :angle-vector (send *pr2* :angle-vector) 500)
-  (send *ri* :wait-interpolation)
-
   (unless (check-elevator-open :timeout 5)
     (send *ri* :go-pos-unsafe 0 0 -90)  ;; Unsafe for faster turning right
     (return-from ready-to-outside :fail))
