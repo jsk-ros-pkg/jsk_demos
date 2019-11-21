@@ -30,11 +30,11 @@
   (send *ri* :angle-vector  (send *fetch* :angle-vector) 3000)
   (send *ri* :wait-interpolation)
 
-  
+
   (send *fetch* :inverse-kinematics (send target-cds :translate #f(200 0 0)) :rotation-axis :y)
   (send *ri* :angle-vector  (send *fetch* :angle-vector) 3000)
   (send *ri* :wait-interpolation)
-  
+
   ;; grasp
   ;; still some bug in start-grasp, so we have to directly use :move-gripper
   (send *ri* :start-grasp)
@@ -55,15 +55,15 @@
   ;; ros initialization
   (ros::roseus "boundingboxarray_subscriber")
   (ros::subscribe *topic-name* jsk_recognition_msgs::BoundingBoxArray #'bounding-box-array-cb 1)
-  
+
   ;; eus initialization
   (if (not (boundp '*fetch*))
       (progn (load "package://fetcheus/fetch-interface.l")
-	     (fetch-init)))
+             (fetch-init)))
   (objects (list *fetch*))
   (setq found-obj nil)
   (setq obj-pos #f(0 0 0))
-  
+
   ;;リセットポーズ
   (send *fetch* :reset-pose)
   (send *ri* :angle-vector (send *fetch* :angle-vector) 5000)
@@ -73,19 +73,19 @@
   ;;物を認識するまでサブスクライブ
   (setq found-obj nil)
   (until found-obj
-	 (print 4)
-  ;;(x::window-main-one) ;; IRT viewerの視点を変えられる。見にくければ変えよう
-	 (ros::spin-once)
-	 (ros::sleep))
+     (print 4)
+     ;;(x::window-main-one) ;; IRT viewerの視点を変えられる。見にくければ変えよう
+     (ros::spin-once)
+     (ros::sleep))
 
   ;;２次元の位置を取得
   (setq 2d-pos (float-vector (elt obj-pos 0) (elt obj-pos 1)))
 
   ;;80cm手前まで移動
   (send *ri* :go-pos
-	(elt (scale (/ (- (norm 2d-pos) 0.8) (norm 2d-pos)) 2d-pos) 0)
-	(elt (scale (/ (- (norm 2d-pos) 0.8) (norm 2d-pos)) 2d-pos) 1)
-	(rad2deg (atan  (elt obj-pos 1) (elt obj-pos 0))))
+    (elt (scale (/ (- (norm 2d-pos) 0.8) (norm 2d-pos)) 2d-pos) 0)
+    (elt (scale (/ (- (norm 2d-pos) 0.8) (norm 2d-pos)) 2d-pos) 1)
+    (rad2deg (atan  (elt obj-pos 1) (elt obj-pos 0))))
 
   ;;机との干渉を計算
   (setq *table* (instance foldable-desk-object :init))
@@ -93,7 +93,7 @@
   (setq *co* (instance collision-object-publisher :init))
   ;;これでコリジョンオブジェクトをMoveitに送る
   (send *co* :add-object *table* :frame-id "base_link" :relative-pose (make-coords :pos #f(800 0 0 ))
- 
+
   ;;上段
   (print 'joudan)
   (send *fetch* :angle-vector #f(298.136 43.1722 -39.9011 62.2852 -56.835 81.379 -104.018 -40.364 0.305897 13.8975))
@@ -105,26 +105,26 @@
 
   ;;手を開く
   (send *ri* :stop-grasp)
-  
+
   ;;もう一度サブスクライブして物体位置確認
   (setq found-obj nil)
   (until found-obj
-	 (print 5)
-  ;;(x::window-main-one) ;; IRT viewerの視点を変えられる。見にくければ変えよう
-	 (ros::spin-once)
-	 (ros::sleep))
-  
-  #|
+     (print 5)
+     ;;(x::window-main-one) ;; IRT viewerの視点を変えられる。見にくければ変えよう
+     (ros::spin-once)
+     (ros::sleep))
+
+#|
 
   ;;0.6m手前まで近づく
   (setq 2d-pos (float-vector (elt obj-pos 0) (elt obj-pos 1)))
   (send *ri* :go-pos-unsafe
-	(elt (scale (/ (- (norm 2d-pos) 0.6) (norm 2d-pos)) 2d-pos) 0)
-	(elt (scale (/ (- (norm 2d-pos) 0.6) (norm 2d-pos)) 2d-pos) 1)
-	(rad2deg (atan  (elt obj-pos 1) (elt obj-pos 0))))
+    (elt (scale (/ (- (norm 2d-pos) 0.6) (norm 2d-pos)) 2d-pos) 0)
+    (elt (scale (/ (- (norm 2d-pos) 0.6) (norm 2d-pos)) 2d-pos) 1)
+    (rad2deg (atan  (elt obj-pos 1) (elt obj-pos 0))))
 
-  |#
-  
+|#
+
   ;;物体をつかむ
   (grasp-with-rec obj-pos)
 
