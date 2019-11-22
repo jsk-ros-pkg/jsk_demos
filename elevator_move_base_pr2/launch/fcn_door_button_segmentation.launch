@@ -8,11 +8,22 @@
   <arg name="GPU" default="0"/>
 
   <group ns="$(arg NS)">
+    <!-- Subscribe only when it gets service request -->
+    <node name="pass_through_image"
+          pkg="nodelet" type="nodelet"
+          args="standalone jsk_topic_tools/Passthrough"
+          output="screen" respawn="true">
+      <remap from="~input" to="$(arg INPUT_IMAGE)"/>
+      <rosparam>
+        default_duration: 0.0  # infinite
+      </rosparam>
+    </node>
+
     <!-- Segment door button 2-dimentionally by FCN -->
     <node name="fcn_object_segmentation"
           pkg="jsk_perception" type="fcn_object_segmentation.py"
           output="screen" respawn="true">
-      <remap from="~input" to="$(arg INPUT_IMAGE)"/>
+      <remap from="~input" to="pass_through_image/output"/>
       <rosparam subst_value="true">
         use_mask: false
         gpu: $(arg GPU)

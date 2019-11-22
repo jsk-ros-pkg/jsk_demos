@@ -193,13 +193,13 @@
 
 
 (defun open-forum-door ()
-  (call-service "door_button/pass_through_label/request"
+  (call-service "door_button/pass_through_image/request"
                 (instance std_srvs::EmptyRequest :init))
   (while (not (check-forum-door-open))
     (push-forum-door-button)
     (unix:sleep 1)  ;; Wait for door opening
     )
-  (call-service "door_button/pass_through_label/stop"
+  (call-service "door_button/pass_through_image/stop"
                 (instance std_srvs::EmptyRequest :init))
   (look-front))
 
