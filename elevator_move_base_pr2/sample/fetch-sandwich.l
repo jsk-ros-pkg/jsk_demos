@@ -5,6 +5,7 @@
 
 (ros::roseus-add-msgs "jsk_recognition_msgs")
 (ros::roseus-add-msgs "sensor_msgs")
+(ros::roseus-add-srvs "std_srvs")
 
 (require :pr2-interface "package://pr2eus/pr2-interface.l")
 (require :pr2-action "package://jsk_demo_common/euslisp/pr2-action.l")
@@ -65,6 +66,11 @@
   (send *pr2* :angle-vector (send *ri* :state :potentio-vector)))
 
 
+(defun call-service (service req)
+  (if (ros::wait-for-service service 0)
+      (ros::service-call service req)
+    nil))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Actions
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -120,7 +126,7 @@
     ))
 
 
-(defun open-forum-door (&optional (timeout 15000))
+(defun push-forum-door-button (&optional (timeout 15000))
   (let (bboxes-msg bbox cam->button-coords cam-coords forum-door-button-pos
                    target-coords ray-vec via-coords push-coords
                    av0 av1 (arm :rarm))
@@ -184,6 +190,18 @@
     (pr2-tuckarm-pose)
     (update-eus-robot-model)
   ))
+
+
+(defun open-forum-door ()
+  (call-service "door_button/pass_through_label/request"
+                (instance std_srvs::EmptyRequest :init))
+  (while (not (check-forum-door-open))
+    (push-forum-door-button)
+    (unix:sleep 1)  ;; Wait for door opening
+    )
+  (call-service "door_button/pass_through_label/stop"
+                (instance std_srvs::EmptyRequest :init))
+  (look-front))
 
 
 (defun go-to-subway-front ()
@@ -266,11 +284,7 @@
   (init)
   (speak-jp (format nil "~Aを買いに行きます。" name) :wait t)
   (go-to-forum-door-inside)
-  (while (not (check-forum-door-open))
-    (open-forum-door)
-    (unix:sleep 1)  ;; Wait for door opening
-    )
-  (look-front)
+  (open-forum-door)
   (go-to-subway-front)
   (order-sandwich name)
   (receive-sandwich)
