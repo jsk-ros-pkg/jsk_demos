@@ -143,7 +143,7 @@
     (when (or (null bboxes-msg) (null (send bboxes-msg :boxes)))
       (ros::ros-warn
        (format nil "Button bounding box was not found in ~A[msec]." timeout))
-      (return-from open-forum-door nil))
+      (return-from push-forum-door-button nil))
     (setq bbox (elt (send bboxes-msg :boxes) 0))  ;; first (expected biggest)
     (setq cam->button-coords (ros::tf-pose->coords (send bbox :pose)))
     (setq cam-coords (send (send *pr2* :head_mount_kinect_rgb_optical_frame_lk)
