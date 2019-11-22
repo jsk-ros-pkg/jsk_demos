@@ -38,7 +38,7 @@
           (instance state :init :check-elevator-open
                     '(lambda (x) (check-elevator-open :timeout 300))))
     (send sm :add-node (actionlib-client-state
-                        :move-elevator-inside move-client :timeout 30 :retry nil
+                        :move-elevator-inside move-client :timeout 40 :retry nil
                         :key 'coords->movebaseactiongoal))
     (send (send sm :node :move-elevator-inside)
           :remap-list '((:goal . inside-coords)))
@@ -65,11 +65,11 @@
 (defun check-elevator-open (&key (timeout 300))
   (let (time-start)
     (send *pr2* :head :angle-vector #f(0 0))
-    (send *ri* :angle-vector (send *pr2* :angle-vector) 500)
+    (send *ri* :angle-vector (send *pr2* :angle-vector) 400)
     (send *ri* :wait-interpolation)
     (setq *change-pc* nil)
     (ros::subscribe *change-publisher-topic* sensor_msgs::PointCloud2 #'pc-cb)
-    (unix:sleep 1)  ;; Wait until point cloud becomes stable
+    (unix:usleep (* 300 1000))  ;; Wait until point cloud becomes stable
 
     (setq time-start (ros::time-now))
     (ros::rate 10)
