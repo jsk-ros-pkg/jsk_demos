@@ -20,7 +20,7 @@
 (defun call-service (service req)
   (if (ros::wait-for-service service 0)
       (ros::service-call service req)
-      nil))
+    nil))
 
 (defun relay-make-plan (req)
   (call-service "/move_base_node/make_plan" req))
