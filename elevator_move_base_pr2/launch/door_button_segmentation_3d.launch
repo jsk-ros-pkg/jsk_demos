@@ -18,12 +18,23 @@
 
     <!-- Pipeline to get 3-dimentional bounding box of door button -->
     <!-- label -> mask -> indices -> cloud -> cluster indices -> bboxes -->
+    <node name="pass_through_label"
+          pkg="nodelet" type="nodelet"
+          args="load jsk_topic_tools/Passthrough $(arg MANAGER)"
+          machine="$(arg MACHINE)"
+          output="screen" respawn="true">
+      <remap from="~input" to="$(arg INPUT_LABEL)"/>
+      <rosparam>
+        default_duration: 0.0  # infinite
+      </rosparam>
+    </node>
+
     <node name="label_to_mask"
           pkg="nodelet" type="nodelet"
           args="load jsk_perception/LabelToMaskImage $(arg MANAGER)"
           machine="$(arg MACHINE)"
           output="screen" respawn="true">
-      <remap from="~input" to="$(arg INPUT_LABEL)"/>
+      <remap from="~input" to="pass_through_label/output"/>
       <rosparam>
         label_value: 1
       </rosparam>
