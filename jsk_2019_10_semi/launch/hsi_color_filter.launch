@@ -55,13 +55,18 @@
 
     <node pkg="nodelet" type="nodelet"
           name="cluster_decomposer$(arg FILTER_NAME_SUFFIX)"
-          args="load jsk_pcl/ClusterPointIndicesDecomposerZAxis $(arg manager)"
+          args="load jsk_pcl/ClusterPointIndicesDecomposer $(arg manager)"
           output="screen" clear_params="true">
       <remap from="~input" to="$(arg OUTPUT)" />
       <remap from="~target" to="euclidean_clustering$(arg FILTER_NAME_SUFFIX)/output" />
       <!-- <remap from="~debug_output" to="debug_output$(arg FILTER_NAME_SUFFIX)" /> -->
       <remap from="~boxes" to="boxes$(arg FILTER_NAME_SUFFIX)" />
       <rosparam>
+        align_boxes: true
+        align_boxes_with_plane: false
+        target_frame_id: base_link
+        use_pca: true
+        force_to_flip_z_axis: false
       </rosparam>
     </node>
 
