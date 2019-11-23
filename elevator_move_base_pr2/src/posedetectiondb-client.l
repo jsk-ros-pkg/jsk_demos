@@ -22,7 +22,7 @@
 
 ;; posedetectiondb -> tf client class
 (defclass posedetectiondb-client
-  :super ros::ros-callback-object
+  :super ros-callback-object
   :slots (object time-stamp poselist frame-id fixed-frame filter-type))
 (defmethod posedetectiondb-client
   (:init

@@ -1,6 +1,5 @@
 #!/usr/bin/env roseus
 
-(load "elevator-buttons.l")
 (require :pr2-interface "package://pr2eus/pr2-interface.l")
 
 (defun push-button (target-coords)
