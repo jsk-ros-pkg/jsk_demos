@@ -34,9 +34,9 @@
       ;; via-coords
       (setq via-coords (send (send target-coords :copy-worldcoords)
                              :translate (scale 70 rayvec) :world))
-      ;; push 30mm
+      ;; push 20mm
       (setq target-coords (send (send target-coords :copy-worldcoords)
-                                :translate (scale -30 rayvec) :world))
+                                :translate (scale -20 rayvec) :world))
 
       (when arm
         (send *pr2* arm :angle-vector (case arm (:rarm rarm-reset)
@@ -110,7 +110,7 @@
         (send *ri* :angle-vector (send *pr2* :angle-vector) 1000) ;; quick!
         (send *ri* :wait-interpolation)
         (return-from push-button nil))
-      (send *ri* :angle-vector (send *pr2* :angle-vector) 1000)
+      (send *ri* :angle-vector (send *pr2* :angle-vector) 800)
       (send *ri* :wait-interpolation)
 
       (send *ri* :angle-vector via-angle-vector 400)
