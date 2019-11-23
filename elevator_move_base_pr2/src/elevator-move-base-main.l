@@ -26,7 +26,6 @@
 
 (load "package://elevator_move_base_pr2/src/move-inside-elevator.l")
 
-(setq *node-debug* nil)
 
 (setq *floors* '(("B2F" "地下2階") ("B1F" "地下1階")
                  ("1F" "1階") ("2F" "2階")
@@ -55,14 +54,6 @@
            (ros::ros-error "There is no building frame-id in TF tree.")
            (exit))
           ))
-
-  (when *node-debug*
-    (if (not (boundp '*irtviewer*)) (make-irtviewer))
-    (objects (list *pr2* *scene*))
-    (send *irtviewer* :look-all *pr2*)
-    (send *irtviewer* :draw-objects)
-    (x::window-main-one)
-    )
   )
 
 (defun update-robot-position ()
@@ -88,12 +79,6 @@
      (ros::ros-info
       (format nil "count: ~A, found: ~A, panel position: ~A"
               count found (send *panel* :worldpos)))
-     (when *node-debug*
-       (ros::spin-once)
-       (send *pr2* :angle-vector (send *ri* :state))
-       (send *irtviewer* :look-all *pr2*)
-       (send *irtviewer* :draw-objects)
-       (x::window-main-one))
      (if (>= found 2) (return))
      (ros::sleep))
     panel-moved
@@ -191,9 +176,6 @@
       (ros::ros-info "Could not find button.")
       (speak-jp "見つかりませんでした。" :wait t)
       (return-from look-button nil))
-
-    (when *node-debug*
-      (send *irtviewer* :draw-objects))
 
     (when *logging*
       (send *logger* :save-obj-pose *panel* "look-button"))
