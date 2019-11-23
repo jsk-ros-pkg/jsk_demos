@@ -44,8 +44,8 @@
         (logf "check IK for free-arm ~A is solvable" arm)
         (unless (and arm (send *pr2* arm :inverse-kinematics target-coords
                                :rotation-axis :x))
-          (setq *ik-fail-av*  (send *pr2* :angle-vector))
-          (setq *ik-fail-coords*  (send target-coords :copy-worldcoords))
+          (setq *ik-fail-av* (send *pr2* :angle-vector))
+          (setq *ik-fail-coords* (send target-coords :copy-worldcoords))
           (dump-loadable-structure
            (format nil "ik-fail-~d.l" (send (ros::time-now) :sec))
            *ik-fail-coords* *ik-fail-av*)
@@ -77,8 +77,8 @@
                                               (:larm larm-reset)))
       (unless
           (send *pr2* arm :inverse-kinematics via-coords :rotation-axis :x)
-        (setq *ik-fail-av*  (send *pr2* :angle-vector))
-        (setq *ik-fail-coords*  (send target-coords :copy-worldcoords))
+        (setq *ik-fail-av* (send *pr2* :angle-vector))
+        (setq *ik-fail-coords* (send target-coords :copy-worldcoords))
         (dump-loadable-structure
          (format nil "ik-fail-~d.l" (send (ros::time-now) :sec))
          *ik-fail-coords* *ik-fail-av*)
@@ -100,8 +100,8 @@
 
       (unless
           (send *pr2* arm :inverse-kinematics target-coords :rotation-axis :x)
-        (setq *ik-fail-av*  (send *pr2* :angle-vector))
-        (setq *ik-fail-coords*  (send target-coords :copy-worldcoords))
+        (setq *ik-fail-av* (send *pr2* :angle-vector))
+        (setq *ik-fail-coords* (send target-coords :copy-worldcoords))
         (dump-loadable-structure
          (format nil "ik-fail-~d.l" (send (ros::time-now) :sec))
          *ik-fail-coords* *ik-fail-av*)
