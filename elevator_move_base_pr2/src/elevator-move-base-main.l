@@ -2,6 +2,9 @@
 
 (ros::roseus-add-msgs "move_base_msgs")
 
+(require :eng2-scene "package://jsk_maps/src/eng2-scene.l")
+(require :eng8-scene "package://jsk_maps/src/eng8-scene.l")
+
 (defvar *logging* (ros::get-param "logging" nil))
 
 (if *logging*
@@ -20,7 +23,7 @@
 (load "package://elevator_move_base_pr2/src/navigation-client.l")
 (load "package://elevator_move_base_pr2/src/push-elevator-button.l")
 (load "package://elevator_move_base_pr2/src/ros-callback-manager.l")
-
+(load "package://elevator_move_base_pr2/src/elevator-buttons.l")
 
 (load "package://roseus_smach/src/state-machine-actionlib.l")
 
@@ -304,7 +307,7 @@
   t)
 
 (defun check-target-floor-arrived (userdata)
-  (let ((topic (instance ros::ros-callback-message
+  (let ((topic (instance ros-callback-message
                          :init roseus::StringStamped "/elevator_number/result"))
         (target-floor (cdr (assoc 'target-floor userdata))))
     (ros::rate 5)
