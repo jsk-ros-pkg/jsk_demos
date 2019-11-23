@@ -28,13 +28,13 @@
 
 (setq *node-debug* nil)
 
-(setq *floors*'(("B2F" "地下2階") ("B1F" "地下1階")
-                ("1F" "1階") ("2F" "2階")
-                ("3F" "3階") ("4F" "4階")
-                ("5F" "5階") ("6F" "6階")
-                ("7F" "7階") ("8F" "8階")
-                ("9F" "9階") ("10F" "10階")
-                ("11F" "11階") ("12F" "12階")))
+(setq *floors* '(("B2F" "地下2階") ("B1F" "地下1階")
+                 ("1F" "1階") ("2F" "2階")
+                 ("3F" "3階") ("4F" "4階")
+                 ("5F" "5階") ("6F" "6階")
+                 ("7F" "7階") ("8F" "8階")
+                 ("9F" "9階") ("10F" "10階")
+                 ("11F" "11階") ("12F" "12階")))
 
 (defun initialize-env ()
   (defvar *tfl* (instance ros::transform-listener :init))
@@ -177,7 +177,8 @@
     ;; Wait until latest image is available.
     (unix:usleep (* 500 1000))
 
-    (send *logger* :save-robot-pose "look-button")
+    (when *logging*
+      (send *logger* :save-robot-pose "look-button"))
     ;; nearest call panel
     (ros::ros-info "panel-name: ~A" panel-name)
     (setq *panel* (car (send *scene* :find-object panel-name)))
@@ -194,7 +195,8 @@
     (when *node-debug*
       (send *irtviewer* :draw-objects))
 
-    (send *logger* :save-obj-pose *panel* "look-button")
+    (when *logging*
+      (send *logger* :save-obj-pose *panel* "look-button"))
     t))
 
 (make-attention-action push-button-func (userdata)
@@ -204,7 +206,8 @@
                    (flatten (send *panel* :inheritance)))))
     (ros::ros-info (format nil "push button (~a) -> ~a" button button-obj))
     (speak-jp "ボタンを押します。")
-    (send *logger* :save-obj-pose button-obj "push-button")
+    (when *logging*
+      (send *logger* :save-obj-pose button-obj "push-button"))
     (push-button button-obj)
     ))
 
@@ -219,7 +222,9 @@
     (ros::rate 10)
     (dotimes (i 30 (< i 30)) ;; 3 sec
       (ros::spin-once)
-      (send *logger* :save-brightness (send button-state :value) "check-button")
+      (when *logging*
+        (send *logger* :save-brightness
+              (send button-state :value) "check-button"))
       (ros::ros-info "button-state: ~A" (send button-state :value))
       (when (< 0.5 (send button-state :value))
         (ros::ros-info "Button is lighting up.")
