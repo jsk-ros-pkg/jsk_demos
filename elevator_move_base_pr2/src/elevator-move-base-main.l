@@ -16,7 +16,6 @@
       (setf (symbol-function 'make-attention-action)
             (symbol-function 'defun)))))
 
-;(load "package://elevator_move_base_pr2/src/add-msg-pgsql.l")
 (require :database-interface "database-interface.l")
 (load "package://elevator_move_base_pr2/src/navigation-client.l")
 (load "package://elevator_move_base_pr2/src/push-elevator-button.l")
@@ -28,9 +27,6 @@
 (load "package://elevator_move_base_pr2/src/move-inside-elevator.l")
 
 (setq *node-debug* nil)
-;(ros::service-call "~set_logger_level"
-;                   (instance roscpp::SetLoggerLevelRequest
-;                             :init :logger "ros" :level "DEBUG"))
 
 (setq *floors*'(("B2F" "地下2階") ("B1F" "地下1階")
                 ("1F" "1階") ("2F" "2階")
@@ -46,8 +42,6 @@
   (ros::advertise "robotsound" sound_play::SoundRequest 5)
   (ros::advertise "view_target" geometry_msgs::PointStamped 1)
 
-  ;; (setq *ri* (instance pr2-interface :init))
-  ;; (setq *pr2* (pr2))
   (pr2-init)
 
   ;; load building scene by existing TF frame
@@ -201,9 +195,6 @@
       (send *irtviewer* :draw-objects))
 
     (send *logger* :save-obj-pose *panel* "look-button")
-    ;; (insert-tf-table-by-coords
-    ;;  *db* (ros::time-now) *scene* (send *pr2* :base_footprint)
-    ;;  :target_id "/base_footprint")
     t))
 
 (make-attention-action push-button-func (userdata)

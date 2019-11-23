@@ -1,12 +1,9 @@
 (load "ros-callback-manager.l")
-;;(load "add-msg-pgsql.l")
 
-;; posedetectiondb -> tf client class
-;;(load "package://euslib/jsk/kalmanlib.l")
 (ros::roseus-add-msgs "posedetection_msgs")
+
+
 ;; get vector in vlist , that is least median distance
-
-
 (defun lmeds-vector
   (vlist)
   (find-extream
@@ -23,6 +20,7 @@
                                            (send-all pose-list :rot))))))
 
 
+;; posedetectiondb -> tf client class
 (defclass posedetectiondb-client
   :super ros::ros-callback-object
   :slots (object time-stamp poselist frame-id fixed-frame filter-type))
