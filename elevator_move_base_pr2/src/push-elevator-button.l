@@ -2,7 +2,6 @@
 
 (load "elevator-buttons.l")
 (require :pr2-interface "package://pr2eus/pr2-interface.l")
-;(load "package://manipserver_lib/euslisp/manip_client_lib.l")
 
 (defun push-button (target-coords)
   (labels ((logf (str &rest args)
@@ -92,12 +91,6 @@
       (send *ri* :angle-vector (send *pr2* :angle-vector) 1500)
       (send *ri* :wait-interpolation)
 
-      (send *pr2* arm :inverse-kinematics via-coords :rotation-axis :x
-            :revert-if-fail nil)
-      (setq via-angle-vector (send *pr2* :angle-vector))
-      (send *ri* :angle-vector (send *pr2* :angle-vector) 500)
-      (send *ri* :wait-interpolation)
-
       (unless
           (send *pr2* arm :inverse-kinematics target-coords :rotation-axis :x)
         (setq *ik-fail-av* (send *pr2* :angle-vector))
@@ -120,12 +113,5 @@
       (send *pr2* arm :angle-vector org-arm-anglev)
       (send *ri* :angle-vector (send *pr2* :angle-vector) 1000) ;; quick!
       (send *ri* :wait-interpolation)
-      #|
-      (send *s* :arm-target-coords arm via-coords)
-      (unix:sleep 10)
-      (send *s* :arm-target-coords arm target-coords)
-      (unix:sleep 2)
-      (send *s* :arm-target-coords arm via-coords)
-      |#
       t)))
 
