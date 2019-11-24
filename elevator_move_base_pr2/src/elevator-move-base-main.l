@@ -36,218 +36,17 @@
   (defvar *scene* (make-scene-by-tf *tfl*))
   )
 
-(defun update (&optional (times 20))
-  (let (updated-object (count 0) (found 0) (panel-moved nil))
-    ;; wait for result
-    (ros::rate 10)
-
-    (while (<= (incf count) times)
-     (ros::spin-once)
-
-     (update-robot-position)
-     (setq updated-object (update-scene-by-tf *scene* *tfl*))
-
-     (when (memq *panel* updated-object)
-       (setq panel-moved t)
-       (incf found))
-     (ros::ros-info
-      (format nil "count: ~A, found: ~A, panel position: ~A"
-              count found (send *panel* :worldpos)))
-     (if (>= found 2) (return))
-     (ros::sleep))
-    panel-moved
-    ))
-
-(defun set-view-target (coords camera frame-id)
-  (let ((msg (instance geometry_msgs::PointStamped :init))
-        (uv (send camera :screen-point (send coords :worldpos))))
-    ;; out of view
-    (when (not (and (<= 0 (elt uv 0) (send camera :width))
-                    (<= 0 (elt uv 1) (send camera :height))))
-      (ros::ros-warn "screen-point: ~A is out of view (~A, ~A)"
-        uv (send camera :width) (send camera :height))
-      (return-from set-view-target nil))
-    (send msg :header :stamp (ros::time-now))
-    (send msg :header :frame_id frame-id)
-    (send msg :point :x (elt uv 0))
-    (send msg :point :y (elt uv 1))
-    (send msg :point :z 10) ;; radius [px]
-    (ros::publish "view_target" msg)
-    t))
-
-(defclass light-button-cb-class
-  :super propertied-object
-  :slots (value timestamp tau))
-(defmethod light-button-cb-class
-  (:init ()
-         (setq value 0 timestamp (ros::time) tau 1.0) ;; tau = half-life
-         (ros::subscribe "light_button" std_msgs::float32 #'send self :cb))
-  (:cb (msg)
-       (let* ((diff (send (ros::time- (ros::time-now) timestamp) :to-sec))
-              (weight (exp (* (log 0.5) (/ diff tau)))))
-         (setq timestamp (ros::time-now))
-         (setq value (+ (* weight value) (* (- 1 weight) (send msg :data))))
-         ))
-  ;; if the last observation is too old, the score is 0
-  (:value () (if (< tau (send (ros::time- (ros::time-now) timestamp) :to-sec))
-                 (setq value 0) value)))
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;;
 ;; State Machine
 ;;
 
-(defun look-button (userdata)
-  (let ((panel-name (cdr (assoc 'panel-name userdata))) look-target look-av)
-    (update-robot-position)
-
-    ;; jsk_pr2_startup/jsk_pr2_move_base/look-forward-in-nav.l sends
-    ;; angle-vector after PR2 reached goal, so we should wait for interpolation.
-    (when (one-shot-subscribe "/move_base/result"
-                              move_base_msgs::MoveBaseActionResult :timeout 500)
-      (unix:usleep (* 200 1000))
-      (send *ri* :wait-interpolation))
-
-    (setq look-target
-          (car (send *scene* :find-object
-                     (format nil "~A~A" (check-current-floor *scene* *tfl*)
-                             panel-name))))
-    (ros::ros-info "look-at button position ~A" (send look-target :worldpos))
-    (send *pr2* :reset-pose)
-    (send *pr2* :head :look-at (send look-target :worldpos))
-    (setq look-av (send *pr2* :angle-vector))
-
-    ;; Move only head quickly
-    (unless (eps-v= (float-vector (elt look-av 15) (elt look-av 16))
-                    (float-vector (elt (send *ri* :state :potentio-vector) 15)
-                                  (elt (send *ri* :state :potentio-vector) 16))
-                    0.2)
-      (send *ri* :angle-vector look-av 500 :head-controller)
-      (send *ri* :wait-interpolation))
-
-    ;; Move arms and torso
-    (unless (eps-v= look-av (send *ri* :state :potentio-vector) 2.0)
-      (send *ri* :angle-vector look-av 5000)
-      (send *ri* :wait-interpolation))
-
-    ;; Wait until latest image is available.
-    (unix:usleep (* 500 1000))
-
-    ;; nearest call panel
-    (ros::ros-info "panel-name: ~A" panel-name)
-    (setq *panel* (car (send *scene* :find-object panel-name)))
-
-    ;; update
-    (ros::ros-info "Looking for button...")
-    (speak-jp "ボタンを探しています。")
-    (ros::ros-info "Waiting for vision update...")
-    (unless (update 20)
-      (ros::ros-info "Could not find button.")
-      (speak-jp "見つかりませんでした。" :wait t)
-      (return-from look-button nil))
-    t))
-
-(defun push-button-func (userdata)
-  (let* ((button (cdr (assoc 'button userdata)))
-         (button-obj
-          (find-if #'(lambda (o) (string= button (send o :name)))
-                   (flatten (send *panel* :inheritance)))))
-    (ros::ros-info (format nil "push button (~a) -> ~a" button button-obj))
-    (speak-jp "ボタンを押します。")
-    (push-button button-obj)))
-
-(defun check-button-light (userdata)
-  (let* ((button (cdr (assoc 'button userdata)))
-         (button-coords (find-if #'(lambda(o)(string= button (send o :name)))
-                                 (flatten (send *panel* :inheritance))))
-         (button-state (instance light-button-cb-class :init)))
-    (set-view-target button-coords (send *pr2* :wide_stereo-left)
-                     "wide_stereo_optical_frame")
-    ;; check phase
-    (ros::rate 10)
-    (dotimes (i 30 (< i 30)) ;; 3 sec
-      (ros::spin-once)
-      (ros::ros-info "button-state: ~A" (send button-state :value))
-      (when (< 0.5 (send button-state :value))
-        (ros::ros-info "Button is lighting up.")
-        (speak-jp "ボタンが光りました。")
-        (return-from check-button-light t))
-      (ros::sleep))
-    (ros::ros-info "Button is not lighting up.")
-    (speak-jp "押せていないようです。")
-    nil))
-
-(defun push-state-machine ()
-  (let ((sm (instance state-machine :init))
-        (move-client (pr2-interface-move-base-action *ri*)))
-    (send sm :add-node (instance state :init :look 'look-button))
-    (send sm :add-node (instance state :init :push 'push-button-func))
-    (send sm :add-node (instance state :init :check 'check-button-light))
-    (send sm :arg-keys 'button 'panel-name 'front-coords)
-    (send sm :goal-state (list :success :fail))
-    (send sm :start-state :look)
-    (send sm :add-transition :look :push t)
-    (send sm :add-transition :look :fail nil)
-    (send sm :add-transition :push :check t)
-    (send sm :add-transition :push :fail nil)
-    (send sm :add-transition :check :success t)
-    (send sm :add-transition :check :look nil)
-    sm))
-
 (defun coords->movebaseactiongoal (co)
   (let ((goal (instance move_base_msgs::movebaseactiongoal :init)))
     (send goal :goal :target_pose :pose (ros::coords->tf-pose co))
     (send goal :goal :target_pose :header :frame_id (send co :name))
     goal))
-
-(defun check-until-elevator-empty (&rest args)
-  (let ((start (ros::time-now)) (result nil))
-    (setq *scan* nil)
-    (ros::subscribe "/base_scan" sensor_msgs::LaserScan
-                    #'(lambda (m) (setq *scan* m)))
-    (unix:sleep 1) ;; to smart
-
-    (while (< (send (ros::time- (ros::time-now) start) :to-sec) 30)
-      (while (not *scan*) (ros::spin-once))
-      ;;
-      (send *tfl* :wait-for-transform "map" (send *scan* :header :frame_id)
-            (send *scan* :header :stamp) 0.5)
-      (setq laser-pose
-            (send *tfl* :lookup-transform "map" (send *scan* :header :frame_id)
-                  (ros::time)))
-      (let ((points nil) (angle (send *scan* :angle_min)) box)
-        (setq target-areas
-              (list (send (make-cube 1000 2000 1000)
-                          :translate #f(4200.0 -30700.0 0.0))
-                    (send (make-cube 1000 2000 1000)
-                          :translate #f(-25800.0 -30700.0 0.0))
-                    (send (make-cube 1000 2000 1000)
-                          :translate #f(34200.0 -30700.0 0.0))))
-        (send-all target-areas :worldpos) ;; omajinai
-        (setq points
-              (map cons
-                   #'(lambda(r)
-                       (prog1
-                           (float-vector (* r (cos angle))
-                                         (* r (sin angle)) 0)
-                         (incf angle (send *scan* :angle_increment))))
-                   (scale 1000 (send *scan* :ranges))))
-        (setq points
-              (mapcan #'(lambda(x)
-                          (let ((pt (send laser-pose :transform-vector x)))
-                            (when (memq :inside
-                                        (send-all target-areas :insidep pt))
-                              (list pt))))
-                      points))
-        (when (< (length points) 10)
-          (setq result t) (return))
-        ))
-    (ros::unsubscribe "/base_scan")
-    (ros::ros-info (if result "Go into elvator." "Cannot go into elevator."))
-    (speak-jp (if result "エレベータに入ります。" "エレベータに入れません。"))
-    result
-    ))
 
 (defun check-target-floor-arrived (userdata)
   (let ((topic (instance ros-callback-message
@@ -309,24 +108,19 @@
     (send sm :add-node (instance state :init :push-outside (push-state-machine)
                                  :remap-list '((panel-name . outside-panel-name)
                                                (button . outside-button))))
-    ;; (send sm :add-node (instance state :init :check-elevator-empty
-    ;;                              'check-until-elevator-empty))
     (send sm :add-node
           (instance state :init :speak-fail
                     '(lambda(x)
                        (ros::ros-warn "Could not take elevator.")
                        (speak-jp "エレベータに乗れませんでした。" :wait t)
                        t)))
-
-    ;; check if elevator door open (added by furushchev 2014/04/29)
     (send sm :add-node
           (instance state :init :move-inside (move-inside-state-machine)
                     :remap-list '((elevator-front-coords . elevator-front-coords)
                                   (inside-coords . inside-coords))))
-    (send sm :add-node
-          (instance state :init :push-inside (push-state-machine)
-                    :remap-list '((panel-name . inside-panel-name)
-                                  (button . target-floor))))
+    (send sm :add-node (instance state :init :push-inside (push-state-machine)
+                                 :remap-list '((panel-name . inside-panel-name)
+                                               (button . target-floor))))
     (send sm :add-node
           (instance state :init :ready-to-outside 'ready-to-outside))
     (send sm :add-node (actionlib-client-state
