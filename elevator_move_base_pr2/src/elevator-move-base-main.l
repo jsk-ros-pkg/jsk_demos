@@ -41,24 +41,13 @@
                  ("11F" "11階") ("12F" "12階")))
 
 (defun initialize-env ()
-  (defvar *tfl* (instance ros::transform-listener :init))
-
   (ros::advertise "robotsound" sound_play::SoundRequest 5)
   (ros::advertise "view_target" geometry_msgs::PointStamped 1)
 
   (pr2-init)
 
-  ;; load building scene by existing TF frame
-  (unix:sleep 1) ;; wait for recieving TF messages
-  (let ((frames (send *tfl* :get-frame-strings)))
-    (cond ((find "eng2" frames :test #'string=)
-           (setq *scene* (make-eng2-scene)))
-          ((find "eng8" frames :test #'string=)
-           (setq *scene* (make-eng8-scene)))
-          (t
-           (ros::ros-error "There is no building frame-id in TF tree.")
-           (exit))
-          ))
+  (defvar *tfl* (instance ros::transform-listener :init))
+  (defvar *scene* (make-scene-by-tf *tfl*))
   )
 
 (defun update-robot-position ()
