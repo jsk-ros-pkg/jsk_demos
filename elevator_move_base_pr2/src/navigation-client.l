@@ -1,34 +1,31 @@
 (ros::roseus-add-msgs "geometry_msgs")
 
 
-(defun load-coords-from-db (db table parent child)
-  (car (select-tf-from-table
-        db :frame_id parent :child_id child :table table :limit 1)))
-
-(defun transform-pose-to-target-frame (coords frame-id
+(defun transform-pose-to-target-frame (coords frame-id tfl
                                        &optional (tm (ros::time 0)))
-  (let ((tra (send *tfl* :lookup-transform frame-id (send coords :name) tm)))
+  (let ((tra (send tfl :lookup-transform frame-id (send coords :name) tm)))
     (when tra
       (send tra :transform coords)
       (send tra :name frame-id)
       tra)))
 
-(defun check-current-floor (&optional pose) ;; :name == frame_id
+(defun check-current-floor (scene tfl &optional pose) ;; :name == frame_id
   (if pose
-      (setq pose (transform-pose-to-target-frame pose (send *scene* :name)))
-    (setq pose (send *tfl* :lookup-transform
-                     (send *scene* :name) "base_footprint" (ros::time 0))))
-  (send *scene* :current-floor pose))
+      (setq pose (transform-pose-to-target-frame pose (send scene :name) tfl))
+    (setq pose (send tfl :lookup-transform
+                     (send scene :name) "base_footprint" (ros::time 0))))
+  (send scene :current-floor pose))
 
-(defun change-floor (target-floor &optional (topicname "/initialpose3d"))
+(defun change-floor (target-floor scene tfl
+                     &optional (topicname "/initialpose3d"))
   (ros::advertise topicname geometry_msgs::PoseWithCovarianceStamped 1)
   (unix:sleep 1);; important
   (let* ((msg (instance geometry_msgs::PoseWithCovarianceStamped :init))
-         (current-floor-frame (check-current-floor))
-         (robot-pose (send *tfl* :lookup-transform
+         (current-floor-frame (check-current-floor scene tfl))
+         (robot-pose (send tfl :lookup-transform
                            current-floor-frame "base_footprint" (ros::time 0))))
-    (if (null robot-pose)
-        (return-from change-floor nil))
+    (unless robot-pose
+      (return-from change-floor nil))
     (send msg :header :frame_id target-floor)
     (send msg :header :stamp (ros::time-now))
     (let ((cov (send msg :pose :covariance)))
