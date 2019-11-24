@@ -8,13 +8,6 @@
 (load "package://elevator_move_base_pr2/src/utils.l")
 
 
-(defvar *panel*)
-(defvar *pr2*)
-(defvar *ri*)
-(defvar *scene*)
-(defvar *tfl*)
-
-
 (defclass light-button-cb-class
   :super propertied-object
   :slots (value timestamp tau))
