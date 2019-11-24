@@ -19,14 +19,6 @@
 (load "package://elevator_move_base_pr2/src/utils.l")
 
 
-(defvar *floors*)
-(defvar *panel*)
-(defvar *pr2*)
-(defvar *ri*)
-(defvar *scene*)
-(defvar *tfl*)
-
-
 (defun initialize-env ()
   (pr2-init)
   (setq *tfl* (instance ros::transform-listener :init))

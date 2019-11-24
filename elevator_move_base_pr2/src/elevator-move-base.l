@@ -22,8 +22,6 @@
     (ros::publish "/elevator_move_base/goal" pub-msg)))
 
 
-(defvar *sm*)
-
 (ros::roseus "elevator_move_base")
 
 (initialize-env)
