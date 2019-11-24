@@ -1,26 +1,9 @@
+(load "package://elevator_move_base_pr2/src/utils.l")
+
 (setq *change-publisher-topic*
       "/check_elevator_open/octree_change_publisher/octree_change_result")
 (setq *change-threshold* (ros::get-param "change_threshold" 700))
 
-
-(defun tolerance-loose (&rest args)
-  (ros::set-dynamic-reconfigure-param
-   "/move_base_node/DWAPlannerROS" "xy_goal_tolerance" :double 0.20)
-  (ros::set-dynamic-reconfigure-param
-   "/move_base_node/DWAPlannerROS" "yaw_goal_tolerance" :double 0.175)  ;; 10deg
-  t)
-
-(defun tolerance-strict (&rest args)
-  (ros::set-dynamic-reconfigure-param
-   "/move_base_node/DWAPlannerROS" "xy_goal_tolerance" :double 0.10)
-  (ros::set-dynamic-reconfigure-param
-   "/move_base_node/DWAPlannerROS" "yaw_goal_tolerance" :double 0.087)  ;; 5deg
-  (ros::set-dynamic-reconfigure-param
-   "/move_base_node/global_costmap" "footprint_padding" :double 0.03)
-  (ros::set-dynamic-reconfigure-param
-   "/move_base_node/local_costmap" "footprint_padding" :double 0.03)
-  (switch-global-planner-observation nil) ;;disable tilt scan
-  t)
 
 (defun move-inside-state-machine ()
   (let ((sm (instance state-machine :init))

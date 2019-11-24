@@ -1,5 +1,6 @@
 (require :eng2-scene "package://jsk_maps/src/eng2-scene.l")
 (require :eng8-scene "package://jsk_maps/src/eng8-scene.l")
+(require :pr2-interface "package://pr2eus/pr2-interface.l")
 
 
 (defun call-service (service req)
@@ -39,3 +40,34 @@
         (push obj updated)
         ))
     updated))
+
+(defun tolerance-loose (&rest args)
+  (ros::set-dynamic-reconfigure-param
+   "/move_base_node/DWAPlannerROS" "xy_goal_tolerance" :double 0.20)
+  (ros::set-dynamic-reconfigure-param
+   "/move_base_node/DWAPlannerROS" "yaw_goal_tolerance" :double 0.175)  ;; 10deg
+  t)
+
+(defun tolerance-normal (&rest args)
+  (ros::set-dynamic-reconfigure-param
+   "/move_base_node/DWAPlannerROS" "xy_goal_tolerance" :double 0.15)
+  (ros::set-dynamic-reconfigure-param
+   "/move_base_node/DWAPlannerROS" "yaw_goal_tolerance" :double 0.087)  ;; 5deg
+  (ros::set-dynamic-reconfigure-param
+   "/move_base_node/global_costmap" "footprint_padding" :double 0.05)
+  (ros::set-dynamic-reconfigure-param
+   "/move_base_node/local_costmap" "footprint_padding" :double 0.05)
+  (use-tilt-laser-obstacle-cloud t)
+  t)
+
+(defun tolerance-strict (&rest args)
+  (ros::set-dynamic-reconfigure-param
+   "/move_base_node/DWAPlannerROS" "xy_goal_tolerance" :double 0.10)
+  (ros::set-dynamic-reconfigure-param
+   "/move_base_node/DWAPlannerROS" "yaw_goal_tolerance" :double 0.087)  ;; 5deg
+  (ros::set-dynamic-reconfigure-param
+   "/move_base_node/global_costmap" "footprint_padding" :double 0.03)
+  (ros::set-dynamic-reconfigure-param
+   "/move_base_node/local_costmap" "footprint_padding" :double 0.03)
+  (use-tilt-laser-obstacle-cloud nil)
+  t)
