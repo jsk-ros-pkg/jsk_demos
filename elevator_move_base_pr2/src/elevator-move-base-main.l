@@ -4,24 +4,11 @@
 
 (require :eng2-scene "package://jsk_maps/src/eng2-scene.l")
 (require :eng8-scene "package://jsk_maps/src/eng8-scene.l")
+(require :pr2-interface "package://pr2eus/pr2-interface.l")
 (require :state-machine
          "package://roseus_smach/src/state-machine.l")
 (require :state-machine-actionlib
          "package://roseus_smach/src/state-machine-actionlib.l")
-
-(defvar *logging* (ros::get-param "logging" nil))
-
-(if *logging*
-    (progn
-      (require :attention-observation
-               "package://jsk_demo_common/euslisp/attention-observation.l")
-      (defparameter *mongo-database* "jsk_robot_lifelog")
-      (defparameter *current-context* :elevator))
-  (progn
-    (require :pr2-interface "package://pr2eus/pr2-interface.l")
-    (unless (boundp 'make-attention-action)
-      (setf (symbol-function 'make-attention-action)
-            (symbol-function 'defun)))))
 
 (load "package://elevator_move_base_pr2/src/check-elevator-open.l")
 (load "package://elevator_move_base_pr2/src/database-interface.l")
@@ -41,7 +28,6 @@
                  ("11F" "11階") ("12F" "12階")))
 
 (defun initialize-env ()
-  (ros::advertise "robotsound" sound_play::SoundRequest 5)
   (ros::advertise "view_target" geometry_msgs::PointStamped 1)
 
   (pr2-init)
@@ -118,7 +104,7 @@
 ;; State Machine
 ;;
 
-(make-attention-action look-button (userdata)
+(defun look-button (userdata)
   (let ((panel-name (cdr (assoc 'panel-name userdata))) look-target look-av)
     (update-robot-position)
 
@@ -154,8 +140,6 @@
     ;; Wait until latest image is available.
     (unix:usleep (* 500 1000))
 
-    (when *logging*
-      (send *logger* :save-robot-pose "look-button"))
     ;; nearest call panel
     (ros::ros-info "panel-name: ~A" panel-name)
     (setq *panel* (car (send *scene* :find-object panel-name)))
@@ -168,24 +152,18 @@
       (ros::ros-info "Could not find button.")
       (speak-jp "見つかりませんでした。" :wait t)
       (return-from look-button nil))
-
-    (when *logging*
-      (send *logger* :save-obj-pose *panel* "look-button"))
     t))
 
-(make-attention-action push-button-func (userdata)
+(defun push-button-func (userdata)
   (let* ((button (cdr (assoc 'button userdata)))
          (button-obj
           (find-if #'(lambda (o) (string= button (send o :name)))
                    (flatten (send *panel* :inheritance)))))
     (ros::ros-info (format nil "push button (~a) -> ~a" button button-obj))
     (speak-jp "ボタンを押します。")
-    (when *logging*
-      (send *logger* :save-obj-pose button-obj "push-button"))
-    (push-button button-obj)
-    ))
+    (push-button button-obj)))
 
-(make-attention-action check-button-light (userdata)
+(defun check-button-light (userdata)
   (let* ((button (cdr (assoc 'button userdata)))
          (button-coords (find-if #'(lambda(o)(string= button (send o :name)))
                                  (flatten (send *panel* :inheritance))))
@@ -196,9 +174,6 @@
     (ros::rate 10)
     (dotimes (i 30 (< i 30)) ;; 3 sec
       (ros::spin-once)
-      (when *logging*
-        (send *logger* :save-brightness
-              (send button-state :value) "check-button"))
       (ros::ros-info "button-state: ~A" (send button-state :value))
       (when (< 0.5 (send button-state :value))
         (ros::ros-info "Button is lighting up.")
@@ -207,8 +182,7 @@
       (ros::sleep))
     (ros::ros-info "Button is not lighting up.")
     (speak-jp "押せていないようです。")
-    nil
-    ))
+    nil))
 
 (defun push-state-machine ()
   (let ((sm (instance state-machine :init))
@@ -225,14 +199,13 @@
     (send sm :add-transition :push :fail nil)
     (send sm :add-transition :check :success t)
     (send sm :add-transition :check :look nil)
-    sm ))
+    sm))
 
 (defun coords->movebaseactiongoal (co)
   (let ((goal (instance move_base_msgs::movebaseactiongoal :init)))
     (send goal :goal :target_pose :pose (ros::coords->tf-pose co))
     (send goal :goal :target_pose :header :frame_id (send co :name))
-    goal
-    ))
+    goal))
 
 (defun check-until-elevator-empty (&rest args)
   (let ((start (ros::time-now)) (result nil))
@@ -298,7 +271,7 @@
     (ros::ros-info "Timeout (5min) reached.")
     nil))
 
-(make-attention-action ready-to-outside (userdata)
+(defun ready-to-outside (userdata)
   (clear-costmap)
   (tolerance-loose)
   (send *ri* :go-pos-unsafe 0 0 90)  ;; Unsafe for faster turning left
@@ -494,5 +467,4 @@
     (send sm :add-transition :take-elevator :fail :fail-outside)
     (send sm :add-transition :go-to :success :succeeded)
     (send sm :add-transition :go-to :fail :failed)
-    sm ))
-
+    sm))
