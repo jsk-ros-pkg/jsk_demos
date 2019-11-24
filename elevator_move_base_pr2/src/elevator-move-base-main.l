@@ -1,7 +1,5 @@
 ;; -*- coding: utf-8 -*-
 
-(ros::roseus-add-msgs "move_base_msgs")
-
 (require :eng2-scene "package://jsk_maps/src/eng2-scene.l")
 (require :eng8-scene "package://jsk_maps/src/eng8-scene.l")
 (require :pr2-interface "package://pr2eus/pr2-interface.l")
@@ -41,12 +39,6 @@
 ;;
 ;; State Machine
 ;;
-
-(defun coords->movebaseactiongoal (co)
-  (let ((goal (instance move_base_msgs::movebaseactiongoal :init)))
-    (send goal :goal :target_pose :pose (ros::coords->tf-pose co))
-    (send goal :goal :target_pose :header :frame_id (send co :name))
-    goal))
 
 (defun check-target-floor-arrived (userdata)
   (let ((topic (instance ros-callback-message

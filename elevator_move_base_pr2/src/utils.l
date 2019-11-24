@@ -1,3 +1,5 @@
+(ros::roseus-add-msgs "move_base_msgs")
+
 (require :eng2-scene "package://jsk_maps/src/eng2-scene.l")
 (require :eng8-scene "package://jsk_maps/src/eng8-scene.l")
 (require :pr2-interface "package://pr2eus/pr2-interface.l")
@@ -48,6 +50,12 @@
   (ros::spin-once)
   (send *pr2* :move-to (send *ri* :state :worldcoords) :world)
   (send *pr2* :angle-vector (send *ri* :state :potentio-vector)))
+
+(defun coords->movebaseactiongoal (coords)
+  (let ((goal (instance move_base_msgs::movebaseactiongoal :init)))
+    (send goal :goal :target_pose :pose (ros::coords->tf-pose coords))
+    (send goal :goal :target_pose :header :frame_id (send coords :name))
+    goal))
 
 (defun tolerance-loose (&rest args)
   (ros::set-dynamic-reconfigure-param
