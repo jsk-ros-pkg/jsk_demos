@@ -64,7 +64,7 @@
   (update-robot-position)
   ;; look at panel
   (let ((look-target
-         (or (find-if #'(lambda(x)(string= (send x :name) "/elevator_number"))
+         (or (find-if #'(lambda (x) (string= (send x :name) "/elevator_number"))
                       (send *panel* :descendants))
              *panel*)))
     (send *pr2* :head :look-at (send look-target :worldpos))
@@ -88,9 +88,7 @@
     (return-from ready-to-outside :fail))
   :success)
 
-;; elevator-front-coords, front-coords, outside-panel-name, outside-button,
-;; inside-coords, inside-panel-name, target-floor, outside-coords
-(defun elevator-state-machine ()
+(defun take-elevator-state-machine ()
   (let ((sm (instance state-machine :init))
         (move-client (pr2-interface-move-base-action *ri*)))
     (send sm :add-node (actionlib-client-state
@@ -144,10 +142,7 @@
     (send sm :add-transition :set-param-for-normal :success t)
     sm))
 
-;; elevator_move_base action server
-;; target_pose :frame_id = "/map" -> convert pose to each floor local
-(defun elevator-smach-initial (userdata) ;; goal -> args
-  (setq *logger* (instance mongo-logger :init "elevator"))
+(defun check-elevator-needed (userdata)
   (update-robot-position)
   (let* ((goal (cdr (assoc :goal userdata)))
          (goal-pose (ros::tf-pose-stamped->coords
@@ -166,8 +161,9 @@
              cur-floor target-floor up/down target-coords))
     (setq target-floor-button
           (elt (assoc target-floor *floors* :test #'string=
-                      :key #'(lambda (x) (format nil "~A/~A" (send *scene* :name)
-                                                 (string-downcase (elt x 0)))))
+                      :key #'(lambda (x)
+                               (format nil "~A/~A" (send *scene* :name)
+                                       (string-downcase (elt x 0)))))
                0)) ;; /eng8/1f -> 1F
     (set-alist 'inside-panel-name "/elevator_inside_panel" userdata)
     (set-alist 'outside-panel-name "/elevator_call_panel" userdata)
@@ -209,15 +205,16 @@
        (send coords :name (send *scene* :name))
        coords)
      userdata)
-    (set-alist 'target-floor target-floor-button userdata) ;; only for elevator
+    (set-alist 'target-floor target-floor-button userdata)
     (set-alist 'outside-button up/down userdata)
     (set-alist 'target-coords target-coords userdata)
-    (pr2-tuckarm-pose) ;; temporary, safety pose
-    (not up/down)))
+    (pr2-tuckarm-pose)
+    (not (not up/down))))
 
 (defun elevator-smach ()
   (let ((sm (instance state-machine :init)))
-    (send sm :add-node (instance state :init :initial 'elevator-smach-initial))
+    (send sm :add-node
+          (instance state :init :check-elevator-needed 'check-elevator-needed))
     (send sm :add-node
           (instance state :init :speak-elevator
                     '(lambda (x)
@@ -227,7 +224,7 @@
                        (speak-jp "エレベータに向かいます。" :wait t)
                        t)))
     (send sm :add-node
-          (instance state :init :take-elevator (elevator-state-machine)))
+          (instance state :init :take-elevator (take-elevator-state-machine)))
     (send sm :add-node (actionlib-client-state
                         :go-to (pr2-interface-move-base-action *ri*)
                         :timeout 600 :retry t
@@ -238,9 +235,9 @@
                        'target-floor 'outside-coords 'target-coords :goal
                        :cancel)
     (send sm :goal-state (list :success :fail))
-    (send sm :start-state :initial)
-    (send sm :add-transition :initial :go-to t)
-    (send sm :add-transition :initial :speak-elevator nil)
+    (send sm :start-state :check-elevator-needed)
+    (send sm :add-transition :check-elevator-needed :speak-elevator t)
+    (send sm :add-transition :check-elevator-needed :go-to nil)
     (send sm :add-transition :speak-elevator :take-elevator t)
     (send sm :add-transition :take-elevator :go-to :success)
     (send sm :add-transition :take-elevator :fail :fail-inside)
