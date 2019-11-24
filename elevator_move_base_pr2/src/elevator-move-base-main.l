@@ -284,19 +284,6 @@
     result
     ))
 
-(defun tolerance-normal (&rest args)
-  (pr2-tuckarm-pose)
-  (ros::set-dynamic-reconfigure-param
-   "/move_base_node/DWAPlannerROS" "xy_goal_tolerance" :double 0.15)
-  (ros::set-dynamic-reconfigure-param
-   "/move_base_node/DWAPlannerROS" "yaw_goal_tolerance" :double 0.087) ;; 5[deg]
-  (ros::set-dynamic-reconfigure-param
-   "/move_base_node/global_costmap" "footprint_padding" :double 0.05)
-  (ros::set-dynamic-reconfigure-param
-   "/move_base_node/local_costmap" "footprint_padding" :double 0.05)
-  (switch-global-planner-observation t) ;;enable tilt scan
-  t)
-
 (defun check-target-floor-arrived (userdata)
   (let ((topic (instance ros-callback-message
                          :init roseus::StringStamped "/elevator_number/result"))
@@ -380,8 +367,10 @@
                         :move-outside move-client :timeout 60 :retry t
                         :key 'coords->movebaseactiongoal))
     (send (send sm :node :move-outside) :remap-list '((:goal . outside-coords)))
-    (send sm :add-node
-          (instance state :init :set-param-for-normal 'tolerance-normal))
+    (send sm :add-node (instance state :init :set-param-for-normal
+                                 '(lambda (x)
+                                    (pr2-tuckarm-pose)
+                                    (tolerance-normal))))
     (send sm :arg-keys 'elevator-front-coords 'front-coords 'outside-panel-name
                        'outside-button 'inside-coords 'inside-panel-name
                        'target-floor 'outside-coords :cancel)
@@ -401,7 +390,7 @@
     (send sm :add-transition :move-outside :set-param-for-normal :succeeded)
     (send sm :add-transition :move-outside :fail-inside :failed)
     (send sm :add-transition :set-param-for-normal :success t)
-    sm ))
+    sm))
 
 ;; elevator_move_base action server
 ;; target_pose :frame_id = "/map" -> convert pose to each floor local
@@ -479,6 +468,7 @@
     (send sm :add-node
           (instance state :init :speak-elevator
                     '(lambda (x)
+                       (pr2-tuckarm-pose)
                        (tolerance-normal)
                        (ros::ros-info "Go to elevator.")
                        (speak-jp "エレベータに向かいます。" :wait t)

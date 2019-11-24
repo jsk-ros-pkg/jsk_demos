@@ -37,7 +37,3 @@
       (setf (elt cov 21) 0.02))
     (send msg :pose :pose (ros::coords->tf-pose robot-pose))
     (ros::publish topicname msg)))
-
-;; for dynamic configuration of costmap params
-(defun switch-global-planner-observation (enable)
-  (use-tilt-laser-obstacle-cloud enable))
