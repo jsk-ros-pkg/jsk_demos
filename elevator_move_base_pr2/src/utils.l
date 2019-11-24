@@ -1,3 +1,9 @@
+(defun call-service (service req)
+  (if (ros::wait-for-service service 0)
+      (ros::service-call service req)
+    nil))
+
+
 (defun update-scene-by-tf (scene tfl &optional (tm (ros::time 0)) (timeout 0.1))
   (let* ((objects (send scene :objects))
          (fixed-frame (send scene :name)) ;; ok?
