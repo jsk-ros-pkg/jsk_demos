@@ -3,6 +3,7 @@
 (ros::roseus "elevator_move_base")
 
 (load "package://elevator_move_base_pr2/src/elevator-move-base-main.l")
+(load "package://elevator_move_base_pr2/src/utils.l")
 
 ;;
 ;; State Machine for test : push buttons
