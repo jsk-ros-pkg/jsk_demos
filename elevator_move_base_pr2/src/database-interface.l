@@ -6,14 +6,12 @@
   :super propertied-object)
 
 (defmethod mongo-logger
-  (:init
-   (&optional (name ""))
+  (:init (&optional (name ""))
    (setq task-id (format nil "~A~A" name (gensym)))
    (ros::ros-warn "logger is initialized task-id: ~A" task-id)
    t)
 
-  (:save-robot-pose
-   (&optional comment)
+  (:save-robot-pose (&optional comment)
    (let ((c (send *ri* :state :worldcoords)) docid)
      (ros::ros-warn "saving robot pose...")
      (setq docid
@@ -24,8 +22,7 @@
      (ros::ros-warn "saved robot pose ~A" docid))
    t)
 
-  (:save-obj-pose
-   (obj &optional comment)
+  (:save-obj-pose (obj &optional comment)
    (let ((robot->obj (send *pr2* :transformation obj)) docid)
      (ros::ros-warn "saving obj pose ~A..." (send obj :name))
      (setq docid
@@ -37,8 +34,7 @@
      (ros::ros-warn "saved obj pose ~A: ~A" (send obj :name) docid))
    t)
 
-  (:save-brightness
-   (value &optional comment)
+  (:save-brightness (value &optional comment)
    (ros::ros-warn "saving brightness ~A" value)
    (setq docid
          (mongo::insert
