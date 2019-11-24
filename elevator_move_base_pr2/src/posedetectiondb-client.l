@@ -1,6 +1,7 @@
-(load "ros-callback-manager.l")
-
+(ros::roseus-add-msgs "geometry_msgs")
 (ros::roseus-add-msgs "posedetection_msgs")
+
+(load "package://elevator_move_base_pr2/src/ros-callback-manager.l")
 
 
 ;; get vector in vlist , that is least median distance
@@ -23,22 +24,24 @@
 ;; posedetectiondb -> tf client class
 (defclass posedetectiondb-client
   :super ros-callback-object
-  :slots (object time-stamp poselist frame-id fixed-frame filter-type))
+  :slots (object time-stamp poselist frame-id fixed-frame filter-type tfl tfb))
+
 (defmethod posedetectiondb-client
-  (:init
-   (obj
-    &key (topic "ObjectDetection") ((:object-frame _obj) nil)
-         ((:fixed-frame _fixed) "/base_footprint") ((:filter-type ft) nil))
-   (setq object obj frame-id _obj fixed-frame _fixed filter-type ft)
+  (:init (obj
+          &key (topic "ObjectDetection") ((:object-frame _obj) nil)
+               ((:fixed-frame _fixed) "/base_footprint")
+               ((:filter-type ft) nil))
+   (setq object obj)
+   (setq frame-id _obj)
+   (setq fixed-frame _fixed)
+   (setq filter-type ft)
    (setq time-stamp (ros::time 0))
-   (unless (boundp '*tfl*)
-     (defvar *tfl* (instance ros::transform-listener :init)))
-   (unless (boundp '*tfb*)
-     (defvar *tfb* (instance ros::transform-broadcaster :init)))
+   (setq tfl (instance ros::transform-listener :init))
+   (setq tfb (instance ros::transform-broadcaster :init))
    (send-super :init topic posedetection_msgs::ObjectDetection :detection-cb))
-  ;; filter detection pose, and move obj to the estimated coords
-  (:update-coords
-   (coords &optional (relative :local))
+
+  (:update-coords (coords &optional (relative :local))
+   "Filter detection pose, and move obj to the estimated coords"
    (when (< 5 (send (ros::time- (ros::time-now) time-stamp) :to-sec))
      (setq poselist nil))
    (setq time-stamp (ros::time-now))
@@ -53,27 +56,27 @@
       (send object :move-to (lmeds-pose poselist) relative))
      (t
       (send object :move-to coords relative))))
-  (:detection-cb
-   (msg)
+
+  (:detection-cb (msg)
    (dolist (object-msg (send msg :objects))
      (when (equal (string-left-trim "/" (send object-msg :type))
                   (string-left-trim "/" (or frame-id (send object :name))))
        ;; broadcast transform
-       (send *tfl* :wait-for-transform
+       (send tfl :wait-for-transform
              fixed-frame (send msg :header :frame_id)
              (send msg :header :stamp) 1)
        (let* ((pose (instance geometry_msgs::PoseStamped :init
                               :header (send msg :header)
                               :pose (send object-msg :pose)))
               (coords (ros::tf-pose->coords (send pose :pose)))
-              (objcoords (send *tfl* :transform-pose
+              (objcoords (send tfl :transform-pose
                                fixed-frame pose)))
          (ros::ros-info "posedetection-cb type:~A, coords~A"
                         (send object-msg :type) coords)
          (when objcoords
            (send self :update-coords objcoords :world)
            (putprop object (send msg :header :stamp) :stamp)
-           (send *tfb* :send-transform object
+           (send tfb :send-transform object
                  fixed-frame (or frame-id (send object :name))
                  (send msg :header :stamp)))
          ))))
@@ -84,7 +87,8 @@
   (let (clients)
     (dolist (obj objects)
       (push
-       (if topic (instance posedetectiondb-client :init obj :topic topic)
+       (if topic
+           (instance posedetectiondb-client :init obj :topic topic)
          (instance posedetectiondb-client :init obj))
        clients))
     (ros::ros-info "initialize posedetection db client with ~A~%"
