@@ -23,7 +23,7 @@
 (load "package://elevator_move_base_pr2/src/navigation-client.l")
 (load "package://elevator_move_base_pr2/src/push-elevator-button.l")
 (load "package://elevator_move_base_pr2/src/ros-callback-manager.l")
-(load "package://elevator_move_base_pr2/src/elevator-buttons.l")
+(load "package://elevator_move_base_pr2/src/utils.l")
 
 (load "package://roseus_smach/src/state-machine-actionlib.l")
 
@@ -74,7 +74,7 @@
      (ros::spin-once)
 
      (update-robot-position)
-     (setq updated-object (update-scene-by-tf *scene*))
+     (setq updated-object (update-scene-by-tf *scene* *tfl*))
 
      (when (memq *panel* updated-object)
        (setq panel-moved t)
