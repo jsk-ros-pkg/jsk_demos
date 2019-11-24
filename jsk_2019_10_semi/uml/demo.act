@@ -6,13 +6,19 @@ start
 
 partition YoshiaAbe {
 
+:子供のところに行く;
+
 :お願い事をつぶやく;
+
+:お願い事を認識する;
 
 }
 
 |サンタロボ|
 
 partition YoshiaAbe {
+
+:着替える場所に行く;
 
 :変装する;
 
