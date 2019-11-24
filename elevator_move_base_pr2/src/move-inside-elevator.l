@@ -1,8 +1,10 @@
-(load "package://elevator_move_base_pr2/src/utils.l")
+(require :state-machine
+         "package://roseus_smach/src/state-machine.l")
+(require :state-machine-actionlib
+         "package://roseus_smach/src/state-machine-actionlib.l")
 
-(setq *change-publisher-topic*
-      "/check_elevator_open/octree_change_publisher/octree_change_result")
-(setq *change-threshold* (ros::get-param "change_threshold" 700))
+(load "package://elevator_move_base_pr2/src/check-elevator-open.l")
+(load "package://elevator_move_base_pr2/src/utils.l")
 
 
 (defun move-inside-state-machine ()
@@ -40,38 +42,3 @@
     (send sm :add-transition :move-elevator-inside :success :succeeded)
     (send sm :add-transition :move-elevator-inside :fail :failed)
     sm))
-
-(defun pc-cb (msg)
-  (setq *change-pc* (* (send msg :height) (send msg :width)))
-  (ros::ros-info "point cloud change: ~A" *change-pc*))
-
-(defun check-elevator-open (&key (timeout 300))
-  (let (time-start)
-    (send *pr2* :head :angle-vector #f(0 0))
-    (send *ri* :angle-vector (send *pr2* :angle-vector) 400)
-    (send *ri* :wait-interpolation)
-    (setq *change-pc* nil)
-    (ros::subscribe *change-publisher-topic* sensor_msgs::PointCloud2 #'pc-cb)
-    (unix:usleep (* 300 1000))  ;; Wait until point cloud becomes stable
-
-    (setq time-start (ros::time-now))
-    (ros::rate 10)
-    (while (or
-            (not *change-pc*)
-            (< *change-pc* *change-threshold*))
-      (when (ros::time> (ros::time-now)
-                        (ros::time+ time-start (ros::time timeout)))
-        (ros::warn
-         (format nil "Could not detect door opening in ~A [sec]." timeout))
-        (speak-jp "ドアが開いていません。")
-        (return-from check-elevator-open nil))
-      (ros::ros-warn "point cloud change: ~A, threshold of open/closed: ~A"
-                     *change-pc* *change-threshold*)
-      (ros::spin-once)
-      (ros::sleep))
-    (ros::unsubscribe *change-publisher-topic*)
-    (ros::ros-info "Door opened.")
-    (speak-jp "ドアが開きました。")
-    (clear-costmap)
-    (unix:usleep (* 500 1000)) ;; wait until door open
-    t))

@@ -23,13 +23,13 @@
       (setf (symbol-function 'make-attention-action)
             (symbol-function 'defun)))))
 
-(require :database-interface "database-interface.l")
+(load "package://elevator_move_base_pr2/src/check-elevator-open.l")
+(load "package://elevator_move_base_pr2/src/database-interface.l")
+(load "package://elevator_move_base_pr2/src/move-inside-elevator.l")
 (load "package://elevator_move_base_pr2/src/navigation-client.l")
 (load "package://elevator_move_base_pr2/src/push-elevator-button.l")
 (load "package://elevator_move_base_pr2/src/ros-callback-manager.l")
 (load "package://elevator_move_base_pr2/src/utils.l")
-
-(load "package://elevator_move_base_pr2/src/move-inside-elevator.l")
 
 
 (setq *floors* '(("B2F" "地下2階") ("B1F" "地下1階")
