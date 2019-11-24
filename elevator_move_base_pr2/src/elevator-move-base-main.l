@@ -78,9 +78,6 @@
     panel-moved
     ))
 
-(defun transform-pose-to-robot-coords (coords)
-  (transform-pose-to-target-frame coords "base_footprint"))
-
 (defun set-view-target (coords camera frame-id)
   (let ((msg (instance geometry_msgs::PointStamped :init))
         (uv (send camera :screen-point (send coords :worldpos))))
@@ -134,7 +131,8 @@
 
     (setq look-target
           (car (send *scene* :find-object
-                     (format nil "~A~A" (check-current-floor) panel-name))))
+                     (format nil "~A~A" (check-current-floor *scene* *tfl*)
+                             panel-name))))
     (ros::ros-info "look-at button position ~A" (send look-target :worldpos))
     (send *pr2* :reset-pose)
     (send *pr2* :head :look-at (send look-target :worldpos))
@@ -323,7 +321,8 @@
         (ros::ros-info (format nil "Arrived at ~A." (elt floor 0)))
         (speak-jp (concatenate string (elt floor 1) "に着きました。"))
         (change-floor (format nil "~A/~a" (send *scene* :name)
-                              (string-downcase (elt floor 0))))
+                              (string-downcase (elt floor 0)))
+                      *scene* *tfl*)
         )))
 
   (unless (check-elevator-open :timeout 5)
@@ -400,10 +399,11 @@
   (let* ((goal (cdr (assoc :goal userdata)))
          (goal-pose (ros::tf-pose-stamped->coords
                      (send goal :target_pose)))
-         (cur-floor (check-current-floor))
-         (target-floor (check-current-floor goal-pose)) target-floor-button
+         (cur-floor (check-current-floor *scene* *tfl*))
+         (target-floor (check-current-floor *scene* *tfl* goal-pose))
+         target-floor-button
          (target-coords
-          (transform-pose-to-target-frame goal-pose (send *scene* :name)))
+          (transform-pose-to-target-frame goal-pose (send *scene* :name) *tfl*))
          (up/down (cond ((send *scene* :floor< target-floor cur-floor) "down")
                         ((send *scene* :floor< cur-floor target-floor) "up")
                         (t nil))))

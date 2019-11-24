@@ -11,7 +11,7 @@
 ;; elevator_move_base action server
 (defun elevator-smach-initial (userdata) ;; goal -> args
   (update-robot-position)
-  (let ((cur-floor (check-current-floor)))
+  (let ((cur-floor (check-current-floor *scene* *tfl*)))
     (set-alist 'home-coords (send *ri* :state :worldcoords "/map") userdata)
     (set-alist 'outside-panel-name "/elevator_call_panel" userdata)
     (set-alist 'button-name "down" userdata)
