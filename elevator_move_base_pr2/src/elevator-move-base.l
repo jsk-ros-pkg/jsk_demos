@@ -1,7 +1,11 @@
 #!/usr/bin/env roseus
 
+(ros::roseus-add-msgs "move_base_msgs")
 (ros::roseus-add-srvs "nav_msgs")
 (ros::roseus-add-srvs "std_srvs")
+
+(require :state-machine-actionlib
+         "package://roseus_smach/src/state-machine-actionlib.l")
 
 (load "package://elevator_move_base_pr2/src/utils.l")
 (load "package://elevator_move_base_pr2/src/elevator-move-base-main.l")
@@ -34,13 +38,13 @@
  "/elevator_move_base/clear_costmaps" std_srvs::Empty
  #'(lambda (req) (call-service "/move_base/clear_costmaps" req)))
 
-(setq sm (elevator-smach))
 (setq s (instance state-machine-action-server :init "/elevator_move_base"
-                  move_base_msgs::MoveBaseAction sm))
+                  move_base_msgs::MoveBaseAction (elevator-smach)))
 (send s :success-state '(:success)) ;; name of success state
 (ros::ros-info "initialized elevator-move-base.l")
+
 (ros::rate 10)
 (while (ros::ok)
- (ros::spin-once)
- (send s :worker)
- (ros::sleep))
+  (ros::spin-once)
+  (send s :worker)
+  (ros::sleep))
