@@ -1,5 +1,7 @@
 ;; -*- coding: utf-8 -*-
 
+(ros::roseus-add-msgs "roseus")
+
 (require :eng2-scene "package://jsk_maps/src/eng2-scene.l")
 (require :eng8-scene "package://jsk_maps/src/eng8-scene.l")
 (require :pr2-interface "package://pr2eus/pr2-interface.l")
@@ -17,28 +19,25 @@
 (load "package://elevator_move_base_pr2/src/utils.l")
 
 
-(setq *floors* '(("B2F" "地下2階") ("B1F" "地下1階")
-                 ("1F" "1階") ("2F" "2階")
-                 ("3F" "3階") ("4F" "4階")
-                 ("5F" "5階") ("6F" "6階")
-                 ("7F" "7階") ("8F" "8階")
-                 ("9F" "9階") ("10F" "10階")
-                 ("11F" "11階") ("12F" "12階")))
+(defvar *floors*)
+(defvar *panel*)
+(defvar *pr2*)
+(defvar *ri*)
+(defvar *scene*)
+(defvar *tfl*)
+
 
 (defun initialize-env ()
-  (ros::advertise "view_target" geometry_msgs::PointStamped 1)
-
   (pr2-init)
-
-  (defvar *tfl* (instance ros::transform-listener :init))
-  (defvar *scene* (make-scene-by-tf *tfl*))
-  )
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-;;
-;; State Machine
-;;
+  (setq *tfl* (instance ros::transform-listener :init))
+  (setq *scene* (make-scene-by-tf *tfl*))
+  (setq *floors* '(("B2F" "地下2階") ("B1F" "地下1階")
+                   ("1F" "1階") ("2F" "2階")
+                   ("3F" "3階") ("4F" "4階")
+                   ("5F" "5階") ("6F" "6階")
+                   ("7F" "7階") ("8F" "8階")
+                   ("9F" "9階") ("10F" "10階")
+                   ("11F" "11階") ("12F" "12階"))))
 
 (defun check-target-floor-arrived (userdata)
   (let ((topic (instance ros-callback-message
@@ -211,7 +210,7 @@
     (pr2-tuckarm-pose)
     (not (not up/down))))
 
-(defun elevator-smach ()
+(defun elevator-move-base-state-machine ()
   (let ((sm (instance state-machine :init)))
     (send sm :add-node
           (instance state :init :check-elevator-needed 'check-elevator-needed))

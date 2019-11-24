@@ -2,7 +2,7 @@
 
 (ros::roseus "elevator_move_base")
 
-(load "package://elevator_move_base_pr2/src/elevator-move-base-main.l")
+(load "package://elevator_move_base_pr2/src/state-machine-main.l")
 (load "package://elevator_move_base_pr2/src/utils.l")
 
 ;;
@@ -54,6 +54,7 @@
 ;;
 
 (initialize-env)
+(ros::advertise "view_target" geometry_msgs::PointStamped 1)
 
 (setq sm (elevator-smach) userdata '(nil))
 (ros::ros-info "initialized gen_sample_data.l")
