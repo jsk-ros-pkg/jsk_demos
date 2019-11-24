@@ -308,6 +308,7 @@ C-x o : 画面移動</br>
 $ rossetip
 $ rossetmaster fetch15
 $ source ~/semi_ws/devel/setup.bash
+$ roslaunch jsk_fetch_startup rviz.launch #rvizを起動したいとき
 ```
 
 ### Rvizを用いた色認識
