@@ -307,6 +307,31 @@ C-x o : 画面移動</br>
 ```bash
 $ rossetip
 $ rossetmaster fetch15
-$ source ~/semi_ws/devel/setup.bash 
-$ roslaunch jsk_fetch_startup rviz.launch #rvizを起動したいとき 
+$ source ~/semi_ws/devel/setup.bash
+$ roslaunch jsk_fetch_startup rviz.launch #rvizを起動したいとき
 ```
+
+### Rvizを用いた色認識
+まず、授業で用いたturtlebotの hsi_color_filter.launch をfetchバージョンに書き換え、/jsk_2019_10_semi/launchに保存。<br>
+```launch
+<!-- hsi_color_filter.launch 変更箇所 -->
+12  <arg name="INPUT" default="points"/>
+13  <arg name="CENTROID_FRAME" default="target"/>
+14  <arg name="DEFAULT_NAMESPACE" default="head_camera/depth_registered"/>
+```
+起動<br>
+```bash
+$ source ~/semi_ws/devel/setup.bash
+$ roslaunch jsk_fetch_startup rviz.launch #rviz起動
+$ roslaunch jsk_2019_10_semi hsi_color_filter.launch
+$ rosrun rqt_reconfigure rqt_reconfigure #HSIのパラメータをいじりたい時
+```
+Rviz上で<br>
+Add ▶ PointCloud2<br>
+PointCloud2 ▶ Topic ▶ ~/hsi_output<br>
+これで色付き点群を見ることができ、<br>
+Add ▶ BoundingBoxArray<br>
+で、認識した色の物体がBoxになっている様子を見ることができる。<br>
+
+赤色を認識したい場合<br>
+h_max=20, h_min=-20, s_max=255, s_min=80, i_max=255, i_min=50 くらいがちょうどよい。hsi_color_filter.launch のデフォルトに設定済み。
