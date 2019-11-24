@@ -36,12 +36,6 @@
   (defvar *scene* (make-scene-by-tf *tfl*))
   )
 
-(defun update-robot-position ()
-  (ros::spin-once)
-  (send *pr2* :move-to (send *ri* :state :worldcoords) :world)
-  (send *pr2* :angle-vector (send *ri* :state))
-  )
-
 (defun update (&optional (times 20))
   (let (updated-object (count 0) (found 0) (panel-moved nil))
     ;; wait for result

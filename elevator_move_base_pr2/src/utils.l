@@ -41,6 +41,14 @@
         ))
     updated))
 
+(defun update-robot-position ()
+  (unless (and (boundp '*pr2*) (boundp '*ri*))
+    (ros::ros-error "*pr2* or *ri* is not bound.")
+    (return-from update-robot-position nil))
+  (ros::spin-once)
+  (send *pr2* :move-to (send *ri* :state :worldcoords) :world)
+  (send *pr2* :angle-vector (send *ri* :state :potentio-vector)))
+
 (defun tolerance-loose (&rest args)
   (ros::set-dynamic-reconfigure-param
    "/move_base_node/DWAPlannerROS" "xy_goal_tolerance" :double 0.20)
