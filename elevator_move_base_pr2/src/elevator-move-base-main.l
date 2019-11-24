@@ -4,6 +4,10 @@
 
 (require :eng2-scene "package://jsk_maps/src/eng2-scene.l")
 (require :eng8-scene "package://jsk_maps/src/eng8-scene.l")
+(require :state-machine
+         "package://roseus_smach/src/state-machine.l")
+(require :state-machine-actionlib
+         "package://roseus_smach/src/state-machine-actionlib.l")
 
 (defvar *logging* (ros::get-param "logging" nil))
 
@@ -24,8 +28,6 @@
 (load "package://elevator_move_base_pr2/src/push-elevator-button.l")
 (load "package://elevator_move_base_pr2/src/ros-callback-manager.l")
 (load "package://elevator_move_base_pr2/src/utils.l")
-
-(load "package://roseus_smach/src/state-machine-actionlib.l")
 
 (load "package://elevator_move_base_pr2/src/move-inside-elevator.l")
 
