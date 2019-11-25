@@ -1,7 +1,7 @@
 #!/usr/bin/env roseus
 
 (load "lib/llib/unittest.l")
-(load "package://elevator_move_base_pr2/src/elevator-move-base-main.l")
+(load "package://elevator_move_base_pr2/src/state-machine-main.l")
 
 
 (ros::roseus "test_number_recognition")
