@@ -31,21 +31,32 @@
                    ("9F" "9階") ("10F" "10階")
                    ("11F" "11階") ("12F" "12階"))))
 
-(defun check-target-floor-arrived (userdata)
-  (let ((topic (instance ros-callback-message
-                         :init roseus::StringStamped "/elevator_number/result"))
-        (target-floor (cdr (assoc 'target-floor userdata))))
+(defun check-target-floor-arrived (target-floor &key (timeout 20))
+  (let ((topic
+         (instance ros-callback-message
+                   :init roseus::StringStamped "/elevator_number/result"))
+        (prev-reset-time (ros::time-now))
+        (prev-floor nil)
+        (cur-floor nil))
     (ros::rate 5)
-    (dotimes (i 1500 nil)  ;; timeout: 5 min
+    (while (ros::ok)
       (ros::spin-once)
-      (if (and (send topic :msg)
-               (substringp (concatenate string "/" target-floor)
-                           (string-upcase (send topic :msg :data))))
-          (return-from check-target-floor-arrived t)
-        (ros::ros-info "waiting /elevator_number/result"))
-      (ros::sleep))
-    (ros::ros-info "Timeout (5min) reached.")
-    nil))
+      (when (send topic :msg)
+        (setq cur-floor (string-upcase (send topic :msg :data))))
+      (unless (equal cur-floor prev-floor)  ;; Elevator moved, so reset time.
+        (ros::ros-info (format nil "Current floor: ~A" cur-floor))
+        (setq prev-reset-time (ros::time-now))
+        (setq prev-floor cur-floor))
+      (when (ros::time> (ros::time-now)
+                        (ros::time+ prev-reset-time (ros::time timeout)))
+        (ros::warn
+         (format nil "Elevator has not moved in recent ~A [sec]." timeout))
+        (speak-jp "エレベータが動いていません。")
+        (return-from check-target-floor-arrived nil))
+      (when (and cur-floor (substringp target-floor cur-floor))
+        (return-from check-target-floor-arrived t))
+      (ros::sleep)
+      )))
 
 (defun ready-to-outside (userdata)
   (clear-costmap)
@@ -62,17 +73,19 @@
     (send *ri* :angle-vector (send *pr2* :angle-vector) 500)
     (send *ri* :wait-interpolation))
 
-  (check-target-floor-arrived userdata)
-
   (let ((targetfloor (cdr (assoc 'target-floor userdata))))
+    (unless (check-target-floor-arrived (concatenate string "/" targetfloor)
+                                        :timeout 20)
+      (send *ri* :go-pos-unsafe 0 0 -90)  ;; Unsafe for faster turning right
+      (return-from ready-to-outside :fail))
+
     (dolist (floor *floors*)
       (when (equal targetfloor (elt floor 0))
         (ros::ros-info (format nil "Arrived at ~A." (elt floor 0)))
         (speak-jp (concatenate string (elt floor 1) "に着きました。"))
         (change-floor (format nil "~A/~a" (send *scene* :name)
                               (string-downcase (elt floor 0)))
-                      *scene* *tfl*)
-        )))
+                      *scene* *tfl*))))
 
   (unless (check-elevator-open :timeout 5)
     (send *ri* :go-pos-unsafe 0 0 -90)  ;; Unsafe for faster turning right
@@ -200,7 +213,7 @@
     (set-alist 'outside-button up/down userdata)
     (set-alist 'target-coords target-coords userdata)
     (pr2-tuckarm-pose)
-    (not (not up/down))))
+    (not (null up/down))))
 
 (defun elevator-move-base-state-machine ()
   (let ((sm (instance state-machine :init)))
