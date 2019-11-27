@@ -70,8 +70,12 @@
 
 (defun go-to-forum-door-inside ()
   (clear-costmap)
+  ;; XXX: Avoid getting stuck on braille block (bumpy tiles for the blind)
+  ;;      at elevator hall on 2F.
   (send *ri* :move-to
-        (send *scene* :spot "/eng2/2f/forum-door-inside"))
+        (send (send (send *scene* :spot "/eng2/2f/elevator-outside")
+                    :copy-worldcoords) :translate #f(0 2500 0) :world))
+  (send *ri* :move-to (send *scene* :spot "/eng2/2f/forum-door-inside"))
   (update-robot-position))
 
 
