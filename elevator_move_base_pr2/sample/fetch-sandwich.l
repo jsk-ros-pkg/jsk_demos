@@ -10,7 +10,8 @@
 (require :pr2-interface "package://pr2eus/pr2-interface.l")
 (require :pr2-action "package://jsk_demo_common/euslisp/pr2-action.l")
 (require :eng2-scene "package://jsk_maps/src/eng2-scene.l")
-(require :navigation-client "package://elevator_move_base_pr2/src/navigation-client.l")
+
+(load "package://elevator_move_base_pr2/src/utils.l")
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -21,14 +22,6 @@
   (send *pr2* :head :angle-vector #f(0 0))
   (send *ri* :angle-vector (send *pr2* :angle-vector) 1000)
   (send *ri* :wait-interpolation))
-
-(defun pr2-init (&optional (create-viewer))
-  (setq *pr2* (pr2)
-        *ri* (instance pr2-interface :init
-                       :move-base-action-name "elevator_move_base"))
-  (pr2-tuckarm-pose)
-  (look-front)
-  (when create-viewer (objects (list *pr2*))))
 
 
 (defun pr2-pick-bag-pose ()
@@ -60,24 +53,17 @@
   (return-from wait-for-hand-over nil))
 
 
-(defun update-eus-robot-model ()
-  (ros::spin-once)
-  (send *pr2* :move-to (send *ri* :state :worldcoords) :world)
-  (send *pr2* :angle-vector (send *ri* :state :potentio-vector)))
-
-
-(defun call-service (service req)
-  (if (ros::wait-for-service service 0)
-      (ros::service-call service req)
-    nil))
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Actions
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 (defun init ()
-  (pr2-init)
+  (setq *pr2* (pr2))
+  (setq *ri* (instance pr2-interface :init
+                       :move-base-action-name "elevator_move_base"))
+  (pr2-tuckarm-pose)
+  (look-front)
   (setq *scene* (make-eng2-scene))
   (setq *initial-pose* (send *ri* :state :worldcoords)))
 
@@ -86,7 +72,7 @@
   (clear-costmap)
   (send *ri* :move-to
         (send *scene* :spot "/eng2/2f/forum-door-inside"))
-  (update-eus-robot-model))
+  (update-robot-position))
 
 
 (defun check-forum-door-open (&optional (max-cloud-size 500) (timeout 10000))
@@ -133,7 +119,7 @@
     ;; Find door button
     (ros::ros-info "Looking for door button...")
     (speak-jp "ボタンを探しています。")
-    (update-eus-robot-model)
+    (update-robot-position)
     (setq bboxes-msg
           (one-shot-subscribe
            "door_button/cluster_indices_decomposer/boxes"
@@ -188,7 +174,7 @@
     (send *ri* :angle-vector-sequence (list av0 av1) (list 3000 2000))
     (send *ri* :wait-interpolation)
     (pr2-tuckarm-pose)
-    (update-eus-robot-model)
+    (update-robot-position)
   ))
 
 
