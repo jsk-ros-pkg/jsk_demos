@@ -175,37 +175,37 @@ atomだと[control] + [shift] + [M] キーでプレビュー出来る。
 
 
 どんなjointがあるのかを調べる
-```
+```lisp
 (send *pepper* :methods :joint)
 ```
 
 全てのパラメータを指定する
-```
+```lisp
 (send *pepper* :angle-vector #f(...))
 ```
 
 viewerのpepperの今の状態のパラメータを知る
-```
+```lisp
 (send *pepper* :angle-vector)
 ```
 
 上記のパラメータをシミュレーターに送る。
-```
+```lisp
 (send *ri* :angle-vector (send *pepper* :angle-vector))
 ```
 
 実機を動かす場合は何秒かけて行うかも指定
-```
+```lisp
 (send *ri* :angle-vector (send *pepper* :angle-vector) 5000)
 ```
 
 実機の今の状態のパラメータを知る
-```
+```lisp
 (send *ri* :state :potentio-vector)
 ```
 
 逆運動学
-```
+```lisp
  (send *pepper* :rarm :inverse-kinematics (make-coords :pos #f(1000 0 1000)) :revert-if-fail nil)
 ```
 
@@ -231,7 +231,7 @@ rostopic list
 
 実機でポーズを作ってから角度取得できれば，実機と`roseus`が繋がっていることを確認できる．
 
-```
+```lisp
 (send *ri* :state :potentio-vector)
 ```
 
@@ -271,13 +271,13 @@ fetch3
 
 
 * 喋らせる
-```
+```lisp
 (send *ri* :speak-jp "こんにちは")
 (send *ri* :speak-en "hello")
 ```
 
 * 移動する
-```
+```lisp
 (send *ri* :go-pos 1 0 0)
 ;;引数は x[m] y[m] z回転[degree]
 ```
@@ -288,6 +288,39 @@ roscd jsk_fetch_startup
 cd launch
 roslaunch jsk_fetch_startup rviz.launch
 ```
+
+### 色認識をする
+
+hsi_color_filter.launchを使う
+最初の arg nameをfetch用に少し変更した
+```xml
+<!-- hsi_color_filter 中身-->
+
+<arg name="INPUT" default="points"/>
+<arg name="CENTROID_FRAME" default="target"/>
+<arg name="DEFAULT_NAMESPACE" default="hed_camera/depth_registered"/>
+<arg name="FILTER_NAME_SUFFIX" default=""/>
+<arg name="OUTPUT" default="hsi_output$(arg FILTER_NAME_SUFFIX)"/>
+```
+
+以下で実行する
+```
+roslaunch jsk_2019_10_semi hsi_color_filter.launch
+```
+/head_camera/depth_registered/boxesのトピックにバウンディングボックスがパブリッシュされる
+
+### 干渉計算
+Moveitにcollision-objectとしてpublishして干渉計算をしてもらう
+```lisp
+(load "package://pr2eus_moveit/euslisp/collision-object-publisher.l")
+
+(setq *co* (instance collision-object-publisher :init))
+(send *co* :add-object obj :frame_id link-name :relative-pose cds)
+
+;;必要なくなったら消す
+(send *co* :wipe-all)　;;:removeで指定したものだけ消すとかも出来る
+```
+
 
 ## JSK豆知識
 
@@ -308,6 +341,7 @@ C-x o : 画面移動</br>
 $ rossetip
 $ rossetmaster fetch15
 $ source ~/semi_ws/devel/setup.bash
+$ roslaunch jsk_fetch_startup rviz.launch #rvizを起動したいとき
 ```
 
 ### Rvizを用いた色認識
