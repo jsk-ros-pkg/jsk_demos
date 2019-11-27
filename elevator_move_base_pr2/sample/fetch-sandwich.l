@@ -175,7 +175,7 @@
     (setq av1 (send *pr2* arm :inverse-kinematics push-coords
                     :rotation-axis :x
                     :look-at-target t))
-    (send *ri* :angle-vector-sequence (list av0 av1) (list 3000 2000))
+    (send *ri* :angle-vector-sequence (list av0 av1 av0) (list 3000 2000 1000))
     (send *ri* :wait-interpolation)
     (pr2-tuckarm-pose)
     (update-robot-position)
@@ -245,10 +245,12 @@
 (defun go-to-initial-pose ()
   (ros::ros-info "Coming back to original position...")
   (speak-jp "もとの場所に帰ります。" :wait t)
-  ;; NOTE: DWA local planner returns invalid plan when detecting door closed.
+  ;; NOTE: DWA local planner does not publish command to go through the door
+  ;;       when detecting door closed, so move to forum-door-outside first
+  ;;       in order to approach the door.
   (ros::ros-info "Move to /eng2/2f/forum-door-outside.")
   (send *ri* :move-to (send *scene* :spot "/eng2/2f/forum-door-outside"))
-  (ros::ros-info (format nil "Move to ~A" *initial-pose*))
+  (ros::ros-info (format nil "Move to initial pose: ~A." *initial-pose*))
   (send *ri* :move-to *initial-pose*))
 
 
