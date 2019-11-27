@@ -233,12 +233,16 @@
   (let* ((button (cdr (assoc 'button userdata)))
          (button-coords (find-if #'(lambda (o) (string= button (send o :name)))
                                  (flatten (send *panel* :inheritance))))
-         (button-state (instance light-button-cb-class :init)))
+         (button-state (instance light-button-cb-class :init))
+         (start-tm (ros::time-now))
+         (timeout 3.0))
     (set-view-target button-coords (send *pr2* :wide_stereo-left)
                      "wide_stereo_optical_frame")
     ;; check phase
     (ros::rate 10)
-    (dotimes (i 30 (< i 30)) ;; 3 sec
+    (while (and (ros::ok)
+                (ros::time< (ros::time-now)
+                            (ros:time+ start-tm (ros::time timeout))))
       (ros::spin-once)
       (ros::ros-info "button-state: ~A" (send button-state :value))
       (when (< 0.5 (send button-state :value))
