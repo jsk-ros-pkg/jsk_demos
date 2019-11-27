@@ -15,24 +15,29 @@
     (send *ri* :angle-vector (send *pr2* :angle-vector) 400)
     (send *ri* :wait-interpolation)
 
-    (ros::subscribe topic sensor_msgs::PointCloud2
-     #'(lambda (msg) (setq change-pc (* (send msg :height) (send msg :width)))))
+    (setq time-start (ros::time-now))
+    (ros::subscribe
+     topic sensor_msgs::PointCloud2
+     #'(lambda (msg)
+         (when msg
+           (let ((stamp (send msg :header :stamp)))
+             (when (> (send stamp :to-sec) (send time-start :to-sec))
+               (setq change-pc (* (send msg :height) (send msg :width)))
+               (ros::ros-info "pointcloud change: ~A, open/closed threshold: ~A"
+                              change-pc change-thre)
+               )))))
     (unix:usleep (* 300 1000))  ;; Wait until point cloud becomes stable
 
-    (setq time-start (ros::time-now))
     (ros::rate 10)
-    (while (or
-            (null change-pc)
-            (< change-pc change-thre))
+    (while (or (null change-pc) (< change-pc change-thre))
+      (ros::spin-once)
       (when (ros::time> (ros::time-now)
                         (ros::time+ time-start (ros::time timeout)))
         (ros::warn
          (format nil "Could not detect door opening in ~A [sec]." timeout))
         (speak-jp "ドアが開いていません。")
+        (ros::unsubscribe topic)
         (return-from check-elevator-open nil))
-      (ros::ros-info "point cloud change: ~A, threshold of open/closed: ~A"
-                     change-pc change-thre)
-      (ros::spin-once)
       (ros::sleep))
 
     (ros::unsubscribe topic)
