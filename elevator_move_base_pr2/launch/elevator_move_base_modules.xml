@@ -20,13 +20,23 @@
       </rosparam>
     </node>
 
+    <node name="pass_through_image"
+          pkg="nodelet" type="nodelet"
+          args="load jsk_topic_tools/Passthrough /$(arg MANAGER)"
+          machine="c2">
+      <remap from="~input" to="image_rect_throttle"/>
+      <rosparam>
+        default_duration: 0.0  # infinite
+      </rosparam>
+    </node>
+
     <!-- Detect elevator_call_panel / elevator_inside_panel. -->
     <node name="imagesift"
           pkg="nodelet" type="nodelet"
           args="load imagesift/ImageSift /$(arg MANAGER)"
           machine="c2"
           launch-prefix="nice -n +10">
-      <remap from="image" to="image_rect_throttle"/>
+      <remap from="image" to="pass_through_image/output"/>
     </node>
 
     <include file="$(find elevator_move_base_pr2)/launch/elevator_panels_detection_$(arg scene).launch">

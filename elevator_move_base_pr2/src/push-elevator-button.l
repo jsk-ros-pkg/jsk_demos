@@ -1,6 +1,7 @@
 (ros::roseus-add-msgs "geometry_msgs")
 (ros::roseus-add-msgs "move_base_msgs")
 (ros::roseus-add-msgs "std_msgs")
+(ros::roseus-add-srvs "std_srvs")
 
 (require :pr2-interface "package://pr2eus/pr2-interface.l")
 (require :state-machine "package://roseus_smach/src/state-machine.l")
@@ -173,6 +174,8 @@
 
 (defun look-button-state (userdata)
   (let ((panel-name (cdr (assoc 'panel-name userdata))) look-target look-av)
+    (call-service "/narrow_stereo/left/pass_through_image/request"
+                  (instance std_srvs::EmptyRequest :init))
     (update-robot-position)
 
     ;; jsk_pr2_startup/jsk_pr2_move_base/look-forward-in-nav.l sends
@@ -219,6 +222,8 @@
       (ros::ros-info "Could not find button.")
       (speak-jp "見つかりませんでした。")
       (return-from look-button-state nil))
+    (call-service "/narrow_stereo/left/pass_through_image/stop"
+                  (instance std_srvs::EmptyRequest :init))
     t))
 
 (defun push-button-state (userdata)
