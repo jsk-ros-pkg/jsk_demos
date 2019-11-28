@@ -22,15 +22,14 @@
 ;; posedetectiondb -> tf client class
 (defclass posedetectiondb-client
   :super ros-callback-object
-  :slots (objects time-stamp poselist frame-id fixed-frame filter-type tfl tfb))
+  :slots (objects time-stamp poselist fixed-frame filter-type tfl tfb))
 
 (defmethod posedetectiondb-client
   (:init (objs
-          &key (topic "ObjectDetection") ((:object-frame _obj) nil)
+          &key (topic "ObjectDetection")
                ((:fixed-frame _fixed) "/base_footprint")
                ((:filter-type ft) nil))
    (setq objects objs)
-   (setq frame-id _obj)
    (setq fixed-frame _fixed)
    (setq filter-type ft)
    (setq time-stamp (ros::time 0))
@@ -58,8 +57,8 @@
   (:detection-cb (msg)
    (dolist (object-msg (send msg :objects))
      (dolist (object objects)
-       (when (equal (string-left-trim "/" (send object-msg :type))
-                    (string-left-trim "/" (or frame-id (send object :name))))
+       (when (substringp (string-left-trim "/" (send object :name))
+                         (string-left-trim "/" (send object-msg :type)))
          ;; broadcast transform
          (send tfl :wait-for-transform
                fixed-frame (send msg :header :frame_id)
@@ -76,7 +75,7 @@
              (send self :update-coords objcoords :world)
              (putprop object (send msg :header :stamp) :stamp)
              (send tfb :send-transform object
-                   fixed-frame (or frame-id (send object :name))
+                   fixed-frame (send object :name)
                    (send msg :header :stamp)))
            )))))
   )
