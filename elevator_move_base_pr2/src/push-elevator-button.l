@@ -242,7 +242,7 @@
     (ros::rate 10)
     (while (and (ros::ok)
                 (ros::time< (ros::time-now)
-                            (ros:time+ start-tm (ros::time timeout))))
+                            (ros::time+ start-tm (ros::time timeout))))
       (ros::spin-once)
       (ros::ros-info "button-state: ~A" (send button-state :value))
       (when (< 0.5 (send button-state :value))
