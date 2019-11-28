@@ -1,0 +1,5 @@
+<launch>
+  <node name="$(anon rviz)"
+	pkg="rviz" type="rviz"
+	args="-d $(find jsk_2019_10_semi)/config/hsi_color_filter.rviz"/>
+</launch>
