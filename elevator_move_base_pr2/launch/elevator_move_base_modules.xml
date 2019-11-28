@@ -1,38 +1,49 @@
 <launch>
   <arg name="scene" default="eng2"/>
+  <arg name="MANAGER" default="elevator_move_base_manager"/>
 
-  <!-- Throttle image -->
+  <node name="$(arg MANAGER)"
+        pkg="nodelet" type="nodelet"
+        args="manager"
+        machine="c2" respawn="true" output="screen"/>
+
   <group ns="/narrow_stereo/left">
-    <node machine="c1" name="throttle" pkg="jsk_topic_tools"
-          type="lightweight_throttle">
+    <!-- Throttle image -->
+    <node name="lightweight_throttle"
+          pkg="nodelet" type="nodelet"
+          args="load jsk_topic_tools/LightweightThrottle /$(arg MANAGER)"
+          machine="c2">
       <remap from="~input" to="image_rect"/>
       <remap from="~output" to="image_rect_throttle"/>
-      <param name="~update_rate" value="2.0"/>
+      <rosparam>
+        update_rate: 2.0
+      </rosparam>
     </node>
-  </group>
 
-  <!-- Detect elevator_call_panel / elevator_inside_panel. -->
-  <group ns="/narrow_stereo/left">
+    <!-- Detect elevator_call_panel / elevator_inside_panel. -->
     <node name="imagesift"
           pkg="nodelet" type="nodelet"
-          args="standalone imagesift/ImageSift"
+          args="load imagesift/ImageSift /$(arg MANAGER)"
           machine="c2"
           launch-prefix="nice -n +10">
       <remap from="image" to="image_rect_throttle"/>
     </node>
+
     <include file="$(find elevator_move_base_pr2)/launch/elevator_panels_detection_$(arg scene).launch">
       <arg name="INPUT_FEATURE" value="ImageFeature0D"/>
       <arg name="MACHINE" value="c2"/>
     </include>
+
     <!-- XXX: This node is often killed on c2, but not on c1 -->
-    <node name="find_elevator_button" pkg="roseus" type="roseus"
-          respawn="true" machine="c1" output="screen"
-          args="$(find elevator_move_base_pr2)/src/find-elevator-button.l" />
+    <node name="find_elevator_button"
+          pkg="elevator_move_base_pr2" type="find-elevator-button.l"
+          machine="c1" respawn="true" output="screen"/>
   </group>
 
   <!-- Check if button is lit or not. -->
-  <node name="light_detector" pkg="elevator_move_base_pr2"
-        type="color_point_detector" machine="c2">
+  <node name="light_detector"
+        pkg="elevator_move_base_pr2" type="color_point_detector"
+        machine="c2">
     <remap from="image" to="/wide_stereo/left/image_rect_color"/>
     <rosparam>
       red: 253
@@ -45,15 +56,18 @@
   </node>
 
   <!-- Read current elevator floor. -->
-  <node name="panel_camera"  machine="c2"
-        pkg="jsk_perception" type="virtual_camera_mono">
+  <node name="panel_camera"
+        pkg="jsk_perception" type="virtual_camera_mono"
+        machine="c2">
     <remap from="image" to="/narrow_stereo/left/image_rect"/>
   </node>
+
   <node name="elevator_number"
         pkg="elevator_move_base_pr2" type="match_template.py"
         machine="c2" output="screen">
     <remap from="~image" to="/panel_camera/image"/>
-    <rosparam file="$(find elevator_move_base_pr2)/launch/template-$(arg scene).yaml" command="load"/>
+    <rosparam command="load"
+              file="$(find elevator_move_base_pr2)/launch/template-$(arg scene).yaml"/>
     <rosparam>
       show_probability: false
     </rosparam>
