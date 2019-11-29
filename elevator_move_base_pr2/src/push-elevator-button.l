@@ -72,7 +72,7 @@
 
 (defun push-button (target-coords)
   (let (rayvec via-coords (arm :rarm)
-        via-angle-vector org-arm-anglev org-head-anglev
+        via-angle-vector org-arm-anglev org-head-anglev reset-pose
         (rarm-reset #f(-60 70 -70 -120 160 -30 180))  ;; 2nd element 80 -> 70
         (larm-reset #f(60 70 70 -120 -160 -30 180)))  ;; 2nd element 80 -> 70
 
@@ -119,16 +119,18 @@
     (setq org-head-anglev (send *pr2* :head :angle-vector))
 
     ;; reset-pose (arms only) and select arm
+    (send *pr2* :reset-pose)
+    (send *pr2* :head :angle-vector org-head-anglev)
+    (setq reset-pose (send *pr2* :angle-vector))
+    (unless (eps-v= reset-pose (send *ri* :state :potentio-vector) 2.0)
+      (send *ri* :angle-vector (send *pr2* :angle-vector) 3000)
+      (send *ri* :wait-interpolation))
     (unless arm
       (setq arm
             (if (plusp (elt (send (send *pr2* :transformation target-coords)
                                   :worldpos) 1))
                 :larm
-              :rarm))
-      (send *pr2* :reset-pose)
-      (send *pr2* :head :angle-vector org-head-anglev)
-      (send *ri* :angle-vector (send *pr2* :angle-vector) 3000)
-      (send *ri* :wait-interpolation))
+              :rarm)))
 
     (ros::ros-info (format nil "select ~A arm to push button ~A"
                            arm (send target-coords :worldpos)))
