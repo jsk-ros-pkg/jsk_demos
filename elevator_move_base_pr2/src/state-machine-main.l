@@ -16,6 +16,7 @@
 (load "package://elevator_move_base_pr2/src/navigation-client.l")
 (load "package://elevator_move_base_pr2/src/push-elevator-button.l")
 (load "package://elevator_move_base_pr2/src/ros-callback-manager.l")
+(load "package://elevator_move_base_pr2/src/sanity-check.l")
 (load "package://elevator_move_base_pr2/src/utils.l")
 
 
@@ -217,6 +218,7 @@
 
 (defun elevator-move-base-state-machine ()
   (let ((sm (instance state-machine :init)))
+    (send sm :add-node (instance state :init :sanity-check 'sanity-check))
     (send sm :add-node
           (instance state :init :check-elevator-needed 'check-elevator-needed))
     (send sm :add-node
@@ -239,7 +241,9 @@
                        'target-floor 'outside-coords 'target-coords :goal
                        :cancel)
     (send sm :goal-state (list :success :fail))
-    (send sm :start-state :check-elevator-needed)
+    (send sm :start-state :sanity-check)
+    (send sm :add-transition :sanity-check :check-elevator-needed t)
+    (send sm :add-transition :sanity-check :fail nil)
     (send sm :add-transition :check-elevator-needed :speak-elevator t)
     (send sm :add-transition :check-elevator-needed :go-to nil)
     (send sm :add-transition :speak-elevator :take-elevator t)
