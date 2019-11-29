@@ -174,7 +174,7 @@
 
 (defun look-button-state (userdata)
   (let ((panel-name (cdr (assoc 'panel-name userdata))) look-target look-av)
-    (call-service "/narrow_stereo/left/pass_through_image/request"
+    (call-service "/narrow_stereo/left/pass_through_image_rect_throttle/request"
                   (instance std_srvs::EmptyRequest :init))
     (update-robot-position)
 
@@ -222,7 +222,7 @@
       (ros::ros-info "Could not find button.")
       (speak-jp "見つかりませんでした。")
       (return-from look-button-state nil))
-    (call-service "/narrow_stereo/left/pass_through_image/stop"
+    (call-service "/narrow_stereo/left/pass_through_image_rect_throttle/stop"
                   (instance std_srvs::EmptyRequest :init))
     t))
 
