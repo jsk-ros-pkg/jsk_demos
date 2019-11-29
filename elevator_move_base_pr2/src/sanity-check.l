@@ -32,7 +32,7 @@
   (speak-subscription-error topic)
   nil)
 
-(defun sanity-check ()
+(defun sanity-check (userdata)
   (let ((success t))
     (unless (boundp '*ri*)
       (pr2-init))
