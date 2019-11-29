@@ -31,7 +31,7 @@
                    ("9F" "9階") ("10F" "10階")
                    ("11F" "11階") ("12F" "12階"))))
 
-(defun check-target-floor-arrived (target-floor &key (timeout 20))
+(defun check-target-floor-arrived (target-floor &key (timeout 25))
   (let ((topic
          (instance ros-callback-message
                    :init roseus::StringStamped "/elevator_number/result"))
@@ -75,7 +75,7 @@
 
   (let ((targetfloor (cdr (assoc 'target-floor userdata))))
     (unless (check-target-floor-arrived (concatenate string "/" targetfloor)
-                                        :timeout 20)
+                                        :timeout 25)
       (send *ri* :go-pos-unsafe 0 0 -90)  ;; Unsafe for faster turning right
       (return-from ready-to-outside :fail))
 
