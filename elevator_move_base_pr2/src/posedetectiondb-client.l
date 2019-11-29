@@ -22,11 +22,15 @@
 ;; posedetectiondb -> tf client class
 (defclass posedetectiondb-client
   :super ros-callback-object
-  :slots (objects time-stamp poselist filter-type tfl tfb))
+  :slots (objects time-stamp poselist fixed-frame filter-type tfl tfb))
 
 (defmethod posedetectiondb-client
-  (:init (objs &key (topic "ObjectDetection") ((:filter-type ft) nil))
+  (:init (objs
+          &key (topic "ObjectDetection")
+               ((:fixed-frame _fixed) "/base_footprint")
+               ((:filter-type ft) nil))
    (setq objects objs)
+   (setq fixed-frame _fixed)
    (setq filter-type ft)
    (setq time-stamp (ros::time 0))
    (setq tfl (instance ros::transform-listener :init))
@@ -56,19 +60,22 @@
        (when (substringp (string-left-trim "/" (send object :name))
                          (string-left-trim "/" (send object-msg :type)))
          ;; broadcast transform
+         (send tfl :wait-for-transform
+               fixed-frame (send msg :header :frame_id)
+               (send msg :header :stamp) 1)
          (let* ((pose (instance geometry_msgs::PoseStamped :init
                                 :header (send msg :header)
                                 :pose (send object-msg :pose)))
                 (coords (ros::tf-pose->coords (send pose :pose)))
                 (objcoords (send tfl :transform-pose
-                                 (send msg :header :frame_id) pose)))
-           (ros::ros-info "posedetection-cb type:~A, coords:~A"
+                                 fixed-frame pose)))
+           (ros::ros-info "posedetection-cb type:~A, coords~A"
                           (send object-msg :type) coords)
            (when objcoords
              (send self :update-coords objcoords :world)
              (putprop object (send msg :header :stamp) :stamp)
              (send tfb :send-transform object
-                   (send msg :header :frame_id) (send object :name)
+                   fixed-frame (send object :name)
                    (send msg :header :stamp)))
            )))))
   )
