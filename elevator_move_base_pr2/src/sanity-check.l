@@ -30,7 +30,7 @@
   nil)
 
 (defun sanity-check ()
-  (let (success t)
+  (let ((success t))
     (unless (boundp '*ri*)
       (pr2-init))
     (unless (check-image-published "/narrow_stereo/left/image_raw" 10)
