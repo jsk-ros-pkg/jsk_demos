@@ -9,22 +9,25 @@
    (format nil "~A のトピックを subscribe できませんでした。" topic) :wait t))
 
 (defun check-image-published (topic &optional (timeout 10))
-  (when (one-shot-subscribe topic sensor_msgs::Image
-                            :timeout timeout :after-stamp (ros::time-now))
+  (when (one-shot-subscribe
+         topic sensor_msgs::Image
+         :timeout (* timeout 1000) :after-stamp (ros::time-now))
     (return-from check-image-published t))
   (speak-subscription-error topic)
   nil)
 
 (defun check-point-cloud-published (topic &optional (timeout 10))
-  (when (one-shot-subscribe topic sensor_msgs::PointCloud2
-                            :timeout timeout :after-stamp (ros::time-now))
+  (when (one-shot-subscribe
+         topic sensor_msgs::PointCloud2
+         :timeout (* timeout 1000) :after-stamp (ros::time-now))
     (return-from check-point-cloud-published t))
   (speak-subscription-error topic)
   nil)
 
 (defun check-laser-scan-published (topic &optional (timeout 10))
-  (when (one-shot-subscribe topic sensor_msgs::LaserScan
-                            :timeout timeout :after-stamp (ros::time-now))
+  (when (one-shot-subscribe
+         topic sensor_msgs::LaserScan
+         :timeout (* timeout 1000) :after-stamp (ros::time-now))
     (return-from check-laser-scan-published t))
   (speak-subscription-error topic)
   nil)
