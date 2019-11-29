@@ -243,6 +243,8 @@
          (button-state (instance light-button-cb-class :init))
          (start-tm (ros::time-now))
          (timeout 3.0))
+    (call-service "/wide_stereo/left/pass_through_image_rect_color/request"
+                  (instance std_srvs::EmptyRequest :init))
     (set-view-target button-coords (send *pr2* :wide_stereo-left)
                      "wide_stereo_optical_frame")
     ;; check phase
@@ -255,11 +257,15 @@
       (when (< 0.5 (send button-state :value))
         (ros::ros-info "Button is lighting up.")
         (speak-jp "ボタンが光りました。")
+        (call-service "/wide_stereo/left/pass_through_image_rect_color/stop"
+                      (instance std_srvs::EmptyRequest :init))
         (clear-costmap)
         (return-from check-button-light-state t))
       (ros::sleep))
     (ros::ros-info "Button is not lighting up.")
     (speak-jp "押せていないようです。")
+    (call-service "/wide_stereo/left/pass_through_image_rect_color/stop"
+                  (instance std_srvs::EmptyRequest :init))
     nil))
 
 (defun push-state-machine ()
