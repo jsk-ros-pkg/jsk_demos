@@ -20,7 +20,17 @@
       </rosparam>
     </node>
 
-    <node name="pass_through_image"
+    <node name="pass_through_image_rect"
+          pkg="nodelet" type="nodelet"
+          args="load jsk_topic_tools/Passthrough /$(arg MANAGER)"
+          machine="c2">
+      <remap from="~input" to="image_rect"/>
+      <rosparam>
+        default_duration: 0.0  # infinite
+      </rosparam>
+    </node>
+
+    <node name="pass_through_image_rect_throttle"
           pkg="nodelet" type="nodelet"
           args="load jsk_topic_tools/Passthrough /$(arg MANAGER)"
           machine="c2">
@@ -36,7 +46,7 @@
           args="load imagesift/ImageSift /$(arg MANAGER)"
           machine="c2"
           launch-prefix="nice -n +10">
-      <remap from="image" to="pass_through_image/output"/>
+      <remap from="image" to="pass_through_image_rect_throttle/output"/>
     </node>
 
     <include file="$(find elevator_move_base_pr2)/launch/elevator_panels_detection_$(arg scene).launch">
@@ -69,7 +79,7 @@
   <node name="panel_camera"
         pkg="jsk_perception" type="virtual_camera_mono"
         machine="c2">
-    <remap from="image" to="/narrow_stereo/left/image_rect"/>
+    <remap from="image" to="/narrow_stereo/left/pass_through_image_rect"/>
   </node>
 
   <node name="elevator_number"

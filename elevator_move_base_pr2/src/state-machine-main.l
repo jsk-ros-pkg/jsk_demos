@@ -1,6 +1,7 @@
 ;; -*- coding: utf-8 -*-
 
 (ros::roseus-add-msgs "roseus")
+(ros::roseus-add-srvs "std_srvs")
 
 (require :eng2-scene "package://jsk_maps/src/eng2-scene.l")
 (require :eng8-scene "package://jsk_maps/src/eng8-scene.l")
@@ -39,6 +40,8 @@
         (prev-reset-time (ros::time-now))
         (prev-floor nil)
         (cur-floor nil))
+    (call-service "/narrow_stereo/left/pass_through_image_rect/request"
+                  (instance std_srvs::EmptyRequest :init))
     (ros::rate 5)
     (while (ros::ok)
       (ros::spin-once)
@@ -53,8 +56,12 @@
         (ros::warn
          (format nil "Elevator has not moved in recent ~A [sec]." timeout))
         (speak-jp "エレベータが動いていません。")
+        (call-service "/narrow_stereo/left/pass_through_image_rect/stop"
+                      (instance std_srvs::EmptyRequest :init))
         (return-from check-target-floor-arrived nil))
       (when (and cur-floor (substringp target-floor cur-floor))
+        (call-service "/narrow_stereo/left/pass_through_image_rect/stop"
+                      (instance std_srvs::EmptyRequest :init))
         (return-from check-target-floor-arrived t))
       (ros::sleep)
       )))
