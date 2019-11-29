@@ -6,7 +6,7 @@ Panels:
       Expanded:
         - /Global Options1
         - /Status1
-      Splitter Ratio: 0.597087026
+      Splitter Ratio: 0.633333325
     Tree Height: 856
   - Class: rviz/Selection
     Name: Selection
@@ -49,44 +49,6 @@ Visualization Manager:
       Plane: XY
       Plane Cell Count: 10
       Reference Frame: <Fixed Frame>
-      Value: true
-    - Alpha: 0.699999988
-      Class: rviz/Map
-      Color Scheme: map
-      Draw Behind: false
-      Enabled: false
-      Name: Map
-      Topic: /map
-      Unreliable: false
-      Use Timestamp: false
-      Value: false
-    - Alpha: 0.899999976
-      Class: rviz/Map
-      Color Scheme: map
-      Draw Behind: false
-      Enabled: true
-      Name: Eng2/2F
-      Topic: /eng2/2f
-      Unreliable: false
-      Use Timestamp: false
-      Value: true
-    - Alpha: 0.699999988
-      Class: rviz/Map
-      Color Scheme: map
-      Draw Behind: false
-      Enabled: true
-      Name: Eng2/7F
-      Topic: /eng2/7f
-      Unreliable: false
-      Use Timestamp: false
-      Value: true
-    - Class: rviz/MarkerArray
-      Enabled: true
-      Marker Topic: /spots_marker_array
-      Name: SpotMarkers
-      Namespaces:
-        {}
-      Queue Size: 100
       Value: true
     - Alpha: 1
       Class: rviz/RobotModel
@@ -508,171 +470,221 @@ Visualization Manager:
       Update Interval: 0
       Value: true
       Visual Enabled: true
-    - Class: jsk_rviz_plugin/PieChart
+    - Class: rviz/Group
+      Displays:
+        - Class: jsk_rviz_plugin/PieChart
+          Enabled: true
+          Name: Battery0
+          Topic: /visualization/battery/value0
+          Value: true
+          auto color change: false
+          background color: 0; 0; 0
+          backround alpha: 0
+          foreground alpha: 0.699999988
+          foreground alpha 2: 0.400000006
+          foreground color: 25; 255; 240
+          left: 0
+          max color: 255; 0; 0
+          max value: 1
+          min value: 0
+          show caption: true
+          size: 128
+          text size: 14
+          top: 0
+        - Class: jsk_rviz_plugin/PieChart
+          Enabled: true
+          Name: Battery1
+          Topic: /visualization/battery/value1
+          Value: true
+          auto color change: false
+          background color: 0; 0; 0
+          backround alpha: 0
+          foreground alpha: 0.699999988
+          foreground alpha 2: 0.400000006
+          foreground color: 25; 255; 240
+          left: 128
+          max color: 255; 0; 0
+          max value: 1
+          min value: 0
+          show caption: true
+          size: 128
+          text size: 14
+          top: 0
+        - Class: jsk_rviz_plugin/PieChart
+          Enabled: true
+          Name: Battery2
+          Topic: /visualization/battery/value2
+          Value: true
+          auto color change: false
+          background color: 0; 0; 0
+          backround alpha: 0
+          foreground alpha: 0.699999988
+          foreground alpha 2: 0.400000006
+          foreground color: 25; 255; 240
+          left: 256
+          max color: 255; 0; 0
+          max value: 1
+          min value: 0
+          show caption: true
+          size: 128
+          text size: 14
+          top: 0
+        - Class: jsk_rviz_plugin/PieChart
+          Enabled: true
+          Name: Battery3
+          Topic: /visualization/battery/value3
+          Value: true
+          auto color change: false
+          background color: 0; 0; 0
+          backround alpha: 0
+          foreground alpha: 0.699999988
+          foreground alpha 2: 0.400000006
+          foreground color: 25; 255; 240
+          left: 384
+          max color: 255; 0; 0
+          max value: 1
+          min value: 0
+          show caption: true
+          size: 128
+          text size: 14
+          top: 0
       Enabled: true
-      Name: Battery0
-      Topic: /visualization/battery/value0
-      Value: true
-      auto color change: false
-      background color: 0; 0; 0
-      backround alpha: 0
-      foreground alpha: 0.699999988
-      foreground alpha 2: 0.400000006
-      foreground color: 25; 255; 240
-      left: 0
-      max color: 255; 0; 0
-      max value: 1
-      min value: 0
-      show caption: true
-      size: 128
-      text size: 14
-      top: 0
-    - Class: jsk_rviz_plugin/PieChart
+      Name: Battery
+    - Class: rviz/Group
+      Displays:
+        - Alpha: 0.699999988
+          Class: rviz/Map
+          Color Scheme: map
+          Draw Behind: false
+          Enabled: false
+          Name: Map
+          Topic: /map
+          Unreliable: false
+          Use Timestamp: false
+          Value: false
+        - Alpha: 0.899999976
+          Class: rviz/Map
+          Color Scheme: map
+          Draw Behind: false
+          Enabled: true
+          Name: Eng2/2F
+          Topic: /eng2/2f
+          Unreliable: false
+          Use Timestamp: false
+          Value: true
+        - Alpha: 0.699999988
+          Class: rviz/Map
+          Color Scheme: map
+          Draw Behind: false
+          Enabled: true
+          Name: Eng2/7F
+          Topic: /eng2/7f
+          Unreliable: false
+          Use Timestamp: false
+          Value: true
+        - Class: rviz/MarkerArray
+          Enabled: true
+          Marker Topic: /spots_marker_array
+          Name: SpotMarkers
+          Namespaces:
+            {}
+          Queue Size: 100
+          Value: true
       Enabled: true
-      Name: Battery1
-      Topic: /visualization/battery/value1
-      Value: true
-      auto color change: false
-      background color: 0; 0; 0
-      backround alpha: 0
-      foreground alpha: 0.699999988
-      foreground alpha 2: 0.400000006
-      foreground color: 25; 255; 240
-      left: 128
-      max color: 255; 0; 0
-      max value: 1
-      min value: 0
-      show caption: true
-      size: 128
-      text size: 14
-      top: 0
-    - Class: jsk_rviz_plugin/PieChart
+      Name: Map&Spot
+    - Class: rviz/Group
+      Displays:
+        - Alpha: 0.400000006
+          Class: rviz/Map
+          Color Scheme: costmap
+          Draw Behind: false
+          Enabled: true
+          Name: GlobalCostmap
+          Topic: /move_base_node/global_costmap/costmap
+          Unreliable: false
+          Use Timestamp: false
+          Value: true
+        - Alpha: 0.699999988
+          Class: rviz/Map
+          Color Scheme: costmap
+          Draw Behind: false
+          Enabled: true
+          Name: LocalCostmap
+          Topic: /move_base_node/local_costmap/costmap
+          Unreliable: false
+          Use Timestamp: false
+          Value: true
+        - Alpha: 1
+          Buffer Length: 1
+          Class: rviz/Path
+          Color: 170; 255; 255
+          Enabled: true
+          Head Diameter: 0.100000001
+          Head Length: 0.0500000007
+          Length: 0.300000012
+          Line Style: Lines
+          Line Width: 0.0299999993
+          Name: NavFnGlobalPathPlan
+          Offset:
+            X: 0
+            Y: 0
+            Z: 0
+          Pose Color: 255; 85; 255
+          Pose Style: None
+          Radius: 0.0299999993
+          Shaft Diameter: 0.0199999996
+          Shaft Length: 0.100000001
+          Topic: /move_base_node/NavfnROS/plan
+          Unreliable: false
+          Value: true
+        - Alpha: 1
+          Buffer Length: 1
+          Class: rviz/Path
+          Color: 0; 255; 0
+          Enabled: true
+          Head Diameter: 0.100000001
+          Head Length: 0.0500000007
+          Length: 0.300000012
+          Line Style: Lines
+          Line Width: 0.0299999993
+          Name: DWAGlobalPathPlan
+          Offset:
+            X: 0
+            Y: 0
+            Z: 0
+          Pose Color: 255; 85; 255
+          Pose Style: None
+          Radius: 0.0299999993
+          Shaft Diameter: 0.0199999996
+          Shaft Length: 0.100000001
+          Topic: /move_base_node/DWAPlannerROS/global_plan
+          Unreliable: false
+          Value: true
+        - Alpha: 1
+          Buffer Length: 1
+          Class: rviz/Path
+          Color: 255; 85; 0
+          Enabled: true
+          Head Diameter: 0.300000012
+          Head Length: 0.200000003
+          Length: 0.300000012
+          Line Style: Lines
+          Line Width: 0.0299999993
+          Name: DWALocalPathPlan
+          Offset:
+            X: 0
+            Y: 0
+            Z: 0
+          Pose Color: 255; 85; 255
+          Pose Style: None
+          Radius: 0.0299999993
+          Shaft Diameter: 0.100000001
+          Shaft Length: 0.100000001
+          Topic: /move_base_node/DWAPlannerROS/local_plan
+          Unreliable: false
+          Value: true
       Enabled: true
-      Name: Battery2
-      Topic: /visualization/battery/value2
-      Value: true
-      auto color change: false
-      background color: 0; 0; 0
-      backround alpha: 0
-      foreground alpha: 0.699999988
-      foreground alpha 2: 0.400000006
-      foreground color: 25; 255; 240
-      left: 256
-      max color: 255; 0; 0
-      max value: 1
-      min value: 0
-      show caption: true
-      size: 128
-      text size: 14
-      top: 0
-    - Class: jsk_rviz_plugin/PieChart
-      Enabled: true
-      Name: Battery3
-      Topic: /visualization/battery/value3
-      Value: true
-      auto color change: false
-      background color: 0; 0; 0
-      backround alpha: 0
-      foreground alpha: 0.699999988
-      foreground alpha 2: 0.400000006
-      foreground color: 25; 255; 240
-      left: 384
-      max color: 255; 0; 0
-      max value: 1
-      min value: 0
-      show caption: true
-      size: 128
-      text size: 14
-      top: 0
-    - Alpha: 0.400000006
-      Class: rviz/Map
-      Color Scheme: costmap
-      Draw Behind: false
-      Enabled: true
-      Name: GlobalCostmap
-      Topic: /move_base_node/global_costmap/costmap
-      Unreliable: false
-      Use Timestamp: false
-      Value: true
-    - Alpha: 0.699999988
-      Class: rviz/Map
-      Color Scheme: costmap
-      Draw Behind: false
-      Enabled: true
-      Name: LocalCostmap
-      Topic: /move_base_node/local_costmap/costmap
-      Unreliable: false
-      Use Timestamp: false
-      Value: true
-    - Alpha: 1
-      Buffer Length: 1
-      Class: rviz/Path
-      Color: 170; 255; 255
-      Enabled: true
-      Head Diameter: 0.100000001
-      Head Length: 0.0500000007
-      Length: 0.300000012
-      Line Style: Lines
-      Line Width: 0.0299999993
-      Name: NavFnGlobalPathPlan
-      Offset:
-        X: 0
-        Y: 0
-        Z: 0
-      Pose Color: 255; 85; 255
-      Pose Style: None
-      Radius: 0.0299999993
-      Shaft Diameter: 0.0199999996
-      Shaft Length: 0.100000001
-      Topic: /move_base_node/NavfnROS/plan
-      Unreliable: false
-      Value: true
-    - Alpha: 1
-      Buffer Length: 1
-      Class: rviz/Path
-      Color: 0; 255; 0
-      Enabled: true
-      Head Diameter: 0.100000001
-      Head Length: 0.0500000007
-      Length: 0.300000012
-      Line Style: Lines
-      Line Width: 0.0299999993
-      Name: DWAGlobalPathPlan
-      Offset:
-        X: 0
-        Y: 0
-        Z: 0
-      Pose Color: 255; 85; 255
-      Pose Style: None
-      Radius: 0.0299999993
-      Shaft Diameter: 0.0199999996
-      Shaft Length: 0.100000001
-      Topic: /move_base_node/DWAPlannerROS/global_plan
-      Unreliable: false
-      Value: true
-    - Alpha: 1
-      Buffer Length: 1
-      Class: rviz/Path
-      Color: 255; 85; 0
-      Enabled: true
-      Head Diameter: 0.300000012
-      Head Length: 0.200000003
-      Length: 0.300000012
-      Line Style: Lines
-      Line Width: 0.0299999993
-      Name: DWALocalPathPlan
-      Offset:
-        X: 0
-        Y: 0
-        Z: 0
-      Pose Color: 255; 85; 255
-      Pose Style: None
-      Radius: 0.0299999993
-      Shaft Diameter: 0.100000001
-      Shaft Length: 0.100000001
-      Topic: /move_base_node/DWAPlannerROS/local_plan
-      Unreliable: false
-      Value: true
+      Name: Navigation
     - Alpha: 1
       Autocompute Intensity Bounds: true
       Autocompute Value Bounds:
@@ -733,493 +745,505 @@ Visualization Manager:
       Use Fixed Frame: true
       Use rainbow: true
       Value: true
-    - Class: jsk_rviz_plugin/OverlayImage
-      Enabled: true
-      Name: NarrowLeftImage
-      Topic: /narrow_stereo/left/image_rect_color
-      Value: true
-      alpha: 0.800000012
-      height: 150
-      keep aspect ratio: false
-      left: 20
-      top: 480
-      transport hint: raw
-      width: 200
-    - Class: jsk_rviz_plugin/OverlayImage
-      Enabled: true
-      Name: DetectedDoorButton
-      Topic: /door_button/label_image_decomposer/output/label_viz
-      Value: true
-      alpha: 0.800000012
-      height: 150
-      keep aspect ratio: false
-      left: 460
-      top: 160
-      transport hint: raw
-      width: 200
-    - Class: jsk_rviz_plugin/OverlayImage
-      Enabled: true
-      Name: DetectedCurrentFloor
-      Topic: /elevator_number/debug_image
-      Value: true
-      alpha: 0.800000012
-      height: 150
-      keep aspect ratio: false
-      left: 240
-      top: 480
-      transport hint: raw
-      width: 200
-    - Class: rviz/TF
-      Enabled: true
-      Frame Timeout: 5
-      Frames:
-        All Enabled: false
-        base_bellow_link:
-          Value: false
-        base_footprint:
-          Value: false
-        base_laser_link:
-          Value: false
-        base_link:
-          Value: false
-        bl_caster_l_wheel_link:
-          Value: false
-        bl_caster_r_wheel_link:
-          Value: false
-        bl_caster_rotation_link:
-          Value: false
-        br_caster_l_wheel_link:
-          Value: false
-        br_caster_r_wheel_link:
-          Value: false
-        br_caster_rotation_link:
-          Value: false
-        double_stereo_link:
-          Value: false
-        elevator_call_panel:
+    - Class: rviz/Group
+      Displays:
+        - Class: jsk_rviz_plugin/OverlayImage
+          Enabled: true
+          Name: NarrowLeftImage
+          Topic: /narrow_stereo/left/image_rect_color
           Value: true
-        elevator_inside_panel:
+          alpha: 0.800000012
+          height: 150
+          keep aspect ratio: false
+          left: 20
+          top: 500
+          transport hint: raw
+          width: 200
+        - Class: jsk_rviz_plugin/OverlayImage
+          Enabled: true
+          Name: ElevatorCallPanel
+          Topic: /narrow_stereo/left/point_pose_extractor_elevator_call_panel/debug_image
           Value: true
-        eng2:
-          Value: false
-        eng2/1f:
-          Value: false
-        eng2/2f:
-          Value: false
-        eng2/3f:
-          Value: false
-        eng2/7f:
-          Value: false
-        eng2/7f/73B2:
-          Value: false
-        eng2/8f:
-          Value: false
-        fl_caster_l_wheel_link:
-          Value: false
-        fl_caster_r_wheel_link:
-          Value: false
-        fl_caster_rotation_link:
-          Value: false
-        fr_caster_l_wheel_link:
-          Value: false
-        fr_caster_r_wheel_link:
-          Value: false
-        fr_caster_rotation_link:
-          Value: false
-        head_chain_cb_link:
-          Value: false
-        head_mount_kinect_ir_link:
-          Value: false
-        head_mount_kinect_ir_optical_frame:
-          Value: false
-        head_mount_kinect_rgb_link:
-          Value: false
-        head_mount_kinect_rgb_optical_frame:
-          Value: false
-        head_mount_link:
-          Value: false
-        head_mount_prosilica_link:
-          Value: false
-        head_mount_prosilica_optical_frame:
-          Value: false
-        head_pan_link:
-          Value: false
-        head_plate_frame:
-          Value: false
-        head_tilt_link:
-          Value: false
-        high_def_frame:
-          Value: false
-        high_def_optical_frame:
-          Value: false
-        imu_link:
-          Value: false
-        l_elbow_flex_link:
-          Value: false
-        l_forearm_cam_frame:
-          Value: false
-        l_forearm_cam_optical_frame:
-          Value: false
-        l_forearm_link:
-          Value: false
-        l_forearm_roll_link:
-          Value: false
-        l_gripper_l_finger_link:
-          Value: false
-        l_gripper_l_finger_tip_frame:
-          Value: false
-        l_gripper_l_finger_tip_link:
-          Value: false
-        l_gripper_led_frame:
-          Value: false
-        l_gripper_motor_accelerometer_link:
-          Value: false
-        l_gripper_motor_screw_link:
-          Value: false
-        l_gripper_motor_slider_link:
-          Value: false
-        l_gripper_palm_link:
-          Value: false
-        l_gripper_r_finger_link:
-          Value: false
-        l_gripper_r_finger_tip_link:
-          Value: false
-        l_gripper_tool_frame:
-          Value: false
-        l_shoulder_lift_link:
-          Value: false
-        l_shoulder_pan_link:
-          Value: false
-        l_torso_lift_side_plate_link:
-          Value: false
-        l_upper_arm_link:
-          Value: false
-        l_upper_arm_roll_link:
-          Value: false
-        l_wrist_flex_link:
-          Value: false
-        l_wrist_roll_link:
-          Value: false
-        laser_tilt_link:
-          Value: false
-        laser_tilt_mount_link:
-          Value: false
-        left_arm_chain_cb_link:
-          Value: false
-        map:
-          Value: false
-        narrow_stereo_l_stereo_camera_frame:
-          Value: false
-        narrow_stereo_l_stereo_camera_optical_frame:
-          Value: false
-        narrow_stereo_link:
-          Value: false
-        narrow_stereo_optical_frame:
-          Value: false
-        narrow_stereo_r_stereo_camera_frame:
-          Value: false
-        narrow_stereo_r_stereo_camera_optical_frame:
-          Value: false
-        odom_combined:
-          Value: false
-        projector_wg6802418_child_frame:
-          Value: false
-        projector_wg6802418_frame:
-          Value: false
-        r_elbow_flex_link:
-          Value: false
-        r_forearm_cam_frame:
-          Value: false
-        r_forearm_cam_optical_frame:
-          Value: false
-        r_forearm_link:
-          Value: false
-        r_forearm_roll_link:
-          Value: false
-        r_gripper_l_finger_link:
-          Value: false
-        r_gripper_l_finger_tip_frame:
-          Value: false
-        r_gripper_l_finger_tip_link:
-          Value: false
-        r_gripper_led_frame:
-          Value: false
-        r_gripper_motor_accelerometer_link:
-          Value: false
-        r_gripper_motor_screw_link:
-          Value: false
-        r_gripper_motor_slider_link:
-          Value: false
-        r_gripper_palm_link:
-          Value: false
-        r_gripper_r_finger_link:
-          Value: false
-        r_gripper_r_finger_tip_link:
-          Value: false
-        r_gripper_tool_frame:
-          Value: false
-        r_shoulder_lift_link:
-          Value: false
-        r_shoulder_pan_link:
-          Value: false
-        r_torso_lift_side_plate_link:
-          Value: false
-        r_upper_arm_link:
-          Value: false
-        r_upper_arm_roll_link:
-          Value: false
-        r_wrist_flex_link:
-          Value: false
-        r_wrist_roll_link:
-          Value: false
-        right_arm_chain_cb_link:
-          Value: false
-        sensor_mount_link:
-          Value: false
-        torso_lift_link:
-          Value: false
-        torso_lift_motor_screw_link:
-          Value: false
-        virtual_camera_frame:
-          Value: false
-        wide_stereo_l_stereo_camera_frame:
-          Value: false
-        wide_stereo_l_stereo_camera_optical_frame:
-          Value: false
-        wide_stereo_link:
-          Value: false
-        wide_stereo_optical_frame:
-          Value: false
-        wide_stereo_r_stereo_camera_frame:
-          Value: false
-        wide_stereo_r_stereo_camera_optical_frame:
-          Value: false
-        world:
-          Value: false
-      Marker Scale: 1
-      Name: ElevatorPanelTF
-      Show Arrows: false
-      Show Axes: true
-      Show Names: true
-      Tree:
-        world:
-          eng2:
+          alpha: 0.800000012
+          height: 320
+          keep aspect ratio: false
+          left: 20
+          top: 160
+          transport hint: raw
+          width: 200
+        - Class: jsk_rviz_plugin/OverlayImage
+          Enabled: true
+          Name: ElevatorInsidePanel
+          Topic: /narrow_stereo/left/point_pose_extractor_elevator_inside_panel/debug_image
+          Value: true
+          alpha: 0.800000012
+          height: 320
+          keep aspect ratio: false
+          left: 240
+          top: 160
+          transport hint: raw
+          width: 200
+        - Class: jsk_rviz_plugin/OverlayImage
+          Enabled: true
+          Name: DetectedDoorButton
+          Topic: /door_button/label_image_decomposer/output/label_viz
+          Value: true
+          alpha: 0.800000012
+          height: 150
+          keep aspect ratio: false
+          left: 460
+          top: 160
+          transport hint: raw
+          width: 200
+        - Class: jsk_rviz_plugin/OverlayImage
+          Enabled: true
+          Name: DetectedCurrentFloor
+          Topic: /elevator_number/debug_image
+          Value: true
+          alpha: 0.800000012
+          height: 150
+          keep aspect ratio: false
+          left: 460
+          top: 330
+          transport hint: raw
+          width: 200
+        - Class: jsk_rviz_plugin/OverlayImage
+          Enabled: true
+          Name: DetectedLightButton
+          Topic: /light_detector/debug_image
+          Value: true
+          alpha: 0.800000012
+          height: 150
+          keep aspect ratio: false
+          left: 240
+          top: 500
+          transport hint: raw
+          width: 200
+        - Class: rviz/TF
+          Enabled: true
+          Frame Timeout: 5
+          Frames:
+            All Enabled: false
+            base_bellow_link:
+              Value: false
+            base_footprint:
+              Value: false
+            base_laser_link:
+              Value: false
+            base_link:
+              Value: false
+            bl_caster_l_wheel_link:
+              Value: false
+            bl_caster_r_wheel_link:
+              Value: false
+            bl_caster_rotation_link:
+              Value: false
+            br_caster_l_wheel_link:
+              Value: false
+            br_caster_r_wheel_link:
+              Value: false
+            br_caster_rotation_link:
+              Value: false
+            double_stereo_link:
+              Value: false
+            elevator_call_panel:
+              Value: true
+            elevator_inside_panel:
+              Value: true
+            eng2:
+              Value: false
             eng2/1f:
-              {}
+              Value: false
             eng2/2f:
-              {}
+              Value: false
             eng2/3f:
-              {}
+              Value: false
             eng2/7f:
-              eng2/7f/73B2:
-                {}
-              map:
-                odom_combined:
-                  base_footprint:
-                    base_link:
-                      base_bellow_link:
-                        {}
-                      base_laser_link:
-                        {}
-                      bl_caster_rotation_link:
-                        bl_caster_l_wheel_link:
-                          {}
-                        bl_caster_r_wheel_link:
-                          {}
-                      br_caster_rotation_link:
-                        br_caster_l_wheel_link:
-                          {}
-                        br_caster_r_wheel_link:
-                          {}
-                      fl_caster_rotation_link:
-                        fl_caster_l_wheel_link:
-                          {}
-                        fl_caster_r_wheel_link:
-                          {}
-                      fr_caster_rotation_link:
-                        fr_caster_l_wheel_link:
-                          {}
-                        fr_caster_r_wheel_link:
-                          {}
-                      torso_lift_link:
-                        head_pan_link:
-                          head_tilt_link:
-                            head_chain_cb_link:
-                              {}
-                            head_plate_frame:
-                              head_mount_link:
-                                head_mount_kinect_ir_link:
-                                  head_mount_kinect_ir_optical_frame:
-                                    {}
-                                  head_mount_kinect_rgb_link:
-                                    head_mount_kinect_rgb_optical_frame:
-                                      {}
-                                head_mount_prosilica_link:
-                                  head_mount_prosilica_optical_frame:
-                                    {}
-                              projector_wg6802418_frame:
-                                projector_wg6802418_child_frame:
-                                  {}
-                              sensor_mount_link:
-                                double_stereo_link:
-                                  narrow_stereo_link:
-                                    narrow_stereo_l_stereo_camera_frame:
-                                      narrow_stereo_l_stereo_camera_optical_frame:
-                                        {}
-                                      narrow_stereo_r_stereo_camera_frame:
-                                        narrow_stereo_r_stereo_camera_optical_frame:
-                                          {}
-                                    narrow_stereo_optical_frame:
-                                      {}
-                                  wide_stereo_link:
-                                    wide_stereo_l_stereo_camera_frame:
-                                      wide_stereo_l_stereo_camera_optical_frame:
-                                        {}
-                                      wide_stereo_r_stereo_camera_frame:
-                                        wide_stereo_r_stereo_camera_optical_frame:
-                                          {}
-                                    wide_stereo_optical_frame:
-                                      {}
-                                high_def_frame:
-                                  high_def_optical_frame:
-                                    {}
-                        imu_link:
-                          {}
-                        l_shoulder_pan_link:
-                          l_shoulder_lift_link:
-                            l_upper_arm_roll_link:
-                              l_upper_arm_link:
-                                l_elbow_flex_link:
-                                  l_forearm_roll_link:
-                                    l_forearm_cam_frame:
-                                      l_forearm_cam_optical_frame:
-                                        {}
-                                    l_forearm_link:
-                                      l_wrist_flex_link:
-                                        l_wrist_roll_link:
-                                          l_gripper_palm_link:
-                                            l_gripper_l_finger_link:
-                                              l_gripper_l_finger_tip_link:
-                                                {}
-                                            l_gripper_led_frame:
-                                              {}
-                                            l_gripper_motor_accelerometer_link:
-                                              {}
-                                            l_gripper_motor_slider_link:
-                                              l_gripper_motor_screw_link:
-                                                {}
-                                            l_gripper_r_finger_link:
-                                              l_gripper_r_finger_tip_link:
-                                                l_gripper_l_finger_tip_frame:
-                                                  {}
-                                            l_gripper_tool_frame:
-                                              {}
-                                          left_arm_chain_cb_link:
-                                            {}
-                        l_torso_lift_side_plate_link:
-                          {}
-                        laser_tilt_mount_link:
-                          laser_tilt_link:
-                            {}
-                        r_shoulder_pan_link:
-                          r_shoulder_lift_link:
-                            r_upper_arm_roll_link:
-                              r_upper_arm_link:
-                                r_elbow_flex_link:
-                                  r_forearm_roll_link:
-                                    r_forearm_cam_frame:
-                                      r_forearm_cam_optical_frame:
-                                        {}
-                                    r_forearm_link:
-                                      r_wrist_flex_link:
-                                        r_wrist_roll_link:
-                                          r_gripper_palm_link:
-                                            r_gripper_l_finger_link:
-                                              r_gripper_l_finger_tip_link:
-                                                {}
-                                            r_gripper_led_frame:
-                                              {}
-                                            r_gripper_motor_accelerometer_link:
-                                              {}
-                                            r_gripper_motor_slider_link:
-                                              r_gripper_motor_screw_link:
-                                                {}
-                                            r_gripper_r_finger_link:
-                                              r_gripper_r_finger_tip_link:
-                                                r_gripper_l_finger_tip_frame:
-                                                  {}
-                                            r_gripper_tool_frame:
-                                              {}
-                                          right_arm_chain_cb_link:
-                                            {}
-                        r_torso_lift_side_plate_link:
-                          {}
-                      torso_lift_motor_screw_link:
-                        {}
-                    elevator_call_panel:
-                      {}
-                    elevator_inside_panel:
-                      virtual_camera_frame:
-                        {}
+              Value: false
+            eng2/7f/73B2:
+              Value: false
             eng2/8f:
-              {}
-      Update Interval: 0
-      Value: true
-    - Class: jsk_rviz_plugin/OverlayImage
+              Value: false
+            fl_caster_l_wheel_link:
+              Value: false
+            fl_caster_r_wheel_link:
+              Value: false
+            fl_caster_rotation_link:
+              Value: false
+            fr_caster_l_wheel_link:
+              Value: false
+            fr_caster_r_wheel_link:
+              Value: false
+            fr_caster_rotation_link:
+              Value: false
+            head_chain_cb_link:
+              Value: false
+            head_mount_kinect_ir_link:
+              Value: false
+            head_mount_kinect_ir_optical_frame:
+              Value: false
+            head_mount_kinect_rgb_link:
+              Value: false
+            head_mount_kinect_rgb_optical_frame:
+              Value: false
+            head_mount_link:
+              Value: false
+            head_mount_prosilica_link:
+              Value: false
+            head_mount_prosilica_optical_frame:
+              Value: false
+            head_pan_link:
+              Value: false
+            head_plate_frame:
+              Value: false
+            head_tilt_link:
+              Value: false
+            high_def_frame:
+              Value: false
+            high_def_optical_frame:
+              Value: false
+            imu_link:
+              Value: false
+            l_elbow_flex_link:
+              Value: false
+            l_forearm_cam_frame:
+              Value: false
+            l_forearm_cam_optical_frame:
+              Value: false
+            l_forearm_link:
+              Value: false
+            l_forearm_roll_link:
+              Value: false
+            l_gripper_l_finger_link:
+              Value: false
+            l_gripper_l_finger_tip_frame:
+              Value: false
+            l_gripper_l_finger_tip_link:
+              Value: false
+            l_gripper_led_frame:
+              Value: false
+            l_gripper_motor_accelerometer_link:
+              Value: false
+            l_gripper_motor_screw_link:
+              Value: false
+            l_gripper_motor_slider_link:
+              Value: false
+            l_gripper_palm_link:
+              Value: false
+            l_gripper_r_finger_link:
+              Value: false
+            l_gripper_r_finger_tip_link:
+              Value: false
+            l_gripper_tool_frame:
+              Value: false
+            l_shoulder_lift_link:
+              Value: false
+            l_shoulder_pan_link:
+              Value: false
+            l_torso_lift_side_plate_link:
+              Value: false
+            l_upper_arm_link:
+              Value: false
+            l_upper_arm_roll_link:
+              Value: false
+            l_wrist_flex_link:
+              Value: false
+            l_wrist_roll_link:
+              Value: false
+            laser_tilt_link:
+              Value: false
+            laser_tilt_mount_link:
+              Value: false
+            left_arm_chain_cb_link:
+              Value: false
+            map:
+              Value: false
+            narrow_stereo_l_stereo_camera_frame:
+              Value: false
+            narrow_stereo_l_stereo_camera_optical_frame:
+              Value: false
+            narrow_stereo_link:
+              Value: false
+            narrow_stereo_optical_frame:
+              Value: false
+            narrow_stereo_r_stereo_camera_frame:
+              Value: false
+            narrow_stereo_r_stereo_camera_optical_frame:
+              Value: false
+            odom_combined:
+              Value: false
+            projector_wg6802418_child_frame:
+              Value: false
+            projector_wg6802418_frame:
+              Value: false
+            r_elbow_flex_link:
+              Value: false
+            r_forearm_cam_frame:
+              Value: false
+            r_forearm_cam_optical_frame:
+              Value: false
+            r_forearm_link:
+              Value: false
+            r_forearm_roll_link:
+              Value: false
+            r_gripper_l_finger_link:
+              Value: false
+            r_gripper_l_finger_tip_frame:
+              Value: false
+            r_gripper_l_finger_tip_link:
+              Value: false
+            r_gripper_led_frame:
+              Value: false
+            r_gripper_motor_accelerometer_link:
+              Value: false
+            r_gripper_motor_screw_link:
+              Value: false
+            r_gripper_motor_slider_link:
+              Value: false
+            r_gripper_palm_link:
+              Value: false
+            r_gripper_r_finger_link:
+              Value: false
+            r_gripper_r_finger_tip_link:
+              Value: false
+            r_gripper_tool_frame:
+              Value: false
+            r_shoulder_lift_link:
+              Value: false
+            r_shoulder_pan_link:
+              Value: false
+            r_torso_lift_side_plate_link:
+              Value: false
+            r_upper_arm_link:
+              Value: false
+            r_upper_arm_roll_link:
+              Value: false
+            r_wrist_flex_link:
+              Value: false
+            r_wrist_roll_link:
+              Value: false
+            right_arm_chain_cb_link:
+              Value: false
+            sensor_mount_link:
+              Value: false
+            torso_lift_link:
+              Value: false
+            torso_lift_motor_screw_link:
+              Value: false
+            virtual_camera_frame:
+              Value: false
+            wide_stereo_l_stereo_camera_frame:
+              Value: false
+            wide_stereo_l_stereo_camera_optical_frame:
+              Value: false
+            wide_stereo_link:
+              Value: false
+            wide_stereo_optical_frame:
+              Value: false
+            wide_stereo_r_stereo_camera_frame:
+              Value: false
+            wide_stereo_r_stereo_camera_optical_frame:
+              Value: false
+            world:
+              Value: false
+          Marker Scale: 1
+          Name: ElevatorPanelTF
+          Show Arrows: false
+          Show Axes: true
+          Show Names: true
+          Tree:
+            world:
+              eng2:
+                eng2/1f:
+                  {}
+                eng2/2f:
+                  {}
+                eng2/3f:
+                  {}
+                eng2/7f:
+                  eng2/7f/73B2:
+                    {}
+                  map:
+                    odom_combined:
+                      base_footprint:
+                        base_link:
+                          base_bellow_link:
+                            {}
+                          base_laser_link:
+                            {}
+                          bl_caster_rotation_link:
+                            bl_caster_l_wheel_link:
+                              {}
+                            bl_caster_r_wheel_link:
+                              {}
+                          br_caster_rotation_link:
+                            br_caster_l_wheel_link:
+                              {}
+                            br_caster_r_wheel_link:
+                              {}
+                          fl_caster_rotation_link:
+                            fl_caster_l_wheel_link:
+                              {}
+                            fl_caster_r_wheel_link:
+                              {}
+                          fr_caster_rotation_link:
+                            fr_caster_l_wheel_link:
+                              {}
+                            fr_caster_r_wheel_link:
+                              {}
+                          torso_lift_link:
+                            head_pan_link:
+                              head_tilt_link:
+                                head_chain_cb_link:
+                                  {}
+                                head_plate_frame:
+                                  head_mount_link:
+                                    head_mount_kinect_ir_link:
+                                      head_mount_kinect_ir_optical_frame:
+                                        {}
+                                      head_mount_kinect_rgb_link:
+                                        head_mount_kinect_rgb_optical_frame:
+                                          {}
+                                    head_mount_prosilica_link:
+                                      head_mount_prosilica_optical_frame:
+                                        {}
+                                  projector_wg6802418_frame:
+                                    projector_wg6802418_child_frame:
+                                      {}
+                                  sensor_mount_link:
+                                    double_stereo_link:
+                                      narrow_stereo_link:
+                                        narrow_stereo_l_stereo_camera_frame:
+                                          narrow_stereo_l_stereo_camera_optical_frame:
+                                            {}
+                                          narrow_stereo_r_stereo_camera_frame:
+                                            narrow_stereo_r_stereo_camera_optical_frame:
+                                              {}
+                                        narrow_stereo_optical_frame:
+                                          elevator_call_panel:
+                                            {}
+                                      wide_stereo_link:
+                                        wide_stereo_l_stereo_camera_frame:
+                                          wide_stereo_l_stereo_camera_optical_frame:
+                                            {}
+                                          wide_stereo_r_stereo_camera_frame:
+                                            wide_stereo_r_stereo_camera_optical_frame:
+                                              {}
+                                        wide_stereo_optical_frame:
+                                          {}
+                                    high_def_frame:
+                                      high_def_optical_frame:
+                                        {}
+                            imu_link:
+                              {}
+                            l_shoulder_pan_link:
+                              l_shoulder_lift_link:
+                                l_upper_arm_roll_link:
+                                  l_upper_arm_link:
+                                    l_elbow_flex_link:
+                                      l_forearm_roll_link:
+                                        l_forearm_cam_frame:
+                                          l_forearm_cam_optical_frame:
+                                            {}
+                                        l_forearm_link:
+                                          l_wrist_flex_link:
+                                            l_wrist_roll_link:
+                                              l_gripper_palm_link:
+                                                l_gripper_l_finger_link:
+                                                  l_gripper_l_finger_tip_link:
+                                                    {}
+                                                l_gripper_led_frame:
+                                                  {}
+                                                l_gripper_motor_accelerometer_link:
+                                                  {}
+                                                l_gripper_motor_slider_link:
+                                                  l_gripper_motor_screw_link:
+                                                    {}
+                                                l_gripper_r_finger_link:
+                                                  l_gripper_r_finger_tip_link:
+                                                    l_gripper_l_finger_tip_frame:
+                                                      {}
+                                                l_gripper_tool_frame:
+                                                  {}
+                                              left_arm_chain_cb_link:
+                                                {}
+                            l_torso_lift_side_plate_link:
+                              {}
+                            laser_tilt_mount_link:
+                              laser_tilt_link:
+                                {}
+                            r_shoulder_pan_link:
+                              r_shoulder_lift_link:
+                                r_upper_arm_roll_link:
+                                  r_upper_arm_link:
+                                    r_elbow_flex_link:
+                                      r_forearm_roll_link:
+                                        r_forearm_cam_frame:
+                                          r_forearm_cam_optical_frame:
+                                            {}
+                                        r_forearm_link:
+                                          r_wrist_flex_link:
+                                            r_wrist_roll_link:
+                                              r_gripper_palm_link:
+                                                r_gripper_l_finger_link:
+                                                  r_gripper_l_finger_tip_link:
+                                                    {}
+                                                r_gripper_led_frame:
+                                                  {}
+                                                r_gripper_motor_accelerometer_link:
+                                                  {}
+                                                r_gripper_motor_slider_link:
+                                                  r_gripper_motor_screw_link:
+                                                    {}
+                                                r_gripper_r_finger_link:
+                                                  r_gripper_r_finger_tip_link:
+                                                    r_gripper_l_finger_tip_frame:
+                                                      {}
+                                                r_gripper_tool_frame:
+                                                  {}
+                                              right_arm_chain_cb_link:
+                                                {}
+                            r_torso_lift_side_plate_link:
+                              {}
+                          torso_lift_motor_screw_link:
+                            {}
+                eng2/8f:
+                  {}
+          Update Interval: 0
+          Value: true
+        - Class: jsk_rviz_plugin/BoundingBoxArray
+          Enabled: true
+          Name: DoorButtonBboxes
+          Topic: /door_button/cluster_indices_decomposer/boxes
+          Unreliable: false
+          Value: true
+          alpha: 0.800000012
+          color: 25; 255; 0
+          coloring: Auto
+          line width: 0.00499999989
+          only edge: false
+          show coords: false
+        - Align Bottom: true
+          Background Alpha: 0.800000012
+          Background Color: 0; 0; 0
+          Class: jsk_rviz_plugin/OverlayText
+          Enabled: true
+          Foreground Alpha: 0.800000012
+          Foreground Color: 25; 255; 240
+          Name: ROSConsoleText
+          Overtake Color Properties: true
+          Overtake Position Properties: true
+          Topic: /rosconsole_overlay_text/output
+          Value: true
+          font: DejaVu Sans Mono
+          height: 200
+          left: 20
+          line width: 2
+          text size: 7
+          top: 650
+          width: 800
       Enabled: true
-      Name: ElevatorCallPanel
-      Topic: /narrow_stereo/left/point_pose_extractor_elevator_call_panel/debug_image
-      Value: true
-      alpha: 0.800000012
-      height: 300
-      keep aspect ratio: false
-      left: 20
-      top: 160
-      transport hint: raw
-      width: 200
-    - Class: jsk_rviz_plugin/OverlayImage
-      Enabled: true
-      Name: ElevatorInsidePanel
-      Topic: /narrow_stereo/left/point_pose_extractor_elevator_inside_panel/debug_image
-      Value: true
-      alpha: 0.800000012
-      height: 300
-      keep aspect ratio: false
-      left: 240
-      top: 160
-      transport hint: raw
-      width: 200
-    - Class: jsk_rviz_plugin/BoundingBoxArray
-      Enabled: true
-      Name: DoorButtonBboxes
-      Topic: /door_button/cluster_indices_decomposer/boxes
-      Unreliable: false
-      Value: true
-      alpha: 0.800000012
-      color: 25; 255; 0
-      coloring: Auto
-      line width: 0.00499999989
-      only edge: false
-      show coords: false
-    - Align Bottom: true
-      Background Alpha: 0.800000012
-      Background Color: 0; 0; 0
-      Class: jsk_rviz_plugin/OverlayText
-      Enabled: true
-      Foreground Alpha: 0.800000012
-      Foreground Color: 25; 255; 240
-      Name: ROSConsoleText
-      Overtake Color Properties: true
-      Overtake Position Properties: true
-      Topic: /rosconsole_overlay_text/output
-      Value: true
-      font: DejaVu Sans Mono
-      height: 200
-      left: 20
-      line width: 2
-      text size: 7
-      top: 650
-      width: 800
+      Name: ElevatorInfo
   Enabled: true
   Global Options:
     Background Color: 48; 48; 48
