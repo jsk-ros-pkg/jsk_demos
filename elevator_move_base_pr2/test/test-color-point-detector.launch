@@ -33,7 +33,7 @@
       topic: /light_button
       hz: 2.0
       hzerror: 0.5
-      test_duration: 5.0
+      test_duration: 2.0
     </rosparam>
   </test>
 

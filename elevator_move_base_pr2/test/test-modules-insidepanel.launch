@@ -29,7 +29,7 @@
         name="test_panel_pose_detection"
         pkg="elevator_move_base_pr2" type="test-panel-pose-detection.l">
     <rosparam>
-      error_threshold: 50
+      panel_type: elevator_inside_panel
     </rosparam>
   </test>
 
