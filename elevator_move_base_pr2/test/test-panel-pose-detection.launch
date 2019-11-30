@@ -2,6 +2,7 @@
   <!-- image_raw, camera_info -> image_rect -> ImageFeature0D -> ObjectDetection -->
   <!-- And compare ObjectDetection with TF from rosbag -->
 
+  <arg name="MANAGER" default="elevator_move_base_manager"/>
   <arg name="ROBOT" default="sim"/>
   <include file="$(find pr2_machine)/$(arg ROBOT).machine"/>
 
@@ -21,30 +22,33 @@
     </node>
   </group>
 
-  <!-- Throttle image -->
+  <node name="$(arg MANAGER)"
+        pkg="nodelet" type="nodelet"
+        args="manager"
+        machine="c2" respawn="true" output="screen"/>
+
+  <!-- Detect elevator_call_panel / elevator_inside_panel. -->
   <group ns="/narrow_stereo/left">
-    <node name="throttle"
-          pkg="jsk_topic_tools" type="lightweight_throttle"
-          machine="c1">
+    <node name="lightweight_throttle"
+          pkg="nodelet" type="nodelet"
+          args="load jsk_topic_tools/LightweightThrottle /$(arg MANAGER)"
+          machine="c2">
       <remap from="~input" to="image_rect"/>
       <remap from="~output" to="image_rect_throttle"/>
       <rosparam>
         update_rate: 2.0
       </rosparam>
     </node>
-  </group>
-
-  <!-- Detect elevator_call_panel / elevator_inside_panel. -->
-  <group ns="/narrow_stereo/left">
     <node name="imagesift"
           pkg="nodelet" type="nodelet"
-          args="standalone imagesift/ImageSift"
+          args="load imagesift/ImageSift /$(arg MANAGER)"
           machine="c2"
           launch-prefix="nice -n +10">
       <remap from="image" to="image_rect_throttle"/>
     </node>
     <include file="$(find elevator_move_base_pr2)/launch/elevator_panels_detection_eng2.launch">
       <arg name="INPUT_FEATURE" value="ImageFeature0D"/>
+      <arg name="MANAGER" value="/$(arg MANAGER)"/>
       <arg name="MACHINE" value="c2"/>
     </include>
     <group ns="/narrow_stereo/left/point_pose_extractor_elevator_call_panel">
