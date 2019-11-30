@@ -13,13 +13,17 @@
   (ros::ros-info "*msg*: ~A" (setq *msg* msg)))
 
 
-(deftest test-call-panel ()
+(deftest test-elevator-panel ()
   (let ((tfl (instance ros::transform-listener :init))
         (dist -1)
         (max-dist (ros::get-param "~max_distance" 50))
+        (panel-type (ros::get-param "~panel_type" "elevator_call_panel"))
         co1 co2)
-    (call-empty-service
-     "/narrow_stereo/left/pass_through_feature_to_call_panel/request")
+    (if (equal panel-type "elevator_call_panel")
+        (call-empty-service
+         "/narrow_stereo/left/pass_through_feature_to_call_panel/request")
+      (call-empty-service
+       "/narrow_stereo/left/pass_through_feature_to_inside_panel/request"))
     (ros::subscribe "/narrow_stereo/left/ObjectDetection"
                     posedetection_msgs::ObjectDetection #'object-detection-cb)
 
@@ -31,7 +35,7 @@
                    (send (car (send *msg* :objects)) :pose)))
         (setq co2 (send tfl :lookup-transform
                         (send *msg* :header :frame_id)
-                        "/elevator_call_panel"
+                        (concatenate string "/" panel-type)
                         (ros::time 0)))
         (when (and co1 co2)
           (setq dist (distance (send co1 :pos) (send co2 :pos)))

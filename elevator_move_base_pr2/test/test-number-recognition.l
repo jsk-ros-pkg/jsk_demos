@@ -11,7 +11,7 @@
 (deftest test-check-target-floor ()
   (setq userdata '())
   (set-alist 'target-floor "7F" userdata)
-  (assert (check-target-floor-arrived userdata)
+  (assert (check-target-floor-arrived "/7F")
           "Failed to check if arrived at target-floor (7F)."))
 
 (run-all-tests)
