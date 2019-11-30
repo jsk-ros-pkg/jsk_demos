@@ -40,6 +40,9 @@
         (prev-reset-time (ros::time-now))
         (prev-floor nil)
         (cur-floor nil))
+    (call-service
+     "/narrow_stereo/left/pass_through_feature_to_inside_panel/request"
+     (instance std_srvs::EmptyRequest :init))
     (call-service "/narrow_stereo/left/pass_through_image_rect/request"
                   (instance std_srvs::EmptyRequest :init))
     (ros::rate 5)
@@ -56,10 +59,16 @@
         (ros::warn
          (format nil "Elevator has not moved in recent ~A [sec]." timeout))
         (speak-jp "エレベータが動いていません。")
+        (call-service
+         "/narrow_stereo/left/pass_through_feature_to_inside_panel/stop"
+         (instance std_srvs::EmptyRequest :init))
         (call-service "/narrow_stereo/left/pass_through_image_rect/stop"
                       (instance std_srvs::EmptyRequest :init))
         (return-from check-target-floor-arrived nil))
       (when (and cur-floor (substringp target-floor cur-floor))
+        (call-service
+         "/narrow_stereo/left/pass_through_feature_to_inside_panel/stop"
+         (instance std_srvs::EmptyRequest :init))
         (call-service "/narrow_stereo/left/pass_through_image_rect/stop"
                       (instance std_srvs::EmptyRequest :init))
         (return-from check-target-floor-arrived t))
