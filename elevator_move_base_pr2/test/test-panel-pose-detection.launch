@@ -64,6 +64,7 @@
         pkg="elevator_move_base_pr2" type="test-panel-pose-detection.l"
         time-limit="300">
     <rosparam>
+      panel_type: elevator_call_panel
       max_distance: 100
     </rosparam>
   </test>
