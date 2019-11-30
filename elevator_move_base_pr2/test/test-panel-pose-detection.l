@@ -18,6 +18,8 @@
         (dist -1)
         (max-dist (ros::get-param "~max_distance" 50))
         co1 co2)
+    (call-empty-service
+     "/narrow_stereo/left/pass_through_feature_to_call_panel/request")
     (ros::subscribe "/narrow_stereo/left/ObjectDetection"
                     posedetection_msgs::ObjectDetection #'object-detection-cb)
 
@@ -29,7 +31,7 @@
                    (send (car (send *msg* :objects)) :pose)))
         (setq co2 (send tfl :lookup-transform
                         (send *msg* :header :frame_id)
-                        (send (car (send *msg* :objects)) :type)
+                        "/elevator_call_panel"
                         (ros::time 0)))
         (when (and co1 co2)
           (setq dist (distance (send co1 :pos) (send co2 :pos)))
