@@ -176,8 +176,14 @@
 
 (defun look-button-state (userdata)
   (let ((panel-name (cdr (assoc 'panel-name userdata))) look-target look-av)
-    (call-service "/narrow_stereo/left/pass_through_image_rect_throttle/request"
-                  (instance std_srvs::EmptyRequest :init))
+    (if (eq panel-name "/elevator_call_panel")
+        (call-service
+         "/narrow_stereo/left/pass_through_feature_to_call_panel/request"
+         (instance std_srvs::EmptyRequest :init))
+      (call-service
+       "/narrow_stereo/left/pass_through_feature_to_inside_panel/request"
+       (instance std_srvs::EmptyRequest :init)))
+
     (update-robot-position)
 
     ;; jsk_pr2_startup/jsk_pr2_move_base/look-forward-in-nav.l sends
@@ -224,8 +230,13 @@
       (ros::ros-info "Could not find button.")
       (speak-jp "見つかりませんでした。")
       (return-from look-button-state nil))
-    (call-service "/narrow_stereo/left/pass_through_image_rect_throttle/stop"
-                  (instance std_srvs::EmptyRequest :init))
+    (if (eq panel-name "/elevator_call_panel")
+        (call-service
+         "/narrow_stereo/left/pass_through_feature_to_call_panel/stop"
+         (instance std_srvs::EmptyRequest :init))
+      (call-service
+       "/narrow_stereo/left/pass_through_feature_to_inside_panel/stop"
+       (instance std_srvs::EmptyRequest :init)))
     t))
 
 (defun push-button-state (userdata)
