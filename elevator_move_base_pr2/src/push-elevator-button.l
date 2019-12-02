@@ -106,15 +106,24 @@
     (setq target-coords (send (send target-coords :copy-worldcoords)
                               :translate (scale -20 rayvec) :world))
 
+    ;; Select which arm to use
     (when arm
       (send *pr2* arm :angle-vector (case arm (:rarm rarm-reset)
                                               (:larm larm-reset)))
       (ros::ros-info (format nil "check if IK for free-arm ~A is solvable" arm))
-      (unless (and arm
-                   (send *pr2* arm :inverse-kinematics target-coords
-                         :rotation-axis :x))
+      (unless
+          (send *pr2* arm :inverse-kinematics target-coords :rotation-axis :x)
         (ros::ros-warn (format nil "could not solve IK: ~A" arm))
         (setq arm nil)))
+    (unless arm
+      (setq arm
+            (if (plusp (elt (send (send *pr2* :transformation target-coords)
+                                  :worldpos) 1))
+                :larm
+              :rarm)))
+    (ros::ros-info (format nil "select ~A arm to push button ~A"
+                           arm (send target-coords :worldpos)))
+
     (send *pr2* :angle-vector (send *ri* :state :potentio-vector))
     (setq org-head-anglev (send *pr2* :head :angle-vector))
 
@@ -125,15 +134,6 @@
     (unless (eps-v= reset-pose (send *ri* :state :potentio-vector) 2.0)
       (send *ri* :angle-vector (send *pr2* :angle-vector) 3000)
       (send *ri* :wait-interpolation))
-    (unless arm
-      (setq arm
-            (if (plusp (elt (send (send *pr2* :transformation target-coords)
-                                  :worldpos) 1))
-                :larm
-              :rarm)))
-
-    (ros::ros-info (format nil "select ~A arm to push button ~A"
-                           arm (send target-coords :worldpos)))
 
     (setq org-arm-anglev (send *pr2* arm :angle-vector))
 
