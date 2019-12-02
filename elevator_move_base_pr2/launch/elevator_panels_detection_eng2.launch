@@ -54,7 +54,7 @@
       object_height: 0.294
       reprojection_threshold: 1.0
       distanceratio_threshold: 0.8
-      error_threshold: 65.0
+      error_threshold: 70.0
       theta_step: 5.0
       phi_step: 5.0
       relative_pose: "0.147 0.1815 -0.0005 0.0 -0.707107 0.0 0.707107"
