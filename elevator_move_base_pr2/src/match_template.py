@@ -102,11 +102,10 @@ class MatchTemplate(ConnectionBasedTransport):
                     top_left=max_loc)
             results[template.name] = result
 
-            rospy.loginfo('score of %s: %f' % (template.name, score))
-
         # publish result
         msg = StringStamped(header=msg.header)
         msg.data = ' '.join([n for n, r in results.items() if r.found])
+        rospy.loginfo('Matched template: {}'.format(msg.data))
         self.pub_result.publish(msg)
 
         # publish debug image
