@@ -63,7 +63,7 @@
 	    :name "/eng2/2f/subway-lunchset")
      `(:pos ,(float-vector 3100.0 -31950 920) :rpy #f(1.5706 0 0)
 	    :name "/eng2/2f/elevator_call_panel")
-     `(:pos ,(float-vector 2900 -34000 1000) :rpy #f(3.1416 0 0)
+     `(:pos ,(float-vector 2900 -34000 1020) :rpy #f(3.1416 0 0)
 	    :name "/eng2/2f/elevator_inside_panel")
      `(:pos ,(float-vector 9800 -27000 0) :rpy #f(0 0 0)
 	    :name "/eng2/2f/forum-door-inside")
@@ -255,7 +255,7 @@
      ;;        :name "/eng2/7f/room73B2-chair")
      `(:pos ,(float-vector 3100 -31950 920) :rpy #f(1.5706 0 0)
 	    :name "/eng2/7f/elevator_call_panel")
-     `(:pos ,(float-vector 2900 -34000 1000) :rpy #f(3.1416 0 0)
+     `(:pos ,(float-vector 2900 -34000 1020) :rpy #f(3.1416 0 0)
 	    :name "/eng2/7f/elevator_inside_panel"))
 
     (setq scene (instance nav-scene-model :init :name "/eng2/7f" :objects (append (list map) (send map :descendants))))
@@ -301,7 +301,7 @@
 	    :name "/eng2/8f/elevator-outside")
      `(:pos ,(float-vector 3100 -31950 920) :rpy #f(1.5706 0 0)
 	    :name "/eng2/8f/elevator_call_panel")
-     `(:pos ,(float-vector 2900 -34000 1000) :rpy #f(3.1416 0 0)
+     `(:pos ,(float-vector 2900 -34000 1020) :rpy #f(3.1416 0 0)
 	    :name "/eng2/8f/elevator_inside_panel"))
 
     (setq scene (instance nav-scene-model :init :name "/eng2/8f" :objects (append (list map) (send map :descendants))))
