@@ -40,11 +40,6 @@
         (prev-reset-time (ros::time-now))
         (prev-floor nil)
         (cur-floor nil))
-    (call-service
-     "/narrow_stereo/left/pass_through_feature_to_inside_panel/request"
-     (instance std_srvs::EmptyRequest :init))
-    (call-service "/narrow_stereo/left/pass_through_image_rect/request"
-                  (instance std_srvs::EmptyRequest :init))
     (ros::rate 5)
     (while (ros::ok)
       (ros::spin-once)
@@ -76,6 +71,11 @@
       )))
 
 (defun ready-to-outside (userdata)
+  (call-service
+   "/narrow_stereo/left/pass_through_feature_to_inside_panel/request"
+   (instance std_srvs::EmptyRequest :init))
+  (call-service "/narrow_stereo/left/pass_through_image_rect/request"
+                (instance std_srvs::EmptyRequest :init))
   (clear-costmap)
   (tolerance-loose)
   (send *ri* :go-pos-unsafe 0 0 90)  ;; Unsafe for faster turning left
