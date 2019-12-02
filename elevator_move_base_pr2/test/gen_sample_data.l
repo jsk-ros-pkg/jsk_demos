@@ -38,7 +38,7 @@
     (send (send sm :node :go-elevator) :remap-list '((:goal . front-coords)))
     (send (send sm :node :go-home) :remap-list '((:goal . home-coords)))
     (send sm :arg-keys 'home-coords 'front-coords
-	  'outside-panel-name 'button-name  :goal :cancel)
+          'outside-panel-name 'button-name  :goal)
     (send sm :goal-state (list :success :fail))
     (send sm :start-state :initial)
     (send sm :add-transition :initial :speak-task t)

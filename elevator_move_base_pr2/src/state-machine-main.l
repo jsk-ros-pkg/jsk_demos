@@ -144,7 +144,7 @@
                                     (tolerance-normal))))
     (send sm :arg-keys 'elevator-front-coords 'front-coords 'outside-panel-name
                        'outside-button 'inside-coords 'inside-panel-name
-                       'target-floor 'outside-coords :cancel)
+                       'target-floor 'outside-coords)
     (send sm :goal-state (list :success :fail-outside :fail-inside))
     (send sm :start-state :move-front)
     (send sm :add-transition :move-front :push-outside :succeeded)
@@ -254,8 +254,7 @@
     (send (send sm :node :go-to) :remap-list '((:goal . target-coords)))
     (send sm :arg-keys 'elevator-front-coords 'front-coords 'outside-panel-name
                        'outside-button 'inside-coords 'inside-panel-name
-                       'target-floor 'outside-coords 'target-coords :goal
-                       :cancel)
+                       'target-floor 'outside-coords 'target-coords :goal)
     (send sm :goal-state (list :success :fail))
     (send sm :start-state :sanity-check)
     (send sm :add-transition :sanity-check :check-elevator-needed t)
