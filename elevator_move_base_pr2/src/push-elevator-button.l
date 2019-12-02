@@ -48,7 +48,7 @@
      (ros::ros-info
       (format nil "count: ~A, found: ~A, panel position: ~A"
               count found (send *panel* :worldpos)))
-     (when (>= found 2)
+     (when (>= found 3)
        (return))
      (ros::sleep))
     panel-moved))
@@ -171,7 +171,6 @@
     ;; return original pose
     (send *pr2* arm :angle-vector org-arm-anglev)
     (send *ri* :angle-vector (send *pr2* :angle-vector) 1000) ;; quick!
-    (send *ri* :wait-interpolation)
     t))
 
 (defun look-button-state (userdata)
