@@ -176,7 +176,7 @@
 
 (defun look-button-state (userdata)
   (let ((panel-name (cdr (assoc 'panel-name userdata))) look-target look-av)
-    (if (eq panel-name "/elevator_call_panel")
+    (if (equal panel-name "/elevator_call_panel")
         (call-service
          "/narrow_stereo/left/pass_through_feature_to_call_panel/request"
          (instance std_srvs::EmptyRequest :init))
@@ -230,7 +230,7 @@
       (ros::ros-info "Could not find button.")
       (speak-jp "見つかりませんでした。")
       (return-from look-button-state nil))
-    (if (eq panel-name "/elevator_call_panel")
+    (if (equal panel-name "/elevator_call_panel")
         (call-service
          "/narrow_stereo/left/pass_through_feature_to_call_panel/stop"
          (instance std_srvs::EmptyRequest :init))
