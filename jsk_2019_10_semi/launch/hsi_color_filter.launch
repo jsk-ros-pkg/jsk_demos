@@ -11,7 +11,7 @@
   -->
   <arg name="INPUT" default="points"/>
   <arg name="CENTROID_FRAME" default="target"/>
-  <arg name="DEFAULT_NAMESPACE" default="head_camera/depth_registered"/>
+  <arg name="DEFAULT_NAMESPACE" default="head_camera_remote/depth_registered"/>
   <arg name="FILTER_NAME_SUFFIX" default=""/>
   <arg name="OUTPUT" default="hsi_output$(arg FILTER_NAME_SUFFIX)"/>
 
@@ -24,6 +24,37 @@
 
   <arg name="create_manager" default="true" />
   <arg name="manager" default="hsi_filter_manager$(arg FILTER_NAME_SUFFIX)" />
+
+  <group ns="/head_camera_remote">
+    <group ns="rgb">
+      <node name="republish_rgb"
+            pkg="image_transport" type="republish"
+            args="compressed raw">
+        <remap from="in" to="/head_camera/rgb/image_rect_color"/>
+        <remap from="out" to="image_rect_color"/>
+      </node>
+    </group>
+
+    <group ns="depth_registered">
+      <node name="republish_depth"
+            pkg="image_transport" type="republish"
+            args="compressedDepth raw">
+        <remap from="in" to="/head_camera/depth_registered/image_rect"/>
+        <remap from="out" to="image_rect"/>
+      </node>
+    </group>
+
+    <node name="point_cloud_xyzrgb"
+          pkg="nodelet" type="nodelet"
+          args="standalone depth_image_proc/point_cloud_xyzrgb">
+      <remap from="rgb/camera_info" to="/head_camera/rgb/camera_info"/>
+      <remap from="rgb/image_rect_color" to="rgb/image_rect_color"/>
+      <remap from="depth_registered/image_rect" to="depth_registered/image_rect"/>
+      <rosparam>
+        queue_size: 100
+      </rosparam>
+    </node>
+  </group>
 
   <group ns="$(arg DEFAULT_NAMESPACE)">
     <node if="$(arg create_manager)"
