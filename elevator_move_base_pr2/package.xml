@@ -25,12 +25,16 @@
   <run_depend>cv_bridge</run_depend>
   <run_depend>geometry_msgs</run_depend>
   <run_depend>image_transport</run_depend>
+  <run_depend>image_view</run_depend>
   <run_depend>imagesift</run_depend>
+  <run_depend>jsk_data</run_depend>
+  <run_depend>jsk_gui_msgs</run_depend>
   <run_depend>jsk_maps</run_depend>
   <run_depend>jsk_pcl_ros</run_depend>
   <run_depend>jsk_pcl_ros_utils</run_depend>
   <run_depend>jsk_perception</run_depend>
   <run_depend>jsk_recognition_utils</run_depend>
+  <run_depend>jsk_rqt_plugins</run_depend>
   <run_depend>jsk_rviz_plugins</run_depend>
   <run_depend>jsk_tools</run_depend>
   <run_depend>jsk_topic_tools</run_depend>
@@ -55,7 +59,6 @@
   <test_depend>rostest</test_depend>
 
 <export>
-    <rosdoc config="rosdoc.yaml"/>
 </export>
 
 </package>
