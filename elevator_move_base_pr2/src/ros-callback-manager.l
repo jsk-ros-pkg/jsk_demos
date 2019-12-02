@@ -7,7 +7,8 @@
 
   (:add-subscribe (ros-object topic-name topic-type callback)
    (unless (member topic-name subscribed-topics :key #'car :test #'equal)
-     (ros::ros-info "subscribe ~A ~A" topic-name topic-type)
+     (ros::ros-info "Start subscribing topic: ~A, type:  ~A"
+                    topic-name topic-type)
      (ros::subscribe topic-name topic-type #'send self :callback topic-name))
    (push (list topic-name ros-object callback) subscribed-topics))
 
@@ -17,7 +18,7 @@
                                        (string= (car x) topic-name)))
                     subscribed-topics))
    (unless (member topic-name subscribed-topics :key #'car :test #'equal)
-     (ros::ros-info "unsubscribe ~A" topic-name)
+     (ros::ros-info "Unsubscribing ~A" topic-name)
      (ros::unsubscribe topic-name)))
 
   (:callback (topic-name msg)
