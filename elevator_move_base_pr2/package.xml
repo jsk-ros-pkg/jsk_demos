@@ -54,7 +54,6 @@
 
   <!-- Dependencies needed while testing this package. -->
   <test_depend>image_proc</test_depend>
-  <test_depend>image_view</test_depend>
   <test_depend>rosbag</test_depend>
   <test_depend>rostest</test_depend>
 
