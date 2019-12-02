@@ -202,14 +202,15 @@
 
 (defun order-sandwich (name)
   (ros::ros-info "Ordering sandwich...")
-  (speak-jp "すみません。" :wait t)
+  (speak-jp "こんにちは。おつかいに来ました。" :wait t)
   (speak-jp (format nil "~Aをください。" name) :wait t))
 
 
 (defun receive-sandwich ()
   ;; go to register front
   (send *ri* :move-to
-        (send *scene* :spot "/eng2/2f/subway-register"))
+        (send (send (send *scene* :spot "/eng2/2f/subway-register")
+                    :copy-worldcoords) :translate #f(0 -200 0) :world))
 
   ;; TODO(Unknown): Pay money here.
   ;;                Consider registering SUBWAY club and getting pre-paid card.
@@ -217,6 +218,9 @@
   (send *pr2* :angle-vector (pr2-pick-bag-pose))
   (send *ri* :angle-vector (send *pr2* :angle-vector) 5000)
   (send *ri* :wait-interpolation)
+
+  (send *ri* :move-to
+        (send *scene* :spot "/eng2/2f/subway-register"))
 
   (send *ri* :stop-grasp :rarm :wait t)
 
