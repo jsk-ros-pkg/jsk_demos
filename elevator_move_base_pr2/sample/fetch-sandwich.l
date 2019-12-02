@@ -75,7 +75,7 @@
   (send *ri* :move-to
         (send (send (send *scene* :spot "/eng2/2f/forum-door-inside")
                     :copy-worldcoords) :translate #f(-3000 0 0) :world))
-  (send *ri* :move-to (send *scene* :spot "/eng2/2f/forum-door-inside"))
+  (send *ri* :go-pos 3.0 0 0)
   (update-robot-position))
 
 
@@ -207,7 +207,7 @@
 
 
 (defun receive-sandwich ()
-  ;; go to register front
+  ;; Go to register front
   (send *ri* :move-to
         (send (send (send *scene* :spot "/eng2/2f/subway-register")
                     :copy-worldcoords) :translate #f(0 -200 0) :world))
@@ -219,8 +219,8 @@
   (send *ri* :angle-vector (send *pr2* :angle-vector) 5000)
   (send *ri* :wait-interpolation)
 
-  (send *ri* :move-to
-        (send *scene* :spot "/eng2/2f/subway-register"))
+  ;; Go to register
+  (send *ri* :go-pos 0.2 0 0)
 
   (send *ri* :stop-grasp :rarm :wait t)
 
