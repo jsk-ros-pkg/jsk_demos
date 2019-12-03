@@ -75,7 +75,7 @@
   (send *ri* :move-to
         (send (send (send *scene* :spot "/eng2/2f/forum-door-inside")
                     :copy-worldcoords) :translate #f(-3000 0 0) :world))
-  (send *ri* :go-pos 3.0 0 0)
+  (send *ri* :go-pos-unsafe 3.0 0 0)
   (update-robot-position))
 
 
