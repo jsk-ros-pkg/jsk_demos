@@ -3,14 +3,29 @@
   <arg name="ROBOT" default="$(optenv ROBOT pr2)" />
   <include file="$(find pr2_machine)/$(arg ROBOT).machine"/>
 
-  <!-- Application -->
+  <!-- ===================================================================== -->
+  <!-- Look at human if found                                                -->
+  <!-- ===================================================================== -->
+
+  <node name="look_at_human"
+        pkg="elevator_move_base_pr2" type="look-at-human.l">
+    <remap from="~input/people_pose_array" to="/edgetpu_human_pose_estimator/output/poses"/>
+  </node>
+
+  <!-- ===================================================================== -->
+  <!-- Main Application                                                      -->
+  <!-- ===================================================================== -->
+
   <node name="fetch_sandwich"
         pkg="elevator_move_base_pr2" type="fetch-sandwich.l"
         args="(demo)"
         machine="c2"
         output="screen"/>
 
-  <!-- For message visualization in Rviz. -->
+  <!-- ===================================================================== -->
+  <!-- For message visualization in Rviz                                     -->
+  <!-- ===================================================================== -->
+
   <node name="rosconsole_overlay_text"
         pkg="jsk_rviz_plugins" type="rosconsole_overlay_text.py"
         machine="c2">
