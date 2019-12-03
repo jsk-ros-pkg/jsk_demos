@@ -239,6 +239,7 @@
   (send *ri* :angle-vector (send *pr2* :angle-vector) 5000)
   (send *ri* :wait-interpolation)
 
+  ;; XXX: Prevent sandwich from covering /base_scan region.
   (pr2-tuckarm-pose :rarm :outside)
   (look-front)
 
