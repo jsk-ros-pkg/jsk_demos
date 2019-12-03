@@ -35,13 +35,13 @@
       (incf person-count))
 
     ;; Do nothing when no valid limb was found
+    (setq look-person (elt (send msg :poses) look-person-idx))
     (when (or (null look-person-idx) (null look-limb-idx)
-              (< (elt limb-scores look-limb-idx) 0.5))
+              (< (elt (send look-person :scores) look-limb-idx) 0.5))
       (return-from people-pose-array-cb nil))
 
     ;; Look at target
     (send *pr2* :angle-vector (send *ri* :state :potentio-vector))
-    (setq look-person (elt (send msg :poses) look-person-idx))
     (setq look-uv
           (send (elt (send look-person :poses) look-limb-idx) :position))
     (setq look-xyz (scale 1e+6 (send (send *pr2* :kinect_head-rgb)
