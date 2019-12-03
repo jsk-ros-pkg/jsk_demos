@@ -107,10 +107,10 @@
              is-door-open))
     (when is-door-open
       (ros::ros-info "Door in front of forum is open.")
-      (speak-jp "ドアが開いています。" :wait t)
+      (speak-jp "ドアが開いています。")
       (return-from check-forum-door-open t))
     (ros::ros-info "Door in front of forum is closed.")
-    (speak-jp "ドアが閉まっています。" :wait t)
+    (speak-jp "ドアが閉まっています。")
     (return-from check-forum-door-open nil)
     ))
 

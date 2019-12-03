@@ -205,7 +205,7 @@
     (unless (eps-v= (float-vector (elt look-av 15) (elt look-av 16))
                     (float-vector (elt (send *ri* :state :potentio-vector) 15)
                                   (elt (send *ri* :state :potentio-vector) 16))
-                    0.2)
+                    0.5)
       (send *ri* :angle-vector look-av 500 :head-controller)
       (send *ri* :wait-interpolation))
 
@@ -220,7 +220,7 @@
     (unless (eps-v= (float-vector (elt look-av 15) (elt look-av 16))
                     (float-vector (elt (send *ri* :state :potentio-vector) 15)
                                   (elt (send *ri* :state :potentio-vector) 16))
-                    0.2)
+                    0.5)
       (send *ri* :angle-vector look-av 500 :head-controller)
       (send *ri* :wait-interpolation))
 

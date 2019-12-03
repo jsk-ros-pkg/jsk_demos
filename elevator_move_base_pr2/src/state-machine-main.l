@@ -96,7 +96,7 @@
 
   (let ((targetfloor (cdr (assoc 'target-floor userdata))))
     (unless (check-target-floor-arrived (concatenate string "/" targetfloor)
-                                        :timeout 25)
+                                        :timeout 20)
       (send *ri* :go-pos-unsafe 0 0 -90)  ;; Unsafe for faster turning right
       (return-from ready-to-outside :fail))
 
