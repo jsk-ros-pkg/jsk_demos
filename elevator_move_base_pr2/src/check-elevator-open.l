@@ -15,14 +15,14 @@
     (send *ri* :angle-vector (send *pr2* :angle-vector) 400)
     (send *ri* :wait-interpolation)
 
-    (unix:usleep (* 500 1000))  ;; Wait until point cloud becomes stable
     (setq time-start (ros::time-now))
     (ros::subscribe
      topic sensor_msgs::PointCloud2
      #'(lambda (msg)
          (when msg
            (let ((stamp (send msg :header :stamp)))
-             (when (> (send stamp :to-sec) (send time-start :to-sec))
+             ;; Wait until point cloud becomes stable
+             (when (ros::time> stamp (ros::time+ time-start (ros::time 0.5)))
                (setq change-pc (* (send msg :height) (send msg :width)))
                (ros::ros-info "pointcloud change: ~A, open/closed threshold: ~A"
                               change-pc change-thre))))))
