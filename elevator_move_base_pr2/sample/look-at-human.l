@@ -1,6 +1,7 @@
 #!/usr/bin/env roseus
 
 (ros::roseus-add-msgs "jsk_recognition_msgs")
+(ros::roseus-add-srvs "std_srvs")
 
 (require :pr2-interface "package://pr2eus/pr2-interface.l")
 
@@ -49,14 +50,25 @@
     (send *pr2* :head :look-at look-xyz)
     (send *ri* :angle-vector (send *pr2* :angle-vector) 500 :head-controller)))
 
+(defun start-look-at-human (req)
+  (ros::subscribe
+   "~input/people_pose_array" jsk_recognition_msgs::PeoplePoseArray
+   #'people-pose-array-cb)
+  (instance std_srvs::EmptyResponse :init))
 
+(defun stop-look-at-human (req)
+  (ros::unsubscribe "~input/people_pose_array")
+  (instance std_srvs::EmptyResponse :init))
+
+
+;; Main process
 (ros::roseus "look_at_human")
 
 (unless (and (boundp '*pr2*) (boundp '*ri*))
   (pr2-init))
 
-(ros::subscribe "~input/people_pose_array" jsk_recognition_msgs::PeoplePoseArray
-                #'people-pose-array-cb)
+(ros::advertise-service "~start" std_srvs::Empty #'start-look-at-human)
+(ros::advertise-service "~stop" std_srvs::Empty #'stop-look-at-human)
 
 (ros::rate 1)
 (while (ros::ok)
