@@ -1,0 +1,18 @@
+<?xml version="1.0"?>
+<package>
+  <name>microwave_pr2_201710</name>
+  <version>0.0.4</version>
+  <description>microwave pr2 package</description>
+
+  <author email="t-murooka@jsk.imi.i.u-tokyo.ac.jp">Takayuki Murooka</author>
+  <maintainer email="t-murooka@jsk.imi.i.u-tokyo.ac.jp">Takayuki Murooka</maintainer>
+
+  <license>BSD</license>
+
+  <buildtool_depend>catkin</buildtool_depend>
+
+  <run_depend>pr2eus</run_depend>
+
+  <export>
+  </export>
+</package>
