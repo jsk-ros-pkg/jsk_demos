@@ -81,14 +81,18 @@
   (send *ri* :go-pos-unsafe 0 0 90)  ;; Unsafe for faster turning left
 
   (update-robot-position)
-  ;; look at panel
+  ;; Look at panel
   (let ((look-target
          (or (find-if #'(lambda (x) (string= (send x :name) "/elevator_number"))
                       (send *panel* :descendants))
              *panel*)))
     (send *pr2* :head :look-at (send look-target :worldpos))
-    (send *ri* :angle-vector (send *pr2* :angle-vector) 500)
-    (send *ri* :wait-interpolation))
+    ;; Move fast but converge to the target angle vector
+    (while (not (eps-v= (send *pr2* :angle-vector)
+                        (send *ri* :state :potentio-vector)
+                        1.0))
+      (send *ri* :angle-vector (send *pr2* :angle-vector) 500)
+      (send *ri* :wait-interpolation)))
 
   (let ((targetfloor (cdr (assoc 'target-floor userdata))))
     (unless (check-target-floor-arrived (concatenate string "/" targetfloor)
