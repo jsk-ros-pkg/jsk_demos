@@ -85,7 +85,6 @@
           (send (send *scene* :spot "/eng2/2f/forum-door-button") :worldpos))
     (send *ri* :angle-vector (send *pr2* :angle-vector) 500)
     (send *ri* :wait-interpolation)
-    (unix:sleep 1)
     (ros::ros-info "Checking if door in front of forum is open...")
     ;; Assume the point cloud to be unorganized and is_dense: True.
     (setq cloud-msg
@@ -93,7 +92,7 @@
            "extract_eng2_forum_door_point_cloud/extract_indices/output"
            sensor_msgs::PointCloud2
            :timeout timeout  ;; timeout[msec]
-           :after-stamp (ros::time+ (ros::time-now) (ros::time 0.5))))
+           :after-stamp (ros::time+ (ros::time-now) (ros::time 1.0))))
     (unless cloud-msg
       (ros::ros-warn
        (format nil "No point cloud was received in ~A[msec]." timeout))
@@ -224,7 +223,7 @@
   (send *ri* :wait-interpolation)
 
   ;; Go to register
-  (send *ri* :go-pos 0.2 0 0)
+  (send *ri* :go-pos-unsafe 0.2 0 0)
 
   (send *ri* :stop-grasp :rarm :wait t)
 
