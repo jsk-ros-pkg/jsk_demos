@@ -201,6 +201,10 @@
 
 
 (defun order-sandwich (name)
+  (ros::ros-info "Looking for clerk...")
+  (call-service "look_at_human/start" (instance std_srvs::EmptyRequest :init))
+  (unix:sleep 5)
+  (call-service "look_at_human/stop" (instance std_srvs::EmptyRequest :init))
   (ros::ros-info "Ordering sandwich...")
   (speak-jp "こんにちは。おつかいに来ました。" :wait t)
   (speak-jp (format nil "~Aをください。" name) :wait t))
