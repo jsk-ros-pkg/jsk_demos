@@ -209,9 +209,19 @@
       (send *ri* :angle-vector look-av 500 :head-controller)
       (send *ri* :wait-interpolation))
 
-    ;; Move arms and torso
+    ;; Move arms and torso only when it is needed (i.e. skipped inside elevator)
     (unless (eps-v= look-av (send *ri* :state :potentio-vector) 2.0)
       (send *ri* :angle-vector look-av 5000)
+      (send *ri* :wait-interpolation))
+
+    ;; Move only head quickly once more, since
+    ;; jsk_pr2_startup/jsk_pr2_move_base/look-forward-in-nav.l sends
+    ;; angle-vector after PR2 reached goal, so we should wait for interpolation.
+    (unless (eps-v= (float-vector (elt look-av 15) (elt look-av 16))
+                    (float-vector (elt (send *ri* :state :potentio-vector) 15)
+                                  (elt (send *ri* :state :potentio-vector) 16))
+                    0.2)
+      (send *ri* :angle-vector look-av 500 :head-controller)
       (send *ri* :wait-interpolation))
 
     ;; Wait until latest image is available.
