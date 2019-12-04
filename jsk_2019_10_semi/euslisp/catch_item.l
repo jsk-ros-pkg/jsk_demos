@@ -81,7 +81,7 @@
 
 ;;棚の直前まで移動
 (defun move-forward()
-    (send *ri* :speak-jp "棚の直前まで移動します")
+    (send *ri* :speak-jp "棚に接近します")
     ;;(go-to-spot "/eng2/7f/room73B2-counter-side")
     (send *ri* :go-pos-unsafe 0.6 0 0)
     (send *ri* :wait-interpolation))
@@ -90,12 +90,11 @@
 (defun catch()
     (setq found-obj nil)
     (until found-obj
-        (print "Detecting the object...")
         (ros::spin-once)
         (ros::sleep))
 
     ;;棚との干渉
-    (send *ri* :speak-jp "棚に")
+    (send *ri* :speak-jp "物体をつかみます")
     (setq *shelf* (instance 73b2-cupboard-without-door-object :init))
     (send *shelf* :trancelate #f(500 0 0)) ;;自分の前500mm
     ;;collision-object initialization
@@ -138,7 +137,6 @@
     (move-to-shelf)
     (set-grasp-pose)
     (move-forward)
-    ;;(move-arm-to-target)
     ;;(catch)
     (go-back)
     (atohayoroshiku))
