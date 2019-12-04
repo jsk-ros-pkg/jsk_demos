@@ -113,7 +113,8 @@
     (setq *co* (instance collision-object-publisher :init))
     ;;coをMoveitに送信
     (send *co* :add-object *shelf* :frame-id "base_link" :relative-pose (make-coords :pos #f(500 0 0)))
-    (grasp-with-rec obj-pos))
+    (grasp-with-rec obj-pos)
+    (send *co* :wipe-all))
 
 ;;後退
 (defun go-back()
