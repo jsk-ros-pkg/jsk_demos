@@ -4,7 +4,9 @@
 (load "package://fetcheus/fetch-interface.l")
 (load "package://pr2eus_moveit/euslisp/collision-object-publisher.l")
 (load "package://jsk_fetch_startup/euslisp/navigation-utils.l")
-(load "models/73b2-cupboard-without-door-object.l") ;;棚
+;;(load "models/73b2-cupboard-without-door-object.l") ;;棚
+(load "./shelf_model.l") ;;自作棚
+
 (ros::load-ros-manifest "jsk_recognition_msgs")
 
 ;;defvarは一度やってしまったら上書きされない
@@ -27,7 +29,7 @@
       (setq obj-pos (scale 0.001 (send (send base-coords :transform base->obj-coords) :worldpos)))
       (setq found-obj t)
 
-      (print found-obj)
+      ;;(print found-obj)
       (print obj-pos)
       obj-pos)))
 
@@ -53,11 +55,10 @@
   ;;(send *ri* :move-gripper -30 :tm 1500 :wait t)
   (send *ri* :wait-interpolation)
 
-  (send *ri* :go-pos 0 0 60)
+  ;;(send *ri* :go-pos 0 0 60)
   (send *ri* :wait-interpolation)
   (unix::sleep 1)
 
-  (send *ri* :stop-grasp)
   (send *ri* :wait-interpolation)
   (unix::sleep 3))
 
@@ -84,7 +85,7 @@
 ;;棚の前でポーズ
 (defun set-grasp-pose()
     (send *ri* :speak-jp "アームが動きます")
-    (send *fetch* :angle-vector #f(20.2925 46.7685 -39.9745 62.3554 -61.1541 76.2204 -100.1 -30.3983 -5.81212 27.5645))
+    (send *fetch* :angle-vector #f(39.3115 46.7395 -40.022 62.3556 -61.1188 76.2675 -100.145 -30.4329 -5.81212 27.5645))
     (send *ri* :angle-vector (send *fetch* :angle-vector) 15000)
     (send *ri* :stop-grasp)
     (send *ri* :wait-interpolation))
@@ -107,12 +108,12 @@
     (setq obj-pos #f(0 0 0))
     ;;棚との干渉
     (send *ri* :speak-jp "物体をつかみます")
-    (setq *shelf* (instance 73b2-cupboard-without-door-object :init))
-    (send *shelf* :translate #f(1000 0 0)) ;;自分の前1000mm
+    ;;(setq *shelf* (instance 73b2-cupboard-without-door-object :init))
+    (send shelf :translate #f(800 200 0)) ;;自分の前 mm
     ;;collision-object initialization
     (setq *co* (instance collision-object-publisher :init))
     ;;coをMoveitに送信
-    (send *co* :add-object *shelf* :frame-id "base_link" :relative-pose (make-coords :pos #f(500 0 0)))
+    (send *co* :add-object shelf :frame-id "base_link" :relative-pose (make-coords :pos #f(800 200 0) :rpy #f(4.71 0 0))) ;;
     (grasp-with-rec obj-pos)
     (send *co* :wipe-all))
 
