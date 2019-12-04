@@ -16,6 +16,8 @@
 (fetch-init)
 (objects (list *fetch*))
 
+(setq time-stamp (ros::time 0))
+
 ;;callback
 (defun bounding-box-array-cb (msg)
   ;;(ros::ros-info "cb called")
@@ -25,6 +27,8 @@
     (let* ((b (elt *bounding-box-list* 0))
            (base->obj-coords (ros::tf-pose->coords (send b :pose)))
            (base-coords (send (send *fetch* :base_link_lk) :copy-worldcoords)))
+      (when (ros::time> time-stamp (send msg :header :stamp)) ;;rostime揃え
+        (return-from bounding-box-array-cb nil))
       (ros::ros-info "tf")
       (setq obj-pos (scale 0.001 (send (send base-coords :transform base->obj-coords) :worldpos)))
       (setq found-obj t)
@@ -55,7 +59,7 @@
 
   ;; grasp
   ;; still some bug in start-grasp, so we have to directly use :move-gripper
-  (send *ri* :start-grasp)
+  (send *ri* :start-grasp :effort 70)
   ;;(send *ri* :move-gripper -30 :tm 1500 :wait t)
   (send *ri* :wait-interpolation)
 
@@ -67,7 +71,6 @@
   (unix::sleep 3))
 
 (ros::roseus "boundingboxarray_subscriber")
-(ros::subscribe *topic-name* jsk_recognition_msgs::BoundingBoxArray #'bounding-box-array-cb 1)
 
 ;;基本動作
 (defun reset-pose()
@@ -90,9 +93,10 @@
 ;;棚の前でポーズ
 (defun set-grasp-pose()
     (send *ri* :speak-jp "アームが動きます")
-    (send *fetch* :angle-vector #f(39.4425 46.7682 -39.9738 -297.637 -61.0798 76.2478 -100.201 -30.435 -5.81212 27.5645))
+    (send *fetch* :angle-vector #f(148.21 46.8197 -40.011 62.3072 -61.0977 76.1935 -100.195 -30.4983 -0.373885 20.5332))
     (send *ri* :angle-vector (send *fetch* :angle-vector) 15000)
-    (send *ri* :stop-grasp)
+    (send *ri* :wait-interpolation)
+    (send *ri* :stop-grasp :effort 70)
     (send *ri* :wait-interpolation))
 
 ;;棚の直前まで移動
@@ -100,6 +104,7 @@
     (send *ri* :speak-jp "棚に接近します")
     ;;(go-to-spot "/eng2/7f/room73B2-counter-side")
     (send *ri* :go-pos-unsafe 0.55 0 0)
+    (setq time-stamp (ros::time-now))
     (send *ri* :wait-interpolation))
 
 ;;腕を物体まで動かす
@@ -113,32 +118,45 @@
     ;;棚との干渉
     (send *ri* :speak-jp "物体をつかみます")
     ;;(setq *shelf* (instance 73b2-cupboard-without-door-object :init))
-    (send shelf :translate #f(800 200 0)) ;;自分の前 mm
+    (send shelf :translate #f(1100 200 0)) ;;自分の前 mm
     ;;collision-object initialization
     (setq *co* (instance collision-object-publisher :init))
     ;;coをMoveitに送信
-    (send *co* :add-object shelf :frame-id "base_link" :relative-pose (make-coords :pos #f(800 200 0) :rpy #f(4.71 0 0))) ;;
+    (send *co* :add-object shelf :frame-id "base_link" :relative-pose (make-coords :pos #f(1100 200 0) :rpy #f(4.71 0 0))) ;;
     (grasp-with-rec obj-pos)
+    (send *ri* :wait-interpolation)
+
+    (send *fetch* :angle-vector #f(150.109 47.4349 -61.1706 4.45315 -59.0323 124.775 -103.03 -24.8294 0.113294 21.0826))
+    (send *ri* :angle-vector (send *fetch* :angle-vector) 6000)
+    (send *ri* :wait-interpolation)
+
     (send *co* :wipe-all))
 
 ;;後退
 (defun go-back()
     (send *ri* :speak-jp "バックします")
-    (send *ri* :go-pos -0.7 0 0)
+    (send *ri* :go-pos-unsafe -0.7 0 0)
     (send *ri* :wait-interpolation))
 
 (defun atohayoroshiku()
-    (send *ri* :speak-jp "かなざわくんあとはよろしく"))
+    (send *ri* :speak-jp "かなざわくん，あとはよろしく"))
 
 ;;main
 (defun main()
     ;;initilalize
     (before-go)
+    (send *ri* :wait-interpolation)
     (move-to-shelf)
+    (send *ri* :wait-interpolation)
     (set-grasp-pose)
+    (send *ri* :wait-interpolation)
     (move-forward)
+    (send *ri* :wait-interpolation)
+    (ros::subscribe *topic-name* jsk_recognition_msgs::BoundingBoxArray #'bounding-box-array-cb 1)
     (catch)
+    (send *ri* :wait-interpolation)
     (go-back)
+    (send *ri* :wait-interpolation)
     (atohayoroshiku))
 
 (main)
