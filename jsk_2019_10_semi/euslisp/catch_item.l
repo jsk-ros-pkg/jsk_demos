@@ -18,9 +18,9 @@
 
 ;;callback
 (defun bounding-box-array-cb (msg)
-  (ros::ros-info "cb called")
+  ;;(ros::ros-info "cb called")
   (setq *bounding-box-list* (send msg :boxes)) ;; boxesは、BoundingBoxのArray(Euslispではlist)
-  (ros::ros-info "set box-list")
+  ;;(ros::ros-info "set box-list")
   (when *bounding-box-list*
     (let* ((b (elt *bounding-box-list* 0))
            (base->obj-coords (ros::tf-pose->coords (send b :pose)))
@@ -36,10 +36,14 @@
 ;;obj-posを引数にとり，対象物をつかむ
 (defun grasp-with-rec (obj-pos)
   (setq target-cds (make-coords :pos (scale 1000 obj-pos)))
+  (ros::ros-info "targe-cds 1")
+  (ros::ros-info (format nil "~A" target-cds))
   (send target-cds :translate #f(-200 0 50)) ;;z should be 0, but the link is not rigid in gazebo, so 100 is the height offset for end effector.
+  (ros::ros-info "targe-cds 2")
+  (ros::ros-info (format nil "~A" target-cds))
   (objects (list *fetch* target-cds))
 
-  (send *fetch* :inverse-kinematics target-cds :rotation-axis :y)
+  (send *fetch* :inverse-kinematics target-cds)
   (ros::ros-warn "the grap arm pose is ~A" (send *fetch* :angle-vector))
   (send *ri* :angle-vector  (send *fetch* :angle-vector) 3000)
   (send *ri* :wait-interpolation)
@@ -79,13 +83,14 @@
 ;;棚の結構前まで移動
 (defun move-to-shelf()
     (send *ri* :speak-jp "棚まで移動します")
+    (send *ri* :clear-costmap)
     (send *ri* :move-to (make-coords :pos #f(2001 6500 351) :rpy (float-vector pi/2 0 0)) :frame-id "/map") ;;棚1m前
     (send *ri* :wait-interpolation))
 
 ;;棚の前でポーズ
 (defun set-grasp-pose()
     (send *ri* :speak-jp "アームが動きます")
-    (send *fetch* :angle-vector #f(39.3115 46.7395 -40.022 62.3556 -61.1188 76.2675 -100.145 -30.4329 -5.81212 27.5645))
+    (send *fetch* :angle-vector #f(39.4425 46.7682 -39.9738 -297.637 -61.0798 76.2478 -100.201 -30.435 -5.81212 27.5645))
     (send *ri* :angle-vector (send *fetch* :angle-vector) 15000)
     (send *ri* :stop-grasp)
     (send *ri* :wait-interpolation))
@@ -94,7 +99,7 @@
 (defun move-forward()
     (send *ri* :speak-jp "棚に接近します")
     ;;(go-to-spot "/eng2/7f/room73B2-counter-side")
-    (send *ri* :go-pos-unsafe 0.5 0 0)
+    (send *ri* :go-pos-unsafe 0.55 0 0)
     (send *ri* :wait-interpolation))
 
 ;;腕を物体まで動かす
@@ -105,7 +110,6 @@
         (ros::spin-once)
         (ros::sleep))
     (ros::ros-info "until finished")
-    (setq obj-pos #f(0 0 0))
     ;;棚との干渉
     (send *ri* :speak-jp "物体をつかみます")
     ;;(setq *shelf* (instance 73b2-cupboard-without-door-object :init))
@@ -129,13 +133,12 @@
 ;;main
 (defun main()
     ;;initilalize
-
     (before-go)
     (move-to-shelf)
     (set-grasp-pose)
     (move-forward)
-    ;;(catch)
+    (catch)
     (go-back)
     (atohayoroshiku))
 
-;;(main)
+(main)
