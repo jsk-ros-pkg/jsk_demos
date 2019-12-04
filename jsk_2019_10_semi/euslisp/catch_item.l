@@ -22,7 +22,6 @@
       (print obj-pos)
       obj-pos)))
 
-
 ;;obj-posを引数にとり，対象物をつかむ
 (defun grasp-with-rec (obj-pos)
   (setq target-cds (make-coords :pos (scale 1000 obj-pos)))
@@ -52,7 +51,6 @@
   (send *ri* :stop-grasp)
   (send *ri* :wait-interpolation)
   (unix::sleep 3))
-
 
 ;;基本動作
 (defun reset-pose()
@@ -103,8 +101,6 @@
     (send *co* :add-object *shelf* :frame-id "base_link" :relative-pose (make-coords :pos #f(500 0 0)))
     (grasp-with-rec obj-pos)
     
-
-
 ;;つかむ
 ;;(defun catch()
 ;;    (send *ri* :speak-jp "箱を掴みます")
@@ -140,3 +136,5 @@
     ;;(catch)
     (go-back)
     (atohayoroshiku))
+
+(main)
