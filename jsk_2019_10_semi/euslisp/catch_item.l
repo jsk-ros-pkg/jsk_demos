@@ -7,18 +7,27 @@
 (load "models/73b2-cupboard-without-door-object.l") ;;棚
 (ros::load-ros-manifest "jsk_recognition_msgs")
 
-(defvar *topic-name* "/head_camera/depth_registered/boxes")
+;;defvarは一度やってしまったら上書きされない
+(defvar *topic-name* "/head_camera_remote/depth_registered/boxes")
 (defvar *bounding-box-list* nil)
+
+(fetch-init)
+(objects (list *fetch*))
 
 ;;callback
 (defun bounding-box-array-cb (msg)
+  (ros::ros-info "cb called")
   (setq *bounding-box-list* (send msg :boxes)) ;; boxesは、BoundingBoxのArray(Euslispではlist)
+  (ros::ros-info "set box-list")
   (when *bounding-box-list*
     (let* ((b (elt *bounding-box-list* 0))
            (base->obj-coords (ros::tf-pose->coords (send b :pose)))
            (base-coords (send (send *fetch* :base_link_lk) :copy-worldcoords)))
+      (ros::ros-info "tf")
       (setq obj-pos (scale 0.001 (send (send base-coords :transform base->obj-coords) :worldpos)))
       (setq found-obj t)
+
+      (print found-obj)
       (print obj-pos)
       obj-pos)))
 
@@ -52,6 +61,9 @@
   (send *ri* :wait-interpolation)
   (unix::sleep 3))
 
+(ros::roseus "boundingboxarray_subscriber")
+(ros::subscribe *topic-name* jsk_recognition_msgs::BoundingBoxArray #'bounding-box-array-cb 1)
+
 ;;基本動作
 (defun reset-pose()
     (send *ri* :angle-vector (send *fetch* :reset-pose) 10000))
@@ -81,36 +93,27 @@
 (defun move-forward()
     (send *ri* :speak-jp "棚に接近します")
     ;;(go-to-spot "/eng2/7f/room73B2-counter-side")
-    (send *ri* :go-pos-unsafe 0.6 0 0)
+    (send *ri* :go-pos-unsafe 0.5 0 0)
     (send *ri* :wait-interpolation))
 
 ;;腕を物体まで動かす
 (defun catch()
     (setq found-obj nil)
+    (ros::ros-info "catch func")
     (until found-obj
         (ros::spin-once)
         (ros::sleep))
-
+    (ros::ros-info "until finished")
+    (setq obj-pos #f(0 0 0))
     ;;棚との干渉
     (send *ri* :speak-jp "物体をつかみます")
     (setq *shelf* (instance 73b2-cupboard-without-door-object :init))
-    (send *shelf* :trancelate #f(500 0 0)) ;;自分の前500mm
+    (send *shelf* :translate #f(1000 0 0)) ;;自分の前1000mm
     ;;collision-object initialization
     (setq *co* (instance collision-object-publisher :init))
     ;;coをMoveitに送信
     (send *co* :add-object *shelf* :frame-id "base_link" :relative-pose (make-coords :pos #f(500 0 0)))
-    (grasp-with-rec obj-pos)
-    
-;;つかむ
-;;(defun catch()
-;;    (send *ri* :speak-jp "箱を掴みます")
-;;    (send *fetch* :angle-vector #f()) ;;腕を下ろす
-;;    (send *ri* :angle-vector (send *fetch* :angle-vector) 4000)
-;;    (send *ri* :wait-interpolation)
-;;    (send *ri* :start-grasp) ;;つかむ
-;;    (send *fetch* :angle-vector #f()) ;;腕を上げる
-;;    (send *ri* :angle-vector (send *fetch* :angle-vector) 4000) ;; 
-;;    (send *ri* :wait-interpolation))
+    (grasp-with-rec obj-pos))
 
 ;;後退
 (defun go-back()
@@ -124,10 +127,6 @@
 ;;main
 (defun main()
     ;;initilalize
-    (ros::roseus "boundingboxarray_subscriber")
-    (ros::subscribe *topic-name* jsk_recognition_msgs::BoundingBoxArray #'bounding-box-array-cb 1)
-    (setq found-obj nil)
-    (setq obj-pos #f(0 0 0))
 
     (before-go)
     (move-to-shelf)
@@ -137,4 +136,4 @@
     (go-back)
     (atohayoroshiku))
 
-(main)
+;;(main)
