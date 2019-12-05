@@ -76,6 +76,8 @@
         (send (send (send *scene* :spot "/eng2/2f/forum-door-inside")
                     :copy-worldcoords) :translate #f(-3000 0 0) :world))
   (send *ri* :go-pos-unsafe 3.0 0 0)
+  ;; Force to move
+  (send *ri* :move-to (send *scene* :spot "/eng2/2f/forum-door-inside"))
   (update-robot-position))
 
 
@@ -168,12 +170,13 @@
     (send *ri* :wait-interpolation)
 
     ;; Push door button
-    (setq av0 (send *pr2* arm :inverse-kinematics via-coords
-                    :rotation-axis :x
-                    :look-at-target t))
-    (setq av1 (send *pr2* arm :inverse-kinematics push-coords
-                    :rotation-axis :x
-                    :look-at-target t))
+    (unless (and (setq av0 (send *pr2* arm :inverse-kinematics via-coords
+                                 :rotation-axis :x
+                                 :look-at-target t))
+                 (setq av1 (send *pr2* arm :inverse-kinematics push-coords
+                                 :rotation-axis :x
+                                 :look-at-target t)))
+      (return-from push-forum-door-button nil))
     (send *ri* :angle-vector-sequence (list av0 av1 av0) (list 3000 2000 1000))
     (send *ri* :wait-interpolation)
     (pr2-tuckarm-pose)
