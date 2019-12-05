@@ -7,6 +7,7 @@
 (setq before_go_flag 0)
 (setq go_flag 0)
 (setq wear_flag 0)
+(setq time_pre (ros::time 0))
 
 (ros::roseus-add-msgs "jsk_recognition_msgs")
 
@@ -25,9 +26,15 @@
   (defun raise-hand ()
     (send *fetch* :angle-vector
 	  #f(105.34 80.0424 -43.3069 0.366239 -52.9459 -12.1806 -56.887 1.18627 0.181273 18.8633)))
+  ;;add---------------------------------------------------
+  (defun before-wear ()
+    (send *fetch* :angle-vector
+	  #f(105.34 90.0000 -43.3069 0.366239 -52.9459 -12.1806 -56.887 181.18627 0.181273 18.8633)))
+  ;;changed-----------------------------------------------
   (defun wear-hat ()
     (send *fetch* :angle-vector
-	 #f(105.286 80.1083 -42.5159 1.09134 -57.3843 -8.95059 -81.3646 1.14232 -0.05665 18.8194)))
+	  #f(105.286 90.0 -42.5159 1.09134 -57.3843 -8.95059 -81.3646 -178.858 -0.05665 18.8194)))
+  ;;------------------------------------------------------
   (defun catch-pose ()
     (send *fetch* :angle-vector
 	  #f(102.021 58.0258 3.4729 77.8199 -59.5596 10.3194 -78.2664 74.1575 0.305897 15.3257)))
@@ -49,13 +56,16 @@
   (release-finger)
   (reset-pose)
   (send *ri* :wait-interpolation)
-  (send *ri* :angle-vector (before-catch) 10000)
+  ;;changed-----------------------------------
+  (send *ri* :angle-vector (raise-hand) 10000)
+  ;;-----------------------------------------
   (send *ri* :wait-interpolation)
   (setq before_go_flag 1))
 
 
 ;;赤色を見つけて近づく
 (defun go_to_red ()
+  (ros::sleep 3)
   (send *ri* :speak-jp "帽子を発見しました。") ;;確認のため
   ;;(format t "bounding box ~A~%" (send *target-coords* :worldpos))
   ;; 物体を見る。こうしないと近づきすぎた時見えなくなる。
@@ -68,40 +78,46 @@
   (setq x (elt (send *target-coords* :worldpos) 0))
   (setq y (elt (send *target-coords* :worldpos) 1))
   (setq z (elt (send *target-coords* :worldpos) 2))
-  (if (> x 800) 	
+  (if (and (> x 920))
       (cond ((> y 200) ;;物体が自分より右にあれば
 	     (send *ri* :go-velocity 0 0 (atan (/ y x)))
 	     (ros::ros-info "turn-left"))
 	    ((< y -200) ;;物体が自分より左にあれば
 	     (send *ri* :go-velocity 0 0 (atan (/ y x)))
 	     (ros::ros-info "turn-right"))
-	    (t (send *ri* :go-velocity 0.1 0 0) ;;物体が遠ければ
+	    (t (send *ri* :go-velocity (* (- x 900) 0.0008) 0 0) ;;物体が遠ければ
 	       (ros::ros-info "go")))
       (progn
 	(send *ri* :speak-jp "移動終了")
 	(send *ri* :go-velocity 0 0 0)
 	(setq go_flag 1))
-      ))
+      )
+  (setq time_pre (ros::time-now)))
 
 
 ;;帽子をかぶる
 (defun fetch_wear ()
   (set-wear-func)
   (send *ri* :speak-jp "帽子をつかみます。")
-  ;;目標点を少し左側にずらしてikを解く 
-  (send *fetch* :inverse-kinematics (make-coords :pos (v+ (send *target-coords* :worldpos) #f(0 0.1 0)) :rotation-axis z)) ;;:revert-if-fail nil)
+  ;;目標点を少し手前にずらしてikを解く
+  ;;changed-----------------------------------------------
+  (send *fetch* :inverse-kinematics (make-coords :pos (v+ (send *target-coords* :worldpos) #f(-0.1 0 0.15))))
+  ;;----------------------------------------------------- 
   (send *ri* :angle-vector (send *fetch* :angle-vector) 5000)
   (send *ri* :wait-interpolation)
   (send *ri* :speak-jp "逆運動学をときました。")
-  ;;第一関節rotate ;;値は今てきとう
-  (send *fetch* :rarm :shoulder-y :joint-angle 5)
-  (send *ri* :angle-vector (send *fetch* :angle-vector) 3000)
+  ;;changed-----------------------------------------
+  ;;前進して確実に帽子をつかむ
+  (send *ri* :speak-jp "前進します。")
+  (send *ri* :go-velocity 0.05 0 0)
   (send *ri* :wait-interpolation)
-  ;;(unix:sleep 3)
+  ;;-----------------------------------------------
   (grasp-finger)
   (send *ri* :speak-jp "帽子をつかみました。")
   (send *ri* :wait-interpolation)
-  (send *ri* :angle-vector (raise-hand) 10000)
+  ;;changed------------------------------------
+  (send *ri* :angle-vector (before-wear) 10000)
+  ;;------------------------------------------
   (send *ri* :wait-interpolation)
   (send *ri* :angle-vector (wear-hat) 6000)
   (send *ri* :wait-interpolation)
@@ -116,7 +132,8 @@
 (defun after_wear ()
   (send *ri* :speak-jp "机から離れます。")
   (set-wear-func)
-  (send *ri* :go-velocity 0 0 (deg2rad 180))
+  (send *ri* :go-pos-unsafe 0 0 180)
+  (send *ri* :wait-interpolation)
   (send *ri* :go-velocity 0.5 0 0)
   (send *ri* :angle-vector (raise-hand) 7000)
   (send *ri* :wait-interpolation)
@@ -137,7 +154,6 @@
 
 (defun bounding-box-array-cb (msg)
   (format t "bounding-box-array-cb~%")
-  (set-table)
   (setq *bounding-box-list* (send msg :boxes)) ;; boxesは、BoundingBoxのArray(Euslispではlist)
  
   ;; BoundingBoxがあれば表示する
@@ -178,8 +194,11 @@
 	(before_go))
     (if (and (= before_go_flag 1)
 	     (= go_flag 0)
-	     (not (null *target-coords*)))
-	(go_to_red))
+	     (not (null *target-coords*))
+	     (ros::time> (send msg :header :stamp) time_pre))
+	(progn
+	  (set-table)
+	  (go_to_red)))
     (if (and (= go_flag 1) (not (null *target-coords*)))
 	(fetch_wear))
     ))
@@ -192,12 +211,9 @@
   (ros::sleep)
   )
 
-;;ここに帽子をかぶった後の動作を書く。
-(after_wear)
 ;;干渉解除
 (send *co* :wipe-all)
+;;帽子をかぶった後の動作。
+(after_wear)
 
-;;boxの最終的な場所サンプル
-;;725.464 -46.985 839.889 / 1.414 -6.724e-08 -4.119e-08>]
 
-;;シミュレーターでikを解いてみる
