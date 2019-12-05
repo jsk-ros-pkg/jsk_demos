@@ -49,7 +49,7 @@
     (setq look-xyz (scale 1e+6 (send (send *pr2* :kinect_head-rgb)
                                      :ray (send look-uv :x) (send look-uv :y))))
     (send *pr2* :head :look-at look-xyz)
-    (send *ri* :angle-vector (send *pr2* :angle-vector) 500 :head-controller)))
+    (send *ri* :angle-vector (send *pr2* :angle-vector) 700 :head-controller)))
 
 (defun start-look-at-human (req)
   (ros::subscribe
@@ -71,7 +71,7 @@
 (ros::advertise-service "~start" std_srvs::Empty #'start-look-at-human)
 (ros::advertise-service "~stop" std_srvs::Empty #'stop-look-at-human)
 
-(ros::rate 1)
+(ros::rate 2)
 (while (ros::ok)
   (ros::spin-once)
   (ros::sleep))
