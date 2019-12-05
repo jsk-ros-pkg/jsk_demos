@@ -211,6 +211,7 @@
 
 (defun receive-sandwich ()
   ;; Go to register front
+  (clear-costmap)
   (send *ri* :move-to
         (send (send (send *scene* :spot "/eng2/2f/subway-register")
                     :copy-worldcoords) :translate #f(0 -200 0) :world))
@@ -223,6 +224,7 @@
   (send *ri* :wait-interpolation)
 
   ;; Go to register
+  (speak-jp "少し前に出ます。" :wait t)
   (send *ri* :go-pos-unsafe 0.2 0 0)
 
   (send *ri* :stop-grasp :rarm :wait t)
@@ -259,11 +261,18 @@
   (ros::ros-info "Move to /eng2/2f/forum-door-outside.")
   (send *ri* :move-to (send *scene* :spot "/eng2/2f/forum-door-outside"))
   (ros::ros-info (format nil "Move to initial pose: ~A." *initial-pose*))
+  (call-service "look_at_human/start" (instance std_srvs::EmptyRequest :init))
   (send *ri* :move-to *initial-pose*))
 
 
 (defun pass-sandwich (name)
+  (unix:sleep 2)
+  (call-service "look_at_human/stop" (instance std_srvs::EmptyRequest :init))
+  (send *ri* :go-pos-unsafe 0 0 (send *pr2* :head :neck-y :joint-angle))
+  (look-front)
+
   (send *pr2* :angle-vector (pr2-pick-bag-pose))
+  (send *pr2* :head :angle-vector #f(0 0))
   (send *ri* :angle-vector (send *pr2* :angle-vector) 5000)
   (send *ri* :wait-interpolation)
   (send *ri* :stop-grasp :rarm :wait t)
