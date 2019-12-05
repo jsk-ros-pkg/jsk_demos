@@ -36,9 +36,10 @@
       (incf person-count))
 
     ;; Do nothing when no valid limb was found
+    (when (or (null look-person-idx) (null look-limb-idx))
+      (return-from people-pose-array-cb nil))
     (setq look-person (elt (send msg :poses) look-person-idx))
-    (when (or (null look-person-idx) (null look-limb-idx)
-              (< (elt (send look-person :scores) look-limb-idx) 0.5))
+    (when (< (elt (send look-person :scores) look-limb-idx) 0.5)
       (return-from people-pose-array-cb nil))
 
     ;; Look at target
