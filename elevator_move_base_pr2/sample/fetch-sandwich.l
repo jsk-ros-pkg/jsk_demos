@@ -269,8 +269,8 @@
 
 
 (defun pass-sandwich (name)
-  (unix:sleep 2)
   (call-service "look_at_human/stop" (instance std_srvs::EmptyRequest :init))
+  (update-robot-position)
   (send *ri* :go-pos-unsafe 0 0 (send *pr2* :head :neck-y :joint-angle))
   (look-front)
 
