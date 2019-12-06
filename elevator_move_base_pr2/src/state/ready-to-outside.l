@@ -9,21 +9,29 @@
 (load "package://elevator_move_base_pr2/src/utils.l")
 
 
-(defun check-target-floor-arrived (target-floor button-coords &key (timeout 10))
+(defun check-target-floor-arrived (target-floor button &key (timeout 10))
   (let ((topic
          (instance ros-callback-message
                    :init roseus::StringStamped "/elevator_number/result"))
         (prev-reset-time (ros::time-now))
         (prev-floor nil)
         (cur-floor nil)
+        button-coords
         (button-state (instance light-button-cb-class :init))
         (start-tm (ros::time-now)))
+    (call-service
+     "/narrow_stereo/left/pass_through_feature_to_inside_panel/request"
+     (instance std_srvs::EmptyRequest :init))
     (call-service "/wide_stereo/left/pass_through_image_rect_color/request"
                   (instance std_srvs::EmptyRequest :init))
-    (set-view-target button-coords (send *pr2* :wide_stereo-left)
-                     "wide_stereo_optical_frame")
     (ros::rate 5)
     (while (ros::ok)
+      (update 1)
+      (setq button-coords
+            (find-if #'(lambda (o) (string= button (send o :name)))
+                     (flatten (send *panel* :inheritance))))
+      (set-view-target button-coords (send *pr2* :wide_stereo-left)
+                       "wide_stereo_optical_frame")
       (ros::spin-once)
       (when (send topic :msg)
         (setq cur-floor (string-upcase (send topic :msg :data))))
@@ -101,11 +109,9 @@
       (send *ri* :wait-interpolation)))
 
   (let* ((targetfloor (cdr (assoc 'target-floor userdata)))
-         (button (cdr (assoc 'button userdata)))
-         (button-coords (find-if #'(lambda (o) (string= button (send o :name)))
-                                 (flatten (send *panel* :inheritance)))))
+         (button (cdr (assoc 'button userdata))))
     (unless (check-target-floor-arrived (concatenate string "/" targetfloor)
-                                        button-coords :timeout 10)
+                                        button :timeout 10)
       (send *ri* :go-pos-unsafe 0 0 -90)  ;; Unsafe for faster turning right
       (return-from ready-to-outside :fail))
 
