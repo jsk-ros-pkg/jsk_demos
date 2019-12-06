@@ -16,7 +16,10 @@
   <node name="point_pose_extractor_elevator_call_panel"
         pkg="jsk_perception" type="point_pose_extractor"
         machine="$(arg MACHINE)">
+    <!-- input -->
     <remap from="ImageFeature0D" to="pass_through_feature_to_call_panel/output"/>
+    <!-- output -->
+    <remap from="~debug_image" to="point_pose_extractor_elevator_panels/debug_image"/>
     <rosparam subst_value="true">
       template_filename: $(find jsk_perception)/template/elevator_call_panel_eng2.png
       child_frame_id: matching
@@ -46,7 +49,10 @@
   <node name="point_pose_extractor_elevator_inside_panel"
         pkg="jsk_perception" type="point_pose_extractor"
         machine="$(arg MACHINE)">
+    <!-- input -->
     <remap from="ImageFeature0D" to="pass_through_feature_to_inside_panel/output"/>
+    <!-- output -->
+    <remap from="~debug_image" to="point_pose_extractor_elevator_panels/debug_image"/>
     <rosparam subst_value="true">
       template_filename: $(find jsk_perception)/template/elevator_inside_panel_eng2.png
       child_frame_id: matching

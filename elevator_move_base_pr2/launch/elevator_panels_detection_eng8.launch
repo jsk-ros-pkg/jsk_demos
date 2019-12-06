@@ -1,11 +1,25 @@
 <launch>
   <arg name="INPUT_FEATURE" default="ImageFeature0D"/>
+  <arg name="MANAGER" default="elevator_move_base_manager"/>
   <arg name="MACHINE" default="c2"/>
+
+  <node name="pass_through_feature_to_call_panel"
+        pkg="nodelet" type="nodelet"
+        args="load jsk_topic_tools/Passthrough $(arg MANAGER)"
+        machine="$(arg MACHINE)">
+    <remap from="~input" to="$(arg INPUT_FEATURE)"/>
+    <rosparam>
+      default_duration: 0.0  # infinite
+    </rosparam>
+  </node>
 
   <node name="point_pose_extractor_elevator_call_panel"
         pkg="jsk_perception" type="point_pose_extractor"
         machine="$(arg MACHINE)">
+    <!-- input -->
     <remap from="ImageFeature0D" to="$(arg INPUT_FEATURE)"/>
+    <!-- output -->
+    <remap from="~debug_image" to="point_pose_extractor_elevator_panels/debug_image"/>
     <rosparam subst_value="true">
       template_filename: $(find jsk_perception)/template/elevator_call_panel_eng8.png
       child_frame_id: matching
@@ -18,10 +32,23 @@
     </rosparam>
   </node>
 
+  <node name="pass_through_feature_to_inside_panel"
+        pkg="nodelet" type="nodelet"
+        args="load jsk_topic_tools/Passthrough $(arg MANAGER)"
+        machine="$(arg MACHINE)">
+    <remap from="~input" to="$(arg INPUT_FEATURE)"/>
+    <rosparam>
+      default_duration: 0.0  # infinite
+    </rosparam>
+  </node>
+
   <node name="point_pose_extractor_elevator_inside_panel"
         pkg="jsk_perception" type="point_pose_extractor"
         machine="$(arg MACHINE)">
+    <!-- input -->
     <remap from="ImageFeature0D" to="$(arg INPUT_FEATURE)"/>
+    <!-- output -->
+    <remap from="~debug_image" to="point_pose_extractor_elevator_panels/debug_image"/>
     <rosparam subst_value="true">
       template_filename: $(find jsk_perception)/template/elevator_inside_panel_eng8.png
       child_frame_id: matching
