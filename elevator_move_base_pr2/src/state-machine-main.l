@@ -3,21 +3,18 @@
 (ros::roseus-add-msgs "roseus")
 (ros::roseus-add-srvs "std_srvs")
 
-(require :eng2-scene "package://jsk_maps/src/eng2-scene.l")
-(require :eng8-scene "package://jsk_maps/src/eng8-scene.l")
 (require :pr2-interface "package://pr2eus/pr2-interface.l")
 (require :state-machine
          "package://roseus_smach/src/state-machine.l")
 (require :state-machine-actionlib
          "package://roseus_smach/src/state-machine-actionlib.l")
 
-(load "package://elevator_move_base_pr2/src/check-elevator-open.l")
-(load "package://elevator_move_base_pr2/src/database-interface.l")
-(load "package://elevator_move_base_pr2/src/move-inside-elevator.l")
-(load "package://elevator_move_base_pr2/src/navigation-client.l")
-(load "package://elevator_move_base_pr2/src/push-elevator-button.l")
-(load "package://elevator_move_base_pr2/src/ros-callback-manager.l")
-(load "package://elevator_move_base_pr2/src/sanity-check.l")
+;; (load "package://elevator_move_base_pr2/src/database-interface.l")
+(load "package://elevator_move_base_pr2/src/state/check-elevator-needed.l")
+(load "package://elevator_move_base_pr2/src/state/check-elevator-open.l")
+(load "package://elevator_move_base_pr2/src/state/push-elevator-button.l")
+(load "package://elevator_move_base_pr2/src/state/ready-to-outside.l")
+(load "package://elevator_move_base_pr2/src/state/sanity-check.l")
 (load "package://elevator_move_base_pr2/src/utils.l")
 
 
@@ -33,85 +30,57 @@
                    ("9F" "9階") ("10F" "10階")
                    ("11F" "11階") ("12F" "12階"))))
 
-(defun check-target-floor-arrived (target-floor &key (timeout 25))
-  (let ((topic
-         (instance ros-callback-message
-                   :init roseus::StringStamped "/elevator_number/result"))
-        (prev-reset-time (ros::time-now))
-        (prev-floor nil)
-        (cur-floor nil))
-    (ros::rate 5)
-    (while (ros::ok)
-      (ros::spin-once)
-      (when (send topic :msg)
-        (setq cur-floor (string-upcase (send topic :msg :data))))
-      (unless (equal cur-floor prev-floor)  ;; Elevator moved, so reset time.
-        (ros::ros-info (format nil "Current floor: ~A" cur-floor))
-        (setq prev-reset-time (ros::time-now))
-        (setq prev-floor cur-floor))
-      (when (ros::time> (ros::time-now)
-                        (ros::time+ prev-reset-time (ros::time timeout)))
-        (ros::warn
-         (format nil "Elevator has not moved in recent ~A [sec]." timeout))
-        (speak-jp "エレベータが動いていません。")
-        (call-service
-         "/narrow_stereo/left/pass_through_feature_to_inside_panel/stop"
-         (instance std_srvs::EmptyRequest :init))
-        (call-service "/narrow_stereo/left/pass_through_image_rect/stop"
-                      (instance std_srvs::EmptyRequest :init))
-        (return-from check-target-floor-arrived nil))
-      (when (and cur-floor (substringp target-floor cur-floor))
-        (call-service
-         "/narrow_stereo/left/pass_through_feature_to_inside_panel/stop"
-         (instance std_srvs::EmptyRequest :init))
-        (call-service "/narrow_stereo/left/pass_through_image_rect/stop"
-                      (instance std_srvs::EmptyRequest :init))
-        (return-from check-target-floor-arrived t))
-      (ros::sleep)
-      )))
+(defun push-state-machine ()
+  (let ((sm (instance state-machine :init)))
+    (send sm :add-node (instance state :init :look 'look-button-state))
+    (send sm :add-node (instance state :init :push 'push-button-state))
+    (send sm :add-node (instance state :init :check 'check-button-light-state))
+    (send sm :arg-keys 'button 'panel-name 'front-coords)
+    (send sm :goal-state (list :success))
+    (send sm :start-state :look)
+    (send sm :add-transition :look :push t)
+    (send sm :add-transition :look :look nil)
+    (send sm :add-transition :push :check t)
+    (send sm :add-transition :push :look nil)
+    (send sm :add-transition :check :success t)
+    (send sm :add-transition :check :look nil)
+    sm))
 
-(defun ready-to-outside (userdata)
-  (call-service
-   "/narrow_stereo/left/pass_through_feature_to_inside_panel/request"
-   (instance std_srvs::EmptyRequest :init))
-  (call-service "/narrow_stereo/left/pass_through_image_rect/request"
-                (instance std_srvs::EmptyRequest :init))
-  (clear-costmap)
-  (tolerance-loose)
-  (send *ri* :go-pos-unsafe 0 0 90)  ;; Unsafe for faster turning left
-
-  (update-robot-position)
-  ;; Look at panel
-  (let ((look-target
-         (or (find-if #'(lambda (x) (string= (send x :name) "/elevator_number"))
-                      (send *panel* :descendants))
-             *panel*)))
-    (send *pr2* :head :look-at (send look-target :worldpos))
-    ;; Move fast but converge to the target angle vector
-    (while (not (eps-v= (send *pr2* :angle-vector)
-                        (send *ri* :state :potentio-vector)
-                        1.0))
-      (send *ri* :angle-vector (send *pr2* :angle-vector) 500)
-      (send *ri* :wait-interpolation)))
-
-  (let ((targetfloor (cdr (assoc 'target-floor userdata))))
-    (unless (check-target-floor-arrived (concatenate string "/" targetfloor)
-                                        :timeout 20)
-      (send *ri* :go-pos-unsafe 0 0 -90)  ;; Unsafe for faster turning right
-      (return-from ready-to-outside :fail))
-
-    (dolist (floor *floors*)
-      (when (equal targetfloor (elt floor 0))
-        (ros::ros-info (format nil "Arrived at ~A." (elt floor 0)))
-        (speak-jp (concatenate string (elt floor 1) "に着きました。"))
-        (change-floor (format nil "~A/~a" (send *scene* :name)
-                              (string-downcase (elt floor 0)))
-                      *scene* *tfl*))))
-
-  (unless (check-elevator-open :timeout 5)
-    (send *ri* :go-pos-unsafe 0 0 -90)  ;; Unsafe for faster turning right
-    (return-from ready-to-outside :fail))
-  :success)
+(defun move-inside-state-machine ()
+  (let ((sm (instance state-machine :init))
+        (move-client (pr2-interface-move-base-action *ri*)))
+    (send sm :add-node (instance state :init :set-param-for-elevator-outside
+                                 'tolerance-loose))
+    (send sm :add-node (actionlib-client-state
+                        :move-elevator-front move-client :timeout 30 :retry nil
+                        :key 'coords->movebaseactiongoal))
+    (send (send sm :node :move-elevator-front)
+          :remap-list '((:goal . elevator-front-coords)))
+    (send sm :add-node (instance state :init :set-param-for-elevator-inside
+                                 'tolerance-strict))
+    (send sm :add-node
+          (instance state :init :check-elevator-open
+                    '(lambda (x) (check-elevator-open :timeout 300))))
+    (send sm :add-node (actionlib-client-state
+                        :move-elevator-inside move-client :timeout 40 :retry nil
+                        :key 'coords->movebaseactiongoal))
+    (send (send sm :node :move-elevator-inside)
+          :remap-list '((:goal . inside-coords)))
+    (send sm :arg-keys 'elevator-front-coords 'inside-coords)
+    (send sm :goal-state (list :success :fail))
+    (send sm :start-state :set-param-for-elevator-outside)
+    (send sm :add-transition
+          :set-param-for-elevator-outside :move-elevator-front t)
+    (send sm :add-transition
+          :move-elevator-front :set-param-for-elevator-inside :succeeded)
+    (send sm :add-transition :move-elevator-front :fail :failed)
+    (send sm :add-transition
+          :set-param-for-elevator-inside :check-elevator-open t)
+    (send sm :add-transition :check-elevator-open :move-elevator-inside t)
+    (send sm :add-transition :check-elevator-open :fail nil)
+    (send sm :add-transition :move-elevator-inside :success :succeeded)
+    (send sm :add-transition :move-elevator-inside :fail :failed)
+    sm))
 
 (defun take-elevator-state-machine ()
   (let ((sm (instance state-machine :init))
@@ -164,75 +133,6 @@
     (send sm :add-transition :move-outside :fail-inside :failed)
     (send sm :add-transition :set-param-for-normal :success t)
     sm))
-
-(defun check-elevator-needed (userdata)
-  (update-robot-position)
-  (let* ((goal (cdr (assoc :goal userdata)))
-         (goal-pose (ros::tf-pose-stamped->coords
-                     (send goal :target_pose)))
-         (cur-floor (check-current-floor *scene* *tfl*))
-         (target-floor (check-current-floor *scene* *tfl* goal-pose))
-         target-floor-button
-         (target-coords
-          (transform-pose-to-target-frame goal-pose (send *scene* :name) *tfl*))
-         (up/down (cond ((send *scene* :floor< target-floor cur-floor) "down")
-                        ((send *scene* :floor< cur-floor target-floor) "up")
-                        (t nil))))
-    (ros::ros-info
-     (format nil
-             "cur-floor: ~A, target-floor: ~A, up/down: ~A, target-coords: ~A"
-             cur-floor target-floor up/down target-coords))
-    (setq target-floor-button
-          (elt (assoc target-floor *floors* :test #'string=
-                      :key #'(lambda (x)
-                               (format nil "~A/~A" (send *scene* :name)
-                                       (string-downcase (elt x 0)))))
-               0)) ;; /eng8/1f -> 1F
-    (set-alist 'inside-panel-name "/elevator_inside_panel" userdata)
-    (set-alist 'outside-panel-name "/elevator_call_panel" userdata)
-    ;; transform to scene frame
-    (set-alist
-     'elevator-front-coords
-     (let ((coords (send *scene* :transformation
-                         (car (send *scene* :find-object
-                                    (format nil "~A/elevator-outside"
-                                            cur-floor))))))
-       (send coords :name (send *scene* :name))
-       (send coords :rotate pi :z)
-       coords)
-     userdata)
-    (set-alist
-     'front-coords
-     (let ((coords (send *scene* :transformation
-                         (car (send *scene* :find-object
-                                    (format nil "~A/elevator_call_panel-front"
-                                            cur-floor))))))
-       (send coords :name (send *scene* :name))
-       coords)
-     userdata)
-    (set-alist
-     'inside-coords
-     (let ((coords (send *scene* :transformation
-                         (car (send *scene* :find-object
-                                    (format nil "~A/elevator_inside_panel-front"
-                                            cur-floor))))))
-       (send coords :name (send *scene* :name))
-       coords)
-     userdata)
-    (set-alist
-     'outside-coords
-     (let ((coords (send *scene* :transformation
-                         (car (send *scene* :find-object
-                                    (format nil "~A/elevator-outside"
-                                            target-floor))))))
-       (send coords :name (send *scene* :name))
-       coords)
-     userdata)
-    (set-alist 'target-floor target-floor-button userdata)
-    (set-alist 'outside-button up/down userdata)
-    (set-alist 'target-coords target-coords userdata)
-    (pr2-tuckarm-pose)
-    (not (null up/down))))
 
 (defun elevator-move-base-state-machine ()
   (let ((sm (instance state-machine :init)))
