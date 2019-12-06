@@ -1,3 +1,4 @@
+(ros::roseus-add-msgs "jsk_recognition_msgs")
 (ros::roseus-add-msgs "sensor_msgs")
 
 (require :pr2-interface "package://pr2eus/pr2-interface.l")
@@ -32,6 +33,14 @@
   (speak-subscription-error topic)
   nil)
 
+(defun check-people-pose-array-published (topic &optional (timeout 10))
+  (when (one-shot-subscribe
+         topic jsk_recognition_msgs::PeoplePoseArray
+         :timeout (* timeout 1000) :after-stamp (ros::time-now))
+    (return-from check-people-pose-array-published t))
+  (speak-subscription-error topic)
+  nil)
+
 (defun sanity-check (userdata)
   (let ((success t))
     (unless (boundp '*ri*)
@@ -51,8 +60,8 @@
       (setq success nil))
 
     ;; For look-at-human
-    (unless
-        (check-image-published "edgetpu_human_pose_estimator/output/poses" 5)
+    (unless (check-people-pose-array-published
+             "edgetpu_human_pose_estimator/output/poses" 5)
       (setq success nil))
 
     ;; For door button recognition with FCN
