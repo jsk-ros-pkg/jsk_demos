@@ -6,6 +6,7 @@ Panels:
       Expanded:
         - /Global Options1
         - /Status1
+        - /DetectedMirror1
       Splitter Ratio: 0.633333325
     Tree Height: 856
   - Class: rviz/Selection
@@ -60,410 +61,6 @@ Visualization Manager:
         Expand Link Details: false
         Expand Tree: false
         Link Tree Style: Links in Alphabetic Order
-        base_bellow_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        base_footprint:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        base_laser_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-        base_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        bl_caster_l_wheel_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        bl_caster_r_wheel_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        bl_caster_rotation_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        br_caster_l_wheel_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        br_caster_r_wheel_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        br_caster_rotation_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        double_stereo_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        fl_caster_l_wheel_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        fl_caster_r_wheel_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        fl_caster_rotation_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        fr_caster_l_wheel_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        fr_caster_r_wheel_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        fr_caster_rotation_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        head_pan_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        head_plate_frame:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        head_tilt_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        high_def_frame:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-        high_def_optical_frame:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-        imu_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-        l_elbow_flex_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        l_forearm_cam_frame:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-        l_forearm_cam_optical_frame:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-        l_forearm_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        l_forearm_roll_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        l_gripper_l_finger_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        l_gripper_l_finger_tip_frame:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-        l_gripper_l_finger_tip_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        l_gripper_led_frame:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-        l_gripper_motor_accelerometer_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        l_gripper_motor_screw_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-        l_gripper_motor_slider_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-        l_gripper_palm_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        l_gripper_r_finger_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        l_gripper_r_finger_tip_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        l_gripper_tool_frame:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-        l_shoulder_lift_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        l_shoulder_pan_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        l_torso_lift_side_plate_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-        l_upper_arm_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        l_upper_arm_roll_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        l_wrist_flex_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        l_wrist_roll_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        laser_tilt_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-        laser_tilt_mount_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        narrow_stereo_l_stereo_camera_frame:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-        narrow_stereo_l_stereo_camera_optical_frame:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-        narrow_stereo_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-        narrow_stereo_optical_frame:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-        narrow_stereo_r_stereo_camera_frame:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-        narrow_stereo_r_stereo_camera_optical_frame:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-        projector_wg6802418_child_frame:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-        projector_wg6802418_frame:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-        r_elbow_flex_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        r_forearm_cam_frame:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-        r_forearm_cam_optical_frame:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-        r_forearm_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        r_forearm_roll_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        r_gripper_l_finger_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        r_gripper_l_finger_tip_frame:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-        r_gripper_l_finger_tip_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        r_gripper_led_frame:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-        r_gripper_motor_accelerometer_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        r_gripper_motor_screw_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-        r_gripper_motor_slider_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-        r_gripper_palm_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        r_gripper_r_finger_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        r_gripper_r_finger_tip_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        r_gripper_tool_frame:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-        r_shoulder_lift_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        r_shoulder_pan_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        r_torso_lift_side_plate_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-        r_upper_arm_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        r_upper_arm_roll_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        r_wrist_flex_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        r_wrist_roll_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        sensor_mount_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        torso_lift_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        torso_lift_motor_screw_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-        wide_stereo_l_stereo_camera_frame:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-        wide_stereo_l_stereo_camera_optical_frame:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-        wide_stereo_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-        wide_stereo_optical_frame:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-        wide_stereo_r_stereo_camera_frame:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-        wide_stereo_r_stereo_camera_optical_frame:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
       Name: RobotModel
       Robot Description: robot_description
       TF Prefix: ""
@@ -761,25 +358,13 @@ Visualization Manager:
           width: 200
         - Class: jsk_rviz_plugin/OverlayImage
           Enabled: true
-          Name: ElevatorCallPanel
-          Topic: /narrow_stereo/left/point_pose_extractor_elevator_call_panel/debug_image
+          Name: ElevatorPanel
+          Topic: /narrow_stereo/left/point_pose_extractor_elevator_panels/debug_image
           Value: true
           alpha: 0.800000012
           height: 320
           keep aspect ratio: false
           left: 20
-          top: 160
-          transport hint: raw
-          width: 200
-        - Class: jsk_rviz_plugin/OverlayImage
-          Enabled: true
-          Name: ElevatorInsidePanel
-          Topic: /narrow_stereo/left/point_pose_extractor_elevator_inside_panel/debug_image
-          Value: true
-          alpha: 0.800000012
-          height: 320
-          keep aspect ratio: false
-          left: 240
           top: 160
           transport hint: raw
           width: 200
@@ -791,7 +376,7 @@ Visualization Manager:
           alpha: 0.800000012
           height: 150
           keep aspect ratio: false
-          left: 460
+          left: 240
           top: 160
           transport hint: raw
           width: 200
@@ -803,7 +388,7 @@ Visualization Manager:
           alpha: 0.800000012
           height: 150
           keep aspect ratio: false
-          left: 460
+          left: 240
           top: 330
           transport hint: raw
           width: 200
@@ -1031,7 +616,7 @@ Visualization Manager:
             torso_lift_motor_screw_link:
               Value: false
             virtual_camera_frame:
-              Value: false
+              Value: true
             wide_stereo_l_stereo_camera_frame:
               Value: false
             wide_stereo_l_stereo_camera_optical_frame:
@@ -1120,8 +705,7 @@ Visualization Manager:
                                             narrow_stereo_r_stereo_camera_optical_frame:
                                               {}
                                         narrow_stereo_optical_frame:
-                                          elevator_call_panel:
-                                            {}
+                                          {}
                                       wide_stereo_link:
                                         wide_stereo_l_stereo_camera_frame:
                                           wide_stereo_l_stereo_camera_optical_frame:
@@ -1207,6 +791,11 @@ Visualization Manager:
                               {}
                           torso_lift_motor_screw_link:
                             {}
+                        elevator_call_panel:
+                          {}
+                        elevator_inside_panel:
+                          virtual_camera_frame:
+                            {}
                 eng2/8f:
                   {}
           Update Interval: 0
@@ -1244,6 +833,18 @@ Visualization Manager:
           width: 800
       Enabled: true
       Name: ElevatorInfo
+    - Class: jsk_rviz_plugin/OverlayImage
+      Enabled: true
+      Name: DetectedMirror
+      Topic: /label_image_decomposer/output/label_viz
+      Value: true
+      alpha: 0.800000012
+      height: 150
+      keep aspect ratio: false
+      left: 460
+      top: 500
+      transport hint: raw
+      width: 200
   Enabled: true
   Global Options:
     Background Color: 48; 48; 48
