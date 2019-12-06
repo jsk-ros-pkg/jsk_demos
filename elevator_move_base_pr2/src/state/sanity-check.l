@@ -36,9 +36,11 @@
   (let ((success t))
     (unless (boundp '*ri*)
       (pr2-init))
-    (unless (check-image-published "/narrow_stereo/left/image_raw" 10)
+
+    ;; Sensors
+    (unless (check-image-published "/narrow_stereo/left/image_rect" 10)
       (setq success nil))
-    (unless (check-image-published "/wide_stereo/left/image_raw" 10)
+    (unless (check-image-published "/wide_stereo/left/image_rect_color" 10)
       (setq success nil))
     (unless
         (check-point-cloud-published "/kinect_head/depth_registered/points" 10)
@@ -47,4 +49,18 @@
       (setq success nil))
     (unless (check-laser-scan-published "/tilt_scan" 2)
       (setq success nil))
+
+    ;; For look-at-human
+    (unless
+        (check-image-published "edgetpu_human_pose_estimator/output/poses" 5)
+      (setq success nil))
+
+    ;; For door button recognition with FCN
+    (call-service "door_button/pass_through_image/request"
+                  (instance std_srvs::EmptyRequest :init))
+    (unless
+        (check-image-published "door_button/fcn_object_segmentation/output" 20)
+      (setq success nil))
+    (call-service "door_button/pass_through_image/stop"
+                  (instance std_srvs::EmptyRequest :init))
     success))
