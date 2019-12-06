@@ -1,19 +1,27 @@
 (ros::roseus-add-msgs "geometry_msgs")
+(ros::roseus-add-msgs "roseus")
 
 (require :pr2-interface "package://pr2eus/pr2-interface.l")
 
 (load "package://elevator_move_base_pr2/src/ros-callback-manager.l")
 (load "package://elevator_move_base_pr2/src/state/check-elevator-open.l")
+(load "package://elevator_move_base_pr2/src/state/push-elevator-button.l")
 (load "package://elevator_move_base_pr2/src/utils.l")
 
 
-(defun check-target-floor-arrived (target-floor &key (timeout 25))
+(defun check-target-floor-arrived (target-floor button-coords &key (timeout 10))
   (let ((topic
          (instance ros-callback-message
                    :init roseus::StringStamped "/elevator_number/result"))
         (prev-reset-time (ros::time-now))
         (prev-floor nil)
-        (cur-floor nil))
+        (cur-floor nil)
+        (button-state (instance light-button-cb-class :init))
+        (start-tm (ros::time-now)))
+    (call-service "/wide_stereo/left/pass_through_image_rect_color/request"
+                  (instance std_srvs::EmptyRequest :init))
+    (set-view-target button-coords (send *pr2* :wide_stereo-left)
+                     "wide_stereo_optical_frame")
     (ros::rate 5)
     (while (ros::ok)
       (ros::spin-once)
@@ -23,8 +31,9 @@
         (ros::ros-info (format nil "Current floor: ~A" cur-floor))
         (setq prev-reset-time (ros::time-now))
         (setq prev-floor cur-floor))
-      (when (ros::time> (ros::time-now)
-                        (ros::time+ prev-reset-time (ros::time timeout)))
+      (when (and (ros::time> (ros::time-now)
+                             (ros::time+ prev-reset-time (ros::time timeout)))
+                 (< (send button-state :value) 0.5))
         (ros::warn
          (format nil "Elevator has not moved in recent ~A [sec]." timeout))
         (speak-jp "エレベータが動いていません。")
@@ -33,12 +42,16 @@
          (instance std_srvs::EmptyRequest :init))
         (call-service "/narrow_stereo/left/pass_through_image_rect/stop"
                       (instance std_srvs::EmptyRequest :init))
+        (call-service "/wide_stereo/left/pass_through_image_rect_color/stop"
+                      (instance std_srvs::EmptyRequest :init))
         (return-from check-target-floor-arrived nil))
       (when (and cur-floor (substringp target-floor cur-floor))
         (call-service
          "/narrow_stereo/left/pass_through_feature_to_inside_panel/stop"
          (instance std_srvs::EmptyRequest :init))
         (call-service "/narrow_stereo/left/pass_through_image_rect/stop"
+                      (instance std_srvs::EmptyRequest :init))
+        (call-service "/wide_stereo/left/pass_through_image_rect_color/stop"
                       (instance std_srvs::EmptyRequest :init))
         (return-from check-target-floor-arrived t))
       (ros::sleep)
@@ -87,9 +100,12 @@
       (send *ri* :angle-vector (send *pr2* :angle-vector) 500)
       (send *ri* :wait-interpolation)))
 
-  (let ((targetfloor (cdr (assoc 'target-floor userdata))))
+  (let* ((targetfloor (cdr (assoc 'target-floor userdata)))
+         (button (cdr (assoc 'button userdata)))
+         (button-coords (find-if #'(lambda (o) (string= button (send o :name)))
+                                 (flatten (send *panel* :inheritance)))))
     (unless (check-target-floor-arrived (concatenate string "/" targetfloor)
-                                        :timeout 20)
+                                        button-coords :timeout 10)
       (send *ri* :go-pos-unsafe 0 0 -90)  ;; Unsafe for faster turning right
       (return-from ready-to-outside :fail))
 
