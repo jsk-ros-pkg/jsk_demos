@@ -57,6 +57,21 @@
     (send goal :goal :target_pose :header :frame_id (send coords :name))
     goal))
 
+(defun transform-pose-to-target-frame (coords frame-id tfl
+                                       &optional (tm (ros::time 0)))
+  (let ((tra (send tfl :lookup-transform frame-id (send coords :name) tm)))
+    (when tra
+      (send tra :transform coords)
+      (send tra :name frame-id)
+      tra)))
+
+(defun check-current-floor (scene tfl &optional pose) ;; :name == frame_id
+  (if pose
+      (setq pose (transform-pose-to-target-frame pose (send scene :name) tfl))
+    (setq pose (send tfl :lookup-transform
+                     (send scene :name) "base_footprint" (ros::time 0))))
+  (send scene :current-floor pose))
+
 (defun tolerance-loose (&rest args)
   (ros::set-dynamic-reconfigure-param
    "/move_base_node/DWAPlannerROS" "xy_goal_tolerance" :double 0.20)
