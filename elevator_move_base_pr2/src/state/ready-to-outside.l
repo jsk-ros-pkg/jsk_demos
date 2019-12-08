@@ -17,8 +17,7 @@
         (prev-floor nil)
         (cur-floor nil)
         button-coords
-        (button-state (instance light-button-cb-class :init))
-        (start-tm (ros::time-now)))
+        (button-state (instance light-button-cb-class :init)))
     (call-service
      "/narrow_stereo/left/pass_through_feature_to_inside_panel/request"
      (instance std_srvs::EmptyRequest :init))
