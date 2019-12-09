@@ -35,7 +35,7 @@
     (send sm :add-node (instance state :init :look 'look-button-state))
     (send sm :add-node (instance state :init :push 'push-button-state))
     (send sm :add-node (instance state :init :check 'check-button-light-state))
-    (send sm :arg-keys 'button 'panel-name 'front-coords)
+    (send sm :arg-keys 'button 'panel-name)
     (send sm :goal-state (list :success))
     (send sm :start-state :look)
     (send sm :add-transition :look :push t)
