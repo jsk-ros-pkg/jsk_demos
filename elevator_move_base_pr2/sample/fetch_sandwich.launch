@@ -33,6 +33,7 @@
       nodes:
         - /elevator_move_base
         - /fetch_sandwich
+        - /narrow_stereo/left/find_elevator_button
       exclude_regexes:
         - ".*follow_joint_trajectory.*"
         - ".*goal id.*"
