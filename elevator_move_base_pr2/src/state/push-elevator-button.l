@@ -9,6 +9,13 @@
 (load "package://elevator_move_base_pr2/src/utils.l")
 
 
+(defvar *panel*)
+;; (defvar *pr2*)
+;; (defvar *ri*)
+(defvar *scene*)
+(defvar *tfl*)
+
+
 (defclass light-button-cb-class
   :super propertied-object
   :slots (value timestamp tau))
@@ -75,11 +82,6 @@
         via-angle-vector org-arm-anglev org-head-anglev reset-pose
         (rarm-reset #f(-60 70 -70 -120 160 -30 180))  ;; 2nd element 80 -> 70
         (larm-reset #f(60 70 70 -120 -160 -30 180)))  ;; 2nd element 80 -> 70
-
-    (unless (and (boundp '*pr2*) (boundp '*ri*))
-      (ros::ros-error "*pr2* or *ri* is not bound.")
-      (return-from push-button nil))
-
     ;; check push target simply from current tuckarm-pose
     (ros::spin-once)
     (send *pr2* :angle-vector (send *ri* :state :potentio-vector))

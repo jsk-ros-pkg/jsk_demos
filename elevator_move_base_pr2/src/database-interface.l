@@ -1,6 +1,10 @@
 (require :mongo-client "package://roseus_mongo/euslisp/mongo-client.l")
 
 
+;; (defvar *pr2*)
+;; (defvar *ri*)
+
+
 (defclass mongo-logger
   :slots (task-id)
   :super propertied-object)
