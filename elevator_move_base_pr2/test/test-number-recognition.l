@@ -8,11 +8,17 @@
 
 (init-unit-test)
 
-(deftest test-check-target-floor ()
-  (setq userdata '())
-  (set-alist 'target-floor "7F" userdata)
-  (assert (check-target-floor-arrived "/7F")
-          "Failed to check if arrived at target-floor (7F)."))
+(deftest test-number-recognition ()
+  (let ((msg nil) (topic "/elevator_number/result"))
+    (call-service "/narrow_stereo/left/pass_through_image_rect/request"
+                  (instance std_srvs::EmptyRequest :init))
+    (ros::subscribe topic roseus::StringStamped #'(lambda (m) (setq msg m)))
+    (ros::rate 10)
+    (while (ros::ok)
+      (ros::spin-once)
+      (when msg (return))
+      (ros::sleep))
+    (assert msg (format nil "Could not subscribe topic: ~A." topic))))
 
 (run-all-tests)
 
