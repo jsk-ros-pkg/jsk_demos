@@ -80,9 +80,9 @@
   ;;      at elevator hall on 2F.
   (send *ri* :move-to
         (send (send (send *scene* :spot "/eng2/2f/forum-door-inside")
-                    :copy-worldcoords) :translate #f(-3000 0 0) :world))
-  (send *ri* :go-pos-unsafe 3.0 0 0)
-  ;; Force to move
+                    :copy-worldcoords) :translate #f(-3200 -100 0) :world))
+  (send *ri* :go-pos-unsafe 3.2 0 0)
+  ;; Modify position
   (send *ri* :move-to (send *scene* :spot "/eng2/2f/forum-door-inside"))
   (update-robot-position))
 
