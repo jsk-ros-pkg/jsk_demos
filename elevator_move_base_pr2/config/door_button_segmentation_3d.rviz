@@ -7,7 +7,7 @@ Panels:
         - /Global Options1
         - /Status1
         - /DetectedMirror1
-      Splitter Ratio: 0.633333325
+      Splitter Ratio: 0.633333
     Tree Height: 856
   - Class: rviz/Selection
     Name: Selection
@@ -17,7 +17,7 @@ Panels:
       - /2D Nav Goal1
       - /Publish Point1
     Name: Tool Properties
-    Splitter Ratio: 0.588679016
+    Splitter Ratio: 0.588679
   - Class: rviz/Views
     Expanded:
       - /Current View1
@@ -28,8 +28,6 @@ Panels:
     Name: Time
     SyncMode: 0
     SyncSource: BaseScan
-Toolbars:
-  toolButtonStyle: 2
 Visualization Manager:
   Class: ""
   Displays:
@@ -39,7 +37,7 @@ Visualization Manager:
       Color: 160; 160; 164
       Enabled: true
       Line Style:
-        Line Width: 0.0299999993
+        Line Width: 0.03
         Value: Lines
       Name: Grid
       Normal Cell Count: 0
@@ -61,6 +59,454 @@ Visualization Manager:
         Expand Link Details: false
         Expand Tree: false
         Link Tree Style: Links in Alphabetic Order
+        base_bellow_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        base_footprint:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        base_laser_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        base_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        bl_caster_l_wheel_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        bl_caster_r_wheel_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        bl_caster_rotation_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        br_caster_l_wheel_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        br_caster_r_wheel_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        br_caster_rotation_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        double_stereo_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        fl_caster_l_wheel_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        fl_caster_r_wheel_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        fl_caster_rotation_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        fr_caster_l_wheel_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        fr_caster_r_wheel_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        fr_caster_rotation_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        head_chain_cb_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        head_mount_kinect_ir_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        head_mount_kinect_ir_optical_frame:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        head_mount_kinect_rgb_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        head_mount_kinect_rgb_optical_frame:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        head_mount_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        head_mount_prosilica_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        head_mount_prosilica_optical_frame:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        head_pan_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        head_plate_frame:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        head_tilt_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        high_def_frame:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        high_def_optical_frame:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        imu_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        l_elbow_flex_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        l_forearm_cam_frame:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        l_forearm_cam_optical_frame:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        l_forearm_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        l_forearm_roll_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        l_gripper_l_finger_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        l_gripper_l_finger_tip_frame:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        l_gripper_l_finger_tip_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        l_gripper_led_frame:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        l_gripper_motor_accelerometer_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        l_gripper_motor_screw_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        l_gripper_motor_slider_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        l_gripper_palm_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        l_gripper_r_finger_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        l_gripper_r_finger_tip_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        l_gripper_tool_frame:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        l_shoulder_lift_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        l_shoulder_pan_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        l_torso_lift_side_plate_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        l_upper_arm_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        l_upper_arm_roll_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        l_wrist_flex_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        l_wrist_roll_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        laser_tilt_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        laser_tilt_mount_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        left_arm_chain_cb_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        narrow_stereo_l_stereo_camera_frame:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        narrow_stereo_l_stereo_camera_optical_frame:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        narrow_stereo_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        narrow_stereo_optical_frame:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        narrow_stereo_r_stereo_camera_frame:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        narrow_stereo_r_stereo_camera_optical_frame:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        projector_wg6802418_child_frame:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        projector_wg6802418_frame:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        r_elbow_flex_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        r_forearm_cam_frame:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        r_forearm_cam_optical_frame:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        r_forearm_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        r_forearm_roll_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        r_gripper_l_finger_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        r_gripper_l_finger_tip_frame:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        r_gripper_l_finger_tip_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        r_gripper_led_frame:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        r_gripper_motor_accelerometer_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        r_gripper_motor_screw_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        r_gripper_motor_slider_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        r_gripper_palm_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        r_gripper_r_finger_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        r_gripper_r_finger_tip_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        r_gripper_tool_frame:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        r_shoulder_lift_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        r_shoulder_pan_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        r_torso_lift_side_plate_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        r_upper_arm_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        r_upper_arm_roll_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        r_wrist_flex_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        r_wrist_roll_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        right_arm_chain_cb_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        sensor_mount_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        torso_lift_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        torso_lift_motor_screw_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        wide_stereo_l_stereo_camera_frame:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        wide_stereo_l_stereo_camera_optical_frame:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        wide_stereo_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        wide_stereo_optical_frame:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        wide_stereo_r_stereo_camera_frame:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        wide_stereo_r_stereo_camera_optical_frame:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
       Name: RobotModel
       Robot Description: robot_description
       TF Prefix: ""
@@ -77,12 +523,12 @@ Visualization Manager:
           auto color change: false
           background color: 0; 0; 0
           backround alpha: 0
-          foreground alpha: 0.699999988
-          foreground alpha 2: 0.400000006
+          foreground alpha: 0.7
+          foreground alpha 2: 0.4
           foreground color: 25; 255; 240
           left: 0
           max color: 255; 0; 0
-          max value: 1
+          max value: 100
           min value: 0
           show caption: true
           size: 128
@@ -96,12 +542,12 @@ Visualization Manager:
           auto color change: false
           background color: 0; 0; 0
           backround alpha: 0
-          foreground alpha: 0.699999988
-          foreground alpha 2: 0.400000006
+          foreground alpha: 0.7
+          foreground alpha 2: 0.4
           foreground color: 25; 255; 240
           left: 128
           max color: 255; 0; 0
-          max value: 1
+          max value: 100
           min value: 0
           show caption: true
           size: 128
@@ -115,12 +561,12 @@ Visualization Manager:
           auto color change: false
           background color: 0; 0; 0
           backround alpha: 0
-          foreground alpha: 0.699999988
-          foreground alpha 2: 0.400000006
+          foreground alpha: 0.7
+          foreground alpha 2: 0.4
           foreground color: 25; 255; 240
           left: 256
           max color: 255; 0; 0
-          max value: 1
+          max value: 100
           min value: 0
           show caption: true
           size: 128
@@ -134,12 +580,12 @@ Visualization Manager:
           auto color change: false
           background color: 0; 0; 0
           backround alpha: 0
-          foreground alpha: 0.699999988
-          foreground alpha 2: 0.400000006
+          foreground alpha: 0.7
+          foreground alpha 2: 0.4
           foreground color: 25; 255; 240
           left: 384
           max color: 255; 0; 0
-          max value: 1
+          max value: 100
           min value: 0
           show caption: true
           size: 128
@@ -149,7 +595,7 @@ Visualization Manager:
       Name: Battery
     - Class: rviz/Group
       Displays:
-        - Alpha: 0.699999988
+        - Alpha: 0.7
           Class: rviz/Map
           Color Scheme: map
           Draw Behind: false
@@ -157,9 +603,8 @@ Visualization Manager:
           Name: Map
           Topic: /map
           Unreliable: false
-          Use Timestamp: false
           Value: false
-        - Alpha: 0.899999976
+        - Alpha: 0.9
           Class: rviz/Map
           Color Scheme: map
           Draw Behind: false
@@ -167,9 +612,8 @@ Visualization Manager:
           Name: Eng2/2F
           Topic: /eng2/2f
           Unreliable: false
-          Use Timestamp: false
           Value: true
-        - Alpha: 0.699999988
+        - Alpha: 0.7
           Class: rviz/Map
           Color Scheme: map
           Draw Behind: false
@@ -177,7 +621,6 @@ Visualization Manager:
           Name: Eng2/7F
           Topic: /eng2/7f
           Unreliable: false
-          Use Timestamp: false
           Value: true
         - Class: rviz/MarkerArray
           Enabled: true
@@ -191,7 +634,7 @@ Visualization Manager:
       Name: Map&Spot
     - Class: rviz/Group
       Displays:
-        - Alpha: 0.400000006
+        - Alpha: 0.4
           Class: rviz/Map
           Color Scheme: costmap
           Draw Behind: false
@@ -199,9 +642,8 @@ Visualization Manager:
           Name: GlobalCostmap
           Topic: /move_base_node/global_costmap/costmap
           Unreliable: false
-          Use Timestamp: false
           Value: true
-        - Alpha: 0.699999988
+        - Alpha: 0.7
           Class: rviz/Map
           Color Scheme: costmap
           Draw Behind: false
@@ -209,18 +651,17 @@ Visualization Manager:
           Name: LocalCostmap
           Topic: /move_base_node/local_costmap/costmap
           Unreliable: false
-          Use Timestamp: false
           Value: true
         - Alpha: 1
           Buffer Length: 1
           Class: rviz/Path
           Color: 170; 255; 255
           Enabled: true
-          Head Diameter: 0.100000001
-          Head Length: 0.0500000007
-          Length: 0.300000012
+          Head Diameter: 0.1
+          Head Length: 0.05
+          Length: 0.3
           Line Style: Lines
-          Line Width: 0.0299999993
+          Line Width: 0.03
           Name: NavFnGlobalPathPlan
           Offset:
             X: 0
@@ -228,9 +669,9 @@ Visualization Manager:
             Z: 0
           Pose Color: 255; 85; 255
           Pose Style: None
-          Radius: 0.0299999993
-          Shaft Diameter: 0.0199999996
-          Shaft Length: 0.100000001
+          Radius: 0.03
+          Shaft Diameter: 0.02
+          Shaft Length: 0.1
           Topic: /move_base_node/NavfnROS/plan
           Unreliable: false
           Value: true
@@ -239,11 +680,11 @@ Visualization Manager:
           Class: rviz/Path
           Color: 0; 255; 0
           Enabled: true
-          Head Diameter: 0.100000001
-          Head Length: 0.0500000007
-          Length: 0.300000012
+          Head Diameter: 0.1
+          Head Length: 0.05
+          Length: 0.3
           Line Style: Lines
-          Line Width: 0.0299999993
+          Line Width: 0.03
           Name: DWAGlobalPathPlan
           Offset:
             X: 0
@@ -251,9 +692,9 @@ Visualization Manager:
             Z: 0
           Pose Color: 255; 85; 255
           Pose Style: None
-          Radius: 0.0299999993
-          Shaft Diameter: 0.0199999996
-          Shaft Length: 0.100000001
+          Radius: 0.03
+          Shaft Diameter: 0.02
+          Shaft Length: 0.1
           Topic: /move_base_node/DWAPlannerROS/global_plan
           Unreliable: false
           Value: true
@@ -262,11 +703,11 @@ Visualization Manager:
           Class: rviz/Path
           Color: 255; 85; 0
           Enabled: true
-          Head Diameter: 0.300000012
-          Head Length: 0.200000003
-          Length: 0.300000012
+          Head Diameter: 0.3
+          Head Length: 0.2
+          Length: 0.3
           Line Style: Lines
-          Line Width: 0.0299999993
+          Line Width: 0.03
           Name: DWALocalPathPlan
           Offset:
             X: 0
@@ -274,9 +715,9 @@ Visualization Manager:
             Z: 0
           Pose Color: 255; 85; 255
           Pose Style: None
-          Radius: 0.0299999993
-          Shaft Diameter: 0.100000001
-          Shaft Length: 0.100000001
+          Radius: 0.03
+          Shaft Diameter: 0.1
+          Shaft Length: 0.1
           Topic: /move_base_node/DWAPlannerROS/local_plan
           Unreliable: false
           Value: true
@@ -285,8 +726,8 @@ Visualization Manager:
     - Alpha: 1
       Autocompute Intensity Bounds: true
       Autocompute Value Bounds:
-        Max Value: 0.303000003
-        Min Value: 0.303000003
+        Max Value: 0.303
+        Min Value: 0.303
         Value: true
       Axis: Z
       Channel Name: intensity
@@ -305,7 +746,7 @@ Visualization Manager:
       Queue Size: 10
       Selectable: true
       Size (Pixels): 3
-      Size (m): 0.00999999978
+      Size (m): 0.01
       Style: Points
       Topic: /base_scan
       Unreliable: false
@@ -335,7 +776,7 @@ Visualization Manager:
       Queue Size: 10
       Selectable: true
       Size (Pixels): 3
-      Size (m): 0.00999999978
+      Size (m): 0.01
       Style: Points
       Topic: /kinect_head/depth_registered/quater/throttled/points
       Unreliable: false
@@ -349,7 +790,7 @@ Visualization Manager:
           Name: NarrowLeftImage
           Topic: /narrow_stereo/left/image_rect_color
           Value: true
-          alpha: 0.800000012
+          alpha: 0.8
           height: 150
           keep aspect ratio: false
           left: 20
@@ -361,7 +802,7 @@ Visualization Manager:
           Name: ElevatorPanel
           Topic: /narrow_stereo/left/point_pose_extractor_elevator_panels/debug_image
           Value: true
-          alpha: 0.800000012
+          alpha: 0.8
           height: 320
           keep aspect ratio: false
           left: 20
@@ -373,7 +814,7 @@ Visualization Manager:
           Name: DetectedDoorButton
           Topic: /door_button/label_image_decomposer/output/label_viz
           Value: true
-          alpha: 0.800000012
+          alpha: 0.8
           height: 150
           keep aspect ratio: false
           left: 240
@@ -385,7 +826,7 @@ Visualization Manager:
           Name: DetectedCurrentFloor
           Topic: /elevator_number/debug_image
           Value: true
-          alpha: 0.800000012
+          alpha: 0.8
           height: 150
           keep aspect ratio: false
           left: 240
@@ -397,7 +838,7 @@ Visualization Manager:
           Name: DetectedLightButton
           Topic: /light_detector/debug_image
           Value: true
-          alpha: 0.800000012
+          alpha: 0.8
           height: 150
           keep aspect ratio: false
           left: 240
@@ -431,10 +872,6 @@ Visualization Manager:
               Value: false
             double_stereo_link:
               Value: false
-            elevator_call_panel:
-              Value: true
-            elevator_inside_panel:
-              Value: true
             eng2:
               Value: false
             eng2/1f:
@@ -615,8 +1052,6 @@ Visualization Manager:
               Value: false
             torso_lift_motor_screw_link:
               Value: false
-            virtual_camera_frame:
-              Value: true
             wide_stereo_l_stereo_camera_frame:
               Value: false
             wide_stereo_l_stereo_camera_optical_frame:
@@ -791,11 +1226,6 @@ Visualization Manager:
                               {}
                           torso_lift_motor_screw_link:
                             {}
-                        elevator_call_panel:
-                          {}
-                        elevator_inside_panel:
-                          virtual_camera_frame:
-                            {}
                 eng2/8f:
                   {}
           Update Interval: 0
@@ -806,18 +1236,18 @@ Visualization Manager:
           Topic: /door_button/cluster_indices_decomposer/boxes
           Unreliable: false
           Value: true
-          alpha: 0.800000012
+          alpha: 0.8
           color: 25; 255; 0
           coloring: Auto
-          line width: 0.00499999989
+          line width: 0.005
           only edge: false
           show coords: false
         - Align Bottom: true
-          Background Alpha: 0.800000012
+          Background Alpha: 0.8
           Background Color: 0; 0; 0
           Class: jsk_rviz_plugin/OverlayText
           Enabled: true
-          Foreground Alpha: 0.800000012
+          Foreground Alpha: 0.8
           Foreground Color: 25; 255; 240
           Name: ROSConsoleText
           Overtake Color Properties: true
@@ -838,7 +1268,7 @@ Visualization Manager:
       Name: DetectedMirror
       Topic: /label_image_decomposer/output/label_viz
       Value: true
-      alpha: 0.800000012
+      alpha: 0.8
       height: 150
       keep aspect ratio: false
       left: 460
@@ -848,7 +1278,6 @@ Visualization Manager:
   Enabled: true
   Global Options:
     Background Color: 48; 48; 48
-    Default Light: true
     Fixed Frame: base_footprint
     Frame Rate: 30
   Name: root
@@ -870,25 +1299,22 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/Orbit
-      Distance: 4.12360001
+      Distance: 4.1236
       Enable Stereo Rendering:
-        Stereo Eye Separation: 0.0599999987
+        Stereo Eye Separation: 0.06
         Stereo Focal Distance: 1
         Swap Stereo Eyes: false
         Value: false
       Focal Point:
-        X: 1.02691996
-        Y: 0.597450018
-        Z: 0.974180996
-      Focal Shape Fixed Size: true
-      Focal Shape Size: 0.0500000007
-      Invert Z Axis: false
+        X: 1.02692
+        Y: 0.59745
+        Z: 0.974181
       Name: Current View
-      Near Clip Distance: 0.00999999978
-      Pitch: 0.609797001
+      Near Clip Distance: 0.01
+      Pitch: 0.609797
       Target Frame: <Fixed Frame>
       Value: Orbit (rviz)
-      Yaw: 2.76534009
+      Yaw: 2.76534
     Saved: ~
 Window Geometry:
   Displays:
@@ -896,7 +1322,7 @@ Window Geometry:
   Height: 1056
   Hide Left Dock: false
   Hide Right Dock: false
-  QMainWindow State: 000000ff00000000fd00000004000000000000016a00000399fc0200000008fb0000001200530065006c0065006300740069006f006e00000001e10000009b0000006100fffffffb0000001e0054006f006f006c002000500072006f007000650072007400690065007302000001ed000001df00000185000000a3fb000000120056006900650077007300200054006f006f02000001df000002110000018500000122fb000000200054006f006f006c002000500072006f0070006500720074006900650073003203000002880000011d000002210000017afb000000100044006900730070006c006100790073010000002800000399000000d700fffffffb0000002000730065006c0065006300740069006f006e00200062007500660066006500720200000138000000aa0000023a00000294fb00000014005700690064006500530074006500720065006f02000000e6000000d2000003ee0000030bfb0000000c004b0069006e0065006300740200000186000001060000030c0000026100000001000000ac00000399fc0200000007fb0000001a0057006900640065004c0065006600740049006d0061006700650000000028000003990000000000000000fb0000001e004e006100720072006f0077004c0065006600740049006d00610067006500000003c7fffffffa0000000000000000fb0000001e004e006100720072006f0077004c0065006600740049006d0061006700650100000028000001c90000000000000000fb0000001e0044006f006f00720042007500740074006f006e0049006d0061006700650000000028000003990000000000000000fb0000001e0054006f006f006c002000500072006f00700065007200740069006500730100000041000000780000000000000000fb0000000a005600690065007700730000000028000002c4000000ad00fffffffb0000001200530065006c0065006300740069006f006e010000025a000000b20000000000000000000000020000073f00000159fc0100000001fb0000000a00560069006500770073030000004e00000080000002e100000197000000030000073f0000003bfc0100000002fb0000000800540069006d006501000000000000073f0000030000fffffffb0000000800540069006d00650100000000000004500000000000000000000005cf0000039900000004000000040000000800000008fc0000000100000002000000010000000a0054006f006f006c00730100000000ffffffff0000000000000000
+  QMainWindow State: 000000ff00000000fd00000004000000000000016a00000399fc0200000008fb0000001200530065006c0065006300740069006f006e00000001e10000009b0000006400fffffffb0000001e0054006f006f006c002000500072006f007000650072007400690065007302000001ed000001df00000185000000a3fb000000120056006900650077007300200054006f006f02000001df000002110000018500000122fb000000200054006f006f006c002000500072006f0070006500720074006900650073003203000002880000011d000002210000017afb000000100044006900730070006c006100790073010000002800000399000000dd00fffffffb0000002000730065006c0065006300740069006f006e00200062007500660066006500720200000138000000aa0000023a00000294fb00000014005700690064006500530074006500720065006f02000000e6000000d2000003ee0000030bfb0000000c004b0069006e0065006300740200000186000001060000030c0000026100000001000000ac00000399fc0200000007fb0000001a0057006900640065004c0065006600740049006d0061006700650000000028000003990000000000000000fb0000001e004e006100720072006f0077004c0065006600740049006d00610067006500000003c7fffffffa0000000000000000fb0000001e004e006100720072006f0077004c0065006600740049006d0061006700650100000028000001c90000000000000000fb0000001e0044006f006f00720042007500740074006f006e0049006d0061006700650000000028000003990000000000000000fb0000001e0054006f006f006c002000500072006f00700065007200740069006500730100000041000000780000000000000000fb0000000a005600690065007700730000000028000002c4000000b000fffffffb0000001200530065006c0065006300740069006f006e010000025a000000b20000000000000000000000020000073f00000159fc0100000001fb0000000a00560069006500770073030000004e00000080000002e100000197000000030000073f0000003bfc0100000002fb0000000800540069006d006501000000000000073f000002f600fffffffb0000000800540069006d00650100000000000004500000000000000000000005cf0000039900000004000000040000000800000008fc0000000100000002000000010000000a0054006f006f006c00730100000000ffffffff0000000000000000
   Selection:
     collapsed: false
   Time:
