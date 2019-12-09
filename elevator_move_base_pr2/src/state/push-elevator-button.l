@@ -46,18 +46,18 @@
     (ros::rate 10)
 
     (while (<= (incf count) times)
-     (ros::spin-once)
-     (update-robot-position)
-     (setq updated-object (update-scene-by-tf *scene* *tfl*))
-     (when (memq *panel* updated-object)
-       (setq panel-moved t)
-       (incf found))
-     (ros::ros-info
-      (format nil "count: ~A, found: ~A, panel position: ~A"
-              count found (send *panel* :worldpos)))
-     (when (>= found 3)
-       (return))
-     (ros::sleep))
+      (ros::spin-once)
+      (update-robot-position)
+      (setq updated-object (update-scene-by-tf *scene* *tfl*))
+      (when (memq *panel* updated-object)
+        (setq panel-moved t)
+        (incf found))
+      (ros::ros-info
+       (format nil "count: ~A, found: ~A, panel position: ~A"
+               count found (send *panel* :worldpos)))
+      (when (>= found 2)
+        (return))
+      (ros::sleep))
     panel-moved))
 
 (defun set-view-target (coords camera frame-id)
@@ -152,7 +152,7 @@
       (send *ri* :wait-interpolation)
       (return-from push-button nil))
     (setq via-angle-vector (send *pr2* :angle-vector))
-    (send *ri* :angle-vector (send *pr2* :angle-vector) 1500)
+    (send *ri* :angle-vector (send *pr2* :angle-vector) 1200)
     (send *ri* :wait-interpolation)
 
     (unless
@@ -164,7 +164,7 @@
       (send *ri* :angle-vector (send *pr2* :angle-vector) 1000) ;; quick!
       (send *ri* :wait-interpolation)
       (return-from push-button nil))
-    (send *ri* :angle-vector (send *pr2* :angle-vector) 800)
+    (send *ri* :angle-vector (send *pr2* :angle-vector) 600)
     (send *ri* :wait-interpolation)
 
     (send *ri* :angle-vector via-angle-vector 400)
@@ -190,8 +190,8 @@
     ;; jsk_pr2_startup/jsk_pr2_move_base/look-forward-in-nav.l sends
     ;; angle-vector after PR2 reached goal, so we should wait for interpolation.
     (when (one-shot-subscribe "/move_base/result"
-                              move_base_msgs::MoveBaseActionResult :timeout 500)
-      (unix:usleep (* 200 1000))
+                              move_base_msgs::MoveBaseActionResult :timeout 300)
+      (unix:usleep (* 100 1000))
       (send *ri* :wait-interpolation))
 
     (setq look-target
@@ -207,7 +207,7 @@
     (unless (eps-v= (float-vector (elt look-av 15) (elt look-av 16))
                     (float-vector (elt (send *ri* :state :potentio-vector) 15)
                                   (elt (send *ri* :state :potentio-vector) 16))
-                    0.5)
+                    1.0)
       (send *ri* :angle-vector look-av 500 :head-controller)
       (send *ri* :wait-interpolation))
 
@@ -222,7 +222,7 @@
     (unless (eps-v= (float-vector (elt look-av 15) (elt look-av 16))
                     (float-vector (elt (send *ri* :state :potentio-vector) 15)
                                   (elt (send *ri* :state :potentio-vector) 16))
-                    0.5)
+                    1.0)
       (send *ri* :angle-vector look-av 500 :head-controller)
       (send *ri* :wait-interpolation))
 
@@ -264,7 +264,7 @@
                                  (flatten (send *panel* :inheritance))))
          (button-state (instance light-button-cb-class :init))
          (start-tm (ros::time-now))
-         (timeout 3.0))
+         (timeout 2.0))
     (call-service "/wide_stereo/left/pass_through_image_rect_color/request"
                   (instance std_srvs::EmptyRequest :init))
     (set-view-target button-coords (send *pr2* :wide_stereo-left)
