@@ -5,6 +5,14 @@
 (require :pr2-interface "package://pr2eus/pr2-interface.l")
 (require :eng2-scene "package://jsk_maps/src/eng2-scene.l")
 
+
+(defvar *pr2*)
+(defvar *ri*)
+(defvar *scene*)
+(defvar *spot*)
+(defvar *spot-name*)
+
+
 (defun pr2-init (&optional (create-viewer))
   (setq *pr2* (pr2)
         *ri* (instance pr2-interface :init

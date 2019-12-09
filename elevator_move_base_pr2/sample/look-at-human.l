@@ -6,6 +6,10 @@
 (require :pr2-interface "package://pr2eus/pr2-interface.l")
 
 
+;; (defvar *pr2*)
+;; (defvar *ri*)
+
+
 (defun people-pose-array-cb (msg)
   (unless (send msg :poses)
     (return-from people-pose-array-cb nil))
@@ -65,7 +69,7 @@
 ;; Main process
 (ros::roseus "look_at_human")
 
-(unless (and (boundp '*pr2*) (boundp '*ri*))
+(unless (and *pr2* *ri*)
   (pr2-init))
 
 (ros::advertise-service "~start" std_srvs::Empty #'start-look-at-human)

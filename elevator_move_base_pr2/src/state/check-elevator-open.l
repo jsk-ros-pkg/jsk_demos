@@ -3,14 +3,15 @@
 (require :pr2-interface "package://pr2eus/pr2-interface.l")
 
 
+;; (defvar *pr2*)
+;; (defvar *ri*)
+
+
 (defun check-elevator-open (&key (timeout 300))
   (let ((topic
          "/check_elevator_open/octree_change_publisher/octree_change_result")
         (change-thre (ros::get-param "change_threshold" 500))
         (change-pc nil) time-start)
-    (unless (and (boundp '*pr2*) (boundp '*ri*))
-      (ros::ros-error "*pr2* or *ri* is not bound.")
-      (return-from check-elevator-open nil))
     (send *pr2* :head :angle-vector #f(0 0))
     (send *ri* :angle-vector (send *pr2* :angle-vector) 400)
     (send *ri* :wait-interpolation)

@@ -9,6 +9,14 @@
 (load "package://elevator_move_base_pr2/src/utils.l")
 
 
+(defvar *floors*)
+(defvar *panel*)
+;; (defvar *pr2*)
+;; (defvar *ri*)
+(defvar *scene*)
+(defvar *tfl*)
+
+
 (defun check-target-floor-arrived (target-floor &key (timeout 10))
   (let ((topic
          (instance ros-callback-message

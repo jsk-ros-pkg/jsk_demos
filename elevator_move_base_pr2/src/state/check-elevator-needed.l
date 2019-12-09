@@ -1,6 +1,11 @@
 (load "package://elevator_move_base_pr2/src/utils.l")
 
 
+(defvar *floors*)
+(defvar *scene*)
+(defvar *tfl*)
+
+
 (defun check-elevator-needed (userdata)
   (update-robot-position)
   (let* ((goal (cdr (assoc :goal userdata)))
