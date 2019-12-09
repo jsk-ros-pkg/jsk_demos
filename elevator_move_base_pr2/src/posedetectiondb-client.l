@@ -22,26 +22,26 @@
 ;; posedetectiondb -> tf client class
 (defclass posedetectiondb-client
   :super ros-callback-object
-  :slots (objects time-stamp poselist fixed-frame filter-type tfl tfb))
+  :slots (objects prev-tm poselist fixed-frame filter-type tfl tfb))
 
 (defmethod posedetectiondb-client
   (:init (objs
           &key (topic "ObjectDetection")
                ((:fixed-frame _fixed) "/base_footprint")
-               ((:filter-type ft) nil))
+               ((:filter-type ft) :lmeds))
    (setq objects objs)
    (setq fixed-frame _fixed)
    (setq filter-type ft)
-   (setq time-stamp (ros::time 0))
+   (setq prev-tm (ros::time 0))
    (setq tfl (instance ros::transform-listener :init))
    (setq tfb (instance ros::transform-broadcaster :init))
    (send-super :init topic posedetection_msgs::ObjectDetection :detection-cb))
 
   (:update-coords (coords &optional (relative :local))
    "Filter detection pose, and move obj to the estimated coords"
-   (when (< 5 (send (ros::time- (ros::time-now) time-stamp) :to-sec))
+   (when (< 5 (send (ros::time- (ros::time-now) prev-tm) :to-sec))
      (setq poselist nil))
-   (setq time-stamp (ros::time-now))
+   (setq prev-tm (ros::time-now))
    (when (not (equal coords (car poselist)))
      (push (send coords :copy-worldcoords) poselist)
      (when (< 20 (length poselist))
