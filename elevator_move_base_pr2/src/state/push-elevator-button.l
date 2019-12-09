@@ -55,7 +55,7 @@
       (ros::ros-info
        (format nil "count: ~A, found: ~A, panel position: ~A"
                count found (send *panel* :worldpos)))
-      (when (>= found 2)
+      (when (>= found 3)
         (return))
       (ros::sleep))
     panel-moved))
