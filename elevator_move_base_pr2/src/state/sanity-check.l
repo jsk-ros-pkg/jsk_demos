@@ -4,6 +4,9 @@
 (require :pr2-interface "package://pr2eus/pr2-interface.l")
 
 
+;; (defvar *ri*)
+
+
 (defun speak-subscription-error (topic)
   (ros::ros-error (format nil "Could not subscribe ~A." topic))
   (speak-jp
@@ -43,7 +46,7 @@
 
 (defun sanity-check (userdata)
   (let ((success t))
-    (unless (boundp '*ri*)
+    (unless *ri*
       (pr2-init))
 
     ;; Sensors

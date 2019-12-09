@@ -14,6 +14,12 @@
 (load "package://elevator_move_base_pr2/src/utils.l")
 
 
+(defvar *initial-pose*)
+(defvar *pr2*)
+(defvar *ri*)
+(defvar *scene*)
+
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; PR2 Utility Functions
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

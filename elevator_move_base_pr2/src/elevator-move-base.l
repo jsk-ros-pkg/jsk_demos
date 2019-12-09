@@ -11,6 +11,8 @@
 (load "package://elevator_move_base_pr2/src/state-machine-main.l")
 (load "package://elevator_move_base_pr2/src/utils.l")
 
+(defvar *sm*)
+
 
 (defun simple-goal-cb (msg)
   (let ((pub-msg (instance move_base_msgs::MoveBaseActionGoal :init))
