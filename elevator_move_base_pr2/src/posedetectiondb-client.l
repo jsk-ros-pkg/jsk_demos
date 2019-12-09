@@ -69,7 +69,7 @@
                 (coords (ros::tf-pose->coords (send pose :pose)))
                 (objcoords (send tfl :transform-pose
                                  fixed-frame pose)))
-           (ros::ros-info "posedetection-cb type:~A, coords~A"
+           (ros::ros-info "posedetection-cb type: ~A, coords: ~A"
                           (send object-msg :type) coords)
            (when objcoords
              (send self :update-coords objcoords :world)
