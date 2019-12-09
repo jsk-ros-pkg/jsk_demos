@@ -31,7 +31,7 @@
      (instance std_srvs::EmptyRequest :init))
     (call-service "/wide_stereo/left/pass_through_image_rect_color/request"
                   (instance std_srvs::EmptyRequest :init))
-    (ros::rate 5)
+    (ros::rate 10)
     (while (ros::ok)
       (update 1)
       (setq button-coords

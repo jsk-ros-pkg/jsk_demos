@@ -68,7 +68,7 @@
           (instance state :init :check-elevator-open
                     '(lambda (x) (check-elevator-open :timeout 300))))
     (send sm :add-node (actionlib-client-state
-                        :move-elevator-inside move-client :timeout 40 :retry nil
+                        :move-elevator-inside move-client :timeout 30 :retry nil
                         :key 'coords->movebaseactiongoal))
     (send (send sm :node :move-elevator-inside)
           :remap-list '((:goal . inside-coords)))
