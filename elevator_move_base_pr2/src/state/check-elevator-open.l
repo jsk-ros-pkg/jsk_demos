@@ -10,7 +10,7 @@
 (defun check-elevator-open (&key (timeout 300))
   (let ((topic
          "/check_elevator_open/octree_change_publisher/octree_change_result")
-        (change-thre (ros::get-param "change_threshold" 500))
+        (change-thre (ros::get-param "change_threshold" 400))
         (change-pc nil) time-start)
     (send *pr2* :head :angle-vector #f(0 0))
     (send *ri* :angle-vector (send *pr2* :angle-vector) 400)
