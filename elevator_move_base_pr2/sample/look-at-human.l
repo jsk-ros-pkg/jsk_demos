@@ -69,8 +69,7 @@
 ;; Main process
 (ros::roseus "look_at_human")
 
-(unless (and *pr2* *ri*)
-  (pr2-init))
+(pr2-init)
 
 (ros::advertise-service "~start" std_srvs::Empty #'start-look-at-human)
 (ros::advertise-service "~stop" std_srvs::Empty #'stop-look-at-human)
