@@ -9,7 +9,7 @@
 (load "package://elevator_move_base_pr2/src/utils.l")
 
 
-(defun check-target-floor-arrived (target-floor button &key (timeout 10))
+(defun check-target-floor-arrived (target-floor &key (timeout 10))
   (let ((topic
          (instance ros-callback-message
                    :init roseus::StringStamped "/elevator_number/result"))
@@ -27,7 +27,7 @@
     (while (ros::ok)
       (update 1)
       (setq button-coords
-            (find-if #'(lambda (o) (string= button (send o :name)))
+            (find-if #'(lambda (o) (string= target-floor (send o :name)))
                      (flatten (send *panel* :inheritance))))
       (set-view-target button-coords (send *pr2* :wide_stereo-left)
                        "wide_stereo_optical_frame")
@@ -52,7 +52,8 @@
         (call-service "/wide_stereo/left/pass_through_image_rect_color/stop"
                       (instance std_srvs::EmptyRequest :init))
         (return-from check-target-floor-arrived nil))
-      (when (and cur-floor (substringp target-floor cur-floor))
+      (when (and cur-floor
+                 (substringp (concatenate string "/" target-floor) cur-floor))
         (call-service
          "/narrow_stereo/left/pass_through_feature_to_inside_panel/stop"
          (instance std_srvs::EmptyRequest :init))
@@ -107,15 +108,13 @@
       (send *ri* :angle-vector (send *pr2* :angle-vector) 500)
       (send *ri* :wait-interpolation)))
 
-  (let* ((targetfloor (cdr (assoc 'target-floor userdata)))
-         (button (cdr (assoc 'button userdata))))
-    (unless (check-target-floor-arrived (concatenate string "/" targetfloor)
-                                        button :timeout 10)
+  (let* ((target-floor (cdr (assoc 'target-floor userdata))))
+    (unless (check-target-floor-arrived target-floor :timeout 10)
       (send *ri* :go-pos-unsafe 0 0 -90)  ;; Unsafe for faster turning right
       (return-from ready-to-outside :fail))
 
     (dolist (floor *floors*)
-      (when (equal targetfloor (elt floor 0))
+      (when (equal target-floor (elt floor 0))
         (ros::ros-info (format nil "Arrived at ~A." (elt floor 0)))
         (speak-jp (concatenate string (elt floor 1) "に着きました。"))
         (change-floor (format nil "~A/~a" (send *scene* :name)
