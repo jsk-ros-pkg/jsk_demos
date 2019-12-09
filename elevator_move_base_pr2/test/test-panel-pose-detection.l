@@ -5,12 +5,7 @@
 (require :unittest "lib/llib/unittest.l")
 
 
-(defvar *msg* nil)
 (init-unit-test)
-
-
-(defun object-detection-cb (msg)
-  (ros::ros-info "*msg*: ~A" (setq *msg* msg)))
 
 
 (deftest test-elevator-panel ()
@@ -18,23 +13,26 @@
         (dist -1)
         (max-dist (ros::get-param "~max_distance" 50))
         (panel-type (ros::get-param "~panel_type" "elevator_call_panel"))
-        co1 co2)
+        co1 co2
+        (msg nil))
+    (unix:usleep (* 100 1000))  ;; Wait for service server
     (if (equal panel-type "elevator_call_panel")
         (call-empty-service
          "/narrow_stereo/left/pass_through_feature_to_call_panel/request")
       (call-empty-service
        "/narrow_stereo/left/pass_through_feature_to_inside_panel/request"))
     (ros::subscribe "/narrow_stereo/left/ObjectDetection"
-                    posedetection_msgs::ObjectDetection #'object-detection-cb)
+                    posedetection_msgs::ObjectDetection
+                    #'(lambda (m) (setq msg m)))
 
     (ros::rate 1)
     (dotimes (cnt 30) ;; 30sec in ros time
       (ros::spin-once)
-      (when *msg*
+      (when msg
         (setq co1 (ros::tf-pose->coords
-                   (send (car (send *msg* :objects)) :pose)))
+                   (send (car (send msg :objects)) :pose)))
         (setq co2 (send tfl :lookup-transform
-                        (send *msg* :header :frame_id)
+                        (send msg :header :frame_id)
                         (concatenate string "/" panel-type)
                         (ros::time 0)))
         (when (and co1 co2)
@@ -44,10 +42,10 @@
           (ros::ros-info "dist: ~A" dist)
           (when (> max-dist dist)
             (return)))
-        (setq *msg* nil))
+        (setq msg nil))
       (ros::sleep))
 
-    (assert *msg* "Could not receive /narrow_stereo/left/ObjectDetection")
+    (assert msg "Could not receive /narrow_stereo/left/ObjectDetection")
     (assert (> dist 0)
             (format nil "looking transform not found"))
     (assert (< dist max-dist)
