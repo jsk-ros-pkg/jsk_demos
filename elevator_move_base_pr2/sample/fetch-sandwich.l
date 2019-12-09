@@ -210,6 +210,8 @@
 
 (defun order-sandwich (name)
   (ros::ros-info "Looking for clerk...")
+  (send *pr2* :head :angle-vector #f(-15 0))
+  (send *ri* :angle-vector (send *pr2* :angle-vector) 500 :head-controller)
   (call-service "look_at_human/start" (instance std_srvs::EmptyRequest :init))
   (unix:sleep 5)
   (call-service "look_at_human/stop" (instance std_srvs::EmptyRequest :init))
