@@ -46,6 +46,14 @@
   (speak-subscription-error topic)
   nil)
 
+(defun check-bool-stamped-published (topic &optional (timeout 10))
+  (when (one-shot-subscribe
+         topic jsk_recognition_msgs::BoolStamped
+         :timeout (* timeout 1000) :after-stamp (ros::time-now))
+    (return-from check-people-pose-array-published t))
+  (speak-subscription-error topic)
+  nil)
+
 (defun sanity-check (userdata)
   (let ((success t))
     (unless (boundp '*ri*)
@@ -76,6 +84,19 @@
         (check-image-published "door_button/fcn_object_segmentation/output" 20)
       (setq success nil))
     (call-service "door_button/pass_through_image/stop"
+                  (instance std_srvs::EmptyRequest :init))
+
+    ;; For human in mirror recognition with FCN
+    (call-service "human_in_mirror/pass_through_kinect_rgb/request"
+                  (instance std_srvs::EmptyRequest :init))
+    (call-service "human_in_mirror/pass_through_kinect_depth/request"
+                  (instance std_srvs::EmptyRequest :init))
+    (unless (check-bool-stamped-published
+             "human_in_mirror/find_human_in_mirror/output" 20)
+      (setq success nil))
+    (call-service "human_in_mirror/pass_through_kinect_rgb/stop"
+                  (instance std_srvs::EmptyRequest :init))
+    (call-service "human_in_mirror/pass_through_kinect_depth/stop"
                   (instance std_srvs::EmptyRequest :init))
 
     (if success
