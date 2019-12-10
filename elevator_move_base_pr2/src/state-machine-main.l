@@ -15,6 +15,7 @@
 (load "package://elevator_move_base_pr2/src/state/push-elevator-button.l")
 (load "package://elevator_move_base_pr2/src/state/ready-to-outside.l")
 (load "package://elevator_move_base_pr2/src/state/sanity-check.l")
+(load "package://elevator_move_base_pr2/src/state/speak-to-human-behind.l")
 (load "package://elevator_move_base_pr2/src/utils.l")
 
 
@@ -67,6 +68,8 @@
     (send sm :add-node
           (instance state :init :check-elevator-open
                     '(lambda (x) (check-elevator-open :timeout 300))))
+    (send sm :add-node (instance state :init :speak-to-human-behind
+                                 'speak-to-human-behind))
     (send sm :add-node (actionlib-client-state
                         :move-elevator-inside move-client :timeout 30 :retry nil
                         :key 'coords->movebaseactiongoal))
@@ -82,8 +85,9 @@
     (send sm :add-transition :move-elevator-front :fail :failed)
     (send sm :add-transition
           :set-param-for-elevator-inside :check-elevator-open t)
-    (send sm :add-transition :check-elevator-open :move-elevator-inside t)
+    (send sm :add-transition :check-elevator-open :speak-to-human-behind t)
     (send sm :add-transition :check-elevator-open :fail nil)
+    (send sm :add-transition :speak-to-human-behind :move-elevator-inside t)
     (send sm :add-transition :move-elevator-inside :success :succeeded)
     (send sm :add-transition :move-elevator-inside :fail :failed)
     sm))
