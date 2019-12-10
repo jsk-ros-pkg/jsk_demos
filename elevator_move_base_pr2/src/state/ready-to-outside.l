@@ -76,7 +76,7 @@
 (defun change-floor (target-floor scene tfl
                      &optional (topicname "/initialpose3d"))
   (ros::advertise topicname geometry_msgs::PoseWithCovarianceStamped 1)
-  (unix:sleep 1)  ;; Wait for publisher to be ready
+  (unix:usleep (* 100 1000))  ;; Wait for publisher to be ready
   (let* ((msg (instance geometry_msgs::PoseWithCovarianceStamped :init))
          (current-floor-frame (check-current-floor scene tfl))
          (robot-pose (send tfl :lookup-transform
@@ -129,7 +129,7 @@
                               (string-downcase (elt floor 0)))
                       *scene* *tfl*))))
 
-  (unless (check-elevator-open :timeout 5)
+  (unless (check-elevator-open :timeout 6)
     (send *ri* :go-pos-unsafe 0 0 -90)  ;; Unsafe for faster turning right
     (return-from ready-to-outside :fail))
   :success)
