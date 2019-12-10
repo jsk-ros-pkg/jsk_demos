@@ -157,7 +157,7 @@
     (send sm :add-node (instance state :init :sanity-check 'sanity-check))
     (send sm :add-node
           (instance state :init :speak-elevator
-                    '(lambda (x)
+                    '(lambda (userdata)
                        ;; Free arm may hold something,
                        ;; so keep it away from base laser
                        (pr2-tuckarm-pose

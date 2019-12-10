@@ -50,7 +50,7 @@
   (when (one-shot-subscribe
          topic jsk_recognition_msgs::BoolStamped
          :timeout (* timeout 1000) :after-stamp (ros::time-now))
-    (return-from check-people-pose-array-published t))
+    (return-from check-bool-stamped-published t))
   (speak-subscription-error topic)
   nil)
 
