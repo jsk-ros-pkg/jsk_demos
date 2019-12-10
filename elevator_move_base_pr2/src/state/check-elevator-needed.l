@@ -72,5 +72,4 @@
     (set-alist 'target-floor target-floor-button userdata)
     (set-alist 'outside-button up/down userdata)
     (set-alist 'target-coords target-coords userdata)
-    (pr2-tuckarm-pose)
     (not (null up/down))))
