@@ -42,8 +42,10 @@ class FindHumanInMirror(ConnectionBasedTransport):
             sub.unregister()
 
     def _cb(self, ppl_msg, lbl_msg):
+        rospy.loginfo('Start callback...')
         out_msg = BoolStamped(header=lbl_msg.header, data=False)
         if not ppl_msg.poses:
+            rospy.loginfo('No human found.')
             self.pub.publish(out_msg)
             return
 
@@ -58,6 +60,8 @@ class FindHumanInMirror(ConnectionBasedTransport):
                 person.scores[i]
                 for i, limb in enumerate(person.poses)
             ])
+            rospy.loginfo('score: {}, threshold: {}'.format(
+                score, self.score_thre))
             if score >= self.score_thre:
                 out_msg.data = True
                 self.pub.publish(out_msg)

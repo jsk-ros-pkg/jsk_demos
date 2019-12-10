@@ -8,6 +8,7 @@
 
 (defun speak-to-human-behind (userdata)
   (let (start-tm (timeout (ros::time 10)) (spoke-p nil))
+    (ros::ros-info "speak-to-human-behind: start")
     (call-service "/human_in_mirror/pass_through_kinect_rgb/request"
                   (instance std_srvs::EmptyRequest :init))
     (call-service "/human_in_mirror/pass_through_kinect_depth/request"
@@ -24,10 +25,12 @@
         (and (ros::ok)
              (not spoke-p)
              (ros::time< (ros::time-now) (ros::time+ start-tm timeout)))
-      (ros::spin-once))
+      (ros::spin-once)
+      (ros::sleep))
     (call-service "/human_in_mirror/pass_through_kinect_rgb/stop"
                   (instance std_srvs::EmptyRequest :init))
     (call-service "/human_in_mirror/pass_through_kinect_depth/stop"
                   (instance std_srvs::EmptyRequest :init))
     (ros::unsubscribe "/human_in_mirror/find_human_in_mirror/output")
+    (ros::ros-info "speak-to-human-behind: end")
     t))
