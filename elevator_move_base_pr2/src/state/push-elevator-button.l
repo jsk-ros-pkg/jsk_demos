@@ -77,22 +77,16 @@
     (ros::publish "view_target" msg)
     t))
 
-(defun push-button (target-coords)
-  (let (rayvec via-coords (arm :larm)
+(defun push-button (target-coords arm)
+  (let (rayvec via-coords
         via-angle-vector org-arm-anglev org-head-anglev reset-pose
         (rarm-reset #f(-60 70 -70 -120 160 -30 180))  ;; 2nd element 80 -> 70
         (larm-reset #f(60 70 70 -120 -160 -30 180)))  ;; 2nd element 80 -> 70
-    ;; check push target simply from current tuckarm-pose
     (ros::spin-once)
     (send *pr2* :angle-vector (send *ri* :state :potentio-vector))
     ;; if the free-arm is grasping something // TODO: smart arm change motion
     (ros::ros-info (format nil "grasp -> ~A" (send *ri* :start-grasp :arms)))
-    (when (< 5 (send *ri* :start-grasp :larm))
-      (pr2-tuckarm-pose :rarm))
-    (when (< 5 (send *ri* :start-grasp :rarm))
-      (pr2-tuckarm-pose :larm))
 
-    (setq arm (check-tuckarm-pose))
     (setq rayvec
           (normalize-vector
            (v- (float-vector
@@ -253,10 +247,11 @@
 (defun push-button-state (userdata)
   (let* ((button (cdr (assoc 'button userdata)))
          (button-coords (find-if #'(lambda (o) (string= button (send o :name)))
-                                 (flatten (send *panel* :inheritance)))))
+                                 (flatten (send *panel* :inheritance))))
+         (push-arm (cdr (assoc 'push-arm userdata))))
     (ros::ros-info (format nil "push button (~a) -> ~a" button button-coords))
     (speak-jp "ボタンを押します。")
-    (push-button button-coords)))
+    (push-button button-coords push-arm)))
 
 (defun check-button-light-state (userdata)
   (let* ((button (cdr (assoc 'button userdata)))
