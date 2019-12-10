@@ -142,9 +142,9 @@
 
 (defun elevator-move-base-state-machine ()
   (let ((sm (instance state-machine :init)))
-    (send sm :add-node (instance state :init :sanity-check 'sanity-check))
     (send sm :add-node
           (instance state :init :check-elevator-needed 'check-elevator-needed))
+    (send sm :add-node (instance state :init :sanity-check 'sanity-check))
     (send sm :add-node
           (instance state :init :speak-elevator
                     '(lambda (x)
@@ -164,11 +164,11 @@
                        'outside-button 'inside-coords 'inside-panel-name
                        'target-floor 'outside-coords 'target-coords :goal)
     (send sm :goal-state (list :success :fail))
-    (send sm :start-state :sanity-check)
-    (send sm :add-transition :sanity-check :check-elevator-needed t)
-    (send sm :add-transition :sanity-check :fail nil)
-    (send sm :add-transition :check-elevator-needed :speak-elevator t)
+    (send sm :start-state :check-elevator-needed)
+    (send sm :add-transition :check-elevator-needed :sanity-check t)
     (send sm :add-transition :check-elevator-needed :go-to nil)
+    (send sm :add-transition :sanity-check :speak-elevator t)
+    (send sm :add-transition :sanity-check :fail nil)
     (send sm :add-transition :speak-elevator :take-elevator t)
     (send sm :add-transition :take-elevator :go-to :success)
     (send sm :add-transition :take-elevator :fail :fail-inside)
