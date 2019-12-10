@@ -103,10 +103,10 @@
 
     ;; via-coords
     (setq via-coords (send (send target-coords :copy-worldcoords)
-                           :translate (scale 70 rayvec) :world))
-    ;; push 20mm
+                           :translate (scale 60 rayvec) :world))
+    ;; push 15mm
     (setq target-coords (send (send target-coords :copy-worldcoords)
-                              :translate (scale -20 rayvec) :world))
+                              :translate (scale -15 rayvec) :world))
 
     ;; Select which arm to use
     (when arm
