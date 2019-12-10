@@ -78,7 +78,7 @@
     t))
 
 (defun push-button (target-coords)
-  (let (rayvec via-coords (arm :rarm)
+  (let (rayvec via-coords (arm :larm)
         via-angle-vector org-arm-anglev org-head-anglev reset-pose
         (rarm-reset #f(-60 70 -70 -120 160 -30 180))  ;; 2nd element 80 -> 70
         (larm-reset #f(60 70 70 -120 -160 -30 180)))  ;; 2nd element 80 -> 70
