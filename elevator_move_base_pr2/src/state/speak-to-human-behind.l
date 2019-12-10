@@ -13,14 +13,15 @@
                   (instance std_srvs::EmptyRequest :init))
     (call-service "/human_in_mirror/pass_through_kinect_depth/request"
                   (instance std_srvs::EmptyRequest :init))
+    (setq start-tm (ros::time-now))
     (ros::subscribe "/human_in_mirror/find_human_in_mirror/output"
                     jsk_recognition_msgs::BoolStamped
                     #'(lambda (m)
-                        (when (send m :data)
+                        (when (and (ros::time< start-tm (send m :header :stamp))
+                                   (send m :data))
                           (ros::ros-info "Speaking to human behind robot...")
-                          (speak-jp "後ろの方、お先に失礼します。" :wait nil))
-                        (setq spoke-p t)))
-    (setq start-tm (ros::time-now))
+                          (speak-jp "後ろの方、お先に失礼します。" :wait nil)
+                          (setq spoke-p t))))
     (while
         (and (ros::ok)
              (not spoke-p)
