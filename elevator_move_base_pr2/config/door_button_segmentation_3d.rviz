@@ -1266,7 +1266,7 @@ Visualization Manager:
     - Class: jsk_rviz_plugin/OverlayImage
       Enabled: true
       Name: DetectedMirror
-      Topic: /label_image_decomposer/output/label_viz
+      Topic: /human_in_mirror/label_image_decomposer/output/label_viz
       Value: true
       alpha: 0.8
       height: 150
