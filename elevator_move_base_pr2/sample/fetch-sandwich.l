@@ -257,6 +257,7 @@
 
   ;; XXX: Prevent sandwich from covering /base_scan region.
   (pr2-tuckarm-pose :rarm :outside)
+  (pr2-tuckarm-pose)
   (look-front)
 
   (send *ri* :go-pos-unsafe 0 0 180)

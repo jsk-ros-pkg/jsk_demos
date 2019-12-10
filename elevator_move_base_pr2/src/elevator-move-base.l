@@ -43,7 +43,8 @@
 
 (setq *sm* (instance state-machine-action-server :init "/elevator_move_base"
                      move_base_msgs::MoveBaseAction
-                     (elevator-move-base-state-machine)))
+                     (elevator-move-base-state-machine)
+                     '((push-arm . :larm))))
 (send *sm* :success-state '(:success)) ;; name of success state
 (ros::ros-info "initialized elevator-move-base.l")
 

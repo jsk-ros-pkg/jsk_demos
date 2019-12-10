@@ -41,7 +41,7 @@
     (send sm :add-node (instance state :init :look 'look-button-state))
     (send sm :add-node (instance state :init :push 'push-button-state))
     (send sm :add-node (instance state :init :check 'check-button-light-state))
-    (send sm :arg-keys 'button 'panel-name)
+    (send sm :arg-keys 'button 'panel-name 'push-arm)
     (send sm :goal-state (list :success))
     (send sm :start-state :look)
     (send sm :add-transition :look :push t)
@@ -117,13 +117,19 @@
                         :move-outside move-client :timeout 60 :retry t
                         :key 'coords->movebaseactiongoal))
     (send (send sm :node :move-outside) :remap-list '((:goal . outside-coords)))
-    (send sm :add-node (instance state :init :set-param-for-normal
-                                 '(lambda (x)
-                                    (pr2-tuckarm-pose)
-                                    (tolerance-normal))))
+    (send sm :add-node
+          (instance state :init :set-param-for-normal
+                    '(lambda (x)
+                       ;; Free arm may hold something,
+                       ;; so keep it away from base laser
+                       (pr2-tuckarm-pose
+                        (case (cdr (assoc 'push-arm userdata))
+                          (:rarm :larm)
+                          (:larm :rarm)))
+                       (tolerance-normal))))
     (send sm :arg-keys 'elevator-front-coords 'front-coords 'outside-panel-name
                        'outside-button 'inside-coords 'inside-panel-name
-                       'target-floor 'outside-coords)
+                       'target-floor 'outside-coords 'push-arm)
     (send sm :goal-state (list :success :fail-outside :fail-inside))
     (send sm :start-state :move-front)
     (send sm :add-transition :move-front :push-outside :succeeded)
@@ -148,7 +154,12 @@
     (send sm :add-node
           (instance state :init :speak-elevator
                     '(lambda (x)
-                       (pr2-tuckarm-pose)
+                       ;; Free arm may hold something,
+                       ;; so keep it away from base laser
+                       (pr2-tuckarm-pose
+                        (case (cdr (assoc 'push-arm userdata))
+                          (:rarm :larm)
+                          (:larm :rarm)))
                        (tolerance-normal)
                        (ros::ros-info "Go to elevator.")
                        (speak-jp "エレベータに向かいます。" :wait t)
@@ -162,7 +173,8 @@
     (send (send sm :node :go-to) :remap-list '((:goal . target-coords)))
     (send sm :arg-keys 'elevator-front-coords 'front-coords 'outside-panel-name
                        'outside-button 'inside-coords 'inside-panel-name
-                       'target-floor 'outside-coords 'target-coords :goal)
+                       'target-floor 'outside-coords 'target-coords
+                       'push-arm :goal)
     (send sm :goal-state (list :success :fail))
     (send sm :start-state :check-elevator-needed)
     (send sm :add-transition :check-elevator-needed :sanity-check t)
