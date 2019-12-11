@@ -2,24 +2,27 @@
 
   <arg name="NS" default="door_button"/>
   <!-- Not implemented machine c3 -->
-  <!-- <arg name="MACHINE" default="c3"/> -->
+  <arg name="MACHINE" default="c2"/>
+  <arg name="GPU_MACHINE" default="c3"/>
   <arg name="INPUT_IMAGE" default="/narrow_stereo/left/image_rect_color"/>
   <arg name="MODEL_FILE" default="$(find elevator_move_base_pr2)/trained_model/fcn8s_at_once_door_button_model_20191025.npz"/>
   <arg name="GPU" default="0"/>
 
   <group ns="$(arg NS)">
     <!-- Subscribe only when it gets service request -->
-    <node name="pass_through_image"
-          pkg="nodelet" type="nodelet"
-          args="standalone jsk_topic_tools/Passthrough"
-          output="screen" respawn="true">
-      <remap from="~input" to="$(arg INPUT_IMAGE)"/>
-      <rosparam>
-        default_duration: 0.0  # infinite
-      </rosparam>
-    </node>
+    <!-- <node name="pass_through_image" -->
+    <!--       pkg="nodelet" type="nodelet" -->
+    <!--       args="standalone jsk_topic_tools/Passthrough" -->
+    <!--       machine="$(arg MACHINE)" -->
+    <!--       output="screen" respawn="true"> -->
+    <!--   <remap from="~input" to="$(arg INPUT_IMAGE)"/> -->
+    <!--   <rosparam> -->
+    <!--     default_duration: 0.0  # infinite -->
+    <!--   </rosparam> -->
+    <!-- </node> -->
 
     <!-- Segment door button 2-dimentionally by FCN -->
+    <!-- TODO(Unknown): Please add 'machine="$(arg GPU_MACHINE)"' -->
     <node name="fcn_object_segmentation"
           pkg="jsk_perception" type="fcn_object_segmentation.py"
           output="screen" respawn="true">
@@ -38,20 +41,21 @@
     </node>
 
     <!-- Visualization -->
-    <node name="label_image_decomposer"
-          pkg="jsk_perception" type="label_image_decomposer.py"
-          output="screen" respawn="true">
-      <remap from="~input" to="$(arg INPUT_IMAGE)"/>
-      <remap from="~input/label" to="fcn_object_segmentation/output"/>
-      <rosparam>
-        label_names:
-          - _background_
-          - button
-        bg_label: 0
-        approximate_sync: false
-        queue_size: 1000
-      </rosparam>
-    </node>
+    <!-- <node name="label_image_decomposer" -->
+    <!--       pkg="jsk_perception" type="label_image_decomposer.py" -->
+    <!--       machine="$(arg MACHINE)" -->
+    <!--       output="screen" respawn="true"> -->
+    <!--   <remap from="~input" to="$(arg INPUT_IMAGE)"/> -->
+    <!--   <remap from="~input/label" to="fcn_object_segmentation/output"/> -->
+    <!--   <rosparam> -->
+    <!--     label_names: -->
+    <!--       - _background_ -->
+    <!--       - button -->
+    <!--     bg_label: 0 -->
+    <!--     approximate_sync: false -->
+    <!--     queue_size: 1000 -->
+    <!--   </rosparam> -->
+    <!-- </node> -->
   </group>  <!-- ns: $(arg NS) -->
 
 </launch>
