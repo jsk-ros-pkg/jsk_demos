@@ -13,6 +13,7 @@
 (defvar *topic-name* "/head_camera_remote/depth_registered/boxes")
 (defvar *gift-name* "/atohayoroshiku")
 (defvar *bounding-box-list* nil)
+(defvar *gift-number* nil)
 
 (fetch-init)
 (objects (list *fetch*))
@@ -37,8 +38,7 @@
       obj-pos)))
 
 (defun gift-cb (msg)
-    (setq *gift-number* (send msg :data))
-    *gift-number*)
+    (setq *gift-number* (send msg :data)))
 
 ;;obj-posを引数にとり，対象物をつかむ
 (defun grasp-with-rec (obj-pos)
@@ -112,9 +112,14 @@
 
 ;;プレゼントを設定．hsiフィルタのパラメータを変更する
 (defun set-gift()
-    (ros::subscribe *gift-name* std_msgs::Int16 #'gift-cb 1)
-    (cond 
+    (setq msg (one-shot-subscribe *gift-name* std_msgs::Int16))
+    (gift-cb msg)
+    (ros::spin-once)
+    (cond
+        ((not (boundp '*gift-number*))
+            (ros::ros-error "*gift-number* not bound."))
         ((= *gift-number* 1)
+            (send *ri* :speak-jp "赤を取ります")
             (ros::set-dynamic-reconfigure-param "/head_camera_remote/depth_registered/hsi_filter" "h_limit_max" :int 20)
             (ros::set-dynamic-reconfigure-param "/head_camera_remote/depth_registered/hsi_filter" "h_limit_min" :int -20)
             (ros::set-dynamic-reconfigure-param "/head_camera_remote/depth_registered/hsi_filter" "s_limit_max" :int 255)
@@ -122,13 +127,15 @@
             (ros::set-dynamic-reconfigure-param "/head_camera_remote/depth_registered/hsi_filter" "i_limit_max" :int 255)
             (ros::set-dynamic-reconfigure-param "/head_camera_remote/depth_registered/hsi_filter" "i_limit_min" :int 50))
         ((= *gift-number* 2)
+            (send *ri* :speak-jp "青を取ります")
             (ros::set-dynamic-reconfigure-param "/head_camera_remote/depth_registered/hsi_filter" "h_limit_max" :int -75)
             (ros::set-dynamic-reconfigure-param "/head_camera_remote/depth_registered/hsi_filter" "h_limit_min" :int -96)
             (ros::set-dynamic-reconfigure-param "/head_camera_remote/depth_registered/hsi_filter" "s_limit_max" :int 255)
             (ros::set-dynamic-reconfigure-param "/head_camera_remote/depth_registered/hsi_filter" "s_limit_min" :int 95)
             (ros::set-dynamic-reconfigure-param "/head_camera_remote/depth_registered/hsi_filter" "i_limit_max" :int 255)
             (ros::set-dynamic-reconfigure-param "/head_camera_remote/depth_registered/hsi_filter" "i_limit_min" :int 70))
-        ((= *gift-number* 3) ;;緑を再定義せよ
+        ((= *gift-number* 3)
+            (send *ri* :speak-jp "緑を取ります")
             (ros::set-dynamic-reconfigure-param "/head_camera_remote/depth_registered/hsi_filter" "h_limit_max" :int 100)
             (ros::set-dynamic-reconfigure-param "/head_camera_remote/depth_registered/hsi_filter" "h_limit_min" :int 60)
             (ros::set-dynamic-reconfigure-param "/head_camera_remote/depth_registered/hsi_filter" "s_limit_max" :int 255)
@@ -151,7 +158,7 @@
     ;;collision-object initialization
     (setq *co* (instance collision-object-publisher :init))
     ;;coをMoveitに送信
-    (send *co* :add-object shelf :frame-id "base_link" :relative-pose (make-coords :pos #f(1100 200 0) :rpy #f(4.71 0 0))) ;;
+    (send *co* :add-object shelf :frame-id "base_link" :relative-pose (make-coords :pos #f(1100 200 0) :rpy #f(4.71 0 0)))
     (grasp-with-rec obj-pos)
     (send *ri* :wait-interpolation)
 
@@ -159,7 +166,8 @@
     (send *ri* :angle-vector (send *fetch* :angle-vector) 6000)
     (send *ri* :wait-interpolation)
 
-    (send *co* :wipe-all))
+    ;;(send *co* :wipe-all)
+    )
 
 ;;後退
 (defun go-back()
