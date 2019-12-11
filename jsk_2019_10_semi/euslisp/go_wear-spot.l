@@ -12,7 +12,7 @@
   (go-to-spot "/eng2/7f/room73B2-center")
   (send *ri* :go-pos 0 0 40)
 
-  (send *ri* :speak-jp "今からサンタに変装するよ！")
+  (send *ri* :speak-jp "今からサンタに変装するよ！" :wait t)
 )
 
 (go-spot)
