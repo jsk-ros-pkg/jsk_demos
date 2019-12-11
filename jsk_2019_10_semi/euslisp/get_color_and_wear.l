@@ -66,7 +66,7 @@
 ;;赤色を見つけて近づく
 (defun go_to_red ()
   (ros::sleep 3)
-  (send *ri* :speak-jp "帽子を発見しました。") ;;確認のため
+  ;;(send *ri* :speak-jp "帽子を発見しました。") ;;確認のため
   ;;(format t "bounding box ~A~%" (send *target-coords* :worldpos))
   ;; 物体を見る。こうしないと近づきすぎた時見えなくなる。
   (send *fetch* :head :look-at (send *target-coords* :worldpos)) 
@@ -78,14 +78,15 @@
   (setq x (elt (send *target-coords* :worldpos) 0))
   (setq y (elt (send *target-coords* :worldpos) 1))
   (setq z (elt (send *target-coords* :worldpos) 2))
-  (if (and (> x 920))
+  (if (and (> x 910))
       (cond ((> y 200) ;;物体が自分より右にあれば
 	     (send *ri* :go-velocity 0 0 (atan (/ y x)))
 	     (ros::ros-info "turn-left"))
 	    ((< y -200) ;;物体が自分より左にあれば
 	     (send *ri* :go-velocity 0 0 (atan (/ y x)))
 	     (ros::ros-info "turn-right"))
-	    (t (send *ri* :go-velocity (* (- x 900) 0.0008) 0 0) ;;物体が遠ければ
+	    (t (send *ri* :clear-costmap)
+	       (send *ri* :go-velocity (* (- x 900) 0.0008) 0 0) ;;物体が遠ければ
 	       (ros::ros-info "go")))
       (progn
 	(send *ri* :speak-jp "移動終了")
@@ -97,23 +98,24 @@
 
 ;;帽子をかぶる
 (defun fetch_wear ()
+  (set-table)
   (set-wear-func)
-  (send *ri* :speak-jp "帽子をつかみます。")
+  ;;(send *ri* :speak-jp "帽子をつかみます。")
   ;;目標点を少し手前にずらしてikを解く
   ;;changed-----------------------------------------------
   (send *fetch* :inverse-kinematics (make-coords :pos (v+ (send *target-coords* :worldpos) #f(-0.1 0 0.15))))
   ;;----------------------------------------------------- 
   (send *ri* :angle-vector (send *fetch* :angle-vector) 5000)
   (send *ri* :wait-interpolation)
-  (send *ri* :speak-jp "逆運動学をときました。")
+  ;;(send *ri* :speak-jp "逆運動学をときました。")
   ;;changed-----------------------------------------
   ;;前進して確実に帽子をつかむ
-  (send *ri* :speak-jp "前進します。")
+  ;;(send *ri* :speak-jp "前進します。")
   (send *ri* :go-velocity 0.05 0 0)
   (send *ri* :wait-interpolation)
   ;;-----------------------------------------------
   (grasp-finger)
-  (send *ri* :speak-jp "帽子をつかみました。")
+  ;;(send *ri* :speak-jp "帽子をつかみました。")
   (send *ri* :wait-interpolation)
   ;;changed------------------------------------
   (send *ri* :angle-vector (before-wear) 10000)
@@ -122,7 +124,7 @@
   (send *ri* :angle-vector (wear-hat) 6000)
   (send *ri* :wait-interpolation)
   (release-finger)
-  (send *ri* :speak-jp "帽子がかぶれました。") 
+  (send *ri* :speak-jp "サンタになったよ") 
   (send *ri* :wait-interpolation)
   (setq wear_flag 1)
   )
@@ -130,11 +132,11 @@
 
 ;;机から離れて手を戻す。
 (defun after_wear ()
-  (send *ri* :speak-jp "机から離れます。")
+  ;;(send *ri* :speak-jp "机から離れます。")
   (set-wear-func)
-  (send *ri* :go-pos-unsafe 0 0 180)
+  (send *ri* :go-pos-unsafe 0 0 -180)
   (send *ri* :wait-interpolation)
-  (send *ri* :go-velocity 0.5 0 0)
+  (send *ri* :go-velocity 0.3 0 0)
   (send *ri* :angle-vector (raise-hand) 7000)
   (send *ri* :wait-interpolation)
   (send *ri* :angle-vector (catch-pose) 10000)
@@ -197,7 +199,6 @@
 	     (not (null *target-coords*))
 	     (ros::time> (send msg :header :stamp) time_pre))
 	(progn
-	  (set-table)
 	  (go_to_red)))
     (if (and (= go_flag 1) (not (null *target-coords*)))
 	(fetch_wear))
@@ -211,9 +212,13 @@
   (ros::sleep)
   )
 
+(ros::unsubscribe *topic-name*)
+
 ;;干渉解除
 (send *co* :wipe-all)
 ;;帽子をかぶった後の動作。
 (after_wear)
+
+
 
 
