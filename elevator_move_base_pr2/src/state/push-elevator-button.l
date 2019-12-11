@@ -188,11 +188,14 @@
       (unix:usleep (* 100 1000))
       (send *ri* :wait-interpolation))
 
+    (ros::ros-info "panel-name: ~A" panel-name)
+    (setq *panel* (car (send *scene* :find-object panel-name)))
+
     (setq look-target
           (car (send *scene* :find-object
                      (format nil "~A~A" (check-current-floor *scene* *tfl*)
                              panel-name))))
-    (ros::ros-info "look-at button position ~A" (send look-target :worldpos))
+    (ros::ros-info "Look at panel position: ~A" (send look-target :worldpos))
     (send *pr2* :reset-pose)
     (send *pr2* :head :look-at (send look-target :worldpos))
     (setq look-av (send *pr2* :angle-vector))
@@ -206,7 +209,7 @@
       (send *ri* :wait-interpolation))
 
     ;; Move arms and torso only when it is needed (i.e. skipped inside elevator)
-    (unless (eps-v= look-av (send *ri* :state :potentio-vector) 2.0)
+    (if (equal panel-name "/elevator_call_panel")
       (send *ri* :angle-vector look-av 5000)
       (send *ri* :wait-interpolation))
 
@@ -222,10 +225,6 @@
 
     ;; Wait until latest image is available.
     (unix:usleep (* 500 1000))
-
-    ;; nearest call panel
-    (ros::ros-info "panel-name: ~A" panel-name)
-    (setq *panel* (car (send *scene* :find-object panel-name)))
 
     ;; update
     (ros::ros-info "Looking for button...")
