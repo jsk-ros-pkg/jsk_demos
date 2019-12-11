@@ -17,7 +17,7 @@
 (defvar *tfl*)
 
 
-(defun check-target-floor-arrived (target-floor &key (timeout 10))
+(defun check-target-floor-arrived (target-floor &key (timeout 5))
   (let ((topic
          (instance ros-callback-message
                    :init roseus::StringStamped "/elevator_number/result"))
@@ -117,7 +117,7 @@
       (send *ri* :wait-interpolation)))
 
   (let* ((target-floor (cdr (assoc 'target-floor userdata))))
-    (unless (check-target-floor-arrived target-floor :timeout 10)
+    (unless (check-target-floor-arrived target-floor :timeout 5)
       (send *ri* :go-pos-unsafe 0 0 -90)  ;; Unsafe for faster turning right
       (return-from ready-to-outside :fail))
 
