@@ -1,47 +1,34 @@
-;;
-(print ";; (demo) start demo")
+;;プレゼントを聞くプログラムは別で走らせておく。
+(print ";;start demo")
 
-(load "package://peppereus/pepper.l")
-(setq *pepper* (pepper))
-
-(defun demo-init ()
-  (setq *white-bag* (body+ (make-sphere 300) (make-cylinder 40 300 :pos #f(0 10 250))))
-  (send *white-bag* :set-color :white)
-  (send *white-bag* :locate #f(-450 100 50))
-  (send *white-bag* :rotate (deg2rad 70) :y)
-  (objects (list *pepper* *white-bag*))
-  )
-
-(defun listen-wish ()
-  (let ((wish "ps4"))
-    (format t ";; listen wish~%")
-    (format t ";; listened wish ~A~%" wish)
-    wish))
+(defun go-listen-spot ()
+  (format t ";;go-listen-splot")
+  (load "move_to_listen_spot.l"))
 
 (defun change-costume ()
-  (format t ";; change costume~%"))
+  (format t ";;change costume")
+  (load "listen_gift.l")
+  (load "go_wear-spot.l")
+  (load "get_color_and_wear.l"))
 
-(defun move-to-present-shelf ()
-  (format t ";; move-to...~%"))
+(defun catch-present ()
+  (format t ";;catch present")
+  (load "catch_item.l"))
 
-(defun pick-present (present)
-  (format t ";; pick present ~A~%" present)
-  (format t ";; put present into bag~%"))
+(defun put-present-into-sock()
+  (format t ";;put present")
+  (load "kanazawa.l")
+  (kanazawa))
 
-(defun move-to-child-room ()
-  (format t ";; move-to child-room~%"))
-
-(defun put-present-into-sock ()
-  (format t ";; put present into sock~%"))
 
 (defun demo ()
-  (let (present)
-    (demo-init)
-    (format t "start demo~%~%~%")
-    (setq present (listen-wish))
-    (change-costume)
-    (move-to-present-shelf)
-    (pick-present present)
-    (move-to-child-room)
-    (put-present-into-sock)
-    ))
+  ;;(go-listen-spot)
+  ;;(change-costume)
+  (catch-present)
+  (put-present-into-sock)
+  )
+
+
+(format t ";;start")
+(demo)
+(format t ";;finish")  
