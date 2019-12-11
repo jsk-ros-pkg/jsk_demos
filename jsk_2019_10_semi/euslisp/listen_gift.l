@@ -14,14 +14,19 @@
   (setq listen-data (send msg :data)))
 
 (ros::subscribe "/atohayoroshiku" std_msgs::Int16 #'spot-cb)
-
+(setq flag 0)
 (ros::rate 10)
-(while (ros::ok)
+
+(while (and (ros::ok) (= flag 0))
   (when message_arrived
+    (setq flag 1)
     (cond ((= listen-data 1) (send *ri* :speak-jp "プレゼントはお菓子、なのだ！"))
 	  ((= listen-data 2) (send *ri* :speak-jp "プレゼントはジーピーユー、なのだ！"))
 	  ((= listen-data 3) (send *ri* :speak-jp "プレゼントはぬいぐるみ、なのだ！"))
-	  (t (send *ri* :speak-jp "プレゼントがわかりません。"))))
+	  (t (progn
+	       (send *ri* :speak-jp "プレゼントがわかりません。")
+	       (setq flag 0)))))
   (setq message_arrived nil)
-  (ros::sleep)
-  (ros::spin-once))
+  (ros::spin-once)
+  (ros::sleep))
+
