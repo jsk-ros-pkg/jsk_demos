@@ -75,4 +75,8 @@
       (setq success nil))
     (call-service "door_button/pass_through_image/stop"
                   (instance std_srvs::EmptyRequest :init))
+
+    (if success
+        (ros::ros-info "sanity-check succeeded.")
+      (ros::ros-error "sanity-check failed."))
     success))
