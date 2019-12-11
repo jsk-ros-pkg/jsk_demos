@@ -19,7 +19,9 @@ class speak_class:
     sound = -3
     arg2 = 'ja'
     recognized_str = ""
+    decided_str = ""
     pub = None
+    flag_of_decision = False
 
     def __init__(self):
         rospy.init_node('fetch_recognition_str', anonymous=False)
@@ -43,24 +45,48 @@ class speak_class:
         speak_msg.sound_request.arg2 = self.arg2
         print("Fetch says {}".format(speak_msg.sound_request.arg))
         rospy.loginfo(speak_msg)
-        self.actionlib_part.send_goal(speak_msg)
+        #self.actionlib_part.send_goal(speak_msg)
 
         atohayoroshiku_msg = Int16()
-        if self.recognized_str in str_list[0]:
-            print("list of red : sweet")
-            atohayoroshiku_msg.data = 1
-            rospy.loginfo(atohayoroshiku_msg)
-            self.pub.publish(atohayoroshiku_msg)
-        else if self.recognized_str in str_list[1]:
-            print("list of blue : gpu")
-            atohayoroshiku_msg.data = 2
-            rospy.loginfo(atohayoroshiku_msg)
-            self.pub.publish(atohayoroshiku_msg)
-        else if self.recognized_str in str_list[2]:
-            print("list of green : nuigurumi")
-            atohayoroshiku_msg.data = 3
-            rospy.loginfo(atohayoroshiku_msg)
-            self.pub.publish(atohayoroshiku_msg)
+        if self.flag_of_decision == False:
+            if self.recognized_str in str_list[0]:
+                self.flag_of_decision = True
+                self.decided_str = self.recognized_str
+                print("list of red : sweet")
+                atohayoroshiku_msg.data = 1
+                rospy.loginfo(atohayoroshiku_msg)
+                self.pub.publish(atohayoroshiku_msg)
+            elif self.recognized_str in str_list[1]:
+                self.flag_of_decision = True
+                self.decided_str = self.recognized_str
+                print("list of blue : gpu")
+                atohayoroshiku_msg.data = 2
+                rospy.loginfo(atohayoroshiku_msg)
+                self.pub.publish(atohayoroshiku_msg)
+            elif self.recognized_str in str_list[2]:
+                self.flag_of_decision = True
+                self.decided_str = self.recognized_str
+                print("list of green : nuigurumi")
+                atohayoroshiku_msg.data = 3
+                rospy.loginfo(atohayoroshiku_msg)
+                self.pub.publish(atohayoroshiku_msg)
+        else:
+            if self.decided_str in str_list[0]:
+                print("list of red : sweet")
+                atohayoroshiku_msg.data = 1
+                rospy.loginfo(atohayoroshiku_msg)
+                self.pub.publish(atohayoroshiku_msg)
+            elif self.decided_str in str_list[1]:
+                print("list of blue : gpu")
+                atohayoroshiku_msg.data = 2
+                rospy.loginfo(atohayoroshiku_msg)
+                self.pub.publish(atohayoroshiku_msg)
+            elif self.decided_str in str_list[2]:
+                print("list of green : nuigurumi")
+                atohayoroshiku_msg.data = 3
+                rospy.loginfo(atohayoroshiku_msg)
+                self.pub.publish(atohayoroshiku_msg)
+
 
 
 
