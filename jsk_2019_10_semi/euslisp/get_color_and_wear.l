@@ -212,9 +212,13 @@
   (ros::sleep)
   )
 
+(ros::unsubscribe *topic-name*)
+
 ;;干渉解除
 (send *co* :wipe-all)
 ;;帽子をかぶった後の動作。
 (after_wear)
+
+
 
 
