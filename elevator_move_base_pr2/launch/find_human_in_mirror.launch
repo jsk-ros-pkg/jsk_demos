@@ -2,7 +2,8 @@
 
   <arg name="NS" default="human_in_mirror"/>
   <!-- Not implemented machine c3 -->
-  <!-- <arg name="MACHINE" default="c3"/> -->
+  <arg name="MACHINE" default="c2"/>
+  <arg name="GPU_MACHINE" default="c3"/>
   <arg name="INPUT_IMAGE" default="/kinect_head/rgb/image_rect_color"/>
   <arg name="INPUT_DEPTH" default="/kinect_head/depth_registered/hw_registered/image_rect"/>
   <arg name="INPUT_PEOPLE_POSE" default="/edgetpu_human_pose_estimator/output/poses"/>
@@ -11,26 +12,29 @@
 
   <group ns="$(arg NS)">
     <!-- Subscribe only when it gets service request -->
-    <node name="pass_through_kinect_rgb"
-          pkg="nodelet" type="nodelet"
-          args="standalone jsk_topic_tools/Passthrough"
-          output="screen" respawn="true">
-      <remap from="~input" to="$(arg INPUT_IMAGE)"/>
-      <rosparam>
-        default_duration: 0.0  # infinite
-      </rosparam>
-    </node>
-    <node name="pass_through_kinect_depth"
-          pkg="nodelet" type="nodelet"
-          args="standalone jsk_topic_tools/Passthrough"
-          output="screen" respawn="true">
-      <remap from="~input" to="$(arg INPUT_DEPTH)"/>
-      <rosparam>
-        default_duration: 0.0  # infinite
-      </rosparam>
-    </node>
+    <!-- <node name="pass_through_kinect_rgb" -->
+    <!--       pkg="nodelet" type="nodelet" -->
+    <!--       args="standalone jsk_topic_tools/Passthrough" -->
+    <!--       machine="$(arg MACHINE)" -->
+    <!--       output="screen" respawn="true"> -->
+    <!--   <remap from="~input" to="$(arg INPUT_IMAGE)"/> -->
+    <!--   <rosparam> -->
+    <!--     default_duration: 0.0  # infinite -->
+    <!--   </rosparam> -->
+    <!-- </node> -->
+    <!-- <node name="pass_through_kinect_depth" -->
+    <!--       pkg="nodelet" type="nodelet" -->
+    <!--       args="standalone jsk_topic_tools/Passthrough" -->
+    <!--       machine="$(arg MACHINE)" -->
+    <!--       output="screen" respawn="true"> -->
+    <!--   <remap from="~input" to="$(arg INPUT_DEPTH)"/> -->
+    <!--   <rosparam> -->
+    <!--     default_duration: 0.0  # infinite -->
+    <!--   </rosparam> -->
+    <!-- </node> -->
 
     <!-- Segment mirror and predict its depth by FCN -->
+    <!-- TODO(Unknown): Please add 'machine="$(arg GPU_MACHINE)"' -->
     <node name="fcn_mirror_depth_prediction"
           pkg="mirror_recognition" type="fcn_at_once_concat_at_once.py"
           output="screen" respawn="true">
@@ -48,28 +52,30 @@
       </rosparam>
     </node>
 
-    <node name="find_human_in_mirror"
-          pkg="elevator_move_base_pr2" type="find_human_in_mirror.py"
-          output="screen">
-      <remap from="~input/people_pose_array" to="$(arg INPUT_PEOPLE_POSE)"/>
-      <remap from="~input/label" to="fcn_mirror_depth_prediction/output/label"/>
-      <rosparam>
-        human_label: 1
-        score_threshold: 0.3
-        queue_size: 300
-      </rosparam>
-    </node>
+    <!-- <node name="find_human_in_mirror" -->
+    <!--       pkg="elevator_move_base_pr2" type="find_human_in_mirror.py" -->
+    <!--       machine="$(arg MACHINE)" -->
+    <!--       output="screen" respawn="true"> -->
+    <!--   <remap from="~input/people_pose_array" to="$(arg INPUT_PEOPLE_POSE)"/> -->
+    <!--   <remap from="~input/label" to="fcn_mirror_depth_prediction/output/label"/> -->
+    <!--   <rosparam> -->
+    <!--     human_label: 1 -->
+    <!--     score_threshold: 0.3 -->
+    <!--     queue_size: 300 -->
+    <!--   </rosparam> -->
+    <!-- </node> -->
 
     <!-- Visualization -->
-    <node name="label_image_decomposer"
-          pkg="jsk_perception" type="label_image_decomposer.py">
-      <remap from="~input" to="$(arg INPUT_IMAGE)"/>
-      <remap from="~input/label" to="fcn_mirror_depth_prediction/output/label"/>
-      <remap from="~label_names" to="fcn_mirror_depth_prediction/mirror_names"/>
-      <rosparam>
-        queue_size: 300
-      </rosparam>
-    </node>
-  </group>
+    <!-- <node name="label_image_decomposer" -->
+    <!--       pkg="jsk_perception" type="label_image_decomposer.py" -->
+    <!--       machine="$(arg MACHINE)"> -->
+    <!--   <remap from="~input" to="$(arg INPUT_IMAGE)"/> -->
+    <!--   <remap from="~input/label" to="fcn_mirror_depth_prediction/output/label"/> -->
+    <!--   <remap from="~label_names" to="fcn_mirror_depth_prediction/mirror_names"/> -->
+    <!--   <rosparam> -->
+    <!--     queue_size: 300 -->
+    <!--   </rosparam> -->
+    <!-- </node> -->
+  </group>  <!-- ns: $(arg NS) -->
 
 </launch>

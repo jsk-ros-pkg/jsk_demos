@@ -14,12 +14,107 @@
     <arg name="MACHINE" value="c2"/>
   </include>
 
-  <!-- Not implemented machine c3 -->
+  <!-- ===================================================================== -->
+
+  <!-- TODO(Unknown): Please implement GPU machine c3 -->
+  <!-- and move these 2 nodes to fcn_door_button_segmentation.launch -->
+  <group ns="door_button">
+    <!-- Subscribe only when it gets service request -->
+    <node name="pass_through_image"
+          pkg="nodelet" type="nodelet"
+          args="standalone jsk_topic_tools/Passthrough"
+          machine="c2"
+          output="screen" respawn="true">
+      <remap from="~input" to="/narrow_stereo/left/image_rect_color"/>
+      <rosparam>
+        default_duration: 0.0  # infinite
+      </rosparam>
+    </node>
+    <!-- Visualization -->
+    <node name="label_image_decomposer"
+          pkg="jsk_perception" type="label_image_decomposer.py"
+          machine="c2"
+          output="screen" respawn="true">
+      <remap from="~input" to="/narrow_stereo/left/image_rect_color"/>
+      <remap from="~input/label" to="fcn_object_segmentation/output"/>
+      <rosparam>
+        label_names:
+          - _background_
+          - button
+        bg_label: 0
+        approximate_sync: false
+        queue_size: 1000
+      </rosparam>
+    </node>
+  </group>  <!-- ns: door_button -->
+
   <!-- <include file="$(find elevator_move_base_pr2)/launch/fcn_door_button_segmentation.launch"> -->
-  <!--   <arg name="MACHINE" value="c3"/> -->
+  <!--   <arg name="MACHINE" value="c2"/> -->
+  <!--   <arg name="GPU_MACHINE" value="c3"/> -->
   <!-- </include> -->
+
+  <!-- ===================================================================== -->
 
   <include file="$(find elevator_move_base_pr2)/launch/door_button_segmentation_3d.launch">
     <arg name="MACHINE" value="c2"/>
   </include>
+
+  <!-- ===================================================================== -->
+
+  <!-- TODO(Unknown): Please implement GPU machine c3 -->
+  <!-- and move these 4 nodes to find_human_in_mirror.launch -->
+  <group ns="human_in_mirror">
+    <!-- Subscribe only when it gets service request -->
+    <node name="pass_through_kinect_rgb"
+          pkg="nodelet" type="nodelet"
+          args="standalone jsk_topic_tools/Passthrough"
+          machine="c2"
+          output="screen" respawn="true">
+      <remap from="~input" to="/kinect_head/rgb/image_rect_color"/>
+      <rosparam>
+        default_duration: 0.0  # infinite
+      </rosparam>
+    </node>
+    <node name="pass_through_kinect_depth"
+          pkg="nodelet" type="nodelet"
+          args="standalone jsk_topic_tools/Passthrough"
+          machine="c2"
+          output="screen" respawn="true">
+      <remap from="~input" to="/kinect_head/depth_registered/hw_registered/image_rect"/>
+      <rosparam>
+        default_duration: 0.0  # infinite
+      </rosparam>
+    </node>
+    <node name="find_human_in_mirror"
+          pkg="elevator_move_base_pr2" type="find_human_in_mirror.py"
+          machine="c2"
+          output="screen" respawn="true">
+      <remap from="~input/people_pose_array" to="/edgetpu_human_pose_estimator/output/poses"/>
+      <remap from="~input/label" to="fcn_mirror_depth_prediction/output/label"/>
+      <rosparam>
+        human_label: 1
+        score_threshold: 0.3
+        queue_size: 300
+      </rosparam>
+    </node>
+    <!-- Visualization -->
+    <node name="label_image_decomposer"
+          pkg="jsk_perception" type="label_image_decomposer.py"
+          machine="c2">
+      <remap from="~input" to="/kinect_head/rgb/image_rect_color"/>
+      <remap from="~input/label" to="fcn_mirror_depth_prediction/output/label"/>
+      <remap from="~label_names" to="fcn_mirror_depth_prediction/mirror_names"/>
+      <rosparam>
+        queue_size: 300
+      </rosparam>
+    </node>
+  </group>
+
+  <!-- <include file="$(find elevator_move_base_pr2)/launch/find_human_in_mirror.launch"> -->
+  <!--   <arg name="MACHINE" value="c2"/> -->
+  <!--   <arg name="GPU_MACHINE" value="c3"/> -->
+  <!-- </include> -->
+
+  <!-- ===================================================================== -->
+
 </launch>
