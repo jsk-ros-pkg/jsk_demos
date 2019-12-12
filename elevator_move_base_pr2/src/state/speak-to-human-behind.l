@@ -55,6 +55,9 @@
                   (instance std_srvs::EmptyRequest :init))
     (call-service "/human_in_mirror/pass_through_kinect_depth/stop"
                   (instance std_srvs::EmptyRequest :init))
-    (ros::unsubscribe "/human_in_mirror/find_human_in_mirror/output")
+    (ros::unsubscribe
+     "/human_in_mirror/find_human_in_mirror/output/inside_mirror")
+    (ros::unsubscribe
+     "/human_in_mirror/find_human_in_mirror/output/outside_mirror")
     (ros::ros-info "speak-to-human-behind: end")
     t))
