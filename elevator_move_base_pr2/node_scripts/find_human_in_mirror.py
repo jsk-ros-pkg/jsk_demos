@@ -17,7 +17,10 @@ class FindHumanInMirror(ConnectionBasedTransport):
         self.mirror_label = rospy.get_param('~mirror_label', 1)
         self.score_thre = rospy.get_param('~score_threshold', 0.5)
         self.bridge = cv_bridge.CvBridge()
-        self.pub = self.advertise('~output', BoolStamped, queue_size=1)
+        self.pub_inside = self.advertise(
+            '~output/inside_mirror', BoolStamped, queue_size=1)
+        self.pub_outside = self.advertise(
+            '~output/outside_mirror', BoolStamped, queue_size=1)
 
     def subscribe(self):
         queue_size = rospy.get_param('~queue_size', 10)
@@ -43,16 +46,18 @@ class FindHumanInMirror(ConnectionBasedTransport):
 
     def _cb(self, ppl_msg, lbl_msg):
         rospy.loginfo('Start callback...')
-        out_msg = BoolStamped(header=lbl_msg.header, data=False)
+        inside_msg = BoolStamped(header=lbl_msg.header, data=False)
+        outside_msg = BoolStamped(header=lbl_msg.header, data=False)
         if not ppl_msg.poses:
             rospy.loginfo('No human found.')
-            self.pub.publish(out_msg)
+            self.pub_inside.publish(inside_msg)
+            self.pub_outside.publish(outside_msg)
             return
 
         lbl = self.bridge.imgmsg_to_cv2(lbl_msg)
         for person in ppl_msg.poses:
-            # mean of [each_limb_score * int(bool(each_limb_is_in_lbl))]
-            score = np.mean([
+            # mean of [each_limb_score * int(bool(each_limb_is_in_mirror))]
+            inside_score = np.mean([
                 int((0 <= limb.position.x <= lbl_msg.width) and
                     (0 <= limb.position.y <= lbl_msg.height) and
                     lbl[int(limb.position.y),
@@ -60,13 +65,25 @@ class FindHumanInMirror(ConnectionBasedTransport):
                 person.scores[i]
                 for i, limb in enumerate(person.poses)
             ])
-            rospy.loginfo('score: {}, threshold: {}'.format(
-                score, self.score_thre))
-            if score >= self.score_thre:
-                out_msg.data = True
-                self.pub.publish(out_msg)
-                return
-        self.pub.publish(out_msg)
+            # mean of [each_limb_score * int(bool(each_limb_is_in_background))]
+            outside_score = np.mean([
+                int((0 <= limb.position.x <= lbl_msg.width) and
+                    (0 <= limb.position.y <= lbl_msg.height) and
+                    lbl[int(limb.position.y),
+                        int(limb.position.x)] != self.mirror_label) *
+                person.scores[i]
+                for i, limb in enumerate(person.poses)
+            ])
+            rospy.loginfo(
+                'inside score: {}, outside score: {}, threshold: {}'.format(
+                    inside_score, outside_score, self.score_thre))
+            if inside_score >= max(self.score_thre, outside_score):
+                inside_msg.data = True
+            if outside_score >= max(self.score_thre, inside_score):
+                outside_msg.data = True
+
+        self.pub_inside.publish(inside_msg)
+        self.pub_outside.publish(outside_msg)
         return
 
 
