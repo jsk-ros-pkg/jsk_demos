@@ -92,7 +92,10 @@
     (call-service "human_in_mirror/pass_through_kinect_depth/request"
                   (instance std_srvs::EmptyRequest :init))
     (unless (check-bool-stamped-published
-             "human_in_mirror/find_human_in_mirror/output" 20)
+             "human_in_mirror/find_human_in_mirror/output/inside_mirror" 20)
+      (setq success nil))
+    (unless (check-bool-stamped-published
+             "human_in_mirror/find_human_in_mirror/output/outside_mirror" 20)
       (setq success nil))
     (call-service "human_in_mirror/pass_through_kinect_rgb/stop"
                   (instance std_srvs::EmptyRequest :init))
