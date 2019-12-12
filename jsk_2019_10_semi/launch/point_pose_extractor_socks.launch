@@ -34,7 +34,7 @@
       template_filename: $(find jsk_2019_10_semi)/images/christmas_sox.jpg
       child_frame_id: matching
       object_width: 0.140
-      object_height: 0.100
+      object_height: 0.105
       reprojection_threshold: 1.0
       distanceratio_threshold: 0.8
       error_threshold: 1000.0
