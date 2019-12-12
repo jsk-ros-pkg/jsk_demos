@@ -33,6 +33,7 @@
       nodes:
         - /elevator_move_base
         - /fetch_sandwich
+        - /human_in_mirror/find_human_in_mirror
         - /narrow_stereo/left/find_elevator_button
       exclude_regexes:
         - ".*follow_joint_trajectory.*"
