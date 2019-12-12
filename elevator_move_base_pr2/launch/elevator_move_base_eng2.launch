@@ -43,7 +43,7 @@
           - button
         bg_label: 0
         approximate_sync: false
-        queue_size: 1000
+        queue_size: 100
       </rosparam>
     </node>
   </group>  <!-- ns: door_button -->
