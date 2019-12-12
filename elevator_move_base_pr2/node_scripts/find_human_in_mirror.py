@@ -14,7 +14,7 @@ class FindHumanInMirror(ConnectionBasedTransport):
 
     def __init__(self):
         super(self.__class__, self).__init__()
-        self.human_label = rospy.get_param('~human_label', 1)
+        self.mirror_label = rospy.get_param('~mirror_label', 1)
         self.score_thre = rospy.get_param('~score_threshold', 0.5)
         self.bridge = cv_bridge.CvBridge()
         self.pub = self.advertise('~output', BoolStamped, queue_size=1)
@@ -56,7 +56,7 @@ class FindHumanInMirror(ConnectionBasedTransport):
                 int((0 <= limb.position.x <= lbl_msg.width) and
                     (0 <= limb.position.y <= lbl_msg.height) and
                     lbl[int(limb.position.y),
-                        int(limb.position.x)] == self.human_label) *
+                        int(limb.position.x)] == self.mirror_label) *
                 person.scores[i]
                 for i, limb in enumerate(person.poses)
             ])
