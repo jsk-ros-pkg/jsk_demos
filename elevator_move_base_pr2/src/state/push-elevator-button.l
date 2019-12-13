@@ -79,13 +79,14 @@
 
 (defun push-button (target-coords arm)
   (let (rayvec via-coords
-        via-angle-vector org-arm-anglev org-head-anglev reset-pose
+        via-angle-vector target-angle-vector org-arm-anglev org-head-anglev
+        reset-pose
         (rarm-reset #f(-60 70 -70 -120 160 -30 180))  ;; 2nd element 80 -> 70
         (larm-reset #f(60 70 70 -120 -160 -30 180)))  ;; 2nd element 80 -> 70
     (ros::spin-once)
     (send *pr2* :angle-vector (send *ri* :state :potentio-vector))
     ;; if the free-arm is grasping something // TODO: smart arm change motion
-    (ros::ros-info (format nil "grasp -> ~A" (send *ri* :start-grasp :arms)))
+    (ros::ros-info (format nil "start-grasp -> ~A" (send *ri* :start-grasp :arms)))
 
     (setq rayvec
           (normalize-vector
@@ -103,24 +104,15 @@
                               :translate (scale -15 rayvec) :world))
 
     ;; Select which arm to use
-    (when arm
-      (send *pr2* arm :angle-vector (case arm (:rarm rarm-reset)
-                                              (:larm larm-reset)))
-      (ros::ros-info (format nil "check if IK for free-arm ~A is solvable" arm))
-      (unless
-          (send *pr2* arm :inverse-kinematics target-coords :rotation-axis :x)
-        (ros::ros-warn (format nil "could not solve IK: ~A" arm))
-        (setq arm nil)))
     (unless arm
       (setq arm
             (if (plusp (elt (send (send *pr2* :transformation target-coords)
                                   :worldpos) 1))
                 :larm
               :rarm)))
-    (ros::ros-info (format nil "select ~A arm to push button ~A"
+    (ros::ros-info (format nil "Select ~A arm to push button ~A"
                            arm (send target-coords :worldpos)))
 
-    (send *pr2* :angle-vector (send *ri* :state :potentio-vector))
     (setq org-head-anglev (send *pr2* :head :angle-vector))
 
     ;; reset-pose (arms only) and select arm
@@ -128,45 +120,43 @@
     (send *pr2* :head :angle-vector org-head-anglev)
     (setq reset-pose (send *pr2* :angle-vector))
     (unless (eps-v= reset-pose (send *ri* :state :potentio-vector) 2.0)
-      (send *ri* :angle-vector (send *pr2* :angle-vector) 3000)
+      (send *ri* :angle-vector reset-pose 3000)
       (send *ri* :wait-interpolation))
 
     (setq org-arm-anglev (send *pr2* arm :angle-vector))
 
-    ;; start push
+    ;; Check if IK is solvable
     (send *pr2* arm :angle-vector (case arm (:rarm rarm-reset)
                                             (:larm larm-reset)))
-    (unless
-        (send *pr2* arm :inverse-kinematics via-coords :rotation-axis :x)
+    (unless (send *pr2* arm :inverse-kinematics via-coords :rotation-axis :x)
       (ros::ros-warn
-       (format nil "could not solve ik to via-coords: ~A" via-coords))
-      ;; return to original pose
+       (format nil "Could not solve IK to via-coords: ~A" via-coords))
       (send *pr2* arm :angle-vector org-arm-anglev)
-      (send *ri* :angle-vector (send *pr2* :angle-vector) 1000) ;; quick!
+      (send *ri* :angle-vector (send *pr2* :angle-vector) 1000)
       (send *ri* :wait-interpolation)
       (return-from push-button nil))
     (setq via-angle-vector (send *pr2* :angle-vector))
-    (send *ri* :angle-vector (send *pr2* :angle-vector) 1200)
-    (send *ri* :wait-interpolation)
 
-    (unless
-        (send *pr2* arm :inverse-kinematics target-coords :rotation-axis :x)
+    (unless (send *pr2* arm :inverse-kinematics target-coords :rotation-axis :x)
       (ros::ros-warn
-       (format nil "could not solve ik to target-coords: ~A" target-coords))
-      ;; return to original pose
+       (format nil "Could not solve IK to target-coords: ~A" target-coords))
       (send *pr2* arm :angle-vector org-arm-anglev)
-      (send *ri* :angle-vector (send *pr2* :angle-vector) 1000) ;; quick!
+      (send *ri* :angle-vector (send *pr2* :angle-vector) 1000)
       (send *ri* :wait-interpolation)
       (return-from push-button nil))
-    (send *ri* :angle-vector (send *pr2* :angle-vector) 600)
-    (send *ri* :wait-interpolation)
+    (setq target-angle-vector (send *pr2* :angle-vector))
 
+    ;; Push
+    (send *ri* :angle-vector via-angle-vector 1200)
+    (send *ri* :wait-interpolation)
+    (send *ri* :angle-vector target-angle-vector 600)
+    (send *ri* :wait-interpolation)
     (send *ri* :angle-vector via-angle-vector 400)
     (send *ri* :wait-interpolation)
 
-    ;; return original pose
+    ;; Return to original pose, but no :wait-interpolation
     (send *pr2* arm :angle-vector org-arm-anglev)
-    (send *ri* :angle-vector (send *pr2* :angle-vector) 1000) ;; quick!
+    (send *ri* :angle-vector (send *pr2* :angle-vector) 1000)
     t))
 
 (defun look-button-state (userdata)
