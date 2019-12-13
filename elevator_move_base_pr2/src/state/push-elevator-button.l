@@ -97,7 +97,7 @@
 
     ;; via-coords
     (setq via-coords (send (send target-coords :copy-worldcoords)
-                           :translate (scale 60 rayvec) :world))
+                           :translate (scale 50 rayvec) :world))
     ;; push 15mm
     (setq target-coords (send (send target-coords :copy-worldcoords)
                               :translate (scale -15 rayvec) :world))
