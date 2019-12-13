@@ -3,6 +3,8 @@
 
 (require :pr2-interface "package://pr2eus/pr2-interface.l")
 
+(load "package://elevator_move_base_pr2/src/utils.l")
+
 
 ;; (defvar *ri*)
 
@@ -46,7 +48,7 @@
 
 (defun sanity-check (userdata)
   (let ((success t))
-    (unless *ri*
+    (unless (boundp '*ri*)
       (pr2-init))
 
     ;; Sensors
