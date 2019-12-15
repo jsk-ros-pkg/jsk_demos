@@ -40,7 +40,7 @@
      value)))
 
 
-(defun update (&optional (times 20))
+(defun update (&optional (times 10))
   (let (updated-object (count 0) (found 0) (panel-moved nil))
     ;; wait for result
     (ros::rate 10)
@@ -220,7 +220,7 @@
     (ros::ros-info "Looking for button...")
     (speak-jp "ボタンを探しています。")
     (ros::ros-info "Waiting for vision update...")
-    (unless (update 20)
+    (unless (update 10)
       (ros::ros-info "Could not find button.")
       (speak-jp "見つかりませんでした。")
       (return-from look-button-state nil))
