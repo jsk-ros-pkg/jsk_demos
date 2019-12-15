@@ -147,7 +147,7 @@
     (setq target-angle-vector (send *pr2* :angle-vector))
 
     ;; Push
-    (send *ri* :angle-vector via-angle-vector 1200)
+    (send *ri* :angle-vector via-angle-vector 1500)
     (send *ri* :wait-interpolation)
     (send *ri* :angle-vector target-angle-vector 600)
     (send *ri* :wait-interpolation)
