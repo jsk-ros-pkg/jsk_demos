@@ -171,7 +171,7 @@
 
     (update-robot-position)
 
-    ;; jsk_pr2_startup/jsk_pr2_move_base/look-forward-in-nav.l sends
+    ;; *1: jsk_pr2_startup/jsk_pr2_move_base/look-forward-in-nav.l sends
     ;; angle-vector after PR2 reached goal, so we should wait for interpolation.
     (when (one-shot-subscribe "/move_base/result"
                               move_base_msgs::MoveBaseActionResult :timeout 300)
@@ -191,11 +191,12 @@
     (setq look-av (send *pr2* :angle-vector))
 
     ;; Move only head quickly
+    (send *ri* :spin-once)
     (unless (eps-v= (float-vector (elt look-av 15) (elt look-av 16))
                     (float-vector (elt (send *ri* :state :potentio-vector) 15)
                                   (elt (send *ri* :state :potentio-vector) 16))
                     1.0)
-      (send *ri* :angle-vector look-av 500 :head-controller)
+      (send *ri* :angle-vector look-av 1000 :head-controller)
       (send *ri* :wait-interpolation))
 
     ;; Move arms and torso only when it is needed (i.e. skipped inside elevator)
@@ -203,15 +204,15 @@
       (send *ri* :angle-vector look-av 5000)
       (send *ri* :wait-interpolation))
 
-    ;; Move only head quickly once more, since
-    ;; jsk_pr2_startup/jsk_pr2_move_base/look-forward-in-nav.l sends
-    ;; angle-vector after PR2 reached goal, so we should wait for interpolation.
-    (unless (eps-v= (float-vector (elt look-av 15) (elt look-av 16))
-                    (float-vector (elt (send *ri* :state :potentio-vector) 15)
-                                  (elt (send *ri* :state :potentio-vector) 16))
-                    1.0)
-      (send *ri* :angle-vector look-av 500 :head-controller)
-      (send *ri* :wait-interpolation))
+    ;; Move only head quickly until converge, since [*1]
+    (until (progn
+             (send *ri* :spin-once)
+             (eps-v= (float-vector (elt look-av 15) (elt look-av 16))
+                     (float-vector (elt (send *ri* :state :potentio-vector) 15)
+                                   (elt (send *ri* :state :potentio-vector) 16))
+                     1.0))
+           (send *ri* :angle-vector look-av 500 :head-controller)
+           (send *ri* :wait-interpolation))
 
     ;; Wait until latest image is available.
     (unix:usleep (* 500 1000))
