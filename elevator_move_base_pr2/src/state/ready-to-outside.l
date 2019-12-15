@@ -110,11 +110,11 @@
              *panel*)))
     (send *pr2* :head :look-at (send look-target :worldpos))
     ;; Move fast but converge to the target angle vector
-    (while (not (eps-v= (send *pr2* :angle-vector)
-                        (send *ri* :state :potentio-vector)
-                        1.0))
-      (send *ri* :angle-vector (send *pr2* :angle-vector) 500)
-      (send *ri* :wait-interpolation)))
+    (until (eps-v= (send *pr2* :angle-vector)
+                   (send *ri* :state :potentio-vector)
+                   1.0)
+           (send *ri* :angle-vector (send *pr2* :angle-vector) 500)
+           (send *ri* :wait-interpolation)))
 
   (let* ((target-floor (cdr (assoc 'target-floor userdata))))
     (unless (check-target-floor-arrived target-floor :timeout 5)
