@@ -193,10 +193,9 @@
 (defun open-forum-door ()
   (call-service "door_button/pass_through_image/request"
                 (instance std_srvs::EmptyRequest :init))
-  (while (not (check-forum-door-open))
-    (push-forum-door-button)
-    (unix:sleep 1)  ;; Wait for door opening
-    )
+  (until (check-forum-door-open)
+         (push-forum-door-button)
+         (unix:sleep 1))  ;; Wait for door opening
   (call-service "door_button/pass_through_image/stop"
                 (instance std_srvs::EmptyRequest :init))
   (look-front))
@@ -290,9 +289,9 @@
   (send *ri* :stop-grasp :rarm :wait t)
   (speak-jp (format nil "~Aを買ってきました。" name) :wait t)
 
-  (while (not (wait-for-hand-impact :rarm :timeout 30))
-    (ros::ros-info "Still waiting for a human to get sandwich from PR2.")
-    (speak-jp (format nil "~Aをどうぞ。" name) :wait t))
+  (until (wait-for-hand-impact :rarm :timeout 30)
+         (ros::ros-info "Still waiting for a human to get sandwich from PR2.")
+         (speak-jp (format nil "~Aをどうぞ。" name) :wait t))
 
   (send *ri* :start-grasp :rarm)
   (send *pr2* :torso_lift_joint :joint-angle 0)
