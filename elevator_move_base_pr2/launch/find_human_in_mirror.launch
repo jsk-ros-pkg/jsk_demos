@@ -79,6 +79,17 @@
     <!--     queue_size: 300 -->
     <!--   </rosparam> -->
     <!-- </node> -->
+    <!-- <node name="lightweight_throttle_edgetpu_human_pose_image" -->
+    <!--       pkg="nodelet" type="nodelet" -->
+    <!--       args="standalone jsk_topic_tools/LightweightThrottle" -->
+    <!--       machine="$(arg MACHINE)" -->
+    <!--       output="screen" respawn="true"> -->
+    <!--   <remap from="~input" to="/edgetpu_human_pose_estimator/output/image"/> -->
+    <!--   <remap from="~output" to="/edgetpu_human_pose_estimator/output/image_throttle"/> -->
+    <!--   <rosparam> -->
+    <!--     update_rate: 3.0 -->
+    <!--   </rosparam> -->
+    <!-- </node> -->
   </group>  <!-- ns: $(arg NS) -->
 
 </launch>
