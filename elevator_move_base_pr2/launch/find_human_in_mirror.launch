@@ -7,7 +7,7 @@
   <arg name="INPUT_IMAGE" default="/kinect_head/rgb/image_rect_color"/>
   <arg name="INPUT_DEPTH" default="/kinect_head/depth_registered/hw_registered/image_rect"/>
   <arg name="INPUT_PEOPLE_POSE" default="/edgetpu_human_pose_estimator/output/poses"/>
-  <arg name="MODEL_DIR" default="$(find mirror_recognition)/trained_model/fcn_mirror_depth_prediction_20191206"/>
+  <arg name="MODEL_FILE" default="$(find jsk_perception)/trained_data/fcn8s_depth_prediction_concat_first_mirror.npz"/>
   <arg name="GPU" default="0"/>
 
   <group ns="$(arg NS)">
@@ -35,20 +35,23 @@
 
     <!-- Segment mirror and predict its depth by FCN -->
     <!-- TODO(Unknown): Please add 'machine="$(arg GPU_MACHINE)"' -->
-    <node name="fcn_mirror_depth_prediction"
-          pkg="mirror_recognition" type="fcn_at_once_concat_at_once.py"
+    <node name="fcn_depth_prediction"
+          pkg="jsk_perception" type="fcn_depth_prediction.py"
           output="screen" respawn="true">
-      <remap from="~input/image" to="pass_through_kinect_rgb/output"/>
+      <remap from="~input" to="pass_through_kinect_rgb/output"/>
       <remap from="~input/depth" to="pass_through_kinect_depth/output"/>
-      <rosparam command="load" file="$(find mirror_recognition)/config/mirror_names.yaml"/>
       <rosparam subst_value="true">
-        model_dir: $(arg MODEL_DIR)
+        model_name: fcn8s_depth_prediction_concat_first
+        model_file: $(arg MODEL_FILE)
         gpu: $(arg GPU)
         queue_size: 10
         approximate_sync: true
         slop: 0.1
         bg_label: 0
         proba_threshold: 0.5
+        target_names:
+          - _background_
+          - mirror
       </rosparam>
     </node>
 
@@ -57,7 +60,7 @@
     <!--       machine="$(arg MACHINE)" -->
     <!--       output="screen" respawn="true"> -->
     <!--   <remap from="~input/people_pose_array" to="$(arg INPUT_PEOPLE_POSE)"/> -->
-    <!--   <remap from="~input/label" to="fcn_mirror_depth_prediction/output/label"/> -->
+    <!--   <remap from="~input/label" to="fcn_depth_prediction/output/label"/> -->
     <!--   <rosparam> -->
     <!--     mirror_label: 1 -->
     <!--     score_threshold: 0.3 -->
@@ -70,8 +73,8 @@
     <!--       pkg="jsk_perception" type="label_image_decomposer.py" -->
     <!--       machine="$(arg MACHINE)"> -->
     <!--   <remap from="~input" to="$(arg INPUT_IMAGE)"/> -->
-    <!--   <remap from="~input/label" to="fcn_mirror_depth_prediction/output/label"/> -->
-    <!--   <remap from="~label_names" to="fcn_mirror_depth_prediction/mirror_names"/> -->
+    <!--   <remap from="~input/label" to="fcn_depth_prediction/output/label"/> -->
+    <!--   <remap from="~label_names" to="fcn_depth_prediction/target_names"/> -->
     <!--   <rosparam> -->
     <!--     queue_size: 300 -->
     <!--   </rosparam> -->
