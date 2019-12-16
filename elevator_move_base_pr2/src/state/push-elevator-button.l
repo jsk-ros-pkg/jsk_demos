@@ -151,7 +151,7 @@
     (send *ri* :wait-interpolation)
     (send *ri* :angle-vector target-angle-vector 600)
     (send *ri* :wait-interpolation)
-    (send *ri* :angle-vector via-angle-vector :fast)
+    (send *ri* :angle-vector via-angle-vector 400)
     (send *ri* :wait-interpolation)
 
     ;; Return to original pose, but no :wait-interpolation
@@ -203,7 +203,7 @@
                      (float-vector (elt (send *ri* :state :potentio-vector) 15)
                                    (elt (send *ri* :state :potentio-vector) 16))
                      1.0))
-           (send *ri* :angle-vector look-av :fast :head-controller)
+           (send *ri* :angle-vector look-av 500 :head-controller)
            (send *ri* :wait-interpolation))
 
     (if (equal panel-name "/elevator_call_panel")
