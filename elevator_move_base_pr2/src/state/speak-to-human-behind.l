@@ -8,34 +8,32 @@
 
 (defun speak-to-human-behind (userdata)
   (let (start-tm (timeout (ros::time 10))
-        (sub-inside-p nil) (sub-outside-p nil) (inside-p nil) (outside-p nil))
-    (ros::ros-info "speak-to-human-behind: start")
+        (sub-inside-num 0) (sub-outside-num 0) (inside-p nil) (outside-p nil))
     (call-service "/human_in_mirror/pass_through_kinect_rgb/request"
                   (instance std_srvs::EmptyRequest :init))
     (call-service "/human_in_mirror/pass_through_kinect_depth/request"
                   (instance std_srvs::EmptyRequest :init))
-    (setq start-tm (ros::time-now))
-
     (ros::subscribe
      "/human_in_mirror/find_human_in_mirror/output/inside_mirror"
      jsk_recognition_msgs::BoolStamped
      #'(lambda (m)
          (when (ros::time< start-tm (send m :header :stamp))
-           (setq sub-inside-p t)
-           (setq inside-p (send m :data)))))
+           (incf sub-inside-num)
+           (setq inside-p (send m :data)))))  ;; Use only latest data
     (ros::subscribe
      "/human_in_mirror/find_human_in_mirror/output/outside_mirror"
      jsk_recognition_msgs::BoolStamped
      #'(lambda (m)
          (when (ros::time< start-tm (send m :header :stamp))
-           (setq sub-outside-p t)
-           (setq outside-p (send m :data)))))
+           (incf sub-outside-num)
+           (setq outside-p (send m :data)))))  ;; Use only latest data
 
+    (setq start-tm (ros::time-now))
     (while (and (ros::ok)
-                (not (and sub-inside-p sub-outside-p))
+                (or (< sub-inside-num 2) (< sub-outside-num 2))
                 (ros::time< (ros::time-now) (ros::time+ start-tm timeout)))
       (ros::spin-once)
-      (when (and sub-inside-p sub-outside-p)
+      (when (and (>= sub-inside-num 2) (>= sub-outside-num 2))
         ;; Speak fast!
         (cond ((and inside-p outside-p)
                (ros::ros-info
@@ -49,7 +47,8 @@
                (ros::ros-info "Speaking to human inside elevator...")
                (speak-jp "エレベータ内の方お邪魔します。" :wait nil))
               (t
-               (ros::ros-info "Nobody was found. Skip speaking."))))
+               (ros::ros-info "Nobody was found. Move into elevator.")
+               (speak-jp "エレベータに入ります。" :wait nil))))
       (ros::sleep))
     (call-service "/human_in_mirror/pass_through_kinect_rgb/stop"
                   (instance std_srvs::EmptyRequest :init))
@@ -59,5 +58,4 @@
      "/human_in_mirror/find_human_in_mirror/output/inside_mirror")
     (ros::unsubscribe
      "/human_in_mirror/find_human_in_mirror/output/outside_mirror")
-    (ros::ros-info "speak-to-human-behind: end")
     t))
