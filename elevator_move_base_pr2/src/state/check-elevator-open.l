@@ -44,5 +44,4 @@
     (ros::ros-info "Door opened.")
     (speak-jp "ドアが開きました。")
     (clear-costmap)
-    (unix:usleep (* 500 1000)) ;; wait until door open
     t))
