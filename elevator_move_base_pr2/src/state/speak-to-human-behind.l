@@ -7,8 +7,9 @@
 
 
 (defun speak-to-human-behind (userdata)
-  (let (start-tm (timeout (ros::time 10))
-        (sub-inside-num 0) (sub-outside-num 0) (inside-p nil) (outside-p nil))
+  (let (start-tm (timeout (ros::time 8))
+        (sub-inside-num 0) (sub-outside-num 0) (sub-req 1)
+        (inside-p nil) (outside-p nil))
     (call-service "/human_in_mirror/pass_through_kinect_rgb/request"
                   (instance std_srvs::EmptyRequest :init))
     (call-service "/human_in_mirror/pass_through_kinect_depth/request"
@@ -30,10 +31,10 @@
 
     (setq start-tm (ros::time-now))
     (while (and (ros::ok)
-                (or (< sub-inside-num 2) (< sub-outside-num 2))
+                (or (< sub-inside-num sub-req) (< sub-outside-num sub-req))
                 (ros::time< (ros::time-now) (ros::time+ start-tm timeout)))
       (ros::spin-once)
-      (when (and (>= sub-inside-num 2) (>= sub-outside-num 2))
+      (when (and (>= sub-inside-num sub-req) (>= sub-outside-num sub-req))
         ;; Speak fast!
         (cond ((and inside-p outside-p)
                (ros::ros-info
