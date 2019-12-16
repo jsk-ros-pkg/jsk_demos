@@ -6,7 +6,6 @@ Panels:
       Expanded:
         - /Global Options1
         - /Status1
-        - /DetectedMirror1
       Splitter Ratio: 0.633333
     Tree Height: 856
   - Class: rviz/Selection
@@ -845,6 +844,30 @@ Visualization Manager:
           top: 500
           transport hint: raw
           width: 200
+        - Class: jsk_rviz_plugin/OverlayImage
+          Enabled: true
+          Name: DetectedMirror
+          Topic: /human_in_mirror/label_image_decomposer/output/label_viz
+          Value: true
+          alpha: 0.8
+          height: 150
+          keep aspect ratio: false
+          left: 460
+          top: 160
+          transport hint: raw
+          width: 200
+        - Class: jsk_rviz_plugin/OverlayImage
+          Enabled: true
+          Name: DetectedHuman
+          Topic: /edgetpu_human_pose_estimator/output/image_throttle
+          Value: true
+          alpha: 0.8
+          height: 150
+          keep aspect ratio: false
+          left: 460
+          top: 330
+          transport hint: raw
+          width: 200
         - Class: rviz/TF
           Enabled: true
           Frame Timeout: 5
@@ -1263,18 +1286,6 @@ Visualization Manager:
           width: 800
       Enabled: true
       Name: ElevatorInfo
-    - Class: jsk_rviz_plugin/OverlayImage
-      Enabled: true
-      Name: DetectedMirror
-      Topic: /human_in_mirror/label_image_decomposer/output/label_viz
-      Value: true
-      alpha: 0.8
-      height: 150
-      keep aspect ratio: false
-      left: 460
-      top: 500
-      transport hint: raw
-      width: 200
   Enabled: true
   Global Options:
     Background Color: 48; 48; 48
