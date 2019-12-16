@@ -151,7 +151,7 @@
     (send *ri* :wait-interpolation)
     (send *ri* :angle-vector target-angle-vector 600)
     (send *ri* :wait-interpolation)
-    (send *ri* :angle-vector via-angle-vector 400)
+    (send *ri* :angle-vector via-angle-vector :fast)
     (send *ri* :wait-interpolation)
 
     ;; Return to original pose, but no :wait-interpolation
@@ -161,14 +161,6 @@
 
 (defun look-button-state (userdata)
   (let ((panel-name (cdr (assoc 'panel-name userdata))) look-target look-av)
-    (if (equal panel-name "/elevator_call_panel")
-        (call-service
-         "/narrow_stereo/left/pass_through_feature_to_call_panel/request"
-         (instance std_srvs::EmptyRequest :init))
-      (call-service
-       "/narrow_stereo/left/pass_through_feature_to_inside_panel/request"
-       (instance std_srvs::EmptyRequest :init)))
-
     (update-robot-position)
 
     ;; *1: jsk_pr2_startup/jsk_pr2_move_base/look-forward-in-nav.l sends
@@ -211,13 +203,21 @@
                      (float-vector (elt (send *ri* :state :potentio-vector) 15)
                                    (elt (send *ri* :state :potentio-vector) 16))
                      1.0))
-           (send *ri* :angle-vector look-av 500 :head-controller)
+           (send *ri* :angle-vector look-av :fast :head-controller)
            (send *ri* :wait-interpolation))
+
+    (if (equal panel-name "/elevator_call_panel")
+        (call-service
+         "/narrow_stereo/left/pass_through_feature_to_call_panel/request"
+         (instance std_srvs::EmptyRequest :init))
+      (call-service
+       "/narrow_stereo/left/pass_through_feature_to_inside_panel/request"
+       (instance std_srvs::EmptyRequest :init)))
 
     ;; Wait until latest image is available.
     (unix:usleep (* 500 1000))
 
-    ;; update
+    ;; Update *scene* (especially pose of *panel*) by TF
     (ros::ros-info "Looking for button...")
     (speak-jp "ボタンを探しています。")
     (ros::ros-info "Waiting for vision update...")
