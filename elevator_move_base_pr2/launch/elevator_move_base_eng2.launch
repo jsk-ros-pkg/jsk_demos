@@ -62,7 +62,7 @@
   <!-- ===================================================================== -->
 
   <!-- TODO(Unknown): Please implement GPU machine c3 -->
-  <!-- and move these 4 nodes to find_human_in_mirror.launch -->
+  <!-- and move these 5 nodes to find_human_in_mirror.launch -->
   <group ns="human_in_mirror">
     <!-- Subscribe only when it gets service request -->
     <node name="pass_through_kinect_rgb"
@@ -106,6 +106,17 @@
       <remap from="~label_names" to="fcn_depth_prediction/mirror_names"/>
       <rosparam>
         queue_size: 300
+      </rosparam>
+    </node>
+    <node name="lightweight_throttle_edgetpu_human_pose_image"
+          pkg="nodelet" type="nodelet"
+          args="standalone jsk_topic_tools/LightweightThrottle"
+          machine="c2"
+          output="screen" respawn="true">
+      <remap from="~input" to="/edgetpu_human_pose_estimator/output/image"/>
+      <remap from="~output" to="/edgetpu_human_pose_estimator/output/image_throttle"/>
+      <rosparam>
+        update_rate: 3.0
       </rosparam>
     </node>
   </group>
