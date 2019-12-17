@@ -80,9 +80,9 @@
    "/move_base_node/DWAPlannerROS" "yaw_goal_tolerance" :double 0.175)  ;; 10deg
   t)
 
-(defun tolerance-normal (&rest args)
+(defun tolerance-medium (&rest args)
   (ros::set-dynamic-reconfigure-param
-   "/move_base_node/DWAPlannerROS" "xy_goal_tolerance" :double 0.15)
+   "/move_base_node/DWAPlannerROS" "xy_goal_tolerance" :double 0.10)
   (ros::set-dynamic-reconfigure-param
    "/move_base_node/DWAPlannerROS" "yaw_goal_tolerance" :double 0.087)  ;; 5deg
   (ros::set-dynamic-reconfigure-param
@@ -102,4 +102,34 @@
   (ros::set-dynamic-reconfigure-param
    "/move_base_node/local_costmap" "footprint_padding" :double 0.03)
   (use-tilt-laser-obstacle-cloud nil)
+  t)
+
+(defun store-params (&rest args)
+  (defparameter *xy-goal-tolerance*
+    (ros::get-param "/move_base_node/DWAPlannerROS/xy_goal_tolerance"))
+  (defparameter *yaw-goal-tolerance*
+    (ros::get-param "/move_base_node/DWAPlannerROS/yaw_goal_tolerance"))
+  (defparameter *global-footprint-padding*
+    (ros::get-param "/move_base_node/global_costmap/footprint_padding"))
+  (defparameter *local-footprint-padding*
+    (ros::get-param "/move_base_node/local_costmap/footprint_padding"))
+  t)
+
+(defun restore-params (&rest args)
+  (when (boundp '*xy-goal-tolerance*)
+    (ros::set-dynamic-reconfigure-param
+     "/move_base_node/DWAPlannerROS" "xy_goal_tolerance"
+     :double *xy-goal-tolerance*))
+  (when (boundp '*yaw-goal-tolerance*)
+    (ros::set-dynamic-reconfigure-param
+     "/move_base_node/DWAPlannerROS" "yaw_goal_tolerance"
+     :double *yaw-goal-tolerance*))
+  (when (boundp '*global-footprint-padding*)
+    (ros::set-dynamic-reconfigure-param
+     "/move_base_node/global_costmap" "footprint_padding"
+     :double *global-footprint-padding*))
+  (when (boundp '*local-footprint-padding*)
+    (ros::set-dynamic-reconfigure-param
+     "/move_base_node/local_costmap" "footprint_padding"
+     :double *local-footprint-padding*))
   t)
