@@ -100,7 +100,7 @@
                                                (button . outside-button))))
     (send sm :add-node
           (instance state :init :speak-fail
-                    '(lambda(x)
+                    '(lambda (x)
                        (ros::ros-warn "Could not take elevator.")
                        (speak-jp "エレベータに乗れませんでした。" :wait t)
                        t)))
@@ -118,15 +118,15 @@
                         :key 'coords->movebaseactiongoal))
     (send (send sm :node :move-outside) :remap-list '((:goal . outside-coords)))
     (send sm :add-node
-          (instance state :init :set-param-for-normal
-                    '(lambda (x)
+          (instance state :init :prepare-normal-movement
+                    '(lambda (userdata)
                        ;; Free arm may hold something,
                        ;; so keep it away from base laser
                        (pr2-tuckarm-pose
                         (case (cdr (assoc 'push-arm userdata))
                           (:rarm :larm)
                           (:larm :rarm)))
-                       (tolerance-normal))))
+                       (restore-params))))
     (send sm :arg-keys 'elevator-front-coords 'front-coords 'outside-panel-name
                        'outside-button 'inside-coords 'inside-panel-name
                        'target-floor 'outside-coords 'push-arm)
@@ -141,9 +141,9 @@
     (send sm :add-transition :push-inside :ready-to-outside :success)
     (send sm :add-transition :ready-to-outside :move-outside :success)
     (send sm :add-transition :ready-to-outside :push-inside :fail)
-    (send sm :add-transition :move-outside :set-param-for-normal :succeeded)
+    (send sm :add-transition :move-outside :prepare-normal-movement :succeeded)
     (send sm :add-transition :move-outside :fail-inside :failed)
-    (send sm :add-transition :set-param-for-normal :success t)
+    (send sm :add-transition :prepare-normal-movement :success t)
     sm))
 
 (defun elevator-move-base-state-machine ()
@@ -160,7 +160,8 @@
                         (case (cdr (assoc 'push-arm userdata))
                           (:rarm :larm)
                           (:larm :rarm)))
-                       (tolerance-normal)
+                       (store-params)
+                       (tolerance-medium)
                        (ros::ros-info "Go to elevator.")
                        (speak-jp "エレベータに向かいます。" :wait t)
                        t)))
