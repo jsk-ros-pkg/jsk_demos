@@ -8,7 +8,7 @@
 
 (defun speak-to-human-behind (userdata)
   (let (start-tm (timeout (ros::time 5))
-        (sub-inside-num 0) (sub-outside-num 0) (sub-req 2)
+        (sub-inside-num 0) (sub-outside-num 0) (sub-req 3)
         (inside-p nil) (outside-p nil))
     (ros::subscribe
      "/human_in_mirror/find_human_in_mirror/output/inside_mirror"
@@ -24,7 +24,7 @@
          (when (ros::time< start-tm (send m :header :stamp))
            (incf sub-outside-num)
            (setq outside-p (or (send m :data) outside-p)))))
-    (unix:usleep (* 200 1000))  ;; Wait for door opening
+    (unix:usleep (* 500 1000))  ;; Wait for door opening
     (call-service "/human_in_mirror/pass_through_kinect_rgb/request"
                   (instance std_srvs::EmptyRequest :init))
     (call-service "/human_in_mirror/pass_through_kinect_depth/request"
