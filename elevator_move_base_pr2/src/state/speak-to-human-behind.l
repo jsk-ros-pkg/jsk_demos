@@ -7,28 +7,28 @@
 
 
 (defun speak-to-human-behind (userdata)
-  (let (start-tm (timeout (ros::time 7))
+  (let (start-tm (timeout (ros::time 5))
         (sub-inside-num 0) (sub-outside-num 0) (sub-req 2)
         (inside-p nil) (outside-p nil))
-    (call-service "/human_in_mirror/pass_through_kinect_rgb/request"
-                  (instance std_srvs::EmptyRequest :init))
-    (call-service "/human_in_mirror/pass_through_kinect_depth/request"
-                  (instance std_srvs::EmptyRequest :init))
-    (unix:usleep (* 200 1000))  ;; Wait for door opening
     (ros::subscribe
      "/human_in_mirror/find_human_in_mirror/output/inside_mirror"
      jsk_recognition_msgs::BoolStamped
      #'(lambda (m)
          (when (ros::time< start-tm (send m :header :stamp))
            (incf sub-inside-num)
-           (setq inside-p (send m :data)))))  ;; Use only latest data
+           (setq inside-p (or (send m :data) inside-p)))))
     (ros::subscribe
      "/human_in_mirror/find_human_in_mirror/output/outside_mirror"
      jsk_recognition_msgs::BoolStamped
      #'(lambda (m)
          (when (ros::time< start-tm (send m :header :stamp))
            (incf sub-outside-num)
-           (setq outside-p (send m :data)))))  ;; Use only latest data
+           (setq outside-p (or (send m :data) outside-p)))))
+    (unix:usleep (* 200 1000))  ;; Wait for door opening
+    (call-service "/human_in_mirror/pass_through_kinect_rgb/request"
+                  (instance std_srvs::EmptyRequest :init))
+    (call-service "/human_in_mirror/pass_through_kinect_depth/request"
+                  (instance std_srvs::EmptyRequest :init))
 
     (setq start-tm (ros::time-now))
     (while (and (ros::ok)
