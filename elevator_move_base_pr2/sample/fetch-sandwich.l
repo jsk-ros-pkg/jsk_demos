@@ -68,6 +68,7 @@
   (setq *pr2* (pr2))
   (setq *ri* (instance pr2-interface :init
                        :move-base-action-name "elevator_move_base"))
+  (send *pr2* :reset-pose)
   (pr2-tuckarm-pose)
   (look-front)
   (setq *scene* (make-eng2-scene))
