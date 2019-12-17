@@ -25,8 +25,7 @@ class FindHumanInMirror(ConnectionBasedTransport):
     def subscribe(self):
         queue_size = rospy.get_param('~queue_size', 10)
         sub_people_pose = message_filters.Subscriber(
-            '~input/people_pose_array', PeoplePoseArray,
-            queue_size=1, buff_size=2**24)
+            '~input/people_pose_array', PeoplePoseArray, queue_size=1)
         sub_label = message_filters.Subscriber(
             '~input/label', Image,
             queue_size=1, buff_size=2**24)
