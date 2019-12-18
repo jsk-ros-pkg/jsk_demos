@@ -40,7 +40,7 @@
 
 (defun sox-with-rec (obj-pos)
   (setq target-cds (make-coords :pos (scale 1000 obj-pos)))
-  (send target-cds :translate #f(30 -40 200)) ;;もともと30 -100 200
+  (send target-cds :translate #f(30 -30 200)) ;;もともと30 -100 200
   ;;(send target-cds :rotate (deg2rad 90) :y :world);;上からつかむために目標の座標を回転
   (send target-cds :rotate (deg2rad -90) :z :world);;上からつかむために目標の座標を回
   (objects (list *fetch* target-cds))
@@ -96,7 +96,7 @@
   (send *ri* :wait-interpolation)
 
   ;;前に進む
-  (send *ri* :go-pos-unsafe 0.14 0 0)
+  (send *ri* :go-pos-unsafe 0.12 0 0)
   (send *ri* :wait-interpolation)
 
   ;下を向く
@@ -105,7 +105,7 @@
   ; (send *ri* :angle-vector (send *fetch* :angle-vector) 1000)
   ; (send *ri* :wait-interpolation)
 
-  (unix:sleep 3)
+  (unix:sleep 10)
   ;;コールバックを呼ぶ
   (setq found-obj nil)
   (until found-obj
@@ -132,8 +132,8 @@
   (send *ri* :angle-vector (send *fetch* :angle-vector) 6000)
   (send *ri* :wait-interpolation)
 
-  ;;(send *ri* :speak-jp "メリークリスマス")
-  (send *ri* :speak "merry christmas from jsk 2019 zemi")
+  (send *ri* :speak-jp "メリークリスマス")
+  ;;(send *ri* :speak "merry christmas from jsk 2019 zemi")
 
   (send *co* :wipe-all))
 

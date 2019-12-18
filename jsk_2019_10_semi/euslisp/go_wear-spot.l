@@ -8,7 +8,9 @@
 
 
 (defun go-spot ()
+  (send *ri* :clear-costmap)
   (go-to-spot "/eng2/7f/room73A3-front1")
+  (send *ri* :clear-costmap)
   (go-to-spot "/eng2/7f/room73B2-center")
   (send *ri* :go-pos 0 0 40)
 

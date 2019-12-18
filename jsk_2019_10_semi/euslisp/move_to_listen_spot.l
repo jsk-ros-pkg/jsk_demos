@@ -11,3 +11,4 @@
 (go-to-spot "/eng2/7f/room73B2-door-front" (make-coords :pos #f(200 0 0)))
 (unix:sleep 1)
 (go-to-spot "/eng2/7f/room73A3-front")
+(send *ri* :speak-jp "ほしいものは何かな？")
