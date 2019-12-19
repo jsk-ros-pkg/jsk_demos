@@ -59,7 +59,7 @@
     (send sm :add-node (instance state :init :set-param-for-elevator-outside
                                  'tolerance-loose))
     (send sm :add-node (actionlib-client-state
-                        :move-elevator-front move-client :timeout 30 :retry nil
+                        :move-elevator-front move-client :timeout 15 :retry t
                         :key 'coords->movebaseactiongoal))
     (send (send sm :node :move-elevator-front)
           :remap-list '((:goal . elevator-front-coords)))
@@ -118,7 +118,7 @@
     (send sm :add-node
           (instance state :init :ready-to-outside 'ready-to-outside))
     (send sm :add-node (actionlib-client-state
-                        :move-outside move-client :timeout 60 :retry t
+                        :move-outside move-client :timeout 15 :retry t
                         :key 'coords->movebaseactiongoal))
     (send (send sm :node :move-outside) :remap-list '((:goal . outside-coords)))
     (send sm :add-node
@@ -173,7 +173,7 @@
           (instance state :init :take-elevator (take-elevator-state-machine)))
     (send sm :add-node (actionlib-client-state
                         :go-to (pr2-interface-move-base-action *ri*)
-                        :timeout 600 :retry t
+                        :timeout 300 :retry t
                         :key 'coords->movebaseactiongoal))
     (send (send sm :node :go-to) :remap-list '((:goal . target-coords)))
     (send sm :arg-keys 'elevator-front-coords 'front-coords 'outside-panel-name
