@@ -60,4 +60,5 @@
      "/human_in_mirror/find_human_in_mirror/output/inside_mirror")
     (ros::unsubscribe
      "/human_in_mirror/find_human_in_mirror/output/outside_mirror")
+    (clear-costmap)
     t))
