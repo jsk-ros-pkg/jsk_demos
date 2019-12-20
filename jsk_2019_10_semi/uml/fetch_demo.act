@@ -1,12 +1,13 @@
 @startuml
 
-start
-
 |サンタロボ|
+
+start
 
 partition YoshiaAbe {
 
   :please add;
+}
 
 @startuml
 
