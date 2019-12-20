@@ -2,7 +2,7 @@
 (print ";;start demo")
 
 (defun go-listen-spot ()
-  (format t ";;go-listen-splot")
+  (format t ";;go-listen-spot")
   (load "move_to_listen_spot.l"))
 
 (defun change-costume ()
@@ -22,8 +22,8 @@
 
 
 (defun demo ()
-  ;;(go-listen-spot)
-  ;;(change-costume)
+  (go-listen-spot)
+  (change-costume)
   (catch-present)
   (put-present-into-sock)
   )
@@ -31,4 +31,4 @@
 
 (format t ";;start")
 (demo)
-(format t ";;finish")  
+(format t ";;finish")

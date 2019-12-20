@@ -132,8 +132,8 @@
   (send *ri* :angle-vector (send *fetch* :angle-vector) 6000)
   (send *ri* :wait-interpolation)
 
-  ;;(send *ri* :speak-jp "メリークリスマス")
-  (send *ri* :speak "merry christmas from jsk 2019 zemi")
+  (send *ri* :speak-jp "メリークリスマス")
+  ;;(send *ri* :speak "merry christmas from jsk 2019 zemi")
 
   (send *co* :wipe-all))
 

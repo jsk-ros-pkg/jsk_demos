@@ -196,6 +196,7 @@
     (send *ri* :wait-interpolation)
     (go-back)
     (send *ri* :wait-interpolation)
-    (atohayoroshiku))
+    ;;(atohayoroshiku)
+		)
 
 (main)
