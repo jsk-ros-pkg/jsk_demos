@@ -22,8 +22,8 @@
 
 
 (defun demo ()
-  ;;(go-listen-spot)
-  ;;(change-costume)
+  (go-listen-spot)
+  (change-costume)
   (catch-present)
   (put-present-into-sock)
   )

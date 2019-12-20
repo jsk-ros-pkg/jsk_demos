@@ -18,6 +18,13 @@
 ;; ros::initする
 (ros::roseus "boundingboxarray_subscriber")
 
+(ros::set-dynamic-reconfigure-param "/head_camera_remote/depth_registered/hsi_filter" "h_limit_max" :int 20)
+(ros::set-dynamic-reconfigure-param "/head_camera_remote/depth_registered/hsi_filter" "h_limit_min" :int -20)
+(ros::set-dynamic-reconfigure-param "/head_camera_remote/depth_registered/hsi_filter" "s_limit_max" :int 255)
+(ros::set-dynamic-reconfigure-param "/head_camera_remote/depth_registered/hsi_filter" "s_limit_min" :int 80)
+(ros::set-dynamic-reconfigure-param "/head_camera_remote/depth_registered/hsi_filter" "i_limit_max" :int 255)
+(ros::set-dynamic-reconfigure-param "/head_camera_remote/depth_registered/hsi_filter" "i_limit_min" :int 50)
+
 ;;帽子をつかむための関数
 (defun set-wear-func ()
   (defun before-catch ()
@@ -47,6 +54,9 @@
   (defun release-finger ()
     ;;(send *ri* :stop-grasp :wait t))
     (send *ri* :go-grasp :effort 70 :pos 10 :wait t))
+  (defun after-wear ()
+    (send *fetch* :angle-vector
+	  #f(105.34 80.0424 -43.3069 0.366239 -52.9459 -12.1806 -56.887 -178.858 0.181273 18.8633)))
 )
 
 
@@ -137,7 +147,7 @@
   (send *ri* :go-pos-unsafe 0 0 -180)
   (send *ri* :wait-interpolation)
   (send *ri* :go-velocity 0.3 0 0)
-  (send *ri* :angle-vector (raise-hand) 7000)
+  (send *ri* :angle-vector (after-wear) 7000)
   (send *ri* :wait-interpolation)
   (send *ri* :angle-vector (catch-pose) 10000)
   (send *ri* :wait-interpolation)
