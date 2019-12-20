@@ -1,0 +1,77 @@
+@startuml
+
+start
+
+|サンタロボ|
+
+partition YoshiaAbe {
+
+  :please add;
+
+@startuml
+
+|子供|
+
+partition YoshiaAbe {
+
+  :please add;
+
+}
+
+|サンタロボ|
+
+partition MiyabiTane {
+
+  :「プレゼントは〜、なのだ！」と言う;
+  :サンタ部屋に戻る;
+  :サンタに変装;
+
+}
+
+partition mqcmd196 {
+
+  :please add;
+
+}
+if (プレゼントはお菓子？) then (yes)
+
+partition mqcmd196 {
+
+  :please add;
+
+}
+
+elseif (プレゼントはGPU？) then (yes)
+
+partition mqcmd196 {
+
+  :please add;
+
+}
+
+elseif (プレゼントはぬいぐるみ？) then (yes)
+
+partition mqcmd196 {
+
+  :please add;
+
+}
+
+else (wait the wish)
+
+partition Kanazawanaoaki {
+
+  :please add;
+
+}
+
+
+endif
+
+|子供|
+
+:プレゼントを受け取る;
+
+end
+
+@enduml
