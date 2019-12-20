@@ -133,4 +133,4 @@
     (send *ri* :go-pos-unsafe 0 0 -90)  ;; Unsafe for faster turning right
     (return-from ready-to-outside :fail))
   (unix:usleep (* 500 1000))  ;; Wait until door is open
-  :success)
+  :succeed)
