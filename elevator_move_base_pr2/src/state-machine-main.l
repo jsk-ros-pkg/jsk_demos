@@ -136,6 +136,8 @@
                         (case (cdr (assoc 'push-arm userdata))
                           (:rarm :larm)
                           (:larm :rarm)))
+                       (call-service "look_forward_in_navigation/start"
+                                     (instance std_srvs::EmptyRequest :init))
                        (restore-params))))
     (send sm :arg-keys 'elevator-front-coords 'front-coords 'outside-panel-name
                        'outside-button 'inside-coords 'inside-panel-name
@@ -171,6 +173,8 @@
                           (:rarm :larm)
                           (:larm :rarm)))
                        (store-params)
+                       (call-service "look_forward_in_navigation/stop"
+                                     (instance std_srvs::EmptyRequest :init))
                        (tolerance-medium)
                        (ros::ros-info "Go to elevator.")
                        (speak-jp "エレベータに向かいます。" :wait t)
