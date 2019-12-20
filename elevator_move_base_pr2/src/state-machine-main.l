@@ -43,13 +43,13 @@
     (send sm :add-node (instance state :init :push 'push-button-state))
     (send sm :add-node (instance state :init :check 'check-button-light-state))
     (send sm :arg-keys 'button 'panel-name 'push-arm)
-    (send sm :goal-state (list :success))
+    (send sm :goal-state (list :succeed))
     (send sm :start-state :look)
     (send sm :add-transition :look :push t)
     (send sm :add-transition :look :look nil)
     (send sm :add-transition :push :check t)
     (send sm :add-transition :push :look nil)
-    (send sm :add-transition :check :success t)
+    (send sm :add-transition :check :succeed t)
     (send sm :add-transition :check :look nil)
     sm))
 
@@ -58,11 +58,12 @@
         (move-client (pr2-interface-move-base-action *ri*)))
     (send sm :add-node (instance state :init :set-param-for-elevator-outside
                                  'tolerance-loose))
-    (send sm :add-node (actionlib-client-state
-                        :move-elevator-front move-client :timeout 15 :retry t
-                        :key 'coords->movebaseactiongoal))
-    (send (send sm :node :move-elevator-front)
-          :remap-list '((:goal . elevator-front-coords)))
+    (send sm :add-node
+          (instance state :init :move-elevator-front
+                    '(lambda (userdata)
+                       (send *ri* :move-to
+                             (cdr (assoc 'elevator-front-coords userdata))
+                             :retry 2))))
     (send sm :add-node (instance state :init :set-param-for-elevator-inside
                                  'tolerance-strict))
     (send sm :add-node
@@ -70,35 +71,38 @@
                     '(lambda (x) (check-elevator-open :timeout 300))))
     (send sm :add-node (instance state :init :speak-to-human-behind
                                  'speak-to-human-behind))
-    (send sm :add-node (actionlib-client-state
-                        :move-elevator-inside move-client :timeout 30 :retry nil
-                        :key 'coords->movebaseactiongoal))
-    (send (send sm :node :move-elevator-inside)
-          :remap-list '((:goal . inside-coords)))
+    (send sm :add-node
+          (instance state :init :move-elevator-inside
+                    '(lambda (userdata)
+                       (send *ri* :move-to
+                             (cdr (assoc 'inside-coords userdata))
+                             :retry 2))))
     (send sm :arg-keys 'elevator-front-coords 'inside-coords)
-    (send sm :goal-state (list :success :fail))
+    (send sm :goal-state (list :succeed :fail))
     (send sm :start-state :set-param-for-elevator-outside)
     (send sm :add-transition
           :set-param-for-elevator-outside :move-elevator-front t)
     (send sm :add-transition
-          :move-elevator-front :set-param-for-elevator-inside :succeeded)
-    (send sm :add-transition :move-elevator-front :fail :failed)
+          :move-elevator-front :set-param-for-elevator-inside t)
+    (send sm :add-transition :move-elevator-front :fail nil)
     (send sm :add-transition
           :set-param-for-elevator-inside :check-elevator-open t)
     (send sm :add-transition :check-elevator-open :speak-to-human-behind t)
     (send sm :add-transition :check-elevator-open :fail nil)
     (send sm :add-transition :speak-to-human-behind :move-elevator-inside t)
-    (send sm :add-transition :move-elevator-inside :success :succeeded)
-    (send sm :add-transition :move-elevator-inside :fail :failed)
+    (send sm :add-transition :move-elevator-inside :succeed t)
+    (send sm :add-transition :move-elevator-inside :fail nil)
     sm))
 
 (defun take-elevator-state-machine ()
   (let ((sm (instance state-machine :init))
         (move-client (pr2-interface-move-base-action *ri*)))
-    (send sm :add-node (actionlib-client-state
-                        :move-front move-client :timeout 300 :retry t
-                        :key 'coords->movebaseactiongoal))
-    (send (send sm :node :move-front) :remap-list '((:goal . front-coords)))
+    (send sm :add-node
+          (instance state :init :move-front
+                    '(lambda (userdata)
+                       (send *ri* :move-to
+                             (cdr (assoc 'front-coords userdata))
+                             :retry 10))))
     (send sm :add-node (instance state :init :push-outside (push-state-machine)
                                  :remap-list '((panel-name . outside-panel-name)
                                                (button . outside-button))))
@@ -117,10 +121,12 @@
                                                (button . target-floor))))
     (send sm :add-node
           (instance state :init :ready-to-outside 'ready-to-outside))
-    (send sm :add-node (actionlib-client-state
-                        :move-outside move-client :timeout 15 :retry t
-                        :key 'coords->movebaseactiongoal))
-    (send (send sm :node :move-outside) :remap-list '((:goal . outside-coords)))
+    (send sm :add-node
+          (instance state :init :move-outside
+                    '(lambda (userdata)
+                       (send *ri* :move-to
+                             (cdr (assoc 'outside-coords userdata))
+                             :retry 10))))
     (send sm :add-node
           (instance state :init :prepare-normal-movement
                     '(lambda (userdata)
@@ -134,20 +140,20 @@
     (send sm :arg-keys 'elevator-front-coords 'front-coords 'outside-panel-name
                        'outside-button 'inside-coords 'inside-panel-name
                        'target-floor 'outside-coords 'push-arm)
-    (send sm :goal-state (list :success :fail-outside :fail-inside))
+    (send sm :goal-state (list :succeed :fail-outside :fail-inside))
     (send sm :start-state :move-front)
-    (send sm :add-transition :move-front :push-outside :succeeded)
-    (send sm :add-transition :move-front :fail-outside :failed)
-    (send sm :add-transition :push-outside :move-inside :success)
-    (send sm :add-transition :move-inside :push-inside :success)
+    (send sm :add-transition :move-front :push-outside t)
+    (send sm :add-transition :move-front :fail-outside nil)
+    (send sm :add-transition :push-outside :move-inside :succeed)
+    (send sm :add-transition :move-inside :push-inside :succeed)
     (send sm :add-transition :move-inside :speak-fail :fail)
     (send sm :add-transition :speak-fail :move-front t)
-    (send sm :add-transition :push-inside :ready-to-outside :success)
-    (send sm :add-transition :ready-to-outside :move-outside :success)
+    (send sm :add-transition :push-inside :ready-to-outside :succeed)
+    (send sm :add-transition :ready-to-outside :move-outside :succeed)
     (send sm :add-transition :ready-to-outside :push-inside :fail)
-    (send sm :add-transition :move-outside :prepare-normal-movement :succeeded)
-    (send sm :add-transition :move-outside :fail-inside :failed)
-    (send sm :add-transition :prepare-normal-movement :success t)
+    (send sm :add-transition :move-outside :prepare-normal-movement t)
+    (send sm :add-transition :move-outside :fail-inside nil)
+    (send sm :add-transition :prepare-normal-movement :succeed t)
     sm))
 
 (defun elevator-move-base-state-machine ()
@@ -171,25 +177,26 @@
                        t)))
     (send sm :add-node
           (instance state :init :take-elevator (take-elevator-state-machine)))
-    (send sm :add-node (actionlib-client-state
-                        :go-to (pr2-interface-move-base-action *ri*)
-                        :timeout 300 :retry t
-                        :key 'coords->movebaseactiongoal))
-    (send (send sm :node :go-to) :remap-list '((:goal . target-coords)))
+    (send sm :add-node
+          (instance state :init :go-to
+                    '(lambda (userdata)
+                       (send *ri* :move-to
+                             (cdr (assoc 'target-coords userdata))
+                             :retry 10))))
     (send sm :arg-keys 'elevator-front-coords 'front-coords 'outside-panel-name
                        'outside-button 'inside-coords 'inside-panel-name
                        'target-floor 'outside-coords 'target-coords
                        'push-arm :goal)
-    (send sm :goal-state (list :success :fail))
+    (send sm :goal-state (list :succeed :fail))
     (send sm :start-state :check-elevator-needed)
     (send sm :add-transition :check-elevator-needed :sanity-check t)
     (send sm :add-transition :check-elevator-needed :go-to nil)
     (send sm :add-transition :sanity-check :speak-elevator t)
     (send sm :add-transition :sanity-check :fail nil)
     (send sm :add-transition :speak-elevator :take-elevator t)
-    (send sm :add-transition :take-elevator :go-to :success)
+    (send sm :add-transition :take-elevator :go-to :succeed)
     (send sm :add-transition :take-elevator :fail :fail-inside)
     (send sm :add-transition :take-elevator :fail :fail-outside)
-    (send sm :add-transition :go-to :success :succeeded)
-    (send sm :add-transition :go-to :fail :failed)
+    (send sm :add-transition :go-to :succeed t)
+    (send sm :add-transition :go-to :fail nil)
     sm))
