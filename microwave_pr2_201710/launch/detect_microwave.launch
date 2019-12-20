@@ -7,7 +7,7 @@
   <node name="point_pose_extractor" pkg="jsk_perception"
         type="point_pose_extractor" clear_params="true">
     <!-- <param name="child_frame_name" value="microwave"/> -->
-    <param name="template_filename" value="$(find micorwave_pr2_201710)/data/microwave_panel.jpg"/> <!-- TODO -->
+    <param name="template_filename" value="$(find microwave_pr2_201710)/data/microwave_panel.jpg"/> <!-- TODO -->
     <param name="object_width" value="0.084" />
     <param name="object_height" value="0.211" />
     <param name="reprojection_threshold" value="3.0" />  <!-- TODO cv::findHomography ransacReprojThreshold 許容される誤差の最大値 1から10が妥当10 3.0 -->
