@@ -163,13 +163,6 @@
   (let ((panel-name (cdr (assoc 'panel-name userdata))) look-target look-av)
     (update-robot-position)
 
-    ;; *1: jsk_pr2_startup/jsk_pr2_move_base/look-forward-in-nav.l sends
-    ;; angle-vector after PR2 reached goal, so we should wait for interpolation.
-    (when (one-shot-subscribe "/move_base/result"
-                              move_base_msgs::MoveBaseActionResult :timeout 300)
-      (unix:usleep (* 100 1000))
-      (send *ri* :wait-interpolation))
-
     (ros::ros-info "panel-name: ~A" panel-name)
     (setq *panel* (car (send *scene* :find-object panel-name)))
 
@@ -195,16 +188,6 @@
     (if (equal panel-name "/elevator_call_panel")
       (send *ri* :angle-vector look-av 5000)
       (send *ri* :wait-interpolation))
-
-    ;; Move only head quickly until converge, since [*1]
-    (until (progn
-             (send *ri* :spin-once)
-             (eps-v= (float-vector (elt look-av 15) (elt look-av 16))
-                     (float-vector (elt (send *ri* :state :potentio-vector) 15)
-                                   (elt (send *ri* :state :potentio-vector) 16))
-                     1.0))
-           (send *ri* :angle-vector look-av 500 :head-controller)
-           (send *ri* :wait-interpolation))
 
     (if (equal panel-name "/elevator_call_panel")
         (call-service
