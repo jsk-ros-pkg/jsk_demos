@@ -124,6 +124,8 @@
     (send sm :add-node
           (instance state :init :move-outside
                     '(lambda (userdata)
+                       (unix:sleep 1)  ;; Wait for door opening
+                       (clear-costmap)
                        (send *ri* :move-to
                              (cdr (assoc 'outside-coords userdata))
                              :retry 10))))
