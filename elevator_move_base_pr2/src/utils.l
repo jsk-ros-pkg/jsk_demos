@@ -59,7 +59,9 @@
     goal))
 
 (defun transform-pose-to-target-frame (coords frame-id tfl
-                                       &optional (tm (ros::time 0)))
+                                       &optional (tm (ros::time 0))
+                                                 (timeout 1.0))
+  (send tfl :wait-for-transform frame-id (send coords :name) tm timeout)
   (let ((tra (send tfl :lookup-transform frame-id (send coords :name) tm)))
     (when tra
       (send tra :transform coords)
