@@ -6,7 +6,8 @@ start
 
 partition YoshiaAbe {
 
-  :please add;
+  :子供部屋まで移動する;
+
 }
 
 @startuml
@@ -16,7 +17,7 @@ partition YoshiaAbe {
 partition YoshiaAbe {
 
   repeat
-   :please add;
+     :欲しいものに関して何かを言う;
   repeat while (プレゼントがお菓子でもGPUでもぬいぐるみでもない)
 
 }
