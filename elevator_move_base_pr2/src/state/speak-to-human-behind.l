@@ -16,14 +16,14 @@
      #'(lambda (m)
          (when (ros::time< start-tm (send m :header :stamp))
            (incf sub-inside-num)
-           (setq inside-p (or (send m :data) inside-p)))))
+           (setq inside-p (send m :data)))))  ;; Use only latest data
     (ros::subscribe
      "/human_in_mirror/find_human_in_mirror/output/outside_mirror"
      jsk_recognition_msgs::BoolStamped
      #'(lambda (m)
          (when (ros::time< start-tm (send m :header :stamp))
            (incf sub-outside-num)
-           (setq outside-p (or (send m :data) outside-p)))))
+           (setq outside-p (send m :data)))))  ;; Use only latest data
     (unix:usleep (* 500 1000))  ;; Wait for door opening
     (call-service "/human_in_mirror/pass_through_kinect_rgb/request"
                   (instance std_srvs::EmptyRequest :init))
