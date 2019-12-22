@@ -7,6 +7,7 @@
 
 
 (defun check-elevator-needed (userdata)
+  (ros::ros-info "Checking if elevator is needed...")
   (update-robot-position)
   (let* ((goal (cdr (assoc :goal userdata)))
          (goal-pose (ros::tf-pose-stamped->coords
