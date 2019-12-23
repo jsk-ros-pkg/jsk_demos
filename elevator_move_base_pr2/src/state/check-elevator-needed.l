@@ -17,13 +17,15 @@
          target-floor-button
          (target-coords
           (transform-pose-to-target-frame goal-pose (send *scene* :name) *tfl*))
-         (up/down (cond ((send *scene* :floor< target-floor cur-floor) "down")
-                        ((send *scene* :floor< cur-floor target-floor) "up")
-                        (t nil))))
+         up/down)
     (ros::ros-info
      (format nil
-             "cur-floor: ~A, target-floor: ~A, up/down: ~A, target-coords: ~A"
-             cur-floor target-floor up/down target-coords))
+             "cur-floor: ~A, target-floor: ~A, target-coords: ~A"
+             cur-floor target-floor target-coords))
+    (setq up/down (cond ((send *scene* :floor< target-floor cur-floor) "down")
+                        ((send *scene* :floor< cur-floor target-floor) "up")
+                        (t nil)))
+    (ros::ros-info (format nil "up/down: ~A" up/down))
     (setq target-floor-button
           (elt (assoc target-floor *floors* :test #'string=
                       :key #'(lambda (x)
