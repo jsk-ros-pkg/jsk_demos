@@ -75,6 +75,9 @@
 
 (ros::roseus "boundingboxarray_subscriber")
 
+(unix::sleep 1)
+(ros::unsubscribe *gift-name*)
+
 ;;基本動作
 (defun reset-pose()
     (send *ri* :angle-vector (send *fetch* :reset-pose) 10000))
@@ -112,8 +115,10 @@
 
 ;;プレゼントを設定．hsiフィルタのパラメータを変更する
 (defun set-gift()
+    (print "start set-gift")
     (setq msg (one-shot-subscribe *gift-name* std_msgs::Int16))
     (gift-cb msg)
+    (ros::ros-info "msg:~A, number:~A" msg *gift-number*)
     (ros::spin-once)
     (cond
         ((not (boundp '*gift-number*))
@@ -197,6 +202,6 @@
     (go-back)
     (send *ri* :wait-interpolation)
     ;;(atohayoroshiku)
-		)
+    )
 
 (main)

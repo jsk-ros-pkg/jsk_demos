@@ -1,5 +1,7 @@
 # jsk_2019_10_semi
 
+![IMG_20191218_190345](https://user-images.githubusercontent.com/20625381/71227573-069cfa80-2323-11ea-80ed-9c45d78a45ef.jpg)
+
 ## ロボットモデルの作り方
 
 ```
