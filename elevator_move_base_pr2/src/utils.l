@@ -59,7 +59,7 @@
     goal))
 
 (defun transform-pose-to-target-frame (coords frame-id tfl
-                                       &optional (tm (ros::time 0))
+                                       &optional (tm (ros::time-now))
                                                  (timeout 1.0))
   (send tfl :wait-for-transform frame-id (send coords :name) tm timeout)
   (let ((tra (send tfl :lookup-transform frame-id (send coords :name) tm)))
@@ -68,14 +68,14 @@
       (send tra :name frame-id)
       tra)))
 
-(defun check-current-floor (scene tfl &optional pose) ;; :name == frame_id
+(defun check-current-floor (scene tfl &optional pose (tm (ros::time-now)))
+  ;; :name == frame_id
   (if pose
       (setq pose (transform-pose-to-target-frame pose (send scene :name) tfl))
     (progn
-      (send tfl :wait-for-transform
-            (send scene :name) "base_footprint" (ros::time 0) 1.0)
+      (send tfl :wait-for-transform (send scene :name) "base_footprint" tm 1.0)
       (setq pose (send tfl :lookup-transform
-                       (send scene :name) "base_footprint" (ros::time 0)))))
+                       (send scene :name) "base_footprint" tm))))
   (send scene :current-floor pose))
 
 (defun tolerance-loose (&rest args)
