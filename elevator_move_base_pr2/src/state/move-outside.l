@@ -8,17 +8,19 @@
 
 
 (defun move-outside (userdata)
-  (unix:sleep 4)  ;; Wait for door opening
+  (unix:sleep 3)  ;; Wait for door opening
   (speak-jp "エレベータから降ります。")
   (clear-costmap)
-  (unless (send *ri* :move-to (cdr (assoc 'outside-coords userdata)) :retry 2)
-    (speak-jp "エレベータから降りられませんでした。")
-    ;; Return to elevator_inside_panel-front
-    (setq panel-front-coords
-          (send *scene* :transformation
-                (car (send *scene* :find-object
-                           (format nil "~A/elevator_inside_panel-front"
-                                   (check-current-floor *scene* *tfl*))))))
-    (send panel-front-coords :name (send *scene* :name))
-    (send *ri* :move-to panel-front-coords :retry 2)
-    nil))
+  (if (send *ri* :move-to (cdr (assoc 'outside-coords userdata)) :retry 2)
+      t
+    (progn
+      (speak-jp "エレベータから降りられませんでした。")
+      ;; Return to elevator_inside_panel-front
+      (setq panel-front-coords
+            (send *scene* :transformation
+                  (car (send *scene* :find-object
+                             (format nil "~A/elevator_inside_panel-front"
+                                     (check-current-floor *scene* *tfl*))))))
+      (send panel-front-coords :name (send *scene* :name))
+      (send *ri* :move-to panel-front-coords :retry 2)
+      nil)))
