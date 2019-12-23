@@ -45,7 +45,7 @@
                      move_base_msgs::MoveBaseAction
                      (elevator-move-base-state-machine)
                      '((push-arm . :larm))))
-(send *sm* :success-state '(:success)) ;; name of success state
+(send *sm* :success-state '(:succeed)) ;; name of success state
 (ros::ros-info "initialized elevator-move-base.l")
 
 (ros::rate 10)
