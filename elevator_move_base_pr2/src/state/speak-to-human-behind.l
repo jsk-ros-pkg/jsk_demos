@@ -7,7 +7,7 @@
 
 
 (defun speak-to-human-behind (userdata)
-  (let (start-tm (timeout (ros::time 4.5))
+  (let (start-tm (timeout (ros::time 3.5))
         (sub-inside-num 0) (sub-outside-num 0) (sub-req 3)
         (inside-p nil) (outside-p nil))
     (ros::subscribe
