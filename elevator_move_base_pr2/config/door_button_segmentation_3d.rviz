@@ -633,7 +633,7 @@ Visualization Manager:
       Name: Map&Spot
     - Class: rviz/Group
       Displays:
-        - Alpha: 0.4
+        - Alpha: 0.3
           Class: rviz/Map
           Color Scheme: costmap
           Draw Behind: false
@@ -642,7 +642,7 @@ Visualization Manager:
           Topic: /move_base_node/global_costmap/costmap
           Unreliable: false
           Value: true
-        - Alpha: 0.7
+        - Alpha: 0.5
           Class: rviz/Map
           Color Scheme: costmap
           Draw Behind: false
