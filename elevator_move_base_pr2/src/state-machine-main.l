@@ -12,6 +12,7 @@
 ;; (load "package://elevator_move_base_pr2/src/database-interface.l")
 (load "package://elevator_move_base_pr2/src/state/check-elevator-needed.l")
 (load "package://elevator_move_base_pr2/src/state/check-elevator-open.l")
+(load "package://elevator_move_base_pr2/src/state/move-outside.l")
 (load "package://elevator_move_base_pr2/src/state/push-elevator-button.l")
 (load "package://elevator_move_base_pr2/src/state/ready-to-outside.l")
 (load "package://elevator_move_base_pr2/src/state/sanity-check.l")
@@ -121,14 +122,7 @@
                                                (button . target-floor))))
     (send sm :add-node
           (instance state :init :ready-to-outside 'ready-to-outside))
-    (send sm :add-node
-          (instance state :init :move-outside
-                    '(lambda (userdata)
-                       (unix:sleep 4)  ;; Wait for door opening
-                       (clear-costmap)
-                       (send *ri* :move-to
-                             (cdr (assoc 'outside-coords userdata))
-                             :retry 10))))
+    (send sm :add-node (instance state :init :move-outside 'move-outside))
     (send sm :add-node
           (instance state :init :prepare-normal-movement
                     '(lambda (userdata)
@@ -144,7 +138,7 @@
     (send sm :arg-keys 'elevator-front-coords 'front-coords 'outside-panel-name
                        'outside-button 'inside-coords 'inside-panel-name
                        'target-floor 'outside-coords 'push-arm)
-    (send sm :goal-state (list :succeed :fail-outside :fail-inside))
+    (send sm :goal-state (list :succeed :fail-outside))
     (send sm :start-state :move-front)
     (send sm :add-transition :move-front :push-outside t)
     (send sm :add-transition :move-front :fail-outside nil)
@@ -156,7 +150,7 @@
     (send sm :add-transition :ready-to-outside :move-outside :succeed)
     (send sm :add-transition :ready-to-outside :push-inside :fail)
     (send sm :add-transition :move-outside :prepare-normal-movement t)
-    (send sm :add-transition :move-outside :fail-inside nil)
+    (send sm :add-transition :move-outside :push-inside nil)
     (send sm :add-transition :prepare-normal-movement :succeed t)
     sm))
 
@@ -201,7 +195,6 @@
     (send sm :add-transition :sanity-check :fail nil)
     (send sm :add-transition :speak-elevator :take-elevator t)
     (send sm :add-transition :take-elevator :go-to :succeed)
-    (send sm :add-transition :take-elevator :fail :fail-inside)
     (send sm :add-transition :take-elevator :fail :fail-outside)
     (send sm :add-transition :go-to :succeed t)
     (send sm :add-transition :go-to :fail nil)
