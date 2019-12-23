@@ -183,11 +183,12 @@
                        t)))
     (send sm :add-node
           (instance state :init :take-elevator (take-elevator-state-machine)))
-    (send sm :add-node (actionlib-client-state
-                        :go-to (pr2-interface-move-base-action *ri*)
-                        :timeout 300 :retry t
-                        :key 'coords->movebaseactiongoal))
-    (send (send sm :node :go-to) :remap-list '((:goal . target-coords)))
+    (send sm :add-node
+          (instance state :init :go-to
+                    '(lambda (userdata)
+                       (send *ri* :move-to
+                             (cdr (assoc 'target-coords userdata))
+                             :retry 10))))
     (send sm :arg-keys 'elevator-front-coords 'front-coords 'outside-panel-name
                        'outside-button 'inside-coords 'inside-panel-name
                        'target-floor 'outside-coords 'target-coords
@@ -202,6 +203,6 @@
     (send sm :add-transition :take-elevator :go-to :succeed)
     (send sm :add-transition :take-elevator :fail :fail-inside)
     (send sm :add-transition :take-elevator :fail :fail-outside)
-    (send sm :add-transition :go-to :succeed :succeeded)
-    (send sm :add-transition :go-to :fail :failed)
+    (send sm :add-transition :go-to :succeed t)
+    (send sm :add-transition :go-to :fail nil)
     sm))
