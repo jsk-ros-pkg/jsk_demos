@@ -9,7 +9,7 @@
 
 (defun move-outside (userdata)
   (unix:sleep 3)  ;; Wait for door opening
-  (speak-jp "エレベータから降ります。")
+  (speak-jp "エレベータからおります。")
   (clear-costmap)
   (if (send *ri* :move-to (cdr (assoc 'outside-coords userdata)) :retry 2)
       t
