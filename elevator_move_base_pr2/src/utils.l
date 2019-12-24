@@ -94,7 +94,6 @@
    "/move_base_node/global_costmap" "footprint_padding" :double 0.05)
   (ros::set-dynamic-reconfigure-param
    "/move_base_node/local_costmap" "footprint_padding" :double 0.05)
-  (use-tilt-laser-obstacle-cloud t)
   t)
 
 (defun tolerance-strict (&rest args)
@@ -106,7 +105,6 @@
    "/move_base_node/global_costmap" "footprint_padding" :double 0.03)
   (ros::set-dynamic-reconfigure-param
    "/move_base_node/local_costmap" "footprint_padding" :double 0.03)
-  (use-tilt-laser-obstacle-cloud nil)
   t)
 
 (defun store-params (&rest args)
