@@ -64,9 +64,12 @@
                     '(lambda (userdata)
                        (send *ri* :move-to
                              (cdr (assoc 'elevator-front-coords userdata))
-                             :retry 2))))
+                             :retry 2 :correction nil))))
     (send sm :add-node (instance state :init :set-param-for-elevator-inside
-                                 'tolerance-strict))
+                                 '(lambda (x)
+                                    (tolerance-strict)
+                                    (use-tilt-laser-obstacle-cloud nil)
+                                    t)))
     (send sm :add-node
           (instance state :init :check-elevator-open
                     '(lambda (x) (check-elevator-open :timeout 300))))
@@ -77,7 +80,7 @@
                     '(lambda (userdata)
                        (send *ri* :move-to
                              (cdr (assoc 'inside-coords userdata))
-                             :retry 2))))
+                             :retry 2 :correction nil))))
     (send sm :arg-keys 'elevator-front-coords 'inside-coords)
     (send sm :goal-state (list :succeed :fail))
     (send sm :start-state :set-param-for-elevator-outside)
@@ -172,6 +175,7 @@
                        (call-service "look_forward_in_navigation/stop"
                                      (instance std_srvs::EmptyRequest :init))
                        (tolerance-medium)
+                       (use-tilt-laser-obstacle-cloud t)
                        (ros::ros-info "Go to elevator.")
                        (speak-jp "エレベータに向かいます。" :wait t)
                        t)))
@@ -180,6 +184,7 @@
     (send sm :add-node
           (instance state :init :go-to
                     '(lambda (userdata)
+                       (use-tilt-laser-obstacle-cloud t)
                        (send *ri* :move-to
                              (cdr (assoc 'target-coords userdata))
                              :retry 10))))
