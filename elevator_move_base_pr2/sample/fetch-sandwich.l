@@ -210,9 +210,10 @@
         :retry 100))
 
 
-(defun order-sandwich (name
-                       &key (bread "オススメ") (topping "オススメ")
-                            (vegetable "オススメ") (dressing "オススメ"))
+(defun order-sandwich
+    (name
+     &key (bread "オススメ") (topping "オススメ")
+          (vegetable "オススメ") (dressing "オススメ"))
   (ros::ros-info "Looking for clerk...")
   (send *pr2* :head :angle-vector #f(-25 0))
   (send *ri* :angle-vector (send *pr2* :angle-vector) 500 :head-controller)
@@ -220,13 +221,21 @@
   (unix:sleep 5)
   (call-service "look_at_human/stop" (instance std_srvs::EmptyRequest :init))
   (ros::ros-info "Ordering sandwich...")
+  (ros::ros-info (format nil "Sandwich: ~A" name))
+  (ros::ros-info (format nil "Bread: ~A" bread))
+  (ros::ros-info (format nil "Topping: ~A" topping))
+  (ros::ros-info (format nil "Vegetable: ~A" vegetable))
+  (ros::ros-info (format nil "Dressing: ~A" dressing))
+  (ros::ros-info "Side Menu: nil")
+  (ros::ros-info "Others: leave it to the clerk")
   (speak-jp "こんにちは。おつかいに来ました。" :wait t)
   (speak-jp (format nil "~Aをください。" name) :wait t)
   (speak-jp (format nil "パンの種類は、~Aでお願いします。" bread) :wait t)
   (speak-jp (format nil "トッピングは、~Aでお願いします。" topping) :wait t)
   (speak-jp (format nil "野菜は、~Aでお願いします。" vegetable) :wait t)
   (speak-jp (format nil "ドレッシングは、~Aでお願いします。" dressing) :wait t)
-  (speak-jp "サイドメニューは、要りません。" :wait t))
+  (speak-jp "サイドメニューは、要りません。" :wait t)
+  (speak-jp "あとは、おまかせでお願いします。" :wait t))
 
 
 (defun receive-sandwich ()
