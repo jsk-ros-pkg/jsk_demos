@@ -6,6 +6,7 @@ Panels:
       Expanded:
         - /Global Options1
         - /Status1
+        - /ElevatorInfo1
       Splitter Ratio: 0.633333
     Tree Height: 856
   - Class: rviz/Selection
@@ -522,7 +523,7 @@ Visualization Manager:
           auto color change: false
           background color: 0; 0; 0
           backround alpha: 0
-          foreground alpha: 0.7
+          foreground alpha: 0.9
           foreground alpha 2: 0.4
           foreground color: 25; 255; 240
           left: 0
@@ -530,7 +531,7 @@ Visualization Manager:
           max value: 100
           min value: 0
           show caption: true
-          size: 128
+          size: 100
           text size: 14
           top: 0
         - Class: jsk_rviz_plugin/PieChart
@@ -541,15 +542,15 @@ Visualization Manager:
           auto color change: false
           background color: 0; 0; 0
           backround alpha: 0
-          foreground alpha: 0.7
+          foreground alpha: 0.9
           foreground alpha 2: 0.4
           foreground color: 25; 255; 240
-          left: 128
+          left: 100
           max color: 255; 0; 0
           max value: 100
           min value: 0
           show caption: true
-          size: 128
+          size: 100
           text size: 14
           top: 0
         - Class: jsk_rviz_plugin/PieChart
@@ -560,15 +561,15 @@ Visualization Manager:
           auto color change: false
           background color: 0; 0; 0
           backround alpha: 0
-          foreground alpha: 0.7
+          foreground alpha: 0.9
           foreground alpha 2: 0.4
           foreground color: 25; 255; 240
-          left: 256
+          left: 200
           max color: 255; 0; 0
           max value: 100
           min value: 0
           show caption: true
-          size: 128
+          size: 100
           text size: 14
           top: 0
         - Class: jsk_rviz_plugin/PieChart
@@ -579,15 +580,15 @@ Visualization Manager:
           auto color change: false
           background color: 0; 0; 0
           backround alpha: 0
-          foreground alpha: 0.7
+          foreground alpha: 0.9
           foreground alpha 2: 0.4
           foreground color: 25; 255; 240
-          left: 384
+          left: 300
           max color: 255; 0; 0
           max value: 100
           min value: 0
           show caption: true
-          size: 128
+          size: 100
           text size: 14
           top: 0
       Enabled: true
@@ -790,84 +791,84 @@ Visualization Manager:
           Topic: /narrow_stereo/left/image_rect_color
           Value: true
           alpha: 0.8
-          height: 150
+          height: 120
           keep aspect ratio: false
-          left: 20
-          top: 500
+          left: 10
+          top: 260
           transport hint: raw
-          width: 200
+          width: 160
         - Class: jsk_rviz_plugin/OverlayImage
           Enabled: true
           Name: ElevatorPanel
           Topic: /narrow_stereo/left/point_pose_extractor_elevator_panels/debug_image
           Value: true
           alpha: 0.8
-          height: 320
+          height: 250
           keep aspect ratio: false
-          left: 20
-          top: 160
+          left: 180
+          top: 130
           transport hint: raw
-          width: 200
+          width: 160
         - Class: jsk_rviz_plugin/OverlayImage
           Enabled: true
           Name: DetectedDoorButton
           Topic: /door_button/label_image_decomposer/output/label_viz
           Value: true
           alpha: 0.8
-          height: 150
+          height: 120
           keep aspect ratio: false
-          left: 240
-          top: 160
+          left: 10
+          top: 390
           transport hint: raw
-          width: 200
+          width: 160
         - Class: jsk_rviz_plugin/OverlayImage
           Enabled: true
           Name: DetectedCurrentFloor
           Topic: /elevator_number/debug_image
           Value: true
           alpha: 0.8
-          height: 150
+          height: 120
           keep aspect ratio: false
-          left: 240
-          top: 330
+          left: 180
+          top: 390
           transport hint: raw
-          width: 200
+          width: 160
         - Class: jsk_rviz_plugin/OverlayImage
           Enabled: true
           Name: DetectedLightButton
           Topic: /light_detector/debug_image
           Value: true
           alpha: 0.8
-          height: 150
+          height: 120
           keep aspect ratio: false
-          left: 240
-          top: 500
+          left: 180
+          top: 520
           transport hint: raw
-          width: 200
+          width: 160
         - Class: jsk_rviz_plugin/OverlayImage
           Enabled: true
           Name: DetectedMirror
           Topic: /human_in_mirror/label_image_decomposer/output/label_viz
           Value: true
           alpha: 0.8
-          height: 150
+          height: 120
           keep aspect ratio: false
-          left: 460
-          top: 160
+          left: 10
+          top: 520
           transport hint: raw
-          width: 200
+          width: 160
         - Class: jsk_rviz_plugin/OverlayImage
           Enabled: true
           Name: DetectedHuman
           Topic: /edgetpu_human_pose_estimator/output/image_throttle
           Value: true
           alpha: 0.8
-          height: 150
+          height: 120
           keep aspect ratio: false
-          left: 460
-          top: 330
+          left: 10
+          top: 130
           transport hint: raw
-          width: 200
+          width: 160
         - Class: rviz/TF
           Enabled: true
           Frame Timeout: 5
@@ -895,6 +896,10 @@ Visualization Manager:
               Value: false
             double_stereo_link:
               Value: false
+            elevator_call_panel:
+              Value: true
+            elevator_inside_panel:
+              Value: true
             eng2:
               Value: false
             eng2/1f:
@@ -1075,6 +1080,8 @@ Visualization Manager:
               Value: false
             torso_lift_motor_screw_link:
               Value: false
+            virtual_camera_frame:
+              Value: true
             wide_stereo_l_stereo_camera_frame:
               Value: false
             wide_stereo_l_stereo_camera_optical_frame:
@@ -1249,6 +1256,11 @@ Visualization Manager:
                               {}
                           torso_lift_motor_screw_link:
                             {}
+                        elevator_call_panel:
+                          {}
+                        elevator_inside_panel:
+                          virtual_camera_frame:
+                            {}
                 eng2/8f:
                   {}
           Update Interval: 0
@@ -1279,7 +1291,7 @@ Visualization Manager:
           Value: true
           font: DejaVu Sans Mono
           height: 200
-          left: 20
+          left: 10
           line width: 2
           text size: 7
           top: 650
@@ -1310,19 +1322,19 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/Orbit
-      Distance: 4.1236
+      Distance: 6.48856
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.06
         Stereo Focal Distance: 1
         Swap Stereo Eyes: false
         Value: false
       Focal Point:
-        X: 1.02692
-        Y: 0.59745
-        Z: 0.974181
+        X: 1.5095
+        Y: 0.408418
+        Z: 1.16486
       Name: Current View
       Near Clip Distance: 0.01
-      Pitch: 0.609797
+      Pitch: 0.614797
       Target Frame: <Fixed Frame>
       Value: Orbit (rviz)
       Yaw: 2.76534
