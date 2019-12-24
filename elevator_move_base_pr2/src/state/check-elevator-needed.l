@@ -43,6 +43,7 @@
                                             cur-floor))))))
        (send coords :name (send *scene* :name))
        (send coords :rotate pi :z)
+       (send coords :translate #f(0 -200 0) :world)
        coords)
      userdata)
     (set-alist
