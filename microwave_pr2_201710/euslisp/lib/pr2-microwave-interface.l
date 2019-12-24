@@ -78,14 +78,14 @@
            (setq microwave-rpy (send *microwave* :rpy-angle))
 
            (send *microwave* :move-to (make-coords :pos microwave-pos :rpy (car microwave-rpy)) :world)
-           (send *microwave* :translate (float-vector -185 450 -270))  ;; x奥行き y横 z高さ  TODO paratun
+           (send *microwave* :translate (float-vector -185 450 -240))  ;; x奥行き y横 z高さ  TODO paratun
            )
          (progn
            (while (null recog-flag)
              (send *microwave* :move-to (send *ri* :state :worldcoords) :world)
              (send *pr2* :move-to (send *ri* :state :worldcoords) :world)
 
-             (send *pr2* :head :neck-p :joint-angle 18)
+             (send *pr2* :head :neck-p :joint-angle 28)
              (send *ri* :angle-vector (send *pr2* :angle-vector))
              (send *ri* :wait-interpolation)
 
@@ -121,16 +121,17 @@
 
                  (format t "go-pos x:~a y:~a theta:~a~%"
                          go-pos-x go-pos-y go-pos-theta)
-                 (if (and (< (abs go-pos-x) 0.05) (< (abs go-pos-y) 0.05) (< (abs go-pos-theta) 0.8))
+                 ;;(if (and (< (abs go-pos-x) 0.05) (< (abs go-pos-y) 0.05) (< (abs go-pos-theta) 0.8))
+                 (if (and (< (abs go-pos-x) 0.05) (< (abs go-pos-y) 0.05) (< (abs go-pos-theta) 1.2))
                      (setq recog-flag t)
-                     (when (y-or-n-p "send to real robot?")
-                       (send *ri* :go-pos-unsafe go-pos-x go-pos-y go-pos-theta)
-                       )
+                     ;;(when (y-or-n-p "send to real robot?")
+                     (send *ri* :go-pos-unsafe go-pos-x go-pos-y go-pos-theta)
+                     ;;)
                      )
                  )
                )
              )
-           (if use-ri (send *ri* :go-pos-unsafe 0.15 0 0))
+           (if use-ri (send *ri* :go-pos-unsafe -0.15 0 0))
            )
          )
      )
@@ -143,7 +144,7 @@
      (send *ri* :wait-interpolation))
 
    (send *microwave* :move-to (make-coords :pos microwave-pos :rpy (car microwave-rpy)) :world)
-   (send *microwave* :translate (float-vector -185 450 -270))  ;; x奥行き y横 z高さ  TODO paratun
+   (send *microwave* :translate (float-vector (+ -185 300) 450 -240))  ;; x奥行き y横 z高さ  TODO paratun
    (send *microwave* :angle-vector (float-vector 180))
 
    (let* ((handle-coords))
@@ -157,7 +158,7 @@
        (send *ri* :wait-interpolation))
 
      (let ((i 180))
-       (while (> i 99)
+       (while (> i 119)
 
          (send *microwave* :angle-vector (float-vector i))
          (setq handle-coords (make-coords :pos (send m-handle :worldpos) :rpy (float-vector (car (car (rpy-angle (send m-handle :worldrot)))) 0 0)))
@@ -167,7 +168,7 @@
 
          (if wait? (wait-enter))
          (when use-ri
-           (send *ri* :angle-vector (send *pr2* :angle-vector) 3000)
+           (send *ri* :angle-vector (send *pr2* :angle-vector) 1000)
            (send *ri* :wait-interpolation))
          (setq i (- i 10))
          )
@@ -178,7 +179,7 @@
              :rotation-axis t)
        (if wait? (wait-enter))
        (when use-ri
-         (send *ri* :angle-vector (send *pr2* :angle-vector) 3000)
+         (send *ri* :angle-vector (send *pr2* :angle-vector) 1000)
          (send *ri* :wait-interpolation))
 
        ;;(send *pr2* :larm :inverse-kinematics (send (send handle-coords :copy-worldcoords) :translate #f(-10 0 60))
@@ -186,21 +187,21 @@
              :rotation-axis t)
        (if wait? (wait-enter))
        (when use-ri
-         (send *ri* :angle-vector (send *pr2* :angle-vector) 3000)
+         (send *ri* :angle-vector (send *pr2* :angle-vector) 1000)
          (send *ri* :wait-interpolation))
 
        (send *pr2* :larm :inverse-kinematics (send (send (send handle-coords :copy-worldcoords) :rotate (/ pi -2) :y) :translate #f(-50 -10 60))
              :rotation-axis t)
        (if wait? (wait-enter))
        (when use-ri
-         (send *ri* :angle-vector (send *pr2* :angle-vector) 3000)
+         (send *ri* :angle-vector (send *pr2* :angle-vector) 1000)
          (send *ri* :wait-interpolation))
 
        (send *pr2* :larm :inverse-kinematics (send (send (send handle-coords :copy-worldcoords) :rotate (/ pi -2) :y) :translate #f(-200 0 10))
              :rotation-axis t)
        (if wait? (wait-enter))
        (when use-ri
-         (send *ri* :angle-vector (send *pr2* :angle-vector) 3000)
+         (send *ri* :angle-vector (send *pr2* :angle-vector) 1000)
          (send *ri* :wait-interpolation))
        )
      )
@@ -215,7 +216,7 @@
          (setq ri-coords (send (send *pr2* :worldcoords) :copy-worldcoords)))
 
      (send *microwave* :move-to (make-coords :pos microwave-pos :rpy (car microwave-rpy)) :world)
-     (send *microwave* :translate (float-vector -185 450 -270))  ;; x奥行き y横 z高さ  TODO paratun
+     (send *microwave* :translate (float-vector (+ -185 300) 450 -240))  ;; x奥行き y横 z高さ  TODO paratun
      ;; (send *microwave* :translate (float-vector 0 600 -120))
      (send *microwave* :angle-vector (float-vector 100))
 
@@ -223,19 +224,19 @@
      (send *pr2* :larm :inverse-kinematics (send (send ri-coords :copy-worldcoords) :move-to (make-coords :pos #f(100 500 700)))
            :rotation-axis nil)
      (if wait? (wait-enter))
-     (when use-ri (send *ri* :angle-vector (send *pr2* :angle-vector) 3000)
+     (when use-ri (send *ri* :angle-vector (send *pr2* :angle-vector) 1000)
            (send *ri* :wait-interpolation))
 
      (send *pr2* :larm :inverse-kinematics (send (send ri-coords :copy-worldcoords) :move-to (make-coords :pos #f(200 600 1000)))
            :rotation-axis nil)
      (if wait? (wait-enter))
-     (when use-ri (send *ri* :angle-vector (send *pr2* :angle-vector) 3000)
+     (when use-ri (send *ri* :angle-vector (send *pr2* :angle-vector) 1000)
            (send *ri* :wait-interpolation))
 
      (let ((i 110))
-       (while (< i 161)
+       (while (< i 201)
          (send *microwave* :move-to (make-coords :pos microwave-pos :rpy (car microwave-rpy)) :world)
-         (send *microwave* :translate (float-vector -185 450 -270))  ;; x奥行き y横 z高さ  TODO paratun
+         (send *microwave* :translate (float-vector (+ -185 300) 450 -240))  ;; x奥行き y横 z高さ  TODO paratun
          ;;(send *microwave* :translate (float-vector 0 600 -120))
 
          (send *microwave* :angle-vector (float-vector i))
@@ -247,7 +248,7 @@
 
          (if wait? (wait-enter))
          (when use-ri
-           (send *ri* :angle-vector (send *pr2* :angle-vector) 3000)
+           (send *ri* :angle-vector (send *pr2* :angle-vector) 1000)
            (send *ri* :wait-interpolation))
          (setq i (+ i 10))
          )
@@ -258,7 +259,7 @@
   (:put-object
    (&optional (wait? nil))
    (send *microwave* :move-to (make-coords :pos microwave-pos :rpy (car microwave-rpy)) :world)
-   (send *microwave* :translate (float-vector -185 450 -270))  ;; x奥行き y横 z高さ  TODO paratun
+   (send *microwave* :translate (float-vector (+ -185 300) 450 -240))  ;; x奥行き y横 z高さ  TODO paratun
    (send *microwave* :angle-vector (float-vector 100))
 
    ;; pre-put
@@ -286,8 +287,55 @@
          (send *ri* :wait-interpolation))
    )
 
-  (:push-button
+  (:push-start-button
    (&optional (wait? nil))
+   (send *pr2* :reset-pose)
+   (send *pr2* :start-grasp :rarm)
+   (send *ri* :start-grasp :rarm)
+
+   (send *microwave* :move-to (make-coords :pos microwave-pos :rpy (car microwave-rpy)) :world)
+   (send *microwave* :translate (float-vector (+ -185 300) 450 -240))  ;; x奥行き y横 z高さ  TODO paratun
+   (send *microwave* :angle-vector (float-vector 180))
+
+   (let ((start-button-front (send (send *microwave* :copy-worldcoords) :transform (make-coords :pos (float-vector -100 -480 160))))
+         (start-button (send (send *microwave* :copy-worldcoords) :transform (make-coords :pos (float-vector 0 -480 160)))))
+
+     (send *pr2* :rarm :inverse-kinematics start-button-front
+           :rotation-axis t)
+     (if wait? (wait-enter))
+     (when use-ri (send *ri* :angle-vector (send *pr2* :angle-vector) 3000)
+           (send *ri* :wait-interpolation))
+
+
+     (send *pr2* :rarm :inverse-kinematics start-button
+           :rotation-axis t)
+     (if wait? (wait-enter))
+     (when use-ri (send *ri* :angle-vector (send *pr2* :angle-vector) 3000)
+           (send *ri* :wait-interpolation))
+
+     (send *pr2* :rarm :inverse-kinematics start-button-front
+           :rotation-axis t)
+     (if wait? (wait-enter))
+     (when use-ri (send *ri* :angle-vector (send *pr2* :angle-vector) 3000)
+           (send *ri* :wait-interpolation))
+     )
+   )
+
+  (:test
+   (&optional (wait? nil))
+   (send *microwave* :move-to (make-coords :pos microwave-pos :rpy (car microwave-rpy)) :world)
+   (send *microwave* :translate (float-vector (+ -185 300) 450 -240))  ;; x奥行き y横 z高さ  TODO paratun
+   (send *microwave* :angle-vector (float-vector 180))
+
+   ;; (let* ((handle-coords))
+   ;;   (setq handle-coords (make-coords :pos (send m-handle :worldpos) :rpy (float-vector (car (car (rpy-angle (send m-handle :worldrot)))) 0 0)))
+   ;;   (send *pr2* :larm :inverse-kinematics (send (send handle-coords :copy-worldcoords) :rotate (/ pi -2) :y)
+   ;;         :rotation-axis t)
+
+   ;;   (when use-ri
+   ;;     (send *ri* :angle-vector (send *pr2* :angle-vector) 3000)
+   ;;     (send *ri* :wait-interpolation))
+   ;;   )
    )
 
   #|

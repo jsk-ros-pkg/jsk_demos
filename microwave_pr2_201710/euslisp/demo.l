@@ -2,6 +2,11 @@
 
 (defun demo
     ()
-  (setq *pmi* (instance pr2-microwave-interface :init))
-  (send *pmi* :execute)
+  (setq *pmi* (instance pr2-microwave-interface :init t))
+
+  (send *pmi* :go-to-microwave-roughly)
+  (send *pmi* :go-to-microwave-accurately)
+  (send *pmi* :open-microwave t)
+  (send *pmi* :put-object t)
+  (send *pmi* :close-microwave t)
   )
