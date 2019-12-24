@@ -204,11 +204,15 @@
 
 (defun go-to-subway-front ()
   (clear-costmap)
+  ;; TODO(Unknown): Wait in line.
   (send *ri* :move-to
-        (send *scene* :spot "/eng2/2f/subway-front")))
+        (send *scene* :spot "/eng2/2f/subway-front")
+        :retry 100))
 
 
-(defun order-sandwich (name)
+(defun order-sandwich (name
+                       &key (bread "オススメ") (topping "オススメ")
+                            (vegetable "オススメ") (dressing "オススメ"))
   (ros::ros-info "Looking for clerk...")
   (send *pr2* :head :angle-vector #f(-25 0))
   (send *ri* :angle-vector (send *pr2* :angle-vector) 500 :head-controller)
@@ -217,7 +221,12 @@
   (call-service "look_at_human/stop" (instance std_srvs::EmptyRequest :init))
   (ros::ros-info "Ordering sandwich...")
   (speak-jp "こんにちは。おつかいに来ました。" :wait t)
-  (speak-jp (format nil "~Aをください。" name) :wait t))
+  (speak-jp (format nil "~Aをください。" name) :wait t)
+  (speak-jp (format nil "パンの種類は、~Aでお願いします。" bread) :wait t)
+  (speak-jp (format nil "トッピングは、~Aでお願いします。" topping) :wait t)
+  (speak-jp (format nil "野菜は、~Aでお願いします。" vegetable) :wait t)
+  (speak-jp (format nil "ドレッシングは、~Aでお願いします。" dressing) :wait t)
+  (speak-jp "サイドメニューは、要りません。" :wait t))
 
 
 (defun receive-sandwich ()
@@ -225,7 +234,8 @@
   (clear-costmap)
   (send *ri* :move-to
         (send (send (send *scene* :spot "/eng2/2f/subway-register")
-                    :copy-worldcoords) :translate #f(0 -200 0) :world))
+                    :copy-worldcoords) :translate #f(0 -200 0) :world)
+        :retry 100)
 
   ;; TODO(Unknown): Pay money here.
   ;;                Consider registering SUBWAY club and getting pre-paid card.
@@ -243,7 +253,7 @@
   (ros::ros-info "Waiting for receiving sandwich.")
   (speak-jp "商品をください。" :wait t)
 
-  (wait-for-hand-over :rarm 60 5)  ;; wait at most (5 + 1) min
+  (wait-for-hand-over :rarm 60 9)  ;; wait at most (9 + 1) min
 
   (send *ri* :start-grasp :rarm)
 
@@ -255,9 +265,8 @@
   (send *ri* :angle-vector (send *pr2* :angle-vector) 5000)
   (send *ri* :wait-interpolation)
 
-  ;; XXX: Prevent sandwich from covering /base_scan region.
-  (pr2-tuckarm-pose :rarm :outside)
-  (pr2-tuckarm-pose)
+  ;; Prevent sandwich from covering /base_scan region.
+  (pr2-tuckarm-pose :rarm)
   (look-front)
 
   (send *ri* :go-pos-unsafe 0 0 180)
@@ -274,6 +283,7 @@
   (send *ri* :move-to (send *scene* :spot "/eng2/2f/forum-door-outside"))
   (ros::ros-info (format nil "Move to initial pose: ~A." *initial-pose*))
   (call-service "look_at_human/start" (instance std_srvs::EmptyRequest :init))
+  ;; NOTE: Robot does not have student ID card, so please open door when needed.
   (send *ri* :move-to *initial-pose*))
 
 
