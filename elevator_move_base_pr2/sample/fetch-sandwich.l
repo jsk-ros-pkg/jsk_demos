@@ -45,8 +45,8 @@
                 -82.6112 -83.1698 -162.008 -72.0918 170.603 0.0 40.2852))
 
 
-(defun wait-for-hand-over (arm &optional (timeout 10) (retry 2))
-  (dotimes (i (+ retry 1))
+(defun wait-for-hand-over (arm &optional (timeout 10) (n-trial 3))
+  (dotimes (i n-trial)
     (when (wait-for-hand-impact arm :timeout timeout)
       (ros::ros-info "Received sandwich.")
       (speak-jp "ありがとうございます。" :wait t)
@@ -262,7 +262,7 @@
   (ros::ros-info "Waiting for receiving sandwich.")
   (speak-jp "商品をください。" :wait t)
 
-  (wait-for-hand-over :rarm 60 9)  ;; wait at most (9 + 1) min
+  (wait-for-hand-over :rarm 60 10)  ;; wait at most 10 min
 
   (send *ri* :start-grasp :rarm)
 
