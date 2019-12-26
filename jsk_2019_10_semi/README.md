@@ -1,6 +1,7 @@
 # jsk_2019_10_semi
 
-![IMG_20191218_190345](https://user-images.githubusercontent.com/20625381/71227573-069cfa80-2323-11ea-80ed-9c45d78a45ef.jpg)
+<img src="https://user-images.githubusercontent.com/20625381/71227573-069cfa80-2323-11ea-80ed-9c45d78a45ef.jpg" width="500" > | <img src="https://user-images.githubusercontent.com/493276/71458697-537f4600-27e7-11ea-92eb-3ba5250be79a.png" width="500" >
+:--------------------------------------:|:--------------------------------------:
 
 ## ロボットモデルの作り方
 
@@ -375,3 +376,9 @@ h_max=20, h_min=-20, s_max=255, s_min=80, i_max=255, i_min=50 くらいがちょ
 ```bash
 rostopic param
 ```
+
+### Published Video
+
+[![](http://img.youtube.com/vi/vQC4fwqVen4/0.jpg)](http://www.youtube.com/watch?v=vQC4fwqVen4 "")
+
+
