@@ -33,7 +33,7 @@ partition MiyabiTane {
 
 partition mqcmd196 {
 
-  :please add;
+  :棚の前まで移動する;
 
 }
 
@@ -41,21 +41,21 @@ partition mqcmd196 {
 
  if (プレゼントはお菓子？) then (yes)
 
-  :please add;
+  :赤の箱を取る;
 
 
  elseif (プレゼントはGPU？) then (yes)
 
-  :please add;
+  :青の箱を取る;
 
 
  elseif (プレゼントはぬいぐるみ？) then (yes)
 
-  :please add;
+  :緑の箱を取る;
 
 
  else (no wish)
-  :please add;
+  :赤の箱を取る;
 
  endif
 }
