@@ -1277,7 +1277,7 @@ Visualization Manager:
           line width: 0.005
           only edge: false
           show coords: false
-        - Align Bottom: true
+        - Align Bottom: false
           Background Alpha: 0.8
           Background Color: 0; 0; 0
           Class: jsk_rviz_plugin/OverlayText
@@ -1293,7 +1293,7 @@ Visualization Manager:
           height: 200
           left: 10
           line width: 2
-          text size: 7
+          text size: 8
           top: 650
           width: 800
       Enabled: true
