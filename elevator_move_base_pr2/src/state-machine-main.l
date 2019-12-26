@@ -187,7 +187,7 @@
                        (use-tilt-laser-obstacle-cloud t)
                        (send *ri* :move-to
                              (cdr (assoc 'target-coords userdata))
-                             :retry 10))))
+                             :retry 10 :correction nil))))
     (send sm :arg-keys 'elevator-front-coords 'front-coords 'outside-panel-name
                        'outside-button 'inside-coords 'inside-panel-name
                        'target-floor 'outside-coords 'target-coords
