@@ -1,4 +1,6 @@
 (ros::roseus-add-msgs "move_base_msgs")
+(ros::roseus-add-msgs "std_msgs")
+(ros::roseus-add-srvs "std_srvs")
 
 (require :eng2-scene "package://jsk_maps/src/eng2-scene.l")
 (require :eng8-scene "package://jsk_maps/src/eng8-scene.l")
@@ -116,6 +118,9 @@
     (ros::get-param "/move_base_node/global_costmap/footprint_padding"))
   (defparameter *local-footprint-padding*
     (ros::get-param "/move_base_node/local_costmap/footprint_padding"))
+  (defparameter *look-at-human-enabled*
+    (send (one-shot-subscribe "look_at_human/enabled" std_msgs::Bool) :data))
+  (call-service "look_at_human/stop" (instance std_srvs::EmptyRequest :init))
   t)
 
 (defun restore-params (&rest args)
@@ -135,4 +140,6 @@
     (ros::set-dynamic-reconfigure-param
      "/move_base_node/local_costmap" "footprint_padding"
      :double *local-footprint-padding*))
+  (when (and (boundp '*look-at-human-enabled*) *look-at-human-enabled*)
+    (call-service "look_at_human/start" (instance std_srvs::EmptyRequest :init)))
   t)
