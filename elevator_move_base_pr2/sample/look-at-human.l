@@ -6,6 +6,7 @@
 (require :pr2-interface "package://pr2eus/pr2-interface.l")
 
 
+(defvar *look-at-human-enabled* nil)
 ;; (defvar *pr2*)
 ;; (defvar *ri*)
 
@@ -56,12 +57,14 @@
     (send *ri* :angle-vector (send *pr2* :angle-vector) 700 :head-controller)))
 
 (defun start-look-at-human (req)
+  (setq *look-at-human-enabled* t)
   (ros::subscribe
    "~input/people_pose_array" jsk_recognition_msgs::PeoplePoseArray
    #'people-pose-array-cb)
   (instance std_srvs::EmptyResponse :init))
 
 (defun stop-look-at-human (req)
+  (setq *look-at-human-enabled* nil)
   (ros::unsubscribe "~input/people_pose_array")
   (instance std_srvs::EmptyResponse :init))
 
@@ -73,8 +76,12 @@
 
 (ros::advertise-service "~start" std_srvs::Empty #'start-look-at-human)
 (ros::advertise-service "~stop" std_srvs::Empty #'stop-look-at-human)
+(ros::advertise "~enabled" std_msgs::Bool 1)
+(unix:usleep (* 100 1000))
 
 (ros::rate 2)
 (while (ros::ok)
   (ros::spin-once)
+  (ros::publish "~enabled"
+                (instance std_msgs::Bool :init :data *look-at-human-enabled*))
   (ros::sleep))
