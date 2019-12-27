@@ -62,13 +62,13 @@
     (send sm :add-node
           (instance state :init :move-elevator-front
                     '(lambda (userdata)
+                       (use-tilt-laser-obstacle-cloud nil)
                        (send *ri* :move-to
                              (cdr (assoc 'elevator-front-coords userdata))
                              :retry 2 :correction nil))))
     (send sm :add-node (instance state :init :set-param-for-elevator-inside
                                  '(lambda (x)
                                     (tolerance-strict)
-                                    (use-tilt-laser-obstacle-cloud nil)
                                     t)))
     (send sm :add-node
           (instance state :init :check-elevator-open
