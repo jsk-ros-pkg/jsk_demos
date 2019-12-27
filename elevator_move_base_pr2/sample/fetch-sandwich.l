@@ -41,7 +41,7 @@
           :use-torso t
           :look-at-target t))
   |#
-  (float-vector 250.0 60.0 74.0 70.0 -120.0 20.0 -30.0 180.0 -13.5232 -15.8808
+  (float-vector 325.0 60.0 74.0 70.0 -120.0 20.0 -30.0 180.0 -13.5232 -15.8808
                 -82.6112 -83.1698 -162.008 -72.0918 170.603 0.0 40.2852))
 
 
@@ -53,7 +53,7 @@
       (return-from wait-for-hand-over t))
     (ros::ros-warn
      (format nil "Hand impact timed out (~A sec) without response" timeout))
-    (speak-jp "サンドイッチを手にかけてください。" :wait t))
+    (speak-jp "袋を私の手に掛けて、手を揺らしてください。" :wait t))
   ;; fail
   (speak-jp "あれ、サンドイッチ。。。" :wait t)
   (return-from wait-for-hand-over nil))
@@ -261,6 +261,7 @@
 
   (ros::ros-info "Waiting for receiving sandwich.")
   (speak-jp "商品をください。" :wait t)
+  (speak-jp "袋を私の手に掛けて、手を揺らしてください。" :wait t)
 
   (wait-for-hand-over :rarm 60 10)  ;; wait at most 10 min
 
