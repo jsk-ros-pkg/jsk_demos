@@ -32,14 +32,12 @@ class FindHumanInMirror(ConnectionBasedTransport):
                 self._people_pose_cb, queue_size=1)
             sub_label = rospy.Subscriber(
                 '~input/label', Image, self._label_cb, queue_size=1)
-            self.subs = [sub_people_pose, sub_label]
         else:
             sub_people_pose = message_filters.Subscriber(
                 '~input/people_pose_array', PeoplePoseArray, queue_size=1)
             sub_label = message_filters.Subscriber(
                 '~input/label', Image,
                 queue_size=1, buff_size=2**24)
-            self.subs = [sub_people_pose, sub_label]
             if self.approximate_sync:
                 queue_size = rospy.get_param('~queue_size', 10)
                 slop = rospy.get_param('~slop', 0.1)
@@ -49,6 +47,7 @@ class FindHumanInMirror(ConnectionBasedTransport):
                 sync = message_filters.TimeSynchronizer(
                     fs=self.subs, queue_size=queue_size)
             sync.registerCallback(self._sync_cb)
+        self.subs = [sub_people_pose, sub_label]
 
     def unsubscribe(self):
         for sub in self.subs:
@@ -62,7 +61,6 @@ class FindHumanInMirror(ConnectionBasedTransport):
             return self._cb(self.ppl_msg, lbl_msg)
 
     def _cb(self, ppl_msg, lbl_msg):
-        rospy.loginfo('Start callback...')
         inside_msg = BoolStamped(header=lbl_msg.header, data=False)
         outside_msg = BoolStamped(header=lbl_msg.header, data=False)
         if not ppl_msg.poses:
