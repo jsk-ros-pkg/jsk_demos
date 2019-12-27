@@ -219,7 +219,6 @@
   (send *ri* :angle-vector (send *pr2* :angle-vector) 500 :head-controller)
   (call-service "look_at_human/start" (instance std_srvs::EmptyRequest :init))
   (unix:sleep 5)
-  (call-service "look_at_human/stop" (instance std_srvs::EmptyRequest :init))
   (ros::ros-info "Ordering sandwich...")
   (ros::ros-info (format nil "Sandwich: ~A" name))
   (ros::ros-info (format nil "Bread: ~A" bread))
@@ -235,7 +234,8 @@
   (speak-jp (format nil "野菜は、~Aでお願いします。" vegetable) :wait t)
   (speak-jp (format nil "ドレッシングは、~Aでお願いします。" dressing) :wait t)
   (speak-jp "サイドメニューは、要りません。" :wait t)
-  (speak-jp "あとは、おまかせでお願いします。" :wait t))
+  (speak-jp "あとは、おまかせでお願いします。" :wait t)
+  (call-service "look_at_human/stop" (instance std_srvs::EmptyRequest :init)))
 
 
 (defun receive-sandwich ()
