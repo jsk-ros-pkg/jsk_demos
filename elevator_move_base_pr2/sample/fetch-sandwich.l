@@ -8,6 +8,7 @@
 (ros::roseus-add-srvs "std_srvs")
 
 (require :pr2-interface "package://pr2eus/pr2-interface.l")
+(require :app-utils "package://jsk_demo_common/euslisp/app-utils.l")
 (require :pr2-action "package://jsk_demo_common/euslisp/pr2-action.l")
 (require :eng2-scene "package://jsk_maps/src/eng2-scene.l")
 
@@ -67,12 +68,7 @@
 (defun init ()
   (setq *pr2* (pr2))
   (setq *ri* (instance pr2-interface :init
-                       :move-base-action-name "elevator_move_base"))
-  (send *pr2* :reset-pose)
-  (pr2-tuckarm-pose)
-  (look-front)
-  (setq *scene* (make-eng2-scene))
-  (setq *initial-pose* (send *ri* :state :worldcoords)))
+                       :move-base-action-name "elevator_move_base")))
 
 
 (defun go-to-forum-door-inside ()
@@ -320,15 +316,35 @@
   (pr2-tuckarm-pose))
 
 
-(defun demo (&optional (name "BLTサンド"))
-  (ros::roseus "fetch_sandwich")
-  (init)
-  (speak-jp (format nil "~Aを買いに行きます。" name) :wait t)
+(defun demo (&key (sandwich "BLTサンド"))
+  (send *pr2* :reset-pose)
+  (pr2-tuckarm-pose)
+  (look-front)
+  (setq *scene* (make-eng2-scene))
+  (setq *initial-pose* (send *ri* :state :worldcoords))
+  (speak-jp (format nil "~Aを買いに行きます。" sandwich) :wait t)
   (go-to-forum-door-inside)
   (open-forum-door)
   (go-to-subway-front)
-  (order-sandwich name)
+  (order-sandwich sandwich)
   (receive-sandwich)
   (go-to-initial-pose)
-  (pass-sandwich name)
+  (pass-sandwich sandwich))
+
+
+(defun main (&key (app-manager :false))
+  (ros::roseus "fetch_sandwich")
+  (init)
+  (if (eq app-manager :true)
+      (progn
+        (let ((sandwich (string-downcase (get-arg :sandwich))))
+          (cond
+           ((find sandwich
+                  (list "BLTサンド" "ローストチキンサンド" "ツナサンド")
+                  ;; 390 * 1.08 = 421 yen (2019/12/27)
+                  :test #'string=)
+            (demo :sandwich sandwich))
+           (t
+            (speak-jp "ごめんなさい。今ちょっと手が離せません。" :wait t)))))
+    (demo))
   (exit 0))
