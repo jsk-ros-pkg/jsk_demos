@@ -34,7 +34,7 @@
 (defun pr2-pick-bag-pose ()
   #|
   (send *pr2* :reset-pose)
-  (send *pr2* :torso :waist-z :joint-angle 250.0)
+  (send *pr2* :torso :waist-z :joint-angle 325.0)
   (let ((cds (make-cascoords :pos (float-vector 800 0 1300))))
     (send cds :rotate pi/2 :x)
     (send *pr2* :rarm :inverse-kinematics
@@ -68,7 +68,12 @@
 (defun init ()
   (setq *pr2* (pr2))
   (setq *ri* (instance pr2-interface :init
-                       :move-base-action-name "elevator_move_base")))
+                       :move-base-action-name "elevator_move_base"))
+  (send *pr2* :reset-pose)
+  (pr2-tuckarm-pose)
+  (look-front)
+  (setq *scene* (make-eng2-scene))
+  (setq *initial-pose* (send *ri* :state :worldcoords)))
 
 
 (defun go-to-forum-door-inside ()
@@ -318,13 +323,20 @@
   (pr2-tuckarm-pose))
 
 
+(defun price (sandwich)
+  (cond
+   ((find sandwich
+          (list "BLTサンド" "ローストチキンサンド" "ツナサンド")
+          :test #'string=)
+    421)  ;; 390 * 1.08 = 421 yen (2019/12/27)
+   (t nil)))
+
+
 (defun demo (&key (sandwich "BLTサンド"))
-  (send *pr2* :reset-pose)
-  (pr2-tuckarm-pose)
-  (look-front)
-  (setq *scene* (make-eng2-scene))
-  (setq *initial-pose* (send *ri* :state :worldcoords))
+  (init)
   (speak-jp (format nil "~Aを買いに行きます。" sandwich) :wait t)
+  (speak-jp
+   (format nil "おそらく、税込み~A円になります。" (price sandwich)) :wait t)
   (go-to-forum-door-inside)
   (open-forum-door)
   (go-to-subway-front)
@@ -334,19 +346,15 @@
   (pass-sandwich sandwich))
 
 
-(defun main (&key (app-manager :false))
+(defun main ()
   (ros::roseus "fetch_sandwich")
-  (init)
-  (if (eq app-manager :true)
-      (progn
-        (let ((sandwich (string-downcase (get-arg :sandwich))))
-          (cond
-           ((find sandwich
-                  (list "BLTサンド" "ローストチキンサンド" "ツナサンド")
-                  ;; 390 * 1.08 = 421 yen (2019/12/27)
-                  :test #'string=)
-            (demo :sandwich sandwich))
-           (t
-            (speak-jp "ごめんなさい。今ちょっと手が離せません。" :wait t)))))
-    (demo))
-  (exit 0))
+  (let ((sandwich-en (string-downcase (or (get-arg :sandwich) "blt")))
+        (sandwich-jp nil)
+        (sandwiches '(("blt" "BLTサンド")
+                      ("roasted_chicken" "ローストチキンサンド")
+                      ("tuna" "ツナサンド"))))
+    (dolist (s sandwiches)
+      (when (string= sandwich-en (elt s 0))
+        (setq sandwich-jp (elt s 1))))
+    (demo :sandwich sandwich-jp)
+    (exit 0)))
