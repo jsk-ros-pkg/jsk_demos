@@ -207,7 +207,7 @@
 
 
 (defun order-sandwich
-    (name
+    (sandwich
      &key (bread "オススメ") (topping "オススメ")
           (vegetable "オススメ") (dressing "オススメ"))
   (ros::ros-info "Looking for clerk...")
@@ -216,21 +216,23 @@
   (call-service "look_at_human/start" (instance std_srvs::EmptyRequest :init))
   (unix:sleep 5)
   (ros::ros-info "Ordering sandwich...")
-  (ros::ros-info (format nil "Sandwich: ~A" name))
+  (ros::ros-info (format nil "Sandwich: ~A" sandwich))
   (ros::ros-info (format nil "Bread: ~A" bread))
   (ros::ros-info (format nil "Topping: ~A" topping))
   (ros::ros-info (format nil "Vegetable: ~A" vegetable))
   (ros::ros-info (format nil "Dressing: ~A" dressing))
   (ros::ros-info "Side Menu: nil")
   (ros::ros-info "Others: leave it to the clerk")
+  (ros::ros-info "To go (Take away)")
   (speak-jp "こんにちは。おつかいに来ました。" :wait t)
-  (speak-jp (format nil "~Aをください。" name) :wait t)
+  (speak-jp (format nil "~Aをください。" sandwich) :wait t)
   (speak-jp (format nil "パンの種類は、~Aでお願いします。" bread) :wait t)
   (speak-jp (format nil "トッピングは、~Aでお願いします。" topping) :wait t)
   (speak-jp (format nil "野菜は、~Aでお願いします。" vegetable) :wait t)
   (speak-jp (format nil "ドレッシングは、~Aでお願いします。" dressing) :wait t)
   (speak-jp "サイドメニューは、要りません。" :wait t)
   (speak-jp "あとは、おまかせでお願いします。" :wait t)
+  (speak-jp "サンドイッチは、持ち帰ります。" :wait t)  ;; Reduce tax (2019/10/1~)
   (call-service "look_at_human/stop" (instance std_srvs::EmptyRequest :init)))
 
 
@@ -293,7 +295,7 @@
   (send *ri* :move-to *initial-pose*))
 
 
-(defun pass-sandwich (name)
+(defun pass-sandwich (sandwich)
   (call-service "look_at_human/stop" (instance std_srvs::EmptyRequest :init))
   (update-robot-position)
   (send *ri* :go-pos-unsafe 0 0 (send *pr2* :head :neck-y :joint-angle))
@@ -304,11 +306,11 @@
   (send *ri* :angle-vector (send *pr2* :angle-vector) 5000)
   (send *ri* :wait-interpolation)
   (send *ri* :stop-grasp :rarm :wait t)
-  (speak-jp (format nil "~Aを買ってきました。" name) :wait t)
+  (speak-jp (format nil "~Aを買ってきました。" sandwich) :wait t)
 
   (until (wait-for-hand-impact :rarm :timeout 30)
          (ros::ros-info "Still waiting for a human to get sandwich from PR2.")
-         (speak-jp (format nil "~Aをどうぞ。" name) :wait t))
+         (speak-jp (format nil "~Aをどうぞ。" sandwich) :wait t))
 
   (send *ri* :start-grasp :rarm)
   (send *pr2* :torso_lift_joint :joint-angle 0)
