@@ -20,7 +20,7 @@
         pkg="elevator_move_base_pr2" type="fetch-sandwich.l"
         args="(demo)"
         machine="c2"
-        output="screen"/>
+        output="screen" required="true"/>
 
   <!-- ===================================================================== -->
   <!-- For message visualization in Rviz                                     -->
