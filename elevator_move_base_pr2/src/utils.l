@@ -29,7 +29,7 @@
           (t
            (ros::ros-fatal
             "There is no building frame_id in TF tree, so exiting...")
-           (exit))
+           (exit 1))
           )
     scene))
 
