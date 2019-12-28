@@ -1,8 +1,6 @@
 <launch>
 
-  <arg name="app_manager" default="false"/>
   <arg name="ROBOT" default="$(optenv ROBOT pr2)" />
-
   <include file="$(find pr2_machine)/$(arg ROBOT).machine"/>
 
   <!-- ===================================================================== -->
@@ -20,7 +18,7 @@
 
   <node name="fetch_sandwich"
         pkg="elevator_move_base_pr2" type="fetch-sandwich.l"
-        args="(run-exit (main :app-manager :$(arg app_manager)))"
+        args="(main)"
         machine="c2"
         output="screen" required="true"/>
 
