@@ -364,5 +364,8 @@
     (dolist (s sandwiches)
       (when (string= sandwich-en (elt s 0))
         (setq sandwich-jp (elt s 1))))
+    (when (null sandwich-jp)
+      (speak-jp "すみません、聞き取れませんでした。")
+      (exit 1))
     (demo :sandwich sandwich-jp)
     (exit 0)))
