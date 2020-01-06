@@ -250,7 +250,8 @@
         :retry 100)
 
   ;; TODO(Unknown): Pay money here.
-  ;;                Consider registering SUBWAY club and getting pre-paid card.
+  ;;                Consider using SUB CLUB card (pre-paid card).
+  ;;                Don't forget to get receipt and put it into the bag.
 
   (send *pr2* :angle-vector (pr2-pick-bag-pose))
   (send *ri* :angle-vector (send *pr2* :angle-vector) 5000)
@@ -289,14 +290,21 @@
 (defun go-to-initial-pose ()
   (ros::ros-info "Coming back to original position...")
   (speak-jp "もとの場所に帰ります。" :wait t)
+
   ;; NOTE: DWA local planner does not publish command to go through the door
   ;;       when detecting door closed, so move to forum-door-outside first
   ;;       in order to approach the door.
   (ros::ros-info "Move to /eng2/2f/forum-door-outside.")
   (send *ri* :move-to (send *scene* :spot "/eng2/2f/forum-door-outside"))
+
+  ;; NOTE: Robot does not have student ID card, so please open door when needed.
+  (ros::ros-info "Move to elevator hall.")
+  (send *ri* :move-to
+        (send (send (send *scene* :spot "/eng2/2f/forum-door-inside")
+                    :copy-worldcoords) :translate #f(-1500 -2000 0) :world))
+
   (ros::ros-info (format nil "Move to initial pose: ~A." *initial-pose*))
   (call-service "look_at_human/start" (instance std_srvs::EmptyRequest :init))
-  ;; NOTE: Robot does not have student ID card, so please open door when needed.
   (send *ri* :move-to *initial-pose*))
 
 
