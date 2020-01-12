@@ -343,7 +343,7 @@
    ;;     )
    ;;   )
    (send *pr2* :rarm :inverse-kinematics
-         (send (send (send *microwave* :copy-worldcoords) :translate #f(-200 -300 150)) :rotate 0 :x)
+         (send (send (send *microwave* :copy-worldcoords) :translate #f(-200 -300 120)) :rotate 0 :x)
          :rotation-axis t)
    (if wait? (wait-enter))
    (when use-ri (send *ri* :angle-vector (send *pr2* :angle-vector) 6000)
@@ -351,7 +351,7 @@
 
    ;; put
    (send *pr2* :rarm :inverse-kinematics
-         (send (send (send *microwave* :copy-worldcoords) :translate #f(70 -300 150)) :rotate 0 :x)
+         (send (send (send *microwave* :copy-worldcoords) :translate #f(70 -300 120)) :rotate 0 :x)
          :rotation-axis t)
    (if wait? (wait-enter))
    (when use-ri (send *ri* :angle-vector (send *pr2* :angle-vector) 3000)
@@ -467,14 +467,15 @@
    (send *microwave* :translate (float-vector (+ -185 300) 450 -240))  ;; x奥行き y横 z高さ  TODO paratun
    (send *microwave* :angle-vector (float-vector 180))
 
-   (let ((heat-button-front (send (send *microwave* :copy-worldcoords) :transform (make-coords :pos (float-vector -70 -480 170))))
-         (heat-button (send (send *microwave* :copy-worldcoords) :transform (make-coords :pos (float-vector 0 -480 170)))))
+   (let ((heat-button-front (send (send *microwave* :copy-worldcoords) :transform (make-coords :pos (float-vector -70 -505 115))))
+         (heat-button (send (send *microwave* :copy-worldcoords) :transform (make-coords :pos (float-vector 10 -505 115)))))
 
      (send *pr2* :rarm :inverse-kinematics heat-button-front
            :rotation-axis t)
      (if wait? (wait-enter))
-     (when use-ri (send *ri* :angle-vector (send *pr2* :angle-vector) 2000)
+     (when use-ri (send *ri* :angle-vector (send *pr2* :angle-vector) 5000)
            (send *ri* :wait-interpolation))
+     (unix::sleep 1)
 
 
      (send *pr2* :rarm :inverse-kinematics heat-button
@@ -501,13 +502,13 @@
    (send *microwave* :translate (float-vector (+ -185 300) 450 -240))  ;; x奥行き y横 z高さ  TODO paratun
    (send *microwave* :angle-vector (float-vector 180))
 
-   (let ((start-button-front (send (send *microwave* :copy-worldcoords) :transform (make-coords :pos (float-vector -70 -480 170))))
-         (start-button (send (send *microwave* :copy-worldcoords) :transform (make-coords :pos (float-vector -10 -480 170)))))
+   (let ((start-button-front (send (send *microwave* :copy-worldcoords) :transform (make-coords :pos (float-vector -70 -510 170))))
+         (start-button (send (send *microwave* :copy-worldcoords) :transform (make-coords :pos (float-vector -5 -510 170)))))
 
      (send *pr2* :rarm :inverse-kinematics start-button-front
            :rotation-axis t)
      (if wait? (wait-enter))
-     (when use-ri (send *ri* :angle-vector (send *pr2* :angle-vector) 2000)
+     (when use-ri (send *ri* :angle-vector (send *pr2* :angle-vector) 5000)
            (send *ri* :wait-interpolation))
 
 
@@ -579,6 +580,7 @@
   (send *pmi* :push-start-button)
 
   ;; wait for baking
+  (unix::sleep (* 2 60))
 
   ;; take object from microwave
   (send *pmi* :open-microwave)
