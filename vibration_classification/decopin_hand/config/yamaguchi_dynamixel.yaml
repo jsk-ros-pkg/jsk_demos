@@ -1,0 +1,55 @@
+# search for Dynamixel IDs with the command below
+# rosrun dynamixel_workbench_controllers find_dynamixel /dev/ttyUSB0
+# Do not forget to set different IDs to each Dynamixel at first time.
+
+rotational_joint:
+  # ID: 1
+  # Return_Delay_Time: 0
+  # Operating_Mode: 4       # Extended Position Control Mode (nearly unlimited rotation mode)
+  # Profile_Acceleration: 0
+  # Profile_Velocity: 0
+  ID: 1
+  Return_Delay_Time: 0
+  Operating_Mode: 5       # Current-based Position Control Mode (nearly unlimited rotation mode)
+  Current_Limit: 100      # Current_Limit * 2.69[mA] can be output. select 0~1193. -> max: 3.21[A], 100 is recommended for rotational servo motor
+  Profile_Acceleration: 0
+  Profile_Velocity: 0
+
+finger1:
+  # ID: 1
+  # Return_Delay_Time: 0
+  # Operating_Mode: 4       # Extended Position Control Mode (nearly unlimited rotation mode)
+  # Profile_Acceleration: 0
+  # Profile_Velocity: 0
+  ID: 2
+  Return_Delay_Time: 0
+  Operating_Mode: 5       # Current-based Position Control Mode (nearly unlimited rotation mode)
+  Current_Limit: 100      # Current_Limit * 2.69[mA] can be output. select 0~1193. -> max: 3.21[A], 100 is recommended for rotational servo motor
+  Profile_Acceleration: 0
+  Profile_Velocity: 0
+
+finger2:
+  # ID: 1
+  # Return_Delay_Time: 0
+  # Operating_Mode: 4       # Extended Position Control Mode (nearly unlimited rotation mode)
+  # Profile_Acceleration: 0
+  # Profile_Velocity: 0
+  ID: 3
+  Return_Delay_Time: 0
+  Operating_Mode: 5       # Current-based Position Control Mode (nearly unlimited rotation mode)
+  Current_Limit: 100      # Current_Limit * 2.69[mA] can be output. select 0~1193. -> max: 3.21[A], 100 is recommended for rotational servo motor
+  Profile_Acceleration: 0
+  Profile_Velocity: 0
+
+finger3:
+  # ID: 1
+  # Return_Delay_Time: 0
+  # Operating_Mode: 4       # Extended Position Control Mode (nearly unlimited rotation mode)
+  # Profile_Acceleration: 0
+  # Profile_Velocity: 0
+  ID: 4
+  Return_Delay_Time: 0
+  Operating_Mode: 5       # Current-based Position Control Mode (nearly unlimited rotation mode)
+  Current_Limit: 100      # Current_Limit * 2.69[mA] can be output. select 0~1193. -> max: 3.21[A], 100 is recommended for rotational servo motor
+  Profile_Acceleration: 0
+  Profile_Velocity: 0
