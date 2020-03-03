@@ -27,4 +27,17 @@
 	<arg name="error_threshold" value="80.0" />
 	<arg name="distanceratio_threshold" value="0.49" />
   </include>
+
+  <node name="ar_pose" pkg="ar_pose" type="ar_single" respawn="false" output="screen">
+    <param name="marker_pattern" type="string" value="$(find ar_pose)/data/4x4/4x4_1.patt"/>
+    <param name="marker_width" type="double" value="152.4"/>
+    <param name="marker_center_x" type="double" value="0.0"/>
+    <param name="marker_center_y" type="double" value="0.0"/>
+    <param name="threshold" type="int" value="100"/>
+    <param name="use_history" type="bool" value="true"/>
+    <param name="reverse_transform" type="bool" value="false"/>
+    <remap from="/camera/camera_info" to="/kinect_head_c2/rgb/camera_info" />
+    <remap from="/camera/image_raw" to="/kinect_head_c2/rgb/image_rect_color" />
+  </node>
+
 </launch>
