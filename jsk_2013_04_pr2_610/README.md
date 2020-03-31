@@ -42,17 +42,23 @@ If you want to execute on real robot, see [below](#On-Real-Robot)
 
 #### Installation
 
-**NOTE** `indigo` distribution is assumed. Please replace it if you want to use on other distribution.
+**NOTE** `melodic` distribution is assumed. Please replace it if you want to use on other distribution.
 
 **NOTE** Assumed that catkin workspace has been installed on your environment. If you don't yet have catkin workspace, please follow [this instruction](http://wiki.ros.org/catkin/Tutorials/create_a_workspace).
 
+**NOTE** Following packages are currently not released in melodic. So this instruction will install them from source.
+
+- [jsk_planning](https://github.com/jsk-ros-pkg/jsk_planning)
+- [pr2_gripper_sensor_msgs](https://github.com/pr2/pr2_gripper_sensor)
+
 ```bash
-source /opt/ros/indigo/setup.bash
-cd /path/to/your_catkin_ws
-mkdir src
+source /opt/ros/melodic/setup.bash
+mkdir ~/ros/jsk_demo_ws/src -p
+cd ~/ros/jsk_demo_ws
 wstool init src
 wstool set jsk_demos -t src --git https://github.com/jsk-ros-pkg/jsk_demos
-wstool set xdot -t src --git https://github.com/k-okada/xdot # https://github.com/jbohren/xdot/pull/12
+wstool set jsk_planning -t src --git https://github.com/jsk-ros-pkg/jsk_planning
+wstool set pr2_gripper_sensor -t -src --git https://github.com/pr2/pr2_gripper_sensor
 wstool update -t src
 rosdep install --from-paths src --ignore-src -r -n -y
 catkin build jsk_2013_04_pr2_610
