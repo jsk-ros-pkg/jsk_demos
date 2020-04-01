@@ -67,7 +67,7 @@ This package can be executed both on simulation and on real robot.
 
 ### Launch demo on simulation
 
-If you want to execute on real robot, see [below](#On-Real-Robot)
+If you want to execute on real robot, see [below](#Launch-demo-on-real-robot)
 
 
 #### kinematics only
