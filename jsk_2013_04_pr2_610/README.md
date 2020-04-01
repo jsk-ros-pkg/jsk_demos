@@ -96,9 +96,9 @@ rosrun jsk_2013_04_pr2_610 demo.l "(demo)" # please ignore all error message
 1. you can launch `demo_<type>.launch` with option `use_sim:=true`
 
 ```bash
-# Terminal 1
-roslaunch jsk_2013_04_pr2_610 demo_tray.launch use_sim:=true
-# replace `tray` with `wash` or `all` if you'd like to see other demos.
+# Replace `tray` with `wash` or `all` if you'd like to see other demos.
+$ export ROBOT=sim
+$ roslaunch jsk_2013_04_pr2_610 demo_tray.launch
 ```
 
 #### Kinematics + planning + planning visualization
@@ -107,6 +107,7 @@ roslaunch jsk_2013_04_pr2_610 demo_tray.launch use_sim:=true
 
 ```bash
 # Terminal 1
+$ export ROBOT=sim
 roslaunch jsk_2013_04_pr2_610 planner.launch
 ```
 
@@ -141,5 +142,6 @@ In PR2 internal pc, you can launch all demos with one launch file.
 
 ```bash
 # on PR2
-roslaunch jsk_2013_04_pr2_610 demo_all.launch
+$ export ROBOT=pr2
+$ roslaunch jsk_2013_04_pr2_610 demo_all.launch
 ```
