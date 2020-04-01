@@ -1,7 +1,6 @@
 jsk_2013_04_pr2_610
 ====================
 
-[![IRT demo](http://img.youtube.com/vi/ToL3egTOahg/0.jpg)](https://www.youtube.com/watch?v=ToL3egTOahg "IRT demo")
 
 ## Citation
 
@@ -21,7 +20,9 @@ This is the package of the demo programs including various home-assistant tasks:
  - Picking a broom and cleaning room
  - Moving a chair
 
-a.k.a PR2/ROS re-written version of [2009 irt demo](https://www.youtube.com/watch?v=ToL3egTOahg)
+[![2009 IRT demo](http://img.youtube.com/vi/ToL3egTOahg/0.jpg)](https://www.youtube.com/watch?v=ToL3egTOahg "2009 IRT demo")
+
+This demo is PR2/ROS re-written version of 2009 IRT demo in the video.
 
 Following components are used for completion of tasks:
 
