@@ -35,15 +35,7 @@ Following components are used for completion of tasks:
 
 More detailed information is provided in the [citation](#citation)
 
-## Usage
-
-This package can be executed both on simulation and on real robot.
-
-### On Simulation
-
-If you want to execute on real robot, see [below](#On-Real-Robot)
-
-#### Installation
+## Installation
 
 **NOTE** `melodic` distribution is assumed. Please replace it if you want to use on other distribution.
 
@@ -69,18 +61,25 @@ catkin build jsk_2013_04_pr2_610
 source ~/ros/jsk_demo_ws/devel/setup.bash
 ```
 
-#### Launch demo
+## Usage
 
-- kinematics only
+This package can be executed both on simulation and on real robot.
+
+### Launch demo on simulation
+
+If you want to execute on real robot, see [below](#On-Real-Robot)
+
+
+#### kinematics only
 
 1. open terminal, then execute following commands
 
-  ```bash
+```bash
 # Terminal 1
 roscore
 ```
 
-  ```bash
+```bash
 # Terminal 2
 rosrun jsk_2013_04_pr2_610 demo.l "(demo)" # please ignore all error message
 ```
@@ -92,21 +91,21 @@ rosrun jsk_2013_04_pr2_610 demo.l "(demo)" # please ignore all error message
   <img src="https://gist.githubusercontent.com/k-okada/b3308c08ce31230e8947/raw/2eb3ca13d1b7ac2019da5ca3778fcc28afa3a92f/jsk_2013_04_pr2_irt_3.png" width="200" height="200" />
   <img src="https://gist.githubusercontent.com/k-okada/b3308c08ce31230e8947/raw/c14d6c52d8bf35fd5c244d989beccd35caa6fa8a/jsk_2013_04_pr2_irt_4.png" width="200" height="200" />
 
-- use planning
+#### Kinematics + planning
 
 1. you can launch `demo_<type>.launch` with option `use_sim:=true`
 
-  ```bash
+```bash
 # Terminal 1
 roslaunch jsk_2013_04_pr2_610 demo_tray.launch use_sim:=true
 # replace `tray` with `wash` or `all` if you'd like to see other demos.
 ```
 
-- planning visualization
+#### Kinematics + planning + planning visualization
 
 1. execute command below
 
-  ```bash
+```bash
 # Terminal 1
 roslaunch jsk_2013_04_pr2_610 planner.launch
 ```
@@ -123,7 +122,7 @@ In this demo, you can see more described information about planning.
 
     ![smach_viewer](https://gist.githubusercontent.com/furushchev/ea64ba5949b0f41b7400/raw/abdba86ac3b56ffc0b6204b65408a02ca8a616dd/smach.png)
 
-### On Real Robot
+### Launch demo on real robot
 
 This package is assumed to use PR2 robot.
 To connect to PR2, set some ENV in shell:
@@ -140,7 +139,7 @@ Then now you can execute all demo plans.
 
 In PR2 internal pc, you can launch all demos with one launch file.
 
-  ```bash
+```bash
 # on PR2
 roslaunch jsk_2013_04_pr2_610 demo_all.launch
 ```
