@@ -14,3 +14,9 @@
     local-name: pr2/pr2_gripper_sensor
     uri: https://github.com/pr2/pr2_gripper_sensor
     version: master
+# apt version of laser_filters_jsk_patch does not contains launch files used in this demo
+# So laser_filters_jsk_patch should be install from source until https://github.com/jsk-ros-pkg/jsk_3rdparty/pull/188 is merged and released.
+- git:
+    local-name: jsk-ros-pkg/jsk_3rdparty
+    uri: https://github.com/jsk-ros-pkg/jsk_3rdparty
+    version: master
