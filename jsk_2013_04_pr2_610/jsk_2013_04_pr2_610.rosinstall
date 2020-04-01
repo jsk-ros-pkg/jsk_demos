@@ -2,10 +2,14 @@
     local-name: jsk-ros-pkg/jsk_demos
     uri: https://github.com/jsk-ros-pkg/jsk_demos.git
     version: master
+# pddl_planner and task_compiler (https://github.com/jsk-ros-pkg/jsk_planning) is not released on melodic
+#     until https://github.com/ros/rosdistro/pull/24310 is merged.
 - git:
     local-name: jsk-ros-pkg/jsk_planning
     uri: https://github.com/jsk-ros-pkg/jsk_planning
     version: master
+# pr2_gripper_sensor_msgs (https://github.com/pr2/pr2_gripper_sensor) is not released on melodic
+#    until https://github.com/ros/rosdistro/pull/24295 is merged.
 - git:
     local-name: pr2/pr2_gripper_sensor
     uri: https://github.com/pr2/pr2_gripper_sensor
