@@ -48,6 +48,8 @@ If you want to execute on real robot, see [below](#On-Real-Robot)
 
 **NOTE** Assumed that catkin workspace has been installed on your environment. If you don't yet have catkin workspace, please follow [this instruction](http://wiki.ros.org/catkin/Tutorials/create_a_workspace).
 
+**NOTE** A catkin workspace is created at $HOME/ros/jsk_demo_ws. ( for example, /home/leus/ros/jsk_demo_ws )
+
 **NOTE** Following packages are currently not released in melodic. So this instruction will install them from source.
 
 - [jsk_planning](https://github.com/jsk-ros-pkg/jsk_planning)
@@ -57,14 +59,13 @@ If you want to execute on real robot, see [below](#On-Real-Robot)
 source /opt/ros/melodic/setup.bash
 mkdir ~/ros/jsk_demo_ws/src -p
 cd ~/ros/jsk_demo_ws
+catkin init
 wstool init src
-wstool set jsk_demos -t src --git https://github.com/jsk-ros-pkg/jsk_demos
-wstool set jsk_planning -t src --git https://github.com/jsk-ros-pkg/jsk_planning
-wstool set pr2_gripper_sensor -t -src --git https://github.com/pr2/pr2_gripper_sensor
+wstool merge https://raw.githubusercontent.com/jsk-ros-pkg/jsk_demos/tree/master/jsk_2013_04_pr2_610/jsk_2013_04_pr2_610.rosinstall
 wstool update -t src
 rosdep install --from-paths src --ignore-src -r -n -y
 catkin build jsk_2013_04_pr2_610
-source /path/to/your_catkin_ws/devel/setup.bash
+source ~/ros/jsk_demo_ws/devel/setup.bash
 ```
 
 #### Launch demo
