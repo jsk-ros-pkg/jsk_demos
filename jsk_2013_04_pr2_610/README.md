@@ -93,7 +93,7 @@ rosrun jsk_2013_04_pr2_610 demo.l "(demo)" # please ignore all error message
 
 #### Kinematics + planning
 
-1. you can launch `demo_<type>.launch` with option `use_sim:=true`
+you can launch `demo_<type>.launch` with `ROBOT=sim` pre-env value setting.
 
 ```bash
 # Replace `tray` with `wash` or `all` if you'd like to see other demos.
