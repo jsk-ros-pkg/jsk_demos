@@ -1,6 +1,8 @@
 jsk_2013_04_pr2_610
 ====================
 
+[![IRT demo](http://img.youtube.com/vi/ToL3egTOahg/0.jpg)](https://www.youtube.com/watch?v=ToL3egTOahg "IRT demo")
+
 ## Citation
 
 ```
