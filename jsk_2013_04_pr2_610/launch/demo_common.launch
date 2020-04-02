@@ -1,7 +1,7 @@
 <launch>
   <arg name="task" />
   <arg name="plan" default="true" />
-  <arg name="use_ffha" default="false" />
+  <arg name="use_ffha" default="true" />
   <arg name="planner_option" value="--heuristic &quot;hlm=lmcount(lm_rhw(reasonable_orders=true,lm_cost_type=2,cost_type=2),pref=true)&quot;
                                     --heuristic &quot;hff=ff()&quot;
                                     --search &quot;iterated([lazy_greedy([hff,hlm],preferred=[hff,hlm]),
