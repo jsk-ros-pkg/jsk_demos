@@ -1,0 +1,21 @@
+(defun raise-arms ()
+  (send *nao* :reset-pose)
+  (send *nao* :larm :shoulder-p :joint-angle -95)
+  (send *nao* :larm :shoulder-r :joint-angle 2)
+  (send *nao* :larm :elbow-y :joint-angle -10)
+  (send *nao* :larm :wrist-y :joint-angle -50)
+  (send *nao* :rarm :shoulder-p :joint-angle -95)
+  (send *nao* :rarm :shoulder-r :joint-angle -5)
+  (send *nao* :rarm :elbow-y :joint-angle -10)
+  (send *nao* :rarm :wrist-y :joint-angle 80))
+
+(defun close-finger ()
+  (send *ri* :start-grasp))
+(defun open-finger ()
+  (send *ri* :stop-grasp))
+
+(defun wear-hat ()
+  (progn (load "euslisp/nao-pose-cap.l")(open-finger)(raise-arms)(objects (list *nao*))(send *ri* :angle-vector (send *nao* :angle-vector) 5000)(send *ri* :wait-interpolation)(close-finger)(unix:sleep 3)(open-finger)))
+
+(defun init-pose ()
+  (progn (send *nao* :reset-pose)(objects (list *nao*))(send *ri* :angle-vector (send *nao* :angle-vector) 5000)))

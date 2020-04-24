@@ -29,7 +29,7 @@ Map tools for JSK Buildings
   # Then move robot with joystick
 ```
 
-  1. Merge the pertial map into floor map
+  1. Merge the partial map into floor map
   
   Edit `pgm` file with Gimp
   
