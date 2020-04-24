@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<launch>
+
+  <!--include file="$(find fetch_gazebo)/launch/simulation.launch" /-->
+  <arg name="robot" default="fetch"/>
+  <arg name="debug" default="false"/>
+  <arg name="gui" default="true"/>
+  <arg name="headless" default="false"/>
+
+  <include file="$(find gazebo_ros)/launch/empty_world.launch">
+    <arg name="debug" value="$(arg debug)" />
+    <arg name="gui" value="$(arg gui)" />
+    <arg name="paused" value="false"/>
+    <arg name="use_sim_time" value="true"/>
+    <arg name="headless" value="$(arg headless)"/>
+  </include>
+
+  <!-- spawn robot -->
+  <include file="$(find quick_tutorial)/launch/include/fetch.launch.xml" />
+  <node name="odom_relay" pkg="topic_tools" type="relay" args="/odom /odom_combined" />
+
+  <!-- empty map -->
+</launch>
