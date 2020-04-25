@@ -15,14 +15,14 @@
     ;; kinematics-simulatorで斜めに移動するのを修正したほうがいいかも
     ;; 目標のイスの前まで移動
     (send *pr2* :move-to (make-coords :pos #f(4500 0 0) :rpy #f(0 0 0)) :world)
-    ;; (send *ri* :move-to (make-coords :pos #f(4500 0 0) :rpy #f(0 0 0)))
+    (send *ri* :move-to (send *pr2* :worldcoords))
     (send *pr2* :move-to (make-coords :rpy (float-vector pi/2 0 0)))
-    ;; (send *ri* :move-to (make-coords :rpy (float-vector pi/2 0 0)))
+    (send *ri* :move-to (send *pr2* :worldcoords))
     (send *pr2* :move-to (make-coords :pos #f(1600 0 0)))
-    ;; (send *ri* :move-to (make-coords :pos #f(1600 0 0)))
+    (send *ri* :move-to (send *pr2* :worldcoords))
     (send *pr2* :move-to (make-coords :rpy (float-vector pi/2 0 0)))
-    ;; (send *ri* :move-to (make-coords :rpy (float-vector pi/2 0 0)))
-    (send *ri* :move-to (make-coords :pos #f(4500 1600 0) :rpy (float-vector pi 0 0)))
+    (send *ri* :move-to (send *pr2* :worldcoords))
+    ;; (send *ri* :move-to (make-coords :pos #f(4500 1600 0) :rpy (float-vector pi 0 0)))
     
 )
 
@@ -43,11 +43,11 @@
     ;; assoc the chair and the l-arm
     (send *pr2* :larm :end-coords :assoc *chair*)
     ;; grasp
-    (send *ri* :start-grasp)
+    (send *ri* :start-grasp :larm)
     (send *ri* :wait-interpolation)
     ;; pull back
     (send *pr2* :move-to (make-coords :pos #f(-350 0 0)))
-    (send *ri* :go-pos -0.35 0)
+    (send *ri* :move-to (send *pr2* :worldcoords))
     (send *ri* :wait-interpolation)
 )
 
@@ -57,58 +57,133 @@
                 :debug-view t :look-at-target t)
     (send *ri* :angle-vector (send *pr2* :angle-vector) 10000)
     (send *ri* :wait-interpolation)
-    (send *pr2* :larm :move-end-rot 90 :z :parent
+    ;; need debug
+    ;; 15 15 (100 -50 0) 15 (100 -50 0) (100 -50 0) 15
+    ;; I think it could be wrote much better...
+    (send *pr2* :larm :move-end-rot 15 :z :parent
                 :debug-view t :look-at-target t)
     (send *ri* :angle-vector (send *pr2* :angle-vector) 10000)
     (send *ri* :wait-interpolation)
-    ;; THIS IS OPTIONAL or should rotate more angle...
-    (send *pr2* :larm :move-end-rot 30 :z :parent
+    (send *pr2* :larm :move-end-rot 15 :z :parent
+                :debug-view t :look-at-target t)
+    (send *ri* :angle-vector (send *pr2* :angle-vector) 10000)
+    (send *ri* :wait-interpolation)
+    (send *pr2* :larm :move-end-pos #f(100 -50 0) :parent
+                :debug-view t :look-at-target t)
+    (send *ri* :angle-vector (send *pr2* :angle-vector) 10000)
+    (send *ri* :wait-interpolation)
+    (send *pr2* :larm :move-end-rot 15 :z :parent
+                :debug-view t :look-at-target t)
+    (send *ri* :angle-vector (send *pr2* :angle-vector) 10000)
+    (send *ri* :wait-interpolation)
+    (send *pr2* :larm :move-end-pos #f(100 -50 0) :parent
+                :debug-view t :look-at-target t)
+    (send *ri* :angle-vector (send *pr2* :angle-vector) 10000)
+    (send *ri* :wait-interpolation)
+    (send *pr2* :larm :move-end-pos #f(100 -50 0) :parent
+                :debug-view t :look-at-target t)
+    (send *ri* :angle-vector (send *pr2* :angle-vector) 10000)
+    (send *ri* :wait-interpolation)
+    (send *pr2* :larm :move-end-rot 15 :z :parent
                 :debug-view t :look-at-target t)
     (send *ri* :angle-vector (send *pr2* :angle-vector) 10000)
     (send *ri* :wait-interpolation)
 )
 
 (defun grab-box-with-r-hand ()
-    ;; go straight
-    (send *pr2* :move-to (make-coords :pos #f(950 200 0)))
-    ;; look at the box
     (setq *box* (send *room* :object "room73b2-empty-box"))
     (send *pr2* :head :look-at (send *box* :worldpos))
+    (send *ri* :angle-vector (send *pr2* :angle-vector) 10000)
+    (send *ri* :wait-interpolation)
+    ;; go straight
+    (send *pr2* :move-to (make-coords :pos #f(950 200 0)))
+    (send *ri* :move-to (send *pr2* :worldcoords))
+    ;; look at the box
+    (setq *box* (send *room* :object "room73b2-empty-box"))
+    ;; (send *pr2* :head :look-at (send *box* :worldpos))
+    (send *ri* :angle-vector (send *pr2* :angle-vector) 10000)
+    (send *ri* :wait-interpolation)
     ;; dissoc the box
     (if (send *box* :parent) (send (send *box* :parent) :dissoc *box*))
+    ;; ik
     (send *pr2* :rarm :inverse-kinematics
                 (car (send *box* :handle))
                 :link-list (send *pr2* :link-list (send *pr2* :rarm :end-coords :parent))
                 :move-target (send *pr2* :rarm :end-coords)
                 :rotation-axis :z
                 :debug-view t)
+    (send *ri* :angle-vector (send *pr2* :angle-vector) 10000)
+    (send *ri* :wait-interpolation)
     ;; assoc the box and the r-arm
     (send *pr2* :rarm :end-coords :assoc *box*)
+    ;; grab
+    (send *ri* :start-grasp :rarm)
+    (send *ri* :wait-interpolation)
     ;; lift up
     (send *pr2* :rarm :move-end-pos #f(100 0 100) :parent
                 :debug-view t :look-at-target t)
+    (send *ri* :angle-vector (send *pr2* :angle-vector) 10000)
+    (send *ri* :wait-interpolation)
     ;; get back to the original pos
     (send *pr2* :move-to (make-coords :pos #f(-950 -200 0)))
+    (send *ri* :move-to (send *pr2* :worldcoords))
     ;; reset pose only rarm
-    (send *pr2* :angle-vector #f(26.5955 68.3427 49.1055 32.6661 -116.323 176.624 -61.6646 160.917 -60.0 74.0 -70.0 -120.0 -20.0 -30.0 180.0 54.9067 38.0989))
+    (send *pr2* :angle-vector #f(49.9755 118.818 30.5735 58.6601 -89.6712 44.3389 -71.5621 242.034 -60.0 74.0 -70.0 -120.0 -20.0 -30.0 180.0 76.848 42.9233))
+    (send *ri* :angle-vector (send *pr2* :angle-vector) 10000)
+    (send *ri* :wait-interpolation)
 )
 
 (defun return-chair ()
-    (send *pr2* :larm :move-end-rot -120 :z :parent
+    (send *pr2* :larm :move-end-rot -15 :z :parent
                 :debug-view t :look-at-target t)
-    (send *pr2* :larm :move-end-pos #f(-200 500 0) :parent
+    (send *ri* :angle-vector (send *pr2* :angle-vector) 10000)
+    (send *ri* :wait-interpolation)
+    (send *pr2* :larm :move-end-pos #f(-100 50 0) :parent
                 :debug-view t :look-at-target t)
+    (send *ri* :angle-vector (send *pr2* :angle-vector) 10000)
+    (send *ri* :wait-interpolation)
+    (send *pr2* :larm :move-end-pos #f(-100 50 0) :parent
+                :debug-view t :look-at-target t)
+    (send *ri* :angle-vector (send *pr2* :angle-vector) 10000)
+    (send *ri* :wait-interpolation)
+    (send *pr2* :larm :move-end-rot -15 :z :parent
+                :debug-view t :look-at-target t)
+    (send *ri* :angle-vector (send *pr2* :angle-vector) 10000)
+    (send *ri* :wait-interpolation)
+    (send *pr2* :larm :move-end-pos #f(-100 50 0) :parent
+                :debug-view t :look-at-target t)
+    (send *ri* :angle-vector (send *pr2* :angle-vector) 10000)
+    (send *ri* :wait-interpolation)
+    (send *pr2* :larm :move-end-rot -15 :z :parent
+                :debug-view t :look-at-target t)
+    (send *ri* :angle-vector (send *pr2* :angle-vector) 10000)
+    (send *ri* :wait-interpolation)
+    (send *pr2* :larm :move-end-rot -15 :z :parent
+                :debug-view t :look-at-target t)
+    (send *ri* :angle-vector (send *pr2* :angle-vector) 10000)
+    (send *ri* :wait-interpolation)
+    (send *pr2* :larm :move-end-pos #f(-200 400 0) :parent
+                :debug-view t :look-at-target t)
+    (send *ri* :angle-vector (send *pr2* :angle-vector) 10000)
+    (send *ri* :wait-interpolation)
     (send *pr2* :move-to (make-coords :pos #f(350 0 0)))
+    (send *ri* :move-to (send *pr2* :worldcoords))
+    ;; release the chair
     (if (send *chair* :parent) (send (send *chair* :parent) :dissoc *chair*))
+    (send *ri* :stop-grasp :larm)
+    (send *ri* :wait-interpolation)
     (send *pr2* :move-to (make-coords :pos #f(-400 0 0)))
+    (send *ri* :move-to (send *pr2* :worldcoords))
     (send *pr2* :reset-pose)
+    (send *ri* :angle-vector (send *pr2* :angle-vector) 10000)
+    (send *ri* :wait-interpolation)
 )
 
 (defun main ()
     (init)
     (go-to-chair-spot)
-    ;; (grab-chair-with-l-hand)
-    ;; (remove-chair)
-    ;; (grab-box-with-r-hand)
-    ;; (return-chair)
+    (grab-chair-with-l-hand)
+    (remove-chair)
+    (grab-box-with-r-hand)
+    (return-chair)
 )
