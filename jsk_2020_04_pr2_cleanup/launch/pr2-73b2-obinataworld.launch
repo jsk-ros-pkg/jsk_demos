@@ -1,0 +1,9 @@
+<launch>
+    <!-- use room73b2.world -->
+    <arg name="world_name" default="$(find eusurdf)/worlds/room73b2.world" />
+
+    <include file="$(find pr2_gazebo)/launch/pr2_empty_world.launch">
+        <arg name="world_name" value="$(arg world_name)" />
+    </include>
+
+</launch>

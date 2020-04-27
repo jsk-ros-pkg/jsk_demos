@@ -10,3 +10,10 @@ l_shoulder_pan_jointを単独で動かしたいとき
 ```
 
 https://www.clearpathrobotics.com/assets/downloads/pr2/pr2_manual_r321.pdf のP16に関節名が書いてある
+
+```lisp
+reset-manip-pose ;;torso-up
+tuck-arm-pose ;;腕閉じる
+```
+
+rosdistroではgo-pos-unsafeがroseus単体で使用可能なpr2eusバージョンが出ていない．単独でpr2eusをクローンしてビルドする必要がある
