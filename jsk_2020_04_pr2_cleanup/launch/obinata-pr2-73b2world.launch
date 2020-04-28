@@ -1,0 +1,18 @@
+<launch>
+    <!-- use room73b2.world -->
+    <arg name="world_name" default="$(find eusurdf)/worlds/room73b2.world" />
+    <!-- initial robot pose -->
+    <!-- It is written on pr2_no_controllers.launch. Please refer to ./pr2_no_controllers.launch -->
+
+    <!-- These scripts are now in development. I referred to /opt/ros/melodic/share/pr2_gazebo/launch/pr2_no_controllers.launch -->
+    <!-- send pr2 urdf to param server -->
+    <!-- <include file="$(find pr2_description)/robots/upload_pr2.launch" pass_all_args="true" /> -->
+    <!-- push robot_description to factory and spawn robot in gazebo -->
+    <!-- <node name="spawn_pr2_leave_from_door" pkg="gazebo_ros" type="spawn_model" args="$(optenv ROBOT_INITIAL_POSE) -unpause -urdf -parm robot_description -x $(arg pr2_init_x -model pr2" respawn="false" output="screen" /> -->
+
+    <!-- bringup script -->
+    <include file="./launch/pr2_empty_world.launch">
+        <arg name="world_name" value="$(arg world_name)" />
+    </include>
+
+</launch>
