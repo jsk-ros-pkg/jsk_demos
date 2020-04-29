@@ -11,8 +11,142 @@
     <!-- <node name="spawn_pr2_leave_from_door" pkg="gazebo_ros" type="spawn_model" args="$(optenv ROBOT_INITIAL_POSE) -unpause -urdf -parm robot_description -x $(arg pr2_init_x -model pr2" respawn="false" output="screen" /> -->
 
     <!-- bringup script -->
-    <include file="./launch/pr2_empty_world.launch">
+    <include file="$(find jsk_2020_04_pr2_cleanup)/launch/pr2_empty_world.launch">
         <arg name="world_name" value="$(arg world_name)" />
     </include>
+
+    <arg name="launch_pr2_base_trajectory_action" default="false"
+        doc="launch pr2_base_trajectory_action for debugging" />
+
+    <!-- start pr2 robot without image processing-->
+    <!-- <include file="$(find jsk_2020_04_pr2_cleanup)/launch/pr2.launch" /> -->
+    <!-- Startup PR2 without any mechanism controllers -->
+    <!-- <include file="$(find pr2_gazebo)/launch/pr2_no_controllers.launch" pass_all_args="true"/> -->
+    <!-- send pr2 urdf to param server -->
+    <!-- <include file="$(find pr2_description)/robots/upload_pr2.launch" /> -->
+
+    <!-- default bringup script -->
+    <!-- <include file="$(find pr2_gazebo)/launch/pr2_bringup.launch" /> -->
+    <!-- Controller Manager -->
+    <!-- <include file="$(find pr2_controller_manager)/controller_manager.launch" /> -->
+
+    <!-- Fake Calibration -->
+    <!-- <node pkg="rostopic" type="rostopic" name="fake_joint_calibration"
+            args="pub /calibrated std_msgs/Bool true" /> -->
+
+    <!-- Stereo image processing -->
+    <!-- <include file="$(find pr2_gazebo)/config/dualstereo_camera.launch" /> -->
+
+    <!-- Start image_proc inside camera namespace-->
+    <!-- <include file="$(find pr2_gazebo)/config/r_forearm_cam.launch" /> -->
+    <!-- <include file="$(find pr2_gazebo)/config/l_forearm_cam.launch" /> -->
+
+    <!-- diagnostics aggregator -->
+    <!-- <node pkg="diagnostic_aggregator" type="aggregator_node" name="diag_agg" args="Robot" /> -->
+    <!-- <group ns="diag_agg"> -->
+        <!-- <include file="$(find pr2_gazebo)/config/pr2_analyzers_simple.launch" /> -->
+        <!--
+        <include file="$(find pr2_gazebo)/config/pr2_analyzers.launch" />
+        -->
+    <!-- </group> -->
+    
+    <!-- Dashboard aggregation -->
+    <!-- <node pkg="pr2_dashboard_aggregator" type="dashboard_aggregator.py" name="pr2_dashboard_aggregator"/> -->
+
+    <!-- Robot pose ekf -->
+    <!-- <node pkg="robot_pose_ekf" type="robot_pose_ekf" name="robot_pose_ekf" output="screen">
+        <param name="freq" value="30.0"/>
+        <param name="sensor_timeout" value="1.0"/>
+        <param name="publish_tf" value="true"/>
+        <param name="odom_used" value="true"/>
+        <param name="imu_used" value="true"/>
+        <param name="vo_used" value="false"/>
+        <remap from="odom" to="base_odometry/odom" />
+        <remap from="imu_data" to="torso_lift_imu/data" />
+    </node> -->
+
+    <!-- Base Laser dynamic_reconfigure -->
+    <!-- <node pkg="gazebo_plugins" type="hokuyo_node" name="base_hokuyo_node">
+        <param name="port" type="string" value="/etc/ros/sensors/base_hokuyo" />
+        <param name="frame_id" type="string" value="base_laser_link" />
+        <param name="min_ang" type="double" value="-2.2689" />
+        <param name="max_ang" type="double" value="2.2689" />
+        <param name="skip" type="int" value="1" />
+        <param name="intensity" value="false" />
+    </node> -->
+
+    <!-- Tilt Laser dynamic_reconfigure -->
+    <!-- <node pkg="gazebo_plugins" type="hokuyo_node" name="tilt_hokuyo_node"> -->
+    <!--   <param name="port" type="string" value="/etc/ros/sensors/tilt_hokuyo" /> -->
+    <!--   <param name="frame_id" type="string" value="laser_tilt_link" /> -->
+    <!--   <param name="min_ang" type="double" value="-0.829" /> -->
+    <!--   <param name="max_ang" type="double" value="0.829" /> -->
+    <!--   <param name="skip" type="int" value="1" /> -->
+    <!--   <param name="intensity" value="true" /> -->
+    <!-- </node> -->
+
+    <!-- Buffer Server -->
+    <!-- <node pkg="tf2_ros" type="buffer_server" name="tf2_buffer_server" output="screen">
+        <param name="buffer_size" value="120.0"/>
+    </node> -->
+
+    <!-- Spawns the synchronizer -->
+    <!-- <node type="camera_synchronizer" name="camera_synchronizer_node" pkg="gazebo_plugins" output="screen" /> -->
+
+    <!-- testing only: simulate torso counter weight spring to reduce load on the torso joint
+    <node name="simulate_torso_spring" pkg="pr2_gazebo" type="pr2_simulate_torso_spring.py" respawn="false" output="screen" />
+    -->
+
+    <!-- Load and Start Default Controllers -->
+    <!-- <include file="$(find pr2_controller_configuration_gazebo)/launch/pr2_default_controllers.launch" /> -->
+
+    <!-- fix gripper threshold -->
+    <param name="/l_gripper_controller/gripper_action_node/stall_velocity_threshold" value="1.0" /> <!-- 0.33 -->
+    <param name="/r_gripper_controller/gripper_action_node/stall_velocity_threshold" value="1.0" />
+
+    <!-- for :move-to and :go-velocity tests -->
+    <node pkg="fake_localization" type="fake_localization" name="fake_localization" >
+        <param name="~odom_frame_id" value="odom_combined" />
+    </node>
+    <node name="map_server" pkg="map_server" type="map_server" args="$(find pr2eus)/test/blank_map.yaml"/>
+
+    <node pkg="move_base" type="move_base" name="move_base_node" output="screen">
+        <remap from="odom" to="base_odometry/odom" />
+        <remap from="cmd_vel" to="base_controller/command" />
+
+        <!-- Use the dwa local planner for the PR2 -->
+        <param name="base_local_planner" value="dwa_local_planner/DWAPlannerROS" />
+
+        <!-- Load common configuration files -->
+        <rosparam file="$(find pr2_navigation_config)/move_base/move_base_params.yaml" command="load" />
+        <rosparam file="$(find pr2_navigation_config)/move_base/costmap_common_params.yaml" command="load" ns="global_costmap" />
+        <rosparam file="$(find pr2_navigation_config)/move_base/costmap_common_params.yaml" command="load" ns="local_costmap" />
+        <rosparam file="$(find pr2_navigation_config)/move_base/dwa_local_planner.yaml" command="load" ns="DWAPlannerROS" />
+        <rosparam file="$(find pr2_navigation_config)/move_base/recovery_behaviors.yaml" command="load" />
+
+        <!-- Load slam navigation specific parameters -->
+        <rosparam file="$(find pr2_navigation_slam)/config/move_base_params.yaml" command="load" />
+        <rosparam file="$(find pr2_navigation_slam)/config/global_costmap_params.yaml" command="load" />
+        <rosparam file="$(find pr2_navigation_slam)/config/local_costmap_params.yaml" command="load"  />
+        <rosparam>
+        global_costmap:
+            observation_sources: base_scan
+        local_costmap:
+            observation_sources: base_scan
+        </rosparam>
+    </node>
+    <node name="tf_world_publisher" pkg="tf" type="static_transform_publisher"
+        args="0 0 0 0 0 0 /world /map 100" />
+
+    <include if="$(arg launch_pr2_base_trajectory_action)"
+            file="$(find pr2_base_trajectory_action)/launch/pr2_base_trajectory_action.launch" />
+
+    <!-- start test -->
+    <test test-name="pr2_ri_test_arm" pkg="roseus" type="roseus" retry="1"
+            args="$(find pr2eus)/test/pr2-ri-test-arm.l" time-limit="800" />
+    <test test-name="pr2_ri_test_base" pkg="roseus" type="roseus" retry="1"
+            args="$(find pr2eus)/test/pr2-ri-test-base.l" time-limit="800" />
+    <test test-name="pr2_ri_test_simple" pkg="roseus" type="roseus" retry="1"
+            args="$(find pr2eus)/test/pr2-ri-test-simple.l" time-limit="800" />
 
 </launch>

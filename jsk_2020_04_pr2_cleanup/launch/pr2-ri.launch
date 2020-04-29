@@ -1,6 +1,12 @@
 <launch>
+
+  <arg name="initial_pose" default="-x 0.5 -y 0 -z 0" />
+  <arg name="world_name" default="$(find eusurdf)/worlds/room73b2.world" />
+
   <!-- start up empty world : expand following launch files to respawn gazebo -->
-  <!-- include file="$(find pr2_gazebo)/launch/pr2_empty_world.launch" -->
+  <include file="$(find pr2_gazebo)/launch/pr2_empty_world.launch">
+    <arg name="world_name" value="$(arg world_name)" /> 
+  </include>
   <!-- include file="$(find gazebo_worlds)/launch/empty_world_paused.launch" -->
   <!-- set use_sim_time flag -->
   <param name="/use_sim_time" value="true" />
@@ -12,20 +18,21 @@
        doc="launch pr2_base_trajectory_action for debugging" />
 
   <!-- start empty world -->
-  <node name="gazebo" pkg="gazebo_ros" type="gzserver" args="-r worlds/empty.world" respawn="true" output="log"/>
-  <group if="$(arg gui)">
-    <node name="gazebo_gui" pkg="gazebo_ros" type="gzclient" respawn="false" output="screen"/>
-  </group>
+  <!-- commented out by Obinata -->
+  <!-- <node name="gazebo" pkg="gazebo_ros" type="gzserver" args="-r worlds/empty.world" respawn="true" output="log"/> -->
+  <!-- <group if="$(arg gui)"> -->
+    <!-- <node name="gazebo_gui" pkg="gazebo_ros" type="gzclient" respawn="false" output="screen"/> -->
+  <!-- </group> -->
 
   <!-- start pr2 robot without image processing-->
-  <!-- <include file="$(find pr2_gazebo)/launch/pr2.launch" /> -->
+  <include file="$(find pr2_gazebo)/launch/pr2.launch" />
   <!-- Startup PR2 without any mechanism controllers -->
   <!-- <include file="$(find pr2_gazebo)/launch/pr2_no_controllers.launch" pass_all_args="true"/> -->
   <!-- send pr2 urdf to param server -->
   <include file="$(find pr2_description)/robots/upload_pr2.launch" />
 
   <!-- push robot_description to factory and spawn robot in gazebo -->
-  <node name="spawn_pr2_model" pkg="gazebo_ros" type="spawn_model" args="$(optenv ROBOT_INITIAL_POSE) -unpause -urdf -param robot_description -model pr2" respawn="false" output="screen" />
+  <node name="spawn_pr2_model" pkg="gazebo_ros" type="spawn_model" args="$(arg initial_pose) -unpause -urdf -param robot_description -model pr2" respawn="false" output="screen" />
 
   <!-- default bringup script -->
   <!-- <include file="$(find pr2_gazebo)/launch/pr2_bringup.launch" /> -->
