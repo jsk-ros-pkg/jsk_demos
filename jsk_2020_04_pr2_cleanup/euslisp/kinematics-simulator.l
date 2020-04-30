@@ -92,28 +92,26 @@
 
 (defun grab-box-with-r-hand ()
     (setq *box* (send *room* :object "room73b2-empty-box"))
+    (setq *pre-box* (make-coords :pos #f(3915 1600 770) :rpy #f(0 0 0)))
     (send *pr2* :head :look-at (send *box* :worldpos))
     (send *ri* :angle-vector (send *pr2* :angle-vector) 10000)
     (send *ri* :wait-interpolation)
-    ;; go straight
-    (send *pr2* :move-to (make-coords :pos #f(950 200 0)))
-    (send *ri* :move-to (send *pr2* :worldcoords))
-    ;; look at the box
-    (setq *box* (send *room* :object "room73b2-empty-box"))
-    ;; (send *pr2* :head :look-at (send *box* :worldpos))
-    (send *ri* :angle-vector (send *pr2* :angle-vector) 10000)
-    (send *ri* :wait-interpolation)
-    ;; dissoc the box
-    (if (send *box* :parent) (send (send *box* :parent) :dissoc *box*))
+    ;; make grasp pose
     ;; ik
     (send *pr2* :rarm :inverse-kinematics
-                (car (send *box* :handle))
+                *pre-box*
                 :link-list (send *pr2* :link-list (send *pr2* :rarm :end-coords :parent))
                 :move-target (send *pr2* :rarm :end-coords)
                 :rotation-axis :z
                 :debug-view t)
     (send *ri* :angle-vector (send *pr2* :angle-vector) 10000)
     (send *ri* :wait-interpolation)
+    (send *ri* :stop-grasp :rarm)
+    ;; go straight
+    (send *pr2* :move-to (make-coords :pos #f(850 0 0)))
+    (send *ri* :move-to (send *pr2* :worldcoords))
+    ;; dissoc the box
+    (if (send *box* :parent) (send (send *box* :parent) :dissoc *box*))
     ;; assoc the box and the r-arm
     (send *pr2* :rarm :end-coords :assoc *box*)
     ;; grab
@@ -125,7 +123,7 @@
     (send *ri* :angle-vector (send *pr2* :angle-vector) 10000)
     (send *ri* :wait-interpolation)
     ;; get back to the original pos
-    (send *pr2* :move-to (make-coords :pos #f(-950 -200 0)))
+    (send *pr2* :move-to (make-coords :pos #f(-850 0 0)))
     (send *ri* :move-to (send *pr2* :worldcoords))
     ;; reset pose only rarm
     (send *pr2* :angle-vector #f(49.9755 118.818 30.5735 58.6601 -89.6712 44.3389 -71.5621 242.034 -60.0 74.0 -70.0 -120.0 -20.0 -30.0 180.0 76.848 42.9233))
