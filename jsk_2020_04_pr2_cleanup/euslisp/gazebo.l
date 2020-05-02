@@ -8,6 +8,7 @@
     (setq *chair* (send *room* :object "room73b2-chair0"))
     (objects (list *pr2* *room*))
     (setq *ri* (instance pr2-interface :init :objects (send *room* :objects)))
+    (send *ri* :angle-vector (send *pr2* :reset-pose) 5000)
 )
 
 (defun go-to-chair-spot ()
@@ -15,15 +16,15 @@
     ;; kinematics-simulatorで斜めに移動するのを修正したほうがいいかも
     ;; 目標のイスの前まで移動
     (send *pr2* :move-to (make-coords :pos #f(4500 0 0) :rpy #f(0 0 0)) :world)
-    (send *ri* :move-to (send *pr2* :worldcoords))
+    ;; init ri is -x 0.5
+    (send *ri* :go-pos-unsafe 4 0 0)
     (send *pr2* :move-to (make-coords :rpy (float-vector pi/2 0 0)))
-    (send *ri* :move-to (send *pr2* :worldcoords))
+    (send *ri* :go-pos-unsafe 0 0 90)
     (send *pr2* :move-to (make-coords :pos #f(1600 0 0)))
-    (send *ri* :move-to (send *pr2* :worldcoords))
+    (send *ri* :go-pos-unsafe 1.6 0 0)
     (send *pr2* :move-to (make-coords :rpy (float-vector pi/2 0 0)))
-    (send *ri* :move-to (send *pr2* :worldcoords))
+    (send *ri* :go-pos-unsafe 0 0 90)
     ;; (send *ri* :move-to (make-coords :pos #f(4500 1600 0) :rpy (float-vector pi 0 0)))
-    
 )
 
 (defun grab-chair-with-l-hand ()
@@ -58,7 +59,7 @@
     (send *ri* :wait-interpolation)
     ;; pull back
     (send *pr2* :move-to (make-coords :pos #f(-350 0 0)))
-    (send *ri* :move-to (send *pr2* :worldcoords))
+    (send *ri* :go-pos-unsafe -0.35 0 0)
     (send *ri* :wait-interpolation)
 )
 
@@ -120,7 +121,7 @@
     (send *ri* :stop-grasp :rarm)
     ;; go straight
     (send *pr2* :move-to (make-coords :pos #f(850 0 0)))
-    (send *ri* :move-to (send *pr2* :worldcoords))
+    (send *ri* :go-pos-unsafe 0.85 0 0)
     ;; dissoc the box
     (if (send *box* :parent) (send (send *box* :parent) :dissoc *box*))
     ;; assoc the box and the r-arm
@@ -135,7 +136,7 @@
     ;; (send *ri* :wait-interpolation)
     ;; get back to the original pos
     (send *pr2* :move-to (make-coords :pos #f(-850 0 0)))
-    (send *ri* :move-to (send *pr2* :worldcoords))
+    (send *ri* :go-pos-unsafe -0.85 0 0)
     ;; reset pose only rarm
     (send *pr2* :angle-vector #f(49.9755 118.818 30.5735 58.6601 -89.6712 44.3389 -71.5621 242.034 -60.0 74.0 -70.0 -120.0 -20.0 -30.0 180.0 76.848 42.9233))
     (send *ri* :angle-vector (send *pr2* :angle-vector) 10000)
@@ -176,13 +177,13 @@
     (send *ri* :angle-vector (send *pr2* :angle-vector) 10000)
     (send *ri* :wait-interpolation)
     (send *pr2* :move-to (make-coords :pos #f(350 0 0)))
-    (send *ri* :move-to (send *pr2* :worldcoords))
+    (send *ri* :go-pos-unsafe 0.35 0 0)
     ;; release the chair
     (if (send *chair* :parent) (send (send *chair* :parent) :dissoc *chair*))
     (send *ri* :stop-grasp :larm)
     (send *ri* :wait-interpolation)
     (send *pr2* :move-to (make-coords :pos #f(-400 0 0)))
-    (send *ri* :move-to (send *pr2* :worldcoords))
+    (send *ri* :go-pos-unsafe -0.4 0 0)
     (send *pr2* :reset-pose)
     (send *ri* :angle-vector (send *pr2* :angle-vector) 10000)
     (send *ri* :wait-interpolation)
