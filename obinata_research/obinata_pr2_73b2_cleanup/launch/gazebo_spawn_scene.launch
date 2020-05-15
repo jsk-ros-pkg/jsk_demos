@@ -1,0 +1,26 @@
+<launch>
+  <!-- spawn scene to gazebo -->
+  <arg name="scene"
+       doc="scene name (Please refer to world dir)" />
+  <arg name="tf_publish" default="false"
+       doc="publish model link states as tf"/>
+  <arg name="tf_publish_frequency" default="3"
+       doc="publish frequency of model link states"/>
+
+  <arg name="model" default="$(find obinata_pr2_73b2_cleanup)/worlds/$(arg scene).urdf.xacro"/>
+  <param name="$(arg scene)/robot_description" command="$(find xacro)/xacro.py '$(arg model)'"/>
+  <node name="spawn_$(arg scene)" pkg="gazebo_ros" type="spawn_model"
+        args="-param $(arg scene)/robot_description -urdf -model $(arg scene)"/>
+
+  <!-- publish joint states for scene -->
+  <group ns="$(arg scene)"
+         if="$(arg tf_publish)">
+    <node name="joint_state_publisher"
+          pkg="joint_state_publisher" type="joint_state_publisher"/>
+    <node name="robot_state_publisher"
+          pkg="robot_state_publisher" type="robot_state_publisher">
+      <param name="tf_prefix" value="$(arg scene)"/>
+      <param name="publish_frequency" value="$(arg tf_publish_frequency)"/>
+    </node>
+  </group>
+</launch>

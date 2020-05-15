@@ -1,6 +1,6 @@
 <?xml version="1.0" ?>
 
-<robot name="room73b2" xmlns:xacro="http://ros.org/wiki/xacro">
+<robot name="door_with_wall" xmlns:xacro="http://ros.org/wiki/xacro">
     <macro name="sphere_inertia" params="radius mass">
         <inertial>
         <origin xyz="0.0 0.0 0.0" rpy="0 0 0"/>
