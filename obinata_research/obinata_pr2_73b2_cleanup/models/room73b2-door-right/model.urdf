@@ -1,0 +1,147 @@
+<?xml version="1.0"?>
+<robot name="room73b2-door-right"
+       xmlns:xi="http://www.w3.org/2001/XInclude">
+  <gazebo>
+    <static>false</static>
+  </gazebo>
+  <link name="ROOM73B2-DOOR-RIGHT-BODYSET2_link">
+    <visual>
+      <origin xyz="0 0 0" rpy="0 -0 0"/>
+      <geometry>
+        <mesh filename="model://room73b2-door-right/meshes/ROOM73B2-DOOR-RIGHT-BODYSET2_link_mesh.dae" scale="1 1 1" />
+      </geometry>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 -0 0"/>
+      <geometry>
+        <mesh filename="model://room73b2-door-right/meshes/ROOM73B2-DOOR-RIGHT-BODYSET2_link_mesh.dae" scale="1 1 1" />
+      </geometry>
+    </collision>
+    <inertial>
+      <mass value="0.001" />
+      <origin xyz="0 0 0" rpy="0 -0 0"/>
+      <inertia ixx="1e-03" ixy="0" ixz="0" iyy="1e-03" iyz="0" izz="1e-03"/>
+    </inertial>
+  </link>
+  <gazebo reference="ROOM73B2-DOOR-RIGHT-BODYSET2_link">
+    <mu1>0.9</mu1>
+    <mu2>0.9</mu2>
+  </gazebo>
+  <link name="ROOM73B2-DOOR-RIGHT-BODYSET3_link">
+    <visual>
+      <origin xyz="-0.015 -0.39 0" rpy="0 -0 0"/>
+      <geometry>
+        <mesh filename="model://room73b2-door-right/meshes/ROOM73B2-DOOR-RIGHT-BODYSET3_link_mesh.dae" scale="1 1 1" />
+      </geometry>
+    </visual>
+    <collision>
+      <origin xyz="-0.015 -0.39 0" rpy="0 -0 0"/>
+      <geometry>
+        <mesh filename="model://room73b2-door-right/meshes/ROOM73B2-DOOR-RIGHT-BODYSET3_link_mesh.dae" scale="1 1 1" />
+      </geometry>
+    </collision>
+    <inertial>
+      <mass value="0.001" />
+      <origin xyz="0 0 0" rpy="0 -0 0"/>
+      <inertia ixx="1e-03" ixy="0" ixz="0" iyy="1e-03" iyz="0" izz="1e-03"/>
+    </inertial>
+  </link>
+  <gazebo reference="ROOM73B2-DOOR-RIGHT-BODYSET3_link">
+    <mu1>0.9</mu1>
+    <mu2>0.9</mu2>
+  </gazebo>
+  <link name="ROOM73B2-DOOR-RIGHT-BODYSET5_link">
+    <visual>
+      <origin xyz="0.09 0.705 0.96" rpy="0 -0 0"/>
+      <geometry>
+        <mesh filename="model://room73b2-door-right/meshes/ROOM73B2-DOOR-RIGHT-BODYSET5_link_mesh.dae" scale="1 1 1" />
+      </geometry>
+    </visual>
+    <collision>
+      <origin xyz="0.09 0.705 0.96" rpy="0 -0 0"/>
+      <geometry>
+        <mesh filename="model://room73b2-door-right/meshes/ROOM73B2-DOOR-RIGHT-BODYSET5_link_mesh.dae" scale="1 1 1" />
+      </geometry>
+    </collision>
+    <inertial>
+      <mass value="0.001" />
+      <origin xyz="0 5.55112e-17 0" rpy="0 -0 0"/>
+      <inertia ixx="1e-03" ixy="0" ixz="0" iyy="1e-03" iyz="0" izz="1e-03"/>
+    </inertial>
+  </link>
+  <gazebo reference="ROOM73B2-DOOR-RIGHT-BODYSET5_link">
+    <mu1>0.9</mu1>
+    <mu2>0.9</mu2>
+  </gazebo>
+  <link name="ROOM73B2-DOOR-RIGHT-BODYSET4_link">
+    <visual>
+      <origin xyz="0.03 0.705 1.06" rpy="0 -0 0"/>
+      <geometry>
+        <mesh filename="model://room73b2-door-right/meshes/ROOM73B2-DOOR-RIGHT-BODYSET4_link_mesh.dae" scale="1 1 1" />
+      </geometry>
+    </visual>
+    <collision>
+      <origin xyz="0.03 0.705 1.06" rpy="0 -0 0"/>
+      <geometry>
+        <mesh filename="model://room73b2-door-right/meshes/ROOM73B2-DOOR-RIGHT-BODYSET4_link_mesh.dae" scale="1 1 1" />
+      </geometry>
+    </collision>
+    <inertial>
+      <mass value="0.001" />
+      <origin xyz="-0.09 -0.705 -0.96" rpy="0 -0 0"/>
+      <inertia ixx="1e-03" ixy="0" ixz="0" iyy="1e-03" iyz="0" izz="1e-03"/>
+    </inertial>
+  </link>
+  <gazebo reference="ROOM73B2-DOOR-RIGHT-BODYSET4_link">
+    <mu1>0.9</mu1>
+    <mu2>0.9</mu2>
+  </gazebo>
+  <joint name="DOOR" type="revolute">
+    <parent link="ROOM73B2-DOOR-RIGHT-BODYSET2_link"/>
+    <child  link="ROOM73B2-DOOR-RIGHT-BODYSET3_link"/>
+    <origin xyz="-0.015 -0.39 0" rpy="0 -0 0 "/>
+    <axis   xyz="0 0 -1"/>
+    <limit lower="0" upper="1.5708" effort="100" velocity="0.5" />
+    <dynamics damping="0.2" friction="0" />
+  </joint>
+  <transmission type="pr2_mechanism_model/SimpleTransmission" name="DOOR_trans" >
+    <actuator name="DOOR_motor" />
+    <joint name="DOOR" />
+    <mechanicalReduction>1</mechanicalReduction>
+  </transmission>
+  <gazebo reference="DOOR">
+    <cfmDamping>0.4</cfmDamping>
+  </gazebo>
+  <joint name="KNOB" type="revolute">
+    <parent link="ROOM73B2-DOOR-RIGHT-BODYSET3_link"/>
+    <child  link="ROOM73B2-DOOR-RIGHT-BODYSET5_link"/>
+    <origin xyz="0.09 0.705 0.96" rpy="0 -0 0 "/>
+    <axis   xyz="1 0 0"/>
+    <limit lower="0" upper="1.5708" effort="100" velocity="0.5" />
+    <dynamics damping="0.2" friction="0" />
+  </joint>
+  <transmission type="pr2_mechanism_model/SimpleTransmission" name="KNOB_trans" >
+    <actuator name="KNOB_motor" />
+    <joint name="KNOB" />
+    <mechanicalReduction>1</mechanicalReduction>
+  </transmission>
+  <gazebo reference="KNOB">
+    <cfmDamping>0.4</cfmDamping>
+  </gazebo>
+  <joint name="LOCK" type="revolute">
+    <parent link="ROOM73B2-DOOR-RIGHT-BODYSET5_link"/>
+    <child  link="ROOM73B2-DOOR-RIGHT-BODYSET4_link"/>
+    <origin xyz="0.03 0.705 1.06" rpy="0 -0 0 "/>
+    <axis   xyz="1 0 0"/>
+    <limit lower="-1.5708" upper="0" effort="100" velocity="0.5" />
+    <dynamics damping="0.2" friction="0" />
+  </joint>
+  <transmission type="pr2_mechanism_model/SimpleTransmission" name="LOCK_trans" >
+    <actuator name="LOCK_motor" />
+    <joint name="LOCK" />
+    <mechanicalReduction>1</mechanicalReduction>
+  </transmission>
+  <gazebo reference="LOCK">
+    <cfmDamping>0.4</cfmDamping>
+  </gazebo>
+</robot>
