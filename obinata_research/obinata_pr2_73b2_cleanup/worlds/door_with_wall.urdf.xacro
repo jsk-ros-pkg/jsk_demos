@@ -16,11 +16,11 @@
     </gazebo>
 
     <!-- door model -->
-    <xacro:include filename="$(find eusurdf)/models/room73b2-door-left/model.urdf.xacro"/>
+    <xacro:include filename="$(find obinata_pr2_73b2_cleanup)/models/room73b2-door-left/model.urdf.xacro"/>
     <room73b2-door-left name="room73b2-door-left_0" parent="room73b2_root_link">
         <origin xyz="0.0 0.405 0.0" rpy="0.0 0.0 0.0"/>
     </room73b2-door-left>
-    <xacro:include filename="$(find eusurdf)/models/room73b2-door-right/model.urdf.xacro"/>
+    <xacro:include filename="$(find obinata_pr2_73b2_cleanup)/models/room73b2-door-right/model.urdf.xacro"/>
     <room73b2-door-right name="room73b2-door-right_0" parent="room73b2_root_link">
         <origin xyz="0.0 -0.405 0.0" rpy="0.0 0.0 0.0"/>
     </room73b2-door-right>
