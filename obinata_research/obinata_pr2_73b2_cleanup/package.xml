@@ -1,0 +1,19 @@
+<?xml version="1.0"?>
+<package>
+  <name>obinata_pr2_73b2_cleanup</name>
+  <version>0.0.0</version>
+  <description>The Obinata's research package</description>
+
+  <author email="mqcmd196@hotmail.co.jp">Yoshiki Obinata</author>
+  <maintainer email="mqcmd196@hotmail.co.jp">Yoshiki Obinata</maintainer>
+
+  <license>BSD</license>
+
+  <buildtool_depend>catkin</buildtool_depend>
+
+  <run_depend>jsk_maps</run_depend>
+  <run_depend>pr2eus</run_depend>
+
+  <export>
+  </export>
+</package>
