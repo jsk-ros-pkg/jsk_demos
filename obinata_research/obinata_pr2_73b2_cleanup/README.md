@@ -1,6 +1,5 @@
 # cleanup robot project
 ## launch urdf.xacro world
-
 ```bash
 roslaunch gazebo_ros empty_world.launch
 # spawn xacro model
@@ -15,3 +14,6 @@ When using rviz config file, use -d option.
 ```bash
 rviz -d config.rviz
 ```
+
+## pr2_gazebo initial pos
+When you want to change initial position of pr2 in pr2_gazebo, please modify the param in `pr2_no_controllers.launch`.
