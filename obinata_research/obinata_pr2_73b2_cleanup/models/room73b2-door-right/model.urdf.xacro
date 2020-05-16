@@ -102,7 +102,6 @@
       <child link="${name}_ROOM73B2-DOOR-RIGHT-BODYSET2_link"/>
       <insert_block name="origin"/>
     </joint>
-    <!-- here? -->
     <joint name="${name}_DOOR" type="revolute">
       <parent link="${name}_ROOM73B2-DOOR-RIGHT-BODYSET2_link"/>
       <child link="${name}_ROOM73B2-DOOR-RIGHT-BODYSET3_link"/>
