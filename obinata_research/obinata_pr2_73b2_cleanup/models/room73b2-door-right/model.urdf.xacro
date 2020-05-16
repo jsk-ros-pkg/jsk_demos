@@ -109,15 +109,16 @@
       <origin xyz="-0.015 -0.39 0" rpy="0 -0 0 "/>
       <axis xyz="0 0 -1"/>
       <limit lower="0" upper="1.5708" effort="100" velocity="0.5"/>
-      <!-- change spring_stiffness -->
-      <dynamics damping="0.2" friction="0" spring_stiffness="100.0" spring_reference="0.0" />
+      <dynamics damping="0.2" friction="0"/>
     </joint>
     <transmission type="pr2_mechanism_model/SimpleTransmission" name="${name}_DOOR_trans">
       <actuator name="${name}_DOOR_motor"/>
       <joint name="${name}_DOOR"/>
       <mechanicalReduction>1</mechanicalReduction>
     </transmission>
+    <!-- modify springStiffness and make the door auto-closed -->
     <gazebo reference="${name}_DOOR">
+      <springStiffness>0.5</springStiffness>
       <cfmDamping>0.4</cfmDamping>
     </gazebo>
     <joint name="${name}_KNOB" type="revolute">
