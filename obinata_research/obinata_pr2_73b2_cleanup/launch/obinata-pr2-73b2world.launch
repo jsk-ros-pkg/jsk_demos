@@ -11,8 +11,9 @@
     <!-- <node name="spawn_pr2_leave_from_door" pkg="gazebo_ros" type="spawn_model" args="$(optenv ROBOT_INITIAL_POSE) -unpause -urdf -parm robot_description -x $(arg pr2_init_x -model pr2" respawn="false" output="screen" /> -->
 
     <!-- bringup script -->
-    <include file="$(find obinata_pr2_73b2_cleanup)/launch/pr2_empty_world.launch">
+    <include file="$(find pr2_gazebo)/launch/pr2_empty_world.launch">
         <arg name="world_name" value="$(arg world_name)" />
+        <arg name="ROBOT_INITIAL_POSE" value="-x 0.75 -y 0 -z 0" />
     </include>
 
     <!-- put chairs -->
