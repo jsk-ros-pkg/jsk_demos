@@ -11,6 +11,7 @@
 
   <buildtool_depend>catkin</buildtool_depend>
 
+  <run_depend>gazebo_ros</run_depend> <!-- for gazebo_ros_pose_publisher https://github.com/ros-simulation/gazebo_ros_pkgs/pull/1098 -->
   <run_depend>jsk_maps</run_depend>
   <run_depend>pr2eus</run_depend>
 

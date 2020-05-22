@@ -1,0 +1,5 @@
+# for gazebo_ros_pose_publisher https://github.com/ros-simulation/gazebo_ros_pkgs/pull/1098
+- git:
+    local-name: gazebo_ros_pkgs
+    uri: https://github.com/k-okada/gazebo_ros_pkgs.git
+    version: add_gazebo_pose_publisher
