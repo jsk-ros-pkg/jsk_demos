@@ -11,6 +11,8 @@
 
   <buildtool_depend>catkin</buildtool_depend>
 
+  <run_depend>gazebo_ros</run_depend> <!-- for gazebo_ros_pose_publisher https://github.com/ros-simulation/gazebo_ros_pkgs/pull/1098 -->
+  <run_depend>pr2_gazebo</run_depend> <!-- ROBOT_INITIAL_POSE argument https://github.com/PR2/pr2_simulator/pull/147, you can remove this line once it is released -->
   <run_depend>jsk_maps</run_depend>
   <run_depend>pr2eus</run_depend>
 

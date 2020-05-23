@@ -1,0 +1,10 @@
+# for gazebo_ros_pose_publisher https://github.com/ros-simulation/gazebo_ros_pkgs/pull/1098
+- git:
+    local-name: gazebo_ros_pkgs
+    uri: https://github.com/k-okada/gazebo_ros_pkgs.git
+    version: add_gazebo_pose_publisher
+# ROBOT_INITIAL_POSE argument https://github.com/PR2/pr2_simulator/pull/147
+- git:
+    local-name: pr2_simulator
+    uri: https://github.com/k-okada/pr2_simulator.git
+    version: arg_robot_initial_pose

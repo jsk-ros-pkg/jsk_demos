@@ -11,9 +11,34 @@
     <!-- <node name="spawn_pr2_leave_from_door" pkg="gazebo_ros" type="spawn_model" args="$(optenv ROBOT_INITIAL_POSE) -unpause -urdf -parm robot_description -x $(arg pr2_init_x -model pr2" respawn="false" output="screen" /> -->
 
     <!-- bringup script -->
-    <include file="$(find obinata_pr2_73b2_cleanup)/launch/pr2_empty_world.launch">
+    <include file="$(find pr2_gazebo)/launch/pr2_empty_world.launch">
         <arg name="world_name" value="$(arg world_name)" />
+        <arg name="ROBOT_INITIAL_POSE" value="-x 0.75 -y 0 -z 0" />
     </include>
+
+    <!-- put chairs -->
+    <node name="spawn_char_1" pkg="gazebo_ros" type="spawn_model"
+          args="-x 4 -y -1 -z 0.1 -Y 0.2 -unpause -file $(find eusurdf)/models/room73b2-chair0/model.urdf -urdf -model chair_1" respawn="false" output="screen" />
+    <node name="spawn_char_2" pkg="gazebo_ros" type="spawn_model"
+          args="-x 4.5 -y -0.3 -z 0.1 -Y 0.8 -unpause -file $(find eusurdf)/models/room73b2-chair0/model.urdf -urdf -model chair_2" respawn="false" output="screen" />
+    <node name="spawn_char_3" pkg="gazebo_ros" type="spawn_model"
+          args="-x 6 -y 0.3 -z 0.1 -Y 1.4 -unpause -file $(find eusurdf)/models/room73b2-chair0/model.urdf -urdf -model chair_3" respawn="false" output="screen" />
+
+    <!-- publish all model postion in TF /gazebo name space
+         c.f https://github.com/ros-simulation/gazebo_ros_pkgs/pull/1098
+             https://github.com/start-jsk/rtmros_tutorials/pull/575
+    -->
+    <group ns="gazebo">
+      <node pkg="gazebo_ros" type="gazebo_ros_pose_publisher"
+            name="gazebo_ros_pose" >
+        <param name="base_frame" value="/world" />
+        <param name="update_rate" value="100" />
+        <param name="tf_prefix" value="/gazebo/" />
+      </node>
+    </group>
+     <node pkg="tf" type="static_transform_publisher"
+           name="static_transform_publisher_robot_odom"
+           args="0 0 0 0 0 0 /gazebo/pr2 /odom 100" /> <!-- AYASHII??? -->
 
     <arg name="launch_pr2_base_trajectory_action" default="false"
         doc="launch pr2_base_trajectory_action for debugging" />
