@@ -6,6 +6,11 @@ roslaunch gazebo_ros empty_world.launch
 roslaunch obinata_pr2_73b2_cleanup/launch/gazebo_spawn_scene.launch scene:=door_with_wall
 ```
 
+## launch 73b2 and fix initial pose
+```bash
+ROBOT_INITIAL_POSE="-x 0.75 -y 0 -z 0 -R 0 -P 0 -Y 0" roslaunch obinata_pr2_73b2_cleanup obinata-pr2-73b2world.launch 
+```
+
 ## about models
 The door with a knob is room73b2-door-right. NOT LEFT
 
