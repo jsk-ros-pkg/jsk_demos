@@ -5,8 +5,30 @@
     (setq *pr2* (pr2))
     (setq *scene* (door_with_wall))
     (send *pr2* :move-to (make-coords :pos #f(-1500 0 0) :rpy #f(0 0 0)))
+    (setq *door* (send *door_with_wall* :object "room73b2-door-right"))
+    (setq *knob* (send *door* :handle-rear-knob))
     (objects (list *pr2* *scene*))
 )
 
 ;; このあとの方針
 ;; ドアを掴んで開けたあと，servo-offにしてそのまま肩で押していく
+
+(defun move-to-door()
+    (send *pr2* :move-to (make-coords :pos #f(700 0 0)))
+    )
+
+(defun grasp-knob()
+    (send *pr2* :head :look-at (send *knob* :worldpos))
+    (send *pr2* :larm :inverse-kinematics
+                *knob*
+                :link-list (send *pr2* :link-list (send *pr2* :larm :end-coords :parent))
+                :move-target (send *pr2* :larm :end-coords)
+                :rotation-axis :z
+                :debug-view t)
+    )
+
+(defun open-door())
+
+(defun push-door())
+
+
