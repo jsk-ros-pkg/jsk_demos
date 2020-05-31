@@ -24,17 +24,20 @@
 
 (defun grasp-knob()
     (send *pr2* :head :look-at (send *knob* :worldpos))
-    ;; larm -> rarm?
-    (send *pr2* :larm :inverse-kinematics
+    (send *pr2* :rarm :inverse-kinematics
                 *knob*
-                :link-list (send *pr2* :link-list (send *pr2* :larm :end-coords :parent))
-                :move-target (send *pr2* :larm :end-coords)
+                :link-list (send *pr2* :link-list (send *pr2* :rarm :end-coords :parent))
+                :move-target (send *pr2* :rarm :end-coords)
                 :rotation-axis :z
                 :debug-view t)
     )
 
-(defun open-door())
+(defun open-door()
+    (if (send *rear-knob* :parent) (send (send *rear-knob* :parent) :dissoc *rear-knob*))
+    (send *pr2* :rarm :end-coords :assoc *rear-knob*)
+    (send *pr2* :rarm :move-end-pos #f(0 0 -100) :world :debug-view t :look-at-target t))
 
-(defun push-door())
+(defun push-door()
+    (send *pr2* :move-to (make-coords :pos #f(1500 0 0))))
 
 
