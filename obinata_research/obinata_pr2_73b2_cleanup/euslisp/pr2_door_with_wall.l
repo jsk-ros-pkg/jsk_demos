@@ -1,5 +1,6 @@
 (load "../models/door_with_wall.l")
 (load "package://pr2eus/pr2.l")
+(load "package://pr2eus/pr2-interface.l")
 
 (defun init ()
     (setq *pr2* (pr2))
@@ -12,6 +13,7 @@
     ;; 廊下側のノブ座標
     (setq *knob* (make-coords :pos #f(-115.0 -140.0 960.0) :rpy #f(-3.142 1.225e-16 1.571)))
     (objects (list *pr2* *scene*))
+    (setq *ri* (instance pr2-interface :init :objects (send *scene* :objects))
 )
 
 ;; このあとの方針
