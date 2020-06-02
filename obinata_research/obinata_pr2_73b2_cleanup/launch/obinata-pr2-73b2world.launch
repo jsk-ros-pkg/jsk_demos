@@ -17,11 +17,11 @@
     </include>
 
     <!-- put chairs -->
-    <node name="spawn_char_1" pkg="gazebo_ros" type="spawn_model"
+    <node name="spawn_chair_1" pkg="gazebo_ros" type="spawn_model"
           args="-x 4 -y -1 -z 0.1 -Y 0.2 -unpause -file $(find eusurdf)/models/room73b2-chair0/model.urdf -urdf -model chair_1" respawn="false" output="screen" />
-    <node name="spawn_char_2" pkg="gazebo_ros" type="spawn_model"
+    <node name="spawn_chair_2" pkg="gazebo_ros" type="spawn_model"
           args="-x 4.5 -y -0.3 -z 0.1 -Y 0.8 -unpause -file $(find eusurdf)/models/room73b2-chair0/model.urdf -urdf -model chair_2" respawn="false" output="screen" />
-    <node name="spawn_char_3" pkg="gazebo_ros" type="spawn_model"
+    <node name="spawn_chair_3" pkg="gazebo_ros" type="spawn_model"
           args="-x 6 -y 0.3 -z 0.1 -Y 1.4 -unpause -file $(find eusurdf)/models/room73b2-chair0/model.urdf -urdf -model chair_3" respawn="false" output="screen" />
 
     <!-- publish all model postion in TF /gazebo name space
