@@ -1,6 +1,8 @@
 <launch>
   <arg name="debug" default="false" />
   <arg name="use_ffha" default="false" />
+  <arg name="exit_on_finish" default="true" doc="exit on the end of task performance if enabled"/>
+
   <node pkg="pddl_planner_viewer"
         type="pddl_planner_viewer.py"
         name="$(anon pddl_planner_viewer)" />
@@ -28,6 +30,7 @@
                                       lazy_wastar([hff,hlm],preferred=[hff,hlm],w=2)],
                                       repeat_last=false)&quot;" />
     <arg name="debug" value="$(arg debug)" />
+    <arg name="exit_on_finish" value="$(arg exit_on_finish)"/>
   </include>
   </group>
 </launch>
