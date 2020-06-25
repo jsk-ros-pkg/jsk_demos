@@ -25,8 +25,8 @@ def change_map(frame):
     try:
         if frame != '/map':
             resp = tf_select(frame+"_tf")
-    except rospy.ServiceException, e:
-        print "Service call failed: %s"%e
+    except rospy.ServiceException as e:
+        rospy.logerr("Service call failed: %s" % e)
 
     rospy.set_param('/amcl/initial_map', frame)
 
