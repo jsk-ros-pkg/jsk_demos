@@ -35,7 +35,7 @@ def callback(pose):
     global pub
 
     # change the map
-    frame = pose.header.frame_id;
+    frame = pose.header.frame_id
     change_map(frame)
 
     rospy.sleep(1) # this is bad
