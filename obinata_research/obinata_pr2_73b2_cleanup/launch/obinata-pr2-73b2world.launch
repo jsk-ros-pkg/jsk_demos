@@ -24,6 +24,27 @@
     <node name="spawn_chair_3" pkg="gazebo_ros" type="spawn_model"
           args="-x 6 -y 0.3 -z 0.1 -Y 1.4 -unpause -file $(find eusurdf)/models/room73b2-chair0/model.urdf -urdf -model chair_3" respawn="false" output="screen" />
 
+    <!-- put trash -->
+    <node name="spawn_can_1" pkg="gazebo_ros" type="spawn_model"
+          args="-x 7.5 -y 1 -z 0.03 -P 1.571 -unpause -file $(find eusurdf)/models/room73b2-georgia-emerald-mountain/model.urdf -urdf -model can_1" respawn="false" output="screen" />
+    <node name="spawn_can_2" pkg="gazebo_ros" type="spawn_model"
+          args="-x 9.5 -y 2 -z 0.03 -P 1.571 -unpause -file $(find eusurdf)/models/room73b2-wanda/model.urdf -urdf -model can_2" respawn="false" output="screen" />
+    <!-- not stable -->
+    <node name="spawn_carton_1" pkg="gazebo_ros" type="spawn_model"
+          args="-x 8 -y 3 -z 0 -P 1.571 -unpause -file $(find eusurdf)/models/room73b2-iemon/model.urdf -urdf -model carton_1" respawn="false" output="screen" />
+    <!-- not stable -->
+    <node name="spawn_bottle_1" pkg="gazebo_ros" type="spawn_model"
+          args="-x 11 -y 3 -z 0.045 -P 1.571 -unpause -file $(find eusurdf)/models/room73b2-bottle/model.urdf -urdf -model bottle_1" respawn="false" output="screen" />
+    <node name="spawn_trashbox" pkg="gazebo_ros" type="spawn_model"
+          args="-x 1 -y -1 -z 0 -unpause -file $(find eusurdf)/models/room73b2-trashbox0/model.urdf -urdf -model trashbox" respawn="false" output="screen" />
+
+    <!-- mini box -->
+    <node name="spawn_box_1" pkg="gazebo_ros" type="spawn_model"
+          args="-x 11.2 -y 0 -z 0.675 -unpause -file $(find eusurdf)/models/room73b2-empty-box/model.urdf -urdf -model box_1" respawn="false" output="screen" />
+    <node name="spawn_box_2" pkg="gazebo_ros" type="spawn_model"
+          args="-x 11.2 -y 1 -z 0.675 -unpause -file $(find eusurdf)/models/room73b2-empty-box/model.urdf -urdf -model box_2" respawn="false" output="screen" />
+        
+
     <!-- publish all model postion in TF /gazebo name space
          c.f https://github.com/ros-simulation/gazebo_ros_pkgs/pull/1098
              https://github.com/start-jsk/rtmros_tutorials/pull/575
