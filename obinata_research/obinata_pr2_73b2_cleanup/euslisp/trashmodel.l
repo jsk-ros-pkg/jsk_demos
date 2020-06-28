@@ -20,7 +20,7 @@
 (send mc-paper-bag-m-b2 :transform (make-coords :pos #f(0 0 0.5)))
 ;; (setq mc-paper-bag-m (body- mc-paper-bag-m-b1 mc-paper-bag-m-b2))
 
-(setq mc-paper-bag-s)
+;; (setq mc-paper-bag-s)
 
 
 ;; McDonald's nugget box
