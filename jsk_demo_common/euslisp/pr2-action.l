@@ -503,6 +503,31 @@
       (if (send *ri* :simulation-modep) (return-from move-fridge-traj t))
       (when (< idx (/ (length lst) 2))
         (return-from move-fridge-traj nil)))
+    (when (and use-base move-robot)
+      (let ((back-traj-points nil))
+        (send *ri* :ros-wait 0.0 :spin-self t)
+        (send *ri* :stop-grasp hand)
+        (send *pr2* hand :move-end-pos (float-vector 50 -100 0) :world :rotation-axis nil)
+        (send *ri* :angle-vector (send *pr2* :angle-vector))
+        (send *ri* :wait-interpolation)
+        (send *pr2* hand :move-end-pos (float-vector -150 0 0) :world :rotation-axis nil)
+        (send *ri* :angle-vector (send *pr2* :angle-vector))
+        (send *ri* :wait-interpolation)
+        (swipe-fridge-door :door-type door-type :use-arm hand
+                           :controller-type (if (eq hand :larm) :larm-controller :rarm-controller))
+        (dolist (base-cds (reverse base-cds-list))
+          (setq diff-cds (send (send (car base-cds-list) :copy-worldcoords)
+                               :transformation base-cds))
+          (setq diff-v (send diff-cds :pos))
+          (push (float-vector (/ (elt diff-v 0) 1000.0)
+                              (/ (elt diff-v 1) 1000.0)
+                              (vector-angle #f(1 0 0)
+                                            (matrix-column (send diff-cds :worldrot) 0)
+                                            #f(0 0 1)))
+                                  back-traj-points))
+        (send *ri* :move-trajectory-sequence back-traj-points tms :send-action t)
+        (send *ri* :wait-interpolation)
+        ))
     t))
 
 ;;
@@ -845,7 +870,7 @@
         ))
   )
 
-(defun swipe-fridge-door (&key (door-type :circle) (ratio 1) (use-arm :rarm) (wait t))
+(defun swipe-fridge-door (&key (door-type :circle) (ratio 1) (use-arm :rarm) (wait t) (controller-type :default-controller))
   (case door-type
     (:circle
      ;; free door handle
@@ -857,7 +882,8 @@
             (float-vector 130 -25.9215 15.5489 55.3988 -36.512 -44.1484 -28.2568 -7.75581 -50.5861 44.487 -45.2274 -70.2799 245.195 -26.7547 148.858 0.027956 -7.548)
             (float-vector 130 38.3106 20.1389 77.7708 -88.0224 -47.5755 -5.72958 -10.483 -12.7603 46.1883 -29.4706 -70.2965 245.815 -44.8729 150.788 0.003956 -13.794)
             )
-           (list 1200 600 1000 700))
+           (list 1200 600 1000 700)
+           controller-type)
      (send *ri* :stop-grasp :rarm)
      (send *ri* :wait-interpolation)
      )
@@ -949,13 +975,16 @@
       (return-from open-fridge-door nil))
 
     ;;move larm forward to keep the fridge door open
-    (move-forward-larm :ratio ratio :wait wait)
+    (unless use-base
+      (move-forward-larm :ratio ratio :wait wait))
 
     ;;detach fridge handle
-    (detach-fridge-handle :wait wait)
+    (unless use-base
+      (detach-fridge-handle :wait wait))
 
     ;;swipe fridge door by larm
-    (swipe-fridge-door :door-type door-type :ratio ratio :use-arm use-arm :wait wait)
+    (unless use-base
+      (swipe-fridge-door :door-type door-type :ratio ratio :use-arm use-arm :wait wait))
 
     ;;grasp can posing
     (grasp-can-posing :door-type door-type :ratio ratio :use-arm use-arm :wait wait)
