@@ -429,45 +429,55 @@
         (ros::ros-warn "Grasp handle failed, return from execute-open")
         (return-from move-fridge-traj nil)))
 
-    (dolist (rr lst)
-      (let ((ik-solved
-             (send *pr2* :inverse-kinematics
-                   (send rr :worldcoords)
-                   :use-torso use-torso
-                   :use-base use-base
-                   :move-arm hand :rotation-axis ra :debug-view nil :warnp nil)))
-        (unless (or ik-solved (eq ra nil))
-          (warn ";; retry ~A~%" rr);
-          (setq ik-solved
-                (send *pr2* :inverse-kinematics
-                      (send rr :copy-worldcoords)
-                      :use-torso use-torso
-                      :use-base use-base
-                      :move-arm hand :rotation-axis nil :debug-view nil :warnp nil)))
-        (unless ik-solved (warn ";; failed ~A~%" rr))
-        (when ik-solved
-          (push (send *pr2* :copy-worldcoords) base-cds-list)
-          (push (send *pr2* :angle-vector) avs)
-          (push time-tick tms))
-        ))
+    (let ((init-av (send *pr2* :angle-vector))
+          (init-base-cds (send *pr2* :copy-worldcoords))
+          diff-cds diff-v)
+      (dolist (rr lst)
+        (let ((ik-solved
+               (send *pr2* :inverse-kinematics
+                     (send rr :worldcoords)
+                     :use-torso use-torso
+                     :use-base use-base
+                     :move-arm hand :rotation-axis ra :debug-view nil :warnp nil)))
+          (unless (or ik-solved (eq ra nil))
+            (warn ";; retry ~A~%" rr);
+            (setq ik-solved
+                  (send *pr2* :inverse-kinematics
+                        (send rr :copy-worldcoords)
+                        :use-torso use-torso
+                        :use-base use-base
+                        :move-arm hand :rotation-axis nil :debug-view nil :warnp nil)))
+          (unless ik-solved (warn ";; failed ~A~%" rr))
+          (when ik-solved
+            (push (send *pr2* :copy-worldcoords) base-cds-list)
+            (push (send *pr2* :angle-vector) avs)
+            (push time-tick tms))
+          ))
+      (send *pr2* :angle-vector init-av)
+      (send *pr2* :move-to init-base-cds :world)
+
+      (when use-base
+        (dotimes (i (length base-cds-list))
+          (setq diff-cds (send (send *pr2* :copy-worldcoords)
+                               :transformation (elt base-cds-list i)))
+          (setq diff-v (send diff-cds :pos))
+          (push (float-vector (/ (elt diff-v 0) 1000.0)
+                              (/ (elt diff-v 1) 1000.0)
+                              (vector-angle #f(1 0 0)
+                                            (matrix-column (send diff-cds :worldrot) 0)
+                                            #f(0 0 1)))
+                                  traj-points))))
     (when return-sequence
-      (return-from move-fridge-traj (list (reverse avs) tms)))
+      (if use-base
+        (return-from move-fridge-traj (list (reverse avs) traj-points tms))
+        (return-from move-fridge-traj (list (reverse avs) tms))))
 
     (when move-robot
-      (dotimes (i (length base-cds-list))
-        (setq diff-cds (send (send *pr2* :copy-worldcoords)
-                             :transformation (elt base-cds-list i)))
-        (setq diff-v (send diff-cds :pos))
-        (push (float-vector (elt diff-v 0)
-                            (elt diff-v 1)
-                            (vector-angle #f(1 0 0)
-                                          (matrix-column (send diff-cds :worldrot) 0)
-                                          #f(0 0 1)))
-                                traj-points))
       (send *ri* :ros-wait 0.0 :spin-self t) ;; attention-check ...
       (send *ri* :angle-vector-sequence (reverse avs) tms)
-      (send *ri* :move-trajectory-sequence (reverse traj-points) tms :send-action t)
-      )
+      (if traj-points
+        (send *ri* :move-trajectory-sequence traj-points tms :send-action t)))
+
     ;; finalize
     (cond
      ((integerp wait-time)
