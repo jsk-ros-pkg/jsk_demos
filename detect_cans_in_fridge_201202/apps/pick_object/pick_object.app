@@ -50,6 +50,7 @@ plugins:
         - /kinect_head/depth_registered/throttled/camera_info
         - /kinect_head/rgb/throttled/image_rect_color/compressed
         - /kinect_head/depth_registered/throttled/image_rect/compressedDepth
+        - /audio
   - name: gdrive_uploader_plugin
     type: app_uploader/gdrive_uploader_plugin
     plugin_args:
