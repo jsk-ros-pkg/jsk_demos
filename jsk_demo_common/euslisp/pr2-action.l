@@ -975,8 +975,7 @@
       (return-from open-fridge-door nil))
 
     ;;move larm forward to keep the fridge door open
-    (unless use-base
-      (move-forward-larm :ratio ratio :wait wait))
+    (move-forward-larm :ratio ratio :wait wait)
 
     ;;detach fridge handle
     (unless use-base
