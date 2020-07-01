@@ -130,6 +130,7 @@
                   (finish-type :pass-to-human) ;; :pass-to-human, :put-on-turtlebot, ...
                   ;;(use-arm :rarm)
                   (use-arm :larm)
+                  (use-base nil)
                   )
   (disable-behavior-server)
   (case app-manager
@@ -152,7 +153,7 @@
      ;; do nothing
      ))
 
-  (unless (open-fridge-door :use-arm use-arm)
+  (unless (open-fridge-door :use-arm use-arm :use-base use-base)
     (return-from demo))
 
   ;; move
