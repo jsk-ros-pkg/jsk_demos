@@ -119,7 +119,7 @@
         (speak-jp (format nil "I will look for ~a and bring it. Please wait a minute." *type*)))
        (t (speak-jp (format nil "~aを持って行きます。少々、お待ちください。" *type*))))
     (speak-jp (format nil "~a を もってきます  しょうしょう おまち ください" *type*)))
-  (pr2-tuckarm-pose :rarm)
+  (pr2-tuckarm-pose)
 
   (setq *opose* (send *ri* :state :worldcoords))
   )
