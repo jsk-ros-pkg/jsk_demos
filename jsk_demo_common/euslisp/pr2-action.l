@@ -494,6 +494,8 @@
     ;; ;;
     (send *ri* :ros-wait 0.0 :spin t :spin-self t) ;; attention-check ...
     (send *pr2* :angle-vector (send *ri* :state :potentio-vector))
+    (if use-base (send *pr2* :move-to (car base-cds-list) :world))
+
     (let ((end-pt (send *pr2* hand :end-coords :worldpos))
           idx)
       (setq idx (position (find-extream lst #'(lambda(x) (distance (send x :worldpos) end-pt)) #'<) lst))
