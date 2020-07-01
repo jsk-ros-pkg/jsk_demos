@@ -675,7 +675,7 @@
   )
 
 (defparameter *fridge-handle-cds* nil)
-(defun move-to-and-open-fridge-door (&key (door-type :circle) (ratio 1) (look-around nil) (head-pitch 14) (torso-lift 130) (move t) (open-fridge-func #'open-fridge-traj) (wait t))
+(defun move-to-and-open-fridge-door (&key (door-type :circle) (ratio 1) (look-around nil) (head-pitch 14) (torso-lift 130) (move t) (open-fridge-func #'open-fridge-traj) (wait t) (use-base nil))
   (let (ret
         (idealcds
          (case door-type
@@ -779,6 +779,7 @@
              (setq ret (funcall open-fridge-func
                                 :rarm cds 1.7 ;;(/ pi 2)
                                 :rotation-axis t :radius 490
+                                :use-base use-base
                                 :wait-time 5.8 ;; t
                                 )))
             ((:slide1 :slide2)
@@ -918,6 +919,7 @@
                               (door-type :circle) (look-around nil) ;; :circle, :slide1, :slide2
                               (func-time 80)
                               (wait t)
+                              (use-base nil)
                               )
   (let ((diffcds (make-coords :pos (float-vector 10000 10000 10000)))
         cds
@@ -929,7 +931,7 @@
     ;; detect fridge and open door
     (dotimes (i 10 nil)
       ;; detect fridge and move to the fridge door
-      (setq ret (move-to-and-open-fridge-door :door-type door-type :ratio ratio :look-around look-around :head-pitch head-pitch :torso-lift torso-lift :move move :open-fridge-func open-fridge-func :wait wait))
+      (setq ret (move-to-and-open-fridge-door :door-type door-type :ratio ratio :look-around look-around :head-pitch head-pitch :torso-lift torso-lift :move move :open-fridge-func open-fridge-func :wait wait :use-base use-base))
       (if ret (return))
       )
 
