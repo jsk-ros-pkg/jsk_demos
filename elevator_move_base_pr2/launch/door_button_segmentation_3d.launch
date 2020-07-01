@@ -1,0 +1,99 @@
+<launch>
+
+  <arg name="NS" default="door_button"/>
+  <arg name="MACHINE" default="c2"/>
+  <arg name="MANAGER" default="door_button_segmentation_manager"/>
+  <arg name="INPUT_LABEL" default="fcn_object_segmentation/output"/>
+  <arg name="INPUT_INFO" default="/narrow_stereo/left/camera_info"/>
+  <arg name="INPUT_CLOUD" default="/kinect_head/depth_registered/points"/>
+  <arg name="FIXED_FRAME" default="/head_mount_kinect_rgb_optical_frame"/>
+
+  <group ns="$(arg NS)">
+    <node name="$(arg MANAGER)"
+          pkg="nodelet" type="nodelet"
+          args="manager"
+          machine="$(arg MACHINE)"
+          output="screen" respawn="true">
+    </node>
+
+    <!-- Pipeline to get 3-dimentional bounding box of door button -->
+    <!-- label -> mask -> indices -> cloud -> cluster indices -> bboxes -->
+    <node name="label_to_mask"
+          pkg="nodelet" type="nodelet"
+          args="load jsk_perception/LabelToMaskImage $(arg MANAGER)"
+          machine="$(arg MACHINE)"
+          output="screen" respawn="true">
+      <remap from="~input" to="$(arg INPUT_LABEL)"/>
+      <rosparam>
+        label_value: 1
+      </rosparam>
+    </node>
+
+    <node name="mask_to_point_indices"
+          pkg="nodelet" type="nodelet"
+          args="load jsk_pcl_utils/MaskImageToPointIndices $(arg MANAGER)"
+          machine="$(arg MACHINE)"
+          output="screen" respawn="true">
+      <remap from="~input" to="label_to_mask/output"/>
+    </node>
+
+    <node name="depth_image_creator"
+          pkg="nodelet" type="nodelet"
+          args="load jsk_pcl/DepthImageCreator $(arg MANAGER)"
+          machine="$(arg MACHINE)"
+          output="screen" respawn="true">
+      <remap from="~input" to="$(arg INPUT_CLOUD)"/>
+      <remap from="~info" to="$(arg INPUT_INFO)"/>
+      <rosparam>
+        use_asynchronous: true
+        organize_cloud: true
+      </rosparam>
+    </node>
+
+    <node name="extract_indices"
+          pkg="nodelet" type="nodelet"
+          args="load jsk_pcl/ExtractIndices $(arg MANAGER)"
+          machine="$(arg MACHINE)"
+          output="screen" respawn="true">
+      <remap from="~input" to="depth_image_creator/output_cloud"/>
+      <remap from="~indices" to="mask_to_point_indices/output"/>
+      <rosparam>
+        approximate_sync: true
+        queue_size: 1000
+        keep_organized: true
+      </rosparam>
+    </node>
+
+    <node name="euclidean_clustering"
+          pkg="nodelet" type="nodelet"
+          args="load jsk_pcl/EuclideanClustering $(arg MANAGER)"
+          machine="$(arg MACHINE)"
+          output="screen" respawn="true">
+      <remap from="~input" to="extract_indices/output"/>
+      <rosparam>
+        min_size: 100
+        max_size: 10000
+        tolerance: 0.02
+      </rosparam>
+    </node>
+
+    <node name="cluster_indices_decomposer"
+          pkg="nodelet" type="nodelet"
+          args="load jsk_pcl/ClusterPointIndicesDecomposer $(arg MANAGER)"
+          machine="$(arg MACHINE)"
+          output="screen" respawn="true">
+      <remap from="~input" to="extract_indices/output"/>
+      <remap from="~target" to="euclidean_clustering/output"/>
+      <rosparam subst_value="true">
+        approximate_sync: false
+        queue_size: 1000
+        sort_by: -cloud_size
+        align_boxes: true
+        align_boxes_with_plane: false
+        use_pca: true
+        target_frame_id: $(arg FIXED_FRAME)
+      </rosparam>
+    </node>
+  </group>  <!-- ns: $(arg NS) -->
+
+</launch>
