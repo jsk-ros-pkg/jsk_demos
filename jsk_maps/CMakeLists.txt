@@ -53,7 +53,7 @@ set(_generated_files
   ${PROJECT_SOURCE_DIR}/raw_maps/eng6-2f-0.05.yaml
   ${PROJECT_SOURCE_DIR}/raw_maps/eng6-4f-0.05.yaml
   ${PROJECT_SOURCE_DIR}/raw_maps/eng8-1f-0.05.yaml
-  ${PROJECT_SOURCE_DIR}/raw_maps/ eng8-b1f-0.05.yaml
+  ${PROJECT_SOURCE_DIR}/raw_maps/eng8-b1f-0.05.yaml
   ${PROJECT_SOURCE_DIR}/launch/start_map_eng2_main.launch
   ${PROJECT_SOURCE_DIR}/launch/start_map_eng6_main.launch
   ${PROJECT_SOURCE_DIR}/launch/start_map_eng8_main.launch
