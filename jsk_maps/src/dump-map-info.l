@@ -101,19 +101,35 @@ map_id: ~a"
 
       ;; map servers
       (if keepout
-        (dolist (map floors)
-          (format fd "
-    <node name=\"$(anon map_server~2,2D)\" pkg=\"map_server\" type=\"map_server\"
-          args=\"~a\" unless=\"$(arg keepout)\" >
-      <remap from=\"map\" to=\"~a\"/>
-      <param name=\"frame_id\" value=\"~a\"/>
-    </node>~%"
-            cntr (get-yaml-filename map :unresolve t :keepout nil)
+        (progn
+          (format fd "    <group if=\"$(arg keepout)\">~%")
+          (dolist (map floors)
+            (format fd "      <node name=\"$(anon map_server~2,2D)\" pkg=\"map_server\" type=\"map_server\"
+            args=\"~a\" >
+        <remap from=\"map\" to=\"~a\"/>
+        <param name=\"frame_id\" value=\"~a\"/>
+      </node>~%"
+            cntr (get-yaml-filename map :unresolve t :keepout t)
             (send map :name) (send map :name))
           (incf cntr))
+          (format fd "    </group>~%")))
+
+      (setq cntr 0)
+      (if keepout
+        (progn
+          (format fd "    <group unless=\"$(arg keepout)\">~%")
+          (dolist (map floors)
+            (format fd "      <node name=\"$(anon map_server~2,2D)\" pkg=\"map_server\" type=\"map_server\"
+            args=\"~a\" >
+        <remap from=\"map\" to=\"~a\"/>
+        <param name=\"frame_id\" value=\"~a\"/>
+      </node>~%"
+              cntr (get-yaml-filename map :unresolve t :keepout nil)
+              (send map :name) (send map :name))
+            (incf cntr))
+          (format fd "    </group>~%"))
         (dolist (map floors)
-          (format fd "
-    <node name=\"$(anon map_server~2,2D)\" pkg=\"map_server\" type=\"map_server\"
+          (format fd "    <node name=\"$(anon map_server~2,2D)\" pkg=\"map_server\" type=\"map_server\"
           args=\"~a\" >
       <remap from=\"map\" to=\"~a\"/>
       <param name=\"frame_id\" value=\"~a\"/>
@@ -122,40 +138,24 @@ map_id: ~a"
             (send map :name) (send map :name))
           (incf cntr)))
 
-      (setq cntr 0)
-      (if keepout
-        (dolist (map floors)
-          (format fd "
-    <node name=\"$(anon map_server~2,2D)\" pkg=\"map_server\" type=\"map_server\"
-          args=\"~a\" if=\"$(arg keepout)\" >
-      <remap from=\"map\" to=\"~a\"/>
-      <param name=\"frame_id\" value=\"~a\"/>
-    </node>~%"
-            cntr (get-yaml-filename map :unresolve t :keepout t)
-            (send map :name) (send map :name))
-          (incf cntr)))
-
       ;; multi map server
       (format fd "~%    <!-- map for navigation nodes -->~%")
       (if keepout
         (progn
-          (format fd "
-    <node name=\"map_server\" pkg=\"multi_map_server\" type=\"multi_map_server\"
-          unless=\"$(arg keepout)\" args=\"~a~%"
-            (get-yaml-filename (car floors) :unresolve t :keepout nil))
-          (dolist (map (cdr floors))
-            (format fd "          ~a~%" (get-yaml-filename map :unresolve t :keepout nil)))
-          (format fd "    \" />~%")
-          (format fd "
-    <node name=\"map_server\" pkg=\"multi_map_server\" type=\"multi_map_server\"
+          (format fd "    <node name=\"map_server\" pkg=\"multi_map_server\" type=\"multi_map_server\"
           if=\"$(arg keepout)\" args=\"~a~%"
             (get-yaml-filename (car floors) :unresolve t :keepout t))
           (dolist (map (cdr floors))
             (format fd "          ~a~%" (get-yaml-filename map :unresolve t :keepout t)))
+          (format fd "    \" />~%")
+          (format fd "    <node name=\"map_server\" pkg=\"multi_map_server\" type=\"multi_map_server\"
+          unless=\"$(arg keepout)\" args=\"~a~%"
+            (get-yaml-filename (car floors) :unresolve t :keepout nil))
+          (dolist (map (cdr floors))
+            (format fd "          ~a~%" (get-yaml-filename map :unresolve t :keepout nil)))
           (format fd "    \" />~%"))
         (progn
-          (format fd "
-    <node name=\"map_server\" pkg=\"multi_map_server\" type=\"multi_map_server\"
+          (format fd "    <node name=\"map_server\" pkg=\"multi_map_server\" type=\"multi_map_server\"
           args=\"~a~%"
             (get-yaml-filename (car floors) :unresolve t :keepout nil))
           (dolist (map (cdr floors))
@@ -163,7 +163,7 @@ map_id: ~a"
           (format fd "    \" />~%")))
 
       ;; group end
-      (format fd "  </group>~%")
+      (format fd "  </group>~%~%")
 
       ;; static transform publisher
       (setq cntr 0)
