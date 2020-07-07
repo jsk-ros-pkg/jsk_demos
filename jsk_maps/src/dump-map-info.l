@@ -83,8 +83,7 @@ map_id: ~a"
     ;;
     (dolist (map floors)
       (dump-map-yaml map)
-      (when (equal (send building :name) "/eng2")
-        (dump-map-yaml map :keepout t)))
+      (dump-map-yaml map :keepout t))
 
     (makedirs filename)
     ;;
@@ -202,9 +201,10 @@ map_id: ~a"
                    :default-floor "/eng2/7f" :keepout t)
   (load "eng8-scene.l")
   (dump-map-launch (make-eng8-scene) "launch/include/start_map_eng8_main.xml"
-                   :default-floor "/eng8/6f")
+                   :default-floor "/eng8/6f" :keepout t)
   (load "eng6-scene.l")
-  (dump-map-launch (make-eng6-scene) "launch/include/start_map_eng6_main.xml")
+  (dump-map-launch (make-eng6-scene) "launch/include/start_map_eng6_main.xml"
+                   :keepout t)
   )
 
 (progn
