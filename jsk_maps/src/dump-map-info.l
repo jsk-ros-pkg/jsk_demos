@@ -17,10 +17,13 @@
     (setq cy (- (elt (send cube :centroid) 1) (/ (* (elt size 1) 50) 2)))
     (list filename cx cy) ))
 
-(defun get-yaml-filename (nav-scene &key (unresolve))
+(defun get-yaml-filename (nav-scene &key (unresolve) (keepout nil))
   (let ((path (pathname (elt (dump-map-image-info nav-scene) 0)))
         yaml-path)
-    (setq yaml-path (format nil "~a~a.yaml" (send path :directory-string) (send path :name)))
+    (setq yaml-path
+          (if keepout
+            (format nil "~a~a_keepout.yaml" (send path :directory-string) (send path :name))
+            (format nil "~a~a.yaml" (send path :directory-string) (send path :name))))
     (if unresolve
         (unresolve-ros-path yaml-path) yaml-path)))
 
@@ -32,13 +35,16 @@
 ;;   occupied_thresh: 0.65
 ;;   free_thresh: 0.192
 ;;   frame_id: scene-name
-(defun dump-map-yaml (nav-scene &optional filename)
+(defun dump-map-yaml (nav-scene &key filename (keepout nil))
   (let ((info (dump-map-image-info nav-scene)) imgfile)
-    (setq filename (or filename (get-yaml-filename nav-scene)))
+    (setq filename (or filename (get-yaml-filename nav-scene :keepout keepout)))
     (with-open-file
         (fd filename :direction :output)
       ;; image filename need to be relative to the yaml filename
-      (setq imgfile (format nil "~a.~a" (send (pathname (elt info 0)) :name) (send (pathname (elt info 0)) :type)))
+      (setq imgfile
+            (if keepout
+              (format nil "~a_keepout.~a" (send (pathname (elt info 0)) :name) (send (pathname (elt info 0)) :type))
+              (format nil "~a.~a" (send (pathname (elt info 0)) :name) (send (pathname (elt info 0)) :type))))
       (format fd "image: ~a
 resolution: 0.050
 origin: [~a, ~a, 0]
@@ -76,7 +82,12 @@ map_id: ~a"
         (setq floors (append (list default-floor) (remove default-floor floors))))
     ;;
     (dolist (map floors)
-      (dump-map-yaml map))
+      (dump-map-yaml map)
+      (when (or (equal (send map :name) "/eng2/1f")
+                (equal (send map :name) "/eng2/2f")
+                (equal (send map :name) "/eng2/3f")
+                (equal (send map :name) "/eng2/7f"))
+        (dump-map-yaml map :keepout t)))
 
     (makedirs filename)
     ;;
