@@ -83,10 +83,7 @@ map_id: ~a"
     ;;
     (dolist (map floors)
       (dump-map-yaml map)
-      (when (or (equal (send map :name) "/eng2/1f")
-                (equal (send map :name) "/eng2/2f")
-                (equal (send map :name) "/eng2/3f")
-                (equal (send map :name) "/eng2/7f"))
+      (when (equal (send building :name) "/eng2")
         (dump-map-yaml map :keepout t)))
 
     (makedirs filename)

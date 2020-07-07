@@ -54,6 +54,7 @@ set(_generated_files
   ${PROJECT_SOURCE_DIR}/raw_maps/eng2-3f-0.05.yaml
   ${PROJECT_SOURCE_DIR}/raw_maps/eng2-3f-0.05_keepout.yaml
   ${PROJECT_SOURCE_DIR}/raw_maps/eng2-8f-0.05.yaml
+  ${PROJECT_SOURCE_DIR}/raw_maps/eng2-8f-0.05_keepout.yaml
   ${PROJECT_SOURCE_DIR}/raw_maps/eng6-2f-0.05.yaml
   ${PROJECT_SOURCE_DIR}/raw_maps/eng6-4f-0.05.yaml
   ${PROJECT_SOURCE_DIR}/raw_maps/eng8-1f-0.05.yaml
