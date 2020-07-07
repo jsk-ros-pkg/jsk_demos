@@ -177,7 +177,7 @@ map_id: ~a"
                 (send building :name) (send map :name))
         (incf cntr)
         (format fd "  <node pkg=\"tf\" type=\"static_transform_publisher\" name=\"$(anon map_tf~2,2D)\"
-        args=\"  0.000   0.000   0.000 0 0 0 ~a /map 100\" >~%
+        args=\"  0.000   0.000   0.000 0 0 0 ~a /map 100\" >
     <remap from=\"tf\" to=\"~a_tf\"/>
   </node>~%"
                 cntr (send map :name) (send map :name))
