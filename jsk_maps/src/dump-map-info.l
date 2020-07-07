@@ -91,7 +91,7 @@ map_id: ~a"
         (fd filename :direction :output)
       (format fd "<launch>~%")
       ;; argument
-      (when keepout (format fd "  <arg name=\"keepout\" default=\"true\"/>~%"))
+      (when keepout (format fd "  <arg name=\"keepout\" default=\"false\"/>~%"))
       (format fd "  <arg name=\"launch_map_server\" default=\"true\"/>~%~%")
 
       ;; group
