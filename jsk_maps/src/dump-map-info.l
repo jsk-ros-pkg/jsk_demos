@@ -141,14 +141,16 @@ map_id: ~a"
       (format fd "~%    <!-- map for navigation nodes -->~%")
       (if keepout
         (progn
-          (format fd "    <node name=\"map_server\" pkg=\"multi_map_server\" type=\"multi_map_server\"
+          (format fd "    <node name=\"map_keepout_server\" pkg=\"multi_map_server\" type=\"multi_map_server\"
           if=\"$(arg keepout)\" args=\"~a~%"
             (get-yaml-filename (car floors) :unresolve t :keepout t))
           (dolist (map (cdr floors))
             (format fd "          ~a~%" (get-yaml-filename map :unresolve t :keepout t)))
-          (format fd "    \" />~%")
+          (format fd "    \" >~%")
+          (format fd "      <remap from=\"map\" to=\"map_keepout\" />~%")
+          (format fd "    </node>~%")
           (format fd "    <node name=\"map_server\" pkg=\"multi_map_server\" type=\"multi_map_server\"
-          unless=\"$(arg keepout)\" args=\"~a~%"
+          args=\"~a~%"
             (get-yaml-filename (car floors) :unresolve t :keepout nil))
           (dolist (map (cdr floors))
             (format fd "          ~a~%" (get-yaml-filename map :unresolve t :keepout nil)))
