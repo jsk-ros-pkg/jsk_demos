@@ -148,6 +148,7 @@ map_id: ~a"
             (format fd "          ~a~%" (get-yaml-filename map :unresolve t :keepout t)))
           (format fd "    \" >~%")
           (format fd "      <remap from=\"map\" to=\"map_keepout\" />~%")
+          (format fd "      <remap from=\"static_map\" to=\"static_map_keepout\" />~%")
           (format fd "    </node>~%")
           (format fd "    <node name=\"map_server\" pkg=\"multi_map_server\" type=\"multi_map_server\"
           args=\"~a~%"
