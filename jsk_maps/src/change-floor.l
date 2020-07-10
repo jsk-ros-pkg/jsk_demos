@@ -27,8 +27,8 @@
   (unix:usleep (* 1000 500))
   (let (robot-pose)
     (when (not (boundp '*tfl*))
-      (ros::ros-error (format nil "transform listener(*tfl*) is not initialized."))
-      (return-from change-floor nil))
+      (setq *tfl* (instance ros::transform-listener :init)))
+    (send *tfl* :wait-for-transform floor-frame base-frame-name (ros::time 0) 1)
     (setq robot-pose
           (send *tfl* :lookup-transform floor-frame base-frame-name (ros::time 0)))
     (when (null robot-pose)
