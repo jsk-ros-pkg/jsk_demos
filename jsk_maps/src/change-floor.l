@@ -18,8 +18,7 @@
                      &key
                      (floor-frame "/map")
                      (topicname "/initialpose3d")
-                     (base-frame-name "base_footprint")
-                     (map-tf-mux "/map_tf_mux/selected"))
+                     (base-frame-name "base_footprint"))
   "change floor by publishing geometry_msgs::PoseWithCovarianceStamped to topicname.
    example of target-floor's name is /eng2/2f, /eng2/7f.
 
