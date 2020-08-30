@@ -15,10 +15,23 @@
 
 ;; McDonald's paper bag
 ;; In the future, I will add some methods that makes the bag folded, crumpled up.
-(setq mc-paper-bag-m)
+(setq mc-paper-bag-m-b1 (make-cube 170 100 270))
+(setq mc-paper-bag-m-b2 (make-cube 168 98 270))
+(send mc-paper-bag-m-b2 :transform (make-coords :pos #f(0 0 2)))
+(setq mc-paper-bag-m (body- mc-paper-bag-m-b1 mc-paper-bag-m-b2))
 
+(setq mc-paper-bag-s-b1 (make-cube 120 80 200))
+(setq mc-paper-bag-s-b2 (make-cube 118 78 200))
+(send mc-paper-bag-s-b2 :transform (make-coords :pos #f(0 0 2)))
+(setq mc-paper-bag-s (body- mc-paper-bag-s-b1 mc-paper-bag-s-b2))
 
-(setq mc-paper-bag-s)
+(setq eyeglasses-case (make-cube 170 60 40))
+(send eyeglasses-case :set-color :black)
 
+(setq obinata-wallet (make-cube 90 110 20))
+(send obinata-wallet :set-color :gray)
+(setq obinata-purse (make-cube 75 95 20))
+(send obinata-purse :set-color :gray)
 
-;; McDonald's nugget box
+;; asus-rog-rtx-2080ti-box
+;; (setq asus-rog-rtx-2080ti-box)
