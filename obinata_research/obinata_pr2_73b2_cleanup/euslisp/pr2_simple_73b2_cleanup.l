@@ -1,6 +1,8 @@
 (load "package://pr2eus/pr2.l")
 (load "models/room73b2-scene.l")
 (load "package://pr2eus/pr2-interface.l")
+(load "trashmodel.l")
+(load "toolmodel.l")
 ;; ;; chair
 ;; (load "models/room73b2-chair0-object.l")
 ;; ;; can
@@ -40,8 +42,27 @@
     (setq *box_2* (room73b2-empty-box))
     (send *box_1* :transform (make-coords :pos #f(11200.0 0.0 675.0) :rpy #f(0.0 0.0 0.0)) :world)
     (send *box_2* :transform (make-coords :pos #f(11200.0 1000.0 675.0) :rpy #f(0.0 0.0 0.0)) :world)
+    ;; eliminate objects on the table
+    (send *room* :remove-object "room73b2-bottle")
+    (send *room* :remove-object "room73b2-sushi-cup2")
+    (send *room* :remove-object "room73b2-empty-box")
+    ;; 2900.0 1800.0 700.0
+
+    ;; meal setting
+    ;; define object
+    (setq *mc-bag-1* mc-paper-bag-s)
+    (setq *mc-bag-2* mc-paper-bag-m)
+    (setq *mc-cup-1* mc-cup)
+    (setq *mc-cup-2* mc-cup)
+
+    (send *mc-bag-1* :transform (make-coords :pos #f(2900 2000 700) :rpy #f(0 0 0)) :world)
+    (send *mc-bag-2* :transform (make-coords :pos #f(3200 2000 700) :rpy #f(0 0 0)) :world)
+    (send *mc-cup-1* :transform (make-coords :pos #f(2900 1500 700) :rpy #f(0 0 0)) :world)
+    (send *mc-cup-2* :transform (make-coords :pos #f(3300 1800 700) :rpy #f(0 0 0)) :world)
+    
     ;; view
-    (objects (list *pr2* *room* *chair_1* *chair_2* *chair_3* *can_1* *can_2* *carton_1* *bottle_1* *trashbox* *box_1* *box_2*)))
+    (objects (list *pr2* *room* *chair_1* *chair_2* *chair_3* *can_1* *can_2* *carton_1* *bottle_1* *trashbox* *box_1* *box_2* *mc-bag-1* *mc-bag-2* *mc-cup-1* *mc-cup-2*))
+    )
 
 (defun init-simulator()
     (setq *ri* (instance pr2-interface :init :objects (send *room* :objects)))
