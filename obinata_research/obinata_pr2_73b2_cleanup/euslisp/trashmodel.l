@@ -30,17 +30,52 @@
 
 ;; McDonald's paper bag
 ;; In the future, I will add some methods that makes the bag folded, crumpled up.
-(setq mc-paper-bag-m-b1 (make-cube 170 100 270))
-(setq mc-paper-bag-m-b2 (make-cube 168 98 270))
-(send mc-paper-bag-m-b2 :transform (make-coords :pos #f(0 0 2)))
-(setq mc-paper-bag-m (body- mc-paper-bag-m-b1 mc-paper-bag-m-b2))
-(send mc-paper-bag-m :transform (make-coords :pos #f(0 0 135) :rpy #f(0 0 0)))
+(defclass mc-paper-bag-m
+    :super cascaded-link
+    :slots ())
+(defmethod mc-paper-bag-m
+    (:init
+    (&rest args)
+    (send-super* :init args)
+    (let (mc-paper-bag-m-b1 mc-paper-bag-m-b2 pre-bag bag)
+        (setq mc-paper-bag-m-b1 (make-cube 170 100 270))
+        (setq mc-paper-bag-m-b2 (make-cube 168 98 270))
+        (send mc-paper-bag-m-b2 :transform (make-coords :pos #f(0 0 2)))
+        (setq pre-bag (body- mc-paper-bag-m-b1 mc-paper-bag-m-b2))
+        (setq bag (instance bodyset-link :init (make-cascoords) :bodies (list pre-bag)))
+        (send bag :transform (make-coords :pos #f(0 0 135) :rpy #f(0 0 0)))
 
-(setq mc-paper-bag-s-b1 (make-cube 120 80 200))
-(setq mc-paper-bag-s-b2 (make-cube 118 78 200))
-(send mc-paper-bag-s-b2 :transform (make-coords :pos #f(0 0 2)))
-(setq mc-paper-bag-s (body- mc-paper-bag-s-b1 mc-paper-bag-s-b2))
-(send mc-paper-bag-s :transform (make-coords :pos #f(0 0 100) :rpy #f(0 0 0)))
+        (send self :assoc bag)
+        (setq links (list bag))
+
+        (send self :init-ending)
+        )
+    self)
+)    
+
+(defclass mc-paper-bag-s
+    :super cascaded-link
+    :slots ())
+(defmethod mc-paper-bag-s
+    (:init
+    (&rest args)
+    (send-super* :init args)
+    (let (mc-paper-bag-s-b1 mc-paper-bag-s-b2)
+        (setq mc-paper-bag-s-b1 (make-cube 120 80 200))
+        (setq mc-paper-bag-s-b2 (make-cube 118 78 200))
+        (send mc-paper-bag-s-b2 :transform (make-coords :pos #f(0 0 2)))
+        (setq pre-bag (body- mc-paper-bag-s-b1 mc-paper-bag-s-b2))
+        (setq bag (instance bodyset-link :init (make-cascoords) :bodies (list pre-bag)))
+        (send bag :transform (make-coords :pos #f(0 0 100) :rpy #f(0 0 0)))
+
+        (send self :assoc bag)
+        (setq links (list bag))
+        (send self :init-ending)
+        )
+        self)
+    )
+
+
 
 ;; asus-rog-rtx-2080ti-box
 ;; (setq asus-rog-rtx-2080ti-box)
