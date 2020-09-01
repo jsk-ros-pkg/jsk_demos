@@ -19,7 +19,8 @@
         (send mc-cup-straw :translate (float-vector 0 0 2))
         (send mc-cup-body :assoc mc-cup-top)
         (send mc-cup-top :assoc mc-cup-straw)
-        (setq cup (instance bodyset :init (make-cascoords) :bodies (list mc-cup-body mc-cup-top mc-cup-straw)))
+        (setq cup (instance bodyset-link :init (make-cascoords) :bodies (list mc-cup-body mc-cup-top mc-cup-straw)))
+        (setq links (list cup))
         (send self :assoc cup)
         
         (send self :init-ending)
