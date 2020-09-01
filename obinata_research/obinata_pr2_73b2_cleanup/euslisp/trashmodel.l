@@ -14,8 +14,6 @@
         ;; straw
         (setq mc-cup-straw (make-torus '(#f(2.9 0 0) #f(2.9 0 200) #f(3.0 0 200) #f(3.0 0 0))))
         (send mc-cup-straw :set-color :yellow)
-        ;; assembled
-        ;; (send mc-cup-straw :transform (make-coords :pos #f(0 0 2) :rpy #f(0 0 0)))
         (send mc-cup-straw :translate (float-vector 0 0 2))
         (send mc-cup-body :assoc mc-cup-top)
         (send mc-cup-top :assoc mc-cup-straw)

@@ -50,16 +50,18 @@
 
     ;; meal setting
     ;; define object
-    (setq *mc-bag-1* mc-paper-bag-s)
-    (setq *mc-bag-2* mc-paper-bag-m)
-    (setq *mc-cup-1* mc-cup)
-    (setq *mc-cup-2* mc-cup)
+    (setq *mc-bag-1* (instance mc-paper-bag-s :init))
+    (setq *mc-bag-2* (instance mc-paper-bag-m :init))
+    (setq *mc-cup-1* (instance mc-cup :init))
+    (setq *mc-cup-2* (instance mc-cup :init))
 
     (send *mc-bag-1* :transform (make-coords :pos #f(2900 2000 700) :rpy #f(0 0 0)) :world)
     (send *mc-bag-2* :transform (make-coords :pos #f(3200 2000 700) :rpy #f(0 0 0)) :world)
     (send *mc-cup-1* :transform (make-coords :pos #f(2900 1500 700) :rpy #f(0 0 0)) :world)
     (send *mc-cup-2* :transform (make-coords :pos #f(3300 1800 700) :rpy #f(0 0 0)) :world)
     
+    ;; (setq *obj-list* (list *pr2* *room* *chair_1* *chair_2* *chair_3* *can_1* *can_2* *carton_1* *bottle_1* *trashbox* *box_1* *box_2* *mc-bag-1* *mc-bag-2* *mc-cup-1* *mc-cup-2*))
+
     ;; view
     (objects (list *pr2* *room* *chair_1* *chair_2* *chair_3* *can_1* *can_2* *carton_1* *bottle_1* *trashbox* *box_1* *box_2* *mc-bag-1* *mc-bag-2* *mc-cup-1* *mc-cup-2*))
     )
