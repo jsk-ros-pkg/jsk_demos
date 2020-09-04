@@ -46,6 +46,9 @@
     (send *room* :remove-object "room73b2-bottle")
     (send *room* :remove-object "room73b2-sushi-cup2")
     (send *room* :remove-object "room73b2-empty-box")
+    ;; eliminate objects on the kitchen
+    (send *room* :remove-object "room73b2-knife")
+    
     ;; 2900.0 1800.0 700.0
 
     ;; meal setting
@@ -70,12 +73,18 @@
     (setq *ri* (instance pr2-interface :init :objects (send *room* :objects)))
     (send *ri* :angle-vector (send *pr2* :reset-pose) 5000))
 
-;; move chairs
-(defun move-chairs()
-    )
+;; start clean-up
+;; go around the room and find out what to do
+(defun walk-around())
 
-;; collect trash
-(defun collect-trash)
+;; calculate which is better, cleaning up the table or moving the chairs
+(defun calculate-cost())
+
+;; move chairs
+(defun move-chairs())
+
+;; collect trash on the dining table
+(defun collect-trash-and-dispose)
 
 ;; collect box
 (defun collect-box)
