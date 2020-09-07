@@ -3,6 +3,7 @@
 (load "package://pr2eus/pr2-interface.l")
 (load "trashmodel.l")
 (load "toolmodel.l")
+(load "movement.l")
 ;; ;; chair
 ;; (load "models/room73b2-chair0-object.l")
 ;; ;; can
@@ -63,7 +64,7 @@
     (send *mc-cup-1* :transform (make-coords :pos #f(2900 1500 700) :rpy #f(0 0 0)) :world)
     (send *mc-cup-2* :transform (make-coords :pos #f(3300 1800 700) :rpy #f(0 0 0)) :world)
     
-    ;; (setq *obj-list* (list *pr2* *room* *chair_1* *chair_2* *chair_3* *can_1* *can_2* *carton_1* *bottle_1* *trashbox* *box_1* *box_2* *mc-bag-1* *mc-bag-2* *mc-cup-1* *mc-cup-2*))
+    ;; petbottle empty and filled
 
     ;; view
     (objects (list *pr2* *room* *chair_1* *chair_2* *chair_3* *can_1* *can_2* *carton_1* *bottle_1* *trashbox* *box_1* *box_2* *mc-bag-1* *mc-bag-2* *mc-cup-1* *mc-cup-2*))
@@ -75,13 +76,28 @@
 
 ;; start clean-up
 ;; go around the room and find out what to do
-(defun walk-around())
+(defun walk-around()
+    (send *pr2* :move-to (make-coords :pos #f(2500 0 0)))
+    (send *pr2* :move-to (make-coords :pos #f(0 0 0) :rpy #f(0.7 0 0)))
+    (send *pr2* :move-to (make-coords :pos #f(1800 0 0)))
+    (send *pr2* :move-to (make-coords :rpy #f(0.871 0 0)))
+    (send *pr2* :move-to (make-coords :pos #f(900 0 0)))
+    (send *pr2* :move-to (make-coords :rpy #f(3.141 0 0)))
+    )
 
 ;; calculate which is better, cleaning up the table or moving the chairs
 (defun calculate-cost())
 
 ;; move chairs
-(defun move-chairs())
+(defun move-chairs()
+    (send *pr2* :move-to (make-coords :pos #f(1300 0 0)))
+    (grasp *pr2* *chair_2* :rarm)
+    ;; [WIP]head look-at front
+    (send *pr2* :move-to (make-coords :pos #f(300 0 0))
+    (send *pr2* :move-to (make-coords :rpy #f(0.7 0 0)))
+    (send *pr2* :move-to (make-coords :pos #f(400 0 0)))
+    (grasp *pr2* *chair_3* :larm)
+    )
 
 ;; collect trash on the dining table
 (defun collect-trash-and-dispose)
