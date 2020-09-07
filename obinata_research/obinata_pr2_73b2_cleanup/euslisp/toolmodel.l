@@ -60,6 +60,16 @@
     self)
 )
 
+;; book
+(defclass book
+    :super cascaded-link
+    :slots ())
+
+;; magazine, stacked
+(defclass magazine
+    :super cascaded-link
+    :slots ())
+
 ;; obinata tools
 (setq eyeglasses-case (make-cube 170 60 40))
 (send eyeglasses-case :set-color :black)
