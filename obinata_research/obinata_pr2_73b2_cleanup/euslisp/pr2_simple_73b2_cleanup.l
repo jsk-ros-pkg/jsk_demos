@@ -93,10 +93,34 @@
     (send *pr2* :move-to (make-coords :pos #f(1300 0 0)))
     (grasp *pr2* *chair_2* :rarm)
     ;; [WIP]head look-at front
-    (send *pr2* :move-to (make-coords :pos #f(300 0 0))
+    (send *pr2* :move-to (make-coords :pos #f(300 0 0)))
     (send *pr2* :move-to (make-coords :rpy #f(0.7 0 0)))
     (send *pr2* :move-to (make-coords :pos #f(400 0 0)))
     (grasp *pr2* *chair_3* :larm)
+    (send *pr2* :move-to (make-coords :pos #f(1500 0 0)))
+    (send *pr2* :move-to (make-coords :rpy #f(-0.7 0 0)))
+    (send *pr2* :move-to (make-coords :pos #f(500 0 0)))
+
+    ;; rotate rarm
+    (send *pr2* :rarm :move-end-rot -45 :z :parent
+    :debug-view t 
+    :look-at-target t)
+    ;; release
+    (if (send *chair_2* :parent) (send (send *chair_2* :parent) :dissoc *chair_2*))
+    (send *pr2* :move-to (make-coords :pos #f(-200 0 0)))
+    (send *pr2* :move-to (make-coords :pos #f(0 400 0)))
+
+    ;; *chair_3* NOT COMPLETED
+    ;; move larm
+    ;; (send *pr2* :larm :move-end-pos #f(0 -400 0) :parent
+    ;; :debug-view t 
+    ;; :look-at-target t)
+    (if (send *chair_3* :parent) (send (send *chair_3* :parent) :dissoc *chair_3*))
+
+    (send *pr2* :move-to (make-coords :pos #f(-300 0 0)))
+    (send *pr2* :reset-pose)
+
+    (send *pr2* :move-to (make-coords :rpy #f(-1.571 0 0)))
     )
 
 ;; collect trash on the dining table
