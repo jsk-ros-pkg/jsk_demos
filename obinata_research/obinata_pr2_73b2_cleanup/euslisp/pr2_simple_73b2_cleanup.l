@@ -140,13 +140,27 @@
 
 ;; collect trash on the dining table
 (defun collect-trash-and-dispose()
-    (send *pr2* :move-to (make-coords :rpy #f(-1.571 0 0)))
-    (send *pr2* :move-to (make-coords :pos #f(800 0 0)))
-    (send *pr2* :move-to (make-coords :rpy #f(-1.571 0 0)))
-    (send *pr2* :move-to (make-coords :pos #f(600 0 0)))
+    ;; (send *pr2* :move-to (make-coords :rpy #f(-1.571 0 0)))
+    ;; (send *pr2* :move-to (make-coords :pos #f(800 0 0)))
+    ;; (send *pr2* :move-to (make-coords :rpy #f(-1.571 0 0)))
+    ;; (send *pr2* :move-to (make-coords :pos #f(600 0 0)))
+
+    (send *pr2* :move-to (make-coords :rpy #f(3.141 0 0)))
+    (send *pr2* :move-to (make-coords :pos #f(1500 -400 0)))
+    (send *pr2* :move-to (make-coords :rpy #f (1.571 0 0)))
+
 
     (setq *room-chair0* (send *room* :object "room73b2-chair0"))
     (setq *room-chair1* (send *room* :object "room73b2-chair1"))
+    (grasp *pr2* *room-chair0* :rarm)
+    (send *pr2* :rarm :move-end-pos #f(400 600 0) :parent :debug-view t :look-at-target t)
+    ;; or #f(400 400 0) + 2 * #f(0 100 0)
+    (send *pr2* :reset-manip-pose)
+    (send *pr2* :move-to (make-coords :pos #f(600 -200 0)))
+    
+    ;; [WIP] teleport the cup
+    (send *mc-cup-1* :move-to (make-coords :pos #f(500 0 0)))
+
 
 )
 
