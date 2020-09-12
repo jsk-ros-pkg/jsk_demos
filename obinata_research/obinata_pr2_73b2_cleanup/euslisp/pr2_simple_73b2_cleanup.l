@@ -121,6 +121,8 @@
     (send *pr2* :reset-pose)
 
     (send *pr2* :move-to (make-coords :rpy #f(-1.571 0 0)))
+    (send *pr2* :move-to (make-coords :pos #f(1400 0 0)))
+    
     )
 
 ;; collect trash on the dining table
