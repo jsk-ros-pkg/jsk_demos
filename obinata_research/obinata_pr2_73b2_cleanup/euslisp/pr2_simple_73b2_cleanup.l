@@ -122,7 +122,7 @@
 
     (send *pr2* :move-to (make-coords :rpy #f(-1.571 0 0)))
     (send *pr2* :move-to (make-coords :pos #f(1400 0 0)))
-    (send *pr2* :move-to (make-coords :pos #f(-1.571 0 0)))
+    (send *pr2* :move-to (make-coords :rpy #f(-1.571 0 0)))
     (send *pr2* :move-to (make-coords :pos #f(1000 0 0)))
     (send *pr2* :move-to (make-coords :rpy #f(1.571 0 0)))
     (send *pr2* :move-to (make-coords :pos #f(1000 0 0)))
@@ -131,16 +131,23 @@
     ;; grasp chair1
     ;; it had better to hug the chair...
     (grasp *pr2* *chair_1* :larm)
-    (send *pr2* :move-to (make-coords :pos #f(2000 100 0)))
+    (send *pr2* :move-to (make-coords :pos #f(1400 300 0)))
     (if (send *chair_1* :parent) (send (send *chair_1* :parent) :dissoc *chair_1*))
-    (send *pr2* :move-to (make-coords :pos #f(-1800 0 0)))
+    (send *pr2* :move-to (make-coords :pos #f(-1200 0 0)))
 
     (send *pr2* :reset-manip-pose)
     )
 
 ;; collect trash on the dining table
-(defun collect-trash-and-dispose
+(defun collect-trash-and-dispose()
     (send *pr2* :move-to (make-coords :rpy #f(-1.571 0 0)))
+    (send *pr2* :move-to (make-coords :pos #f(800 0 0)))
+    (send *pr2* :move-to (make-coords :rpy #f(-1.571 0 0)))
+    (send *pr2* :move-to (make-coords :pos #f(600 0 0)))
+
+    (setq *room-chair0* (send *room* :object "room73b2-chair0"))
+    (setq *room-chair1* (send *room* :object "room73b2-chair1"))
+
 )
 
 ;; collect box
