@@ -56,8 +56,8 @@
     ;; define object
     (setq *mc-bag-1* (instance mc-paper-bag-s :init))
     (setq *mc-bag-2* (instance mc-paper-bag-m :init))
-    (setq *mc-cup-1* (instance mc-cup :init))
-    (setq *mc-cup-2* (instance mc-cup :init))
+    (setq *mc-cup-1* (mc-cup))
+    (setq *mc-cup-2* (mc-cup))
 
     (send *mc-bag-1* :transform (make-coords :pos #f(2900 2000 700) :rpy #f(0 0 0)) :world)
     (send *mc-bag-2* :transform (make-coords :pos #f(3200 2000 700) :rpy #f(0 0 0)) :world)
