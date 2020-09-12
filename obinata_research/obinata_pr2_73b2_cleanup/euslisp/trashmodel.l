@@ -1,12 +1,12 @@
 ;; McDonald's M-size cup
-(defclass mc-cup
+(defclass mc-cup-object
     :super cascaded-link
-    :slots ())
-(defmethod mc-cup
+    :slots (handle0))
+(defmethod mc-cup-object
     (:init
     (&rest args)
     (send-super* :init args)
-    (let (mc-cup-body mc-cup-top mc-cup-straw)
+    (let (mc-cup-body mc-cup-top mc-cup-straw cup)
         (setq mc-cup-body (make-solid-of-revolution (list (float-vector 0 0 2) (float-vector 30 0 2) (float-vector 43 0 130) (float-vector 45 0 130) (float-vector 30 0 0) (float-vector 0 0 0))))
         (send mc-cup-body :set-color #f(0.619 0 1))
         ;; top
@@ -21,10 +21,21 @@
         (setq links (list cup))
         (send self :assoc cup)
         
+        (setq handle0 (make-cascoords :pos #f(0 0 60) :name "handle0"))
+        (send cup :assoc handle0)
+
+        (setq links (list cup))
+        (setq joint-list (list))
         (send self :init-ending)
-        )
-        self)
-        )
+        (send-all links :worldcoords)
+
+        self))
+
+        (:handle (&rest args) (forward-message-to-all (list handle0) args))
+    )
+
+(defun mc-cup (&rest args) (instance* mc-cup-object :init args))
+
 
 ;; McDonald's paper bag
 ;; In the future, I will add some methods that makes the bag folded, crumpled up.
