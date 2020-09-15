@@ -148,7 +148,10 @@
     
     ;; move to trashbox
     (send *pr2* :move-to (make-coords :pos #f(1700 -1000 0) :rpy #f(3.141 0 0)) :world)
-
+    ;; carry to desk
+    (send *pr2* :move-to (make-coords :pos #f(3900 200 0) :rpy #f(1.571 0 0)) :world)
+    (if (send *trashbox* :parent) (send (send *trashbox* :parent) :dissoc *trashbox*))
+    
 
     (send *pr2* :move-to (make-coords :rpy #f(3.141 0 0)))
     (send *pr2* :move-to (make-coords :pos #f(1500 -400 0)))
