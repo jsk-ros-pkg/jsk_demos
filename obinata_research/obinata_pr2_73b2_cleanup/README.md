@@ -37,3 +37,8 @@ When you want to change initial position of pr2 in pr2_gazebo, please modify the
 
 ## reference
 https://github.com/jsk-ros-pkg/jsk_demos/pull/1293#commitcomment-39067634
+
+## show coords
+```lisp
+(send (send *door* :get :knob-coords) :draw-on :flush t) 
+```

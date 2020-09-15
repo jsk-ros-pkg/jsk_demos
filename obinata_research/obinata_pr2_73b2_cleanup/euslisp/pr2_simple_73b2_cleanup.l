@@ -32,7 +32,8 @@
     (setq *can_2* (room73b2-wanda))
     (setq *carton_1* (room73b2-iemon))
     (setq *bottle_1* (room73b2-bottle))
-    (setq *trashbox* (room73b2-trashbox0))
+    ;; https://github.com/euslisp/EusLisp/pull/444
+    (setq *trashbox* (trashbox))
     (send *can_1* :transform (make-coords :pos #f(7500.0 1000.0 30.0) :rpy #f(0.0 0.0 1.571)))
     (send *can_2* :transform (make-coords :pos #f(9500.0 2000.0 30.0) :rpy #f(0.0 0.0 1.571)))
     (send *carton_1* :transform (make-coords :pos #f(8000.0 3000.0 0.0) :rpy #f(0.0 0.0 1.571)))
@@ -144,6 +145,10 @@
     ;; (send *pr2* :move-to (make-coords :pos #f(800 0 0)))
     ;; (send *pr2* :move-to (make-coords :rpy #f(-1.571 0 0)))
     ;; (send *pr2* :move-to (make-coords :pos #f(600 0 0)))
+    
+    ;; move to trashbox
+    (send *pr2* :move-to (make-coords :pos #f(1700 -1000 0) :rpy #f(3.141 0 0)) :world)
+
 
     (send *pr2* :move-to (make-coords :rpy #f(3.141 0 0)))
     (send *pr2* :move-to (make-coords :pos #f(1500 -400 0)))
