@@ -148,26 +148,35 @@
     
     ;; move to trashbox
     (send *pr2* :move-to (make-coords :pos #f(1700 -1000 0) :rpy #f(3.141 0 0)) :world)
+    (grasp *pr2* *trashbox* :larm)
     ;; carry to desk
     (send *pr2* :move-to (make-coords :pos #f(3900 200 0) :rpy #f(1.571 0 0)) :world)
     (if (send *trashbox* :parent) (send (send *trashbox* :parent) :dissoc *trashbox*))
-    
 
-    (send *pr2* :move-to (make-coords :rpy #f(3.141 0 0)))
-    (send *pr2* :move-to (make-coords :pos #f(1500 -400 0)))
-    (send *pr2* :move-to (make-coords :rpy #f (1.571 0 0)))
-
+    ;; go to chair
+    (send *pr2* :reset-manip-pose) 
+    (send *pr2* :move-to (make-coords :pos #f(4500 1200 0) :rpy #f(3.141 0 0)) :world)
 
     (setq *room-chair0* (send *room* :object "room73b2-chair0"))
-    (setq *room-chair1* (send *room* :object "room73b2-chair1"))
     (grasp *pr2* *room-chair0* :rarm)
-    (send *pr2* :rarm :move-end-pos #f(400 600 0) :parent :debug-view t :look-at-target t)
-    ;; or #f(400 400 0) + 2 * #f(0 100 0)
-    (send *pr2* :reset-manip-pose)
-    (send *pr2* :move-to (make-coords :pos #f(600 -200 0)))
     
-    ;; [WIP] teleport the cup
+    (send *pr2* :rarm :move-end-pos #f(-400 -600 0) (send *pr2* :copy-worldcoords) :debug-view t :look-at-target t)
+    (release *room-chair0*)
+    (send *pr2* :reset-manip-pose)
+
+    (send *pr2* :move-to (make-coords :pos #f(3900 1600 0) :rpy #f(3.141 0 0)) :world)
+    ;; [WIP] teleport the cup and mc-bag-1(s-size)
     (send *mc-cup-1* :move-to (make-coords :pos #f(500 0 0)))
+    (send *mc-bag-1* :move-to (make-coords :pos #f(200 -200 0)))
+    
+    (grasp *pr2* :larm *trashbox* :handle)
+    (send *pr2* :larm :move-end-pos #f(0 0 300) (send *pr2* :copy-worldcoords) :debug-view t)
+    (send *pr2* :larm :move-end-pos #f(250 0 0) (send *pr2* :copy-worldcoords) :debug-view t)
+    ;; fail to solve ik
+    ;; (send *pr2* :larm :move-end-pos #f(0 -300 0) (send *pr2* :copy-worldcoords) :debug-view t)
+    (wipe-with-rarm *pr2*)
+    
+    ;; vanish trashes
 
 
 )
