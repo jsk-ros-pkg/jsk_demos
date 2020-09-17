@@ -33,6 +33,8 @@ When you want to change initial position of pr2 in pr2_gazebo, please modify the
 
 ## Where is the eusmodel of 73b2?
 `/opt/ros/melodic/share/euslisp/jskeus/eus/models/room73b2-scene.l`
+## When you want to fix eusmodel converted from euslib
+https://github.com/jsk-ros-pkg/euslib/pull/148
 
 
 ## reference
