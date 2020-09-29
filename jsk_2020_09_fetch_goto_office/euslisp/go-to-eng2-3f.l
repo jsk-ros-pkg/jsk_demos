@@ -8,14 +8,16 @@
     (undock)
     (send *ri* :move-to (make-coords :pos #f(1850 -30746 0) :rpy (float-vector -pi/2 0 0)) :frame-id "/map")
     (unix:sleep 1)
-    (send *ri* :speak-jp "エレベータのボタンを押してください" :wait t))
+    (send *ri* :speak-jp "エレベータのボタンを押してください" :wait t)
+    )
     
 (defun get-on-elevator()
     ;; (push-elevator-button())
     ;; (confirm-opened-door())
     (send *ri* :go-pos 3.0 0 180)
     (unix:sleep 1)
-    (send *ri* :speak-jp "エレベータに乗りました" :wait t))
+    (send *ri* :speak-jp "エレベータに乗りました" :wait t)
+    )
 
 (defun get-off-elevator()
     ;; (recognize-arrive-at-eng2-3f())
@@ -23,7 +25,16 @@
     (send *ri* :speak-jp "マップを切り替えました" :wait t)
     (send *ri* :clear-costmap)
     ;; re-create 3f elevator map
-    (send *ri* :go-pos 3.5 0 0))
+    (send *ri* :go-pos 3.5 0 0)
+    (unix:sleep 1)
+    (send *ri* :speak-jp "エレベータから降りました" :wait t)
+    )
+
+(defun go-to-eng2-3f()
+    (go-to-7f-elevator)
+    (get-on-elevator)
+    (get-off-elevator)
+    )
 
 ;; jimusitu kyoin
 ;; (send *ri* :move-to (make-coords :pos #f(50000 -31276 0) :rpy (float-vector 0 0 0)) :frame-id "/map")
