@@ -17,10 +17,13 @@
     (setq cy (- (elt (send cube :centroid) 1) (/ (* (elt size 1) 50) 2)))
     (list filename cx cy) ))
 
-(defun get-yaml-filename (nav-scene &key (unresolve))
+(defun get-yaml-filename (nav-scene &key (unresolve) (keepout nil))
   (let ((path (pathname (elt (dump-map-image-info nav-scene) 0)))
         yaml-path)
-    (setq yaml-path (format nil "~a~a.yaml" (send path :directory-string) (send path :name)))
+    (setq yaml-path
+          (if keepout
+            (format nil "~a~a_keepout.yaml" (send path :directory-string) (send path :name))
+            (format nil "~a~a.yaml" (send path :directory-string) (send path :name))))
     (if unresolve
         (unresolve-ros-path yaml-path) yaml-path)))
 
@@ -32,13 +35,16 @@
 ;;   occupied_thresh: 0.65
 ;;   free_thresh: 0.192
 ;;   frame_id: scene-name
-(defun dump-map-yaml (nav-scene &optional filename)
+(defun dump-map-yaml (nav-scene &key filename (keepout nil))
   (let ((info (dump-map-image-info nav-scene)) imgfile)
-    (setq filename (or filename (get-yaml-filename nav-scene)))
+    (setq filename (or filename (get-yaml-filename nav-scene :keepout keepout)))
     (with-open-file
         (fd filename :direction :output)
       ;; image filename need to be relative to the yaml filename
-      (setq imgfile (format nil "~a.~a" (send (pathname (elt info 0)) :name) (send (pathname (elt info 0)) :type)))
+      (setq imgfile
+            (if keepout
+              (format nil "~a_keepout.~a" (send (pathname (elt info 0)) :name) (send (pathname (elt info 0)) :type))
+              (format nil "~a.~a" (send (pathname (elt info 0)) :name) (send (pathname (elt info 0)) :type))))
       (format fd "image: ~a
 resolution: 0.050
 origin: [~a, ~a, 0]
@@ -66,7 +72,7 @@ map_id: ~a"
         (t (error "failed to make directory ~A (probe-file: ~A)" cur-dir (probe-file cur-dir)))))
     t))
 
-(defun dump-map-launch (building filename &key default-floor)
+(defun dump-map-launch (building filename &key default-floor (keepout nil))
   (let ((floors (send building :floors))
         (cntr 0))
     (if (stringp default-floor)
@@ -76,33 +82,92 @@ map_id: ~a"
         (setq floors (append (list default-floor) (remove default-floor floors))))
     ;;
     (dolist (map floors)
-      (dump-map-yaml map))
+      (dump-map-yaml map)
+      (dump-map-yaml map :keepout t))
 
     (makedirs filename)
     ;;
     (with-open-file
         (fd filename :direction :output)
       (format fd "<launch>~%")
+      ;; argument
+      (when keepout (format fd "  <arg name=\"keepout\" default=\"false\"/>~%"))
       (format fd "  <arg name=\"launch_map_server\" default=\"true\"/>~%~%")
-      ;;
+
+      ;; group
       (format fd "  <group if=\"$(arg launch_map_server)\">~%")
       (format fd "    <!-- map for visualization nodes -->~%")
-      (dolist (map floors)
-        (format fd "    <node name=\"$(anon map_server~2,2D)\" pkg=\"map_server\" type=\"map_server\"
+
+      ;; map servers
+      (if keepout
+        (progn
+          (format fd "    <group if=\"$(arg keepout)\">~%")
+          (dolist (map floors)
+            (format fd "      <node name=\"$(anon map_server~2,2D)\" pkg=\"map_server\" type=\"map_server\"
+            args=\"~a\" >
+        <remap from=\"map\" to=\"~a\"/>
+        <param name=\"frame_id\" value=\"~a\"/>
+      </node>~%"
+            cntr (get-yaml-filename map :unresolve t :keepout t)
+            (send map :name) (send map :name))
+          (incf cntr))
+          (format fd "    </group>~%")))
+
+      (setq cntr 0)
+      (if keepout
+        (progn
+          (format fd "    <group unless=\"$(arg keepout)\">~%")
+          (dolist (map floors)
+            (format fd "      <node name=\"$(anon map_server~2,2D)\" pkg=\"map_server\" type=\"map_server\"
+            args=\"~a\" >
+        <remap from=\"map\" to=\"~a\"/>
+        <param name=\"frame_id\" value=\"~a\"/>
+      </node>~%"
+              cntr (get-yaml-filename map :unresolve t :keepout nil)
+              (send map :name) (send map :name))
+            (incf cntr))
+          (format fd "    </group>~%"))
+        (dolist (map floors)
+          (format fd "    <node name=\"$(anon map_server~2,2D)\" pkg=\"map_server\" type=\"map_server\"
           args=\"~a\" >
       <remap from=\"map\" to=\"~a\"/>
       <param name=\"frame_id\" value=\"~a\"/>
-    </node>~%" cntr (get-yaml-filename map :unresolve t) (send map :name) (send map :name))
-        (incf cntr)
-        )
-      ;;
+    </node>~%"
+            cntr (get-yaml-filename map :unresolve t)
+            (send map :name) (send map :name))
+          (incf cntr)))
+
+      ;; multi map server
       (format fd "~%    <!-- map for navigation nodes -->~%")
-      (format fd "    <node pkg=\"multi_map_server\" type=\"multi_map_server\" name=\"map_server\"~%        args=\"")
-      (dolist (map floors)
-        (format fd "   ~a~%" (get-yaml-filename map :unresolve t)))
-      (format fd "    \"/>~%")
-      (format fd "  </group>~%")
-      ;;
+      (if keepout
+        (progn
+          (format fd "    <node name=\"map_keepout_server\" pkg=\"multi_map_server\" type=\"multi_map_server\"
+          if=\"$(arg keepout)\" args=\"~a~%"
+            (get-yaml-filename (car floors) :unresolve t :keepout t))
+          (dolist (map (cdr floors))
+            (format fd "          ~a~%" (get-yaml-filename map :unresolve t :keepout t)))
+          (format fd "    \" >~%")
+          (format fd "      <remap from=\"map\" to=\"map_keepout\" />~%")
+          (format fd "      <remap from=\"static_map\" to=\"static_map_keepout\" />~%")
+          (format fd "    </node>~%")
+          (format fd "    <node name=\"map_server\" pkg=\"multi_map_server\" type=\"multi_map_server\"
+          args=\"~a~%"
+            (get-yaml-filename (car floors) :unresolve t :keepout nil))
+          (dolist (map (cdr floors))
+            (format fd "          ~a~%" (get-yaml-filename map :unresolve t :keepout nil)))
+          (format fd "    \" />~%"))
+        (progn
+          (format fd "    <node name=\"map_server\" pkg=\"multi_map_server\" type=\"multi_map_server\"
+          args=\"~a~%"
+            (get-yaml-filename (car floors) :unresolve t :keepout nil))
+          (dolist (map (cdr floors))
+            (format fd "          ~a~%" (get-yaml-filename map :unresolve t :keepout nil)))
+          (format fd "    \" />~%")))
+
+      ;; group end
+      (format fd "  </group>~%~%")
+
+      ;; static transform publisher
       (setq cntr 0)
       (dolist (map floors)
         (format fd "  <node pkg=\"tf\" type=\"static_transform_publisher\" name=\"$(anon map_tf~2,2D)\"
@@ -114,7 +179,7 @@ map_id: ~a"
                 (send building :name) (send map :name))
         (incf cntr)
         (format fd "  <node pkg=\"tf\" type=\"static_transform_publisher\" name=\"$(anon map_tf~2,2D)\"
-        args=\"  0.000   0.000   0.000 0 0 0 ~a /map 100\" >~%
+        args=\"  0.000   0.000   0.000 0 0 0 ~a /map 100\" >
     <remap from=\"tf\" to=\"~a_tf\"/>
   </node>~%"
                 cntr (send map :name) (send map :name))
@@ -136,12 +201,13 @@ map_id: ~a"
 (defun dump-all-maps ()
   (load "eng2-scene.l")
   (dump-map-launch (make-eng2-scene) "launch/include/start_map_eng2_main.xml"
-                   :default-floor "/eng2/7f")
+                   :default-floor "/eng2/7f" :keepout t)
   (load "eng8-scene.l")
   (dump-map-launch (make-eng8-scene) "launch/include/start_map_eng8_main.xml"
-                   :default-floor "/eng8/6f")
+                   :default-floor "/eng8/6f" :keepout t)
   (load "eng6-scene.l")
-  (dump-map-launch (make-eng6-scene) "launch/include/start_map_eng6_main.xml")
+  (dump-map-launch (make-eng6-scene) "launch/include/start_map_eng6_main.xml"
+                   :keepout t)
   )
 
 (progn
