@@ -1,25 +1,17 @@
-(load "package://pr2eus/pr2.l")
+;; jsknts, not jsknt
+(load "package://hrpsys_ros_bridge_tutorials/euslisp/hrp2jsknts-interface.l")
 (load "models/room73b2-scene.l")
-(load "package://pr2eus/pr2-interface.l")
 (load "trashmodel.l")
 (load "toolmodel.l")
 (load "movement.l")
-;; ;; chair
-;; (load "models/room73b2-chair0-object.l")
-;; ;; can
-;; (load "models/room73b2-georgia-emerald-mountain-object.l")
-;; (load "models/room73b2-wanda-object.l")
-;; ;; iemon
-;; (load "models/room73b2-iemon-object.l")
-;; ;; bottle
-;; (load "models/room73b2-bottle-object.l")
 
 
 (defun init-irt()
-    (setq *pr2* (pr2))
+    (hrp2jsknts-init)
+    (setq *hrp2* *hrp2jsknts*)
     (setq *room* (room73b2))
     ;; ROBOT_INITIAL_POSE
-    (send *pr2* :move-to (make-coords :pos #f(750 0 0) :rpy #f(0 0 0)))
+    (send *hrp2* :move-to (make-coords :pos #f(750 0 0) :rpy #f(0 0 0)))
     ;; chairs <- box1
     (setq *chair_1* (room73b2-chair0))
     (setq *chair_2* (room73b2-chair0))
@@ -68,22 +60,18 @@
     ;; petbottle empty and filled
 
     ;; view
-    (objects (list *pr2* *room* *chair_1* *chair_2* *chair_3* *can_1* *can_2* *carton_1* *bottle_1* *trashbox* *box_1* *box_2* *mc-bag-1* *mc-bag-2* *mc-cup-1* *mc-cup-2*))
+    (objects (list *hrp2* *room* *chair_1* *chair_2* *chair_3* *can_1* *can_2* *carton_1* *bottle_1* *trashbox* *box_1* *box_2* *mc-bag-1* *mc-bag-2* *mc-cup-1* *mc-cup-2*))
     )
-
-(defun init-simulator()
-    (setq *ri* (instance pr2-interface :init :objects (send *room* :objects)))
-    (send *ri* :angle-vector (send *pr2* :reset-pose) 5000))
 
 ;; start clean-up
 ;; go around the room and find out what to do
 (defun walk-around()
-    (send *pr2* :move-to (make-coords :pos #f(2500 0 0)))
-    (send *pr2* :move-to (make-coords :pos #f(0 0 0) :rpy #f(0.7 0 0)))
-    (send *pr2* :move-to (make-coords :pos #f(1800 0 0)))
-    (send *pr2* :move-to (make-coords :rpy #f(0.871 0 0)))
-    (send *pr2* :move-to (make-coords :pos #f(900 0 0)))
-    (send *pr2* :move-to (make-coords :rpy #f(3.141 0 0)))
+    (send *hrp2* :move-to (make-coords :pos #f(2500 0 0)))
+    (send *hrp2* :move-to (make-coords :pos #f(0 0 0) :rpy #f(0.7 0 0)))
+    (send *hrp2* :move-to (make-coords :pos #f(1800 0 0)))
+    (send *hrp2* :move-to (make-coords :rpy #f(0.871 0 0)))
+    (send *hrp2* :move-to (make-coords :pos #f(900 0 0)))
+    (send *hrp2* :move-to (make-coords :rpy #f(3.141 0 0)))
     )
 
 ;; calculate which is better, cleaning up the table or moving the chairs
@@ -91,91 +79,92 @@
 
 ;; move chairs
 (defun move-chairs()
-    ;; (send *pr2* :move-to (make-coords :pos #f(1300 0 0)))
+    ;; (send *hrp2* :move-to (make-coords :pos #f(1300 0 0)))
     (send *hrp2* :move-to (make-coords :pos #f(3800 0 0) :rpy #f(-0.871 0 0)) :world)
-    (grasp *pr2* *chair_2* :rarm)
-    ;; [WIP]head look-at front
-    ;; (send *pr2* :move-to (make-coords :pos #f(300 0 0)))
-    ;; (send *pr2* :move-to (make-coords :rpy #f(0.7 0 0)))
-    ;; (send *pr2* :move-to (make-coords :pos #f(400 0 0)))
-    ;; (grasp *pr2* *chair_3* :larm)
-    ;; (send *pr2* :move-to (make-coords :pos #f(1500 0 0)))
-    ;; (send *pr2* :move-to (make-coords :rpy #f(-0.7 0 0)))
-    ;; (send *pr2* :move-to (make-coords :pos #f(500 0 0)))
+    ;; (grasp *hrp2* *chair_2* :rarm)
+    (grasp *hrp2* :larm *chair_2* :handle)
+    ;; ;; [WIP]head look-at front
+    ;; (send *hrp2* :move-to (make-coords :pos #f(300 0 0)))
+    ;; (send *hrp2* :move-to (make-coords :rpy #f(0.7 0 0)))
+    ;; (send *hrp2* :move-to (make-coords :pos #f(400 0 0)))
+    (grasp *hrp2* :rarm *chair_1* :handle)
+    ;; (send *hrp2* :move-to (make-coords :pos #f(1500 0 0)))
+    ;; (send *hrp2* :move-to (make-coords :rpy #f(-0.7 0 0)))
+    ;; (send *hrp2* :move-to (make-coords :pos #f(500 0 0)))
 
     ;; rotate rarm
-    (send *pr2* :rarm :move-end-rot -45 :z :parent
+    (send *hrp2* :rarm :move-end-rot -45 :z :parent
     :debug-view t 
     :look-at-target t)
     ;; release
     (if (send *chair_2* :parent) (send (send *chair_2* :parent) :dissoc *chair_2*))
-    (send *pr2* :move-to (make-coords :pos #f(-200 0 0)))
-    (send *pr2* :move-to (make-coords :pos #f(0 400 0)))
+    (send *hrp2* :move-to (make-coords :pos #f(-200 0 0)))
+    (send *hrp2* :move-to (make-coords :pos #f(0 400 0)))
 
     ;; *chair_3* NOT COMPLETED
     ;; move larm
-    ;; (send *pr2* :larm :move-end-pos #f(0 -400 0) :parent
+    ;; (send *hrp2* :larm :move-end-pos #f(0 -400 0) :parent
     ;; :debug-view t 
     ;; :look-at-target t)
     (if (send *chair_3* :parent) (send (send *chair_3* :parent) :dissoc *chair_3*))
 
-    (send *pr2* :move-to (make-coords :pos #f(-300 0 0)))
-    (send *pr2* :reset-pose)
+    ;; (send *hrp2* :move-to (make-coords :pos #f(-300 0 0)))
+    (send *hrp2* :reset-pose)
 
-    (send *pr2* :move-to (make-coords :rpy #f(-1.571 0 0)))
-    (send *pr2* :move-to (make-coords :pos #f(1400 0 0)))
-    (send *pr2* :move-to (make-coords :rpy #f(-1.571 0 0)))
-    (send *pr2* :move-to (make-coords :pos #f(1000 0 0)))
-    (send *pr2* :move-to (make-coords :rpy #f(1.571 0 0)))
-    (send *pr2* :move-to (make-coords :pos #f(1000 0 0)))
-    (send *pr2* :move-to (make-coords :rpy #f(1.571 0 0)))
+    ;; (send *hrp2* :move-to (make-coords :rpy #f(-1.571 0 0)))
+    ;; (send *hrp2* :move-to (make-coords :pos #f(1400 0 0)))
+    ;; (send *hrp2* :move-to (make-coords :rpy #f(-1.571 0 0)))
+    ;; (send *hrp2* :move-to (make-coords :pos #f(1000 0 0)))
+    ;; (send *hrp2* :move-to (make-coords :rpy #f(1.571 0 0)))
+    ;; (send *hrp2* :move-to (make-coords :pos #f(1000 0 0)))
+    ;; (send *hrp2* :move-to (make-coords :rpy #f(1.571 0 0)))
 
     ;; grasp chair1
     ;; it had better to hug the chair...
-    (grasp *pr2* *chair_1* :larm)
-    (send *pr2* :move-to (make-coords :pos #f(1400 300 0)))
+    (grasp *hrp2* *chair_1* :larm)
+    (send *hrp2* :move-to (make-coords :pos #f(1400 300 0)))
     (if (send *chair_1* :parent) (send (send *chair_1* :parent) :dissoc *chair_1*))
-    (send *pr2* :move-to (make-coords :pos #f(-1200 0 0)))
+    (send *hrp2* :move-to (make-coords :pos #f(-1200 0 0)))
 
-    (send *pr2* :reset-manip-pose)
+    (send *hrp2* :reset-manip-pose)
     )
 
 ;; collect trash on the dining table
 (defun collect-trash-and-dispose()
-    ;; (send *pr2* :move-to (make-coords :rpy #f(-1.571 0 0)))
-    ;; (send *pr2* :move-to (make-coords :pos #f(800 0 0)))
-    ;; (send *pr2* :move-to (make-coords :rpy #f(-1.571 0 0)))
-    ;; (send *pr2* :move-to (make-coords :pos #f(600 0 0)))
+    ;; (send *hrp2* :move-to (make-coords :rpy #f(-1.571 0 0)))
+    ;; (send *hrp2* :move-to (make-coords :pos #f(800 0 0)))
+    ;; (send *hrp2* :move-to (make-coords :rpy #f(-1.571 0 0)))
+    ;; (send *hrp2* :move-to (make-coords :pos #f(600 0 0)))
     
     ;; move to trashbox
-    (send *pr2* :move-to (make-coords :pos #f(1700 -1000 0) :rpy #f(3.141 0 0)) :world)
-    (grasp *pr2* *trashbox* :larm)
+    (send *hrp2* :move-to (make-coords :pos #f(1700 -1000 0) :rpy #f(3.141 0 0)) :world)
+    (grasp *hrp2* *trashbox* :larm)
     ;; carry to desk
-    (send *pr2* :move-to (make-coords :pos #f(3900 200 0) :rpy #f(1.571 0 0)) :world)
+    (send *hrp2* :move-to (make-coords :pos #f(3900 200 0) :rpy #f(1.571 0 0)) :world)
     (if (send *trashbox* :parent) (send (send *trashbox* :parent) :dissoc *trashbox*))
 
     ;; go to chair
-    (send *pr2* :reset-manip-pose) 
-    (send *pr2* :move-to (make-coords :pos #f(4500 1200 0) :rpy #f(3.141 0 0)) :world)
+    (send *hrp2* :reset-manip-pose) 
+    (send *hrp2* :move-to (make-coords :pos #f(4500 1200 0) :rpy #f(3.141 0 0)) :world)
 
     (setq *room-chair0* (send *room* :object "room73b2-chair0"))
-    (grasp *pr2* *room-chair0* :rarm)
+    (grasp *hrp2* *room-chair0* :rarm)
     
-    (send *pr2* :rarm :move-end-pos #f(-400 -600 0) (send *pr2* :copy-worldcoords) :debug-view t :look-at-target t)
+    (send *hrp2* :rarm :move-end-pos #f(-400 -600 0) (send *hrp2* :copy-worldcoords) :debug-view t :look-at-target t)
     (release *room-chair0*)
-    (send *pr2* :reset-manip-pose)
+    (send *hrp2* :reset-manip-pose)
 
-    (send *pr2* :move-to (make-coords :pos #f(3900 1600 0) :rpy #f(3.141 0 0)) :world)
+    (send *hrp2* :move-to (make-coords :pos #f(3900 1600 0) :rpy #f(3.141 0 0)) :world)
     ;; [WIP] teleport the cup and mc-bag-1(s-size)
     (send *mc-cup-1* :move-to (make-coords :pos #f(500 0 0)))
     (send *mc-bag-1* :move-to (make-coords :pos #f(200 -200 0)))
     
-    (grasp *pr2* :larm *trashbox* :handle)
-    (send *pr2* :larm :move-end-pos #f(0 0 300) (send *pr2* :copy-worldcoords) :debug-view t)
-    (send *pr2* :larm :move-end-pos #f(250 0 0) (send *pr2* :copy-worldcoords) :debug-view t)
+    (grasp *hrp2* :larm *trashbox* :handle)
+    (send *hrp2* :larm :move-end-pos #f(0 0 300) (send *hrp2* :copy-worldcoords) :debug-view t)
+    (send *hrp2* :larm :move-end-pos #f(250 0 0) (send *hrp2* :copy-worldcoords) :debug-view t)
     ;; fail to solve ik
-    ;; (send *pr2* :larm :move-end-pos #f(0 -300 0) (send *pr2* :copy-worldcoords) :debug-view t)
-    (wipe-with-rarm *pr2*)
+    ;; (send *hrp2* :larm :move-end-pos #f(0 -300 0) (send *hrp2* :copy-worldcoords) :debug-view t)
+    (wipe-with-rarm *hrp2*)
     
     ;; vanish trashes
 

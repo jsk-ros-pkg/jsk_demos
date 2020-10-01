@@ -30,3 +30,34 @@ roslaunch pr2_gazebo pr2_empty_world.launch world_name:=/home/obinata/hogehoge.w
 https://github.com/chiwunau/pr2_open_b2_door_demo/blob/master/euslisp/pull-open-door.l#L135-L140
 
 https://github.com/chiwunau/pr2_open_b2_door_demo
+
+
+両方同時に動かすようにIKを解く
+```lisp
+(send *robot* :inverse-kinematics                                           
+(list (send (send *robot* :rarm :end-coords :copy-worldcoords) :translate #F(100 0 0) :world)                                                                                   
+      (send *robot* :larm :end-coords :copy-worldcoords))                                  
+:move-target (list (send *robot* :rarm :end-coords) (send *robot* :larm :end-coords)) :link-list (list (send *robot* :link-list (send *robot* :rarm :end-coords :parent)) (send *robot* :link-list (send *robot* :larm :end-coords :parent))) :debug-view t)
+
+```
+```lisp
+(send *robot* :inverse-kinema(send *robot* :inverse-kinematics                                         \
+
+(list (cadr (send *chair_1* :handle))                                                     \
+
+      (car (send *chair_2* :handle)))
+:move-target (list (send *robot* :rarm :end-coords) (send *robot* :larm :end-coords)) :lin\
+k-list (list (send *robot* :link-list (send *robot* :rarm :end-coords :parent)) (send *rob\
+ot* :link-list (send *robot* :larm :end-coords :parent))) :rotation-axis (list :z :z) :deb\
+ug-view t)
+tics                                         \
+
+(list (cadr (send *chair_1* :handle))                                                     \
+
+      (car (send *chair_2* :handle)))
+:move-target (list (send *robot* :rarm :end-coords) (send *robot* :larm :end-coords)) :lin\
+k-list (list (send *robot* :link-list (send *robot* :rarm :end-coords :parent)) (send *rob\
+ot* :link-list (send *robot* :larm :end-coords :parent))) :rotation-axis (list :z :z) :deb\
+ug-view t)
+
+```
