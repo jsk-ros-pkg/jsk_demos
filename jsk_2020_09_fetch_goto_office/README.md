@@ -4,3 +4,6 @@
 ;; enter elevator
 (send *ri* :go-pos 3.5 0 180)
 ```
+
+事務室行ってきて
+進んで
