@@ -13,7 +13,8 @@
 
 (defun register-julius-words(julius-words)
     (ros::wait-for-service *julius-service*)
-    (let 
+    (ros::ros-info (format nil "Registering words ~A to Julius..." julius-words))
+    (let
         ((req (instance speech_recognition_msgs::SpeechRecognitionRequest :init)))
         (send (send req :vocabulary) :words julius-words)
     )
