@@ -1,0 +1,19 @@
+<?xml version="1.0"?>
+<package>
+  <name>jsk_2020_09_fetch_goto_office</name>
+  <version>0.0.0</version>
+  <description>Fetch's going to the office at eng2-3f</description>
+
+  <author email="mqcmd196@hotmail.co.jp">Yoshiki Obinata</author>
+  <maintainer email="mqcmd196@hotmail.co.jp">Yoshiki Obinata</maintainer>
+
+  <license>BSD</license>
+
+  <buildtool_depend>catkin</buildtool_depend>
+
+  <run_depend>jsk_maps</run_depend>
+  <run_depend>fetcheus</run_depend>
+
+  <export>
+  </export>
+</package>
