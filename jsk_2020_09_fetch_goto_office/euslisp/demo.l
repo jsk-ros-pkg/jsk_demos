@@ -1,31 +1,8 @@
 (require :fetch-interface "package://fetcheus/fetch-interface.l")
 (load "package://jsk_maps/src/change-floor.l")
 (load "package://jsk_fetch_startup/euslisp/navigation-utils.l")
+(load "speech-recognition-service.l")
 (fetch-init)
-
-;; subscribing
-(ros::load-ros-manifest "speech_recognition_msgs")
-(defvar *julius_msg* "/speech_to_text_julius")
-(defvar *julius_service* "speech_recognition")
-
-(defun register-julius-words()
-    (ros::wait-for-service *julius_service*)
-    (setq req (instance speech_recognition_msgs::SpeechRecognitionRequest :init))
-    (send (send req :vocabulary) :words (list "さんがい" "にんげん" "けんくどう" "たんたんめん" "けいおかだ" "すすんで" "ふぇっち" "でこーど" "ぴーあーるーつー" "かえるよ"))
-)
-
-(defun listen-julius()
-    (setq res (ros::service-call "speech_recognition" req t))
-    (ros::ros-info (format nil "~A :: ~A" (send (send res :result) :transcript) (send (send res :result) :confidence)))
-    (car (send (send res :result) :transcript))
-    )
-
-(defun wait-for-julius-trigger(word)
-    (while t 
-        (if (equal word (listen-julius))
-            (return t)
-            (unix:sleep 1))
-        ))
 
 (defun go-to-7f-elevator()
     (undock)
