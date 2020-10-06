@@ -39,7 +39,8 @@
         (fd filename :direction :output)
       ;; image filename need to be relative to the yaml filename
       (setq imgfile (format nil "~a.~a" (send (pathname (elt info 0)) :name) (send (pathname (elt info 0)) :type)))
-      (format fd "image: ~a
+      (format fd "# The yaml files of jsk_maps are automatically generated at src/dump-map-info.l .
+image: ~a
 resolution: 0.050
 origin: [~a, ~a, 0]
 negate: 0
