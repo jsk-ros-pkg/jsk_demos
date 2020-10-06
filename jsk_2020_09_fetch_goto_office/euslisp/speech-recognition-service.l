@@ -9,7 +9,7 @@
 (defvar *google-msg* "/speech_to_text_google")
 (defvar *julius-service* "speech_recognition")
 
-(defvar julius-words (list "さんがい" "にんげん" "けんくどう" "たんたんめん" "けいおかだ" "すすんで" "ふぇっち" "でこーど" "ぴーあーるーつー" "かえるよ"))
+(defvar julius-words (list "さんがい" "にんげん" "けんくどう" "たんたんめん" "すすんで" "ふぇっち" "でこーど" "ぴーあーるーつー" "かえるよ"))
 
 (defun register-julius-words(julius-words)
     (ros::wait-for-service *julius-service*)
@@ -57,6 +57,14 @@
 (defun wait-for-speech-trigger(word)
     (while t 
         (if (equal word (get-text-from-speech-recognition))
+            (return t)
+            (unix:sleep 1))
+    )
+)
+
+(defun wait-for-julius-trigger(word)
+    (while t 
+        (if (equal word (listen-with-julius))
             (return t)
             (unix:sleep 1))
     )
