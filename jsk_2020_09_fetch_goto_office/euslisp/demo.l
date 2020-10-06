@@ -80,7 +80,7 @@
     (send *ri* :clear-costmap)
     (send *ri* :move-to (make-coords :pos #f(737 -32134 -0) :rpy (float-vector -pi/2 0 0)) :frame-id "/map")
     (unix:sleep 1)
-    (send *ri* :speak-jp "エレベータの下ボタンを押してください" :wait t)
+    (send *ri* :speak-jp "エレベータの上ボタンを押してください" :wait t)
     )
 
 (defun get-on-elevator2()
@@ -115,11 +115,10 @@
 (defun go-to-73b2()
     (send *ri* :clear-costmap)
     (send *ri* :speak-jp "73B2に向かいます")
-    (dock)
+    (auto-dock)
     )
 
 (defun demo()
-    (register-julius-words)
     (go-to-7f-elevator)
     (send *ri* :speak-jp "エレベータがついたらすすんでと言ってください")
     (wait-for-julius-trigger "すすんで")
@@ -143,6 +142,7 @@
     (wait-for-julius-trigger "すすんで")
     (go-to-auto-door4)
     (send *ri* :speak-jp "自動ドアがあいたらすすんでと言ってください")
+    (wait-for-julius-trigger "すすんで")
     (go-to-3f-elevator)
     (send *ri* :speak-jp "エレベータがついたらすすんでと言ってください")
     (wait-for-julius-trigger "すすんで")
@@ -169,3 +169,9 @@
 
 ;; elevator hall
 ;; (send *ri* :move-to (make-coords :pos #f(1850 -30746 0) :rpy (float-vector -pi/2 0 0)) :frame-id "/map")
+
+
+;; memo
+;; imu
+;; julius 10 -> 2
+;; no rotation move_base

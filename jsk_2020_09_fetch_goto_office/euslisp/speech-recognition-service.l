@@ -9,22 +9,21 @@
 (defvar *google-msg* "/speech_to_text_google")
 (defvar *julius-service* "speech_recognition")
 
-(defvar julius-words (list "さんがい" "にんげん" "けんくどう" "たんたんめん" "すすんで" "ふぇっち" "でこーど" "ぴーあーるーつー" "かえるよ"))
+(defvar *julius-words* (list "すすんで" "かえるよ"))
 
-(defun register-julius-words(julius-words)
-    (ros::wait-for-service *julius-service*)
-    (ros::ros-info (format nil "Registering words ~A to Julius..." julius-words))
-    (let
-        ((req (instance speech_recognition_msgs::SpeechRecognitionRequest :init)))
-        (send (send req :vocabulary) :words julius-words)
-    )
+(defun julius-words-list(*julius-words*)
+    (ros::ros-info (format nil "Julius word are " *julius-words*))
 )
 
 (defun listen-with-julius()
-    (let 
-        ((res (ros::service-call *julius-service* req t)))
-        (ros::ros-info (format nil "SpeechRecognition::Julius :transcript ~A :confidence ~A" (send (send res :result) :transcript) (send (send res :result) :confidence)))
-        (car (send (send res :result) :transcript))
+  (ros::wait-for-service *julius-service*)
+  (let
+      ((req (instance speech_recognition_msgs::SpeechRecognitionRequest :init))
+       res)
+    (send (send req :vocabulary) :words *julius-words*)
+    (setq res (ros::service-call *julius-service* req t))
+    (ros::ros-info (format nil "SpeechRecognition::Julius :transcript ~A :confidence ~A" (send (send res :result) :transcript) (send (send res :result) :confidence)))
+    (car (send (send res :result) :transcript))
     )
 )
 
@@ -71,4 +70,4 @@
 )
 
 ;; main
-(register-julius-words julius-words)
+(julius-words-list *julius-words*)
