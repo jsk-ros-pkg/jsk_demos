@@ -24,19 +24,6 @@
 
 (defun get-off-elevator1()
     (change-floor "/eng2/3f" :base-frame-name "/base_link")
-    (let
-        ((msg (instance geometry_msgs::PoseWithCovarianceStamped :init)))
-        (send msg :header :stamp (ros::time-now))
-        (send msg :header :frame_id "/map")
-        (send msg :pose :pose (ros::coords->tf-pose(make-coords :pos #f(737 -35134 0) :rpy (float-vector pi/2 0 0))))
-        (send msg :pose :covariance (list 1e-3 0.0 0.0 0.0 0.0 0.0
-                                        0.0 1e-3 0.0 0.0 0.0 0.0
-                                        0.0 0.0 0.0 0.0 0.0 0.0
-                                        0.0 0.0 0.0 0.0 0.0 0.0
-                                        0.0 0.0 0.0 0.0 0.0 0.0
-                                        0.0 0.0 0.0 0.0 0.0 1e-3))
-        (ros::publish "/initialpose" msg))
-    ;; SET SPOT!!!
     (send *ri* :speak-jp "マップを切り替えました" :wait t)
     ;; (recognize-arrive-at-eng2-3f())
     (send *ri* :clear-costmap)
@@ -92,18 +79,6 @@
 
 (defun get-off-elevator2()
     (change-floor "/eng2/7f" :base-frame-name "/base_link")
-    (let
-        ((msg (instance geometry_msgs::PoseWithCovarianceStamped :init)))
-        (send msg :header :stamp (ros::time-now))
-        (send msg :header :frame_id "/map")
-        (send msg :pose :pose (ros::coords->tf-pose (make-coords :pos #f(1850 -33746 0) :rpy (float-vector pi/2 0 0))))
-        (send msg :pose :covariance (list 1e-3 0.0 0.0 0.0 0.0 0.0
-                                        0.0 1e-3 0.0 0.0 0.0 0.0
-                                        0.0 0.0 0.0 0.0 0.0 0.0
-                                        0.0 0.0 0.0 0.0 0.0 0.0
-                                        0.0 0.0 0.0 0.0 0.0 0.0
-                                        0.0 0.0 0.0 0.0 0.0 1e-3))
-        (ros::publish "/initialpose" msg))
     (send *ri* :speak-jp "マップを切り替えました" :wait t)
     ;; (recognize-arrive-at-eng2-3f())
     (send *ri* :clear-costmap)
@@ -126,31 +101,31 @@
     (send *ri* :speak-jp "エレベータがついたらすすんでと言ってください")
     (wait-for-julius-trigger "すすんで")
     (get-off-elevator1)
-    (go-to-auto-door1)
-    (send *ri* :speak-jp "自動ドアがあいたらすすんでと言ってください")
-    (wait-for-julius-trigger "すすんで")
-    (go-to-auto-door2)
-    (send *ri* :speak-jp "自動ドアがあいたらすすんでと言ってください")
-    (wait-for-julius-trigger "すすんで")
-    (go-to-office-kyoin)
-    (send *ri* :speak-jp "用事が済んだら教えてください")
+    ;; (go-to-auto-door1)
+    ;; (send *ri* :speak-jp "自動ドアがあいたらすすんでと言ってください")
+    ;; (wait-for-julius-trigger "すすんで")
+    ;; (go-to-auto-door2)
+    ;; (send *ri* :speak-jp "自動ドアがあいたらすすんでと言ってください")
+    ;; (wait-for-julius-trigger "すすんで")
+    ;; (go-to-office-kyoin)
+    ;; (send *ri* :speak-jp "用事が済んだら教えてください")
 
-    (wait-for-julius-trigger "かえるよ")
-    (send *ri* :speak-jp "帰ります")
-    (go-to-auto-door3)
-    (send *ri* :speak-jp "自動ドアがあいたらすすんでと言ってください")
-    (wait-for-julius-trigger "すすんで")
-    (go-to-auto-door4)
-    (send *ri* :speak-jp "自動ドアがあいたらすすんでと言ってください")
-    (wait-for-julius-trigger "すすんで")
-    (go-to-3f-elevator)
-    (send *ri* :speak-jp "エレベータがついたらすすんでと言ってください")
-    (wait-for-julius-trigger "すすんで")
-    (get-on-elevator2)
-    (send *ri* :speak-jp "エレベータがついたらすすんでと言ってください")
-    (wait-for-julius-trigger "すすんで")
-    (get-off-elevator2)
-    (go-to-73b2)
+    ;; (wait-for-julius-trigger "かえるよ")
+    ;; (send *ri* :speak-jp "帰ります")
+    ;; (go-to-auto-door3)
+    ;; (send *ri* :speak-jp "自動ドアがあいたらすすんでと言ってください")
+    ;; (wait-for-julius-trigger "すすんで")
+    ;; (go-to-auto-door4)
+    ;; (send *ri* :speak-jp "自動ドアがあいたらすすんでと言ってください")
+    ;; (wait-for-julius-trigger "すすんで")
+    ;; (go-to-3f-elevator)
+    ;; (send *ri* :speak-jp "エレベータがついたらすすんでと言ってください")
+    ;; (wait-for-julius-trigger "すすんで")
+    ;; (get-on-elevator2)
+    ;; (send *ri* :speak-jp "エレベータがついたらすすんでと言ってください")
+    ;; (wait-for-julius-trigger "すすんで")
+    ;; (get-off-elevator2)
+    ;; (go-to-73b2)
     )
 
 ;; (defun go-to-front-of-auto-door1()
