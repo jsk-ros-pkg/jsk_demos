@@ -12,7 +12,7 @@
 (defvar *julius-words* (list "すすんで" "かえるよ"))
 
 (defun julius-words-list(*julius-words*)
-    (ros::ros-info (format nil "Julius word are " *julius-words*))
+    (ros::ros-info (format nil "Julius words are ~A" *julius-words*))
 )
 
 (defun listen-with-julius()
