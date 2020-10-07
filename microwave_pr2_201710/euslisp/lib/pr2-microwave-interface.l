@@ -150,7 +150,6 @@
      (send microwave-cds :move-to *pr2* :world)
      (send microwave-cds :transform local-cds)
      (send *microwave* :move-to microwave-cds :world)
-     (setq *test* (send *microwave* :copy-worldcoords))   ;; TODO delete
 
      (send *microwave* :rotate pi/2 :y)
      (send *microwave* :rotate pi :x)
@@ -347,10 +346,6 @@
      )
    )
 
-
-
-
-
   ;; TODO
   (:take-object
    (&optional (wait? nil))
@@ -400,35 +395,27 @@
      )
    )
 
-  ;; TODO
-  (:push-heat-button
-   (&optional (wait? nil))
-   (send *pr2* :reset-pose)
-   (send *ri* :start-grasp :rarm)
-   (send *ri* :wait-interpolation)
+  (:push-button
+   (pos &optional (wait? nil))
+   (let* ((button-front (send (send *microwave* :copy-worldcoords) :transform (make-coords :pos pos)))
+          (button (send (send button-front :copy-worldcoords) :translate (float-vector 85 0 0) :world)))
 
-   (send *microwave* :move-to (make-coords :pos microwave-pos :rpy (car microwave-rpy)) :world)
-   (send *microwave* :angle-vector (float-vector 180))
-
-   (let ((heat-button-front (send (send *microwave* :copy-worldcoords) :transform (make-coords :pos (float-vector -70 -505 115))))
-         (heat-button (send (send *microwave* :copy-worldcoords) :transform (make-coords :pos (float-vector 10 -505 115)))))
-
-     (progn   ;; pre-push
-       (send *pr2* :rarm :inverse-kinematics heat-button-front :rotation-axis t)
+     (progn ;; pre-push
+       (send *pr2* :rarm :inverse-kinematics button-front :rotation-axis t)
        (if wait? (wait-enter))
-       (send *ri* :angle-vector (send *pr2* :angle-vector) 5000)
+       (send *ri* :angle-vector (send *pr2* :angle-vector) 2000)
        (send *ri* :wait-interpolation)
        )
 
      (progn   ;; push
-       (send *pr2* :rarm :inverse-kinematics heat-button :rotation-axis t)
+       (send *pr2* :rarm :inverse-kinematics button :rotation-axis t)
        (if wait? (wait-enter))
-       (send *ri* :angle-vector (send *pr2* :angle-vector) 5000)
+       (send *ri* :angle-vector (send *pr2* :angle-vector) 3000)
        (send *ri* :wait-interpolation)
        )
 
      (progn   ;; post-push
-       (send *pr2* :rarm :inverse-kinematics heat-button-front :rotation-axis t)
+       (send *pr2* :rarm :inverse-kinematics button-front :rotation-axis t)
        (if wait? (wait-enter))
        (send *ri* :angle-vector (send *pr2* :angle-vector) 2000)
        (send *ri* :wait-interpolation)
@@ -436,7 +423,44 @@
      )
    )
 
-  ;; TODO
+  (:push-500w-button
+   (&optional (wait? nil))
+   (send *pr2* :reset-pose)
+   (send *pr2* :start-grasp :rarm)
+   (send *ri* :start-grasp :rarm)
+
+   (send *microwave* :move-to (make-coords :pos microwave-pos :rpy (car microwave-rpy)) :world)
+   (send *microwave* :angle-vector (float-vector 180))
+
+   (send self :push-button (float-vector -70 -370 105))
+
+   (progn   ;; reset-pose
+     (send *pr2* :reset-pose)
+     (if wait? (wait-enter))
+     (send *ri* :angle-vector (send *pr2* :angle-vector) 2000)
+     (send *ri* :wait-interpolation)
+     )
+   )
+
+  (:push-1min-button
+   (&optional (wait? nil))
+   (send *pr2* :reset-pose)
+   (send *pr2* :start-grasp :rarm)
+   (send *ri* :start-grasp :rarm)
+
+   (send *microwave* :move-to (make-coords :pos microwave-pos :rpy (car microwave-rpy)) :world)
+   (send *microwave* :angle-vector (float-vector 180))
+
+   (send self :push-button (float-vector -70 -390 120))
+
+   (progn   ;; reset-pose
+     (send *pr2* :reset-pose)
+     (if wait? (wait-enter))
+     (send *ri* :angle-vector (send *pr2* :angle-vector) 2000)
+     (send *ri* :wait-interpolation)
+     )
+   )
+
   (:push-start-button
    (&optional (wait? nil))
    (send *pr2* :reset-pose)
@@ -446,30 +470,7 @@
    (send *microwave* :move-to (make-coords :pos microwave-pos :rpy (car microwave-rpy)) :world)
    (send *microwave* :angle-vector (float-vector 180))
 
-   (let ((start-button-front (send (send *microwave* :copy-worldcoords) :transform (make-coords :pos (float-vector -70 -410 170))))
-         (start-button (send (send *microwave* :copy-worldcoords) :transform (make-coords :pos (float-vector -5 -410 170)))))
-
-     (progn ;; pre-push
-       (send *pr2* :rarm :inverse-kinematics start-button-front :rotation-axis t)
-       (if wait? (wait-enter))
-       (send *ri* :angle-vector (send *pr2* :angle-vector) 2000)
-       (send *ri* :wait-interpolation)
-       )
-
-     (progn   ;; push
-       (send *pr2* :rarm :inverse-kinematics start-button :rotation-axis t)
-       (if wait? (wait-enter))
-       (send *ri* :angle-vector (send *pr2* :angle-vector) 3000)
-       (send *ri* :wait-interpolation)
-       )
-
-     (progn   ;; post-push
-       (send *pr2* :rarm :inverse-kinematics start-button-front :rotation-axis t)
-       (if wait? (wait-enter))
-       (send *ri* :angle-vector (send *pr2* :angle-vector) 2000)
-       (send *ri* :wait-interpolation)
-       )
-     )
+   (send self :push-button (float-vector -70 -410 195))
 
    (progn   ;; reset-pose
      (send *pr2* :reset-pose)
