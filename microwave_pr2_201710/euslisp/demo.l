@@ -1,24 +1,33 @@
-#|
-what you have to do before demo
-- put microwave forward
-
-|#
-
 (require :pr2-microwave-interface "package://microwave_pr2_201710/euslisp/lib/pr2-microwave-interface.l")
 
 (defun demo
     ()
-  (setq *pmi* (instance pr2-microwave-interface :init t))
+  ;; init
+  (setq *pmi* (instance pr2-microwave-interface :init))
 
+  ;; go to microwave
   (send *pmi* :go-to-microwave-roughly)
   (send *pmi* :go-to-microwave-accurately)
-  (send *pmi* :open-microwave t)
-  (send *pmi* :put-object t)
-  (send *pmi* :close-microwave t)
-  ;; (send *pmi* :push-heat-button t)
-  ;; (send *pmi* :push-start-button t)
-  ;; (send *pmi* :wait t)
-  ;; (send *pmi* :open-microwave t)
-  ;; (send *pmi* :take-object t)
-  ;; (send *pmi* :close-microwave t)
+
+  ;; put object in microwave
+  (send *pmi* :open-microwave)
+  (send *pmi* :go-forward)
+  (send *pmi* :put-object)
+  (send *pmi* :go-backward)
+  (send *pmi* :close-microwave)
+
+  ;; push button
+  (send *pmi* :go-to-microwave-accurately)
+  (send *pmi* :push-heat-button)
+  (send *pmi* :push-start-button)
+
+  ;; wait for heating
+  (unix::sleep (* 2 60))
+
+  ;; take object from microwave
+  (send *pmi* :open-microwave)
+  (send *pmi* :go-forward)
+  (send *pmi* :take-object)
+  (send *pmi* :go-backward)
+  (send *pmi* :close-microwave)
   )
