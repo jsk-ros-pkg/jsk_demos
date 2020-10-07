@@ -195,7 +195,10 @@
 
 
      ;; open
-     (let ((i 170))
+     (let ((i 170)
+           av
+           (tms (list))
+           (avs (list)))
        (while (> i 109)
 
          (send *microwave* :angle-vector (float-vector i))
@@ -204,12 +207,15 @@
                ;;:revert-if-fail nil
                :rotation-axis t)
 
-         (if wait? (wait-enter))
-         (when use-ri
-           (send *ri* :angle-vector (send *pr2* :angle-vector) 1000)
-           (send *ri* :wait-interpolation))
+         (setq av (send *pr2* :angle-vector))
+         (setq avs (append avs (list av)))
+         (setq tms (append tms (list 100)))
+
          (setq i (- i 5))
          )
+       (when use-ri
+         (send *ri* :angle-vector-sequence avs tms)
+         (send *ri* :wait-interpolation))
        )
 
      (progn   ;; pull left hand from microwave
