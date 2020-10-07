@@ -6,8 +6,7 @@
   (setq *pmi* (instance pr2-microwave-interface :init))
 
   ;; go to microwave
-  (send *pmi* :go-to-microwave-roughly)
-  (send *pmi* :go-to-microwave-accurately)
+  ;;(send *pmi* :go-to-microwave-roughly)
   (send *pmi* :update-microwave-pose)
 
   ;; put object in microwave
