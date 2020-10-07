@@ -8,6 +8,7 @@
   ;; go to microwave
   (send *pmi* :go-to-microwave-roughly)
   (send *pmi* :go-to-microwave-accurately)
+  (send *pmi* :update-microwave-pose)
 
   ;; put object in microwave
   (send *pmi* :open-microwave)
