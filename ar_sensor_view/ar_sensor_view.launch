@@ -1,0 +1,41 @@
+<launch>
+  <arg name="CAMERA_NAME"  default="camera" />
+  <arg name="IMAGE_TYPE"   default="image_rect" />
+  <arg name="ORIGIN_FRAME" default="map" />
+  <arg name="ROBOT_FRAME"  default="BODY" />
+  <arg name="DEBUG"        default="false" />
+
+  <arg name="USE_TARGET_LIST" default="false" />
+  <arg name="TARGET_LIST" default="[]" />
+
+  <group ns="$(arg CAMERA_NAME)" >
+    <node name="robot_points_indicator"
+          pkg="image_view2" type="image_view2" >
+      <remap from="image"    to="$(arg IMAGE_TYPE)" />
+      <param name="autosize" value="false" />
+      <param name="interaction_mode" value="poly" />
+    </node>
+
+    <node name="dynamic_tf_publisher"
+          pkg="dynamic_tf_publisher" type="tf_publish.py"
+          output="screen" clear_params="true" >
+      <remap from="/set_dynamic_tf" to="set_dynamic_tf"/>
+      <remap from="/assoc_tf"   to="assoc_tf"  />
+      <remap from="/dissoc_tf"  to="dissoc_tf" />
+      <remap from="/publish_tf" to="publish_tf"/>
+      <remap from="/delete_tf"  to="delete_tf" />
+    </node>
+
+    <node name="calc_points"
+          pkg="roseus" type="roseus" output="screen"
+          args="$(find ar_sensor_view)/calc-polygon-to-coords.l" >
+      <remap from="poly" to="$(arg IMAGE_TYPE)/poly" />
+      <param name="~origin_frame" value="$(arg ORIGIN_FRAME)" />
+      <param name="~robot_frame"  value="$(arg ROBOT_FRAME)" />
+      <param name="~debug" value="$(arg DEBUG)" />
+      <rosparam if="$(arg USE_TARGET_LIST)" subst_value="true">
+        target_list: $(arg TARGET_LIST)
+      </rosparam>
+    </node>
+  </group>
+</launch>
