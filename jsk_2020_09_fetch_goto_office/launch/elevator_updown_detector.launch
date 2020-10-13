@@ -1,0 +1,4 @@
+<launch>
+  <node name="imu_filtered_publisher" pkg="jsk_2020_09_fetch_goto_office" type="imu_filtered_publisher.py" />
+  <node name="elevator_updown_detector" pkg="jsk_2020_09_fetch_goto_office" type="elevator_updown_detector.py" />
+</launch>
