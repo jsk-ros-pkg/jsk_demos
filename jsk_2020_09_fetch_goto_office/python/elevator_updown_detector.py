@@ -4,10 +4,10 @@ from std_msgs.msg import Float64, String
 
 class UpDownDetectPublisher:
     def __init__(self):
-        rospy.sleep(10)
         rospy.init_node('updown_detector', anonymous=True)
-        self.sub = rospy.Subscriber('/imu_filtered/z', Float64, self.callback)
+        self.sub = rospy.Subscriber('/imu_filtered/z/passthroughed', Float64, self.callback)
         self.pub = rospy.Publisher('/updown_state', String, queue_size=1)
+
         self.elevator_state = "stopping"
         self.speed_state = "stopping"
         
