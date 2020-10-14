@@ -20,6 +20,7 @@
     (send *ri* :go-pos 3.0 0 180)
     (unix:sleep 1)
     (send *ri* :speak-jp "エレベータに乗りました" :wait t)
+	(send *ri* :speak-jp "エレベータの3階のボタンを押してください" :wait t)
     )
 
 (defun get-off-elevator1()
@@ -75,6 +76,7 @@
     (send *ri* :go-pos 3.0 0 180)
     (unix:sleep 1)
     (send *ri* :speak-jp "エレベータに乗りました" :wait t)
+	(send *ri* :speak-jp "エレベータの7階のボタンを押してください" :wait t)
     )
 
 (defun get-off-elevator2()
