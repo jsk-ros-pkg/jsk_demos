@@ -4,6 +4,13 @@
 (load "speech-recognition-service.l")
 (ros::load-ros-manifest "geometry_msgs")
 (ros::advertise "/initialpose" geometry_msgs::PoseWithCovarianceStamped 1)
+
+;; passthrough service
+(ros::roseus "passthrough")
+(ros::wait-for-service "/passthrough/request")
+(ros::wait-for-service "/passthrough/stop")
+(setq *pass-req* (instance std_srvs::EmptyRequest :init))
+
 (fetch-init)
 
 (defun go-to-7f-elevator()
@@ -21,6 +28,7 @@
     (unix:sleep 1)
     (send *ri* :speak-jp "エレベータに乗りました" :wait t)
 	(send *ri* :speak-jp "エレベータの3階のボタンを押してください" :wait t)
+	(ros::service-call "/passthrough/request" *pass-req* t)
     )
 
 (defun get-off-elevator1()
@@ -29,6 +37,7 @@
     ;; (recognize-arrive-at-eng2-3f())
     (send *ri* :clear-costmap)
     ;; CHANGE TO MOVE-TO?
+	(ros::service-call "/passthrough/stop" *pass-req* t)
     (send *ri* :go-pos 3.5 0 0)
     (unix:sleep 1)
     (send *ri* :speak-jp "エレベータからおりました" :wait t)
@@ -76,6 +85,7 @@
     (send *ri* :go-pos 3.0 0 180)
     (unix:sleep 1)
     (send *ri* :speak-jp "エレベータに乗りました" :wait t)
+	(ros::service-call "/passthrough/request" *pass-req* t)
 	(send *ri* :speak-jp "エレベータの7階のボタンを押してください" :wait t)
     )
 
@@ -83,6 +93,7 @@
     (change-floor "/eng2/7f" :base-frame-name "/base_link")
     (send *ri* :speak-jp "マップを切り替えました" :wait t)
     ;; (recognize-arrive-at-eng2-3f())
+	(ros::service-call "/passthrough/stop" *pass-req* t)
     (send *ri* :clear-costmap)
     (send *ri* :go-pos 3.5 0 0)
     (unix:sleep 1)
