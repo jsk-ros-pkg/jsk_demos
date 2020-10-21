@@ -4,11 +4,11 @@
   <version>0.0.4</version>
   <description>The jsk_2020_10_semi package</description>
 
-  <author email="">@yuli-disney</author>
-  <author email="">@softyanija</author>
-  <author email="">@tenrobo18</author>
-  <author email="">@tkmtnt7000</author>
-  <author email="">@ketaro-m</author>
+  <!-- <author email="">yuli-disney</author> -->
+  <!-- <author email="">softyanija</author> -->
+  <!-- <author email="">tenrobo18</author> -->
+  <!-- <author email="">tkmtnt7000</author> -->
+  <!-- <author email="">ketaro-m</author> -->
   <maintainer email="k-okada@jsk.t.u-tokyo.ac.jp">Kei Okada</maintainer>
 
   <license>BSD</license>
