@@ -1,0 +1,55 @@
+@startuml
+
+|ロボ|
+
+start
+
+partition A {
+
+  :引き出し前まで移動する;
+
+}
+
+@startuml
+
+|使用者|
+
+partition B {
+
+  repeat
+    :何を探すか言うor入力;
+  repeat while (探すものがそもそも備品リストに無い)
+
+}
+
+|ロボ|
+
+partition C {
+
+    :探す物品に対応する引き出しを開ける;
+    :引き出しの中をカメラで映す;
+
+}
+
+|使用者|
+
+partition D {
+
+    if (探しているものがあった) then (yes)
+    
+        :引き出しを閉める;
+        
+    else (no) 
+    
+        repeat
+            :他の引き出しを開ける;
+        repeat while (物品を見つけたか全部探しきった)
+    
+    endif
+    
+    :探索を終えて初期位置に戻る;
+}
+
+end
+
+@enduml
