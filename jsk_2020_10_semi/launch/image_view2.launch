@@ -1,0 +1,18 @@
+<launch>
+
+  <machine name="fetch15" address="fetch15.jsk.imi.i.u-tokyo.ac.jp" user="fetch" env-loader="/home/fetch/ros/melodic/machine-env.sh" />
+  <machine name="fetch1075" address="fetch1075.jsk.imi.i.u-tokyo.ac.jp" user="fetch" env-loader="/home/fetch/ros/melodic/machine-env.sh" />
+  <machine name="localhost" address="localhost" />
+  <arg name="machine" default="localhost" />
+  <arg name="use_window" default="false" />
+
+  <!-- following two node publish organized cloud w.r.t. camera frame -->
+  <node name="edgetpu_human_pose_estimator_image_view2" pkg="image_view2" type="image_view2"
+        ns="/edgetpu_human_pose_estimator/output"
+        output="screen"
+        machine="$(arg machine)" >
+    <param name="image_transport" value="compressed" />
+    <param name="use_window" value="$(arg use_window)" />
+  </node>
+
+</launch>

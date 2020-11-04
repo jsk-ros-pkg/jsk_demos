@@ -1,0 +1,55 @@
+<launch>
+
+  <machine name="fetch15" address="fetch15.jsk.imi.i.u-tokyo.ac.jp" user="fetch" env-loader="/home/fetch/ros/melodic/machine-env.sh" />
+  <machine name="fetch1075" address="fetch1075.jsk.imi.i.u-tokyo.ac.jp" user="fetch" env-loader="/home/fetch/ros/melodic/machine-env.sh" />
+  <machine name="localhost" address="localhost" />
+  <arg name="machine" default="localhost" />
+  <arg name="CAMERA_NS" default="head_camera" />
+  <arg name="COLOR_NS" default="rgb" />
+
+  <!-- following two node publish organized cloud w.r.t. camera frame -->
+  <node name="depth_image_register" pkg="nodelet" type="nodelet"
+        args="load depth_image_proc/register /screenpoint_manager" ns="$(arg CAMERA_NS)"
+        output="screen" clear_params="true" respawn="true"
+        machine="$(arg machine)" >
+    <!-- publish depth_registered/image_rect from depth/image_rect {rgb,depth}/camera_info -->
+    <remap from="rgb/camera_info" to="$(arg COLOR_NS)/camera_info" />
+    <remap from="depth/camera_info" to="depth/camera_info" />
+    <remap from="depth/image_rect" to="depth/image_rect" />
+    <param name="qeueu_size" value="30" />
+  </node>
+  <node name="depth_image_proc" pkg="nodelet" type="nodelet"
+        args="load depth_image_proc/point_cloud_xyzrgb /screenpoint_manager" ns="$(arg CAMERA_NS)"
+        output="screen" clear_params="true" respawn="true"
+        machine="$(arg machine)" >
+    <!-- publish depth_registered/points from rgb/image_rect_color and depth_registered/image_rect -->
+    <remap from="rgb/camera_info" to="$(arg COLOR_NS)/camera_info" />
+    <remap from="rgb/image_rect_color" to="$(arg COLOR_NS)/image_rect_color" />
+    <remap from="depth_registered/image_rect" to="depth_registered/image_rect" />
+    <param name="qeueu_size" value="30" />
+  </node>
+
+  <!-- launch/pointcloud_screenpoint.launch -->
+  <include file="$(find jsk_pcl_ros)/launch/pointcloud_screenpoint.launch">
+    <arg name="cloud_machine" value="$(arg machine)" />
+    <arg name="image_type" default="image_rect_color" />
+    <arg name="image" default="/$(arg CAMERA_NS)/$(arg COLOR_NS)" />
+    <arg name="points" default="/$(arg CAMERA_NS)/depth_registered/points" />
+    <arg name="USE_DEPTH_CREATER" default="false" />
+    <arg name="USE_REGISTERED_DEPTH" default="false"/>
+    <arg name="USE_VIEW" default="false"/>
+  </include>
+  <!-- force subscribe output to run screenpoint -->
+  <node name="alwasy_subscribe_output_screenpoint" pkg="rostopic"
+  	type="rostopic" output="screen" respawn="true"
+        args="hz /pointcloud_screenpoint_nodelet/output"
+        machine="$(arg machine)" />
+  <node name="display_point" pkg="jsk_pcl_ros"
+  	type="pointcloud_screenpoint.l" output="screen" respawn="true"
+        machine="$(arg machine)" >
+    <param name="sensor_topic" value="/edgetpu_human_pose_estimator/output/image"/>
+    <param name="ray_srv" value="/pointcloud_screenpoint_nodelet/screen_to_point"/>
+    <param name="base_frame" value="head_camera_link"/>
+  </node>
+
+</launch>
