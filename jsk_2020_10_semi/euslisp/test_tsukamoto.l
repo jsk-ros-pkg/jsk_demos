@@ -39,10 +39,32 @@
 |#
 
 (defun pose-of-give ()
-  (send *fetch* :rarm :inverse-kinematics (send (send *fetch* :copy-worldcoords) :transform (make-coords :pos #f(600 300 1000))) :debug-view t)
+  (send *ri* :start-grasp :effort 60)
+  (unix:sleep 1) 
+  ;;(send *fetch* :torso_lift_joint :joint-angle 60)
   ;;(send *ri* :angle-vector (send *fetch* :angle-vector) 5000)
+  ;;(send *fetch* :stop-grasp)
+  (send *fetch* :rarm :inverse-kinematics (send (send *fetch* :copy-worldcoords) :transform (make-coords :pos #f(600 100 1000) :rpy (float-vector 0 0 pi/2))) :debug-view t)
+  (send *ri* :angle-vector (send *fetch* :angle-vector) 5000)
+  (send *ri* :wait-interpolation t)
+  ;;(send *fetch* :wrist_roll_joint :joint-angle 0)
+  ;;(send *ri* :angle-vector (send *fetch* :angle-vector) 5000)
+  (send *ri* :wait-interpolation t)
+  (send *ri* :stop-grasp)
+  #|
+  (send *ri* :wait-interpolation t)
+  (send *ri* :start-grasp)
+  (send *ri* :wait-interpolation t)
+  |#
+  #|
+  (send *fetch* :torso_lift_joint :joint-angle 60)
+  (send *ri* :angle-vector (send *fetch* :angle-vector) 5000)
+  (send *ri* :wait-interpolation t)
+  |#
+  ;;(send *ri* :angle-vector (send *fetch* :reset-pose) 5000)
   )
-
+  ;;(send *fetch* :rarm :angle-vector)
+  
 #|
 (defun raise-hand ()
   (send *fetch* :angle-vector #f(5.0000 88.0000 -42.0000 0 -60 1 -77.0000 7.000 0 2.0000)))
