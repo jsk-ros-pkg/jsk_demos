@@ -1,0 +1,16 @@
+<launch>
+  <arg name="input" default="/imu_filtered/z" />
+  <arg name="output" default="/imu_filtered/z/passthroughed" />
+  <arg name="default_duration" default="10" />
+  
+  <node pkg="jsk_topic_tools" name="passthrough" type="passthrough">
+    <remap from="~input" to="$(arg input)" />
+    <remap from="~output" to="$(arg output)" />
+    <rosparam subst_value="true">
+      default_duration: $(arg default_duration)
+    </rosparam>
+  </node>
+
+  <node name="imu_filtered_publisher" pkg="jsk_2020_09_fetch_goto_office" type="imu_filtered_publisher.py" />
+  <node name="elevator_updown_detector" pkg="jsk_2020_09_fetch_goto_office" type="elevator_updown_detector.py" />
+</launch>
