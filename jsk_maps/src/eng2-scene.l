@@ -72,7 +72,7 @@
 
 (defun make-eng2-3f-scene ()
   (let* (scene map floor-names rooms spots objects)
-    (setq map (make-floor-plane (ros::resolve-ros-path "package://jsk_maps/raw_maps/eng2-3f-0.05.pgm") 50 -13000 -48500 :name "/eng2/3f/floor-plane"))
+    (setq map (make-floor-plane (ros::resolve-ros-path "package://jsk_maps/raw_maps/eng2-3f-0.05.pgm") 50 -11900 -47100 :name "/eng2/3f/floor-plane"))
 
     ;; 3F
     (make-cascoords-tree
