@@ -1,0 +1,23 @@
+<?xml version="1.0"?>
+<package>
+  <name>jsk_2019_10_semi</name>
+  <version>0.0.4</version>
+  <description>The jsk_2019_10_semi package</description>
+
+  <author email="tanemoto-miyabi412@g.ecc.u-tokyo.ac.jp">Miyabi Tanemoto</author>
+  <author email="abe-yoshia-770@g.ecc.u-tokyo.ac.jp">YoshiaAbe</author>
+  <author email="naoaki65k@g.ecc.u-tokyo.ac.jp">Kanazawa Naoaki</author>
+  <author email="mqcmd196@hotmail.co.jp">Yoshiki Obinata</author>
+  <maintainer email="k-okada@jsk.t.u-tokyo.ac.jp">Kei Okada</maintainer>
+
+  <license>BSD</license>
+
+  <buildtool_depend>catkin</buildtool_depend>
+
+  <run_depend>fetcheus</run_depend>
+  <run_depend>jsk_maps</run_depend>
+  <run_depend>pr2eus</run_depend>
+
+  <export>
+  </export>
+</package>
