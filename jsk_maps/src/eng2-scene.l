@@ -222,6 +222,9 @@
 	 `(:rot ,(rpy-matrix pi/2 0 0)
 			:pos ,(float-vector 5500 6196 51.6065)
 			:name "/eng2/7f/room73B2-fetch-dock-front")
+	 `(:rot ,(rpy-matrix pi/2 0 0)
+                        :pos ,(float-vector 2753 7698 51.6065)
+			:name "/eng2/7f/room73B2-fetch-dock-entrance")
 
 
 
