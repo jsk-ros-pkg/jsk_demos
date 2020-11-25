@@ -1,0 +1,11 @@
+source /opt/ros/melodic/setup.bash
+source ~/semi_ws/devel/setup.bash
+
+rossetip
+rossetmaster fetch15
+
+cd ~/semi_ws/src/jsk_demos/jsk_2020_10_semi/euslisp
+roseus
+
+(load "sample.l")
+(progn (setq *door-knob* (send (send (send *scene* :spot "/eng2/7f/room73A3-front") :copy-worldcoords) :locate #f(100 400 800))) (send *door-knob* :draw-on :flush t :size 1000 :color #f(1 0 0)))

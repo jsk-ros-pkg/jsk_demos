@@ -22,6 +22,7 @@
       (send (geo::make-bounding-box
              (flatten (send-all (send *fetch* :bodies) :vertices)))
             :grow 2.0))
+
 (defun move-73-A2-front ()
   (setq *room73A2-front* (send (send *scene* :spot "/eng2/7f/room73A2-front") :copy-worldcoords))
   (send *fetch* :move-to *room73A2-front* :world)
@@ -49,3 +50,35 @@
 (defun catch ()
   (send *fetch* :angle-vector #f(5 52 3 77 -59 10 -78 74 0 2)))
 |#
+
+#| 顔を検知してそこに描かれた長方形の面積を求める |#
+(defclass face_area
+  :slots (*rect*)
+  )
+(defmethod face_area
+  (:init ()
+	 (ros::roseus "face_recognized_client")
+	 (ros::subscribe "edgetpu_face_detector/output/rects" jsk_recognition_msgs::RectArray #'send self :cb)
+	 (setq *rect* nil)
+	 (ros::ros-info "init")
+	 self)
+  (:cb (msg)
+       (setq *rect* (send msg :rects))
+       )
+  (:loop ()
+	 (ros::rate 10)
+	 (while (ros::ok)
+	   (if *rect*
+	       (progn
+		 (setq w (send (elt *rect* 0) :width))
+		 (setq h (send (elt *rect* 0) :height))
+		 (setq *area* (* w h))
+		 (ros::ros-info "area : ~A" *area*)
+		 )
+	     )
+	     (ros::spin-once)
+	     (ros::sleep)
+	    )
+	 (exit)
+	 )
+  )
