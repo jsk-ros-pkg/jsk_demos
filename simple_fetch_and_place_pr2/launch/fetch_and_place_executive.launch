@@ -1,0 +1,45 @@
+<launch>
+  <arg name="execute" default="false" />
+  <arg name="record" default="false" />
+
+  <machine name="localhost" address="localhost" />
+
+  <rosparam>
+    robot:
+      database: jsk_robot_lifelog
+      name: pr1012
+  </rosparam>
+
+  <!-- create isolated mongodb data -->
+  <include file="$(find jsk_robot_startup)/lifelog/mongodb_local.launch" />
+
+  <!-- launch gazebo and load scenario -->
+  <include file="$(find simple_fetch_and_place_pr2)/launch/jsk_kitchen_scenario_pr2.launch" />
+
+  <!-- setup scene camera -->
+  <include file="$(find simple_fetch_and_place_pr2)/launch/gazebo_spawn_scene_camera.launch">
+    <arg name="record_video" value="$(arg record)" />
+  </include>
+
+  <!-- launch perception -->
+  <include file="$(find simple_fetch_and_place_pr2)/launch/gazebo_fake_perception.launch" />
+
+  <!-- start task -->
+  <include file="$(find task_compiler)/launch/execute-pddl.launch"
+           if="$(arg execute)">
+    <arg name="action" value="$(find simple_fetch_and_place_pr2)/euslisp/fetch-and-place-action.l" />
+    <arg name="description" value="$(find simple_fetch_and_place_pr2)/euslisp/fetch-and-place-planning.l" />
+    <arg name="return_success" value="t" />
+    <arg name="return_fail" value="nil" />
+    <arg name="planner" value="downward" />
+    <arg name="gui" value="false" />
+  </include>
+
+  <!-- rviz -->
+  <node name="rviz" pkg="rviz" type="rviz"
+        args="-d $(find simple_fetch_and_place_pr2)/config/fnp.rviz" />
+
+  <!-- smach viewer -->
+  <node name="smach_viewer" pkg="smach_viewer" type="smach_viewer"
+        respawn="true" />
+</launch>

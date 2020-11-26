@@ -1,0 +1,24 @@
+<launch>
+  <arg name="planner" default="downward" /> <!-- ff, ffha or downward -->
+  <arg name="execute" default="false" />
+
+  <group if="$(arg execute)">
+    <include file="$(find task_compiler)/launch/execute-pddl.launch">
+      <arg name="action" value="$(find simple_fetch_and_place_pr2)/euslisp/fetch-and-place-action.l" />
+      <arg name="description" value="$(find simple_fetch_and_place_pr2)/euslisp/fetch-and-place-planning.l" />
+      <arg name="return_success" value="true" />
+      <arg name="return_fail" value="false" />
+      <arg name="planner" value="$(arg planner)" />
+      <arg name="gui" value="false" />
+    </include>
+  </group>
+  <group unless="$(arg execute)">
+    <include file="$(find pddl_planner)/launch/pddl_$(arg planner).launch" />
+    <node name="plan_client" pkg="roseus" type="roseus"
+          args="$(find simple_fetch_and_place_pr2)/euslisp/fetch-and-place-planning.l"
+          output="screen">
+      <param name="display_graph" value="true" />
+    </node>
+  </group>
+  <node pkg="smach_viewer" name="smach_viewer" type="smach_viewer.py" />
+</launch>
