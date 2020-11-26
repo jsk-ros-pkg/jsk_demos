@@ -405,7 +405,7 @@
 	 (time-tick (/ (* (- func-time 16) 1000) (length lst)));;changing opening-door speed
 	 avs base-cds-list traj-points tms)
     (when move-robot  ;; open-gripper
-      (send *ri* :move-gripper hand 0.09 :wait nil))
+      (send *ri* :stop-grasp hand :wait nil))
     (when fix-waist-z
       (unless (numberp fix-waist-z) (setq fix-waist-z 130))
       (send *pr2* :torso :waist-z :joint-angle fix-waist-z))
