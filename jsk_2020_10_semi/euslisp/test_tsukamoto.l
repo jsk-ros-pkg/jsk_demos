@@ -205,7 +205,7 @@
   (send *ri* :wait-interpolation nil)
   (relative-move-hand 300 400 1200 0 0 pi/2)
   (send *ri* :wait-interpolation nil)
-  (
+  
   (relative-move-hand 300 200 1200 0 0 pi/2)
   )
 
@@ -231,13 +231,17 @@
 
 ;;(relative-move-hand 0 -500 550 pi 0 pi/2)
 
-(defun open-box ()
+#| 足元に置かれたUberEatsの蓋を開ける |#
+(defun box-open ()
   (relative-move-hand 100 -500 550 pi 0 pi/2)
   (send *ri* :wait-interpolation nil)
-  (unix::sleep 1)
-  (send *fetch* :rarm :angle-vector #f(-60.9601 55.1198 -152.558 64.3187 71.9964 114.228 173.586))
-  (send *ri* :angle-vector (send *fetch* :angle-vector) 5000 :use-torso nil)
+  (unix::sleep 1) ;; sleepさせないと挙動がおかしい
+  (send *fetch* :rarm :angle-vector #f(-60.9601 55.1198 -152.558 64.3187 71.9964 114.228 173.586)) ;; 元のものから１つめを-20度した
+  (send *ri* :angle-vector (send *fetch* :angle-vector) 5000)
+  ;; シミュレーション上ではuse-torsoが使えない
+  ;; (send *ri* :angle-vector (send *fetch* :angle-vector) 5000 :use-torso nil)
   (send *ri* :wait-interpolation nil)
+  ;; ここから蓋開け動作
   (relative-move-hand 0 -500 650 pi 0 pi/2)
   (send *ri* :wait-interpolation nil)
   (relative-move-hand 0 -500 700 pi 0 pi/2)
@@ -246,10 +250,11 @@
   (send *ri* :wait-interpolation nil)
   (relative-move-hand 280 -500 870 pi 0 pi/2)
   (send *ri* :wait-interpolation nil)
+  #|
   (relative-move-hand 280 -550 870 pi 0 pi/2)
   (send *ri* :wait-interpolation nil)
-  ;;(relative-move-hand 280 -550 500 pi 0 pi/2)
-  ;;(send *ri* :wait-interpolation nil)
+  |#
+  ;; 向きを変えて取ってから手を外す
   (relative-move-hand 280 -550 870 pi (/ pi 2) pi/2)
   (send *ri* :wait-interpolation nil)
   (relative-move-hand 600 0 870 (/ -pi 2) (/ pi 2) pi/2)
