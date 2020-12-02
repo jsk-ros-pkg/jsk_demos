@@ -13,7 +13,7 @@
 (unless (boundp '*ri*)
   (fetch-init)) ;; fetch-init instantiate *fetch* and *ri*
 
-(setq *area* 0)
+
 
 ;; show in irtviewer
 (objects (list *fetch* *scene*))
@@ -108,6 +108,7 @@
   )
 
 #| 顔を検知してそこに描かれた長方形の面積を求める |#
+(setq *area* 0)
 (defclass face_area
   :slots (*rect* *area*)
   )
@@ -127,11 +128,36 @@
 	 (while (ros::ok)
 	   (if *rect*
 	       (progn
+		 (setq x (send (elt *rect* 0) :x))
+		 (setq y (send (elt *rect* 0) :y))
 		 (setq w (send (elt *rect* 0) :width))
 		 (setq h (send (elt *rect* 0) :height))
 		 (setq *area* (* w h)) ;; 大域変数
 		 (ros::ros-info "area : ~A" *area*)
 		 )
+	     )
+	     (ros::spin-once)
+	     (ros::sleep)
+	    )
+	 (exit)
+	 )
+  (:loop-head-move ()
+	 (ros::rate 0.5)
+	 (while (ros::ok)
+	   (if *rect*
+	       (progn
+		 (setq x (send (elt *rect* 0) :x))
+		 (setq y (send (elt *rect* 0) :y))
+		 (ros::ros-info "area : ~A" x)
+		 (if (> x 250)
+		     (send *fetch* :head :angle-vector #f(30 0))
+		     (send *ri* :angle-vector (send *fetch* :angle-vector) 3000)
+		     )
+		 (if (< x 100)
+		     (send *fetch* :head :angle-vector #f(-30 0))
+		     (send *ri* :angle-vector (send *fetch* :angle-vector) 3000)
+		     )
+		   )
 	     )
 	     (ros::spin-once)
 	     (ros::sleep)
@@ -148,7 +174,7 @@
   )
 
 #| 相対座標の取得 |#
-(defun make-relative-coord (x y z roll pitch yaw)
+(defun make-relative-coord (x y z &optional (roll 0) (pitch 0) (yaw 0))
   (setq descartes (float-vector x y z))
   (setq euler (float-vector roll pitch yaw))
   (setq relative-coord (send (send *fetch* :copy-worldcoords) :transform
@@ -157,7 +183,7 @@
   )
 
 #| 相対位置に右手を動かす |#
-(defun relative-move-hand (x y z roll pitch yaw)
+(defun relative-move-hand (x y z &optional (roll 0) (pitch 0) (yaw 0) (ut t))
   (let coords
        (setq coords (make-relative-coord x y z roll pitch yaw))
        (send *fetch* :rarm :inverse-kinematics coords :debug-view t)
@@ -179,6 +205,7 @@
   (send *ri* :wait-interpolation nil)
   (relative-move-hand 300 400 1200 0 0 pi/2)
   (send *ri* :wait-interpolation nil)
+  (
   (relative-move-hand 300 200 1200 0 0 pi/2)
   )
 
@@ -192,4 +219,42 @@
   (send *fetch* :stop-grasp)
   (send *ri* :stop-grasp)
   (unix::sleep 3)
+  )
+
+;;(relative-move-hand 300 -400 1000 0 0 0)
+
+;;(relative-move-hand 600 0 600 0 0 pi/2)
+;;(relative-move-hand 300 -400 200 0 pi/2 0)
+
+;;(relative-move-hand 100 -400 200 0 pi/2 0)
+;;(relative-move-hand -100 -400 200 0 pi/2 0)
+
+;;(relative-move-hand 0 -500 550 pi 0 pi/2)
+
+(defun open-box ()
+  (relative-move-hand 100 -500 550 pi 0 pi/2)
+  (send *ri* :wait-interpolation nil)
+  (unix::sleep 1)
+  (send *fetch* :rarm :angle-vector #f(-60.9601 55.1198 -152.558 64.3187 71.9964 114.228 173.586))
+  (send *ri* :angle-vector (send *fetch* :angle-vector) 5000 :use-torso nil)
+  (send *ri* :wait-interpolation nil)
+  (relative-move-hand 0 -500 650 pi 0 pi/2)
+  (send *ri* :wait-interpolation nil)
+  (relative-move-hand 0 -500 700 pi 0 pi/2)
+  (send *ri* :wait-interpolation nil)
+  (relative-move-hand 100 -500 800 pi 0 pi/2)
+  (send *ri* :wait-interpolation nil)
+  (relative-move-hand 280 -500 870 pi 0 pi/2)
+  (send *ri* :wait-interpolation nil)
+  (relative-move-hand 280 -550 870 pi 0 pi/2)
+  (send *ri* :wait-interpolation nil)
+  ;;(relative-move-hand 280 -550 500 pi 0 pi/2)
+  ;;(send *ri* :wait-interpolation nil)
+  (relative-move-hand 280 -550 870 pi (/ pi 2) pi/2)
+  (send *ri* :wait-interpolation nil)
+  (relative-move-hand 600 0 870 (/ -pi 2) (/ pi 2) pi/2)
+  ;;(send *fetch* :rarm :angle-vector #f(-38.915 26.4334 -161.297 63.6166 51.1904 110.028 141.666))
+  ;;(send *ri* :angle-vector (send *fetch* :angle-vector) 5000 :use-torso nil)
+  ;;(send *fetch* :rarm :angle-vector #f(-18.915 26.4334 -161.297 63.6166 51.1904 110.028 141.666))
+  ;;(send *ri* :angle-vector (send *fetch* :angle-vector) 5000 :use-torso nil))
   )
