@@ -6,6 +6,7 @@
 (require "package://jsk_maps/src/eng2-scene.l")
 
 (load "utils.l")
+(load "add-co.l")
 
 (unless (boundp '*scene*)
   (setq *scene* (make-eng2-7f-scene)))

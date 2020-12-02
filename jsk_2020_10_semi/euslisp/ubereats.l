@@ -6,6 +6,7 @@
 (require "package://jsk_maps/src/eng2-scene.l")
 
 (load "utils.l")
+(load "add-co.l")
 
 (unless (boundp '*scene*)
   (setq *scene* (make-eng2-7f-scene)))
@@ -45,8 +46,10 @@
 (move-to-coord *door-knob-base*)
 
 ; right of the fetch
-(setq *box* (send (send (send (send *fetch* :copy-worldcoords) :locate #f(-200 -400 900)) :rotate pi/2 :z) :rotate pi/2 :y))
-(setq *bento* (send (send *box* :copy-worldcoords) :locate #f(400 0 0)))
+(setq *box* (send (send (send (send *fetch* :copy-worldcoords) :locate #f(-100 -500 900)) :rotate pi/2 :z) :rotate pi/2 :y))
+(setq *bento* (send (send *box* :copy-worldcoords) :locate #f(700 0 0)))
+(if (boundp '*co*)
+  (add-box -100 -540 0))
 
 ;; set coords
 (setq *door-knob2-right* 
@@ -56,6 +59,8 @@
     (send *door-knob2-right* :copy-worldcoords) :locate #f(0 0 -100)) :rotate (/ pi 6) :y))
 (setq *door-knob3* (send (send 
     (send *door-knob2-right* :copy-worldcoords) :locate #f(200 0 -100)) :rotate (/ pi 6) :y))
+(if (boundp '*co*)
+  (add-door (+ (- (elt (send *door-knob3* :worldpos) 0) (elt (send *fetch* :worldpos) 0)) 50)))
 
 ; grasp bento
 (look-at-coord *bento* 5000 t)
@@ -68,12 +73,16 @@
 ; hang on the knob
 (look-at-coord *door-knob3* 3000 t)
 (ik-coord *door-knob3-right* 5000)
+(unix:sleep 1)
 (ik-coord *door-knob3* 3000)
 (send *ri* :stop-grasp :effort 60)
 (unix:sleep 3)
 (look-at-coord *door-knob3-right* 3000 t)
-(ik-coord *door-knob3-right* 3000)
+(ik-coord *door-knob3-right* 2000)
 (ik-coord *door-knob2-right* 1000)
 
 (move-waist 100.0)
 (reset-pose 7000)
+(if (boundp '*co*)
+  (progn (del-door)
+      (del-box)))
