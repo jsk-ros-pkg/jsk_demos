@@ -233,13 +233,20 @@
 
 #| 足元に置かれたUberEatsの蓋を開ける |#
 (defun box-open ()
+  ;;腰を上げてからのほうが手がリュックに当たらない
+  (send *fetch* :torso_lift_joint :joint-angle 100)
+  (send *ri* :angle-vector (send *fetch* :angle-vector) 5000)
+  (send *ri* :wait-interpolation nil)
+  
   (relative-move-hand 100 -500 550 pi 0 pi/2)
   (send *ri* :wait-interpolation nil)
   (unix::sleep 1) ;; sleepさせないと挙動がおかしい
-  (send *fetch* :rarm :angle-vector #f(-60.9601 55.1198 -152.558 64.3187 71.9964 114.228 173.586)) ;; 元のものから１つめを-20度した
-  (send *ri* :angle-vector (send *fetch* :angle-vector) 5000)
-  ;; シミュレーション上ではuse-torsoが使えない
-  ;; (send *ri* :angle-vector (send *fetch* :angle-vector) 5000 :use-torso nil)
+
+  (setq shoulder-y-angle-10 (- (send *fetch* :rarm-shoulder-y :joint-angle) 10))
+  (send *fetch* :rarm-shoulder-y :joint-angle shoulder-y-angle-20)
+  ;;(send *fetch* :rarm :angle-vector #f(-60.9601 55.1198 -152.558 64.3187 71.9964 114.228 173.586)) ;; 元のものから１つめを-20度した
+  
+  (send *ri* :angle-vector (send *fetch* :angle-vector) 5000 :use-torso nil)
   (send *ri* :wait-interpolation nil)
   ;; ここから蓋開け動作
   (relative-move-hand 0 -500 650 pi 0 pi/2)
