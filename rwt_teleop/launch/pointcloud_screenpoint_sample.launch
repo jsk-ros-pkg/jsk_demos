@@ -1,0 +1,103 @@
+<launch>
+  <machine name="localhost"   address="localhost" />
+  <arg name="cloud_machine"   default="localhost" doc="point cloud processor machine" />
+  <arg name="display_machine" default="localhost" doc="display client machine" />
+  <arg name="base_frame"      default="xtion_link" />
+  <arg name="image"           default="/xtion/rgb" doc="image namespace" />
+  <arg name="image_type"      default="image_raw"/>
+  <arg name="points"          default="/xtion/depth/points" doc="point cloud" />
+  <arg name="USE_VIEW"        default="true" doc="if true, launch image_view2 on $(arg display_machine)" />
+  <arg name="USE_RVIZ"        default="false" doc="if true, launch rviz on $(arg display_machine)" />
+  <arg name="PUBLISH_BASE_FOOTPRINT" default="false" doc="publish tf from base_footprint to camera" />
+  <arg name="publish_base_footprint_camera_frame" default="xtion_link" doc="frame used for publish tf from base_footprint to camera" />
+
+  <!-- launch/pointcloud_screenpoint.launch -->
+  <include file="$(find jsk_pcl_ros)/launch/pointcloud_screenpoint.launch">
+    <arg name="cloud_machine" default="$(arg cloud_machine)"/>
+    <arg name="display_machine" default="$(arg display_machine)"/>
+    <arg name="image" default="$(arg image)"/>
+    <arg name="image_type" default="$(arg image_type)"/>
+    <arg name="points" default="$(arg points)"/>
+    <arg name="USE_DEPTH_CREATER" default="false" />
+    <arg name="USE_REGISTERED_DEPTH" default="true"/>
+    <arg name="USE_VIEW" default="$(arg USE_VIEW)"/>
+  </include>
+
+  <!-- publish markers, broadcast TF -->
+  <node name="display_point" pkg="jsk_pcl_ros" machine="localhost"
+        type="pointcloud_screenpoint.l" output="screen">
+    <rosparam subst_value="true">
+      base_frame: $(arg base_frame)
+      sensor_topic: $(arg image)/$(arg image_type)
+      ray_srv: /pointcloud_screenpoint_nodelet/screen_to_point
+    </rosparam>
+  </node>
+
+  <!-- If PATH is different, you can directly call roseus like below -->
+  <!--<node name="display_point" pkg="roseus" machine="$(arg cloud_machine)"
+  	type="roseus" output="screen" respawn="true"
+        args="$(find jsk_pcl_ros)/euslisp/pointcloud_screenpoint.l">
+    <param name="sensor_topic" value="$(arg image)/image_rect_color"/>
+    <param name="ray_srv" value="/pointcloud_screenpoint_nodelet/screen_to_point"/>
+    </node>-->
+
+  <node name="$(anon rviz)" type="rviz" output="screen" if="$(arg USE_RVIZ)"
+        respawn="true" pkg="rviz" machine="$(arg display_machine)"
+        args="-d $(find jsk_pcl_ros)/launch/pointcloud_screenpoint.rviz"/>
+
+  <!-- publish base_footprint since 'base_footprint' is hardcoded within euslisp/pointcloud_screenpoint.l -->
+  <node name="optical_frame_tf_publisher" if="$(arg PUBLISH_BASE_FOOTPRINT)"
+        pkg="tf" type="static_transform_publisher"
+        args="0 0 1 -1.57 1.57 -1.57 base_footprint $(arg publish_base_footprint_camera_frame) 500" />
+
+  <sphinxdoc><![CDATA[
+
+This script displays which point the user pointed on a 2D screen in the 3D rviz.
+
+Sample images below:
+
+.. image:: launch/images/pointcloud_screenpoint_3people.png
+  :width: 640
+
+There are two parameters to input.
+
+1. 'image' is used in showing a image view on the image_view2, and its camera_info parameter is used for changing the coordinates of points.
+2. 'points' is the pointcloud source to estimate 3D points that the user wantedt to specify on a 2D screen.
+
+For example,
+By default, pointcloud_screenpoint takes camera image and point clouds from kinect.
+
+.. code-block:: bash
+
+  roslaunch jsk_pcl_ros pointcloud_screenpoint_sample.launch
+
+You can mix wide_stereo camera and assembled_tilt_scan.
+
+.. code-block:: bash
+
+  roslaunch jsk_pcl_ros pointcloud_screenpoint_sample.launch image:=/wide_stereo/left points:=/tilt_laser_cloud2
+
+Or, you can mix kinect camera and assembled_tilt_scan.
+
+.. code-block:: bash
+
+  roslaunch jsk_pcl_ros pointcloud_screenpoint_sample.launch image:=/camera/rgb points:=/tilt_laser_cloud2
+
+pointclouds published by kinect
+
+.. image:: launch/images/pointcloud_screenpoint_kinect.png
+  :width: 640
+
+pointclouds published by laser
+
+.. image:: launch/images/pointcloud_screenpoint_laser.png
+  :width: 640
+
+amplifiered pointclouds published by laser
+
+.. image:: launch/images/pointcloud_screenpoint_disparity_laser.png
+  :width: 640
+
+
+  ]]></sphinxdoc>
+</launch>
