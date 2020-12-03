@@ -6,3 +6,7 @@
 
 32.E1-irteusgl$ (send *fetch* :rarm)
 (#<bodyset-link #X55e397588458 shoulder_pan_link  5500.0 6228.65 807.616 / 3.142 0.0 0.0> #<bodyset-link #X55e3975871b0 shoulder_lift_link  5383.0 6228.65 867.616 / 3.142 1.4 -1.207e-16> #<bodyset-link #X55e3975d40d8 upperarm_roll_link  5345.777 6228.65 651.803 / 3.142 1.4 -0.2> #<bodyset-link #X55e3975e3cd0 elbow_flex_link  5323.172 6228.65 520.738 / 0.198 0.018 -3.108> #<bodyset-link #X55e3975e3148 forearm_roll_link  5516.299 6267.353 517.145 / 0.198 0.018 -3.108> #<bodyset-link #X55e3975e08c8 wrist_flex_link  5638.351 6291.813 514.874 / -2.501 -1.492 -0.445> #<bodyset-link #X55e3975e0070 wrist_roll_link  5629.637 6285.315 652.946 / -2.501 -1.492 -0.445>)
+
+関節名リスト
+10.irteusgl$ (send *fetch* :methods :rarm)
+(:upperarm_roll_joint :upperarm_roll_link_lk :rarm-shoulder-y :rarm-shoulder-p :rarm-shoulder-r :rarm-elbow-p :rarm-elbow-r :rarm-wrist-p :rarm-wrist-r :_make_instance_upperarm_roll_link_geom0 :rarm-end-coords :rarm-root-link :rarm)
