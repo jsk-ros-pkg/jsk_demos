@@ -14,6 +14,7 @@
   <run_depend>sensor_msgs</run_depend>
 
   <export>
-    <gazebo plugin_path="${prefix}/lib" />
+    <app_manager app_dir="${prefix}/apps"/>
   </export>
+
 </package>
