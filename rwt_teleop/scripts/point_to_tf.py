@@ -17,6 +17,6 @@ class PointToTf():
                               msg.header.stamp, self.frame_id, msg.header.frame_id)
 
 if __name__ == '__main__':
-    rospy.init_node('pose_to_tf', anonymous=True)
+    rospy.init_node('point_to_tf', anonymous=True)
     PointToTf()
     rospy.spin()
