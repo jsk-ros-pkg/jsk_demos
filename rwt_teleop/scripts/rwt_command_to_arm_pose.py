@@ -81,24 +81,38 @@ class RwtCommandToArmPose():
       self.head_pub.publish(self.head_pose)
 
     lr = tgt
-      
+
     if cmd == "clickteleopmode":
       self.lr_for_click = lr
 
     if cmd == "gripper":
       gripper_cmd = Pr2GripperCommandActionGoal()
-      gripper_cmd.goal.command.position = ( 0.1 if val == "on" else 0.0)
+      gripper_cmd.goal.command.position = ( 0.0 if val == "close" else 0.1)
       gripper_cmd.goal.command.max_effort = 75
       self.g_pub[lr].publish(gripper_cmd)
 
-    if cmd == "jog":
-      delta = 0.05
-      if val == "f": self.ee_pose[lr].pose.position.x += delta
-      if val == "b": self.ee_pose[lr].pose.position.x -= delta
-      if val == "l": self.ee_pose[lr].pose.position.y += delta
-      if val == "r": self.ee_pose[lr].pose.position.y -= delta
-      if val == "u": self.ee_pose[lr].pose.position.z += delta
-      if val == "d": self.ee_pose[lr].pose.position.z -= delta
+    if cmd == "jogpos":
+      delta = 0.01
+      if val == "+x": self.ee_pose[lr].pose.position.x += delta
+      if val == "-x": self.ee_pose[lr].pose.position.x -= delta
+      if val == "+y": self.ee_pose[lr].pose.position.y += delta
+      if val == "-y": self.ee_pose[lr].pose.position.y -= delta
+      if val == "+z": self.ee_pose[lr].pose.position.z += delta
+      if val == "-z": self.ee_pose[lr].pose.position.z -= delta
+      self.ee_pose[lr].header.stamp  = rospy.Time.now()
+      self.ep_pub[lr].publish(self.ee_pose[lr])
+
+    if cmd == "jogrot":
+      delta = math.radians(10)
+      if val == "+x": q_rel = tf.transformations.quaternion_from_euler( delta, 0, 0)
+      if val == "-x": q_rel = tf.transformations.quaternion_from_euler(-delta, 0, 0)
+      if val == "+y": q_rel = tf.transformations.quaternion_from_euler(0,  delta, 0)
+      if val == "-y": q_rel = tf.transformations.quaternion_from_euler(0, -delta, 0)
+      if val == "+z": q_rel = tf.transformations.quaternion_from_euler(0, 0,  delta)
+      if val == "-z": q_rel = tf.transformations.quaternion_from_euler(0, 0, -delta)
+      q_org = self.ee_pose[lr].pose.orientation
+      q_new = tf.transformations.quaternion_multiply(q_rel, [q_org.x, q_org.y, q_org.z, q_org.w])
+      self.ee_pose[lr].pose.orientation = Quaternion(q_new[0],q_new[1],q_new[2],q_new[3])
       self.ee_pose[lr].header.stamp  = rospy.Time.now()
       self.ep_pub[lr].publish(self.ee_pose[lr])
 
@@ -111,8 +125,15 @@ class RwtCommandToArmPose():
     if cmd == "turn":
       q_org = self.ee_pose[lr].pose.orientation
       q_rel = tf.transformations.quaternion_from_euler( math.radians( 30 if val == "r" else -30 ) ,0 ,0)
-      q_new = tf.transformations.quaternion_multiply(q_rel, [q_org.x, q_org.y, q_org.z, q_org.w])
+      # q_new = tf.transformations.quaternion_multiply(q_rel, [q_org.x, q_org.y, q_org.z, q_org.w])
+      q_new = tf.transformations.quaternion_multiply([q_org.x, q_org.y, q_org.z, q_org.w], q_rel)
       self.ee_pose[lr].pose.orientation = Quaternion(q_new[0],q_new[1],q_new[2],q_new[3])
+      self.ee_pose[lr].header.stamp  = rospy.Time.now()
+      self.ep_pub[lr].publish(self.ee_pose[lr])
+
+    if cmd == "tabletopmode":
+      q_tt = tf.transformations.quaternion_from_euler( 0, math.radians(90) ,0)
+      self.ee_pose[lr].pose.orientation = Quaternion(q_tt[0],q_tt[1],q_tt[2],q_tt[3])
       self.ee_pose[lr].header.stamp  = rospy.Time.now()
       self.ep_pub[lr].publish(self.ee_pose[lr])
 
