@@ -7,7 +7,7 @@
   <arg name="device"     default="head_mount_kinect2"                   unless="$(arg is_real)"/>
   <arg name="base_frame" default="head_mount_kinect_rgb_optical_frame"      if="$(arg is_real)"/>
   <arg name="base_frame" default="head_mount_kinect2_rgb_optical_frame" unless="$(arg is_real)"/>
-  
+
   <group unless="$(arg is_real)">
     <include file="$(find pr2_gazebo)/launch/pr2_empty_world.launch">
       <arg name="KINECT2" value="true" />
@@ -36,8 +36,6 @@
     <param name="frame_id" value="rwt_clicked_point"/>
     <remap from="~input" to="/pointcloud_screenpoint_nodelet/output_point" />
   </node>
-
-  <node pkg="topic_tools" type="transform" name="point_to_pose" args='/pointcloud_screenpoint_nodelet/output_point /rwt_clicked_point geometry_msgs/PoseStamped "geometry_msgs.msg.PoseStamped(header=m.header,pose=geometry_msgs.msg.Pose(position=m.point,orientation=geometry_msgs.msg.Quaternion(0,0,0,1)))" --import geometry_msgs --wait-for-start' output="screen"/>
 
   <node pkg="rwt_teleop" type="pr2-realtime-ik.l" name="pr2_realtime_ik" output="log"/>
 
