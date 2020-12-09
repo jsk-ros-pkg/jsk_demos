@@ -4,9 +4,11 @@ import rospy
 import tf
 import copy
 import math
+import numpy as np
 from std_msgs.msg import *
 from geometry_msgs.msg import *
 from pr2_controllers_msgs.msg import Pr2GripperCommandActionGoal
+from sound_play.libsoundplay import SoundClient
 
 class RwtCommandToArmPose():
   LR   = ["l", "r"]
@@ -17,6 +19,8 @@ class RwtCommandToArmPose():
     self.ee_pose      = {}
     self.ep_pub       = {}
     self.g_pub        = {}
+    self.w_sub        = {}
+    self.w            = {lr : WrenchStamped for lr in self.LR}
     self.tfl = tf.TransformListener()
     self.cmd_str_sub = rospy.Subscriber("/rwt_command_string", String, self.cmd_str_cb)
     self.sub = rospy.Subscriber("/pointcloud_screenpoint_nodelet/output_point", PointStamped, self.click_cb)
@@ -27,11 +31,16 @@ class RwtCommandToArmPose():
       self.ee_pose[lr].pose.orientation = Quaternion(0,0,0,1)
       self.ep_pub[lr]  = rospy.Publisher('/master_'+lr+'arm_pose', PoseStamped, queue_size=1)
       self.g_pub[lr]   = rospy.Publisher('/'+lr+'_gripper_controller/gripper_action/goal', Pr2GripperCommandActionGoal, queue_size=1)
-  
+      self.w_sub[lr]   = rospy.Subscriber( ("/left"if lr == "l" else "/right") + "_endeffector/wrench", WrenchStamped, self.wrench_cb, lr)
+
+
     self.head_pose     = PoseStamped(header=Header(frame_id="base_link"))
     self.head_pub      = rospy.Publisher('/master_head_pose', PoseStamped, queue_size=1)
-    self.lr_for_click  = "l"
+    self.lr_for_click  = "r" ## start with right handed
     self.lr_mode_pub   = rospy.Publisher('/rwt_current_state', String, queue_size=1)
+
+    self.sound = SoundClient()
+    self.lang = "japanese"  # speak japanese by default
 
     rospy.loginfo("start main loop")
     rate = rospy.Rate(10)
@@ -49,9 +58,12 @@ class RwtCommandToArmPose():
       return
 
     self.ee_pose[self.lr_for_click].header.stamp  = msg.header.stamp
-    self.ee_pose[self.lr_for_click].pose.position = Point( pos[0], pos[1], pos[2])
+    self.ee_pose[self.lr_for_click].pose.position = Point( pos[0], pos[1], pos[2] + 0.1) ## hanko demo
     self.ep_pub[self.lr_for_click].publish(self.ee_pose[self.lr_for_click])
 
+
+  def wrench_cb(self, msg, lr):
+      self.w[lr] = msg
 
   def cmd_str_cb(self, msg):
     rospy.loginfo("rwt_command_string [" + msg.data + "] received")
@@ -119,7 +131,33 @@ class RwtCommandToArmPose():
     if cmd == "pull":
       self.ee_pose[lr].pose.position.x -= 0.3
       self.ee_pose[lr].pose.position.z -= 0.2
-      self.ee_pose[lr].header.stamp  = rospy.Time.now()
+      self.ee_pose[lr].header.stamp = rospy.Time.now()
+      self.ep_pub[lr].publish(self.ee_pose[lr])
+
+    ## hanko demo
+    if cmd == "push":
+      z_org = self.ee_pose[lr].pose.position.z
+      f_norm = 0
+      for i in range(10):
+        f_norm = np.linalg.norm([self.w[lr].wrench.force.x, self.w[lr].wrench.force.y, self.w[lr].wrench.force.z])
+        if f_norm > float(val):
+          rospy.loginfo("Hit @ " + str(f_norm) + " [N]")
+          self.sound.play(1)
+          break
+        else:
+          rospy.loginfo("Go down @ " + str(f_norm) + " [N]")
+          self.ee_pose[lr].pose.position.z -= 0.005
+          self.ee_pose[lr].header.stamp = rospy.Time.now()
+          self.ep_pub[lr].publish(self.ee_pose[lr])
+          rospy.sleep(1)
+
+      else:
+        rospy.logwarn("Fail @ " + str(f_norm) + " [N]")
+        self.sound.play(3)
+
+      rospy.loginfo("Return")
+      self.ee_pose[lr].pose.position.z = z_org
+      self.ee_pose[lr].header.stamp = rospy.Time.now()
       self.ep_pub[lr].publish(self.ee_pose[lr])
 
     if cmd == "turn":
