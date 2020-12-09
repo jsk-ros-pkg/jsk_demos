@@ -222,6 +222,7 @@
   (send *fetch* :stop-grasp)
   (send *ri* :stop-grasp)
   (unix::sleep 3)
+  (send *ri* :start-grasp :effort 100) ;; effort 100にするのがミソ
   (relative-move-hand 500 -300 1000 (/ -pi 2) 0 pi/2)
   (relative-move-hand 350 -300 1000 (/ -pi 2) 0 pi/2)
   )
@@ -283,9 +284,9 @@
   (send *ri* :angle-vector (send *fetch* :angle-vector) 5000)
   (send *ri* :wait-interpolation nil)
 
-  (relative-move-hand 100 -500 550 pi 0 pi/2) ;;予備動作
+  (relative-move-hand 100 -500 600 pi 0 pi/2) ;;予備動作
   (send *ri* :wait-interpolation nil)
-  (relative-move-hand -100 -500 550 pi 0 pi/2 nil) ;;中に入れる
+  (relative-move-hand -300 -500 580 pi 0 pi/2 nil) ;;中に入れる
   (send *ri* :wait-interpolation nil)
   (unix::sleep 1) ;; sleepさせないと挙動がおかしい
 
@@ -296,20 +297,20 @@
   (send *ri* :angle-vector (send *fetch* :angle-vector) 5000 :use-torso nil)
   (send *ri* :wait-interpolation nil)
   ;; ここから蓋開け動作
-  (relative-move-hand -200 -500 650 pi 0 pi/2)
+  (relative-move-hand -300 -500 650 pi 0 pi/2)
   (send *ri* :wait-interpolation nil)
-  (relative-move-hand -200 -500 700 pi 0 pi/2)
+  (relative-move-hand -250 -500 700 pi 0 pi/2)
   (send *ri* :wait-interpolation nil)
-  (relative-move-hand -100 -500 800 pi 0 pi/2)
+  (relative-move-hand -200 -500 800 pi 0 pi/2)
   (send *ri* :wait-interpolation nil)
-  (relative-move-hand 80 -500 870 pi 0 pi/2)
+  (relative-move-hand 150 -500 900 pi 0 pi/2)
   (send *ri* :wait-interpolation nil)
   #|
   (relative-move-hand 280 -550 870 pi 0 pi/2)
   (send *ri* :wait-interpolation nil)
   |#
   ;; 90度向きを変えて取ってから手を外す
-  (relative-move-hand 80 -550 870 pi pi/2 pi/2)
+  (relative-move-hand -80 -550 870 pi pi/2 pi/2)
   (send *ri* :wait-interpolation nil)
   (relative-move-hand 600 0 870 (/ -pi 2) (/ pi 2) pi/2)
   ;;(send *fetch* :rarm :angle-vector #f(-38.915 26.4334 -161.297 63.6166 51.1904 110.028 141.666))
@@ -328,4 +329,18 @@
   (relative-move-hand -250 -500 600 0 pi/2 (* 3 pi/2))
 
   (relative-move-hand -30 -500 550 0 pi/2 (* 3 pi/2))
+
+  (unix::sleep 1)
+  (send *ri* :stop-grasp)
+  (unix::sleep 1)
+  (relative-move-hand -30 -500 800 0 pi/2 (* 3 pi/2))
+  
+  )
+
+(defun box-flow ()
+  (give-flow)
+  (unix::sleep 1)
+  (put-box)
+  (unix::sleep 1)
+  (box-open)
   )
