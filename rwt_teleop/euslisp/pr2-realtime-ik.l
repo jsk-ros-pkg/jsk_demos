@@ -40,9 +40,9 @@
 (setq m (instance realtime-ik-class :init))
 
 (defun run ()
-  (send *pr2* :reset-pose)
-  (send *pr2* :head :neck-p :joint-angle 60)
-  (send *pr2* :torso_lift_joint :joint-angle 300)
+  (send *robot* :reset-pose)
+  (send *robot* :head :neck-p :joint-angle 60)
+  (send *robot* :torso_lift_joint :joint-angle 300)
   (send *ri* :angle-vector (send *robot* :angle-vector) 3000)
   (send *ri* :wait-interpolation)
 
