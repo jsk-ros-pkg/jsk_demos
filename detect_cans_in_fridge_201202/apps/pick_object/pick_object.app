@@ -6,19 +6,35 @@ launch: detect_cans_in_fridge_201202/pick_object.xml
 platform: pr2
 plugins:
   - name: kinect_head_video_recorder_plugin
-    type: app_recorder/video_recorder_plugin
+    type: app_recorder/audio_video_recorder_plugin
     launch_args:
       video_path: /tmp
       video_title: pick_object_kinect_head.avi
-      video_topic_name: /kinect_head/rgb/throttled/image_rect_color
-      video_fps: 5.0
+      audio_topic_name: /audio
+      audio_channels: 1
+      audio_sample_rate: 16000
+      audio_format: wave
+      audio_sample_format: S16LE
+      video_topic_name: /kinect_head/rgb/image_rect_color
+      video_height: 480
+      video_width: 640
+      video_framerate: 30
+      video_encoding: BGR
   - name: human_pose_estimator_video_recorder_plugin
-    type: app_recorder/video_recorder_plugin
+    type: app_recorder/audio_video_recorder_plugin
     launch_args:
       video_path: /tmp
       video_title: pick_object_kinect_head_human_pose_estimator.avi
+      audio_topic_name: /audio
+      audio_channels: 1
+      audio_sample_rate: 16000
+      audio_format: wave
+      audio_sample_format: S16LE
       video_topic_name: /edgetpu_human_pose_estimator/output/image
-      video_fps: 10.0
+      video_height: 480
+      video_width: 640
+      video_framerate: 15
+      video_encoding: RGB
   - name: rosbag_recorder_plugin
     type: app_recorder/rosbag_recorder_plugin
     launch_args:
