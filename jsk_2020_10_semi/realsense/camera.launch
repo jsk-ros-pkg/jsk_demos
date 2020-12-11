@@ -1,0 +1,11 @@
+<launch>
+  <include file="$(find realsense2_camera)/launch/rs_camera.launch">
+    <arg name="enable_pointcloud" default="true" />
+  </include>
+  <node pkg="image_view2" type="image_view2" name="rs_camera_image_view"
+        ns="/camera/color/">
+    <remap from="image" to="image_raw" />
+  </node>
+  <node pkg="rviz" type="rviz" name="rviz" args="-d /home/mech-user/realsense/conf.rviz" />
+
+</launch>

@@ -1,0 +1,45 @@
+<launch>
+
+  <machine name="localhost" address="localhost" />
+
+  <!-- following two node publish organized cloud w.r.t. camera frame -->
+  <node name="depth_image_register" pkg="nodelet" type="nodelet"
+        args="load depth_image_proc/register /screenpoint_manager" ns="camera"
+        output="screen" clear_params="true" respawn="true" >
+    <remap from="rgb/camera_info" to="color/camera_info" />
+    <remap from="depth/camera_info" to="depth/camera_info" />
+    <remap from="depth/image_rect" to="depth/image_rect_raw" />
+    <param name="qeueu_size" value="30" />
+  </node>
+  <node name="depth_image_proc" pkg="nodelet" type="nodelet"
+        args="load depth_image_proc/point_cloud_xyzrgb /screenpoint_manager" ns="camera"
+        output="screen" clear_params="true" respawn="true" >
+    <remap from="rgb/camera_info" to="color/camera_info" />
+    <remap from="rgb/image_rect_color" to="color/image_raw" />
+    <remap from="depth_registered/image_rect" to="depth_registered/image_rect" />
+    <param name="qeueu_size" value="30" />
+  </node>
+
+  <!-- launch/pointcloud_screenpoint.launch -->
+  <include file="$(find jsk_pcl_ros)/launch/pointcloud_screenpoint.launch">
+    <arg name="image_type" default="image_raw" />
+    <arg name="image" default="/camera/color" />
+    <arg name="points" default="/camera/depth_registered/points" />
+    <arg name="USE_DEPTH_CREATER" default="false" />
+    <arg name="USE_REGISTERED_DEPTH" default="false"/>
+    <arg name="USE_VIEW" default="false"/>
+  </include>
+  <node name="display_point" pkg="roseus"
+  	type="roseus" output="screen" respawn="true"
+        args="$(find jsk_pcl_ros)/euslisp/pointcloud_screenpoint.l">
+    <param name="sensor_topic" value="/camera/color/image_raw"/>
+    <param name="ray_srv" value="/pointcloud_screenpoint_nodelet/screen_to_point"/>
+  </node>
+  <!-- publish base_footprint since 'base_footprint' is hardcoded within euslisp/pointcloud_screenpoint.l -->
+  <node name="optical_frame_tf_publisher"
+        pkg="tf" type="static_transform_publisher"
+        args="0 0 1 -1.57 1.57 -1.57 base_footprint camera_link 500" />
+
+  <node pkg="rostopic" type="rostopic" name="echo_sp_output" args="echo /pointcloud_screenpoint_nodelet/output" launch-prefix="xterm -e" />
+
+</launch>
