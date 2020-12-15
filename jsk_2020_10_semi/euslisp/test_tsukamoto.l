@@ -219,9 +219,11 @@
   
   (relative-move-hand 600 0 1200 0 0 pi/2)
   (unix::sleep 3)
+  (send *ri* :speak-jp "うーばーいーつです")
   (send *fetch* :stop-grasp)
   (send *ri* :stop-grasp)
   (unix::sleep 3)
+  (send *fetch* :start-grasp)
   (send *ri* :start-grasp :effort 100) ;; effort 100にするのがミソ
   (relative-move-hand 500 -300 1000 (/ -pi 2) 0 pi/2)
   (relative-move-hand 350 -300 1000 (/ -pi 2) 0 pi/2)
