@@ -237,6 +237,7 @@
 
 ;;(relative-move-hand 0 -500 550 pi 0 pi/2)
 
+#|
 #| 足元に置かれたUberEatsの蓋を開ける |#
 (defun box-open ()
   ;;腰を上げてからのほうが手がリュックに当たらない
@@ -276,9 +277,12 @@
   ;;(send *fetch* :rarm :angle-vector #f(-18.915 26.4334 -161.297 63.6166 51.1904 110.028 141.666))
   ;;(send *ri* :angle-vector (send *fetch* :angle-vector) 5000 :use-torso nil))
   )
+|#
 
 #| 足元に置かれたUberEatsの蓋を開ける |#
 (defun box-open-improve ()
+
+  (look-at-coord (make-relative-coord -150 -500 580))
   ;;腰を上げてからのほうが手がリュックに当たらない
   (send *fetch* :torso_lift_joint :joint-angle 100)
   (send *ri* :angle-vector (send *fetch* :angle-vector) 5000)
@@ -305,6 +309,8 @@
   (send *ri* :wait-interpolation nil)
   (relative-move-hand 150 -500 900 pi 0 pi/2)
   (send *ri* :wait-interpolation nil)
+  (relative-move-hand 150 -500 650 pi 0 pi/2)
+  (send *ri* :wait-interpolation nil)
   #|
   (relative-move-hand 280 -550 870 pi 0 pi/2)
   (send *ri* :wait-interpolation nil)
@@ -312,13 +318,15 @@
   ;; 90度向きを変えて取ってから手を外す
   (relative-move-hand -80 -550 870 pi pi/2 pi/2)
   (send *ri* :wait-interpolation nil)
-  (relative-move-hand 600 0 870 (/ -pi 2) (/ pi 2) pi/2)
+
+  ;;(relative-move-hand 600 0 870 (/ -pi 2) (/ pi 2) pi/2)
   ;;(send *fetch* :rarm :angle-vector #f(-38.915 26.4334 -161.297 63.6166 51.1904 110.028 141.666))
   ;;(send *ri* :angle-vector (send *fetch* :angle-vector) 5000 :use-torso nil)
   ;;(send *fetch* :rarm :angle-vector #f(-18.915 26.4334 -161.297 63.6166 51.1904 110.028 141.666))
   ;;(send *ri* :angle-vector (send *fetch* :angle-vector) 5000 :use-torso nil))
   )
 
+#| 箱をfetchの右横に置く動作 |#
 (defun put-box ()
   (relative-move-hand 350 -500 800 0 pi/2 pi/2)
   
@@ -342,5 +350,5 @@
   (unix::sleep 1)
   (put-box)
   (unix::sleep 1)
-  (box-open)
+  (box-open-improve)
   )
