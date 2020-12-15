@@ -17,7 +17,7 @@ void pin_setup()
 
 void pin_loop()
 {
-  pinMode( DIN_PIN, INPUT );
+  pinMode( DIN_PIN, INPUT_PULLUP );
   pin_msg.data = digitalRead(DIN_PIN);
   arduino_pub.publish(&pin_msg);
 }
