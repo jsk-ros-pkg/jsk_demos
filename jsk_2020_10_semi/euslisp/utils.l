@@ -22,7 +22,7 @@
 (defun reset-pose (&optional (tm 3000))
     (send *fetch* :reset-pose)
     (send *ri* :angle-vector (send *fetch* :angle-vector) tm)
-    (send *ri* :wait-interpolation)
+    (send *ri* :wait-interpolation))
 
 (defun ik-coord (coord &optional (tm 3000) (wi nil))
     (send *fetch* :rarm :inverse-kinematics coord :debug-view t)
