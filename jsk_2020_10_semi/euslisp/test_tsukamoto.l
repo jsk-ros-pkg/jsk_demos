@@ -226,7 +226,8 @@
   (send *fetch* :start-grasp)
   (send *ri* :start-grasp :effort 100) ;; effort 100にするのがミソ
   (relative-move-hand 500 -300 1000 (/ -pi 2) 0 pi/2)
-  (relative-move-hand 350 -300 1000 (/ -pi 2) 0 pi/2)
+  (relative-move-hand 400 -300 1000 (/ -pi 2) 0 pi/2)
+  (relative-move-hand -200 -400 750 -pi 0 pi/2)
   )
 
 ;;(relative-move-hand 300 -400 1000 0 0 0)
@@ -305,20 +306,20 @@
   ;; ここから蓋開け動作
   (relative-move-hand -300 -500 650 pi 0 pi/2)
   (send *ri* :wait-interpolation nil)
-  (relative-move-hand -250 -500 700 pi 0 pi/2)
+  (relative-move-hand -250 -500 700 pi -0.15 pi/2)
   (send *ri* :wait-interpolation nil)
-  (relative-move-hand -200 -500 800 pi 0 pi/2)
+  (relative-move-hand -200 -500 800 pi -0.30 pi/2)
   (send *ri* :wait-interpolation nil)
-  (relative-move-hand 150 -500 900 pi 0 pi/2)
+  (relative-move-hand 100 -500 850 pi -0.45 pi/2)
   (send *ri* :wait-interpolation nil)
-  (relative-move-hand 150 -500 650 pi 0 pi/2)
+  (relative-move-hand 150 -500 750 pi -0.60 pi/2)
   (send *ri* :wait-interpolation nil)
   #|
   (relative-move-hand 280 -550 870 pi 0 pi/2)
   (send *ri* :wait-interpolation nil)
   |#
   ;; 90度向きを変えて取ってから手を外す
-  (relative-move-hand -80 -550 870 pi pi/2 pi/2)
+  (relative-move-hand 150 -500 750 pi pi/2 pi/2)
   (send *ri* :wait-interpolation nil)
 
   ;;(relative-move-hand 600 0 870 (/ -pi 2) (/ pi 2) pi/2)
@@ -330,10 +331,11 @@
 
 #| 箱をfetchの右横に置く動作 |#
 (defun put-box ()
-  (relative-move-hand 350 -500 800 0 pi/2 pi/2)
+  ;;(relative-move-hand 350 -500 800 0 pi/2 pi/2)
   
-  (relative-move-hand 350 -500 800 0 pi/2 (* 3 pi/2))
+  ;;(relative-move-hand 350 -500 800 0 pi/2 (* 3 pi/2))
 
+  ;;(relative-move-hand -200 -400 750 -pi 0 pi/2)
   (relative-move-hand -250 -500 800 0 pi/2 (* 3 pi/2))
 
   (relative-move-hand -250 -500 600 0 pi/2 (* 3 pi/2))
@@ -350,6 +352,10 @@
 (defun box-flow ()
   (give-flow)
   (unix::sleep 1)
+
+  ;;(move-to-place "/eng2/7f/room73B2-door-front")
+  ;;(send *ri* :go-wait)
+  (move-to-place "/eng2/7f/room73A3-front")
   (put-box)
   (unix::sleep 1)
   (box-open-improve)
