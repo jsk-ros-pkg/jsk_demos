@@ -293,7 +293,7 @@
 
   (relative-move-hand 100 -500 600 pi 0 pi/2) ;;予備動作
   (send *ri* :wait-interpolation nil)
-  (relative-move-hand -300 -500 580 pi 0 pi/2 nil) ;;中に入れる
+  (relative-move-hand -300 -500 550 pi 0 pi/2 nil) ;;中に入れる
   (send *ri* :wait-interpolation nil)
   (unix::sleep 1) ;; sleepさせないと挙動がおかしい
 
