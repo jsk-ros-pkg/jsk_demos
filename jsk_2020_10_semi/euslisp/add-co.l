@@ -1,5 +1,5 @@
 (defun add-door (x)
-    (let ((door (make-cube 10 1000 2000)))
+    (let ((door (make-cube 10 3000 2000)))
         (send door :translate (float-vector x 0 1000))
         (send *co* :add-attached-object door
             "base_link"
