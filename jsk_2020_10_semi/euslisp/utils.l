@@ -25,7 +25,7 @@
     (send *ri* :wait-interpolation))
 
 (defun ik-coord (coord &optional (tm 3000) (wi nil))
-    (send *fetch* :rarm :inverse-kinematics coord :debug-view t)
+    (send *fetch* :rarm :inverse-kinematics coord :debug-view t :rotation-axis nil)
     (send *ri* :angle-vector (send *fetch* :angle-vector) tm)
     (send *ri* :wait-interpolation wi))
 
@@ -50,5 +50,16 @@
     (send *fetch* :torso :waist-z :joint-angle z)
     (send *ri* :angle-vector (send *fetch* :angle-vector) tm)
     (send *ri* :wait-interpolation wi))
+
+(defun search-mark (frame)
+  (let ((mark nil) (tm nil))
+  (ros::rate 10)
+  (while (null mark)
+    (unless (boundp '*tfl*) (setq *tfl* (instance transform-listener :init)))
+    (setq tm (send *tfl* :get-latest-common-time "/base_link" frame))
+    (setq mark (send *tfl* :lookup-transform "/base_link" frame tm))
+    (ros::sleep)
+    )
+  mark))
 
 
