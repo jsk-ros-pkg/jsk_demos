@@ -25,7 +25,7 @@
     (send *ri* :wait-interpolation))
 
 (defun ik-coord (coord &optional (tm 3000) (wi nil))
-    (send *fetch* :rarm :inverse-kinematics coord :debug-view t :rotation-axis nil)
+    (send *fetch* :rarm :inverse-kinematics coord :debug-view t)
     (send *ri* :angle-vector (send *fetch* :angle-vector) tm)
     (send *ri* :wait-interpolation wi))
 
