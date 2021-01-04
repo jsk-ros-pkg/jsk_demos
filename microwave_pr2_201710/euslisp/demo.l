@@ -15,11 +15,11 @@
   (send *pmi* :close-microwave)
 
   ;; push button
-  (send *ri* :angle-vector (send *robot* :reset-pose) 2000)
+  (send *ri* :angle-vector (send *pr2* :reset-pose) 2000)
   (send *pmi* :push-500w-button)
-  (send *pmi* :push-1min-button 3)
+  (send *pmi* :push-1min-button)
   (send *pmi* :push-start-button)
-  (send *ri* :angle-vector (send *robot* :reset-pose) 2000)
+  (send *ri* :angle-vector (send *pr2* :reset-pose) 2000)
 
   ;; wait for heating
   (unix::sleep (* 3 60))
