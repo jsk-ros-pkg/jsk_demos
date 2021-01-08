@@ -108,7 +108,7 @@
 
     (setq scene (instance nav-scene-model :init :name "/eng2/3f" :objects (append (list map) (send map :descendants))))
     (send scene :map map)
-    scene )))
+    scene ))
 
 
 (defun make-eng2-7f-scene ()
