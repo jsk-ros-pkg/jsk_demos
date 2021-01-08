@@ -77,6 +77,12 @@
     ;; 3F
     (make-cascoords-tree
      map
+     `(:rot #2f((0.0 1.0 0.0) (-1.0 0.0 0.0) (0.0 0.0 1.0))
+	    :pos ,(float-vector 3100.0 -31250.0 0.0)
+	    :name "/eng2/3f/elevator_call_panel-front")
+     `(:rot #2f((1.0 0.0 0.0) (0.0 1.0 0.0) (0.0 0.0 1.0))
+	    :pos ,(float-vector 2000.0 -33950.0 0.0)
+	    :name "/eng2/3f/elevator_inside_panel-front")
      `(:rot #2f((-1.0 0.0 0.0) (0.0 -1.0 0.0) (0.0 0.0 1.0))
 	    :pos ,(float-vector -2950 -32650 0)
 	    :name "/eng2/3f/room-31A-front")
@@ -94,11 +100,15 @@
 	    :name "/eng2/3f/cross-road")
      `(:rot #2f((1.0 0.0 0.0) (0.0 1.0 0.0) (0.0 0.0 1.0))
 	    :pos ,(float-vector -2590 -44905 0)
-	    :name "/eng2/3f/small-kitchen"))
+	    :name "/eng2/3f/small-kitchen")
+     `(:pos ,(float-vector 3100 -31950 920) :rpy #f(1.5706 0 0)
+      :name "/eng2/3f/elevator_call_panel")
+     `(:pos ,(float-vector 2900 -34000 1020) :rpy #f(3.1416 0 0)
+      :name "/eng2/3f/elevator_inside_panel"))
 
     (setq scene (instance nav-scene-model :init :name "/eng2/3f" :objects (append (list map) (send map :descendants))))
     (send scene :map map)
-    scene ))
+    scene )))
 
 
 (defun make-eng2-7f-scene ()
