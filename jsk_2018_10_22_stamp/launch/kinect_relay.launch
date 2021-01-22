@@ -1,0 +1,44 @@
+<launch>
+
+  <arg name="camera" default="kinect_head_remote"/>
+  <arg name="manager" default="$(arg camera)/$(arg camera)_nodelet_manager" />
+
+  <include file="$(find openni_launch)/launch/openni.launch">
+    <arg name="camera" value="$(arg camera)" />
+    <arg name="rgb_frame_id" value="/head_mount_kinect_rgb_optical_frame" />
+    <arg name="depth_frame_id" value="/head_mount_kinect_rgb_optical_frame" />
+    <arg name="publish_tf" value="false" />
+    <arg name="load_driver" value="false" />
+    <arg name="depth_registration" value="true" />
+  </include>
+
+  <node name="relay_rgb_info" pkg="nodelet" type="nodelet"
+        args="load jsk_topic_tools/Relay $(arg manager)">
+    <remap from="~input" to="kinect_head/rgb/camera_info" />
+    <remap from="~output" to="$(arg camera)/rgb/camera_info" />
+  </node>
+
+  <node name="relay_depth_info" pkg="nodelet" type="nodelet"
+        args="load jsk_topic_tools/Relay $(arg manager)">
+    <remap from="~input" to="kinect_head/depth_registered/camera_info" />
+    <remap from="~output" to="$(arg camera)/depth_registered/camera_info" />
+  </node>
+
+  <node name="relay_depth_image" pkg="nodelet" type="nodelet"
+        args="load jsk_topic_tools/Relay $(arg manager)">
+    <remap from="~input" to="$(arg camera)/depth_registered/hw_registered/image_rect" />
+    <remap from="~output" to="$(arg camera)/depth_registered/image_rect" />
+  </node>
+
+  <node name="rgb_decompress" pkg="image_transport" type="republish"
+        args="compressed raw">
+    <remap from="in" to="kinect_head/rgb/image_color" />
+    <remap from="out" to="$(arg camera)/rgb/image_color" />
+  </node>
+
+  <node name="depth_decompress" pkg="image_transport" type="republish"
+        args="compressedDepth raw">
+    <remap from="in" to="kinect_head/depth_registered/image_raw"/>
+    <remap from="out" to="$(arg camera)/depth_registered/image_raw" />
+  </node>
+</launch>

@@ -1,0 +1,22 @@
+<launch>
+
+  <arg name="daihuku_user" default="nvidia" />
+  <arg name="daihuku_env_loader" default="/home/$(arg daihuku_user)/env.sh" />
+  <arg name="montblanc_user" default="applications" />
+  <arg name="montblanc_env_loader" default="/home/$(arg montblanc_user)/env.sh" />
+  <arg name="manju_user" default="iory" />
+  <arg name="manju_env_loader" default="/home/$(arg manju_user)/env.sh" />
+
+  <machine name="daihuku" address="daihuku"
+           user="$(arg daihuku_user)" env-loader="$(arg daihuku_env_loader)"
+           timeout="60.0" />
+
+  <machine name="montblanc" address="montblanc"
+           user="$(arg montblanc_user)" env-loader="$(arg montblanc_env_loader)"
+           timeout="60.0" />
+
+  <machine name="manju" address="manju"
+           user="$(arg manju_user)" env-loader="$(arg manju_env_loader)"
+           timeout="60.0" />
+
+</launch>
