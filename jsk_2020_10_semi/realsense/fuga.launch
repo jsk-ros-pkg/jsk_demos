@@ -1,0 +1,9 @@
+<launch>
+
+  <machine name="fetch1075" address="fetch1075.jsk.imi.i.u-tokyo.ac.jp" user="fetch" env-loader="/home/fetch/ros/indigo/machine-env.sh" />
+  <machine name="localhost" address="localhost" />
+  <!-- <arg name="CAMERA_NS" default="camera" />  -->
+
+  <node machine="fetch1075" name="rostopic" pkg="rostopic" type="rostopic" args="list"/>
+
+</launch>

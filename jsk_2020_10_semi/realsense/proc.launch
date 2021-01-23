@@ -31,7 +31,7 @@
   </include>
   <node name="display_point" pkg="roseus"
   	type="roseus" output="screen" respawn="true"
-        args="$(find jsk_pcl_ros)/euslisp/pointcloud_screenpoint.l">
+        args="$(find jsk_2020_10_semi)/realsense/pointcloud_screenpoint.l">
     <param name="sensor_topic" value="/camera/color/image_raw"/>
     <param name="ray_srv" value="/pointcloud_screenpoint_nodelet/screen_to_point"/>
   </node>
