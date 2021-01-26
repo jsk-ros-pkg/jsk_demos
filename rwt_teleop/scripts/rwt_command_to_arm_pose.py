@@ -12,58 +12,57 @@ from sound_play.libsoundplay import SoundClient
 
 class RwtCommandToArmPose():
   LR   = ["l", "r"]
+  LEFTRIGHT   = {"l" : "left", "r" : "right"}
   sgns = { "l" : 1, "r" : -1 }
 
   def __init__(self):
     rospy.init_node('RwtCommandToArmPose')
-    self.ee_pose      = {}
-    self.ep_pub       = {}
-    self.g_pub        = {}
-    self.w_sub        = {}
-    self.w            = {lr : WrenchStamped for lr in self.LR}
-    self.tfl = tf.TransformListener()
+    ### subs
+    self.clk_pt_sub  = rospy.Subscriber("/pointcloud_screenpoint_nodelet/output_point", PointStamped, self.clk_pt_cb)
     self.cmd_str_sub = rospy.Subscriber("/rwt_command_string", String, self.cmd_str_cb)
-    self.sub = rospy.Subscriber("/pointcloud_screenpoint_nodelet/output_point", PointStamped, self.click_cb)
-
-    for lr in self.LR:
-      self.ee_pose[lr] = PoseStamped(header=Header(frame_id="base_link"))
-      self.ee_pose[lr].pose.position    = Point(0.5, self.sgns[lr] * 0.3, 1.0)
-      self.ee_pose[lr].pose.orientation = Quaternion(0,0,0,1)
-      self.ep_pub[lr]  = rospy.Publisher('/master_'+lr+'arm_pose', PoseStamped, queue_size=1)
-      self.g_pub[lr]   = rospy.Publisher('/'+lr+'_gripper_controller/gripper_action/goal', Pr2GripperCommandActionGoal, queue_size=1)
-      self.w_sub[lr]   = rospy.Subscriber( ("/left"if lr == "l" else "/right") + "_endeffector/wrench", WrenchStamped, self.wrench_cb, lr)
-
-
-    self.head_pose     = PoseStamped(header=Header(frame_id="base_link"))
-    self.head_pub      = rospy.Publisher('/master_head_pose', PoseStamped, queue_size=1)
-    self.lr_for_click  = "r" ## start with right handed
-    self.lr_mode_pub   = rospy.Publisher('/rwt_current_state', String, queue_size=1)
-
+    self.eew_sub     = {lr : rospy.Subscriber( "/"+self.LEFTRIGHT[lr]+"_endeffector/wrench", WrenchStamped, self.eew, lr) for lr in self.LR}
+    self.eew         = {lr : WrenchStamped for lr in self.LR}
+    self.tfl         = tf.TransformListener()
+    ### pubs
+    self.eep_pub     = {lr : rospy.Publisher('/master_'+lr+'arm_pose', PoseStamped, queue_size=1) for lr in self.LR}
+    self.eep         = {lr :
+                        PoseStamped(
+                            header = Header(frame_id="base_link"),
+                            pose   = Pose(
+                                position    = Point(0.5, self.sgns[lr] * 0.3, 1.0),
+                                orientation = Quaternion(0,0,0,1))) for lr in self.LR}
+    self.g_pub       = {lr : rospy.Publisher('/'+lr+'_gripper_controller/gripper_action/goal', Pr2GripperCommandActionGoal, queue_size=1) for lr in self.LR}
+    self.hp_pub      = rospy.Publisher('/master_head_pose', PoseStamped, queue_size=1)
+    self.hp          = PoseStamped(header=Header(frame_id="base_link"))
+    self.fb_str_pub  = rospy.Publisher('/rwt_current_state', String, queue_size=1)
+    self.lr_for_clk  = "r" ## start with right handed
+    self.manip_mode  = {lr : "front" for lr in self.LR}
+    ### Notification sound
     self.sound = SoundClient()
-    self.lang = "japanese"  # speak japanese by default
 
     rospy.loginfo("start main loop")
     rate = rospy.Rate(10)
     while not rospy.is_shutdown():
-      self.lr_mode_pub.publish(self.lr_for_click)
+      self.fb_str_pub.publish(self.lr_for_clk+"_forclick")
       rate.sleep()
 
-
-  def click_cb(self, msg):
+  def clk_pt_cb(self, msg):
     try:
       self.tfl.waitForTransform("/base_link", "/rwt_clicked_point", msg.header.stamp, timeout=rospy.Duration(1))
       (pos, rot) = self.tfl.lookupTransform("/base_link", "/rwt_clicked_point", rospy.Time(0))
     except Exception, e:
       rospy.logerr(e)
       return
+    self.eep[self.lr_for_clk].header.stamp  = msg.header.stamp
 
-    self.ee_pose[self.lr_for_click].header.stamp  = msg.header.stamp
-    self.ee_pose[self.lr_for_click].pose.position = Point( pos[0], pos[1], pos[2] + 0.1) ## hanko demo
-    self.ep_pub[self.lr_for_click].publish(self.ee_pose[self.lr_for_click])
+    if self.manip_mode == "table":
+      self.eep[self.lr_for_clk].pose.position = Point( pos[0], pos[1], pos[2] + 0.1) ## hanko demo
+    else:
+      self.eep[self.lr_for_clk].pose.position = Point( pos[0]-0.05, pos[1], pos[2]) ## microwave demo
+    self.eep_pub[self.lr_for_clk].publish(self.eep[self.lr_for_clk])
 
-
-  def wrench_cb(self, msg, lr):
-      self.w[lr] = msg
+  def eew(self, msg, lr):
+      self.eew[lr] = msg
 
   def cmd_str_cb(self, msg):
     rospy.loginfo("rwt_command_string [" + msg.data + "] received")
@@ -77,7 +76,7 @@ class RwtCommandToArmPose():
       return
 
     if cmd == "look":
-      q = self.head_pose.pose.orientation
+      q = self.hp.pose.orientation
       r, p, y = tf.transformations.euler_from_quaternion([q.x, q.y, q.z, q.w])
       delta = math.radians(30)
       if val == "l": y += delta
@@ -88,14 +87,14 @@ class RwtCommandToArmPose():
       p = min(max(p, math.radians(-80)), math.radians(80))
       y = min(max(y, math.radians(-170)), math.radians(170))
       q = tf.transformations.quaternion_from_euler(r,p,y)
-      self.head_pose.pose.orientation = Quaternion(q[0],q[1],q[2],q[3])
-      self.head_pose.header.stamp     = rospy.Time.now()
-      self.head_pub.publish(self.head_pose)
+      self.hp.pose.orientation = Quaternion(q[0],q[1],q[2],q[3])
+      self.hp.header.stamp     = rospy.Time.now()
+      self.hp_pub.publish(self.hp)
 
     lr = tgt
 
     if cmd == "clickteleopmode":
-      self.lr_for_click = lr
+      self.lr_for_clk = lr
 
     if cmd == "gripper":
       gripper_cmd = Pr2GripperCommandActionGoal()
@@ -105,14 +104,14 @@ class RwtCommandToArmPose():
 
     if cmd == "jogpos":
       delta = 0.01
-      if val == "+x": self.ee_pose[lr].pose.position.x += delta
-      if val == "-x": self.ee_pose[lr].pose.position.x -= delta
-      if val == "+y": self.ee_pose[lr].pose.position.y += delta
-      if val == "-y": self.ee_pose[lr].pose.position.y -= delta
-      if val == "+z": self.ee_pose[lr].pose.position.z += delta
-      if val == "-z": self.ee_pose[lr].pose.position.z -= delta
-      self.ee_pose[lr].header.stamp  = rospy.Time.now()
-      self.ep_pub[lr].publish(self.ee_pose[lr])
+      if val == "+x": self.eep[lr].pose.position.x += delta
+      if val == "-x": self.eep[lr].pose.position.x -= delta
+      if val == "+y": self.eep[lr].pose.position.y += delta
+      if val == "-y": self.eep[lr].pose.position.y -= delta
+      if val == "+z": self.eep[lr].pose.position.z += delta
+      if val == "-z": self.eep[lr].pose.position.z -= delta
+      self.eep[lr].header.stamp  = rospy.Time.now()
+      self.eep_pub[lr].publish(self.eep[lr])
 
     if cmd == "jogrot":
       delta = math.radians(10)
@@ -122,59 +121,73 @@ class RwtCommandToArmPose():
       if val == "-y": q_rel = tf.transformations.quaternion_from_euler(0, -delta, 0)
       if val == "+z": q_rel = tf.transformations.quaternion_from_euler(0, 0,  delta)
       if val == "-z": q_rel = tf.transformations.quaternion_from_euler(0, 0, -delta)
-      q_org = self.ee_pose[lr].pose.orientation
+      q_org = self.eep[lr].pose.orientation
       q_new = tf.transformations.quaternion_multiply(q_rel, [q_org.x, q_org.y, q_org.z, q_org.w])
-      self.ee_pose[lr].pose.orientation = Quaternion(q_new[0],q_new[1],q_new[2],q_new[3])
-      self.ee_pose[lr].header.stamp  = rospy.Time.now()
-      self.ep_pub[lr].publish(self.ee_pose[lr])
+      self.eep[lr].pose.orientation = Quaternion(q_new[0],q_new[1],q_new[2],q_new[3])
+      self.eep[lr].header.stamp  = rospy.Time.now()
+      self.eep_pub[lr].publish(self.eep[lr])
 
     if cmd == "pull":
-      self.ee_pose[lr].pose.position.x -= 0.3
-      self.ee_pose[lr].pose.position.z -= 0.2
-      self.ee_pose[lr].header.stamp = rospy.Time.now()
-      self.ep_pub[lr].publish(self.ee_pose[lr])
+      self.eep[lr].pose.position.x -= 0.3
+      self.eep[lr].pose.position.z -= 0.2
+      self.eep[lr].header.stamp = rospy.Time.now()
+      self.eep_pub[lr].publish(self.eep[lr])
 
-    ## hanko demo
     if cmd == "push":
-      z_org = self.ee_pose[lr].pose.position.z
+      pos_org = copy.deepcopy(self.eep[lr].pose.position)
       f_norm = 0
       for i in range(10):
-        f_norm = np.linalg.norm([self.w[lr].wrench.force.x, self.w[lr].wrench.force.y, self.w[lr].wrench.force.z])
+        f_norm = np.linalg.norm([self.eew[lr].wrench.force.x, self.eew[lr].wrench.force.y, self.eew[lr].wrench.force.z])
         if f_norm > float(val):
           rospy.loginfo("Hit @ " + str(f_norm) + " [N]")
+          self.fb_str_pub.publish(lr+"_push_ok")
           self.sound.play(1)
           break
         else:
-          rospy.loginfo("Go down @ " + str(f_norm) + " [N]")
-          self.ee_pose[lr].pose.position.z -= 0.005
-          self.ee_pose[lr].header.stamp = rospy.Time.now()
-          self.ep_pub[lr].publish(self.ee_pose[lr])
+          rospy.loginfo("Go @ " + str(f_norm) + " [N]")
+          if self.manip_mode[lr] == "table":
+            self.eep[lr].pose.position.z -= 0.005 ## for hanko demo
+          else:
+            self.eep[lr].pose.position.x += 0.01
+          self.eep[lr].header.stamp = rospy.Time.now()
+          self.eep_pub[lr].publish(self.eep[lr])
+          self.fb_str_pub.publish(lr+"_push_doing")
           rospy.sleep(1)
-
       else:
         rospy.logwarn("Fail @ " + str(f_norm) + " [N]")
+        self.fb_str_pub.publish(lr+"_push_fail")
         self.sound.play(3)
 
       rospy.loginfo("Return")
-      self.ee_pose[lr].pose.position.z = z_org
-      self.ee_pose[lr].header.stamp = rospy.Time.now()
-      self.ep_pub[lr].publish(self.ee_pose[lr])
+      self.eep[lr].pose.position = pos_org
+      self.eep[lr].header.stamp  = rospy.Time.now()
+      self.eep_pub[lr].publish(self.eep[lr])
 
-    if cmd == "turn":
-      q_org = self.ee_pose[lr].pose.orientation
-      q_rel = tf.transformations.quaternion_from_euler( math.radians( 30 if val == "r" else -30 ) ,0 ,0)
-      # q_new = tf.transformations.quaternion_multiply(q_rel, [q_org.x, q_org.y, q_org.z, q_org.w])
-      q_new = tf.transformations.quaternion_multiply([q_org.x, q_org.y, q_org.z, q_org.w], q_rel)
-      self.ee_pose[lr].pose.orientation = Quaternion(q_new[0],q_new[1],q_new[2],q_new[3])
-      self.ee_pose[lr].header.stamp  = rospy.Time.now()
-      self.ep_pub[lr].publish(self.ee_pose[lr])
+    # if cmd == "turn":
+    #   q_org = self.eep[lr].pose.orientation
+    #   q_rel = tf.transformations.quaternion_from_euler( math.radians( 30 if val == "r" else -30 ) ,0 ,0)
+    #   # q_new = tf.transformations.quaternion_multiply(q_rel, [q_org.x, q_org.y, q_org.z, q_org.w])
+    #   q_new = tf.transformations.quaternion_multiply([q_org.x, q_org.y, q_org.z, q_org.w], q_rel)
+    #   self.eep[lr].pose.orientation = Quaternion(q_new[0],q_new[1],q_new[2],q_new[3])
+    #   self.eep[lr].header.stamp  = rospy.Time.now()
+    #   self.eep_pub[lr].publish(self.eep[lr])
 
-    if cmd == "tabletopmode":
-      q_tt = tf.transformations.quaternion_from_euler( 0, math.radians(90) ,0)
-      self.ee_pose[lr].pose.orientation = Quaternion(q_tt[0],q_tt[1],q_tt[2],q_tt[3])
-      self.ee_pose[lr].header.stamp  = rospy.Time.now()
-      self.ep_pub[lr].publish(self.ee_pose[lr])
+    if cmd == "tablemode":
+      self.manip_mode[lr]           = "table"
+      self.eep[lr].pose.orientation = Quaternion_from_rpy(0, math.radians(90) ,0)
+      self.eep[lr].header.stamp     = rospy.Time.now()
+      self.eep_pub[lr].publish(self.eep[lr])
 
+    if cmd == "frontmode":
+      self.manip_mode[lr]           = "front"
+      self.eep[lr].pose.orientation = Quaternion_from_rpy(0,0,0)
+      self.eep[lr].header.stamp     = rospy.Time.now()
+      self.eep_pub[lr].publish(self.eep[lr])
+
+
+def Quaternion_from_rpy(r, p, y):
+  q = tf.transformations.quaternion_from_euler( r, p ,y)
+  return Quaternion(q[0], q[1], q[2], q[3])
 
 if __name__ == '__main__':
   inst = RwtCommandToArmPose()
