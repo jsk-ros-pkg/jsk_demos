@@ -14,7 +14,7 @@ def callback(msg):
         nose_position_y = nose_position.position.y
         print(nose_position)
 
-        nose_pos_publisher = rospy.Publisher ("camera/color/image_raw/screenpoint", PointStamped, queue_size=10)
+        nose_pos_publisher = rospy.Publisher ("head_camera/rgb/image_raw/screenpoint", PointStamped, queue_size=10)
         nose_pos_pointstamp = PointStamped()
         nose_pos_pointstamp.header.frame_id = "nose"
         nose_pos_pointstamp.point.x = nose_position_x
