@@ -1,0 +1,64 @@
+<launch>
+
+  <machine name="fetch1075" address="fetch1075.jsk.imi.i.u-tokyo.ac.jp" user="fetch" env-loader="/home/fetch/ros/indigo/machine-env.sh" />
+  <machine name="localhost" address="localhost" />
+  <!-- <arg name="CAMERA_NS" default="camera" />  -->
+  <!-- <arg name="COLOR_NS" default="color" /> -->
+  <arg name="CAMERA_NS" default="head_camera" />
+  <arg name="COLOR_NS" default="rgb" />
+
+  <!-- following two node publish organized cloud w.r.t. camera frame -->
+  <node name="depth_image_register" pkg="nodelet" type="nodelet"
+        args="load depth_image_proc/register /screenpoint_manager" ns="$(arg CAMERA_NS)"
+        output="screen" clear_params="true" respawn="true" machine="fetch1075" >
+    <remap from="rgb/camera_info" to="$(arg COLOR_NS)/camera_info" />
+    <remap from="depth/camera_info" to="depth/camera_info" />
+    <remap from="depth/image_rect" to="depth/image_rect_raw" />
+    <param name="qeueu_size" value="30" />
+  </node>
+  <node name="depth_image_proc" pkg="nodelet" type="nodelet"
+        args="load depth_image_proc/point_cloud_xyzrgb /screenpoint_manager" ns="$(arg CAMERA_NS)"
+        output="screen" clear_params="true" respawn="true" machine="fetch1075" >
+    <remap from="rgb/camera_info" to="$(arg COLOR_NS)/camera_info" />
+    <remap from="rgb/image_rect_color" to="$(arg COLOR_NS)/image_raw" />
+    <remap from="depth_registered/image_rect" to="depth_registered/image_rect" />
+    <param name="qeueu_size" value="30" />
+  </node>
+
+  <!-- launch/pointcloud_screenpoint.launch -->
+  <include file="$(find jsk_pcl_ros)/launch/pointcloud_screenpoint.launch">
+    <arg name="cloud_machine" default="fetch1075" />
+    <arg name="image_type" default="image_raw" />
+    <arg name="image" default="/$(arg CAMERA_NS)/$(arg COLOR_NS)" />
+    <arg name="points" default="/$(arg CAMERA_NS)/depth_registered/points" />
+    <arg name="USE_DEPTH_CREATER" default="false" />
+    <arg name="USE_REGISTERED_DEPTH" default="false"/>
+    <arg name="USE_VIEW" default="false"/>
+  </include>
+  <node name="display_point" pkg="roseus"
+  	type="roseus" output="screen" respawn="true"
+        args="$(find jsk_pcl_ros)/euslisp/pointcloud_screenpoint.l">
+    <param name="sensor_topic" value="/$(arg CAMERA_NS)/$(arg COLOR_NS)/image_raw"/>
+    <param name="ray_srv" value="/pointcloud_screenpoint_nodelet/screen_to_point"/>
+  </node>
+  <!-- publish base_footprint since 'base_footprint' is hardcoded within euslisp/pointcloud_screenpoint.l -->
+  <!-- <node name="optical_frame_tf_publisher" -->
+  <!--       pkg="tf" type="static_transform_publisher" -->
+  <!--       args="0 0 1 -1.57 1.57 -1.57 base_footprint camera_link 500" /> -->
+
+  <node name="base_footprint_tf_publisher"
+        pkg="tf" type="static_transform_publisher"
+        args="0 0 0 0 0 0 base_link base_footprint 500" />
+
+  <!-- <node pkg="rostopic" type="rostopic" name="echo_sp_output" args="echo /pointcloud_screenpoint_nodelet/output" launch-prefix="xterm -e" /> -->
+
+  <node pkg="image_view2" type="image_view2" name="rs_camera_image_view"
+        ns="/$(arg CAMERA_NS)/$(arg COLOR_NS)/">
+    <remap from="image" to="image_raw" />
+    <rosparam subst_value="true" >
+      image_transport: compressed
+    </rosparam>
+  </node>
+  <node pkg="rviz" type="rviz" name="rviz" args="-d /home/mech-user/realsense/fetch.rviz" />
+  
+</launch>
