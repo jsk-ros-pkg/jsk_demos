@@ -12,8 +12,7 @@
 
   (do-until-key
    ;; (setq tm (send *l* :get-latest-common-time "/camera_link" "/ray_target"))
-   ;; (setq tm (send *l* :get-latest-common-time "/head_camera_link" "/ray_target"))
-    (setq tm (send *l* :get-latest-common-time "/head_camera_link" "/target_nose"))
+    (setq tm (send *l* :get-latest-common-time "/base_footprint" "/ray_target"))
     (setq neck-angle (send *fetch* :head :neck-y :joint-angle))
     (ros::ros-info "neck-angle is ~A" neck-angle)
     (when tm
