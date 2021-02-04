@@ -1,0 +1,6 @@
+<launch>
+  <arg name="INPUT_IMAGE" default="/camera/color/image_raw" />
+  <include file="$(find coral_usb)/launch/edgetpu_human_pose_estimator.launch" >
+    <arg name="INPUT_IMAGE" value="/camera/color/image_raw" />
+  </include>
+</launch>
