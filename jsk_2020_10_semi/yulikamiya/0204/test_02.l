@@ -25,14 +25,14 @@
         (setq coord-x (elt target-pos 0))
         (setq coord-y (elt target-pos 1))
         ;;(setq neck-y (* (if (> (elt target-pos 1) 0) 10 -10)))
-        (setq neck-y (+ neck-angle (* (* 10 (/ coord-y coord-x)))))
+        (setq neck-y (+ neck-angle (* (* 5 (/ coord-y coord-x)))))
         (send *fetch* :head :neck-y :joint-angle neck-y)
-        (send *ri* :angle-vector-raw (send *fetch* :angle-vector) 400 :head-controller) ;; ????
+        (send *ri* :angle-vector-raw (send *fetch* :angle-vector) 200 :head-controller) ;; ????
       )
     )
     (send *irtviewer* :draw-objects)
     ;;
-    (unix:sleep 1)
+    (unix:usleep 200000)
     ))
 
 
