@@ -28,8 +28,11 @@ class Controller(object):
 
         self.recent_name_list = []
         self.registered_name_set = set()
+        print("name_set registered")
         self.video_capture = VideoCapture(env, video_device)
+        print("video capturing")
         self.detector = Detector(env)
+        print("detector imported")
 
     def _update_name_list(self):
         limit_time = datetime.datetime.now() - datetime.timedelta(seconds=self.NAME_TTL_SEC)
@@ -61,7 +64,6 @@ class Controller(object):
 
 
     def run(self):
-        
         # input username and password
         credential_path = './.gitignore'
         try:
