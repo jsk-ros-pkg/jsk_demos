@@ -1,0 +1,8 @@
+<launch>
+  <arg name="INPUT_IMAGE" default="/camera/color/image_raw" />
+  <include file="$(find coral_usb)/launch/edgetpu_human_pose_estimator.launch" >
+    <arg name="INPUT_IMAGE" value="$(arg INPUT_IMAGE)" />
+    <arg name="IMAGE_TRANSPORT" value="compressed" />
+  </include>
+  <node pkg="rqt_image_view" name="rqt_image_view" type="rqt_image_view" />
+</launch>

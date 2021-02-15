@@ -1,0 +1,4 @@
+<launch>
+    <include file="$(find jsk_2020_10_semi)/realsense/camera.launch" />
+    <include file="$(find jsk_2020_10_semi)/realsense/proc.launch" />
+</launch>

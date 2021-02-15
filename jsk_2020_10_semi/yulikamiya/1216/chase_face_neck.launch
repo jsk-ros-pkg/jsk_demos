@@ -1,0 +1,6 @@
+<launch>
+    <include file="$(find jsk_2020_10_semi)/realsense/camera.launch" />
+    <includg file="$(find jsk_2020_10_semi)/realsense/proc.launch" />
+    <node pkg="jsk_2020_10_semi" type="get_pose_1216.py" name="get_pose"/>
+    <node pkg="jsk_2020_10_semi" type="chase_face_neck.l" name="chase_face"/>
+</launch>

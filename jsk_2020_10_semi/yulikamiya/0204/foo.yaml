@@ -1,0 +1,33 @@
+footprint: '[]'
+footprint_padding: 0.05
+global_frame: odom
+height: 4
+inflater: {cost_scaling_factor: 10.0, enabled: true, inflation_radius: 1.0, robot_radius: 0.3}
+obstacles:
+  base_scan: {clearing: true, data_type: LaserScan, marking: true, max_obstacle_height: 0.3,
+    min_obstacle_height: 0.25, obstacle_range: 4.0, raytrace_range: 5.0, topic: base_scan}
+  combination_method: 1
+  enabled: true
+  footprint_clearing_enabled: true
+  mark_threshold: 0
+  max_obstacle_height: 2.0
+  min_obstacle_height: 0.05
+  observation_sources: base_scan
+  origin_z: 0.0
+  publish_observations: false
+  unknown_threshold: 15
+  z_resolution: 0.125
+  z_voxels: 16
+origin_x: 0.0
+origin_y: 0.0
+plugins:
+- {name: obstacles, type: 'costmap_2d::FetchDepthLayer'}
+- {name: inflater, type: 'costmap_2d::InflationLayer'}
+publish_frequency: 2.0
+resolution: 0.025
+robot_base_frame: base_link
+robot_radius: 0.3
+rolling_window: true
+transform_tolerance: 0.5
+update_frequency: 5.0
+width: 4

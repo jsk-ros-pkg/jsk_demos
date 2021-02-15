@@ -1,0 +1,22 @@
+{
+  "configurations": [
+    {
+      "browse": {
+        "databaseFilename": "",
+        "limitSymbolsToIncludedHeaders": true
+      },
+      "includePath": [
+        "/home/mech-user/semi_ws/devel/include/**",
+        "/opt/ros/melodic/include/**",
+        "/home/mech-user/semi_ws/src/jsk_demos/jsk_2015_06_hrp_drc/drc_task_common/include/**",
+        "/opt/ros/melodic/share/fetch_gazebo/include/**",
+        "/home/mech-user/semi_ws/src/jsk_robot/jsk_robot_common/jsk_robot_startup/include/**",
+        "/opt/ros/melodic/share/julius/include/**",
+        "/home/mech-user/semi_ws/src/jsk_robot/jsk_pr2_robot/pr2_base_trajectory_action/include/**",
+        "/usr/include/**"
+      ],
+      "name": "ROS"
+    }
+  ],
+  "version": 4
+}
