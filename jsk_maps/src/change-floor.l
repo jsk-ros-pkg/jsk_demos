@@ -18,8 +18,7 @@
                      &key
                      (floor-frame "/map")
                      (topicname "/initialpose3d")
-                     (base-frame-name "base_footprint")
-                     (map-tf-mux "/map_tf_mux/selected"))
+                     (base-frame-name "base_footprint"))
   "change floor by publishing geometry_msgs::PoseWithCovarianceStamped to topicname.
    example of target-floor's name is /eng2/2f, /eng2/7f.
 
@@ -28,8 +27,8 @@
   (unix:usleep (* 1000 500))
   (let (robot-pose)
     (when (not (boundp '*tfl*))
-      (ros::ros-error (format nil "transform listener(*tfl*) is not initialized."))
-      (return-from change-floor nil))
+      (setq *tfl* (instance ros::transform-listener :init)))
+    (send *tfl* :wait-for-transform floor-frame base-frame-name (ros::time 0) 1)
     (setq robot-pose
           (send *tfl* :lookup-transform floor-frame base-frame-name (ros::time 0)))
     (when (null robot-pose)
