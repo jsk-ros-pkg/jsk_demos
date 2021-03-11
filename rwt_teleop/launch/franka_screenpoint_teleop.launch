@@ -1,0 +1,31 @@
+<launch>
+
+  <arg name="is_real" default="true" />
+  <arg name="rviz"    default="true" />
+
+  <arg name="device"     default="camera"                                   if="$(arg is_real)"/>
+  <arg name="device"     default="head_mount_kinect2"                   unless="$(arg is_real)"/>
+
+  <machine name="localhost"   address="localhost" />
+  <include file="$(find jsk_pcl_ros)/launch/pointcloud_screenpoint.launch">
+    <arg name="image"                default="/$(arg device)/rgb"/>
+    <arg name="points"               default="/$(arg device)/depth_registered/points"/>
+    <arg name="USE_DEPTH_CREATER"    default="false" />
+    <arg name="USE_REGISTERED_DEPTH" default="true"/>
+    <arg name="USE_VIEW"             default="false"/>
+  </include>
+
+  <node pkg="rwt_teleop" type="dual_panda_rwt_command_parser.py" name="dual_panda_rwt_command_parser"/>
+
+  <node pkg="rwt_teleop" type="point_to_tf.py" name="point_to_tf">
+    <param name="frame_id" value="rwt_clicked_point"/>
+    <remap from="~input" to="/pointcloud_screenpoint_nodelet/output_point" />
+  </node>
+
+  <node pkg="rwt_teleop" type="dual_panda-realtime-ik.l" name="dual_panda_realtime_ik" output="log"/>
+
+  <node pkg="sound_play" type="soundplay_node.py" name="sound_play"/>
+
+  <node pkg="topic_tools" type="relay" name="relay" args="/operator_view/screenpoint /camera/rgb/image_rect_color/screenpoint"/>
+
+</launch>
