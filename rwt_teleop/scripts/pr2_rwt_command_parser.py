@@ -50,7 +50,12 @@ class RwtCommandToArmPose():
 
     self.ee_pose[self.lr_for_click].header.stamp  = msg.header.stamp
     self.ee_pose[self.lr_for_click].pose.position = Point( pos[0], pos[1], pos[2])
-    self.ep_pub[self.lr_for_click].publish(self.ee_pose[self.lr_for_click])
+    # self.ep_pub[self.lr_for_click].publish(self.ee_pose[self.lr_for_click])
+
+    self.br.sendTransform((pos[0], pos[1], pos[2]), (0, 0, 0, 1), msg.header.stamp, "/center_pos", "/base_link")
+    self.br.sendTransform((pos[0], pos[1]+0.1, pos[2]), (0, 0, 0, 1), msg.header.stamp, "/larm_pos",  "/center_pos")
+    self.br.sendTransform((pos[0], pos[1]-0.1, pos[2]), (0, 0, 0, 1), msg.header.stamp, "/rsrm_pos",  "/center_pos")
+
 
 
   def cmd_str_cb(self, msg):
