@@ -42,7 +42,7 @@
 (defun run ()
   (send *robot* :reset-pose)
   (send *robot* :head :neck-p :joint-angle 60)
-  (send *robot* :torso_lift_joint :joint-angle 300)
+  (send *robot* :torso_lift_joint :joint-angle 200)
   (send *ri* :angle-vector (send *robot* :angle-vector) 3000)
   (send *ri* :wait-interpolation)
 

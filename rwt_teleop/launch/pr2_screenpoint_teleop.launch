@@ -30,7 +30,7 @@
     <arg name="USE_VIEW"             default="false"/>
   </include>
 
-  <node pkg="rwt_teleop" type="rwt_command_to_arm_pose.py" name="rwt_command_to_arm_pose"/>
+  <node pkg="rwt_teleop" type="pr2_rwt_command_parser.py" name="pr2_rwt_command_parser"/>
 
   <node pkg="rwt_teleop" type="point_to_tf.py" name="point_to_tf">
     <param name="frame_id" value="rwt_clicked_point"/>
