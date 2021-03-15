@@ -16,7 +16,6 @@
 
   <run_depend>roseus</run_depend>
   <run_depend>pr2eus</run_depend>
-  <run_depend>pr2_controllers_msgs</run_depend>
 
   <run_depend>jsk_tools</run_depend>
   <run_depend>jsk_pcl_ros</run_depend>
