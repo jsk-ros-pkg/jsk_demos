@@ -1,0 +1,85 @@
+<launch>
+  <arg name="FRONT_DEPTH" default="/spot/depth/frontleft"/>
+  <arg name="BACK_DEPTH" default="/spot/depth/back"/>
+  <arg name="FRONT_CLOUD" default="$(arg FRONT_DEPTH)/points"/>
+  <arg name="BACK_CLOUD" default="$(arg BACK_DEPTH)/points"/>
+  <arg name="MANAGER" default="nodelet_manager"/>
+
+  <!-- Publish the pointcloud -->
+  <group ns="depth_to_pointcloud">
+    <node name="$(arg MANAGER)"
+          pkg="nodelet" type="nodelet"
+          args="manager"
+          output="screen" respawn="true"/>
+
+    <node name="frontleft_pointcloud"
+          pkg="nodelet" type="nodelet"
+          args="load depth_image_proc/point_cloud_xyz $(arg MANAGER)">
+      <remap from="camera_info" to="$(arg FRONT_DEPTH)/camera_info"/>
+      <remap from="image_rect" to="$(arg FRONT_DEPTH)/image"/>
+      <remap from="points" to="$(arg FRONT_CLOUD)"/>
+    </node>
+    
+    <node name="back_pointcloud"
+          pkg="nodelet" type="nodelet"
+          args="load depth_image_proc/point_cloud_xyz $(arg MANAGER)">
+      <remap from="camera_info" to="$(arg BACK_DEPTH)/camera_info"/>
+      <remap from="image_rect" to="$(arg BACK_DEPTH)/image"/>
+      <remap from="points" to="$(arg BACK_CLOUD)"/>
+    </node>
+  </group>
+
+  
+  <!-- Detect elevator open or close -->
+  <group ns="check_elevator_open">
+    <node name="$(arg MANAGER)"
+          pkg="nodelet" type="nodelet"
+          args="manager"
+          output="screen" respawn="true"/>
+
+    <!-- front -->
+    <node name="front_voxel_grid"
+          pkg="nodelet" type="nodelet"
+          args="load pcl/VoxelGrid $(arg MANAGER)">
+      <remap from="~input" to="$(arg FRONT_CLOUD)"/>
+      <rosparam>
+        filter_limit_min: 1.0
+        filter_limit_max: 3.0
+        leaf_size: 0.01
+      </rosparam>
+    </node>
+
+    <node name="front_octree_change_publisher"
+          pkg="nodelet" type="nodelet"
+          args="load jsk_pcl/OctreeChangePublisher $(arg FRONT_CLOUD)">
+      <remap from="~input" to="voxel_grid/output"/>
+      <rosparam>
+        resolution: 0.3
+        noise_filter: 10
+      </rosparam>
+    </node>
+
+    <!-- back -->
+    <node name="back_voxel_grid"
+          pkg="nodelet" type="nodelet"
+          args="load pcl/VoxelGrid $(arg MANAGER)">
+      <remap from="~input" to="$(arg BACK_CLOUD)"/>
+      <rosparam>
+        filter_limit_min: 1.0
+        filter_limit_max: 3.0
+        leaf_size: 0.01
+      </rosparam>
+    </node>
+
+    <node name="back_octree_change_publisher"
+          pkg="nodelet" type="nodelet"
+          args="load jsk_pcl/OctreeChangePublisher $(arg BACK_CLOUD)">
+      <remap from="~input" to="voxel_grid/output"/>
+      <rosparam>
+        resolution: 0.3
+        noise_filter: 10
+      </rosparam>
+    </node>
+  </group>
+
+</launch>
