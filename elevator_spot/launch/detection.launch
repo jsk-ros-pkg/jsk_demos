@@ -51,8 +51,8 @@
 
     <node name="front_octree_change_publisher"
           pkg="nodelet" type="nodelet"
-          args="load jsk_pcl/OctreeChangePublisher $(arg FRONT_CLOUD)">
-      <remap from="~input" to="voxel_grid/output"/>
+          args="load jsk_pcl/OctreeChangePublisher $(arg MANAGER)">
+      <remap from="~input" to="front_voxel_grid/output"/>
       <rosparam>
         resolution: 0.3
         noise_filter: 10
@@ -73,8 +73,8 @@
 
     <node name="back_octree_change_publisher"
           pkg="nodelet" type="nodelet"
-          args="load jsk_pcl/OctreeChangePublisher $(arg BACK_CLOUD)">
-      <remap from="~input" to="voxel_grid/output"/>
+          args="load jsk_pcl/OctreeChangePublisher $(arg MANAGER)">
+      <remap from="~input" to="back_voxel_grid/output"/>
       <rosparam>
         resolution: 0.3
         noise_filter: 10

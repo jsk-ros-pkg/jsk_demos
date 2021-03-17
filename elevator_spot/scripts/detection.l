@@ -1,4 +1,6 @@
 #!/usr/bin/env roseus
+(load "package://spoteus/spot-interface.l")
+
 (unless (boundp '*ri*) (setq *ri* (instance spot-interface :init)))
 
 (setq *detection* t)
@@ -13,9 +15,9 @@
         (change-thre (ros::get-param "change_threshold" 250))
         (change-pc nil) time-start topic)
     ;; change topic-name by camera input
-    (cond ((= camera "front")
+    (cond ((string= camera "front")
            (setq topic front-topic))
-          ((= camera "back")
+          ((string= camera "back")
            (setq topic back-topic))
           (t (ros::ros-error "The robot cannot detect the elevator opening by the camera.")))
     (setq time-start (ros::time-now))
