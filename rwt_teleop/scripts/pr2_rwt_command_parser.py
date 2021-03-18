@@ -114,7 +114,7 @@ class RwtCommandToArmPose():
     if tgt == "h" and cmd == "look":
       q = self.hp.pose.orientation
       r, p, y = tf.transformations.euler_from_quaternion([q.x, q.y, q.z, q.w])
-      delta = math.radians(30)
+      delta = math.radians(15)
       if val == "l": y += delta
       if val == "r": y -= delta
       if val == "u": p -= delta
