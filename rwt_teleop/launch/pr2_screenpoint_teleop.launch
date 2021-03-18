@@ -37,6 +37,12 @@
     <remap from="~input" to="/pointcloud_screenpoint_nodelet/output_point" />
   </node>
 
+  <!-- <node pkg="jsk_topic_tools" type="tf_to_pose.py" name="tf_to_pose_larm"> -->
+  <!--   <remap from="~output" to="/master_larm_pose" /> -->
+  <!--   <param name="~src_frame" value="base_link"/> -->
+  <!--   <param name="~dst_frame" value="larm_pos"/> -->
+  <!-- </node> -->
+
   <node pkg="rwt_teleop" type="pr2-realtime-ik.l" name="pr2_realtime_ik" output="log"/>
 
 </launch>

@@ -58,6 +58,7 @@
 	  )
     (send *robot* :head :neck-p :joint-angle (rad2deg (elt (car (rpy-angle (send head-tgt :rot))) 1)))
     (send *robot* :head :neck-y :joint-angle (rad2deg (elt (car (rpy-angle (send head-tgt :rot))) 0)))
+    (send *robot* :torso_lift_joint :joint-angle (+ 200 (elt (send head-tgt :pos) 2)))
 
     (send *ri* :angle-vector (send *robot* :angle-vector) 100)
     (send *irtviewer* :draw-objects :flush nil)
@@ -69,5 +70,3 @@
   )
 
 (run)
-
-
