@@ -45,4 +45,28 @@
 
   <node pkg="rwt_teleop" type="pr2-realtime-ik.l" name="pr2_realtime_ik" output="log"/>
 
+  <node pkg="rwt_teleop" type="draw_force_on_image.py" name="draw_force_on_image">
+    <remap from="l_force_input" to="/left_endeffector/wrench"/>
+    <remap from="r_force_input" to="/right_endeffector/wrench"/>
+  </node>
+
+  <group ns="larm_marker">
+    <node pkg="image_view2" type="image_view2" name="image_view2_for_draw_force_on_image" output="log">
+      <remap from="image" to="/edgetpu_object_detector/output/image"/>
+      <remap from="camera_info" to="/kinect_head/rgb/camera_info"/>
+      <param name="use_window" value="false"/>
+    </node>
+  </group>
+
+  <group ns="rarm_marker">
+    <node pkg="image_view2" type="image_view2" name="image_view2_for_draw_force_on_image" output="log">
+      <remap from="image" to="/larm_marker/image_marked"/>
+      <remap from="image_marked" to="/operator_view"/>
+      <remap from="camera_info" to="/kinect_head/rgb/camera_info"/>
+      <param name="use_window" value="false"/>
+    </node>
+  </group>
+
+  <node pkg="topic_tools" type="relay" name="relay" args="/operator_view/screenpoint /kinect_head/rgb/image_rect_color/screenpoint"/>
+
 </launch>
