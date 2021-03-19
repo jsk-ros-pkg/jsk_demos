@@ -1,12 +1,8 @@
 <launch>
-
-  <arg name="is_real" default="true" />
-  <arg name="rviz"    default="true" />
-
-  <arg name="device"     default="camera"                                   if="$(arg is_real)"/>
-  <arg name="device"     default="head_mount_kinect2"                   unless="$(arg is_real)"/>
-
+  <arg name="rviz"   default="true" />
+  <arg name="device" default="camera"/>
   <machine name="localhost"   address="localhost" />
+  
   <include file="$(find jsk_pcl_ros)/launch/pointcloud_screenpoint.launch">
     <arg name="image"                default="/$(arg device)/rgb"/>
     <arg name="points"               default="/$(arg device)/depth_registered/points"/>

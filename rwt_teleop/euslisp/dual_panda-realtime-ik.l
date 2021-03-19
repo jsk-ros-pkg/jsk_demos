@@ -23,6 +23,16 @@
 	 (ros::subscribe "master_larm_pose" geometry_msgs::PoseStamped #'send self :larm-cb)
 	 (ros::subscribe "master_rarm_pose" geometry_msgs::PoseStamped #'send self :rarm-cb)
 	 (ros::subscribe "master_head_pose" geometry_msgs::PoseStamped #'send self :head-cb)
+	 (defun set-reset-pose (req)
+	   (let ((m (send req :response)))
+	     (setq larm-tgt (make-coords :pos #f(500  300 1000) :rpy #f(3.14 1.57 0)))
+	     (setq rarm-tgt (make-coords :pos #f(500 -300 1000) :rpy #f(3.14 1.57 0)))
+	     (setq head-tgt (make-coords))
+	     (send *ri* :angle-vector (send *robot* :reset-pose) 5000)
+	     (send *ri* :wait-interpolation)
+	     m)
+	   )
+	 (ros::advertise-service "set_reset_pose" std_srvs::Empty #'set-reset-pose)
 	 )
   (:larm-cb (msg)
 	    (setq raw-coords (ros::tf-pose->coords (send msg :pose)))
@@ -72,5 +82,3 @@
   )
 
 (run)
-
-
