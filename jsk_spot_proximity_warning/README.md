@@ -2,7 +2,7 @@
 
 With this demo, robot speaks warning when people are near the robot.
 
-<video>
+https://user-images.githubusercontent.com/9410362/111855412-20831e00-8968-11eb-8d02-c3d8670e7171.mp4
 
 ## How to run
 
