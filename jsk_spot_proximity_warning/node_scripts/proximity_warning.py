@@ -24,10 +24,14 @@ class ProximityWarningNode(object):
         self._target_id_list = rospy.get_param('~target_id_list', [])
         self._duration_timeout = rospy.get_param('~duration_timeout', 0.1)
 
-        self._sp_client = SoundClient()
+        self._sp_client = SoundClient(blocking=True,
+                                      sound_action='robotsound',
+                                      sound_topic='robotsound')
         self._flag_proximity = False
 
         rospy.Subscriber('~bbox_array', BoundingBoxArray, self.callback)
+
+        rospy.loginfo('Node has been initialized.')
 
     def callback(self, msg):
 
@@ -60,8 +64,7 @@ class ProximityWarningNode(object):
                 flag_proximity = True
                 break
 
-        if flag_proximity:
-            self._flag_proximity = flag_proximity
+        self._flag_proximity = flag_proximity
 
     def process(self):
 
@@ -72,9 +75,11 @@ class ProximityWarningNode(object):
             rate.sleep()
 
             if self._flag_proximity:
-
+                rospy.loginfo('Too close')
                 # do something
-                self._sp_client.say('Too close. Please stay away.')
+                self._sp_client.say('Too close. Please stay away.', blocking=True)
+            else:
+                rospy.loginfo('There is no person near.')
 
 
 def main():
