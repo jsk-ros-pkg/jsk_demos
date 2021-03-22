@@ -10,6 +10,7 @@ class DualPandaRwtCommandParser(DualArmRwtCommandParser):
     self.dual_arm_distance = 0.2
     self.init_pose_xyz  = {lr : (0.5, self.sgns[lr] * 0.3, 1.0)          for lr in self.LR}
     self.init_pose_rpy  = {lr : (0, math.radians(90), math.radians(180)) for lr in self.LR}
+
     self.table_pose_rpy = {lr : (0, math.radians(90), math.radians(180)) for lr in self.LR}
     self.front_pose_rpy = self.table_pose_rpy ### front pose by panda is prohibit
     super(DualPandaRwtCommandParser, self).__init__()

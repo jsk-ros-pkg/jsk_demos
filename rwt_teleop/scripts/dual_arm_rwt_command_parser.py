@@ -230,7 +230,13 @@ class DualArmRwtCommandParser(object):
     
   def set_gripper_close(self, _lr, _go_close):
     print "should be overrided!!"
-    
+
+  def set_gripper_close(self, _lr, _go_close):
+    g_cmd = Pr2GripperCommandActionGoal()
+    g_cmd.goal.command.position   = (0.0 if _go_close else 0.1)
+    g_cmd.goal.command.max_effort = 75
+    self.g_pub[_lr].publish(g_cmd)
+
 def lrd2lr_list(_lrd):
   if _lrd in ["l", "r"]:
     return [_lrd]
