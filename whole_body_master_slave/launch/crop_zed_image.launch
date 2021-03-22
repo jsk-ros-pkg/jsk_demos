@@ -1,0 +1,31 @@
+<launch>
+
+  <node pkg="usb_cam" type="usb_cam_node" name="zed_usb_cam" output="screen">
+    <param name="image_width" type="int" value="4416" />
+    <param name="image_height" type="int" value="1242" />
+    <param name="pixel_format" type="str" value="yuyv" />
+  </node>
+
+  <node pkg="image_proc" type="image_proc" name="image_proc"/>
+
+  <node pkg="nodelet" type="nodelet" args="standalone image_proc/crop_decimate" name="crop_left">
+    <param name="x_offset" type="int" value="0" />
+    <param name="y_offset" type="int" value="0" />
+    <param name="width" type="int" value="2208" />
+    <param name="height" type="int" value="1242" />
+    <remap from="camera/image_raw" to="/zed_usb_cam/image_raw"/>
+    <remap from="camera/camera_info" to="/zed_usb_cam/camera_info"/>
+    <remap from="camera_out/image_raw" to="zed_left/image_raw"/>
+    <remap from="camera_out/camera_info" to="zed_left/camera_info"/>
+  </node>
+  <node pkg="nodelet" type="nodelet" args="standalone image_proc/crop_decimate" name="crop_right">
+    <param name="x_offset" type="int" value="2208" />
+    <param name="y_offset" type="int" value="0" />
+    <param name="width" type="int" value="2208" />
+    <param name="height" type="int" value="1242" />
+    <remap from="camera/image_raw" to="/zed_usb_cam/image_raw"/>
+    <remap from="camera/camera_info" to="/zed_usb_cam/camera_info"/>
+    <remap from="camera_out/image_raw" to="zed_right/image_raw"/>
+    <remap from="camera_out/camera_info" to="zed_right/camera_info"/>
+  </node>
+</launch>
