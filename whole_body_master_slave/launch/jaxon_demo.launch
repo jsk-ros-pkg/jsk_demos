@@ -25,7 +25,12 @@
   <!-- <node name="vive_sn_to_rf" pkg="tf" type="static_transform_publisher" args="0 0 0 1.570796 3.141592 0 /tracker_LHR_03DCC6A7 /vive_rf_tf 1000" /> -->
   <node name="vive_sn_to_head" pkg="tf" type="static_transform_publisher" args="0 0 0 0 1.570796 -1.570796 /hmd /vive_head_tf 1000" />
 
-  <node name="TF2PoseStamped" pkg="whole_body_master_slave" type="TF2PoseStamped.py" output="screen" required="true"/>
+  <node pkg="jsk_topic_tools" type="tf_to_pose.py" name="tf_to_pose_head">
+    <remap from="~output" to="/master_head_pose" />
+    <param name="~src_frame" value="operator_origin"/>
+    <param name="~dst_frame" value="vive_head_tf"/>
+    <param name="~rate" value="200"/>
+  </node>
 
   <node name="lh_joy_to_thk_l_refpos" pkg="topic_tools" type="transform" args='/vive_lh_joy /thk_hand_controller/left/refpos  std_msgs/Float32 "std_msgs.msg.Float32(m.axes[2])" --import std_msgs --wait-for-start' output="screen" required="true"/>
   <node name="rh_joy_to_thk_r_refpos" pkg="topic_tools" type="transform" args='/vive_rh_joy /thk_hand_controller/right/refpos std_msgs/Float32 "std_msgs.msg.Float32(m.axes[2])" --import std_msgs --wait-for-start' output="screen" required="true"/>
