@@ -32,6 +32,9 @@
     <param name="~rate" value="200"/>
   </node>
 
+
+  <node pkg="rostopic" type="rostopic" name="thk_hand_init_call" args='pub -1 /thk_hand_controller/both/init std_msgs/Empty "{}"' output="screen"/>
+    
   <node name="lh_joy_to_thk_l_refpos" pkg="topic_tools" type="transform" args='/vive_lh_joy /thk_hand_controller/left/refpos  std_msgs/Float32 "std_msgs.msg.Float32(m.axes[2])" --import std_msgs --wait-for-start' output="screen" required="true"/>
   <node name="rh_joy_to_thk_r_refpos" pkg="topic_tools" type="transform" args='/vive_rh_joy /thk_hand_controller/right/refpos std_msgs/Float32 "std_msgs.msg.Float32(m.axes[2])" --import std_msgs --wait-for-start' output="screen" required="true"/>
 
