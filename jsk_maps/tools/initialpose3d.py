@@ -25,8 +25,8 @@ def change_map(frame):
     try:
         if frame != '/map':
             resp = tf_select(frame+"_tf")
-    except rospy.ServiceException, e:
-        print "Service call failed: %s"%e
+    except rospy.ServiceException as e:
+        rospy.logerr("Service call failed: %s" % e)
 
     rospy.set_param('/amcl/initial_map', frame)
 
@@ -35,7 +35,7 @@ def callback(pose):
     global pub
 
     # change the map
-    frame = pose.header.frame_id;
+    frame = pose.header.frame_id
     change_map(frame)
 
     rospy.sleep(1) # this is bad

@@ -374,7 +374,7 @@ h_max=20, h_min=-20, s_max=255, s_min=80, i_max=255, i_min=50 くらいがちょ
 
 パラメータの一覧を取得
 ```bash
-rostopic param
+rosparam list
 ```
 
 ### Published Video
