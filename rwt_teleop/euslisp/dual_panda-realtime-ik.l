@@ -1,5 +1,5 @@
 #!/usr/bin/env roseus
-(require :dual_panda-interface "package://franka_eus/euslisp/dual_panda-interface.l")
+(require :dual_panda-interface "package://panda_eus/euslisp/dual_panda-interface.l")
 
 (ros::roseus "dual_panda_realtime_ik")
 
