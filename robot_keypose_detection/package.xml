@@ -1,0 +1,27 @@
+<package>
+
+  <name>robot_keypose_detection</name>
+  <version>0.0.1</version>
+  <description>The package for Robot Keypose Detection</description>
+
+  <maintainer email="ab.ioryz@gmail.com">Iori Yanokura</maintainer>
+  <license>BSD</license>
+
+  <buildtool_depend>catkin</buildtool_depend>
+
+  <build_depend>jsk_data</build_depend>
+
+  <run_depend>cv_bridge</run_depend>
+  <run_depend>dynamic_tf_publisher</run_depend>
+  <run_depend>geometry_msgs</run_depend>
+  <run_depend>jsk_data</run_depend>
+  <run_depend>jsk_topic_tools</run_depend>
+  <run_depend>sensor_msgs</run_depend>
+
+  <!-- install chainer {{ -->
+  <run_depend>python-h5py</run_depend>
+  <run_depend version_lt="7.0.0">python-chainer-pip</run_depend>
+  <run_depend>python-chainercv-pip</run_depend>
+  <!-- }} install chainer -->
+
+ </package>
