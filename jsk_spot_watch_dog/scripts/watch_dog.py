@@ -8,6 +8,7 @@ import numpy as np
 from nav_msgs.msg import Odometry
 import rospy
 from sensor_msgs.msg import CompressedImage, Image
+from spot_msgs.msg import BatteryStateArray
 from std_srvs.srv import Trigger
 import tf
 import time
@@ -42,6 +43,10 @@ class WatchDog():
             '/spot/odometry',
             Odometry, self.odom_cb, queue_size=1)
 
+        self.sub_bat = rospy.Subscriber(
+            '/spot/status/battery_states',
+            BatteryStateArray, self.bat_cb, queue_size=1)
+
         self.body_pose_pub = rospy.Publisher('/spot/body_pose', Pose, queue_size=1)
 
 
@@ -62,6 +67,8 @@ class WatchDog():
         self.lookup_angle = -0.4 # radian
         self.change_body_duration = 1.0 # s
         self.change_t = 0
+        self.temp_threshold = 50
+        self.battery_temp = 0;
 
     def _body_action(self, euler):
         if time.time() - self.change_t < self.change_body_duration:
@@ -157,6 +164,15 @@ class WatchDog():
     def odom_cb(self, msg):
         q = msg.pose.pose.orientation
         self.body_euler = tf.transformations.euler_from_quaternion((q.x, q.y, q.z, q.w))
+
+    def bat_cb(self, msg):
+        self.battery_temp = np.max(np.array(msg.battery_states[0].temperatures))
+        #print(self.battery_temp)
+
+        if self.status == self.stand and self.battery_temp > self.temp_threshold:
+            rospy.logwarn("the battery temperature is higher than the threshold: {} vs {}, sit down and turn off servo".format(self.battery_temp, self.temp_threshold))
+            self._sit_action()
+            self.status = self.rest
 
     def detection_cb(self, msg):
 
