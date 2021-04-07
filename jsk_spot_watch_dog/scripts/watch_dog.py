@@ -223,6 +223,6 @@ class WatchDog():
             self._body_action(target_euler)
 
 if __name__ == '__main__':
-    rospy.init_node('edgetpu_object_detector')
+    rospy.init_node('spot_watchdog')
     wath_action = WatchDog()
     rospy.spin()
