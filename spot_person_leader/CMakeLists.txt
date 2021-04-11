@@ -1,9 +1,16 @@
 cmake_minimum_required(VERSION 3.0.2)
-project(spot_person_follower)
+project(spot_person_leader)
 
 add_compile_options(-std=c++11 -Wall)
 
-find_package(catkin REQUIRED COMPONENTS genmsg actionlib_msgs geometry_msgs rospy)
+find_package(catkin REQUIRED COMPONENTS genmsg actionlib actionlib_msgs rospy)
+
+add_action_files(
+    DIRECTORY action
+    FILES LeadPerson.action
+)
+
+generate_messages(DEPENDENCIES actionlib_msgs)
 
 catkin_package(
 )

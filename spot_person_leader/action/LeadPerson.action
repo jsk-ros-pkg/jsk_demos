@@ -1,0 +1,7 @@
+string start_point
+string end_point
+---
+bool success
+---
+string waypoint_id
+string filepath
