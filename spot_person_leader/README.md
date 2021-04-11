@@ -1,8 +1,8 @@
-# Person Follow Demo
+# Person Lead Demo
 
 <TODO image>
 
-This demo enables Spot to follow person.
+This demo enables Spot to lead person.
 
 ## Prerequities
 
@@ -24,9 +24,5 @@ Before running this demo, please launch and prepair a controller.
 And then, please run
 
 ```bash
-roslaunch spot_person_follower demo.launch
+roslaunch spot_person_leader demo.launch
 ```
-
-After this, you can start following behavior by pressing L2 button of the controller.
-Spot will follow the nearest person at the time of pressing.
-If you want to stop the behavior, please press the L2 button again.
