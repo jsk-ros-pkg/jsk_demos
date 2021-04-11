@@ -19,12 +19,12 @@
         <remap from="~lead_person" to="/spot/lead_person" />
 
         <rosparam subst_value='true'>
-            dist_visible: 5.0
+            dist_visible: 2.0
             duration_timeout: 0.1
             label_person: 0
             frame_id_robot: 'body'
             list_navigate_to:
-                - ['73B2', '7FElevator', '$(find spot_person_leader)/autowalk/73B2_to_7FElevator.walk'],
+                - ['73B2', 'Elevator', '$(find spot_person_leader)/autowalk/73B2_to_7FElevator.walk']
         </rosparam>
     </node>
 </launch>
