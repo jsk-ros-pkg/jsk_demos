@@ -79,10 +79,17 @@ class LeadPersonDemo(object):
         self._srv_upload_graph = rospy.ServiceProxy('~upload_graph', UploadGraph)
 
         # action client
-        self._client_navigate_to = rospy.SimpleActionClient(
+        self._client_navigate_to = actionlib.SimpleActionClient(
                                         '~navigate_to',
                                         NavigateToAction
                                         )
+
+        # tf
+        self._tf_buffer = tf2_ros.Buffer()
+        self._tf_listener = tf2_ros.TransformListener(self._tf_buffer)
+
+        # sound client
+        self._sound_client = SoundClient(blocking=False, sound_action='/robotsound', sound_topic='/robotsound')
 
         # checking if person exists or not
         self._is_person_visible = False
@@ -90,7 +97,7 @@ class LeadPersonDemo(object):
         self._sub_bbox_array = rospy.Subscriber('~bbox_array',BoundingBoxArray,self._cb_bbox_array)
 
         # action server
-        self._server_lead_person = rospy.SimpleActionServer(
+        self._server_lead_person = actionlib.SimpleActionServer(
                                         '~lead_person',
                                         LeadPersonAction,
                                         execute_cb=self._handler_lead_person,
@@ -98,10 +105,15 @@ class LeadPersonDemo(object):
                                         )
         self._server_lead_person.start()
 
+        rospy.loginfo('Initialized!')
+
     def _handler_lead_person(self, goal):
 
-        if self.startNavigateTo( goal.start_point, goal.end_point ):
-            rospy.loginfo('Navigate to started.')
+        rospy.loginfo('Lead Action started.')
+        end_id = self.settingupNavigateTo( goal.start_point, goal.end_point )
+        if end_id is not None:
+            self._sound_client.say('I will go to {}. Please follow me'.format(goal.end_point),blocking=True)
+            self.startNavigateTo( end_id )
         else:
             rospy.logerr('Route not found.')
             result = LeadPersonResult()
@@ -111,9 +123,15 @@ class LeadPersonDemo(object):
 
         rate = rospy.Rate(10)
 
-        while not rospy.is_shutdown():
+        while True:
 
             rate.sleep()
+
+            if rospy.is_shutdown():
+                rospy.logwarn('shutdown requested.')
+                # Cancel navigate to action
+                self._client_navigate_to.cancel_goal()
+                return
 
             if self._server_lead_person.is_preempt_requested():
                 rospy.logwarn('Action preempted.')
@@ -126,11 +144,14 @@ class LeadPersonDemo(object):
                 return
 
             if self._client_navigate_to.wait_for_result(rospy.Duration(0.05)):
+                rospy.loginfo('Navigate to action has finished')
                 break
 
             if not self._is_person_visible:
+                rospy.loginfo('No person is visible. Stopped.')
                 self.publishZeroVelocity()
 
+        self._sound_client.say('We have arrived at {}.'.format(goal.end_point))
         result_navigate_to = self._client_navigate_to.get_result()
         result = LeadPersonResult()
         result.success = result_navigate_to.success
@@ -146,7 +167,7 @@ class LeadPersonDemo(object):
             pykdl_transform_fixed_to_robot = tf2_geometry_msgs.transform_to_kdl(
                 self._tf_buffer.lookup_transform(
                     frame_id_robot,
-                    frame_id_robot,
+                    frame_id_msg,
                     time_observed,
                     timeout=rospy.Duration(self._duration_timeout)
                 )
@@ -161,16 +182,16 @@ class LeadPersonDemo(object):
             if bbox.label == self._label_person:
                 vector_bbox = convert_msg_point_to_kdl_vector(bbox.pose.position)
                 vector_bbox_robotbased = pykdl_transform_fixed_to_robot * vector_bbox
-                if vector_bbox_robotbased.Norm < self._dist_visible:
+                if vector_bbox_robotbased.Norm() < self._dist_visible:
                     is_person_visible = True
                     break
         self._is_person_visible = is_person_visible
 
     def publishZeroVelocity(self):
 
-        self._pub_cmd_vel(Twist())
+        self._pub_cmd_vel.publish(Twist())
 
-    def startNavigateTo(self,
+    def settingupNavigateTo(self,
                         start_point,
                         end_point):
 
@@ -178,22 +199,27 @@ class LeadPersonDemo(object):
             if start_point == navigate_to[0] and end_point == navigate_to[1]:
                 self.uploadGraph(navigate_to[2])
                 self.setLocalizationFiducial()
-                waypoint_ids = self.listGraph()
-                start_id = waypoint_ids[0]
-                end_id = waypoint_ids[-1]
+                res = self.listGraph()
+                start_id = res.waypoint_ids[0]
+                end_id = res.waypoint_ids[-1]
+                return end_id
             elif start_point == navigate_to[1] and end_point == navigate_to[0]:
                 self.uploadGraph(navigate_to[2])
                 self.setLocalizationFiducial()
-                start_id = waypoint_ids[-1]
-                end_id = waypoint_ids[0]
+                res = self.listGraph()
+                start_id = res.waypoint_ids[-1]
+                end_id = res.waypoint_ids[0]
+                return end_id
             else:
                 continue
-            goal = NavigateToGoal()
-            goal.id_navigate_to = end_id
-            self._client_navigate_to.send_goal(goal)
-            return True
         rospy.logerr('navigation route from {} to {} is not found.'.format(start_point, end_point))
-        return False
+        return None
+
+    def startNavigateTo(self,
+                        end_id):
+        goal = NavigateToGoal()
+        goal.id_navigate_to = end_id
+        self._client_navigate_to.send_goal(goal)
 
     def uploadGraph(self, filepath):
 
