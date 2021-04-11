@@ -1,0 +1,50 @@
+<launch>
+    <node
+        pkg="spot_person_follower"
+        type="main.py"
+        name="spot_person_follower"
+        output="screen"
+        >
+        <rosparam>
+            frame_fixed: odom
+            frame_robot: body
+            duration_timeout: 0.05
+            num_max_track: 20
+            thresholds_distance:
+                '0': 5.0 # person 
+            threshold_angle: 0.8
+            threshold_lost_duration: 5.0
+            threshold_move_velocity: 1.0
+            threshold_tracking_switching_distance: 1.0
+            threshold_target_close_distance: 0.5
+            destination_offset_from_target_x: -0.5
+            destination_offset_from_target_y: 0
+            destination_offset_from_target_theta: 0
+            publish_bbox_array: True
+            use_trajectory: True
+            rate_control: 1
+        </rosparam>
+
+        <remap from="~go_pos" to="/spot/trajectory" />
+        <remap from="~cmd_vel" to="/develop_input/cmd_vel" />
+        <remap from="~input_bbox_array" to="/spot_recognition/bbox_array" />
+        <remap from="~input_tracking_labels" to="/spot_recognition/tracking_labels" />
+
+    </node>
+
+    <node
+        pkg="spot_person_follower"
+        type="follow_on_button.py"
+        name="follow_on_button"
+        output="screen"
+        >
+        <rosparam>
+            duration_timeout: 10.0
+            follow_button: 6 # L2
+            duration_impersity: 1.0
+        </rosparam>
+
+        <remap from="~follow" to="/spot_person_follower/follow_person" />
+        <remap from="~joy" to="/spot_teleop/joy" />
+    </node>
+</launch>
