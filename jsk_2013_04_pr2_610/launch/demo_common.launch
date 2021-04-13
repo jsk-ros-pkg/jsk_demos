@@ -1,7 +1,6 @@
 <launch>
   <arg name="task" />
   <arg name="plan" default="true" />
-  <arg name="use_downward" default="true" />
   <arg name="use_ffha" default="false" />
   <arg name="planner_option" value="--heuristic &quot;hlm=lmcount(lm_rhw(reasonable_orders=true,lm_cost_type=2,cost_type=2),pref=true)&quot;
                                     --heuristic &quot;hff=ff()&quot;
@@ -19,7 +18,7 @@
           output="screen" />
   </group>
   <group if="$(arg plan)">
-    <include if="$(arg use_downward)"
+    <include unless="$(arg use_ffha)"
              file="$(find pddl_planner)/launch/pddl_downward.launch">
       <arg name="planner_option" value="$(arg planner_option)" />
     </include>
