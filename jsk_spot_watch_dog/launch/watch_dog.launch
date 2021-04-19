@@ -20,6 +20,7 @@
     <param name="human_width_threshold" value="$(arg human_width_threshold)" />
     <param name="human_height_threshold" value="$(arg human_height_threshold)" />
     <param name="max_tracking_yaw" value="$(arg max_tracking_yaw)" />
+    <param name="bark_sound" value="/home/spot/sound_play/bark.wav" />
   </node>
 </launch>
 

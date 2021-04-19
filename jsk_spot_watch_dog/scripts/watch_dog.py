@@ -10,6 +10,7 @@ import rospy
 from sensor_msgs.msg import CompressedImage, Image
 from spot_msgs.msg import BatteryStateArray
 from std_srvs.srv import Trigger
+from sound_play.libsoundplay import SoundClient
 import tf
 import time
 
@@ -25,6 +26,10 @@ class WatchDog():
         self.human_height_threshold = rospy.get_param('~human_height_threshold')
 
         self.max_tracking_yaw = rospy.get_param('~max_tracking_yaw')
+
+        self.bark_sound = rospy.get_param('~bark_sound', '/home/spot/sound_play/bark.wav')
+
+        self.sound_client = SoundClient(sound_action='robotsound', sound_topic='robotsound')
 
         self.sub_image = rospy.Subscriber(
             rospy.resolve_name('~input'),
@@ -75,6 +80,8 @@ class WatchDog():
             return
 
         self.change_t = time.time()
+        if not euler[0] == 0 or not euler[1] == 0 or not euler[2] == 0:
+            self.sound_client.playWave(self.bark_sound)
 
         q = tf.transformations.quaternion_from_euler(euler[0], euler[1], euler[2]) #RPY
         pose = Pose()
