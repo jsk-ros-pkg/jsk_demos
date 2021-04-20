@@ -11,7 +11,7 @@
   (let ((front-topic
          "/check_elevator_open/front_octree_change_publisher/octree_change_result")
         (back-topic
-         "/check_elevator_open/front_octree_change_publisher/octree_change_result")
+         "/check_elevator_open/back_octree_change_publisher/octree_change_result")
         (change-thre (ros::get-param "change_threshold" 250))
         (change-pc nil) time-start topic)
     ;; change topic-name by camera input
