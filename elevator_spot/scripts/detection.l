@@ -5,14 +5,14 @@
 
 (setq *detection* t)
 
-(defun check-elevator-open (camera &key (timeout 300))
+(defun check-elevator-open (camera &key (timeout 300) (th 250))
   ;; This function is cited from jsk_demos/elevator_move_base_pr2
   ;; NEED TO CHANGE TOPIC NAME
   (let ((front-topic
          "/check_elevator_open/front_octree_change_publisher/octree_change_result")
         (back-topic
          "/check_elevator_open/back_octree_change_publisher/octree_change_result")
-        (change-thre (ros::get-param "change_threshold" 250))
+        (change-thre (ros::get-param "change_threshold" th))
         (change-pc nil) time-start topic)
     ;; change topic-name by camera input
     (cond ((string= camera "front")
