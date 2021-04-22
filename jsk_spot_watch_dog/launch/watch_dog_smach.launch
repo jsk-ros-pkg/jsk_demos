@@ -1,6 +1,6 @@
 <launch>
   <arg name="input_image" default="/spot/camera/back/image/compressed"/>
-  <arg name="brightness_threshold" default="60" />
+  <arg name="luminance_threshold" default="60" />
   <arg name="rest_time_per_hour" default="10" /> # min
 
   # person attention
@@ -10,12 +10,12 @@
   <arg name="human_height_threshold" default="0.4" /> # rate of image height
   <arg name="max_tracking_yaw" default="0.8" /> # radian
 
-  <node name="spot_watchdog" pkg="jsk_spot_watch_dog" type="watch_dog.py"
+  <node name="spot_watchdog" pkg="jsk_spot_watch_dog" type="watch_dog_smach.py"
         output="screen" respawn="false">
     <remap from="~input" to="$(arg input_image)" />
-    <remap from="~panorama" to="$(arg panorama_image)" />
+    <remap from="~panorama_image" to="$(arg panorama_image)" />
     <remap from="~human" to="$(arg human_detection_result)" />
-    <param name="brightness_threshold" value="$(arg brightness_threshold)" />
+    <param name="luminance_threshold" value="$(arg luminance_threshold)" />
     <param name="rest_time_per_hour" value="$(arg rest_time_per_hour)" />
     <param name="human_width_threshold" value="$(arg human_width_threshold)" />
     <param name="human_height_threshold" value="$(arg human_height_threshold)" />
