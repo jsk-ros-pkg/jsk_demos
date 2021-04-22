@@ -17,7 +17,7 @@
 (elevator-spot 7 2)
 
 ;;go ahead to recognize tag
-(send *ri* :go-pos 3.0 0 0)
+(send *ri* :go-pos -3.0 0 0)
 
 (send *ri* :speak-jp "ローソンに向かいます")
 
