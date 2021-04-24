@@ -24,7 +24,7 @@ class Robot():
         self.bridge = CvBridge()
 
         self.luminance = 0
-        self.stand_start_time = 0
+        self.start_time = 0
         self.body_euler = [0,0,0]
         self.yaw_offset = 0
         self.battery_temp = 0;
@@ -64,18 +64,28 @@ class Robot():
         self.body_pose_pub = rospy.Publisher('/spot/body_pose', Pose, queue_size=1)
 
         # hade-coding parameter due to the limitation of SPOT
-        self.lookup_angle = rospy.get_param('lookup_angle', -0.4) # radian
-        self.change_body_duration = rospy.get_param('change_body_duration', 1.0) # s
-        self.temp_threshold = rospy.get_param('temp_threshold', 50)
+        self.lookup_angle = rospy.get_param('~lookup_angle', -0.4) # radian
+        self.change_body_duration = rospy.get_param('~change_body_duration', 1.0) # s
+        self.temp_threshold = rospy.get_param('~temp_threshold', 50)
         #self.change_t = 0
 
         self.bark_sound = rospy.get_param('~bark_sound', '/home/spot/sound_play/bark.wav')
         self.sound_client = SoundClient(sound_action='robotsound', sound_topic='robotsound')
 
+        self.claim_srv_name = "/spot/claim"
         self.sit_srv_name = "/spot/sit"
         self.stand_srv_name = "/spot/stand"
         self.poweron_srv_name = "/spot/power_on"
         self.poweroff_srv_name = "/spot/power_off"
+
+        # claim control
+        rospy.wait_for_service(self.claim_srv_name)
+        try:
+            claim_srv_call = rospy.ServiceProxy(self.claim_srv_name, Trigger)
+            claim_srv_call()
+        except rospy.ServiceException, e:
+            print "Service call failed: %s"%e
+
 
     def stand_action(self):
         # servo on
@@ -159,12 +169,12 @@ class DayMotion(smach.State):
         super(DayMotion, self).__init__(outcomes, input_keys, output_keys, io_keys)
 
         self.robot = robot
-        self.luminance_tresh  = self.robot.luminance_threshold
+        self.luminance_thresh  = self.robot.luminance_threshold
 
     def execute(self, userdata):
 
-        while self.robot.luminance >= self.luminance_tresh:
-            rospy.logdebug("day motion, luminance: {}, stand duration: {:3f} min".format(self.robot.luminance, (time.time() - self.robot.stand_start_time) / 60))
+        while self.robot.luminance >= self.luminance_thresh:
+            rospy.logdebug("day motion, luminance: {}, stand duration: {:3f} min".format(self.robot.luminance, (time.time() - self.robot.start_time) / 60))
             if rospy.is_shutdown():
                 return 'preempted'
 
@@ -187,9 +197,9 @@ class Rest(DayMotion):
     def specific_execute(self, userdata):
         time.sleep(1.0)
 
-        if (time.time() - self.robot.stand_start_time) / 60 > self.robot.rest_time_per_hour:
+        if (time.time() - self.robot.start_time) / 60 > self.robot.rest_time_per_hour:
                 rospy.loginfo("finish rest")
-                self.robot.stand_start_time = time.time()
+                self.robot.start_time = time.time()
                 self.robot.stand_action()
                 return 'stand'
 
@@ -203,13 +213,14 @@ class Watch(DayMotion):
         # battery temperature
         if self.robot.battery_temp > self.robot.temp_threshold:
             rospy.logwarn("the battery temperature is higher than the threshold: {} vs {}, sit down and turn off servo".format(self.robot.battery_temp, self.robot.temp_threshold))
+            self.robot.start_time = time.time()
             self.robot.sit_action()
             return 'sit'
 
         # rest
-        if  (time.time() - self.robot.stand_start_time) / 60 > 60 - self.robot.rest_time_per_hour:
+        if  (time.time() - self.robot.start_time) / 60 > 60 - self.robot.rest_time_per_hour:
             rospy.loginfo("have a rest")
-            self.robot.stand_start_time = time.time()
+            self.robot.start_time = time.time()
             self.robot.sit_action()
             return 'sit'
 
@@ -231,7 +242,9 @@ class Watch(DayMotion):
 
         if target_person is None:
             target_euler = [0, 0, 0]
-            self.robot.yaw_offset = self.robot.body_euler[2]
+            # only update yaw offset when the robot attitude is level
+            if np.abs(self.robot.body_euler[0]) < 0.05 and np.abs(self.robot.body_euler[1]) < 0.05:
+                self.robot.yaw_offset = self.robot.body_euler[2]
         else:
             rel_yaw_angle =  (self.robot.paranoma_width / 2 - (target_person.x + target_person.width/2)) / float(self.robot.paranoma_width) * 2 * np.pi
 
@@ -252,22 +265,22 @@ class DarkMotion(smach.State):
         super(DarkMotion, self).__init__(outcomes = ['light_on', 'preempted'])
 
         self.robot = robot
-        self.luminance_tresh  = self.robot.luminance_threshold
+        self.luminance_thresh  = self.robot.luminance_threshold
 
     def execute(self, userdata):
 
-        rospy.loginfo("day motion, luminance: {}, stand duration: {}".format(self.robot.luminance, time.time() - self.robot.stand_start_time))
+        rospy.loginfo("dark motion, luminance: {}, stand duration: {}".format(self.robot.luminance, time.time() - self.robot.start_time))
 
         # TODO: use threading.Event and callback function instead of while function (check MonitorState)
         # https://qiita.com/tag1216/items/2dcb112f8018eb19a999
-        while self.robot.luminance < self.luminance_tresh:
+        while self.robot.luminance < self.luminance_thresh:
             if rospy.is_shutdown():
                 return 'preempted'
             time.sleep(1)
 
         self.robot.stand_action() # stand
         rospy.loginfo("stand up because surrounding is bright")
-        self.robot.stand_start_time = time.time()
+        self.robot.start_time = time.time()
         return 'light_on'
 
 def main():
