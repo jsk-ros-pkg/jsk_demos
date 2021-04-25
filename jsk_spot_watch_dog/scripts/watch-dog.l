@@ -38,6 +38,11 @@
      (setq battery-temp 0)
      (setq ypr-euler '(0 0 0))
      ))
+  (:spot-status-battery-states-callback  (msg)   ;; overwrite
+                                         (send-super :spot-status-battery-states-callback msg)
+                                         (setq battery-temp (apply #'max (coerce (send (elt (send msg :battery_states) 0) :temperatures) cons)))
+                                         (ros::ros-debug "battery temp: ~A" battery-temp)
+                                         )
   (:image-cb (msg)
              (let ((img (instance grayscale-image :init
                                   (send msg :width)
@@ -63,7 +68,12 @@
               (ros::ros-debug  "body quaternion is ~A, YPR euler is ~A ~%" q ypr-euler)
               ))
   (:bright-surrounding () (if (> luminance luminance-threshold) t nil))
-  (:high-bettery-temp () (if (> battery-temp temp-threshold) t nil))
+  ;;(:high-battery-temp () (if (> battery-temp temp-threshold) t nil))
+  (:high-battery-temp () (if (> battery-temp temp-threshold)
+                             (progn
+                               (ros::ros-info "bat temp: ~A; temp thresh: ~A" battery-temp temp-threshold)
+                             t)
+                           nil))
   )
 
 
@@ -127,7 +137,7 @@
         (setq ret :sit)
         (return-from func-watch ret))
       ;; check battery temperature
-      (when (send *ri* :high-bettery-temp)
+      (when (send *ri* :high-battery-temp)
         (ros::ros-warn "the battery temperature is higher than the threshold: ~A vs ~A, sit down and turn off servo" (send *ri* :get-val 'battery-temp) (send *ri* :get-val 'temp-threshold))
         (send *ri* :set-val 'stand-start-time (ros::time-now))
         (send *ri* :sit)
