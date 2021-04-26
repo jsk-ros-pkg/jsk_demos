@@ -65,6 +65,10 @@
                       (send msg :pose :pose :orientation :y)
                       (send msg :pose :pose :orientation :z)))
               (setq ypr-euler (elt (rpy-angle (quaternion2matrix q)) 0))
+              (if (and
+                   (< (abs (elt (send *ri* :get-val 'ypr-euler) 2)) 0.05)
+                   (< (abs (elt (send *ri* :get-val 'ypr-euler) 1)) 0.05))
+                  (send *ri* :set-val 'yaw-offset (elt (send *ri* :get-val 'ypr-euler) 0)))
               (ros::ros-debug  "body quaternion is ~A, YPR euler is ~A ~%" q ypr-euler)
               ))
   (:bright-surrounding () (if (> luminance luminance-threshold) t nil))
@@ -159,13 +163,7 @@
                    (> (send rect :height) max-person-height))
             (setq max-person-height (send rect :height))
             (setq target-person rect)))
-        (if (null target-person)
-            (progn
-              (setq target-rpy-euler '(0 0 0))
-              (if (and
-                   (< (abs (elt (send *ri* :get-val 'ypr-euler) 2)) 0.05)
-                   (< (abs (elt (send *ri* :get-val 'ypr-euler) 1)) 0.05))
-                  (send *ri* :set-val 'yaw-offset (elt (send *ri* :get-val 'ypr-euler) 0))))
+        (if (null target-person) (setq target-rpy-euler '(0 0 0))
           (progn
             (setq rel-yaw-angle (/ (* (* (- (/ (send *ri* :get-val 'paranoma-width) 2)  (+ (send target-person :x) (/ (send target-person :width) 2)))   2.0) pi) (send *ri* :get-val 'paranoma-width)))
             (if (< (abs rel-yaw-angle) (send *ri* :get-val 'max-tracking-yaw))
