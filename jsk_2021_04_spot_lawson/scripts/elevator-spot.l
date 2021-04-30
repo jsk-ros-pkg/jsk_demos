@@ -1,10 +1,10 @@
 #!/usr/bin/env roseus
 (setq *elevator-spot* t)
 (load "package://spoteus/spot-interface.l")
-
+(load "amabe_nazodance.l")
 (unless (boundp '*ri*) (setq *ri* (instance spot-interface :init)))
-(unless (boundp '*detection*) (load "package://elevator_spot/scripts/detection.l"))
-(unless (boundp '*speech-recognition-service*) (load "package://elevator_spot/scripts/speech-recognition-service.l"))
+(unless (boundp '*detection*) (load "package://jsk_2021_04_spot_lawson/scripts/detection.l"))
+(unless (boundp '*speech-recognition-service*) (load "package://jsk_2021_04_spot_lawson/scripts/speech-recognition-service.l"))
 
 (defun elevator-spot(start-floor goal-floor)
   ;; Using front camera to get in the elevator
@@ -17,6 +17,6 @@
   ;; check elevator arrive
   ;; (wait-for-julius-trigger "すすんで")
   (check-elevator-open "back")
-  ;; nazodance sinakya
+  (nazodance)
   (send *ri* :go-pos -4.0 0 0)
   (send *ri* :set-locomotion-mode 1))
