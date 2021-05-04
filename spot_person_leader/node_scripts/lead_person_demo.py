@@ -21,7 +21,9 @@ from spot_person_leader.srv import GetStairRanges, GetStairRangesRequest
 
 from spot_person_leader.msg import LeadPersonAction, LeadPersonFeedback, LeadPersonResult
 
-def convert_msg_point_to_kdl_vector(point):
+from spot_ros_client.libspotros import SpotRosClient
+
+ef convert_msg_point_to_kdl_vector(point):
     return PyKDL.Vector(point.x,point.y,point.z)
 
 class LeadPersonDemo(object):
@@ -37,8 +39,6 @@ class LeadPersonDemo(object):
 
     Service Client:
         - '~list_graph' (service type: spot_msgs/ListGraph)
-
-        - '~set_localization_fiducial' (service type: spot_msgs/SetLocalizationFiducial)
 
         - '~upload_graph' (service type: spot_msgs/UploadGraph)
 
@@ -75,10 +75,11 @@ class LeadPersonDemo(object):
         self._pub_cmd_vel = rospy.Publisher('~cmd_vel', Twist, queue_size=1)
 
         # rosservice call
-        self._srv_list_graph = rospy.ServiceProxy('~list_graph', ListGraph)
-        self._srv_set_localization_fiducial = rospy.ServiceProxy('~set_localization_fiducial', SetLocalizationFiducial)
         self._srv_upload_graph = rospy.ServiceProxy('~upload_graph', UploadGraph)
         self._srv_get_stair_ranges = rospy.ServiceProxy('~get_stair_ranges', GetStairRanges)
+
+        #
+        self._spot_client = SpotRosClient();
 
         # action client
         self._client_navigate_to = actionlib.SimpleActionClient(
@@ -227,10 +228,10 @@ class LeadPersonDemo(object):
 
         for navigate_to in self._list_navigate_to:
             if start_point == navigate_to[0] and end_point == navigate_to[1]:
-                self.uploadGraph(navigate_to[2])
-                self.setLocalizationFiducial()
+                self._spot_client.upload_graph(navigate_to[2])
+                self._spot_client.set_localization_fiducial()
                 stair_ranges = self.parseStairRanges(self._srv_get_stair_ranges(GetStairRangesRequest(upload_filepath=navigate_to[2])).result)
-                list_waypoint_id = self.listGraph()
+                list_waypoint_id = self._spot_client.list_graph()
                 list_ranges = []
                 id_current = 0
                 for stair_range in stair_ranges:
@@ -262,33 +263,6 @@ class LeadPersonDemo(object):
         goal = NavigateToGoal()
         goal.id_navigate_to = id_navigate_to
         self._client_navigate_to.send_goal(goal)
-
-    def uploadGraph(self, filepath):
-
-        try:
-            resp = self._srv_upload_graph(filepath)
-            return resp.success, resp.message
-        except rospy.ServiceException as e:
-            rospy.logerr('Error: {}'.format(e))
-            return False, 'Error: {}'.format(e)
-
-    def setLocalizationFiducial(self):
-
-        try:
-            resp = self._srv_set_localization_fiducial()
-            return resp.success, resp.message
-        except rospy.ServiceException as e:
-            rospy.logerr('Error: {}'.format(e))
-            return False, 'Error: {}'.format(e)
-
-    def listGraph(self):
-
-        try:
-            resp = self._srv_list_graph()
-            return resp
-        except rospy.ServiceException as e:
-            rospy.logerr('Error: {}'.format(e))
-            return None
 
 
 def main():
