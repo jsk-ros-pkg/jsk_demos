@@ -1,0 +1,54 @@
+<launch>
+
+  <!-- see /home/leus/ros/indigo/src/start-jsk/jsk_apc/jsk_arc2017_baxter/launch/setup/include/play_rosbag.launch -->
+
+  <!-- USAGE -->
+  <!-- roslaunch decopin_hand play_rosbag.launch filename:=$HOME/.ros/rosbag/si2019/hoge.bag -->
+
+  <!-- for fetch robot -->
+
+  <arg name="filename" />
+  <arg name="recognition" default="true"/>
+
+  <param name="use_sim_time" value="true" />
+  <node name="rosbag_play"
+        pkg="rosbag" type="play"
+        args="$(arg filename) --clock --loop"/>
+
+  <include file="$(find openni2_launch)/launch/openni2.launch">
+    <arg name="camera" value="head_camera" />
+    <arg name="load_driver" value="false" />
+    <arg name="publish_tf" value="false" />
+    <!-- do not use hardware registration -->
+    <arg name="depth_registration" value="false" />
+    <!-- enable software registration -->
+    <arg name="rgb_processing" value="true" />
+    <arg name="depth_processing" value="true" />
+    <arg name="depth_registered_processing" value="true" />
+  </include>
+
+  <!-- compress & decompress image & depth -->
+  <group ns="/head_camera/rgb">
+    <node name="republish"
+          pkg="image_transport" type="republish"
+          args="compressed raw">
+      <remap from="in" to="image_raw" />
+      <remap from="out" to="image_raw" />
+    </node>
+  </group>
+  <group ns="/head_camera/depth">
+    <node name="republish"
+          pkg="image_transport" type="republish"
+          args="compressedDepth raw">
+      <remap from="in" to="image_raw" />
+      <remap from="out" to="image_raw" />
+    </node>
+  </group>
+
+  <param name="robot_description" command="$(find xacro)/xacro.py $(find fetch_description)/robots/fetch.urdf" />
+
+  <!-- for visualization of proximity sensors -->
+  <!-- <node pkg="rviz" type="rviz" name="visualize_proximity_sensors" output="screen" respawn="true" args="-d $(find euslib)/rviz/proximity_sensor_marker.rviz"/> -->
+  <!-- <node pkg="rviz" type="rviz" name="visualize_proximity_sensors" output="screen" respawn="true" args="-d $(find euslib)/rviz/hand_proximity.rviz"/> -->
+
+</launch>
