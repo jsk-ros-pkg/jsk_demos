@@ -2,6 +2,7 @@
 (load "package://spoteus/spot-interface.l")
 (load "elevator-spot.l")
 (load "amabe_nazodance.l")
+(load "human_recognize.l")
 (spot-init nil)
 
 (send *ri* :speak-jp "買い物に行きます")
@@ -26,7 +27,14 @@
 
 ;;do something in lawson
 (send *ri* :speak-jp "ローソンに着きました")
-(unix::sleep 5)
+
+(unix::sleep 3)
+
+(send *ri* :speak-jp "お茶をください")
+
+(unix::sleep 3)
+
+(check-human)
 
 (send *ri* :speak-jp "エレベータ前に向かいます")
 (send *ri* :navigate-to 0)

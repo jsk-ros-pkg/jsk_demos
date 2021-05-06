@@ -14,7 +14,7 @@
     (setq rects (send (one-shot-subscribe "/edgetpu_panorama_human_pose_estimator/output/rects" jsk_recognition_msgs::RectArray) :rects))
     (let ((spot_angle (instance std_msgs::UInt16 :init)))
       (when rects
-    	(progn
+	(progn
 	  (setq l (length rects))
 	  (setq size 0)
 	  (setq i 0)
@@ -27,7 +27,13 @@
     	  (if (> size th)
     	      (progn (ros::ros-info "found human")
 		     (send *ri* :body-pose 0 0.3 0)
+		     (send *ri* :speak-jp "ICカードで支払います")
+		     (unix::sleep 5)
     		     (send *ri* :speak-jp "上のかごに載せてください")
+		     (unix::sleep 5)
+		     (send *ri* :bod-pose 0 0 0)
+		     (send *ri* :speak-jp "ありがとうございました")
+		     (unix::sleep 2)
     		     (setq f 1)))))))
 	  )
 
