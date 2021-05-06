@@ -26,6 +26,16 @@ from spot_ros_client.libspotros import SpotRosClient
 def convert_msg_point_to_kdl_vector(point):
     return PyKDL.Vector(point.x,point.y,point.z)
 
+def parseStairRanges(string):
+    rospy.loginfo('string: {}'.format(string))
+    b = map(lambda x: x.split(','), string.split('),'))
+    rospy.loginfo('b: {}'.format(b))
+    return map(
+            lambda x: map(
+                lambda y: int( y.replace(' ','').replace('[','').replace(']','').replace('(','').replace(')','')),
+                x ),
+            b )
+
 class LeadPersonDemo(object):
 
     '''
@@ -61,7 +71,10 @@ class LeadPersonDemo(object):
         self._frame_id_robot = str(rospy.get_param('~frame_id_robot','body'))
 
         # rosservice call
-        self._srv_get_stair_ranges = rospy.ServiceProxy('~get_stair_ranges', GetStairRanges)
+        self._srv_get_stair_ranges = rospy.ServiceProxy(
+                                    '~get_stair_ranges',
+                                    GetStairRanges
+                                    )
 
         #
         self._spot_client = SpotRosClient();
@@ -72,25 +85,38 @@ class LeadPersonDemo(object):
 
         # sound client
         self._sound_client = SoundClient(
-                                    blocking=True,
+                                    blocking=False,
                                     sound_action='/robotsound',
-                                    sound_topic='/robotsound')
+                                    sound_topic='/robotsound'
+                                    )
 
         # checking if person exists or not
         self._is_person_visible = False
         ## subscribe
-        self._sub_bbox_array = rospy.Subscriber('~bbox_array',BoundingBoxArray,self._cb_bbox_array)
+        self._sub_bbox_array = rospy.Subscriber(
+                                        '~bbox_array',
+                                        BoundingBoxArray,
+                                        self._cb_bbox_array
+                                        )
 
         # action server
         self._server_lead_person = actionlib.SimpleActionServer(
                                         '~lead_person',
                                         LeadPersonAction,
                                         execute_cb=self._handler_lead_person,
-                                        auto_start=True
+                                        auto_start=False
                                         )
+        self._server_lead_person.start()
 
         rospy.loginfo('Initialized!')
-        rospy.loginfo('list_navigate_to: {}'.format(self._list_navigate_to))
+
+    def _handler_print(self, goal):
+
+        rospy.loginfo('goal: {}'.format(goal))
+
+        result = LeadPersonResult()
+        result.success = True
+        self._server_lead_person.set_succeeded(result)
 
     def _handler_lead_person(self, goal):
 
@@ -100,10 +126,15 @@ class LeadPersonDemo(object):
 
         rate = rospy.Rate(10)
         if list_waypoint_id is not None:
-            self._sound_client.say('I will go to {}. Please follow me'.format(goal.end_point),blocking=True)
+            self._sound_client.say('I will go to {}.'.format(goal.end_point),blocking=True)
             for navigate_range in list_ranges:
+                rospy.loginfo('route {} to {}'.format(
+                            navigate_range['start_id'],
+                            navigate_range['end_id']))
                 if navigate_range['is_stair']:
-                    self._sound_client.say('Please go through the stairs and away from it.')
+                    self._sound_client.say(
+                            'Please go through the stairs and away from it.',
+                            blocking=True)
                     # TODO: wait until a person has gone up stairs
                     self._spot_client.navigate_to(list_waypoint_id[navigate_range['end_id']])
                     while True:
@@ -122,14 +153,16 @@ class LeadPersonDemo(object):
                             result.success = False
                             self._server_lead_person.set_preempted(result)
                             return
-                        if self._wait_for_navigate_to_result(rospy.Duration(0.05)):
+                        if self._spot_client.wait_for_navigate_to_result(rospy.Duration(0.05)):
                             rospy.loginfo('Navigate to action has finished')
                             break
                         if self._is_person_visible:
                             rospy.loginfo('Person is visible while stairs. Stopped.')
                             self._spot_client.pubCmdVel(0, 0, 0)
                 else:
-                    self._sound_client.say('Please follow me.')
+                    self._sound_client.say(
+                            'Please follow me.',
+                            blocking=True)
                     self._spot_client.navigate_to(list_waypoint_id[navigate_range['end_id']])
                     while True:
                         rate.sleep()
@@ -147,7 +180,7 @@ class LeadPersonDemo(object):
                             result.success = False
                             self._server_lead_person.set_preempted(result)
                             return
-                        if self._wait_for_navigate_to_result(rospy.Duration(0.05)):
+                        if self._spot_client.wait_for_navigate_to_result(rospy.Duration(0.05)):
                             rospy.loginfo('Navigate to action has finished')
                             break
                         if not self._is_person_visible:
@@ -196,9 +229,6 @@ class LeadPersonDemo(object):
                     break
         self._is_person_visible = is_person_visible
 
-    def parseStairRanges(string):
-        b = map(lambda x: x.split(','), string.split('),'))
-        return map( lambda x: map( lambda y: int(y.replace(' ','').replace('[','').replace(']','').replace('(','').replace(')','')), x ), b )
 
     def settingupNavigateTo(self,
                         start_point,
@@ -208,7 +238,7 @@ class LeadPersonDemo(object):
             if start_point == navigate_to[0] and end_point == navigate_to[1]:
                 self._spot_client.upload_graph(navigate_to[2])
                 self._spot_client.set_localization_fiducial()
-                stair_ranges = self.parseStairRanges(
+                stair_ranges = parseStairRanges(
                         self._srv_get_stair_ranges(GetStairRangesRequest(upload_filepath=navigate_to[2])).result)
                 list_waypoint_id = self._spot_client.list_graph()
                 list_ranges = []
@@ -218,18 +248,18 @@ class LeadPersonDemo(object):
                         list_ranges.append(
                             {'start_id': id_current,
                              'end_id': stair_range[0],
-                             'is_stair': false }
+                             'is_stair': False }
                             )
                     list_ranges.append(
                             {'start_id': stair_range[0],
                              'end_id': stair_range[1],
-                             'is_stair': true }
+                             'is_stair': True }
                             )
                     id_current = stair_range[1]
                 list_ranges.append(
-                            {'start_id': id_cuurent,
+                            {'start_id': id_current,
                              'end_id': -1,
-                             'is_stair': false }
+                             'is_stair': False }
                             )
                 return list_waypoint_id, list_ranges
             else:

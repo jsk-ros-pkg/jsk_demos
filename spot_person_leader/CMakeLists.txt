@@ -15,6 +15,11 @@ add_service_files(
     FILES GetStairRanges.srv
 )
 
+add_message_files(
+    DIRECTORY msg
+    FILES StairRange.msg
+)
+
 generate_messages(DEPENDENCIES actionlib_msgs)
 
 catkin_package(

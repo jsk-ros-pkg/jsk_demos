@@ -17,14 +17,18 @@ def calc_total_cost(graph):
         total_cost += edge.annotations.cost.value
     return total_cost
 
+def is_stair(edge):
+    return edge.annotations.mobility_params.stair_hint
+
 def get_stair_ranges(graph):
     result = []
     start_id = -1
     end_id = -1
     for index, edge in enumerate(graph.edges):
-        if start_id == -1 and edge.annotations.stairs.state == map_pb2.ANNOTATION_STATE_SET:
+        print('{} th: stair: {}'.format(index, is_stair(edge)))
+        if start_id == -1 and is_stair(edge):
             start_id = index
-        elif start_id != -1 and edge.annotations.stairs.state == map_pb2.ANNOTATION_STATE_NONE:
+        elif start_id != -1 and not is_stair(edge):
             end_id = index
             result.append((start_id,end_id))
             start_id = -1
