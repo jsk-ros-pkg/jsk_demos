@@ -34,17 +34,6 @@ class LeadPersonDemo(object):
     Subscriber:
         - '~bbox_array' (message type: jsk_recognition_msgs/BoundingBoxArray)
 
-    Publisher:
-        - '~cmd_vel' (message type: geometry_msgs/Twist)
-
-    Service Client:
-        - '~list_graph' (service type: spot_msgs/ListGraph)
-
-        - '~upload_graph' (service type: spot_msgs/UploadGraph)
-
-    Action Client:
-        - '~navigate_to' (action type: spot_msgs/NavigateTo)
-
     Action Server:
         - '~lead_person' (action type: spot_msgs/LeadPerson)
 
@@ -97,11 +86,11 @@ class LeadPersonDemo(object):
                                         '~lead_person',
                                         LeadPersonAction,
                                         execute_cb=self._handler_lead_person,
-                                        auto_start=False
+                                        auto_start=True
                                         )
-        self._server_lead_person.start()
 
         rospy.loginfo('Initialized!')
+        rospy.loginfo('list_navigate_to: {}'.format(self._list_navigate_to))
 
     def _handler_lead_person(self, goal):
 
@@ -219,7 +208,8 @@ class LeadPersonDemo(object):
             if start_point == navigate_to[0] and end_point == navigate_to[1]:
                 self._spot_client.upload_graph(navigate_to[2])
                 self._spot_client.set_localization_fiducial()
-                stair_ranges = self.parseStairRanges(self._srv_get_stair_ranges(GetStairRangesRequest(upload_filepath=navigate_to[2])).result)
+                stair_ranges = self.parseStairRanges(
+                        self._srv_get_stair_ranges(GetStairRangesRequest(upload_filepath=navigate_to[2])).result)
                 list_waypoint_id = self._spot_client.list_graph()
                 list_ranges = []
                 id_current = 0

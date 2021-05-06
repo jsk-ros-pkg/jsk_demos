@@ -34,6 +34,7 @@
         pkg="spot_person_leader"
         type="get_stair_range_server.py"
         name="get_stair_range_server"
+        output="screen"
         >
     </node>
 </launch>
