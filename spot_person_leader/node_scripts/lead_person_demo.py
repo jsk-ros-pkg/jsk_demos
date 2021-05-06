@@ -23,7 +23,7 @@ from spot_person_leader.msg import LeadPersonAction, LeadPersonFeedback, LeadPer
 
 from spot_ros_client.libspotros import SpotRosClient
 
-ef convert_msg_point_to_kdl_vector(point):
+def convert_msg_point_to_kdl_vector(point):
     return PyKDL.Vector(point.x,point.y,point.z)
 
 class LeadPersonDemo(object):
