@@ -13,7 +13,7 @@
         <remap from="~list_graph" to="/spot/list_graph" />
         <remap from="~set_localization_fiducial" to="/spot/set_localization_fiducial" />
         <remap from="~upload_graph" to="/spot/upload_graph" />
-        <remap from="~get_stair_ranges" to="/get_stair_range_server/get_stair_ranges" />
+        <remap from="~get_stair_ranges" to="/get_stair_ranges" />
         <!-- Action Server -->
         <remap from="~navigate_to" to="/spot/navigate_to" />
         <!-- Action Client -->
