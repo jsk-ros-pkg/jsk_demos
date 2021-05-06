@@ -1,3 +1,4 @@
+jsk_2021_04_spot_lawson/autowalk/
 jsk_maps/raw_maps/*
 !jsk_maps/raw_maps/*.pgm
 !jsk_maps/raw_maps/*.xcf
