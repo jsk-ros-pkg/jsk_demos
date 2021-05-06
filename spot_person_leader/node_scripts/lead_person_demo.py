@@ -71,28 +71,21 @@ class LeadPersonDemo(object):
         self._label_person = int(rospy.get_param('~label_person', 0))
         self._frame_id_robot = str(rospy.get_param('~frame_id_robot','body'))
 
-        # Publisher
-        self._pub_cmd_vel = rospy.Publisher('~cmd_vel', Twist, queue_size=1)
-
         # rosservice call
-        self._srv_upload_graph = rospy.ServiceProxy('~upload_graph', UploadGraph)
         self._srv_get_stair_ranges = rospy.ServiceProxy('~get_stair_ranges', GetStairRanges)
 
         #
         self._spot_client = SpotRosClient();
-
-        # action client
-        self._client_navigate_to = actionlib.SimpleActionClient(
-                                        '~navigate_to',
-                                        NavigateToAction
-                                        )
 
         # tf
         self._tf_buffer = tf2_ros.Buffer()
         self._tf_listener = tf2_ros.TransformListener(self._tf_buffer)
 
         # sound client
-        self._sound_client = SoundClient(blocking=True, sound_action='/robotsound', sound_topic='/robotsound')
+        self._sound_client = SoundClient(
+                                    blocking=True,
+                                    sound_action='/robotsound',
+                                    sound_topic='/robotsound')
 
         # checking if person exists or not
         self._is_person_visible = False
@@ -123,54 +116,54 @@ class LeadPersonDemo(object):
                 if navigate_range['is_stair']:
                     self._sound_client.say('Please go through the stairs and away from it.')
                     # TODO: wait until a person has gone up stairs
-                    self.startNavigateTo( list_waypoint_id[navigate_range['end_id']] )
+                    self._spot_client.navigate_to(list_waypoint_id[navigate_range['end_id']])
                     while True:
                         rate.sleep()
                         if rospy.is_shutdown():
                             rospy.logwarn('shutdown requested.')
                             # Cancel navigate to action
-                            self._client_navigate_to.cancel_goal()
+                            self._spot_client.cancel_navigate_to()
                             return
                         if self._server_lead_person.is_preempt_requested():
                             rospy.logwarn('Action preempted.')
                             # Cancel navigate to action
-                            self._client_navigate_to.cancel_goal()
+                            self._spot_client.cancel_navigate_to()
                             # Set aborted action server
                             result = LeadPersonResult()
                             result.success = False
                             self._server_lead_person.set_preempted(result)
                             return
-                        if self._client_navigate_to.wait_for_result(rospy.Duration(0.05)):
+                        if self._wait_for_navigate_to_result(rospy.Duration(0.05)):
                             rospy.loginfo('Navigate to action has finished')
                             break
                         if self._is_person_visible:
                             rospy.loginfo('Person is visible while stairs. Stopped.')
-                            self.publishZeroVelocity()
+                            self._spot_client.pubCmdVel(0, 0, 0)
                 else:
                     self._sound_client.say('Please follow me.')
-                    self.startNavigateTo( list_waypoint_id[navigate_range['end_id']] )
+                    self._spot_client.navigate_to(list_waypoint_id[navigate_range['end_id']])
                     while True:
                         rate.sleep()
                         if rospy.is_shutdown():
                             rospy.logwarn('shutdown requested.')
                             # Cancel navigate to action
-                            self._client_navigate_to.cancel_goal()
+                            self._spot_client.cancel_navigate_to()
                             return
                         if self._server_lead_person.is_preempt_requested():
                             rospy.logwarn('Action preempted.')
                             # Cancel navigate to action
-                            self._client_navigate_to.cancel_goal()
+                            self._spot_client.cancel_navigate_to()
                             # Set aborted action server
                             result = LeadPersonResult()
                             result.success = False
                             self._server_lead_person.set_preempted(result)
                             return
-                        if self._client_navigate_to.wait_for_result(rospy.Duration(0.05)):
+                        if self._wait_for_navigate_to_result(rospy.Duration(0.05)):
                             rospy.loginfo('Navigate to action has finished')
                             break
                         if not self._is_person_visible:
                             rospy.loginfo('No person is visible. Stopped.')
-                            self.publishZeroVelocity()
+                            self._spot_client.pubCmdVel(0, 0, 0)
         else:
             rospy.logerr('Route not found.')
             result = LeadPersonResult()
@@ -179,7 +172,7 @@ class LeadPersonDemo(object):
             return
 
         self._sound_client.say('We have arrived at {}.'.format(goal.end_point))
-        result_navigate_to = self._client_navigate_to.get_result()
+        result_navigate_to = self._spot_client.get_navigate_to_result()
         result = LeadPersonResult()
         result.success = result_navigate_to.success
         self._server_lead_person.set_succeeded(result)
@@ -213,10 +206,6 @@ class LeadPersonDemo(object):
                     is_person_visible = True
                     break
         self._is_person_visible = is_person_visible
-
-    def publishZeroVelocity(self):
-
-        self._pub_cmd_vel.publish(Twist())
 
     def parseStairRanges(string):
         b = map(lambda x: x.split(','), string.split('),'))
@@ -257,12 +246,6 @@ class LeadPersonDemo(object):
                 continue
         rospy.logerr('navigation route from {} to {} is not found.'.format(start_point, end_point))
         return None, None
-
-    def startNavigateTo(self,
-                        id_navigate_to):
-        goal = NavigateToGoal()
-        goal.id_navigate_to = id_navigate_to
-        self._client_navigate_to.send_goal(goal)
 
 
 def main():
