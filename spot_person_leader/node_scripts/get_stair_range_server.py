@@ -40,6 +40,7 @@ def handler(req):
 def main():
     rospy.init_node('get_stair_ranges')
     rospy.Service('~/get_stair_ranges', GetStairRanges, handler)
+    rospy.loginfo('Initialized.')
     rospy.spin()
 
 def test():
