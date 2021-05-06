@@ -26,7 +26,7 @@
             frame_id_robot: 'body'
             list_navigate_to:
                 - ['73B2', 'Elevator', '$(find spot_person_leader)/autowalk/73B2_to_7FElevator.walk']
-                - ['73B2', '81C1', '$(find spot_person_leader)/autowalk/73B2_to_81C1.walk']
+                - ['73B2', '81C1', '$(find spot_person_leader)/autowalk/eng2_73b2_to_81c1_night.walk']
         </rosparam>
     </node>
 
