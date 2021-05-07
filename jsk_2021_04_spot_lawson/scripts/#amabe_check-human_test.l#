@@ -1,3 +1,4 @@
+/dual_fisheye_to_panorama/output
 #!/usr/bin/env roseus
 (load "package://spoteus/spot-interface.l")
 (load "human_recognize.l")
