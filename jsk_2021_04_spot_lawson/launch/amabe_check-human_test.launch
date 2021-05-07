@@ -1,0 +1,6 @@
+<launch>
+  <node pkg="jsk_2021_04_spot_lawson" type="amabe_human-check_test.l" name="amabe_human-check_test"
+	output="screen" />
+  <include file = "$(find jsk_2021_04_spot_lawson)/launch/amabe_panorama_human_pose_estimator.launch">
+    <arg name="INPUT_IMAGE" value="/dual_fisheye_to_panorama/output"/>
+</launch>
