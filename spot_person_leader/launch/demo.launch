@@ -8,6 +8,12 @@
         <!-- Action Client -->
         <remap from="~lead_person" to="/spot/lead_person" />
 
-        <rosparam file="$(find spot_person_leader)/config/map.yaml" />
+        <rosparam
+            ns="map"
+            file="$(find spot_person_leader)/config/map.yaml"
+            subst_value="true"
+            />
+
+        <param name="~initial_node" value="73B2" />
     </node>
 </launch>

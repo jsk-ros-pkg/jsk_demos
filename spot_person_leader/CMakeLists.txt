@@ -12,6 +12,8 @@ add_action_files(
 
 generate_messages(DEPENDENCIES actionlib_msgs)
 
+add_custom_target(${PROJECT_NAME}_download_autowalk_data ALL COMMAND python$ENV{ROS_PYTHON_VERSION} ${PROJECT_SOURCE_DIR}/scripts/download_autowalk_data.py)
+
 catkin_package(
 )
 

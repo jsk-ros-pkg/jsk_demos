@@ -11,19 +11,13 @@ import tf2_ros
 import tf2_geometry_msgs
 
 from sound_play.libsoundplay import SoundClient
+from spot_ros_client.libspotros import SpotRosClient
 
-from geometry_msgs.msg import Twist
 from jsk_recognition_msgs.msg import BoundingBoxArray
-from spot_msgs.msg import TrajectoryAction, TrajectoryGoal
-from spot_msgs.msg import NavigateToAction, NavigateToGoal
-from spot_msgs.srv import ListGraph, ListGraphRequest
-from spot_msgs.srv import SetLocalizationFiducial, SetLocalizationFiducialRequest
-from spot_msgs.srv import UploadGraph, UploadGraphRequest
 from spot_person_leader.srv import GetStairRanges, GetStairRangesRequest
 
 from spot_person_leader.msg import LeadPersonAction, LeadPersonFeedback, LeadPersonResult
 
-from spot_ros_client.libspotros import SpotRosClient
 
 
 def convert_msg_point_to_kdl_vector(point):
@@ -53,8 +47,8 @@ class Map:
 
         node_list = nx.shortest_path( self._network, node_from, node_to )
         path = []
-        for index in len(node_list):
-            path.append(self._edge[node_list[index],node_list[index+1]])
+        for index in range(len(node_list)-1):
+            path.append(self._edges[node_list[index],node_list[index+1]])
         return path
 
 
@@ -69,7 +63,7 @@ class LeadPersonDemo(object):
         edges = rospy.get_param('~map/edges')
         nodes = rospy.get_param('~map/nodes')
         self._map = Map(edges,nodes)
-        self._current_node = rospy.get_param('initial_node')
+        self._current_node = rospy.get_param('~initial_node')
         self._pre_edge = None
 
         # tf
@@ -105,8 +99,12 @@ class LeadPersonDemo(object):
         for edge in path:
             if self.navigate_edge(edge):
                 rospy.loginfo('transition with edge {} succeeded'.format(edge))
+                self._current_node = edge['to']
+                self._pre_edge = edge
             else:
                 rospy.logerr('transition with edge {} failed'.format(edge))
+                result = LeadPersonResult(success=False)
+                self._server_lead_person.set_aborted(result)
                 return
 
         self._sound_client.say('目的地 {} に到着しました.'.format(goal.target_node))
@@ -124,12 +122,12 @@ class LeadPersonDemo(object):
 
             # graph uploading and localization
             if self._pre_edge is not None and \
-                edge['arg']['graph'] == self._pre_edge['arg']['graph']:
+                edge['args']['graph'] == self._pre_edge['args']['graph']:
                 rospy.loginfo('graph upload and localization skipped.')
             else:
-                self._spot_client.upload_graph( edge['arg']['graph'] )
-                rospy.loginfo('graph uploaded.')
-                if edge['arg']['localization_method'] == 'fiducial':
+                self._spot_client.upload_graph( edge['args']['graph'] )
+                rospy.loginfo('graph {} uploaded.'.format(edge['args']['graph']))
+                if edge['args']['localization_method'] == 'fiducial':
                     self._spot_client.set_localization_fiducial()
                 else:
                     # Not implemented
@@ -139,7 +137,7 @@ class LeadPersonDemo(object):
 
             self._sound_client.say('ついてきてください', blocking=True)
 
-            self._spot_client.navigate_to(edge['arg']['end_id'], blocking=True)
+            self._spot_client.navigate_to(edge['args']['end_id'], blocking=True)
             self._spot_client.wait_for_navigate_to_result()
             result = self._spot_client.get_navigate_to_result()
 
@@ -149,12 +147,12 @@ class LeadPersonDemo(object):
 
             # graph uploading and localization
             if self._pre_edge is not None and \
-                edge['arg']['graph'] == self._pre_edge['arg']['graph']:
+                edge['args']['graph'] == self._pre_edge['args']['graph']:
                 rospy.loginfo('graph upload and localization skipped.')
             else:
-                self._spot_client.upload_graph( edge['arg']['graph'] )
-                rospy.loginfo('graph uploaded.')
-                if edge['arg']['localization_method'] == 'fiducial':
+                self._spot_client.upload_graph( edge['args']['graph'] )
+                rospy.loginfo('graph {} uploaded.'.format(edge['args']['graph']))
+                if edge['args']['localization_method'] == 'fiducial':
                     self._spot_client.set_localization_fiducial()
                 else:
                     # Not implemented
@@ -164,7 +162,7 @@ class LeadPersonDemo(object):
 
             self._sound_client.say('階段は危ないので先に行ってください', blocking=True)
 
-            self._spot_client.navigate_to(edge['arg']['end_id'], blocking=True)
+            self._spot_client.navigate_to(edge['args']['end_id'], blocking=True)
             self._spot_client.wait_for_navigate_to_result()
             result = self._spot_client.get_navigate_to_result()
 
