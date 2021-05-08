@@ -1,0 +1,41 @@
+edges:
+  - from: '73B2front'
+    to: '7FElevator'
+    type: 'walk'
+    cost: 10
+    args:
+      graph: '$(find spot_person_leader)/autowalk/73B2front_to_7FElevator.walk'
+      start_id: ''
+      end_id: ''
+      localization_method: 'fiducial'
+  - from: '7FElevator'
+    to: '73B2front'
+    type: 'walk'
+    cost: 10
+    args:
+      graph: '$(find spot_person_leader)/autowalk/73B2front_to_7FElevator.walk'
+      start_id: ''
+      end_id: ''
+      localization_method: 'pose'
+  - from: '73B2front'
+    to: '7Fstair28F'
+    type: 'walk'
+    cost: 10
+    args:
+      graph: '$(find spot_person_leader)/autowalk/73B2front_to_7FElevator.walk'
+      start_id: ''
+      end_id: ''
+      localization_method: 'fiducial'
+  - from: '7FstairTo8F'
+    to: '73B2front'
+    type: 'walk'
+    cost: 10
+    args:
+      graph: '$(find spot_person_leader)/autowalk/73B2front_to_7FElevator.walk'
+      start_id: ''
+      end_id: ''
+      localization_method: 'pose'
+nodes:
+  - name: '73B2front'
+  - name: '7FElevator'
+  - name: '7FstairTo8F'

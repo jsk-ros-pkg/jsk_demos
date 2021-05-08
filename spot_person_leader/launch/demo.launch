@@ -5,36 +5,9 @@
         name="spot_person_leader"
         output="screen"
         >
-        <!-- Subscriber -->
-        <remap from="~bbox_array" to="/spot_recognition/bbox_array" />
-        <!-- Publisher -->
-        <remap from="~cmd_vel" to="/develop_input/cmd_vel" />
-        <!-- Service Client -->
-        <remap from="~list_graph" to="/spot/list_graph" />
-        <remap from="~set_localization_fiducial" to="/spot/set_localization_fiducial" />
-        <remap from="~upload_graph" to="/spot/upload_graph" />
-        <remap from="~get_stair_ranges" to="/get_stair_ranges" />
-        <!-- Action Server -->
-        <remap from="~navigate_to" to="/spot/navigate_to" />
         <!-- Action Client -->
         <remap from="~lead_person" to="/spot/lead_person" />
 
-        <rosparam subst_value='true'>
-            dist_visible: 2.0
-            duration_timeout: 0.1
-            label_person: 0
-            frame_id_robot: 'body'
-            list_navigate_to:
-                - ['73B2', 'Elevator', '$(find spot_person_leader)/autowalk/73B2_to_7FElevator.walk']
-                - ['73B2', '81C1', '$(find spot_person_leader)/autowalk/eng2_73b2_to_81c1_night.walk']
-        </rosparam>
-    </node>
-
-    <node
-        pkg="spot_person_leader"
-        type="get_stair_range_server.py"
-        name="get_stair_range_server"
-        output="screen"
-        >
+        <rosparam file="$(find spot_person_leader)/config/map.yaml" />
     </node>
 </launch>

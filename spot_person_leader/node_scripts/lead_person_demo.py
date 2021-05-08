@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+import networkx as nx
+
 import actionlib
 import rospy
 import PyKDL
@@ -23,249 +25,156 @@ from spot_person_leader.msg import LeadPersonAction, LeadPersonFeedback, LeadPer
 
 from spot_ros_client.libspotros import SpotRosClient
 
+
 def convert_msg_point_to_kdl_vector(point):
     return PyKDL.Vector(point.x,point.y,point.z)
 
-def parseStairRanges(string):
-    rospy.loginfo('string: {}'.format(string))
-    b = map(lambda x: x.split(','), string.split('),'))
-    rospy.loginfo('b: {}'.format(b))
-    return map(
-            lambda x: map(
-                lambda y: int( y.replace(' ','').replace('[','').replace(']','').replace('(','').replace(')','')),
-                x ),
-            b )
+
+class Map:
+
+    def __init__(self, edges=[], nodes=[]):
+
+        self._edges = {}
+        self._nodes = {}
+        self._network = nx.DiGraph()
+
+        self.loadGraph( edges, nodes )
+
+    def loadGraph(self, edges, nodes):
+
+        for node in nodes:
+            self._nodes[node['name']] = node
+
+        for edge in edges:
+            self._edges[edge['from'],edge['to']] = edge
+            self._network.add_edge(edge['from'],edge['to'],weight=edge['cost'])
+
+    def calcPath(self, node_from, node_to):
+
+        node_list = nx.shortest_path( self._network, node_from, node_to )
+        path = []
+        for index in len(node_list):
+            path.append(self._edge[node_list[index],node_list[index+1]])
+        return path
+
 
 class LeadPersonDemo(object):
 
     '''
-    LeadPersonDemo
-
-    Subscriber:
-        - '~bbox_array' (message type: jsk_recognition_msgs/BoundingBoxArray)
-
-    Action Server:
-        - '~lead_person' (action type: spot_msgs/LeadPerson)
-
-    Parameters:
-        - '~dist_visible' (float, default: 5.0)
-
-        - '~duration_timeout' (float, default: 0.1)
-
-        - '~label_person' (int, default: 0)
-
-        - '~frame_id_robot' (str, default: 'body')
-
-        - '~list_navigate_to' (list of list of str, default: [])
     '''
 
     def __init__(self):
 
         # navigation dictonary
-        self._list_navigate_to = rospy.get_param('~list_navigate_to', [])
-
-        # parameters
-        self._dist_visible = float(rospy.get_param('~dist_visible',5.0))
-        self._duration_timeout = float(rospy.get_param('~duration_timeout', 0.1))
-        self._label_person = int(rospy.get_param('~label_person', 0))
-        self._frame_id_robot = str(rospy.get_param('~frame_id_robot','body'))
-
-        # rosservice call
-        self._srv_get_stair_ranges = rospy.ServiceProxy(
-                                    '~get_stair_ranges',
-                                    GetStairRanges
-                                    )
-
-        #
-        self._spot_client = SpotRosClient();
+        edges = rospy.get_param('~map/edges')
+        nodes = rospy.get_param('~map/nodes')
+        self._map = Map(edges,nodes)
+        self._current_node = rospy.get_param('initial_node')
+        self._pre_edge = None
 
         # tf
         self._tf_buffer = tf2_ros.Buffer()
         self._tf_listener = tf2_ros.TransformListener(self._tf_buffer)
 
-        # sound client
+
+        #
+        self._spot_client = SpotRosClient();
         self._sound_client = SoundClient(
                                     blocking=False,
-                                    sound_action='/robotsound',
-                                    sound_topic='/robotsound'
+                                    sound_action='/robotsound_jp',
+                                    sound_topic='/robotsound_jp'
                                     )
-
-        # checking if person exists or not
-        self._is_person_visible = False
-        ## subscribe
-        self._sub_bbox_array = rospy.Subscriber(
-                                        '~bbox_array',
-                                        BoundingBoxArray,
-                                        self._cb_bbox_array
-                                        )
 
         # action server
         self._server_lead_person = actionlib.SimpleActionServer(
                                         '~lead_person',
                                         LeadPersonAction,
-                                        execute_cb=self._handler_lead_person,
+                                        execute_cb=self.handler_lead_person,
                                         auto_start=False
                                         )
         self._server_lead_person.start()
 
         rospy.loginfo('Initialized!')
 
-    def _handler_print(self, goal):
-
-        rospy.loginfo('goal: {}'.format(goal))
-
-        result = LeadPersonResult()
-        result.success = True
-        self._server_lead_person.set_succeeded(result)
-
-    def _handler_lead_person(self, goal):
+    def handler_lead_person(self, goal):
 
         rospy.loginfo('Lead Action started.')
 
-        list_waypoint_id, list_ranges = self.settingupNavigateTo( goal.start_point, goal.end_point )
+        path = self._map.calcPath( self._current_node, goal.target_node )
 
-        rate = rospy.Rate(10)
-        if list_waypoint_id is not None:
-            self._sound_client.say('I will go to {}.'.format(goal.end_point),blocking=True)
-            for navigate_range in list_ranges:
-                rospy.loginfo('route {} to {}'.format(
-                            navigate_range['start_id'],
-                            navigate_range['end_id']))
-                if navigate_range['is_stair']:
-                    self._sound_client.say(
-                            'Please go through the stairs and away from it.',
-                            blocking=True)
-                    # TODO: wait until a person has gone up stairs
-                    self._spot_client.navigate_to(list_waypoint_id[navigate_range['end_id']])
-                    while True:
-                        rate.sleep()
-                        if rospy.is_shutdown():
-                            rospy.logwarn('shutdown requested.')
-                            # Cancel navigate to action
-                            self._spot_client.cancel_navigate_to()
-                            return
-                        if self._server_lead_person.is_preempt_requested():
-                            rospy.logwarn('Action preempted.')
-                            # Cancel navigate to action
-                            self._spot_client.cancel_navigate_to()
-                            # Set aborted action server
-                            result = LeadPersonResult()
-                            result.success = False
-                            self._server_lead_person.set_preempted(result)
-                            return
-                        if self._spot_client.wait_for_navigate_to_result(rospy.Duration(0.05)):
-                            rospy.loginfo('Navigate to action has finished')
-                            break
-                        if self._is_person_visible:
-                            rospy.loginfo('Person is visible while stairs. Stopped.')
-                            self._spot_client.pubCmdVel(0, 0, 0)
-                else:
-                    self._sound_client.say(
-                            'Please follow me.',
-                            blocking=True)
-                    self._spot_client.navigate_to(list_waypoint_id[navigate_range['end_id']])
-                    while True:
-                        rate.sleep()
-                        if rospy.is_shutdown():
-                            rospy.logwarn('shutdown requested.')
-                            # Cancel navigate to action
-                            self._spot_client.cancel_navigate_to()
-                            return
-                        if self._server_lead_person.is_preempt_requested():
-                            rospy.logwarn('Action preempted.')
-                            # Cancel navigate to action
-                            self._spot_client.cancel_navigate_to()
-                            # Set aborted action server
-                            result = LeadPersonResult()
-                            result.success = False
-                            self._server_lead_person.set_preempted(result)
-                            return
-                        if self._spot_client.wait_for_navigate_to_result(rospy.Duration(0.05)):
-                            rospy.loginfo('Navigate to action has finished')
-                            break
-                        if not self._is_person_visible:
-                            rospy.loginfo('No person is visible. Stopped.')
-                            self._spot_client.pubCmdVel(0, 0, 0)
-        else:
-            rospy.logerr('Route not found.')
-            result = LeadPersonResult()
-            result.success = False
-            self._server_lead_person.set_aborted(result)
-            return
+        for edge in path:
+            if self.navigate_edge(edge):
+                rospy.loginfo('transition with edge {} succeeded'.format(edge))
+            else:
+                rospy.logerr('transition with edge {} failed'.format(edge))
+                return
 
-        self._sound_client.say('We have arrived at {}.'.format(goal.end_point))
-        result_navigate_to = self._spot_client.get_navigate_to_result()
-        result = LeadPersonResult()
-        result.success = result_navigate_to.success
+        self._sound_client.say('目的地 {} に到着しました.'.format(goal.target_node))
+
+        result = LeadPersonResult(success=True)
         self._server_lead_person.set_succeeded(result)
 
-    def _cb_bbox_array(self,msg):
+    def navigate_edge(self, edge):
 
-        time_observed = msg.header.stamp
-        frame_id_msg = msg.header.frame_id
-        frame_id_robot = self._frame_id_robot
+        if self._current_node != edge['from']:
+            # Not valid
+            return False
 
-        try:
-            pykdl_transform_fixed_to_robot = tf2_geometry_msgs.transform_to_kdl(
-                self._tf_buffer.lookup_transform(
-                    frame_id_robot,
-                    frame_id_msg,
-                    time_observed,
-                    timeout=rospy.Duration(self._duration_timeout)
-                )
-            )
-        except (tf2_ros.LookupException, tf2_ros.ConnectivityException, tf2_ros.ExtrapolationException) as e:
-            rospy.logerr('lookup transform failed. {}'.format(e))
-            return
+        if edge['type'] == 'walk':
 
-        # check if there is a person
-        is_person_visible = False
-        for bbox in msg.boxes:
-            if bbox.label == self._label_person:
-                vector_bbox = convert_msg_point_to_kdl_vector(bbox.pose.position)
-                vector_bbox_robotbased = pykdl_transform_fixed_to_robot * vector_bbox
-                if vector_bbox_robotbased.Norm() < self._dist_visible:
-                    is_person_visible = True
-                    break
-        self._is_person_visible = is_person_visible
-
-
-    def settingupNavigateTo(self,
-                        start_point,
-                        end_point):
-
-        for navigate_to in self._list_navigate_to:
-            if start_point == navigate_to[0] and end_point == navigate_to[1]:
-                self._spot_client.upload_graph(navigate_to[2])
-                self._spot_client.set_localization_fiducial()
-                stair_ranges = parseStairRanges(
-                        self._srv_get_stair_ranges(GetStairRangesRequest(upload_filepath=navigate_to[2])).result)
-                list_waypoint_id = self._spot_client.list_graph()
-                list_ranges = []
-                id_current = 0
-                for stair_range in stair_ranges:
-                    if id_current < stair_range[0]:
-                        list_ranges.append(
-                            {'start_id': id_current,
-                             'end_id': stair_range[0],
-                             'is_stair': False }
-                            )
-                    list_ranges.append(
-                            {'start_id': stair_range[0],
-                             'end_id': stair_range[1],
-                             'is_stair': True }
-                            )
-                    id_current = stair_range[1]
-                list_ranges.append(
-                            {'start_id': id_current,
-                             'end_id': -1,
-                             'is_stair': False }
-                            )
-                return list_waypoint_id, list_ranges
+            # graph uploading and localization
+            if self._pre_edge is not None and \
+                edge['arg']['graph'] == self._pre_edge['arg']['graph']:
+                rospy.loginfo('graph upload and localization skipped.')
             else:
-                continue
-        rospy.logerr('navigation route from {} to {} is not found.'.format(start_point, end_point))
-        return None, None
+                self._spot_client.upload_graph( edge['arg']['graph'] )
+                rospy.loginfo('graph uploaded.')
+                if edge['arg']['localization_method'] == 'fiducial':
+                    self._spot_client.set_localization_fiducial()
+                else:
+                    # Not implemented
+                    rospy.logerr('localization_method other than fiducial is not implemented yet.')
+                    return False
+                rospy.loginfo('robot is localized on the graph.')
+
+            self._sound_client.say('ついてきてください', blocking=True)
+
+            self._spot_client.navigate_to(edge['arg']['end_id'], blocking=True)
+            self._spot_client.wait_for_navigate_to_result()
+            result = self._spot_client.get_navigate_to_result()
+
+            return result.success
+
+        elif edge['type'] == 'stair':
+
+            # graph uploading and localization
+            if self._pre_edge is not None and \
+                edge['arg']['graph'] == self._pre_edge['arg']['graph']:
+                rospy.loginfo('graph upload and localization skipped.')
+            else:
+                self._spot_client.upload_graph( edge['arg']['graph'] )
+                rospy.loginfo('graph uploaded.')
+                if edge['arg']['localization_method'] == 'fiducial':
+                    self._spot_client.set_localization_fiducial()
+                else:
+                    # Not implemented
+                    rospy.logerr('localization_method other than fiducial is not implemented yet.')
+                    return False
+                rospy.loginfo('robot is localized on the graph.')
+
+            self._sound_client.say('階段は危ないので先に行ってください', blocking=True)
+
+            self._spot_client.navigate_to(edge['arg']['end_id'], blocking=True)
+            self._spot_client.wait_for_navigate_to_result()
+            result = self._spot_client.get_navigate_to_result()
+
+            self._sound_client.say('おまたせしました', blocking=True)
+
+            return result.success
+
+        else:
+            # Unknown edge type
+            return False
 
 
 def main():

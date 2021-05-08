@@ -1,5 +1,4 @@
-string start_point
-string end_point
+string target_node
 ---
 bool success
 ---

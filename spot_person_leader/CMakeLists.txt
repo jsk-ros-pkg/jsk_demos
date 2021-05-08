@@ -10,16 +10,6 @@ add_action_files(
     FILES LeadPerson.action
 )
 
-add_service_files(
-    DIRECTORY srv
-    FILES GetStairRanges.srv
-)
-
-add_message_files(
-    DIRECTORY msg
-    FILES StairRange.msg
-)
-
 generate_messages(DEPENDENCIES actionlib_msgs)
 
 catkin_package(

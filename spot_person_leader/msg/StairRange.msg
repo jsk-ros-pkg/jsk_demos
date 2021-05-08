@@ -1,2 +1,0 @@
-string start
-string end
