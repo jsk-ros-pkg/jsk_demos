@@ -5,82 +5,131 @@ edges:
     cost: 10
     args:
       graph: '$(find spot_person_leader)/autowalk/eng2_73B2_to_7FElevator.walk'
-      start_id: 'slangy-vulture-olJ4jnBPrLhoJBMxDFtD1w=='
-      end_id: 'mum-eel-fcK.PVxkJ2GxrBDlKq+ZQg=='
-      localization_method: 'fiducial'
   - from: '7FElevator'
     to: '73B2'
     type: 'walk'
     cost: 10
     args:
       graph: '$(find spot_person_leader)/autowalk/eng2_73B2_to_7FElevator.walk'
-      start_id: 'mum-eel-fcK.PVxkJ2GxrBDlKq+ZQg=='
-      end_id: 'slangy-vulture-olJ4jnBPrLhoJBMxDFtD1w=='
-      localization_method: 'fiducial'
+  - from: '73B2'
+    to: '73A2'
+    type: 'walk'
+    cost: 10
+    args:
+      graph: '$(find spot_person_leader)/autowalk/eng2_73B2_to_7FElevator.walk'
+  - from: '73A2'
+    to: '73B2'
+    type: 'walk'
+    cost: 10
+    args:
+      graph: '$(find spot_person_leader)/autowalk/eng2_73B2_to_7FElevator.walk'
+  - from: '7FElevator'
+    to: '73A2'
+    type: 'walk'
+    cost: 10
+    args:
+      graph: '$(find spot_person_leader)/autowalk/eng2_73B2_to_7FElevator.walk'
+  - from: '73A2'
+    to: '7FElevator'
+    type: 'walk'
+    cost: 10
+    args:
+      graph: '$(find spot_person_leader)/autowalk/eng2_73B2_to_7FElevator.walk'
   - from: '73B2'
     to: '7FstairTo8F'
     type: 'walk'
     cost: 10
     args:
-      graph: '$(find spot_person_leader)/autowalk/eng2_73b2_to_81c1_night.walk'
-      start_id: 'fuzzed-medusa-wyXWCEjmWas1kMo8EJW8Bw=='
-      end_id: 'largo-viper-Q1w9dqqCbIjvKBAa1tI+3Q=='
-      localization_method: 'fiducial'
+      graph: '$(find spot_person_leader)/autowalk/eng2_73B2_to_81C1.walk'
   - from: '7FstairTo8F'
     to: '73B2'
     type: 'walk'
     cost: 10
     args:
-      graph: '$(find spot_person_leader)/autowalk/eng2_73b2_to_81c1_night.walk'
-      start_id: 'largo-viper-Q1w9dqqCbIjvKBAa1tI+3Q=='
-      end_id: 'fuzzed-medusa-wyXWCEjmWas1kMo8EJW8Bw=='
-      localization_method: 'waypoint'
+      graph: '$(find spot_person_leader)/autowalk/eng2_73B2_to_81C1.walk'
   - from: '7FstairTo8F'
     to: '8FstairTo7F'
     type: 'stair'
     cost: 10
     args:
-      graph: '$(find spot_person_leader)/autowalk/eng2_73b2_to_81c1_night.walk'
-      start_id: 'largo-viper-Q1w9dqqCbIjvKBAa1tI+3Q=='
-      end_id: 'elite-frog-d3ttmqTPmAZ5vkfrNtc3lA=='
-      localization_method: 'waypoint'
+      graph: '$(find spot_person_leader)/autowalk/eng2_73B2_to_81C1.walk'
   - from: '8FstairTo7F'
     to: '7FstairTo8F'
     type: 'stair'
     cost: 10
     args:
-      graph: '$(find spot_person_leader)/autowalk/eng2_73b2_to_81c1_night.walk'
-      start_id: 'elite-frog-d3ttmqTPmAZ5vkfrNtc3lA=='
-      end_id: 'largo-viper-Q1w9dqqCbIjvKBAa1tI+3Q=='
-      localization_method: 'waypoint'
+      graph: '$(find spot_person_leader)/autowalk/eng2_73B2_to_81C1.walk'
   - from: '8FstairTo7F'
     to: '81C1'
     type: 'walk'
     cost: 10
     args:
-      graph: '$(find spot_person_leader)/autowalk/eng2_73b2_to_81c1_night.walk'
-      start_id: 'elite-frog-d3ttmqTPmAZ5vkfrNtc3lA=='
-      end_id: 'crazed-vole-M0n4MLiK9XpQEhTHodXtmw=='
-      localization_method: 'waypoint'
+      graph: '$(find spot_person_leader)/autowalk/eng2_73B2_to_81C1.walk'
   - from: '81C1'
     to: '8FstairTo7F'
     type: 'walk'
     cost: 10
     args:
-      graph: '$(find spot_person_leader)/autowalk/eng2_73b2_to_81c1_night.walk'
-      start_id: 'crazed-vole-M0n4MLiK9XpQEhTHodXtmw=='
-      end_id: 'elite-frog-d3ttmqTPmAZ5vkfrNtc3lA=='
-      localization_method: 'waypoint'
+      graph: '$(find spot_person_leader)/autowalk/eng2_73B2_to_81C1.walk'
+  - from: '7FstairTo8F'
+    to: '8FstairTo7F'
+    type: 'stair'
+    cost: 10
+    args:
+      graph: '$(find spot_person_leader)/autowalk/eng2_73B2_to_81C1.walk'
+     localization_method: 'waypoint'
+  - from: '8FstairTo7F'
+    to: '7FstairTo8F'
+    type: 'stair'
+    cost: 10
+    args:
+      graph: '$(find spot_person_leader)/autowalk/eng2_73B2_to_81C1.walk'
 nodes:
   '73B2':
     name_en: '73B2'
     name_jp: '73B2'
+    waypoints_on_graph:
+      '$(find spot_person_leader)/autowalk/eng2_73B2_to_7FElevator.walk':
+        id: 'dyed-bat-t00VKo5XixLihCvpsZPRqw=='
+        localization_method: 'fiducial'
+      '$(find spot_person_leader)/autowalk/eng2_73B2_to_81C1.walk':
+        id: 'fuzzed-medusa-wyXWCEjmWas1kMo8EJW8Bw=='
+        localization_method: 'fiducial'
+  '73A2':
+    name_en: '73A2'
+    name_jp: '73A2'
+    waypoints_on_graph:
+      '$(find spot_person_leader)/autowalk/eng2_73B2_to_7FElevator.walk':
+        id: 'affine-drake-Jfb0ZPtNcqcrq9yhnEl2DA=='
+        localization_method: 'fiducial'
   '7FElevator':
     name_en: 'Elevator'
     name_jp: 'エレベーター'
+    waypoints_on_graph:
+      '$(find spot_person_leader)/autowalk/eng2_73B2_to_7FElevator.walk':
+        id: 'looted-cougar-RWT2C0zLJXG.ezYnCuLUeQ=='
+        localization_method: 'fiducial'
   '7FstairTo8F':
     name_en: 'Stair'
     name_jp: '階段'
+    waypoints_on_graph:
+      '$(find spot_person_leader)/autowalk/eng2_73B2_to_7FElevator.walk':
+        id: 'aired-wrasse-UmViHfVK68XNKfnezv8UCQ=='
+        localization_method: 'waypoint'
   '8FstairTo7F':
     name_en: 'Stair'
     name_jp: '階段'
+    waypoints_on_graph:
+      '$(find spot_person_leader)/autowalk/eng2_73B2_to_7FElevator.walk':
+        id: 'toxic-viper-teYR9q7YGGyXS8KbcjA32w=='
+        localization_method: 'waypoint'
+  '81C1':
+    name_en: '81C1'
+    name_jp: '81C1'
+    waypoints_on_graph:
+      '$(find spot_person_leader)/autowalk/eng2_73B2_to_7FElevator.walk':
+        id: 'crazed-vole-M0n4MLiK9XpQEhTHodXtmw=='
+        localization_method: 'fiducial'
+  '2FElevator':
+    name_en: 'Elevator'
+    name_jp: 'エレベーター'
