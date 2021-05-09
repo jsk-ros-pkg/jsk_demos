@@ -1,0 +1,42 @@
+<launch>
+
+  <arg name="is_real" default="true" />
+  <arg name="rviz"    default="true" />
+
+  <arg name="device"     default="kinect_head"                              if="$(arg is_real)"/>
+  <arg name="device"     default="head_mount_kinect2"                   unless="$(arg is_real)"/>
+  <arg name="base_frame" default="head_mount_kinect_rgb_optical_frame"      if="$(arg is_real)"/>
+  <arg name="base_frame" default="head_mount_kinect2_rgb_optical_frame" unless="$(arg is_real)"/>
+
+  <group unless="$(arg is_real)">
+    <include file="$(find pr2_gazebo)/launch/pr2_empty_world.launch">
+      <arg name="KINECT2" value="true" />
+    </include>
+    <include file="$(find pr2eus_tutorials)/launch/gazebo/spawn_objects.launch"/>
+    <include file="$(find rwt_image_view)/launch/rwt_image_view.launch"/>
+  </group>
+
+  <!-- <include file="$(find rwt_teleop)/launch/my_segmentation.launch"> -->
+  <!--   <arg name="rviz"      default="$(arg rviz)" /> -->
+  <!--   <arg name="device"           default="$(arg device)" /> -->
+  <!-- </include> -->
+
+  <machine name="localhost"   address="localhost" />
+  <include file="$(find jsk_pcl_ros)/launch/pointcloud_screenpoint.launch">
+    <arg name="image"                default="/$(arg device)/rgb"/>
+    <arg name="points"               default="/$(arg device)/depth_registered/points"/>
+    <arg name="USE_DEPTH_CREATER"    default="false" />
+    <arg name="USE_REGISTERED_DEPTH" default="true"/>
+    <arg name="USE_VIEW"             default="false"/>
+  </include>
+
+  <node pkg="rwt_teleop" type="rwt_command_to_arm_pose.py" name="rwt_command_to_arm_pose"/>
+
+  <node pkg="rwt_teleop" type="point_to_tf.py" name="point_to_tf">
+    <param name="frame_id" value="rwt_clicked_point"/>
+    <remap from="~input" to="/pointcloud_screenpoint_nodelet/output_point" />
+  </node>
+
+  <node pkg="rwt_teleop" type="pr2-realtime-ik.l" name="pr2_realtime_ik" output="log"/>
+
+</launch>
