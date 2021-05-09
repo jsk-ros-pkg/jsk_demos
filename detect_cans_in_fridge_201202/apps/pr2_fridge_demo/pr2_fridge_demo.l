@@ -1,8 +1,8 @@
 #!/usr/bin/env roseus
 
+(require :app-utils "package://jsk_demo_common/euslisp/app-utils.l")
+
 (load "package://detect_cans_in_fridge_201202/euslisp/main.l")
 
-(init)
 (send *ri* :clear-costmap)
-(demo)
-(exit)
+(run-exit (demo :type "georgia"))
