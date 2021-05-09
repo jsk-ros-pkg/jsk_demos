@@ -122,49 +122,64 @@ class LeadPersonDemo(object):
 
         if edge['type'] == 'walk':
 
+            graph_name = edge['args']['graph']
+            start_id = self._nodes[edge['from']]['waypoints_on_graph'][graph_name]['id']
+            localization_method = self._nodes[edge['from']]['waypoints_on_graph'][graph_name]['localization_method']
+            end_id = self._nodes[edge['to']]['waypoints_on_graph'][graph_name]['id']
+
             # graph uploading and localization
             if self._pre_edge is not None and \
-                edge['args']['graph'] == self._pre_edge['args']['graph']:
+                graph_name == self._pre_edge['args']['graph']:
                 rospy.loginfo('graph upload and localization skipped.')
             else:
-                self._spot_client.upload_graph( edge['args']['graph'] )
-                rospy.loginfo('graph {} uploaded.'.format(edge['args']['graph']))
-                if edge['args']['localization_method'] == 'fiducial':
+                # Upload
+                self._spot_client.upload_graph( graph_name )
+                rospy.loginfo('graph {} uploaded.'.format(graph_name))
+                # Localization
+                if localization_method == 'fiducial':
                     self._spot_client.set_localization_fiducial()
-                elif edge['args']['localization_method'] == 'waypoint':
-                    self._spot_client.set_localization_waypoint(edge['args']['start_id'])
+                elif localization_method == 'waypoint':
+                    self._spot_client.set_localization_waypoint(start_id)
                 else:
                     rospy.logerr('Unknown localization method')
                     return False
                 rospy.loginfo('robot is localized on the graph.')
 
             self._sound_client.say('ついてきてください', blocking=True)
-            self._spot_client.navigate_to(edge['args']['end_id'], blocking=True)
+            self._spot_client.navigate_to( end_id, blocking=True)
             self._spot_client.wait_for_navigate_to_result()
             result = self._spot_client.get_navigate_to_result()
 
             # recovery
             if not result.success:
                 self._sound_client.say('失敗したので元に戻ります', blocking=True)
-                self._spot_client.navigate_to(edge['args']['start_id'], blocking=True)
+                self._spot_client.navigate_to( start_id, blocking=True)
                 self._spot_client.wait_for_navigate_to_result()
 
             return result.success
 
         elif edge['type'] == 'stair':
 
+            graph_name = edge['args']['graph']
+            start_id = self._nodes[edge['from']]['waypoints_on_graph'][graph_name]['id']
+            localization_method = self._nodes[edge['from']]['waypoints_on_graph'][graph_name]['localization_method']
+            end_id = self._nodes[edge['to']]['waypoints_on_graph'][graph_name]['id']
+
             # graph uploading and localization
             if self._pre_edge is not None and \
-                edge['args']['graph'] == self._pre_edge['args']['graph']:
+                graph_name == self._pre_edge['args']['graph']:
                 rospy.loginfo('graph upload and localization skipped.')
             else:
-                self._spot_client.upload_graph( edge['args']['graph'] )
-                rospy.loginfo('graph {} uploaded.'.format(edge['args']['graph']))
-                if edge['args']['localization_method'] == 'fiducial':
+                # Upload
+                self._spot_client.upload_graph( graph_name )
+                rospy.loginfo('graph {} uploaded.'.format(graph_name))
+                # Localization
+                if localization_method == 'fiducial':
                     self._spot_client.set_localization_fiducial()
+                elif localization_method == 'waypoint':
+                    self._spot_client.set_localization_waypoint(start_id)
                 else:
-                    # Not implemented
-                    rospy.logerr('localization_method other than fiducial is not implemented yet.')
+                    rospy.logerr('Unknown localization method')
                     return False
                 rospy.loginfo('robot is localized on the graph.')
 
@@ -173,14 +188,14 @@ class LeadPersonDemo(object):
             # TODO:
             #   wait until a person went up
 
-            self._spot_client.navigate_to(edge['args']['end_id'], blocking=True)
+            self._spot_client.navigate_to( end_id, blocking=True)
             self._spot_client.wait_for_navigate_to_result()
             result = self._spot_client.get_navigate_to_result()
 
             # recovery
             if not result.success:
                 self._sound_client.say('失敗したので元に戻ります', blocking=True)
-                self._spot_client.navigate_to(edge['args']['start_id'], blocking=True)
+                self._spot_client.navigate_to( start_id, blocking=True)
                 self._spot_client.wait_for_navigate_to_result()
             else:
                 self._sound_client.say('おまたせしました', blocking=True)
