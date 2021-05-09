@@ -123,9 +123,9 @@ class LeadPersonDemo(object):
         if edge['type'] == 'walk':
 
             graph_name = edge['args']['graph']
-            start_id = self._nodes[edge['from']]['waypoints_on_graph'][graph_name]['id']
-            localization_method = self._nodes[edge['from']]['waypoints_on_graph'][graph_name]['localization_method']
-            end_id = self._nodes[edge['to']]['waypoints_on_graph'][graph_name]['id']
+            start_id = filter( lambda x: x['graph'] == graph_name, self._map._nodes[edge['from']]['waypoints_on_graph'])[0]['id']
+            localization_method = filter( lambda x: x['graph'] == graph_name, self._map._nodes[edge['from']]['waypoints_on_graph'])[0]['localization_method']
+            end_id = filter( lambda x: x['graph'] == graph_name, self._map._nodes[edge['to']]['waypoints_on_graph'])[0]['id']
 
             # graph uploading and localization
             if self._pre_edge is not None and \
@@ -161,9 +161,9 @@ class LeadPersonDemo(object):
         elif edge['type'] == 'stair':
 
             graph_name = edge['args']['graph']
-            start_id = self._nodes[edge['from']]['waypoints_on_graph'][graph_name]['id']
-            localization_method = self._nodes[edge['from']]['waypoints_on_graph'][graph_name]['localization_method']
-            end_id = self._nodes[edge['to']]['waypoints_on_graph'][graph_name]['id']
+            start_id = filter( lambda x: x['graph'] == graph_name, self._map._nodes[edge['from']]['waypoints_on_graph'])[0]['id']
+            localization_method = filter( lambda x: x['graph'] == graph_name, self._map._nodes[edge['from']]['waypoints_on_graph'])[0]['localization_method']
+            end_id = filter( lambda x: x['graph'] == graph_name, self._map._nodes[edge['to']]['waypoints_on_graph'])[0]['id']
 
             # graph uploading and localization
             if self._pre_edge is not None and \

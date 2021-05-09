@@ -77,7 +77,6 @@ edges:
     cost: 10
     args:
       graph: '$(find spot_person_leader)/autowalk/eng2_73B2_to_81C1.walk'
-     localization_method: 'waypoint'
   - from: '8FstairTo7F'
     to: '7FstairTo8F'
     type: 'stair'
@@ -89,45 +88,45 @@ nodes:
     name_en: '73B2'
     name_jp: '73B2'
     waypoints_on_graph:
-      '$(find spot_person_leader)/autowalk/eng2_73B2_to_7FElevator.walk':
+      - graph: '$(find spot_person_leader)/autowalk/eng2_73B2_to_7FElevator.walk'
         id: 'dyed-bat-t00VKo5XixLihCvpsZPRqw=='
         localization_method: 'fiducial'
-      '$(find spot_person_leader)/autowalk/eng2_73B2_to_81C1.walk':
+      - graph: '$(find spot_person_leader)/autowalk/eng2_73B2_to_81C1.walk'
         id: 'fuzzed-medusa-wyXWCEjmWas1kMo8EJW8Bw=='
         localization_method: 'fiducial'
   '73A2':
     name_en: '73A2'
     name_jp: '73A2'
     waypoints_on_graph:
-      '$(find spot_person_leader)/autowalk/eng2_73B2_to_7FElevator.walk':
+      - graph: '$(find spot_person_leader)/autowalk/eng2_73B2_to_7FElevator.walk'
         id: 'affine-drake-Jfb0ZPtNcqcrq9yhnEl2DA=='
         localization_method: 'fiducial'
   '7FElevator':
     name_en: 'Elevator'
     name_jp: 'エレベーター'
     waypoints_on_graph:
-      '$(find spot_person_leader)/autowalk/eng2_73B2_to_7FElevator.walk':
+      - graph: '$(find spot_person_leader)/autowalk/eng2_73B2_to_7FElevator.walk'
         id: 'looted-cougar-RWT2C0zLJXG.ezYnCuLUeQ=='
         localization_method: 'fiducial'
   '7FstairTo8F':
     name_en: 'Stair'
     name_jp: '階段'
     waypoints_on_graph:
-      '$(find spot_person_leader)/autowalk/eng2_73B2_to_7FElevator.walk':
+      - graph: '$(find spot_person_leader)/autowalk/eng2_73B2_to_81C1.walk'
         id: 'aired-wrasse-UmViHfVK68XNKfnezv8UCQ=='
         localization_method: 'waypoint'
   '8FstairTo7F':
     name_en: 'Stair'
     name_jp: '階段'
     waypoints_on_graph:
-      '$(find spot_person_leader)/autowalk/eng2_73B2_to_7FElevator.walk':
-        id: 'toxic-viper-teYR9q7YGGyXS8KbcjA32w=='
+      - graph: '$(find spot_person_leader)/autowalk/eng2_73B2_to_81C1.walk'
+        id: 'effete-chunga-cGupHFfePR3KKRTBQ.XU4Q=='
         localization_method: 'waypoint'
   '81C1':
     name_en: '81C1'
     name_jp: '81C1'
     waypoints_on_graph:
-      '$(find spot_person_leader)/autowalk/eng2_73B2_to_7FElevator.walk':
+      - graph: '$(find spot_person_leader)/autowalk/eng2_73B2_to_81C1.walk'
         id: 'crazed-vole-M0n4MLiK9XpQEhTHodXtmw=='
         localization_method: 'fiducial'
   '2FElevator':
