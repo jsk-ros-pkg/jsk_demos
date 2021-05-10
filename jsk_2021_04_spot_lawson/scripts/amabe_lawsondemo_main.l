@@ -30,7 +30,7 @@
 
 (unix::sleep 3)
 
-(send *ri* :speak-jp "お茶をください")
+(send *ri* :speak-jp "お茶とポッキーをください")
 
 (unix::sleep 3)
 
