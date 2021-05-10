@@ -183,7 +183,7 @@ class LeadPersonDemo(object):
                     return False
                 rospy.loginfo('robot is localized on the graph.')
 
-            self._sound_client.say('階段は危ないので先に行ってください', blocking=True)
+            self._sound_client.say('階段は危ないので私より下に立たないでください', blocking=True)
 
             # TODO:
             #   wait until a person went up
