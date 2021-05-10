@@ -21,11 +21,15 @@
 	  (loop
 	   (if (= i l) (return-from nil))
 	   (setq size_b (* (send (elt rects i) :width) (send (elt rects i) :height)))
-	   (if (> size_b size) (setq size size_b))
+	   (if (> size_b size) (progn
+				 (setq deg (/ (* (- 1770 (send (elt rects i) :x)) 180) 1770))
+				 (setq size size_b)))
 	   (setq i (+ i 1)))
-    	  (ros::ros-info "size is ~A" size)
-    	  (if (> size th)
+    	  (ros::ros-info "size is ~A, deg is ~A" size deg)
+    	  (if (and (> size th) (> deg -90) (< deg 90))
     	      (progn (ros::ros-info "found human")
+		     (send *ri* :go-pos 0 0 deg)
+		     (unix::sleep 3)
 		     (send *ri* :body-pose 0 0.3 0)
 		     (send *ri* :speak-jp "ICカードで支払います")
 		     (unix::sleep 8)
