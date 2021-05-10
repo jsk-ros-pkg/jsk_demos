@@ -6,6 +6,6 @@ rospy.init_node('check', anonymous=True)
 def callback(data):
     print(data.height, data.width)
     
-rospy.Subscriber("/dual_fisheye_to_panorama/output", Image, callback)
+rospy.Subscriber("/edgetpu_panorama_human_pose_estimator/output/image", Image, callback)
 
 rospy.spin()
