@@ -7,7 +7,7 @@
 (spot-init nil)
 
 (send *ri* :spwak-jp "何が欲しいですか"
-(wait-for-julius-trigger "おちゃとポッキー")
+(wait-for-julius-trigger "おちゃとぽっきい")
 (send *ri* :speak-jp "わかりました")
 
 (setq *path* "/home/amabe/spot_ws/src/jsk_demos/jsk_2021_04_spot_lawson/autowalk/amabe_73b2toele.walk")
