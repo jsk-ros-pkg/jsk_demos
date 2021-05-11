@@ -1,5 +1,5 @@
 <launch>
-  <node pkg="jsk_2021_04_spot_lawson" type="amabe_spot_lawsondemo_main.l" name="amabe_spot_lawsondemo" output="screen" />
+  <!-- <node pkg="jsk_2021_04_spot_lawson" type="amabe_spot_lawsondemo_main.l" name="amabe_spot_lawsondemo" output="screen" /> -->
   <include file = "$(find julius_ros)/launch/julius.launch">
-    </include>
+  </include>
 </launch>

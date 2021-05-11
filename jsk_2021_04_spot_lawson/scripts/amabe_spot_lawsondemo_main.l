@@ -6,7 +6,7 @@
 (load "package://jsk_2021_04_spot_lawson/scripts/speech-recognition-service.l")
 (spot-init nil)
 
-(send *ri* :spwak-jp "何が欲しいですか"
+(send *ri* :speak-jp "何が欲しいですか")
 (wait-for-julius-trigger "おちゃとぽっきい")
 (send *ri* :speak-jp "わかりました")
 
