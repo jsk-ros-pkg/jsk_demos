@@ -3,9 +3,12 @@
 (load "elevator-spot.l")
 (load "amabe_nazodance.l")
 (load "human_recognize.l")
+(load "package://jsk_2021_04_spot_lawson/scripts/speech-recognition-service.l")
 (spot-init nil)
 
-(send *ri* :speak-jp "買い物に行きます")
+(send *ri* :spwak-jp "何が欲しいですか"
+(wait-for-julius-trigger "おちゃとポッキー")
+(send *ri* :speak-jp "わかりました")
 
 (setq *path* "/home/amabe/spot_ws/src/jsk_demos/jsk_2021_04_spot_lawson/autowalk/amabe_73b2toele.walk")
 (send *ri* :upload-path *path*)

@@ -13,7 +13,7 @@
 (defvar *google-msg* "/speech_to_text_google")
 (defvar *julius-service* "speech_recognition")
 
-(defvar *julius-words* (list "すすんで" "うけとりました" "わたしました"))
+(defvar *julius-words* (list "すすんで" "うけとりました" "わたしました" "おちゃとポッキー"))
 
 (defun julius-words-list(*julius-words*)
     (ros::ros-info (format nil "Julius words are ~A" *julius-words*))
