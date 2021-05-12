@@ -7,7 +7,7 @@
 (spot-init nil)
 
 (send *ri* :speak-jp "何が欲しいですか")
-(wait-for-julius-trigger "おちゃとぽっきい")
+(wait-for-julius-trigger "おちゃとぽっきぃ")
 (send *ri* :speak-jp "わかりました")
 
 (setq *path* "/home/amabe/spot_ws/src/jsk_demos/jsk_2021_04_spot_lawson/autowalk/amabe_73b2toele.walk")
@@ -42,7 +42,7 @@
 (send *ri* :speak-jp "エレベータ前に向かいます")
 (send *ri* :navigate-to 0)
 
-(send *ri* "エレベータに乗ります")
+(send *ri* :speak-jp "エレベータに乗ります")
 (elevator-spot 2 7)
 (send *ri* :go-pos 0 1.5 0)
 
