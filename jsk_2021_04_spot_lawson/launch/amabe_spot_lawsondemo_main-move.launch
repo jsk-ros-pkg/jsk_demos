@@ -1,0 +1,8 @@
+<launch>
+  <!-- <node pkg="jsk_2021_04_spot_lawson" type="amabe_spot_lawsondemo_main.l" name="amabe_spot_lawsondemo" output="screen" /> -->
+  <include file = "$(find julius_ros)/launch/julius.launch">
+    <arg name="launch_audio_capture" value="false"/>
+    <arg name="launch_sound_play" value="false"/>
+  </include>
+  <include file="$(find jsk_2021_04_spot_lawson)/launch/detection.launch"/>
+</launch>

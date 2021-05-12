@@ -1,0 +1,19 @@
+<?xml version="1.0"?>
+<package>
+  <name>jsk_2021_04_spot_lawson</name>
+  <version>0.0.0</version>
+  <description>Spot goes to the lawson from 73B2.</description>
+
+  <author email="amabe@jsk.imi.i.u-tokyo.ac.jp">Koki Amabe</author>
+  <author email="obinata@jsk.imi.i.u-tokyo.ac.jp">Yoshiki Obinata</author>
+  <maintainer email="amabe@jsk.imi.i.u-tokyo.ac.jp">Koki Amabe</maintainer>
+  <maintainer email="obinata@jsk.imi.i.u-tokyo.ac.jp">Yoshiki Obinata</maintainer>
+
+  <license>BSD</license>
+
+  <buildtool_depend>catkin</buildtool_depend>
+  <run_depend>spoteus</run_depend>
+
+  <export>
+  </export>
+</package>
