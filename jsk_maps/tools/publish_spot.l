@@ -1,6 +1,7 @@
 #!/usr/bin/env roseus
 
 (ros::roseus-add-msgs "jsk_rviz_plugins")
+(ros::roseus-add-msgs "visualization_msgs")
 
 (defvar *scene* nil)
 (defvar *current-map-id* nil)
