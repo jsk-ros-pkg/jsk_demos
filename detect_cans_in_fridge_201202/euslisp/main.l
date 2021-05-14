@@ -177,7 +177,7 @@
        (return-from demo)))
     )
   (enable-behavior-server)
-  (if (eq app-manager :true) (ros::exit))
+  (if (eq app-manager :true) (ros::exit) t)
   )
 
 (defun wait-android-query (&optional (demo-type :map))
