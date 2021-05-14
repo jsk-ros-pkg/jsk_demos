@@ -1,6 +1,6 @@
 <launch>
   <arg name="plan" default="true"/>
-  <arg name="use_ffha" default="false" />
+  <arg name="use_ffha" default="true" />
   <include file="$(find jsk_2013_04_pr2_610)/launch/demo_common.launch">
     <arg name="task" value="tray" />
     <arg name="plan" value="$(arg plan)"/>
