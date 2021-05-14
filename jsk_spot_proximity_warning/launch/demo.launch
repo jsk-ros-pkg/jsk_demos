@@ -1,0 +1,22 @@
+<launch>
+    <arg name="sound_play_action" default="robotsound" />
+    <arg name="bbox_array_topic" default="/rect_array_in_panorama_to_bounding_box_array/bbox_array" />
+    <arg name="frame_robot" default="body" />
+    <arg name="threshold_distance" default="1.0" />
+
+    <node
+        pkg="jsk_spot_proximity_warning"
+        type="proximity_warning.py"
+        name="jsk_spot_proximity_warning"
+        output="screen"
+        >
+        <remap from="~bbox_array" to="/rect_array_in_panorama_to_bounding_box_array/bbox_array" />
+        <remap from="robotsound" to="$(arg sound_play_action)" />
+
+        <rosparam subst_value="true">
+            frame_robot: $(arg frame_robot)
+            threshold_distance: $(arg threshold_distance)
+            target_id_list: [0]
+        </rosparam>
+    </node>
+</launch>
