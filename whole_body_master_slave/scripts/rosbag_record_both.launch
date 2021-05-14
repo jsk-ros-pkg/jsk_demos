@@ -1,0 +1,6 @@
+<launch>
+  <machine name="rhp4" address="rhp4" env-loader="/opt/ros/kinetic/env.sh" />
+  <!-- <machine name="rhp4" address="rhp4" env-loader="/home/leus/ishiguro/catkin_ws/wbms/devel/env.sh" /> -->
+  <node pkg="rosbag" type="record" name="rosbag_record_rhp4_inside" machine="rhp4" args="record -o /tmp/test /diagnostics /rosout"/>
+  <!-- <node pkg="rosbag" type="record" name="rosbag_record_rhp4_inside" args="record -o /tmp/test /diagnostics /rosout"/> -->
+</launch>

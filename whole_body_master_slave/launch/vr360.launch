@@ -1,0 +1,67 @@
+<launch>
+  <node pkg="rviz" type="rviz" name="rviz" args="-l -d $(find whole_body_master_slave)/config/vr360.rviz" output="screen"/>
+
+  <!-- slave side 360cam tf -->
+  <node pkg="tf" type="static_transform_publisher" name="dummy_slave_cam_tf" args="0 0 1 0 0 0 operator_origin slave_cam 10" />
+  
+  <!-- master side texture sphere polygon tf -->
+  <node pkg="tf" type="static_transform_publisher" name="tex_sph_conv_tf" args="0 0 0 3.1415 0 0 slave_cam tex_sph_conv 10" />
+  
+  <!-- dummy hmd tf -->
+  <!-- <node pkg="tf" type="static_transform_publisher" name="dummy_hmd_tf" args="0 0 1.234 0 0 0 1 map hmd 10" /> -->
+
+  <!-- rviz_camera_stream setting -->
+  <group ns="rviz_cam_L">
+    <node pkg="tf" type="static_transform_publisher" name="camera_tf" args="0 0.05 0 -1.57 0 -1.57 vive_head_tf rviz_cam_L 10" />
+    <node name="camera_info" pkg="rostopic" type="rostopic"
+	  args="pub camera_info sensor_msgs/CameraInfo
+		'{header: {seq: 0, stamp: {secs: 0, nsecs: 0}, frame_id: 'rviz_cam_L'},
+		height: 720, width: 720, distortion_model: 'plumb_bob',
+		D: [0],
+		K: [300.0, 0.0, 360, 0.0, 300.0, 360, 0.0, 0.0, 1.0],
+		R: [1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0],
+		P: [300.0, 0.0, 360, 0.0, 0.0, 300, 360, 0.0, 0.0, 0.0, 1.0, 0.0],
+		binning_x: 0, binning_y: 0,
+		roi: {x_offset: 0, y_offset: 0, height: 720, width: 720, do_rectify: false}}' -r 2"
+	  output="screen"/>
+  </group>
+
+  <group ns="rviz_cam_R">
+    <node pkg="tf" type="static_transform_publisher" name="camera_tf" args="0 -0.05 0 -1.57 0 -1.57 vive_head_tf rviz_cam_R 10" />
+    <node name="camera_info" pkg="rostopic" type="rostopic"
+	  args="pub camera_info sensor_msgs/CameraInfo
+		'{header: {seq: 0, stamp: {secs: 0, nsecs: 0}, frame_id: 'rviz_cam_R'},
+		height: 720, width: 720, distortion_model: 'plumb_bob',
+		D: [0],
+		K: [300.0, 0.0, 360, 0.0, 300.0, 360, 0.0, 0.0, 1.0],
+		R: [1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0],
+		P: [300.0, 0.0, 360, 0.0, 0.0, 300, 360, 0.0, 0.0, 0.0, 1.0, 0.0],
+		binning_x: 0, binning_y: 0,
+		roi: {x_offset: 0, y_offset: 0, height: 720, width: 720, do_rectify: false}}' -r 2"
+	  output="screen"/>
+  </group>
+
+  <!-- vive_ros setting -->
+  <remap from="/camera_info_left"  to="/rviz_cam_L/camera_info"/>
+  <remap from="/camera_info_right" to="/rviz_cam_R/camera_info"/>
+  <remap from="/image_left"       to="/rviz_cam_L/image" />
+  <remap from="/image_right"      to="/rviz_cam_R/image" />
+  <include file="$(find vive_ros)/launch/vive.launch"/>
+
+  <remap from="/vive/controller_LHR_FFDEDD47/joy" to="/vive_lh_joy" />
+  <remap from="/vive/controller_LHR_FFA77D42/joy" to="/vive_rh_joy" />
+  
+  <node name="world_vive_to_operator_origin" pkg="tf" type="static_transform_publisher" args="0 2 0 -1.570796 0 0 /world /operator_origin 10" />
+  <node name="vive_sn_to_head" pkg="tf" type="static_transform_publisher" args="0 0 0 0 1.570796 -1.570796 /hmd /vive_head_tf 10" />
+  <!-- <node name="vive_sn_to_lh"  pkg="tf" type="static_transform_publisher" args="0 0 0 0 1.570796 -1.570796 /controller_LHR_FFDEDD47 /vive_lh_tf 10" /> -->
+  <!-- <node name="vive_sn_to_rh"  pkg="tf" type="static_transform_publisher" args="0 0 0 0 1.570796 -1.570796 /controller_LHR_FFA77D42 /vive_rh_tf 10" /> -->
+  <!-- <node name="vive_sn_tp_com" pkg="tf" type="static_transform_publisher" args="0 0 0 1.570796 1.570796 0 /tracker_LHR_09DC9A32 /vive_com_tf 10" /> -->
+  <!-- <node name="vive_sn_to_lf"  pkg="tf" type="static_transform_publisher" args="0 0 0 1.570796 3.141592 0 /tracker_LHR_1ADE74F2 /vive_lf_tf 10" /> -->
+  <!-- <node name="vive_sn_to_rf"  pkg="tf" type="static_transform_publisher" args="0 0 0 1.570796 3.141592 0 /tracker_LHR_03DCC6A7 /vive_rf_tf 10" /> -->
+
+  <node name="TF2PoseStamped" pkg="whole_body_master_slave" type="TF2PoseStamped.py" output="screen" required="true"/>
+
+  <node name="lh_joy_to_lhand" pkg="topic_tools" type="transform" args='/vive_lh_joy /master_lhand_pose geometry_msgs/PoseStamped "geometry_msgs.msg.PoseStamped(header=m.header,pose=geometry_msgs.msg.Pose(position=geometry_msgs.msg.Point(m.buttons[0],m.axes[2],0),orientation=geometry_msgs.msg.Quaternion(0,0,0,1)))" --import geometry_msgs --wait-for-start' output="screen" required="true"/>
+  <node name="rh_joy_to_rhand" pkg="topic_tools" type="transform" args='/vive_rh_joy /master_rhand_pose geometry_msgs/PoseStamped "geometry_msgs.msg.PoseStamped(header=m.header,pose=geometry_msgs.msg.Pose(position=geometry_msgs.msg.Point(m.buttons[0],m.axes[2],0),orientation=geometry_msgs.msg.Quaternion(0,0,0,1)))" --import geometry_msgs --wait-for-start' output="screen" required="true"/>
+  
+</launch>
