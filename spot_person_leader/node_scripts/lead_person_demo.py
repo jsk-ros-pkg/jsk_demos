@@ -11,6 +11,7 @@ from spot_ros_client.libspotros import SpotRosClient
 
 from spot_person_leader.msg import LeadPersonAction, LeadPersonFeedback, LeadPersonResult
 from spot_person_leader.srv import ResetCurrentNode, ResetCurrentNodeResponse
+from std_msgs.msg import Bool
 
 
 
@@ -56,6 +57,9 @@ class LeadPersonDemo(object):
         self._current_node = rospy.get_param('~initial_node')
         self._pre_edge = None
 
+        # parameter
+        self._duration_visible_timeout = rospy.get_param('~duration_visible_timeout', 10.0)
+
         #
         self._spot_client = SpotRosClient();
         self._sound_client = SoundClient(
@@ -71,6 +75,14 @@ class LeadPersonDemo(object):
                                     self.handler_reset_current_node
                                     )
 
+        # subscriber
+        self._state_visible = False
+        self._sub_visible = rospy.Subscriber(
+                                    '~visible',
+                                    Bool,
+                                    self.callback_visible
+                                    )
+
         # action server
         self._server_lead_person = actionlib.SimpleActionServer(
                                         '~lead_person',
@@ -81,6 +93,10 @@ class LeadPersonDemo(object):
         self._server_lead_person.start()
 
         rospy.loginfo('Initialized!')
+
+    def callback_visible(self, msg):
+
+        self._state_visible = msg.data
 
 
     def handler_reset_current_node(self, req):
@@ -123,9 +139,18 @@ class LeadPersonDemo(object):
         if edge['type'] == 'walk':
 
             graph_name = edge['args']['graph']
-            start_id = filter( lambda x: x['graph'] == graph_name, self._map._nodes[edge['from']]['waypoints_on_graph'])[0]['id']
-            localization_method = filter( lambda x: x['graph'] == graph_name, self._map._nodes[edge['from']]['waypoints_on_graph'])[0]['localization_method']
-            end_id = filter( lambda x: x['graph'] == graph_name, self._map._nodes[edge['to']]['waypoints_on_graph'])[0]['id']
+            start_id = filter(
+                        lambda x: x['graph'] == graph_name,
+                        self._map._nodes[edge['from']]['waypoints_on_graph']
+                        )[0]['id']
+            localization_method = filter(
+                        lambda x: x['graph'] == graph_name,
+                        self._map._nodes[edge['from']]['waypoints_on_graph']
+                        )[0]['localization_method']
+            end_id = filter(
+                        lambda x: x['graph'] == graph_name,
+                        self._map._nodes[edge['to']]['waypoints_on_graph']
+                        )[0]['id']
 
             # graph uploading and localization
             if self._pre_edge is not None and \
@@ -146,24 +171,58 @@ class LeadPersonDemo(object):
                 rospy.loginfo('robot is localized on the graph.')
 
             self._sound_client.say('ついてきてください', blocking=True)
-            self._spot_client.navigate_to( end_id, blocking=True)
-            self._spot_client.wait_for_navigate_to_result()
-            result = self._spot_client.get_navigate_to_result()
+
+            success = False
+            state_navigate = True
+            last_visible = rospy.Time.now()
+            rate = rospy.Rate(10)
+            self._spot_client.navigate_to( end_id, blocking=False)
+            while not rospy.is_shutdown():
+                rate.sleep()
+                if state_navigate:
+                    if self._spot_client.wait_for_navigate_to_result(rospy.Duration(0.1)):
+                        result = self._spot_client.get_navigate_to_result()
+                        success = result.success
+                        break
+                    if not self._state_visible:
+                        self._spot_client.cancel_navigate_to()
+                        state_navigate = False
+                    else:
+                        last_visible = rospy.Time.now()
+                else:
+                    if not self._state_visible:
+                        self._sound_client.say('近くに人が見えません', blocking=True)
+                    else:
+                        self._spot_client.navigate_to( end_id, blocking=False)
+                        state_navigate = True
+                        last_visible = rospy.Time.now()
+                    if rospy.Time.now() - last_visible > rospy.Duration(self._duration_visible_timeout):
+                        success = False
+                        break
 
             # recovery
-            if not result.success:
+            if success:
                 self._sound_client.say('失敗したので元に戻ります', blocking=True)
                 self._spot_client.navigate_to( start_id, blocking=True)
                 self._spot_client.wait_for_navigate_to_result()
 
-            return result.success
+            return success
 
         elif edge['type'] == 'stair':
 
             graph_name = edge['args']['graph']
-            start_id = filter( lambda x: x['graph'] == graph_name, self._map._nodes[edge['from']]['waypoints_on_graph'])[0]['id']
-            localization_method = filter( lambda x: x['graph'] == graph_name, self._map._nodes[edge['from']]['waypoints_on_graph'])[0]['localization_method']
-            end_id = filter( lambda x: x['graph'] == graph_name, self._map._nodes[edge['to']]['waypoints_on_graph'])[0]['id']
+            start_id = filter(
+                        lambda x: x['graph'] == graph_name,
+                        self._map._nodes[edge['from']]['waypoints_on_graph']
+                        )[0]['id']
+            localization_method = filter(
+                        lambda x: x['graph'] == graph_name,
+                        self._map._nodes[edge['from']]['waypoints_on_graph']
+                        )[0]['localization_method']
+            end_id = filter(
+                        lambda x: x['graph'] == graph_name,
+                        self._map._nodes[edge['to']]['waypoints_on_graph']
+                        )[0]['id']
 
             # graph uploading and localization
             if self._pre_edge is not None and \
