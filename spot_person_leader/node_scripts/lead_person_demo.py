@@ -124,7 +124,8 @@ class LeadPersonDemo(object):
                 self._server_lead_person.set_aborted(result)
                 return
 
-        self._sound_client.say('目的地に到着しました.'.format(goal.target_node))
+        self._sound_client.say('目的地に到着しました.'.format(goal.target_node),
+                               volume=10.0)
 
         result = LeadPersonResult(success=True)
         self._server_lead_person.set_succeeded(result)
@@ -170,7 +171,9 @@ class LeadPersonDemo(object):
                     return False
                 rospy.loginfo('robot is localized on the graph.')
 
-            self._sound_client.say('ついてきてください', blocking=True)
+            self._sound_client.say('ついてきてください',
+                                   volume=10.0,
+                                   blocking=True)
 
             success = False
             state_navigate = True
@@ -183,26 +186,40 @@ class LeadPersonDemo(object):
                     if self._spot_client.wait_for_navigate_to_result(rospy.Duration(0.1)):
                         result = self._spot_client.get_navigate_to_result()
                         success = result.success
+                        rospy.loginfo('result: {}'.format(result))
                         break
                     if not self._state_visible:
                         self._spot_client.cancel_navigate_to()
+                        # cancel handling is not implemented for navigate_to action
+                        self._spot_client.pubCmdVel(0,0,0)
                         state_navigate = False
                     else:
                         last_visible = rospy.Time.now()
                 else:
                     if not self._state_visible:
-                        self._sound_client.say('近くに人が見えません', blocking=True)
+                        self._sound_client.say(
+                                '近くにひとが見えません',
+                                volume=10.0,
+                                blocking=True)
+                        self._spot_client.pubCmdVel(0,0,0)
                     else:
                         self._spot_client.navigate_to( end_id, blocking=False)
                         state_navigate = True
                         last_visible = rospy.Time.now()
-                    if rospy.Time.now() - last_visible > rospy.Duration(self._duration_visible_timeout):
-                        success = False
-                        break
+                    #if rospy.Time.now() - last_visible > rospy.Duration(self._duration_visible_timeout):
+                    #    self._sound_client.say(
+                    #            '近くにひとが見えないので失敗しました',
+                    #            volume=10.0,
+                    #            blocking=True)
+                    #    success = False
+                    #    break
 
             # recovery
-            if success:
-                self._sound_client.say('失敗したので元に戻ります', blocking=True)
+            if not success:
+                self._sound_client.say(
+                        '失敗したので元に戻ります',
+                        volume=10.0,
+                        blocking=True)
                 self._spot_client.navigate_to( start_id, blocking=True)
                 self._spot_client.wait_for_navigate_to_result()
 
@@ -242,7 +259,10 @@ class LeadPersonDemo(object):
                     return False
                 rospy.loginfo('robot is localized on the graph.')
 
-            self._sound_client.say('階段は危ないので私より下に立たないでください', blocking=True)
+            self._sound_client.say(
+                    '階段は危ないので私より下に立たないでください',
+                    volume=10.0,
+                    blocking=True)
 
             # TODO:
             #   wait until a person went up
@@ -253,11 +273,17 @@ class LeadPersonDemo(object):
 
             # recovery
             if not result.success:
-                self._sound_client.say('失敗したので元に戻ります', blocking=True)
+                self._sound_client.say(
+                        '失敗したので元に戻ります',
+                        volume=10.0,
+                        blocking=True)
                 self._spot_client.navigate_to( start_id, blocking=True)
                 self._spot_client.wait_for_navigate_to_result()
             else:
-                self._sound_client.say('おまたせしました', blocking=True)
+                self._sound_client.say(
+                        'おまたせしました',
+                        volume=10.0,
+                        blocking=True)
 
             return result.success
 

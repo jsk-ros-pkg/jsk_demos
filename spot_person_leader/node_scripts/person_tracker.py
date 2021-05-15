@@ -13,7 +13,7 @@ from std_msgs.msg import Bool
 def convert_msg_point_to_kdl_vector(point):
     return PyKDL.Vector(point.x,point.y,point.z)
 
-def PersonTracker(object):
+class PersonTracker(object):
 
     def __init__(self):
 
@@ -25,6 +25,9 @@ def PersonTracker(object):
 
         self._is_person_visible = False
         self._time_observed = rospy.Time.now()
+
+        self._tf_buffer = tf2_ros.Buffer()
+        self._tf_listener = tf2_ros.TransformListener(self._tf_buffer)
 
         self._sub_bbox_array = rospy.Subscriber(
                 '~bbox_array',
@@ -48,7 +51,7 @@ def PersonTracker(object):
                 self._tf_buffer.lookup_transform(
                     frame_id_robot,
                     frame_id_msg,
-                    time_observed,
+                    self._time_observed,
                     timeout=rospy.Duration(self._timeout_transform)
                 )
             )
@@ -76,7 +79,7 @@ def PersonTracker(object):
 
         while not rospy.is_shutdown():
             rate.sleep()
-            if rospy.Time.now > self._time_observed + rospy.Duration(self._timeout_observation):
+            if rospy.Time.now() > self._time_observed + rospy.Duration(self._timeout_observation):
                 self._pub_visible.publish(Bool(False))
             else:
                 self._pub_visible.publish(Bool(self._is_person_visible))
