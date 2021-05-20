@@ -304,6 +304,11 @@ class LeadPersonDemo(object):
                         self._map._nodes[edge['to']]['waypoints_on_graph']
                         )[0]['id']
 
+            self._sound_client.say(
+                    '私は階段で行くので、エレベーターで移動してください',
+                    volume=10.0,
+                    blocking=True)
+
             # graph uploading and localization
             if self._pre_edge is not None and \
                 graph_name == self._pre_edge['args']['graph']:
@@ -321,11 +326,6 @@ class LeadPersonDemo(object):
                     rospy.logerr('Unknown localization method')
                     return False
                 rospy.loginfo('robot is localized on the graph.')
-
-            self._sound_client.say(
-                    '私は階段で行くので、エレベーターで移動してください',
-                    volume=10.0,
-                    blocking=True)
 
             self._spot_client.navigate_to( end_id, blocking=True)
             self._spot_client.wait_for_navigate_to_result()
