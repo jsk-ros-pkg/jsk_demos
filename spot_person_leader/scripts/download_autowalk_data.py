@@ -30,6 +30,14 @@ def main():
         extract=True
     )
 
+    download_data(
+        pkg_name=PKG,
+        path='autowalk/eng2_2FElevator_to_2FEntrance.walk.tar.gz',
+        url='https://drive.google.com/uc?id=1cYUn_qnRslWuH0ZMEBN6ovqmdcUB0MzY',
+        md5='78c6e1e8e5967b216c9f53e38893750e',
+        extract=True
+    )
+
 
 if __name__ == '__main__':
     main()
