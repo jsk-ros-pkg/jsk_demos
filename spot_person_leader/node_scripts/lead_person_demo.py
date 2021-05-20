@@ -77,6 +77,8 @@ class LeadPersonDemo(object):
 
         # subscriber
         self._state_visible = False
+        self._starttime_visibility = rospy.Time.now()
+        self._duration_visibility = rospy.Duration()
         self._sub_visible = rospy.Subscriber(
                                     '~visible',
                                     Bool,
@@ -96,7 +98,12 @@ class LeadPersonDemo(object):
 
     def callback_visible(self, msg):
 
-        self._state_visible = msg.data
+        if self._state_visible != msg.data:
+            self._starttime_visibility = rospy.Time.now()
+            self._duration_visibility = rospy.Duration()
+            self._state_visible = msg.data:
+        else:
+            self._duration_visibility = rospy.Time.now() - self._starttime_visibility
 
 
     def handler_reset_current_node(self, req):
@@ -177,42 +184,31 @@ class LeadPersonDemo(object):
 
             success = False
             state_navigate = True
-            last_visible = rospy.Time.now()
             rate = rospy.Rate(10)
             self._spot_client.navigate_to( end_id, blocking=False)
             while not rospy.is_shutdown():
                 rate.sleep()
-                if state_navigate:
-                    if self._spot_client.wait_for_navigate_to_result(rospy.Duration(0.1)):
-                        result = self._spot_client.get_navigate_to_result()
-                        success = result.success
-                        rospy.loginfo('result: {}'.format(result))
-                        break
-                    if not self._state_visible:
-                        self._spot_client.cancel_navigate_to()
-                        # cancel handling is not implemented for navigate_to action
-                        self._spot_client.pubCmdVel(0,0,0)
-                        state_navigate = False
-                    else:
-                        last_visible = rospy.Time.now()
-                else:
-                    if not self._state_visible:
-                        self._sound_client.say(
-                                '近くにひとが見えません',
-                                volume=10.0,
-                                blocking=True)
-                        self._spot_client.pubCmdVel(0,0,0)
-                    else:
-                        self._spot_client.navigate_to( end_id, blocking=False)
-                        state_navigate = True
-                        last_visible = rospy.Time.now()
-                    if rospy.Time.now() - last_visible > rospy.Duration(self._duration_visible_timeout):
-                        self._sound_client.say(
-                                '近くにひとが見えないので失敗しました',
-                                volume=10.0,
-                                blocking=True)
-                        success = False
-                        break
+
+                if self._spot_client.wait_for_navigate_to_result(rospy.Duration(0.1)):
+                    result = self._spot_client.get_navigate_to_result()
+                    success = result.success
+                    rospy.loginfo('result: {}'.format(result))
+                    break
+
+                if self._state_navigate and\
+                        not self._state_visible and\
+                        self._duration_visibility > rospy.Duration(5.0):
+                    self._spot_client.cancel_navigate_to()
+                    state_navigate = False
+                elif not self._state_visible:
+                    self._sound_client.say(
+                            '近くに人が見えません',
+                            volume=10.0,
+                            blocking=True
+                            )
+                elif self._state_visible and not self._state_navigate:
+                    self._spot_client.navigate_to( end_id, blocking=False)
+                    state_navigate = False
 
             # recovery
             if not success:
@@ -260,12 +256,9 @@ class LeadPersonDemo(object):
                 rospy.loginfo('robot is localized on the graph.')
 
             self._sound_client.say(
-                    '階段は危ないので私より下に立たないでください',
+                    '階段は危ないので私が昇り降りしている間は近づかないでください',
                     volume=10.0,
                     blocking=True)
-
-            # TODO:
-            #   wait until a person went up
 
             self._spot_client.navigate_to( end_id, blocking=True)
             self._spot_client.wait_for_navigate_to_result()
@@ -279,11 +272,87 @@ class LeadPersonDemo(object):
                         blocking=True)
                 self._spot_client.navigate_to( start_id, blocking=True)
                 self._spot_client.wait_for_navigate_to_result()
+
+            rate = rospy.Rate(10)
+            self._sound_client.startWaveFromPkg('spot_person_leader','resources/akatonbo.ogg')
+            while not rospy.is_shutdown():
+                rate.sleep()
+                if self._state_visible and self._duration_visibility > rospy.Duration(10):
+                    self._sound_client.stopAll()
+                    break
+
+            self._sound_client.say(
+                    'おまちしておりました',
+                    volume=10.0,
+                    blocking=True)
+
+            return result.success
+
+        elif edge['type'] == 'go_alone_and_wait':
+
+            graph_name = edge['args']['graph']
+            start_id = filter(
+                        lambda x: x['graph'] == graph_name,
+                        self._map._nodes[edge['from']]['waypoints_on_graph']
+                        )[0]['id']
+            localization_method = filter(
+                        lambda x: x['graph'] == graph_name,
+                        self._map._nodes[edge['from']]['waypoints_on_graph']
+                        )[0]['localization_method']
+            end_id = filter(
+                        lambda x: x['graph'] == graph_name,
+                        self._map._nodes[edge['to']]['waypoints_on_graph']
+                        )[0]['id']
+
+            # graph uploading and localization
+            if self._pre_edge is not None and \
+                graph_name == self._pre_edge['args']['graph']:
+                rospy.loginfo('graph upload and localization skipped.')
             else:
+                # Upload
+                self._spot_client.upload_graph( graph_name )
+                rospy.loginfo('graph {} uploaded.'.format(graph_name))
+                # Localization
+                if localization_method == 'fiducial':
+                    self._spot_client.set_localization_fiducial()
+                elif localization_method == 'waypoint':
+                    self._spot_client.set_localization_waypoint(start_id)
+                else:
+                    rospy.logerr('Unknown localization method')
+                    return False
+                rospy.loginfo('robot is localized on the graph.')
+
+            self._sound_client.say(
+                    '私は階段で行くので、エレベーターで移動してください',
+                    volume=10.0,
+                    blocking=True)
+
+            self._spot_client.navigate_to( end_id, blocking=True)
+            self._spot_client.wait_for_navigate_to_result()
+            result = self._spot_client.get_navigate_to_result()
+
+            # recovery
+            if not result.success:
+                rospy.logwarn('失敗したので元に戻ります')
                 self._sound_client.say(
-                        'おまたせしました',
+                        '失敗したので元に戻ります',
                         volume=10.0,
                         blocking=True)
+                self._spot_client.navigate_to( start_id, blocking=True)
+                self._spot_client.wait_for_navigate_to_result()
+
+            rate = rospy.Rate(10)
+            self._sound_client.startWaveFromPkg('spot_person_leader','resources/akatonbo.ogg')
+            while not rospy.is_shutdown():
+                rate.sleep()
+                if self._state_visible and self._duration_visibility > rospy.Duration(10):
+                    self._sound_client.stopAll()
+                    break
+
+            self._sound_client.say(
+                    'おまちしておりました',
+                    volume=10.0,
+                    blocking=True)
 
             return result.success
 
