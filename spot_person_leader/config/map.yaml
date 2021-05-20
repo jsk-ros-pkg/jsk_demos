@@ -1,4 +1,16 @@
 edges:
+  - from: '2FElevator'
+    to: '2FEntrance'
+    type: 'walk'
+    cost: 10
+    args:
+      graph: '$(find spot_person_leader)/autowalk/eng2_2FElevator_to_2FEntrance.walk'
+  - from: '2FEntrance'
+    to: '2FElevator'
+    type: 'walk'
+    cost: 10
+    args:
+      graph: '$(find spot_person_leader)/autowalk/eng2_2FElevator_to_2FEntrance.walk'
   - from: '7FElevator'
     to: '2FElevator'
     type: 'go_alone_and_wait'
@@ -150,4 +162,14 @@ nodes:
     waypoints_on_graph:
       - graph: '$(find spot_person_leader)/autowalk/eng2_7FElevator_to_2FElevator.walk'
         id: 'rainy-collie-uwFW2KVYg2YCUi8FF6N00g=='
+        localization_method: 'fiducial'
+      - graph: '$(find spot_person_leader)/autowalk/eng2_2FElevator_to_2FEntrance.walk'
+        id: 'snaky-beagle-.fmRm2JflzlV6Dv5fTdnIQ=='
+        localization_method: 'fiducial'
+  '2FEntrance':
+    name_en: 'Entrance'
+    name_jp: '入り口'
+    waypoints_on_graph:
+      - graph: '$(find spot_person_leader)/autowalk/eng2_2FElevator_to_2FEntrance.walk'
+        id: 'ended-conch-2XbkwOkQkvye4OZcmL89pQ=='
         localization_method: 'fiducial'
