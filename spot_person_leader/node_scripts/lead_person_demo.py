@@ -206,13 +206,13 @@ class LeadPersonDemo(object):
                         self._spot_client.navigate_to( end_id, blocking=False)
                         state_navigate = True
                         last_visible = rospy.Time.now()
-                    #if rospy.Time.now() - last_visible > rospy.Duration(self._duration_visible_timeout):
-                    #    self._sound_client.say(
-                    #            '近くにひとが見えないので失敗しました',
-                    #            volume=10.0,
-                    #            blocking=True)
-                    #    success = False
-                    #    break
+                    if rospy.Time.now() - last_visible > rospy.Duration(self._duration_visible_timeout):
+                        self._sound_client.say(
+                                '近くにひとが見えないので失敗しました',
+                                volume=10.0,
+                                blocking=True)
+                        success = False
+                        break
 
             # recovery
             if not success:
