@@ -101,7 +101,7 @@ class LeadPersonDemo(object):
         if self._state_visible != msg.data:
             self._starttime_visibility = rospy.Time.now()
             self._duration_visibility = rospy.Duration()
-            self._state_visible = msg.data:
+            self._state_visible = msg.data
         else:
             self._duration_visibility = rospy.Time.now() - self._starttime_visibility
 
@@ -195,7 +195,7 @@ class LeadPersonDemo(object):
                     rospy.loginfo('result: {}'.format(result))
                     break
 
-                if self._state_navigate and\
+                if state_navigate and\
                         not self._state_visible and\
                         self._duration_visibility > rospy.Duration(5.0):
                     self._spot_client.cancel_navigate_to()
@@ -206,9 +206,9 @@ class LeadPersonDemo(object):
                             volume=10.0,
                             blocking=True
                             )
-                elif self._state_visible and not self._state_navigate:
+                elif self._state_visible and not state_navigate:
                     self._spot_client.navigate_to( end_id, blocking=False)
-                    state_navigate = False
+                    state_navigate = True
 
             # recovery
             if not success:
