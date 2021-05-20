@@ -1,4 +1,16 @@
 edges:
+  - from: '7FElevator'
+    to: '2FElevator'
+    type: 'go_alone_and_wait'
+    cost: 10
+    args:
+      graph: '$(find spot_person_leader)/autowalk/eng2_7FElevator_to_2FElevator.walk'
+  - from: '2FElevator'
+    to: '7FElevator'
+    type: 'go_alone_and_wait'
+    cost: 10
+    args:
+      graph: '$(find spot_person_leader)/autowalk/eng2_7FElevator_to_2FElevator.walk'
   - from: '73B2'
     to: '7FElevator'
     type: 'walk'
