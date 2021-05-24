@@ -120,6 +120,8 @@ class LeadPersonDemo(object):
 
         path = self._map.calcPath( self._current_node, goal.target_node )
 
+        self._sound_client.say('目的地に向かいます')
+
         for edge in path:
             if self.navigate_edge(edge):
                 rospy.loginfo('transition with edge {} succeeded'.format(edge))
@@ -340,19 +342,18 @@ class LeadPersonDemo(object):
                         blocking=True)
                 self._spot_client.navigate_to( start_id, blocking=True)
                 self._spot_client.wait_for_navigate_to_result()
-
-            rate = rospy.Rate(10)
-            self._sound_client.startWaveFromPkg('spot_person_leader','resources/akatonbo.ogg')
-            while not rospy.is_shutdown():
-                rate.sleep()
-                if self._state_visible and self._duration_visibility > rospy.Duration(10):
-                    self._sound_client.stopAll()
-                    break
-
-            self._sound_client.say(
-                    'おまちしておりました',
-                    volume=10.0,
-                    blocking=True)
+            else:
+                rate = rospy.Rate(10)
+                self._sound_client.startWaveFromPkg('spot_person_leader','resources/akatonbo.ogg')
+                while not rospy.is_shutdown():
+                    rate.sleep()
+                    if self._state_visible and self._duration_visibility > rospy.Duration(10):
+                        self._sound_client.stopAll()
+                        break
+                self._sound_client.say(
+                        'おまちしておりました',
+                        volume=10.0,
+                        blocking=True)
 
             return result.success
 
