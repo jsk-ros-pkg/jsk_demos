@@ -9,6 +9,7 @@ import rospy
 from sound_play.libsoundplay import SoundClient
 from spot_ros_client.libspotros import SpotRosClient
 
+from std_msgs.msg import String
 from spot_person_leader.msg import LeadPersonAction, LeadPersonFeedback, LeadPersonResult
 from spot_person_leader.srv import ResetCurrentNode, ResetCurrentNodeResponse
 from std_msgs.msg import Bool
@@ -68,6 +69,9 @@ class LeadPersonDemo(object):
                                     sound_topic='/robotsound_jp'
                                     )
 
+        # publisher
+        self._pub_current_node = rospy.Publisher('~/current_node',String,queue_size=1)
+
         # reset service
         self._service_reset = rospy.Service(
                                     '~reset_current_node',
@@ -95,6 +99,13 @@ class LeadPersonDemo(object):
         self._server_lead_person.start()
 
         rospy.loginfo('Initialized!')
+
+    def spin(self):
+
+        rate = rospy.Rate(10)
+        while not rospy.is_shutdown():
+            rate.sleep()
+            self._pub_current_node.publish(String(data=self._current_node))
 
     def callback_visible(self, msg):
 
