@@ -222,6 +222,7 @@ class LeadPersonDemo(object):
                 elif self._state_visible and not state_navigate:
                     self._spot_client.navigate_to( end_id, blocking=False)
                     state_navigate = True
+                    
 
             # recovery
             if not success:
@@ -268,6 +269,19 @@ class LeadPersonDemo(object):
                     return False
                 rospy.loginfo('robot is localized on the graph.')
 
+            # check if there is a person lower than the robot.
+            from geometry_msgs.msg import PoseArray
+            while not rospy.is_shutdown():
+                people_pose_array = rospy.wait_for_message('/person_tracker/people_pose_array',PoseArray)
+                exist_person_down = False
+                for pose in PoseArray.poses:
+                    if pose.position.z < -0.5:
+                        exist_person_down = True
+                if exist_person_down:
+                    self._sound_client.say('私より低い位置に誰かいるのでいなくなるまで待ちます')
+                else:
+                    break
+
             self._sound_client.say(
                     '階段は危ないので私が昇り降りしている間は近づかないでください',
                     volume=10.0,
@@ -290,7 +304,7 @@ class LeadPersonDemo(object):
             self._sound_client.startWaveFromPkg('spot_person_leader','resources/akatonbo.ogg')
             while not rospy.is_shutdown():
                 rate.sleep()
-                if self._state_visible and self._duration_visibility > rospy.Duration(10):
+                if self._state_visible and self._duration_visibility > rospy.Duration(5):
                     self._sound_client.stopAll()
                     break
 
