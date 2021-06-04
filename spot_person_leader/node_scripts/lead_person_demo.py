@@ -3,6 +3,8 @@
 
 import networkx as nx
 
+import threading
+
 import actionlib
 import rospy
 
@@ -158,6 +160,9 @@ class LeadPersonDemo(object):
             return False
 
         if edge['type'] == 'walk':
+            #
+            # Edge Type : walk
+            #
 
             graph_name = edge['args']['graph']
             start_id = filter(
@@ -196,7 +201,6 @@ class LeadPersonDemo(object):
                                    blocking=True)
 
             success = False
-            state_navigate = True
             rate = rospy.Rate(10)
             self._spot_client.navigate_to( end_id, blocking=False)
             while not rospy.is_shutdown():
@@ -208,21 +212,205 @@ class LeadPersonDemo(object):
                     rospy.loginfo('result: {}'.format(result))
                     break
 
-                if state_navigate and\
-                        not self._state_visible and\
-                        self._duration_visibility > rospy.Duration(5.0):
-                    self._spot_client.cancel_navigate_to()
-                    state_navigate = False
-                elif not self._state_visible:
-                    self._sound_client.say(
+                if not self._state_visible and self._duration_visibility > rospy.Duration(0.5):
+                    flag_speech = False
+                    def notify_visibility():
+                        self._sound_client.say(
                             '近くに人が見えません',
                             volume=10.0,
                             blocking=True
                             )
-                elif self._state_visible and not state_navigate:
-                    self._spot_client.navigate_to( end_id, blocking=False)
-                    state_navigate = True
-                    
+                        flag_speech = False
+                    speech_thread = threading.Thread(target=notify_visibility)
+                    speech_thread.start()
+                    while not self._state_visible and self._duration_visibility > rospy.Duration(0.5):
+                        rate.sleep()
+                        self._spot_client.pubCmdVel(0,0,0)
+                        if not flag_speech:
+                            flag_speech = True
+                            speech_thread.start()
+                        if not self._state_visible and self._duration_visibility > rospy.Duration(5.0):
+                            self._spot_client.cancel_navigate_to()
+                        if self._state_visible:
+                            self._spot_client.navigate_to( end_id, blocking=False)
+
+            # recovery
+            if not success:
+                self._sound_client.say(
+                        '失敗したので元に戻ります',
+                        volume=10.0,
+                        blocking=True)
+                self._spot_client.navigate_to( start_id, blocking=True)
+                self._spot_client.wait_for_navigate_to_result()
+
+            return success
+
+        elif edge['type'] == 'narrow':
+            #
+            # Edge Type : narrow
+            #
+
+            graph_name = edge['args']['graph']
+            start_id = filter(
+                        lambda x: x['graph'] == graph_name,
+                        self._map._nodes[edge['from']]['waypoints_on_graph']
+                        )[0]['id']
+            localization_method = filter(
+                        lambda x: x['graph'] == graph_name,
+                        self._map._nodes[edge['from']]['waypoints_on_graph']
+                        )[0]['localization_method']
+            end_id = filter(
+                        lambda x: x['graph'] == graph_name,
+                        self._map._nodes[edge['to']]['waypoints_on_graph']
+                        )[0]['id']
+
+            # graph uploading and localization
+            if self._pre_edge is not None and \
+                graph_name == self._pre_edge['args']['graph']:
+                rospy.loginfo('graph upload and localization skipped.')
+            else:
+                # Upload
+                self._spot_client.upload_graph( graph_name )
+                rospy.loginfo('graph {} uploaded.'.format(graph_name))
+                # Localization
+                if localization_method == 'fiducial':
+                    self._spot_client.set_localization_fiducial()
+                elif localization_method == 'waypoint':
+                    self._spot_client.set_localization_waypoint(start_id)
+                else:
+                    rospy.logerr('Unknown localization method')
+                    return False
+                rospy.loginfo('robot is localized on the graph.')
+
+            self._sound_client.say('ついてきてください',
+                                   volume=10.0,
+                                   blocking=True)
+
+            success = False
+            rate = rospy.Rate(10)
+            self._spot_client.navigate_to( end_id, blocking=False)
+            while not rospy.is_shutdown():
+                rate.sleep()
+
+                if self._spot_client.wait_for_navigate_to_result(rospy.Duration(0.1)):
+                    result = self._spot_client.get_navigate_to_result()
+                    success = result.success
+                    rospy.loginfo('result: {}'.format(result))
+                    break
+
+                if not self._state_visible and self._duration_visibility > rospy.Duration(0.5):
+                    flag_speech = False
+                    def notify_visibility():
+                        self._sound_client.say(
+                            '近くに人が見えません',
+                            volume=10.0,
+                            blocking=True
+                            )
+                        flag_speech = False
+                    speech_thread = threading.Thread(target=notify_visibility)
+                    speech_thread.start()
+                    while not self._state_visible and self._duration_visibility > rospy.Duration(0.5):
+                        rate.sleep()
+                        self._spot_client.pubCmdVel(0,0,0)
+                        if not flag_speech:
+                            flag_speech = True
+                            speech_thread.start()
+                        if not self._state_visible and self._duration_visibility > rospy.Duration(5.0):
+                            self._spot_client.cancel_navigate_to()
+                        if self._state_visible:
+                            self._spot_client.navigate_to( end_id, blocking=False)
+
+                # TODO:
+                #   notification about obstacles
+
+            # recovery
+            if not success:
+                self._sound_client.say(
+                        '失敗したので元に戻ります',
+                        volume=10.0,
+                        blocking=True)
+                self._spot_client.navigate_to( start_id, blocking=True)
+                self._spot_client.wait_for_navigate_to_result()
+
+            return success
+
+        elif edge['type'] == 'crosswalk':
+            #
+            # Edge Type : crosswalk
+            #
+
+            graph_name = edge['args']['graph']
+            start_id = filter(
+                        lambda x: x['graph'] == graph_name,
+                        self._map._nodes[edge['from']]['waypoints_on_graph']
+                        )[0]['id']
+            localization_method = filter(
+                        lambda x: x['graph'] == graph_name,
+                        self._map._nodes[edge['from']]['waypoints_on_graph']
+                        )[0]['localization_method']
+            end_id = filter(
+                        lambda x: x['graph'] == graph_name,
+                        self._map._nodes[edge['to']]['waypoints_on_graph']
+                        )[0]['id']
+
+            # graph uploading and localization
+            if self._pre_edge is not None and \
+                graph_name == self._pre_edge['args']['graph']:
+                rospy.loginfo('graph upload and localization skipped.')
+            else:
+                # Upload
+                self._spot_client.upload_graph( graph_name )
+                rospy.loginfo('graph {} uploaded.'.format(graph_name))
+                # Localization
+                if localization_method == 'fiducial':
+                    self._spot_client.set_localization_fiducial()
+                elif localization_method == 'waypoint':
+                    self._spot_client.set_localization_waypoint(start_id)
+                else:
+                    rospy.logerr('Unknown localization method')
+                    return False
+                rospy.loginfo('robot is localized on the graph.')
+
+            # TODO:
+            #   safety validation before crosswalk passing
+
+            self._sound_client.say('ついてきてください',
+                                   volume=10.0,
+                                   blocking=True)
+
+            success = False
+            rate = rospy.Rate(10)
+            self._spot_client.navigate_to( end_id, blocking=False)
+            while not rospy.is_shutdown():
+                rate.sleep()
+
+                if self._spot_client.wait_for_navigate_to_result(rospy.Duration(0.1)):
+                    result = self._spot_client.get_navigate_to_result()
+                    success = result.success
+                    rospy.loginfo('result: {}'.format(result))
+                    break
+
+                if not self._state_visible and self._duration_visibility > rospy.Duration(0.5):
+                    flag_speech = False
+                    def notify_visibility():
+                        self._sound_client.say(
+                            '近くに人が見えません',
+                            volume=10.0,
+                            blocking=True
+                            )
+                        flag_speech = False
+                    speech_thread = threading.Thread(target=notify_visibility)
+                    speech_thread.start()
+                    while not self._state_visible and self._duration_visibility > rospy.Duration(0.5):
+                        rate.sleep()
+                        self._spot_client.pubCmdVel(0,0,0)
+                        if not flag_speech:
+                            flag_speech = True
+                            speech_thread.start()
+                        if not self._state_visible and self._duration_visibility > rospy.Duration(5.0):
+                            self._spot_client.cancel_navigate_to()
+                        if self._state_visible:
+                            self._spot_client.navigate_to( end_id, blocking=False)
 
             # recovery
             if not success:
@@ -236,6 +424,9 @@ class LeadPersonDemo(object):
             return success
 
         elif edge['type'] == 'stair':
+            #
+            # Edge Type : stair
+            #
 
             graph_name = edge['args']['graph']
             start_id = filter(
@@ -299,23 +490,26 @@ class LeadPersonDemo(object):
                         blocking=True)
                 self._spot_client.navigate_to( start_id, blocking=True)
                 self._spot_client.wait_for_navigate_to_result()
+            else
+                rate = rospy.Rate(10)
+                self._sound_client.startWaveFromPkg('spot_person_leader','resources/akatonbo.ogg')
+                while not rospy.is_shutdown():
+                    rate.sleep()
+                    if self._state_visible and self._duration_visibility > rospy.Duration(5):
+                        self._sound_client.stopAll()
+                        break
 
-            rate = rospy.Rate(10)
-            self._sound_client.startWaveFromPkg('spot_person_leader','resources/akatonbo.ogg')
-            while not rospy.is_shutdown():
-                rate.sleep()
-                if self._state_visible and self._duration_visibility > rospy.Duration(5):
-                    self._sound_client.stopAll()
-                    break
-
-            self._sound_client.say(
-                    'おまちしておりました',
-                    volume=10.0,
-                    blocking=True)
+                self._sound_client.say(
+                        'おまちしておりました',
+                        volume=10.0,
+                        blocking=True)
 
             return result.success
 
         elif edge['type'] == 'go_alone_and_wait':
+            #
+            # Edge Type : go_alone_and_wait
+            #
 
             graph_name = edge['args']['graph']
             start_id = filter(
