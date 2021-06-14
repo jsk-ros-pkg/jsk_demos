@@ -38,6 +38,14 @@ def main():
         extract=True
     )
 
+    download_data(
+        pkg_name=PKG,
+        path='autowalk/eng2_2FElevator_to_MainGate.walk.tar.gz',
+        url='https://drive.google.com/uc?id=1CIuStpjxIA188MLxUsfUjI-47Ev36Wiv',
+        md5='47d669bcb1394b97c95e5d77f78da3e5',
+        extract=True
+    )
+
 
 if __name__ == '__main__':
     main()
