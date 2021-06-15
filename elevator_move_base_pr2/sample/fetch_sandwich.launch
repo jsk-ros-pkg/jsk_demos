@@ -1,0 +1,54 @@
+<launch>
+
+  <arg name="ROBOT" default="$(optenv ROBOT pr2)" />
+  <include file="$(find pr2_machine)/$(arg ROBOT).machine"/>
+
+  <!-- ===================================================================== -->
+  <!-- Look at human if found                                                -->
+  <!-- ===================================================================== -->
+
+  <node name="look_at_human"
+        pkg="elevator_move_base_pr2" type="look-at-human.l">
+    <remap from="~input/people_pose_array" to="/edgetpu_human_pose_estimator/output/poses"/>
+  </node>
+
+  <!-- ===================================================================== -->
+  <!-- Main Application                                                      -->
+  <!-- ===================================================================== -->
+
+  <node name="fetch_sandwich"
+        pkg="elevator_move_base_pr2" type="fetch-sandwich.l"
+        args="(main)"
+        machine="c2"
+        output="screen" required="true"/>
+
+  <!-- ===================================================================== -->
+  <!-- For message visualization in Rviz                                     -->
+  <!-- ===================================================================== -->
+
+  <node name="rosconsole_overlay_text"
+        pkg="jsk_rviz_plugins" type="rosconsole_overlay_text.py"
+        machine="c2">
+    <rosparam>
+      nodes:
+        - /elevator_move_base
+        - /fetch_sandwich
+        - /human_in_mirror/find_human_in_mirror
+        - /narrow_stereo/left/find_elevator_button
+      exclude_regexes:
+        - ".*follow_joint_trajectory.*"
+        - ".*goal id.*"
+        - ".*violate.*"
+        - ".*wait-interpolation debug.*"
+        - ".*action-result-cb.*"
+        - ".*;; .*"
+        - ".*#f(.*).*"
+        - ".*commanded joint differs.*"
+        - ".*trajectory command :.*"
+        - ".*waitForTransform failed! :.*"
+      reverse_lines: false
+      line_buffer_length: 15
+    </rosparam>
+  </node>
+
+</launch>

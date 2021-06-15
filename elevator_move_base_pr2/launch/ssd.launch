@@ -1,0 +1,56 @@
+<launch>
+  <arg name="respawn" default="true" />
+
+  <arg name="gpu" default="0" />
+  <arg name="input_image" default="/kinect_head/rgb/image_rect_color" />
+  <arg name="input_camera_info" default="/kinect_head/rgb/camera_info" />
+  <arg name="input_depth" default="/kinect_head/depth_registered/image_rect" />
+
+  <arg name="montblanc_user" default="applications" />
+  <arg name="montblanc_env_loader" default="/home/$(arg montblanc_user)/env.sh" />
+  <machine name="montblanc" address="montblanc"
+           user="$(arg montblanc_user)" env-loader="$(arg montblanc_env_loader)"
+           timeout="30.0" />
+  <arg name="gpu_machine" default="montblanc" />
+
+  <group ns="ssd">
+
+    <!-- <rosparam ns="ssd_object_detector"> -->
+    <!--   score_thresh: 0.2 -->
+    <!-- </rosparam> -->
+
+    <node name="ssd_object_detector"
+          pkg="jsk_perception" type="ssd_object_detector.py"
+          output="screen"
+          machine="$(arg gpu_machine)" respawn="true" >
+      <remap from="~input" to="$(arg input_image)" />
+      <rosparam subst_value="true">
+        gpu: $(arg gpu)
+        model_path: voc0712
+      </rosparam>
+    </node>
+
+    <node name="bounding_box_pose"
+          pkg="elevator_move_base_pr2" type="bounding_box_centroid_3d.py"
+          respawn="$(arg respawn)"
+          output="screen" >
+      <remap from="~input" to="ssd_object_detector/output/rect" />
+      <remap from="~input/depth" to="$(arg input_depth)"/>
+      <remap from="~input/camera_info" to="$(arg input_camera_info)" />
+      <rosparam>
+        approximate_sync: true
+        queue_size: 10
+        slop: 0.1
+      </rosparam>
+    </node>
+
+    <node name="concat_pose_and_detector"
+          pkg="elevator_move_base_pr2" type="concat_pose_and_class.py"
+          output="screen" >
+      <remap from="~input/poses" to="bounding_box_pose/output" />
+      <remap from="~input/classes" to="ssd_object_detector/output/class"/>
+    </node>
+
+  </group>
+
+</launch>

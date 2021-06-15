@@ -1,0 +1,71 @@
+<launch>
+  <arg name="INPUT_FEATURE" default="ImageFeature0D"/>
+  <arg name="MANAGER" default="elevator_move_base_manager"/>
+  <arg name="MACHINE" default="c2"/>
+
+  <node name="pass_through_feature_to_call_panel"
+        pkg="nodelet" type="nodelet"
+        args="load jsk_topic_tools/Passthrough $(arg MANAGER)"
+        machine="$(arg MACHINE)">
+    <remap from="~input" to="$(arg INPUT_FEATURE)"/>
+    <rosparam>
+      default_duration: 0.0  # infinite
+    </rosparam>
+  </node>
+
+  <node name="point_pose_extractor_elevator_call_panel"
+        pkg="jsk_perception" type="point_pose_extractor"
+        machine="$(arg MACHINE)">
+    <!-- input -->
+    <remap from="ImageFeature0D" to="pass_through_feature_to_call_panel/output"/>
+    <!-- output -->
+    <remap from="~debug_image" to="point_pose_extractor_elevator_panels/debug_image"/>
+    <rosparam subst_value="true">
+      template_filename: $(find jsk_perception)/template/elevator_call_panel_eng2.png
+      child_frame_id: matching
+      object_width: 0.098
+      object_height: 0.241
+      reprojection_threshold: 1.0
+      distanceratio_threshold: 0.8
+      error_threshold: 60.0
+      theta_step: 0.2
+      phi_step: 5.0
+      relative_pose: "0.1205 0.049 -0.0005 0.0 -0.707107 0.0 0.707107"
+      viewer_window: false
+      window_name: elevator_call_panel
+    </rosparam>
+  </node>
+
+  <node name="pass_through_feature_to_inside_panel"
+        pkg="nodelet" type="nodelet"
+        args="load jsk_topic_tools/Passthrough $(arg MANAGER)"
+        machine="$(arg MACHINE)">
+    <remap from="~input" to="$(arg INPUT_FEATURE)"/>
+    <rosparam>
+      default_duration: 0.0  # infinite
+    </rosparam>
+  </node>
+
+  <node name="point_pose_extractor_elevator_inside_panel"
+        pkg="jsk_perception" type="point_pose_extractor"
+        machine="$(arg MACHINE)">
+    <!-- input -->
+    <remap from="ImageFeature0D" to="pass_through_feature_to_inside_panel/output"/>
+    <!-- output -->
+    <remap from="~debug_image" to="point_pose_extractor_elevator_panels/debug_image"/>
+    <rosparam subst_value="true">
+      template_filename: $(find jsk_perception)/template/elevator_inside_panel_eng2.png
+      child_frame_id: matching
+      object_width: 0.363
+      object_height: 0.294
+      reprojection_threshold: 1.0
+      distanceratio_threshold: 0.8
+      error_threshold: 70.0
+      theta_step: 5.0
+      phi_step: 5.0
+      relative_pose: "0.147 0.1815 -0.0005 0.0 -0.707107 0.0 0.707107"
+      viewer_window: false
+      window_name: elevator_inside_panel
+    </rosparam>
+  </node>
+</launch>

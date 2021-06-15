@@ -1,52 +1,60 @@
 #!/usr/bin/env roseus
 
-(load "lib/llib/unittest.l")
 (ros::roseus-add-msgs "posedetection_msgs")
 
-(ros::roseus "test-panel-pose-detection")
-(defvar *tfl* (instance ros::transform-listener :init))
-(setq *msg* nil)
+(require :unittest "lib/llib/unittest.l")
+
 
 (init-unit-test)
 
-(defun object-detection-cb (msg)
-  (ros::ros-info "*msg*: ~A" (setq *msg* msg)))
 
-(deftest test-call-panel ()
-  (ros::subscribe "/narrow_stereo/left/ObjectDetection"
-                  posedetection_msgs::ObjectDetection #'object-detection-cb)
-  (setq is-ok nil)
-  (setq *distance* -1)
-  (ros::rate 1)
-  (dotimes (cnt 30) ;; 30sec in real
-    (when *msg*
-      (let (co tf)
+(deftest test-elevator-panel ()
+  (let ((tfl (instance ros::transform-listener :init))
+        (dist -1)
+        (max-dist (ros::get-param "~max_distance" 50))
+        (panel-type (ros::get-param "~panel_type" "elevator_call_panel"))
+        co1 co2
+        (msg nil))
+    (unix:usleep (* 100 1000))  ;; Wait for service server
+    (if (equal panel-type "elevator_call_panel")
+        (call-empty-service
+         "/narrow_stereo/left/pass_through_feature_to_call_panel/request")
+      (call-empty-service
+       "/narrow_stereo/left/pass_through_feature_to_inside_panel/request"))
+    (ros::subscribe "/narrow_stereo/left/ObjectDetection"
+                    posedetection_msgs::ObjectDetection
+                    #'(lambda (m) (setq msg m)))
+
+    (ros::rate 1)
+    (dotimes (cnt 30) ;; 30sec in ros time
+      (ros::spin-once)
+      (when msg
         (setq co1 (ros::tf-pose->coords
-                   (send (car (send *msg* :objects)) :pose)))
-        (setq co2 (send *tfl* :lookup-transform
-                        (send *msg* :header :frame_id)
-                        (send (car (send *msg* :objects)) :type)
-                        (send *msg* :header :stamp)))
+                   (send (car (send msg :objects)) :pose)))
+        (setq co2 (send tfl :lookup-transform
+                        (send msg :header :frame_id)
+                        (concatenate string "/" panel-type)
+                        (ros::time 0)))
         (when (and co1 co2)
+          (setq dist (distance (send co1 :pos) (send co2 :pos)))
           (ros::ros-info "co1: ~A" co1)
           (ros::ros-info "co2: ~A" co2)
-          (ros::ros-info "dist: ~A" (distance (send co1 :pos) (send co2 :pos)))
-          (setq *distance* (distance (send co1 :pos) (send co2 :pos)))
-          (when (> 50 (distance (send co1 :pos) (send co2 :pos)))
-            (return)
-          ))
-      (setq *msg* nil)))
-    (ros::spin-once)
-    (ros::sleep))
-  (assert *msg* "/narrow_stereo/left/ObjectDetection not received")
-  (assert (> *distance* 0)
-          (format nil "looking transform not found"))
-  (assert (< *distance* 50)
-          (format nil
-                  "ObjectDetection and TF(in bag) are close: ~A" *distance*))
-  (unix::sleep 15) ;; for making video
-  )
+          (ros::ros-info "dist: ~A" dist)
+          (when (> max-dist dist)
+            (return)))
+        (setq msg nil))
+      (ros::sleep))
+
+    (assert msg "Could not receive /narrow_stereo/left/ObjectDetection")
+    (assert (> dist 0)
+            (format nil "looking transform not found"))
+    (assert (< dist max-dist)
+            (format nil "ObjectDetection and TF(in bag) are not close: ~A"
+                    dist))
+  ))
+
+
+(ros::roseus "test_panel_pose_detection")
 
 (run-all-tests)
-
 (exit)

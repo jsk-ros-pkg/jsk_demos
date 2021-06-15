@@ -9,7 +9,6 @@
 
   <include file="$(find elevator_move_base_pr2)/launch/elevator_move_base_modules.xml">
     <arg name="scene" value="eng8" />
-    <arg name="ROBOT" value="$(arg ROBOT)"/>
   </include>
 
 </launch>

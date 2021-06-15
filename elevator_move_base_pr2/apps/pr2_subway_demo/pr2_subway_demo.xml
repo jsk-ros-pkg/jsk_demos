@@ -1,0 +1,4 @@
+<launch>
+  <include file="$(find elevator_move_base_pr2)/launch/elevator_move_base_eng2.launch"/>
+  <include file="$(find elevator_move_base_pr2)/sample/fetch_sandwich.launch"/>
+</launch>
