@@ -107,6 +107,54 @@ edges:
     cost: 10
     args:
       graph: '$(find spot_person_leader)/autowalk/eng2_73B2_to_81C1.walk'
+  - from: 'eng2_2FElevator'
+    to: 'eng2_MainEntrance_upper'
+    type: 'walk'
+    cost: 10
+    args:
+      graph: '$(find spot_person_leader)/autowalk/eng2_2FElevator_to_MainGate.walk'
+  - from: 'eng2_MainEntrance_upper'
+    to: 'eng2_2FElevator'
+    type: 'walk'
+    cost: 10
+    args:
+      graph: '$(find spot_person_leader)/autowalk/eng2_2FElevator_to_MainGate.walk'
+  - from: 'eng2_MainEntrance_lower'
+    to: 'eng2_MainEntrance_upper'
+    type: 'stair'
+    cost: 10
+    args:
+      graph: '$(find spot_person_leader)/autowalk/eng2_MainEntrance_lower_to_MainGate.walk'
+  - from: 'eng2_MainEntrance_upper'
+    to: 'eng2_MainEntrance_lower'
+    type: 'stair'
+    cost: 10
+    args:
+      graph: '$(find spot_person_leader)/autowalk/eng2_MainEntrance_lower_to_MainGate.walk'
+  - from: 'eng2_MainEntrance_lower'
+    to: 'eng2_MainEntrance_outer'
+    type: 'crosswalk'
+    cost: 10
+    args:
+      graph: '$(find spot_person_leader)/autowalk/eng2_MainEntrance_lower_to_MainGate.walk'
+  - from: 'eng2_MainEntrance_outer'
+    to: 'eng2_MainEntrance_lower'
+    type: 'crosswalk'
+    cost: 10
+    args:
+      graph: '$(find spot_person_leader)/autowalk/eng2_MainEntrance_lower_to_MainGate.walk'
+  - from: 'HongoMainGate'
+    to: 'eng2_MainEntrance_outer'
+    type: 'walk'
+    cost: 10
+    args:
+      graph: '$(find spot_person_leader)/autowalk/eng2_MainEntrance_lower_to_MainGate.walk'
+  - from: 'eng2_MainEntrance_outer'
+    to: 'HongoMainGate'
+    type: 'walk'
+    cost: 10
+    args:
+      graph: '$(find spot_person_leader)/autowalk/eng2_MainEntrance_lower_to_MainGate.walk'
 nodes:
   '73B2':
     name_en: '73B2'
