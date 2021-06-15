@@ -1,0 +1,76 @@
+<launch>
+    <arg name="TOPIC_FRONT_RIGHT" default="/spot/camera/frontright"/>
+    <arg name="TOPIC_FRONT_LEFT" default="/spot/camera/frontleft"/>
+
+    <!-- front right -->
+    <node
+        pkg="nodelet"
+        type="nodelet"
+        name="obstacle_detector_front_right_depth_image_proc"
+        args="standalone depth_image_proc/point_cloud_xyz"
+        >
+        <remap from="camera_info" to="$(arg TOPIC_FRONT_RIGHT)/camera_info"/>
+        <remap from="image_rect" to="$(arg TOPIC_FRONT_RIGHT)/image_rect"/>
+        <remap from="points" to="$(arg TOPIC_FRONT_RIGHT)/points"/>
+    </node>
+    <node
+        pkg="nodelet"
+        type="nodelet"
+        name="obstacle_detector_front_right_attention_clipper"
+        args="standalone jsk_pcl/Attentionclipper"
+        >
+        <remap from="~input/points" to="$(arg TOPIC_FRONT_RIGHT)/points"/>
+        <rosparam subst_value="true">
+            initial_pos: [2.0, 0, 0.5]
+            initial_rot: [0, 0, 0]
+            dimension_x: 2.0
+            dimension_y: 3.0
+            dimension_z: 0.5
+            frame_id: body
+        </rosparam>
+    </node>
+    <node
+        pkg="jsk_pcl_ros"
+        type="extract_indices"
+        name="obstacle_detector_front_right_extract_indices"
+        >
+        <remap from="~input" to="$(arg TOPIC_FRONT_RIGHT)/points"/>
+        <remap from="~indices" to="obstacle_detector_front_right_attention_clipper/output/point_indices"/>
+    </node>
+
+    <!-- front left -->
+    <node
+        pkg="nodelet"
+        type="nodelet"
+        name="obstacle_detector_front_left_depth_image_proc"
+        args="standalone depth_image_proc/point_cloud_xyz"
+        >
+        <remap from="camera_info" to="$(arg TOPIC_FRONT_LEFT)/camera_info"/>
+        <remap from="image_rect" to="$(arg TOPIC_FRONT_LEFT)/image_rect"/>
+        <remap from="points" to="$(arg TOPIC_FRONT_LEFT)/points"/>
+    </node>
+    <node
+        pkg="nodelet"
+        type="nodelet"
+        name="obstacle_detector_front_left_attention_clipper"
+        args="standalone jsk_pcl/Attentionclipper"
+        >
+        <remap from="~input/points" to="$(arg TOPIC_FRONT_LEFT)/points"/>
+        <rosparam subst_value="true">
+            initial_pos: [2.0, 0, 0.5]
+            initial_rot: [0, 0, 0]
+            dimension_x: 2.0
+            dimension_y: 3.0
+            dimension_z: 0.5
+            frame_id: body
+        </rosparam>
+    </node>
+    <node
+        pkg="jsk_pcl_ros"
+        type="extract_indices"
+        name="obstacle_detector_front_left_extract_indices"
+        >
+        <remap from="~input" to="$(arg TOPIC_FRONT_LEFT)/points"/>
+        <remap from="~indices" to="obstacle_detector_front_left_attention_clipper/output/point_indices"/>
+    </node>
+</launch>
