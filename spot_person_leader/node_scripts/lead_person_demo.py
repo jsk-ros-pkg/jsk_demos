@@ -229,6 +229,7 @@ class LeadPersonDemo(object):
                         self._spot_client.pubCmdVel(0,0,0)
                         if not flag_speech:
                             flag_speech = True
+                            speech_thread = threading.Thread(target=notify_visibility)
                             speech_thread.start()
                         if not self._state_visible and self._duration_visibility > rospy.Duration(5.0):
                             self._spot_client.cancel_navigate_to()
@@ -265,6 +266,24 @@ class LeadPersonDemo(object):
                         self._map._nodes[edge['to']]['waypoints_on_graph']
                         )[0]['id']
 
+            self._tmp_last_obstacle_right = rospy.Time()
+            self._tmp_last_obstacle_left = rospy.Time()
+
+            def obstacle_callback_right(msg):
+                if len(msg.data) > 0:
+                    self._tmp_last_obstacle_right = msg.header.stamp
+                    rospy.loginfo('obstacle found in right side')
+
+            def obstacle_callback_left(msg):
+                if len(msg.data) > 0:
+                    self._tmp_last_obstacle_left = msg.header.stamp
+                    rospy.loginfo('obstacle found in left side')
+
+            subscriber_obstacle_callback_right = rospy.Subscriber('/spot_recognition/right_obstacle', PointCloud2, obstacle_callback_right)
+            subscriber_obstacle_callback_left = rospy.Subscriber('/spot_recognition/left_obstacle', PointCloud2, obstacle_callback_left)
+
+            rospy.loginfo('start obstacle subscription')
+
             # graph uploading and localization
             if self._pre_edge is not None and \
                 graph_name == self._pre_edge['args']['graph']:
@@ -283,23 +302,34 @@ class LeadPersonDemo(object):
                     return False
                 rospy.loginfo('robot is localized on the graph.')
 
-            last_obstacle_right = rospy.Time()
-            last_obstacle_left = rospy.Time()
-
-            def obstacle_callback_right(msg):
-                if len(msg.data) > 0:
-                    last_obstacle_right = msg.header.stamp
-
-            def obstacle_callback_left(msg):
-                if len(msg.data) > 0:
-                    last_obstacle_left = msg.header.stamp
-
-            subscriber_obstacle_callback_right = rospy.Subscriber('/spot_recognition/right_obstacles', PointCloud2, obstacle_callback_right)
-            subscriber_obstacle_callback_left = rospy.Subscriber('/spot_recognition/left_obstacles', PointCloud2, obstacle_callback_left)
 
             self._sound_client.say('ついてきてください',
                                    volume=1.0,
                                    blocking=True)
+
+            flag_valid_obstacle_notification = True
+            def notify_obstacle():
+                rate = rospy.Rate(2)
+                while flag_valid_obstacle_notification and not rospy.is_shutdown():
+                    current_time = rospy.Time.now()
+                    if current_time - self._tmp_last_obstacle_right < rospy.Duration(1.0) and current_time - self._tmp_last_obstacle_left < rospy.Duration(1.0):
+                        self._sound_client.say(
+                                '周囲にご注意ください',
+                                blocking=True
+                                )
+                    elif current_time - self._tmp_last_obstacle_right < rospy.Duration(1.0):
+                        self._sound_client.say(
+                                '右にご注意ください',
+                                blocking=True
+                                )
+                    elif current_time - self._tmp_last_obstacle_left < rospy.Duration(1.0):
+                        self._sound_client.say(
+                                '左にご注意ください',
+                                blocking=True
+                                )
+                rospy.logwarn('notify_obstacle finished.')
+            thread_notify_obstacle = threading.Thread(target=notify_obstacle)
+            thread_notify_obstacle.start()
 
             success = False
             rate = rospy.Rate(10)
@@ -329,32 +359,19 @@ class LeadPersonDemo(object):
                         self._spot_client.pubCmdVel(0,0,0)
                         if not flag_speech:
                             flag_speech = True
+                            speech_thread = threading.Thread(target=notify_visibility)
                             speech_thread.start()
                         if not self._state_visible and self._duration_visibility > rospy.Duration(5.0):
                             self._spot_client.cancel_navigate_to()
                         if self._state_visible:
                             self._spot_client.navigate_to( end_id, blocking=False)
 
-                # notification about obstacles
-                current_time = rospy.Time.now()
-                if current_time - last_obstacle_right < rospy.Duration(1.0) and current_time - last_obstacle_left < rospy.Duration(1.0):
-                    self._sound_client.say(
-                            '周囲にご注意ください',
-                            blocking=True
-                            )
-                elif current_time - last_obstacle_right < rospy.Duration(1.0):
-                    self._sound_client.say(
-                            '右にご注意ください',
-                            blocking=True
-                            )
-                elif current_time - last_obstacle_left < rospy.Duration(1.0):
-                    self._sound_client.say(
-                            '左にご注意ください',
-                            blocking=True
-                            )
-
+            flag_valid_obstacle_notification = False
+            thread_notify_obstacle.join()
             subscriber_obstacle_callback_right.unregister()
             subscriber_obstacle_callback_left.unregister()
+            del self._tmp_last_obstacle_right
+            del self._tmp_last_obstacle_left
 
             # recovery
             if not success:
@@ -439,6 +456,7 @@ class LeadPersonDemo(object):
                         self._spot_client.pubCmdVel(0,0,0)
                         if not flag_speech:
                             flag_speech = True
+                            speech_thread = threading.Thread(target=notify_visibility)
                             speech_thread.start()
                         if not self._state_visible and self._duration_visibility > rospy.Duration(5.0):
                             self._spot_client.cancel_navigate_to()
@@ -523,7 +541,7 @@ class LeadPersonDemo(object):
                         blocking=True)
                 self._spot_client.navigate_to( start_id, blocking=True)
                 self._spot_client.wait_for_navigate_to_result()
-            else
+            else:
                 rate = rospy.Rate(10)
                 self._sound_client.startWaveFromPkg('spot_person_leader','resources/akatonbo.ogg')
                 while not rospy.is_shutdown():
