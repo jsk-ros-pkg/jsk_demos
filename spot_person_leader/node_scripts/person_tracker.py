@@ -82,7 +82,7 @@ class PersonTracker(object):
                     is_person_visible = True
                     break
         self._pub_people_pose_array.publish(people_pose_array)
-        self._pub_visible(Bool(is_person_visible))
+        self._pub_visible.publish(Bool(is_person_visible))
 
 def main():
 
