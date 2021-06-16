@@ -39,4 +39,7 @@
             timeout_observation: 5.0
         </rosparam>
     </node>
+
+    <include
+        file="$(find spot_person_leader)/launch/obstacle_detector.launch" />
 </launch>

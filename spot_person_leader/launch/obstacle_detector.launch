@@ -21,11 +21,11 @@
         >
         <remap from="~input/points" to="$(arg TOPIC_FRONT_RIGHT)/points"/>
         <rosparam subst_value="true">
-            initial_pos: [1.0, 0, 0.5]
+            initial_pos: [1.0, 0, 0]
             initial_rot: [0, 0, 0]
             dimension_x: 1.0
             dimension_y: 1.5
-            dimension_z: 0
+            dimension_z: 0.5
             frame_id: "body"
         </rosparam>
     </node>
@@ -36,6 +36,7 @@
         >
         <remap from="~input" to="$(arg TOPIC_FRONT_RIGHT)/points"/>
         <remap from="~indices" to="obstacle_detector_front_right_attention_clipper/output/point_indices"/>
+        <remap from="~output" to="/spot_recognition/left_obstacle"/>
     </node>
 
     <!-- front left -->
@@ -57,11 +58,11 @@
         >
         <remap from="~input/points" to="$(arg TOPIC_FRONT_LEFT)/points"/>
         <rosparam subst_value="true">
-            initial_pos: [1.0, 0, 0.5]
+            initial_pos: [1.0, 0, 0]
             initial_rot: [0, 0, 0]
             dimension_x: 1.0
             dimension_y: 1.5
-            dimension_z: 0
+            dimension_z: 0.5
             frame_id: "body"
         </rosparam>
     </node>
@@ -72,5 +73,6 @@
         >
         <remap from="~input" to="$(arg TOPIC_FRONT_LEFT)/points"/>
         <remap from="~indices" to="obstacle_detector_front_left_attention_clipper/output/point_indices"/>
+        <remap from="~output" to="/spot_recognition/right_obstacle"/>
     </node>
 </launch>
