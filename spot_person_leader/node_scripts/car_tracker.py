@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+import threading
+
 import PyKDL
 import rospy
 import message_filters
@@ -69,8 +71,8 @@ class TrackedObject(object):
             self.last_observed = observed_time
 
             # Update State
-            if (self.state == self.LOST or self.state == self.UNKNOWN) or
-                (self.velocity.Norm() < threshold_velocity) or
+            if (self.state == self.LOST or self.state == self.UNKNOWN) or \
+                (self.velocity.Norm() < threshold_velocity) or \
                 ((robot_position_fixedbased - self.position).Norm() > threshold_distance):
                 self.state = self.FOUND
             else:
@@ -191,7 +193,7 @@ class MultiObjectTracker(object):
 
     def spin(self):
 
-        rate = rospy.Spin(1)
+        rate = rospy.Rate(2)
         while not rospy.is_shutdown():
 
             rate.sleep()
@@ -200,7 +202,7 @@ class MultiObjectTracker(object):
 
                 exist_moving_object = False
                 for key in self._dict_objects:
-                    if self._dict_objects[key].state:
+                    if self._dict_objects[key].state == TrackedObject.MOVING:
                         exist_moving_object = True
 
                 self._pub_visible.publish(Bool(exist_moving_object))
