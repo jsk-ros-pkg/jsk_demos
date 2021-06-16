@@ -148,7 +148,7 @@ class LeadPersonDemo(object):
                 return
 
         self._sound_client.say('目的地に到着しました.'.format(goal.target_node),
-                               volume=10.0)
+                               volume=1.0)
 
         result = LeadPersonResult(success=True)
         self._server_lead_person.set_succeeded(result)
@@ -198,7 +198,7 @@ class LeadPersonDemo(object):
                 rospy.loginfo('robot is localized on the graph.')
 
             self._sound_client.say('ついてきてください',
-                                   volume=10.0,
+                                   volume=1.0,
                                    blocking=True)
 
             success = False
@@ -218,7 +218,7 @@ class LeadPersonDemo(object):
                     def notify_visibility():
                         self._sound_client.say(
                             '近くに人が見えません',
-                            volume=10.0,
+                            volume=1.0,
                             blocking=True
                             )
                         flag_speech = False
@@ -239,7 +239,7 @@ class LeadPersonDemo(object):
             if not success:
                 self._sound_client.say(
                         '失敗したので元に戻ります',
-                        volume=10.0,
+                        volume=1.0,
                         blocking=True)
                 self._spot_client.navigate_to( start_id, blocking=True)
                 self._spot_client.wait_for_navigate_to_result()
@@ -298,7 +298,7 @@ class LeadPersonDemo(object):
             subscriber_obstacle_callback_left = rospy.Subscriber('/spot_recognition/left_obstacles', PointCloud2, obstacle_callback_left)
 
             self._sound_client.say('ついてきてください',
-                                   volume=10.0,
+                                   volume=1.0,
                                    blocking=True)
 
             success = False
@@ -318,7 +318,7 @@ class LeadPersonDemo(object):
                     def notify_visibility():
                         self._sound_client.say(
                             '近くに人が見えません',
-                            volume=10.0,
+                            volume=1.0,
                             blocking=True
                             )
                         flag_speech = False
@@ -360,7 +360,7 @@ class LeadPersonDemo(object):
             if not success:
                 self._sound_client.say(
                         '失敗したので元に戻ります',
-                        volume=10.0,
+                        volume=1.0,
                         blocking=True)
                 self._spot_client.navigate_to( start_id, blocking=True)
                 self._spot_client.wait_for_navigate_to_result()
@@ -408,7 +408,7 @@ class LeadPersonDemo(object):
             #   safety validation before crosswalk passing
 
             self._sound_client.say('ついてきてください',
-                                   volume=10.0,
+                                   volume=1.0,
                                    blocking=True)
 
             success = False
@@ -428,7 +428,7 @@ class LeadPersonDemo(object):
                     def notify_visibility():
                         self._sound_client.say(
                             '近くに人が見えません',
-                            volume=10.0,
+                            volume=1.0,
                             blocking=True
                             )
                         flag_speech = False
@@ -449,7 +449,7 @@ class LeadPersonDemo(object):
             if not success:
                 self._sound_client.say(
                         '失敗したので元に戻ります',
-                        volume=10.0,
+                        volume=1.0,
                         blocking=True)
                 self._spot_client.navigate_to( start_id, blocking=True)
                 self._spot_client.wait_for_navigate_to_result()
@@ -508,7 +508,7 @@ class LeadPersonDemo(object):
 
             self._sound_client.say(
                     '階段は危ないので私が昇り降りしている間は近づかないでください',
-                    volume=10.0,
+                    volume=1.0,
                     blocking=True)
 
             self._spot_client.navigate_to( end_id, blocking=True)
@@ -519,7 +519,7 @@ class LeadPersonDemo(object):
             if not result.success:
                 self._sound_client.say(
                         '失敗したので元に戻ります',
-                        volume=10.0,
+                        volume=1.0,
                         blocking=True)
                 self._spot_client.navigate_to( start_id, blocking=True)
                 self._spot_client.wait_for_navigate_to_result()
@@ -534,7 +534,7 @@ class LeadPersonDemo(object):
 
                 self._sound_client.say(
                         'おまちしておりました',
-                        volume=10.0,
+                        volume=1.0,
                         blocking=True)
 
             return result.success
@@ -560,7 +560,7 @@ class LeadPersonDemo(object):
 
             self._sound_client.say(
                     '私は階段で行くので、エレベーターで移動してください',
-                    volume=10.0,
+                    volume=1.0,
                     blocking=True)
 
             # graph uploading and localization
@@ -590,7 +590,7 @@ class LeadPersonDemo(object):
                 rospy.logwarn('失敗したので元に戻ります')
                 self._sound_client.say(
                         '失敗したので元に戻ります',
-                        volume=10.0,
+                        volume=1.0,
                         blocking=True)
                 self._spot_client.navigate_to( start_id, blocking=True)
                 self._spot_client.wait_for_navigate_to_result()
@@ -604,7 +604,7 @@ class LeadPersonDemo(object):
                         break
                 self._sound_client.say(
                         'おまちしておりました',
-                        volume=10.0,
+                        volume=1.0,
                         blocking=True)
 
             return result.success
