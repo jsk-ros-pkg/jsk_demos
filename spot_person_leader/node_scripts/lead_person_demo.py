@@ -11,6 +11,7 @@ import rospy
 from sound_play.libsoundplay import SoundClient
 from spot_ros_client.libspotros import SpotRosClient
 
+from sensor_msgs.msg import PointCloud2
 from std_msgs.msg import String
 from spot_person_leader.msg import LeadPersonAction, LeadPersonFeedback, LeadPersonResult
 from spot_person_leader.srv import ResetCurrentNode, ResetCurrentNodeResponse
@@ -282,6 +283,20 @@ class LeadPersonDemo(object):
                     return False
                 rospy.loginfo('robot is localized on the graph.')
 
+            last_obstacle_right = rospy.Time()
+            last_obstacle_left = rospy.Time()
+
+            def obstacle_callback_right(msg):
+                if len(msg.data) > 0:
+                    last_obstacle_right = msg.header.stamp
+
+            def obstacle_callback_left(msg):
+                if len(msg.data) > 0:
+                    last_obstacle_left = msg.header.stamp
+
+            subscriber_obstacle_callback_right = rospy.Subscriber('/spot_recognition/right_obstacles', PointCloud2, obstacle_callback_right)
+            subscriber_obstacle_callback_left = rospy.Subscriber('/spot_recognition/left_obstacles', PointCloud2, obstacle_callback_left)
+
             self._sound_client.say('ついてきてください',
                                    volume=10.0,
                                    blocking=True)
@@ -320,8 +335,26 @@ class LeadPersonDemo(object):
                         if self._state_visible:
                             self._spot_client.navigate_to( end_id, blocking=False)
 
-                # TODO:
-                #   notification about obstacles
+                # notification about obstacles
+                current_time = rospy.Time.now()
+                if current_time - last_obstacle_right < rospy.Duration(1.0) and current_time - last_obstacle_left < rospy.Duration(1.0):
+                    self._sound_client.say(
+                            '周囲にご注意ください',
+                            blocking=True
+                            )
+                elif current_time - last_obstacle_right < rospy.Duration(1.0):
+                    self._sound_client.say(
+                            '右にご注意ください',
+                            blocking=True
+                            )
+                elif current_time - last_obstacle_left < rospy.Duration(1.0):
+                    self._sound_client.say(
+                            '左にご注意ください',
+                            blocking=True
+                            )
+
+            subscriber_obstacle_callback_right.unregister()
+            subscriber_obstacle_callback_left.unregister()
 
             # recovery
             if not success:
