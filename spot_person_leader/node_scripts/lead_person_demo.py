@@ -185,8 +185,13 @@ class LeadPersonDemo(object):
                 rospy.loginfo('graph upload and localization skipped.')
             else:
                 # Upload
+                self._spot_client.clear_graph()
+                self._spot_client.sit()
+                self._spot_client.power_off()
                 self._spot_client.upload_graph( graph_name )
                 rospy.loginfo('graph {} uploaded.'.format(graph_name))
+                self._spot_client.power_on()
+                self._spot_client.stand()
                 # Localization
                 if localization_method == 'fiducial':
                     self._spot_client.set_localization_fiducial()
@@ -290,8 +295,13 @@ class LeadPersonDemo(object):
                 rospy.loginfo('graph upload and localization skipped.')
             else:
                 # Upload
+                self._spot_client.clear_graph()
+                self._spot_client.sit()
+                self._spot_client.power_off()
                 self._spot_client.upload_graph( graph_name )
                 rospy.loginfo('graph {} uploaded.'.format(graph_name))
+                self._spot_client.power_on()
+                self._spot_client.stand()
                 # Localization
                 if localization_method == 'fiducial':
                     self._spot_client.set_localization_fiducial()
@@ -409,8 +419,13 @@ class LeadPersonDemo(object):
                 rospy.loginfo('graph upload and localization skipped.')
             else:
                 # Upload
+                self._spot_client.clear_graph()
+                self._spot_client.sit()
+                self._spot_client.power_off()
                 self._spot_client.upload_graph( graph_name )
                 rospy.loginfo('graph {} uploaded.'.format(graph_name))
+                self._spot_client.power_on()
+                self._spot_client.stand()
                 # Localization
                 if localization_method == 'fiducial':
                     self._spot_client.set_localization_fiducial()
@@ -499,8 +514,13 @@ class LeadPersonDemo(object):
                 rospy.loginfo('graph upload and localization skipped.')
             else:
                 # Upload
+                self._spot_client.clear_graph()
+                self._spot_client.sit()
+                self._spot_client.power_off()
                 self._spot_client.upload_graph( graph_name )
                 rospy.loginfo('graph {} uploaded.'.format(graph_name))
+                self._spot_client.power_on()
+                self._spot_client.stand()
                 # Localization
                 if localization_method == 'fiducial':
                     self._spot_client.set_localization_fiducial()
@@ -587,8 +607,13 @@ class LeadPersonDemo(object):
                 rospy.loginfo('graph upload and localization skipped.')
             else:
                 # Upload
+                self._spot_client.clear_graph()
+                self._spot_client.sit()
+                self._spot_client.power_off()
                 self._spot_client.upload_graph( graph_name )
                 rospy.loginfo('graph {} uploaded.'.format(graph_name))
+                self._spot_client.power_on()
+                self._spot_client.stand()
                 # Localization
                 if localization_method == 'fiducial':
                     self._spot_client.set_localization_fiducial()
