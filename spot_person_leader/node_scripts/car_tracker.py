@@ -133,8 +133,6 @@ class MultiObjectTracker(object):
                    msg_bbox_array,
                    msg_tracking_labels):
 
-        rospy.loginfo('callback called')
-
         if msg_bbox_array.header.frame_id != self._frame_fixed:
             rospy.logerr('frame_id of bbox (which is {}) array must be the same `~frame_fixed` which is {}'.format(
                 msg_bbox_array.header.frame_id,
@@ -159,6 +157,9 @@ class MultiObjectTracker(object):
         with self._lock_for_dict_objects:
             # add new object and update existing object state
             for bbox, tracking_label in zip(msg_bbox_array.boxes, msg_tracking_labels.labels):
+
+                if bbox.label not in self._thresholds_distance.keys():
+                    continue
 
                 if tracking_label.id not in self._dict_objects:
                     if len(self._dict_objects) < self._num_max_track:
