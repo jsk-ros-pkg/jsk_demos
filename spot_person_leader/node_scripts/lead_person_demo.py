@@ -616,6 +616,7 @@ class LeadPersonDemo(object):
 
             switchbot_goal = SwitchBotcommandActionGoal()
             switchbot_goal.device_name = self._map._nodes[edge['from']]['switchbot_device']
+            switchbot_goal.command = 'press'
 
             self._sound_client.say(
                     '私は階段で行くので、エレベーターで{}階に移動してください'.format(
