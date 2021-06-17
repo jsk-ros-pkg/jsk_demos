@@ -1,4 +1,6 @@
 <launch>
+    <arg name="switchbot_token"/>
+
     <node
         pkg="spot_person_leader"
         type="lead_person_demo.py"
@@ -60,6 +62,11 @@
             threshold_lost_duration: 1.0
         </rosparam>
     </node>
+
+    <include
+        file="$(find switchbot_ros)/launch/switchbot.launch">
+        <arg name="token" value="$(arg switchbot_token)"/>
+    </include>
 
     <include
         file="$(find spot_person_leader)/launch/obstacle_detector.launch" />
