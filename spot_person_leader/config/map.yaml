@@ -1,13 +1,13 @@
 edges:
   - from: 'eng2_2FElevator'
     to: 'eng2_2FEntrance'
-    type: 'walk'
+    type: 'narrow'
     cost: 10
     args:
       graph: '$(find spot_person_leader)/autowalk/eng2_2FElevator_to_2FEntrance.walk'
   - from: 'eng2_2FEntrance'
     to: 'eng2_2FElevator'
-    type: 'walk'
+    type: 'narrow'
     cost: 10
     args:
       graph: '$(find spot_person_leader)/autowalk/eng2_2FElevator_to_2FEntrance.walk'
@@ -25,25 +25,25 @@ edges:
       graph: '$(find spot_person_leader)/autowalk/eng2_7FElevator_to_2FElevator.walk'
   - from: '73B2'
     to: '7FElevator'
-    type: 'walk'
+    type: 'narrow'
     cost: 10
     args:
       graph: '$(find spot_person_leader)/autowalk/eng2_73B2_to_7FElevator.walk'
   - from: '7FElevator'
     to: '73B2'
-    type: 'walk'
+    type: 'narrow'
     cost: 10
     args:
       graph: '$(find spot_person_leader)/autowalk/eng2_73B2_to_7FElevator.walk'
   - from: '73B2'
     to: '73A2'
-    type: 'walk'
+    type: 'narrow'
     cost: 10
     args:
       graph: '$(find spot_person_leader)/autowalk/eng2_73B2_to_7FElevator.walk'
   - from: '73A2'
     to: '73B2'
-    type: 'walk'
+    type: 'narrow'
     cost: 10
     args:
       graph: '$(find spot_person_leader)/autowalk/eng2_73B2_to_7FElevator.walk'
@@ -61,13 +61,13 @@ edges:
       graph: '$(find spot_person_leader)/autowalk/eng2_73B2_to_7FElevator.walk'
   - from: '73B2'
     to: '7FstairTo8F'
-    type: 'walk'
+    type: 'narrow'
     cost: 10
     args:
       graph: '$(find spot_person_leader)/autowalk/eng2_73B2_to_81C1.walk'
   - from: '7FstairTo8F'
     to: '73B2'
-    type: 'walk'
+    type: 'narrow'
     cost: 10
     args:
       graph: '$(find spot_person_leader)/autowalk/eng2_73B2_to_81C1.walk'
@@ -95,27 +95,15 @@ edges:
     cost: 10
     args:
       graph: '$(find spot_person_leader)/autowalk/eng2_73B2_to_81C1.walk'
-  - from: '7FstairTo8F'
-    to: '8FstairTo7F'
-    type: 'stair'
-    cost: 10
-    args:
-      graph: '$(find spot_person_leader)/autowalk/eng2_73B2_to_81C1.walk'
-  - from: '8FstairTo7F'
-    to: '7FstairTo8F'
-    type: 'stair'
-    cost: 10
-    args:
-      graph: '$(find spot_person_leader)/autowalk/eng2_73B2_to_81C1.walk'
   - from: 'eng2_2FElevator'
     to: 'eng2_MainEntrance_upper'
-    type: 'walk'
+    type: 'narrow'
     cost: 10
     args:
       graph: '$(find spot_person_leader)/autowalk/eng2_2FElevator_to_MainGate.walk'
   - from: 'eng2_MainEntrance_upper'
     to: 'eng2_2FElevator'
-    type: 'walk'
+    type: 'narrow'
     cost: 10
     args:
       graph: '$(find spot_person_leader)/autowalk/eng2_2FElevator_to_MainGate.walk'
