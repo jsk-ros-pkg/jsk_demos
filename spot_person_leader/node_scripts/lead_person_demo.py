@@ -16,7 +16,7 @@ from std_msgs.msg import String
 from spot_person_leader.msg import LeadPersonAction, LeadPersonFeedback, LeadPersonResult
 from spot_person_leader.srv import ResetCurrentNode, ResetCurrentNodeResponse
 from std_msgs.msg import Bool
-from switchbot_ros.msg import SwitchBotcommandActionGoal, SwitchBotCommandAction
+from switchbot_ros.msg import SwitchBotCommandGoal, SwitchBotCommandAction
 
 
 
@@ -614,7 +614,7 @@ class LeadPersonDemo(object):
                         self._map._nodes[edge['to']]['waypoints_on_graph']
                         )[0]['id']
 
-            switchbot_goal = SwitchBotcommandActionGoal()
+            switchbot_goal = SwitchBotCommandGoal()
             switchbot_goal.device_name = self._map._nodes[edge['from']]['switchbot_device']
             switchbot_goal.command = 'press'
 
