@@ -32,6 +32,14 @@ def main():
 
     download_data(
         pkg_name=PKG,
+        path='autowalk/eng2_elevator_7FElevator_to_2FElevator.walk.tar.gz',
+        url='https://drive.google.com/uc?id=1iyx0y1dPu4HUPMNepR_VaZd_WEaC5Lku',
+        md5='915916d084abd54c2c17f0738a726da3',
+        extract=True
+    )
+
+    download_data(
+        pkg_name=PKG,
         path='autowalk/eng2_2FElevator_to_2FEntrance.walk.tar.gz',
         url='https://drive.google.com/uc?id=1cYUn_qnRslWuH0ZMEBN6ovqmdcUB0MzY',
         md5='78c6e1e8e5967b216c9f53e38893750e',
