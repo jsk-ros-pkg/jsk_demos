@@ -436,16 +436,27 @@ class LeadPersonDemo(object):
                     return False
                 rospy.loginfo('robot is localized on the graph.')
 
-            # TODO:
-            #   safety validation before crosswalk passing
+            safety_count = 0
+            while not rospy.is_shutdown():
+                if safety_count > 10:
+                    break;
+                try:
+                    is_visible_car = rospy.wait_for_message('/car_tracker/visible', Bool)
+                    if is_visible_car:
+                        safety_count = 0
+                    else:
+                        safety_count += 1
+                except Exception as e:
+                    safety_count = 0
 
             self._sound_client.say('ついてきてください',
                                    volume=1.0,
                                    blocking=True)
 
             success = False
-            rate = rospy.Rate(10)
             self._spot_client.navigate_to( end_id, blocking=False)
+
+            rate = rospy.Rate(10)
             while not rospy.is_shutdown():
                 rate.sleep()
 
