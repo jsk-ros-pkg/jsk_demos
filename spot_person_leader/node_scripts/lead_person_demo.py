@@ -16,6 +16,7 @@ from std_msgs.msg import String
 from spot_person_leader.msg import LeadPersonAction, LeadPersonFeedback, LeadPersonResult
 from spot_person_leader.srv import ResetCurrentNode, ResetCurrentNodeResponse
 from std_msgs.msg import Bool
+from switchbot_ros.msg import SwitchBotcommandActionGoal, SwitchBotCommandAction
 
 
 
@@ -74,6 +75,12 @@ class LeadPersonDemo(object):
 
         # publisher
         self._pub_current_node = rospy.Publisher('~/current_node',String,queue_size=1)
+
+        # action client
+        self._ac_switchbot = actionlib.SimpleActionClient(
+                                    '/switchbot_ros/switch',
+                                    SwitchBotCommandAction
+                                    )
 
         # reset service
         self._service_reset = rospy.Service(
@@ -607,8 +614,13 @@ class LeadPersonDemo(object):
                         self._map._nodes[edge['to']]['waypoints_on_graph']
                         )[0]['id']
 
+            switchbot_goal = SwitchBotcommandActionGoal()
+            switchbot_goal.device_name = self._map._nodes[edge['from']]['switchbot_device']
+
             self._sound_client.say(
-                    '私は階段で行くので、エレベーターで移動してください',
+                    '私は階段で行くので、エレベーターで{}階に移動してください'.format(
+                        self._map._nodes[edge['to']]['floor']
+                    ),
                     volume=1.0,
                     blocking=True)
 

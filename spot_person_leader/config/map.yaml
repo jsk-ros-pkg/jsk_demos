@@ -171,6 +171,8 @@ nodes:
       - graph: '$(find spot_person_leader)/autowalk/eng2_7FElevator_to_2FElevator.walk'
         id: 'larger-mudcat-0x3bt3Dif.1QU9JfXpyQPw=='
         localization_method: 'fiducial'
+    switchbot_device: '/eng2/7f/elevator/down/button'
+    floor: 7
   '7FstairTo8F':
     name_en: 'Stair'
     name_jp: '階段'
@@ -205,6 +207,8 @@ nodes:
       - graph: '$(find spot_person_leader)/autowalk/eng2_2FElevator_to_MainGate.walk'
         id: 'banner-oxen-UrEwTUbZYL0IQnY5TCFwrA=='
         localization_method: 'fiducial'
+    switchbot_device: '/eng2/2f/elevator/up/button'
+    floor: 2
   'eng2_2FEntrance':
     name_en: 'Entrance'
     name_jp: '入り口'
