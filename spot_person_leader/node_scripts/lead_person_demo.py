@@ -617,6 +617,7 @@ class LeadPersonDemo(object):
             switchbot_goal = SwitchBotCommandGoal()
             switchbot_goal.device_name = self._map._nodes[edge['from']]['switchbot_device']
             switchbot_goal.command = 'press'
+            self._ac_switchbot.send_goal(switchbot_goal)
 
             self._sound_client.say(
                     '私は階段で行くので、エレベーターで{}階に移動してください'.format(
@@ -673,6 +674,90 @@ class LeadPersonDemo(object):
                         'おまちしておりました',
                         volume=1.0,
                         blocking=True)
+
+            return result.success
+
+        elif edge['type'] == 'elevator':
+            #
+            # Edge Type : elevator
+            #
+
+            graph_name = edge['args']['graph']
+            start_id = filter(
+                        lambda x: x['graph'] == graph_name,
+                        self._map._nodes[edge['from']]['waypoints_on_graph']
+                        )[0]['id']
+            localization_method = filter(
+                        lambda x: x['graph'] == graph_name,
+                        self._map._nodes[edge['from']]['waypoints_on_graph']
+                        )[0]['localization_method']
+            rest_waypoint_id = edge['args']['rest_waypoint_id']
+            end_id = filter(
+                        lambda x: x['graph'] == graph_name,
+                        self._map._nodes[edge['to']]['waypoints_on_graph']
+                        )[0]['id']
+
+            switchbot_goal = SwitchBotCommandGoal()
+            switchbot_goal.device_name = self._map._nodes[edge['from']]['switchbot_device']
+            switchbot_goal.command = 'press'
+            self._ac_switchbot.send_goal(switchbot_goal)
+
+            self._sound_client.say(
+                    'エレベーターで移動します',
+                    volume=1.0,
+                    blocking=True)
+
+            # graph uploading and localization
+            if self._pre_edge is not None and \
+                graph_name == self._pre_edge['args']['graph']:
+                rospy.loginfo('graph upload and localization skipped.')
+            else:
+                # Upload
+                self._spot_client.clear_graph()
+                self._spot_client.sit()
+                self._spot_client.power_off()
+                self._spot_client.upload_graph( graph_name )
+                rospy.loginfo('graph {} uploaded.'.format(graph_name))
+                self._spot_client.power_on()
+                self._spot_client.stand()
+                # Localization
+                if localization_method == 'fiducial':
+                    self._spot_client.set_localization_fiducial()
+                elif localization_method == 'waypoint':
+                    self._spot_client.set_localization_waypoint(start_id)
+                else:
+                    rospy.logerr('Unknown localization method')
+                    return False
+                rospy.loginfo('robot is localized on the graph.')
+
+            self._sound_client.say(
+                    '{}階を押してください'.format(
+                        self._map._nodes[edge['to']]['floor']
+                    ),
+                    volume=1.0,
+                    blocking=True)
+
+            # TODO: check if the door of a elevator is open
+            self._spot_client.navigate_to( rest_waypoint_id, blocking=True)
+            self._spot_client.wait_for_navigate_to_result()
+            result = self._spot_client.get_navigate_to_result()
+            ## recovery when riding on
+            if not result.success:
+                rospy.logwarn('失敗したので元に戻ります')
+                self._sound_client.say(
+                        '失敗したので元に戻ります',
+                        volume=1.0,
+                        blocking=True)
+                self._spot_client.navigate_to( start_id, blocking=True)
+                self._spot_client.wait_for_navigate_to_result()
+                return result.success
+
+            # TODO: check if the door of a elevator is open after once closed
+            self._spot_client.sit()
+            self._spot_client.stand()
+            self._spot_client.navigate_to( end_id, blocking=True)
+            self._spot_client.wait_for_navigate_to_result()
+            result = self._spot_client.get_navigate_to_result()
 
             return result.success
 
