@@ -284,12 +284,10 @@ class LeadPersonDemo(object):
             def obstacle_callback_right(msg):
                 if len(msg.data) > 0:
                     self._tmp_last_obstacle_right = msg.header.stamp
-                    rospy.loginfo('obstacle found in right side')
 
             def obstacle_callback_left(msg):
                 if len(msg.data) > 0:
                     self._tmp_last_obstacle_left = msg.header.stamp
-                    rospy.loginfo('obstacle found in left side')
 
             subscriber_obstacle_callback_right = rospy.Subscriber('/spot_recognition/right_obstacle', PointCloud2, obstacle_callback_right)
             subscriber_obstacle_callback_left = rospy.Subscriber('/spot_recognition/left_obstacle', PointCloud2, obstacle_callback_left)
@@ -701,6 +699,9 @@ class LeadPersonDemo(object):
             switchbot_goal.device_name = self._map._nodes[edge['from']]['switchbot_device']
             switchbot_goal.command = 'press'
             self._ac_switchbot.send_goal(switchbot_goal)
+            self._ac_switchbot.wait_for_result() # TODO: add timeout and error handling
+            result = self._ac_switchbot.get_result()
+            rospy.loginfo('switchbot result: {}'.format(result))
 
             self._sound_client.say(
                     'エレベーターで移動します',
@@ -730,13 +731,6 @@ class LeadPersonDemo(object):
                     return False
                 rospy.loginfo('robot is localized on the graph.')
 
-            self._sound_client.say(
-                    '{}階を押してください'.format(
-                        self._map._nodes[edge['to']]['floor']
-                    ),
-                    volume=1.0,
-                    blocking=True)
-
             # TODO: check if the door of a elevator is open
             self._spot_client.navigate_to( rest_waypoint_id, blocking=True)
             self._spot_client.wait_for_navigate_to_result()
@@ -751,9 +745,21 @@ class LeadPersonDemo(object):
                 self._spot_client.navigate_to( start_id, blocking=True)
                 self._spot_client.wait_for_navigate_to_result()
                 return result.success
+            else:
+                self._sound_client.say(
+                    '{}階を押してください'.format(
+                        self._map._nodes[edge['to']]['floor']
+                    ),
+                    volume=1.0,
+                    blocking=True)
 
             # TODO: check if the door of a elevator is open after once closed
             self._spot_client.sit()
+            self._sound_client.say(
+                    '20秒まちます',
+                    volume=1.0,
+                    blocking=True)
+            rospy.sleep(20)
             self._spot_client.stand()
             self._spot_client.navigate_to( end_id, blocking=True)
             self._spot_client.wait_for_navigate_to_result()
