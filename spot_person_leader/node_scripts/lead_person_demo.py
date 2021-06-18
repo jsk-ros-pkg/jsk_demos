@@ -192,13 +192,8 @@ class LeadPersonDemo(object):
                 rospy.loginfo('graph upload and localization skipped.')
             else:
                 # Upload
-                self._spot_client.clear_graph()
-                self._spot_client.sit()
-                self._spot_client.power_off()
                 self._spot_client.upload_graph( graph_name )
                 rospy.loginfo('graph {} uploaded.'.format(graph_name))
-                self._spot_client.power_on()
-                self._spot_client.stand()
                 # Localization
                 if localization_method == 'fiducial':
                     self._spot_client.set_localization_fiducial()
@@ -300,13 +295,8 @@ class LeadPersonDemo(object):
                 rospy.loginfo('graph upload and localization skipped.')
             else:
                 # Upload
-                self._spot_client.clear_graph()
-                self._spot_client.sit()
-                self._spot_client.power_off()
                 self._spot_client.upload_graph( graph_name )
                 rospy.loginfo('graph {} uploaded.'.format(graph_name))
-                self._spot_client.power_on()
-                self._spot_client.stand()
                 # Localization
                 if localization_method == 'fiducial':
                     self._spot_client.set_localization_fiducial()
@@ -424,13 +414,8 @@ class LeadPersonDemo(object):
                 rospy.loginfo('graph upload and localization skipped.')
             else:
                 # Upload
-                self._spot_client.clear_graph()
-                self._spot_client.sit()
-                self._spot_client.power_off()
                 self._spot_client.upload_graph( graph_name )
                 rospy.loginfo('graph {} uploaded.'.format(graph_name))
-                self._spot_client.power_on()
-                self._spot_client.stand()
                 # Localization
                 if localization_method == 'fiducial':
                     self._spot_client.set_localization_fiducial()
@@ -530,13 +515,8 @@ class LeadPersonDemo(object):
                 rospy.loginfo('graph upload and localization skipped.')
             else:
                 # Upload
-                self._spot_client.clear_graph()
-                self._spot_client.sit()
-                self._spot_client.power_off()
                 self._spot_client.upload_graph( graph_name )
                 rospy.loginfo('graph {} uploaded.'.format(graph_name))
-                self._spot_client.power_on()
-                self._spot_client.stand()
                 # Localization
                 if localization_method == 'fiducial':
                     self._spot_client.set_localization_fiducial()
@@ -630,13 +610,8 @@ class LeadPersonDemo(object):
                 rospy.loginfo('graph upload and localization skipped.')
             else:
                 # Upload
-                self._spot_client.clear_graph()
-                self._spot_client.sit()
-                self._spot_client.power_off()
                 self._spot_client.upload_graph( graph_name )
                 rospy.loginfo('graph {} uploaded.'.format(graph_name))
-                self._spot_client.power_on()
-                self._spot_client.stand()
                 # Localization
                 if localization_method == 'fiducial':
                     self._spot_client.set_localization_fiducial()
@@ -695,32 +670,14 @@ class LeadPersonDemo(object):
                         self._map._nodes[edge['to']]['waypoints_on_graph']
                         )[0]['id']
 
-            switchbot_goal = SwitchBotCommandGoal()
-            switchbot_goal.device_name = self._map._nodes[edge['from']]['switchbot_device']
-            switchbot_goal.command = 'press'
-            self._ac_switchbot.send_goal(switchbot_goal)
-            self._ac_switchbot.wait_for_result() # TODO: add timeout and error handling
-            result = self._ac_switchbot.get_result()
-            rospy.loginfo('switchbot result: {}'.format(result))
-
-            self._sound_client.say(
-                    'エレベーターで移動します',
-                    volume=1.0,
-                    blocking=True)
-
             # graph uploading and localization
             if self._pre_edge is not None and \
                 graph_name == self._pre_edge['args']['graph']:
                 rospy.loginfo('graph upload and localization skipped.')
             else:
                 # Upload
-                self._spot_client.clear_graph()
-                self._spot_client.sit()
-                self._spot_client.power_off()
                 self._spot_client.upload_graph( graph_name )
                 rospy.loginfo('graph {} uploaded.'.format(graph_name))
-                self._spot_client.power_on()
-                self._spot_client.stand()
                 # Localization
                 if localization_method == 'fiducial':
                     self._spot_client.set_localization_fiducial()
@@ -730,6 +687,31 @@ class LeadPersonDemo(object):
                     rospy.logerr('Unknown localization method')
                     return False
                 rospy.loginfo('robot is localized on the graph.')
+
+            switchbot_goal = SwitchBotCommandGoal()
+            switchbot_goal.device_name = self._map._nodes[edge['from']]['switchbot_device']
+            switchbot_goal.command = 'press'
+            self._ac_switchbot.send_goal(switchbot_goal)
+            self._ac_switchbot.wait_for_result()
+            result = self._ac_switchbot.get_result()
+            rospy.loginfo('switchbot result: {}'.format(result))
+
+            if result.done:
+                self._sound_client.say(
+                    'エレベーターで移動します',
+                    volume=1.0,
+                    blocking=True)
+            else:
+                if self._map._nodes[edge['to']]['floor'] > self._map._nodes[edge['to']]['floor']:
+                    self._sound_client.say(
+                        'エレベーターで移動します. 上ボタンを押してください.',
+                        volume=1.0,
+                        blocking=True)
+                else:
+                    self._sound_client.say(
+                        'エレベーターで移動します. 下ボタンを押してください.',
+                        volume=1.0,
+                        blocking=True)
 
             # TODO: check if the door of a elevator is open
             self._spot_client.navigate_to( rest_waypoint_id, blocking=True)
@@ -754,13 +736,12 @@ class LeadPersonDemo(object):
                     blocking=True)
 
             # TODO: check if the door of a elevator is open after once closed
-            self._spot_client.sit()
             self._sound_client.say(
                     '20秒まちます',
                     volume=1.0,
                     blocking=True)
             rospy.sleep(20)
-            self._spot_client.stand()
+
             self._spot_client.navigate_to( end_id, blocking=True)
             self._spot_client.wait_for_navigate_to_result()
             result = self._spot_client.get_navigate_to_result()
