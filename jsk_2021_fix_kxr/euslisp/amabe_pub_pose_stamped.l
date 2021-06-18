@@ -10,7 +10,8 @@
 
 (setq *robot* (dual_panda))
 
-(ros::advertise "/pose_stamped_rarm" geometry_msgs::PoseStamped 1)
+(ros::advertise "/pose_stamped/rarm" geometry_msgs::PoseStamped 1)
+(ros::advertise "/pose_stamped/larm" geometry_msgs::PoseStamped 1)
 
 (defvar *joints* nil)
 
@@ -32,12 +33,14 @@
 (ros::subscribe "/dual_panda/joint_states" sensor_msgs::JointState #'joints-cb 1)
 
 (while (ros::ok)
-  (let ((pose-stamped-rarm (instance geometry_msgs::PoseStamped :init)))
+  (let ((pose-stamped-rarm (instance geometry_msgs::PoseStamped :init) (pose-stamped-larm (instance geometry_msgs::PoseStamped :init))))
     (setq joint-states (coerce (mapcar #'(lambda (x) (rad2deg x)) (coerce *joints* cons)) float-vector))
     (if (= (length joint-states) 14)
 	(send *robot* :angle-vector joint-states))
     (setq pose-stamped-rarm (ros::coords->tf-pose-stamped (send *robot* :rarm :end-coords) "dual_arm_base"))
-    (ros::publish "/pose_stamped_rarm" pose-stamped-rarm)
+    (setq pose-stamped-larm (ros::coords->tf-pose-stamped (send *robot* :larm :end-coords) "dual_arm_base"))
+    (ros::publish "/pose_stamped/rarm" pose-stamped-rarm)
+    (ros::publish "/pose_stamped/larm" pose-stamped-larm)
     (ros::spin-once)
     (ros::sleep)))
 #|
