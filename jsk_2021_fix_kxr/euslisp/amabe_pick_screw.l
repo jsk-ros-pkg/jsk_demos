@@ -1,5 +1,4 @@
-#
-!/usr/bin/env roseus
+#!/usr/bin/env roseus
 
 (require "package://panda_eus/euslisp/dual_panda-interface.l")
 
