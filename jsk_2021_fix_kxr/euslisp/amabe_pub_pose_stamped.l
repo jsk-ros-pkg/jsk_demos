@@ -10,8 +10,8 @@
 
 (setq *robot* (dual_panda))
 
-(ros::advertise "/pose_stamped/rarm" geometry_msgs::PoseStamped 1)
-(ros::advertise "/pose_stamped/larm" geometry_msgs::PoseStamped 1)
+(ros::advertise "/dual_panda/end_coords/rarm" geometry_msgs::PoseStamped 1)
+(ros::advertise "/dual_panda/end_coords/larm" geometry_msgs::PoseStamped 1)
 
 (defvar *joints* nil)
 
@@ -21,6 +21,7 @@
   (setq l (- (length buf) 1))
   (setq i l)
   (setq ans nil)
+  (print "publishing end-coords...")
   (while (<= 0 i)
     (if (and (not (= i 7)) (not (= i 8)) (not (= i 16)) (not (= i 17)))
 	(if (not ans)
@@ -39,28 +40,7 @@
 	(send *robot* :angle-vector joint-states))
     (setq pose-stamped-rarm (ros::coords->tf-pose-stamped (send *robot* :rarm :end-coords) "dual_arm_base"))
     (setq pose-stamped-larm (ros::coords->tf-pose-stamped (send *robot* :larm :end-coords) "dual_arm_base"))
-    (ros::publish "/pose_stamped/rarm" pose-stamped-rarm)
-    (ros::publish "/pose_stamped/larm" pose-stamped-larm)
+    (ros::publish "/dual_panda/end_coords/rarm" pose-stamped-rarm)
+    (ros::publish "/dual_panda/end_coords/larm" pose-stamped-larm)
     (ros::spin-once)
     (ros::sleep)))
-#|
-(ros::load-ros-manifest "sensor_msgs")
-(setq tem (send (one-shot-subscribe "/dual_panda/joint_states" sensor_msgs::JointState) :position))
-(mapcar #'(lambda (x) (rad2deg x)) (list pi pi/2 pi))
-(coerce #f(1 2 3) cons)
-|#
-
-#|
-(setq buf #f(0.0 15.0 0.0 -135.0 0.0 150.0 45.0 7.0 8.0 0.0 15.0 0.0 -135.0 0.0 150.0 45.0 14.0 15.0))
-(setq buf (coerce buf cons))
-(setq l (- (length buf) 1))
-(setq i l)
-(setq ans nil)
-(while (<= 0 i)
-  (if (and (not (= i 7)) (not (= i 8)) (not (= i 16)) (not (= i 17)))
-      (if (not ans)
-	  (setq ans (cons (elt buf i) nil))
-	  (setq ans (cons (elt buf i) ans))))
-  (setq i (- i 1)))
-(coerce ans float-vector)
-|#
