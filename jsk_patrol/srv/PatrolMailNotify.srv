@@ -1,0 +1,6 @@
+std_msgs/String place_name
+std_msgs/String mail_title
+std_msgs/String from_address
+std_msgs/String to_address
+std_msgs/String message
+---
