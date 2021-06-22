@@ -1,6 +1,9 @@
 <launch>
     <arg name="TOPIC_FRONT_RIGHT" default="/spot/depth/frontright"/>
     <arg name="TOPIC_FRONT_LEFT" default="/spot/depth/frontleft"/>
+    <arg name="TOPIC_RIGHT" default="/spot/depth/right"/>
+    <arg name="TOPIC_LEFT" default="/spot/depth/left"/>
+    <arg name="TOPIC_BACK" default="/spot/depth/back"/>
 
     <!-- front right -->
     <node
@@ -13,6 +16,52 @@
         <remap from="image_rect" to="$(arg TOPIC_FRONT_RIGHT)/image"/>
         <remap from="points" to="$(arg TOPIC_FRONT_RIGHT)/points"/>
     </node>
+    <!-- front left -->
+    <node
+        pkg="nodelet"
+        type="nodelet"
+        name="obstacle_detector_front_left_depth_image_proc"
+        args="standalone depth_image_proc/point_cloud_xyz"
+        >
+        <remap from="camera_info" to="$(arg TOPIC_FRONT_LEFT)/camera_info"/>
+        <remap from="image_rect" to="$(arg TOPIC_FRONT_LEFT)/image"/>
+        <remap from="points" to="$(arg TOPIC_FRONT_LEFT)/points"/>
+    </node>
+    <!-- right -->
+    <node
+        pkg="nodelet"
+        type="nodelet"
+        name="obstacle_detector_right_depth_image_proc"
+        args="standalone depth_image_proc/point_cloud_xyz"
+        >
+        <remap from="camera_info" to="$(arg TOPIC_RIGHT)/camera_info"/>
+        <remap from="image_rect" to="$(arg TOPIC_RIGHT)/image"/>
+        <remap from="points" to="$(arg TOPIC_RIGHT)/points"/>
+    </node>
+    <!-- left -->
+    <node
+        pkg="nodelet"
+        type="nodelet"
+        name="obstacle_detector_left_depth_image_proc"
+        args="standalone depth_image_proc/point_cloud_xyz"
+        >
+        <remap from="camera_info" to="$(arg TOPIC_LEFT)/camera_info"/>
+        <remap from="image_rect" to="$(arg TOPIC_LEFT)/image"/>
+        <remap from="points" to="$(arg TOPIC_LEFT)/points"/>
+    </node>
+    <!-- back -->
+    <node
+        pkg="nodelet"
+        type="nodelet"
+        name="obstacle_detector_back_depth_image_proc"
+        args="standalone depth_image_proc/point_cloud_xyz"
+        >
+        <remap from="camera_info" to="$(arg TOPIC_BACK)/camera_info"/>
+        <remap from="image_rect" to="$(arg TOPIC_BACK)/image"/>
+        <remap from="points" to="$(arg TOPIC_BACK)/points"/>
+    </node>
+
+    <!-- left obstacle -->
     <node
         pkg="nodelet"
         type="nodelet"
@@ -39,17 +88,7 @@
         <remap from="~output" to="/spot_recognition/left_obstacle"/>
     </node>
 
-    <!-- front left -->
-    <node
-        pkg="nodelet"
-        type="nodelet"
-        name="obstacle_detector_front_left_depth_image_proc"
-        args="standalone depth_image_proc/point_cloud_xyz"
-        >
-        <remap from="camera_info" to="$(arg TOPIC_FRONT_LEFT)/camera_info"/>
-        <remap from="image_rect" to="$(arg TOPIC_FRONT_LEFT)/image"/>
-        <remap from="points" to="$(arg TOPIC_FRONT_LEFT)/points"/>
-    </node>
+    <!-- right obstacle -->
     <node
         pkg="nodelet"
         type="nodelet"
