@@ -167,6 +167,9 @@ class LeadPersonDemo(object):
             # Not valid
             return False
 
+
+
+
         if edge['type'] == 'walk':
             #
             # Edge Type : walk
@@ -253,6 +256,9 @@ class LeadPersonDemo(object):
                 self._spot_client.wait_for_navigate_to_result()
 
             return success
+
+
+
 
         elif edge['type'] == 'narrow':
             #
@@ -389,6 +395,9 @@ class LeadPersonDemo(object):
 
             return success
 
+
+
+
         elif edge['type'] == 'crosswalk':
             #
             # Edge Type : crosswalk
@@ -490,6 +499,9 @@ class LeadPersonDemo(object):
 
             return success
 
+
+
+
         elif edge['type'] == 'stair':
             #
             # Edge Type : stair
@@ -573,6 +585,9 @@ class LeadPersonDemo(object):
 
             return result.success
 
+
+
+
         elif edge['type'] == 'go_alone_and_wait':
             #
             # Edge Type : go_alone_and_wait
@@ -649,6 +664,9 @@ class LeadPersonDemo(object):
                         blocking=True)
 
             return result.success
+
+
+
 
         elif edge['type'] == 'elevator':
             #
@@ -747,6 +765,9 @@ class LeadPersonDemo(object):
             result = self._spot_client.get_navigate_to_result()
 
             return result.success
+
+
+
 
         else:
             rospy.logerr('Unknown edge type.')
