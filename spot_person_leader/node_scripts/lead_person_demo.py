@@ -919,7 +919,29 @@ class LeadPersonDemo(object):
                         volume=1.0,
                         blocking=True)
 
-            # TODO: check if the door of a elevator is open
+            # check if the door of a elevator is open
+            door_is_open = False
+            def door_point_callback(msg):
+                global door_is_open
+                if len(msg.data) == 0:
+                    door_is_open = True
+                else:
+                    door_is_open = False
+
+            subscriber_door_check = rospy.Subscriber(
+                                        '/spot_recognition/elevator_door_outside_points',
+                                        PointCloud2,
+                                        door_point_callback)
+
+            rate = rospy.Rate(1)
+            while not rospy.is_shutdown():
+                rate.sleep()
+                if door_is_open:
+                    break
+
+            subscriber_door_check.unregister()
+            self._sound_client.say('エレベーターが着きました', volume=1.0, blocking=False)
+
             self._spot_client.navigate_to( rest_waypoint_id, blocking=True)
             self._spot_client.wait_for_navigate_to_result()
             result = self._spot_client.get_navigate_to_result()
@@ -942,13 +964,29 @@ class LeadPersonDemo(object):
                     volume=1.0,
                     blocking=True)
 
-            # TODO: check if the door of a elevator is open after once closed
-            self._sound_client.say(
-                    '20秒まちます',
-                    volume=1.0,
-                    blocking=True)
-            rospy.sleep(20)
+            # check if the door of a elevator is open after once closed
+            subscriber_door_check = rospy.Subscriber(
+                                        '/spot_recognition/elevator_door_inside_points',
+                                        PointCloud2,
+                                        door_point_callback)
+            rate = rospy.Rate(1)
+            while not rospy.is_shutdown():
+                rate.sleep()
+                if not door_is_open:
+                    break
+            rospy.loginfo('door closed')
+            while not rospy.is_shutdown():
+                rate.sleep()
+                if door_is_open:
+                    break
+            rospy.loginfo('door opened')
 
+            self._sound_client.say(
+                    '{}階に着きました'.format(
+                        self._map._nodes[edge['to']]['floor']
+                        ),
+                    volume=1.0,
+                    blocking=False)
             self._spot_client.navigate_to( end_id, blocking=True)
             self._spot_client.wait_for_navigate_to_result()
             result = self._spot_client.get_navigate_to_result()
