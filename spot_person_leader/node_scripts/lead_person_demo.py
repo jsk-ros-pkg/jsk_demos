@@ -18,6 +18,7 @@ from spot_person_leader.srv import ResetCurrentNode, ResetCurrentNodeResponse
 from std_msgs.msg import Bool
 from switchbot_ros.msg import SwitchBotCommandGoal, SwitchBotCommandAction
 
+import roslaunch
 
 
 class Map:
@@ -175,6 +176,16 @@ class LeadPersonDemo(object):
             # Edge Type : walk
             #
 
+            uuid = roslaunch.rlutil.get_or_generate_uuid(None, False)
+            roslaunch.configure_logging(uuid)
+            detection_roslaunch_cli_args = ['spot_person_leader','walk_detection.launch']
+            detection_roslaunch_file = roslaunch.rlutil.resolve_launch_arguments(detection_roslaunch_cli_args)
+            detection_roslaunch_args = cli_args[2:]
+            detection_roslaunch_parent = roslaunch.parent.ROSLaunchParent(
+                                            uuid,
+                                            [(detection_roslaunch_file,detection_roslaunch_args)])
+            detection_roslaunch_parent.start()
+
             graph_name = edge['args']['graph']
             start_id = filter(
                         lambda x: x['graph'] == graph_name,
@@ -204,6 +215,7 @@ class LeadPersonDemo(object):
                     self._spot_client.set_localization_waypoint(start_id)
                 else:
                     rospy.logerr('Unknown localization method')
+                    detection_roslaunch_parent.shutdown()
                     return False
                 rospy.loginfo('robot is localized on the graph.')
 
@@ -255,6 +267,7 @@ class LeadPersonDemo(object):
                 self._spot_client.navigate_to( start_id, blocking=True)
                 self._spot_client.wait_for_navigate_to_result()
 
+            detection_roslaunch_parent.shutdown()
             return success
 
 
@@ -264,6 +277,16 @@ class LeadPersonDemo(object):
             #
             # Edge Type : narrow
             #
+
+            uuid = roslaunch.rlutil.get_or_generate_uuid(None, False)
+            roslaunch.configure_logging(uuid)
+            detection_roslaunch_cli_args = ['spot_person_leader','narrow_detection.launch']
+            detection_roslaunch_file = roslaunch.rlutil.resolve_launch_arguments(detection_roslaunch_cli_args)
+            detection_roslaunch_args = cli_args[2:]
+            detection_roslaunch_parent = roslaunch.parent.ROSLaunchParent(
+                                            uuid,
+                                            [(detection_roslaunch_file,detection_roslaunch_args)])
+            detection_roslaunch_parent.start()
 
             graph_name = edge['args']['graph']
             start_id = filter(
@@ -310,6 +333,7 @@ class LeadPersonDemo(object):
                     self._spot_client.set_localization_waypoint(start_id)
                 else:
                     rospy.logerr('Unknown localization method')
+                    detection_roslaunch_parent.shutdown()
                     return False
                 rospy.loginfo('robot is localized on the graph.')
 
@@ -393,6 +417,7 @@ class LeadPersonDemo(object):
                 self._spot_client.navigate_to( start_id, blocking=True)
                 self._spot_client.wait_for_navigate_to_result()
 
+            detection_roslaunch_parent.shutdown()
             return success
 
 
@@ -402,6 +427,16 @@ class LeadPersonDemo(object):
             #
             # Edge Type : crosswalk
             #
+
+            uuid = roslaunch.rlutil.get_or_generate_uuid(None, False)
+            roslaunch.configure_logging(uuid)
+            detection_roslaunch_cli_args = ['spot_person_leader','crosswalk_detection.launch']
+            detection_roslaunch_file = roslaunch.rlutil.resolve_launch_arguments(detection_roslaunch_cli_args)
+            detection_roslaunch_args = cli_args[2:]
+            detection_roslaunch_parent = roslaunch.parent.ROSLaunchParent(
+                                            uuid,
+                                            [(detection_roslaunch_file,detection_roslaunch_args)])
+            detection_roslaunch_parent.start()
 
             graph_name = edge['args']['graph']
             start_id = filter(
@@ -432,6 +467,7 @@ class LeadPersonDemo(object):
                     self._spot_client.set_localization_waypoint(start_id)
                 else:
                     rospy.logerr('Unknown localization method')
+                    detection_roslaunch_parent.shutdown()
                     return False
                 rospy.loginfo('robot is localized on the graph.')
 
@@ -497,6 +533,7 @@ class LeadPersonDemo(object):
                 self._spot_client.navigate_to( start_id, blocking=True)
                 self._spot_client.wait_for_navigate_to_result()
 
+            detection_roslaunch_parent.shutdown()
             return success
 
 
@@ -506,6 +543,16 @@ class LeadPersonDemo(object):
             #
             # Edge Type : stair
             #
+
+            uuid = roslaunch.rlutil.get_or_generate_uuid(None, False)
+            roslaunch.configure_logging(uuid)
+            detection_roslaunch_cli_args = ['spot_person_leader','stair_detection.launch']
+            detection_roslaunch_file = roslaunch.rlutil.resolve_launch_arguments(detection_roslaunch_cli_args)
+            detection_roslaunch_args = cli_args[2:]
+            detection_roslaunch_parent = roslaunch.parent.ROSLaunchParent(
+                                            uuid,
+                                            [(detection_roslaunch_file,detection_roslaunch_args)])
+            detection_roslaunch_parent.start()
 
             graph_name = edge['args']['graph']
             start_id = filter(
@@ -536,6 +583,7 @@ class LeadPersonDemo(object):
                     self._spot_client.set_localization_waypoint(start_id)
                 else:
                     rospy.logerr('Unknown localization method')
+                    detection_roslaunch_parent.shutdown()
                     return False
                 rospy.loginfo('robot is localized on the graph.')
 
@@ -583,6 +631,7 @@ class LeadPersonDemo(object):
                         volume=1.0,
                         blocking=True)
 
+            detection_roslaunch_parent.shutdown()
             return result.success
 
 
@@ -673,6 +722,16 @@ class LeadPersonDemo(object):
             # Edge Type : elevator
             #
 
+            uuid = roslaunch.rlutil.get_or_generate_uuid(None, False)
+            roslaunch.configure_logging(uuid)
+            detection_roslaunch_cli_args = ['spot_person_leader','elevator_detection.launch']
+            detection_roslaunch_file = roslaunch.rlutil.resolve_launch_arguments(detection_roslaunch_cli_args)
+            detection_roslaunch_args = cli_args[2:]
+            detection_roslaunch_parent = roslaunch.parent.ROSLaunchParent(
+                                            uuid,
+                                            [(detection_roslaunch_file,detection_roslaunch_args)])
+            detection_roslaunch_parent.start()
+
             graph_name = edge['args']['graph']
             start_id = filter(
                         lambda x: x['graph'] == graph_name,
@@ -703,6 +762,7 @@ class LeadPersonDemo(object):
                     self._spot_client.set_localization_waypoint(start_id)
                 else:
                     rospy.logerr('Unknown localization method')
+                    detection_roslaunch_parent.shutdown()
                     return False
                 rospy.loginfo('robot is localized on the graph.')
 
@@ -744,6 +804,7 @@ class LeadPersonDemo(object):
                         blocking=True)
                 self._spot_client.navigate_to( start_id, blocking=True)
                 self._spot_client.wait_for_navigate_to_result()
+                detection_roslaunch_parent.shutdown()
                 return result.success
             else:
                 self._sound_client.say(
@@ -764,6 +825,7 @@ class LeadPersonDemo(object):
             self._spot_client.wait_for_navigate_to_result()
             result = self._spot_client.get_navigate_to_result()
 
+            detection_roslaunch_parent.shutdown()
             return result.success
 
 
