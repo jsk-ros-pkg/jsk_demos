@@ -22,45 +22,6 @@
             initial_node: '73B2'
             duration_visible_timeout: 10.0
         </rosparam>
-
-    </node>
-
-    <node
-        pkg="spot_person_leader"
-        type="person_tracker.py"
-        name="person_tracker"
-        output="screen"
-        >
-        <remap from="~bbox_array" to="/spot_recognition/bbox_array" />
-        <!-- remap from="~visible" to="" / -->
-
-        <rosparam subst_value="true">
-            frame_id_robot: 'body'
-            label_person: 0
-            dist_visible: 5.0
-            timeout_observation: 5.0
-        </rosparam>
-    </node>
-
-    <node
-        pkg="spot_person_leader"
-        type="car_tracker.py"
-        name="car_tracker"
-        output="screen"
-        >
-        <remap from="~input_bbox_array" to="/spot_recognition/bbox_array" />
-        <remap from="~input_tracking_labels" to="/spot_recognition/tracking_labels" />
-
-        <rosparam subst_value="true">
-            frame_fixed: 'odom'
-            frame_robot: 'body'
-            timeout_transform: 0.05
-            num_max_track: 10
-            thresholds_distance:
-                '2': 50
-            threshold_move_velocity: 2
-            threshold_lost_duration: 1.0
-        </rosparam>
     </node>
 
     <include
@@ -69,5 +30,5 @@
     </include>
 
     <include
-        file="$(find spot_person_leader)/launch/obstacle_detector.launch" />
+        file="$(find spot_person_leader)/launch/detections/common_detection.launch" />
 </launch>
