@@ -191,7 +191,7 @@ class LeadPersonDemo(object):
             self._tmp_starttime_visibility = rospy.Time.now()
             self._tmp_duration_visibility = rospy.Duration()
 
-            def callback_visible(self, msg):
+            def callback_visible(msg):
 
                 if self._tmp_state_visible != msg.data:
                     self._tmp_starttime_visibility = rospy.Time.now()
@@ -200,7 +200,7 @@ class LeadPersonDemo(object):
                 else:
                     self._tmp_duration_visibility = rospy.Time.now() - self._tmp_starttime_visibility
 
-            subscriber_visible = rospy.Subscriber('/walk_detection_person_tracker/visible', Bool, visibility_callback)
+            subscriber_visible = rospy.Subscriber('/walk_detection_person_tracker/visible', Bool, callback_visible)
             rospy.loginfo('start subscription')
 
             # graph uploading and localization
@@ -329,7 +329,7 @@ class LeadPersonDemo(object):
                 if len(msg.data) > 0:
                     self._tmp_last_obstacle_left = msg.header.stamp
 
-            def callback_visible(self, msg):
+            def callback_visible(msg):
 
                 if self._tmp_state_visible != msg.data:
                     self._tmp_starttime_visibility = rospy.Time.now()
@@ -340,7 +340,7 @@ class LeadPersonDemo(object):
 
             subscriber_obstacle_callback_right = rospy.Subscriber('/spot_recognition/right_obstacle', PointCloud2, obstacle_callback_right)
             subscriber_obstacle_callback_left = rospy.Subscriber('/spot_recognition/left_obstacle', PointCloud2, obstacle_callback_left)
-            subscriber_visible = rospy.Subscriber('/narrow_detection_person_tracker/visible', Bool, visibility_callback)
+            subscriber_visible = rospy.Subscriber('/narrow_detection_person_tracker/visible', Bool, callback_visible)
 
             rospy.loginfo('start subscription')
 
@@ -496,7 +496,7 @@ class LeadPersonDemo(object):
             self._tmp_starttime_visibility = rospy.Time.now()
             self._tmp_duration_visibility = rospy.Duration()
 
-            def callback_visible(self, msg):
+            def callback_visible(msg):
 
                 if self._tmp_state_visible != msg.data:
                     self._tmp_starttime_visibility = rospy.Time.now()
@@ -505,7 +505,7 @@ class LeadPersonDemo(object):
                 else:
                     self._tmp_duration_visibility = rospy.Time.now() - self._tmp_starttime_visibility
 
-            subscriber_visible = rospy.Subscriber('/walk_detection_person_tracker/visible', Bool, visibility_callback)
+            subscriber_visible = rospy.Subscriber('/walk_detection_person_tracker/visible', Bool, callback_visible)
             rospy.loginfo('start subscription')
 
             # graph uploading and localization
@@ -638,7 +638,7 @@ class LeadPersonDemo(object):
             self._tmp_starttime_visibility = rospy.Time.now()
             self._tmp_duration_visibility = rospy.Duration()
 
-            def callback_visible(self, msg):
+            def callback_visible(msg):
 
                 if self._tmp_state_visible != msg.data:
                     self._tmp_starttime_visibility = rospy.Time.now()
@@ -647,7 +647,7 @@ class LeadPersonDemo(object):
                 else:
                     self._tmp_duration_visibility = rospy.Time.now() - self._tmp_starttime_visibility
 
-            subscriber_visible = rospy.Subscriber('/stair_detection_person_tracker/visible', Bool, visibility_callback)
+            subscriber_visible = rospy.Subscriber('/stair_detection_person_tracker/visible', Bool, callback_visible)
             rospy.loginfo('start subscription')
 
             # graph uploading and localization
@@ -761,7 +761,7 @@ class LeadPersonDemo(object):
             self._tmp_starttime_visibility = rospy.Time.now()
             self._tmp_duration_visibility = rospy.Duration()
 
-            def callback_visible(self, msg):
+            def callback_visible(msg):
 
                 if self._tmp_state_visible != msg.data:
                     self._tmp_starttime_visibility = rospy.Time.now()
@@ -770,7 +770,7 @@ class LeadPersonDemo(object):
                 else:
                     self._tmp_duration_visibility = rospy.Time.now() - self._tmp_starttime_visibility
 
-            subscriber_visible = rospy.Subscriber('/go_alone_and_wait_detection_person_tracker/visible', Bool, visibility_callback)
+            subscriber_visible = rospy.Subscriber('/go_alone_and_wait_detection_person_tracker/visible', Bool, callback_visible)
             rospy.loginfo('start subscription')
 
             #
