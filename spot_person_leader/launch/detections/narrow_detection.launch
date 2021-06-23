@@ -43,7 +43,7 @@
         name="narrow_detection_front_right_extract_indices"
         >
         <remap from="~input" to="$(arg TOPIC_DEPTH_FRONT_RIGHT)/points"/>
-        <remap from="~indices" to="obstacle_detector_front_right_attention_clipper/output/point_indices"/>
+        <remap from="~indices" to="narrow_detection_front_right_attention_clipper/output/point_indices"/>
         <remap from="~output" to="/spot_recognition/left_obstacle"/>
     </node>
 
@@ -70,7 +70,7 @@
         name="narrow_detection_front_left_extract_indices"
         >
         <remap from="~input" to="$(arg TOPIC_DEPTH_FRONT_LEFT)/points"/>
-        <remap from="~indices" to="obstacle_detector_front_left_attention_clipper/output/point_indices"/>
+        <remap from="~indices" to="narrow_detection_front_left_attention_clipper/output/point_indices"/>
         <remap from="~output" to="/spot_recognition/right_obstacle"/>
     </node>
 </launch>

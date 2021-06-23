@@ -17,10 +17,10 @@
     <node
         pkg="apriltag_ros"
         type="apriltag_ros_continuous_node"
-        name="elevator_detector_front_right_apriltag_detector"
+        name="elevator_detection_front_right_apriltag_detector"
         >
         <!-- Remap topics from those used in code to those on the ROS network -->
-        <remap from="image_rect" to="$(arg TOPIC_CAMERA_FRONT_RIGHT/image" />
+        <remap from="image_rect" to="$(arg TOPIC_CAMERA_FRONT_RIGHT)/image" />
         <remap from="camera_info" to="$(arg TOPIC_CAMERA_FRONT_RIGHT)/camera_info" />
 
         <rosparam command="load" file="$(find spot_person_leader)/config/apriltag/settings.yaml" />
@@ -30,10 +30,10 @@
     <node
         pkg="apriltag_ros"
         type="apriltag_ros_continuous_node"
-        name="elevator_detector_front_left_apriltag_detector"
+        name="elevator_detection_front_left_apriltag_detector"
         >
         <!-- Remap topics from those used in code to those on the ROS network -->
-        <remap from="image_rect" to="$(arg TOPIC_CAMERA_FRONT_LEFT/image" />
+        <remap from="image_rect" to="$(arg TOPIC_CAMERA_FRONT_LEFT)/image" />
         <remap from="camera_info" to="$(arg TOPIC_CAMERA_FRONT_LEFT)/camera_info" />
 
         <rosparam command="load" file="$(find spot_person_leader)/config/apriltag/settings.yaml" />
@@ -43,10 +43,10 @@
     <node
         pkg="apriltag_ros"
         type="apriltag_ros_continuous_node"
-        name="elevator_detector_right_apriltag_detector"
+        name="elevator_detection_right_apriltag_detector"
         >
         <!-- Remap topics from those used in code to those on the ROS network -->
-        <remap from="image_rect" to="$(arg TOPIC_CAMERA_RIGHT/image" />
+        <remap from="image_rect" to="$(arg TOPIC_CAMERA_RIGHT)/image" />
         <remap from="camera_info" to="$(arg TOPIC_CAMERA_RIGHT)/camera_info" />
 
         <rosparam command="load" file="$(find spot_person_leader)/config/apriltag/settings.yaml" />
@@ -56,10 +56,10 @@
     <node
         pkg="apriltag_ros"
         type="apriltag_ros_continuous_node"
-        name="elevator_detector_left_apriltag_detector"
+        name="elevator_detection_left_apriltag_detector"
         >
         <!-- Remap topics from those used in code to those on the ROS network -->
-        <remap from="image_rect" to="$(arg TOPIC_CAMERA_LEFT/image" />
+        <remap from="image_rect" to="$(arg TOPIC_CAMERA_LEFT)/image" />
         <remap from="camera_info" to="$(arg TOPIC_CAMERA_LEFT)/camera_info" />
 
         <rosparam command="load" file="$(find spot_person_leader)/config/apriltag/settings.yaml" />
@@ -69,10 +69,10 @@
     <node
         pkg="apriltag_ros"
         type="apriltag_ros_continuous_node"
-        name="elevator_detector_back_apriltag_detector"
+        name="elevator_detection_back_apriltag_detector"
         >
         <!-- Remap topics from those used in code to those on the ROS network -->
-        <remap from="image_rect" to="$(arg TOPIC_CAMERA_BACK/image" />
+        <remap from="image_rect" to="$(arg TOPIC_CAMERA_BACK)/image" />
         <remap from="camera_info" to="$(arg TOPIC_CAMERA_BACK)/camera_info" />
 
         <rosparam command="load" file="$(find spot_person_leader)/config/apriltag/settings.yaml" />
@@ -84,7 +84,7 @@
     <node
         pkg="nodelet"
         type="nodelet"
-        name="elevator_detector_concatenate_pointcloud"
+        name="elevator_detection_concatenate_pointcloud"
         args="standalone pcl/PointCloudConcatenateDataSynchronizer"
         >
         <remap from="~output" to="/spot/depth/points" />
@@ -104,7 +104,7 @@
     <node
         pkg="nodelet"
         type="nodelet"
-        name="elevator_detector_door_detector_outside_attention_clipper"
+        name="elevator_detection_door_detector_outside_attention_clipper"
         args="standalone jsk_pcl/AttentionClipper"
         >
         <remap from="~input/points" to="/spot/depth/points"/>
@@ -120,11 +120,11 @@
     <node
         pkg="jsk_pcl_ros"
         type="extract_indices"
-        name="elevator_detector_door_detector_outside_extract_indices"
+        name="elevator_detection_door_detector_outside_extract_indices"
         >
         <remap from="~input" to="/spot/depth/points"/>
         <remap from="~indices" to="elevator_detector_door_detector_outside_attention_clipper/output/point_indices"/>
-        <remap from="~output" to="/spot_recognition/elevator_door_detector_outside"/>
+        <remap from="~output" to="/spot_recognition/elevator_door_outside_points"/>
     </node>
 
     <!-- elevator door detector from inside -->
@@ -151,6 +151,6 @@
         >
         <remap from="~input" to="/spot/depth/points"/>
         <remap from="~indices" to="elevator_detector_door_detector_inside_attention_clipper/output/point_indices"/>
-        <remap from="~output" to="/spot_recognition/elevator_door_detector_inside"/>
+        <remap from="~output" to="/spot_recognition/elevator_door_inside_points"/>
     </node>
 </launch>

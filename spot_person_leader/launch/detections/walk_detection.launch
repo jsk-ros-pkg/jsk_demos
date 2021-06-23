@@ -3,7 +3,7 @@
     <node
         pkg="spot_person_leader"
         type="person_tracker.py"
-        name="person_tracker"
+        name="walk_detection_person_tracker"
         output="screen"
         >
         <remap from="~bbox_array" to="/spot_recognition/bbox_array" />

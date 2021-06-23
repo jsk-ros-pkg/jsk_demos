@@ -3,7 +3,7 @@
     <node
         pkg="spot_person_leader"
         type="person_tracker.py"
-        name="person_tracker"
+        name="crosswalk_detection_person_tracker"
         output="screen"
         >
         <remap from="~bbox_array" to="/spot_recognition/bbox_array" />
@@ -21,7 +21,7 @@
     <node
         pkg="spot_person_leader"
         type="car_tracker.py"
-        name="car_tracker"
+        name="crosswalk_detection_car_tracker"
         output="screen"
         >
         <remap from="~input_bbox_array" to="/spot_recognition/bbox_array" />
