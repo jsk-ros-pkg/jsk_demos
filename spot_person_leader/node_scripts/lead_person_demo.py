@@ -93,15 +93,8 @@ class LeadPersonDemo(object):
                                     self.handler_reset_current_node
                                     )
 
-        # subscriber
-        self._state_visible = False
-        self._starttime_visibility = rospy.Time.now()
-        self._duration_visibility = rospy.Duration()
-        self._sub_visible = rospy.Subscriber(
-                                    '~visible',
-                                    Bool,
-                                    self.callback_visible
-                                    )
+        #
+        roslaunch.pmon._init_signal_handlers()
 
         # action server
         self._server_lead_person = actionlib.SimpleActionServer(
@@ -120,16 +113,6 @@ class LeadPersonDemo(object):
         while not rospy.is_shutdown():
             rate.sleep()
             self._pub_current_node.publish(String(data=self._current_node))
-
-    def callback_visible(self, msg):
-
-        if self._state_visible != msg.data:
-            self._starttime_visibility = rospy.Time.now()
-            self._duration_visibility = rospy.Duration()
-            self._state_visible = msg.data
-        else:
-            self._duration_visibility = rospy.Time.now() - self._starttime_visibility
-
 
     def handler_reset_current_node(self, req):
 
@@ -185,7 +168,7 @@ class LeadPersonDemo(object):
             detection_roslaunch_file = roslaunch.rlutil.resolve_launch_arguments(detection_roslaunch_cli_args)
             detection_roslaunch_parent = roslaunch.parent.ROSLaunchParent(
                                             uuid,
-                                            detection_roslaunch_parent
+                                            detection_roslaunch_file
                                             )
             detection_roslaunch_parent.start()
 
@@ -203,6 +186,23 @@ class LeadPersonDemo(object):
                         self._map._nodes[edge['to']]['waypoints_on_graph']
                         )[0]['id']
 
+            # register visibility subscriber
+            self._tmp_state_visible = False
+            self._tmp_starttime_visibility = rospy.Time.now()
+            self._tmp_duration_visibility = rospy.Duration()
+
+            def callback_visible(self, msg):
+
+                if self._tmp_state_visible != msg.data:
+                    self._tmp_starttime_visibility = rospy.Time.now()
+                    self._tmp_duration_visibility = rospy.Duration()
+                    self._tmp_state_visible = msg.data
+                else:
+                    self._tmp_duration_visibility = rospy.Time.now() - self._tmp_starttime_visibility
+
+            subscriber_visible = rospy.Subscriber('/walk_detection_person_tracker/visible', Bool, visibility_callback)
+            rospy.loginfo('start subscription')
+
             # graph uploading and localization
             if self._pre_edge is not None and \
                 graph_name == self._pre_edge['args']['graph']:
@@ -219,6 +219,10 @@ class LeadPersonDemo(object):
                 else:
                     rospy.logerr('Unknown localization method')
                     detection_roslaunch_parent.shutdown()
+                    subscriber_visible.unregister()
+                    del self._tmp_state_visible
+                    del self._tmp_starttime_visibility
+                    del self._tmp_duration_visibility
                     return False
                 rospy.loginfo('robot is localized on the graph.')
 
@@ -238,7 +242,7 @@ class LeadPersonDemo(object):
                     rospy.loginfo('result: {}'.format(result))
                     break
 
-                if not self._state_visible and self._duration_visibility > rospy.Duration(0.5):
+                if not self._tmp_state_visible and self._tmp_duration_visibility > rospy.Duration(0.5):
                     flag_speech = False
                     def notify_visibility():
                         self._sound_client.say(
@@ -249,17 +253,23 @@ class LeadPersonDemo(object):
                         flag_speech = False
                     speech_thread = threading.Thread(target=notify_visibility)
                     speech_thread.start()
-                    while not self._state_visible and self._duration_visibility > rospy.Duration(0.5):
+                    while not self._tmp_state_visible and self._tmp_duration_visibility > rospy.Duration(0.5):
                         rate.sleep()
                         self._spot_client.pubCmdVel(0,0,0)
                         if not flag_speech:
                             flag_speech = True
                             speech_thread = threading.Thread(target=notify_visibility)
                             speech_thread.start()
-                        if not self._state_visible and self._duration_visibility > rospy.Duration(5.0):
+                        if not self._tmp_state_visible and self._tmp_duration_visibility > rospy.Duration(5.0):
                             self._spot_client.cancel_navigate_to()
-                        if self._state_visible:
+                        if self._tmp_state_visible:
                             self._spot_client.navigate_to( end_id, blocking=False)
+
+            detection_roslaunch_parent.shutdown()
+            subscriber_visible.unregister()
+            del self._tmp_state_visible
+            del self._tmp_starttime_visibility
+            del self._tmp_duration_visibility
 
             # recovery
             if not success:
@@ -270,7 +280,6 @@ class LeadPersonDemo(object):
                 self._spot_client.navigate_to( start_id, blocking=True)
                 self._spot_client.wait_for_navigate_to_result()
 
-            detection_roslaunch_parent.shutdown()
             return success
 
 
@@ -287,7 +296,8 @@ class LeadPersonDemo(object):
             detection_roslaunch_file = roslaunch.rlutil.resolve_launch_arguments(detection_roslaunch_cli_args)
             detection_roslaunch_parent = roslaunch.parent.ROSLaunchParent(
                                             uuid,
-                                            detection_roslaunch_parent
+                                            detection_roslaunch_file,
+                                            is_core=False
                                             )
             detection_roslaunch_parent.start()
 
@@ -307,6 +317,9 @@ class LeadPersonDemo(object):
 
             self._tmp_last_obstacle_right = rospy.Time()
             self._tmp_last_obstacle_left = rospy.Time()
+            self._tmp_state_visible = False
+            self._tmp_starttime_visibility = rospy.Time.now()
+            self._tmp_duration_visibility = rospy.Duration()
 
             def obstacle_callback_right(msg):
                 if len(msg.data) > 0:
@@ -316,10 +329,20 @@ class LeadPersonDemo(object):
                 if len(msg.data) > 0:
                     self._tmp_last_obstacle_left = msg.header.stamp
 
+            def callback_visible(self, msg):
+
+                if self._tmp_state_visible != msg.data:
+                    self._tmp_starttime_visibility = rospy.Time.now()
+                    self._tmp_duration_visibility = rospy.Duration()
+                    self._tmp_state_visible = msg.data
+                else:
+                    self._tmp_duration_visibility = rospy.Time.now() - self._tmp_starttime_visibility
+
             subscriber_obstacle_callback_right = rospy.Subscriber('/spot_recognition/right_obstacle', PointCloud2, obstacle_callback_right)
             subscriber_obstacle_callback_left = rospy.Subscriber('/spot_recognition/left_obstacle', PointCloud2, obstacle_callback_left)
+            subscriber_visible = rospy.Subscriber('/narrow_detection_person_tracker/visible', Bool, visibility_callback)
 
-            rospy.loginfo('start obstacle subscription')
+            rospy.loginfo('start subscription')
 
             # graph uploading and localization
             if self._pre_edge is not None and \
@@ -337,6 +360,14 @@ class LeadPersonDemo(object):
                 else:
                     rospy.logerr('Unknown localization method')
                     detection_roslaunch_parent.shutdown()
+                    subscriber_obstacle_callback_right.unregister()
+                    subscriber_obstacle_callback_left.unregister()
+                    subscriber_visible.unregister()
+                    del self._tmp_last_obstacle_right
+                    del self._tmp_last_obstacle_left
+                    del self._tmp_state_visible
+                    del self._tmp_starttime_visibility
+                    del self._tmp_duration_visibility
                     return False
                 rospy.loginfo('robot is localized on the graph.')
 
@@ -381,7 +412,7 @@ class LeadPersonDemo(object):
                     rospy.loginfo('result: {}'.format(result))
                     break
 
-                if not self._state_visible and self._duration_visibility > rospy.Duration(0.5):
+                if not self._tmp_state_visible and self._tmp_duration_visibility > rospy.Duration(0.5):
                     flag_speech = False
                     def notify_visibility():
                         self._sound_client.say(
@@ -392,24 +423,30 @@ class LeadPersonDemo(object):
                         flag_speech = False
                     speech_thread = threading.Thread(target=notify_visibility)
                     speech_thread.start()
-                    while not self._state_visible and self._duration_visibility > rospy.Duration(0.5):
+                    while not self._tmp_state_visible and self._tmp_duration_visibility > rospy.Duration(0.5):
                         rate.sleep()
                         self._spot_client.pubCmdVel(0,0,0)
                         if not flag_speech:
                             flag_speech = True
                             speech_thread = threading.Thread(target=notify_visibility)
                             speech_thread.start()
-                        if not self._state_visible and self._duration_visibility > rospy.Duration(5.0):
+                        if not self._tmp_state_visible and self._tmp_duration_visibility > rospy.Duration(5.0):
                             self._spot_client.cancel_navigate_to()
-                        if self._state_visible:
+                        if self._tmp_state_visible:
                             self._spot_client.navigate_to( end_id, blocking=False)
 
             flag_valid_obstacle_notification = False
             thread_notify_obstacle.join()
+
+            detection_roslaunch_parent.shutdown()
             subscriber_obstacle_callback_right.unregister()
             subscriber_obstacle_callback_left.unregister()
+            subscriber_visible.unregister()
             del self._tmp_last_obstacle_right
             del self._tmp_last_obstacle_left
+            del self._tmp_state_visible
+            del self._tmp_starttime_visibility
+            del self._tmp_duration_visibility
 
             # recovery
             if not success:
@@ -420,7 +457,6 @@ class LeadPersonDemo(object):
                 self._spot_client.navigate_to( start_id, blocking=True)
                 self._spot_client.wait_for_navigate_to_result()
 
-            detection_roslaunch_parent.shutdown()
             return success
 
 
@@ -437,7 +473,7 @@ class LeadPersonDemo(object):
             detection_roslaunch_file = roslaunch.rlutil.resolve_launch_arguments(detection_roslaunch_cli_args)
             detection_roslaunch_parent = roslaunch.parent.ROSLaunchParent(
                                             uuid,
-                                            detection_roslaunch_parent
+                                            detection_roslaunch_file
                                             )
             detection_roslaunch_parent.start()
 
@@ -455,6 +491,23 @@ class LeadPersonDemo(object):
                         self._map._nodes[edge['to']]['waypoints_on_graph']
                         )[0]['id']
 
+            # register visibility subscriber
+            self._tmp_state_visible = False
+            self._tmp_starttime_visibility = rospy.Time.now()
+            self._tmp_duration_visibility = rospy.Duration()
+
+            def callback_visible(self, msg):
+
+                if self._tmp_state_visible != msg.data:
+                    self._tmp_starttime_visibility = rospy.Time.now()
+                    self._tmp_duration_visibility = rospy.Duration()
+                    self._tmp_state_visible = msg.data
+                else:
+                    self._tmp_duration_visibility = rospy.Time.now() - self._tmp_starttime_visibility
+
+            subscriber_visible = rospy.Subscriber('/walk_detection_person_tracker/visible', Bool, visibility_callback)
+            rospy.loginfo('start subscription')
+
             # graph uploading and localization
             if self._pre_edge is not None and \
                 graph_name == self._pre_edge['args']['graph']:
@@ -471,6 +524,10 @@ class LeadPersonDemo(object):
                 else:
                     rospy.logerr('Unknown localization method')
                     detection_roslaunch_parent.shutdown()
+                    subscriber_visible.unregister()
+                    del self._tmp_state_visible
+                    del self._tmp_starttime_visibility
+                    del self._tmp_duration_visibility
                     return False
                 rospy.loginfo('robot is localized on the graph.')
 
@@ -479,7 +536,7 @@ class LeadPersonDemo(object):
                 if safety_count > 10:
                     break;
                 try:
-                    is_visible_car = rospy.wait_for_message('/car_tracker/visible', Bool)
+                    is_visible_car = rospy.wait_for_message('/crosswalk_detection_car_tracker/visible', Bool)
                     if is_visible_car:
                         safety_count = 0
                     else:
@@ -504,7 +561,7 @@ class LeadPersonDemo(object):
                     rospy.loginfo('result: {}'.format(result))
                     break
 
-                if not self._state_visible and self._duration_visibility > rospy.Duration(0.5):
+                if not self._tmp_state_visible and self._tmp_duration_visibility > rospy.Duration(0.5):
                     flag_speech = False
                     def notify_visibility():
                         self._sound_client.say(
@@ -515,17 +572,23 @@ class LeadPersonDemo(object):
                         flag_speech = False
                     speech_thread = threading.Thread(target=notify_visibility)
                     speech_thread.start()
-                    while not self._state_visible and self._duration_visibility > rospy.Duration(0.5):
+                    while not self._tmp_state_visible and self._tmp_duration_visibility > rospy.Duration(0.5):
                         rate.sleep()
                         self._spot_client.pubCmdVel(0,0,0)
                         if not flag_speech:
                             flag_speech = True
                             speech_thread = threading.Thread(target=notify_visibility)
                             speech_thread.start()
-                        if not self._state_visible and self._duration_visibility > rospy.Duration(5.0):
+                        if not self._tmp_state_visible and self._tmp_duration_visibility > rospy.Duration(5.0):
                             self._spot_client.cancel_navigate_to()
-                        if self._state_visible:
+                        if self._tmp_state_visible:
                             self._spot_client.navigate_to( end_id, blocking=False)
+
+            detection_roslaunch_parent.shutdown()
+            subscriber_visible.unregister()
+            del self._tmp_state_visible
+            del self._tmp_starttime_visibility
+            del self._tmp_duration_visibility
 
             # recovery
             if not success:
@@ -536,7 +599,6 @@ class LeadPersonDemo(object):
                 self._spot_client.navigate_to( start_id, blocking=True)
                 self._spot_client.wait_for_navigate_to_result()
 
-            detection_roslaunch_parent.shutdown()
             return success
 
 
@@ -553,7 +615,7 @@ class LeadPersonDemo(object):
             detection_roslaunch_file = roslaunch.rlutil.resolve_launch_arguments(detection_roslaunch_cli_args)
             detection_roslaunch_parent = roslaunch.parent.ROSLaunchParent(
                                             uuid,
-                                            detection_roslaunch_parent
+                                            detection_roslaunch_file
                                             )
             detection_roslaunch_parent.start()
 
@@ -571,6 +633,23 @@ class LeadPersonDemo(object):
                         self._map._nodes[edge['to']]['waypoints_on_graph']
                         )[0]['id']
 
+            # register visibility subscriber
+            self._tmp_state_visible = False
+            self._tmp_starttime_visibility = rospy.Time.now()
+            self._tmp_duration_visibility = rospy.Duration()
+
+            def callback_visible(self, msg):
+
+                if self._tmp_state_visible != msg.data:
+                    self._tmp_starttime_visibility = rospy.Time.now()
+                    self._tmp_duration_visibility = rospy.Duration()
+                    self._tmp_state_visible = msg.data
+                else:
+                    self._tmp_duration_visibility = rospy.Time.now() - self._tmp_starttime_visibility
+
+            subscriber_visible = rospy.Subscriber('/stair_detection_person_tracker/visible', Bool, visibility_callback)
+            rospy.loginfo('start subscription')
+
             # graph uploading and localization
             if self._pre_edge is not None and \
                 graph_name == self._pre_edge['args']['graph']:
@@ -587,13 +666,17 @@ class LeadPersonDemo(object):
                 else:
                     rospy.logerr('Unknown localization method')
                     detection_roslaunch_parent.shutdown()
+                    subscriber_visible.unregister()
+                    del self._tmp_state_visible
+                    del self._tmp_starttime_visibility
+                    del self._tmp_duration_visibility
                     return False
                 rospy.loginfo('robot is localized on the graph.')
 
             # check if there is a person lower than the robot.
             from geometry_msgs.msg import PoseArray
             while not rospy.is_shutdown():
-                people_pose_array = rospy.wait_for_message('/person_tracker/people_pose_array',PoseArray)
+                people_pose_array = rospy.wait_for_message('/stair_detection_person_tracker/people_pose_array',PoseArray)
                 exist_person_down = False
                 for pose in PoseArray.poses:
                     if pose.position.z < -0.5:
@@ -625,7 +708,7 @@ class LeadPersonDemo(object):
                 self._sound_client.startWaveFromPkg('spot_person_leader','resources/akatonbo.ogg')
                 while not rospy.is_shutdown():
                     rate.sleep()
-                    if self._state_visible and self._duration_visibility > rospy.Duration(5):
+                    if self._tmp_state_visible and self._tmp_duration_visibility > rospy.Duration(5):
                         self._sound_client.stopAll()
                         break
 
@@ -635,6 +718,10 @@ class LeadPersonDemo(object):
                         blocking=True)
 
             detection_roslaunch_parent.shutdown()
+            subscriber_visible.unregister()
+            del self._tmp_state_visible
+            del self._tmp_starttime_visibility
+            del self._tmp_duration_visibility
             return result.success
 
 
@@ -644,6 +731,16 @@ class LeadPersonDemo(object):
             #
             # Edge Type : go_alone_and_wait
             #
+
+            uuid = roslaunch.rlutil.get_or_generate_uuid(None, False)
+            detection_roslaunch_path = rospack.get_path('spot_person_leader') + '/launch/detections/go_alone_and_wait_detection.launch'
+            detection_roslaunch_cli_args = [detection_roslaunch_path]
+            detection_roslaunch_file = roslaunch.rlutil.resolve_launch_arguments(detection_roslaunch_cli_args)
+            detection_roslaunch_parent = roslaunch.parent.ROSLaunchParent(
+                                            uuid,
+                                            detection_roslaunch_file
+                                            )
+            detection_roslaunch_parent.start()
 
             graph_name = edge['args']['graph']
             start_id = filter(
@@ -659,6 +756,24 @@ class LeadPersonDemo(object):
                         self._map._nodes[edge['to']]['waypoints_on_graph']
                         )[0]['id']
 
+            # register visibility subscriber
+            self._tmp_state_visible = False
+            self._tmp_starttime_visibility = rospy.Time.now()
+            self._tmp_duration_visibility = rospy.Duration()
+
+            def callback_visible(self, msg):
+
+                if self._tmp_state_visible != msg.data:
+                    self._tmp_starttime_visibility = rospy.Time.now()
+                    self._tmp_duration_visibility = rospy.Duration()
+                    self._tmp_state_visible = msg.data
+                else:
+                    self._tmp_duration_visibility = rospy.Time.now() - self._tmp_starttime_visibility
+
+            subscriber_visible = rospy.Subscriber('/go_alone_and_wait_detection_person_tracker/visible', Bool, visibility_callback)
+            rospy.loginfo('start subscription')
+
+            #
             switchbot_goal = SwitchBotCommandGoal()
             switchbot_goal.device_name = self._map._nodes[edge['from']]['switchbot_device']
             switchbot_goal.command = 'press'
@@ -686,6 +801,11 @@ class LeadPersonDemo(object):
                     self._spot_client.set_localization_waypoint(start_id)
                 else:
                     rospy.logerr('Unknown localization method')
+                    detection_roslaunch_parent.shutdown()
+                    subscriber_visible.unregister()
+                    del self._tmp_state_visible
+                    del self._tmp_starttime_visibility
+                    del self._tmp_duration_visibility
                     return False
                 rospy.loginfo('robot is localized on the graph.')
 
@@ -707,7 +827,7 @@ class LeadPersonDemo(object):
                 self._sound_client.startWaveFromPkg('spot_person_leader','resources/akatonbo.ogg')
                 while not rospy.is_shutdown():
                     rate.sleep()
-                    if self._state_visible and self._duration_visibility > rospy.Duration(10):
+                    if self._tmp_state_visible and self._tmp_duration_visibility > rospy.Duration(10):
                         self._sound_client.stopAll()
                         break
                 self._sound_client.say(
@@ -715,6 +835,11 @@ class LeadPersonDemo(object):
                         volume=1.0,
                         blocking=True)
 
+            detection_roslaunch_parent.shutdown()
+            subscriber_visible.unregister()
+            del self._tmp_state_visible
+            del self._tmp_starttime_visibility
+            del self._tmp_duration_visibility
             return result.success
 
 
@@ -731,7 +856,7 @@ class LeadPersonDemo(object):
             detection_roslaunch_file = roslaunch.rlutil.resolve_launch_arguments(detection_roslaunch_cli_args)
             detection_roslaunch_parent = roslaunch.parent.ROSLaunchParent(
                                             uuid,
-                                            detection_roslaunch_parent
+                                            detection_roslaunch_file
                                             )
             detection_roslaunch_parent.start()
 
