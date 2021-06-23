@@ -19,6 +19,9 @@ from std_msgs.msg import Bool
 from switchbot_ros.msg import SwitchBotCommandGoal, SwitchBotCommandAction
 
 import roslaunch
+import rospkg
+
+rospack = rospkg.RosPack()
 
 
 class Map:
@@ -177,13 +180,13 @@ class LeadPersonDemo(object):
             #
 
             uuid = roslaunch.rlutil.get_or_generate_uuid(None, False)
-            roslaunch.configure_logging(uuid)
-            detection_roslaunch_cli_args = ['spot_person_leader','walk_detection.launch']
+            detection_roslaunch_path = rospack.get_path('spot_person_leader') + '/launch/detections/walk_detection.launch'
+            detection_roslaunch_cli_args = [detection_roslaunch_path]
             detection_roslaunch_file = roslaunch.rlutil.resolve_launch_arguments(detection_roslaunch_cli_args)
-            detection_roslaunch_args = cli_args[2:]
             detection_roslaunch_parent = roslaunch.parent.ROSLaunchParent(
                                             uuid,
-                                            [(detection_roslaunch_file,detection_roslaunch_args)])
+                                            detection_roslaunch_parent
+                                            )
             detection_roslaunch_parent.start()
 
             graph_name = edge['args']['graph']
@@ -279,13 +282,13 @@ class LeadPersonDemo(object):
             #
 
             uuid = roslaunch.rlutil.get_or_generate_uuid(None, False)
-            roslaunch.configure_logging(uuid)
-            detection_roslaunch_cli_args = ['spot_person_leader','narrow_detection.launch']
+            detection_roslaunch_path = rospack.get_path('spot_person_leader') + '/launch/detections/narrow_detection.launch'
+            detection_roslaunch_cli_args = [detection_roslaunch_path]
             detection_roslaunch_file = roslaunch.rlutil.resolve_launch_arguments(detection_roslaunch_cli_args)
-            detection_roslaunch_args = cli_args[2:]
             detection_roslaunch_parent = roslaunch.parent.ROSLaunchParent(
                                             uuid,
-                                            [(detection_roslaunch_file,detection_roslaunch_args)])
+                                            detection_roslaunch_parent
+                                            )
             detection_roslaunch_parent.start()
 
             graph_name = edge['args']['graph']
@@ -429,13 +432,13 @@ class LeadPersonDemo(object):
             #
 
             uuid = roslaunch.rlutil.get_or_generate_uuid(None, False)
-            roslaunch.configure_logging(uuid)
-            detection_roslaunch_cli_args = ['spot_person_leader','crosswalk_detection.launch']
+            detection_roslaunch_path = rospack.get_path('spot_person_leader') + '/launch/detections/crosswalk_detection.launch'
+            detection_roslaunch_cli_args = [detection_roslaunch_path]
             detection_roslaunch_file = roslaunch.rlutil.resolve_launch_arguments(detection_roslaunch_cli_args)
-            detection_roslaunch_args = cli_args[2:]
             detection_roslaunch_parent = roslaunch.parent.ROSLaunchParent(
                                             uuid,
-                                            [(detection_roslaunch_file,detection_roslaunch_args)])
+                                            detection_roslaunch_parent
+                                            )
             detection_roslaunch_parent.start()
 
             graph_name = edge['args']['graph']
@@ -545,13 +548,13 @@ class LeadPersonDemo(object):
             #
 
             uuid = roslaunch.rlutil.get_or_generate_uuid(None, False)
-            roslaunch.configure_logging(uuid)
-            detection_roslaunch_cli_args = ['spot_person_leader','stair_detection.launch']
+            detection_roslaunch_path = rospack.get_path('spot_person_leader') + '/launch/detections/stair_detection.launch'
+            detection_roslaunch_cli_args = [detection_roslaunch_path]
             detection_roslaunch_file = roslaunch.rlutil.resolve_launch_arguments(detection_roslaunch_cli_args)
-            detection_roslaunch_args = cli_args[2:]
             detection_roslaunch_parent = roslaunch.parent.ROSLaunchParent(
                                             uuid,
-                                            [(detection_roslaunch_file,detection_roslaunch_args)])
+                                            detection_roslaunch_parent
+                                            )
             detection_roslaunch_parent.start()
 
             graph_name = edge['args']['graph']
@@ -723,13 +726,13 @@ class LeadPersonDemo(object):
             #
 
             uuid = roslaunch.rlutil.get_or_generate_uuid(None, False)
-            roslaunch.configure_logging(uuid)
-            detection_roslaunch_cli_args = ['spot_person_leader','elevator_detection.launch']
+            detection_roslaunch_path = rospack.get_path('spot_person_leader') + '/launch/detections/elevator_detection.launch'
+            detection_roslaunch_cli_args = [detection_roslaunch_path]
             detection_roslaunch_file = roslaunch.rlutil.resolve_launch_arguments(detection_roslaunch_cli_args)
-            detection_roslaunch_args = cli_args[2:]
             detection_roslaunch_parent = roslaunch.parent.ROSLaunchParent(
                                             uuid,
-                                            [(detection_roslaunch_file,detection_roslaunch_args)])
+                                            detection_roslaunch_parent
+                                            )
             detection_roslaunch_parent.start()
 
             graph_name = edge['args']['graph']
