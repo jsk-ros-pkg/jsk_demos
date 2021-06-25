@@ -894,6 +894,19 @@ class LeadPersonDemo(object):
                     return False
                 rospy.loginfo('robot is localized on the graph.')
 
+            # Start checking if the door of a elevator is open
+            self._tmp_door_is_open = False
+            def door_point_callback(msg):
+                if len(msg.data) == 0:
+                    self._tmp_door_is_open = True
+                else:
+                    self._tmp_door_is_open = False
+
+            subscriber_door_check = rospy.Subscriber(
+                                        '/spot_recognition/elevator_door_outside_points',
+                                        PointCloud2,
+                                        door_point_callback)
+
             switchbot_goal = SwitchBotCommandGoal()
             switchbot_goal.device_name = self._map._nodes[edge['from']]['switchbot_device']
             switchbot_goal.command = 'press'
@@ -919,24 +932,10 @@ class LeadPersonDemo(object):
                         volume=1.0,
                         blocking=True)
 
-            # check if the door of a elevator is open
-            door_is_open = False
-            def door_point_callback(msg):
-                global door_is_open
-                if len(msg.data) == 0:
-                    door_is_open = True
-                else:
-                    door_is_open = False
-
-            subscriber_door_check = rospy.Subscriber(
-                                        '/spot_recognition/elevator_door_outside_points',
-                                        PointCloud2,
-                                        door_point_callback)
-
-            rate = rospy.Rate(1)
+            rate = rospy.Rate(2)
             while not rospy.is_shutdown():
                 rate.sleep()
-                if door_is_open:
+                if self._tmp_door_is_open:
                     break
 
             subscriber_door_check.unregister()
@@ -969,15 +968,15 @@ class LeadPersonDemo(object):
                                         '/spot_recognition/elevator_door_inside_points',
                                         PointCloud2,
                                         door_point_callback)
-            rate = rospy.Rate(1)
+            rate = rospy.Rate(2)
             while not rospy.is_shutdown():
                 rate.sleep()
-                if not door_is_open:
+                if not self._tmp_door_is_open:
                     break
             rospy.loginfo('door closed')
             while not rospy.is_shutdown():
                 rate.sleep()
-                if door_is_open:
+                if self._tmp_door_is_open:
                     break
             rospy.loginfo('door opened')
 
