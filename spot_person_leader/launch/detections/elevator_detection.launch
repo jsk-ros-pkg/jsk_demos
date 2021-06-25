@@ -109,10 +109,10 @@
         >
         <remap from="~input/points" to="/spot/depth/points"/>
         <rosparam subst_value="true">
-            initial_pos: [0, 0, 0]
+            initial_pos: [0, 0, 0.5]
             initial_rot: [0, 0, 0]
-            dimension_x: 1.0
-            dimension_y: 1.0
+            dimension_x: 0.5
+            dimension_y: 0.5
             dimension_z: 0.5
             frame_id: elevator_door_frame
         </rosparam>
@@ -123,7 +123,7 @@
         name="elevator_detection_door_detector_outside_extract_indices"
         >
         <remap from="~input" to="/spot/depth/points"/>
-        <remap from="~indices" to="elevator_detector_door_detector_outside_attention_clipper/output/point_indices"/>
+        <remap from="~indices" to="elevator_detection_door_detector_outside_attention_clipper/output/point_indices"/>
         <remap from="~output" to="/spot_recognition/elevator_door_outside_points"/>
     </node>
 
@@ -131,7 +131,7 @@
     <node
         pkg="nodelet"
         type="nodelet"
-        name="elevator_detector_door_detector_inside_attention_clipper"
+        name="elevator_detection_door_detector_inside_attention_clipper"
         args="standalone jsk_pcl/AttentionClipper"
         >
         <remap from="~input/points" to="/spot/depth/points"/>
@@ -147,10 +147,10 @@
     <node
         pkg="jsk_pcl_ros"
         type="extract_indices"
-        name="elevator_detector_door_detector_inside_extract_indices"
+        name="elevator_detection_door_detector_inside_extract_indices"
         >
         <remap from="~input" to="/spot/depth/points"/>
-        <remap from="~indices" to="elevator_detector_door_detector_inside_attention_clipper/output/point_indices"/>
+        <remap from="~indices" to="elevator_detection_door_detector_inside_attention_clipper/output/point_indices"/>
         <remap from="~output" to="/spot_recognition/elevator_door_inside_points"/>
     </node>
 </launch>
