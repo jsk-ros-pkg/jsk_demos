@@ -1,3 +1,3 @@
 #!/usr/bin/env roseus
 
-(send *ri* :rarm :start-grasp)
+(send *ri* :start-grasp :rarm)
