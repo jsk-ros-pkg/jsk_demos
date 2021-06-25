@@ -8,6 +8,8 @@
 
 (objects (list *robot*))
 
+(send *ri* :stop-grasp :rarm :width 0.02)
+
 (send *robot* :reset-pose)
 (send *robot* :larm :move-end-pos #f(-500 0 0))
 (send *robot* :rarm :inverse-kinematics (send (send *robot* :copy-worldcoords) :transform (make-coords :pos #f(547 -18 824) :rpy (float-vector -3.14 1.57 1.57))) :rotation-axis t)
