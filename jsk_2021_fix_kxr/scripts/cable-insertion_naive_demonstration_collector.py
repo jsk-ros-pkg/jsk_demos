@@ -20,6 +20,7 @@ class ScriptDemonstrationCollector(object):
         """
         self.initializer_script_path = initializer_script_path
         self.main_script_path = main_script_path
+        self.save_dir_base = save_dir_base
 
     def get_demonstration(self):
         """Getting demonstration
