@@ -687,7 +687,11 @@ class LeadPersonDemo(object):
             # check if there is a person lower than the robot.
             from geometry_msgs.msg import PoseArray
             while not rospy.is_shutdown():
-                people_pose_array = rospy.wait_for_message('/stair_detection_person_tracker/people_pose_array',PoseArray,rospy.Duration(2))
+                try:
+                    people_pose_array = rospy.wait_for_message('/stair_detection_person_tracker/people_pose_array',PoseArray,rospy.Duration(10))
+                except Exception as e:
+                    rospy.logwarn('{}'.format(e))
+                    continue
                 exist_person_down = False
                 for pose in people_pose_array.poses:
                     if pose.position.z < -0.5:
