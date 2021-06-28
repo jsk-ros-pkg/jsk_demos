@@ -10,7 +10,7 @@ import subprocess
 
 class ScriptDemonstrationCollector(object):
 
-    def __init__(self, initializer_script_path, main_script_path, save_dir_base='/tmp'):
+    def __init__(self, initializer_script_path, main_script_path, save_dir_base='/home/amabe/rosbag/panda'):
         """Euslisp script based demonstration collector.
 
         Args:
@@ -58,7 +58,7 @@ class ScriptDemonstrationCollector(object):
         """Start rosbag record subprocess.
         """
         print("start rosbag")
-        self.target_dir = join(self.save_dir_base, 'rosbag')
+        self.target_dir = join(self.save_dir_base, 'cable-insertion_naive')
         self.num_bagfies = len([name for name in os.listdir(
             self.target_dir) if os.path.isfile((self.target_dir, name))])
         options = "save_dir:={} bagfile_prefix:={:03}".format(
