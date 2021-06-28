@@ -139,6 +139,8 @@ class LeadPersonDemo(object):
                 else:
                     rospy.logerr('transition with edge {} failed'.format(edge))
                     result = LeadPersonResult(success=False)
+                    self._sound_client.say('目的地に到達できませんでした'.format(goal.target_node),
+                               volume=1.0)
                     self._server_lead_person.set_aborted(result)
                     return
             except Exception as e:
@@ -539,15 +541,18 @@ class LeadPersonDemo(object):
 
             safety_count = 0
             while not rospy.is_shutdown():
+                rospy.loginfo('safety_count: {}'.format(safety_count))
                 if safety_count > 10:
                     break;
                 try:
-                    is_visible_car = rospy.wait_for_message('/crosswalk_detection_car_tracker/visible', Bool)
-                    if is_visible_car:
+                    is_visible_car = rospy.wait_for_message('/crosswalk_detection_car_tracker/visible', Bool, rospy.Duration(1))
+                    rospy.loginfo('is_visible_car: {}'.format(is_visible_car))
+                    if is_visible_car == True:
                         safety_count = 0
                     else:
                         safety_count += 1
                 except Exception as e:
+                    rospy.logwarn('{}'.format(e))
                     safety_count = 0
 
             self._sound_client.say('ついてきてください',
@@ -682,9 +687,9 @@ class LeadPersonDemo(object):
             # check if there is a person lower than the robot.
             from geometry_msgs.msg import PoseArray
             while not rospy.is_shutdown():
-                people_pose_array = rospy.wait_for_message('/stair_detection_person_tracker/people_pose_array',PoseArray)
+                people_pose_array = rospy.wait_for_message('/stair_detection_person_tracker/people_pose_array',PoseArray,rospy.Duration(2))
                 exist_person_down = False
-                for pose in PoseArray.poses:
+                for pose in people_pose_array.poses:
                     if pose.position.z < -0.5:
                         exist_person_down = True
                 if exist_person_down:
