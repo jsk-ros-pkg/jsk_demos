@@ -43,7 +43,6 @@ class ScriptDemonstrationCollector(object):
         Returns:
             int: PID of subproces.
         """
-        #print(os.path.exists(file_path))
         if not os.path.exists(file_path):
             raise FileNotFoundError(
                 "{}, file path dosen't exist".format(file_path))
@@ -57,6 +56,7 @@ class ScriptDemonstrationCollector(object):
     def start_rosbag_record(self):
         """Start rosbag record subprocess.
         """
+        print("start rosbag")
         self.target_dir = join(self.save_dir_base, 'rosbag')
         self.num_bagfies = len([name for name in os.listdir(
             self.target_dir) if os.path.isfile((self.target_dir, name))])
@@ -87,11 +87,6 @@ class ScriptDemonstrationCollector(object):
                     cmd = "rm -rf {}".format(bagfile_name)
                     cmd = shlex.split(cmd)
                     subprocess.call(cmd)
-
-# initializer_script_path = "/home/amabe/franka_ws/src/jsk_demos/jsk_2021_fix_kxr/euslisp/cable-insertion_naive_init.l"
-# main_script_path = "/home/amabe/franka_ws/src/jsk_demos/jsk_2021_fix_kxr/euslisp/cable-insertion_naive_insertion.l"
-# node = ScriptDemonstrationCollector(initializer_script_path=initializer_script_path,main_script_path=main_script_path)
-# node.get_demonstration()
 
 initializer_script_path = "/home/amabe/franka_ws/src/jsk_demos/jsk_2021_fix_kxr/euslisp/cable-insertion_naive_init.l"
 main_script_path = "/home/amabe/franka_ws/src/jsk_demos/jsk_2021_fix_kxr/euslisp/cable-insertion_naive_insert.l"
