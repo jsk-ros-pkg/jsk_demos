@@ -131,14 +131,20 @@ class LeadPersonDemo(object):
         self._sound_client.say('目的地に向かいます')
 
         for edge in path:
-            if self.navigate_edge(edge):
-                rospy.loginfo('transition with edge {} succeeded'.format(edge))
-                self._current_node = edge['to']
-                self._pre_edge = edge
-            else:
-                rospy.logerr('transition with edge {} failed'.format(edge))
-                result = LeadPersonResult(success=False)
-                self._server_lead_person.set_aborted(result)
+            try:
+                if self.navigate_edge(edge):
+                    rospy.loginfo('transition with edge {} succeeded'.format(edge))
+                    self._current_node = edge['to']
+                    self._pre_edge = edge
+                else:
+                    rospy.logerr('transition with edge {} failed'.format(edge))
+                    result = LeadPersonResult(success=False)
+                    self._server_lead_person.set_aborted(result)
+                    return
+            except Exception as e:
+                rospy.logerr('Got an error with edge {}: {}'.format(edge, e))
+                self._sound_client.say('エラーが発生しました'.format(goal.target_node),
+                               volume=1.0)
                 return
 
         self._sound_client.say('目的地に到着しました.'.format(goal.target_node),
