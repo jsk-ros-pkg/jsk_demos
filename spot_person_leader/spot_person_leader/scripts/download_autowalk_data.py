@@ -54,6 +54,14 @@ def main():
         extract=True
     )
 
+    download_data(
+        pkg_name=PKG,
+        path='autowalk/eng2_2FElevator_to_eng8_2FElevator.walk.tar.gz',
+        url='https://drive.google.com/uc?id=1oyU1ufqy9gryPXw8YZ45Ff7AR8K825dT',
+        md5='ac9a67567104df2ddd78b8c53fa61ba2',
+        extract=True
+    )
+
 
 if __name__ == '__main__':
     main()

@@ -1,16 +1,4 @@
 edges:
-  - from: 'eng2_2FElevator'
-    to: 'eng2_2FEntrance'
-    type: 'narrow'
-    cost: 10
-    args:
-      graph: '$(find spot_person_leader)/autowalk/eng2_2FElevator_to_2FEntrance.walk'
-  - from: 'eng2_2FEntrance'
-    to: 'eng2_2FElevator'
-    type: 'narrow'
-    cost: 10
-    args:
-      graph: '$(find spot_person_leader)/autowalk/eng2_2FElevator_to_2FEntrance.walk'
   - from: '7FElevator'
     to: 'eng2_2FElevator'
     type: 'go_alone_and_wait'
@@ -157,6 +145,114 @@ edges:
     cost: 10
     args:
       graph: '$(find spot_person_leader)/autowalk/eng2_2FElevator_to_MainGate.walk'
+  - from: 'eng2_2FElevator'
+    to: 'eng2_Entrance_to_eng8'
+    type: 'narrow'
+    cost: 10
+    args:
+      graph: '$(find spot_person_leader)/autowalk/eng2_2FElevator_to_eng8_2FElevator.walk'
+  - from: 'eng2_Entrance_to_eng8'
+    to: 'eng2_2FElevator'
+    type: 'narrow'
+    cost: 10
+    args:
+      graph: '$(find spot_person_leader)/autowalk/eng2_2FElevator_to_eng8_2FElevator.walk'
+  - from: 'eng2_Entrance_to_eng8'
+    to: 'eng2_Entrance_to_eng8_outside'
+    type: 'walk'
+    cost: 10
+    args:
+      graph: '$(find spot_person_leader)/autowalk/eng2_2FElevator_to_eng8_2FElevator.walk'
+  - from: 'eng2_Entrance_to_eng8_outside'
+    to: 'eng2_Entrance_to_eng8'
+    type: 'walk'
+    cost: 10
+    args:
+      graph: '$(find spot_person_leader)/autowalk/eng2_2FElevator_to_eng8_2FElevator.walk'
+  - from: 'eng2_Entrance_to_eng8_outside'
+    to: 'bicycle_parking_eng6_lower'
+    type: 'crosswalk'
+    cost: 10
+    args:
+      graph: '$(find spot_person_leader)/autowalk/eng2_2FElevator_to_eng8_2FElevator.walk'
+  - from: 'bicycle_parking_eng6_lower'
+    to: 'eng2_Entrance_to_eng8_outside'
+    type: 'crosswalk'
+    cost: 10
+    args:
+      graph: '$(find spot_person_leader)/autowalk/eng2_2FElevator_to_eng8_2FElevator.walk'
+  - from: 'bicycle_parking_eng6_lower'
+    to: 'eng_TelephoneBox'
+    type: 'walk'
+    cost: 10
+    args:
+      graph: '$(find spot_person_leader)/autowalk/eng2_2FElevator_to_eng8_2FElevator.walk'
+  - from: 'eng_TelephoneBox'
+    to: 'bicycle_parking_eng6_lower'
+    type: 'walk'
+    cost: 10
+    args:
+      graph: '$(find spot_person_leader)/autowalk/eng2_2FElevator_to_eng8_2FElevator.walk'
+  - from: 'eng8_Piloti_Entrance'
+    to: 'eng_TelephoneBox'
+    type: 'crosswalk'
+    cost: 10
+    args:
+      graph: '$(find spot_person_leader)/autowalk/eng2_2FElevator_to_eng8_2FElevator.walk'
+  - from: 'eng_TelephoneBox'
+    to: 'eng8_Piloti_Entrance'
+    type: 'crosswalk'
+    cost: 10
+    args:
+      graph: '$(find spot_person_leader)/autowalk/eng2_2FElevator_to_eng8_2FElevator.walk'
+  - from: 'eng8_Piloti_Entrance'
+    to: 'eng8_Piloti_Center'
+    type: 'walk'
+    cost: 10
+    args:
+      graph: '$(find spot_person_leader)/autowalk/eng2_2FElevator_to_eng8_2FElevator.walk'
+  - from: 'eng8_Piloti_Center'
+    to: 'eng8_Piloti_Entrance'
+    type: 'walk'
+    cost: 10
+    args:
+      graph: '$(find spot_person_leader)/autowalk/eng2_2FElevator_to_eng8_2FElevator.walk'
+  - from: 'eng8_Piloti_Center'
+    to: 'eng8_Piloti_stair_below'
+    type: 'narrow'
+    cost: 10
+    args:
+      graph: '$(find spot_person_leader)/autowalk/eng2_2FElevator_to_eng8_2FElevator.walk'
+  - from: 'eng8_Piloti_stair_below'
+    to: 'eng8_Piloti_Center'
+    type: 'narrow'
+    cost: 10
+    args:
+      graph: '$(find spot_person_leader)/autowalk/eng2_2FElevator_to_eng8_2FElevator.walk'
+  - from: 'eng8_Piloti_stair_above'
+    to: 'eng8_Piloti_stair_below'
+    type: 'stair'
+    cost: 10
+    args:
+      graph: '$(find spot_person_leader)/autowalk/eng2_2FElevator_to_eng8_2FElevator.walk'
+  - from: 'eng8_Piloti_stair_below'
+    to: 'eng8_Piloti_stair_above'
+    type: 'stair'
+    cost: 10
+    args:
+      graph: '$(find spot_person_leader)/autowalk/eng2_2FElevator_to_eng8_2FElevator.walk'
+  - from: 'eng8_Piloti_stair_above'
+    to: 'eng8_2FElevator'
+    type: 'narrow'
+    cost: 10
+    args:
+      graph: '$(find spot_person_leader)/autowalk/eng2_2FElevator_to_eng8_2FElevator.walk'
+  - from: 'eng8_2FElevator'
+    to: 'eng8_Piloti_stair_above'
+    type: 'narrow'
+    cost: 10
+    args:
+      graph: '$(find spot_person_leader)/autowalk/eng2_2FElevator_to_eng8_2FElevator.walk'
 nodes:
   '73B2':
     name_en: '73B2'
@@ -227,15 +323,11 @@ nodes:
       - graph: '$(find spot_person_leader)/autowalk/eng2_elevator_7FElevator_to_2FElevator.walk'
         id: 'shelfy-dassie-vK9Tf3cAQpdA.25gPJl8OQ=='
         localization_method: 'fiducial'
+      - graph: '$(find spot_person_leader)/autowalk/eng2_2FElevator_to_eng8_2FElevator.walk'
+        id: 'inland-remora-FqtX8ScP+.inEd4xFYKq4A=='
+        localization_method: 'fiducial'
     switchbot_device: '/eng2/2f/elevator/up/button'
     floor: 2
-  'eng2_2FEntrance':
-    name_en: 'Entrance'
-    name_jp: '入り口'
-    waypoints_on_graph:
-      - graph: '$(find spot_person_leader)/autowalk/eng2_2FElevator_to_2FEntrance.walk'
-        id: 'ended-conch-2XbkwOkQkvye4OZcmL89pQ=='
-        localization_method: 'fiducial'
   'eng2_MainEntrance_upper':
     name_en: 'Entrance'
     name_jp: '入り口'
@@ -264,3 +356,66 @@ nodes:
       - graph: '$(find spot_person_leader)/autowalk/eng2_2FElevator_to_MainGate.walk'
         id: 'wobbly-macaw-YHBHKCQPbVkWFdDSrFO3Gw=='
         localization_method: 'waypoint'
+  'eng2_Entrance_to_eng8':
+    name_en: 'entrance'
+    name_jp: 'エントランス'
+    waypoints_on_graph:
+      - graph: '$(find spot_person_leader)/autowalk/eng2_2FElevator_to_eng8_2FElevator.walk'
+        id: 'slain-magpie-K5jahfbkqwM.su8GIZUyLw=='
+        localization_method: 'fiducial'
+  'eng2_Entrance_to_eng8_outside':
+    name_en: 'entrance'
+    name_jp: 'エントランス'
+    waypoints_on_graph:
+      - graph: '$(find spot_person_leader)/autowalk/eng2_2FElevator_to_eng8_2FElevator.walk'
+        id: 'above-puffin-100RMl4r9V.ujhdP8gYa3w=='
+        localization_method: 'waypoint'
+  'bicycle_parking_eng6_lower':
+    name_en: 'bicycle_parking'
+    name_jp: '駐輪場下'
+    waypoints_on_graph:
+      - graph: '$(find spot_person_leader)/autowalk/eng2_2FElevator_to_eng8_2FElevator.walk'
+        id: 'gowned-dingo-oKoVgFPXF2eecyPVriBDpA=='
+        localization_method: 'waypoint'
+  'eng_TelephoneBox':
+    name_en: 'telephone box'
+    name_jp: '電話ボックス'
+    waypoints_on_graph:
+      - graph: '$(find spot_person_leader)/autowalk/eng2_2FElevator_to_eng8_2FElevator.walk'
+        id: 'slain-pika-VdtPz3lWcp5T+pEArUB3PA=='
+        localization_method: 'fiducial'
+  'eng8_Piloti_Entrance':
+    name_en: 'Piloti'
+    name_jp: 'ピロティ'
+    waypoints_on_graph:
+      - graph: '$(find spot_person_leader)/autowalk/eng2_2FElevator_to_eng8_2FElevator.walk'
+        id: 'untidy-pigeon-Alwyk8DVKL1ROYyHHKD+xQ=='
+        localization_method: 'waypoint'
+  'eng8_Piloti_Center':
+    name_en: 'Piloti'
+    name_jp: 'ピロティ'
+    waypoints_on_graph:
+      - graph: '$(find spot_person_leader)/autowalk/eng2_2FElevator_to_eng8_2FElevator.walk'
+        id: 'azoic-lion-Iapbto7rzlzuFF0MvXdyPA=='
+        localization_method: 'fiducial'
+  'eng8_Piloti_stair_below':
+    name_en: 'Piloti'
+    name_jp: 'ピロティ'
+    waypoints_on_graph:
+      - graph: '$(find spot_person_leader)/autowalk/eng2_2FElevator_to_eng8_2FElevator.walk'
+        id: 'forte-ram-wWTPMTBRsY3KMxLOychvuQ=='
+        localization_method: 'waypoint'
+  'eng8_Piloti_stair_above':
+    name_en: 'Piloti'
+    name_jp: 'ピロティ'
+    waypoints_on_graph:
+      - graph: '$(find spot_person_leader)/autowalk/eng2_2FElevator_to_eng8_2FElevator.walk'
+        id: 'veined-weevil-mamBzsO9XuxkAYE3WigbQQ=='
+        localization_method: 'waypoint'
+  'eng8_2FElevator':
+    name_en: 'Elevator'
+    name_jp: 'エレベーター'
+    waypoints_on_graph:
+      - graph: '$(find spot_person_leader)/autowalk/eng2_2FElevator_to_eng8_2FElevator.walk'
+        id: 'afeard-frog-vhsz6u.NAnlyKwGcaMCI+Q=='
+        localization_method: 'fiducial'
