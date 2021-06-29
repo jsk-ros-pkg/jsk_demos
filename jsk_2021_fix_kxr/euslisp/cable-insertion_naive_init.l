@@ -16,4 +16,11 @@
 (send *ri* :angle-vector (send *robot* :angle-vector) 3000)
 (send *ri* :wait-interpolation)
 
+(do-until-key
+ (print "waiting for Enter...")
+ (unix::sleep 1))
+
+(send *ri* :start-grasp :rarm)
+(unix::sleep 1)
+
 (exit)

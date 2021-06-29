@@ -27,16 +27,6 @@ class ScriptDemonstrationCollector(object):
         """Getting demonstration
         """
         self.run_eus_script(self.initializer_script_path, wait=True)
-        
-        while True:
-            wait_setting = raw_input("press Enter to finish setting")
-            if wait_setting == "":
-                print("you pressed Enter")
-                break
-            else:
-                print("you pressed other key")
-
-        self.run_eus_script(self.setting_script_path, wait=True)
         self.start_rosbag_record()
         self.run_eus_script(self.main_script_path, wait=True)
         self.stop_rosbag_record()
