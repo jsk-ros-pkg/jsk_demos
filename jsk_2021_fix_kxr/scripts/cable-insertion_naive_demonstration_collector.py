@@ -10,7 +10,7 @@ import subprocess
 
 class ScriptDemonstrationCollector(object):
 
-    def __init__(self, initializer_script_path, main_script_path, save_dir_base='/home/amabe/rosbag/panda'):
+    def __init__(self, initializer_script_path, setting_script_path, main_script_path, save_dir_base='/home/amabe/rosbag/panda'):
         """Euslisp script based demonstration collector.
 
         Args:
@@ -19,19 +19,20 @@ class ScriptDemonstrationCollector(object):
             save_dir_base (str): Path to save rosbag file
         """
         self.initializer_script_path = initializer_script_path
+        self.setting_script_path = setting_script_path
         self.main_script_path = main_script_path
         self.save_dir_base = save_dir_base
 
     def get_demonstration(self):
         """Getting demonstration
         """
-        self.run_eus_scrpt(self.initializer_script_path, wait=True)
+        self.run_eus_script(self.initializer_script_path, wait=True)
         self.start_rosbag_record()
-        self.run_eus_scrpt(self.main_script_path, wait=True)
+        self.run_eus_script(self.main_script_path, wait=True)
         self.stop_rosbag_record()
         self.check_if_save_demo()
 
-    def run_eus_scrpt(self, file_path, wait=True):
+    def run_eus_script(self, file_path, wait=True):
         """Run euslistp script
 
         Args:
@@ -90,6 +91,7 @@ class ScriptDemonstrationCollector(object):
                     subprocess.call(cmd)
 
 initializer_script_path = "/home/amabe/franka_ws/src/jsk_demos/jsk_2021_fix_kxr/euslisp/cable-insertion_naive_init.l"
+setting_script_path = "/home/amabe/franka_ws/src/jsk_demos/jsk_2021_fix_kxr/euslisp/cable-insertion_naive_grasp.l"
 main_script_path = "/home/amabe/franka_ws/src/jsk_demos/jsk_2021_fix_kxr/euslisp/cable-insertion_naive_insert.l"
-node = ScriptDemonstrationCollector(initializer_script_path=initializer_script_path,main_script_path=main_script_path)
+node = ScriptDemonstrationCollector(initializer_script_path=initializer_script_path,setting_script_path=setting_script_path,main_script_path=main_script_path)
 node.get_demonstration()
