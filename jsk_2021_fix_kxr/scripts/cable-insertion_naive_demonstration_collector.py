@@ -60,7 +60,7 @@ class ScriptDemonstrationCollector(object):
         print("start rosbag")
         self.target_dir = join(self.save_dir_base, 'cable-insertion_naive')
         self.num_bagfies = len([name for name in os.listdir(
-            self.target_dir) if os.path.isfile((self.target_dir, name))])
+            self.target_dir) if os.path.isfile(os.path.join(self.target_dir, name))])
         options = "save_dir:={} bagfile_prefix:={:03}".format(
             self.target_dir, self.num_bagfies)
         rospy.loginfo(
