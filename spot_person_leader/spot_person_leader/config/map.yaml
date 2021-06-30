@@ -253,6 +253,78 @@ edges:
     cost: 10
     args:
       graph: '$(find spot_person_leader)/autowalk/eng2_2FElevator_to_eng8_2FElevator.walk'
+  - from: 'eng_TelephoneBox'
+    to: 'eng1_eastside'
+    type: 'crosswalk'
+    cost: 10
+    args:
+      graph: '$(find spot_person_leader)/autowalk/eng_TelephoneBox_to_HongoMainGate.walk'
+  - from: 'eng1_eastside'
+    to: 'eng_TelephoneBox'
+    type: 'crosswalk'
+    cost: 10
+    args:
+      graph: '$(find spot_person_leader)/autowalk/eng_TelephoneBox_to_HongoMainGate.walk'
+  - from: 'eng1_eastside'
+    to: 'eng1_eastside_square'
+    type: 'walk'
+    cost: 10
+    args:
+      graph: '$(find spot_person_leader)/autowalk/eng_TelephoneBox_to_HongoMainGate.walk'
+  - from: 'eng1_eastside_square'
+    to: 'eng1_eastside'
+    type: 'walk'
+    cost: 10
+    args:
+      graph: '$(find spot_person_leader)/autowalk/eng_TelephoneBox_to_HongoMainGate.walk'
+  - from: 'eng1_eastside_square'
+    to: 'eng_square_eastnorthpoint'
+    type: 'crosswalk'
+    cost: 10
+    args:
+      graph: '$(find spot_person_leader)/autowalk/eng_TelephoneBox_to_HongoMainGate.walk'
+  - from: 'eng_square_eastnorthpoint'
+    to: 'eng1_eastside_square'
+    type: 'crosswalk'
+    cost: 10
+    args:
+      graph: '$(find spot_person_leader)/autowalk/eng_TelephoneBox_to_HongoMainGate.walk'
+  - from: 'eng_square_eastnorthpoint'
+    to: 'eng_square_westnorthpoint'
+    type: 'walk'
+    cost: 10
+    args:
+      graph: '$(find spot_person_leader)/autowalk/eng_TelephoneBox_to_HongoMainGate.walk'
+  - from: 'eng_square_westnorthpoint'
+    to: 'eng_square_eastnorthpoint'
+    type: 'walk'
+    cost: 10
+    args:
+      graph: '$(find spot_person_leader)/autowalk/eng_TelephoneBox_to_HongoMainGate.walk'
+  - from: 'eng_square_westnorthpoint'
+    to: 'starbucks_front'
+    type: 'crosswalk'
+    cost: 10
+    args:
+      graph: '$(find spot_person_leader)/autowalk/eng_TelephoneBox_to_HongoMainGate.walk'
+  - from: 'starbucks_front'
+    to: 'eng_square_westnorthpoint'
+    type: 'crosswalk'
+    cost: 10
+    args:
+      graph: '$(find spot_person_leader)/autowalk/eng_TelephoneBox_to_HongoMainGate.walk'
+  - from: 'starbucks_front'
+    to: 'HongoMainGate'
+    type: 'walk'
+    cost: 10
+    args:
+      graph: '$(find spot_person_leader)/autowalk/eng_TelephoneBox_to_HongoMainGate.walk'
+  - from: 'HongoMainGate'
+    to: 'starbucks_front'
+    type: 'walk'
+    cost: 10
+    args:
+      graph: '$(find spot_person_leader)/autowalk/eng_TelephoneBox_to_HongoMainGate.walk'
 nodes:
   '73B2':
     name_en: '73B2'
@@ -356,6 +428,9 @@ nodes:
       - graph: '$(find spot_person_leader)/autowalk/eng2_2FElevator_to_MainGate.walk'
         id: 'wobbly-macaw-YHBHKCQPbVkWFdDSrFO3Gw=='
         localization_method: 'waypoint'
+      - graph: '$(find spot_person_leader)/autowalk/eng_TelephoneBox_to_HongoMainGate.walk'
+        id: 'scabby-gibbon-6xcOMWNTVIXmDJ2EB6GHXw=='
+        localization_method: 'fiducial'
   'eng2_Entrance_to_eng8':
     name_en: 'entrance'
     name_jp: 'エントランス'
@@ -383,6 +458,9 @@ nodes:
     waypoints_on_graph:
       - graph: '$(find spot_person_leader)/autowalk/eng2_2FElevator_to_eng8_2FElevator.walk'
         id: 'slain-pika-VdtPz3lWcp5T+pEArUB3PA=='
+        localization_method: 'fiducial'
+      - graph: '$(find spot_person_leader)/autowalk/eng_TelephoneBox_to_HongoMainGate.walk'
+        id: 'aired-hyrax-BF+hXHaUufi.DLd3pEWm5Q=='
         localization_method: 'fiducial'
   'eng8_Piloti_Entrance':
     name_en: 'Piloti'
@@ -419,3 +497,28 @@ nodes:
       - graph: '$(find spot_person_leader)/autowalk/eng2_2FElevator_to_eng8_2FElevator.walk'
         id: 'afeard-frog-vhsz6u.NAnlyKwGcaMCI+Q=='
         localization_method: 'fiducial'
+  'eng1_eastside':
+    waypoints_on_graph:
+      - graph: '$(find spot_person_leader)/autowalk/eng_TelephoneBox_to_HongoMainGate.walk'
+        id: 'rabid-basset-i8S27Fm4hNZ7nXCaNnpg0A=='
+        localization_method: 'waypoint'
+  'eng1_eastside_square':
+    waypoints_on_graph:
+      - graph: '$(find spot_person_leader)/autowalk/eng_TelephoneBox_to_HongoMainGate.walk'
+        id: 'dyed-leech-jG.RWrdrKNCEjyHqdHyuaw=='
+        localization_method: 'waypoint'
+  'eng_square_eastnorthpoint':
+    waypoints_on_graph:
+      - graph: '$(find spot_person_leader)/autowalk/eng_TelephoneBox_to_HongoMainGate.walk'
+        id: 'setose-cocoon-s.opQAe8rPGrM7NzXXurLQ=='
+        localization_method: 'waypoint'
+  'eng_square_westnorthpoint':
+    waypoints_on_graph:
+      - graph: '$(find spot_person_leader)/autowalk/eng_TelephoneBox_to_HongoMainGate.walk'
+        id: 'analog-hydra-OHqbbrjChrVyH59Bn8X6Vw=='
+        localization_method: 'waypoint'
+  'starbucks_front':
+    waypoints_on_graph:
+      - graph: '$(find spot_person_leader)/autowalk/eng_TelephoneBox_to_HongoMainGate.walk'
+        id: 'tubed-isopod-T1WXNMuaEjGlAV.D36WuZQ=='
+        localization_method: 'waypoint'
