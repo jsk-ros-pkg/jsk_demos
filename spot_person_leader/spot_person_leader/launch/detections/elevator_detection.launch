@@ -153,4 +153,17 @@
         <remap from="~indices" to="elevator_detection_door_detector_inside_attention_clipper/output/point_indices"/>
         <remap from="~output" to="/spot_recognition/elevator_door_inside_points"/>
     </node>
+
+    <!-- switchbot_ros -->
+    <node
+        pkg="switchbot_ros"
+        type="switchbot_ros_server.py"
+        name="switchbot_ros"
+        output="screen">
+        <rosparam
+            command="load"
+            file="$(find spot_person_leader)/config/switchbot_ros/token.yaml"
+            />
+    </node>
+
 </launch>

@@ -16,4 +16,17 @@
             timeout_observation: 5.0
         </rosparam>
     </node>
+
+    <!-- switchbot_ros -->
+    <node
+        pkg="switchbot_ros"
+        type="switchbot_ros_server.py"
+        name="switchbot_ros"
+        output="screen">
+        <rosparam
+            command="load"
+            file="$(find spot_person_leader)/config/switchbot_ros/token.yaml"
+            />
+    </node>
+
 </launch>
