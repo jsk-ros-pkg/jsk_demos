@@ -45,7 +45,8 @@ class Map:
 
     def calcPath(self, node_from, node_to):
 
-        node_list = nx.shortest_path( self._network, node_from, node_to )
+        node_list = nx.dijkstra_path( self._network, node_from, node_to )
+        rospy.loginfo('node_list: {}'.format(node_list))
         path = []
         for index in range(len(node_list)-1):
             path.append(self._edges[node_list[index],node_list[index+1]])
