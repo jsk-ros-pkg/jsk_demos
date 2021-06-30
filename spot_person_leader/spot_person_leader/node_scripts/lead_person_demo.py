@@ -951,7 +951,7 @@ class LeadPersonDemo(object):
                         volume=1.0,
                         blocking=True)
                 else:
-                    if self._map._nodes[edge['to']]['floor'] > self._map._nodes[edge['to']]['floor']:
+                    if self._map._nodes[edge['to']]['floor'] > self._map._nodes[edge['from']]['floor']:
                         self._sound_client.say(
                             'エレベーターで移動します. 上ボタンを押してください.',
                             volume=1.0,
@@ -962,7 +962,8 @@ class LeadPersonDemo(object):
                             volume=1.0,
                             blocking=True)
             else:
-                if self._map._nodes[edge['to']]['floor'] > self._map._nodes[edge['to']]['floor']:
+                rospy.logwarn('switchbot action client failed.')
+                if self._map._nodes[edge['to']]['floor'] > self._map._nodes[edge['from']]['floor']:
                     self._sound_client.say(
                         'エレベーターで移動します. 上ボタンを押してください.',
                         volume=1.0,
