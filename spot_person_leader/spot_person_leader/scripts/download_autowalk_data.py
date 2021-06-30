@@ -62,6 +62,14 @@ def main():
         extract=True
     )
 
+    download_data(
+        pkg_name=PKG,
+        path='autowalk/eng_TelephoneBox_to_HongoMainGate.walk.tar.gz',
+        url='https://drive.google.com/uc?id=120WC6SE4C_9XIvy0j3HEraljIigjcJ5U',
+        md5='6f89cd74bea3934171e0ae720747da24',
+        extract=True
+    )
+
 
 if __name__ == '__main__':
     main()
