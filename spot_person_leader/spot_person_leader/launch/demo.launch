@@ -1,5 +1,4 @@
 <launch>
-    <arg name="switchbot_token"/>
 
     <node
         pkg="spot_person_leader"
@@ -24,10 +23,18 @@
         </rosparam>
     </node>
 
-    <include
-        file="$(find switchbot_ros)/launch/switchbot.launch">
-        <arg name="token" value="$(arg switchbot_token)"/>
-    </include>
+
+    <!-- switchbot_ros -->
+    <node
+        pkg="switchbot_ros"
+        type="switchbot_ros_server.py"
+        name="switchbot_ros"
+        output="screen">
+        <rosparam
+            command="load"
+            file="$(find spot_person_leader)/config/switchbot_ros/token.yaml"
+            />
+    </node>
 
     <include
         file="$(find spot_person_leader)/launch/detections/common_detection.launch" />
