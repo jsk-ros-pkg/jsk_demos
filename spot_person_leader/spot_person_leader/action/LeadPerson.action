@@ -1,0 +1,6 @@
+string target_node
+---
+bool success
+---
+string waypoint_id
+string filepath
