@@ -533,6 +533,10 @@ class LeadPersonDemo(object):
                     return False
                 rospy.loginfo('robot is localized on the graph.')
 
+            self._sound_client.say('車が通るかみています',
+                                   volume=1.0,
+                                   blocking=True)
+
             safety_count = 0
             while not rospy.is_shutdown():
                 rospy.loginfo('safety_count: {}'.format(safety_count))
@@ -543,6 +547,10 @@ class LeadPersonDemo(object):
                     rospy.loginfo('is_visible_car: {}'.format(is_visible_car))
                     if is_visible_car == True:
                         safety_count = 0
+                        self._sound_client.say('車が通ります',
+                                   volume=1.0,
+                                   blocking=True)
+
                     else:
                         safety_count += 1
                 except Exception as e:
