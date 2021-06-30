@@ -80,12 +80,6 @@ class LeadPersonDemo(object):
         # publisher
         self._pub_current_node = rospy.Publisher('~/current_node',String,queue_size=1)
 
-        # action client
-        self._ac_switchbot = actionlib.SimpleActionClient(
-                                    '/switchbot_ros/switch',
-                                    SwitchBotCommandAction
-                                    )
-
         # reset service
         self._service_reset = rospy.Service(
                                     '~reset_current_node',
@@ -789,10 +783,16 @@ class LeadPersonDemo(object):
             rospy.loginfo('start subscription')
 
             #
-            switchbot_goal = SwitchBotCommandGoal()
-            switchbot_goal.device_name = self._map._nodes[edge['from']]['switchbot_device']
-            switchbot_goal.command = 'press'
-            self._ac_switchbot.send_goal(switchbot_goal)
+            action_client_switchbot = actionlib.SimpleActionClient(
+                                            '/switchbot_ros/switch',
+                                            SwitchBotCommandAction
+                                            )
+            if action_client_switchbot.wait_for_server(rospy.Duration(10)):
+                #
+                switchbot_goal = SwitchBotCommandGoal()
+                switchbot_goal.device_name = self._map._nodes[edge['from']]['switchbot_device']
+                switchbot_goal.command = 'press'
+                action_client_switchbot.send_goal(switchbot_goal)
 
             self._sound_client.say(
                     '私は階段で行くので、エレベーターで{}階に移動してください'.format(
@@ -922,19 +922,37 @@ class LeadPersonDemo(object):
                                         PointCloud2,
                                         door_point_callback)
 
-            switchbot_goal = SwitchBotCommandGoal()
-            switchbot_goal.device_name = self._map._nodes[edge['from']]['switchbot_device']
-            switchbot_goal.command = 'press'
-            self._ac_switchbot.send_goal(switchbot_goal)
-            self._ac_switchbot.wait_for_result()
-            result = self._ac_switchbot.get_result()
-            rospy.loginfo('switchbot result: {}'.format(result))
+            #
+            action_client_switchbot = actionlib.SimpleActionClient(
+                                            '/switchbot_ros/switch',
+                                            SwitchBotCommandAction
+                                            )
+            if action_client_switchbot.wait_for_server(rospy.Duration(10)):
+                #
+                switchbot_goal = SwitchBotCommandGoal()
+                switchbot_goal.device_name = self._map._nodes[edge['from']]['switchbot_device']
+                switchbot_goal.command = 'press'
+                action_client_switchbot.send_goal(switchbot_goal)
+                action_client_switchbot.wait_for_result()
+                result = action_client_switchbot.get_result()
+                rospy.loginfo('switchbot result: {}'.format(result))
 
-            if result.done:
-                self._sound_client.say(
-                    'エレベーターで移動します',
-                    volume=1.0,
-                    blocking=True)
+                if result.done:
+                    self._sound_client.say(
+                        'エレベーターで移動します',
+                        volume=1.0,
+                        blocking=True)
+                else:
+                    if self._map._nodes[edge['to']]['floor'] > self._map._nodes[edge['to']]['floor']:
+                        self._sound_client.say(
+                            'エレベーターで移動します. 上ボタンを押してください.',
+                            volume=1.0,
+                            blocking=True)
+                    else:
+                        self._sound_client.say(
+                            'エレベーターで移動します. 下ボタンを押してください.',
+                            volume=1.0,
+                            blocking=True)
             else:
                 if self._map._nodes[edge['to']]['floor'] > self._map._nodes[edge['to']]['floor']:
                     self._sound_client.say(
