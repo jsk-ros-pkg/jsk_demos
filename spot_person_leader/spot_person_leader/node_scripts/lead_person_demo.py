@@ -211,22 +211,34 @@ class LeadPersonDemo(object):
                 rospy.loginfo('graph upload and localization skipped.')
             else:
                 # Upload
-                self._spot_client.upload_graph( graph_name )
-                rospy.loginfo('graph {} uploaded.'.format(graph_name))
-                # Localization
-                if localization_method == 'fiducial':
-                    self._spot_client.set_localization_fiducial()
-                elif localization_method == 'waypoint':
-                    self._spot_client.set_localization_waypoint(start_id)
+                ret = self._spot_client.upload_graph(graph_name)
+                if ret[0]:
+                    rospy.loginfo('graph {} uploaded.'.format(graph_name))
                 else:
-                    rospy.logerr('Unknown localization method')
+                    rospy.logerr('graph uploading failed: {}'.format(ret[1]))
                     detection_roslaunch_parent.shutdown()
                     subscriber_visible.unregister()
                     del self._tmp_state_visible
                     del self._tmp_starttime_visibility
                     del self._tmp_duration_visibility
                     return False
-                rospy.loginfo('robot is localized on the graph.')
+                # Localization
+                if localization_method == 'fiducial':
+                    ret = self._spot_client.set_localization_fiducial()
+                elif localization_method == 'waypoint':
+                    ret = self._spot_client.set_localization_waypoint(start_id)
+                else:
+                    ret = (False,'Unknown localization method')
+                if ret[0]:
+                    rospy.loginfo('robot is localized on the graph.')
+                else:
+                    rospy.logwarn('Localization failed: {}'.format(ret[1]))
+                    detection_roslaunch_parent.shutdown()
+                    subscriber_visible.unregister()
+                    del self._tmp_state_visible
+                    del self._tmp_starttime_visibility
+                    del self._tmp_duration_visibility
+                    return False
 
             self._sound_client.say('ついてきてください',
                                    volume=1.0,
@@ -352,15 +364,11 @@ class LeadPersonDemo(object):
                 rospy.loginfo('graph upload and localization skipped.')
             else:
                 # Upload
-                self._spot_client.upload_graph( graph_name )
-                rospy.loginfo('graph {} uploaded.'.format(graph_name))
-                # Localization
-                if localization_method == 'fiducial':
-                    self._spot_client.set_localization_fiducial()
-                elif localization_method == 'waypoint':
-                    self._spot_client.set_localization_waypoint(start_id)
+                ret = self._spot_client.upload_graph(graph_name)
+                if ret[0]:
+                    rospy.loginfo('graph {} uploaded.'.format(graph_name))
                 else:
-                    rospy.logerr('Unknown localization method')
+                    rospy.logerr('graph uploading failed: {}'.format(ret[1]))
                     detection_roslaunch_parent.shutdown()
                     subscriber_obstacle_callback_right.unregister()
                     subscriber_obstacle_callback_left.unregister()
@@ -371,8 +379,27 @@ class LeadPersonDemo(object):
                     del self._tmp_starttime_visibility
                     del self._tmp_duration_visibility
                     return False
-                rospy.loginfo('robot is localized on the graph.')
-
+                # Localization
+                if localization_method == 'fiducial':
+                    ret = self._spot_client.set_localization_fiducial()
+                elif localization_method == 'waypoint':
+                    ret = self._spot_client.set_localization_waypoint(start_id)
+                else:
+                    ret = (False,'Unknown localization method')
+                if ret[0]:
+                    rospy.loginfo('robot is localized on the graph.')
+                else:
+                    rospy.logwarn('Localization failed: {}'.format(ret[1]))
+                    detection_roslaunch_parent.shutdown()
+                    subscriber_obstacle_callback_right.unregister()
+                    subscriber_obstacle_callback_left.unregister()
+                    subscriber_visible.unregister()
+                    del self._tmp_last_obstacle_right
+                    del self._tmp_last_obstacle_left
+                    del self._tmp_state_visible
+                    del self._tmp_starttime_visibility
+                    del self._tmp_duration_visibility
+                    return False
 
             self._sound_client.say('ついてきてください',
                                    volume=1.0,
@@ -516,13 +543,26 @@ class LeadPersonDemo(object):
                 rospy.loginfo('graph upload and localization skipped.')
             else:
                 # Upload
-                self._spot_client.upload_graph( graph_name )
-                rospy.loginfo('graph {} uploaded.'.format(graph_name))
+                ret = self._spot_client.upload_graph(graph_name)
+                if ret[0]:
+                    rospy.loginfo('graph {} uploaded.'.format(graph_name))
+                else:
+                    rospy.logerr('graph uploading failed: {}'.format(ret[1]))
+                    detection_roslaunch_parent.shutdown()
+                    subscriber_visible.unregister()
+                    del self._tmp_state_visible
+                    del self._tmp_starttime_visibility
+                    del self._tmp_duration_visibility
+                    return False
                 # Localization
                 if localization_method == 'fiducial':
-                    self._spot_client.set_localization_fiducial()
+                    ret = self._spot_client.set_localization_fiducial()
                 elif localization_method == 'waypoint':
-                    self._spot_client.set_localization_waypoint(start_id)
+                    ret = self._spot_client.set_localization_waypoint(start_id)
+                else:
+                    ret = (False,'Unknown localization method')
+                if ret[0]:
+                    rospy.loginfo('robot is localized on the graph.')
                 else:
                     rospy.logerr('Unknown localization method')
                     detection_roslaunch_parent.shutdown()
@@ -531,7 +571,6 @@ class LeadPersonDemo(object):
                     del self._tmp_starttime_visibility
                     del self._tmp_duration_visibility
                     return False
-                rospy.loginfo('robot is localized on the graph.')
 
             self._sound_client.say('車が通るかみています',
                                    volume=1.0,
@@ -669,22 +708,34 @@ class LeadPersonDemo(object):
                 rospy.loginfo('graph upload and localization skipped.')
             else:
                 # Upload
-                self._spot_client.upload_graph( graph_name )
-                rospy.loginfo('graph {} uploaded.'.format(graph_name))
-                # Localization
-                if localization_method == 'fiducial':
-                    self._spot_client.set_localization_fiducial()
-                elif localization_method == 'waypoint':
-                    self._spot_client.set_localization_waypoint(start_id)
+                ret = self._spot_client.upload_graph(graph_name)
+                if ret[0]:
+                    rospy.loginfo('graph {} uploaded.'.format(graph_name))
                 else:
-                    rospy.logerr('Unknown localization method')
+                    rospy.logerr('graph uploading failed: {}'.format(ret[1]))
                     detection_roslaunch_parent.shutdown()
                     subscriber_visible.unregister()
                     del self._tmp_state_visible
                     del self._tmp_starttime_visibility
                     del self._tmp_duration_visibility
                     return False
-                rospy.loginfo('robot is localized on the graph.')
+                # Localization
+                if localization_method == 'fiducial':
+                    ret = self._spot_client.set_localization_fiducial()
+                elif localization_method == 'waypoint':
+                    ret = self._spot_client.set_localization_waypoint(start_id)
+                else:
+                    ret = (False,'Unknown localization method')
+                if ret[0]:
+                    rospy.loginfo('robot is localized on the graph.')
+                else:
+                    rospy.logwarn('Localization failed: {}'.format(ret[1]))
+                    detection_roslaunch_parent.shutdown()
+                    subscriber_visible.unregister()
+                    del self._tmp_state_visible
+                    del self._tmp_starttime_visibility
+                    del self._tmp_duration_visibility
+                    return False
 
             # check if there is a person lower than the robot.
             from geometry_msgs.msg import PoseArray
@@ -815,22 +866,34 @@ class LeadPersonDemo(object):
                 rospy.loginfo('graph upload and localization skipped.')
             else:
                 # Upload
-                self._spot_client.upload_graph( graph_name )
-                rospy.loginfo('graph {} uploaded.'.format(graph_name))
-                # Localization
-                if localization_method == 'fiducial':
-                    self._spot_client.set_localization_fiducial()
-                elif localization_method == 'waypoint':
-                    self._spot_client.set_localization_waypoint(start_id)
+                ret = self._spot_client.upload_graph(graph_name)
+                if ret[0]:
+                    rospy.loginfo('graph {} uploaded.'.format(graph_name))
                 else:
-                    rospy.logerr('Unknown localization method')
+                    rospy.logerr('graph uploading failed: {}'.format(ret[1]))
                     detection_roslaunch_parent.shutdown()
                     subscriber_visible.unregister()
                     del self._tmp_state_visible
                     del self._tmp_starttime_visibility
                     del self._tmp_duration_visibility
                     return False
-                rospy.loginfo('robot is localized on the graph.')
+                # Localization
+                if localization_method == 'fiducial':
+                    ret = self._spot_client.set_localization_fiducial()
+                elif localization_method == 'waypoint':
+                    ret = self._spot_client.set_localization_waypoint(start_id)
+                else:
+                    ret = (False,'Unknown localization method')
+                if ret[0]:
+                    rospy.loginfo('robot is localized on the graph.')
+                else:
+                    rospy.logwarn('Localization failed: {}'.format(ret[1]))
+                    detection_roslaunch_parent.shutdown()
+                    subscriber_visible.unregister()
+                    del self._tmp_state_visible
+                    del self._tmp_starttime_visibility
+                    del self._tmp_duration_visibility
+                    return False
 
             self._spot_client.navigate_to( end_id, blocking=True)
             self._spot_client.wait_for_navigate_to_result()
@@ -904,18 +967,26 @@ class LeadPersonDemo(object):
                 rospy.loginfo('graph upload and localization skipped.')
             else:
                 # Upload
-                self._spot_client.upload_graph( graph_name )
-                rospy.loginfo('graph {} uploaded.'.format(graph_name))
-                # Localization
-                if localization_method == 'fiducial':
-                    self._spot_client.set_localization_fiducial()
-                elif localization_method == 'waypoint':
-                    self._spot_client.set_localization_waypoint(start_id)
+                ret = self._spot_client.upload_graph(graph_name)
+                if ret[0]:
+                    rospy.loginfo('graph {} uploaded.'.format(graph_name))
                 else:
-                    rospy.logerr('Unknown localization method')
+                    rospy.logerr('graph uploading failed: {}'.format(ret[1]))
                     detection_roslaunch_parent.shutdown()
                     return False
-                rospy.loginfo('robot is localized on the graph.')
+                # Localization
+                if localization_method == 'fiducial':
+                    ret = self._spot_client.set_localization_fiducial()
+                elif localization_method == 'waypoint':
+                    ret = self._spot_client.set_localization_waypoint(start_id)
+                else:
+                    ret = (False,'Unknown localization method')
+                if ret[0]:
+                    rospy.loginfo('robot is localized on the graph.')
+                else:
+                    rospy.logwarn('Localization failed: {}'.format(ret[1]))
+                    detection_roslaunch_parent.shutdown()
+                    return False
 
             # Start checking if the door of a elevator is open
             self._tmp_door_is_open = False
