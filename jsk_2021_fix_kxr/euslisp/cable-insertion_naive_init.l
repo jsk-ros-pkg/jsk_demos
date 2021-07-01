@@ -12,7 +12,7 @@
 
 (send *robot* :reset-pose)
 (send *robot* :larm :move-end-pos #f(-500 0 0))
-(send *robot* :rarm :inverse-kinematics (send (send *robot* :copy-worldcoords) :transform (make-coords :pos #f(547 -18 823) :rpy (float-vector -3.14 1.57 1.57))) :rotation-axis t)
+(send *robot* :rarm :inverse-kinematics (send (send *robot* :copy-worldcoords) :transform (make-coords :pos #f(547 -18 825) :rpy (float-vector -3.14 1.57 1.57))) :translation-axis t :rotation-axis t)
 (send *ri* :angle-vector (send *robot* :angle-vector) 3000)
 (send *ri* :wait-interpolation)
 
