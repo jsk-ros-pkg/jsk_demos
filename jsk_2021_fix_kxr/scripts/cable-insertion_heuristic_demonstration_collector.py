@@ -10,7 +10,7 @@ import subprocess
 
 class ScriptDemonstrationCollector(object):
 
-    def __init__(self, initializer_script_path, setting_script_path, main_script_path, save_dir_base='/home/amabe/rosbag/panda'):
+    def __init__(self, initializer_script_path, setting_script_path, main_script_path, save_dir_base='/home/amabe/rosbag/panda/cable-insertion_heuristic'):
         """Euslisp script based demonstration collector.
 
         Args:
@@ -59,13 +59,10 @@ class ScriptDemonstrationCollector(object):
         """Start rosbag record subprocess.
         """
         print("start rosbag")
-        self.target_dir = join(self.save_dir_base, 'cable-insertion_naive')
-        self.num_bagfies = len([name for name in os.listdir(
-            self.target_dir) if os.path.isfile(os.path.join(self.target_dir, name))])
-        options = "save_dir:={} bagfile_prefix:={:03}".format(
-            self.target_dir, self.num_bagfies)
+        self.save_dir_base
+        options = "save_dir:={}".format(self.save_dir_base)
         rospy.loginfo(
-            "Start recording, saving file in {}...".format(self.target_dir))
+            "Start recording, saving file in {}...".format(self.save_dir_base))
         command = "roslaunch jsk_panda_startup panda_record.launch {}".format(
             options)
         command = shlex.split(command)
@@ -81,16 +78,44 @@ class ScriptDemonstrationCollector(object):
     def check_if_save_demo(self):
         """Ask user if you want to save this demonstration or not.
         """
-        save_demo = raw_input("Save this trajectory? [yes/no]")
-        if save_demo == 'no':
-            for f in os.listdir(self.target_dir):
-                if f.startswith('{:03}'.format(self.num_bagfies)):
-                    bagfile_name = join(self.target_dir, f)
+        while True:
+            save_demo = raw_input("Success, fault, don't save [s/f/n]")
+            if save_demo == 's':
+                self.target_dir = join(self.save_dir_base, 'success')
+                self.num_bagfiles = len([name for name in os.listdir( self.target_dir) if os.path.isfile(os.path.join(self.target_dir, name))])
+                for f in os.listdir(self.save_dir_base):
+                    if os.path.isfile(os.path.join(self.save_dir_base,f)):
+                        bagfile_name_origin = join(self.save_dir_base, f)
+                        bagfile_name_con = join(self.target_dir, '{}_'.format(self.num_bagfiles) + f)
+                        cmd = "mv {} {}".format(bagfile_name_origin,bagfile_name_con)
+                        cmd = shlex.split(cmd)
+                        subprocess.call(cmd)
+                break
+                    
+            if save_demo == 'f':
+                self.target_dir = join(self.save_dir_base, 'fault')
+                self.num_bagfiles = len([name for name in os.listdir( self.target_dir) if os.path.isfile(os.path.join(self.target_dir, name))])
+                for f in os.listdir(self.save_dir_base):
+                    if os.path.isfile(os.path.join(self.save_dir_base,f)):
+                        bagfile_name_origin = join(self.save_dir_base, f)
+                        bagfile_name_con = join(self.target_dir, '{}_'.format(self.num_bagfiles) + f)
+                        cmd = "mv {} {}".format(bagfile_name_origin,bagfile_name_con)
+                        cmd = shlex.split(cmd)
+                        subprocess.call(cmd)
+                break
+                    
+            if save_demo == 'n':
+                print("trashing this data")
+                for f in os.listdir(self.save_dir_base):
+                    if os.path.isfile(os.path.join(self.save_dir_base,f)):
+                        bagfile_name = join(self.save_dir_base, f)
                     cmd = "rm -rf {}".format(bagfile_name)
+                    print(cmd)
                     cmd = shlex.split(cmd)
                     subprocess.call(cmd)
+                break
 
-initializer_script_path = "/home/amabe/franka_ws/src/jsk_demos/jsk_2021_fix_kxr/euslisp/cable-insertion_heuristic_init.l"
+initializer_script_path  = "/home/amabe/franka_ws/src/jsk_demos/jsk_2021_fix_kxr/euslisp/cable-insertion_heuristic_init.l"
 setting_script_path = "/home/amabe/franka_ws/src/jsk_demos/jsk_2021_fix_kxr/euslisp/cable-insertion_heuristic_grasp.l"
 main_script_path = "/home/amabe/franka_ws/src/jsk_demos/jsk_2021_fix_kxr/euslisp/cable-insertion_naive_insert.l"
 node = ScriptDemonstrationCollector(initializer_script_path=initializer_script_path,setting_script_path=setting_script_path,main_script_path=main_script_path)
