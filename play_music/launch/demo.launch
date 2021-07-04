@@ -1,0 +1,12 @@
+<launch>
+  <arg name="music_directory" default="/var/lib/robot" />
+
+  <node
+    pkg="play_music"
+    type="play_music.py"
+    name="play_music"
+    output="screen"
+    >
+    <param name="music_directory" value="$(arg music_directory)" />
+  </node>
+</launch>

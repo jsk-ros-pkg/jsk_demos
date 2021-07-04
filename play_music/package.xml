@@ -1,0 +1,18 @@
+<?xml version="1.0"?>
+<package format="2">
+  <name>play_music</name>
+  <version>0.0.4</version>
+  <description>The play_music package</description>
+
+  <maintainer email="shinjo@jsk.imi.i.u-tokyo.ac.jp">Koki Shinjo</maintainer>
+
+  <license>BSD</license>
+
+  <buildtool_depend>catkin</buildtool_depend>
+
+  <exec_depend>rospy</exec_depend>
+  <exec_depend>sound_play</exec_depend>
+
+  <export>
+  </export>
+</package>
