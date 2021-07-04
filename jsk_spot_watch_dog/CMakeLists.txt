@@ -18,7 +18,7 @@ include_directories(
 ## Install ##
 #############
 
-catkin_install_python(PROGRAMS scripts/watch_dog.py
+catkin_install_python(PROGRAMS scripts/watch_dog_smach.py
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
 
