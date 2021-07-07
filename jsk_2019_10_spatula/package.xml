@@ -1,0 +1,16 @@
+<?xml version="1.0"?>
+<package format="2">
+  <name>jsk_2019_10_spatula</name>
+  <version>0.0.4</version>
+  <description>The jsk_2019_10_spatula package</description>
+  <maintainer email="anne@koepken.de"> Anne Koepken </maintainer>
+  <license>BSD</license>
+  <author email="anne@koepken.de">Anne Koepken</author>
+
+  <depend>catkin</depend>
+  <depend>roscpp</depend>
+  <depend>rospy</depend>
+  <depend>std_msgs</depend>
+  <depend>pr2eus</depend>
+  <depend>roseus</depend>
+</package>
