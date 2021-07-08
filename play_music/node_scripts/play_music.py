@@ -70,19 +70,10 @@ class SpotPlayAndDance:
         self.client = SoundClient(sound_action='/robotsound', sound_topic='/robotsound')
         self.spot_client = SpotRosClient()
 
-        music_directory = rospy.get_param('~music_directory')
-        music_files = []
-        for music_file in os.listdir(music_directory):
-            if music_file.split('.')[-1] == 'mp3' or music_file.split('.')[-1] == 'wav':
-                music_files.append(music_file)
-
-        if len(music_files) == 0:
-            rospy.logerr('No music file found in {}'.format(music_directory))
-            sys.exit(1)
-
-        play_file = music_directory + '/' + random.sample(music_files, 1)[0]
-        # TODO calc bpm
-        self.bpm = 130
+        music_list = rospy.get_param('~musics')
+        music_entry = random.sample(music_list, 1)[0]
+        play_file = music_entry['filepath']
+        self.bpm = float(music_entry['bpm'])
 
         self.do_dance = True
         self.thread_dance = threading.Thread(target=self.dance)

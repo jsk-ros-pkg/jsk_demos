@@ -1,12 +1,14 @@
 <launch>
-  <arg name="music_directory" default="/var/lib/robot" />
-
   <node
     pkg="play_music"
     type="play_music.py"
     name="play_music"
     output="screen"
     >
-    <param name="music_directory" value="$(arg music_directory)" />
+    <rosparam>
+        musics:
+            - filepath: '/var/lib/robot/yorunikakeru.wav'
+              bpm: 130
+    </rosparam>
   </node>
 </launch>
