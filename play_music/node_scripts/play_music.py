@@ -30,6 +30,12 @@ def main():
 
     rospy.sleep(3)
 
+     def shutdown_hook():
+         rospy.logwarn('stop playin music...')
+         client.stopAll()
+
+    rospy.on_shutdown(shutdown_hook)
+
     rospy.loginfo('Started to play {}'.format(play_file))
 
     client.playWave(play_file, blocking=True)
