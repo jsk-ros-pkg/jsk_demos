@@ -1,0 +1,12 @@
+<launch>
+  <arg name="music_list_file" default="$(find jsk_spot_sing_and_dance)/config/music_list.yaml" />
+
+  <node
+    pkg="jsk_spot_sing_and_dance"
+    type="sing_and_dance.py"
+    name="sing_and_dance"
+    output="screen"
+    >
+    <rosparam command="load" file="$(arg music_list_file)" />
+  </node>
+</launch>

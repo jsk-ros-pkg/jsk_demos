@@ -1,0 +1,5 @@
+musics:
+  - filepath: '/var/lib/robot/musics/yorunikakeru.wav'
+    bpm: 130
+  - filepath: '/var/lib/robot/musics/steppin_out.wav'
+    bpm: 140
