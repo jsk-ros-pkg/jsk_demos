@@ -8,7 +8,7 @@ find_package(catkin REQUIRED COMPONENTS
 catkin_package(
 )
 
-catkin_install_python(PROGRAMS node_scripts/jsk_spot_take_envelop_to_mech_office.py
+catkin_install_python(PROGRAMS node_scripts/take_envelop_to_mech_office.py
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
 
