@@ -5,7 +5,6 @@
 
 import actionlib
 import rospy
-
 from spot_behavior_manager_msgs.msg import LeadPersonAction, LeadPersonGoal
 
 
@@ -14,6 +13,7 @@ def main():
     rospy.init_node('spot_go_to_spot')
 
     target_node_id = rospy.get_param('~target_node_id', 'eng2_7FElevator')
+    num_retry = rospy.get_param('~num_retry', 3)
 
     client = actionlib.SimpleActionClient(
         '/spot_behavior_manager_demo/lead_person', LeadPersonAction)
@@ -24,11 +24,20 @@ def main():
         rospy.logerr('Server down.')
         return
 
-    rospy.loginfo('send a goal')
+    rospy.loginfo('Start to go to {}'.format(target_node_id))
 
-    client.send_goal_and_wait(LeadPersonGoal(target_node_id=target_node_id))
+    for i in range(num_retry):
 
-    rospy.loginfo('finished.')
+        client.send_goal_and_wait(
+            LeadPersonGoal(target_node_id=target_node_id))
+        result = client.get_result()
+        if result.success:
+            rospy.loginfo('Finished.')
+            return
+        else:
+            rospy.logwarn('Failed. retrying...')
+
+    rospy.logerr('Failed even after retrying.')
 
 
 if __name__ == '__main__':
