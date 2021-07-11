@@ -7,6 +7,6 @@
     name="sing_and_dance"
     output="screen"
     >
-    <rosparam command="load" file="$(arg music_list_file)" />
+    <rosparam command="load" file="$(arg music_list_file)" subst_value="true" />
   </node>
 </launch>
