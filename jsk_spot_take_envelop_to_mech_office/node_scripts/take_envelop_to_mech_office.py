@@ -6,10 +6,18 @@
 import actionlib
 import rospy
 from spot_behavior_manager_msgs.msg import LeadPersonAction, LeadPersonGoal
+from std_msgs.msg import String
 import sys
 
 
 def sendResultMail():
+
+    last_node_id = rospy.wait_for_message('')
+
+    mail_content = \
+'I have got stuck around \'{}\'
+Please rescue me.
+'.format(last_node_id)
 
     return True
 
