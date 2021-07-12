@@ -58,7 +58,7 @@ class Demo:
             '~node_id_mech_office', 'eng2_Mech_Office')
         self.num_max_retry = rospy.get_param('~num_max_retry', 3)
         self.from_address = rospy.get_param(
-            '~from_address', 'shinjo@jsk.imi.i.u-tokyo.ac.jp')
+            '~from_address', 'spot-jsk@jsk.imi.i.u-tokyo.ac.jp')
         self.to_address = rospy.get_param(
             '~to_address', 'spot@jsk.imi.i.u-tokyo.ac.jp')
 
