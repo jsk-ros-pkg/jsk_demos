@@ -16,21 +16,6 @@ from email.Utils import formatdate
 
 def sendResultMail(from_address,to_address):
 
-    subject = 'Result of Mech Office Demo'
-    text = 'I have succeeded to take envelops to Mech Office.'
-
-    msg = MIMEText(text.encode('utf-8'),'plain','utf-8')
-    msg['Subject'] = Header(subject,'utf-8')
-    msg['From'] = from_address
-    msg['To'] = to_address
-    msg['Date'] = formatdate(localtime=True)
-
-    smtp = smtplib.SMTP('localhost')
-    smtp.sendmail(from_address,to_address,msg.as_string())
-    smtp.close()
-
-    rospy.loginfo('Sent result mail')
-
     return True
 
 
