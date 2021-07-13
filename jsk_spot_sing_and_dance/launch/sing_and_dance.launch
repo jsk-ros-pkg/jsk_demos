@@ -1,6 +1,6 @@
 <launch>
   <arg name="music_list_file" default="$(find jsk_spot_sing_and_dance)/config/music_list.yaml" />
-  <arg name="music_name" default="None" />
+  <arg name="music_name" default="" />
 
   <node
     pkg="jsk_spot_sing_and_dance"

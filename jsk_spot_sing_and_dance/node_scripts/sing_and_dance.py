@@ -31,11 +31,11 @@ class SpotPlayAndDance:
         music_list = rospy.get_param('~music_list')
         music_name = rospy.get_param('~music_name',None)
         try:
-            if music_name is None:
+            if music_name is None or music_name == '':
                 music_name, music_entry = random.sample(music_list.items(), 1)[0]
             elif music_name not in music_list:
-                rospy.logwarn('{} is not in music_list'.format(music_name))
-                music_name, music_entry = random.sample(music_list.items(), 1)[0]
+                rospy.logerr('{} is not in music_list'.format(music_name))
+                sys.exit()
             else:
                 music_entry = music_list[music_name]
             play_file = music_entry['filepath']
