@@ -87,6 +87,11 @@ class SpotPlayAndDance:
             rospy.sleep(time_desired - rospy.Time.now())
             time_desired += loop_duration
 
+        rate = rospy.Rate(1)
+        for i in range(5):
+            rate.sleep()
+            self.spot_client.pubCmdVel(0,0,0.1)
+
     def shutdown_hook(self):
         rospy.logwarn('stop playing music...')
         self.client.stopAll()
@@ -94,6 +99,10 @@ class SpotPlayAndDance:
         self.thread_dance.join()
         self.spot_client.pubBodyPose(0.0, Quaternion(w=1.0))
         self.spot_client.stand()
+        rate = rospy.Rate(1)
+        for i in range(5):
+            rate.sleep()
+            self.spot_client.pubCmdVel(0,0,0.1)
 
 
 if __name__ == '__main__':
