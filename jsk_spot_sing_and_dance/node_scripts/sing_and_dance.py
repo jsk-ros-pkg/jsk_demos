@@ -28,20 +28,27 @@ class SpotPlayAndDance:
             sound_action='/robotsound', sound_topic='/robotsound')
         self.spot_client = SpotRosClient()
 
-        music_list = rospy.get_param('~musics')
+        music_list = rospy.get_param('~music_list')
+        music_name = rospy.get_param('~music_name',None)
         try:
-            music_entry = random.sample(music_list, 1)[0]
+            if music_name is None:
+                music_name, music_entry = random.sample(music_list.items(), 1)[0]
+            elif music_name not in music_list:
+                rospy.logwarn('{} is not in music_list'.format(music_name))
+                music_name, music_entry = random.sample(music_list.items(), 1)[0]
+            else:
+                music_entry = music_list[music_name]
             play_file = music_entry['filepath']
             self.bpm = float(music_entry['bpm'])
         except Exception as e:
-            rospy.logerr('Failed to determine music file: {}'.format(e))
+            rospy.logerr('Failed to load music: {}'.format(e))
             sys.exit()
 
         self.do_dance = True
         self.thread_dance = threading.Thread(target=self.dance)
         rospy.on_shutdown(self.shutdown_hook)
 
-        rospy.loginfo('Started to play {}'.format(play_file))
+        rospy.loginfo('Started to play {} from {}'.format(music_name, play_file))
         self.thread_dance.start()
         self.client.playWave(play_file, blocking=True)
 

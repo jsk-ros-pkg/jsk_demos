@@ -1,5 +1,6 @@
 <launch>
   <arg name="music_list_file" default="$(find jsk_spot_sing_and_dance)/config/music_list.yaml" />
+  <arg name="music_name" default="None" />
 
   <node
     pkg="jsk_spot_sing_and_dance"
@@ -8,5 +9,6 @@
     output="screen"
     >
     <rosparam command="load" file="$(arg music_list_file)" subst_value="true" />
+    <param name="~music_name" value="$(arg music_name)" />
   </node>
 </launch>
