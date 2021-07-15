@@ -16,6 +16,7 @@ import smach_ros
 import tf
 import time
 import copy
+import sys
 
 
 class Robot():
