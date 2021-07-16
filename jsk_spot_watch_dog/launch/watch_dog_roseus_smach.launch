@@ -12,9 +12,6 @@
   <arg name="temp_threshold" default="45" /> # degree
   <arg name="change_body_duration" default="0.8" /> # second
 
-  # sound play
-  <node pkg="sound_play" type="soundplay_node.py" name="sound_play" />
-
   # watch dog smach
   <node pkg="roseus" type="roseus" name="spot_watchdog" output="screen"
         args="$(find jsk_spot_watch_dog)/scripts/watch-dog.l" >
