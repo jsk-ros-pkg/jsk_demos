@@ -48,6 +48,9 @@ class SpotPlayAndDance:
         self.thread_dance = threading.Thread(target=self.dance)
         rospy.on_shutdown(self.shutdown_hook)
 
+        self.spot_client.power_on()
+        self.spot_client.stand()
+
         rospy.loginfo('Started to play {} from {}'.format(music_name, play_file))
         self.thread_dance.start()
         self.client.playWave(play_file, blocking=True)
