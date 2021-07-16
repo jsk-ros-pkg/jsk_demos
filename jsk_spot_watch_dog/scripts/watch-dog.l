@@ -111,7 +111,7 @@
       (ros::spin-once)
       (send *ri* :spin-once)
       (setq ret (func-day-basic userdata-alist))
-      (if ret (return-from func-watch ret))
+      (if ret (return-from func-rest ret))
       (when (> (/ (send (ros::time- (ros::time-now) (send *ri* :get-val 'stand-start-time)) :to-sec) 60)
              (send *ri* :get-val 'rest-time-per-hour))
         (ros::ros-info  "finish rest")
