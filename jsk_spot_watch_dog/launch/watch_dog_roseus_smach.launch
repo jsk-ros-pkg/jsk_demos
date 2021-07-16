@@ -24,7 +24,7 @@
     <param name="human_height_threshold" value="$(arg human_height_threshold)" />
     <param name="max_tracking_yaw" value="$(arg max_tracking_yaw)" />
     <param name="change_body_duration" value="$(arg change_body_duration)" />
-    <param name="bark_sound" value="/home/spot/sound_play/bark.wav" />
+    <param name="bark_sound" value="/var/lib/robot/bark.wav" />
     <param name="temp_threshold" value="$(arg temp_threshold)" />
   </node>
 </launch>
