@@ -2,8 +2,8 @@
 Changelog for package jsk_demo_common
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.0.5 (2021-07-17)
+------------------
 * [jsk_demo_common] use :stop-grasp in open fridge (`#1275 <https://github.com/jsk-ros-pkg/jsk_demos/issues/1275>`_)
 * Refine 73B2 fridge demo motion (`#1264 <https://github.com/jsk-ros-pkg/jsk_demos/issues/1264>`_)
 * add fridge demo with voice command (`#1263 <https://github.com/jsk-ros-pkg/jsk_demos/issues/1263>`_)

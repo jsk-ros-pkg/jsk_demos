@@ -2,8 +2,8 @@
 Changelog for package jsk_2013_04_pr2_610
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.0.5 (2021-07-17)
+------------------
 
 * fix readme rosinstall url (`#1289 <https://github.com/jsk-ros-pkg/jsk_demos/issues/1289>`_)
 

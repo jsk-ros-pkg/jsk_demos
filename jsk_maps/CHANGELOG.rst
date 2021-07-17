@@ -2,8 +2,8 @@
 Changelog for package jsk_maps
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.0.5 (2021-07-17)
+------------------
 * add fetch dock2 (`#1329 <https://github.com/jsk-ros-pkg/jsk_demos/issues/1329>`_)
 * [jsk_maps] update change-floor.l to set *tfl* when it is not set (`#1301 <https://github.com/jsk-ros-pkg/jsk_demos/issues/1301>`_)
 * fix slant and fetch place (`#1300 <https://github.com/jsk-ros-pkg/jsk_demos/issues/1300>`_)

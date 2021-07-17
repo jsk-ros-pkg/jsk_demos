@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package>
   <name>welcome_to_jsk_fetch</name>
-  <version>0.0.4</version>
+  <version>0.0.5</version>
   <description>The welcome_to_jsk package</description>
 
   <maintainer email="yamaguchi@jsk.imi.i.u-tokyo.ac.jp">Naoya Yamaguchi</maintainer>

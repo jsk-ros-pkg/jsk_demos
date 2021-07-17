@@ -2,8 +2,8 @@
 Changelog for package detect_cans_in_fridge_201202
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.0.5 (2021-07-17)
+------------------
 
 * [detect_cans_in_fridge_201202] add rosinstall (`#1290 <https://github.com/jsk-ros-pkg/jsk_demos/issues/1290>`_)
 * add fridge demo with voice command (`#1263 <https://github.com/jsk-ros-pkg/jsk_demos/issues/1263>`_)

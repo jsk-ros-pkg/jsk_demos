@@ -2,8 +2,8 @@
 Changelog for package drc_task_common
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.0.5 (2021-07-17)
+------------------
 * Merge pull request `#1216 <https://github.com/jsk-ros-pkg/jsk_demos/issues/1216>`_ from mttamtam/add_run_depends
   [drc_task_common/package.xml] Add rviz_animated_view_controller to ru…
 * [drc_task_common/package.xml] Add rviz_animated_view_controller to run_depends

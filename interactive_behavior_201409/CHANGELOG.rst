@@ -2,8 +2,8 @@
 Changelog for package interactive_behavior_201409
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.0.5 (2021-07-17)
+------------------
 * Refine 73B2 fridge demo motion (`#1264 <https://github.com/jsk-ros-pkg/jsk_demos/issues/1264>`_)
 * Contributors: Shingo Kitagawa
 

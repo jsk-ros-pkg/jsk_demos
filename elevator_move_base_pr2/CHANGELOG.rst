@@ -2,8 +2,8 @@
 Changelog for package elevator_move_base_pr2
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.0.5 (2021-07-17)
+------------------
 
 * elevator_move_base_pr2: fix for testing (`#1238 <https://github.com/jsk-ros-pkg/jsk_demos/issues/1238>`_)
 

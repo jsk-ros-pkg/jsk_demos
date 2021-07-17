@@ -2,8 +2,8 @@
 Changelog for package welcome_to_jsk_fetch
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.0.5 (2021-07-17)
+------------------
 * Add demo programs for visitors using fetch (`#1235 <https://github.com/jsk-ros-pkg/jsk_demos/issues/1235>`_)
 
   * add JSK navigation node with fetch

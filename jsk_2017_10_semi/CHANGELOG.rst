@@ -2,8 +2,8 @@
 Changelog for package jsk_2017_10_semi
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.0.5 (2021-07-17)
+------------------
 * Remove unnecessary build_depend and fetcheus for kinetic build (`#1240 <https://github.com/jsk-ros-pkg/jsk_demos/issues/1240>`_)
 
   * clean up cmake file

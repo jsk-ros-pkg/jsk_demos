@@ -2,8 +2,8 @@
 Changelog for package diabolo_pr2_201806
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.0.5 (2021-07-17)
+------------------
 
 * Add .rviz and stop feedback controly from teleop device (`#1260 <https://github.com/jsk-ros-pkg/jsk_demos/issues/1260>`_)
 
