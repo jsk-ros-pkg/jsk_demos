@@ -2,6 +2,96 @@
 Changelog for package jsk_maps
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* add fetch dock2 (`#1329 <https://github.com/jsk-ros-pkg/jsk_demos/issues/1329>`_)
+* [jsk_maps] update change-floor.l to set *tfl* when it is not set (`#1301 <https://github.com/jsk-ros-pkg/jsk_demos/issues/1301>`_)
+* fix slant and fetch place (`#1300 <https://github.com/jsk-ros-pkg/jsk_demos/issues/1300>`_)
+  * update 73b2 kitchen map
+  * change 3f-map origin
+  * update eng2-3f-0.05_keepout.xcf
+  * fix the elevator in eng2 3th floor
+  * remove fetch dock in 73b2
+  * update 73b2 map
+  * update eng2 7f maps to add vending machine
+  * make *tfl* when there is no *tfl*
+  * remove unused mux key
+  * remap static_map to static_map_keepout
+  * publish map_keepout topic
+  * resize and rotate eng2 8f map
+  * set keepout arg default false
+  * add eng6 and eng8 keepout arg
+  * add eng8 keepout maps
+  * add eng6 keepout maps
+  * update eng2 1f and 2f keepout
+  * remove unnecessary return
+  * use group tag
+  * add keepout arg in launch/start_map_eng2.launch
+  * add eng2 8f keepout
+  * add eng2/8f keepout map
+  * add keepout arg for eng2 building
+  * generate keepout yaml
+  * remove eng2-7f-0.05_keepout.yaml
+  * update eng2 1f map
+  * Merge branch 'master' into update-maps
+  * update eng2 3f map
+  * update eng2 7f map
+  * update eng2 2f maps
+  * remove unnecessary space in jsk_maps/CMakeLists.txt
+  * Update eng2/7f map
+  * Update eng2/2f map
+
+* [jsk_maps] use rospy.logerr in initialpose3d (`#1298 <https://github.com/jsk-ros-pkg/jsk_demos/issues/1298>`_)
+
+  * remove unnecessary ;
+  * use rospy.logerr instead of print
+
+* Update map of eng2-8f, add room 83A3 (`#1247 <https://github.com/jsk-ros-pkg/jsk_demos/issues/1247>`_)
+* update fetch dock spot (`#1274 <https://github.com/jsk-ros-pkg/jsk_demos/issues/1274>`_)
+* remove pr2 from eng2 7f map (`#1265 <https://github.com/jsk-ros-pkg/jsk_demos/issues/1265>`_)
+* fix a typo in REAME.md of jsk_maps (`#1269 <https://github.com/jsk-ros-pkg/jsk_demos/issues/1269>`_)
+* [jsk_maps] Add change-floor server to change map (`#1251 <https://github.com/jsk-ros-pkg/jsk_demos/issues/1251>`_)
+* Refine 73B2 fridge demo motion (`#1264 <https://github.com/jsk-ros-pkg/jsk_demos/issues/1264>`_)
+
+  * remove pr2 from eng2 7f map
+  * update 73b2 fridge front spot
+  * [jsk_maps/change-floor.l] Modified key value of change-costmap-publish-frequency
+  * [jsk_maps/change-floor.l] Fixed typo. inamenitialpose3d  -> initialpose3d
+  * [jsk_maps/change-floor.l] Remove shebang
+  * [jsk_maps/change-floor-server.l] Refactor unix:usleep -> unix:sleep
+  * [jsk_maps/change-floor-server.l] Change publish_frequncy of costmap to reload it
+  * [jsk_maps/change-floor.l] Add change-costmap-publish-frequency function
+  * [jsk_maps/change-floor.l] Return t in change-floor function
+  * [jsk_maps/change-floor.l] Refactor
+  * [jsk_maps/change-floor.l] Fixed lookup transform
+  * [jsk_maps/change-floor-server.l] Add comments
+  * [jsk_maps/change-floor-server.l] Add *tfl* initialization
+  * [jsk_maps/change-floor.l] Add *tfl* error exception
+  * [jsk_maps] Add change-floor server
+  * update map of eng2-8f, add room 83A3
+
+* update position of fetch's charge dock (`#1245 <https://github.com/jsk-ros-pkg/jsk_demos/issues/1245>`_)
+* Add fetch's dock spot to /spots_marker_array (`#1244 <https://github.com/jsk-ros-pkg/jsk_demos/issues/1244>`_)
+* update map of 73B2, set gray pixels to white (`#1243 <https://github.com/jsk-ros-pkg/jsk_demos/issues/1243>`_)
+* change map of eng2-7f (`#1233 <https://github.com/jsk-ros-pkg/jsk_demos/issues/1233>`_)
+* elevator_move_base_pr2: Fixes for pr2 indigo demo (`#1238 <https://github.com/jsk-ros-pkg/jsk_demos/issues/1238>`_)
+
+  * jsk_maps: cleanup old codes
+
+* [jsk_maps] refactor publish_spot.l & add test (`#1227 <https://github.com/jsk-ros-pkg/jsk_demos/issues/1227>`_)
+
+  * jsk_maps: disable test on hydro
+  * jsk_maps: cleanup old codes
+  * jsk_maps: add test
+  * jsk_maps: publish_spots.l: refactor / add option to select using pictograms or pins
+
+* jsk_maps/tools/publish_spot.l: add message when map is selected (`#1214 <https://github.com/jsk-ros-pkg/jsk_demos/issues/1214>`_)
+* [jsk_maps][building-model.l] add :rooms / :current-room (`#1221 <https://github.com/jsk-ros-pkg/jsk_demos/issues/1221>`_)
+
+  * jsk_maps/tools/publish_spot.l: add emssage when map is selected
+
+* Contributors: Naoaki Kanazawa, Kei Okada, Koki Shinjo, Naoya Yamaguchi, Shingo Kitagawa, Yuki Furuta, Yuto Uchimi, Taichi Higashide, Iory Yanokura, Yoshiki Obinata
+
 0.0.4 (2017-03-15)
 ------------------
 * [jsk_maps] add README.md

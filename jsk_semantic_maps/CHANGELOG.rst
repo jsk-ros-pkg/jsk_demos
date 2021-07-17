@@ -2,6 +2,9 @@
 Changelog for package jsk_semantic_maps
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 0.0.4 (2017-03-15)
 ------------------
 

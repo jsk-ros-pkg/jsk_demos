@@ -2,6 +2,33 @@
 Changelog for package detect_cans_in_fridge_201202
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
+* [detect_cans_in_fridge_201202] add rosinstall (`#1290 <https://github.com/jsk-ros-pkg/jsk_demos/issues/1290>`_)
+* add fridge demo with voice command (`#1263 <https://github.com/jsk-ros-pkg/jsk_demos/issues/1263>`_)
+
+* 2019/04/10 Fridge demo (`#1262 <https://github.com/jsk-ros-pkg/jsk_demos/issues/1262>`_)
+
+  * fix to launch correct file
+  * change +x for apps
+  * update pr2_fridge_demo apps
+  * update color_histogram_detector
+  * add euslisp codes
+  * add launch files
+  * update package.xml
+  * add pr2_fridge_demo app
+  * add config/pr2.machine
+  * add config/reference_histograms.yaml
+  * remove config/object_histograms.yaml
+  * detect_cans: color_histogram.launch: fix some minor bug
+  * add morinaga_milk as reference histogram
+  * use new color histogram
+
+* Update README to indigo (`#1220 <https://github.com/jsk-ros-pkg/jsk_demos/issues/1220>`_)
+
+* Contributors: Guilherme Affonso, Kei Okada, Koki Shinjo, Shingo Kitagawa, Yuki Furuta
+
 0.0.4 (2017-03-15)
 ------------------
 * Migrate srv files from jsk_pcl_ros to jsk_recognition_msgs

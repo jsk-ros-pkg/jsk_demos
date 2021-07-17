@@ -2,6 +2,46 @@
 Changelog for package jsk_2013_04_pr2_610
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
+* fix readme rosinstall url (`#1289 <https://github.com/jsk-ros-pkg/jsk_demos/issues/1289>`_)
+
+* [jsk_2013_04_pr2_610] update README.md for melodic (`#1285 <https://github.com/jsk-ros-pkg/jsk_demos/issues/1285>`_)
+
+  * [jsk_2013_04_pr2_610] add use_ffha option to demo\_<hoge>.launch
+  * [jsk_2013_04_pr2_610] utity planner option of demo_common.launch to planner.launch
+  * [jsk_2013_04_pr2_610] fix README.md
+  * [jsk_2013_04_pr_610] update README.md so that do not use export ROBOT= sentence
+  * [jsk_2013_04_pr2_610] fixed roslaunch argument according to https://github.com/sktometometo/jsk_demos/commit/26709c70ca58b84ba16d68293e3f8539008c2794#diff-9579c5ce5cb31e6fb71f882b0e382b6dw
+  * [jsk_2013_04_pr2_610] fix internal link
+  * [jsk_2013_04_pr2_610] fix format of README.md
+  * [jsk_2013_04_pr2_610] add jsk_3rdpaty entry to rosinstall due to laser_filters_jsk_patch dependency
+  * [jsk_2013_04_pr2_610] moved the location of the video and modified description of the demo
+  * [jsk_2013_04_pr2_610] add comments to rosinstall
+  * [jsk_2013_04_pr2_610] add rosinstall and update READM.md to use it
+  * [jsk_2013_04_pr2_610] add Youtue link of IRT demo to README.md
+  * [jsk_2013_04_pr2_610] update README.md for melodic
+  *
+  ```
+  [/workspace/ros/ws_jsk_demos/src/jsk_demos/jsk_2013_04_pr2_610/launch/planner.launch]:
+  Missing package dependencies: task_compiler/package.xml: smach_viewer
+  cannot find package [smach_viewer] for node [smach_viewer.py]
+  unable to find node [smach_viewer/smach_viewer.py]: smach_viewer
+  ROS path [0]=/opt/ros/kinetic/share/ros
+  ```
+  https://github.com/tork-a/jsk_planning-release/blob/release/kinetic/task_compiler/package.xml#L25
+  * remove unnecessary packages from find_package, remaining package lists are used in generate_mesages
+
+* travis: drop hydro (`#1231 <https://github.com/jsk-ros-pkg/jsk_demos/issues/1231>`_)
+
+  * jsk_2013_04_pr2_610: skip move animation on simulation
+  * jsk_2013_04_pr2_610: pass test
+
+* Update README to indigo (`#1220 <https://github.com/jsk-ros-pkg/jsk_demos/issues/1220>`_)
+
+* Contributors: Yuki Furuta, Guilherme Affonso, Naoaki Kanazawa, Kei Okada, Koki Shinjo, Shingo Kitagawa
+
 0.0.4 (2017-03-15)
 ------------------
 * [jsk_2013_04_pr2_610][package.xml] remove unnecessary dependency: jsk_smart_gui
