@@ -119,7 +119,7 @@
         (speak-jp (format nil "I will look for ~a and bring it. Please wait a minute." *type*)))
        (t (speak-jp (format nil "~aを持って行きます。少々、お待ちください。" *type*))))
     (speak-jp (format nil "~a を もってきます  しょうしょう おまち ください" *type*)))
-  (pr2-tuckarm-pose :rarm)
+  (pr2-tuckarm-pose)
 
   (setq *opose* (send *ri* :state :worldcoords))
   )
@@ -130,6 +130,7 @@
                   (finish-type :pass-to-human) ;; :pass-to-human, :put-on-turtlebot, ...
                   ;;(use-arm :rarm)
                   (use-arm :larm)
+                  (use-base nil)
                   )
   (disable-behavior-server)
   (case app-manager
@@ -152,7 +153,7 @@
      ;; do nothing
      ))
 
-  (unless (open-fridge-door :use-arm use-arm)
+  (unless (open-fridge-door :use-arm use-arm :use-base use-base)
     (return-from demo))
 
   ;; move
@@ -177,7 +178,7 @@
        (return-from demo)))
     )
   (enable-behavior-server)
-  (if (eq app-manager :true) (ros::exit))
+  (if (eq app-manager :true) (ros::exit) t)
   )
 
 (defun wait-android-query (&optional (demo-type :map))

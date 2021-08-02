@@ -1,0 +1,23 @@
+<?xml version="1.0"?>
+<package>
+  <name>rwt_teleop</name>
+  <version>1.0.0</version>
+  <description>teleopration by rwt tools</description>
+
+  <maintainer email="ishiguro@jsk.imi.i.u-tokyo.ac.jp">Yasuhiro Ishiguro</maintainer>
+
+  <license>BSD</license>
+
+  <buildtool_depend>catkin</buildtool_depend>
+
+  <run_depend>std_msgs</run_depend>
+  <run_depend>sensor_msgs</run_depend>
+  <run_depend>geometry_msgs</run_depend>
+  <run_depend>pr2_controllers_msgs</run_depend>
+  <run_depend>app_manager</run_depend>
+
+  <export>
+    <app_manager app_dir="${prefix}/apps"/>
+  </export>
+
+</package>
