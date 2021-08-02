@@ -1,0 +1,3 @@
+apps:
+- app: rwt_teleop/rwt_teleop
+  display: rwt_teleop
