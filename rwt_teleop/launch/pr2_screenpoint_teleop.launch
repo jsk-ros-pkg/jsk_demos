@@ -1,7 +1,6 @@
 <launch>
 
   <arg name="is_real" default="true" />
-  <arg name="rviz"    default="true" />
 
   <arg name="device"     default="kinect_head"                              if="$(arg is_real)"/>
   <arg name="device"     default="head_mount_kinect2"                   unless="$(arg is_real)"/>
@@ -17,7 +16,6 @@
   </group>
 
   <!-- <include file="$(find rwt_teleop)/launch/tabletop_segmentation.launch"> -->
-  <!--   <arg name="rviz"      default="$(arg rviz)" /> -->
   <!--   <arg name="device"           default="$(arg device)" /> -->
   <!-- </include> -->
 
