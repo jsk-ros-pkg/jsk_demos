@@ -2,7 +2,7 @@
     <node
         pkg="spot_behavior_manager_demo"
         type="demo.py"
-        name="spot_behavior_manager_demo"
+        name="spot_person_lead_demo"
         output="screen"
         >
 
