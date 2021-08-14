@@ -6,11 +6,13 @@ import roslaunch
 import rospkg
 import rospy
 
+import threading
+
 from std_msgs.msg import Bool
 
 class WalkBehavior(BaseBehavior):
 
-    def callback_visible(msg):
+    def callback_visible(self, msg):
 
         if self.state_visible != msg.data:
             self.starttime_visibility = rospy.Time.now()
@@ -39,7 +41,20 @@ class WalkBehavior(BaseBehavior):
         self.subscriber_visible = None
         self.state_visible = False
         self.starttime_visibility = rospy.Time.now()
-        self.duration_visibility = rospy.Duration()
+        self.duration_visibility = rospy.Duration(10)
+
+        # start subscriber
+        try:
+            self.subscriber_visible = rospy.Subscriber(
+                                        '/walk_detection_person_tracker/visible',
+                                        Bool,
+                                        self.callback_visible
+                                        )
+        except Exception as e:
+            rospy.logerr('{}'.format(e))
+            return False
+
+        return True
 
     def run_main(self, start_node, end_node, edge, pre_edge ):
 
@@ -50,7 +65,7 @@ class WalkBehavior(BaseBehavior):
                     lambda x: x['graph'] == graph_name,
                     start_node.properties['waypoints_on_graph']
                     )[0]['id']
-        start_id = filter(
+        end_id = filter(
                     lambda x: x['graph'] == graph_name,
                     end_node.properties['waypoints_on_graph']
                     )[0]['id']
@@ -84,17 +99,6 @@ class WalkBehavior(BaseBehavior):
                 rospy.logwarn('Localization failed: {}'.format(ret[1]))
                 return False
 
-        # start person tracker
-        try:
-            self.subscriber_visible = rospy.Subscriber(
-                                        '/walk_detection_person_tracker/visible',
-                                        Bool,
-                                        self.callback_visible
-                                        )
-        except Exception as e:
-            rospy.logerr('{}'.format(e))
-            return False
-
         # start leading
         success = False
         rate = rospy.Rate(10)
@@ -112,7 +116,7 @@ class WalkBehavior(BaseBehavior):
             if not self.state_visible and self.duration_visibility > rospy.Duration(0.5):
                 flag_speech = False
                 def notify_visibility():
-                    self._sound_client.say(
+                    self.sound_client.say(
                         '近くに人が見えません',
                         volume=1.0,
                         blocking=True
@@ -143,6 +147,8 @@ class WalkBehavior(BaseBehavior):
     def run_final(self, start_node, end_node, edge, pre_edge ):
 
         rospy.logdebug('run_finalize() called')
+
+        self.spot_client.cancel_navigate_to()
 
         if self.subscriber_visible != None:
             self.subscriber_visible.unregister()

@@ -6,12 +6,14 @@ import roslaunch
 import rospkg
 import rospy
 
+import threading
+
 from std_msgs.msg import Bool
 from sensor_msgs.msg import PointCloud2
 
 class NarrowBehavior(BaseBehavior):
 
-    def callback_visible(msg):
+    def callback_visible(self, msg):
 
         if self.state_visible != msg.data:
             self.starttime_visibility = rospy.Time.now()
@@ -20,12 +22,12 @@ class NarrowBehavior(BaseBehavior):
         else:
             self.duration_visibility = rospy.Time.now() - self.starttime_visibility
 
-    def callback_obstacle_right(msg):
+    def callback_obstacle_right(self, msg):
 
         if len(msg.data) > 0:
             self.last_obstacle_right = msg.header.stamp
 
-    def callback_obstacle_left(msg):
+    def callback_obstacle_left(self, msg):
 
         if len(msg.data) > 0:
             self.last_obstacle_left = msg.header.stamp
@@ -50,13 +52,36 @@ class NarrowBehavior(BaseBehavior):
         self.subscriber_visible = None
         self.state_visible = False
         self.starttime_visibility = rospy.Time.now()
-        self.duration_visibility = rospy.Duration()
+        self.duration_visibility = rospy.Duration(10)
 
         # value for obstacle detection
         self.subscriber_obstacle_right = None
         self.subscriber_obstacle_left = None
         self.last_obstacle_right = rospy.Time()
         self.last_obstacle_left = rospy.Time()
+
+        # start subscribers
+        try:
+            self.subscriber_obstacle_right = rospy.Subscriber(
+                                        '/spot_recognition/right_obstacle',
+                                        PointCloud2,
+                                        self.callback_obstacle_right
+                                        )
+            self.subscriber_obstacle_left = rospy.Subscriber(
+                                        '/spot_recognition/left_obstacle',
+                                        PointCloud2,
+                                        self.callback_obstacle_left
+                                        )
+            self.subscriber_visible = rospy.Subscriber(
+                                        '/narrow_detection_person_tracker/visible',
+                                        Bool,
+                                        self.callback_visible
+                                        )
+        except Exception as e:
+            rospy.logerr('{}'.format(e))
+            return False
+
+        return True
 
     def run_main(self, start_node, end_node, edge, pre_edge ):
 
@@ -101,27 +126,6 @@ class NarrowBehavior(BaseBehavior):
                 rospy.logwarn('Localization failed: {}'.format(ret[1]))
                 return False
 
-        # start person tracker
-        try:
-            self.subscriber_obstacle_right = rospy.Subscriber(
-                                        '/spot_recognition/right_obstacle',
-                                        PointCloud2,
-                                        self.callback_obstacle_right
-                                        )
-            self.subscriber_obstacle_left = rospy.Subscriber(
-                                        '/spot_recognition/left_obstacle',
-                                        PointCloud2,
-                                        self.callback_obstacle_left
-                                        )
-            self.subscriber_visible = rospy.Subscriber(
-                                        '/walk_detection_person_tracker/visible',
-                                        Bool,
-                                        self.callback_visible
-                                        )
-        except Exception as e:
-            rospy.logerr('{}'.format(e))
-            return False
-
         # thread for obstacle notification
         flag_valid_obstacle_notification = True
         def notify_obstacle():
@@ -165,7 +169,7 @@ class NarrowBehavior(BaseBehavior):
             if not self.state_visible and self.duration_visibility > rospy.Duration(0.5):
                 flag_speech = False
                 def notify_visibility():
-                    self._sound_client.say(
+                    self.sound_client.say(
                         '近くに人が見えません',
                         volume=1.0,
                         blocking=True
@@ -200,6 +204,8 @@ class NarrowBehavior(BaseBehavior):
     def run_final(self, start_node, end_node, edge, pre_edge ):
 
         rospy.logdebug('run_finalize() called')
+
+        self.spot_client.cancel_navigate_to()
 
         if self.subscriber_obstacle_right != None:
             self.subscriber_obstacle_right.unregister()

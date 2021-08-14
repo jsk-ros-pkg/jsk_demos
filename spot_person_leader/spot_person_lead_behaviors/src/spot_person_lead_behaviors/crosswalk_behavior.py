@@ -4,9 +4,13 @@ from spot_behavior_manager.base_behavior import BaseBehavior
 
 import rospy
 
+import threading
+
+from std_msgs.msg import Bool
+
 class CrosswalkBehavior(BaseBehavior):
 
-    def callback_person_visible(msg):
+    def callback_person_visible(self, msg):
 
         if self.person_state_visible != msg.data:
             self.person_starttime_visibility = rospy.Time.now()
@@ -15,7 +19,7 @@ class CrosswalkBehavior(BaseBehavior):
         else:
             self.person_duration_visibility = rospy.Time.now() - self.person_starttime_visibility
 
-    def callback_car_visible(msg):
+    def callback_car_visible(self, msg):
 
         if self.car_state_visible != msg.data:
             self.car_starttime_visibility = rospy.Time.now()
@@ -44,13 +48,31 @@ class CrosswalkBehavior(BaseBehavior):
         self.subscriber_person_visible = None
         self.person_state_visible = False
         self.person_starttime_visibility = rospy.Time.now()
-        self.person_duration_visibility = rospy.Duration()
+        self.person_duration_visibility = rospy.Duration(10)
 
         # value for car checker
         self.subscriber_car_visible = None
         self.car_state_visible = False
         self.car_starttime_visibility = rospy.Time.now()
-        self.car_duration_visibility = rospy.Duration()
+        self.car_duration_visibility = rospy.Duration(10)
+
+        # start subscribers
+        try:
+            self.subscriber_person_visible = rospy.Subscriber(
+                                        '/crosswalk_detection_person_tracker/visible',
+                                        Bool,
+                                        self.callback_person_visible
+                                        )
+            self.subscriber_car_visible = rospy.Subscriber(
+                                        '/crosswalk_detection_car_tracker/visible',
+                                        Bool,
+                                        self.callback_car_visible
+                                        )
+        except Exception as e:
+            rospy.logerr('{}'.format(e))
+            return False
+
+        return True
 
     def run_main(self, start_node, end_node, edge, pre_edge ):
 
@@ -95,24 +117,8 @@ class CrosswalkBehavior(BaseBehavior):
                 rospy.logwarn('Localization failed: {}'.format(ret[1]))
                 return False
 
-        # start person and car tracker
-        try:
-            self.subscriber_person_visible = rospy.Subscriber(
-                                        '/crosswalk_detection_person_tracker/visible',
-                                        Bool,
-                                        self.callback_person_visible
-                                        )
-            self.subscriber_car_visible = rospy.Subscriber(
-                                        '/crosswalk_detection_car_tracker/visible',
-                                        Bool,
-                                        self.callback_car_visible
-                                        )
-        except Exception as e:
-            rospy.logerr('{}'.format(e))
-            return False
-
         # checking if there is a moving car visible or not
-        self._sound_client.say('車が通るかみています',blocking=True)
+        self.sound_client.say('車が通るかみています',blocking=True)
         safety_count = 0
         rate = rospy.Rate(1)
         while not rospy.is_shutdown():
@@ -124,7 +130,7 @@ class CrosswalkBehavior(BaseBehavior):
                 rospy.loginfo('car visible: {}'.format(self.car_state_visible))
                 if self.car_state_visible == True:
                     safety_count = 0
-                    self._sound_client.say('車が通ります',blocking=True)
+                    self.sound_client.say('車が通ります',blocking=True)
                 else:
                     safety_count += 1
             except Exception as e:
@@ -148,7 +154,7 @@ class CrosswalkBehavior(BaseBehavior):
             if not self.state_visible and self.duration_visibility > rospy.Duration(0.5):
                 flag_speech = False
                 def notify_visibility():
-                    self._sound_client.say(
+                    self.sound_client.say(
                         '近くに人が見えません',
                         volume=1.0,
                         blocking=True
@@ -179,6 +185,8 @@ class CrosswalkBehavior(BaseBehavior):
     def run_final(self, start_node, end_node, edge, pre_edge ):
 
         rospy.logdebug('run_finalize() called')
+
+        self.spot_client.cancel_navigate_to()
 
         if self.subscriber_person_visible != None:
             self.subscriber_person_visible.unregister()

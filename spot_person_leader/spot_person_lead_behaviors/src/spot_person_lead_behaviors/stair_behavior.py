@@ -7,11 +7,11 @@ import rospkg
 import rospy
 
 from std_msgs.msg import Bool
-from geometry_msgs import PoseArray
+from geometry_msgs.msg import PoseArray
 
 class StairBehavior(BaseBehavior):
 
-    def callback_visible(msg):
+    def callback_visible(self, msg):
 
         if self.state_visible != msg.data:
             self.starttime_visibility = rospy.Time.now()
@@ -20,7 +20,7 @@ class StairBehavior(BaseBehavior):
         else:
             self.duration_visibility = rospy.Time.now() - self.starttime_visibility
 
-    def callback_people_pose_array(msg):
+    def callback_people_pose_array(self, msg):
 
         self.exist_person_down = False
         for pose in msg.poses:
@@ -47,12 +47,30 @@ class StairBehavior(BaseBehavior):
         self.subscriber_visible = None
         self.state_visible = False
         self.starttime_visibility = rospy.Time.now()
-        self.duration_visibility = rospy.Duration()
+        self.duration_visibility = rospy.Duration(10)
 
         # value for people pose array
         self.subscriber_people_pose_array = None
         self.msg_people_pose_array = None
         self.exist_person_down = False
+
+        # start subscribers
+        try:
+            self.subscriber_visible = rospy.Subscriber(
+                                        '/stair_detection_person_tracker/visible',
+                                        Bool,
+                                        self.callback_visible
+                                        )
+            self.subscriber_people_pose_array = rospy.Subscriber(
+                                        '/stair_detection_person_tracker/people_pose_array',
+                                        PoseArray,
+                                        self.callback_people_pose_array
+                                        )
+        except Exception as e:
+            rospy.logerr('{}'.format(e))
+            return False
+
+        return True
 
     def run_main(self, start_node, end_node, edge, pre_edge ):
 
@@ -63,7 +81,7 @@ class StairBehavior(BaseBehavior):
                     lambda x: x['graph'] == graph_name,
                     start_node.properties['waypoints_on_graph']
                     )[0]['id']
-        start_id = filter(
+        end_id = filter(
                     lambda x: x['graph'] == graph_name,
                     end_node.properties['waypoints_on_graph']
                     )[0]['id']
@@ -97,28 +115,6 @@ class StairBehavior(BaseBehavior):
                 rospy.logwarn('Localization failed: {}'.format(ret[1]))
                 return False
 
-        # start person tracker
-        try:
-            self.subscriber_visible = rospy.Subscriber(
-                                        '/stair_detection_person_tracker/visible',
-                                        Bool,
-                                        self.callback_visible
-                                        )
-        except Exception as e:
-            rospy.logerr('{}'.format(e))
-            return False
-
-        # start people pose array
-        try:
-            self.subscriber_people_pose_array = rospy.Subscriber(
-                                        '/stair_detection_person_tracker/people_pose_array',
-                                        PoseArray,
-                                        self.callback_people_pose_array
-                                        )
-        except Exception as e:
-            rospy.logerr('{}'.format(e))
-            return False
-
         # check if there is a person lower than the robot.
         while not rospy.is_shutdown():
             if self.exist_person_down:
@@ -146,6 +142,8 @@ class StairBehavior(BaseBehavior):
     def run_final(self, start_node, end_node, edge, pre_edge ):
 
         rospy.logdebug('run_finalize() called')
+
+        self.spot_client.cancel_navigate_to()
 
         if self.subscriber_visible != None:
             self.subscriber_visible.unregister()
