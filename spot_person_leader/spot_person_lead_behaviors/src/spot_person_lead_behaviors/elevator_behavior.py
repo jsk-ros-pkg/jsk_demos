@@ -152,8 +152,11 @@ class ElevatorBehavior(BaseBehavior):
                                     PointCloud2,
                                     self.door_point_cloud_callback)
 
+        self.sound_client.say('エレベーターに乗ります', blocking=True)
+
         # push button with switchbot
         rospy.loginfo('calling elevator when riding...')
+        self.sound_client.say('エレベーターを呼んでいます', blocking=True)
         success_calling = False
         if not self.action_client_switchbot.wait_for_server(rospy.Duration(10)):
             rospy.logerr('switchbot server seems to fail.')
@@ -247,6 +250,7 @@ class ElevatorBehavior(BaseBehavior):
             if self.door_is_open and self.is_target_floor and self.elevator_stop_acc:
                 break
         rospy.loginfo('elevator door opened and at the target_floor')
+        self.sound_client.say('エレベーターが{}階に到着しました'.format(end_floor), blocking=True)
 
         # dance before starting to move
         self.spot_client.pubBodyPose(0.0,Quaternion(w=1))
@@ -259,6 +263,7 @@ class ElevatorBehavior(BaseBehavior):
         self.spot_client.stand()
 
         # get off the elevator
+        self.sound_client.say('エレベーターからおります', blocking=True)
         self.spot_client.navigate_to(end_id, blocking=True)
         result = self.spot_client.get_navigate_to_result()
 
