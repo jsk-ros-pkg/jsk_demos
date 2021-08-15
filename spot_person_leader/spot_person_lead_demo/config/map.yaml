@@ -1,7 +1,7 @@
 edges:
   - from: 'eng2_73B2'
     to: 'eng2_7FElevator'
-    behavior_type: 'spot_person_lead_behaviors.walk_behavior.WalkBehavior'
+    behavior_type: 'spot_person_lead_behaviors.walk_behavior.NarrowBehavior'
     cost: 10
     args:
       graph: '$(find spot_autowalk_data)/autowalk/eng2_73B2_to_7FElevator.walk'
@@ -13,7 +13,7 @@ edges:
       graph: '$(find spot_autowalk_data)/autowalk/eng2_73B2_to_7FElevator.walk'
   - from: 'eng2_7FElevator'
     to: 'eng2_2FElevator'
-    behavior_type: 'spot_basic_behaviors.elevator_behavior.ElevatorBehavior'
+    behavior_type: 'spot_person_lead_behaviors.elevator_behavior.ElevatorBehavior'
     cost: 10
     args:
       graph: '$(find spot_autowalk_data)/autowalk/eng2_elevator_7FElevator_to_2FElevator.walk'
@@ -21,12 +21,60 @@ edges:
       goal_waypoint_id: 'shelfy-dassie-vK9Tf3cAQpdA.25gPJl8OQ=='
   - from: 'eng2_2FElevator'
     to: 'eng2_7FElevator'
-    behavior_type: 'spot_basic_behaviors.elevator_behavior.ElevatorBehavior'
+    behavior_type: 'spot_person_lead_behaviors.elevator_behavior.ElevatorBehavior'
     cost: 10
     args:
       graph: '$(find spot_autowalk_data)/autowalk/eng2_elevator_7FElevator_to_2FElevator.walk'
       rest_waypoint_id: 'unsaid-collie-jvatvS.7KX9jpzQz61GL4A=='
       goal_waypoint_id: 'sly-chetah-IZ4pVY7vrqO36OoKCYk9Zg=='
+  - from: 'eng2_2FElevator'
+    to: 'eng2_MainEntrance_upper'
+    behavior_type: 'spot_person_lead_behaviors.narrow_behavior.NarrowBehavior'
+    cost: 10
+    args:
+      graph: '$(find spot_person_leader)/autowalk/eng2_2FElevator_to_MainGate.walk'
+  - from: 'eng2_MainEntrance_upper'
+    to: 'eng2_2FElevator'
+    behavior_type: 'spot_person_lead_behaviors.narrow_behavior.NarrowBehavior'
+    cost: 10
+    args:
+      graph: '$(find spot_person_leader)/autowalk/eng2_2FElevator_to_MainGate.walk'
+  - from: 'eng2_MainEntrance_upper'
+    to: 'eng2_MainEntrance_lower'
+    behavior_type: 'spot_person_lead_behaviors.stair_behavior.StairBehavior'
+    cost: 10
+    args:
+      graph: '$(find spot_person_leader)/autowalk/eng2_2FElevator_to_MainGate.walk'
+  - from: 'eng2_MainEntrance_lower'
+    to: 'eng2_MainEntrance_upper'
+    behavior_type: 'spot_person_lead_behaviors.stair_behavior.StairBehavior'
+    cost: 10
+    args:
+      graph: '$(find spot_person_leader)/autowalk/eng2_2FElevator_to_MainGate.walk'
+  - from: 'eng2_MainEntrance_lower'
+    to: 'eng2_MainEntrance_outer'
+    behavior_type: 'spot_person_lead_behaviors.crosswalk_behavior.CrosswalkBehavior'
+    cost: 10
+    args:
+      graph: '$(find spot_person_leader)/autowalk/eng2_2FElevator_to_MainGate.walk'
+  - from: 'eng2_MainEntrance_outer'
+    to: 'eng2_MainEntrance_lower'
+    behavior_type: 'spot_person_lead_behaviors.crosswalk_behavior.CrosswalkBehavior'
+    cost: 10
+    args:
+      graph: '$(find spot_person_leader)/autowalk/eng2_2FElevator_to_MainGate.walk'
+  - from: 'eng2_MainEntrance_outer'
+    to: 'HongoMainGate'
+    behavior_type: 'spot_person_lead_behaviors.walk_behavior.WalkBehavior'
+    cost: 10
+    args:
+      graph: '$(find spot_person_leader)/autowalk/eng2_2FElevator_to_MainGate.walk'
+  - from: 'HongoMainGate'
+    to: 'eng2_MainEntrance_outer'
+    behavior_type: 'spot_person_lead_behaviors.walk_behavior.WalkBehavior'
+    cost: 10
+    args:
+      graph: '$(find spot_person_leader)/autowalk/eng2_2FElevator_to_MainGate.walk'
 nodes:
   'eng2_73B2':
     name_en: '73B2'
@@ -35,18 +83,12 @@ nodes:
       - graph: '$(find spot_autowalk_data)/autowalk/eng2_73B2_to_7FElevator.walk'
         id: 'dyed-bat-t00VKo5XixLihCvpsZPRqw=='
         localization_method: 'fiducial'
-      - graph: '$(find spot_autowalk_data)/autowalk/eng2_73B2_to_81C1.walk'
-        id: 'fuzzed-medusa-wyXWCEjmWas1kMo8EJW8Bw=='
-        localization_method: 'fiducial'
   'eng2_7FElevator':
     name_en: 'Elevator'
     name_jp: 'エレベーター'
     waypoints_on_graph:
       - graph: '$(find spot_autowalk_data)/autowalk/eng2_73B2_to_7FElevator.walk'
         id: 'looted-cougar-RWT2C0zLJXG.ezYnCuLUeQ=='
-        localization_method: 'fiducial'
-      - graph: '$(find spot_autowalk_data)/autowalk/eng2_7FElevator_to_2FElevator.walk'
-        id: 'larger-mudcat-0x3bt3Dif.1QU9JfXpyQPw=='
         localization_method: 'fiducial'
       - graph: '$(find spot_autowalk_data)/autowalk/eng2_elevator_7FElevator_to_2FElevator.walk'
         id: 'sly-chetah-IZ4pVY7vrqO36OoKCYk9Zg=='
@@ -58,24 +100,40 @@ nodes:
     name_en: 'Elevator'
     name_jp: 'エレベーター'
     waypoints_on_graph:
-      - graph: '$(find spot_autowalk_data)/autowalk/eng2_7FElevator_to_2FElevator.walk'
-        id: 'rainy-collie-uwFW2KVYg2YCUi8FF6N00g=='
-        localization_method: 'fiducial'
-      - graph: '$(find spot_autowalk_data)/autowalk/eng2_2FElevator_to_2FEntrance.walk'
-        id: 'snaky-beagle-.fmRm2JflzlV6Dv5fTdnIQ=='
-        localization_method: 'fiducial'
       - graph: '$(find spot_autowalk_data)/autowalk/eng2_2FElevator_to_MainGate.walk'
         id: 'banner-oxen-UrEwTUbZYL0IQnY5TCFwrA=='
         localization_method: 'fiducial'
       - graph: '$(find spot_autowalk_data)/autowalk/eng2_elevator_7FElevator_to_2FElevator.walk'
         id: 'shelfy-dassie-vK9Tf3cAQpdA.25gPJl8OQ=='
         localization_method: 'fiducial'
-      - graph: '$(find spot_autowalk_data)/autowalk/eng2_2FElevator_to_eng8_2FElevator.walk'
-        id: 'inland-remora-FqtX8ScP+.inEd4xFYKq4A=='
-        localization_method: 'fiducial'
-      - graph: '$(find spot_autowalk_data)/autowalk/eng2_elevator_3FElevator_to_2FElevator.walk'
-        id: 'dashed-virus-QgetwIkinypWecGNMSS4Yw=='
-        localization_method: 'fiducial'
     switchbot_device: '/eng2/2f/elevator/up/button'
     floor: 2
     floor_height: 0
+  'eng2_MainEntrance_upper':
+    name_en: 'Entrance'
+    name_jp: '入り口'
+    waypoints_on_graph:
+      - graph: '$(find spot_person_leader)/autowalk/eng2_2FElevator_to_MainGate.walk'
+        id: 'sown-eel-fcPD.nqdAAv5EP23gzftqA=='
+        localization_method: 'waypoint'
+  'eng2_MainEntrance_lower':
+    name_en: 'Entrance'
+    name_jp: '入り口'
+    waypoints_on_graph:
+      - graph: '$(find spot_person_leader)/autowalk/eng2_2FElevator_to_MainGate.walk'
+        id: 'dummy-isopod-8jheUWJFFD7iQ3NXMXTWFg=='
+        localization_method: 'waypoint'
+  'eng2_MainEntrance_outer':
+    name_en: 'Entrance'
+    name_jp: '入り口'
+    waypoints_on_graph:
+      - graph: '$(find spot_person_leader)/autowalk/eng2_2FElevator_to_MainGate.walk'
+        id: 'gifted-taipan-i3YcwQS4hjHWoC69kSCMsA=='
+        localization_method: 'waypoint'
+  'HongoMainGate':
+    name_en: 'Maingate'
+    name_jp: '正門'
+    waypoints_on_graph:
+      - graph: '$(find spot_person_leader)/autowalk/eng2_2FElevator_to_MainGate.walk'
+        id: 'wobbly-macaw-YHBHKCQPbVkWFdDSrFO3Gw=='
+        localization_method: 'waypoint'
