@@ -1,7 +1,7 @@
 edges:
   - from: 'eng2_73B2'
     to: 'eng2_7FElevator'
-    behavior_type: 'spot_person_lead_behaviors.walk_behavior.NarrowBehavior'
+    behavior_type: 'spot_person_lead_behaviors.narrow_behavior.NarrowBehavior'
     cost: 10
     args:
       graph: '$(find spot_autowalk_data)/autowalk/eng2_73B2_to_7FElevator.walk'
