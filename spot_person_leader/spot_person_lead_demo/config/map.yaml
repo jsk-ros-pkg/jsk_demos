@@ -32,49 +32,49 @@ edges:
     behavior_type: 'spot_person_lead_behaviors.narrow_behavior.NarrowBehavior'
     cost: 10
     args:
-      graph: '$(find spot_person_leader)/autowalk/eng2_2FElevator_to_MainGate.walk'
+      graph: '$(find spot_person_leader)/autowalk/eng2_2FElevator_to_MainEntrance.walk'
   - from: 'eng2_MainEntrance_upper'
     to: 'eng2_2FElevator'
     behavior_type: 'spot_person_lead_behaviors.narrow_behavior.NarrowBehavior'
     cost: 10
     args:
-      graph: '$(find spot_person_leader)/autowalk/eng2_2FElevator_to_MainGate.walk'
+      graph: '$(find spot_person_leader)/autowalk/eng2_2FElevator_to_MainEntrance.walk'
   - from: 'eng2_MainEntrance_upper'
     to: 'eng2_MainEntrance_lower'
     behavior_type: 'spot_person_lead_behaviors.stair_behavior.StairBehavior'
     cost: 10
     args:
-      graph: '$(find spot_person_leader)/autowalk/eng2_2FElevator_to_MainGate.walk'
+      graph: '$(find spot_person_leader)/autowalk/eng2_MainEntrance_to_HongoMainGate.walk'
   - from: 'eng2_MainEntrance_lower'
     to: 'eng2_MainEntrance_upper'
     behavior_type: 'spot_person_lead_behaviors.stair_behavior.StairBehavior'
     cost: 10
     args:
-      graph: '$(find spot_person_leader)/autowalk/eng2_2FElevator_to_MainGate.walk'
+      graph: '$(find spot_person_leader)/autowalk/eng2_MainEntrance_to_HongoMainGate.walk'
   - from: 'eng2_MainEntrance_lower'
     to: 'eng2_MainEntrance_outer'
     behavior_type: 'spot_person_lead_behaviors.crosswalk_behavior.CrosswalkBehavior'
     cost: 10
     args:
-      graph: '$(find spot_person_leader)/autowalk/eng2_2FElevator_to_MainGate.walk'
+      graph: '$(find spot_person_leader)/autowalk/eng2_MainEntrance_to_HongoMainGate.walk'
   - from: 'eng2_MainEntrance_outer'
     to: 'eng2_MainEntrance_lower'
     behavior_type: 'spot_person_lead_behaviors.crosswalk_behavior.CrosswalkBehavior'
     cost: 10
     args:
-      graph: '$(find spot_person_leader)/autowalk/eng2_2FElevator_to_MainGate.walk'
+      graph: '$(find spot_person_leader)/autowalk/eng2_MainEntrance_to_HongoMainGate.walk'
   - from: 'eng2_MainEntrance_outer'
     to: 'HongoMainGate'
     behavior_type: 'spot_person_lead_behaviors.walk_behavior.WalkBehavior'
     cost: 10
     args:
-      graph: '$(find spot_person_leader)/autowalk/eng2_2FElevator_to_MainGate.walk'
+      graph: '$(find spot_person_leader)/autowalk/eng2_MainEntrance_to_HongoMainGate.walk'
   - from: 'HongoMainGate'
     to: 'eng2_MainEntrance_outer'
     behavior_type: 'spot_person_lead_behaviors.walk_behavior.WalkBehavior'
     cost: 10
     args:
-      graph: '$(find spot_person_leader)/autowalk/eng2_2FElevator_to_MainGate.walk'
+      graph: '$(find spot_person_leader)/autowalk/eng2_MainEntrance_to_HongoMainGate.walk'
 nodes:
   'eng2_73B2':
     name_en: '73B2'
@@ -100,8 +100,8 @@ nodes:
     name_en: 'Elevator'
     name_jp: 'エレベーター'
     waypoints_on_graph:
-      - graph: '$(find spot_autowalk_data)/autowalk/eng2_2FElevator_to_MainGate.walk'
-        id: 'banner-oxen-UrEwTUbZYL0IQnY5TCFwrA=='
+      - graph: '$(find spot_autowalk_data)/autowalk/eng2_2FElevator_to_MainEntrance.walk'
+        id: 'mythic-leech-Uslc00eTIhygFsCdH2q1Qg=='
         localization_method: 'fiducial'
       - graph: '$(find spot_autowalk_data)/autowalk/eng2_elevator_7FElevator_to_2FElevator.walk'
         id: 'shelfy-dassie-vK9Tf3cAQpdA.25gPJl8OQ=='
@@ -113,27 +113,30 @@ nodes:
     name_en: 'Entrance'
     name_jp: '入り口'
     waypoints_on_graph:
-      - graph: '$(find spot_person_leader)/autowalk/eng2_2FElevator_to_MainGate.walk'
-        id: 'sown-eel-fcPD.nqdAAv5EP23gzftqA=='
-        localization_method: 'waypoint'
+      - graph: '$(find spot_autowalk_data)/autowalk/eng2_2FElevator_to_MainEntrance.walk'
+        id: 'violet-ibis-HtCPm39SIDSzoJFVX88S+A=='
+        localization_method: 'fiducial'
+      - graph: '$(find spot_person_leader)/autowalk/eng2_MainEntrance_to_HongoMainGate.walk'
+        id: 'about-goat-EHRLqkk7XWmMXAdfcXHP5g=='
+        localization_method: 'fiducial'
   'eng2_MainEntrance_lower':
     name_en: 'Entrance'
     name_jp: '入り口'
     waypoints_on_graph:
-      - graph: '$(find spot_person_leader)/autowalk/eng2_2FElevator_to_MainGate.walk'
-        id: 'dummy-isopod-8jheUWJFFD7iQ3NXMXTWFg=='
+      - graph: '$(find spot_person_leader)/autowalk/eng2_MainEntrance_to_HongoMainGate.walk'
+        id: 'aft-tick-clWAq8obxtWm64bTthYwMQ=='
         localization_method: 'waypoint'
   'eng2_MainEntrance_outer':
     name_en: 'Entrance'
     name_jp: '入り口'
     waypoints_on_graph:
-      - graph: '$(find spot_person_leader)/autowalk/eng2_2FElevator_to_MainGate.walk'
-        id: 'gifted-taipan-i3YcwQS4hjHWoC69kSCMsA=='
+      - graph: '$(find spot_person_leader)/autowalk/eng2_MainEntrance_to_HongoMainGate.walk'
+        id: 'tilled-weevil-slAZLtX3U2NcqaINkGY0Sw=='
         localization_method: 'waypoint'
   'HongoMainGate':
     name_en: 'Maingate'
     name_jp: '正門'
     waypoints_on_graph:
-      - graph: '$(find spot_person_leader)/autowalk/eng2_2FElevator_to_MainGate.walk'
-        id: 'wobbly-macaw-YHBHKCQPbVkWFdDSrFO3Gw=='
+      - graph: '$(find spot_person_leader)/autowalk/eng2_MainEntrance_to_HongoMainGate.walk'
+        id: 'aglow-gadfly-tSusAUqUNtqVaKFO49pDbQ=='
         localization_method: 'waypoint'
