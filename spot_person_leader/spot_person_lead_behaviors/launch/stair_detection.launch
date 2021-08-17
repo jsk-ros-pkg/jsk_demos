@@ -1,7 +1,7 @@
 <launch>
     <!-- person tracker -->
     <node
-        pkg="spot_person_leader"
+        pkg="spot_person_lead_behaviors"
         type="person_tracker.py"
         name="stair_detection_person_tracker"
         output="screen"
