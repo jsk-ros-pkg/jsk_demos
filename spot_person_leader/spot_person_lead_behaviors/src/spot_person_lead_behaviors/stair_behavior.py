@@ -128,8 +128,8 @@ class StairBehavior(BaseBehavior):
 
         # start leading
         self.spot_client.navigate_to( end_id, blocking=False)
-        self._spot_client.wait_for_navigate_to_result()
-        result = self._spot_client.get_navigate_to_result()
+        self.spot_client.wait_for_navigate_to_result()
+        result = self.spot_client.get_navigate_to_result()
 
         # recovery on failure
         if not result.success:

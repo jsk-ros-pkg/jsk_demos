@@ -150,13 +150,13 @@ class NarrowBehavior(BaseBehavior):
                             )
             rospy.logwarn('notify_obstacle finished.')
         thread_notify_obstacle = threading.Thread(target=notify_obstacle)
-        thread_notify_obstacle.start()
 
         # start leading
         success = False
         rate = rospy.Rate(10)
         self.sound_client.say('ついてきてください',blocking=True)
         self.spot_client.navigate_to( end_id, blocking=False)
+        thread_notify_obstacle.start()
         while not rospy.is_shutdown():
             rate.sleep()
 

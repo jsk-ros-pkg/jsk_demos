@@ -250,7 +250,7 @@ class ElevatorBehavior(BaseBehavior):
             if self.door_is_open and self.is_target_floor and self.elevator_stop_acc:
                 break
         rospy.loginfo('elevator door opened and at the target_floor')
-        self.sound_client.say('エレベーターが{}階に到着しました'.format(end_floor), blocking=True)
+        self.sound_client.say('エレベーターが{}階に到着しました'.format(end_floor), blocking=False)
 
         # dance before starting to move
         self.spot_client.pubBodyPose(0.0,Quaternion(w=1))
@@ -263,7 +263,7 @@ class ElevatorBehavior(BaseBehavior):
         self.spot_client.stand()
 
         # get off the elevator
-        self.sound_client.say('エレベーターからおります', blocking=True)
+        self.sound_client.say('エレベーターからおります', blocking=False)
         self.spot_client.navigate_to(end_id, blocking=True)
         result = self.spot_client.get_navigate_to_result()
 
