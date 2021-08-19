@@ -2,6 +2,8 @@
 
 from spot_behavior_manager.base_behavior import BaseBehavior
 
+import roslaunch
+import rospkg
 import rospy
 
 import threading
@@ -151,7 +153,7 @@ class CrosswalkBehavior(BaseBehavior):
                 rospy.loginfo('result: {}'.format(result))
                 break
 
-            if not self.state_visible and self.duration_visibility > rospy.Duration(0.5):
+            if not self.person_state_visible and self.person_duration_visibility > rospy.Duration(0.5):
                 flag_speech = False
                 def notify_visibility():
                     self.sound_client.say(
@@ -162,16 +164,16 @@ class CrosswalkBehavior(BaseBehavior):
                     flag_speech = False
                 speech_thread = threading.Thread(target=notify_visibility)
                 speech_thread.start()
-                while not self.state_visible and self.duration_visibility > rospy.Duration(0.5):
+                while not self.person_state_visible and self.person_duration_visibility > rospy.Duration(0.5):
                     rate.sleep()
                     self.spot_client.pubCmdVel(0,0,0)
                     if not flag_speech:
                         flag_speech = True
                         speech_thread = threading.Thread(target=notify_visibility)
                         speech_thread.start()
-                    if not self.state_visible and self.duration_visibility > rospy.Duration(5.0):
+                    if not self.person_state_visible and self.person_duration_visibility > rospy.Duration(5.0):
                         self.spot_client.cancel_navigate_to()
-                    if self.state_visible:
+                    if self.person_state_visible:
                         self.spot_client.navigate_to( end_id, blocking=False)
 
         # recovery on failure
