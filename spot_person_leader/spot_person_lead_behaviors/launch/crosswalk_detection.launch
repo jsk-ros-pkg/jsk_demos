@@ -17,6 +17,9 @@
         </rosparam>
     </node>
 
+    <!-- multi object tracker -->
+    <include file="$(find jsk_spot_startup)/launch/include/multi_object_detector.launch" />
+
     <!-- car tracker -->
     <node
         pkg="spot_person_lead_behaviors"

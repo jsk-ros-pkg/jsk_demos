@@ -88,6 +88,7 @@ class MultiObjectTracker(object):
         self._frame_fixed = rospy.get_param('~frame_fixed', 'fixed_frame')
         self._frame_robot = rospy.get_param('~frame_robot', 'base_link')
         self._timeout_transform = rospy.get_param('~timeout_transform',0.05)
+        slop = rospy.get_param('~slop', 0.1)
 
         # parameters for multi object trackers
         ## maximum number of tracking objects
@@ -121,12 +122,12 @@ class MultiObjectTracker(object):
                 rospy.wait_for_message('~input_tracking_labels', LabelArray, 3)
                 break
             except (rospy.ROSException, rospy.ROSInterruptException) as e:
-                rospy.logwarn(
-                    'subscribing topic seems not to be pulished. waiting... Error: {}'.format(e))
+                rospy.logerr('subscribing topic seems not to be published.')
+                rospy.logerr('Error: {}'.format(e))
             rate.sleep()
         mf_sub_bbbox_array = message_filters.Subscriber('~input_bbox_array', BoundingBoxArray)
         mf_sub_tracking_labels = message_filters.Subscriber('~input_tracking_labels', LabelArray)
-        ts = message_filters.TimeSynchronizer([mf_sub_bbbox_array, mf_sub_tracking_labels], 10)
+        ts = message_filters.ApproximateTimeSynchronizer([mf_sub_bbbox_array, mf_sub_tracking_labels], 10, slop)
         ts.registerCallback(self._cb_object)
 
     def _cb_object(self,
