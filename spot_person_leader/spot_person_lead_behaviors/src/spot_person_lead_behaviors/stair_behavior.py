@@ -116,15 +116,13 @@ class StairBehavior(BaseBehavior):
                 return False
 
         # check if there is a person lower than the robot.
-        while not rospy.is_shutdown():
-            if self.exist_person_down:
-                self.sound_client.say('私より低い位置に誰かいるのでいなくなるまで待ちます',blocking=True)
-            else:
-                break
+        #while not rospy.is_shutdown():
+        #    if self.exist_person_down:
+        #        self.sound_client.say('私より低い位置に誰かいるのでいなくなるまで待ちます',blocking=True)
+        #    else:
+        #        break
 
-        self.sound_client.say(
-                '階段は危ないので私が昇り降りしている間は近づかないでください',
-                blocking=True)
+        self.sound_client.say('階段を移動します。ご注意ください。',blocking=True)
 
         # start leading
         self.spot_client.navigate_to( end_id, blocking=False)
@@ -136,8 +134,13 @@ class StairBehavior(BaseBehavior):
             self.sound_client.say('失敗したので元に戻ります', blocking=True)
             self.spot_client.navigate_to( start_id, blocking=True)
             self.spot_client.wait_for_navigate_to_result()
-
-        return result.success
+            return result.success
+        else:
+            rate = rospy.Rate(1)
+            while not self.state_visible:
+                self.sound_client.say('ひとが見えるまでお待ちしています。',blocking=True)
+                rate.sleep()
+            return result.success
 
     def run_final(self, start_node, end_node, edge, pre_edge ):
 
