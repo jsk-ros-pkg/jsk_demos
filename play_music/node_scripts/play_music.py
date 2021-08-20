@@ -24,13 +24,15 @@ def main():
         rospy.logerr('No music file found in {}'.format(music_directory))
         return
 
-    play_file = random.sample(music_files, 1)[0]
+    play_file = music_directory + '/' + random.sample(music_files, 1)[0]
 
     client = SoundClient(sound_action='/robotsound', sound_topic='/robotsound')
 
+    rospy.sleep(3)
+
     rospy.loginfo('Started to play {}'.format(play_file))
 
-    client.startWave(play_file)
+    client.playWave(play_file, blocking=True)
 
 
 if __name__ == '__main__':
