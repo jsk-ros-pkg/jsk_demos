@@ -1,6 +1,6 @@
 <launch>
   <arg name="debug" default="false" />
-  <arg name="use_ffha" default="false" />
+  <arg name="use_ffha" default="true" />
   <node pkg="pddl_planner_viewer"
         type="pddl_planner_viewer.py"
         name="$(anon pddl_planner_viewer)" />
