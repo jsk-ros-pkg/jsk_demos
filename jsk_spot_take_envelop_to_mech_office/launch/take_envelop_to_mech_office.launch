@@ -1,0 +1,9 @@
+<launch>
+    <node
+        pkg="jsk_spot_take_envelop_to_mech_office"
+        type="take_envelop_to_mech_office.py"
+        name="take_envelop_to_mech_office"
+        output="screen"
+        >
+    </node>
+</launch>
