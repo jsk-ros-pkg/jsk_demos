@@ -1,0 +1,34 @@
+<launch>
+  <arg name="input_image" default="/spot/camera/back/image"/>
+  <arg name="luminance_threshold" default="60" />
+  <arg name="rest_time_per_hour" default="10" /> # min
+
+  # person attention
+  <arg name="panorama_image" default="/dual_fisheye_to_panorama/output/quater" />
+  <arg name="human_detection_result" default="/spot_recognition/rects" />
+  <arg name="human_width_threshold" default="0.45" /> # rate of human(bbox) height
+  <arg name="human_height_threshold" default="0.4" /> # rate of image height
+  <arg name="max_tracking_yaw" default="0.8" /> # radian
+  <arg name="temp_threshold" default="45" /> # degree
+  <arg name="change_body_duration" default="0.8" /> # second
+
+  # watch dog smach
+  <node pkg="roseus" type="roseus" name="spot_watchdog" output="screen"
+        args="$(find jsk_spot_watch_dog)/scripts/watch-dog.l" >
+    <remap from="~input" to="$(arg input_image)" />
+    <remap from="~panorama_image" to="$(arg panorama_image)" />
+    <remap from="~human" to="$(arg human_detection_result)" />
+    <param name="luminance_threshold" value="$(arg luminance_threshold)" />
+    <param name="rest_time_per_hour" value="$(arg rest_time_per_hour)" />
+    <param name="human_width_threshold" value="$(arg human_width_threshold)" />
+    <param name="human_height_threshold" value="$(arg human_height_threshold)" />
+    <param name="max_tracking_yaw" value="$(arg max_tracking_yaw)" />
+    <param name="change_body_duration" value="$(arg change_body_duration)" />
+    <param name="bark_sound" value="/var/lib/robot/bark.wav" />
+    <param name="temp_threshold" value="$(arg temp_threshold)" />
+  </node>
+</launch>
+
+
+
+
