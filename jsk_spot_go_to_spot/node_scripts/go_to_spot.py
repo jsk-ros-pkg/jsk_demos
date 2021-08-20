@@ -16,9 +16,13 @@ def main():
     target_node_id = rospy.get_param('~target_node_id', 'eng2_7FElevator')
 
     client = actionlib.SimpleActionClient(
-        '/spot/lead_person', LeadPersonAction)
+        '/spot_behavior_manager_demo/lead_person', LeadPersonAction)
 
-    client.wait_for_server()
+    rospy.loginfo('waiting for server...')
+
+    if not client.wait_for_server(rospy.Duration(10)):
+        rospy.logerr('Server down.')
+        return
 
     rospy.loginfo('send a goal')
 
