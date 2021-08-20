@@ -1,5 +1,6 @@
 <launch>
   <arg name="MACHINE" default="localhost" />
+  <arg name="keepout" default="false" />
   <arg name="launch_map_server" default="true" />
   <arg name="use_machine" default="false" />
   <arg name="use_pictogram" default="false" />
@@ -10,6 +11,7 @@
         args="0 0 0 0 0 0 /world /eng2 100"/>
 
   <include file="$(find jsk_maps)/launch/include/start_map_eng2_main.xml">
+    <arg name="keepout" value="$(arg keepout)"/>
     <arg name="launch_map_server" value="$(arg launch_map_server)"/>
   </include>
 

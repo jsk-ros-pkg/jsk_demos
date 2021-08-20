@@ -16,7 +16,6 @@
 (setq *costmap-name* (ros::get-param "~costmap_name" "global_costmap"))
 (setq *base-frame-name* (ros::get-param "~base_frame_id" "base_footprint"))
 (setq *topicname* (ros::get-param "~initialpose" "/initialpose3d"))
-(setq *map-tf-mux* (ros::get-param "~map_tf_mux" "/map_tf_mux/selected"))
 
 
 (defun change-floor-callback (msg)
@@ -27,8 +26,7 @@
       (format nil "floor changed to ~A" target-floor-name))
     (change-floor target-floor-name
                   :topicname *topicname*
-                  :base-frame-name *base-frame-name*
-                  :map-tf-mux *map-tf-mux*)
+                  :base-frame-name *base-frame-name*)
     ;; change publish_freuquency to reload costmap automatically
     (let ((current-costmap-publish-frequency
            (ros::get-param (format nil "~A/~A/publish_frequency"
