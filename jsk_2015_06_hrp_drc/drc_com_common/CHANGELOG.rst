@@ -2,6 +2,9 @@
 Changelog for package drc_com_common
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.0.5 (2021-07-17)
+------------------
+
 0.0.4 (2017-03-15)
 ------------------
 * [drc_task_common] no-UI valve rotation and opening door
