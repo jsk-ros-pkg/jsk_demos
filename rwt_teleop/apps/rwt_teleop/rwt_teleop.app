@@ -9,7 +9,7 @@ plugins:
     type: app_recorder/audio_video_recorder_plugin
     launch_args:
       video_path: /tmp
-      video_title: pick_object_kinect_head.avi
+      video_title: rwt_teleop_kinect_head.avi
       audio_topic_name: /audio
       audio_channels: 1
       audio_sample_rate: 16000
@@ -24,7 +24,7 @@ plugins:
     type: app_recorder/audio_video_recorder_plugin
     launch_args:
       video_path: /tmp
-      video_title: pick_object_kinect_head_human_pose_estimator.avi
+      video_title: rwt_teleop_kinect_head_human_pose_estimator.avi
       audio_topic_name: /audio
       audio_channels: 1
       audio_sample_rate: 16000
@@ -39,7 +39,7 @@ plugins:
     type: app_recorder/rosbag_recorder_plugin
     launch_args:
       rosbag_path: /tmp
-      rosbag_title: pick_object_rosbag.bag
+      rosbag_title: rwt_teleop_rosbag.bag
       compress: true
       rosbag_topic_names:
         - /rosout
@@ -71,14 +71,14 @@ plugins:
     type: app_uploader/gdrive_uploader_plugin
     plugin_args:
       upload_file_paths:
-        - /tmp/pick_object_kinect_head.avi
-        - /tmp/pick_object_kinect_head_human_pose_estimator.avi
-        - /tmp/pick_object_rosbag.bag
+        - /tmp/rwt_teleop_kinect_head.avi
+        - /tmp/rwt_teleop_kinect_head_human_pose_estimator.avi
+        - /tmp/rwt_teleop_rosbag.bag
       upload_file_titles:
-        - pick_object_kinect_head.avi
-        - pick_object_kinect_head_human_pose_estimator.avi
-        - pick_object_rosbag.bag
-      upload_parents_path: pr2_fridge_pick_object
+        - rwt_teleop_kinect_head.avi
+        - rwt_teleop_kinect_head_human_pose_estimator.avi
+        - rwt_teleop_rosbag.bag
+      upload_parents_path: pr2_fridge_rwt_teleop
       upload_server_name: /gdrive_server
   - name: user_speech_notifier_plugin
     type: app_notifier/user_speech_notifier_plugin
@@ -92,7 +92,7 @@ plugins:
   - name: mail_notifier_plugin
     type: app_notifier/mail_notifier_plugin
     plugin_args:
-      mail_title: PR2 fridge pick object demo
+      mail_title: PR2 rwt teleop demo
       use_timestamp_title: true
     plugin_arg_yaml: /var/lib/robot/pr2_mail_notifier_plugin.yaml
 plugin_order:
