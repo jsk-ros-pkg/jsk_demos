@@ -78,7 +78,7 @@ plugins:
         - rwt_teleop_kinect_head.avi
         - rwt_teleop_kinect_head_human_pose_estimator.avi
         - rwt_teleop_rosbag.bag
-      upload_parents_path: pr2_fridge_rwt_teleop
+      upload_parents_path: pr2_rwt_teleop
       upload_server_name: /gdrive_server
   - name: user_speech_notifier_plugin
     type: app_notifier/user_speech_notifier_plugin
