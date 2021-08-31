@@ -23,5 +23,7 @@
                (flatten (send-all (send *fetch* :bodies) :vertices))) :grow 2.0)))
 
 (setq *trash-can-front* (make-cascoords :pos #f(1895.0 9378.0 0.0) :rpy (float-vector 0 0 0)))
-(send *fetch* :move-to *trash-can-front* :world)
-(send *ri* :move-to *trash-can-front*)
+(defun approach-to-trashcan ()
+  (send *fetch* :move-to *trash-can-front* :world)
+  (send *irtviewer* :draw-objects) ;; update viewer
+  (send *ri* :move-to *trash-can-front*))
