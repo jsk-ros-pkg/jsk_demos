@@ -3,50 +3,11 @@
 
 """"""
 
+import sys
 import actionlib
+from sound_play.libsoundplay import SoundClient
 import rospy
 from spot_behavior_manager_msgs.msg import LeadPersonAction, LeadPersonGoal
-from std_msgs.msg import String
-import sys
-import smtplib
-from email.MIMEText import MIMEText
-from email.Header import Header
-from email.Utils import formatdate
-
-
-def sendResultMail(from_address,to_address):
-
-    return True
-
-
-def sendRescueMail(from_address,to_address):
-
-    last_node_id = rospy.wait_for_message('/spot_behavior_manager_demo/current_node_id').data
-
-    subject = '[Important] Please rescue me by Spot'
-    text = 'I have got stuck around node {}.\n'.format(last_node_id) + \
-           'Please rescue me!'
-
-    msg = MIMEText(text.encode('utf-8'),'plain','utf-8')
-    msg['Subject'] = Header(subject,'utf-8')
-    msg['From'] = from_address
-    msg['To'] = to_address
-    msg['Date'] = formatdate(localtime=True)
-
-    smtp = smtplib.SMTP('localhost')
-    smtp.sendmail(from_address,to_address,msg.as_string())
-    smtp.close()
-
-    rospy.loginfo('Sent rescue mail')
-
-    return True
-
-
-def main():
-
-    rospy.init_node('spot_go_to_spot')
-    demo = Demo()
-    demo.run()
 
 
 class Demo:
@@ -57,23 +18,21 @@ class Demo:
         self.node_id_mech_office = rospy.get_param(
             '~node_id_mech_office', 'eng2_Mech_Office')
         self.num_max_retry = rospy.get_param('~num_max_retry', 3)
-        self.from_address = rospy.get_param(
-            '~from_address', 'spot-jsk@jsk.imi.i.u-tokyo.ac.jp')
-        self.to_address = rospy.get_param(
-            '~to_address', 'spot@jsk.imi.i.u-tokyo.ac.jp')
 
         self.actionclient = actionlib.SimpleActionClient(
             '/spot_behavior_manager_demo/lead_person', LeadPersonAction)
+        self.soundclient = SoundClient(sound_action='/robotsound_jp',sound_topic='/robotsound_jp')
 
         rospy.loginfo('waiting for server...')
         if not self.actionclient.wait_for_server(rospy.Duration(10)):
             rospy.logerr('Server down.')
-            sys.exit(1)
+            self.initialized = False
+        else:
+            self.initialized = True
 
     def exit(self):
 
         rospy.logwarn('Trying to go back to 73b2...')
-
         for num_trial in range(self.num_max_retry):
             self.actionclient.send_goal_and_wait(
                 LeadPersonGoal(target_node_id=self.node_id_73b2))
@@ -86,17 +45,23 @@ class Demo:
                     rospy.logwarn('Failed. retrying...')
                 else:
                     rospy.logerr('Failed even after retrying.')
-                    sendRescueMail()
-                    self.exit(1)
+                    sys.exit(1)
 
         rospy.loginfo('I am back to 73B2.')
-        sendResultMail(self.from_address,self.to_address)
         sys.exit(1)
 
     def run(self):
 
-        rospy.loginfo('Start to go to {}'.format(self.node_id_mech_office))
+        # wait for envelop
+        self.soundclient.say('事務室へ持っていくものを置いてください。',blocking=True)
+        ## checking if something is placed on the robot
+        ### TODO
+        ## ask if OK
+        ### TODO
 
+        # go to mech office
+        rospy.loginfo('Start to go to {}'.format(self.node_id_mech_office))
+        self.soundclient.say('事務室へ向かいます',blocking=True)
         for num_trial in range(self.num_max_retry):
             self.actionclient.send_goal_and_wait(
                 LeadPersonGoal(target_node_id=self.node_id_mech_office))
@@ -113,8 +78,14 @@ class Demo:
 
         rospy.loginfo('I am now at the Mech Office.')
 
-        rospy.loginfo('Return to {}'.format(self.node_id_73b2))
+        self.soundclient.say('荷物を回収してください。',blocking=True)
+        ## checking if package is taken from the robot
+        ### TODO
+        ## ask if OK
+        ### TODO
 
+        # go back to 73b2
+        rospy.loginfo('Return to {}'.format(self.node_id_73b2))
         for num_trial in range(self.num_max_retry):
             self.actionclient.send_goal_and_wait(
                 LeadPersonGoal(target_node_id=self.node_id_73b2))
@@ -130,7 +101,14 @@ class Demo:
                     self.exit()
 
         rospy.loginfo('I am back to 73B2.')
-        sendResultMail(self.from_address,self.to_address)
+
+
+def main():
+    rospy.init_node('spot_go_to_spot')
+    demo = Demo()
+    if not demo.initialized:
+        sys.exit(1)
+    demo.run()
 
 
 if __name__ == '__main__':
