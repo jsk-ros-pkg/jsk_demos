@@ -29,7 +29,7 @@
   (send *ri* :wait-interpolation nil)
   )
 
-(setq *path* (ros::get-param "~path" (format nil "~A/autowalk/73b2_inside.walk" (ros::rospack-find "spot_autowalk_data"))))
+(setq *path* (ros::get-param "~path" (format nil "/home/lshinjo/ros/catkin_ws/src/jsk-ros-pkg/jsk_robot/jsk_spot_robot/spot_autowalk_data/autowalk/73b2_inside.walk" (ros::rospack-find "spot_autowalk_data")))) ;; (setq *path* (ros::get-param "~path" (format nil "~A/autowalk/73b2_inside.walk" (ros::rospack-find "spot_autowalk_data))))
 (setq *init-waypoint* (floor (ros::get-param "~init_waypoint" 0)))
 (setq *upload* (ros::get-param "~upload" t))
 
@@ -46,13 +46,53 @@
 ;;(ros::ros-info "ready go to 81C1?")
 ;;(if (y-or-n-p) t (exit))
 
-;; go to tsukamoto's desk
-(send *ri* :navigate-to 9)
-(send *ri* :go-pos 0 0 180)
 
+
+(defun go-to-desk (name)
+  (if (string= name "hiraoka")
+      (send *ri* :navigate- to 4)
+    (send *ri* :go-pos 0 -0.2 0))
+  (if (string= name "obinata")
+      (send *ri* :navigate-to 4))
+  (if (string= name "ishida")
+    (send *ri* :navigate-to 5)
+    (send  *ri* :go-pos 0 0 90))
+  ;; go to tsukamoto's desk
+  (if (string= name "tsukamoto")
+    (send *ri* :navigate-to 9)
+    (send *ri* :go-pos 0 0 180))
+  (if (string= name "PR2")
+      (send *ri* :navigate-to 10)
+    )
+  (if (string= name "ichikura")
+      (send *ri* :navigate-to 11))
+  (if (string= name "3dprinter")
+    (send *ri* :navigate-to 12)
+    (send *ri* :go-pos 0 0.2 0))
+  (if (string= name "kitagawa")
+      (send *ri* :navigate-to 13))
+  (if (string= name "shinjo")
+      (send *ri* :navigate-to 16))
+  (if (string= name "kanazawa")
+      (send *ri* :navigate-to 16)
+    (send *ri* :go-pos 0.3 0 0))
+  (if (string= name "wakabayashi")
+      (send *ri* :navigate-to 17)
+    (send *ri* :go-pos 0 -0.2 0))
+  (if (string= name "tanemoto")
+      (send *ri* :navigate-to 18))
+  (if (string= name "guiga")
+      (send *ri* :navigate-to 18)
+    (send *ri* :go-pos 0 0 -30)
+    (send *ri* :go-pos 0.3 0 0))
+
+  (send *ri* :speak-jp "ゴミはありますか")
+  (sene *ri* :speak-jp "あったら入れてください")
+  )
 ;; (ros::ros-info "ready go back to 73B2?")
 ;; (if (y-or-n-p) t (exit))
 
+(send *ri* navigate-to -1) ;; go back to dock
 ;; go back to 73B2
 ;;(send *ri* :navigate-to 0)
 
