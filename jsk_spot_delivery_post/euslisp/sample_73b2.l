@@ -109,5 +109,9 @@
   (unix::sleep 1)
   (go-to-desk)
   
-  (send *ri* :speak-jp "お届け物です")
+  (send *ri* :speak-jp "お届け物です" :wait t)
+  (send *ri* :speak-jp "受け取ったら受け取りましたと言ってください" :wait t)
+  (while (not (string= "受け取りました" (elt (send (one-shot-subscribe "/speech_to_text_jp" speech_recognition_msgs::SpeechRecognitionCandidates) :transcript) 0))))
+  (send *ri* :speak-jp "戻ります")
+  (send *ri* :navigate-to 0)
   )
