@@ -50,9 +50,11 @@
       (send *ri* :speak-jp "聞き取れませんでした" :wait t))
     (setq position (look-up-desk-position name))
     (ros::ros-info "~A" position)
+    (send *ri* :speak-jp "~Aさんの机に向かいます" :wait t)
     (send *ri* :navigate-to (car position))
     (unless (and (= (second position) 0) (= (third position) 0) (= (fourth position) 0))
       (send *ri* :go-pos (float-vector (second position) (third position) (fourth position))))
+    (send *ri* :speak-jp "~Aさん" :wait t)
     ))
 
 (defun set-name ()
