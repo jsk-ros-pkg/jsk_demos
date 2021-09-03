@@ -49,9 +49,10 @@
     (while (not (setq name (set-name)))
       (send *ri* :speak-jp "聞き取れませんでした" :wait t))
     (setq position (look-up-desk-position name))
+    (ros::ros-info "~A" position)
     (send *ri* :navigate-to (car position))
     (unless (and (= (second position) 0) (= (third position) 0) (= (fourth position) 0))
-      (send *ri* :go-pos #f((second position) (third position) (fourth position))))
+      (send *ri* :go-pos (float-vector (second position) (third position) (fourth position))))
     ))
 
 (defun set-name ()
