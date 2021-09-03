@@ -58,7 +58,7 @@
     ))
 
 (defun set-name ()
-  (ros::ros-info "talk to spot")
+  (ros::ros-info "talk to Spot")
   (let ((message (elt (send (one-shot-subscribe "/speech_to_text_jp" speech_recognition_msgs::SpeechRecognitionCandidates) :transcript) 0)))
     (ros::ros-info "~A" message)
     (cond
@@ -79,7 +79,7 @@
      (t nil)
      )))
 
-;; set-desk-position
+;; set desk position to hash table
 (defvar *desk-position* (make-hash-table :test #'equal))
 (defun add-entry-desk-position (key value)
   (setf (gethash (intern key) *desk-position*) value))
