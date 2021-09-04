@@ -1,4 +1,13 @@
 <launch>
+
+    <arg name="use_person_detection" default="true"/>
+    <arg name="use_obstacle_detection" default="true"/>
+
+    <rosparam subst_value="true">
+        /narrow_behavior/use_person_detection: $(arg use_person_detection)
+        /narrow_behavior/use_obstacle_detection: $(arg use_obstacle_detection)
+    </rosparam>
+
     <node
         pkg="spot_behavior_manager_demo"
         type="demo.py"
