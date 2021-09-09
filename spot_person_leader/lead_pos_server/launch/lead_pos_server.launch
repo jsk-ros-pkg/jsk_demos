@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<launch>
+    <node pkg="lead_pos_server" type="person_tracker.py" name="lead_pos_server_person_tracker">
+        <remap from="~bbox_array" to="/spot_recognition/bbox_array" />
+        <!-- remap from="~visible" to="" / -->
+
+        <rosparam subst_value="true">
+            frame_id_robot: 'body'
+            label_person: 0
+            dist_visible: 5.0
+            timeout_observation: 5.0
+        </rosparam>
+    </node>
+
+    <node pkg="lead_pos_server" type="lead_pos_server.py" name="lead_pos_server">
+        <remap from="~visible" to="/lead_pos_server_person_tracker/visible" />
+    </node>
+</launch>

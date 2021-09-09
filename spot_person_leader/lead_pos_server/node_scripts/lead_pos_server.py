@@ -34,7 +34,11 @@ class LeadPosServer:
         self._state_last_visible = rospy.Time()
         self._state_duration_visible = rospy.Duration()
 
-        self._subscriber_person_visible = rospy.Subscriber()
+        self._subscriber_person_visible = rospy.Subscriber(
+            '~visible',
+            Bool,
+            self.callback_person_view
+        )
         self._action_server_lead_pos = actionlib.SimpleActionServer(
             '~lead_pos',
             LeadPosAction,
