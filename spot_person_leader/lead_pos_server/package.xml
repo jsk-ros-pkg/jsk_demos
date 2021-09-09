@@ -11,11 +11,7 @@
 
   <buildtool_depend>catkin</buildtool_depend>
 
-  <depend>actionlib</depend>
-  <depend>actionlib_msgs</depend>
   <depend>rospy</depend>
-  <depend>geometry_msgs</depend>
-
 
   <export></export>
 </package>

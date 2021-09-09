@@ -10,7 +10,8 @@ import tf2_ros
 import tf2_geometry_msgs
 
 from std_msgs.msg import Bool
-from lead_pos_server.msg import LeadPosAction, LeadPosResult
+from move_base_msgs.msg import MoveBaseAction, MoveBaseResult
+from geometry_msgs.msg import PoseStamped
 
 from spot_ros_client.libspotros import SpotRosClient
 from sound_play.libsoundplay import SoundClient
@@ -23,6 +24,10 @@ class LeadPosServer:
         self._frame_id_robot = rospy.get_param('~frame_id_robot', 'body')
         self._frame_id_fixed = rospy.get_param('~frame_id_fixed', 'odom')
         self._timeout_transform = rospy.get_param('~timeout_transform', 0.05)
+
+        self._tolerance_x = rospy.get_param('~tolerance_x', 0.1)
+        self._tolerance_y = rospy.get_param('~tolerance_y', 0.1)
+        self._tolerance_theta = rospy.get_param('~tolerance_theta', 0.1)
 
         self._tf_buffer = tf2_ros.Buffer()
         self._tf_listener = tf2_ros.TransformListener(self._tf_buffer)
@@ -41,10 +46,12 @@ class LeadPosServer:
         )
         self._action_server_lead_pos = actionlib.SimpleActionServer(
             '~lead_pos',
-            LeadPosAction,
+            MoveBaseAction,
             execute_cb=self.handler_lead_pose,
             auto_start=True
         )
+
+        rospy.loginfo('Initialized')
 
     def callback_person_view(self, msg):
 
@@ -61,13 +68,13 @@ class LeadPosServer:
 
         # [m] [m] [rad]
         target_frame = goal.target_pose.header.frame_id
-        target_x = goal.target_pose.position.x
-        target_y = goal.target_pose.position.y
-        target_z = goal.target_pose.position.z
-        target_qx = goal.target_pose.orientation.x
-        target_qy = goal.target_pose.orientation.y
-        target_qz = goal.target_pose.orientation.z
-        target_qw = goal.target_pose.orientation.w
+        target_x = goal.target_pose.pose.position.x
+        target_y = goal.target_pose.pose.position.y
+        target_z = goal.target_pose.pose.position.z
+        target_qx = goal.target_pose.pose.orientation.x
+        target_qy = goal.target_pose.pose.orientation.y
+        target_qz = goal.target_pose.pose.orientation.z
+        target_qw = goal.target_pose.pose.orientation.w
 
         #
         # calculate target pose at fixed frame
@@ -75,8 +82,8 @@ class LeadPosServer:
         try:
             frame_fixed_to_target_frame = tf2_geometry_msgs.transform_to_kdl(
                 self._tf_buffer.lookup_transform(
-                    target_frame,
                     self._frame_id_fixed,
+                    target_frame,
                     rospy.Time(),
                     timeout=rospy.Duration(self._timeout_transform)
                 )
@@ -111,7 +118,7 @@ class LeadPosServer:
         rate = rospy.Rate(1)
         state = 'none'  # trajectory, stop, or none
         trajectory_command_validtime = rospy.Time()
-        while True:
+        while not rospy.is_shutdown():
 
             rate.sleep()
 
@@ -123,8 +130,8 @@ class LeadPosServer:
             try:
                 frame_fixed_to_robot = tf2_geometry_msgs.transform_to_kdl(
                     self._tf_buffer.lookup_transform(
-                        target_frame,
                         self._frame_id_fixed,
+                        self._frame_id_robot,
                         rospy.Time(),
                         timeout=rospy.Duration(self._timeout_transform)
                     )
@@ -142,19 +149,23 @@ class LeadPosServer:
             command_theta = frame_robot_to_goal.M.GetRPY()[2]
 
             # break if robot reach the goal
-            if math.fabs(command_x) < tolerance_x and math.fabs(command_y) < tolerance_y and math.fabs(command_theta) < tolerance_theta:
+            if math.fabs(command_x) < self._tolerance_x \
+                    and math.fabs(command_y) < self._tolerance_y \
+                    and math.fabs(command_theta) < self._tolerance_theta:
                 rospy.loginfo('Goal Reached.')
-                self._action_server_lead_pos.set_succeeded(LeadPosResult())
+                self._action_server_lead_pos.set_succeeded(MoveBaseResult())
                 break
 
             if state == 'trajectory':
 
                 if not self._state_person_visible and self._state_duration_visible > rospy.Duration(1):
+                    rospy.logwarn('No person visible')
                     self._spot_client.pubCmdVel(0, 0, 0)
                     state = 'stop'
                 elif rospy.Time.now() > trajectory_command_validtime:
+                    rospy.loginfo('Restart moving')
                     command_duration = 10
-                    trajectory_command_validtime = rospy.Time.now() + command_duration - 2
+                    trajectory_command_validtime = rospy.Time.now() + rospy.Duration(command_duration - 2)
                     self._spot_client.trajectory(
                         command_x,
                         command_y,
@@ -167,11 +178,13 @@ class LeadPosServer:
             elif state == 'stop':
 
                 if not self._state_person_visible and self._state_duration_visible > rospy.Duration(1):
+                    rospy.logwarn('No person visible')
                     self._spot_client.pubCmdVel(0, 0, 0)
                     state = 'stop'
                 else:
+                    rospy.loginfo('Restart moving')
                     command_duration = 10
-                    trajectory_command_validtime = rospy.Time.now() + command_duration - 2
+                    trajectory_command_validtime = rospy.Time.now() + rospy.Duration(command_duration - 2)
                     self._spot_client.trajectory(
                         command_x,
                         command_y,
@@ -182,22 +195,26 @@ class LeadPosServer:
                     state = 'trajectory'
 
             else:
-                command_duration = 10
-                trajectory_command_validtime = rospy.Time.now() + command_duration - 2
-                self._spot_client.trajectory(
-                    command_x,
-                    command_y,
-                    command_theta,
-                    command_duration,
-                    blocking=False
-                )
-                state = 'trajectory'
+                if not self._state_person_visible and self._state_duration_visible > rospy.Duration(1):
+                    rospy.logwarn('No person visible')
+                    self._spot_client.pubCmdVel(0, 0, 0)
+                    state = 'stop'
+                else:
+                    rospy.loginfo('Start moving')
+                    command_duration = 10
+                    trajectory_command_validtime = rospy.Time.now() + rospy.Duration(command_duration - 2)
+                    self._spot_client.trajectory(
+                        command_x,
+                        command_y,
+                        command_theta,
+                        command_duration,
+                        blocking=False
+                    )
+                    state = 'trajectory'
 
 
-if __name__ == '_main__':
+if __name__ == '__main__':
 
     rospy.init_node('lead_pos_server')
-
     server = LeadPosServer()
-
     rospy.spin()

@@ -12,7 +12,7 @@
         </rosparam>
     </node>
 
-    <node pkg="lead_pos_server" type="lead_pos_server.py" name="lead_pos_server">
+    <node pkg="lead_pos_server" type="lead_pos_server.py" name="lead_pos_server" output="screen">
         <remap from="~visible" to="/lead_pos_server_person_tracker/visible" />
     </node>
 </launch>
