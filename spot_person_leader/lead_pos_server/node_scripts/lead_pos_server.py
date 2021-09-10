@@ -148,6 +148,10 @@ class LeadPosServer:
             command_y = frame_robot_to_goal.p[1]
             command_theta = frame_robot_to_goal.M.GetRPY()[2]
 
+            rospy.loginfo('command_x: {}'.format(command_x))
+            rospy.loginfo('command_y: {}'.format(command_y))
+            rospy.loginfo('r p y: {}'.format(frame_robot_to_goal.M.GetRPY()))
+            rospy.loginfo('command_theta: {}'.format(command_theta))
             # break if robot reach the goal
             if math.fabs(command_x) < self._tolerance_x \
                     and math.fabs(command_y) < self._tolerance_y \
