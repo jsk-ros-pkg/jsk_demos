@@ -15,4 +15,8 @@
     <node pkg="lead_pos_server" type="lead_pos_server.py" name="lead_pos_server" output="screen">
         <remap from="~visible" to="/lead_pos_server_person_tracker/visible" />
     </node>
+
+    <node pkg="lead_pos_server" type="string_parser.py" name="lead_pos_string_parser" output="screen">
+        <remap from="~lead_pos" to="/lead_pos_server/lead_pos" />
+    </node>
 </launch>
