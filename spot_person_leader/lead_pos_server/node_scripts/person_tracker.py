@@ -74,7 +74,7 @@ class PersonTracker(object):
                 vector_bbox = convert_msg_point_to_kdl_vector(
                     bbox.pose.position)
                 vector_bbox_robotbased = frame_fixed_to_robot * vector_bbox
-                rospy.logdebug('Person found at the distance {}'.format(
+                rospy.loginfo('Person found at the distance {}'.format(
                     vector_bbox_robotbased.Norm()))
                 if vector_bbox_robotbased.Norm() < self._view_range:
                     pose = Pose()

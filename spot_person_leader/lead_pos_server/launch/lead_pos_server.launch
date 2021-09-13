@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <launch>
-    <node pkg="lead_pos_server" type="person_tracker.py" name="lead_pos_server_person_tracker">
+    <node pkg="lead_pos_server" type="person_tracker.py" name="lead_pos_server_person_tracker" output="screen">
         <remap from="~bbox_array" to="/spot_recognition/bbox_array" />
         <!-- remap from="~visible" to="" / -->
 
