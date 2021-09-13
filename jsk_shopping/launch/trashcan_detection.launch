@@ -7,12 +7,12 @@
     <arg name="CENTROID_FRAME" value="target"/>
     <arg name="DEFAULT_NAMESPACE" value="pcl_nodelet"/>
 
-    <arg name="h_max" value="10" />
-    <arg name="h_min" value="0" />
-    <arg name="s_max" value="255" />
-    <arg name="s_min" value="240" />
-    <arg name="i_max" value="100" />
-    <arg name="i_min" value="70" />
+    <arg name="h_max" value="-2" />
+    <arg name="h_min" value="-128" />
+    <arg name="s_max" value="173" />
+    <arg name="s_min" value="88" />
+    <arg name="i_max" value="135" />
+    <arg name="i_min" value="54" />
 
     <arg name="create_manager" value="true" />
     <arg name="manager" value="hsi_filter_manager" />
