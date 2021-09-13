@@ -45,12 +45,18 @@ edges:
     cost: 10
     args:
       graph: '$(find spot_autowalk_data)/autowalk/eng2_MainEntrance_to_HongoMainGate_Daylight.walk'
+      stair_nums:
+        - -10
+        - -10
   - from: 'eng2_MainEntrance_lower'
     to: 'eng2_MainEntrance_upper'
     behavior_type: 'spot_person_lead_behaviors.stair_behavior.StairBehavior'
     cost: 10
     args:
       graph: '$(find spot_autowalk_data)/autowalk/eng2_MainEntrance_to_HongoMainGate_Daylight.walk'
+      stair_nums:
+        - 10
+        - 10
   - from: 'eng2_MainEntrance_lower'
     to: 'eng2_MainEntrance_outer'
     behavior_type: 'spot_person_lead_behaviors.crosswalk_behavior.CrosswalkBehavior'
