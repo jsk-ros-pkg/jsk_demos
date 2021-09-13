@@ -1,4 +1,6 @@
 <launch>
+    <arg name="initial_node_id" default="eng2_73B2" />
+    <arg name="edges_file" default="$(find spot_behavior_manager_demo)/config/edges.yaml" />
 
     <arg name="use_person_detection" default="true"/>
     <arg name="use_obstacle_detection" default="true"/>
@@ -8,21 +10,10 @@
         /narrow_behavior/use_obstacle_detection: $(arg use_obstacle_detection)
     </rosparam>
 
-    <node
-        pkg="spot_behavior_manager_demo"
-        type="demo.py"
-        name="spot_person_lead_demo"
-        output="screen"
+    <include
+        file="$(find spot_behavior_manager_demo)/launch/demo.launch"
         >
-
-        <rosparam
-            ns="map"
-            file="$(find spot_person_lead_demo)/config/map.yaml"
-            subst_value="true"
-            />
-
-        <rosparam subst_value="true">
-            initial_node_id: 'eng2_73B2'
-        </rosparam>
-    </node>
+        <arg name="edges_file" value="$(arg edges_file)" />
+        <arg name="initial_node_id" value="$(arg initial_node_id)" />
+    </include>
 </launch>
