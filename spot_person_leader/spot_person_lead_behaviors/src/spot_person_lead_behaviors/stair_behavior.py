@@ -120,10 +120,10 @@ class StairBehavior(BaseBehavior):
 
         self.sound_client.say('階段を移動します。',blocking=True)
         for index, num in enumerate(stair_nums):
-            if num > 0:
-                self.sound_client.say('{}段の下り階段があります',blocking=True)
+            if num < 0:
+                self.sound_client.say('{}段の下り階段があります'.format(-num),blocking=True)
             else:
-                self.sound_client.say('{}段の登り階段があります',blocking=True)
+                self.sound_client.say('{}段の登り階段があります'.format(num),blocking=True)
 
             if index != len(stair_nums) - 1:
                 self.sound_client.say('その後踊り場があった後',blocking=True)
