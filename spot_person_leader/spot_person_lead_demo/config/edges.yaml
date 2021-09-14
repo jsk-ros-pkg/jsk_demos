@@ -55,8 +55,8 @@ edges:
     args:
       graph: '$(find spot_autowalk_data)/autowalk/eng2_MainEntrance_to_HongoMainGate_Daylight.walk'
       stair_nums:
-        - 10
-        - 10
+        - 8
+        - 4
   - from: 'eng2_MainEntrance_lower'
     to: 'eng2_MainEntrance_outer'
     behavior_type: 'spot_person_lead_behaviors.crosswalk_behavior.CrosswalkBehavior'
