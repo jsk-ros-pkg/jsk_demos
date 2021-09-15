@@ -11,6 +11,8 @@
             /tf_static
             /dual_fisheye_to_panorama/output/compressed
             /dual_fisheye_to_panorama/panorama_info
+            /spinal/baro
+            /spinal/imu
             /spot/body_pose
             /spot/camera/back/camera_info
             /spot/camera/back/image/compressed
@@ -85,6 +87,7 @@
             /spot_recognition/rects
             /spot_recognition/object_detection_image/compressed
             /spot_recognition/tracking_labels
+            /spot_recognition/elevator_door_points
             /spot_recognition/right_obstacle
             /spot_recognition/left_obstacle
             /crosswalk_detection_car_tracker/visible
