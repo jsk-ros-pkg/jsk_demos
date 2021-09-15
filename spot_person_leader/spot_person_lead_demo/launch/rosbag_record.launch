@@ -87,6 +87,9 @@
             /spot_recognition/tracking_labels
             /spot_recognition/right_obstacle
             /spot_recognition/left_obstacle
+            /crosswalk_detection_car_tracker/visible
+            /crosswalk_detection_person_tracker/visible
+            /crosswalk_detection_person_tracker/people_pose_array
             "
         output="screen" />
 
