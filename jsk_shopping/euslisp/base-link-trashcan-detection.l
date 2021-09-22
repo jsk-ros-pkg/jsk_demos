@@ -17,7 +17,7 @@
 ;; (fetch-init)
 ;; (objects (list *fetch*))
 
-;; `(setq time-stamp (ros::time 0))
+(setq time-stamp (ros::time 0))
 
 ;;callback
 (defun bounding-box-array-cb (msg)
