@@ -326,12 +326,51 @@ $(function() {
     var resetWorld = new ROSLIB.Service({
       ros : ros,
       name : '/gazebo/reset_world',
-      serviceType : 'std_srcs/Empty'
+      serviceType : 'std_srvs/Empty'
     });
     request = $.extend(true, {}, init_request);
     var request1 = new ROSLIB.ServiceRequest();
     resetWorld.callService(request1, result => { console.log('Call ' + setModelState.name); });
   });
+
+  // start look at human
+  document.getElementById('start-look-at-human-button').onclick = function() {
+    // call /look_at_human/start service
+    var lookatHuman = new ROSLIB.Service({
+      ros : ros,
+      name : '/look_at_human/start',
+      serviceType : 'std_srvs/Empty'
+    });
+    var request_look = new ROSLIB.ServiceRequest();
+    lookatHuman.callService(request_look, result => { console.log('Call ' + lookatHuman.name); });
+    // call /pr2_realtime_ik/stop service
+    var RealtimeIK = new ROSLIB.Service({
+      ros : ros,
+      name : '/pr2_realtime_ik/stop',
+      serviceType : 'std_srvs/Empty'
+    });
+    var request_ik = new ROSLIB.ServiceRequest();
+    RealtimeIK.callService(request_ik, result => { console.log('Call ' + RealtimeIK.name); });
+  }
+  // stop look at human
+  document.getElementById("stop-look-at-human-button").onclick = function() {
+    // call /look_at_human/stop service
+    var lookatHuman = new ROSLIB.Service({
+      ros : ros,
+      name : '/look_at_human/stop',
+      serviceType : 'std_srvs/Empty'
+    });
+    var request_look = new ROSLIB.ServiceRequest();
+    lookatHuman.callService(request_look, result => { console.log('Call ' + lookatHuman.name); });
+    // call /pr2_realtime_ik/start service
+    var RealtimeIK = new ROSLIB.Service({
+      ros : ros,
+      name : '/pr2_realtime_ik/start',
+      serviceType : 'std_srvs/Empty'
+    });
+    var request_ik = new ROSLIB.ServiceRequest();
+    RealtimeIK.callService(request_ik, result => { console.log('Call ' + RealtimeIK.name); });
+  };
 
   var mjpeg_canvas = null;
   var current_image_info = {topic:'', width:0, height:0, frame_id:''};
