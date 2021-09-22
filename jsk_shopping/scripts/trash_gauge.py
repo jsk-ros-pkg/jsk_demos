@@ -18,7 +18,7 @@ def draw_rect_cb(msg):
         img = orig[100:380, 140:500]
         #img = img / float(1024)
         scaled_img = cv2.convertScaleAbs(orig, alpha=float(256)/1024, beta=0)
-        print scaled_img
+        
         # threshold = 100
         #ret, img_bnr = cv2.threshold(img, threshold, 255, cv2.THRESH_BINARY)
         #avg = cv2.mean(orig)
