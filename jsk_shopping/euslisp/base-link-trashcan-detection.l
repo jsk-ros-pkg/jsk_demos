@@ -58,3 +58,36 @@
 (defun main()
   (ros::subscribe *topic-name* jsk_recognition_msgs::BoundingBoxArray #'bounding-box-array-cb 1)
   )
+
+(defun trashcan-grasp (obj-pos)
+  (let ((cam-coords nil)
+        (obj-coords (make-coords :pos (send (scale 1000 obj-pos) :pos) :rpy #f(0 0 0))))
+    (unless (boundp '*tfl*) (setq *tfl* (instance transform-listener :init)))
+    (setq cam-coords (send *tfl* :lookup-transform "/base_link" "/head_camera_depth_optical_frame" (ros::time 0)))
+    (send obj-coords :transform *mark* :world)
+    (send obj-coords :transform (make-coords :pos #f(0 -100 0)) :world)
+    (send *fetch* :rarm :inverse-kinematics obj-coords :rotation-axis t)
+    (send *ri* :angle-vector (send *fetch* :angle-vector) 5000) ;; reaching
+    ;; TODO
+    ;; Add reaching movement
+    (send *ri* :wait-interpolation)
+    (send *fetch* :start-grasp)
+    (send *ri* :start-grasp)
+    (unix::sleep 1)
+    (send *fetch* :move-end-pos #f(0 0 -100)) 
+    (send *ri* :angle-vector (send *fetch* :angle-vector) 5000)
+    (send *ri* :wait-interpolation)
+
+    ;; TODO
+    ;; trashcan-inside-detection
+
+    (send *fetch* :move-end-pos #f(0 0 100))
+    (send *ri* :angle-vector (send *fetch* :angle-vector) 5000)
+    (send *ri* :wait-interpolation)
+    (send *fetch* :stop-grasp)
+    (send *ri* :stop-grasp)
+    (unix::sleep 1)
+    (send *fetch* :reset-pose)
+    (send *ri* :angle-vector (send *fetch* :angle-vector) 5000)
+    (send *ri* :wait-interpolation)
+    ))
