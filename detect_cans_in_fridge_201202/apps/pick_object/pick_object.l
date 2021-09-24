@@ -7,6 +7,8 @@
 
 (defun main ()
   (let ((object (string-downcase (get-arg :object))))
+    ;; set default object: georgia
+    (if (null object) (setq object "georgia"))
     (cond
       ((find object (list "wonda" "georgia" "boss" "iemon") :test #'string=)
        (send *ri* :clear-costmap)
