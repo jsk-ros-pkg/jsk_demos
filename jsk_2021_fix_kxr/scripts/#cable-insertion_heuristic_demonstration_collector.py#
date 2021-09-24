@@ -109,10 +109,10 @@ class ScriptDemonstrationCollector(object):
                 for f in os.listdir(self.save_dir_base):
                     if os.path.isfile(os.path.join(self.save_dir_base,f)):
                         bagfile_name = join(self.save_dir_base, f)
-                        cmd = "rm -rf {}".format(bagfile_name)
-                        print(cmd)
-                        cmd = shlex.split(cmd)
-                        subprocess.call(cmd)
+                    cmd = "rm -rf {}".format(bagfile_name)
+                    print(cmd)
+                    cmd = shlex.split(cmd)
+                    subprocess.call(cmd)
                 break
 
 initializer_script_path  = "/home/amabe/franka_ws/src/jsk_demos/jsk_2021_fix_kxr/euslisp/cable-insertion_heuristic_init.l"
