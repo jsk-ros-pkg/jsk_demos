@@ -15,7 +15,9 @@ plugins:
       audio_sample_rate: 16000
       audio_format: wave
       audio_sample_format: S16LE
-      video_topic_name: /kinect_head/rgb/image_rect_color
+      # use raw topic to suppress data transmission between c1 and c2
+      # video_topic_name: /kinect_head/rgb/image_rect_color
+      video_topic_name: /kinect_head/rgb/image_raw
       video_height: 480
       video_width: 640
       video_framerate: 30
