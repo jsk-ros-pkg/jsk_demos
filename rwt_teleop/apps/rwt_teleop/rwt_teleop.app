@@ -24,6 +24,9 @@ plugins:
       video_width: 640
       video_framerate: 30
       video_encoding: BGR
+      use_machine: true
+      machine_file: $(find pr2_machine)/pr2.machine
+      machine_name: c2
   - name: human_pose_estimator_video_recorder_plugin
     type: app_recorder/audio_video_recorder_plugin
     launch_args:
@@ -41,6 +44,9 @@ plugins:
       video_width: 640
       video_framerate: 15
       video_encoding: RGB
+      use_machine: true
+      machine_file: $(find pr2_machine)/pr2.machine
+      machine_name: c2
   - name: rosbag_recorder_plugin
     type: app_recorder/rosbag_recorder_plugin
     launch_args:
