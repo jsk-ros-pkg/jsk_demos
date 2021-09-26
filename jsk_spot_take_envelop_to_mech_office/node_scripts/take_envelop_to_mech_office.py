@@ -20,7 +20,7 @@ class Demo:
         self.num_max_retry = rospy.get_param('~num_max_retry', 3)
 
         self.actionclient = actionlib.SimpleActionClient(
-            '/spot_behavior_manager_demo/lead_person', LeadPersonAction)
+            '/spot_behavior_manager_demo/execute_behaviors', LeadPersonAction)
         self.soundclient = SoundClient(sound_action='/robotsound_jp',sound_topic='/robotsound_jp')
 
         rospy.loginfo('waiting for server...')
