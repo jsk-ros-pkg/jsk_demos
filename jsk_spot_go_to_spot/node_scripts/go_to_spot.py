@@ -16,7 +16,7 @@ def main():
     num_retry = rospy.get_param('~num_retry', 3)
 
     client = actionlib.SimpleActionClient(
-        '/spot_behavior_manager_demo/lead_person', LeadPersonAction)
+        '/spot_behavior_manager_demo/execute_behaviors', LeadPersonAction)
 
     rospy.loginfo('waiting for server...')
 
