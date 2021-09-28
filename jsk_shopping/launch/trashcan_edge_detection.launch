@@ -13,7 +13,7 @@
     <arg name="s_max" value="158" />
     <arg name="s_min" value="35" />
     <arg name="i_max" value="164" />
-    <arg name="i_min" value="19" />
+    <arg name="i_min" value="50" />
 
     <arg name="create_manager" value="true" />
     <arg name="manager" value="hsi_filter_manager" />
