@@ -1,0 +1,88 @@
+#!/usr/bin/env python
+# -*- encoding: utf-8 -*-
+
+import math
+
+import actionlib
+import rospy
+
+from std_srvs.srv import Empty, EmptyRequest
+from geometry_msgs.msg import WrenchStamped
+from jsk_spot_delivery_demo.msg import DeliverToAction, DeliverToResult
+from spot_behavior_manager_msgs.msg import LeadPersonAction, LeadPersonGoal
+from spot_ros_client.libspotros import SpotRosClient
+from sound_play.libsoundplay import SoundClient
+
+
+class DeliverToServer:
+
+    def __init__(self):
+
+        self.srvclient_reset_body_force = rospy.ServiceProxy(
+            '~reset_body_force', Empty)
+
+        self.spot_ros_client = SpotRosClient()
+        self.sound_client = SoundClient(sound_action='/robotsound_jp',sound_topic='/robotsound_jp')
+
+        self.actionserver_deliver_to = actionlib.SimpleActionServer(
+            '~deliver_to', DeliverToAction, self.callback_deliver_to)
+
+    def wait_package_setting(self, duration=rospy.Duration(120)):
+
+        self.done_pick_or_place = False
+        force_threshold = rospy.get_param('~force_threshold', 5)
+        self.srvclient_reset_body_force()
+
+        def callback(msg):
+            rospy.logdebug('force z: {}, threshold: {}'.format(math.fabs(msg.wrench.force.z), force_threshold))
+            if math.fabs(msg.wrench.force.z) > force_threshold:
+                self.done_pick_or_place = True
+        sub = rospy.Subscriber('~body_force', WrenchStamped, callback)
+        rate = rospy.Rate(10)
+        timeout_deadline = rospy.Time.now() + duration
+        while not rospy.is_shutdown():
+            rate.sleep()
+            if self.done_pick_or_place or rospy.Time.now() > timeout_deadline:
+                break
+        result = self.done_pick_or_place
+        sub.unregister()
+        del self.done_pick_or_place
+        return result
+
+    def callback_deliver_to(self, goal):
+
+        rospy.loginfo('Waiting for package placed.')
+        self.sound_client.say('荷物を置いてください', blocking=True)
+        self.wait_package_setting()
+        rospy.loginfo('Package placed')
+
+        rospy.loginfo('move to {}'.format(goal.target_node_id))
+        result = self.spot_ros_client.execute_behaviors(goal.target_node_id)
+        if not result:
+            rospy.logerr('Failed to reach {}'.format(goal.target_node_id))
+            self.actionserver_deliver_to.set_aborted(
+                DeliverToResult(False, 'Falied to reach the destination.'))
+            return
+        rospy.loginfo('reached {}'.format(goal.target_node_id))
+
+        while not rospy.is_shutdown():
+            rospy.loginfo('Waiting for package picked.')
+            self.sound_client.say('荷物を受け取ってください', blocking=True)
+            if self.wait_package_setting(rospy.Duration(5)):
+                rospy.loginfo('Package picked')
+                break
+
+        self.actionserver_deliver_to.set_succeeded(
+            DeliverToResult(True, 'Success'))
+        return
+
+
+def main():
+
+    rospy.init_node('deliver_to_server')
+    node = DeliverToServer()
+    rospy.spin()
+
+
+if __name__ == '__main__':
+    main()
