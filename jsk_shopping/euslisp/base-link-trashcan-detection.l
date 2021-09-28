@@ -1,4 +1,6 @@
-;;棚から箱を取ってくる動作
+;;#!/usr/bin/env roseus
+
+;; mainly copied from jsk_demos/201910semi
 
 (ros::roseus "trashcan-detection")
 ;;load packages
@@ -55,31 +57,49 @@
   (send *ri* :angle-vector  (send *fetch* :angle-vector) 3000)
   (send *ri* :wait-interpolation))
 
+
+(defun look-at-coord (coord &optional (tm 3000) (wi nil))
+    (send *fetch* :head :look-at (send coord :worldpos))
+    (send *ri* :angle-vector (send *fetch* :angle-vector) tm)
+    (send *ri* :wait-interpolation wi))
+
 (defun main()
   (ros::subscribe *topic-name* jsk_recognition_msgs::BoundingBoxArray #'bounding-box-array-cb 1)
   )
 
 (defun trashcan-grasp (obj-pos)
   (let ((cam-coords nil)
-        (obj-coords (make-coords :pos (send (scale 1000 obj-pos) :pos) :rpy #f(0 0 0))))
+        (obj-coords (make-coords :pos (scale 1000 obj-pos) :rpy #f(0 0 0))))
     (unless (boundp '*tfl*) (setq *tfl* (instance transform-listener :init)))
     (setq cam-coords (send *tfl* :lookup-transform "/base_link" "/head_camera_depth_optical_frame" (ros::time 0)))
-    (send obj-coords :transform *mark* :world)
-    (send obj-coords :transform (make-coords :pos #f(0 -100 0)) :world)
-    (send *fetch* :rarm :inverse-kinematics obj-coords :rotation-axis t)
-    (send *ri* :angle-vector (send *fetch* :angle-vector) 5000) ;; reaching
-    ;; TODO
-    ;; Add reaching movement
+    
+    (send *fetch* :angle-vector #f(20.0 56.549 86.0026 -30.9913 101.496 -91.683 92.782 8.07181 0.0 0.0)) ;; (send *fetch* :rarm :inverse-kinematics (make-coords :pos #f(400 -200 500) :rpy (float-vector 0 0 pi/2)))
+    (send *ri* :angle-vector (send *fetch* :angle-vector) 5000)
+    (send *ri* :wait-interpolation)
+    (send obj-coords :transform cam-coords :world)
+    (send obj-coords :transform (make-coords :pos #f(0 0 100)) :world)
+    (send *fetch* :head :neck-y :joint-angle -90)
+    (send *fetch* :head :neck-p :joint-angle 60)
+    (send *ri* :angle-vector-raw (send *fetch* :angle-vector) :head-controller)
+    (send *ri* :wait-interpolation)
+    (send *fetch* :rarm :inverse-kinematics (make-coords :pos (send obj-coords :pos) :rpy (float-vector 0 pi/2 pi/2)) :rotation-axis t)
+    (send *ri* :angle-vector (send *fetch* :angle-vector) 10000) ;; reaching
+    (send *ri* :wait-interpolation)
+    (send *fetch* :rarm :move-end-pos #f(100 0 0))
+    (send *ri* :angle-vector (send *fetch* :angle-vector) 10000)
     (send *ri* :wait-interpolation)
     (send *fetch* :start-grasp)
     (send *ri* :start-grasp)
     (unix::sleep 1)
-    (send *fetch* :move-end-pos #f(0 0 -100)) 
-    (send *ri* :angle-vector (send *fetch* :angle-vector) 5000)
-    (send *ri* :wait-interpolation)
 
     ;; TODO
     ;; trashcan-inside-detection
+    (setq watching-coords (make-coords :pos (float-vector (- (elt (send obj-coords :pos) 0) (* (sin (/ pi/2 2)) (elt (send obj-coords :pos) 2))) (elt (send obj-coords :pos) 1) (* (cos (/ pi/2 2)) (elt (send obj-coords :pos) 2))) :rpy (float-vector 0 (/ pi/2 2) pi/2)))
+    (send *fetch* :rarm :inverse-kinematics watching-coords :rotation-axis t)
+    (send *ri* :angle-vector (send *fetch* :angle-vector) 5000)
+    (send *ri* :wait-interpolation)
+    ;; (send *fetch* :rarm :inverse-kinematics (make-coords :pos #f(400 -200 400) :rpy (float-vector 0 (/ pi/2 2) pi/2)))
+    ;; #f(20.0 12.7397 58.0108 -63.9436 127.969 -161.961 123.759 -5.36722 0.0 0.0)
 
     (send *fetch* :move-end-pos #f(0 0 100))
     (send *ri* :angle-vector (send *fetch* :angle-vector) 5000)
@@ -89,5 +109,51 @@
     (unix::sleep 1)
     (send *fetch* :reset-pose)
     (send *ri* :angle-vector (send *fetch* :angle-vector) 5000)
+    (send *ri* :wait-interpolation)
+    ))
+
+(defun right-side(obj-pos)
+  (let ((cam-coords nil)
+        (obj-coords nil))
+    (unless (boundp '*tfl*) (setq *tfl* (instance transform-listener :init)))
+    (setq cam-coords (send *tfl* :lookup-transform "/base_link" "/head_camera_depth_optical_frame" (ros::time 0)))
+    (unix::sleep 2)
+    ;; (send *fetch* :angle-vector #f(20.0 56.549 86.0026 -30.9913 101.496 -91.683 92.782 8.07181 0.0 0.0)) ;; (send *fetch* :rarm :inverse-kinematics (make-coords :pos #f(400 -200 500) :rpy (float-vector 0 0 pi/2)))
+    ;; (send *ri* :angle-vector (send *fetch* :angle-vector) 5000)
+    ;; (send *ri* :wait-interpolation)
+    (setq obj-coords (make-coords :pos (scale 1000 obj-pos) :rpy #f(0 0 0)))
+    (send obj-coords :transform cam-coords :world)
+    (send obj-coords :transform (make-coords :pos #f(0 0 100)) :world)
+    (ros::ros-info "~A" obj-coords)
+    (send *fetch* :head :neck-y :joint-angle -90)
+    (send *fetch* :head :neck-p :joint-angle 60)
+    (send *ri* :angle-vector-raw (send *fetch* :angle-vector) 3000 :head-controller)
+    (send *ri* :wait-interpolation)
+    (send *fetch* :rarm :inverse-kinematics (make-coords :pos (send obj-coords :pos) :rpy (float-vector 0 pi/2 0)) :rotation-axis t)
+    (send *ri* :angle-vector (send *fetch* :angle-vector) 10000) ;; reaching
+    (send *ri* :wait-interpolation)
+    (send *fetch* :rarm :move-end-pos #f(100 0 0))
+    (send *ri* :angle-vector (send *fetch* :angle-vector) 5000 :use-torso nil)
+    (send *ri* :wait-interpolation)
+    ;; (send *fetch* :start-grasp)
+    ;; (send *ri* :start-grasp)
+    (unix::sleep 1)
+    (send *fetch* :rarm :move-end-rot -45 :z)
+    (send *fetch* :rarm :move-end-pos #f(0 150 0))
+    (send *ri* :angle-vector (send *fetch* :angle-vector) 10000 :use-torso nil)
+    (send *ri* :wait-interpolation)
+    (send *ri* :speak-jp "ごみ箱の中身を確認します")
+    (unix::sleep 2)
+    
+    (send *fetch* :rarm :move-end-pos #f(0 -150 0))
+    (send *fetch* :rarm :move-end-rot 45 :z)
+    (send *ri* :angle-vector (send *fetch* :angle-vector) 10000 :use-torso nil)
+    (send *ri* :wait-interpolation)
+
+    (send *fetch* :rarm :move-end-pos #f(-100 0 0))
+    (send *ri* :angle-vector (send *fetch* :angle-vector) 5000)
+    (send *ri* :wait-interpolation)
+    (send *fetch* :reset-pose)
+    (send *ri* :angle-vector (send *fetch* :angle-vector) 10000)
     (send *ri* :wait-interpolation)
     ))
