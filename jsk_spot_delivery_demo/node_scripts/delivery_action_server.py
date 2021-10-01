@@ -33,8 +33,8 @@ class DeliveryActionServer:
 
         self.actionserver_deliver_to = actionlib.SimpleActionServer(
             '~deliver_to', DeliverToAction, self.callback_deliver_to)
-        self.actionserver_pickup_pacakge = actionlib.SimpleActionServer(
-            '~pickup_pacakge', PickupPackageAction, self.callback_pickup_pacakge)
+        self.actionserver_pickup_package = actionlib.SimpleActionServer(
+            '~pickup_package', PickupPackageAction, self.callback_pickup_package)
 
     def wait_package_setting(self, duration=rospy.Duration(120)):
 
@@ -98,7 +98,7 @@ class DeliveryActionServer:
         if success:
             rospy.loginfo('Package placed')
             self.sound_client.say('荷物を確認しました', blocking=True)
-            self.actionserver_pickup_pacakge.set_succeeded(
+            self.actionserver_pickup_package.set_succeeded(
                 PickupPackageResult(True, target_node_id)
             )
         else:
