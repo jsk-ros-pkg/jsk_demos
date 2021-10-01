@@ -213,6 +213,20 @@ def main():
     sm.userdata.task_list = TaskList()
     sm.userdata.task_executing = None
 
+    with sm:
+        smach.StateMachine.add('Ready', Ready(),
+                               transitions={'task_executing':'TaskExecuting',
+                                            'strolling':'Strolling'})
+        smach.StateMachine.add('Strolling',Strolling(),
+                               transitions={'task_asking':'TaskAsking',
+                                            'strolling':'Strolling'})
+
+    rospy.loginfo('initialized')
+
+    outcome = sm.execute()
+
+    rospy.loginfo('outcome: {}'.format(outcome))
+
 
 if __name__ == '__main__':
     main()

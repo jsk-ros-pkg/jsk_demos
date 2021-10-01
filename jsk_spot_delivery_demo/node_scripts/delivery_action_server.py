@@ -36,6 +36,8 @@ class DeliveryActionServer:
         self.actionserver_pickup_package = actionlib.SimpleActionServer(
             '~pickup_package', PickupPackageAction, self.callback_pickup_package)
 
+        rospy.loginfo('initialized')
+
     def wait_package_setting(self, duration=rospy.Duration(120)):
 
         self.done_pick_or_place = False
