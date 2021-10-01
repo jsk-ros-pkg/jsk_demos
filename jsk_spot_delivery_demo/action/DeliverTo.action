@@ -1,7 +1,5 @@
 string target_node_id
-bool wait_package
 ---
 bool success
 string message
 ---
-string current_node_id

@@ -1,13 +1,51 @@
 <launch>
 
-    <!-- deliver to  -->
-    <node pkg="jsk_spot_delivery_demo" type="deliver_to_server.py" name="deliver_to_server" output="screen">
+    <!-- delivery_demo -->
+    <node pkg="jsk_spot_delivery_demo" type="delivery_action_server.py" name="delivery_action_server" output="screen">
+        <rosparam>
+            list_node_strolling:
+                - eng2_73B2
+                - eng2_73A2
+        </rosparam>
+
+        <remap from="~person_visible" to="/delivery_demo_person_tracker/visible" />
+        <remap from="~people_pose_array" to="/delivery_demo_person_tracker/people_pose_array" />
+
+        <remap from="~pickup_package" to="/delivery_action_server/pickup_package" />
+        <remap from="~delivery_to" to="/delivery_action_server/deliver_to" />
+    </node>
+
+    <!-- deliver_to and pickup_package action server -->
+    <node pkg="jsk_spot_delivery_demo" type="delivery_action_server.py" name="delivery_action_server" output="screen">
         <rosparam>
             force_threshold: 1.5
         </rosparam>
+        <rosparam load="$(find spot_behavior_manager_demo)/config/nodes.yaml" />
         <remap from="~reset_body_force" to="/body_force_publisher/zero_offset" />
         <remap from="~body_force" to="/body_force_publisher/wrench_output" />
     </node>
+
+    <!-- ros speech recognition -->
+    <include file="$(find ros_speech_recognition)/launch/speech_recognition.launch">
+        <arg name="launch_sound_play" value="false" />
+        <arg name="launch_audio_capture" value="false" />
+        <arg name="audio_topic" value="/audio" />
+        <arg name="launguage" default="ja-JP" />
+    </include>
+
+    <!-- person tracker -->
+    <node pkg="spot_person_lead_behaviors" type="person_tracker.py" name="delivery_demo_person_tracker" output="screen">
+        <remap from="~bbox_array" to="/spot_recognition/bbox_array" />
+        <!-- remap from="~visible" to="" / -->
+
+        <rosparam subst_value="true">
+            frame_id_robot: 'body'
+            label_person: 0
+            dist_visible: 5.0
+            timeout_observation: 5.0
+        </rosparam>
+    </node>
+
 
     <!-- body force caculation -->
     <node pkg="jsk_spot_delivery_demo" type="body_force_publisher.py" name="body_force_publisher" output="screen">

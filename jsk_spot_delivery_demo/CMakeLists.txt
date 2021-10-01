@@ -4,24 +4,11 @@ project(jsk_spot_delivery_demo)
 find_package(catkin REQUIRED genmsg actionlib_msgs std_msgs
 )
 
-## Generate messages in the 'msg' folder
-# add_message_files(
-#   FILES
-#   Message1.msg
-#   Message2.msg
-# )
-
-## Generate services in the 'srv' folder
-# add_service_files(
-#   FILES
-#   Service1.srv
-#   Service2.srv
-# )
-
 add_action_files(
 DIRECTORY action
 FILES
     DeliverTo.action
+    PickupPackage.action
 )
 
 generate_messages(
@@ -31,10 +18,6 @@ generate_messages(
 )
 
 catkin_package(
-#  INCLUDE_DIRS include
-#  LIBRARIES jsk_spot_delivery_demo
-#  CATKIN_DEPENDS other_catkin_pkg
-#  DEPENDS system_lib
 )
 
 ###########

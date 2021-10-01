@@ -1,0 +1,5 @@
+duration timeout
+---
+bool success
+string target_node_id
+---
