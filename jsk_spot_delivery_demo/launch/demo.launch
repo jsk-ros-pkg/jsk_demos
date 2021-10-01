@@ -30,7 +30,7 @@
         <arg name="launch_sound_play" value="false" />
         <arg name="launch_audio_capture" value="false" />
         <arg name="audio_topic" value="/audio" />
-        <arg name="launguage" default="ja-JP" />
+        <arg name="language" default="ja-JP" />
     </include>
 
     <!-- person tracker -->
