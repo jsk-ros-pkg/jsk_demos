@@ -1,7 +1,7 @@
 <launch>
 
     <!-- delivery_demo -->
-    <node pkg="jsk_spot_delivery_demo" type="delivery_action_server.py" name="delivery_action_server" output="screen">
+    <node pkg="jsk_spot_delivery_demo" type="delivery_demo.py" name="delivery_demo" output="screen">
         <rosparam>
             list_node_strolling:
                 - eng2_73B2
