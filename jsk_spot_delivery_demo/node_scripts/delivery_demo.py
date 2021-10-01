@@ -177,7 +177,7 @@ class Task:
 
 class TaskList:
 
-    def __init__(self)
+    def __init__(self):
         self.list = []
         self.lock = threading.Lock()
 

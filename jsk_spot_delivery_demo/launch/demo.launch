@@ -20,7 +20,7 @@
         <rosparam>
             force_threshold: 1.5
         </rosparam>
-        <rosparam load="$(find spot_behavior_manager_demo)/config/nodes.yaml" />
+        <rosparam command="load" file="$(find spot_behavior_manager_demo)/config/nodes.yaml" />
         <remap from="~reset_body_force" to="/body_force_publisher/zero_offset" />
         <remap from="~body_force" to="/body_force_publisher/wrench_output" />
     </node>

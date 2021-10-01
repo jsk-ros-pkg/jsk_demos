@@ -134,7 +134,7 @@ class DeliveryActionServer:
 def main():
 
     rospy.init_node('delivery_action_server')
-    node = DeliveryServer()
+    node = DeliveryActionServer()
     rospy.spin()
 
 
