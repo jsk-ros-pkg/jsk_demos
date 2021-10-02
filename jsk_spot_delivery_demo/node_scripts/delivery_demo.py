@@ -37,12 +37,13 @@ def get_person_pose():
         msg = rospy.wait_for_message('~people_pose_array', PoseArray,
                                      timeout=rospy.Duration(1))
         if len(msg.poses) == 0:
-            return None
+            rospy.logwarn('no person')
+            return None, None
         else:
             return random.choice(msg.poses), msg.header.frame_id
     except rospy.ROSException as e:
         rospy.logwarn('Timeout exceede: {}'.format(e))
-        return None
+        return None, None
 
 
 class Task:
