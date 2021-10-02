@@ -75,11 +75,25 @@ class TaskList:
         return length
 
 
+data_speech_recongition_client = None
+data_spot_ros_client = None
+data_sound_client = None
+data_list_node_strolling = None
+data_task_list_= None
+data_task_executing = None
+
 def main():
 
     rospy.init_node('delivery_demo')
 
     sm = smach.StateMachine(outcomes=[''])
+
+    global data_speech_recongition_client
+    global data_spot_ros_client
+    global data_sound_client
+    global data_list_node_strolling
+    global data_task_list
+    global data_task_executing
 
     # read only
     data_speech_recongition_client = SpeechRecognitionClient()
@@ -99,9 +113,6 @@ def main():
         def execute(self, userdata):
             rospy.loginfo('Ready')
 
-            global task_list
-            global task_executing
-
             if data_task_list.length() > 0 or data_task_executing is not None:
                 return 'task_executing'
 
@@ -115,9 +126,6 @@ def main():
 
         def execute(self, userdata):
             rospy.loginfo('Strolling')
-
-            global task_list
-            global task_executing
 
             # Move to a node randomly selected.
             next_target = random.choice(data_list_node_strolling)
@@ -143,9 +151,6 @@ def main():
             smach.State.__init__(self, outcomes=['ready','task_asking'])
 
         def execute(self, userdata):
-
-            global task_list
-            global task_executing
 
             # get person pose
             pose, frame_id = get_person_pose()
@@ -185,8 +190,7 @@ def main():
         def execute(self, userdata):
             rospy.loginfo('TaskAsking')
 
-            global task_list
-            global task_executing
+            global data_task_list
 
             # ask
             success, target_node_id = self.ask_task()
@@ -207,8 +211,8 @@ def main():
         def execute(self, userdata):
             rospy.loginfo('TaskExecuting')
 
-            global task_list
-            global task_executing
+            global data_task_list
+            global data_task_executing
 
             if data_task_executing is not None and data_task_list.length() == 0:
                 rospy.logwarn('No task left')
