@@ -233,7 +233,6 @@ def main():
 
             goal = DeliverToGoal()
             goal.target_node_id = target_node_id
-            goal.wait_package = True
             self.actionclient_deliver_to.send_goal(goal)
             self.actionclient_deliver_to.wait_for_result()
             result = self.actionclient_deliver_to.get_result()
