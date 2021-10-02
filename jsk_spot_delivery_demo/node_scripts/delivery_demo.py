@@ -169,7 +169,7 @@ def main():
             rospy.loginfo(
                 'Found person at (x,y,theta) = ({},{},{})'.format(x, y, theta))
             data_spot_ros_client.trajectory(
-                x, y, theta, rospy.Duration(10), blocking=True)
+                x, y, theta, 10, blocking=True)
 
             return 'task_asking'
 
