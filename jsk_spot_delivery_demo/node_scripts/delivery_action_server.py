@@ -32,9 +32,12 @@ class DeliveryActionServer:
         self.node_list = rospy.get_param('~nodes', {})
 
         self.actionserver_deliver_to = actionlib.SimpleActionServer(
-            '~deliver_to', DeliverToAction, self.callback_deliver_to)
+            '~deliver_to', DeliverToAction, self.callback_deliver_to, auto_start=False)
         self.actionserver_pickup_package = actionlib.SimpleActionServer(
-            '~pickup_package', PickupPackageAction, self.callback_pickup_package)
+            '~pickup_package', PickupPackageAction, self.callback_pickup_package, auto_start=False)
+
+        self.actionserver_deliver_to.start()
+        self.actionserver_pickup_package.start()
 
         rospy.loginfo('initialized')
 
@@ -72,8 +75,7 @@ class DeliveryActionServer:
             recogntion_result = self.speech_recognition_client.recognize()
             target_node_candidates = {}
             for node_id, value in self.node_list.items():
-                rospy.logwarn('valud: {}'.format(value))
-                if value.has_key('name_jp') and value['name_jp'] in recogntion_result.transcript:
+                if value.has_key('name_jp') and value['name_jp'] in str(recogntion_result.transcript):
                     target_node_candidates[node_id] = value
             if len(target_node_candidates) == 0:
                 rospy.logerr(
