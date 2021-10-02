@@ -1,7 +1,8 @@
 <launch>
+    <arg name="launch_demo" default="true" />
 
     <!-- delivery_demo -->
-    <node pkg="jsk_spot_delivery_demo" type="delivery_demo.py" name="delivery_demo" output="screen">
+    <node pkg="jsk_spot_delivery_demo" type="delivery_demo.py" name="delivery_demo" output="screen" if="$(arg launch_demo)">
         <rosparam>
             list_node_strolling:
                 - eng2_73B2
