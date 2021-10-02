@@ -118,6 +118,7 @@ class DeliveryActionServer:
 
         rospy.loginfo('move to {}'.format(target_node_id))
         result = self.spot_ros_client.execute_behaviors(target_node_id)
+        rospy.logwarn('result: {}'.format(result))
         if not result:
             rospy.logerr('Failed to reach {}'.format(target_node_id))
             self.actionserver_deliver_to.set_aborted(
