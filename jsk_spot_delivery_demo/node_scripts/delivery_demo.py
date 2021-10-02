@@ -220,7 +220,7 @@ def main():
                 rospy.logwarn('No task left')
                 return 'ready'
             elif data_task_executing is None and data_task_list.length() != 0:
-                data_task_executing = data_task_list.pop(0)
+                data_task_executing = data_task_list.pop()
             # else: execute data_task_executing
 
             success = self.do_deliver_to(data_task_executing.target_node_id)
