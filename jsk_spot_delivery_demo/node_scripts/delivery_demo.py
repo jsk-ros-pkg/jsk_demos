@@ -161,7 +161,7 @@ def main():
                 return 'ready'
 
             # approach
-            pos = PyKDL.Vector(pose.position, x, pose.position.y, pose.position.z)
+            pos = PyKDL.Vector(pose.position.x, pose.position.y, pose.position.z)
             pos = pos - 2.0 * pos / pos.Norm()
             x = pos[0]
             y = pos[1]
