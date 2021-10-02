@@ -7,6 +7,7 @@ import threading
 
 import actionlib
 import rospy
+import PyKDL
 
 from jsk_spot_delivery_demo.msg import DeliverToAction, DeliverToGoal
 from jsk_spot_delivery_demo.msg import PickupPackageAction, PickupPackageGoal
