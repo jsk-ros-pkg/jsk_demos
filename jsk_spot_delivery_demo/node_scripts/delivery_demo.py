@@ -86,7 +86,7 @@ class Strolling(smach.State):
 class Approaching(smach.State):
 
     def __init__(self):
-        smach.State.__init__(self, outcomes=['task_asking'])
+        smach.State.__init__(self, outcomes=['ready','task_asking'])
 
     def execute(self, userdata):
         # get person pose
@@ -221,8 +221,9 @@ def main():
                                transitions={'approaching':'Approaching',
                                             'strolling':'Strolling'})
         smach.StateMachine.add('Approaching',Approaching(),
-                               transitions={'task_asking':'TaskAsking'})
-        smach.StateMachine.add('TaskAsking',Approaching(),
+                               transitions={'ready':'Ready',
+                                            'task_asking':'TaskAsking'})
+        smach.StateMachine.add('TaskAsking',TaskAsking(),
                                transitions={'ready':'Ready'})
         smach.StateMachine.add('TaskExecuting',TaskExecuting(),
                                transitions={'ready':'Ready'})

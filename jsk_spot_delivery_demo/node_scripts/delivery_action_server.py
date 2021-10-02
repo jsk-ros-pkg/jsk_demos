@@ -72,7 +72,8 @@ class DeliveryActionServer:
             recogntion_result = self.speech_recognition_client.recognize()
             target_node_candidates = {}
             for node_id, value in self.node_list.items():
-                if 'name_jp' in value and value['name_jp'] in recogntion_result:
+                rospy.logwarn('valud: {}'.format(value))
+                if value.has_key('name_jp') and value['name_jp'] in recogntion_result.transcript:
                     target_node_candidates[node_id] = value
             if len(target_node_candidates) == 0:
                 rospy.logerr(
