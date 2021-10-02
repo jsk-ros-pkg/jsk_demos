@@ -73,7 +73,7 @@ class DeliveryActionServer:
         while not rospy.is_shutdown() and rospy.Time.now() < timeout_deadline:
             self.sound_client.say('配達先を教えてください。', blocking=True)
             recogntion_result = self.speech_recognition_client.recognize()
-            recognized_destination = recogntion_result.transcript[0]]
+            recognized_destination = recogntion_result.transcript[0]
             target_node_candidates = {}
             for node_id, value in self.node_list.items():
                 if value.has_key('name_jp') and value['name_jp'].encode('utf-8') == recognized_destination:
