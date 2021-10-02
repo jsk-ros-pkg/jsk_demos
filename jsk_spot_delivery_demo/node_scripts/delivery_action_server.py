@@ -71,7 +71,7 @@ class DeliveryActionServer:
             self.sound_client.say('配達先を教えてください。', blocking=True)
             recogntion_result = self.speech_recognition_client.recognize()
             target_node_candidates = {}
-            for node_id, value in self.node_list.values():
+            for node_id, value in self.node_list.items():
                 if 'name_jp' in value and value['name_jp'] in recogntion_result:
                     target_node_candidates[node_id] = value
             if len(target_node_candidates) == 0:

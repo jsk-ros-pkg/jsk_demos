@@ -61,7 +61,7 @@ class Ready(smach.State):
 class Strolling(smach.State):
 
     def __init__(self):
-        smach.State.__init__(self, outcomes=['task_asking', 'strolling'])
+        smach.State.__init__(self, outcomes=['approaching', 'strolling'])
 
     def execute(self, userdata):
         rospy.loginfo('Strolling')
@@ -78,7 +78,7 @@ class Strolling(smach.State):
         while not rospy.is_shutdown() and rospy.Time.now() > timeout:
             rate.sleep()
             if check_person():
-                return 'task_asking'
+                return 'approaching'
 
         return 'strolling'
 
@@ -218,8 +218,15 @@ def main():
                                transitions={'task_executing':'TaskExecuting',
                                             'strolling':'Strolling'})
         smach.StateMachine.add('Strolling',Strolling(),
-                               transitions={'task_asking':'TaskAsking',
+                               transitions={'approaching':'Approaching',
                                             'strolling':'Strolling'})
+        smach.StateMachine.add('Approaching',Approaching(),
+                               transitions={'task_asking':'TaskAsking'})
+        smach.StateMachine.add('TaskAsking',Approaching(),
+                               transitions={'ready':'Ready'})
+        smach.StateMachine.add('TaskExecuting',TaskExecuting(),
+                               transitions={'ready':'Ready'})
+
 
     rospy.loginfo('initialized')
 
