@@ -127,8 +127,9 @@ def main():
 
             # Searching a person.
             timeout = rospy.Time.now() + rospy.Duration(120)
-            rate = rospy.Rate(1)
+            rate = rospy.Rate(5)
             while not rospy.is_shutdown() and rospy.Time.now() < timeout:
+                rospy.loginfo('Searching person')
                 rate.sleep()
                 if check_person():
                     return 'approaching'
