@@ -13,7 +13,7 @@
         <remap from="~people_pose_array" to="/delivery_demo_person_tracker/people_pose_array" />
 
         <remap from="~pickup_package" to="/delivery_action_server/pickup_package" />
-        <remap from="~delivery_to" to="/delivery_action_server/deliver_to" />
+        <remap from="~deliver_to" to="/delivery_action_server/deliver_to" />
     </node>
 
     <!-- deliver_to and pickup_package action server -->

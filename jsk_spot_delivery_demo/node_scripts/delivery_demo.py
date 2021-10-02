@@ -180,6 +180,7 @@ def main():
             smach.State.__init__(self, outcomes=['ready'])
             self.actionclient_pickup_package = actionlib.SimpleActionClient(
                 '~pickup_package', PickupPackageAction)
+            self.actionclient_pickup_package.wait_for_server(rospy.Duration(5))
 
         def ask_task(self):
 
@@ -209,6 +210,7 @@ def main():
                 self, outcomes=['ready'])
             self.actionclient_deliver_to = actionlib.SimpleActionClient(
                 '~deliver_to', DeliverToAction)
+            self.actionclient_deliver_to.wait_for_server(rospy.Duration(5))
 
         def execute(self, userdata):
             rospy.loginfo('TaskExecuting')
