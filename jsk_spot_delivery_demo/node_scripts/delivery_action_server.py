@@ -57,7 +57,7 @@ class DeliveryActionServer:
         timeout_deadline = rospy.Time.now() + duration
         while not rospy.is_shutdown():
             rate.sleep()
-            if self.done_pick_or_place or rospy.Time.now() < timeout_deadline:
+            if self.done_pick_or_place or rospy.Time.now() > timeout_deadline:
                 break
         success = self.done_pick_or_place
         sub.unregister()
@@ -95,7 +95,7 @@ class DeliveryActionServer:
             target_node_name_jp = self.node_list[target_node_id]['name_jp'].encode('utf-8')
             rospy.loginfo('target_node_id: {}'.format(target_node_id))
             self.sound_client.say(
-                '{}ですね。わかりました。'.format(target_node_name_jp))
+                '{}ですね。わかりました。'.format(target_node_name_jp),blocking=True)
 
         rospy.loginfo('Waiting for package placed.')
         self.sound_client.say('荷物を置いてください', blocking=True)
@@ -108,7 +108,7 @@ class DeliveryActionServer:
                 PickupPackageResult(True, target_node_id)
             )
         else:
-            rospy.logwerr('Timeout')
+            rospy.logerr('Timeout')
             self.actionserver_pickup_package.set_aborted(
                 PickupPackageResultoResult(False, 'Falied to recognize package.'))
 
