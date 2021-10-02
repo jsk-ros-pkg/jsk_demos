@@ -216,11 +216,12 @@ def main():
             global data_task_list
             global data_task_executing
 
-            if data_task_executing is not None and data_task_list.length() == 0:
+            if data_task_executing is None and data_task_list.length() == 0:
                 rospy.logwarn('No task left')
                 return 'ready'
-            elif data_task_executing is None and data_task_list.length() == 0:
-                data_task_executing = data_pop(0)
+            elif data_task_executing is None and data_task_list.length() != 0:
+                data_task_executing = data_task_list.pop(0)
+            # else: execute data_task_executing
 
             success = self.do_deliver_to(data_task_executing.target_node_id)
             if success:
