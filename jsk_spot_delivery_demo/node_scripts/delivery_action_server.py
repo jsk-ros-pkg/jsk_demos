@@ -87,7 +87,7 @@ class DeliveryActionServer:
 
         if not success:
             self.actionserver_pickup_package.set_aborted(
-                DeliverToResult(False, 'Falied to recognize the destination from speech.'))
+                PickupPackageResult(False, 'Falied to recognize the destination from speech.'))
             return
         else:
             target_node_id = target_node_candidates.keys()[0]
@@ -109,7 +109,7 @@ class DeliveryActionServer:
         else:
             rospy.logwerr('Timeout')
             self.actionserver_pickup_package.set_aborted(
-                DeliverToResult(False, 'Falied to recognize package.'))
+                PickupPackageResultoResult(False, 'Falied to recognize package.'))
 
     def callback_deliver_to(self, goal):
 
