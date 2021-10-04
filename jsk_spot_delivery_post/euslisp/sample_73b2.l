@@ -5,9 +5,9 @@
 ;; By default, it is assumed that Spot is at the entrance of 73B2 and headed to the AR marker on the door.
 ;;
 (ros::roseus-add-msgs "speech_recognition_msgs")
-(load "package://spotkinovaeus/spotkinova-interface.l")
+(load "package://spoteus/spot-interface.l")
 (unless (boundp '*ri*)
-  (spotkinova-init)) ;; do not create-viewer
+  (spot-init)) ;; do not create-viewer
 
 (defun look-at-desk ()
   (setq coord (make-cascoords :pos #f(800 0 500) :rpy (float-vector 0 (/ pi 4) 0)))
