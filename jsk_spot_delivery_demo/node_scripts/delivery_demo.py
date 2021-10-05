@@ -168,8 +168,8 @@ def main():
             theta = math.atan2(y, x)
             rospy.loginfo(
                 'Found person at (x,y,theta) = ({},{},{})'.format(x, y, theta))
-            data_spot_ros_client.trajectory(
-                x, y, theta, 10, blocking=True)
+           # data_spot_ros_client.trajectory(
+           #     x, y, theta, 10, blocking=True)
 
             return 'task_asking'
 
