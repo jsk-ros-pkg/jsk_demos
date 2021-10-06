@@ -48,7 +48,7 @@ def main():
         target_node_id = target_node_candidates.keys()[0]
         target_node_name_jp = node_list[target_node_id]['name_jp']
 
-        rospy.loginfo('leading person to {}'.format())
+        rospy.loginfo('leading person to {}'.format(target_node_name_jp))
         action_server_lead_to.send_goal_and_wait(LeadPersonGoal(target_node_id=target_node_id))
 
 
