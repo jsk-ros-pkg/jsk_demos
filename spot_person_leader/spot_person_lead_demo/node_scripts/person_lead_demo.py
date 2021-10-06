@@ -9,9 +9,6 @@ from spot_behavior_manager_msgs.msg import LeadPersonAction, LeadPersonGoal
 from sound_play.libsoundplay import SoundClient
 from ros_speech_recognition import SpeechRecognitionClient
 
-import smach
-import smach_ros
-
 
 def main():
 
@@ -19,7 +16,7 @@ def main():
 
     speech_recognition_client = SpeechRecognitionClient()
     sound_client = SoundClient(sound_action='/robotsound_jp', sound_topic='/robotsound_jp')
-    action_server_lead_to = actionlib.SimpleActionClient('/spot_behavior_manager_demo/execute_behaviors', LeadPersonAction)
+    action_server_lead_to = actionlib.SimpleActionClient('~execute_behaviors', LeadPersonAction)
 
     node_list = rospy.get_param('~nodes', {})
 
@@ -46,9 +43,9 @@ def main():
                 break
 
         target_node_id = target_node_candidates.keys()[0]
-        target_node_name_jp = node_list[target_node_id]['name_jp']
+        target_node_name_jp = node_list[target_node_id]['name_jp'].encode('utf-8')
 
-        rospy.loginfo('leading person to {}'.format(target_node_name_jp))
+        rospy.loginfo('executing behaviors to {}'.format(target_node_name_jp))
         action_server_lead_to.send_goal_and_wait(LeadPersonGoal(target_node_id=target_node_id))
 
 
