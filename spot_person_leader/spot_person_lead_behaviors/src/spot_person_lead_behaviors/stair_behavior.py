@@ -9,6 +9,8 @@ import rospy
 from std_msgs.msg import Bool
 from geometry_msgs.msg import PoseArray
 
+import threading
+
 class StairBehavior(BaseBehavior):
 
     def callback_visible(self, msg):
@@ -89,6 +91,7 @@ class StairBehavior(BaseBehavior):
                     lambda x: x['graph'] == graph_name,
                     start_node.properties['waypoints_on_graph']
                     )[0]['localization_method']
+        stair_nums = edge.properties['stair_nums']
 
         # graph uploading and localization
         if pre_edge is not None and \
@@ -115,19 +118,51 @@ class StairBehavior(BaseBehavior):
                 rospy.logwarn('Localization failed: {}'.format(ret[1]))
                 return False
 
-        # check if there is a person lower than the robot.
-        #while not rospy.is_shutdown():
-        #    if self.exist_person_down:
-        #        self.sound_client.say('私より低い位置に誰かいるのでいなくなるまで待ちます',blocking=True)
-        #    else:
-        #        break
+        self.sound_client.say('階段を移動します。',blocking=True)
+        for index, num in enumerate(stair_nums):
+            if num < 0:
+                self.sound_client.say('{}段の下り階段があります'.format(-num),blocking=True)
+            else:
+                self.sound_client.say('{}段の登り階段があります'.format(num),blocking=True)
 
-        self.sound_client.say('階段を移動します。ご注意ください。',blocking=True)
+            if index != len(stair_nums) - 1:
+                self.sound_client.say('その後踊り場があった後',blocking=True)
 
         # start leading
+        success = False
+        rate = rospy.Rate(10)
+        self.sound_client.say('ついてきてください',blocking=True)
         self.spot_client.navigate_to( end_id, blocking=False)
-        self.spot_client.wait_for_navigate_to_result()
-        result = self.spot_client.get_navigate_to_result()
+        while not rospy.is_shutdown():
+            rate.sleep()
+
+            if self.spot_client.wait_for_navigate_to_result(rospy.Duration(0.1)):
+                result = self.spot_client.get_navigate_to_result()
+                success = result.success
+                rospy.loginfo('result: {}'.format(result))
+                break
+
+            if not self.state_visible and self.duration_visibility > rospy.Duration(0.5):
+                flag_speech = False
+                def notify_visibility():
+                    self.sound_client.say(
+                        '近くに人が見えません',
+                        blocking=True
+                        )
+                    flag_speech = False
+                speech_thread = threading.Thread(target=notify_visibility)
+                speech_thread.start()
+                while not self.state_visible and self.duration_visibility > rospy.Duration(0.5):
+                    rate.sleep()
+                    self.spot_client.pubCmdVel(0,0,0)
+                    if not flag_speech:
+                        flag_speech = True
+                        speech_thread = threading.Thread(target=notify_visibility)
+                        speech_thread.start()
+                    if not self.state_visible and self.duration_visibility > rospy.Duration(5.0):
+                        self.spot_client.cancel_navigate_to()
+                    if self.state_visible:
+                        self.spot_client.navigate_to( end_id, blocking=False)
 
         # recovery on failure
         if not result.success:

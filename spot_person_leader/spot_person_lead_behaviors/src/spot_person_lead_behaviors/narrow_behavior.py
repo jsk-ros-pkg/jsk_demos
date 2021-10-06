@@ -36,6 +36,10 @@ class NarrowBehavior(BaseBehavior):
 
         rospy.logdebug('run_initial() called')
 
+        # get parameters
+        self.use_person_detection = rospy.get_param('/narrow_behavior/use_person_detection', True)
+        self.use_obstacle_detection = rospy.get_param('/narrow_behavior/use_obstacle_detection', True)
+
         # launch recognition launch
         uuid = roslaunch.rlutil.get_or_generate_uuid(None, False)
         roslaunch_path = rospkg.RosPack().get_path('spot_person_lead_behaviors') +\
@@ -149,14 +153,18 @@ class NarrowBehavior(BaseBehavior):
                             blocking=True
                             )
             rospy.logwarn('notify_obstacle finished.')
-        thread_notify_obstacle = threading.Thread(target=notify_obstacle)
+        if self.use_obstacle_detection:
+            thread_notify_obstacle = threading.Thread(target=notify_obstacle)
+        else:
+            thread_notify_obstacle = None
 
         # start leading
         success = False
         rate = rospy.Rate(10)
         self.sound_client.say('ついてきてください',blocking=True)
         self.spot_client.navigate_to( end_id, blocking=False)
-        thread_notify_obstacle.start()
+        if thread_notify_obstacle is not None:
+            thread_notify_obstacle.start()
         while not rospy.is_shutdown():
             rate.sleep()
 
@@ -166,7 +174,7 @@ class NarrowBehavior(BaseBehavior):
                 rospy.loginfo('result: {}'.format(result))
                 break
 
-            if not self.state_visible and self.duration_visibility > rospy.Duration(0.5):
+            if self.use_person_detection and not self.state_visible and self.duration_visibility > rospy.Duration(0.5):
                 flag_speech = False
                 def notify_visibility():
                     self.sound_client.say(
@@ -191,7 +199,8 @@ class NarrowBehavior(BaseBehavior):
 
         # stop notification thread
         flag_valid_obstacle_notification = False
-        thread_notify_obstacle.join()
+        if thread_notify_obstacle is not None:
+            thread_notify_obstacle.join()
 
         # recovery on failure
         if not success:
