@@ -17,7 +17,7 @@ def main():
 
     rospy.init_node('person_lead_demo')
 
-    speech_recongition_client = SpeechRecognitionClient()
+    speech_recognition_client = SpeechRecognitionClient()
     sound_client = SoundClient(sound_action='/robotsound_jp', sound_topic='/robotsound_jp')
     action_server_lead_to = actionlib.SimpleActionClient('/spot_behavior_manager_demo/execute_behaviors', LeadPersonAction)
 
