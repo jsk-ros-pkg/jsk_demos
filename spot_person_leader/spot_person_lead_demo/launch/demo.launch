@@ -9,6 +9,7 @@
         /narrow_behavior/use_obstacle_detection: $(arg use_obstacle_detection)
     </rosparam>
 
+    <!-- -->
     <node
         pkg="spot_behavior_manager_demo"
         type="demo.py"
@@ -58,4 +59,25 @@
                 - '/spot_person_lead_demo/execute_behaviors'
         </rosparam>
     </node>
+
+    <!--  -->
+    <node
+        pkg="spot_person_lead_demo"
+        type="person_lead_demo.py"
+        name="person_lead_demo"
+        output="screen"
+        >
+        <rosparam
+            file="$(find spot_behavior_manager_demo)/config/nodes.yaml"
+            subst_value="true"
+            />
+    </node>
+
+    <!-- ros speech recognition -->
+    <include file="$(find ros_speech_recognition)/launch/speech_recognition.launch">
+        <arg name="launch_sound_play" value="false" />
+        <arg name="launch_audio_capture" value="false" />
+        <arg name="audio_topic" value="/audio" />
+        <arg name="language" default="ja-JP" />
+    </include>
 </launch>
