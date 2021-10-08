@@ -32,11 +32,13 @@
 (send *ri* :angle-vector (send *robot* :angle-vector) 3000)
 (send *ri* :wait-interpolation)
 
-(send *ri* :stop-grasp :rarm)
 (send *ri* :stop-grasp :larm)
 (unix::sleep 2)
 
-(send *robot* :larm :move-end-pos #f(-30 0 0))
-(send *robot* :rarm :move-end-pos #f(-30 0 0))
+(send *robot* :larm :move-end-pos #f(-100 0 0))
+(send *ri* :angle-vector (send *robot* :angle-vector) 3000)
+(send *ri* :wait-interpolation)
+
+(send *robot* :larm :move-end-pos #f(0 0 -200))
 (send *ri* :angle-vector (send *robot* :angle-vector) 3000)
 (send *ri* :wait-interpolation)
