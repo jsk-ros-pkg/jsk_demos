@@ -1,6 +1,8 @@
 #!/usr/bin/env roseus
 
 (load "package://spoteus/spot-interface.l")
+(ros::roseus-add-msgs "spot_behavior_manager_msgs")
+
 (unless (boundp '*ri*)
   (spot-init))
 
@@ -22,11 +24,20 @@
   )
 
 (defun main ()
-  (autowalk-data-upload)
-  (send *ri* :navigate-to -1)
-  (send *ri* :go-pos 0 0 90)
-  (send *ri* :sit)
-  (unix::sleep 1)
-  (send *ri* :navigate-to 0)
-  )
-  
+  (let ((behavior_msg nil))
+    (ros::advertise "/spot_behavior_manager_demo/execute_behaviors/goal"
+                    spot_behavior_manager_msgs::LeadPersonActionGoal)
+    (setq behavior_msg (instance spot_behavior_manager_msgs::LeadPersonActionGoal :init))
+
+    ;; garbage colletion from trash cans
+    (autowalk-data-upload)
+    (send *ri* :navigate-to 1)
+    (send *ri* :go-pos -1.4 0 -90)
+    (send *ri* :sit)
+    ;; (unix::sleep 1)
+    ;; (send *ri* :navigate-to 0) ;; go to 73B2 front
+
+    ;; (send (send behavior_msg :goal) :target_node_id "eng2_GarbageCollectionArea_east")
+    ;; (ros::ros-info "Move to ~A!" (send (send behavior_msg :goal) :target_node_id))
+    ;; (ros::publish "/spot_behavior_manager_demo/execute_behaviors/goal" behavior_msg)
+    )
