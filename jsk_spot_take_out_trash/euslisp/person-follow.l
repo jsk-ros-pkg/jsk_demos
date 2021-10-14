@@ -72,3 +72,6 @@
 
 (setq r (instance person-recog-cb-class :init))
 ;; (send r :person-follow-loop)
+(defun main ()
+  (setq person-follow (instance person-recog-cb-class :init))
+  (send person-follow :person-follow-loop))
