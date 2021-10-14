@@ -1,4 +1,4 @@
-#!/usr/bin/env roseusb
+#!/usr/bin/env roseus
 
 (ros::roseus-add-msgs "jsk_recognition_msgs")
 (ros::roseus "person recognition")
