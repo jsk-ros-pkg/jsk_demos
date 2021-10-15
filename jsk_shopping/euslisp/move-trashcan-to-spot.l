@@ -1,4 +1,4 @@
-(load "package://jsk_spot_startup/euslisp/navigation-utils.l")
+;; (load "package://jsk_fetch_startup/euslisp/navigation-utils.l")
 
 
 (defun move-to-spot-front ()
