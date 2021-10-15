@@ -47,5 +47,12 @@
 
 (defun move-to-spot-front ()
   (send *ri* :go-pos-unsafe 0 0 -90))
+
+(defun move-to-trashcan-front ()
+  (let ((offset #f(-500 -500 0)))
+    (setq success
+          (go-to-spot "/eng2/7f/room73B2-microwave-front" :relative-pos offset :relative-rot 0))
+    (send *ri* :go-pos-unsafe 100 0 0)
+    (send *ri* :go-pos-unsafe 0 0 -90)))
 ;; (setq offset #f(-450 -400 0))
 ;;(setq success (go-to-spot "/eng2/7f/room73B2-microwave-front" :relative-pos offset :relative-rot -pi/2))
