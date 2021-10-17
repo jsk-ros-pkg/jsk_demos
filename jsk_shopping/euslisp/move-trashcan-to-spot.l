@@ -56,3 +56,7 @@
     (send *ri* :go-pos-unsafe 0 0 -90)))
 ;; (setq offset #f(-450 -400 0))
 ;;(setq success (go-to-spot "/eng2/7f/room73B2-microwave-front" :relative-pos offset :relative-rot -pi/2))
+
+;; memo of fetch lift-pose
+;; #<cascaded-coords #X557cd2b8c030 :rarm-end-coords  6299.923 5800.117 1350.932 / -0.001 -0.0 1.571>
+;; #f(20.0 -26.2704 -31.6325 -186.682 42.9422 -149.082 73.9761 87.1705 0.0 0.0)
