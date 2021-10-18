@@ -1,9 +1,9 @@
 (defun ih-init ()
   ;; init
-  (load "package://jsk_2020_04_pr2_curry/euslisp/cook-with-pos-map/soup-from-boil/tool-use-arrange-codes.l")
+  (load "package://jsk_2021_10_soup_from_boil/euslisp/tool-use-arrange-codes.l")
   
   ;; set objects
-  (load "package://jsk_2020_04_pr2_curry/euslisp/model/cooking-pot-73b2.l")
+  (load "package://jsk_2021_10_soup_from_boil/euslisp/model/cooking-pot-73b2.l")
   (setq *pot* (cooking-pot))
   (setq *pot-coords* (make-coords :pos (float-vector 450 8030 30850) :rpy (float-vector 3.142 0 0))) ;; arrange original ;;ここを変える
   (send *pot* :newcoords (send *pot-coords* :copy-worldcoords))

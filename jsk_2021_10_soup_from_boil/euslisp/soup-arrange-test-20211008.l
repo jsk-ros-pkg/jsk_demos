@@ -1,4 +1,4 @@
-(load "package://jsk_2020_04_pr2_curry/euslisp/cook-with-pos-map/soup-from-boil/move-to-kitchen-with-map.l")
+(load "package://jsk_2021_10_soup_from_boil/euslisp/move-to-kitchen-with-map.l")
 (warn "please run (soup-arrange-0) or (soup-arrange-all)~%")
 
 ;; 最初に換気扇とIHの電源を入れていく
@@ -56,7 +56,7 @@
   )
 
 (defun ih-check ()
-  (load "package://jsk_2020_04_pr2_curry/euslisp/cook-with-pos-map/soup-from-boil/ih-use-arrange-codes.l")
+  (load "package://jsk_2021_10_soup_from_boil/euslisp/ih-use-arrange-codes.l")
   ;; (update-pos)
   (set-pose)
   (now-start-ih-with-fail-detection :deg 10)
@@ -70,7 +70,7 @@
   ;; 設置するもの
   
   ;; おたまとお皿を用意する TODOここで鍋の位置も調整してもいいかも 最初にコンロ操作を確認するのもあり？
-  (load "package://jsk_2020_04_pr2_curry/euslisp/cook-with-pos-map/soup-from-boil/tool-use-arrange-codes.l")
+  (load "package://jsk_2021_10_soup_from_boil/euslisp/tool-use-arrange-codes.l")
   ;; (update-pos)
   (set-pose)
   (now-set-ladle-a-and-plate-with-dialogue)
@@ -87,7 +87,7 @@
   (send *ri* :speak-jp "沸騰させる調理を開始します")
   
   ;; 着火する
-  (load "package://jsk_2020_04_pr2_curry/euslisp/cook-with-pos-map/soup-from-boil/ih-use-arrange-codes.l")
+  (load "package://jsk_2021_10_soup_from_boil/euslisp/ih-use-arrange-codes.l")
   ;; (update-pos)
   (now-start-ih-with-fail-detection :deg 10)
   
@@ -104,7 +104,7 @@
     (now-boil-with-dialogue))
   
   ;; 火を止める
-  (load "package://jsk_2020_04_pr2_curry/euslisp/cook-with-pos-map/soup-from-boil/ih-use-arrange-codes.l")
+  (load "package://jsk_2021_10_soup_from_boil/euslisp/ih-use-arrange-codes.l")
   ;; (update-pos)
   (push-knob)
   (set-pose-3)
@@ -124,13 +124,13 @@
   ;; (move-to-arrange-with-speech-before-and-before-with-rec)
  
   ;; おたまを掴む
-  (load "package://jsk_2020_04_pr2_curry/euslisp/cook-with-pos-map/soup-from-boil/arrangement-codes.l")
+  (load "package://jsk_2021_10_soup_from_boil/euslisp/arrangement-codes.l")
   ;; (update-pos)
   (set-pose) ;; よけいなset-poseになってしまっているがデモ固定化のために一応のこしておく．右腕がここで動いていなければなくしても問題ないかも．
   (grasp-ladle-with-fail-detection)
   
   ;; 鍋を掴む
-  (load "package://jsk_2020_04_pr2_curry/euslisp/cook-with-pos-map/soup-from-boil/ih-use-arrange-codes.l")
+  (load "package://jsk_2021_10_soup_from_boil/euslisp/ih-use-arrange-codes.l")
   ;; (update-pos)  
   (grasp-pot-from-below-model-with-fail-detection) ;; 鍋を掴む
   

@@ -1,13 +1,13 @@
 (defun arrangement-init ()
   ;; init
-  (load "package://jsk_2020_04_pr2_curry/euslisp/cook-with-pos-map/soup-from-boil/tool-use-arrange-codes.l")
+  (load "package://jsk_2021_10_soup_from_boil/euslisp/tool-use-arrange-codes.l")
   
   ;; set objects
-  (load "package://jsk_2020_04_pr2_curry/euslisp/model/curry-dish.l")
+  (load "package://jsk_2021_10_soup_from_boil/euslisp/model/curry-dish.l")
   (setq *curry-dish* (curry-dish))
   (send *curry-dish* :newcoords (send *curry-dish-coords* :copy-worldcoords))
-  
-  (load "package://jsk_2020_04_pr2_curry/euslisp/model/sato-rice.l")
+
+  (load "package://jsk_2021_10_soup_from_boil/euslisp/model/sato-rice.l")
   (setq *sato-rice* (sato-rice))
   (send *sato-rice* :newcoords (send *sato-rice-coords* :copy-worldcoords))
   
