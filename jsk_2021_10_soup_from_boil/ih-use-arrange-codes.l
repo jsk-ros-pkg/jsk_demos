@@ -5,7 +5,7 @@
   ;; set objects
   (load "package://jsk_2020_04_pr2_curry/euslisp/model/cooking-pot-73b2.l")
   (setq *pot* (cooking-pot))
-  (setq *pot-coords* (make-coords :pos (float-vector 450 8030 30850) :rpy (float-vector 3.142 0 0))) ;; arrange original
+  (setq *pot-coords* (make-coords :pos (float-vector 450 8030 30850) :rpy (float-vector 3.142 0 0))) ;; arrange original ;;ここを変える
   (send *pot* :newcoords (send *pot-coords* :copy-worldcoords))
   
   
@@ -17,7 +17,7 @@
   (setq *ih-panel-coords* (make-coords :pos (float-vector 563 7940 30865) :rpy (float-vector  3.044 1.407 2.87)))
 
   ;; arrange original
-  (setq *ih-knob-coords* (make-coords :pos (float-vector 680 8110 30715) :rpy (float-vector -3.047 -0.011 1.512)))
+  (setq *ih-knob-coords* (make-coords :pos (float-vector 680 8110 30715) :rpy (float-vector -3.047 -0.011 1.512))) ;; ここを変える
   
   (move-to-arrange-irt)
   (objects (list *pr2* *scene* *spatula* *ladle* *pot*))
@@ -221,6 +221,20 @@
       (setq *fail-flag* t))
   )
 
+;; Temperature recognition
+(ros::load-ros-manifest "std_msgs")
+(setq *max-temp* nil)
+(setq *min-temp* nil)
+(setq *center-temp* nil)
+(defun max-temp-cb (msg)
+  (setq *max-temp* (send msg :data)))
+(defun min-temp-cb (msg)
+  (setq *min-temp* (send msg :data)))
+(defun center-temp-cb (msg)
+  (setq *center-temp* (send msg :data)))
+(ros::subscribe "/thermal/max_temp" std_msgs::Int16 #'max-temp-cb)
+(ros::subscribe "/thermal/min_temp" std_msgs::Int16 #'min-temp-cb)
+(ros::subscribe "/thermal/center_temp" std_msgs::Int16 #'center-temp-cb)
 
 ;; def util-funcs
 (defun reset-rarm ()

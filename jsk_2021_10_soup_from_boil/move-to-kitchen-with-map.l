@@ -118,16 +118,16 @@
 (init)
 (update-view)
 
-(if (send *ri* :simulation-modep)
-    (progn
-      (update-view)
-      )
-  (progn
-    (update-pos)
-    (store-params)
-    (change-dynm-params)
-    )
-  )
+;; (if (send *ri* :simulation-modep)
+;;     (progn
+;;       (update-view)
+;;       )
+;;   (progn
+;;     (update-pos)
+;;     (store-params)
+;;     (change-dynm-params)
+;;     )
+;;   )
 
 (warn "~% If you use real robot, run (update-pos) ~%")
 (warn "please run (move-to-kitchen-ri) , (move-to-sink-ri) or (move-to-stove-ri) and (set-pose)~%")
@@ -571,6 +571,12 @@
   (send *viewer* :draw-objects)
   (send *ri* :angle-vector (send *pr2* :angle-vector) 4000)
   (send *ri* :wait-interpolation)
+  )
+
+(defun pre-ik-pose ()
+  ;; set-pose without ri
+  (send *pr2* :reset-manip-pose)
+  (send *pr2* :torso_lift_joint :joint-angle 325)
   )
 
 (defun set-pose-rec ()

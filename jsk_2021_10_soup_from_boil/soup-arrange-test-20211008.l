@@ -57,7 +57,8 @@
 
 (defun ih-check ()
   (load "package://jsk_2020_04_pr2_curry/euslisp/cook-with-pos-map/soup-from-boil/ih-use-arrange-codes.l")
-  (update-pos)
+  ;; (update-pos)
+  (set-pose)
   (now-start-ih-with-fail-detection :deg 10)
   (push-knob)
   (set-pose)
@@ -70,7 +71,8 @@
   
   ;; おたまとお皿を用意する TODOここで鍋の位置も調整してもいいかも 最初にコンロ操作を確認するのもあり？
   (load "package://jsk_2020_04_pr2_curry/euslisp/cook-with-pos-map/soup-from-boil/tool-use-arrange-codes.l")
-  (update-pos)
+  ;; (update-pos)
+  (set-pose)
   (now-set-ladle-a-and-plate-with-dialogue)
   
   (send *ri* :speak-jp "準備を行いました．確認してokと合図をして下さい")
@@ -86,20 +88,32 @@
   
   ;; 着火する
   (load "package://jsk_2020_04_pr2_curry/euslisp/cook-with-pos-map/soup-from-boil/ih-use-arrange-codes.l")
-  (update-pos)
+  ;; (update-pos)
   (now-start-ih-with-fail-detection :deg 10)
   
   ;; 沸騰させる
-  (now-boil-with-dialogue)
+  (look-at-pot)
+  (ros::spin-once)
+  (if *max-temp*
+    (progn
+      (while (< *max-temp* 75)
+        (send *ri* :speak-jp "まだお湯は沸騰していません" :wait t)
+        (unix:sleep 15)
+        (ros::spin-once))
+      (send *ri* :speak-jp "お湯が沸騰しました。" :wait t))
+    (now-boil-with-dialogue))
   
   ;; 火を止める
   (load "package://jsk_2020_04_pr2_curry/euslisp/cook-with-pos-map/soup-from-boil/ih-use-arrange-codes.l")
-  (update-pos)
+  ;; (update-pos)
   (push-knob)
   (set-pose-3)
-  
-  (send *ri* :speak-jp "沸騰させる調理を行いました．確認してokと合図をして下さい")
-  (curry-ok-wait)
+
+  (if *max-temp*
+    (send *ri* :speak-jp "沸騰させる調理を行いました．" :wait t)
+    (progn
+      (send *ri* :speak-jp "沸騰させる調理を行いました．確認してokと合図をして下さい")
+      (curry-ok-wait)))
   (send *ri* :speak-jp "次の工程に移ります")
   
   (warn "please run (soup-arrange-2) ~%")
@@ -108,15 +122,16 @@
 (defun soup-arrange-2 () ;; お湯を注ぐ
   ;; ;; 盛り付けの位置に移動する 
   ;; (move-to-arrange-with-speech-before-and-before-with-rec)
-  
+ 
   ;; おたまを掴む
   (load "package://jsk_2020_04_pr2_curry/euslisp/cook-with-pos-map/soup-from-boil/arrangement-codes.l")
-  (update-pos)
+  ;; (update-pos)
+  (set-pose) ;; よけいなset-poseになってしまっているがデモ固定化のために一応のこしておく．右腕がここで動いていなければなくしても問題ないかも．
   (grasp-ladle-with-fail-detection)
   
   ;; 鍋を掴む
   (load "package://jsk_2020_04_pr2_curry/euslisp/cook-with-pos-map/soup-from-boil/ih-use-arrange-codes.l")
-  (update-pos)  
+  ;; (update-pos)  
   (grasp-pot-from-below-model-with-fail-detection) ;; 鍋を掴む
   
   ;; お湯を注ぐ ;; 何回かやる？
@@ -138,17 +153,23 @@
   (set-pose)
   
   ;;完成！！
-  (send *ri* :speak-jp "お湯を注ぐ工程を行いました．確認してokと合図をして下さい")
+  (send *ri* :speak-jp "お湯を注ぐ工程を行いました．確認してokと合図をして下さい" :wait t)
   (curry-ok-wait)
-  (send *ri* :speak-jp "スープが完成しました")
-  
-  ;; (warn "please run (soup-arrange-3) ~%")
+
+  (warn "please run (soup-arrange-3) ~%")
   )
 
 
 (defun soup-arrange-3 () ;; 冷ます
-  
-  (warn "please run (soup-arrange-4) ~%")
+  (look-at-dish)
+  (ros::spin-once)
+  (if *max-temp*
+    (while (> *max-temp* 65)
+      (send *ri* :speak-jp "まだスープが熱いです。もう少しお待ちください。" :wait t)
+      (unix:sleep 15)
+      (ros::spin-once)))
+  (send *ri* :speak-jp "スープが完成しました")
+  ;; (warn "please run (soup-arrange-4) ~%")
   )
 
 (defun soup-arrange-all ()
@@ -157,6 +178,6 @@
   (soup-arrange-1) ;; 沸騰させる
   (unix:sleep 2)
   (soup-arrange-2) ;; お湯を注ぐ
-  ;; (unix:sleep 2)
-  ;; (soup-arrange-3) ;; 冷ます
+  (unix:sleep 2)
+  (soup-arrange-3) ;; 冷ます
   )

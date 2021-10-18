@@ -553,20 +553,22 @@
   (send *ladle* :rotate (deg2rad 90) :x)
   (send *pr2* :rarm :end-coords :assoc *ladle*)
   (send *viewer* :draw-objects)
-
+  
   (warn "please run (put-ladle-1) or (put-ladle-0) ~%")
   )
 
 (defun receive-ladle-with-dialogue ()
   (rarm-middle-pose)
   
+  (set-ladle)
+  (arrange-motion-set)  
+  
   (send *ri* :speak-jp "おたまを渡す準備をして，okと合図をして下さい")
   (receive-with-dialogue)  
   (send *ri* :start-grasp :rarm :wait t :gain 100)
   
-  (send *ladle* :newcoords (send (send *pr2* :rarm :end-coords) :copy-worldcoords))
-  (send *ladle* :rotate (deg2rad 90) :x)
-  (send *pr2* :rarm :end-coords :assoc *ladle*)
+  (set-ladle)
+  
   (send *viewer* :draw-objects)
 
   (warn "please run (put-ladle-1) or (put-ladle-0) ~%")
@@ -1570,6 +1572,7 @@
   )
 
 (defun grasp-ladle ()
+  (pre-ik-pose)
   (send *pr2* :larm :angle-vector #f(117.007 48.3805 113.439 -103.326 38.7107 -5.72958 14.4628))
   (send *ri* :angle-vector (send *pr2* :angle-vector) 3000)
   (send *ri* :wait-interpolation)
@@ -1799,6 +1802,7 @@
 (defun before-arrange-motion ()
   ;; (send *arrow* :newcoords (make-coords :pos (float-vector 504.422 8343.425 30917.724) :rpy (float-vector -1.367 0.118 -0.067)))
   ;; (send *arrow* :newcoords (make-coords :pos (float-vector 570 8500 31100) :rpy (float-vector 3.14 0.0 0.0)))
+  (pre-ik-pose)
   (send *arrow* :newcoords (make-coords :pos (float-vector 380 8720 31110) :rpy (float-vector 3.14 0.0 0.0)))
   (send *pr2* :rarm :inverse-kinematics
         (send *arrow* :copy-worldcoords)
@@ -1814,6 +1818,7 @@
 (defun arrange-motion-set ()
   ;; copy from (transfer-curry-set) in arrangement-codes.l
   (send *arrow* :newcoords (make-coords :pos (float-vector 504.422 8343.425 30917.724) :rpy (float-vector -1.367 0.118 -0.067)))
+  (pre-ik-pose)
   (send *pr2* :rarm :inverse-kinematics
         (send *arrow* :copy-worldcoords)
         :move-target (elt (send *ladle* :attention) 1)
@@ -2178,7 +2183,7 @@
   (receive-ladle-with-dialogue)
   
   ;; 盛り付ける動作をして皿を人にセットしてもらう
-  (before-arrange-motion)
+  ;; (before-arrange-motion)
   (arrange-motion-set)
   (arrange-motion)
   (have-the-plate-set-with-dialgue)
