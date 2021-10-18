@@ -4,6 +4,18 @@
 ![IMG_5826](https://user-images.githubusercontent.com/38127823/136733293-a7e58b12-2150-4099-ad30-2df666da0a86.jpg)
 
 ## 準備
+
+ワークスペースの作成
+
+```
+mkdir ~/soup_ws/src -p
+cd ~/soup_ws/src
+git clone https://github.com/jsk-ros-pkg/jsk_demos.git
+rosdep install --from-paths . --ignore-src -y -r
+cd ~/soup_ws
+catkin build jsk_2021_10_soup_from_boil
+```
+
 [google スライド](https://docs.google.com/presentation/d/1uuL0VSfQScqvSo1AYunSH2SAyWI3LbZ4ZQoqa1mCs14/edit?usp=sharing)に従いながらハードウェア等の準備をする．  
 
 行うのは
@@ -16,7 +28,8 @@
 PR2を移動させるために、電源ケーブルを抜く。
 準備が出来たら
 ```
-# Do not forget to set ROS_MASTER_URI to PR1040 (e.g. rossetmaster pr1040)
+# ROS_MASTER_URIをPR1040にすることを忘れない (e.g. rossetmaster pr1040)
+source ~/soup_ws/devel/setup.bash
 roscd jsk_2021_10_soup_from_boil/euslisp
 roseus move-to-kitchen-with-map.l
 (move-to-arrange-ri-direct)
@@ -32,7 +45,8 @@ move-to : succeeded
 ### 位置のチェック
 
 ```
-roscd jsk_2020_04_pr2_curry/euslisp/cook-with-pos-map/soup-from-boil
+source ~/soup_ws/devel/setup.bash
+roscd jsk_2021_10_soup_from_boil/euslisp
 roseus soup-arrange-test-20211008.l
 (ih-check)
 ```
@@ -41,7 +55,8 @@ roseus soup-arrange-test-20211008.l
 
 ## 実行
 ```
-roscd jsk_2020_04_pr2_curry/euslisp/cook-with-pos-map/soup-from-boil
+source ~/soup_ws/devel/setup.bash
+roscd jsk_2021_10_soup_from_boil/euslisp
 roseus soup-arrange-test-20211008.l
 (soup-arrange-all)
 ```
