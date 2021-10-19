@@ -130,9 +130,9 @@
     (ros::ros-debug "release")
     (send *ri* :stop-grasp :effort 100)
     ;;; move to pre reset pose
-    (ros::ros-debug "pre reset pose")
-    (send *fetch* :angle-vector *pre-reset-pose*)
-    (send *ri* :angle-vector (send *fetch* :angle-vector) 10000)
+    ;(ros::ros-debug "pre reset pose")
+    ;(send *fetch* :angle-vector *pre-reset-pose*)
+    ;(send *ri* :angle-vector (send *fetch* :angle-vector) 10000)
     ;;; reset-pose
     (ros::ros-debug "reset pose")
     (send *fetch* :reset-pose)

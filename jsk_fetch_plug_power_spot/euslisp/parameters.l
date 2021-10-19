@@ -6,7 +6,7 @@
         ))
 (setq *plug-to-grasp-pose*
     (make-cascoords
-        :pos #f(-6.21 15.0 -32.68)
+        :pos #f(-6.21 15.0 -35.68)
         :rpy #f(1.575 0.016 -3.121)
         ))
 (setq *plug-frame* "plug_frame")
