@@ -414,6 +414,15 @@
       (go-back-to-dock)
       (return-from unplug-power-connector nil)))
 
+  ;; move head to ar markers again
+  (if (move-head-to-markers)
+    t
+    (progn
+      (ros::ros-error "Failed to find markers")
+      (recover-to-resetpose)
+      (go-back-to-dock)
+      (return-from plug-power-connector nil)))
+
   ;; put the plug to the holder
   (if (plug-to-holder)
     t
