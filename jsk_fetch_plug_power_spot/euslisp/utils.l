@@ -47,16 +47,21 @@
     (setq start-time (ros::time-now))
     (while t
       (unix::sleep 1)
-      (setq detection-results-msg (one-shot-subscribe "/tag_detections" apriltag_ros::AprilTagDetectionArray :timeout 10))
-      (when (not detection-results-msg) (return-from move-head-to-markers nil))
-      (setq id-list (mapcar #'(lambda (x) (elt (send x :id) 0)) (send detection-results-msg :detections)))
-      (if (and (id-in-list 0 id-list)
-               (id-in-list 1 id-list)
-               (id-in-list 2 id-list))
-          (progn
-            (ros::ros-info "all markers are found")
-            (return-from move-head-to-markers t))
-          nil)
+      (ros::ros-info "Retrieving tag message from \"/tag_detections\"...")
+      (setq detection-results-msg (one-shot-subscribe "/tag_detections" apriltag_ros::AprilTagDetectionArray)) ;; TODO: add timeout
+      (when detection-results-msg
+        (ros::ros-info "Got an message")
+        (setq id-list (mapcar #'(lambda (x) (elt (send x :id) 0)) (send detection-results-msg :detections)))
+        (if (and (id-in-list 0 id-list)
+                 (id-in-list 1 id-list)
+                 (id-in-list 2 id-list))
+            (progn
+              (ros::ros-info "all markers are found")
+              (return-from move-head-to-markers t))
+            (progn
+              (ros::ros-info "Keep searching markers")
+              nil))
+        )
       ;;; move head randomly
       (let ((tilt-angle (+ 0 (* (- 70 20) (/ (random 100) 100.0))))
             (pan-angle (+ -30 (* (- 30 -30) (/ (random 100) 100.0)))))
@@ -386,11 +391,11 @@
   (send *ri* :angle-vector (send *fetch* :reset-pose) 5000)
 
   ;; approach to spot
-  (if (approach-to-spot)
-    t
-    (progn
-      (ros::ros-error "Failed to approach to spot")
-      (return-from unplug-power-connector nil)))
+  ;;(if (approach-to-spot)
+  ;;  t
+  ;;  (progn
+  ;;    (ros::ros-error "Failed to approach to spot")
+  ;;    (return-from unplug-power-connector nil)))
 
   ;; move head to ar marker
   (if (move-head-to-markers)
