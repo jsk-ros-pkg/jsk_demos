@@ -390,12 +390,12 @@
   (send *fetch* :reset-pose)
   (send *ri* :angle-vector (send *fetch* :reset-pose) 5000)
 
-  ;; approach to spot
-  ;;(if (approach-to-spot)
-  ;;  t
-  ;;  (progn
-  ;;    (ros::ros-error "Failed to approach to spot")
-  ;;    (return-from unplug-power-connector nil)))
+   approach to spot
+  (if (approach-to-spot)
+    t
+    (progn
+      (ros::ros-error "Failed to approach to spot")
+      (return-from unplug-power-connector nil)))
 
   ;; move head to ar marker
   (if (move-head-to-markers)
