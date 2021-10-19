@@ -1,4 +1,6 @@
 <launch>
+  <arg name="spot_name" default="belka" /> <!-- belka or strelka -->
+
   <arg name="image_topic" default="/l515_head/color/image_raw" />
   <arg name="camera_info_topic" default="/l515_head/color/camera_info" />
   <arg name="camera_frame" default="l515_head_color_optical_frame" />
@@ -33,7 +35,7 @@
           />
       <rosparam
           command="load"
-          file="$(find jsk_fetch_plug_power_spot)/config/apriltag/tags.yaml"
+          file="$(find jsk_fetch_plug_power_spot)/config/apriltag/tags_for_$(arg spot_name).yaml"
           />
   </node>
 </launch>

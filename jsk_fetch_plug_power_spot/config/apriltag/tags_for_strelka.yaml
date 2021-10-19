@@ -1,0 +1,9 @@
+standalone_tags:
+  [
+    {id: 3, size: 0.030, name: 'plug_frame'},
+    {id: 4, size: 0.030, name: 'socket_frame'},
+    {id: 5, size: 0.030, name: 'holder_frame'},
+  ]
+tag_bundles:
+  [
+  ]
