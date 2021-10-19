@@ -11,8 +11,8 @@
     <arg name="h_max" value="127" />
     <arg name="h_min" value="52" />
     <arg name="s_max" value="158" />
-    <arg name="s_min" value="35" />
-    <arg name="i_max" value="164" />
+    <arg name="s_min" value="62" />
+    <arg name="i_max" value="172" />
     <arg name="i_min" value="50" />
 
     <arg name="create_manager" value="true" />
