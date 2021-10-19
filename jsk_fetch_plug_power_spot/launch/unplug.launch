@@ -1,8 +1,8 @@
 <launch>
-    <arg name="spot_type" default="belka" />
+    <arg name="spot_name" default="belka" />
 
     <include file="$(find jsk_fetch_plug_power_spot)/launch/apriltag_detection.launch.xml">
-        <arg name="spot_type" value="$(arg spot_type)"/>
+        <arg name="spot_name" value="$(arg spot_name)"/>
     </include>
 
     <node
