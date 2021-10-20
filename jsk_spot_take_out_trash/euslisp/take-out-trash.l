@@ -11,8 +11,9 @@
 
 (defun autowalk-data-upload ()
   (setq *path*
-        (ros::get-param "~path"
-                        (format nil "~A/autowalk/eng2_73b2kitchen.walk" *spot_autowalk_data_path*)))
+        (ros::get-param
+         "~path"
+         (format nil "~A/autowalk/eng2_73b2kitchen.walk" *spot_autowalk_data_path*)))
   (setq *init-waypoint* (floor (ros::get-param "~init_waypoint" 0)))
   (setq *upload* (ros::get-param "~upload" t))
   ;; Upload graphnav files to the robot.
