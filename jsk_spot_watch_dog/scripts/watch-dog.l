@@ -11,7 +11,24 @@
 
 (defclass watchdog-interface
   :super spot-interface
-  :slots (luminance ypr-euler luminance-threshold stand-start-time yaw-offset battery-temp temp-threshold human-rects rest-time-per-hour human-width-threshold human-height-threshold max-tracking-yaw paranoma-width paranoma-height lookup-angle change-body-duration bark-sound))
+  :slots (luminance
+          ypr-euler
+          luminance-threshold
+          stand-start-time
+          yaw-offset
+          battery-temp
+          temp-threshold-sit
+          temp-threshold-stand
+          human-rects
+          rest-time-per-hour
+          human-width-threshold
+          human-height-threshold
+          max-tracking-yaw
+          paranoma-width
+          paranoma-height
+          lookup-angle
+          change-body-duration
+          bark-sound))
 (defmethod watchdog-interface
   (:init
    (&rest args)
@@ -24,7 +41,8 @@
      (setq max-tracking-yaw (ros::get-param "~max_tracking_yaw" 0.0))
      (setq lookup-angle  (ros::get-param "~lookup_angle" -0.4)) ;; radian
      (setq change-body-duration (ros::get-param "~change_body_duration" 1.0))
-     (setq temp-threshold (ros::get-param "~temp_threshold" 50))
+     (setq temp-threshold-sit (ros::get-param "~temp_threshold" 50))
+     (setq temp-threshold-stand (ros::get-param "~temp_threshold" 40))
      (setq bark-sound (pathname (ros::get-param "~bark_sound" "bark.wav")))
      (let ((ros-img (one-shot-subscribe "~panorama_image" sensor_msgs::Image)))
        (setq paranoma-width (send ros-img :width))
@@ -73,9 +91,15 @@
               ))
   (:bright-surrounding () (if (> luminance luminance-threshold) t nil))
   ;;(:high-battery-temp () (if (> battery-temp temp-threshold) t nil))
-  (:high-battery-temp () (if (> battery-temp temp-threshold)
+  (:ready-stand-temp () (if (< battery-temp temp-threshold-stand)
                              (progn
-                               (ros::ros-info "bat temp: ~A; temp thresh: ~A" battery-temp temp-threshold)
+                               t)
+                             (progn
+                               (ros::ros-info "bat temp: ~A; temp thresh: ~A" battery-temp temp-threshold-stand)
+                               nil)))
+  (:high-battery-temp () (if (> battery-temp temp-threshold-sit)
+                             (progn
+                               (ros::ros-info "bat temp: ~A; temp thresh: ~A" battery-temp temp-threshold-sit)
                              t)
                            nil))
   )
@@ -112,8 +136,9 @@
       (send *ri* :spin-once)
       (setq ret (func-day-basic userdata-alist))
       (if ret (return-from func-rest ret))
-      (when (> (/ (send (ros::time- (ros::time-now) (send *ri* :get-val 'stand-start-time)) :to-sec) 60)
-             (send *ri* :get-val 'rest-time-per-hour))
+      (when (and (send *ri* :ready-stand-temp) 
+                 (> (/ (send (ros::time- (ros::time-now) (send *ri* :get-val 'stand-start-time)) :to-sec) 60)
+                    (send *ri* :get-val 'rest-time-per-hour)))
         (ros::ros-info  "finish rest")
         (send *ri* :set-val 'stand-start-time (ros::time-now))
         (send *ri* :power-on)
