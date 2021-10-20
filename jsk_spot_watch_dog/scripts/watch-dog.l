@@ -41,8 +41,8 @@
      (setq max-tracking-yaw (ros::get-param "~max_tracking_yaw" 0.0))
      (setq lookup-angle  (ros::get-param "~lookup_angle" -0.4)) ;; radian
      (setq change-body-duration (ros::get-param "~change_body_duration" 1.0))
-     (setq temp-threshold-sit (ros::get-param "~temp_threshold" 50))
-     (setq temp-threshold-stand (ros::get-param "~temp_threshold" 40))
+     (setq temp-threshold-sit (ros::get-param "~temp_threshold_sit" 50))
+     (setq temp-threshold-stand (ros::get-param "~temp_threshold_stand" 40))
      (setq bark-sound (pathname (ros::get-param "~bark_sound" "bark.wav")))
      (let ((ros-img (one-shot-subscribe "~panorama_image" sensor_msgs::Image)))
        (setq paranoma-width (send ros-img :width))
@@ -167,7 +167,7 @@
         (return-from func-watch ret))
       ;; check battery temperature
       (when (send *ri* :high-battery-temp)
-        (ros::ros-warn "the battery temperature is higher than the threshold: ~A vs ~A, sit down and turn off servo" (send *ri* :get-val 'battery-temp) (send *ri* :get-val 'temp-threshold))
+        (ros::ros-warn "the battery temperature is higher than the threshold: ~A vs ~A, sit down and turn off servo" (send *ri* :get-val 'battery-temp) (send *ri* :get-val 'temp-threshold-sit))
         (send *ri* :set-val 'stand-start-time (ros::time-now))
         (send *ri* :sit)
         (send *ri* :power-off)
