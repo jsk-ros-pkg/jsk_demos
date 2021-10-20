@@ -21,14 +21,12 @@
   (send *spotkinova* :kinova_joint_1 :joint-angle -30)
   ;; (send *spotkinova* :head :move-end-rot -30 :z)
   (send *ri* :angle-vector (send *spotkinova* :angle-vector) 3000)
-  (send *ri* :wait-interpolation nil)
-  )
+  (send *ri* :wait-interpolation nil))
 
 (defun put-on-desk (coord)
   (send *spotkinova* :head :inverse-kinematics coord :rotation-axis nil)
   (send *ri* :angle-vector (send *spotkinova* :angle-vector) 5000)
-  (send *ri* :wait-interpolation nil)
-  )
+  (send *ri* :wait-interpolation nil))
 
 (defun autowalk-data-upload ()
   (setq *path*
@@ -41,8 +39,7 @@
   ;; Localize the robot in the map
   (ros::ros-info "initialize position with waypoint of ~A" *init-waypoint*)
   ;; (send *ri* :initial-localization-waypoint *init-waypoint*)
-  (send *ri* :initial-localization-fiducial)
-  )
+  (send *ri* :initial-localization-fiducial))
 
 (defun go-to-desk ()
   (let (name position)
@@ -52,14 +49,17 @@
     (ros::ros-info "~A" position)
     (send *ri* :speak-jp "~Aさんの机に向かいます" :wait t)
     (send *ri* :navigate-to (car position))
+    ;; when spot needs to move navigate position
     (unless (and (= (second position) 0) (= (third position) 0) (= (fourth position) 0))
       (send *ri* :go-pos (float-vector (second position) (third position) (fourth position))))
-    (send *ri* :speak-jp "~Aさん" :wait t)
-    ))
+    (send *ri* :speak-jp "~Aさん" :wait t)))
 
 (defun set-name ()
   (ros::ros-info "talk to Spot")
-  (let ((message (elt (send (one-shot-subscribe "/speech_to_text_jp" speech_recognition_msgs::SpeechRecognitionCandidates) :transcript) 0)))
+  (let ((message
+         (elt (send (one-shot-subscribe
+                     "/speech_to_text_jp"
+                     speech_recognition_msgs::SpeechRecognitionCandidates) :transcript) 0)))
     (ros::ros-info "~A" message)
     (cond
      ((substringp "北川" message) "kitagawa")
@@ -76,8 +76,7 @@
      ((substringp "PR" message) "pr2")
      ((substringp "hr" message) "hrp2")
      ((substringp "3Dプリンター" message) "3dprinter")
-     (t nil)
-     )))
+     (t nil))))
 
 ;; set desk position to hash table
 (defvar *desk-position* (make-hash-table :test #'equal))
@@ -100,8 +99,7 @@
   (add-entry-desk-position "kanazawa" (list 16 0.2 0 0 "金沢"))
   (add-entry-desk-position "wakabayashi" (list 17 0 -0.2 0 "若林"))
   (add-entry-desk-position "tanemoto" (list 18 0 0 0 "種本"))
-  (add-entry-desk-position "guiga" (list 18 0.3 0.2 30 "ギガ"))
-  )
+  (add-entry-desk-position "guiga" (list 18 0.3 0.2 30 "ギガ")))
 
 (defun main ()
   (autowalk-data-upload)
@@ -114,7 +112,11 @@
 
   (send *ri* :speak-jp "お届け物です" :wait t)
   (send *ri* :speak-jp "受け取ったら受け取りましたと言ってください" :wait t)
-  (while (not (string= "受け取りました" (elt (send (one-shot-subscribe "/speech_to_text_jp" speech_recognition_msgs::SpeechRecognitionCandidates) :transcript) 0))))
+  (while (not
+          (string=
+           "受け取りました"
+           (elt (send (one-shot-subscribe
+                       "/speech_to_text_jp"
+                       speech_recognition_msgs::SpeechRecognitionCandidates) :transcript) 0))))
   (send *ri* :speak-jp "戻ります")
-  (send *ri* :navigate-to 0)
-  )
+  (send *ri* :navigate-to 0))
