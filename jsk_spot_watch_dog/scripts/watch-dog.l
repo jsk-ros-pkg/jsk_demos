@@ -167,7 +167,7 @@
         (return-from func-watch ret))
       ;; check battery temperature
       (when (send *ri* :high-battery-temp)
-        (ros::ros-warn "the battery temperature is higher than the threshold: ~A vs ~A, sit down and turn off servo" (send *ri* :get-val 'battery-temp) (send *ri* :get-val 'temp-threshold))
+        (ros::ros-warn "the battery temperature is higher than the threshold: ~A vs ~A, sit down and turn off servo" (send *ri* :get-val 'battery-temp) (send *ri* :get-val 'temp-threshold-sit))
         (send *ri* :set-val 'stand-start-time (ros::time-now))
         (send *ri* :sit)
         (send *ri* :power-off)
