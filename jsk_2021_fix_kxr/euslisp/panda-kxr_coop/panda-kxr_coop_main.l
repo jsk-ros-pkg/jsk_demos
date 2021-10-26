@@ -10,18 +10,16 @@
 
 (ros::advertise "/panda_order" std_msgs::String 1)
 
-;(setq joint_state (one-shot-subscribe "/puppet_joint_states" sensor_msgs::jointstate))
+(defvar *timeout-servo-list*)
 
 ;;make list of timeout-servo
 (defun make-timeout-servo-list ()
-    (let (timeout-joint-list)
-      (setq timeout-joint-list '())
-      (setq count (- (length (send joint_state :name)) 1))
+  (setq *timeout-servo-list* '())
+  (setq count (- (length (send joint_states :name)) 1))
       (while (> count -1)
 	(if (< (elt (send joint_state :effort) count) 0.1)
-	  (setq timeout-joint-list (cons (elt (send joint_state :name) count) timeout-joint-list)))
-	(setq count (- count 1)))
-      (print timeout-joint-list)))
+	  (setq *timeout-servo-list* (cons (elt (send joint_states :name) count) *timeout-servo-list*)))
+	(setq count (- count 1)))))
 
 (dual_panda-init)
 
@@ -30,6 +28,59 @@
 ;setting
 (send *ri* :stop-grasp :rarm)
 (send *ri* :stop-grasp :larm)
+(send *robot* :reset-pose)
+(send *robot* :rarm :move-end-pos #f(-500 0 0))
+(send *robot* :larm :move-end-pos #f(-500 0 0))
+(send *ri* :angle-vector (send *robot* :angle-vector) 3000)
+(send *ri* :wait-interpolation)
+
+(setq joint_states (one-shot-subscribe "/puppet_joint_states" sensor_msgs::jointstate))
+
+
+(cond ((string-equal (subseq (elt *timeout-servo-list* 0) 0 4) "rarm")
+       ())
+      ((string-equal (subseq (elt *timeout-servo-list* 0) 0 4) "larm")
+       ()))
+
+#|
+;rarm用に切り替えた直後
+
+;rarmを崖に近づける
+(send *robot* :rarm :inverse-kinematics (send (send *robot* :copy-worldcoords) :transform (make-coords :pos #f(444 -300.5 1400) :rpy (float-vector 0.0 1.57 -1.57))) :translation-axis t :rotation-axis t)
+(send *robot* :larm :inverse-kinematics (send (send *robot* :copy-worldcoords) :transform (make-coords :pos #f(467 -90.157 1310) :rpy (float-vector 0.0 1.501 -3.061))) :translation-axis t :rotation-axis t)
+(send *ri* :angle-vector (send *robot* :angle-vector) 3000)
+(send *ri* :wait-interpolation)
+
+(send *robot* :larm :move-end-pos #f(10 0 0))
+(send *ri* :angle-vector (send *robot* :angle-vector) 3000)
+(send *ri* :wait-interpolation)
+
+(send *ri* :start-grasp :larm)
+(unix:sleep 1)
+
+(send *robot* :rarm :inverse-kinematics (send (send *robot* :copy-worldcoords) :transform (make-coords :pos #f(444 -188.5 1400) :rpy (float-vector 0.0 1.57 -1.57))) :translation-axis t :rotation-axis t)
+(send *robot* :larm :inverse-kinematics (send (send *robot* :copy-worldcoords) :transform (make-coords :pos #f(444 -32.157 1300) :rpy (float-vector 2.341 1.552 -2.369))) :translation-axis t :rotation-axis t)
+(send *ri* :angle-vector (send *robot* :angle-vector) 3000)
+(send *ri* :wait-interpolation)
+
+(send *robot* :rarm :move-end-pos #f(100 0 0))
+(send *ri* :angle-vector (send *robot* :angle-vector) 3000)
+(send *ri* :wait-interpolation)
+
+(send *ri* :start-grasp :rarm)
+(unix:sleep 2)
+
+(send *robot* :rarm :inverse-kinematics (send (send *robot* :copy-worldcoords) :transform (make-coords :pos #f(444 -96.5 1300) :rpy (float-vector 0.0 1.57 -1.57))) :translation-axis t :rotation-axis t)
+(send *robot* :larm :inverse-kinematics (send (send *robot* :copy-worldcoords) :transform (make-coords :pos #f(444 60.157 1300) :rpy (float-vector 2.341 1.552 -2.369))) :translation-axis t :rotation-axis t)
+(send *ri* :angle-vector (send *robot* :angle-vector) 3000)
+(send *ri* :wait-interpolation)
+
+(send *ri* :stop-grasp :larm)
+(unis:sleep 1)
+
+(send *robot* :larm :move-end-pos #f(-100 0 0))
+(send *ri* :angle-vector (send *robot* :angle-vector) 3000)
+(send *ri* :wait-interpolation)
 
 (send *robot* :rarm :inverse-kinematics (send (send *robot* :copy-worldcoords) :transform (make-coords :pos #f(444 -96.5 1301.6) :rpy (float-vector 0.0 1.57 -1.57))) :translation-axis t :rotation-axis t)
 (send *robot* :larm :inverse-kinematics (send (send *robot* :copy-worldcoords) :transform (make-coords :pos #f(432.17 224.157 1400) :rpy (float-vector -1.57 0.84 1.60))) :translation-axis t :rotation-axis t)
@@ -64,3 +115,4 @@
 (send *ri* :wait-interpolation)
 
 ;;move KXR's rarm by himlelf
+|#
