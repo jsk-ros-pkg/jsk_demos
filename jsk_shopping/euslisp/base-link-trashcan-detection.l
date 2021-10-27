@@ -7,6 +7,7 @@
 (load "package://fetcheus/fetch-interface.l")
 ;;(load "package://pr2eus_moveit/euslisp/collision-object-publisher.l")
 ;;(load "package://jsk_fetch_startup/euslisp/navigation-utils.l")
+(load "move-trashcan-to-spot.l")
 
 (ros::load-ros-manifest "jsk_recognition_msgs")
 
@@ -63,10 +64,6 @@
     (send *ri* :angle-vector (send *fetch* :angle-vector) tm)
     (send *ri* :wait-interpolation wi))
 
-(defun main()
-  (ros::subscribe *topic-name* jsk_recognition_msgs::BoundingBoxArray #'bounding-box-array-cb 1)
-  )
-
 (defun trashcan-grasp (obj-pos)
   (let ((cam-coords nil)
         (obj-coords (make-coords :pos (scale 1000 obj-pos) :rpy #f(0 0 0))))
@@ -85,7 +82,8 @@
     (send *ri* :wait-interpolation)
     (send *fetch*
           :rarm :inverse-kinematics
-          (make-coords :pos (send obj-coords :pos) :rpy (float-vector 0 pi/2 pi/2)) :rotation-axis t)
+          (make-coords :pos (send obj-coords :pos)
+                       :rpy (float-vector 0 pi/2 pi/2)) :rotation-axis t)
     (send *ri* :angle-vector (send *fetch* :angle-vector) 10000) ;; reaching
     (send *ri* :wait-interpolation)
     (send *fetch* :rarm :move-end-pos #f(100 0 0))
@@ -125,7 +123,9 @@
         (obj-coords nil))
     (unless (boundp '*tfl*) (setq *tfl* (instance transform-listener :init)))
     (setq cam-coords
-          (send *tfl* :lookup-transform "/base_link" "/head_camera_depth_optical_frame" (ros::time 0)))
+          (send *tfl*
+                :lookup-transform "/base_link" "/head_camera_depth_optical_frame"
+                (ros::time 0)))
     (unix::sleep 2)
     ;; (send *fetch* :angle-vector #f(20.0 56.549 86.0026 -30.9913 101.496 -91.683 92.782 8.07181 0.0 0.0)) ;; (send *fetch* :rarm :inverse-kinematics (make-coords :pos #f(400 -200 500) :rpy (float-vector 0 0 pi/2)))
     ;; (send *ri* :angle-vector (send *fetch* :angle-vector) 5000)
@@ -139,7 +139,8 @@
     (send *ri* :angle-vector-raw (send *fetch* :angle-vector) 3000 :head-controller)
     (send *ri* :wait-interpolation)
     (send *fetch* :rarm :inverse-kinematics
-          (make-coords :pos (send obj-coords :pos) :rpy (float-vector 0 pi/2 0)) :rotation-axis t)
+          (make-coords :pos (send obj-coords :pos)
+                       :rpy (float-vector 0 pi/2 0)) :rotation-axis t)
     (send *ri* :angle-vector (send *fetch* :angle-vector) 10000) ;; reaching
     (send *ri* :wait-interpolation)
     (send *fetch* :rarm :move-end-pos #f(100 0 0))
@@ -173,9 +174,10 @@
         (obj-coords nil))
     (ros::spin-once)
     (unless (boundp '*tfl*) (setq *tfl* (instance transform-listener :init)))
-    (setq cam-coords (send *tfl*
-                           :lookup-transform "/base_link" "/head_camera_depth_optical_frame"
-                           (ros::time 0)))
+    (setq cam-coords
+          (send *tfl*
+                :lookup-transform "/base_link" "/head_camera_depth_optical_frame"
+                (ros::time 0)))
     (unix::sleep 2)
     ;; (send *fetch* :angle-vector #f(20.0 56.549 86.0026 -30.9913 101.496 -91.683 92.782 8.07181 0.0 0.0)) ;; (send *fetch* :rarm :inverse-kinematics (make-coords :pos #f(400 -200 500) :rpy (float-vector 0 0 pi/2)))
     ;; (send *ri* :angle-vector (send *fetch* :angle-vector) 5000)
@@ -213,17 +215,20 @@
         (obj-coords nil))
     (ros::spin-once)
     (unless (boundp '*tfl*) (setq *tfl* (instance transform-listener :init)))
-    (setq cam-coords (send *tfl*
-                           :lookup-transform "/base_link" "/head_camera_depth_optical_frame"
-                           (ros::time 0)))
+    (setq cam-coords
+          (send *tfl*
+                :lookup-transform "/base_link" "/head_camera_depth_optical_frame"
+                (ros::time 0)))
     (unix::sleep 2)
     ;; (send *fetch* :angle-vector #f(20.0 56.549 86.0026 -30.9913 101.496 -91.683 92.782 8.07181 0.0 0.0)) ;; (send *fetch* :rarm :inverse-kinematics (make-coords :pos #f(400 -200 500) :rpy (float-vector 0 0 pi/2)))
     ;; (send *ri* :angle-vector (send *fetch* :angle-vector) 5000)
     ;; (send *ri* :wait-interpolation)
-    (setq obj-coords (make-coords :pos (scale 1000 obj-pos) :rpy (float-vector 0 0 pi/2)))
+    (setq obj-coords (make-coords :pos (scale 1000 obj-pos)
+                                  :rpy (float-vector 0 0 pi/2)))
     (send obj-coords :transform cam-coords :world)
-    (send obj-coords :transform (make-coords :pos #f(-130 -25 30)) :world)
-    (setq obj-coords (make-coords :pos (send obj-coords :pos) :rpy (float-vector 0 0 pi/2)))
+    (send obj-coords :transform (make-coords :pos #f(-130 -25 30)) :world) ;; fetch1075 1020
+    (setq obj-coords (make-coords :pos (send obj-coords :pos)
+                                  :rpy (float-vector 0 0 pi/2)))
     (ros::ros-info "~A" obj-coords)
 
     (send *fetch* :rarm :inverse-kinematics obj-coords :rotation-axis t)
@@ -235,10 +240,11 @@
     (send *ri* :start-grasp)
     (send *ri* :speak-jp "ごみ袋を持ち上げます" :wait t)
 
-    ;; (send obj-coords :transform (make-coords :pos #f(-50 0 1300)) :world)
-    ;; (send *fetch* :rarm :inverse-kinematics obj-coords :rotation-axis nil)
-    ;; (send *ri* :angle-vector (send *fetch* :angle-vector) 5000 :use-torso t)
-    ;; (send *ri* :wait-interpolation)
+    ;; lifting garbage bag
+    (send obj-coords :transform (make-coords :pos #f(-50 0 700)) :world)
+    (send *fetch* :rarm :inverse-kinematics obj-coords :rotation-axis nil)
+    (send *ri* :angle-vector (send *fetch* :angle-vector) 5000 :use-torso t)
+    (send *ri* :wait-interpolation)
     ;; (send *fetch* :torso :waist-z :joint-angle 360)
     ;; (send *ri* :angle-vector (send *fetch* :angle-vector) 10000)
     ;; (send *ri* :wait-interpolation)
@@ -248,3 +254,19 @@
     ;; (send *ri* :angle-vector (send *fetch* :angle-vector) 5000)
     ;; (send *ri* :wait-interpolation)
     ))
+
+(defun hole-main()
+  (move-to-trashcan-front)
+  (ros::subscribe *topic-name*
+                  jsk_recognition_msgs::BoundingBoxArray
+                  #'bounding-box-array-cb 1)
+  (ros::spin-once)
+  (hole obj-pos))
+
+(defun right-side-main()
+  (move-to-trashcan-front)
+  (ros::subscribe *topic-name*
+                  jsk_recognition_msgs::BoundingBoxArray
+                  #'bounding-box-array-cb 1)
+  (ros::spin-once)
+  (right-side obj-pos))
