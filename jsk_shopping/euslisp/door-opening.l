@@ -53,6 +53,7 @@
       (setq goal-pose (send goal-pose :rotate relative-rot :z :local)))
     (send *fetch* :move-to goal-pose :world)
     (send *ri* :move-to goal-pose)))
+
 (defun door-open ()
   (send *ri* :stop-grasp)
   (go-to-spot "door-spot" :relative-pos #f(200 -300 0))
@@ -77,9 +78,17 @@
   (send *ri* :angle-vector (send *fetch* :angle-vector) 5000)
   (send *ri* :wait-interpolation)
 
+  (send *ri* :angle-vector-sequence
+        (list (send *fetch* :rarm :move-end-pos #f(-50 0 0))
+              (send *fetch* :rarm :move-end-pos #f(-50 0 0)))
+        (list 3000 3000))
+  ;; (send *fetch* :rarm :move-end-pos #f(-100 0 0))
+  ;; (send *ri* :angle-vector (send *fetch* :angle-vector) 5000)
+  (send *ri* :wait-interpolation)
+
   (send *fetch* :rarm :inverse-kinematics
         (send (send *fetch* :copy-worldcoords) :transform
-              (make-coords :pos #f(800 70 950) :rpy (float-vector 0 0 -pi/2))))
+              (make-coords :pos #f(700 70 950) :rpy (float-vector 0 0 -pi/2))))
   (send *ri* :angle-vector (send *fetch* :angle-vector) 5000)
   (send *ri* :wait-interpolation)
   )
