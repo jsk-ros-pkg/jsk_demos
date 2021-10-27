@@ -25,8 +25,7 @@
 # for more info https://github.com/kochigami/naoqi_driver/issues/2
 - git:
     local-name: naoqi_driver
-    # uri: https://github.com/kochigami/naoqi_driver ## https://github.com/kochigami/naoqi_driver/pull/9
-    uri: https://github.com/k-okada/naoqi_driver
+    uri: https://github.com/kochigami/naoqi_driver
     version: kochigami-develop
 # add many nodes..... wait for 0.5.6
 - git:
