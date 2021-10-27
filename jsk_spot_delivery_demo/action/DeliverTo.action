@@ -1,4 +1,4 @@
-string target_node_id
+jsk_spot_delivery_demo/DeliveryTask task
 ---
 bool success
 string message

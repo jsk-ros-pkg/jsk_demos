@@ -2,11 +2,18 @@
     <arg name="launch_demo" default="true" />
 
     <!-- delivery_demo -->
-    <node pkg="jsk_spot_delivery_demo" type="delivery_demo.py" name="delivery_demo" output="screen" if="$(arg launch_demo)">
+    <node
+        pkg="jsk_spot_delivery_demo"
+        type="delivery_demo.py"
+        name="delivery_demo"
+        output="screen"
+        if="$(arg launch_demo)">
         <rosparam>
             list_node_strolling:
                 - eng2_73B2
                 - eng2_73A2
+                - eng2_73A1
+                - eng2_73A4
         </rosparam>
 
         <remap from="~person_visible" to="/delivery_demo_person_tracker/visible" />
@@ -17,25 +24,25 @@
     </node>
 
     <!-- deliver_to and pickup_package action server -->
-    <node pkg="jsk_spot_delivery_demo" type="delivery_action_server.py" name="delivery_action_server" output="screen">
+    <node
+        pkg="jsk_spot_delivery_demo"
+        type="delivery_action_server.py"
+        name="delivery_action_server"
+        output="screen">
         <rosparam>
             force_threshold: 1.5
         </rosparam>
-        <rosparam command="load" file="$(find spot_behavior_manager_demo)/config/nodes.yaml" />
+        <rosparam command="load" file="$(find spot_behavior_graph)/config/nodes.yaml" />
         <remap from="~reset_body_force" to="/body_force_publisher/zero_offset" />
         <remap from="~body_force" to="/body_force_publisher/wrench_output" />
     </node>
 
-    <!-- ros speech recognition -->
-    <include file="$(find ros_speech_recognition)/launch/speech_recognition.launch">
-        <arg name="launch_sound_play" value="false" />
-        <arg name="launch_audio_capture" value="false" />
-        <arg name="audio_topic" value="/audio" />
-        <arg name="language" default="ja-JP" />
-    </include>
-
     <!-- person tracker -->
-    <node pkg="spot_person_lead_behaviors" type="person_tracker.py" name="delivery_demo_person_tracker" output="screen">
+    <node
+        pkg="spot_person_lead_behaviors"
+        type="person_tracker.py"
+        name="delivery_demo_person_tracker"
+        output="screen">
         <remap from="~bbox_array" to="/spot_recognition/bbox_array" />
         <!-- remap from="~visible" to="" / -->
 
@@ -49,7 +56,11 @@
 
 
     <!-- body force caculation -->
-    <node pkg="jsk_spot_delivery_demo" type="body_force_publisher.py" name="body_force_publisher" output="screen">
+    <node
+        pkg="jsk_spot_delivery_demo"
+        type="body_force_publisher.py"
+        name="body_force_publisher"
+        output="screen">
         <remap from="~input_wrench_front_right" to="/front_right/wrench" />
         <remap from="~input_wrench_front_left" to="/front_left/wrench" />
         <remap from="~input_wrench_rear_right" to="/rear_right/wrench" />
@@ -57,7 +68,10 @@
     </node>
 
     <group ns="front_right">
-        <node pkg="virtual_force_publisher" type="virtual_force_publisher" name="virtual_force_publisher">
+        <node
+            pkg="virtual_force_publisher"
+            type="virtual_force_publisher"
+            name="virtual_force_publisher">
             <remap from="joint_states" to="/joint_states" />
             <rosparam subst_value="true">
                 publish_frequency: 50.0
@@ -69,7 +83,10 @@
     </group>
 
     <group ns="front_left">
-        <node pkg="virtual_force_publisher" type="virtual_force_publisher" name="virtual_force_publisher">
+        <node
+            pkg="virtual_force_publisher"
+            type="virtual_force_publisher"
+            name="virtual_force_publisher">
             <remap from="joint_states" to="/joint_states" />
             <rosparam subst_value="true">
                 publish_frequency: 50.0
@@ -81,7 +98,10 @@
     </group>
 
     <group ns="rear_right">
-        <node pkg="virtual_force_publisher" type="virtual_force_publisher" name="virtual_force_publisher">
+        <node
+            pkg="virtual_force_publisher"
+            type="virtual_force_publisher"
+            name="virtual_force_publisher">
             <remap from="joint_states" to="/joint_states" />
             <rosparam subst_value="true">
                 publish_frequency: 50.0
@@ -93,7 +113,10 @@
     </group>
 
     <group ns="rear_left">
-        <node pkg="virtual_force_publisher" type="virtual_force_publisher" name="virtual_force_publisher">
+        <node
+            pkg="virtual_force_publisher"
+            type="virtual_force_publisher"
+            name="virtual_force_publisher">
             <remap from="joint_states" to="/joint_states" />
             <rosparam subst_value="true">
                 publish_frequency: 50.0
