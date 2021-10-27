@@ -18,12 +18,20 @@
 
 (defun view-fetch ()
   (send *irtviewer* :look-all
-        (send (geo::make-bounding-box (flatten (send-all (send *fetch* :bodies) :vertices))) :grow 2.0)))
+        (send (geo::make-bounding-box
+               (flatten (send-all (send *fetch* :bodies) :vertices))) :grow 2.0)))
 
 (defun move-dock-front ()
-  (setq *dock-front* (send (send *scene* :spot "/eng2/7f/room73B2-fetch-dock-front") :copy-worldcoords))
+  (setq *dock-front*
+        (send (send *scene* :spot "/eng2/7f/room73B2-fetch-dock-front") :copy-worldcoords))
   (send *fetch* :move-to *dock-front* :world)
   (send *ri* :move-to *dock-front*))
+
+(defun move-73b2-door-front ()
+  (setq *73b2-door-front*
+        (send (send *scene* :spot "door-spot") :copy-worldcoords))
+  (send *fetch* :move-to *73b2-door-front* :world)
+  (send *ri* :move-to *73b2-door-front*))
 
 (defun get-spot-coords (name)
   (let ((spot-coords nil))
@@ -51,7 +59,9 @@
 (defun move-to-trashcan-front ()
   (let ((offset #f(-500 -500 0)))
     (setq success
-          (go-to-spot "/eng2/7f/room73B2-microwave-front" :relative-pos offset :relative-rot 0))
+          (go-to-spot "/eng2/7f/room73B2-microwave-front"
+                      :relative-pos offset
+                      :relative-rot 0))
     (send *ri* :go-pos-unsafe 0.1 0 0)
     (send *ri* :go-pos-unsafe 0 0 -90)))
 ;; (setq offset #f(-450 -400 0))
