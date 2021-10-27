@@ -12,7 +12,7 @@
 (ros::load-ros-manifest "std_msgs")
 (ros::load-ros-manifest "sensor_msgs")
 
-(ros::rate 10)
+(ros::rate 1)
 
 (defun servo-onoff()
   (setq msg (send (one-shot-subscribe "/panda_order" std_msgs::String) :data))
@@ -30,21 +30,71 @@
 	 (progn
 	   (send *ri* :larm-hold)))))
 
-(setq msg (send (one-shot-subscribe "/panda_order" std_msgs::String) :data))
-(print msg)
+(defun take-posture()
+  (setq msg (send (one-shot-subscribe "/panda_order" std_msgs::String) :data))
+  (cond ((string-equal msg "RARM-SHOULDER-R")
+	 (progn
+	   (send *robot* :angle-vector #f(0.0 -10.0 40.0 -20.0 0.0 0.0 -10.0 40.0 -20.0 0.0 -90.0 -90.0 0.0 -27.0 -27.0 -90.0 90.0 0.0 -27.0 -27.0 0.0 10.0))
+	   (send *ri* :angle-vector (send *robot* :angle-vector) 200)
+	 ((string-equal msg "RARM-ELBOW-P")
+	  (progn
+	    (send *robot* :angle-vector #f(0.0 -10.0 40.0 -20.0 0.0 0.0 -10.0 40.0 -20.0 0.0 0.0 -90.0 0.0 -27.0 -27.0 0.0 90.0 0.0 -27.0 -27.0 0.0 10.0))
+	    (send *ri* :angle-vector (send *robot* :angle-vector) 200)))))))
 
-;指定された姿勢を取る
-(cond ((string-equal msg "RARM-SHOULDER-R")
-       (progn
-	 (send *robot* :angle-vector #f(0.0 -10.0 40.0 -20.0 0.0 0.0 -10.0 40.0 -20.0 0.0 -90.0 -90.0 0.0 -27.0 -27.0 -90.0 90.0 0.0 -27.0 -27.0 0.0 10.0))
-	 (send *ri* :angle-vector (send *robot* :angle-vector) 100))
-       ((string-equal msg "RARM-ELBOW-P")
-	(progn
-	  (send *robot* :angle-vector #f(0.0 -10.0 40.0 -20.0 0.0 0.0 -10.0 40.0 -20.0 0.0 0.0 -90.0 0.0 -27.0 -27.0 0.0 90.0 0.0 -27.0 -27.0 0.0 10.0))
-	  (send *ri* :angle-vector (send *robot* :angle-vector) 100)))))
+(defun check-move()
+  (setq msg (send (one-shot-subscribe "/panda_order" std_msgs::String) :data))
+  (cond ((string-equal msg "check-rarm-elbow-p")
+	 (progn
+	   (send *robot* :rarm-elbow-p :joint-angle 40)
+	   (send *ri* :angle-vector (send *robot* :angle-vector) 150)
+	   (unix:sleep 3)
+	   
+	   (send *robot* :rarm-elbow-p :joint-angle -40)
+	   (send *ri* :angle-vector (send *robot* :angle-vector) 150)
+	   (unix:sleep 3)
+	   
+	   (send *robot* :rarm-elbow-p :joint-angle 0)
+	   (send *ri* :angle-vector (send *robot* :angle-vector) 150)
+	   (unix:sleep 3)))))
+
+
+(take-posture)
 
 ;;指令を受けた後腕のサーボを切る
 (servo-onoff)
 
+(setq f 0)
+(while (= f 0)
+  (joint-publish)
+  (if ()
+      (progn
+	(send *ri* :rarm-hold)
+	(send *robot* :rarm-elbow-p :joint-angle 40)
+	(send *ri* :angle-vector (send *robot* :angle-vector) 150)
+	(unix:sleep 3)
+	
+	(send *robot* :rarm-elbow-p :joint-angle -40)
+	(send *ri* :angle-vector (send *robot* :angle-vector) 150)
+	(unix:sleep 3)
+	
+	(send *robot* :rarm-elbow-p :joint-angle 0)
+	(send *ri* :angle-vector (send *robot* :angle-vector) 150)
+	(unix:sleep 3)
+
+	(if ()
+	     (setq f 1))
+	)))
+ 
+
+  
+  (unix:sleep 1))
+
+(while (ros::ok)
+  (print "hoge")
+  (ros::sleep))
+
 ;;ケーブルがさせた後腕のサーボon
 (servo-onoff)
+
+;;サーボが生き返ったかの確認
+(check-move)
