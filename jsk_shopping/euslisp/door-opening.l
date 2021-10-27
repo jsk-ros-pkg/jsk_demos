@@ -86,9 +86,67 @@
   ;; (send *ri* :angle-vector (send *fetch* :angle-vector) 5000)
   (send *ri* :wait-interpolation)
 
+  ;; opening door
   (send *fetch* :rarm :inverse-kinematics
         (send (send *fetch* :copy-worldcoords) :transform
               (make-coords :pos #f(700 70 950) :rpy (float-vector 0 0 -pi/2))))
   (send *ri* :angle-vector (send *fetch* :angle-vector) 5000)
   (send *ri* :wait-interpolation)
+
+  (send *fetch* :rarm :inverse-kinematics
+        (send (send *fetch* :copy-worldcoords) :transform
+              (make-coords
+               :pos
+               (float-vector
+                (- 800 (* 700 (sin (/ pi 12)))) (+ 70 (- 700 (* 700 (cos (/ pi 12))))) 950)
+               :rpy
+               (float-vector (/ -pi 12) 0 -pi/2))) :rotation-axis t)
+  (send *ri* :angle-vector (send *fetch* :angle-vector) 5000)
+  (send *ri* :wait-interpolation)
+
+  (send *fetch* :rarm :inverse-kinematics
+        (send (send *fetch* :copy-worldcoords) :transform
+              (make-coords
+               :pos
+               (float-vector
+                (- 800 (* 700 (sin (/ pi 8)))) (+ 70 (- 700 (* 700 (cos (/ pi 8))))) 950)
+               :rpy
+               (float-vector (/ -pi 6) 0 -pi/2))))
+  (send *ri* :angle-vector (send *fetch* :angle-vector) 5000)
+  (send *ri* :wait-interpolation)
+
+  (send *fetch* :rarm :inverse-kinematics
+        (send (send *fetch* :copy-worldcoords) :transform
+              (make-coords
+               :pos
+               (float-vector
+                (- 800 (* 700 (sin (/ pi 6)))) (+ 70 (- 700 (* 700 (cos (/ pi 6))))) 950)
+               :rpy
+               (float-vector (/ -pi 5) 0 -pi/2))))
+  (send *ri* :angle-vector (send *fetch* :angle-vector) 5000)
+  (send *ri* :wait-interpolation)
+
+  (send *fetch* :rarm :inverse-kinematics
+        (send (send *fetch* :copy-worldcoords) :transform
+              (make-coords
+               :pos
+               (float-vector
+                (- 800 (* 700 (sin (/ pi 5)))) (+ 70 (- 700 (* 700 (cos (/ pi 5))))) 950)
+               :rpy
+               (float-vector (/ -pi 5) 0 -pi/2))))
+  (send *ri* :angle-vector (send *fetch* :angle-vector) 5000)
+  (send *ri* :wait-interpolation)
+
+  (send *fetch* :rarm :inverse-kinematics
+        (send (send *fetch* :copy-worldcoords) :transform
+              (make-coords
+               :pos
+               (float-vector
+                (- 800 (* 700 (sin (/ pi 4)))) (+ 70 (- 700 (* 700 (cos (/ pi 4))))) 950)
+               :rpy
+               (float-vector (/ -pi 4) 0 -pi/2))))
+  (send *ri* :angle-vector (send *fetch* :angle-vector) 5000)
+  (send *ri* :wait-interpolation)
+
+  ;; TODO
   )
