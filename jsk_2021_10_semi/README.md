@@ -17,7 +17,7 @@ catkin build -vi
 source devel/setup.bash
 ```
 
-とすると以下のプログラムでロボットのモデルを作ることが出来ます．
+とすると以下のプログラムでロボットのモデルを作ることが出来ます．インタプリタは `roseus` として実行してください．
 
 ```
 (load "package://peppereus/pepper.l")
