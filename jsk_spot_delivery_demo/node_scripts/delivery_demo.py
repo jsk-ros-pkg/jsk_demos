@@ -242,7 +242,7 @@ def main():
 
             success = self.do_deliver_to(
                                 data_task_executing.target_node_id,
-                                data_task_executing.package_content,
+                                data_task_executing.content,
                                 data_task_executing.sender
                                         )
             if success:
