@@ -248,7 +248,7 @@ class DeliveryActionServer:
                 rate.sleep()
                 continue
             self.sound_client.say(
-                    '{}さんから{}のお届けです、荷物を受け取ってください'.format(task.sender_name,task.package_content),
+                    '{}さんから{}のお届けです、荷物を受け取ってください'.format(task.sender,task.package_content),
                     blocking=True)
             if self.wait_package_setting(rospy.Duration(5)):
                 rospy.loginfo('Package picked')
