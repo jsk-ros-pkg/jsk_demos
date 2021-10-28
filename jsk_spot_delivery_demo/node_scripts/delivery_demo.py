@@ -177,7 +177,7 @@ def main():
                     rospy.logwarn('No person')
                     continue
                 else:
-                    pos = PyKDL.Vector(pose.position.x, pose.position.y, pose.position.z)
+                    pos = PyKDL.Vector(pose.pose.position.x, pose.pose.position.y, pose.pose.position.z)
                     pos = pos - 2.0 * pos / pos.Norm()
                     x = pos[0]
                     y = pos[1]
