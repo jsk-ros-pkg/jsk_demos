@@ -178,7 +178,7 @@ def main():
                     continue
                 else:
                     pos = PyKDL.Vector(pose.pose.position.x, pose.pose.position.y, pose.pose.position.z)
-                    pos = pos - 2.0 * pos / pos.Norm()
+                    pos = pos - 0.5 * pos / pos.Norm()
                     x = pos[0]
                     y = pos[1]
                     theta = math.atan2(y, x)
