@@ -241,8 +241,12 @@ class DeliveryActionServer:
             return
         rospy.loginfo('reached {}'.format(task.target_node_id))
 
+        rate = rospy.Rate(1)
         while not rospy.is_shutdown():
             rospy.loginfo('Waiting for package picked.')
+            if not self.head_for_person(use_pitch=False):
+                rate.sleep()
+                continue
             self.sound_client.say(
                     '{}さんから{}のお届けです、荷物を受け取ってください'.format(task.sender_name,task.package_content),
                     blocking=True)
