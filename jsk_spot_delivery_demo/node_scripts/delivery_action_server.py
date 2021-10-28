@@ -188,9 +188,11 @@ class DeliveryActionServer:
                 rospy.logerr('No spoken result: \'{}\''.format(recognition_result))
                 self.sound_client.say('聞き取れませんでした', blocking=True)
                 continue
-            recognized_name = recognition_result.transcript[0]
-            self.sound_client.say('{}さんですね',blocking=True)
-            success = True
+            else:
+                recognized_name = recognition_result.transcript[0]
+                self.sound_client.say('{}さんですね',blocking=True)
+                success = True
+                break
 
         if not success:
             result.success = False
