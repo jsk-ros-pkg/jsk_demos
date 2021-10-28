@@ -21,6 +21,12 @@ from ros_speech_recognition import SpeechRecognitionClient
 import smach
 import smach_ros
 
+def calc_distance(pose):
+
+    return pose.position.x ** 2 + pose.position.y ** 2 + pose.position.z ** 2
+
+def convert_msg_point_to_kdl_vector(point):
+    return PyKDL.Vector(point.x,point.y,point.z)
 
 def get_nearest_person_pose():
 
