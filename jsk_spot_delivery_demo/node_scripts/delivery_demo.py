@@ -178,10 +178,10 @@ def main():
                     continue
                 else:
                     pos = PyKDL.Vector(pose.pose.position.x, pose.pose.position.y, pose.pose.position.z)
+                    theta = math.atan2(pos[1],pos[0])
                     pos = pos - 0.5 * pos / pos.Norm()
                     x = pos[0]
                     y = pos[1]
-                    theta = math.atan2(y, x)
                     data_spot_ros_client.trajectory(x, y, theta, 5, blocking=True)
 
             return 'task_asking'
