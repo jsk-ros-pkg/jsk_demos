@@ -33,6 +33,8 @@
             force_threshold: 1.5
         </rosparam>
         <rosparam command="load" file="$(find spot_behavior_graph)/config/nodes.yaml" />
+        <remap from="~person_visible" to="/delivery_demo_person_tracker/visible" />
+        <remap from="~people_pose_array" to="/delivery_demo_person_tracker/people_pose_array" />
         <remap from="~reset_body_force" to="/body_force_publisher/zero_offset" />
         <remap from="~body_force" to="/body_force_publisher/wrench_output" />
     </node>

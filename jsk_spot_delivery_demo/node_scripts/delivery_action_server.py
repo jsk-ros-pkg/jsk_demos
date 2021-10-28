@@ -5,9 +5,10 @@ import math
 
 import actionlib
 import rospy
+import PyKDL
 
 from std_srvs.srv import Empty, EmptyRequest
-from geometry_msgs.msg import WrenchStamped, Quaternion
+from geometry_msgs.msg import WrenchStamped, Quaternion, PoseArray, PoseStamped
 from jsk_spot_delivery_demo.msg import DeliverToAction, DeliverToResult
 from jsk_spot_delivery_demo.msg import PickupPackageAction, PickupPackageResult
 from spot_behavior_manager_msgs.msg import LeadPersonAction, LeadPersonGoal
@@ -29,14 +30,14 @@ def get_nearest_person_pose():
 
     try:
         msg = rospy.wait_for_message('~people_pose_array', PoseArray,
-                                     timeout=rospy.Duration(1))
+                                     timeout=rospy.Duration(5))
     except rospy.ROSException as e:
         rospy.logwarn('Timeout exceede: {}'.format(e))
-        return None, None
+        return None
 
     if len(msg.poses) == 0:
         rospy.logwarn('No person visible')
-        return None, None
+        return None
 
     distance = calc_distance(msg.poses[0])
     target_pose = msg.poses[0]
@@ -52,7 +53,7 @@ def get_nearest_person_pose():
     return pose_stamped
 
 
-def get_diff_for_person(self, pose_stamped):
+def get_diff_for_person(pose_stamped):
 
     vector_person_msgbased = convert_msg_point_to_kdl_vector(pose_stamped.pose.position)
     x = pose_stamped.pose.position.x
@@ -88,14 +89,17 @@ class DeliveryActionServer:
 
         rospy.loginfo('initialized')
 
-    def head_for_person(self, pose_stamped, use_pitch=True):
+    def head_for_person(self, use_pitch=True):
 
         self.spot_ros_client.pubBodyPose(0,Quaternion(x=0,y=0,z=0,w=1))
         pose = get_nearest_person_pose()
+        if pose is None:
+            return False
         pitch, yaw = get_diff_for_person(pose)
         self.spot_ros_client.Trajectory(0,0,yaw,5,blocking=True)
         if use_pitch:
             self.spot_ros_client.pubBodyPose(0,Quaternion(x=0,y=math.sin(-pitch/2),z=0,w=math.cos(-pitch/2)))
+        return True
 
     def wait_package_setting(self, duration=rospy.Duration(120)):
 
