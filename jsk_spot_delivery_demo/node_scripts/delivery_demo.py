@@ -12,7 +12,7 @@ import PyKDL
 from jsk_spot_delivery_demo.msg import DeliverToAction, DeliverToGoal
 from jsk_spot_delivery_demo.msg import PickupPackageAction, PickupPackageGoal
 from std_msgs.msg import Bool
-from geometry_msgs.msg import PoseArray
+from geometry_msgs.msg import PoseArray, PoseStamped
 
 from spot_ros_client.libspotros import SpotRosClient
 from sound_play.libsoundplay import SoundClient
