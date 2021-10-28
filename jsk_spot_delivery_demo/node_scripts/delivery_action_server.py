@@ -124,10 +124,45 @@ class DeliveryActionServer:
         del self.done_pick_or_place
         return success
 
+    def check_allow_word(self, text):
+
+        self.allow_words = [
+                'はい',
+                'あります',
+                'お願い',
+                'イエス',
+                ]
+        for word in self.allow_words:
+            if word in text:
+                return True
+        return False
+
     def callback_pickup_package(self, goal):
 
         result = PickupPackageResult()
         timeout_deadline = rospy.Time.now() + goal.timeout
+
+        rospy.loginfo('Asking package task')
+        success = False
+        timeout_temp = rospy.Time.now() + rospy.Duration(20)
+        while not rospy.is_shutdown() and rospy.Time.now() < timeout_temp:
+            self.head_for_person()
+            self.sound_client.say('配達物はありませんか', blocking=True)
+            recognition_result = self.speech_recognition_client.recognize()
+            if len(recognition_result.transcript) == 0:
+                rospy.logerr('No matching node found from spoken \'{}\''.format(recognition_result))
+                self.sound_client.say('聞き取れませんでした', blocking=True)
+                continue
+            else:
+                recognized_text = recognition_result.transcript[0]
+                success = True
+                break
+
+        if not success or self.check_allow_word(recognized_text):
+            result.success = False
+            result.message = 'No delivery task.'
+            self.actionserver_pickup_package.set_aborted(result)
+            return
 
         rospy.loginfo('Asking package information')
         success = False
