@@ -169,20 +169,20 @@ def main():
                 if rospy.Time.now() > timeout:
                     rospy.logwarn('Timeout')
                     return 'ready'
-                # check person is at
-                ## TODO
                 # get person pose
                 pose = get_nearest_person_pose()
                 if pose is None:
                     rospy.logwarn('No person')
                     continue
+                elif calc_distance(pose.pose) < 1.0:
+                    break
                 else:
                     pos = PyKDL.Vector(pose.pose.position.x, pose.pose.position.y, pose.pose.position.z)
                     theta = math.atan2(pos[1],pos[0])
                     pos = pos - 0.5 * pos / pos.Norm()
                     x = pos[0]
                     y = pos[1]
-                    data_spot_ros_client.trajectory(x, y, theta, 5, blocking=True)
+                    data_spot_ros_client.trajectory(x, y, theta, 2, blocking=True)
 
             return 'task_asking'
 
