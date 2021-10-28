@@ -47,6 +47,7 @@
   ;; go to spot
   (let* ((ret (get-spot-coords name))
          (goal-pose ret))
+
     (when relative-pos
       (setq goal-pose (send goal-pose :translate relative-pos :world)))
     (when relative-rot
@@ -56,7 +57,7 @@
 
 (defun door-open ()
   (send *ri* :stop-grasp)
-  (go-to-spot "door-spot" :relative-pos #f(200 -300 0))
+  (go-to-spot "door-spot" :relative-pos #f(120 -700 0)) ;; adjust environment
 
   (send *fetch* :rarm :inverse-kinematics
         (send (send *fetch* :copy-worldcoords) :transform
@@ -74,22 +75,27 @@
   (send *fetch* :rarm :inverse-kinematics
         (send (send *fetch* :copy-worldcoords) :transform
               (make-coords :pos #f(800 70 890) :rpy (float-vector 0 0 (* 2 (/ -pi 3))))))
+  (send *fetch* :rarm :inverse-kinematics
+        (send (send *fetch* :copy-worldcoords) :transform
+              (make-coords :pos #f(800 70 890) :rpy (float-vector 0 (/ pi 4) (* 2 (/ -pi 3))))))
   (send *irtviewer* :draw-objects)
   (send *ri* :angle-vector (send *fetch* :angle-vector) 5000)
   (send *ri* :wait-interpolation)
 
-  (send *ri* :angle-vector-sequence
-        (list (send *fetch* :rarm :move-end-pos #f(-50 0 0))
-              (send *fetch* :rarm :move-end-pos #f(-50 0 0)))
-        (list 3000 3000))
-  ;; (send *fetch* :rarm :move-end-pos #f(-100 0 0))
-  ;; (send *ri* :angle-vector (send *fetch* :angle-vector) 5000)
+  ;; (send *ri* :angle-vector-sequence
+  ;;       (list (send *fetch* :rarm :move-end-pos #f(-50 0 0))
+  ;;             (send *fetch* :rarm :move-end-pos #f(-50 0 0)))
+  ;;       (list 3000 3000))
+  (send *fetch* :rarm :inverse-kinematics
+        (send (send *fetch* :copy-worldcoords) :transform
+              (make-coords :pos #f(700 70 890) :rpy (float-vector 0 (/ pi 4) (* 2 (/ -pi 3))))))
+  (send *ri* :angle-vector (send *fetch* :angle-vector) 5000)
   (send *ri* :wait-interpolation)
 
   ;; opening door
   (send *fetch* :rarm :inverse-kinematics
         (send (send *fetch* :copy-worldcoords) :transform
-              (make-coords :pos #f(700 70 950) :rpy (float-vector 0 0 -pi/2))))
+              (make-coords :pos #f(700 70 950) :rpy (float-vector 0 (/ pi 4) -pi/2))))
   (send *ri* :angle-vector (send *fetch* :angle-vector) 5000)
   (send *ri* :wait-interpolation)
 
@@ -100,7 +106,7 @@
                (float-vector
                 (- 800 (* 700 (sin (/ pi 12)))) (+ 70 (- 700 (* 700 (cos (/ pi 12))))) 950)
                :rpy
-               (float-vector (/ -pi 12) 0 -pi/2))) :rotation-axis t)
+               (float-vector (/ -pi 12) (/ pi 4) -pi/2))) :rotation-axis t)
   (send *ri* :angle-vector (send *fetch* :angle-vector) 5000)
   (send *ri* :wait-interpolation)
 
@@ -111,7 +117,7 @@
                (float-vector
                 (- 800 (* 700 (sin (/ pi 8)))) (+ 70 (- 700 (* 700 (cos (/ pi 8))))) 950)
                :rpy
-               (float-vector (/ -pi 6) 0 -pi/2))))
+               (float-vector (/ -pi 6) (/ pi 4) -pi/2))))
   (send *ri* :angle-vector (send *fetch* :angle-vector) 5000)
   (send *ri* :wait-interpolation)
 
@@ -122,7 +128,7 @@
                (float-vector
                 (- 800 (* 700 (sin (/ pi 6)))) (+ 70 (- 700 (* 700 (cos (/ pi 6))))) 950)
                :rpy
-               (float-vector (/ -pi 5) 0 -pi/2))))
+               (float-vector (/ -pi 5) (/ pi 4) -pi/2))))
   (send *ri* :angle-vector (send *fetch* :angle-vector) 5000)
   (send *ri* :wait-interpolation)
 
@@ -133,7 +139,7 @@
                (float-vector
                 (- 800 (* 700 (sin (/ pi 5)))) (+ 70 (- 700 (* 700 (cos (/ pi 5))))) 950)
                :rpy
-               (float-vector (/ -pi 5) 0 -pi/2))))
+               (float-vector (/ -pi 5) (/ pi 4) -pi/2))))
   (send *ri* :angle-vector (send *fetch* :angle-vector) 5000)
   (send *ri* :wait-interpolation)
 
@@ -144,7 +150,7 @@
                (float-vector
                 (- 800 (* 700 (sin (/ pi 4)))) (+ 70 (- 700 (* 700 (cos (/ pi 4))))) 950)
                :rpy
-               (float-vector (/ -pi 4) 0 -pi/2))))
+               (float-vector (/ -pi 4) (/ pi 4) -pi/2))))
   (send *ri* :angle-vector (send *fetch* :angle-vector) 5000)
   (send *ri* :wait-interpolation)
 
