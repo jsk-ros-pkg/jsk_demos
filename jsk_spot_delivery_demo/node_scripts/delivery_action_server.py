@@ -25,7 +25,6 @@ def calc_distance(pose):
 def convert_msg_point_to_kdl_vector(point):
     return PyKDL.Vector(point.x,point.y,point.z)
 
-
 def get_nearest_person_pose():
 
     try:

@@ -22,28 +22,31 @@ import smach
 import smach_ros
 
 
-def check_person():
-    try:
-        msg = rospy.wait_for_message('~person_visible', Bool,
-                                     timeout=rospy.Duration(1))
-        return msg.data
-    except rospy.ROSException as e:
-        rospy.logwarn('Timeout exceede: {}'.format(e))
-        return False
+def get_nearest_person_pose():
 
-
-def get_person_pose():
     try:
         msg = rospy.wait_for_message('~people_pose_array', PoseArray,
-                                     timeout=rospy.Duration(1))
-        if len(msg.poses) == 0:
-            rospy.logwarn('no person')
-            return None, None
-        else:
-            return random.choice(msg.poses), msg.header.frame_id
+                                     timeout=rospy.Duration(5))
     except rospy.ROSException as e:
         rospy.logwarn('Timeout exceede: {}'.format(e))
-        return None, None
+        return None
+
+    if len(msg.poses) == 0:
+        rospy.logwarn('No person visible')
+        return None
+
+    distance = calc_distance(msg.poses[0])
+    target_pose = msg.poses[0]
+    for pose in msg.poses:
+        if calc_distance(pose) < distance:
+            distance = calc_distance(pose)
+            target_pose = pose
+
+    pose_stamped = PoseStamped()
+    pose_stamped.header = msg.header
+    pose_stamped.pose = target_pose
+
+    return pose_stamped
 
 
 class Task:
@@ -51,7 +54,6 @@ class Task:
     def __init__(self, target_node_id):
         self.target_node_id = target_node_id
         self.num_trial = 0
-
 
 class TaskList:
 
@@ -141,7 +143,7 @@ def main():
             while not rospy.is_shutdown() and rospy.Time.now() < timeout:
                 rospy.loginfo('Searching person')
                 rate.sleep()
-                if check_person():
+                if get_nearest_person_pose() is not None:
                     return 'approaching'
 
             return 'strolling'
@@ -154,22 +156,27 @@ def main():
 
         def execute(self, userdata):
 
-            # get person pose
-            pose, frame_id = get_person_pose()
-            if pose is None:
-                rospy.logwarn('No person')
-                return 'ready'
-
             # approach
-            pos = PyKDL.Vector(pose.position.x, pose.position.y, pose.position.z)
-            pos = pos - 2.0 * pos / pos.Norm()
-            x = pos[0]
-            y = pos[1]
-            theta = math.atan2(y, x)
-            rospy.loginfo(
-                'Found person at (x,y,theta) = ({},{},{})'.format(x, y, theta))
-           # data_spot_ros_client.trajectory(
-           #     x, y, theta, 10, blocking=True)
+            timeout = rospy.Time.now() + rospy.Duration(30)
+            while not rospy.is_shutdown():
+                # check timeout
+                if rospy.Time.now() > timeout:
+                    rospy.logwarn('Timeout')
+                    return 'ready'
+                # check person is at
+                ## TODO
+                # get person pose
+                pose = get_nearest_person_pose()
+                if pose is None:
+                    rospy.logwarn('No person')
+                    continue
+                else:
+                    pos = PyKDL.Vector(pose.position.x, pose.position.y, pose.position.z)
+                    pos = pos - 2.0 * pos / pos.Norm()
+                    x = pos[0]
+                    y = pos[1]
+                    theta = math.atan2(y, x)
+                    data_spot_ros_client.trajectory(x, y, theta, 5, blocking=True)
 
             return 'task_asking'
 
