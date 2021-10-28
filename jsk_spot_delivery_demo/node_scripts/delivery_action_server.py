@@ -96,7 +96,7 @@ class DeliveryActionServer:
         if pose is None:
             return False
         pitch, yaw = get_diff_for_person(pose)
-        self.spot_ros_client.Trajectory(0,0,yaw,5,blocking=True)
+        self.spot_ros_client.trajectory(0,0,yaw,5,blocking=True)
         if use_pitch:
             self.spot_ros_client.pubBodyPose(0,Quaternion(x=0,y=math.sin(-pitch/2),z=0,w=math.cos(-pitch/2)))
         return True
