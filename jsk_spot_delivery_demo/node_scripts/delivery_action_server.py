@@ -190,7 +190,6 @@ class DeliveryActionServer:
                 continue
             else:
                 recognized_name = recognition_result.transcript[0]
-                self.sound_client.say('{}さんですね',blocking=True)
                 success = True
                 break
 
@@ -199,6 +198,9 @@ class DeliveryActionServer:
             result.message = 'Falied to recognize sender name from speech.'
             self.actionserver_pickup_package.set_aborted(result)
             return
+        else:
+            rospy.loginfo('sender name is {}'.format(recognized_name))
+            self.sound_client.say('{}さんですね'.format(recognized_name),blocking=True)
 
 
         rospy.loginfo('Waiting for package placed.')
