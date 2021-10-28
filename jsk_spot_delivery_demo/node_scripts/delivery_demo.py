@@ -57,8 +57,10 @@ def get_nearest_person_pose():
 
 class Task:
 
-    def __init__(self, target_node_id):
+    def __init__(self, target_node_id, content, sender):
         self.target_node_id = target_node_id
+        self.content = content
+        self.sender = sender
         self.num_trial = 0
 
 class TaskList:
@@ -201,7 +203,7 @@ def main():
                 PickupPackageGoal(timeout=rospy.Duration(60)))
             self.actionclient_pickup_package.wait_for_result()
             result = self.actionclient_pickup_package.get_result()
-            return result.success, result.target_node_id
+            return result.success, result.task.target_node_id, result.task.package_content, result.task.sender
 
         def execute(self, userdata):
             rospy.loginfo('TaskAsking')
@@ -209,9 +211,9 @@ def main():
             global data_task_list
 
             # ask
-            success, target_node_id = self.ask_task()
+            success, target_node_id, content, sender = self.ask_task()
             if success:
-                data_task_list.append(Task(target_node_id))
+                data_task_list.append(Task(target_node_id, content, sender))
 
             return 'ready'
 
@@ -238,16 +240,22 @@ def main():
                 data_task_executing = data_task_list.pop()
             # else: execute data_task_executing
 
-            success = self.do_deliver_to(data_task_executing.target_node_id)
+            success = self.do_deliver_to(
+                                data_task_executing.target_node_id,
+                                data_task_executing.package_content,
+                                data_task_executing.sender
+                                        )
             if success:
                 data_task_executing = None
 
             return 'ready'
 
-        def do_deliver_to(self, target_node_id):
+        def do_deliver_to(self, target_node_id, content, sender):
 
             goal = DeliverToGoal()
-            goal.target_node_id = target_node_id
+            goal.task.target_node_id = target_node_id
+            goal.task.package_content = content
+            goal.task.sender = sender
             self.actionclient_deliver_to.send_goal(goal)
             self.actionclient_deliver_to.wait_for_result()
             result = self.actionclient_deliver_to.get_result()
