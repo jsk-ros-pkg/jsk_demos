@@ -199,8 +199,9 @@ class DeliveryActionServer:
             self.actionserver_pickup_package.set_aborted(result)
             return
         else:
-            rospy.loginfo('sender name is {}'.format(recognized_name))
-            self.sound_client.say('{}さんですね'.format(recognized_name),blocking=True)
+            sender_name = recognized_name
+            rospy.loginfo('sender name is {}'.format(sender_name))
+            self.sound_client.say('{}さんですね'.format(sender_name),blocking=True)
 
 
         rospy.loginfo('Waiting for package placed.')
