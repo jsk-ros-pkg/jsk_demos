@@ -11,17 +11,21 @@
 (ros::advertise "/panda_order" std_msgs::String 1)
 
 (defvar *timeout-servo-list*)
+(defvar *reparing-servo-num*)
 (defvar *panda_order*)
+
 
 (setq *panda_order* (instance std_msgs::String :init))
 
 (defun make-timeout-servo-list ()
   (setq *timeout-servo-list* '())
   (setq count (- (length (send joint_states :name)) 1))
-      (while (> count -1)
-	(if (< (elt (send joint_states :effort) count) 0.1)
-	  (setq *timeout-servo-list* (cons (elt (send joint_states :name) count) *timeout-servo-list*)))
-	(setq count (- count 1)))))
+  (while (> count -1)
+    (if (< (elt (send joint_states :effort) count) 0.1)
+	(progn
+	  (setq *timeout-servo-list* (cons (elt (send joint_states :name) count) *timeout-servo-list*))
+	  (setq *reparing-servo-num* count)))
+    (setq count (- count 1))))
 
 (dual_panda-init)
 
@@ -46,8 +50,11 @@
 (cond ((string-equal (subseq (elt *timeout-servo-list* 0) 0 4) "rarm")
        (progn
 	 (reset-pose-high)
-	 (send *panda_order* :data "RARM-SHOULDER-R")
+	 (send *panda_order* :data "RARM-ELBOW-P")
 	 (ros::publish "/panda_order" *panda_order*)
+	 (ros::spin-once)
+
+	 (unix:sleep 3)
 	 
 	 (send *robot* :rarm :inverse-kinematics (send (send *robot* :copy-worldcoords) :transform (make-coords :pos #f(444 -300.5 1400) :rpy (float-vector 0.0 1.57 -1.57))) :translation-axis t :rotation-axis t)
 	 (send *robot* :larm :inverse-kinematics (send (send *robot* :copy-worldcoords) :transform (make-coords :pos #f(467 -90.157 1305) :rpy (float-vector 0.0 1.501 -3.061))) :translation-axis t :rotation-axis t)
@@ -78,14 +85,6 @@
 	 (send *ri* :angle-vector (send *robot* :angle-vector) 3000)
 	 (send *ri* :wait-interpolation)
 
-	 (send *panda_order* :data "rarm-free")
-	 (ros::publish "/panda_order" *panda_order*)
-
-	 ;;wait for insert-cable
-
-	 (send *panda_order* :data "rarm-hold")
-	 (ros::publish "/panda_order" *panda_order*)
-
 	 (send *ri* :stop-grasp :larm)
 	 (unix:sleep 1)
 
@@ -113,23 +112,67 @@
 	 (send *ri* :angle-vector (send *robot* :angle-vector) 2000)
 	 (send *ri* :wait-interpolation)
 
+	 (send *panda_order* :data "rarm-free")
+	 (ros::publish "/panda_order" *panda_order*)
+	 (unix:sleep 5)
 	 
+	 ;;wait for insert-cable
+	 (print "cable-inserting")
+	 (unix:sleep 10)
+	 (send *panda_order* :data "ope-finish")
+	 (ros::publish "/panda_order" *panda_order*)
+	 (print "ope-finish")
+
+	 (setq f 0)
+	 (while (= f 0)
+	   (print "waiting for joint_states")
+	   (setq joint_states (one-shot-subscribe "/puppet_joint_states" sensor_msgs::jointstate))
+	   (if (> (elt (send joint_states :effort) *reparing-servo-num*) 0.1)
+	       (progn
+		 (setq f 1))))
+
+	 ;;check effort
 
 	 (send *ri* :stop-grasp :larm)
 	 (unix:sleep 1)
 
 	 (send *robot* :larm :move-end-pos #f(-100 0 0))
 	 (send *ri* :angle-vector (send *robot* :angle-vector) 3000)
-	 (send *ri* :wait-interpolation)))
-       
-       ((string-equal (subseq (elt *timeout-servo-list* 0) 0 4) "larm")
-	(progn
-	  (reset-pose-high)
-	  (print "hoge")
-	  (unix:sleep 1))))
+	 (send *ri* :wait-interpolation)
+
+	 (send *panda_order* :data "rarm-hold")
+	 (ros::publish "/panda_order" *panda_order*)
+	 (unix:sleep 7)
+
+	 (send *panda_order* :data "check-rarm")
+	 (ros::publish "/panda_order" *panda_order*)
+	 (unix:sleep 13)
+
+	 (send *panda_order* :data "ope-success")
+	 (ros::publish "/panda_order" *panda_order*)
+	 ))
+      
+      ((string-equal (subseq (elt *timeout-servo-list* 0) 0 4) "larm")
+       (progn
+	 (reset-pose-high)
+	 (print "hoge")
+	 (unix:sleep 1))))
 
 #|
 ;rarm用に切り替えた直後
+(setq f 0)
+(while (< f 100)
+  (send *panda_order* :data "tte")
+  (ros::publish "/panda_order" *panda_order*)
+  (ros::spin-once)
+  (setq f (+ 1 f))
+  (print "huga"))
+
+(do-until-key
+  (send *panda_order* :data "tte")
+  (ros::publish "/panda_order" *panda_order*)
+  (ros::spin-once)
+  (print "huga"))
 
 ;rarmを崖に近づける
 (send *robot* :rarm :inverse-kinematics (send (send *robot* :copy-worldcoords) :transform (make-coords :pos #f(444 -300.5 1400) :rpy (float-vector 0.0 1.57 -1.57))) :translation-axis t :rotation-axis t)
