@@ -293,6 +293,7 @@ class DeliveryActionServer:
                     blocking=True)
             if self.wait_package_setting(rospy.Duration(5)):
                 rospy.loginfo('Package picked')
+                self.sound_client.say('荷物の受取を確認しました')
                 break
 
         self.actionserver_deliver_to.set_succeeded(

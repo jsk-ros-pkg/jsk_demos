@@ -250,7 +250,7 @@ def main():
             if success:
                 data_task_executing = None
 
-            return 'ready'
+            return 'task_asking'
 
         def do_deliver_to(self, target_node_id, content, sender):
 
