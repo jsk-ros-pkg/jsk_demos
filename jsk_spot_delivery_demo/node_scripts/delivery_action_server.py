@@ -157,8 +157,8 @@ class DeliveryActionServer:
                 self.sound_client.say('聞き取れませんでした', blocking=True)
                 continue
             else:
-                rospy.loginfo('recognized_text: {}'.format(recognized_text))
                 recognized_text = recognition_result.transcript[0]
+                rospy.loginfo('recognized_text: {}'.format(recognized_text))
                 success = True
                 break
         self.stand_straight()
