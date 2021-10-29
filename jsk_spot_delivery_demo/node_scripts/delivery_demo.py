@@ -172,6 +172,8 @@ def main():
     data_task_list = TaskList()
     data_task_executing = None
 
+    data_anchor_pose = None
+
     class Ready(smach.State):
 
         def __init__(self):
