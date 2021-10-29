@@ -280,7 +280,7 @@ def main():
 
         def __init__(self):
             smach.State.__init__(
-                self, outcomes=['ready'])
+                self, outcomes=['ready', 'task_asking'])
             self.actionclient_deliver_to = actionlib.SimpleActionClient(
                 '~deliver_to', DeliverToAction)
             self.actionclient_deliver_to.wait_for_server(rospy.Duration(5))
