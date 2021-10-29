@@ -146,7 +146,7 @@ def main():
                 next_target, blocking=True)
 
             # Searching a person.
-            timeout = rospy.Time.now() + rospy.Duration(120)
+            timeout = rospy.Time.now() + rospy.Duration(30)
             rate = rospy.Rate(5)
             while not rospy.is_shutdown() and rospy.Time.now() < timeout:
                 rospy.loginfo('Searching person')
@@ -200,7 +200,7 @@ def main():
         def ask_task(self):
 
             self.actionclient_pickup_package.send_goal(
-                PickupPackageGoal(timeout=rospy.Duration(30)))
+                PickupPackageGoal(timeout=rospy.Duration(120)))
             self.actionclient_pickup_package.wait_for_result()
             result = self.actionclient_pickup_package.get_result()
             return result.success, result.task.target_node_id, result.task.package_content, result.task.sender

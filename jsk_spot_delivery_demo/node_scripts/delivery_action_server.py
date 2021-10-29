@@ -247,7 +247,6 @@ class DeliveryActionServer:
             rospy.loginfo('sender name is {}'.format(sender_name))
             self.sound_client.say('{}さんですね'.format(sender_name),blocking=True)
 
-
         rospy.loginfo('Waiting for package placed.')
         self.head_for_person(use_pitch=False)
         self.sound_client.say('荷物を置いてください', blocking=True)
@@ -260,7 +259,6 @@ class DeliveryActionServer:
         else:
             rospy.loginfo('Package placed')
             self.sound_client.say('荷物を確認しました', blocking=True)
-
 
         result.success = True
         result.message = 'Success'
