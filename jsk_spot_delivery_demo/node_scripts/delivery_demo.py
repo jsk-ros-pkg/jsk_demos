@@ -196,6 +196,7 @@ def main():
         def execute(self, userdata):
             rospy.loginfo('Strolling')
 
+            global data_anchor_pose
             # Move to a node randomly selected.
             next_target = random.choice(data_list_node_strolling)
             if data_anchor_pose is not None:
@@ -292,6 +293,7 @@ def main():
 
             global data_task_list
             global data_task_executing
+            global data_anchor_pose
 
             if data_task_executing is None and data_task_list.length() == 0:
                 rospy.logwarn('No task left')
