@@ -60,7 +60,10 @@ def get_diff_for_person(pose_stamped):
     z = pose_stamped.pose.position.z
 
     yaw = math.atan2(y,x)
-    pitch = math.acos( z / math.sqrt(x**2 + y**2))
+    try:
+        pitch = math.acos( z / math.sqrt(x**2 + y**2))
+    except ValueError:
+        pitch = 0
     return pitch, yaw
 
 
