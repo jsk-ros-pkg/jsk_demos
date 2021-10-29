@@ -101,6 +101,9 @@ class DeliveryActionServer:
             self.spot_ros_client.pubBodyPose(0,Quaternion(x=0,y=math.sin(-pitch/2),z=0,w=math.cos(-pitch/2)))
         return True
 
+    def stand_straight(self):
+        self.spot_ros_client.pubBodyPose(0,Quaternion(x=0,y=0,z=0,w=1))
+
     def wait_package_setting(self, duration=rospy.Duration(120)):
 
         self.done_pick_or_place = False
@@ -154,11 +157,13 @@ class DeliveryActionServer:
                 self.sound_client.say('聞き取れませんでした', blocking=True)
                 continue
             else:
+                rospy.loginfo('recognized_text: {}'.format(recognized_text))
                 recognized_text = recognition_result.transcript[0]
                 success = True
                 break
+        self.stand_straight()
 
-        if not success or self.check_allow_word(recognized_text):
+        if not success or not self.check_allow_word(recognized_text):
             result.success = False
             result.message = 'No delivery task.'
             self.actionserver_pickup_package.set_aborted(result)
@@ -196,6 +201,7 @@ class DeliveryActionServer:
             else:
                 success = True
                 break
+        self.stand_straight()
 
         if not success:
             result.success = False
@@ -226,6 +232,7 @@ class DeliveryActionServer:
                 recognized_name = recognition_result.transcript[0]
                 success = True
                 break
+        self.stand_straight()
 
         if not success:
             result.success = False

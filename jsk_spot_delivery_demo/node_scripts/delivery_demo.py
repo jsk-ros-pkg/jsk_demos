@@ -200,7 +200,7 @@ def main():
         def ask_task(self):
 
             self.actionclient_pickup_package.send_goal(
-                PickupPackageGoal(timeout=rospy.Duration(120)))
+                PickupPackageGoal(timeout=rospy.Duration(30)))
             self.actionclient_pickup_package.wait_for_result()
             result = self.actionclient_pickup_package.get_result()
             return result.success, result.task.target_node_id, result.task.package_content, result.task.sender
