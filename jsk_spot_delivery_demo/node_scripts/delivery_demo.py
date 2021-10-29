@@ -91,58 +91,12 @@ class TaskList:
 def stand_straight(spot_client):
     spot_client.pubBodyPose(0,Quaternion(x=0,y=0,z=0,w=1.0))
 
-def get_anchor_pose(tf_buffer, spot_client):
-    stand_straight(spot_client)
-    try:
-        transform_odom2base = tf_buffer.lookup_transform(
-                'odom',
-                'base_link',
-                rospy.Time()
-                )
-    except:
-        return None
-    return PyKDL.Frame(
-            PyKDL.Rotation.Quaternion(
-                transform_odom2base.transform.rotation.x,
-                transform_odom2base.transform.rotation.y,
-                transform_odom2base.transform.rotation.z,
-                transform_odom2base.transform.rotation.w),
-            PyKDL.Vector(
-                transform_odom2base.transform.translation.x,
-                transform_odom2base.transform.translation.y,
-                transform_odom2base.transform.translation.z))
-
-def go_back_to_anchor_pose(anchor_pose, tf_buffer, spot_client):
-    stand_straight(spot_client)
-    try:
-        transform_odom2base = tf_buffer.lookup_transform(
-                'odom',
-                'base_link',
-                rospy.Time()
-                )
-    except:
-        return None
-    frame_odom2current = PyKDL.Frame(
-            PyKDL.Rotation.Quaternion(
-                transform_odom2base.transform.rotation.x,
-                transform_odom2base.transform.rotation.y,
-                transform_odom2base.transform.rotation.z,
-                transform_odom2base.transform.rotation.w),
-            PyKDL.Vector(
-                transform_odom2base.transform.translation.x,
-                transform_odom2base.transform.translation.y,
-                transform_odom2base.transform.translation.z))
-    frame_current2anchor = frame_odom2current.Inverse() * anchor_pose
-    spot_client.trajectory(frame_current2anchor.p[0], frame_current2anchor.p[1],
-                        frame_current2anchor.M.GetRPY()[2], 10, blocking=True)
-
 data_speech_recongition_client = None
 data_spot_ros_client = None
 data_sound_client = None
 data_list_node_strolling = None
 data_task_list_= None
 data_task_executing = None
-data_anchor_pose = None
 
 def main():
 
@@ -156,7 +110,6 @@ def main():
     global data_list_node_strolling
     global data_task_list
     global data_task_executing
-    global data_anchor_pose
 
     #
     tf_buffer = tf2_ros.Buffer()
@@ -171,8 +124,6 @@ def main():
     # read/write
     data_task_list = TaskList()
     data_task_executing = None
-
-    data_anchor_pose = None
 
     class Ready(smach.State):
 
@@ -196,15 +147,11 @@ def main():
         def execute(self, userdata):
             rospy.loginfo('Strolling')
 
-            global data_anchor_pose
             # Move to a node randomly selected.
             next_target = random.choice(data_list_node_strolling)
-            if data_anchor_pose is not None:
-                go_back_to_anchor_pose(data_anchor_pose, tf_buffer, data_spot_ros_client)
             rospy.loginfo('Moving to {}'.format(next_target))
             result = data_spot_ros_client.execute_behaviors(
                 next_target, blocking=True)
-            data_anchor_pose = get_anchor_pose(tf_buffer, data_spot_ros_client)
 
             # Searching a person.
             timeout = rospy.Time.now() + rospy.Duration(30)
@@ -293,7 +240,6 @@ def main():
 
             global data_task_list
             global data_task_executing
-            global data_anchor_pose
 
             if data_task_executing is None and data_task_list.length() == 0:
                 rospy.logwarn('No task left')
@@ -302,14 +248,11 @@ def main():
                 data_task_executing = data_task_list.pop()
             # else: execute data_task_executing
 
-            if data_anchor_pose is not None:
-                go_back_to_anchor_pose(data_anchor_pose, tf_buffer, data_spot_ros_client)
             success = self.do_deliver_to(
                                 data_task_executing.target_node_id,
                                 data_task_executing.content,
                                 data_task_executing.sender
                                         )
-            data_anchor_pose = get_anchor_pose(tf_buffer, data_spot_ros_client)
             if success:
                 data_task_executing = None
                 return 'task_asking'
