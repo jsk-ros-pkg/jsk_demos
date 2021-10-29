@@ -249,8 +249,10 @@ def main():
                                         )
             if success:
                 data_task_executing = None
+                return 'task_asking'
+            else:
+                return 'ready'
 
-            return 'task_asking'
 
         def do_deliver_to(self, target_node_id, content, sender):
 
@@ -276,7 +278,8 @@ def main():
         smach.StateMachine.add('TaskAsking',TaskAsking(),
                                transitions={'ready':'Ready'})
         smach.StateMachine.add('TaskExecuting',TaskExecuting(),
-                               transitions={'ready':'Ready'})
+                               transitions={'ready':'Ready',
+                                            'task_asking':'TaskAsking'})
 
 
     rospy.loginfo('initialized')
