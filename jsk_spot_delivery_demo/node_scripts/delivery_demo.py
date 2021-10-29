@@ -8,11 +8,13 @@ import threading
 import actionlib
 import rospy
 import PyKDL
+import tf2_ros
+import PyKDL
 
 from jsk_spot_delivery_demo.msg import DeliverToAction, DeliverToGoal
 from jsk_spot_delivery_demo.msg import PickupPackageAction, PickupPackageGoal
 from std_msgs.msg import Bool
-from geometry_msgs.msg import PoseArray, PoseStamped
+from geometry_msgs.msg import PoseArray, PoseStamped, Quaternion
 
 from spot_ros_client.libspotros import SpotRosClient
 from sound_play.libsoundplay import SoundClient
@@ -86,6 +88,53 @@ class TaskList:
         self.lock.release()
         return length
 
+def stand_straight(spot_client):
+    spot_client.pubBodyPose(0,Quaternion(x=0,y=0,z=0,w=1.0))
+
+def get_anchor_pose(tf_buffer, spot_client):
+    stand_straight(spot_client)
+    try:
+        transform_odom2base = tf_buffer.lookup_transform(
+                'odom',
+                'base_link',
+                rospy.Time()
+                )
+    except:
+        return None
+    return PyKDL.Frame(
+            PyKDL.Rotation.Quaternion(
+                transform_odom2base.transform.rotation.x,
+                transform_odom2base.transform.rotation.y,
+                transform_odom2base.transform.rotation.z,
+                transform_odom2base.transform.rotation.w),
+            PyKDL.Vector(
+                transform_odom2base.transform.translation.x,
+                transform_odom2base.transform.translation.y,
+                transform_odom2base.transform.translation.z))
+
+def go_back_to_anchor_pose(anchor_pose, tf_buffer, spot_client):
+    stand_straight(spot_client)
+    try:
+        transform_odom2base = tf_buffer.lookup_transform(
+                'odom',
+                'base_link',
+                rospy.Time()
+                )
+    except:
+        return None
+    frame_odom2current = PyKDL.Frame(
+            PyKDL.Rotation.Quaternion(
+                transform_odom2base.transform.rotation.x,
+                transform_odom2base.transform.rotation.y,
+                transform_odom2base.transform.rotation.z,
+                transform_odom2base.transform.rotation.w),
+            PyKDL.Vector(
+                transform_odom2base.transform.translation.x,
+                transform_odom2base.transform.translation.y,
+                transform_odom2base.transform.translation.z))
+    frame_current2anchor = frame_odom2current.Inverse() * anchor_pose
+    spot_client.trajectory(frame_current2anchor.p[0], frame_current2anchor.p[1],
+                        frame_current2anchor.M.GetRPY()[2], 10, blocking=True)
 
 data_speech_recongition_client = None
 data_spot_ros_client = None
@@ -93,6 +142,7 @@ data_sound_client = None
 data_list_node_strolling = None
 data_task_list_= None
 data_task_executing = None
+data_anchor_pose = None
 
 def main():
 
@@ -106,6 +156,11 @@ def main():
     global data_list_node_strolling
     global data_task_list
     global data_task_executing
+    global data_anchor_pose
+
+    #
+    tf_buffer = tf2_ros.Buffer()
+    tf_listener = tf2_ros.TransformListener(tf_buffer)
 
     # read only
     data_speech_recongition_client = SpeechRecognitionClient()
@@ -141,9 +196,12 @@ def main():
 
             # Move to a node randomly selected.
             next_target = random.choice(data_list_node_strolling)
+            if data_anchor_pose is not None:
+                go_back_to_anchor_pose(data_anchor_pose, tf_buffer, data_spot_ros_client)
             rospy.loginfo('Moving to {}'.format(next_target))
             result = data_spot_ros_client.execute_behaviors(
                 next_target, blocking=True)
+            data_anchor_pose = get_anchor_pose(tf_buffer, data_spot_ros_client)
 
             # Searching a person.
             timeout = rospy.Time.now() + rospy.Duration(30)
@@ -210,8 +268,6 @@ def main():
 
             global data_task_list
 
-            #
-
             # ask
             success, target_node_id, content, sender = self.ask_task()
             if success:
@@ -242,11 +298,14 @@ def main():
                 data_task_executing = data_task_list.pop()
             # else: execute data_task_executing
 
+            if data_anchor_pose is not None:
+                go_back_to_anchor_pose(data_anchor_pose, tf_buffer, data_spot_ros_client)
             success = self.do_deliver_to(
                                 data_task_executing.target_node_id,
                                 data_task_executing.content,
                                 data_task_executing.sender
                                         )
+            data_anchor_pose = get_anchor_pose(tf_buffer, data_spot_ros_client)
             if success:
                 data_task_executing = None
                 return 'task_asking'
