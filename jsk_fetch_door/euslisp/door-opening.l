@@ -12,25 +12,6 @@
 (defvar *bounding-box-list* nil)
 (setq time-stamp (ros::time 0))
 
-;; (unless (boundp '*scene*)
-;;   (setq *scene* (make-eng2-7f-scene)))
-;; (unless (boundp '*ri*)
-;;   (fetch-init)) ;; fetch-init instantiate *fetch* and *ri*
-;; (objects (list *fetch* *scene*))
-;; (send *ri* :objects (send *scene* :objects))
-
-(defun view-fetch ()
-  (send *irtviewer* :look-all
-        (send (geo::make-bounding-box
-               (flatten (send-all (send *fetch* :bodies) :vertices))) :grow 2.0)))
-
-(defun move-dock-front ()
-  (setq *dock-front*
-        (send (send *scene*
-                    :spot "/eng2/7f/room73B2-fetch-dock-front") :copy-worldcoords))
-  (send *fetch* :move-to *dock-front* :world)
-  (send *ri* :move-to *dock-front*))
-
 (defun get-spot-coords (name)
   (let ((spot-coords nil))
     (setq spot-coords (send (send *scene* :spot name) :copy-worldcoords))
@@ -73,9 +54,37 @@
   (let ((cam-coords nil)
         (obj-coords (make-coords :pos obj-pos :rpy #f(0 0 0))))
     (unless (boundp '*tfl*) (setq *tfl* (instance transform-listener :init)))
-    (setq cam-coords
-          (send *tfl* :lookup-transform "/base_link" "/head_camera_depth_optical_frame" (ros::time 0)))
+    (setq cam-coords (send *tfl*
+                           :lookup-transform
+                           "/base_link" "/head_camera_depth_optical_frame"
+                           (ros::time 0)))
     (send obj-coords :transform cam-coords :world)
+    (send obj-coords :transform (make-coords :pos #f(0 50 -100)) :world)
+    (send *fetch* :rarm :inverse-kinematics
+          (make-coords :pos (send obj-coords :pos)
+                       :rpy (float-vector 0 -pi/2 pi/2)) :rotation-axis t)
+    (send *ri* :angle-vector (send *fetch* :angle-vector) 5000)
+    (send *ri* :wait-interpolation)
+    (send *fetch* :rarm :move-end-pos #f(140 0 0))
+    (send *ri* :angle-vector (send *fetch* :angle-vector) 5000)
+    (send *ri* :wait-interpolation)
+    (send *ri* :start-grasp)
+
+    (send *ri* :servo-off :gripper nil :head nil)
+
+    (send *ri* :go-pos-unsafe 0.3 0 0)
+    (send *ri* :go-pos-unsafe 0 0 -45)
+    (send *ri* :go-pos-unsafe 0.3 0 0)
+
+    ;; release handle
+    (send *fetch* :angle-vector (send *ri* :state :potentio-vector))
+    (send *ri* :angle-vector (send *fetch* :angle-vector) 5000)
+    (send *ri* :wait-interpolation)
+
+    (send *ri* :stop-grasp)
+    (send *fetch* :rarm :move-end-pos #f(-100 0 0))
+    (send *ri* :angle-vector (send *fetch* :angle-vector) 5000)
+    (send *ri* :wait-interpolation)
     ))
 
 (defun door-open ()
@@ -96,11 +105,13 @@
   (send *ri* :start-grasp)
 
   (send *fetch* :rarm :inverse-kinematics
-        (send (send *fetch* :copy-worldcoords) :transform
-              (make-coords :pos #f(800 70 890) :rpy (float-vector 0 0 (* 2 (/ -pi 3))))))
+        (send (send *fetch* :copy-worldcoords)
+              :transform (make-coords :pos #f(800 70 890)
+                                      :rpy (float-vector 0 0 (* 2 (/ -pi 3))))))
   (send *fetch* :rarm :inverse-kinematics
-        (send (send *fetch* :copy-worldcoords) :transform
-              (make-coords :pos #f(800 70 890) :rpy (float-vector 0 (/ pi 4) (* 2 (/ -pi 3))))))
+        (send (send *fetch* :copy-worldcoords)
+              :transform (make-coords :pos #f(800 70 890)
+                                      :rpy (float-vector 0 (/ pi 4) (* 2 (/ -pi 3))))))
   (send *irtviewer* :draw-objects)
   (send *ri* :angle-vector (send *fetch* :angle-vector) 5000)
   (send *ri* :wait-interpolation)
@@ -110,15 +121,17 @@
   ;;             (send *fetch* :rarm :move-end-pos #f(-50 0 0)))
   ;;       (list 3000 3000))
   (send *fetch* :rarm :inverse-kinematics
-        (send (send *fetch* :copy-worldcoords) :transform
-              (make-coords :pos #f(700 70 890) :rpy (float-vector 0 (/ pi 4) (* 2 (/ -pi 3))))))
+        (send (send *fetch* :copy-worldcoords)
+              :transform (make-coords :pos #f(700 70 890)
+                                      :rpy (float-vector 0 (/ pi 4) (* 2 (/ -pi 3))))))
   (send *ri* :angle-vector (send *fetch* :angle-vector) 5000)
   (send *ri* :wait-interpolation)
 
   ;; opening door
   (send *fetch* :rarm :inverse-kinematics
-        (send (send *fetch* :copy-worldcoords) :transform
-              (make-coords :pos #f(700 70 950) :rpy (float-vector 0 (/ pi 4) -pi/2))))
+        (send (send *fetch* :copy-worldcoords)
+              :transform (make-coords :pos #f(700 70 950)
+                                      :rpy (float-vector 0 (/ pi 4) -pi/2))))
   (send *ri* :angle-vector (send *fetch* :angle-vector) 5000)
   (send *ri* :wait-interpolation)
 
@@ -128,8 +141,7 @@
                :pos
                (float-vector
                 (- 800 (* 700 (sin (/ pi 12)))) (+ 70 (- 700 (* 700 (cos (/ pi 12))))) 950)
-               :rpy
-               (float-vector (/ -pi 12) (/ pi 4) -pi/2))) :rotation-axis t)
+               :rpy (float-vector (/ -pi 12) (/ pi 4) -pi/2))) :rotation-axis t)
   (send *ri* :angle-vector (send *fetch* :angle-vector) 5000)
   (send *ri* :wait-interpolation)
 
@@ -139,8 +151,7 @@
                :pos
                (float-vector
                 (- 800 (* 700 (sin (/ pi 8)))) (+ 70 (- 700 (* 700 (cos (/ pi 8))))) 950)
-               :rpy
-               (float-vector (/ -pi 6) (/ pi 4) -pi/2))))
+               :rpy (float-vector (/ -pi 6) (/ pi 4) -pi/2))))
   (send *ri* :angle-vector (send *fetch* :angle-vector) 5000)
   (send *ri* :wait-interpolation)
 
@@ -150,8 +161,7 @@
                :pos
                (float-vector
                 (- 800 (* 700 (sin (/ pi 6)))) (+ 70 (- 700 (* 700 (cos (/ pi 6))))) 950)
-               :rpy
-               (float-vector (/ -pi 5) (/ pi 4) -pi/2))))
+               :rpy (float-vector (/ -pi 5) (/ pi 4) -pi/2))))
   (send *ri* :angle-vector (send *fetch* :angle-vector) 5000)
   (send *ri* :wait-interpolation)
 
@@ -161,8 +171,7 @@
                :pos
                (float-vector
                 (- 800 (* 700 (sin (/ pi 5)))) (+ 70 (- 700 (* 700 (cos (/ pi 5))))) 950)
-               :rpy
-               (float-vector (/ -pi 5) (/ pi 4) -pi/2))))
+               :rpy (float-vector (/ -pi 5) (/ pi 4) -pi/2))))
   (send *ri* :angle-vector (send *fetch* :angle-vector) 5000)
   (send *ri* :wait-interpolation)
 
@@ -172,8 +181,7 @@
                :pos
                (float-vector
                 (- 800 (* 700 (sin (/ pi 4)))) (+ 70 (- 700 (* 700 (cos (/ pi 4))))) 950)
-               :rpy
-               (float-vector (/ -pi 4) (/ pi 4) -pi/2))))
+               :rpy (float-vector (/ -pi 4) (/ pi 4) -pi/2))))
   (send *ri* :angle-vector (send *fetch* :angle-vector) 5000)
   (send *ri* :wait-interpolation)
 
@@ -184,4 +192,6 @@
   (ros::subscribe *topic-name*
                   jsk_recognition_msgs::BoundingBoxArray
                   #'bounding-box-array-cb 1)
+  (ros::spin-once)
+  (door-open-with-rec)
   )
