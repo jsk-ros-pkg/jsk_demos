@@ -1,0 +1,18 @@
+<?xml version="1.0"?>
+<package>
+  <name>jsk_fetch_door</name>
+  <version>0.0.5</version>
+  <description>The jsk_fetch_door package</description>
+
+  <author email="tsukamoto@jsk.imi.i.u-tokyo.ac.jp">Naoto Tsukamoto</author>
+
+  <license>BSD</license>
+
+  <buildtool_depend>catkin</buildtool_depend>
+
+  <run_depend>fetcheus</run_depend>
+  <run_depend>jsk_maps</run_depend>
+
+  <export>
+  </export>
+</package>
