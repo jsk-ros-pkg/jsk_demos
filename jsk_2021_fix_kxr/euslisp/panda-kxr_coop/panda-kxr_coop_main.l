@@ -155,8 +155,24 @@
       ((string-equal (subseq (elt *timeout-servo-list* 0) 0 4) "larm")
        (progn
 	 (reset-pose-high)
-	 (print "hoge")
-	 (unix:sleep 1))))
+	 (send *panda_order* :data "LARM-ELBOW-P")
+	 (ros::publish "/panda_order" *panda_order*)
+	 (ros::spin-once)
+
+	 (send *robot* :larm :inverse-kinematics (send (send *robot* :copy-worldcoords) :transform (make-coords :pos #f(276 -125.5 1320) :rpy (float-vector -2.97 1.545 0.16))) :translation-axis t :rotation-axis t)
+	 (send *ri* :angle-vector (send *robot* :angle-vector) 3000)
+	 (send *ri* :wait-interpolation)
+
+	 (send *robot* :larm :move-end-pos #f(25 0 0))
+	 (send *ri* :angle-vector (send *robot* :angle-vector) 3000)
+	 (send *ri* :wait-interpolation)
+
+	 (send *ri* :start-grasp :larm)
+	 (unix:sleep 2)
+
+	 (send *robot* :larm :inverse-kinematics (send (send *robot* :copy-worldcoords) :transform (make-coords :pos #f(443 114.5 1300) :rpy (float-vector 0.0 1.57 -1.57))) :translation-axis t :rotation-axis t)
+	 (send *ri* :angle-vector (send *robot* :angle-vector) 5000)
+	 (send *ri* :wait-interpolation))))
 
 #|
 ;rarm用に切り替えた直後
