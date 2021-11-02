@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.8.3)
-project(jsk_fetch_door)
+project(jsk_fetch_door_open_close)
 
 find_package(catkin REQUIRED COMPONENTS)
 

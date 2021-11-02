@@ -1,18 +1,18 @@
 <?xml version="1.0"?>
 <package>
-  <name>jsk_fetch_door</name>
+  <name>jsk_fetch_door_open_close</name>
   <version>0.0.5</version>
-  <description>The jsk_fetch_door package</description>
+  <description>The jsk_fetch_door_open_close package</description>
 
+  <maintainer email="tsukamoto@jsk.imi.i.u-tokyo.ac.jp">Naoto Tsukamoto</maintainer>
   <author email="tsukamoto@jsk.imi.i.u-tokyo.ac.jp">Naoto Tsukamoto</author>
 
   <license>BSD</license>
 
   <buildtool_depend>catkin</buildtool_depend>
 
-  <run_depend>fetcheus</run_depend>
-  <run_depend>jsk_maps</run_depend>
+  <exec_depend>fetcheus</exec_depend>
+  <exec_depend>jsk_maps</exec_depend>
+  <exec_depend>pr2eus</exec_depend>
 
-  <export>
-  </export>
 </package>
