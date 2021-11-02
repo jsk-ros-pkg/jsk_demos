@@ -57,7 +57,7 @@
 
 (defun door-open ()
   (send *ri* :stop-grasp)
-  (go-to-spot "door-spot" :relative-pos #f(120 -700 0)) ;; adjust environment
+;;  (go-to-spot "door-spot" :relative-pos #f(120 -700 0)) ;; adjust environment
 
   (send *fetch* :rarm :inverse-kinematics
         (send (send *fetch* :copy-worldcoords) :transform
@@ -66,6 +66,7 @@
   (send *ri* :angle-vector (send *fetch* :angle-vector) 5000)
   (send *ri* :wait-interpolation)
 
+  (send *ri* :speak-jp "ドアを開けます")
   (send *fetch* :rarm :move-end-pos #f(100 0 0))
   (send *irtviewer* :draw-objects)
   (send *ri* :angle-vector (send *fetch* :angle-vector) 5000)
@@ -81,7 +82,10 @@
   (send *irtviewer* :draw-objects)
   (send *ri* :angle-vector (send *fetch* :angle-vector) 5000)
   (send *ri* :wait-interpolation)
-
+  (send *ri* :speak-jp "サーボオフ")
+  (unix::sleep 1)
+  (send *ri* :servo-off :gripper nil :head nil)
+  (unix::sleep 5)
   ;; (send *ri* :angle-vector-sequence
   ;;       (list (send *fetch* :rarm :move-end-pos #f(-50 0 0))
   ;;             (send *fetch* :rarm :move-end-pos #f(-50 0 0)))
