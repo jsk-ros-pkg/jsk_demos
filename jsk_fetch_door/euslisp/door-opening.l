@@ -59,22 +59,26 @@
                            "/base_link" "/head_camera_depth_optical_frame"
                            (ros::time 0)))
     (send obj-coords :transform cam-coords :world)
-    (send obj-coords :transform (make-coords :pos #f(0 50 -100)) :world)
+    (ros::ros-info "obj-coords: ~A" obj-coords)
+    (send obj-coords :transform (make-coords :pos #f(-120 -10 0)) :world)
     (send *fetch* :rarm :inverse-kinematics
           (make-coords :pos (send obj-coords :pos)
-                       :rpy (float-vector 0 -pi/2 pi/2)) :rotation-axis t)
+                       :rpy (float-vector 0 0 pi/2)) :rotation-axis t)
     (send *ri* :angle-vector (send *fetch* :angle-vector) 5000)
     (send *ri* :wait-interpolation)
-    (send *fetch* :rarm :move-end-pos #f(140 0 0))
+    ;; reaching
+    (send *fetch* :rarm :move-end-pos #f(100 0 0))
     (send *ri* :angle-vector (send *fetch* :angle-vector) 5000)
     (send *ri* :wait-interpolation)
+    (unix::sleep 2)
     (send *ri* :start-grasp)
-
+    ;; arm servo off
     (send *ri* :servo-off :gripper nil :head nil)
-
-    (send *ri* :go-pos-unsafe 0.3 0 0)
-    (send *ri* :go-pos-unsafe 0 0 -45)
-    (send *ri* :go-pos-unsafe 0.3 0 0)
+    (unix::sleep 1)
+    ;; opening the door by using base moving
+    (send *ri* :go-velocity -0.2 0 0 4000)
+    (send *ri* :go-velocity 0 0 -0.25 6280) ;; pi/2 rotation
+    (send *ri* :go-velocity -0.1 0 0 15000)
 
     ;; release handle
     (send *fetch* :angle-vector (send *ri* :state :potentio-vector))
@@ -84,11 +88,32 @@
     (send *ri* :stop-grasp)
     (send *fetch* :rarm :move-end-pos #f(-100 0 0))
     (send *ri* :angle-vector (send *fetch* :angle-vector) 5000)
-    (send *ri* :wait-interpolation)
-    ))
+    (send *ri* :wait-interpolation)))
 
-(defun door-open ()
-  (send *ri* :stop-grasp)
+(defun door-close-with-rec (obj-pos)
+  (let ((cam-coords nil)
+        (obj-coords (make-coords :pos obj-pos :rpy #f(0 0 0))))
+    (unless (boundp '*tfl*) (setq *tfl* (instance transform-listener :init)))
+    (setq cam-coords (send *tfl*
+                           :lookup-transform
+                           "/base_link" "/head_camera_depth_optical_frame"
+                           (ros::time 0)))
+    (send obj-coords :transform cam-coords :world)
+    (ros::ros-info "obj-coords: ~A" obj-coords)
+    (send obj-coords :transform (make-coords :pos #f(-120 -10 0)) :world)
+    (send *fetch* :rarm :inverse-kinematics
+          (make-coords :pos (send obj-coords :pos)
+                       :rpy (float-vector 0 0 pi/2)) :rotation-axis t)
+    (send *ri* :angle-vector (send *fetch* :angle-vector) 5000)
+    (send *ri* :wait-interpolation)
+
+    (send *fetch* :rarm :move-end-pos #f(100 0 0))
+    (send *ri* :angle-vector (send *fetch* :angle-vector) 5000)
+    (send *ri* :wait-interpolation)
+    (unix::sleep 2)))
+
+(defun door-open-not-recog ()
+;;  (send *ri* :stop-grasp)
   (go-to-spot "door-spot" :relative-pos #f(120 -700 0)) ;; adjust environment
 
   (send *fetch* :rarm :inverse-kinematics
@@ -183,17 +208,22 @@
                 (- 800 (* 700 (sin (/ pi 4)))) (+ 70 (- 700 (* 700 (cos (/ pi 4))))) 950)
                :rpy (float-vector (/ -pi 4) (/ pi 4) -pi/2))))
   (send *ri* :angle-vector (send *fetch* :angle-vector) 5000)
-  (send *ri* :wait-interpolation)
+  (send *ri* :wait-interpolation))
 
-  ;; TODO
-  )
-
-(defun main()
+(defun 73b2-door-open()
   (setq *obj-pos* nil)
   (ros::subscribe *topic-name*
                   jsk_recognition_msgs::BoundingBoxArray
                   #'bounding-box-array-cb 1)
   (while (not *obj-pos*)
     (ros::spin-once))
-  (door-open-with-rec *obj-pos*)
-  )
+  (door-open-with-rec *obj-pos*))
+
+(defun 73b2-door-close()
+  (setq *obj-pos* nil)
+  (ros::subscribe *topic-name*
+                  jsk_recognition_msgs::BoundingBoxArray
+                  #'bounding-box-array-cb 1)
+  (while (not *obj-pos*)
+    (ros::spin-once))
+  (door-close-with-rec *obj-pos*))
