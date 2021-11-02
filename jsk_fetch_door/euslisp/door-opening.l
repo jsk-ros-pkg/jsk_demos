@@ -42,13 +42,13 @@
       (when (ros::time> time-stamp (send msg :header :stamp))
         (return-from bounding-box-array-cb nil))
       (ros::ros-info "tf")
-      (setq obj-pos (send (send base-coords
-                                :transform base->obj-coords) :worldpos)))
+      (setq *obj-pos* (send (send base-coords
+                                :transform base->obj-coords) :worldpos))
       (setq found-obj t)
-      (ros::ros-info "obj-pos:~A" obj-pos)
+      (ros::ros-info "obj-pos:~A" *obj-pos*)
       (ros::ros-info "base-coords:~A" base-coords)
       (ros::ros-info "base->obj-coords:~A" base->obj-coords)
-      obj-pos)))
+      *obj-pos*)))
 
 (defun door-open-with-rec(obj-pos)
   (let ((cam-coords nil)
@@ -189,9 +189,11 @@
   )
 
 (defun main()
+  (setq *obj-pos* nil)
   (ros::subscribe *topic-name*
                   jsk_recognition_msgs::BoundingBoxArray
                   #'bounding-box-array-cb 1)
-  (ros::spin-once)
-  (door-open-with-rec)
+  (while (not *obj-pos*)
+    (ros::spin-once))
+  (door-open-with-rec *obj-pos*)
   )
