@@ -74,6 +74,7 @@ map_id: ~a"
 
 (defun dump-map-launch (building filename &key default-floor (keepout nil))
   (let ((floors (send building :floors))
+        (bld-name (remove #\/ (send building :name)))
         (cntr 0))
     (if (stringp default-floor)
         (setq default-floor
@@ -92,6 +93,8 @@ map_id: ~a"
       (format fd "<launch>~%")
       ;; argument
       (when keepout (format fd "  <arg name=\"keepout\" default=\"false\"/>~%"))
+      (format fd "  <arg name=\"prefix\" default=\"\"/>~%")
+      (format fd "  <arg name=\"launch_map_select\" default=\"true\"/>~%")
       (format fd "  <arg name=\"launch_map_server\" default=\"true\"/>~%~%")
 
       ;; group
@@ -103,12 +106,12 @@ map_id: ~a"
         (progn
           (format fd "    <group if=\"$(arg keepout)\">~%")
           (dolist (map floors)
-            (format fd "      <node name=\"$(anon map_server~2,2D)\" pkg=\"map_server\" type=\"map_server\"
+            (format fd "      <node name=\"$(anon ~A_map_server~2,2D)\" pkg=\"map_server\" type=\"map_server\"
             args=\"~a\" >
         <remap from=\"map\" to=\"~a\"/>
         <param name=\"frame_id\" value=\"~a\"/>
       </node>~%"
-            cntr (get-yaml-filename map :unresolve t :keepout t)
+            bld-name cntr (get-yaml-filename map :unresolve t :keepout t)
             (send map :name) (send map :name))
           (incf cntr))
           (format fd "    </group>~%")))
@@ -118,22 +121,22 @@ map_id: ~a"
         (progn
           (format fd "    <group unless=\"$(arg keepout)\">~%")
           (dolist (map floors)
-            (format fd "      <node name=\"$(anon map_server~2,2D)\" pkg=\"map_server\" type=\"map_server\"
+            (format fd "      <node name=\"$(anon ~A_map_server~2,2D)\" pkg=\"map_server\" type=\"map_server\"
             args=\"~a\" >
         <remap from=\"map\" to=\"~a\"/>
         <param name=\"frame_id\" value=\"~a\"/>
       </node>~%"
-              cntr (get-yaml-filename map :unresolve t :keepout nil)
+              bld-name cntr (get-yaml-filename map :unresolve t :keepout nil)
               (send map :name) (send map :name))
             (incf cntr))
           (format fd "    </group>~%"))
         (dolist (map floors)
-          (format fd "    <node name=\"$(anon map_server~2,2D)\" pkg=\"map_server\" type=\"map_server\"
+          (format fd "    <node name=\"$(anon ~A_map_server~2,2D)\" pkg=\"map_server\" type=\"map_server\"
           args=\"~a\" >
       <remap from=\"map\" to=\"~a\"/>
       <param name=\"frame_id\" value=\"~a\"/>
     </node>~%"
-            cntr (get-yaml-filename map :unresolve t)
+            bld-name cntr (get-yaml-filename map :unresolve t)
             (send map :name) (send map :name))
           (incf cntr)))
 
@@ -141,7 +144,7 @@ map_id: ~a"
       (format fd "~%    <!-- map for navigation nodes -->~%")
       (if keepout
         (progn
-          (format fd "    <node name=\"map_keepout_server\" pkg=\"multi_map_server\" type=\"multi_map_server\"
+          (format fd "    <node name=\"$(arg prefix)map_keepout_server\" pkg=\"multi_map_server\" type=\"multi_map_server\"
           if=\"$(arg keepout)\" args=\"~a~%"
             (get-yaml-filename (car floors) :unresolve t :keepout t))
           (dolist (map (cdr floors))
@@ -150,14 +153,14 @@ map_id: ~a"
           (format fd "      <remap from=\"map\" to=\"map_keepout\" />~%")
           (format fd "      <remap from=\"static_map\" to=\"static_map_keepout\" />~%")
           (format fd "    </node>~%")
-          (format fd "    <node name=\"map_server\" pkg=\"multi_map_server\" type=\"multi_map_server\"
+          (format fd "    <node name=\"$(arg prefix)map_server\" pkg=\"multi_map_server\" type=\"multi_map_server\"
           args=\"~a~%"
             (get-yaml-filename (car floors) :unresolve t :keepout nil))
           (dolist (map (cdr floors))
             (format fd "          ~a~%" (get-yaml-filename map :unresolve t :keepout nil)))
           (format fd "    \" />~%"))
         (progn
-          (format fd "    <node name=\"map_server\" pkg=\"multi_map_server\" type=\"multi_map_server\"
+          (format fd "    <node name=\"$(arg prefix)map_server\" pkg=\"multi_map_server\" type=\"multi_map_server\"
           args=\"~a~%"
             (get-yaml-filename (car floors) :unresolve t :keepout nil))
           (dolist (map (cdr floors))
@@ -170,24 +173,24 @@ map_id: ~a"
       ;; static transform publisher
       (setq cntr 0)
       (dolist (map floors)
-        (format fd "  <node pkg=\"tf\" type=\"static_transform_publisher\" name=\"$(anon map_tf~2,2D)\"
+        (format fd "  <node pkg=\"tf\" type=\"static_transform_publisher\" name=\"$(anon ~A_map_tf~2,2D)\"
         args=\"~7,3f ~7,3f ~7,3f 0 0 0 ~a ~a 100\"/>~%"
-                cntr
+                bld-name cntr
                 (/ (elt (send map :worldpos) 0) 1000.0)
                 (/ (elt (send map :worldpos) 1) 1000.0)
                 (/ (elt (send map :worldpos) 2) 1000.0)
                 (send building :name) (send map :name))
         (incf cntr)
-        (format fd "  <node pkg=\"tf\" type=\"static_transform_publisher\" name=\"$(anon map_tf~2,2D)\"
+        (format fd "  <node pkg=\"tf\" type=\"static_transform_publisher\" name=\"$(anon ~A_map_tf~2,2D)\"
         args=\"  0.000   0.000   0.000 0 0 0 ~a /map 100\" >
     <remap from=\"tf\" to=\"~a_tf\"/>
   </node>~%"
-                cntr (send map :name) (send map :name))
+                bld-name cntr (send map :name) (send map :name))
         (incf cntr)
         )
       ;;
-      (format fd "  <node name=\"tf_mux\" pkg=\"topic_tools\" type=\"mux\"
-        args=\"tf ")
+      (format fd "  <node name=\"$(arg prefix)tf_mux\" pkg=\"topic_tools\" type=\"mux\"
+        if=\"$(arg launch_map_select)\" args=\"tf ")
       (dolist (map floors)
         (format fd " ~a_tf" (send map :name)))
       (format fd "\">
