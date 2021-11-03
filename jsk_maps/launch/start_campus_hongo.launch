@@ -1,0 +1,83 @@
+<launch>
+  <arg name="MACHINE" default="localhost" />
+  <arg name="keepout" default="false" />
+  <arg name="launch_rviz" default="true" />
+  <arg name="launch_map_server" default="true" />
+  <arg name="use_machine" default="true" />
+  <arg name="use_pictogram" default="true" />
+
+  <machine name="localhost" address="localhost" if="$(arg use_machine)" />
+
+  <node pkg="tf" type="static_transform_publisher" name="$(anon hongo_tf)"
+        args="-300 -300 0 0 0 0 /world /hongo 100"/>
+  <node name="$(anon map_server)" pkg="map_server" type="map_server"
+        args="$(find jsk_maps)/raw_maps/hongo-1.00.yaml" >
+    <remap from="map" to="/hongo"/>
+    <param name="frame_id" value="/hongo"/>
+  </node>
+
+  <node name="publish_spot_hongo" pkg="roseus" type="roseus"
+        args="$(find jsk_maps)/tools/publish_campus.l"
+        machine="$(arg MACHINE)"
+        output="screen" />
+
+  <!-- <include file="$(find jsk_maps)/launch/start_map_eng2.launch" /> -->
+  <node pkg="tf" type="static_transform_publisher" name="$(anon eng2_tfA)"
+        args="-10 200 10 -1.39626 0 0 /world /eng2 100"/> <!-- see bld-eng2 location in (make-hongo-campus) -->
+
+  <include file="$(find jsk_maps)/launch/include/start_map_eng2_main.xml">
+    <arg name="prefix" value="eng2_" />
+    <arg name="keepout" value="$(arg keepout)"/>
+    <arg name="launch_map_server" value="$(arg launch_map_server)"/>
+    <arg name="launch_map_select" value="false"/>
+  </include>
+
+  <node pkg="tf" type="static_transform_publisher" name="$(anon eng2_tfB)"
+        args="0 6.9 0 0 0 0 /eng2/7f /eng2/7f/73B2 100"/>
+
+  <node name="publish_spot_eng2" pkg="roseus" type="roseus"
+        args="$(find jsk_maps)/tools/publish_spot.l"
+        machine="$(arg MACHINE)"
+        output="screen" >
+    <param name="~scene" value="eng2" />
+    <param name="~use_pictogram" value="$(arg use_pictogram)" />
+  </node>
+
+  <!-- <include file="$(find jsk_maps)/launch/start_map_eng8.launch" > -->
+  <node pkg="tf" type="static_transform_publisher" name="$(anon eng8_tfA)"
+        args="-140 220 10 1.74533 0 0 /world /eng8 100"/> <!-- see bld-eng8 location in (make-hongo-campus) -->
+
+  <include file="$(find jsk_maps)/launch/include/start_map_eng8_main.xml">
+    <arg name="prefix" value="eng8_" />
+    <arg name="keepout" value="$(arg keepout)"/>
+    <arg name="launch_map_server" value="$(arg launch_map_server)"/>
+    <arg name="launch_map_select" value="false"/>
+  </include>
+
+  <node pkg="tf" type="static_transform_publisher" name="$(anon eng8_tfB)"
+        args="0 -13.678 0  0 0 0 /eng8/6f /eng8/6f/610 100" />
+
+  <node name="publish_spot_eng8" pkg="roseus" type="roseus"
+        args="$(find jsk_maps)/tools/publish_spot.l"
+        machine="$(arg MACHINE)"
+        output="screen" >
+    <param name="~scene" value="eng8" />
+    <param name="~use_pictogram" value="$(arg use_pictogram)" />
+  </node>
+
+  <!-- for initialpose topic -->
+  <node name="initialpose3d" pkg="jsk_maps" type="initialpose3d.py">
+    <remap from="initialpose_in" to="initialpose3d" />
+    <remap from="initialpose_out" to="initialpose" />
+  </node>
+
+  <!-- mtf selector for navigation nodes -->
+  <node name="tf_mux" pkg="topic_tools" type="mux"
+        args="tf  /eng2/7f_tf /eng2/1f_tf /eng2/2f_tf /eng2/3f_tf /eng2/8f_tf /eng8/6f_tf /eng8/b1f_tf /eng8/1f_tf">
+    <remap from="mux" to="map_tf_mux" />
+  </node>
+  <!-- rviz -->
+  <node name="rviz" pkg="rviz" type="rviz"
+        args="-d $(find jsk_maps)/launch/config/hongo.rviz"
+        if="$(arg launch_rviz)"/>
+</launch>
