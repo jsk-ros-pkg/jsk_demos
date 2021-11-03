@@ -32,9 +32,9 @@
      (cylinder->marker-msg cyl header :color color :ns "pin_head" :lifetime lifetime :id id :alpha alpha)
      (cube->marker-msg cub header :color color :ns "pin_body" :lifetime lifetime :id id :alpha alpha)
      (text->marker-msg name (send cds :translate (float-vector 0 0 (/ height 6)))
-                       header :ns "pin_label" :lifetime lifetime :id id))))
+                       header :ns "pin_label" :lifetime lifetime :id id :scale radius))))
 
-(defun publish-pin-marker-array (spots header &key (alpha 0.8) (lifetime 15))
+(defun publish-pin-marker-array (spots header &key (height 1800) (radius 100) (alpha 0.8) (lifetime 15))
   "Publish marker array from spots.
    'spots' is list of cons (name . coords) for each spots."
   (unless (ros::get-topic-publisher *pub-spots-marker-topic*)
@@ -49,6 +49,8 @@
                 (mapcar #'(lambda (spot)
                             (make-pin-marker (car spot) (cdr spot)
                                              header (incf id)
+                                             :height height
+                                             :radius radius
                                              :alpha alpha
                                              :lifetime lifetime)) spots))))))
 
@@ -82,7 +84,7 @@
     (send cds :translate (float-vector 0 0 100) :world)
     (cons pictogram
           (text->marker-msg name cds header
-                            :ns "pin_label" :lifetime lifetime :id id))))
+                            :ns "pin_label" :lifetime lifetime :id id :scale (* size 200)))))
 
 (defun publish-pictogram-array (spots header
                                 &key (alpha 0.8) (lifetime 15) (size 0.5)
